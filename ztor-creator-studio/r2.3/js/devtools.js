@@ -111,7 +111,7 @@
   /* ✝ 2026-07-30：pickup.html／pickup-detail.html／scanner.html 移出本清單——取貨管理已列進
      feature-scope-map（O24–O30，🟢 Phase 1），不再是「未列 scope 的整頁功能」，各版本皆可進入（D157）。 */
   var FULL_ROUTES = {
-    'index.html': 1, 'creators.html': 1, 'projects.html': 1, 'project-detail.html': 1, 'create-project.html': 1,
+    'index.html': 1, 'home-canvas.html': 1, 'creators.html': 1, 'projects.html': 1, 'project-detail.html': 1, 'create-project.html': 1,
     'create-campaign.html': 1, 'funding-simulate.html': 1, 'events.html': 1, 'event-detail.html': 1, 'create-event.html': 1, 'edit-event.html': 1,
     'fans-crm.html': 1, 'fan-detail.html': 1, 'tier-settings.html': 1, 'my-ip.html': 1, 'ip-detail.html': 1,
     'ip-market.html': 1, 'register-ip.html': 1, 'settings.html': 1,
@@ -161,7 +161,9 @@
   /* 以 Phase 4（最終完整版）為基底的版本：full 本身，以及只改接個別頁面、
      其餘同 Phase 4 的特殊版（funding-test、deck-for-sony）。這些版本不減功能，
      故 full-only 頁面與跨頁連結照常可見。新增同型特殊版時把 key 加進這裡。 */
-  function isFullBaseVersion(v) { return v === 'full' || v === 'funding-test' || v === 'deck-for-sony' || v === 'golive-4step'; }
+  /* `home-canvas` 2026-08-31 已不是一個版本（該頁進了正式導覽），這個鍵仍留在白名單裡：
+     舊的 devstate 還存著它的瀏覽器，若落進「未知版本」會被當成限縮版、導覽少一半。 */
+  function isFullBaseVersion(v) { return v === 'full' || v === 'funding-test' || v === 'deck-for-sony' || v === 'golive-4step' || v === 'home-canvas'; }
   function applyRouteAvailability() {
     var allowFull = isFullBaseVersion(state.version);
     document.querySelectorAll('a[href]').forEach(function (a) {

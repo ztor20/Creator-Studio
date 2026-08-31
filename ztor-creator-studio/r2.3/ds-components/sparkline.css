@@ -17,7 +17,7 @@
            .sparkline__grid   水平虛線格線（每個縱軸刻度一條）
            .sparkline__band   標記區間的直立色塊
            .sparkline__area   線下的淡色填充
-           .sparkline__line   折線本身
+           .sparkline__line   折線本身（`--sub` 為附加線：細一階、吃 --line 的顏色、不畫面積）
            .sparkline__seg    區間內的重點線段（--up／--down 為漲跌語意色）
            .sparkline__target 目標值的虛線
            .sparkline__mark   區間的數值標籤（HTML，疊在 SVG 上；同樣有 --up／--down）
@@ -124,6 +124,15 @@
   opacity: 0.85;
 }
 
+/* 附加線（2026-08-31）：同一張圖上多疊幾條做比較用。比主線細一階、吃自己的顏色
+   （由行內 `--line` 帶進來，通常是 `--chart-*`），而且不畫面積——面積疊起來會把
+   底下那條蓋掉。主線維持中性墨色，「哪一條是主角」才不必靠顏色去猜。 */
+.sparkline__line--sub {
+  stroke: var(--line, var(--chart-1));
+  stroke-width: 1.25;
+  opacity: 0.95;
+}
+
 .sparkline__area {
   fill: var(--spark-ink);
   opacity: 0.1;
@@ -180,4 +189,13 @@
 /* 細節版把繪圖區加高：四段縱軸刻度要在 30px 裡排開會疊字，
    而密集折線在太矮的區域裡會糊成一條帶子、看不出起伏。 */
 .sparkline--detail { --spark-plot-h: 76px; }
-.sparkline--detail .sparkline__area { opacity: 0.06; }
+.sparkline--detail /* 附加線（2026-08-31）：同一張圖上多疊幾條做比較用。比主線細一階、吃自己的顏色
+   （由行內 `--line` 帶進來，通常是 `--chart-*`），而且不畫面積——面積疊起來會把
+   底下那條蓋掉。主線維持中性墨色，「哪一條是主角」才不必靠顏色去猜。 */
+.sparkline__line--sub {
+  stroke: var(--line, var(--chart-1));
+  stroke-width: 1.25;
+  opacity: 0.95;
+}
+
+.sparkline__area { opacity: 0.06; }

@@ -62,6 +62,14 @@
     'crumb.back':       { en: 'Back to previous level', zh: '返回上一層' },
     /* ─── Topbar ───────────────────────────────────────────── */
     'nav.dashboard':    { en: 'Dashboard',  zh: '總覽' },
+    /* 新版總覽（2026-08-31）：一屏不捲的展示版型進正式導覽，掛在原本的總覽下面。
+       兩個語言各照自己的習慣寫——中文「新版總覽」，英文把 new 放在後面括號裡是
+       產品慣例（同一個東西的新版本，不是另一個功能）。 */
+    'nav.dashboard-new':      { en: 'Dashboard (new)',      zh: '新版總覽' },
+    /* 舊版總覽（2026-09-01）：兩份對調之後，原本那一份退到第二格並改名——側欄與它自己
+       頁上的麵包屑都吃這一支，兩處說法一致。`nav.dashboard`（單純的「總覽」）留著不動：
+       docs/ 底下那幾份儀表板草稿還在用它。 */
+    'nav.dashboard-old':      { en: 'Dashboard (old)',      zh: '舊版總覽' },
     /* 儀表板頁首（2026-07-28）。標題刻意不叫 Dashboard——側欄與麵包屑已經說了兩次。
        副標依序點名這一頁的四個帶狀區，讀完就知道往下會看到什麼。 */
     'dash.h1':          { en: 'Studio',     zh: '工作室' },
@@ -574,6 +582,11 @@
     /* 走勢圖刻度（2026-08-28）：縱軸標量級、橫軸標期間。刻度字串自帶單位；
        英文用 12w/9w 這種縮寫省寬度，中文本來就短、直接寫「12 週」。 */
     'spark.y.rev25':     { en: '$25k',      zh: '$25k' },
+    /* 展示版收入走勢的三條格線（2026-08-31）：值域從 0 起算，附加的來源線才不會
+       全部擠在底邊。金額刻度兩個語言同形，不另譯。 */
+    'spark.y.rev20':     { en: '$20k',      zh: '$20k' },
+    'spark.y.rev10':     { en: '$10k',      zh: '$10k' },
+    'spark.y.zero':      { en: '$0',        zh: '$0' },
     'spark.y.rev20':     { en: '$20k',      zh: '$20k' },
     'spark.y.rev15':     { en: '$15k',      zh: '$15k' },
     'spark.y.fans13':    { en: '1.3k',      zh: '1,300' },
@@ -585,7 +598,9 @@
     'spark.x.now':       { en: 'now',       zh: '本週' },
     'spark.fans-wow':    { en: '+2.3%',     zh: '+2.3%' },
     'ops.revenue-meta':       { en: 'Updated 2h ago · view in Earnings', zh: '2 小時前更新 · 查看 Earnings' },
-    'ops.pending':            { en: 'Pending actions',       zh: '待處理事項' },
+    /* 2026-08-31 改名：與面板標題同一個詞。KPI 卡點了會捲到那個面板，
+       兩邊叫不同的名字會讀成兩件事。 */
+    'ops.pending':            { en: 'To-do',                 zh: '待辦事項' },
     'dash.tab.ongoing':       { en: 'Ongoing',  zh: '進行中' },
     /* 2026-08-28 撤除 dash.activity.title：F5 併進磚列的「近期」分頁之後，
        那張卡連同標題一起退場，分頁詞 rail.tab.recent 已接手命名這一區。 */
@@ -596,7 +611,7 @@
     'ops.projects':           { en: 'Active projects',       zh: '進行中項目' },
     'ops.projects-meta':      { en: 'Live · co-create · scheduled', zh: '進行中 · 共創 · 準備中' },
     /* F2 tile popups（2026-07-27）— in-place 明細彈窗，每項自帶 CTA */
-    'ops.modal.pending-title':  { en: 'Pending actions',                    zh: '待處理事項' },
+    'ops.modal.pending-title':  { en: 'To-do',                              zh: '待辦事項' },
     'ops.modal.pending-sub':    { en: 'Each item has one clear next step',  zh: '每一項都有明確的下一步' },
     'ops.modal.view-alerts':    { en: 'View in Alerts & actions',           zh: '在今日待處理查看' },
     'ops.modal.projects-title': { en: 'Active projects',                    zh: '進行中項目' },
@@ -683,7 +698,63 @@
        persona=nick 的品名覆寫在 PERSONA_DICT.nick，兩處要一起改，
        否則面板唸預設世界觀的品名、上面那行 desc 卻是周湯豪的作品。
        相對時間是示意假資料（原型層沒有事件時間戳，見 ASSUMPTIONS ISSUE-001）。 */
-    'issue.next':                 { en: 'Next step',                 zh: '下一步' },
+    'issue.affected':             { en: 'Affected',                  zh: '受影響的項目' },
+    /* 面板標題把筆數寫進句子。名詞這半各自照自己的語法：中文帶量詞「件」，
+       英文靠單複數兩個鍵，不是同一句的逐字對譯。 */
+    'ops.pending-n':              { en: 'to-dos',                    zh: '件待辦事項' },
+    'ops.pending-one':            { en: 'to-do',                     zh: '件待辦事項' },
+    /* compact 形態（展示版左欄）的標題：只有名稱、不帶筆數。那一格只出三則、
+       旁邊有通往全部的箭頭，沒有數字就沒有「說了 5 卻只看得到 3」的問題。 */
+    'ops.todo':                   { en: 'To-do',                     zh: '待辦事項' },
+    /* 首頁展示版的大畫布（2026-08-31）。
+       2026-08-31 撤除（墓碑）：`canvas.mode.wall`／`canvas.mode.timeline`（模式切換）
+       與 `canvas.today`（時間軸上的「今天」）。使用者裁示不需要未來 90 天，
+       畫布只剩單一作品舞台一個模式。 */
+    'canvas.f.all':               { en: 'All',                       zh: '全部' },
+    'canvas.f.work':              { en: 'Works',                     zh: '作品' },
+    'canvas.f.product':           { en: 'Merch',                     zh: '商品' },
+    'canvas.f.event':             { en: 'Events',                    zh: '活動' },
+    'canvas.open':                { en: 'Open',                      zh: '前往' },
+    /* 進行中那一格的標題整句跟著組別換（2026-08-31 使用者裁示「xxx進行中，每次
+       換頁就換名」）。兩個語言各照自己的語序：中文把量詞放前面（「上線進行中」），
+       英文把它放後面（Ongoing releases），不是逐字對譯。 */
+    'canvas.ongoing.golive':      { en: 'Ongoing releases',          zh: '上線進行中' },
+    'canvas.ongoing.fund':        { en: 'Ongoing funding',           zh: '募資進行中' },
+    'canvas.ongoing.preorder':    { en: 'Ongoing pre-orders',        zh: '預購進行中' },
+    'canvas.ongoing.event':       { en: 'Ongoing events',            zh: '活動進行中' },
+    'canvas.split.revenue':       { en: 'Revenue mix',               zh: '收入分布' },
+    /* 這一格 2026-08-31 由分段條改成走勢曲線，名字跟著改——畫的不是分布了。
+       中文「收入走勢」、英文 Revenue trend（產品慣用語，不是 curve）。 */
+    'canvas.trend.revenue':       { en: 'Revenue trend',             zh: '收入走勢' },
+    'canvas.trend.total':         { en: 'Total',                     zh: '總收入' },
+    /* 圓環中心那一行單位：中文「位粉絲」（量詞在前，跟著數字讀），英文只寫 fans。 */
+    'canvas.donut.fans':          { en: 'fans',                      zh: '位粉絲' },
+    /* 與「收入分布」成對，所以英文也成對用 mix，不寫 tiers——兩張輪播講的是
+       同一件事的兩面（錢從哪來、人由誰組成）。 */
+    'canvas.split.tiers':         { en: 'Fan mix',                   zh: '粉絲分布' },
+    'btn.prev':                   { en: 'Previous',                  zh: '上一張' },
+    'nav.collapse':               { en: 'Collapse navigation',       zh: '收合導覽' },
+    'nav.expand':                 { en: 'Expand navigation',         zh: '展開導覽' },
+    'btn.next':                   { en: 'Next',                      zh: '下一張' },
+    'btn.view-more':              { en: 'View more',                 zh: '查看更多' },
+    'canvas.more.projects':       { en: 'More projects',              zh: '查看更多項目' },
+    'canvas.more.events':         { en: 'More events',                zh: '查看更多活動' },
+    'canvas.today-in':            { en: 'In today',                  zh: '今日進帳' },
+    'dash.ongoing':               { en: 'Ongoing',                   zh: '進行中' },
+    /* 四個分頁的標籤刻意都只有兩個字：這一欄 300px，四個並排就沒有第三個字的空間。
+       英文各自取產品慣用的單字，不是中文的逐字對應。 */
+    'canvas.tab.golive':          { en: 'Release',                   zh: '上線' },
+    'canvas.tab.fund':            { en: 'Funding',                   zh: '募資' },
+    'canvas.tab.preorder':        { en: 'Pre-order',                 zh: '預購' },
+    'canvas.tab.event':           { en: 'Events',                    zh: '活動' },
+    'canvas.picks.title':         { en: 'Coming up',                  zh: '近期項目與活動' },
+    'canvas.scroll.more':         { en: 'Scroll for more',            zh: '往下看更多' },
+    'canvas.tab.empty':           { en: 'Nothing open in this group', zh: '這一類目前沒有進行中的' },
+    'canvas.empty.title':         { en: 'Nothing published yet',     zh: '還沒有上線的東西' },
+    'canvas.empty.text':          { en: 'Your works, merch and events appear here as soon as the first one goes live.', zh: '第一件作品、商品或活動上線之後，就會出現在這裡。' },
+    'canvas.greeting-sub':        { en: 'What came in, what needs you, and where your work is playing right now.', zh: '進來的錢、需要你處理的事，以及你的作品現在正在哪裡被聽見、被看見。' },
+    'issue.snooze':               { en: 'Snooze',                    zh: '暫緩' },
+    'issue.blocking':             { en: 'Can\u2019t be dismissed until resolved', zh: '處理完才會消失，無法暫緩' },
     'issue.sub.below-threshold':  { en: 'Below restock threshold',   zh: '低於補貨門檻' },
     'issue.sub.not-confirmed':    { en: 'Not confirmed yet',         zh: '尚未確認' },
     'issue.ago.2h':               { en: '2 hours ago',               zh: '2 小時前' },
@@ -5987,6 +6058,11 @@
 
     /* Project detail */
     'project-detail.crumb.projects':{en: 'Projects',zh: '項目'},
+    /* 麵包屑第一節帶發行模式（2026-08-31）：類型徽章撤除後由這裡交代「這是哪一類項目」。
+       沿用 TYPE 表既有的中文用字（直接發佈／共創／預購），不另造一套。 */
+    'project-detail.crumb.projects-golive':{en: 'Direct-release projects',zh: '直接發佈項目'},
+    'project-detail.crumb.projects-fund':{en: 'Co-create projects',zh: '共創項目'},
+    'project-detail.crumb.projects-preorder':{en: 'Presale projects',zh: '預購項目'},
     'project-detail.badge.live':{en: 'Live',zh: '進行中'},
     'project-detail.badge.cat':{en: 'Short film',zh: '短片'},
     'project-detail.badge.type':{en: 'Co-create',zh: '共創'},
@@ -6248,6 +6324,24 @@
     'pd-c.aud-backers':{en: 'Share with: Backers only',zh: '公開給：僅支持者'},
     'pd-c.aud-superfan':{en: 'Share with: Superfan+',zh: '公開給：Superfan 以上'},
     'pd-c.title-ph':{en: 'What happened?',zh: '發生了什麼事？'},
+    /* 總覽進度摘要最上面那一行的收合入口（2026-08-31）。與 pd-c.title-ph 分開：
+       時間軸那個落點問的是「發生了什麼事」，這裡問的是「要不要發一則更新」。 */
+    'pd-ov.post.stub':{en: 'Post an update',zh: '發布更新'},
+    /* 支持者 KPI 的走勢圖與方案切換（2026-08-31）。 */
+    'pd-ov.kpi.bk-all':{en: 'All plans',zh: '全部方案'},
+    'pd-ov.kpi.range-day':{en: 'Day',zh: '日'},
+    'pd-ov.kpi.range-week':{en: 'Week',zh: '週'},
+    'pd-ov.kpi.range-month':{en: 'Month',zh: '月'},
+    'pd-ov.kpi.bk-foot':{en: 'Cumulative backers since launch',zh: '開跑至今的累積支持人數'},
+    /* 方案統計（2026-08-31）：已募那條長條的明細拆成自己一段。 */
+    'pd-ov.plansplit.title':{en: 'By plan',zh: '方案統計'},
+    'pd-ov.plansplit.col-plan':{en: 'Plan',zh: '方案'},
+    'pd-ov.plansplit.col-sold':{en: 'Sold',zh: '售出'},
+    'pd-ov.plansplit.col-amount':{en: 'Raised',zh: '累積金額'},
+    'pd-ov.plansplit.col-share':{en: 'Share',zh: '佔比'},
+    'pd-ov.kpi.bk-split':{en: 'Backers by plan',zh: '依方案看支持人數'},
+    'pd-ov.kpi.bk-x0':{en: 'Start',zh: '開始'},
+    'pd-ov.kpi.bk-x1':{en: 'Now',zh: '現在'},
     'pd-c.attach-image':{en: 'Image',zh: '圖片'},
     'pd-c.attach-video':{en: 'Video',zh: '影片'},
     'pd-c.attach-audio':{en: 'Music',zh: '音樂'},

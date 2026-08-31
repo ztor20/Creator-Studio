@@ -70,6 +70,10 @@
      亮一階，不能寫死一個絕對色。亮色維持白卡——畫布是 #FAFAFA、卡是白，白填在畫布上有升起感，
      在白卡裡則交給邊框（本來就是這樣，行為不變）。 */
   --control-raise:     var(--card);
+  /* 與上一條成對的 hover 階（2026-08-31 使用者：「這個 hover 要亮的，現在變暗了」）。
+     亮色維持既有的 --accent 灰（白卡上往灰走才叫亮一階的相反——白卡本來就是最亮，
+     hover 只能往下踩一點）；深色見 [data-theme="dark"] 的覆寫。 */
+  --control-raise-hover: var(--accent);
   --ring:              var(--primary);   /* 品牌橘 focus ring；亮暗同色（2026-06-25）。a11y：白底約 1.3:1 低於 WCAG，依「無障礙僅建議」保留 */
 
   /* Charts — 品牌＋status 色序 */
@@ -205,6 +209,14 @@
   --status-accent-ink:  #6D28D9;
   --status-accent:     #8B5CF6;   /* purple — extra category-tag hue (2026-06-05) */
   --status-error:      #DA314A;   /* 2026-07-21 補回：狀態徽章的錯誤色，與 --destructive（刪除等破壞性操作）語意分開；值暫同 --destructive，暗色見 override（Figma 845:11071 兩色分歧） */
+
+  /* ── 壓在圖片上的字與它的壓底（2026-08-31 建，展示版的海報牆在用）──
+     這三支是**常數**：不隨主題翻轉。理由是它們貼在照片上，而照片不會因為使用者
+     切成亮色主題就變亮——把文字色接上 --foreground，亮色主題下就會變成白圖上的
+     淺灰字。壓底也一樣恆定深色，它的工作是保證圖片再亮也讀得到上面那行字。 */
+  --scrim-media:       rgba(0, 0, 0, 0.82);
+  --on-media:          #FFFFFF;
+  --on-media-muted:    rgba(255, 255, 255, 0.66);
 
   /* Geometry */
   /* ztorUI 換裝（2026-08-28 熔接自 demo/ztorui-skin，遷移計劃見專案根
@@ -383,7 +395,15 @@
      讓「真的會透」的那幾層（外殼、側欄）與浮層管線同一個量級。
      舊值：blur(14px) saturate(140%)。 */
   --overlay-blur:      blur(24px) saturate(1.25);
-  --overlay-tint:      rgba(0, 0, 0, 0.45);   /* darkening mixed into modal backdrops (see .payout-modal) */
+  --overlay-tint:      rgba(0, 0, 0, 0.32);   /* darkening mixed into modal backdrops (see .payout-modal)；2026-09-01 由 0.45 調亮，與暗色那支同一次裁示 */
+  /* 浮層遮罩本身（2026-09-01 使用者裁示「統一將所有 popup 後的黑色遮罩都改」）：
+     配方原本在三支元件裡各抄一份（payout-modal／embed-modal／explainer），
+     三份一樣的字串遲早會有一份沒跟上；收成這一支之後，「遮罩多暗」全站只有一個答案。
+     畫布色 68% → 40%：真正把後面壓死的是這一項，不是 `--overlay-tint`——68% 的實色
+     畫布疊上去，底下那一頁幾乎只剩一片黑（實測合成後 alpha 0.85，把遮罩色調亮之後
+     也只降到 0.83）。降到 40% 之後合成 alpha 約 0.68，後面那一頁看得出還在，
+     浮層才有東西可以浮。兩支變數都會跟著主題走，所以這裡只寫一次。 */
+  --overlay-scrim:     color-mix(in srgb, var(--background) 40%, var(--overlay-tint));
 
   /* Typography */
 
@@ -625,10 +645,11 @@
   --ztu-orange-lo:     #f2871f;   /* 橘的暗版（漸層底端、內陰影的折射色） */
 
   /* Foundation：玻璃與檯面 */
-  --ztu-glass-bg:      rgba(255, 255, 255, 0.07);   /* 玻璃卡半透明底 */
+  --ztu-glass-bg:      rgba(255, 255, 255, 0.05);   /* 玻璃卡半透明底 · 2026-08-31 調參器定案（docs/sheet-button-tuner.html），舊值 0.07 */
   --ztu-glass-strong:  rgba(255, 255, 255, 0.12);   /* 玻璃 hover 加強 */
   --ztu-glass-rim:     rgba(255, 255, 255, 0.15);   /* 頂緣內光 */
-  --ztu-film:          rgba(255, 255, 255, 0.06);   /* 巢狀薄膜（Wave 2a 新增）：卡中卡、控件凹槽、縮圖框、
+  --ztu-film:          rgba(255, 255, 255, 0.085);  /* 2026-08-31 調參器定案（docs/sheet-button-tuner.html），舊值 0.06。與 --nest-line 歸零成對：界線收掉之後，
+                                                       層次改由這片薄膜自己撐 · 巢狀薄膜（Wave 2a 新增）：卡中卡、控件凹槽、縮圖框、
                                                        中性徽章共用的「疊上去的一層」。比玻璃低一階、
                                                        刻意不帶 backdrop-filter——巢狀層再模糊只會取樣到
                                                        自己的母卡，讀不出層次還多耗 GPU。 */
@@ -638,7 +659,7 @@
   --ztu-shell-solid:   #1c1c1b;                     /* 外殼玻璃疊在檯面上算出來的實色等價：7% 白疊 #0a0a09。
                                                        給「必須是實色、但要跟外殼看起來同一階」的填色用（例如徑向漸層雕的凹角）。 */
   --ztu-blur-glass:    24px;
-  --ztu-blur-heavy:    40px;
+  --ztu-blur-heavy:    50px;   /* 2026-08-31 調參器定案（docs/sheet-button-tuner.html），舊值 40px */
   --ztu-shadow-card:   0 24px 60px rgba(0, 0, 0, 0.45);
   --ztu-shadow-pop:    0 12px 40px rgba(0, 0, 0, 0.5);
   --ztu-shadow-pop-up: 0 -12px 40px rgba(0, 0, 0, 0.5);   /* Wave 2b 新增：--ztu-shadow-pop 的向上版。
@@ -662,11 +683,21 @@
   /* 發光家族的唯一一組自訂屬性（主要動作、側欄選中、segmented、switch 共用一份，
      不各寫各的）。--ztu-pill-active-* 讓「選中」比「主要動作」安靜一階
      （glow 4px→2px、30%→24%、55%/60% vs 60%/70%）。 */
+  /* 2026-08-31：調參器一度把三個色停降到 50／40／40（更透光），使用者看實機後當場回退——
+     「主按鈕剛剛調了一些透明度的參數，透明度的部分調回來吧」。所以濃度維持 78／78／82，
+     同輪只保留 --ztu-accent-fg 由 0.95 提到 1（那是字、不是面）。 */
   --ztu-accent-surface: linear-gradient(150deg, color-mix(in srgb, #ffc178 78%, transparent), color-mix(in srgb, #ffa33f 78%, transparent) 52%, color-mix(in srgb, #f2871f 82%, transparent));
   --ztu-accent-blur:    blur(16px) saturate(1.25);
   --ztu-accent-glow:    0 4px 18px color-mix(in srgb, #ffa33f 30%, transparent), inset 0 1px 0 color-mix(in srgb, #ffffff 60%, transparent), inset 0 -1px 0 color-mix(in srgb, #f2871f 70%, transparent), inset 0 0 0 1px color-mix(in srgb, #ffffff 14%, transparent);
   --ztu-pill-active-glow: 0 2px 10px color-mix(in srgb, #ffa33f 24%, transparent), inset 0 1px 0 color-mix(in srgb, #ffffff 55%, transparent), inset 0 -1px 0 color-mix(in srgb, #f2871f 60%, transparent), inset 0 0 0 1px color-mix(in srgb, #ffffff 12%, transparent);
-  --ztu-accent-fg:      rgba(255, 255, 255, 0.95);
+  --ztu-accent-fg:      rgba(255, 255, 255, 1);   /* 2026-08-31 調參器定案（docs/sheet-button-tuner.html），舊值 0.95 */
+  /* hover 與字影（2026-08-31 使用者：「文字加個陰影吧但不要太多，然後 hover 效果要再明顯一點」）。
+     hover 不換色票——漸層沒有「亮一階」的對應值，改成在原本那面上疊一層同色的薄洗，
+     光暈同時加強：填得更滿＋光更外擴，讀起來是「這顆被點亮了」，而不是「這顆被調亮了」。
+     字影刻意壓在很低的份量：橘面本來就亮，字影只是把白字從面上抬起來一點，不是要做立體。 */
+  --ztu-accent-wash-hover: color-mix(in srgb, var(--ztu-orange) 18%, transparent);
+  --ztu-accent-glow-hover: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px 0 color-mix(in srgb, #ffffff 75%, transparent), inset 0 -1px 0 color-mix(in srgb, #f2871f 75%, transparent), inset 0 0 0 1px color-mix(in srgb, #ffffff 24%, transparent);
+  --ztu-accent-ink-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);   /* 2026-08-31 同日加重（使用者「再多一點」），舊值 0 1px 2px 30% */
 
   /* 霧光色層（主要按鈕的 ::before 吃它）。變數名刻意不加 --ztu- 前綴：
      規格書 §3.8 的 ::before 區塊要求一字不差照抄，那段寫的就是 var(--bloom-surface)。
@@ -756,11 +787,18 @@
   --nest-surface:      rgba(222, 223, 233, 0.04);
   /* 舊註（已不適用）：深色不需要線框，4% 薄膜已經把層次做出來了。
      ztorUI 換裝（2026-08-28 熔接）：玻璃語彙靠「白色低透明線」讀邊界，卡中卡一起走同一條。 */
-  --nest-line:         rgba(255, 255, 255, 0.10);   /* 舊值 transparent */
+  /* 2026-08-31 調參器定案（docs/sheet-button-tuner.html）：巢狀層的界線收掉，層次全部交給薄膜的明度差。
+     這等於把 Wave 2b「玻璃層次靠線、不靠薄膜」那一半退回去——同輪 --ztu-film 由 0.06 提到 0.085 接手，
+     線消失但層次還在。影響全站每一個巢狀層（.card--muted／.nest／浮層裡的卡）。 */
+  --nest-line:         rgba(255, 255, 255, 0);   /* 舊值 0.10（更早：transparent） */
   /* 深色改成半透明薄膜（Q67）：寫死 --card #212223 時，控件在畫布上是亮的、在卡上同色、
      在 L2 分卡上反而更暗——同一顆按鈕在三種表面上讀出三種層級關係。改成疊加之後，
      不管坐在哪一層都固定比那一層亮一階。 */
   --control-raise:     rgba(222, 223, 233, 0.04);
+  /* 深色的 hover 必須往「亮」走：靜止已經是 4% 的淺色薄膜，hover 再套 --accent（#2A2B2C 實色深灰）
+     就是從薄膜掉回一塊比周圍更暗的色塊——玻璃面愈亮愈明顯（2026-08-31 使用者在浮層裡回報）。
+     改成同一族薄膜的 3 倍濃度，hover ＝ 同一片膜變厚，不換材質。 */
+  --control-raise-hover: rgba(222, 223, 233, 0.12);
   /* --ring 不覆寫 → 繼承 var(--primary)=橘，亮暗同色（2026-06-25）*/
 
   /* Charts — dark variants */
@@ -805,7 +843,7 @@
   --foreground-muted:  rgba(255, 255, 255, 0.70);   /* [ext] 中階文字（--text-mid）· ztorUI 換裝（2026-08-28 熔接）：舊值 #B9B9B9 */
   --foreground-on-inverse:        #FDFDFD;                    /* footer text stays white on the dark slab */
   --foreground-on-inverse-muted:  rgba(253, 253, 253, 0.6);
-  --border-soft:       rgba(255, 255, 255, 0.10);   /* ztorUI 換裝（2026-08-28 熔接）：舊值 #202122（midnight-v2） */
+  --border-soft:       rgba(255, 255, 255, 0.06);   /* 2026-08-31 調參器定案（docs/sheet-button-tuner.html），舊值 0.10（更早 #202122 midnight-v2） */
 
   /* ztorUI 換裝（2026-08-28 Wave 2a 熔接自 skin §7）：捲軸滑塊改寫成固定 alpha。
      :root 那兩支是 color-mix(--foreground 14%/32%, transparent)，而 --foreground 在本主題
@@ -819,7 +857,11 @@
   /* ztorUI 換裝（2026-08-28 熔接自 demo/ztorui-skin，遷移計劃見專案根 r2.3-遷移計劃.md） · 類別 6 模糊／遮罩 ＋ 類別 1）：
      modal 遮罩改成「65% 的畫布色」（ztorUI 規格 §2.4），舊值 rgba(0,0,0,0.6)；
      品牌漸層三站改成橘三階，舊值 #ffb866 / #ffa33f / #ff7a4d。 */
-  --overlay-tint:      color-mix(in srgb, #0e0d0c 65%, transparent);
+  /* 65% → 46%（2026-09-01 使用者裁示「後面的遮罩不用這麼暗，統一將所有 popup 後的
+     黑色遮罩都改」）：遮罩的工作是把後面那一頁推遠、讓浮層自己站出來，不是把整頁
+     關掉；65% 之後底下那一頁幾乎只剩一片黑，浮層就沒有「浮在什麼上面」可言。
+     改的是這一支 token，全站每一個浮層（modal／drawer／彈窗／掃描器）一起變。 */
+  --overlay-tint:      color-mix(in srgb, #0e0d0c 46%, transparent);
   --gradient-brand:    linear-gradient(90deg, #ffc178 0%, #ffa33f 55%, #f2871f 100%);
 
   /* Status accents [ext] — pure-RGB dark variants */

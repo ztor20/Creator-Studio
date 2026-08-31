@@ -53,7 +53,8 @@
      型別卡 icon 變體／upload hero 已 promote 成 ds-components（form-section /
      radio-card / control-row / form-grid / selection-card--icon / upload-tile）。 */
 
-  /* 就緒檢查 footer chip＋tooltip（.readiness__chip / --ready / __pop）已 promote 至 ds-components/readiness.css。
+  /* 就緒檢查 tooltip（.readiness__anchor / __pop）已 promote 至 ds-components/readiness.css；
+     本頁 2026-08-31 起改掛在 Start selling 按鈕上，footer chip 變體留給其他建立流程。
      footnote（.form-footnote）與編輯態 Delete（.btn--ghost.btn--destructive）已 promote 至 ds-components（2026-07-09）。 */
 
   /* segmented 切換後揭露的子欄位群（庫存版本/取貨方式）*/
@@ -812,25 +813,27 @@
   </div>
 
   </div><!-- /.wizard__sheet -->
-  <!-- §5.2.4 底部操作列：Save for later 已移到 header；此列只放就緒 chip＋主動作（右對齊）。
-       就緒檢查（Ready to sell?）改為 chip 的 hover/focus tooltip（使用者裁示，取代右欄常駐卡）。 -->
+  <!-- §5.2.4 底部操作列：Save for later 已移到 header；此列只放主動作（右對齊）。
+       就緒檢查（Ready to sell?）掛在主動作上——hover／focus「Start selling」才浮出還差哪幾項
+       （2026-08-31 使用者裁示，取代 footer 常駐 chip；chip 變體本身保留給其他建立流程用）。
+       hover 目標是外層 .readiness__anchor 而不是按鈕本身：按鈕未備齊時是 disabled，
+       部分瀏覽器不會把滑鼠事件送給 disabled 元素，掛在按鈕上會有讀不到的機率。 -->
   <!-- 底部動作列在閘門上沒有意義（還沒開始填），跟著閘門一起收；enterWizard 才放出來 -->
   <footer class="wizard__bottom wizard__bottom--end hidden" data-cp-footer>
     <div class="wizard__bottom-actions">
       <!-- 編輯態才出現：刪除（破壞性，確認流程待規格 §4.5）-->
       <button class="btn btn--destructive" id="cp-delete" hidden data-i18n="cp.delete">Delete</button>
-      <div class="readiness__chip" id="readiness__chip" tabindex="0" aria-describedby="readiness__pop">
-        <i data-lucide="circle" class="ztor-icon"></i><span id="readiness__chip-text">6 items needed</span>
+      <div class="readiness__anchor" id="cp-ready-anchor" tabindex="0" aria-describedby="readiness__pop">
+        <button class="btn btn--primary" id="cp-primary" disabled data-i18n="cp.start.selling">Start selling</button>
         <!-- hover/focus 顯示的就緒檢查 tooltip（內容由 renderReadiness 填）-->
         <div class="readiness__pop" id="readiness__pop" role="tooltip">
           <div class="readiness">
             <div class="readiness__head"><h3 class="readiness__title" id="cp-ready-title">Ready to sell?</h3></div>
             <ul class="readiness__list" id="cp-ready-list"></ul>
-            <div class="readiness__banner" id="cp-ready-banner">6 items needed to start selling</div>
+            <div class="readiness__banner" id="cp-ready-banner">5 items needed to start selling</div>
           </div>
         </div>
       </div>
-      <button class="btn btn--primary" id="cp-primary" disabled data-i18n="cp.start.selling">Start selling</button>
     </div>
   </footer>
 </div>
@@ -1050,7 +1053,6 @@
     if (state.type === 'physical') {
       const a = [
         { k: 'Hero image',           done: () => !!assets['p-hero'] },
-        { k: '1+ gallery images',    done: () => !!assets['p-gallery'] },
         { k: 'Product name',         done: () => has(fName) },
         { k: 'Description (30+)',     done: () => len(fDesc) >= 30 },
       ];
@@ -1082,9 +1084,8 @@
 
   const listEl   = document.getElementById('cp-ready-list');
   const bannerEl = document.getElementById('cp-ready-banner');
-  const chipEl   = document.getElementById('readiness__chip');
-  const chipText = document.getElementById('readiness__chip-text');
-  const chipIcon = chipEl.querySelector('.ztor-icon');
+  const anchorEl = document.getElementById('cp-ready-anchor');
+  const popEl    = document.getElementById('readiness__pop');
   const primary  = document.getElementById('cp-primary');
   const readyTitle = document.getElementById('cp-ready-title');
 
@@ -1108,27 +1109,19 @@
     if (ready) {
       bannerEl.textContent = T('cp.ready.banner.ready', 'Ready to sell!');
       bannerEl.classList.add('readiness__banner--ready');
-      chipText.textContent = T('cp.ready.chip.ready', 'Ready to sell');
-      chipEl.classList.add('readiness__chip--ready');
-      chipIcon.setAttribute('data-lucide', 'check-circle');
     } else if (skip) {
       bannerEl.textContent = remaining + ' item' + (remaining > 1 ? 's' : '') + ' missing · validation skipped (dev)';
       bannerEl.classList.remove('readiness__banner--ready');
-      chipText.textContent = T('cp.ready.chip.skip', 'Validation skipped');
-      chipEl.classList.remove('readiness__chip--ready');
-      chipIcon.setAttribute('data-lucide', 'circle');
     } else {
       bannerEl.textContent = T('cp.ready.banner.needed', '{n} items needed to start selling').replace('{n}', remaining);
       bannerEl.classList.remove('readiness__banner--ready');
-      chipText.textContent = T('cp.ready.chip.togo', '{n} to go').replace('{n}', remaining);
-      chipEl.classList.remove('readiness__chip--ready');
-      chipIcon.setAttribute('data-lucide', 'circle');
     }
-    /* 編輯態：商品已存在，Save changes 不受就緒 gating，footer chip 收起（就緒 tooltip 也隨之收起）*/
-    if (editMode) { primary.disabled = false; chipEl.hidden = true; }
-    else { primary.disabled = !(ready || skip); chipEl.hidden = false; }
+    /* 編輯態：商品已存在，Save changes 不受就緒 gating，就緒 tooltip 一併收起（沒有東西擋著，
+       hover 主動作再跳出一張「還差幾項」的卡只會誤導）*/
+    if (editMode) { primary.disabled = false; popEl.hidden = true; anchorEl.removeAttribute('tabindex'); }
+    else { primary.disabled = !(ready || skip); popEl.hidden = false; anchorEl.setAttribute('tabindex', '0'); }
     readyTitle.textContent = T('cp.ready.title', 'Ready to sell?');
-    if (window.ztorIcons) window.ztorIcons.applyIcons(listEl), window.ztorIcons.applyIcons(chipEl);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(listEl);
   }
 
   /* 完成→回電子商店清單並彈出新品貼文 composer（spec §7 / 5.1.5.7 / D068）。

@@ -213,6 +213,12 @@
 
   /* 這份 path 在站上有兩份複本：本檔是正本，login.html 是副本（登入頁刻意不載
      sidebar.js）。改 logo 要兩邊一起改，見 UI-CHANGES 2026-08-04。 */
+  /* 只有記號、沒有字的標誌（2026-08-31 使用者提供 Ztor_Symbol.svg）。
+     側欄收合成 76px 時字標會被切成「zto」，這支是那個狀態下的品牌落點；
+     兩者同時掛在品牌連結裡，由 CSS 決定哪一個顯示。fill 改 currentColor，
+     跟著側欄的文字色走，不寫死白色。 */
+  const SYMBOL_SVG = '<svg class="app-sidebar__brand-symbol" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path opacity="0.99" d="M21.0879 14.0938C22.6959 14.0939 23.9998 15.3043 24 16.7969C24 18.2896 22.6961 19.4998 21.0879 19.5C19.4796 19.5 18.1758 18.2897 18.1758 16.7969C18.176 15.3042 19.4797 14.0938 21.0879 14.0938ZM14.8906 4.5C15.2844 4.5 15.6034 4.8193 15.6035 5.21387C15.6035 5.35888 15.5612 5.49277 15.4873 5.60547L15.3975 5.71777L13.4912 8.08398L8.12109 14.7559C8.10547 14.7736 8.09069 14.7927 8.07715 14.8115C8.0012 14.9169 7.95612 15.0448 7.95605 15.1846C7.95605 15.5395 8.24348 15.828 8.59766 15.8281H15.1191L15.1201 15.8271C15.4826 15.8271 15.7752 16.1212 15.7754 16.4834V18.8037C15.7753 19.167 15.4816 19.46 15.1201 19.46H0.642578C0.287501 19.4598 0.000137745 19.1722 0 18.8164C0 18.6775 0.0460766 18.5478 0.121094 18.4424L0.166016 18.3867L2.22559 15.8281L8.05469 8.58594C8.05575 8.58492 8.05762 8.58403 8.05762 8.58301C8.092 8.53185 8.1123 8.47007 8.1123 8.4043C8.11208 8.22804 7.96891 8.08496 7.79297 8.08496H1.37207C1.00961 8.0849 0.716901 7.79087 0.716797 7.42871V5.15625C0.717001 4.79313 1.01071 4.50006 1.37207 4.5H14.8906Z"/></svg>';
+
   const LOGO_SVG = '<svg class="app-topbar__brand-logo" viewBox="0 0 101 32" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path opacity="0.99" d="M55.749 7.35352C62.3102 6.56387 68.1795 8.99977 70.8506 13.6182C71.8335 15.3184 72.2187 16.7656 72.3027 19.0908C72.4094 22.015 71.9544 23.817 70.5332 26.0986C69.8395 27.2145 67.9548 29.025 66.6904 29.792C62.6322 32.2529 56.4412 32.7086 51.6602 30.8984C48.7838 29.81 46.349 27.6537 45.0264 25.0264C44.2163 23.4148 43.8408 21.6966 43.8311 19.5537C43.8214 17.4853 44.0078 16.4756 44.6934 14.8818C45.864 12.1628 48.31 9.81044 51.2637 8.56543C52.486 8.05031 54.5137 7.50209 55.749 7.35352ZM96.4805 23.1143C98.9761 23.1143 101 24.9861 101 27.2949C101 29.6039 98.9763 31.4766 96.4805 31.4766C93.9848 31.4764 91.9619 29.6038 91.9619 27.2949C91.9622 24.9863 93.985 23.1145 96.4805 23.1143ZM89.5264 7.31055C90.089 7.31055 90.5439 7.76583 90.5439 8.32617V12.2227C90.5439 12.6328 90.2997 12.9866 89.9473 13.1465L89.9102 13.1621L83.6123 15.9268C83.2129 16.1318 82.9384 16.5458 82.9336 17.0254V30.1709C82.9336 30.7329 82.4771 31.1875 81.916 31.1875H76.9004C76.3379 31.1873 75.8838 30.7311 75.8838 30.1709V8.68457C75.8838 8.12275 76.3395 7.66917 76.9004 7.66895H81.916C82.4787 7.66895 82.9336 8.12423 82.9336 8.68457V9.69531C82.9336 9.84549 83.0567 9.96875 83.207 9.96875C83.2424 9.96868 83.2764 9.96012 83.3086 9.94727C83.3103 9.94707 83.3154 9.94482 83.3164 9.94434L89.1035 7.4043L89.1465 7.38477C89.2644 7.33638 89.3923 7.31061 89.5264 7.31055ZM35.6514 0C36.214 0 36.6689 0.455327 36.6689 1.01562V7.56348C36.6689 7.83628 36.89 8.05745 37.1631 8.05762H40.5762C41.1387 8.05762 41.5935 8.51311 41.5938 9.07324V12.5742C41.5938 13.1362 41.1372 13.5908 40.5762 13.5908H37.1631C36.89 13.591 36.6689 13.8122 36.6689 14.085V30.1699C36.6689 30.7318 36.2124 31.1855 35.6514 31.1855H30.6592C30.0966 31.1855 29.6417 30.7302 29.6416 30.1699V14.085C29.6416 13.8122 29.4205 13.5911 29.1475 13.5908H27.9102C27.3475 13.5908 26.8936 13.1346 26.8936 12.5742V9.07324C26.8938 8.51149 27.3493 8.05762 27.9102 8.05762H29.1475C29.4205 8.05738 29.6416 7.83624 29.6416 7.56348V1.01562C29.6417 0.453712 30.0982 0 30.6592 0H35.6514ZM23.1084 8.04492C23.7194 8.0451 24.2138 8.5392 24.2139 9.14941C24.2139 9.37374 24.1479 9.58055 24.0332 9.75488L23.8936 9.92773L20.9365 13.5889L12.6016 23.9072C12.5773 23.9347 12.5552 23.9641 12.5342 23.9932C12.4161 24.1563 12.3467 24.3549 12.3467 24.5713C12.3468 25.1201 12.7923 25.5652 13.3418 25.5654H23.4619L23.4639 25.5645C24.0265 25.5645 24.4805 26.0198 24.4805 26.5801V30.168C24.4805 30.7299 24.0249 31.1835 23.4639 31.1836H0.998047C0.4467 31.1836 0 30.7382 0 30.1875C2.76681e-06 29.9727 0.0710906 29.7725 0.1875 29.6094L0.256836 29.5234L3.45312 25.5645L12.5 14.3652C12.5017 14.3637 12.5049 14.3619 12.5049 14.3604C12.5581 14.2814 12.5888 14.1864 12.5889 14.085C12.5889 13.8121 12.367 13.5908 12.0938 13.5908H2.12988C1.56722 13.5908 1.1123 13.1346 1.1123 12.5742V9.06055C1.11243 8.49869 1.56891 8.04492 2.12988 8.04492H23.1084ZM59.7852 13.2803C56.0761 12.3824 52.1339 14.574 51.2188 18.041C50.9957 18.8888 50.9911 20.5182 51.2109 21.2852C51.8885 23.6539 54.3762 25.684 57.0762 26.0732C60.5912 26.5803 64.1954 24.3252 64.9893 21.123C65.201 20.2655 65.1817 18.8623 64.9473 18.0518C64.2681 15.7105 62.2975 13.8891 59.7852 13.2803ZM24.2168 8.05762L24.2012 8.04492H24.2168V8.05762Z"/></svg>';
 
   /* Nav definition · spec §3.2.1 order. Each top-level item carries a Tabler
@@ -220,7 +226,14 @@
      (spec §3.2.1 / decisions D013 + D014). Sub-pages / create flows are reached
      in-page, not from the header; `match` keeps the item highlighted there. */
   const NAV = [
-    { href: "index.html",    key: "nav.dashboard", icon: "layout-grid" },
+    /* 2026-09-01 兩份總覽對調（使用者裁示「將新版總覽替換上總覽（第一個），將原本的
+       總覽往下移命名為舊版總覽」）：新版排第一、成為進站的預設落點，原本那一份退到
+       第二格並改名。**兩份仍然並存**（2026-08-31 起的狀態沒變，見 ASSUMPTIONS
+       CANVAS-001）——這一次動的是誰排前面、誰叫什麼，不是把舊的下架。
+       名字只改舊的那一份：新版仍叫「新版總覽」，與「舊版總覽」成對，一眼看得出
+       是同一件事的兩個版本。 */
+    { href: "home-canvas.html", key: "nav.dashboard-new", icon: "sparkles" },
+    { href: "index.html",    key: "nav.dashboard-old", icon: "layout-grid" },
     { href: "projects.html", key: "nav.projects",  icon: "rocket",
       match: ["create-project.html"] },
     /* IP Bank dropdown (D013): My IP + IP Market. Detail pages are reached
@@ -293,7 +306,7 @@
   /* ✝ 2026-07-30：取貨管理三頁移出本清單，改由 feature-scope-map 的 O24–O30（🟢 Phase 1）管轄（D157）。
      這份清單與 devtools.js 的同名清單必須一致，改一邊就要改另一邊。 */
   const FULL_ROUTES = new Set([
-    "index.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-video-review.html", "projects.html", "project-detail.html", "create-project.html",
+    "index.html", "home-canvas.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-video-review.html", "projects.html", "project-detail.html", "create-project.html",
     "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "media-vault.html",
     "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "fan-analytics.html", "audience-report.html", "my-ip.html", "ip-detail.html",
@@ -304,8 +317,10 @@
     const v = (window.ztorDevState && window.ztorDevState.get && window.ztorDevState.get().version)
       || document.documentElement.getAttribute("data-version") || "full";
     /* 以 Phase 4 為基底的版本（不減功能、只改接個別頁面）：nav 全開。
-       與 devtools.js 的 isFullBaseVersion() 同一份白名單，新增同型特殊版時兩處都要加。 */
-    return v === "full" || v === "funding-test" || v === "deck-for-sony" || v === "golive-4step";
+       與 devtools.js 的 isFullBaseVersion() 同一份白名單，新增同型特殊版時兩處都要加。
+       `home-canvas` 2026-08-31 已不是一個版本（該頁進了正式導覽），鍵留著只為了讓
+       還存著舊 devstate 的瀏覽器不會被當成未知版本、導覽少一半。 */
+    return v === "full" || v === "funding-test" || v === "deck-for-sony" || v === "golive-4step" || v === "home-canvas";
   }
   function routeAllowed(href) {
     const route = (href || "").split(/[?#]/)[0].toLowerCase();
@@ -641,7 +656,13 @@
            <span class="app-sidebar__context-name">${creator.name}</span>
          </div>` : "");
     return `
-    <a href="${isAdminPlatform ? ROSTER_PAGE : "index.html"}" class="app-sidebar__brand" aria-label="Ztor Creator Studio">${LOGO_SVG}<span class="app-sidebar__brand-name" data-i18n="nav.brand-sub">Creator Studio</span></a>
+    <div class="app-sidebar__top">
+    <a href="${isAdminPlatform ? ROSTER_PAGE : "index.html"}" class="app-sidebar__brand" aria-label="Ztor Creator Studio">${LOGO_SVG}${SYMBOL_SVG}<span class="app-sidebar__brand-name" data-i18n="nav.brand-sub">Creator Studio</span></a>
+      <button class="app-nav-rail-toggle" type="button" aria-expanded="true"
+        aria-label="Collapse navigation" data-i18n-aria-label="nav.collapse" data-nav-rail>
+        <i data-lucide="sidebar-collapse" class="ztor-icon"></i>
+      </button>
+    </div>
     ${lead}
     <button class="app-nav-burger" type="button" aria-expanded="false" aria-label="Menu" data-i18n-aria-label="nav.menu" data-nav-burger>
       <i data-lucide="menu" class="ztor-icon"></i>
@@ -738,6 +759,43 @@
       wireHoverGroups();
     }
     wireBurger(root);
+    wireNavRail(root);
+  }
+
+  /* ── 側欄收合成只有 icon（2026-08-31 使用者裁示「全頁都要有」）─────
+     只在 sidebar 模式有意義：topbar 模式本來就沒有可收的欄寬。
+     狀態存 localStorage、由 theme.js 之外的這裡在 mount 時還原——跨頁維持同一個
+     選擇，不然每點一次導覽就重新展開一次，那個鈕等於沒用。
+     收起時只藏字不藏路：每個 icon 留在原位，子選單整段收起（它要靠名稱才讀得懂），
+     品牌換成只有記號的版本。 */
+  const RAIL_KEY = "ztor.navRail";
+  function applyNavRail(on) {
+    const app = document.querySelector(".app");
+    if (app) app.classList.toggle("is-nav-rail", !!on);
+    document.querySelectorAll("[data-nav-rail]").forEach(btn => {
+      const key = on ? "nav.expand" : "nav.collapse";
+      btn.setAttribute("aria-expanded", on ? "false" : "true");
+      btn.setAttribute("data-i18n-aria-label", key);
+      /* 直接查表寫值，不靠 applyI18n(btn)——那支只掃「傳進去那個元素的後代」，
+         標籤掛在按鈕自己身上，所以永遠掃不到（實測切回展開後仍是英文）。 */
+      const t = (typeof window.i18nT === "function") && window.i18nT(key);
+      btn.setAttribute("aria-label", t || (on ? "Expand navigation" : "Collapse navigation"));
+      const ic = btn.querySelector("[data-lucide]");
+      if (ic) ic.setAttribute("data-lucide", on ? "sidebar-expand" : "sidebar-collapse");
+      if (window.ztorIcons) window.ztorIcons.applyIcons(btn);
+    });
+  }
+  function wireNavRail(root) {
+    const btn = root.querySelector("[data-nav-rail]");
+    if (!btn) return;
+    let on = false;
+    try { on = localStorage.getItem(RAIL_KEY) === "1"; } catch (e) {}
+    applyNavRail(on);
+    btn.addEventListener("click", () => {
+      on = !on;
+      try { localStorage.setItem(RAIL_KEY, on ? "1" : "0"); } catch (e) {}
+      applyNavRail(on);
+    });
   }
 
   /* ── Narrow-screen burger (≤900px, spec §6.8) ──────────────────

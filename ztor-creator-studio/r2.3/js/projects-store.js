@@ -367,15 +367,14 @@
       bar: null, todo: null
     },
     {
-      id: 'nick-wei-le-ni', created: '2024/07/25', name: '罵醒我', nameEn: "Wake Me Up",
-      cat: 'song', icon: 'music', type: 'go-live', status: 'live',
+      id: 'nick-wei-le-ni', created: '2024/07/25', name: 'LOVE RAGE HOPE 卡帶版', nameEn: "LOVE RAGE HOPE — Cassette Edition",
+      cat: 'album', icon: 'music', type: 'go-live', status: 'live',
       releaseDate: '2024/08/02',
       /* 表現彙總用（自身 meta 已載明）*/
       perf: { usd: 3180, audience: 240000, kind: 'streams' },
-      /* 2026-07-26：改名後換上 repo 裡本來就對應〈罵醒我〉的封面（原為〈為了你〉的 nick-wln.jpg）。
-         與下方「罵醒我 (Reimagined)」共用同一張＝同一首歌的兩個版本，刻意相同。 */
-      cover: IMG + 'nick-mxw.jpg', poster: IMG + 'nick-mxw.jpg',
-      desc: { en: 'A 2024 standalone single — released Aug 02, 2024.', zh: '2024 獨立單曲，2024/08/02 發行。' },
+      /* 2026-09-01 與下面 `nick-lrh-cassette` 互換名稱與主視覺（同一次裁示），發行日與串流數不動。 */
+      cover: IMG + 'nick-lrh.jpg', poster: IMG + 'nick-lrh.jpg',
+      desc: { en: 'A hand-numbered cassette pressing — released Aug 02, 2024.', zh: '封套手寫編號的限量卡帶版，2024/08/02 發行。' },
       meta: { en: 'US$3,180 lifetime · 240,000 streams', zh: '累計 US$3,180 · 240,000 次串流' },
       bar: null, todo: null
     },
@@ -406,13 +405,16 @@
 
     /* ── ③ MV 募資（已上線）＝影視家族版稅樣本 ──────────────────── */
     {
-      id: 'nick-ni-shuo', created: '2024/06/10', fundFrom: '2024/07/01', name: '帥到分手 MV', nameEn: "Too Handsome to Stay (MV)",
-      cat: 'mv', icon: 'film', type: 'fund', status: 'live', goalMet: true, delivered: true,
+      id: 'nick-ni-shuo', created: '2024/06/10', fundFrom: '2024/07/01', name: 'LOVE·RAGE·HOPE 巡演實錄電影', nameEn: "LOVE·RAGE·HOPE — Tour Film",
+      cat: 'movie', icon: 'film', type: 'fund', status: 'live', goalMet: true, delivered: true,
       /* 表現彙總用（meta 未載明，依募資規模給一致的示意值）*/
       perf: { usd: 7300, audience: 2400000, kind: 'views' },
-      /* MV 沿用單曲主視覺（同一首歌），與下方直接發佈版同圖 */
-      cover: IMG + 'nick-sdfs.jpg', poster: IMG + 'nick-sdfs.jpg',
-      desc: { en: 'A crowdfunded cinematic MV shot on 35mm — backers funded the full one-take production.', zh: '共創拍攝的電影感 MV，35mm 底片一鏡到底；製作費由支持者共同促成。' },
+      /* 2026-09-01 使用者裁示「把進行中項目和帥到分手 MV、罵醒我、LOVE·RAGE·HOPE 的假資料
+         做對調」：**只換名稱、主視覺與說明**，狀態／金額／天數／檔期一律留在原位——
+         使用者要的是讓那三件招牌作品出現在進行中，不是改動任何一件的進度。
+         配對照家族走（影視換影視、音樂換音樂），否則類型標籤會跟著說謊。 */
+      cover: IMG + 'nick-lrh-tour.jpg', poster: IMG + 'nick-lrh-tour.jpg',
+      desc: { en: 'The last night of the tour, cut into a feature — backers funded the post-production. Now streaming.', zh: '把巡演最後一夜剪成長片，後期製作由支持者共同促成；現已上線。' },
       meta: { en: '$45,000 funded · 980 backers · Now streaming', zh: '$45,000 已募足 · 980 位支持者 · 現已上線' },
       fund: { raised: '$45,000', goal: '$45,000', backers: '980', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Jul 01 – Aug 15, 2024 · Released', zh: '2024/07/01 – 08/15 · 已上線' } },
       list: { goal: { en: '$45,000 / $45,000', zh: '$45,000 / $45,000' }, left: { en: 'Released', zh: '已上線' } },
@@ -592,10 +594,11 @@
     {
       /* 補「預購 × 準備中」（主要缺口）· 影視家族。對應送審件 wr-1104
          （審核通過、上映日 2026/11/07，尚未到）。 */
-      id: 'nick-rlh-live-film', created: '2026/01/20', fundFrom: '2026/02/26', name: 'LOVE·RAGE·HOPE 巡演實錄電影', nameEn: "LOVE·RAGE·HOPE — Tour Film",
-      cat: 'movie', icon: 'film', type: 'preorder', status: 'scheduled', goalMet: true, delivered: false,
-      cover: IMG + 'nick-lrh-tour.jpg', poster: IMG + 'nick-lrh-tour.jpg',
-      desc: { en: 'The final night of the tour, cut into a feature — approved by review, waiting on the release date.', zh: '把巡演最後一夜剪成長片；審核已通過，正在等上映日。' },
+      id: 'nick-rlh-live-film', created: '2026/01/20', fundFrom: '2026/02/26', name: '帥到分手 MV', nameEn: "Too Handsome to Stay (MV)",
+      cat: 'mv', icon: 'film', type: 'preorder', status: 'scheduled', goalMet: true, delivered: false,
+      /* 2026-09-01 與上面 `nick-ni-shuo` 互換名稱與主視覺（同一次裁示），預購數與上映日不動。 */
+      cover: IMG + 'nick-sdfs.jpg', poster: IMG + 'nick-sdfs.jpg',
+      desc: { en: 'A cinematic MV shot on 35mm in one take — pre-orders are full and review is cleared; it goes live Nov 07.', zh: '35mm 底片一鏡到底的電影感 MV；預購已額滿、審核通過，11/07 上映。' },
       meta: { en: '1,500 / 1,500 pre-orders · approved, goes live Nov 07', zh: '1,500 / 1,500 筆預購 · 審核已過，11/07 上映' },
       list: { goal: { en: '1,500 / 1,500', zh: '1,500 / 1,500 筆' }, left: { en: 'Goes live Nov 07', zh: '11/07 上映' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Line up the release-day post', zh: '準備上映當天的貼文' }
@@ -645,13 +648,15 @@
     },
     {
       /* 補次級缺口「預購 × 進行中 × 音樂家族」。 */
-      id: 'nick-lrh-cassette', created: '2026/06/05', fundFrom: '2026/07/08', name: 'LOVE RAGE HOPE 卡帶版', nameEn: "LOVE RAGE HOPE — Cassette Edition",
-      cat: 'album', icon: 'music', type: 'preorder', status: 'published', goalMet: false, delivered: false,
-      cover: IMG + 'nick-lrh.jpg', poster: IMG + 'nick-lrh.jpg',
-      desc: { en: 'A limited cassette pressing with a hand-numbered sleeve — taking pre-orders now.', zh: '限量卡帶版，封套手寫編號；現正接受預購。' },
+      id: 'nick-lrh-cassette', created: '2026/06/05', fundFrom: '2026/07/08', name: '罵醒我', nameEn: "Wake Me Up",
+      cat: 'song', icon: 'music', type: 'preorder', status: 'published', goalMet: false, delivered: false,
+      /* 2026-09-01 與上面 `nick-wei-le-ni` 互換名稱與主視覺（同一次裁示），預購數與檔期不動。
+         與「罵醒我 (Reimagined)」共用同一張＝同一首歌的兩個版本，刻意相同。 */
+      cover: IMG + 'nick-mxw.jpg', poster: IMG + 'nick-mxw.jpg',
+      desc: { en: 'The single on its own physical release — pre-orders are open now.', zh: '這首單曲的實體發行，現正接受預購。' },
       meta: { en: '520 / 900 pre-orders · $22 each · 14 days left', zh: '520 / 900 筆預購 · 單價 $22 · 剩 14 天' },
       list: { goal: { en: '520 / 900', zh: '520 / 900 筆' }, left: { en: '14 days left', zh: '剩 14 天' }, period: { en: 'Presale Jul 08 – Aug 31, 2026', zh: '預購期間 2026/07/08 – 08/31' } },
-      bar: { pct: 58 }, todo: { en: 'Confirm the tape duplication run', zh: '確認卡帶壓製批量' }
+      bar: { pct: 58 }, todo: { en: 'Confirm the pressing run', zh: '確認實體壓製批量' }
     },
     {
       /* 補次級缺口「直接發佈 × 準備中 × 音樂家族」。非影片家族不送審（D182 第 2 題），

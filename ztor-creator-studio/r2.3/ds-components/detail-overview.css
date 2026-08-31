@@ -1,0 +1,103 @@
+/* ============================================================
+   detail-overview.css · 詳情頁總覽的三欄骨架（2026-08-31 使用者裁決）
+
+   使用者在項目詳情的總覽上圈出四個區塊、指定分欄：
+   「分為垂直的三欄／左1 內容變垂直排列／中2／右3,4」，並補了一條通則
+   ——「有通知的就往右放一欄」。
+
+   三欄各自回答一個問題，這是分欄的依據、不是為了填滿寬度：
+     ① 左（窄）· 數字      現在的量體是多少。KPI 直排——它們是同一種東西的三個切面，
+                          上下讀比左右讀快，橫排會讀成三個並列的區塊。
+     ② 中（寬）· 進行到哪  作品上架追蹤、狀態卡、進度摘要，同一條時間線。
+     ③ 右（中）· 是什麼 ＋ 要你動手  識別資訊（不會變）與通知／下一步（等你處理）。
+
+   為什麼不用 bento：bento 是 12 欄的鋪排工具，一列一列往下長；這裡要的是三根
+   各自獨立往下長的柱子，柱與柱之間不對列。用 bento 做得先把每一欄再包一層巢狀
+   bento，反而比直接寫三欄 grid 難讀（項目詳情原本就是那樣包的，已於本輪拆掉）。
+
+   anatomy
+     .detail-overview                 三欄 grid
+       .detail-overview__col          一欄，內部由上往下堆
+         --narrow                     左欄（數字）用比較窄的軌道
+         --sticky                     捲動時整欄黏住（右欄）
+       .detail-overview__kpis         KPI 直排容器（取代原本的 .bento）
+   ============================================================ */
+
+.detail-overview {
+  display: grid;
+  /* 3 / 5 / 4：沿用改版前 KPI 列與 進度(7)＋方案(5) 的相對份量，中欄最寬——
+     它裝的是清單，最需要橫向空間；左欄只有數字，窄一點反而讀得快。 */
+  grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 4fr);
+  gap: var(--sp-16);
+  /* 三欄各自長到自己的高度，不被最高的那一欄拉齊——拉齊會讓短的那欄底下多出一片空白，
+     看起來像少放了東西。 */
+  align-items: start;
+}
+
+/* 右欄整欄沒東西時收成兩欄（2026-08-31）：那一欄裝的是條件顯示的區塊，全部不出現時
+   留著它只會讓中欄被壓窄、右邊空一大塊。由 renderStage() 實測子層可見性後掛上這個類別，
+   不用 :has(:not([hidden]))——那條選擇器讀起來像「有非隱藏子層」，實際上空白文字節點
+   也算，判斷會失準。 */
+/* 兩欄時重新分配寬度（2026-08-31 使用者：「這三個可以有更多空間，重新設計一下」）：
+   3fr / 9fr 是三欄那組軌道直接留下來的，數字欄仍然只有 ~250px，右邊卻空出一大塊——
+   而數字那三格現在裝的是長條＋圖例、走勢圖＋圖例，正是最需要橫向空間的東西
+   （圖例是「名稱 / 金額 / 佔比」三欄，窄了就得換行）。改成 5fr / 7fr：
+   2026-08-31 再調（同日）：改成 7fr / 5fr，數字欄變成寬的那一邊（約 600px）。
+   理由是那一欄同輪又長出兩個變化——沒有圖的兩格改成並排（各自只剩半欄寬），
+   以及走勢圖升格成整張 chart-card。並排那兩格的圖例是「名稱／金額／佔比」三欄，
+   在 430px 的一半（約 200px）會把方案名擠到換行。里程碑清單是短行，讓給它沒有損失。 */
+.detail-overview--2col { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.detail-overview--2col .detail-overview__col--sticky { display: none; }
+
+.detail-overview__col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+  min-width: 0;
+}
+
+/* 右欄黏住：識別資訊與待辦在捲動時要留在手邊，左／中兩欄通常比它長。
+   top 對齊站上其他吸附元素（.section-nav 的 78px 是導覽，這裡用 --sp-64 對齊 bento__aside 的既有值）。 */
+@media (min-width: 1081px) {
+  .detail-overview__col--sticky { position: sticky; top: var(--sp-64); }
+}
+
+/* KPI 直排（使用者：「左1 內容變垂直排列」）。改成 flex 而不是把 .bento 的軌道改成 1 欄：
+   KPI 是 JS 注入的，帶著 `bento--span-4`，在 1 欄的 grid 裡 `span 4` 會生出三欄隱式軌道、
+   又變回橫排。flex 讓那個 grid-column 直接失效，不必回頭改注入端。 */
+.detail-overview__kpis {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+  min-width: 0;
+}
+
+/* 沒有走勢圖的那幾格兩個一排（2026-08-31 使用者：「兩個放第一行並排」）：
+   它們是短格子（一個數字＋一條長條），直排會拉出一長條瘦高的空白；
+   有走勢圖的那一格自成一張 chart-card 佔滿欄寬，圖才有橫向空間可展。
+   單數時最後一格自己佔滿一排——寧可讓它寬，不要留一個空格。 */
+.detail-overview__kpi-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-16);
+}
+.detail-overview__kpi-row > :only-child { grid-column: 1 / -1; }
+@media (max-width: 899px) {
+  .detail-overview__kpi-row { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* 中寬：三欄擠不下時先併成兩欄——左欄的數字跟中欄的時間線關係最近，讓它們同一欄，
+   右欄（識別＋通知）獨立留著。 */
+@media (max-width: 1080px) {
+  .detail-overview { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  .detail-overview__col--narrow { grid-column: 1; }
+  /* 兩欄時 KPI 回到橫排：欄變寬了，直排會拉出一長條瘦高的數字。 */
+  .detail-overview__kpis { flex-direction: row; }
+  .detail-overview__kpis > * { flex: 1 1 0; min-width: 0; }
+}
+
+/* 窄畫面單欄：順序＝數字 → 進行到哪 → 是什麼／待辦，與桌機由左而右的讀序一致。 */
+@media (max-width: 899px) {
+  .detail-overview { grid-template-columns: minmax(0, 1fr); }
+  .detail-overview__kpis { flex-direction: column; }
+}

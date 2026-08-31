@@ -1,0 +1,523 @@
+/* ============================================================
+   canvas-stage — 首頁展示版的滿版舞台（2026-08-31 建）
+
+   取代同日稍早的 `canvas-wall.css`（海報牆）。使用者裁示：右邊那一大塊是
+   **一件作品或商品的整張背景畫面**，不是把所有東西列出來。理由在參考版型裡
+   看得很清楚——那張圖不是一個區塊，它是整個畫面的地，左欄的字直接浮在上面；
+   一旦變成一格一格的磚，畫面就退回「又一張卡」，那股氣勢就沒了。
+
+   對照參考版型：
+     那棟樓         → 當前這一件作品／商品的主視覺（滿版鋪底）
+     樓層選擇器     → 右緣的作品切換器（換樓層＝換這張底圖）
+     異常釘點       → 浮在圖上的標記：這件作品自己的事實與待處理事項
+     左欄的字       → 直接壓在圖上，不畫卡框（見 canvas-home.css）
+
+   解剖：
+     .canvas-stage                 舞台層（絕對定位鋪滿主內容區，壓在最底）
+       .canvas-stage__img          底圖
+       .canvas-stage__scrim        左濃右淡的壓底，保證左欄的字讀得到
+       .canvas-stage__marker       浮在圖上的標記（膠囊＋垂線＋脈動點）
+       .canvas-stage__rail         右緣的作品切換器（當前項＝這張圖是誰）
+         .canvas-stage__pick       一列：切換鈕（類型＋名稱）＋前往箭頭
+   ============================================================ */
+
+.canvas-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* 沒有圓角：它鋪滿整個視窗，圓角會在四個角露出底色、讀成「一張貼上去的圖」。 */
+  z-index: 0;
+  /* **主色鋪底**（2026-08-31 使用者裁示「主色鋪底要開」）：這張圖的平均色鋪成一整面
+     漸層，墊在模糊層底下。模糊層退到 0.6 之後，暗的那一半會露出頁面的底色——那是
+     一片與這件作品無關的黑；鋪上主色之後，整屏最暗的地方仍然帶著這件作品的顏色。
+     **顏色由 JS 每張圖各自算**（見 components.js 的 `canvasTint`，把圖畫進 1×1 的
+     畫布讓瀏覽器做平均）：寫死一個 hex 只對某一張圖成立，而這裡的圖是使用者自己
+     上傳的，每張都不同。算不出來時（跨源、載入失敗）退回檯面色，畫面不會壞。 */
+  background: linear-gradient(135deg,
+    var(--canvas-tint, var(--ztu-canvas)) 0%,
+    color-mix(in srgb, var(--canvas-tint, var(--ztu-canvas)) 70%, black) 100%);
+}
+/* 底層：同一張圖放大模糊鋪滿整個視窗（2026-08-31 使用者裁示）。
+   沒有它，左半就是一片純黑——那不是「暗」，是「什麼都沒有」。用同一張圖的模糊版
+   當底色，暗的那一半仍帶著這件作品自己的顏色，兩半才是同一個畫面。
+   `scale(1.12)` 是必要的：模糊會讓邊緣往內透出底色，放大一點把那圈邊推到畫面外。 */
+.canvas-stage__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* 2026-08-31 兩次調整，兩次都是使用者回報「有一塊黑黑的」：
+       第一次（黑色直帶）→ 不透明度 .6 → .85、模糊 64 → 48、放大 1.12 → 1.18。
+         底層太弱時，畫面中段那條「清晰那張還沒溶進來、壓底又還沒退掉」的地帶
+         沒有東西可看，就成了一條黑帶。
+       第二次（黑色雲塊）→ 模糊 48 → 90、加 `brightness(1.22) contrast(.85)`、
+         不透明度 .9、放大 1.3。48px 的模糊還留得住輪廓，而那正是問題：主視覺
+         左半只要有一塊深色（這裡是一件黑外套），它就會在左欄後面糊成一團看得出
+         形狀的黑雲。這一層的工作是「借這件作品的顏色鋪底」，不是「重放一次這張
+         圖」——把它糊到只剩色場、再壓掉自身的明暗差（降對比、提亮度），深色區
+         就攤平成整面的一階暗，不再是一塊。放大到 1.3 是因為模糊愈重、邊緣往內
+         透底色的那一圈愈寬，要把它推出畫面外。 */
+  /* 第三次（調參器定案值，docs/canvas-bg-tuner.html）：模糊 90 → 112、亮度
+     1.22 → 1.5、不透明度 .9 → 1、放大 1.3 → 1。
+     不透明度收到 1 是關鍵的一手：先前留著的那 10% 透出的是頁面的近黑底色，
+     等於在整片色場上又壓了一層黑，深色區因此再暗一階。填滿之後底下那層黑
+     完全不參與，剩下的明暗只來自這張圖本身，再由亮度 1.5 拉起來。 */
+  transform: scale(1);
+  /* 模糊 112 → 174、不透明度 1 → 0.9（2026-08-31 由調參器定案）：這一層要的是
+     「這件作品的顏色鋪成一片地」，糊得愈重、原圖的輪廓愈不會在左半糊成一團
+     看得出形狀的雲；退一點透明度則讓它與外殼的檯面色融在一起，不像另外貼上去的一塊。 */
+  filter: blur(174px) saturate(1.3) brightness(1.5) contrast(0.85);
+  /* 0.9 → 0.6（2026-08-31 由調參器定案）：這一層退得愈多，畫面愈黑、清晰的主視覺
+     愈跳出來——它的工作只是「暗的那一半仍帶著這件作品的顏色」，不必自己也亮。 */
+  opacity: 0.6;
+}
+
+/* 直式圖靠右擺，保留它自己的比例（2026-08-31 使用者裁示）。
+   前一版是 `inset: 0` ＋ `object-fit: cover` ＋ 整張壓暗——那會把一張直式主視覺
+   橫拉滿版、上下裁掉大半，人臉只剩中間一條，而且左右一樣暗，右邊那半也就沒有
+   「亮」可言了。改成貼右緣、`height: 100%` ＋ `width: auto`：完全不裁切，圖多寬
+   由它自己的比例決定；`max-width` 只在遇到橫式素材時擋住它吃掉整個畫面。
+   壓暗交給下面那層漸層，圖本身不再上 filter——統一壓暗等於把亮的那半也一起壓掉。 */
+.canvas-stage__img {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  /* **寬度直接指定成整頁的 70%**（2026-08-31 使用者裁示），`max-width` 一併解除。
+     為什麼不是繼續調上限：上限是天花板，而這張圖平常的寬度是「高度 × 它自己的比例」
+     算出來的——正方素材在 900 高的視窗上就是 900px，上限比它大就完全不起作用
+     （使用者回報「拉到 83、84% 就不能再調」正是這個）。指定寬度之後，多出來的部分
+     由下面的 `object-fit: cover` 裁切，留哪一段由 `object-position` 決定。
+     沿革：62% → 70% → 84%（都是上限）→ 70%（改成真正的寬度）。 */
+  max-width: none;
+  width: 72%;
+  object-fit: cover;
+  /* 左緣用遮罩溶掉，不留一條硬邊（2026-08-31 使用者裁示「蓋掉那張圖片的邊界」）：
+     清晰的那張與底下的模糊層是同一張圖，邊界一旦看得見就會讀成「貼了一張圖上去」。
+     遮罩只吃 alpha，所以漸層色寫 token 不寫 #000。
+     **斜坡 2026-08-31 兩次調整：26% → 58% → 50%**（先是使用者回報「圖片邊界太明顯」，
+     後者是調參器定案值）：26% 的斜坡對一張 62% 寬的圖只有 16% 視窗寬，短到看得出
+     「這裡開始有一張圖」；拉長之後交界讀起來是同一張圖從模糊走到清晰（像景深），
+     不是兩張圖的接縫。圖放寬到 70% 之後，50% 的斜坡在畫面上反而更長，所以數字
+     變小、實際的溶接長度沒有變短。
+     **這是純 alpha 遮罩**：`var(--foreground)` 在這裡只代表「不透明」，它的顏色
+     一個像素都不會畫出來——遮罩只讀 alpha。寫 token 而不是 `#fff` 是為了不新增
+     裸值（check_ds_sync 檢查 10）。溶接處看到的顏色來自它底下那一層，不是遮罩。 */
+  /* 斜坡從圖的最左緣就開始、在 30% 收完（起點 8% → 0%、終點 50% → 30%，
+     2026-08-31 由調參器兩次定案）：圖加寬之後左邊那一段本來就已經蓋在左欄的字上，
+     留一段全透明的平台等於把硬邊往右挪；斜坡收短則讓清晰的那張更早站滿，
+     交界仍然溶在暗角與壓底裡看不出來。 */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 0%, var(--foreground) 30%);
+          mask-image: linear-gradient(to right, transparent 0%, transparent 0%, var(--foreground) 30%);
+}
+/* 左暗右亮，中線約在 46%（使用者標的那條）。
+   左端全暗、到 68% 完全透明，右邊維持原亮度。左段不再是「全暗到 28%」的平台——
+   加了模糊底層之後，那樣會把底層的顏色也一起壓掉，暗的那一半又變回純黑。
+   不用一片均勻的半透明黑：那會把整張圖壓成灰紙，右半也就不再是「亮」的那一半。
+   第二層由下往上壓一點，給右下角的作品名一個底。 */
+.canvas-stage__scrim {
+  position: absolute;
+  inset: 0;
+  /* 2026-08-31 再調（使用者回報「左邊遮罩太暗」）：站點多了一個、整條曲線往下移。
+     舊值在 26% 還有 88%、46% 還有 45%，那一段剛好蓋在畫面中段，把底層與清晰層
+     交界處僅剩的亮度也壓掉了。新值把「夠暗」的區間收在 0–16%（左欄字的落點就在
+     那裡，那一段一點都沒放鬆），16% 之後放得比原本快。 */
+  /* **右緣也要一道**（2026-08-31 使用者回報「背景太白的時候看不到字」）：右邊那一排
+     是白字浮在照片上，遇到亮色主視覺（白底的海報、逆光的人像）整排就消失。
+     字級與陰影都救不了純白底——白字上再加陰影只會糊，唯一有效的是把它底下那一段
+     壓暗。做成與左邊同一種手法（從邊緣往內漸消的漸層），兩側就讀成同一套語彙，
+     而不是「右邊多了一塊方形的暗片」。
+     只壓到 40%：再往左會把中間的主體也吃掉，那正是這一屏唯一的視覺主角。 */
+  background:
+    /* **暗角**（2026-08-31 使用者裁示「讓焦點聚焦在中間那一塊」）：四邊往內壓暗、
+       中間放掉，視線就會落在照片的主體上——這一屏唯一的視覺主角是那張圖，
+       而先前四邊一樣亮的時候，右邊那一排白字與中間的主體在互相搶。
+       它同時把右緣那一段再壓一階，亮色主視覺下的白字更站得住。
+       用橢圓不用正圓：畫面是 16:9，正圓的暗角會在左右兩邊留下看得出來的弧線。 */
+    radial-gradient(ellipse 72% 82% at 60% 52%,
+      transparent 0%,
+      color-mix(in srgb, var(--scrim-media) 27%, transparent) 58%,
+      color-mix(in srgb, var(--scrim-media) 82%, transparent) 100%),
+    linear-gradient(to right,
+      var(--scrim-media) 0%,
+      color-mix(in srgb, var(--scrim-media) 90%, transparent) 16%,
+      color-mix(in srgb, var(--scrim-media) 60%, transparent) 34%,
+      color-mix(in srgb, var(--scrim-media) 26%, transparent) 54%,
+      transparent 74%),
+    linear-gradient(to left,
+      color-mix(in srgb, var(--scrim-media) 66%, transparent) 0%,
+      color-mix(in srgb, var(--scrim-media) 41%, transparent) 18%,
+      transparent 40%),
+    linear-gradient(to top, color-mix(in srgb, var(--scrim-media) 55%, transparent) 0%, transparent 32%);
+}
+
+/* ── 浮在圖上的標記 ───────────────────────────────────── */
+/* 參考版型的 Abnormal water flow：一顆膠囊掛在半空，下面一條線垂到地面的脈動點。
+   膠囊講「是什麼」，點講「在哪裡」。這裡的「哪裡」是圖上的一個位置，位置由資料端
+   給的百分比決定——原型沒有真實的空間座標，這件事記在 ASSUMPTIONS CANVAS-001。 */
+.canvas-stage__marker {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  text-decoration: none;
+}
+.canvas-stage__pill {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  padding: var(--sp-8) var(--sp-14) var(--sp-8) var(--sp-8);
+  border-radius: var(--radius-lg);
+  /* 膠囊本身是玻璃：它浮在一張照片上，不透光的實色塊會讀成「貼上去的貼紙」。 */
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  white-space: nowrap;
+}
+.canvas-stage__icon {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--ztu-film);
+  color: var(--foreground);
+}
+.canvas-stage__icon .ztor-icon { width: 16px; height: 16px; }
+/* 只有需要被處理的那一種才染色，其餘（進度、上線日）維持中性——
+   一張圖上三顆紅膠囊會讀成「整件作品都在燒」（Q77 表面律的同一條理由）。 */
+.canvas-stage__marker--alert .canvas-stage__icon {
+  background: var(--status-error);
+  color: var(--on-media);
+}
+.canvas-stage__marker--warning .canvas-stage__icon {
+  background: var(--status-warning);
+  color: var(--status-warning-ink);
+}
+.canvas-stage__label {
+  display: flex;
+  flex-direction: column;
+  line-height: var(--lh-snug);
+}
+.canvas-stage__label-top {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.canvas-stage__label-main {
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  color: var(--foreground);
+}
+
+/* 垂線與地面的點：把膠囊釘到圖上的某個位置。沒有這一段，膠囊就只是漂在畫面上的
+   一個標籤，讀不出它在指哪裡。 */
+.canvas-stage__stem {
+  width: 1px;
+  height: var(--sp-24);
+  background: linear-gradient(to bottom, var(--border), transparent);
+}
+.canvas-stage__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--foreground);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+.canvas-stage__marker--alert .canvas-stage__dot {
+  background: var(--status-error);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--status-error) 22%, transparent);
+}
+.canvas-stage__marker--warning .canvas-stage__dot {
+  background: var(--status-warning);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--status-warning) 22%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .canvas-stage__marker--alert .canvas-stage__dot { animation: canvas-dot-pulse 2.4s var(--easing) infinite; }
+}
+@keyframes canvas-dot-pulse {
+  0%, 100% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--status-error) 22%, transparent); }
+  50%      { box-shadow: 0 0 0 13px color-mix(in srgb, var(--status-error) 4%, transparent); }
+}
+
+/* ── 右緣的作品切換器 ─────────────────────────────────── */
+/* 行為對應參考版型的樓層選擇器：換一項＝換整張底圖，就像換一層樓＝換整棟樓的剖面。
+   位置 2026-08-31 兩次調整：先由垂直置中改成接在模式切換下方，模式切換撤除後
+   （同日）再上移到浮層頂端——它現在是畫布上唯一的控制，留著原本讓給切換器的
+   64px 會變成一段沒有理由的空白。
+   **沒有外框**（同日使用者裁示）：外框讓這一列讀成「一塊面板」，但它其實只是幾個
+   選項；當前那一項自己就是一顆按鈕，框由它來畫就夠了。 */
+.canvas-stage__rail {
+  /* 釘住由外面那層 `.canvas-hero__chrome` 負責（2026-08-31 使用者回報「滑動時右側
+     選項會一直抖動、消失時又和最上面那條不同步」）：原本用捲動事件即時算位移，
+     JS 比瀏覽器的捲動繪製慢半拍所以會抖；改成與頂列包在同一塊 sticky 之後，
+     兩者由瀏覽器在同一幀處理，也一定同進同出。這一支因此回到單純的版面元素。 */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  /* 2 → 8 → 16（2026-08-31 三次「增加間距」）：展開的那一列有 50px 高、其餘只有 27px，
+     小的縫在那個落差下等於沒有——幾個名稱會讀成一段連在一起的文字。這一排現在是
+     第一屏的一格內容（不只是換底圖的控制），列與列之間要看得出是六件不同的事。 */
+  gap: var(--sp-16);
+  z-index: 2;
+}
+/* 每一列的結構：切換鈕（類型小字＋名稱）＋ 前往的箭頭。
+   **當前這一項自己就是原本右下角那塊作品說明**（2026-08-31 使用者裁示移除該塊）：
+   類型小字在上、名稱放大、最右邊一顆前往箭頭。同一件事沒有理由在畫面上寫兩次，
+   而且寫在切換器裡更省——你正在看哪一件，與你可以換去看哪一件，是同一份清單。
+   hover 給的是同一套裝扮：那是「換過去之後會變成這樣」的預覽。 */
+.canvas-stage__pick {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  /* 200 → 420（2026-08-31 使用者裁示「名字要完整顯示，不要 ...」）：這一排是絕對
+     定位、貼右緣，寬度往左長不會擠到任何東西。420 只是保險，擋住某天出現一個
+     長到橫跨畫布的名字。 */
+  max-width: 420px;
+  /* 每一列都吃同一組內距（不是只有當前那一列），名稱的右緣才對得齊
+     （2026-08-31 使用者裁示「2、3 要對齊」）：內距只給有玻璃的那一列時，
+     它的字會比其他列往左縮一個內距寬，一整排的右緣就歪了。
+     右邊 12 → 10（同日再調）：名稱與箭頭之間的空白等於「這一格的右內距減去箭頭
+     自己的右內距」，收右內距是把那段空白收小、又不動箭頭本身留白的唯一方法。
+     左邊 12 → 20（同日使用者裁示「左 padding 大一點」）：這一列的字是靠右排的，
+     左邊那一段是玻璃面在名稱前面留的呼吸；名稱長短不一，左內距太小時短名稱那幾列
+     的玻璃會貼著字收尾，看起來像被裁掉一角。 */
+  padding: var(--sp-6) var(--sp-10) var(--sp-6) var(--sp-20);
+  /* 圓角 10 → 24（同日使用者裁示「整個框框圓角也大一點」）：展開時這一塊有 50px 高，
+     10px 的圓角在這個高度上幾乎讀不出來，看起來像一個直角的色塊。 */
+  border-radius: var(--radius-xl);
+}
+/* 玻璃面：當前這一列恆常有，滑鼠底下那一列也有（2026-08-31 使用者裁示兩次：
+   先「玻璃背景還是要在」，再「hover 時和已選一樣要有一個玻璃底」）。框仍然不畫。
+   兩者同一套裝扮不會混淆，因為同一時間只有一列是展開的——滑鼠一進到這一排，
+   當前那一列就先收回未選中的樣子（見下面那組規則）。 */
+.canvas-stage__pick--active,
+.canvas-stage__pick:hover {
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+}
+/* 這一排的標題：與左欄那兩格的區塊標題同一階（14／500），只是靠右、並且要在
+   照片上站得住（白字＋貼著壓底色的陰影，與下面幾列同一套）。 */
+.canvas-stage__rail-title {
+  margin: 0 var(--sp-10) var(--sp-12) 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium, 500);
+  color: var(--on-media);
+  text-shadow: 0 1px 3px color-mix(in srgb, var(--scrim-media) 45%, transparent);
+}
+
+.canvas-stage__pick-main {
+  appearance: none;
+  border: 0;
+  background: none;
+  /* 平常不留空，滑鼠進到這一排才讓出「前往 ＋ 箭頭」那一格（2026-08-31 使用者裁示
+     「沒有前往的時候右邊要縮回來」）：那一組只在滑鼠底下那一列出現，永遠留著的話，
+     六列名稱右邊會掛著一段沒有東西的空白——展開的那一列尤其明顯，玻璃面裡有一半是空的。
+     **讓開的是整排、不是單一列**：只給滑鼠底下那一列讓，其餘幾列的右緣就會歪掉；
+     整排一起移動時，六列彼此仍然對齊，讀起來是「動作滑了進來」。
+     60px＝箭頭 22 ＋ 兩段間距 ＋「前往」約 24（英文 Open 約 27，以寬的那個為準），
+     寫死一個值而不是跟著字長——跟著字長會因為換語言而整排跳動一次。 */
+  padding: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  font-family: var(--font-ui);
+  /* 未選中的列也是白的（2026-08-31 使用者裁示「未選的字也要是白色的」；原本是
+     66% 的 `--on-media-muted`）。降階的工作交給字級（12 vs 16）與那三樣只有展開
+     才有的東西（類型小字、玻璃面、箭頭）——顏色再分一次階，這一排在暗的底圖上
+     會有一半讀不出來。
+     用恆定的 `--on-media` 而不是會隨主題翻轉的 `--foreground`：這幾個字躺在照片上，
+     不管站上切成什麼主題，它們的底都是同一張圖。
+     沒有面也沒有框（同日稍早裁示「不要有 border」），所以字自己扛可讀性：
+     白色 ＋ 一層貼著壓底色的陰影。 */
+  /* 未選中的那幾列帶一點透明（2026-08-31 使用者裁示「有一點透明度，但不要太多」）：
+     88% 而不是 `--on-media-muted` 的 66%——66% 在暗的底圖上會有一半讀不出來，
+     那正是同日稍早把它們改成純白的原因。88% 只是讓「不是現在這一件」輕一階，
+     展開的那一列（下面的規則）仍是純白。 */
+  color: color-mix(in srgb, var(--on-media) 88%, transparent);
+  cursor: pointer;
+  text-align: right;
+  /* 陰影只要「把字從照片上撐起來」那一點點（2026-08-31 使用者裁示「淡一點」）：
+     原本直接吃 `--scrim-media`（82% 黑），在深底圖上會在每個字周圍結一圈灰邊。
+     降到它的 45%——照片再亮也還讀得到，暗底上又看不出有陰影。 */
+  text-shadow: 0 1px 3px color-mix(in srgb, var(--scrim-media) 45%, transparent);
+  transition: color var(--duration) var(--easing);
+}
+/* 類型小字預設不佔位：六項全部帶著類型的話，這一列就從「切換器」變成一張清單，
+   而它的工作是切換、不是閱讀。只有正在看的那一項與滑鼠底下那一項需要交代身分。 */
+.canvas-stage__pick-kind {
+  display: none;
+  font-size: var(--fs-11);
+  color: var(--on-media-muted);
+}
+/* 「前往」站在名稱與箭頭之間（2026-08-31 使用者裁示三次改到位：先是名稱前面、
+   只在已選＋滑過時出現，最後改成這裡）：動詞緊鄰它要作用的那個箭頭，讀起來是
+   「前往 →」一句話；放在名稱前面時它會先被讀成名稱的一部分。
+   **已選的那一列一直掛著它**（不再限定滑過時）：滑過就換底圖之後，「當前這一列」
+   與「滑鼠底下那一列」是同一列，而在那一列上唯一還有意義的動作就是前往。
+   字級比名稱小兩階：它是動作的標籤，不是這一列的內容。
+   排在 `__pick-cta` 裡、與箭頭同一組（2026-08-31 使用者裁示「前往和箭頭要水平
+   置中對齊」）：兩者交給同一個 flex 置中，不必各自算 `bottom`；而那一組整個站在
+   玻璃面外面，所以它的寬度不會把名稱往左推——名稱的右緣仍與其餘幾列同在一條線。 */
+.canvas-stage__pick-lead {
+  display: none;
+  font-size: var(--fs-11);
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--on-media-muted);
+}
+/* 只在滑鼠底下那一列出現（2026-08-31 使用者裁示「已選不要出現前往和箭頭，
+   hover 上去才顯示」；同日稍早曾讓已選的那一列固定掛著）：滑過就換底圖之後，
+   「已選」與「滑鼠底下」多數時候是同一列，固定掛著等於畫面上永遠有一組動作
+   在等人按——而這一排的主要工作是「看接下來有什麼」，不是每一列都催人進去。 */
+.canvas-stage__pick:hover .canvas-stage__pick-lead { display: block; }
+/* 滑鼠進到這一排時，**玻璃面往右長出來**，名稱一格都不動（2026-08-31 使用者裁示
+   「原本字的底部應該固定切齊現在的右側線，而前往和箭頭應該從那條線往右邊凸出來，
+   然後還是在框內」）。
+   做法是同時給右內距與等量的負右外距：這一排是 `align-items: flex-end`，右內距單獨
+   加只會把字往左推（先前那一版正是這樣，整排在 hover 時往左跳）；補一個負的右外距
+   之後，長出去的是框的右緣，字留在原地。
+   這也是這一排整體往內縮 24px 的原因——長出去的 60px 需要有地方去，不然會頂到
+   外殼的 `overflow: hidden`。 */
+.canvas-stage__rail:hover .canvas-stage__pick {
+  padding-right: calc(var(--sp-10) + 60px);
+  margin-right: -60px;
+}
+
+.canvas-stage__pick-name {
+  /* 名稱整句顯示、不截斷（2026-08-31 使用者裁示；原本 `max-width: 180px` ＋
+     ellipsis）。截斷的理由本來是「切換器不該被名字撐寬」，但這一排貼著右緣、
+     往左長不會擠到任何東西；而被截成「LOVE·RAGE·HOPE 巡…」的那幾列，讀者反而
+     認不出是哪一件——切換器認不出選項就沒有用。 */
+  white-space: nowrap;
+  font-size: var(--fs-12);
+  line-height: 1.25;
+  transition: font-size var(--duration) var(--easing);
+}
+/* 前往的箭頭：預設收起來（不佔寬），與名稱同時長出來。
+   它是獨立的連結，因為它做的事與切換不同——切換是「換底圖看這一件」，
+   前往是「進到這一件的頁面」。名稱那一段仍吃掉整列扣掉箭頭的寬度，
+   所以主要動作還是一整行可點的。 */
+/* 「前往 ＋ 箭頭」整組站在玻璃面外面（2026-08-31 使用者裁示「前往和箭頭會凸出來」；
+   同日稍早它們是收在面內的）。這一改是為了上一條裁示：**名稱的右緣要與頂列的時間
+   切齊**——那條線由玻璃面的右緣減去右內距決定，只要動作那一組還住在面內，名稱就得
+   先讓開它的寬度，兩條線永遠差一格。搬出去之後這一排是「名稱貼齊那條線、動作長在
+   線外」。
+   **站在玻璃面裡面**（2026-08-31 同日三次改到位：箭頭凸出列外 → 收回面內 →
+   連同「前往」一起搬到面外 → 使用者裁示「前往和箭頭要在框框裡面」，收回面內定案）：
+   凸出去的版本要往右多吃 34px，而玻璃面的右緣已經抵著內容區的邊——再往外長，
+   面本身就會被外殼的 `overflow: hidden` 切掉一角。名稱與頂列時間的那條對齊線因此
+   改由頂列讓出右內距去接（見 canvas-home.css）。
+   `right` 6px 不是 12px：箭頭是圖示不是文字，它的視覺邊界比方框小一圈，照文字的
+   內距留白就會多出一段。
+   `bottom` 對齊列的下內距，也就是**名稱那一行**（不是整列垂直置中）：展開時上面
+   還有一行類型小字，置中會把這一組抬到兩行之間，看起來像在標示那兩行。 */
+.canvas-stage__pick-cta {
+  position: absolute;
+  right: var(--sp-6);
+  bottom: var(--sp-6);
+  display: flex;
+  /* 「前往」與箭頭互相置中（2026-08-31 使用者裁示）：文字 17px 高、箭頭 22px 高，
+     各自對齊 `bottom` 時兩者的視覺中線差 2–3px，讀起來像箭頭掉下去一點。 */
+  align-items: center;
+  gap: var(--sp-4);
+  pointer-events: none;
+}
+.canvas-stage__pick-go {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  opacity: 0;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-media-muted);
+  text-decoration: none;
+  transition: opacity var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+.canvas-stage__pick-go .ztor-icon { width: 18px; height: 18px; }
+.canvas-stage__pick-go:hover { color: var(--on-media); }
+
+/* 展開的那一套：當前項恆常展開，滑鼠底下的那一項暫時展開。 */
+/* 展開與未展開同色（2026-08-31 起兩者都是白）：這一條留著只為了蓋掉下面那組
+   「滑鼠進到這一排時，當前那一列先收回去」的規則。 */
+.canvas-stage__pick--active .canvas-stage__pick-main,
+.canvas-stage__pick:hover .canvas-stage__pick-main { color: var(--on-media); }
+.canvas-stage__pick--active .canvas-stage__pick-kind,
+.canvas-stage__pick:hover .canvas-stage__pick-kind { display: block; }
+/* 18 → 16（2026-08-31 使用者裁示「字小一點」）：這一排是切換器不是標題，
+   放大只需要大到「看得出現在講的是這一列」，大過頭會與左欄第一格的大數字打架。 */
+.canvas-stage__pick--active .canvas-stage__pick-name,
+.canvas-stage__pick:hover .canvas-stage__pick-name { font-size: var(--fs-16); }
+.canvas-stage__pick:hover .canvas-stage__pick-go { opacity: 1; pointer-events: auto; }
+
+/* 同一時間只有一列是放大的（2026-08-31 使用者裁示）：滑鼠一進到這一排，當前
+   那一列就先收回未選中的樣子，放大的名額交給滑鼠底下的那一列；滑鼠離開整排，
+   當前那一列自己長回來。兩列同時是大的時候，畫面等於同時指著兩件事。 */
+.canvas-stage__rail:hover .canvas-stage__pick--active:not(:hover) {
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.canvas-stage__rail:hover .canvas-stage__pick--active:not(:hover) .canvas-stage__pick-main { color: var(--on-media); }
+.canvas-stage__rail:hover .canvas-stage__pick--active:not(:hover) .canvas-stage__pick-kind { display: none; }
+.canvas-stage__rail:hover .canvas-stage__pick--active:not(:hover) .canvas-stage__pick-name { font-size: var(--fs-12); }
+/* 2026-08-31 撤除（墓碑）：這裡原本還有兩條「滑鼠進到這一排時，把已選那一列的
+   前往與箭頭收起來」——已選不再固定顯示它們之後，那兩條沒有東西可收。 */
+
+.canvas-stage__pick-main:focus-visible,
+.canvas-stage__pick-go:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+@media (prefers-reduced-motion: reduce) {
+  .canvas-stage__pick-name { transition: none; }
+}
+
+/* ── 2026-08-31 撤除（墓碑）：右下角的作品說明 `.canvas-stage__caption`
+   （`__kind`／`__title`／`__go`）。使用者裁示移除。它回答的問題（我現在在看哪一件、
+   怎麼進去）沒有消失，是整份搬進右緣的切換器：當前那一項自己就長成類型小字＋
+   放大的名稱＋前往箭頭。一個畫面上把同一件事寫兩次，第二次就只是佔位置——
+   而右下那一塊佔的還是照片最完整的一角。 */
+
+/* ── 2026-08-31 撤除（墓碑）：模式切換（`.canvas-stage__modes`／`__mode`）與
+   「未來 90 天」時間軸（`.canvas-stage__timeline`、`.canvas-timeline*`、`.canvas-event*`）
+   整組退場，使用者裁示「不需要未來 90 天了」。畫布只剩單一作品舞台一個模式，
+   既然沒有第二個模式，切換器本身也就沒有存在的理由——留一顆永遠亮著自己的按鈕，
+   比拿掉它更難解釋。時間軸要回來的話連渲染器一起找回：`canvasDated()`／
+   `canvasTimeline()` 同日一併自 components.js 移除。 */
+
+
+/* 畫布的空狀態：展示版有一半的面積是這塊，沒有東西可放時要有話講，
+   不能只留一句「還沒有資料」。 */
+.canvas-stage__empty {
+  height: 100%;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: var(--sp-8);
+  color: var(--muted-foreground);
+}
+.canvas-stage__empty-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-18);
+  color: var(--foreground);
+}
+.canvas-stage__empty-text {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  max-width: 36ch;
+}

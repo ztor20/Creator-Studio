@@ -40,8 +40,29 @@
    里程碑自己的「發布更新」。負的 margin 讓底色往兩側各長回 10px，這樣列的內容邊界
    仍然對齊卡的其他區塊，只有底色比文字寬一點——不然 hover 起來像文字被框住。 */
 .step-list__row--interactive { cursor: default; }
+/* hover 底色（2026-08-31 使用者：「hover 效果不明顯」）：--accent 在深色是實色深灰
+   （#2A2B2C），坐在玻璃卡上比周圍還暗，讀起來像列被按下去而不是被指到。
+   改吃 --control-raise-hover（與控件靜止態同一族薄膜、濃度三倍），hover ＝亮一階。
+   舊值：var(--accent)。 */
 .step-list__row--interactive:hover,
-.step-list__row--interactive:focus-within { background: var(--accent); }
+.step-list__row--interactive:focus-within { background: var(--control-raise-hover); }
+
+/* hover 時把「待完成」的記號預演成完成的樣子（2026-08-31 使用者裁示：
+   「如果是可以發布更新的里程碑，hover 時前面的 icon 要變成淡淡的綠勾勾，
+   像是要完成前的設計」）。這一列 hover 出現的動作就是「發布更新並標記完成」——
+   記號先淡淡地轉綠，等於在按下去之前先給一眼結果。
+   刻意用淡綠不用 --pmark--done 的實色：那是既成事實，這裡是預告。
+   **逾期那一顆也算在內**（2026-08-31 使用者補充）：它同樣是「等著被完成」的里程碑，
+   而且是最該被完成的那一顆——排除它反而讓最需要這個提示的列沒有提示。
+   實色紅的底與那圈紅光暈要一併蓋掉，否則綠勾會壓在紅底上讀成兩個狀態。
+   只有 --done 排除：它已經完成，沒有東西可以預告。 */
+.step-list__row--interactive:hover .pmark:not(.pmark--done),
+.step-list__row--interactive:focus-within .pmark:not(.pmark--done) {
+  border-color: color-mix(in srgb, var(--status-success) 55%, transparent);
+  background: color-mix(in srgb, var(--status-success) 16%, transparent);
+  color: color-mix(in srgb, var(--status-success) 85%, transparent);
+  box-shadow: none;
+}
 /* 動作預設不佔位、也不吃點擊：它與逾期標籤共用右端那一格，hover 時互換。 */
 .step-list__act {
   position: absolute;

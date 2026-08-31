@@ -74,10 +74,35 @@
   -webkit-backdrop-filter: var(--ztu-accent-blur);
   color: var(--primary-foreground);
   box-shadow: var(--ztu-accent-glow);
+  /* 2026-08-31 使用者：「文字加個陰影吧，但不要太多」。份量刻意壓到只夠把白字從橘面上
+     抬起一點——橘面本身就亮，字影再重就會變成浮雕。值收在 --ztu-accent-ink-shadow。 */
+  text-shadow: var(--ztu-accent-ink-shadow);
 }
-/* hover 不換色票（漸層沒有「亮一階」的對應值），改整顆提亮 7%。
-   .btn 基底的 transition 已含 filter，所以這是有過場的。 */
-.btn--primary:hover { background: var(--ztu-accent-surface); filter: brightness(1.07); }
+/* hover（2026-08-31 改強，使用者：「hover 效果要再明顯一點」）。
+   原本只有 filter: brightness(1.07)——面是半透明漸層，整顆提亮 7% 在深色檯面上幾乎看不出來。
+   改成三件一起動：①同色薄洗（::after）把面填得更滿、②光暈換成更外擴的 hover 版、
+   ③保留一點點提亮收尾。不換色票的原則不變（漸層沒有「亮一階」的對應值）。 */
+.btn--primary:hover {
+  background: var(--ztu-accent-surface);
+  filter: brightness(1.04);
+  box-shadow: var(--ztu-accent-glow-hover);
+}
+/* hover 的薄洗層。z-index:-1 與霧光層同階，但寫在後面所以疊在它上面、仍在文字之下
+   （負 z-index 的子層畫在元素自己的背景之後、行內內容之前）。
+   用獨立圖層而不是換 background：換背景會讓漸層整組重畫、過場是硬切；
+   疊一層可以只補間 opacity，hover 進出都是柔的。 */
+.btn--primary::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ztu-accent-wash-hover);
+  opacity: 0;
+  transition: opacity var(--duration) var(--easing);
+  pointer-events: none;
+}
+.btn--primary:hover::after { opacity: 1; }
 
 /* 霧光色層（ztorUI 規格 §3.8）。色層內縮再模糊，形狀吃 border-radius: inherit。
    淡出邊緣不用 mask——mask 的線性／徑向淡出都是方或橢圓，套在膠囊上會把圓潤切掉；
@@ -115,7 +140,13 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
 }
-.btn--outline:hover { background: var(--accent); }
+/* hover 往亮走，不往暗走（2026-08-31 使用者指著浮層裡的「前往進度」：「這個 hover 要亮的，
+   現在變暗了」）。成因：靜止態是 --control-raise（深色＝4% 淺色薄膜），hover 卻換成
+   --accent（深色＝#2A2B2C 實色深灰）——從薄膜掉回一塊比周圍更暗的色塊，玻璃面愈亮愈明顯。
+   改吃與 --control-raise 成對的 --control-raise-hover（深色＝同族薄膜 12%，亮色維持原本的 --accent），
+   hover ＝ 同一片膜變厚，不換材質；邊框跟著提到頂緣內光那一階，整顆一起亮。
+   舊值：background: var(--accent)。 */
+.btn--outline:hover { background: var(--control-raise-hover); border-color: var(--ztu-glass-rim); }
 .btn--outline.btn--lg { --btn-pad-x: 17px; }
 .btn--outline.btn--sm { --btn-pad-x: 9px; }
 .btn--ghost {

@@ -13,6 +13,9 @@
 <link rel="stylesheet" href="ds-components/review-status.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/detail-overview.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card-group.css?v=r2.2">   <!-- 2026-08-31：項目摘要卡內的「方案」分組 -->
+<link rel="stylesheet" href="ds-components/sparkline.css?v=r2.2">   <!-- 2026-08-31：支持者 KPI 的累積走勢 -->
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
@@ -75,7 +78,7 @@
       <div class="pd-detail__topbar">
         <div class="pd-detail__breadcrumb page-crumb page-crumb--back">
           <a class="btn btn--icon-circle btn--sm page-crumb__back" href="projects.html" aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
-          <a href="projects.html" class="card__link" data-i18n="project-detail.crumb.projects">Projects</a>
+          <a href="projects.html" class="card__link" id="pd-crumb-root" data-i18n="project-detail.crumb.projects">Projects</a>
           <span style="margin:0 6px">/</span>
           <span id="pd-crumb-cat" data-i18n="projects.cat.movie">Movie</span>
           <span style="margin:0 6px">/</span>
@@ -101,10 +104,20 @@
                放在預覽旁邊——它是「把粉絲端連結拿去貼」的小動作，不是一個要被推銷的功能。
                與通知粉絲（群發訊息出口，直接發佈限定）是兩件事：那是站內對名單發訊息，
                這是把公開連結帶去站外。原型行為＝複製粉絲端連結＋toast（UIA-122）。 -->
+          <!-- 通知粉絲（2026-08-31 使用者裁示，由總覽的卡搬來）：直接發佈限定，
+               `data-type="go-live"` 沿用同一套顯隱。與分享並排——兩顆都是「把這個項目
+               帶去別的地方」的小動作，差別在對象：分享是站外的公開連結，這一顆是站內的
+               粉絲名單。本頁只提供出口，發送能力在群發訊息（5.1.7.1）。 -->
+          <a class="btn btn--outline btn--icon" href="fans-crm.html?msg=all" data-type="go-live"
+             aria-label="Tell your fans" title="Tell your fans"
+             data-i18n-aria-label="pd-ov.msg.title" data-i18n-title="pd-ov.msg.title"><i data-lucide="send" class="ztor-icon"></i></a>
           <button class="btn btn--outline btn--icon" type="button" data-pd-share aria-label="Share project" title="Share project" data-i18n-aria-label="pd.share" data-i18n-title="pd.share"><i data-lucide="share" class="ztor-icon"></i></button>
           <button class="btn btn--outline"><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="project-detail.btn.preview">Preview</span></button>
           <!-- 發布項目更新僅共創與預購提供（§2.4 第 4 項；直接發佈 2026-08-17 起沒有這個區段）。 -->
-          <button class="btn btn--primary" data-modal-open="pd-edit-update" data-type="fund preorder" data-i18n="project-detail.btn.post-update">Post update</button>
+          <!-- 2026-08-31 撤除（墓碑）：頁首的「發布更新」主按鈕（data-modal-open="pd-edit-update"）。
+                 總覽的進度摘要卡最上面已經有常駐的發文入口，那裡還帶著落點（要完成哪一顆里程碑）
+                 與快捷夾帶；頁首這一顆開的是同一個彈窗、少了落點資訊，同一件事兩個入口、
+                 其中一個還比較笨。彈窗本身保留——進度摘要每一列 hover 出現的「發布更新」仍然開它。 -->
         </div>
       </div>
 
@@ -117,7 +130,10 @@
         <div class="pd-hero__main">
           <div class="pd-hero__badges flex-row" style="gap:8px;flex-wrap:wrap">
             <span class="badge badge--orange" id="pd-badge-status"><span data-i18n="project-detail.badge.live">Live</span></span>
-            <span class="badge badge--info" id="pd-badge-type"><span data-i18n="project-detail.badge.type">Co-create</span></span>
+            <!-- 2026-08-31 撤除（墓碑）：類型徽章 #pd-badge-type（共創／預購／直接發佈）。
+                 使用者裁示把發行模式移進麵包屑第一節（「共創項目」「直接發佈項目」「預購項目」），
+                 那裡本來就是「這是哪一類的東西」的位置；留著徽章就是同一件事在標題上下講兩遍。
+                 狀態徽章（#pd-badge-status）不動——狀態會變，模式不會，兩者不是同一種資訊。 -->
           </div>
           <div class="pd-hero__head">
             <h1 class="pd-hero__title" id="pd-title">Moonlight Over Sham Shui Po</h1>
@@ -125,6 +141,12 @@
           <p class="pd-hero__desc" id="pd-desc">
             A coming-of-age short film about a florist who only blooms at night. Co-creation the final color grade and a limited NFT collectible for backers.
           </p>
+          <!-- 識別列（2026-08-31 使用者裁示「這裡加上建立日期」，同輪總覽的項目摘要撤除）。
+               只放兩筆：創作者與建立日期。內容類型與發行模式已經在麵包屑上
+               （「共創項目 / 電影 / …」），寫在這裡是第二遍。
+               2026-08-18 曾有過 #pd-hero-facts（三列式），當時撤除的理由是與總覽的
+               項目摘要重複；那張卡本輪撤掉，資訊回到這裡，改成一行不佔高度的小字。 -->
+          <p class="pd-hero__meta" id="pd-hero-meta"></p>
           <!-- 營運摘要（§2.1 第 2 項）與下一步（第 3 項）2026-08-17 搬進總覽分頁：
                兩者都隨發行模式與項目狀態換內容（§2.1.1 階段重點面板），屬於「現在怎麼樣、
                我該做什麼」那一格；hero 留識別。見 D193。
@@ -207,22 +229,28 @@
            §2.1.1 的三張表；資料全部來自站上既有來源（送審件、進度 store、todo、
            releaseDate、募資與集單數字），本頁不新增資料源、不自創狀態。 -->
       <div class="tab-panel tab-panel--active" data-panel="overview">
-        <div class="bento bento--top">
+        <div class="detail-overview">
 
-          <!-- 左欄（2026-08-18）：包成一個巢狀 bento，右邊才留得出側欄。
-               包起來而不是讓側欄用 grid-row 橫跨——後者的 `-1` 指顯性網格的最後一條線，
-               而這裡的列全是自動產生的，實測會把整個 bento 壓成一列。 -->
-          <div class="bento bento--span-9">
-          <!-- ① 重點面板 · KPI 列。內層再包一個 .bento 的理由：格數會隨情境變（1–3 格），
+          <!-- ① 左欄 · 數字（2026-08-31 使用者裁決三欄化）：KPI 由一排三格改成直排。
+               這一欄回答「現在的量體是多少」，三個數字上下讀比左右讀快——它們是同一種東西
+               的三個切面，不是三個並列的區塊。 -->
+          <div class="detail-overview__col detail-overview__col--narrow">
+                      <!-- ① 重點面板 · KPI 列。內層再包一個 .bento 的理由：格數會隨情境變（1–3 格），
                外層那條 12 欄軌道要留給底下的區塊，不能讓 KPI 的欄寬跟著它一起變。 -->
-          <div class="bento bento--span-12" id="pd-ov-kpis" hidden></div>
+          
+<div class="detail-overview__kpis" id="pd-ov-kpis" hidden></div>
+          </div>
 
-          <!-- ② 作品（§2.2.11 在總覽的落點）。準備中時它同時是重點面板——追蹤條回答
+          <!-- ② 中欄 · 現在進行到哪：作品上架追蹤、狀態卡、進度摘要。三者講的是同一條時間線
+               （這件作品走到哪、卡在哪、下一個里程碑是什麼），所以收在同一欄。 -->
+          <div class="detail-overview__col">
+                      <!-- ② 作品（§2.2.11 在總覽的落點）。準備中時它同時是重點面板——追蹤條回答
                「現在卡在哪一段」，送審件面板回答「那一件作品現在怎麼樣」，兩者講同一條線，
                所以是同一塊而不是兩塊。已上線時追蹤條收起，只留作品識別、上映日期與編輯入口。
                **直接讀 js/work-review-store.js，不另存一份**（§2.2.11 兩個落點都讀同一份資料）：
                總覽的上架追蹤、進度的完成作品節點、作品本身講的一定是同一件事。 -->
-          <section class="card bento--span-12" id="pd-ov-work-card" hidden>
+          
+<section class="card" id="pd-ov-work-card" hidden>
             <div class="card__head">
               <h3 class="card__title" id="pd-ov-work-title"></h3>
             </div>
@@ -262,10 +290,11 @@
             </div>
           </section>
 
-          <!-- ③ 狀態卡：一組事實 ＋ 一句說明。兩個情境共用——已取消的終止說明（§2.2.4 凍結範圍，
+                      <!-- ③ 狀態卡：一組事實 ＋ 一句說明。兩個情境共用——已取消的終止說明（§2.2.4 凍結範圍，
                此時 KPI 列與進度摘要都不出現：里程碑已凍結、數字停止變動），以及直接發佈非影片
                家族準備中的上線排程（那一格沒有可盯的數字，只有一個還沒填的日期）。 -->
-          <section class="card bento--span-12" id="pd-ov-panel" hidden>
+          
+<section class="card" id="pd-ov-panel" hidden>
             <div class="card__head">
               <h3 class="card__title" id="pd-ov-panel-title"></h3>
             </div>
@@ -277,22 +306,39 @@
             </div>
           </section>
 
-          <!-- ④ 下一步（自成一卡的版本）。只有在這件事不屬於畫面上任何一個區塊時才出現
-               ——屬於作品的長在作品卡、屬於交付的長在進度摘要、屬於終止的長在終止卡，
-               否則同一顆按鈕會在一頁上畫兩次。 -->
-          <section class="card bento--span-12" id="pd-ov-next" hidden>
-            <div class="next-step next-step--lead">
-              <span class="next-step__label" data-i18n="pd-ov.next.title">Next step</span>
-              <p class="next-step__text" id="pd-ov-next-text"></p>
-              <div class="next-step__act" id="pd-ov-next-act"></div>
-            </div>
-          </section>
-
-          <!-- ⑤ 進度摘要（共創與預購）。2026-08-18 使用者裁決：這一塊要放大成主要區塊，
+                      <!-- ⑤ 進度摘要（共創與預購）。2026-08-18 使用者裁決：這一塊要放大成主要區塊，
                列出近期要完成的里程碑（不只一顆），並且能就地發布更新、不必先跳到進度分頁。
                發布更新走既有的 [data-modal-open="pd-edit-update"]，與頁首那顆、進度分頁那顆
                是同一個彈窗、同一支 submitUpdate()，不另造第二套發文機制。 -->
-          <section class="card bento--span-7" id="pd-ov-progress" hidden>
+          
+            <section class="card" id="pd-ov-progress" hidden>
+            <!-- 發文入口（2026-08-31 使用者裁示，同日三版：先塞在卡頭底下 → 拆成獨立區塊
+                 → 收回這張卡裡、擺在最上面）。定案的形狀是「這張卡最上面一個空的輸入框」：
+                 進度摘要在講「這件事走到哪」，而發一則更新就是把它往前推一步——
+                 動作放在紀錄的正上方，讀序是先寫再看。
+                 這裡只放收合態的那一行；點下去把 §2.2.10 那個活的發文框（#pd-composer）
+                 搬到它下面展開，不另做一份欄位（post-composer.css 檔頭的「一個發文框、
+                 N 個落點」）。placeholder 用自己的 key：時間軸那個落點問的是「發生了什麼事」，
+                 這裡問的是「要不要發一則更新」，兩句話不共用。 -->
+            <div id="pd-ov-post-wrap" hidden>
+              <div class="post-composer post-composer--inset" id="pd-ov-post" data-pd-ov-composer>
+                <button class="post-composer__stub" type="button" data-pd-ov-composer-open
+                        data-i18n="pd-ov.post.stub">Post an update</button>
+                <!-- 收合態的快捷夾帶（2026-08-31 使用者裁示「這區塊下方要加上夾帶的選項」）：
+                     三顆各自帶 data-pd-ov-composer-open ＋ data-ptl-attach，點一下就展開並選好
+                     那一種——比「先點開、再找夾帶」少一步。不用 .post-composer__foot：
+                     那一段在收合態被 CSS 藏起來，這一列要的正是收合態才出現。 -->
+                <div class="post-composer__quick">
+                  <button class="btn btn--ghost btn--sm" type="button" data-pd-ov-composer-open data-ptl-attach="image"><i data-lucide="image" class="ztor-icon"></i><span data-i18n="pd-c.attach-image">Image</span></button>
+                  <button class="btn btn--ghost btn--sm" type="button" data-pd-ov-composer-open data-ptl-attach="video"><i data-lucide="video" class="ztor-icon"></i><span data-i18n="pd-c.attach-video">Video</span></button>
+                  <button class="btn btn--ghost btn--sm" type="button" data-pd-ov-composer-open data-ptl-attach="audio"><i data-lucide="music" class="ztor-icon"></i><span data-i18n="pd-c.attach-audio">Music</span></button>
+                </div>
+              </div>
+              <!-- 分隔線（2026-08-31 使用者裁示）：發文是動作、進度摘要是紀錄，同一張卡上的
+                   兩組東西照 Q71 第 1 級用一條出血到卡緣的髮絲線分界。展開時發文框插在
+                   收合那一行與這條線之間，所以兩個狀態下這條線都在正確的位置。 -->
+              <div class="group-divider"></div>
+            </div>
             <div class="card__head">
               <h3 class="card__title" data-i18n="pd-ov.prog.title">Progress</h3>
               <span class="badge badge--neutral" id="pd-ov-prog-count" hidden></span>
@@ -330,20 +376,17 @@
               <button class="btn btn--outline btn--block" type="button" data-goto-tab="progress" data-i18n="pd-ov.prog.go">Go to progress</button>
             </div>
           </section>
-
-          <!-- ⑦ 方案摘要（2026-08-18 使用者裁決）。方案抽成獨立分頁之後，總覽要看得到
-               「現在賣的是哪幾個方案、多少錢」——那是創作者最常回頭確認的一組數字，
-               而它在總覽原本一個字都沒有。只列名稱與價格，件數／名額／權益留在方案分頁：
-               這裡回答「有哪幾個」，那裡才回答「每一個包含什麼」。 -->
-          <section class="card bento--span-5" id="pd-ov-plans" hidden>
-            <div class="card__head"><h3 class="card__title" data-i18n="pd-ov.plans.title">Support plans</h3></div>
-            <div class="data-list" id="pd-ov-plans-list"></div>
-            <div class="card__foot">
-              <button class="btn btn--outline btn--block" type="button" data-goto-tab="plans" data-i18n="pd-ov.plans.go">Go to plans</button>
-            </div>
-          </section>
           </div>
-          <!-- 2026-08-18 使用者裁決：項目摘要改成整個 bento 的右側欄（.bento__aside），
+
+          <!-- ③ 右欄 · 這是什麼項目 ＋ 要你動手的事（2026-08-31 使用者裁示「有通知的就往右放一欄」）：
+               項目摘要與方案摘要是不會變的識別資訊，下一步與通知粉絲是等你處理的事。
+               整欄 sticky，捲動時識別與待辦都留在手邊。
+               ⚠ 2026-09-01 現況：這一欄的四張卡已陸續全部撤除（見底下四則墓碑），
+               所以它在每一種發行模式下都是空的，renderStage() 的空欄偵測一律判成兩欄
+               ——畫面實際上是兩欄，第三欄只剩這個空殼與它的機制。殼留著是因為要再放東西
+               進來時不必重建三欄骨架；如果確定不再放，連同 --2col 那組機制一起退場。 -->
+          <div class="detail-overview__col detail-overview__col--sticky">
+                      <!-- 2026-08-18 使用者裁決：項目摘要改成整個 bento 的右側欄（.bento__aside），
                橫跨所有列、自己 sticky。左邊那一疊回答「現在該盯什麼」，右邊這一欄回答
                「這是什麼項目」——後者在捲動時要一直看得到，前者才是會變的東西。 -->
           <!-- ⑥ 項目摘要（2026-08-18 使用者裁決，取代原「支持者摘要」）。
@@ -353,29 +396,42 @@
                所以這張卡不會有某一格空掉。
                撤除的「支持者摘要」原本只剩兩列（支持方案數、收單期間），兩者都已搬進
                上面那列 KPI：方案數自成一格、收單期間掛在剩餘天數底下當小字。 -->
-          <section class="card bento--span-3 bento__aside" id="pd-ov-backers" hidden>
-            <div class="card__head"><h3 class="card__title" id="pd-ov-backers-title"></h3></div>
-            <div class="data-list" id="pd-ov-backers-list"></div>
-            <!-- 2026-08-18 撤除（墓碑）：#pd-ov-about（項目說明）。使用者裁示刪除——
-                 同一句話已經在頁首標題底下，這裡是第二遍；項目摘要要的是可以掃過去的
-                 事實列，一段散文會把它變成兩種讀法混在一張卡上。 -->
-            <div class="flex-row mt-16">
-              <button class="btn btn--outline btn--block" type="button" data-goto-tab="backers" id="pd-ov-backers-go"></button>
-            </div>
-          </section>
+          
+<!-- 2026-08-31 撤除（墓碑）：#pd-ov-backers（項目摘要）。使用者裁示拿掉。
+               它裝的四筆是「這個項目是什麼」——發行模式已經在麵包屑第一節、內容類型也在
+               麵包屑，剩下的創作者與建立日期同輪搬回 hero 的識別列（#pd-hero-meta），
+               所以拿掉不掉資訊。2026-08-18 那次是反方向的搬動（hero 的 #pd-hero-facts
+               撤除、資訊集中到這張卡），兩次的判準是同一條：同一筆事實只在一個地方講。
+               方案摘要本來在 2026-08-31 稍早併進這張卡，這一輪還原成自己一張卡。 -->
+          <!-- 2026-08-31 撤除（墓碑）：#pd-ov-plans（方案摘要）。使用者裁示拿掉，與同輪的
+               項目摘要同一個方向——總覽右欄只留「等你動手的事」，識別與清單各自回到
+               它們自己的頁（方案分頁、麵包屑、hero 識別列）。
+               同日的三次搬動一併記著：稍早先把方案併進項目摘要當第二組，接著項目摘要
+               整張撤除、方案還原成自己一張卡，最後兩張都撤。渲染端 renderStage() 的
+               plCard 區塊一併移除。 -->
 
 
-          <!-- ⑦ 通知粉絲（直接發佈限定，§2.1.1 末段與 §2.4 第 6 項）：本頁只提供出口，
+                      <!-- ④ 下一步（自成一卡的版本）。只有在這件事不屬於畫面上任何一個區塊時才出現
+               ——屬於作品的長在作品卡、屬於交付的長在進度摘要、屬於終止的長在終止卡，
+               否則同一顆按鈕會在一頁上畫兩次。 -->
+          
+<!-- 2026-09-01 撤除（墓碑）：#pd-ov-next（自成一卡的「下一步」）。使用者裁示拿掉。
+               它只在「這件事不屬於畫面上任何一個區塊」時才出現——屬於作品的長在作品卡、
+               屬於交付的長在進度摘要、屬於終止的長在狀態卡，那三個歸屬都還在（見 setNext()）。
+               撤掉的是那個沒有歸屬的兜底卡：總覽已經有常駐的發文入口與進度清單，
+               再多一張只寫一句話的卡是第四種「現在該做什麼」的說法。
+               ⚠ 連帶效果：owner 為空的情況現在畫面上不再顯示下一步。 -->
+
+                      <!-- ⑦ 通知粉絲（直接發佈限定，§2.1.1 末段與 §2.4 第 6 項）：本頁只提供出口，
                發送能力在群發訊息（5.1.7.1），不在這裡重造一套。出口不帶受眾條件——
                「買過這個項目的人」這一組受眾尚未定義（主規格 §8.24 第 1 項），
                未裁決前不得自行補進去。 -->
-          <section class="card bento--span-6" data-type="go-live">
-            <div class="card__head"><h3 class="card__title" data-i18n="pd-ov.msg.title">Tell your fans</h3></div>
-            <p class="field-text" data-i18n="pd-ov.msg.body">Direct releases carry no project updates. Reach fans from the broadcast composer instead.</p>
-            <div class="flex-row mt-16">
-              <a class="btn btn--outline btn--sm" href="fans-crm.html?msg=all"><i data-lucide="send" class="ztor-icon ztor-icon--sm"></i><span data-i18n="pd-ov.msg.cta">Go to broadcast</span></a>
-            </div>
-          </section>
+          
+<!-- 2026-08-31 撤除（墓碑）：總覽的「通知粉絲」卡。使用者裁示搬到頁首動作列、
+               收成一顆 icon（見 .pd-hero__actions 的 data-pd-notify）。它本來就只是一個出口
+               ——一張卡的份量給一顆按鈕，讀者會以為那裡有東西要處理。
+               `data-type="go-live"` 的顯隱條件原封搬到新的那顆鈕上。 -->
+          </div>
 
         </div>
       </div>
@@ -396,7 +452,7 @@
                → sp-24 → 逐張套組卡（.form-section--outlined，卡間自帶 sp-24）→ sp-24 → 新增鈕
                → sp-12 → 底部說明。抬頭沿用建立流程的 .form-section__title／__sub 字級。 -->
           <!-- 共創方案（欄位沿用 5.1.2.1 §5.2.2 F24／F25，含分潤名額） -->
-          <section class="bento--span-12" data-type="fund" data-edit-exempt>
+          <section class="bento--span-12 fc-bundle-col" data-type="fund" data-edit-exempt>
             <div class="form-section__head" style="margin-bottom:var(--sp-24)">
               <h3 class="form-section__title" data-i18n="project-detail.tiers.title">Support plans</h3>
               <p class="form-section__sub" data-i18n="pd-bundle.editor-sub">Each bundle is a reward tier backers can buy — it can include a profit-share and multiple items. At least one.</p>
@@ -789,7 +845,13 @@
                   <label class="field__label" for="pd-c-body" data-i18n="pd-edit.update.body">Body</label>
                   <textarea class="textarea" id="pd-c-body" rows="3" data-i18n-placeholder="pd-edit.update.body-ph" placeholder="Share progress with your backers…"></textarea>
                 </div>
-                <span data-ptl-ms-slot><select id="pd-c-ms" aria-hidden="true" tabindex="-1"></select></span>
+                <!-- 要完成哪一顆里程碑：時間軸那個落點由位置回答（D197），所以平常收著；
+                     總覽那個落點沒有位置訊號，類型選「里程碑更新」時就得問一次
+                     （2026-08-31 使用者裁示，與彈窗同一個道理）。顯隱由 syncComposer() 管。 -->
+                <div class="field" data-ptl-ms-slot hidden>
+                  <label class="field__label" for="pd-c-ms" data-i18n="pd-edit.update.ms-pick">Milestone to complete</label>
+                  <select class="select" id="pd-c-ms"></select>
+                </div>
                 <!-- 夾帶（2026-08-18 使用者裁決）：按底下的圖片／影片／音樂才長出對應的
                      上傳框，右上角的 × 收掉、回到只有文字。**一則只能一種**——三種的版面、
                      播放行為與粉絲端呈現都不一樣，允許混用等於要為每一種組合各定一次規則。
@@ -1735,6 +1797,11 @@ window.ztorPdLookup = (function () {
 <script src="js/performance-store.js?v=r2.2"></script>
 <!-- 收益走勢的互動圖表。放在 performance-store 之後：明細裡的 OTT 平台名單直接沿用
      表現分頁那一份，兩個分頁看到的平台必須是同一組。 -->
+<!-- 2026-08-31：借用 components.js 的 sparkBlock 畫 KPI 走勢圖，與儀表板同一支渲染器
+     （使用者裁示「有同樣的元件就用一樣的」）。本頁沒有任何 data-component 掛載點，
+     它的 mount() 掃不到東西，載進來只是為了那支共用函式。 -->
+<script src="js/linechart.js?v=r2.2"></script>   <!-- 2026-08-31：走勢圖的共用產生器，與活動詳情售票趨勢同一支 -->
+<script src="js/components.js?v=r2.2"></script>
 <script src="js/project-earnings-chart.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <!-- 展示內容相簿的圖片格：hover 替換／刪除由共用元件產生（站上統一路徑）。 -->
@@ -2055,6 +2122,96 @@ window.ztorPdLookup = (function () {
 
     /* KPI 欄位登記表。回傳 null ＝ 這個項目沒有這份資料，該格不畫。
        value/of 分開的理由：「8,420 / 15,000」是一個值，拆兩格會讀成兩個數字。 */
+    /* 這個 IIFE 沒有 parseYmd（另一個 IIFE 才有那一份），本地補一個同樣的解析。
+       格式與 projects-store 的 `fundFrom` 一致：YYYY/MM/DD。 */
+    const ymd = v => { const a = String(v || '').split('/'); return a.length === 3 ? new Date(+a[0], +a[1] - 1, +a[2]) : null; };
+
+    /* ── 方案拆分（2026-08-31 抽成共用）──────────────────────────────
+       每個方案佔多少支持者、對應多少金額。原本這段只長在支持者分頁的「方案支持統計」
+       表格裡；總覽的已募進度條也要同一份拆分，抄第二份遲早會對不上。
+       規則沿用該表既有的示意拆法（B-tier 示意，非真實資料）：依方案序位加權（前面的方案
+       人多）、受 limited 名額上限修正、餘數補回第一個方案，總和恆等於 fund.backers。 */
+    function planSplit() {
+      const BD = window.ztorPdBundles;
+      const f = proj && proj.fund;
+      if (!BD || !f || !f.backers) return [];
+      const bundles = BD.getBundles() || [];
+      if (!bundles.length) return [];
+      const total = Math.round(moneyNum(f.backers));
+      const n = bundles.length;
+      const weights = bundles.map((b, i) => n - i);
+      const wsum = weights.reduce((a, b) => a + b, 0) || 1;
+      const capOf = b => (b.avail === 'limited' && +b.cap > 0) ? +b.cap : 0;
+      const counts = bundles.map((b, i) => Math.round(total * weights[i] / wsum));
+      bundles.forEach((b, i) => {
+        const cap = capOf(b);
+        if (cap && counts[i] > cap) { counts[0] += counts[i] - cap; counts[i] = cap; }
+      });
+      counts[0] = Math.max(0, counts[0] + (total - counts.reduce((a, b) => a + b, 0)));
+      /* 金額＝把「已募」依人數比例拆開，不是 人數 × 單價。
+         示意資料裡的人數與單價彼此獨立（2,140 人 × $3,680 遠大於 $120,000 的目標），
+         相乘會讓進度條爆表。依比例拆分則保證各段加起來剛好等於已募，
+         也就是進度條的總長度必然等於 f.pct。 */
+      const raised = moneyNum((proj.fund && proj.fund.raised) || 0);
+      const sumC = counts.reduce((a, b2) => a + b2, 0) || 1;
+      return bundles.map((b, i) => ({
+        b: b, cap: capOf(b), count: counts[i],
+        amount: raised * counts[i] / sumC
+      }));
+    }
+
+    /* 迷你走勢圖（2026-08-31）。components.js 沒有載在這一頁——它會自動掛載
+       `data-component` 的東西，只為了畫一條線把整包拉進來，副作用比重複這 10 行大。
+       所以這裡只做最小的一條線（同一組 .sparkline class、同一個視覺語言），
+       不含 components.js 那支的格線／區間／目標線等進階能力。 */
+    function sparkMini(values, h) {
+      if (!values || values.length < 2) return '';
+      const max = Math.max.apply(null, values) || 1;
+      const n = values.length;
+      const pts = values.map((v, i) => [i / (n - 1) * 100, 100 - (v / max) * 100]);
+      const line = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(2) + ' ' + p[1].toFixed(2)).join(' ');
+      const area = line + ' L100 100 L0 100 Z';
+      /* 結構照 sparkline.css 的 anatomy：.sparkline > __plot > __main > __canvas > __svg。
+         高度由 --spark-plot-h 給（畫布那一層吃它）——少了 __canvas 這一層 SVG 就沒有
+         高度約束，viewBox 會被撐成整片（實測踩過：畫出一塊黑色三角形）。 */
+      return '<div class="sparkline" style="--spark-plot-h:' + (h || 44) + 'px" aria-hidden="true">' +
+        '<div class="sparkline__plot"><div class="sparkline__main">' +
+        '<div class="sparkline__canvas">' +
+        '<svg class="sparkline__svg" viewBox="0 0 100 100" preserveAspectRatio="none">' +
+        '<path class="sparkline__area" d="' + area + '"></path>' +
+        '<path class="sparkline__line" d="' + line + '"></path>' +
+        '</svg></div></div></div></div>';
+    }
+
+    /* 走勢圖目前只看哪一個方案（''＝全部）。2026-08-31 使用者裁示圖例改成截圖那種
+       色點 chips——站上已經有這個東西：收益走勢的篩選 chips（`.filter-tabs--source`），
+       它的註解自己寫著「收益篩選 chips（＝圖表圖例）」。既然同一個元件在本頁就是
+       「圖例即篩選」，這裡照做，不做一個長得像分頁、按了卻沒反應的假圖例。 */
+    let ovBackerSeries = '';
+    /* 走勢圖的期間尺度（2026-08-31 使用者：「要和收入趨勢那一塊一樣」）。
+       收入趨勢的卡頭右側就是這個 segmented；這裡沿用同一個位置與同一組 class。
+       只給日／週／月：這條線的跨度是一次募資（本例 94 天），季與年在這個尺度下
+       只會畫出一兩個點。 */
+    let ovBackerRange = 'week';
+    /* 折線／長條：切期間會重畫整張卡，檢視狀態要記著，不然一按日／週／月就跳回折線。 */
+    let ovBackerView = 'line';
+
+    /* 支持者累積走勢的示意曲線（ASSUMPTIONS UIA-121）。
+       ⚠ 站上只有一個總數（fund.backers），**沒有任何時間序列**——每天／每週累積多少人
+       是不存在的欄位。這條線是原型示意，形狀取募資期常見的「開跑衝一波 → 中段平緩 →
+       結尾再衝」，兩個端點錨在真實的數字（起始 0、結尾＝總數）與真實的起訖日。
+       不用亂數：同一個項目每次重繪都要畫出同一條線，不然看起來像資料在跳。 */
+    function backerCurve(total, points) {
+      const out = [];
+      for (let i = 0; i < points; i++) {
+        const t = points > 1 ? i / (points - 1) : 1;
+        const s = 0.55 * (1 - Math.pow(1 - t, 2.4)) + 0.45 * Math.pow(t, 3.2);
+        out.push(Math.round(total * s));
+      }
+      if (out.length) out[out.length - 1] = total;
+      return out;
+    }
+
     function kpi(key) {
       const f = proj.fund, li = proj.list;
       const sum = PROG ? PROG.summary(proj) : { done: 0, total: 0 };
@@ -2063,18 +2220,121 @@ window.ztorPdLookup = (function () {
           /* 目標放 meta 而不是跟在數字後面：金額字串長，1024 以下「$88,600 / $120,000」
              會擠成兩行，主要數字反而被切斷。達成率與進度條講的是同一個比例，一個給數字、
              一個給形狀。 */
+          /* 2026-08-31 使用者裁示：橘色那一段再切分成各方案佔多少。
+             寬度＝該方案金額 ÷ 目標，所以所有段加起來就是達成率，形狀與 f.pct 一致。
+             拆分讀 planSplit()，與支持者分頁的「方案支持統計」是同一份。 */
           return f && { label: T('pd-ov.kpi.raised', 'Raised'), value: f.raised,
-            meta: T('pd-ov.kpi.goal', 'Goal {g}').replace('{g}', f.goal) + ' · ' + f.pct + '%', pct: f.pct };
+            meta: T('pd-ov.kpi.goal', 'Goal {g}').replace('{g}', f.goal) + ' · ' + f.pct + '%', pct: f.pct,
+            segs: (() => {
+              const goal = moneyNum(f.goal);
+              const split = planSplit();
+              if (!goal || !split.length) return null;
+              return split.map((r, i) => ({
+                name: r.b.name || T('pd-bundle.untitled', 'Untitled plan'),
+                count: r.count, amount: r.amount,
+                pct: Math.max(0, r.amount / goal * 100),
+                color: 'var(--chart-' + ((i % 5) + 1) + ')'
+              }));
+            })(),
+            /* 條底下的圖例（2026-08-31 二版，使用者給了參考圖）：色點 ＋ 方案名 ＋ 金額 ＋ 佔比。
+               佔比是「佔已募」不是「佔目標」——三條加起來要等於 100%，那才是這條長條在拆的東西；
+               佔目標的話三個數字加起來是 74%，讀者會以為少算了一塊。
+               長度仍然按目標算（進度條要看得出離目標多遠），兩者分工不同、不衝突。 */
+            legend: (() => {
+              const split = planSplit();
+              const raised = moneyNum(f.raised) || 0;
+              if (!split.length || !raised) return null;
+              return split.map((r, i) => ({
+                name: r.b.name || T('pd-bundle.untitled', 'Untitled plan'),
+                color: 'var(--chart-' + ((i % 5) + 1) + ')',
+                amt: '$' + Math.round(r.amount).toLocaleString('en-US'),
+                pct: Math.round(r.amount / raised * 100) + '%'
+              }));
+            })() };
         case 'orders':
           return li && { label: T('pd-ov.kpi.orders', 'Pre-ordered'), value: L(li.goal), pct: proj.bar ? proj.bar.pct : null };
-        case 'backers':
-          return (f && f.backers) ? { label: T('pd-ov.kpi.backers', 'Backers'), value: f.backers } : null;
+        case 'backers': {
+          if (!f || !f.backers) return null;
+          /* 2026-08-31 使用者裁示（二版）：不用下拉切換，**全部方案畫在同一張圖上**，
+             各自一個顏色，底下用圖例說明哪個顏色是哪個方案。
+             一張圖比切換好在「可以互相比較」——切換一次只看得到一條，讀者得靠記憶
+             拼出高低關係。附加線與主線共用同一組值域（sparkBlock 的 extra 保證這件事），
+             所以疊起來的高低真的可比。
+             顏色與「已募」那張進度條的分段同一套（--chart-1..5 依方案序位）：
+             同一個方案在兩張圖上是同一個顏色，不必各記一次。
+             曲線仍是示意（UIA-124）：形狀同一條、只有總量不同——分方案的節奏
+             站上沒有資料，替每個方案編一條不同節奏會是更大的謊。 */
+          const split = planSplit();
+          const total = Math.round(moneyNum(f.backers));
+          const start = ymd(proj.fundFrom);
+          /* ⚠ diffDays(a, b) 回傳的是 a − b，所以「起始到今天」要寫成 (today, start)，
+             反過來會拿到負數（實測踩過：曲線被夾成最短的 4 週）。 */
+          /* 取樣密度跟著期間走：日＝每天一點（上限 30，再多在 600px 寬會擠成一片）、
+             週＝每 7 天、月＝每 30 天。點數決定橫軸有幾個日期。 */
+          const spanDays = start ? Math.max(1, PROG.diffDays(PROG.today(), start)) : 56;
+          const stepOf = { day: 1, week: 7, month: 30 };
+          const step = stepOf[ovBackerRange] || 7;
+          const wk = Math.max(3, Math.min(30, Math.round(spanDays / step)));
+          const colorOf = i => 'var(--chart-' + ((i % 5) + 1) + ')';
+          return {
+            label: T('pd-ov.kpi.backers', 'Backers'),
+            value: f.backers,
+            /* 走勢資料（2026-08-31 二版）：改餵 linechart 共用產生器（與活動詳情售票趨勢
+               同一支）。多條線共用同一個 max，疊起來的高低才可比。
+               線色直接給 --chart-N，與同一張卡的圖例色點對齊——同一個方案在線上與
+               色點上是同一個顏色，不必各記一次；總數那條走中性灰，它是背景參照不是主角。
+               **不畫面積**：多條線各自填底會互相蓋住，而 .linechart__area 是主色調的，
+               疊在中性灰的總數線下會讀成「橘色那條才是主線」。
+               橫軸寫真的日期（使用者裁示「時間也是要寫上去不是寫開始和現在」）：
+               從 fundFrom 起算、每個取樣點一個日期，格式 M/D。 */
+            spark: (() => {
+              const pts = wk + 1;
+              const labels = [];
+              if (start) {
+                const stepDays = Math.max(1, Math.round(spanDays / wk));
+                for (let i = 0; i < pts; i++) {
+                  const dte = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i * stepDays);
+                  labels.push((dte.getMonth() + 1) + '/' + dte.getDate());
+                }
+              }
+              return {
+                max: total || 1,
+                labels: labels,
+                /* 選了某個方案就只留「總數 ＋ 那一條」（2026-08-31）：全部疊著時
+                   看的是彼此的高低，選一條時看的是它自己的形狀，總數留著當比例尺。 */
+                series: [{ values: backerCurve(total, pts), color: 'var(--muted-foreground)' }].concat(
+                  split
+                    .map((r, i) => ({ key: r.b.id || r.b.name, values: backerCurve(r.count, pts),
+                                      color: 'var(--chart-' + ((i % 5) + 1) + ')' }))
+                    .filter(x => !ovBackerSeries || x.key === ovBackerSeries))
+              };
+            })(),
+            legend: split.map((r, i) => ({
+              key: r.b.id || r.b.name,
+              name: r.b.name || T('pd-bundle.untitled', 'Untitled plan'),
+              color: colorOf(i), amt: r.count.toLocaleString('en-US'),
+              pct: total ? Math.round(r.count / total * 100) + '%' : ''
+            }))
+          };
+        }
         case 'left':
           /* 收單期間掛在這一格底下當小字（2026-08-18 使用者裁決）：「還有幾天」與
              「哪一段期間」是同一件事的兩種說法，分成兩列會讓人以為是兩個數字。
              原本它住在「支持者摘要」那張卡，那張卡本輪改成項目摘要。 */
-          return daysLeftOf() ? { label: T('pd-ov.kpi.left', 'Days left'), value: daysLeftOf(),
-            of: ' ' + T('pd-ov.kpi.days', 'days'), meta: campaignWindow() } : null;
+          /* 2026-08-31 使用者裁示：補一條「開始到結束」的時間進度條。
+             已過的比例＝(今天 − 起始) ÷ (今天 − 起始 + 剩餘天數)——結束日不是獨立欄位，
+             由剩餘天數反推，與這一格顯示的數字必然一致。 */
+          if (!daysLeftOf()) return null;
+          return { label: T('pd-ov.kpi.left', 'Days left'), value: daysLeftOf(),
+            of: ' ' + T('pd-ov.kpi.days', 'days'), meta: campaignWindow(),
+            pct: (() => {
+              const st = ymd(proj.fundFrom);
+              const left = parseInt(String(daysLeftOf()).replace(/[^0-9]/g, ''), 10);
+              if (!st || !(left >= 0)) return null;
+              const gone = PROG.diffDays(PROG.today(), st);   /* diffDays 是 a − b，方向不能反 */
+              const span = gone + left;
+              return span > 0 ? Math.round(gone / span * 100) : null;
+            })() };
         /* 2026-08-18 撤除（墓碑）：case 'plans'（支持方案數）。同日稍早才由「支持者摘要」
            搬上 KPI 列，當天下午總覽長出「方案摘要」那張卡之後即撤除——那張卡把三個方案
            連名稱與價格一起列出來，數量用看的就知道，再給一格「3」是同一件事講兩遍。
@@ -2328,17 +2588,184 @@ window.ztorPdLookup = (function () {
       if (kbox) {
         const tiles = (cfg.kpis || []).map(kpi).filter(Boolean);
         kbox.hidden = !tiles.length;
-        /* 一列放得下幾格：2 格各半、3 格各三分之一、4 格各四分之一（2026-08-18 補 4 格，
-           因為支持方案數搬進這一列）。 */
-        const span = tiles.length === 2 ? 6 : (tiles.length >= 4 ? 3 : 4);
-        kbox.innerHTML = tiles.map(t =>
-          '<div class="kpi bento--span-' + span + '">' +
+        /* 2026-08-31 撤除（墓碑）：bento 的 span 計算。這一欄已於同日改成
+           「沒有圖的兩個一排（.detail-overview__kpi-row）＋ 有圖的自成一張 chart-card」，
+           欄寬由那個 grid 自己決定，不再吃 bento 的 12 欄軌道。 */
+        /* 進度條有兩種形狀（2026-08-31）：帶 segs 的用 .stacked-bar 依方案切分，
+           其餘沿用單色的 .project-bar。兩者都吃同一個 pct 語意（佔目標／期間的百分比）。 */
+        const barHTML = t => {
+          if (t.segs && t.segs.length) {
+            const used = t.segs.reduce((a, x) => a + x.pct, 0);
+            return '<div class="stacked-bar">' +
+              t.segs.map(x => '<div class="stacked-bar__seg" style="width:' + Math.max(0, x.pct).toFixed(2) +
+                '%;background:' + x.color + '" title="' + esc(x.name + ' · ' + x.count.toLocaleString('en-US')) + '"></div>').join('') +
+              '<div class="stacked-bar__seg" style="width:' + Math.max(0, 100 - used).toFixed(2) + '%;background:transparent"></div>' +
+            '</div>';
+          }
+          return t.pct != null
+            ? '<div class="project-bar"><div class="project-bar__fill" style="width:' + Math.max(0, Math.min(100, t.pct)) + '%"></div></div>'
+            : '';
+        };
+        /* 圖例（2026-08-31）：用 chart.css 的 .source-list／.source-row，與儀表板的
+           收入來源圖例同一支——色點 ＋ 名稱 ＋ 數字。只在支持者那一格出現。 */
+        const legendHTML = t => {
+          if (!t.legend || !t.legend.length) return '';
+          return '<div class="source-list kpi__legend">' + t.legend.map(g =>
+            '<div class="source-row">' +
+              '<span class="source-row__swatch" style="background:' + g.color + '"></span>' +
+              '<span>' + esc(g.name) + '</span>' +
+              '<span class="source-row__amt">' + esc(g.amt) + '</span>' +
+              (g.pct ? '<span class="source-row__pct">' + esc(g.pct) + '</span>' : '') +
+            '</div>').join('') + '</div>';
+        };
+        const SPARK = (window.ZtorComponents && window.ZtorComponents.sparkBlock)
+          || (sk => sparkMini(sk.values, sk.h));
+        /* 帶走勢圖的那一格改用 chart-card 外殼（2026-08-31 使用者：「用活動詳情的售票趨勢」）。
+           那張圖在活動詳情是 `.card.chart-card`＋標題群＋繪圖區，不是一格 KPI——
+           它要回答的是「走勢長什麼樣」，需要整欄的寬度與一個自己的標題。
+           其餘沒有圖的格子維持 KPI 磚，兩個一排（使用者：「兩個放第一行並排」）。
+           判準用 `t.spark` 而不是寫死 'backers'：日後哪一格長出走勢圖就自動適用。 */
+        /* 圖例＝篩選 chips（2026-08-31 使用者：「換成截圖的設計，不需要數字」）。
+           沿用收益走勢那組 `.filter-tabs--source`：每一顆用 inline `--dot` 帶自己的顏色，
+           選中時整顆吃那個色（見 filter-tabs.css §--source）。不放數字——數字在底下的
+           「方案統計」那一段有完整的四欄，這裡只回答「哪個顏色是誰、現在在看哪一條」。 */
+        const chipsHTML = t => {
+          if (!t.legend || !t.legend.length) return '';
+          const chip = (key, name, color, on) =>
+            '<button class="filter-tabs__item' + (on ? ' filter-tabs__item--active' : '') + '" type="button"' +
+              ' role="tab" aria-selected="' + (on ? 'true' : 'false') + '" style="--dot:' + color + '"' +
+              ' data-ov-series="' + esc(key) + '">' +
+              (key ? '<span class="filter-tabs__dot" aria-hidden="true"></span>' : '') +
+              '<span>' + esc(name) + '</span></button>';
+          return '<nav class="filter-tabs filter-tabs--source mt-16" role="tablist"' +
+            ' aria-label="' + esc(T('pd-ov.kpi.bk-split', 'Backers by plan')) + '">' +
+            chip('', T('pd-ov.kpi.bk-all', 'All plans'), 'var(--primary)', !ovBackerSeries) +
+            t.legend.map(g => chip(g.key, g.name, g.color, ovBackerSeries === g.key)).join('') +
+          '</nav>';
+        };
+        const chartTile = t => {
+          const LC = window.ZtorLinechart;
+          const fmt = v => Number(v || 0).toLocaleString('en-US');
+          const sp = t.spark || {};
+          const max = sp.max || 1;
+          const yAxis = LC ? '<div class="linechart__y-axis">' + LC.yTicksHTML(max, fmt) + '</div>' : '';
+          const xLabels = '<div class="linechart__labels linechart__labels--sparse">' +
+            (sp.labels || []).map(x => '<span>' + esc(x) + '</span>').join('') + '</div>';
+          const line = LC ? '<div class="linechart linechart--axes mt-16">' + yAxis +
+              '<div class="linechart__main">' +
+                '<svg class="linechart__svg" viewBox="0 0 600 180" preserveAspectRatio="none" aria-hidden="true">' +
+                  LC.gridHTML() + LC.seriesHTML(sp.series || [], max) +
+                '</svg>' + xLabels +
+              '</div></div>' : '';
+          /* 長條檢視：同一組資料的另一種畫法（切換由卡片的 data-chart-view 控制，
+             規則在 chart.css）。多條線疊著時長條會互相遮住，所以長條只畫「現在選的那一條」
+             ——選了方案就是它，選「全部方案」就是總數那條。外層沿用 .barchart-wrap，
+             它借 linechart 的兩欄版面讓縱軸對齊，不必再排一次。 */
+          const barVals = (sp.series && sp.series.length)
+            ? (sp.series.length > 1 ? sp.series[0].values : sp.series[0].values) : [];
+          const barColor = (sp.series && sp.series.length > 1) ? sp.series[0].color : (sp.series[0] && sp.series[0].color);
+          const bars = '<div class="linechart linechart--axes barchart-wrap mt-16">' + yAxis +
+            '<div class="linechart__main"><div class="barchart">' +
+              barVals.map((v, i2) => '<div class="barchart__bar" style="height:' +
+                Math.max(3, Math.round(v / max * 100)) + '%;background:' + barColor + '" title="' +
+                esc((sp.labels || [])[i2] || '') + ' · ' + fmt(v) + '"></div>').join('') +
+            '</div>' + xLabels + '</div></div>';
+          /* 期間切換放卡頭右側、檢視切換放卡底右側——與收入趨勢／售票趨勢同一個位置。 */
+          const RANGES = [['day', 'pd-ov.kpi.range-day', 'Day'], ['week', 'pd-ov.kpi.range-week', 'Week'], ['month', 'pd-ov.kpi.range-month', 'Month']];
+          return '<section class="card chart-card" data-chart-view="' + ovBackerView + '">' +
+            '<div class="chart-card__head">' +
+              '<div>' +
+                '<div class="kpi__label">' + esc(t.label) + '</div>' +
+                '<div class="kpi__value-row"><div class="kpi__value">' + esc(t.value) + '</div></div>' +
+              '</div>' +
+              '<div class="chart-card__controls"><div class="segmented" role="tablist" data-ov-range>' +
+                RANGES.map(r => '<button class="segmented__item' + (ovBackerRange === r[0] ? ' segmented__item--active' : '') +
+                  '" type="button" role="tab" aria-selected="' + (ovBackerRange === r[0] ? 'true' : 'false') +
+                  '" data-ov-range-set="' + r[0] + '">' + esc(T(r[1], r[2])) + '</button>').join('') +
+              '</div></div>' +
+            '</div>' +
+            '<div class="chart-card__body">' + chipsHTML(t) + line + bars + '</div>' +
+            '<div class="chart-card__foot">' +
+              '<span>' + esc(T('pd-ov.kpi.bk-foot', 'Cumulative backers since launch')) + '</span>' +
+              '<div class="chart-card__foot-actions" data-ov-view>' +
+                '<button class="segmented__item' + (ovBackerView === 'line' ? ' segmented__item--active' : '') + '" type="button" data-ov-view-set="line" aria-label="Line chart" title="Line chart"><i data-lucide="chart-line" class="ztor-icon" style="width:14px;height:14px"></i></button>' +
+                '<button class="segmented__item' + (ovBackerView === 'bar' ? ' segmented__item--active' : '') + '" type="button" data-ov-view-set="bar" aria-label="Bar chart" title="Bar chart"><i data-lucide="chart-column" class="ztor-icon" style="width:14px;height:14px"></i></button>' +
+              '</div>' +
+            '</div>' +
+          '</section>';
+        };
+        const plainTile = t =>
+          '<div class="kpi">' +
             '<div class="kpi__label">' + esc(t.label) + '</div>' +
-            '<div class="kpi__value">' + esc(t.value) + (t.of ? '<span class="stat__of">' + esc(t.of) + '</span>' : '') + '</div>' +
-            (t.pct != null ? '<div class="project-bar"><div class="project-bar__fill" style="width:' + Math.max(0, Math.min(100, t.pct)) + '%"></div></div>' : '') +
-            (t.meta ? '<div class="kpi__meta">' + esc(t.meta) + '</div>' : '') +
-          '</div>').join('') +
-          '';   /* kpiNote 於 2026-08-18 撤除，見 stage() 的墓碑 */
+            /* 數字包在 .kpi__value-row 裡：與儀表板的 KPI 同一個骨架（2026-08-31
+               使用者裁示「有同樣的元件就用一樣的」），之後要加成長膠囊也接得上。 */
+            '<div class="kpi__value-row"><div class="kpi__value">' + esc(t.value) +
+              (t.of ? '<span class="stat__of">' + esc(t.of) + '</span>' : '') + '</div>' +
+              /* 註腳（目標、收單期間）跟著金額那一行走、靠右（2026-08-31 使用者裁示）：
+                 它是在說明左邊那個數字，放卡底會被長條與圖例隔開、離得最遠。 */
+              (t.meta ? '<div class="kpi__meta">' + esc(t.meta) + '</div>' : '') + '</div>' +
+            /* 順序：條／圖 → 圖例 → 註腳。圖例緊貼著它在解釋的那條長條（參考圖也是這個順序），
+               kpi__meta 是整格的註腳（目標、期間），留在最後。 */
+            barHTML(t) +
+            (t.spark ? SPARK(t.spark) : '') +
+          '</div>';
+        const withChart = tiles.filter(t => t.spark);
+        const plain = tiles.filter(t => !t.spark);
+        /* 方案統計（2026-08-31 使用者裁示「把這些拆開，在下面多新增一個 section」）：
+           已募那條長條底下的圖例拆出來自成一段。理由是它已經不只是圖例——一列有
+           方案名、人數、金額、佔比四件事，塞在 KPI 磚裡每一欄都只剩幾十像素。
+           拆出來之後那格回到「一個數字＋一條長條」的本分，明細有自己的地方可以展開。
+           走勢卡的圖例**不拆**：那是在說明四條線各是誰，離開圖就沒有意義。
+           色點沿用同一組 --chart-N，與長條分段、走勢線三處同色。 */
+        const splitSection = () => {
+          const rows = planSplit();
+          const raised = moneyNum((proj.fund && proj.fund.raised) || 0);
+          if (!rows.length || !raised) return '';
+          return '<section class="card">' +
+            '<div class="card__head"><h3 class="card__title" data-i18n="pd-ov.plansplit.title">' +
+              esc(T('pd-ov.plansplit.title', 'Plan breakdown')) + '</h3></div>' +
+            /* 欄位（2026-08-31 使用者補充「包含各方案的售出數量、累積金額」）：
+               方案／售出／累積金額／佔比。多一個數字欄就得多一條軌道，
+               所以用 `.source-list--stats`（chart.css）而不是塞進名稱那一欄。 */
+            /* 2026-08-31 二版（使用者：「要有百分比條 總金額的比例」）：改用 `.rank-bars`
+               ——站上「每一類各自一列、而且要看得到比例」的既有答案（chart.css §6）。
+               長度按「佔最大那一列的比例」算（元件自己的算法：row ÷ max × 100），
+               所以最長的那條永遠滿格、彼此的長短才比得出來；右邊那欄仍寫「佔總金額的百分比」，
+               兩個問題各有各的欄位，不混在同一個數字裡。
+               色點沿用同一組 --chart-N，與長條分段、走勢線三處同色。 */
+            '<ul class="rank-bars">' +
+              '<li class="rank-bar rank-bar--stats rank-bar--head">' +
+                '<div class="rank-bar__track"><div class="rank-bar__content">' +
+                  '<span class="rank-bar__label" data-i18n="pd-ov.plansplit.col-plan">' + esc(T('pd-ov.plansplit.col-plan', 'Plan')) + '</span>' +
+                '</div></div>' +
+                '<span class="rank-bar__amt" data-i18n="pd-ov.plansplit.col-sold">' + esc(T('pd-ov.plansplit.col-sold', 'Sold')) + '</span>' +
+                '<span class="rank-bar__amt" data-i18n="pd-ov.plansplit.col-amount">' + esc(T('pd-ov.plansplit.col-amount', 'Raised')) + '</span>' +
+                '<span class="rank-bar__pct" data-i18n="pd-ov.plansplit.col-share">' + esc(T('pd-ov.plansplit.col-share', 'Share')) + '</span>' +
+              '</li>' +
+              (() => {
+                const top = Math.max.apply(null, rows.map(r => r.amount)) || 1;
+                return rows.map((r, i2) =>
+                  '<li class="rank-bar rank-bar--stats">' +
+                    '<div class="rank-bar__track">' +
+                      '<div class="rank-bar__fill" style="width:' + Math.max(2, Math.round(r.amount / top * 100)) + '%"></div>' +
+                      '<div class="rank-bar__content">' +
+                        '<span class="rank-bar__dot" style="background:var(--chart-' + ((i2 % 5) + 1) + ')"></span>' +
+                        '<span class="rank-bar__label">' + esc(r.b.name || T('pd-bundle.untitled', 'Untitled plan')) + '</span>' +
+                      '</div>' +
+                    '</div>' +
+                    '<span class="rank-bar__amt">' + r.count.toLocaleString('en-US') + '</span>' +
+                    '<span class="rank-bar__amt">$' + Math.round(r.amount).toLocaleString('en-US') + '</span>' +
+                    '<span class="rank-bar__pct">' + Math.round(r.amount / raised * 100) + '%</span>' +
+                  '</li>').join('');
+              })() +
+            '</ul>' +
+          '</section>';
+        };
+        kbox.innerHTML =
+          (plain.length ? '<div class="detail-overview__kpi-row">' + plain.map(plainTile).join('') + '</div>' : '') +
+          withChart.map(chartTile).join('') +
+          splitSection();
+        icons(kbox);   /* chart-card 的標題圖示是 <i data-lucide>，要重畫一次 */
       }
 
       /* ── ② 作品卡（追蹤條 ＋ 送審件面板）─────────────────────────────── */
@@ -2407,22 +2834,28 @@ window.ztorPdLookup = (function () {
       };
       setNext('pd-ov-work-next', 'pd-ov-work-next-text', 'pd-ov-work-next-act', inOwner && n.owner === 'work');
       setNext('pd-ov-panel-next', 'pd-ov-panel-next-text', 'pd-ov-panel-next-act', inOwner && n.owner === 'panel');
-      const nextCard = document.getElementById('pd-ov-next');
-      if (nextCard) {
-        const standalone = !!n && !inOwner;
-        nextCard.hidden = !standalone;
-        if (standalone) {
-          document.getElementById('pd-ov-next-text').textContent = n.text || '';
-          const act = document.getElementById('pd-ov-next-act');
-          act.innerHTML = nextActHTML(n);
-          icons(act);
-        }
-      }
+      /* 2026-09-01：#pd-ov-next 撤除，這裡原本那段渲染一併移除。
+         有歸屬的下一步仍由上面的 setNext() 畫在作品卡與狀態卡上。 */
 
       /* ── ⑤ 進度摘要 ──────────────────────────────────────────────────── */
       const progCard = document.getElementById('pd-ov-progress');
       if (progCard) {
         progCard.hidden = !cfg.progress;
+        /* 發文入口與進度摘要同進退：兩者的前提一樣（這個項目有里程碑要交代）。
+           不給的情況（直接發佈、已取消）連同這一塊一起收掉，否則會留下一個
+           點了沒有東西可發的入口。 */
+        const ovPostWrap = document.getElementById('pd-ov-post-wrap');
+        if (ovPostWrap) ovPostWrap.hidden = !cfg.progress;
+
+        /* 右欄可能整欄沒東西（2026-08-31：項目摘要與方案摘要都撤除之後，那一欄只剩
+           條件顯示的「下一步」與「通知粉絲」）。空著不收的話，中欄會被壓在 5fr、
+           右邊留一大塊白。這裡實測有沒有看得見的子層，沒有就讓版面收成兩欄。 */
+        const ovGrid = document.querySelector('.detail-overview');
+        const ovAside = document.querySelector('.detail-overview__col--sticky');
+        if (ovGrid && ovAside) {
+          const alive = [...ovAside.children].some(el => !el.hidden);
+          ovGrid.classList.toggle('detail-overview--2col', !alive);
+        }
         if (cfg.progress && PROG) {
           const T0 = PROG.today();
           const sum = PROG.summary(proj);
@@ -2544,6 +2977,20 @@ window.ztorPdLookup = (function () {
           }
           if (postBtn) postBtn.hidden = !isLive;
           document.getElementById('pd-ov-progress-list').innerHTML = rows.join('');
+          /* 發文入口這一塊跟著進度摘要一起在／不在（兩者的前提相同：這個項目有里程碑要交代）。
+             發文框本身是活的 DOM、每次重繪都會被 renderTimeline() 收回時間軸——它不在旁邊時
+             收合的那一行就要回來，否則入口會消失。 */
+          const ovc = document.querySelector('[data-pd-ov-composer]');
+          if (ovc) {
+            const c = document.getElementById('pd-composer');
+            const here = c && ovc.nextElementSibling === c;
+            const open = here && c.classList.contains('is-open');
+            /* 展開中才把自己這一行讓出來；發文框收合了（送出或取消）就換回這一行，
+               免得卡上出現兩個問法不同的空輸入框。收合的它由下一次 renderTimeline()
+               收回時間軸，這裡先藏起來。 */
+            ovc.hidden = open;
+            if (here && !open) c.hidden = true;
+          }
           icons(progCard);
 
         }
@@ -2553,31 +3000,6 @@ window.ztorPdLookup = (function () {
          方案抽成獨立分頁之後，總覽要看得到「現在賣的是哪幾個方案、多少錢」。
          只列名稱與價格：件數／名額／權益留在方案分頁——這裡回答「有哪幾個」，
          那裡才回答「每一個包含什麼」。價格讀方案編輯器算好的那一份，不自己再算。 */
-      const plCard = document.getElementById('pd-ov-plans');
-      if (plCard) {
-        const BD = window.ztorPdBundles;
-        const list = BD ? BD.getBundles() : [];
-        plCard.hidden = !cfg.backers || !list.length;
-        if (!plCard.hidden) {
-          /* 縮圖取這張方案的第一件商品（2026-08-18 使用者裁決「需要有方案圖片」）：
-             方案本身沒有自己的圖，它是一組商品的組合；第一件就是卡片上排最前面那一件，
-             跟方案分頁看到的順序一致。沒有商品時留一格空底，列的基線才不會跳。 */
-          document.getElementById('pd-ov-plans-list').innerHTML = list.map(b => {
-            const img = (b.items && b.items[0] && b.items[0].img) || '';
-            const thumb = img
-              ? '<img class="data-list__thumb" src="' + esc(img) + '" alt="" loading="lazy">'
-              : '<span class="data-list__thumb"></span>';
-            return '<div class="data-list__row"><div class="data-list__row-main">' + thumb +
-              '<div class="data-list__body"><div class="data-list__title">' +
-              esc(b.name || T('pd-bundle.untitled', 'Untitled plan')) + '</div>' +
-              /* 第二行寫這張方案裝了什麼（2026-08-18 使用者裁決）：只有名稱與價格時，
-                 三張方案看起來只差在數字；讀同一支 summaryMeta，與方案分頁卡片上那行一致。 */
-              '<div class="data-list__meta">' + esc(BD.summaryMeta(b)) + '</div></div>' +
-            '</div><span class="data-list__amount">' + esc(BD.money(BD.finalPrice(b))) + '</span></div>';
-          }).join('');
-        }
-      }
-
       /* ── ⑥ 項目摘要（2026-08-18 取代「支持者摘要」）────────────────────
          這張卡回答「這是什麼項目」，不回答「現在怎麼樣」——後者由上面那列 KPI 與
          進度摘要講完。四筆識別事實在每一種發行模式、每一個狀態都存在，所以不會空格；
@@ -2585,33 +3007,9 @@ window.ztorPdLookup = (function () {
          原本的「支持方案數」與「收單期間」搬進上面那列 KPI，不在這裡重複。 */
       /* 發行模式的字樣與清單那邊同一份（projects.mode.*），不在這裡另寫。 */
       const MODE_KEY = { fund: 'projects.mode.fund', preorder: 'projects.mode.preorder', 'go-live': 'projects.mode.golive' };
-      const bkCard = document.getElementById('pd-ov-backers');
-      if (bkCard) {
-        bkCard.hidden = !cfg.backers;
-        if (cfg.backers) {
-          const store = window.ztorProjects;
-          document.getElementById('pd-ov-backers-title').textContent = T('pd-ov.about.title', 'About this project');
-          document.getElementById('pd-ov-backers-go').textContent = T('pd-ov.about.go', 'Project settings');
-          const rows = [
-            ['user', T('pd-hero.owner', 'Creator'), store ? store.owner() : '—'],
-            [proj.icon || 'file', T('pd-hero.cat', 'Content type'), store ? L(store.catLabel(proj.cat)) : '—'],
-            ['rocket', T('pd-ov.about.mode', 'Release mode'), T(MODE_KEY[proj.type] || 'projects.mode.fund', '')],
-            ['calendar', T('pd-hero.created', 'Created'), proj.created || '—']
-          ];
-          /* 標籤在上、值在下（2026-08-18 使用者兩輪裁決）：先把值做成白色大字、標籤做成
-             帶圖示的小字，同日再裁示「標籤放第一行」。順序回到「先說這是什麼、再給值」，
-             但主從仍由字級與顏色分——值 15px 白、標籤 12px 灰。圖示跟著標籤那一行走、
-             與文字同高，不用左邊那個 32px 的框：值是主行之後，那個框會變成一列裡最重的
-             東西，而它只是在說這一列是什麼類別。 */
-          document.getElementById('pd-ov-backers-list').innerHTML = rows.map(r =>
-            '<div class="data-list__row data-list__row--fact"><div class="data-list__row-main">' +
-              '<div class="data-list__body">' +
-                '<div class="data-list__meta"><i data-lucide="' + r[0] + '" class="ztor-icon"></i>' + esc(r[1]) + '</div>' +
-                '<div class="data-list__title">' + esc(r[2]) + '</div>' +
-              '</div></div></div>').join('');
-          icons(bkCard);
-        }
-      }
+      /* 2026-08-31：#pd-ov-backers（項目摘要）已撤除，這裡原本那段渲染一併移除。
+         四筆識別事實的去處：發行模式→麵包屑第一節、內容類型→麵包屑第二節、
+         創作者與建立日期→ hero 的識別列（見 renderHero 附近的 #pd-hero-meta）。 */
     }
 
     /* 送審件面板的內容（總覽用；共創與預購的同一份資料畫在時間軸的完成作品節點上）。 */
@@ -3338,6 +3736,8 @@ window.ztorPdLookup = (function () {
       if (composer && slot) {
         slot.appendChild(composer);
         composer.hidden = false;
+        /* 回到時間軸＝回到有位置訊號的落點，里程碑下拉跟著收起來。 */
+        composerHost = 'timeline';
         syncComposer();
       }
       icons(host);
@@ -3461,6 +3861,9 @@ window.ztorPdLookup = (function () {
     /* 發文框落在哪一格（由 renderTimeline 寫入）。位置本身就是發文類型的預設值，
        掛哪一顆里程碑也由它決定——D197：不再問第二次。 */
     let composerCtx = { at: 'today', msId: '' };
+    /* 發文框現在坐在哪一個落點。時間軸的落點自帶位置訊號（類型與里程碑都由位置回答）；
+       總覽的落點沒有位置，所以要把里程碑下拉打開讓人自己選。 */
+    let composerHost = 'timeline';
 
     function syncComposer() {
       if (!cKind || !cMs || !proj || !PROG) return;
@@ -3491,11 +3894,17 @@ window.ztorPdLookup = (function () {
       /* 掛載不再是一個要回答的問題：位置已經回答了它。這個 select 不出現在畫面上，
          只是給送出邏輯一個單一的值可以讀。 */
       cMsSyncing = true;
+      /* 選項帶名字（2026-08-31）：總覽的落點會把這個下拉顯示出來，沒有名字就選不了。
+         時間軸的落點仍然收著它，多帶字串不影響。只列還沒完成的——已完成的不能再完成一次。 */
+      const msPick = PROG.milestones(proj).filter(m => m.status !== 'done');
       cMs.innerHTML =
-        PROG.milestones(proj).map(m => '<option value="' + m.id + '"></option>').join('') +
+        msPick.map(m => '<option value="' + m.id + '">' + esc(L(m.name)) + '</option>').join('') +
         '<option value=""></option>';
       cMs.value = kind === 'milestone' ? composerCtx.msId : '';
       cMsSyncing = false;
+      /* 沒有位置訊號的落點（總覽）才問這一題。 */
+      const msSlot = document.querySelector('[data-ptl-ms-slot]');
+      if (msSlot) msSlot.hidden = !(composerHost === 'overview' && kind === 'milestone');
 
       /* 標題只有一般更新貼文才有（D197）。 */
       const tf = document.querySelector('[data-ptl-title-field]');
@@ -3523,6 +3932,75 @@ window.ztorPdLookup = (function () {
       c.classList.add('is-open');
       const t = document.getElementById('pd-c-title');
       if (t) t.focus();
+    });
+
+    /* 總覽「進度摘要」上方的發文入口（2026-08-31 使用者裁示）。點下去不是開另一份表單，
+       是把 §2.2.10 那個活的發文框搬進這張卡再展開——欄位、夾帶、送出全部沿用同一份實作。
+       類型與「要完成哪一顆里程碑」由 renderTimeline() 算好的 composerCtx 提供，跟時間軸上
+       「接下來要交代的那一件事」是同一顆，兩個入口不會給出不同的預設值。
+       送出後 renderAll() 會把發文框搬回時間軸，收合那一行由 renderStage() 放回來。 */
+    document.addEventListener('click', e => {
+      if (!e.target.closest('[data-pd-ov-composer-open]')) return;
+      const slot = document.querySelector('[data-pd-ov-composer]');
+      const c = document.getElementById('pd-composer');
+      if (!slot || !c) return;
+      slot.insertAdjacentElement('afterend', c);
+      c.hidden = false;
+      c.classList.add('is-open');
+      slot.hidden = true;
+      composerHost = 'overview';
+      syncComposer();
+      const t = document.getElementById('pd-c-title');
+      if (t && !t.closest('[hidden]')) t.focus();
+    });
+
+    /* 期間切換（日／週／月）：重畫，取樣密度與橫軸日期跟著變。 */
+    document.addEventListener('click', e => {
+      const b = e.target.closest('[data-ov-range-set]');
+      if (!b) return;
+      ovBackerRange = b.getAttribute('data-ov-range-set');
+      renderStage();
+    });
+
+    /* 折線／長條切換：只換卡片的 data-chart-view，顯隱規則在 chart.css。
+       不重畫——兩種畫法的 markup 本來就都在卡上，重畫會把期間與篩選的狀態也重跑一次。
+       js/chart.js 那支只在 DOMContentLoaded 掃一次 .chart-card，而這張卡是渲染出來的，
+       它掃不到，所以這裡自己接。 */
+    document.addEventListener('click', e => {
+      const b = e.target.closest('[data-ov-view-set]');
+      if (!b) return;
+      const card = b.closest('.chart-card');
+      if (!card) return;
+      ovBackerView = b.getAttribute('data-ov-view-set');
+      card.setAttribute('data-chart-view', ovBackerView);
+      b.parentNode.querySelectorAll('[data-ov-view-set]').forEach(x =>
+        x.classList.toggle('segmented__item--active', x === b));
+    });
+
+    /* 走勢圖的圖例＝篩選（2026-08-31）：點一顆只留「總數 ＋ 那一條」，點「全部」還原。 */
+    document.addEventListener('click', e => {
+      const b = e.target.closest('[data-ov-series]');
+      if (!b) return;
+      ovBackerSeries = b.getAttribute('data-ov-series') || '';
+      renderStage();
+    });
+
+    /* 換分頁時把發文框還給時間軸（2026-08-31）。分頁切換不重繪，所以不主動還的話，
+       從總覽展開過一次之後，進度分頁的發文框就永遠被搬走了——那一格會變成空的。
+       順手收合並把總覽那一行放回來：離開再回來本來就該回到收合態。
+       欄位裡打到一半的字跟著元素走、不清空（沿用 2026-08-17「只開不關」的裁決）。 */
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.section-nav__item, [data-goto-tab]')) return;
+      const c = document.getElementById('pd-composer');
+      const slot = document.querySelector('[data-ptl-composer-slot]');
+      if (!c || !slot || slot.contains(c)) return;
+      c.classList.remove('is-open');
+      slot.appendChild(c);
+      c.hidden = false;
+      composerHost = 'timeline';
+      syncComposer();
+      const ovc = document.querySelector('[data-pd-ov-composer]');
+      if (ovc) ovc.hidden = false;
     });
 
     /* 夾帶：一則貼文只能一種（2026-08-18 使用者裁決）。按下長出那一種的上傳框、
@@ -3584,8 +4062,11 @@ window.ztorPdLookup = (function () {
         milestoneId: cMs ? cMs.value : ''
       });
       /* 發里程碑的文＝完成那顆里程碑（D197）：那段短文就是它的完成宣告。 */
-      if (cKind && cKind.value === 'milestone' && composerCtx.msId) {
-        PROG.patchMilestone(proj, composerCtx.msId, { status: 'done' });
+      /* 完成哪一顆：總覽的落點可以自己選（下拉），時間軸的落點由位置決定。
+         優先讀下拉的值，空的才退回位置給的那一顆。 */
+      const doneMsId = (cMs && cMs.value) || composerCtx.msId;
+      if (cKind && cKind.value === 'milestone' && doneMsId) {
+        PROG.patchMilestone(proj, doneMsId, { status: 'done' });
         renderAll();
       }
       attachReset();
@@ -4183,7 +4664,11 @@ window.ztorPdLookup = (function () {
        observer 掛這種內層捲動容器時觸發時機不穩（實測捲過頭了仍回報 isIntersecting）。
        門檻取 hero 自己的高度，版面改了也不用回頭改數字。 */
     (function () {
-      const scroller = document.querySelector('main.main');
+      /* 2026-08-31：內嵌模式（detail-sheet 浮層）的捲軸在 <body>、不在 main.main
+         （見 shared.css「內嵌模式」把捲動改回單層）。掛錯容器 scrollTop 恆為 0，
+         頂列永遠進不了黏住態——在浮層裡就會看到內容從那一列底下穿出去。 */
+      const embed = document.documentElement.hasAttribute('data-embed');
+      const scroller = embed ? document.scrollingElement : document.querySelector('main.main');
       const bar = document.querySelector('.pd-detail__topbar');
       const hero = document.querySelector('.pd-hero');
       const mini = document.querySelector('[data-pd-mini]');
@@ -4206,7 +4691,7 @@ window.ztorPdLookup = (function () {
           if (name && title) name.textContent = title.textContent;
         }
       }
-      scroller.addEventListener('scroll', sync, { passive: true });
+      (embed ? window : scroller).addEventListener('scroll', sync, { passive: true });
       sync();
     })();
     renderAll();
@@ -4554,7 +5039,35 @@ window.ztorPdLookup = (function () {
          （pd-badge-type：共創／預購／直接發佈）交代，資訊沒有減少。
          各模式的對外字樣在規格仍列為〔產品待確認〕（§7.2），見 ASSUMPTIONS UIA-104。 */
       badge('pd-badge-status', t(STATUS[p.status]), STATUS_TONE[p.status]);
-      badge('pd-badge-type', t(TYPE[p.type]), 'badge--info');
+      /* 2026-08-31：類型徽章撤除，發行模式改寫進麵包屑第一節。i18n key 跟著換
+         （不是只改文字）——applyI18n 換語言時會依 data-i18n 重寫該節點，直接塞字會被洗掉。 */
+      const CRUMB_KEY = { 'go-live': 'project-detail.crumb.projects-golive',
+                          fund: 'project-detail.crumb.projects-fund',
+                          preorder: 'project-detail.crumb.projects-preorder' };
+      const crumbRoot = document.getElementById('pd-crumb-root');
+      if (crumbRoot) {
+        const k = CRUMB_KEY[p.type] || 'project-detail.crumb.projects';
+        /* ⚠ 這個 IIFE 沒有 T(key)（它只有吃 {en,zh} 的 t()）——查 key 要用全域 i18nT。
+           2026-08-31 踩過：寫成 T(k) 會丟 ReferenceError，把整個 render() 中斷在這裡，
+           而麵包屑因為 data-i18n 已經先設好、看起來仍然正確，錯得很安靜。 */
+        crumbRoot.dataset.i18n = k;
+        const label = (window.i18nT && window.i18nT(k)) || 'Projects';
+        crumbRoot.textContent = label;
+      }
+
+      /* hero 的識別列（2026-08-31 使用者裁示「這裡加上建立日期」）：創作者 · 建立於 X。
+         只放這兩筆——內容類型與發行模式已經在麵包屑上，寫在這裡是第二遍。
+         整行由 JS 產生、不掛 data-i18n：它是兩個值串起來的句子，換語言時由這裡重畫，
+         掛 key 反而會被 applyI18n 用單一字串蓋掉。 */
+      const heroMeta = document.getElementById('pd-hero-meta');
+      if (heroMeta) {
+        const store = window.ztorProjects;
+        const bits = [];
+        if (store && store.owner()) bits.push(store.owner());
+        if (p.created) bits.push(t({ en: 'Created ' + p.created, zh: '建立於 ' + p.created }));
+        heroMeta.textContent = bits.join(' · ');
+        heroMeta.hidden = !bits.length;
+      }
 
       /* ── 發布時程（直接發佈專屬，§2.2.4 發布狀態在總覽的落點）─────────────
          2026-08-17：整張卡原本寫死成綠色「Live」＋兩個固定日期，準備中的項目會在

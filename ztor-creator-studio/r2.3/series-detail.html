@@ -563,7 +563,11 @@
     /* 2026-08-18：分頁控制項由 `.tabs__item` 改成 `.section-nav__item`（左側直排）。 */
     /* 頂列黏住之後，麵包屑換成「縮圖＋名稱」（2026-08-18，與項目詳情、活動詳情同一支）。 */
     (function () {
-      const scroller = document.querySelector('main.main');
+      /* 2026-08-31：內嵌模式（detail-sheet 浮層）的捲軸在 <body>、不在 main.main
+         （見 shared.css「內嵌模式」把捲動改回單層）。掛錯容器 scrollTop 恆為 0，
+         頂列永遠進不了黏住態——在浮層裡就會看到內容從那一列底下穿出去。 */
+      const embed = document.documentElement.hasAttribute('data-embed');
+      const scroller = embed ? document.scrollingElement : document.querySelector('main.main');
       const bar = document.querySelector('.detail-topbar');
       const hero = document.querySelector('.page-intro');
       const mini = document.querySelector('[data-sd-mini]');
@@ -587,7 +591,7 @@
           if (name && title) name.textContent = title.textContent.trim();
         }
       }
-      scroller.addEventListener('scroll', sync, { passive: true });
+      (embed ? window : scroller).addEventListener('scroll', sync, { passive: true });
       sync();
     })();
 

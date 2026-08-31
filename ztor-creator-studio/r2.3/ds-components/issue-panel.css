@@ -28,16 +28,16 @@
          .issue-panel__toggle          <button aria-expanded>：標題＋總筆數＋chevron
        .issue-panel__groups[hidden]    分組區（收合時整段收起）
          .issue-group
-           .issue-group__head          模組 icon ＋ 模組名 ＋ 該組筆數
+           .issue-group__head          模組 icon ＋ 模組名
            .issue-group__list
-             .issue-card               事項卡（中性面）
+             .issue-card               事項卡（收合無框；hover 與展開時上薄膜）
                .issue-card__head
-                 .issue-card__toggle   <button aria-expanded>：計數徽章＋標題＋相對時間＋chevron
-                 .issue-card__aside    （選配）暫緩／鎖頭鈕；按鈕不能包按鈕，故與 toggle 並排
+                 .issue-card__toggle   <button aria-expanded>：嚴重度直條＋標題＋相對時間＋chevron
                .issue-card__body[hidden]
+                 .issue-card__affected 一行小標「受影響的項目」
                  .issue-card__details  受影響細項清單（每項左側一條細直線）
-                   .issue-detail
-                 .issue-card__next     下一步一行：標籤＋既有 CTA 連結
+                   .issue-detail       名稱與說明＋自己的動作鈕
+                 .issue-card__foot     （選配）卡底列：暫緩鈕或「無法暫緩」說明
 
    鍵盤：兩層開合都是原生 <button>＋`aria-expanded`，Tab 走得到、Enter／Space 開合，
    focus 樣式走站上的 `--ring`。開合狀態由 JS 寫 `aria-expanded` 與 body 的 `hidden`，
@@ -98,7 +98,11 @@
 
 /* 總筆數：中性膠囊。這顆數字回答「總共幾件」，不回答「有多急」——
    嚴重度是逐則的事，加總起來沒有意義，所以它不染色。 */
-.issue-panel__count { flex: none; }
+/* 筆數已經寫進標題那句話裡，數字這半用等寬數字＋不換行，讓 5 與 12 的字寬一致。 */
+.issue-panel__n {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 
 /* chevron 推到最右：面板的開關與各事項卡的開關因此落在同一條垂直線上。 */
 .issue-panel__chev {
@@ -114,8 +118,26 @@
 .issue-panel__groups {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-20);
+  /* 28px 而不是 20：模組名不再是全大寫小標、與卡片標題同級之後，20px 的間距
+     會讓「上一組的最後一列」與「下一組的標題」讀起來像同一串（2026-08-31）。 */
+  gap: var(--sp-28);
   margin-top: var(--sp-20);
+}
+
+/* hover 面掛在整個群組上，不是單一張卡（2026-08-31 使用者裁示）：一組＝一個模組
+   底下的所有事項，滑過時整塊一起亮，讀者知道自己現在在哪個模組裡。
+   左右負邊距讓這片底色滿到面板的內容邊，而不是縮在文字寬度裡。 */
+.issue-group {
+  padding: var(--sp-8);
+  margin: 0 calc(var(--sp-8) * -1);
+  border-radius: var(--radius-lg);
+  transition: background-color var(--duration) var(--easing);
+}
+/* 展開態與 hover 共用同一片面：展開的時候該被匡起來的是「這個模組底下正在看的
+   這件事」，不是卡片自己再畫一個內框。兩個框疊在一起會讓人以為那是兩層東西。 */
+.issue-group:hover,
+.issue-group:has(.issue-card__toggle[aria-expanded="true"]) {
+  background: var(--ztu-film);
 }
 .issue-panel__groups[hidden] { display: none; }
 
@@ -123,24 +145,26 @@
   display: flex;
   align-items: center;
   gap: var(--sp-8);
-  margin-bottom: var(--sp-8);
+  margin-bottom: var(--sp-10);
 }
 /* 模組名走全大寫＋字距的標籤語彙（同 card.css 的 `.card__subhead`）：
    它不是第二層標題，是一條「以下這幾件屬於哪裡」的分隔說明。 */
+/* 模組名與卡片標題同字級（--fs-14，2026-08-31 使用者裁示）。同時拿掉全大寫與
+   字距：那是「微標籤」的語彙，字級升到與標題同級之後再全大寫會變成第二個標題在
+   搶第一眼。層次改由顏色承擔——模組名走 muted，事項標題走 foreground。 */
 .issue-group__label {
   font-family: var(--font-ui);
-  font-size: var(--fs-12);
+  font-size: var(--fs-14);
   color: var(--foreground-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 .issue-group__icon {
   display: inline-flex;
   flex: none;
   color: var(--muted-foreground);
 }
-.issue-group__icon .ztor-icon { width: 14px; height: 14px; }
-.issue-group__count { flex: none; }
+/* 16px 而不是跟著標籤走 12px：這顆 icon 是「以下這幾件屬於哪個模組」的識別，
+   全大寫小字旁邊的線性 icon 在視覺上本來就會比同尺寸文字更小一號。 */
+.issue-group__icon .ztor-icon { width: 18px; height: 18px; }
 
 .issue-group__list {
   display: flex;
@@ -149,14 +173,22 @@
 }
 
 /* ── 事項卡 ────────────────────────────────────────────── */
-/* 卡面一律中性（Q77 表面律）：薄膜底＋一條邊界，跟 `.card--muted` 同一組配方，
-   所以它在玻璃面板上讀起來是「疊在面板上的一層」而不是「浮在面板上的第二張卡」。
-   巢狀層不上 backdrop 模糊——再模糊只會取樣到自己的母面，讀不出層次還多耗 GPU。 */
+/* 收合時完全無框：一則事項在收合狀態下只是一列可掃視的文字，畫一個框等於宣告
+   「這是一張卡」，五則就是五張卡疊在面板上，面板自己的邊界反而讀不出來。
+   卡片本身完全不畫框：滑過與展開兩個時刻要的框都由群組那一層畫
+   （見上面 `.issue-group`），卡片只負責內距。
+   兩種狀態都只上薄膜底、不上 backdrop 模糊：巢狀層再模糊只會取樣到自己的母面，
+   讀不出層次還多耗 GPU（Q77 表面律）。 */
 .issue-card {
-  background: var(--ztu-film);
-  border: 1px solid var(--nest-line);
   border-radius: var(--radius-lg);
-  padding: var(--sp-12) var(--sp-14);
+  padding: var(--sp-10) var(--sp-12);
+  transition: background-color var(--duration) var(--easing);
+}
+/* 展開後內距加大：收合時它只是一列字，12px 內距剛好把它托住；展開後裡面有
+   小標、一串細項與各自的動作鈕，同樣的內距會讓內容貼著邊。
+   底色不掛在這裡——展開的框由群組那一層畫（見 `.issue-group`）。 */
+.issue-card:has(.issue-card__toggle[aria-expanded="true"]) {
+  padding: var(--sp-10) var(--sp-12) var(--sp-14);
 }
 /* 已暫緩：整張降階，但不移除——它當下不需要處理，仍要看得到（spec 5.1.1 §F4）。 */
 .issue-card--snoozed { opacity: 0.62; }
@@ -189,15 +221,22 @@
   border-radius: var(--radius-sm);
 }
 
-/* 計數徽章＝這一則牽涉幾個細項，顏色＝嚴重度。染色配方直接沿用 badge.css 的
-   `.badge--error`／`--warning`／`--info`，本檔只補「數字要置中、寬度要對齊」——
-   1 和 3 若各自照文字寬收縮，一整欄徽章的左右邊界會參差不齊。 */
-.issue-card__count {
+/* 嚴重度標記＝這一列唯一的顏色。用一小條直線而不是圓點：站上的圓點已經被
+   「未讀通知」佔走了（側欄通知中心那顆），同一個形狀再拿來講嚴重度，讀者會把
+   「這則很嚴重」讀成「這則還沒看過」。直條沒有那層既有語意，而且與展開後每個
+   細項左緣那條細直線是同一套線的語彙，收合與展開之間讀得下去。
+   3×14 是取捨：細到不與 14px 標題爭第一眼，長到在標題旁邊仍看得見。
+   （前一版是帶數字的徽章，數字＝細項數，跟標題自己寫的數量重複，已於同日移除。） */
+.issue-card__sev {
   flex: none;
-  justify-content: center;
-  min-width: 22px;
-  font-variant-numeric: tabular-nums;
+  width: 3px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--muted-foreground);
 }
+.issue-card__sev--error   { background: var(--status-error); }
+.issue-card__sev--warning { background: var(--status-warning); }
+.issue-card__sev--info    { background: var(--status-info); }
 
 .issue-card__title {
   flex: 1 1 auto;
@@ -227,32 +266,58 @@
   transition: transform var(--duration) var(--easing);
 }
 
-/* 右側的次要動作（暫緩／鎖頭）。與 toggle 並排而不是包在裡面——按鈕不能包按鈕，
-   包了之後讀屏會把整列唸成一顆按鈕，鍵盤也走不到裡面那顆。 */
-.issue-card__aside { flex: none; }
+/* 次要動作已移進展開後的「下一步」那一行（見 components.js issueCard 註解）：
+   收合列只剩資訊，不再有純圖示鈕。 */
 
 /* ── 展開後的內容 ──────────────────────────────────────── */
 .issue-card__body {
-  margin-top: var(--sp-12);
+  margin-top: var(--sp-14);
 }
 .issue-card__body[hidden] { display: none; }
+
+/* 「受影響的項目」：一行小標，說明下面這串是什麼。沒有它，展開後的清單會被
+   讀成「這一則的說明文字」而不是「這一則牽涉到的東西」。 */
+.issue-card__affected {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  margin-bottom: var(--sp-12);
+}
 
 .issue-card__details {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-10);
+  gap: var(--sp-16);
 }
 
 /* 每個細項左側一條細直線：它是「這一則底下的東西」，不是同層的另一則。
    用邊線而不是縮排＋項目符號——符號會多帶一層語意（清單／勾選），
-   而這裡要說的只有從屬關係。 */
+   而這裡要說的只有從屬關係。
+   一列＝左線＋名稱與說明＋自己的動作鈕；鈕靠右且 `flex: none`，名稱可截斷。 */
 .issue-detail {
-  padding-left: var(--sp-12);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-8) var(--sp-12);
+  padding-left: var(--sp-14);
   border-left: 1px solid var(--border);
 }
+/* `min-width` 是折行的門檻，不是裝飾：面板住在 bento 欄裡，寬度跟著版面走而不是
+   跟著視窗走，所以這裡不掛 media query——名稱一旦被壓到 150px 以下，動作鈕自己
+   掉到下一行靠右站，而不是把名稱擠成三行。1440 的面板約 460px，鈕與名稱同列。 */
+.issue-detail__body {
+  flex: 1 1 auto;
+  min-width: 150px;
+}
+.issue-detail__action {
+  flex: none;
+  margin-left: auto;
+}
+/* 名稱升到 14px（與收合列的標題同級）：展開後這幾行才是要讀的內容，
+   壓在 13px 會讀成註腳。 */
 .issue-detail__name {
   font-family: var(--font-ui);
-  font-size: var(--fs-13);
+  font-size: var(--fs-14);
   line-height: var(--lh-comfy);
   color: var(--foreground);
 }
@@ -263,43 +328,24 @@
   color: var(--muted-foreground);
 }
 
-/* 下一步：一行文字標籤＋既有的 CTA 連結。這裡刻意不做成「建議動作」——
-   站上沒有推薦引擎，寫成建議等於憑空多出一個產品功能（見 ASSUMPTIONS ISSUE-001）。
-   它呈現的是這一則本來就帶著的下一步與去處。 */
-.issue-card__next {
+/* 卡底列：只在真的有東西要說時才由渲染器產出——動作已經下放到每個細項，
+   這裡剩下的是「這一則不能暫緩」的說明或那顆暫緩鈕，靠右收尾。
+   刻意不放「建議動作」：站上沒有推薦引擎，寫成建議等於憑空多出一個產品功能
+   （見 ASSUMPTIONS ISSUE-001）。 */
+.issue-card__foot {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--sp-8);
-  margin-top: var(--sp-12);
-  padding-top: var(--sp-10);
+  margin-top: var(--sp-14);
+  padding-top: var(--sp-12);
   border-top: 1px solid var(--nest-line);
 }
-.issue-card__next-label {
+.issue-card__note {
   font-family: var(--font-ui);
   font-size: var(--fs-12);
   color: var(--muted-foreground);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
-.issue-card__next-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  font-family: var(--font-ui);
-  font-size: var(--fs-13);
-  color: var(--foreground);
-  text-decoration: none;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 1px;
-}
-.issue-card__next-link:hover { border-bottom-color: var(--foreground); }
-.issue-card__next-link:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 3px;
-  border-radius: var(--radius-sm);
-}
-.issue-card__next-link .ztor-icon { width: 14px; height: 14px; }
 
 @media (prefers-reduced-motion: reduce) {
   .issue-panel__chev,
@@ -310,4 +356,161 @@
    細項的名稱與說明維持原樣——它們是展開後才出現的內容，不參與這一欄的掃視。 */
 @media (max-width: 640px) {
   .issue-card__ago { display: none; }
+}
+
+/* ── compact：展示版左欄用的精簡形態（2026-08-31 建）──────────
+   一屏不捲的展示版型左欄只有三格，待處理事項那一格放得下三則。
+
+   **分組在這個形態下退場**，這是被寬度與則數逼出來的，不是偷懶：只剩三則時，
+   依來源模組分組幾乎必然是三組各一則，分組的作用（把同一個模組的事收在一起）
+   一次都用不到，卻要付出三行組標題的高度。模組名改成事項標題右側的小標——
+   「這一則屬於哪裡」還在，只是不再靠版面結構承載。
+
+   `__more` 是這個形態的必要配件，不是裝飾：標題那句仍寫實際總數（「5 件待處理
+   事項」），畫面上只有三則，沒有一條通往其餘兩則的路，那個數字就會變成謊話。 */
+.issue-panel--compact .issue-panel__groups {
+  gap: var(--sp-8);
+  margin-top: var(--sp-12);
+}
+.issue-panel--compact .issue-group {
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+}
+.issue-panel--compact .issue-group:hover { background: none; }
+.issue-panel--compact .issue-group__head { display: none; }
+
+/* 面整個拿掉（2026-08-31 使用者裁示「讓這裡不要這麼明顯，融入在背景中」）。
+   一天之內走過三版，記錄取捨：先是有框的卡 → 無框毛玻璃 → 現在連玻璃也交出去。
+   理由是這一欄的另外兩格（收入分布、進行中）本來就是直接壓在底圖上的字，只有
+   這一格是三塊浮起來的面——三個亮塊排在暗處，眼睛會先看到「三個方塊」再看到
+   內容，而它們是三件待辦、不是三顆按鈕。
+   讀得到嗎：讀得到。底圖左三分之一有 `--scrim-media` 壓著（見 canvas-stage.css），
+   那層壓底本來就是為了讓左欄的字站得住，這一格與另外兩格站在同一片底上。
+   界線改由節奏承擔：列距由 8 拉到 16，三則之間看得出斷點，不必靠三個面去切。
+   hover 才浮出一層薄膜——那是「這一列可以點」的回應，不是常駐的裝飾。 */
+.issue-panel--compact .issue-card {
+  /* 內距與負邊距成對（2026-08-31 再調 6 → 10/12）：文字仍然對齊左欄其他兩格的
+     左緣，但滑過時亮起來的是一塊有厚度的面，不是貼著字的一條。前一版兩邊都只有
+     6px，hover 起來像「字後面多了一層灰」，讀不出那是一張可以點的卡。 */
+  padding: var(--sp-8) var(--sp-12);
+  margin: 0 calc(var(--sp-12) * -1);
+  border-radius: var(--radius-lg);
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 0;
+}
+/* hover 才浮出玻璃（2026-08-31 使用者裁示「hover 時玻璃背景不見了」）：閒置時
+   什麼都不畫是刻意的（融入底圖），但滑過的那一刻要給出「這一列是一張卡」的回應，
+   `--ztu-film` 那 4% 白在照片上幾乎看不見。玻璃在這裡合法：母面是一張照片、
+   不是另一片玻璃，模糊有東西可以取樣。 */
+/* 底色由 `--ztu-glass-bg`（5% 白）改成 10%（2026-09-01 使用者回報「hover 壞掉了」）：
+   毛玻璃的可讀性有一半靠模糊，而這一格坐在照片最暗的那一角，模糊沒什麼可取樣；
+   5% 的白在那裡幾乎看不見，滑過去像沒有反應。把面自己撐起來之後，模糊變成加分項
+   而不是唯一的依靠——遮罩那件事（見 canvas-home.css）修好之後兩者都在。 */
+.issue-panel--compact .issue-card:hover {
+  background: color-mix(in srgb, var(--on-media) 10%, transparent);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+}
+/* 列距 8 → 16 → 12 → 8 → 0（2026-08-31 五調，最後一次是使用者裁示「直接去掉間距」）：
+   卡面退場時拉到 16，因為那時列與列之間只剩這段距離在說「這是兩件事」；hover 的
+   玻璃面補回來、卡自己有了 8/12 的內距之後就不需要那麼多，最後歸零——界線的事
+   已經完全由內距承擔，列距只是第二份空白。歸零之後 hover 的兩塊面會緊鄰，
+   但同一時間只有一塊亮著，不會併成一塊。
+   gap 掛在清單上而不是卡的 margin 上——卡帶著負的左右外距去撐 hover 的面，
+   再加上下外距會與 gap 疊起來，兩個地方各說一半。 */
+.issue-panel--compact .issue-group__list { gap: 0; }
+
+/* 前面那顆 icon 只講「這是哪個模組」，**一律白色**（2026-08-31 使用者裁示）。
+   取捨要知道：嚴重度在這個形態下不再有視覺標記。三則裡出現三個不同顏色時，
+   顏色反而先被讀成「三個不同的分類」而不是「三個不同的急迫度」；而這一欄的排序
+   本來就是照急迫度來的，最上面那則就是最急的。完整版（儀表板）仍保留染色的色條，
+   那裡一次會出現五則以上，順序不足以說明輕重。 */
+/* 圓形的薄膜底（2026-08-31 使用者裁示「這個 icon 多一個圓的玻璃背景」；當天稍早
+   曾因為「卡本身已經是一片玻璃、面上不該再疊面」而拿掉底色，卡面退場之後這個
+   理由就不成立了——現在閒置時 icon 直接躺在照片上，一層底反而讓它站得住）。
+   **圓形不是方形**：方框會讀成一顆按鈕（那是它上一版被拿掉的原因），圓形在站上
+   是「一個標記」的形狀。
+   **用薄膜、不上 backdrop 模糊**：滑過時它的母面就是卡片自己的玻璃，玻璃上再糊
+   一層只會取樣到自己的母面（Q77 的巢狀層規則）；薄膜在照片上與在玻璃上都成立。 */
+.issue-panel--compact .issue-card__icon {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ztu-film);
+}
+.issue-panel--compact .issue-card__icon .ztor-icon { width: 15px; height: 15px; }
+/* `__sev` 的類別在這裡只是沿用同一個掛點，形狀與顏色都蓋掉：這個形態下它是
+   一顆沒有底的 icon，不是色條，三個嚴重度變體也一律回到白色。 */
+.issue-panel--compact .issue-card__sev,
+.issue-panel--compact .issue-card__sev--error,
+.issue-panel--compact .issue-card__sev--warning,
+.issue-panel--compact .issue-card__sev--info {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ztu-film);
+  color: var(--foreground);
+}
+
+/* 標題與模組名疊成兩行。 */
+.issue-card__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-align: left;
+}
+.issue-panel--compact .issue-card__title { flex: none; }
+.issue-panel--compact .issue-card__where {
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+
+/* 模組名走 muted：它是限定詞不是標題，不能與事項標題同色，否則一列上會有兩個
+   看起來同等重要的東西。2026-08-31 由「貼在標題右側」改成「疊在標題下方」。 */
+.issue-card__where {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 相對時間在窄欄讓位給模組名：模組名決定「這件事要去哪裡處理」，
+   相對時間只決定「有多久了」——前者才是這一格要幫忙做的決定。 */
+.issue-panel--compact .issue-card__ago { display: none; }
+
+/* 2026-08-31 撤除（墓碑）：`.issue-panel__more`（compact 標題旁的「查看更多」
+   箭頭），使用者裁示移除。它原本是這個形態的必要配件——標題那句寫著實際總數，
+   畫面上卻只出三則。同日稍早標題已改成只寫「待辦事項」、不帶筆數，這條路也就
+   不再是「非有不可」；取捨仍要記著：現在畫面上沒有通往其餘幾則的路。 */
+
+/* ── 待辦事項彈窗（2026-08-31 建）──────────────────────────
+   卡片點開後的浮層。殼是全站共用的 `.payout-dialog`（窄版），這裡只補兩件
+   它沒有的東西：模組名那一行，與狀況說明那一段。
+   為什麼說明是一整段而不是幾個欄位：它要回答的是「為什麼這件事要做」，
+   那是一句話的事；拆成欄位反而要讀者自己把幾個片語接回一句話。 */
+.todo-dialog__where {
+  display: block;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-12);
+}
+.todo-dialog__desc {
+  margin: 0 0 var(--sp-16);
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  line-height: var(--lh-relaxed, 1.6);
+  color: var(--foreground-muted);
+}
+.todo-dialog__desc em {
+  font-style: normal;
+  color: var(--foreground);
 }

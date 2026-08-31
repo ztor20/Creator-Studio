@@ -350,6 +350,15 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
    700px 視窗還有約 190px 餘裕，正常尺寸不會出現捲軸；只有在 150% 縮放或 ~560px 高的
    視窗下才會啟動，確保底部的帳號／設定永遠點得到。真的啟動時，它長得跟全站其他捲軸一樣。 */
 .app-sidebar > nav { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+/* 左右各讓出側欄自己的內距、再用等量負外距收回來（2026-09-01 使用者回報
+   「光暈被切掉了」）：上面那條的 `overflow-y: auto` 會讓左右方向一起變成 auto，
+   於是這一層的內容框就是裁切線，而選中項的橘色光暈是往外暈開的 box-shadow，
+   剛好被裁在項目的邊上、變成一個硬邊的方框。內容的位置一格都沒動（負外距抵銷），
+   光暈從此暈在側欄自己的寬度裡。 */
+.app-sidebar > nav {
+  padding-inline: var(--sp-14);
+  margin-inline: calc(var(--sp-14) * -1);
+}
 .app-sidebar__nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-6); }  /* 2026-06-13：加大項目間距 */
 .app-sidebar__nav > li { list-style: none; }
 
@@ -1667,7 +1676,13 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   /* 黏住之後底下要留得出間距（2026-08-18 使用者裁決）：這一列會蓋在內容上，
      間距太小時捲動中的卡片會貼著它跑，看起來像撞在一起。 */
   margin-bottom: var(--sp-20);
-  background: var(--surface-page);
+  /* ztorUI 換裝（2026-08-31，使用者指著浮層裡這一列裁示「這一個不該有黑色背景」）：
+     靜止態不要底色。Wave 2b 把站上的殼層頂列（.app-topbar／.wizard__top）都換成玻璃時
+     漏掉了這一列，它還留著換裝前的不透明 --surface-page（#0C0D0D）——在星空檯面上是一條
+     看得出來的深色帶，在 detail-sheet 浮層裡（面板是玻璃、iframe 透明）更直接變成一條黑槓。
+     底色改成只在 is-stuck 時由 ::before 以玻璃的形式出現（見下），因為那正是唯一需要底色的
+     時刻：有內容要從它底下捲過去。舊值：background: var(--surface-page)。 */
+  background: transparent;
 }
 /* 縮圖＋名稱：只在捲過頁首之後出現，佔麵包屑原本的位置。名稱不換行、太長就截斷——
    這一列的高度必須固定，浮在內容上的東西一旦會長高，底下的內容就會跟著跳。 */
@@ -1695,9 +1710,17 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* 黏住之後補一條底線：底色與頁面同色，沒有這條線就看不出內容是從它底下捲過去的。 */
+/* 黏住之後才長出材質：玻璃底＋模糊＋一條淡分隔線，與 .app-topbar／.wizard__top 同一套
+   殼層配方。捲動中的內容從它底下糊過去，看得出「有東西被蓋住」而不是「內容穿過一條色帶」。
+   ztorUI 換裝（2026-08-31）舊值：只有 border-bottom: 1px solid var(--border)，底色靠
+   靜止態就存在的不透明 --surface-page 撐。 */
 .pd-detail__topbar.is-stuck::before,
-.detail-topbar.is-stuck::before { border-bottom: 1px solid var(--border); }
+.detail-topbar.is-stuck::before {
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  border-bottom: 1px solid var(--border-soft);
+}
 .pd-detail__topbar::before,
 .detail-topbar::before {
   content: "";
@@ -1706,9 +1729,35 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   bottom: 0;
   left: calc(var(--sp-28) * -1);
   right: calc(var(--sp-28) * -1);
-  background: inherit;
-  z-index: -1;
+  /* 舊值 background: inherit（跟著上面那條不透明底色走）。 */
+  background: transparent;
+  /* z-index 由 -1 改 0（2026-08-31，使用者：「而且要毛玻璃」）：負 z-index 的色帶
+     被畫在元素自己的背景與內容之間，實測 backdrop-filter 取樣不到從它底下捲過去的頁面
+     ——宣告讀得到 blur(24px)，畫面上卻是清的。改成一般的 0 層，並把列內的內容抬到 1，
+     色帶就成為正常的「疊在頁面之上」的一層，糊得到底下的東西。 */
+  z-index: 0;
 }
+/* 內容抬到色帶之上（配合上一條把色帶由 -1 改 0）。 */
+.pd-detail__topbar > *,
+.detail-topbar > * { position: relative; z-index: 1; }
+
+/* 內嵌（detail-sheet 浮層）裡色帶左右各短一截（2026-08-31 使用者：「這一條要延伸至左右，
+   現在左右被切掉了」）。成因不是 -28px 給錯：`.page` 是 `max-width: 1280px; margin: 0 auto`，
+   浮層的面板比 1280＋內距寬，於是兩側各長出一段 auto margin。固定的 -28px 只蓋得到內距，
+   蓋不到那段 margin。改成從視窗寬度反推——`.page` 在 iframe 視窗裡是置中的，
+   `50% - 50vw` 正好把色帶推到視窗兩邊。
+   全頁模式維持 -28px：那裡 `.main` 通常窄於 1280＋內距、沒有 auto margin，而且視窗寬度
+   還含側欄，用 vw 反而會把色帶推到側欄底下。 */
+html[data-embed] .pd-detail__topbar::before,
+html[data-embed] .detail-topbar::before {
+  left: calc(50% - 50vw);
+  right: calc(50% - 50vw);
+}
+/* 100vw 含捲軸寬，會比可視區多出幾 px。用 clip 裁掉（不是 hidden——hidden 會讓元素
+   變成捲動容器，頂列的 sticky 就跟著失效）。
+   掛在 <html> 不掛 <body>：body 的 overflow 在 html 是 visible 時會被「傳播」到視窗、
+   body 自己反而算成 visible，寫在 body 上等於沒寫。 */
+html[data-embed] { overflow-x: clip; }
 /* 這條麵包屑與頁面動作同一列（.pd-detail__topbar），列本身已經有下方間距，
    所以取消 .page-crumb 的 margin-bottom；顏色／字級照收。 */
 .pd-detail__breadcrumb,
@@ -1840,6 +1889,13 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   letter-spacing: -1px;
 }
 .pd-hero__desc { margin: 0; color: var(--foreground-muted); max-width: 720px; }
+/* hero 的識別列（2026-08-31）：創作者 · 建立於 X。比簡介再輕一階——它是註記不是內容，
+   放在簡介底下、用最小的字級與最淡的墨，讀者掃過去就好。 */
+.pd-hero__meta {
+  margin: 0;
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
 /* ✝ 2026-08-17 墓碑 · .pd-hero__owner（單行「創作者 X · 建立於 Y · 共創自 Z 起」）
    三個事實塞在一行、靠 · 分隔，讀起來是一句話而不是三筆資料，而且撐不起右欄的高度。
    改用站上既有的 .data-list（#pd-hero-facts）逐筆列出，標籤與值分開；欄位內容見
@@ -2248,10 +2304,41 @@ html[data-embed] .main {
      在 iframe 裡 100vh ＝ 框自己的高度，所以這一條剛好讓頁面底色鋪滿、又不會造出第二條捲軸
      （min-height 不是 height，內容比框高時照樣往下長）。 */
   min-height: 100vh;
-  background: var(--surface-page);
+  /* ztorUI 換裝（2026-08-31）：這層不透明底原本是為了蓋掉當時 <body> 的灰色殼層色，
+     現在 <body> 已經是星空檯面（--ztu-canvas ＋ 星點 ＋ 暖光），蓋住它反而讓浮層裡的詳情頁
+     變成一塊死黑的方板，跟浮層外的儀表板不同調。改成透明，讓內嵌頁跟直接開的那一份看到
+     同一片檯面——原本「不應該是灰色」的成因已經隨換裝消失。
+     舊值：background: var(--surface-page)。 */
+  background: transparent;
 }
-/* 頁面欄的上緣留白在覆蓋層裡不需要——標題列已經在正上方 24px 處。 */
-html[data-embed] .page { padding-top: var(--sp-8); }
+/* 內嵌頁不再自己畫檯面（2026-08-31 第二輪，使用者回饋「看起來是放一個新的背景，
+   不是毛玻璃的 popup」）。
+
+   成因：浮層裡的 iframe 載的是同一頁本人，所以它把 <body> 的檯面色、暖光與四層星空
+   全部再畫一次。於是浮層裡出現「第二片星空」——面板明明是玻璃，卻沒有任何底下的東西
+   透得上來，看起來就只是換了一張新背景。
+
+   檯面屬於 app shell，浮層裡的那一份 shell 已經被收掉（上面那條 display:none），
+   檯面自然也不該留。全部關掉之後 iframe 整片透明，detail-sheet 面板的 backdrop-filter
+   透到的就是底下那一頁本人——毛玻璃這才成立。 */
+html[data-embed][data-nav-mode="sidebar"] body {
+  background-color: transparent;
+  background-image: none;
+}
+html[data-embed][data-nav-mode="sidebar"]::before,
+html[data-embed][data-nav-mode="sidebar"]::after,
+html[data-embed][data-nav-mode="sidebar"] body::before,
+html[data-embed][data-nav-mode="sidebar"] body::after {
+  display: none;
+}
+
+/* 頁面欄的上緣留白在覆蓋層裡不需要——標題列已經在正上方。
+   2026-08-31（使用者：「整個頁面要往上，上方有一個很大的空白」）：連同外殼留白的上緣一起歸零。
+   那 8px＋14px 疊起來，在浮層標題列與詳情頁第一列之間留出一段沒有作用的空白，
+   讀起來像兩條工具列中間卡了一塊空地。左右的 14px 保留——那是內容與面板邊緣的呼吸。
+   舊值：padding-top: var(--sp-8)；body 的 --ztu-shell-gutter 四邊等寬。 */
+html[data-embed] .page { padding-top: 0; }
+html[data-embed][data-nav-mode="sidebar"] body:has(> .app) { padding-top: 0; }
 
 /* ============================================================
    內文字重 200（2026-07-28 使用者裁示：「body 要 200，最多 300」）

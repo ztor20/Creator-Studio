@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full" data-nav-mode="sidebar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- base：這頁住在 docs/，資產與 iframe 都以 r2.3 根為準，跟其他 demo 頁同一組相對路徑。
+     副作用：純 #hash 連結會被 base 解析成換頁，所以本頁不用裸 #anchor。 -->
+<base href="../">
+<title>調參器 · 詳情浮層與主按鈕</title>
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css">
+<link rel="stylesheet" href="ds-components/fonts.css">
+<link rel="stylesheet" href="ds-components/button.css">
+<link rel="stylesheet" href="ds-components/card.css">
+<link rel="stylesheet" href="ds-components/kpi.css">
+<link rel="stylesheet" href="ds-components/detail-sheet.css">
+<style>
+/* ════════════════════════════════════════════════════════════════════
+   調參器（lab）· 詳情浮層 detail-sheet ＋ 主按鈕 --ztu-accent-*
+
+   這是實驗場不是正式層：規則全部 lab- 前綴、收在本頁內，不建 ds-components、
+   不定義新 token。調出定案值之後才由人搬進 _tokens.css / detail-sheet.css。
+
+   ⚠ 玻璃的紅線（2026-08-31 踩過）：舞台與浮層的任何祖先都不可以有 opacity、
+     filter、mask 或動這些屬性的 animation——帶 opacity 的祖先會成為 backdrop root，
+     底下那一頁就被排除在 backdrop 之外，backdrop-filter 會「有宣告但什麼都沒糊」。
+     本頁刻意把 .detail-sheet 的入場動畫關掉，就是為了不讓 fill 中的動畫混淆判讀。
+   ════════════════════════════════════════════════════════════════════ */
+
+.lab-body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  background-color: var(--ztu-canvas);
+  color: var(--foreground);
+  font-family: var(--font-ui);
+}
+@media (max-width: 1100px) { .lab-body { grid-template-columns: 1fr; } }
+
+/* ── 左：控制欄 ─────────────────────────────────────────── */
+.lab-panel {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 20px 20px 64px;
+  background: #111110;
+  border-right: 1px solid rgba(255,255,255,.08);
+}
+.lab-panel h1 { font-size: 18px; font-weight: 500; margin: 0 0 4px; letter-spacing: .2px; }
+.lab-panel .lab-lede { font-size: 12px; line-height: 1.6; color: var(--muted-foreground); margin: 0 0 20px; }
+.lab-group { margin-bottom: 26px; }
+.lab-group__title {
+  font-size: 11px; letter-spacing: .8px; text-transform: uppercase;
+  color: var(--brand-ink); margin: 0 0 4px;
+}
+.lab-group__note { font-size: 11px; line-height: 1.6; color: var(--muted-foreground); margin: 0 0 12px; }
+.lab-row { display: grid; grid-template-columns: 1fr 22px 56px; gap: 6px 8px; align-items: center; margin-bottom: 10px; }
+.lab-row label { font-size: 12px; color: var(--foreground); }
+.lab-row output { font-size: 11px; color: var(--muted-foreground); text-align: right; font-variant-numeric: tabular-nums; }
+.lab-row input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--ztu-orange); }
+/* 單項重置：每根滑桿各自回到現行值，不用整頁重來 */
+.lab-reset {
+  width: 20px; height: 20px; padding: 0; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,.14); border-radius: 6px;
+  background: none; color: var(--muted-foreground);
+  font-size: 11px; cursor: pointer;
+}
+.lab-reset:hover { background: var(--ztu-film); color: var(--foreground); }
+.lab-reset.is-dirty { border-color: var(--ztu-orange); color: var(--ztu-orange); }
+
+/* 層次圖例：哪一層是哪一層，調之前先看得懂 */
+.lab-layers { margin: 0 0 14px; padding: 10px 12px; border: 1px solid rgba(255,255,255,.1); border-radius: 10px; background: rgba(255,255,255,.03); }
+.lab-layers li { font-size: 11px; line-height: 1.7; color: var(--muted-foreground); list-style: none; }
+.lab-layers li b { color: var(--foreground); font-weight: 500; }
+.lab-layers ol { margin: 0; padding: 0; }
+.lab-toggles { display: flex; flex-direction: column; gap: 6px; margin: 0 0 14px; }
+.lab-toggles label { font-size: 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.lab-toggles input { accent-color: var(--ztu-orange); }
+.lab-sheet.is-panelless .detail-sheet__panel { visibility: hidden; }
+.lab-row input[type="color"] {
+  grid-column: 1 / -1; width: 100%; height: 28px; padding: 0;
+  border: 1px solid rgba(255,255,255,.14); border-radius: 8px; background: none; cursor: pointer;
+}
+.lab-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0 10px; }
+.lab-out {
+  width: 100%; min-height: 260px; box-sizing: border-box;
+  background: #0a0a09; color: #d7d7d2;
+  border: 1px solid rgba(255,255,255,.12); border-radius: 10px;
+  padding: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px; line-height: 1.65; white-space: pre; overflow: auto;
+}
+
+/* ── 右：舞台 ───────────────────────────────────────────── */
+.lab-stages { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+.lab-stage__label { font-size: 12px; color: var(--muted-foreground); margin: 0 0 8px; }
+
+/* 浮層舞台：自己就是「底下那一頁」，浮層的玻璃糊的就是它。
+   position:relative ＋ overflow:hidden 讓 fixed 的浮層改成收在框內展示。 */
+.lab-stage {
+  position: relative;
+  height: 660px;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: var(--ztu-canvas);
+  background-image:
+    radial-gradient(64% 48% at 26% 14%, color-mix(in srgb, var(--primary) 15%, transparent), transparent 70%),
+    radial-gradient(46% 40% at 88% 76%, color-mix(in srgb, var(--ztu-bloom-1) 10%, transparent), transparent 72%);
+  background-repeat: no-repeat, no-repeat;
+}
+/* 星點：跟站上同一批烘好的 PNG，讓糊出來的質地與正式站一致 */
+.lab-stage::before, .lab-stage::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+}
+.lab-stage::before { background: url("images/starfield-a.png") repeat; background-size: 620px 620px; opacity: .7; }
+.lab-stage::after  { background: url("images/starfield-c.png") repeat; background-size: 740px 740px; opacity: .5; }
+
+/* 底下那一頁的替身：故意放亮圖與大字，暗紗與模糊調得夠不夠一眼看得出來 */
+.lab-under { position: absolute; inset: 0; padding: 28px; display: flex; gap: 24px; }
+.lab-under__rail { width: 200px; flex: none; display: flex; flex-direction: column; gap: 14px; }
+.lab-under__brand { font-family: var(--font-display); font-size: 26px; letter-spacing: .5px; }
+.lab-under__navitem { font-size: 13px; color: var(--muted-foreground); }
+.lab-under__main { flex: 1; min-width: 0; }
+.lab-under__title { font-family: var(--font-display); font-size: 46px; margin: 6px 0 14px; }
+.lab-under__row { display: flex; gap: 16px; align-items: flex-start; }
+.lab-under__shot { width: 190px; height: 250px; border-radius: 14px; object-fit: cover; flex: none; }
+.lab-under__copy { font-size: 14px; line-height: 1.9; color: var(--muted-foreground); }
+
+/* 浮層本體：沿用正式的 .detail-sheet / __panel / __head / __frame，
+   只改成絕對定位、關掉入場動畫（動畫會動 background-color，靜態預覽不需要）。 */
+.lab-sheet.detail-sheet { position: absolute; animation: none; }
+.lab-sheet .detail-sheet__panel { animation: none; }
+
+/* 按鈕舞台：同一顆按鈕分別坐在檯面與玻璃上——兩個場景都要看得過去 */
+.lab-btnstage { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .lab-btnstage { grid-template-columns: 1fr; } }
+.lab-btnbox { border-radius: 16px; padding: 28px; display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.lab-btnbox--canvas {
+  background-color: var(--ztu-canvas);
+  background-image: radial-gradient(70% 60% at 20% 10%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 70%);
+}
+.lab-btnbox--glass {
+  background: var(--ztu-glass-bg);
+  box-shadow: inset 0 1px 0 var(--ztu-glass-rim);
+  border: 1px solid rgba(255,255,255,.06);
+}
+.lab-btnbox__cap { font-size: 11px; letter-spacing: .6px; text-transform: uppercase; color: var(--muted-foreground); }
+</style>
+</head>
+<body class="lab-body">
+
+<aside class="lab-panel">
+  <h1>調參器 · 詳情浮層與主按鈕</h1>
+  <p class="lab-lede">
+    右邊是活的：浮層裡跑的是真的 <code>project-detail.html?embed=1</code>，糊的是它底下那一頁。
+    調到滿意就按「複製 CSS」，把值貼給我，我搬進正式層。滑桿的預設值＝目前線上的值，↺ 就是回到那裡（2026-08-31 定案後已同步）。<br>
+    標「全站」的參數會影響整個站（不只浮層）；若只想改浮層，跟我說一聲，我幫你收成浮層專用的變數。
+  </p>
+
+  <div class="lab-group">
+    <p class="lab-group__title">A · 浮層外框</p>
+    <div class="lab-layers"><ol>
+      <li>④ <b>浮層內容</b>　詳情頁本人（iframe），最上層</li>
+      <li>③ <b>面板玻璃</b>　白膜＋模糊＋頂緣內光，另有一圈投影落在面板外</li>
+      <li>② <b>暗紗</b>　蓋滿整個視窗，<b>面板底下也有</b>——所以它同時決定「面板透出來多暗」</li>
+      <li>① <b>底下那一頁</b>　你點進來之前看的畫面（本頁用一份有亮圖大字的替身）</li>
+    </ol></div>
+    <p class="lab-group__note">「面板看起來偏暗」是 ②暗紗 與 ③玻璃 一起造成的，面板外那圈黑則多半是<b>投影</b>——三個都在下面，可以分開調。看不出暗紗在做什麼時，勾第一個開關把面板移開。</p>
+    <div class="lab-toggles">
+      <label><input type="checkbox" id="t-panel">移開面板（只看 ①底下那頁 ＋ ②暗紗）</label>
+      <label><input type="checkbox" id="t-veil">暫時關掉暗紗（跟現值 A／B 比）</label>
+      <label><input type="checkbox" id="t-shadow">暫時關掉面板投影</label>
+    </div>
+
+    <div class="lab-row"><label for="veil">暗紗濃度（浮層專用）</label><output id="veil-o"></output>
+      <input type="range" id="veil" min="0" max="100" step="1" value="0"></div>
+
+    <div class="lab-row"><label for="glass">玻璃白膜　<em>全站</em></label><output id="glass-o"></output>
+      <input type="range" id="glass" min="0" max="24" step="0.5" value="5"></div>
+
+    <div class="lab-row"><label for="blur">面板模糊　<em>全站</em></label><output id="blur-o"></output>
+      <input type="range" id="blur" min="0" max="80" step="1" value="50"></div>
+
+    <div class="lab-row"><label for="sat">面板飽和（浮層專用）</label><output id="sat-o"></output>
+      <input type="range" id="sat" min="1" max="1.8" step="0.02" value="1.2"></div>
+
+    <div class="lab-row"><label for="rim">頂緣內光　<em>全站</em></label><output id="rim-o"></output>
+      <input type="range" id="rim" min="0" max="34" step="1" value="15"></div>
+
+    <div class="lab-row"><label for="radius">面板圓角　<em>全站</em></label><output id="radius-o"></output>
+      <input type="range" id="radius" min="0" max="48" step="1" value="30"></div>
+
+    <div class="lab-row"><label for="gutter">四邊留白　<em>全站</em></label><output id="gutter-o"></output>
+      <input type="range" id="gutter" min="0" max="40" step="1" value="14"></div>
+
+    <div class="lab-row"><label for="shy">投影下移　<em>全站</em></label><output id="shy-o"></output>
+      <input type="range" id="shy" min="0" max="60" step="1" value="24"></div>
+    <div class="lab-row"><label for="shb">投影擴散　<em>全站</em></label><output id="shb-o"></output>
+      <input type="range" id="shb" min="0" max="140" step="2" value="60"></div>
+    <div class="lab-row"><label for="sha">投影濃度　<em>全站</em></label><output id="sha-o"></output>
+      <input type="range" id="sha" min="0" max="80" step="1" value="45"></div>
+
+    <div class="lab-row"><label for="divider">頭列分隔線　<em>全站</em></label><output id="divider-o"></output>
+      <input type="range" id="divider" min="0" max="30" step="1" value="6"></div>
+  </div>
+
+  <div class="lab-group">
+    <p class="lab-group__title">B · 浮層裡的區塊（卡片與 KPI）</p>
+    <p class="lab-group__note">浮層裡的卡片走「薄膜＋細邊、不投影」，因為玻璃上再壓一層有影子的卡就是兩層玻璃。</p>
+
+    <div class="lab-row"><label for="film">卡片薄膜　<em>全站</em></label><output id="film-o"></output>
+      <input type="range" id="film" min="0" max="24" step="0.5" value="8.5"></div>
+    <div class="lab-row"><label for="nest">卡片邊線　<em>全站</em></label><output id="nest-o"></output>
+      <input type="range" id="nest" min="0" max="30" step="1" value="0"></div>
+    <div class="lab-row"><label for="cardr">卡片圓角　<em>全站</em></label><output id="cardr-o"></output>
+      <input type="range" id="cardr" min="0" max="36" step="1" value="24"></div>
+  </div>
+
+  <div class="lab-group">
+    <p class="lab-group__title">C · 主按鈕（橘）</p>
+    <p class="lab-group__note">這組就是 2026-08-28 換裝時沒收的那一題。側欄的「已選中」跟主按鈕共用同一組 token，改了會一起變——這是當初刻意的，不是漏改。</p>
+
+    <div class="lab-row"><label for="angle">漸層角度</label><output id="angle-o"></output>
+      <input type="range" id="angle" min="0" max="360" step="5" value="150"></div>
+
+    <div class="lab-row"><label for="c1">亮端色</label><output id="c1-o"></output>
+      <input type="color" id="c1" value="#ffc178"></div>
+    <div class="lab-row"><label for="a1">亮端濃度</label><output id="a1-o"></output>
+      <input type="range" id="a1" min="0" max="100" step="1" value="78"></div>
+
+    <div class="lab-row"><label for="c2">中段色</label><output id="c2-o"></output>
+      <input type="color" id="c2" value="#ffa33f"></div>
+    <div class="lab-row"><label for="a2">中段濃度</label><output id="a2-o"></output>
+      <input type="range" id="a2" min="0" max="100" step="1" value="78"></div>
+    <div class="lab-row"><label for="p2">中段位置</label><output id="p2-o"></output>
+      <input type="range" id="p2" min="0" max="100" step="1" value="52"></div>
+
+    <div class="lab-row"><label for="c3">暗端色</label><output id="c3-o"></output>
+      <input type="color" id="c3" value="#f2871f"></div>
+    <div class="lab-row"><label for="a3">暗端濃度</label><output id="a3-o"></output>
+      <input type="range" id="a3" min="0" max="100" step="1" value="82"></div>
+
+    <div class="lab-row"><label for="bblur">按鈕背景模糊</label><output id="bblur-o"></output>
+      <input type="range" id="bblur" min="0" max="40" step="1" value="16"></div>
+    <div class="lab-row"><label for="bsat">按鈕背景飽和</label><output id="bsat-o"></output>
+      <input type="range" id="bsat" min="1" max="2" step="0.05" value="1.25"></div>
+
+    <div class="lab-row"><label for="gy">外光下移</label><output id="gy-o"></output>
+      <input type="range" id="gy" min="0" max="24" step="1" value="4"></div>
+    <div class="lab-row"><label for="gb">外光擴散</label><output id="gb-o"></output>
+      <input type="range" id="gb" min="0" max="60" step="1" value="18"></div>
+    <div class="lab-row"><label for="ga">外光濃度</label><output id="ga-o"></output>
+      <input type="range" id="ga" min="0" max="90" step="1" value="30"></div>
+
+    <div class="lab-row"><label for="ih">上緣內光</label><output id="ih-o"></output>
+      <input type="range" id="ih" min="0" max="100" step="1" value="60"></div>
+    <div class="lab-row"><label for="ib">下緣內折</label><output id="ib-o"></output>
+      <input type="range" id="ib" min="0" max="100" step="1" value="70"></div>
+    <div class="lab-row"><label for="ir">內描邊</label><output id="ir-o"></output>
+      <input type="range" id="ir" min="0" max="40" step="1" value="14"></div>
+    <div class="lab-row"><label for="fg">字色不透明</label><output id="fg-o"></output>
+      <input type="range" id="fg" min="50" max="100" step="1" value="100"></div>
+  </div>
+
+  <div class="lab-actions">
+    <button class="btn btn--outline btn--sm" type="button" id="copy">複製 CSS</button>
+    <button class="btn btn--ghost btn--sm" type="button" id="reset">回到現行值</button>
+  </div>
+  <pre class="lab-out" id="out"></pre>
+</aside>
+
+<div class="lab-stages">
+
+  <section>
+    <p class="lab-stage__label">① 詳情浮層 — 面板裡跑的是真的 project-detail.html（embed 模式），糊的是它底下那一頁</p>
+    <div class="lab-stage">
+      <div class="lab-under">
+        <div class="lab-under__rail">
+          <div class="lab-under__brand">ztor.</div>
+          <div class="lab-under__navitem">總覽</div>
+          <div class="lab-under__navitem">項目</div>
+          <div class="lab-under__navitem">IP 資產</div>
+          <div class="lab-under__navitem">電子商店</div>
+          <div class="lab-under__navitem">活動</div>
+        </div>
+        <div class="lab-under__main">
+          <div class="lab-under__navitem">項目 / 音樂</div>
+          <h2 class="lab-under__title">底下這一頁還在</h2>
+          <div class="lab-under__row">
+            <img class="lab-under__shot" src="images/projects/nick-sdfs.jpg" alt="">
+            <p class="lab-under__copy">
+              這一區故意放了亮圖與大字。<br>
+              暗紗調太淡，這張臉會整個透上來跟浮層搶讀；<br>
+              調太濃，就看不出底下還有一頁、玻璃感也沒了。<br>
+              模糊調太小，這幾行字會在浮層裡浮出鬼影。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-sheet lab-sheet">
+        <div class="detail-sheet__panel" role="dialog" aria-modal="true" aria-label="Detail preview">
+          <div class="detail-sheet__head">
+            <button class="detail-sheet__back" type="button" title="整頁開啟">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/><path d="M11 13l9 -9"/><path d="M15 4h5v5"/></svg>
+            </button>
+            <h2 class="detail-sheet__title">帥到分手</h2>
+            <div class="detail-sheet__actions">
+              <button class="detail-sheet__btn" type="button" title="關閉">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></svg>
+              </button>
+            </div>
+          </div>
+          <iframe class="detail-sheet__frame" id="lab-frame" title="Detail preview"
+                  src="project-detail.html?id=nick-wo-de-i&embed=1&theme=dark"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="lab-stage__label">② 主按鈕 — 同一顆分別坐在檯面與玻璃上（浮層裡的按鈕就是右邊那個情境）</p>
+    <div class="lab-btnstage">
+      <div class="lab-btnbox lab-btnbox--canvas">
+        <span class="lab-btnbox__cap">坐在檯面上</span>
+        <button class="btn btn--primary" type="button">發布更新</button>
+        <button class="btn btn--primary btn--sm" type="button">小尺寸</button>
+        <button class="btn btn--primary btn--lg" type="button">Start selling</button>
+        <button class="btn btn--primary" type="button" disabled>停用態</button>
+      </div>
+      <div class="lab-btnbox lab-btnbox--glass">
+        <span class="lab-btnbox__cap">坐在玻璃上</span>
+        <button class="btn btn--primary" type="button">發布更新</button>
+        <button class="btn btn--primary btn--sm" type="button">小尺寸</button>
+        <button class="btn btn--primary btn--lg" type="button">Start selling</button>
+        <button class="btn btn--primary" type="button" disabled>停用態</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* 調參器的傳動：每根滑桿 → 組出 token 值 → 同時寫進本頁與 iframe 的 <html> inline style。
+   寫兩邊是因為浮層裡那一頁是獨立文件，CSS 變數不會跨 iframe 繼承——卡片薄膜、
+   邊線、主按鈕都活在那份文件裡。 */
+(function () {
+  'use strict';
+
+  var IDS = ['veil','glass','blur','sat','rim','radius','gutter','shy','shb','sha','divider',
+             'film','nest','cardr',
+             'angle','c1','a1','c2','a2','p2','c3','a3','bblur','bsat','gy','gb','ga','ih','ib','ir','fg'];
+  var el = {}, def = {};
+  IDS.forEach(function (id) { el[id] = document.getElementById(id); def[id] = el[id].value; });
+
+  var frame = document.getElementById('lab-frame');
+  var out = document.getElementById('out');
+
+  function v(id) { return el[id].value; }
+  function n(id) { return parseFloat(el[id].value); }
+  function white(pct) { return 'rgba(255, 255, 255, ' + (n(pct) / 100).toFixed(3).replace(/0+$/,'').replace(/\.$/,'.0') + ')'; }
+  function mix(hex, pct) { return 'color-mix(in srgb, ' + hex + ' ' + pct + '%, transparent)'; }
+
+  /* 產出的 token 值：名字與正式層一模一樣，貼過去就能用 */
+  function build() {
+    var t = {};
+    t['--sheet-veil']   = 'color-mix(in srgb, var(--ztu-canvas) ' + n('veil') + '%, transparent)';
+    t['--ztu-glass-bg'] = white('glass');
+    t['--ztu-blur-heavy'] = n('blur') + 'px';
+    t['--ztu-glass-rim'] = white('rim');
+    t['--radius-shell'] = n('radius') + 'px';
+    t['--ztu-shell-gutter'] = n('gutter') + 'px';
+    t['--ztu-shadow-card'] = '0 ' + n('shy') + 'px ' + n('shb') + 'px rgba(0, 0, 0, ' + (n('sha')/100).toFixed(2) + ')';
+    t['--border-soft']  = white('divider');
+    t['--ztu-film']     = white('film');
+    t['--nest-line']    = white('nest');
+    t['--radius-xl']    = n('cardr') + 'px';
+
+    t['--ztu-accent-surface'] = 'linear-gradient(' + n('angle') + 'deg, ' +
+      mix(v('c1'), n('a1')) + ', ' +
+      mix(v('c2'), n('a2')) + ' ' + n('p2') + '%, ' +
+      mix(v('c3'), n('a3')) + ')';
+    t['--ztu-accent-blur'] = 'blur(' + n('bblur') + 'px) saturate(' + n('bsat') + ')';
+    t['--ztu-accent-glow'] =
+      '0 ' + n('gy') + 'px ' + n('gb') + 'px ' + mix(v('c2'), n('ga')) + ', ' +
+      'inset 0 1px 0 ' + mix('#ffffff', n('ih')) + ', ' +
+      'inset 0 -1px 0 ' + mix(v('c3'), n('ib')) + ', ' +
+      'inset 0 0 0 1px ' + mix('#ffffff', n('ir'));
+    t['--ztu-accent-fg'] = 'rgba(255, 255, 255, ' + (n('fg')/100).toFixed(2) + ')';
+    return t;
+  }
+
+  function labels() {
+    document.getElementById('veil-o').textContent    = n('veil') + '%';
+    document.getElementById('glass-o').textContent   = n('glass') + '%';
+    document.getElementById('blur-o').textContent    = n('blur') + 'px';
+    document.getElementById('sat-o').textContent     = n('sat').toFixed(2);
+    document.getElementById('rim-o').textContent     = n('rim') + '%';
+    document.getElementById('radius-o').textContent  = n('radius') + 'px';
+    document.getElementById('gutter-o').textContent  = n('gutter') + 'px';
+    document.getElementById('shy-o').textContent     = n('shy') + 'px';
+    document.getElementById('shb-o').textContent     = n('shb') + 'px';
+    document.getElementById('sha-o').textContent     = n('sha') + '%';
+    document.getElementById('divider-o').textContent = n('divider') + '%';
+    document.getElementById('film-o').textContent    = n('film') + '%';
+    document.getElementById('nest-o').textContent    = n('nest') + '%';
+    document.getElementById('cardr-o').textContent   = n('cardr') + 'px';
+    document.getElementById('angle-o').textContent   = n('angle') + '°';
+    document.getElementById('c1-o').textContent      = v('c1');
+    document.getElementById('a1-o').textContent      = n('a1') + '%';
+    document.getElementById('c2-o').textContent      = v('c2');
+    document.getElementById('a2-o').textContent      = n('a2') + '%';
+    document.getElementById('p2-o').textContent      = n('p2') + '%';
+    document.getElementById('c3-o').textContent      = v('c3');
+    document.getElementById('a3-o').textContent      = n('a3') + '%';
+    document.getElementById('bblur-o').textContent   = n('bblur') + 'px';
+    document.getElementById('bsat-o').textContent    = n('bsat').toFixed(2);
+    document.getElementById('gy-o').textContent      = n('gy') + 'px';
+    document.getElementById('gb-o').textContent      = n('gb') + 'px';
+    document.getElementById('ga-o').textContent      = n('ga') + '%';
+    document.getElementById('ih-o').textContent      = n('ih') + '%';
+    document.getElementById('ib-o').textContent      = n('ib') + '%';
+    document.getElementById('ir-o').textContent      = n('ir') + '%';
+    document.getElementById('fg-o').textContent      = n('fg') + '%';
+  }
+
+  function paint(t, root) {
+    if (!root) return;
+    Object.keys(t).forEach(function (k) { root.style.setProperty(k, t[k]); });
+  }
+
+  /* 每一列各自的重置鈕（使用者要求：每個數值都要能單獨還原）。
+     用 JS 生而不是逐列寫死——30 根滑桿手寫 30 顆鈕，之後加一根就會漏一顆。
+     值一離開現行值就把鈕點亮，等於同時是「這根被我動過」的標記。 */
+  function buildResets() {
+    IDS.forEach(function (id) {
+      var row = el[id].closest('.lab-row');
+      var outEl = row.querySelector('output');
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'lab-reset';
+      b.textContent = '↺';
+      b.title = '回到現行值（' + def[id] + '）';
+      b.addEventListener('click', function () { el[id].value = def[id]; apply(); });
+      row.insertBefore(b, outEl);
+      el[id + '-reset'] = b;
+    });
+  }
+  function markDirty() {
+    IDS.forEach(function (id) {
+      var b = el[id + '-reset'];
+      if (b) b.classList.toggle('is-dirty', el[id].value !== def[id]);
+    });
+  }
+
+  function text(t) {
+    return [
+      '/* ─ ds-components/_tokens.css · [data-theme="dark"] ─ */',
+      '  --ztu-glass-bg:      ' + t['--ztu-glass-bg'] + ';',
+      '  --ztu-glass-rim:     ' + t['--ztu-glass-rim'] + ';',
+      '  --ztu-film:          ' + t['--ztu-film'] + ';',
+      '  --nest-line:         ' + t['--nest-line'] + ';',
+      '  --border-soft:       ' + t['--border-soft'] + ';',
+      '  --ztu-blur-heavy:    ' + t['--ztu-blur-heavy'] + ';',
+      '  --ztu-shadow-card:   ' + t['--ztu-shadow-card'] + ';',
+      '  --ztu-shell-gutter:  ' + t['--ztu-shell-gutter'] + ';',
+      '  --radius-shell:      ' + t['--radius-shell'] + ';',
+      '  --radius-xl:         ' + t['--radius-xl'] + ';',
+      '',
+      '  --ztu-accent-surface: ' + t['--ztu-accent-surface'] + ';',
+      '  --ztu-accent-blur:    ' + t['--ztu-accent-blur'] + ';',
+      '  --ztu-accent-glow:    ' + t['--ztu-accent-glow'] + ';',
+      '  --ztu-accent-fg:      ' + t['--ztu-accent-fg'] + ';',
+      '',
+      '/* ─ ds-components/detail-sheet.css · .detail-sheet ─ */',
+      '  --sheet-veil: ' + t['--sheet-veil'] + ';',
+      '',
+      '/* ─ ds-components/detail-sheet.css · .detail-sheet__panel ─ */',
+      '  backdrop-filter: blur(var(--ztu-blur-heavy)) saturate(' + n('sat') + ');'
+    ].join('\n');
+  }
+
+  var sheet = document.querySelector('.lab-sheet');
+
+  function apply() {
+    var t = build();
+    labels();
+    markDirty();
+    paint(t, document.documentElement);
+
+    /* --sheet-veil 必須寫在 .detail-sheet 身上，不能只寫在 <html>。
+       元件自己在 .detail-sheet 的規則裡宣告了這個變數，那條宣告會蓋掉從 :root 繼承下來的值——
+       第一版把它設在 <html> 上，所以那根滑桿拉了完全沒反應（使用者：「暗紗濃度我看不出來有什麼差異」）。 */
+    var veil = document.getElementById('t-veil').checked
+      ? 'transparent'
+      : 'color-mix(in srgb, var(--ztu-canvas) ' + n('veil') + '%, transparent)';
+    sheet.style.setProperty('--sheet-veil', veil);
+    sheet.classList.toggle('is-panelless', document.getElementById('t-panel').checked);
+
+    var p = document.querySelector('.lab-sheet .detail-sheet__panel');
+    if (p) {
+      p.style.backdropFilter = 'blur(' + n('blur') + 'px) saturate(' + n('sat') + ')';
+      p.style.webkitBackdropFilter = p.style.backdropFilter;
+      p.style.boxShadow = document.getElementById('t-shadow').checked
+        ? 'inset 0 1px 0 var(--ztu-glass-rim)'
+        : 'var(--ztu-shadow-card), inset 0 1px 0 var(--ztu-glass-rim)';
+    }
+    try { paint(t, frame.contentDocument.documentElement); } catch (e) { /* iframe 還沒載完 */ }
+    out.textContent = text(t);
+  }
+
+  buildResets();
+  IDS.forEach(function (id) {
+    el[id].addEventListener('input', apply);
+    el[id].addEventListener('change', apply);
+  });
+  ['t-panel','t-veil','t-shadow'].forEach(function (id) {
+    document.getElementById(id).addEventListener('change', apply);
+  });
+
+  document.getElementById('reset').addEventListener('click', function () {
+    IDS.forEach(function (id) { el[id].value = def[id]; });
+    apply();
+  });
+
+  document.getElementById('copy').addEventListener('click', function (e) {
+    var btn = e.currentTarget, old = btn.textContent;
+    navigator.clipboard.writeText(out.textContent).then(function () {
+      btn.textContent = '已複製';
+      setTimeout(function () { btn.textContent = old; }, 1200);
+    });
+  });
+
+  frame.addEventListener('load', apply);
+  apply();
+})();
+</script>
+</body>
+</html>
