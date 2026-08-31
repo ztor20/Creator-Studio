@@ -26,6 +26,9 @@
    更大的間距與底部留白，用於表單裡自成一段的可移除 chip 清單。 */
 .chip-group--loose { display: flex; gap: var(--sp-8); margin-bottom: var(--sp-12); }
 
+/* Q71 定案 2026-08-25：chip 語言全面無框化——讀成一排「標籤」而不是一排「按鈕」。
+   未選＝ --input-surface 淡填（Q19，比卡亮一階，可互動填色面的統一答案）；
+   hover＝ --accent；已選（--active）與唯讀（--static）的分工見下方各自區塊。 */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -35,8 +38,8 @@
   font-size: var(--fs-12);
   font-weight: var(--fw-regular);
   color: var(--foreground-muted);
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--input-surface);
+  border: 0;
   border-radius: var(--radius-pill);
   cursor: pointer;
   transition: background-color var(--duration) var(--easing),
@@ -59,17 +62,20 @@
 }
 
 .chip--static { cursor: default; }
-.chip--static:hover { background: var(--card); color: var(--foreground-muted); }
+/* 唯讀標籤 hover 不變色（無框化後與未選底同階，Q71 定案）：不是可互動的篩選項，
+   不該有 hover 高亮暗示可點。 */
+.chip--static:hover { background: var(--input-surface); color: var(--foreground-muted); }
 
 /* --value · 創作者剛輸入的值（多規格的選項值）。中性淡填、不反白：
    這種 chip 是「我剛打進去的資料」，不是被選中的篩選條件，不該是全頁最搶眼的東西
    （2026-07-21 使用者裁示，參照 Webflow Designer 的 class chip——淡色填底、安靜待在面板上）。
-   與 tag-input 的橘色已選標籤（Q19）分工：橘＝已套用的分類，灰＝剛建立的值。 */
+   與 tag-input 的橘色已選標籤（Q19）分工：橘＝已套用的分類，灰＝剛建立的值。
+   Q71 無框化後（2026-08-25）：底色與未選 chip 的預設值已相同，本變體視覺上等同預設態，
+   保留 class 只為語意標記／相容既有消費頁，不再有獨立視覺差異——下一輪盤點可考慮併入預設。 */
 .chip--value,
 .chip--value:hover {
   background: var(--input-surface);
   color: var(--foreground);
-  border-color: var(--border);
 }
 
 .chip__count {
@@ -139,3 +145,17 @@
   background: color-mix(in srgb, currentColor 18%, transparent);
 }
 .chip__remove .ztor-icon { width: 11px; height: 11px; stroke-width: 2.4; }
+
+/* --add · 新增鈕，Q71 定案 2026-08-25：這排全面無框化之後，「還沒有內容的那一格」
+   反而需要一個例外——虛線框讀成「這排標籤的下一格」，語意是可加入，不是句子裡的連結。
+   唯一保留邊框的 chip 變體。 */
+.chip--add {
+  border: 1px dashed var(--border);
+  color: var(--muted-foreground);
+  background: transparent;
+}
+.chip--add:hover {
+  color: var(--foreground);
+  border-color: var(--foreground-muted);
+  background: transparent;
+}

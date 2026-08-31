@@ -1,0 +1,84 @@
+/* ============================================================
+   next-step.css · 下一步（一句話 ＋ 一顆主要動作）
+
+   一張卡的最後一段：告訴創作者「這個階段最該做的那一件事」，並就地給出那個動作。
+   與 `.info-banner`（純說明、沒有動作）、`.insight-row`（自動算出來的一句話結論、
+   沒有動作）的分工：**只有這一支帶動作**。判斷句：這段字後面有沒有一顆要按的按鈕？
+   有 → next-step。
+
+   首個消費情境：項目詳情 · 總覽（規格 5.1.2.2 §2.1.1「下一步」，2026-08-18 重排）。
+   在那一頁它出現在三個位置——作品卡底下（送審／重送／設定上映日）、終止卡底下
+   （發一則說明退款的更新）、以及自成一卡（其餘待辦）。三處共用同一支，因為它們是
+   同一件事的同一種寫法；分開寫遲早會長出三種間距與三種按鈕大小。
+
+   anatomy
+     .next-step                    一段（橫排；窄了會換行）
+       .next-step__label           前綴標籤（選用；自成一卡的版本才需要指名這是「下一步」）
+       .next-step__text            那句話（14px，次要色）
+       .next-step__act             動作（一顆或多顆按鈕，靠右）
+
+   modifier
+     .next-step--lead              自成一卡：拿掉上分隔線與上間距（它是卡裡唯一的內容）
+
+   surface
+     可坐在 --card（一般卡內）與 --nest-surface（巢狀卡內）兩層；它自己不填色，
+     只用一條 1px 上分隔線與所在卡分段，所以跨層安全。
+
+   note
+     - 沒有下一步時整段 `[hidden]`，不留空殼（規格 §2.1.1：「沒有待辦時整段不顯示」）。
+     - 動作可能是 0 顆按鈕（例如「等審核結果」時只有一句話），此時 `.next-step__act`
+       是空的、不佔寬度。
+   ============================================================ */
+
+.next-step {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-12);
+  margin-top: var(--sp-16);
+  padding-top: var(--sp-16);
+  border-top: 1px solid var(--border);
+}
+/* [hidden] 必須蓋過上面的 display:flex，否則 JS 設 el.hidden=true 照樣顯示。 */
+.next-step[hidden] { display: none; }
+
+/* 自成一卡時它是卡裡唯一的內容，上面沒有東西要被分隔。 */
+.next-step--lead {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.next-step__label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  flex: none;
+}
+
+/* 這句話要能自己撐一行、也要能在窄欄換行，所以給一個 flex 基準寬而不是固定寬。 */
+.next-step__text {
+  flex: 1 1 260px;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  line-height: var(--lh-normal);
+  color: var(--foreground-muted);
+}
+
+.next-step__act {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  margin-left: auto;
+  flex: none;
+}
+
+/* 窄畫面：按鈕不再靠右擠在句尾，改成整段直排、動作自己一行。 */
+@media (max-width: 640px) {
+  .next-step { align-items: flex-start; }
+  .next-step__act { margin-left: 0; }
+}

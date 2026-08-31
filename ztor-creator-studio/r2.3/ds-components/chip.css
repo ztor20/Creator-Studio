@@ -1,0 +1,175 @@
+/* ============================================================
+   Chip — clickable filter pill with active state + optional count.
+
+   Distinct from .badge (which is pure status display):
+   • .badge      = read-only status indicator (5 status colors)
+   • .chip       = interactive filter / selector (neutral color,
+                   inverts to foreground bg when active)
+
+   Used in Earnings Transactions filter, Tax docs year filter,
+   and any list with a filterable taxonomy.
+
+   Anatomy:
+     .chip-group       (inline-flex wrap container, 6px gap)
+       .chip
+         <text>
+         .chip__count  (optional · separator + faded number)
+       .chip--active   (inverted bg)
+       .chip--static   (read-only chip · no hover affordance)
+     .filter-row       (chip-group + actions row · space-between)
+       .filter-row__actions
+   ============================================================ */
+
+.chip-group { display: inline-flex; flex-wrap: wrap; gap: var(--sp-6); }
+/* --loose · 2026-08-09 promoted from create-event.html（原 `.ce-lineup`）：一列
+   陣容／參演者 chip 的容器，比預設 chip-group 寬鬆——block 而非 inline-flex、
+   更大的間距與底部留白，用於表單裡自成一段的可移除 chip 清單。 */
+.chip-group--loose { display: flex; gap: var(--sp-8); margin-bottom: var(--sp-12); }
+
+/* Q71 定案 2026-08-25：chip 語言全面無框化——讀成一排「標籤」而不是一排「按鈕」。
+   未選＝ --input-surface 淡填（Q19，比卡亮一階，可互動填色面的統一答案）；
+   hover＝ --accent；已選（--active）與唯讀（--static）的分工見下方各自區塊。 */
+/* ztorUI 換裝（2026-08-28 Wave 2b 熔接自 demo/ztorui-skin §13）：未選中的底由 --input-surface
+   （展開後等於 --card 實色）改成 6% 白薄膜，與 .input／.textarea／.select 同一階——
+   chip 跟它們是同一種「疊在卡上的控件面」，換裝時被漏列。
+   舊值：background: var(--input-surface)。 */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  padding: var(--sp-6) var(--sp-12);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);
+  color: var(--foreground-muted);
+  background: var(--ztu-film);
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background-color var(--duration) var(--easing),
+              color var(--duration) var(--easing),
+              border-color var(--duration) var(--easing);
+}
+/* hover 由 --accent 實色改成 12% 白玻璃（同 --ztu-glass-strong）。舊值：var(--accent)。 */
+.chip:hover { background: var(--ztu-glass-strong); color: var(--foreground); }
+
+/* ztorUI 換裝（2026-08-28 Wave 2b 熔接自 skin §13）：已選態由「13% 橘 tint 色塊＋橘字」
+   改成「12% 白玻璃＋頂緣內光＋橘字」。
+   2026-08-28 使用者指著商品標籤與關聯電影那兩排 chip 說「這也和測試 DS 不同」。
+   整套語彙這一輪收斂成「表面一律中性玻璃，顏色只出現在光與字上」（側欄選中、狀態標籤、
+   分頁燈條都已改過），橘 tint 就成了全站唯一還在用色塊當選中態的地方，混著橘字讀起來
+   是一塊糊掉的褐。改中性玻璃之後，選中感由「比未選中亮一階」與橘字共同承擔。
+   舊宣告：background: var(--selected-surface)／var(--selected-surface-hover)；
+           color: var(--selected-ink)；border-color: color-mix(--primary 45%, transparent)。*/
+.chip--active,
+.chip--active:hover {
+  background: var(--ztu-glass-strong);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  color: var(--ztu-orange-hi);
+  box-shadow: inset 0 1px 0 var(--ztu-rim-soft);
+}
+
+.chip--static { cursor: default; }
+/* 唯讀標籤 hover 不變色（無框化後與未選底同階，Q71 定案）：不是可互動的篩選項，
+   不該有 hover 高亮暗示可點。
+   ztorUI 換裝（2026-08-28 Wave 2b）：底跟著 .chip 改吃 --ztu-film。舊值：var(--input-surface)。 */
+.chip--static:hover { background: var(--ztu-film); color: var(--foreground-muted); }
+
+/* --value · 創作者剛輸入的值（多規格的選項值）。中性淡填、不反白：
+   這種 chip 是「我剛打進去的資料」，不是被選中的篩選條件，不該是全頁最搶眼的東西
+   （2026-07-21 使用者裁示，參照 Webflow Designer 的 class chip——淡色填底、安靜待在面板上）。
+   與 tag-input 的橘色已選標籤（Q19）分工：橘＝已套用的分類，灰＝剛建立的值。
+   Q71 無框化後（2026-08-25）：底色與未選 chip 的預設值已相同，本變體視覺上等同預設態，
+   保留 class 只為語意標記／相容既有消費頁，不再有獨立視覺差異——下一輪盤點可考慮併入預設。 */
+.chip--value,
+.chip--value:hover {
+  background: var(--ztu-film);   /* ztorUI 換裝（2026-08-28 Wave 2b）：跟著 .chip 走，舊值 --input-surface */
+  color: var(--foreground);
+}
+
+.chip__count {
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  padding-left: var(--sp-4);
+  border-left: 1px solid var(--border);
+  margin-left: var(--sp-2);
+}
+.chip--active .chip__count {
+  color: color-mix(in srgb, var(--background) 70%, transparent);
+  border-left-color: color-mix(in srgb, var(--background) 25%, transparent);
+}
+
+/* Filter row · pairs a chip-group with action buttons on the right.
+   The chip-group half is optional: when a filter is low-frequency it collapses into a
+   .select and the row carries only .filter-row__actions (selects + .field-pill search),
+   which then sits left-aligned — see Projects (2026-07-23). */
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-12);
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-12);
+}
+.filter-row__actions { display: inline-flex; gap: var(--sp-8); align-items: center; }
+
+/* Removable chip · a selected / creator-added value carrying an inline ×.
+   Used by .tag-input (product tags) and the variant builder's option values
+   (spec 5.1.5.2 §4.1④ / §4.5). Color inherits from the chip so it works on
+   both neutral and --active (inverted) chips. */
+/* 2026-07-28 使用者裁示：「字沒有置中」。量到的是 9px——可移除 chip 的左內距 12px，
+   右邊卻是 6px 內距＋16px 按鈕＋gap／margin 共 8px，所以標籤被推到左邊 9px。
+   （一般 chip 沒有這個問題：實測左右都是 12.67px、上下都是 9px，本來就正中。）
+
+   做法：× 改成絕對定位、不再佔版面，chip 兩側內距對稱 → 文字真的在正中央。
+   代價是 chip 變寬約 14px：右內距要留得下按鈕，長標籤才不會壓到 ×。
+   對稱值 = 6px 邊距 + 16px 按鈕 + 4px 間隙 = 26px，兩側同值。 */
+.chip--removable {
+  position: relative;
+  padding-inline: 26px;
+  justify-content: center;
+}
+.chip__remove {
+  position: absolute;
+  right: var(--sp-6);
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity var(--duration) var(--easing),
+              background-color var(--duration) var(--easing);
+}
+.chip__remove:hover {
+  opacity: 1;
+  background: color-mix(in srgb, currentColor 18%, transparent);
+}
+.chip__remove .ztor-icon { width: 11px; height: 11px; stroke-width: 2.4; }
+/* ztorUI 換裝（2026-08-28 Wave 2b 熔接自 skin §13）：已選 chip 裡的 × 鈕從繼承橘字改成中性弱色。
+   它是次要動作，跟標籤名搶同一個顏色只會讓 chip 更吵。（未選 chip 的 × 仍走 color: inherit。） */
+.chip--active .chip__remove { color: var(--muted-foreground); }
+.chip--active .chip__remove:hover { color: var(--foreground); }
+
+/* --add · 新增鈕，Q71 定案 2026-08-25：這排全面無框化之後，「還沒有內容的那一格」
+   反而需要一個例外——虛線框讀成「這排標籤的下一格」，語意是可加入，不是句子裡的連結。
+   唯一保留邊框的 chip 變體。 */
+.chip--add {
+  border: 1px dashed var(--border);
+  color: var(--muted-foreground);
+  background: transparent;
+}
+.chip--add:hover {
+  color: var(--foreground);
+  border-color: var(--foreground-muted);
+  background: transparent;
+}

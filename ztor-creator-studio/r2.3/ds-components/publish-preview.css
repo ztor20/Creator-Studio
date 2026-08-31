@@ -1,0 +1,69 @@
+/* ============================================================
+   Publish preview · 發布前預覽確認層（D223，2026-08-24）
+   partials/publish-preview.js 掛載的彈窗殼固定用 .payout-modal /
+   .payout-dialog--xwide（STYLE-DECISIONS Q27：彈窗殼唯一元件）。本檔只放
+   這個殼裡才會用到的排版微調——語言分頁＋預覽/列表切換那一列、翻譯提示條、
+   預覽卡可編輯欄位的視覺提示、列表表格的儲存格。
+   consumer：partials/publish-preview.js（唯一掛載點）
+   ============================================================ */
+
+.pp-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-16);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-16);
+}
+.pp-lang-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+}
+.pp-view-toggle { flex: 0 0 auto; }
+
+.pp-banner { margin-bottom: var(--sp-16); }
+
+.pp-preview-slot {
+  display: flex;
+  justify-content: center;
+  padding: var(--sp-8) 0 var(--sp-4);
+}
+/* 預覽卡在彈窗裡沿用 preview-card.css 既有的 .payout-dialog .preview-card 規則
+   （疊在灰底薄膜上），這裡不重複定義背景色。 */
+
+/* 非預設語系時，預覽卡裡可翻譯欄位改 contenteditable——用虛線框給出「這裡能點進去改」
+   的提示，不靠填色（填色在 --nest-surface 上會糊，見鐵律 Surface-Layer Contrast）。 */
+.pp-slot--editable {
+  outline: 1px dashed var(--border);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+  cursor: text;
+}
+.pp-slot--editable:hover { outline-color: var(--foreground-muted); }
+.pp-slot--editable:focus {
+  outline: 1px solid var(--selected-ink);
+  outline-offset: 2px;
+}
+
+.pp-table { width: 100%; }
+.pp-cell { vertical-align: top; padding-top: var(--sp-10); }
+.pp-cell--readonly {
+  color: var(--muted-foreground);
+  white-space: pre-wrap;
+}
+.pp-cell-field { width: 100%; min-width: 200px; }
+
+/* 動態欄位分組小標（規格列／選項組這類列數不定的清單，使用者 2026-08-24 追加裁示）：
+   跨欄一列、比一般列淡一階的底色＋大寫字距，讀成「以下都是同一組」，不佔用一整支
+   欄位列的高度。consumer：create-product.html 的規格與商品選項（唯一消費者，目前）。 */
+.pp-group-row td {
+  padding: var(--sp-8) 0 var(--sp-4);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  border-top: 1px solid var(--border);
+}
+.pp-group-row:first-child td { border-top: 0; }

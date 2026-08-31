@@ -1,0 +1,188 @@
+/* ============================================================
+   Filter Tabs — secondary, lighter pill row for narrowing a list
+   by status, each pill showing a label + live count badge.
+
+   Distinct from .tabs (primary view switch with underline/brand
+   accent): filter-tabs is a quieter, lower-weight control meant to
+   sit on the row *below* the primary tabs, so the two read as a
+   clear primary → secondary hierarchy. Active pill = soft muted
+   fill (no brand colour, leaving orange to the primary tabs).
+
+   Promoted 2026-06-15 from E-Shop F3 (status filter, was a <select>).
+
+   Anatomy:
+     .filter-tabs (role="tablist")
+       .filter-tabs__item            (button, role="tab")
+         <text>
+         .filter-tabs__count         (count badge)
+       .filter-tabs__item--active    (muted fill + foreground text)
+
+   The active state + count text are driven by inline JS on the
+   consuming page (see e-shop.html).
+   ============================================================ */
+.filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-6);
+}
+.filter-tabs__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  box-sizing: border-box;
+  height: var(--sp-32);
+  padding: 0 var(--sp-12);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--foreground-muted);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-none);
+  cursor: pointer;
+  transition:
+    background-color var(--duration) var(--easing),
+    color var(--duration) var(--easing);
+}
+/* `display:inline-flex` above outranks the UA stylesheet's `[hidden]{display:none}`,
+   so a consumer setting el.hidden would otherwise get a still-visible chip. Consumers
+   hide zero-match filters this way (projects.html scopes release modes to the active
+   status tab), so honour the attribute explicitly. (2026-07-27) */
+.filter-tabs__item[hidden] { display: none; }
+.filter-tabs__item:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+.filter-tabs__item:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+/* ztorUI 換裝（2026-08-28 Wave 2b 熔接自 demo/ztorui-skin §4.4）：已選態從「品牌橘 tint 色塊」
+   改成「中性玻璃殼＋字自己發光＋殼底一團暖光」。
+   2026-08-27 使用者裁示「不要用按鈕，用標籤的元件」——橘色 tint 讓這排狀態篩選讀成一排按鈕，
+   跟右上角的 Create product 同一個級別，違反本檔檔頭寫的分層（filter-tabs 是 quieter、
+   lower-weight 的次級控制）。改法是把顏色從「面」移到「光與字」上：
+     · 殼＝中性玻璃，跟未選中只差一層透明度；
+     · 字＝橘的亮版（--ztu-orange-hi）＋兩層 text-shadow。近的一層小而濃，把字緣托出來；
+       遠的一層大而淡，是散到周圍的暈。單層會變成一圈生硬的描邊，兩層才讀得出「字在發光」。
+   ⚠ 這個方案是 2026-08-27 使用者從八個候選裡挑的，代價是選中感最弱的一種——殼跟未選中項
+   只差一層玻璃，全靠文字亮度分辨。實際頁面上如果覺得認不出選了哪一格，第一個該加強的是
+   字的亮度或殼的透明度，**不要回頭再往殼裡塞光層**，那會變回被否決的舊版。
+   position／isolation／overflow 是下面 ::after 那團底部光的容器條件，屬同一顆元件、
+   合併寫在這一條，不另立一條只放這三個屬性的規則。
+   顏色走 var(--dot, …)：`--filter-tabs--source` 的每一項用 inline `--dot` 帶自己的色，
+   沒設 --dot 的（絕大多數頁面）就落回品牌橘，computed 完全不變。
+   舊宣告：background: var(--selected-surface)；color: var(--selected-ink)。*/
+.filter-tabs__item--active,
+.filter-tabs__item--active:hover {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  color: var(--dot, var(--ztu-orange-hi));
+  font-weight: var(--fw-medium);
+  box-shadow: none;
+  text-shadow:
+    0 0 6px color-mix(in srgb, var(--dot, var(--ztu-orange)) 65%, transparent),
+    0 0 16px color-mix(in srgb, var(--dot, var(--ztu-orange)) 35%, transparent);
+}
+/* 底部光（2026-08-27 使用者：「再加上底部光，但不要線」）。刻意只留暈、不留 1px 細線：
+   線是「光源本身」，暈是「光打在殼裡的結果」。留線的版本光源太明確，會跟字自己發光
+   搶「這裡有一個光源」的角色；拿掉線之後殼底只剩一團說不出來源的暖光，字才是唯一光源。
+   兩層暈：近的小而濃、遠的大而淡，單層的衰減沒有層次。
+   模糊 4px 遠小於暈高 26px——blur 一旦逼近層高就糊成一塊均勻色斑（本專案既定教訓）。 */
+.filter-tabs__item--active::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  bottom: 0;
+  left: 8%;
+  right: 8%;
+  height: 26px;
+  pointer-events: none;
+  filter: blur(4px);
+  background:
+    radial-gradient(52% 62% at 50% 100%,
+      color-mix(in srgb, var(--dot, var(--ztu-orange-hi)) 55%, transparent),
+      transparent 70%),
+    radial-gradient(88% 100% at 50% 100%,
+      color-mix(in srgb, var(--dot, var(--ztu-orange)) 30%, transparent),
+      transparent 74%);
+}
+.filter-tabs__count {
+  font-size: var(--fs-11);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-none);
+  color: var(--muted-foreground);
+  background: color-mix(in srgb, var(--foreground) 7%, var(--card));
+  border-radius: var(--radius-pill);
+  padding: 1px var(--sp-6);
+  min-width: 16px;
+  text-align: center;
+}
+
+/* ── .filter-tabs--brand — 2026-07-27 Q8 裁決 A 後大幅縮編：橘色已選態變成全站基底，
+     這個修飾類原本的四條顏色覆寫（橘底／橘字／橘 hover／橘計數）全部與基底重複，已刪。
+     只留下它真正獨有的那一項：計數不套泡泡、平鋪顯示。9 個消費頁的 class 不必動。
+     （原始意圖見 2026-06-22；當時橘是 opt-in，現在是預設。）── */
+.filter-tabs--brand .filter-tabs__count {
+  background: transparent;
+  padding: 0;
+  min-width: 0;
+  color: var(--muted-foreground);
+}
+/* ztorUI 換裝（2026-08-28 Wave 2b）：`--brand` 的已選計數覆寫已刪——上面的基底
+   現在就是「無泡泡＋橘六成字」，這條只會用更高的特異度把顏色蓋回 --selected-ink。
+   刪掉的舊宣告：.filter-tabs--brand .filter-tabs__item--active .filter-tabs__count
+                 { background: transparent; color: var(--selected-ink); } */
+
+/* ztorUI 換裝（2026-08-28 Wave 2b §4.4）：已選的計數泡泡整個拆掉——泡泡是第二個色塊，
+   跟剛改成「只有光沒有色塊」的標籤打架。改成平鋪的數字、顏色是橘的六成，
+   讀成「標籤名的附註」而不是另一顆徽章。
+   舊宣告：background: color-mix(in srgb, var(--primary) 22%, transparent)；color: var(--selected-ink)。*/
+.filter-tabs__item--active .filter-tabs__count {
+  background: transparent;
+  padding: 0;
+  min-width: 0;
+  color: color-mix(in srgb, var(--dot, var(--ztu-orange-hi)) 60%, transparent);
+}
+/* ⚠ 位置：這一條必須寫在上面 `--brand` 那一段之後——`.filter-tabs--brand .filter-tabs__count`
+   與本條同為 (0,2,0)，靠源碼順序決勝；寫在前面會被 --brand 的 --muted-foreground 蓋掉，
+   e-shop（掛 --brand）的已選計數就變回灰的。 */
+
+/* ── .filter-tabs--source — opt-in variant: the active pill takes the COLOUR OF
+     ITS OWN ITEM, passed per-button as `--dot` (e.g. style="--dot:var(--chart-2)").
+     Same soft-tint recipe as --brand (12% fill + coloured label), but instead of
+     one brand orange each item tints with the colour it represents, so the
+     selection matches the series it filters. Built for Earnings F5 revenue-source
+     filter, where each source already owns a colour shared by its chart line and
+     the "Revenue by source" list dot. Set --dot on the item that has no colour of
+     its own (e.g. "All") to the brand orange. (2026-07-25)
+
+     Anatomy adds an optional leading colour dot:
+       .filter-tabs__item[style="--dot:…"]
+         .filter-tabs__dot   (8px colour dot, reads --dot)
+         <text>
+     ── */
+.filter-tabs__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--dot, var(--muted-foreground));
+  display: inline-block;
+  flex: none;
+}
+/* ztorUI 換裝（2026-08-28 Wave 2b）：`--source` 的兩條已選覆寫已刪。
+   基底的已選態改寫成 var(--dot, 品牌橘) 之後，「用自己的顏色標記自己」這個變體的
+   全部意圖都已經由基底達成（字色、字光、底部光都跟著 --dot 走），這裡再疊一塊
+   `--dot 12% + --card` 的色塊只會把中性玻璃殼蓋回色塊、退回被否決的舊語彙。
+   刪掉的舊宣告：
+     .filter-tabs--source .filter-tabs__item--active
+       { background: color-mix(in srgb, var(--dot, var(--primary)) 12%, var(--card));
+         color: var(--dot, var(--primary)); }
+     .filter-tabs--source .filter-tabs__item--active:hover
+       { background: color-mix(in srgb, var(--dot, var(--primary)) 18%, var(--card)); } */

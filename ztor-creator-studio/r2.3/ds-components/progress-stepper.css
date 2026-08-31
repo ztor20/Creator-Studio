@@ -1,0 +1,184 @@
+/* ── Progress stepper ─────────────────────────────────────────────────────
+   建立流程多步驟進度條：一條細長軌道 + 品牌漸層填充（依當前步推進）+ 下方步驟標籤。
+   取代舊的列內數字圓圈 .stepper（2026-06-23）。用在 create-event / create-project /
+   register-ip 等多步驟 wizard 的 .wizard__progress 槽內。
+
+   驅動：在 .progress-stepper 上設 inline `--progress`（已完成比例，如 40%）。
+   JS 切步時更新 `--progress` 與各 .progress-stepper__label 的 --current / --done。 */
+
+.progress-stepper {
+  --progress: 0%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  width: 100%;
+}
+
+.progress-stepper__track {
+  position: relative;
+  /* 2026-08-10 使用者指示「進度條可以細一點」：6 → 3px。它是背景資訊，
+     旁邊已經有步驟名稱與狀態小字在說同一件事，不需要那麼粗。 */
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--muted);
+  overflow: hidden;
+}
+
+.progress-stepper__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--progress);
+  border-radius: var(--radius-pill);
+  background: var(--gradient-brand);
+  transition: width .35s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ── 分段軌道（--segmented，2026-08-10）──────────────────────────────────
+   使用者反饋「進度條斷點的位置好像可以有更好的位置」。原本是一條連續的長條，
+   填到 40% 這種位置在畫面上不對應任何東西——讀者看不出那一格是哪一步。
+   改成一步一段：段與段之間留縫，縫的位置就是步驟的分界，填滿幾段＝完成幾步。
+
+   用法：容器加 `--segmented`，並設 `--steps`（看得到幾步）與 `--at`（現在第幾步，1 起算）。
+   `--progress` 仍是已完成的比例，由消費頁算好（跳過的步驟不佔位）。
+   沒加這個修飾類的消費頁（create-project／register-ip／publish-work…）行為完全不變。 */
+/* 分段版的填充不做寬度動畫（2026-08-10 使用者反饋「第一個步驟中有一點橘色」）：
+   連續長條時，寬度從 40% 滑到 60% 是有意義的過場；切成段之後，填充永遠停在段的邊界上，
+   中間那 350ms 只會畫出「半段橘色」這種不存在的狀態。停在第一步（完成度 0%）時最傷——
+   從別的步驟退回來的瞬間，軌道最左端會殘留一小截橘色，看起來像進度條壞掉。 */
+.progress-stepper--segmented .progress-stepper__fill {
+  transition: none;
+  /* 圓角交給軌道（它自己是 --radius-pill ＋ overflow:hidden，已經把兩端修圓）。
+     填充自己再圓一次是多的，而且 0 寬度的圓角盒在 2× 螢幕的半像素位置上會描出髮絲邊。 */
+  border-radius: 0;
+}
+
+.progress-stepper--segmented .progress-stepper__track {
+  --seg: calc(100% / var(--steps, 1));
+  --seg-gap: 3px;
+  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0, #000 calc(var(--seg) - var(--seg-gap)), transparent calc(var(--seg) - var(--seg-gap)), transparent var(--seg));
+  mask-image: repeating-linear-gradient(90deg, #000 0, #000 calc(var(--seg) - var(--seg-gap)), transparent calc(var(--seg) - var(--seg-gap)), transparent var(--seg));
+}
+/* 正在走的那一段：中性亮色。實色橘＝已完成、灰亮＝你在這裡、暗＝還沒到。
+   2026-08-10 使用者反饋「還在第一步驟時，進度條半透明顏色看起來好像壞掉」：
+   這一段原本是 --primary 稀釋到 28%，在深色軌道（#161718）上混出來的是 #5c4a2a 這種
+   泥巴棕——它既不是品牌橘、也不是灰，看起來像沒渲染完的橘色，第一步（完成度 0%）
+   整條軌道只剩它時最明顯。改成中性灰之後，色相被保留給「已完成」單獨使用：
+   有顏色＝做完了，沒顏色＝還沒，亮度只回答「你在哪」。 */
+.progress-stepper--segmented .progress-stepper__track::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  left: calc(var(--seg) * (var(--at, 1) - 1));
+  width: var(--seg);
+  background: color-mix(in srgb, var(--foreground-muted) 45%, transparent);
+}
+
+/* 標籤與軌道對齊（2026-08-10 使用者反饋「每步驟的標題與進度條似乎沒有對齊」）：
+   預設版的標籤列是 space-between——第一個貼左、最後一個貼右、中間平均分配空隙，
+   每個標籤佔多寬取決於自己的字數；軌道卻是等寬分段。兩套分法不可能對得上。
+   分段版改成等寬格線：一格＝一段，標籤盒本身就是那一段的寬度，所以文字起點
+   就是那一段的起點，hover 底色蓋住的範圍也剛好是那一段（＝「可以點的範圍」與
+   「這一段代表哪一步」講的是同一件事）。
+
+   2026-08-10 第二次修正（使用者反饋「目前 hover 的範圍看起來壞掉了」）：這一組原本
+   是「保留基底的左右內距、再用等量負外距把它抵銷掉」，文字確實對齊了段的起點，
+   但 hover 底色的盒子因此比所在的那一段左右各多出 8px——底色蓋住的範圍與上方的
+   分段對不起來，看起來像偏移了半格。負外距拿掉，標籤盒就等於格線那一格＝正好一段。
+
+   左右內距保留（2026-08-10 第三次，使用者反饋「要有左 padding」）：對齊的責任在
+   **盒子**身上——一格＝一段已經由格線保證，hover 底色也因此剛好蓋住那一段；文字則
+   靠內距與盒子的左緣拉開距離，否則字會直接貼著 hover 底色的邊，讀起來很擠。
+   換句話說：盒子貼齊分段，文字在盒子裡呼吸，兩件事不衝突。 */
+.progress-stepper--segmented .progress-stepper__labels {
+  display: grid;
+  grid-template-columns: repeat(var(--steps, 1), minmax(0, 1fr));
+  gap: 0;
+}
+.progress-stepper--segmented .progress-stepper__label,
+.progress-stepper--segmented .progress-stepper__label:first-child,
+.progress-stepper--segmented .progress-stepper__label:last-child {
+  align-items: flex-start;
+  text-align: left;
+  margin-inline: 0;
+}
+
+.progress-stepper__labels {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-12);
+}
+
+.progress-stepper__label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  cursor: default;
+  /* 2026-08-10 使用者指示「這些步驟選擇應該要有 hover 效果」：標籤自己就是點擊區，
+     所以要有可點的量體——內距把命中區撐開，圓角與 hover 底色沿用站上互動元素的既有配方
+     （Q9：互動 hover 一律 --accent）。不可點的未來步驟不給 hover，免得看起來能按。 */
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-4) var(--sp-8);
+  margin: calc(var(--sp-4) * -1) calc(var(--sp-8) * -1);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+/* 標籤現在是 display:flex（撐開命中區用），會蓋掉 UA 的 [hidden]{display:none}——
+   被跳過的步驟（共看派對的票務、免票入場的票種）要真的收起來，得顯式還原。 */
+.progress-stepper__label[hidden] { display: none; }
+
+.progress-stepper__label--done:hover,
+.progress-stepper__label--current:hover { background: var(--accent); }
+.progress-stepper__label--done:focus-visible,
+.progress-stepper__label--current:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+/* 每一步都能點（`--anystep`，2026-08-10 使用者指示，選配）：預設只有已完成與當前那一步
+   可點、前進一律走「下一步」，所以未來的步驟刻意不給 hover——看起來能按卻按不動更糟。
+   加上這個修飾類代表消費頁的點擊處理器允許跳到任何一步（原型要能直接翻到想看的那一段），
+   標籤的可點外觀就跟著全部打開。**兩件事必須同時做**：只加 class 不改點擊邏輯，會做出
+   「看起來能按、按了沒反應」；只改邏輯不加 class，能按的步驟看不出來可以按。
+   被跳過的步驟本來就 `[hidden]`、不在畫面上，不受影響。 */
+.progress-stepper--anystep .progress-stepper__label { cursor: pointer; }
+.progress-stepper--anystep .progress-stepper__label:hover { background: var(--accent); }
+.progress-stepper--anystep .progress-stepper__label:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+/* 每一步下方的狀態小字（選配子元素，2026-08-10）：已完成打勾、未完成留白字。
+   有了它，進度就不只靠一條軌道的長度表達——哪一步做完了可以直接讀。
+   消費頁自行決定要不要放這一段，沒放的頁面版面不變。 */
+.progress-stepper__state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  font-size: var(--fs-11);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted-foreground);
+  font-weight: var(--fw-regular);
+}
+.progress-stepper__state .ztor-icon { width: 12px; height: 12px; }
+.progress-stepper__label--done .progress-stepper__state { color: var(--status-success-ink); }
+
+/* 已完成步驟：可回點 */
+.progress-stepper__label--done {
+  color: var(--foreground-muted);
+  cursor: pointer;
+}
+
+/* 當前步驟 */
+.progress-stepper__label--current {
+  color: var(--foreground);
+  font-weight: var(--fw-medium);
+}
+
+/* 第一與最後一個標籤貼齊兩端，中間自然分布 */
+.progress-stepper__label:first-child { align-items: flex-start; margin-left: 0; }
+.progress-stepper__label:last-child  { align-items: flex-end; margin-right: 0; }
+
+/* 窄螢幕：標籤縮小、軌道加高一點維持可見 */
+@media (max-width: 720px) {
+  .progress-stepper__label { font-size: var(--fs-11); letter-spacing: .02em; }
+}

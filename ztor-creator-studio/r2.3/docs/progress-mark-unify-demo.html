@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEMO · 進度記號統一（定案：B）</title>
+
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+
+<style>
+  /* 正式站 shared.css 開頭的兩條全域規則，這頁沒載它，得自己補（前幾份 demo 踩過）。 */
+  *, *::before, *::after { box-sizing: border-box }
+  [hidden] { display: none !important }
+
+  body {
+    margin: 0; background: var(--surface-page); color: var(--foreground);
+    font-family: var(--font-ui); font-size: var(--fs-14); line-height: var(--lh-normal);
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: var(--sp-40) var(--sp-24) var(--sp-64) }
+  h1 { font-size: var(--fs-28); margin: 0 0 var(--sp-8) }
+  h2 { font-size: var(--fs-20); margin: var(--sp-48) 0 var(--sp-6) }
+  h3 { font-size: var(--fs-15); margin: var(--sp-24) 0 var(--sp-8); color: var(--foreground-muted) }
+  p  { margin: 0 0 var(--sp-12); color: var(--foreground-muted); max-width: 74ch }
+  .lede { font-size: var(--fs-15) }
+  .why { font-size: var(--fs-13); color: var(--muted-foreground); max-width: 80ch }
+  .why b { color: var(--foreground-muted); font-weight: var(--fw-medium) }
+  .pick { color: var(--primary); font-weight: var(--fw-medium) }
+  ul { margin: 0 0 var(--sp-12); padding-left: var(--sp-20); color: var(--foreground-muted); max-width: 76ch }
+  li { margin-bottom: var(--sp-4) }
+
+  .pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 380px); gap: var(--sp-24); align-items: start; margin-top: var(--sp-16) }
+  @media (max-width: 980px) { .pair { grid-template-columns: minmax(0, 1fr) } }
+  .cap { font-size: var(--fs-12); color: var(--muted-foreground); margin: 0 0 var(--sp-10) }
+
+  /* 狀態表：一列一個狀態，左邊記號、右邊說它在講什麼 */
+  .legend { display: flex; flex-wrap: wrap; gap: var(--sp-10) var(--sp-24); margin: var(--sp-12) 0 var(--sp-4) }
+  .legend__row { display: flex; align-items: center; gap: var(--sp-10); font-size: var(--fs-12); color: var(--muted-foreground) }
+  .legend__slot { width: 26px; display: grid; place-items: center }
+
+  /* =========================================================================
+     PM · 進度記號（progress mark）。三個方案共用同一組 class 名，差別由外層
+     .opt--a / --b / --c 切換——同一份資料、同一份 markup，只有畫法不同。
+     ========================================================================= */
+  .pm {
+    flex: none; border-radius: var(--radius-pill);
+    display: inline-grid; place-items: center;
+    background: var(--foreground-muted); color: var(--on-primary);
+    width: var(--pm-size, 10px); height: var(--pm-size, 10px);
+  }
+  .pm .ic { width: 0; height: 0; opacity: 0 }        /* 預設不放字符 */
+  .pm--sm { --pm-size: 10px }
+  .pm--md { --pm-size: 20px }
+  .pm--done  { background: var(--status-success) }
+  .pm--alert { background: var(--status-error) }
+  .pm--today { background: var(--primary); --pm-size: 12px;
+               box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary) 18%, transparent) }
+  .pm--hollow { background: transparent; border: 1px solid var(--muted-foreground); --pm-size: 8px }
+
+  /* ── 方案 A：全部收斂成「點」。摘要那一欄也用 sm，字符一律不畫。 */
+  .opt--a .pm--md { --pm-size: 10px }
+
+  /* ── 方案 B（推薦）：一顆記號兩個尺寸。sm 給軸、md 給摘要；
+       字符只在 md 出現，而且只給「已完成」與「逾期」兩個狀態。 */
+  .opt--b .pm--md.pm--done .ic,
+  .opt--b .pm--md.pm--alert .ic { width: 12px; height: 12px; opacity: 1 }
+  .opt--b .pm--md.pm--alert .ic { width: 14px; height: 14px }
+  .opt--b .pm--md.pm--alert { box-shadow: 0 0 0 4px color-mix(in srgb, var(--status-error) 16%, transparent) }
+  /* 「還沒到」在兩個尺寸都維持**實心灰**，不用空心——空心在這套語言裡已經被
+     「這一列不是里程碑」（一般更新、項目建立）佔走了。同一個修飾子在不同尺寸
+     代表不同意思，是設計系統最容易長出第二套規則的地方。淡由整列的 55% 負責。 */
+
+  /* ── 方案 C：全部收斂成「圈」。軸上那一欄也長成 20px 的圈＋字符。 */
+  .opt--c .pm { --pm-size: 20px; background: transparent;
+                border: 2px solid var(--muted-foreground); color: var(--muted-foreground) }
+  .opt--c .pm .ic { width: 12px; height: 12px; opacity: 1 }
+  .opt--c .pm--done  { border-color: var(--status-success); color: var(--status-success) }
+  .opt--c .pm--alert { border-color: var(--status-error); color: var(--destructive-ink) }
+  .opt--c .pm--today { border-color: var(--primary); color: var(--primary); box-shadow: none; --pm-size: 20px }
+  .opt--c .pm--hollow { border-style: dashed; --pm-size: 20px }
+
+  /* =========================================================================
+     左欄：迷你時間軸（照正式站 .ptl 的骨架簡寫）
+     ========================================================================= */
+  .tl { display: grid; grid-template-columns: 64px 20px minmax(0, 1fr); column-gap: var(--sp-14); max-width: 600px; position: relative }
+  .tl__node { display: contents }
+  .tl__date { font-size: var(--fs-12); color: var(--muted-foreground); text-align: right; padding-top: 3px }
+  .tl__node--alert .tl__date { color: var(--destructive-ink) }
+  .tl__node--today .tl__date { color: var(--foreground); font-weight: var(--fw-medium) }
+  .tl__rail { display: grid; justify-items: center; position: relative; padding-top: 5px }
+  /* 點壓在軸線上（正式站 .ptl__dot 也有這條）：不設 z-index 的話軸線會從點的正中間穿過去。 */
+  .tl__rail .pm { position: relative; z-index: 1 }
+  .tl__rail::before { content: ""; position: absolute; top: 0; bottom: -14px; width: 1px; background: var(--border) }
+  .tl__node:last-child .tl__rail::before { bottom: auto; height: 5px }
+  .tl__body { padding-bottom: var(--sp-14); border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+              display: flex; align-items: baseline; gap: var(--sp-8) }
+  .tl__name { font-size: var(--fs-14); font-weight: var(--fw-medium); margin: 0 }
+  .tl__node--alert .tl__name { color: var(--destructive-ink) }
+  .tl__node--upd .tl__name { font-weight: var(--fw-regular); color: var(--foreground-muted) }
+  .tl__late { font-size: var(--fs-14); font-weight: var(--fw-medium); color: var(--destructive-ink) }
+
+  /* =========================================================================
+     右欄：迷你進度摘要（照正式站 .step-list 的骨架簡寫）
+     ========================================================================= */
+  .sl__row { display: flex; align-items: center; gap: var(--sp-12); padding: var(--sp-14) var(--sp-12);
+             margin: 0 calc(var(--sp-12) * -1); border-radius: var(--radius-lg) }
+  .sl__row--todo { opacity: .55 }
+  .sl__body { display: flex; align-items: baseline; gap: var(--sp-8); flex: 1 1 auto; min-width: 0 }
+  .sl__title { font-size: var(--fs-14); font-weight: var(--fw-medium) }
+  .sl__meta { font-size: var(--fs-12); color: var(--muted-foreground) }
+  .sl__row--alert .sl__title { color: var(--destructive-ink) }
+  .sl__end { margin-left: auto; flex: none }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>進度記號：摘要與時間軸統一成一套</h1>
+<p class="lede"><b class="pick">2026-08-18 使用者裁決：走 B</b>，已落地成 <code>ds-components/progress-mark.css</code>（D198）。本頁留作決策紀錄，A 與 C 保留在下面對照。</p>
+<p class="why"><b>兩個看這頁時要知道的差異：</b>① 本頁三段裡的時間軸是為了比記號而<b>簡化重畫</b>的，每列比原型緊約一半——<b>軸的疏密不在提案範圍</b>，使用者已裁示原型維持現有鬆度，不要照這頁的節奏去改軸。② B 落地後同日又迭代一輪：使用者裁示<b>軸上也要有勾勾與驚嘆號</b>，所以尺寸收斂成單一 20px、<code>--sm</code>／<code>--md</code> 退場，「還沒到」也從實心灰改回<b>空心圈＋淡勾</b>。本頁的 B 區塊停在第一輪的樣子，最終規則以 <code>ds-components/progress-mark.css</code> 與 design-system 的 Progress mark 章節為準。</p>
+<p class="lede">同一顆里程碑現在有兩張臉：總覽的「進度摘要」是 22px 的圈＋字符，進度分頁的時間軸是 10px 的點。三個方案都用同一份資料、同一份 markup，只換記號的畫法。</p>
+
+<h2>現在的兩套（問題在哪）</h2>
+<p class="why">摘要用<b>圈＋字符</b>說狀態（實心綠圈打勾／虛線灰圈淡勾／紅圈驚嘆號），時間軸用<b>點的顏色</b>說狀態。同一件事在兩個畫面上要用兩種讀法，而它們常常同時出現在使用者眼前——總覽看完就點進進度。</p>
+
+<h2>方案 A · 全部收斂成「點」</h2>
+<p class="why">摘要放棄字符，改用軸上那顆點。<b>好處</b>：兩處一模一樣，最安靜。<b>代價</b>：摘要那一列高 50px，一顆 10px 的點在裡面顯得空；而且逾期從「紅圈驚嘆號」降成「紅點」，正好是唯一該被看見的那一個變弱了。</p>
+<div class="pair opt--a">
+  <div><p class="cap">進度分頁 · 時間軸</p><div class="tl" data-tl></div></div>
+  <div><p class="cap">總覽 · 進度摘要</p><div class="card"><div data-sl></div></div></div>
+</div>
+
+<h2>方案 B · 一顆記號，兩個尺寸 <span class="pick">（推薦）</span></h2>
+<p class="why">同一組狀態規則，兩個尺寸：<b>sm 10px 給軸</b>、<b>md 20px 給摘要</b>。顏色永遠是主要訊號，字符只在 md 出現，而且只給「已完成」與「逾期」兩個狀態——<b>10px 放不下字符</b>，20px 才放得下；而 20px 多出來的面積本來就需要有東西填，不然那顆點在 50px 的列裡會浮著。</p>
+<ul>
+  <li>已完成＝實心綠（md 再加一個勾）。</li>
+  <li>還沒到＝空心灰圈，整列壓到 55%——「還沒發生」由空心與淡度一起講。</li>
+  <li>今天＝品牌色＋一圈光暈（只在軸上會出現）。</li>
+  <li>逾期＝實心紅（md 再加驚嘆號與一圈紅光暈）。</li>
+</ul>
+<p class="why">回答你的問題：<b>驚嘆號可以融進去</b>——它不是另一套語言，是同一顆點放大之後長出來的細節。<b>勾就沒那麼必要</b>：實心綠本來就代表完成，勾是同一件事講兩遍，所以只在 md 保留（那裡有空間，且與逾期成對）。</p>
+<div class="pair opt--b">
+  <div><p class="cap">進度分頁 · 時間軸（sm）</p><div class="tl" data-tl></div></div>
+  <div><p class="cap">總覽 · 進度摘要（md）</p><div class="card"><div data-sl></div></div></div>
+</div>
+<div class="legend opt--b" data-legend></div>
+
+<h2>方案 C · 全部收斂成「圈」</h2>
+<p class="why">時間軸改用摘要那套 20px 圈＋字符。<b>代價</b>：這正是 8/18 早上從時間軸拿掉的東西——一條軸七顆圈，圈的邊界比軸線還搶眼，而軸要說的是「這些事是連著的」。放在這裡是為了對照，不建議採用。</p>
+<div class="pair opt--c">
+  <div><p class="cap">進度分頁 · 時間軸</p><div class="tl" data-tl></div></div>
+  <div><p class="cap">總覽 · 進度摘要</p><div class="card"><div data-sl></div></div></div>
+</div>
+
+<h2>建議</h2>
+<p class="why">走 <b class="pick">B</b>。它把兩處變成同一套規則的兩個尺寸，而不是兩套規則；改動也最小——時間軸的點原封不動，只有摘要那三顆換皮。落地時把它 promote 成一支 <code>progress-mark.css</code>，<code>step-list</code> 與 <code>progress-timeline</code> 都引用它，之後新增狀態只要改一個地方。</p>
+
+</div>
+
+<script>
+/* 同一份資料餵給三個方案，畫法差異全部在 CSS——這樣比較才有意義。 */
+const ICON = {
+  check: '<path d="M5 12l5 5l10 -10"/>',
+  bang:  '<path d="M12 19v.01"/><path d="M12 15v-10"/>',
+  clock: '<path d="M12 7v5l3 3"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>'
+};
+function ic(name) {
+  return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' + (ICON[name] || '') + '</svg>';
+}
+function mark(state, size) {
+  const glyph = state === 'done' ? 'check' : state === 'alert' ? 'bang' : state === 'today' ? '' : 'check';
+  return '<span class="pm pm--' + size + ' pm--' + state + '">' + ic(glyph) + '</span>';
+}
+
+/* 時間軸：未來在上、今天在中、過去在下（D194）。 */
+const TL = [
+  { d: '11/19', name: '成片定剪',     state: 'todo' },
+  { d: '9/20',  name: '主體拍攝殺青', state: 'todo' },
+  { d: '今天',  name: '1 件逾期，2 件還沒到', state: 'today', cls: 'today' },
+  { d: '8/11',  name: '前期製作完成', state: 'alert', late: '逾期 6 天', cls: 'alert' },
+  { d: '7/28',  name: '劇本定稿',     state: 'done' },
+  { d: '',      name: '3 則更新',     state: 'hollow', cls: 'upd' },
+  { d: '2025/8/1', name: '項目建立',  state: 'hollow', cls: 'upd' }
+];
+/* 摘要：只列還沒完成的，加上一顆已完成的當對照。 */
+const SL = [
+  { name: '前期製作完成', meta: '8/11',  state: 'alert', end: '<span class="badge badge--error">逾期 6 天</span>', cls: 'alert' },
+  { name: '劇本定稿',     meta: '7/28',  state: 'done' },
+  { name: '主體拍攝殺青', meta: '9/20',  state: 'todo', cls: 'todo' },
+  { name: '成片定剪',     meta: '11/19', state: 'todo', cls: 'todo' }
+];
+
+document.querySelectorAll('[data-tl]').forEach(host => {
+  host.innerHTML = TL.map(n =>
+    '<div class="tl__node' + (n.cls ? ' tl__node--' + n.cls : '') + '">' +
+      '<span class="tl__date">' + n.d + '</span>' +
+      '<span class="tl__rail">' + mark(n.state, 'sm') + '</span>' +
+      '<div class="tl__body">' +
+        (n.late ? '<span class="tl__late">' + n.late + '</span>' : '') +
+        '<h4 class="tl__name">' + n.name + '</h4>' +
+      '</div>' +
+    '</div>').join('');
+});
+
+document.querySelectorAll('[data-sl]').forEach(host => {
+  host.innerHTML = SL.map(r =>
+    '<div class="sl__row' + (r.cls ? ' sl__row--' + r.cls : '') + '">' +
+      mark(r.state, 'md') +
+      '<div class="sl__body"><span class="sl__title">' + r.name + '</span>' +
+      '<span class="sl__meta">' + r.meta + '</span></div>' +
+      (r.end ? '<span class="sl__end">' + r.end + '</span>' : '') +
+    '</div>').join('');
+});
+
+const LEG = [
+  ['done',  '已完成'], ['todo', '還沒到'], ['today', '今天'], ['alert', '逾期'], ['hollow', '一般更新／項目建立']
+];
+document.querySelectorAll('[data-legend]').forEach(host => {
+  host.innerHTML = LEG.map(l =>
+    '<span class="legend__row"><span class="legend__slot">' + mark(l[0], 'sm') + '</span>' +
+    '<span class="legend__slot">' + mark(l[0], 'md') + '</span>' + l[1] + '</span>').join('');
+});
+</script>
+</body>
+</html>

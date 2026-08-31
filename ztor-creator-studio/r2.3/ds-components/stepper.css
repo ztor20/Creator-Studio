@@ -1,0 +1,108 @@
+/* ============================================================
+   Stepper — house up/down control for number inputs
+   (2026-07-27, L: "we should have a custom made up and down stepper
+   according to our design system")
+
+   Why: `input[type="number"]` renders the browser's own spin buttons — the
+   grey double-arrow. It is a user-agent control, so it ignores our tokens and
+   looks foreign on the dark canvas, which is the same class of bug as the
+   unstyled checkbox. The design system's rule is explicit: never ship the
+   native select popup, browser-default checkboxes, or OS focus rings — every
+   control has a house voice. The spinner was the last UA control left on these
+   forms.
+
+   COMPOSES with .amount-field rather than replacing it. The unit suffix
+   ("10 %", "30 days") is already solved by
+   `.amount-field--suffix.amount-field--readonly` — amount-field.css says that
+   variant was promoted precisely so future suffix fields need no page-local
+   class. This file adds ONLY the button column that did not exist, and nudges
+   the suffix left to make room.
+
+   ── Markup contract ─────────────────────────────────────────────────────
+     <div class="amount-field amount-field--suffix amount-field--readonly zstep">
+       <span class="amount-field__unit"><span class="amount-field__sym">%</span></span>
+       <input class="amount-field__input input zstep__input" type="number"
+              min="0" max="100" step="1" value="10">
+       <span class="zstep__btns">
+         <button class="zstep__btn" type="button" data-step="up"   tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button>
+         <button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
+       </span>
+     </div>
+   Without a unit, drop the __unit span and add .zstep--nounit.
+
+   Buttons are tabindex="-1" on purpose: the input itself already steps with
+   ↑/↓, so making the buttons tab stops would add two redundant stops per
+   field. They stay mouse-clickable and keep aria-labels; they are not the
+   keyboard path.
+   ============================================================ */
+
+/* Kill the UA spinner everywhere. Applied to every number input, not just
+   .zstep ones — a native spinner is never correct in this product. Fields
+   without a house stepper are simply typed into (and still take ↑/↓). */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.zstep { position: relative; }
+
+/* Make room: button column (28px) + the suffix that now sits left of it. */
+.zstep .amount-field__unit { right: 28px; }
+.zstep.amount-field--suffix.amount-field--readonly .amount-field__input.input { padding-right: 68px; }
+.zstep--nounit .amount-field__input.input,
+.zstep--nounit.amount-field--suffix.amount-field--readonly .amount-field__input.input { padding-right: 36px; }
+
+.zstep__btns {
+  position: absolute;
+  top: 1px;                       /* sits inside the field's 1px border */
+  right: 1px;
+  bottom: 1px;
+  display: flex;
+  flex-direction: column;
+  width: 28px;
+  overflow: hidden;
+  border-left: 1px solid var(--border);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.zstep__btn {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background-color var(--duration) var(--easing),
+              color var(--duration) var(--easing);
+}
+.zstep__btn + .zstep__btn { border-top: 1px solid var(--border); }
+.zstep__btn:hover { background: var(--accent); color: var(--foreground); }
+/* Press feedback — the control should feel like it heard the click. Scale
+   would fight the 1px-inset frame, so this uses the fill instead. */
+.zstep__btn:active { background: color-mix(in srgb, var(--primary) 22%, var(--card)); color: var(--foreground); }
+.zstep__btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+.zstep__btn .ztor-icon { width: 13px; height: 13px; }
+
+/* At the limit the button is spent — say so rather than letting it look live
+   and do nothing. Set by partials/stepper.js. */
+.zstep__btn[disabled] { color: var(--border); cursor: default; background: transparent; }
+
+/* Disabled/readonly host field — hide the whole column; a computed field
+   (e.g. per-slot) must not look steppable. */
+.zstep:has(.zstep__input:disabled) .zstep__btns,
+.zstep:has(.zstep__input[readonly]) .zstep__btns { display: none; }
+.zstep:has(.zstep__input:disabled) .amount-field__input.input,
+.zstep:has(.zstep__input[readonly]) .amount-field__input.input { padding-right: 40px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .zstep__btn { transition: none; }
+}

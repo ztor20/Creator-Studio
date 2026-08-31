@@ -1,0 +1,313 @@
+/* ============================================================
+   issue-panel.css · 待處理事項面板（依來源模組分組、逐項展開）
+   ------------------------------------------------------------
+   Promoted 2026-08-28（使用者裁決：把儀表板同一份待辦資料的三個出口——
+   警示條、「待處理事項」彈窗、「查看全部」彈窗——併成一個頁內面板）。
+
+   它取代的是「一條摘要 ＋ 兩層彈窗」的組合：同一份 dash-alerts 先在警示條露出
+   最急的一筆，其餘藏進兩個內容互相包含的彈出層，讀者要開兩次窗才知道總共有幾件、
+   分別屬於哪個模組。面板把這三件事攤在同一個平面上：分組回答「哪個模組」，
+   分組上的筆數回答「有幾件」，逐項展開回答「這一件牽涉到什麼、下一步是什麼」。
+
+   與既有元件的分工
+     · alert.css 的 `.alert--card`：單則通知的卡片形態，一則一張、彼此獨立，
+       嚴重度靠圖示字色。這支處理的是「一整批待辦的目錄」，多了分組層與展開層。
+     · collapse-group.css：一組表單欄位的折疊盒，折疊態只留一行摘要值。
+       這支的折疊態要留的是「標題＋牽涉幾項＋多久以前」，而且有兩層（面板／單則）。
+     · accordion.css：FAQ 語彙，整列都是文字、沒有徽章與右側控制鈕。
+   三者都留著，不互相取代。
+
+   表面律（Q77）：事項卡的**面**一律中性（`--ztu-film`），不照參照圖鋪紅底。
+   嚴重度只出現在計數徽章那顆染色膠囊上（沿用 badge.css 的 `--error`／`--warning`
+   ／`--info`），面本身不帶顏色——一次跳出三張紅底卡，畫面會讀成「整個工作站在燒」，
+   而實際上那只是三件各自有下一步的例行事務。
+
+   anatomy
+     .card.issue-panel                 面板＝頁面級表面，玻璃四件套由 .card 提供
+       .issue-panel__head              標題列（整列可點，收合整個面板）
+         .issue-panel__toggle          <button aria-expanded>：標題＋總筆數＋chevron
+       .issue-panel__groups[hidden]    分組區（收合時整段收起）
+         .issue-group
+           .issue-group__head          模組 icon ＋ 模組名 ＋ 該組筆數
+           .issue-group__list
+             .issue-card               事項卡（中性面）
+               .issue-card__head
+                 .issue-card__toggle   <button aria-expanded>：計數徽章＋標題＋相對時間＋chevron
+                 .issue-card__aside    （選配）暫緩／鎖頭鈕；按鈕不能包按鈕，故與 toggle 並排
+               .issue-card__body[hidden]
+                 .issue-card__details  受影響細項清單（每項左側一條細直線）
+                   .issue-detail
+                 .issue-card__next     下一步一行：標籤＋既有 CTA 連結
+
+   鍵盤：兩層開合都是原生 <button>＋`aria-expanded`，Tab 走得到、Enter／Space 開合，
+   focus 樣式走站上的 `--ring`。開合狀態由 JS 寫 `aria-expanded` 與 body 的 `hidden`，
+   CSS 只負責 chevron 的旋轉，不參與顯示／隱藏的判斷。
+   ============================================================ */
+
+/* 面板本身只補「內距歸零、內容自己排間距」——玻璃四件套、圓角與投影都由 .card 給。 */
+.issue-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+/* KPI 卡點擊會把焦點送到這裡（tabindex="-1"），所以要看得見焦點落在哪。
+   用 outline 而不是換底色：面板是玻璃，換底色會破壞它與頁面的層次關係。 */
+.issue-panel:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* ── 面板標題列 ─────────────────────────────────────────── */
+.issue-panel__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+}
+
+/* 整列可點：點標題、點筆數、點空白都算「收合這個面板」。只讓 chevron 可點的話，
+   等於把一顆 16px 的圖示當成整個面板的開關。 */
+.issue-panel__toggle {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.issue-panel__toggle:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.issue-panel__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-18);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-snug);
+  color: var(--foreground);
+}
+
+/* 總筆數：中性膠囊。這顆數字回答「總共幾件」，不回答「有多急」——
+   嚴重度是逐則的事，加總起來沒有意義，所以它不染色。 */
+.issue-panel__count { flex: none; }
+
+/* chevron 推到最右：面板的開關與各事項卡的開關因此落在同一條垂直線上。 */
+.issue-panel__chev {
+  flex: none;
+  margin-left: auto;
+  color: var(--muted-foreground);
+  transition: transform var(--duration) var(--easing);
+}
+[aria-expanded="true"] > .issue-panel__chev,
+[aria-expanded="true"] > .issue-card__chev { transform: rotate(180deg); }
+
+/* ── 分組 ──────────────────────────────────────────────── */
+.issue-panel__groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-20);
+  margin-top: var(--sp-20);
+}
+.issue-panel__groups[hidden] { display: none; }
+
+.issue-group__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-8);
+}
+/* 模組名走全大寫＋字距的標籤語彙（同 card.css 的 `.card__subhead`）：
+   它不是第二層標題，是一條「以下這幾件屬於哪裡」的分隔說明。 */
+.issue-group__label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--foreground-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.issue-group__icon {
+  display: inline-flex;
+  flex: none;
+  color: var(--muted-foreground);
+}
+.issue-group__icon .ztor-icon { width: 14px; height: 14px; }
+.issue-group__count { flex: none; }
+
+.issue-group__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+
+/* ── 事項卡 ────────────────────────────────────────────── */
+/* 卡面一律中性（Q77 表面律）：薄膜底＋一條邊界，跟 `.card--muted` 同一組配方，
+   所以它在玻璃面板上讀起來是「疊在面板上的一層」而不是「浮在面板上的第二張卡」。
+   巢狀層不上 backdrop 模糊——再模糊只會取樣到自己的母面，讀不出層次還多耗 GPU。 */
+.issue-card {
+  background: var(--ztu-film);
+  border: 1px solid var(--nest-line);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-12) var(--sp-14);
+}
+/* 已暫緩：整張降階，但不移除——它當下不需要處理，仍要看得到（spec 5.1.1 §F4）。 */
+.issue-card--snoozed { opacity: 0.62; }
+
+.issue-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+}
+
+.issue-card__toggle {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.issue-card__toggle:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+/* 計數徽章＝這一則牽涉幾個細項，顏色＝嚴重度。染色配方直接沿用 badge.css 的
+   `.badge--error`／`--warning`／`--info`，本檔只補「數字要置中、寬度要對齊」——
+   1 和 3 若各自照文字寬收縮，一整欄徽章的左右邊界會參差不齊。 */
+.issue-card__count {
+  flex: none;
+  justify-content: center;
+  min-width: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.issue-card__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  line-height: var(--lh-snug);
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 相對時間：靠右、不換行。窄畫面下先讓標題截斷，時間本身只有幾個字，
+   一旦折行就會把整列撐成兩層、破壞這一欄的掃視節奏。 */
+.issue-card__ago {
+  flex: none;
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+.issue-card__chev {
+  flex: none;
+  color: var(--muted-foreground);
+  transition: transform var(--duration) var(--easing);
+}
+
+/* 右側的次要動作（暫緩／鎖頭）。與 toggle 並排而不是包在裡面——按鈕不能包按鈕，
+   包了之後讀屏會把整列唸成一顆按鈕，鍵盤也走不到裡面那顆。 */
+.issue-card__aside { flex: none; }
+
+/* ── 展開後的內容 ──────────────────────────────────────── */
+.issue-card__body {
+  margin-top: var(--sp-12);
+}
+.issue-card__body[hidden] { display: none; }
+
+.issue-card__details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+}
+
+/* 每個細項左側一條細直線：它是「這一則底下的東西」，不是同層的另一則。
+   用邊線而不是縮排＋項目符號——符號會多帶一層語意（清單／勾選），
+   而這裡要說的只有從屬關係。 */
+.issue-detail {
+  padding-left: var(--sp-12);
+  border-left: 1px solid var(--border);
+}
+.issue-detail__name {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  line-height: var(--lh-comfy);
+  color: var(--foreground);
+}
+.issue-detail__sub {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  line-height: var(--lh-normal);
+  color: var(--muted-foreground);
+}
+
+/* 下一步：一行文字標籤＋既有的 CTA 連結。這裡刻意不做成「建議動作」——
+   站上沒有推薦引擎，寫成建議等於憑空多出一個產品功能（見 ASSUMPTIONS ISSUE-001）。
+   它呈現的是這一則本來就帶著的下一步與去處。 */
+.issue-card__next {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  margin-top: var(--sp-12);
+  padding-top: var(--sp-10);
+  border-top: 1px solid var(--nest-line);
+}
+.issue-card__next-label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.issue-card__next-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--foreground);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1px;
+}
+.issue-card__next-link:hover { border-bottom-color: var(--foreground); }
+.issue-card__next-link:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+.issue-card__next-link .ztor-icon { width: 14px; height: 14px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .issue-panel__chev,
+  .issue-card__chev { transition: none; }
+}
+
+/* 窄畫面：相對時間讓位（標題與筆數才是決定「要不要展開」的資訊），
+   細項的名稱與說明維持原樣——它們是展開後才出現的內容，不參與這一欄的掃視。 */
+@media (max-width: 640px) {
+  .issue-card__ago { display: none; }
+}

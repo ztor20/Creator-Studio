@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/combobox.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
@@ -121,11 +122,15 @@
           </div>
         </div>
 
-        <!-- 分頁：基本資料｜bookyay 活動 -->
-        <nav class="tabs tabs--count-plain" role="tablist" id="cd-tabs">
-          <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="basic" data-i18n="cd.tab.basic">Details</div>
-          <div class="tabs__item" role="tab" aria-selected="false" data-tab="events"><span data-i18n="cd.tab.events">bookyay events</span> <span class="tabs__item-count" data-cd-count>0</span></div>
-        </nav>
+        <!-- 分頁：基本資料｜bookyay 活動（2026-08-26：橫排 tabs 改成左側分節導覽 section-nav，
+             與 product-detail／series-detail／settings 同一套骨架，統一詳情頁的分節控制項；
+             .tab-panel／data-panel 切換邏輯不變，tabs.css 仍保留供 .tab-panel 顯隱規則） -->
+        <div class="section-nav-layout mt-24">
+          <nav class="section-nav" role="tablist" id="cd-tabs" data-tabs aria-label="Creator detail sections">
+            <button class="section-nav__item section-nav__item--active" role="tab" aria-selected="true" data-tab="basic" data-i18n="cd.tab.basic">Details</button>
+            <button class="section-nav__item" role="tab" aria-selected="false" data-tab="events"><span data-i18n="cd.tab.events">bookyay events</span> <span class="section-nav__count" data-cd-count>0</span></button>
+          </nav>
+          <div class="section-nav__body">
 
         <!-- ── 分頁一 · 基本資料 ─────────────────────────────────── -->
         <section class="tab-panel tab-panel--active cd-panel" data-panel="basic">
@@ -196,6 +201,8 @@
             <button class="btn btn--primary" type="button" data-cd-save data-i18n="creators.form-save">Save</button>
           </div>
         </section>
+          </div><!-- /section-nav__body -->
+        </div><!-- /section-nav-layout -->
       </div>
 
     </div>
@@ -278,12 +285,12 @@
     renderHead();
   });
 
-  /* ── 分頁 ─────────────────────────────────────────────────── */
+  /* ── 分頁（2026-08-26：section-nav 左側分節導覽，做法沿用 product-detail） ─────── */
   var tabs = document.getElementById('cd-tabs');
   function showTab(name) {
-    Array.prototype.forEach.call(tabs.querySelectorAll('.tabs__item'), function (t) {
+    Array.prototype.forEach.call(tabs.querySelectorAll('.section-nav__item'), function (t) {
       var on = t.getAttribute('data-tab') === name;
-      t.classList.toggle('tabs__item--active', on);
+      t.classList.toggle('section-nav__item--active', on);
       t.setAttribute('aria-selected', on ? 'true' : 'false');
     });
     Array.prototype.forEach.call(document.querySelectorAll('.tab-panel'), function (p) {
@@ -291,7 +298,7 @@
     });
   }
   tabs.addEventListener('click', function (e) {
-    var t = e.target.closest('.tabs__item');
+    var t = e.target.closest('.section-nav__item');
     if (t) showTab(t.getAttribute('data-tab'));
   });
   if (qs.get('tab') === 'events') showTab('events');

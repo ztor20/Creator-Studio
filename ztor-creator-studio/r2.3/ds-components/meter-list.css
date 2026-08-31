@@ -1,0 +1,154 @@
+/* ============================================================
+   meter-list.css · 逐項水位清單（名稱 → 量條 → 數字，三欄一線）
+
+   一組同質項目各自的「賣了幾成／用了幾成」。搭 `stock-bar.css` 的量條使用：
+   本檔只管三欄的排版與狀態，量條本身仍是 `.stock-bar` / `.stock-bar__fill`。
+
+   首個消費情境：活動詳情總覽的「售票進度」卡（2026-08-17），一列一個票種。
+
+   為什麼是三欄一線（2026-08-17 使用者指示「優化 UI」後改）：
+   第一版是「名稱靠左、數字靠右、量條另起一行」。卡片一寬，眼睛要從最左跑到
+   最右才把名稱與數字配起來，還要再往下一行找那條量條——同一筆資料被拆到三個
+   位置。改成一線之後，一列讀完就是一個票種的完整狀態。
+
+   anatomy
+     .meter-list
+       .meter-list__row              三欄 grid（名稱｜量條｜數字）
+         .meter-list__name          名稱（可含徽章，過長截斷）
+         .stock-bar                 量條（來自 stock-bar.css）
+         .meter-list__num           數字，靠右、等寬
+           b                        主要數字（前景色，不加粗——靠顏色不靠字重）
+
+   modifier
+     .meter-list--media             最左邊多一欄縮圖（見下方 --media 段）
+     .meter-list__row--off          淡化整列（如已暫停販售的票種：庫存仍佔著，
+                                    但不是現在的戰場）
+     .meter-list__num--hot          數字轉品牌色（如即將售罄，需要立刻決定）
+   ============================================================ */
+
+.meter-list__row {
+  display: grid;
+  /* 量條那一欄設寬度上限：卡片一寬，條子會拉成跨半個畫面的細線，數字又被推到
+     最右邊，三欄等於再度分家。條子夠長就能比較，不必更長。 */
+  grid-template-columns: minmax(90px, 180px) minmax(120px, 260px) auto;
+  gap: var(--sp-16);
+  align-items: center;
+  justify-content: start;
+  padding: var(--sp-12) 0;
+}
+.meter-list__row + .meter-list__row { border-top: 1px solid var(--border); }
+
+.meter-list__name {
+  font-size: var(--fs-14);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  min-width: 0;
+}
+/* 名稱本體才截斷，後面的徽章不跟著被切掉 */
+.meter-list__name > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meter-list__num {
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+/* 主要數字用前景色而不是加粗：一疊等寬數字裡，換色比換字重好認，
+   也不會讓那一行的基線看起來歪掉。 */
+.meter-list__num b {
+  color: var(--foreground);
+  font-weight: var(--fw-regular);
+}
+.meter-list__num--hot b { color: var(--brand-ink); }
+
+.meter-list__row--off { opacity: 0.55; }
+
+/* 量條在這個情境不要自己的上下外距——列的 padding 已經給了節奏 */
+.meter-list__row .stock-bar { margin: 0; }
+
+/* 總量那一條（放在清單之上）做粗一階，與逐項的細條分出主從 */
+.stock-bar--total { height: 8px; }
+
+
+/* ── --media：最左邊多一欄縮圖（2026-08-17 使用者指示「需要列出票券與票券組合包
+   及其商品或票券圖片」）─────────────────────────────────────────────────────
+   首個消費情境：活動詳情總覽的售票進度卡。票券那一段每列掛活動主視覺（那就是這張票
+   在粉絲票夾裡的樣子），票務商品那一段每列掛「這一組裝了什麼」——票的圖 ＋ 每件商品的圖，
+   疊成一小排。名字讀得出組合叫什麼，圖才讀得出裡面是什麼。
+
+   為什麼是 modifier 而不是改預設：多數水位清單講的是抽象的量（票種、庫存、名額），
+   沒有圖可掛；硬給一欄空縮圖只會讓每一列左邊多一塊灰。 */
+/* 名稱那一欄比無圖版寬：掛圖的清單多半有第二行（「這一組裝了什麼」），
+   180px 上限會把商品名切成「LOVE RAGE HOP…」，等於第二行白寫。
+   多出來的寬度從量條那一欄借——條子夠長就能比較，不必更長。 */
+/* --media 的欄位：縮圖｜名稱｜（數字疊在量條上方）。
+   2026-08-17 使用者指示「放在進度條上方靠右」：數字原本是量條右邊的第四欄，
+   一列讀完要走「名稱 → 條 → 數字」三段，而數字與條講的是同一件事的兩種說法。
+   疊起來之後那一格自己就完整：上面一行字、下面一條線。 */
+.meter-list--media .meter-list__row {
+  grid-template-columns: auto minmax(160px, 280px) minmax(160px, 1fr) auto;
+}
+/* 第三欄改成「數字在上、量條在下」的直排 */
+.meter-list--media .meter-list__meter {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-6);
+  min-width: 0;
+}
+.meter-list--media .meter-list__meter .meter-list__num { text-align: right; }
+
+.meter-list__thumbs { display: flex; align-items: center; }
+
+.meter-list__thumb {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--muted);
+  object-fit: cover;
+  display: block;
+}
+/* 兩張以上就疊起來：一組通常只有兩三件，攤開會把名稱那一欄推掉。
+   外圈用卡片底色描一圈，疊住的地方才看得出是兩張圖不是一張破圖。 */
+.meter-list__thumb + .meter-list__thumb {
+  margin-left: -12px;
+  box-shadow: 0 0 0 2px var(--card);
+}
+
+/* 名稱底下再一行「這一組裝了什麼」。與 .meter-list__name 的截斷共存：
+   兩行各自截斷，長商品名不會把整列撐開。 */
+.meter-list__name--stack {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-2);
+}
+/* 「還剩多少」自成一欄、貼齊整列最右（2026-08-17 使用者指示「這個要單獨放在最右邊」）。
+   它與左邊那組數字是兩種性質——「119 / 180」是既成事實，「還有 61 位」是接下來要處理
+   的事。同輪先做成數字底下的第二行，但那樣它仍隸屬於那一格，讀起來像同一組數字的
+   續行；獨立一欄之後，一列從左到右是「這是什麼 → 賣得如何 → 還差多少」三件事。
+   墓碑：原 `.meter-list__num-sub`（數字欄的第二行）於同日被本規則取代。 */
+.meter-list__left {
+  font-size: var(--fs-12);
+  color: var(--foreground-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+  align-self: center;
+}
+
+.meter-list__sub {
+  font-size: var(--fs-12);
+  color: var(--foreground-muted);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -38,6 +38,7 @@
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stock-bar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stock-readout.css?v=r2.2">
@@ -94,13 +95,20 @@
            tab 對應：總覽（§2.3 銷售摘要＋庫存健康快照＋§2.4 項目引用，皆唯讀管理視角）／
            基本資訊（§2.5 素材＋§2.6 資訊＋§2.7 內容檔）／定價與庫存（§2.8 規格＋§2.9 價格＋§2.10 庫存）／
            交付與取貨（§2.11 取貨＋§2.12 限購）／關聯（§2.13 標籤＋§2.14 電影）。
-           §2.x 產品內容與各 data-feat／devtools 鎖定欄位邏輯不變，只重新分組進 tab-panel。tabs 為既有 DS 元件（earnings canonical）。 -->
-      <nav class="tabs tabs--card tabs--underline-short mt-24" role="tablist" data-tabs>
-        <button class="tabs__item tabs__item--active" role="tab" data-tab="overview" aria-selected="true" data-i18n="product-detail.tab.overview">Overview</button>
-        <button class="tabs__item" role="tab" data-tab="price-stock" aria-selected="false" data-i18n="product-detail.tab.price-stock">Pricing &amp; stock</button>
-        <button class="tabs__item" role="tab" data-tab="delivery" aria-selected="false" data-i18n="product-detail.tab.delivery">Delivery</button>
-        <button class="tabs__item" role="tab" data-tab="relations" aria-selected="false" data-i18n="product-detail.tab.relations">Relations</button>
-      </nav>
+           §2.x 產品內容與各 data-feat／devtools 鎖定欄位邏輯不變，只重新分組進 tab-panel。
+
+           2026-08-25（Q75 定案）：分頁控制項由橫排卡式 tabs 改成左側分節導覽（section-nav，分隔線式、
+           無 icon），與 series-detail／settings 同一套骨架＝`.section-nav-layout`（左 `nav.section-nav` ＋
+           右 `.section-nav__body`）。`.tab-panel`／`data-panel` 切換邏輯不變，tabs.css 仍保留（供
+           `.tab-panel`／`.tab-panel--active` 顯隱規則），只是分頁控制項本身換了骨架與樣式。 -->
+      <div class="section-nav-layout mt-24">
+        <nav class="section-nav" role="tablist" data-tabs aria-label="Product detail sections">
+          <button class="section-nav__item section-nav__item--active" role="tab" data-tab="overview" aria-selected="true" data-i18n="product-detail.tab.overview">Overview</button>
+          <button class="section-nav__item" role="tab" data-tab="price-stock" aria-selected="false" data-i18n="product-detail.tab.price-stock">Pricing &amp; stock</button>
+          <button class="section-nav__item" role="tab" data-tab="delivery" aria-selected="false" data-i18n="product-detail.tab.delivery">Delivery</button>
+          <button class="section-nav__item" role="tab" data-tab="relations" aria-selected="false" data-i18n="product-detail.tab.relations">Relations</button>
+        </nav>
+        <div class="section-nav__body">
 
       <div class="detail-grid mt-16">
       <div class="detail-main">
@@ -722,6 +730,9 @@
       </aside>
       </div><!-- /detail-grid -->
 
+        </div><!-- /section-nav__body -->
+      </div><!-- /section-nav-layout -->
+
 
       <!-- 右側唯讀 meta 欄（跨分頁常駐；所有數值皆來自既有欄位，實編輯仍在對應分頁）-->
 
@@ -1269,17 +1280,19 @@
 <script>
   /* Product detail · in-page tabs（canonical pattern per earnings.html；無共用 tabs.js，各頁 inline）。
      把區塊堆疊分組為 總覽 / 基本資訊 / 定價與庫存 / 交付與取貨 / 關聯；
-     支援 [data-tab-jump] 跨 tab 深連結（庫存健康「Adjust stock →」）與 #hash deep-link。 */
+     支援 [data-tab-jump] 跨 tab 深連結（庫存健康「Adjust stock →」）與 #hash deep-link。
+     2026-08-25：分頁控制項由橫排 .tabs__item 改成左側 .section-nav__item（Q75 定案，做法沿用
+     series-detail 的 section-nav 分頁邏輯）；.tab-panel 顯隱與 detail-grid 右欄策略不變。 */
   (function () {
     const tablist = document.querySelector('[data-tabs]');
     if (!tablist) return;
-    const tabs = tablist.querySelectorAll('.tabs__item');
+    const tabs = tablist.querySelectorAll('.section-nav__item');
     const panels = document.querySelectorAll('.tab-panel[data-panel]');
     function activate(name, push) {
       let matched = false;
       tabs.forEach(t => {
         const on = t.dataset.tab === name;
-        t.classList.toggle('tabs__item--active', on);
+        t.classList.toggle('section-nav__item--active', on);
         t.setAttribute('aria-selected', on ? 'true' : 'false');
         if (on) matched = true;
       });
@@ -1297,7 +1310,7 @@
       if (push && window.history && history.replaceState) history.replaceState(null, '', '#' + name);
     }
     tablist.addEventListener('click', e => {
-      const btn = e.target.closest('.tabs__item');
+      const btn = e.target.closest('.section-nav__item');
       if (btn) activate(btn.dataset.tab, true);
     });
     document.addEventListener('click', e => {

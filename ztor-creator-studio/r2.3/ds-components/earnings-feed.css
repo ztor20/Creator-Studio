@@ -1,0 +1,150 @@
+/* ============================================================
+   earnings-feed.css · 近期收入：一筆一個框
+   ------------------------------------------------------------
+   Promoted 2026-08-28（使用者裁示：「近期收入搬到第一屏、一筆一個 section 匡、
+   每 10 秒更新一次」）。
+
+   它取代的是什麼
+     同一份資料原本走 `transaction-list` 的表格版（`.ztor-table`），住在頁面下半、
+     與「近期動態」並排。表格是為了「一次掃完一整欄、上下比較」而生；搬進第一屏
+     右側那一欄之後只剩 219～259px，欄與欄互相擠壓、名稱幾乎全被截斷，
+     表格的優勢一個都用不到。改成逐筆成框：一筆就是一個完整的小敘述
+     （這是什麼 → 收了多少 → 從哪裡、什麼時候），三行各自佔滿框寬，
+     窄欄反而是它最舒服的寬度。
+     **`transaction-list` 一個位元組都沒動**——earnings 等頁仍在消費它。
+
+   表面（Q77）
+     框巢狀在玻璃卡裡 → `--ztu-film`（6% 薄膜）＋ 1px `--nest-line`，
+     **不上 backdrop-filter**（母卡已經是玻璃，子層再模糊只會取樣到母卡自己），
+     **面不染色**。金額是正是負只表現在文字色（`--amount--neg` 走 `--destructive`），
+     不鋪底色——一欄五個框各自染一次底，整欄會讀成一片色塊。
+
+   結構
+     .earnings-feed                直向框列（間距 --sp-8）
+       .earnings-feed__item        一筆＝一個框
+         .earnings-feed__name      名稱（單行截斷）— 這是什麼
+         .earnings-feed__amount    金額（--font-numeric，本框視覺權重最高）— 收了多少
+         .earnings-feed__meta      來源與時間一行兩端 — 從哪裡、什麼時候
+           .earnings-feed__icon    來源類型圖示（registry，data-lucide）
+           .earnings-feed__src     來源（可截斷）
+           .earnings-feed__time    時間（不折行，靠右）
+
+   為什麼名稱在金額上方而不是相反
+     金額用字級與字重承擔權重，不必靠位置再強調一次；名稱放最上面，
+     一整欄由上而下讀就是「這是什麼／這是什麼／…」，掃視時對得起來。
+     反過來把金額擺第一行，一欄五個數字連成一片、名稱變成註腳，
+     反而看不出每一筆各是什麼。
+
+   輪替（見 js/components.js 的 earnings-feed 渲染器與計時器）
+     資料是既有 8 筆的**輪替**，不是有新交易進來（ASSUMPTIONS FEED-001）。
+     新的一筆從頂端進場（`--enter`），其餘往下推、最末一筆退出可視範圍。
+     `prefers-reduced-motion: reduce` 時內容照換、動畫不播。
+   ============================================================ */
+
+.earnings-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+
+/* 一筆一個框。內距用 --sp-12/--sp-14 與 .issue-card 同一階——兩者都是「玻璃卡裡的
+   一排薄膜小框」，同屏出現時內距不一致會讀成兩套系統。 */
+/* 巢狀薄膜（Q77 的卡中卡配方）：這些框住在 .card 裡面，不上模糊——模糊套模糊只會
+   取樣到自己的母面。2026-08-28 曾因外框一度撤除而升成玻璃，同日外框改回加上，
+   這裡也跟著退回薄膜，否則就是玻璃疊玻璃。 */
+.earnings-feed__item {
+  background: var(--ztu-film);
+  border: 1px solid var(--nest-line);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-12) var(--sp-14);
+  /* 三行之間的節奏比框與框之間緊一階，框才讀得出是一個整體。 */
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+/* 名稱：單行截斷。折行會讓一欄裡的框高低不一，輪替時每 10 秒整欄跳一次高度。
+   資料端的名稱帶 <em>（作品名），字體由全站 em 樣式承接，這裡不另外指定。 */
+.earnings-feed__name {
+  font-size: var(--fs-12);
+  line-height: var(--lh-comfy);
+  color: var(--foreground-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 金額＝這一框的主角。字面與 .data-list__amount 同源（--font-numeric ＋ tabular-nums），
+   一欄由上而下的小數點才對得齊；字級提到 --fs-18，是框內唯一大於內文的元素。 */
+.earnings-feed__amount {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-18);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-snug);
+  letter-spacing: 0;
+  color: var(--foreground);
+}
+/* 支出（提領、退費）只換文字色，不換框的面——沿用 .data-list__amount--neg 的語意色。 */
+.earnings-feed__amount--neg { color: var(--destructive); }
+
+/* 來源與時間：同一行兩端。串接成一句在英文會爆行（Story world licensing · Nov 20），
+   兩端對齊時中間的空白自己吸收中英文的長度差。 */
+.earnings-feed__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  font-size: var(--fs-11);
+  line-height: var(--lh-normal);
+  color: var(--muted-foreground);
+  min-width: 0;
+}
+.earnings-feed__icon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+.earnings-feed__src {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 時間永遠完整：它只有一兩個詞，被截斷就等於沒有資訊。名稱與來源可以截，這個不行。 */
+.earnings-feed__time {
+  margin-left: auto;
+  flex: none;
+  white-space: nowrap;
+}
+
+/* 進場：只給輪替時新出現在頂端的那一框。位移刻意很小（6px）並且只往下——
+   讀起來是「上面推進來一筆」，不是整欄重畫。 */
+@keyframes ztu-earnings-feed-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+.earnings-feed__item--enter {
+  animation: ztu-earnings-feed-in calc(var(--duration) * 1.6) var(--easing) both;
+}
+
+/* 減少動態：內容照換（那是資訊，不是裝飾），但不播位移與淡入。 */
+@media (prefers-reduced-motion: reduce) {
+  .earnings-feed__item--enter { animation: none; }
+}
+
+
+/* ── 收入欄（2026-08-28）：是卡，與另外兩欄同層級 ────────────────────────
+   標題列走 .card__head，上內距由 .card 自己負責——先前無框版本手動補的 --sp-20
+   已隨外框回歸移除，否則會與卡的內距疊成兩倍。
+   「查看全部」放在標題列右側而不是卡底整寬按鈕：省一整行，而且與標題同一列時
+   讀者一眼就知道這一區通往哪裡。 */
+.earnings-col { min-width: 0; }
+.earnings-col__more {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex: none;
+  font-size: var(--fs-13);
+}
+.earnings-col__more .ztor-icon { width: 15px; height: 15px; }

@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full" data-data-state="has-data">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- base：同 demo A，資產與導覽都以 r2.2 根為準；本頁不用裸 #anchor。 -->
+<base href="../">
+<title>DEMO B · 儀表板只重排</title>
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css">
+<link rel="stylesheet" href="ds-components/fonts.css">
+<link rel="stylesheet" href="ds-components/button.css">
+<link rel="stylesheet" href="ds-components/badge.css">
+<link rel="stylesheet" href="ds-components/bento.css">
+<link rel="stylesheet" href="ds-components/kpi.css">
+<link rel="stylesheet" href="ds-components/data-list.css">
+<link rel="stylesheet" href="ds-components/info-banner.css">
+<link rel="stylesheet" href="ds-components/alert.css">
+<link rel="stylesheet" href="ds-components/card.css">
+<link rel="stylesheet" href="ds-components/empty-card.css">
+<link rel="stylesheet" href="ds-components/input.css">
+<link rel="stylesheet" href="ds-components/header.css">
+<link rel="stylesheet" href="ds-components/table.css">
+<link rel="stylesheet" href="ds-components/perf-rank.css">
+<link rel="stylesheet" href="ds-components/chart.css">
+<link rel="stylesheet" href="ds-components/chip.css">
+<link rel="stylesheet" href="ds-components/accordion.css">
+<link rel="stylesheet" href="ds-components/payout-modal.css">
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="ds-components/detail-sheet.css">
+<style>
+  /* DEMO 專用：只有頁面切換條，版面本身完全沿用既有元件與 span，未新增樣式。 */
+  .demo-bar { display:flex; align-items:center; gap: var(--sp-10); flex-wrap: wrap;
+              padding: var(--sp-10) var(--sp-14); margin-bottom: var(--sp-20);
+              border: 1px dashed var(--border); border-radius: var(--radius-xl);
+              background: var(--accent); font-family: var(--font-ui); font-size: var(--fs-13);
+              color: var(--muted-foreground); }
+  .demo-bar__tag { font-weight: var(--fw-medium); color: var(--foreground); }
+  .demo-bar__spacer { margin-left: auto; }
+</style>
+</head>
+<body data-sheet-nav>
+<div class="app">
+
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <div class="demo-bar">
+        <span class="demo-bar__tag">DEMO B · 只重排</span>
+        <span>項目全留，高頻在前、複盤在後；總長度不變</span>
+        <span class="demo-bar__spacer"></span>
+        <a class="card__link" href="index.html">現況</a>
+        <a class="card__link" href="docs/dashboard-demo-a.html">提案 A</a>
+      </div>
+
+      <div class="page-crumb">
+        <span data-i18n="nav.dashboard">Dashboard</span>
+      </div>
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="dash.h1">Studio</h1>
+          <p class="page-intro__sub" data-i18n="dash.sub">What came in, what needs you, and where your work is playing right now.</p>
+        </div>
+        <div class="page-intro__actions"><p class="greeting" data-greeting></p></div>
+      </div>
+
+      <!-- F2 · 營運摘要（位置不變）-->
+      <div class="bento dash-data-only mb-16" data-component="ops-summary" data-key="dash-ops"></div>
+
+      <!-- ══ 第 1 排（原第 4 排）：F6 進行中項目 ｜ F4 今日待處理 ═══════════
+           兩個最高頻的旅程（檔期推進、處理待辦）提到第一排。
+           span 為什麼是這個組合：裝表格的卡有最小寬度（近期活動與項目 632px、
+           近期收入 597px、最近動態 448px，見 bento.css 註解），只有 F4 是彈性
+           卡片列、放得進 span-5。所以 F4 在右欄不是優先序低，是唯一放得下的組合。
+           ═══════════════════════════════════════════════════════════════ -->
+      <div class="bento bento--stack-lg dash-data-only">
+        <section class="card bento--span-7">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--accent"><i data-lucide="calendar" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="dash.progress.title">Events &amp; projects</h3>
+            </div>
+            <a class="card__link" href="projects.html" data-i18n="dash.progress.link">View all</a>
+          </div>
+          <div data-component="events-projects" data-key="dash-events"></div>
+        </section>
+
+        <section class="card bento--span-5">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--warning"><i data-lucide="bell" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="section.alerts">Alerts &amp; actions</h3>
+            </div>
+            <a class="card__link" href="index.html" data-i18n="btn.view-all-alerts">View all</a>
+          </div>
+          <div data-component="alerts" data-key="dash-alerts"></div>
+        </section>
+      </div>
+
+      <!-- ══ 第 2 排（原第 3、4 排的另一半）：F3 近期收入 ｜ F5 近期動態 ══ -->
+      <div class="bento bento--stack-lg mt-24 dash-data-only">
+        <section class="card bento--span-7">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--primary"><i data-lucide="dollar-sign" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="section.recent-earnings">Recent earnings</h3>
+            </div>
+            <a class="card__link" href="earnings.html" data-i18n="btn.view-all">View all</a>
+          </div>
+          <div data-component="transaction-list" data-key="dash-recent"></div>
+        </section>
+
+        <section class="card bento--span-5">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--info"><i data-lucide="refresh-ccw" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="dash.recent.title">Recent activity</h3>
+            </div>
+            <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="dash.recent.sub">System events</span>
+          </div>
+          <div data-component="activity-list" data-key="dash-activity"></div>
+        </section>
+      </div>
+
+      <!-- ══ 第 3 排：F7 粉絲關係與受眾趨勢 ｜ F8 外部資料狀態（順序不變）══ -->
+      <div class="bento mt-24 dash-data-only">
+        <section class="card bento--span-7">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--success"><i data-lucide="users" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="dash.f7.title">Fan relations &amp; audience trends</h3>
+            </div>
+          </div>
+          <div class="insight-split" data-component="insight-split" data-key="dash-insight"></div>
+        </section>
+
+        <section class="card bento--span-5">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon"><i data-lucide="link" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="dash.ext.title">External data status</h3>
+            </div>
+            <a class="card__link" href="fan-analytics.html" data-i18n="dash.ext.link">Manage in Fan analytics</a>
+          </div>
+          <div data-component="ext-data-status" data-key="dash-ext"></div>
+        </section>
+      </div>
+
+      <!-- ══ F9 · 站上粉絲分級組成（緊接 F7，同一批人的另一個切面）═══════ -->
+      <section class="card mt-24 dash-data-only">
+        <div class="card__head">
+          <h3 class="card__title" data-i18n="dash.tiers.title">Fans on Ztor</h3>
+          <span class="chip chip--static" data-i18n="dash.tiers.chip">On-Ztor only — no external platforms</span>
+        </div>
+        <div class="pie-figure">
+          <div class="pie" aria-hidden="true"
+               style="--pie-stops:
+                 var(--primary) 0 12%,
+                 var(--status-info) 0 40%,
+                 var(--status-success) 0 77%,
+                 var(--foreground-muted) 0 100%"></div>
+          <div class="pie-figure__legend">
+            <div class="source-list">
+              <div class="source-row"><span class="source-row__swatch" style="background:var(--primary)"></span><span data-i18n="fans.tier.inner-row">Inner Circle · 12%</span><span class="source-row__amt" data-i18n="fans.tier.inner-cnt">154 fans</span><span class="source-row__pct">$8,420</span></div>
+              <div class="source-row"><span class="source-row__swatch" style="background:var(--status-info)"></span><span data-i18n="fans.tier.super-row">Superfan · 28%</span><span class="source-row__amt" data-i18n="fans.tier.super-cnt">359 fans</span><span class="source-row__pct">$6,180</span></div>
+              <div class="source-row"><span class="source-row__swatch" style="background:var(--status-success)"></span><span data-i18n="fans.tier.devoted-row">Ranked fans · 37%</span><span class="source-row__amt" data-i18n="fans.tier.devoted-cnt">475 fans</span><span class="source-row__pct">$4,890</span></div>
+              <div class="source-row"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span data-i18n="fans.tier.fan-row">Fan · 23%</span><span class="source-row__amt" data-i18n="fans.tier.fan-cnt">295 fans</span><span class="source-row__pct">$1,210</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="card__note" data-i18n="dash.tiers.note">1,283 fans with a Ztor account, split by tier — the same roster the Fans pages count.</p>
+      </section>
+
+      <!-- ══ 最後：平台表現三卡（旅程 D，週／月頻率，移到頁尾）═══════════ -->
+      <div class="bento mt-24 dash-data-only" data-perf="dash"></div>
+
+    </div>
+
+    <footer class="app-footer">
+      <span>DEMO B · 提案「只重排不減項」</span>
+      <span>·</span>
+      <span>探索頁，不屬正式站台</span>
+      <span>·</span>
+      <span>依據 docs/dashboard-佈局重思-2026-08-07.md</span>
+    </footer>
+  </main>
+</div>
+
+<div class="payout-modal" data-bd-modal="ops-pending" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ops-pending-title">
+    <div class="payout-dialog__head">
+      <div>
+        <h2 class="payout-dialog__title" id="ops-pending-title" data-i18n="ops.modal.pending-title">Pending actions</h2>
+        <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ops.modal.pending-sub">Each item has one clear next step</span>
+      </div>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-bd-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div data-component="alerts" data-key="ops-pending-list"></div>
+    </div>
+  </section>
+</div>
+
+<div class="payout-modal" data-bd-modal="ops-projects" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ops-projects-title">
+    <div class="payout-dialog__head">
+      <div>
+        <h2 class="payout-dialog__title" id="ops-projects-title" data-i18n="ops.modal.projects-title">Active projects</h2>
+        <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ops.modal.projects-sub">Live, funding and scheduled right now</span>
+      </div>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-bd-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div data-component="events-projects" data-key="ops-projects-list"></div>
+    </div>
+  </section>
+</div>
+
+<script src="js/icons.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/sidebar.js"></script>
+<script src="js/components.js"></script>
+<script src="js/projects-store.js"></script>
+<script src="js/performance-store.js"></script>
+<script src="js/reveal.js"></script>
+<script src="js/detail-sheet.js"></script>
+<script>
+(function () {
+  function closeAll() {
+    document.querySelectorAll('.payout-modal[data-bd-modal]').forEach(function (m) { m.hidden = true; });
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('click', function (e) {
+    var opener = e.target.closest('[data-bd-open]');
+    if (opener) {
+      var m = document.querySelector('[data-bd-modal="' + opener.dataset.bdOpen + '"]');
+      if (m) { m.hidden = false; document.body.style.overflow = 'hidden'; }
+      return;
+    }
+    if (e.target.closest('[data-bd-close]')) { closeAll(); return; }
+    if (e.target.classList && e.target.classList.contains('payout-modal') && e.target.hasAttribute('data-bd-modal')) closeAll();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
+})();
+
+(function () {
+  function zh() { return (document.documentElement.lang || '').toLowerCase().indexOf('zh') === 0; }
+  function greet(h) {
+    if (h < 5)  return zh() ? '夜深了' : 'Still up';
+    if (h < 11) return zh() ? '早安'   : 'Good morning';
+    if (h < 17) return zh() ? '午安'   : 'Good afternoon';
+    return         zh() ? '晚安'   : 'Good evening';
+  }
+  function dateLine(d) {
+    if (zh()) {
+      var wk = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()];
+      return d.getFullYear() + ' 年 ' + (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日 · 週' + wk;
+    }
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function paint() {
+    var el = document.querySelector('[data-greeting]');
+    if (!el) return;
+    var name = (window.ztorProjects && window.ztorProjects.displayName && window.ztorProjects.displayName()) || '';
+    var d = new Date();
+    var sep = zh() ? '，' : ', ';
+    el.innerHTML =
+      '<span class="greeting__hi">' + greet(d.getHours()) + (name ? sep + '<span class="greeting__name"></span>' : '') + '</span>' +
+      '<span class="greeting__meta"></span>';
+    var n = el.querySelector('.greeting__name');
+    if (n) n.textContent = name;
+    el.querySelector('.greeting__meta').textContent = dateLine(d);
+  }
+  paint();
+  document.addEventListener('i18n:applied', paint);
+})();
+</script>
+</body>
+</html>

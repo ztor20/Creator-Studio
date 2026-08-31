@@ -1,0 +1,81 @@
+/* ============================================================
+   Progress mark · 進度記號（2026-08-18，使用者裁決方案 B ＋ 同日追加）
+
+   一顆記號，兩個消費者：
+     progress-timeline（進度分頁的時間軸）
+     step-list（總覽的進度摘要）
+   此前兩處各有一套畫法——摘要是「圈＋字符」、軸是「點的顏色」，同一顆里程碑
+   在兩個畫面上要用兩種讀法，而它們常常前後腳出現（總覽看完就點進進度）。
+
+   語言只有三條規則：
+     ① 每一顆里程碑都是一個「打勾格」。還沒到＝空心圈＋淡勾，已完成＝實心綠＋白勾，
+        逾期＝實心紅＋驚嘆號。同一個形狀走完一顆里程碑的一生，狀態換的是填色與字符，
+        不是形狀——形狀一換，讀者就得重新學一次。
+     ② 填色＝狀態的份量。灰／空心＝還沒發生、綠＝完成、紅＝逾期、藍＝進行中、
+        品牌色＝今天。顏色是掃視時第一個被看到的訊號，字符是停下來之後的確認。
+     ③ 空心小點（--ghost）＝這一列不是里程碑（一般更新、項目建立）。它沒有狀態、
+        不會逾期，所以也沒有字符可放；小一號是為了讓它退到里程碑後面。
+
+   2026-08-18（第二輪，使用者：「主要是這些 UI 上應該要有勾勾或驚嘆號」）：
+   原本 20px 才畫字符、時間軸的 10px 只留顏色。使用者看過實機後裁示軸上也要有字符，
+   所以尺寸收斂成單一一個 20px——這也讓「統一」名實相符：兩處現在是同一顆記號，
+   不是同一套規則的兩個尺寸。
+   ✝ 墓碑：.pmark--sm / .pmark--md（尺寸修飾子）。呼叫端不再需要選尺寸。
+
+   Anatomy
+     .pmark  [--done | --doing | --alert | --today | --ghost]
+       .ztor-icon      （里程碑狀態才放；--today 與 --ghost 不放）
+   ============================================================ */
+
+.pmark {
+  flex: none;
+  width: var(--pmark-size, 20px);
+  height: var(--pmark-size, 20px);
+  border-radius: var(--radius-pill);
+  display: inline-grid;
+  place-items: center;
+  /* 預設＝還沒到：空心圈＋淡勾。空心而不是實心灰，是因為「還沒發生」要看得出來是
+     一個等著被填滿的位置；實心灰會讀成「一個已經定案、只是不重要的東西」。 */
+  background: transparent;
+  border: 1px solid var(--muted-foreground);
+  color: var(--muted-foreground);
+}
+.pmark .ztor-icon { width: 12px; height: 12px }
+
+/* ── 狀態 ──────────────────────────────────────────────────── */
+.pmark--done,
+.pmark--doing,
+.pmark--alert,
+.pmark--today {
+  border-color: transparent;
+  background: var(--pmark-fill);
+  color: var(--on-primary);
+}
+.pmark--done  { --pmark-fill: var(--status-success) }
+.pmark--doing { --pmark-fill: var(--status-info) }
+.pmark--alert { --pmark-fill: var(--status-error) }
+/* 逾期與今天各帶一圈光暈：它們是各自畫面上「現在該看這裡」的落點，
+   光暈讓它們在一整排同尺寸的記號裡先被找到，而不必靠放大。 */
+.pmark--alert {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--status-error) 16%, transparent);
+}
+/* 驚嘆號是一支不含外圈的直線＋點，筆畫比打勾少，同尺寸下看起來小一號；
+   而它正是這一串裡最該被看到的那一顆。 */
+.pmark--alert .ztor-icon { width: 14px; height: 14px }
+
+/* 今天不是里程碑的狀態，是軸上的一個位置——所以它不放字符（放勾會讀成「今天完成了」）。
+   縮小成 12px 的實心點：它要被看見，但不該看起來像一顆待辦的里程碑。 */
+.pmark--today {
+  --pmark-fill: var(--primary);
+  --pmark-size: 12px;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+.pmark--today .ztor-icon { display: none }
+
+/* ── 不是里程碑 ────────────────────────────────────────────── */
+.pmark--ghost {
+  --pmark-size: 8px;
+  background: transparent;
+  border: 1px solid var(--muted-foreground);
+}
+.pmark--ghost .ztor-icon { display: none }

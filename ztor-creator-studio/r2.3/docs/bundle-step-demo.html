@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 資產一律以 ../（r2.2 根）為前綴，不用 <base>（2026-08-13）。
+     dashboard-demo-a.html 那種 <base href="../"> 的寫法在「文件本身沒有可解析的
+     基底網址」時會整組失效——例如被當成 data: 快照預覽時，20 條樣式表全部載不到，
+     畫面只剩頁內 <style>，看起來像整頁壞掉。明寫 ../ 沒有這個單點失敗。 -->
+<title>DEMO · 票務商品那一步重新設計</title>
+<script src="../js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/upload-tile.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/kv-list.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/wizard-split.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/bundle-editor.css?v=r2.2">
+<link rel="stylesheet" href="../shared.css?v=r2.2">
+<style>
+  /* ══════════════════════════════════════════════════════════════════════
+     DEMO 專用樣式（探索頁，未進 ds-components；裁決後才 promote）
+     只用既有 token，不寫死顏色與字級。
+     ══════════════════════════════════════════════════════════════════════ */
+
+  /* 這一頁本身不是提案的一部分，只是讓三種狀態可以並排比較 */
+  .bdx-demo { display: flex; align-items: center; gap: var(--sp-10); flex-wrap: wrap;
+              padding: var(--sp-10) var(--sp-14); margin-bottom: var(--sp-28);
+              border: 1px dashed var(--border); border-radius: var(--radius-xl);
+              background: var(--accent); font-family: var(--font-ui);
+              font-size: var(--fs-13); color: var(--muted-foreground); }
+  .bdx-demo__tag { font-weight: var(--fw-medium); color: var(--foreground); }
+  .bdx-demo__spacer { margin-left: auto; }
+
+  .bdx-page { max-width: 1140px; margin: 0 auto; padding: var(--sp-32) var(--sp-24) var(--sp-56); }
+  /* 這頁沒有 wizard 的貼頂列，右軌的讓位高度歸零（正式頁由 create-event 執行期量測） */
+  :root { --wizard-top-h: 0px; }
+
+  /* ── 收合列：已經存在的捆綁包 ─────────────────────────────────────────
+     一組捆綁包平常只需要回答三件事：叫什麼、裡面有什麼、賣多少。
+     其餘欄位是編輯時才要看的東西，點開才給。 */
+  .bdx-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto;
+             align-items: center; gap: var(--sp-14);
+             width: 100%; padding: var(--sp-12) var(--sp-14); margin-bottom: var(--sp-10);
+             text-align: left; cursor: pointer; }
+  .bdx-row:hover { background: var(--accent); }
+  .bdx-row__thumb { display: grid; place-items: center;
+                    width: 44px; height: 44px; border-radius: var(--radius-md);
+                    background: var(--muted); color: var(--muted-foreground); }
+  .bdx-row__thumb .ztor-icon { width: 18px; height: 18px; }
+  .bdx-row__name { font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); }
+  .bdx-row__meta { margin-top: var(--sp-2); font-size: var(--fs-12); color: var(--muted-foreground); }
+  .bdx-row__price { font-family: var(--font-numeric); font-size: var(--fs-16); color: var(--foreground); }
+  .bdx-row__was { margin-left: var(--sp-6); font-size: var(--fs-12);
+                  color: var(--muted-foreground); text-decoration: line-through; }
+  .bdx-row__chev { color: var(--muted-foreground); }
+
+  /* ── 編輯卡：三段式 ───────────────────────────────────────────────────
+     段落順序＝內容 → 定價 → 包裝。理由寫在頁尾的「為什麼這樣排」。 */
+  .bdx-card { padding: var(--sp-20); margin-bottom: var(--sp-12); }
+  .bdx-card__head { display: flex; align-items: center; gap: var(--sp-10);
+                    padding-bottom: var(--sp-16); margin-bottom: var(--sp-20);
+                    border-bottom: 1px solid var(--border); }
+  .bdx-card__idx { font-family: var(--font-numeric); font-size: var(--fs-13);
+                   color: var(--muted-foreground); }
+  .bdx-card__title { font-family: var(--font-ui); font-size: var(--fs-16); color: var(--foreground); }
+  .bdx-card__acts { margin-left: auto; display: flex; gap: var(--sp-8); }
+
+  .bdx-sec + .bdx-sec { margin-top: var(--sp-28); padding-top: var(--sp-24);
+                        border-top: 1px solid var(--border-soft, var(--border)); }
+  .bdx-sec__head { display: flex; align-items: baseline; gap: var(--sp-8); margin-bottom: var(--sp-16); }
+  .bdx-sec__num { display: grid; place-items: center; flex: none;
+                  width: 20px; height: 20px; border-radius: var(--radius-pill);
+                  background: var(--muted); color: var(--muted-foreground);
+                  font-family: var(--font-numeric); font-size: var(--fs-11); }
+  .bdx-sec__title { font-family: var(--font-ui); font-size: var(--fs-16); color: var(--foreground); }
+  .bdx-sec__sub { font-size: var(--fs-12); color: var(--muted-foreground); }
+
+  /* ── 適用票種：分組挑選器 ─────────────────────────────────────────────
+     這是整張卡最會膨脹的一塊（場次 × 票種）。三件事在控制它：
+       ① 依場次分組、組頭可以整場全選
+       ② 一排票種捷徑，跨場次勾同一個票種（多場活動最常見的意圖）
+       ③ 選完就收合成 chip，清單只在挑選當下展開 */
+  .bdx-pick { border: 1px solid var(--border); border-radius: var(--radius-lg);
+              padding: var(--sp-12) var(--sp-14); }
+  .bdx-pick__bar { display: flex; align-items: center; gap: var(--sp-10);
+                   flex-wrap: wrap; padding-bottom: var(--sp-10); margin-bottom: var(--sp-4);
+                   border-bottom: 1px solid var(--border); }
+  .bdx-pick__barlabel { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .bdx-pick__done { margin-left: auto; }
+  .bdx-grp + .bdx-grp { margin-top: var(--sp-4); }
+  .bdx-grp__head { display: flex; align-items: center; gap: var(--sp-10);
+                   padding: var(--sp-10) 0 var(--sp-6); }
+  .bdx-grp__name { font-family: var(--font-ui); font-size: var(--fs-12);
+                   color: var(--muted-foreground); letter-spacing: 0.04em; text-transform: uppercase; }
+  .bdx-grp__all { margin-left: auto; font-size: var(--fs-12); }
+  /* 組內的票列沿用 bundle-editor 的 .fc-ref／.bd-ticket（同一個「引用一列」的語彙） */
+  .bdx-grp .bd-ticket:last-of-type { border-bottom: 0; }
+
+  /* 收合態：已選的票以 chip 呈現＋一顆「更改」 */
+  .bdx-chosen { display: flex; align-items: flex-start; gap: var(--sp-10); flex-wrap: wrap; }
+  .bdx-chosen .chip-group { flex: 1 1 auto; }
+
+  /* ── 定價：一列算完 ───────────────────────────────────────────────────
+     原價加總 → 折扣 → 最終價。折扣輸入直接坐在算式裡，改一下就看到結果，
+     不必在卡頭與卡底之間來回對照。 */
+  .bdx-calc { display: flex; align-items: center; gap: var(--sp-14); flex-wrap: wrap;
+              padding: var(--sp-14) var(--sp-16); border-radius: var(--radius-lg);
+              background: var(--muted); }
+  .bdx-calc__part { display: flex; flex-direction: column; gap: var(--sp-4); }
+  .bdx-calc__k { font-size: var(--fs-11); color: var(--muted-foreground); }
+  .bdx-calc__v { font-family: var(--font-numeric); font-size: var(--fs-16); color: var(--foreground); }
+  .bdx-calc__v--final { font-size: var(--fs-24); }
+  .bdx-calc__op { color: var(--muted-foreground); font-size: var(--fs-14); align-self: center;
+                  padding-top: var(--sp-14); }
+  .bdx-calc__disc { width: 108px; }
+  .bdx-calc__final { margin-left: auto; text-align: right; }
+
+  /* ── 包裝：名稱／說明／封面圖同一列 ──────────────────────────────────
+     封面圖是辨識用縮圖、不是主視覺，所以縮成一格擺右邊，
+     不再是佔 267px 的獨立區塊。 */
+  .bdx-brand { display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: var(--sp-16); align-items: start; }
+  .bdx-brand .field:last-child { margin-bottom: 0; }
+  .bdx-brand__cover .upload-tile { width: 120px; }
+  /* align-self 是必要的：`.field` 是 flex column，按鈕不設就會被拉滿整欄、
+     文字跟著置中，看起來像一條分隔線而不是一顆可以按的字。 */
+  .bdx-suggest { align-self: flex-start; background: none; border: 0; padding: 0; cursor: pointer;
+                 font: inherit; font-size: var(--fs-12); color: var(--primary);
+                 text-align: left; text-decoration: underline; text-underline-offset: 2px; }
+
+  /* ── 右軌：報影響，不報清單 ───────────────────────────────────────────
+     沒被綁到的票收成一行，讓「哪幾張票被牽動」一眼看得出來。 */
+  .bdx-rail__note { margin-top: var(--sp-12); font-size: var(--fs-12);
+                    color: var(--muted-foreground); line-height: var(--lh-normal); }
+  .bdx-rail__fold { margin-top: var(--sp-10); padding-top: var(--sp-10);
+                    border-top: 1px solid var(--border);
+                    font-size: var(--fs-12); color: var(--muted-foreground); }
+  .bdx-rail__grp { margin: var(--sp-14) 0 var(--sp-6); font-family: var(--font-ui);
+                   font-size: var(--fs-11); color: var(--muted-foreground);
+                   letter-spacing: 0.04em; text-transform: uppercase; }
+  .bdx-rail__grp:first-child { margin-top: 0; }
+  .kv__v .bdx-used { color: var(--primary); }
+
+  /* ── 說明區（只是 demo 的旁白，不是提案的一部分）───────────────────── */
+  .bdx-notes { max-width: 1140px; margin: var(--sp-56) auto 0; padding: 0 var(--sp-24); }
+  .bdx-notes h2 { font-family: var(--font-display); font-size: var(--fs-20);
+                  color: var(--foreground); margin-bottom: var(--sp-12); }
+  .bdx-notes h3 { font-family: var(--font-ui); font-size: var(--fs-14);
+                  color: var(--foreground); margin: var(--sp-24) 0 var(--sp-8); }
+  .bdx-notes p, .bdx-notes li { font-size: var(--fs-13); color: var(--muted-foreground);
+                                line-height: var(--lh-relaxed); }
+  .bdx-notes ul { margin: 0; padding-left: var(--sp-20); }
+  .bdx-notes li { margin-bottom: var(--sp-6); }
+
+  @media (max-width: 1024px) {
+    .bdx-brand { grid-template-columns: minmax(0, 1fr); }
+    .bdx-calc__final { margin-left: 0; text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bdx-page">
+
+  <div class="bdx-demo">
+    <span class="bdx-demo__tag">DEMO</span>
+    <span>票務商品（建立活動第 6 步）重新設計提案。假資料＝三場的粉絲見面會，每場兩種票。</span>
+    <span class="bdx-demo__spacer"></span>
+    <button class="btn btn--outline btn--sm" type="button" data-demo-state="empty">空狀態</button>
+    <button class="btn btn--outline btn--sm" type="button" data-demo-state="editing">編輯中</button>
+    <button class="btn btn--outline btn--sm" type="button" data-demo-state="filled">已有兩組</button>
+  </div>
+
+  <h1 class="wizard__step-title">票務商品</h1>
+  <p class="wizard__step-sub">把門票和商品綁成一組賣。沒有要綁就直接下一步。</p>
+
+  <div class="wizard-split wizard-split--narrow">
+    <div class="wizard-split__main">
+      <div class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title">捆綁包</h3>
+          <p class="form-section__sub">一組至少含一張票。數量跟它含的那張票共用，賣掉一組就從那張票扣一張，不另外設庫存。</p>
+        </div>
+        <div id="bdx-list"></div>
+        <button class="btn btn--outline fc-add" type="button" id="bdx-add" hidden>＋ 新增捆綁包</button>
+      </div>
+    </div>
+
+    <aside class="wizard-split__rail">
+      <div class="card fd-ov">
+        <h3 class="fd-ov__title">這一步的影響</h3>
+        <div id="bdx-rail"></div>
+      </div>
+    </aside>
+  </div>
+
+</div>
+
+<div class="bdx-notes">
+  <h2>為什麼這樣排</h2>
+
+  <h3>順序倒過來：內容 → 定價 → 包裝</h3>
+  <p>現行版本的欄位順序是名稱＊ → 說明 → 封面圖 → 適用票種 → 商店商品 → 販售上限 → 額外權益 → 套組優惠，等於要創作者先替一個還沒有內容的盒子取名字、上傳封面。腦中的句子其實是「VIP 票 ＋ 巡演 T 恤，賣 4,800」——先有內容，才有名字與價格。名稱移到最後之後，可以直接從內容自動擬一個建議名，必填欄從空白格變成確認一下就好。</p>
+
+  <h3>適用票種：分組、捷徑、選完就收</h3>
+  <p>三場兩種票時，現行的平面勾選清單就佔 419px；十場的活動會長到約 1,900px，一個欄位吃掉兩個畫面。這裡改成依場次分組（組頭可整場全選）、加一排跨場次的票種捷徑，並在選完之後收合成 chip，清單只在挑選當下展開。卡片高度因此不再隨場次數膨脹。</p>
+
+  <h3>空狀態要能說「不綁」</h3>
+  <p>副標寫著「沒有要綁就直接下一步」，但畫面上只有一顆「＋ 新增捆綁包」，沒有任何「不綁」的動作。多數活動不會做捆綁包，這是這一步最常見的結果，該有正式出口——同時用一個具體例子把「數量池共用」講清楚，那是站上的新概念。</p>
+
+  <h3>右軌報影響，不報清單</h3>
+  <p>原本的「票的數量池」把左邊勾選清單的同一份票再列一次。改成用到的票排前面並標「被 N 組用到」，沒被綁到的收成一行——右軌要回答的是「我改這張票的張數會牽動誰」。</p>
+
+  <h2>這份 demo 替三個待裁決的問題各給了一個答案</h2>
+  <ul>
+    <li><strong>多選票種在多場活動下是什麼意思</strong> — demo 保留現行語意（勾起來的票都適用，粉絲買的時候挑一種），並在算式旁明講「賣掉一組，就從粉絲挑的那一張扣一張」。若正式版要改成「一組只對應一張票」，捷徑那一排就不需要了。</li>
+    <li><strong>要不要每場各建一組</strong> — demo 在適用票種上方放了「一組通用所有場次／每場各一組」二選一。選後者時只挑票種，按下建立會一次長出三組（Day 1／Day 2／Day 3），省掉手動複製三次。</li>
+    <li><strong>命名要不要移到最後</strong> — demo 移到最後，並附自動建議名。收合列的辨識靠名稱，所以中途離開仍會留下「未命名套組」；建議名讓這個風險降到最低，但沒有完全消除。</li>
+  </ul>
+
+  <h2>順帶會修掉的兩件事</h2>
+  <ul>
+    <li>卡頭摘要現在寫「1 份作品」——那是募資版的字彙漏過來的（判斷條件掛在「有沒有分潤名額」而不是「有沒有作品」）。活動的捆綁包裡是票和商品，摘要應該報「1 張票 · 2 件商品」。</li>
+    <li><code>create-event.html</code> 的右軌用的是 <code>.wizard-split__side</code>，但元件裡只有 <code>.wizard-split__rail</code>。靠 grid 自動配位剛好落在對的格子，所以看起來正常，實際上 sticky、最大高度與疊卡間距全部沒生效。本 demo 用的是正確的 <code>__rail</code>。</li>
+  </ul>
+</div>
+
+<script src="../js/icons.js?v=r2.2"></script>
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   DEMO 控制器。純前端示意，不接資料層。
+   資料形狀刻意對齊正式頁：票＝場次 × 票種的矩陣，一格一張票。
+   ════════════════════════════════════════════════════════════════════════ */
+(function () {
+  "use strict";
+  var esc = function (s) { return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); };
+  var money = function (n) { return "$" + Number(n || 0).toLocaleString("en-US"); };
+
+  /* ── 假資料 ──────────────────────────────────────────────────────────
+     三場同場地的粉絲見面會（對齊 bookyay 假資料的 MIRROR FANMEETING）。 */
+  var SESSIONS = [
+    { id: "s1", name: "Day 1" },
+    { id: "s2", name: "Day 2" },
+    { id: "s3", name: "Day 3" }
+  ];
+  var TYPES = [
+    { id: "ty1", name: "搖滾區", price: 3800 },
+    { id: "ty2", name: "一般席", price: 2200 }
+  ];
+  /* 矩陣：每一格都是獨立的一張票，帶自己的張數 */
+  var TICKETS = [];
+  SESSIONS.forEach(function (ss) {
+    TYPES.forEach(function (ty) {
+      TICKETS.push({
+        id: ss.id + "-" + ty.id, sess: ss.id, type: ty.id,
+        name: ss.name + " · " + ty.name, price: ty.price,
+        qty: ty.id === "ty1" ? 150 : 400
+      });
+    });
+  });
+  var PRODUCTS = [
+    { id: "p1", name: "巡演 T 恤", price: 890 },
+    { id: "p2", name: "限定托特包", price: 650 },
+    { id: "p3", name: "簽名海報", price: 480 },
+    { id: "p4", name: "應援手燈", price: 1200 },
+    { id: "p5", name: "寫真小卡組", price: 350 }
+  ];
+
+  var ticketById = function (id) { return TICKETS.filter(function (t) { return t.id === id; })[0]; };
+  var productById = function (id) { return PRODUCTS.filter(function (p) { return p.id === id; })[0]; };
+  var sessionById = function (id) { return SESSIONS.filter(function (s) { return s.id === id; })[0]; };
+
+  /* ── 狀態 ────────────────────────────────────────────────────────────
+     bundles[]：已建立的組。editing：正在編輯的那一組（null＝沒有）。 */
+  var seq = 0;
+  var bundles = [];
+  var editing = null;
+
+  function newBundle() {
+    seq += 1;
+    return { id: "b" + seq, name: "", desc: "", tickets: [], items: [],
+             perks: [], disc: "", cap: "", scope: "shared", pickOpen: true };
+  }
+
+  /* 原價加總＝勾選的票裡最貴的那一張（粉絲只挑一種）＋所有商品。
+     取最貴的那張是保守估：算便宜了會讓折後價看起來比實際低。 */
+  function baseOf(b) {
+    var top = 0;
+    b.tickets.forEach(function (id) { var t = ticketById(id); if (t && t.price > top) top = t.price; });
+    var goods = b.items.reduce(function (n, id) { var p = productById(id); return n + (p ? p.price : 0); }, 0);
+    return top + goods;
+  }
+  function finalOf(b) {
+    var d = Number(b.disc) || 0;
+    return Math.round(baseOf(b) * (100 - d) / 100);
+  }
+  /* 建議名稱＝票種名 ＋ 第一件商品。有內容才給，沒內容不亂猜。 */
+  function suggestName(b) {
+    if (!b.tickets.length) return "";
+    var names = {};
+    b.tickets.forEach(function (id) {
+      var t = ticketById(id); if (!t) return;
+      var ty = TYPES.filter(function (x) { return x.id === t.type; })[0];
+      if (ty) names[ty.name] = 1;
+    });
+    var tierPart = Object.keys(names).join("／");
+    var first = b.items.length ? productById(b.items[0]) : null;
+    return first ? tierPart + " ＋ " + first.name : tierPart;
+  }
+  function contentMeta(b) {
+    var bits = [];
+    if (b.tickets.length) bits.push(b.tickets.length + " 張票");
+    if (b.items.length) bits.push(b.items.length + " 件商品");
+    if (b.perks.length) bits.push(b.perks.length + " 項權益");
+    return bits.length ? bits.join(" · ") : "還沒有內容";
+  }
+
+  /* ── 繪製 ────────────────────────────────────────────────────────── */
+  var list = document.getElementById("bdx-list");
+  var addBtn = document.getElementById("bdx-add");
+  var rail = document.getElementById("bdx-rail");
+
+  function emptyHTML() {
+    return '' +
+      '<div class="empty-card">' +
+        '<span class="empty-card__icon"><i data-lucide="package" class="ztor-icon"></i></span>' +
+        '<h4 class="empty-card__title">把票和商品綁成一組賣</h4>' +
+        '<p class="empty-card__text">例如「一張 VIP 票 ＋ 一件巡演 T 恤」算一組，賣 4,800。' +
+          '數量跟它含的那張票共用——賣掉一組就從那張票扣一張，不必另外算庫存。</p>' +
+        '<div class="empty-card__cta">' +
+          '<button class="btn btn--primary" type="button" data-bdx="new">新增捆綁包</button>' +
+          '<button class="btn btn--ghost" type="button" data-bdx="skip">這個活動不做捆綁包</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function rowHTML(b, i) {
+    var base = baseOf(b), fin = finalOf(b);
+    var off = base > fin;
+    return '' +
+      '<button class="card bdx-row" type="button" data-bdx="open" data-id="' + esc(b.id) + '">' +
+        '<span class="bdx-row__thumb"><i data-lucide="package" class="ztor-icon"></i></span>' +
+        '<span>' +
+          '<span class="bdx-row__name">' +
+            '<span class="bdx-card__idx">' + String(i + 1).padStart(2, "0") + '</span> ' +
+            esc(b.name || "未命名套組") + '</span>' +
+          '<span class="bdx-row__meta">' + esc(contentMeta(b)) + '</span>' +
+        '</span>' +
+        '<span class="bdx-row__price">' + money(fin) +
+          (off ? '<span class="bdx-row__was">' + money(base) + '</span>' : '') + '</span>' +
+        '<span class="bdx-row__chev"><i data-lucide="chevron-right" class="ztor-icon"></i></span>' +
+      '</button>';
+  }
+
+  /* 票種捷徑：跨所有場次勾同一個票種。已經整排勾滿就顯示為 active。 */
+  function tierChipsHTML(b) {
+    return TYPES.map(function (ty) {
+      var ids = TICKETS.filter(function (t) { return t.type === ty.id; }).map(function (t) { return t.id; });
+      var all = ids.every(function (id) { return b.tickets.indexOf(id) >= 0; });
+      return '<button class="chip' + (all ? ' chip--active' : '') + '" type="button" ' +
+        'data-bdx="tier" data-type="' + esc(ty.id) + '">' + esc(ty.name) + '</button>';
+    }).join("");
+  }
+
+  function pickerHTML(b) {
+    /* 每場各一組：只挑票種，不挑到「哪一場的哪一張」——場次由建立時展開。 */
+    if (b.scope === "per") {
+      return '<div class="bdx-pick">' +
+        '<div class="bdx-pick__bar"><span class="bdx-pick__barlabel">要賣哪一種票</span>' +
+          '<span class="chip-group">' + tierChipsHTML(b) + '</span></div>' +
+        '<p class="field__hint" style="margin-top:var(--sp-10)">' +
+          '按下「建立」會一次長出 ' + SESSIONS.length + ' 組：' +
+          esc(SESSIONS.map(function (s) { return s.name; }).join("／")) +
+          '。每一組各自對應那一場的票，之後可以分開改價。</p>' +
+      '</div>';
+    }
+    var groups = SESSIONS.map(function (ss) {
+      var rows = TICKETS.filter(function (t) { return t.sess === ss.id; });
+      var all = rows.every(function (t) { return b.tickets.indexOf(t.id) >= 0; });
+      return '<div class="bdx-grp">' +
+        '<div class="bdx-grp__head">' +
+          '<span class="bdx-grp__name">' + esc(ss.name) + '</span>' +
+          '<label class="zcheck bdx-grp__all"><span class="zcheck__control">' +
+            '<input class="zcheck__input" type="checkbox" data-bdx="sess" data-sess="' + esc(ss.id) + '"' +
+              (all ? " checked" : "") + '>' +
+            '<span class="zcheck__box"></span></span>' +
+            '<span class="zcheck__label">整場全選</span></label>' +
+        '</div>' +
+        rows.map(function (t) {
+          var on = b.tickets.indexOf(t.id) >= 0;
+          var ty = TYPES.filter(function (x) { return x.id === t.type; })[0];
+          return '<label class="fc-ref bd-ticket' + (on ? " bd-ticket--on" : "") + '">' +
+            '<span class="zcheck__control">' +
+              '<input class="zcheck__input" type="checkbox" data-bdx="tk" data-tk="' + esc(t.id) + '"' +
+                (on ? " checked" : "") + '>' +
+              '<span class="zcheck__box"></span></span>' +
+            '<span class="fc-ref__thumb fc-ref__thumb--work"><i data-lucide="ticket" class="ztor-icon"></i></span>' +
+            '<div><div class="fc-ref__name">' + esc(ty ? ty.name : t.name) + '</div>' +
+              '<div class="fc-ref__meta">' + money(t.price) + ' · 共 ' + t.qty + ' 張</div></div>' +
+          '</label>';
+        }).join("") +
+      '</div>';
+    }).join("");
+
+    return '<div class="bdx-pick">' +
+      '<div class="bdx-pick__bar">' +
+        '<span class="bdx-pick__barlabel">整排勾選</span>' +
+        '<span class="chip-group">' + tierChipsHTML(b) + '</span>' +
+        (b.tickets.length
+          ? '<button class="btn btn--outline btn--sm bdx-pick__done" type="button" data-bdx="pickdone">選好了</button>'
+          : '') +
+      '</div>' + groups +
+    '</div>';
+  }
+
+  function chosenHTML(b) {
+    var byTier = {};
+    b.tickets.forEach(function (id) {
+      var t = ticketById(id); if (!t) return;
+      var ty = TYPES.filter(function (x) { return x.id === t.type; })[0];
+      var key = ty ? ty.name : t.name;
+      (byTier[key] = byTier[key] || []).push(sessionById(t.sess).name);
+    });
+    var chips = Object.keys(byTier).map(function (k) {
+      var ns = byTier[k];
+      var span = ns.length === SESSIONS.length ? "所有場次" : ns.join("／");
+      return '<span class="chip chip--static">' + esc(k) + ' · ' + esc(span) + '</span>';
+    }).join("");
+    return '<div class="bdx-chosen">' +
+      '<span class="chip-group">' + chips + '</span>' +
+      '<button class="btn btn--outline btn--sm" type="button" data-bdx="pickopen">更改</button>' +
+    '</div>';
+  }
+
+  function itemsHTML(b) {
+    var rows = b.items.map(function (id) {
+      var p = productById(id); if (!p) return "";
+      return '<div class="fc-ref">' +
+        '<span class="fc-ref__thumb fc-ref__thumb--work"><i data-lucide="package" class="ztor-icon"></i></span>' +
+        '<div><div class="fc-ref__name">' + esc(p.name) + '</div>' +
+          '<div class="fc-ref__meta">' + money(p.price) + '</div></div>' +
+        '<button class="btn btn--icon btn--sm" type="button" data-bdx="unitem" data-item="' + esc(p.id) + '" ' +
+          'aria-label="移除"><i data-lucide="x" class="ztor-icon"></i></button>' +
+      '</div>';
+    }).join("");
+    var left = PRODUCTS.filter(function (p) { return b.items.indexOf(p.id) < 0; });
+    return rows +
+      '<div class="fc-pick" style="margin-top:' + (rows ? 'var(--sp-10)' : '0') + '">' +
+        '<input class="input" type="search" placeholder="搜尋你的商品…" data-bdx="pq" autocomplete="off">' +
+        '<div class="fc-pick__results" data-bdx-results hidden>' +
+          (left.length
+            ? left.map(function (p) {
+                return '<button class="fc-pick__opt" type="button" data-bdx="item" data-item="' + esc(p.id) + '">' +
+                  '<i data-lucide="package" class="ztor-icon"></i>' +
+                  '<span>' + esc(p.name) + '</span>' +
+                  '<span class="fc-pick__opt-price">' + money(p.price) + '</span></button>';
+              }).join("")
+            : '<div class="fc-pick__empty">商品都加進來了。</div>') +
+        '</div>' +
+      '</div>';
+  }
+
+  function cardHTML(b, i) {
+    var base = baseOf(b), fin = finalOf(b);
+    var sug = suggestName(b);
+    var deductNote = b.tickets.length > 1
+      ? '賣掉一組，就從粉絲挑的那一張票扣一張。'
+      : (b.tickets.length ? '賣掉一組，就從這張票扣一張。' : '');
+    return '' +
+    '<div class="card bdx-card" data-id="' + esc(b.id) + '">' +
+      '<div class="bdx-card__head">' +
+        '<span class="bdx-card__idx">' + String(i + 1).padStart(2, "0") + '</span>' +
+        '<span class="bdx-card__title">' + esc(b.name || sug || "新的捆綁包") + '</span>' +
+        '<span class="bdx-card__acts">' +
+          '<button class="btn btn--ghost btn--sm" type="button" data-bdx="del">刪除</button>' +
+          '<button class="btn btn--primary btn--sm" type="button" data-bdx="save">' +
+            (b.scope === "per" ? "建立 " + SESSIONS.length + " 組" : "完成") + '</button>' +
+        '</span>' +
+      '</div>' +
+
+      /* ── 1 這一組賣什麼 ── */
+      '<section class="bdx-sec">' +
+        '<div class="bdx-sec__head"><span class="bdx-sec__num">1</span>' +
+          '<span class="bdx-sec__title">這一組賣什麼</span></div>' +
+
+        '<div class="field">' +
+          '<div class="field__label">適用票種</div>' +
+          (SESSIONS.length > 1
+            ? '<div class="filter-tabs" role="radiogroup" style="margin-bottom:var(--sp-10)">' +
+                '<button class="filter-tabs__item' + (b.scope === "shared" ? " filter-tabs__item--active" : "") +
+                  '" type="button" role="radio" aria-checked="' + (b.scope === "shared") + '" ' +
+                  'data-bdx="scope" data-scope="shared">一組通用所有場次</button>' +
+                '<button class="filter-tabs__item' + (b.scope === "per" ? " filter-tabs__item--active" : "") +
+                  '" type="button" role="radio" aria-checked="' + (b.scope === "per") + '" ' +
+                  'data-bdx="scope" data-scope="per">每場各一組</button>' +
+              '</div>'
+            : '') +
+          ((b.pickOpen || !b.tickets.length) ? pickerHTML(b) : chosenHTML(b)) +
+          (deductNote ? '<div class="field__hint">' + esc(deductNote) + '</div>' : '') +
+        '</div>' +
+
+        '<div class="field">' +
+          '<div class="field__label">商店商品</div>' +
+          itemsHTML(b) +
+        '</div>' +
+
+        '<div class="field">' +
+          '<label class="field__label">額外權益</label>' +
+          '<div class="field__hint">沒有商品編號的東西，例如 Discord 身分組或感謝名單</div>' +
+          '<input class="input" data-bdx="perk" value="' + esc(b.perks.join("、")) + '" ' +
+            'placeholder="用頓號分隔，例：Discord 專屬身分組、感謝名單">' +
+        '</div>' +
+      '</section>' +
+
+      /* ── 2 怎麼賣 ── */
+      '<section class="bdx-sec">' +
+        '<div class="bdx-sec__head"><span class="bdx-sec__num">2</span>' +
+          '<span class="bdx-sec__title">怎麼賣</span>' +
+          '<span class="bdx-sec__sub">價格由內容加總推導，折扣是你唯一要決定的數字</span></div>' +
+
+        '<div class="bdx-calc">' +
+          '<span class="bdx-calc__part"><span class="bdx-calc__k">原價加總</span>' +
+            '<span class="bdx-calc__v">' + money(base) + '</span></span>' +
+          '<span class="bdx-calc__op">−</span>' +
+          '<span class="bdx-calc__part"><span class="bdx-calc__k">套組優惠</span>' +
+            '<span class="amount-field amount-field--suffix amount-field--readonly bdx-calc__disc">' +
+              '<input class="input amount-field__input" inputmode="numeric" data-bdx="disc" ' +
+                'value="' + esc(b.disc) + '" placeholder="0">' +
+              '<span class="amount-field__unit">%</span></span></span>' +
+          '<span class="bdx-calc__part bdx-calc__final"><span class="bdx-calc__k">粉絲付</span>' +
+            '<span class="bdx-calc__v bdx-calc__v--final">' + money(fin) + '</span></span>' +
+        '</div>' +
+
+        '<div class="form-grid form-grid--2" style="margin-top:var(--sp-16)">' +
+          '<div class="field"><label class="field__label">販售上限</label>' +
+            '<div class="field__hint">留空＝跟著票的張數走，不另外設限</div>' +
+            '<input class="input" inputmode="numeric" data-bdx="cap" value="' + esc(b.cap) + '" placeholder="不限"></div>' +
+        '</div>' +
+      '</section>' +
+
+      /* ── 3 怎麼呈現 ── */
+      '<section class="bdx-sec">' +
+        '<div class="bdx-sec__head"><span class="bdx-sec__num">3</span>' +
+          '<span class="bdx-sec__title">怎麼呈現</span>' +
+          '<span class="bdx-sec__sub">粉絲在活動頁上看到的樣子</span></div>' +
+
+        '<div class="bdx-brand">' +
+          '<div>' +
+            '<div class="field">' +
+              '<label class="field__label">套組名稱 <span class="field__req">*</span></label>' +
+              '<input class="input" data-bdx="name" value="' + esc(b.name) + '" ' +
+                'placeholder="' + esc(sug || "例：早鳥支持") + '">' +
+              (sug && b.name !== sug
+                ? '<button class="bdx-suggest" type="button" data-bdx="usesug">用建議名稱「' + esc(sug) + '」</button>'
+                : '') +
+            '</div>' +
+            '<div class="field">' +
+              '<label class="field__label">一句話說明買這組拿到什麼</label>' +
+              '<input class="input" data-bdx="desc" value="' + esc(b.desc) + '" ' +
+                'placeholder="例：VIP 票＋限定 T 恤＋演出前見面會">' +
+            '</div>' +
+          '</div>' +
+          '<div class="field bdx-brand__cover">' +
+            '<div class="field__label">封面圖</div>' +
+            '<div class="upload-tile upload-tile--portrait">' +
+              '<span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>' +
+              '<span class="upload-tile__title">上傳</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</section>' +
+    '</div>';
+  }
+
+  function railHTML() {
+    if (!bundles.length && !editing) {
+      return '<p class="bdx-rail__note">還沒有捆綁包，每一張票都各自單獨賣。' +
+        '綁了之後，這裡會列出哪幾張票被牽動。</p>';
+    }
+    var all = bundles.concat(editing ? [editing] : []);
+    var used = [], idle = [];
+    TICKETS.forEach(function (t) {
+      var n = all.filter(function (b) { return (b.tickets || []).indexOf(t.id) >= 0; }).length;
+      (n ? used : idle).push({ t: t, n: n });
+    });
+    if (!used.length) {
+      return '<p class="bdx-rail__note">目前這一組還沒有選票，所以沒有票被牽動。</p>';
+    }
+    var bySess = {};
+    used.forEach(function (u) { (bySess[u.t.sess] = bySess[u.t.sess] || []).push(u); });
+    var html = '<div class="kv-list">' + SESSIONS.map(function (ss) {
+      var rows = bySess[ss.id];
+      if (!rows) return "";
+      return '<div class="bdx-rail__grp">' + esc(ss.name) + '</div>' +
+        rows.map(function (u) {
+          var ty = TYPES.filter(function (x) { return x.id === u.t.type; })[0];
+          return '<div class="kv"><span class="kv__k">' + esc(ty ? ty.name : u.t.name) + '</span>' +
+            '<span class="kv__v">' + u.t.qty + ' 張 · <span class="bdx-used">被 ' + u.n + ' 組用到</span></span></div>';
+        }).join("");
+    }).join("") + '</div>';
+    if (idle.length) {
+      html += '<p class="bdx-rail__fold">其餘 ' + idle.length + ' 張票沒有被綁，各自單獨賣。</p>';
+    }
+    return html;
+  }
+
+  function render() {
+    var html = "";
+    if (editing) {
+      html = bundles.map(rowHTML).join("") + cardHTML(editing, bundles.length);
+    } else if (bundles.length) {
+      html = bundles.map(rowHTML).join("");
+    } else {
+      html = emptyHTML();
+    }
+    list.innerHTML = html;
+    addBtn.hidden = !!editing || !bundles.length;
+    rail.innerHTML = railHTML();
+    if (window.ztorIcons) { window.ztorIcons.applyIcons(list); window.ztorIcons.applyIcons(rail); }
+  }
+
+  /* ── 互動 ────────────────────────────────────────────────────────── */
+  function setTickets(b, ids) { b.tickets = ids; }
+
+  list.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-bdx]");
+    if (!el) return;
+    var act = el.dataset.bdx;
+    var b = editing;
+
+    if (act === "new") { editing = newBundle(); return render(); }
+    if (act === "skip") {
+      list.innerHTML = '<div class="empty-card">' +
+        '<span class="empty-card__icon"><i data-lucide="check" class="ztor-icon"></i></span>' +
+        '<h4 class="empty-card__title">這一步跳過了</h4>' +
+        '<p class="empty-card__text">每一張票都各自單獨賣。正式版按下這顆會直接進「發布設定」。</p>' +
+        '<div class="empty-card__cta"><button class="btn btn--outline" type="button" data-bdx="undo">回上一步</button></div>' +
+      '</div>';
+      if (window.ztorIcons) window.ztorIcons.applyIcons(list);
+      return;
+    }
+    if (act === "undo") { return render(); }
+    if (act === "open") {
+      var id = el.dataset.id;
+      editing = bundles.filter(function (x) { return x.id === id; })[0];
+      bundles = bundles.filter(function (x) { return x.id !== id; });
+      editing.pickOpen = false;
+      return render();
+    }
+    if (!b) return;
+
+    if (act === "scope") { b.scope = el.dataset.scope; b.tickets = []; b.pickOpen = true; return render(); }
+    if (act === "tier") {
+      var ids = TICKETS.filter(function (t) { return t.type === el.dataset.type; }).map(function (t) { return t.id; });
+      var all = ids.every(function (x) { return b.tickets.indexOf(x) >= 0; });
+      setTickets(b, all
+        ? b.tickets.filter(function (x) { return ids.indexOf(x) < 0; })
+        : b.tickets.concat(ids.filter(function (x) { return b.tickets.indexOf(x) < 0; })));
+      return render();
+    }
+    if (act === "pickdone") { b.pickOpen = false; return render(); }
+    if (act === "pickopen") { b.pickOpen = true; return render(); }
+    if (act === "item") {
+      if (b.items.indexOf(el.dataset.item) < 0) b.items.push(el.dataset.item);
+      return render();
+    }
+    if (act === "unitem") {
+      b.items = b.items.filter(function (x) { return x !== el.dataset.item; });
+      return render();
+    }
+    if (act === "usesug") { b.name = suggestName(b); return render(); }
+    if (act === "del") { editing = null; return render(); }
+    if (act === "save") {
+      if (b.scope === "per") {
+        /* 每場各一組：把挑到的票種在每一場各展開成一組 */
+        var types = {};
+        b.tickets.forEach(function (id) { var t = ticketById(id); if (t) types[t.type] = 1; });
+        var tys = Object.keys(types);
+        if (!tys.length) { editing = null; return render(); }
+        SESSIONS.forEach(function (ss) {
+          seq += 1;
+          var tk = TICKETS.filter(function (t) {
+            return t.sess === ss.id && tys.indexOf(t.type) >= 0;
+          }).map(function (t) { return t.id; });
+          var copy = { id: "b" + seq, name: (b.name || suggestName(b) || "套組") + " · " + ss.name,
+                       desc: b.desc, tickets: tk, items: b.items.slice(), perks: b.perks.slice(),
+                       disc: b.disc, cap: b.cap, scope: "shared", pickOpen: false };
+          bundles.push(copy);
+        });
+      } else {
+        if (!b.name) b.name = suggestName(b);
+        b.pickOpen = false;
+        bundles.push(b);
+      }
+      editing = null;
+      return render();
+    }
+  });
+
+  list.addEventListener("change", function (e) {
+    var el = e.target.closest("[data-bdx]");
+    if (!el || !editing) return;
+    var b = editing;
+    if (el.dataset.bdx === "tk") {
+      var id = el.dataset.tk;
+      setTickets(b, el.checked
+        ? b.tickets.concat([id])
+        : b.tickets.filter(function (x) { return x !== id; }));
+      return render();
+    }
+    if (el.dataset.bdx === "sess") {
+      var ids = TICKETS.filter(function (t) { return t.sess === el.dataset.sess; }).map(function (t) { return t.id; });
+      setTickets(b, el.checked
+        ? b.tickets.concat(ids.filter(function (x) { return b.tickets.indexOf(x) < 0; }))
+        : b.tickets.filter(function (x) { return ids.indexOf(x) < 0; }));
+      return render();
+    }
+  });
+
+  /* 打字的欄位就地存值、只重畫需要跟著變的地方——每敲一個字整卡重畫會失焦。 */
+  list.addEventListener("input", function (e) {
+    var el = e.target.closest("[data-bdx]");
+    if (!el || !editing) return;
+    var b = editing, k = el.dataset.bdx;
+    if (k === "name") { b.name = el.value; syncHead(); return; }
+    if (k === "desc") { b.desc = el.value; return; }
+    if (k === "cap")  { b.cap = el.value; return; }
+    if (k === "perk") { b.perks = el.value.split(/[、,]/).map(function (s) { return s.trim(); })
+                          .filter(Boolean); return; }
+    if (k === "disc") { b.disc = el.value; syncPrice(); return; }
+    if (k === "pq") {
+      var box = list.querySelector("[data-bdx-results]");
+      var q = el.value.trim().toLowerCase();
+      box.hidden = false;
+      Array.prototype.forEach.call(box.querySelectorAll(".fc-pick__opt"), function (o) {
+        o.hidden = !!q && o.textContent.toLowerCase().indexOf(q) < 0;
+      });
+      return;
+    }
+  });
+  list.addEventListener("focusin", function (e) {
+    if (e.target.dataset && e.target.dataset.bdx === "pq") {
+      var box = list.querySelector("[data-bdx-results]");
+      if (box) box.hidden = false;
+    }
+  });
+  document.addEventListener("mousedown", function (e) {
+    var box = list.querySelector("[data-bdx-results]");
+    if (box && !e.target.closest(".fc-pick")) box.hidden = true;
+  });
+
+  function syncHead() {
+    var t = list.querySelector(".bdx-card__title");
+    if (t) t.textContent = editing.name || suggestName(editing) || "新的捆綁包";
+  }
+  function syncPrice() {
+    var v = list.querySelector(".bdx-calc__v--final");
+    if (v) v.textContent = money(finalOf(editing));
+  }
+
+  addBtn.addEventListener("click", function () { editing = newBundle(); render(); });
+
+  /* ── demo 狀態切換（不是提案的一部分）─────────────────────────────── */
+  function seed(state) {
+    bundles = []; editing = null; seq = 0;
+    if (state === "editing") {
+      editing = newBundle();
+      editing.tickets = ["s1-ty1", "s2-ty1", "s3-ty1"];
+      editing.items = ["p1"];
+      editing.disc = "12";
+      editing.pickOpen = false;
+    }
+    if (state === "filled") {
+      seq += 1;
+      bundles.push({ id: "b" + seq, name: "搖滾區 ＋ 巡演 T 恤", desc: "搖滾區票加一件限定 T 恤",
+        tickets: ["s1-ty1", "s2-ty1", "s3-ty1"], items: ["p1"], perks: [], disc: "12",
+        cap: "", scope: "shared", pickOpen: false });
+      seq += 1;
+      bundles.push({ id: "b" + seq, name: "Day 3 收藏組", desc: "最後一場限定，含海報與小卡",
+        tickets: ["s3-ty2"], items: ["p3", "p5"], perks: ["感謝名單"], disc: "8",
+        cap: "50", scope: "shared", pickOpen: false });
+    }
+    render();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-demo-state]"), function (btn) {
+    btn.addEventListener("click", function () { seed(btn.dataset.demoState); });
+  });
+
+  seed("empty");
+})();
+</script>
+</body>
+</html>

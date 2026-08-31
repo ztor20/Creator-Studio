@@ -1,0 +1,413 @@
+/* ============================================================
+   Ztor Creator Studio — Header (canonical app topbar)
+   2026-06-01: promoted from shared.css `.app-topbar*` so the shipped product
+   topbar is the single-source DS Header component. Markup is injected by
+   sidebar.js on product pages; design-system.html renders a static mirror.
+   Tokens come from ds-components/_tokens.css. (Replaces the old unused
+   `.ztor-header`.)
+   ============================================================ */
+
+/* ---------- Top bar (ported from R 2.0 .app-topbar__* pattern, R 2.1 tokens) ----------
+   64 px sticky header · brand SVG logo + semantic <ul> nav + mega dropdown panels +
+   right-side cluster (theme · search panel · lang · notifications · avatar menu).
+   Tokens (--card / --foreground / --border / --primary) all come from
+   ds-components/_tokens.css — visual chrome from R 2.0, palette from R 2.1. */
+/* ztorUI 換裝（2026-08-28 Wave 2a 熔接自 demo/ztorui-skin §3.5）：頂欄改玻璃——
+   半透明底＋backdrop 模糊＋下緣 1px 邊＋頂緣內光。頂欄是「蓋在內容上的一片薄板」，
+   內容捲到它下面時要看得出有東西經過，實色底做不到這件事（ztorUI 規格 §2.3 .topbar--glass）。
+   舊值：background: var(--card)（實色），無 backdrop-filter、無 box-shadow。 */
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 64px;
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-edge-top);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-24);
+  padding: 0 var(--sp-32);
+  transition: background-color var(--duration) var(--easing),
+              border-color var(--duration) var(--easing),
+              backdrop-filter var(--duration) var(--easing);
+}
+
+/* 捲動態：玻璃加厚一階。ztorUI 換裝（2026-08-28 Wave 2a 熔接自 skin §3.5）——底色升到
+   --ztu-glass-strong、模糊升到 --ztu-blur-heavy，再補一層外投影，讓「有內容正在它下面經過」
+   讀得出來。改成不分主題（原本只寫在 [data-theme="dark"]）：玻璃語彙本身就不是深色專屬的
+   狀態差，捲動加厚在兩個主題都成立。
+   舊值：[data-theme="dark"] .app-topbar.is-scrolled { background: color-mix(in srgb,
+         var(--background) 62%, transparent); backdrop-filter: var(--overlay-blur); }。 */
+.app-topbar.is-scrolled {
+  background: var(--ztu-glass-strong);
+  backdrop-filter: blur(var(--ztu-blur-heavy));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-heavy));
+  border-bottom-color: var(--border);
+  box-shadow: var(--shadow-float), var(--shadow-edge-top);
+}
+
+.app-topbar__brand {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--foreground);
+  flex-shrink: 0;
+}
+.app-topbar__brand-logo { height: 24px; width: auto; color: currentColor; }
+
+.app-topbar__nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.app-topbar__nav > li { position: relative; z-index: 1; }
+.app-topbar__nav-group { position: relative; z-index: 1; }
+
+/* Shared sliding highlight — one pill that glides between nav items on hover
+   and rests on the active page item. Reuses --muted / --radius-md /
+   --duration / --easing (Motion mega-menu shared-element feel). */
+.app-topbar__nav-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 36px;                 /* matches .app-topbar__link height */
+  border-radius: var(--radius-md);
+  background: var(--muted);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;                   /* behind the links */
+  will-change: transform, width;
+  transition: transform var(--duration) var(--easing),
+              width     var(--duration) var(--easing),
+              opacity   var(--duration) var(--easing);
+}
+.app-topbar__nav-highlight[data-show="true"] { opacity: 1; }
+
+.app-topbar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  height: 36px;
+  padding: 0 var(--sp-12);
+  border-radius: var(--radius-md);
+  border: 0;
+  background: transparent;
+  color: var(--foreground-muted);
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+  letter-spacing: -0.003em;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--duration) var(--easing),
+              color var(--duration) var(--easing);
+}
+/* Hover / active bg is now provided by the shared sliding highlight pill
+   (.app-topbar__nav-highlight), so the links themselves stay transparent to
+   avoid a double background. Colour still shifts on hover / active. */
+.app-topbar__link:hover { background: transparent; color: var(--foreground); }
+/* 2026-07-27 Q8 裁決 A：頂欄目前頁改橘字。底色仍留給滑動 highlight pill，不加第二層底。 */
+.app-topbar__link[aria-current="page"] { color: var(--selected-ink); background: transparent; }
+.app-topbar__link--group { padding-right: var(--sp-8); }
+.app-topbar__link--group .ztor-icon { opacity: 0.6; transition: transform var(--duration) var(--easing); }
+.app-topbar__link[aria-expanded="true"] .ztor-icon { transform: rotate(180deg); }
+
+/* Dropdown panel (mega) */
+.app-topbar__dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 280px;
+  /* ztorUI 換裝（2026-08-28 Wave 2a 熔接自 skin §3.5）：mega 下拉是**浮層**，一律不透明。
+     頂欄本身已經變成玻璃，下拉再透一次就是看穿兩層、選項的字會跟底下的內容打架
+     （ztorUI 規格 §2.4 浮層實色律）。邊改吃玻璃頂緣那支白 15%，才與其他浮層同一條邊。
+     舊值：background: var(--card)（跟著頂欄走）；backdrop-filter: var(--overlay-blur)；
+           border: 1px solid var(--border)。 */
+  background: var(--popover);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--ztu-glass-rim);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+  padding: var(--sp-6);
+  margin: 0;
+  list-style: none;
+  z-index: 60;
+
+  /* Animated open/close (Motion-style): fade + slide + subtle scale.
+     visibility (not display) is toggled so the transition can run.
+     State is driven by sidebar.js via data-state; default = closed. */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px) scale(0.98);
+  transform-origin: top center;
+  transition: opacity   var(--duration) var(--easing),
+              transform var(--duration) var(--easing),
+              visibility 0s linear var(--duration);
+}
+.app-topbar__dropdown[data-state="open"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  transition-delay: 0s;
+}
+/* Legacy no-JS fallback: the [hidden] attribute still fully hides a panel. */
+.app-topbar__dropdown[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .app-topbar__nav-highlight,
+  .app-topbar__dropdown { transition: none; }
+}
+.app-topbar__dropdown--mega {
+  min-width: 360px;
+  /* Drop 4px below the 64px header bottom. The nav <li> is 36px tall and centered
+     in the header, so its bottom sits 14px above the header bottom; 14 + 4 = 18px. */
+  top: calc(100% + 18px);
+}
+.app-topbar__dropdown--right { right: 0; left: auto; }
+/* No dark override: the dropdown uses var(--card), same as .app-topbar, in both themes. */
+
+.app-topbar__dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-10) var(--sp-12);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--foreground);
+  cursor: pointer;
+}
+.app-topbar__dropdown-option:hover { background: var(--accent); }
+
+.app-topbar__dropdown-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--radius);
+  background: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--foreground-muted);
+}
+.app-topbar__dropdown-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+.app-topbar__dropdown-option-title {
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+  color: var(--foreground);
+}
+.app-topbar__dropdown-option-sub {
+  font-family: var(--font-body);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.app-topbar__dropdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin: var(--sp-6) 0;
+}
+
+/* 帳戶選單的語言列（D222，撤除 D221 的雙概念）——可展開的單選清單，坐在同一個
+   .app-topbar__dropdown 選單裡，沿用 .app-topbar__dropdown-option 的列樣式（不是
+   另一支分級選單元件，見 STYLE-DECISIONS Q70）。常駐只有一列（標題＋目前值＋chevron），
+   點了才展開四個語系；展開態不影響外層帳戶下拉本身的開合。 */
+.app-topbar__dropdown-option--toggle {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+.app-topbar__dropdown-option--toggle > *:first-child { flex: 1 1 auto; min-width: 0; }
+.app-topbar__dropdown-lang-chevron {
+  flex: 0 0 auto;
+  color: var(--muted-foreground);
+  transition: transform .15s ease;
+}
+.app-topbar__dropdown-option--toggle[aria-expanded="true"] .app-topbar__dropdown-lang-chevron {
+  transform: rotate(180deg);
+}
+.app-topbar__dropdown-langlist {
+  list-style: none;
+  margin: var(--sp-4) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.app-topbar__dropdown-langlist[hidden] { display: none; }
+/* 語言選項列一律縮排到與側欄子項同一階（--sp-40），視覺上讀成「屬於上面那顆展開列」 */
+/* 語言選項是 <button>，繼承 .app-topbar__dropdown-option 的 flex/padding，但那支基礎
+   規則從未給過 button reset（它平常只套在 <a> 上）——沒補這條，瀏覽器預設的
+   buttonface 灰底會蓋成四顆實心灰膠囊，跟同選單其他列（透明底）不一致，也會被誤讀成
+   「全部都被選中」（2026-08-24 審查抓到，兩個 shell 同病，見 .app-topbar__dropdown-option--toggle
+   同樣需要 reset）。選中語意只交給 check icon／aria-checked，不靠填色。 */
+/* 語言選項的縮排（2026-08-25 兩次裁示）：原本多縮排一整階（--sp-40，基礎列是 --sp-12），
+   同一個下拉裡出現兩條差很遠的左緣；先拿掉覆寫與其他列齊平，使用者再裁示「向後退一點點，
+   一點點可以和上一層區分就好」——改成基礎列 +8px。側欄殼同步（shared.css 的
+   .app-sidebar__sub-link--lang，同樣 +8px）。 */
+.app-topbar__dropdown-option--lang {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  padding-left: var(--sp-20);
+}
+.app-topbar__dropdown-option--lang > *:first-child { flex: 1 1 auto; }
+.app-topbar__dropdown-lang-check { flex: 0 0 auto; color: var(--foreground); }
+
+/* Right-side cluster: theme · search · lang · notifications · avatar */
+.app-topbar__actions {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+}
+
+/* Icon buttons now compose the Button atom — markup is
+   `.app-topbar__icon-btn .btn .btn--icon`. This hook only keeps the
+   position context for the unread badge-dot; look comes from
+   button.css → .btn--icon. (2026-06-01 refactor.) */
+.app-topbar__icon-btn { position: relative; }
+
+.app-topbar__badge-dot {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.app-topbar__avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--foreground);
+  color: var(--background);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+}
+
+/* Search trigger + panel */
+.app-topbar__search-menu { position: relative; }
+.app-topbar__search-panel {
+  width: 380px;
+  padding: var(--sp-12);
+}
+.app-topbar__search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  /* 2026-07-21 Q25：原 padding 8px 撐出 35.5px，改吃 token 固定 36 */
+  height: var(--control-h-sm);
+  padding: 0 var(--sp-12);
+  background: var(--muted);
+  border-radius: var(--radius-md);
+}
+.app-topbar__search-input-wrap .ztor-icon { color: var(--muted-foreground); width: 16px; height: 16px; }
+.app-topbar__search-input {
+  border: 0; background: transparent; outline: none;
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  flex: 1;
+  color: var(--foreground);
+}
+.app-topbar__search-input::placeholder { color: var(--muted-foreground); }
+.app-topbar__search-kbd {
+  font-family: var(--font-mono, var(--font-ui));
+  font-size: var(--fs-11);
+  font-weight: var(--fw-regular);
+  padding: var(--sp-2) var(--sp-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
+  background: var(--background);
+}
+.app-topbar__search-hint {
+  margin: var(--sp-8) 0 0;
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  padding: 0 var(--sp-4);
+}
+
+/* ── Narrow-screen burger（≤900px，spec §6.8）──────────────────────────
+   Shared by both shells (.app-topbar and the sidebar rail): below 900px the
+   inline nav is hidden and this button expands it as a full-width stacked
+   panel under the top row. Hidden ≥901px, so the desktop topbar / rail is
+   untouched. Open state = [data-nav-open] on the shell root (set by
+   js/sidebar.js). Icon swap: menu when closed, x when open. (2026-07-25) */
+.app-nav-burger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-h-sm);
+  height: var(--control-h-sm);
+  margin-left: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: background-color var(--duration) var(--easing);
+}
+.app-nav-burger:hover { background: var(--accent); }
+.app-nav-burger:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.app-nav-burger [data-lucide="x"] { display: none; }
+[data-nav-open] .app-nav-burger [data-lucide="menu"] { display: none; }
+[data-nav-open] .app-nav-burger [data-lucide="x"] { display: inline-block; }
+
+/* Responsive — collapse to wrap + hide inline nav (burger reveals it) */
+@media (max-width: 900px) {
+  .app-topbar { height: auto; flex-wrap: wrap; padding: var(--sp-12) var(--sp-16); gap: var(--sp-12); }
+  .app-nav-burger { display: inline-flex; }
+  /* The flex item is the <nav> wrapper, not the <ul> — show/hide the wrapper so
+     the row collapses to logo + burger + action icons only. */
+  .app-topbar > nav { display: none; }
+  .app-topbar[data-nav-open] > nav {
+    display: block;
+    flex: 1 1 100%;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-top: var(--sp-8);
+    border-top: 1px solid var(--border);
+  }
+  .app-topbar[data-nav-open] .app-topbar__nav {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--sp-4);
+  }
+  .app-topbar[data-nav-open] .app-topbar__nav-highlight { display: none; }
+  /* Sub-menus are hover-driven on desktop — unusable by touch, so inside the
+     burger panel they sit open inline (indented) instead of floating. */
+  .app-topbar[data-nav-open] > nav .app-topbar__dropdown {
+    position: static;
+    display: block;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    box-shadow: none;
+    border: 0;
+    background: transparent;
+    min-width: 0;
+    padding: 0 0 var(--sp-4) var(--sp-24);
+  }
+}

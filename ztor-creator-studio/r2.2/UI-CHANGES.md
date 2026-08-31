@@ -4,6 +4,274 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-08-26 · Design system 文件整理：Pattern 卡渲染化、demo 對齊現況、token 文件校正（B 反饋導入＋D infra）
+
+**範圍**：`design-system.html`／`design-system.md`／四支元件 CSS 的細節校正。產品頁零改動。
+
+**動機**：使用者反饋「design-system.html 需要更容易視覺閱讀，元件實際使用的組合該渲染的要渲染出來，只有文字敘述會看不懂」，並指出「應該有 token 和元件沒有完美對上的，特別是細節使用」。三份全量稽核（158 個元件小節的渲染覆蓋率、token 與元件 CSS 的四向交叉比對、CSS 連結與索引一致性）先定位問題，再依「看不懂的優先」順序施工。稽核推翻了一個原始假設——沒有任何小節是「純文字零渲染」，真正的問題是**渲染與文字描述的現況對不上**，以及**組合層（Pillar 5）從頭到尾沒有渲染**。
+
+**內容**：
+
+- **【B】Pillar 5 由密集表格改成 10 張可渲染的 Pattern 卡**：原本 10 個 pattern 的 trigger／must 全擠在一張表格的單一儲存格裡，只能讀不能看。現拆成 10 個獨立小節（`#pattern-dashboard`／`-tabbed`／`-filter-list`／`-lifecycle`／`-wizard`／`-form-assembly`／`-settings`／`-modal`／`-split-preview`／`-detail-rail`），每張卡有三段：Trigger／Must 規則文字（原表格內容逐字轉移，產品規則未改寫）、**用真元件組出來的渲染實例**、實際使用頁連結。上方 10 張線框縮圖包成 `.wire-link` 變可點索引，TOC 補 10 條子連結。這是本輪最大的一塊：組合規則本來就只活在 Pillar 5，卻是全文件唯一沒有視覺的地方。
+- **【B】五個 demo 與文字現況脫節的小節重修**：
+  - `store-settings` — demo 還是 2026-08-11（D184）改版前的舊彈窗版面，文字卻在描述已改成的獨立頁面。demo 重建為新版骨架（page-crumb／page-intro／四分頁／右側常駐 preview 欄）。
+  - `media-vault` — `.vault-gridbar__meta` 寫「2 photos · 3 audio files」，內容格卻渲染空庫房佔位，自相矛盾。改成有內容版本（數量與 meta 一致），空庫房另立一格標明是 empty 態；補上 2026-07-31 起的 `.vault-keys`（已發出鑰匙）區塊。
+  - `scanner` — 文字描述至少 8 種畫面，demo 只有相機首頁與單一成功結果。補齊密碼閘門、鎖定、場次未開始／已結束、離線保留、名單列、重複掃描、不屬此場次錯誤，合計 9 種狀態；`.scanner-flash` 屬瞬時效果，改文字註記不渲染。
+  - `size-chart-editor` — 文字寫了三個機制、demo 一個都沒有。補上尺碼制分頁（`.sce-block__tabs`）、cm／inch 單位切換（`.sce-block__head`）、多份指南切換（`.sg-picker__select`）。
+  - `session-list` — demo 把展開把手放在整列最右的 `.product-list__actions`，與規格文字「必須放在名稱前面」（窄螢幕 `overflow-x:hidden` 會裁掉最右側）相反。核對產品頁 `events.html` 後確認規格是對的、demo 是錯的，把手移進 `.product-list__title`。
+- **【D】Token 文件漂移校正**（值一律以 `_tokens.css` 為準）：`--primary-foreground` 文件停在改版前的 `#FFFFFF`、實際已是 `#171717`（2026-07-28 因白字在橘上對比僅 1.9:1 而改），這是全站主要按鈕的文字色，文件教錯了關鍵值；`--secondary` 已於 Q9 退役卻仍畫著色票，改為退役標註；`--input-surface` 暗色停在候選階段的 `#262729`、定案是 `#2A2B2D`；Mode pillar 的暗色 `muted-foreground`（`#757575`→`#979797`）與 `border`／`input`（`#2C2D2E`→`#373839`）兩處過期。Foundation §1.4 Radius 原本只寫純數字、且是 Q2 合併前的「7–8px cards」舊描述，改為六個具名 token 的完整對照（`--radius-sm` 3px 到 `--radius-pill` 9999px），與 Quick Reference 一致。
+- **【D】元件 CSS 的 token 紀律補正**：`scanner.css` 兩處 `var(--fs-17)` 與 `control-row.css` 一處 `var(--radius-xs)` 引用了從未定義且無 fallback 的 token，字級與圓角一直靜默失效，改用刻度上存在的值；`upload-tile.css` 寫死的 `background:#000` 改用 `var(--surface-inverse)`；`selection-card.css` 的深色主題示意色塊停在 midnight-v2 改版前的 `#191A1A`，改為現行 `#0C0D0D`——那張縮圖是在告訴使用者「深色模式長這樣」，畫的卻是已退役的配色。`ds-baseline.json` 的裸值棘輪隨 upload-tile 修正下降一格。
+- **【D】文件基礎設施**：補上 `finding-card.css`／`source-status.css` 兩條漏掛的 `<link>`（兩節 demo 原本無樣式裸奔）；清除 `search-collapse.css`／`size-chart-editor.css` 的重複 link 與指向 0 規則墓碑 `inline-edit.css` 的死 link；修 4 個斷錨（`#progress-stepper`→`#stepper`、`#settings-layout`→`#settings-nav`）；`<title>` 與側欄品牌字樣由 R 2.1 更正為 R 2.2；補齊 8 節缺漏的 `data-product-preview` 配對並修正一個對不上的值；23 個小節補上樣式來源標註（15 節補 Source 列，8 節純 JS 渲染模組註明樣式借用來源）。
+
+**影響檔案**：`site/r2.2/design-system.html`、`site/r2.2/design-system.md`、`site/r2.2/ds-components/scanner.css`、`site/r2.2/ds-components/control-row.css`、`site/r2.2/ds-components/upload-tile.css`、`site/r2.2/ds-components/selection-card.css`、`site/r2.2/ds-baseline.json`。
+
+**驗證**：文件內建 integrity check 由「斷鏈 4／缺預覽 9／多餘預覽 1」變成全部歸零（`ids 211 · duplicate 0 · broken hrefs 0 · missing previews 0`）；`check_ds_sync.py` 12 項無 FAIL（僅既有裸色 WARN，棘輪無新增）；fresh-context 驗收 agent 逐條核對 16 項通過 15 項（唯一 FAIL 來自施工中的暫存檔，已刪除）；localhost 實際開頁截圖確認 Pattern 卡與五個重修小節渲染正常。
+
+## 2026-08-26 · 詳情頁分節導覽全面統一（B 反饋導入，Q75 擴大）
+
+使用者指示「只要是詳情頁都要統一」——昨天 product-detail 的改法擴大到其餘六個有頁內分頁的詳情頁，全站詳情頁自此同款（連同 series-detail、settings 共九頁）。
+
+- **【B】** 六頁由橫排 tabs 改左側分節導覽（照 product-detail 配方，panel 內容零改動、切換／hash 深連結／條件顯示邏輯全保留）：`project-detail.html`（8 分頁，`data-type`／`data-pd-progress-tab` 等條件顯示屬性原樣保留；原 tabbar 右側的「編輯」鈕搬到內容區頂端右對齊）、`auction-detail.html`（3 分頁）、`bundle-detail.html`（3 分頁）、`creator-detail.html`（2 分頁，`div[role=tab]` 統一成 button）、`fan-detail.html`（4 分頁，自寫切換 JS 同步）、`ip-detail.html`（5 分頁）。
+- **【B】** `section-nav.css` 新增 `.section-nav__count`：素面 11px 數字、`margin-left:auto` 靠右貼列尾、tabular-nums、已選列跟著換 `--selected-ink`——承接 creator-detail（動態 `data-cd-count`）與 ip-detail（靜態 14）分頁原本的計數，與 `.tabs--count-plain` 同一種素面數字語言。DS 頁 demo、spec 表與 `design-system.md` 同步；Section nav 條目的「tabs＝頁級、section-nav＝分頁內」舊分工描述改寫（詳情頁的頁級導覽現在就是 section-nav，橫排 tabs 留給清單頁工具列與節內篩選）。
+- 範圍外不動：`event-detail.html`（無頁內分頁）、`pickup-detail.html`（僅清單篩選 tabs）、各頁的 `filter-tabs`／`segmented` 篩選器。
+- 驗證：creator／fan／ip 三頁施工端瀏覽器實測；project／auction／bundle 三頁主對話 localhost 實測（含 `#earnings`／`#bids`／`#price-stock` 深連結、條件分頁顯隱、無水平爆版）；check_ds_sync 全 PASS。
+
+## 2026-08-25 · 定案套回全站：商品詳情分節導覽改版＋Q72 補漏＋Q71 判級修正（B 反饋導入）
+
+同日「demo 定案 promote」條目把定案落進元件層，本條是頁面端與補漏端的同步。全站 22 頁 Q71 判級掃描的完整清單另存於 session 暫存（重要結論已行動或記入 `STYLE-DECISIONS.md`）。
+
+- **【B】** `product-detail.html` 頁內導覽由橫排卡片式 tabs 改為左側分節導覽（Q75）：head 補 `section-nav.css`、四個分頁項搬進 `nav.section-nav`（無 icon）、既有四個 panel 內容一字未動；行內 JS 換選擇器，分頁切換／hash 深連結（`#delivery` 等）／`data-tab-jump` 跳轉／右軌開關四個行為全數保留（jsdom 靜態驗證＋localhost 實測）。
+- **【B】** Q72 元件層補漏：裁決當天只改了 `kv-list.css`，全站掃描抓到同角色漏網三支——`data-list.css`、`table.css`（tbody td）、`settings.css`（`.settings-row`）列線同步由 `--border` 改 `--border-soft`，12+ 消費頁一次生效。`data-list.css` 的子列群組轉換邊界屬組線、維持 `--border`。
+- **【B】** `settings.css` 的 `.settings-nav` 容器 `gap` 由 2px 歸零：分隔線式的列線要相接，藥丸時代的間隙會把線切斷（Q75 連動）。
+- **【B】** Q71 判級修正：`project-detail.html` 交付摘要兩張 KPI 卡補上漏掛的 `card--muted`（與頁內既有設計註解對齊）。
+- **【D】** `create-product.html` 的 `.nest` 行內註解、`progress-timeline.css` 檔頭註解更新（nest 已改頂線、composer 已更名 post-composer），純文字勘誤。
+- **【D】** 新記 `STYLE-DECISIONS.md` Q76（待裁決）：chip 無框化後，淺色模式 `--input-surface` 與 `--card` 同值導致未選 chip 融進卡面（7 處消費場景），候選修法已列；掃描另抓出 4 項需使用者裁示的判級題（create-project 兩組 checkbox 是否升級多選元件、order-detail 核取框對齊、register-ip 的多選卡需要標題＋說明版型），待裁後另輪處理。
+
+## 2026-08-25 · Demo 探索檔退場＋三支零消費元件墓碑化（D infra／使用者裁決）
+
+使用者：「照提案執行」。demo 定案已全部 promote 進 `ds-components/`（見上方同日「demo 定案 promote」條目）且 DS 文件同步完畢，探索檔使命結束；元件巡檢報告（`scratch/元件巡檢報告-20260825.md`）核實三支元件全站零真實消費，比照 `cookie-banner.css`／`footer.css` 既有慣例退場。
+
+- **【D】** 5 支 demo 探索檔刪除（git 歷史可回溯，不留墓碑）：`demo-nav-redesign.html`、`demo-eshop-styles.html`、`demo-layer-e-shop.html`、`demo-layer-create-product.html`、`demo-layer-preview.css`。全庫 grep 確認無產品頁 `<link>`/`<script>` 等活代碼引用；`demo-layer-system.html`（綁著未裁決的 Q61–Q64）與 `section-test.html`（8 處引用，另案）不動。
+- **【C】** 三支零消費元件墓碑化：`inline-edit.css`（早已清空，統一成標準墓碑格式）、`avatar-stack.css`（`project-detail.html` 曾掛 `<link>` 但全檔無任何 markup 消費，等於連了線沒接電器，死 link 已移除）、`composer.css`（全庫只有 `design-system.html` 掛 `<link>` 展示，連產品頁 `<link>` 都沒有；與獨立在用的 `post-composer.css` 是不同構想，非誤植重複）。樣式整支清空、檔案保留為墓碑。
+- **【C】** `design-system.html` 同步撤除：avatar-stack／composer 各自的 demo 區塊、TOC 兩條、`<link>` 兩個、組成圖（compose-map／compose__tier）殘留 chip；`design-system.md` Pillar 4 兩列改標「已退場」、composer 的 §4.19 加退場說明並保留原文供追溯。`inline-edit.css` 在 DS 頁與 md 早已是「留卡標已退場」狀態，本輪只同步 CSS 檔頭格式。
+
+## 2026-08-25 · demo 定案 promote：卡內分組與可選卡系列元件落地（B 反饋導入，Q71/Q74/Q75）
+
+**範圍**：`demo-eshop-styles.html`（E-Shop 三頁風格組合 demo）圈定的卡內分組與可選卡規則定案，本輪 promote 進 `ds-components/` 並同步 `design-system.html`／`design-system.md`。新增 `check-card.css`（Cosmos 多選卡）、`card-group.css`（卡內分組三件組）；`chip.css` 全面無框化＋新增 `.chip--add`；`checkbox.css` 新增 `.zcheck--lg`；`radio-card.css` 新增 `.radio-cards--stack`；`nest.css` 去向上陰影改補頂線；`section-nav.css` 整體改分隔線式。不動任何產品頁 `.html`，兩支新元件與 `.radio-cards--stack` 尚無消費頁，待下一輪套用。
+
+**動機**：使用者在 demo 迭代中逐輪裁決一批視覺規則（詳見上方 2026-08-25「E-Shop 三頁風格組合 demo」條目 v5／v7／v9 與同日「導覽元件重設計提案 demo」），並記入 `STYLE-DECISIONS.md` Q71（卡內分組三級制）、Q74（單選卡與多選卡已選畫法刻意分開）、Q75（section-nav 全站統一分隔線式）。demo 階段刻意先不動 `ds-components/`（見「E-Shop 三頁風格組合 demo」條目末行「定案後才 promote」），本輪把三題的定案結果落地。
+
+**內容**：
+
+- `check-card.css`（新增）— `.check-cards` 兩欄等寬 grid、`.check-card` 46px 無框藥丸（`--input-surface` 底）、`.check-card__mark` 28px 圓形標記（未選中性淡填／已選橘 24%）、`.check-card--on` 整格染 `color-mix(--primary 28%, transparent)`＋`--selected-ink`、`.check-cards--sm` 隨內容寬換行的小尺寸變體、可選 `.check-card__group`／`.check-card__count`。Q74 定案：與 `.radio-cards`（單選，底不變＋右上橘點）刻意分開兩種已選畫法，不強求同一答案。
+- `card-group.css`（新增）— Q71 三級制的第 1 級（排版分組）與卡頭：`.group-title`／`.group-desc`（小標→內容合併總距 32px）、`.group-divider`（組分隔線，上下各 32px、出血到卡緣）、`.card-head`／`__title`／`__desc`／`__rule`（T-A2 卡頭，上距 24／線下距 32）、`.attr-value`／`.attr-link`（屬性列純文字值＋底線動作，取代黑底標籤）。第 2 級沿用既有 `.control-group`、第 3 級沿用既有 `.nest`，本檔不重複定義。
+- `chip.css` — 全面無框化：未選 `--input-surface` 底、`border:0`，hover `--accent`；`.chip--static` hover 不變色；`.chip--value` 現與預設外觀相同（相容保留，列為合併候選）；新增 `.chip--add`（1px 虛線框，唯一保留邊框的變體）。
+- `checkbox.css` — 新增 `.zcheck--lg`（24px 大框，掛在包住 `.zcheck__control` 的外層容器上，圓角 `--radius-sm`→`--radius`，勾維持 5×9 不變）。
+- `radio-card.css` — 新增 `.radio-cards--stack`（一欄直排，取代先前使用者否決的直排有框版）；已選畫法不變（底不變＋右上橘點，Q74）。
+- `nest.css` — 拿掉向上陰影，改 `border-top: 1px solid var(--nest-line)`；亮色靠髮絲線分層、深色靠 `--nest-surface` 薄膜分層（線本身透明）。`--shadow-nest-up` 不再被本元件使用，`Funding panel` 仍在用、非死 token。
+- `section-nav.css` — 整體改分隔線式：每列 1px `--border-soft` 下緣線、末列去線、無底色無藥丸無 icon，已選只換 `--selected-ink`＋medium 字重；`.settings-nav__item` 沿用同一組選擇器，`settings.css` 只留容器吸附位移。三頁同款：product-detail（本輪由橫排 tabs 改為分節導覽）、series-detail、settings。
+- `design-system.md` Pillar 6 新增 §6.0.2，記錄 Q71 的 L0 畫布版（列距 40、組分隔線上下各 56＋滿版、組內容左右內縮 16）與卡片版（L1，摘要對照 Card group 條目）兩種版面各自的間距階梯定案值。
+
+**影響檔案**：`site/r2.2/ds-components/check-card.css`（新增）、`site/r2.2/ds-components/card-group.css`（新增）、`site/r2.2/ds-components/chip.css`、`site/r2.2/ds-components/checkbox.css`、`site/r2.2/ds-components/radio-card.css`、`site/r2.2/ds-components/nest.css`、`site/r2.2/ds-components/section-nav.css`、`site/r2.2/design-system.html`、`site/r2.2/design-system.md`。
+
+**驗證**：`python3 Skills/project-ui-creator/scripts/check_ds_sync.py "site/r2.2"` 12 項全數 PASS（僅既有裸色 WARN，棘輪無新增）；新元件 demo 卡在 `design-system.html` TOC 皆有錨點可解析；`design-system.md` 對應條目與 html 同步更新。
+
+## 2026-08-25 · E-Shop 三頁風格組合 demo（D infra／提案，不動現行頁面）
+
+**範圍**：新增 `demo-eshop-styles.html`（提案 demo；變體樣式只活在該頁 `<style>`、全走既有 token）。現行頁面零改動。
+
+**動機**：導覽重設計提案（`demo-nav-redesign.html`）走到要看「整頁用起來的樣子」——使用者指示試做電子商店頁、創建商品頁、商品詳情頁三頁 demo，最上方加 demo 控制器切換頁面與風格組合。放進控制器的候選由使用者以問答圈定：
+
+- ③ 清單分頁：現況殼 vs **3D改**（使用者指示：計數不帶泡泡、用 3C 的素排計數、顏色暗一階）
+- ① 分節導覽（商品詳情左欄）：1D 分隔線清單 vs 1F 群組圖示側欄
+- ② 次層分頁（商品詳情內）：2D 藥丸群 vs 2H icon 藥丸 dock
+- 表單分節（創建商品）：L0-A 間距級差 vs 現況卡容器（對照）
+
+**內容**：三頁皆用真字資料（26MS T-Shirt 等 e-shop 樣本）；商品清單採 L0 平鋪＋髮絲線桌面（使用者屬意的方向）；詳情內容區用 L0-A 手法排 Basics／Specifications 兩節。控制器是 sticky header，槽位按當前頁顯隱；另有明暗切換。
+
+**v2（同日，三點反饋）**：
+
+- 兩排計數統一素排：類型 pill 那排掛上既有的 `filter-tabs--brand` 修飾類（它僅存的差異正是「計數不套泡泡」），與第一排的 `--count-plain` 同語言
+- 商品詳情做出「分節 → 次層 → 內容」三層真實連動：四節各有自己的內容（Overview 無次層、示範不是每節都要第二層；Info & media 四格＝Basics 列／Variants 表／Size guide 表／Media 縮圖格；Pricing & stock 兩格；Sales & orders 兩格＝訂單表／成效列），1D／1F 與 2D／2H 兩組變體 active 同步
+- 創建商品照實頁補細節：類型切換鈕、必填星號、描述字數統計（即時）、Media 上傳格、Specifications 可增刪列、Size guide 資訊列、Pricing & inventory、頁尾 Validation＋雙鈕、右側 sticky 商品預覽軌（名稱與價格即時同步）。表單分節殼擴成四選：**現況卡（預設，使用者屬意）**／細框卡（只框不填）／L0-A 間距級差／L0-B 小標髮絲線
+
+**v3（同日）**：使用者裁決「創建商品不改，以現行 UI 為基礎」——控制器撤掉表單分節槽位、`.cf-sec` 固定為現況卡；商品詳情的內容區跟著這個基礎改成同語言的卡片分節（Basics／Specifications／Variants 表／訂單表等各自成卡，與分頁同名的卡內小標依文案規則移除），電子商店維持 L0 平鋪清單。探索範圍收斂到三個槽位：
+
+- 分節導覽：1D／1F
+- 次層分頁：2D／2H
+- 清單分頁：現況／3D改
+
+**v4（同日，裁決收斂＋新探索）**：
+
+- 使用者裁決：詳情頁分節導覽 1D 與 1F 兩案都留；次層分頁定案 **2H icon dock**（②槽位撤除、三節的 2D 版移除）；電子商店定案現況殼（③槽位與 3D改 區塊移除）
+- 使用者指示「這些元件都可以分成有 icon 和無 icon」：控制器新增 **icon 開關**，一鍵顯隱 1D／1F／2H 三個導覽元件的 icon（動作鈕 icon 不受影響）；1D 補上與 1F 同組的 icon
+- 新增第四頁「**卡內分組**」：使用者提題——一張卡裡有兩組資訊要區分、先不新增層，可以怎麼做。五種只動排版的手法（G-A 小標＋間距級差／G-B 小標＋滿版髮絲線／G-C 有字的分隔線／G-D 左標籤欄／G-E 縮排側線），示範內容＝定價＋庫存兩組真字列；G-A/B 與 G-C 正好對應 STYLE-DECISIONS **Q46**（群組標題在上 vs 有字的分隔線，待裁決）的兩派
+
+**v5（同日，Q71 立法）**：使用者陳述卡內分組的層級規則，記入 `STYLE-DECISIONS.md` **Q71（已裁決）**——三級制：第 1 級・平級分組＝次級標題或分隔線（G-A～G-E）；第 2 級・些微強調＝1px 線框（正例：創建商品的尺寸指南）；第 3 級・全新且必須強調＝才加新的一層（正例：創建商品的多規格矩陣）。demo 的卡內分組頁同步：副標改寫成三級規則、頁尾補「級 2 線框」與「級 3 新層」兩個參照範例（用商品選項＋尺寸指南／規格矩陣的真字內容）。Q46 的兩派都屬第 1 級、該題保留待裁決。全站盤點「誰用錯級」另開工單。
+
+**v6（同日）**：使用者圈選 G-A 的組標題與第一列，指出「標題和內文應該要有用間距做出區隔」。組標題下外距 `--sp-4` → `--sp-10`（加上列自身 14px 上內距，標題到第一個欄位標籤實測 24px），五個手法一起改；G-C 有字分隔線的上下外距同步對齊（上 `--sp-32` 與組間距一致、下 `--sp-10` 與其他手法一致）。這個值與詳情卡 `.l0-h` 相同——「小標對其內容」站上只有一個答案。
+
+**v7（同日，Q71 第二輪細化）**：使用者裁示——G-B 立為第 1 級基本型、G-D 視內容可選（G-A／G-C／G-E 自 demo 移除）；級 2 線框維持現行設計；**級 3 灰填色巢狀層樣式否決**、demo 的該區塊撤除。兩個後續設計題就地給候選：多規格矩陣的替代呈現（M-A 線框／M-B 小標線）；大區塊標題怎麼加（T-A 卡內大標 fs-16、同 Q65 標題階／T-B 標題移卡外 L0／T-C 大寫卡頭、詳情卡現行語言）。Q71 條目同步細化。
+
+**v8（同日）**：使用者圈選 T-A 的大標題與其下方內容，指「區隔間距要再大一點」。實測發現階梯是反的——大區塊標題到子組 16px，比子組小標到內文的 24px 還小，讀起來像大標題屬於第一個子組。改成層級越高間距越大：
+
+- 大區塊標題 → 子組：`--sp-16` → `--sp-32`（T-A 卡內大標、T-C 大寫卡頭同步）
+- 子組小標 → 內文：維持 24px（v6 已定）
+- 列與列：14px
+
+T-B 的標題在卡外、卡片邊界本身已是硬邊界，只從 `--sp-12` 調到 `--sp-16`。組與組之間（20px＋髮絲線＋20px）走的是「線」這個訊號、與純留白不同軌，維持不動。
+
+**v9（同日，三點反饋）**：
+
+- **矩陣改用正式巢狀層**：使用者裁示「M 這種複雜程度的可以加一層，不要用 M-A／M-B」。M-A／M-B 撤除，改用 `.card--muted`（`--nest-surface`＋`--nest-line`）——站上「卡裡疊一層」的正式答案。原 demo 那版灰底用 `--muted` 往暗填，正是 Q66 否決的舊做法，混亂感源自此。Q71 條目同步更正。
+- **T-A2 新變體**：使用者疑慮「大標會不會跟第一個子組看起來是同一塊、Inventory 變成另一塊」。T-A2＝卡頭下加一道滿版線（出血到卡緣），把大標切成整張卡的頭、不歸任何子組。
+- **術語表**：使用者問「有沒有更好的表達區塊層級的方式」。頁首新增五層用詞表——層 layer／區塊 section／子區塊 group／列 row／欄位 field；「一個 section 包兩個 section」的正確講法＝「一個區塊含兩個子區塊」。
+- **複雜排列示範**：新增 X 段，把真元件放進卡內分組——`.input`／`.select`／`.textarea`／`.switch`＋`.control-row`／`.segmented`／單選卡，分組仍用 G-B 基本型。demo 頁改為連結真的 ds-components（card／input／field-system／switch／control-row／segmented／radio-card），不自刻控制項。
+
+**v10（同日，六點反饋）**：
+
+- **`.segmented` 換掉**：使用者裁示分段切換那種樣式不可用，改用 `.chip-group`＋`.chip--active`（橘 tint，與已定案的導覽「已選」語言同一個答案）；`.segmented` 與 `.badge--neutral` 已從本頁清零
+- **巢狀層貼齊**：底色維持 `--nest-surface`，去掉向上陰影、左右與下緣切齊母卡外緣（母卡補 `overflow:hidden`）；做法對齊站上既有的 `.nest`
+- **屬性列換法**：原本「深色 badge ×3 ＋ Edit 按鈕」語意不清，改成純文字值（`M · L · XL`）＋文字動作 Edit
+- **大區塊標題定案 T-A2**，標題上下留白由卡內距 20px 放大到 24px；T-A／T-B／T-C 撤除
+- **兩條開關列的關係**：新增 S 段對照——S-1 兩張獨立框＋間距（彼此無關）、S-2 站上既有的 `.control-group` 同框＋分隔線（同一組）
+- **更多元件＋L0 版**：X 段補上從原型盤點來的元件（`.amount-field`／`.chip-group`／`.select`／`.control-group`＋`.switch`／日期／數量／`.radio-list`／`.zcheck`／標籤／`.textarea`／`.kv`），並新增 L0 段——同一組內容改為直接坐在畫布上（不進卡），與 L1 卡片版並排比較。radio-list 與 chip 群在 demo 內可點
+
+**v11（同日，八點反饋）**：
+
+- **L0 上的控件改成只有框、不填色**（第 1、8 點）：`--input-surface`（暗色 #2A2B2D）是為了在卡面 #212223 上浮出來而調亮的，坐到畫布 #0C0D0D 上就變成整條發亮的板子，比同區塊裡 1px `--border` 的框重得多——使用者說的「兩種線框其中一個太亮」正是這個落差。L0 段的 `.input`／`.textarea`／`.select`／`.amount-field`（含單位格）一律改透明底，與 `.control-group` 同一種框語言。（順帶查證：`.input` 的 `border-color` 算出來是白色屬假象，元件本身 `border:0`、邊界走 `box-shadow`，畫面上沒有白框。）
+- **間距階梯統一**（第 2、3 點）：不論小標後面接哪種內容，「小標 → 內容第一行／框邊」一律 24px。相鄰外距會合併取最大值，所以規則給的是合併後的總值：`.mini-t` 16（＋表頭 8）、`.control-group`／`.radio-list`／`.kv` 24（＋0）、`.grow` 12（＋列 12）、`.flatrow` 沿用 10（＋列 14）。大區塊標題維持 32px。
+- **日期／時間欄位加前置圖示**（第 4 點）：日期用日曆、時間用時鐘，並補一個時間欄位示範兩種圖示的分工。
+- **並排灰卡回歸**（第 5 點）：「Who can buy」改回 `.segmented.radio-cards`（灰卡＋右上橘點）；另新增 `.radio-list--boxed`——直排、每項有 1px 邊界，作為選項多／要省空間時的替代，兩者並列說明分工。
+- **修好核取方塊**（第 6 點）：原 markup 漏了 `.zcheck__control` 外層，`.zcheck__box` 的 `inset:0` 因此撐滿整個 label——點下去整片變橘就是這個原因，不是設計。
+- **新增鈕改成標籤樣式**（第 7 點）：Tags 的「+ Add」由文字連結改成虛線 chip（`.chip--add`），讀起來是這排標籤的下一格。
+- 另修：`.radio-cards` 的橘點由元件 `::after` 提供，我多掛的 `.radio-card__icon` 造成兩顆點，已移除；radio-cards 與 chip 群在 demo 內可點。
+
+**v12（同日，五點反饋）**：
+
+- **直排選項改用同款卡**（第 1 點）：`.radio-list--boxed` 撤除，Pickup point 改成 `.radio-cards--stack`（一欄版的並排灰卡）——與 Who can buy 同一種卡面與右上橘點，只差欄數。
+- **多選改用卡片**（第 2 點）：Fulfilment 由裸核取清單改成 `.check-card`（同卡面＋左側核取方塊當標記）。右上橘點是單選的記號，多選不借用。
+- **日期／時間圖示不重複**（第 3 點）：隱藏瀏覽器原生的 picker indicator（`::-webkit-calendar-picker-indicator` 透明化，整格仍可點開選擇器），只留前置圖示。
+- **摘要列間距**（第 4 點）：`.kv` 上下內距 `--sp-8` → `--sp-12`，與 `.grow` 同節奏。
+- **分隔線統一**（第 5 點）：實測站上「列與列的分隔」有兩個色階——`.kv` 用 `--border`（#373839）、`.grow`／`.flatrow` 用 `--border-soft`（#202122），同張卡裡交錯就是使用者說的混亂。demo 統一成「列線＝`--border-soft`、組線＝`--border`」兩級（以頁面覆寫達成，元件未動），並記入 **STYLE-DECISIONS Q72 待裁決**——裁決後才改 `kv-list.css` 並同步三個消費頁。
+- 另修：選項卡在 L0 仍保留填色（它是「可點的面」，與輸入欄位那種「可填的槽」角色不同），避免同頁兩種卡一填一空。
+
+**v13（同日）**：使用者要求看不同的多選元件設計，上 Mobbin 取材後新增 MS 段，六案並列、全可點、各附出處：
+
+- **MS-A 清單列＋右側核取**（Care.com／Spotify）：標籤靠左、方塊靠右對齊成一欄，掃描最快、副標放得下
+- **MS-B 可選標籤**（Substack／Reddit／SchoolAI）：選中＝橘 tint 藥丸，與站上已定案的「已選」語言同一個答案；選項多、標籤短時最省空間
+- **MS-C 加號標籤**（Cosmos）：未選帶＋號、選中換打勾並反白，動作意圖最明確，適合初次設定
+- **MS-D 開關列**（Langdock／Plane／Expensify）：語意是「每項各自開關」而非「挑幾個」；站上已有 `.control-group`＋`.switch`，不必新增元件
+- **MS-E 卡片多選**（現行 demo 用的）：選項少、每項需要副標時
+- **MS-F 已選在上、可搜尋**（Skillshare／Polywork）：選項幾十個以上的收納法
+
+**v14（同日）**：使用者提題「大區塊標題與子組小標都要有帶描述／不帶描述的變體，例如尺寸指南那則的標題與副標關係」。新增 D 段，四種組合並列（兩層都不帶／只大區塊帶／只子組帶／兩層都帶）。規則照站上既有的 `.form-section__title`＋`__sub`：
+
+- 標題 → 它的描述：4px，貼緊讀成一個單位
+- 標題群 → 內容：大區塊 32px、子組 24px，**加不加描述都不變**
+
+新增 `.gt-desc`／`.gsub-desc` 兩支，用 `:has()` 讓標題在有描述時自動收窄下外距；原本的間距階梯規則同步補上 `.gsub-desc + …` 的對應選擇器，確保帶描述時內容距離不跑掉。描述字級用 `--fs-12`（與本頁 `.ghint`、站上 `.control-row__sub` 一致）；站上 `.form-section__sub` 是 `--fs-11`，兩者差異另案。
+
+**v15（同日，四點反饋）**：
+
+- **巢狀層補上方圓角**：`.gnest` 加 `border-radius: var(--radius-xl)`（四角同值，做法同站上 `.nest`）——左右下三邊已貼齊母卡外緣、被母卡的 `overflow:hidden` 再裁一次，畫面上只留上方兩個圓角。
+- **描述字級裁定 12px、偶數優先**：記入 **STYLE-DECISIONS Q73（已裁決、待執行）**。demo 已符合；站上 `.form-section__sub` 的 11→12 影響二十幾頁，排到 promote 那一輪一起改。
+- **多選改用加號標籤**：Fulfilment 由 `.check-card` 換成 MS-C（Cosmos 式加號標籤）。Tags 那排維持原樣不動——使用者指出兩者語意不同：Tags 是「已經貼上去的內容」，多選是「可以加進來的選項」。
+- **新增「待裁決」清單**（頁首）：使用者回報前一輪的口頭清單看不懂，改成寫進頁面的五條白話說明，每條都寫「在哪一段看」與「兩個選項差在哪」。
+
+**v16（同日，五題全數裁決＋兩題落地元件）**：
+
+- **S-1／S-2 兩種都留**（看情況選用）。S-1 圓角由 `--radius-md` 改 `--radius-xl`（與 S-2 外框同值，兩者才是同一種「框」）、兩框間距 10 → 20px。
+- **卡片版與畫布版都留、以卡片版（L1）為主**。畫布版的節奏調整：列內距 12 → 16、組分隔線上下 20 → 32（沒有卡片內距撐著，同樣數值在畫布上會擠）；`.gsub + .grow` 同步降到 8，維持「小標到內容 24px」的階梯。
+- **多選 MS-A～MS-E 全留、MS-F 移除**。MS-A 核取方塊 16 → 20px；MS-B 去掉外框線、未選改中性填色（讀起來是標籤不是按鈕）；MS-C 已選由全白改成橘 tint＋橘字（Q8 的已選語言）；MS-D 不動；**MS-E 改成 Cosmos 版型**（兩欄等寬卡、標籤靠左、右端圓形標記格、下方計數、可分組）。
+- **Q72 列線顏色裁定「暗的」並落地元件**：`kv-list.css` 的 `border-top` 由 `--border` 改 `--border-soft`，9 個消費頁一次生效；product-detail 實測列線為 #202122。內距維持 `--sp-8`（不在本題範圍，demo 的 12px 屬該頁版面選擇）。
+- **Q73 描述字級裁定 12px 並落地元件**：`form-section.css` 的 `__sub` 11 → 12；**同輪 `field-system.css` 的 `.field__hint`／`.field__error` 也由 11 → 12**——Q21 已認定「區塊副標」與「欄位說明」是同一種輔助說明角色，只改一邊會製造新的同角色兩字級。create-product 實測無破版、無水平溢出。
+- `design-system.md` 與 `design-system.html` 的 KV list、Form section、Field system 三條同步；demo 頁首的待裁決清單改寫為裁決結果。
+
+**v17（同日）**：
+
+- **MS-E 去框、標記等大**：`.cos__item` 的 1px 邊框移除（靠填色與母層對比讀出來）；未選的「＋」由文字改成與打勾同一支 15px 線圖示——兩者是同一格裡互換的兩個狀態，尺寸不同會在切換時跳一下。
+- **MS-C 併入 MS-E**：使用者裁示「MS-C 不用、用 MS-E 取代，但要做一個 MS-C 的尺寸」。`.ms-add` 整組退場（留墓碑），改為 MS-E 的小尺寸變體 `.cos--sm`——隨內容寬、會換行的行內排列，高度 38px（原 MS-C 量體），標記格與圖示等比縮一階。同一個概念只留一套 class。
+- X 段與 L0 段的 Fulfilment 欄位同步改用 `.cos--sm`。
+
+**v18（同日，已選底色的候選比較）**：使用者問「已選的橘可不可以疊在未選的灰底上」，做出來後回報「彩度變低、看起來髒髒」——原因是灰為無彩色，混進去等於稀釋色度，愈想靠它提亮就愈濁，該案否決並在 CSS 留下原因註記。改列五個不混灰的候選並排比較（MS-E 段內，全可點）：
+
+- **A 現行**：橘 14% 疊母層——比未選暗
+- **C**：橘 20% 疊母層——亮度接近未選、色乾淨
+- **D**：橘 28% 疊母層——明顯比未選亮
+- **F**（使用者提案）：已選底＝比未選亮一階的**中性灰**，底完全不染橘、零濁感
+- **E**：底不變，只有文字與標記轉橘
+
+同輪兩項調整（使用者指定）：**標記格**先改成 1px 淡框無填色，同日使用者再裁示「還是換回背景色」——改回填色版（未選中性淡填 8%、已選橘 tint 24%，兩態只差色相不改形狀）；**F 的文字改回前景白**——底已用亮度差說明「這格被挑起來了」，文字再轉橘是同一件事講兩次，白字在亮一階的灰上也讀得更清楚。
+
+**v19（同日）**：使用者從五個候選中「先選 D」——多選卡已選底色＝**橘 28% 疊母層**，套用到 MS-E 的兩種尺寸與 X／L0 段的 Fulfilment 欄位；A（14%）與 C（20%）保留為 MS-E 段的對照列。刻意不動全站 `--selected-surface`（14%）——那個 token 服務側欄、filter-tabs、section-nav 等導覽類已選，卡片與導覽要不要同濃度是另一題。
+
+同輪發現並記錄 **STYLE-DECISIONS Q74（待裁決）**：單選卡（`.radio-cards`）的已選是「底色不變、只有右上橘點」（Q8 的理由：標題＋副標的卡，整段染橘會變成讀橘色內文），與多選卡新定的「染底 28%」是同一個卡片家族的兩個答案。要沿用、跟進、還是確認刻意分開，等使用者裁決。
+
+**v20（同日，整理成定案版）**：使用者要求「留下最後決定的就好，並重新分類」。卡內分組頁重整：
+
+- **移除比較用的落選項**：已選底色的 A／C／F／E 對照列與其修飾類（`.cos--t14`／`--t20`／`--gray`／`--ink`）全數清除，只留裁定的橘 28% 與一句否決理由（橘疊灰底會稀釋彩度）。
+- **重新分類成四段**：01 分組與層級（G-B／G-D／級 2 線框／巢狀層）、02 標題（卡頭＋滿版線／帶描述變體）、03 版面基準（L1 卡片版／L0 畫布版／開關列兩式）、04 選擇類元件（多選四案）。
+- **頁首「待裁決」改寫成「已定案」**，五條各寫結論；未決的 Q74 單獨列在末尾。
+- MS 段標題由「六種做法」更正為「四種做法」（MS-C 已併入 MS-E 小尺寸、MS-F 已移除）。
+
+同輪兩項 L0 調整（使用者指定）：**間距整套加大**——列上下內距 16 → 20（相鄰兩列文字相距 40px）、組分隔線上下 32 → 56，用組距與列距的落差做出群組感；**組分隔線滿版、組內內容左右內縮 16px**，線因此讀起來是跨過整個版面的斷點，而不是某一組自己的下框。MS-A 的核取方框放大到 24px、圓角改 `--radius`(6px)，勾維持元件預設尺寸。
+
+**v21（同日）**：
+
+- **子組小標到內容的間距 24 → 32**（使用者：「與下面的間距要再大一點」）。實測改之前卡頭線、組線、小標三個邊界的留白都是 24——三層一樣寬，讀不出誰統轄誰。現在卡片版的階梯是：列與列 14＋14／小標 → 內容 32／組線上下各 32（組界總留白 64＋線）；L0 版同步往上一階（小標 → 內容 40、組線上下 56）。相鄰外距會合併取最大值，所以各條寫的是合併後的總值。
+- **可選標籤全頁去框**（使用者：「不應該有 border」）。先前只改了 MS-B 那組，X／L0 段的 chip 仍帶框；改成 `#pg-group .chip` 一律無框、未選中性填色。例外是「+ Add」——它是「還沒有內容的那一格」，保留虛線框表達可加入。
+
+**v22（同日）**：
+
+- **新增欄位排列的垂直變體**（使用者：「原型是以垂直排為主，demo 加上垂直排的變體」）。控制器補一組「欄位排列：橫向／垂直（原型式）」，同一份內容當場切換。垂直模式對齊站上 `.field` 的實際做法：標籤在上、與控制項間距 `--sp-6`、欄位之間 `--sp-20`（L0 為 28），控制項寬度上限 420px，**標籤色與字級也對齊 `.field__label`（`--foreground` 白字、`--fs-12`）**——兩種排列的標籤色不同是刻意的：橫向時標籤與值左右相對，灰字是「這一格是什麼」的索引、白留給值；垂直時標籤獨立成一行、下面接可填的控制項，它是這一組的抬頭，退成灰會讓整欄看起來都是說明文字。**垂直模式一併拿掉列的髮絲線**——標籤在上時，線會把「標籤＋控制項」這一組從中間切開，讀起來像清單而不是表單；分組改由小標與組線負責。
+- **G-D 左標籤欄移除**（使用者指示）。同日先裁「視內容需要可選」，整理定案版時改為移除——平級分組只留 G-B 一個答案；CSS 留墓碑，頁面副標與裁決紀錄同步改寫。
+
+**v23（同日，修正一處違反已裁決規則的做法）**：使用者指出 chip 的未選底「不應該有這些深色的，請看看我們決議的元件規則」——查證屬實。前一輪把未選 chip 的底改成 `--muted`，暗色是 `#161718`、比卡面 `#212223` **還暗**，正是 **Q66 已否決的「往暗陷」**（該題裁決是「疊上去的一層跟著父層亮一階」）。改用 `--input-surface`（`#2A2B2D`，比卡亮一階，與 Q19「可互動的填色面」同一個答案）；`.chip--static` 的 hover 一併對齊同一階。實測卡面 33/34/35、chip 42/43/45，方向正確。
+
+**驗證**：`http://localhost:4325/demo-eshop-styles.html` 三頁 × 全部風格組合切換正常（含詳情三層連動、創建頁增刪規格與預覽同步的程式化實測）、console 零錯誤；`check_ds_sync` 12 項 PASS（僅既有裸色 WARN，棘輪無新增）。定案後才 promote 進 ds-components。
+
+---
+
+## 2026-08-25 · 導覽元件重設計提案 demo（D infra／提案，不動現行頁面）
+
+**範圍**：新增 `demo-nav-redesign.html`（提案 demo，做法同 `demo-layer-system.html`——變體樣式只活在該頁 `<style>`、全走既有 token，未進 ds-components）。現行頁面與元件 CSS 一個字都沒動。
+
+**動機**：使用者圈選三個導覽元件要求多風格重設計供挑選。每個元件給 4 個新方向＋現況對照，各自放在仿真的頁面脈絡（清單頁＝events、詳情頁＝event-detail Setup 版面）裡，分頁可點、可切明暗。三個元件：
+
+- 詳情頁分節導覽（`.section-nav`，活動詳情左欄）
+- 分節內的次層分頁列（`.list-toolbar` 殼＋`--underline-short` tabs，Setup 那排）
+- 清單生命週期分頁（events 的殼＋計數 tabs＋類型 pill）
+
+**提案內容**：
+
+- 分節導覽：1B 墨線標記／1C 浮卡座／1D 編號目錄／1E 節點軌
+- 次層分頁列：2B 內嵌軌道（segmented）／2C 無殼髮絲線／2D 藥丸群（Q8 橘 tint）／2E 級距切換
+- 生命週期分頁：3B 計數前置（迷你 KPI 分頁）／3C 內嵌軌道＋計數／3D 全藥丸單語言／3E 狀態點分頁
+- 末節附兩個成套家族預覽（軌道系 1C＋2B＋3C、編輯系 1D＋2C＋3B），供整站一致性判斷
+
+**第二輪追加（同日，Mobbin 取材＋layers 規則）**：使用者指示上 Mobbin MCP 取材、並裁示 layers 規則——「盡可能簡單乾淨，UI 預設直接落在 L0 畫布上；只有必須把一組東西框在一起、其他手段分不開，才疊一層」。demo 頁因此追加：
+
+- 頁首新增 layers 規則說明卡，每案右端標層數成本（L0／L0・框線／＋1 層）
+- 每元件各加 2 案（合計各 6 案），全數附 Mobbin 出處連結：1F 群組圖示側欄（Melio／Pipedrive／GitBook）、1G 純文字染色（Turo／Squarespace）、2F 大寫小標分頁（Productboard）、2G 框線膠囊分頁（Relevance AI／Programa）、3F 生命週期軸帶（Attio／Zoho CRM）、3G 狀態卡篩選（Slite quick filters）
+- 成套組合說明補註：依 layers 規則，家族二（編輯系）最貼；Mobbin 輪的 L0 案可替換進該家族
+
+**第三輪（同日）**：使用者看過後淘汰九案（1E 節點軌、1G 純文字、2C 無殼髮絲線、2E 級距、2F 大寫小標、2G 框線膠囊、3E 狀態點、3F 軸帶、3G 狀態卡）——線性／純文字系整批出局，偏好有填色的方向。demo 同步：
+
+- 移除九個被否決的案（demo 頁保留 CSS 無害、markup 已刪）；家族二的 2C 改由 2D 藥丸群頂替
+- 再上 Mobbin 補「有填色」方向四案：1H 反白直欄（Posh）、2H icon 藥丸 dock（Base44／Dovetail）、2I 反白藥丸（Posh）、3H 反白分頁＋計數（Posh）
+- 使用者另提層次題：卡容器（1）的內容改成 e-shop 式 L0 平鋪＋髮絲線（2）更乾淨，但多 section 時 L0 能不能不靠 layer1（3）做區隔——新增「L0 分區研究」一節，四種只用 L0 材料的手法：L0-A 間距級差（Graphite）、L0-B 小標帶全寬髮絲線（Google Drive 深色設定頁）、L0-C 左標題右內容（Cloudflare／Squarespace）、L0-D 品牌短槓小標（Klook；橘的範圍需對照 STYLE-DECISIONS 維度 5）
+
+**第四輪（同日，三點反饋）**：
+
+- 1C 浮卡座退場（「兩個 layer 的不要」）；家族一的側欄改由現況橘 tint 藥丸（L0）頂替
+- 1D 更名「分隔線清單」：序號改為可選裝飾（預設不帶）、容器頂線移除（首項上方不畫線）、末項不畫底線；選中標籤染橘補回品牌記號
+- L0 分區研究的骨架列改用真字展示（Dates：First show／Final show／Doors open；Venue：Venue／Address／Capacity，左標籤右值）
+
+**驗證**：`http://localhost:4325/demo-nav-redesign.html` 全節算繪正確、分頁點擊切換正常、明暗切換正常、console 零錯誤；`check_ds_sync` 12 項 PASS（僅既有裸色 WARN，棘輪無新增）。使用者裁決選定方案後才 promote 進 ds-components 並另記一筆。
+
+---
+
 ## 2026-08-25 · 帳戶選單的語言列與其他列對齊（B 反饋導入）
 
 **範圍**：`shared.css`（`.app-sidebar__sub-link--lang-toggle` 補 `text-align: left`、`.app-sidebar__sub-link--lang` 內距 `--sp-56` → `--sp-48`）、`ds-components/header.css`（`.app-topbar__dropdown-option--lang` 內距 `--sp-40` → `--sp-20`，＝基礎列 `--sp-12` 再加 8px）。

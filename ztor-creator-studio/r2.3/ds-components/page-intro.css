@@ -1,0 +1,213 @@
+/* Ztor Creator Studio - Page intro molecule */
+
+.page-intro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-20);
+  margin-bottom: var(--sp-28);
+  flex-wrap: wrap;
+}
+
+/* .page-intro__eyebrow retired 2026-05-28. Title + sub now lead. */
+
+/* 主視覺 ＋ 標題並排（2026-08-13 使用者指示「需要有活動圖片在左邊」）。
+   `.page-intro` 本體是「左邊一坨內容、右邊動作」的兩欄，圖片要跟標題黏在一起，
+   所以多包一層 __lead 當左欄；底線對齊沿用外層的 flex-end，圖與標題的基線才不會錯開。
+   直式 2:3 是全站顯示端的統一比例（D164／§7.10），這裡只是縮小版。
+   沒有圖的活動（草稿常常還沒上傳）由消費頁把 __media 收起來，不留一個空框。 */
+.page-intro__lead {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-20);
+  /* 讓左欄可以被壓縮：標題是全站最大的字，不給它縮，長活動名稱會把右邊的動作列
+     整排擠到下一行（實測 1194px 視窗：標題自然寬 517＋圖 96＋動作 293 就爆了）。
+     壓縮之後標題換行、動作留在同一列——那才是這個頁首的兩欄結構。 */
+  /* basis 用固定的 320px 而不是 auto：`.page-intro` 是 flex-wrap:wrap，換行的判斷在
+     壓縮之前——basis:auto 會拿標題的自然寬（長活動名稱可以到 500px 以上）去比，
+     於是還沒開始壓縮就先把動作列擠到下一行。給一個小 basis，這一列永遠排得下，
+     再靠 grow 吃掉剩餘寬度，標題自己換行。 */
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.page-intro__lead > * { min-width: 0; }
+.page-intro__media {
+  flex: none;
+  width: 96px;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--muted);
+}
+.page-intro__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-width: 720px) {
+  /* 窄畫面把圖縮一階：標題已經會換行，圖再佔 96px 會把標題擠成一行兩個字 */
+  .page-intro__media { width: 64px; }
+}
+
+/* Breadcrumb / caption above the page title — 2026-07-28（L 裁示：改成品牌橘）。
+   在此之前這一列沒有名字：25 個頁面各自寫一次 `class="text-sub" style="font-size:
+   var(--fs-12);margin-bottom:14px"`，同一個元件卻要改 25 個地方才換得掉顏色。
+   收成 .page-crumb 之後顏色只有一個來源。
+   顏色走 --brand-ink（亮 #8F4E00／暗 #ffa33f）而不是 --primary：這兩個值是為
+   「橘色的字」量過對比的（暗底對 --card 8.02:1、亮底同樣過 AA），--primary 是為
+   色塊而不是字身調的。麵包屑是全頁最小的字（12px），不能用會糊掉的橘。
+   連結吃 color:inherit——整條麵包屑同一個顏色，層級靠 / 分隔與位置表達，不靠色差。 */
+/* ztorUI 換裝（2026-08-28 Wave 2b 熔接自 demo/ztorui-skin §10）：整條麵包屑從「全部都是
+   品牌橘」改成「上層 70% 白、當前層 95% 白」。
+   成因：Wave 1 把 --brand-ink 換成亮橘 #ffc178 之後，這裡的每一節（含 / 分隔符）都是橘的，
+   讀不出「哪一節是現在這一頁、哪一節可以點回去」。橘在 ztorUI 這套語言裡是選中／主要動作的
+   專用色（規格書 §8.5），拿來鋪整條導覽路徑是過度上色。層級改由亮度階梯表達。
+   ⚠ 規格書沒有 breadcrumb 這個元件（全文 grep「crumb」零命中，來源專案把它列為待建元件）；
+   以下數值依鄰近家族推導——文字連結與次級文字走 §1.4 的三段白階梯，返回圓鈕走 §7.16
+   Icon Button 的 --glass 變體。日後規格補上要回頭對。
+   舊值：color: var(--brand-ink)。 */
+.page-crumb {
+  font-size: var(--fs-12);
+  line-height: var(--lh-snug);
+  margin-bottom: var(--sp-14);
+  color: var(--foreground-muted);
+}
+/* 當前層級提回 95% 白。markup 裡當前層永遠是麵包屑的最後一個 <span>
+   （product-detail 是商品名、e-shop 是唯一那一節）；/ 分隔符雖然也是 <span>，
+   但永遠不會是最後一個，所以 :last-child 剛好只選中當前層——不必動 HTML、不必猜第幾個節點。 */
+.page-crumb > span:last-child { color: var(--foreground); }
+.page-crumb a { color: inherit; text-decoration: none; }
+/* 可點層級 hover 提亮到 95% 白，與側欄項的 hover 同一個做法（底線保留）。 */
+.page-crumb a:hover { color: var(--foreground); text-decoration: underline; text-underline-offset: 2px; }
+
+/* 返回上一層（2026-08-02 使用者裁示，版型參考 Lovable：圓鈕在麵包屑左側、同一列）。
+   ── 為什麼只有詳情頁需要它 ────────────────────────────────
+   詳情頁有兩種開法。從清單點一列會走 detail-sheet 覆蓋層（iframe ?embed=1），
+   那層頂部自己就有「← 回到 XXX」；直接開網址（書籤、分享連結、搜尋結果）則是
+   整頁滿版，除了瀏覽器上一頁沒有任何返回入口。這顆補的是後者，所以在覆蓋層裡
+   要收起來——同一個畫面出現兩顆返回鈕，使用者得先分辨哪顆退到哪裡。
+   隱藏規則寫在 shared.css 的 html[data-embed] 區塊，跟其他覆蓋層收納規則同處。
+
+   ── 為什麼是固定連結而不是 history.back() ─────────────────
+   href 指向麵包屑的上一層（取貨詳情 → pickup.html）。用 history.back() 的話，
+   從外部連結第一次進站沒有上一頁可退，按鈕會變成沒反應；固定連結永遠成立，
+   而且是真的 <a>，cmd-click 開新分頁、右鍵複製網址都照常。
+
+   ── 為什麼 .page-crumb 只在有返回鈕時才變 flex ────────────
+   .page-crumb 有 30 個消費頁，其中 20 頁沒有返回鈕。整支改成 flex 會讓那 20 頁
+   的每個 <a> 與 / 分隔都變成 flex item，行為改變卻換不到任何好處，所以用
+   .page-crumb--back 這個修飾子把版面改動關在需要的那 10 頁裡。
+   分隔符的 6px 間距寫在各頁 markup 的 inline style 上，flex 情境照樣生效。 */
+.page-crumb--back {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+/* 只留位置，外觀全部來自 .btn.btn--icon-circle.btn--sm——照 button.css 的分工
+   註解「消費者只保留 layout hook，LOOK 由共用 class 提供」。 */
+/* 右間距 2026-08-02 由 10px 加到 16px（使用者裁示「要和後面的麵包屑有更多一點間距」）。
+   拿掉底色之後，圓鈕的邊界看不見了，量到的 10px 是從 28px 方框的邊算起、
+   眼睛卻是從箭頭的筆畫算起——中間那 6px 的留白讀不出來，兩者就黏在一起。 */
+.page-crumb__back {
+  flex: 0 0 auto;
+  margin-right: var(--sp-16);
+}
+/* 退出麵包屑的連結樣式。上面那兩條 `.page-crumb a`（0,1,1）比 `.btn--icon-circle`
+   （0,1,0）強，會把返回鈕一起吃掉：字符被染成麵包屑的品牌橘、hover 還會在 svg
+   底下畫一條底線。這顆是控制項不是麵包屑的一節——照站上其他 icon 圓鈕的配色
+   （--muted 底 × --muted-foreground 字符，hover 轉 --foreground），不跟著橘。
+   選擇器用兩個 class（0,2,0）才蓋得過 `.page-crumb a`。 */
+/* 無框無底（2026-08-02 使用者裁示「這個按鈕要用沒有外匡的」）。
+   `.btn--icon-circle` 自帶 --muted 填色，那是為 composer 那種「坐在卡片裡」的
+   位置調的。麵包屑這一列直接坐在頁面底上，亮色模式的 --muted(#FAFAFA) 對上白色
+   頁面幾乎同色——只拿掉外框、留著填色的話，會變成暗色模式看得到一顆灰圓、亮色
+   模式整顆消失只剩箭頭浮著，同一顆鈕在兩個主題長不一樣。
+   所以填色跟著一起收掉：靜止態只有箭頭，圓形只在 hover 時由 `.btn--icon-circle`
+   的 --accent 底色現形。這也讓它跟 wizard 頂列的 .wizard__back（裸箭頭）同一種
+   做法，收掉 STYLE-DECISIONS Q43 原本的分歧。 */
+.page-crumb .page-crumb__back {
+  color: var(--muted-foreground);
+  background: transparent;
+  border: 0;
+}
+/* ztorUI 換裝（2026-08-28 Wave 2b §10）：靜止態維持既有裁決（裸箭頭、不畫圓，見上一段），
+   只改 hover——現形的那顆圓從 .btn--icon-circle:hover 的不透明 --accent 換成玻璃圓鈕
+   （ztorUI 規格 §7.16 .icon-btn--glass）。
+   ── 為什麼用 inset box-shadow 當邊而不是 border ──
+   規格書的 .icon-btn--glass 寫的是 border: 1px solid var(--line)，但這顆鈕靜止態 border: 0，
+   hover 才長出 1px 實體邊會讓 28px 的方框變 30px、整條麵包屑跟著抖一下。
+   inset 陰影畫在盒內、不佔版面，視覺結果相同。
+   特異度 0,3,0（含 :hover），穩定高於 .btn--icon-circle:hover（0,2,0）。 */
+.page-crumb .page-crumb__back:hover {
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  box-shadow: inset 0 0 0 1px var(--border);
+  color: var(--foreground);
+  text-decoration: none;
+}
+/* 2026-07-28（L 裁示「Satoshi 輕一點好看」）：頁面 H1 是全站唯一夠大、能撐得住
+   Light 的字級（44px）。Satoshi 的字面本來就開闊，字級越大越不需要重量——44px 的
+   300 讀起來仍然清楚，但把 Regular 那點厚重感拿掉了。小字級不跟進：13px 的 300
+   在深底上會糊掉，全站其餘一律 400（見 _tokens.css 字重刻度說明）。 */
+.page-intro__title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: var(--fs-44);
+  line-height: var(--lh-tight);
+  letter-spacing: -1px;
+  margin: 0 0 var(--sp-8);
+}
+
+.page-intro__sub {
+  color: var(--foreground-muted);
+  font-size: var(--fs-15);
+  margin: 0;
+  max-width: 560px;
+}
+
+/* flex-wrap: wrap（2026-07-31 補）：這一列只放按鈕時怎麼排都塞得下，一旦有頁面
+   把較寬的控制項放進來，窄視窗會直接爆出容器——按鈕被壓成直排、最右邊那顆切掉
+   一半。允許換行不改變任何現有頁面的版面（沒有溢位就不會換行），只是把溢位的那
+   一顆換到下一行。 */
+.page-intro__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  align-items: center;
+}
+
+/* 說明文字 ＋ 就地的求助連結（2026-07-31 使用者裁決）。
+   「系統說明」原本站在動作列裡，跟「新增庫房」「儲存」這些會改變資料的按鈕並排，
+   讀起來像第三個動作，其實它只是把這一頁再解釋一次——跟說明文字是同一個角色。
+   移到說明段落的末尾之後，動作列只剩真正的動作。
+
+   `.page-intro__sub` 掛著 data-i18n，切語言時整段 innerHTML 會被換掉，所以連結
+   不能寫在它裡面；改成把兩者收進 .page-intro__lede，讓 sub 變 inline，連結就會
+   自然接在最後一句後面、句子長時一起換行。max-width 從 sub 移到 lede，避免行寬
+   在兩個元素上各設一次。 */
+.page-intro__lede { max-width: 560px; }
+.page-intro__lede .page-intro__sub { display: inline; max-width: none; }
+.page-intro__help {
+  margin-left: var(--sp-6);
+  font-size: var(--fs-13);
+  color: var(--primary);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
+  transition: border-bottom-color var(--duration) var(--easing);
+  white-space: nowrap;
+}
+.page-intro__help:hover { border-bottom-color: var(--primary); }
+.page-intro__help:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .page-intro__help { transition-duration: 1ms; } }
+
+/* 頁尾註腳（2026-07-31）：整頁層級的細字，例如「本頁數字為原型示範資料」。
+   與 .page-crumb 同一個家族——頁面外框的上下兩端，一個在標題之前、一個在內容
+   之後——所以住同一支檔。用它取代把免責聲明做成 info-banner 壓在內容底下：
+   橫幅是「請讀我」，註腳是「需要時查得到」，這種聲明屬於後者。 */
+.page-note {
+  margin: var(--sp-24) 0 0;
+  font-size: var(--fs-12);
+  line-height: var(--lh-normal);
+  color: var(--muted-foreground);
+}
+
+@media (max-width: 900px) {
+  .page-intro__title { font-size: var(--fs-32); }
+}

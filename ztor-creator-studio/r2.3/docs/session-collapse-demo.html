@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 資產一律以 ../（r2.2 根）為前綴，不用 <base>：文件本身沒有可解析的基底網址時
+     （被當成 data: 快照預覽），<base> 會讓整組樣式表一起載不到。 -->
+<title>DEMO · 場次盒的展開／折疊（三案）</title>
+<script src="../js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/date-input.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/ticket-tier-card.css?v=r2.2">
+<link rel="stylesheet" href="../shared.css?v=r2.2">
+<style>
+  /* ── DEMO 專用的頁面框架（不進產品頁） ───────────────────────── */
+  body { background: var(--surface-page); color: var(--foreground); }
+  .demo-page { max-width: 1080px; margin: 0 auto; padding: var(--sp-32) var(--sp-24) 120px; }
+  .demo-head { margin-bottom: var(--sp-32); }
+  .demo-head h1 { font-family: var(--font-display); font-size: var(--fs-32); margin: 0 0 var(--sp-8); }
+  .demo-head p { color: var(--muted-foreground); font-size: var(--fs-14); margin: 0; max-width: 70ch; line-height: 1.7; }
+  .demo-case { margin-top: var(--sp-40); }
+  .demo-case__head { display: flex; align-items: baseline; gap: var(--sp-12); margin-bottom: var(--sp-8); }
+  .demo-case__no { font-family: var(--font-display); font-size: var(--fs-20); }
+  .demo-case__tag { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .demo-case__note { color: var(--muted-foreground); font-size: var(--fs-13); line-height: 1.7; margin: 0 0 var(--sp-16); max-width: 78ch; }
+  .demo-case__note b { color: var(--foreground); font-weight: var(--fw-regular); }
+  .demo-controls { display: flex; gap: var(--sp-8); align-items: center; margin-bottom: var(--sp-16); flex-wrap: wrap; }
+
+  /* ── 場次盒（沿用產品頁的既有語彙：.card--muted 填色＝L2）────────
+     折疊態只換掉「盒裡放什麼」，盒子本身的表面層級不變。 */
+  .sess { display: flex; flex-direction: column; gap: var(--sp-20); }
+  .sess + .sess { margin-top: var(--sp-16); }
+
+  /* 標題列：整列可點＝折疊切換。左邊 chevron 轉向表達開合。 */
+  .sess__head {
+    display: flex; align-items: center; gap: var(--sp-12);
+    width: 100%; background: none; border: 0; padding: 0; cursor: pointer;
+    color: inherit; text-align: left; font: inherit;
+  }
+  .sess__chev { flex: none; transition: transform 180ms var(--easing); color: var(--muted-foreground); }
+  .sess[data-open="true"] .sess__chev { transform: rotate(90deg); }
+  .sess__title { font-family: var(--font-display); font-size: var(--fs-18); }
+  .sess__spacer { flex: 1; }
+  .sess__body[hidden] { display: none; }
+
+  /* A 案：一行摘要 */
+  .sum-line { color: var(--muted-foreground); font-size: var(--fs-13); font-variant-numeric: tabular-nums; }
+  .sum-line b { color: var(--foreground); font-weight: var(--fw-regular); }
+  .sum-line--todo { color: var(--status-warning-ink); }
+
+  /* B 案：事實列（沿用票種卡的 dt/dd 語彙） */
+  .sum-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-16); margin-top: var(--sp-12); }
+  .sum-facts > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .sum-facts dt { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .sum-facts dd { margin: 0; font-size: var(--fs-14); font-variant-numeric: tabular-nums; }
+  .sum-facts dd.is-todo { color: var(--status-warning-ink); }
+
+  /* C 案：徽章列 */
+  .sum-chips { display: flex; gap: var(--sp-8); flex-wrap: wrap; margin-top: var(--sp-12); }
+
+  /* 折疊態的內距收一點：只有一行摘要時 20px 上下留白顯得太空 */
+  .sess[data-open="false"].sum-a { padding-top: var(--sp-16); padding-bottom: var(--sp-16); }
+
+  @media (prefers-reduced-motion: reduce) { .sess__chev { transition: none; } }
+</style>
+</head>
+<body>
+<div class="demo-page">
+
+  <div class="demo-head">
+    <h1>場次盒的展開／折疊</h1>
+    <p>
+      場次一多，整頁就是一長串攤開的表單，要找「第 5 場在哪一天」得一路捲。三個案子折疊態放的資訊完全一樣——<b>場次名稱、日期與時間、開放入場</b>——差別只在怎麼排、佔多高、掃視時眼睛怎麼走。
+      每一組都可以直接點標題列開合；第 3 場刻意留空，看未填完的場次在折疊態長什麼樣。
+    </p>
+  </div>
+
+  <!-- ═══ A ═══ -->
+  <section class="demo-case">
+    <div class="demo-case__head"><span class="demo-case__no">A</span><span class="demo-case__tag">一行摘要</span></div>
+    <p class="demo-case__note">
+      摘要跟標題同一行、靠右。<b>最省高度</b>（折疊態一場 61px），十場也只佔半個畫面，適合「先找到那一場再進去改」。
+      代價是資訊擠在一行、只能用「·」分隔，欄位一多會讀成一串；日期與開放入場沒有各自的標籤，要靠格式（<code>18:00 開場</code>）自己說明白。
+    </p>
+    <div class="form-section form-section--outlined">
+      <div class="form-section__head"><h3 class="form-section__title">日期與時間</h3></div>
+
+      <div class="card card--muted sess sum-a" data-open="false" data-case="a">
+        <button type="button" class="sess__head" data-toggle>
+          <span class="sess__chev">▸</span>
+          <span class="sess__title">Day 1</span>
+          <span class="sess__spacer"></span>
+          <span class="sum-line"><b>10/02（五）</b> · 19:00–21:30 · 18:00 開場</span>
+        </button>
+        <div class="sess__body" hidden data-body></div>
+      </div>
+
+      <div class="card card--muted sess sum-a" data-open="false" data-case="a">
+        <button type="button" class="sess__head" data-toggle>
+          <span class="sess__chev">▸</span>
+          <span class="sess__title">Day 2</span>
+          <span class="sess__spacer"></span>
+          <span class="sum-line"><b>10/03（六）</b> · 19:00–21:30 · 18:00 開場</span>
+        </button>
+        <div class="sess__body" hidden data-body></div>
+      </div>
+
+      <div class="card card--muted sess sum-a" data-open="false" data-case="a">
+        <button type="button" class="sess__head" data-toggle>
+          <span class="sess__chev">▸</span>
+          <span class="sess__title">Day 3</span>
+          <span class="sess__spacer"></span>
+          <span class="sum-line sum-line--todo">日期尚未設定</span>
+        </button>
+        <div class="sess__body" hidden data-body></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ B ═══ -->
+  <section class="demo-case">
+    <div class="demo-case__head"><span class="demo-case__no">B</span><span class="demo-case__tag">事實列（三欄，標籤在上）</span></div>
+    <p class="demo-case__note">
+      摘要換行到標題下方，三欄各自帶標籤——沿用票種卡已經在用的「事實列」語彙（<code>總價／票價／數量</code> 那一套），所以站上讀起來是同一種東西。
+      <b>值有標籤就不必靠格式自我說明</b>，之後要多一欄（例如「入場方式」）也塞得下。代價是折疊態一場 156px，是 A 的 2.5 倍——三場就多佔 285px。
+    </p>
+    <div class="form-section form-section--outlined">
+      <div class="form-section__head"><h3 class="form-section__title">日期與時間</h3></div>
+
+      <div class="card card--muted sess" data-open="false" data-case="b">
+        <button type="button" class="sess__head" data-toggle>
+          <span class="sess__chev">▸</span>
+          <span class="sess__title">Day 1</span>
+        </button>
+        <dl class="sum-facts" data-summary>
+          <div><dt>日期</dt><dd>2026/10/02（五）</dd></div>
+          <div><dt>時間</dt><dd>19:00–21:30</dd></div>
+          <div><dt>開放入場</dt><dd>18:00（開演前 60 分）</dd></div>
+        </dl>
+        <div class="sess__body" hidden data-body></div>
+      </div>
+
+      <div class="card card--muted sess" data-open="false" data-case="b">
+        <button type="button" class="sess__head" data-toggle>
+          <span class="sess__chev">▸</span>
+          <span class="sess__title">Day 2</span>
+        </button>
+        <dl class="sum-facts" data-summary>
+          <div><dt>日期</dt><dd>2026/10/03（六）</dd></div>
+          <div><dt>時間</dt><dd>19:00–21:30</dd></div>
+          <div><dt>開放入場</dt><dd>18:00（開演前 60 分）</dd></div>
+        </dl>
+        <div class="sess__body" hidden data-body></div>
+      </div>
+
+      <div class="card card--muted sess" data-open="false" data-case="b">
+        <button type="button" class="sess__head" data-toggle>
+          <span class="sess__chev">▸</span>
+          <span class="sess__title">Day 3</span>
+        </button>
+        <dl class="sum-facts" data-summary>
+          <div><dt>日期</dt><dd class="is-todo">尚未設定</dd></div>
+          <div><dt>時間</dt><dd class="is-todo">尚未設定</dd></div>
+          <div><dt>開放入場</dt><dd>不限制</dd></div>
+        </dl>
+        <div class="sess__body" hidden data-body></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ C ═══ -->
+  <section class="demo-case">
+    <div class="demo-case__head"><span class="demo-case__no">C</span><span class="demo-case__tag">徽章列</span></div>
+    <p class="demo-case__note">
+      每個值一顆徽章，掃起來最輕（折疊態一場 123px）。但站上的徽章一直是<b>狀態</b>的語彙（售票中／已取消／已售完），拿來裝日期時間會讓兩種意思混在一起——放進來是讓你看到它長什麼樣、再決定要不要，不是推薦選項。
+    </p>
+    <div class="form-section form-section--outlined">
+      <div class="form-section__head"><h3 class="form-section__title">日期與時間</h3></div>
+
+      <div class="card card--muted sess" data-open="false" data-case="c">
+        <button type="button" class="sess__head" data-toggle>
+          <span class="sess__chev">▸</span>
+          <span class="sess__title">Day 1</span>
+        </button>
+        <div class="sum-chips" data-summary>
+          <span class="badge badge--neutral"><span>2026/10/02</span></span>
+          <span class="badge badge--neutral"><span>19:00–21:30</span></span>
+          <span class="badge badge--neutral"><span>18:00 開場</span></span>
+        </div>
+        <div class="sess__body" hidden data-body></div>
+      </div>
+
+      <div class="card card--muted sess" data-open="false" data-case="c">
+        <button type="button" class="sess__head" data-toggle>
+          <span class="sess__chev">▸</span>
+          <span class="sess__title">Day 2</span>
+        </button>
+        <div class="sum-chips" data-summary>
+          <span class="badge badge--neutral"><span>2026/10/03</span></span>
+          <span class="badge badge--neutral"><span>19:00–21:30</span></span>
+          <span class="badge badge--neutral"><span>18:00 開場</span></span>
+        </div>
+        <div class="sess__body" hidden data-body></div>
+      </div>
+
+      <div class="card card--muted sess" data-open="false" data-case="c">
+        <button type="button" class="sess__head" data-toggle>
+          <span class="sess__chev">▸</span>
+          <span class="sess__title">Day 3</span>
+        </button>
+        <div class="sum-chips" data-summary>
+          <span class="badge badge--warning"><span>日期尚未設定</span></span>
+        </div>
+        <div class="sess__body" hidden data-body></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 行為選項 ═══ -->
+  <section class="demo-case">
+    <div class="demo-case__head"><span class="demo-case__no">＋</span><span class="demo-case__tag">另外兩個要一起決定的行為</span></div>
+    <p class="demo-case__note">
+      1. <b>一次只開一個（手風琴）還是可以同時開好幾個？</b>同時開好幾個方便對照兩場的時間差異；一次只開一個則永遠只有一份表單在眼前、不會捲到迷路。上面三組預設是「可以同時開」，下面這組切成手風琴讓你比較。<br>
+      2. <b>預設全折還是第一場先開？</b>新建立的活動只有一場、本來就該是開的；多場時全折比較好找，但「剛按下新增場次」那一場應該自動展開——不然按了像沒反應。
+    </p>
+    <div class="demo-controls">
+      <button class="btn btn--outline btn--sm" type="button" data-expand-all>全部展開</button>
+      <button class="btn btn--outline btn--sm" type="button" data-collapse-all>全部折疊</button>
+    </div>
+    <div class="form-section form-section--outlined" data-accordion>
+      <div class="form-section__head"><h3 class="form-section__title">手風琴：一次只開一個</h3></div>
+      <div class="card card--muted sess" data-open="true" data-case="b">
+        <button type="button" class="sess__head" data-toggle>
+          <span class="sess__chev">▸</span><span class="sess__title">Day 1</span>
+        </button>
+        <dl class="sum-facts" data-summary hidden>
+          <div><dt>日期</dt><dd>2026/10/02（五）</dd></div>
+          <div><dt>時間</dt><dd>19:00–21:30</dd></div>
+          <div><dt>開放入場</dt><dd>18:00（開演前 60 分）</dd></div>
+        </dl>
+        <div class="sess__body" data-body></div>
+      </div>
+      <div class="card card--muted sess" data-open="false" data-case="b">
+        <button type="button" class="sess__head" data-toggle>
+          <span class="sess__chev">▸</span><span class="sess__title">Day 2</span>
+        </button>
+        <dl class="sum-facts" data-summary>
+          <div><dt>日期</dt><dd>2026/10/03（六）</dd></div>
+          <div><dt>時間</dt><dd>19:00–21:30</dd></div>
+          <div><dt>開放入場</dt><dd>18:00（開演前 60 分）</dd></div>
+        </dl>
+        <div class="sess__body" hidden data-body></div>
+      </div>
+      <div class="card card--muted sess" data-open="false" data-case="b">
+        <button type="button" class="sess__head" data-toggle>
+          <span class="sess__chev">▸</span><span class="sess__title">Day 3</span>
+        </button>
+        <dl class="sum-facts" data-summary>
+          <div><dt>日期</dt><dd class="is-todo">尚未設定</dd></div>
+          <div><dt>時間</dt><dd class="is-todo">尚未設定</dd></div>
+          <div><dt>開放入場</dt><dd>不限制</dd></div>
+        </dl>
+        <div class="sess__body" hidden data-body></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* 展開態的表單內容：三個案子共用同一份（折疊態才是差異所在），
+   所以由 JS 注入，demo 檔不必把同一段 markup 抄六遍。 */
+(function () {
+  'use strict';
+  var FORM =
+    '<div class="form-grid">' +
+      '<label class="field"><span class="field__label">場次名稱</span>' +
+        '<input class="input" value="Day 1" placeholder="例：Day 1"></label>' +
+    '</div>' +
+    '<div class="form-grid">' +
+      '<label class="field"><span class="field__label">活動日期 <span class="field__req">*</span></span>' +
+        '<input class="input" type="date" value="2026-10-02"></label>' +
+    '</div>' +
+    '<div class="form-grid">' +
+      '<label class="field"><span class="field__label">開始時間</span><input class="input" type="time" value="19:00"></label>' +
+      '<label class="field"><span class="field__label">結束時間</span><input class="input" type="time" value="21:30"></label>' +
+    '</div>' +
+    '<div class="field control-group control-group--plain">' +
+      '<div class="field__label"><span>開放入場</span> <span class="text-sub">（選填）</span></div>' +
+      '<div class="form-grid">' +
+        '<label class="field"><span class="field__label">時間</span><input class="input" type="time" value="18:00"></label>' +
+        '<label class="field"><span class="field__label">開演前</span>' +
+          '<span class="amount-field amount-field--suffix amount-field--readonly">' +
+            '<input class="input amount-field__input" type="number" value="60">' +
+            '<span class="amount-field__unit">分鐘</span></span></label>' +
+      '</div>' +
+    '</div>';
+
+  document.querySelectorAll('[data-body]').forEach(function (b) { b.innerHTML = FORM; });
+
+  function setOpen(sess, open) {
+    sess.setAttribute('data-open', open ? 'true' : 'false');
+    var body = sess.querySelector('[data-body]');
+    var sum = sess.querySelector('[data-summary]');
+    if (body) body.hidden = !open;
+    /* 展開時摘要收起：同一組數字在畫面上出現兩次，讀起來像有兩份資料。 */
+    if (sum) sum.hidden = open;
+    var head = sess.querySelector('[data-toggle]');
+    if (head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  document.querySelectorAll('.sess').forEach(function (s) {
+    setOpen(s, s.getAttribute('data-open') === 'true');
+  });
+
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-toggle]');
+    if (t) {
+      var sess = t.closest('.sess');
+      var open = sess.getAttribute('data-open') !== 'true';
+      var acc = sess.closest('[data-accordion]');
+      if (acc && open) acc.querySelectorAll('.sess').forEach(function (o) { if (o !== sess) setOpen(o, false); });
+      setOpen(sess, open);
+      return;
+    }
+    if (e.target.closest('[data-expand-all]')) {
+      document.querySelectorAll('[data-accordion] .sess').forEach(function (s) { setOpen(s, true); });
+      return;
+    }
+    if (e.target.closest('[data-collapse-all]')) {
+      document.querySelectorAll('[data-accordion] .sess').forEach(function (s) { setOpen(s, false); });
+    }
+  });
+})();
+</script>
+<script src="../js/icons.js?v=r2.2"></script>
+<script src="../partials/date-input.js?v=r2.2"></script>
+</body>
+</html>

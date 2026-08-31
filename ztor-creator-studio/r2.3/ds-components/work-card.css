@@ -1,0 +1,292 @@
+/* ============================================================
+   Work card · 創作者自己那一批「進行中的項目與活動」的封面磚
+   ------------------------------------------------------------
+   用途
+     儀表板 F6「近期活動與項目」（spec 5.1.1 §F6）。**與該區塊的表格並存**
+     （2026-08-28 使用者裁決）：磚列坐在 F6 區塊之上、橫向一列；表格留在
+     Ongoing 分頁裡、資料全上。分工——磚列回答「認出是哪幾件作品」，
+     表格回答「看數字」。
+
+   為什麼是封面磚、不是資訊卡（2026-08-28 第二版）
+     第一版是 16:9 封面＋狀態徽章＋進度條＋摘要的資訊卡，一排三張。問題是
+     那些數字下方表格全都有，磚上再寫一次就是同一份資料兩種說法。改成磚列之後
+     分工才立得住：磚只負責認人，資料交給表格。
+     磚上只留三樣——封面、名稱、名稱前的狀態點；沒有進度條、沒有摘要、沒有徽章。
+
+   比例：2:3 直式（使用者裁示）
+     素材是專輯封面式的正方圖（images/projects/*.jpg 實測 400×400、562×562），
+     使用者看過正方版後仍選直式——海報式的直立矩形一列排開，辨識節奏比正方明顯。
+     正方素材不裁切：完整圖 contain 置中，左右空白由同一張圖的模糊放大版補滿（見 __cover）。
+
+   與 event-preview-card 的分工
+     那支是**粉絲端**活動卡的即時預覽（spec 5.1.6.1，欄位是海報／活動名／
+     日期場地／票價，跟著建立活動表單即時重畫）；這支是**創作者端**的作品辨識。
+     兩支都是「帶封面的方塊」但不可互換。
+
+   第三版加回了三行字（2026-08-28，同日第三次裁決）
+     第二版只留封面與名稱，磚列因此「認得出是哪幾件」卻答不出「這件現在怎樣了」。
+     加回來的是**分層過**的三行，不是把第一版的資訊卡搬回來：
+       類型（含狀態點）→ 名稱 → 進度或期限
+     類型與狀態同一行的理由見 .work-card__cat；進度／期限的三種分岔見 .work-card__timing。
+     跟第一版的差別是磚上沒有摘要、沒有徽章、沒有金額——那些仍然只在下方表格。
+
+   結構
+     .work-cards               橫向捲動列（scroll-snap，右緣露半張提示可捲）
+       .work-card              一張磚，本體就是 <a>（錨點自帶鍵盤焦點與 Enter）
+         .work-card__cover     2:3 封面
+           .work-card__bg      模糊背景板（同一張圖放大）
+           .work-card__img     完整圖 contain
+         .work-card__cat       類型列＝狀態點 .ztor-dot ＋ 視覺隱藏狀態詞 ＋ .work-card__cat-text
+         .work-card__name      名稱列＝.work-card__name-text（獨佔一行）
+         .work-card__timing    進度或期限（可省略）＝.project-bar ＋ .work-card__timing-text
+   ============================================================
+*/
+
+/* 一排三張（12 欄各佔 4 欄）。斷點用視窗寬而不是容器查詢：這張卡在 1440px
+   以上是 bento 的 span-8、以下被 --stack-lg 攤成滿寬，兩種情況下三張卡的
+   實得寬度都還在可讀範圍（1440 視窗約 290px／1280 視窗約 410px）。 */
+/* 橫向捲動列。用 scroll-snap 而不是分頁箭頭捲動：捲一格就對齊一張磚，
+   觸控板與滑鼠滾輪都自然；右緣刻意讓最後一張露半截，那是「還有更多」的唯一提示
+   （不畫捲軸——深色底上的原生橫捲軸在 macOS 預設是隱形的，畫了也等於沒畫）。 */
+/* 翻頁鈕要定位在捲動區的左右緣，所以外面包一層——鈕放進 .work-cards 裡會跟著捲走。 */
+/* 磚寬與封面高在這裡定義一次：翻頁鈕要靠封面高算垂直位置，磚要靠磚寬定寬，
+   兩者若各寫各的，改磚寬時鈕就會飄掉。 */
+.work-cards__wrap {
+  position: relative;
+  --work-tile-w: 150px;
+  --work-cover-h: calc(var(--work-tile-w) * 3 / 2);   /* 2:3 */
+}
+
+/* 翻頁鈕：浮在磚列左右緣、垂直對齊封面的中線（不是整列的中線——列底下還有名稱那一行，
+   對整列會偏低）。用實色 --popover 而不是玻璃：它蓋在封面照片上，半透明會讓箭頭讀不出來。 */
+.work-cards__nav {
+  position: absolute;
+  top: calc(var(--work-cover-h) / 2);
+  transform: translateY(-50%);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--popover);
+  color: var(--foreground);
+  box-shadow: var(--shadow-float);
+  cursor: pointer;
+}
+.work-cards__nav[hidden] { display: none; }
+.work-cards__nav:hover { background: var(--accent); }
+.work-cards__nav:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.work-cards__nav .ztor-icon { width: 18px; height: 18px; }
+.work-cards__nav--prev { left: calc(var(--sp-12) * -1); }
+.work-cards__nav--next { right: calc(var(--sp-12) * -1); }
+
+.work-cards {
+  display: flex;
+  scroll-behavior: smooth;
+  gap: var(--sp-12);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: var(--sp-4);   /* 給 focus 外框留出不被裁掉的餘裕 */
+  scrollbar-width: none;
+}
+.work-cards::-webkit-scrollbar { display: none; }
+
+/* 磚寬 150px＝一列露約 6 張（使用者裁定的密度）。flex: none 讓它不被壓縮，
+   窄視窗時改成捲動而不是把每張都擠瘦——擠瘦會讓封面小到認不出作品。 */
+.work-card {
+  flex: none;
+  width: var(--work-tile-w, 150px);
+  scroll-snap-align: start;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-lg);
+}
+.work-card:hover .work-card__cover { transform: translateY(-2px); }
+.work-card:hover .work-card__name { color: var(--foreground); }
+.work-card:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+/* 不可點的磚（2026-08-28）：事件的來源模組查不到落點頁時，渲染器吐 div 而不是 a。
+   外觀與可點的磚一致，但把 hover 的抬升與提亮收掉——會動的東西看起來就該能點，
+   留著等於用動作騙一次點擊。它本來就不在 Tab 鍵序上（div 沒有 href）。 */
+.work-card--static { cursor: default; }
+.work-card--static:hover .work-card__cover { transform: none; }
+.work-card--static:hover .work-card__name { color: var(--foreground-muted); }
+
+/* 2:3 直式（2026-08-28 使用者裁示改直的）。
+   素材是正方（實測 400×400、562×562），正方塞進 2:3 的框用 cover 會**切掉左右**——
+   不是上下。實測切掉後「LOVE RAGE HOPE」只剩「VS RAGE HO」、「BILLIE」只剩「ILLIE」，
+   而作品名寫在封面上正是這張磚拿來認人的依據，切掉等於磚失去用途。
+   所以改成兩層：完整的圖 contain 置中（一個像素都不裁），底下墊同一張圖放大模糊當背景板。
+   兩個 <img> 指同一個 src，瀏覽器只會下載一次。
+   換成真正的直式素材時本規則不必改：contain 遇到 2:3 的圖就會剛好填滿，模糊底自然看不見。 */
+.work-card__cover {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--muted);
+  border: 1px solid var(--nest-line);
+  transition: transform var(--duration) var(--easing);
+}
+/* 背景板：同一張圖放大並模糊，補滿 contain 之後左右的空白。
+   scale(1.25) 是為了讓模糊的邊緣溢出裁切框——不放大的話 blur 會在四邊吃出一圈透明。 */
+.work-card__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.25);
+  filter: blur(18px) saturate(1.1);
+  opacity: 0.55;
+}
+.work-card__img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;      /* 完整呈現，不裁切 */
+  display: block;
+}
+
+/* ── 磚下方的文字塊（2026-08-28 第四版重排）─────────────────────────────
+   由上而下：眉標（作品類型）／名稱／狀態列（項目類型 ↔ 值）／進度條。
+   字級與明度刻意遞減再回升：眉標最淡、名稱最實、狀態列回中間調、進度條是圖形不是字——
+   讓眼睛在 150px 寬裡有明確的落點順序。
+   狀態點於本版撤除：純顏色沒有圖例，看得見的人得不到資訊（使用者實際問了「這是什麼」）；
+   而磚列本身已有「進行中／最近發生」分頁在篩狀態，點只能再細分一階、不值一個視覺元素。
+   狀態詞改以視覺隱藏的形式掛在磚上，讀屏仍唸得到。 */
+
+/* 眉標＝作品類型。最小最淡：封面其實已經講了一半（專輯封面 vs 電影海報一眼可辨），
+   這行只是把那個直覺變成明確的字，不該跟名稱搶。 */
+.work-card__kind {
+  margin-top: var(--sp-8);
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  line-height: var(--lh-normal);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 眉標的兩段版（2026-08-28）：事件磚用它承載規格 §F5 的「事件類型 ↔ 事件來源」。
+   排法與下方狀態列刻意一致（兩端對齊、左固定、右讓位），兩行同一種對齊，
+   眼睛才會把它們讀成一組，而不是四段各自為政。
+   父層的 nowrap／ellipsis 對 flex 子項無效，所以截斷規則改寫在子項上。 */
+.work-card__kind--split {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-6);
+}
+.work-card__kind-text { flex: none; }
+.work-card__source {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 名稱＝識別，整張磚最強的落點，獨佔一行。 */
+.work-card__name {
+  margin-top: var(--sp-2);
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  line-height: var(--lh-normal);
+  color: var(--foreground-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--duration) var(--easing);
+}
+.work-card__name em { font-style: italic; }
+
+/* 狀態列：左＝項目類型（預購／共創／上線），右＝最可行動的值（剩餘天數＞百分比＞上線日）。
+   兩者同一行，因為講的是同一件事——「這是什麼機制、現在到哪」；拆兩行反而要讀者自己接起來。
+   用兩端對齊而不是「·」串接：中英文長度差很大（預購 vs Pre-order、剩餘 20 天 vs 20 days left），
+   串接在英文必爆行；兩端對齊時中間的空白會自己吸收差額。
+   右值 min-width:0 才會在極端長度時讓出空間，而不是把左邊的類型擠沒。 */
+.work-card__state {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  margin-top: var(--sp-6);
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  line-height: var(--lh-normal);
+}
+.work-card__type {
+  flex: none;
+  color: var(--foreground-muted);
+}
+.work-card__value {
+  min-width: 0;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 進度條：只有真的有百分比時才畫，所以它不是版面的固定成員——
+   沒有它的磚不會留下一條空軌道（空軌道會被讀成「進度是 0」）。
+   沿用 shared.css 的 .project-bar（Q77：不為磚列另造一條），收掉它自帶的上外距。 */
+.work-card__bar { margin-top: var(--sp-6); }
+.work-card__bar.project-bar { margin-top: var(--sp-6); }
+
+/* ── 區塊標題列：標題本身就是分頁（2026-08-28）────────────────────────────
+   原本是「作品」標題＋右側一組膠囊分頁，兩者其實在講同一件事——這一區現在顯示的是
+   哪一批作品。做成標題級的兩個詞之後，區塊名稱與篩選合而為一，少一個元件、
+   也少一次「看標題→再看右邊篩選」的視線往返。右側空出來的位置改放「更多」出口。
+   .section-head 本來就是 space-between，排法不必改；但它的 align-items 是 baseline
+   （給「標題＋副標」兩段文字用的），這裡右邊是帶圖示的連結，baseline 會讓圖示浮高，
+   所以就地改成 center。 */
+.work-rail__head {
+  align-items: center;
+  margin-bottom: var(--sp-12);
+}
+
+.work-rail__tabs {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-16);
+}
+
+/* 分頁詞用標題的字級與字面——它們就是標題。未選中的維持可讀（--muted-foreground，
+   不是灰到看不見）：它是入口不是註腳，看不見就沒人會點。 */
+.work-rail__tab {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: var(--fs-22);
+  font-weight: var(--fw-regular);
+  letter-spacing: -0.5px;
+  line-height: var(--lh-tight);
+  color: var(--muted-foreground);
+  transition: color var(--duration) var(--easing);
+}
+.work-rail__tab:hover { color: var(--foreground-muted); }
+.work-rail__tab:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; border-radius: var(--radius-sm); }
+.work-rail__tab--active { color: var(--foreground); }
+
+/* 「更多」：靠右的文字連結，字級回到內文級——它是出口不是標題，不該與分頁詞爭。 */
+.work-rail__more {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex: none;
+  font-size: var(--fs-13);
+}
+.work-rail__more .ztor-icon { width: 15px; height: 15px; }
+

@@ -60,9 +60,43 @@
 | Q53 | 勾選框：站上有正規的 `.zcheck` 元件，但提款／捐贈確認、`manage-ip` 與 `register-ip` 的定價「請洽詢」共七處仍是裸的原生 checkbox，其中提款／捐贈那族還被一個灰底外框列包住 | **全站只有一種勾選框＝`.zcheck`，且確認類勾選不另加容器框**：`.payout-confirm`／`__box`／`__text`（`ds-components/payout-modal.css`）、`.mi-onreq`（`ds-components/manage-ip.css`）、`.ri-onreq`（`register-ip.html` 頁內 `<style>`）三族全數退場走墓碑，七處裸 checkbox 一律改成 `.zcheck` 的四層 markup（`__control` > `__input` + `__box`，外加 `__label`）。要與上一個區塊拉開距離時用既有的 `mt-8`／`mt-16` 工具類，**不為此新增變體**。`.zcheck` 之外站上僅存的原生 checkbox 是 `.switch`（開關，另一種控件，不在本題範圍）與 `checkbox.css` 檔尾那條 `accent-color` 安全網（兜底規則，不是 API） | 2026-08-06 | 使用者指著捐贈彈窗的確認列裁示「不需要有一個框框，我們的元件樣式應該沒有這樣？有的話請統一改掉」。理由：外框是把「這件事不可逆」再說一次，而那件事旁邊那顆停用的主要行動已經說過了；站上其餘每一個勾選都是「一個方框＋一句話」，沒有一個包在框裡。`.mi-onreq`／`.ri-onreq` 當初刻意把標籤壓成 `--fs-12`＋`--muted-foreground`「輕一階」，是為了讓一顆沒有樣式的系統勾選框旁的字不要太搶眼；換成正規元件後那個理由消失，標籤統一吃 `.zcheck__label`（`--fs-13`／`--foreground`） | ✅ 已執行 2026-08-06（三支 CSS 墓碑化；`earnings-sony.html`、`partials/payout-request-modal.js`、`design-system.html` demo、`manage-ip.html` ×3、`register-ip.html` ×3 全部改寫；六頁補掛 `ds-components/checkbox.css`；`design-system.md` §4.96 Checkbox／§4.29 Payout dialog 與 `design-system.html` 對應卡片同步，Checkbox 卡新增「確認閘門」整句標籤示範。實測：捐贈與提款兩個彈窗的確認閘門仍是勾了才啟用主要行動，`manage-ip` 勾選與金額欄間距維持 14px（`mt-8` 8＋`.field` gap 6），深淺主題各驗一次）|
 | Q65 | 區塊標題字級：Q21（2026-07-20）把 `.form-section__title` 由 18 壓到 14、與 `.field__label` 拉平，層級改由卡片邊界承擔。但一步之內有多張卡、卡內還有 `__subhead` 與欄位標籤時，三層字全是 14px | **`.form-section__title` `--fs-14`→`--fs-16`，部分推翻 Q21 第 1 點；全站套用、不做單頁特例**。`.form-section__subhead` 與 `.field__label` 維持 `--fs-14`——標題升上去之後，小標自然落在標題與欄位標籤之間，層級由「比標題小一階」＋上緣 hairline＋留白三者共同承擔（小標與欄位標籤仍同字級，靠 `--font-display` vs `--font-ui` 的字型差與 hairline 分辨）。**Q21 其餘四點不動**：`__sub` 11px 與色階、`field__hint` 色階、`kpi` 底色、頁寬變體 | 2026-08-11 | 使用者圈選建立活動的「活動形式」區塊標題裁示「這個層級的標題字都應該大一級」，經告知本項會推翻 Q21 且影響 21 個消費頁後，明確回覆「全站都要改，應該是從 DS 去改」。理由：Q21 的「靠卡片邊界承擔層級」在一張卡只有一組欄位時成立，但建立活動的場次那一步是三張卡、卡內還有小標與欄位標籤，掃過去分不出誰統轄誰——同一輪使用者已兩度回報「完全沒有階層」 | ✅ 已執行 2026-08-11（`form-section.css` 元件層一次生效；`design-system.md` Form section 條目與 `design-system.html` §4 小標卡同步；21 個消費頁抽驗 create-event／create-product／settings／earnings，深淺主題各一次，無換行破版或水平溢出）|
 
+| Q73 | 描述文字的字級：站上「標題底下的說明句」有兩個值——`.form-section__sub` 是 `--fs-11`，`.control-row__sub`／`.field__hint` 是 `--fs-12` | **統一 12px，字級以偶數為主**（2026-08-25 使用者裁示「用 12、偶數為主」）。demo 的 `.gt-desc`／`.gsub-desc` 已用 `--fs-12`。**站上 `.form-section__sub` 的 11→12 尚未執行**——它影響二十幾個消費頁，等 promote 那一輪一起做，避免現在動了又跟 demo 的其他未定案項目衝突 | 2026-08-25 | 同一個角色（標題的描述）不留兩個字級；偶數字級在 4px 基準的間距系統裡對得比較齊 | ✅ 已執行 2026-08-25（`form-section.css` `__sub` 11→12；同輪 `field-system.css` 的 `.field__hint`／`.field__error` 也由 11→12——Q21 已認定兩者同角色，只改一邊會變成同角色兩字級。`design-system.md`／`.html` 同步；create-product 實測無破版、無水平溢出）|
+| Q72 | 「列與列的分隔線」站上有兩個色階：`.kv` 用 `--border`（暗色 #373839）、`.grow`／`.flatrow` 與多數列式版面用 `--border-soft`（#202122），同一張卡裡交錯就讀成兩種階層 | **列線一律 `--border-soft`（暗的）、組線才用 `--border`** — 2026-08-25 使用者裁示「暗的」。`kv-list.css` 的 `border-top` 已改；內距維持 `--sp-8` 不動（那不在本題範圍）| 2026-08-25 | 同一個角色（同組內、列與列之間）不留兩個色階；亮的那階留給「換一組了」的組線，兩級才分得開 | ✅ 已執行 2026-08-25（`kv-list.css` 元件層一次生效，9 個消費頁同步；product-detail 實測列線已為 #202122。`design-system.md`／`.html` 條目與表格同步。**同日補漏**：全站掃描發現裁決當天漏改三支同角色元件——`data-list.css`、`table.css` tbody、`settings.css` 的 `.settings-row`——列線同樣由 `--border` 改 `--border-soft`，波及 12+ 消費頁一次生效；`data-list.css` 的子列群組轉換邊界屬組線、維持 `--border` 是對的）|
+| Q71 | 卡內分組與強調的層級階梯：一張卡（一層）裡有多組資訊時，什麼時候用排版分、什麼時候可以再加層 | **三級制**。第 1 級（預設・平級分組）：**次級標題或分隔線**做區分，不加任何層——手法見 `demo-eshop-styles.html` 卡內分組頁的 G-A～G-E。第 2 級（些微強調的功能區塊）：**1px 線框**圈出來、不加填色層——現行範例＝創建商品的「尺寸指南」資訊列。第 3 級（全新且必須被強調、又隸屬於某段落的區塊）：才**加新的一層**（填色層）——現行範例＝創建商品的多規格（規格矩陣）。判準是「這塊需要多強的獨立性」，由弱到強：排版 → 線框 → 新層；與 layers 規則（頁面級：預設 L0、分組才疊層）同一條軸線的卡內版。Q46（群組標題在上 vs 有字的分隔線，待裁決）的兩派都屬第 1 級，該題另行裁決。〔**同日第二輪細化（使用者裁示）**：第 1 級以 **G-B（小標＋滿版髮絲線）為基本型**、G-D（左標籤欄）視內容需要可選，G-A／G-C／G-E 落選；第 2 級維持現行線框設計；**第 3 級的灰填色巢狀層樣式否決、不再出現**——原正例（多規格矩陣）這類「隸屬段落之下、又要被強調」的內容改用第 1／2 級語言重新設計，改用站上**正式的巢狀層語言** `.card--muted`（`--nest-surface` 薄膜＋亮色才畫的 `--nest-line`，Q66 已裁決「往亮疊、不往暗陷」）——2026-08-25 使用者看過線框／小標線兩案後裁示「M 這種複雜程度的可以加一層，不要用現在的 M-A M-B，看起來太混亂」。先前 demo 那版灰底用的是 `--muted`（往暗填）＝ Q66 已否決的舊做法，所以第 3 級真正該禁的是「自創往暗的灰底」，不是「加層」本身。大區塊標題（子組之上再一階）**定案 T-A2＝卡頭＋滿版線**（標題上下留白 24px、下方一道貫穿卡面的線，讓大標屬於整張卡而非第一個子組）；T-A／T-B／T-C 撤除。巢狀層再細化兩點（同日使用者裁示）：**去掉向上陰影、左右與下緣切齊母卡外緣**（＝站上 `.nest` 的出血做法，母卡需 `overflow:hidden`）。〕 | 2026-08-25 | 使用者在卡內分組探索（demo-eshop-styles）後主動陳述規則，並以創建商品的多規格（新層）與尺寸指南（線框）為兩個既有正例 | ✅ 已執行 2026-08-25（promote：`card-group.css` 新增＋`nest.css` 去陰影補頂線＋DS 文件同步；全站 22 頁判級掃描完成——明確可改項已修、需人判斷 11 項另列待使用者裁示；demo 探索檔同日退場，手法正式落地見 `card-group.css` 與 design-system.html §4.133，舊 demo 可從 git 歷史回溯）|
+| Q74 | 可選卡的「已選」表達：單選卡（底不變＋右上橘點）與多選卡（染橘 28%）是兩個答案 | **刻意分開，寫進規則**：單選卡＝底不變（`--input-surface`）＋右上實心橘點；多選卡＝底染 `--primary` 28% 疊母層＋文字 `--selected-ink`。分開的理由成立：多選一次會亮好幾格，需要更強的「這些是選進來的」訊號；單選永遠只亮一格，橘點就夠。導覽類已選（`--selected-surface` 14%）不在本題範圍 | 2026-08-25 | 使用者裁決「刻意分開」（詳見下方 Q74 節） | ✅ 已執行 2026-08-25（`check-card.css` 落地＋DS 文件同步；radio-card 已選畫法未動） |
+| Q75 | 分節導覽（section-nav）的視覺語言：現行藥丸／底色式 vs demo 的分隔線式（1D 案） | **全站統一分隔線式、無 icon**：每列 1px `--border-soft` 下緣線、末列去線、無底色無藥丸、已選只換 `--selected-ink`＋medium。三個消費頁同款：product-detail（本輪由橫排 tabs 改為分節導覽）、series-detail、settings（舊別名 `.settings-nav` 隨元件本體生效） | 2026-08-25 | 使用者於 demo 選定 1D＋無 icon，並裁示三頁一起改，避免同一視覺角色兩個答案 | ✅ 已執行 2026-08-25（`section-nav.css` 本體改分隔線式；product-detail 由橫排 tabs 改左側分節導覽、切換／hash 深連結／跳轉行為保留；`settings.css` 的 `.settings-nav` 2px 間隙歸零讓列線相接；三頁 localhost 目視驗證過）。**2026-08-26 擴大**：使用者裁示「只要是詳情頁都要統一」——project／auction／bundle／creator／fan／ip 六個詳情頁同日改完，全站九頁同款；`section-nav.css` 新增 `.section-nav__count` 承接分頁計數；`event-detail`（無頁內分頁）與 `pickup-detail`（僅篩選 tabs）不在範圍 |
+
 ---
 
 ## 待裁決
+
+### Q76 · chip 無框化後，淺色模式的未選 chip 與卡面同色（2026-08-25 提出，待裁決）
+
+Q71 那輪把 chip 全面無框化（未選＝`--input-surface` 底、無 border）。暗色模式沒問題（`--input-surface` 比 `--card` 亮一階），但**淺色模式的 `--input-surface` 與 `--card` 是同一個值**（`_tokens.css`），未選 chip 在淺色卡面上會融成一片、看不出邊界——全站掃描找到 7 處消費場景（create-auction、create-event ×2、create-product、create-project、register-ip、project-detail）。
+
+候選修法：
+
+- A：淺色模式把 `--input-surface` 拉出一階色差（影響所有輸入控件，範圍大、要目視驗證）
+- B：只給 chip 一個淺色模式專用的填色 role token（範圍小，但多一個 token）
+- C：淺色模式的 chip 恢復 1px 邊框（違背「無框化」的裁決精神，列出僅供比較）
+
+暫依現況（無框化照 Q71 裁決執行，淺色模式問題掛本題）；本站以暗色為主要展示模式，實害有限但存在。
+
+### Q74 · 可選卡的「已選」表達：單選卡與多選卡目前是兩個答案（2026-08-25 提出，同日使用者裁決：刻意分開）
+
+同一個卡片家族，兩種已選畫法：
+
+- **單選卡** `.radio-cards .segmented__btn--active`（`ds-components/radio-card.css:81`）：**底色不變**（維持 `--input-surface`），已選只由右上角的實心橘點表達。Q8 當時的理由寫在檔內註解——radio-card 是「標題＋副標」的卡，整段標題染橘會變成在讀橘色內文，所以橘落在標記而不是文字或底色。
+- **多選卡** `.cos__item--on`（demo）：**底色染橘 28%**＋文字轉 `--selected-ink`，2026-08-25 使用者從五個候選中選 D 暫定。
+
+分岔的可辯護理由：多選一次會亮好幾格，需要更強的「這些是選進來的」訊號；單選永遠只有一格亮，橘點就夠。但兩者長在同一種卡面上，並排時仍讀得出不同體系。
+
+要裁決的是：多選卡沿用單選卡的做法（底不變、只有標記橘，＝候選 E），或單選卡跟進多選卡（已選染底），或確認兩者刻意分開並寫進規則。
+
+**與全站 `--selected-surface`（14%）的關係**：D 沒有動那個 token——它服務側欄、filter-tabs、section-nav 等導覽類已選。若日後要讓卡片與導覽同一個濃度，需另案評估（會動到全站）。
+
+**裁決（2026-08-25）**：確認兩者**刻意分開**並寫進規則——單選卡維持底不變＋右上橘點；多選卡（promote 後的 `check-card.css`）維持染橘 28%＋`--selected-ink`。已登記進已裁決表。
+
 
 ### Q70 · 帳戶選單新增的「可展開單選清單」是站上第一個這種形狀（2026-08-24 提出，暫依現況）
 

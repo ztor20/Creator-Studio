@@ -1,0 +1,87 @@
+/* SiteSpecific Owner lookup — registered user selection or pending email invite. */
+.owner-lookup { position: relative; }
+
+.owner-lookup__results {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + var(--sp-6));
+  right: 0;
+  left: 0;
+  overflow: hidden;
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-float);
+}
+.owner-lookup__results[hidden], .owner-lookup__status[hidden] { display: none; }
+
+.owner-lookup__result {
+  display: flex;
+  width: 100%;
+  gap: var(--sp-12);
+  padding: var(--sp-12);
+  color: var(--foreground);
+  font: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border-soft);
+  cursor: pointer;
+}
+.owner-lookup__result:last-child { border-bottom: 0; }
+.owner-lookup__result:hover, .owner-lookup__result:focus-visible { background: var(--accent); outline: none; }
+.owner-lookup__result--empty { color: var(--muted-foreground); cursor: default; }
+.owner-lookup__result--empty:hover { background: transparent; }
+/* 已選中的那一列（2026-08-10，bookyay 帶入閘門）：這個 lookup 的選取會留著——
+   選完之後還能再點回輸入框、把整份清單叫出來換一個。既然清單會帶著「已經選過」
+   的狀態重開，就得在清單裡指出是哪一列，否則使用者只能靠輸入框的字回想。
+   creators／artist-picker 那兩個 lookup 選完就收掉、不會重開，不受影響。 */
+.owner-lookup__result[aria-selected="true"] { background: var(--accent); }
+
+/* 選不了的那一列（2026-08-13 補齊）：這一筆列得出來、但不能選——第一個消費端是 bookyay
+   帶入閘門的「已匯入」（同一場 bookyay 活動在 ztor 上只會存在一次，帶過就不能再帶）。
+   仍然列出來而不是濾掉：搜得到才回答得了「這場我是不是已經建過了」，濾掉的話畫面會說
+   「找不到相符的活動」，那是錯的訊息。
+   狀態由 `disabled` 屬性本身表達，不另設 class——按鈕要能真的擋住點擊，`disabled` 是非加不可的，
+   再多一個 class 就是同一件事寫兩遍、還會出現「有 class 沒 disabled」的破窗。
+   原本這一段寫在 artist-picker.css（那支已無消費頁），2026-08-13 移回本檔：`.owner-lookup__*`
+   的樣式歸 owner-lookup.css 管，留在別支等於只有載入那支的頁面才有這個狀態。
+   改用明確的字色而非整列 opacity：整列淡化會連右邊那顆說明用的標籤一起淡掉，
+   但那顆標籤正是「為什麼點不動」的答案，是這一列最該讀得清楚的東西。 */
+.owner-lookup__result[disabled] { color: var(--muted-foreground); cursor: default; }
+.owner-lookup__result[disabled] .owner-lookup__name { color: var(--muted-foreground); }
+.owner-lookup__result[disabled]:hover { background: transparent; }
+/* 右側狀態標籤：靠右推到底、不參與壓縮（左邊的名稱／說明才是可以被截斷的那一段）。 */
+.owner-lookup__flag { flex: none; align-self: center; margin-left: auto; }
+
+.owner-lookup__avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--control-h-sm);
+  height: var(--control-h-sm);
+  color: var(--foreground);
+  background: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+}
+/* 名稱與說明是上下兩行，不是同一行的兩段字（2026-08-10 修）：這一層原本只設了
+   min-width，兩個 <span> 於是並排流成一行——底下 __meta 的 margin-top 與單行省略號
+   （white-space:nowrap + text-overflow）都是為「自己佔一行」寫的，在 inline 狀態下
+   通通不生效。creators 的帳號查找也一直長成一行，同輪一起回到原本設計的樣子。 */
+.owner-lookup__copy { display: flex; flex-direction: column; min-width: 0; }
+.owner-lookup__name { color: var(--foreground); font-family: var(--font-ui); font-size: var(--fs-14); font-weight: var(--fw-regular); }
+.owner-lookup__meta { margin-top: var(--sp-2); overflow: hidden; color: var(--muted-foreground); font-size: var(--fs-12); text-overflow: ellipsis; white-space: nowrap; }
+
+.owner-lookup__status {
+  margin: var(--sp-8) 0 0;
+  color: var(--muted-foreground);
+  font-size: var(--fs-12);
+  line-height: var(--lh-normal);
+}
+.owner-lookup__status[data-state="linked"] { color: var(--foreground-muted); }
+.owner-lookup__status[data-state="invite"] { color: var(--foreground-muted); }
+.owner-lookup__status[data-state="error"] { color: var(--destructive); }
