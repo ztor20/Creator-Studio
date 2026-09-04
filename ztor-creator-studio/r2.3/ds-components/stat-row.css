@@ -23,6 +23,10 @@
    modifier（值的語意色，只在整個數字帶狀態語意時用；一般數字不染色）
      .stat__value--success      到場率、已完成
      .stat__value--warning      待退金額、逾期
+     .stat__value--zero         這一格是 0（退到 --faint-ink），見下方密度變體
+
+   密度變體
+     .stat-row--inline          標籤化的一排：欄名與值同一行、字級小（2026-09-02）
    ============================================================ */
 
 .stat-row {
@@ -55,6 +59,9 @@
 }
 .stat__value--success { color: var(--status-success-ink); }
 .stat__value--warning { color: var(--status-warning-ink); }
+/* 「這一格沒有東西」——不是狀態色，是把 0 退一階，讓整排卡裡真的有數字的那幾張
+   自己浮出來。用既有的 --faint-ink（站上「淡到只剩存在感」的那一階），不新增顏色。 */
+.stat__value--zero { color: var(--faint-ink); }
 
 /* 分母與單位跟數字同一行：「200 / 600 張」是一個值，拆兩行會讀成兩個數字。
    字級退兩階、不吃 letter-spacing（負字距是給大字用的）。 */
@@ -73,6 +80,69 @@
   margin-top: var(--sp-6);
 }
 
+
+/* ── --inline：標籤化的一排（2026-09-02）─────────────────────────────
+   首個消費情境：roster-picker 的 creator 卡（260px 寬的 `.selection-card`）。
+   base 那一組是為「整卡寬度的頭部」調的——32px 數字、每欄至少 104px、欄與欄之間
+   28px 加一條分隔線；那個量體是「這張卡在講的就是這幾個數字」。
+
+   本變體給的是相反的情境：**數字只是這張卡的註腳**，卡真正在講的是「這是誰」。
+   欄名與值因此收成同一行、字級小到只是一組標籤（值 12、欄名 11），整排數字佔掉
+   一行高度而不是兩行。它仍然是同一支 `.stat-row`、同一種讀法（欄名在前、值在後、
+   等寬數字），**不是第二種「卡內數字排」**——站上這個視覺角色仍然只有一個答案
+   （鐵律 11）。
+
+     · `grid-auto-flow: column` ＋ `grid-auto-columns: 1fr`：欄數不寫死，兩個或
+       三個都自動等分。等分是重點——欄寬不隨字長浮動，卡與卡的值才落在同一條
+       垂直線上，一排掃過去是在比同一件事
+     · 每一欄自己是 `align-items: baseline` 的 flex：欄名與值坐同一條基線，
+       11 與 12 兩個字級不會一上一下
+     · 欄名可截斷、值永不截斷：窄欄先犧牲的是「To import」那幾個字，不是數字
+     · margin-bottom 歸零：節奏由所在卡片的 gap 持有（Q103） */
+.stat-row--inline {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--sp-8);
+  margin-bottom: 0;
+}
+.stat-row--inline .stat {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-4);
+  white-space: nowrap;
+}
+/* 收緊（Q103 允許的相鄰用法）：把 base 的欄間分隔線與內距關掉，不創造新節奏。 */
+.stat-row--inline .stat + .stat { padding-left: 0; border-left: 0; }
+.stat-row--inline .stat__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--fs-11);
+  line-height: var(--lh-normal);
+  margin-bottom: 0;
+}
+.stat-row--inline .stat__value {
+  flex: none;
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-normal);
+  letter-spacing: 0;   /* 負字距是給 32px 大字用的 */
+}
+/* 0 的那一欄整格退一階（不只值）：值已經是 --faint-ink，欄名若維持原色，
+   「這一格沒有東西」只講了一半，掃一排時 0 的欄仍然有重量。 */
+.stat-row--inline .stat:has(.stat__value--zero) .stat__label { color: var(--faint-ink); }
+.stat-row--inline .stat__value--zero { font-weight: var(--fw-regular); }
+
+/* 墓碑 2026-09-02（同日新增、同日退場）：這裡原本有 `.stat-row--compact`——
+   三等分 grid、欄名在上、數字 20、欄名 11，是同日上午為 creator 卡加的密度變體。
+   同日使用者看到成品說「那些數字太佔空間 改小標籤就好」：20px 的數字在一張
+   260px 的卡上仍然是主角，而那張卡要講的是「這是誰」。兩層結構（欄名在上、
+   數字在下）本身就是佔兩行高度的原因，所以不是把 20 調小就好，整個結構換成
+   上面的 `--inline`（同一行、標籤化）。
+   之後真的又遇到「小卡裡要一排大數字」，重新加一個修飾子即可——不要為了留著
+   它而在不需要的地方套上。 */
 
 /* 墓碑 2026-08-17（同日新增、同日退場）：這裡原本有 `.stat-row--tight`，
    把間距收成 --sp-16，理由是這一排被放進活動詳情現場報到台的兩欄版面左欄、

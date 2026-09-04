@@ -81,7 +81,30 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--sp-16);
 }
-.detail-overview__kpi-row > :only-child { grid-column: 1 / -1; }
+/* 2026-09-01 修正：原本只寫 :only-child，所以「單數時最後一格自己佔滿一排」這條規則
+   在三格的時候沒有生效（預購的 已預購／單價／剩餘天數 就是三格），第三格縮在左半邊、
+   右邊開一個洞。改成 :last-child:nth-child(odd)——一格、三格、五格都成立，
+   兩格與四格維持並排。 */
+.detail-overview__kpi-row > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+/* 剛好三格時排成一行（2026-09-01 使用者：「他們可以放同一行嗎」）。
+   三格是「已募／剩餘天數／支持者」這種同層級的量體數字，讓其中一個獨佔一整排會
+   讀成它比另外兩個重要；一行三格才看得出它們是並列的。
+   四格以上維持兩個一排——再擠下去，值底下那行註腳（目標、檔期）每一格都會換行。
+   ⚠ 選擇器讀作「有第三個子層、而且沒有第四個」。用 :nth-child 不用 :has(:not(...))：
+   前者只數元素，空白文字節點不會混進來。
+   門檻設在 1081px（不是 899px）：1080 以下這一欄本身只有 260px 左右，三格各 76px，
+   「62 / 100 筆」會斷成三行。窄的時候由底下那條改成一格一排。
+   要包在 min-width 裡是因為 :has() 這條的權重高過單純的 class 選擇器，
+   不隔開的話窄畫面的規則會被它蓋掉。 */
+@media (min-width: 1081px) {
+  .detail-overview__kpi-row:has(> :nth-child(3)):not(:has(> :nth-child(4))) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  /* 三欄時最後一格不再獨佔一排（上面那條 :last-child:nth-child(odd) 對三格也成立）。 */
+  .detail-overview__kpi-row:has(> :nth-child(3)):not(:has(> :nth-child(4))) > :last-child {
+    grid-column: auto;
+  }
+}
 @media (max-width: 899px) {
   .detail-overview__kpi-row { grid-template-columns: minmax(0, 1fr); }
 }
@@ -91,9 +114,16 @@
 @media (max-width: 1080px) {
   .detail-overview { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
   .detail-overview__col--narrow { grid-column: 1; }
-  /* 兩欄時 KPI 回到橫排：欄變寬了，直排會拉出一長條瘦高的數字。 */
-  .detail-overview__kpis { flex-direction: row; }
-  .detail-overview__kpis > * { flex: 1 1 0; min-width: 0; }
+  /* 2026-09-01 撤除（墓碑）：`flex-direction: row` ＋ `> * { flex: 1 1 0 }`
+     （原意是「兩欄時 KPI 回到橫排，欄變寬了直排會拉出一長條瘦高的數字」）。
+     那條寫在這一欄只裝 KPI 磚的時候；現在同一欄還裝著走勢卡與方案統計那張表，
+     把它們攤成橫排等於三個完全不同的東西各分到三分之一欄寬——實測 1000px 視窗下
+     KPI 那一排只剩 30px、三格各 9.8px，整塊爛掉。
+     橫排的原始目的已經由 `.detail-overview__kpi-row` 自己的 2／3 欄網格達成，
+     這一層維持直排就好。 */
+  /* 這一欄在 1080 以下大約只有 260px：兩格各 122px、三格各 76px，數字底下那行註腳
+     （目標、檔期、「62 / 100 筆」）每一格都會斷行。一格一排，寬度換可讀性。 */
+  .detail-overview__kpi-row { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* 窄畫面單欄：順序＝數字 → 進行到哪 → 是什麼／待辦，與桌機由左而右的讀序一致。 */

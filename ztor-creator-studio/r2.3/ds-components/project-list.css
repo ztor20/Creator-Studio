@@ -64,14 +64,22 @@
 
 /* 2026-07-26（Q34）：跟 .product-list__row 統一，Q9 純換底色改浮起版——卡底＋圓角＋陰影，
    列從清單裡浮出來；自身與上一列的 border-bottom 透明避免分隔線切過浮起的列（見 product-list.css
-   同款規則的完整沿革註解）。 */
+   同款規則的完整沿革註解）。
+   **2026-09-01 補上 ztorUI 換裝那一輪漏掉的同步**（使用者回報「這個 hover 效果應該和電子商店
+   的一樣」）：2026-08-28 Wave 2a 把 `.product-list__row:hover` 改成浮成一張**玻璃卡**
+   （半透明＋模糊＋深投影＋頂緣內光），與卡片同一種材質；這一支當時沒跟上，還停在實色
+   `--card` ＋純陰影，於是同一種列在兩個模組浮起來時是兩種材質。四個值一次對齊，
+   不是抄數值——底色、模糊、圓角、投影全部引用同一組 token，日後那邊再調這邊會跟著走。
+   舊值：background: var(--card)；border-radius: var(--radius-md)；box-shadow: var(--shadow-lift-flat)。 */
 .project-list__row:hover {
   position: relative;
   z-index: 1;
-  background: var(--card);
-  border-radius: var(--radius-md);
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  border-radius: var(--radius-lg);
   border-bottom-color: transparent;
-  box-shadow: var(--shadow-lift-flat);
+  box-shadow: var(--shadow-lift-flat), var(--shadow-edge-top);
   transition: box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease;
 }
 .project-list__row:has(+ .project-list__row:hover) {

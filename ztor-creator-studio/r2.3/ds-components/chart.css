@@ -124,9 +124,9 @@
          </div>
          <div class="chart-card__controls">
            <div class="segmented" role="tablist">
-             <button class="segmented__item segmented__item--active">D</button>
-             <button class="segmented__item">W</button>
-             <button class="segmented__item">M</button>
+             <button class="segmented__btn segmented__btn--active">D</button>
+             <button class="segmented__btn">W</button>
+             <button class="segmented__btn">M</button>
            </div>
            <button class="chart-card__icon-btn" aria-label="Export"><i data-lucide="upload"></i></button>
          </div>
@@ -239,44 +239,26 @@
    不必讓每個消費頁多記一個 class。 */
 .chart-card__foot > span:only-child { margin-left: auto; }
 
-.chart-card__foot-actions {
-  display: inline-flex;
-  gap: var(--sp-2);
-  background: var(--muted);
-  border-radius: var(--radius);
-  padding: var(--sp-2);
-}
+/* 2026-09-01 撤除（墓碑）：本類自己畫的軌道（`--muted` 底、`--radius`、2px 內距）。
+   那是「分段切換」的第三種畫法——同一張卡上，卡頭的日／週／月與卡底的折線／長條
+   長得不一樣。改成掛 `.segmented`（DS 元件）＋段用 `.segmented__btn--icon`，
+   本類只剩「在卡底靠右」這件事，不再自己定義材質。 */
+.chart-card__foot-actions { flex: none; }
+/* 卡底只剩這一組時靠右（2026-09-01 說明文字撤除之後的常態）：
+   `space-between` 在只有一個子元素時等同靠左，看起來像掉到了錯的一邊。
+   與上面 `> span:only-child` 那條是同一個處置的兩半。 */
+.chart-card__foot > .chart-card__foot-actions:only-child { margin-left: auto; }
 
-/* Segmented control — D/W/M style. Used in chart card header.
-   Generic enough to promote to its own component later. */
-.segmented {
-  display: inline-flex;
-  background: var(--muted);
-  border-radius: var(--radius);
-  padding: var(--sp-2);
-  gap: 1px;
-}
-.segmented__item {
-  padding: 3px 9px;
-  font-family: var(--font-ui);
-  font-size: var(--fs-12);
-  font-weight: var(--fw-regular);
-  color: var(--muted-foreground);
-  background: transparent;
-  border: 0;
-  border-radius: 4px;
-  cursor: pointer;
-  min-width: 24px;
-  transition: background-color var(--duration) var(--easing),
-              color var(--duration) var(--easing);
-}
-.segmented__item:hover { color: var(--foreground); }
-/* 2026-07-27 Q8 裁決 A：同 .segmented__btn--active——保留浮起 pill，只把字換成橘。 */
-.segmented__item--active {
-  background: var(--card);
-  color: var(--selected-ink);
-  box-shadow: var(--shadow-hairline);
-}
+/* 2026-09-01 撤除（墓碑）：本檔自己那一份 `.segmented` ＋ `.segmented__item`／`--active`。
+
+   它是站上「分段切換」這個角色的**第二份實作**，而且 chart.css 在多數頁面比
+   `segmented.css` 晚載入，所以它的 `.segmented` 會把 DS 那支蓋掉——2026-08-28 ztorUI
+   換裝把選中段改成 accent 漸層＋毛玻璃＋光暈之後，圖表卡上的日／週／月仍然是換裝前的
+   「白色浮起 pill ＋橘字」，因為吃到的是這一份。使用者 2026-09-01 指著它說「沒有照 DS」。
+
+   收斂方式：類名由 `.segmented__item` 全站改成 DS 的 `.segmented__btn`（7 個檔、55 處），
+   本檔不再定義任何 segmented 樣式。`earnings.html` 與 `earnings-overview.html` 原本只靠
+   這一份、沒有載 segmented.css，已補上連結。 */
 
 /* Linechart axes + multi-series additions */
 .linechart--axes {
@@ -298,6 +280,22 @@
   transform: translateY(-50%);
 }
 .linechart__main { position: relative; }
+/* --mini · KPI 磚裡的小折線（2026-09-01 使用者：「曲線圖要有細節 例如縱橫的數值」）。
+   原本那格用的是 `.sparkline`——一條沒有刻度的線，只讀得出「有沒有在長」，
+   讀不出長到多少、從哪一天起算。改成 `.linechart--axes` 的縮小版，縱軸與橫軸都給值。
+   與大圖的差別只有尺寸與刻度密度，畫法與座標系完全共用 `js/linechart.js`，不另做一套：
+     · 繪圖區 72px（大圖 180px）；磚高本來就只有一百多，再高會把數字擠掉
+     · 縱軸只留頭尾兩個刻度（最大值與 0）。四個刻度在 72px 內字會疊在一起，
+       而這個尺寸要回答的是「頂點到哪」不是「每一段是多少」
+     · 縱軸欄寬 36→30px、橫軸標籤上距收緊
+   橫軸標籤沿用 `--sparse`（頭尾各一個），由呼叫端只給兩個值。 */
+/* 縱軸欄 30 → 24px（2026-09-01 使用者：「這塊左邊好像留太多空白」）：
+   刻度靠右對齊，只有兩個數（最大值與 0）而且改畫每期新增之後位數變少，
+   30px 的欄寬在「19」這種兩位數旁邊會空出半格。24px 仍裝得下三位數。 */
+.linechart--mini { grid-template-columns: 24px 1fr; }
+.linechart--mini .linechart__y-axis { height: 72px; }
+.linechart--mini .linechart__svg { height: 72px; }
+.linechart--mini .linechart__labels--sparse { margin-top: var(--sp-4); }
 .linechart__labels--sparse {
   display: flex;
   justify-content: space-between;
@@ -528,6 +526,32 @@
   font-size: var(--fs-13);
   font-variant-numeric: tabular-nums;
 }
+/* --barline 變體（2026-09-01 使用者裁示，只用於項目詳情）：比例改用 `.project-bar`——
+   就是 KPI 磚底下那條細的——自成一列橫跨整個 grid，標籤不再壓在填色上。
+
+   為什麼是變體而不是改 base：使用者先要求全站換掉，隨即收回成「只改原本那頁」。
+   所以站上暫時**同一個角色有兩種畫法**——收入來源分布與忠誠點數來源仍是原本那顆藥丸。
+   已記入 STYLE-DECISIONS 待裁決 Q79；在使用者裁決之前不要把任何一邊擴散出去，
+   也不要新增第三種。
+
+   用法：`<ul class="rank-bars rank-bars--barline">`，列尾多一個
+   `<div class="project-bar rank-bar__bar">`；`__fill` 在這個變體裡不出現。
+   粗細·圓角·顏色全部來自 shared.css 的 `.project-bar`，這裡不定義第二套。 */
+.rank-bars--barline {
+  /* 每一列現在是兩行高（標籤 ＋ 條），列距要比行內間距明顯才分得開 */
+  gap: var(--sp-14);
+}
+.rank-bars--barline .rank-bar {
+  column-gap: var(--sp-12);
+  row-gap: var(--sp-6);
+}
+.rank-bars--barline .rank-bar__track { height: auto; min-width: 0; }
+/* 標籤不再包在藥丸裡，左內距拿掉才對得齊同一張卡上的其他列 */
+.rank-bars--barline .rank-bar__content { padding: 0; min-width: 0; }
+.rank-bar__bar { grid-column: 1 / -1; }
+/* 間距交給 row-gap 統一管，收掉 .project-bar 自帶的上外距 */
+.rank-bar__bar.project-bar { margin-top: 0; }
+
 /* --amount variant · adds a value column between the track and the pct
    (name · % · amount), e.g. royalty region / platform breakdowns */
 .rank-bar--amount {
@@ -539,6 +563,11 @@
    數字才知道自己是什麼；用同一個 grid 才對得齊。 */
 .rank-bar--stats {
   grid-template-columns: 1fr auto auto 48px;
+}
+/* 少一個金額欄的變體（2026-09-01，項目詳情「方案統計」的預購版）：預購站上沒有募得金額，
+   那一欄整欄不出現。不是把金額寫成「—」——留一個永遠空白的欄位，讀者會一直在找它的值。 */
+.rank-bar--stats3 {
+  grid-template-columns: 1fr auto 48px;
 }
 .rank-bar--head {
   color: var(--muted-foreground);

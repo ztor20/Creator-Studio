@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creator 卡片比較頁 · Ztor Creator Studio</title>
+
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/avatar.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/selection-card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/stat-row.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+
+<style>
+  /* ══════════════════════════════════════════════════════════════════════
+     Creator 卡片比較頁（lab · 2026-09-02 · 第三輪）
+
+     實驗場，不進部署（`docs/` 被 deploy.sh 排除，也不在 check_ds_sync 的產品頁
+     掃描範圍內）。規則一律 `lab-` 前綴、收在本頁 <style> 裡：不建 ds-components、
+     不定義任何 token，值全部引用 `_tokens.css`（零裸 hex／rgb／font-size）。
+     定案的那一號才搬進 `ds-components/roster-picker.css` 正式層。
+
+     **編號換過**：第二輪的四個變體（三格數字列／主數字領銜／緊湊列卡／數字優先磚）
+     全部退場，本頁的 1–4 是第三輪的新四個，方向一律是「小標籤」——欄名與值同一行、
+     字級小到只是一組標籤。之後翻到本頁請以本輪編號為準。
+
+     四個變體共用同一組四張卡的資料，故意含三個極端值：全 0 的已綁定卡、未綁定卡
+     （本輪起不印任何場次數字）、以及長名字＋兩位數的卡。中英文各看一次，版面不能
+     只對一種語言成立。
+     ══════════════════════════════════════════════════════════════════════ */
+
+  html[data-lang="en"] [data-zh] { display: none !important; }
+  html[data-lang="zh"] [data-en] { display: none !important; }
+
+  body {
+    margin: 0;
+    padding: var(--sp-40) var(--sp-32) var(--sp-80);
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-body);
+    font-size: var(--fs-14);
+    line-height: var(--lh-relaxed);
+  }
+
+  .lab-wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--sp-40); }
+
+  /* 頁首 ─────────────────────────────────────────────────────── */
+  .lab-head { display: flex; flex-direction: column; gap: var(--sp-12); }
+  .lab-head__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--fs-28);
+    font-weight: var(--fw-light);
+    line-height: var(--lh-tight);
+    letter-spacing: -0.6px;
+  }
+  .lab-note {
+    margin: 0;
+    padding: var(--sp-12) var(--sp-16);
+    border-left: 2px solid var(--primary);
+    background: var(--ztu-film);
+    border-radius: var(--radius-sm);
+    color: var(--foreground-muted);
+    font-size: var(--fs-13);
+    line-height: var(--lh-relaxed);
+  }
+  .lab-note--history { border-left-color: var(--border); }
+  .lab-toolbar { display: flex; align-items: center; gap: var(--sp-8); flex-wrap: wrap; }
+
+  /* 一個變體 ─────────────────────────────────────────────────── */
+  .lab-variant { display: flex; flex-direction: column; gap: var(--sp-12); }
+  .lab-variant__head { display: flex; align-items: baseline; gap: var(--sp-10); flex-wrap: wrap; }
+  .lab-variant__no {
+    font-family: var(--font-display);
+    font-size: var(--fs-22);
+    font-weight: var(--fw-light);
+    line-height: var(--lh-none);
+    color: var(--primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .lab-variant__name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--fs-18);
+    font-weight: var(--fw-regular);
+    line-height: var(--lh-snug);
+  }
+  .lab-variant__pick {
+    font-size: var(--fs-11);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+  /* 取捨說明：一行講「強調什麼、放棄什麼」，不寫實作。 */
+  .lab-tradeoff { margin: 0; color: var(--muted-foreground); font-size: var(--fs-13); }
+  .lab-tradeoff b { color: var(--foreground-muted); font-weight: var(--fw-medium); }
+
+  /* 四個變體共用的網格與卡內基礎（卡面／已選態全部來自 .selection-card） */
+  .lab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--sp-12); }
+  /* 卡壓成「左識別圓、右兩列」：本輪四個變體都是這個骨架，差別只在第二列怎麼寫。 */
+  .lab-card {
+    min-width: 0;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sp-10);
+    padding: var(--sp-12) var(--sp-16);
+  }
+  .lab-media { flex: none; display: grid; place-items: center; }
+  .lab-text { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: stretch; gap: var(--sp-6); }
+  .lab-name {
+    max-width: 100%;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: var(--fs-15); line-height: var(--lh-snug); color: var(--foreground);
+  }
+  /* 名稱那一列右邊掛徽章的版本（只有 2 號用）：徽章不縮、名字先被切。 */
+  .lab-nameline { min-width: 0; display: flex; align-items: center; gap: var(--sp-8); }
+  .lab-nameline > .badge { flex: none; }
+  .lab-status { min-width: 0; display: flex; align-items: center; gap: var(--sp-10); }
+  .lab-status > .badge { flex: none; }
+  .lab-stats { flex: 1 1 auto; min-width: 0; }
+
+  /* ── 2 · 三欄小標籤（含可匯入）────────────────────────────────
+     同一種寫法擠三欄，並把「已綁定」徽章移回名稱那一列。 */
+  .lab2-stats { flex: 1 1 auto; min-width: 0; }
+
+  /* ── 3 · 一行流水句 ─────────────────────────────────────────
+     三個數字寫成一句話，靠中點分段；不是欄，所以會隨字長流動、也會換行。 */
+  .lab3-line {
+    min-width: 0;
+    font-size: var(--fs-11);
+    line-height: var(--lh-normal);
+    color: var(--foreground-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .lab3-line b { font-weight: var(--fw-medium); color: var(--foreground); }
+  .lab3-line .lab3-sep { color: var(--faint-ink); margin: 0 var(--sp-4); }
+  .lab3-line--zero, .lab3-line--zero b { color: var(--faint-ink); }
+
+  /* ── 4 · 兩顆數字晶片 ───────────────────────────────────────
+     每個數字裝進一顆 .badge，數字本身加重。 */
+  .lab4-chips { min-width: 0; display: flex; flex-wrap: wrap; gap: var(--sp-6); }
+  .lab4-chips .badge { font-size: var(--fs-11); }
+  .lab4-chips .badge b { font-weight: var(--fw-medium); color: var(--foreground); margin-left: var(--sp-4); font-variant-numeric: tabular-nums; }
+  .lab4-chips .lab-zero, .lab4-chips .lab-zero b { color: var(--faint-ink); }
+</style>
+</head>
+<body>
+<div class="lab-wrap">
+
+  <header class="lab-head">
+    <h1 class="lab-head__title">
+      <span data-zh>Creator 卡片比較頁</span><span data-en>Creator card lab</span>
+    </h1>
+    <p class="lab-note">
+      <span data-zh><b>這是比較頁，不是正式頁。</b>四個變體並排讓你直接選編號；選定的那一號才搬進 <code>ds-components/roster-picker.css</code> 正式層，其餘三個連同本頁的 <code>lab-</code> 規則一起作廢。<br><b>目前正式頁（創作者活動管理）用的是 1 號。</b></span>
+      <span data-en><b>This is a comparison page, not the real thing.</b> Four variants side by side — pick a number. Only the picked one moves into <code>ds-components/roster-picker.css</code>; the other three and this page's <code>lab-</code> rules go away with it.<br><b>The live page (Creator event management) currently ships variant 1.</b></span>
+    </p>
+    <p class="lab-note lab-note--history">
+      <span data-zh><b>第三輪，編號換過。</b>第二輪的四個變體（三格數字列／主數字領銜／緊湊列卡／數字優先磚）已全部退場——那一輪的數字是 20px 大字，你的回饋是「太佔空間，改小標籤就好」。本頁的 1–4 是本輪的新四個，方向一律是「欄名與值同一行、字級小」。之後翻到這一頁，編號請以本輪為準。</span>
+      <span data-en><b>Round three — the numbering was reset.</b> Round two's four variants (stat row / lead figure / compact row / numbers-first tile) are all retired; that round set the figures at 20px and the note back was "they take up too much room — make them small labels". Variants 1–4 below are this round's, all in the small-label direction: column name and value on one line, set small. Numbers on this page refer to this round only.</span>
+    </p>
+    <p class="lab-note lab-note--history">
+      <span data-zh><b>「可匯入」這個欄位已經退場（2026-09-02，D238）。</b>本頁做完之後同日又裁示「綁定以後，會自動匯入，實時檢查更新」——自動匯入之後不存在「還沒搬進來」的活動，所以正式頁已經沒有可匯入這個數字、沒有「有待匯入」篩選、表格也沒有勾選匯入。本頁的 <b>2 號（三欄小標籤含可匯入）</b>與 <b>3 號</b>的流水句因此在講一個現在不存在的欄位，留著只當作「三欄塞不塞得下」的量測證據，不要照它復刻。正式頁採用的 1 號不受影響（那兩欄是已匯入／待設定）。</span>
+      <span data-en><b>The "to import" figure is gone (2026-09-02, D238).</b> After this page was made, the same day's call was "once linked, events import automatically and keep syncing" — which leaves no such thing as an event still waiting to come across. The live page therefore has no to-import figure, no "To import" filter and no import checkboxes. Variant <b>2 (three label columns, to-import kept)</b> and the run-on sentence in <b>3</b> now describe a field that no longer exists; keep them only as evidence of what three columns cost in 260px, do not copy them. Variant 1, the one that shipped, is unaffected — its two columns are Imported / To set up.</span>
+    </p>
+    <p class="lab-tradeoff">
+      <span data-zh>四張卡是同一組資料，含三個極端值：全 0 的已綁定卡（Aya）、未綁定卡（KMT，本輪起卡上不印任何場次數字）、長名字＋兩位數（Sakuragi）。每個變體的第一張卡是已選態（1px 橘 outline ＋中性陰影，站上既有裁決）。</span>
+      <span data-en>All four variants share one data set with three edge cases: a linked creator whose figures are all zero (Aya), an unlinked one (KMT — as of this round, no event figures at all), and a long name with double-digit figures (Sakuragi). The first card of each variant is in the selected state (1px orange outline + neutral shadow, the site's standing call).</span>
+    </p>
+    <div class="lab-toolbar">
+      <button class="btn btn--outline btn--sm" type="button" id="lab-lang">中 / EN</button>
+      <button class="btn btn--outline btn--sm" type="button" id="lab-theme">
+        <span data-zh>亮 / 暗</span><span data-en>Light / Dark</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ══ 1 · 兩欄小標籤 ══════════════════════════════════════════ -->
+  <section class="lab-variant">
+    <div class="lab-variant__head">
+      <span class="lab-variant__no">1</span>
+      <h2 class="lab-variant__name"><span data-zh>兩欄小標籤</span><span data-en>Two label columns</span></h2>
+      <span class="lab-variant__pick" data-zh>目前正式頁用這一號</span><span class="lab-variant__pick" data-en>Shipped on the live page</span>
+    </div>
+    <p class="lab-tradeoff">
+      <span data-zh><b>強調</b>卡的第二列只回答一件事：「這一位的 bookyay 資料現在是什麼狀態」。已綁定就放已匯入／待設定兩個等寬欄（值落在同一條垂直線，位數變多也不會把後面那一欄往右推）；未綁定就用「未綁定」徽章佔住同一個位置，就地說明這裡為什麼是空的。<b>放棄</b>兩件事：卡上沒有可匯入（那是選人之後才用的量，留在下段摘要與「有待匯入」篩選），也沒有明說的「已綁定」徽章——有數字就代表帳號通了。</span>
+      <span data-en><b>Emphasises</b> one job for the second line: what state this creator's bookyay data is in. Linked shows Imported / To set up as two equal columns, so the values sit on one vertical line and a second digit never pushes the next column along; not linked puts the badge in that same slot, explaining on the spot why it is empty. <b>Gives up</b> two things: the to-import figure (it belongs to the step after you pick someone, and stays in the summary line and the "To import" filter), and an explicit "Linked" chip — figures on the card already say the account is connected.</span>
+    </p>
+    <div class="lab-grid">
+      <button type="button" class="selection-card lab-card selection-card--active" aria-pressed="true">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">D</span></span>
+        <span class="lab-text">
+          <span class="lab-name">Denise Lonely</span>
+          <span class="lab-status">
+            <span class="stat-row stat-row--inline lab-stats">
+              <span class="stat"><span class="stat__label"><span data-zh>已匯入</span><span data-en>Imported</span></span><span class="stat__value">2</span></span>
+              <span class="stat"><span class="stat__label"><span data-zh>待設定</span><span data-en>To set up</span></span><span class="stat__value">1</span></span>
+            </span>
+          </span>
+        </span>
+      </button>
+      <button type="button" class="selection-card lab-card" aria-pressed="false">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">A</span></span>
+        <span class="lab-text">
+          <span class="lab-name">Aya Kondo</span>
+          <span class="lab-status">
+            <span class="stat-row stat-row--inline lab-stats">
+              <span class="stat"><span class="stat__label"><span data-zh>已匯入</span><span data-en>Imported</span></span><span class="stat__value stat__value--zero">0</span></span>
+              <span class="stat"><span class="stat__label"><span data-zh>待設定</span><span data-en>To set up</span></span><span class="stat__value stat__value--zero">0</span></span>
+            </span>
+          </span>
+        </span>
+      </button>
+      <button type="button" class="selection-card lab-card" aria-pressed="false">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">K</span></span>
+        <span class="lab-text">
+          <span class="lab-name">KMT Collective</span>
+          <span class="lab-status">
+            <span class="badge badge--warning"><span data-zh>未綁定</span><span data-en>Not linked</span></span>
+          </span>
+        </span>
+      </button>
+      <button type="button" class="selection-card lab-card" aria-pressed="false">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">S</span></span>
+        <span class="lab-text">
+          <span class="lab-name">Sakuragi Entertainment Group Japan</span>
+          <span class="lab-status">
+            <span class="stat-row stat-row--inline lab-stats">
+              <span class="stat"><span class="stat__label"><span data-zh>已匯入</span><span data-en>Imported</span></span><span class="stat__value">48</span></span>
+              <span class="stat"><span class="stat__label"><span data-zh>待設定</span><span data-en>To set up</span></span><span class="stat__value">7</span></span>
+            </span>
+          </span>
+        </span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══ 2 · 三欄小標籤（含可匯入）══════════════════════════════ -->
+  <section class="lab-variant">
+    <div class="lab-variant__head">
+      <span class="lab-variant__no">2</span>
+      <h2 class="lab-variant__name"><span data-zh>三欄小標籤（含可匯入）</span><span data-en>Three columns, to-import kept</span></h2>
+    </div>
+    <p class="lab-tradeoff">
+      <span data-zh><b>強調</b>把可匯入放回卡上，並保留「已綁定」徽章（移到名稱那一列）。這是唯一在說「這一位還有事要做」的數字——沒有它，一排卡看不出為什麼值得點進去，左上角的「有待匯入」篩選在卡上也找不到對應的視覺。<b>放棄</b>卡寬是固定的：260px 的卡塞三欄，英文欄名（Imported／To set up）會被截成「Import…」，而名稱那一列又被徽章切走一段，「KMT Collective」這種長度就開始掉尾巴。中文塞得下、英文塞不下的版面，等於只對一種語言成立。</span>
+      <span data-en><b>Emphasises</b> bringing the to-import figure back onto the card, and keeping the "Linked" chip (moved up to the name line). It is the one number that says this creator still needs work — without it a row of cards gives no reason to click into any of them, and the "To import" filter top-left has nothing to point at. <b>Gives up</b> fit: the card width is fixed. Three columns in 260px clip the English labels to "Import…", and the chip on the name line eats enough room that a name like "KMT Collective" starts losing its tail. A layout that fits Chinese but not English only works in one language.</span>
+    </p>
+    <div class="lab-grid">
+      <button type="button" class="selection-card lab-card selection-card--active" aria-pressed="true">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">D</span></span>
+        <span class="lab-text">
+          <span class="lab-nameline">
+            <span class="lab-name">Denise Lonely</span>
+            <span class="badge badge--neutral"><span data-zh>已綁定</span><span data-en>Linked</span></span>
+          </span>
+          <span class="stat-row stat-row--inline lab2-stats">
+            <span class="stat"><span class="stat__label"><span data-zh>可匯入</span><span data-en>To import</span></span><span class="stat__value">3</span></span>
+            <span class="stat"><span class="stat__label"><span data-zh>已匯入</span><span data-en>Imported</span></span><span class="stat__value">2</span></span>
+            <span class="stat"><span class="stat__label"><span data-zh>待設定</span><span data-en>To set up</span></span><span class="stat__value">1</span></span>
+          </span>
+        </span>
+      </button>
+      <button type="button" class="selection-card lab-card" aria-pressed="false">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">A</span></span>
+        <span class="lab-text">
+          <span class="lab-nameline">
+            <span class="lab-name">Aya Kondo</span>
+            <span class="badge badge--neutral"><span data-zh>已綁定</span><span data-en>Linked</span></span>
+          </span>
+          <span class="stat-row stat-row--inline lab2-stats">
+            <span class="stat"><span class="stat__label"><span data-zh>可匯入</span><span data-en>To import</span></span><span class="stat__value stat__value--zero">0</span></span>
+            <span class="stat"><span class="stat__label"><span data-zh>已匯入</span><span data-en>Imported</span></span><span class="stat__value stat__value--zero">0</span></span>
+            <span class="stat"><span class="stat__label"><span data-zh>待設定</span><span data-en>To set up</span></span><span class="stat__value stat__value--zero">0</span></span>
+          </span>
+        </span>
+      </button>
+      <button type="button" class="selection-card lab-card" aria-pressed="false">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">K</span></span>
+        <span class="lab-text">
+          <span class="lab-nameline">
+            <span class="lab-name">KMT Collective</span>
+            <span class="badge badge--warning"><span data-zh>未綁定</span><span data-en>Not linked</span></span>
+          </span>
+        </span>
+      </button>
+      <button type="button" class="selection-card lab-card" aria-pressed="false">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">S</span></span>
+        <span class="lab-text">
+          <span class="lab-nameline">
+            <span class="lab-name">Sakuragi Entertainment Group Japan</span>
+            <span class="badge badge--neutral"><span data-zh>已綁定</span><span data-en>Linked</span></span>
+          </span>
+          <span class="stat-row stat-row--inline lab2-stats">
+            <span class="stat"><span class="stat__label"><span data-zh>可匯入</span><span data-en>To import</span></span><span class="stat__value">12</span></span>
+            <span class="stat"><span class="stat__label"><span data-zh>已匯入</span><span data-en>Imported</span></span><span class="stat__value">48</span></span>
+            <span class="stat"><span class="stat__label"><span data-zh>待設定</span><span data-en>To set up</span></span><span class="stat__value">7</span></span>
+          </span>
+        </span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══ 3 · 一行流水句 ══════════════════════════════════════════ -->
+  <section class="lab-variant">
+    <div class="lab-variant__head">
+      <span class="lab-variant__no">3</span>
+      <h2 class="lab-variant__name"><span data-zh>一行流水句</span><span data-en>One running line</span></h2>
+    </div>
+    <p class="lab-tradeoff">
+      <span data-zh><b>強調</b>三個數字都在，而且不必為它們切欄——一句話讀完「可匯入 3 · 已匯入 2 · 待設定 1」，卡最省版面，密度最高。<b>放棄</b>對齊：句子隨字長流動，卡與卡的數字不在同一條垂直線上，一排掃過去只能一張一張讀；英文更長，兩位數一出現就掉到第二行、卡的高度自己不一致。</span>
+      <span data-en><b>Emphasises</b> keeping all three figures without spending a column on each — "3 to import · 2 imported · 1 to set up" reads as one sentence, and the card gets as small as it can. <b>Gives up</b> alignment: the sentence flows with the text, so no two cards put their figures in the same place and the row has to be read card by card. English runs longer, and a double-digit figure tips it onto a second line, so the cards stop being the same height.</span>
+    </p>
+    <div class="lab-grid">
+      <button type="button" class="selection-card lab-card selection-card--active" aria-pressed="true">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">D</span></span>
+        <span class="lab-text">
+          <span class="lab-name">Denise Lonely</span>
+          <span class="lab3-line">
+            <span data-zh>可匯入 <b>3</b><span class="lab3-sep">·</span>已匯入 <b>2</b><span class="lab3-sep">·</span>待設定 <b>1</b></span>
+            <span data-en><b>3</b> to import<span class="lab3-sep">·</span><b>2</b> imported<span class="lab3-sep">·</span><b>1</b> to set up</span>
+          </span>
+        </span>
+      </button>
+      <button type="button" class="selection-card lab-card" aria-pressed="false">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">A</span></span>
+        <span class="lab-text">
+          <span class="lab-name">Aya Kondo</span>
+          <span class="lab3-line lab3-line--zero">
+            <span data-zh>可匯入 <b>0</b><span class="lab3-sep">·</span>已匯入 <b>0</b><span class="lab3-sep">·</span>待設定 <b>0</b></span>
+            <span data-en><b>0</b> to import<span class="lab3-sep">·</span><b>0</b> imported<span class="lab3-sep">·</span><b>0</b> to set up</span>
+          </span>
+        </span>
+      </button>
+      <button type="button" class="selection-card lab-card" aria-pressed="false">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">K</span></span>
+        <span class="lab-text">
+          <span class="lab-name">KMT Collective</span>
+          <span class="lab-status">
+            <span class="badge badge--warning"><span data-zh>未綁定</span><span data-en>Not linked</span></span>
+          </span>
+        </span>
+      </button>
+      <button type="button" class="selection-card lab-card" aria-pressed="false">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">S</span></span>
+        <span class="lab-text">
+          <span class="lab-name">Sakuragi Entertainment Group Japan</span>
+          <span class="lab3-line">
+            <span data-zh>可匯入 <b>12</b><span class="lab3-sep">·</span>已匯入 <b>48</b><span class="lab3-sep">·</span>待設定 <b>7</b></span>
+            <span data-en><b>12</b> to import<span class="lab3-sep">·</span><b>48</b> imported<span class="lab3-sep">·</span><b>7</b> to set up</span>
+          </span>
+        </span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══ 4 · 兩顆數字晶片 ════════════════════════════════════════ -->
+  <section class="lab-variant">
+    <div class="lab-variant__head">
+      <span class="lab-variant__no">4</span>
+      <h2 class="lab-variant__name"><span data-zh>兩顆數字晶片</span><span data-en>Two figure chips</span></h2>
+    </div>
+    <p class="lab-tradeoff">
+      <span data-zh><b>強調</b>每個數字是一顆獨立、數得出來的東西——晶片有自己的底，掃一排先看到「這張卡上有幾件事」，全 0 的那張整組退成淡色、幾乎看不見，對比最強。<b>放棄</b>對齊與輕盈：晶片寬度隨字長變動，卡與卡的數字不在同一條垂直線上；兩顆藥丸的視覺重量也比兩段小字重，一排卡看過去先看到的是形狀，不是數字。</span>
+      <span data-en><b>Emphasises</b> each figure as a separate, countable thing — a chip has its own ground, so scanning the row first tells you how many things sit on a card, and an all-zero card fades almost out of sight. The contrast between "has work" and "has none" is the strongest of the four. <b>Gives up</b> alignment and lightness: chip widths follow their text, so no two cards line their figures up, and two pills carry more visual weight than two runs of small text — the row reads as shapes before it reads as numbers.</span>
+    </p>
+    <div class="lab-grid">
+      <button type="button" class="selection-card lab-card selection-card--active" aria-pressed="true">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">D</span></span>
+        <span class="lab-text">
+          <span class="lab-name">Denise Lonely</span>
+          <span class="lab4-chips">
+            <span class="badge badge--neutral"><span data-zh>已匯入</span><span data-en>Imported</span><b>2</b></span>
+            <span class="badge badge--neutral"><span data-zh>待設定</span><span data-en>To set up</span><b>1</b></span>
+          </span>
+        </span>
+      </button>
+      <button type="button" class="selection-card lab-card" aria-pressed="false">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">A</span></span>
+        <span class="lab-text">
+          <span class="lab-name">Aya Kondo</span>
+          <span class="lab4-chips">
+            <span class="badge badge--neutral lab-zero"><span data-zh>已匯入</span><span data-en>Imported</span><b>0</b></span>
+            <span class="badge badge--neutral lab-zero"><span data-zh>待設定</span><span data-en>To set up</span><b>0</b></span>
+          </span>
+        </span>
+      </button>
+      <button type="button" class="selection-card lab-card" aria-pressed="false">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">K</span></span>
+        <span class="lab-text">
+          <span class="lab-name">KMT Collective</span>
+          <span class="lab-status">
+            <span class="badge badge--warning"><span data-zh>未綁定</span><span data-en>Not linked</span></span>
+          </span>
+        </span>
+      </button>
+      <button type="button" class="selection-card lab-card" aria-pressed="false">
+        <span class="lab-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">S</span></span>
+        <span class="lab-text">
+          <span class="lab-name">Sakuragi Entertainment Group Japan</span>
+          <span class="lab4-chips">
+            <span class="badge badge--neutral"><span data-zh>已匯入</span><span data-en>Imported</span><b>48</b></span>
+            <span class="badge badge--neutral"><span data-zh>待設定</span><span data-en>To set up</span><b>7</b></span>
+          </span>
+        </span>
+      </button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* 本頁只有兩顆開關：語言與主題。lab 頁不接站上的 i18n / theme 模組——
+   那兩支會寫 localStorage，實驗場不該把使用者在正式站的偏好改掉。 */
+(function () {
+  'use strict';
+  var root = document.documentElement;
+  document.getElementById('lab-lang').addEventListener('click', function () {
+    root.setAttribute('data-lang', root.getAttribute('data-lang') === 'zh' ? 'en' : 'zh');
+  });
+  document.getElementById('lab-theme').addEventListener('click', function () {
+    root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+})();
+</script>
+</body>
+</html>

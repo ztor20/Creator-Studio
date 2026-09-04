@@ -1,0 +1,104 @@
+/* ============================================================
+   link-field.css · 唯讀連結 ＋ 複製 ＋ 重置
+   ------------------------------------------------------------
+   一條系統產生、人不能編輯、但要能整條帶走的連結。首個角色是 §7.14 的
+   非公開連結（商品或組合切成隱藏時產生，可隨時重置作廢舊連結）。
+
+   ── 與 vault-share 的關係 ─────────────────────────────────────────
+   `vault-share.css` 的 `.vshare__link`（媒體庫的鑰匙連結）是站上第一個做這件事的地方，
+   本支把它的共同部分抽出來成為 DS 級答案：一個唯讀輸入框吃滿寬、行尾一到兩顆動作鈕、
+   底下一行說明。`.vshare__link` 這一輪不動——媒體庫的那條連結還多帶「剛產生」的橘框強調，
+   與這裡的中性預設不是同一件事；等日後確認兩者要同一個外觀時再收斂，收斂前不要照抄它的 markup。
+
+   ── 複製的回饋長在按鈕上 ──────────────────────────────────────────
+   「已複製」寫在按鈕自己的文字上、不跳 toast：手剛離開的地方就是眼睛在看的地方，
+   回饋跑到畫面角落等於沒有回饋（沿用 `media-vault.js` 既有的判斷）。
+   行為由 `js/link-field.js` 統一接線，消費頁只寫 markup。
+
+   anatomy
+     .linkf                       (.linkf--copied 短暫回饋 · .linkf--disabled 不可操作)
+       .linkf__label              （選配；用 .field__label 也可以）
+       .linkf__row
+         input.input.linkf__input （readonly，等寬字）
+         button.btn.linkf__act    （複製）
+         button.btn.linkf__act    （重置，選配）
+       .linkf__hint               （一行說明）
+
+   surface：`__row` 自帶 `--input-surface` 底與 1px `--border`，白底與灰底上都成立。
+   ============================================================ */
+
+.linkf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+.linkf[hidden] { display: none; }
+
+.linkf__label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);
+  color: var(--foreground);
+}
+
+.linkf__row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-6);
+  padding: var(--sp-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--input-surface);
+  transition: border-color var(--duration) var(--easing), background-color var(--duration) var(--easing);
+}
+
+/* 連結要能被唸出來也要能被逐字核對，走等寬字並讓框本身退成透明——
+   外框已經由 __row 畫過一次，輸入框再畫一次會變成雙框。 */
+.linkf__input.input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--control-h-sm);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  border-color: transparent;
+  background: transparent;
+}
+
+/* 動作鈕：不被連結擠壓；複製鈕在「複製 → 已複製」之間換字，給一個下限寬度免得整列跳動。 */
+.linkf__act {
+  flex: none;
+  justify-content: center;
+}
+.linkf__act--copy { min-width: 92px; }
+
+/* 窄欄變體（--stack）：右欄／窄容器（約 250–300px）放不下「輸入框＋兩顆鈕」同一列，
+   連結會被擠到只剩「https」。改兩列——第一列輸入框獨佔滿寬，第二列兩顆動作鈕靠右
+   （沿用站上動作列一律靠右的慣例，見 `.bd-foot-actions`／`.product-list__actions`）。 */
+.linkf--stack .linkf__row {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.linkf--stack .linkf__input.input {
+  flex: 1 1 100%;
+}
+
+.linkf__hint {
+  font-size: var(--fs-12);
+  line-height: var(--lh-comfy);
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+/* 已複製：整條連結列亮一下，回饋不只在按鈕的字上（一秒多之後由 JS 撤掉）。 */
+.linkf--copied .linkf__row {
+  border-color: var(--primary);
+  background: var(--selected-surface);
+}
+
+/* 不可操作（例如切回顯示、連結已作廢）：靠顏色與游標表達，不疊 opacity 弱化整塊（Q58）。 */
+.linkf--disabled .linkf__row {
+  background: var(--muted);
+  border-color: var(--border-soft);
+}
+.linkf--disabled .linkf__input.input { color: var(--locked-field-ink); }
+.linkf--disabled .linkf__act { pointer-events: none; color: var(--locked-field-ink); }

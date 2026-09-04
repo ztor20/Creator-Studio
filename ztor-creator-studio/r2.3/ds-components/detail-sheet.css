@@ -81,15 +81,37 @@
      iframe 整片透明，所以面板透出來的是底下那一頁本人。
      舊值：background: var(--surface-shell)；border-radius: var(--radius-xl) var(--radius-xl) 0 0；
      box-shadow: var(--shadow-overlay, 0 -8px 40px rgba(0,0,0,.45))。 */
+  /* 2026-09-01：`backdrop-filter` 由本體搬到 `::before`（見下）。宣告內容與視覺完全不變，
+     差別只在「掛在誰身上」——掛在面板本體時，面板就成為一個 backdrop root，
+     裡面那個 iframe 的所有 backdrop-filter 在部分瀏覽器會整組失效（使用者實測：
+     詳情頁黏住的頂列沒有毛玻璃，把這一層的模糊關掉才出現）。
+     搬到子層之後 iframe 變成它的**兄弟**而不是後代，內側的玻璃就活過來了。 */
+  position: relative;
   background: var(--ztu-glass-bg);
-  backdrop-filter: blur(var(--ztu-blur-heavy)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--ztu-blur-heavy)) saturate(1.2);
   border-radius: var(--radius-shell);
   box-shadow: var(--ztu-shadow-card), inset 0 1px 0 var(--ztu-glass-rim);
   overflow: hidden;
   /* 由下往上推出來——方向就是它的意思：這一層是疊在原本那頁「上面」的，
      不是把原本那頁換掉。關閉時反向收回去，使用者看得到自己回到哪裡。 */
   animation: detail-sheet-rise 260ms cubic-bezier(.16, 1, .3, 1) both;
+}
+/* 面板的毛玻璃層（2026-09-01 由 .detail-sheet__panel 本體搬來）。
+   它糊的是「面板背後」的東西——暗紗與底下那一頁——與搬家前完全一樣；
+   面板自己的內容畫在它上面（下一條把子層抬到 z-index 1），不會被糊到。
+   ⚠ 不要把這段搬回本體：那會讓面板重新成為 backdrop root，內嵌頁裡任何
+   backdrop-filter（頂列的玻璃）就再次失效。 */
+.detail-sheet__panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* 負層：畫在面板自己的底色**之上**、流內內容（頭列與 iframe）**之下**，
+     所以它糊得到背後那一頁，又不會蓋住面板的內容。
+     另一種寫法是 `z-index: 0` ＋ 把子層抬到 1，效果相同；選負層是因為不必為了
+     疊序去動面板的每一個子層。 */
+  z-index: -1;
+  pointer-events: none;
+  backdrop-filter: blur(var(--ztu-blur-heavy)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--ztu-blur-heavy)) saturate(1.2);
 }
 
 /* 暗紗淡入：動 background-color，不動 opacity（理由見 .detail-sheet 的註解）。 */

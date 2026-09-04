@@ -7,7 +7,7 @@
    store，清單與詳情頁同吃一份。
 
    內容類型（cat）沿用上游 spec 5.1.2.1 §4.1 F3 的創作者可見選項：
-   電影 movie／短劇 short／影集 series／音樂 song／音樂專輯 album／MV mv／
+   電影 movie／短片 short／影集 series／音樂 song／音樂專輯 album／MV mv／
    活動 event／其他商品 merch／文檔 document／自訂 custom。
    family 是把上述收成三個家族（film／music／other），只用於呈現層分組與
    「哪些區塊要出現」的判斷（例如音樂家族才有版稅分析）。
@@ -458,12 +458,21 @@
          原本沒有任何一筆預購影片走到已成功（唯一的預購影片停在進行中），這條路徑因此
          無從驗證。預購沒有分潤名額，方案必含作品本身（D167）。 */
       id: 'nick-nsddd-film', created: '2025/12/02', fundFrom: '2026/01/08', name: '什麼都不必說 短片版', nameEn: "Nothing Left to Say — The Short Film",
-      cat: 'short', icon: 'film', type: 'preorder', status: 'succeeded', goalMet: true, delivered: false,
-      cover: IMG + 'nick-nsddd.jpg', poster: IMG + 'nick-nsddd.jpg',
+      /* 狀態 succeeded → published（2026-09-01，第 5 格）：那一排只收還在跑的
+         （scheduled ／ published），「已達標、定剪中」不在其中。額滿但檔期還沒結束
+         仍然是進行中的預購，站上另一筆（GET REAL 聯名 Tee）本來就是這個形狀。 */
+      cat: 'short', icon: 'film', type: 'preorder', status: 'published', goalMet: true, delivered: false,
+      /* 主視覺 2026-09-01 換成 MV 那一張（`nick-smdbbs.jpg`，使用者裁示「我想要
+         什麼都不必說的 MV 那張海報出現在 dashboard 的第五個選項」）：短片版與 MV 是
+         同一首歌的兩個版本，共用一張主視覺是站上既有的做法（另一例：罵醒我與
+         罵醒我 (Reimagined)）。**不是把 MV 本身放進那一排**——MV 那一筆已經上線，
+         要讓它進榜得把狀態改回「準備上線」，那會把它從已上線作品裡拿掉，
+         表現最佳作品那份榜單就少一筆（它現在是 190 萬次觀看那一列）。 */
+      cover: IMG + 'nick-smdbbs.jpg', poster: IMG + 'nick-smdbbs.jpg',
       desc: { en: 'A twenty-minute short built around the song — pre-orders closed at target, now in final cut; buyers are waiting on the release.', zh: '以同名歌曲延伸的二十分鐘短片；預購已達標結束、正在定剪，預購者尚未收到交付。' },
-      meta: { en: '900 / 900 pre-orders · $18 each · in final cut', zh: '900 / 900 筆預購 · 單價 $18 · 定剪中' },
-      list: { goal: { en: '900 / 900', zh: '900 / 900 筆' } },
-      bar: { pct: 100, variant: 'success' }, todo: { en: 'Publish the finished film', zh: '上架完成的作品' }
+      meta: { en: '900 / 900 pre-orders · $18 each · 10 days left', zh: '900 / 900 筆預購 · 單價 $18 · 剩 10 天' },
+      list: { goal: { en: '900 / 900', zh: '900 / 900 筆' }, left: { en: '10 days left', zh: '剩 10 天' }, period: { en: 'Presale Jan 08 – Sep 11, 2026', zh: '預購期間 2026/01/08 – 09/11' } },
+      bar: { pct: 100, variant: 'success' }, todo: { en: 'Confirm the fulfilment list before presale closes', zh: '結單前確認出貨名單' }
     },
 
     {
@@ -524,6 +533,19 @@
       bar: null, todo: { en: 'Set monetization', zh: '設定變現方式' }
     },
     {
+      /* 2026-09-01 補：nick persona 的**預購 × 草稿**樣本（使用者：「預購少了草稿」）。
+         這個組合原本整個缺，清單頁的狀態頁籤因此在預購底下不會出現「草稿」那一格
+         （計數 0 就隱藏）。
+         ⚠ 同一個 persona 的預購仍缺「已成功」與「已取消」兩種狀態，本輪沒補——
+         使用者只點名草稿，補樣本屬於資料範圍、不自行擴張。 */
+      id: 'nick-lrh-vinyl', created: '2026/08/20', name: 'LOVE RAGE HOPE 黑膠典藏版', nameEn: "LOVE RAGE HOPE — Vinyl Collector's Edition",
+      cat: 'album', icon: 'music', type: 'preorder', status: 'draft',
+      cover: IMG + 'nick-lrh.jpg', poster: IMG + 'nick-lrh.jpg',
+      desc: { en: 'A 180g double vinyl pressing of the fifth studio album — pressing plant and price still being confirmed.', zh: '第五張錄音室專輯的 180 克雙黑膠壓片；壓片廠與定價還在確認。' },
+      meta: { en: 'Created Aug 20, 2026', zh: '建立於 2026/08/20' },
+      bar: null, todo: { en: 'Confirm pressing quote', zh: '確認壓片報價' }
+    },
+    {
       id: 'nick-ma-xing-wo', created: '2025/07/01', name: '罵醒我 (Reimagined)', nameEn: "Wake Me Up (Reimagined)",
       cat: 'song', icon: 'music', type: 'fund', status: 'draft',
       cover: IMG + 'nick-mxw.jpg', poster: IMG + 'nick-mxw.jpg',
@@ -534,7 +556,11 @@
     {
       id: 'nick-r2', created: '2026/07/01', fundFrom: '2026/07/20', name: 'REALIVE (R2) 特仕版演唱會', nameEn: "REALIVE (R2) Special Edition Concert",
       cat: 'event', icon: 'ticket', type: 'preorder', status: 'published', goalMet: false, delivered: false,
-      cover: IMG + 'nick-r2.jpg', poster: IMG + 'nick-r2.jpg',
+      /* 主視覺 2026-09-01 換成「REALIVE 白趴 官方周邊」那一張（`nick-baipa-goods.jpg`，
+         使用者裁示）：兩件都屬 REALIVE 這一檔，共用同一組現場影像是站上既有的做法。
+         **這是這一筆自己的欄位、不是只給第一屏用的**——項目清單、項目詳情、第二屏的
+         進行中卡片都吃同一個 `poster`，所以那幾處會一起換。 */
+      cover: IMG + 'nick-baipa-goods.jpg', poster: IMG + 'nick-baipa-goods.jpg',
       desc: { en: 'motorola presents REALIVE (R2) — Taipei Arena, Nov 23–24, 2026. Full upgrade with 70+ stage looks.', zh: 'motorola 呈獻 REALIVE (R2) 特仕版，臺北小巨蛋 11/23–24；全面升級、逾 70 套舞台造型。' },
       meta: { en: '18,400 / 20,000 tickets · $95 each · 8 days left', zh: '18,400 / 20,000 張票 · 單價 $95 · 剩 8 天' },
       list: { goal: { en: '18,400 / 20,000', zh: '18,400 / 20,000 張' }, left: { en: '8 days left', zh: '剩 8 天' }, period: { en: 'Presale Jul 20 – Aug 25, 2026', zh: '預購期間 2026/07/20 – 08/25' } },
@@ -573,8 +599,12 @@
       cat: 'merch', icon: 'shopping-bag', type: 'preorder', status: 'published', goalMet: true, delivered: false,
       cover: IMG + 'nick-baipa-goods.jpg', poster: IMG + 'nick-baipa-goods.jpg',
       desc: { en: 'A collab tee already past target and still taking pre-orders — every extra unit is upside.', zh: '聯名 Tee 已超過目標、仍在接受預購；超出的每一件都是額外收益。' },
-      meta: { en: '1,180 / 800 pre-orders · $42 each · 9 days left', zh: '1,180 / 800 筆預購 · 單價 $42 · 剩 9 天' },
-      list: { goal: { en: '1,180 / 800', zh: '1,180 / 800 筆' }, left: { en: '9 days left', zh: '剩 9 天' }, period: { en: 'Presale Jul 01 – Aug 26, 2026', zh: '預購期間 2026/07/01 – 08/26' } },
+      /* 倒數 9 → 13 天（2026-09-01）：第 4 格要讓給「罵醒我」，而那一排同一天只留一件，
+         9 這一天不能兩筆都佔。13 是往後找到的第一個沒人用的日子（11／12／14 已被
+         ON STAGE、Live House Tour、街頭舞台計畫佔走）。**代價要知道**：這一筆因此排到
+         第 8 位，第一屏那六格看不到它了；它在項目頁仍然在。 */
+      meta: { en: '1,180 / 800 pre-orders · $42 each · 13 days left', zh: '1,180 / 800 筆預購 · 單價 $42 · 剩 13 天' },
+      list: { goal: { en: '1,180 / 800', zh: '1,180 / 800 筆' }, left: { en: '13 days left', zh: '剩 13 天' }, period: { en: 'Presale Jul 01 – Sep 14, 2026', zh: '預購期間 2026/07/01 – 09/14' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Confirm extra print run', zh: '確認追加印量' }
     },
     {
@@ -599,7 +629,13 @@
       /* 2026-09-01 與上面 `nick-ni-shuo` 互換名稱與主視覺（同一次裁示），預購數與上映日不動。 */
       cover: IMG + 'nick-sdfs.jpg', poster: IMG + 'nick-sdfs.jpg',
       desc: { en: 'A cinematic MV shot on 35mm in one take — pre-orders are full and review is cleared; it goes live Nov 07.', zh: '35mm 底片一鏡到底的電影感 MV；預購已額滿、審核通過，11/07 上映。' },
-      meta: { en: '1,500 / 1,500 pre-orders · approved, goes live Nov 07', zh: '1,500 / 1,500 筆預購 · 審核已過，11/07 上映' },
+      /* 2026-09-01 使用者裁示第一屏那一排「第二、第四、第五格分別是帥到分手、
+         罵醒我、什麼都不必說」：那一排是按「距今幾天」排序的時間線，所以動的是
+         倒數天數，不是另外做一份清單。四筆一起算才排得出那個順序（見各筆註解）。 */
+      /* 補上預購結單的倒數（第 2 格 ＝ 5 天）：原本這一串的最後一段是上映日，
+         而那一排取最後一段當倒數，讀不出天數就整筆不進榜。倒數講的是**預購還剩幾天
+         結單**，與 11/07 上映是兩件事，所以兩段並存、上映日留在中段。 */
+      meta: { en: '1,500 / 1,500 pre-orders · approved, goes live Nov 07 · 5 days left', zh: '1,500 / 1,500 筆預購 · 審核已過，11/07 上映 · 剩 5 天' },
       list: { goal: { en: '1,500 / 1,500', zh: '1,500 / 1,500 筆' }, left: { en: 'Goes live Nov 07', zh: '11/07 上映' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Line up the release-day post', zh: '準備上映當天的貼文' }
     },
@@ -654,8 +690,10 @@
          與「罵醒我 (Reimagined)」共用同一張＝同一首歌的兩個版本，刻意相同。 */
       cover: IMG + 'nick-mxw.jpg', poster: IMG + 'nick-mxw.jpg',
       desc: { en: 'The single on its own physical release — pre-orders are open now.', zh: '這首單曲的實體發行，現正接受預購。' },
-      meta: { en: '520 / 900 pre-orders · $22 each · 14 days left', zh: '520 / 900 筆預購 · 單價 $22 · 剩 14 天' },
-      list: { goal: { en: '520 / 900', zh: '520 / 900 筆' }, left: { en: '14 days left', zh: '剩 14 天' }, period: { en: 'Presale Jul 08 – Aug 31, 2026', zh: '預購期間 2026/07/08 – 08/31' } },
+      /* 倒數 14 → 9 天（2026-09-01，第 4 格）：14 原本與「街頭舞台計畫」同一天，
+         而那一排同一天只留一件，這一筆一直被擠掉。 */
+      meta: { en: '520 / 900 pre-orders · $22 each · 9 days left', zh: '520 / 900 筆預購 · 單價 $22 · 剩 9 天' },
+      list: { goal: { en: '520 / 900', zh: '520 / 900 筆' }, left: { en: '9 days left', zh: '剩 9 天' }, period: { en: 'Presale Jul 08 – Sep 10, 2026', zh: '預購期間 2026/07/08 – 09/10' } },
       bar: { pct: 58 }, todo: { en: 'Confirm the pressing run', zh: '確認實體壓製批量' }
     },
     {
@@ -697,7 +735,7 @@
 
   const CAT_LABEL = {
     movie:    { en: 'Movie',      zh: '電影' },
-    short:    { en: 'Short film', zh: '短劇' },
+    short:    { en: 'Short film', zh: '短片' },
     series:   { en: 'Series',     zh: '影集' },
     song:     { en: 'Song',       zh: '音樂' },
     album:    { en: 'Album',      zh: '音樂專輯' },

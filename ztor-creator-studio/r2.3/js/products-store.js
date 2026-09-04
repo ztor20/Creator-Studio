@@ -460,6 +460,150 @@
     });
   }
 
+  /* ══ D241 · 庫存池、三開關與鎖定庫存（spec 0-設計規格書 §7.14）════════════════
+     推導邏輯一律走 js/listing-state.js（window.ListingState），本檔只負責「資料長什麼樣」：
+     把既有的平面欄位（status／stock／cap／sold）補成 §7.14 的模型。舊欄位一個都不刪——
+     還沒改版的頁面仍在讀它們——但凡是「算出來的」都改由 ProductsStore.statusOf() 回答。
+
+     三態鎖定量：locks.single／locks.bundles[id] 為 null ＝ 這個管道沒鎖定（共用沒有被鎖定的庫存量）；
+     是數字（含 0）＝ 鎖定模式。詳見 listing-state.js 檔頭。 */
+
+  var LS = (typeof window !== 'undefined' && window.ListingState) || null;
+
+  /* 逐品的上架與鎖定示範值。沒列在這裡的商品吃 seedListing() 的預設（上架＋顯示＋不排程＋不鎖定），
+     目前在庫由既有 stock 換算。列在這裡的每一筆都是為了讓某一個狀態在原型上真的看得到。 */
+  var LISTING_SEED = {
+    /* 低庫存＋鎖定示範疊在同一品：池 3、單售鎖 1、組合（coastline-starter-set）鎖 1 →
+       兩個管道都在鎖定模式，剩下 1 件沒有被鎖定的庫存量沒有人能賣（§7.14「所有管道都設了鎖定」）。
+       zine 是單一規格且已是 coastline-starter-set 的成員（見下方 BUNDLE_SEED），單售鎖定後
+       可售量看的是鎖定量（1），仍 ≤ 門檻 4，「低庫存」與「鎖定」兩個示範互不打架、同時成立。
+       ⚠ 這條原本掛在 tee（多規格）身上，2026-09-04 D241 收尾移到這裡——多規格商品的庫存池
+       與鎖定怎麼疊尚無定論（見 ASSUMPTIONS UIA-132），示範資料先避開這個未決問題。 */
+    zine:    { locks: { single: 1, bundles: { 'coastline-starter-set': 1 } } },
+    /* 隱藏＋私下販售：商店找不到，持非公開連結仍可買（§7.14 狀態組合表第五列） */
+    acetate: { shown: false, privateLink: 'https://ztor.example/s/acetate?k=k3m8qr72' },
+    /* 售罄：池 0 */
+    pin:     {},
+    /* 即將開賣：上架且顯示，開賣日期與時間在未來 */
+    movie:   { saleStart: '2026-10-01T12:00:00' },
+    /* 販售結束：停售日期與時間已過 */
+    song:    { saleEnd: '2026-08-20T23:59:00' },
+    /* 已下架：總閘門關掉，公開與非公開連結都失效 */
+    membership: { listed: false }
+  };
+
+  /* 一個組合包＝一個販售管道。cap 是組合自己的限量硬上限（§7.2），null ＝ 無額外上限。 */
+  var BUNDLE_SEED = {
+    'coastline-starter-set': {
+      id: 'coastline-starter-set', persona: 'default', name: '九龍夜行 入門組合',
+      /* zine（2026-09-04 D241 收尾新增）：多收一個單一規格成員，讓 product-detail.html 的
+         庫存分配表有單一規格＋組合包列＋鎖定示範可看（見上方 LISTING_SEED.zine）。 */
+      members: [{ productId: 'tee' }, { productId: 'cap' }, { productId: 'shoes' }, { productId: 'zine' }],
+      cap: null, listed: true, listAt: null, unlistAt: null,
+      /* lowThreshold＝0（2026-09-04 修正，原本兩個組合都是 3）：e-shop 的 Bundles 狀態篩選
+         沒有「急需補貨」tab（組合是否設低庫存門檻仍是產品待確認，ASSUMPTIONS UIA-133），
+         非 0 門檻卻沒有對應 tab 會讓組合列在某些成員量小時掉進 deriveStatus 判成 low、
+         但 9 個分頁一個都篩不到它——加入 zine（池僅 3）當成員後這條路徑真的會被踩到，
+         故收斂成 0，兩個組合統一不參與低庫存判斷。 */
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0
+    },
+    'wish-you-good-life-four-piece': {
+      id: 'wish-you-good-life-four-piece', persona: 'nick', name: '『祝你好命』選物四件組',
+      members: [
+        { productId: 'wy-26ms-tshirt-white' }, { productId: 'wy-bundle-cap' },
+        { productId: 'wy-bundle-cargo-pants' }, { productId: 'wy-bundle-lowtop-sneakers' }
+      ],
+      cap: 50, listed: true, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 3
+    }
+  };
+
+  /* 目前在庫：數位商品與 stock 為 ∞ 的一律 'unlimited'，其餘取現有庫存數。
+     限量版本（edition==='limited'）的 stock 本來就是「還剩幾件」，直接當目前在庫。 */
+  function poolTotal(p) {
+    if (p.cat === 'digital' || p.stock === '∞' || p.stock === undefined) return 'unlimited';
+    var n = Number(p.stock);
+    return isNaN(n) ? 'unlimited' : n;
+  }
+
+  function seedListing(id, p) {
+    if (p.pool) return p;                       /* 同一筆記錄被兩個 persona 共用時只補一次 */
+    var s = LISTING_SEED[id] || {};
+    p.id = p.id || id;
+    p.listed = (s.listed !== undefined) ? s.listed : true;
+    p.listAt = s.listAt || null;
+    p.unlistAt = s.unlistAt || null;
+    p.shown = (s.shown !== undefined) ? s.shown : true;
+    p.privateLink = p.shown ? null : (s.privateLink || null);
+    p.saleStart = s.saleStart || null;
+    p.saleEnd = s.saleEnd || null;
+    p.lowThreshold = Number(s.lowThreshold !== undefined ? s.lowThreshold : (p.threshold || 0)) || 0;
+    p.pool = {
+      total: (s.total !== undefined) ? s.total : poolTotal(p),
+      locks: {
+        single: (s.locks && s.locks.single !== undefined) ? s.locks.single : null,
+        bundles: (s.locks && s.locks.bundles) ? s.locks.bundles : {}
+      }
+    };
+    return p;
+  }
+
+  Object.keys(DATASETS).forEach(function (personaId) {
+    var set = DATASETS[personaId];
+    Object.keys(set).forEach(function (id) { seedListing(id, set[id]); });
+  });
+  /* 舊的組合記錄補上同一組欄位，讓組合細節頁能與商品頁走同一套推導。 */
+  Object.keys(BUNDLES_NICK).forEach(function (k) {
+    var b = BUNDLES_NICK[k];
+    var seed = b.id && BUNDLE_SEED[b.id];
+    if (seed) Object.keys(seed).forEach(function (f) { if (b[f] === undefined) b[f] = seed[f]; });
+  });
+
+  /* ── 對外 API（新頁面一律走這裡，別再自己算）────────────────────────────
+     statusOf(product, channel)  單售或某個組合包視角的主徽章狀態
+     flagsOf(product, channel)   細節頁用：{ status, hidden } 兩顆徽章
+     qtyOf(product, channel)     該管道可售量
+     bundleStatusOf(bundle)      組合包的主徽章狀態（可售量＝成員最小值再與 cap 取最小）
+     bundlesUsing(productId)     哪些組合包含這件商品（算「所有管道都鎖定了嗎」用） */
+  function ls() { return LS || (typeof window !== 'undefined' && window.ListingState) || null; }
+  function bundlesOfPersona() {
+    var out = [], k;
+    for (k in BUNDLE_SEED) {
+      if (!Object.prototype.hasOwnProperty.call(BUNDLE_SEED, k)) continue;
+      if (BUNDLE_SEED[k].persona === persona() || (persona() === 'userB' && BUNDLE_SEED[k].persona === 'default')) out.push(BUNDLE_SEED[k]);
+    }
+    return out;
+  }
+  window.ProductsStore = {
+    all: function () { return active(); },
+    get: function (id) { var p = active()[id]; return p ? seedListing(id, p) : null; },
+    bundles: bundlesOfPersona,
+    getBundle: function (id) { return BUNDLE_SEED[id] || null; },
+    bundlesUsing: function (productId) {
+      return bundlesOfPersona().filter(function (b) {
+        return (b.members || []).some(function (m) { return m.productId === productId; });
+      });
+    },
+    qtyOf: function (product, channel) {
+      var L = ls(); return L ? L.channelQty(product, channel || 'single') : Infinity;
+    },
+    statusOf: function (product, channel, now) {
+      var L = ls(); if (!L || !product) return 'live';
+      return L.deriveStatus(product, { qty: L.channelQty(product, channel || 'single'), lowThreshold: product.lowThreshold }, now);
+    },
+    flagsOf: function (product, channel, now) {
+      var L = ls(); if (!L || !product) return { status: 'live', hidden: false };
+      return L.deriveFlags(product, { qty: L.channelQty(product, channel || 'single'), lowThreshold: product.lowThreshold }, now);
+    },
+    bundleQtyOf: function (bundle) {
+      var L = ls(); return L ? L.bundleQty(bundle, active()) : Infinity;
+    },
+    bundleStatusOf: function (bundle, now) {
+      var L = ls(); if (!L || !bundle) return 'live';
+      return L.deriveStatus(bundle, { qty: L.bundleQty(bundle, active()), lowThreshold: bundle.lowThreshold }, now);
+    }
+  };
+
   var P = active();
   window.ZTOR_PRODUCTS = P;
   // 由 ?id 取商品；找不到回 null（頁面自帶預設 zine）。

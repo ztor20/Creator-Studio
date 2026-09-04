@@ -23,6 +23,10 @@
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
+<!-- D241（spec 0-設計規格書 §7.14）：三開關、非公開連結、成員庫存分配 -->
+<link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-store.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
@@ -67,7 +71,10 @@
         <div style="min-width:0">
           <h1 class="page-intro__title" id="bd-title" style="margin:0">Ultimate Fan Bundle</h1>
           <div class="flex-row" style="gap:6px;margin-top:8px">
-            <span class="badge badge--orange"><span data-i18n="bd.badge.live">Live</span></span>
+            <!-- D241：主徽章由 ListingState.deriveFlags() 推導（草稿→已下架→販售結束→售罄→即將開賣→急需補貨→販售中），
+                 「已隱藏」是另一件事、擺第二顆，不蓋掉售罄。 -->
+            <span class="badge badge--orange" id="bd-status-badge"><span data-i18n="shop.status.live">Live</span></span>
+            <span class="badge badge--neutral" id="bd-hidden-badge" hidden><span data-i18n="shop.status.hidden">Hidden</span></span>
             <span class="badge"><span data-i18n="bd.badge.bundle">Bundle</span></span>
           </div>
         </div>
@@ -151,9 +158,12 @@
             <p class="form-section__sub" data-i18n="cb.media.hero">Bundle cover — the first thing fans see</p>
           </div>
           <!-- 2026-08-09（使用者裁決）：全站直式上傳圖統一成 .upload-assets--fill。
-               封面大格＋附圖 2×2 的舊版面退場，五格同尺寸、四格撐滿一整列。
-               這裡是編輯既有組合，五格都已有圖，不套逐格出現（沒有空格要藏）。 -->
-          <div class="upload-assets upload-assets--fill">
+               封面大格＋附圖 2×2 的舊版面退場，同尺寸、四格撐滿一整列。
+               2026-09-04（使用者裁決 D243）：張數上限由 8 張放寬成 10 張（封面 1＋附圖 9），
+               同輪改套 [data-upload-reveal]——原本這一頁刻意攤開整組空槽，使用者裁示全站一致
+               「填完一格才長出下一格」，所以編輯既有組合也只露出一個空格。這組示範資料
+               （memberItems）目前有 4 個成員商品，其餘格子由逐格出現機制收著。 -->
+          <div class="upload-assets upload-assets--fill" data-upload-reveal>
             <div class="upload-tile upload-tile--portrait is-filled" data-bd-asset="hero" data-upload>
               <span class="upload-tile__flag" data-i18n="cp.media.cover-flag">Cover</span>
               <img class="upload-tile__thumb" id="bd-hero" src="images/products/set-outfit-model.webp" alt="『祝你好命』選物四件組">
@@ -162,6 +172,11 @@
             <div class="upload-tile upload-tile--portrait is-filled" data-bd-asset="gallery" data-upload><img class="upload-tile__thumb" src="images/products/wyagl-cap-generated.webp" alt="祝你好命刺繡 Logo 老帽"></div>
             <div class="upload-tile upload-tile--portrait is-filled" data-bd-asset="gallery" data-upload><img class="upload-tile__thumb" src="images/products/wyagl-cargo-pants-generated.webp" alt="祝你好命束口工裝褲"></div>
             <div class="upload-tile upload-tile--portrait is-filled" data-bd-asset="gallery" data-upload><img class="upload-tile__thumb" src="images/products/wyagl-lowtop-sneakers-generated.webp" alt="祝你好命紅白低筒球鞋"></div>
+            <div class="upload-tile upload-tile--portrait" data-bd-asset="gallery" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
+            <div class="upload-tile upload-tile--portrait" data-bd-asset="gallery" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
+            <div class="upload-tile upload-tile--portrait" data-bd-asset="gallery" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
+            <div class="upload-tile upload-tile--portrait" data-bd-asset="gallery" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
+            <div class="upload-tile upload-tile--portrait" data-bd-asset="gallery" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
           </div>
         </section>
 
@@ -217,11 +232,13 @@
           </div>
         </section>
 
-        <!-- 庫存（Stock）：Edition 不限量/限量 + 唯讀目前在庫＝min(成員)（spec 5.1.5.9 §2.3 → 5.1.5.4 §4 F4）-->
+        <!-- 庫存（Stock）：Edition 不限量／限量 ＋ 成員逐列的庫存分配（spec 5.1.5.9 §2.3 · 0-設計規格書 §7.14）。
+             舊版是一個唯讀「目前在庫」欄、說明寫「自動取成員最低庫存」，已由 D241 取代：
+             成員的庫存是一顆池，單售與每個組合包各是一個管道；本組合要嘛鎖定件數、要嘛共用沒有被鎖定的庫存量。 -->
         <section class="form-section form-section--outlined">
           <div class="form-section__head">
             <h3 class="form-section__title" data-i18n="cb.stock.title">Stock</h3>
-            <p class="form-section__sub" data-i18n="cb.avail.readonly">Auto · lowest member stock (min of members)</p>
+            <p class="form-section__sub" data-i18n="bd.stock.sub">Lock stock for this bundle, or leave it shared with the member’s other channels</p>
           </div>
           <!-- 庫存版本：用 selection-card（同定價卡），非 radio-card -->
           <div class="field">
@@ -236,18 +253,26 @@
               </button>
             </div>
           </div>
-          <div class="form-grid" style="margin-bottom:0">
+          <div class="form-grid">
             <div class="field" data-when-bd-edition="limited" data-feat="S45" hidden style="margin-bottom:0">
               <div class="field__label"><span data-i18n="cb.total">Total quantity</span> <span class="field__req">*</span></div>
-              <input class="input" value="50">
+              <input class="input" id="bd-total" value="50">
               <div class="field__hint" data-i18n="cb.total.hint">Hard cap · still limited by member stock</div>
             </div>
-            <div class="field" style="margin-bottom:0">
-              <div class="field__label" data-i18n="cb.avail.label">Available now</div>
-              <input class="input" id="bd-available" value="12" readonly>
-              <div class="field__hint" data-i18n="cb.avail.readonly">Auto · lowest member stock (min of members)</div>
+          </div>
+          <div class="salloc salloc--bundle" id="bd-alloc">
+            <div class="salloc__row salloc__row--head">
+              <span></span>
+              <span style="text-align:right" data-i18n="stock.free">Unlocked</span>
+              <span data-i18n="stock.lock">Locked</span>
+              <span style="text-align:right" data-i18n="stock.sellable">Sellable</span>
+            </div>
+            <div class="salloc__row salloc__row--free" id="bd-alloc-total">
+              <span class="salloc__name"><span data-i18n="stock.bundle-min">Bundle sellable = lowest member stock</span></span>
+              <span class="salloc__qty" id="bd-bundle-qty">—</span>
             </div>
           </div>
+          <p class="lctl__note" data-i18n="stock.restock-hint">Restocks land in unlocked stock; locked ones need to lock again</p>
         </section>
 
       </div><!-- /tab-panel price-stock -->
@@ -265,28 +290,31 @@
             <span class="text-sub" id="bd-member-count" style="font-size: var(--fs-12)">(3)</span>
           </div>
           <div class="data-list" id="bd-members">
-            <div class="data-list__row">
+            <div class="data-list__row" data-bd-pid="zine">
               <div class="data-list__row-main">
                 <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html">Pirate Queen zine vol. 02</a> <span class="text-sub">Books · $24.00</span></div></div>
+                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=zine">Pirate Queen zine vol. 02</a> <span class="text-sub">Books · $24.00</span></div></div>
               </div>
-              <div class="data-list__end bd-member-end"><span style="font-size: var(--fs-13)">$24.00</span></div>
+              <div class="data-list__end bd-member-end"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">$24.00</span></div>
             </div>
-            <div class="data-list__row">
+            <div class="data-list__row" data-bd-pid="tee">
               <div class="data-list__row-main">
                 <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html">Kowloon After Dark tee (M)</a> <span class="text-sub">Apparel · $32.00</span></div></div>
+                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=tee">Kowloon After Dark tee (M)</a> <span class="text-sub">Apparel · $32.00</span></div></div>
               </div>
-              <div class="data-list__end bd-member-end"><span style="font-size: var(--fs-13)">$32.00</span></div>
+              <div class="data-list__end bd-member-end"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">$32.00</span></div>
             </div>
-            <div class="data-list__row">
+            <div class="data-list__row" data-bd-pid="movie">
               <div class="data-list__row-main">
                 <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html">Summer Preset Pack</a> <span class="text-sub">Digital · $13.00</span></div></div>
+                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=movie">Summer Preset Pack</a> <span class="text-sub">Digital · $13.00</span></div></div>
               </div>
-              <div class="data-list__end bd-member-end"><span style="font-size: var(--fs-13)">$13.00</span></div>
+              <div class="data-list__end bd-member-end"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">$13.00</span></div>
             </div>
           </div>
+          <!-- D241：沒有被鎖定的庫存量與鎖定量在這裡只顯示，可編輯的那一份在「銷售設定」的庫存卡，
+               同一個數字不做兩個入口。 -->
+          <div class="field__hint mt-8" data-i18n="bd.members.alloc-hint">Lock amounts are edited in Sales settings.</div>
         </section>
 
         <!-- §2.5 成員與變更影響 -->
@@ -294,7 +322,9 @@
           <div class="form-section__head">
             <h3 class="form-section__title" data-i18n="bd.impact.title">Member impact</h3>
           </div>
-          <div class="field__hint" data-i18n="bd.impact.note">Editing a member's price, stock or visibility can affect this bundle's sellable quantity and pricing validity — a sold-out or hidden member makes the bundle unsellable and pulls it from your shop; a member price rise can push the fixed price above members' total.</div>
+          <!-- D241（spec §7.14 組合包成交條件）：舊文案把「下架」與「隱藏」寫成同一件事，
+               隱藏的成員照樣能被組合帶著成交，已由本條取代。 -->
+          <div class="field__hint" data-i18n="bd.impact.member-rule">A member stops this bundle when it is unlisted, off sale, or has nothing left to sell inside this bundle. Hiding it changes nothing — it still sells as part of a bundle. A member price rise can also push the bundle price above the members' total.</div>
         </section>
 
       </div><!-- /tab-panel members -->
@@ -304,38 +334,107 @@
       <!-- 右側常駐欄（跨分頁）：上架設定（可互動、管整個組合，Q25）＋ 組合概況（唯讀）-->
       <aside class="detail-rail">
 
-        <!-- 上架設定（spec 5.1.5.9 §2.3 · D144；選法 2026-07-17 改 radio-list、2026-07-21 改收合式）：
-             三選一 不上架／立刻上架／定時上架，選「定時上架」才展開上架時間。
-             2026-07-27 自主欄移入右欄，比照商品明細（STYLE-DECISIONS Q25：管整個物件、不隸屬任一分頁）。 -->
+        <!-- 上架、顯示與開賣（spec 5.1.5.9 §2.3 · 0-設計規格書 §7.14 · D241）：
+             D241 把舊的「上架設定」三選一拆成三個互相獨立的開關。細節頁的上架列用 switch——
+             東西已經存在了，這裡只剩「現在開著還是關著」，再擺一次三選一等於要創作者重講一次
+             已經做過的決定。三個時間欄一律選填、沒有預設值。
+             仍放右側常駐欄（STYLE-DECISIONS Q25：管整個組合、不隸屬任一分頁）。 -->
         <section class="form-section form-section--outlined">
-          <div class="form-section__head">
-            <h3 class="form-section__title" data-i18n="cp.listing.title">Listing settings</h3>
-          </div>
-          <div class="radio-list radio-list--collapsible" id="bd-listing-mode">
-            <button class="radio-list__trigger" type="button" aria-expanded="false">
-              <span class="radio-list__dot"></span>
-              <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
-              <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
-            </button>
-            <div class="radio-list__options" hidden>
-              <button class="radio-list__item" type="button" data-bd-listing="none">
-                <span class="radio-list__dot"></span>
-                <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-list__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
-              </button>
-              <button class="radio-list__item radio-list__item--active" type="button" data-bd-listing="now">
-                <span class="radio-list__dot"></span>
-                <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
-              </button>
-              <button class="radio-list__item" type="button" data-bd-listing="schedule">
-                <span class="radio-list__dot"></span>
-                <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-list__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
-              </button>
+          <div class="form-section__head form-section__head--actions">
+            <div class="form-section__head-titles">
+              <h3 class="form-section__title" data-i18n="cp.listing.sec-listed">Listing</h3>
+              <p class="form-section__sub" data-i18n="cp.listing.listed-hint">Unlisting stops every channel and kills all links</p>
+            </div>
+            <div class="form-section__head-actions">
+              <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" id="bd-listed" data-i18n-aria-label="cp.listing.sec-listed" aria-label="Listing"></div>
             </div>
           </div>
-          <div class="field" data-bd-listing-fields hidden style="margin-top:12px;margin-bottom:0">
-            <div class="field__label"><span data-i18n="cp.listing.time">Listing time</span> <span class="field__req">*</span></div>
-            <input class="input" type="datetime-local">
-            <div class="field__hint" data-i18n="cp.listing.pending">Auto-downlist &amp; time zone pending spec.</div>
+          <!-- --stack：右側常駐欄只有 300px，兩個時間欄並排會溢出（元件說明要求窄欄明說、不靠猜視窗寬度）。 -->
+          <div class="lctl lctl--stack">
+            <!-- 顯示於商店自己一項（D247；2026-09-04 使用者再裁示：不要外框、與第 2 層對調位置）：
+                 它回答的是「上架之後找不找得到」，緊接在上架那顆總開關後面；排程盒排在它下面。
+                 隱藏時長出來的非公開連結用 .lctl__body（列自己的揭示區），不再用外框把兩者圈起來。 -->
+            <div class="lctl__row">
+              <div class="lctl__head">
+                <div class="lctl__titles">
+                  <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
+                  <p class="lctl__hint" data-i18n="cp.listing.shown-hint">Hidden items stay purchasable via the private link and inside bundles</p>
+                </div>
+                <div class="switch switch--on lctl__control" role="switch" aria-checked="true" tabindex="0" id="bd-shown"></div>
+              </div>
+              <div class="lctl__body" id="bd-shown-body" hidden>
+                  <div class="linkf linkf--stack" data-linkf id="bd-linkf">
+                    <span class="linkf__label" data-i18n="link.private-h">Private link</span>
+                    <div class="linkf__row">
+                      <input class="input linkf__input" readonly value="">
+                      <button class="btn btn--outline btn--sm linkf__act linkf__act--copy" type="button" data-linkf-copy><span data-i18n="link.copy">Copy</span></button>
+                      <button class="btn btn--ghost btn--sm linkf__act" type="button" data-linkf-reset><span data-i18n="link.reset">Reset link</span></button>
+                    </div>
+                    <p class="linkf__hint" data-i18n="link.private-hint">Only people with the link can open it. Use it for internal test orders; it stops working once shown in shop</p>
+                  </div>
+              </div>
+            </div>
+            <div class="lctl__rule"></div>
+            <div class="control-group control-group--plain lctl__derived">
+              <div class="field"><div class="field__label" data-i18n="cp.listing.time">Listing time</div><input class="input" type="datetime-local" id="bd-list-at"></div>
+              <div class="lctl__row">
+                <div class="lctl__head">
+                  <div class="lctl__titles">
+                    <span class="lctl__title" data-i18n="cp.listing.unlist-sched">Unlist at a set time</span>
+                    <p class="lctl__hint" data-i18n="cp.listing.unlist-sched-sub">Unlists automatically at the time you set</p>
+                  </div>
+                  <div class="switch lctl__control" id="bd-unlist-toggle" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+                <div class="lctl__sched" data-bd-unlist-fields hidden>
+                  <div class="field"><div class="field__label"><span data-i18n="cp.listing.unlist">Unlist time</span> <span class="field__req">*</span></div><input class="input" type="datetime-local" id="bd-unlist-at"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="cp.listing.sec-sale">Sale</h3>
+          </div>
+          <div class="lctl lctl--stack">
+            <div class="lctl__row lctl__row--choice">
+              <div class="lctl__body">
+                <div class="radio-list radio-list--collapsible" id="bd-sale-mode">
+                  <button class="radio-list__trigger" type="button" aria-expanded="false">
+                    <span class="radio-list__dot"></span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-list__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
+                    <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
+                  </button>
+                  <div class="radio-list__options" hidden>
+                    <button class="radio-list__item radio-list__item--active" type="button" data-bd-sale-mode="follow">
+                      <span class="radio-list__dot"></span>
+                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-list__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
+                    </button>
+                    <button class="radio-list__item" type="button" data-bd-sale-mode="schedule">
+                      <span class="radio-list__dot"></span>
+                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-list__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="lctl__derived">
+              <div class="field" data-bd-sale-start-field hidden><div class="field__label" data-i18n="cp.listing.sale-start">Sale start</div><input class="input" type="datetime-local" id="bd-sale-open"></div>
+              <div class="lctl__row">
+                <div class="lctl__head">
+                  <div class="lctl__titles">
+                    <span class="lctl__title" data-i18n="cp.listing.saleend-sched">Close sales at a set time</span>
+                    <p class="lctl__hint" data-i18n="cp.listing.saleend-sched-sub">Checkout closes then; the item stays visible</p>
+                  </div>
+                  <div class="switch lctl__control" id="bd-saleend-toggle" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+                <div class="lctl__sched" data-bd-saleend-fields hidden>
+                  <div class="field"><div class="field__label"><span data-i18n="cp.listing.sale-end">Sale end</span> <span class="field__req">*</span></div><input class="input" type="datetime-local" id="bd-sale-close"><p class="field__error" id="bd-sale-window-err" data-i18n="cp.listing.sale-err" hidden>Sale end must be after sale start</p></div>
+                </div>
+              </div>
+            </div>
+            <p class="lctl__note" data-i18n="cp.listing.pending">Time zone &amp; exact timing pending spec.</p>
           </div>
         </section>
 
@@ -345,7 +444,7 @@
             <h3 class="form-section__title" data-i18n="bd.rail.summary">Bundle at a glance</h3>
           </div>
           <div class="kv"><span class="kv__k" data-i18n="cb.pricing">Bundle price</span><span class="kv__v" id="bd-rail-price">$69.00</span></div>
-          <div class="kv"><span class="kv__k" data-i18n="cb.avail.label">Available now</span><span class="kv__v" id="bd-rail-available">12</span></div>
+          <div class="kv"><span class="kv__k" data-i18n="cb.avail.label">Goods in stock</span><span class="kv__v" id="bd-rail-available">12</span></div>
           <div class="kv"><span class="kv__k" data-i18n="bd.members.title">In this bundle</span><span class="kv__v" id="bd-rail-members">3</span></div>
         </section>
 
@@ -375,7 +474,10 @@
 
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
+<!-- D241：狀態與可售量的唯一推導層（spec §7.14）。products-store 會用到它，須先載。 -->
+<script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="js/link-field.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/sticky-actions.js?v=r2.2"></script>
@@ -409,7 +511,7 @@
       const members = document.getElementById('bd-members');
       if (members && bundle.memberItems) {
         members.innerHTML = bundle.memberItems.map(item =>
-          '<div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=' + esc(item.id) + '">' + esc(item.name) + '</a> <span class="text-sub">' + esc(item.meta) + '</span></div></div></div><div class="data-list__end bd-member-end"><span style="font-size: var(--fs-13)">' + esc(item.price) + '</span></div></div>'
+          '<div class="data-list__row" data-bd-pid="' + esc(item.id) + '"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=' + esc(item.id) + '">' + esc(item.name) + '</a> <span class="text-sub">' + esc(item.meta) + '</span></div></div></div><div class="data-list__end bd-member-end"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">' + esc(item.price) + '</span></div></div>'
         ).join('');
         if (window.ztorIcons) window.ztorIcons.applyIcons(members);
       }
@@ -418,10 +520,255 @@
       setText('bd-rail-members', String(memberCount));
       document.title = bundle.name + ' · Bundle detail · Ztor';
     }
-    /* 右欄「可售數」鏡射庫存分頁的唯讀欄位（同一個數字只有一個來源）*/
-    const availInput = document.getElementById('bd-available');
+    /* ══ D241 · 三開關 × 庫存池（spec 0-設計規格書 §7.14）════════════════════════
+       成員可售量、組合可售量、頁首徽章與非公開連結全部問 window.ListingState，本頁不自算。
+       組合記錄：ProductsStore 有這個組合的種子就吃它的三開關欄位，沒有就用預設（上架＋顯示＋
+       不排程）；成員 id 取自成員清單每一列的 data-bd-pid，所以清單與庫存表講的是同一批成員。 */
+    const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
+    const LS = window.ListingState;
+    const store = window.ProductsStore;
     const railAvail = document.getElementById('bd-rail-available');
-    if (availInput && railAvail) railAvail.textContent = availInput.value;
+    const seed = (store && bundle && store.getBundle && store.getBundle(bundle.id)) || null;
+    const bundleModel = {
+      id: (bundle && bundle.id) || 'ultimate-fan-bundle',
+      members: [...document.querySelectorAll('#bd-members [data-bd-pid]')]
+        .map(r => ({ productId: r.getAttribute('data-bd-pid'), qty: 1 })),
+      cap: null,
+      listed: seed ? seed.listed !== false : true,
+      listAt: (seed && seed.listAt) || null,
+      unlistAt: (seed && seed.unlistAt) || null,
+      shown: seed ? seed.shown !== false : true,
+      privateLink: (seed && seed.privateLink) || null,
+      saleStart: (seed && seed.saleStart) || null,
+      saleEnd: (seed && seed.saleEnd) || null,
+      lowThreshold: (seed && seed.lowThreshold) || 0
+    };
+    const allProducts = () => (store && store.all ? store.all() : {});
+    const productOf = pid => (store && store.get ? store.get(pid) : null);
+    const lockErrors = {};
+
+    const allocEl = document.getElementById('bd-alloc');
+    const allocTotalRow = document.getElementById('bd-alloc-total');
+    const bundleQtyEl = document.getElementById('bd-bundle-qty');
+    const totalInput = document.getElementById('bd-total');
+    const limitedEdition = () => {
+      const a = document.querySelector('#bd-edition .selection-card--active');
+      return !!a && a.dataset.bdEdition === 'limited';
+    };
+    /* 不限量掛 data-i18n，切語言時由 applyI18n 自己接手；其餘寫數字。 */
+    function setQty(el, n) {
+      if (!el) return;
+      if (n === Infinity) { el.setAttribute('data-i18n', 'cb.stock.unlimited'); el.textContent = T('cb.stock.unlimited', 'Unlimited'); }
+      else { el.removeAttribute('data-i18n'); el.textContent = String(n); }
+    }
+    /* 一列一個成員：成員名、該商品的沒有被鎖定的庫存量（唯讀）、鎖定給本組合的量（可填）、本組合可售量。
+       只在成員清單變動時重建，數字更新走 refreshAlloc()，免得打字時輸入框被重建、失焦。 */
+    function renderAlloc() {
+      if (!allocEl) return;
+      [...allocEl.querySelectorAll('[data-bd-alloc-row]')].forEach(r => r.remove());
+      bundleModel.members.forEach(m => {
+        const p = productOf(m.productId);
+        const row = document.createElement('div');
+        row.className = 'salloc__row';
+        row.setAttribute('data-bd-alloc-row', m.productId);
+        const nameEl = document.querySelector('#bd-members [data-bd-pid="' + m.productId + '"] .data-list__title a');
+        const label = (nameEl && nameEl.textContent) || (p && p.name) || m.productId;
+        row.innerHTML = '<span class="salloc__name"><a class="card__link" href="product-detail.html?id=' + esc(m.productId) + '">' + esc(label) + '</a></span>'
+          + '<span class="salloc__qty salloc__qty--muted" data-bd-free></span>'
+          + '<span class="salloc__lock"><div class="amount-field amount-field--suffix">'
+          + '<input class="input amount-field__input" inputmode="numeric" data-bd-lock data-i18n-aria-label="stock.lock" aria-label="Locked">'
+          + '<span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></div></span>'
+          + '<span class="salloc__qty" data-bd-sellable></span>'
+          + '<p class="salloc__error" data-i18n="stock.lock-err" hidden>Exceeds unlocked stock</p>';
+        allocEl.insertBefore(row, allocTotalRow);
+        const inp = row.querySelector('[data-bd-lock]');
+        if (inp && p && LS) {
+          const lock = LS.lockOf(p, { bundle: bundleModel.id });
+          inp.value = lock === null ? '' : String(lock);
+        }
+      });
+      if (window.applyI18n) window.applyI18n(allocEl);
+      refreshAlloc();
+    }
+    /* 數字、錯誤態、頁首徽章與右欄鏡射：組合可售量一律問 ListingState.bundleQty()。 */
+    function refreshAlloc() {
+      if (!LS) return;
+      const cap = totalInput ? parseFloat(totalInput.value) : NaN;
+      bundleModel.cap = (limitedEdition() && !isNaN(cap)) ? cap : null;
+      bundleModel.members.forEach(m => {
+        const p = productOf(m.productId);
+        const row = allocEl && allocEl.querySelector('[data-bd-alloc-row="' + m.productId + '"]');
+        const listRow = document.querySelector('#bd-members [data-bd-pid="' + m.productId + '"]');
+        const free = p ? LS.freeQty(p) : 0;
+        const lock = p ? LS.lockOf(p, { bundle: bundleModel.id }) : null;
+        if (row) {
+          setQty(row.querySelector('[data-bd-free]'), free);
+          setQty(row.querySelector('[data-bd-sellable]'), p ? LS.channelQty(p, { bundle: bundleModel.id }) : 0);
+          const inp = row.querySelector('[data-bd-lock]');
+          const max = p ? LS.validateLock(p, { bundle: bundleModel.id }, 0).max : 0;
+          if (inp) inp.placeholder = (max === Infinity) ? '' : T('stock.lock-max', 'Up to {n}').replace('{n}', max);
+          const bad = !!lockErrors[m.productId];
+          row.classList.toggle('salloc__row--error', bad);
+          const err = row.querySelector('.salloc__error');
+          if (err) err.hidden = !bad;
+          if (inp) { if (bad) inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid'); }
+        }
+        /* 成員清單只顯示、不重複提供編輯：同一個數字不做兩個入口。 */
+        if (listRow) {
+          setQty(listRow.querySelector('[data-bd-free]'), free);
+          const lockEl = listRow.querySelector('[data-bd-lock]');
+          if (lockEl) { if (lock === null) { lockEl.removeAttribute('data-i18n'); lockEl.textContent = '—'; } else setQty(lockEl, lock); }
+        }
+      });
+      const qty = LS.bundleQty(bundleModel, allProducts());
+      setQty(bundleQtyEl, qty);
+      if (railAvail) setQty(railAvail, qty);
+      refreshBadges(qty);
+    }
+    /* 頁首徽章：主徽章走 deriveFlags（跳過 hidden 那一層），「已隱藏」另掛一顆。 */
+    function refreshBadges(qty) {
+      if (!LS) return;
+      const f = LS.deriveFlags(bundleModel, { qty: qty, lowThreshold: bundleModel.lowThreshold });
+      const badge = document.getElementById('bd-status-badge');
+      if (badge) {
+        badge.className = LS.badgeClass(f.status);
+        const sp = badge.querySelector('span');
+        const key = LS.STATUS_META[f.status].i18n;
+        if (sp) { sp.setAttribute('data-i18n', key); sp.textContent = T(key, f.status); }
+      }
+      const hidden = document.getElementById('bd-hidden-badge');
+      if (hidden) hidden.hidden = !f.hidden;
+    }
+    /* 切語言後把「最多 N」這種由 JS 寫進去的字重算一次（data-i18n 的部分 applyI18n 自己會接手）。 */
+    document.addEventListener('i18n:applied', () => refreshAlloc());
+    /* 鎖定量：清空＝取消鎖定（回去共用沒有被鎖定的庫存量）；填數字＝鎖定模式（含 0）。
+       超過上限就不寫進池——寫了沒有被鎖定的庫存量會被吃掉，下一次校驗的上限就跟著失準。 */
+    if (allocEl) allocEl.addEventListener('input', e => {
+      const inp = e.target.closest('[data-bd-lock]');
+      if (!inp || !LS) return;
+      const host = inp.closest('[data-bd-alloc-row]');
+      const pid = host && host.getAttribute('data-bd-alloc-row');
+      const p = pid && productOf(pid);
+      if (!p) return;
+      const raw = inp.value.trim();
+      if (raw === '') { p.pool.locks.bundles[bundleModel.id] = null; delete lockErrors[pid]; }
+      else {
+        const n = Math.floor(Number(raw));
+        const v = (isNaN(n) || n < 0) ? { ok: false } : LS.validateLock(p, { bundle: bundleModel.id }, n);
+        if (v.ok) { p.pool.locks.bundles[bundleModel.id] = n; delete lockErrors[pid]; }
+        else lockErrors[pid] = true;
+      }
+      refreshAlloc();
+    });
+
+    /* ── 三個開關（互相獨立，不互相蘊含）───────────────────────────────── */
+    const listedSwitch = document.getElementById('bd-listed');
+    const shownSwitch = document.getElementById('bd-shown');
+    const shownBody = document.getElementById('bd-shown-body');
+    const linkfEl = document.getElementById('bd-linkf');
+    function paintSwitch(el, on) {
+      if (!el) return;
+      el.setAttribute('aria-checked', on ? 'true' : 'false');
+      el.classList.toggle('switch--on', on);
+    }
+    function syncShown() {
+      paintSwitch(shownSwitch, bundleModel.shown);
+      if (shownBody) shownBody.hidden = bundleModel.shown;
+      if (!bundleModel.shown) {
+        /* 切成隱藏才有非公開連結；切回顯示時作廢（§7.14）。 */
+        if (!bundleModel.privateLink && LS) bundleModel.privateLink = LS.privateLinkFor(bundleModel.id);
+        if (window.linkField && linkfEl) window.linkField.setValue(linkfEl, bundleModel.privateLink || '');
+      } else {
+        bundleModel.privateLink = null;
+        if (window.linkField && linkfEl) window.linkField.setValue(linkfEl, '');
+      }
+    }
+    function bindSwitch(el, read, write) {
+      if (!el) return;
+      const flip = () => { write(!read()); };
+      el.addEventListener('click', flip);
+      el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
+    }
+    bindSwitch(listedSwitch, () => bundleModel.listed, on => {
+      bundleModel.listed = on;
+      paintSwitch(listedSwitch, on);
+      refreshAlloc();
+    });
+    bindSwitch(shownSwitch, () => bundleModel.shown, on => {
+      bundleModel.shown = on;
+      syncShown();
+      refreshAlloc();
+    });
+    if (linkfEl) linkfEl.addEventListener('linkfield:reset', e => {
+      if (window.linkField && LS) window.linkField.setValue(e.detail.root, LS.resetPrivateLink(bundleModel));
+    });
+
+    /* 三個時間欄都選填、沒有預設值；唯一校驗＝停售不得早於或等於開賣。 */
+    const listAtEl = document.getElementById('bd-list-at');
+    const unlistAtEl = document.getElementById('bd-unlist-at');
+    const saleOpenEl = document.getElementById('bd-sale-open');
+    const saleCloseEl = document.getElementById('bd-sale-close');
+    const saleWinErr = document.getElementById('bd-sale-window-err');
+    const local = v => (v ? String(v).slice(0, 16) : '');
+    if (listAtEl) listAtEl.value = local(bundleModel.listAt);
+    if (unlistAtEl) unlistAtEl.value = local(bundleModel.unlistAt);
+    if (saleOpenEl) saleOpenEl.value = local(bundleModel.saleStart);
+    if (saleCloseEl) saleCloseEl.value = local(bundleModel.saleEnd);
+    function syncTimes() {
+      bundleModel.listAt = (listAtEl && listAtEl.value) || null;
+      bundleModel.unlistAt = (unlistAtEl && unlistAtEl.value) || null;
+      bundleModel.saleStart = (saleOpenEl && saleOpenEl.value) || null;
+      bundleModel.saleEnd = (saleCloseEl && saleCloseEl.value) || null;
+      if (LS && saleWinErr) saleWinErr.hidden = LS.validateSaleWindow(bundleModel.saleStart, bundleModel.saleEnd).ok;
+      refreshAlloc();
+    }
+    [listAtEl, unlistAtEl, saleOpenEl, saleCloseEl].forEach(el => { if (el) el.addEventListener('input', syncTimes); });
+
+    /* 開賣二選一（D245）：立即開賣＝不問開賣時間；定時開賣才露出開賣時間欄。
+       進頁時由資料反推——已經排定開賣時間的組合，主決定就是「定時開賣」。 */
+    const bdSm = document.getElementById('bd-sale-mode');
+    const bdSaleStartField = document.querySelector('[data-bd-sale-start-field]');
+    let bdSaleMode = bundleModel.saleStart ? 'schedule' : 'follow';
+    function syncBdSaleMode() { if (bdSaleStartField) bdSaleStartField.hidden = bdSaleMode !== 'schedule'; }
+    if (bdSm) {
+      bdSm.querySelectorAll('.radio-list__item').forEach(b => {
+        b.classList.toggle('radio-list__item--active', b.dataset.bdSaleMode === bdSaleMode);
+      });
+      if (window.ZtorRadioList) window.ZtorRadioList.syncTrigger(bdSm);
+      bdSm.addEventListener('radio-list:change', e => {
+        bdSaleMode = e.detail.item.dataset.bdSaleMode || 'follow';
+        syncBdSaleMode();
+        /* 切回「立即開賣」＝把排定的開賣時間收掉，畫面與資料才不會各說各話。 */
+        if (bdSaleMode === 'follow' && saleOpenEl) { saleOpenEl.value = ''; syncTimes(); }
+      });
+    }
+    syncBdSaleMode();
+
+    /* 定時下架／定時停售（D246）：開關關著＝不排這個時間；進頁時由資料反推。 */
+    function wireBdSchedToggle(toggleId, fieldsSel, inputEl) {
+      const t = document.getElementById(toggleId);
+      const f = document.querySelector(fieldsSel);
+      if (!t || !f) return;
+      const paint = on => {
+        t.setAttribute('aria-checked', on ? 'true' : 'false');
+        t.classList.toggle('switch--on', on);
+        f.hidden = !on;
+      };
+      paint(!!(inputEl && inputEl.value));
+      const flip = () => {
+        const on = t.getAttribute('aria-checked') !== 'true';
+        paint(on);
+        if (!on && inputEl) { inputEl.value = ''; syncTimes(); }
+      };
+      t.addEventListener('click', flip);
+      t.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
+    }
+    wireBdSchedToggle('bd-unlist-toggle', '[data-bd-unlist-fields]', unlistAtEl);
+    wireBdSchedToggle('bd-saleend-toggle', '[data-bd-saleend-fields]', saleCloseEl);
+
+    paintSwitch(listedSwitch, bundleModel.listed);
+    syncShown();
+    renderAlloc();
 
     /* 組合價格（D103）：base 自動（唯讀）＋折扣 %；折後＝base×(1−%)。base 為 demo 靜態值（成員加總）*/
     const bdBase = bundle ? bundle.priceAmount : 69.00;
@@ -456,7 +803,9 @@
     if (eGrid) eGrid.querySelectorAll('[data-bd-edition]').forEach(btn => btn.addEventListener('click', () => {
       eGrid.querySelectorAll('[data-bd-edition]').forEach(b => b.classList.toggle('selection-card--active', b === btn));
       document.querySelectorAll('[data-when-bd-edition]').forEach(el => el.hidden = el.dataset.whenBdEdition !== btn.dataset.bdEdition);
+      refreshAlloc();   /* 限量硬上限會壓低組合可售量（§7.14）*/
     }));
+    if (totalInput) totalInput.addEventListener('input', refreshAlloc);
 
     /* 販售排程 toggle */
     const saleToggle = document.getElementById('bd-sale-toggle');
@@ -471,14 +820,6 @@
       saleToggle.addEventListener('click', flip);
       saleToggle.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
     }
-
-    /* 上架設定 radio-list（收合式）：選「定時上架」才展開上架時間欄（spec 5.1.5.9 §2.3 · D144）。
-       開合與選中狀態由 partials/radio-list.js 統一處理。 */
-    const bdLm = document.getElementById('bd-listing-mode');
-    if (bdLm) bdLm.addEventListener('radio-list:change', e => {
-      const f = document.querySelector('[data-bd-listing-fields]');
-      if (f) f.hidden = e.detail.item.dataset.bdListing !== 'schedule';
-    });
 
     const panel = document.getElementById('bd-preview');
     if (panel) {

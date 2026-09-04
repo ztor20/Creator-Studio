@@ -20,10 +20,20 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
    openForProduct(name), close }. hooks: { onCreate(session) }.
    UI chrome = data-i18n; sample item/ticket lists are literals. */
 (function () {
+  /* 2026-09-03（D240 一物一碼）：清單多一顆組合商品。組合下單時展開成成員原子商品的
+     領取單位（成員數量 × 組合數量），組合本身不產生領取碼——所以加進場次的是它的成員，
+     選品邏輯不變（仍然選「一個組合」），只是要在畫面上先講清楚會拆成幾件。
+     `members` 只餵下方的展開提示，不進 selected（選的還是組合本身）。 */
   var PRODUCTS = [
     { id: 'zine', kind: 'product', name: 'Pirate Queen zine vol. 02', meta: 'Books · 40 sold' },
     { id: 'tee',  kind: 'product', name: 'Kowloon After Dark tee · M / L', meta: 'Apparel · 22 sold' },
-    { id: 'lp',   kind: 'product', name: 'Kowloon After Dark vinyl LP', meta: 'Music · numbered' }
+    { id: 'lp',   kind: 'product', name: 'Kowloon After Dark vinyl LP', meta: 'Music · numbered' },
+    { id: 'bundle-launch', kind: 'product', name: 'Launch night bundle',
+      meta: 'Bundle · cap ×3 + vinyl ×1 picked up on-site',
+      members: [
+        { name: 'Kowloon After Dark six-panel cap', qty: 3 },
+        { name: 'Kowloon After Dark vinyl · numbered 1/50', qty: 1 }
+      ] }
   ];
   var TICKETS = [
     { id: 'sign', kind: 'ticket', name: 'Signing session · GA entry', meta: 'Taipei signing · on-site entry' },
@@ -100,6 +110,9 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
           </div>
           <div class="combobox__menu" data-pks-menu hidden></div>
         </div>
+        <!-- 組合商品的展開提示（D240 裁決二）：加進來的是組合，現場核銷的是它的成員，
+             一個成員一個領取碼。只講會拆成什麼，不改選品——成員不是各自的可選項目。 -->
+        <div data-pks-bundles hidden></div>
       </section>
     </div>
 
@@ -147,6 +160,27 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       });
       if (window.ztorIcons) window.ztorIcons.applyIcons(field);
     }
+    /* 已選項目裡的組合商品：列出它會拆成哪幾個成員的領取單位。 */
+    function renderBundles() {
+      var box = modal && modal.querySelector('[data-pks-bundles]');
+      if (!box) return;
+      var bundles = selected.map(itemById).filter(function (it) { return it && it.members && it.members.length; });
+      if (!bundles.length) { box.hidden = true; box.innerHTML = ''; return; }
+      var tpl = (window.i18nT && window.i18nT('pks.bundle.note')) ||
+                'Splits into {n} member units — each has its own pickup code and is redeemed on its own.';
+      box.hidden = false;
+      box.innerHTML = bundles.map(function (it) {
+        /* 件數＝成員數量加總（成員 qty × 組合數量），不是成員種類數 */
+        var units = it.members.reduce(function (n, m) { return n + (m.qty || 1); }, 0);
+        var lines = it.members.map(function (m) {
+          return esc(m.name) + ' ×' + (m.qty || 1);
+        }).join('<br>');
+        return '<p class="field__hint" style="margin-top:var(--sp-12)"><b>' + esc(it.name) + '</b> · ' +
+               esc(tpl.replace('{n}', units)) + '<br>' + lines + '</p>';
+      }).join('');
+    }
+    document.addEventListener('i18n:applied', function () { if (modal) renderBundles(); });
+
     function renderMenu() {
       var menu = modal.querySelector('[data-pks-menu]');
       var q = (modal.querySelector('[data-pks-search]').value || '').trim().toLowerCase();
@@ -174,8 +208,8 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     function openMenu() { renderMenu(); var m = modal.querySelector('[data-pks-menu]'); if (m) m.hidden = false; setExpanded(true); }
     function closeMenu() { var m = modal.querySelector('[data-pks-menu]'); if (m) m.hidden = true; setExpanded(false); }
     function setExpanded(on) { var s = modal.querySelector('[data-pks-search]'); if (s) s.setAttribute('aria-expanded', on ? 'true' : 'false'); }
-    function addItem(id) { if (id && selected.indexOf(id) < 0) selected.push(id); var s = modal.querySelector('[data-pks-search]'); if (s) s.value = ''; renderChips(); renderMenu(); syncCreateEnabled(); }
-    function removeItem(id) { var i = selected.indexOf(id); if (i >= 0) selected.splice(i, 1); renderChips(); renderMenu(); syncCreateEnabled(); }
+    function addItem(id) { if (id && selected.indexOf(id) < 0) selected.push(id); var s = modal.querySelector('[data-pks-search]'); if (s) s.value = ''; renderChips(); renderMenu(); renderBundles(); syncCreateEnabled(); }
+    function removeItem(id) { var i = selected.indexOf(id); if (i >= 0) selected.splice(i, 1); renderChips(); renderMenu(); renderBundles(); syncCreateEnabled(); }
     /* 兩步各自檢查自己的必填：step 1 名稱＋地點＋時間先後，step 2 至少 1 個項目
        （D112 無草稿態）。掃碼密碼自 2026-08-01 起是選填，不進這份檢查。 */
     function syncCreateEnabled() {
@@ -294,7 +328,9 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       lastFocused = document.activeElement;
       var isEdit = titleKey === 'pks.title.edit';
       updateTimeErr();
-      selected = preselectId ? [preselectId] : [];
+      /* 編輯既有場次＝台北簽書會那一場，項目已經選好（含一顆組合商品，用來示範
+         「組合會拆成成員各自核銷」的提示）；建立新場次則從空的開始。 */
+      selected = preselectId ? [preselectId] : (isEdit ? ['zine', 'tee', 'bundle-launch'] : []);
       var search = modal.querySelector('[data-pks-search]');
       if (search) search.value = '';
       /* 掃碼密碼預先產生：創作者不想管就直接下一步；要自訂再改 */
@@ -304,6 +340,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (isEdit) modal.querySelector('[data-pks-url]').value = 'ztor.app/scan/tpe-signing-7f3a2';
       modal.querySelector('[data-pks-create]').setAttribute('data-i18n', isEdit ? 'pks.save' : 'pks.create');
       renderChips();
+      renderBundles();
       closeMenu();
       setStep(1);
       var title = modal.querySelector('#pickup-dialog-title');

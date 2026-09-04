@@ -106,3 +106,39 @@
   min-width: 0;
   max-width: 190px;
 }
+
+/* --stats 圖例（2026-09-01，項目詳情「方案統計」）：一列除了名稱與佔比，還要帶
+   售出份數與累積金額。上面那條 190px 的上限是為了展示版那格（只有名稱＋百分比、
+   環旁只剩一小條寬度）；這裡欄位多一倍，卡也寬得多，所以解掉上限讓它吃滿。
+   數字欄一律不縮（`flex: none`）、等寬數字，三列的小數點才對得齊；
+   名稱那一欄仍是唯一會被壓縮的（`.split-bar__label` 的 flex: 1）。 */
+.donut-mix__legend--stats {
+  flex: 1 1 auto;
+  max-width: none;
+}
+.donut-mix__legend--stats .split-bar__legend { gap: var(--sp-10); }
+.donut-mix__legend--stats .split-bar__row { gap: var(--sp-12); }
+.donut-mix__amt {
+  flex: none;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* 欄名那一列：同一組間距、墨色與字級降一階，數字才知道自己是什麼。 */
+.donut-mix__legend--stats .split-bar__row--head,
+.donut-mix__legend--stats .split-bar__row--head .split-bar__label,
+.donut-mix__legend--stats .split-bar__row--head .split-bar__pct {
+  color: var(--muted-foreground);
+  font-size: var(--fs-12);
+}
+/* 欄名列沒有色點，用一個等寬的空位佔住，名稱才跟底下幾列對齊。 */
+.donut-mix__legend--stats .split-bar__row--head .split-bar__dot {
+  background: transparent;
+}
+
+/* 窄畫面環與圖例上下疊（2026-09-01）：環 150px ＋ 四欄數字在 480px 以下並排會把
+   方案名擠到剩幾個字。 */
+@media (max-width: 767px) {
+  .donut-mix--stack { flex-direction: column; align-items: stretch; }
+  .donut-mix--stack .donut-mix__ringwrap { align-self: center; }
+}
