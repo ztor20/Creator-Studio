@@ -13,12 +13,10 @@
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/combobox.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<!-- 墓碑 2026-09-02（D233）：tabs／section-nav／combobox／tag-input／chip／data-list 六支
+     隨 bookyay 分頁一起退場——這一頁回到只有基本資料一頁，沒有分頁列、沒有匯入器、
+     沒有已匯入名單。匯入請走 admin-creator-events.html。 -->
+<link rel="stylesheet" href="ds-components/avatar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/header.css?v=r2.2">
@@ -34,13 +32,8 @@
      頁首（麵包屑、名稱、動作）跟著同一條邊界，否則會變成上寬下窄的偏頭版面。 */
   .cd-page { max-width: 880px; }   /* 自己的 class，不覆寫共用的 .page */
 
-  /* 頁首身分區 */
-  .cd-ava {
-    width: 64px; height: 64px; border-radius: 50%;
-    display: grid; place-items: center; flex: none;
-    background: color-mix(in srgb, var(--primary) 16%, var(--muted));
-    color: var(--foreground); font-size: var(--fs-22);
-  }
+  /* 頁首身分區。墓碑 2026-09-02：`.cd-ava` 已 promote 成 `ds-components/avatar.css`
+     的 `.ztor-avatar--lg`（值一字未改），markup 改吃元件 class。 */
   .cd-facts { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 6px; color: var(--muted-foreground); font-size: var(--fs-13); }
   .cd-facts__dot { opacity: .5; }
 
@@ -55,23 +48,15 @@
   .cd-ro__k { font-size: var(--fs-12); color: var(--muted-foreground); }
   .cd-ro__v { font-size: var(--fs-14); }
 
-  /* bookyay 分頁的匯入工具列 */
-  .cd-import { display: flex; align-items: center; gap: 12px; }
-  .cd-import .combobox { flex: 1; min-width: 0; max-width: 420px; }
-  .cd-import__field { cursor: pointer; }
-  .cd-import__ph { color: var(--muted-foreground); font-size: var(--fs-13); padding: 0 2px; }
-  .cd-import__caret { flex: none; margin-left: auto; color: var(--muted-foreground); align-self: center; }
-  .cd-import__check { flex: none; margin-left: auto; display: grid; place-items: center; color: var(--primary); }
-  .cd-opt[disabled] { cursor: default; }
-  .cd-opt[disabled] .combobox__opt-name { color: var(--muted-foreground); }
-  .cd-flag { flex: none; margin-left: auto; align-self: center; }
+  /* 已匯入活動的唯讀事實（D233）：這一頁不再做匯入，只回答「搬過幾場」並給一條路過去。
+     自己一行、不擠進上面那排 `·` 分隔的身分資訊——那一排講的是「這位是誰」，
+     這一行講的是「他在創作者活動管理頁的進度」，兩件事。 */
+  .cd-imported { margin-top: 10px; font-size: var(--fs-13); }
 
-  .cd-listhead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 28px 0 8px; }
-  .cd-listhead__t { font-size: var(--fs-14); }
-  .cd-listhead__n { font-size: var(--fs-13); color: var(--muted-foreground); }
-  .cd-list .data-list__row { padding-left: 0; padding-right: 0; }
+  /* 墓碑 2026-09-02（D233）：cd-import 那一組九條（下拉多選匯入器與已匯入名單的頁面級
+     排版，class 前綴 cd-import／cd-opt／cd-flag／cd-listhead／cd-list）隨 bookyay 分頁退場。 */
 
-  /* 分頁底部的動作列。不用 .sticky-actions：內嵌模式（?embed=1）會把它隱藏，
+  /* 頁底的動作列。不用 .sticky-actions：內嵌模式（?embed=1）會把它隱藏，
      而這一頁正是要被 detail-sheet 內嵌的那一頁。 */
   .cd-actions { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border-soft); }
   .cd-saved { margin-right: auto; color: var(--muted-foreground); font-size: var(--fs-13); }
@@ -94,7 +79,9 @@
 
       <!-- 查無此 creator：不靜默換一筆真實存在的（沿用 5.1.6.3 的同一條規則） -->
       <div class="empty-card" id="cd-unknown" hidden>
-        <div class="empty-card__icon"><i data-lucide="user-x" class="ztor-icon"></i></div>
+        <!-- 2026-09-02 順手修：原本寫 user-x，registry 沒有這個 key，實際渲染成空白。
+             改用既有的 alert-circle（收尾驗收的「icon 接線」項）。 -->
+        <div class="empty-card__icon"><i data-lucide="alert-circle" class="ztor-icon"></i></div>
         <h2 class="empty-card__title" data-i18n="cd.unknown.title">Creator not found</h2>
         <p class="empty-card__text" data-i18n="cd.unknown.desc">This creator no longer exists, or the link is wrong.</p>
         <a class="btn btn--outline" href="creators.html" data-i18n="cd.unknown.back">Back to Creator Management</a>
@@ -104,7 +91,7 @@
         <!-- 頁首：這一位是誰、什麼狀態，以及兩個離開這一頁的去處 -->
         <div class="page-intro">
           <div class="page-intro__lead">
-            <span class="cd-ava" data-cd-ava aria-hidden="true">?</span>
+            <span class="ztor-avatar ztor-avatar--lg" data-cd-ava aria-hidden="true">?</span>
             <div>
               <h1 class="page-intro__title" data-cd-name></h1>
               <div class="cd-facts">
@@ -114,6 +101,10 @@
                 <span class="cd-facts__dot">·</span>
                 <span data-cd-status></span>
               </div>
+              <!-- F1 已匯入活動（D233）：唯讀事實一行，0 場也照樣顯示（藏起來會讓
+                   「還沒搬過」讀成「這一位沒有這件事」）。點進創作者活動管理頁並帶本 creator
+                   識別，落地就選好人，不必在那一頁重新搜尋。 -->
+              <p class="cd-imported"><a class="card__link" data-cd-imported href="admin-creator-events.html"></a></p>
             </div>
           </div>
           <div class="page-intro__actions">
@@ -122,18 +113,12 @@
           </div>
         </div>
 
-        <!-- 分頁：基本資料｜bookyay 活動（2026-08-26：橫排 tabs 改成左側分節導覽 section-nav，
-             與 product-detail／series-detail／settings 同一套骨架，統一詳情頁的分節控制項；
-             .tab-panel／data-panel 切換邏輯不變，tabs.css 仍保留供 .tab-panel 顯隱規則） -->
-        <div class="section-nav-layout mt-24">
-          <nav class="section-nav" role="tablist" id="cd-tabs" data-tabs aria-label="Creator detail sections">
-            <button class="section-nav__item section-nav__item--active" role="tab" aria-selected="true" data-tab="basic" data-i18n="cd.tab.basic">Details</button>
-            <button class="section-nav__item" role="tab" aria-selected="false" data-tab="events"><span data-i18n="cd.tab.events">bookyay events</span> <span class="section-nav__count" data-cd-count>0</span></button>
-          </nav>
-          <div class="section-nav__body">
-
-        <!-- ── 分頁一 · 基本資料 ─────────────────────────────────── -->
-        <section class="tab-panel tab-panel--active cd-panel" data-panel="basic">
+        <!-- 墓碑 2026-09-02（D233 裁決一）：這裡原本是「基本資料｜bookyay 活動」兩個分頁
+             （`.section-nav-layout` ＋ `.section-nav`）。bookyay 匯入整段搬到獨立頁
+             創作者活動管理（`admin-creator-events.html`，規格 5.1.0.6），這一頁回到只有基本資料
+             一頁，**分頁列一併拿掉**——一個分頁的分頁列是在問一個沒有第二個選項的問題。
+             頁首那一行「已匯入 M 場活動」是這一頁留下的唯一相關內容（唯讀事實＋連結）。 -->
+        <section class="cd-panel">
 
           <!-- Wave 3 C-3（2026-08-28 使用者裁決）：這兩段原本直接落在星空上，只靠
                border-top 分隔，站上其餘表單頁的 .form-section 都是玻璃卡（--outlined）
@@ -158,7 +143,7 @@
               <label class="field">
                 <span class="field__label" data-i18n="creators.form-handle">Shop URL</span>
                 <input class="input" type="text" id="cd-handle" data-i18n-placeholder="creators.form-handle-ph" placeholder="denise">
-                <span class="field__hint" id="cd-handle-prev">ztor.com/shop/…</span>
+                <span class="field__hint" id="cd-handle-prev">ztor.com/shop/&hellip;</span>
               </label>
               <label class="field">
                 <span class="field__label"><span data-i18n="creators.form-phone">Phone</span> <span class="text-sub" data-i18n="creators.form-optional">(optional)</span></span>
@@ -173,40 +158,6 @@
             <button class="btn btn--primary" type="button" data-cd-save data-i18n="creators.form-save">Save</button>
           </div>
         </section>
-
-        <!-- ── 分頁二 · bookyay 活動 ─────────────────────────────── -->
-        <section class="tab-panel cd-panel" data-panel="events">
-
-          <div class="form-section" style="padding-top:28px">
-            <h2 class="form-section__title" data-i18n="cd.imp.title">Import events</h2>
-            <p class="form-section__sub" data-i18n="cd.imp.sub">Events this creator already sells on bookyay (an external ticketing platform) can be pulled into ztor. Pick as many as you like; each bookyay event imports once, so the ones already in can't be picked again.</p>
-
-            <div class="cd-import" style="margin-top:20px">
-              <div class="combobox">
-                <div class="tag-input__field cd-import__field" id="cd-imp-field" role="combobox" tabindex="0"
-                     aria-expanded="false" aria-controls="cd-imp-menu" aria-haspopup="listbox"></div>
-                <div class="combobox__menu" id="cd-imp-menu" role="listbox" aria-multiselectable="true" hidden></div>
-              </div>
-              <button class="btn btn--primary" type="button" id="cd-imp-do" disabled>
-                <i data-lucide="download" class="ztor-icon"></i><span id="cd-imp-do-label">Import</span>
-              </button>
-            </div>
-
-            <div class="cd-listhead">
-              <span class="cd-listhead__t" data-i18n="creators.imp-list">Imported events</span>
-              <span class="cd-listhead__n" id="cd-imp-n"></span>
-            </div>
-            <div class="cd-list" id="cd-imp-list"></div>
-          </div>
-
-          <div class="cd-actions">
-            <span class="cd-saved" data-cd-saved hidden data-i18n="cd.saved">Saved</span>
-            <a class="btn btn--ghost" href="creators.html" data-i18n="creators.create-cancel">Cancel</a>
-            <button class="btn btn--primary" type="button" data-cd-save data-i18n="creators.form-save">Save</button>
-          </div>
-        </section>
-          </div><!-- /section-nav__body -->
-        </div><!-- /section-nav-layout -->
       </div>
 
     </div>
@@ -224,10 +175,10 @@
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script>
-/* Creator 詳情／編輯（Tier 0 Admin · spec 5.1.0 F3 · D224）。
-   兩個分頁：基本資料（Admin 可改店鋪網址與電話）與 bookyay 活動（下拉多選匯入）。
+/* Creator 詳情／編輯（Tier 0 Admin · spec 5.1.0.5 · D224、D233）。
+   單一頁：基本資料（Admin 可改店鋪網址與電話）。
    ztor 帳號唯讀——它是這個 creator 的身分來源，換掉等於換一個人。
-   進來的 handle 由 ?handle= 帶；?tab= 決定落在哪一個分頁（名冊 ⋯ 選單的兩個入口）。
+   進來的 handle 由 ?handle= 帶（2026-09-02 起不再有 ?tab=，分頁已隨 bookyay 匯入退場）。
    儲存寫進 window.ztorCreator.save()，那一層落 localStorage，所以在 detail-sheet 的
    iframe 裡改完，底下的名冊會收到 storage 事件跟著更新。 */
 (function () {
@@ -279,6 +230,12 @@
     document.querySelector('[data-cd-ro-name]').textContent  = c.name;
     document.querySelector('[data-cd-ro-email]').textContent = c.email || '—';
     document.querySelector('[data-cd-ro-created]').textContent = c.created || '—';
+    /* 已匯入 M 場活動（D233 · F1）。M 走 window.ztorCreator.bookyayStats()——名冊的
+       待設定徽章與創作者活動管理頁讀的是同一支，三處數字才對得上。 */
+    var imp = document.querySelector('[data-cd-imported]');
+    imp.textContent = tx('cd.imported-n', 'Imported events: {n}')
+      .replace('{n}', window.ztorCreator.bookyayStats(c).imported);
+    imp.setAttribute('href', 'admin-creator-events.html?creator=' + encodeURIComponent(c.seed || c.handle));
     document.title = c.name + ' · Ztor Creator Studio';
   }
   /* 「前往工作區」＝進這一位的後台。頁面在覆蓋層裡時，detail-sheet.js 會攔下這個
@@ -289,23 +246,9 @@
     renderHead();
   });
 
-  /* ── 分頁（2026-08-26：section-nav 左側分節導覽，做法沿用 product-detail） ─────── */
-  var tabs = document.getElementById('cd-tabs');
-  function showTab(name) {
-    Array.prototype.forEach.call(tabs.querySelectorAll('.section-nav__item'), function (t) {
-      var on = t.getAttribute('data-tab') === name;
-      t.classList.toggle('section-nav__item--active', on);
-      t.setAttribute('aria-selected', on ? 'true' : 'false');
-    });
-    Array.prototype.forEach.call(document.querySelectorAll('.tab-panel'), function (p) {
-      p.classList.toggle('tab-panel--active', p.getAttribute('data-panel') === name);
-    });
-  }
-  tabs.addEventListener('click', function (e) {
-    var t = e.target.closest('.section-nav__item');
-    if (t) showTab(t.getAttribute('data-tab'));
-  });
-  if (qs.get('tab') === 'events') showTab('events');
+  /* 墓碑 2026-09-02（D233）：這裡原本有 showTab()／`?tab=` 分派與整段 bookyay 匯入器
+     （下拉多選、已匯入名單、「繼續設定」深連結）。分頁與匯入都搬到創作者活動管理頁
+     （`admin-creator-events.html`），這一頁只剩基本資料，沒有第二個面板要切。 */
 
   /* ── 基本資料 ─────────────────────────────────────────────── */
   handleInput.value = c.handle;
@@ -317,136 +260,7 @@
   handleInput.addEventListener('input', syncPrev);
   syncPrev();
 
-  /* ── bookyay 活動：下拉多選 → 匯入 ────────────────────────── */
-  var pool    = window.ztorCreator.bookyayEvents || [];
-  var field   = document.getElementById('cd-imp-field');
-  var menu    = document.getElementById('cd-imp-menu');
-  var doBtn   = document.getElementById('cd-imp-do');
-  var doLabel = document.getElementById('cd-imp-do-label');
-  var listEl  = document.getElementById('cd-imp-list');
-  var countEl = document.getElementById('cd-imp-n');
-  var tabCount = document.querySelector('[data-cd-count]');
-  var picked = [];                                   /* 下拉裡勾起來、還沒按匯入 */
-  var done   = (c.bookyayEvents || []).slice();      /* 已匯入（草稿，按儲存才寫回） */
-
-  function ev(id) { return pool.filter(function (e) { return e.id === id; })[0] || null; }
-  function menuOpen() { return !menu.hidden; }
-  function openMenu() { renderMenu(); menu.hidden = false; field.setAttribute('aria-expanded', 'true'); }
-  function closeMenu() { menu.hidden = true; field.setAttribute('aria-expanded', 'false'); }
-
-  function renderField() {
-    field.innerHTML = picked.length
-      ? picked.map(function (id) {
-          var e = ev(id); if (!e) return '';
-          return '<span class="chip chip--active chip--removable">' + esc(e.name)
-            + '<button type="button" class="chip__remove" data-unpick="' + esc(id) + '"'
-            + ' aria-label="' + esc(tx('creators.imp-unpick', 'Remove')) + '">'
-            + '<i data-lucide="x" class="ztor-icon"></i></button></span>';
-        }).join('')
-      : '<span class="cd-import__ph">' + esc(tx('creators.imp-ph', 'Choose events…')) + '</span>';
-    /* 朝下的箭頭：這一格長得像輸入框，實際上是「點開來選」——與站上 .select 同一個訊號。 */
-    field.insertAdjacentHTML('beforeend',
-      '<i data-lucide="chevron-down" class="ztor-icon cd-import__caret" aria-hidden="true"></i>');
-    doBtn.disabled = !picked.length;
-    /* 按鈕自己說要匯入幾場。字帶數量，所以不掛 data-i18n（掛了語言切換會還原成含 {n}
-       的原字），改聽 i18n:applied 自己重寫；英文單複數不同形。 */
-    doLabel.textContent = !picked.length
-      ? tx('creators.imp-do', 'Import')
-      : (picked.length === 1
-          ? tx('creators.imp-do-1', 'Import 1 event')
-          : tx('creators.imp-do-n', 'Import {n} events').replace('{n}', picked.length));
-    icons(field); icons(doBtn);
-  }
-  function renderMenu() {
-    if (!pool.length) {
-      menu.innerHTML = '<div class="combobox__empty">' + esc(tx('creators.imp-none', 'No bookyay events found.')) + '</div>';
-      return;
-    }
-    menu.innerHTML = pool.map(function (e) {
-      var already = done.indexOf(e.id) !== -1;
-      var on = picked.indexOf(e.id) !== -1;
-      /* 選中＝既有的 .is-active 底色 ＋ 右側一個勾；沒有縮圖可放，所以不用
-         __opt-icon 那個 28px 方塊——空著的縮圖槽會讀成「圖還沒載出來」。
-         已匯入的照樣列出但點不動：同一場只會存在一次，濾掉會回答成「查無此活動」，
-         而 Admin 打開下拉常常正是為了確認某一場搬過沒有。 */
-      return '<button type="button" class="combobox__opt cd-opt' + (on ? ' is-active' : '') + '" role="option"'
-        + ' aria-selected="' + (on ? 'true' : 'false') + '" data-pick="' + esc(e.id) + '"'
-        + (already ? ' disabled aria-disabled="true"' : '') + '>'
-        + '<span class="combobox__opt-text">'
-        +   '<span class="combobox__opt-name">' + esc(e.name) + '</span>'
-        +   '<span class="combobox__opt-meta">' + esc(e.date) + ' · ' + esc(e.venue) + '</span>'
-        + '</span>'
-        + (already ? '<span class="badge badge--neutral cd-flag">' + esc(tx('creators.imp-done', 'Imported')) + '</span>'
-                   : (on ? '<span class="cd-import__check"><i data-lucide="check" class="ztor-icon"></i></span>' : ''))
-        + '</button>';
-    }).join('');
-    icons(menu);
-  }
-  function renderList() {
-    countEl.textContent = done.length === 1
-      ? tx('cd.imp.count-1', '1 event')
-      : tx('cd.imp.count-n', '{n} events').replace('{n}', done.length);
-    tabCount.textContent = done.length;
-    if (!done.length) {
-      listEl.innerHTML = '<div class="empty-card">'
-        + '<div class="empty-card__icon"><i data-lucide="ticket" class="ztor-icon"></i></div>'
-        + '<h2 class="empty-card__title">' + esc(tx('creators.imp-empty', 'No events imported yet.')) + '</h2>'
-        + '<p class="empty-card__text">' + esc(tx('cd.imp.empty-desc', 'Pick one or more from the list above and import them.')) + '</p>'
-        + '</div>';
-      icons(listEl);
-      return;
-    }
-    listEl.innerHTML = '<div class="data-list">' + done.map(function (id) {
-      var e = ev(id); if (!e) return '';
-      return '<div class="data-list__row">'
-        + '<div class="data-list__row-main">'
-        +   '<span class="data-list__icon data-list__icon--neutral"><i data-lucide="ticket" class="ztor-icon"></i></span>'
-        +   '<div class="data-list__body">'
-        +     '<div class="data-list__title">' + esc(e.name) + '</div>'
-        +     '<div class="data-list__meta">' + esc(e.date) + ' · ' + esc(e.venue) + '</div>'
-        +   '</div>'
-        + '</div>'
-        + '<span class="badge badge--neutral">' + esc(tx('creators.imp-done', 'Imported')) + '</span>'
-        + '</div>';
-    }).join('') + '</div>';
-    icons(listEl);
-  }
-  function renderImport() { renderField(); renderList(); if (menuOpen()) renderMenu(); }
-
-  field.addEventListener('click', function (e) {
-    /* 這一段會重畫自己，e.target 因此離開文件——外面那個「點空白處關閉」的判斷靠
-       closest() 找祖先，對已離開文件的節點永遠找不到，會誤判成點在外面。攔在這裡。 */
-    e.stopPropagation();
-    var rm = e.target.closest('[data-unpick]');
-    if (rm) {
-      var id = rm.getAttribute('data-unpick');
-      picked = picked.filter(function (x) { return x !== id; });
-      renderImport();
-      return;
-    }
-    menuOpen() ? closeMenu() : openMenu();
-  });
-  field.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); menuOpen() ? closeMenu() : openMenu(); }
-    if (e.key === 'Escape' && menuOpen()) { e.stopPropagation(); closeMenu(); }
-  });
-  menu.addEventListener('click', function (e) {
-    e.stopPropagation();
-    var opt = e.target.closest('[data-pick]');
-    if (!opt || opt.disabled) return;
-    var id = opt.getAttribute('data-pick'), at = picked.indexOf(id);
-    if (at === -1) picked.push(id); else picked.splice(at, 1);
-    renderField(); renderMenu();          /* 選單留著開，一次挑多場 */
-  });
-  document.addEventListener('click', function (e) {
-    if (menuOpen() && !e.target.closest('.cd-import')) closeMenu();
-  });
-  doBtn.addEventListener('click', function () {
-    if (!picked.length) return;
-    picked.forEach(function (id) { if (done.indexOf(id) === -1) done.push(id); });
-    picked = []; closeMenu(); renderImport();
-  });
-  document.addEventListener('i18n:applied', function () { renderImport(); renderHead(); });
+  document.addEventListener('i18n:applied', function () { renderHead(); });
 
   /* ── 儲存 ─────────────────────────────────────────────────── */
   function flash() {
@@ -458,12 +272,11 @@
   Array.prototype.forEach.call(document.querySelectorAll('[data-cd-save]'), function (b) {
     b.addEventListener('click', function () {
       var handle = slug(handleInput.value);
-      if (!handle) { handleInput.reportValidity(); showTab('basic'); return; }
+      if (!handle) { handleInput.reportValidity(); return; }
       /* 店鋪網址平台唯一（D107）——比對時把自己排除在外。 */
       if (list.some(function (x) { return x !== c && x.handle === handle; })) {
         handleInput.setCustomValidity(tx('creators.form-handle-dup', 'This shop URL is already taken.'));
         handleInput.reportValidity();
-        showTab('basic');
         return;
       }
       /* 代管中的就是這一位時，店鋪網址改了要跟著換：localStorage 存的是 handle。 */
@@ -472,8 +285,7 @@
       window.ztorCreator.save(c.seed, {
         handle: handle,
         shop: '/shop/' + handle,
-        phone: (phoneInput.value || '').trim(),
-        bookyayEvents: done.slice()
+        phone: (phoneInput.value || '').trim()
       });
       if (wasActive) window.ztorCreator.set(handle);
       renderHead(); syncPrev(); flash();
@@ -481,7 +293,6 @@
   });
 
   renderHead();
-  renderImport();
   i18n(document.body);
 })();
 </script>

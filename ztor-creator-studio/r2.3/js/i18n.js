@@ -62,10 +62,9 @@
     'crumb.back':       { en: 'Back to previous level', zh: '返回上一層' },
     /* ─── Topbar ───────────────────────────────────────────── */
     'nav.dashboard':    { en: 'Dashboard',  zh: '總覽' },
-    /* 新版總覽（2026-08-31）：一屏不捲的展示版型進正式導覽，掛在原本的總覽下面。
-       兩個語言各照自己的習慣寫——中文「新版總覽」，英文把 new 放在後面括號裡是
-       產品慣例（同一個東西的新版本，不是另一個功能）。 */
-    'nav.dashboard-new':      { en: 'Dashboard (new)',      zh: '新版總覽' },
+    /* 2026-09-01 撤除（墓碑）：`nav.dashboard-new`（新版總覽／Dashboard (new)）。
+       兩份總覽對調之後這一頁排第一格、是進站的預設落點，使用者裁示「去掉新」——
+       它吃回上面那支單純的 `nav.dashboard`，舊的那一份由 `nav.dashboard-old` 標明。 */
     /* 舊版總覽（2026-09-01）：兩份對調之後，原本那一份退到第二格並改名——側欄與它自己
        頁上的麵包屑都吃這一支，兩處說法一致。`nav.dashboard`（單純的「總覽」）留著不動：
        docs/ 底下那幾份儀表板草稿還在用它。 */
@@ -215,6 +214,113 @@
     'admin.ip-bank':      { en: 'Admin IP Bank',      zh: 'Admin IP Bank' },
     'admin.ip-reporting': { en: 'IP Bank Reporting',  zh: 'IP Bank Reporting' },
     'admin.video-review': { en: 'Video publishing review', zh: '影片上架審核' },
+    /* D233（2026-09-02）：Admin 第六個同層目的地，排在 Creator 管理正下方 */
+    /* 2026-09-02（D234）使用者指示改名：活動匯入 → 創作者活動管理。同日第二輪依
+       使用者裁示把名字一路貫徹到底——鍵名由 `admin.event-import` 改成
+       `admin.creator-events`、檔名改 `admin-creator-events.html`、命名空間 `aei.*`
+       改 `ace.*`。留一個以退場名字命名的鍵，下一個讀的人會以為這頁還叫匯入。
+       英文名收成 `Creator events`：側欄上一格是 `Creator Management`，
+       `Creator event management` 與它只差一個字、在側欄還被擠成兩行。 */
+    'admin.creator-events': { en: 'Creator events',     zh: '創作者活動管理' },
+
+    /* ─── 5.1.0.6 創作者活動管理（Creator event management）· D233／D234／D238 ──────
+       跨 creator 的 bookyay 工作台：上面一排卡選人、下面看那一位搬進來的活動。
+       D238 起匯入是自動的（綁定後自動搬進來、持續檢查更新），所以這一組字裡沒有任何
+       「挑幾場搬過來」的說法，只有「搬進來了什麼」與「哪幾場還沒設完」。
+       文案規則（鐵律 12）：頁面標題已經說了這是在管活動，欄位標籤只寫「名稱／日期／
+       場地／狀態」，不再把「活動」兩個字重講一次。 */
+    'ace.lede':           { en: 'Every creator on the platform and their bookyay events. Once a bookyay account is linked, that creator\'s events come across on their own and keep syncing — this is where you see what arrived and which of it still needs bundle set-up.',
+                            zh: '平台上每一位 creator 的 bookyay 活動。綁定 bookyay 帳號之後，活動會自動搬進來並持續檢查更新；這裡看得到搬進來了什麼、哪幾場還沒設定套組。' },
+    /* 墓碑 2026-09-02（同日改版）：版面從「左名單／右內容」改成「上面卡片選人、
+       下面看那一位」，窄畫面把左欄收成一顆按鈕的折疊列隨之整組退場（卡片列本來就
+       在最上面、不擋路），以下 3 把隨之零引用、就地移除——
+         · 折疊鈕的兩個狀態：'ace.list.open'（選擇 creator）、'ace.list.close'（收起清單）
+         · 'ace.list.title'（Creators／Creator）：左欄面板的標題，上午建頁時就沒有掛上
+           任何元素，本輪一併清掉
+       數字＝3 把，與本輪 i18n.js 的實際 diff 一致。 */
+    'ace.search.ph':      { en: 'Search name or shop handle', zh: '搜尋名稱或店鋪識別' },
+    'ace.filter.all':         { en: 'All',            zh: '全部' },
+    'ace.filter.pending':     { en: 'To set up',      zh: '有待設定' },
+    'ace.filter.unlinked':    { en: 'Not linked',     zh: '未綁定' },
+    'ace.unlinked':       { en: 'Not linked',         zh: '未綁定' },
+    /* 兩套：帶數字的整句（`ace.n.*`）給下段標題列的摘要那一行用；只有欄名的
+       （`ace.lbl.*`）給 creator 卡上的小標籤數字用——那裡欄名與值同一行、字級小到
+       只是一組標籤，整句話塞不進去也不該塞。 */
+    'ace.n.imported':     { en: '{n} imported',       zh: '已匯入 {n}' },
+    'ace.n.pending':      { en: '{n} to set up',      zh: '待設定 {n}' },
+    'ace.lbl.imported':   { en: 'Imported',           zh: '已匯入' },
+    'ace.lbl.pending':    { en: 'To set up',          zh: '待設定' },
+    /* 墓碑 2026-09-02（第三輪，使用者裁示「未綁定：不會有匯入與設定資料」「已綁定：
+       有已匯入與待設定，可匯入不一定需要」）：creator 卡的狀態列改成二選一——有數字
+       就放數字、沒數字才放「未綁定」徽章，以下 2 把隨之零引用、就地移除——
+         · 'ace.lbl.importable'（可匯入／To import）：可匯入不再上卡。
+         · 'ace.linked'（已綁定／Linked）：已綁定的卡不再掛徽章（有數字就代表帳號通了；
+           260px 的卡也塞不下徽章＋兩欄英文欄名）。
+       兩個**值**都沒有消失：可匯入仍由 'ace.n.importable'（下段標題列摘要）與
+       'ace.filter.importable'（上方「有待匯入」篩選）承擔，未綁定仍由 'ace.unlinked'
+       在卡上明說。
+       數字＝2 把，與本輪 i18n.js 的實際 diff 一致（本輪無新增鍵）。
+       ⚠ 後續修正（2026-09-02 D238）：上一段「可匯入的值沒有消失」已不再成立——改自動
+       匯入之後那個值本身退場，'ace.n.importable' 與 'ace.filter.importable' 也一起移除，
+       見下方 D238 的墓碑。 */
+    /* 墓碑 2026-09-02（使用者裁示「卡片留這四個資訊就好」）：creator 卡減成四個
+       資訊，最後匯入時間那一行整段撤除，以下 2 把隨之零引用、就地移除——
+         · 'ace.last'（最後匯入 {date}／Last import {date}）
+         · 'ace.last-never'（尚未匯入／Never imported）
+       上游同輪已把這一欄從規格 5.1.0.6 F2 移除（D235）。
+       數字＝2 把，與本輪 i18n.js 的實際 diff 一致（另新增 3 把 `ace.lbl.*`）。 */
+    'ace.nomatch':        { en: 'No creator matches this filter.', zh: '沒有符合這個篩選的 creator。' },
+    'ace.empty.title':    { en: 'No creators yet',    zh: '還沒有任何 creator' },
+    'ace.empty.text':     { en: 'Creators are built in Creator Management. Once one exists, their bookyay events show up here.',
+                            zh: 'creator 在 Creator 管理裡建立。建好之後，他在 bookyay 上的活動就會出現在這裡。' },
+    'ace.empty.cta':      { en: 'Go to Creator Management', zh: '前往 Creator 管理' },
+    'ace.none.title':     { en: 'Pick a creator',     zh: '先選一位 creator' },
+    'ace.none.text':      { en: 'Choose someone above to see the events that came across from bookyay.',
+                            zh: '從上面選一位，看他從 bookyay 搬進來的活動。' },
+    'ace.notfound.title': { en: 'Creator not found',  zh: '找不到這個 creator' },
+    'ace.notfound.text':  { en: 'The link points at a creator that no longer exists. Nobody was opened in its place — pick one above.',
+                            zh: '連結指向的 creator 已經不存在。這裡不會改開另一位，請從上面自行選一位。' },
+    'ace.unlinked.title': { en: 'No bookyay account linked', zh: '尚未綁定 bookyay 帳號' },
+    'ace.unlinked.text':  { en: 'This creator has no bookyay account linked yet. Once it is, their bookyay events come across on their own and keep syncing — nothing has to be moved by hand.',
+                            zh: '這位 creator 還沒有綁定 bookyay 帳號。綁定之後，他在 bookyay 上的活動會自動搬進來，並持續檢查更新，不需要手動搬。' },
+    'ace.unlinked.cta':   { en: 'Link bookyay account', zh: '前往綁定 bookyay 帳號' },
+    'ace.unlinked.todo':  { en: 'Where the linking happens and who does it is still being decided, so this button does nothing yet.',
+                            zh: '在哪裡綁、由誰綁，產品尚未定案，所以這顆按鈕目前不會做任何事。' },
+    'ace.noevents.title': { en: 'Nothing on bookyay', zh: 'bookyay 上沒有這位的活動' },
+    'ace.noevents.text':  { en: 'This creator is linked, but bookyay has nothing selling under their account right now.',
+                            zh: '這位 creator 已經綁定，但目前 bookyay 上沒有掛在他帳號下的活動。' },
+    'ace.col.name':       { en: 'Name',               zh: '名稱' },
+    'ace.col.date':       { en: 'Date',               zh: '日期' },
+    'ace.col.venue':      { en: 'Venue',              zh: '場地' },
+    'ace.col.status':     { en: 'Status',             zh: '狀態' },
+    /* 狀態只剩兩值（D238 自動匯入）：搬進來的每一場不是「待設定套組」就是「已完成」。
+       「已匯入·」那個前綴同輪拿掉——整張表都是已匯入的，每一列再講一次是廢話。 */
+    'ace.status.pending': { en: 'Setup pending',      zh: '待設定套組' },
+    'ace.status.done':    { en: 'Completed',          zh: '已完成' },
+    'ace.continue':       { en: 'Continue set-up',    zh: '繼續設定' },
+    /* 最後檢查 ＋ 重新檢查（D238）。時間是絕對值，格式與資料裡的其他時間戳一致。 */
+    'ace.checked':        { en: 'Last checked {t}',   zh: '最後檢查 {t}' },
+    'ace.checked-never':  { en: 'Not checked yet',    zh: '尚未檢查' },
+    'ace.recheck':        { en: 'Check again',        zh: '重新檢查' },
+    'ace.rechecking':     { en: 'Checking…',          zh: '檢查中…' },
+    'ace.recheck.toast':  { en: 'Checked — nothing new on bookyay', zh: '已重新檢查，bookyay 沒有新的活動' },
+    /* 墓碑 2026-09-02（D238，使用者裁示「綁定以後，會自動匯入，實時檢查更新」）：
+       手動匯入整組退場——表格變唯讀清單、沒有勾選欄也沒有「匯入已選」主鈕，而且
+       自動匯入之後不存在「可匯入」這個狀態。以下 9 把隨之零引用、就地移除——
+         · 勾選：'ace.select-all'（全選可匯入的列）、'ace.select-one'（選取 {name}）
+         · 主鈕三態：'ace.do'（匯入已選）、'ace.do-1'、'ace.do-n'
+         · 匯入回饋：'ace.toast'（已匯入 {n} 場，{k} 場待設定套組）
+         · 「可匯入」這個值的三個說法：'ace.status.importable'（表格狀態徽章）、
+           'ace.filter.importable'（上方「有待匯入」篩選）、'ace.n.importable'
+           （下段標題列摘要）
+       這一次那個**值本身**也消失了（與上一輪「可匯入不上卡、但值還在」不同）：
+       綁定後自動匯入，沒有「還沒搬進來」的活動可以數。
+       數字＝移除 9 把、新增 5 把（'ace.checked'／'.checked-never'／'.recheck'／
+       '.rechecking'／'.recheck.toast'），與本輪 i18n.js 的實際 diff 一致。 */
+    'ace.loading':        { en: 'Loading bookyay…',   zh: '正在讀取 bookyay…' },
+    'ace.error.title':    { en: 'bookyay did not answer', zh: 'bookyay 沒有回應' },
+    'ace.error.text':     { en: 'The event list could not be fetched. What you see is the last successful check.', zh: '這次讀不到活動名錄，畫面上是上一次檢查成功的結果。' },
+    'ace.error.retry':    { en: 'Try again',          zh: '重試' },
     'ipbank.lede':        { en: 'Configure the IP owner and revenue share for every film across the platform.', zh: '設定全平台每部 Film 的 IP Owner 與 revenue share。' },
     'ipbank.add':         { en: 'Add IP entry',       zh: '建立 IP Entry' },
     'ipbank.note':        { en: 'Shares are validated per film. Unallocated share remains with the platform.', zh: '分潤比例會以每部 Film 驗證，未配置比例屬於平台。' },
@@ -327,21 +433,23 @@
     'creators.create':    { en: 'Create creator',      zh: '建立 creator' },
     /* D218／D224 · 編輯 creator（2026-08-24 起是獨立頁 creator-detail.html） */
     'creators.form-save': { en: 'Save',                zh: '儲存' },
-    /* D219 · 編輯 creator 時匯入 bookyay 活動（下拉多選 → 匯入 → 已匯入名單） */
-    'creators.imp-label': { en: 'Import bookyay events', zh: '匯入 bookyay 活動' },
-    'creators.imp-ph':    { en: 'Choose events…',      zh: '選擇活動…' },
-    'creators.imp-do':    { en: 'Import',              zh: '匯入' },
-    'creators.imp-do-1':  { en: 'Import 1 event',      zh: '匯入 1 場活動' },
-    'creators.imp-do-n':  { en: 'Import {n} events',   zh: '匯入 {n} 場活動' },
-    'creators.imp-hint':  { en: "Pick the events already selling on bookyay. Importing pulls them in as this creator's ztor events.", zh: '挑出已經在 bookyay 上賣的活動。匯入後會成為這位 creator 在 ztor 上的活動。' },
-    'creators.imp-none':  { en: 'No bookyay events found.', zh: '找不到 bookyay 活動。' },
-    'creators.imp-list':  { en: 'Imported events',      zh: '已匯入的活動' },
-    'creators.imp-empty': { en: 'No events imported yet.',  zh: '尚未匯入任何活動。' },
-    'creators.imp-done':  { en: 'Imported',            zh: '已匯入' },
-    'creators.imp-unpick':{ en: 'Remove',              zh: '移除' },
+    /* 墓碑 2026-09-02（D233）：bookyay 匯入整段離開 Creator 管理與 Creator 詳情，搬進獨立頁
+       創作者活動管理（`admin-creator-events.html`，鍵在下方 `ace.*`），以下 22 把隨之零引用、就地移除——
+         · 名冊 ⋯ 選單那一項：'creators.action-import'（匯入活動）
+         · 詳情頁的下拉多選匯入器（D219 形態，整組退場）：'creators.imp-label'、'creators.imp-ph'、
+           'creators.imp-hint'、'creators.imp-none'、'creators.imp-list'、'creators.imp-empty'、
+           'creators.imp-unpick'
+         · 那個匯入器的主鈕與其單複數（同組退場）：'creators.imp-do'、'creators.imp-do-1'、
+           'creators.imp-do-n'
+         · 詳情頁的 bookyay 分頁與其區段文案：'cd.tab.basic'、'cd.tab.events'、'cd.imp.title'、
+           'cd.imp.sub'、'cd.imp.count-1'、'cd.imp.count-n'、'cd.imp.empty-desc'
+         · 舊頁的狀態語彙（新頁在 `ace.status.*` 有自己的一組，語意相同但名字歸屬新頁）：
+           'creators.imp-done'、'cd.imp.pending'、'cd.imp.ready'、'cd.imp.continue'
+       只有 'creators.pending-n' 留下——它是名冊列的待設定徽章，那一頁還在用。
+       數字更正（同日）：初版這則墓碑寫「15 把」、清單也漏列 imp-do 三把，與實際 diff 對不上。 */
+    'creators.pending-n': { en: 'To set up: {n}',      zh: '待設定 {n}' },
     /* D224 · Creator 詳情／編輯頁 creator-detail.html */
-    'cd.tab.basic':       { en: 'Details',             zh: '基本資料' },
-    'cd.tab.events':      { en: 'bookyay events',      zh: 'bookyay 活動' },
+    'cd.imported-n':      { en: 'Imported events: {n}', zh: '已匯入 {n} 場活動' },
     'cd.enter':           { en: 'Enter workspace',     zh: '前往工作區' },
     'cd.created':         { en: 'Created {date}',      zh: '建立於 {date}' },
     'cd.saved':           { en: 'Saved',               zh: '已儲存' },
@@ -349,11 +457,6 @@
     'cd.acc.sub':         { en: "This creator's identity comes from the ztor account they registered themselves. It can't be changed here — swapping it means a different person, which is a different creator.", zh: '這位 creator 的身分來自他本人在 ztor 前台註冊的帳號。不可在此變更——換掉等於換一個人，那是建另一個 creator。' },
     'cd.shop.title':      { en: 'Shop and contact',    zh: '商店與聯絡方式' },
     'cd.shop.sub':        { en: 'This is the part Admin can change.', zh: '這一組是 Admin 可以改的。' },
-    'cd.imp.title':       { en: 'Import events',       zh: '匯入活動' },
-    'cd.imp.sub':         { en: 'Events this creator already sells on bookyay (an external ticketing platform) can be pulled into ztor. Pick as many as you like; each bookyay event imports once, so the ones already in can\'t be picked again.', zh: '這位 creator 已經在 bookyay（外部售票平台）上販售的活動，可以整場搬進 ztor。一次可以選多場；同一場只會匯入一次，匯過的在清單裡點不動。' },
-    'cd.imp.count-1':     { en: '1 event',             zh: '1 場' },
-    'cd.imp.count-n':     { en: '{n} events',          zh: '{n} 場' },
-    'cd.imp.empty-desc':  { en: 'Pick one or more from the list above and import them.', zh: '從上面的清單挑一場或多場，按「匯入」搬進 ztor。' },
     'cd.unknown.title':   { en: 'Creator not found',   zh: '找不到這個 creator' },
     'cd.unknown.desc':    { en: 'This creator no longer exists, or the link is wrong.', zh: '這個 creator 已經不存在，或連結有誤。' },
     'cd.unknown.back':    { en: 'Back to Creator Management', zh: '回到 Creator 管理' },
@@ -367,7 +470,6 @@
     'creators.status-disabled': { en: 'Disabled',       zh: '已停用' },
     'creators.row-actions': { en: 'More actions',       zh: '更多操作' },
     'creators.action-edit':    { en: 'Edit',            zh: '編輯' },
-    'creators.action-import':  { en: 'Import events',   zh: '匯入活動' },
     'creators.action-disable': { en: 'Disable',         zh: '停用' },
     'creators.action-enable':  { en: 'Enable',          zh: '啟用' },
     'creators.search-ph':  { en: 'Search name or handle', zh: '搜尋名稱或店鋪識別' },
@@ -415,7 +517,7 @@
     'nav.ip-detail-sub':      { en: 'Single-IP page · rental + bidding', zh: '單一 IP 頁面 · 租用與競標' },
 
     'nav.manage-eshop':       { en: 'E-Shop',                zh: '電子商店' },
-    'nav.manage-eshop-sub':   { en: 'Products · Bundles · Auctions', zh: '商品 · 組合 · 競標' },
+    'nav.manage-eshop-sub':   { en: 'Products · Bundles · Auctions', zh: '單售 · 組合 · 拍賣' },
     'nav.orders':             { en: 'Orders',                zh: '訂單管理' },
     'nav.store-settings':     { en: 'Store settings',        zh: '商店設定' },
     'nav.store-settings-sub': { en: 'Shop appearance, payment & shipping', zh: '商店外觀 · 付款 · 出貨' },
@@ -731,7 +833,12 @@
     'canvas.donut.fans':          { en: 'fans',                      zh: '位粉絲' },
     /* 與「收入分布」成對，所以英文也成對用 mix，不寫 tiers——兩張輪播講的是
        同一件事的兩面（錢從哪來、人由誰組成）。 */
+    /* 2026-09-01：這一格由圓環（互斥的四塊）改成分層弧（層層包含），標題跟著改——
+       畫的不再是「分布」而是「分層」，名字不改就是說謊。舊 key 留著不刪：
+       `canvas.split.tiers` 仍是「一個總數怎麼被分掉」那種卡的正確說法，只是這一格
+       現在講的不是那件事。 */
     'canvas.split.tiers':         { en: 'Fan mix',                   zh: '粉絲分布' },
+    'canvas.tiers.title':         { en: 'Fan tiers',                 zh: '粉絲分層' },
     'btn.prev':                   { en: 'Previous',                  zh: '上一張' },
     'nav.collapse':               { en: 'Collapse navigation',       zh: '收合導覽' },
     'nav.expand':                 { en: 'Expand navigation',         zh: '展開導覽' },
@@ -750,6 +857,21 @@
     'canvas.picks.title':         { en: 'Coming up',                  zh: '近期項目與活動' },
     'canvas.scroll.more':         { en: 'Scroll for more',            zh: '往下看更多' },
     'canvas.tab.empty':           { en: 'Nothing open in this group', zh: '這一類目前沒有進行中的' },
+    /* 全新帳號的引導畫面（2026-09-01）：規格沒有定義新手引導，這幾句屬呈現層的補寫，
+       記在 ASSUMPTIONS CANVAS-005。三張卡各講「這一條路是什麼」，用的都是站上真的
+       有的能力（項目＝募資／預購／上線、電子商店＝周邊與數位商品、活動＝售票／場次／
+       現場核銷），不新造功能。 */
+    'canvas.start.title':         { en: 'Nothing here yet — pick somewhere to start', zh: '這裡還沒有東西，選一個地方開始' },
+    'canvas.start.text':          { en: 'Whatever you make first, this page fills in around it: the money, the people, and what needs you next.', zh: '不論先做哪一件，這一頁都會跟著長出來——錢、人，以及接下來需要你處理的事。' },
+    'canvas.start.project':       { en: 'New project',   zh: '建立項目' },
+    'canvas.start.project-sub':   { en: 'Crowdfunding, pre-orders and releases all begin as a project.', zh: '募資、預購與上線，都從一個項目開始。' },
+    'canvas.start.product':       { en: 'New product',   zh: '建立商品' },
+    'canvas.start.product-sub':   { en: 'Sell merch and digital goods in your shop.', zh: '在電子商店賣周邊與數位商品。' },
+    'canvas.start.event':         { en: 'New event',     zh: '建立活動' },
+    'canvas.start.event-sub':     { en: 'Ticketing, dates and door check-in.', zh: '售票、場次與現場核銷。' },
+    /* 右排在「有資料但沒有項目與活動」時的那一行（只建了商品的帳號會走到）。 */
+    'canvas.picks.none':          { en: 'Nothing scheduled yet',     zh: '還沒有排定的項目或活動' },
+    'canvas.zero.note':           { en: 'No revenue or fans yet — they show up here as soon as something sells.', zh: '還沒有收入與粉絲——賣出第一筆之後就會出現在這裡。' },
     'canvas.empty.title':         { en: 'Nothing published yet',     zh: '還沒有上線的東西' },
     'canvas.empty.text':          { en: 'Your works, merch and events appear here as soon as the first one goes live.', zh: '第一件作品、商品或活動上線之後，就會出現在這裡。' },
     'canvas.greeting-sub':        { en: 'What came in, what needs you, and where your work is playing right now.', zh: '進來的錢、需要你處理的事，以及你的作品現在正在哪裡被聽見、被看見。' },
@@ -1598,7 +1720,7 @@
     'projects.cat.grp.music':     { en: 'Music',                                zh: '音樂' },
     'projects.cat.grp.other':     { en: 'Other',                                zh: '其他' },
     'projects.cat.movie':         { en: 'Movie',                                zh: '電影' },
-    'projects.cat.short':         { en: 'Short film',                           zh: '短劇' },
+    'projects.cat.short':         { en: 'Short film',                           zh: '短片' },
     'projects.cat.series':        { en: 'Series',                               zh: '影集' },
     'projects.cat.song':          { en: 'Song',                                 zh: '音樂' },
     'projects.cat.album':         { en: 'Album',                                zh: '音樂專輯' },
@@ -2178,9 +2300,9 @@
     'e-shop.alert.cta-view':  { en: 'View low stock',                      zh: '查看低庫存' },
     'e-shop.alert.cta-restock': { en: 'Restock',                           zh: '補貨' },
     'e-shop.alert.dismiss':   { en: 'Dismiss',                             zh: '關閉提醒' },
-    'e-shop.tab.products':    { en: 'Products',                            zh: '商品' },
+    'e-shop.tab.products':    { en: 'Products',                            zh: '單售' },
     'e-shop.tab.bundles':     { en: 'Bundles',                             zh: '組合' },
-    'e-shop.tab.auctions':    { en: 'Auctions',                            zh: '競標' },
+    'e-shop.tab.auctions':    { en: 'Auctions',                            zh: '拍賣' },
     'e-shop.filter.placeholder': { en: 'Filter products',                  zh: '篩選商品' },
     'e-shop.col.product':        { en: 'Product',                          zh: '商品' },
     'e-shop.col.category':      { en: 'Category',                         zh: '分類' },
@@ -2222,6 +2344,10 @@
     'e-shop.cat.home':        { en: 'Home & living',                       zh: '居家生活' },
     'e-shop.cat.prints':      { en: 'Posters & prints',                    zh: '海報與印刷' },
     'e-shop.cat.collectibles':{ en: 'Collectibles',                        zh: '收藏品' },
+    /* 組合（Bundle）分類詞（2026-09-03，D240）：訂單品項明細裡 mode:'bundle' 的品項
+       catKey 落在這裡（不是實體分類，是「這是一個組合」的標記），供 order-detail.html
+       的品項分類欄使用。 */
+    'e-shop.cat.bundle':      { en: 'Bundle',                              zh: '組合' },
     /* 競標用的葉節點分類（2026-07-27）：同一套 taxonomy，供 Auctions 分頁的列引用。 */
     'e-shop.cat.instruments': { en: 'Instruments',                         zh: '樂器' },
     'e-shop.cat.footwear':    { en: 'Footwear',                            zh: '鞋款' },
@@ -2245,6 +2371,42 @@
        產列時請走 optionLabel() 依語言取邊，不要用固定索引取其中一半。 */
     'e-shop.option.size':     { en: 'Size',                                zh: '尺寸' },
     'e-shop.option.colour':   { en: 'Colour',                              zh: '顏色' },
+    /* ═══ D241 · 三開關與庫存池的共用詞彙（spec 0-設計規格書 §7.14）══════════
+       商品狀態徽章、非公開連結、庫存分配三組字，五個頁面（電子商店／商品細節／組合細節／
+       建立商品／建立組合）共用，不再各自命名。舊的 e-shop.status.*、e-shop.row.*、
+       product-detail.badge.*、bd.badge.* 一律保留不刪——那些頁面還沒改版，改版時才切過來。 */
+    /* 八態的推導條件寫在 js/listing-state.js 的 deriveStatus，這裡只放文案。
+       中英各自道地：中文用賣家後台的口語（售罄／急需補貨），英文用電商後台的慣用詞。 */
+    'shop.status.draft':           { en: 'Draft',                              zh: '未完成' },
+    'shop.status.live':            { en: 'Live',                               zh: '販售中' },
+    'shop.status.coming':          { en: 'Coming soon',                        zh: '即將開賣' },
+    'shop.status.ended':           { en: 'Ended',                              zh: '販售結束' },
+    'shop.status.soldout':         { en: 'Sold out',                           zh: '售罄' },
+    'shop.status.low':             { en: 'Low stock',                          zh: '急需補貨' },
+    'shop.status.hidden':          { en: 'Hidden',                             zh: '已隱藏' },
+    'shop.status.unlisted':        { en: 'Unlisted',                           zh: '已下架' },
+    /* 非公開連結：切成隱藏時才產生，可隨時重置。 */
+    'link.private-h':         { en: 'Private link',                       zh: '非公開連結' },
+    'link.private-hint':      { en: 'Only people with the link can open it. Use it for internal test orders; it stops working once shown in shop', zh: '只有拿到連結的人能進，用來內部下單測試；切回顯示後失效' },
+    'link.copy':              { en: 'Copy',                               zh: '複製' },
+    'link.copied':            { en: 'Copied',                             zh: '已複製' },
+    'link.copy-failed':       { en: 'Could not copy — select the link and copy it', zh: '複製失敗，請手動選取連結' },
+    'link.reset':             { en: 'Reset link',                         zh: '重置連結' },
+    'link.reset-hint':        { en: 'The old link stops working immediately', zh: '舊連結立即失效' },
+    /* 庫存池與鎖定分配（stock-allocation 元件的欄位名與提示）。 */
+    'stock.pool':             { en: 'Goods in stock',                     zh: '目前在庫' },
+    'stock.lock':             { en: 'Locked',                             zh: '鎖定量' },
+    'stock.free':             { en: 'Unlocked',                           zh: '未鎖定' },
+    'stock.channel-single':   { en: 'Single sale',                        zh: '單售' },
+    'stock.channel-bundle':   { en: 'Bundle',                             zh: '組合包' },
+    'stock.sellable':         { en: 'Sellable',                           zh: '可售' },
+    'stock.all-locked':       { en: '{n} unlocked — neither single sale nor bundles can reach them', zh: '{n} 件未鎖定，單售與組合包都拿不到' },
+    'stock.lock-max':         { en: 'Up to {n}',                          zh: '最多 {n}' },
+    'stock.lock-err':         { en: 'Exceeds unlocked stock',             zh: '超過未鎖定量' },
+    'stock.bundle-min':       { en: 'Bundle sellable = lowest member stock', zh: '組合可售＝成員最低在庫' },
+    'stock.restock-hint':     { en: 'Restocks land in unlocked stock; locked ones need to lock again', zh: '補貨會補進未鎖定的部分；已鎖定的要再鎖一次才能繼續賣' },
+    'stock.unit-pcs':         { en: 'pcs',                                zh: '件' },
+
     /* 2026-07-21 使用者指示，全站狀態詞彙一起改（規格見 5.1.5-電子商店.md §2）：
        全部狀態→全部商品／上架中→販售中／庫存過低→急需補貨／草稿→未完成。內部狀態概念不變，只換顯示字詞。 */
     'e-shop.status.all':      { en: 'All products',                        zh: '全部商品' },
@@ -2280,7 +2442,10 @@
     'e-shop.delete':          { en: 'Delete',                              zh: '刪除' },
     'e-shop.a.publish':       { en: 'Publish',                             zh: '上架商品' },
     'e-shop.a.unpublish':     { en: 'Unpublish',                           zh: '下架商品' },
-    'e-shop.a.shoplist':      { en: 'List in shop',                        zh: '在商店上架' },
+    /* D241：這個列操作管的是「在網站上找不找得到」（顯示／隱藏），不是總閘門的上架／下架，
+       所以字改成顯示於商店；真正的上架在 e-shop.a.publish／unpublish 那一組。 */
+    'e-shop.a.shoplist':      { en: 'Show in shop',                        zh: '顯示於商店' },
+    'e-shop.a.shophide':      { en: 'Hide',                                zh: '隱藏' },
     /* 2026-08-04 釘選（D172，術語由「固定」正名為「釘選」見 D173）：列操作與釘選區分隔列。
        分隔列文案要能一句講完「這條線以上的東西會發生什麼事」，所以講粉絲端結果，不講操作名稱。 */
     'e-shop.a.pin':           { en: 'Pin to front',                        zh: '釘選' },
@@ -2612,6 +2777,11 @@
     'bd.stock.min':         { en: '· min of members',        zh: '· 成員最小可售量' },
     'bd.impact.title':      { en: 'Member impact',           zh: '成員影響' },
     'bd.impact.note':       { en: "Editing a member's price, stock or visibility can affect this bundle's sellable quantity and pricing validity — a sold-out or hidden member makes the bundle unsellable and pulls it from your shop; a member price rise can push the fixed price above members' total.", zh: '修改成員的價格、庫存或可見狀態，可能影響本組合的可售量與定價有效性——成員售罄或下架會使組合不可售並一併下架；成員漲價可能使固定價高於成員合計。' },
+    /* D241（spec §7.14 組合包成交條件）：成員「隱藏」不再讓組合不可售——隱藏的成員照樣
+       能被組合帶著成交。舊的 bd.impact.note 把下架與隱藏混為一談，改由這一條取代。 */
+    'bd.impact.member-rule': { en: "A member stops this bundle when it is unlisted, off sale, or has nothing left to sell inside this bundle. Hiding it changes nothing — it still sells as part of a bundle. A member price rise can also push the bundle price above the members' total.", zh: '成員下架、未開賣，或在本組合的可售量歸零時，組合就不可售；成員隱藏不影響，照樣能被組合帶著賣。成員漲價則可能讓組合價高於成員合計。' },
+    'bd.stock.sub':          { en: 'Lock stock for this bundle, or leave it shared with the member\u2019s other channels', zh: '把成員的庫存鎖定給本組合，或維持與其他管道共用' },
+    'bd.members.alloc-hint': { en: 'Lock amounts are edited in Sales settings.', zh: '鎖定量在「銷售設定」分頁調整。' },
     'bd.kpi.sold':          { en: 'Bundles sold',            zh: '已售組數' },
     'bd.sales.empty':       { en: 'No sales yet. Revenue appears here once fans buy this bundle.', zh: '尚無銷售紀錄。粉絲購買後，收入會顯示在這裡。' },
     /* 合併 2026-07-29：hint 取本機版（不帶規格編號，使用者可見字串不出現 §），
@@ -2884,7 +3054,7 @@
     'events.r.next-leg-draft.meta':         { en: 'Date 3 of 3', zh: '第 3 場 / 共 3 場' },
     'events.r.next-leg-draft.datetime':     { en: 'Date TBD', zh: '日期未定' },
     'events.row2.title':       { en: 'Kowloon Café 10th Anniv. — Hualien encore',      zh: '九龍冰室 十週年 — 花蓮加場' },
-    'events.row2.meta':        { en: 'Concert · Series 2/3',                zh: '演出 · 系列 2/3' },
+    'events.row2.meta':        { en: 'Concert · Series 2/3',                zh: '演唱會 · 系列 2/3' },
     'events.row2.datetime':    { en: 'Oct 19, 2026 · 7:30 PM',             zh: '2026/10/19 · 晚上 7:30' },
     'events.row2.venue':       { en: 'Hualien Cultural Center · Hualien',  zh: '花蓮文化中心 · 花蓮' },
     'events.row3.title':       { en: 'Online — Q&amp;A with fanvestors',    zh: '線上 — Fanvestor 問答會' },
@@ -2893,7 +3063,7 @@
     'events.row3.venue':       { en: 'Online (Zoom)',                       zh: '線上（Zoom）' },
     'events.row3.tickets':     { en: '— / unlimited',                       zh: '— / 不限名額' },
     'events.row4.title':       { en: 'Winter Acoustic Night',               zh: 'Winter Acoustic Night 冬季原聲之夜' },
-    'events.row4.meta':        { en: 'Concert',                             zh: '演出' },
+    'events.row4.meta':        { en: 'Concert',                             zh: '演唱會' },
     'events.row4.datetime':    { en: 'Jun 14, 2026 · 8:00 PM',             zh: '2026/6/14 · 晚上 8:00' },
     'events.row4.venue':       { en: 'The Wall · Taipei',                   zh: 'The Wall · 台北' },
     'events.row5.title':       { en: 'Tokyo Pop-up Meet &amp; Greet',       zh: '東京快閃見面會' },
@@ -2901,11 +3071,11 @@
     'events.row5.datetime':    { en: 'May 02, 2026 · 6:00 PM',             zh: '2026/5/2 · 晚上 6:00' },
     'events.row5.venue':       { en: 'Shibuya Loft · Tokyo',                zh: 'Shibuya Loft · 東京' },
     'events.row6.title':       { en: 'Arena show — hometown finale',        zh: '小巨蛋場 — 家鄉終場' },
-    'events.row6.meta':        { en: 'Concert',                             zh: '演出' },
+    'events.row6.meta':        { en: 'Concert',                             zh: '演唱會' },
     'events.row6.datetime':    { en: 'May 23, 2025 · 8:00 PM',             zh: '2025/5/23 · 晚上 8:00' },
     'events.row6.venue':       { en: 'Arena · Taipei',                      zh: '小巨蛋 · 台北' },
     'events.row7.title':       { en: 'Next tour leg (planning)',            zh: '巡演新場次規劃' },
-    'events.row7.meta':        { en: 'Concert · planning',                  zh: '演出 · 規劃中' },
+    'events.row7.meta':        { en: 'Concert · planning',                  zh: '演唱會 · 規劃中' },
     'events.row7.datetime':    { en: 'Date TBD',                            zh: '日期未定' },
     'events.empty.noresult.title': { en: 'No events match',                 zh: '沒有符合的活動' },
     'events.empty.noresult.sub':   { en: 'Try a different time tab, status, or search term.', zh: '換個時段分頁、狀態或搜尋字詞試試。' },
@@ -2970,7 +3140,7 @@
     'events.r.realive-sea-kl.datetime':                { en: 'Jan 23, 2027 · 8:00 PM', zh: '2027/1/23 · 晚上 8:00' },
     'events.r.realive-sea-kl.venue':                   { en: 'Zepp Kuala Lumpur · Kuala Lumpur', zh: 'Zepp Kuala Lumpur · 吉隆坡' },
     'events.r.lrh-signing-taichung.title':             { en: 'LOVE RAGE HOPE signing — Taichung', zh: 'LOVE RAGE HOPE 專輯簽名會 — 臺中' },
-    'events.r.lrh-signing-taichung.meta':              { en: 'Meet &amp; Greet', zh: '粉絲見面會' },
+    'events.r.lrh-signing-taichung.meta':              { en: 'Meet &amp; Greet', zh: '見面會' },
     'events.r.lrh-signing-taichung.datetime':          { en: 'Nov 08, 2026 · 2:00 PM', zh: '2026/11/8 · 下午 2:00' },
     'events.r.lrh-signing-taichung.venue':             { en: 'Eslite Park Lane · Taichung', zh: '誠品園道店 · 臺中' },
     'events.r.lrh-writing-class.title':                { en: 'LOVE RAGE HOPE — Writing session, online', zh: 'LOVE RAGE HOPE 線上創作課' },
@@ -3192,7 +3362,7 @@
     'ee.img.sub':         { en: 'These are live right now. Hover any image to replace or remove it.', zh: '這些是目前上線中的圖。將游標移到圖上可替換或移除。' },
     'ee.img.add':         { en: 'Add image',                      zh: '新增圖片' },
     'ee.img.n':           { en: 'Image {n}',                      zh: '第 {n} 張' },
-    'ee.img.galleryn':    { en: '{n} of 8',                       zh: '{n} / 8' },
+    'ee.img.galleryn':    { en: '{n} of 10',                      zh: '{n} / 10' },
 
     'ee.det.h1':          { en: 'Details',                        zh: '活動內容' },
     'ee.det.sub':         { en: 'Copy and artwork. Safe to change at any time — fans see the update immediately.', zh: '文案與視覺。隨時可改——粉絲端會立即看到更新。' },
@@ -3766,7 +3936,7 @@
        ce.img.keyvisual 仍供相簿第一格的角落標記使用，ce.img.gallery(-hint) 已無消費者。 */
     'ce.images.sub':        { en: 'The first one is the key visual; the rest are the gallery.', zh: '排在第一張的是主視覺，其餘是圖庫。' },
     'ce.img.add':           { en: 'Add image',                        zh: '新增圖片' },
-    'ce.img.note':          { en: 'Portrait 750 × 1125, up to 8. The first one is the key visual; hover an image to replace or delete it.', zh: '直式 750 × 1125，最多 8 張。排第一的是主視覺；游標移到圖片可替換或刪除。' },
+    'ce.img.note':          { en: 'Portrait 750 × 1125, up to 10. The first one is the key visual; hover an image to replace or delete it.', zh: '直式 750 × 1125，最多 10 張。排第一的是主視覺；游標移到圖片可替換或刪除。' },
     'ce.img.keyvisual':     { en: 'Key visual',                       zh: '主視覺' },
     /* 2026-08-06：說明裡的「手機主視覺」把標籤（主視覺）又講了一次，砍掉；剩下的才是這一格真正的新資訊。
        本 key 僅剩 edit-event.html 消費，該頁待撤除。 */
@@ -3775,7 +3945,7 @@
     /* 2026-07-31 使用者：活動不併入單一直式，橫式橫幅改回 16:9 / 1920×1080（見 documents 5.1.6.1 F4）。 */
     'ce.img.banner-hint':   { en: '1920 × 1080 · landscape · Hero (desktop), social', zh: '1920 × 1080 · 橫式 · 桌面主視覺、社群' },
     'ce.img.gallery':       { en: 'Gallery images',                   zh: '圖庫圖片' },
-    'ce.img.gallery-hint':  { en: '750 × 1125 · portrait · Detail carousel, 1–8', zh: '750 × 1125 · 直式 · 詳情輪播，1～8 張' },
+    'ce.img.gallery-hint':  { en: '750 × 1125 · portrait · Detail carousel, 1–10', zh: '750 × 1125 · 直式 · 詳情輪播，1～10 張' },
     'ce.video':             { en: 'Video teaser',                     zh: '影片預告' },
     'ce.video.title':       { en: 'Upload a teaser',                  zh: '上傳預告片' },
     'ce.video.hint':        { en: 'MP4 or MOV · up to 2GB',           zh: 'MP4 或 MOV · 單檔上限 2GB' },
@@ -4011,7 +4181,7 @@
     'cp.psub.home':         { en: 'Home &amp; Living',      zh: '居家生活' },
     'cp.psub.books':        { en: 'Books',                     zh: '書籍' },
     'cp.psub.collectibles': { en: 'Collectibles',            zh: '收藏品' },
-    'cp.psub.music':        { en: 'Music (physical)',   zh: '音樂（實體）' },
+    'cp.psub.music':        { en: 'Song',               zh: '音樂單曲' },
     'cp.psub.album':        { en: 'Album',                 zh: '音樂專輯' },
     'cp.psub.documentary':  { en: 'Documentary',               zh: '文檔' },
     'cp.psub.instruments':  { en: 'Instruments',               zh: '樂器' },
@@ -4019,18 +4189,19 @@
     'cp.psub.equipment':    { en: 'Equipment',             zh: '設備器材' },
     'cp.psub.memorabilia':  { en: 'Memorabilia',             zh: '紀念物' },
     'cp.psub.limited':      { en: 'Limited &amp; signed', zh: '限量・簽名品' },
-    'cp.psub.merch':        { en: 'Merch',                     zh: '商品' },
+    'cp.psub.merch':        { en: 'Merch',                     zh: '其他商品' },
     /* §7.1 數位次分類（Digital Merchandise）*/
     'cp.dsub.digital':      { en: 'Digital content',       zh: '數位內容' },
     'cp.dsub.movie':        { en: 'Movie',                     zh: '電影' },
-    'cp.dsub.short':        { en: 'Short drama',               zh: '短劇' },
+    'cp.dsub.short':        { en: 'Short film',                zh: '短片' },
     'cp.dsub.series':       { en: 'Series',                    zh: '影集' },
-    'cp.dsub.music':        { en: 'Music',                     zh: '音樂' },
+    'cp.dsub.music':        { en: 'Song',                      zh: '音樂單曲' },
     'cp.dsub.album':        { en: 'Album',                 zh: '音樂專輯' },
     'cp.dsub.mv':           { en: 'MV · MV',                          zh: 'MV' },
-    'cp.dsub.documentary':  { en: 'Documentary',               zh: '文檔' },
+    'cp.dsub.documentary':  { en: 'Documentary',               zh: '紀錄片' },
+    'cp.dsub.document':     { en: 'Document',                  zh: '文檔' },
     'cp.dsub.membership':   { en: 'Membership / VIP card',   zh: '會員卡' },
-    'cp.dsub.merch':        { en: 'Merch',                     zh: '商品' },
+    'cp.dsub.merch':        { en: 'Merch',                     zh: '其他商品' },
     /* 建立拍賣流程（create-auction · spec 5.1.5.10）——種類、活動次分類、交付、就緒檢查 */
     'ca.h1':                { en: 'New auction',                      zh: '建立拍賣' },
     'ca.subtitle':          { en: 'Auction',                          zh: '拍賣' },
@@ -4217,6 +4388,8 @@
     'cp.cost':              { en: 'Cost',                             zh: '成本價' },
     'cp.cost.note':         { en: 'Optional',                     zh: '選填' },
     'cp.stock':             { en: 'Goods in stock',                   zh: '目前在庫' },
+    /* D241：建立流程只收目前在庫，鎖定量不在這裡收（spec §7.14）。 */
+    'cp.stock.pool-hint':   { en: 'Locking stock for single sale or a bundle happens on the product page and in the bundle flow.', zh: '鎖定給單售或組合包的量在商品細節頁與建立組合流程設定。' },
     'cp.stock.digital':     { en: 'Copies remaining',                 zh: '剩餘份數' },
     'cp.lowstock':          { en: 'Alert me when running low',        zh: '庫存快不夠時提醒我' },
     'cp.lowstock.hint':     { en: 'Alerts you at 10% of your stock cap — the default low-stock threshold.', zh: '在庫存降到庫存上限的 10%（預設低庫存門檻）時提醒你。' },
@@ -4286,9 +4459,12 @@
     'cp.delivery.pickup.ph': { en: 'Sender address for the courier',  zh: '提供給物流的寄件地址' },
     'cp.delivery.pickup.hint': { en: 'Defaults to your store shipping address (Store settings F5) if left blank.', zh: '留空時沿用商店設定 F5 的寄件地。' },
     'cp.delivery.subsidy':  { en: 'Closed Beta: the platform subsidizes shipping fees.', zh: 'Closed Beta 期間平台補貼運費。' },
-    'cp.delivery.instr':    { en: 'Pickup instructions',              zh: '領取說明' },
-    'cp.delivery.instr.ph': { en: 'e.g., Collect at the merch table after the show. Show this QR code.', zh: '例：演出後到周邊攤位出示此 QR code 領取。' },
-    'cp.delivery.qr-note':  { en: 'Buyers get a QR per order; staff scan it at the session’s scanner URL to redeem. Manage sessions, scanner and log in Pickup management.', zh: '每筆訂單生成一組 QR；工作人員在取貨場次的 scanner URL 掃描核銷。場次、scanner 與核銷紀錄在取貨管理。' },
+    /* 2026-09-04 D244 退場（墓碑）：'cp.delivery.instr' / 'cp.delivery.instr.ph'——商品層的領取說明欄
+       撤除，說明改由取貨場次那一欄持有（5.1.5.12 F1）。要復活請先回上游改規格。 */
+    /* 2026-09-03（D240 一物一碼）：QR 的粒度從「一筆訂單一組」改成「每一件商品一組」——
+       買家的領取 QR 顯示在 ztor 前台的買家帳號，Creator Studio 不出示 QR（§7.2 裁決十）；
+       工作人員在場次 scanner 逐件掃描核銷。 */
+    'cp.delivery.qr-note':  { en: 'Each unit gets its own pickup QR, shown in the buyer’s ztor account — staff scan it one at a time at the session’s scanner. Manage sessions, scanner and log in Pickup management.', zh: '每件商品各有一組領取 QR，顯示在買家的 ztor 前台帳號；工作人員在取貨場次逐件掃描核銷。場次、scanner 與核銷紀錄在取貨管理。' },
     /* §4.5 共用設定：每人限購 + 標籤 (D064) */
     /* 2026-07-21 拆成兩個 section：cp.limits.title（購買限制）＋ cp.tags（商品標籤）。
        cp.shared.title 已無消費頁，保留定義避免其他 session 正在用的分支炸掉。 */
@@ -4345,16 +4521,48 @@
     'cp.sale.end':          { en: 'Discount end date',                zh: '折扣結束日' },
     'cp.sale.endbefore':    { en: 'End date must be after start date', zh: '結束日需晚於開始日' },
     'cp.sale.pending':      { en: 'Time zone & exact timing pending spec.', zh: '時區與時間精度待規格確認。' },
-    /* 上架設定 → 定時上架（spec 5.1.5.2 §4.6 / 5.1.5.1 §2.16 · D144；三型共用區塊標題）*/
+    /* ── 上架、顯示與開賣（spec 0-設計規格書 §7.14 · D241，2026-09-04 由「上架設定」改組）──
+       三組互相獨立的開關，欄位名稱五頁一律相同、不得各頁另取名：
+         上架列 listed-*／time／unlist   顯示列 shown-*   開賣列 sale-*
+       建立頁的上架列用 radio-list 三選一（none／now／schedule 三把舊 key 續用，
+       create-project 與 create-auction 也在借），細節頁改用 switch（listed-switch）。 */
+    /* 2026-09-04 D245：原本一個 section 三列（上架／顯示／開賣）拆成兩個 section。
+       'cp.listing.title' 只剩建立拍賣那頁在用（該頁還是舊的單卡上架設定），故保留。
+       'cp.listing.listed-h'、'cp.listing.sale-h'、'cp.listing.sale-hint' 三支隨拆分退場（墓碑）：
+       section 標題已經寫了「上架設定」「開賣設定」，列標題再寫一次是重述上下文；
+       原本的 sale-hint 那句話由開賣二選一的兩條 sub ＋ 停售欄的 hint 分別承接。 */
     'cp.listing.title':     { en: 'Listing settings',                 zh: '上架設定' },
+    'cp.listing.sec-listed':{ en: 'Listing',                          zh: '上架設定' },
+    'cp.listing.sec-sale':  { en: 'Sale',                             zh: '開賣設定' },
+    'cp.listing.sale-follow': { en: 'Sell immediately',               zh: '立即開賣' },
+    'cp.listing.sale-follow-sub': { en: 'Checkout opens as soon as it is listed', zh: '上架後立刻可以結帳' },
+    'cp.listing.sale-sched': { en: 'Open at a set time',              zh: '定時開賣' },
+    'cp.listing.sale-sched-sub': { en: 'Checkout opens at the time you set', zh: '到指定時間才開放結帳' },
+    /* 下架與停售改成明示的「定時…」開關（2026-09-04 使用者回饋 · D246）：原本是一個裸的
+       時間欄＋一句「留空＝不自動下架」，要從「沒填」推回「不會發生」。開關關著就是不排。 */
+    'cp.listing.unlist-sched': { en: 'Unlist at a set time',          zh: '定時下架' },
+    'cp.listing.unlist-sched-sub': { en: 'Unlists automatically at the time you set', zh: '到指定時間自動下架' },
+    'cp.listing.saleend-sched': { en: 'Close sales at a set time',    zh: '定時停售' },
+    'cp.listing.saleend-sched-sub': { en: 'Checkout closes then; the item stays visible', zh: '到指定時間停止結帳，商店仍看得到' },
+    'cp.listing.listed-switch': { en: 'Listed',                        zh: '上架' },
+    'cp.listing.listed-hint': { en: 'Unlisting stops every channel and kills all links', zh: '下架後所有管道都不能賣，連結全部失效' },
+    'cp.listing.shown-h':   { en: 'Show in shop',                      zh: '顯示於商店' },
+    'cp.listing.shown-hint': { en: 'Hidden items stay purchasable via the private link and inside bundles', zh: '隱藏後商店找不到，但能經非公開連結購買，也能被組合包帶著賣' },
     'cp.listing.none':      { en: "Don't list",                       zh: '不上架' },
     'cp.listing.now':       { en: 'List now',                         zh: '立刻上架' },
     'cp.listing.schedule':  { en: 'Schedule',                         zh: '定時上架' },
     'cp.listing.none-sub':  { en: 'Save as draft, stays hidden',      zh: '存成草稿，先不對外' },
     'cp.listing.now-sub':   { en: 'Goes live right after saving',     zh: '儲存後立刻出現在商店' },
     'cp.listing.schedule-sub': { en: 'Auto-lists at the time you set', zh: '到指定時間自動上架' },
-    'cp.listing.time':      { en: 'Listing time',                     zh: '上架時間' },
-    'cp.listing.pending':   { en: 'Auto-downlist & time zone pending spec.', zh: '自動下架與時區待規格確認。' },
+    'cp.listing.time':      { en: 'Listing time',                     zh: '上架日期與時間' },
+    'cp.listing.pending':   { en: 'Time zone & exact timing pending spec.', zh: '時區與時間粒度待規格確認。' },
+    'cp.listing.unlist':    { en: 'Unlist time',                      zh: '下架日期與時間' },
+    /* 2026-09-04 D246 之後，商品／組合四頁的下架時間改由「定時下架」開關管，這句用不到了；
+       建立專案（create-project.html）的發布區塊仍是裸欄位、還在用，所以保留。 */
+    'cp.listing.unlist-hint': { en: 'Leave empty to keep it listed until you take it down.', zh: '留空＝不自動下架，由你手動處理。' },
+    'cp.listing.sale-start':{ en: 'Sale start',                       zh: '開賣日期與時間' },
+    'cp.listing.sale-end':  { en: 'Sale end',                         zh: '停售日期與時間' },
+    'cp.listing.sale-err':  { en: 'Sale end must be after sale start', zh: '停售日期與時間要晚於開賣日期與時間' },
     'cp.pv.name':           { en: 'Product name',                     zh: '商品名稱' },
     'cp.pv.desc':           { en: 'Missing: description',             zh: '尚缺：描述' },
     'cp.pv.itemname':       { en: 'Item name',                        zh: '物品名稱' },
@@ -4385,7 +4593,7 @@
     'cb.add.sub':           { en: 'Create a new product to add to this bundle', zh: '建立一件新商品加入組合' },
     'cb.recent':            { en: 'Recently viewed',                  zh: '近期瀏覽' },
     'cb.min-items':         { en: 'Add at least 2 items',             zh: '至少加入 2 件' },
-    'cb.stock.label':       { en: 'Bundle stock',                     zh: '組合庫存' },
+    'cb.stock.label':       { en: 'Goods in stock',                   zh: '目前在庫' },
     'cb.stock.unlimited':   { en: 'Unlimited',                        zh: '不限量' },
     'cb.stock.min':         { en: '(min of members)',                 zh: '（成員最少）' },
     'cb.meta.instock':      { en: 'in stock',                         zh: '件庫存' },
@@ -4433,8 +4641,12 @@
     'cb.edition.limited-hint': { en: 'Add a hard cap on top of member stock.', zh: '在成員庫存之上再設一個硬上限。' },
     'cb.total':             { en: 'Total quantity',                   zh: '組合上限' },
     'cb.total.hint':        { en: 'Hard cap · still limited by member stock', zh: '硬上限 · 仍受成員庫存約束' },
-    'cb.avail.label':       { en: 'Available now',                    zh: '目前在庫' },
+    'cb.avail.label':       { en: 'Goods in stock',                   zh: '目前在庫' },
     'cb.avail.readonly':    { en: 'Auto · lowest member stock (min of members)', zh: '自動 · 取成員最低庫存（min(成員)）' },
+    /* D241（spec 0-設計規格書 §7.14）：庫存卡改成成員鎖定量分配表後的新文案。 */
+    'cb.stock.alloc-sub':   { en: 'Each member shares one stock pool with its own single sale. Lock what this bundle needs.', zh: '成員的庫存與它自己的單售共用一個池；要保留給本組合就鎖定件數。' },
+    'cb.stock.empty':       { en: 'Add at least one member to see what this bundle can sell', zh: '加入成員後才會算出組合可售量' },
+    'cb.listing.hidden-note': { en: 'The private link is created once you save, on the bundle page', zh: '非公開連結在儲存後產生，於組合頁複製' },
     /* 折扣設定 → 排程特價（spec 5.1.5.4 §4 F7；2026-07-17 由「販售排程」改回「排程特價」歸入折扣設定 / D144 反轉 D091）*/
     'cb.sale.start':        { en: 'Discount start date',              zh: '折扣開始日' },
     'cb.sale.end':          { en: 'Discount end date',                zh: '折扣結束日' },
@@ -4529,7 +4741,7 @@
     'cpp.content.series':   { en: 'Series',                    zh: '影集' },
     'cpp.content.movie':    { en: 'Movie',                     zh: '電影' },
     'cpp.content.event':    { en: 'Event',                     zh: '活動' },
-    'cpp.content.merch':    { en: 'Merch',                     zh: '周邊' },
+    'cpp.content.merch':    { en: 'Merch',                     zh: '其他商品' },
     'cpp.content.doc':      { en: 'Documentary',               zh: '紀錄片' },
     'cpp.content.custom':   { en: 'Custom',                    zh: '自訂' },
     'cpp.s1.content-hint':  { en: 'Fans will see the content type label. Subcategory only — main category is auto-assigned in E-Shop.', zh: '粉絲看到的是內容類型標籤。僅次分類——主分類在電子商店自動指派。' },
@@ -4559,7 +4771,7 @@
     'cpp.s2.keyvisual':     { en: 'Key visual',                       zh: '主視覺' },
     'cpp.s2.keyvisual-size':{ en: '750 × 1125 · portrait',             zh: '750 × 1125 · 直式' },
     'cpp.s2.gallery':       { en: 'Gallery',                          zh: '圖庫' },
-    'cpp.s2.gallery-size':  { en: '750 × 1125 · portrait · 1–8 images', zh: '750 × 1125 · 直式 · 1–8 張' },
+    'cpp.s2.gallery-size':  { en: '750 × 1125 · portrait · 1–10 images', zh: '750 × 1125 · 直式 · 1–10 張' },
     'cpp.s2.add':           { en: 'Add images',                       zh: '新增圖片' },
     'cpp.s2.trailer':       { en: 'Trailer / behind-the-scenes',      zh: '預告片 / 幕後' },
     'cpp.s2.trailer-drop':  { en: 'Drop an MP4 or MOV',               zh: '拖入 MP4 或 MOV' },
@@ -4624,7 +4836,7 @@
     'cpp.s4.complete':      { en: 'Complete',                         zh: '完成' },
     'cpp.s4.uploaded':      { en: 'Uploaded',                         zh: '已上傳' },
     'cpp.s4.imgs':          { en: 'Key visual · gallery',             zh: '主視覺 · 圖庫' },
-    'cpp.s4.gallery':       { en: '4 of 8 images',                    zh: '8 張中已 4 張' },
+    'cpp.s4.gallery':       { en: '4 of 10 images',                   zh: '10 張中已 4 張' },
     'cpp.s4.trailer':       { en: 'Trailer',                          zh: '預告片' },
     'cpp.s4.no-trailer':    { en: 'Not uploaded',                     zh: '未上傳' },
     'cpp.s4.access':        { en: 'Access',                           zh: '存取' },
@@ -4743,10 +4955,18 @@
     'cpp.tf.format.digital':{ en: 'Digital',                          zh: '數位' },
     'cpp.tf.format.vinyl':  { en: 'Vinyl',                            zh: '黑膠' },
     'cpp.tf.format.cd':     { en: 'CD',                               zh: 'CD' },
+    'cpp.tf.format.cassette':{ en: 'Cassette',                        zh: '卡帶' },
     'cpp.tf.subject':       { en: 'Subject',                          zh: '主題' },
     'cpp.tf.style':         { en: 'Style',                            zh: '風格' },
     'cpp.tf.style.ph':      { en: 'e.g. cinematic, vérité',           zh: '例：cinematic, vérité' },
     'cpp.tf.distribution':  { en: 'Distribution',                     zh: '發行方式' },
+    'cpp.tf.etype':         { en: 'Event type',                       zh: '活動類型' },
+    'cpp.tf.etype.concert': { en: 'Concert',                          zh: '演唱會' },
+    'cpp.tf.etype.festival':{ en: 'Festival',                         zh: '音樂節' },
+    'cpp.tf.etype.meet':    { en: 'Meet & Greet',                     zh: '見面會' },
+    'cpp.tf.etype.launch':  { en: 'Launch Party',                     zh: '發表派對' },
+    'cpp.tf.etype.virtual': { en: 'Virtual Event',                    zh: '線上活動' },
+    'cpp.tf.etype.watch':   { en: 'Watch Party',                      zh: '共看派對' },
     'cpp.tf.venue':         { en: 'Venue',                            zh: '場地' },
     'cpp.tf.datetime':      { en: 'Date &amp; Time',                  zh: '日期與時間' },
     'cpp.tf.capacity':      { en: 'Capacity',                         zh: '容納人數' },
@@ -4843,7 +5063,9 @@
                               zh: '套組就是支持者實際拿到的東西：你商店裡的商品、額外權益，以及（可選的）一份收益分潤。' },
     'cpp.bd.add':           { en: '+ Add bundle',                    zh: '＋ 新增套組' },
     'cpp.bd.untitled':      { en: 'Untitled bundle',                  zh: '未命名套組' },
-    'cpp.bd.edit':          { en: 'Edit',                             zh: '編輯' },
+    /* 彈窗標題（分段版）：新增／編輯要跟著各變體的字彙走，光寫「編輯」看不出在編輯什麼。 */
+    'cpp.bd.edit':          { en: 'Edit bundle',                      zh: '編輯套組' },
+    'cpp.bd.edit.pre':      { en: 'Edit tier',                        zh: '編輯方案' },
     'cpp.bd.expand':        { en: 'Expand',                           zh: '展開' },
     'cpp.bd.collapse':      { en: 'Collapse',                         zh: '收合' },
     'cpp.bd.remove':        { en: 'Remove',                           zh: '移除' },
@@ -4942,7 +5164,7 @@
                               zh: '無商品編號的項目，例如 Discord 身分組、感謝名單、抽選資格。' },
     'cpp.bd.calc.nodisc':   { en: 'Same as the items add up to.',      zh: '＝內容合計，未另外給優惠。' },
     'cpp.bd.sec.info':      { en: 'Bundle info',                      zh: '基本資料' },
-    'cpp.bd.sec.info.sub':  { en: 'The name and one-liner fans see.',  zh: '粉絲在活動頁上看到的名稱與說明。' },
+    'cpp.bd.sec.info.sub':  { en: 'The name and one-liner fans see.',  zh: '粉絲在頁面上看到的名稱與說明。' },   /* 2026-09-01 去活動化：分段版通用給共創／預購之後，「活動頁」只對三分之一的消費者為真 */
     'cpp.bd.cover.sub':     { en: 'One image so bundles tell each other apart.',
                               zh: '一張圖，讓幾組之間分得出來。' },
     /* 定價：折扣改成開關（比照建立商品的「折扣設定」） */
@@ -4955,6 +5177,8 @@
                               zh: '這一組最多可以賣出幾份。' },
     'cpp.bd.qty.unlim.sub': { en: 'Capped only by the tickets it contains',
                               zh: '只受它含的票券張數限制' },
+    /* 預購字彙：基礎字串講的是票券（分段版原本活動專用），預購沒有票這回事。 */
+    'cpp.bd.qty.unlim.sub.pre': { en: 'No cap on orders',              zh: '接單不設上限' },
     'cpp.bd.avail.limited.sub': { en: 'Set a hard cap of your own',    zh: '自己另外設一個上限' },
     /* 多場活動才問：這一組是跨場通用，還是每一場各出一組。 */
     'cpp.bd.scope.shared':  { en: 'Shared across all dates', zh: '全場次共用一組' },
@@ -5066,6 +5290,8 @@
     /* 2026-07-28 使用者裁示：Unlimited → Auto。份數從共用名額池推導（floor(剩餘池 ÷ 每份名額)），
        Limited 改成「創作者主動設硬上限」的選配。舊鍵 cpp.bd.avail.unlimited 已退場。 */
     'cpp.bd.avail.auto':    { en: 'Auto',                             zh: '自動' },
+    /* 分段版 radio-card 的副標（2026-09-01 通用化）：自動＝由名額池推導。 */
+    'cpp.bd.avail.auto.sub':{ en: 'Derived from the slot pool',       zh: '由名額池自動推導可售份數' },
     'cpp.bd.avail.limited': { en: 'Limited',                          zh: '限量' },
     'cpp.bd.avail.auto.hint':    { en: 'Up to {n} from the shared pool of {pool} slots. Recalculated as slots sell.',
                                    zh: '依 {pool} 個名額的共用池，最多 {n} 份。名額賣出後自動重算。' },
@@ -5096,8 +5322,15 @@
     'cpp.bd.items':         { en: 'Items from your shop',             zh: '商店商品' },
     'cpp.bd.items.hint':    { en: 'Everything here is a real product, so Orders and Pickup can fulfil it.',
                               zh: '這裡的每一項都是真實商品，訂單與取貨才有東西可以履約。' },
+    'cpp.bd.g1':            { en: 'What this tier is',                zh: '這是什麼方案' },
+    'cpp.bd.g2':            { en: 'What backers get',                 zh: '支持者拿到什麼' },
+    'cpp.bd.g3':            { en: 'How it sells',                     zh: '怎麼賣' },
     'cpp.bd.search':        { en: 'Search your products…',            zh: '搜尋你的商品…' },
     'cpp.bd.search.none':   { en: 'No product matches.',              zh: '沒有符合的商品。' },
+    'cpp.bd.search.browse': { en: 'Your products',                    zh: '你的商品' },
+    'cpp.bd.search.create': { en: 'Create a new product…',            zh: '建立新商品…' },
+    'cpp.bd.price.unpriced':{ en: '{n} unpriced',                     zh: '{n} 件未定價' },
+    'cpp.bd.price.unpriced.tip': { en: 'Unpriced items count as $0 in the bundle price.', zh: '未定價的項目在套組價裡以 $0 計。' },
     'cpp.bd.search.new':    { en: 'Create “{q}” as a new draft product',
                               zh: '把「{q}」建成新的草稿商品' },
     'cpp.bd.item.remove':   { en: 'Remove item',                      zh: '移除商品' },
@@ -5315,6 +5548,25 @@
     'od.col.fulfil':        { en: 'Fulfilment',              zh: '出貨狀態' },
     'od.col.subtotal':      { en: 'Subtotal',                zh: '小計' },
     'od.item.pickup.goto':  { en: 'Go to pickup session',    zh: '前往取貨場次' },
+    /* ─── 領取單位彙總與展開列（D240，2026-09-03）───────────────
+       品項層取貨狀態改「N 件中已核銷 M 件」彙總，可展開看每個領取單位（領取碼、
+       狀態、最近核銷時間；不顯示 QR，見 §7.2 裁決十）。summary 帶 {done}/{total}
+       兩個變數、由 order-detail.html 的 paint() 填入（與 od.items.count 同一套慣例）。 */
+    'od.units.summary':     { en: '{done} of {total} redeemed', zh: '{total} 件中已核銷 {done} 件' },
+    /* voided>0 時的變體（D242，2026-09-03）：退款成立後被退品項的領取單位轉 void，
+       彙總要能分辨「還有幾件待領」與「幾件已因退款失效」（規格 5.1.5.3.1 §2.3.1）。 */
+    'od.units.summary.void': { en: '{done} of {total} redeemed · {voided} refunded', zh: '{total} 件中已核銷 {done} 件・{voided} 件已退款失效' },
+    'od.units.unset':       { en: 'Pickup session not yet set', zh: '取貨場次待設定' },
+    'od.units.void':        { en: 'Cancelled / refunded',    zh: '已取消／已退款' },
+    'od.units.expand':      { en: 'Expand',                  zh: '展開' },
+    'od.unit.status.pending': { en: 'Awaiting redemption',   zh: '待核銷' },
+    'od.unit.status.done':  { en: 'Redeemed',                zh: '已核銷' },
+    'od.unit.status.unset': { en: 'Session not set',         zh: '場次待設定' },
+    'od.unit.status.void':  { en: 'Cancelled / refunded',    zh: '已取消／已退款' },
+    'od.unit.redeemed-at':  { en: 'Redeemed at {at}',        zh: '核銷於 {at}' },
+    /* 組合品項（mode:'bundle'）：組合本身不產生領取碼，主列展開看成員；成員全非 pickup
+       （沒有可核銷單位）時展開鈕仍在、只是顯示「查看成員」而非核銷彙總。 */
+    'od.bundle.members':    { en: 'View members',            zh: '查看成員' },
     /* 2026-08-07：`od.axis.fulfil`／`od.axis.payment`（兩條狀態軸的標籤）與
        `od.sub.placed`／`od.sub.placed1`（頁首「建立於 … · … 件品項」副標）四個 key 刪除——
        軸標籤改以 .status-axes--split 的細分隔線取代，副標拆成下面的 od.info.placed
@@ -5396,18 +5648,19 @@
     'cp.delivery.session.tpe':  { en: 'Taipei signing — pickup (today)', zh: '台北簽書會取貨（今日）' },
     'cp.delivery.session.khh':  { en: 'Kaohsiung fan-meet — pickup (Jul 12)', zh: '高雄粉絲見面會取貨（7/12）' },
     'cp.delivery.session.new':  { en: 'Create pickup session', zh: '建立取貨場次' },
-    'cp.delivery.session.hint': { en: 'On-site QR pickup is redeemed at a pickup session’s scanner. Pick an existing session or create one — this product is pre-added. Scanner URL, password and roster live in Pickup management.', zh: '現場 QR 領取在取貨場次的 scanner 核銷。選既有場次或新建一個——本商品會預先加入。scanner URL、密碼與名單在取貨管理。' },
-    'pd.delivery.session.hint': { en: 'This product redeems at a pickup session’s scanner. Scanner URL, password, roster and log live in Pickup management.', zh: '本商品在取貨場次的 scanner 核銷。scanner URL、密碼、名單與核銷紀錄在取貨管理。' },
+    'cp.delivery.session.hint': { en: 'Pick one or create a new one — this product joins that session’s pickup list.', zh: '選既有場次或新建一個，本商品會加進那個場次的取貨清單。' },
+    'pd.delivery.session.hint': { en: 'Redeemed at this session’s scanner — URL, password and roster live in Pickup management.', zh: '在這個場次的 scanner 核銷；scanner URL、密碼與名單在取貨管理。' },
 
     /* ── D111 · 取貨管理主頁 pickup.html ── */
     'pk.crumb.eshop':   { en: 'E-Shop',            zh: '電子商店' },
     'pk.crumb.self':    { en: 'Pickup management', zh: '取貨管理' },
     'pk.h1':            { en: 'Pickup management', zh: '取貨管理' },
-    'pk.sub':           { en: 'Run on-site redemption: build pickup sessions, add items and event tickets, open a phone scanner and check people off. Not a shipping form.', zh: '處理現場核銷：建立取貨場次、加入商品與活動票券、開啟手機 scanner、逐一核銷。這不是出貨表單。' },
+    'pk.sub':           { en: 'Every item carries its own pickup code — staff scan one code to hand over one item.', zh: '每一件商品各有一組領取碼，工作人員掃一碼、交出一件。' },
     'pk.btn.create':    { en: 'Create pickup session', zh: '建立取貨場次' },
     'pk.kpi.today':     { en: 'To redeem today',   zh: '今日待核銷' },
     'pk.kpi.active':    { en: 'Active sessions',   zh: '進行中場次' },
     'pk.kpi.redeemed':  { en: 'Redeemed today',    zh: '今日已核銷' },
+    'pk.kpi.unit':      { en: 'units',              zh: '件' },
     'pk.status.all':       { en: 'All',        zh: '全部' },
     'pk.status.scheduled': { en: 'Scheduled',  zh: '尚未開始' },
     'pk.status.active':    { en: 'Active',     zh: '進行中' },
@@ -5416,8 +5669,8 @@
     'pk.search.ph':     { en: 'Search sessions', zh: '搜尋取貨場次' },
     'pk.col.session':   { en: 'Session',        zh: '取貨場次' },
     'pk.col.content':   { en: 'Contents',      zh: '內容' },
-    'pk.col.pending':   { en: 'Pending',        zh: '待核銷' },
-    'pk.col.redeemed':  { en: 'Redeemed',       zh: '已核銷' },
+    'pk.col.pending':   { en: 'Pending units',  zh: '待核銷件數' },
+    'pk.col.redeemed':  { en: 'Redeemed units', zh: '已核銷件數' },
     'pk.col.status':    { en: 'Status',         zh: '狀態' },
     'pk.col.scanner':   { en: 'Scanner',        zh: 'Scanner' },
     'pk.a.more':        { en: 'More actions',   zh: '更多操作' },
@@ -5494,7 +5747,7 @@
     'pk.roster.all':    { en: 'All',          zh: '全部' },
     'pk.roster.pending':{ en: 'Pending',      zh: '待核銷' },
     'pk.roster.done':   { en: 'Redeemed',     zh: '已核銷' },
-    'pk.roster.search.ph': { en: 'Name, email, order #, ticket ID', zh: '姓名、email、訂單編號、ticket ID' },
+    'pk.roster.search.ph': { en: 'Name, email, order #, ticket ID, pickup code', zh: '姓名、email、訂單編號、ticket ID、領取碼' },
     'pk.roster.r1':     { en: 'Order #ZT-10482 · Pirate Queen zine vol. 02 ×1', zh: '訂單 #ZT-10482 · 海上霸姬 幕後寫真誌 vol.02 ×1' },
     'pk.roster.r2':     { en: 'Order #ZT-10475 · Kowloon After Dark tee (M) ×1 · redeemed 14:22', zh: '訂單 #ZT-10475 · 九龍夜行 紀念 T 恤 (M) ×1 · 14:22 核銷' },
     'pk.roster.r3':     { en: 'Ticket TK-88213 · Signing GA entry · checked in 14:05', zh: '票券 TK-88213 · 簽書會一般入場 · 14:05 入場' },
@@ -5503,23 +5756,38 @@
     'pk.roster.reverse':{ en: 'Reverse redemption', zh: '反轉核銷' },
     'pk.roster.manual': { en: 'Redeem manually', zh: '手動核銷' },
     'pk.roster.noresult': { en: 'No matching people', zh: '查無符合的名單' },
+    /* D240 一物一碼：買多件的買家收成一列可展開的群組列，列首寫本場次已領幾件。 */
+    'pk.roster.group.expand': { en: 'Show pickup units', zh: '展開這位買家的領取單位' },
+    'pk.g.mika.progress': { en: '1 of 5 collected', zh: '本場次已領 1／5' },
+    'pk.g.noor.progress': { en: '0 of 2 collected', zh: '本場次已領 0／2' },
+    'pk.g.kai.progress':  { en: '2 of 2 collected', zh: '本場次已領 2／2' },
+    /* 退款即失效示範（D242，2026-09-03）：Yuki H.（#ZT-10471，一件失效一件仍可領）、
+       Jonas P.（#ZT-10473，組合成員部分失效）。N＝總件數扣掉已失效的（見 js/orders-store.js
+       同一輪的「退款即失效」節）。 */
+    'pk.g.yuki.progress': { en: '0 of 1 collected · 1 refunded', zh: '本場次已領 0／1・1 件已退款失效' },
+    'pk.g.jonas.progress': { en: '0 of 1 collected · 2 refunded', zh: '本場次已領 0／1・2 件已退款失效' },
     'pk.st.pending':    { en: 'Pending',      zh: '待核銷' },
     'pk.st.done':       { en: 'Redeemed',     zh: '已核銷' },
+    /* D242：退款成立後該領取單位轉此狀態，與 od.unit.status.void 用同一組字樣 */
+    'pk.st.void':       { en: 'Cancelled / refunded', zh: '已取消／已退款' },
     'pk.st.checkedin':  { en: 'Checked in',   zh: '已入場' },
+    'pk.st.waiting':    { en: 'To check in',  zh: '待入場' },
     'pk.log.all':       { en: 'All',          zh: '全部' },
     'pk.log.success':   { en: 'Success',      zh: '成功' },
     'pk.log.duplicate': { en: 'Duplicate',    zh: '重複掃描' },
     'pk.log.reversal':  { en: 'Reversal',     zh: '人工反轉' },
     'pk.log.export':    { en: 'Export',       zh: '匯出' },
     'pk.log.exported':  { en: 'Exported',     zh: '已匯出' },
-    'pk.log.l1':        { en: 'Devon W. · Kowloon After Dark tee (M) ×1', zh: 'Devon W. · 九龍夜行 紀念 T 恤 (M) ×1' },
-    'pk.log.l1.meta':   { en: '14:22 · order #ZT-10475 · staff: Jo', zh: '14:22 · 訂單 #ZT-10475 · 工作人員：Jo' },
+    'pk.log.l1':        { en: 'Devon W. · Kowloon After Dark tee (M)', zh: 'Devon W. · 九龍夜行 紀念 T 恤 (M)' },
+    'pk.log.l1.meta':   { en: '14:22 · PU-10475-01 · order #ZT-10475 · staff: Jo', zh: '14:22 · PU-10475-01 · 訂單 #ZT-10475 · 工作人員：Jo' },
     'pk.log.l2':        { en: 'Aria S. · Signing GA entry', zh: 'Aria S. · 簽書會一般入場' },
     'pk.log.l2.meta':   { en: '14:05 · ticket TK-88213 · check-in written to Events', zh: '14:05 · 票券 TK-88213 · 入場狀態已回寫 Events' },
-    'pk.log.l3':        { en: 'Kai T. · Kowloon After Dark tee (L) ×1', zh: 'Kai T. · 九龍夜行 紀念 T 恤 (L) ×1' },
-    'pk.log.l3.meta':   { en: '14:31 · already redeemed 13:58 — blocked', zh: '14:31 · 13:58 已核銷 — 已擋下' },
-    'pk.log.l4':        { en: 'Reversal · Nina P. · Pirate Queen zine vol. 02 ×1', zh: '反轉 · Nina P. · 海上霸姬 幕後寫真誌 vol.02 ×1' },
-    'pk.log.l4.meta':   { en: '13:40 · reversed wrong scan · order #ZT-10460 restored to pending', zh: '13:40 · 反轉誤掃 · 訂單 #ZT-10460 回到待核銷' },
+    'pk.log.l3':        { en: 'Kai T. · Kowloon After Dark tee (L)', zh: 'Kai T. · 九龍夜行 紀念 T 恤 (L)' },
+    'pk.log.l3.meta':   { en: '14:31 · PU-10466-02 · already redeemed 13:58 — blocked', zh: '14:31 · PU-10466-02 · 13:58 已核銷 — 已擋下' },
+    'pk.log.l4':        { en: 'Reversal · Nina P. · Pirate Queen zine vol. 02', zh: '反轉 · Nina P. · 海上霸姬 幕後寫真誌 vol.02' },
+    'pk.log.l4.meta':   { en: '13:40 · PU-10460-01 · reversed wrong scan · that unit back to pending', zh: '13:40 · PU-10460-01 · 反轉誤掃 · 這一件回到待核銷' },
+    'pk.log.l5':        { en: 'Mika L. · Kowloon After Dark six-panel cap', zh: 'Mika L. · 九龍夜行 六片帽' },
+    'pk.log.l5.meta':   { en: '13:40 · PU-10482-02 · from Launch night bundle · order #ZT-10482', zh: '13:40 · PU-10482-02 · 來自 首賣夜 組合包 · 訂單 #ZT-10482' },
     'pk.log.st.success':   { en: 'Success',   zh: '成功' },
     'pk.log.st.duplicate': { en: 'Duplicate', zh: '重複掃描' },
     'pk.log.st.reversal':  { en: 'Reversal',  zh: '人工反轉' },
@@ -5533,9 +5801,14 @@
     'pk.board.per':     { en: 'Per person',     zh: '每人領取' },
     'pk.board.progress':{ en: 'Redemption progress', zh: '核銷進度' },
     'pk.board.result':  { en: 'Session result', zh: '這場結果' },
-    'pk.board.left':    { en: 'still to collect', zh: '人還沒領' },
-    'pk.board.noshow':  { en: 'did not collect', zh: '人沒來領' },
+    'pk.board.left':    { en: 'units still to collect', zh: '件還沒領走' },
+    'pk.board.noshow':  { en: 'units not collected', zh: '件沒領走' },
     'pk.board.redeemed':{ en: 'Redeemed',       zh: '已核銷' },
+    /* D240：核銷數字以「件」（領取單位）計；買家人數另列一行，一位買家可能有好幾件。 */
+    'pk.board.redeemed.active': { en: '44 / 80 units', zh: '44 / 80 件' },
+    'pk.board.redeemed.ended':  { en: '68 / 80 units', zh: '68 / 80 件' },
+    'pk.board.buyers':  { en: 'Buyers',        zh: '買家' },
+    'pk.board.buyers.val': { en: '52 people',  zh: '52 位' },
     'pk.board.export':  { en: 'Export no-shows', zh: '匯出未領名單' },
     'pk.board.extend':  { en: 'Extend session', zh: '延長場次時間' },
     'pk.a.copyurl':     { en: 'Copy scanner URL', zh: '複製掃碼網址' },
@@ -5545,13 +5818,14 @@
     'pk.col.source':    { en: 'Source',         zh: '來源' },
     'pk.col.item':      { en: 'Pickup item',    zh: '領取項目' },
     'pk.col.variant':   { en: 'Variant',        zh: '規格' },
-    'pk.col.qty':       { en: 'Qty',            zh: '數量' },
+    'pk.col.code':      { en: 'Pickup code',    zh: '領取碼' },
+    'pk.col.bundle':    { en: 'From bundle',    zh: '來源組合' },
     'pk.col.status':    { en: 'Status',         zh: '狀態' },
     'pk.col.lastscan':  { en: 'Last redeemed',  zh: '最近核銷' },
     'pk.r1.item':       { en: 'Pirate Queen zine vol. 02', zh: '海上霸姬 幕後寫真誌 vol.02' },
     'pk.r2.item':       { en: 'Kowloon After Dark tee',  zh: '九龍夜行 紀念 T 恤' },
     'pk.r3.item':       { en: 'Signing GA entry', zh: '簽書會一般入場' },
-    'pk.log.dialog.sub':{ en: 'Every scan result, including blocked duplicates and manual reversals.', zh: '每一次掃碼的結果，包含被擋下的重複掃描與人工反轉。' },
+    'pk.log.dialog.sub':{ en: 'One row per pickup unit — every scan result, including blocked duplicates and manual reversals.', zh: '一列一件：每一次掃碼的結果，包含被擋下的重複掃描與人工反轉。' },
     /* 另外兩個場次（對應取貨管理列表的三列） */
     'pk.s2.name':       { en: 'Kaohsiung fan-meet — pickup', zh: '高雄粉絲見面會取貨' },
     'pk.s2.loc':        { en: 'Pier-2 Hall B',  zh: '駁二 B 館' },
@@ -5572,6 +5846,7 @@
     'pks.tab.items':    { en: 'Items',     zh: '取貨項目' },
     'pks.tab.scanner':  { en: 'Password',  zh: '設置密碼' },
     'pks.sec.items.sub':{ en: 'Add at least one product or event ticket.', zh: '至少加入一項商品或活動票券' },
+    'pks.bundle.note':  { en: 'Splits into {n} member units — each has its own pickup code and is redeemed on its own.', zh: '會拆成 {n} 個成員的領取單位，各有自己的領取碼、各自核銷。' },
     'pks.close':        { en: 'Close',         zh: '關閉' },
     'pks.f.name':       { en: 'Session name',  zh: '場次名稱' },
     'pks.f.name.ph':    { en: 'e.g., Taipei signing — pickup', zh: '例：台北簽書會取貨' },
@@ -5613,7 +5888,6 @@
     'pks.done.ok':      { en: 'Done',          zh: '完成' },
 
     /* ── D111 · 手機 scanner scanner.html（sc.*）── */
-    'sc.brand':         { en: 'ztor scanner',  zh: 'ztor scanner' },
     'sc.brand.mark':    { en: 'Scanner',       zh: 'Scanner' },
     'sc.session':       { en: 'Taipei signing — pickup', zh: '台北簽書會取貨' },
     'sc.pw.title':      { en: 'Enter scanner password', zh: '輸入 scanner 密碼' },
@@ -5624,28 +5898,17 @@
     'sc.nav.scan':      { en: 'Scan',           zh: '掃描' },
     'sc.nav.items':     { en: 'Items',          zh: '項目' },
     'sc.nav.roster':    { en: 'Roster',         zh: '名單' },
-    'sc.roster.hint':   { en: 'Read-only lookup — reverse a redemption only in Pickup session detail on the creator dashboard.', zh: '僅供查詢——反轉核銷只能在創作者後台的取貨場次詳情操作。' },
-    'sc.cam.hint':      { en: 'Point the camera at a buyer’s QR code', zh: '將相機對準買家的 QR code' },
-    'sc.scan.simulate': { en: 'Simulate a scan', zh: '模擬掃描' },
-    'sc.scan.manual':   { en: 'Enter code manually', zh: '手動輸入代碼' },
+    'sc.roster.hint':   { en: 'Read-only — reverse a redemption in Pickup session detail on the creator dashboard.', zh: '僅供查詢——反轉核銷只能在創作者後台的取貨場次詳情操作。' },
+    'sc.cam.hint':      { en: 'Point the camera at a pickup code', zh: '將相機對準領取碼' },
+    'sc.scan.manual':   { en: 'Enter code manually', zh: '手動輸入領取碼' },
     'sc.scan.note':     { en: 'The scanner only redeems — it can’t see amounts, Earnings or fan data.', zh: 'scanner 只能核銷——看不到金額、Earnings 或粉絲資料。' },
     'sc.res.valid':     { en: 'Valid — ready to redeem', zh: '有效 — 可核銷' },
     'sc.res.dup':       { en: 'Already redeemed', zh: '已核銷過' },
     'sc.res.notin':     { en: 'Not in this session', zh: '不屬於此場次' },
     'sc.res.back':      { en: 'Back',          zh: '返回' },
-    'sc.res.confirm':   { en: 'Confirm pickup', zh: '確認核銷' },
-    'sc.res.redeemed':  { en: 'Redeemed ✓',    zh: '已核銷 ✓' },
-    'sc.r.buyer':       { en: 'Buyer',         zh: '買家' },
-    'sc.r.holder':      { en: 'Ticket holder', zh: '持票人' },
-    'sc.r.source':      { en: 'Source',        zh: '來源' },
     'sc.r.item':        { en: 'Item',          zh: '項目' },
-    'sc.r.qty':         { en: 'Qty',           zh: '數量' },
-    'sc.r.status':      { en: 'Status',        zh: '狀態' },
-    'sc.st.pending':    { en: 'Awaiting pickup', zh: '待取貨' },
-    'sc.st.waiting':    { en: 'To check in',   zh: '待入場' },
-    'sc.st.doneat':     { en: 'Redeemed 13:58', zh: '13:58 已核銷' },
-    'sc.note.dup':      { en: 'This QR was already redeemed. Ask a creator to reverse it before redeeming again.', zh: '此 QR 已核銷過。需再次核銷請先請創作者反轉。' },
-    'sc.note.notin':    { en: 'This QR is valid but not added to this session. Add the item in Pickup management or use the right session.', zh: '此 QR 有效但未加入本場次。請在取貨管理加入該項目，或使用正確場次。' },
+    'sc.note.dup':      { en: 'This code was redeemed already — scanning it again changes nothing. The buyer’s other items are unaffected; a creator can reverse this one in the studio.', zh: '這一件已經核銷過，再掃一次不會生效。同一位買家的其他件不受影響；要重來請創作者在後台反轉這一件。' },
+    'sc.note.notin':    { en: 'The code is valid, but this item was never added to the session you are scanning for.', zh: '領取碼有效，但這一件的商品沒有加進你正在掃的這一場。' },
     /* 2026-08-19 掃碼流程重規劃（camera-first＋bottom sheet）新增 */
     'sc.gate.place':    { en: 'Huashan Creative Park · Hall 4B', zh: '華山文創園區 中4B' },
     'sc.gate.time':     { en: 'Today 13:00 – 18:00', zh: '今天 13:00 – 18:00' },
@@ -5659,11 +5922,11 @@
     'sc.lock.body':     { en: '5 wrong attempts — this device is locked for 10 minutes. The creator can still change the password in the studio. (Demo: 10 seconds.)', zh: '密碼連續錯誤 5 次，此裝置暫停輸入 10 分鐘；創作者仍可在後台修改密碼。（demo 以 10 秒代替）' },
     'sc.cnt.pending':   { en: 'Pending',        zh: '待核銷' },
     'sc.cnt.done':      { en: 'Redeemed',       zh: '已核銷' },
-    'sc.res.confirmall':{ en: 'Confirm — redeem everything', zh: '確認核銷，一次領取全部' },
-    'sc.res.refund':    { en: 'Order cancelled / refunded', zh: '訂單已取消／退款' },
-    'sc.note.refund':   { en: 'This entitlement is no longer valid. If the buyer disputes it, point them to the creator.', zh: '此資格已失效；如有爭議請買家聯繫創作者。' },
+    /* zh 統一成「已取消／已退款」與 od.unit.status.void／pk.st.void 同一組字樣（D242，2026-09-03）*/
+    'sc.res.refund':    { en: 'Cancelled / refunded', zh: '已取消／已退款' },
+    /* F1.3 明文要求：說明「碼已失效、不可核銷」，不只是講沒東西可交付（D242）*/
+    'sc.note.refund':   { en: 'This pickup code is void and can no longer be redeemed — the item was cancelled or refunded. There is nothing to hand over; point the buyer to the creator.', zh: '這個領取碼已失效、不可核銷——這一件已取消或退款。沒有東西可以交付，請買家聯繫創作者。' },
     'sc.last':          { en: 'Last redeemed',  zh: '最近核銷時間' },
-    'sc.notin.item':    { en: 'Poster print A2', zh: 'A2 海報印刷' },
     'sc.flash.done':    { en: 'Redeemed',       zh: '已完成核銷' },
     'sc.flash.sub':     { en: 'Roster and redemption log updated', zh: '已回寫名單與核銷紀錄' },
     'sc.flash.held':    { en: 'Result held',    zh: '已保留結果' },
@@ -5676,23 +5939,39 @@
     'sc.block.ended.b': { en: 'Ended at 18:00. Unredeemed entitlements stay pending; extend the end time in session detail to keep scanning.', zh: '結束時間 18:00 已過；未領取的資格維持待核銷，要延長請創作者在場次詳情調整結束時間。' },
     'sc.off.banner':    { en: 'Offline — results are held, not redeemed', zh: '目前離線——結果先保留，不算核銷' },
     'sc.off.queue':     { en: 'To send',        zh: '待送出' },
-    'sc.manual.title':  { en: 'Enter a code',   zh: '手動輸入代碼' },
-    'sc.manual.ph':     { en: 'QR code, ticket ID or pickup code', zh: 'QR 代碼、票號或取貨代碼' },
-    'sc.manual.hint':   { en: 'For when the camera can’t scan or the buyer has no QR.', zh: '相機掃不到或買家出示不了 QR 時使用。' },
+    'sc.manual.title':  { en: 'Enter a code',   zh: '手動輸入領取碼' },
+    'sc.manual.ph':     { en: 'Pickup code or ticket ID', zh: '領取碼或票號' },
+    'sc.manual.hint':   { en: 'For when the camera can’t scan or the buyer can’t show a code.', zh: '相機掃不到、或買家出示不了領取碼時使用。' },
     'sc.manual.go':     { en: 'Check code',     zh: '驗證代碼' },
     'sc.manual.x':      { en: 'Cancel',         zh: '取消' },
-    'sc.roster.tap':    { en: 'Tap a row to fill its code into manual entry.', zh: '點名單列可把代碼帶入手動輸入。' },
+    'sc.roster.tap':    { en: 'Tap an item to fill its code into manual entry.', zh: '點單位列可把領取碼帶入手動輸入。' },
     'sc.items.hint':    { en: 'To change what this session can redeem, edit the session in the studio.', zh: '要調整可核銷範圍，請回場次詳情的編輯入口。' },
     'sc.demo.title':    { en: 'Demo scenarios', zh: 'Demo 情境' },
     'sc.demo.ok':       { en: 'Scan: success',  zh: '模擬掃描：成功' },
     'sc.demo.dup':      { en: 'Duplicate scan', zh: '重複掃描' },
     'sc.demo.notin':    { en: 'Not in this session', zh: '不屬於此場次' },
-    'sc.demo.refund':   { en: 'Cancelled / refunded', zh: '已取消／退款' },
+    'sc.demo.refund':   { en: 'Cancelled / refunded', zh: '已取消／已退款' },
     'sc.demo.offline':  { en: 'Toggle offline', zh: '切換離線' },
     'sc.demo.time':     { en: 'Cycle session time', zh: '切換場次時間狀態' },
     'sc.demo.lock':     { en: 'Password lockout', zh: '模擬密碼鎖定' },
     'sc.demo.reset':    { en: 'Reset demo',     zh: '重設 demo' },
     'sc.demo.note':     { en: 'Prototype-only controls — the real page has no such rail.', zh: '原型專用控制列——正式產品沒有這一欄。' },
+
+    /* 2026-09-03 一物一碼（D240）：一個領取碼核銷一件；結果只顯示這一件，確認後回相機
+       並以進度 band 提示這位買家在本場次還剩幾件 */
+    'sc.res.confirmone':{ en: 'Redeem this item',  zh: '確認核銷這一件' },
+    'sc.r.variant':     { en: 'Option',            zh: '選項' },
+    'sc.r.from':        { en: 'From bundle',       zh: '來源組合' },
+    'sc.r.from.meta':   { en: 'from {name}',       zh: '來自{name}' },
+    'sc.notin.unknown': { en: 'Unknown code',     zh: '查無此領取碼' },
+    'sc.note.unknown':  { en: 'No pickup unit carries this code. Re-check it with the buyer, or look the buyer up in the roster.', zh: '沒有任何領取單位掛著這個碼。請與買家再確認一次，或到名單用姓名查。' },
+    'sc.prog.count':    { en: '{n} / {m} redeemed', zh: '已領 {n}／{m}' },
+    'sc.prog.left':     { en: '{n} still to scan', zh: '還有 {n} 件要掃' },
+    'sc.prog.clear':    { en: 'Nothing left for this buyer', zh: '這位買家已全數領完' },
+    'sc.roster.search.ph': { en: 'Name, order #, ticket ID, pickup code', zh: '姓名、訂單編號、票號、領取碼' },
+    'sc.roster.empty':  { en: 'No match in this session', zh: '本場次查無符合的資料' },
+    'sc.demo.next':     { en: 'Same buyer, next item', zh: '同買家第二件' },
+    'sc.demo.bundle':   { en: 'Bundle member',     zh: '組合成員' },
 
     'od.item1.name':  { en: 'Pirate Queen zine vol. 02', zh: '海上霸姬 幕後寫真誌 vol.02' },
     'od.item2.name':  { en: 'Kowloon After Dark tee (M)', zh: '九龍夜行 紀念 T 恤 (M)' },
@@ -5707,6 +5986,7 @@
     'od.item9.name':  { en: 'Kowloon After Dark — lead single', zh: '九龍夜行 主題單曲' },
     'od.item10.name': { en: 'Pirate Queen — behind the scenes', zh: '海上霸姬 幕後紀錄' },
     'od.item11.name': { en: 'Lam Ka-wai official fan club', zh: '林家維 官方後援會' },
+    'od.item12.name': { en: 'Launch night bundle', zh: '首賣夜 組合包' },
     'project-detail.collab.owner-name': { en: 'Gary Lin', zh: '林家維' },
     'od.refund.title':      { en: 'Refund',                 zh: '退款' },
     'od.refund.select':     { en: 'Select items to refund', zh: '選擇要退款的品項' },
@@ -5715,6 +5995,9 @@
     'od.refund.cancel':     { en: 'Cancel',                 zh: '取消' },
     'od.refund.full.note':  { en: 'Refunds the whole order (all items and shipping). No item selection needed.', zh: '退整筆訂單（所有品項與運費），不需選品項。' },
     'od.refund.restock':    { en: 'Approved refunds restock physical items (digital items are non-restockable); the refund is absorbed per Earnings and posted as an adjustment — the original revenue event is never edited.', zh: '退款核准後實體商品回補庫存（數位商品不回補）；退款依 Earnings 結算並以調整分錄記錄——原始收入事件不可更改。' },
+    /* 取貨影響（D242，2026-09-03）：§2.6「取貨影響」條——失效範圍、組合成員的對應、
+       已核銷後退款不自動反轉，規則本體見 §7.2，本頁不重抄。 */
+    'od.refund.pickup-impact': { en: "Refunded items' pickup codes are voided immediately; for bundles, only the refunded members are voided. If a unit was already redeemed, its record stays — refunding doesn't reverse it.", zh: '退款成立後被退品項的領取碼即刻失效；組合品項只有被退成員失效。已核銷之後才退款的，核銷紀錄不會被撤銷。' },
     'od.refund.dispute':    { en: 'Disputes are buyer-initiated, not issued here: a disputed order shows Disputed on its Payment · settlement axis and the amount is held from Available until Earnings resolves it.', zh: '爭議由買家發起、非在此提出：訂單被爭議時於「付款 · 結算」軸顯示 Disputed，該筆金額自可提領餘額暫扣、待 Earnings 調查。' },
     'od.snap.title':        { en: 'Product snapshot',        zh: '商品快照' },
     'od.snap.variant':      { en: 'Variant purchased',       zh: '所購選項' },
@@ -6332,16 +6615,25 @@
     'pd-ov.kpi.range-day':{en: 'Day',zh: '日'},
     'pd-ov.kpi.range-week':{en: 'Week',zh: '週'},
     'pd-ov.kpi.range-month':{en: 'Month',zh: '月'},
-    'pd-ov.kpi.bk-foot':{en: 'Cumulative backers since launch',zh: '開跑至今的累積支持人數'},
+    'pd-ov.kpi.units':{en: 'Sales trend',zh: '販售趨勢'},
+    /* 2026-09-01 撤除（墓碑）：卡底那句期間說明的全部 12 個字串
+       （`units-foot`／`pre-foot`／`rev-foot`／`aud-foot` × 日週月）。
+       同日先由「累積…」改成「每期新增…」，當天稍晚使用者裁示整句刪掉——
+       同一件事卡上已經講了三次：卡頭標題、期間切換、縱軸刻度。 */
+    'pd-ov.kpi.units-split':{en: 'Units sold by plan',zh: '依方案看售出份數'},
+    'pd-cf.col.units':{en: 'Units sold',zh: '售出份數'},
     /* 方案統計（2026-08-31）：已募那條長條的明細拆成自己一段。 */
     'pd-ov.plansplit.title':{en: 'By plan',zh: '方案統計'},
     'pd-ov.plansplit.col-plan':{en: 'Plan',zh: '方案'},
+    'pd-ov.plansplit.unit':{en: 'units',zh: '份'},
     'pd-ov.plansplit.col-sold':{en: 'Sold',zh: '售出'},
     'pd-ov.plansplit.col-amount':{en: 'Raised',zh: '累積金額'},
     'pd-ov.plansplit.col-share':{en: 'Share',zh: '佔比'},
     'pd-ov.kpi.bk-split':{en: 'Backers by plan',zh: '依方案看支持人數'},
     'pd-ov.kpi.bk-x0':{en: 'Start',zh: '開始'},
     'pd-ov.kpi.bk-x1':{en: 'Now',zh: '現在'},
+    'pd-ov.kpi.pre-trend':{en: 'Sales trend',zh: '販售趨勢'},
+    'pd-ov.kpi.pre-split':{en: 'Pre-orders by plan',zh: '依方案看預購筆數'},
     'pd-c.attach-image':{en: 'Image',zh: '圖片'},
     'pd-c.attach-video':{en: 'Video',zh: '影片'},
     'pd-c.attach-audio':{en: 'Music',zh: '音樂'},
@@ -6618,7 +6910,7 @@
     'project-detail.schedule.editbtn':{en: 'Edit dates',zh: '編輯日期'},
     'project-detail.showcase.images':{en: 'Images',zh: '圖片素材'},
     'project-detail.showcase.gallery':{en: 'Gallery',zh: '相簿'},
-    'project-detail.showcase.gallery-hint':{en: '1200 × 800 · 1–8 images',zh: '1200 × 800 · 1–8 張'},
+    'project-detail.showcase.gallery-hint':{en: '1200 × 800 · 1–10 images',zh: '1200 × 800 · 1–10 張'},
     'project-detail.showcase.video':{en: 'Trailer / story video',zh: '預告 / 故事影片'},
     'project-detail.showcase.trailer-drop':{en: 'Drop an MP4 or MOV',zh: '拖放 MP4 或 MOV'},
     'project-detail.showcase.trailer-hint':{en: 'Up to 2 GB · pending',zh: '上限 2 GB · 待補'},
@@ -7031,7 +7323,7 @@
        同輪四個空格補上常駐 CTA 後，這格是整個素材步驟裡唯一還用另一種說法的，改成同一句。 */
     'pw.art.cover.cta':     { en: 'Drop an image or browse',         zh: '拖入圖片或點擊選檔' },
     'pw.art.stills.title':  { en: 'Stills',                           zh: '劇照' },
-    'pw.art.stills.sub':    { en: 'Frames that sell the film without spoiling it. Up to 8.', zh: '讓人想看、又不爆雷的畫面。最多 8 張。' },
+    'pw.art.stills.sub':    { en: 'Frames that sell the film without spoiling it. Up to 10.', zh: '讓人想看、又不爆雷的畫面。最多 10 張。' },
     'pw.art.trailer.title': { en: 'Trailer',                          zh: '預告片' },
     'pw.art.trailer.sub':   { en: 'Plays on the work’s page before anyone rents it.', zh: '放在作品頁上，租片前就能看。' },
     'pw.art.trailer.hint':  { en: 'Up to 3 minutes',                  zh: '3 分鐘以內' },
@@ -7262,7 +7554,7 @@
     'cocreate.crumb.self':{en: 'Co-creation dashboard',zh: '共創儀表板'},
     'cocreate.explore-note':{en: '<strong>Exploratory prototype · unified model —</strong> backer = NFT holder; creator self-contribution 0–any ($0 = pure pre-order); production paid in deliverable-gated tranches, post-release profit shared (early manual trigger allowed). A back-office preview merging the NFT and equity models; figures illustrative, pending a product decision — existing pages are unaffected until this is folded into project-detail.',zh: '<strong>探索原型 · 統一模型 —</strong> 支持者＝NFT 持有者；發起人自付額 0～任意（0＝純預購）；製作期依交付分期撥款、上映後分潤（可手動提早）。合併 NFT 與股權兩套的後台預覽，數字為示意、待產品裁決；正式併入 project-detail 前既有頁不受影響。'},
     'cocreate.badge.reached':{en: 'Goal reached',zh: '目標達成'},
-    'cocreate.badge.cat':{en: 'AI short film',zh: 'AI 短劇'},
+    'cocreate.badge.cat':{en: 'AI short film',zh: 'AI 短片'},
     'cocreate.badge.type':{en: 'Co-creation',zh: '共創計畫'},
     'cocreate.title':{en: 'I Am Speed',zh: '我要衝線'},
     'cocreate.owner-line':{en: 'By Gary · Original language Cantonese · Campaign 2026/06/01–09/01',zh: '發起人 Gary · 原版語言 粵語 · 計畫期間 2026/06/01–09/01'},
@@ -7800,6 +8092,13 @@
     'event-detail.sales.title':{ en: 'Sales progress',     zh: '售票進度' },
     'event-detail.sales.sold': { en: 'Sold',               zh: '已售出' },
     'event-detail.sales.bytier':{ en: 'By tier',           zh: '各票種' },
+    /* 販售時間卡（2026-08-31）：大字＝還剩幾天可賣，meta＝實際的開賣／停售日期與時間。 */
+    'event-detail.sales.window': { en: 'Sales window',      zh: '販售時間' },
+    'event-detail.sales.window.left': { en: 'days left',    zh: '天可賣' },
+    'event-detail.sales.window.today': { en: 'Last day',    zh: '今天最後一天' },
+    'event-detail.sales.window.closed': { en: 'Closed',     zh: '已停售' },
+    'event-detail.sales.window.opens': { en: 'Opens {t}',   zh: '{t} 開賣' },
+    'event-detail.sales.window.untilstart': { en: 'until the event begins', zh: '賣到開演' },
     'event-detail.sales.week': { en: 'Last 7 days',        zh: '最近 7 天' },
     'event-detail.sales.left': { en: 'left {n}',           zh: '剩 {n}' },
     'event-detail.sales.held': { en: '{n} held',           zh: '{n} 保留' },
@@ -7864,9 +8163,9 @@
     'ed.pub.onsale.now.sub': { en: 'Selling starts the moment it goes live, and runs until the event begins.',
                               zh: '發布後立刻開賣，賣到活動開始為止。' },
     'ed.pub.onsale.sch.sub': { en: 'You set when selling opens and closes; outside that window nobody can buy.',
-                              zh: '自己指定開賣與停售時間，時間外買不到。' },
-    'ed.pub.sale.from':   { en: 'Sale opens',              zh: '開賣時間' },
-    'ed.pub.sale.to':     { en: 'Sale closes',             zh: '停售時間' },
+                              zh: '自己指定開賣與停售日期與時間，時間外買不到。' },
+    'ed.pub.sale.from':   { en: 'Sale opens',              zh: '開賣日期與時間' },
+    'ed.pub.sale.to':     { en: 'Sale closes',             zh: '停售日期與時間' },
     'ed.pub.ship.sub':    { en: 'How fans get hold of the ticket.', zh: '粉絲怎麼拿到票。' },
     'ed.pub.pickup.eticket.sub': { en: 'The ticket lives in the app; scan it at the door.',
                               zh: '票收在 App 裡，入場掃碼。' },
@@ -8406,15 +8705,15 @@
     'fin.period.year':        { en: 'Year', zh: '年' },
     'fin.items.title':        { en: 'My projects', zh: '我的項目' },
     'fin.cat.all':            { en: 'All categories', zh: '全部類別' },
-    'fin.cat.film':           { en: 'Film', zh: '電影' },
-    'fin.cat.short':          { en: 'Short drama', zh: '短劇' },
-    'fin.cat.series':         { en: 'Series', zh: '連續劇' },
+    'fin.cat.film':           { en: 'Movie', zh: '電影' },
+    'fin.cat.short':          { en: 'Short film', zh: '短片' },
+    'fin.cat.series':         { en: 'Series', zh: '影集' },
     'fin.cat.single':         { en: 'Single', zh: '單曲' },
     'fin.cat.album':          { en: 'Album', zh: '專輯' },
     'fin.cat.mv':             { en: 'MV',                    zh: 'MV' },
     'fin.cat.event':          { en: 'Event',                 zh: '活動' },
-    'fin.cat.merch':          { en: 'Merch',                 zh: '周邊商品' },
-    'fin.cat.doc':            { en: 'Document',              zh: '文檔' },
+    'fin.cat.merch':          { en: 'Merch',                 zh: '周邊' },
+    'fin.cat.doc':            { en: 'Documentary',           zh: '紀錄片' },
     'fin.cat.custom':         { en: 'Custom',                zh: '自訂' },
     'fin.date.todate':        { en: 'To date', zh: '迄今' },
     'fin.date.3m':            { en: 'Last 3 months', zh: '近三個月' },
@@ -8827,7 +9126,7 @@
       'events.row2.venue':    { zh: '屏東', en: 'Pingtung' },
       'events.row2.tickets':  { zh: '— / 不限名額', en: '— / unlimited' },
       'events.row3.title':    { zh: 'REALIVE 世界巡迴・中國段 — 重慶場', en: 'REALIVE World Tour (China) — Chongqing' },
-      'events.row3.meta':     { zh: '演出 · 世界巡迴', en: 'Concert · World tour' },
+      'events.row3.meta':     { zh: '演唱會 · 世界巡迴', en: 'Concert · World tour' },
       'events.row3.datetime': { zh: '2026/10/25 · 晚上 8:00', en: 'Oct 25, 2026 · 8:00 PM' },
       'events.row3.venue':    { zh: '蜚聲 LIVEHOUSE · 重慶', en: 'Feisheng Livehouse · Chongqing' },
       'events.row4.title':    { zh: '台灣祭墾丁大灣 — 演唱嘉賓', en: 'Taiwan Fest Kenting — Guest set' },
@@ -8836,15 +9135,15 @@
       'events.row4.venue':    { zh: '墾丁大灣 · 屏東', en: 'Kenting Dawan · Pingtung' },
       'events.row4.tickets':  { zh: '— / 不限名額', en: '— / unlimited' },
       'events.row5.title':    { zh: 'LOVE·RAGE·HOPE Live House Tour — 臺中場', en: 'LOVE·RAGE·HOPE Live House Tour — Taichung' },
-      'events.row5.meta':     { zh: '演出 · Live House 巡演', en: 'Concert · Live house tour' },
+      'events.row5.meta':     { zh: '演唱會 · Live House 巡演', en: 'Concert · Live house tour' },
       'events.row5.datetime': { zh: '2026/4/11 · 晚上 8:00', en: 'Apr 11, 2026 · 8:00 PM' },
       'events.row5.venue':    { zh: 'Legacy Taichung · 臺中', en: 'Legacy Taichung · Taichung' },
       'events.row6.title':    { zh: 'motorola 呈獻 REALIVE (R2) 特仕版 — 臺北小巨蛋', en: 'REALIVE (R2) Special Ed. — Taipei Arena' },
-      'events.row6.meta':     { zh: '演出', en: 'Concert' },
+      'events.row6.meta':     { zh: '演唱會', en: 'Concert' },
       'events.row6.datetime': { zh: '2025/5/23 · 晚上 8:00', en: 'May 23, 2025 · 8:00 PM' },
       'events.row6.venue':    { zh: '臺北小巨蛋 · 臺北', en: 'Taipei Arena · Taipei' },
       'events.row7.title':    { zh: 'REALIVE 世界巡迴 — 新場次規劃', en: 'REALIVE World Tour — Next leg (planning)' },
-      'events.row7.meta':     { zh: '演出 · 規劃中', en: 'Concert · planning' },
+      'events.row7.meta':     { zh: '演唱會 · 規劃中', en: 'Concert · planning' },
       'event-detail.h1':                { zh: 'REALIVE 世界巡迴・中國段 — 重慶場', en: 'REALIVE World Tour (China) — Chongqing' },
       'event-detail.ov.series-val':     { zh: 'REALIVE 世界巡迴 · 第 2 場（共 3 場）', en: 'REALIVE World Tour · 2 of 3' },
       'event-detail.series.row1.title': { zh: 'REALIVE 世界巡迴・中國段 — 成都場', en: 'REALIVE World Tour (China) — Chengdu' },
@@ -8954,9 +9253,10 @@
       'pk.roster.r1':   { zh: '訂單 #ZT-10482 · REALIVE 巡演精裝寫真誌 ×1', en: 'Order #ZT-10482 · REALIVE tour photobook ×1' },
       'pk.roster.r2':   { zh: '訂單 #ZT-10475 · REALIVE 白趴 官方 Tee (M) ×1 · 14:22 核銷', en: 'Order #ZT-10475 · REALIVE White Party tee (M) ×1 · redeemed 14:22' },
       'pk.roster.r4':   { zh: '訂單 #ZT-10466 · REALIVE 白趴 官方 Tee (L) ×1 · 14:31 核銷', en: 'Order #ZT-10466 · REALIVE White Party tee (L) ×1 · redeemed 14:31' },
-      'pk.log.l1':      { zh: 'Devon W. · REALIVE 白趴 官方 Tee (M) ×1', en: 'Devon W. · REALIVE White Party tee (M) ×1' },
-      'pk.log.l3':      { zh: 'Kai T. · REALIVE 白趴 官方 Tee (L) ×1', en: 'Kai T. · REALIVE White Party tee (L) ×1' },
-      'pk.log.l4':      { zh: '反轉 · Nina P. · REALIVE 巡演精裝寫真誌 ×1', en: 'Reversal · Nina P. · REALIVE tour photobook ×1' },
+      'pk.log.l1':      { zh: 'Devon W. · REALIVE 白趴 官方 Tee (M)', en: 'Devon W. · REALIVE White Party tee (M)' },
+      'pk.log.l3':      { zh: 'Kai T. · REALIVE 白趴 官方 Tee (L)', en: 'Kai T. · REALIVE White Party tee (L)' },
+      'pk.log.l4':      { zh: '反轉 · Nina P. · REALIVE 巡演精裝寫真誌', en: 'Reversal · Nina P. · REALIVE tour photobook' },
+      'pk.log.l5':      { zh: 'Mika L. · REALIVE 白趴 六片帽', en: 'Mika L. · REALIVE White Party six-panel cap' },
       /* 我的 IP（row5–8 與租入區塊，原本沒覆蓋） */
       'my-ip.row5.name':   { zh: 'REALIVE (R2) 演唱會視覺', en: 'REALIVE (R2) concert visuals' },
       'my-ip.row5.rights': { zh: '周湯豪 · 100%', en: 'Nick Chou · 100%' },

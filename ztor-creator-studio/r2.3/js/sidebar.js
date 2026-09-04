@@ -36,9 +36,13 @@
   /* 2026-08-07（D179）：Admin 同層目的地由四個增為五個——新增影片上架審核
      （spec 5.1.0.4，登記於 0-設計規格書 §3.2 產品地圖 Tier 0）。它跨全平台、
      不需選定 Artist，與其他四個同層。 */
-  const ADMIN_ROUTES = new Set(["creators.html", "creator-detail.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-video-review.html"]);
+  /* 2026-09-02（D233）：Admin 同層目的地由五個增為六個——新增創作者活動管理
+     （spec 5.1.0.6，登記於 0-設計規格書 §3.2 產品地圖 Tier 0），排在 Creator 管理
+     正下方：它是 creator 名冊衍生出來的工作，不是與 Admin IP Bank 平行的另一個領域。 */
+  const ADMIN_ROUTES = new Set(["creators.html", "creator-detail.html", "admin-creator-events.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-video-review.html"]);
   const ADMIN_NAV = [
     { href: "creators.html",          key: "admin.creator-mgmt", icon: "users" },
+    { href: "admin-creator-events.html", key: "admin.creator-events", icon: "download" },
     { href: "admin-video-review.html", key: "admin.video-review", icon: "file-check" },
     { href: "admin-ip-bank.html",     key: "admin.ip-bank",      icon: "landmark", match: ["admin-ip-bank-entry.html"] },
     { href: "ip-bank-reporting.html", key: "admin.ip-reporting", icon: "bar-chart-3" },
@@ -49,11 +53,33 @@
   /* Demo roster (prototype data; the real list comes from the backend).
      Mirrors the concept sketch (denise / aya / kmt). */
   /* D107: creator 資料含 email／電話（選填）／建立時間。email 供 phase 2 交還本人。
-     D219: 另含 bookyayEvents——已從 bookyay 匯入的活動 id 清單，只在編輯 creator 裡加。 */
+     D219: 另含 bookyayEvents——已從 bookyay 匯入的活動 id 清單。
+     D233（2026-09-02）: 匯入搬到獨立頁 admin-creator-events.html 之後，那一頁要在**還沒選人以前**
+     就把每位 creator 的進度講清楚，所以這裡補了 bookyay 相關欄位。
+     D238（2026-09-02）: 匯入由「Admin 逐場勾選」改成**綁定後自動匯入、系統持續檢查更新**，
+     所以「可匯入」這個概念整組退場（自動搬完之後不存在「還沒搬進來」的活動），欄位改成：
+       · bookyayLinked  — 有沒有綁定 bookyay 帳號。未綁定＝沒有任何活動、右欄走 F5 空狀態。
+                          綁定流程本身〔產品待確認〕（D233 未定第 4 項），這裡只有結果值。
+       · bookyayPool    — 「哪些 bookyay 活動算這位 creator 的」的原型答案（id 陣列，指向
+                          BOOKYAY_EVENTS）。真實界定方式〔產品待確認〕（D233 未定第 1 項）。
+       · bookyayEvents  — 已在 ztor 這一側落地的活動 id。**自動匯入之後它涵蓋整個 pool**
+                          （示範資料照這個前提寫；兩者不一致就演成「有東西還沒搬過來」，
+                          那正是 D238 取消掉的狀態）。
+       · bookyaySetup   — 已匯入且套組已設定完成的 id。與 create-event 發布時寫的
+                          localStorage `ztor.bkySetupDone` 併集使用：這一份是示範資料的起始值，
+                          那一份是這次操作累積的結果，兩份都算「已完成」。
+       · lastImportAt   — 最後一次真的搬進新活動的時間；沒搬過為 null。自動匯入之後沒有頁面
+                          顯示它（D235 已把「最後匯入時間」從規格 5.1.0.6 F2 移除），保留是因為
+                          它屬上游的資料口徑，不是呈現決策。
+       · lastCheckedAt  — 最後一次向 bookyay 檢查更新的時間（D238 新增，顯示在下段標題列）。
+                          未綁定為 null——沒綁帳號就沒有「檢查」這回事。 */
   const CREATORS = [
-    { handle: "denise", name: "Denise Lonely",  shop: "/shop/denise", status: "active",   email: "denise@example.com", phone: "",             created: "2026-01-08", bookyayEvents: ["bky-ev-03"] },
-    { handle: "aya",    name: "Aya Kondo",       shop: "/shop/aya",    status: "active",   email: "aya@example.com",    phone: "+81 90-1234-5678", created: "2026-02-19", bookyayEvents: [] },
-    { handle: "kmt",    name: "KMT Collective",  shop: "/shop/kmt",    status: "disabled", email: "team@kmt.example",   phone: "",             created: "2025-11-30", bookyayEvents: ["bky-ev-01", "bky-ev-05"] },
+    { handle: "denise", name: "Denise Lonely",  shop: "/shop/denise", status: "active",   email: "denise@example.com", phone: "",             created: "2026-01-08",
+      bookyayLinked: true,  bookyayPool: ["bky-1", "bky-2", "bky-3", "bky-4", "bky-5"], bookyayEvents: ["bky-1", "bky-2", "bky-3", "bky-4", "bky-5"], bookyaySetup: ["bky-1", "bky-3"], lastImportAt: "2026-08-28 14:20", lastCheckedAt: "2026-09-02 09:40" },
+    { handle: "aya",    name: "Aya Kondo",       shop: "/shop/aya",    status: "active",   email: "aya@example.com",    phone: "+81 90-1234-5678", created: "2026-02-19",
+      bookyayLinked: true,  bookyayPool: [], bookyayEvents: [], bookyaySetup: [], lastImportAt: null, lastCheckedAt: "2026-09-02 09:40" },
+    { handle: "kmt",    name: "KMT Collective",  shop: "/shop/kmt",    status: "disabled", email: "team@kmt.example",   phone: "",             created: "2025-11-30",
+      bookyayLinked: false, bookyayPool: [], bookyayEvents: [], bookyaySetup: [], lastImportAt: null, lastCheckedAt: null },
   ];
   /* BR-02 開店前置：一個 creator 的來源是本人先在 ztor 前台（買家端）自助註冊 ztor／Store
      帳號。Admin 在 Creator 管理「建立 creator」時，是搜尋這批已註冊、但尚未建檔的帳號，
@@ -66,20 +92,40 @@
     { id: "u-1288", name: "Sora Kim",      username: "sora",       email: "sora.kim@example.com",     phone: "+82 10 5555 7777", registered: "2026-07-15" },
     { id: "u-1301", name: "Diego Alvarez", username: "diego.a",    email: "diego@example.com",        phone: "",                 registered: "2026-07-18" },
   ];
-  /* D219 bookyay 活動匯入：bookyay 是外部售票平台，creator 的活動可能已經在那邊賣了。
-     Admin 在編輯 creator 時可以從這份名錄挑幾場（可多選）匯入，成為這位 creator 在
-     ztor 上的活動；匯過的就留在「已匯入」名單裡、不能再匯一次（下拉裡照樣列出但點不動，
-     理由與建立活動帶入閘門的「已匯入」同一條：濾掉會回答成「查無此活動」）。
+  /* D219 bookyay 活動：bookyay 是外部售票平台，creator 的活動可能已經在那邊賣了。
+     **D238（2026-09-02）改自動匯入**：creator 綁定 bookyay 帳號之後，屬於他的活動由系統
+     自動搬進 ztor 並持續檢查更新，Admin 不再逐場勾選——所以「可匯入／已匯入」這組對立
+     不存在了，本池對已綁定的人來說就是「他在 ztor 上的活動」。
      prototype 假資料；真實名錄由 bookyay 端提供，而「哪些活動算這位 creator 的」
-     怎麼界定〔產品待確認〕——原型把整份名錄列給每一位。 */
+     怎麼界定、多久檢查一次〔產品待確認〕（ASSUMPTIONS PG-EVIMP-001／PG-EVIMP-006）。 */
+  /* 2026-09-01 對齊 create-event.html 的 BKY 池（使用者裁示 admin 匯入後要能接著把活動
+     設完）：原本兩邊各一份假資料（這裡六場簡表、create-event 五場完整資料），id 對不上，
+     「繼續設定」就找不到完整欄位可帶。改成同 id 同名——**create-event 的 BKY 是正本**
+     （它有場次、票種、開賣日期與時間），這裡只是給 admin 看的摘要投影。
+     那邊標 imported 的三場（站上已存在的活動）刻意不列，本池維持這五場。 */
   const BOOKYAY_EVENTS = [
-    { id: "bky-ev-01", name: "REALIVE 世界巡迴 · 台北",  date: "2026-09-12", venue: "台北流行音樂中心" },
-    { id: "bky-ev-02", name: "REALIVE 世界巡迴 · 高雄",  date: "2026-09-20", venue: "高雄流行音樂中心" },
-    { id: "bky-ev-03", name: "什麼都不必說 聽團日",       date: "2026-10-04", venue: "Legacy Taipei" },
-    { id: "bky-ev-04", name: "黑膠典藏版 簽名會",         date: "2026-10-18", venue: "誠品信義店" },
-    { id: "bky-ev-05", name: "FLAMES 前導試聽會",         date: "2026-11-02", venue: "華山 Legacy mini" },
-    { id: "bky-ev-06", name: "年末感謝祭 Fan Meeting",     date: "2026-12-21", venue: "TICC 台北國際會議中心" },
+    { id: "bky-1", name: "REALIVE World Tour — Taipei", date: "2026-09-12", venue: "台北小巨蛋" },
+    { id: "bky-2", name: "MIRROR FANMEETING 2026 高雄", date: "2026-10-02", venue: "高雄流行音樂中心 海音館" },
+    { id: "bky-3", name: "城市草地音樂節 2026",          date: "2026-11-08", venue: "大佳河濱公園" },
+    { id: "bky-4", name: "限量黑膠簽名場 — 台中",        date: "2026-12-06", venue: "Legacy Taichung" },
+    { id: "bky-5", name: "冬季特別公演 — 台南",          date: "2027-01-17", venue: "台南文化中心 演藝廳" },
   ];
+  /* 2026-09-02（D233 建、D238 收成兩值）：這四欄就是創作者活動管理頁表格要的全部——
+     規格 5.1.0.6 F3 只要求「每一筆至少呈現活動名稱、日期與場地」，狀態不是資料欄位
+     而是**算出來的**：在完成清單裡＝已完成，不在＝待設定套組。自動匯入之後只剩這兩值
+     （「可匯入」隨 D238 退場）。所以本池不需要 status 欄，也就不會有「資料裡的 status
+     與算出來的狀態各說各話」這種第二真相。
+     兩份假資料**仍未合併**（見 ASSUMPTIONS UIA-EI-04）：create-event.html 的 BKY 是正本
+     （帶 type／圖片／場次／票種，驅動那一頁的類型閘門），本池是給 admin 看的摘要投影。
+     契約是 **id 一致**——「繼續設定」靠 `?import=<id>` 過去找完整欄位，id 對不上就會落空。 */
+  function bookyaySetupDone() {
+    /* 「這一場的套組設完了沒」的單一來源：示範資料的起始值（CREATORS[].bookyaySetup）
+       ＋ create-event 發布時寫進 localStorage 的累積結果。名冊、創作者活動管理頁與詳情頁
+       三處都讀這一支，數字才不會各算各的。 */
+    var ls = [];
+    try { ls = JSON.parse(localStorage.getItem("ztor.bkySetupDone") || "[]") || []; } catch (e) { ls = []; }
+    return Array.isArray(ls) ? ls : [];
+  }
   /* D224 · creator 的編輯結果（店鋪網址、電話、已匯入的 bookyay 活動）存 localStorage。
      編輯搬到獨立頁 creator-detail.html 之後，它是被 detail-sheet 放進 iframe 的
      「另一個 window」——兩邊各有一份 CREATORS 陣列，改在那一邊不會傳回名冊。
@@ -147,7 +193,28 @@
      registered = BR-02 pre-registered accounts pool (searched by the「建立 creator」onboard wizard). */
   window.ztorCreator = { list: CREATORS, registered: REGISTERED, bookyayEvents: BOOKYAY_EVENTS,
                         get: getCreator, set: setCreator, rosterPage: ROSTER_PAGE,
-                        save: saveCreator, add: addCreator, refresh: refreshCreators };
+                        save: saveCreator, add: addCreator, refresh: refreshCreators,
+                        /* D233：套組完成清單的共用讀取（名冊的待設定徽章、創作者活動管理頁的
+                           狀態欄與詳情頁的唯讀事實都走這一支）。 */
+                        bookyaySetupDone: bookyaySetupDone,
+                        /* 一位 creator 的匯入進度，三處共用同一份算法——名冊、創作者活動管理頁
+                           與 Creator 詳情頁的「已匯入 M 場活動」不會各算各的。
+                           墓碑 2026-09-02（D238 自動匯入）：這裡原本還回傳 `importable`
+                           （在池裡但還沒搬過來的場次數）。綁定後自動匯入之後不存在「還沒搬
+                           進來」的活動，該值零消費、就地移除——三個消費點（卡上的小標籤、
+                           下段標題列摘要、「有待匯入」篩選）同輪一起退場。 */
+                        bookyayStats: function (c) {
+                          var pool = (c && c.bookyayPool) || [];
+                          var imported = ((c && c.bookyayEvents) || []).filter(function (id) { return pool.indexOf(id) !== -1; });
+                          var doneIds = bookyaySetupDone().concat((c && c.bookyaySetup) || []);
+                          var pending = imported.filter(function (id) { return doneIds.indexOf(id) === -1; });
+                          return {
+                            pool: pool,
+                            imported: imported.length,
+                            pending: pending.length,
+                            doneIds: doneIds
+                          };
+                        } };
 
   /* ── Admin 從某個 Admin 頁進入某位創作者的工作區（2026-08-07）──────────────
      既有的代管路徑是「Creator 管理選一位」（上面的 ztor.activeCreator）。影片上架
@@ -230,10 +297,17 @@
        總覽往下移命名為舊版總覽」）：新版排第一、成為進站的預設落點，原本那一份退到
        第二格並改名。**兩份仍然並存**（2026-08-31 起的狀態沒變，見 ASSUMPTIONS
        CANVAS-001）——這一次動的是誰排前面、誰叫什麼，不是把舊的下架。
-       名字只改舊的那一份：新版仍叫「新版總覽」，與「舊版總覽」成對，一眼看得出
-       是同一件事的兩個版本。 */
-    { href: "home-canvas.html", key: "nav.dashboard-new", icon: "sparkles" },
-    { href: "index.html",    key: "nav.dashboard-old", icon: "layout-grid" },
+       **2026-09-01 同日再改：第一格的「新」拿掉**（使用者裁示「去掉新」）——它排在
+       第一格、是進站的預設落點，名字就該是這件事本身；「新版」是相對於誰新，而那個
+       「誰」已經自己在下面標了「舊版」。第一格因此吃回 `nav.dashboard`（單純的「總覽」），
+       `nav.dashboard-new` 隨之退役。
+       **圖示同時對調**（使用者裁示「icon 也不對，這是正式的總覽」）：`sparkles` 是
+       「這是新加的、還在試」的說法，一個正式的總覽不該掛著它；站上代表總覽的字形
+       是 `layout-grid`，交還給排第一的那一格。舊的那一份改用 `history`——兩格不能
+       同時掛 `layout-grid`（同一個字形出現兩次，這一對就分不出誰是誰），而它現在
+       的身分正是「上一個版本」。 */
+    { href: "index.html", key: "nav.dashboard", icon: "layout-grid" },
+    { href: "dashboard-classic.html", key: "nav.dashboard-old", icon: "history" },
     { href: "projects.html", key: "nav.projects",  icon: "rocket",
       match: ["create-project.html"] },
     /* IP Bank dropdown (D013): My IP + IP Market. Detail pages are reached
@@ -306,7 +380,7 @@
   /* ✝ 2026-07-30：取貨管理三頁移出本清單，改由 feature-scope-map 的 O24–O30（🟢 Phase 1）管轄（D157）。
      這份清單與 devtools.js 的同名清單必須一致，改一邊就要改另一邊。 */
   const FULL_ROUTES = new Set([
-    "index.html", "home-canvas.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-video-review.html", "projects.html", "project-detail.html", "create-project.html",
+    "index.html", "dashboard-classic.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-video-review.html", "projects.html", "project-detail.html", "create-project.html",
     "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "media-vault.html",
     "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "fan-analytics.html", "audience-report.html", "my-ip.html", "ip-detail.html",
@@ -785,17 +859,25 @@
       if (window.ztorIcons) window.ztorIcons.applyIcons(btn);
     });
   }
+  /* 目前是不是收合態——**問 DOM，不問變數**（2026-09-01）。
+     舊版把狀態記在 wireNavRail 的閉包變數 `on` 裡，只要有第二個地方改了收合態
+     （本輪新增的「收合時點母項目就展開側欄」就是），那個變數就過期，
+     下一次按收合鈕會朝錯的方向切。 */
+  function navRailOn() {
+    const app = document.querySelector(".app");
+    return !!(app && app.classList.contains("is-nav-rail"));
+  }
+  function setNavRail(on) {
+    try { localStorage.setItem(RAIL_KEY, on ? "1" : "0"); } catch (e) {}
+    applyNavRail(on);
+  }
   function wireNavRail(root) {
     const btn = root.querySelector("[data-nav-rail]");
     if (!btn) return;
     let on = false;
     try { on = localStorage.getItem(RAIL_KEY) === "1"; } catch (e) {}
     applyNavRail(on);
-    btn.addEventListener("click", () => {
-      on = !on;
-      try { localStorage.setItem(RAIL_KEY, on ? "1" : "0"); } catch (e) {}
-      applyNavRail(on);
-    });
+    btn.addEventListener("click", () => setNavRail(!navRailOn()));
   }
 
   /* ── Narrow-screen burger (≤900px, spec §6.8) ──────────────────
@@ -939,7 +1021,17 @@
     if (!toggle) return;
     e.preventDefault();
     const group = toggle.closest(".app-sidebar__group");
-    const open = group.getAttribute("data-state") === "open";
+    /* 收合態下點有子項目的母項目：先把側欄展開，再把這一組打開（2026-09-01 使用者回報
+       「收合狀態下這幾個有子項目的點擊都沒反應」）。
+       為什麼看起來沒反應：accordion 本身有作動、`data-state` 也翻了，但收合態的子選單
+       是被 CSS 藏起來的（見 shared.css 的 `.is-nav-rail`），翻了也看不到。
+       這時候使用者的意圖是「我要看到子項目」，所以**強制展開**、不照 toggle 的語意
+       （否則本來就 open 的那一組會在展開側欄的同一下被收掉，等於還是沒反應）。
+       底部 actions 的帳號／幣別群組不走這條——它們在收合態有自己的浮出選單。 */
+    const inNav = !!group.closest(".app-sidebar__nav");
+    const wasRail = inNav && navRailOn();
+    if (wasRail) setNavRail(false);
+    const open = !wasRail && group.getAttribute("data-state") === "open";
     /* 2026-07-27：真正的 accordion——展開一個就收合同層的其他群組，側欄高度因此有上限、
        不會因為使用者逐一點開而重新溢出（這是「側欄不捲動」能成立的另一半）。
        scope 限定 .app-sidebar__nav 內的導覽群組：底部 actions 的帳號／幣別群組

@@ -1,0 +1,1086 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>母子列展開 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* ============================================================
+     lab-row-disclosure — 「母列展開看子列」的設計探索頁（2026-09-04）
+
+     這是探索頁，不是產品頁。它的用途只有一個：把同一份資料用七種擺法排出來，
+     讓設計師當場比較與挑選。挑定之後才會另輪 promote 成元件、遷移到
+     pickup-detail.html 與 events.html。
+
+     ── 邊界（刻意的自我約束）────────────────────────────────
+     本頁的 <style> 不覆寫、不重新定義任何既有共用 class 或 token：
+     所有選擇器一律 `lab-` 前綴，所有值一律走既有 token。
+
+     因此表格骨架（.lab-tbl）是本頁自有的一套，不是站上的 .product-list。
+     理由有二：
+       1. 覆寫既有元件的欄軌幾何會踩到上面那條邊界；
+       2. 七個候選必須共用同一套表格外框才比得公平——欄寬、列高、
+          分隔線、表頭字級全部一致，差異才會只剩「展開這件事怎麼做」。
+     「基準 · 現況」那張卡的視覺是照 ds-components/row-disclosure.css 的實際值
+     逐項複刻（縮排 --sp-32、左緣 2px --border-soft、子列 --fs-13 ＋
+     --foreground-muted、把手轉 180 度），所以它讀起來跟站上現況一致。
+
+     展開／收合的「行為」則是原樣沿用站上的 js/row-disclosure.js：
+     母列的把手掛 data-rowdis、子元素掛 data-rowdis-child，由那支的
+     document 級委派切 aria-expanded 與 hidden。沒有第二份 toggle。
+     ============================================================ */
+
+  /* 本頁所有 [hidden] 一律不顯示。.lab-tbl__row 之類會設 display:grid，
+     UA 的 [hidden]{display:none} 是 UA 層、作者規則一律贏，所以要自己寫回來。 */
+  .lab [hidden] { display: none !important; }
+
+  /* ── 頁面骨架 ───────────────────────────────────────────── */
+  .lab-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-16);
+    margin: var(--sp-24) 0 var(--sp-8);
+  }
+  .lab-toolbar__label {
+    font-size: var(--fs-12);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--column-head-ink);
+  }
+  .lab-note {
+    margin: 0 0 var(--sp-24);
+    font-size: var(--fs-13);
+    color: var(--muted-foreground);
+  }
+  .lab-cards { display: grid; gap: var(--sp-24); }
+  .lab-card { display: grid; gap: var(--sp-16); }
+  .lab-card__head { display: flex; align-items: center; gap: var(--sp-12); }
+  .lab-card__code {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--sp-28);
+    height: var(--sp-28);
+    padding: 0 var(--sp-8);
+    border-radius: var(--radius-sm);
+    background: var(--ztu-accent-surface);
+    color: var(--ztu-accent-fg);
+    font-family: var(--font-ui);
+    font-size: var(--fs-12);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.06em;
+  }
+  .lab-card__code--plain {
+    background: var(--muted);
+    color: var(--foreground-muted);
+  }
+  .lab-card__name { margin: 0; font-size: var(--fs-18); font-weight: var(--fw-semibold); }
+  .lab-lede { margin: 0; font-size: var(--fs-14); color: var(--foreground-muted); }
+
+  /* 優缺點兩欄。項目一條一行，不用頓號串成一句。 */
+  .lab-pros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--sp-16) var(--sp-32);
+    padding-top: var(--sp-16);
+    border-top: 1px solid var(--border-soft);
+  }
+  .lab-pros__title {
+    margin: 0 0 var(--sp-8);
+    font-size: var(--fs-12);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--column-head-ink);
+  }
+  .lab-pros ul { margin: 0; padding-inline-start: var(--sp-16); }
+  .lab-pros li { font-size: var(--fs-13); color: var(--foreground-muted); margin-bottom: var(--sp-6); }
+  .lab-pros li:last-child { margin-bottom: 0; }
+
+  /* ── 共用表格骨架（本頁自有）───────────────────────────── */
+  .lab-scroll { overflow-x: auto; }
+  .lab-scroll > .lab-tbl { min-width: min-content; }
+  .lab-tbl { width: 100%; color: var(--foreground); font-family: var(--font-ui); }
+  .lab-tbl__head,
+  .lab-tbl__row {
+    display: grid;
+    gap: var(--sp-16);
+    align-items: center;
+  }
+  .lab-tbl__head {
+    min-height: var(--sp-40);
+    padding: 0 var(--sp-10);
+    color: var(--column-head-ink);
+    font-size: var(--fs-12);
+    font-weight: var(--fw-regular);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  .lab-tbl__row {
+    min-height: var(--sp-56);
+    padding: var(--sp-12) var(--sp-10);
+    border-bottom: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    font-size: var(--fs-14);
+    transition: background-color var(--duration) var(--easing);
+  }
+  .lab-tbl__row--head { cursor: pointer; }
+  .lab-tbl__row--head:hover { background: var(--ztu-film); }
+
+  /* 欄軌：兩個脈絡各一組，七個候選共用（F 除外，見下）。 */
+  .lab-tbl--pk .lab-tbl__head,
+  .lab-tbl--pk .lab-tbl__row {
+    grid-template-columns: minmax(116px, 1fr) 92px minmax(148px, 1.2fr) 52px 116px minmax(96px, 0.8fr) 96px 76px;
+  }
+  .lab-tbl--ev .lab-tbl__head,
+  .lab-tbl--ev .lab-tbl__row {
+    grid-template-columns: 52px minmax(168px, 1.4fr) 152px minmax(104px, 1fr) 124px 108px 92px;
+  }
+
+  /* 儲存格語彙 */
+  .lab-title { font-size: var(--fs-14); }
+  .lab-meta { margin-top: var(--sp-2); font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-mono { font-family: var(--font-mono); font-size: var(--fs-12); letter-spacing: 0.02em; }
+  .lab-none { color: var(--muted-foreground); }
+  .lab-num { font-variant-numeric: tabular-nums; }
+  .lab-thumb {
+    width: var(--sp-48);
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--muted);
+  }
+  .lab-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .lab-label { display: flex; align-items: center; gap: var(--sp-4); }
+  .lab-label > span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* 把手：外觀吃 .btn.btn--icon.btn--xs，本頁只加「不被壓縮」與「會轉」。
+     選擇器寫 svg 不寫 .ztor-icon——icon registry 把 <i> 換成 <svg>，
+     指元素就不必去碰共用 class。 */
+  .lab-toggle { flex: none; }
+  .lab-toggle svg { transition: transform var(--duration) var(--easing); }
+  .lab-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+  /* 票數（活動脈絡）。百分比由 --lab-pct 帶進來，不寫死顏色。 */
+  .lab-tix { font-size: var(--fs-13); font-variant-numeric: tabular-nums; }
+  .lab-tix__bar {
+    margin-top: var(--sp-6);
+    height: var(--sp-4);
+    border-radius: var(--radius-pill);
+    background: var(--border);
+    overflow: hidden;
+  }
+  .lab-tix__fill {
+    height: 100%;
+    width: var(--lab-pct, 0%);
+    border-radius: var(--radius-pill);
+    background: var(--primary);
+  }
+
+  /* 狀態點 */
+  .lab-dot {
+    display: inline-block;
+    flex: none;
+    width: var(--sp-8);
+    height: var(--sp-8);
+    border-radius: var(--radius-pill);
+    background: var(--border);
+  }
+  .lab-dot--done { background: var(--status-success); }
+  .lab-dot--pending { background: var(--status-warning); }
+  .lab-dot--void { background: var(--status-error); }
+
+  /* ── 基準 · 現況 ────────────────────────────────────────
+     照 row-disclosure.css 的實際值複刻：子列整列縮排一階（所以欄位跟著
+     一起右移、與表頭錯開，這正是現況的樣子），左緣一條 2px 線。 */
+  .lab-base__child {
+    position: relative;
+    padding-inline-start: var(--sp-32);
+    font-size: var(--fs-13);
+    color: var(--foreground-muted);
+  }
+  .lab-base__child::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 2px;
+    background: var(--border-soft);
+  }
+  .lab-base__child .lab-title { font-size: var(--fs-13); }
+
+  /* ── A · 內嵌面板 ──────────────────────────────────────── */
+  .lab-inset {
+    margin: 0 var(--sp-10) var(--sp-12);
+    padding: var(--sp-16) var(--sp-20);
+    background: var(--ztu-glass-bg);
+    border: 1px solid var(--ztu-rim-soft);
+    border-radius: var(--radius-lg);
+  }
+  .lab-inset__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--sp-6) var(--sp-12);
+    margin-bottom: var(--sp-12);
+    font-size: var(--fs-12);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--column-head-ink);
+  }
+  .lab-inset__list { display: grid; gap: var(--sp-2); }
+  .lab-inset__item {
+    display: grid;
+    grid-template-columns: var(--sp-8) minmax(0, 1.4fr) 116px minmax(0, 1fr) 96px;
+    align-items: center;
+    gap: var(--sp-12);
+    padding: var(--sp-8) var(--sp-6);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-13);
+  }
+  .lab-inset__item:hover { background: var(--ztu-film); }
+  .lab-inset__item--ev { grid-template-columns: var(--sp-8) 148px minmax(0, 1fr) 140px 112px 96px; }
+  .lab-inset__sub { color: var(--muted-foreground); }
+
+  /* ── B · 分組帶 ───────────────────────────────────────── */
+  .lab-lane {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-10);
+    min-height: var(--sp-32);
+    margin-top: var(--sp-12);
+    padding: var(--sp-4) var(--sp-10);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    background: var(--muted);
+    cursor: pointer;
+  }
+  .lab-lane:hover { background: var(--ztu-film); }
+  .lab-lane__name { font-size: var(--fs-13); font-weight: var(--fw-semibold); color: var(--foreground); }
+  .lab-lane__meta {
+    font-size: var(--fs-12);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--column-head-ink);
+  }
+  .lab-lane__spacer { flex: 1 1 auto; }
+  /* 子列＝真正對齊欄軌的資料列。左緣的一段記號用 inset shadow 不用 border，
+     border 會把內容推 2px、跟表頭錯開。 */
+  .lab-lane-child {
+    border-radius: 0;
+    box-shadow: inset 2px 0 0 var(--border);
+  }
+
+  /* ── C · 樹狀連接線 ────────────────────────────────────
+     縮排只給第一格的內容，不給整列——整列縮排會把後面每一欄跟著推走
+     （那正是現況的毛病）。垂直主幹＋每一項一條短橫線，最後一項的主幹
+     收在橫線處，形成收尾轉角。 */
+  .lab-tree { position: relative; }
+  .lab-tree > :first-child { padding-inline-start: var(--sp-32); }
+  .lab-tree::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: var(--sp-12);
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+  .lab-tree--last::before { bottom: 50%; }
+  .lab-tree::after {
+    content: "";
+    position: absolute;
+    inset-inline-start: var(--sp-12);
+    top: 50%;
+    width: var(--sp-12);
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── D · 碼晶片網格 ────────────────────────────────────── */
+  .lab-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-8);
+    margin: 0 var(--sp-10) var(--sp-12);
+    padding: var(--sp-14) var(--sp-16);
+    background: var(--muted);
+    border-radius: var(--radius-lg);
+  }
+  .lab-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-8);
+    padding: var(--sp-6) var(--sp-12);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--card);
+    font-family: var(--font-mono);
+    font-size: var(--fs-12);
+    letter-spacing: 0.02em;
+    color: var(--foreground);
+  }
+  .lab-pill__name {
+    font-family: var(--font-ui);
+    font-size: var(--fs-12);
+    letter-spacing: 0;
+    color: var(--muted-foreground);
+  }
+  .lab-pill--done { border-color: color-mix(in srgb, var(--status-success) 45%, transparent); }
+  .lab-pill--void { opacity: 0.55; }
+  .lab-pill--void .lab-pill__code { text-decoration: line-through; }
+
+  /* ── E · 側板 ──────────────────────────────────────────
+     真正的 detail-sheet 是「用 iframe 開同一頁」的全螢幕覆蓋層（見
+     ds-components/detail-sheet.css），這裡要示範的是右側滑出的明細板，
+     所以材質語彙（玻璃底、頂緣內光、深投影）照抄、實作自成一支，
+     不動那支元件本人。 */
+  .lab-sheet { position: fixed; inset: 0; z-index: 90; display: flex; justify-content: flex-end; }
+  .lab-sheet[hidden] { display: none; }
+  .lab-sheet__headmain { flex: 1 1 auto; min-width: 0; }
+  .lab-sheet__scrim { position: absolute; inset: 0; background: var(--overlay-scrim); }
+  .lab-sheet__panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(460px, 100%);
+    height: 100%;
+    background: var(--ztu-shell-solid);
+    border-inline-start: 1px solid var(--ztu-glass-rim);
+    box-shadow: var(--ztu-shadow-card);
+    animation: lab-sheet-in 200ms var(--easing) both;
+  }
+  @keyframes lab-sheet-in {
+    from { transform: translateX(var(--sp-24)); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+  .lab-sheet__head {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-12);
+    padding: var(--sp-20) var(--sp-24);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .lab-sheet__title { margin: 0; font-size: var(--fs-16); font-weight: var(--fw-semibold); }
+  .lab-sheet__body { flex: 1 1 auto; overflow-y: auto; padding: var(--sp-16) var(--sp-24) var(--sp-32); }
+  .lab-sheet__row {
+    display: grid;
+    grid-template-columns: var(--sp-8) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--sp-12);
+    padding: var(--sp-12) 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: var(--fs-13);
+  }
+  .lab-sheet__row:last-child { border-bottom: 0; }
+  /* 標題與註腳在側板裡是上下兩行；兩者都是 span，不自己成行就會黏成一句。 */
+  .lab-sheet__row .lab-title,
+  .lab-sheet__row .lab-meta { display: block; }
+  .lab-chevron { flex: none; color: var(--muted-foreground); }
+
+  /* ── F · 列內進度 ──────────────────────────────────────
+     母列多一欄放分段條，所以 F 有自己的欄軌。 */
+  .lab-tbl--fpk .lab-tbl__head,
+  .lab-tbl--fpk .lab-tbl__row {
+    grid-template-columns: minmax(120px, 1fr) 100px minmax(200px, 2fr) 108px 92px;
+  }
+  .lab-tbl--fev .lab-tbl__head,
+  .lab-tbl--fev .lab-tbl__row {
+    grid-template-columns: 52px minmax(160px, 1.2fr) 150px minmax(200px, 2fr) 116px 96px;
+  }
+  .lab-seg {
+    display: flex;
+    gap: var(--sp-2);
+    height: var(--sp-10);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+  }
+  .lab-seg__i { flex: 1 1 0; background: var(--border); }
+  .lab-seg__i--done { background: var(--status-success); }
+  .lab-seg__i--pending { background: var(--status-warning); }
+  .lab-seg__i--void { background: var(--status-error); }
+  .lab-seg__i--part {
+    background: linear-gradient(to right, var(--status-success) var(--lab-pct, 0%), var(--border) var(--lab-pct, 0%));
+  }
+  .lab-seg-cap {
+    margin-top: var(--sp-6);
+    font-size: var(--fs-12);
+    color: var(--muted-foreground);
+  }
+  .lab-fdetail {
+    display: grid;
+    gap: var(--sp-4);
+    padding: var(--sp-8) var(--sp-10) var(--sp-14) var(--sp-40);
+  }
+  .lab-fdetail__i {
+    display: grid;
+    grid-template-columns: var(--sp-8) minmax(0, 1.6fr) 116px minmax(0, 1fr) 80px;
+    align-items: center;
+    gap: var(--sp-12);
+    font-size: var(--fs-13);
+    color: var(--foreground-muted);
+  }
+
+  /* ── 頁尾提示 ─────────────────────────────────────────── */
+  .lab-foot { margin-top: var(--sp-32); }
+  .lab-foot ol { margin: 0; padding-inline-start: var(--sp-20); }
+  .lab-foot li { font-size: var(--fs-14); color: var(--foreground-muted); margin-bottom: var(--sp-10); }
+  .lab-foot li:last-child { margin-bottom: 0; }
+  .lab-foot b { color: var(--foreground); font-weight: var(--fw-semibold); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page lab">
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title">母子列展開 · 設計探索</h1>
+          <p class="page-intro__sub">這是一張比較用的探索頁，不是產品頁：把「母列點開看子列」這件事用 r2.3 現行設計系統重新想過，同一份資料排出七種擺法，供當場挑選。挑定之後才會另輪做成元件、遷移到取貨場次名單與活動清單。沒有任何既有頁面被改動。</p>
+        </div>
+      </div>
+
+      <div class="lab-toolbar">
+        <span class="lab-toolbar__label">資料脈絡</span>
+        <div class="segmented" id="lab-ctx">
+          <button class="segmented__btn segmented__btn--active" type="button" data-ctx="pk">取貨場次名單</button>
+          <button class="segmented__btn" type="button" data-ctx="ev">活動系列</button>
+        </div>
+      </div>
+      <p class="lab-note">切換脈絡後，下方七張卡會同時換成該脈絡的資料。取貨名單＝一位買家的多件領取單位；活動系列＝一個巡演的多個場次日期。</p>
+
+      <div class="lab-cards" id="lab-cards"></div>
+
+      <section class="card lab-foot">
+        <div class="card__head"><h2 class="card__title">怎麼挑</h2></div>
+        <ol>
+          <li><b>現場工作人員的掃視速度</b>：取貨台是站著、趕時間、單手拿掃描槍的場合。哪一種能讓人一眼認出「這位買家還有幾件沒領、下一件在哪」？</li>
+          <li><b>一人多件時的可讀性</b>：五件、十件、二十件的時候會不會塌？重複的資訊（訂單號、系列名）有沒有被收掉？群組的開頭與結尾看不看得出來？</li>
+          <li><b>與站上其他資料表的一致性</b>：它跟電子商店、訂單、活動這些既有清單讀起來是同一套語言，還是自成一格？愈特別的擺法，之後要維護的例外愈多。</li>
+        </ol>
+        <p class="card__note">三個判準會互相打架——最好讀的通常最不一致，最一致的通常密度最低。挑的時候先決定哪一項優先。</p>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- E · 側板的載體。放在 app 之外，覆蓋整個視窗。 -->
+<div class="lab-sheet" id="lab-sheet" hidden>
+  <div class="lab-sheet__scrim" data-sheet-close></div>
+  <aside class="lab-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="lab-sheet-title">
+    <div class="lab-sheet__head">
+      <div class="lab-sheet__headmain">
+        <h2 class="lab-sheet__title" id="lab-sheet-title">—</h2>
+        <div class="lab-meta" id="lab-sheet-sub">—</div>
+      </div>
+      <button class="btn btn--icon btn--sm" type="button" data-sheet-close aria-label="關閉側板" title="關閉側板"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="lab-sheet__body" id="lab-sheet-body"></div>
+  </aside>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/row-disclosure.js?v=r2.2"></script>
+<script>
+/* ============================================================
+   探索頁的算繪。七個候選共用同一份資料，切脈絡就整批重畫，
+   這樣才保證每張卡看到的是同一批數字。
+
+   展開／收合不自己寫：母列把手掛 data-rowdis、子元素掛
+   data-rowdis-child，交給 js/row-disclosure.js 的 document 級委派。
+   重畫之後呼叫 rowDisclosure.sync() 把 hidden 對回 aria-expanded。
+   ============================================================ */
+(function () {
+  'use strict';
+
+  /* ── 資料（與 pickup-detail.html／events.html 站上示範資料一致）── */
+  var TEE = 'Kowloon After Dark tee';
+  var CAP = 'Kowloon After Dark six-panel cap';
+  var VINYL = 'Kowloon After Dark vinyl · numbered 1/50';
+  var BUNDLE = 'Launch night bundle';
+
+  var PK = {
+    key: 'pk',
+    cols: ['買家', '來源', '領取項目', '規格', '領取碼', '來源組合', '狀態', '最近核銷'],
+    fcols: ['買家', '來源', '本場次進度', '已領／總件', '狀態'],
+    groups: [
+      { id: 'mika', name: 'Mika L.', order: '#ZT-10482', done: 1, total: 5, units: [
+        { item: TEE, variant: 'M', code: 'PU-10482-01', bundle: '', st: 'pending', scan: '' },
+        { item: CAP, variant: '', code: 'PU-10482-02', bundle: BUNDLE, st: 'done', scan: '13:40' },
+        { item: CAP, variant: '', code: 'PU-10482-03', bundle: BUNDLE, st: 'pending', scan: '' },
+        { item: CAP, variant: '', code: 'PU-10482-04', bundle: BUNDLE, st: 'pending', scan: '' },
+        { item: VINYL, variant: '', code: 'PU-10482-05', bundle: BUNDLE, st: 'pending', scan: '' }
+      ] },
+      { id: 'noor', name: 'Noor P.', order: '#ZT-10490', done: 0, total: 2, units: [
+        { item: TEE, variant: 'L', code: 'PU-10490-01', bundle: '', st: 'pending', scan: '' },
+        { item: TEE, variant: 'L', code: 'PU-10490-02', bundle: '', st: 'pending', scan: '' }
+      ] },
+      { id: 'yuki', name: 'Yuki H.', order: '#ZT-10471', done: 0, total: 1, single: true, units: [
+        { item: VINYL, variant: '', code: 'PU-10471-01', bundle: '', st: 'void', scan: '' }
+      ] },
+      { id: 'devon', name: 'Devon W.', order: '#ZT-10475', done: 1, total: 1, single: true, units: [
+        { item: TEE, variant: 'L', code: 'PU-10475-01', bundle: '', st: 'done', scan: '14:22' }
+      ] }
+    ]
+  };
+
+  var EV = {
+    key: 'ev',
+    cols: ['', '活動', '日期時間', '場地', '票數', '營收', '狀態'],
+    fcols: ['', '活動', '日期區間', '各場售票進度', '營收', '狀態'],
+    groups: [
+      { id: 'realive', name: 'REALIVE World Tour — Asia leg', order: 'Concert · 3 dates',
+        img: 'images/projects/nick-realive.jpg',
+        date: '2026/09/12 – 2026/10/03', venue: '3 venues',
+        sold: 1240, cap: 1800, rev: '$3,732,000', st: 'on-sale',
+        done: 1, total: 3,
+        units: [
+          { n: 'Date 1 of 3', date: '2026/09/12 · 7:30 PM', venue: '高雄巨蛋', sold: 600, cap: 600, rev: '$1,800,000', st: 'soldout' },
+          { n: 'Date 2 of 3', date: '2026/09/26 · 7:30 PM', venue: '台中洲際', sold: 440, cap: 600, rev: '$1,326,000', st: 'on-sale' },
+          { n: 'Date 3 of 3', date: '2026/10/03 · 7:30 PM', venue: '台北小巨蛋', sold: 200, cap: 600, rev: '$606,000', st: 'on-sale' }
+        ] }
+    ]
+  };
+
+  /* ── 小工具 ────────────────────────────────────────────── */
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function dash(s) { return s ? esc(s) : '<span class="lab-none">—</span>'; }
+  function pct(a, b) { return b ? Math.round(a / b * 100) : 0; }
+
+  var PK_BADGE = {
+    pending: '<span class="badge badge--warning">待核銷</span>',
+    done: '<span class="badge badge--success">已核銷</span>',
+    void: '<span class="badge badge--error">已失效</span>'
+  };
+  var PK_WORD = { pending: '待核銷', done: '已核銷', void: '已失效' };
+  var EV_BADGE = {
+    'on-sale': '<span class="badge badge--success">On sale</span>',
+    soldout: '<span class="badge badge--success">Sold out</span>'
+  };
+  function evWord(st) { return st === 'soldout' ? 'Sold out' : 'On sale'; }
+
+  /* 母列的整組狀態：失效的件不能算成待領——現場拿著失效的碼來領是另一件事。 */
+  function pkBadge(g) {
+    var pending = 0, voided = 0;
+    g.units.forEach(function (u) { if (u.st === 'pending') pending++; if (u.st === 'void') voided++; });
+    if (pending) return '<span class="badge badge--warning">' + pending + ' 件待領</span>';
+    if (voided) return '<span class="badge badge--error">' + voided + ' 件已失效</span>';
+    return '<span class="badge badge--success">全部領完</span>';
+  }
+
+  function chev(gid) {
+    return '<button class="btn btn--icon btn--xs lab-toggle" type="button" data-rowdis="' + gid +
+      '" aria-expanded="false" aria-label="展開子列"><i data-lucide="chevron-down" class="ztor-icon"></i></button>';
+  }
+  function thumb(g) {
+    return '<div class="lab-thumb"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>';
+  }
+  function tix(sold, cap) {
+    return '<div class="lab-tix">' + sold.toLocaleString() + ' / ' + cap.toLocaleString() +
+      '<div class="lab-tix__bar"><div class="lab-tix__fill" style="--lab-pct:' + pct(sold, cap) + '%"></div></div></div>';
+  }
+  function head(ctx, mod) {
+    var cols = mod === 'f' ? ctx.fcols : ctx.cols;
+    return '<div class="lab-tbl__head">' + cols.map(function (c) { return '<div>' + esc(c) + '</div>'; }).join('') + '</div>';
+  }
+  function tbl(ctx, mod, body) {
+    var variant = mod === 'f' ? (ctx.key === 'pk' ? 'lab-tbl--fpk' : 'lab-tbl--fev')
+                              : (ctx.key === 'pk' ? 'lab-tbl--pk' : 'lab-tbl--ev');
+    return '<div class="lab-scroll"><div class="lab-tbl ' + variant + '">' + head(ctx, mod) + body + '</div></div>';
+  }
+
+  /* ── 基準 · 現況 ──────────────────────────────────────── */
+  function renderBase(ctx) {
+    var out = '';
+    ctx.groups.forEach(function (g) {
+      var gid = 'base-' + ctx.key + '-' + g.id;
+      if (ctx.key === 'pk') {
+        if (g.single) {
+          var u = g.units[0];
+          out += '<div class="lab-tbl__row">' +
+            '<div class="lab-title">' + esc(g.name) + '</div>' +
+            '<div>' + esc(g.order) + '</div>' +
+            '<div>' + esc(u.item) + '</div><div>' + dash(u.variant) + '</div>' +
+            '<div class="lab-mono">' + esc(u.code) + '</div><div>' + dash(u.bundle) + '</div>' +
+            '<div>' + PK_BADGE[u.st] + '</div><div>' + dash(u.scan) + '</div></div>';
+          return;
+        }
+        out += '<div class="lab-tbl__row lab-tbl__row--head" data-rowdis-row="' + gid + '">' +
+          '<div><div class="lab-label"><span class="lab-title">' + esc(g.name) + '</span>' + chev(gid) + '</div>' +
+          '<div class="lab-meta">' + g.done + ' of ' + g.total + ' collected</div></div>' +
+          '<div>' + esc(g.order) + '</div>' +
+          '<div></div><div></div><div></div><div></div><div></div><div></div></div>';
+        g.units.forEach(function (u) {
+          out += '<div class="lab-tbl__row lab-base__child" data-rowdis-child="' + gid + '" hidden>' +
+            '<div></div><div>' + esc(g.order) + '</div>' +
+            '<div class="lab-title">' + esc(u.item) + '</div><div>' + dash(u.variant) + '</div>' +
+            '<div class="lab-mono">' + esc(u.code) + '</div><div>' + dash(u.bundle) + '</div>' +
+            '<div>' + PK_BADGE[u.st] + '</div><div>' + dash(u.scan) + '</div></div>';
+        });
+      } else {
+        out += '<div class="lab-tbl__row lab-tbl__row--head" data-rowdis-row="' + gid + '">' +
+          thumb(g) +
+          '<div><div class="lab-label"><span class="lab-title">' + esc(g.name) + '</span>' + chev(gid) + '</div>' +
+          '<div class="lab-meta">' + esc(g.order) + '</div></div>' +
+          '<div>' + esc(g.date) + '</div><div>' + esc(g.venue) + '</div>' +
+          '<div>' + tix(g.sold, g.cap) + '</div><div class="lab-num">' + esc(g.rev) + '</div>' +
+          '<div>' + EV_BADGE[g.st] + '</div></div>';
+        g.units.forEach(function (d) {
+          out += '<div class="lab-tbl__row lab-base__child" data-rowdis-child="' + gid + '" hidden>' +
+            thumb(g) +
+            '<div><div class="lab-title">' + esc(g.name) + '</div><div class="lab-meta">' + esc(d.n) + '</div></div>' +
+            '<div>' + esc(d.date) + '</div><div>' + esc(d.venue) + '</div>' +
+            '<div>' + tix(d.sold, d.cap) + '</div><div class="lab-num">' + esc(d.rev) + '</div>' +
+            '<div>' + EV_BADGE[d.st] + '</div></div>';
+        });
+      }
+    });
+    return tbl(ctx, '', out);
+  }
+
+  /* ── A · 內嵌面板 ─────────────────────────────────────── */
+  function renderA(ctx) {
+    var out = '';
+    ctx.groups.forEach(function (g) {
+      var gid = 'a-' + ctx.key + '-' + g.id;
+      if (ctx.key === 'pk') {
+        if (g.single) {
+          var u = g.units[0];
+          out += '<div class="lab-tbl__row">' +
+            '<div class="lab-title">' + esc(g.name) + '</div><div>' + esc(g.order) + '</div>' +
+            '<div>' + esc(u.item) + '</div><div>' + dash(u.variant) + '</div>' +
+            '<div class="lab-mono">' + esc(u.code) + '</div><div>' + dash(u.bundle) + '</div>' +
+            '<div>' + PK_BADGE[u.st] + '</div><div>' + dash(u.scan) + '</div></div>';
+          return;
+        }
+        out += '<div class="lab-tbl__row lab-tbl__row--head" data-rowdis-row="' + gid + '">' +
+          '<div><div class="lab-label"><span class="lab-title">' + esc(g.name) + '</span>' + chev(gid) + '</div>' +
+          '<div class="lab-meta">' + g.done + ' / ' + g.total + ' 已領</div></div>' +
+          '<div>' + esc(g.order) + '</div>' +
+          '<div>' + g.total + ' 件領取單位</div><div></div><div></div><div></div>' +
+          '<div>' + pkBadge(g) + '</div>' +
+          '<div>' + dash(g.units.filter(function (u) { return u.scan; }).map(function (u) { return u.scan; })[0]) + '</div></div>';
+        var items = g.units.map(function (u) {
+          return '<div class="lab-inset__item">' +
+            '<span class="lab-dot lab-dot--' + u.st + '"></span>' +
+            '<span>' + esc(u.item) + (u.variant ? ' <span class="lab-inset__sub">· ' + esc(u.variant) + '</span>' : '') + '</span>' +
+            '<span class="lab-mono">' + esc(u.code) + '</span>' +
+            '<span class="lab-inset__sub">' + (u.bundle ? esc(u.bundle) : '單買') + '</span>' +
+            '<span class="lab-inset__sub">' + (u.st === 'done' ? '已核銷 ' + esc(u.scan) : PK_WORD[u.st]) + '</span></div>';
+        }).join('');
+        out += '<div class="lab-inset" data-rowdis-child="' + gid + '" hidden>' +
+          '<div class="lab-inset__head"><span>' + esc(g.order) + '</span><span>' + g.total + ' 件領取單位</span>' +
+          '<span>已領 ' + g.done + ' 件</span></div><div class="lab-inset__list">' + items + '</div></div>';
+      } else {
+        out += '<div class="lab-tbl__row lab-tbl__row--head" data-rowdis-row="' + gid + '">' +
+          thumb(g) +
+          '<div><div class="lab-label"><span class="lab-title">' + esc(g.name) + '</span>' + chev(gid) + '</div>' +
+          '<div class="lab-meta">' + esc(g.order) + '</div></div>' +
+          '<div>' + esc(g.date) + '</div><div>' + esc(g.venue) + '</div>' +
+          '<div>' + tix(g.sold, g.cap) + '</div><div class="lab-num">' + esc(g.rev) + '</div>' +
+          '<div>' + EV_BADGE[g.st] + '</div></div>';
+        var dates = g.units.map(function (d) {
+          return '<div class="lab-inset__item lab-inset__item--ev">' +
+            '<span class="lab-dot lab-dot--' + (d.st === 'soldout' ? 'done' : 'pending') + '"></span>' +
+            '<span>' + esc(d.date) + '</span>' +
+            '<span>' + esc(d.venue) + '</span>' +
+            '<span class="lab-num">' + d.sold + ' / ' + d.cap + '</span>' +
+            '<span class="lab-num lab-inset__sub">' + esc(d.rev) + '</span>' +
+            '<span class="lab-inset__sub">' + evWord(d.st) + '</span></div>';
+        }).join('');
+        out += '<div class="lab-inset" data-rowdis-child="' + gid + '" hidden>' +
+          '<div class="lab-inset__head"><span>3 場</span><span>2026/09/12 – 10/03</span><span>系列名不再重複</span></div>' +
+          '<div class="lab-inset__list">' + dates + '</div></div>';
+      }
+    });
+    return tbl(ctx, '', out);
+  }
+
+  /* ── B · 分組帶 ───────────────────────────────────────── */
+  function renderB(ctx) {
+    var out = '';
+    ctx.groups.forEach(function (g) {
+      var gid = 'b-' + ctx.key + '-' + g.id;
+      if (ctx.key === 'pk') {
+        if (g.single) {
+          var u = g.units[0];
+          out += '<div class="lab-tbl__row">' +
+            '<div class="lab-title">' + esc(g.name) + '</div><div>' + esc(g.order) + '</div>' +
+            '<div>' + esc(u.item) + '</div><div>' + dash(u.variant) + '</div>' +
+            '<div class="lab-mono">' + esc(u.code) + '</div><div>' + dash(u.bundle) + '</div>' +
+            '<div>' + PK_BADGE[u.st] + '</div><div>' + dash(u.scan) + '</div></div>';
+          return;
+        }
+        out += '<div class="lab-lane" data-rowdis-row="' + gid + '">' + chev(gid) +
+          '<span class="lab-lane__name">' + esc(g.name) + '</span>' +
+          '<span class="lab-lane__meta">' + esc(g.order) + '</span>' +
+          '<span class="lab-lane__spacer"></span>' +
+          '<span class="lab-lane__meta">' + g.done + ' / ' + g.total + ' 已領</span></div>';
+        g.units.forEach(function (u) {
+          out += '<div class="lab-tbl__row lab-lane-child" data-rowdis-child="' + gid + '" hidden>' +
+            '<div></div><div></div>' +
+            '<div class="lab-title">' + esc(u.item) + '</div><div>' + dash(u.variant) + '</div>' +
+            '<div class="lab-mono">' + esc(u.code) + '</div><div>' + dash(u.bundle) + '</div>' +
+            '<div>' + PK_BADGE[u.st] + '</div><div>' + dash(u.scan) + '</div></div>';
+        });
+      } else {
+        out += '<div class="lab-lane" data-rowdis-row="' + gid + '">' + chev(gid) +
+          '<span class="lab-lane__name">' + esc(g.name) + '</span>' +
+          '<span class="lab-lane__meta">' + esc(g.order) + '</span>' +
+          '<span class="lab-lane__spacer"></span>' +
+          '<span class="lab-lane__meta">' + g.sold.toLocaleString() + ' / ' + g.cap.toLocaleString() + ' 張 · ' + esc(g.rev) + '</span></div>';
+        g.units.forEach(function (d) {
+          out += '<div class="lab-tbl__row lab-lane-child" data-rowdis-child="' + gid + '" hidden>' +
+            '<div></div>' +
+            '<div><div class="lab-title">' + esc(d.n) + '</div></div>' +
+            '<div>' + esc(d.date) + '</div><div>' + esc(d.venue) + '</div>' +
+            '<div>' + tix(d.sold, d.cap) + '</div><div class="lab-num">' + esc(d.rev) + '</div>' +
+            '<div>' + EV_BADGE[d.st] + '</div></div>';
+        });
+      }
+    });
+    return tbl(ctx, '', out);
+  }
+
+  /* ── C · 樹狀連接線 ───────────────────────────────────── */
+  function renderC(ctx) {
+    var out = '';
+    ctx.groups.forEach(function (g) {
+      var gid = 'c-' + ctx.key + '-' + g.id;
+      if (ctx.key === 'pk') {
+        if (g.single) {
+          var u = g.units[0];
+          out += '<div class="lab-tbl__row">' +
+            '<div class="lab-title">' + esc(g.name) + '</div><div>' + esc(g.order) + '</div>' +
+            '<div>' + esc(u.item) + '</div><div>' + dash(u.variant) + '</div>' +
+            '<div class="lab-mono">' + esc(u.code) + '</div><div>' + dash(u.bundle) + '</div>' +
+            '<div>' + PK_BADGE[u.st] + '</div><div>' + dash(u.scan) + '</div></div>';
+          return;
+        }
+        out += '<div class="lab-tbl__row lab-tbl__row--head" data-rowdis-row="' + gid + '">' +
+          '<div><div class="lab-label"><span class="lab-title">' + esc(g.name) + '</span>' + chev(gid) + '</div>' +
+          '<div class="lab-meta">' + g.done + ' / ' + g.total + ' 已領</div></div>' +
+          '<div>' + esc(g.order) + '</div><div></div><div></div><div></div><div></div><div></div><div></div></div>';
+        g.units.forEach(function (u, i) {
+          var last = i === g.units.length - 1 ? ' lab-tree--last' : '';
+          out += '<div class="lab-tbl__row lab-tree' + last + '" data-rowdis-child="' + gid + '" hidden>' +
+            '<div></div><div></div>' +
+            '<div class="lab-title">' + esc(u.item) + '</div><div>' + dash(u.variant) + '</div>' +
+            '<div class="lab-mono">' + esc(u.code) + '</div><div>' + dash(u.bundle) + '</div>' +
+            '<div>' + PK_BADGE[u.st] + '</div><div>' + dash(u.scan) + '</div></div>';
+        });
+      } else {
+        out += '<div class="lab-tbl__row lab-tbl__row--head" data-rowdis-row="' + gid + '">' +
+          thumb(g) +
+          '<div><div class="lab-label"><span class="lab-title">' + esc(g.name) + '</span>' + chev(gid) + '</div>' +
+          '<div class="lab-meta">' + esc(g.order) + '</div></div>' +
+          '<div>' + esc(g.date) + '</div><div>' + esc(g.venue) + '</div>' +
+          '<div>' + tix(g.sold, g.cap) + '</div><div class="lab-num">' + esc(g.rev) + '</div>' +
+          '<div>' + EV_BADGE[g.st] + '</div></div>';
+        g.units.forEach(function (d, i) {
+          var last = i === g.units.length - 1 ? ' lab-tree--last' : '';
+          out += '<div class="lab-tbl__row lab-tree' + last + '" data-rowdis-child="' + gid + '" hidden>' +
+            '<div></div>' +
+            '<div class="lab-title">' + esc(d.n) + '</div>' +
+            '<div>' + esc(d.date) + '</div><div>' + esc(d.venue) + '</div>' +
+            '<div>' + tix(d.sold, d.cap) + '</div><div class="lab-num">' + esc(d.rev) + '</div>' +
+            '<div>' + EV_BADGE[d.st] + '</div></div>';
+        });
+      }
+    });
+    return tbl(ctx, '', out);
+  }
+
+  /* ── D · 碼晶片網格 ───────────────────────────────────── */
+  function renderD(ctx) {
+    var out = '';
+    ctx.groups.forEach(function (g) {
+      var gid = 'd-' + ctx.key + '-' + g.id;
+      if (ctx.key === 'pk') {
+        if (g.single) {
+          var u = g.units[0];
+          out += '<div class="lab-tbl__row">' +
+            '<div class="lab-title">' + esc(g.name) + '</div><div>' + esc(g.order) + '</div>' +
+            '<div>' + esc(u.item) + '</div><div>' + dash(u.variant) + '</div>' +
+            '<div class="lab-mono">' + esc(u.code) + '</div><div>' + dash(u.bundle) + '</div>' +
+            '<div>' + PK_BADGE[u.st] + '</div><div>' + dash(u.scan) + '</div></div>';
+          return;
+        }
+        out += '<div class="lab-tbl__row lab-tbl__row--head" data-rowdis-row="' + gid + '">' +
+          '<div><div class="lab-label"><span class="lab-title">' + esc(g.name) + '</span>' + chev(gid) + '</div>' +
+          '<div class="lab-meta">' + g.done + ' / ' + g.total + ' 已領</div></div>' +
+          '<div>' + esc(g.order) + '</div><div>' + g.total + ' 件</div><div></div><div></div><div></div>' +
+          '<div>' + pkBadge(g) + '</div><div></div></div>';
+        var pills = g.units.map(function (u) {
+          var cls = u.st === 'done' ? ' lab-pill--done' : (u.st === 'void' ? ' lab-pill--void' : '');
+          return '<span class="lab-pill' + cls + '"><span class="lab-dot lab-dot--' + u.st + '"></span>' +
+            '<span class="lab-pill__code">' + esc(u.code) + '</span>' +
+            '<span class="lab-pill__name">' + esc(u.item.replace('Kowloon After Dark ', '')) + (u.variant ? ' ' + esc(u.variant) : '') + '</span></span>';
+        }).join('');
+        out += '<div class="lab-chips" data-rowdis-child="' + gid + '" hidden>' + pills + '</div>';
+      } else {
+        out += '<div class="lab-tbl__row lab-tbl__row--head" data-rowdis-row="' + gid + '">' +
+          thumb(g) +
+          '<div><div class="lab-label"><span class="lab-title">' + esc(g.name) + '</span>' + chev(gid) + '</div>' +
+          '<div class="lab-meta">' + esc(g.order) + '</div></div>' +
+          '<div>' + esc(g.date) + '</div><div>' + esc(g.venue) + '</div>' +
+          '<div>' + tix(g.sold, g.cap) + '</div><div class="lab-num">' + esc(g.rev) + '</div>' +
+          '<div>' + EV_BADGE[g.st] + '</div></div>';
+        var chips = g.units.map(function (d) {
+          return '<span class="lab-pill' + (d.st === 'soldout' ? ' lab-pill--done' : '') + '">' +
+            '<span class="lab-dot lab-dot--' + (d.st === 'soldout' ? 'done' : 'pending') + '"></span>' +
+            '<span class="lab-pill__code">' + esc(d.date.split(' · ')[0]) + '</span>' +
+            '<span class="lab-pill__name">' + esc(d.venue) + ' · ' + d.sold + '/' + d.cap + '</span></span>';
+        }).join('');
+        out += '<div class="lab-chips" data-rowdis-child="' + gid + '" hidden>' + chips + '</div>';
+      }
+    });
+    return tbl(ctx, '', out);
+  }
+
+  /* ── E · 側板 ─────────────────────────────────────────── */
+  function renderE(ctx) {
+    var out = '';
+    ctx.groups.forEach(function (g) {
+      if (ctx.key === 'pk') {
+        var u0 = g.units[0];
+        var summary = g.single
+          ? esc(u0.item) + (u0.variant ? ' · ' + esc(u0.variant) : '')
+          : g.total + ' 件領取單位';
+        out += '<div class="lab-tbl__row lab-tbl__row--head" data-sheet-open="' + ctx.key + ':' + g.id + '">' +
+          '<div class="lab-title">' + esc(g.name) + '</div><div>' + esc(g.order) + '</div>' +
+          '<div>' + summary + '</div><div>' + (g.single ? dash(u0.variant) : '<span class="lab-none">多筆</span>') + '</div>' +
+          '<div class="lab-mono">' + (g.single ? esc(u0.code) : '<span class="lab-none">多筆</span>') + '</div>' +
+          '<div>' + (g.single ? dash(u0.bundle) : '<span class="lab-none">多筆</span>') + '</div>' +
+          '<div>' + (g.single ? PK_BADGE[u0.st] : pkBadge(g)) + '</div>' +
+          '<div class="lab-label"><span>' + (g.single ? dash(u0.scan) : '<span class="lab-none">—</span>') + '</span>' +
+          '<i data-lucide="chevron-right" class="ztor-icon lab-chevron"></i></div></div>';
+      } else {
+        out += '<div class="lab-tbl__row lab-tbl__row--head" data-sheet-open="' + ctx.key + ':' + g.id + '">' +
+          thumb(g) +
+          '<div><div class="lab-title">' + esc(g.name) + '</div><div class="lab-meta">' + esc(g.order) + '</div></div>' +
+          '<div>' + esc(g.date) + '</div><div>' + esc(g.venue) + '</div>' +
+          '<div>' + tix(g.sold, g.cap) + '</div><div class="lab-num">' + esc(g.rev) + '</div>' +
+          '<div class="lab-label"><span>' + EV_BADGE[g.st] + '</span>' +
+          '<i data-lucide="chevron-right" class="ztor-icon lab-chevron"></i></div></div>';
+      }
+    });
+    return tbl(ctx, '', out);
+  }
+
+  /* ── F · 列內進度 ─────────────────────────────────────── */
+  function renderF(ctx) {
+    var out = '';
+    ctx.groups.forEach(function (g) {
+      var gid = 'f-' + ctx.key + '-' + g.id;
+      if (ctx.key === 'pk') {
+        var segs = g.units.map(function (u) {
+          return '<span class="lab-seg__i lab-seg__i--' + u.st + '" title="' + esc(u.code) + ' · ' + PK_WORD[u.st] + '"></span>';
+        }).join('');
+        out += '<div class="lab-tbl__row lab-tbl__row--head" data-rowdis-row="' + gid + '">' +
+          '<div><div class="lab-label"><span class="lab-title">' + esc(g.name) + '</span>' + chev(gid) + '</div></div>' +
+          '<div>' + esc(g.order) + '</div>' +
+          '<div><div class="lab-seg">' + segs + '</div>' +
+          '<div class="lab-seg-cap">' + g.units.map(function (u) { return PK_WORD[u.st]; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(' · ') + '</div></div>' +
+          '<div class="lab-num">' + g.done + ' / ' + g.total + '</div>' +
+          '<div>' + pkBadge(g) + '</div></div>';
+        var items = g.units.map(function (u) {
+          return '<div class="lab-fdetail__i"><span class="lab-dot lab-dot--' + u.st + '"></span>' +
+            '<span>' + esc(u.item) + (u.variant ? ' · ' + esc(u.variant) : '') + '</span>' +
+            '<span class="lab-mono">' + esc(u.code) + '</span>' +
+            '<span>' + (u.bundle ? esc(u.bundle) : '單買') + '</span>' +
+            '<span>' + (u.st === 'done' ? esc(u.scan) : PK_WORD[u.st]) + '</span></div>';
+        }).join('');
+        out += '<div class="lab-fdetail" data-rowdis-child="' + gid + '" hidden>' + items + '</div>';
+      } else {
+        var dsegs = g.units.map(function (d) {
+          return '<span class="lab-seg__i lab-seg__i--part" style="--lab-pct:' + pct(d.sold, d.cap) + '%" title="' + esc(d.venue) + ' ' + d.sold + '/' + d.cap + '"></span>';
+        }).join('');
+        out += '<div class="lab-tbl__row lab-tbl__row--head" data-rowdis-row="' + gid + '">' +
+          thumb(g) +
+          '<div><div class="lab-label"><span class="lab-title">' + esc(g.name) + '</span>' + chev(gid) + '</div>' +
+          '<div class="lab-meta">' + esc(g.order) + '</div></div>' +
+          '<div>' + esc(g.date) + '</div>' +
+          '<div><div class="lab-seg">' + dsegs + '</div>' +
+          '<div class="lab-seg-cap">' + g.units.map(function (d) { return d.venue + ' ' + pct(d.sold, d.cap) + '%'; }).join(' · ') + '</div></div>' +
+          '<div class="lab-num">' + esc(g.rev) + '</div>' +
+          '<div>' + EV_BADGE[g.st] + '</div></div>';
+        var ditems = g.units.map(function (d) {
+          return '<div class="lab-fdetail__i"><span class="lab-dot lab-dot--' + (d.st === 'soldout' ? 'done' : 'pending') + '"></span>' +
+            '<span>' + esc(d.n) + ' · ' + esc(d.venue) + '</span>' +
+            '<span>' + esc(d.date.split(' · ')[0]) + '</span>' +
+            '<span class="lab-num">' + d.sold + ' / ' + d.cap + '</span>' +
+            '<span class="lab-num">' + esc(d.rev) + '</span></div>';
+        }).join('');
+        out += '<div class="lab-fdetail" data-rowdis-child="' + gid + '" hidden>' + ditems + '</div>';
+      }
+    });
+    return tbl(ctx, 'f', out);
+  }
+
+  /* ── 候選清單 ─────────────────────────────────────────── */
+  var CANDIDATES = [
+    {
+      code: '基準', plain: true, name: '現況',
+      lede: '站上此刻的做法：母列是一條幾乎空白的資料列，子列整列往右縮排一階、左緣一條 2px 直線。放在這裡當對照組。',
+      render: renderBase,
+      pros: ['改動成本為零，站上三個頁面已經在用', '子列保留完整欄位，要查哪一格都查得到'],
+      cons: ['母列八個欄位只填得起兩格，展開等於插進一條空白列', '子列每一列重寫一次訂單號或系列名，眼睛要過濾', '群組的頭尾只靠一條細線，多開幾組就分不出邊界', '子列整列縮排，欄位跟表頭錯開一階']
+    },
+    {
+      code: 'A', name: '內嵌面板',
+      lede: '展開的不是幾條表格列，而是母列底下一塊有自己底色、圓角與內距的面板。面板內不受欄軌約束，可以自由排版、把重複欄位整個拿掉。',
+      render: renderA,
+      pros: ['重複的訂單號與系列名只在面板抬頭寫一次', '面板的底色與鑲邊把整組框起來，頭尾一目瞭然', '排版自由，件數多時可以改成兩欄或分區'],
+      cons: ['面板內的欄位不對齊表頭，跨買家橫向比對做不到', '多開幾組時頁面會被一塊塊面板切碎，清單的節奏斷掉', '同一份資料要維護兩套版面（表格列一套、面板一套）']
+    },
+    {
+      code: 'B', name: '分組帶',
+      lede: '母列不再假裝是一條資料列：改成一條明顯矮於資料列的分組標頭帶，貼左、字級小、底色略深。真正對齊欄位的是子列。',
+      render: renderB,
+      pros: ['解掉「母列六個空欄」——標頭帶不對齊欄軌，本來就不需要填', '子列是貨真價實的資料列，欄位與表頭完全對齊', '帶子的底色與圓角讓群組的起點很清楚'],
+      cons: ['群組的結尾仍然只靠下一條帶子劃分，最後一組收在哪裡較弱', '收合狀態下只剩一條矮帶，資訊量比現況的母列少', '清單同時出現分組帶與一般資料列時，會有兩種列高']
+    },
+    {
+      code: 'C', name: '樹狀連接線',
+      lede: '保留現在的列結構，只把左緣那條直線做成真正的樹狀線：垂直主幹、每一項一條短橫線、最後一項收尾轉角。縮排只給第一格的內容，其他欄位維持對齊。',
+      render: renderC,
+      pros: ['改動最小，只換視覺不換結構，遷移成本最低', '收尾轉角把「這一組到這裡結束」畫了出來', '欄位不再整列右移，跨列比對回得來'],
+      cons: ['子列仍然是完整的資料列，重複資訊沒有被收掉', '線很細，深色底下遠看仍然弱', '件數多時樹狀線會拉得很長，視覺重量不夠壓住整組']
+    },
+    {
+      code: 'D', name: '碼晶片網格',
+      lede: '展開後不逐列展開，改成一片晶片網格：每件一顆膠囊，帶狀態色點與領取碼，十幾件也能一眼看完。以取貨名單為主。',
+      render: renderD,
+      pros: ['密度最高，一位買家二十件也不會把清單灌爆', '狀態靠顏色不靠讀字，現場掃視最快', '晶片本身就是可點的核銷入口，動作距離最短'],
+      cons: ['規格、來源組合、核銷時間放不進晶片，要查得再點一層', '晶片網格與資料表是兩種語言，同一頁並置會有斷層', '活動系列硬套會掉資訊：一顆晶片裝不下日期＋場地＋票數＋營收＋狀態，此處的活動版只是示意，實際不建議']
+    },
+    {
+      code: 'E', name: '側板',
+      lede: '表格本身維持乾淨、完全不展開；點一列從右側滑出明細板，整組內容在板子裡看。這裡的板子是照 detail-sheet 的材質語彙（玻璃底、頂緣內光、深投影）另做的示意，沒有動那支元件本人。',
+      render: renderE,
+      pros: ['清單永遠是一列一筆，掃視節奏完全不被打斷', '板子空間充裕，明細要多詳細都放得下', '站上已有覆蓋層的既有做法，語彙不用重新發明'],
+      cons: ['一次只能看一組，多組互相比較做不到', '每看一組要多一次開與關，現場連續作業會嫌慢', '手機上側板幾乎佔滿螢幕，等同換頁']
+    },
+    {
+      code: 'F', name: '列內進度',
+      lede: '母列不展開也看得懂：列內用分段條表示每一件的狀態，一段一件、顏色走狀態色。點了才展開細節，而多數時候不必展開。',
+      render: renderF,
+      pros: ['資訊密度最高，收合狀態就答完「還剩幾件、卡在哪裡」', '顏色比例即進度，遠看也讀得出來', '展開的內容可以做得很輕，因為摘要已經在列上'],
+      cons: ['分段條要吃掉一個欄位寬，其他欄位得讓位', '件數超過十幾件時每段太細，個別狀態辨識不出來', '分段條是新語彙，站上其他清單沒有，一致性成本最高']
+    }
+  ];
+
+  /* ── 算繪與互動 ───────────────────────────────────────── */
+  var ctxKey = 'pk';
+  var wrap = document.getElementById('lab-cards');
+
+  function ctxData() { return ctxKey === 'pk' ? PK : EV; }
+
+  function bullets(list) {
+    return '<ul>' + list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>';
+  }
+
+  function paint() {
+    var ctx = ctxData();
+    wrap.innerHTML = CANDIDATES.map(function (c) {
+      return '<section class="card lab-card">' +
+        '<div class="lab-card__head">' +
+        '<span class="lab-card__code' + (c.plain ? ' lab-card__code--plain' : '') + '">' + esc(c.code) + '</span>' +
+        '<h2 class="lab-card__name">' + esc(c.name) + '</h2></div>' +
+        '<p class="lab-lede">' + esc(c.lede) + '</p>' +
+        c.render(ctx) +
+        '<div class="lab-pros">' +
+        '<div><h3 class="lab-pros__title">優點</h3>' + bullets(c.pros) + '</div>' +
+        '<div><h3 class="lab-pros__title">代價</h3>' + bullets(c.cons) + '</div>' +
+        '</div></section>';
+    }).join('');
+    if (window.ztorIcons) window.ztorIcons.applyIcons();
+    if (window.rowDisclosure) window.rowDisclosure.sync();
+  }
+
+  /* 脈絡切換 */
+  var seg = document.getElementById('lab-ctx');
+  seg.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-ctx]');
+    if (!btn) return;
+    ctxKey = btn.getAttribute('data-ctx');
+    Array.prototype.forEach.call(seg.querySelectorAll('[data-ctx]'), function (b) {
+      b.classList.toggle('segmented__btn--active', b === btn);
+    });
+    closeSheet();
+    paint();
+  });
+
+  /* E 的側板 */
+  var sheet = document.getElementById('lab-sheet');
+  var sheetTitle = document.getElementById('lab-sheet-title');
+  var sheetSub = document.getElementById('lab-sheet-sub');
+  var sheetBody = document.getElementById('lab-sheet-body');
+
+  function openSheet(token) {
+    var parts = token.split(':');
+    var ctx = parts[0] === 'pk' ? PK : EV;
+    var g = null;
+    ctx.groups.forEach(function (x) { if (x.id === parts[1]) g = x; });
+    if (!g) return;
+    sheetTitle.textContent = g.name;
+    if (parts[0] === 'pk') {
+      sheetSub.textContent = g.order + ' · ' + g.total + ' 件領取單位 · 已領 ' + g.done + ' 件';
+      sheetBody.innerHTML = g.units.map(function (u) {
+        return '<div class="lab-sheet__row"><span class="lab-dot lab-dot--' + u.st + '"></span>' +
+          '<span><span class="lab-title">' + esc(u.item) + '</span>' +
+          '<span class="lab-meta">' + esc(u.code) + (u.variant ? ' · ' + esc(u.variant) : '') +
+          (u.bundle ? ' · ' + esc(u.bundle) : '') + '</span></span>' +
+          '<span class="lab-none">' + (u.st === 'done' ? '已核銷 ' + esc(u.scan) : PK_WORD[u.st]) + '</span></div>';
+      }).join('');
+    } else {
+      sheetSub.textContent = g.order + ' · ' + g.date + ' · ' + g.sold.toLocaleString() + ' / ' + g.cap.toLocaleString() + ' 張';
+      sheetBody.innerHTML = g.units.map(function (d) {
+        return '<div class="lab-sheet__row"><span class="lab-dot lab-dot--' + (d.st === 'soldout' ? 'done' : 'pending') + '"></span>' +
+          '<span><span class="lab-title">' + esc(d.venue) + '</span>' +
+          '<span class="lab-meta">' + esc(d.date) + ' · ' + d.sold + ' / ' + d.cap + ' 張 · ' + esc(d.rev) + '</span></span>' +
+          '<span class="lab-none">' + evWord(d.st) + '</span></div>';
+      }).join('');
+    }
+    sheet.hidden = false;
+    if (window.ztorIcons) window.ztorIcons.applyIcons();
+  }
+  function closeSheet() { sheet.hidden = true; }
+
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-sheet-close]')) { closeSheet(); return; }
+    var opener = e.target.closest('[data-sheet-open]');
+    if (opener) openSheet(opener.getAttribute('data-sheet-open'));
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !sheet.hidden) closeSheet();
+  });
+
+  paint();
+})();
+</script>
+</body>
+</html>

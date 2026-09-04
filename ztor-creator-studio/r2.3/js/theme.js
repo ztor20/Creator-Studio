@@ -138,6 +138,10 @@
     try { framed = window.self !== window.top; } catch (_) { framed = true; }   // 跨源存取被擋＝確實在別人的框裡
     if (embedded || framed) {
       document.documentElement.setAttribute('data-embed', '1');
+      /* 2026-09-01 撤除（墓碑）：`--sb-w`（量捲軸寬給頂列色帶扣掉）。
+         它服務的是頂列那條 `calc(50% - 50vw)` 的溢出色帶；同日頂列的黏附行為
+         重寫成 fixed 之後，那一列本身就橫跨捲動容器、不再需要色帶替身，
+         這個變數也就沒有消費者了（見 shared.css 的對應墓碑）。 */
     }
   } catch (_) {}
 })();

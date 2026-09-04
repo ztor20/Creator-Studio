@@ -277,56 +277,48 @@
    只在吸住時開（.is-stuck 由 js/media-vault.js 掛）——常駐的話這道往上的實心陰影
    會把上面的庫房標頭蓋掉。 */
 .vault-reach {
-  position: sticky;
-  top: var(--sp-16);
-  z-index: 3;
+  /* ztorUI 換裝補漏（2026-09-01 使用者回報「還是有一些頁面沒套用新的 DS」）：
+     Wave 2a 的規則是**內容表面改玻璃、彈出層維持不透明**，這一支當時沒跟上，
+     還停在實色 `--card`，於是同一種卡在不同模組是兩種材質。配方與 `.card` 同源
+     （引用同一組 token，不抄數值）。舊值：background: var(--card)。 */
+  /* 2026-09-01 撤除吸頂（使用者裁示「這個不用 fix」）：這張卡原本 `position: sticky`
+     釘在捲動區頂端，代價是它會蓋住下面那張卡的標題（截圖裡壓到「解鎖條件」），
+     而且它為了補縫要在上下各鋪一塊**實色**頁面底色——那個手法的前提是卡片不透明，
+     同日這張卡改成玻璃之後就露餡，變成卡片外圍一圈深色方框。
+     兩件事一起解：不釘住，補縫的虛擬元素與它的 JS 觀察器一併退場（見下方墓碑）。 */
   display: flex;
   flex-direction: column;
   gap: var(--sp-10);
   padding: var(--sp-16) var(--sp-18);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  background: var(--card);
-  box-shadow: var(--shadow-card);
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
 }
-/* 吸住時：上下各鋪一塊實心的頁面底色，把兩道縫填掉。
-     · 上面那道＝貼頂的 --sp-16 間距；
-     · 下面那道＝這張卡與下一張卡之間的 gap（捲上來的內容會從卡片底下經過時被
-       看見一小截，2026-08-01 使用者標的那條線就是這裡）。
-
-   為什麼是 ::before/::after 而不是 box-shadow：box-shadow 會跟著元素的 border-radius
-   走，上下兩塊因此帶圓角，四個角補不到，下一張卡的圓角就從角落露出來（使用者
-   「不用圓角」指的正是這個）。虛擬元素是方角的。
-
-   left/right 各給 -1px：絕對定位對齊的是「內距框」，這張卡有 1px 邊框，left: 0 會
-   在左右各留下一道 1px 的縫。
-
-   z-index:-1 在這張卡自己的堆疊脈絡（z-index:3）裡，所以只會沉到卡片底色之下，
-   仍然蓋在捲動內容之上。 */
-.vault-reach.is-stuck::before,
-.vault-reach.is-stuck::after {
-  content: "";
-  position: absolute;
-  left: -1px;
-  right: -1px;
-  z-index: -1;
-  pointer-events: none;
-  background: var(--surface-page);
-}
-.vault-reach.is-stuck::before { bottom: 100%; height: 48px; }
-.vault-reach.is-stuck::after  { top: 100%; height: var(--sp-16); }
+/* 2026-09-01 撤除（墓碑）：`.vault-reach.is-stuck::before/::after`——吸住時上下補縫用的
+   兩塊實色頁面底色。吸頂本身已撤除（見上方），這兩塊沒有對象；它們也是「卡片必須
+   不透明」才成立的手法，與這張卡現在的玻璃面互斥。JS 那支 `bindStuckWatch()`
+   同一輪一起退場（js/media-vault.js）。 */
 
 /* 門條改單欄（2026-07-31）：讀數搬出去吸頂之後，這裡只剩「怎麼進得來」的設定，
    並排的理由（左因右果）已經不存在，各佔一整行讀起來更直。 */
 .vault-door {
+  /* ztorUI 換裝補漏（2026-09-01 使用者回報「還是有一些頁面沒套用新的 DS」）：
+     Wave 2a 的規則是**內容表面改玻璃、彈出層維持不透明**，這一支當時沒跟上，
+     還停在實色 `--card`，於是同一種卡在不同模組是兩種材質。配方與 `.card` 同源
+     （引用同一組 token，不抄數值）。舊值：background: var(--card)。 */
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-20);
   padding: var(--sp-16) var(--sp-18);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  background: var(--card);
-  box-shadow: var(--shadow-card);
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
 }
 .vault-door__col { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-10); }
 /* 這一頁的區塊標題：「解鎖條件」「誰進得來」「已發出的鑰匙」「這座庫房裡」共用同
@@ -557,14 +549,20 @@
    得來」，下面回答「裡面有什麼」——而不是一張卡加一段裸內容。
    注意這跟「主欄不做成一張 .card」不衝突：兩張是兄弟，包成一張才會變卡中卡。 */
 .vault-gridwrap {
+  /* ztorUI 換裝補漏（2026-09-01 使用者回報「還是有一些頁面沒套用新的 DS」）：
+     Wave 2a 的規則是**內容表面改玻璃、彈出層維持不透明**，這一支當時沒跟上，
+     還停在實色 `--card`，於是同一種卡在不同模組是兩種材質。配方與 `.card` 同源
+     （引用同一組 token，不抄數值）。舊值：background: var(--card)。 */
   display: flex;
   flex-direction: column;
   gap: var(--sp-12);
   padding: var(--sp-16) var(--sp-18);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  background: var(--card);
-  box-shadow: var(--shadow-card);
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
 }
 .vault-gridbar {
   display: flex;
@@ -616,8 +614,16 @@
 }
 .vault-empty__kind .ztor-icon { width: 14px; height: 14px; color: var(--muted-foreground); }
 
+/* 分區清單的容器（`[data-vault-grid]`，JS 現算填入上傳格＋各分區）。
+   **間距由容器持有**（2026-09-01 使用者回報「照片標籤黏在上傳格上」）：原本寫成
+   `.vault-group + .vault-group { margin-top }`——「群組跟群組之間」有 20px，但排在
+   最前面的上傳格不是 `.vault-group`，「上傳格跟第一個群組之間」誰都沒管，貼成 0。
+   相鄰選擇器給節奏的通病就是這個：第一個鄰居換一種元素就漏。改成容器 `gap`，
+   誰排進來都有同一段距離。（form-section 2026-08-10 的 radio-cards 是同一個病，
+   當時只補了那一處；本輪起立法：節奏歸容器，見 design-system.md Pillar 3。） */
+[data-vault-grid] { display: flex; flex-direction: column; gap: var(--sp-20); }
 .vault-group { display: flex; flex-direction: column; gap: var(--sp-10); }
-.vault-group + .vault-group { margin-top: var(--sp-20); }
+/* 2026-09-01 撤除（墓碑）：`.vault-group + .vault-group { margin-top }`，改由上面的容器 gap 承擔。 */
 
 .vault-group__head {
   display: flex;
@@ -654,12 +660,16 @@
 
 /* ── 音檔：清單列 ─────────────────────────────────────── */
 .vault-tracks {
+  /* ztorUI 換裝補漏（2026-09-01，同一輪）：內容表面改玻璃，配方與 `.card` 同源。
+     舊值：background: var(--card)。 */
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: var(--card);
-  box-shadow: var(--shadow-card);
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
   overflow: hidden;
 }
 .vault-track {
@@ -1093,13 +1103,17 @@
   gap: var(--sp-16);
 }
 .vault-ovcard {
+  /* ztorUI 換裝補漏（2026-09-01，同一輪）：內容表面改玻璃，配方與 `.card` 同源。
+     舊值：background: var(--card)。 */
   display: flex;
   flex-direction: column;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  background: var(--card);
-  box-shadow: var(--shadow-card);
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
   overflow: hidden;
   text-align: left;
   cursor: pointer;

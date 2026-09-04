@@ -291,6 +291,7 @@
 
 <script src="js/events-store.js?v=r2.2"></script>
 <script src="js/icons.js?v=r2.2"></script>
+<script src="js/detail-topbar.js?v=r2.2"></script><!-- 2026-09-01：詳情頁頂列的黏附行為，與項目詳情同一支 -->
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="partials/upload-tile.js?v=r2.2"></script>
@@ -562,37 +563,27 @@
     if (!tablist) return;
     /* 2026-08-18：分頁控制項由 `.tabs__item` 改成 `.section-nav__item`（左側直排）。 */
     /* 頂列黏住之後，麵包屑換成「縮圖＋名稱」（2026-08-18，與項目詳情、活動詳情同一支）。 */
+    /* 2026-09-01：捲動判定與 fixed 的幾何抽成共用 `js/detail-topbar.js`（項目詳情
+       同一支）。這裡只留「這一頁的縮圖與名稱從哪來」。
+       行為也在同一輪改了：麵包屑那一列先被推掉、整個頁首捲完，精簡列才滑進來。 */
     (function () {
-      /* 2026-08-31：內嵌模式（detail-sheet 浮層）的捲軸在 <body>、不在 main.main
-         （見 shared.css「內嵌模式」把捲動改回單層）。掛錯容器 scrollTop 恆為 0，
-         頂列永遠進不了黏住態——在浮層裡就會看到內容從那一列底下穿出去。 */
-      const embed = document.documentElement.hasAttribute('data-embed');
-      const scroller = embed ? document.scrollingElement : document.querySelector('main.main');
       const bar = document.querySelector('.detail-topbar');
-      const hero = document.querySelector('.page-intro');
-      const mini = document.querySelector('[data-sd-mini]');
-      const crumb = bar && bar.querySelector('.page-crumb');
-      if (!scroller || !bar || !hero || !mini || !crumb) return;
       const cover = document.getElementById('sd-mini-cover');
       const name = document.getElementById('sd-mini-name');
-      let on = null;
-      function sync() {
-        const gone = scroller.scrollTop > hero.offsetTop + hero.offsetHeight - bar.offsetHeight;
-        if (gone === on) return;
-        on = gone;
-        mini.hidden = !gone;
-        crumb.hidden = gone;
-        bar.classList.toggle('is-stuck', gone);
-        if (gone) {
+      if (!window.ZtorDetailTopbar || !bar) return;
+      window.ZtorDetailTopbar.init({
+        bar: bar,
+        hero: document.querySelector('.page-intro'),
+        mini: document.querySelector('[data-sd-mini]'),
+        crumb: bar.querySelector('.page-crumb'),
+        onStick: function () {
           const heroImg = document.querySelector('#sd-hero-img img');
           const title = document.querySelector('.page-intro__title');
           const src = heroImg && heroImg.getAttribute('src');
           if (cover) { cover.hidden = !src; if (src) cover.src = src; }
           if (name && title) name.textContent = title.textContent.trim();
         }
-      }
-      (embed ? window : scroller).addEventListener('scroll', sync, { passive: true });
-      sync();
+      });
     })();
 
     const tabs = tablist.querySelectorAll('.section-nav__item');

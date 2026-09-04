@@ -30,6 +30,22 @@
 /* 卡內欄位沿用建立流程 section 的節奏：label 14px、說明貼齊 label（gap 收成 0）。
    欄位之間的 16px 由基礎 .field 提供，這裡不覆寫（Q6 已統一全站表單節奏）。 */
 .fc-bundle__body .field__label { font-size: var(--fs-14); font-weight: var(--fw-regular); }
+
+/* ── 三段式分組（2026-09-01 使用者裁示重設計）────────────────────────────
+   卡內依「這是什麼方案／支持者拿到什麼／怎麼賣」分三段，每段一個小標。
+   分隔用上緣 hairline ＋ 留白，不疊填色（Q24：卡內再疊面只會愈來愈糊）；
+   第一段貼著卡頭、不畫線（上面就是標題列本人）。
+   小標字級停在 --fs-14、走 display 字型——與 form-section__subhead 同一階：
+   它統轄的是欄位標籤（同樣 14px 的 ui 字型），靠字型與墨色分層，不再放大。 */
+.bd-group { padding-top: var(--sp-16); border-top: 1px solid var(--border); margin-top: var(--sp-16); }
+.bd-group:first-child { padding-top: 0; border-top: 0; margin-top: 0; }
+.bd-group__title {
+  margin: 0 0 var(--sp-12);
+  font-family: var(--font-display);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+}
 .fc-bundle__body .field__label + .field__hint { margin-top: calc(-1 * var(--sp-4)); }
 .fc-bundle__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-16); }
 
@@ -221,10 +237,17 @@
    為什麼要換底色：它跟下面的商品列共用 .fc-ref 的骨架（同樣的縮圖 ＋ 兩行文字），
    長得一樣就會被讀成「清單的第一項」，接著就是去找它的移除鈕。填色是這裡唯一
    在一眼之內分得出「這一列不是清單成員」的手段。
-   縮圖格反過來吃 --card：底色一換，原本的 --muted 縮圖會跟整列糊在一起。 */
+
+   ⚠ 2026-09-01 改成疊薄膜（使用者：「這個沒有照 DS」）。兩個絕對實色都違反 Q66
+   「往亮疊、不往暗陷」——列吃 --muted（#161718）、縮圖吃 --card（#212223），
+   在彈窗這種巢狀情境裡等於把兩塊實色檯面貼進玻璃面板，層次讀成「陷下去」。
+   現在列疊一層 --ztu-film（＋亮色才看得見的 --nest-line），坐在 .bd-sec 的 4% 薄膜上
+   自然比周圍亮一階，「被抬起來的固定項」這件事仍然講得出來。
+   縮圖回到與相鄰商品圖同一個 --muted 媒體井（card.css 對 Q66 的例外：往下凹的襯底）——
+   當初改吃 --card 是因為列本身是 --muted、兩者會糊在一起，列改亮之後對比自己回來。 */
 .fc-ref--work {
-  background: var(--muted);
-  border-bottom: 0;
+  background: var(--ztu-film);
+  border: 1px solid var(--nest-line);
   border-radius: var(--radius-md);
   padding: var(--sp-8) var(--sp-12);
 }
@@ -232,7 +255,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--card);
   color: var(--muted-foreground);
 }
 .fc-ref__thumb--work .ztor-icon { width: 20px; height: 20px; }
@@ -276,6 +298,24 @@
 /* 找不到商品時的出口：現在就開一個草稿商品，而不是逼人改用自由文字。
    （黑膠還沒壓出來就是還沒有 SKU——這是真實情境，不是使用者的錯。）*/
 .fc-pick__empty { padding: var(--sp-10) var(--sp-8); font-size: var(--fs-12); color: var(--muted-foreground); }
+
+/* 未定價警示（2026-09-01）：套組價旁的小徽章。用狀態警示黃不用紅——
+   未定價是「還沒做完」不是「做錯了」，紅色會把每一張含草稿項的卡都畫成錯誤。 */
+.fc-sum__unpriced {
+  display: inline-block;
+  margin-left: var(--sp-6);
+  padding: 1px var(--sp-6);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-11);
+  /* fill／ink 分工照 .badge--warning（badge.css）：填色歸原色淡染、墨色歸 -ink。
+     原色當文字色在亮色模式對白只有 1.42:1（design-system.md 的 Don't 明文禁止）；
+     -ink 在深色主題等於原色，深色外觀不變、亮色才壓得深。
+     （首版直接拿原色當文字色，收尾驗收抓到，同日改正。） */
+  color: var(--status-warning-ink);
+  background: color-mix(in srgb, var(--status-warning) 22%, var(--card));
+  white-space: nowrap;
+  vertical-align: middle;
+}
 
 /* ── 額外權益列 ───────────────────────────────────────────────────
    權益「應該」是自由文字：Discord 身分組、名字進片尾字卡，都沒有 SKU、

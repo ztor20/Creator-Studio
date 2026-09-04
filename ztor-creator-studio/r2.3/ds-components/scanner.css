@@ -1,6 +1,13 @@
-/* Mobile scanner · spec 5.1.5.14 (standalone phone scanner, D111/D121/D122).
+/* Mobile scanner · spec 5.1.5.14 (standalone phone scanner, D111/D121/D122/D240).
    A separate URL with NO Creator Studio nav — staff open it on a phone,
-   enter the session password, then scan buyer QR codes to redeem.
+   enter the session password, then scan pickup codes to redeem.
+
+   2026-09-03（D240 一物一碼）: one code = one pickup unit. The result sheet shows
+   that single unit only (buyer / source / item / option / source bundle) and its
+   confirm action; after confirming, staff stay on the camera and a progress band
+   (`.scanner-progress`) says how many of that buyer's items are done. The old
+   multi-claim list (`.scanner-claims`) is retired — the note further down in
+   this file records where its job went.
 
    2026-08-19 redesign（流程重規劃）: camera is the home screen; results come up
    as a bottom sheet inside the frame (continuous-scan rhythm instead of a
@@ -224,6 +231,39 @@
 }
 .scanner-hint { text-align: center; font-size: var(--fs-12); color: var(--muted-foreground); }
 
+/* Buyer progress band（D240 裁決六）— 核銷一件之後留在相機畫面連續掃描，這條 band
+   常駐顯示「剛剛那位買家在本場次領了幾件、還剩幾件」，工作人員才知道要不要繼續掃。
+   坐在相機分頁最上緣、與相機同一層 surface，靠下緣一條 border 與相機分界。 */
+.scanner-progress {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-10);
+  padding: var(--sp-10) var(--sp-16) var(--sp-12);
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+.scanner-progress[hidden] { display: none; }
+.scanner-progress__icon { width: 20px; height: 20px; color: var(--status-success); }
+.scanner-progress__body { display: grid; gap: var(--sp-2); min-width: 0; }
+.scanner-progress__row { display: flex; align-items: baseline; gap: var(--sp-8); }
+.scanner-progress__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--fs-14);
+  color: var(--foreground);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.scanner-progress__count {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-bold);
+  color: var(--status-success);
+  font-variant-numeric: tabular-nums;
+}
+.scanner-progress__note { font-size: var(--fs-12); color: var(--muted-foreground); }
+
 /* Roster rows are JS-rendered data-list rows made tappable（點列帶入代碼）*/
 .scanner-rosterrow { cursor: pointer; width: 100%; text-align: left;
   background: none; border: 0; font: inherit; color: inherit; }
@@ -306,24 +346,21 @@
   border-top: 1px solid var(--border);
 }
 
-/* Buyer identity + claim lines inside the sheet */
+/* Buyer identity inside the sheet */
 .scanner-buyer { display: grid; gap: var(--sp-2); }
 .scanner-buyer b { font-size: var(--fs-16); color: var(--foreground);
   font-weight: var(--fw-medium); }
 .scanner-buyer span { font-size: var(--fs-12); color: var(--muted-foreground); }
-.scanner-claims { display: grid; gap: var(--sp-8); }
-.scanner-claim {
-  display: flex;
-  align-items: baseline;
-  gap: var(--sp-10);
-  padding: var(--sp-10) var(--sp-12);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-}
-.scanner-claim__name { flex: 1 1 auto; font-size: var(--fs-14); color: var(--foreground); }
-.scanner-claim__opt { display: block; font-size: var(--fs-12); color: var(--muted-foreground); }
-.scanner-claim__qty { font-family: var(--font-display); font-weight: var(--fw-bold);
-  color: var(--foreground); font-variant-numeric: tabular-nums; }
+
+/* 墓碑 2026-09-03（D240 一物一碼）：.scanner-claims / .scanner-claim（__name／__opt／
+   __qty）是「一次掃描核銷整筆、sheet 列出買家名下多個品項」那個時代的清單。改成掃一
+   個領取碼核銷一件之後，結果只顯示這一件（裁決六），單件明細改用 .scanner-buyer ＋
+   .scanner-result__rows；這組 class 全站零消費，樣式已移除，留此註記說明去向。 */
+
+/* 名單列的單位子列縮排：本檔不再覆寫。舊做法（`data-list__row--child`）的預設縮排是
+   64px——對齊 52px 圖示的桌面尺度，手機框 400px 太深，所以這裡曾把它調回 32px。
+   2026-09-03（Q107）名單子列改吃 row-disclosure 之後，一階本來就是 32px（`.rowdis__child`
+   的預設），覆寫成了同值的死規則，一併移除。 */
 
 /* Result detail rows（label / value dl，沿用前版）*/
 .scanner-result__rows { display: flex; flex-direction: column; gap: var(--sp-10); margin: 0; }

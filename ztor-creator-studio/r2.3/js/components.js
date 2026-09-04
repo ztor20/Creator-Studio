@@ -311,17 +311,45 @@
     });
 
     var svg = '';
-    /* 格線畫在每個「有值」的縱軸刻度上，折線才跟刻度對得起來。 */
+    /* 格線畫在每個「有值」的縱軸刻度上，折線才跟刻度對得起來。
+       **2026-09-01 起改成最後才畫**（見下方 `grid`）：堆疊面積會把整片畫布填滿，
+       先畫的格線會被埋在下面，縱軸的刻度就變成沒有對應的三個字。 */
+    var grid = '';
     withV.forEach(function (k) {
       var y = sp.yOf(k.v).toFixed(2);
-      svg += '<line class="sparkline__grid" x1="0" y1="' + y + '" x2="100" y2="' + y + '"></line>';
+      grid += '<line class="sparkline__grid" x1="0" y1="' + y + '" x2="100" y2="' + y + '"></line>';
     });
     (sk.bands || []).forEach(function (b) {
       var x1 = sp.xOf(b.from), x2 = sp.xOf(b.to);
       svg += '<rect class="sparkline__band" x="' + x1.toFixed(2) + '" y="0" width="'
            + (x2 - x1).toFixed(2) + '" height="' + H + '"></rect>';
     });
-    svg += '<path class="sparkline__area" d="' + sp.area + '"></path>';
+    /* 堆疊面積（2026-09-01 使用者裁示「收入只有總收入和兩個項目值，其他的呢」）：
+       由下往上一層一層疊，最上面那條邊界就是總收入那條線。與「多畫幾條線」的差別是
+       它答得了「錢從哪來」——五條線在 300px 的欄裡是五條纏在一起的線，堆疊則是
+       五塊各自有厚度的面，而且厚度加起來一定等於總額，不會出現「剩下的呢」。
+       每一塊畫成一條封閉路徑：沿上緣走過去，再沿下緣走回來。
+       有堆疊時就不畫預設的那片線下填充——兩者是同一塊地方的兩種畫法，疊起來會糊。 */
+    var stacked = sk.stack && sk.stack.length;
+    if (stacked) {
+      var bottom = sk.values.map(function () { return sp.min; });
+      sk.stack.forEach(function (layer) {
+        var top = layer.values.map(function (v, i) { return bottom[i] + v; });
+        var fwd = top.map(function (v, i) {
+          return (i ? 'L' : 'M') + sp.xOf(i).toFixed(2) + ' ' + sp.yOf(v).toFixed(2);
+        }).join(' ');
+        var back = '';
+        for (var i = bottom.length - 1; i >= 0; i--) {
+          back += ' L' + sp.xOf(i).toFixed(2) + ' ' + sp.yOf(bottom[i]).toFixed(2);
+        }
+        svg += '<path class="sparkline__stack" style="--fill:' + layer.color + '" d="'
+             + fwd + back + ' Z"></path>';
+        bottom = top;
+      });
+    } else {
+      svg += '<path class="sparkline__area" d="' + sp.area + '"></path>';
+    }
+    svg += grid;
     svg += '<path class="sparkline__line" d="' + sp.line + '"></path>';
     /* 附加線（2026-08-31）：與主線共用同一組值域與同一支 `sparkPaths`，
        所以幾條線疊起來的高低是可以互相比較的——各自算自己的極值就會變成
@@ -745,6 +773,31 @@
   }
   var CANVAS_EVENT_ON = { scheduled: 1, 'on-sale': 1, live: 1 };
 
+  /* ── 這一頁的取數層認得「現在有多少資料」（2026-09-01 使用者裁示）───────────
+     空畫面其實有兩種，中間那一段——**已經建立過東西、但只有一兩筆**——才是新帳號
+     用最久的狀態，先前完全示範不出來：全站的 Empty 是純 CSS 隱藏（`shared.css` 的
+     `.dash-data-only`），store 的資料一筆都沒少。
+     **只改這一頁自己的取數層、不動 store**：store 是三十幾頁共用的，為了一頁的示範
+     去改它，等於把風險攤到全站。這幾支 getter 讀 devtools 寫在 `<html>` 上的狀態，
+     把餵給渲染器的資料裁到該有的量。
+     ⚠ 這是**原型的示範狀態**：真實系統裡這幾種樣子是由資料筆數自然決定的，
+     不會有一個開關（記在 ASSUMPTIONS CANVAS-005）。 */
+  function canvasScope() {
+    return document.documentElement.getAttribute('data-data-state') || 'has-data';
+  }
+  /* 「有資料、但很少」的兩種：右排與第二屏要跟著縮，收入與粉絲都還是 0。 */
+  function canvasSparse() {
+    var v = canvasScope();
+    return v === 'only-product' || v === 'one-project';
+  }
+  /* 把一串裁到這個狀態該有的量：只有商品＝項目與活動都沒有；只有一個項目＝留一筆。 */
+  function canvasTrim(list) {
+    var v = canvasScope();
+    if (v === 'only-product') return [];
+    if (v === 'one-project') return list.slice(0, 1);
+    return list;
+  }
+
   function canvasItems() {
     var zh = canvasZh(), out = [], all = [];
     var api = window.ztorProjects;
@@ -813,7 +866,10 @@
       seen[r.n] = 1;
       one.push(r);
     });
-    return one.length ? one : all;
+    /* 裁到當下這個狀態該有的量（見 `canvasTrim`）。**裁在最後、不裁在來源**：
+       前面那些篩選與排序講的是「什麼叫接下來要進行的事」，那個口徑不該因為示範
+       狀態而改變；這裡只決定「看得到幾筆」。 */
+    return canvasTrim(one.length ? one : all);
   }
 
   /* 舞台上浮的標記位置：畫面座標，不是資料。原型沒有「這件事發生在圖上的哪裡」
@@ -858,9 +914,13 @@
     { key: 'src.commission', en: 'Tastemaker commission', pct: 11, color: 'var(--chart-5)' },
     /* 「其他」＝剩下五項（OTT 版稅、IP 版稅、串流、授權、項目支持）的合計 27%，
        沿用既有的 `src.other` 譯詞（項目支持 · 其他），不新造一個同義的鍵。 */
-    { key: 'src.other',      en: 'Project support · other', pct: 27, color: 'var(--muted-foreground)' }
+    /* 顏色 2026-09-01 由 `--muted-foreground` 改成 `--chart-3`：這一組改用堆疊面積之後，
+       「其他」是佔 27% 的一整塊面，而中性墨色是為了「圖例上的一個小點」挑的——鋪成面
+       就是畫面上最亮的一塊，蓋過旁邊四塊有顏色的。這一組現在只有那一張卡在用。 */
+    { key: 'src.other',      en: 'Project support · other', pct: 27, color: 'var(--chart-3)' }
   ];
-  var TIER_COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-5)'];
+  /* 2026-09-01 撤除（墓碑）：`TIER_COLORS`——粉絲分層那一格改成 `.tier-arc` 之後，
+     顏色由「由外往內吃 `--tier-1..4`」在該處就地算出來，不再需要一份固定的對照表。 */
 
   function splitBar(rows) {
     return '<div class="split-bar">'
@@ -875,6 +935,46 @@
               + '<span class="split-bar__dot" style="color:' + r.color + '"></span>'
               + '<span class="split-bar__label"' + di18n(r.key) + '>' + s(r.label || r.en) + '</span>'
               + '<span class="split-bar__pct">' + r.pct + '%</span>'
+              + '</div>';
+          }).join('')
+      + '</div></div>';
+  }
+
+  /* 分層弧（`.tier-arc`，2026-09-01 使用者選定 `docs/fan-tiers-demo.html` 的方案 D）：
+     層層包含的資料——角度是「這一層有多少人」（累積佔比），線寬是「第幾層」。
+     `rows` 由外往內傳，每一列帶 `cum`（累積佔比 0–100）。
+     線寬與 tier-arc.css 沒有共用變數：它是資料的一部分（第幾層），寫在行內。
+     半徑 60、最粗 26 → 外緣落在 73，仍在 150 的畫布內（半徑上限 75）；再粗就會被裁一角。 */
+  var TIER_ARC_W = [26, 20, 15, 11];
+  function tierArc(rows, total, unitKey, unitText) {
+    var R = 60, C = 2 * Math.PI * R;
+    var segs = rows.map(function (r, i) {
+      var w = TIER_ARC_W[i] || TIER_ARC_W[TIER_ARC_W.length - 1];
+      var len = C * Math.max(0, Math.min(100, r.cum || 0)) / 100;
+      return '<circle class="tier-arc__seg" cx="75" cy="75" r="' + R + '"'
+        + ' style="--seg:' + (r.color || 'var(--tier-1)') + '" stroke-width="' + w + '"'
+        + ' stroke-dasharray="' + len.toFixed(2) + ' ' + (C - len).toFixed(2) + '"></circle>';
+    }).join('');
+    return '<div class="tier-arc">'
+      + '<div class="tier-arc__ringwrap">'
+      +   '<svg class="tier-arc__ring" viewBox="0 0 150 150" aria-hidden="true">'
+      +     '<circle class="tier-arc__track" cx="75" cy="75" r="' + R + '" stroke-width="' + TIER_ARC_W[0] + '"></circle>'
+      +     segs
+      +   '</svg>'
+      +   '<div class="tier-arc__center">'
+      +     '<span class="tier-arc__value">' + s(total) + '</span>'
+      +     (unitText ? '<span class="tier-arc__unit"' + di18n(unitKey) + '>' + s(unitText) + '</span>' : '')
+      +   '</div>'
+      + '</div>'
+      + '<div class="tier-arc__legend">'
+      +   rows.map(function (r, i) {
+            /* 圓點大小跟著該層的線寬走：圖例與圖用同一個編碼，一眼看得出誰在外面。 */
+            var d = Math.max(4, Math.round((TIER_ARC_W[i] || 11) / 2.4));
+            return '<div class="tier-arc__row">'
+              + '<span class="tier-arc__dot" style="--seg:' + (r.color || 'var(--tier-1)')
+              +   ';width:' + d + 'px;height:' + d + 'px"></span>'
+              + '<span class="tier-arc__label"' + di18n(r.key) + '>' + s(r.label || r.en || '') + '</span>'
+              + '<span class="tier-arc__val">' + (r.cum || 0) + '%</span>'
               + '</div>';
           }).join('')
       + '</div></div>';
@@ -950,26 +1050,42 @@
            其餘     大數字 ＋ 分段條（原本的 split-bar，其他消費情境仍可用）
          為什麼兩張不同型：兩張講的本來就是兩件事，硬要同一種畫法，其中一張一定
          在遷就。輪播的高度取最高的那一張，兩型並存不會讓外框跳動。 */
-      + (d.mode === 'donut'
+      + (d.mode === 'arc'
+          ? tierArc(d.rows || [], d.value, d.unitKey, d.unit)
+        : d.mode === 'donut'
           ? donutMix(d.rows || [], d.value, d.unitKey, d.unit)
           : '<div class="distribution__value-row">'
             + '<span class="distribution__value">' + s(d.value) + '</span>'
             + (d.delta ? '<span class="distribution__delta">' + s(d.delta) + '</span>' : '')
             + '</div>'
-            + (d.mode === 'curve'
+            + (d.mode === 'zero'
+                /* 零值：大數字之後只接一句話，不接任何圖。 */
+                ? '<p class="distribution__note"' + di18n(d.noteKey) + '>' + s(d.note) + '</p>'
+              : d.mode === 'curve'
                 /* 幾條線各是誰：三個小色鍵一排，不用完整圖例（那要三行，這一格
                    沒有那個高度）。主線的鍵吃中性墨色，與圖上一致。
                    **色鍵排在曲線上方、靠右**（2026-08-31 使用者裁示）：它是讀圖的
                    前提，先看到才知道等一下的三條線各是誰；排在圖下面時，讀者是
                    看完圖再回頭找對照。靠右則是為了讓它與左邊的大數字分工——
                    同一行的兩端，一邊是答案、一邊是圖例。 */
+                /* 預設只留三個、其餘收成「…」，滑過這一格才全部展開
+                   （2026-09-01 使用者裁示）：六個色鍵在 300px 的欄裡要排三行，
+                   而它是讀圖的**前提**、不是內容——常駐三行等於讓圖例比圖還大。
+                   留下的三個是 Total ＋ 前兩支來源；**照清單既有的順序取前兩個**，
+                   那份順序本來就是由大到小、只有「其他」被刻意釘在最後（它是把尾巴
+                   加總起來的那一項，不該因為數字大就排到前面代表一個來源）。
+                   展開的觸發同時吃 `:focus-within`：鍵盤走到這一格裡的箭頭時也該看得到
+                   全部，滑鼠不是唯一的到達方式。 */
                 ? '<div class="distribution__keys">'
                   +   '<span class="distribution__key distribution__key--ink"'
                   +     di18n('canvas.trend.total') + '>Total</span>'
-                  +   ((d.spark && d.spark.extra) || []).map(function (ex) {
-                        return '<span class="distribution__key" style="--key:' + ex.color + '"'
+                  +   ((d.spark && (d.spark.stack || d.spark.extra)) || []).map(function (ex, i) {
+                        return '<span class="distribution__key' + (i > 1 ? ' distribution__key--more' : '')
+                          + '" style="--key:' + ex.color + '"'
                           + di18n(ex.key) + '>' + s(ex.en) + '</span>';
                       }).join('')
+                  +   (((d.spark && (d.spark.stack || d.spark.extra)) || []).length > 2
+                        ? '<span class="distribution__keys-rest" aria-hidden="true">…</span>' : '')
                   + '</div>'
                   + '<div class="distribution__curve">' + sparkBlock(d.spark) + '</div>'
                 : splitBar(d.rows || [])))
@@ -990,9 +1106,31 @@
     return { picks: picks, cur: picks[canvasPick] };
   }
 
+  /* 沒有項目與活動可選時的備援主視覺（2026-09-01）：帳號可能只建了商品——商品有
+     主圖，拿它當地比一片漸層有生氣，而且它確實是這個帳號自己的東西。
+     `ZTOR_PRODUCTS` 是 products-store 既有的公開物件，這裡只讀不寫。 */
+  function canvasFallbackImg() {
+    var P = window.ZTOR_PRODUCTS;
+    if (!P) return '';
+    var ids = Object.keys(P);
+    for (var i = 0; i < ids.length; i++) {
+      var img = P[ids[i]] && P[ids[i]].img;
+      if (img) return 'images/products/' + img;
+    }
+    return '';
+  }
+
   function canvasStage(d) {
     var st = canvasCurrent();
     if (!st) {
+      var fb = canvasFallbackImg();
+      if (fb) {
+        return '<div class="canvas-stage">'
+          + '<img class="canvas-stage__bg" src="' + fb + '" alt="" aria-hidden="true">'
+          + '<img class="canvas-stage__img" src="' + fb + '" alt="" aria-hidden="true">'
+          + '<div class="canvas-stage__scrim" aria-hidden="true"></div>'
+          + '</div>';
+      }
       return '<div class="canvas-stage"><div class="canvas-stage__empty">'
         + '<div class="canvas-stage__empty-title"' + di18n('canvas.empty.title') + '>Nothing published yet</div>'
         + '<div class="canvas-stage__empty-text"' + di18n('canvas.empty.text') + '>Your works, merch and events appear here as soon as the first one goes live.</div>'
@@ -1048,7 +1186,19 @@
      那個容器住在頂列那一層，所以切換器得從浮層裡搬出來、自成一個渲染器。 */
   function canvasPicks() {
     var st = canvasCurrent();
-    if (!st) return '';
+    /* 沒有任何項目與活動時留一行、不整排消失（2026-09-01 使用者點名的案例：
+       只建了商品的帳號——這一排只吃項目與活動，所以它必然是空的）。
+       右半邊莫名空一大塊，比留一行「還沒有排定的」糟；而這一行同時是這一頁唯一
+       提示「你還可以建立項目或活動」的位置。
+       全新帳號不會走到這裡：那個狀態整個 `.canvas-hero__picks` 都是隱藏的。 */
+    if (!st) {
+      return '<div class="canvas-stage__rail" role="group">'
+        + '<p class="canvas-stage__rail-title"' + di18n('canvas.picks.title') + '>Coming up</p>'
+        + '<p class="canvas-stage__rail-none"' + di18n('canvas.picks.none') + '>Nothing scheduled yet</p>'
+        + '<a class="canvas-stage__rail-cta" href="create-project.html"'
+        +   di18n('canvas.start.project') + '>New project</a>'
+        + '</div>';
+    }
     var picks = st.picks;
     /* 這一排上面掛一行標題（2026-08-31 使用者裁示「上面加一個標題 項目與活動」）：
        它現在是第一屏的第三格，與左欄那兩格一樣需要一個名字——沒有名字時，六行
@@ -1465,7 +1615,7 @@
          環狀的列沒有「捲到底」這回事，而原生捲動一定有兩個端點；位移只要在動畫
          結束後把第一件搬到最後（或反過來），位置歸零就等於轉了一格。 */
       /* 這一屏的背景（正中央那一件的海報）**不畫在這裡**：它要鋪滿整個視窗、壓在所有
-         東西的最後面，所以那個節點與第一屏的底圖放在一起（見 home-canvas.html）。
+         東西的最後面，所以那個節點與第一屏的底圖放在一起（見 index.html）。
          畫在這一段裡的話，它會落在 `.canvas-below` 那層 z-index 之內，蓋掉側欄。 */
       return '<div class="live-rail__wrap">'
         + nav('prev', 'chevron-left', 'rail.prev', 'Previous', '-1')
@@ -1799,6 +1949,19 @@
         return b ? b.label : '';
       }
       var tiers = ((DATA['dash-insight'] || {}).fans || {}).tiers || [];
+      /* 資料很少時，這一格收成**一張零值卡**（2026-09-01）：剛建立第一件東西的帳號
+         還沒有收入、也還沒有粉絲，兩張零值卡輪流講同一件「還沒有」是空轉。
+         **零值要有大數字、但不畫圖**：一條全平的走勢線或一個空的環讀起來像壞掉，
+         而 `$0` 是一個明確的事實。輪播只剩一張時，標題旁那兩顆箭頭會自己收掉
+         （`distributionBlock` 的第二個參數看的是張數）。 */
+      if (canvasSparse()) {
+        return {
+          index: 0,
+          slides: [{ titleKey: 'canvas.trend.revenue', title: 'Revenue trend',
+                     mode: 'zero', value: '$0',
+                     noteKey: 'canvas.zero.note', note: 'No revenue or fans yet' }]
+        };
+      }
       return {
         index: canvasRotatorIndex,
         slides: [
@@ -1811,42 +1974,83 @@
             mode: 'curve', value: rev.value, delta: delta(rev),
             spark: {
               values: (rev.spark && rev.spark.values) || [], h: 64,
-              /* 刻度只留三上兩下（2026-08-31 使用者裁示「多加一些橫縱的數值，不要太多」）：
-                 縱軸兩條格線（$20k／$10k），值域另外指定 0–26k：格線要落在整數，
-                 值域卻得包住最高的那條線（24.8k），兩件事分開寫才不會把線畫到畫布外。
+              /* 刻度（2026-09-01 使用者裁示「橫軸增加兩個 divide、縱軸增加一個」）：
+                 縱軸三條格線（$20k／$15k／$10k）、橫軸四個（9 週／6 週／3 週／本週），
+                 與正式儀表板那張 KPI 卡同一組節奏。
+                 **新增的那條格線插在原本兩條之間**：$20k 與 $10k 的位置不動，畫面上
+                 只是多一條線，不是整組刻度重排。
+                 值域另外指定 0–26k，不取資料極值：格線要落在整數，值域卻得包住最高的
+                 那條線（24.8k），兩件事分開寫才不會把線畫到畫布外（實測踩過）。
                  值域從 0 起算不是從 15k：附加線只有 5–7k，不從 0 起算它們會全部
-                 擠在底邊變成兩條直線。橫軸只留兩端（9 週前／本週），中間的 6 週、
-                 3 週在 300px 的欄裡是四個互相擠的字，而「這段是多久」兩端就講完了。 */
+                 擠在底邊變成兩條直線。
+                 （前一版只留兩端，理由是「6 週、3 週在 300px 的欄裡是四個互相擠的字」；
+                 使用者裁示補回來，實測四個字沒有互疊。） */
               max: 26, min: 0,
               yTicks: [{ key: 'spark.y.rev20', text: '$20k', v: 20 },
+                       { key: 'spark.y.rev15', text: '$15k', v: 15 },
                        { key: 'spark.y.rev10', text: '$10k', v: 10 }],
-              xTicks: [{ key: 'spark.x.w9', text: '9w' }, { key: 'spark.x.now', text: 'now' }],
-              /* 附加線：總收入之外再放兩條最大的來源（電子商店 28%、共創 20%）。
-                 為什麼只有兩條：五條全放進 300px 的欄就是五條纏在一起的線，而這一格
-                 要回答的是「錢主要從哪來、那兩塊在長還是在縮」。完整的九項在收入總覽頁。
-                 **兩條線是示意資料**（與整條 spark 同一個等級的示意，見上方 KPI 卡的
-                 說明）：站上沒有逐來源的時間序列，只有「當期份額」。這兩條的**末端
-                 對齊真實份額**（24,830 × 28% ＝ 6.95k、× 20% ＝ 4.97k），中段的形狀是
-                 編出來的——共創走一波募資高峰後回落，電子商店穩定成長。要拿它做結論
-                 之前，先確認後端有沒有逐來源的序列（記在 ASSUMPTIONS CANVAS-002）。 */
-              extra: [
-                { key: 'src.eshop', en: 'E-Shop sales', color: 'var(--chart-1)',
-                  values: [4.19,4.23,4.25,4.23,4.19,4.17,4.19,4.23,4.28,4.3,4.29,4.26,4.25,4.27,4.33,4.39,4.42,4.42,4.4,4.41,4.44,4.52,4.59,4.64,4.65,4.65,4.67,4.73,4.82,4.9,4.96,4.99,5.0,5.04,5.11,5.21,5.3,5.37,5.41,5.43,5.48,5.56,5.66,5.77,5.84,5.88,5.91,5.95,6.03,6.14,6.25,6.32,6.36,6.37,6.42,6.5,6.61,6.71,6.77,6.81,6.83,6.87,6.95] },
-                { key: 'src.cocreate', en: 'Co-creation funding', color: 'var(--chart-2)',
-                  values: [5.08,5.21,5.27,5.29,5.37,5.49,5.61,5.65,5.66,5.74,5.86,5.96,5.97,5.97,6.05,6.15,6.21,6.2,6.18,6.23,6.32,6.33,6.28,6.26,6.3,6.33,6.32,6.23,6.18,6.21,6.22,6.15,6.05,5.99,5.99,5.96,5.86,5.74,5.66,5.65,5.6,5.48,5.34,5.28,5.24,5.18,5.03,4.91,4.87,4.93,4.95,4.9,4.87,4.92,4.98,4.98,4.93,4.92,4.97,5.03,5.02,4.97,4.97] }
-              ]
+              xTicks: [{ key: 'spark.x.w9', text: '9w' }, { key: 'spark.x.w6', text: '6w' },
+                       { key: 'spark.x.w3', text: '3w' }, { key: 'spark.x.now', text: 'now' }],
+              /* 堆疊的五塊＝`CANVAS_REV_SPLIT` 那五項（2026-09-01 使用者裁示，取代
+                 前一版的「總收入 ＋ 兩條最大來源」三條線）。前一版答不了「其他的呢」：
+                 五條線在 300px 的欄裡會纏成一束，所以當時只挑了最大的兩條，而剩下的
+                 三項就從畫面上消失了。改成堆疊之後五塊都在、厚度加起來就是總額。
+                 **五塊的份額是示意資料**（與整條 spark 同一個等級，記在 ASSUMPTIONS
+                 CANVAS-002）：站上只有「當期份額」，沒有逐來源的時間序列。做法是給每一項
+                 一個 9 週前的起始份額，往今天的真實份額平滑過去，再逐點正規化成 100%
+                 —— **總額那條線是真的，怎麼分是編的**，而正規化保證兩者永遠對得起來
+                 （任何一點的五塊相加都等於那一天的總收入，不會出現「加起來不等於總數」）。
+                 起始份額編的故事：共創走完一波募資高峰後回落（29 → 20），電子商店穩定
+                 成長（24 → 28），其餘小幅上升。 */
+              stack: (function () {
+                var vals = (rev.spark && rev.spark.values) || [];
+                var from = { 'src.eshop': 24, 'src.cocreate': 29, 'src.events': 12,
+                             'src.commission': 8, 'src.other': 27 };
+                var n = vals.length;
+                return CANVAS_REV_SPLIT.map(function (r) {
+                  return { key: r.key, en: r.en, color: r.color, values: vals.map(function (tot, i) {
+                    /* smoothstep：兩端平、中段順，比直線內插像一條會呼吸的份額。 */
+                    var t = n > 1 ? i / (n - 1) : 1, e = t * t * (3 - 2 * t);
+                    var a = from[r.key] != null ? from[r.key] : r.pct;
+                    var share = a + (r.pct - a) * e;
+                    /* 逐點正規化：五項的起訖各自平滑之後總和未必剛好 100，
+                       除以當下的總和才保證堆疊的上緣等於總收入那條線。 */
+                    var sum = 0;
+                    CANVAS_REV_SPLIT.forEach(function (q) {
+                      var qa = from[q.key] != null ? from[q.key] : q.pct;
+                      sum += qa + (q.pct - qa) * e;
+                    });
+                    return tot * share / sum;
+                  }) };
+                });
+              })()
             } },
-          /* 粉絲改成圓環（同日使用者提供參考圖）：總數收進環心，圖例並排在右邊。
-             這一張因此沒有上方那個 56px 的大數字——環心已經有一個總數，
-             同一個數字在同一張卡上出現兩次沒有意義。 */
-          { titleKey: 'canvas.split.tiers', title: 'Fan mix',
-            mode: 'donut', value: fans.value,
+          /* 粉絲那一張 2026-09-01 由圓環改成**分層弧**（使用者說明四層是層層包含
+             Fan ⊇ Ranked fans ⊇ Superfan ⊇ Inner Circle，並在 `docs/fan-tiers-demo.html`
+             選定方案 D）：圓環的前提是「切開一個整體、彼此不重疊」，把包含關係畫成互斥
+             四塊會讓人以為 Inner Circle 與 Superfan 是並列的兩群。
+             總數仍收在環心，所以這一張沒有上方那個大數字——同一個數字在同一張卡上
+             出現兩次不多講任何事。
+             **佔比要換一種讀法**：store 那四個數字（12/28/37/23，加起來剛好 100）是
+             「只到這一層」的佔比；包含關係要的是累積值。由最內層往外累加即可得到
+             12 → 40 → 77 → 100，**不新增任何假資料，只換一種讀法**（記在
+             ASSUMPTIONS CANVAS-004）。
+             `tiers` 本來就是由內往外排（Inner Circle 在第一個），所以照順序累加出來的
+             就是累積佔比，再整個倒過來變成「由外往內」餵給弧。 */
+          { titleKey: 'canvas.tiers.title', title: 'Fan tiers',
+            mode: 'arc', value: fans.value,
             unitKey: 'canvas.donut.fans', unit: 'fans',
-            rows: tiers.map(function (x, i) {
-              return { key: x.key, en: x.label, label: x.label,
-                       pct: parseInt(String(x.pct), 10) || 0,
-                       color: TIER_COLORS[i % TIER_COLORS.length] };
-            }) }
+            rows: (function () {
+              var run = 0;
+              return tiers.map(function (x) {
+                run += parseInt(String(x.pct), 10) || 0;
+                return { key: x.key, en: x.label, label: x.label, cum: run };
+              }).reverse().map(function (r, i) {
+                /* 顏色由外往內吃色階：`--tier-1` 是最外層。 */
+                r.color = 'var(--tier-' + (i + 1) + ')';
+                return r;
+              });
+            })() }
         ]
       };
     }
@@ -2046,9 +2250,9 @@
          活動連票都還沒開賣，進度條會是一整排的 0。 */
       var live = { 'on-sale': 1, live: 1 };
       return {
-        rows: canvasRowsOf('fund')
+        rows: canvasTrim(canvasRowsOf('fund')
           .concat(canvasRowsOf('preorder'))
-          .concat(canvasRowsOf('event').filter(function (r) { return live[r.status]; }))
+          .concat(canvasRowsOf('event').filter(function (r) { return live[r.status]; })))
       };
     }
   });
@@ -2056,7 +2260,13 @@
     /* limit 0＝全部列出（2026-08-31 使用者裁示「有更多就繼續往下排」）：
        這一格原本固定出三則、多的看不到；現在清單有幾則就排幾則，左欄跟著變長，
        第一段也跟著長高（見 canvas-home.css 的 `.canvas-hero` min-height）。 */
-    get: function () { return { items: DATA['dash-alerts'].items, compact: true, limit: 0 }; }
+    get: function () {
+      var items = DATA['dash-alerts'].items || [];
+      /* 資料很少的帳號待辦也不會多：留一則（2026-09-01）。不歸零——剛建立第一件
+         東西的人，站上本來就有「補交稅務表單」這種必辦事項在等他。 */
+      if (canvasSparse()) items = items.slice(0, 1);
+      return { items: items, compact: true, limit: 0 };
+    }
   });
 
   Object.defineProperty(DATA, 'dash-alerts-blocking', {
@@ -2510,6 +2720,15 @@
     function applyTint(stage, hex) { stage.style.setProperty('--canvas-tint', hex); }
     function canvasTint() {
       var stage = document.querySelector('.canvas-stage');
+      /* 空資料時把這支變數清掉（2026-09-01，cheat code › 情境 › DATA STATE › Empty）：
+         它是從**當下那張海報**算出來的平均色，而空資料時底圖那幾層是關掉的
+         （見 canvas-home.css）——變數若留著上一張的顏色，畫面會變成一片說不出來歷的
+         橘褐。清掉之後 `var(--canvas-tint, var(--ztu-canvas))` 退回中性的畫布色。
+         **要在這裡清、不能只寫 CSS**：這支是 JS 寫成行內樣式的，行內贏過任何選擇器。 */
+      if (document.documentElement.getAttribute('data-data-state') === 'empty') {
+        if (stage) stage.style.removeProperty('--canvas-tint');
+        return;
+      }
       var img = stage && stage.querySelector('.canvas-stage__img');
       if (!stage || !img) return;
       var src = img.getAttribute('src');
@@ -2540,6 +2759,8 @@
       new MutationObserver(canvasTint).observe(host, { childList: true, subtree: true });
     }
     window.addEventListener('load', canvasTint);
+    /* 切換 cheat code 的資料狀態時要重算：空↔有資料之間，這支變數該清該補。 */
+    document.addEventListener('ztor:devstate-changed', canvasTint);
   })();
 
   /* ── 近期收入的輪替計時器（2026-08-28 使用者裁示「每 10 秒更新一次」）─────────
@@ -2717,7 +2938,7 @@
      單位詞、倒數），不是掛 `data-i18n` 的靜態標籤——`applyI18n` 掃不到，換了語言
      它們會停在上一次渲染的那一種。重畫的範圍只限這一頁自己的四個渲染器。
      **事件是 `i18n:applied`，不是 `ztor:langchange`**：後者站上沒有任何地方發
-     （home-canvas.html 的頂列本來也掛在它上面，一起改掉了）。
+     （index.html 的頂列本來也掛在它上面，一起改掉了）。
      比對語言碼而不是無條件重畫：`applyI18n` 每次套用都會發這個事件（含初次載入
      與 `rerender` 自己呼叫的那一次），無條件重畫會在 i18n 與元件之間來回觸發。 */
   var canvasLang = document.documentElement.lang || '';
@@ -2726,6 +2947,14 @@
     if (now === canvasLang) return;
     canvasLang = now;
     rerender(['work-rows', 'live-cards', 'canvas-stage', 'canvas-overlay', 'canvas-picks', 'kpi-rotator']);
+  });
+  /* 切換 cheat code 的資料狀態時也要重畫（2026-09-01）：這幾個渲染器的取數在渲染當下
+     讀 `data-data-state`（見 `canvasScope`），而 devtools 只改屬性、不會叫任何人重畫——
+     不掛這一條，在面板上切檔位畫面會停在上一種資料，看起來像開關壞了。
+     待辦那一格也要跟著（它的筆數同樣跟著狀態走）。 */
+  document.addEventListener('ztor:devstate-changed', function () {
+    rerender(['work-rows', 'live-cards', 'canvas-stage', 'canvas-overlay', 'canvas-picks',
+              'kpi-rotator', 'issue-panel']);
   });
 
   /* 滑過切換器就換底圖（2026-08-31 使用者裁示「這些選項是 hover 上去就換背景」）：

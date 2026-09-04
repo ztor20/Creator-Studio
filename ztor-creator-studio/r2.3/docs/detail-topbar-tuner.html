@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>詳情頁頂列 · 材質調節器</title>
+<!--
+  detail-topbar-tuner · 2026-09-01
+
+  為什麼有這一頁：黏住的頂列在 detail-sheet 浮層裡到底有沒有毛玻璃，**因瀏覽器而異**。
+  面板自己帶著 backdrop-filter: blur(50px)，巢狀的 backdrop-filter 跨 iframe 邊界
+  在部分環境直接失效（使用者的瀏覽器沒糊、本專案的內嵌瀏覽器有糊）。
+  來回猜三輪之後改用調節器：左邊是**真的浮層**（同一份 detail-sheet 面板 ＋ 真的 iframe），
+  右邊四個旋鈕直接寫進 iframe 的 CSS 變數，你在**自己的瀏覽器**裡看到什麼就是什麼。
+
+  照 claude-ops 6-UI設計專案規則的「參數調節器」條款：lab 頁屬實驗場，
+  規則以 tn- 前綴收在頁內、不建 ds-components、不定義 token。定案後把印出來的
+  CSS 貼回 shared.css 的 `.pd-detail__topbar.is-stuck`。
+-->
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../shared.css?v=r2.2">
+<style>
+  body {
+    margin: 0;
+    font-family: var(--font-ui);
+    color: var(--foreground);
+    background: var(--surface-shell);
+  }
+  .tn-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 0; height: 100vh; }
+
+  /* ── 左：真的浮層 ─────────────────────────────────────────── */
+  /* 底下鋪一張有紋理的東西：模糊只有在「底下有東西可以糊」的時候才看得出來，
+     鋪純色會讓開與關看起來一樣，那正是先前判斷失準的原因。 */
+  .tn-stage {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(60% 50% at 20% 20%, color-mix(in srgb, var(--primary) 30%, transparent), transparent 70%),
+      radial-gradient(50% 40% at 80% 70%, color-mix(in srgb, var(--status-info) 26%, transparent), transparent 70%),
+      repeating-linear-gradient(45deg, transparent 0 14px, color-mix(in srgb, var(--foreground) 6%, transparent) 14px 16px),
+      var(--surface-page);
+  }
+  .tn-sheet {
+    position: absolute;
+    inset: 24px;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    /* 與 detail-sheet__panel 同一份配方。2026-09-01 起模糊掛在 ::before（負層）
+       而不是面板本體——本體帶 backdrop-filter 會讓它成為 backdrop root，
+       裡面 iframe 的毛玻璃在部分瀏覽器整組失效（使用者實測確認）。 */
+    background: var(--ztu-glass-bg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-float, 0 24px 60px rgba(0,0,0,.5));
+  }
+  .tn-sheet::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    backdrop-filter: blur(50px) saturate(1.2);
+    -webkit-backdrop-filter: blur(50px) saturate(1.2);
+  }
+  /* 對照組：把面板的毛玻璃整個關掉。2026-09-01 修好之後兩邊應該都看得到內側的玻璃；
+     若哪天又壞了，這顆開關仍然是最快的分辨方式。 */
+  .tn-sheet--flat::before { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .tn-sheet--flat { background: var(--surface-page); }
+  .tn-frame { width: 100%; height: 100%; border: 0; display: block; background: transparent; }
+
+  /* ── 右：旋鈕 ─────────────────────────────────────────────── */
+  .tn-panel {
+    overflow-y: auto;
+    padding: var(--sp-20);
+    background: var(--surface-page);
+    border-left: 1px solid var(--border);
+    font-size: var(--fs-13);
+  }
+  .tn-panel h1 { font-size: var(--fs-16); margin: 0 0 var(--sp-6); }
+  .tn-note { color: var(--muted-foreground); font-size: var(--fs-12); line-height: 1.6; margin: 0 0 var(--sp-16); }
+  .tn-row { margin-bottom: var(--sp-16); }
+  .tn-row label { display: flex; justify-content: space-between; gap: var(--sp-8); margin-bottom: var(--sp-6); }
+  .tn-row output { color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+  .tn-row input[type=range] { width: 100%; accent-color: var(--primary); }
+  .tn-row select { width: 100%; }
+  .tn-check { display: flex; align-items: center; gap: var(--sp-8); margin-bottom: var(--sp-10); }
+  .tn-out {
+    width: 100%; height: 190px; resize: vertical;
+    font-family: var(--font-mono, monospace); font-size: var(--fs-12);
+    color: var(--foreground); background: var(--input-surface, var(--muted));
+    border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--sp-10);
+  }
+  .tn-hr { border: 0; border-top: 1px solid var(--border); margin: var(--sp-20) 0; }
+</style>
+</head>
+<body>
+<div class="tn-wrap">
+  <div class="tn-stage">
+    <div class="tn-sheet" id="tn-sheet">
+      <iframe class="tn-frame" id="tn-frame" src="../project-detail.html?id=nick-lrh&embed=1"></iframe>
+    </div>
+  </div>
+
+  <div class="tn-panel">
+    <h1>詳情頁頂列 · 材質</h1>
+    <p class="tn-note">
+      左邊是<strong>真的浮層</strong>：同一份 <code>backdrop-filter: blur(50px)</code> 面板 ＋ 真的 iframe。
+      捲動裡面的內容讓卡片與圖表經過頂列底下，才看得出模糊有沒有作用——底下是平面底色時，
+      糊與不糊看起來一樣。
+    </p>
+
+    <div class="tn-check">
+      <input type="checkbox" id="tn-flat">
+      <label for="tn-flat">面板不用毛玻璃（對照組。2026-09-01 已把面板的模糊搬到負層，開關兩邊現在應該都有內側玻璃）</label>
+    </div>
+    <div class="tn-check">
+      <input type="checkbox" id="tn-layer">
+      <label for="tn-layer">頂列強制合成層（<code>translateZ(0)</code>，有些瀏覽器靠這個救回模糊）</label>
+    </div>
+
+    <button class="btn btn--outline" type="button" id="tn-jump" style="width:100%">捲到頂列黏住的位置</button>
+    <p class="tn-note" style="margin:var(--sp-6) 0 0">
+      iframe 裡的圖表是 JS 畫的，載入後版面會再重排一次、把捲動位置洗掉；
+      所以這裡給一顆按鈕，不靠自動捲。
+    </p>
+
+    <hr class="tn-hr">
+
+    <div class="tn-row">
+      <label>模糊半徑 <output id="tn-blur-o">24px</output></label>
+      <input type="range" id="tn-blur" min="0" max="60" step="1" value="24">
+    </div>
+
+    <div class="tn-row">
+      <label for="tn-tint">底色走哪一邊</label>
+      <select id="tn-tint">
+        <option value="white" selected>白（跟浮層面板同一份材質）</option>
+        <option value="shell">殼色 #1C1D1E（暗一階）</option>
+        <option value="page">頁底色 #0C0D0D（最暗）</option>
+      </select>
+    </div>
+    <div class="tn-row">
+      <label>底色濃度 <output id="tn-alpha-o">5%</output></label>
+      <input type="range" id="tn-alpha" min="0" max="100" step="1" value="5">
+    </div>
+
+    <div class="tn-row">
+      <label>下緣漸層淡出高度 <output id="tn-scrim-o">0px</output></label>
+      <input type="range" id="tn-scrim" min="0" max="80" step="2" value="0">
+      <p class="tn-note" style="margin:var(--sp-6) 0 0">
+        不靠 backdrop-filter，所以浮層裡一定會生效。內容會「淡掉」而不是「被切斷」。
+      </p>
+    </div>
+    <div class="tn-row">
+      <label>漸層濃度 <output id="tn-scrima-o">70%</output></label>
+      <input type="range" id="tn-scrima" min="0" max="100" step="5" value="70">
+    </div>
+
+    <hr class="tn-hr">
+    <p class="tn-note" style="margin-bottom:var(--sp-6)">定案後把這段貼回 <code>shared.css</code> 的 <code>.pd-detail__topbar.is-stuck</code>：</p>
+    <textarea class="tn-out" id="tn-css" readonly></textarea>
+  </div>
+</div>
+
+<script>
+/* 同源，所以直接寫 iframe 文件的 CSS 變數；不用 postMessage。 */
+(function () {
+  var frame = document.getElementById('tn-frame');
+  var sheet = document.getElementById('tn-sheet');
+  var el = {
+    blur: document.getElementById('tn-blur'), blurO: document.getElementById('tn-blur-o'),
+    tint: document.getElementById('tn-tint'),
+    alpha: document.getElementById('tn-alpha'), alphaO: document.getElementById('tn-alpha-o'),
+    scrim: document.getElementById('tn-scrim'), scrimO: document.getElementById('tn-scrim-o'),
+    scrima: document.getElementById('tn-scrima'), scrimaO: document.getElementById('tn-scrima-o'),
+    flat: document.getElementById('tn-flat'), layer: document.getElementById('tn-layer'),
+    css: document.getElementById('tn-css')
+  };
+
+  var TINT = {
+    white: { label: '白', mix: function (a) { return 'color-mix(in srgb, #fff ' + a + '%, transparent)'; } },
+    shell: { label: '殼色', mix: function (a) { return 'color-mix(in srgb, var(--surface-shell) ' + a + '%, transparent)'; } },
+    page:  { label: '頁底色', mix: function (a) { return 'color-mix(in srgb, var(--surface-page) ' + a + '%, transparent)'; } }
+  };
+
+  function doc() { try { return frame.contentDocument; } catch (e) { return null; } }
+
+  function apply() {
+    var d = doc(); if (!d) return;
+    var root = d.documentElement.style;
+    var blur = el.blur.value + 'px';
+    var alpha = el.alpha.value;
+    var bg = TINT[el.tint.value].mix(alpha);
+    var scrimH = el.scrim.value + 'px';
+    var scrimC = 'color-mix(in srgb, var(--surface-page) ' + el.scrima.value + '%, transparent)';
+
+    root.setProperty('--detail-bar-blur', blur);
+    root.setProperty('--detail-bar-bg', bg);
+    root.setProperty('--detail-bar-scrim-h', scrimH);
+    root.setProperty('--detail-bar-scrim-c', scrimC);
+
+    var bar = d.querySelector('.pd-detail__topbar');
+    if (bar) bar.style.transform = el.layer.checked ? 'translateZ(0)' : '';
+
+    sheet.classList.toggle('tn-sheet--flat', el.flat.checked);
+
+    el.blurO.textContent = blur;
+    el.alphaO.textContent = alpha + '%';
+    el.scrimO.textContent = scrimH;
+    el.scrimaO.textContent = el.scrima.value + '%';
+
+    el.css.value =
+      '.pd-detail__topbar.is-stuck,\n' +
+      '.detail-topbar.is-stuck {\n' +
+      '  background: ' + bg + ';\n' +
+      '  backdrop-filter: blur(' + blur + ');\n' +
+      '  -webkit-backdrop-filter: blur(' + blur + ');\n' +
+      '}\n' +
+      (el.scrim.value > 0
+        ? '.pd-detail__topbar.is-stuck::after,\n' +
+          '.detail-topbar.is-stuck::after {\n' +
+          '  height: ' + scrimH + ';\n' +
+          '  background: linear-gradient(to bottom, ' + scrimC + ', transparent);\n' +
+          '}\n'
+        : '/* 下緣漸層：未啟用（高度 0） */\n');
+  }
+
+  ['blur', 'tint', 'alpha', 'scrim', 'scrima', 'flat', 'layer'].forEach(function (k) {
+    el[k].addEventListener('input', apply);
+    el[k].addEventListener('change', apply);
+  });
+  function jump() {
+    var d = doc(); if (!d) return;
+    var hero = d.querySelector('.pd-hero');
+    if (hero) d.scrollingElement.scrollTop = hero.offsetTop + hero.offsetHeight + 160;
+    apply();
+  }
+  document.getElementById('tn-jump').addEventListener('click', jump);
+
+  frame.addEventListener('load', function () {
+    apply();
+    /* 直接捲到頂列會黏住的位置，省得每次手動找。
+       延後兩拍：iframe 的 load 當下版面還在重排（圖表是 JS 畫的），
+       立刻設 scrollTop 會被之後的重排洗掉。 */
+    setTimeout(jump, 400);
+    setTimeout(jump, 1200);
+  });
+  apply();
+})();
+</script>
+</body>
+</html>

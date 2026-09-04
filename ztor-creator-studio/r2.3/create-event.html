@@ -943,13 +943,53 @@
         </aside>
         <div class="wizard-split__main">
 
-      <!-- 販售方式（文件 3）：從 bookyay 帶入的活動，開賣與停售時間跟著 bookyay 走，
+      <!-- 販售方式（文件 3）：從 bookyay 帶入的活動，開賣與停售日期與時間跟著 bookyay 走，
            這裡只顯示、不可改；沒帶入就自己填。
-           2026-08-09：加一階「發布後直接開賣」開關（預設開）。開著＝不用填開賣/停售時間，
+           2026-08-09：加一階「發布後直接開賣」開關（預設開）。開著＝不用填開賣/停售日期與時間，
            關掉才出現這兩組欄位讓人自訂——沿用 control-row.css 的 .control-group（開關列＋它
            揭示出來的表單包成一框，既有做法見 create-product.html 低庫存提醒門檻），不新寫版面。
            兩組時間各自佔一整行：拿掉外層 .form-grid 並排，改成兩個獨立 .field（各自內部仍是
            日期＋時間並排的 .form-grid），.field 自帶 margin-bottom 16px 讓兩行自然分開。 -->
+      <!-- 上架設定（spec 5.1.6.1 F12b · 主規格 §7.14 · D239，2026-09-02）：可見性窗口。
+           上架＝粉絲看得到、開賣＝粉絲買得到，是兩軸；這一區管前者，下一區「販售方式」管後者。
+           排在販售方式之前：先決定在網站上找不找得到、再決定能不能購買和結帳。三選一與商品頁同一組。 -->
+      <div class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-di="d.list">上架設定</h3>
+          <p class="form-section__sub" data-di="d.list.sub">活動頁什麼時候讓粉絲看得到、什麼時候收起來。</p>
+        </div>
+        <div class="segmented radio-cards" id="ce-list-mode" data-seg="list-mode" data-value="now">
+          <button class="segmented__btn" type="button" data-val="none">
+            <span class="radio-card__text"><span class="radio-card__title" data-di="d.list.none">不上架</span><span class="radio-card__sub" data-di="d.list.none.sub">存成草稿，先不對外</span></span>
+          </button>
+          <button class="segmented__btn segmented__btn--active" type="button" data-val="now">
+            <span class="radio-card__text"><span class="radio-card__title" data-di="d.list.now">立刻上架</span><span class="radio-card__sub" data-di="d.list.now.sub">發布後立刻出現</span></span>
+          </button>
+          <button class="segmented__btn" type="button" data-val="schedule">
+            <span class="radio-card__text"><span class="radio-card__title" data-di="d.list.schedule">定時上架</span><span class="radio-card__sub" data-di="d.list.schedule.sub">到指定時間自動上架</span></span>
+          </button>
+        </div>
+        <div id="ce-list-time" hidden>
+          <div class="field" style="margin-top:12px">
+            <label class="field__label"><span data-di="d.list.time">上架日期與時間</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
+            <div class="form-grid">
+              <input class="input" type="date" data-ce="list-d">
+              <input class="input" type="time" data-ce="list-t">
+            </div>
+          </div>
+        </div>
+        <div id="ce-unlist">
+          <div class="field" style="margin-top:12px;margin-bottom:0">
+            <label class="field__label"><span data-di="d.list.unlist">下架日期與時間</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+            <div class="form-grid">
+              <input class="input" type="date" data-ce="unlist-d">
+              <input class="input" type="time" data-ce="unlist-t">
+            </div>
+            <div class="field__hint" data-di="d.list.unlist.hint">留空＝不自動下架，由你手動處理；不得早於活動結束——當天粉絲還要看得到入場資訊。</div>
+          </div>
+        </div>
+      </div>
+
       <div class="form-section form-section--outlined">
         <div class="form-section__head">
           <h3 class="form-section__title" data-di="d.sale">販售方式</h3>
@@ -962,21 +1002,21 @@
             <span class="radio-card__text"><span class="radio-card__title" data-di="d.sale.now">直接販售</span><span class="radio-card__sub" data-di="d.sale.now.sub">發布後立刻開賣，賣到活動開始為止。</span></span>
           </button>
           <button class="segmented__btn" type="button" data-val="window">
-            <span class="radio-card__text"><span class="radio-card__title" data-di="d.sale.window">限時販售</span><span class="radio-card__sub" data-di="d.sale.window.sub">自己指定開賣與停售時間，時間外買不到。</span></span>
+            <span class="radio-card__text"><span class="radio-card__title" data-di="d.sale.window">限時販售</span><span class="radio-card__sub" data-di="d.sale.window.sub">自己指定開賣與停售日期與時間，時間外買不到。</span></span>
           </button>
         </div>
         <!-- 2026-08-10 使用者指示：時間欄不要外框。二選一卡已經把「這一區在講什麼」交代完，
              再包一層框等於把同一件事框兩次。 -->
         <div id="ce-sale-times" hidden>
             <div class="field">
-              <label class="field__label"><span data-di="d.sale.from">開賣時間</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
+              <label class="field__label"><span data-di="d.sale.from">開賣日期與時間</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
               <div class="form-grid">
                 <input class="input" type="date" data-ce="sale-from-d" data-bky="saleFromD" data-required>
                 <input class="input" type="time" data-ce="sale-from-t" data-bky="saleFromT">
               </div>
             </div>
             <div class="field">
-              <label class="field__label"><span data-di="d.sale.to">停售時間</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+              <label class="field__label"><span data-di="d.sale.to">停售日期與時間</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
               <div class="form-grid">
                 <input class="input" type="date" data-ce="sale-to-d" data-bky="saleToD">
                 <input class="input" type="time" data-ce="sale-to-t" data-bky="saleToT">
@@ -1352,7 +1392,7 @@
   /* 共看派對走的是原本那條流程（2026-08-09 使用者指示補回）：基本資料（改成挑影片與房間名稱）、
      時間人數地區隱私、入場券、確認——所以票務（5）與發布設定（6）兩步整步跳過。
      票務是「場次 × 票種」的矩陣，共看派對只有一張單價入場券，沒有東西可矩陣；
-     發布設定裡的取票方式與開賣時間也不適用（房間是線上的，隱私已在第 3 步問過）。 */
+     發布設定裡的取票方式與開賣日期與時間也不適用（房間是線上的，隱私已在第 3 步問過）。 */
   const skipped = st => (isWP() && (st === 5 || st === 6 || st === 7)) ||
                         /* 票種改成票務裡的「快速設定」彈窗（2026-08-09 使用者指示），
                            所以一般活動不再走第 4 步；那一步從此只服務共看派對的入場券。
@@ -1762,6 +1802,24 @@
   function doPublish() {
     markSaved();
     alert(T("ce.publish-alert", "Event would be published here. (Prototype)"));
+    /* Admin 代 creator 設定的那一趟（2026-09-01）：發布＝這一場設完了。把完成記號落
+       localStorage（創作者活動管理頁與名冊靠它畫「待設定／已完成」），然後回到出發點。
+       **回那裡而不是活動清單**：admin 的工作單位是 creator，做完一場該回到「這位
+       creator 還有哪幾場要設」的清單，不是掉進 creator 自己的工作台。一般 creator
+       發布不帶這兩個參數，行為完全不變。
+       2026-09-02（D233）：出發點由 `creator-detail.html?tab=events` 改成創作者活動管理頁
+       （`admin-creator-events.html?creator=`）——那個分頁已隨匯入整段搬家而退場，
+       再導過去會落在只剩基本資料的詳情頁，看不到剛設完的那一場。 */
+    const q = new URLSearchParams(location.search);
+    const impId = q.get("import"), backHandle = q.get("handle");
+    if (impId && backHandle) {
+      try {
+        const done = JSON.parse(localStorage.getItem("ztor.bkySetupDone") || "[]");
+        if (done.indexOf(impId) === -1) done.push(impId);
+        localStorage.setItem("ztor.bkySetupDone", JSON.stringify(done));
+      } catch (_) {}
+      location.href = "admin-creator-events.html?creator=" + encodeURIComponent(backHandle);
+    }
   }
 
   /* ---- A6：圖片/影片上傳格點擊填入示意（demo）。必填 3 圖（主視覺／橫式橫幅／圖庫，D164）填齊才反映就緒。
@@ -1832,14 +1890,25 @@
   });
 
   /* 販售方式：「發布後直接開賣」開關（2026-08-09）。預設開＝發布後立刻開賣，兩組時間欄
-     整組收起、開賣時間也不必填；關掉才出現讓人自訂開賣／停售時間，這時開賣時間才是真的
-     必填（呼應 §4.5③ 的 ＊ 必填檢核）。bookyay 帶入時開賣時間是它決定的，開關跟著鎖住
+     整組收起、開賣日期與時間也不必填；關掉才出現讓人自訂開賣／停售日期與時間，這時開賣日期與時間才是真的
+     必填（呼應 §4.5③ 的 ＊ 必填檢核）。bookyay 帶入時開賣日期與時間是它決定的，開關跟著鎖住
      不給切回去，鎖定樣式沿用既有的 .switch--locked（見 settings.html／tier-settings.html
      的合規鎖定開關）——見下方 bkyApply()。 */
+  /* 上架設定三選一（§7.14 · D239）：schedule 露出上架日期與時間；none 收掉下架日期與時間；now／schedule 露出下架日期與時間。 */
+  const listModeSeg = document.getElementById("ce-list-mode");
+  listModeSeg?.addEventListener("click", e => {
+    const btn = e.target.closest(".segmented__btn");
+    if (!btn) return;
+    listModeSeg.dataset.value = btn.dataset.val;
+    listModeSeg.querySelectorAll(".segmented__btn").forEach(b => b.classList.toggle("segmented__btn--active", b === btn));
+    const t = document.getElementById("ce-list-time"), u = document.getElementById("ce-unlist");
+    if (t) t.hidden = btn.dataset.val !== "schedule";
+    if (u) u.hidden = btn.dataset.val === "none";
+  });
   const saleModeSeg  = document.getElementById("ce-sale-mode");
   const saleTimesBox = document.getElementById("ce-sale-times");
   const saleFromDEl  = document.querySelector('[data-ce="sale-from-d"]');
-  /* 選「直接販售」就不需要開賣時間，那兩組欄位整組收起、必填也跟著撤掉；
+  /* 選「直接販售」就不需要開賣日期與時間，那兩組欄位整組收起、必填也跟著撤掉；
      選「限時販售」才長出來並恢復必填（2026-08-10 由開關改成二選一）。 */
   function applySaleMode() {
     const now = !saleModeSeg || saleModeSeg.dataset.value !== "window";
@@ -1862,7 +1931,7 @@
 
   /* ---- 圖片相簿（2026-08-06 使用者指示，做法比照項目詳情頁的展示相簿）------------
      一列格子＝這個活動的圖片，**排第一的就是主視覺**（角落掛 __flag）。末格永遠是空的
-     「＋ 新增圖片」；填滿它就變成一張正式圖片、後面再長一個新的空格出來（上限 8 張）。
+     「＋ 新增圖片」；填滿它就變成一張正式圖片、後面再長一個新的空格出來（上限 10 張）。
      刪掉一張＝整格移除（不留空洞），主視覺標記跟著重算——順序就是語意，不必再問一次
      「這張是主視覺還是圖庫」。
      galAddSlot/galSyncFlags 額外掛到外層作用域（2026-08-09）：bookyay 帶入時 renderGallery()
@@ -1871,7 +1940,7 @@
   (function () {
     const gal = document.getElementById("ce-gallery");
     if (!gal) return;
-    const MAX = 8;
+    const MAX = 10;   /* 2026-09-04 D243：全站圖片張數上限 8 → 10 */
     const tiles = () => Array.from(gal.querySelectorAll("[data-gallery-tile]"));
 
     function addSlot() {
@@ -4124,6 +4193,17 @@
     "d.limit.order":  { en: "Tickets per order",   zh: "每次交易限購數量" },
     "d.limit.times":  { en: "Orders per person",   zh: "限購次數" },
     "d.limit.times.hint": { en: "How many separate orders one person can place.", zh: "同一個人可以下幾次單。" },
+    "d.list":         { en: "Listing",           zh: "上架設定" },
+    "d.list.sub":     { en: "When fans can see the event page, and when it comes down.", zh: "活動頁什麼時候讓粉絲看得到、什麼時候收起來。" },
+    "d.list.none":    { en: "Don't list",        zh: "不上架" },
+    "d.list.none.sub":{ en: "Save as draft, stays hidden", zh: "存成草稿，先不對外" },
+    "d.list.now":     { en: "List now",          zh: "立刻上架" },
+    "d.list.now.sub": { en: "Visible right after publishing", zh: "發布後立刻出現" },
+    "d.list.schedule":{ en: "Schedule",          zh: "定時上架" },
+    "d.list.schedule.sub": { en: "Goes visible at the time you set", zh: "到指定時間自動上架" },
+    "d.list.time":    { en: "Listing time",      zh: "上架日期與時間" },
+    "d.list.unlist":  { en: "Unlist time",       zh: "下架日期與時間" },
+    "d.list.unlist.hint": { en: "Leave empty to keep it listed until you take it down. Must not be before the event ends — fans still need the entry info that day.", zh: "留空＝不自動下架，由你手動處理；不得早於活動結束——當天粉絲還要看得到入場資訊。" },
     "d.sale":         { en: "Sales window",      zh: "販售方式" },
     "d.sale.sub":     { en: "When fans can start buying, and when it stops.", zh: "粉絲從什麼時候開始買得到、買到什麼時候為止。" },
     "d.rule.net.range": { en: "Varies by ticket", zh: "各張票不同" },
@@ -4132,9 +4212,9 @@
                           zh: "發布後立刻開賣，賣到活動開始為止。" },
     "d.sale.window":    { en: "Sell in a set window", zh: "限時販售" },
     "d.sale.window.sub":{ en: "Pick when sales open and close — fans can't buy outside that window.",
-                          zh: "自己指定開賣與停售時間，時間外買不到。" },
-    "d.sale.from":    { en: "On sale from",      zh: "開賣時間" },
-    "d.sale.to":      { en: "Off sale at",       zh: "停售時間" },
+                          zh: "自己指定開賣與停售日期與時間，時間外買不到。" },
+    "d.sale.from":    { en: "On sale from",      zh: "開賣日期與時間" },
+    "d.sale.to":      { en: "Off sale at",       zh: "停售日期與時間" },
     "d.ship":         { en: "How fans collect",  zh: "取票方式" },
     "d.ship.sub":     { en: "How the ticket reaches them.", zh: "粉絲怎麼拿到票。" },
     "d.ship.e":       { en: "E-ticket",          zh: "電子門票" },
@@ -4754,8 +4834,11 @@
   /* ---- 假的 bookyay 活動 ------------------------------------------------------
      三筆刻意做出差異：單場／三日系列（同一個場地，照文件「無論哪個場次，地點都一樣」）／
      沒有手續費也沒有折扣的那種。 */
+  /* 每筆帶 type（2026-09-01）：正常流程是人先在類型閘門選完才進帶入閘門，但 admin 從
+     創作者活動管理頁的「繼續設定」深連結（?import=）直接進來，沒有那一步——bookyay 自己
+     知道活動是哪一種，跟著資料走。 */
   const BKY = [
-    { id: "bky-1",
+    { id: "bky-1", type: "concert",
       label: "REALIVE World Tour — Taipei",
       note:  "2026/09/12 · 台北小巨蛋",
       name: "REALIVE World Tour — Taipei",
@@ -4770,7 +4853,7 @@
       tiers: [{ name: "VIP", price: "4200", qty: "100", fee: "150" },
               { name: "搖滾區", price: "3300", qty: "200", fee: "120" },
               { name: "看台", price: "2400", qty: "300", fee: "80" }] },
-    { id: "bky-2",
+    { id: "bky-2", type: "meet",
       label: "MIRROR FANMEETING 2026",
       note:  "2026/10/02–10/04 · 高雄流行音樂中心（三場）",
       name: "MIRROR FANMEETING 2026 高雄",
@@ -4786,7 +4869,7 @@
       sessionNames: ["Day 1", "Day 2", "Day 3"],
       tiers: [{ name: "搖滾區", price: "3800", qty: "150", fee: "120" },
               { name: "一般席", price: "2200", qty: "400", fee: "80" }] },
-    { id: "bky-3",
+    { id: "bky-3", type: "festival",
       label: "城市草地音樂節 2026",
       note:  "2026/11/08 · 大佳河濱公園",
       name: "城市草地音樂節 2026",
@@ -4802,7 +4885,7 @@
     /* 這兩筆是為了示範「取票方式不是電子門票時要多問什麼」（2026-08-10 使用者指示）：
        順豐寄送要運費、到店自取要取貨地點。兩個欄位不是 bookyay 帶來的，
        帶入後仍要創作者自己填，所以刻意留空。 */
-    { id: "bky-4",
+    { id: "bky-4", type: "launch",
       label: "限量黑膠簽名場 — 台中",
       note:  "2026/12/06 · 台中 Legacy（實體票寄送）",
       name: "限量黑膠簽名場 — 台中",
@@ -4816,7 +4899,7 @@
       ship: "sf", sessions: [],
       tiers: [{ name: "黑膠套票", price: "2800", qty: "400", fee: "100" },
               { name: "一般入場", price: "1200", qty: "200", fee: "60" }] },
-    { id: "bky-5",
+    { id: "bky-5", type: "concert",
       label: "冬季特別公演 — 台南",
       note:  "2027/01/17 · 台南文化中心（到店自取）",
       name: "冬季特別公演 — 台南",
@@ -4931,11 +5014,11 @@
       el.dispatchEvent(new Event("input", { bubbles: true }));
       lockField(el, true);
     });
-    /* 開賣時間是 bookyay 決定的，不是「發布後直接開賣」：開關關掉、兩組時間欄現形
+    /* 開賣日期與時間是 bookyay 決定的，不是「發布後直接開賣」：開關關掉、兩組時間欄現形
        （上面已經填值＋鎖住），開關本身也鎖住不給切回去——鎖定樣式沿用既有的
        .switch--locked（settings.html／tier-settings.html 的合規鎖定開關同一套）。 */
     if (saleModeSeg) {
-      /* 帶入的活動開賣時間是 bookyay 決定的：選到「限時販售」並整組鎖住。 */
+      /* 帶入的活動開賣日期與時間是 bookyay 決定的：選到「限時販售」並整組鎖住。 */
       saleModeSeg.dataset.value = "window";
       saleModeSeg.querySelectorAll(".segmented__btn").forEach(b =>
         b.classList.toggle("segmented__btn--active", b.dataset.val === "window"));
@@ -5100,7 +5183,7 @@
 
   /* 活動視覺：帶入時一律用正常、可互動的上傳格（掛 data-upload，交給共用元件接管）——
      可以換掉、可以刪除，「＋ 新增圖片」的空格照樣保留（2026-08-09 使用者裁決：主視覺雖然
-     是 bookyay 帶入的，但要能改、也要能再新增，不是唯讀）。第一張的主視覺標記與未滿 8 張
+     是 bookyay 帶入的，但要能改、也要能再新增，不是唯讀）。第一張的主視覺標記與未滿 10 張
      時要不要補新增格，直接借用正常相簿那一套 galSyncFlags/galAddSlot（見上方「圖片相簿」），
      不重寫第二份判斷。圖片段落標題仍掛來源標記（純資訊、不鎖欄位），方便回頭認得出這批圖
      是哪裡帶進來的。傳 null＝還原成原本那個「＋ 新增圖片」的空相簿。 */
@@ -5124,7 +5207,7 @@
     Array.from(gal.querySelectorAll("[data-gallery-tile]")).forEach(t => {
       if (window.ztorUploadTile) window.ztorUploadTile.enhance(t);
     });
-    if (galSyncFlags) galSyncFlags();   // 主視覺標記＋未滿 8 張時補「＋ 新增圖片」空格
+    if (galSyncFlags) galSyncFlags();   // 主視覺標記＋未滿 10 張時補「＋ 新增圖片」空格
     if (window.ztorIcons) window.ztorIcons.applyIcons(gal);
   }
 
@@ -5272,6 +5355,23 @@
     if (draft) {
       dupFrom(draft);
       resumeNote(draft);
+    }
+    /* Admin 從創作者活動管理頁的「繼續設定」進來（2026-09-01；2026-09-02 起入口在
+       admin-creator-events.html，?import=<bky id>）：
+       這一趟是「幫這位 creator 把匯入的活動設完」，類型與帶入兩關都由資料決定，
+       不再問人——直接套用該場、落在票務商品（帶入後第一件真的要人決定的事，
+       與帶入閘門那顆「帶入」按鈕同一個落點）。找不到或已帶過就退回正常閘門，
+       不硬闖：網址是可以被亂打的。 */
+    const imp = qs.get("import");
+    if (imp) {
+      const rec = BKY.find(r => r.id === imp);
+      if (rec && !rec.imported) {
+        chooseType(rec.type || "concert");
+        bkyApply(rec);
+        enterWizard();
+        step = 6;
+        render();
+      }
     }
     syncBundleEmpty();     // 一開始一組都沒有＝空狀態說明卡，加號先收起來
     if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);

@@ -4,12 +4,14 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>#ZT-10482 · Order detail · Ztor</title>
 <script src="js/theme.js?v=r2.2"></script>
+<script src="js/row-disclosure.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/row-disclosure.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
@@ -67,10 +69,23 @@
   .od-items { display:grid; grid-template-columns: minmax(0,1.4fr) auto auto minmax(0,1fr) auto; }
   .od-items .data-list__row,
   .od-items__head { grid-column:1 / -1; display:grid; grid-template-columns:subgrid; gap:var(--sp-12); align-items:start; }
+  /* L3 遷移（2026-09-04）新增：.rowdis__group／.rowdis__frame 把 .data-list__row 包了一層，
+     這兩層本身也要接力傳遞 subgrid 欄軌，否則群組／框內的列會脫離 .od-items 的欄軌、
+     各自重新算欄寬（正是本次遷移實測踩到的欄位跑版）。 */
+  .od-items .rowdis__group,
+  .od-items .rowdis__frame { grid-column:1 / -1; display:grid; grid-template-columns:subgrid; }
   .od-items__head { padding-bottom:var(--sp-8); border-bottom:1px solid var(--border); font-size: var(--fs-12); color: var(--muted-foreground); }
   .od-cell { font-size: var(--fs-13); }
   .od-col-r { text-align:right; }
   .od-item-pickup { display:flex; flex-direction:column; align-items:flex-start; gap:var(--sp-4); font-size: var(--fs-12); }
+  /* 2026-09-03（D240 一物一碼）：現場 QR 品項與組合品項的彙總列（「N 件中已核銷 M 件」）
+     可展開看每個領取單位／每個成員。展開列＝共用元件 row-disclosure（Q107 裁決後站上的
+     單一答案，見 design-system.md §4.204）；本頁只留「把手與彙總文字並排」這一格的排版。 */
+  .od-item-pickup__head { display:flex; align-items:center; gap:var(--sp-4); }
+  /* [hidden] 的保險線：上面那條 .od-items .data-list__row 自己寫了 display:grid，與
+     元件層的 [hidden] 同權重，誰贏取決於來源順序——收合中的子列藏不藏得住不留給運氣。 */
+  .od-items .data-list__row[hidden] { display:none; }
+  .od-unit-code { font-variant-numeric: tabular-nums; letter-spacing: .02em; font-size: var(--fs-13); }
   /* 金額拆解併入品項明細後，與上方商品列表以細線分隔 */
   .od-amt-group { border-top:1px solid var(--border); margin-top:var(--sp-16); padding-top:var(--sp-8); }
   /* 收入對帳降為右下角常駐入口 */
@@ -324,6 +339,7 @@
       </div>
 
       <div class="field__hint mt-8" data-i18n="od.refund.restock">Approved refunds restock physical items (digital items are non-restockable); the refund is absorbed per Earnings and posted as an adjustment — the original revenue event is never edited.</div>
+      <div class="field__hint mt-8" data-i18n="od.refund.pickup-impact">Refunded items' pickup codes are voided immediately; for bundles, only the refunded members are voided. If a unit was already redeemed, its record stays — refunding doesn't reverse it.</div>
       <div class="field__hint mt-8" data-i18n="od.refund.dispute">Disputes are buyer-initiated, not issued here: a disputed order shows Disputed on its Payment · settlement axis and the amount is held from Available until Earnings resolves it.</div>
     </div>
     <div class="payout-dialog__foot">
@@ -461,28 +477,131 @@
   var shipStage = order.fulfil.indexOf('completed') >= 0 ? 'completed'
     : order.fulfil.indexOf('shipped') >= 0 ? 'shipped'
     : order.fulfil.indexOf('toship') >= 0 ? 'toship' : '';
-  order.items.forEach(function (it) {
-    var cell;
-    if (it.mode === 'pickup') {
-      cell = badge({ cls: 'badge--warning badge--inline', key: 'orders.status.pickup', text: 'Awaiting pickup' }) +
-        '<a class="card__link" href="pickup.html" data-i18n="od.item.pickup.goto">Go to pickup session</a>';
-    } else if (it.mode === 'digital') {
-      cell = badge({ cls: 'badge--success badge--inline', key: 'orders.status.completed', text: 'Completed' });
-    } else if (shipStage === 'completed') {
-      cell = badge({ cls: 'badge--success badge--inline', key: 'orders.status.completed', text: 'Completed' });
-    } else if (shipStage === 'shipped') {
-      cell = badge({ cls: 'badge--neutral badge--inline', key: 'orders.status.shipped', text: 'Shipped' });
-    } else if (shipStage === 'toship') {
-      cell = badge({ cls: 'badge--warning badge--inline', key: 'orders.status.toship', text: 'To ship' });
-    } else {
-      /* 待付款：訂單層還沒有履約動作，品項層自然也還不是「待出貨」 */
-      cell = '<span class="text-sub">—</span>';
+  var shipCell = function () {
+    if (shipStage === 'completed') return badge({ cls: 'badge--success badge--inline', key: 'orders.status.completed', text: 'Completed' });
+    if (shipStage === 'shipped') return badge({ cls: 'badge--neutral badge--inline', key: 'orders.status.shipped', text: 'Shipped' });
+    if (shipStage === 'toship') return badge({ cls: 'badge--warning badge--inline', key: 'orders.status.toship', text: 'To ship' });
+    /* 待付款：訂單層還沒有履約動作，品項層自然也還不是「待出貨」 */
+    return '<span class="text-sub">—</span>';
+  };
+
+  /* 領取單位（D240）── 每個 pickup 品項與 bundle 品項的 pickup 成員都有自己的
+     units［]；彙總文字「N 件中已核銷 M 件」、全 unset／全 void 時改講狀態本身，
+     見 documents/0-設計規格書.md §7.2「領取單位的正式定義」。不顯示 QR（裁決十），
+     只顯示領取碼的識別字串＋狀態徽章＋最近核銷時間，供對照與客服查詢。 */
+  var unitStatusBadge = function (u) {
+    var MAP = {
+      pending: { cls: 'badge--warning badge--inline', key: 'od.unit.status.pending', text: 'Awaiting redemption' },
+      done: { cls: 'badge--success badge--inline', key: 'od.unit.status.done', text: 'Redeemed' },
+      unset: { cls: 'badge--neutral badge--inline', key: 'od.unit.status.unset', text: 'Session not set' },
+      'void': { cls: 'badge--error badge--inline', key: 'od.unit.status.void', text: 'Cancelled / refunded' }
+    };
+    return badge(MAP[u.status] || MAP.pending);
+  };
+  /* label 由 S.unitSummary() 的 {total,done,voided,unset} 推導（D242）：全 unset／全
+     voided 各自講狀態本身；其餘情況照舊講「N 件中已核銷 M 件」，voided>0 時額外帶出
+     「X 件已退款失效」——彙總需要讓創作者分辨還有幾件待領、幾件因退款失效
+     （規格 5.1.5.3.1 §2.3.1）。voided 的件不算進待核銷，所以不影響 done/total 語意。 */
+  var labelFromAgg = function (agg) {
+    if (!agg || !agg.total) return null;
+    if (agg.unset === agg.total) return { mode: 'unset' };
+    if (agg.voided === agg.total) return { mode: 'void' };
+    /* 分母＝這個脈絡下還該領的件數（扣掉退款失效），與取貨場次名單、scanner 的計數同口徑；
+       買了幾件由同列的 Qty 欄承擔，這裡不重複。 */
+    return { mode: 'summary', done: agg.done, total: agg.total - agg.voided, voided: agg.voided };
+  };
+  /* unset／void 用靜態 key（全站 i18n.js 的 apply() 自動處理）；summary 帶 {done}/{total}
+     （／{voided}）變數、存在 data 屬性上，換語言時交給下方 paint() 重畫（同頁既有慣例，
+     見 od.items.count）。 */
+  var summaryHtml = function (label) {
+    if (!label) return '';
+    if (label.mode === 'unset') return '<span data-i18n="od.units.unset">Pickup session not yet set</span>';
+    if (label.mode === 'void') return '<span data-i18n="od.units.void">Cancelled / refunded</span>';
+    if (label.voided) {
+      return '<span data-od-unit-summary data-od-done="' + label.done + '" data-od-total="' + label.total +
+        '" data-od-voided="' + label.voided + '">' +
+        label.done + ' of ' + label.total + ' redeemed · ' + label.voided + ' refunded</span>';
     }
+    return '<span data-od-unit-summary data-od-done="' + label.done + '" data-od-total="' + label.total + '">' +
+      label.done + ' of ' + label.total + ' redeemed</span>';
+  };
+  var toggleHtml = function (gid) {
+    return '<button class="btn btn--icon btn--sm rowdis__toggle" type="button" data-rowdis="' + gid + '"' +
+      ' aria-expanded="false" aria-label="Expand" data-i18n-aria-label="od.units.expand">' +
+      '<i data-lucide="chevron-down" class="ztor-icon"></i></button>';
+  };
+  /* 零縮排（L3 整組換層，2026-09-04）：階層不再靠 level-2／level-3 縮排刻度說，
+     改由容器承擔——第一層（品項／組合包）是 `.rowdis__group`，第二層（組合成員 →
+     成員各自的領取單位）是 `.rowdis__frame`。unitChildRow 因此不再接 level 參數。 */
+  var unitChildRow = function (u, gid) {
+    return '<div class="data-list__row rowdis__child rowdis__child--compact" data-rowdis-child="' + gid + '" hidden>' +
+        '<div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title od-unit-code">' + esc(u.code) + '</div></div></div>' +
+        '<span class="od-cell"></span><span class="od-cell"></span>' +
+        '<div class="od-item-pickup">' + unitStatusBadge(u) +
+          (u.status === 'done' && u.at ? '<span class="text-sub" data-od-unit-at="' + esc(u.at) + '"></span>' : '') +
+        '</div>' +
+        '<span class="data-list__amount"></span>' +
+      '</div>';
+  };
+
+  order.items.forEach(function (it, i) {
+    var cellHtml, extraRowsHtml = '', isGroup = false;
+    if (it.mode === 'pickup' && it.units && it.units.length) {
+      isGroup = true;
+      var gid = 'i' + i;
+      cellHtml = '<div class="od-item-pickup__head">' + toggleHtml(gid) + summaryHtml(labelFromAgg(S.unitSummary(it))) + '</div>' +
+        '<a class="card__link" href="pickup.html" data-i18n="od.item.pickup.goto">Go to pickup session</a>';
+      it.units.forEach(function (u) { extraRowsHtml += unitChildRow(u, gid); });
+    } else if (it.mode === 'bundle' && it.members) {
+      /* 組合本身不產生領取碼（D240 裁決二）：主列彙總只合計成員裡 pickup 成員的 units，
+         展開後逐成員顯示各自的取貨方式；pickup 成員再帶自己的展開單位，ship 成員沿用
+         訂單層 shipStage 徽章（§2.6：混合取貨方式依各成員自己的取貨方式分別顯示）。
+         成員本身是第一層群組的子列；有自己單位的成員再連同其單位一起包進
+         `.rowdis__frame`（第二層，填色最多兩層、第三層改用 1px 框，見
+         ds-components/nest.css 檔頭與 row-disclosure.css §第二層）——成員列本身
+         兼任那個框的把手（rowdis__head），沒有自己單位的成員（ship）維持素樸子列。 */
+      isGroup = true;
+      var gid = 'i' + i;
+      var agg = S.unitSummary(it);
+      var label = labelFromAgg(agg);
+      cellHtml = '<div class="od-item-pickup__head">' + toggleHtml(gid) +
+        (label ? summaryHtml(label) : '<span data-i18n="od.bundle.members">View members</span>') +
+        '</div>';
+      it.members.forEach(function (m, j) {
+        var mgid = gid + '-' + j;
+        var memberFulfil, memberExtra = '', memberIsGroup = false;
+        if (m.mode === 'pickup' && m.units && m.units.length) {
+          memberIsGroup = true;
+          memberFulfil = '<div class="od-item-pickup__head">' + toggleHtml(mgid) + summaryHtml(labelFromAgg(S.unitSummary(m))) + '</div>';
+          m.units.forEach(function (u) { memberExtra += unitChildRow(u, mgid); });
+        } else {
+          memberFulfil = shipCell();
+        }
+        var memberRowHtml =
+          '<div class="data-list__row rowdis__child rowdis__child--compact' + (memberIsGroup ? ' rowdis__head' : '') + '" data-rowdis-child="' + gid + '" hidden>' +
+            '<div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title">' +
+              '<span data-i18n="' + esc(m.nameKey) + '">' + esc(m.name) + '</span></div></div></div>' +
+            '<span class="od-cell">' + m.qty + '</span><span class="od-cell"></span>' +
+            '<div class="od-item-pickup">' + memberFulfil + '</div>' +
+            '<span class="data-list__amount"></span>' +
+          '</div>';
+        extraRowsHtml += memberIsGroup
+          ? ('<div class="rowdis__frame">' + memberRowHtml + memberExtra + '</div>')
+          : memberRowHtml;
+      });
+    } else if (it.mode === 'digital') {
+      cellHtml = badge({ cls: 'badge--success badge--inline', key: 'orders.status.completed', text: 'Completed' });
+    } else {
+      cellHtml = shipCell();
+    }
+
+    var catI18nKey = it.catKey === 'bundle' ? 'e-shop.cat.bundle' : it.catKey;
+    var iconName = it.mode === 'digital' ? 'download' : it.mode === 'bundle' ? 'boxes' : 'package';
     var row = document.createElement('div');
-    row.className = 'data-list__row';
+    row.className = 'data-list__row' + (isGroup ? ' rowdis__head' : '');
     row.innerHTML =
       '<div class="data-list__row-main">' +
-        '<div class="data-list__icon"><i data-lucide="' + (it.mode === 'digital' ? 'download' : 'package') + '" class="ztor-icon"></i></div>' +
+        '<div class="data-list__icon"><i data-lucide="' + iconName + '" class="ztor-icon"></i></div>' +
         '<div class="data-list__body">' +
           /* §2.3.1 品項名稱點擊開商品快照 popup，不直接連活商品 */
           '<div class="data-list__title"><a class="card__link od-snap-open" role="button" href="#"' +
@@ -491,15 +610,30 @@
             (it.snap.variant ? ' data-snap-variant="' + esc(it.snap.variant) + '"' : '') +
             ' data-snap-desc="' + esc(it.snap.desc) + '" data-snap-manage="' + esc(it.snap.manage) + '">' +
             '<span data-i18n="' + esc(it.nameKey) + '">' + esc(it.name) + '</span></a></div>' +
-          '<div class="data-list__meta" data-i18n="' + esc(it.catKey) + '">—</div>' +
+          '<div class="data-list__meta" data-i18n="' + esc(catI18nKey) + '">—</div>' +
         '</div>' +
       '</div>' +
       '<span class="od-cell">' + it.qty + '</span>' +
       '<span class="od-cell od-col-r">' + esc(it.unit) + '</span>' +
-      '<div class="od-item-pickup">' + cell + '</div>' +
+      '<div class="od-item-pickup">' + cellHtml + '</div>' +
       '<span class="data-list__amount">$' + it.amt.toFixed(2) + '</span>';
-    itemsHost.appendChild(row);
+    /* L3 整組換層：可展開的品項（isGroup）與它的子列一起包進 `.rowdis__group
+       rowdis__group--gutter`（清單型容器要補內距，見 row-disclosure.css）；
+       不可展開的品項（digital／純出貨）維持素樸列，不套群組容器。 */
+    if (isGroup) {
+      var groupWrap = document.createElement('div');
+      groupWrap.className = 'rowdis__group rowdis__group--gutter';
+      groupWrap.appendChild(row);
+      if (extraRowsHtml) groupWrap.insertAdjacentHTML('beforeend', extraRowsHtml);
+      itemsHost.appendChild(groupWrap);
+    } else {
+      itemsHost.appendChild(row);
+    }
   });
+
+  /* 展開／收合歸共用元件 row-disclosure（js/row-disclosure.js）：把手 data-rowdis="gid"、
+     子列 data-rowdis-child="gid"，組合主列與各成員的把手各自只操作自己 gid 底下的子列。 */
+  window.rowDisclosure.init(itemsHost);
 
   /* ── §2.3.2 金額拆解（數位訂單無運費列）───────────────────── */
   var A = order.amounts;
@@ -604,6 +738,20 @@
     });
     document.querySelectorAll('[data-od-refund-meta]').forEach(function (el) {
       el.textContent = T(el.dataset.catKey, '') + ' · ' + el.dataset.price;
+    });
+    /* 領取單位彙總「N 件中已核銷 M 件」與單位子列的最近核銷時間：兩個變數，同一套
+       data-od-done/-total／-od-unit-at 重畫慣例（見上方 §2.3.1 建列） */
+    document.querySelectorAll('[data-od-unit-summary]').forEach(function (el) {
+      if (el.dataset.odVoided) {
+        el.textContent = T('od.units.summary.void', '{done} of {total} redeemed · {voided} refunded')
+          .replace('{done}', el.dataset.odDone).replace('{total}', el.dataset.odTotal).replace('{voided}', el.dataset.odVoided);
+        return;
+      }
+      el.textContent = T('od.units.summary', '{done} of {total} redeemed')
+        .replace('{done}', el.dataset.odDone).replace('{total}', el.dataset.odTotal);
+    });
+    document.querySelectorAll('[data-od-unit-at]').forEach(function (el) {
+      el.textContent = T('od.unit.redeemed-at', 'Redeemed at {at}').replace('{at}', el.dataset.odUnitAt);
     });
   }
   paint();

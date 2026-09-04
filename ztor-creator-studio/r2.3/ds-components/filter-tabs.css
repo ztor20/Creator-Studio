@@ -186,3 +186,31 @@
          color: var(--dot, var(--primary)); }
      .filter-tabs--source .filter-tabs__item--active:hover
        { background: color-mix(in srgb, var(--dot, var(--primary)) 18%, var(--card)); } */
+
+/* ── .filter-tabs--legend — 圖例即篩選（2026-09-01 使用者裁示）。
+     用在圖表卡的「依方案看走勢」：這一排同時是圖例（哪個顏色是誰）與篩選器
+     （現在在看哪一條）。基底的已選態是玻璃殼＋字光＋底部光，那套語彙在圖例上太重
+     ——一排四項裡有一項發著光，會先被讀成「這一項比較重要」，而不是「現在選的是它」。
+
+     這個變體因此把已選的殼與光全部收掉，每一項都回到「色點＋文字」的預設樣子；
+     選中的訊號改由**未選的變淡**承擔（`.is-filtered` 由呼叫端在真的挑了某一項時掛上）。
+     整組靠右：它是圖的附註，不是卡片的主標。 */
+.filter-tabs--legend { justify-content: flex-end; }
+.filter-tabs--legend .filter-tabs__item--active,
+.filter-tabs--legend .filter-tabs__item--active:hover {
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: var(--foreground);
+  font-weight: var(--fw-regular);
+  text-shadow: none;
+}
+.filter-tabs--legend .filter-tabs__item--active::after { content: none; }
+/* 只有「挑了某一項」時才變淡（`.is-filtered`）。預設的「全部」不算挑——那時候
+   每一條線都畫著，把其餘圖例調淡等於說它們沒被畫，與畫面上看到的相反。 */
+.filter-tabs--legend.is-filtered .filter-tabs__item:not(.filter-tabs__item--active) {
+  opacity: 0.4;
+}
+.filter-tabs--legend.is-filtered .filter-tabs__item:not(.filter-tabs__item--active):hover {
+  opacity: 0.7;
+}

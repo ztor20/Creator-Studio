@@ -114,7 +114,6 @@
              It renders as a badge on the row instead. -->
         <nav class="filter-tabs filter-tabs--brand" id="proj-states" role="tablist" aria-label="Project state" data-i18n-aria-label="projects.state.label">
           <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-state="all"><span data-i18n="projects.state.all">All states</span><span class="filter-tabs__count" data-state-count>0</span></button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-state="draft"><span data-i18n="projects.state.draft">Draft</span><span class="filter-tabs__count" data-state-count>0</span></button>
           <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-state="scheduled"><span data-i18n="projects.state.scheduled">Scheduled</span><span class="filter-tabs__count" data-state-count>0</span></button>
           <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-state="published"><span data-i18n="projects.state.published">In progress</span><span class="filter-tabs__count" data-state-count>0</span></button>
           <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-state="succeeded"><span data-i18n="projects.state.succeeded">Succeeded</span><span class="filter-tabs__count" data-state-count>0</span></button>
@@ -122,6 +121,11 @@
                right now", so the only one allowed to move (see tabs.css .is-live). -->
           <button class="filter-tabs__item filter-tabs__item--live" type="button" role="tab" aria-selected="false" data-state="live" data-live="0"><span data-i18n="projects.state.live">Live</span><span class="filter-tabs__count" data-state-count>0</span><span class="live-dot" aria-hidden="true"></span></button>
           <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-state="cancelled"><span data-i18n="projects.state.cancelled">Cancelled</span><span class="filter-tabs__count" data-state-count>0</span></button>
+          <!-- 草稿排最後（2026-09-01 使用者裁示「草稿都要放在最後面，每個類型都是」）：
+               這一排照的是項目往前走的順序（準備中 → 進行中 → 已成功 → 已上線 → 已取消）；
+               草稿是「還沒進到那條路上」的東西，夾在中間會被讀成第一個階段。
+               排序純粹是 DOM 順序——計數與顯隱都以 data-state 為鍵（見 render()），不受影響。 -->
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-state="draft"><span data-i18n="projects.state.draft">Draft</span><span class="filter-tabs__count" data-state-count>0</span></button>
         </nav>
         <select class="select select--bare" id="proj-cat" aria-label="Content category" data-i18n-aria-label="projects.cat.label" style="width:auto;min-width:184px;margin-left:auto">
           <option value="all" data-i18n="projects.cat.all">All categories</option>
@@ -458,7 +462,16 @@
     if (grpOther) grpOther.label = T('projects.cat.grp.other', 'Other');
     document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('segmented__btn--active', b.getAttribute('data-view') === view));
 
-    const items = PROJECTS.filter(match);
+    /* 草稿列置頂（2026-09-01 使用者裁示「前面這個位置都要像電子商店一樣把草稿放最前面」）。
+       理由與電子商店那條同源（UIA-038）：草稿沒有對粉絲顯示、也沒有粉絲端的陳列順序，
+       它是創作者自己還沒填完的東西——集中在最前面才會被想起來補齊，混在已上線的項目
+       中間只會被讀成「這個項目怎麼是空的」。
+       其餘項目維持原順序（穩定分割，不重排），清單與卡片兩種檢視都套用。
+       ⚠ 與狀態頁籤的排序相反、而且是刻意的：頁籤照的是項目往前走的階段順序，
+       草稿還沒進到那條路上所以排最後；這裡照的是「creator 該先處理什麼」。 */
+    const matched = PROJECTS.filter(match);
+    const items = matched.filter(p => p.status === 'draft')
+      .concat(matched.filter(p => p.status !== 'draft'));
     const isList = view === 'list';
     const isEmpty = items.length === 0;
     listEl.parentElement.classList.toggle('hidden', !isList || isEmpty);

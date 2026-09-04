@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/header.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/avatar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-footer.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -37,12 +38,9 @@
      product-list (F3 roster rows); the create form reuses the payout dialog
      shell. Only the avatar, the work-row layout and the disabled-row dimming
      are one-off page chrome. */
-  .creator-ava {
-    width: 40px; height: 40px; border-radius: 50%;
-    display: grid; place-items: center;
-    background: color-mix(in srgb, var(--primary) 16%, var(--muted));
-    color: var(--foreground); font-weight: var(--fw-regular); font-size: var(--fs-14);
-  }
+  /* 墓碑 2026-09-02：`.creator-ava` / `.creator-ava--lg` 的樣式已 promote 成
+     `ds-components/avatar.css` 的 `.ztor-avatar` / `--lg`（第四個消費頁出現時補建，
+     值一字未改）。本頁只留「停用列變暗」這條頁面級規則。 */
   /* F2 work row: status filter (left) + search (right) on one row. */
   .creators-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
   .creators-toolbar__search { flex: 0 1 320px; min-width: 200px; }
@@ -61,7 +59,7 @@
   }
   .product-list--creators .product-list__row { cursor: pointer; }
   .product-list--creators .product-list__row.is-disabled .product-list__title,
-  .product-list--creators .product-list__row.is-disabled .creator-ava { opacity: 0.55; }
+  .product-list--creators .product-list__row.is-disabled .ztor-avatar { opacity: 0.55; }
   .creators-row__actions { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
   /* empty-card sets its own display → [hidden] alone won't hide it (DS gotcha). */
   #creator-empty[hidden] { display: none; }
@@ -80,8 +78,6 @@
   .creator-onboard[hidden] { display: none; }
   .creator-onboard__row { margin-top: 16px; }
   .creator-onboard__row:first-child { margin-top: 0; }
-  /* larger avatar for the onboard form (roster list keeps the 40px .creator-ava) */
-  .creator-ava--lg { width: 64px; height: 64px; font-size: var(--fs-22); }
   @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -193,7 +189,7 @@
         <div class="creator-onboard" id="creator-fill" hidden>
           <label class="field creator-onboard__row">
             <span class="field__label" data-i18n="creators.form-avatar">Avatar</span>
-            <span class="creator-ava creator-ava--lg" id="creator-form-ava" aria-hidden="true">?</span>
+            <span class="ztor-avatar ztor-avatar--lg" id="creator-form-ava" aria-hidden="true">?</span>
           </label>
           <label class="field creator-onboard__row">
             <span class="field__label" data-i18n="creators.form-name">Creator name</span>
@@ -301,26 +297,40 @@
         .replace('{n}', rows.length).replace('{m}', list.length);
     }
 
+    /* 待設定計數（2026-09-01）：這位 creator 匯入的 bookyay 活動裡，還沒設完套組與發布
+       的有幾場。放在名冊是因為 admin 通常一次幫多個 creator onboard——名冊該讓他一眼
+       看到誰還有沒做完的事，而不是逐個點進去翻。
+       2026-09-02（D233）：算法搬進 `window.ztorCreator.bookyayStats()`——名冊、創作者活動管理頁
+       與 Creator 詳情頁的唯讀事實三處讀同一支，數字不會各算各的（原本這裡自己過濾一次池
+       與 localStorage，新頁再寫一份就會分岔）。 */
+    function pendingBadge(c) {
+      var n = window.ztorCreator.bookyayStats(c).pending;
+      if (!n) return '';
+      var t = ((window.i18nT && window.i18nT('creators.pending-n')) || 'To set up: {n}').replace('{n}', n);
+      return ' <span class="badge badge--warning">' + t + '</span>';
+    }
     roster.innerHTML = rows.map(function (c) {
       var disabled = st(c) === 'disabled';
       var toggleKey = disabled ? 'creators.action-enable' : 'creators.action-disable';
       var toggleIcon = disabled ? 'check-circle' : 'x-circle';
       return '<div class="product-list__row' + (disabled ? ' is-disabled' : '') + '" role="row" data-creator-row data-handle="' + c.handle + '">'
-        + '<span class="creator-ava" role="cell">' + initial(c.name) + '</span>'
+        + '<span class="ztor-avatar" role="cell">' + initial(c.name) + '</span>'
         + '<div class="product-list__body" role="cell">'
         +   '<div class="product-list__title">' + c.name + '</div>'
         +   '<div class="product-list__meta">' + c.shop + '</div>'
         + '</div>'
         + '<div class="creators-row__created" role="cell">' + (c.created || '—') + '</div>'
-        + '<div class="product-list__cell" role="cell">' + statusBadge(c.status) + '</div>'
+        + '<div class="product-list__cell" role="cell">' + statusBadge(c.status) + pendingBadge(c) + '</div>'
         + '<div class="creators-row__actions" role="cell">'
         +   '<button class="btn btn--primary btn--sm" type="button" data-manage="' + c.handle + '" data-i18n="creators.manage">Enter</button>'
         +   '<details class="dropdown">'
         +     '<summary class="btn btn--ghost btn--icon btn--sm" aria-label="' + ((window.i18nT && window.i18nT('creators.row-actions')) || 'More actions') + '"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>'
         +     '<div class="dropdown__menu" role="menu">'
-        /* D224：兩個入口都開同一個詳情頁，只是落在不同分頁 */
-        +       '<button class="dropdown__item" type="button" role="menuitem" data-detail="' + c.handle + '" data-tab="basic"><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="creators.action-edit">Edit</span></button>'
-        +       '<button class="dropdown__item" type="button" role="menuitem" data-detail="' + c.handle + '" data-tab="events"><i data-lucide="download" class="ztor-icon"></i><span data-i18n="creators.action-import">Import events</span></button>'
+        /* 墓碑 2026-09-02（D233）：這裡原本還有第二項「匯入活動」（`data-tab="events"`，
+           開詳情頁的 bookyay 分頁）。bookyay 匯入整段搬到側欄的獨立頁「創作者活動管理」
+           （`admin-creator-events.html`，規格 5.1.0.6），同一個功能只留一個入口，故移除；
+           i18n 的 `creators.action-import` 一併退場。要匯入請走側欄第二項。 */
+        +       '<button class="dropdown__item" type="button" role="menuitem" data-detail="' + c.handle + '"><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="creators.action-edit">Edit</span></button>'
         +       '<button class="dropdown__item" type="button" role="menuitem" data-toggle="' + c.handle + '"><i data-lucide="' + toggleIcon + '" class="ztor-icon"></i><span data-i18n="' + toggleKey + '">' + toggleKey + '</span></button>'
         +     '</div>'
         +   '</details>'
@@ -338,12 +348,12 @@
      iframe，名冊的篩選、搜尋與捲動位置原封不動留在底下，關掉就在原地。
      直接叫它的 API 而不是靠 detail-sheet.js 的連結攔截——列上是按鈕不是 <a>，
      而且要帶 tab 參數。 */
-  function openDetail(handle, tab, trigger) {
+  function openDetail(handle, trigger) {
     var c = list.filter(function (x) { return x.handle === handle; })[0];
     /* 帶的是 seed（示範資料的原始 handle），不是現值——店鋪網址改得掉，
        拿現值當鍵的話，改過之後這個連結就對不回同一筆。 */
     var key = c && c.seed ? c.seed : handle;
-    window.ztorDetailSheet.open('creator-detail.html?handle=' + encodeURIComponent(key) + '&tab=' + (tab || 'basic'),
+    window.ztorDetailSheet.open('creator-detail.html?handle=' + encodeURIComponent(key),
                                 c ? c.name : '', trigger);
   }
   /* 覆蓋層裡的詳情頁是另一個 window，改完會寫進 localStorage；同源的另一份文件會收到
@@ -365,12 +375,13 @@
       if (c) { window.ztorCreator.save(c.seed || c.handle, { status: st(c) === 'disabled' ? 'active' : 'disabled' }); render(); }
       return;
     }
-    /* D224：⋯ 選單的「編輯」與「匯入活動」是同一個詳情頁的兩個分頁。 */
+    /* D233（2026-09-02）：⋯ 選單只剩「編輯」一個去處，詳情頁也只剩一頁基本資料，
+       所以不再帶 `?tab=`。 */
     var detail = e.target.closest('[data-detail]');
     if (detail) {
       e.preventDefault();
       var dd = detail.closest('details'); if (dd) dd.open = false;
-      openDetail(detail.getAttribute('data-detail'), detail.getAttribute('data-tab'), detail);
+      openDetail(detail.getAttribute('data-detail'), detail);
       return;
     }
     if (e.target.closest('.dropdown')) return;   /* native <details> handles open/close */
@@ -379,7 +390,7 @@
     /* D218／D224：整列點擊開詳情頁（基本資料那一頁），不是進工作區——進工作區留給
        「前往」那顆按鈕。同一列兩個目的地，破壞性小的那個（可關掉的覆蓋層）拿大面積。 */
     var row = e.target.closest('[data-creator-row]');
-    if (row) openDetail(row.getAttribute('data-handle'), 'basic', row);
+    if (row) openDetail(row.getAttribute('data-handle'), row);
   });
 
   /* Status filter (filter-tabs) */

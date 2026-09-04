@@ -215,6 +215,7 @@
               <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.tf.format.digital">Digital</span></label>
               <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.tf.format.vinyl">Vinyl</span></label>
               <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.tf.format.cd">CD</span></label>
+              <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.tf.format.cassette">Cassette</span></label>
             </div>
           </div>
           <div class="field"><div class="field__label" data-i18n="cpp.tf.genre">Genre</div><input class="input" placeholder="e.g. Indie rock, Dream pop" data-i18n-placeholder="cpp.tf.genre.ph"></div>
@@ -236,6 +237,10 @@
 
         <!-- event -->
         <div class="form-grid hidden" data-fieldgroup="event">
+          <!-- 活動類型（D227）：Event 這個內容類型對應 §7.1 的 E&E 主分類，該主分類有六個葉節點，
+               不在這裡再選一次就落不到任何一個。定義與 create-event.html Step 1 同一份，但**項目沒有共看派對**（2026-09-01 使用者裁決）——
+               它是既有影片的放映場次、沒有待製作的作品，活動模組六型、項目這裡五型。 -->
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.etype">Event type</div><select class="select"><option data-i18n="cpp.tf.etype.concert">Concert</option><option data-i18n="cpp.tf.etype.festival">Festival</option><option data-i18n="cpp.tf.etype.meet">Meet &amp; Greet</option><option data-i18n="cpp.tf.etype.launch">Launch Party</option><option data-i18n="cpp.tf.etype.virtual">Virtual Event</option></select></div>
           <div class="field"><div class="field__label" data-i18n="cpp.tf.venue">Venue</div><input class="input" placeholder="e.g. Legacy Taipei" data-i18n-placeholder="cpp.tf.venue.ph"></div>
           <div class="field"><div class="field__label" data-i18n="cpp.tf.datetime">Date &amp; Time</div><input class="input" type="datetime-local"></div>
           <div class="field"><div class="field__label" data-i18n="cpp.tf.capacity">Capacity</div><input class="input" placeholder="e.g. 300" data-i18n-placeholder="cpp.tf.capacity.ph"></div>
@@ -308,7 +313,7 @@
           <div class="upload-tile upload-tile--portrait" data-upload>
             <span class="upload-tile__icon">＋</span>
             <span class="upload-tile__title" data-i18n="cpp.s2.gallery">Gallery</span>
-            <span class="upload-tile__hint" data-i18n="cpp.s2.gallery-size">750 × 1125 · portrait · 1–8 images</span>
+            <span class="upload-tile__hint" data-i18n="cpp.s2.gallery-size">750 × 1125 · portrait · 1–10 images</span>
           </div>
         </div>
       </div>
@@ -445,6 +450,15 @@
         <div class="field hidden" data-schedule-field style="margin-top:12px">
           <label class="field__label" data-i18n="cpp.s3.sched.when">Publish date &amp; time</label>
           <input class="input" type="datetime-local">
+        </div>
+        <!-- 下架日期與時間（spec 5.1.2.1 F18 · 主規格 §7.14 · D239，2026-09-02）：發布＝可見性窗口的起點，
+             這裡補終點。立即發布與稍後排程都露出、選填、不預設值。販售窗口不在這裡——
+             共創的開募／截止＝F21 周期、預購的開賣／截止＝F27 預購截止，本來就有。
+             i18n 沿用商品頁的 cp.listing.* key：三模組欄位名稱依 §7.14 必須一致，同一個字串就用同一把 key。 -->
+        <div class="field" data-unlist-field style="margin-top:12px;margin-bottom:0">
+          <label class="field__label" data-i18n="cp.listing.unlist">Unlist time</label>
+          <input class="input" type="datetime-local" id="cpp-unlist-time">
+          <div class="field__hint" data-i18n="cp.listing.unlist-hint">Leave empty to keep it listed until you take it down.</div>
         </div>
       </div>
     </section>
@@ -1619,6 +1633,10 @@
     list: '#bd-list',
     addBtn: '#bd-add',
     t: T,
+    /* 2026-09-01 使用者裁示「建立頁改成 popup、內容拆成 section」：改走分段版型
+       ——清單列＋彈窗編輯，彈窗內一段一張分卡（與建立活動的套組、建立商品的分層
+       同一個語彙）。編輯器本體同輪通用化，共創在彈窗裡多的是「含分潤名額」分卡。 */
+    layout: 'sections',
     poolInput: '#fd-slots',      /* 池＝共創步驟的支持者名額，會即時變動 */
     /* 每名額單價＝共創步驟那個唯讀欄位的值（帶千分位逗號，模組會 parse）。
        套組價因此是算出來的：名額 × 這個單價 ＋ 商品定價加總 − 套組優惠。 */
@@ -1733,6 +1751,7 @@
     addBtn: '#bdp-add',
     t: T,
     shares: false,
+    layout: 'sections',   /* 2026-09-01：同上，預購步驟同輪改分段彈窗；作品＋份數自成一張分卡 */
     /* D167：作品的單價來自預購設定那一步，作品的名字就是這個項目的標題——兩個都即時讀，
        改了上一步的數字或名稱，方案卡當場跟著改。 */
     unitPriceInput: '#po-price',

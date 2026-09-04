@@ -8,6 +8,33 @@
 
 | 編號 | 角色/題目 | 裁決 | 日期 | 理由 | 執行狀態 |
 |---|---|---|---|---|---|
+| Q107 | 「可展開的子列」站上有兩種基礎元件 | **建一支新的、兩邊都改吃它**（使用者原話「要有新的」）：新元件 `ds-components/row-disclosure.css`（namespace `rowdis`）＋ `js/row-disclosure.js`，只擁有揭露語意與階層視覺（把手位置與轉向、`aria-expanded`、子列縮排刻度、左緣階層線、母子列要不要畫線），欄位版面仍歸所在容器，因此表格型（`.product-list__row`）與清單型（`.data-list__row`）兩種骨架都能疊。五個使用頁全部遷移：`pickup-detail.html`／`order-detail.html`／`scanner.html`／`events.html`／`project-detail.html`。兩份舊做法（`product-list.css` 的 `__row--group`／`__row--child`、`data-list.css` 的 `__row--child`）退場、原處留墓碑。三處不一致各選一邊：左緣階層線選「有」、母子列列線收成 `--compact` 變體（表格型留線、清單型不留）、整列可點選「有 `cursor: pointer`」 | 2026-09-03 | 同一個視覺角色兩個答案，只改一邊就會分岔；兩套欄位模板本來就不同，所以收斂的是「揭露」這一層、不是把清單合併 | ✅ 已執行 2026-09-03（新元件＋五頁遷移＋兩份舊做法立墓碑；`shared.css` 的 `.pd-deep` 縮排覆寫改指 `--rowdis-indent`；`scanner.css` 同值死規則與 `pickup.css` 過期註解一併清；design-system.md／.html 四張卡同步；check_ds_sync PASS）〔**2026-09-04 追加裁決：視覺模型改採 L3「整組換層」，見下段，縮排模型（`--rowdis-indent`／`--level-2`／`--level-3`／左緣線／組尾線）整組退場**〕|
+| Q108 | L3 群組面板內（`.rowdis__group` 亮著時）的列 hover：要不要沿用 Q34（2026-07-26）裁定的全站通用「浮起玻璃卡」hover——`product-list.css` 66–84 行，`--ztu-glass-bg` 底＋`backdrop-filter`＋`box-shadow: var(--shadow-lift-flat), var(--shadow-edge-top)` | **不沿用，面板內另立一條——這是 Q34 的範圍例外**：使用者從探索頁 `lab-row-hover.html` 的六個候選（基準＋H1–H5）裡裁定 **H1（提亮一階）＋H4（動作浮現）相加**，寫進 `ds-components/row-disclosure.css`（見該檔「面板內列 hover」段）。母列與子列**同一階**（不分強弱）：手型游標與 chevron 已交代母列可點性，亮度分強弱既讀不出來又要多發明一個「半階」新 token。範圍邊界——只在面板亮著（`.rowdis__group` 的既有面板條件：展開或 `--static` 恆亮）時生效；面板外的列、以及收合狀態的母列，完全不變、仍吃 Q34 的通用浮起玻璃卡 | 2026-09-04 | 面板內沿用通用浮起玻璃卡有三個矛盾：①方向反了——`--ztu-glass-bg`（5% 白）比面板底 `--ztu-film`（8.6% 白）更暗，hover 讀起來是下沉不是浮起，違反 Surface-Layer Contrast「淺灰填只在比自己亮的底上成立」；②模糊沒有意義——`backdrop-filter` 在面板內只會取樣到面板自己（`ds-components/nest.css` 檔頭記過同一教訓）；③語意打架——一列浮出面板，跟「這一組是同一個平面」矛盾 | ✅ 已執行 2026-09-04（`ds-components/row-disclosure.css` 新增面板內 hover＋動作選單 opacity 揭露規則；`product-list.css`／`data-list.css` 未動；`design-system.md` §4.204 新增「面板內 hover」段＋States 行更新；`design-system.html` §4.204 demo 卡新增常駐模擬 hover 列＋doc-only `.ds-hover-sim`；`pickup-detail.html`／`order-detail.html`／`project-detail.html`／`scanner.html`／`events.html` 五頁 devserver 目視核對；check_ds_sync PASS） |
+
+**2026-09-04 追加裁決：視覺模型採 L3「整組換層」**
+
+Q107 當時只裁決「要不要建新元件」，元件落地後使用者看過縮排＋左緣 2px 線的呈現，裁示：**「都不太理想，可以用層的概念去做更明確的設計區分」**。
+
+**探索過程**：先做 `lab-row-disclosure.html`（第一版，六個候選＋現況基準——內嵌面板／分組帶／樹狀連接線／碼晶片網格／側板／列內進度），使用者看過全部否決，理由是這些候選各自發明了一套新語彙，沒有沿用站上既有的表面階層系統。第二版改用站上既有的填色層次規則（`ds-components/nest.css` 的 L1 卡片／L2 薄膜疊層），做 `lab-row-layers.html` 五個候選：L1 子層下沉／L2 母列升層／L3 整組換層／L4 浮層抽屜／L5 層＋框的兩層。使用者裁示採用 **L3**。
+
+**最終模型（三句話）**：
+
+- 未展開：整列與其他資料列同層（L1 卡面），看起來就是一般資料列。
+- 展開：母列與它的子項一起被包進一整塊 L2 薄膜面板（`--ztu-film` 底、四周一圈 1px `--border-soft`、圓角 `--radius-lg`）——群組的邊界是一整塊面，不是幾條線拼出來的暗示。
+- 零縮排：子項欄位與表頭嚴格對齊，沒有任何縮排階、沒有子列左緣的直線。
+
+**第二層用框，不是新規則**：order-detail 有兩層展開（品項→組合成員→成員的領取單位），第二層改用 `.rowdis__frame`（1px inset 框、不填色）。依據是 `ds-components/nest.css` 檔頭既有明文的規則——「只有兩層填色（L1 卡片 `--card`／L2 薄膜），第三層以後不再疊填色、改用 1px 邊框表達層級」（該規則於 STYLE-DECISIONS Q24 裁決）。本次只是把既有規則套進 row-disclosure 這個情境，不是另立第三片填色。
+
+**縮排模型整組退場**：`--rowdis-indent` 變數、`.rowdis__child--level-2`／`--level-3` 兩個縮排刻度變體、`.rowdis__child` 的 `padding-inline-start`、子列左緣 `::before` 2px 線、`--compact` 底下的 `border-bottom: 0` 與組尾線，隨 L3 定案一併撤除，原處留墓碑（`ds-components/row-disclosure.css` 檔尾）；`shared.css` 的 `.pd-deep` 對 `--rowdis-indent` 的覆寫（原本用來對齊 44px 文字起點）一併移除——零縮排之後沒有要對齊的東西。
+
+**日期**：2026-09-04。**理由**：使用者看過縮排模型的實際呈現後認為階層不夠明確，指定改用「層」的概念；兩份探索頁逐輪否決到定案。**執行狀態**：✅ 已執行 2026-09-04（`ds-components/row-disclosure.css` 改寫；五個使用頁遷移；縮排模型退場立墓碑；`shared.css` 同步；check_ds_sync PASS，詳見 UI-CHANGES.md 本日條目）。
+
+---
+
+| 編號 | 角色/題目 | 裁決 | 日期 | 理由 | 執行狀態 |
+|---|---|---|---|---|---|
+| Q103 | 垂直節奏誰持有（間距黏死的系統性成因） | **容器 `gap` 持有節奏**；相鄰選擇器只准收緊不准創造節奏 | 2026-09-01 | 距離綁在「成員是誰」上，異類鄰居一來就貼 0（三次前科）；token 刻度沒缺，缺的是法律 | 已立法（DS §2.3）＋check 13 WARN 盤點；media-vault 已改容器 gap |
+| Q101 | 分段切換（segmented）有兩份實作 | **收斂回 DS 的 `segmented.css`**：`chart.css` 那份平行實作（`.segmented` 軌道 ＋ `.segmented__item`／`--active`）撤除，類名全站改 `.segmented__btn`；圖表卡底的折線／長條切換也由 `.chart-card__foot-actions` 自畫軌道改成掛 `.segmented` ＋ `--icon` | 2026-09-01 | chart.css 比 segmented.css 晚載入，它的 `.segmented` 會把 DS 那支蓋掉——8/28 ztorUI 把選中段換成 accent 漸層＋光暈之後，圖表卡上仍是換裝前的白色浮起 pill ＋橘字。使用者指出「這兩個都沒有照 DS」 | ✅ 已執行 2026-09-01（7 檔 55 處）|
 | Q1 | 膠囊型元件圓角形狀 | **B**：可篩選/可點＝全圓（chip、filter-tabs），純顯示徽章＝小圓角矩形（badge、field-pill、metric-pill）。形狀＝「可否互動」的線索，須寫進 design-system.md | 2026-07-13 | 形狀當 affordance 比全統一更有資訊量 | ✅ 已執行 2026-07-13 |
 | Q2 | 控制項圓角級距（6 vs 7px） | **統一 6px**：`--radius`/`--radius-md` 合併成 6px；`.btn--icon-circle` 裸值 9999 改 `--radius-pill`。全圓 pill(9999)、shell(28) 不動 | 2026-07-13 | 1px 是假精度 | ✅ 已執行 2026-07-13 |
 | Q3 | 卡片邊界：陰影 vs 邊框 | **C（規則版）**：預設卡片用 1px 純邊框（平、乾淨）；只有要強調可點/浮起的主卡才升級純陰影〔**`.card`／`.kpi` 這兩支已被 Q32（2026-07-26）取代，改陰影浮起；`.ztor-card`（docs-only）與其餘控制項/清單類 1px 邊框角色不受影響，仍照本條**〕 | 2026-07-13 | 邊框優先＝editorial，陰影收窄成「強調」訊號 | ✅ 已執行 2026-07-13（部分被 Q32 取代）|
@@ -31,7 +58,7 @@
 | Q25 | 單行輸入控件的高度（站上有 6 種、其中 3 種帶小數） | **統一 36px＝`--control-h-sm`，且一律吃 token、不用 padding 撐**：`.input`／`.select`／`.picker__search-input`／`.app-sidebar__action`（含側欄搜尋）／`.app-topbar__search-input-wrap`／`.field-pill`／`.tag-input` 全部改 `height: var(--control-h-sm)`；表格密集列 `.variant-table .input` 降一階吃 `--control-h-xs`(28)、不再是 padding 撐出來的 32；`.textarea` 例外維持 padding ＋ `min-height:100px`（多行本來就不能鎖高）。**追加同輪（使用者：「都改為整數」）**：側欄兩條列也一起吃 token——`.app-sidebar__link`(34.8→36)、`.app-sidebar__sub-link`(33.6→36，`display` 由 `block` 改 `flex`＋`align-items:center`，鎖高後 block 的文字會貼頂不會自動置中)；子項與主項的區別交給縮排與字級，不靠高度差。**刻意不動的**：`.app-notif__item`（通知列，標題＋時間＋內文多行）、`.app-notif__foot`、`.duration-chip`（內含 `__price` 第二行）——這些高度本來就該隨內容變，鎖高是錯的；它們的「小數」是內容撐開的結果、不是控件尺度分岔。**盤點結果**（`docs/input高度盤點-2026-07-21.md`）：39（`.input` 基準）／44（field-pill、tag-input）／41.5（picker 搜尋）／37.5（側欄搜尋）／35.5（頂欄搜尋）／32（規格表格）＝6 種，其中三個搜尋框的小數高度看不出任何分級理由，是各自手調 padding 沒對過帳的殘留。**小數的根因是做法而非數值**——padding×2 ＋ font-size×line-height(1.5) 幾乎必然算出零頭，所以裁決連做法一起改掉，只調數值治標。**為什麼選 36 而非 44**：(1) `.btn` 就是 36，工具列裡搜尋框與按鈕必須齊平——那三個歪掉的搜尋框正是沒對齊按鈕造成的；(2) `_tokens.css` 原本就宣稱「同尺寸的 input 與 button 等高」，選 36 讓這句由空話變事實（選 44 得反過來改註解或連按鈕一起放大）；(3) 本站 token 命名刻意對齊 shadcn，而 shadcn 的 input 與 button 同為 `h-9`＝36。代價：一般欄位矮 3px、field-pill／tag-input 矮 8px（後者較有感，已告知使用者需目視確認）| 2026-07-21 | 使用者裁示（三選一中選 36「跟按鈕等高」）；根因治理而非逐個湊數值 | ✅ 已執行 2026-07-21（元件層一次生效：input／field-pill／tag-input／picker／header／shared／variant-builder；`--control-h-*` 註解同步改寫，標明實際預設是 sm 不是 md）|
 | Q26 | 站上有兩個按鈕家族、預設高度不同 | **`.ztor-btn` 家族退場，`.btn` 成為唯一按鈕**（墓碑留在 `button.css` 開頭）。`.btn` 的三階尺寸本來就正確（`--sm` 28／預設 36／`--lg` 44，全整數、全在刻度上），**問題不在尺寸而在兩套並存**：`.ztor-btn` 預設 44px 且被標為「design-system 文件用的 canonical 按鈕」，`.btn` 預設 36px 卻是 236+ 處真實頁面在用的。使用者檢視元件的唯一入口是 `design-system.html`，那裡把 44 標成預設按鈕，與出貨結果不符——DS 頁在按鈕這一項是錯的。**退場成本近乎零**：清點時全站已無任何 markup 消費 `.ztor-btn`，只剩 `design-system.html` 一行 class API 說明，DS 頁的按鈕 demo 早就用 `.btn` 了。比照 2026-07-10 `.ztor-input` 替身退場的前例（同樣是「文件用替身 vs 產品頁真身」）。**副作用**：`--control-h-lg`(52) 與 `--control-h-xl`(60) 的唯一消費者是 `.ztor-btn` 的兩個大尺寸變體，退場後這兩階變成零消費，已在 `design-system.md` 標為「待採用」（定義保留備用，不刪——刻度完整性比零消費警告重要）| 2026-07-21 | 使用者裁示（三個選項中選「退場」）；DS 頁必須與產品頁同源，否則設計師看到的不是實際出貨的東西 | ✅ 已執行 2026-07-21（`button.css` 規則清空留墓碑、`design-system.html` 移除 class API 列、`design-system.md` 三處敘述改寫）|
 | Q24 | 卡片內的層級怎麼往上疊（填色階梯已用完） | **兩層填色，L3 以後改邊框**：(1) **L1 卡片維持絕對色** `--card`（亮 `#FFFFFF`／深 `#212223`），不參與疊加——DevTools 檢視卡片時看到的就是真正的顏色，不是一串半透明宣告值；(2) **L2 巢狀層才是疊加**，新增 `--nest-surface`（亮 `transparent`／深 `rgba(222,223,233,.04)`，合成 ≈ `#292A2B`）；(3) **L3 以後不再疊填色，改用 1px 邊框**——再疊會愈來愈糊、也失去色溫；(4) 深色的疊加色**刻意用冷調淺灰 `rgb(222,223,233)` 而非純白**：純白會把 midnight 畫布的冷調洗掉（B−R 由 +2 掉到 +0.8），這個 tint 反而推到 +3.0、與畫布同溫（Figma 856:27796 獨立算出同一值）；(5) **亮色兩層都是白**，單靠 `--shadow-nest-up` 的向上陰影分層。**起因**：商品選項切到「多選項」時下方要長出「疊上去的一層」，但實測發現巢狀層與其中的 input 在現有絕對色模型下算出**完全同色** `rgb(38,39,41)`——填色階梯已經用完，再加一階必須動 foundation。因為裁決把填色上限壓在兩層，**既有 token（`--card`／`--input-surface`／`--accent`／`--border`）零修改**，只新增 `--nest-surface`＋`--shadow-nest-up` 兩個。L3 邊框規則**只寫進文件、不出 `nest.css`**——nest 不知道自己裡面會放什麼，硬寫 `.nest > *` 會誤傷，由消費端自己套。**同日即落地**：`variant-builder.css` 的 `.option-set__row`／`.variant-option` 坐在 nest 裡＝L3，去掉 `--input-surface` 填色改 `transparent` ＋ 1px `--border`（該輪同時把兩顆「新增」鈕改成 1px **虛線** `--border`，沿用 upload-tile／payout-modal 既有的「這裡還沒有東西」語彙，非新語彙）。**L3 邊框不另立 token，就用 `--border`** | 2026-07-21 | 使用者裁示（探索頁 `docs/層級系統-半透明疊加-探索.html` 逐輪確認）；Figma 856:27798 版型 | ✅ 已執行 2026-07-21（`nest.css` 新元件＋`_tokens.css` 兩個新 token；消費頁 create-product 商品選項）|
-| Q25 | 詳情頁右側常駐欄可不可以放「可互動」的卡（原定義只放唯讀狀態） | **放寬為兩類都可以，但要分得出來**：右欄仍以唯讀狀態卡為主（庫存、交付、關聯這類「改東西前要先知道」的資訊），另外允許放**跨分頁層級的可互動設定**——判準是「這個設定管的是整個商品、不隸屬任何一個分頁」。第一個案例是**上架設定**：上架與否是商品的最高層級狀態，塞在「定價與庫存」分頁裡等於暗示它只跟定價庫存有關，放右欄才能在編輯任何分頁時都看得到並隨手改。**不放寬的部分**：隸屬單一分頁的欄位一律留在該分頁，右欄不做成第二個表單。`detail-rail.css` 的元件說明與 design-system Pillar 5 的 pattern 卡同步更新 | 2026-07-21 | 使用者裁示（指定把上架設定移到右欄） | ✅ 已執行 2026-07-21（product-detail 右欄第一張卡）|
+| Q25 | 詳情頁右側常駐欄可不可以放「可互動」的卡（原定義只放唯讀狀態） | **放寬為兩類都可以，但要分得出來**：右欄仍以唯讀狀態卡為主（庫存、交付、關聯這類「改東西前要先知道」的資訊），另外允許放**跨分頁層級的可互動設定**——判準是「這個設定管的是整個商品、不隸屬任何一個分頁」。第一個案例是**上架設定**：上架與否是商品的最高層級狀態，塞在「定價與庫存」分頁裡等於暗示它只跟定價庫存有關，放右欄才能在編輯任何分頁時都看得到並隨手改。**不放寬的部分**：隸屬單一分頁的欄位一律留在該分頁，右欄不做成第二個表單。`detail-rail.css` 的元件說明與 design-system Pillar 5 的 pattern 卡同步更新〔**2026-09-03 D241 三開關落地後上架設定卡改為 `ds-components/listing-controls.css`（上架、顯示、開賣三開關），仍放詳情頁右欄，本裁決的判準與位置沿用**〕 | 2026-07-21 | 使用者裁示（指定把上架設定移到右欄） | ✅ 已執行 2026-07-21（product-detail 右欄第一張卡）|
 
 ---
 
@@ -91,7 +118,96 @@
 
 ---
 
+### Q103 · 垂直節奏由容器持有（2026-09-01 使用者裁示，已立法）
+
+使用者回報「UI 上有許多間距不對、黏在一起的狀況，每次生成 UI 都有這種間距問題」，指定要修系統性成因。全站掃描（自動量測 28 頁的兄弟間距＋重疊）後定位：**不是 token 缺（`--sp-*` 刻度完整），是「距離誰持有」沒有法律**。各元件各自發明——有的靠成員自帶 `margin-bottom`（`.field`）、有的靠 `.x + .x` 相鄰選擇器（`.vault-group`）、有的靠容器 `gap`。前兩種把距離綁在「成員是誰」上，排進來一個異類鄰居就貼成 0px；同一個病至少發過三次（2026-08-10 form-section 的 radio-cards、2026-09-01 media-vault 的上傳格、`.form-grid` 同型風險）。
+
+**裁決**：直排兄弟之間的節奏一律由容器 `gap` 持有；相鄰選擇器只准用來收緊（`margin-top: 0`／負值／label＋hint 語意配對），不准創造節奏。判別法：把任一鄰居換成別種元件，距離還該存在嗎？該存在→容器的事。細則見 design-system.md §2.3；存量的同類相鄰規則由 check_ds_sync 檢查 13 以 WARN 盤點，逐步遷移、不強拆。
+
+### Q107 · 「可展開的子列」站上有兩種基礎元件（2026-09-03 提出，**同日裁決「要有新的」並全數執行**）
+
+同一個視覺角色（母列可展開、點了看子列），D240 取貨核銷改一物一碼這輪落地在三個頁面，長出了兩份不同的基礎元件：
+
+- **`.product-list__row--group` / `--child`** — `ds-components/product-list.css:698,730`：`pickup-detail.html:196`（母列，買家分組）、`:212`（子列，一個領取單位）。這支元件 2026-08-06 為活動系列場次而建（`design-system.md` §4.117），本輪是它第二個消費場景，非本輪新建。
+- **`.data-list__row--child`** — `ds-components/data-list.css:46`：`order-detail.html:516,553`（品項的可展開單位與組合成員，仿 `project-detail.html`「計畫項目收益」小計展開列的既有寫法）、`scanner.html:382`（F3 名單子列，`.scanner-rosterrow` 疊加）。這支寫法源自 `project-detail.html` 既有的展開列，本輪是它的又一個消費場景。
+
+兩邊都是「母列展開看子列」的同一種視覺角色，chevron 位置也不同（pickup-detail 在品名前、order-detail 在 Fulfilment 欄）。本輪三個施工 agent 各自沿用手邊容器最近的既有元件——`pickup-detail.html` 本來就是 `product-list` 系的頁面專用表格，`order-detail.html` 與 `scanner.html` 本來就是 `data-list` 的頁面專用 subgrid 變體——沒有人另外發明第三種畫法，`check_ds_sync` 的元件檢查也沒有把這判為衝突。
+
+**裁決（2026-09-03，使用者原話「要有新的」）**：不選 A（各自保留）、也不是把其中一支併進另一支，而是**建一支新的，兩邊容器都改吃它**。
+
+**新元件** — `ds-components/row-disclosure.css`（namespace `rowdis`）＋ `js/row-disclosure.js`（`window.rowDisclosure`），規格見 `design-system.md` §4.204。關鍵在於它**只擁有揭露語意與階層視覺**（把手的位置與轉向、`aria-expanded` 狀態、子列的縮排刻度、子列左緣的階層線、母子列之間要不要畫線），欄寬、欄數與每一格的內容仍歸它疊上去的那個容器。所以它是與容器列**同時掛**的一層 class——兩套欄位模板不必合併，收斂的只是「揭露」這一層。
+
+**五個使用頁全部遷移** — `pickup-detail.html`（買家分組）· `order-detail.html`（品項單位與組合成員，兩層）· `scanner.html`（F3 名單，唯讀、只取階層視覺）· `events.html`（活動系列場次，7 組 16 條子列）· `project-detail.html`（收支小計，4 條子列）。各頁自寫的 toggle（`data-group-toggle`／`data-od-toggle`／`data-sub-toggle`／頁內函式）一併撤除，改用共用 JS 的 `data-rowdis` 契約。
+
+**兩份舊做法退場** — `product-list.css` 的 `__row--group`／`__row--child`／`__group-toggle`／`__group-chevron` 與 `data-list.css` 的 `__row--child`（含縮排變數與相鄰選擇器組尾線）CSS 規則刪除、**原處留墓碑**（不放檔頭前 12 行，那會讓 `check_ds_sync` 把整支元件當成已退役而跳過檢查——這兩支元件本體都還在服役）。
+
+**收斂時的三處選邊**（兩份舊做法不一致的地方，各選了一邊）：
+
+1. **子列左緣的階層線**：選 product-list 那一邊（**有線**）。這條線正是這個元件在說的事；清單型的子列（order-detail、scanner、project-detail）因此多了一條 2px `--border-soft`。
+2. **母子列之間的列線**：兩邊各自成立，收成 `--compact` 變體，由**容器密度**決定——表格型保留列線（那裡的每一列本來就是資料表的一列），清單型不畫（整組讀成一塊，組尾再用一條 `--border` 與下一組分開）。不再是兩支元件的差別。
+3. **整列可點的游標**：選「**有 `cursor: pointer`**」。舊的 product-list 群組列整列可點卻沒有游標提示。
+
+附帶修掉一個舊做法的副作用：階層線由 inset box-shadow 改成絕對定位的 `::before`。inset shadow 與容器 hover 的 `box-shadow` 是同一個屬性，舊做法得在 hover 時把線再寫一次補回來；`::before` 不是 grid item，不影響欄軌也不與陰影打架。
+
+執行紀錄見 `UI-CHANGES.md` 2026-09-03「可展開子列收斂成一支元件 row-disclosure（Q107）」。
+
 ## 待裁決
+
+### Q106 · 「正在忙」站上有三種畫法（2026-09-02 提出，本輪新增第三種、已標註題號）
+
+同一個語意（「這件事正在進行，等一下」），站上目前有三份各自實作：
+
+- **環形 spinner（獨立圖形）** — `ds-components/upload-tile.css:291-292`（`.upload-tile__spinner`，22px、2px 環、`--primary` 缺口、`upl-spin .6s`）：上傳中／優化中的 frosted 罩裡放一顆轉圈。
+- **環形 spinner（由狀態點變形）** — `shared.css:1403-1410`（`.wizard__save-status[data-state="saving"] .wizard__save-status__dot`，12px、2px 環、`--foreground-muted` 缺口、`wiz-spin .6s`）：自動儲存的綠點在儲存中變成一顆轉圈。
+- **把既有的 icon 轉起來（本輪新增）** — `ds-components/button.css`（`.btn[aria-busy="true"] .ztor-icon`，`btn-busy-spin .7s`）：按鈕忙碌時不換圖形，讓它原本那顆 `refresh-ccw` 轉。首個消費者：創作者活動管理的「重新檢查」。
+
+**為什麼本輪還是新增了第三種**：前兩種都是「放一顆專門用來轉的圖形」，適合佔一塊面積的進行中狀態（罩層、狀態列）。按鈕上的忙碌不一樣——那顆 icon 本身就是動作的符號（重新檢查＝`refresh-ccw`），換成一顆通用 spinner 反而讓人以為按鈕變成了別的東西；而且 28px 高的次要按鈕塞不下一顆獨立 spinner 再加文字。所以本輪走「原地轉既有 icon」，並在此登記，不主張它取代前兩種。
+
+**待裁決**：這三種要不要收斂，以及收成什麼。可能的方向——(A) 維持三種、但寫成一條規則（有面積的進行中→獨立 spinner；控制項忙碌→轉它自己的 icon；狀態點→變形）；(B) 統一 spinner 的圈徑、線寬與轉速（現在是 .6s／.6s／.7s、2px／2px／無），只留一組值；(C) 把 `.upload-tile__spinner` 與 wizard 那顆合併成一支共用元件。裁決權在使用者，本輪一個字都沒改前兩種。
+
+### Q105 · ~~「側欄名單列被選中」有兩支各自實作的元件~~（2026-09-02 提出，**同日隨版面改版失效**）
+
+**已失效，不需裁決。** 這一題記的是：站上有兩支長得一模一樣的「左側名單列，點一列換右邊內容」——`.vault-row` / `--active`（`ds-components/media-vault.css:124-188`，2026-08-01 建，消費頁 `fans-vault.html`），以及同日上午為活動匯入頁新建、逐值抄它寫成的那一支。不是兩種畫法，是同一種畫法有兩份程式碼，日後只改一邊就會分岔。
+
+同日下午使用者裁示活動匯入頁改版面（「creator 選擇在上、活動列表在下」「creator 改成一張一張卡片橫著排列」），那支元件整支改寫成 `ds-components/roster-picker.css`：creator 不再是側欄名單列、而是網格裡的卡片，已選態改由既有的 `.selection-card--active`（1px 橘 outline ＋中性陰影）提供，元件本身一條 `--active` 都沒寫。**那份重複的程式碼隨改寫消失**，站上「側欄名單列被選中」現在只剩 `media-vault.css` 一份實作。
+
+沒有第二份、也沒有第三種畫法，所以這一題不留待裁決，也不需要對 `fans-vault.html` 做任何治理動作——那一頁維持原樣。若日後又出現第二個「側欄名單列」需求，直接沿用 `.vault-row`（或屆時再提一次遷移）。
+
+### Q104 · 共創方案在同一個畫面上有三種叫法（2026-09-01 提出，未動任何文案）
+
+項目詳情「方案」分頁的共創區塊，同一件東西被叫了三個名字：
+
+- 區段標題「支持方案」（`project-detail.tiers.title`，i18n.js:6692）
+- 區段副標「每個**組合包**是贊助者可認購的回饋方案」（`pd-bundle.editor-sub`，i18n.js:6723）
+- 新增鈕「＋ 新增**組合包**」（`pd-bundle.add`，i18n.js:6742）
+- 而編輯器模組內部（清單列、彈窗標題、footer）共創一律講「**套組**」（`js/bundle-editor.js` 的 VOC：共創＝套組、預購＝方案、活動＝組合包）
+
+模組那套字彙是有制度的（2026-08-04 定，三個變體各講各的話）；頁面層這三個 key 是更早寫的，沒跟上。目前的結果是使用者在同一畫面上要自己把「支持方案／組合包／套組」對應成同一件事。
+
+**待裁決**：共創這一塊對外的名字是「套組」還是「方案」。牽涉的不只 UI 文案——「支持方案」是規格 §5.2.2 用的產品詞，改動要回寫上游；所以本輪一個字都沒改，暫維持現狀。建議方向：頁面層跟隨模組的變體字彙（共創＝套組），標題保留產品詞「支持方案」當區段名。
+
+### Q102 · 浮層裡的頂列材質（2026-09-01 提出；成因已找到並修掉，剩材質微調待裁決）
+
+黏住的詳情頁頂列在 detail-sheet 浮層裡**有沒有毛玻璃因瀏覽器而異**：`.detail-sheet__panel` 自己帶著 `backdrop-filter: blur(50px)`，巢狀的 backdrop-filter 跨 iframe 邊界在部分環境失效。本專案的內嵌瀏覽器實測有糊（1:1 解析度 A／B 差異明顯），使用者的瀏覽器沒有。
+
+同一輪已來回三次：5% 白薄膜（太白、沒糊時內容直接穿過去）→ `--surface-shell` 72%（太黑、疊在面板的暖色玻璃上變成一塊黑）→ 回到 5% 白薄膜。再猜下去沒有意義。
+
+**做法**：材質改成四個 CSS 變數，並新增 `docs/detail-topbar-tuner.html` 讓使用者在**自己的瀏覽器**裡調（左邊是真的浮層）。多一個不依賴 backdrop-filter 的選項——列的下緣加一段漸層淡出，讓內容淡掉而不是被切斷。
+
+**2026-09-01 收斂**：使用者用調節器的對照開關證明成因是 `.detail-sheet__panel` 本體的 `backdrop-filter` 讓面板成為 backdrop root、壓掉 iframe 內側的玻璃。已把那段搬到 `::before` 負層（視覺不變），成因移除。
+
+**要裁決的**：定案的底色、模糊半徑、要不要啟用下緣漸層。調節器會把值印成可貼的 CSS；貼回 `shared.css` 的 `.pd-detail__topbar.is-stuck` 之前，預設值不動。
+
+### Q100 · rank-bar 的比例條有兩種畫法（2026-09-01 提出，暫依使用者裁示落地，待裁決）
+
+「一列代表一個項目、長度代表比例」這個角色，站上現在有兩個答案：
+
+- **原本的藥丸**：`.rank-bar__track` 40px 高，`__fill` 是一顆撐滿高度的 `--muted` 藥丸，標籤與色點壓在填色上面。仍在用的頁面——`earnings.html`／`earnings-overview.html` 的「收入來源分布」、`fan-detail.html` 的「忠誠點數的來源」（`ds-components/chart.css:494`）。
+- **細條**：`.rank-bars--barline`，比例改用 `.project-bar`（`styles/shared.css:2056` 那條 6px 的）自成一列橫跨整個 grid，標籤永遠貼齊列首。只在 `project-detail.html` 的四份清單（方案統計、版稅分頁的地區與串流平台表現）。
+
+**經過**：使用者 2026-09-01 先裁示「1 進度條要用 2 的元件／檢查所有設計，只要是 1 的元件都要改 2」，四個頁面全部換完之後隨即收回——「我錯了 只要改原本那頁就好」。所以細條版目前是刻意的單頁例外，不是還沒做完的遷移。
+
+**要裁決的**：其餘三頁要不要跟上，還是兩種畫法各自有分工（例如「表格型的用細條、純排行的用藥丸」）。在裁決之前不要把任何一邊擴散出去，也不要新增第三種。
 
 ### Q76 · chip 無框化後，淺色模式的未選 chip 與卡面同色（2026-08-25 提出，待裁決）
 
@@ -514,6 +630,10 @@ Figma node 856-22782 把上架設定畫成收合式：外框 1px 邊、圓角 18
 選項：**A** 維持現況（外框與列都 16，把「收合式選擇器」視為卡片級容器，等於為 Q16 開一個具名例外）；**B** 外框 16、內部列回 6（容器是卡片、列還是控制項）；**C** 整組回 6（嚴格守 Q16，與 Figma 有落差）。裁決權在使用者。
 
 **2026-07-21 追加證據，方向偏向 A**：使用者當日另外指名「多規格選項列的圓角都要再大一點」，該組列（`.option-set__row`／`.option-set__add`／`.variant-option`，含優先權較高的 `.option-set .variant-option`）因此由 6 放大到 `--radius-xl`(16)；同日新增的 `.control-group`（開關＋揭示表單的外框）也取 16。也就是說「表單內的成組列」這個角色，使用者連續三次都選了大圓角。若最終裁 A，Q16 的「控制項／清單列維持 6px」需改寫成「**單獨的控制項**維持 6px；**成組的設定列**（收合式選擇器、選項列、control-group）用 16」，並把判準寫進 design-system.md，而不是留成一串個案例外。
+
+**2026-09-04 追加：`control-row` 併入 A 的範圍，並留下一個新問題。** 使用者看建立商品的上架設定時裁示「圓角沒有照 DS」——現場是 `.control-group`（24）與單獨的 `.control-row`（10）並排。`.control-row` 已改吃 `--radius-xl`，與 `control-group` 同值；兩者是同一個角色（表單裡成組的設定列），只差有沒有揭示區。同輪 `.lctl__derived` 由填色的 `.card--muted`（16）改成線框的 `.control-group--plain`（24），所以建立流程裡的盒子現在只剩兩級：頁面層的 `form-section--outlined`（24）與它裡面的設定盒（24）。
+
+**新問題（待裁決）**：巢狀盒子要不要降一階圓角？`.card--muted`（卡中卡）用的是 `--radius-lg`(16)，理由是「比母卡小一階才看得出是裡面那一層」；現在設定盒與母卡同為 24。選項：**A** 維持同值（層級交給邊框與內距表達，現行做法）；**B** 巢狀一律降一階（設定盒改 16，`card--muted` 那條規則因此有了通則）。裁決權在使用者。
 
 ### Q17：1-of-N 選擇器的分工（2026-07-17 提出，待裁決）
 

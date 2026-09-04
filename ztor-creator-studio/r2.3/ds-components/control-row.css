@@ -17,7 +17,11 @@
   justify-content: space-between;
   gap: var(--sp-14);
   padding: var(--sp-14) var(--sp-16);
-  border-radius: var(--radius-md);
+  /* 2026-09-04（使用者裁示「圓角沒有照 DS」）：由 --radius-md(10) 改 --radius-xl(24)，
+     與 .control-group 同值。兩者是同一個角色——「表單裡成組的設定列」，只差有沒有揭示區；
+     並排時一個 10 一個 24 一眼看得出不一致。單獨的控制項（button／input／badge）維持小圓角，
+     這條界線見 STYLE-DECISIONS Q22。舊值：var(--radius-md)。 */
+  border-radius: var(--radius-xl);
   box-shadow: inset 0 0 0 1px var(--border);   /* 全周外框，不撐版面高度 */
 }
 .control-row[hidden] { display: none; }   /* 蓋過 display:flex（條件隱藏，如數位模式無低庫存）*/
@@ -107,9 +111,14 @@
      .input-action
        .input / <code>       （撐滿剩餘寬度、過長截斷）
        .btn.btn--icon｜.btn--sm  （一到兩顆動作鈕）
+   2026-09-04：撐滿的那一格也接受 <select>（含 zselect 生成的觸發鈕——它把原 select 的
+   class 原封搬過來，所以同樣吃 .select）。首個情境：建立商品／商品細節的「取貨場次」
+   ——選單＋「建立取貨場次」鈕，原本是頁面各寫一份 inline flex。
    Consumers: pickup-detail.html（掃碼網址／密碼＋複製）、
-              partials/pickup-session-modal.js（密碼＋重新產生、網址＋重設／停用） */
+              partials/pickup-session-modal.js（密碼＋重新產生、網址＋重設／停用）、
+              create-product.html／product-detail.html（取貨場次＋建立場次鈕） */
 .input-action { display: flex; align-items: center; gap: var(--sp-8); min-width: 0; }
 .input-action > .input,
+.input-action > .select,
 .input-action > code { flex: 1 1 auto; min-width: 0; }
 .input-action > .btn { flex: none; }
