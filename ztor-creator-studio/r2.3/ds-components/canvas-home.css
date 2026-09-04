@@ -88,25 +88,37 @@
 .canvas-hero { position: relative; }
 .canvas-hint {
   position: absolute;
-  /* 往右讓開一段（2026-09-01 使用者裁示「往右邊一點，然後大一點」）：內容區的正中
-     偏左，左欄那一欄的重量本來就壓在左邊，提示站在正中會被讀成左欄的收尾。 */
-  left: calc(50% + var(--sp-72));
+  /* 右緣切齊右排那一行標題（2026-09-01 使用者三次裁示走到位：先「往右邊一點」、
+     再在畫面上一路指到右邊、最後「和『近期項目與活動』靠右對齊」）：
+     這一顆現在只剩字與箭頭，與右排那一整欄都是靠右的字——它們該收在同一條線上。
+     值＝右排的 `right: --sp-24` 再加它自己那 `--sp-10` 的右內距（那 10px 是滑鼠進到
+     那一排時讓玻璃面往右長的預留，見 canvas-stage.css）。**用這兩支相加而不是寫死 34**：
+     哪一天那兩個數字動了，這條線會自己跟著走。
+     實測標題與每一列名稱的右緣都是 1352，這一顆的右緣同樣 1352。
+     先前是「畫面正中再往右讓一段」，那個算式的參考點是內容區的中線，而中線會跟著
+     側欄收合左右跑——側欄一收，提示就換一個位置；從右緣量之後它固定不動。 */
+  right: calc(var(--sp-24) + var(--sp-10));
   bottom: var(--sp-24);
-  transform: translateX(-50%);
   z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: var(--sp-8);
-  /* 放大一階（同一次裁示）：它是這一屏唯一的出口，先前 12px 的字配 6/14 的內距
-     在整屏照片上像一張貼紙。 */
-  padding: var(--sp-10) var(--sp-20);
+  /* 面整個拿掉，只留字與箭頭（2026-09-01 使用者裁示「改成待辦事項那樣，只要有文字
+     和箭頭就好」）：這一頁左欄的三個區塊標題本來就是直接壓在照片上的字，沒有任何面；
+     這顆鈕是同一階的東西，掛著一片玻璃膠囊就變成畫面上唯一一張浮起來的貼紙。
+     可讀性改由 `text-shadow` 一個人扛（左欄那些字靠的是舞台的壓底，這顆站在畫面
+     右下角、壓底較弱）。
+     **左右內距歸零、只留上下**：面沒了之後，左右內距只是把字往內推、看不出用途；
+     上下留 10px 是點擊面積，鈕的高度因此仍有 40px。
+     字級與字重對齊 `.issue-panel__title`（14 / 500），三個標題與這顆鈕讀成同一階。 */
+  padding: var(--sp-10) 0;
   border: 0;
-  border-radius: var(--radius-pill);
-  background: var(--ztu-film);
-  backdrop-filter: blur(var(--ztu-blur-glass));
-  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   font-family: var(--font-ui);
   font-size: var(--fs-14);
+  font-weight: var(--fw-medium, 500);
   color: color-mix(in srgb, var(--on-media) 88%, transparent);
   text-shadow: 0 1px 3px color-mix(in srgb, var(--scrim-media) 45%, transparent);
   cursor: pointer;
@@ -126,6 +138,120 @@
   85%           { transform: translateY(3px); }
 }
 .is-scrolled .canvas-hint { opacity: 0; pointer-events: none; }
+
+/* ── 空資料（cheat code › 情境 › DATA STATE › Empty，2026-09-01 補）─────────
+   這一頁原本沒有空狀態，第一次進站的人會看到一整屏別人的假資料。開關沿用站上既有的
+   那一組（`shared.css` 的 `.dash-data-only` ／ `.dash-empty-only`，由
+   `html[data-data-state]` 驅動），不另做一套。
+
+   **整屏收成一句話與一個動作**：帳號下什麼都沒有的時候，收入、粉絲、待辦、接下來要做
+   的事、拿來當背景的主視覺，五樣同時不存在——逐格畫五個空盒子只是把「沒有東西」講五次。
+   **不畫 `.empty-card`**：那是給有卡框的頁面用的；這一頁左欄本來就不畫卡，在滿版的地上
+   貼一張白卡會是整屏唯一浮起來的東西。 */
+/* 全新帳號的引導畫面：一句主張 ＋ 三個起點。整組靠左、與左欄同一條左緣，
+   垂直置中於這一屏——沒有別的內容要跟它爭位置，貼在上緣會讓下面空一大片。 */
+.canvas-start {
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
+  /* 這一屏的其他東西都不在了，讓它自己站在畫面的中段。padding-top 用比例不用固定值：
+     視窗一矮，這一段會跟著往上收，不會被擠出畫面。 */
+  padding-top: 10vh;
+}
+.canvas-start__title {
+  margin: 0 0 var(--sp-10);
+  font-family: var(--font-display);
+  font-size: var(--fs-32);
+  line-height: var(--lh-snug);
+  color: var(--on-media);
+  /* 上限用 em 不用 ch（2026-09-01 修）：`ch` 是「0」這個字的寬度，約半個 em，
+     中文一個字是一整個 em——20ch 在中文只有十個字寬，標題會斷在「地／方」中間。 */
+  max-width: 22em;
+}
+.canvas-start__text {
+  margin: 0 0 var(--sp-32);
+  font-family: var(--font-ui);
+  font-size: var(--fs-15);
+  line-height: 1.75;
+  color: var(--on-media-muted);
+  max-width: 40em;   /* 同上：ch 對中文不準，改用 em */
+}
+/* 三個起點並排。**畫成玻璃卡是刻意的**：這一頁的規則是「左欄的字不畫卡、可以點的
+   東西才畫面」（第二屏的進行中卡片同一個道理）——這三張是純粹的動作，該有面。 */
+.canvas-start__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-16);
+}
+@media (max-width: 900px) {
+  .canvas-start__grid { grid-template-columns: minmax(0, 1fr); }
+}
+.canvas-start__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-8);
+  padding: var(--sp-20);
+  border-radius: var(--radius-xl);
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  box-shadow: inset 0 0 0 1px var(--ztu-glass-rim);
+  text-decoration: none;
+  transition: background var(--duration) var(--easing),
+              transform var(--duration) var(--easing);
+}
+.canvas-start__card:hover {
+  background: color-mix(in srgb, var(--on-media) 10%, transparent);
+  transform: translateY(-2px);
+}
+.canvas-start__card:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+.canvas-start__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: var(--sp-4);
+  border-radius: var(--radius-lg);
+  background: var(--ztu-film);
+  color: var(--on-media);
+}
+.canvas-start__icon .ztor-icon { width: 18px; height: 18px; }
+.canvas-start__name {
+  font-family: var(--font-ui);
+  font-size: var(--fs-16);
+  font-weight: var(--fw-medium, 500);
+  color: var(--on-media);
+}
+.canvas-start__sub {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  line-height: 1.7;
+  color: var(--on-media-muted);
+}
+/* 底圖那幾層一起關掉：沒有作品就沒有海報可以當地，留著等於拿別人的作品當背景。
+   關掉之後 `.canvas-stage` 自己那層主色漸層仍在，畫面退成一片乾淨的品牌底色
+   （見 canvas-stage.css 的 `--canvas-tint`）。壓底與暗角也一起收——它們的工作是
+   讓字在照片上讀得出來，沒有照片就不需要。 */
+html[data-data-state="empty"] .canvas-stage__bg,
+html[data-data-state="empty"] .canvas-stage__img,
+html[data-data-state="empty"] .canvas-stage__scrim,
+html[data-data-state="empty"] .live-bg { display: none; }
+/* 主色鋪底的歸位不在這裡做：`--canvas-tint` 是 JS 寫成**行內樣式**的（從當下那張海報
+   算出來的平均色），行內贏過任何選擇器，所以空資料時由 `components.js` 的 `canvasTint()`
+   自己把它移除，畫面退回 `var(--canvas-tint, var(--ztu-canvas))` 的中性畫布色。 */
+
+/* 資料很少時，下面兩屏跟著收（2026-09-01）：
+   **只有商品**——沒有任何在跑的項目或活動，第二屏沒有對象；也還沒有已上線的作品，
+   第三屏的平台表現沒有數字可講。兩屏都收掉之後，「往下看更多」也沒有下面可看。
+   **只有一個項目**——第二屏成立（那一件正在跑），第三屏仍不成立（還沒上線）。
+   ⚠ 這裡用示範狀態當判準是原型的權宜：真實系統的判準是「有沒有在跑的東西」與
+   「有沒有已上線的作品」兩個資料問題（記在 ASSUMPTIONS CANVAS-005）。 */
+html[data-data-state="only-product"] .canvas-sheet--live,
+html[data-data-state="only-product"] .canvas-sheet--perf,
+html[data-data-state="only-product"] .canvas-hint,
+html[data-data-state="one-project"] .canvas-sheet--perf { display: none; }
 
 /* ── 第二屏：進行中的卡片列（2026-08-31 使用者裁示重做）────────────────
    先前這一屏是作品磚列（`work-cards`，海報放大到 240px、右緣漸消）。使用者裁示
@@ -433,8 +559,17 @@
   width: 300px;
   /* 高度是下限不是上限（2026-08-31）：待辦事項多了就往下長，整段跟著變高。 */
   min-height: 100%;
-  display: flex;
-  flex-direction: column;
+  /* 上下兩格由**第一屏的垂直中線**切開（2026-09-01 使用者在畫面上畫線裁示
+     「待辦事項的起始點要從那條紅線開始」）：上半是「現在的狀況」，下半是「要處理的事」。
+     先前是 `space-between`——待辦那一格貼著底、上緣的位置由它自己有多高決定，
+     待辦多一則整格就往上長一截，那條線每次都落在不同的地方。改成切中線之後，
+     待辦的上緣是一條不動的線，長短只影響它自己往下佔多少。
+     第一列的高度由頁尾腳本量出來寫進 `--rail-split`（＝第一屏的中線減左欄的上緣）——
+     那兩個位置都不是常數（問候可能兩行、外殼有內距），只有量得到。
+     還沒量到之前退回 `auto`：那時兩格緊接著排，一瞬間而已，不會壞。 */
+  display: grid;
+  grid-template-rows: var(--rail-split, auto) auto;
+  align-content: start;
   /* 28 → 48（2026-08-31 使用者裁示「這三個區域的間距要再大一點」）：同日稍早把
      兩區的**列距**歸零之後，區塊之間就成了整欄唯一的分隔——區內不留空、區與區
      之間放大，三格才讀成三件事而不是一長串。多出來的高度由最後一格（待辦）
@@ -442,14 +577,17 @@
   /* 48 → 72（2026-08-31 使用者裁示「增加間距」）：「上線進行中」那一格撤除之後
      左欄只剩兩格，48 在兩格之間讀起來像是「同一段落斷了一行」；放大到 72 之後，
      收入那一格與待辦那一格才各自成一件事。 */
-  gap: var(--sp-72);
+  /* 2026-09-01 歸零：兩列的分界改由中線決定，再加一段列距就會把待辦推離那條線。 */
+  gap: 0;
   /* 兩格往下鋪滿整屏（2026-08-31 使用者裁示「把左欄的兩格往下鋪滿，讓左欄的底邊與
      右欄的視覺重量對稱」）：`space-between` 之後，上面那格貼著頂、待辦那格貼著底，
      中間的空白由這一屏剩下多少決定；`gap: 72` 因此變成兩格之間的**下限**。
      **同時移除同一支規則裡多寫的 `min-height: 0`**——它排在上面那行 `min-height: 100%`
      後面、把「至少一屏高」整條蓋掉，左欄因此一直停在內容結束的地方（實測 731，
      底下空著 100px）。`.canvas-hero` 同日踩過一模一樣的坑。 */
-  justify-content: space-between;
+  /* 2026-09-01 撤除（墓碑）：`justify-content: space-between`。兩格改由中線切開之後，
+     「上面貼頂、下面貼底」那條規則沒有對象了——上面那格仍然貼頂
+     （`align-content: start`），下面那格的上緣改由中線決定，不再貼底。 */
   /* 左右與上緣不留內距：左欄的四邊就是內容區的四邊，右邊那幾個浮層也對齊同一個框
      （2026-08-31 使用者裁示「這些是一個區塊」）。留 4px 或 8px 的話，左上角與
      右上角就會差那幾像素，一整塊讀起來是歪的。
@@ -541,8 +679,11 @@
    仍然不裁掉超出的部分：清單比空間長時它就把整段撐高，往下捲看得到（原本的
    `overflow: hidden` 會把第四則之後直接切掉）。 */
 .canvas-home__rail > :last-child {
+  /* `flex: none` 留給窄畫面那一段（1024px 以下這一欄仍是 flex）；大螢幕改成 grid
+     之後它不生效，但也不礙事。 */
   flex: none;
   min-height: 0;
+  align-self: start;   /* grid 預設 stretch 會把面板拉到列底，裡面的清單卻不會跟著長 */
 }
 
 /* 兩張進行中項目並排。用 grid 而不是磚列的橫捲：只有兩張，捲動的機制一個都用不到，

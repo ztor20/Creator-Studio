@@ -1,0 +1,129 @@
+/* ============================================================
+   tier-arc — 層層包含的分層弧（2026-09-01 建）
+
+   使用者說明了粉絲分層真正的模型：**Fan ⊇ Ranked fans ⊇ Superfan ⊇ Inner Circle**，
+   四層是層層包含、不是四群並列的人。接著在 `docs/fan-tiers-demo.html` 的四個方案裡
+   選定這一支（方案 D，由使用者自己提的形狀：「把顏色疊在一起，最外層最粗且形成一圈，
+   往內每層更細、長度涵蓋更內層」）。
+
+   **為什麼不是 `.donut-mix`**（它原本畫這一格）：圓環的前提是「切開一個整體、彼此不
+   重疊」。把包含關係畫成互斥的四塊，讀者會以為 Inner Circle 與 Superfan 是並列的兩群，
+   而它們其實是「同一群人裡走得最近的那一小撮」。這是圖型用錯，不是尺寸或顏色的問題。
+
+   **這一支怎麼成立的：兩個維度分開編碼。**
+     角度（弧長）  ＝ 這一層有多少人（累積佔比，最外層 100%）
+     線寬          ＝ 第幾層（最外層最粗，往內遞減）
+   兩件事分開之後，任何一個角度往中心看，看得到幾層就代表那個角度的人走到了第幾層——
+   包含關係直接畫在圖上，不必靠圖例解釋。
+
+   **顏色吃分層色階 `--tier-1..4`、不是分類色**（見 `_tokens.css`）：分類色是給彼此獨立、
+   沒有大小順序的類別；分層要的是同一個色相走深淺，深淺本身就是「第幾層」。
+
+   解剖：
+     .tier-arc                外框（環 ＋ 圖例並排）
+       .tier-arc__ringwrap    環的定位框
+         .tier-arc__ring      SVG（旋轉 -90°，每一層都從十二點鐘開始）
+           .tier-arc__track   底環（薄膜色，畫在最粗那一層的位置）
+           .tier-arc__seg     一層弧（顏色由行內 `--seg` 帶進來、線寬由行內給）
+         .tier-arc__center    環心：總數 ＋ 單位
+           .tier-arc__value
+           .tier-arc__unit
+       .tier-arc__legend      圖例（一層一列）
+         .tier-arc__row  ＞  .tier-arc__dot ／ .tier-arc__label ／ .tier-arc__val
+
+   圖例的圓點大小跟著該層的線寬走：一眼看得出哪一層畫在外面。這是刻意讓圖例與圖
+   共用同一個編碼，而不是四個一樣大的點。
+   ============================================================ */
+
+.tier-arc {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-12);
+}
+
+/* 環自己不縮：圖例那一欄吃剩下的寬度（與 donut-mix 同一個處理）。 */
+.tier-arc__ringwrap {
+  position: relative;
+  flex: none;
+  width: var(--tier-arc-size, 150px);
+  height: var(--tier-arc-size, 150px);
+}
+.tier-arc__ring {
+  width: 100%;
+  height: 100%;
+  display: block;
+  /* 從十二點鐘開始畫（SVG 的 0° 在三點鐘方向）。四層共用同一個起點，
+     所以「愈往內愈短」在同一條起跑線上比得出來。 */
+  transform: rotate(-90deg);
+}
+.tier-arc__track {
+  fill: none;
+  stroke: var(--ztu-film);
+}
+.tier-arc__seg {
+  fill: none;
+  stroke: var(--seg, var(--tier-1));
+  /* 圓端：弧的終點是「這一層停在哪裡」，圓端讓那個位置看起來是一個端點而不是被切斷。
+     線寬由行內屬性給——它是資料的一部分（第幾層），不是樣式常數。 */
+  stroke-linecap: round;
+}
+
+/* 環心：總數與單位。與 donut-mix 同一組字級，兩支環在同一個輪播裡換張時不會跳。 */
+.tier-arc__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  text-align: center;
+  pointer-events: none;
+}
+.tier-arc__value {
+  font-family: var(--font-numeric, var(--font-display));
+  font-size: var(--fs-24);
+  line-height: 1.05;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+.tier-arc__unit {
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+
+/* 圖例：一層一列，由外往內，與環的疊法同一個順序。
+   上限 190px 的理由同 donut-mix：名稱是 `flex: 1` 撐開的，欄位愈寬百分比被推得愈遠，
+   四行會讀成四段各自為政的句子。 */
+.tier-arc__legend {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+.tier-arc__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+}
+.tier-arc__dot {
+  flex: none;
+  border-radius: 999px;
+  background: var(--seg, var(--tier-1));
+}
+.tier-arc__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--muted-foreground);
+}
+.tier-arc__val {
+  flex: none;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}

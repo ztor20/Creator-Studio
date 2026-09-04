@@ -10,7 +10,7 @@
    但尚未改由本檔渲染（屬後續重構，見 UI-CHANGES 2026-07-27 該筆的「已知債」）。
 
    images 是「已上傳素材」的真實路徑（不是 true/false）：編輯頁必須顯示創作者當初上傳的圖，
-   而不是三個空的上傳框；gallery 是 1–8 張的陣列。每筆刻意沿用活動清單那一列在用的圖檔，
+   而不是三個空的上傳框；gallery 是 1–10 張的陣列（2026-09-04 D243）。每筆刻意沿用活動清單那一列在用的圖檔，
    同一場活動不該在兩個畫面長著兩張不同的臉。
    2026-07-31（D164 / documents 5.1.6.1 F4）：素材槽由四個收斂為三個——原本的 thumb（縮圖）與
    poster（直式海報）比例統一後形狀相同、素材同源，併成單一 keyvisual（主視覺）；banner（橫式
@@ -167,6 +167,8 @@
           price: 5200, sold: 7, cap: 40 }
       ],
       publish: { onsale: 'scheduled', pickup: 'sf', visibility: 'public' },
+      /* 只設開賣、不設停售的示範（`to: ''`）——賣到開演為止。 */
+      sale: { from: '2026-08-15 12:00', to: '' },
       sold: 200,
       revenue: 606000,
       status: 'on-sale',
@@ -335,6 +337,12 @@
           products: [{ name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'images/products/coastline-acetate.webp' }],
           price: 45, sold: 26, cap: 60 }
       ],
+      /* 販售時間（2026-08-31 新欄 `sale`）：`from` 開賣、`to` 停售，皆為 'YYYY-MM-DD HH:MM'。
+         `to` 留空＝只設開賣、賣到開演（見 ASSUMPTIONS SALE-001）；整個 `sale` 缺席＝
+         `publish.onsale: 'now'`（發布後直接開賣），兩者不是同一件事，不要互相補值。
+         這一筆示範「開賣＋停售」都設的完整區間。 */
+      publish: { onsale: 'scheduled', pickup: 'eticket', visibility: 'public' },
+      sale: { from: '2026-08-01 10:00', to: '2026-09-11 23:59' },
       sold: 118,
       revenue: 590,
       status: 'on-sale',

@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- base：這一份住在 docs/，資產以 r2.3 根為準（與其他 demo／調參器同一組相對路徑）。 -->
+<base href="../">
+<title>Demo · 粉絲分層要用哪種圖（層層包含）</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/donut-mix.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/split-bar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi-rotator.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+/* ── demo 專用樣式一律 `lab-` 前綴（與調參器同一個約定）：這一份住在 docs/，
+      不得覆寫任何共用 class，也不重新定義 DS token。三個方案共用的排版寫在這裡，
+      每個方案自己的圖形寫在它自己的區塊裡。 ────────────────────────────── */
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-ui);
+}
+.lab-wrap { max-width: 1180px; margin: 0 auto; padding: var(--sp-32) var(--sp-24) var(--sp-72); }
+.lab-h1 { font-family: var(--font-display); font-size: var(--fs-28); margin: 0 0 var(--sp-8) }
+.lab-lede { color: var(--muted-foreground); font-size: var(--fs-14); line-height: 1.7; margin: 0 0 var(--sp-32); max-width: 68ch }
+.lab-lede code { font-family: var(--font-mono, monospace); font-size: .92em }
+
+/* 三欄並排，每一欄都是「展示版左欄那一格」的真實寬度（300px），
+   底也刻意用同一片深色——這幾個圖將來是坐在照片上的，不是坐在白紙上。 */
+.lab-row { display: flex; flex-wrap: wrap; gap: var(--sp-24); align-items: flex-start }
+.lab-col { width: 300px; flex: none }
+.lab-slot {
+  width: 300px;
+  padding: var(--sp-16);
+  border-radius: var(--radius-xl);
+  background: color-mix(in srgb, var(--ztu-canvas, #0C0D0D) 88%, white);
+  box-shadow: inset 0 0 0 1px var(--ztu-glass-rim);
+}
+.lab-tag {
+  display: inline-block; margin-bottom: var(--sp-8);
+  font-size: var(--fs-11); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.lab-note { font-size: var(--fs-12); line-height: 1.7; color: var(--muted-foreground); margin: var(--sp-12) 0 0 }
+.lab-note b { color: var(--foreground); font-weight: var(--fw-medium, 500) }
+.lab-title { font-size: var(--fs-14); font-weight: var(--fw-medium, 500); margin: 0 0 var(--sp-12) }
+
+/* ── A 漏斗（階梯橫條）──────────────────────────────────────────
+   一層一條，長度＝累積人數；右邊是人數，條下是「上一層有多少比例走到這一層」。
+   **轉換率放在條與條之間**，不是排成第五欄：它講的是兩層之間的事，貼在中間才讀得出
+   它屬於哪一段。 */
+.lab-funnel { display: flex; flex-direction: column; gap: var(--sp-4) }
+.lab-funnel__row { display: flex; align-items: center; gap: var(--sp-10) }
+.lab-funnel__bar {
+  flex: 1 1 auto; min-width: 0; height: 26px; border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--ztu-film) 100%, transparent);
+  overflow: hidden;
+}
+.lab-funnel__fill { display: block; height: 100%; border-radius: inherit; background: var(--seg) }
+.lab-funnel__label { flex: 0 0 84px; font-size: var(--fs-12); color: var(--muted-foreground) }
+.lab-funnel__num {
+  flex: 0 0 auto; min-width: 52px; text-align: right;
+  font-family: var(--font-numeric, var(--font-display)); font-size: var(--fs-14);
+  font-variant-numeric: tabular-nums; color: var(--foreground);
+}
+.lab-funnel__step {
+  margin: 0 0 0 84px; padding-left: var(--sp-10);
+  font-size: var(--fs-11); color: var(--muted-foreground);
+}
+
+/* ── B 巢狀橫條 ────────────────────────────────────────────────
+   一條滿版＝全部粉絲，裡面疊三條愈來愈短的。畫的就是「包含」本身。 */
+.lab-nest { position: relative; display: flex; flex-direction: column; gap: 3px }
+.lab-nest__track {
+  height: 22px; border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--ztu-film) 100%, transparent);
+}
+.lab-nest__fill { display: block; height: 100%; border-radius: inherit; background: var(--seg) }
+.lab-nest__legend { margin-top: var(--sp-12); display: flex; flex-direction: column; gap: var(--sp-6) }
+.lab-nest__row { display: flex; align-items: center; gap: var(--sp-8); font-size: var(--fs-12) }
+.lab-nest__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--seg); flex: none }
+.lab-nest__label { flex: 1 1 auto; color: var(--muted-foreground) }
+.lab-nest__val { font-variant-numeric: tabular-nums; color: var(--foreground) }
+
+/* ── D 巢狀弧（同一圈上疊起來、愈內層愈細）────────────────────────
+   使用者提案：「把 C 的顏色疊在一起——最外層最粗且形成一圈，次一層稍細、長度涵蓋
+   更內層，最細的是最內層。」四條弧同半徑、不同線寬，由粗到細依序畫上去，
+   所以任何一個角度往中心看，看得到幾層就代表那個角度的人走到了第幾層。
+   線寬遞減不是裝飾：它是「深度」這個維度的編碼，角度編「多少人」，兩件事分開才讀得出包含。 */
+.lab-arc { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12) }
+.lab-arc__ringwrap { position: relative; flex: none; width: 150px; height: 150px }
+.lab-arc__ring { width: 100%; height: 100%; display: block; transform: rotate(-90deg) }
+.lab-arc__track { fill: none; stroke: var(--ztu-film) }
+.lab-arc__seg { fill: none; stroke: var(--seg); stroke-linecap: round }
+.lab-arc__center {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1px; text-align: center; pointer-events: none;
+}
+.lab-arc__value { font-family: var(--font-numeric, var(--font-display)); font-size: var(--fs-24); line-height: 1.05 }
+.lab-arc__unit { font-size: var(--fs-11); color: var(--muted-foreground) }
+.lab-arc__legend { flex: 0 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--sp-6) }
+.lab-arc__row { display: flex; align-items: center; gap: var(--sp-8); font-size: var(--fs-12) }
+.lab-arc__dot { border-radius: 999px; background: var(--seg); flex: none }
+.lab-arc__label { flex: 1 1 auto; color: var(--muted-foreground) }
+.lab-arc__val { font-variant-numeric: tabular-nums; color: var(--foreground) }
+
+/* ── 說明區 ──────────────────────────────────────────────────── */
+.lab-sec { margin-top: var(--sp-56) }
+.lab-sec h2 { font-family: var(--font-display); font-size: var(--fs-20); margin: 0 0 var(--sp-12) }
+.lab-sec p, .lab-sec li { color: var(--muted-foreground); font-size: var(--fs-14); line-height: 1.8 }
+.lab-sec b { color: var(--foreground) }
+.lab-table { border-collapse: collapse; font-size: var(--fs-13); margin-top: var(--sp-12) }
+.lab-table th, .lab-table td { border-bottom: 1px solid var(--border); padding: var(--sp-8) var(--sp-16); text-align: left }
+.lab-table th { color: var(--muted-foreground); font-weight: var(--fw-medium, 500) }
+.lab-table td { font-variant-numeric: tabular-nums }
+</style>
+</head>
+<body>
+<div class="lab-wrap">
+
+  <h1 class="lab-h1">粉絲分層要用哪種圖</h1>
+  <p class="lab-lede">
+    前提是使用者給的模型：<b>Fan ⊇ Ranked fans ⊇ Superfan ⊇ Inner Circle</b>——四層是層層包含，不是四群並列的人。
+    站上目前那組數字（12% / 28% / 37% / 23%，加起來剛好 100）是<b>「只到這一層」的佔比</b>；
+    要畫成包含關係就得改讀成累積值，那是純推導、不必新增假資料，但四個數字的意思會變。
+    三個方案都用同一組推導值、同一個 300px 寬度、同一片深底——那一格將來是坐在照片上的。
+  </p>
+
+  <div class="lab-row">
+
+    <!-- A -->
+    <div class="lab-col">
+      <span class="lab-tag">方案 A · 推薦</span>
+      <div class="lab-slot">
+        <p class="lab-title">粉絲分層</p>
+        <div class="lab-funnel" id="funnel"></div>
+      </div>
+      <p class="lab-note">
+        <b>漏斗（階梯橫條）。</b>一層一條，長度就是人數；條與條之間標「上一層有多少比例走到這一層」。
+        它多回答了一件現在看不到的事：<b>每一層的轉換率</b>——那才是這一格該回答的問題，
+        「有多少人願意再靠近一步」。
+      </p>
+    </div>
+
+    <!-- B -->
+    <div class="lab-col">
+      <span class="lab-tag">方案 B</span>
+      <div class="lab-slot">
+        <p class="lab-title">粉絲分層</p>
+        <div class="lab-nest" id="nest"></div>
+        <div class="lab-nest__legend" id="nestLegend"></div>
+      </div>
+      <p class="lab-note">
+        <b>巢狀橫條。</b>一條滿版＝全部粉絲，裡面疊三條愈來愈短的，畫的就是「包含」本身。
+        省高度、關係最明確；代價是四條共用同一條基線，比長度比漏斗吃力一點。
+      </p>
+    </div>
+
+    <!-- C -->
+    <div class="lab-col">
+      <span class="lab-tag">方案 C · 現況</span>
+      <div class="lab-slot">
+        <p class="lab-title">粉絲分布</p>
+        <div class="donut-mix" id="donut"></div>
+      </div>
+      <p class="lab-note">
+        <b>現況的圓環。</b>圓環的前提是「切開一個整體、彼此不重疊」，
+        而這四層是層層包含——畫成四塊會讓人以為 Inner Circle 與 Superfan 是並列的兩群。
+        <b>這是圖型用錯，不是尺寸或顏色的問題。</b>
+      </p>
+    </div>
+
+    <!-- D -->
+    <div class="lab-col">
+      <span class="lab-tag">方案 D · 使用者提案</span>
+      <div class="lab-slot">
+        <p class="lab-title">粉絲分層</p>
+        <div class="lab-arc" id="arc"></div>
+      </div>
+      <p class="lab-note">
+        <b>巢狀弧。</b>把 C 的四段改成同一圈上疊起來：最外層最粗、走滿一整圈，
+        往內每一層更細、弧也更短，且一定被外一層蓋住。
+        <b>角度編「多少人」、線寬編「第幾層」</b>，兩個維度分開之後，包含關係就直接畫在圖上。
+        顏色沿用站上既有的分層色，所以走滿整圈的是紫色（Fan）不是綠色——要換色再說。
+      </p>
+    </div>
+
+  </div>
+
+  <div class="lab-sec">
+    <h2>數字怎麼來的</h2>
+    <p>總數 1,283（站上既有）。把「只到這一層」的佔比由內往外累加，就得到每一層的實際人數：</p>
+    <table class="lab-table">
+      <tr><th>層</th><th>只到這一層</th><th>累積佔比</th><th>人數</th><th>上一層走到這一層</th></tr>
+      <tr><td>Fan</td><td>23%</td><td>100%</td><td>1,283</td><td>—</td></tr>
+      <tr><td>Ranked fans</td><td>37%</td><td>77%</td><td>988</td><td>77%</td></tr>
+      <tr><td>Superfan</td><td>28%</td><td>40%</td><td>513</td><td>52%</td></tr>
+      <tr><td>Inner Circle</td><td>12%</td><td>12%</td><td>154</td><td>30%</td></tr>
+    </table>
+    <p>
+      <b>順帶一個既有的假資料不一致</b>：粉絲卡的副標寫「184 are Inner Circle」，
+      但 12% × 1,283 = 154。漏斗會把這個矛盾攤在畫面上，改圖的時候要一起修——
+      兩個數字擇一為準，不要兩份定義。
+    </p>
+  </div>
+
+  <div class="lab-sec">
+    <h2>為什麼不是同心圓</h2>
+    <p>
+      同心圓（環中環）看起來最像「包含」，但最內圈只有 12%，在 300px 的欄裡會小到讀不出來，
+      而且人對「圓環的角度」與「圓環的半徑」都不擅長比大小。要畫包含關係，長度是最好讀的編碼。
+    </p>
+  </div>
+
+</div>
+
+<script>
+/* 資料：只到這一層的佔比（站上既有的四個數字）＋總數。
+   累積值由內往外加出來——這一份 demo 不新增任何假資料，只換一種讀法。 */
+var TOTAL = 1283;
+var TIERS = [
+  { label: 'Fan',          only: 23, color: 'var(--chart-5)' },
+  { label: 'Ranked fans',  only: 37, color: 'var(--chart-3)' },
+  { label: 'Superfan',     only: 28, color: 'var(--chart-2)' },
+  { label: 'Inner Circle', only: 12, color: 'var(--chart-1)' }
+];
+/* 由最內層往外累加：Inner 12 → Super 40 → Ranked 77 → Fan 100。 */
+(function () {
+  var run = 0;
+  for (var i = TIERS.length - 1; i >= 0; i--) { run += TIERS[i].only; TIERS[i].cum = run; }
+  TIERS.forEach(function (t) { t.n = Math.round(TOTAL * t.cum / 100); });
+})();
+
+function nf(n) { return n.toLocaleString(); }
+
+/* ── A 漏斗 ── */
+(function () {
+  var host = document.getElementById('funnel'), html = '';
+  TIERS.forEach(function (t, i) {
+    html += '<div class="lab-funnel__row">'
+      + '<span class="lab-funnel__label">' + t.label + '</span>'
+      + '<span class="lab-funnel__bar"><span class="lab-funnel__fill" style="width:' + t.cum + '%;--seg:' + t.color + '"></span></span>'
+      + '<span class="lab-funnel__num">' + nf(t.n) + '</span>'
+      + '</div>';
+    var next = TIERS[i + 1];
+    if (next) {
+      var rate = Math.round(next.cum / t.cum * 100);
+      html += '<p class="lab-funnel__step">↳ ' + rate + '% 走到下一層</p>';
+    }
+  });
+  host.innerHTML = html;
+})();
+
+/* ── B 巢狀橫條 ── */
+(function () {
+  var host = document.getElementById('nest'), leg = document.getElementById('nestLegend');
+  host.innerHTML = TIERS.map(function (t) {
+    return '<span class="lab-nest__track"><span class="lab-nest__fill" style="width:' + t.cum + '%;--seg:' + t.color + '"></span></span>';
+  }).join('');
+  leg.innerHTML = TIERS.map(function (t) {
+    return '<div class="lab-nest__row">'
+      + '<span class="lab-nest__dot" style="--seg:' + t.color + '"></span>'
+      + '<span class="lab-nest__label">' + t.label + '</span>'
+      + '<span class="lab-nest__val">' + nf(t.n) + '</span>'
+      + '</div>';
+  }).join('');
+})();
+
+/* ── D 巢狀弧：同半徑、線寬遞減，由外層往內層依序疊上去。 ── */
+(function () {
+  var host = document.getElementById('arc');
+  var SIZE = 150, R = 60, C = 2 * Math.PI * R;
+  /* 線寬由粗到細（2026-09-01 使用者回報「最內層看起來太細」，7 → 11px）：
+     最外層放寬到 26px，往內每層收的量改成遞減（6／5／4），最內層才留得住厚度。
+     取捨要知道：外一層露出來的「衣領」因此從 2.5px 收到 2px，層與層的界線變淺一點；
+     再往上加最內層的寬度，衣領就會細到看不出誰在外面，那時候這張圖就不再是巢狀的了。
+     半徑 60、最粗 26 → 外緣落在 73，仍在 150 的畫布內（半徑上限 75）。
+     **2026-09-01 試過「讓末端偏粗」後撤回**（使用者：壞掉了，改回來）：把每一條弧切成
+     28 段、逐段內插線寬做出由細到粗的漸變，結果是每一層的寬度不再是一個定值——
+     而寬度正是這張圖用來編「第幾層」的那個維度，一漸變，包含關係就讀不出來了；
+     Fan 走滿一整圈，細的起點與粗的終點還會在十二點鐘撞成一個明顯的錯階。
+     線寬要留成每層一個定值。 */
+  var WIDTHS = [26, 20, 15, 11];
+  /* 由外往內畫：TIERS 的順序是 Fan → Ranked → Superfan → Inner，剛好就是由外往內。 */
+  var segs = TIERS.map(function (t, i) {
+    var len = C * t.cum / 100;
+    return '<circle class="lab-arc__seg" style="--seg:' + t.color + '" stroke-width="' + WIDTHS[i] + '"'
+      + ' cx="' + SIZE / 2 + '" cy="' + SIZE / 2 + '" r="' + R + '"'
+      + ' stroke-dasharray="' + len.toFixed(2) + ' ' + (C - len).toFixed(2) + '"></circle>';
+  }).join('');
+  host.innerHTML = '<div class="lab-arc__ringwrap">'
+    + '<svg class="lab-arc__ring" viewBox="0 0 ' + SIZE + ' ' + SIZE + '">'
+    +   '<circle class="lab-arc__track" cx="' + SIZE / 2 + '" cy="' + SIZE / 2 + '" r="' + R + '" stroke-width="' + WIDTHS[0] + '"></circle>'
+    +   segs
+    + '</svg>'
+    + '<div class="lab-arc__center"><span class="lab-arc__value">' + nf(TOTAL) + '</span>'
+    +   '<span class="lab-arc__unit">位粉絲</span></div>'
+    + '</div>'
+    + '<div class="lab-arc__legend">'
+    +   TIERS.map(function (t, i) {
+          /* 圖例的點跟著線寬走：一眼看得出哪一層畫在外面。 */
+          var d = Math.max(4, Math.round(WIDTHS[i] / 2.4));
+          return '<div class="lab-arc__row">'
+            + '<span class="lab-arc__dot" style="--seg:' + t.color + ';width:' + d + 'px;height:' + d + 'px"></span>'
+            + '<span class="lab-arc__label">' + t.label + '</span>'
+            + '<span class="lab-arc__val">' + t.cum + '%</span>'
+            + '</div>';
+        }).join('')
+    + '</div>';
+})();
+
+/* ── C 現況的圓環：照站上那支 donut-mix 的畫法（互斥四段），只為了並排對照。 ── */
+(function () {
+  var host = document.getElementById('donut');
+  var SIZE = 150, W = 9, R = (SIZE - W) / 2, C = 2 * Math.PI * R, GAP = W;
+  var off = 0, segs = '';
+  TIERS.slice().reverse().forEach(function (t) {
+    var len = C * t.only / 100 - GAP;
+    segs += '<circle class="donut-mix__seg" style="--seg:' + t.color + '" cx="' + SIZE / 2 + '" cy="' + SIZE / 2
+      + '" r="' + R + '" stroke-dasharray="' + Math.max(len, 0.01) + ' ' + (C - Math.max(len, 0.01))
+      + '" stroke-dashoffset="' + (-off) + '"></circle>';
+    off += C * t.only / 100;
+  });
+  host.innerHTML = '<div class="donut-mix__ringwrap">'
+    + '<svg class="donut-mix__ring" viewBox="0 0 ' + SIZE + ' ' + SIZE + '">'
+    +   '<circle class="donut-mix__track" cx="' + SIZE / 2 + '" cy="' + SIZE / 2 + '" r="' + R + '"></circle>'
+    +   segs
+    + '</svg>'
+    + '<div class="donut-mix__center"><span class="donut-mix__value">' + nf(TOTAL) + '</span>'
+    +   '<span class="donut-mix__unit">位粉絲</span></div>'
+    + '</div>'
+    + '<div class="split-bar__legend donut-mix__legend">'
+    +   TIERS.slice().reverse().map(function (t) {
+          return '<div class="split-bar__row">'
+            + '<span class="split-bar__dot" style="color:' + t.color + '"></span>'
+            + '<span class="split-bar__label">' + t.label + '</span>'
+            + '<span class="split-bar__pct">' + t.only + '%</span>'
+            + '</div>';
+        }).join('')
+    + '</div>';
+})();
+</script>
+</body>
+</html>

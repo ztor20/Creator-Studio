@@ -86,6 +86,17 @@
    （輪播的外框高度取最高的那一張，多這 16px 不會讓兩張的高度打架）。 */
 .distribution .donut-mix { margin-top: var(--sp-16); }
 
+/* 零值那一張（2026-09-01）：大數字之後只接一句話，不接任何圖——一條全平的走勢線
+   或一個空的環讀起來像壞掉，而 `$0` 是一個明確的事實。 */
+.distribution__note {
+  margin: var(--sp-8) 0 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  line-height: 1.7;
+  color: var(--muted-foreground);
+  max-width: 28em;
+}
+
 .distribution__value-row {
   display: flex;
   align-items: baseline;
@@ -142,3 +153,23 @@
   background: var(--key, var(--chart-1));
 }
 .distribution__key--ink::before { background: var(--muted-foreground); }
+
+/* 色鍵預設只留三個、其餘收成「…」（2026-09-01 使用者裁示「預設只有 Total、最多、
+   次要多，其他收合；hover 在收入那一格時才全部展開」）：六個色鍵在 300px 的欄裡要排
+   三行，而它是讀圖的**前提**、不是內容——常駐三行等於讓圖例比圖還大。
+   **展開用 CSS 不用 JS**：這是純粹的顯示切換，沒有狀態要記；用 class 切換還得處理
+   重畫後的還原。
+   `:focus-within` 一起吃：這一格裡有兩顆切換箭頭，鍵盤走到那裡時也該看得到全部。
+   展開只長高不改寬：左欄那一格的高度由格線的第一列決定（見 canvas-home.css 的
+   `--rail-split`），多出來的兩行吃在那一列的餘裕裡，不會把待辦那一格往下推。 */
+.distribution__key--more { display: none; }
+.distribution__keys-rest {
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  letter-spacing: .08em;
+}
+.distribution:hover .distribution__key--more,
+.distribution:focus-within .distribution__key--more { display: inline-flex; }
+.distribution:hover .distribution__keys-rest,
+.distribution:focus-within .distribution__keys-rest { display: none; }

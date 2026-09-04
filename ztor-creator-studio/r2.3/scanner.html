@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/scanner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/row-disclosure.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stock-bar.css?v=r2.2">
 </head>
@@ -81,21 +82,33 @@
 
       <!-- SCREEN · scan（F1.2）— camera is the home screen -->
       <div class="scanner-screen scanner-screen--cam" data-sc-screen="scan">
+        <!-- 買家進度 band（F1.2 買家進度提示，D240 裁決六）：核銷一件後留在相機畫面，
+             band 常駐告訴工作人員「這位買家還有沒有下一件要掃」 -->
+        <div class="scanner-progress" data-sc-prog hidden>
+          <i data-lucide="check-circle-fill" class="ztor-icon scanner-progress__icon"></i>
+          <div class="scanner-progress__body">
+            <div class="scanner-progress__row">
+              <span class="scanner-progress__name" data-sc-prog-name></span>
+              <span class="scanner-progress__count" data-sc-prog-count></span>
+            </div>
+            <span class="scanner-progress__note" data-sc-prog-note></span>
+          </div>
+        </div>
         <div class="scanner-cam">
           <div class="scanner-cam__reticle"><div class="scanner-cam__line"></div></div>
           <button class="btn btn--outline scanner-manual" type="button" data-sc-manual><span data-i18n="sc.scan.manual">Enter code manually</span></button>
-          <span class="scanner-cam__hint" data-i18n="sc.cam.hint">Point the camera at a buyer's QR code</span>
+          <span class="scanner-cam__hint" data-i18n="sc.cam.hint">Point the camera at a pickup code</span>
         </div>
       </div>
 
       <!-- SCREEN · F3 roster（唯讀查詢；點列帶入手動輸入代碼）-->
       <div class="scanner-screen scanner-screen--list" data-sc-screen="roster" hidden>
         <div class="field">
-          <input class="input" placeholder="Name, email, order #, ticket ID" data-sc-roster-search data-i18n-placeholder="pk.roster.search.ph">
-          <div class="field__hint" data-i18n="sc.roster.tap">Tap a row to fill its code into manual entry.</div>
+          <input class="input" placeholder="Name, order #, ticket ID, pickup code" data-sc-roster-search data-i18n-placeholder="sc.roster.search.ph">
+          <div class="field__hint" data-i18n="sc.roster.tap">Tap an item to fill its code into manual entry.</div>
         </div>
         <div class="data-list" data-sc-roster></div>
-        <div class="field__hint" data-i18n="sc.roster.hint">Read-only lookup — reverse a redemption only in Pickup session detail on the creator dashboard.</div>
+        <div class="field__hint" data-i18n="sc.roster.hint">Read-only — reverse a redemption in Pickup session detail on the creator dashboard.</div>
       </div>
 
       <!-- SCREEN · F2 verifiable items（正式定義；統計連動核銷）-->
@@ -129,8 +142,8 @@
         <div class="scanner-sheet__band"><span data-i18n="sc.manual.title">Enter a code</span></div>
         <div class="scanner-sheet__body">
           <div class="field">
-            <input class="input" data-sc-mcode placeholder="QR code, ticket ID or pickup code" data-i18n-placeholder="sc.manual.ph" autocomplete="off">
-            <div class="field__hint" data-i18n="sc.manual.hint">For when the camera can't scan or the buyer has no QR.</div>
+            <input class="input" data-sc-mcode placeholder="Pickup code or ticket ID" data-i18n-placeholder="sc.manual.ph" autocomplete="off">
+            <div class="field__hint" data-i18n="sc.manual.hint">For when the camera can't scan or the buyer can't show a code.</div>
           </div>
         </div>
         <div class="scanner-sheet__foot">
@@ -161,6 +174,8 @@
   <aside class="scanner-demo">
     <span class="scanner-demo__title" data-i18n="sc.demo.title">Demo scenarios</span>
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="ok"><i data-lucide="check" class="ztor-icon"></i> <span data-i18n="sc.demo.ok">Scan: success</span></button>
+    <button class="btn btn--outline btn--sm" type="button" data-sc-demo="next"><i data-lucide="users" class="ztor-icon"></i> <span data-i18n="sc.demo.next">Same buyer, next item</span></button>
+    <button class="btn btn--outline btn--sm" type="button" data-sc-demo="bundle"><i data-lucide="package" class="ztor-icon"></i> <span data-i18n="sc.demo.bundle">Bundle member</span></button>
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="dup"><i data-lucide="rotate-ccw" class="ztor-icon"></i> <span data-i18n="sc.demo.dup">Duplicate scan</span></button>
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="notin"><i data-lucide="x-circle" class="ztor-icon"></i> <span data-i18n="sc.demo.notin">Not in this session</span></button>
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="refund"><i data-lucide="ban" class="ztor-icon"></i> <span data-i18n="sc.demo.refund">Cancelled / refunded</span></button>
@@ -172,38 +187,93 @@
   </aside>
 </div>
 
+<script src="js/orders-store.js?v=r2.2"></script>
 <script>
-/* Mobile scanner · spec 5.1.5.14（2026-08-19 flow redesign）.
-   Camera-first home + bottom-sheet results + live in-memory roster.
+/* Mobile scanner · spec 5.1.5.14（2026-09-03 一物一碼改版，D240）.
+   Camera-first home + bottom-sheet result for ONE pickup unit + continuous scan.
+   核銷的單位是「領取單位」——一件商品一個領取碼，掃一個碼核銷一件；同一位買家有
+   多件時逐件掃描，核銷完停在相機畫面、以進度 band 告訴工作人員還剩幾件。
    Demo rail beside the frame drives every scenario. No backend. */
 (function () {
   function T(k, fb) { return (window.i18nT && window.i18nT(k)) || fb || k; }
+  function fill(s, map) {
+    Object.keys(map).forEach(function (k) { s = s.split('{' + k + '}').join(map[k]); });
+    return s;
+  }
   var q = function (s) { return document.querySelector(s); };
 
-  /* ── demo data：roster drives every count（items 統計連動核銷）── */
-  var ROSTER = [
-    { code: 'ZT-10482', name: 'Mika L.',  src: 'Order #ZT-10482', status: 'pending',
-      items: [{ k: 'pk.item.zine', qty: 1 }] },
-    { code: 'ZT-10491', name: 'Noor P.',  src: 'Order #ZT-10491', status: 'pending',
-      items: [{ k: 'pk.item.tee', qty: 1 }, { k: 'pk.tk.signing', qty: 1 }] },
-    { code: 'TK-88230', name: 'Jules R.', src: 'Ticket TK-88230', status: 'pending',
-      items: [{ k: 'pk.tk.signing', qty: 2 }] },
-    { code: 'ZT-10475', name: 'Devon W.', src: 'Order #ZT-10475', status: 'done', at: '14:22',
-      items: [{ k: 'pk.item.tee', qty: 1 }] },
-    { code: 'TK-88213', name: 'Aria S.',  src: 'Ticket TK-88213', status: 'done', at: '14:05',
-      items: [{ k: 'pk.tk.signing', qty: 1 }] },
-    { code: 'ZT-10466', name: 'Kai T.',   src: 'Order #ZT-10466', status: 'done', at: '14:31',
-      items: [{ k: 'pk.item.tee', qty: 1 }] }
+  /* 本台 scanner 綁定的取貨場次（沿用 pickup.html 的示範場次代號）*/
+  var SESSION = 'tpe-signing-7f3a2';
+
+  /* ── 領取單位 UNITS（D240）：一個領取碼＝一件 ──────────────────────
+     schema（訂單與票券共用一套）：
+       code    領取碼（票券即票號）
+       buyer   買家／持票人
+       src     來源（訂單編號或票號）
+       kind    order | ticket
+       itemKey / itemName  商品名（i18n key 優先）
+       variant 選項組合
+       from    來源組合的 i18n key（由組合展開的成員才有，D240 裁決二）
+       session 所屬取貨場次（null＝取貨場次待設定）
+       status  pending 待核銷 | done 已核銷 | unset 取貨場次待設定 | void 已取消退款
+       at      最近核銷時間
+     訂單來源的單位讀 js/orders-store.js（window.ztorOrders.unitsOf，回傳的是複本，
+     本頁核銷只改複本、不動 store）；票券單位不在 orders-store 裡，寫在本頁。 */
+  function unitsFromOrders() {
+    var out = [];
+    if (!window.ztorOrders) return out;
+    window.ztorOrders.list().forEach(function (o) {
+      window.ztorOrders.unitsOf(o).forEach(function (u) {
+        out.push({
+          code: u.code, buyer: u.buyer, src: 'Order #' + u.orderNo, kind: 'order',
+          itemKey: u.itemNameKey, itemName: u.itemName, variant: u.variant,
+          from: u.from, session: u.session, status: u.status, at: u.at
+        });
+      });
+    });
+    return out;
+  }
+  /* 活動票券：本來就一票一碼（D240 裁決三）。Jules R. 兩張＝同一位買家多件的票券示範。 */
+  var TICKET_UNITS = [
+    { code: 'TK-88230', buyer: 'Jules R.', src: 'Ticket TK-88230', kind: 'ticket',
+      itemKey: 'pk.tk.signing', itemName: 'Signing session · GA entry', variant: null,
+      from: null, session: SESSION, status: 'pending', at: null },
+    { code: 'TK-88231', buyer: 'Jules R.', src: 'Ticket TK-88231', kind: 'ticket',
+      itemKey: 'pk.tk.signing', itemName: 'Signing session · GA entry', variant: null,
+      from: null, session: SESSION, status: 'pending', at: null },
+    { code: 'TK-88213', buyer: 'Aria S.', src: 'Ticket TK-88213', kind: 'ticket',
+      itemKey: 'pk.tk.signing', itemName: 'Signing session · GA entry', variant: null,
+      from: null, session: SESSION, status: 'done', at: '14:05' }
   ];
-  /* sold/done 基數含名單外的歷史核銷；done 隨本頁核銷遞增 */
-  var ITEMS = [
-    { k: 'pk.item.zine', type: 'goods',  icon: 'package', sold: 40, done: 28 },
-    { k: 'pk.item.tee',  type: 'goods',  icon: 'package', sold: 22, done: 17 },
-    { k: 'pk.tk.signing', type: 'ticket', icon: 'ticket', sold: 60, done: 54 }
-  ];
+  /* 已取消／已退款的單位（D242，2026-09-03）：orders-store 現在有真實 void 範例
+     （#ZT-10471 的 PU-10471-01、#ZT-10473 的 PU-10473-01／02，見 js/orders-store.js
+     「退款即失效」節），退款情境直接從那份資料撈，不再於本頁另寫一份。 */
+  var UNITS = unitsFromOrders().concat(TICKET_UNITS);
+
   var timeState = 'live';   /* notyet | live | ended */
   var offline = false;
-  var queue = [];
+  var queue = [];           /* 離線暫存的是領取碼（一碼一件）*/
+  var progBuyer = null;     /* 進度 band 目前顯示的買家 */
+
+  /* ── unit helpers ── */
+  function live(u) { return u.session === SESSION && (u.status === 'pending' || u.status === 'done'); }
+  function sessionUnits() { return UNITS.filter(live); }
+  function unitByCode(c) {
+    var hit = null, key = String(c || '').trim().toLowerCase();
+    UNITS.forEach(function (u) { if (!hit && u.code.toLowerCase() === key) hit = u; });
+    return hit;
+  }
+  function unitName(u) { return T(u.itemKey, u.itemName || u.code); }
+  /* demo 資料有些品項名本身就帶了選項（如「… tee (M)」），同一件事不重覆說兩次 */
+  function nameHasVariant(u) { return !!u.variant && unitName(u).indexOf('(' + u.variant + ')') >= 0; }
+  function progressOf(buyer) {
+    var total = 0, done = 0;
+    sessionUnits().forEach(function (u) {
+      if (u.buyer !== buyer) return;
+      total++; if (u.status === 'done') done++;
+    });
+    return { total: total, done: done };
+  }
 
   /* ── screens ── */
   function show(screen) {
@@ -261,52 +331,99 @@
     b.addEventListener('click', function () { setTab(b.getAttribute('data-sc-navto')); });
   });
 
-  /* ── counts / roster / items rendering ── */
-  function itemDef(k) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].k === k) return ITEMS[i]; return null; }
+  /* ── counts / roster / items rendering（三處數字都由領取單位加總）── */
   function refresh() {
-    var pend = 0, done = 0;
-    ITEMS.forEach(function (it) { pend += it.sold - it.done; done += it.done; });
+    var us = sessionUnits(), pend = 0, done = 0;
+    us.forEach(function (u) { if (u.status === 'done') done++; else pend++; });
     q('[data-sc-cnt-pending]').textContent = pend;
     q('[data-sc-cnt-done]').textContent = done;
-    renderRoster(); renderItems();
+    renderRoster(); renderItems(); renderProgress();
   }
+  function statusBadge(u) {
+    return u.status === 'done'
+      ? '<span class="badge badge--success"><span>' + T('pk.st.done', 'Redeemed') + (u.at ? ' ' + u.at : '') + '</span></span>'
+      : '<span class="badge badge--warning"><span>' + T('pk.st.pending', 'Pending') + '</span></span>';
+  }
+  /* F3 名單：按買家分組，一列＝一個領取單位（D240 裁決七）。點單位列預填該碼，
+     核銷仍要按「驗證代碼」——名單本身唯讀。 */
   function renderRoster() {
     var kw = (q('[data-sc-roster-search]').value || '').trim().toLowerCase();
     var host = q('[data-sc-roster]');
-    host.innerHTML = ROSTER.filter(function (p) {
-      var hay = (p.name + ' ' + p.src + ' ' + p.code).toLowerCase();
-      return !kw || hay.indexOf(kw) >= 0;
-    }).map(function (p) {
-      var meta = p.src + ' · ' + p.items.map(function (i) { return T(i.k) + ' ×' + i.qty; }).join(' · ');
-      var badge = p.status === 'done'
-        ? '<span class="badge badge--success"><span>' + T('pk.st.done', 'Redeemed') + (p.at ? ' ' + p.at : '') + '</span></span>'
-        : '<span class="badge badge--warning"><span>' + T('pk.st.pending', 'Pending') + '</span></span>';
-      return '<button class="data-list__row scanner-rosterrow" type="button" data-sc-code="' + p.code + '">' +
+    var order = [], groups = {};
+    sessionUnits().forEach(function (u) {
+      var hay = (u.buyer + ' ' + u.src + ' ' + u.code + ' ' + unitName(u)).toLowerCase();
+      if (kw && hay.indexOf(kw) < 0) return;
+      var g = groups[u.buyer];
+      if (!g) { g = groups[u.buyer] = { buyer: u.buyer, src: u.src, kind: u.kind, units: [] }; order.push(g); }
+      g.units.push(u);
+    });
+    if (!order.length) {
+      host.innerHTML = '<div class="data-list__row"><div class="data-list__row-main">' +
+        '<div class="data-list__body"><div class="data-list__meta">' +
+        T('sc.roster.empty', 'No match in this session.') + '</div></div></div></div>';
+      return;
+    }
+    host.innerHTML = order.map(function (g) {
+      var p = progressOf(g.buyer);
+      var head = '<div class="data-list__row rowdis__head">' +
         '<div class="data-list__row-main">' +
-          '<div class="data-list__icon"><i data-lucide="' + (p.code.indexOf('TK-') === 0 ? 'ticket' : 'user') + '" class="ztor-icon"></i></div>' +
-          '<div class="data-list__body"><div class="data-list__title">' + p.name + '</div>' +
-          '<div class="data-list__meta">' + meta + '</div></div>' +
+          '<div class="data-list__icon"><i data-lucide="' + (g.kind === 'ticket' ? 'ticket' : 'user') + '" class="ztor-icon"></i></div>' +
+          '<div class="data-list__body"><div class="data-list__title">' + g.buyer + '</div>' +
+          '<div class="data-list__meta">' + g.src + '</div></div>' +
         '</div>' +
-        '<div class="data-list__end data-list__end--row">' + badge + '</div>' +
-      '</button>';
+        '<div class="data-list__end data-list__end--row"><span class="data-list__meta">' +
+          fill(T('sc.prog.count', '{n} / {m} redeemed'), { n: p.done, m: p.total }) + '</span></div>' +
+      '</div>';
+      var body = head + g.units.map(function (u) {
+        var meta = u.code + (u.from ? ' · ' + fill(T('sc.r.from.meta', 'from {name}'), { name: T(u.from) }) : '');
+        /* 子列＝共用元件 row-disclosure 的子列（Q107 裁決後站上唯一的「這幾列從屬於上面那一列」
+           做法）。這份名單的母列不可展開——名單唯讀、單位一律攤開，所以只用它的階層視覺、
+           不掛 data-rowdis-child，也就不需要 js/row-disclosure.js。 */
+        return '<button class="data-list__row rowdis__child rowdis__child--compact scanner-rosterrow" type="button" data-sc-code="' + u.code + '">' +
+          '<div class="data-list__row-main"><div class="data-list__body">' +
+            '<div class="data-list__title">' + unitName(u) + (u.variant && !nameHasVariant(u) ? ' · ' + u.variant : '') + '</div>' +
+            '<div class="data-list__meta">' + meta + '</div>' +
+          '</div></div>' +
+          '<div class="data-list__end data-list__end--row">' + statusBadge(u) + '</div>' +
+        '</button>';
+      }).join('');
+      /* L3 整組換層：唯讀群組用 `--static`，面板恆亮（沒有把手可展開／收合，
+         「這幾件屬於這位買家」單靠面那塊面說），`--gutter` 讓面板往外長、
+         列的 x 位置不動（`.data-list__row` 自己沒有左右內距）。 */
+      return '<div class="rowdis__group rowdis__group--gutter rowdis__group--static">' + body + '</div>';
     }).join('');
     host.querySelectorAll('[data-sc-code]').forEach(function (row) {
-      /* 規格 F1.1：名單只做身分核對，核銷仍走手動輸入——點列預填代碼、保留確認 */
+      /* 規格 F3：名單只做身分核對，核銷仍走手動輸入——點列預填領取碼、保留確認 */
       row.addEventListener('click', function () { openManual(row.getAttribute('data-sc-code')); });
     });
     if (window.ztorIcons) window.ztorIcons.applyIcons(host);
   }
+  /* F2 可核銷項目：仍按商品／票種彙總，數字由該項目底下的領取單位加總（D240 裁決七） */
+  function itemGroups() {
+    var order = [], map = {};
+    sessionUnits().forEach(function (u) {
+      var g = map[u.itemKey];
+      if (!g) {
+        g = map[u.itemKey] = { key: u.itemKey, name: u.itemName, sold: 0, done: 0,
+          type: u.kind === 'ticket' ? 'ticket' : 'goods' };
+        order.push(g);
+      }
+      g.sold++; if (u.status === 'done') g.done++;
+    });
+    return order;
+  }
   function renderItems() {
+    var all = itemGroups();
     function rows(type) {
-      return ITEMS.filter(function (it) { return it.type === type; }).map(function (it) {
+      return all.filter(function (it) { return it.type === type; }).map(function (it) {
         var pend = it.sold - it.done;
         var pct = it.sold ? Math.round(it.done / it.sold * 100) : 0;
         var stat = type === 'ticket'
           ? '<span>' + T('pk.stat.issued', 'Issued') + '</span> <b>' + it.sold + '</b> <span class="pickup-stats__dot">·</span> <span>' + T('pk.stat.waiting', 'To check in') + '</span> <b>' + pend + '</b> <span class="pickup-stats__dot">·</span> <span>' + T('pk.stat.checkedin', 'Checked in') + '</span> <b>' + it.done + '</b>'
           : '<span>' + T('pk.stat.sold', 'Sold') + '</span> <b>' + it.sold + '</b> <span class="pickup-stats__dot">·</span> <span>' + T('pk.stat.pending', 'Pending') + '</span> <b>' + pend + '</b> <span class="pickup-stats__dot">·</span> <span>' + T('pk.stat.done', 'Redeemed') + '</span> <b>' + it.done + '</b>';
         return '<div class="data-list__row"><div class="data-list__row-main">' +
-          '<div class="data-list__icon"><i data-lucide="' + it.icon + '" class="ztor-icon"></i></div>' +
-          '<div class="data-list__body"><div class="data-list__title">' + T(it.k) + '</div>' +
+          '<div class="data-list__icon"><i data-lucide="' + (type === 'ticket' ? 'ticket' : 'package') + '" class="ztor-icon"></i></div>' +
+          '<div class="data-list__body"><div class="data-list__title">' + T(it.key, it.name) + '</div>' +
           '<div class="pickup-stats mt-4">' + stat + '</div>' +
           '<div class="stock-bar mt-4"><div class="stock-bar__fill" style="width:' + pct + '%"></div></div>' +
           '</div></div></div>';
@@ -318,43 +435,64 @@
   }
   q('[data-sc-roster-search]').addEventListener('input', renderRoster);
 
-  /* ── result sheet ── */
+  /* ── 買家進度 band（F1.2 買家進度提示）── */
+  function renderProgress() {
+    var band = q('[data-sc-prog]');
+    if (!progBuyer) { band.hidden = true; return; }
+    var p = progressOf(progBuyer);
+    if (!p.total) { band.hidden = true; return; }
+    var left = p.total - p.done;
+    q('[data-sc-prog-name]').textContent = progBuyer;
+    q('[data-sc-prog-count]').textContent = fill(T('sc.prog.count', '{n} / {m} redeemed'), { n: p.done, m: p.total });
+    q('[data-sc-prog-note]').textContent = left
+      ? fill(T('sc.prog.left', '{n} left to scan'), { n: left })
+      : T('sc.prog.clear', 'Nothing left for this buyer');
+    band.hidden = false;
+    if (window.ztorIcons) window.ztorIcons.applyIcons(band);
+  }
+
+  /* ── result sheet：只顯示掃到的這一件（D240 裁決六）── */
   var sheet = q('[data-sc-sheet]'), scrim = q('[data-sc-scrim]');
-  function openSheet(kind, person, extraCode) {
+  function buyerBlock(u) {
+    return '<div class="scanner-buyer"><b>' + u.buyer + '</b><span>' + u.src + ' · ' + u.code + '</span></div>';
+  }
+  function detailRows(u, extra) {
+    var rows = '<div class="scanner-result__row"><dt data-i18n="sc.r.item">' + T('sc.r.item', 'Item') + '</dt><dd>' + unitName(u) + '</dd></div>';
+    if (u.variant && !nameHasVariant(u)) rows += '<div class="scanner-result__row"><dt data-i18n="sc.r.variant">' + T('sc.r.variant', 'Option') + '</dt><dd>' + u.variant + '</dd></div>';
+    if (u.from) rows += '<div class="scanner-result__row"><dt data-i18n="sc.r.from">' + T('sc.r.from', 'From bundle') + '</dt><dd>' + T(u.from) + '</dd></div>';
+    return '<dl class="scanner-result__rows">' + rows + (extra || '') + '</dl>';
+  }
+  function note(key, fb) {
+    return '<div class="info-banner"><i data-lucide="info" class="ztor-icon info-banner__icon"></i><span data-i18n="' + key + '">' + T(key, fb) + '</span></div>';
+  }
+  function openSheet(kind, unit, rawCode) {
     var band = q('[data-sc-sheet-band]'), body = q('[data-sc-sheet-body]'), foot = q('[data-sc-sheet-foot]');
     sheet.className = 'scanner-sheet is-on scanner-sheet--' + ({ ok: 'ok', dup: 'warn', notin: 'bad', refund: 'bad' }[kind]);
     scrim.classList.add('is-on');
-    function buyer(p) {
-      return '<div class="scanner-buyer"><b>' + p.name + '</b><span>' + p.src + ' · ' + p.code + '</span></div>';
-    }
-    function claims(p) {
-      return '<div class="scanner-claims">' + p.items.map(function (i) {
-        return '<div class="scanner-claim"><span class="scanner-claim__name">' + T(i.k) + '</span><span class="scanner-claim__qty">×' + i.qty + '</span></div>';
-      }).join('') + '</div>';
-    }
-    function note(key, fb) {
-      return '<div class="info-banner"><i data-lucide="info" class="ztor-icon info-banner__icon"></i><span data-i18n="' + key + '">' + T(key, fb) + '</span></div>';
-    }
+    var back = '<button class="btn btn--primary" type="button" data-sc-close data-i18n="sc.res.back">' + T('sc.res.back', 'Back') + '</button>';
     if (kind === 'ok') {
       band.innerHTML = '<i data-lucide="badge-check" class="ztor-icon"></i><span data-i18n="sc.res.valid">' + T('sc.res.valid') + '</span>';
-      body.innerHTML = buyer(person) + claims(person);
-      foot.innerHTML = '<button class="btn btn--primary" type="button" data-sc-confirm data-i18n="sc.res.confirmall">' + T('sc.res.confirmall', 'Confirm — redeem everything') + '</button>' +
+      body.innerHTML = buyerBlock(unit) + detailRows(unit);
+      foot.innerHTML = '<button class="btn btn--primary" type="button" data-sc-confirm data-i18n="sc.res.confirmone">' + T('sc.res.confirmone', 'Redeem this item') + '</button>' +
         '<button class="btn btn--outline" type="button" data-sc-close data-i18n="sc.res.back">' + T('sc.res.back', 'Back') + '</button>';
-      foot.querySelector('[data-sc-confirm]').addEventListener('click', function () { confirmRedeem(person); });
+      foot.querySelector('[data-sc-confirm]').addEventListener('click', function () { confirmRedeem(unit); });
     } else if (kind === 'dup') {
       band.innerHTML = '<i data-lucide="alert-triangle" class="ztor-icon"></i><span data-i18n="sc.res.dup">' + T('sc.res.dup') + '</span>';
-      body.innerHTML = buyer(person) +
-        '<dl class="scanner-result__rows"><div class="scanner-result__row"><dt data-i18n="sc.last">' + T('sc.last', 'Last redeemed') + '</dt><dd>' + (person.at || '14:05') + '</dd></div></dl>' +
+      body.innerHTML = buyerBlock(unit) +
+        detailRows(unit, '<div class="scanner-result__row"><dt data-i18n="sc.last">' + T('sc.last', 'Last redeemed') + '</dt><dd>' + (unit.at || '—') + '</dd></div>') +
         note('sc.note.dup');
-      foot.innerHTML = '<button class="btn btn--primary" type="button" data-sc-close data-i18n="sc.res.back">' + T('sc.res.back', 'Back') + '</button>';
+      foot.innerHTML = back;
     } else if (kind === 'notin') {
       band.innerHTML = '<i data-lucide="x-circle" class="ztor-icon"></i><span data-i18n="sc.res.notin">' + T('sc.res.notin') + '</span>';
-      body.innerHTML = '<div class="scanner-buyer"><b>' + (extraCode || 'ZT-10490') + '</b><span><span data-i18n="sc.notin.item">' + T('sc.notin.item', 'Poster print A2') + '</span> · Order #ZT-10490</span></div>' + note('sc.note.notin');
-      foot.innerHTML = '<button class="btn btn--primary" type="button" data-sc-close data-i18n="sc.res.back">' + T('sc.res.back', 'Back') + '</button>';
+      /* 碼查得到但不在本場次 → notin；碼根本查不到 → 換一段說明，別讓工作人員以為是場次設定問題 */
+      body.innerHTML = unit
+        ? buyerBlock(unit) + detailRows(unit) + note('sc.note.notin')
+        : '<div class="scanner-buyer"><b>' + (rawCode || '—') + '</b><span data-i18n="sc.notin.unknown">' + T('sc.notin.unknown', 'Unknown code') + '</span></div>' + note('sc.note.unknown');
+      foot.innerHTML = back;
     } else if (kind === 'refund') {
-      band.innerHTML = '<i data-lucide="ban" class="ztor-icon"></i><span data-i18n="sc.res.refund">' + T('sc.res.refund', 'Order cancelled / refunded') + '</span>';
-      body.innerHTML = '<div class="scanner-buyer"><b>Rio C.</b><span>Order #ZT-10429 · ' + T('sc.r.item', 'Item') + ': ' + T('pk.item.zine') + '</span></div>' + note('sc.note.refund');
-      foot.innerHTML = '<button class="btn btn--primary" type="button" data-sc-close data-i18n="sc.res.back">' + T('sc.res.back', 'Back') + '</button>';
+      band.innerHTML = '<i data-lucide="ban" class="ztor-icon"></i><span data-i18n="sc.res.refund">' + T('sc.res.refund', 'Cancelled / refunded') + '</span>';
+      body.innerHTML = buyerBlock(unit) + detailRows(unit) + note('sc.note.refund');
+      foot.innerHTML = back;
     }
     foot.querySelectorAll('[data-sc-close]').forEach(function (b) { b.addEventListener('click', closeSheet); });
     if (window.ztorIcons) window.ztorIcons.applyIcons(sheet);
@@ -370,27 +508,29 @@
     if (window.ztorIcons) window.ztorIcons.applyIcons(f);
     setTimeout(function () { f.classList.remove('is-on'); }, 1100);
   }
-  function confirmRedeem(person) {
+  /* 確認核銷這一件 → 回到相機畫面連續掃描，band 帶出這位買家的場次進度 */
+  function confirmRedeem(u) {
     closeSheet();
+    setTab('scan');
     if (offline) {
-      if (queue.indexOf(person.code) < 0) queue.push(person.code);
+      if (queue.indexOf(u.code) < 0) queue.push(u.code);
       q('[data-sc-queue]').hidden = false;
       q('[data-sc-queue-n]').textContent = queue.length;
       flash('sc.flash.held', 'sc.flash.heldsub');
       return;
     }
-    applyRedeem(person);
+    applyRedeem(u);
     flash('sc.flash.done', 'sc.flash.sub');
   }
-  function applyRedeem(person) {
-    if (person.status === 'done') return;
-    person.status = 'done';
-    person.at = new Date().toTimeString().slice(0, 5);
-    person.items.forEach(function (i) { var d = itemDef(i.k); if (d) d.done += i.qty; });
+  function applyRedeem(u) {
+    if (!u || u.status !== 'pending') return;
+    u.status = 'done';
+    u.at = new Date().toTimeString().slice(0, 5);
+    progBuyer = u.buyer;
     refresh();
   }
 
-  /* ── manual entry（F1.1；roster 點列預填）── */
+  /* ── manual entry（F1.1 手動輸入領取碼；roster 點列預填）── */
   var msheet = q('[data-sc-msheet]'), mcode = q('[data-sc-mcode]');
   function openManual(prefill) {
     mcode.value = prefill || '';
@@ -404,10 +544,11 @@
     var code = mcode.value.trim();
     closeManual();
     if (timeState !== 'live') return; /* blocked overlay 已擋 */
-    var p = null;
-    ROSTER.forEach(function (x) { if (x.code.toLowerCase() === code.toLowerCase()) p = x; });
-    if (!p) { openSheet('notin', null, code || '—'); return; }
-    openSheet(p.status === 'done' ? 'dup' : 'ok', p);
+    var u = unitByCode(code);
+    if (!u) { openSheet('notin', null, code || '—'); return; }
+    if (u.status === 'void') { openSheet('refund', u); return; }
+    if (u.session !== SESSION) { openSheet('notin', u); return; }
+    openSheet(u.status === 'done' ? 'dup' : 'ok', u);
   });
 
   /* ── session time boundary（F1.3）── */
@@ -433,6 +574,11 @@
   }
 
   /* ── demo rail ── */
+  function firstUnit(test) {
+    var hit = null;
+    UNITS.forEach(function (u) { if (!hit && test(u)) hit = u; });
+    return hit;
+  }
   document.querySelectorAll('[data-sc-demo]').forEach(function (b) {
     b.addEventListener('click', function () {
       var k = b.getAttribute('data-sc-demo');
@@ -442,9 +588,7 @@
         offline = !offline;
         q('[data-sc-offline]').classList.toggle('is-on', offline);
         if (!offline && queue.length) {
-          queue.forEach(function (c) {
-            ROSTER.forEach(function (p) { if (p.code === c) applyRedeem(p); });
-          });
+          queue.forEach(function (c) { applyRedeem(unitByCode(c)); });
           queue = [];
           q('[data-sc-queue]').hidden = true;
           flash('sc.flash.sent', 'sc.flash.sentsub');
@@ -456,23 +600,42 @@
       if (q('[data-sc-body]').hidden) return;
       if (timeState !== 'live') return;
       if (k === 'ok') {
-        var p = null;
-        ROSTER.forEach(function (x) { if (!p && x.status === 'pending') p = x; });
-        if (p) openSheet('ok', p); else openSheet('dup', ROSTER[0]);
+        /* demo 順序：先挑「名下不只一件」的買家，接著按「同買家第二件」才講得完整條連續掃描的故事 */
+        var p = firstUnit(function (u) { return live(u) && u.status === 'pending' && progressOf(u.buyer).total > 1; })
+          || firstUnit(function (u) { return live(u) && u.status === 'pending'; });
+        if (p) openSheet('ok', p); else openSheet('dup', firstUnit(function (u) { return live(u) && u.status === 'done'; }));
+      }
+      if (k === 'next') {
+        /* 同買家第二件：拿剛核銷過那位買家名下還沒領的下一件；沒有就找任何一位有兩件以上的買家 */
+        var n = progBuyer && firstUnit(function (u) { return live(u) && u.status === 'pending' && u.buyer === progBuyer; });
+        if (!n) {
+          n = firstUnit(function (u) {
+            return live(u) && u.status === 'pending' && progressOf(u.buyer).total > 1;
+          });
+        }
+        if (n) openSheet('ok', n);
+      }
+      if (k === 'bundle') {
+        var m = firstUnit(function (u) { return live(u) && u.status === 'pending' && u.from; })
+          || firstUnit(function (u) { return live(u) && u.from; });
+        if (m) openSheet(m.status === 'done' ? 'dup' : 'ok', m);
       }
       if (k === 'dup') {
-        var d = null;
-        ROSTER.forEach(function (x) { if (!d && x.status === 'done') d = x; });
-        openSheet('dup', d || ROSTER[3]);
+        var d = firstUnit(function (u) { return live(u) && u.status === 'done'; });
+        if (d) openSheet('dup', d);
       }
-      if (k === 'notin') openSheet('notin');
-      if (k === 'refund') openSheet('refund');
+      if (k === 'notin') {
+        /* 不屬此場次＝領取碼有效、但它的商品還沒加入本場次（session 為 null／別場）*/
+        var x = firstUnit(function (u) { return u.session !== SESSION; });
+        openSheet('notin', x, x ? x.code : 'PU-10490-01');
+      }
+      if (k === 'refund') openSheet('refund', firstUnit(function (u) { return u.status === 'void'; }));
     });
   });
 
   /* i18n.js 在本 script 之後載入且預設繁中：每次 apply()（含首次與 cheat-code
-     切語言）後重繪 JS 渲染的名單／項目，動態字串才跟著換語言 */
-  document.addEventListener('i18n:applied', function () { renderRoster(); renderItems(); applyTime(); });
+     切語言）後重繪 JS 渲染的名單／項目／進度，動態字串才跟著換語言 */
+  document.addEventListener('i18n:applied', function () { renderRoster(); renderItems(); renderProgress(); applyTime(); });
 
   refresh(); applyTime();
 })();

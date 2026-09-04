@@ -68,6 +68,11 @@
 .zcheck__control {
   position: relative;
   flex: none;
+  /* 2026-09-02 修：少了這一條，檔頭寫的「裸 control 放在表格儲存格裡」那種用法會壞——
+     `<span>` 預設是 inline，inline 元素不吃 width／height，方塊實測收成 0×0（創作者活動管理頁
+     的勾選欄整欄空白）。`.zcheck` 底下它是 flex 子項、會被 blockify，所以此前一直沒發作。
+     inline-block 對兩種父容器都成立（flex 子項照樣 blockify 成 block）。 */
+  display: inline-block;
   width: 16px;
   height: 16px;
   /* 與標籤第一行光學對齊：(16.9 行框 − 16 box) ÷ 2 ≒ 0.5，取 1px 讓方塊
@@ -97,6 +102,11 @@
 .zcheck__box {
   position: absolute;
   inset: 0;
+  /* 2026-09-02 修（與上方 display 同一組「裸 control」的病）：畫出來的方塊蓋在真 input
+     之上，而且在 DOM 裡排在後面——點擊被它接走，input 收不到，勾不起來。有 <label> 包著
+     時 label 會把點擊轉給 input，所以此前一直沒發作；表格儲存格裡的裸 control 沒有 label，
+     就會變成「點了沒反應」。方塊只是裝飾，互動一律歸 input。 */
+  pointer-events: none;
   display: grid;
   place-items: center;
   border-radius: var(--radius-sm);

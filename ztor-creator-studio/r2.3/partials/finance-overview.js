@@ -786,12 +786,12 @@
   var PERIOD_KEYS = ['day', 'month', 'quarter', 'year'];
   var period = document.querySelector('[data-fin-period]');
   if (period) {
-    period.querySelectorAll('.segmented__item').forEach(function (t, i) {
+    period.querySelectorAll('.segmented__btn').forEach(function (t, i) {
       t.addEventListener('click', function () {
-        period.querySelectorAll('.segmented__item').forEach(function (x) {
-          x.classList.remove('segmented__item--active'); x.setAttribute('aria-selected', 'false');
+        period.querySelectorAll('.segmented__btn').forEach(function (x) {
+          x.classList.remove('segmented__btn--active'); x.setAttribute('aria-selected', 'false');
         });
-        t.classList.add('segmented__item--active'); t.setAttribute('aria-selected', 'true');
+        t.classList.add('segmented__btn--active'); t.setAttribute('aria-selected', 'true');
         curPeriod = PERIOD_KEYS[i] || 'month';
         hideTip();
         renderChart();

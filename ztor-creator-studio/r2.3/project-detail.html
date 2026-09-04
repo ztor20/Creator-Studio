@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Moonlight Over Sham Shui Po · Project detail · Ztor Creator Studio</title>
 <script src="js/theme.js?v=r2.2"></script>
+<script src="js/row-disclosure.js?v=r2.2"></script>   <!-- 收支小計展開／收合（共用元件，不再各頁一份） -->
 <link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/button.css?v=r2.2">
@@ -21,6 +22,8 @@
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chart.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/split-bar.css?v=r2.2">   <!-- 2026-09-01：方案統計圓環的圖例借它的列 -->
+<link rel="stylesheet" href="ds-components/donut-mix.css?v=r2.2">   <!-- 2026-09-01：方案統計改成圓環 -->
 <link rel="stylesheet" href="ds-components/perf-rank.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chart-tip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
@@ -30,6 +33,7 @@
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/row-disclosure.css?v=r2.2">   <!-- 收支小計的可展開子列（Q107 收斂後站上的單一答案） -->
 <!-- 進度分頁的交付藍圖時間軸（§2.2.10）：里程碑是節點、更新掛在節點底下、公告收在軸外 -->
 <link rel="stylesheet" href="ds-components/progress-timeline.css?v=r2.2">
 <!-- 總覽的重點面板與進度的交付摘要用同一排大數字 -->
@@ -311,16 +315,21 @@
                發布更新走既有的 [data-modal-open="pd-edit-update"]，與頁首那顆、進度分頁那顆
                是同一個彈窗、同一支 submitUpdate()，不另造第二套發文機制。 -->
           
-            <section class="card" id="pd-ov-progress" hidden>
             <!-- 發文入口（2026-08-31 使用者裁示，同日三版：先塞在卡頭底下 → 拆成獨立區塊
-                 → 收回這張卡裡、擺在最上面）。定案的形狀是「這張卡最上面一個空的輸入框」：
-                 進度摘要在講「這件事走到哪」，而發一則更新就是把它往前推一步——
-                 動作放在紀錄的正上方，讀序是先寫再看。
+                 → 收回進度摘要那張卡裡、擺在最上面。2026-09-01 第四版：**自己一張卡**，
+                 使用者裁示「這一塊變成自己一個 section，就不用分隔線了，但間距要留出來」）。
+                 間距由 .detail-overview__col 的 16px 欄距接手，卡與卡之間本來就有距離；
+                 同輪撤除卡內那條 .group-divider（同一張卡裡才需要畫線分兩組，拆成兩張卡
+                 之後線與卡緣會連續出現兩道邊界）。
+                 讀序不變：發文那張排在進度摘要之前——進度摘要講「這件事走到哪」，
+                 發一則更新是把它往前推一步，先寫再看。
                  這裡只放收合態的那一行；點下去把 §2.2.10 那個活的發文框（#pd-composer）
                  搬到它下面展開，不另做一份欄位（post-composer.css 檔頭的「一個發文框、
                  N 個落點」）。placeholder 用自己的 key：時間軸那個落點問的是「發生了什麼事」，
-                 這裡問的是「要不要發一則更新」，兩句話不共用。 -->
-            <div id="pd-ov-post-wrap" hidden>
+                 這裡問的是「要不要發一則更新」，兩句話不共用。
+                 ⚠ 這張卡仍要是 .card：--inset 變體的規則全寫成 `.card .post-composer--inset`
+                 （整塊去面、只有 stub 拿薄膜），少了外層的 .card 會整塊變回有面。 -->
+            <section class="card" id="pd-ov-post-wrap" hidden>
               <div class="post-composer post-composer--inset" id="pd-ov-post" data-pd-ov-composer>
                 <button class="post-composer__stub" type="button" data-pd-ov-composer-open
                         data-i18n="pd-ov.post.stub">Post an update</button>
@@ -334,11 +343,12 @@
                   <button class="btn btn--ghost btn--sm" type="button" data-pd-ov-composer-open data-ptl-attach="audio"><i data-lucide="music" class="ztor-icon"></i><span data-i18n="pd-c.attach-audio">Music</span></button>
                 </div>
               </div>
-              <!-- 分隔線（2026-08-31 使用者裁示）：發文是動作、進度摘要是紀錄，同一張卡上的
-                   兩組東西照 Q71 第 1 級用一條出血到卡緣的髮絲線分界。展開時發文框插在
-                   收合那一行與這條線之間，所以兩個狀態下這條線都在正確的位置。 -->
-              <div class="group-divider"></div>
-            </div>
+              <!-- 2026-09-01 撤除（墓碑）：這裡原本有一條 .group-divider。它是 2026-08-31 的
+                   產物——發文與進度摘要同住一張卡時，照 Q71 第 1 級用一條出血髮絲線分兩組。
+                   本日兩者拆成兩張卡，卡緣自己就是分界，再留一條線會變成連續兩道邊界。 -->
+            </section>
+
+            <section class="card" id="pd-ov-progress" hidden>
             <div class="card__head">
               <h3 class="card__title" data-i18n="pd-ov.prog.title">Progress</h3>
               <span class="badge badge--neutral" id="pd-ov-prog-count" hidden></span>
@@ -1013,42 +1023,46 @@
                   <h3 class="card__title" data-i18n="pd-earn.items.title">Project item earnings</h3>
                 </div>
                 <div class="data-list">
-                  <div class="data-list__row">
+                  <div class="rowdis__group rowdis__group--gutter">
+                  <div class="data-list__row rowdis__head">
                     <div class="data-list__row-main">
                       <div class="data-list__icon data-list__icon--sm data-list__icon--success"><i data-lucide="plus" class="ztor-icon"></i></div>
                       <div class="data-list__body"><div class="data-list__title" data-i18n="pd-earn.income.sub">Income subtotal</div></div>
                     </div>
                     <div class="pd-deep__amount-group">
                       <span class="data-list__amount" data-deep-amt="income">USD 500,000</span>
-                      <button class="btn btn--icon btn--sm" type="button" data-sub-toggle="income" aria-expanded="false" aria-label="Expand" data-i18n-aria-label="pd-earn.deep.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
+                      <button class="btn btn--icon btn--sm rowdis__toggle" type="button" data-rowdis="income" aria-expanded="false" aria-label="Expand" data-i18n-aria-label="pd-earn.deep.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
                     </div>
                   </div>
-                  <div class="data-list__row data-list__row--child" data-sub-child="income" hidden>
+                  <div class="data-list__row rowdis__child rowdis__child--compact" data-rowdis-child="income" hidden>
                     <div class="data-list__row-main"><div class="data-list__body" data-i18n="pd-earn.item.royalty">Item royalty income</div></div>
                     <div class="data-list__amount" data-deep-amt="income">USD 500,000</div>
                   </div>
+                  </div>
 
-                  <div class="data-list__row">
+                  <div class="rowdis__group rowdis__group--gutter">
+                  <div class="data-list__row rowdis__head">
                     <div class="data-list__row-main">
                       <div class="data-list__icon data-list__icon--sm data-list__icon--error"><i data-lucide="minus" class="ztor-icon"></i></div>
                       <div class="data-list__body"><div class="data-list__title" data-i18n="pd-earn.expense.sub">Expense subtotal</div></div>
                     </div>
                     <div class="pd-deep__amount-group">
                       <span class="data-list__amount" data-deep-amt="expense">USD 100,000</span>
-                      <button class="btn btn--icon btn--sm" type="button" data-sub-toggle="expense" aria-expanded="false" aria-label="Expand" data-i18n-aria-label="pd-earn.deep.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
+                      <button class="btn btn--icon btn--sm rowdis__toggle" type="button" data-rowdis="expense" aria-expanded="false" aria-label="Expand" data-i18n-aria-label="pd-earn.deep.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
                     </div>
                   </div>
-                  <div class="data-list__row data-list__row--child" data-sub-child="expense" hidden>
+                  <div class="data-list__row rowdis__child rowdis__child--compact" data-rowdis-child="expense" hidden>
                     <div class="data-list__row-main"><div class="data-list__body" data-i18n="pd-earn.item.platform">Platform fee</div></div>
                     <div class="data-list__amount" data-deep-amt="platform">USD 50,000</div>
                   </div>
-                  <div class="data-list__row data-list__row--child" data-sub-child="expense" hidden>
+                  <div class="data-list__row rowdis__child rowdis__child--compact" data-rowdis-child="expense" hidden>
                     <div class="data-list__row-main"><div class="data-list__body" data-i18n="pd-earn.item.promo">Promotion &amp; marketing</div></div>
                     <div class="data-list__amount" data-deep-amt="promo">USD 25,000</div>
                   </div>
-                  <div class="data-list__row data-list__row--child" data-sub-child="expense" hidden>
+                  <div class="data-list__row rowdis__child rowdis__child--compact" data-rowdis-child="expense" hidden>
                     <div class="data-list__row-main"><div class="data-list__body" data-i18n="pd-earn.item.critic">Critic commission</div></div>
                     <div class="data-list__amount" data-deep-amt="critic">USD 25,000</div>
+                  </div>
                   </div>
 
                   <div class="data-list__row">
@@ -1183,7 +1197,8 @@
           </section>
 
           <!-- 方案支持統計：列由方案編輯器（ztorPdBundles）的同一份方案生成，
-               名稱與價格與方案分頁永遠一致；每方案支持人數＝fund.backers 的示意拆分。 -->
+               名稱與價格與方案分頁永遠一致；每方案的數字是**售出份數**（2026-09-01 使用者裁決
+               「一人可多方案」之後改的口徑），拆分讀共用的 planSplit()。 -->
           <section class="card bento--span-12">
             <div class="card__head"><h3 class="card__title" data-i18n="cocreate.tiers.title">Support by plan</h3></div>
             <div style="overflow-x:auto">
@@ -1193,7 +1208,7 @@
                   <th style="width:80px" data-i18n="pd-cf.col.price">Price</th>
                   <th style="width:130px" data-i18n="pd-cf.col.slots">Slots</th>
                   <th style="width:120px" data-i18n="pd-cofund.col.pct">Filled</th>
-                  <th style="text-align:right;width:110px" data-i18n="pd-cf.col.backers">Backers</th>
+                  <th style="text-align:right;width:110px" data-i18n="pd-cf.col.units">Units sold</th>
                 </tr></thead>
                 <tbody id="pd-cofund-tiers"></tbody>
               </table>
@@ -1340,51 +1355,40 @@
                 <h3 class="card__title" data-i18n="pd-roy.region.title">Regional performance</h3>
                 <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="pd-roy.byrev">By royalty</span>
               </div>
-              <ul class="rank-bars mt-16">
+              <ul class="rank-bars rank-bars--barline mt-16">
                 <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:100%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--primary)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.tw">Taiwan</span></div></div>
-                  <span class="rank-bar__amt">US$612</span><span class="rank-bar__pct">38.5%</span>
-                </li>
+                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--primary)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.tw">Taiwan</span></div></div>
+                  <span class="rank-bar__amt">US$612</span><span class="rank-bar__pct">38.5%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:100%"></div></div></li>
                 <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:47%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-2)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.jp">Japan</span></div></div>
-                  <span class="rank-bar__amt">US$288</span><span class="rank-bar__pct">18.1%</span>
-                </li>
+                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-2)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.jp">Japan</span></div></div>
+                  <span class="rank-bar__amt">US$288</span><span class="rank-bar__pct">18.1%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:47%"></div></div></li>
                 <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:28%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-3)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.us">United States</span></div></div>
-                  <span class="rank-bar__amt">US$173</span><span class="rank-bar__pct">10.9%</span>
-                </li>
+                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-3)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.us">United States</span></div></div>
+                  <span class="rank-bar__amt">US$173</span><span class="rank-bar__pct">10.9%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:28%"></div></div></li>
                 <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:21%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-4)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.hk">Hong Kong</span></div></div>
-                  <span class="rank-bar__amt">US$129</span><span class="rank-bar__pct">8.1%</span>
-                </li>
+                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-4)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.hk">Hong Kong</span></div></div>
+                  <span class="rank-bar__amt">US$129</span><span class="rank-bar__pct">8.1%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:21%"></div></div></li>
                 <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:14%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-5)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.sg">Singapore</span></div></div>
-                  <span class="rank-bar__amt">US$87</span><span class="rank-bar__pct">5.5%</span>
-                </li>
+                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-5)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.sg">Singapore</span></div></div>
+                  <span class="rank-bar__amt">US$87</span><span class="rank-bar__pct">5.5%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:14%"></div></div></li>
                 <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:12%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-success)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.my">Malaysia</span></div></div>
-                  <span class="rank-bar__amt">US$74</span><span class="rank-bar__pct">4.7%</span>
-                </li>
+                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-success)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.my">Malaysia</span></div></div>
+                  <span class="rank-bar__amt">US$74</span><span class="rank-bar__pct">4.7%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:12%"></div></div></li>
                 <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:9%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-info)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.kr">South Korea</span></div></div>
-                  <span class="rank-bar__amt">US$58</span><span class="rank-bar__pct">3.6%</span>
-                </li>
+                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-info)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.kr">South Korea</span></div></div>
+                  <span class="rank-bar__amt">US$58</span><span class="rank-bar__pct">3.6%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:9%"></div></div></li>
                 <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:7%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-accent)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.th">Thailand</span></div></div>
-                  <span class="rank-bar__amt">US$43</span><span class="rank-bar__pct">2.7%</span>
-                </li>
+                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-accent)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.th">Thailand</span></div></div>
+                  <span class="rank-bar__amt">US$43</span><span class="rank-bar__pct">2.7%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:7%"></div></div></li>
                 <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:5%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--muted-foreground)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.ca">Canada</span></div></div>
-                  <span class="rank-bar__amt">US$32</span><span class="rank-bar__pct">2.0%</span>
-                </li>
+                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--muted-foreground)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.ca">Canada</span></div></div>
+                  <span class="rank-bar__amt">US$32</span><span class="rank-bar__pct">2.0%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:5%"></div></div></li>
                 <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:4%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--foreground)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.au">Australia</span></div></div>
-                  <span class="rank-bar__amt">US$26</span><span class="rank-bar__pct">1.6%</span>
-                </li>
+                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--foreground)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.au">Australia</span></div></div>
+                  <span class="rank-bar__amt">US$26</span><span class="rank-bar__pct">1.6%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:4%"></div></div></li>
                 <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:11%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--border)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.other">Other regions</span></div></div>
-                  <span class="rank-bar__amt">US$68</span><span class="rank-bar__pct">4.3%</span>
-                </li>
+                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--border)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.other">Other regions</span></div></div>
+                  <span class="rank-bar__amt">US$68</span><span class="rank-bar__pct">4.3%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:11%"></div></div></li>
               </ul>
             </section>
 
@@ -1395,39 +1399,31 @@
                   <h3 class="card__title" data-i18n="pd-roy.platform.title">Streaming platforms</h3>
                   <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="pd-roy.byrev">By royalty</span>
                 </div>
-                <ul class="rank-bars mt-16">
+                <ul class="rank-bars rank-bars--barline mt-16">
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:100%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-success)"></span><span class="rank-bar__label">Spotify</span></div></div>
-                    <span class="rank-bar__amt">US$486</span><span class="rank-bar__pct">30.6%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-success)"></span><span class="rank-bar__label">Spotify</span></div></div>
+                    <span class="rank-bar__amt">US$486</span><span class="rank-bar__pct">30.6%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:100%"></div></div></li>
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:70%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--destructive)"></span><span class="rank-bar__label">YouTube</span></div></div>
-                    <span class="rank-bar__amt">US$342</span><span class="rank-bar__pct">21.5%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--destructive)"></span><span class="rank-bar__label">YouTube</span></div></div>
+                    <span class="rank-bar__amt">US$342</span><span class="rank-bar__pct">21.5%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:70%"></div></div></li>
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:61%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-info)"></span><span class="rank-bar__label">KKBOX</span></div></div>
-                    <span class="rank-bar__amt">US$297</span><span class="rank-bar__pct">18.7%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-info)"></span><span class="rank-bar__label">KKBOX</span></div></div>
+                    <span class="rank-bar__amt">US$297</span><span class="rank-bar__pct">18.7%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:61%"></div></div></li>
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:44%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--foreground)"></span><span class="rank-bar__label">Apple Music</span></div></div>
-                    <span class="rank-bar__amt">US$214</span><span class="rank-bar__pct">13.5%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--foreground)"></span><span class="rank-bar__label">Apple Music</span></div></div>
+                    <span class="rank-bar__amt">US$214</span><span class="rank-bar__pct">13.5%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:44%"></div></div></li>
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:24%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-3)"></span><span class="rank-bar__label">LINE MUSIC</span></div></div>
-                    <span class="rank-bar__amt">US$118</span><span class="rank-bar__pct">7.4%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-3)"></span><span class="rank-bar__label">LINE MUSIC</span></div></div>
+                    <span class="rank-bar__amt">US$118</span><span class="rank-bar__pct">7.4%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:24%"></div></div></li>
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:13%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--primary)"></span><span class="rank-bar__label" data-i18n="pd-roy.pf.friday">friDay Music</span></div></div>
-                    <span class="rank-bar__amt">US$62</span><span class="rank-bar__pct">3.9%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--primary)"></span><span class="rank-bar__label" data-i18n="pd-roy.pf.friday">friDay Music</span></div></div>
+                    <span class="rank-bar__amt">US$62</span><span class="rank-bar__pct">3.9%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:13%"></div></div></li>
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:8%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-4)"></span><span class="rank-bar__label">Amazon Music</span></div></div>
-                    <span class="rank-bar__amt">US$41</span><span class="rank-bar__pct">2.6%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-4)"></span><span class="rank-bar__label">Amazon Music</span></div></div>
+                    <span class="rank-bar__amt">US$41</span><span class="rank-bar__pct">2.6%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:8%"></div></div></li>
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:6%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-5)"></span><span class="rank-bar__label">Deezer</span></div></div>
-                    <span class="rank-bar__amt">US$30</span><span class="rank-bar__pct">1.9%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-5)"></span><span class="rank-bar__label">Deezer</span></div></div>
+                    <span class="rank-bar__amt">US$30</span><span class="rank-bar__pct">1.9%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:6%"></div></div></li>
                 </ul>
               </section>
             </div>
@@ -1439,35 +1435,28 @@
                   <h3 class="card__title" data-i18n="pd-roy.ott.title">OTT platforms</h3>
                   <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="pd-roy.byrev">By royalty</span>
                 </div>
-                <ul class="rank-bars mt-16">
+                <ul class="rank-bars rank-bars--barline mt-16">
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:100%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-success)"></span><span class="rank-bar__label">Netflix</span></div></div>
-                    <span class="rank-bar__amt">US$1,240</span><span class="rank-bar__pct">34.8%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-success)"></span><span class="rank-bar__label">Netflix</span></div></div>
+                    <span class="rank-bar__amt">US$1,240</span><span class="rank-bar__pct">34.8%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:100%"></div></div></li>
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:71%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-2)"></span><span class="rank-bar__label">Disney+</span></div></div>
-                    <span class="rank-bar__amt">US$880</span><span class="rank-bar__pct">24.7%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-2)"></span><span class="rank-bar__label">Disney+</span></div></div>
+                    <span class="rank-bar__amt">US$880</span><span class="rank-bar__pct">24.7%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:71%"></div></div></li>
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:48%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-3)"></span><span class="rank-bar__label">iQIYI 愛奇藝</span></div></div>
-                    <span class="rank-bar__amt">US$595</span><span class="rank-bar__pct">16.7%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-3)"></span><span class="rank-bar__label">iQIYI 愛奇藝</span></div></div>
+                    <span class="rank-bar__amt">US$595</span><span class="rank-bar__pct">16.7%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:48%"></div></div></li>
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:31%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-4)"></span><span class="rank-bar__label">Prime Video</span></div></div>
-                    <span class="rank-bar__amt">US$382</span><span class="rank-bar__pct">10.7%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-4)"></span><span class="rank-bar__label">Prime Video</span></div></div>
+                    <span class="rank-bar__amt">US$382</span><span class="rank-bar__pct">10.7%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:31%"></div></div></li>
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:20%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-5)"></span><span class="rank-bar__label">CATCHPLAY+</span></div></div>
-                    <span class="rank-bar__amt">US$248</span><span class="rank-bar__pct">7.0%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-5)"></span><span class="rank-bar__label">CATCHPLAY+</span></div></div>
+                    <span class="rank-bar__amt">US$248</span><span class="rank-bar__pct">7.0%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:20%"></div></div></li>
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:14%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-info)"></span><span class="rank-bar__label">friDay 影音</span></div></div>
-                    <span class="rank-bar__amt">US$176</span><span class="rank-bar__pct">4.9%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-info)"></span><span class="rank-bar__label">friDay 影音</span></div></div>
+                    <span class="rank-bar__amt">US$176</span><span class="rank-bar__pct">4.9%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:14%"></div></div></li>
                   <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__fill" style="width:6%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--border)"></span><span class="rank-bar__label" data-i18n="pd-roy.ott.other">Other platforms</span></div></div>
-                    <span class="rank-bar__amt">US$79</span><span class="rank-bar__pct">2.2%</span>
-                  </li>
+                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--border)"></span><span class="rank-bar__label" data-i18n="pd-roy.ott.other">Other platforms</span></div></div>
+                    <span class="rank-bar__amt">US$79</span><span class="rank-bar__pct">2.2%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:6%"></div></div></li>
                 </ul>
               </section>
             </div>
@@ -1801,6 +1790,8 @@ window.ztorPdLookup = (function () {
      （使用者裁示「有同樣的元件就用一樣的」）。本頁沒有任何 data-component 掛載點，
      它的 mount() 掃不到東西，載進來只是為了那支共用函式。 -->
 <script src="js/linechart.js?v=r2.2"></script>   <!-- 2026-08-31：走勢圖的共用產生器，與活動詳情售票趨勢同一支 -->
+<script src="js/donut.js?v=r2.2"></script>       <!-- 2026-09-01：圓環的共用產生器（方案統計） -->
+<script src="js/detail-topbar.js?v=r2.2"></script><!-- 2026-09-01：詳情頁頂列的黏附行為，與系列詳情同一支 -->
 <script src="js/components.js?v=r2.2"></script>
 <script src="js/project-earnings-chart.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
@@ -2075,10 +2066,12 @@ window.ztorPdLookup = (function () {
          next     下一步 { text, label, tab|href|modal, kind, owner } · null ＝ 不顯示
                     owner  這件事屬於哪一塊：'work' / 'panel' / 'progress' / null（自成一卡）
          progress 要不要畫進度摘要
-         backers  要不要畫支持者摘要
+         backers  ✝ 2026-09-01 撤除：要不要畫支持者摘要。那張卡已於 2026-08-31 撤除，
+                  這個旗標自那天起沒有人讀
 
-       **同一個數字只有一個來源**：renderStage() 把 kpis 用掉的鍵記進 used，底下兩張
-       摘要卡逐列比對後跳過。頁首那三列識別事實（創作者／內容類型／建立日期）不進這裡。
+       ✝ 「同一個數字只有一個來源」原本由 renderStage() 的 used 集合機械保證（底下兩張
+       摘要卡照它跳過重複的列）。那兩張卡撤除後這個機制沒有對象，已於 2026-09-01 一併撤除；
+       原則仍然成立，只是改成靠人看。頁首那三列識別事實（創作者／內容類型／建立日期）不進這裡。
     */
 
     /* 數字格式化與「原型沒有結構化欄位時怎麼辦」───────────────────────────
@@ -2131,13 +2124,45 @@ window.ztorPdLookup = (function () {
        表格裡；總覽的已募進度條也要同一份拆分，抄第二份遲早會對不上。
        規則沿用該表既有的示意拆法（B-tier 示意，非真實資料）：依方案序位加權（前面的方案
        人多）、受 limited 名額上限修正、餘數補回第一個方案，總和恆等於 fund.backers。 */
+    /* 支持者人數（共創才有這個欄位）。 */
+    function backerCount() {
+      return (proj && proj.fund && proj.fund.backers) ? Math.round(moneyNum(proj.fund.backers)) : 0;
+    }
+
+    /* 要被拆到各方案頭上的那個總量＝**售出份數**，不是人數（2026-09-01 使用者裁決）。
+
+       一個支持者可以買多個方案，所以「賣出幾份」與「有幾個人」是兩個數字，不能互相取代。
+       站上只有人數（`fund.backers`），份數沒有欄位——以每人平均份數推導，見下方常數與
+       ASSUMPTIONS UIA-126。這條假設一旦有真資料，只要把這個函式換掉，上面的圖與表都跟著對。
+
+       預購那邊不必換算：`list.goal` 的「62 / 100 筆」本來就是筆數。
+       ⚠ 那個欄位在兩種模式底下裝的是**不同的東西**（預購是筆數、共創是金額
+       「$19,600 / $70,000」），所以退路只給預購走——不擋的話，一個沒有 fund 物件的共創
+       項目會把 19,600 當成一萬九千份去拆方案（實測踩過：star-ferry-tales）。 */
+    const UNITS_PER_BACKER = 1.3;
+    function unitsTotal() {
+      if (!proj) return 0;
+      if (proj.fund && proj.fund.backers) return Math.round(backerCount() * UNITS_PER_BACKER);
+      if (proj.type !== 'preorder') return 0;
+      const g = (proj.list && L(proj.list.goal)) || '';
+      const m = g.match(/([\d,]+)/);
+      return m ? Math.round(moneyNum(m[1])) : 0;
+    }
+    /* 預購的目標筆數＝「62 / 100」後面那個數。分段長條的分母用它，所有段加起來
+       才會剛好等於達成率（與 proj.bar.pct 同一個形狀）。 */
+    function orderGoalTotal() {
+      const g = (proj && proj.list && L(proj.list.goal)) || '';
+      const m = g.match(/([\d,]+)\s*\/\s*([\d,]+)/);
+      return m ? moneyNum(m[2]) : 0;
+    }
+
     function planSplit() {
       const BD = window.ztorPdBundles;
-      const f = proj && proj.fund;
-      if (!BD || !f || !f.backers) return [];
+      if (!BD) return [];
+      const total = unitsTotal();
+      if (!total) return [];
       const bundles = BD.getBundles() || [];
       if (!bundles.length) return [];
-      const total = Math.round(moneyNum(f.backers));
       const n = bundles.length;
       const weights = bundles.map((b, i) => n - i);
       const wsum = weights.reduce((a, b) => a + b, 0) || 1;
@@ -2187,29 +2212,182 @@ window.ztorPdLookup = (function () {
        色點 chips——站上已經有這個東西：收益走勢的篩選 chips（`.filter-tabs--source`），
        它的註解自己寫著「收益篩選 chips（＝圖表圖例）」。既然同一個元件在本頁就是
        「圖例即篩選」，這裡照做，不做一個長得像分頁、按了卻沒反應的假圖例。 */
-    let ovBackerSeries = '';
-    /* 走勢圖的期間尺度（2026-08-31 使用者：「要和收入趨勢那一塊一樣」）。
-       收入趨勢的卡頭右側就是這個 segmented；這裡沿用同一個位置與同一組 class。
-       只給日／週／月：這條線的跨度是一次募資（本例 94 天），季與年在這個尺度下
-       只會畫出一兩個點。 */
-    let ovBackerRange = 'week';
-    /* 折線／長條：切期間會重畫整張卡，檢視狀態要記著，不然一按日／週／月就跳回折線。 */
-    let ovBackerView = 'line';
+    /* 2026-09-01 改成**逐卡一份**：原本是三個單一變數，只夠一張走勢卡用。這一輪起
+       同一欄可能同時站著兩、三張走勢卡（支持者／預購累積／收益／觀看），共用一組
+       變數的話按其中一張的「月」，另外兩張會跟著跳。
+       key ＝ 產生那張卡的 KPI 鍵，卡片上以 data-ov-chart 標記，事件處理照著回填。
+         series  現在只看哪一個方案（''＝全部）
+         range   日／週／月的取樣尺度。只給這三級：一條線的跨度是一次募資（本例 94 天），
+                 季與年在這個尺度下只會畫出一兩個點
+         view    折線或長條。切期間會重畫整張卡，這個狀態要記著，不然一按日／週／月
+                 就跳回折線 */
+    const ovChart = {};
+    const chartState = k => (ovChart[k] || (ovChart[k] = { series: '', range: 'week', view: 'line' }));
 
     /* 支持者累積走勢的示意曲線（ASSUMPTIONS UIA-121）。
        ⚠ 站上只有一個總數（fund.backers），**沒有任何時間序列**——每天／每週累積多少人
        是不存在的欄位。這條線是原型示意，形狀取募資期常見的「開跑衝一波 → 中段平緩 →
        結尾再衝」，兩個端點錨在真實的數字（起始 0、結尾＝總數）與真實的起訖日。
        不用亂數：同一個項目每次重繪都要畫出同一條線，不然看起來像資料在跳。 */
-    function backerCurve(total, points) {
+    /* raw＝不取整（2026-09-01）：算「每期新增」時要拿沒有取整的累積值去相減。
+       取整後再相減，小數點下的差會被擠成 0／1 交替，畫出來是一排鋸齒——不是資料在抖，
+       是四捨五入在抖（實測：62 筆分 15 週，每週約 4.1 筆，相減後變成 0,1,0,1,2…）。
+       取整留到最後：相減完再 round，形狀才是平滑的。 */
+    function backerCurve(total, points, raw) {
       const out = [];
       for (let i = 0; i < points; i++) {
         const t = points > 1 ? i / (points - 1) : 1;
-        const s = 0.55 * (1 - Math.pow(1 - t, 2.4)) + 0.45 * Math.pow(t, 3.2);
-        out.push(Math.round(total * s));
+        out.push(raw ? total * campaignShape(t) : Math.round(total * campaignShape(t)));
       }
       if (out.length) out[out.length - 1] = total;
       return out;
+    }
+
+    /* 募資期的累積形狀（2026-09-01 重寫，使用者：「這個曲線圖可以合理一點嗎」）。
+
+       三段相加，權重合計 1（所以 t=1 時剛好等於總量）：
+         0.50 · (1 − (1−t)^3.5)   開跑那一波：一開始最陡、幾週內迅速冷卻
+         0.25 · t                 中段的自然流量：平的
+         0.25 · t^5               收尾衝刺：t≈0.7 之前幾乎是 0，最後才拉起來
+       換成「每期新增」之後（那才是畫在圖上的東西）它的高低是
+       開跑 1.75 → 中段 0.64 → 收尾 1.50——**開跑最高、收尾次之、中間最低**。
+
+       ✝ 舊版是 `0.55·(1−(1−t)^2.4) + 0.45·t^3.2`：每期新增在開跑是 1.32、收尾 1.44，
+       收尾比開跑還高，而且兩頭的斜率太接近，畫出來是一條左右幾乎對稱的平滑 U——
+       使用者一眼就看出那不是真的募資節奏，是一條公式。 */
+    function campaignShape(t) {
+      return 0.50 * (1 - Math.pow(1 - t, 3.5)) + 0.25 * t + 0.25 * Math.pow(t, 5);
+    }
+
+    /* 確定性的抖動（2026-09-01）：同一顆種子每次都算出同一組值，重繪不會跳動
+       ——這是不用 Math.random 的原因（同一個項目每次打開必須畫出同一條線）。
+       為什麼要抖：三段公式再怎麼調，畫出來仍是一條數學上完美平滑的線，
+       而真實的每週進件不會平滑。±18% 的幅度只夠讓線有呼吸，不足以改變趨勢。 */
+    function jitter(seed, i) {
+      const x = Math.sin((seed + 1) * 127.1 + (i + 1) * 311.7) * 43758.5453;
+      return x - Math.floor(x);
+    }
+
+    /* 上線之後的累積走勢（2026-09-01，ASSUMPTIONS UIA-125）。形狀與募資期那條**不同**：
+       募資是「開跑衝一波 → 中段平緩 → 結尾再衝」，上線後是「前期陡、之後長尾趨緩」。
+       站上一樣沒有時間序列、只有一個累計值，兩個端點錨在 0 與那個累計值。 */
+    function tailCurve(total, points, raw) {
+      const out = [];
+      for (let i = 0; i < points; i++) {
+        const t = points > 1 ? i / (points - 1) : 1;
+        const v = total * (1 - Math.pow(1 - t, 2.2));
+        out.push(raw ? v : Math.round(v));
+      }
+      if (out.length) out[out.length - 1] = total;
+      return out;
+    }
+
+    /* 每期新增（2026-09-01 使用者裁示「現在是累積的改成不是累積的」）。
+       做法是把累積曲線多取一個點再相鄰相減，不是另外編一條「新增」的曲線——
+       這樣「每期新增」與「累積總數」必然是同一條線的兩種讀法，期末加總仍等於真實的總數，
+       兩者不可能互相矛盾。
+       為什麼改：累積線在募資期一定單調上升，任何一個項目畫出來都是同一個往右上的形狀，
+       看不出哪一段真的有人進來、哪一段停了。每期新增才回答得了「節奏」。
+       cumFn 收 (total, points) 的累積產生器（backerCurve／tailCurve 都是這個形狀）。 */
+    function deltaOf(cumFn, total, points, seed) {
+      /* 第三個參數 raw＝不取整。取整後再相減會把小數的差擠成 0／1 交替，畫出鋸齒。 */
+      const cum = cumFn(total, points + 1, true);
+      const out = [];
+      /* 相減之後**也不取整**（2026-09-01 二修）：一個方案 15 週賣 21 份，每週 1.4 份，
+         取整就變成 1,1,2,1,1,2… 的階梯——那是四捨五入的形狀，不是它的節奏。
+         線本來就是連續的，讓它畫小數；要看整數的地方（縱軸刻度、長條的 tooltip）
+         各自在顯示的那一刻取整就好。 */
+      for (let i = 1; i < cum.length; i++) out.push(Math.max(0, cum[i] - cum[i - 1]));
+      if (seed == null) return out;
+      /* 抖動後**重新歸一**：每一期各自乘一個 ±18% 的係數會讓總和跑掉，
+         乘回去之後期末加總仍然等於真實的總量——這條不變式是「新增與累積是同一條線」
+         的保證，不能為了好看犧牲掉。 */
+      const j = out.map((v, i) => v * (0.82 + 0.36 * jitter(seed, i)));
+      const want = out.reduce((a, b) => a + b, 0);
+      const got = j.reduce((a, b) => a + b, 0) || 1;
+      return j.map(v => v * want / got);
+    }
+
+    /* 取樣密度跟著期間尺度走：日＝每天一點（上限 30，再多在 600px 寬會擠成一片）、
+       週＝每 7 天、月＝每 30 天。點數決定橫軸有幾個日期，格式 M/D。 */
+    function sampleAxis(key, start) {
+      /* ⚠ diffDays(a, b) 回傳的是 a − b，所以「起算到今天」要寫成 (today, start)，
+         反過來會拿到負數（實測踩過：曲線被夾成最短的 4 週）。 */
+      const spanDays = start ? Math.max(1, PROG.diffDays(PROG.today(), start)) : 56;
+      const step = ({ day: 1, week: 7, month: 30 })[chartState(key).range] || 7;
+      const n = Math.max(3, Math.min(30, Math.round(spanDays / step)));
+      const pts = n + 1, labels = [];
+      if (start) {
+        const stepDays = Math.max(1, Math.round(spanDays / n));
+        /* 標籤只寫每第 stride 個取樣點，其餘留空字串（2026-09-01）。
+           空的 <span> 仍然佔一個 flex 位置，所以有寫字的那幾個位置**還是對在資料點上**
+           （容器是 space-between，第 i 格永遠落在寬度的 i/(pts−1)）；直接少放幾個 span
+           反而會讓日期整排位移。
+           上限抓 8 個：上線後那兩張圖的跨度是一整年，週尺度就有 31 個點，
+           全部寫出來會疊成一條看不懂的黑帶（實測踩過）。 */
+        const stride = Math.max(1, Math.ceil(n / 7));
+        for (let i = 0; i < pts; i++) {
+          if (i % stride && i !== pts - 1) { labels.push(''); continue; }
+          const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i * stepDays);
+          labels.push((d.getMonth() + 1) + '/' + d.getDate());
+        }
+      }
+      return { pts: pts, labels: labels };
+    }
+
+    /* 依方案拆分的累積走勢卡（2026-09-01 抽成共用：支持者與預購累積是同一張卡的兩個實例，
+       差別只有「要拆的總量從哪來」，那件事已經收進 unitsTotal()）。
+
+       **全部方案畫在同一張圖上**、各自一個顏色（2026-08-31 使用者裁示）：一張圖比切換好在
+       可以互相比較，切換一次只看得到一條，讀者得靠記憶拼出高低關係。多條線共用同一個
+       max，疊起來的高低才真的可比。
+       顏色與同一張卡的圖例、以及進度條的分段同一套（--chart-1..5 依方案序位），
+       同一個方案在三處是同一個顏色，不必各記一次；總數那條走中性灰，它是背景參照不是主角。
+       **不畫面積**：多條線各自填底會互相蓋住，而 .linechart__area 是主色調的，
+       疊在中性灰的總數線下會讀成「橘色那條才是主線」。
+       曲線仍是示意（UIA-124）：形狀同一條、只有總量不同——分方案的節奏站上沒有資料，
+       替每個方案編一條不同節奏會是更大的謊。 */
+    function trendTile(key, o) {
+      const split = planSplit();
+      const total = unitsTotal();
+      const ax = sampleAxis(key, ymd(proj.fundFrom) || ymd(proj.created));
+      const sel = chartState(key).series;
+      const colorOf = i => 'var(--chart-' + ((i % 5) + 1) + ')';
+      /* 選了某個方案就只留「總數 ＋ 那一條」：全部疊著時看的是彼此的高低，
+         選一條時看的是它自己的形狀，總數留著當比例尺。 */
+      /* 每條線一顆自己的種子：總數線 0、方案由 1 起算。同一個方案在日／週／月三種
+         尺度下種子相同，切換期間時形狀的個性不會整個換掉。 */
+      const series = [{ values: deltaOf(backerCurve, total, ax.pts, 0), color: 'var(--muted-foreground)' }].concat(
+        split.map((r, i) => ({ key: r.b.id || r.b.name, values: deltaOf(backerCurve, r.count, ax.pts, i + 1), color: colorOf(i) }))
+             .filter(x => !sel || x.key === sel));
+      /* 縱軸的最大值改成「所有線的最高點」，不能再用總量（2026-09-01 改畫每期新增）：
+         每期新增的峰值遠小於累積總數，拿總數當上限的話整組線會被壓在底部一條線裡。 */
+      const peak = Math.max.apply(null, series.reduce((a, x) => a.concat(x.values), [0]));
+      return {
+        key: key, label: o.label, value: o.value, splitKey: o.splitKey,
+        /* 縱軸上限往上取整：值是小數，刻度不該寫「4.7」。 */
+        spark: { max: Math.max(1, Math.ceil(peak)), labels: ax.labels, series: series },
+        legend: split.map((r, i) => ({
+          key: r.b.id || r.b.name,
+          name: r.b.name || T('pd-bundle.untitled', 'Untitled plan'),
+          color: colorOf(i), amt: r.count.toLocaleString('en-US'),
+          pct: total ? Math.round(r.count / total * 100) + '%' : ''
+        }))
+      };
+    }
+
+    /* 單一序列的走勢卡（收益／觀看，2026-09-01）。這兩個數字沒有方案可拆，
+       所以沒有圖例 chips——那組 chips 的作用是篩選方案，沒有方案就不該長出一排假分頁。
+       同輪與方案走勢一起改畫每期新增：卡頭的數字仍是累計（那是這個 KPI 的定義），
+       圖回答的是「還在不在賺」，兩件事各佔一個位置。 */
+    function soloTrendTile(key, o) {
+      const ax = sampleAxis(key, ymd(proj.releaseDate) || ymd(proj.created));
+      const values = deltaOf(tailCurve, o.total, ax.pts, key === 'revenue' ? 11 : 12);
+      return {
+        key: key, label: o.label, value: o.value, meta: o.meta, unit: o.unit,
+        spark: { max: Math.max(1, Math.ceil(Math.max.apply(null, values.concat([0])))), labels: ax.labels,
+                 series: [{ values: values, color: o.color }] }
+      };
     }
 
     function kpi(key) {
@@ -2220,102 +2398,78 @@ window.ztorPdLookup = (function () {
           /* 目標放 meta 而不是跟在數字後面：金額字串長，1024 以下「$88,600 / $120,000」
              會擠成兩行，主要數字反而被切斷。達成率與進度條講的是同一個比例，一個給數字、
              一個給形狀。 */
-          /* 2026-08-31 使用者裁示：橘色那一段再切分成各方案佔多少。
-             寬度＝該方案金額 ÷ 目標，所以所有段加起來就是達成率，形狀與 f.pct 一致。
-             拆分讀 planSplit()，與支持者分頁的「方案支持統計」是同一份。 */
+          /* 2026-09-01 撤除（墓碑）：依方案切分的 `segs` ＋ 條底下的 `legend`。
+             使用者裁示這條進度條回到**單一數值**——方案的拆分屬於底下那張方案統計，
+             這一格只回答「離目標還有多遠」。拆分本身沒有消失，planSplit() 仍然餵
+             方案統計與支持者分頁的表。
+
+             ⚠ 同日一度連單色的 `pct` 長條也拿掉（誤讀「進度條（改成一個數值）」成
+             「把進度條換成數值」），使用者隨即指正「要有進度條」，已還原。
+             那次的教訓：`pct` 是這一格的形狀、`meta` 的百分比是它的數字，兩個都要。 */
           return f && { label: T('pd-ov.kpi.raised', 'Raised'), value: f.raised,
-            meta: T('pd-ov.kpi.goal', 'Goal {g}').replace('{g}', f.goal) + ' · ' + f.pct + '%', pct: f.pct,
-            segs: (() => {
-              const goal = moneyNum(f.goal);
-              const split = planSplit();
-              if (!goal || !split.length) return null;
-              return split.map((r, i) => ({
-                name: r.b.name || T('pd-bundle.untitled', 'Untitled plan'),
-                count: r.count, amount: r.amount,
-                pct: Math.max(0, r.amount / goal * 100),
-                color: 'var(--chart-' + ((i % 5) + 1) + ')'
-              }));
-            })(),
-            /* 條底下的圖例（2026-08-31 二版，使用者給了參考圖）：色點 ＋ 方案名 ＋ 金額 ＋ 佔比。
-               佔比是「佔已募」不是「佔目標」——三條加起來要等於 100%，那才是這條長條在拆的東西；
-               佔目標的話三個數字加起來是 74%，讀者會以為少算了一塊。
-               長度仍然按目標算（進度條要看得出離目標多遠），兩者分工不同、不衝突。 */
-            legend: (() => {
-              const split = planSplit();
-              const raised = moneyNum(f.raised) || 0;
-              if (!split.length || !raised) return null;
-              return split.map((r, i) => ({
-                name: r.b.name || T('pd-bundle.untitled', 'Untitled plan'),
-                color: 'var(--chart-' + ((i % 5) + 1) + ')',
-                amt: '$' + Math.round(r.amount).toLocaleString('en-US'),
-                pct: Math.round(r.amount / raised * 100) + '%'
-              }));
-            })() };
-        case 'orders':
-          return li && { label: T('pd-ov.kpi.orders', 'Pre-ordered'), value: L(li.goal), pct: proj.bar ? proj.bar.pct : null };
-        case 'backers': {
+            meta: T('pd-ov.kpi.goal', 'Goal {g}').replace('{g}', f.goal) + ' · ' + f.pct + '%', pct: f.pct };
+        case 'orders': {
+          /* 2026-09-01 撤除（墓碑）：依方案切分的 `segs`（同日稍早才比照共創的「已募」
+             加上）。共創那一格在同一天已被裁示回到單色長條——方案的拆分屬於底下的
+             方案統計，這一格只回答「離目標還有多遠」；本格是同一件事的另一半，
+             使用者本日裁示「進度條要改掉」後一併回到單色，兩格不再有兩種畫法。
+             拆分本身沒有消失：planSplit() 仍然餵方案統計與支持者分頁的表。 */
+          if (!li) return null;
+          return { label: T('pd-ov.kpi.orders', 'Pre-ordered'), value: L(li.goal),
+            pct: proj.bar ? proj.bar.pct : null };
+        }
+        /* 2026-09-01 使用者裁決：一個支持者可以買多個方案，所以這張圖畫的是**售出份數**
+           不是人數——原本總數那條是人數、分方案那三條是份數，兩個單位疊在同一組值域上，
+           三條加起來剛好等於人數只是拆分方式造成的巧合，不是事實。
+           人數改由同一列的「支持者」數字磚承載（`backers-n`），一個數字一個問題。 */
+        /* 方案售出走勢（2026-09-01 定案）：**各方案 × 時間**，畫的是售出份數。
+           這一輪來回三次才落到這裡，把理由寫清楚免得下次又繞：
+             1. 原本是「支持者」多序列圖——總數那條畫人數、分方案那三條畫份數，
+                兩個單位疊在同一組值域上。使用者問「一人可以買幾個方案」時就是在指這件事。
+             2. 中間一度改成單序列的人數曲線，方案的事全部下放到方案統計那張表；
+                但那等於把「哪個方案什麼時候賣得動」這個問題從畫面上拿掉了。
+             3. 定案：**人數與份數各有各的位置**——人數是上面那格數字磚（backers-n），
+                這張卡專心畫份數，總數那條＝各方案相加，單位從頭到尾一致。
+           曲線仍是示意（UIA-124／UIA-126）：形狀同一條、只有總量不同。 */
+        case 'units': {
+          const u = unitsTotal();
+          if (!u) return null;
+          return trendTile('units', {
+            /* 卡頭不寫數字（2026-09-01 使用者裁示）：這張卡回答的是節奏，
+               總量在底下的方案統計環心上。 */
+            label: T('pd-ov.kpi.units', 'Sales trend'), value: '', splitKey: 'pd-ov.kpi.units-split'
+          });
+        }
+        /* 2026-09-01 撤除（墓碑）：case 'backers'（單序列的每期新增人數曲線）與它用的
+           `deltaCurve()`。它是上面第 2 步的產物，第 3 步定案後沒有消費端——人數改由
+           數字磚承載，這張卡回到各方案的份數走勢。 */
+        /* 支持者人數的數字磚。2026-09-01 起募資中也用它——走勢卡改畫售出份數之後，
+           「有幾個人」就沒有別的地方在講了。 */
+        case 'backers-n': {
           if (!f || !f.backers) return null;
-          /* 2026-08-31 使用者裁示（二版）：不用下拉切換，**全部方案畫在同一張圖上**，
-             各自一個顏色，底下用圖例說明哪個顏色是哪個方案。
-             一張圖比切換好在「可以互相比較」——切換一次只看得到一條，讀者得靠記憶
-             拼出高低關係。附加線與主線共用同一組值域（sparkBlock 的 extra 保證這件事），
-             所以疊起來的高低真的可比。
-             顏色與「已募」那張進度條的分段同一套（--chart-1..5 依方案序位）：
-             同一個方案在兩張圖上是同一個顏色，不必各記一次。
-             曲線仍是示意（UIA-124）：形狀同一條、只有總量不同——分方案的節奏
-             站上沒有資料，替每個方案編一條不同節奏會是更大的謊。 */
-          const split = planSplit();
-          const total = Math.round(moneyNum(f.backers));
-          const start = ymd(proj.fundFrom);
-          /* ⚠ diffDays(a, b) 回傳的是 a − b，所以「起始到今天」要寫成 (today, start)，
-             反過來會拿到負數（實測踩過：曲線被夾成最短的 4 週）。 */
-          /* 取樣密度跟著期間走：日＝每天一點（上限 30，再多在 600px 寬會擠成一片）、
-             週＝每 7 天、月＝每 30 天。點數決定橫軸有幾個日期。 */
-          const spanDays = start ? Math.max(1, PROG.diffDays(PROG.today(), start)) : 56;
-          const stepOf = { day: 1, week: 7, month: 30 };
-          const step = stepOf[ovBackerRange] || 7;
-          const wk = Math.max(3, Math.min(30, Math.round(spanDays / step)));
-          const colorOf = i => 'var(--chart-' + ((i % 5) + 1) + ')';
-          return {
-            label: T('pd-ov.kpi.backers', 'Backers'),
-            value: f.backers,
-            /* 走勢資料（2026-08-31 二版）：改餵 linechart 共用產生器（與活動詳情售票趨勢
-               同一支）。多條線共用同一個 max，疊起來的高低才可比。
-               線色直接給 --chart-N，與同一張卡的圖例色點對齊——同一個方案在線上與
-               色點上是同一個顏色，不必各記一次；總數那條走中性灰，它是背景參照不是主角。
-               **不畫面積**：多條線各自填底會互相蓋住，而 .linechart__area 是主色調的，
-               疊在中性灰的總數線下會讀成「橘色那條才是主線」。
-               橫軸寫真的日期（使用者裁示「時間也是要寫上去不是寫開始和現在」）：
-               從 fundFrom 起算、每個取樣點一個日期，格式 M/D。 */
-            spark: (() => {
-              const pts = wk + 1;
-              const labels = [];
-              if (start) {
-                const stepDays = Math.max(1, Math.round(spanDays / wk));
-                for (let i = 0; i < pts; i++) {
-                  const dte = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i * stepDays);
-                  labels.push((dte.getMonth() + 1) + '/' + dte.getDate());
-                }
-              }
-              return {
-                max: total || 1,
-                labels: labels,
-                /* 選了某個方案就只留「總數 ＋ 那一條」（2026-08-31）：全部疊著時
-                   看的是彼此的高低，選一條時看的是它自己的形狀，總數留著當比例尺。 */
-                series: [{ values: backerCurve(total, pts), color: 'var(--muted-foreground)' }].concat(
-                  split
-                    .map((r, i) => ({ key: r.b.id || r.b.name, values: backerCurve(r.count, pts),
-                                      color: 'var(--chart-' + ((i % 5) + 1) + ')' }))
-                    .filter(x => !ovBackerSeries || x.key === ovBackerSeries))
-              };
-            })(),
-            legend: split.map((r, i) => ({
-              key: r.b.id || r.b.name,
-              name: r.b.name || T('pd-bundle.untitled', 'Untitled plan'),
-              color: colorOf(i), amt: r.count.toLocaleString('en-US'),
-              pct: total ? Math.round(r.count / total * 100) + '%' : ''
-            }))
-          };
+          /* 磚裡的迷你走勢（2026-09-01 使用者：「要有走勢圖」）。欄位叫 `mini` 不叫 `spark`
+             ——`spark` 是「這一格升格成整張 chart-card」的開關（見 renderStage 的 withChart），
+             拿它來裝磚內的小圖，這一格會整個被搬去當大卡。
+             畫累積人數：磚裡只有 36px 高、沒有座標軸，看的是「有沒有一直在長」，
+             每期新增那種上下起伏在這個尺寸只會讀成雜訊。 */
+          /* 橫軸只需要頭尾兩個日期（起算日與今天），所以這裡不走 sampleAxis()——
+             那支是給大圖用的、會依日／週／月切換算出整排取樣點。 */
+          const st = ymd(proj.fundFrom) || ymd(proj.created);
+          const md = d => d ? ((d.getMonth() + 1) + '/' + d.getDate()) : '';
+          /* 與大圖同一個口徑（2026-09-01 使用者裁示「累積的改成不是累積的」）：磚裡這條
+             也畫每期新增。站上只留一種走勢的讀法，不能大圖畫新增、小圖畫累積。 */
+          return { label: T('pd-ov.kpi.backers', 'Backers'), value: f.backers,
+            mini: { values: deltaOf(backerCurve, backerCount(), 12, 0),
+                    labels: st ? [md(st), md(PROG.today())] : [] } };
+        }
+        /* 預購累積走勢（2026-09-01）。**卡頭不寫數字**：共創有「錢」與「人」兩個量，
+           一個給進度條、一個給圖；預購只有「筆數」一個量，62 已經寫在上面那格，
+           卡頭再寫一次會被讀成兩個數字。 */
+        case 'orders-trend': {
+          if (!li || !unitsTotal()) return null;
+          return trendTile('orders-trend', {
+            label: T('pd-ov.kpi.pre-trend', 'Pre-orders over time'), value: '', splitKey: 'pd-ov.kpi.pre-split'
+          });
         }
         case 'left':
           /* 收單期間掛在這一格底下當小字（2026-08-18 使用者裁決）：「還有幾天」與
@@ -2339,8 +2493,11 @@ window.ztorPdLookup = (function () {
            搬上 KPI 列，當天下午總覽長出「方案摘要」那張卡之後即撤除——那張卡把三個方案
            連名稱與價格一起列出來，數量用看的就知道，再給一格「3」是同一件事講兩遍。
            真的要數字時，方案分頁的卡頭有。 */
-        case 'unit':
-          return unitPriceOf() ? { label: T('pd-ov.kpi.unit', 'Unit price'), value: unitPriceOf() } : null;
+        /* 2026-09-01 撤除（墓碑）：case 'unit'（單價）。使用者裁示移除——單價是建立
+           項目時就定好、之後不會動的設定值，總覽這一列問的是「現在走到哪」，
+           一格不會變的數字佔掉四分之一的寬度。要看單價：方案分頁的預購設定那一格
+           （#pd-pre-unit）就是它，而且在那裡可以改。
+           unitPriceOf() 保留：方案分頁的預購單價欄仍從它取預設值。 */
         case 'delivery':
           /* 讀進度藍圖最後一顆里程碑的預計日期（B8）；藍圖沒排日期時退回 i18n 常數。 */
           return { label: T('project-detail.tl.delivery', 'Expected delivery'),
@@ -2355,12 +2512,26 @@ window.ztorPdLookup = (function () {
           return { label: T('cocreate.tranche.title', 'Payout progress'), value: done + '%',
             meta: T(done === 70 ? 'pd-ov.kpi.payout-meta-live' : 'pd-ov.kpi.payout-meta', ''), pct: done };
         }
-        case 'revenue':
+        case 'revenue': {
           /* 剛上線、還沒有任何收入事件時值是「—」；這時不附口徑說明——那句話是用來
-             交代「這個數字是誰算的」，沒有數字就沒有要交代的對象。 */
-          return { label: T('pd-ov.kpi.revenue', 'Lifetime revenue'), value: moneyOf() || '—', meta: moneyOf() ? T('pd-ov.kpi.revenue-meta', '') : '' };
-        case 'audience':
-          return { label: T(audienceLabelKey(), 'Views'), value: audienceOf() || '—' };
+             交代「這個數字是誰算的」，沒有數字就沒有要交代的對象，也沒有線可畫，
+             這一格退回素磚。 */
+          const v = moneyOf();
+          if (!v) return { label: T('pd-ov.kpi.revenue', 'Lifetime revenue'), value: '—' };
+          return soloTrendTile('revenue', {
+            label: T('pd-ov.kpi.revenue', 'Lifetime revenue'), value: v,
+            meta: T('pd-ov.kpi.revenue-meta', ''), total: moneyNum(v),
+            unit: 'US$', color: 'var(--chart-1)'
+          });
+        }
+        case 'audience': {
+          const v = audienceOf();
+          if (!v) return { label: T(audienceLabelKey(), 'Views'), value: '—' };
+          return soloTrendTile('audience', {
+            label: T(audienceLabelKey(), 'Views'), value: v, total: moneyNum(v),
+            color: 'var(--chart-2)'
+          });
+        }
         default: return null;
       }
     }
@@ -2395,7 +2566,7 @@ window.ztorPdLookup = (function () {
           else next = { text: T('pd-ov.next.editwork', ''), label: T('pd.work.edit', 'Edit work'), href: workHref(), owner: 'progress' };
           return {
             kpis: [], work: null,
-            panel: null, next: next, progress: true, backers: false
+            panel: null, next: next, progress: true
           };
         }
         if (st === 'scheduled') {
@@ -2409,7 +2580,7 @@ window.ztorPdLookup = (function () {
               note: T('project-detail.golive.note', '')
             },
             next: relDate ? null : { text: T('pd-ov.next.setgolive', ''), label: T('pd-ov.next.setgolive.cta', 'Set the date'), tab: 'setup', owner: 'panel' },
-            progress: false, backers: false
+            progress: false
           };
         }
         if (st === 'cancelled') return cancelledStage();
@@ -2426,12 +2597,15 @@ window.ztorPdLookup = (function () {
            等上映本來就是交付故事的最後一步，進度摘要清單尾端現在有「完成作品」那一列，
            同一件事不開兩張卡。作品卡自此只服務直接發佈與已上線的作品識別。 */
         return {
-          kpis: [], work: null,
+          /* 2026-09-01：這一格原本是空的，整個左欄因此開天窗。準備中要回答的是
+             「募到多少、有多少人在等」——募資期已經結束，剩餘天數與走勢卡都退場，
+             留下靜態的兩個數字與方案統計（交付要照方案出貨，那份清單這時就要看得到）。 */
+          kpis: pre ? ['orders'] : ['raised', 'backers-n'], work: null,
           panel: null,
           next: (r && r.status === 'approved' && !rel)
             ? { text: T('pd-ov.next.setdate', ''), label: T('pd.work.setdate', 'Set the release date'), href: workHref(), owner: 'progress' }
             : null,
-          progress: true, backers: true
+          progress: true
         };
       }
       if (st === 'published') {
@@ -2439,14 +2613,21 @@ window.ztorPdLookup = (function () {
         return {
           /* 2026-08-18：支持方案數由「支持者摘要」搬進這一列（使用者裁決）；
              收單期間掛在 'left' 那一格底下當小字，不另外佔一格。 */
-          kpis: pre ? ['orders', 'unit', 'left'] : ['raised', 'backers', 'left'],
+          /* 2026-09-01：預購補上「預購累積」走勢卡，與共創的售出走勢同一張卡。
+             共創這一列補回「支持者」——走勢卡改畫份數之後，人數需要自己的位置。 */
+          /* 共創這一列三格（2026-09-01 使用者：「要有支持者」）：已募＝數值、剩餘天數＝進度條、
+             支持者＝數值；曲線另外一張卡。人數的「多少」與「什麼節奏」分成兩個位置，
+             數字不必等曲線讀完才看得到。 */
+          /* 2026-09-01：預購這一列拿掉 'unit'（單價，見 kpi() 那裡的墓碑），
+             剩「已預購／截止倒數／預購累積走勢」——兩格數字並排、走勢卡自成一張。 */
+          kpis: pre ? ['orders', 'left', 'orders-trend'] : ['raised', 'left', 'backers-n', 'units'],
           /* 2026-08-18 撤除（墓碑）：kpiNote（「募資期結束時達標，項目就成立。」／
              預購版的未達最少預購數全額退款）。使用者裁示移除——那是集資的規則、在
              創作者建立項目時就知道了，每次打開總覽再讀一次沒有新資訊；而它橫跨整列
              的寬度，讀起來像這四個數字的註腳。規則本身仍在 §2.1.1。 */
           work: null, panel: null,
           next: { text: T(pre ? 'pd-ov.next.postupdate-pre' : 'pd-ov.next.postupdate', ''), label: T('project-detail.btn.post-update', 'Post update'), modal: 'pd-edit-update', owner: 'progress' },
-          progress: true, backers: true
+          progress: true
         };
       }
       if (st === 'succeeded') {
@@ -2467,11 +2648,14 @@ window.ztorPdLookup = (function () {
         return {
           /* 預購沒有撥款進度那一段（§2.1.1 預購差異表第二列），所以只有兩格；
              集單結果留給支持者摘要那張卡，不在這裡再寫一次同一個數字。 */
-          kpis: pre ? ['delivery', 'milestones'] : ['delivery', 'milestones', 'payout'],
+          /* 2026-09-01 補上已募／已預購那一格：方案統計本來就會出現在這個狀態，
+             但它上面沒有任何一格在講「這批錢／這批單是誰買的」，那張卡等於沒有頭。
+             走勢卡不放——募資已經結束，那條線不會再動，佔整欄的圖只換來一次閱讀。 */
+          kpis: pre ? ['orders', 'delivery', 'milestones'] : ['raised', 'delivery', 'milestones', 'payout'],
           /* 2026-08-19（D202）：作品審核併入進度摘要（清單尾端的「完成作品」列），
              作品卡在共創與預購不再出現。 */
           work: null,
-          panel: null, next: next, progress: true, backers: true
+          panel: null, next: next, progress: true
         };
       }
       if (st === 'cancelled') return cancelledStage();
@@ -2492,7 +2676,7 @@ window.ztorPdLookup = (function () {
         work: null,
         panel: null,
         next: todo ? { text: todo, label: '', owner: null } : null,
-        progress: true, backers: !isDirect()
+        progress: true
       };
     }
 
@@ -2509,13 +2693,17 @@ window.ztorPdLookup = (function () {
          底下那句 note 已經把「依方案的未達標處理、去設定分頁看」講完了，再列一行
          等於把同一句話寫兩次。 */
       return {
-        kpis: [], work: null,
+        /* 2026-09-01：終止後左欄原本整欄空白。要退款就是照方案退，所以這裡留下
+           「募到多少／多少人」與方案統計那份清單。直接發佈沒有金額也沒有支持者，
+           終止時左欄真的沒有數字可放，維持空。 */
+        kpis: isDirect() ? [] : (proj.type === 'preorder' ? ['orders'] : ['raised', 'backers-n']),
+        work: null,
         panel: { titleKey: 'pd-ov.title.ended', facts: facts, note: isDirect() ? '' : T('pd-ov.end.refund-note', '') },
         /* 一般更新是已取消狀態下唯一還開著的發文動作（§2.2.4）；里程碑凍結，
            所以進度摘要不出現，這件事因此歸終止卡。 */
         next: isDirect() ? null : { text: T('pd-ov.next.refundpost', ''), label: T('project-detail.btn.post-update', 'Post update'), modal: 'pd-edit-update', owner: 'panel' },
         /* 直接發佈沒有支持者這件事，取消了也不會長出來。 */
-        progress: false, backers: !isDirect()
+        progress: false
       };
     }
 
@@ -2578,46 +2766,31 @@ window.ztorPdLookup = (function () {
     function renderStage() {
       if (!proj) return;
       const cfg = stage();
-      /* 這一格的 KPI 用掉了哪些數字。底下兩張摘要卡照它跳過——同一個數字兩個來源
-         遲早會不一致，這個集合就是「一頁一個來源」的機械保證。 */
-      const used = {};
-      (cfg.kpis || []).forEach(k => { used[k] = true; });
+      /* 2026-09-01 撤除（墓碑）：`used` 登記表（哪些數字已被 KPI 用掉）。它存在的目的是
+         讓「項目摘要」與「支持者摘要」兩張卡跳過重複的列，那兩張卡已於 2026-08-31 撤除，
+         這份集合自那天起建了卻沒有人讀。cfg.backers（要不要畫支持者摘要）同因失效，
+         已從 stage() 的回傳說明裡拿掉。 */
 
       /* ── ① 重點面板 · KPI 列 ─────────────────────────────────────────── */
       const kbox = document.getElementById('pd-ov-kpis');
       if (kbox) {
         const tiles = (cfg.kpis || []).map(kpi).filter(Boolean);
-        kbox.hidden = !tiles.length;
         /* 2026-08-31 撤除（墓碑）：bento 的 span 計算。這一欄已於同日改成
            「沒有圖的兩個一排（.detail-overview__kpi-row）＋ 有圖的自成一張 chart-card」，
            欄寬由那個 grid 自己決定，不再吃 bento 的 12 欄軌道。 */
-        /* 進度條有兩種形狀（2026-08-31）：帶 segs 的用 .stacked-bar 依方案切分，
-           其餘沿用單色的 .project-bar。兩者都吃同一個 pct 語意（佔目標／期間的百分比）。 */
+        /* 2026-09-01 撤除（墓碑）：`segs` 分支（`.stacked-bar` 依方案切分的長條）。
+           它在 2026-08-31 與單色的 `.project-bar` 並存，兩格各用一種；兩個消費點
+           （共創「已募」、預購「已預購」）都已於 2026-09-01 被裁示回到單色，
+           這個分支自此沒有人餵資料。KPI 列的進度條從此只有一種畫法。
+           `.stacked-bar` 元件本身不退場——fan-analytics 仍在用。 */
         const barHTML = t => {
-          if (t.segs && t.segs.length) {
-            const used = t.segs.reduce((a, x) => a + x.pct, 0);
-            return '<div class="stacked-bar">' +
-              t.segs.map(x => '<div class="stacked-bar__seg" style="width:' + Math.max(0, x.pct).toFixed(2) +
-                '%;background:' + x.color + '" title="' + esc(x.name + ' · ' + x.count.toLocaleString('en-US')) + '"></div>').join('') +
-              '<div class="stacked-bar__seg" style="width:' + Math.max(0, 100 - used).toFixed(2) + '%;background:transparent"></div>' +
-            '</div>';
-          }
           return t.pct != null
             ? '<div class="project-bar"><div class="project-bar__fill" style="width:' + Math.max(0, Math.min(100, t.pct)) + '%"></div></div>'
             : '';
         };
-        /* 圖例（2026-08-31）：用 chart.css 的 .source-list／.source-row，與儀表板的
-           收入來源圖例同一支——色點 ＋ 名稱 ＋ 數字。只在支持者那一格出現。 */
-        const legendHTML = t => {
-          if (!t.legend || !t.legend.length) return '';
-          return '<div class="source-list kpi__legend">' + t.legend.map(g =>
-            '<div class="source-row">' +
-              '<span class="source-row__swatch" style="background:' + g.color + '"></span>' +
-              '<span>' + esc(g.name) + '</span>' +
-              '<span class="source-row__amt">' + esc(g.amt) + '</span>' +
-              (g.pct ? '<span class="source-row__pct">' + esc(g.pct) + '</span>' : '') +
-            '</div>').join('') + '</div>';
-        };
+        /* 2026-09-01 撤除（墓碑）：legendHTML（.source-list 版的色點圖例）。它在
+           2026-08-31 把圖例拆成「方案統計」那一段之後就沒有人呼叫了——那一段用的是
+           .rank-bars，欄位更多。走勢卡的圖例走的是另一支（chipsHTML，圖例即篩選）。 */
         const SPARK = (window.ZtorComponents && window.ZtorComponents.sparkBlock)
           || (sk => sparkMini(sk.values, sk.h));
         /* 帶走勢圖的那一格改用 chart-card 外殼（2026-08-31 使用者：「用活動詳情的售票趨勢」）。
@@ -2629,23 +2802,36 @@ window.ztorPdLookup = (function () {
            沿用收益走勢那組 `.filter-tabs--source`：每一顆用 inline `--dot` 帶自己的顏色，
            選中時整顆吃那個色（見 filter-tabs.css §--source）。不放數字——數字在底下的
            「方案統計」那一段有完整的四欄，這裡只回答「哪個顏色是誰、現在在看哪一條」。 */
+        /* 圖例即篩選（2026-09-01 使用者裁示改樣式）：每一項都是「色點＋文字」的預設樣子，
+           已選**不套**基底那層玻璃殼與字光——選中的訊號改由「未選的變淡」承擔，
+           整組靠右（見 filter-tabs.css 的 `--legend` 變體）。
+
+           「全部方案」也給一顆點，顏色跟著它在圖上那條線走（`--muted-foreground` 的中性灰），
+           不是品牌橘：這一排同時是圖例，點的顏色要對得上線的顏色，不然讀者會去圖上找橘色的線。
+
+           變淡只在**挑了某一個方案**時才發生。預設的「全部方案」不算挑——那時候四條線
+           全部畫著，把三個方案的圖例調淡等於說它們沒被畫，與畫面上看到的相反。 */
         const chipsHTML = t => {
           if (!t.legend || !t.legend.length) return '';
+          const sel = chartState(t.key).series;
           const chip = (key, name, color, on) =>
             '<button class="filter-tabs__item' + (on ? ' filter-tabs__item--active' : '') + '" type="button"' +
               ' role="tab" aria-selected="' + (on ? 'true' : 'false') + '" style="--dot:' + color + '"' +
               ' data-ov-series="' + esc(key) + '">' +
-              (key ? '<span class="filter-tabs__dot" aria-hidden="true"></span>' : '') +
+              '<span class="filter-tabs__dot" aria-hidden="true"></span>' +
               '<span>' + esc(name) + '</span></button>';
-          return '<nav class="filter-tabs filter-tabs--source mt-16" role="tablist"' +
-            ' aria-label="' + esc(T('pd-ov.kpi.bk-split', 'Backers by plan')) + '">' +
-            chip('', T('pd-ov.kpi.bk-all', 'All plans'), 'var(--primary)', !ovBackerSeries) +
-            t.legend.map(g => chip(g.key, g.name, g.color, ovBackerSeries === g.key)).join('') +
+          return '<nav class="filter-tabs filter-tabs--source filter-tabs--legend mt-16' +
+            (sel ? ' is-filtered' : '') + '" role="tablist"' +
+            ' aria-label="' + esc(T(t.splitKey || 'pd-ov.kpi.units-split', 'Units sold by plan')) + '">' +
+            chip('', T('pd-ov.kpi.bk-all', 'All plans'), 'var(--muted-foreground)', !sel) +
+            t.legend.map(g => chip(g.key, g.name, g.color, sel === g.key)).join('') +
           '</nav>';
         };
         const chartTile = t => {
           const LC = window.ZtorLinechart;
-          const fmt = v => Number(v || 0).toLocaleString('en-US');
+          const cs = chartState(t.key);
+          /* 縱軸刻度的單位由呼叫端給（收益是 US$，人數與筆數沒有前綴）。 */
+          const fmt = v => (t.unit || '') + Number(v || 0).toLocaleString('en-US');
           const sp = t.spark || {};
           const max = sp.max || 1;
           const yAxis = LC ? '<div class="linechart__y-axis">' + LC.yTicksHTML(max, fmt) + '</div>' : '';
@@ -2668,31 +2854,80 @@ window.ztorPdLookup = (function () {
             '<div class="linechart__main"><div class="barchart">' +
               barVals.map((v, i2) => '<div class="barchart__bar" style="height:' +
                 Math.max(3, Math.round(v / max * 100)) + '%;background:' + barColor + '" title="' +
-                esc((sp.labels || [])[i2] || '') + ' · ' + fmt(v) + '"></div>').join('') +
+                /* 值是小數（每期新增不取整，見 deltaOf），tooltip 顯示時才取整。 */
+                esc((sp.labels || [])[i2] || '') + ' · ' + fmt(Math.round(v)) + '"></div>').join('') +
             '</div>' + xLabels + '</div></div>';
           /* 期間切換放卡頭右側、檢視切換放卡底右側——與收入趨勢／售票趨勢同一個位置。 */
           const RANGES = [['day', 'pd-ov.kpi.range-day', 'Day'], ['week', 'pd-ov.kpi.range-week', 'Week'], ['month', 'pd-ov.kpi.range-month', 'Month']];
-          return '<section class="card chart-card" data-chart-view="' + ovBackerView + '">' +
+          /* 卡底那句話說明這條線在算什麼；收益那張後面接一句口徑說明（那個數字是誰算的），
+             它原本是素磚的 meta，改成走勢卡之後 meta 沒有位置，接在這裡意思一樣。 */
+          /* 2026-09-01 撤除（墓碑）：卡底那句「每週新增的售出份數」之類的說明
+             （`footKey` ＋ i18n 的 units-foot／pre-foot／rev-foot／aud-foot 各三句）。
+             使用者裁示刪掉——同一件事卡上已經講了三次：卡頭的標題（販售趨勢）、
+             卡頭右邊的期間切換（日／週／月）、縱軸的刻度。
+             `t.meta` 留著：那不是重述，是「這個數字是誰算的」的口徑說明（收益那張）。 */
+          const foot = t.meta ? esc(t.meta) : '';
+          return '<section class="card chart-card" data-ov-chart="' + esc(t.key) + '" data-chart-view="' + cs.view + '">' +
             '<div class="chart-card__head">' +
               '<div>' +
-                '<div class="kpi__label">' + esc(t.label) + '</div>' +
-                '<div class="kpi__value-row"><div class="kpi__value">' + esc(t.value) + '</div></div>' +
+                /* 標題用走勢卡自己的 .chart-card__title（2026-09-01 使用者裁示「要和方案統計
+                   一樣的字體大小顏色」）。原本借 .kpi__label——12px、全大寫、灰字，那是
+                   素磚上「這個數字叫什麼」的小標；這一格已經長成一張卡，卡的標題就該是
+                   卡標題。.chart-card__title 與 .card__title 本來就是同一套排版（font-display
+                   18px / regular / --foreground），全站其他走勢卡（收入趨勢、售票趨勢）用的
+                   也是它，這頁是唯一的孤例。 */
+                '<h3 class="chart-card__title">' + esc(t.label) + '</h3>' +
+                /* 數字可以省略（預購累積）：同一個數字已經寫在上面那格素磚上。 */
+                (t.value ? '<div class="kpi__value-row"><div class="kpi__value">' + esc(t.value) + '</div></div>' : '') +
               '</div>' +
               '<div class="chart-card__controls"><div class="segmented" role="tablist" data-ov-range>' +
-                RANGES.map(r => '<button class="segmented__item' + (ovBackerRange === r[0] ? ' segmented__item--active' : '') +
-                  '" type="button" role="tab" aria-selected="' + (ovBackerRange === r[0] ? 'true' : 'false') +
+                RANGES.map(r => '<button class="segmented__btn' + (cs.range === r[0] ? ' segmented__btn--active' : '') +
+                  '" type="button" role="tab" aria-selected="' + (cs.range === r[0] ? 'true' : 'false') +
                   '" data-ov-range-set="' + r[0] + '">' + esc(T(r[1], r[2])) + '</button>').join('') +
               '</div></div>' +
             '</div>' +
             '<div class="chart-card__body">' + chipsHTML(t) + line + bars + '</div>' +
             '<div class="chart-card__foot">' +
-              '<span>' + esc(T('pd-ov.kpi.bk-foot', 'Cumulative backers since launch')) + '</span>' +
-              '<div class="chart-card__foot-actions" data-ov-view>' +
-                '<button class="segmented__item' + (ovBackerView === 'line' ? ' segmented__item--active' : '') + '" type="button" data-ov-view-set="line" aria-label="Line chart" title="Line chart"><i data-lucide="chart-line" class="ztor-icon" style="width:14px;height:14px"></i></button>' +
-                '<button class="segmented__item' + (ovBackerView === 'bar' ? ' segmented__item--active' : '') + '" type="button" data-ov-view-set="bar" aria-label="Bar chart" title="Bar chart"><i data-lucide="chart-column" class="ztor-icon" style="width:14px;height:14px"></i></button>' +
+              /* 沒有口徑說明時就不長那一格（2026-09-01 卡底說明撤除之後的常態）。 */
+              (foot ? '<span>' + foot + '</span>' : '') +
+              /* 2026-09-01：這一組掛 `.segmented`（DS 元件）＋段用 `--icon` 變體。
+                 原本借的是 chart.css 那份已撤除的 segmented 副本，而且行內把圖示寫死
+                 14px——尺寸交給 `.segmented__btn--icon` 的 18px，不在頁面裡另定一套。 */
+              '<div class="segmented chart-card__foot-actions" data-ov-view>' +
+                '<button class="segmented__btn segmented__btn--icon' + (cs.view === 'line' ? ' segmented__btn--active' : '') + '" type="button" data-ov-view-set="line" aria-label="Line chart" title="Line chart"><i data-lucide="chart-line" class="ztor-icon"></i></button>' +
+                '<button class="segmented__btn segmented__btn--icon' + (cs.view === 'bar' ? ' segmented__btn--active' : '') + '" type="button" data-ov-view-set="bar" aria-label="Bar chart" title="Bar chart"><i data-lucide="chart-column" class="ztor-icon"></i></button>' +
               '</div>' +
             '</div>' +
           '</section>';
+        };
+        /* 磚內的小折線（2026-09-01 使用者：「曲線圖要有細節 例如縱橫的數值」）。
+           取代原本沒有刻度的 .sparkline：縱軸給頭尾兩個值（最大值與 0）、橫軸給起訖日期。
+           畫法與座標系直接用 js/linechart.js 那支，跟底下的大圖同一份——尺寸與刻度密度
+           的差別收在 CSS 的 .linechart--mini，不在這裡另寫一套幾何。 */
+        const miniChart = m => {
+          const LC = window.ZtorLinechart;
+          if (!LC || !m.values || m.values.length < 2) return '';
+          /* 值是小數（每期新增不取整），刻度往上取整才不會寫出「4.7」。 */
+          const max = Math.max(1, Math.ceil(Math.max.apply(null, m.values)));
+          const fmt = v => Number(v || 0).toLocaleString('en-US');
+          /* 刻度的 13%／88% 與 js/linechart.js 的座標系對齊（值 0 落在 y=158、
+             最大值落在 y=23，換算成容器高度就是這兩個百分比）。 */
+          const yAxis = '<div class="linechart__y-axis">' +
+            '<span class="linechart__y-tick" style="top:13%">' + esc(fmt(max)) + '</span>' +
+            '<span class="linechart__y-tick" style="top:88%">0</span>' +
+          '</div>';
+          const labels = (m.labels && m.labels.length)
+            ? '<div class="linechart__labels linechart__labels--sparse">' +
+                '<span>' + esc(m.labels[0]) + '</span>' +
+                '<span>' + esc(m.labels[m.labels.length - 1]) + '</span>' +
+              '</div>' : '';
+          return '<div class="linechart linechart--axes linechart--mini">' + yAxis +
+            '<div class="linechart__main">' +
+              '<svg class="linechart__svg" viewBox="0 0 600 180" preserveAspectRatio="none" aria-hidden="true">' +
+                LC.gridHTML() +
+                LC.seriesHTML([{ values: m.values, color: 'var(--primary)', area: true }], max) +
+              '</svg>' + labels +
+            '</div></div>';
         };
         const plainTile = t =>
           '<div class="kpi">' +
@@ -2700,14 +2935,16 @@ window.ztorPdLookup = (function () {
             /* 數字包在 .kpi__value-row 裡：與儀表板的 KPI 同一個骨架（2026-08-31
                使用者裁示「有同樣的元件就用一樣的」），之後要加成長膠囊也接得上。 */
             '<div class="kpi__value-row"><div class="kpi__value">' + esc(t.value) +
-              (t.of ? '<span class="stat__of">' + esc(t.of) + '</span>' : '') + '</div>' +
-              /* 註腳（目標、收單期間）跟著金額那一行走、靠右（2026-08-31 使用者裁示）：
-                 它是在說明左邊那個數字，放卡底會被長條與圖例隔開、離得最遠。 */
-              (t.meta ? '<div class="kpi__meta">' + esc(t.meta) + '</div>' : '') + '</div>' +
-            /* 順序：條／圖 → 圖例 → 註腳。圖例緊貼著它在解釋的那條長條（參考圖也是這個順序），
-               kpi__meta 是整格的註腳（目標、期間），留在最後。 */
+              (t.of ? '<span class="stat__of">' + esc(t.of) + '</span>' : '') + '</div></div>' +
+            /* 順序：數字 → 進度條 → 註腳 → 迷你走勢（2026-09-01 使用者裁示「灰字放進度條下面」）。
+               ✝ 這推翻 2026-08-31 的「註腳跟著金額那一行走、靠右」——當時那一格底下還有
+               分段長條＋圖例兩層，註腳擺卡底會被推到離它在說明的數字最遠的地方。
+               圖例已於同輪拆成獨立的方案統計、分段長條也退回單色，卡底不再擁擠，
+               註腳回到條的下面：一格由上而下就是「多少 → 走到哪 → 對照什麼」，
+               而靠右那版會在三格並排時各自對齊到不同的位置，掃過去像沒對齊。 */
             barHTML(t) +
-            (t.spark ? SPARK(t.spark) : '') +
+            (t.meta ? '<div class="kpi__meta">' + esc(t.meta) + '</div>' : '') +
+            (t.mini ? miniChart(t.mini) : '') +
           '</div>';
         const withChart = tiles.filter(t => t.spark);
         const plain = tiles.filter(t => !t.spark);
@@ -2719,52 +2956,66 @@ window.ztorPdLookup = (function () {
            色點沿用同一組 --chart-N，與長條分段、走勢線三處同色。 */
         const splitSection = () => {
           const rows = planSplit();
+          if (!rows.length) return '';
+          /* 2026-09-01 使用者裁示改成圓環圖（附了兩張參考圖：環在左、總數收進環心、
+             圖例在右一列一個方案）。用站上既有的 `.donut-mix`——它 2026-08-31 為展示版的
+             粉絲分布而建，那一格改版後成了零消費元件；這裡的資料形狀（一個總數拆成幾塊、
+             段與段不重疊）正是它的定義，不必再造第三種圓環（站上另外兩支的分工見
+             donut-mix.css 檔頭：`.donut` 只吃兩段、`.pie` 沒有圓端與縫）。
+
+             ✝ 撤除（墓碑）：原本的 `.rank-bars--barline` 四欄表（方案／售出／累積金額／佔比，
+             每列底下一條 .project-bar）。改成環之後每一段的長度就是佔比，列底的長條變成
+             同一件事講兩遍；四個欄位全部保留，搬進環右邊的圖例。
+
+             **環照售出份數切**，與圖例的「佔比」同一個分母。這裡不會與「累積金額」的佔比
+             打架——planSplit() 的金額本來就是按份數比例拆的（見該函式的註解），
+             兩種算法在這份資料上恆等；改用份數是因為這張卡的主體是份數（環心也是份數），
+             一張卡只用一個分母。 */
           const raised = moneyNum((proj.fund && proj.fund.raised) || 0);
-          if (!rows.length || !raised) return '';
+          const hasAmt = raised > 0;
+          const totalCount = rows.reduce((a, r) => a + r.count, 0) || 1;
+          const colorOf = i2 => 'var(--chart-' + ((i2 % 5) + 1) + ')';
+          const pctOf = r => r.count / totalCount * 100;
+          const D = window.ZtorDonut;
+          if (!D) return '';
+          const ring = D.ringHTML(
+            rows.map((r, i2) => ({ pct: pctOf(r), color: colorOf(i2) })),
+            totalCount.toLocaleString('en-US'),
+            T('pd-ov.plansplit.unit', 'units'));
+          const head =
+            '<div class="split-bar__row split-bar__row--head">' +
+              '<span class="split-bar__dot"></span>' +
+              '<span class="split-bar__label" data-i18n="pd-ov.plansplit.col-plan">' + esc(T('pd-ov.plansplit.col-plan', 'Plan')) + '</span>' +
+              '<span class="donut-mix__amt" data-i18n="pd-ov.plansplit.col-sold">' + esc(T('pd-ov.plansplit.col-sold', 'Sold')) + '</span>' +
+              (hasAmt ? '<span class="donut-mix__amt" data-i18n="pd-ov.plansplit.col-amount">' + esc(T('pd-ov.plansplit.col-amount', 'Raised')) + '</span>' : '') +
+              '<span class="split-bar__pct" data-i18n="pd-ov.plansplit.col-share">' + esc(T('pd-ov.plansplit.col-share', 'Share')) + '</span>' +
+            '</div>';
+          const legend = rows.map((r, i2) =>
+            '<div class="split-bar__row" style="color:' + colorOf(i2) + '">' +
+              '<span class="split-bar__dot"></span>' +
+              '<span class="split-bar__label">' + esc(r.b.name || T('pd-bundle.untitled', 'Untitled plan')) + '</span>' +
+              '<span class="donut-mix__amt">' + r.count.toLocaleString('en-US') + '</span>' +
+              (hasAmt ? '<span class="donut-mix__amt">$' + Math.round(r.amount).toLocaleString('en-US') + '</span>' : '') +
+              '<span class="split-bar__pct">' + Math.round(pctOf(r)) + '%</span>' +
+            '</div>').join('');
           return '<section class="card">' +
             '<div class="card__head"><h3 class="card__title" data-i18n="pd-ov.plansplit.title">' +
               esc(T('pd-ov.plansplit.title', 'Plan breakdown')) + '</h3></div>' +
-            /* 欄位（2026-08-31 使用者補充「包含各方案的售出數量、累積金額」）：
-               方案／售出／累積金額／佔比。多一個數字欄就得多一條軌道，
-               所以用 `.source-list--stats`（chart.css）而不是塞進名稱那一欄。 */
-            /* 2026-08-31 二版（使用者：「要有百分比條 總金額的比例」）：改用 `.rank-bars`
-               ——站上「每一類各自一列、而且要看得到比例」的既有答案（chart.css §6）。
-               長度按「佔最大那一列的比例」算（元件自己的算法：row ÷ max × 100），
-               所以最長的那條永遠滿格、彼此的長短才比得出來；右邊那欄仍寫「佔總金額的百分比」，
-               兩個問題各有各的欄位，不混在同一個數字裡。
-               色點沿用同一組 --chart-N，與長條分段、走勢線三處同色。 */
-            '<ul class="rank-bars">' +
-              '<li class="rank-bar rank-bar--stats rank-bar--head">' +
-                '<div class="rank-bar__track"><div class="rank-bar__content">' +
-                  '<span class="rank-bar__label" data-i18n="pd-ov.plansplit.col-plan">' + esc(T('pd-ov.plansplit.col-plan', 'Plan')) + '</span>' +
-                '</div></div>' +
-                '<span class="rank-bar__amt" data-i18n="pd-ov.plansplit.col-sold">' + esc(T('pd-ov.plansplit.col-sold', 'Sold')) + '</span>' +
-                '<span class="rank-bar__amt" data-i18n="pd-ov.plansplit.col-amount">' + esc(T('pd-ov.plansplit.col-amount', 'Raised')) + '</span>' +
-                '<span class="rank-bar__pct" data-i18n="pd-ov.plansplit.col-share">' + esc(T('pd-ov.plansplit.col-share', 'Share')) + '</span>' +
-              '</li>' +
-              (() => {
-                const top = Math.max.apply(null, rows.map(r => r.amount)) || 1;
-                return rows.map((r, i2) =>
-                  '<li class="rank-bar rank-bar--stats">' +
-                    '<div class="rank-bar__track">' +
-                      '<div class="rank-bar__fill" style="width:' + Math.max(2, Math.round(r.amount / top * 100)) + '%"></div>' +
-                      '<div class="rank-bar__content">' +
-                        '<span class="rank-bar__dot" style="background:var(--chart-' + ((i2 % 5) + 1) + ')"></span>' +
-                        '<span class="rank-bar__label">' + esc(r.b.name || T('pd-bundle.untitled', 'Untitled plan')) + '</span>' +
-                      '</div>' +
-                    '</div>' +
-                    '<span class="rank-bar__amt">' + r.count.toLocaleString('en-US') + '</span>' +
-                    '<span class="rank-bar__amt">$' + Math.round(r.amount).toLocaleString('en-US') + '</span>' +
-                    '<span class="rank-bar__pct">' + Math.round(r.amount / raised * 100) + '%</span>' +
-                  '</li>').join('');
-              })() +
-            '</ul>' +
+            '<div class="donut-mix donut-mix--stack">' + ring +
+              '<div class="donut-mix__legend donut-mix__legend--stats">' +
+                '<div class="split-bar__legend">' + head + legend + '</div>' +
+              '</div>' +
+            '</div>' +
           '</section>';
         };
+        /* 隱藏條件要連方案統計一起看（2026-09-01）：那一段的資料來源與 KPI 不同，
+           只看磚數的話會出現「有明細但整欄被藏起來」。 */
+        const split = splitSection();
+        kbox.hidden = !(tiles.length || split);
         kbox.innerHTML =
           (plain.length ? '<div class="detail-overview__kpi-row">' + plain.map(plainTile).join('') + '</div>' : '') +
           withChart.map(chartTile).join('') +
-          splitSection();
+          split;
         icons(kbox);   /* chart-card 的標題圖示是 <i data-lucide>，要重畫一次 */
       }
 
@@ -3954,11 +4205,20 @@ window.ztorPdLookup = (function () {
       if (t && !t.closest('[hidden]')) t.focus();
     });
 
+    /* 2026-09-01：三個切換都改成先問「這是哪一張卡」（卡片上的 data-ov-chart），
+       同一欄同時站著兩、三張走勢卡時才不會互相牽動。 */
+    const chartKeyOf = el => {
+      const c = el.closest('.chart-card[data-ov-chart]');
+      return c ? c.getAttribute('data-ov-chart') : '';
+    };
+
     /* 期間切換（日／週／月）：重畫，取樣密度與橫軸日期跟著變。 */
     document.addEventListener('click', e => {
       const b = e.target.closest('[data-ov-range-set]');
       if (!b) return;
-      ovBackerRange = b.getAttribute('data-ov-range-set');
+      const k = chartKeyOf(b);
+      if (!k) return;
+      chartState(k).range = b.getAttribute('data-ov-range-set');
       renderStage();
     });
 
@@ -3970,18 +4230,22 @@ window.ztorPdLookup = (function () {
       const b = e.target.closest('[data-ov-view-set]');
       if (!b) return;
       const card = b.closest('.chart-card');
-      if (!card) return;
-      ovBackerView = b.getAttribute('data-ov-view-set');
-      card.setAttribute('data-chart-view', ovBackerView);
+      const k = chartKeyOf(b);
+      if (!card || !k) return;
+      const v = b.getAttribute('data-ov-view-set');
+      chartState(k).view = v;
+      card.setAttribute('data-chart-view', v);
       b.parentNode.querySelectorAll('[data-ov-view-set]').forEach(x =>
-        x.classList.toggle('segmented__item--active', x === b));
+        x.classList.toggle('segmented__btn--active', x === b));
     });
 
     /* 走勢圖的圖例＝篩選（2026-08-31）：點一顆只留「總數 ＋ 那一條」，點「全部」還原。 */
     document.addEventListener('click', e => {
       const b = e.target.closest('[data-ov-series]');
       if (!b) return;
-      ovBackerSeries = b.getAttribute('data-ov-series') || '';
+      const k = chartKeyOf(b);
+      if (!k) return;
+      chartState(k).series = b.getAttribute('data-ov-series') || '';
       renderStage();
     });
 
@@ -4041,6 +4305,17 @@ window.ztorPdLookup = (function () {
       const c = document.getElementById('pd-composer');
       if (!c) return;
       c.classList.remove('is-open');
+      /* 從總覽展開的那一份要還原成總覽自己的入口（2026-09-01 修）：發文框是活的 DOM、
+         被搬到總覽那張卡裡，只把 is-open 拿掉的話，卡上留著的是**時間軸版**的收合行
+         （它問「發生了什麼事」），而總覽問的是「要不要發一則更新」——同一個位置換了
+         一個問法，還少了圖片／影片／音樂那一列快捷。還原的邏輯本來就寫在 renderStage()
+         裡（`here && !open` 那一段），只是取消沒有走到它，所以這裡照做一次。
+         時間軸那個落點不受影響：發文框本來就住在那裡，收合成自己的一行才是對的。 */
+      const ovc = document.querySelector('[data-pd-ov-composer]');
+      if (ovc && ovc.nextElementSibling === c) {
+        c.hidden = true;
+        ovc.hidden = false;
+      }
       if (cTitle) cTitle.value = '';
       if (cBody) cBody.value = '';
       if (cKind) delete cKind.dataset.touched;
@@ -4494,30 +4769,28 @@ window.ztorPdLookup = (function () {
         }
 
         /* 方案支持統計：方案本體（名稱／價格／上限）讀方案編輯器同一份資料；
-           每方案支持人數原型沒有這份資料——以 fund.backers 按遞減權重（入門方案人最多）
-           做示意拆分，限量方案不超過上限、溢出補回第一個方案。 */
+           每方案的售出份數讀共用的 planSplit()。
+
+           2026-09-01 兩件事一起改：(1) 口徑從「支持人數」改成「售出份數」——使用者裁決
+           一人可多方案之後，逐方案再講人數就沒有意義（同一個人會被算進好幾列）。
+           (2) 這裡原本有一份跟 planSplit() 一字不差的拆分程式碼；8/31 抽共用時漏了這一處，
+           兩份各算各的遲早會對不上，改成只留一份。 */
         const tiers = document.getElementById('pd-cofund-tiers');
         if (tiers && BD && bundles.length) {
-          const total = Math.round(moneyNum(f.backers));
-          const n = bundles.length;
-          const weights = bundles.map((b, i) => n - i);
-          const wsum = weights.reduce((a, b) => a + b, 0) || 1;
+          const split = planSplit();
+          /* planSplit() 拿不到總量時會回空陣列（例如沒有 fund 的項目），所以逐格取值要有退路，
+             不能假設它跟 bundles 一樣長。 */
+          const countOf = i => (split[i] ? split[i].count : 0);
           const capOf = b => (b.avail === 'limited' && +b.cap > 0) ? +b.cap : 0;
-          const counts = bundles.map((b, i) => Math.round(total * weights[i] / wsum));
-          bundles.forEach((b, i) => {
-            const cap = capOf(b);
-            if (cap && counts[i] > cap) { counts[0] += counts[i] - cap; counts[i] = cap; }
-          });
-          counts[0] = Math.max(0, counts[0] + (total - counts.reduce((a, b) => a + b, 0)));
           tiers.innerHTML = bundles.map((b, i) => {
             const cap = capOf(b);
-            const filled = cap ? Math.min(100, Math.round(counts[i] / cap * 100)) + '%' : '—';
+            const filled = cap ? Math.min(100, Math.round(countOf(i) / cap * 100)) + '%' : '—';
             const slots = cap ? cap.toLocaleString('en-US') : T('pd-cf.slots.unlimited', 'Unlimited');
             return '<tr class="ztor-table__row"><td style="font-weight:var(--fw-regular)">' +
               esc(b.name || T('pd-bundle.untitled', 'Untitled plan')) + '</td>' +
               '<td>' + esc(BD.money(BD.finalPrice(b))) + '</td>' +
               '<td>' + esc(slots) + '</td><td>' + filled + '</td>' +
-              '<td style="text-align:right;font-weight:var(--fw-regular)">' + counts[i].toLocaleString('en-US') + '</td></tr>';
+              '<td style="text-align:right;font-weight:var(--fw-regular)">' + countOf(i).toLocaleString('en-US') + '</td></tr>';
           }).join('');
         }
 
@@ -4663,36 +4936,26 @@ window.ztorPdLookup = (function () {
        用捲動位置判斷、不用 IntersectionObserver：站上的捲軸在 main.main 而不是視窗，
        observer 掛這種內層捲動容器時觸發時機不穩（實測捲過頭了仍回報 isIntersecting）。
        門檻取 hero 自己的高度，版面改了也不用回頭改數字。 */
+    /* 2026-09-01：捲動判定與 fixed 的幾何抽成共用 `js/detail-topbar.js`（系列詳情
+       同一支）。這裡只留「這一頁的縮圖與名稱從哪來」。
+       行為也在同一輪改了：麵包屑那一列先被推掉、整個 hero 捲完，精簡列才滑進來。 */
     (function () {
-      /* 2026-08-31：內嵌模式（detail-sheet 浮層）的捲軸在 <body>、不在 main.main
-         （見 shared.css「內嵌模式」把捲動改回單層）。掛錯容器 scrollTop 恆為 0，
-         頂列永遠進不了黏住態——在浮層裡就會看到內容從那一列底下穿出去。 */
-      const embed = document.documentElement.hasAttribute('data-embed');
-      const scroller = embed ? document.scrollingElement : document.querySelector('main.main');
       const bar = document.querySelector('.pd-detail__topbar');
-      const hero = document.querySelector('.pd-hero');
-      const mini = document.querySelector('[data-pd-mini]');
-      const crumb = document.querySelector('.pd-detail__breadcrumb');
-      if (!scroller || !bar || !hero || !mini || !crumb) return;
       const cover = document.getElementById('pd-mini-cover');
       const name = document.getElementById('pd-mini-name');
       const poster = document.getElementById('pd-poster');
       const title = document.getElementById('pd-title');
-      let on = null;
-      function sync() {
-        const gone = scroller.scrollTop > hero.offsetTop + hero.offsetHeight - bar.offsetHeight;
-        if (gone === on) return;
-        on = gone;
-        mini.hidden = !gone;
-        crumb.hidden = gone;
-        bar.classList.toggle('is-stuck', gone);
-        if (gone) {
+      if (!window.ZtorDetailTopbar || !bar) return;
+      window.ZtorDetailTopbar.init({
+        bar: bar,
+        hero: document.querySelector('.pd-hero'),
+        mini: document.querySelector('[data-pd-mini]'),
+        crumb: document.querySelector('.pd-detail__breadcrumb'),
+        onStick: function () {
           if (cover && poster) { cover.src = poster.src; cover.alt = poster.alt || ''; }
           if (name && title) name.textContent = title.textContent;
         }
-      }
-      (embed ? window : scroller).addEventListener('scroll', sync, { passive: true });
-      sync();
+      });
     })();
     renderAll();
 
@@ -4805,6 +5068,10 @@ window.ztorPdLookup = (function () {
       list: root,
       addBtn: '[data-bundle-add]',
       t: T,
+      /* 2026-09-01 使用者裁示「詳情頁這一塊跟建立頁一樣改 popup」：同一天建立頁
+         先改的分段版型（清單列＋兩步彈窗、彈窗內一段一張分卡）這裡跟進，
+         全站的方案編輯只剩一種長相。 */
+      layout: 'sections',
       pool: SLOT_POOL,
       perSlot: PER_SLOT,
       initial: seed,
@@ -4828,6 +5095,7 @@ window.ztorPdLookup = (function () {
       addBtn: '[data-bundle-add-pre]',
       t: T,
       shares: false,
+      layout: 'sections',   /* 2026-09-01：同上，預購方案跟建立頁一起改分段彈窗 */
       collapsedByDefault: true,
       unitPriceInput: '#pd-pre-unit',
       workName: pname,
@@ -5221,24 +5489,18 @@ window.ztorPdLookup = (function () {
         });
         if (deep) deep.hidden = b.getAttribute('data-earn-series') !== 'ott';
       });
-      /* 深度明細：整區收合 ＋ 小計列展開看組成 */
+      /* 深度明細：整區收合（本頁自己的區段開關）＋ 小計列展開看組成（共用元件） */
       if (deep) {
         deep.addEventListener('click', e => {
           const top = e.target.closest('[data-deep-toggle]');
-          if (top) {
-            const open = top.getAttribute('aria-expanded') !== 'true';
-            top.setAttribute('aria-expanded', open ? 'true' : 'false');
-            deep.querySelector('[data-deep-body]').hidden = !open;
-            return;
-          }
-          const sub = e.target.closest('[data-sub-toggle]');
-          if (sub) {
-            const open = sub.getAttribute('aria-expanded') !== 'true';
-            sub.setAttribute('aria-expanded', open ? 'true' : 'false');
-            deep.querySelectorAll('[data-sub-child="' + sub.getAttribute('data-sub-toggle') + '"]')
-                .forEach(row => { row.hidden = !open; });
-          }
+          if (!top) return;
+          const open = top.getAttribute('aria-expanded') !== 'true';
+          top.setAttribute('aria-expanded', open ? 'true' : 'false');
+          deep.querySelector('[data-deep-body]').hidden = !open;
         });
+        /* 小計列展開看組成＝共用元件 row-disclosure（把手、鍵盤、子列顯隱都在那裡，
+           見 design-system.md §4.204）；本頁不再自寫 toggle。 */
+        if (window.rowDisclosure) window.rowDisclosure.init(deep);
       }
       const period = document.querySelector('[data-earn-period]');
       if (period) period.addEventListener('click', e => {

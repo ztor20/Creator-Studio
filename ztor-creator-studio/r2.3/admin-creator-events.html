@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>創作者活動管理 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/avatar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/roster-picker.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/admin-ip-bank-table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/header.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/footer.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* 創作者活動管理（Tier 0 Admin · spec 5.1.0.6 · D233；頁名 D234 由「活動匯入」更名；
+     D238 改自動匯入、表格變唯讀清單）。
+     版面骨架（上段選人、下段內容）、creator 卡片與選定者的標題列（含「最後檢查 ＋
+     重新檢查」那一組）都由 `ds-components/roster-picker.css` ＋
+     `ds-components/selection-card.css` ＋ `ds-components/stat-row.css`（卡上的小標籤
+     數字＝`--inline` 變體）提供；這裡只放這一頁獨有的一件小事：活動表格的欄寬與換行鎖定。 */
+
+  /* 狀態與動作兩欄不鎖寬、只禁止換行：它們的字會隨語言變長（「待設定套組」vs
+     「Setup pending」），寫死一個值就得遷就最長的那個語言，中文版整欄空一半。 */
+  .ace-status, .ace-act { white-space: nowrap; }
+  /* 日期是唯一會被拿來上下比對的欄，等寬數字才對得齊 */
+  .ace-date { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* 墓碑 2026-09-02（D238 自動匯入）：以下兩條隨「勾選匯入」整組退場，全庫零殘留——
+       · `.ace-col-pick`      勾選欄的鎖寬（44px）。表格沒有勾選欄了。
+       · `.ace-row--locked`   已匯入列的字色退一階。當時它表達的是「這一列不必再決定」，
+                              現在每一列都是已匯入的事實，沒有第二種列可以對比。 */
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <!-- F1 頁首。導航脈絡由側欄／頂列的 Admin 列承擔（js/sidebar.js 的 ADMIN_NAV），
+           本頁是側欄的頂層目的地、不是誰的子頁，所以不畫 page-crumb。 -->
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="admin.creator-events">Creator event management</h1>
+          <p class="page-intro__sub" data-i18n="ace.lede">Every creator on the platform and their bookyay events. Once a bookyay account is linked, that creator's events come across on their own and keep syncing — this is where you see what arrived and which of it still needs bundle set-up.</p>
+        </div>
+      </div>
+
+      <!-- 載入中（§6 慣例）。原型沒有真的請求，用 ?state=loading 演示。 -->
+      <div id="ace-loading" hidden>
+        <div class="empty-card">
+          <div class="empty-card__icon"><i data-lucide="refresh-ccw" class="ztor-icon"></i></div>
+          <h2 class="empty-card__title" data-i18n="ace.loading">Loading bookyay…</h2>
+        </div>
+      </div>
+
+      <!-- 錯誤（§6 慣例）。原型用 ?state=error 演示。 -->
+      <div id="ace-error" hidden>
+        <div class="empty-card">
+          <div class="empty-card__icon empty-card__icon--warning"><i data-lucide="alert-circle" class="ztor-icon"></i></div>
+          <h2 class="empty-card__title" data-i18n="ace.error.title">bookyay did not answer</h2>
+          <p class="empty-card__text" data-i18n="ace.error.text">The event list could not be fetched. What you see is the last successful check.</p>
+          <a class="btn btn--outline" href="admin-creator-events.html" data-i18n="ace.error.retry">Try again</a>
+        </div>
+      </div>
+
+      <!-- 狀態一 · 無 creator：平台上還沒有人，左邊沒有可選的、右邊也不呈現內容。
+           示範名冊永遠有三位，所以這個狀態用 ?state=empty 演示。 -->
+      <div id="ace-nocreators" hidden>
+        <div class="empty-card">
+          <div class="empty-card__icon"><i data-lucide="users" class="ztor-icon"></i></div>
+          <h2 class="empty-card__title" data-i18n="ace.empty.title">No creators yet</h2>
+          <p class="empty-card__text" data-i18n="ace.empty.text">Creators are built in Creator Management. Once one exists, their bookyay events show up here.</p>
+          <a class="btn btn--outline" href="creators.html" data-i18n="ace.empty.cta">Go to Creator Management</a>
+        </div>
+      </div>
+
+      <!-- 上段選人、下段看那一位（2026-09-02 使用者裁示）。 -->
+      <div class="roster-picker" id="ace-shell" hidden>
+
+        <!-- F2 · Creator 選擇（上段）：工作列在最上，底下是一張卡一位 creator 的網格 -->
+        <section class="roster-picker__pick">
+          <div class="roster-picker__bar">
+            <label class="field-pill roster-picker__search" aria-label="Search creators" data-i18n-aria-label="ace.search.ph">
+              <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+              <input class="field-pill__input" type="search" id="ace-search" autocomplete="off"
+                     placeholder="Search name or shop handle" data-i18n-placeholder="ace.search.ph">
+            </label>
+
+            <nav class="filter-tabs" role="tablist" aria-label="Filter creators" id="ace-filters">
+              <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-filter="all"><span data-i18n="ace.filter.all">All</span><span class="filter-tabs__count" data-count="all">0</span></button>
+              <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-filter="pending"><span data-i18n="ace.filter.pending">To set up</span><span class="filter-tabs__count" data-count="pending">0</span></button>
+              <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-filter="unlinked"><span data-i18n="ace.filter.unlinked">Not linked</span><span class="filter-tabs__count" data-count="unlinked">0</span></button>
+            </nav>
+          </div>
+
+          <div class="roster-picker__grid" id="ace-roster"></div>
+          <p class="roster-picker__nomatch" id="ace-nomatch" hidden data-i18n="ace.nomatch">No creator matches this filter.</p>
+        </section>
+
+        <!-- 下段：選定者的內容（F3／F4／F5），或未選定時的引導 -->
+        <div class="roster-picker__body" id="ace-body">
+
+          <!-- 狀態二 · 有 creator、未選定 -->
+          <div id="ace-none">
+            <div class="empty-card">
+              <div class="empty-card__icon"><i data-lucide="users" class="ztor-icon"></i></div>
+              <h2 class="empty-card__title" data-i18n="ace.none.title">Pick a creator</h2>
+              <p class="empty-card__text" data-i18n="ace.none.text">Choose someone above to see the events that came across from bookyay.</p>
+            </div>
+          </div>
+
+          <!-- 深連結查無此 creator：不靜默改開另一位（與 5.1.0.5 F1 同一條規則） -->
+          <div id="ace-notfound" hidden>
+            <div class="empty-card">
+              <div class="empty-card__icon empty-card__icon--warning"><i data-lucide="alert-circle" class="ztor-icon"></i></div>
+              <h2 class="empty-card__title" data-i18n="ace.notfound.title">Creator not found</h2>
+              <p class="empty-card__text" data-i18n="ace.notfound.text">The link points at a creator that no longer exists. Nobody was opened in its place — pick one above.</p>
+            </div>
+          </div>
+
+          <div class="roster-picker__detail" id="ace-detail" hidden>
+            <div class="roster-picker__head">
+              <div class="roster-picker__head-text">
+                <h2 class="roster-picker__head-title" id="ace-head-name"></h2>
+                <div class="roster-picker__head-meta" id="ace-head-meta"></div>
+              </div>
+              <!-- F6 · 最後檢查 ＋ 重新檢查（D238）。放在標題列這一區、不進卡片：
+                   卡剛壓成兩列，再塞一行時間戳等於把上一輪拿掉的東西放回去；而且這是
+                   「選定這一位之後才需要知道」的量，與摘要數字同一級。
+                   兩個字串都帶值或帶狀態，所以不掛 data-i18n（掛了切語言會還原成含
+                   佔位符的原字），改由 renderSync() 在載入與 i18n:applied 時重寫。 -->
+              <div class="roster-picker__head-actions" id="ace-sync" hidden>
+                <span class="roster-picker__head-sync" id="ace-checked"></span>
+                <button class="btn btn--outline btn--sm" type="button" id="ace-recheck">
+                  <i data-lucide="refresh-ccw" class="ztor-icon ztor-icon--sm"></i><span id="ace-recheck-label">Check again</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- F5 · 未綁定 bookyay 帳號 -->
+            <div id="ace-unlinked" hidden>
+              <div class="empty-card">
+                <div class="empty-card__icon"><i data-lucide="link" class="ztor-icon"></i></div>
+                <h2 class="empty-card__title" data-i18n="ace.unlinked.title">No bookyay account linked</h2>
+                <p class="empty-card__text" data-i18n="ace.unlinked.text">This creator has no bookyay account linked yet. Once it is, their bookyay events come across on their own and keep syncing — nothing has to be moved by hand.</p>
+                <!-- 綁定流程本身〔產品待確認〕（D233 未定第 4 項）：這裡只給入口與一句
+                     說明，按鈕停用、不接任何假流程。 -->
+                <button class="btn btn--outline" type="button" disabled data-i18n="ace.unlinked.cta">Link bookyay account</button>
+                <p class="empty-card__text" data-i18n="ace.unlinked.todo">Where the linking happens and who does it is still being decided, so this button does nothing yet.</p>
+              </div>
+            </div>
+
+            <!-- 選定 creator、bookyay 上沒有這位的活動 -->
+            <div id="ace-noevents" hidden>
+              <div class="empty-card">
+                <div class="empty-card__icon"><i data-lucide="ticket" class="ztor-icon"></i></div>
+                <h2 class="empty-card__title" data-i18n="ace.noevents.title">Nothing on bookyay</h2>
+                <p class="empty-card__text" data-i18n="ace.noevents.text">This creator is linked, but bookyay has nothing selling under their account right now.</p>
+              </div>
+            </div>
+
+            <!-- F3／F4 · 這位 creator 從 bookyay 自動搬進來的活動，唯讀清單。
+                 D238 起沒有勾選欄、沒有匯入鈕：自動匯入之後這張表回答的是「搬進來了什麼、
+                 哪幾場還沒設完」，唯一動作是待設定套組那幾列的「繼續設定」。 -->
+            <div class="admin-table-wrap admin-table-wrap--fluid" id="ace-table-wrap" hidden>
+              <table class="ztor-table">
+                <thead>
+                  <tr>
+                    <th scope="col" data-i18n="ace.col.name">Name</th>
+                    <th scope="col" data-i18n="ace.col.date">Date</th>
+                    <th scope="col" data-i18n="ace.col.venue">Venue</th>
+                    <th class="ace-status" scope="col" data-i18n="ace.col.status">Status</th>
+                    <th class="ace-act" scope="col"><span class="u-visually-hidden" data-i18n="ace.continue">Continue set-up</span></th>
+                  </tr>
+                </thead>
+                <tbody id="ace-rows"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 頁尾照姊妹 admin 頁的既有寫法（admin-video-review.html）：版本字串 ＋ 掛 i18n 的
+         模組名。此前這裡是寫死的英文「Admin · Creator event management (Tier 0)」，切成
+         中文時整條不翻，而且 Tier 0 是內部的 IA 用語、不是給使用者看的。 -->
+    <footer class="app-footer"><span>Ztor Creator Studio · R 2.3 prototype</span><span>·</span><span data-i18n="admin.studio">Admin Creator Studio</span></footer>
+  </main>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/toast.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script>
+/* 創作者活動管理（Tier 0 Admin · spec 5.1.0.6 · D233 建、D238 改自動匯入）。
+
+   跨 creator 的工作台：上面一排卡列出平台上每一位 creator 的進度，選定一位之後
+   下面才出現他從 bookyay 搬進來的活動表格。與 D224 時期「進了某位 creator 的詳情頁
+   才看得到這件事」的差別就在這裡——Admin 的工作是批次的，一天處理好幾位。
+
+   **D238（2026-09-02 使用者裁示「綁定以後，會自動匯入，實時檢查更新」）**：綁定 bookyay
+   帳號之後活動自動搬進來，系統持續檢查更新。連帶三件事——
+     · 「可匯入」整個概念退場（自動搬完就不存在「還沒搬進來」的活動），篩選收成三個、
+       活動狀態收成兩值（待設定套組／已完成）
+     · 表格變唯讀：沒有勾選欄、沒有「匯入已選」主鈕，唯一動作是「繼續設定」
+     · 標題列改放「最後檢查時間 ＋ 重新檢查」——自動的東西要看得見它上一次動過
+
+   資料都來自 window.ztorCreator（js/sidebar.js）：
+     · list / refresh          creator 名冊與 localStorage 覆寫（ztor.creatorEdits；本頁
+                               D238 起只讀不寫——手動匯入退場後這一頁沒有會改資料的動作）
+     · bookyayEvents            bookyay 活動池（id 與 create-event.html 的 BKY 對齊）
+     · bookyayStats(c)          一位的已匯入／待設定與完成 id 清單（三處共用） */
+(function () {
+  'use strict';
+  if (!window.ztorCreator) return;
+
+  var qs      = new URLSearchParams(location.search);
+  var C       = window.ztorCreator;
+  var pool    = C.bookyayEvents || [];
+
+  var shell     = document.getElementById('ace-shell');
+  var noCreators= document.getElementById('ace-nocreators');
+  var loadingEl = document.getElementById('ace-loading');
+  var errorEl   = document.getElementById('ace-error');
+  var rosterEl  = document.getElementById('ace-roster');
+  var noMatchEl = document.getElementById('ace-nomatch');
+  var searchEl  = document.getElementById('ace-search');
+  var filtersEl = document.getElementById('ace-filters');
+  var bodyEl    = document.getElementById('ace-body');
+  var noneEl    = document.getElementById('ace-none');
+  var notFound  = document.getElementById('ace-notfound');
+  var detailEl  = document.getElementById('ace-detail');
+  var unlinkedEl= document.getElementById('ace-unlinked');
+  var noEventsEl= document.getElementById('ace-noevents');
+  var tableWrap = document.getElementById('ace-table-wrap');
+  var rowsEl    = document.getElementById('ace-rows');
+  var headName  = document.getElementById('ace-head-name');
+  var headMeta  = document.getElementById('ace-head-meta');
+  var syncEl    = document.getElementById('ace-sync');
+  var checkedEl = document.getElementById('ace-checked');
+  var recheckBtn= document.getElementById('ace-recheck');
+  var recheckLbl= document.getElementById('ace-recheck-label');
+
+  function tx(key, fb) { return (window.i18nT && window.i18nT(key)) || fb; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>'"]/g, function (ch) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[ch]; }); }
+  function icons(el) { if (window.ztorIcons) window.ztorIcons.applyIcons(el); }
+  function i18n(el) { if (window.applyI18n) window.applyI18n(el); }
+  function initial(n) { return (n || '?').trim().charAt(0).toUpperCase(); }
+  function ev(id) { for (var i = 0; i < pool.length; i++) if (pool[i].id === id) return pool[i]; return null; }
+
+  /* ── 載入／錯誤／無 creator 的演示開關 ────────────────────────
+     這三個狀態在原型裡沒有自然的觸發路徑（沒有真的請求、示範名冊也永遠不是空的），
+     用 ?state=loading｜error｜empty 演示。真實實作換成請求的生命週期與真名冊即可，
+     畫面本身不必改。 */
+  var demoState = qs.get('state');
+  if (demoState === 'loading' || demoState === 'error') {
+    (demoState === 'loading' ? loadingEl : errorEl).hidden = false;
+    i18n(document.body); icons(document.body);
+    return;
+  }
+
+  /* ── 狀態一 · 平台尚無 creator ───────────────────────────── */
+  var list = demoState === 'empty' ? [] : (C.list || []);
+  if (!list.length) {
+    noCreators.hidden = false;
+    i18n(document.body); icons(document.body);
+    return;
+  }
+  shell.hidden = false;
+
+  /* ── 選定的人 ────────────────────────────────────────────────
+     鍵用 seed（示範資料的原始 handle）優先——店鋪網址改得掉，拿現值當唯一鍵的話，
+     改過一次之後連結就對不回同一筆（與 creator-detail 同一條）。 */
+  var wanted   = qs.get('creator') || '';
+  var current  = null;
+  var notFoundKey = '';
+  if (wanted) {
+    current = list.filter(function (x) { return x.seed === wanted; })[0]
+           || list.filter(function (x) { return x.handle === wanted; })[0]
+           || null;
+    if (!current) notFoundKey = wanted;
+  }
+
+  var filter   = 'all';
+  var checking = false;   /* 「重新檢查」進行中（原型的假檢查） */
+
+  function stats(c) { return C.bookyayStats(c); }
+
+  function matchesFilter(c) {
+    var s = stats(c);
+    if (filter === 'pending')  return s.pending > 0;
+    if (filter === 'unlinked') return !c.bookyayLinked;
+    return true;
+  }
+  function matchesSearch(c) {
+    var q = (searchEl.value || '').trim().toLowerCase();
+    if (!q) return true;
+    return (c.name || '').toLowerCase().indexOf(q) !== -1
+        || (c.handle || '').toLowerCase().indexOf(q) !== -1;
+  }
+
+  /* ── F2 · 左欄 ─────────────────────────────────────────────── */
+  function renderCounts() {
+    var n = { all: list.length, pending: 0, unlinked: 0 };
+    list.forEach(function (c) {
+      if (stats(c).pending > 0) n.pending++;
+      if (!c.bookyayLinked)     n.unlinked++;
+    });
+    Object.keys(n).forEach(function (k) {
+      var el = filtersEl.querySelector('[data-count="' + k + '"]');
+      if (el) el.textContent = n[k];
+    });
+  }
+
+  /* 卡上一格數字：欄名與值同一行的小標籤（`.stat-row--inline` 的排法）。0 值整格退成
+     --faint-ink，整排掃過去，真的有東西要處理的那幾張自己浮出來。 */
+  function statCell(n, key, fb) {
+    return '<span class="stat">'
+      +   '<span class="stat__label">' + esc(tx(key, fb)) + '</span>'
+      +   '<span class="stat__value' + (n ? '' : ' stat__value--zero') + '">' + esc(String(n)) + '</span>'
+      + '</span>';
+  }
+
+  /* 一張卡＝一位 creator，壓成兩列：左邊 32px 識別圓，右邊上列名稱、下列狀態列
+     （綁定徽章 ＋ 小標籤數字）。2026-09-02 第三輪，使用者「那些數字太佔空間 改小
+     標籤就好」＋「需要整張卡片 UI 一起調整」。
+
+     卡上有哪些數字由綁定狀態決定（同日使用者裁示「未綁定：不會有匯入與設定資料」
+     「已綁定：有已匯入與待設定，可匯入不一定需要」）：
+
+       · 未綁定 → 狀態列放「未綁定」徽章，一個場次數字都不印。沒綁帳號就沒有已匯入／
+         待設定這回事，印兩個 0 會被讀成「查過了、結果是零」；徽章佔的正是數字的位置，
+         就地說明這裡為什麼是空的。
+       · 已綁定 → 狀態列放「已匯入」「待設定」兩個小標籤，**不另外掛一顆「已綁定」
+         徽章**：有數字就代表帳號通了，一排卡每張都掛一顆是噪音；而且量過塞不下——
+         260px 的卡扣掉「Linked」徽章只剩 119px 給兩欄，英文欄名會被截成「Import…」。
+
+     2026-09-02（D238）：卡上的兩個數字沒有變動（自動匯入之後「已匯入」仍然是「搬進來
+     了幾場」）；退場的是第三個數字「可匯入」，它在上一輪就已經不上卡，本輪連同下段
+     摘要與「有待匯入」篩選整組退場。
+
+     卡面／hover／已選 outline 全部來自 `.selection-card`（站上「可選取的卡被選中」
+     只有這一種畫法）；數字那一段的呈現來自 `.stat-row--inline`；
+     `.roster-picker__card*` 只排「兩列怎麼疊」與「狀態列裡誰吃剩餘寬度」。 */
+  function renderRoster() {
+    renderCounts();
+    var rows = list.filter(function (c) { return matchesFilter(c) && matchesSearch(c); });
+    noMatchEl.hidden = rows.length > 0;
+    rosterEl.innerHTML = rows.map(function (c) {
+      var s = stats(c);
+      var on = current && (current.seed || current.handle) === (c.seed || c.handle);
+      return '<button type="button" class="selection-card roster-picker__card' + (on ? ' selection-card--active' : '') + '"'
+        + ' aria-pressed="' + (on ? 'true' : 'false') + '" data-pick-creator="' + esc(c.seed || c.handle) + '">'
+        +   '<span class="roster-picker__card-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">' + esc(initial(c.name)) + '</span></span>'
+        +   '<span class="roster-picker__card-text">'
+        +     '<span class="roster-picker__card-name">' + esc(c.name) + '</span>'
+        +     '<span class="roster-picker__card-status">'
+        +       (c.bookyayLinked
+                  ? '<span class="stat-row stat-row--inline roster-picker__card-stats">'
+                    + statCell(s.imported, 'ace.lbl.imported', 'Imported')
+                    + statCell(s.pending,  'ace.lbl.pending',  'To set up')
+                    + '</span>'
+                  : '<span class="badge badge--warning">'
+                    + esc(tx('ace.unlinked', 'Not linked'))
+                    + '</span>')
+        +     '</span>'
+        +   '</span>'
+        + '</button>';
+    }).join('');
+    icons(rosterEl);
+  }
+
+  /* ── F3／F4 · 右欄 ─────────────────────────────────────────── */
+  function renderDetail() {
+    noneEl.hidden     = !!current || !!notFoundKey;
+    notFound.hidden   = !notFoundKey;
+    detailEl.hidden   = !current;
+    if (!current) return;
+
+    var s = stats(current);
+    headName.textContent = current.name;
+    var linked  = !!current.bookyayLinked;
+    /* 摘要只剩兩個數字（D238：「可匯入 N」隨自動匯入退場）。
+       未綁定不印數字（D236 的同一條理由，這裡是卡片以外的第二個落點）：沒綁 bookyay
+       帳號就沒有已匯入或待設定這回事，印兩個 0 會被讀成「查過了、結果是零」。
+       未綁定時這一列改成空的，底下的 F5 空狀態已經把「為什麼沒有東西」講完。 */
+    headMeta.innerHTML = !linked ? '' :
+        '<span>' + esc(tx('ace.n.imported', '{n} imported').replace('{n}', s.imported)) + '</span>'
+      + '<span aria-hidden="true">·</span>'
+      + '<span>' + esc(tx('ace.n.pending', '{n} to set up').replace('{n}', s.pending)) + '</span>';
+
+    var hasPool = (current.bookyayPool || []).length > 0;
+    unlinkedEl.hidden = linked;
+    noEventsEl.hidden = !linked || hasPool;
+    tableWrap.hidden  = !linked || !hasPool;
+    /* 「最後檢查 ＋ 重新檢查」跟著**綁定狀態**走，不跟著表格走：已綁定但目前一場都沒有，
+       正是最想按一下重新檢查的時候。未綁定則整組收起來——沒綁帳號就沒有「檢查」這回事。 */
+    syncEl.hidden = !linked;
+
+    if (!tableWrap.hidden) renderRows(s);
+    renderSync();
+  }
+
+  /* 狀態只剩兩值（D238）：在完成清單裡＝已完成，不在＝待設定套組。
+     自動匯入之後池裡每一場都已經搬進來了，「可匯入」那一值沒有對象。 */
+  function statusOf(id, s) { return s.doneIds.indexOf(id) === -1 ? 'pending' : 'done'; }
+
+  function renderRows(s) {
+    rowsEl.innerHTML = (current.bookyayPool || []).map(function (id) {
+      var e = ev(id); if (!e) return '';
+      var st    = statusOf(id, s);
+      var badge = st === 'pending' ? 'badge--warning' : 'badge--success';
+      var label = st === 'pending' ? tx('ace.status.pending', 'Setup pending')
+                                   : tx('ace.status.done', 'Completed');
+      return '<tr>'
+        + '<td class="ace-name">' + esc(e.name) + '</td>'
+        + '<td class="ace-date">' + esc(e.date) + '</td>'
+        + '<td>' + esc(e.venue) + '</td>'
+        + '<td class="ace-status"><span class="badge ' + badge + '">' + esc(label) + '</span></td>'
+        /* F4 繼續設定：只有「已匯入·待設定套組」才有這條出口；已完成的不再提供
+           （帶入閘門那一側同樣擋住重複帶入）。走 create-event 既有的 ?import= 深連結，
+           那一頁會依資料決定類型、直接落在票務商品那一步。 */
+        + '<td class="ace-act">' + (st === 'pending'
+            ? '<button type="button" class="btn btn--outline btn--sm" data-continue="' + esc(id) + '">'
+              + esc(tx('ace.continue', 'Continue set-up'))
+              + '<i data-lucide="chevron-right" class="ztor-icon"></i></button>'
+            : '') + '</td>'
+        + '</tr>';
+    }).join('');
+    icons(rowsEl);
+  }
+
+  /* ── F6 · 最後檢查 ＋ 重新檢查（D238）───────────────────────────
+     時間一律寫成絕對值（`YYYY-MM-DD HH:MM`，與資料裡的其他時間戳同格式）。相對說法
+     （「3 分鐘前」）讀起來親切，但 Admin 打開這一頁多半是在跟 bookyay 那邊對帳，
+     要的是一個能直接比對的時刻；而且相對說法要自己跑計時器與兩種語言的複數規則。 */
+  function renderSync() {
+    if (!current) return;
+    checkedEl.textContent = current.lastCheckedAt
+      ? tx('ace.checked', 'Last checked {t}').replace('{t}', current.lastCheckedAt)
+      : tx('ace.checked-never', 'Not checked yet');
+    recheckLbl.textContent = checking ? tx('ace.rechecking', 'Checking…') : tx('ace.recheck', 'Check again');
+    recheckBtn.setAttribute('aria-busy', checking ? 'true' : 'false');
+  }
+
+  /* ── 選定一位 ───────────────────────────────────────────────
+     網址跟著換（replaceState，不塞歷史）：深連結進來與在頁面上點選看到的是同一個
+     位址，Admin 可以把當下這一位的網址直接貼給人。 */
+  function select(key, reveal) {
+    current = list.filter(function (x) { return (x.seed || x.handle) === key; })[0] || null;
+    notFoundKey = '';
+    try {
+      var u = new URL(location.href);
+      current ? u.searchParams.set('creator', current.seed || current.handle) : u.searchParams.delete('creator');
+      history.replaceState(null, '', u.pathname + u.search);
+    } catch (e) {}
+    renderRoster();
+    renderDetail();
+    if (reveal) revealBody();
+  }
+
+  /* 卡片列在上面，選完之後下段可能整段落在摺線下（窄畫面尤其明顯，一排卡就佔掉
+     大半個視窗）。只在下段的頂端真的不在視窗內時捲一次，已經看得到就不要無故移動畫面。
+     `prefers-reduced-motion` 的人拿到瞬移，不拿到滑動。 */
+  function revealBody() {
+    if (!bodyEl) return;
+    var top = bodyEl.getBoundingClientRect().top;
+    if (top >= 0 && top < window.innerHeight * 0.6) return;
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    try {
+      bodyEl.scrollIntoView({ block: 'start', behavior: still ? 'auto' : 'smooth' });
+    } catch (e) { bodyEl.scrollIntoView(true); }
+  }
+
+  /* ── 重新檢查（D238）─────────────────────────────────────────
+     原型做的是一次**假的**檢查：短暫忙碌態 → 更新最後檢查時間 → toast 一句。刻意
+     不假裝抓到新活動——那會憑空生出上游沒有的資料，而且「檢查完有沒有東西」正是
+     〔產品待確認〕的一部分（多久檢查一次、失敗怎麼辦、新活動怎麼通知；ASSUMPTIONS
+     PG-EVIMP-006）。
+
+     **不落 localStorage，只改記憶體裡的這一筆**：`ztor.creatorEdits` 存的是「Admin 在
+     這台瀏覽器改過的東西」，而最後檢查時間在真實系統裡是平台側同步作業的時刻、不是
+     一筆人為編輯。寫進去等於讓前端宣稱自己擁有那個時鐘，而且會讓示範資料被每一次
+     點擊永久推移（下一個開這一頁的人看到的是別人按出來的時間）。代價是重新整理後
+     回到示範值，記在 ASSUMPTIONS。 */
+  function doRecheck() {
+    if (!current || !current.bookyayLinked || checking) return;
+    checking = true;
+    renderSync();
+    window.setTimeout(function () {
+      checking = false;
+      current.lastCheckedAt = stamp();
+      renderSync();
+      if (window.ztorToast) {
+        window.ztorToast.show(tx('ace.recheck.toast', 'Checked — nothing new on bookyay'), { tone: 'success' });
+      }
+    }, 900);
+  }
+  function stamp() {
+    var d = new Date(), p = function (x) { return (x < 10 ? '0' : '') + x; };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  /* ── 事件 ───────────────────────────────────────────────── */
+  rosterEl.addEventListener('click', function (e) {
+    var row = e.target.closest('[data-pick-creator]');
+    if (row) select(row.getAttribute('data-pick-creator'), true);
+  });
+  searchEl.addEventListener('input', renderRoster);
+  filtersEl.addEventListener('click', function (e) {
+    var item = e.target.closest('.filter-tabs__item');
+    if (!item) return;
+    Array.prototype.forEach.call(filtersEl.querySelectorAll('.filter-tabs__item'), function (t) {
+      var on = t === item;
+      t.classList.toggle('filter-tabs__item--active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    filter = item.getAttribute('data-filter');
+    renderRoster();
+  });
+
+  recheckBtn.addEventListener('click', doRecheck);
+  rowsEl.addEventListener('click', function (e) {
+    var go = e.target.closest('[data-continue]');
+    if (!go) return;
+    /* 以這位 creator 的身分開 create-event 的帶入後流程（`set()` 與名冊的「前往」
+       同一套代管機制，頂列會有既有的「代管中＋返回」列）。帶 handle 是為了設完
+       之後回得來。 */
+    C.set(current.handle);
+    location.href = 'create-event.html?import=' + encodeURIComponent(go.getAttribute('data-continue'))
+      + '&handle=' + encodeURIComponent(current.seed || current.handle);
+  });
+
+  /* 另一個分頁改了 creator（名冊改狀態、詳情頁改店鋪網址）時跟著重畫 */
+  window.addEventListener('storage', function (e) {
+    if (e.key !== 'ztor.creatorEdits') return;
+    if (C.refresh) C.refresh();
+    renderRoster(); renderDetail();
+  });
+
+  document.addEventListener('i18n:applied', function () { renderRoster(); renderDetail(); });
+
+  renderRoster();
+  renderDetail();
+  i18n(document.body);
+  icons(document.body);
+})();
+</script>
+<script src="js/zselect.js?v=r2.2"></script>
+</body>
+</html>

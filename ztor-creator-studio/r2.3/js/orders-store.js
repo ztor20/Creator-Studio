@@ -51,9 +51,44 @@
    就多出「買家實付」一列（§2.3.2「跨幣別需顯示原幣、換算幣、匯率與時點」）；同幣別
    訂單 fx 為 null，那一列整條不產生（規格明文：同幣別訂單不顯示此列）。
    12 筆裡只有 #ZT-10482 是跨幣別（TWD），其餘 11 筆同幣別——兩種情況都看得到。
+
+   ── 領取單位（Pickup unit）資料層（2026-09-03，使用者裁決 D240）─────────────
+   定義權威在 documents/0-設計規格書.md §7.2「領取單位（Pickup unit）的正式定義」，
+   本檔只落地：每個 mode:'pickup' 品項新增 units［長度＝qty］，元素含 code／status／
+   at／session；status 四值 pending（待核銷）｜done（已核銷）｜unset（取貨場次待設定，
+   商品未綁場次時 session 為 null）｜void（訂單已取消退款，領取碼即刻失效）。組合商品
+   品項 mode:'bundle'，members 展開成成員商品的領取單位（成員 qty × 組合 qty），
+   組合本身不產生碼；成員 units 多帶 from 標記來源組合，mode:'ship' 的成員沒有 units
+   （依裁決二）。
+   #ZT-10482（Mika L.）藉這輪追加一顆組合品項「Launch night bundle」示範混合取貨，
+   goods／platform／payment／net／total／fx 一併重算（142.00 / −21.30 / −3.41 /
+   125.29 / 142.00 / NT$4,725.00），與本節開頭「金額口徑」同一條算式；上方 2026-08-07
+   的舊註解（$56.00 系列數字）是那一輪的歷史記錄，不再是這筆訂單的現況。
+   輔助函式 unitsOf(order)／unitSummary(item) 掛在 window.ztorOrders，供
+   scanner.html／pickup-detail.html／order-detail.html 之後接這份資料層時使用。
+
+   ── 退款即失效（2026-09-03，使用者裁決 D242，補充 D240）───────────────────
+   裁決見 documents/decisions.md D242：訂單品項退款成立時，該品項展開的全部領取單位
+   轉 void、領取碼即刻失效、不可再核銷；退的若是組合品項，只有被退成員的單位失效，
+   其餘成員不受影響。新增兩筆 demo 訂單落地這條規則：
+     #ZT-10471（Yuki H.）── 同一訂單裡一個品項已退款失效、另一個品項仍可領的最小對照：
+       vinyl（PU-10471-01）因退款轉 void，cap（PU-10471-02）不受影響仍待核銷。
+     #ZT-10473（Jonas P.）── 組合的部分成員被退：「Launch night bundle」的 cap 成員
+       兩件都轉 void（PU-10473-01／02），vinyl 成員（PU-10473-03）不受影響仍待核銷。
+       member 級的退款金額（refund.amount $58）為示意值——組合本身不逐成員定價，
+       「是否允許只退組合中的部分成員」屬 D242 未定清單第 1 項，本檔只落地「若發生，
+       對應到哪些單位」這條已裁決規則，不代表退款流程本身已支援選取組合成員。
+   unitSummary(item) 回傳新增 voided／unset 兩個計數（見下方定義）：total／done 意義
+   不變，voided＝已因退款失效的件數、unset＝取貨場次待設定的件數；pending（待核銷）＝
+   total − done − voided − unset，未另開欄位。三個消費頁共用同一口徑：**voided 的件
+   不算進待核銷**（規格 5.1.5.3.1 §2.3.1／5.1.5.15 F4.1）。
    ------------------------------------------------------------------ */
 (function () {
   'use strict';
+
+  /* 取貨場次代號：沿用 pickup.html 既有示範場次（data-pk-url 的 tpe-signing-7f3a2），
+     單一來源、不在各筆訂單重複硬寫字串。 */
+  var PICKUP_SESSION = 'tpe-signing-7f3a2';
 
   /* 幣別模型（2026-08-07 使用者裁決 A）：商店結算幣別＝USD，買家在台灣、以 TWD 付款，
      所以跨幣別是常態而非例外——12 筆裡 11 筆有 fx。刻意留兩個對照：
@@ -158,7 +193,10 @@
             price: '$180.00', variant: '',
             desc: 'Hand-numbered acetate LP — limited run of 50, signed.',
             manage: 'product-detail.html?id=acetate'
-          }
+          },
+          units: [
+            { code: 'PU-10484-01', status: 'pending', at: null, session: PICKUP_SESSION }
+          ]
         }
       ],
       amounts: { goods: '$180.00', shipping: '', platform: '−$27.00', payment: '−$4.32', net: '$148.68' },
@@ -166,10 +204,12 @@
       fx: { currency: 'TWD', paid: 'NT$5,670.00', rate: '1 USD = 31.5 TWD' }
     },
     {
-      /* 混合訂單（寄送＋現場 QR 領取）——原本 order-detail.html 寫死的那一筆 */
+      /* 混合訂單（寄送＋現場 QR 領取＋組合品項）——原本 order-detail.html 寫死的那一筆。
+         2026-09-03（D240）追加組合商品「Launch night bundle」示範：組合下單展開成
+         2 個 pickup 成員＋1 個 ship 成員，混合取貨方式在同一張單同時出現。 */
       id: 'ZT-10482', date: '2026-06-08', kind: 'mixed',
       pay: 'paid', fulfil: ['toship', 'pickup'],
-      text: 'zt-10482 mika 幕後寫真誌 九龍夜行 紀念 t 恤 pirate queen zine tee',
+      text: 'zt-10482 mika 幕後寫真誌 九龍夜行 紀念 t 恤 pirate queen zine tee 組合 launch night bundle',
       buyer: {
         name: 'Mika L.',
         shipTo: 'No. 12, Ln 3, Dadaocheng, Taipei 103, TW',
@@ -192,12 +232,141 @@
             price: '$32.00', variant: 'M',
             desc: 'Soft-washed cotton tee with a 九龍夜行 print. Unisex fit.',
             manage: 'product-detail.html?id=tee'
-          }
+          },
+          units: [
+            { code: 'PU-10482-01', status: 'pending', at: null, session: PICKUP_SESSION }
+          ]
+        },
+        {
+          /* 組合品項（D240 裁決二）：組合本身不產生領取碼，catKey 'bundle' 沒有對應
+             i18n 分類詞條（現有 e-shop.cat.* 詞彙都是實體分類、非「這是一個組合」的
+             標記），品項表的分類欄會落到既有的「—」佔位，不影響渲染。 */
+          nameKey: 'od.item12.name', name: 'Launch night bundle',
+          catKey: 'bundle', qty: 1, unit: '$86.00', amt: 86, mode: 'bundle',
+          snap: {
+            price: '$86.00', variant: '',
+            desc: 'Launch-night bundle — six-panel cap ×3 and numbered vinyl picked up on-site, enamel pin shipped separately.',
+            manage: 'product-detail.html?id=bundle-launch'
+          },
+          members: [
+            {
+              nameKey: 'od.item6.name', name: 'Kowloon After Dark six-panel cap',
+              qty: 3, mode: 'pickup',
+              units: [
+                { code: 'PU-10482-02', status: 'done', at: '13:40', session: PICKUP_SESSION, from: 'od.item12.name' },
+                { code: 'PU-10482-03', status: 'pending', at: null, session: PICKUP_SESSION, from: 'od.item12.name' },
+                { code: 'PU-10482-04', status: 'pending', at: null, session: PICKUP_SESSION, from: 'od.item12.name' }
+              ]
+            },
+            {
+              nameKey: 'od.item4.name', name: 'Kowloon After Dark vinyl · numbered 1/50',
+              qty: 1, mode: 'pickup',
+              units: [
+                { code: 'PU-10482-05', status: 'pending', at: null, session: PICKUP_SESSION, from: 'od.item12.name' }
+              ]
+            },
+            {
+              /* ship 成員不產生 units（D240 裁決二：只有 pickup 成員逐件展開） */
+              nameKey: 'od.item7.name', name: 'Neon sign enamel pin',
+              qty: 1, mode: 'ship'
+            }
+          ]
         }
       ],
-      amounts: { goods: '$56.00', shipping: '$5.00', platform: '−$8.40', payment: '−$1.34', net: '$51.26' },
-      total: '$56.00', totalAmt: 56,
-      fx: { currency: 'TWD', paid: 'NT$1,921.50', rate: '1 USD = 31.5 TWD' }
+      amounts: { goods: '$142.00', shipping: '$8.00', platform: '−$21.30', payment: '−$3.41', net: '$125.29' },
+      total: '$142.00', totalAmt: 142,
+      fx: { currency: 'TWD', paid: 'NT$4,725.00', rate: '1 USD = 31.5 TWD' }
+    },
+    {
+      /* 退款即失效示範 A（D242，2026-09-03）：同一張單裡一個品項因退款轉 void、
+         另一個品項不受影響仍可核銷——最小可視對照。純現場 QR 領取，無寄送地址。 */
+      id: 'ZT-10471', date: '2026-06-05', kind: 'pickup',
+      pay: 'refunded', fulfil: ['pickup'],
+      text: 'zt-10471 yuki 九龍夜行 原聲黑膠 六片帽 部分退款 現場領取 vinyl cap partial refund pickup',
+      buyer: {
+        name: 'Yuki H.',
+        shipTo: '',
+        contact: 'yuki.h@example.com'
+      },
+      items: [
+        {
+          nameKey: 'od.item4.name', name: 'Kowloon After Dark vinyl · numbered 1/50',
+          catKey: 'e-shop.cat.collectibles', qty: 1, unit: '$180.00', amt: 180, mode: 'pickup',
+          snap: {
+            price: '$180.00', variant: '',
+            desc: 'Hand-numbered acetate LP — limited run of 50, signed.',
+            manage: 'product-detail.html?id=acetate'
+          },
+          /* 退款成立 → 領取單位轉 void、領取碼即刻失效（D242 裁決一）*/
+          units: [
+            { code: 'PU-10471-01', status: 'void', at: null, session: PICKUP_SESSION }
+          ]
+        },
+        {
+          nameKey: 'od.item6.name', name: 'Kowloon After Dark six-panel cap',
+          catKey: 'e-shop.cat.apparel', qty: 1, unit: '$26.00', amt: 26, mode: 'pickup',
+          snap: {
+            price: '$26.00', variant: '',
+            desc: 'Embroidered six-panel cap with an adjustable strap.',
+            manage: 'product-detail.html?id=cap'
+          },
+          /* 這件沒有被退款，不受影響——裁決一只動被退品項展開的單位 */
+          units: [
+            { code: 'PU-10471-02', status: 'pending', at: null, session: PICKUP_SESSION }
+          ]
+        }
+      ],
+      amounts: { goods: '$206.00', shipping: '', platform: '−$30.90', payment: '−$4.94', net: '$170.16' },
+      total: '$206.00', totalAmt: 206,
+      fx: { currency: 'TWD', paid: 'NT$6,489.00', rate: '1 USD = 31.5 TWD' },
+      refund: { scope: 'partial', amount: '$180.00', on: '2026-06-11' }
+    },
+    {
+      /* 退款即失效示範 B（D242）：組合品項的部分成員被退——只有被退成員的領取單位
+         失效，其餘成員不受影響（裁決二）。member 級退款金額（$58）為示意值，見本檔
+         上方「退款即失效」節的說明。 */
+      id: 'ZT-10473', date: '2026-06-04', kind: 'pickup',
+      pay: 'refunded', fulfil: ['pickup'],
+      text: 'zt-10473 jonas 首賣夜 組合包 六片帽 原聲黑膠 部分退款 launch night bundle cap vinyl partial refund',
+      buyer: {
+        name: 'Jonas P.',
+        shipTo: '',
+        contact: 'jonas.p@example.com'
+      },
+      items: [
+        {
+          nameKey: 'od.item12.name', name: 'Launch night bundle',
+          catKey: 'bundle', qty: 1, unit: '$86.00', amt: 86, mode: 'bundle',
+          snap: {
+            price: '$86.00', variant: '',
+            desc: 'Launch-night bundle — six-panel cap ×2 and numbered vinyl, both picked up on-site.',
+            manage: 'product-detail.html?id=bundle-launch'
+          },
+          members: [
+            {
+              /* 被退的成員：兩件都轉 void */
+              nameKey: 'od.item6.name', name: 'Kowloon After Dark six-panel cap',
+              qty: 2, mode: 'pickup',
+              units: [
+                { code: 'PU-10473-01', status: 'void', at: null, session: PICKUP_SESSION, from: 'od.item12.name' },
+                { code: 'PU-10473-02', status: 'void', at: null, session: PICKUP_SESSION, from: 'od.item12.name' }
+              ]
+            },
+            {
+              /* 未被退的成員：不受影響，仍待核銷 */
+              nameKey: 'od.item4.name', name: 'Kowloon After Dark vinyl · numbered 1/50',
+              qty: 1, mode: 'pickup',
+              units: [
+                { code: 'PU-10473-03', status: 'pending', at: null, session: PICKUP_SESSION, from: 'od.item12.name' }
+              ]
+            }
+          ]
+        }
+      ],
+      amounts: { goods: '$86.00', shipping: '', platform: '−$12.90', payment: '−$2.06', net: '$71.04' },
+      total: '$86.00', totalAmt: 86,
+      fx: { currency: 'TWD', paid: 'NT$2,709.00', rate: '1 USD = 31.5 TWD' },
+      refund: { scope: 'partial', amount: '$58.00', on: '2026-06-10' }
     },
     {
       /* 純數位訂單：無實體物流（§2.5 區塊狀態）——出貨彈窗改呈現數位交付狀態 */
@@ -354,7 +523,11 @@
             price: '$180.00', variant: '',
             desc: 'Hand-numbered acetate LP — limited run of 50, signed.',
             manage: 'product-detail.html?id=acetate'
-          }
+          },
+          /* 「取貨場次待設定」示範：商品尚未加入任何場次，領取單位還沒有 session（D240）*/
+          units: [
+            { code: 'PU-10472-01', status: 'unset', at: null, session: null }
+          ]
         }
       ],
       amounts: { goods: '$204.00', shipping: '$5.00', platform: '−$30.60', payment: '−$4.90', net: '$173.50' },
@@ -518,6 +691,70 @@
 
   function normalize(id) { return String(id || '').replace(/^#/, '').trim().toUpperCase(); }
 
+  /* ── 領取單位 helper（D240）───────────────────────────────────────
+     unitsOf(order)：扁平化該訂單所有領取單位，含 pickup 品項自己的 units，
+     以及 bundle 品項展開後、其 pickup 成員的 units（ship 成員沒有 units、略過）。
+     每個元素補齊消費頁common需要的欄位：品項名／選項組合／來源組合／買家／訂單號。
+     unitSummary(item)：單一品項的「N 件中 M 件已核銷」，bundle 品項要合計全部
+     pickup 成員的 units（不含 ship 成員，因為它沒有可核銷的領取單位）。 */
+  function unitsOf(order) {
+    var out = [];
+    (order.items || []).forEach(function (it) {
+      if (it.mode === 'pickup' && it.units) {
+        it.units.forEach(function (u) {
+          out.push({
+            code: u.code, status: u.status, at: u.at, session: u.session,
+            itemName: it.name, itemNameKey: it.nameKey,
+            variant: (it.snap && it.snap.variant) ? it.snap.variant : null,
+            from: u.from || null,
+            buyer: order.buyer.name, orderNo: order.id
+          });
+        });
+      } else if (it.mode === 'bundle' && it.members) {
+        it.members.forEach(function (m) {
+          if (m.mode !== 'pickup' || !m.units) return;
+          m.units.forEach(function (u) {
+            out.push({
+              code: u.code, status: u.status, at: u.at, session: u.session,
+              itemName: m.name, itemNameKey: m.nameKey,
+              variant: m.variant || null,
+              from: u.from || null,
+              buyer: order.buyer.name, orderNo: order.id
+            });
+          });
+        });
+      }
+    });
+    return out;
+  }
+
+  /* 單一 units［]的計數（D242）：total 不變（購買件數），done／voided／unset 分開算，
+     pending（待核銷）由消費頁自己推：total − done − voided − unset。voided 的件不算
+     待核銷（規格 5.1.5.3.1 §2.3.1／5.1.5.15 F4.1 的共同口徑）。 */
+  function summarizeUnits(units) {
+    var done = 0, voided = 0, unset = 0;
+    (units || []).forEach(function (u) {
+      if (u.status === 'done') done++;
+      else if (u.status === 'void') voided++;
+      else if (u.status === 'unset') unset++;
+    });
+    return { total: (units || []).length, done: done, voided: voided, unset: unset };
+  }
+
+  function unitSummary(item) {
+    if (item.mode === 'pickup') return summarizeUnits(item.units);
+    if (item.mode === 'bundle') {
+      var total = 0, done = 0, voided = 0, unset = 0;
+      (item.members || []).forEach(function (m) {
+        if (m.mode !== 'pickup') return;
+        var s = summarizeUnits(m.units);
+        total += s.total; done += s.done; voided += s.voided; unset += s.unset;
+      });
+      return { total: total, done: done, voided: voided, unset: unset };
+    }
+    return { total: 0, done: 0, voided: 0, unset: 0 };
+  }
+
   window.ztorOrders = {
     list: function () { return ORDERS.slice(); },
     get: function (id) {
@@ -529,6 +766,8 @@
     first: function () { return ORDERS[0]; },
     kpi: kpi,
     fulfilBadge: function (v) { return FULFIL_BADGE[v] || null; },
-    payBadge: function (v) { return PAY_BADGE[v] || null; }
+    payBadge: function (v) { return PAY_BADGE[v] || null; },
+    unitsOf: unitsOf,
+    unitSummary: unitSummary
   };
 })();

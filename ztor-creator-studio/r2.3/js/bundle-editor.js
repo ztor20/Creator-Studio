@@ -76,9 +76,15 @@
        key 不同＝技術上是不同列，但對創作者而言那是同一件商品——請人在三個一模一樣的
        選項之間挑一個，是把資料層的瑕疵當成使用者的問題。 */
     var seen = {};
+    /* IP 資產不進項目（D232）：方案引用的是「可販售的商品」，IP 在項目裡只以
+       建立項目 §4.1 F5 的「IP 租借」出現——那是「這個作品借用了誰的 IP」的權利
+       揭露，不是貨。目前的種子目錄沒有 IP 類商品，這道過濾是護欄：日後往
+       products-store 加了 IP 資產，picker 也不會把授權關係當成回饋品列出來。 */
+    var IP_SUBKEYS = ['story-world', 'person-based', 'brand', 'event-format', 'ip-other'];
     return Object.keys(P).reduce(function (acc, k) {
       var name = P[k].name;
       if (!name || seen[name]) return acc;
+      if (P[k].ip === true || IP_SUBKEYS.indexOf(P[k].subKey) > -1) return acc;
       seen[name] = true;
       acc.push({
         id: k,
@@ -177,9 +183,11 @@
     var getTickets = typeof opts.tickets === 'function' ? opts.tickets
                    : (opts.tickets ? function () { return opts.tickets; } : null);
 
-    /* 分段版型（2026-08-13，`layout: 'sections'`）：活動變體專用。使用者先要 UI 規劃、
-       看過 `docs/bundle-step-demo.html` 之後裁示「照這樣改正式」。募資兩個消費頁不傳
-       這個選項，走原本的版型，一行都不受影響。
+    /* 分段版型（2026-08-13，`layout: 'sections'`）：原為活動變體專用——使用者先要
+       UI 規劃、看過 `docs/bundle-step-demo.html` 之後裁示「照這樣改正式」。
+       2026-09-01 使用者裁示建立專案與項目詳情也改成彈窗＋分段，於是通用化：
+       現在**每個消費頁都走這一條**，共創／預購各有自己的第一張分卡
+       （含分潤名額／作品＋份數），行內三段卡版型（bd-group）成為無消費頁的備用版型。
 
        版型差在**順序**：預設是名稱＊ → 說明 → 封面圖 → 內容 → 數量 → 權益 → 定價，
        等於要創作者先替一個還沒有內容的盒子取名字；分段版把它倒過來——
@@ -267,6 +275,12 @@
           b.slots = 0;
           if (b.avail !== 'limited') b.avail = 'unlimited';
         }
+        /* 分段版的折扣是開關制（discountOn），舊種子只有 discount 數字——帶了折扣卻
+           不開開關的話，discountOf() 會回 0，種子的折扣就靜默蒸發（2026-09-01 通用化時補）。 */
+        if (SECTIONS && cash(b.discount) > 0) b.discountOn = true;
+        /* 帶種子＝這一組本來就存在，不是剛按「新增」開出來的：彈窗標題要寫「編輯」，
+           而且原樣關掉也不能被「空卡直接丟掉」的規則收走（2026-09-01 詳情頁接上時抓到）。 */
+        b.fresh = false;
       }
       return b;
     }
@@ -587,15 +601,30 @@
         .replace('{max}', String(maxPct(b))).replace('{share}', money(share));
     }
 
+    /* 未定價品項數（草稿項與嵌入建立時沒填價格的商品）。
+       它們在計價裡當 0（cash('') = 0）——那是「少一項就少加」的刻意設計，
+       但少加這件事必須讓創作者看見（2026-09-01 使用者裁示「不再默默算 0」）：
+       套組價旁邊標「N 件未定價」，賣出去的價格才不會比畫面上這個數字該有的還低。 */
+    function unpricedCount(b) {
+      return (b.items || []).filter(function (i) { return !cash(i.price); }).length;
+    }
+    function unpricedBadgeHTML(b) {
+      var n = unpricedCount(b);
+      if (!n) return '';
+      return '<span class="fc-sum__unpriced" title="' + esc(T('cpp.bd.price.unpriced.tip')) + '">' +
+        esc(T('cpp.bd.price.unpriced').replace('{n}', String(n))) + '</span>';
+    }
+
     /* 收合摘要列的價格格：有優惠時原價劃掉並列在套組價前面。
        只寫套組價會讓「這張卡有折扣」這件事在收合狀態下完全消失——而收合狀態正是
        創作者比較三張卡的那一屏。 */
     function summaryPriceHTML(b) {
-      if (listPrice(b) <= 0) return '—';
+      /* 原價 0 的卡也要標未定價——「只裝了未定價項目」正是最需要這個警示的狀態。 */
+      if (listPrice(b) <= 0) return '—' + unpricedBadgeHTML(b);
       var d = discountOf(b);
       return (d > 0
         ? '<span class="fc-sum__was" title="' + esc(T('cpp.bd.price.list')) + '">' + esc(money(listPrice(b))) + '</span>'
-        : '') + esc(money(finalPrice(b)));
+        : '') + esc(money(finalPrice(b))) + unpricedBadgeHTML(b);
     }
 
     /* 展開態右上角的價格：標籤「套組價」＋放大的金額（2026-07-30 使用者選定）。
@@ -603,13 +632,14 @@
        自己把價格改成多少，等於要一路捲到底才知道剛才那一下的後果。標籤是必要的——
        右上角一個沒有名字的數字，跟卡片最後那個有算式的數字看起來會像兩件事。 */
     function headPriceHTML(b) {
-      if (listPrice(b) <= 0) return '<span class="fc-sum__tag">' + esc(T('cpp.bd.price.tag')) + '</span>—';
+      if (listPrice(b) <= 0) return '<span class="fc-sum__tag">' + esc(T('cpp.bd.price.tag')) + '</span>—' + unpricedBadgeHTML(b);
       var d = discountOf(b);
       return '<span class="fc-sum__tag">' + esc(T('cpp.bd.price.tag')) + '</span>' +
         (d > 0
           ? '<span class="fc-sum__was" title="' + esc(T('cpp.bd.price.list')) + '">' + esc(money(listPrice(b))) + '</span>'
           : '') +
-        '<span class="fc-sum__val">' + esc(money(finalPrice(b))) + '</span>';
+        '<span class="fc-sum__val">' + esc(money(finalPrice(b))) + '</span>' +
+        unpricedBadgeHTML(b);
     }
 
     /* 收合摘要：名稱 · 內容物 · 名額｜價格。內容物寫成人看得懂的一句，不是計數器。 */
@@ -669,6 +699,15 @@
     /* 建議名稱＝票種名（跨場次去重）＋第一件商品。沒有內容就不給——沒東西可依據時
        擬出來的名字是猜的，不是建議。 */
     function suggestName(b) {
+      /* 無票變體（2026-09-01 分段版通用化）：從內容擬名——預購以作品開頭、共創以
+         第一件商品開頭。擬不出來就回空字串，名稱欄退回一般的必填空格。 */
+      if (!getTickets) {
+        if (WORK) {
+          var wn = workName();
+          return wn ? (b.items.length ? wn + ' ＋ ' + b.items[0].name : wn) : '';
+        }
+        return b.items.length ? b.items[0].name : '';
+      }
       var chosen = b.tickets || [];
       if (!chosen.length) return '';
       var seen = {}, names = [];
@@ -722,9 +761,17 @@
        改由「完成」按鈕自己的 disabled 說話——還不能建立時按鈕就是關的。原本那顆 chip
        在兩項都齊時只會寫「可以建立了」，等於把按鈕已經表達的事再說一次。
        這組條件本身不動，它仍然是按鈕停用與否的判準。 */
+    /* 內容有沒有著落——各變體的「這一組裝了東西」判準（2026-09-01 分段版通用化）：
+       活動＝至少含一張票；共創＝有商品或名額 > 0；預購＝作品必含（unitCount ≥ 1 恆真），
+       所以恆過。與 isValid() 的非名稱那一半同一套判準，不另立第二種「算有內容」。 */
+    function hasContent(b) {
+      if (getTickets) return (b.tickets || []).length > 0;
+      if (SHARES) return b.items.length > 0 || slotCount(b) > 0;
+      return true;
+    }
     function readiness(b) {
       return [
-        (b.tickets || []).length > 0,
+        hasContent(b),
         !!String(b.name || '').trim() || !!suggestName(b),
         !capOver(b)
       ];
@@ -1015,6 +1062,12 @@
                 '<label class="field__label">' + esc(T('cpp.bd.calc.final')) + '</label>' +
                 '<div class="field-readout" data-bd-calc-final>' + esc(money(finalPrice(b))) + '</div>' +
               '</div>' +
+              /* 折扣上限那句話只給共創／預購（2026-09-01 通用化）：它們的折抵有地板
+                 （分潤名額不可折），超標要當場承認實際生效值。活動版維持定案時的樣子。 */
+              (!getTickets
+                ? '<div class="field__hint' + (discountOver(b) ? ' fc-hint--over' : '') +
+                    '" data-bd-discount-hint>' + esc(discountHintText(b)) + '</div>'
+                : '') +
             '</div>'
           : '<div class="field__hint mt-8">' + esc(T('cpp.bd.calc.nodisc')) + '</div>') +
       '</section>';
@@ -1063,8 +1116,13 @@
           '<p class="bd-sec__sub">' + esc(T('cpp.bd.sec.qty.sub')) + '</p>' +
         '</div>' +
         '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(T('cpp.bd.sec.qty')) + '">' +
-          card(AVAIL_OPEN, !limited, 'cpp.bd.qty.unlim') + card('limited', limited, 'cpp.bd.avail.limited') +
+          /* 共創的第一個選項是「自動」（由名額池推導），不是「不限量」——兩個講法
+             對應兩種事實，掛錯字會把推導出來的上限說成沒有上限。 */
+          card(AVAIL_OPEN, !limited, SHARES ? 'cpp.bd.avail.auto' : 'cpp.bd.qty.unlim') +
+          card('limited', limited, 'cpp.bd.avail.limited') +
         '</div>' +
+        (!limited && SHARES
+          ? '<div class="field__hint mt-8" data-bd-auto-hint>' + esc(autoHintText(b)) + '</div>' : '') +
         (limited
           ? '<div class="form-grid mt-16">' +
               '<div class="field">' +
@@ -1074,11 +1132,13 @@
                   (capOver(b) ? ' aria-invalid="true"' : '') +
                   ' data-bd-f="cap" value="' + esc(b.cap) +
                   '" placeholder="' + esc(T('cpp.bd.cap.ph')) + '">' +
-                /* 上限來自票券張數，寫在欄位底下才不必自己去比對票種那一段 */
+                /* 上限提示：活動來自票券張數（capMaxHint），共創／預購來自名額池與
+                   份數的換算（capHintText）——各變體講自己的事實。 */
                 (capMaxHint(b)
                   ? '<div class="field__hint' + (capOver(b) ? ' fc-hint--over' : '') + '" data-bd-capmax>' +
                       esc(capMaxHint(b)) + '</div>'
-                  : '') +
+                  : (!getTickets && capHintText(b)
+                      ? '<div class="field__hint" data-bd-cap-hint>' + esc(capHintText(b)) + '</div>' : '')) +
               '</div>' +
             '</div>'
           : '') +
@@ -1088,6 +1148,33 @@
     /* ④ 基本資料（名稱與說明）／⑤ 封面圖 —— 拆成兩張，比照建立商品的
        「商品資訊」與「展示它」。原本合成一張「呈現方式」，名稱／說明與圖片是兩件
        不同的事，混在同一張卡裡右邊那一格圖看起來像名稱欄的附屬。 */
+    /* 共創的「含分潤名額」分卡（2026-09-01 分段版通用化）。名額是這一組內容的一部分
+       ——支持者買到的分潤資格——所以排在內容區第一張，與預設版型的三段分組同一個歸類。 */
+    function secSlotsHTML(b) {
+      return '<section class="bd-sec">' +
+        '<div class="bd-sec__head">' +
+          '<h3 class="bd-sec__title">' + esc(T('cpp.bd.slots')) + '</h3>' +
+          '<p class="bd-sec__sub">' + esc(T('cpp.bd.slots.hint')) + '</p>' +
+        '</div>' +
+        '<input class="input" type="number" min="0" step="1" data-bd-f="slots" value="' + esc(b.slots) + '">' +
+      '</section>';
+    }
+
+    /* 預購的「作品」分卡：作品列（不可移除，D167）＋含作品份數。 */
+    function secWorkHTML(b) {
+      return '<section class="bd-sec">' +
+        '<div class="bd-sec__head">' +
+          '<h3 class="bd-sec__title">' + esc(T('cpp.bd.work')) + '</h3>' +
+          '<p class="bd-sec__sub">' + esc(T('cpp.bd.units.hint')) + '</p>' +
+        '</div>' +
+        workRowHTML(b) +
+        '<div class="field mt-16">' +
+          '<label class="field__label">' + esc(T('cpp.bd.units')) + ' <span class="field__req">*</span></label>' +
+          '<input class="input" type="number" min="1" step="1" data-bd-f="units" value="' + esc(b.units) + '">' +
+        '</div>' +
+      '</section>';
+    }
+
     function secInfoHTML(b) {
       var sug = suggestName(b);
       return '<section class="bd-sec">' +
@@ -1161,8 +1248,13 @@
           '<div class="payout-dialog__body">' +
             (step2
               ? secInfoHTML(b) + secCoverHTML(b)
-              : secKindHTML(b) + secPerHTML(b) + secSessionsHTML(b) + secItemsHTML(b) +
-                secPerksHTML(b) + secPriceHTML(b) + secQtyHTML(b)) +
+              /* 第 1 步的內容分卡依變體組合（2026-09-01 通用化）：
+                 活動＝票種／場次那三張（原樣不動）；共創＝分潤名額；預購＝作品＋份數。
+                 商品、權益、定價、數量四張是共用的。 */
+              : (getTickets
+                  ? secKindHTML(b) + secPerHTML(b) + secSessionsHTML(b)
+                  : (SHARES ? secSlotsHTML(b) : secWorkHTML(b))) +
+                secItemsHTML(b) + secPerksHTML(b) + secPriceHTML(b) + secQtyHTML(b)) +
           '</div>' +
           '<div class="payout-dialog__foot">' +
             /* 價格釘在 footer（2026-08-13 使用者指示）：它是整張卡的結果，
@@ -1268,7 +1360,11 @@
             : (SHARES ? '<div class="field__hint mt-8" data-bd-auto-hint>' + esc(autoHintText(b)) + '</div>' : '')) +
         '</div>';
 
-      var qtyRow = '<div class="form-grid">' + qtyField + availField + '</div>';
+      /* 2026-09-01 撤除（墓碑）：qtyRow（名額／份數 與 販售上限 並排的 form-grid）。
+         三段式重排（見下）把兩者拆進不同段——名額／份數是「支持者拿到什麼」的一部分
+         （每一筆含幾份），販售上限是「怎麼賣」的供給設定。原本並排的理由（「最容易被
+         當成同一件事，特別要分清楚」）由分段承擔：兩件事各在各的段落裡，比並排在
+         同一列更說得清楚它們不是同一件事。 */
 
       /* 預購的內容分兩塊：作品本體在最上方、不可移除，附屬商品接在下面（D167）。
          共創沒有作品這一段，內容區就只有商店商品，與 2026-07-30 完全相同。 */
@@ -1345,8 +1441,8 @@
       /* 順序差一處：預購的份數欄位要在作品出現之後才有東西可數，所以數量那排排在
          內容兩塊後面（也就是規格 F29 的欄位順序）；共創沿用原順序不動。
          活動變體的票種接在內容之前——先講「這組賣給誰」，再講「裡面有什麼」。 */
-      var middle = coverField + ticketsField +
-        (SHARES ? (qtyRow + itemsField) : (workField + itemsField + qtyRow));
+      var contentFields = coverField + ticketsField +
+        (SHARES ? (qtyField + itemsField) : (workField + qtyField + itemsField));
 
       return '' +
       '<div class="card fc-bundle' + (b.collapsed ? ' fc-bundle--collapsed' : '') +
@@ -1376,30 +1472,42 @@
           '</div>' +
         '</div>' +
 
-        /* ── 卡片內的順序＝從「輸入」走到「結果」（2026-07-30 重排）───────────
-           共創：名稱 → 一句話說明 → 名額｜販售上限 → 商店商品 → 額外權益 → 定價區塊。
-           預購：名稱 → 一句話說明 → 作品 → 附屬商品 → 份數｜販售上限 → 權益 → 定價。
-           舊排法把價格（結果）跟名稱（輸入）並排在第一列，等於在人還沒說出這張卡
-           裝什麼之前就先給他一個 $0；組成說明夾在兩排欄位之間，歸屬也看不出來。
-           定價現在整組收在卡片最後，讀完前面五項才會遇到它，那時它才有內容可算。 */
+        /* ── 三段式分組（2026-09-01 使用者裁示重設計）────────────────────────
+           2026-07-30 那次重排把順序理成「從輸入走到結果」，但七組欄位仍是一直排、
+           沒有分組——身分、內容物、生意混在一起，讀的人得自己斷句。
+           這次依三個問題分段，每段一個小標：
+             ① 這是什麼方案      名稱＋一句話說明
+             ② 支持者拿到什麼    名額/份數＋作品＋商品＋權益（票與封面也在這段）
+             ③ 怎麼賣            販售上限＋套組優惠＋套組價
+           連帶的兩個搬動：名額／份數離開「與販售上限並排」（它是內容的量，不是供給），
+           販售上限搬到定價旁邊（上限與價格才是同一個問題的兩半——賣幾份、賣多少錢）。
+           「從輸入走到結果」的大方向不變：定價仍在最後。 */
         '<div class="fc-bundle__body">' +
-          '<div class="field">' +
-            '<label class="field__label">' + esc(T('cpp.bd.name')) + ' <span class="field__req">*</span></label>' +
-            '<input class="input" data-bd-f="name" value="' + esc(b.name) + '" placeholder="' + esc(T('cpp.bd.name.ph')) + '">' +
+          '<div class="bd-group">' +
+            '<h4 class="bd-group__title">' + esc(T('cpp.bd.g1')) + '</h4>' +
+            '<div class="field">' +
+              '<label class="field__label">' + esc(T('cpp.bd.name')) + ' <span class="field__req">*</span></label>' +
+              '<input class="input" data-bd-f="name" value="' + esc(b.name) + '" placeholder="' + esc(T('cpp.bd.name.ph')) + '">' +
+            '</div>' +
+            '<div class="field">' +
+              '<label class="field__label">' + esc(T('cpp.bd.desc')) + '</label>' +
+              '<input class="input" data-bd-f="desc" value="' + esc(b.desc) + '" placeholder="' + esc(T('cpp.bd.desc.ph')) + '">' +
+            '</div>' +
           '</div>' +
 
-          '<div class="field">' +
-            '<label class="field__label">' + esc(T('cpp.bd.desc')) + '</label>' +
-            '<input class="input" data-bd-f="desc" value="' + esc(b.desc) + '" placeholder="' + esc(T('cpp.bd.desc.ph')) + '">' +
+          '<div class="bd-group">' +
+            '<h4 class="bd-group__title">' + esc(T('cpp.bd.g2')) + '</h4>' +
+            contentFields +
+            '<div class="field">' +
+              '<div class="field__label">' + esc(T('cpp.bd.perks')) + ' <span class="text-sub">' + esc(T('cpp.bd.perks.sub')) + '</span></div>' +
+              (b.perks.length ? perksHTML(b) : '') +
+              '<button class="btn btn--outline btn--add fc-add-item" type="button" data-bd-perk-add>' + esc(T('cpp.bd.perk.add')) + '</button>' +
+            '</div>' +
           '</div>' +
 
-          middle +
-
-          '<div class="field">' +
-            '<div class="field__label">' + esc(T('cpp.bd.perks')) + ' <span class="text-sub">' + esc(T('cpp.bd.perks.sub')) + '</span></div>' +
-            (b.perks.length ? perksHTML(b) : '') +
-            '<button class="btn btn--outline btn--add fc-add-item" type="button" data-bd-perk-add>' + esc(T('cpp.bd.perk.add')) + '</button>' +
-          '</div>' +
+          '<div class="bd-group">' +
+            '<h4 class="bd-group__title">' + esc(T('cpp.bd.g3')) + '</h4>' +
+            availField +
 
           /* ── 定價區塊：這張卡唯一的「結果」──────────────────────────────
              優惠（唯一可填的定價決定）與價格（算出來的）並排成兩個窄欄，兩行說明
@@ -1427,6 +1535,7 @@
             '<div class="field__hint fc-pricing__note" data-bd-price-hint>' + esc(priceHintText(b)) + '</div>' +
             '<div class="field__hint fc-pricing__note' + (discountOver(b) ? ' fc-hint--over' : '') +
               '" data-bd-discount-hint>' + esc(discountHintText(b)) + '</div>' +
+          '</div>' +
           '</div>' +
 
           /* ── 卡片底部的兩個出口 ────────────────────────────────────────
@@ -1561,6 +1670,17 @@
           if (capOver(b)) capEl.setAttribute('aria-invalid', 'true');
           else capEl.removeAttribute('aria-invalid');
         }
+        /* 共創／預購的推導提示（2026-09-01 通用化）：名額池換算、上限說明、折扣上限
+           都會隨名額／商品即時變，跟著就地同步、不重畫。 */
+        var autoHintEl = card.querySelector('[data-bd-auto-hint]');
+        if (autoHintEl) autoHintEl.textContent = autoHintText(b);
+        var capHintEl = card.querySelector('[data-bd-cap-hint]');
+        if (capHintEl) capHintEl.textContent = capHintText(b);
+        var discHintEl = card.querySelector('[data-bd-discount-hint]');
+        if (discHintEl) {
+          discHintEl.textContent = discountHintText(b);
+          discHintEl.classList.toggle('fc-hint--over', discountOver(b));
+        }
         var primaryEl = card.querySelector('[data-bd-primary]');
         if (primaryEl) primaryEl.disabled = gateOffFor(b);
         /* footer 的劃線原價：折扣打到 0 或清空時要收掉，否則會留著一個
@@ -1694,30 +1814,122 @@
         var b = get(card.dataset.bdCard);
         if (b) syncCard(card, b);
       });
+      /* 分段版的收合列只帶 data-bd-open、上面那圈掃不到，價格與摘要沒人更新——
+         外部注入的單價一改（項目詳情的預購單價欄），列上的數字就過期（2026-09-01 實測）。
+         同樣就地改文字不整列重畫：列是可聚焦的按鈕，整列換掉會把鍵盤焦點踢掉。
+         名稱不用同步——名稱只能在彈窗第 2 步改，而卡片開著時它的列不存在。 */
+      if (SECTIONS) {
+        list.querySelectorAll('[data-bd-open]').forEach(function (row) {
+          var b = get(row.dataset.bdOpen);
+          if (!b) return;
+          var meta = row.querySelector('.bd-row__meta');
+          if (meta) meta.textContent = summaryMeta(b);
+          var price = row.querySelector('.bd-row__price');
+          if (price) {
+            var base = listPrice(b), fin = finalPrice(b);
+            price.innerHTML = esc(money(fin)) +
+              (base > fin ? '<span class="bd-row__was">' + esc(money(base)) + '</span>' : '');
+          }
+        });
+      }
     }
 
     function renderResults(card, b, q) {
       var box = card.querySelector('[data-bd-results]');
       if (!box) return;
       var term = String(q || '').trim().toLowerCase();
-      if (!term) { box.hidden = true; box.innerHTML = ''; return; }
       var taken = {};
       b.items.forEach(function (i) { taken[i.id] = true; });
-      var hits = catalogue().filter(function (p) {
-        return !taken[p.id] && p.name.toLowerCase().indexOf(term) >= 0;
-      }).slice(0, 6);
+      var pool = catalogue().filter(function (p) { return !taken[p.id]; });
+      /* 空欄＝瀏覽模式（2026-09-01 使用者裁示「搜尋改成可瀏覽」）：點進欄位就先列全部商品，
+         名稱旁帶分類。原本空欄直接把清單藏起來，等於「不記得商品名就找不到」——
+         但目錄一共就幾十筆，先攤開讓人認，比逼人回想正確的字省。
+         打了字再收斂成比對結果；上限一律 12 筆，容器自己會捲（max-height 264px）。 */
+      var hits = (term
+        ? pool.filter(function (p) { return p.name.toLowerCase().indexOf(term) >= 0; })
+        : pool
+      ).slice(0, 12);
       box.innerHTML =
+        (!term && hits.length ? '<div class="fc-pick__empty">' + esc(T('cpp.bd.search.browse')) + '</div>' : '') +
         hits.map(function (p) {
           return '<button type="button" class="fc-pick__opt" data-bd-opt="' + esc(p.id) + '">' +
             (p.img ? '<img src="' + esc(p.img) + '" alt="" loading="lazy">' : '<span></span>') +
-            '<span>' + esc(p.name) + '</span>' +
+            '<span>' + esc(p.name) +
+              (p.meta ? ' <span class="fc-pick__opt-price">' + esc(p.meta) + '</span>' : '') + '</span>' +
             '<span class="fc-pick__opt-price">' + (p.price ? '$' + esc(p.price) : '') + '</span>' +
           '</button>';
         }).join('') +
         (hits.length ? '' : '<div class="fc-pick__empty">' + esc(T('cpp.bd.search.none')) + '</div>') +
-        '<button type="button" class="fc-pick__opt" data-bd-opt="__new"><span></span>' +
-          '<span>' + esc(T('cpp.bd.search.new').replace('{q}', q)) + '</span><span></span></button>';
+        /* 兩個出口並列（2026-09-01）：
+           「建立新商品」＝開完整的建立商品流程（embed 彈窗，見 openCreateModal），
+             建出來的是一件有定價、會進電子商店的真商品——這條路原本只有電子商店的
+             組合包接了（create-bundle.html ?embed=1），募資套組一直是死路。
+           「新增草稿項」＝還沒壓出來的黑膠：連定價都還沒有，先佔一列之後再補。
+             有搜尋字時才出現（它的名字就是你打的字）。 */
+        '<button type="button" class="fc-pick__opt" data-bd-opt="__create"><span></span>' +
+          '<span>' + esc(T('cpp.bd.search.create')) + '</span><span></span></button>' +
+        (term
+          ? '<button type="button" class="fc-pick__opt" data-bd-opt="__new"><span></span>' +
+              '<span>' + esc(T('cpp.bd.search.new').replace('{q}', q)) + '</span><span></span></button>'
+          : '');
       box.hidden = false;
+    }
+
+    /* ── 就地建立商品（2026-09-01 使用者裁示）────────────────────────────
+       嵌入完整的 create-product 流程（?embed=1），建立完成由 postMessage 回傳、
+       直接加進正在編輯的那張套組。機制與電子商店組合包同一套
+       （create-bundle.html 2026-06-17 起就有），本輪接進募資套組——原本搜不到商品
+       只剩草稿項這條路，而草稿沒有定價、計價當 0，方案價會默默少算。
+
+       彈窗動態建立：本編輯器掛在 5 個頁面上，與其要求每一頁都放一份 modal markup，
+       不如自己長。外殼借 payout-modal 的 --embed 變體（消費頁都已載 payout-modal.css）。
+       ⚠ 原型限制：嵌入頁建立的商品**不會**真的寫進 ZTOR_PRODUCTS（那是唯讀種子），
+       所以它以 `new:` 前綴的 id 直接進 items——有名稱有定價、計價正確，
+       但重新整理後不會出現在目錄裡（與草稿項同一級的示意行為，記 ASSUMPTIONS）。 */
+    var createModal = null, createTarget = null;
+    function openCreateModal(b) {
+      createTarget = b;
+      if (!createModal) {
+        createModal = document.createElement('div');
+        createModal.className = 'payout-modal';
+        createModal.innerHTML =
+          '<div class="payout-dialog payout-dialog--embed" role="dialog" aria-modal="true" aria-label="New product">' +
+            '<iframe class="embed-frame" title="Create product"></iframe>' +
+          '</div>';
+        document.body.appendChild(createModal);
+        createModal.addEventListener('click', function (e) {
+          if (e.target === createModal) closeCreateModal();
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && createModal && !createModal.hidden) closeCreateModal();
+        });
+        window.addEventListener('message', function (e) {
+          var d = (e && e.data) || {};
+          if (d.type === 'cp:cancel') { closeCreateModal(); return; }
+          if (d.type === 'cp:created' && createTarget) {
+            var pr = d.product || {};
+            var price = String(pr.price || '').replace(/[^0-9.]/g, '');
+            createTarget.items.push({
+              id: 'new:' + String(pr.name || 'product').toLowerCase().replace(/\s+/g, '-') + ':' + Date.now(),
+              name: pr.name || '', img: '',
+              meta: price ? '$' + price : '', price: price
+            });
+            closeCreateModal();
+            render({ blur: true });
+            onChange(BUNDLES);
+          }
+        });
+      }
+      createModal.querySelector('iframe').src = 'create-product.html?embed=1';
+      createModal.hidden = false;
+      document.body.classList.add('is-modal-open');
+    }
+    function closeCreateModal() {
+      if (!createModal) return;
+      createModal.hidden = true;
+      document.body.classList.remove('is-modal-open');
+      createModal.querySelector('iframe').src = 'about:blank';
+      createTarget = null;
     }
 
     /* ── 事件（全部委派到容器，卡片是重畫出來的，直接綁會掉） ──────────────── */
@@ -1752,6 +1964,14 @@
       if (e.target.hasAttribute('data-bd-search')) {
         renderResults(card, b, e.target.value);
       }
+    });
+
+    /* 點進搜尋欄就開瀏覽清單（focusin 會冒泡，focus 不會）。 */
+    list.addEventListener('focusin', function (e) {
+      if (!e.target.hasAttribute || !e.target.hasAttribute('data-bd-search')) return;
+      var card = e.target.closest('[data-bd-card]');
+      var b = card && get(card.dataset.bdCard);
+      if (b) renderResults(card, b, e.target.value);
     });
 
     /* 含作品份數的下限（D167：最小 1）在離開欄位時才夾住，不在打字當下夾——
@@ -1940,6 +2160,10 @@
       var opt = e.target.closest('[data-bd-opt]');
       if (opt) {
         var id = opt.dataset.bdOpt;
+        if (id === '__create') {
+          openCreateModal(b);
+          return;
+        }
         if (id === '__new') {
           /* 目錄裡沒有＝還沒壓出來的黑膠。就地開一個草稿商品，仍然是一筆真的目錄列，
              只是狀態是草稿——不是退回自由文字。 */
@@ -1996,6 +2220,7 @@
           .map(function (t) { return t.id; });
         copy.pickOpen = false;
         copy.collapsed = true;
+        copy.fresh = false;   /* 展開出來的是已送出的組，再點開要寫「編輯」不是「新增」 */
         return copy;
       });
       var at = BUNDLES.indexOf(b);

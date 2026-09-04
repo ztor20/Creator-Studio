@@ -16,7 +16,8 @@
            .sparkline__svg    preserveAspectRatio="none" 撐滿剩餘寬度
            .sparkline__grid   水平虛線格線（每個縱軸刻度一條）
            .sparkline__band   標記區間的直立色塊
-           .sparkline__area   線下的淡色填充
+           .sparkline__area   線下的淡色填充（有堆疊時不畫，兩者是同一塊地方的兩種畫法）
+           .sparkline__stack  堆疊面積的一塊（由下往上疊，上緣＝主線的總額；色由 --fill 帶）
            .sparkline__line   折線本身（`--sub` 為附加線：細一階、吃 --line 的顏色、不畫面積）
            .sparkline__seg    區間內的重點線段（--up／--down 為漲跌語意色）
            .sparkline__target 目標值的虛線
@@ -137,6 +138,20 @@
   fill: var(--spark-ink);
   opacity: 0.1;
   stroke: none;
+}
+
+/* 堆疊面積的一塊（2026-09-01 建，首個消費者＝展示版左欄的收入走勢）：由下往上疊，
+   最上面那條邊界就是主線畫的總額。顏色由行內 `--fill` 帶進來（與圖例的色鍵同一支）。
+   透明度 0.45 不是不透明：這幾塊坐在照片上，實色會讓整格變成一面貼在圖上的色板；
+   半透明既留得住底圖的層次，塊與塊之間也仍分得開——它們本來就是相鄰的異色。
+   每一塊自己描一條同色的細邊：純填充在相鄰兩塊明度接近時會看不出界線，
+   而這一格的重點正是「哪一塊多厚」。 */
+.sparkline__stack {
+  fill: var(--fill, var(--chart-1));
+  opacity: 0.45;
+  stroke: var(--fill, var(--chart-1));
+  stroke-width: 0.75;
+  vector-effect: non-scaling-stroke;
 }
 
 

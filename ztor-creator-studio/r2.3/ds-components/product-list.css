@@ -343,6 +343,25 @@
 .product-list--eshop .product-list__category-cell { color: var(--foreground); }
 .product-list--eshop .product-list__actions { display: flex; justify-content: flex-end; }
 
+/* D241（spec 0-設計規格書 §7.14）：狀態欄可能同時掛兩顆徽章——一顆講販售軸（售罄／
+   販售結束／即將開賣…），一顆講顯示軸（已隱藏）。「隱藏但照樣在賣」是規格裡真實存在
+   的組合（私下販售），一顆徽章講不完，欄寬不夠就換行。與拍賣分頁的狀態欄同一套處理。 */
+.product-list--eshop .product-list__status,
+.product-list--bundles .product-list__status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  align-content: center;
+}
+/* 庫存欄的「N 件未鎖定」註記：所有管道都設了鎖定時，沒有被鎖定的庫存量沒有人能賣，提醒創作者重新
+   分配（§7.14 庫存規則）。數字仍是主角，註記降一級、自己一行。 */
+.product-list__stock-note {
+  margin-top: var(--sp-2);
+  color: var(--muted-foreground);
+  font-size: var(--fs-11);
+  line-height: var(--lh-comfy);
+}
+
 /* 套組分頁 — 同 product-list 外觀，較寬的成員欄；
    欄位：Image / Bundle / Fan tier / Members / Price / Status / Stock / Actions
    （2026-07-29 加入粉絲分級，與商品分頁同一個位置：名稱之後、其餘資料欄之前，
@@ -558,11 +577,14 @@
 
 /* 2026-08-01：Scanner 欄撤除（狀態在詳情頁的交付區看得到，列表放一句「Scanner 已啟用」
    是重複的），8 欄 → 7 欄。 */
-/* 取貨場次詳情的取貨/入場名單（2026-08-01）：規格 5.1.5.15 F4 的七個欄位各自成欄
-   ＋ ⋯ 操作欄。與 --pickup（場次清單）是不同表，故另開一支模板。 */
+/* 取貨場次詳情的取貨/入場名單（2026-08-01）：規格 5.1.5.15 F4 的欄位各自成欄
+   ＋ ⋯ 操作欄。與 --pickup（場次清單）是不同表，故另開一支模板。
+   2026-09-03（D240 一物一碼）：一列＝一個領取單位，欄位由八欄改九欄——「數量」欄退場
+   （一列本來就是一件，數字恆為 1），新增「領取碼」與「來源組合」兩欄。買家分組吃共用的
+   可展開子列元件 row-disclosure（design-system.md §4.204），本檔只提供欄位版面。 */
 .product-list--roster .product-list__head,
 .product-list--roster .product-list__row {
-  grid-template-columns: minmax(120px, 1fr) 108px minmax(150px, 1.2fr) 72px 56px 104px 96px 40px;
+  grid-template-columns: minmax(120px, 1fr) 108px minmax(140px, 1.1fr) 64px 112px minmax(96px, 0.8fr) 104px 88px 40px;
 }
 @media (max-width: 760px) {
   .product-list--roster .product-list__row { grid-template-columns: minmax(0, 1fr) auto; }
@@ -683,54 +705,19 @@
 }
 
 /* ============================================================
-   群組列（母列＋子列）— 2026-08-06
+   ✝ 墓碑 — 群組列（`__row--group` / `__row--child` / `__group-toggle` /
+   `__group-chevron`）2026-08-06 建，2026-09-03 退場
    ------------------------------------------------------------
-   一筆清單項目其實是好幾筆時，母列收成一列、點開才看到底下每一筆。
-   首次用於活動清單的系列場次：同一個活動辦好幾場，每一場都是獨立的一場
-   活動，但清單不該因為一個 20 場的巡演就多出 20 列。
-
-   母列點擊＝展開／收合（不導向），子列點擊才進該場的詳情頁。
-
-   Markup:
-     <div class="product-list__row product-list__row--group"
-          data-group="tour-a" aria-expanded="false"> … </div>
-     <div class="product-list__row product-list__row--child"
-          data-group-child="tour-a" data-go="…" hidden> … </div>
+   退場原因：站上「母列收成一列、點開才看到底下每一筆」曾有兩份各自的實作——
+   本檔這一組（表格型容器）與 `data-list.css` 的 `__row--child`（清單型容器）。
+   同一個視覺角色兩個答案，只改一邊就會分岔。
+   由誰取代：`ds-components/row-disclosure.css`（`.rowdis__head` / `__label` /
+   `__toggle` / `__child`）＋ `js/row-disclosure.js`，見 design-system.md §4.204。
+   依據：STYLE-DECISIONS.md Q107（2026-09-03 使用者裁決「要有新的」）。
+   遷移完成的消費頁：events.html（系列場次）· pickup-detail.html（買家分組）。
+   本檔仍擁有欄位版面（grid 欄、列高、hover）；揭露語意與階層視覺歸新元件。
+   原規則見 git 歷史（2026-09-03 之前的版本）。
    ============================================================ */
-
-/* 母列的展開把手：放在**名稱前面**，不放最右的操作欄。清單頁的 .main 是
-   overflow-x:hidden，視窗窄一點時右側幾欄會被切掉且捲不到，收在那裡等於沒有入口；
-   樹狀清單的展開三角本來也長在最前面。外觀吃 .btn.btn--icon.btn--xs，本檔只擁有
-   「排在名稱前面」與「會轉」這兩件事。 */
-.product-list__row--group .product-list__product { display: flex; align-items: center; gap: var(--sp-8); }
-.product-list__group-toggle { flex: none; }
-/* 展開鈕跟在名稱後面（2026-08-18）。名稱那一格本身是單行截斷（`overflow:hidden` ＋
-   `text-overflow:ellipsis`），把按鈕放進去會被一起截掉，所以有鈕的那幾列改成一條
-   flex：文字吃剩下的寬度並自己截斷，按鈕固定不縮。只有群組列會命中這條規則。 */
-.product-list__title:has(.product-list__group-toggle) {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-4);
-}
-.product-list__title:has(.product-list__group-toggle) > :first-child {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.product-list__group-chevron { transition: transform var(--duration) var(--easing); }
-.product-list__row--group[aria-expanded="true"] .product-list__group-chevron { transform: rotate(180deg); }
-
-/* 子列：縮排一階並在左緣畫一條線，說明「這幾列從屬於上面那一列」。
-   線用 inset shadow 不用 border-left——border 會參與 grid 的欄寬計算，
-   母列與子列的欄就會對不齊。 */
-.product-list__row--child {
-  padding-left: var(--sp-32);
-  box-shadow: inset 2px 0 0 var(--border-soft);
-}
-.product-list__row--child .product-list__title { font-size: var(--fs-13); }
-/* hover 的浮起會蓋掉 inset shadow（同一個屬性），補回來 */
-.product-list__row--child:hover { box-shadow: inset 2px 0 0 var(--border-soft), var(--shadow-lift-flat); }
 
 /* ============================================================
    橫向捲動包層 — 2026-08-06

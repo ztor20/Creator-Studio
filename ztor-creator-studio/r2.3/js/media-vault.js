@@ -594,23 +594,9 @@
     els.lensReset.hidden = !on;
   }
 
-  /* 「誰進得來」吸住了沒有——吸住才開那道往上的實心陰影（沒吸住時它會把上面的
-     庫房標頭蓋掉）。捲動容器在正式頁是 .main、在彈窗版是 .vault-modal__body，
-     所以往上找，不寫死。 */
-  function bindStuckWatch() {
-    var el = els.reach;
-    if (!el) return;
-    var scroller = el.closest(".vault-modal__body") || el.closest(".main") || document.scrollingElement;
-    var offset = parseFloat(getComputedStyle(el).top) || 0;
-    function check() {
-      var base = scroller === document.scrollingElement ? 0 : scroller.getBoundingClientRect().top;
-      el.classList.toggle("is-stuck", el.getBoundingClientRect().top - base <= offset + 1);
-    }
-    (scroller === document.scrollingElement ? window : scroller)
-      .addEventListener("scroll", check, { passive: true });
-    window.addEventListener("resize", check);
-    check();
-  }
+  /* 2026-09-01 撤除（墓碑）：`bindStuckWatch()`——它負責在「誰進得來」吸頂時掛上
+     `is-stuck`，好讓 CSS 補上下兩道縫。使用者裁示那張卡不吸頂了（釘住會蓋掉下一張卡
+     的標題），CSS 的 sticky 與補縫虛擬元素同一輪退場，這支觀察器因此沒有對象。 */
 
   function render() {
     renderLens(); renderRail(); renderOverview();
@@ -1348,7 +1334,6 @@
 
     render();
     wire();
-    bindStuckWatch();
     if (window.applyI18n) {
       if (els.rail) window.applyI18n(els.rail);
       window.applyI18n(els.lens);

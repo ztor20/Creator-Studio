@@ -29,7 +29,7 @@
         if (!btn) return;
         card.setAttribute('data-chart-view', btn.dataset.view);
         toggle.querySelectorAll('[data-view]').forEach(b =>
-          b.classList.toggle('segmented__item--active', b === btn));
+          b.classList.toggle('segmented__btn--active', b === btn));
         hide();
       });
     }
