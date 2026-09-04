@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/accordion.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">   <!-- 2026-09-05：交易明細展開層（提款／退款／扣款）的鍵值摘要 -->
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pager.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
@@ -548,26 +549,48 @@
              sibling .when-empty below; toggled by Cheat Codes Empty. -->
         <div class="when-data">
 
-        <!-- Filter chips · type + status -->
+        <!-- 交易明細 · D250（2026-09-05）：收入事件與帳務異動兩族放同一張表、依時間排序。
+             分頁層的切換只做「只看收入／只看金流異動」，不把兩族拆成兩個分頁——創作者對帳看的
+             是一條時間軸（這段期間進了什麼、出了什麼），拆兩頁等於逼他在兩張表之間對時間。
+             欄位依族切換、不適用的欄位寫「—」（不寫 −$0.00，填零會被讀成真的扣了 0 元）；
+             兩族的狀態不共用色票：收入＝填色徽章，帳務異動＝描邊徽章（badge.css --outline）。 -->
         <div class="filter-row">
-          <div class="chip-group" role="group" aria-label="Transaction type">
-            <button class="chip chip--active" data-filter="all"><span data-i18n="tx.filter.all">All</span></button>
-            <button class="chip" data-filter="eshop"><span data-i18n="tx.filter.eshop">E-Shop</span></button>
-            <button class="chip" data-filter="event" data-feat="E13"><span data-i18n="tx.filter.event">Event tickets</span></button>
-            <button class="chip" data-filter="ip" data-feat="E14"><span data-i18n="tx.filter.ip">IP royalties</span></button>
-            <button class="chip" data-filter="licensing" data-feat="E15"><span data-i18n="tx.filter.licensing">Licensing</span></button>
-            <button class="chip" data-filter="streaming" data-feat="E16"><span data-i18n="tx.filter.streaming">Platform / streaming</span></button>
-            <button class="chip" data-filter="project" data-feat="E17"><span data-i18n="tx.filter.project">Project support</span></button>
-            <!-- cocreate income types (ASSUMPTIONS CCR-001) — reuse canonical src.* labels -->
-            <button class="chip" data-filter="cocreate"><span data-i18n="src.cocreate">Co-creation funding</span></button>
-            <button class="chip" data-filter="commission"><span data-i18n="src.commission">Tastemaker commission</span></button>
-            <button class="chip" data-filter="ott"><span data-i18n="src.ott">OTT royalties</span></button>
-            <button class="chip" data-filter="royalty"><span data-i18n="tx.filter.royalty">Off-platform royalties</span></button>
-            <button class="chip" data-filter="payout" data-feat="E18"><span data-i18n="tx.filter.payouts">Payouts &amp; refunds</span></button>
+          <div class="segmented" role="tablist" aria-label="Transaction family" data-i18n-aria-label="tx.fam.aria" data-tx-family>
+            <button class="segmented__btn segmented__btn--active" type="button" role="tab" aria-selected="true" data-fam="all" data-i18n="tx.fam.all">All</button>
+            <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-fam="revenue" data-i18n="tx.fam.revenue">Income only</button>
+            <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-fam="ledger" data-feat="E18" data-i18n="tx.fam.ledger">Money movement only</button>
           </div>
           <div class="filter-row__actions">
             <button class="btn btn--outline btn--sm" data-tab-jump="royalty" data-feat="E20" data-i18n="btn.manual-entry-roy">Add a royalty statement</button>
             <button class="btn btn--outline btn--sm" data-i18n="btn.export-csv">Export CSV</button>
+          </div>
+        </div>
+
+        <!-- 第一排＝收入分類（規格 §7.3 的收入事件分類，單選）。貼文帶貨收益與 Fanvestor 分潤
+             在分類表裡有定義、但還沒有第一筆資料，所以不給篩選項——永遠空的篩選項會被當成故障。 -->
+        <div class="filter-row">
+          <div class="chip-group" role="group" aria-label="Revenue category" data-i18n-aria-label="tx.cat.aria" data-tx-cats>
+            <button class="chip chip--active" data-cat="all"><span data-i18n="tx.filter.all">All</span></button>
+            <button class="chip" data-cat="goods"><span data-i18n="tx.cat.goods">E-Shop sales</span></button>
+            <button class="chip" data-cat="event" data-feat="E13"><span data-i18n="tx.cat.event">Event tickets</span></button>
+            <button class="chip" data-cat="project" data-feat="E17"><span data-i18n="tx.cat.project">Project support</span></button>
+            <button class="chip" data-cat="ip" data-feat="E14"><span data-i18n="tx.cat.ip">IP royalties</span></button>
+            <button class="chip" data-cat="licensing" data-feat="E15"><span data-i18n="tx.cat.licensing">Licensing</span></button>
+            <button class="chip" data-cat="streaming" data-feat="E16"><span data-i18n="tx.cat.streaming">Streaming & royalties</span></button>
+            <button class="chip" data-cat="collab"><span data-i18n="tx.cat.collab">Collaborator share</span></button>
+            <button class="chip" data-cat="referral"><span data-i18n="tx.cat.referral">Referral share</span></button>
+          </div>
+        </div>
+
+        <!-- 第二排＝狀態與資料來源（多選）。手動補登是資料來源標記、不是分類（§7.3），
+             所以它跟狀態站同一排、與上面那排的分類正交。 -->
+        <div class="filter-row filter-row--group">
+          <div class="chip-group" role="group" aria-label="Status and data source" data-i18n-aria-label="tx.flag.aria" data-tx-flags>
+            <button class="chip" data-flag="accrued"><span data-i18n="tx.st.accrued">Pending</span></button>
+            <button class="chip" data-flag="available"><span data-i18n="tx.st.available">Available</span></button>
+            <button class="chip" data-flag="disputed"><span data-i18n="tx.st.disputed">Disputed</span></button>
+            <button class="chip" data-flag="refunded"><span data-i18n="tx.st.refunded">Refunded</span></button>
+            <button class="chip" data-flag="manual"><span data-i18n="tx.src.manual">Manual entry</span></button>
           </div>
         </div>
 
@@ -579,14 +602,15 @@
               </tr>
             </thead>
             <tbody>
-              <!-- Rows are clickable · expand to per-transaction trace (Event ID · rate version · own waterfall) · spec §5.1.8 F7 -->
-              <tr class="ztor-table__row" data-tx-row data-feat="E17" aria-expanded="false">
+              <!-- 一列一筆交易；點列展開的內容依族不同（收入＝該筆金流瀑布，提款／退款／扣款＝
+                   對應的帳務摘要）。列上的 data-fam／data-cat／data-flags 是篩選器讀的欄位。 -->
+              <tr class="ztor-table__row" data-tx-row data-feat="E17" data-fam="revenue" data-cat="project" data-flags="accrued" aria-expanded="false">
                 <td class="ztor-table__datecell">Nov 24</td>
-                <td><span data-i18n="earnings.name.九龍夜行">Kowloon After Dark OST</span> · Pre-order <span class="text-sub">· Project support</span></td>
-                <td>EUR 1,326.00 → $1,410.00 <span class="text-sub"></span></td>
-                <td><span class="badge badge--orange">Pending</span></td>
-                <td style="text-align:right;color:var(--muted-foreground)">−$84.60</td>
-                <td style="text-align:right;font-weight: var(--fw-regular)">$1,325.40</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
+                <td><span data-i18n="earnings.name.九龍夜行">Kowloon After Dark OST</span> <span data-i18n="tx.r.ost.qual">· pre-order</span> <span class="text-sub">· <span data-i18n="tx.cat.project">Project support</span></span></td>
+                <td>EUR 1,326.00 → $1,410.00</td>
+                <td><span class="tx-status"><span class="badge badge--orange" data-i18n="tx.st.accrued">Pending</span> <span class="tx-status__when" data-i18n="tx.r.ost.when">Available Dec 8</span></span></td>
+                <td class="ztor-table__amt ztor-table__amt--muted">−$84.60</td>
+                <td class="ztor-table__amt">$1,325.40</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
               </tr>
               <tr class="ztor-table__detail" data-feat="E17" hidden>
                 <td colspan="7">
@@ -604,13 +628,13 @@
                   </div>
                 </td>
               </tr>
-              <tr class="ztor-table__row" data-tx-row data-feat="E16" aria-expanded="false">
+              <tr class="ztor-table__row" data-tx-row data-feat="E16" data-fam="revenue" data-cat="streaming" data-flags="available" aria-expanded="false">
                 <td class="ztor-table__datecell">Nov 23</td>
-                <td>Spotify · Q4 statement <span class="text-sub">· Platform / streaming</span></td>
+                <td>Spotify <span data-i18n="tx.r.spotify.qual">· Q4 statement</span> <span class="text-sub">· <span data-i18n="tx.cat.streaming">Streaming &amp; royalties</span></span></td>
                 <td>$684.32</td>
-                <td><span class="badge badge--success">Available</span></td>
-                <td style="text-align:right;color:var(--muted-foreground)">−$0.00</td>
-                <td style="text-align:right;font-weight: var(--fw-regular)">$684.32</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
+                <td><span class="tx-status"><span class="badge badge--success" data-i18n="tx.st.available">Available</span></span></td>
+                <td class="ztor-table__amt ztor-table__amt--muted">$0.00</td>
+                <td class="ztor-table__amt">$684.32</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
               </tr>
               <tr class="ztor-table__detail" data-feat="E16" hidden>
                 <td colspan="7">
@@ -620,19 +644,19 @@
                       <span><span data-i18n="tx.detail.ratever">Rate version</span> cfg-2026.02</span>
                     </div>
                     <div class="waterfall tx-detail__ladder">
-                      <div class="waterfall__row waterfall__row--income"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.gross">This transaction</span><span class="waterfall__meta" data-i18n="tx.detail.nofee">No Ztor fee on this royalty</span></div><span class="waterfall__amt">$684.32</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:100%"></span></div></div>
+                      <div class="waterfall__row waterfall__row--income"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.gross">This transaction</span><span class="waterfall__meta"><span data-i18n="tx.detail.nofee">No Ztor fee on this royalty</span></span></div><span class="waterfall__amt">$684.32</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:100%"></span></div></div>
                       <div class="waterfall__row waterfall__row--subtotal"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.net">Net of fees</span></div><span class="waterfall__amt">$684.32</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:100%"></span></div></div>
                     </div>
                   </div>
                 </td>
               </tr>
-              <tr class="ztor-table__row" data-tx-row aria-expanded="false">
+              <tr class="ztor-table__row" data-tx-row data-fam="revenue" data-cat="goods" data-flags="available" aria-expanded="false">
                 <td class="ztor-table__datecell">Nov 22</td>
-                <td><span data-i18n="earnings.name.tidepool">Pirate Queen zine vol. 02</span> × 14 <span class="text-sub">· E-Shop sales</span></td>
+                <td><span data-i18n="earnings.name.tidepool">Pirate Queen zine vol. 02</span> × 14 <span class="text-sub">· <span data-i18n="tx.cat.goods">E-Shop sales</span></span></td>
                 <td>$392.00</td>
-                <td><span class="badge badge--success">Available</span></td>
-                <td style="text-align:right;color:var(--muted-foreground)">−$23.52</td>
-                <td style="text-align:right;font-weight: var(--fw-regular)">$368.48</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
+                <td><span class="tx-status"><span class="badge badge--success" data-i18n="tx.st.available">Available</span></span></td>
+                <td class="ztor-table__amt ztor-table__amt--muted">−$23.52</td>
+                <td class="ztor-table__amt">$368.48</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
               </tr>
               <tr class="ztor-table__detail" hidden>
                 <td colspan="7">
@@ -650,13 +674,36 @@
                   </div>
                 </td>
               </tr>
-              <tr class="ztor-table__row" data-tx-row data-feat="E15" aria-expanded="false">
+              <tr class="ztor-table__row" data-tx-row data-feat="E14" data-fam="revenue" data-cat="ip" data-flags="available" aria-expanded="false">
+                <td class="ztor-table__datecell">Nov 21</td>
+                <td><span data-i18n="earnings.name.holder">Gary Lin</span> <span data-i18n="tx.r.ip.qual">likeness → 2 licensees</span> <span class="text-sub">· <span data-i18n="tx.cat.ip">IP royalties</span></span></td>
+                <td>$842.00</td>
+                <td><span class="tx-status"><span class="badge badge--success" data-i18n="tx.st.available">Available</span></span></td>
+                <td class="ztor-table__amt ztor-table__amt--muted">−$42.10</td>
+                <td class="ztor-table__amt">$799.90</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
+              </tr>
+              <tr class="ztor-table__detail" data-feat="E14" hidden>
+                <td colspan="7">
+                  <div class="tx-detail">
+                    <div class="tx-detail__meta">
+                      <span class="tx-detail__id"><span data-i18n="tx.detail.eventid">Event ID</span> <code>evt_2N6hF8Cs</code><button class="tx-detail__copy" type="button" aria-label="Copy event ID" data-i18n-aria-label="tx.detail.copy" data-copy="evt_2N6hF8Cs"><i data-lucide="copy" class="ztor-icon"></i></button></span>
+                      <span><span data-i18n="tx.detail.ratever">Rate version</span> cfg-2026.02</span>
+                    </div>
+                    <div class="waterfall tx-detail__ladder">
+                      <div class="waterfall__row waterfall__row--income"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.gross">This transaction</span></div><span class="waterfall__amt">$842.00</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:100%"></span></div></div>
+                      <div class="waterfall__row waterfall__row--deduct"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.platform">Platform fee</span><span class="waterfall__meta">5% · cfg-2026.02</span></div><span class="waterfall__amt">−$42.10</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:95.0%"></span></div></div>
+                      <div class="waterfall__row waterfall__row--subtotal"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.net">Net of fees</span></div><span class="waterfall__amt">$799.90</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:95.0%"></span></div></div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr class="ztor-table__row" data-tx-row data-feat="E15" data-fam="revenue" data-cat="licensing" data-flags="paid" aria-expanded="false">
                 <td class="ztor-table__datecell">Nov 20</td>
-                <td><span data-i18n="earnings.name.latebloom">Moonlight Over Sham Shui Po</span> → <span data-i18n="earnings.name.studioyiu">Yiu Pictures</span> <span class="text-sub">· Licensing</span></td>
-                <td>JPY 350,000 → $2,401.00 <span class="text-sub"></span></td>
-                <td><span class="badge badge--success">Paid</span></td>
-                <td style="text-align:right;color:var(--muted-foreground)">−$120.05</td>
-                <td style="text-align:right;font-weight: var(--fw-regular)">$2,280.95</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
+                <td><span data-i18n="earnings.name.latebloom">Moonlight Over Sham Shui Po</span> → <span data-i18n="earnings.name.studioyiu">Yiu Pictures</span> <span class="text-sub">· <span data-i18n="tx.cat.licensing">Licensing</span></span></td>
+                <td>JPY 350,000 → $2,401.00</td>
+                <td><span class="tx-status"><span class="badge badge--info" data-i18n="tx.st.paid">Paid out</span></span></td>
+                <td class="ztor-table__amt ztor-table__amt--muted">−$120.05</td>
+                <td class="ztor-table__amt">$2,280.95</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
               </tr>
               <tr class="ztor-table__detail" data-feat="E15" hidden>
                 <td colspan="7">
@@ -674,31 +721,83 @@
                   </div>
                 </td>
               </tr>
-              <tr class="ztor-table__row" data-tx-row data-feat="E18" aria-expanded="false">
+              <tr class="ztor-table__row" data-tx-row data-fam="revenue" data-cat="referral" data-flags="accrued" aria-expanded="false">
+                <td class="ztor-table__datecell">Nov 19</td>
+                <td><span data-i18n="tx.r.referral.item">Agent code KURO15 · 12 orders</span> <span class="text-sub">· <span data-i18n="tx.cat.referral">Referral share</span></span></td>
+                <td>$128.40</td>
+                <td><span class="tx-status"><span class="badge badge--orange" data-i18n="tx.st.accrued">Pending</span> <span class="tx-status__when" data-i18n="tx.r.referral.when">Available Dec 3</span></span></td>
+                <td class="ztor-table__amt ztor-table__amt--muted">$0.00</td>
+                <td class="ztor-table__amt">$128.40</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
+              </tr>
+              <tr class="ztor-table__detail" hidden>
+                <td colspan="7">
+                  <div class="tx-detail">
+                    <div class="tx-detail__meta">
+                      <span class="tx-detail__id"><span data-i18n="tx.detail.eventid">Event ID</span> <code>evt_9C4vT1Xm</code><button class="tx-detail__copy" type="button" aria-label="Copy event ID" data-i18n-aria-label="tx.detail.copy" data-copy="evt_9C4vT1Xm"><i data-lucide="copy" class="ztor-icon"></i></button></span>
+                      <span><span data-i18n="tx.detail.ratever">Rate version</span> cfg-2026.02</span>
+                    </div>
+                    <div class="waterfall tx-detail__ladder">
+                      <div class="waterfall__row waterfall__row--income"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.gross">This transaction</span><span class="waterfall__meta"><span data-i18n="tx.r.referral.meta">8% of discounted order value</span></span></div><span class="waterfall__amt">$128.40</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:100%"></span></div></div>
+                      <div class="waterfall__row waterfall__row--subtotal"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.net">Net of fees</span></div><span class="waterfall__amt">$128.40</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:100%"></span></div></div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr class="ztor-table__row" data-tx-row data-feat="E13" data-fam="revenue" data-cat="event" data-flags="available" aria-expanded="false">
                 <td class="ztor-table__datecell">Nov 18</td>
-                <td>Bank transfer ••3417 <span class="text-sub">· Payout</span></td>
-                <td style="color:var(--destructive)">−$5,200.00</td>
-                <td><span class="badge badge--success">Paid</span></td>
-                <td style="text-align:right;color:var(--muted-foreground)">−$2.50</td>
-                <td style="text-align:right;font-weight: var(--fw-regular);color:var(--destructive)">−$5,202.50</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
+                <td><span data-i18n="earnings.name.taipeilive">Kowloon Café 10th Anniv. · Taipei</span> × 38 <span class="text-sub">· <span data-i18n="tx.cat.event">Event tickets</span></span></td>
+                <td>$1,140.00</td>
+                <td><span class="tx-status"><span class="badge badge--success" data-i18n="tx.st.available">Available</span></span></td>
+                <td class="ztor-table__amt ztor-table__amt--muted">−$114.00</td>
+                <td class="ztor-table__amt">$1,026.00</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
+              </tr>
+              <tr class="ztor-table__detail" data-feat="E13" hidden>
+                <td colspan="7">
+                  <div class="tx-detail">
+                    <div class="tx-detail__meta">
+                      <span class="tx-detail__id"><span data-i18n="tx.detail.eventid">Event ID</span> <code>evt_6P0jS5Bn</code><button class="tx-detail__copy" type="button" aria-label="Copy event ID" data-i18n-aria-label="tx.detail.copy" data-copy="evt_6P0jS5Bn"><i data-lucide="copy" class="ztor-icon"></i></button></span>
+                      <span><span data-i18n="tx.detail.ratever">Rate version</span> cfg-2026.02</span>
+                    </div>
+                    <div class="waterfall tx-detail__ladder">
+                      <div class="waterfall__row waterfall__row--income"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.gross">This transaction</span></div><span class="waterfall__amt">$1,140.00</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:100%"></span></div></div>
+                      <div class="waterfall__row waterfall__row--deduct"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.platform">Platform fee</span><span class="waterfall__meta">10% · cfg-2026.02</span></div><span class="waterfall__amt">−$114.00</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:90.0%"></span></div></div>
+                      <div class="waterfall__row waterfall__row--subtotal"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.net">Net of fees</span></div><span class="waterfall__amt">$1,026.00</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:90.0%"></span></div></div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr class="ztor-table__row ztor-table__row--ledger" data-tx-row data-feat="E18" data-fam="ledger" data-cat="payout" aria-expanded="false">
+                <td class="ztor-table__datecell">Nov 18</td>
+                <td>Bank transfer ••3417 <span class="text-sub">· <span data-i18n="tx.cat.payout">Payout</span></span></td>
+                <td>−$5,200.00</td>
+                <td><span class="tx-status"><span class="badge badge--outline" data-i18n="tx.st.payout-paid">Paid</span></span></td>
+                <td class="ztor-table__amt ztor-table__amt--muted"><span class="tx-na">—</span></td>
+                <td class="ztor-table__amt">−$5,202.50</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
               </tr>
               <tr class="ztor-table__detail" data-feat="E18" hidden>
                 <td colspan="7">
                   <div class="tx-detail">
                     <div class="tx-detail__meta">
-                      <span class="tx-detail__id"><span data-i18n="tx.detail.eventid">Event ID</span> <code>pyt_24Qn8Lf0</code><button class="tx-detail__copy" type="button" aria-label="Copy event ID" data-i18n-aria-label="tx.detail.copy" data-copy="pyt_24Qn8Lf0"><i data-lucide="copy" class="ztor-icon"></i></button></span>
+                      <span class="tx-detail__id"><span data-i18n="tx.detail.batchid">Payout batch</span> <code>pyt_24Qn8Lf0</code><button class="tx-detail__copy" type="button" aria-label="Copy event ID" data-i18n-aria-label="tx.detail.copy" data-copy="pyt_24Qn8Lf0"><i data-lucide="copy" class="ztor-icon"></i></button></span>
                     </div>
-                    <p class="tx-detail__note" data-i18n="tx.detail.payout-note">Payout · no revenue breakdown. A $2.50 bank transfer fee was applied.</p>
+                    <dl class="tx-detail__kv">
+                      <div class="kv kv--lead"><dt class="kv__k" data-i18n="tx.pv.bank">To account</dt><dd class="kv__v">Bank transfer ••3417</dd></div>
+                      <div class="kv"><dt class="kv__k" data-i18n="tx.pv.sent">Sent</dt><dd class="kv__v">Nov 18</dd></div>
+                      <div class="kv"><dt class="kv__k" data-i18n="tx.pv.arrived">Arrived</dt><dd class="kv__v">Nov 20</dd></div>
+                      <div class="kv"><dt class="kv__k" data-i18n="tx.pv.fee">Bank transfer fee</dt><dd class="kv__v">−$2.50</dd></div>
+                      <div class="kv"><dt class="kv__k" data-i18n="tx.pv.covers">Covers</dt><dd class="kv__v"><a class="card__link" href="#" data-i18n="tx.pv.covers-v">14 income events · Nov 1–17</a></dd></div>
+                    </dl>
+                    <p class="tx-detail__note" data-i18n="tx.detail.payout-note2">A payout moves money you had already earned — it is not new income, so it carries no fee breakdown or rate version.</p>
                   </div>
                 </td>
               </tr>
-              <tr class="ztor-table__row" data-tx-row data-feat="E20" aria-expanded="false">
+              <tr class="ztor-table__row" data-tx-row data-feat="E20" data-fam="revenue" data-cat="licensing" data-flags="accrued manual" aria-expanded="false">
                 <td class="ztor-table__datecell">Nov 16</td>
-                <td><span data-i18n="earnings.name.neontide">Dragon Tiger Gate key art</span> rental — <span data-i18n="earnings.name.studiomira">Studio Mira</span> <span class="text-sub">· Licensing · manual entry · unverified</span></td>
+                <td><span data-i18n="earnings.name.neontide">Dragon Tiger Gate key art</span> → <span data-i18n="earnings.name.studiomira">Studio Mira</span> <span class="text-sub">· <span data-i18n="tx.cat.licensing">Licensing</span> · <span data-i18n="tx.src.manual">Manual entry</span></span></td>
                 <td>$480.00</td>
-                <td><span class="badge badge--orange">Pending</span></td>
-                <td style="text-align:right;color:var(--muted-foreground)">−$0.00</td>
-                <td style="text-align:right;font-weight: var(--fw-regular)">$480.00</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
+                <td><span class="tx-status"><span class="badge badge--orange" data-i18n="tx.st.accrued">Pending</span> <span class="tx-status__when" data-i18n="tx.st.no-unlock">Not withdrawable</span></span></td>
+                <td class="ztor-table__amt ztor-table__amt--muted"><span class="tx-na">—</span></td>
+                <td class="ztor-table__amt">$480.00</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
               </tr>
               <tr class="ztor-table__detail" data-feat="E20" hidden>
                 <td colspan="7">
@@ -707,26 +806,130 @@
                       <span class="tx-detail__id"><span data-i18n="tx.detail.eventid">Event ID</span> <code>man_9F2cR7Hs</code><button class="tx-detail__copy" type="button" aria-label="Copy event ID" data-i18n-aria-label="tx.detail.copy" data-copy="man_9F2cR7Hs"><i data-lucide="copy" class="ztor-icon"></i></button></span>
                       <span><span data-i18n="tx.detail.ratever">Rate version</span> —</span>
                     </div>
+                    <dl class="tx-detail__kv">
+                      <div class="kv kv--lead"><dt class="kv__k" data-i18n="tx.mv.source">Where it came from</dt><dd class="kv__v"><span data-i18n="tx.mv.source-v">Creator-entered rental invoice</span></dd></div>
+                      <div class="kv"><dt class="kv__k" data-i18n="tx.mv.file">Attachment</dt><dd class="kv__v"><a class="card__link" href="#">invoice-1116.pdf</a></dd></div>
+                    </dl>
                     <p class="tx-detail__note" data-i18n="tx.detail.manual-note"><strong>Manual entry · unverified.</strong> Excluded from Available, payouts, and tax documents — at most it shows in display stats.</p>
                   </div>
                 </td>
               </tr>
-              <tr class="ztor-table__row" data-tx-row data-feat="E18" aria-expanded="false">
+              <tr class="ztor-table__row" data-tx-row data-fam="revenue" data-cat="goods" data-flags="disputed" aria-expanded="false">
+                <td class="ztor-table__datecell">Nov 14</td>
+                <td><span data-i18n="tx.r.hoodie.item">WYAGL hoodie × 6</span> <span class="text-sub">· <span data-i18n="tx.cat.goods">E-Shop sales</span></span></td>
+                <td>$180.00</td>
+                <td><span class="tx-status"><span class="badge badge--error" data-i18n="tx.st.disputed">Disputed</span></span></td>
+                <td class="ztor-table__amt ztor-table__amt--muted">−$10.80</td>
+                <td class="ztor-table__amt">$169.20</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
+              </tr>
+              <tr class="ztor-table__detail" hidden>
+                <td colspan="7">
+                  <div class="tx-detail">
+                    <div class="tx-detail__meta">
+                      <span class="tx-detail__id"><span data-i18n="tx.detail.eventid">Event ID</span> <code>evt_1D8qL0Fj</code><button class="tx-detail__copy" type="button" aria-label="Copy event ID" data-i18n-aria-label="tx.detail.copy" data-copy="evt_1D8qL0Fj"><i data-lucide="copy" class="ztor-icon"></i></button></span>
+                      <span><span data-i18n="tx.detail.ratever">Rate version</span> cfg-2026.02</span>
+                    </div>
+                    <div class="waterfall tx-detail__ladder">
+                      <div class="waterfall__row waterfall__row--income"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.gross">This transaction</span></div><span class="waterfall__amt">$180.00</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:100%"></span></div></div>
+                      <div class="waterfall__row waterfall__row--deduct"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.platform">Platform fee</span><span class="waterfall__meta">4% · cfg-2026.02</span></div><span class="waterfall__amt">−$7.20</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:96.0%"></span></div></div>
+                      <div class="waterfall__row waterfall__row--deduct"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.payment">Payment fee</span><span class="waterfall__meta">2% · Stripe</span></div><span class="waterfall__amt">−$3.60</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:94.0%"></span></div></div>
+                      <div class="waterfall__row waterfall__row--subtotal"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.net">Net of fees</span></div><span class="waterfall__amt">$169.20</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:94.0%"></span></div></div>
+                    </div>
+                    <p class="tx-detail__note" data-i18n="tx.detail.disputed-note"><strong>Under dispute.</strong> Held out of Available until the bank decides; it returns if you win.</p>
+                  </div>
+                </td>
+              </tr>
+              <tr class="ztor-table__row" data-tx-row data-fam="revenue" data-cat="collab" data-flags="available" aria-expanded="false">
+                <td class="ztor-table__datecell">Nov 13</td>
+                <td><span data-i18n="tx.r.collab.item">FLAMES music video · featured artist share</span> <span class="text-sub">· <span data-i18n="tx.cat.collab">Collaborator share</span></span></td>
+                <td>$310.00</td>
+                <td><span class="tx-status"><span class="badge badge--success" data-i18n="tx.st.available">Available</span></span></td>
+                <td class="ztor-table__amt ztor-table__amt--muted">−$15.50</td>
+                <td class="ztor-table__amt">$294.50</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
+              </tr>
+              <tr class="ztor-table__detail" hidden>
+                <td colspan="7">
+                  <div class="tx-detail">
+                    <div class="tx-detail__meta">
+                      <span class="tx-detail__id"><span data-i18n="tx.detail.eventid">Event ID</span> <code>evt_4R2yG7Ku</code><button class="tx-detail__copy" type="button" aria-label="Copy event ID" data-i18n-aria-label="tx.detail.copy" data-copy="evt_4R2yG7Ku"><i data-lucide="copy" class="ztor-icon"></i></button></span>
+                      <span><span data-i18n="tx.detail.ratever">Rate version</span> cfg-2026.02</span>
+                    </div>
+                    <div class="waterfall tx-detail__ladder">
+                      <div class="waterfall__row waterfall__row--income"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.gross">This transaction</span><span class="waterfall__meta"><span data-i18n="tx.r.collab.meta">15% of the project net</span></span></div><span class="waterfall__amt">$310.00</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:100%"></span></div></div>
+                      <div class="waterfall__row waterfall__row--deduct"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.platform">Platform fee</span><span class="waterfall__meta">5% · cfg-2026.02</span></div><span class="waterfall__amt">−$15.50</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:95.0%"></span></div></div>
+                      <div class="waterfall__row waterfall__row--subtotal"><div class="waterfall__head"><span class="waterfall__name" data-i18n="tx.detail.net">Net of fees</span></div><span class="waterfall__amt">$294.50</span><div class="waterfall__bar"><span class="waterfall__fill" style="width:95.0%"></span></div></div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr class="ztor-table__row ztor-table__row--ledger" data-tx-row data-feat="E18" data-fam="ledger" data-cat="refund" data-flags="refunded" aria-expanded="false">
                 <td class="ztor-table__datecell">Nov 12</td>
-                <td><span data-i18n="earnings.name.springlaunch">Kowloon Café 10th Anniv.</span> · ticket refunds × 3 <span class="text-sub">· Refund</span></td>
-                <td style="color:var(--destructive)">−$210.00</td>
-                <td><span class="badge badge--error">Disputed</span></td>
-                <td style="text-align:right;color:var(--muted-foreground)">+$6.30</td>
-                <td style="text-align:right;font-weight: var(--fw-regular);color:var(--destructive)">−$203.70</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
+                <td><span data-i18n="earnings.name.springlaunch">Kowloon Café 10th Anniv.</span> <span data-i18n="tx.r.refund.qual">· 3 ticket refunds</span> <span class="text-sub">· <span data-i18n="tx.cat.refund">Refund</span></span></td>
+                <td>−$210.00</td>
+                <td><span class="tx-status"><span class="badge badge--outline" data-i18n="tx.st.refunded">Refunded</span></span></td>
+                <td class="ztor-table__amt ztor-table__amt--muted"><span class="tx-na">—</span></td>
+                <td class="ztor-table__amt">−$210.00</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
               </tr>
               <tr class="ztor-table__detail" data-feat="E18" hidden>
                 <td colspan="7">
                   <div class="tx-detail">
                     <div class="tx-detail__meta">
-                      <span class="tx-detail__id"><span data-i18n="tx.detail.eventid">Event ID</span> <code>ref_6T1dY4Wp</code><button class="tx-detail__copy" type="button" aria-label="Copy event ID" data-i18n-aria-label="tx.detail.copy" data-copy="ref_6T1dY4Wp"><i data-lucide="copy" class="ztor-icon"></i></button></span>
+                      <span class="tx-detail__id"><span data-i18n="tx.detail.reversalid">Reversal</span> <code>ref_6T1dY4Wp</code><button class="tx-detail__copy" type="button" aria-label="Copy event ID" data-i18n-aria-label="tx.detail.copy" data-copy="ref_6T1dY4Wp"><i data-lucide="copy" class="ztor-icon"></i></button></span>
                       <span><span data-i18n="tx.detail.ratever">Rate version</span> cfg-2026.02</span>
                     </div>
-                    <p class="tx-detail__note" data-i18n="tx.detail.refund-note"><strong>Refund · disputed.</strong> Frozen from Available during the dispute window; restored if the dispute is won.</p>
+                    <dl class="tx-detail__kv">
+                      <div class="kv kv--lead"><dt class="kv__k" data-i18n="tx.rv.origin">Reverses</dt><dd class="kv__v"><a class="card__link" href="#" data-i18n="tx.rv.origin-v">Event tickets · Nov 3 · evt_0M5aZ2Qe</a></dd></div>
+                      <div class="kv"><dt class="kv__k" data-i18n="tx.rv.absorb">Absorbed by</dt><dd class="kv__v"><span data-i18n="tx.rv.absorb-v">This period’s distributable profit</span></dd></div>
+                    </dl>
+                    <p class="tx-detail__note" data-i18n="tx.detail.refund-note2">Refunds come out of the refund reserve first, then this period’s distributable profit, then carry forward — nothing already paid out is clawed back.</p>
+                  </div>
+                </td>
+              </tr>
+              <tr class="ztor-table__row ztor-table__row--ledger" data-tx-row data-feat="E18" data-fam="ledger" data-cat="deduction" aria-expanded="false">
+                <td class="ztor-table__datecell">Nov 10</td>
+                <td><span data-i18n="tx.r.deduct.item">October platform service fee</span> <span class="text-sub">· <span data-i18n="tx.cat.deduction">Deduction</span></span></td>
+                <td>−$45.00</td>
+                <td><span class="tx-status"><span class="badge badge--outline" data-i18n="tx.st.deducted">Deducted</span></span></td>
+                <td class="ztor-table__amt ztor-table__amt--muted"><span class="tx-na">—</span></td>
+                <td class="ztor-table__amt">−$45.00</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
+              </tr>
+              <tr class="ztor-table__detail" data-feat="E18" hidden>
+                <td colspan="7">
+                  <div class="tx-detail">
+                    <div class="tx-detail__meta">
+                      <span class="tx-detail__id"><span data-i18n="tx.detail.reversalid">Reversal</span> <code>dbt_7W3nH6Ya</code><button class="tx-detail__copy" type="button" aria-label="Copy event ID" data-i18n-aria-label="tx.detail.copy" data-copy="dbt_7W3nH6Ya"><i data-lucide="copy" class="ztor-icon"></i></button></span>
+                      <span><span data-i18n="tx.detail.ratever">Rate version</span> cfg-2026.02</span>
+                    </div>
+                    <dl class="tx-detail__kv">
+                      <div class="kv kv--lead"><dt class="kv__k" data-i18n="tx.dv.what">What for</dt><dd class="kv__v"><span data-i18n="tx.dv.what-v">Storefront subscription · October</span></dd></div>
+                      <div class="kv"><dt class="kv__k" data-i18n="tx.dv.period">Period</dt><dd class="kv__v">Oct 1 – Oct 31</dd></div>
+                    </dl>
+                    <p class="tx-detail__note" data-i18n="tx.detail.deduct-note">Charged against your balance, not against a single sale — so there is no per-transaction breakdown.</p>
+                  </div>
+                </td>
+              </tr>
+              <tr class="ztor-table__row ztor-table__row--ledger" data-tx-row data-feat="E18" data-fam="ledger" data-cat="payout" aria-expanded="false">
+                <td class="ztor-table__datecell">Nov 05</td>
+                <td>Bank transfer ••3417 <span class="text-sub">· <span data-i18n="tx.cat.payout">Payout</span></span></td>
+                <td>$1,800.00</td>
+                <td><span class="tx-status"><span class="badge badge--outline-danger" data-i18n="tx.st.failed">Failed</span></span></td>
+                <td class="ztor-table__amt ztor-table__amt--muted"><span class="tx-na">—</span></td>
+                <td class="ztor-table__amt"><span class="tx-na">—</span></td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
+              </tr>
+              <tr class="ztor-table__detail" data-feat="E18" hidden>
+                <td colspan="7">
+                  <div class="tx-detail">
+                    <div class="tx-detail__meta">
+                      <span class="tx-detail__id"><span data-i18n="tx.detail.batchid">Payout batch</span> <code>pyt_18Hs4Kv2</code><button class="tx-detail__copy" type="button" aria-label="Copy event ID" data-i18n-aria-label="tx.detail.copy" data-copy="pyt_18Hs4Kv2"><i data-lucide="copy" class="ztor-icon"></i></button></span>
+                    </div>
+                    <dl class="tx-detail__kv">
+                      <div class="kv kv--lead"><dt class="kv__k" data-i18n="tx.pv.bank">To account</dt><dd class="kv__v">Bank transfer ••3417</dd></div>
+                      <div class="kv"><dt class="kv__k" data-i18n="tx.pv.sent">Sent</dt><dd class="kv__v">Nov 05</dd></div>
+                      <div class="kv"><dt class="kv__k" data-i18n="tx.pv.returned">Returned</dt><dd class="kv__v">Nov 07</dd></div>
+                      <div class="kv"><dt class="kv__k" data-i18n="tx.pv.reason">Why it failed</dt><dd class="kv__v"><span data-i18n="tx.pv.reason-v">Account name did not match</span></dd></div>
+                    </dl>
+                    <p class="tx-detail__note" data-i18n="tx.detail.failed-note">The money never left — it went back to Available, so nothing was deducted. Fix the account details and request the payout again.</p>
+                    <a class="btn btn--outline btn--sm" href="#payouts" data-tab-jump="payouts" data-i18n="tx.detail.failed-cta">Update payout account</a>
                   </div>
                 </td>
               </tr>
@@ -734,8 +937,11 @@
           </table>
         </section>
 
-        <p class="text-sub mt-16" style="font-size: var(--fs-12)">
-          <span data-i18n="tx.showing">Showing 7 of 214 transactions ·</span>
+        <!-- 沒有任何一列符合篩選時的訊息（篩選器現在是真的會篩的，見頁尾腳本）。 -->
+        <p class="text-sub mt-16" data-tx-none hidden style="font-size: var(--fs-12)" data-i18n="tx.none">No transactions match these filters.</p>
+
+        <p class="text-sub mt-16" data-tx-foot style="font-size: var(--fs-12)">
+          <span data-tx-showing data-i18n="tx.showing">Showing 14 of 214 transactions ·</span>
           <a class="card__link" href="#" data-i18n="btn.load-more">Load more →</a>
         </p>
 
@@ -1388,8 +1594,10 @@
     const initial = (location.hash || '').replace('#', '');
     if (['overview','transactions','breakdown','payouts','tax','howto'].includes(initial)) activate(initial);
 
-    /* Filter chips — local-only single-select within group */
-    document.querySelectorAll('.chip-group').forEach(group => {
+    /* Filter chips — local-only single-select within group.
+       交易明細那兩排（[data-tx-cats]／[data-tx-flags]）不走這裡：它們是真的會篩的
+       篩選器，且第二排是多選，行為寫在下面的「交易明細篩選」那一段。 */
+    document.querySelectorAll('.chip-group:not([data-tx-cats]):not([data-tx-flags])').forEach(group => {
       group.addEventListener('click', e => {
         const chip = e.target.closest('.chip:not(.chip--static)');
         if (!chip) return;
@@ -1552,6 +1760,109 @@
     document.addEventListener('i18n:applied', () => {
       if (currentKey && projModal && !projModal.hidden) renderProject(currentKey);
     });
+  })();
+
+  /* 交易明細篩選（spec §5.1.8 F7 · D250）——三個面向同時生效：
+       族（segmented：全部／只看收入／只看金流異動）
+       收入分類（第一排 chip，單選；帳務異動列沒有收入分類，選任一類就不出現）
+       狀態與資料來源（第二排 chip，多選）
+     規格重寫這一段的起點就是「篩選器不可信」：舊版的 chip 只換 active 樣式、不篩任何東西，
+     選了一個分類看到的還是全部，於是這張表沒辦法拿來對帳。現在它真的篩。
+     狀態與資料來源同一排但不是同一個面向——狀態彼此之間是 OR（勾兩個就看這兩種），
+     手動補登是資料來源、與狀態正交，勾了就在前面的結果上再收一次（AND）。
+     筆數與空結果訊息跟著結果走；語言切換後 applyI18n 會把 {n} 樣板寫回去，所以
+     i18n:applied 之後要重跑一次。 */
+  (function () {
+    const body = document.querySelector('[data-panel="transactions"] .ztor-table tbody');
+    if (!body) return;
+    const famBar  = document.querySelector('[data-tx-family]');
+    const catBar  = document.querySelector('[data-tx-cats]');
+    const flagBar = document.querySelector('[data-tx-flags]');
+    const noneMsg = document.querySelector('[data-tx-none]');
+    const foot    = document.querySelector('[data-tx-foot]');
+    const showing = document.querySelector('[data-tx-showing]');
+    const STATES  = ['accrued', 'available', 'disputed', 'refunded'];
+
+    let fam = 'all', cat = 'all';
+    const picked = new Set();
+
+    function apply() {
+      const states = STATES.filter(f => picked.has(f));
+      const wantManual = picked.has('manual');
+      let n = 0;
+
+      body.querySelectorAll('[data-tx-row]').forEach(row => {
+        const flags = (row.dataset.flags || '').split(' ').filter(Boolean);
+        let on = (fam === 'all' || row.dataset.fam === fam)
+              && (cat === 'all' || row.dataset.cat === cat);
+        if (on && states.length) on = states.some(f => flags.indexOf(f) > -1);
+        if (on && wantManual) on = flags.indexOf('manual') > -1;
+
+        row.hidden = !on;
+        const detail = row.nextElementSibling;
+        if (detail && detail.classList.contains('ztor-table__detail') && !on) {
+          detail.hidden = true;
+          row.setAttribute('aria-expanded', 'false');
+        }
+        if (on) n++;
+      });
+
+      if (noneMsg) noneMsg.hidden = n > 0;
+      if (foot) foot.hidden = n === 0;
+      paintCount(n);
+    }
+
+    let lastCount = 0;
+    function paintCount(n) {
+      lastCount = n;
+      if (!showing) return;
+      const tpl = (window.i18nT && window.i18nT('tx.showing')) || showing.textContent;
+      showing.textContent = String(tpl).replace('{n}', n);
+    }
+
+    if (famBar) famBar.addEventListener('click', e => {
+      const btn = e.target.closest('.segmented__btn');
+      if (!btn) return;
+      fam = btn.dataset.fam;
+      famBar.querySelectorAll('.segmented__btn').forEach(b => {
+        const on = b === btn;
+        b.classList.toggle('segmented__btn--active', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      /* 帳務異動列沒有收入分類——留著那排會走進死路：先選了「商品銷售」再切「只看金流異動」，
+         兩個條件相乘就是零筆，畫面變空但看不出是哪個條件造成的。切到金流異動時把那排收起來
+         並歸零，切回來再放出來。 */
+      if (catBar) {
+        const row = catBar.closest('.filter-row');
+        const off = fam === 'ledger';
+        if (row) row.hidden = off;
+        if (off && cat !== 'all') {
+          cat = 'all';
+          catBar.querySelectorAll('.chip').forEach(c => c.classList.toggle('chip--active', c.dataset.cat === 'all'));
+        }
+      }
+      apply();
+    });
+
+    if (catBar) catBar.addEventListener('click', e => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      cat = chip.dataset.cat;
+      catBar.querySelectorAll('.chip').forEach(c => c.classList.toggle('chip--active', c === chip));
+      apply();
+    });
+
+    if (flagBar) flagBar.addEventListener('click', e => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      const f = chip.dataset.flag;
+      if (picked.has(f)) { picked.delete(f); chip.classList.remove('chip--active'); }
+      else { picked.add(f); chip.classList.add('chip--active'); }
+      apply();
+    });
+
+    document.addEventListener('i18n:applied', () => paintCount(lastCount));
+    apply();
   })();
 
   /* Transactions · expandable rows + copy Event ID (spec §5.1.8 F7) */

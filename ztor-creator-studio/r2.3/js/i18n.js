@@ -1336,7 +1336,8 @@
     'tx.col.status':          { en: 'Status',                zh: '狀態' },
     'tx.col.fees':            { en: 'Fees',                  zh: '扣項' },
     'tx.col.net':             { en: 'Net of fees',           zh: '淨額' },
-    'tx.showing':             { en: 'Showing 7 of 214 transactions ·', zh: '顯示 214 筆中的 7 筆 ·' },
+    'tx.showing':             { en: 'Showing {n} of 214 transactions ·', zh: '顯示 214 筆中的 {n} 筆 ·' },
+    'tx.none':                { en: 'No transactions match these filters.', zh: '沒有交易符合目前的篩選。' },
 
     /* Transactions · per-row expand detail (F7 · trace) */
     'tx.detail.eventid':      { en: 'Event ID',              zh: '收入事件編號' },
@@ -1351,6 +1352,91 @@
     'tx.detail.payout-note':  { en: 'Payout · no revenue breakdown. A $2.50 bank transfer fee was applied.', zh: '提款 · 無收入拆解；已扣銀行轉帳費 $2.50。' },
     'tx.detail.manual-note':  { en: '<strong>Manual entry · unverified.</strong> Excluded from Available, payouts, and tax documents — at most it shows in display stats.', zh: '<strong>手動補登 · 未驗證。</strong>不計入可提領、提款與稅務文件，最多顯示在展示性統計。' },
     'tx.detail.refund-note':  { en: '<strong>Refund · disputed.</strong> Frozen from Available during the dispute window; restored if the dispute is won.', zh: '<strong>退款 · 爭議中。</strong>爭議期間自可提領凍結；申訴成立則還原。' },
+
+    /* ── 交易明細 · D250（2026-09-05）兩族一表 ────────────────────────────────
+       分類名稱只有這一組 key：規格 §7.3 是收入分類的唯一來源，篩選 chip 與列上的
+       分類標籤共用同一個 key，兩邊才不會各自漂走。
+       墓碑：`tx.filter.eshop`／`event`／`ip`／`licensing`／`streaming`／`project`／
+       `payouts` 這批舊篩選名在 earnings.html 退場，改用下面的 `tx.cat.*`；鍵本身保留，
+       凍結不掛導覽的拆頁版 earnings-ztor.html 還在用。`tx.filter.royalty`（站外版稅）
+       零消費者——站外版稅已併入「串流・版稅」（§7.3），保留墓碑不再使用。 */
+    'tx.fam.aria':            { en: 'Transaction family',    zh: '交易族別' },
+    'tx.fam.all':             { en: 'All',                   zh: '全部' },
+    'tx.fam.revenue':         { en: 'Income only',           zh: '只看收入' },
+    'tx.fam.ledger':          { en: 'Money movement only',   zh: '只看金流異動' },
+    'tx.cat.aria':            { en: 'Revenue category',      zh: '收入分類' },
+    'tx.flag.aria':           { en: 'Status and data source', zh: '狀態與資料來源' },
+
+    'tx.cat.goods':           { en: 'E-Shop sales',          zh: '商品銷售' },
+    'tx.cat.event':           { en: 'Event tickets',         zh: '活動票務' },
+    'tx.cat.project':         { en: 'Project support',       zh: '項目支持' },
+    'tx.cat.ip':              { en: 'IP royalties',          zh: 'IP 版稅' },
+    'tx.cat.licensing':       { en: 'Licensing',             zh: '授權收入' },
+    'tx.cat.streaming':       { en: 'Streaming & royalties', zh: '串流・版稅' },
+    'tx.cat.collab':          { en: 'Collaborator share',    zh: '合作者分潤' },
+    'tx.cat.referral':        { en: 'Referral share',        zh: '推薦分潤' },
+    'tx.cat.payout':          { en: 'Payout',                zh: '提款' },
+    'tx.cat.refund':          { en: 'Refund',                zh: '退款' },
+    'tx.cat.deduction':       { en: 'Deduction',             zh: '扣款' },
+
+    /* 收入族的狀態（填色徽章）與帳務異動族的狀態（描邊徽章）分開列：兩邊都有「已付款」，
+       但收入的已付款是「這筆錢已經撥給你」、提款的已付款是「這批款已經匯出」，不是同一件事。 */
+    'tx.st.accrued':          { en: 'Pending',               zh: '待結算' },
+    'tx.st.available':        { en: 'Available',             zh: '可提領' },
+    'tx.st.paid':             { en: 'Paid out',              zh: '已撥款' },
+    'tx.st.disputed':         { en: 'Disputed',              zh: '爭議中' },
+    'tx.st.payout-paid':      { en: 'Paid',                  zh: '已付款' },
+    'tx.st.refunded':         { en: 'Refunded',              zh: '已退款' },
+    'tx.st.deducted':         { en: 'Deducted',              zh: '已扣款' },
+    'tx.src.manual':          { en: 'Manual entry',          zh: '手動補登' },
+    /* 手動補登的待結算列不接可提領日期——它永遠不會轉成可提領（§7.3：手動補登（未驗證）
+       不計入可提領與提款可申請金額）。同一個位置改寫「不計入可提領」，不留空：空著會被
+       讀成「日期還沒算出來」，那是另一件事。 */
+    'tx.st.no-unlock':        { en: 'Not withdrawable',      zh: '不計入可提領' },
+
+    /* 逐列的敘述文字（作品名走 earnings.name.*，會跟著 persona 換） */
+    'tx.r.ost.qual':          { en: '· pre-order',           zh: '· 預購' },
+    'tx.r.ost.when':          { en: 'Available Dec 8',       zh: '12/08 可提領' },
+    'tx.r.spotify.qual':      { en: '· Q4 statement',        zh: '· Q4 結算' },
+    'tx.r.ip.qual':           { en: 'likeness → 2 licensees', zh: '肖像 → 2 位被授權者' },
+    'tx.r.referral.item':     { en: 'Agent code KURO15 · 12 orders', zh: '代理碼 KURO15 · 12 筆訂單' },
+    'tx.r.referral.when':     { en: 'Available Dec 3',       zh: '12/03 可提領' },
+    'tx.r.referral.meta':     { en: '8% of discounted order value', zh: '折扣後成交金額的 8%' },
+    'tx.r.hoodie.item':       { en: 'WYAGL hoodie × 6',      zh: 'WYAGL 連帽衫 × 6' },
+    'tx.r.collab.item':       { en: 'FLAMES music video · featured artist share', zh: 'FLAMES MV · 客座演出分潤' },
+    'tx.r.collab.meta':       { en: '15% of the project net', zh: '該項目淨額的 15%' },
+    'tx.r.refund.qual':       { en: '· 3 ticket refunds',    zh: '· 退票 3 張' },
+    'tx.r.deduct.item':       { en: 'October platform service fee', zh: '10 月平台服務費' },
+
+    /* 展開層 · 帳務異動族（收入族用的是既有的 tx.detail.* 瀑布字串） */
+    'tx.detail.batchid':      { en: 'Payout batch',          zh: '提款批次編號' },
+    'tx.detail.reversalid':   { en: 'Reversal',              zh: '沖銷單號' },
+    'tx.pv.bank':             { en: 'To account',            zh: '收款帳戶' },
+    'tx.pv.sent':             { en: 'Sent',                  zh: '送出' },
+    'tx.pv.arrived':          { en: 'Arrived',               zh: '入帳' },
+    'tx.pv.fee':              { en: 'Bank transfer fee',     zh: '銀行轉帳費' },
+    'tx.pv.covers':           { en: 'Covers',                zh: '包含' },
+    'tx.pv.returned':         { en: 'Returned',              zh: '退回' },
+    'tx.pv.reason':           { en: 'Why it failed',         zh: '失敗原因' },
+    'tx.pv.reason-v':         { en: 'Account name did not match', zh: '戶名與帳戶不符' },
+    'tx.st.failed':           { en: 'Failed',                zh: '失敗' },
+    'tx.detail.failed-note':  { en: 'The money never left \u2014 it went back to Available, so nothing was deducted. Fix the account details and request the payout again.', zh: '這筆錢沒有離開，已退回可提領，餘額沒有被扣。修正帳戶資料後可以重新申請。' },
+    'tx.detail.failed-cta':   { en: 'Update payout account',  zh: '更新收款帳戶' },
+    'tx.pv.covers-v':         { en: '14 income events · Nov 1–17', zh: '14 筆收入事件 · 11/01–11/17' },
+    'tx.mv.source':           { en: 'Where it came from',    zh: '來源說明' },
+    'tx.mv.source-v':         { en: 'Creator-entered rental invoice', zh: '創作者自行輸入的租用發票' },
+    'tx.mv.file':             { en: 'Attachment',            zh: '附件' },
+    'tx.rv.origin':           { en: 'Reverses',              zh: '沖銷的原交易' },
+    'tx.rv.origin-v':         { en: 'Event tickets · Nov 3 · evt_0M5aZ2Qe', zh: '活動票務 · 11/03 · evt_0M5aZ2Qe' },
+    'tx.rv.absorb':           { en: 'Absorbed by',           zh: '由誰吸收' },
+    'tx.rv.absorb-v':         { en: 'This period\u2019s distributable profit', zh: '本期可分配淨利' },
+    'tx.dv.what':             { en: 'What for',              zh: '扣款項目' },
+    'tx.dv.what-v':           { en: 'Storefront subscription · October', zh: '商店訂閱費 · 10 月' },
+    'tx.dv.period':           { en: 'Period',                zh: '期間' },
+    'tx.detail.payout-note2': { en: 'A payout moves money you had already earned \u2014 it is not new income, so it carries no fee breakdown or rate version.', zh: '提款搬的是你已經賺到的錢，不是新的收入，所以沒有扣項拆解、也沒有費率版本。' },
+    'tx.detail.refund-note2': { en: 'Refunds come out of the refund reserve first, then this period\u2019s distributable profit, then carry forward \u2014 nothing already paid out is clawed back.', zh: '退款依序由退款準備金、本期可分配淨利、再結轉赤字吸收；已經撥出去的款項不會被追回。' },
+    'tx.detail.disputed-note':{ en: '<strong>Under dispute.</strong> Held out of Available until the bank decides; it returns if you win.', zh: '<strong>爭議中。</strong>銀行裁定之前自可提領扣除；申訴成立就還原。' },
+    'tx.detail.deduct-note':  { en: 'Charged against your balance, not against a single sale \u2014 so there is no per-transaction breakdown.', zh: '這筆從餘額扣，不是從某一筆銷售扣，所以沒有逐筆拆解。' },
 
     /* Status pills */
     'status.pending':         { en: 'Pending',               zh: '待結算' },
@@ -5766,7 +5852,7 @@
     /* D240 一物一碼：買多件的買家收成一列可展開的群組列，列首寫本場次已領幾件。 */
     'pk.roster.group.expand': { en: 'Show pickup units', zh: '展開這位買家的領取單位' },
     'pk.g.mika.progress': { en: '1 of 5 collected', zh: '本場次已領 1／5' },
-    'pk.g.noor.progress': { en: '0 of 2 collected', zh: '本場次已領 0／2' },
+    'pk.g.noor.progress': { en: '0 of 3 collected', zh: '本場次已領 0／3' },
     'pk.g.kai.progress':  { en: '2 of 2 collected', zh: '本場次已領 2／2' },
     /* 退款即失效示範（D242，2026-09-03）：Yuki H.（#ZT-10471，一件失效一件仍可領）、
        Jonas P.（#ZT-10473，組合成員部分失效）。N＝總件數扣掉已失效的（見 js/orders-store.js
@@ -9113,7 +9199,7 @@
       'earnings.waterfall.gross-meta': { zh: '248 筆已結算收入', en: '248 settled events' },
       'earnings.waterfall.ip-meta':    { zh: '取樣曲目授權使用', en: 'Sampled track licensing' },
       'earnings.waterfall.nft-meta':   { zh: '40% · 1,240 位支持者', en: '40% · 1,240 backers' },
-      'tx.showing':                    { zh: '顯示 271 筆中的 7 筆 ·', en: 'Showing 7 of 271 transactions ·' },
+      'tx.showing':                    { zh: '顯示 271 筆中的 {n} 筆 ·', en: 'Showing {n} of 271 transactions ·' },
 
       /* ── 活動（列表 + 詳情）：周湯豪真實演出史，見 persona/NICKTHEREAL/資料彙整.md 二、演唱會/活動史 ── */
       /* 依日期分桶（今天＝2026-07-26）：即將舉辦＝共看派對 8/1、跨年 12/31；

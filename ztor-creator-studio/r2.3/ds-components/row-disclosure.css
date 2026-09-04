@@ -21,10 +21,12 @@
      表格型（pickup-detail 買家分組、events 系列場次）
        <div class="rowdis__group" role="rowgroup">
          <div class="product-list__row rowdis__head" data-rowdis-row="mika">
-           <div class="product-list__title rowdis__label"><span>Mika L.</span>
+           <div class="rowdis__lead" role="cell">
              <button class="btn btn--icon btn--xs rowdis__toggle"
                      data-rowdis="mika" aria-expanded="false">chevron-down</button></div>
+           <div class="product-list__title"><span>Mika L.</span></div>
          <div class="product-list__row rowdis__child" data-rowdis-child="mika" hidden>
+           <div class="rowdis__lead" role="cell"><span class="rowdis__num">1</span></div>
 
      清單型（order-detail 品項展開單位、project-detail 收支小計）
        <div class="rowdis__group rowdis__group--gutter">
@@ -192,7 +194,12 @@
 .rowdis__head[hidden] { display: none; }
 
 /* 把手與標題並排的那一格（選配）。用在「標題是單行截斷、把手不能被一起截掉」
-   的情境：文字吃剩下的寬度並自己截斷，把手固定寬不縮。 */
+   的情境：文字吃剩下的寬度並自己截斷，把手固定寬不縮。
+   ⚠ 2026-09-04 起正式頁面全數不再消費：把手改站列首欄（見上方 `.rowdis__lead`），
+   標題格裡沒有要防截斷的並排元素了，pickup-detail／events／design-system 的
+   `rowdis__label` 已隨那次改動移除。規則留著只為了凍結保存的探索頁
+   `lab-row-hover.html`（六個 hover 候選的沿革證據，明令不動）；等那批探索頁一併
+   清理時本規則跟著退場，屆時照墓碑機制辦。新頁面不要再用它。 */
 .rowdis__label {
   display: flex;
   align-items: center;
@@ -203,6 +210,57 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ── 列首欄 ─────────────────────────────────────────────────
+   2026-09-04 使用者裁決（STYLE-DECISIONS Q109，指名參考 Braintrust）：展開控制
+   移到列的最前緣、獨立一個窄欄，`⋯` 動作選單維持在列尾，兩者分踞兩端。此前
+   chevron 貼在標題文字後面（列的中段），與列尾的 `⋯` 讀不出「這是同一列的兩個
+   控制項」，也讓每一組的標題長度不同時把手的 x 位置跟著浮動。
+
+   規則（三條）
+     1. 這一欄從來不空著也從來不多出來——同一張表裡的每一列都有它，包括沒有群組
+        的一般列（Braintrust 亦然）。它是欄位版面的一部分，不是「有分組才長出來」
+        的東西，所以表頭也要跟著多一欄，否則表頭與資料列會差一格。
+     2. 母列在這一欄放 chevron（`.rowdis__toggle`）；子列放**它在該組內的序號**
+        （1 起算，`.rowdis__num`）；沒有群組的一般列留空。
+     3. 寬度由消費頁的 grid 軌決定，值一律引用本檔的 `--rowdis-lead-w`——軌與格子
+        兩邊各寫一次數值遲早會分岔。28px 不是隨手取的：它等於 `--control-h-xs`
+        （`.btn--icon.btn--xs` 的邊長），欄寬剛好包住把手、左右不留浮動的餘白。
+
+   為什麼變數掛在 `:root`：軌道寫在消費頁的 grid 容器上（`.product-list__head`／
+   `__row`），那個容器不是 `.rowdis__lead` 的祖先鏈上任何一個本元件的節點，掛在
+   元件自己的 class 上讀不到。站上已有同樣做法（`ds-components/preview-panel.css`
+   的 `--preview-w`）。 */
+:root { --rowdis-lead-w: var(--sp-28); }
+
+.rowdis__lead {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--rowdis-lead-w);
+}
+
+/* 序號：純文字、不可聚焦——這一欄只有母列的把手是控制項，子列的編號是資料。
+   字級與顏色比照表頭的欄名（`--fs-12`／`--column-head-ink`）：它是編號不是內容，
+   要能一眼掃過又不跟同列的值搶注意力。等寬數字讓 1 與 10 的個位對齊。 */
+.rowdis__num {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  line-height: var(--lh-normal);
+  color: var(--column-head-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ≤760px：兩個消費頁的清單都退回堆疊版面（欄軌重定義成「列首欄｜內容｜動作」）。
+   列首欄在窄框下仍然留著、不藏：把手是鍵盤使用者唯一的展開入口，不能因為換版面
+   就消失（整列可點只服務指標與觸控）。這裡把它釘在第一列第一格，並把緊接著的
+   內容欄推到第二軌——base 的 `.product-list__product { grid-column: 1; grid-row: 1 }`
+   會與它搶同一格，不推開會疊在一起。 */
+@media (max-width: 760px) {
+  .rowdis__lead { grid-column: 1; grid-row: 1; }
+  .product-list--roster .product-list__product { grid-column: 2; }
 }
 
 /* 揭露把手：外觀吃 .btn.btn--icon（--xs／--sm 由消費頁決定），本支只擁有

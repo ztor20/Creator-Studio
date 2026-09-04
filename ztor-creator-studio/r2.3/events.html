@@ -33,11 +33,14 @@
   /* 2026-07-28：本頁專屬的 sticky 規則退場——貼頂已收進元件（list-toolbar.css 的 Snap dock）
      ＋共用行為 js/sticky-dock.js，五個清單頁同一份，不再各頁一套。 */
 
-  /* events 活動清單 8 欄覆寫 (F1)：縮圖｜活動｜日期時間｜場地｜票券｜收入｜狀態｜操作。
-     欄數為本頁專屬，比照 e-shop 留頁內。 */
+  /* events 活動清單 9 欄覆寫 (F1)：列首｜縮圖｜活動｜日期時間｜場地｜票券｜收入｜狀態｜操作。
+     欄數為本頁專屬，比照 e-shop 留頁內。
+     2026-09-04（Q109）：最前面多一軌＝可展開列的列首欄（母列放 chevron／子列放場次序號／
+     一般列留空，見 ds-components/row-disclosure.css 的 `.rowdis__lead`），8 欄 → 9 欄；
+     寬度引用該元件擁有的 `--rowdis-lead-w`，其餘欄一格不動、只往右順移一軌。 */
   .product-list--events .product-list__head,
   .product-list--events .product-list__row {
-    grid-template-columns: 76px minmax(200px, 1.4fr) 150px 150px 132px 96px 112px 104px;
+    grid-template-columns: var(--rowdis-lead-w) 60px minmax(200px, 1.4fr) 150px 150px 132px 96px 112px 104px;   /* 2026-09-04：縮圖 76→60，欄寬跟著收 */
   }
   .product-list--events .product-list__revenue,
   .product-list--events .product-list__datetime,
@@ -64,18 +67,19 @@
 
   @media (max-width: 760px) {
     .product-list--events .product-list__head { display: none; }
+    /* 窄框仍保留列首欄那一軌（把手是鍵盤使用者唯一的展開入口），其餘欄位往右順移一格。 */
     .product-list--events .product-list__row {
-      grid-template-columns: 76px minmax(0, 1fr) auto;
+      grid-template-columns: var(--rowdis-lead-w) 60px minmax(0, 1fr) auto;
       gap: 8px 14px;
     }
-    .product-list--events .product-list__image-cell { grid-column: 1; grid-row: 1; align-self: start; }
-    .product-list--events .product-list__product   { grid-column: 2; grid-row: 1; }
-    .product-list--events .product-list__datetime  { grid-column: 2; grid-row: 2; }
-    .product-list--events .product-list__venue     { grid-column: 2; grid-row: 3; }
-    .product-list--events .product-list__tickets   { grid-column: 2; grid-row: 4; }
-    .product-list--events .product-list__revenue   { grid-column: 2; grid-row: 5; }
-    .product-list--events .product-list__status    { grid-column: 2; grid-row: 6; }
-    .product-list--events .product-list__actions   { grid-column: 3; grid-row: 1; align-self: start; }
+    .product-list--events .product-list__image-cell { grid-column: 2; grid-row: 1; align-self: start; }
+    .product-list--events .product-list__product   { grid-column: 3; grid-row: 1; }
+    .product-list--events .product-list__datetime  { grid-column: 3; grid-row: 2; }
+    .product-list--events .product-list__venue     { grid-column: 3; grid-row: 3; }
+    .product-list--events .product-list__tickets   { grid-column: 3; grid-row: 4; }
+    .product-list--events .product-list__revenue   { grid-column: 3; grid-row: 5; }
+    .product-list--events .product-list__status    { grid-column: 3; grid-row: 6; }
+    .product-list--events .product-list__actions   { grid-column: 4; grid-row: 1; align-self: start; }
   }
 </style>
 <link rel="stylesheet" href="ds-components/detail-sheet.css?v=r2.2">
@@ -192,6 +196,7 @@
         <div class="product-list-scroll">
           <section class="product-list product-list--events mt-16" id="ev-list" role="table" aria-label="Events">
           <div class="product-list__head" role="row">
+            <div role="columnheader"></div>
             <div role="columnheader" aria-label="Thumbnail"></div>
             <div role="columnheader" data-i18n="events.col.event">Event</div>
             <div role="columnheader" data-i18n="events.col.datetime">Date &amp; time</div>
@@ -208,6 +213,7 @@
                還有 5 筆同為 status:'live' 的活動，並非唯一一筆，只是這一筆帶 roster、報到台面在
                event-detail 的即時面板。 -->
           <div class="product-list__row" role="row" data-go="event-detail.html?id=inner-circle-taipei" data-stage="live" data-category="fans-meet" data-search="inner circle fan meet 內圈 見面會 粉絲見面會 neo studio 台北 臺北 taipei 進行中 live nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-asn.jpg" alt="" loading="lazy"></div>
             </div>
@@ -245,21 +251,21 @@
                母列的數字是各場加總（票券 1,240/1,800、收入 $3,732,000），日期是頭尾區間；
                母列點擊＝展開／收合，子列點擊才進那一場的詳情頁。
                篩選只看母列（母列的 data-stage／data-category 取各場的共同值），
-               子列不進分頁計數——它是同一個系列，算一筆。 -->
+               子列不進分頁計數——它是同一個系列，算一筆。
+               2026-09-04（Q109）：展開鈕從名稱後面移到列首獨立欄（`.rowdis__lead`），與列尾的
+               `⋯` 分踞兩端；子列在同一格放它在這個系列裡的場次序號。原本擔心的「多佔一欄會讓
+               這幾列的名稱晚一格起跑」不再成立——那一欄現在每一列都有，包括沒有系列的一般列。 -->
           <div class="rowdis__group">
           <div class="product-list__row rowdis__head" role="row" data-rowdis-row="realive-asia"
                data-stage="on-sale" data-category="concert"
                data-search="realive 世界巡迴 亞洲段 world tour asia 系列 series 高雄 台中 台北 kaohsiung taichung taipei nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="realive-asia" aria-expanded="false" aria-label="Show dates" data-i18n-aria-label="events.series.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
             <div class="product-list__product" role="cell">
-              <!-- 展開鈕跟在名稱後面（2026-08-18 使用者指示），不放最右的操作欄：視窗窄一點時
-                   .main 會把右側欄位切掉（既有問題，見 UI-CHANGES 2026-08-06 第四批），
-                   收在那裡等於沒有入口。放名稱前面時它與縮圖之間多佔一欄，這幾列的名稱
-                   會比其他列晚一格起跑，整張清單的左緣因此斷掉。 -->
               <div class="product-list__body">
-                <div class="product-list__title rowdis__label"><a class="card__link" href="series-detail.html?id=realive-asia" data-i18n="events.rowSER.title">REALIVE World Tour — Asia leg</a><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="realive-asia" aria-expanded="false" aria-label="Show dates" data-i18n-aria-label="events.series.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                <div class="product-list__title"><a class="card__link" href="series-detail.html?id=realive-asia" data-i18n="events.rowSER.title">REALIVE World Tour — Asia leg</a></div>
                 <div class="product-list__meta" data-i18n="events.rowSER.meta">Concert · 3 dates</div>
               </div>
             </div>
@@ -273,7 +279,7 @@
             <div class="product-list__actions" role="cell">
               <!-- ⋮ 選單是系列母頁的主要入口。標題本身也是連結，但母列的整列點擊是「展開」，
                    所以光靠標題沒人會發現那裡還能點去別的地方——入口要有名字。
-                   「展開場次」不放進來（2026-08-06 使用者指示）：名稱前面已經有一顆雪佛龍在做這件事，
+                   「展開場次」不放進來（2026-08-06 使用者指示）：列首欄已經有一顆雪佛龍在做這件事，
                    選單裡再放一次是同一個動作的第二個入口，只是多一層點擊。 -->
               <details class="dropdown">
                 <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
@@ -287,6 +293,7 @@
 
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="realive-asia" hidden
                data-go="event-detail.html?id=realive-asia-kaohsiung">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">1</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
@@ -317,6 +324,7 @@
 
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="realive-asia" hidden
                data-go="event-detail.html?id=realive-asia-taichung">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">2</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
@@ -347,6 +355,7 @@
 
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="realive-asia" hidden
                data-go="event-detail.html?id=realive-asia-taipei">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">3</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
@@ -378,6 +387,7 @@
 
           <!-- 共看派對（Watch Party，D149 §4.7）：一同回顧既有演出實錄；共看內容＝LOVE·RAGE·HOPE 臺中場 -->
           <div class="product-list__row" role="row" data-go="event-detail.html?id=lrh-taichung-watchback" data-stage="on-sale" data-category="online" data-search="watch party 共看派對 一同回顧 watch back love rage hope live house tour 臺中 台中 taichung 線上共看 online nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lrh-tour.jpg" alt="" loading="lazy"></div>
             </div>
@@ -414,6 +424,7 @@
           <!-- 粉絲見面會 · 簽名會（2026-07-27 為了讓「粉絲見面會」類型有可評估的內容而加的示範資料；
                不需要時整段刪掉即可，對應紀錄在 js/events-store.js 的 album-signing-taipei）。 -->
           <div class="product-list__row" role="row" data-go="event-detail.html?id=album-signing-taipei" data-stage="on-sale" data-category="fans-meet" data-search="簽名會 專輯簽名 album signing 見面會 fans meet 誠品信義 eslite xinyi 台北 臺北 taipei nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-baipa-goods.jpg" alt="" loading="lazy"></div>
             </div>
@@ -444,6 +455,7 @@
           </div>
 
           <div class="product-list__row" role="row" data-go="event-detail.html?id=taiwan-fest-kenting" data-stage="scheduled" data-category="concert" data-search="台灣祭 墾丁大灣 taiwan fest kenting 屏東 pingtung 演唱嘉賓 guest nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-wln.jpg" alt="" loading="lazy"></div>
             </div>
@@ -491,12 +503,13 @@
           <div class="product-list__row rowdis__head" role="row" data-rowdis-row="realive-world-tour"
                data-stage="on-sale" data-category="concert"
                data-search="realive 世界巡迴 world tour 系列 series 重慶 chongqing 蜚聲 livehouse 台北小巨蛋 臺北小巨蛋 taipei arena motorola 特仕版 下一站 規劃中 draft nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="realive-world-tour" aria-expanded="false" aria-label="Show dates" data-i18n-aria-label="events.series.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
             <div class="product-list__product" role="cell">
               <div class="product-list__body">
-                <div class="product-list__title rowdis__label"><a class="card__link" href="series-detail.html?id=realive-world-tour" data-i18n="events.g.realive-world-tour.title">REALIVE World Tour</a><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="realive-world-tour" aria-expanded="false" aria-label="Show dates" data-i18n-aria-label="events.series.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                <div class="product-list__title"><a class="card__link" href="series-detail.html?id=realive-world-tour" data-i18n="events.g.realive-world-tour.title">REALIVE World Tour</a></div>
                 <div class="product-list__meta" data-i18n="events.g.realive-world-tour.meta">Concert · 3 dates</div>
               </div>
             </div>
@@ -519,6 +532,7 @@
           </div>
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="realive-world-tour" hidden
                data-go="event-detail.html?id=realive-r2-arena">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">1</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-r2.jpg" alt="" loading="lazy"></div>
             </div>
@@ -549,6 +563,7 @@
           </div>
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="realive-world-tour" hidden
                data-go="event-detail.html?id=realive-chongqing">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">2</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
@@ -579,6 +594,7 @@
           </div>
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="realive-world-tour" hidden
                data-go="create-event.html?draft=next-leg-draft">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">3</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
@@ -607,6 +623,7 @@
           </div>
 
           <div class="product-list__row" role="row" data-go="event-detail.html?id=pingtung-bluefin" data-stage="scheduled" data-category="concert" data-search="屏東黑鮪魚文化觀光季 海洋音樂會 pingtung bluefin 屏東 ocean concert nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-flames.jpg" alt="" loading="lazy"></div>
             </div>
@@ -637,6 +654,7 @@
           </div>
 
           <div class="product-list__row" role="row" data-go="event-detail.html?id=taipei-nye" data-stage="scheduled" data-category="concert" data-search="跨年 new year countdown 臺北最high新年城 台北 taipei nickthereal 周湯豪 nick chou 年末 跨年演出">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/hero-event.jpg" alt="" loading="lazy"></div>
             </div>
@@ -668,6 +686,7 @@
 
           <!-- 共看派對（Watch Party，D149 §4.7）：線上同步共看、單一入場券、以人數上限計 -->
           <div class="product-list__row" role="row" data-go="event-detail.html?id=realive-r2-watchparty" data-stage="on-sale" data-category="online" data-search="watch party 共看派對 realive r2 演唱會電影 concert film 線上共看 online co-watch nickthereal 周湯豪">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
@@ -699,6 +718,7 @@
 
           <!-- Past（依日期由近到遠）-->
           <div class="product-list__row" role="row" data-go="event-detail.html?id=lrh-taichung" data-stage="past" data-category="concert" data-search="love rage hope live house tour 臺中 台中 taichung legacy nickthereal 周湯豪 nick chou 巡演">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lrh.jpg" alt="" loading="lazy"></div>
             </div>
@@ -751,6 +771,7 @@
 
           <!-- ══ 已排程（2026-08-17 使用者指示：每個狀態都要有五個類型）══ -->
           <div class="product-list__row" role="row" data-go="event-detail.html?id=nick-symphonic-taipei" data-stage="scheduled" data-category="concert" data-search="交響樂版 symphonic nick 臺北流行音樂中心 北流 台北 臺北 taipei nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lwh.jpg" alt="" loading="lazy"></div>
             </div>
@@ -781,12 +802,13 @@
           <div class="product-list__row rowdis__head" role="row" data-rowdis-row="realive-sea"
                data-stage="scheduled" data-category="concert"
                data-search="realive 世界巡迴 東南亞段 southeast asia 新加坡 singapore capitol theatre 系列 series 多站 nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="realive-sea" aria-expanded="false" aria-label="Show dates" data-i18n-aria-label="events.series.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
             <div class="product-list__product" role="cell">
               <div class="product-list__body">
-                <div class="product-list__title rowdis__label"><span data-i18n="events.g.realive-sea.title">REALIVE World Tour — Southeast Asia leg</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="realive-sea" aria-expanded="false" aria-label="Show dates" data-i18n-aria-label="events.series.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                <div class="product-list__title"><span data-i18n="events.g.realive-sea.title">REALIVE World Tour — Southeast Asia leg</span></div>
                 <div class="product-list__meta" data-i18n="events.g.realive-sea.meta">Concert · 2 dates</div>
               </div>
             </div>
@@ -807,6 +829,7 @@
           </div>
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="realive-sea" hidden
                data-go="event-detail.html?id=realive-sea-singapore">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">1</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
@@ -835,6 +858,7 @@
           </div>
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="realive-sea" hidden
                data-go="event-detail.html?id=realive-sea-kl">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">2</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
@@ -863,6 +887,7 @@
           </div>
           </div>
           <div class="product-list__row" role="row" data-go="event-detail.html?id=lrh-signing-taichung" data-stage="scheduled" data-category="fans-meet" data-search="love rage hope 專輯簽名會 簽名 見面會 粉絲見面會 誠品園道 台中 臺中 taichung nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lrh.jpg" alt="" loading="lazy"></div>
             </div>
@@ -890,6 +915,7 @@
             </div>
           </div>
           <div class="product-list__row" role="row" data-go="event-detail.html?id=lrh-writing-class" data-stage="scheduled" data-category="online" data-search="love rage hope 創作課 線上課 線上活動 virtual online 直播 未完成的夢 nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-wln.jpg" alt="" loading="lazy"></div>
             </div>
@@ -917,6 +943,7 @@
             </div>
           </div>
           <div class="product-list__row" role="row" data-go="event-detail.html?id=flames-mv-premiere" data-stage="scheduled" data-category="online" data-search="flames mv 首播 premiere 共看派對 watch party 線上 online 重製版 nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-flames.jpg" alt="" loading="lazy"></div>
             </div>
@@ -946,6 +973,7 @@
 
           <!-- ══ 售票中（2026-08-17 使用者指示：每個狀態都要有五個類型）══ -->
           <div class="product-list__row" role="row" data-go="event-detail.html?id=nantou-lantern-opening" data-stage="on-sale" data-category="concert" data-search="南投燈會 開幕 lantern festival nantou 南投 單場 演唱會 concert nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-flames.jpg" alt="" loading="lazy"></div>
             </div>
@@ -973,6 +1001,7 @@
             </div>
           </div>
           <div class="product-list__row" role="row" data-go="event-detail.html?id=lrh-studio-live" data-stage="on-sale" data-category="online" data-search="love rage hope 錄音室 直播 線上活動 virtual online 幕後 nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lrh.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1002,6 +1031,7 @@
 
           <!-- ══ 進行中（2026-08-17 使用者指示：每個狀態都要有五個類型）══ -->
           <div class="product-list__row" role="row" data-go="event-detail.html?id=fubon-postgame-taipei" data-stage="live" data-category="concert" data-search="富邦悍將 賽後演唱會 fubon guardians 臺北大巨蛋 台北大巨蛋 taipei dome 進行中 live nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lrh-tour.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1032,12 +1062,13 @@
           <div class="product-list__row rowdis__head" role="row" data-rowdis-row="lrh-campus"
                data-stage="live" data-category="concert"
                data-search="love rage hope 校園巡迴 campus tour 台大 臺大 ntu 台北 臺北 taipei 系列 series 多站 進行中 nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="lrh-campus" aria-expanded="false" aria-label="Show dates" data-i18n-aria-label="events.series.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lrh.jpg" alt="" loading="lazy"></div>
             </div>
             <div class="product-list__product" role="cell">
               <div class="product-list__body">
-                <div class="product-list__title rowdis__label"><span data-i18n="events.g.lrh-campus.title">LOVE·RAGE·HOPE Campus Tour</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="lrh-campus" aria-expanded="false" aria-label="Show dates" data-i18n-aria-label="events.series.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                <div class="product-list__title"><span data-i18n="events.g.lrh-campus.title">LOVE·RAGE·HOPE Campus Tour</span></div>
                 <div class="product-list__meta" data-i18n="events.g.lrh-campus.meta">Concert · 2 dates</div>
               </div>
             </div>
@@ -1058,6 +1089,7 @@
           </div>
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="lrh-campus" hidden
                data-go="event-detail.html?id=lrh-campus-ntu">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">1</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lrh.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1086,6 +1118,7 @@
           </div>
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="lrh-campus" hidden
                data-go="event-detail.html?id=lrh-campus-nccu">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">2</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lrh.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1114,6 +1147,7 @@
           </div>
           </div>
           <div class="product-list__row" role="row" data-go="event-detail.html?id=lrh-listening-party" data-stage="live" data-category="online" data-search="love rage hope 聽歌會 listening party 線上活動 virtual online 直播 進行中 live nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lrh.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1141,6 +1175,7 @@
             </div>
           </div>
           <div class="product-list__row" role="row" data-go="event-detail.html?id=lrh-doc-watchparty" data-stage="live" data-category="online" data-search="love rage hope 巡演紀錄片 documentary 共看派對 watch party 線上 online 進行中 live nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lrh-tour.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1173,12 +1208,13 @@
           <div class="product-list__row rowdis__head" role="row" data-rowdis-row="sdfs-tour"
                data-stage="past" data-category="concert"
                data-search="帥到分手 party tour 復刻 a station 台北 臺北 taipei 系列 series 多站 已結束 ended nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="sdfs-tour" aria-expanded="false" aria-label="Show dates" data-i18n-aria-label="events.series.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-sdfs.jpg" alt="" loading="lazy"></div>
             </div>
             <div class="product-list__product" role="cell">
               <div class="product-list__body">
-                <div class="product-list__title rowdis__label"><span data-i18n="events.g.sdfs-tour.title">Too Handsome to Stay — Party Tour (revival)</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="sdfs-tour" aria-expanded="false" aria-label="Show dates" data-i18n-aria-label="events.series.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                <div class="product-list__title"><span data-i18n="events.g.sdfs-tour.title">Too Handsome to Stay — Party Tour (revival)</span></div>
                 <div class="product-list__meta" data-i18n="events.g.sdfs-tour.meta">Concert · 2 dates</div>
               </div>
             </div>
@@ -1199,6 +1235,7 @@
           </div>
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="sdfs-tour" hidden
                data-go="event-detail.html?id=sdfs-tour-taipei">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">1</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-sdfs.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1227,6 +1264,7 @@
           </div>
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="sdfs-tour" hidden
                data-go="event-detail.html?id=sdfs-tour-chengdu">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">2</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-sdfs.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1255,6 +1293,7 @@
           </div>
           </div>
           <div class="product-list__row" role="row" data-go="event-detail.html?id=reallife-signing-kaohsiung" data-stage="past" data-category="fans-meet" data-search="real life 專輯簽名會 簽名 見面會 粉絲見面會 大立百貨 高雄 kaohsiung 已結束 nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-real-life.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1282,6 +1321,7 @@
             </div>
           </div>
           <div class="product-list__row" role="row" data-go="event-detail.html?id=reallife-full-album-online" data-stage="past" data-category="online" data-search="real life 全碟重現 線上演出 線上活動 virtual online 直播 已結束 nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-real-life.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1309,6 +1349,7 @@
             </div>
           </div>
           <div class="product-list__row" role="row" data-go="event-detail.html?id=sdfs-mv-watchback" data-stage="past" data-category="online" data-search="帥到分手 mv 十週年 共看回顧 共看派對 watch party 線上 online 已結束 nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-sdfs.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1338,6 +1379,7 @@
 
           <!-- ══ 已取消（2026-08-17 使用者指示：每個狀態都要有五個類型）══ -->
           <div class="product-list__row" role="row" data-go="event-detail.html?id=hualien-summer-love" data-stage="cancelled" data-category="concert" data-search="花蓮 夏戀嘉年華 summer love hualien 鯉魚潭 颱風 取消 cancelled nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-flames.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1368,12 +1410,13 @@
           <div class="product-list__row rowdis__head" role="row" data-rowdis-row="realive-china-2027"
                data-stage="cancelled" data-category="concert"
                data-search="realive 世界巡迴 中國段 福州 海峽文化藝術中心 fuzhou 系列 series 多站 取消 cancelled nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="realive-china-2027" aria-expanded="false" aria-label="Show dates" data-i18n-aria-label="events.series.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
             <div class="product-list__product" role="cell">
               <div class="product-list__body">
-                <div class="product-list__title rowdis__label"><span data-i18n="events.g.realive-china-2027.title">REALIVE World Tour — China leg (2027)</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="realive-china-2027" aria-expanded="false" aria-label="Show dates" data-i18n-aria-label="events.series.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                <div class="product-list__title"><span data-i18n="events.g.realive-china-2027.title">REALIVE World Tour — China leg (2027)</span></div>
                 <div class="product-list__meta" data-i18n="events.g.realive-china-2027.meta">Concert · 2 dates</div>
               </div>
             </div>
@@ -1394,6 +1437,7 @@
           </div>
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="realive-china-2027" hidden
                data-go="event-detail.html?id=realive-china-fuzhou">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">1</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1422,6 +1466,7 @@
           </div>
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="realive-china-2027" hidden
                data-go="event-detail.html?id=realive-china-hangzhou">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">2</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1450,6 +1495,7 @@
           </div>
           </div>
           <div class="product-list__row" role="row" data-go="event-detail.html?id=lrh-meet-tokyo" data-stage="cancelled" data-category="fans-meet" data-search="love rage hope 東京 快閃 見面會 粉絲見面會 tokyo shibuya 澀谷 取消 cancelled nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lrh.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1477,6 +1523,7 @@
             </div>
           </div>
           <div class="product-list__row" role="row" data-go="event-detail.html?id=lrh-backers-briefing" data-stage="cancelled" data-category="online" data-search="love rage hope 共創 說明會 進度 線上活動 virtual online 取消 cancelled nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lrh.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1504,6 +1551,7 @@
             </div>
           </div>
           <div class="product-list__row" role="row" data-go="event-detail.html?id=r2-rehearsal-watchparty" data-stage="cancelled" data-category="online" data-search="realive r2 彩排 實錄 共看派對 watch party 線上 online 取消 cancelled nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-r2-special.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1536,12 +1584,13 @@
           <div class="product-list__row rowdis__head" role="row" data-rowdis-row="realive-japan"
                data-stage="draft" data-category="concert"
                data-search="realive 世界巡迴 日本段 japan 規劃中 draft 系列 series 多站 nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="realive-japan" aria-expanded="false" aria-label="Show dates" data-i18n-aria-label="events.series.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
             <div class="product-list__product" role="cell">
               <div class="product-list__body">
-                <div class="product-list__title rowdis__label"><span data-i18n="events.g.realive-japan.title">REALIVE World Tour — Japan leg (planning)</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="realive-japan" aria-expanded="false" aria-label="Show dates" data-i18n-aria-label="events.series.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                <div class="product-list__title"><span data-i18n="events.g.realive-japan.title">REALIVE World Tour — Japan leg (planning)</span></div>
                 <div class="product-list__meta" data-i18n="events.g.realive-japan.meta">Concert · 2 dates</div>
               </div>
             </div>
@@ -1562,6 +1611,7 @@
           </div>
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="realive-japan" hidden
                data-go="create-event.html?draft=realive-japan-draft-1">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">1</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1589,6 +1639,7 @@
           </div>
           <div class="product-list__row rowdis__child" role="row" data-rowdis-child="realive-japan" hidden
                data-go="create-event.html?draft=realive-japan-draft-2">
+            <div class="rowdis__lead" role="cell"><span class="rowdis__num">2</span></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-realive.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1616,6 +1667,7 @@
           </div>
           </div>
           <div class="product-list__row" role="row" data-go="create-event.html?draft=onstage-encore-draft" data-stage="draft" data-category="concert" data-search="on stage 加場 單場 演唱會 concert 規劃中 draft nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lwh.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1642,6 +1694,7 @@
             </div>
           </div>
           <div class="product-list__row" role="row" data-go="create-event.html?draft=lrh-meet-draft" data-stage="draft" data-category="fans-meet" data-search="love rage hope 見面會 粉絲見面會 fan meet 規劃中 draft nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-lrh.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1668,6 +1721,7 @@
             </div>
           </div>
           <div class="product-list__row" role="row" data-go="create-event.html?draft=nick-online-draft" data-stage="draft" data-category="online" data-search="nickthereal 線上專場 線上活動 virtual online 規劃中 draft nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-nsddd.jpg" alt="" loading="lazy"></div>
             </div>
@@ -1694,6 +1748,7 @@
             </div>
           </div>
           <div class="product-list__row" role="row" data-go="create-event.html?draft=onstage-film-watchparty-draft" data-stage="draft" data-category="online" data-search="on stage 演唱會電影 共看派對 watch party 線上 online 規劃中 draft nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-r2.jpg" alt="" loading="lazy"></div>
             </div>

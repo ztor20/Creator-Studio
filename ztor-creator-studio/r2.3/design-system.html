@@ -485,6 +485,15 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 .ctl-row { display: flex; align-items: center; gap: 14px; padding: 8px 0; }
 .ctl-row > code { flex-basis: 150px; }
 .lh-sample { font-family: var(--font-ui); font-size: var(--fs-15); max-width: 30ch; }
+/* ── §4.204 Row disclosure demo — 列首欄的欄軌（doc-only）──
+   2026-09-04：base `.product-list` 是 5 軌，這兩個 demo（活動系列群組列、§4.204 表格型）
+   要示範最前面多一軌的列首欄，所以在 demo 容器上補一組欄軌。真實消費頁的軌道各自寫在
+   product-list.css（--roster）與 events.html（--events），不經過這裡。 */
+.ds-lead-demo .product-list__head,
+.ds-lead-demo .product-list__row {
+  grid-template-columns: var(--rowdis-lead-w) minmax(200px, 1fr) 112px 88px 92px 40px;
+}
+
 /* ── §4.204 Row disclosure demo — 面板內 hover 常駐模擬（doc-only，不覆寫共用 class）──
    2026-09-04：真實互動走 ds-components/row-disclosure.css 的 :hover／:focus-within／
    [open]（見該檔「面板內列 hover」段），這裡另掛一顆 doc 專用 class 讓同一個視覺結果
@@ -1768,6 +1777,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <tr><th>orange</th><td><span class="badge badge--orange">Live</span></td><td><span style="color:var(--muted-foreground)">—</span></td></tr>
     <tr><th>neutral</th><td><span class="badge badge--neutral">Draft</span></td><td><span style="color:var(--muted-foreground)">—</span></td></tr>
     <tr><th>default</th><td><span class="badge">Default</span></td><td><span style="color:var(--muted-foreground)">—</span></td></tr>
+    <tr><th>--outline</th><td><span class="badge badge--outline">Paid</span></td><td><span data-en>Ledger states (payout / refund / deduction) in a table that also carries income rows — filled = money you earned, outlined = money moving</span><span data-zh>與收入列同表的帳務異動狀態（提款／退款／扣款）——填色＝賺到的錢，描邊＝帳的搬動</span></td></tr>
+    <tr><th>--outline-danger</th><td><span class="badge badge--outline-danger">Failed</span></td><td><span data-en>The failed state of that same shell (a payout returned by the bank); border + text go destructive, the fill stays transparent so it never reads as <code>.badge--error</code></span><span data-zh>同一個殼的失敗態（提款被銀行退回）；邊與字換成 destructive、底維持透明，才不會讀成 <code>.badge--error</code></span></td></tr>
     <tr><th>--inline</th><td><span style="font-weight:var(--fw-regular)">Coastline tee (M) ×1 <span class="badge badge--neutral badge--inline">Limit 2/person</span></span></td><td><span data-en>Quiet qualifier after a title (regular weight, middle-aligned, 6px lead) — list / detail titles</span><span data-zh>標題後的安靜限定詞（regular 字重、middle 對齊、左 6px）— 清單／細節標題</span></td></tr>
   </tbody></table>
   </div>
@@ -1991,7 +2002,17 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         <button class="btn btn--outline btn--sm">Export CSV</button>
       </div>
     </div>
+    <div class="filter-row filter-row--group">
+      <div class="chip-group" role="group">
+        <button class="chip">Pending</button>
+        <button class="chip chip--active">Available</button>
+        <button class="chip">Disputed</button>
+        <button class="chip">Manual entry</button>
+      </div>
+    </div>
   </div>
+  <p class="field-text" data-en><strong><code>.filter-row--group</code></strong> is the second row of one filter set (here: status and data source under revenue category). Two bare chip rows with nothing between them read as one wrapped row — the hairline splits them back into two facets. The first row is single-select, the second multi-select.</p>
+  <p class="field-text" data-zh><strong><code>.filter-row--group</code></strong> 是同一組篩選的第二排（此處：收入分類下面的狀態與資料來源）。兩排裸 chip 中間沒有東西分界，會被讀成同一排折行——發線把它們分回兩個面向。第一排單選、第二排多選。</p>
   <p class="field-text" data-en><strong>Export CSV is a Button</strong> (<code>.btn--outline</code>, §4.2), not a chip — the filter-row pairs a chip-group (filters) with a real Button action. Chips filter; actions like export / print are Buttons.</p>
   <p class="field-text" data-zh><strong>Export CSV 是 Button</strong>（<code>.btn--outline</code>，§4.2），不是 chip —— filter-row 是「chip-group（篩選）配一顆真正的 Button 動作」。chip 負責篩選；匯出／列印這類動作一律用 Button。</p>
   <p class="field-label" data-en>Do &amp; Don't</p>
@@ -3954,6 +3975,38 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       </tbody>
     </table>
   </div>
+  <p class="field-label" data-en>Two families, one table <span class="field-note">(Earnings transactions · F7 · D250 — income rows and ledger rows on one timeline)</span></p>
+  <p class="field-label" data-zh>兩族一表 <span class="field-note">(Earnings 交易明細 · F7 · D250 —— 收入列與帳務異動列在同一條時間軸上)</span></p>
+  <div class="demo" style="flex-direction:column;align-items:stretch;">
+    <table class="ztor-table" style="min-width:520px;">
+      <thead><tr><th scope="col">Date</th><th scope="col">Item</th><th scope="col" style="text-align:right">Fees</th><th scope="col" style="text-align:right">Net</th><th scope="col">Status</th></tr></thead>
+      <tbody>
+        <tr class="ztor-table__row">
+          <td class="ztor-table__datecell">Nov 24</td>
+          <td>Kowloon After Dark OST · pre-order <span class="text-sub">· Project support</span></td>
+          <td class="ztor-table__amt ztor-table__amt--muted">−$84.60</td>
+          <td class="ztor-table__amt">$1,325.40</td>
+          <td><span class="tx-status"><span class="badge badge--orange">Pending</span> <span class="tx-status__when">Available Dec 8</span></span></td>
+        </tr>
+        <tr class="ztor-table__row ztor-table__row--ledger">
+          <td class="ztor-table__datecell">Nov 18</td>
+          <td>Bank transfer ••3417 <span class="text-sub">· Payout</span></td>
+          <td class="ztor-table__amt ztor-table__amt--muted"><span class="tx-na">—</span></td>
+          <td class="ztor-table__amt">−$5,202.50</td>
+          <td><span class="tx-status"><span class="badge badge--outline">Paid</span></span></td>
+        </tr>
+        <tr class="ztor-table__row ztor-table__row--ledger">
+          <td class="ztor-table__datecell">Nov 05</td>
+          <td>Bank transfer ••3417 <span class="text-sub">· Payout</span></td>
+          <td class="ztor-table__amt ztor-table__amt--muted"><span class="tx-na">—</span></td>
+          <td class="ztor-table__amt"><span class="tx-na">—</span></td>
+          <td><span class="tx-status"><span class="badge badge--outline-danger">Failed</span></span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="field-text" data-en>Three rules carry the split. <strong>Weight</strong> — <code>.ztor-table__row--ledger</code> drops the whole row to <code>--muted-foreground</code>; a payout answers "why did my balance change", not "what did I earn". <strong>Badge shell</strong> — income states are filled tints, ledger states are outlined, so the income "Paid out" and the payout "Paid" never read as the same thing. <strong>Blanks</strong> — a column that does not apply to that family shows <code>.tx-na</code>'s em dash, never −$0.00; a zero would read as "this one really was charged nothing". Pending rows append the date the money unlocks (<code>.tx-status__when</code>) because that is the question creators actually bring to this table.</p>
+  <p class="field-text" data-zh>三條規則撐起這個分工。<strong>份量</strong>——<code>.ztor-table__row--ledger</code> 把整列降到 <code>--muted-foreground</code>；提款回答的是「餘額為什麼變了」，不是「賺了多少」。<strong>徽章的殼</strong>——收入族填色、帳務異動族描邊，收入的「已撥款」與提款的「已付款」才不會讀成同一件事。<strong>留白</strong>——不適用於該族的欄位用 <code>.tx-na</code> 的破折號，不寫 −$0.00；填零會被讀成「這筆真的扣了 0 元」。待結算的列在徽章後面接可動用的日期（<code>.tx-status__when</code>），因為那是創作者拿到這張表真正要問的事。</p>
   <p class="field-text" data-en>Row examples are included in the same table preview.</p>
   <p class="field-text" data-zh>資料列範例併在同一組 table 視覺展示中。</p>
   <div class="matrix-block"><div class="matrix-block__head"><span class="gallery__name">Row & cell</span><span class="gallery__when" data-en>Row hover wash and default cell; zebra-free — hover is the only row accent.</span><span class="gallery__when" data-zh>列 hover 淡染與預設儲存格；不用斑馬紋——hover 是唯一的列強調。</span></div>
@@ -3999,6 +4052,11 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       <tr><td><code>.ztor-table__row</code> / <code>.ztor-table__chev</code></td><td><span data-en>Clickable row (<code>aria-expanded</code>) + leading chevron that rotates 90° when open</span><span data-zh>可點列（<code>aria-expanded</code>）＋列首 chevron，展開時轉 90°</span></td></tr>
       <tr><td><code>.ztor-table__detail</code> (<code>[hidden]</code>)</td><td><span data-en>Sibling detail row (<code>&lt;td colspan&gt;</code>), <code>--muted</code> bg; <code>[hidden]</code> hides it</span><span data-zh>相鄰詳情列（<code>&lt;td colspan&gt;</code>），<code>--muted</code> 底；<code>[hidden]</code> 隱藏</span></td></tr>
       <tr><td><code>.tx-detail</code> / <code>__meta</code> / <code>__id</code> / <code>__copy</code> / <code>__note</code> / <code>__ladder</code></td><td><span data-en>Trace block: Event ID <code>&lt;code&gt;</code> + copy button, rate version, note, and <code>.waterfall</code> mini-ladder</span><span data-zh>追溯區塊：Event ID <code>&lt;code&gt;</code>＋複製鈕、費率版本、註記、與 <code>.waterfall</code> 小階梯</span></td></tr>
+      <tr><td><code>.ztor-table__row--ledger</code></td><td><span data-en>Ledger row (payout / refund / deduction) sharing a table with income rows — whole row drops to <code>--muted-foreground</code>. Selector carries <code>tbody</code> to outweigh <code>.ztor-table tbody td</code></span><span data-zh>與收入列同表的帳務異動列（提款／退款／扣款）——整列降到 <code>--muted-foreground</code>。選擇器帶 <code>tbody</code> 才壓得過 <code>.ztor-table tbody td</code></span></td></tr>
+      <tr><td><code>.ztor-table__amt</code> / <code>--muted</code></td><td><span data-en>Money cell: right-aligned, tabular figures, no wrap — a narrow column otherwise folds the minus sign of "−$5,202.50" onto its own line, where it reads as a dash. <code>--muted</code> is the secondary amount (fees)</span><span data-zh>金額欄：靠右、等寬數字、不換行——窄欄會把「−$5,202.50」的負號折到上一行，單獨一行的負號會被讀成破折號。<code>--muted</code> 是次要金額（扣項）</span></td></tr>
+      <tr><td><code>.tx-status</code> / <code>__when</code></td><td><span data-en>Status cell: badge plus, on pending rows only, the date that amount unlocks</span><span data-zh>狀態格：徽章，待結算的列再接該筆可動用的日期</span></td></tr>
+      <tr><td><code>.tx-na</code></td><td><span data-en>The em dash for a column that does not apply to this row's family. Never −$0.00 — a zero reads as "this one really was charged nothing"</span><span data-zh>不適用於該列所屬族別的欄位所寫的破折號。不寫 −$0.00——填零會被讀成「這筆真的扣了 0 元」</span></td></tr>
+      <tr><td><code>.tx-detail__kv</code></td><td><span data-en>Key-value summary inside an expanded ledger row (income rows get <code>__ladder</code> instead); reuses <code>kv-list.css</code>, adds only a width cap and tighter rows</span><span data-zh>帳務異動列展開後的鍵值摘要（收入列用的是 <code>__ladder</code>）；複用 <code>kv-list.css</code>，只加寬度上限與較緊的列距</span></td></tr>
     </tbody></table>
     <p class="field-label" data-en>Token usage <span class="field-note">(→ Pillar 2 Role)</span></p>
     <p class="field-label" data-zh>Token 使用 <span class="field-note">（→ Pillar 2 Role）</span></p>
@@ -4030,7 +4088,9 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <span class="layer layer--organism">🟠 organism</span>
   </div>
   <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en><strong>2026-09-04 (user ruling, “this spacing does not need to be this big”)</strong>: the list thumbnail <code>__image</code> shrinks from 76×114 to <strong>60×90</strong> (width 60, height still derived from <code>--img-portrait</code> 2:3), so the row goes 154 → <strong>130</strong>. The <code>--sp-20</code> block padding stays — what made the row tall was the portrait poster, not the padding. Thumbnail columns follow: 84px ones (<code>--eshop</code>/<code>--bundles</code>/<code>--auctions</code>) become 68, 76px ones (<code>--ip</code>/<code>--rented</code>/events) become 60, each keeping its original gutter. <code>--pickup</code> keeps 76 — that column holds a <code>__thumb</code> (76px square QR icon chip), not the shrinking <code>__image</code>.</p>
   <p class="sub__desc" data-en>Borderless inventory table for E-Shop: product identity (image / thumb + title + meta) + category + price + status + stock + visibility switch + edit action, on row-divider layout. The E-Shop page swaps column layouts per panel via page-level modifiers — <code>--eshop</code> (Products: image / category / price / status / stock / visibility), <code>--bundles</code> (Bundles: image / members / bundle price / stock), <code>--auctions</code> (Auctions: image / category / bid / activity) — all layered on the same base grid. Below 760px the header hides and rows restack. <strong>2026-07-31 user: <code>.product-list__image</code> turned portrait</strong> (76×94, width unchanged, height from <code>--img-portrait</code>) — real product photos now render uncropped instead of a square crop of the portrait original. Exceptions: <strong>2026-08-05 (D176 / Q52)</strong>: ratio value changed to <code>2 / 3</code> (76×114, row 154) and the events square exception was dropped &mdash; <code>.product-list--events .product-list__image</code> no longer overrides, so <strong>all eight list thumbnails now share one ratio with no exception</strong>. the pickup page's <code>.product-list__thumb</code> QR icon-chip is a different class and is unaffected. <strong>2026-08-04 pinned section (<code>.product-list__divider</code> + <code>.product-list__pin-mark</code>, spec 5.1.5 F4 / D172)</strong> — rows pinned to the front of the fan-facing shop sit above a labelled divider carrying a <code>n/10</code> count; membership is position, so dragging a row across the divider is what pins or unpins it. No fan-facing "featured" badge: the creator-side cue is the section plus a small pin glyph before the name, which is the only cue left whenever the divider is hidden. <strong>2026-08-05:</strong> the divider now holds in every filter and search state (it used to collapse the moment either was active). Filtering only hides non-matching rows, so what stays on screen is still "pinned above, rest below" &mdash; the visibility test is therefore "can this view see any pinned row", not "is a filter active". None visible &rarr; the whole divider collapses, since a rule reading "pinned above" with nothing above it would lie. The count keeps reporting the panel-wide <code>n/10</code> quota. The <code>--empty</code> invitation box, by contrast, shows in <em>every</em> filter state (pinning belongs to the list, not to the "All products" view, and "filter to live, then pick a few to feature" is a normal path) &mdash; with nothing pinned there are no two sections to divide, so nothing can be misread. Only its action link collapses when the current view holds no pinnable row (a draft-only filter), since it would otherwise be a button that does nothing. With nothing pinned yet the divider stays visible, switches to its <code>--empty</code> variant (a rounded 1px box instead of a single rule — with nothing above it, it invites rather than divides) and swaps to a prompt — "Pin items to the top." with the right-hand slot swapped from the <code>n/10</code> count to a borderless <code>.btn--ghost</code> action (<code>__divider-cta</code>) — sitting exactly where the pinned section will appear. The link guides rather than acts: it scrolls the first pinnable row into the upper third, opens that row's action menu and rings the Pin entry with <code>.dropdown__item.is-hinted</code> (§4.26); choosing what to pin stays with the creator.</p>
+  <p class="sub__desc" data-zh><strong>2026-09-04（使用者裁示「這個間距不需要這麼大就縮短」）</strong>：清單縮圖 <code>__image</code> 由 76×114 收成 <strong>60×90</strong>（寬度改 60，高度仍由 <code>--img-portrait</code> 2:3 推導），列高隨之由 154 變 <strong>130</strong>。上下留白維持 <code>--sp-20</code>——真正撐高列的是直式海報而不是留白。縮圖欄的欄寬跟著收：原本 84px 的（<code>--eshop</code>／<code>--bundles</code>／<code>--auctions</code>）收成 68、原本 76px 的（<code>--ip</code>／<code>--rented</code>／活動清單）收成 60，各自維持原來的 gutter。<code>--pickup</code> 維持 76——那一欄放的是 <code>__thumb</code>（76px 方形 QR 圖示晶片），不是會縮的 <code>__image</code>。</p>
   <p class="sub__desc" data-zh>E-Shop 的無框庫存表：商品識別（圖／縮圖＋標題＋meta）＋分類＋價格＋狀態＋庫存＋可見度開關＋編輯動作，列分隔線版式。E-Shop 頁以頁面層修飾子按分頁切換欄位版型——<code>--eshop</code>（商品：圖／分類／價格／狀態／庫存／可見度）、<code>--bundles</code>（套組：圖／成員／套組價／庫存）、<code>--auctions</code>（競標：圖／分類／出價／動態）——都疊在同一 base grid 上。760px 以下表頭隱藏、列重新堆疊。<strong>2026-07-31 使用者：<code>.product-list__image</code> 改直式</strong>（76×94，寬度不變、高度由 <code>--img-portrait</code> 推導）——真實商品照不再被裁成方形。例外：<strong>2026-08-05（D176／Q52）</strong>：比例值改 <code>2 / 3</code>（76×114、列高 154），同時撤除活動的方形例外&mdash;&mdash;<code>.product-list--events .product-list__image</code> 的覆寫已刪除，<strong>八支清單縮圖現在沒有例外、全部同一個比例</strong>；取貨頁的 <code>.product-list__thumb</code> QR icon chip 是不同 class，不受影響。</p>
   <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
   <div class="compose">
@@ -8294,6 +8354,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <div class="product-list-scroll">
       <section class="product-list product-list--roster" role="table">
         <div class="product-list__head" role="row">
+          <div role="columnheader"></div>
           <div role="columnheader">Buyer</div>
           <div role="columnheader">Source</div>
           <div role="columnheader">Pickup item</div>
@@ -8306,9 +8367,10 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         </div>
         <div class="rowdis__group">
         <div class="product-list__row rowdis__head" role="row" data-rowdis-row="ds-pk-mika">
+          <div class="rowdis__lead" role="cell"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="ds-pk-mika" aria-expanded="true" aria-label="Show pickup units"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
           <div class="product-list__product" role="cell">
             <div class="product-list__body">
-              <div class="product-list__title rowdis__label"><span>Mika L.</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="ds-pk-mika" aria-expanded="true" aria-label="Show pickup units"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+              <div class="product-list__title"><span>Mika L.</span></div>
               <div class="product-list__meta">1 of 3 collected</div>
             </div>
           </div>
@@ -8322,6 +8384,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <div class="product-list__actions" role="cell"></div>
         </div>
         <div class="product-list__row rowdis__child" role="row" data-rowdis-child="ds-pk-mika">
+          <div class="rowdis__lead" role="cell"><span class="rowdis__num">1</span></div>
           <div class="product-list__product" role="cell"></div>
           <div class="product-list__cell" role="cell"><a class="card__link" href="#pickup">#ZT-10482</a></div>
           <div class="product-list__cell" role="cell">Coastline tee</div>
@@ -8333,6 +8396,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <div class="product-list__actions" role="cell"></div>
         </div>
         <div class="product-list__row rowdis__child" role="row" data-rowdis-child="ds-pk-mika">
+          <div class="rowdis__lead" role="cell"><span class="rowdis__num">2</span></div>
           <div class="product-list__product" role="cell"></div>
           <div class="product-list__cell" role="cell"><a class="card__link" href="#pickup">#ZT-10482</a></div>
           <div class="product-list__cell" role="cell">Six-panel cap</div>
@@ -8344,6 +8408,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <div class="product-list__actions" role="cell"></div>
         </div>
         <div class="product-list__row rowdis__child" role="row" data-rowdis-child="ds-pk-mika">
+          <div class="rowdis__lead" role="cell"><span class="rowdis__num">3</span></div>
           <div class="product-list__product" role="cell"></div>
           <div class="product-list__cell" role="cell"><a class="card__link" href="#pickup">#ZT-10482</a></div>
           <div class="product-list__cell" role="cell">Six-panel cap</div>
@@ -8356,6 +8421,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         </div>
         </div>
         <div class="product-list__row" role="row">
+          <div class="rowdis__lead" role="cell"></div>
           <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Devon W.</div></div></div>
           <div class="product-list__cell" role="cell"><a class="card__link" href="#pickup">#ZT-10475</a></div>
           <div class="product-list__cell" role="cell">Coastline tee</div>
@@ -10254,12 +10320,13 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   <p class="sub__desc" data-en>The same series in the event list: one parent row carrying the totals, expanding to one row per date. Parent click toggles; only the children open a detail page.</p>
   <p class="sub__desc" data-zh>同一個系列在活動清單上的樣子：母列扛加總、點開才是每一場。母列點擊是展開，只有子列會開詳情頁。</p>
   <div class="demo"><div style="width:100%">
-    <div class="product-list">
+    <div class="product-list ds-lead-demo">
       <div class="rowdis__group">
       <div class="product-list__row rowdis__head" role="row" data-rowdis-row="ds-ser-realive">
+        <div class="rowdis__lead" role="cell"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="ds-ser-realive" aria-expanded="true" aria-label="Show dates"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
         <div class="product-list__product" role="cell">
           <div class="product-list__body">
-            <div class="product-list__title rowdis__label"><span>REALIVE 世界巡迴 — 亞洲段</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="ds-ser-realive" aria-expanded="true" aria-label="Show dates"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+            <div class="product-list__title"><span>REALIVE 世界巡迴 — 亞洲段</span></div>
             <div class="product-list__meta">演唱會 · 共 3 場</div>
           </div>
         </div>
@@ -10277,6 +10344,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         </div>
       </div>
       <div class="product-list__row rowdis__child" role="row" data-rowdis-child="ds-ser-realive">
+        <div class="rowdis__lead" role="cell"><span class="rowdis__num">1</span></div>
         <div class="product-list__product" role="cell">
           <div class="product-list__body">
             <div class="product-list__title">高雄</div>
@@ -10289,6 +10357,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         <div class="product-list__actions" role="cell"></div>
       </div>
       <div class="product-list__row rowdis__child" role="row" data-rowdis-child="ds-ser-realive">
+        <div class="rowdis__lead" role="cell"><span class="rowdis__num">2</span></div>
         <div class="product-list__product" role="cell">
           <div class="product-list__body">
             <div class="product-list__title">台中</div>
@@ -10308,7 +10377,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <p class="field-text"><code>.session-list</code> · <code>__row</code>（<code>--main</code> 為第 1 場）· <code>__no</code>（固定寬序號，讓多列欄位左緣對齊）· <code>__fields</code>（日期｜場地兩欄；<code>--main</code> 改單欄）· <code>__text</code>（<code>--empty</code> 為未填時的降權態）· <code>__end</code>（固定寬尾欄，讓「有移除鈕」與「有徽章」兩種列的右緣也對齊）· <code>__add</code>。<strong>2026-08-09 新增</strong>：<code>__head[data-multi]</code>（選配欄位標題列，與 <code>__row</code> 同排版、文字改小標色）· <code>.session-list--detailed</code>（多欄修飾類：單場 4 欄「日期｜起｜訖｜入場」，<code>[data-multi="true"]</code> 多插「場次名」成 5 欄，兩種欄寬各自定義；≤640px 時 <code>__head</code> 隱藏、欄位收成 1～2 欄）。</p>
     <p class="field-text"><strong>第 1 場為什麼是唯讀鏡像</strong>：日期與場地在同一頁上面已經有一組正式欄位，這裡再給一組可編輯的，同一筆資料就有兩個真相來源——使用者改了下面那格，上面那格與 Review 摘要、發布前檢核不知道該聽誰的。改成鏡像後只有「第 2 場起」是這份清單自己的資料。</p>
     <p class="field-text"><strong>開關為什麼在「場地與時間」不在確認頁</strong>：使用者最初指定放最後的確認頁；確認頁的定位是「檢查每一項沒問題就發布」，在那裡開一個會生出 N 個活動的開關等於在檢查步驟做重大建立動作，而且日期與場地都在前一步填過、要改得跳回去。2026-08-06 與使用者確認後移到「場地與時間」。</p>
-    <p class="field-text"><strong>清單頁的群組列＝<a href="#row-disclosure">Row disclosure</a>（§4.204，2026-09-04 改 L3 整組換層）</strong>：群組容器 <code>.rowdis__group</code> 包住母列＋所有子列（表格型不加 <code>--gutter</code>）、母列疊 <code>.rowdis__head</code>＋<code>data-rowdis-row</code>（整列可點）、把手 <code>.rowdis__toggle</code>＋<code>data-rowdis</code>、子列 <code>.rowdis__child</code>＋<code>data-rowdis-child</code>（零縮排，展開時階層由 <code>.rowdis__group</code> 那塊 L2 薄膜面板說），互動走 <code>js/row-disclosure.js</code>。<strong>把手與名稱同一格、緊接在名稱之後</strong>——清單頁的 <code>.main</code> 是 <code>overflow-x:hidden</code>，視窗窄一點時右側幾欄會被切掉且捲不到，把手收在最右的操作欄等於沒有入口；名稱那一格是單行截斷，所以有把手的列再掛 <code>.rowdis__label</code>，讓文字自己截斷、把手不縮。（2026-08-06 到 2026-09-03 之間，這件事由 <code>product-list.css</code> 自己的 <code>__row--group</code>／<code>--child</code> 承擔；Q107 裁決收斂成一支之後那組已退場，CSS 原處留墓碑。）<strong>系列母頁的入口要有名字</strong>：母列標題本身是連結（進系列母頁），但母列的整列點擊是「展開」，光靠標題沒人會發現那裡還能點去別的地方，所以操作欄的 ⋮ 另給一個具名項目「管理整個系列」，子場詳情頁的「系列」分頁也放一個。行為約定由消費頁負責：母列整列可點＝展開／收合（明確的展開鈕與 ⋮ 裡那一項一律有效，連結與選單本身放行）；子列不進分頁計數；子列可見＝母列過篩選且展開；搜尋中一律攤開（搜到的字可能長在某一場身上）。</p>
+    <p class="field-text"><strong>清單頁的群組列＝<a href="#row-disclosure">Row disclosure</a>（§4.204，2026-09-04 改 L3 整組換層）</strong>：群組容器 <code>.rowdis__group</code> 包住母列＋所有子列（表格型不加 <code>--gutter</code>）、母列疊 <code>.rowdis__head</code>＋<code>data-rowdis-row</code>（整列可點）、把手 <code>.rowdis__toggle</code>＋<code>data-rowdis</code>、子列 <code>.rowdis__child</code>＋<code>data-rowdis-child</code>（零縮排，展開時階層由 <code>.rowdis__group</code> 那塊 L2 薄膜面板說），互動走 <code>js/row-disclosure.js</code>。<strong>把手站列首欄（2026-09-04 · Q109 改）</strong>——原本把手跟在名稱後面（列的中段），與列尾的 ⋮ 讀不出「這是同一列的兩個控制項」，各組名稱長度不同時把手的 x 位置還會浮動。現在它在 <code>.rowdis__lead</code>、列的最前緣，⋮ 維持最末端，子列在同一格放場次序號；一般列也有這一欄（留空），所以名稱欄的左緣仍是一條線。當初「不放最右操作欄」的顧慮依舊成立（清單頁的 <code>.main</code> 是 <code>overflow-x:hidden</code>，視窗窄一點時右側幾欄會被切掉且捲不到），列首欄剛好在被切掉的反方向。（2026-08-06 到 2026-09-03 之間，這件事由 <code>product-list.css</code> 自己的 <code>__row--group</code>／<code>--child</code> 承擔；Q107 裁決收斂成一支之後那組已退場，CSS 原處留墓碑。）<strong>系列母頁的入口要有名字</strong>：母列標題本身是連結（進系列母頁），但母列的整列點擊是「展開」，光靠標題沒人會發現那裡還能點去別的地方，所以操作欄的 ⋮ 另給一個具名項目「管理整個系列」，子場詳情頁的「系列」分頁也放一個。行為約定由消費頁負責：母列整列可點＝展開／收合（明確的展開鈕與 ⋮ 裡那一項一律有效，連結與選單本身放行）；子列不進分頁計數；子列可見＝母列過篩選且展開；搜尋中一律攤開（搜到的字可能長在某一場身上）。</p>
     <p class="field-text"><strong>三種活動詳情頁</strong>（2026-08-06 使用者裁決）：單場活動（<code>event-detail.html</code>，無系列）／系列母頁（<code>series-detail.html</code>）／系列子場（<code>event-detail.html</code>，有系列）。母頁承載共用設定、改一次同步所有場次；判準是「這個欄位每一場一不一樣」——一樣的（名稱、描述、陣容、圖片、人數、票種與票價）住母頁，不一樣的（日期、場地）住子場。<strong>階層要在麵包屑上讀得出來</strong>：子場是「活動 / 系列母頁 / 這一場」三層、返回鈕回系列母頁；末層寫「第 N 場 · 場地」不寫活動名稱（同系列各場刻意同名，用名稱三場會一模一樣）。單場活動維持兩層。母頁不是一場活動，所以頁首不掛日期與場地、也沒有報到與名單。入口有兩個：活動清單的母列標題、子場詳情頁「系列」分頁的「管理整個系列 →」。頁面上刻意寫死兩則規則：已開賣的警示用 <code>.alert--row.--warning</code>（沿用編輯活動「改動的後果」同一種說法），以及「取消系列中的一場＝與取消一場獨立活動完全相同的退款規則」。</p>
     <p class="field-text"><code>ds-components/session-list.css</code> ＋ <code>ds-components/row-disclosure.css</code>／<code>js/row-disclosure.js</code>（群組列）。消費頁：<code>create-event.html</code>（步驟 3 場地與時間 › 系列場次，用 <code>.session-list--detailed</code> ＋ <code>__head</code>）、<code>create-event-legacy.html</code>（基準版）、<code>events.html</code>（系列母列與子列）、<code>series-detail.html</code>（系列母頁，場次表用頁內變體 <code>product-list--series</code>）、<code>pickup-detail.html</code>（2026-09-03／D240，取貨名單以買家分組：買多件的買家收成母列、每一件是一條子列；與活動清單同一支元件，未另開第二種分組列）。產品規格缺口見 ASSUMPTIONS SER-001。</p>
   </div>
@@ -10865,6 +10934,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   <p class="sub__desc" data-zh>一筆清單項目其實是好幾筆：母列收成一列，底下每一筆點開才出現。站上「可展開子列」的單一答案。2026-09-03 之前這件事有兩份實作——表格型清單用 <code>product-list</code> 的 <code>__row--group</code>／<code>--child</code>、清單型用 <code>data-list</code> 的 <code>__row--child</code>——STYLE-DECISIONS Q107 裁決後由本支取代兩者。<strong>2026-09-04 改寫成「L3 整組換層」模型</strong>：階層不再靠縮排與左緣線說，改由「這一組坐在哪一層平面」說。收合時整列與其他資料列同層（L1 卡面）；展開時母列與它的子項一起被包進一塊 L2 薄膜面板，子項欄位與表頭嚴格對齊、零縮排。</p>
   <p class="sub__desc" data-en><strong>It owns the disclosure and the plane, not the columns.</strong> Three things belong to it: where the handle sits and which way it turns, the <code>aria-expanded</code> state, and which plane the group sits on once expanded (same plane while collapsed, an L2 film panel while open, a 1px frame for the second layer). Column widths and cell contents stay with the container it is laid over — the <code>.product-list__row</code> grid, or <code>.data-list__row-main</code> / <code>__amount</code>. That is why it is a layer of classes carried <em>alongside</em> a container row rather than a list of its own.</p>
   <p class="sub__desc" data-zh><strong>它擁有揭露與那塊面，不擁有欄位。</strong>歸它的三件事：把手的位置與轉向、<code>aria-expanded</code> 狀態、以及「這一組展開時坐在哪一層面」（收合同層、展開後的 L2 薄膜面板、第二層的 1px 框）。欄寬與每一格的內容仍歸它疊上去的那個容器——<code>.product-list__row</code> 的 grid 欄，或 <code>.data-list__row-main</code>／<code>__amount</code>。所以它是與容器列<em>同時掛</em>的一層 class，不是另一種清單。</p>
+  <p class="sub__desc" data-en><strong>Expand at the leading edge, <code>⋯</code> at the trailing edge.</strong> Since 2026-09-04 (Q109) the disclosure handle sits in its own narrow lead column at the very start of the row, and the actions menu stays at the very end — the two controls hold the two ends and never sit next to each other. Child rows put their number within the group in that same cell; rows with no group leave it empty. Every row in a table has the column, header included. The decision followed eight web examples on Mobbin (Midday, Evernote, Xero, Salesforce, Braintrust, ClickUp, Asana, Zoho CRM), with Braintrust named as the reference. List-shaped consumers keep their handles where they are — see the note under the second demo.</p>
+  <p class="sub__desc" data-zh><strong>展開在最前緣、<code>⋯</code> 在最末端。</strong>2026-09-04（Q109）起，揭露把手站在列最前緣一個獨立的窄欄，動作選單維持在列的最末端——兩個控制項分踞兩端，從不相鄰。子列在同一格放它在該組內的序號，沒有群組的一般列留空；同一張表裡每一列都有這一欄，表頭也算一列。裁決依據是 Mobbin 上八個 web 實例（Midday、Evernote、Xero、Salesforce、Braintrust、ClickUp、Asana、Zoho CRM），指名參考 Braintrust。清單型的消費頁維持把手現況，理由見第二個 demo 下方的說明。</p>
   <p class="sub__desc" data-en><strong>Zero indent, columns aligned.</strong> <code>.rowdis__group</code> wraps the parent row and its children; collapsed it carries no styling, expanded (detected via <code>:has()</code> on an inner handle's <code>aria-expanded="true"</code>) it becomes the L2 film panel — <code>--ztu-film</code> fill, a 1px <code>--border-soft</code> ring drawn with an inset box-shadow (a real border would join the grid's column sizing and knock parent and child 1px out of alignment), <code>--radius-lg</code> corners, row hairlines inside the panel turned transparent. List-shaped containers add <code>--gutter</code> (their rows carry no side padding of their own, so the panel needs a negative margin plus matching padding to grow outward without moving the columns); table-shaped containers skip it — <code>.product-list__row</code> already carries side padding, so the panel edge lines up with the row edge as-is. A second layer (order-detail's item → bundle member → member's own pickup units) uses <code>.rowdis__frame</code> instead of a third fill, per the existing rule in <code>ds-components/nest.css</code>: at most two plane fills (L1 card, L2 film), anything past that is a 1px border.</p>
   <p class="sub__desc" data-zh><strong>零縮排、欄位對齊。</strong><code>.rowdis__group</code> 包住母列與它的子項；收合無樣式，展開時（用 <code>:has()</code> 偵測內部把手 <code>aria-expanded="true"</code>）成為 L2 薄膜面板——<code>--ztu-film</code> 底、一圈 inset box-shadow 畫的 1px <code>--border-soft</code>（用 box-shadow 而不是真的 border，是因為 border 會參與 grid 欄寬計算，母列與面板外的資料列會因此差 1px、欄位對不齊）、<code>--radius-lg</code> 圓角，面板內部的列底線轉透明。清單型容器要加 <code>--gutter</code>（列本身沒有左右內距，靠負外距＋等值內距讓面板往外長、欄位起點不動）；表格型容器不加——<code>.product-list__row</code> 本來就有左右內距，面板邊緣與資料列外緣重合就是對的。第二層（order-detail 的品項 → 組合成員 → 成員自己的領取單位）改用 <code>.rowdis__frame</code>、不再疊第三層填色，依 <code>ds-components/nest.css</code> 的既有規則：填色最多兩層（L1 卡片、L2 薄膜），第三層以後改用 1px 邊框。</p>
   <p class="field-label" data-en>Rendered preview <span class="field-note">(live — the handles really work, driven by <code>js/row-disclosure.js</code>)</span></p>
@@ -10874,12 +10945,13 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       <p class="field-label" data-en>In a table-shaped container (<code>.product-list</code>) — whole row toggles, no <code>--gutter</code>. <span class="field-note">Starts expanded; the highlighted row simulates <code>:hover</code> permanently (panel-in H1 + H4) so it shows without moving the mouse — compare it against the plain row above it.</span></p>
       <p class="field-label" data-zh>表格型容器裡（<code>.product-list</code>）——整列可點，不加 <code>--gutter</code>。<span class="field-note">預設展開；標亮那列常駐模擬 <code>:hover</code>（面板內 H1＋H4），不必真的移過去，方便跟上面那列素面對照。</span></p>
       <div class="product-list-scroll">
-        <div class="product-list">
+        <div class="product-list ds-lead-demo">
           <div class="rowdis__group">
             <div class="product-list__row rowdis__head ds-hover-sim" data-rowdis-row="ds-rd-a">
+              <div class="rowdis__lead"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="ds-rd-a" aria-expanded="true" aria-label="Collapse"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
               <div class="product-list__product">
                 <div class="product-list__body">
-                  <div class="product-list__title rowdis__label"><span>Mika L.</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="ds-rd-a" aria-expanded="true" aria-label="Collapse"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                  <div class="product-list__title"><span>Mika L.</span></div>
                   <div class="product-list__meta">1 / 2</div>
                 </div>
               </div>
@@ -10889,6 +10961,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
               <div class="product-list__actions"></div>
             </div>
             <div class="product-list__row rowdis__child" data-rowdis-child="ds-rd-a">
+              <div class="rowdis__lead"><span class="rowdis__num">1</span></div>
               <div class="product-list__product"></div>
               <div class="product-list__cell">PU-10482-01</div>
               <div class="product-list__cell">Tee · M</div>
@@ -10896,6 +10969,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
               <div class="product-list__actions"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="#"><i data-lucide="external-link" class="ztor-icon"></i><span>Source</span></a></div></details></div>
             </div>
             <div class="product-list__row rowdis__child ds-hover-sim" data-rowdis-child="ds-rd-a">
+              <div class="rowdis__lead"><span class="rowdis__num">2</span></div>
               <div class="product-list__product"></div>
               <div class="product-list__cell">PU-10482-02</div>
               <div class="product-list__cell">Cap</div>
@@ -10909,6 +10983,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <div style="width:100%">
       <p class="field-label" data-en>In a list-shaped container (<code>.data-list</code>) — handle only, <code>--gutter</code>, two layers deep (second layer is <code>.rowdis__frame</code>, a 1px border instead of a third fill)</p>
       <p class="field-label" data-zh>清單型容器裡（<code>.data-list</code>）——只有把手可點、加 <code>--gutter</code>，示範兩層（第二層是 <code>.rowdis__frame</code> 的 1px 框，不疊第三層填色）</p>
+      <p class="field-label" data-en><span class="field-note">No lead column here (2026-09-04 call). A list-shaped row has no column grid and no header to align to; and this demo shows the two-layer case, where the member row is both a child of layer one (wants a number) and the parent of the layer-two frame (wants a handle) — one lead cell cannot hold both. The three list-shaped consumers keep their handles where they are: <code>order-detail</code> for the reason just given, <code>project-detail</code> because its lead is already the ＋／−／＝ marker chip and the handle reads better next to the amount it expands, <code>scanner</code> because its roster is <code>--static</code> and has no handle to move.</span></p>
+      <p class="field-label" data-zh><span class="field-note">這裡不套列首欄（2026-09-04 判斷）。清單型的列不是欄格線結構，也沒有表頭可對齊；而且這個 demo 正是兩層的情況——成員那一列同時是第一層的子列（該有序號）與第二層框的母列（該有把手），一個列首格放不下兩種角色。三個清單型消費頁因此維持把手現況：<code>order-detail</code> 是剛才這個理由，<code>project-detail</code> 的列首已經是 ＋／−／＝ 的記號晶片、把手貼著金額擺才讀得出「這個數字展開成它的組成」，<code>scanner</code> 的名單是 <code>--static</code> 唯讀恆亮、根本沒有把手可搬。</span></p>
       <div class="data-list">
         <div class="rowdis__group rowdis__group--gutter">
           <div class="data-list__row rowdis__head">
@@ -10961,7 +11037,9 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       <tr><td><code>.rowdis__group--gutter</code></td><td><span data-en>Add on list-shaped containers. <code>.data-list__row</code> carries no side padding of its own, so the panel needs a negative margin plus matching padding to grow outward without moving the row's x-position. Table-shaped containers skip it — <code>.product-list__row</code> already carries side padding.</span><span data-zh>清單型容器要加。<code>.data-list__row</code> 本身沒有左右內距，靠負外距＋等值內距讓面板往外長，列的 x 位置不動。表格型不加——<code>.product-list__row</code> 自己就有左右內距。</span></td></tr>
       <tr><td><code>.rowdis__group--static</code></td><td><span data-en>For read-only groups (scanner's F3 roster): the panel stays lit regardless of any handle's <code>aria-expanded</code> — there is nothing to expand, but "these units belong to this buyer" still needs the same clarity as an expandable group.</span><span data-zh>唯讀群組用（scanner 的 F3 名單）：面板恆亮，不看任何把手的 <code>aria-expanded</code>——沒有東西可展開，但「這幾件屬於同一買家」要跟可展開的清單一樣清楚。</span></td></tr>
       <tr><td><code>.rowdis__head</code></td><td><span data-en>The parent row, carried alongside the container's own row class, and must be a direct child of <code>.rowdis__group</code> (the selector reads <code>:has(&gt; .rowdis__head …)</code>). It only takes a pointer cursor when it also carries <code>data-rowdis-row</code> (whole row toggles); where only the handle toggles, the cursor belongs to the button.</span><span data-zh>母列，與容器自己的列 class 同時掛，且必須是 <code>.rowdis__group</code> 的直接子節點（選擇器寫成 <code>:has(&gt; .rowdis__head …)</code>）。只有同時帶 <code>data-rowdis-row</code>（整列可點）時才給手指游標；只有把手可點的用法，游標歸按鈕本身。</span></td></tr>
-      <tr><td><code>.rowdis__label</code></td><td><span data-en>Optional. The cell where the handle sits next to a single-line truncating title: the text takes the remaining width and ellipsises itself, the handle keeps its width. Without it a handle placed inside <code>.product-list__title</code> gets clipped along with the text.</span><span data-zh>選配。把手與「單行截斷的標題」並排的那一格：文字吃剩下的寬度並自己截斷，把手固定寬不縮。沒有它的話，放進 <code>.product-list__title</code> 的把手會跟著文字一起被截掉。</span></td></tr>
+      <tr><td><code>.rowdis__lead</code></td><td><span data-en><strong>The lead cell</strong> (2026-09-04, Q109, Braintrust as the named reference). A narrow cell at the very start of the row, <code>--rowdis-lead-w</code> wide (<code>--sp-28</code>, the exact side of a <code>.btn--icon.btn--xs</code>). Parent rows put the handle here; child rows put their number within the group; ungrouped rows leave it empty. It is part of the column layout, not something groups grow — <strong>the header takes one too</strong>, or header and body rows sit one column apart.</span><span data-zh><strong>列首欄</strong>（2026-09-04 · Q109，指名參考 Braintrust）。列最前緣的一個窄格，寬 <code>--rowdis-lead-w</code>（<code>--sp-28</code>，正好是 <code>.btn--icon.btn--xs</code> 的邊長）。母列在這裡放把手、子列放它在該組內的序號、沒有群組的一般列留空。它是欄位版面的一部分，不是「有分組才長出來」的東西——<strong>表頭也要跟著多一欄</strong>，否則表頭與資料列會差一格。</span></td></tr>
+      <tr><td><code>.rowdis__num</code></td><td><span data-en>The child row's number inside <code>.rowdis__lead</code>, counted from 1 within its own group. Plain text, never focusable — the only control in this column is the parent row's handle. <code>--fs-12</code> / <code>--column-head-ink</code> / tabular numerals, i.e. the same weight as a column header: it is a marker, not a value competing with the row's data.</span><span data-zh>子列在 <code>.rowdis__lead</code> 裡的序號，於該組內從 1 起算。純文字、永遠不可聚焦——這一欄唯一的控制項是母列的把手。<code>--fs-12</code>／<code>--column-head-ink</code>／等寬數字，跟表頭欄名同一個份量：它是編號，不是跟同列的值搶注意力的內容。</span></td></tr>
+      <tr><td><code>.rowdis__label</code></td><td><span data-en><strong>No longer used by any product page (since 2026-09-04).</strong> It used to be the cell where the handle sat next to a single-line truncating title. With the handle moved to <code>.rowdis__lead</code>, the title cell has nothing beside it to protect from truncation, so all five consumers and this page dropped it. The rule survives only for the frozen exploration page <code>lab-row-hover.html</code>; it retires with that batch. Do not use it in new pages.</span><span data-zh><strong>2026-09-04 起正式頁面已不消費。</strong>它原本是把手與「單行截斷的標題」並排的那一格。把手改站 <code>.rowdis__lead</code> 之後，標題格裡沒有要防截斷的並排元素，五個消費頁與本頁 demo 都已移除。CSS 規則留著只為了凍結保存的探索頁 <code>lab-row-hover.html</code>，跟那批一起退場。新頁面不要再用它。</span></td></tr>
       <tr><td><code>.rowdis__toggle</code></td><td><span data-en>The handle. Looks are borrowed from <a href="#button">Button</a> (<code>.btn--icon</code>, size chosen by the page); this component only adds "does not shrink" and "turns 180° on <code>aria-expanded</code>". <strong>State lives on the button</strong>, because the button is the focusable, keyboard-operable element — Enter and Space come free from a native <code>&lt;button&gt;</code>.</span><span data-zh>把手。外觀借 <a href="#button">Button</a>（<code>.btn--icon</code>，尺寸由頁面決定），本支只加「不被壓縮」與「隨 <code>aria-expanded</code> 轉 180°」。<strong>狀態放在按鈕上</strong>——它才是可聚焦、可用鍵盤操作的那個元素，Enter 與 Space 由原生 <code>&lt;button&gt;</code> 免費提供。</span></td></tr>
       <tr><td><code>.rowdis__child</code></td><td><span data-en>The child row: zero indent (columns line up with the header pixel-for-pixel — hierarchy is said by the plane, not by position), type and text colour one step quieter. It also carries its own <code>[hidden] { display: none }</code>, because the container writes <code>display: grid</code>.</span><span data-zh>子列：零縮排（欄位與表頭嚴格對齊，階層由那塊面說、不是位置），字級與文字色退一階。並自帶 <code>[hidden] { display: none }</code>，因為容器寫了 <code>display: grid</code>。</span></td></tr>
       <tr><td><code>.rowdis__child--compact</code></td><td><span data-en>The list-shaped container's density: tighter vertical padding only. ⚠ It no longer owns hierarchy — row rules and the group's closing line are now the group panel's job, not this variant's.</span><span data-zh>清單型容器的密度：只收窄上下留白。⚠ 它不再管階層——列線與組尾線都已改由群組那塊面承擔，不是它的職責。</span></td></tr>
@@ -10972,7 +11050,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <p class="field-text"><code>window.rowDisclosure.init(root, { onToggle })</code> <span data-en>registers a container (and its callback, for pages where being open is only one of several visibility conditions — the pickup roster also filters by status and search)</span><span data-zh>登記一個容器與 callback，給「展開只是可見性其中一個條件」的頁面用（取貨名單還要疊狀態篩選與搜尋）</span> · <code>set(head, open)</code> · <code>toggle(head)</code> · <code>sync(root)</code> · <code>isOpen(head)</code>. <span data-en>Clicks run through one document-level delegate, so dynamically rendered rows need no rebinding and <code>init()</code> never adds a second listener.</span><span data-zh>點擊走 document 級單一委派，動態渲染的列不必重新綁定，<code>init()</code> 也不會再加第二顆監聽器。</span></p>
     <div class="compose"><div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div><div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="#button">Button</a> <a class="compose-chip compose-chip--atom" href="#icon">Icon</a></div></div>
     <p class="field-text"><span data-en>Laid over</span><span data-zh>疊在哪些容器上</span>: <a href="#product-list">Product list</a> · <a href="#data-list">Data list</a>. <span data-en>Whether the second layer fills or frames follows <code>ds-components/nest.css</code>.</span><span data-zh>第二層填色或框，依 <code>ds-components/nest.css</code> 的既有規則。</span></p>
-    <p class="field-text"><span data-en>Consumers</span><span data-zh>採用頁</span>: <a href="pickup-detail.html">pickup-detail.html</a> (<span data-en>table-shaped, no</span><span data-zh>表格型、不加</span> <code>--gutter</code>) · <a href="events.html">events.html</a> (<span data-en>table-shaped, no</span><span data-zh>表格型、不加</span> <code>--gutter</code>) · <a href="project-detail.html">project-detail.html</a> (<code>--gutter</code>) · <a href="order-detail.html">order-detail.html</a> (<code>--gutter</code>, <span data-en>two layers, second is <code>.rowdis__frame</code></span><span data-zh>兩層，第二層是 <code>.rowdis__frame</code></span>) · <a href="scanner.html">scanner.html</a> (<code>--gutter --static</code>)</p>
+    <p class="field-text"><span data-en>Consumers</span><span data-zh>採用頁</span>: <a href="pickup-detail.html">pickup-detail.html</a> (<span data-en>table-shaped, no</span><span data-zh>表格型、不加</span> <code>--gutter</code><span data-en>, has the lead column</span><span data-zh>，有列首欄</span>) · <a href="events.html">events.html</a> (<span data-en>table-shaped, no</span><span data-zh>表格型、不加</span> <code>--gutter</code><span data-en>, has the lead column</span><span data-zh>，有列首欄</span>) · <a href="project-detail.html">project-detail.html</a> (<code>--gutter</code>) · <a href="order-detail.html">order-detail.html</a> (<code>--gutter</code>, <span data-en>two layers, second is <code>.rowdis__frame</code></span><span data-zh>兩層，第二層是 <code>.rowdis__frame</code></span>) · <a href="scanner.html">scanner.html</a> (<code>--gutter --static</code>)</p>
     <p class="field-text"><code>ds-components/row-disclosure.css</code> · <code>js/row-disclosure.js</code></p>
   </div>
   </details>

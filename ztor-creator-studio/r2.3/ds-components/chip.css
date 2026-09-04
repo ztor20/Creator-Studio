@@ -114,6 +114,20 @@
 }
 .filter-row__actions { display: inline-flex; gap: var(--sp-8); align-items: center; }
 
+/* --group · 同一組篩選底下的第二排（2026-09-05，交易明細的「狀態與資料來源」接在
+   「收入分類」下面）。兩排都是裸 chip 時，中間沒有東西分界就會被讀成同一排折行——
+   一條發線把它們分回兩個面向。分隔線用 --border-soft：這是「同一組之內」的分界，
+   與卡與卡之間的 --border 差一階（同 kv-list 的兩級規則）。 */
+.filter-row--group {
+  border-top: 1px solid var(--border-soft);
+  padding-top: var(--sp-12);
+}
+/* `.filter-row` 是 flex，特異度壓過瀏覽器對 hidden 屬性的預設 display:none——不寫這條，
+   JS 把整排篩選設成 hidden 也藏不掉（同 badge.css／alert.css 已有的處置）。
+   第一排被藏起來時，第二排就是這組的第一排，發線與上內距要跟著收掉，否則會留一條沒有上文的線。 */
+.filter-row[hidden] { display: none; }
+.filter-row[hidden] + .filter-row--group { border-top: 0; padding-top: 0; }
+
 /* Removable chip · a selected / creator-added value carrying an inline ×.
    Used by .tag-input (product tags) and the variant builder's option values
    (spec 5.1.5.2 §4.1④ / §4.5). Color inherits from the chip so it works on
