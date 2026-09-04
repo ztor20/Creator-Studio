@@ -203,7 +203,6 @@
 }
 .ztor-table__row[aria-expanded="true"] td { background: var(--muted); }
 
-.ztor-table__detail[hidden] { display: none; }
 .ztor-table__detail > td {
   padding: 0;
   background: var(--muted);
@@ -256,6 +255,52 @@
   color: var(--foreground-muted);
 }
 .tx-detail__ladder { max-width: 540px; }
+
+/* ── 交易明細：收入事件與帳務異動同一張表（D250，2026-09-05）──────────────────
+   規格 5.1.8 F7 把兩族放在同一條時間軸上，不拆分頁：創作者對帳問的是「這段期間
+   進了什麼、出了什麼」，拆兩頁等於逼他在兩張表之間對時間。同表就得讓兩族在掃描時
+   分得出來，這一段是那個分工的呈現面：
+
+     · 狀態徽章 —— 收入族用填色 tint、帳務異動族用描邊（見 badge.css 的 --outline）
+     · 列的份量 —— 帳務異動列整列降到 --muted-foreground（它回答的是「餘額為什麼變了」，
+       不是「賺了多少」），只有金額維持可讀
+     · 不適用的欄 —— 用 .tx-na 的「—」，不填 −$0.00：填零會被讀成「這筆真的扣了 0 元」
+
+   .tx-status 是狀態格本身：待結算的列在徽章後面接一個可動用時間（「12/08 可提領」），
+   其餘狀態不接。窄欄時 wrap 到第二行，不擠壓徽章。 */
+.ztor-table__row[hidden],
+.ztor-table__detail[hidden] { display: none; }
+
+/* 選擇器要壓過 `.ztor-table tbody td`（0,1,2）才吃得到，所以帶上 tbody。 */
+.ztor-table tbody .ztor-table__row--ledger td { color: var(--muted-foreground); }
+
+.tx-status {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-4) var(--sp-8);
+}
+.tx-status__when {
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+.tx-na { color: var(--faint-ink); }
+
+/* 金額欄：靠右、等寬數字、不折行。原本是逐格寫 inline style，值一多就會像交易明細那樣
+   在窄欄把「−$5,202.50」的負號折到上一行——負號單獨站一行會被讀成破折號。 */
+.ztor-table__amt {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.ztor-table__amt--muted { color: var(--muted-foreground); }
+
+/* 展開層的鍵值摘要（提款與退款／扣款用；收入事件用的是 .tx-detail__ladder 瀑布）。
+   複用 kv-list 元件，這裡只給它一個寬度上限，與瀑布同寬、不跨滿整張表。 */
+.tx-detail__kv { max-width: 540px; }
+.tx-detail__kv .kv { padding-block: var(--sp-6); }
 
 /* ── Media feature cell — a small square thumbnail leading the row's name
    (2026-07-25 promoted from the sony finance table; 32px square, one step

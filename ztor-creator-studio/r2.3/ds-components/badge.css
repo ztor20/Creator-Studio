@@ -145,6 +145,26 @@
 .badge--accent  { background: color-mix(in srgb, var(--status-accent)  16%, var(--card)); color: var(--status-accent-ink); }
 .badge--neutral { background: var(--ztu-film); color: var(--foreground-muted); }   /* ztorUI 換裝（2026-08-28 Wave 2a）：跟著中性底走，舊值 var(--muted) */
 
+/* --outline · 描邊徽章：同一張表裡「不是收入」的那一族狀態（D250，2026-09-05）。
+   交易明細把收入事件與帳務異動（提款／退款／扣款）放在同一張表，規格要求兩族的狀態
+   **不共用色票**——收入的「已付款」與提款的「已付款」是兩件事，掃描時要分得出來。
+   於是分工訂成：**填色＝你賺到的錢的狀態，描邊＝帳的搬動的狀態**。形狀語彙差一階，
+   不必再多發明一組色相（多一組色相只會讓狀態色的意思更稀）。
+   描邊在任何一層 surface 上都成立（1px 實線，不靠填色跟背景比對比），所以帳務異動列
+   即使坐在展開後的 --muted 深底上仍讀得出來。
+   --outline-danger 是同一形狀的失敗態（提款退回／扣款失敗）：只有邊與字換成 destructive，
+   底維持透明，才不會跟收入族的 .badge--error 撞成同一塊紅色貼紙。 */
+.badge--outline {
+  background: transparent;
+  color: var(--muted-foreground);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.badge--outline-danger {
+  background: transparent;
+  color: var(--destructive-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--status-error) 45%, transparent);
+}
+
 /* --inline：接在標題文字後的「安靜限定詞」標籤（如「4 variants」「限量」）。
    字重降回 regular（比狀態 pill 輕，不搶標題）、與同行文字基線對齊、左側小間距。
    用於清單／細節標題後的次要標記。 */

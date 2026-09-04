@@ -144,8 +144,13 @@
      方形出來。列高不用另外調：__row 的 min-height 116 只是下限，縮圖＋上下
      --sp-20 內距就會把列撐高。
      2026-08-05（D176）：比例由 750/930 改 2/3，縮圖高由 94px 變 114px，
-     列高隨之由 134 變 154。 */
-  width: 76px;
+     列高隨之由 134 變 154。
+     2026-09-04 使用者裁示「這個間距不需要這麼大就縮短」：**寬 76 → 60px**，
+     高隨 2:3 由 114 變 90，列高（縮圖＋上下 --sp-20）由 154 變 130。真正撐高列的是
+     直式海報而不是留白，所以縮的是圖；上下留白維持 --sp-20，與其他清單同一組數字。
+     縮圖欄的欄寬同輪跟著收：原本 84px 的（電子商店／組合／拍賣）收成 68、原本 76px 的
+     （取貨／我的 IP／租借／活動）收成 60——各自維持原來的 gutter，欄寬只是跟著圖變窄。 */
+  width: 60px;
   aspect-ratio: var(--img-portrait);
   overflow: hidden;
   /* ztorUI 換裝（2026-08-28 Wave 2a 熔接自 skin §5）：同 __thumb，改薄膜＋髮絲邊。
@@ -328,7 +333,7 @@
      2026-07-29：名稱與分類之間插入粉絲分級欄（144px）。寬度取自最長的值
      「Superfan or above」——這一欄的值是徽章或短句，不換行才讀得快；名稱欄的
      1.6fr 自動吸收掉這 144px，其餘固定欄不動。 */
-  grid-template-columns: 26px 84px minmax(220px, 1.6fr) 144px 88px 64px 96px 72px 40px;
+  grid-template-columns: 26px 68px minmax(220px, 1.6fr) 144px 88px 64px 96px 72px 40px;
 }
 
 /* 粉絲分級欄在 Phase 1–3 不出現（D187）。格線是固定軌數，只把格子 display:none
@@ -336,7 +341,7 @@
    被藏起來，比在容器上再掛一個 class 少一層需要同步的狀態。 */
 .product-list--eshop:has([data-col="tier"].ztd-ver-hidden) .product-list__head,
 .product-list--eshop:has([data-col="tier"].ztd-ver-hidden) .product-list__row {
-  grid-template-columns: 26px 84px minmax(220px, 1.6fr) 88px 64px 96px 72px 40px;
+  grid-template-columns: 26px 68px minmax(220px, 1.6fr) 88px 64px 96px 72px 40px;
 }
 .product-list--eshop .product-list__price,
 .product-list--eshop .product-list__stock,
@@ -368,11 +373,11 @@
    兩個分頁掃起來是同一條線）。 */
 .product-list--bundles .product-list__head,
 .product-list--bundles .product-list__row {
-  grid-template-columns: 84px minmax(180px, 1.4fr) 144px minmax(150px, 1fr) 88px 112px 100px 40px;
+  grid-template-columns: 68px minmax(180px, 1.4fr) 144px minmax(150px, 1fr) 88px 112px 100px 40px;
 }
 .product-list--bundles:has([data-col="tier"].ztd-ver-hidden) .product-list__head,
 .product-list--bundles:has([data-col="tier"].ztd-ver-hidden) .product-list__row {
-  grid-template-columns: 84px minmax(180px, 1.4fr) minmax(150px, 1fr) 88px 112px 100px 40px;
+  grid-template-columns: 68px minmax(180px, 1.4fr) minmax(150px, 1fr) 88px 112px 100px 40px;
 }
 
 /* ── 粉絲分級門檻欄（2026-07-29 L 裁示：「creator 可以點選哪一級買得到」）─────────
@@ -417,7 +422,7 @@
    單一表格、欄位隨生命週期重解意義（spec §87–91）：Bid＝起標/目前/成交價；Activity＝倒數·關注/出價·人數·剩餘/得標·實收。 */
 .product-list--auctions .product-list__head,
 .product-list--auctions .product-list__row {
-  grid-template-columns: 84px minmax(168px, 1.3fr) minmax(100px, 0.8fr) 92px minmax(104px, 0.6fr) minmax(170px, 1.4fr) 44px;
+  grid-template-columns: 68px minmax(168px, 1.3fr) minmax(100px, 0.8fr) 92px minmax(104px, 0.6fr) minmax(170px, 1.4fr) 44px;
 }
 .product-list--auctions .product-list__activity { font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-comfy); }
 .product-list--auctions .product-list__status { display: flex; flex-wrap: wrap; gap: var(--sp-4); align-content: center; }
@@ -582,17 +587,20 @@
    2026-09-03（D240 一物一碼）：一列＝一個領取單位，欄位由八欄改九欄——「數量」欄退場
    （一列本來就是一件，數字恆為 1），新增「領取碼」與「來源組合」兩欄。買家分組吃共用的
    可展開子列元件 row-disclosure（design-system.md §4.204），本檔只提供欄位版面。 */
+/* 2026-09-04：最前面多一軌＝可展開列的列首欄（母列放 chevron、子列放組內序號、
+   一般列留空；見 ds-components/row-disclosure.css 的 `.rowdis__lead`）。九欄 → 十欄，
+   寬度引用該元件擁有的 `--rowdis-lead-w`，其餘欄一格不動、只順移一軌。 */
 .product-list--roster .product-list__head,
 .product-list--roster .product-list__row {
-  grid-template-columns: minmax(120px, 1fr) 108px minmax(140px, 1.1fr) 64px 112px minmax(96px, 0.8fr) 104px 88px 40px;
+  grid-template-columns: var(--rowdis-lead-w) minmax(120px, 1fr) 108px minmax(140px, 1.1fr) 64px 112px minmax(96px, 0.8fr) 104px 88px 40px;
 }
 @media (max-width: 760px) {
-  .product-list--roster .product-list__row { grid-template-columns: minmax(0, 1fr) auto; }
+  .product-list--roster .product-list__row { grid-template-columns: var(--rowdis-lead-w) minmax(0, 1fr) auto; }
 }
 
 .product-list--pickup .product-list__head,
 .product-list--pickup .product-list__row {
-  grid-template-columns: 76px minmax(180px, 1fr) minmax(160px, 0.9fr) 64px 96px 96px 40px;
+  grid-template-columns: 76px minmax(180px, 1fr) minmax(160px, 0.9fr) 64px 96px 96px 40px;   /* 縮圖欄維持 76：取貨列放的是 __thumb（76px 方形 QR 圖示晶片），不是會縮的 __image */
 }
 /* 整列可點進詳情頁：游標與鍵盤焦點都要讀得出來（列內的連結／按鈕仍各自可點）。 */
 .product-list__row--link { cursor: pointer; }
@@ -632,7 +640,7 @@
   /* 2026-07-25（使用者裁示）：來源改純文字放名稱上方（見 __source），類型徽章（原創／衍生／
      驗證中）獨立成一欄——名稱欄不再需要吸收徽章，收窄回單純文字寬度；新增 Type 欄固定寬度
      （最長字樣「Verifying」）。租出數/收入/操作欄維持窄（文字短）；Mktplace 欄只放切換鈕。 */
-  grid-template-columns: 76px minmax(180px, 1.1fr) 92px minmax(110px, 0.8fr) 60px 80px minmax(96px, 0.5fr) 64px 56px;
+  grid-template-columns: 60px minmax(180px, 1.1fr) 92px minmax(110px, 0.8fr) 60px 80px minmax(96px, 0.5fr) 64px 56px;
 }
 .product-list--ip .product-list__cell { color: var(--foreground); }
 
@@ -693,7 +701,7 @@
 .product-list--rented .product-list__row {
   /* 欄寬總和須 ≤ --ip 變體（同一容器寬）：76+170+84+100+112+112+72+88=814，與 --ip 的
      814 對齊；首版 900px 會把 Action 欄擠出容器（Renew 鈕被裁掉半顆）。 */
-  grid-template-columns: 76px minmax(170px, 1.1fr) 84px minmax(100px, 0.6fr) minmax(112px, 0.6fr) minmax(112px, 0.55fr) minmax(72px, 0.4fr) 88px;
+  grid-template-columns: 60px minmax(170px, 1.1fr) 84px minmax(100px, 0.6fr) minmax(112px, 0.6fr) minmax(112px, 0.55fr) minmax(72px, 0.4fr) 88px;
 }
 .product-list--rented .product-list__cell { color: var(--foreground); }
 
