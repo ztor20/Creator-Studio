@@ -1664,9 +1664,13 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
    捲動時內容會從色帶兩側穿出去。 */
 .pd-detail__topbar,
 .detail-topbar {
-  position: sticky;
-  top: 0;
-  z-index: 30;
+  /* 2026-09-01 使用者裁示重寫黏附行為：靜止態**不黏**，跟著內容被推掉；
+     整個 hero 捲掉之後才切成 fixed 從上緣滑進來（見 js/detail-topbar.js 檔頭）。
+     舊值：position: sticky; top: 0;——那會讓頁首還在畫面上時，上面就壓著一條
+     同樣寫著項目名稱的列。
+     ⚠ sticky 沒辦法「先捲走、之後再回來」：元素捲出上緣後 sticky 就失效，
+     所以黏住態必須是 fixed，不能只調 top。 */
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1710,54 +1714,80 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* 黏住之後才長出材質：玻璃底＋模糊＋一條淡分隔線，與 .app-topbar／.wizard__top 同一套
-   殼層配方。捲動中的內容從它底下糊過去，看得出「有東西被蓋住」而不是「內容穿過一條色帶」。
-   ztorUI 換裝（2026-08-31）舊值：只有 border-bottom: 1px solid var(--border)，底色靠
-   靜止態就存在的不透明 --surface-page 撐。 */
-.pd-detail__topbar.is-stuck::before,
-.detail-topbar.is-stuck::before {
-  background: var(--ztu-glass-bg);
-  backdrop-filter: blur(var(--ztu-blur-glass));
-  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+/* 黏住態（2026-09-01 重寫）：切成 fixed 貼在捲動容器的上緣，並長出殼層的玻璃材質
+   ——玻璃底＋模糊＋一條淡分隔線，與 .app-topbar／.wizard__top 同一套配方。
+   捲動中的內容從它底下糊過去，看得出「有東西被蓋住」而不是「內容穿過一條色帶」。
+
+   左右緣與內距由 js/detail-topbar.js 實測後寫進這四個變數：容器（全頁是 main.main、
+   內嵌是視窗）的左右緣決定這一條有多寬，內距把列內的文字補到 `.page` 的內容框，
+   精簡列的名稱才與底下的內容切齊。寫死不行——全頁模式左邊有側欄，內嵌模式沒有。 */
+.pd-detail__topbar.is-stuck,
+.detail-topbar.is-stuck {
+  position: fixed;
+  top: 0;
+  left: var(--detail-bar-l, 0px);
+  /* 用寬度不用 right（2026-09-01 實測修正）：`right` 得靠 `innerWidth − 容器右緣` 反推，
+     而 innerWidth 含捲軸、內嵌模式下量到的值會跟畫面差一個捲軸寬，右邊因此漏一條縫。
+     直接給寬度就沒有這個中間變數。 */
+  width: var(--detail-bar-w, auto);
+  z-index: 30;
+  margin-bottom: 0;
+  padding-left: var(--detail-bar-pl, 0px);
+  padding-right: var(--detail-bar-pr, 0px);
+  /* 材質（2026-09-01 多次來回後改成可調參數，見 docs/detail-topbar-tuner.html）。
+
+     底色預設回到殼層的 `--ztu-glass-bg`（5% 白薄膜）：中間一版改成 `--surface-shell` 72%
+     想壓掉泛白，使用者回「現在變黑了，可以讓顏色看起來和背景很像嗎」——在 detail-sheet
+     浮層裡那條深帶疊在面板自己的暖色玻璃上會變成一塊黑，而**面板的底就是 5% 白**。
+
+     ⚠ **浮層裡的 backdrop-filter 不能當成一定會生效**：`.detail-sheet__panel` 自己帶著
+     `blur(50px)`，巢狀的 backdrop-filter 跨 iframe 邊界在部分瀏覽器直接失效（使用者環境
+     實測沒有糊；本專案的內嵌瀏覽器實測有糊——所以這是環境差異，不是宣告寫錯）。
+     沒有糊的時候，5% 白薄膜擋不住底下的東西，內容會清楚地從它底下穿過去。
+     `--detail-bar-scrim-*` 就是給那個情況的替代方案：列的下緣加一段漸層淡出，
+     讓內容「淡掉」而不是「被切斷」，不依賴 backdrop-filter。預設高度 0＝不啟用。
+
+     四個變數都可以在 `docs/detail-topbar-tuner.html` 裡調，那頁會把定案值印成可貼的 CSS。 */
+  background: var(--detail-bar-bg, var(--ztu-glass-bg));
+  backdrop-filter: blur(var(--detail-bar-blur, var(--ztu-blur-glass)));
+  -webkit-backdrop-filter: blur(var(--detail-bar-blur, var(--ztu-blur-glass)));
   border-bottom: 1px solid var(--border-soft);
+  animation: detail-topbar-in 180ms ease-out;
 }
-.pd-detail__topbar::before,
-.detail-topbar::before {
+/* 下緣的漸層淡出（預設關閉：高度 0）。不用 backdrop-filter，所以它在浮層裡一定會生效。 */
+.pd-detail__topbar.is-stuck::after,
+.detail-topbar.is-stuck::after {
   content: "";
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: calc(var(--sp-28) * -1);
-  right: calc(var(--sp-28) * -1);
-  /* 舊值 background: inherit（跟著上面那條不透明底色走）。 */
-  background: transparent;
-  /* z-index 由 -1 改 0（2026-08-31，使用者：「而且要毛玻璃」）：負 z-index 的色帶
-     被畫在元素自己的背景與內容之間，實測 backdrop-filter 取樣不到從它底下捲過去的頁面
-     ——宣告讀得到 blur(24px)，畫面上卻是清的。改成一般的 0 層，並把列內的內容抬到 1，
-     色帶就成為正常的「疊在頁面之上」的一層，糊得到底下的東西。 */
-  z-index: 0;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: var(--detail-bar-scrim-h, 0px);
+  background: linear-gradient(to bottom,
+    var(--detail-bar-scrim-c, var(--surface-page)), transparent);
+  pointer-events: none;
 }
-/* 內容抬到色帶之上（配合上一條把色帶由 -1 改 0）。 */
+/* 從上緣滑進來：它是「捲到這裡才出現」的東西，直接閃現會像畫面破圖。 */
+@keyframes detail-topbar-in {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pd-detail__topbar.is-stuck,
+  .detail-topbar.is-stuck { animation: none; }
+}
+/* 佔位塊：頂列切成 fixed 之後離開文件流，底下的內容會往上跳一整列的高度。
+   由 js/detail-topbar.js 在黏住時撐成原本那一列的高度。 */
+.detail-topbar-spacer { height: 0; }
+/* 2026-09-01 撤除（墓碑）：`.pd-detail__topbar::before` 那條溢出到左右的色帶，
+   連同它在內嵌模式的 `calc(50% - 50vw)` 覆寫與 theme.js 量出來的 `--sb-w`。
+   它存在的理由是「這一列在 .page 的內距與 max-width 裡面，底色只鋪到內容寬」；
+   黏住態改成 fixed 之後，這一列本身就橫跨整個捲動容器，材質直接畫在元素上，
+   不需要再有一條替身。 */
+/* 內容仍抬一層：黏住態的玻璃畫在元素自己的背景上，列內的東西要在它之上。 */
 .pd-detail__topbar > *,
 .detail-topbar > * { position: relative; z-index: 1; }
 
-/* 內嵌（detail-sheet 浮層）裡色帶左右各短一截（2026-08-31 使用者：「這一條要延伸至左右，
-   現在左右被切掉了」）。成因不是 -28px 給錯：`.page` 是 `max-width: 1280px; margin: 0 auto`，
-   浮層的面板比 1280＋內距寬，於是兩側各長出一段 auto margin。固定的 -28px 只蓋得到內距，
-   蓋不到那段 margin。改成從視窗寬度反推——`.page` 在 iframe 視窗裡是置中的，
-   `50% - 50vw` 正好把色帶推到視窗兩邊。
-   全頁模式維持 -28px：那裡 `.main` 通常窄於 1280＋內距、沒有 auto margin，而且視窗寬度
-   還含側欄，用 vw 反而會把色帶推到側欄底下。 */
-html[data-embed] .pd-detail__topbar::before,
-html[data-embed] .detail-topbar::before {
-  left: calc(50% - 50vw);
-  right: calc(50% - 50vw);
-}
-/* 100vw 含捲軸寬，會比可視區多出幾 px。用 clip 裁掉（不是 hidden——hidden 會讓元素
-   變成捲動容器，頂列的 sticky 就跟著失效）。
-   掛在 <html> 不掛 <body>：body 的 overflow 在 html 是 visible 時會被「傳播」到視窗、
-   body 自己反而算成 visible，寫在 body 上等於沒寫。 */
-html[data-embed] { overflow-x: clip; }
 /* 這條麵包屑與頁面動作同一列（.pd-detail__topbar），列本身已經有下方間距，
    所以取消 .page-crumb 的 margin-bottom；顏色／字級照收。 */
 .pd-detail__breadcrumb,
@@ -1939,10 +1969,13 @@ html[data-embed] { overflow-x: clip; }
 .pd-deep [aria-expanded="true"] .ztor-icon { transform: rotate(180deg); }
 /* 小計列右側：金額＋展開鈕同一組 */
 .pd-deep__amount-group { display: flex; align-items: center; gap: var(--sp-8); }
-/* 展開鈕佔的欄寬（.btn--icon.btn--sm 32px ＋ 與金額的 gap）——沒有展開鈕的列補等寬右內距，
-   讓「明細子列」與「淨收益」的金額和小計列金額共用同一條右基準線。 */
-.pd-deep { --pd-deep-toggle-col: calc(32px + var(--sp-8)); --data-list-child-indent: 44px; }
-.pd-deep .data-list__row--child,
+/* 小計列展開吃共用元件 row-disclosure（§4.204，2026-09-04 改 L3 整組換層後零縮排——
+   這一區曾覆寫元件的縮排刻度變數對齊 44px 文字起點，隨縮排模型整組退場一併移除，
+   見 ds-components/row-disclosure.css 檔頭墓碑段）。這裡只留右側欄寬：展開鈕佔位
+   （.btn--icon.btn--sm 32px ＋與金額的 gap），沒有展開鈕的列補等寬右內距，讓
+   「明細子列」與「淨收益」的金額和小計列金額共用同一條右基準線。 */
+.pd-deep { --pd-deep-toggle-col: calc(32px + var(--sp-8)); }
+.pd-deep .rowdis__child,
 .pd-deep .data-list__row:last-child { padding-inline-end: var(--pd-deep-toggle-col); }
 
 /* ---------- Footer bar ---------- */

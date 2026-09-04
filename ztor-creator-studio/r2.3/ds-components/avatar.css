@@ -1,0 +1,60 @@
+/* ============================================================
+   Avatar · 人的識別圓（姓名首字，2026-09-02 promote）
+
+   一顆圓、裡面一個字：這個人是誰。沒有真實頭像檔的原型階段，首字就是識別。
+
+   為什麼現在才 promote：同一個做法此前被複製過三次——`creators.html` 的
+   `.creator-ava`（40px）與 `.creator-ava--lg`（64px）、`creator-detail.html` 的
+   `.cd-ava`（64px），三份的底色配方一字不差
+   （`color-mix(in srgb, var(--primary) 16%, var(--muted))`），差別只有尺寸。
+   創作者活動管理頁（`admin-creator-events.html`）是第四次要用，照鐵律「第一次出現就 promote、
+   不等三次法則」補建，同輪把前兩頁一併換過來，站上只剩這一份。
+
+   與 `.admin-table__avatar`（28px，admin 表格列內）的分工：那一支是表格列裡的
+   袖珍版、吃 `--accent` 中性底，屬 admin 表格元件自己的一部分；本支是通用的、
+   吃品牌 tint，用在名冊列、詳情頁頁首與任何「這是誰」的位置。兩者尺寸與底色都
+   不同，不是同一個視覺角色。
+
+   anatomy
+     .ztor-avatar          預設 40px（名冊列、主從版面的左欄列）
+     .ztor-avatar--sm      32px（密度優先的小卡）
+     .ztor-avatar--lg      64px（詳情頁頁首、建檔表單）
+
+   surface 層：坐在 `--card` 玻璃卡、`--background` 畫布與 `--muted` 上都成立——
+   底是品牌 tint 混 `--muted`，與三層都有色相差；不需要邊框。
+
+   全值引用 _tokens.css。
+   ============================================================ */
+.ztor-avatar {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--primary) 16%, var(--muted));
+  color: var(--foreground);
+  font-family: var(--font-ui);
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-14);
+  line-height: var(--lh-none);
+  user-select: none;
+}
+
+/* --lg：詳情頁頁首與建檔表單。字級跟著放大，否則 64px 的圓裡浮著一個 14px 的字，
+   讀起來是「圓沒填滿」而不是「這是頭像」。 */
+.ztor-avatar--lg {
+  width: 64px;
+  height: 64px;
+  font-size: var(--fs-22);
+}
+
+/* --sm：密度優先的小卡（2026-09-02）。首個消費情境＝roster-picker 的 creator 卡，
+   同日第三輪把整張卡壓成「一列身分 ＋ 一列小標籤」的兩列量體；40px 的圓在那個
+   高度裡會變成卡上最大的東西，識別圓喧賓奪主。字級跟著退一階，維持「圓被字填滿」
+   的比例（與 --lg 同一條理由，方向相反）。 */
+.ztor-avatar--sm {
+  width: 32px;
+  height: 32px;
+  font-size: var(--fs-13);
+}

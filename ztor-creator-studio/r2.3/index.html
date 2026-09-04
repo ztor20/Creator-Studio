@@ -24,7 +24,6 @@
 <link rel="stylesheet" href="ds-components/header.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <!-- F6 Ongoing 分頁的項目／活動卡（2026-08-28 取代該處的表格） -->
-<link rel="stylesheet" href="ds-components/work-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/perf-rank.css?v=r2.2">
 <!-- ztor 粉絲組成卡（2026-08-06 自粉絲分析搬來）：圓餅與圖例在 chart.css，
      卡頭那顆口徑膠囊在 chip.css。 -->
@@ -38,513 +37,372 @@
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/detail-sheet.css?v=r2.2">
-<style>
-
-
-  /* 2026-08-28 撤除（墓碑）：`.alerts-strip*` 那組頁內樣式（告警通知條，2026-08-19 第六版，
-     Wise 式的無狀態符號版型＋貼邊滿版勾勾）。同一份 dash-alerts 此前有三個出口——
-     通知條、「待處理事項」彈窗、「查看全部」彈窗——使用者裁決併成一個頁內分組面板
-     （`ds-components/issue-panel.css`）。通知條與兩個彈窗同日移除，樣式無消費端故一併清掉。
-     要「一句話摘要最急的一筆」的場合請改用 `.alert--banner` 本體，不要復活這組。 */
-
-  /* 卡底按鈕一律沉到卡底（2026-08-19 使用者裁決）：卡片在 bento 裡等高，
-     內容較短的那張若讓按鈕跟著內容走，就會浮在半空、下面留一塊空白。
-     .card 原本不是 flex，所以只對「有卡底按鈕」的卡開 flex column。 */
-  .page .card:has(> .btn--block) { display: flex; flex-direction: column; }
-  .page .card > .btn--block { margin-top: auto; }
-
-  /* 站上粉絲卡：頂部兩個大數字並排（總數｜Inner Circle），下方圓餅 */
-  /* ── KPI 變體（2026-08-19 使用者裁決；採用後需 promote 進 ds-components/kpi.css）──
-     總收入卡不再是實色橘 hero：底色回到一般卡，只把數字染橘。墨色一律走 --brand-ink，
-     不得用 var(--primary)——後者在亮色底只有 1.92:1（STYLE-DECISIONS Q8）。 */
-  .kpi--accent .kpi__value { color: var(--brand-ink); }
-  /* 註腳一律沉到卡底（2026-08-19 使用者裁決）：四塊卡在 bento 裡等高，但各自的
-     內容量不同（總收入多一顆 delta 膠囊），註腳跟著內容走就會四條高低不一。
-     margin-top:auto 把它推到底，四張卡的註腳落在同一條線上。
-     只作用於儀表板這一排，不動全站 .kpi——其他頁的 KPI 常常包在卡片裡、
-     旁邊還有別的內容，沉底在那裡不一定成立。 */
-  /* 2026-08-28：帶走勢圖的卡改由 .sparkline 當貼底錨點（kpi.css 裡它是 margin-top:auto），
-     所以註腳只在「沒有走勢圖」的卡上沉底——兩個 auto 併存會把剩餘空間對半分，註腳反而浮到中間。 */
-  [data-key="dash-ops-4up"] .kpi:not(:has(.sparkline)) .kpi__meta { margin-top: auto; }
-  /* 帶右上去處連結的卡要有定位基準（連結是絕對定位的）。
-     2026-08-19：delta 曾試過與數字同一行，使用者裁決改回數字下方——
-     `.kpi--inline-delta` 連同渲染器的 inlineDelta 選項一併撤除，不留死碼。 */
-  .kpi:has(.kpi__toplink) { position: relative; }
-  /* 右上角的去處：畫面上只有一顆箭頭，尺寸與顏色跟其他三塊 KPI 的 .kpi__chevron 對齊
-     （中性 --muted-foreground，不用橘——橘留給主操作）。連結名稱由內層的
-     .u-visually-hidden 承擔，看不到但讀屏唸得到。 */
-  .kpi__toplink {
-    position: absolute; top: var(--sp-16); right: var(--sp-18);
-    display: inline-flex; align-items: center;
-    color: var(--muted-foreground); text-decoration: none;
-  }
-  .kpi__toplink:hover { color: var(--foreground); }
-  .kpi__toplink-chev { width: 16px; height: 16px; flex: none; }
-  /* 標籤要讓出右上連結的位置，否則兩段文字會疊在一起（實測 269px 卡寬時重疊）。
-     用 padding-right 而非縮短 flex basis：標籤仍佔滿一行、下面的數字才不會被推上來。 */
-  .kpi:has(.kpi__toplink) .kpi__label { padding-right: calc(var(--sp-18) + 16px); }
-
-  /* 卡頭裝了膠囊切換器時改中線對齊：.card__head 預設 align-items: baseline，
-     那是為「標題 vs 文字連結」定的，膠囊有內距、基線會浮在奇怪的位置。 */
-  .card__head:has(.filter-tabs) { align-items: center; }
-
-  /* 粉絲明細住在彈出層裡（620px），沒有卡片版面那樣的寬度：兩欄各只剩 282px，
-     圓餅圖例會擠成一字一行、風險提醒的標題直排。彈出層內一律收單欄。 */
-  .payout-modal .fans-split > * { grid-column: span 12; }
-  .payout-modal .fans-nums { gap: var(--sp-24); }
-
-  .fans-nums { display: flex; gap: var(--sp-32); margin-bottom: var(--sp-16); }
-  /* 滿寬粉絲卡的卡內兩欄：左圓餅、右數字與風險 */
-  .fans-split { align-items: start; }
-  .fans-nums .kpi__value { margin-top: var(--sp-2); }
-
-
-  /* 流失風險 toast 以 <a> 承載整條可點；CTA 不折行（窄欄裡會被擠成直排） */
-  .risk-toast { text-decoration: none; }
-  .risk-toast .alert__cta { white-space: nowrap; }
-</style>
+<!-- 展示版三支（2026-08-31）：版型層、大畫布、左欄第一格的輪播 -->
+<link rel="stylesheet" href="ds-components/live-item.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/canvas-home.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/canvas-stage.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/split-bar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/donut-mix.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tier-arc.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi-rotator.css?v=r2.2">
 </head>
-<body data-sheet-nav>
+
+<body class="canvas-home-shell" data-sheet-nav>
 <div class="app">
 
   <header class="app-topbar" id="sidebar"></header>
 
   <main class="main">
-
-    <!-- [local-edit] Hero banner carousel removed per L's request (2026-07-27).
-         Upstream section (spec 5.1.1 §1, id="hero") lived here — full-bleed
-         4-slide carousel (Create Project / video / IP Market / Create Event).
-         Left out of this local clone only; js/hero.js is a no-op without
-         #hero in the DOM, so no script changes needed. -->
-
     <div class="page">
 
-      <div class="page-crumb">
-        <span data-i18n="nav.dashboard-old">Dashboard (old)</span>
-      </div>
-
-      <div class="page-intro">
-        <div>
-          <!-- 標題帶藝人名（2026-08-19 使用者裁決）：英文 "Nick Chou’s Studio"／中文「周湯豪的工作站」。
-               名字跟著 persona 走（js/projects-store.js 的 displayName()）——換 persona 時整份假資料
-               會跟著換，寫死名字會立刻穿幫。因此不掛 data-i18n（那給的是固定字串），改由頁尾腳本
-               與問候語一起產生，換語言與換 persona 都會重寫。 -->
-          <h1 class="page-intro__title" data-studio-title>Studio</h1>
-          <p class="page-intro__sub" data-i18n="dash.sub">What came in, what needs you, and where your work is playing right now.</p>
-        </div>
-        <div class="page-intro__actions"><p class="greeting" data-greeting></p></div>
-      </div>
-
-      <!-- F2 · 營運摘要（spec 5.1.1 §F2）· 四塊一排（2026-08-19 使用者裁決）。
-           第四塊「ztor 粉絲組成」＝ F9，點開才看圓餅與分級明細（彈出層在頁尾）。
-           總收入卡不再是實色橘 hero：底色回到一般卡、只把數字染 --brand-ink
-           （橘當字時不得用 var(--primary)，亮色底只有 1.92:1，STYLE-DECISIONS Q8）；
-           「較上週」膠囊與數字同一行、「查看 Earnings ›」在右上、「2 小時前更新」是註腳不是連結。
-           總收入引用 Earnings F3（gross），不在本頁重算；淨利／待結算／可提領只在 Earnings。 -->
-      <!-- 2026-08-28 使用者裁決的三欄版面（同日自兩欄再擴一欄）：
-           左欄三張數字卡直堆（span-4）｜中欄待處理面板（span-5）｜右欄近期收入（span-3）。
-           左欄用 .bento__stack（既有 helper，專為「一個 grid 欄位裡直向疊多張卡」而生），
-           所以三張卡是 flex 子層、不再各自吃 --span-N；--fill 讓最矮的那張（進行中項目，沒有圖表）
-           吃掉剩餘高度。中欄與右欄各是單一 .card，grid 預設 stretch 就會拉到同高，
-           不必再加 --fill，三欄自然齊底。
-           **為什麼是 4／5／3**：實測 1440 視窗內容寬 1082px、1280 視窗 922px（左側欄固定 248px）。
-             · 左欄 4 欄＝350／297px：KPI 的走勢圖畫布還有 228px，橫軸四段刻度不重疊；再瘦一階
-               （span-3＝219px）畫布只剩 150px，圖會擠。
-             · 中欄 5 欄＝442／375px：分組列（模組名＋筆數）兩個寬度都不擠壓；1280 時最長的一則
-               事項標題（提款已暫停 — 需補稅務表單）會走元件本來就有的 ellipsis，展開即見全文。
-             · 右欄 3 欄＝259／219px：逐筆框的金額（最長 +US$2,400.00）單行放得下、不換行。
-           待處理的「計數卡」已於同日撤除：中欄面板自己就帶總筆數與逐組筆數。 -->
-      <div class="bento dash-data-only mb-16">
-        <div class="bento__stack bento__stack--fill bento--span-3" data-component="ops-summary" data-key="dash-ops-4up"></div>
-      <!-- F4 · 今日待處理（spec 5.1.1 §F4）· 分組展開面板（2026-08-28 使用者裁決）。
-           取代 2026-08-19 的通知條與它帶出的兩個彈窗（ops-pending／todo-all）——那三者
-           顯示的是同一份 dash-alerts，讀者卻要開兩層窗才知道總共幾件、分別屬於哪個模組。
-           面板把三件事攤在同一個平面：分組回答「哪個模組」、組上的筆數回答「有幾件」、
-           逐項展開回答「牽涉到什麼、下一步是什麼」。規格 §F4 要的「可看全部＋依來源模組
-           分辨」因此在頁內成立，不再依賴彈出層。
-           表面律（Q77）：事項卡的面一律中性，嚴重度只上計數徽章。
-           id 是 F2「待處理事項」KPI 卡的落點（那顆卡點了捲到這裡並把焦點交給它）。 -->
-      <section class="card issue-panel bento--span-5" id="issue-panel" tabindex="-1"
-               data-component="issue-panel" data-key="dash-alerts"></section>
-
-      <!-- F3 · spec 5.1.1 §F3 — 只列已結算收入、無狀態欄（狀態恆為 settled）。
-           每一筆：名稱 · 金額 · 來源與時間。資料引用 Earnings，不在本頁重算。
-           2026-08-28 使用者裁示自頁面下半搬到第一屏第三欄（整張搬移、不是複製），
-           同輪由表格改成逐筆成框（.earnings-feed），並每 10 秒輪替一次既有的 8 筆——
-           模擬「收入持續進來」的即時感，站上沒有即時推播、也沒有新交易產生
-           （ASSUMPTIONS FEED-001）。輪替與計時器在 js/components.js 檔尾。
-           空狀態不放在這張卡裡：整列掛 .dash-data-only，空資料時整列不存在，
-           卡內的空狀態永遠輪不到；改與 F2／F4 一樣做成下方的獨立 .dash-empty-only 區塊。 -->
-      <!-- 卡框（2026-08-28 使用者兩次裁示的最終版）：一度拿掉外框、讓逐筆的框直接坐在畫布上，
-           後改回加上外框——三欄裡另外兩欄都是卡，只有這一欄沒有邊界時，它會讀成「掉在版面上」
-           而不是「與另外兩欄並列的一區」。
-           **連帶必須把逐筆的框退回巢狀薄膜**（見 earnings-feed.css）：外框回來之後它們又是卡中卡，
-           維持玻璃就是玻璃疊玻璃。
-           標題列沿用 .card__head（與隔壁 .issue-panel 同為 --fs-18），右側「查看全部」留在原地——
-           它比舊版卡底那顆整寬按鈕省一整行，而且與標題同一列時，讀者一眼就知道這一區通往哪裡。 -->
-      <section class="card earnings-col bento--span-4">
-        <div class="card__head">
-          <div class="card__title-group">
-            <h3 class="card__title" data-i18n="section.recent-earnings">Recent earnings</h3>
+      <!-- 第一屏（2026-08-31 使用者裁示「往下滑，內容要換」）：頂列＋大畫布固定佔滿
+           一個視窗高度，往下才是換過內容的第二段。包一層 `.canvas-hero` 而不是讓
+           `.page` 自己撐高——`.page` 現在要能往下長，一屏那件事得由自己的容器負責。 -->
+      <div class="canvas-hero">
+      <!-- 頂列與右緣的作品切換器包在同一層（2026-08-31 使用者裁示「他們應該同步往上
+           滑不見」）：sticky 的元素是被自己容器的下緣推走的，時機取決於元素自己的
+           高度——切換器 250px、頂列 46px，各自 sticky 一定不同步（實測捲到 860 時
+           頂列還在 4、切換器已到 -139）。包成同一塊 sticky 之後整塊一起走。
+           外面那層 `__stick` 決定它們什麼時候被推走（高度由 JS 算，見頁尾腳本）：
+           使用者裁示「下一段一出現，這兩個就跟著往上滑掉」，而 sticky 的容器如果是
+           整個第一屏，它們會一直釘到第一屏的最後一百多像素才走——那時第二段已經
+           佔掉半個畫面了。 -->
+      <div class="canvas-hero__stick" data-hero-stick>
+      <div class="canvas-hero__chrome">
+        <div class="canvas-home__bar">
+          <div class="canvas-home__lead">
+            <h1 class="canvas-home__title" id="canvas-greeting">Home</h1>
+            <!-- 副標與正式儀表板同一句（`dash.sub`，2026-08-31 使用者裁示「加到問候
+                 底下」）：兩頁講的是同一件事，這一句不另寫一份。 -->
+            <p class="canvas-home__sub" data-i18n="dash.sub">The money coming in, what needs you, and where your work is being heard and seen.</p>
           </div>
-          <a class="card__link earnings-col__more" href="earnings.html">
-            <span data-i18n="btn.view-all">View all</span>
-            <i data-lucide="chevron-right" class="ztor-icon" aria-hidden="true"></i>
-          </a>
+          <div class="canvas-home__meta">
+            <span class="canvas-home__date" id="canvas-date"></span>
+            <span class="canvas-home__sep" aria-hidden="true"></span>
+            <span class="canvas-home__clock" id="canvas-clock">--:--</span>
+          </div>
         </div>
-        <div data-component="earnings-feed" data-key="dash-recent-feed"></div>
-      </section>
+        <!-- 作品切換器：獨立的渲染器，位置由 CSS 掛在頂列底下、貼右緣。 -->
+        <div class="canvas-hero__picks dash-data-only" data-component="canvas-picks"></div>
       </div>
-      <div class="dash-empty-only mb-16">
-        <section class="card"><div class="empty-card">
-          <span class="empty-card__icon"><i data-lucide="trending-up" class="ztor-icon"></i></span>
-          <h3 class="empty-card__title" data-i18n="dash.empty.ops.title">No activity yet</h3>
-          <p class="empty-card__text" data-i18n="dash.empty.ops.text">Your revenue, to-dos and projects show up here once you start creating.</p>
-          <a class="btn btn--primary empty-card__cta" href="create-project.html" data-i18n="dash.empty.ops.cta">Create project</a>
-        </div></section>
-      </div>
+      </div><!-- /.canvas-hero__stick -->
 
-      <div class="dash-empty-only mb-16">
-        <section class="card"><div class="empty-card">
-          <span class="empty-card__icon empty-card__icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></span>
-          <h3 class="empty-card__title" data-i18n="dash.empty.alerts.title">You're all caught up</h3>
-          <p class="empty-card__text" data-i18n="dash.empty.alerts.text">Alerts and to-dos from across your studio appear here.</p>
-        </div></section>
-      </div>
+      <!-- 舞台鋪滿整個內容區、壓在最底；左欄的字直接浮在它上面（不畫卡框），
+           與參考版型一樣——那張圖不是一個區塊，它是整個畫面的地。 -->
+      <div class="canvas-home">
+        <div class="canvas-home__stage" data-component="canvas-stage"></div>
 
-      <!-- F3 的空狀態（2026-08-28 自「近期收入」卡內搬出來）：那張卡搬進第一屏之後
-           住在 .dash-data-only 的那一列裡，空資料時整列不顯示、卡內的空狀態永遠輪不到。
-           改成與 F2／F4 同一個做法——空狀態各自成為獨立的 .dash-empty-only 區塊。 -->
-      <div class="dash-empty-only">
-        <section class="card"><div class="empty-card">
-          <span class="empty-card__icon empty-card__icon--primary"><i data-lucide="tag" class="ztor-icon"></i></span>
-          <h3 class="empty-card__title" data-i18n="dash.empty.earnings.title">No earnings yet</h3>
-          <p class="empty-card__text" data-i18n="dash.empty.earnings.text">Income from sales, events and royalties will show up here.</p>
-        </div></section>
-      </div>
+        <!-- 第二屏的地：正中央那一件的海報，糊掉（2026-08-31 使用者裁示「選到那個
+             活動就拿那個活動的海報當背景，是整個畫面最後面的背景」）。放在這裡而不是
+             第二屏裡面：第二屏那一層有自己的 z-index，畫在裡面會蓋掉側欄；擺在第一屏
+             的底圖旁邊，它與底圖同屬最外層的堆疊，剛好壓在所有內容的後面。
+             圖由 components.js 的輪播控制換，亮暗由頁尾的捲動監聽切換。 -->
+        <div class="live-bg" data-live-bg aria-hidden="true"></div>
 
-      <!-- F6 近期活動與進行中項目 ｜ F3 近期收入 ═══════════════════════════
-           F5 近期動態收成 F6 卡內第二個分頁：同一批「已發生／進行中」的事，
-           拆成兩張各半的卡會讓人左右來回讀同一批東西。
-           卡片骨架規則（2026-08-19 使用者裁決，全頁一致）：
-             · 切換器放卡頭右側（.card__head 本來就是 space-between）
-             · 去處連結放卡底、做成整寬按鈕；卡頭只留標題
-             · 卡頭不放裝飾圖示 -->
-      <!-- F6 精選卡片列（2026-08-28 使用者裁決）：下方表格保留、兩者並存。
-           分工——卡片列是「一眼認出是哪幾件」，靠 16:9 真實封面做辨識（表格只塞得下 40px 縮圖）；
-           下方表格是「一次掃完全部」，靠對齊的欄位做比較。同一份 dash-events 前 3 筆與全部，
-           刻意不同呈現、不同用途。 -->
-      <div class="dash-data-only mb-16">
-        <!-- 磚列自己的分頁（2026-08-28）。鉤子刻意與下方 F6 卡片的 [data-dash-tabs] 分開：
-             兩組都是 .filter-tabs__item，共用同一個屬性鉤子的話點這裡會連帶切下面那張卡。
-             i18n key 自成一組（rail.tab.*）：F6 表格已於同日移除，不再有「兩處共用」的對象。 -->
-        <!-- 標題本身就是切換（2026-08-28 使用者裁示）：原本是「作品」標題＋右側一組膠囊分頁，
-             兩者其實在講同一件事——這一區現在顯示的是哪一批作品。做成標題級的兩個詞之後，
-             區塊名稱與篩選合而為一，少一個元件、也少一次視線往返。
-             未選中的那個維持可讀（不是灰到看不見）——它是入口不是註腳，看不見就沒人會點。 -->
-        <div class="section-head work-rail__head">
-          <nav class="work-rail__tabs" role="tablist" data-rail-tabs>
-            <button class="work-rail__tab work-rail__tab--active" type="button" role="tab" aria-selected="true" data-rail-tab="ongoing" data-i18n="rail.tab.active">Active</button>
-            <button class="work-rail__tab" type="button" role="tab" aria-selected="false" data-rail-tab="recent" data-i18n="rail.tab.recent">Recent</button>
-          </nav>
-          <!-- 右側「更多」（2026-08-28 使用者裁示，取代原本擺在這裡的膠囊分頁）：
-               分頁已經升格成標題，這個位置空出來就給出口。磚列只露 12 筆、
-               store 裡有 27 筆，而下方 F6 表格看的是另一份 6 筆的資料——
-               所以這個出口不是重複，它是這一區唯一通往完整項目清單的路。 -->
-          <a class="card__link work-rail__more" href="projects.html">
-            <span data-i18n="rail.more">More</span>
-            <i data-lucide="chevron-right" class="ztor-icon" aria-hidden="true"></i>
-          </a>
+        <!-- 左欄三格，浮在圖上 -->
+        <div class="canvas-home__rail dash-data-only">
+          <!-- 1 收入與粉絲組成，8 秒輪流 -->
+          <div data-component="kpi-rotator" data-key="canvas-kpi-rotator"></div>
+
+          <!-- 2026-08-31 撤除（墓碑）：「上線進行中」那一格（`work-rows` ＋ `canvas-works`）。
+               使用者重新定義第一屏要回答的三件事——錢與粉絲的狀況、必須做的待辦、
+               接下來要進行哪些項目——而第三件已經由右緣的切換器承擔（它同時是底圖的
+               來源），這一格留著就是同一件事在同一屏講兩次。正在跑的那幾件在第二屏。
+               渲染器與 `.work-row` 的樣式都留著沒刪：那是「一列一件」的通用寫法，
+               別的頁面要用時不必重寫。 -->
+
+          <!-- 3 待處理事項，預設三則 -->
+          <section class="issue-panel issue-panel--compact" id="issue-panel" tabindex="-1"
+                   data-component="issue-panel" data-key="canvas-issues"></section>
         </div>
-        <div data-component="work-cards" data-key="dash-events-cards"></div>
-      </div>
-      <!-- 2026-08-28（同日第三次，墓碑）：「近期動態」卡（§F5，activity-list ＋ dash-activity）
-           已整個併進上方磚列的「近期」分頁——同一則事件與同一件作品的磚本來就講同一件事
-           （「帥到分手 MV 上線」＝那支 MV 狀態為已上線），合併後左分頁＝我在做什麼、
-           右分頁＝剛剛發生了什麼，敘事乾淨一階。五個規格欄位逐項落在磚上：
-           事件類型與來源在眉標兩端、名稱獨佔一行、狀態與時間在狀態列兩端。
-           這一列因此整列移除（它只有這一張卡）。渲染器 activity-list 與資料集 dash-activity
-           都保留：docs/ 的五份儀表板探索稿仍在消費，且磚列的「近期」分頁正是讀 dash-activity。
-           同輪撤除的還有這張卡的空狀態區塊與 dash.activity.title／dash.empty.activity.* 字串。
-           更早的墓碑（2026-08-28 同日）：本來並排在這裡的「近期收入」卡已搬到第一屏第三欄。 -->
 
-      <!-- 平台表現 · 跨所有已上線項目（2026-07-28 使用者裁示）。資料與 project-detail ›
-           Performance 分頁同源（js/performance-store.js），兩邊不會對不上。 -->
-      <!-- 區塊標題（2026-08-28 使用者裁示）：這一區是三張卡（表現最佳作品／平台觸及／受眾在哪）
-           的集合，先前只有各卡自己的標題、沒有一個名字把它們收成一區。補上頁面級的
-           .section-head 之後，與上方的磚列、收入欄同一套標題語彙，三區在頁面上就對得起來。
-           這裡不放分頁也不放出口：三張卡各自已有自己的入口，區標只負責命名。
-           不掛 mt-24：讓 .section-head 自帶的 36px 上外距生效，與磚列那個區標同一個節奏——
-           兩個都是頁面級分節標題，間距不一致會讓人以為它們是不同層級的東西。 -->
-      <div class="section-head perf-section__head">
-        <h2 class="section-head__title" data-i18n="dash.perf.title">Performance</h2>
-      </div>
-      <div class="bento dash-data-only" data-perf="dash"></div>
-      <div class="dash-empty-only mt-24">
-        <section class="card"><div class="empty-card">
-          <span class="empty-card__icon empty-card__icon--accent"><i data-lucide="bar-chart-3" class="ztor-icon"></i></span>
-          <h3 class="empty-card__title" data-i18n="dash.perf.empty.title">No platform data yet</h3>
-          <p class="empty-card__text" data-i18n="dash.perf.empty.text">Once a project is live, views and streams from each distribution platform show up here.</p>
-        </div></section>
+        <!-- 全新帳號的引導畫面（2026-09-01 使用者裁示重做；cheat code › 情境 ›
+             DATA STATE › Empty）。**它不是「儀表板的空版本」，是一個引導畫面**——
+             前一版把整頁縮成一句話加一顆按鈕，等於告訴第一次進站的人「這裡沒你的事」。
+             **也刻意不做「零值儀表板」**：對什麼都還沒開始的人顯示 $0、0 位粉絲，
+             讀起來是「你不及格」而不是「來開始吧」。零值是「有資料但很少」那一組狀態
+             的語言（見 canvas-home.css 的降級規則），不是這一個狀態的。
+             頂列（問候／日期／時間）留著——這仍然是他的工作台；底下整個畫布換成
+             一句主張與三個起點，三個目的地站上都真的存在。
+             一屏、不捲：下面兩屏與「往下看更多」都掛 `.dash-data-only`，這一頁本來的
+             承諾就是一屏看完。 -->
+        <div class="canvas-start dash-empty-only">
+          <h2 class="canvas-start__title" data-i18n="canvas.start.title">Nothing here yet — pick somewhere to start</h2>
+          <p class="canvas-start__text" data-i18n="canvas.start.text">Whatever you make first, this page fills in around it: the money, the people, and what needs you next.</p>
+          <div class="canvas-start__grid">
+            <a class="canvas-start__card" href="create-project.html">
+              <span class="canvas-start__icon"><i data-lucide="rocket" class="ztor-icon" aria-hidden="true"></i></span>
+              <span class="canvas-start__name" data-i18n="canvas.start.project">New project</span>
+              <span class="canvas-start__sub" data-i18n="canvas.start.project-sub">Crowdfunding, pre-orders and releases all begin as a project.</span>
+            </a>
+            <a class="canvas-start__card" href="create-product.html">
+              <span class="canvas-start__icon"><i data-lucide="shopping-bag" class="ztor-icon" aria-hidden="true"></i></span>
+              <span class="canvas-start__name" data-i18n="canvas.start.product">New product</span>
+              <span class="canvas-start__sub" data-i18n="canvas.start.product-sub">Sell merch and digital goods in your shop.</span>
+            </a>
+            <a class="canvas-start__card" href="create-event.html">
+              <span class="canvas-start__icon"><i data-lucide="ticket" class="ztor-icon" aria-hidden="true"></i></span>
+              <span class="canvas-start__name" data-i18n="canvas.start.event">New event</span>
+              <span class="canvas-start__sub" data-i18n="canvas.start.event-sub">Ticketing, dates and door check-in.</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 浮層（作品切換器／說明／浮標）貼齊內容區的四邊，不是視窗邊：
+             底圖要滿到視窗邊才是「地」，但這些控制要跟左欄同一個框。 -->
+        <div class="canvas-home__overlay" data-component="canvas-overlay"></div>
       </div>
 
+      <!-- 往下捲的提示（2026-08-31 使用者裁示）：貼著第一屏的底、置中。
+           位置的理由——左欄與右欄之間那道空隙的底端本來就是整屏最空的一塊，提示放在
+           那裡不擠掉任何內容；而「往下」的手勢與位置一致，畫面正下方是所有人找它的地方。
+           它是按鈕不只是裝飾：按下去就捲到第二屏，不必自己找滾輪。
+           一開始捲就淡出——它只需要在「還沒開始捲」的那幾秒存在。 -->
+      <button type="button" class="canvas-hint dash-data-only" data-scroll-hint>
+        <span data-i18n="canvas.scroll.more">Scroll for more</span>
+        <i data-lucide="chevron-down" class="ztor-icon" aria-hidden="true"></i>
+      </button>
+      </div><!-- /.canvas-hero -->
+
+      <!-- ── 第二段：往下滑之後的內容（2026-08-31 使用者裁示把這兩區放出來）──
+           平台表現的標記與資料與正式儀表板同一份（`[data-perf="dash"]` ＋
+           performance-store），不另做一套：同一件事在兩頁各寫一份，遲早會有一頁沒跟上。
+           進行中那一屏是這一頁自己的排法（`live-cards`），但資料仍走 projects／events
+           兩支 store 的同一組口徑（見 components.js 的 `canvasRowsOf`）。 -->
+      <!-- 空資料時整段不存在（2026-09-01）：這兩屏問的是「手上這幾件跑得怎麼樣」與
+           「作品在哪裡被看見」，帳號下什麼都沒有的時候，這兩個問題沒有對象。
+           留著會變成兩屏空白讓人往下捲。 -->
+      <div class="canvas-below dash-data-only">
+        <!-- 第二段：進行中的項目與活動，自己佔一屏（2026-08-31 使用者裁示先「這個要
+             自己佔一頁的篇幅」，再「換成進行中的項目募資、預購以及活動售票中」）。
+             一次一張整的卡、右邊露出下一張的一半，右側三分之一留白給翻頁鈕——
+             這一屏要回答的是「手上這幾件跑得怎麼樣」，看不完的按下一輪。
+             「查看更多」在卡片下方，一屏只有一件事時出口該在讀完之後的位置。 -->
+        <!-- 沒有區塊標題（2026-08-31 使用者裁示刪除）：這一屏只有一件事，而卡片上
+             已經寫著它是什麼（募資／預購／售票中）；標題在這裡只是重複一次。 -->
+        <section class="canvas-sheet canvas-sheet--live">
+          <div data-component="live-cards" data-key="canvas-live"></div>
+          <!-- 出口跟著正中央那一件走（2026-08-31 使用者裁示）：看的是項目就寫
+               「查看更多項目」、落在項目清單；看的是活動就寫「查看更多活動」、
+               落在活動清單。文字與去處都由輪播控制更新（components.js）。 -->
+          <div class="canvas-sheet__foot">
+            <a class="btn btn--primary btn--lg" href="projects.html" data-live-more>
+              <span data-i18n="canvas.more.projects">More projects</span>
+              <i data-lucide="chevron-right" class="ztor-icon" aria-hidden="true"></i>
+            </a>
+          </div>
+        </section>
+
+        <!-- 第三段：平台表現，同樣佔一屏，每一個類型一行（同日使用者裁示）。 -->
+        <section class="canvas-sheet canvas-sheet--perf">
+          <div class="bento" data-perf="dash"></div>
+        </section>
+      </div>
     </div>
-
-    <footer class="app-footer">
-      <span>Ztor Creator Studio · R 2.3 prototype</span>
-      <span>·</span>
-      <span>All financial figures sourced from Earnings</span>
-      <span>·</span>
-      <span>Built on the Ztor Creator Studio design system</span>
-    </footer>
   </main>
-</div>
 
-<!-- 2026-08-28 撤除（墓碑）：`data-bd-modal="ops-pending"`（F2 待處理事項彈窗）與
-     `data-bd-modal="todo-all"`（F4 完整待辦視圖彈窗）。兩者與當時的告警通知條顯示的是
-     同一份 dash-alerts，且 pending 是 todo-all 的子集——同一份資料三個出口。
-     使用者裁決改成頁內分組面板（見上方 `#issue-panel`），兩個彈窗與 todo-all 的來源模組
-     篩選腳本同日移除。要「依模組分辨」請看面板的分組，不要復活這兩個彈窗。 -->
-<!-- 站上粉絲的明細（2026-08-19 使用者裁決：粉絲組成收成第四塊 bento，點開才出現）。
-     內容原封不動從原本那張卡搬進來——圓餅與分級、站上總數與活躍數、流失風險、分母註腳。 -->
-<div class="payout-modal" data-bd-modal="fans-tiers" hidden>
-  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="fans-tiers-title">
-    <div class="payout-dialog__head">
-      <div>
-        <h2 class="payout-dialog__title" id="fans-tiers-title" data-i18n="dash.tiers.title">ztor 粉絲組成</h2>
-        <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="dash.tiers.chip">只算站內，不含外部平台</span>
-      </div>
-      <button class="btn btn--icon" type="button" aria-label="Close" data-bd-close><i data-lucide="x" class="ztor-icon"></i></button>
-    </div>
-    <div class="payout-dialog__body">
-<div class="bento bento--top fans-split">
-          <div class="bento--span-6">
-          <div class="pie-figure">
-            <div class="pie" aria-hidden="true"
-                 style="--pie-stops:
-                   var(--primary) 0 12%,
-                   var(--status-info) 0 40%,
-                   var(--status-success) 0 77%,
-                   var(--foreground-muted) 0 100%"></div>
-            <div class="pie-figure__legend">
-              <div class="source-list">
-                <div class="source-row"><span class="source-row__swatch" style="background:var(--primary)"></span><span data-i18n="fans.tier.inner-row">Inner Circle · 12%</span><span class="source-row__amt" data-i18n="fans.tier.inner-cnt">154 位</span><span class="source-row__pct">$8,420</span></div>
-                <div class="source-row"><span class="source-row__swatch" style="background:var(--status-info)"></span><span data-i18n="fans.tier.super-row">超級粉絲 · 28%</span><span class="source-row__amt" data-i18n="fans.tier.super-cnt">359 位</span><span class="source-row__pct">$6,180</span></div>
-                <div class="source-row"><span class="source-row__swatch" style="background:var(--status-success)"></span><span data-i18n="fans.tier.devoted-row">上榜粉絲 · 37%</span><span class="source-row__amt" data-i18n="fans.tier.devoted-cnt">475 位</span><span class="source-row__pct">$4,890</span></div>
-                <div class="source-row"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span data-i18n="fans.tier.fan-row">一般粉絲 · 23%</span><span class="source-row__amt" data-i18n="fans.tier.fan-cnt">295 位</span><span class="source-row__pct">$1,210</span></div>
-              </div>
-            </div>
-          </div>
-          </div>
-          <div class="bento--span-6">
-          <div class="fans-nums">
-            <div class="kpi-plain">
-              <div class="kpi__label">站上粉絲 <span class="text-sub">· 2 小時前更新</span></div>
-              <div class="kpi__value">1,283</div>
-            </div>
-            <div class="kpi-plain">
-              <div class="kpi__label">活躍 · Inner Circle</div>
-              <div class="kpi__value">184 位</div>
-            </div>
-          </div>
-          <!-- F7 粉絲關係欄的流失風險 toast：整條可點，落地 Fans CRM 開 composer -->
-          <a class="alert alert--banner alert--error insight-split__toast risk-toast mt-16" href="fans-crm.html?msg=risk">
-            <div class="alert__icon">!</div>
-            <div class="alert__body">
-              <div class="alert__title" data-i18n="dash.fans.risk.title">5 位超級粉絲有流失風險</div>
-              <div class="alert__meta" data-i18n="dash.fans.risk.meta">已 14+ 天未互動</div>
-            </div>
-            <span class="alert__cta" data-i18n="dash.fans.risk.cta">發送私訊更新</span>
-          </a>
-          <div class="mt-16"><a class="card__link" href="fans-crm.html" data-i18n="dash.fans.link">開啟粉絲頁</a></div>
-          </div>
-          </div>
-          <p class="card__note" data-i18n="dash.tiers.note">站內有帳號的 1,283 位粉絲，按分級切開——跟粉絲各頁算的是同一份名冊。粉絲分析頁的受眾數字含只在外部平台看得到的人，兩者分母不同。</p>
-    </div>
-  </section>
 </div>
-
-<!-- ══ F2 · Active projects — in-place popup, same shell. Rows = F6's data minus
-     drafts (derived in components.js), each with a labelled Open project / Open event CTA. -->
-<div class="payout-modal" data-bd-modal="ops-projects" hidden>
-  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ops-projects-title">
-    <div class="payout-dialog__head">
-      <div>
-        <h2 class="payout-dialog__title" id="ops-projects-title" data-i18n="ops.modal.projects-title">Active projects</h2>
-        <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ops.modal.projects-sub">Live, funding and scheduled right now</span>
-      </div>
-      <button class="btn btn--icon" type="button" aria-label="Close" data-bd-close><i data-lucide="x" class="ztor-icon"></i></button>
-    </div>
-    <div class="payout-dialog__body">
-      <div data-component="events-projects" data-key="ops-projects-list"></div>
-    </div>
-    <div class="payout-dialog__foot">
-      <span></span>
-      <a class="btn btn--outline btn--sm" href="projects.html" data-i18n="ops.modal.go-projects">Go to Projects</a>
-    </div>
-  </section>
-</div>
-
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
-<!-- D225：登入落點之一，載了才會在 pending 旗標存在時詢問登入語言 -->
+<!-- D225：2026-09-01 這一頁成為 `index.html`＝Artist 的登入落點，所以要載它；
+     沒載的話 pending 旗標永遠不會被消化，「登入時選的語言要不要設成帳號預設」就不會問。 -->
 <script src="partials/login-lang-prompt.js?v=r2.2"></script>
-<script src="js/hero.js?v=r2.2"></script>
-<!-- projects-store 要排在 components.js 之前（2026-08-28）：F6 上方的封面磚列
-     直接讀 store 的 poster 欄位，而 components.js 的 mount() 是同步跑的——
-     store 晚一步載入，磚列就會退回 dash-events 那份只有正方圖的簡化假資料。
-     store 對 ztorPersonaId／ztorWorkReview 的依賴都有 typeof 防護，且 persona 是
-     呼叫時才解析，提前載入安全。performance-store 讀 projects-store，仍排在其後。 -->
+<!-- 三個資料 store 都要排在 components.js 之前：畫布的磚（作品／商品／活動）
+     在 mount() 同步跑的那一刻就要取得到，晚一步載入畫布就是空的。 -->
 <script src="js/projects-store.js?v=r2.2"></script>
-<!-- 送審件（2026-08-28）：磚列「進度或期限」那一行的日期分岔走 ztorProjects.releaseDate()，
-     而影片家族的上映日期依 D180 存在送審件裡、非影片家族才存在項目自己的欄位上。
-     這支不載，影片家族那一半的日期就永遠讀到空字串、磚上整行不畫，看起來像資料缺漏。
-     它是純資料 store，載入時不碰 DOM，排在 components.js 之前即可。 -->
 <script src="js/work-review-store.js?v=r2.2"></script>
+<script src="js/products-store.js?v=r2.2"></script>
+<script src="js/events-store.js?v=r2.2"></script>
 <script src="js/components.js?v=r2.2"></script>
-<!-- 平台表現兩張卡：與 project-detail › Performance 分頁同一份資料 -->
+<!-- 平台表現三張卡：與 project-detail › Performance 同一份資料 -->
 <script src="js/performance-store.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/scenario.js?v=r2.2"></script>
-<script>
-/* F2 popup open/close — mirrors earnings.html's breakdown-popup wiring verbatim
-   (same data-bd-* vocabulary, backdrop click + Escape close, body scroll lock). */
-(function () {
-  function closeAll() {
-    document.querySelectorAll('.payout-modal[data-bd-modal]').forEach(function (m) { m.hidden = true; });
-    document.body.style.overflow = '';
-  }
-  document.addEventListener('click', function (e) {
-    var opener = e.target.closest('[data-bd-open]');
-    if (opener) {
-      /* 2026-08-19：opener 可能是 <a href="#">（F4「查看全部」）。不擋預設行為的話，
-         有 <base> 的頁面會把 # 解析成 base 的位址而整頁跳走；沒 base 的頁面也會在
-         網址列留一個空 hash。 */
-      e.preventDefault();
-      /* 先關掉其他彈出層再開新的（2026-08-19）：這頁的彈出層是互斥的，而且
-         「待處理 → 查看全部」那顆按鈕同時掛了 data-bd-close 與 data-bd-open，
-         開啟分支先 return 的話 close 永遠跑不到，兩層會疊在一起。 */
-      closeAll();
-      var m = document.querySelector('[data-bd-modal="' + opener.dataset.bdOpen + '"]');
-      if (m) { m.hidden = false; document.body.style.overflow = 'hidden'; }
-      return;
-    }
-    if (e.target.closest('[data-bd-close]')) { closeAll(); return; }
-    if (e.target.classList && e.target.classList.contains('payout-modal') && e.target.hasAttribute('data-bd-modal')) closeAll();
-  });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && document.querySelector('.payout-modal[data-bd-modal]:not([hidden])')) closeAll();
-  });
-})();
-</script>
 <script src="js/detail-sheet.js?v=r2.2"></script>
 <script>
-/* 儀表板問候語（2026-07-28 使用者裁示）。
-   兩件事跟著環境走，所以不寫死：
-     · 名字 → persona（周湯豪／Gary），由 projects-store 的 displayName() 提供
-     · 招呼 → 時段。早上開工和深夜結帳看到同一句「歡迎回來」，會讓人覺得這個介面
-       沒在看現在幾點；時段問候是最低成本的「它知道我在」。
-   第二行放日期：儀表板上的數字都帶時間語意（今日待處理、近 30 天），
-   先講今天是哪一天，那些相對時間才有參考點。 */
+/* 頂列的時間與今日進帳（2026-08-31）。
+   時間每分鐘更新一次，不是每秒——展示版上一個跳秒的鐘會一直把目光拉過去，
+   而它其實不帶任何要讀的資訊。 */
 (function () {
-  function zh() { return (document.documentElement.lang || '').toLowerCase().indexOf('zh') === 0; }
-  function greet(h) {
-    if (h < 5)  return zh() ? '夜深了'   : 'Still up';
-    if (h < 11) return zh() ? '早安'     : 'Good morning';
-    if (h < 17) return zh() ? '午安'     : 'Good afternoon';
-    return         zh() ? '晚安'     : 'Good evening';
-  }
-  function dateLine(d) {
-    if (zh()) {
-      var wk = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()];
-      return d.getFullYear() + ' 年 ' + (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日 · 週' + wk;
-    }
-    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-  }
-  function artistName() {
-    return (window.ztorProjects && window.ztorProjects.displayName && window.ztorProjects.displayName()) || '';
-  }
-  /* 頁面標題＝藝人名＋工作站。沒有名字時退回單純的「工作站／Studio」，
-     不留一個孤零零的所有格符號。 */
-  function paintTitle() {
-    var h = document.querySelector('[data-studio-title]');
-    if (!h) return;
-    var name = artistName();
-    h.textContent = !name ? (zh() ? '工作站' : 'Studio')
-                  : zh() ? name + '的工作站'
-                  : name + '\u2019s Studio';
-  }
-  function paint() {
-    paintTitle();
-    var el = document.querySelector('[data-greeting]');
+  function pad(x) { return (x < 10 ? '0' : '') + x; }
+  function tick() {
+    var el = document.getElementById('canvas-clock');
     if (!el) return;
-    var name = artistName();
     var d = new Date();
-    /* 中文「早安，周湯豪」用全形逗號；英文用半形加空格。 */
-    var sep = zh() ? '，' : ', ';
-    el.innerHTML =
-      '<span class="greeting__hi">' + greet(d.getHours()) + (name ? sep + '<span class="greeting__name"></span>' : '') + '</span>' +
-      '<span class="greeting__meta"></span>';
-    var n = el.querySelector('.greeting__name');
-    if (n) n.textContent = name;                 /* textContent：名字是資料，不進 HTML */
-    el.querySelector('.greeting__meta').textContent = dateLine(d);
+    el.textContent = pad(d.getHours()) + ':' + pad(d.getMinutes());
   }
-  paint();
-  /* 換語言、換 persona 之後都要重寫——兩者都會改名字或招呼語。 */
-  document.addEventListener('i18n:applied', paint);
-})();
-</script>
-<script>
-/* 近期活動與項目：卡內兩個分頁（進行中 / 最近發生）。切換器住在卡頭右側。 */
-(function () {
-  document.querySelectorAll('[data-dash-tabs]').forEach(function (nav) {
-    var card = nav.closest('.card');
-    nav.addEventListener('click', function (e) {
-      var btn = e.target.closest('.filter-tabs__item[data-tab]');
-      if (!btn) return;
-      nav.querySelectorAll('.filter-tabs__item').forEach(function (t) {
-        var on = t === btn;
-        t.classList.toggle('filter-tabs__item--active', on);
-        t.setAttribute('aria-selected', on ? 'true' : 'false');
-      });
-      card.querySelectorAll('.tab-panel[data-panel]').forEach(function (pn) {
-        pn.classList.toggle('tab-panel--active', pn.getAttribute('data-panel') === btn.getAttribute('data-tab'));
-      });
-    });
+  tick();
+  setInterval(tick, 60000);
+
+  /* 日期：與時間同一列（2026-08-31 使用者裁示頂列只留日期與時間）。
+     兩個語言各寫各的格式，不是同一串的逐字對譯——中文「2026 年 8 月 31 日 · 週一」，
+     英文 "Mon, 31 Aug 2026"。跟著語言切換重畫。 */
+  function stamp() {
+    var el = document.getElementById('canvas-date');
+    if (!el) return;
+    var zh = (document.documentElement.lang || '').toLowerCase().indexOf('zh') === 0;
+    var d = new Date();
+    el.textContent = zh
+      ? d.getFullYear() + ' 年 ' + (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日 · '
+        + '週' + '日一二三四五六'.charAt(d.getDay())
+      : d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  stamp();
+  /* i18n 發的事件是 `i18n:applied`；`ztor:langchange` 站上沒有任何地方發，
+     掛在它上面等於沒掛（2026-08-31 修）。 */
+  document.addEventListener('i18n:applied', stamp);
+
+
+
+  /* 問候語與儀表板同一套（名字走 persona、招呼看時段）：兩個版型講同一句話，
+     不要一個說 Home 一個說「午安，周湯豪」。 */
+  function greet() {
+    var el = document.getElementById('canvas-greeting');
+    if (!el) return;
+    var api = window.ztorProjects;
+    var name = api && api.displayName ? api.displayName() : '';
+    var zh = (document.documentElement.lang || '').toLowerCase().indexOf('zh') === 0;
+    var h = new Date().getHours();
+    var hi = zh ? (h < 12 ? '早安' : h < 18 ? '午安' : '晚安')
+               : (h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening');
+    el.textContent = name ? (zh ? hi + '，' + name : hi + ', ' + name) : hi;
+  }
+  greet();
+  document.addEventListener('DOMContentLoaded', greet);
+  document.addEventListener('i18n:applied', greet);
+
+  /* 捲過第一屏就把底圖淡掉（2026-08-31）：底圖是 `fixed` 的——它必須滿到視窗邊
+     才讀得出「這張圖是地」——所以捲動時它不會自己離開。下面那一段是一般的工作
+     內容（磚列、平台表現），躺在一張人臉上讀不乾淨；淡掉之後就回到站上原本的
+     星空檯面，與其他頁一致。門檻取半屏：太早會在還看得到第一屏時就開始褪，
+     太晚則會讓第二段的頭幾行仍疊在圖上。 */
+  /* 捲動發生在 `.main` 身上、不是視窗：站上的外殼是固定高度的玻璃殼，
+     內容在面板裡自己捲（shared.css 的 `.main { overflow-y: auto }`）。
+     監聽掛在 window 上永遠不會觸發（2026-08-31 實測）。 */
+  var scroller = document.querySelector('.main');
+  var hero = document.querySelector('.canvas-hero');
+  var rail = document.querySelector('.canvas-home__rail');
+  var liveSheet = document.querySelector('.canvas-sheet--live');
+  var FADE = 72;   /* 左欄上緣漸消的長度 */
+
+  /* 頂列與切換器什麼時候被推走（2026-08-31 使用者裁示兩次：先「下一段出現時，
+     這兩個也一起往上滑不見」，再「**在左欄那一塊滑走之前，頂列與右側都不要動**」）：
+     sticky 的元素是被**自己容器的下緣**推走的，容器若是整個第一屏，它們會釘到
+     第一屏剩下最後一個元素高度時才走——而第一屏比左欄還長（左欄結束之後還有一段
+     空白），所以它們會在左欄早就捲完之後還壓在畫面上。
+     解法是把它們包進一個容器，讓容器的**下緣切齊左欄的下緣**：左欄還在畫面上時
+     它們一動不動，左欄的底邊一碰到畫面頂端，它們就跟著滑出去。
+     容器多出來的高度用等量的負下外距抵銷，底下的內容位置完全不動；容器本身
+     `pointer-events: none`（它會蓋到下面的內容上），只有裡面的頂列吃事件。
+     **算一次就好**：高度只跟版面有關，不跟捲動有關——所以不放進 onScroll，
+     避免又走回「JS 每一幀算位移」那條會抖的老路。 */
+  var stick = document.querySelector('[data-hero-stick]');
+  var chrome = document.querySelector('.canvas-hero__chrome');
+  var stickH = null;
+  function sizeStick() {
+    if (!stick || !chrome || !rail || !scroller) return;
+    /* 不必先把樣式清掉再量：這一層多出來的高度已經被等量的負下外距抵銷，
+       左欄與容器量到的都是它們自己的自然位置。 */
+    var y = scroller.scrollTop;
+    var top = stick.getBoundingClientRect().top + y;
+    var bottom = rail.getBoundingClientRect().bottom + y;
+    var h = Math.max(Math.round(bottom - top), chrome.offsetHeight);
+    /* 右邊那一排要在「頂列底下到左欄下緣」這一段裡垂直置中（2026-08-31 使用者裁示
+       「這一整個是不是稍微往下移一點」）。它是相對頂列定位的，量得到自己下緣的
+       只有這裡：把「頂列下緣到這一層下緣」的距離寫成變數，CSS 用它把框拉到底。 */
+    stick.style.setProperty('--picks-span', (h - chrome.offsetHeight) + 'px');
+    if (h === stickH) return;
+    stickH = h;
+    /* 這一層在版面上該佔的高度＝頂列自己的高 ＋ 頂列與工作區之間的間距。
+       **那段間距要在這裡加回來**（2026-08-31 使用者回報「這兩個區域的間距要留出來」）：
+       間距原本是頂列的下外距，而這一層一旦有了指定高度，子元素的下外距就不再穿透
+       出來——56px 的呼吸整段消失，問候與第一格的標題會黏在一起。 */
+    var bar = chrome.firstElementChild;
+    var gapBelow = bar ? (parseFloat(getComputedStyle(bar).marginBottom) || 0) : 0;
+    stick.style.height = h + 'px';
+    stick.style.marginBottom = (chrome.offsetHeight + gapBelow - h) + 'px';
+    sizeRailSplit();
+  }
+  /* 左欄上下兩格的分界＝**第一屏的垂直中線**（2026-09-01 使用者在畫面上畫線裁示
+     「待辦事項的起始點要從那條紅線開始」）。寫成 CSS 變數餵給格線的第一列
+     （見 canvas-home.css 的 `.canvas-home__rail`）。
+     **只有量得到**：中線是第一屏自己的高度算出來的，而左欄的上緣還要看問候那一行
+     排了幾行、外殼留了多少內距——兩個都不是常數，寫死一個數字換個視窗高度就跑掉。 */
+  function sizeRailSplit() {
+    if (!hero || !rail) return;
+    var hb = hero.getBoundingClientRect(), rb = rail.getBoundingClientRect();
+    if (!hb.height || !rb.height) return;
+    var split = Math.round((hb.top + hb.height / 2) - rb.top);
+    if (split > 0) rail.style.setProperty('--rail-split', split + 'px');
+  }
+  sizeStick();
+  window.addEventListener('resize', sizeStick);
+  window.addEventListener('load', sizeStick);
+  /* 換語言／重畫之後左欄的高度會變（待辦筆數、字長都不同），第一屏跟著變高變矮。 */
+  document.addEventListener('i18n:applied', function () { setTimeout(sizeStick, 0); });
+  /* 第一屏的高度在載入後還會再變幾次（字型換好、圖載完、元件重畫），而它變了
+     推走的時刻就跟著錯位——實測有一次算在 933、穩定後是 877，差了 56px。
+     盯著它自己重算，比在每一個可能的時機各補一次呼叫可靠。 */
+  if (window.ResizeObserver && rail) {
+    /* 看的是左欄不是第一屏：左欄是決定第一屏高度的那一項，而第一屏的高度會被
+       這支函式自己改動——盯著自己改的東西會來回觸發。 */
+    new ResizeObserver(function () { sizeStick(); }).observe(rail);
+  }
+
+  function onScroll() {
+    if (!scroller) return;
+    var y = scroller.scrollTop;
+
+    /* 1) 第一段快要走完時把底圖與切換器一起淡掉：它們是 `fixed`／sticky 的，
+          不會自己離開，而第二段是一般的工作內容，躺在一張人臉上讀不乾淨。
+          門檻改成「第一段的底邊剩下四分之一個螢幕」（2026-08-31 再調）：原本寫成
+          固定的「半個螢幕」，第一段變長之後那個位置還在半路上——照片消失時左欄
+          才捲到待辦事項，看起來像圖突然壞掉。 */
+    var heroH = hero ? hero.offsetHeight : scroller.clientHeight;
+    var fadeAt = Math.max(heroH - scroller.clientHeight * 0.25, scroller.clientHeight * 0.3);
+    document.body.classList.toggle('is-past-hero', y > fadeAt);
+    /* 一開始捲就把提示收掉：它的工作是「告訴你這一頁還有下面」，你一動它就完成了。 */
+    document.body.classList.toggle('is-scrolled', y > 8);
+
+    /* 1b) 第二段佔著畫面時，換上「正中央那一件的海報」當整個視窗的地
+          （2026-08-31 使用者裁示；圖由 components.js 的輪播控制換，這裡只管開關）。
+          判準是「這一段蓋住畫面的中線」：那一刻它已經是讀者在看的東西，而更早開燈
+          會在第一屏還沒走完時就把地換掉。 */
+    if (liveSheet) {
+      var lr = liveSheet.getBoundingClientRect();
+      var mid = scroller.clientHeight / 2;
+      document.body.classList.toggle('is-live-bg', lr.top < mid && lr.bottom > mid);
+    }
+
+    /* 2) 右邊的作品切換器與頂列都改用 CSS sticky 釘住（2026-08-31 再調）：
+          原本這裡用捲動事件即時算位移，JS 比瀏覽器的捲動繪製慢半拍所以會抖，
+          而且與頂列（CSS sticky）由兩套機制驅動、離開的時機對不上。
+          規則寫在 canvas-stage.css 的 `.canvas-stage__rail`，這裡不再插手。 */
+
+    /* 3) 左欄往上捲時上緣漸消：遮罩是相對元素自己的框算的，而「畫面頂端現在切到
+          這一欄的哪裡」只有捲動量知道，所以把兩個位置寫成變數餵給 CSS。
+          **淡出的長度跟著捲動量長，不是固定 72**（2026-08-31 使用者回報「還沒開始
+          滑就被遮住了」）：固定值在 `y = 0` 時就已經把最上面 72px 蓋掉一半，
+          而那時根本還沒有東西捲出去。 */
+    if (rail) {
+      var fade = Math.min(y, FADE);
+      rail.style.setProperty('--rail-fade-start', y + 'px');
+      rail.style.setProperty('--rail-fade-end', (y + fade) + 'px');
+    }
+  }
+  /* 提示鈕：按了就捲到第二屏。用 `scrollIntoView` 而不是自己算位移——那一段的位置
+     會隨左欄長短變動，算出來的數字很快就過期。 */
+  var hint = document.querySelector('[data-scroll-hint]');
+  if (hint) hint.addEventListener('click', function () {
+    var next = document.querySelector('.canvas-sheet');
+    if (next) next.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
-})();
-</script>
-<script>
-/* 「去處連結一律放卡底、做成按鈕」（2026-08-19 使用者裁決：「其他 section 也都一樣」）。
-   在這裡用腳本統一搬，而不是逐張卡改 markup——作品表現那三張是 performance-store.js
-   產生的，同一支也餵 index.html 與項目詳情頁，改它會動到本輪範圍外的頁面。
-   規則：卡頭裡的 .card__link 移到卡片最後、換成 .btn--outline.btn--block；
-   彈出層內的卡不動（那裡的連結是收尾動作，不是「看更多」）。 */
-(function () {
-  function normalize() {
-    document.querySelectorAll('.page .card').forEach(function (card) {
-      if (card.closest('.payout-modal')) return;
-      /* 卡頭圖示退場（2026-08-19 使用者裁決）：標題已經說清楚這張卡是什麼，
-         再放一顆裝飾性圖示只是多一個要對齊的東西。JS 注入的卡也走這裡。 */
-      var ic = card.querySelector('.card__head .card__title-icon');
-      if (ic) ic.remove();
-      var link = card.querySelector('.card__head .card__link');
-      if (!link) return;
-      if (card.querySelector(':scope > .btn--block')) return;   // 已經有卡底按鈕就不重複加
-      link.classList.remove('card__link');
-      link.classList.add('btn', 'btn--outline', 'btn--block', 'mt-16');
-      /* 連結內的 chevron 是「卡頭小連結」的語彙，變成按鈕之後不需要 */
-      var chev = link.querySelector('svg, i');
-      if (chev) chev.remove();
-      card.appendChild(link);
-    });
-  }
-  normalize();
-  /* 作品表現那三張卡由 performance-store.js 在 DOMContentLoaded 才注入，
-     所以要再跑一次；重跑是安全的（已搬過的卡頭裡沒有 .card__link 了）。 */
-  document.addEventListener('DOMContentLoaded', normalize);
+
+  onScroll();
+  if (scroller) scroller.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
 })();
 </script>
 </body>

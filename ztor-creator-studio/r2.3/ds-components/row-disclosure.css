@@ -1,0 +1,265 @@
+/* ============================================================
+   Row disclosure（可展開子列）— 2026-09-03 建，2026-09-04 改寫成 L3「整組換層」
+   ------------------------------------------------------------
+   STYLE-DECISIONS Q107 裁決「要有新的」，收斂了此前兩份各自的實作
+   （`product-list.css` 的 `__row--group`／`__row--child` 與 `data-list.css` 的
+   `__row--child`）。2026-09-04 使用者從探索頁 `lab-row-layers.html` 的五個候選裡
+   挑定 **L3 整組換層**，本支依那個模型改寫：階層不再靠縮排與左緣線說，改由
+   「這一組坐在哪一層平面上」說。
+
+   模型（三句話）
+     1. 未展開：整列與其他資料列同層（L1 卡面），看起來就是一般資料列。
+     2. 展開：母列與它的子項**一起**被包進一塊 L2 薄膜面板（`--ztu-film` 底、
+        四周一圈 1px `--border-soft` 用 inset box-shadow 畫、圓角 --radius-lg、
+        上下各留一點外距）；面板內部的列底線轉透明。群組的邊界是一整塊面。
+     3. 零縮排：子項欄位與表頭嚴格對齊，沒有任何縮排階，也沒有子列左緣的直線。
+
+   **欄位版面不歸它**：欄寬、欄數、每一格的內容仍由所在容器提供——表格型的
+   `.product-list__row` grid 欄，或清單型的 `.data-list__row-main`／`__amount`。
+   所以它是疊在容器列上的一層 class，兩種容器都能吃：
+
+     表格型（pickup-detail 買家分組、events 系列場次）
+       <div class="rowdis__group" role="rowgroup">
+         <div class="product-list__row rowdis__head" data-rowdis-row="mika">
+           <div class="product-list__title rowdis__label"><span>Mika L.</span>
+             <button class="btn btn--icon btn--xs rowdis__toggle"
+                     data-rowdis="mika" aria-expanded="false">chevron-down</button></div>
+         <div class="product-list__row rowdis__child" data-rowdis-child="mika" hidden>
+
+     清單型（order-detail 品項展開單位、project-detail 收支小計）
+       <div class="rowdis__group rowdis__group--gutter">
+         <div class="data-list__row rowdis__head">…<button class="rowdis__toggle" …>
+         <div class="data-list__row rowdis__child rowdis__child--compact"
+              data-rowdis-child="i0" hidden>
+
+   互動（點擊、鍵盤、切 aria-expanded 與子列的 hidden）由 `js/row-disclosure.js`
+   提供，消費頁不再各寫一份 toggle。面板本身純 CSS `:has()` 驅動，不經過 JS。
+   契約見 design-system.md §4.204。
+   Consumers: pickup-detail.html · order-detail.html · scanner.html · events.html
+              · project-detail.html
+   ============================================================ */
+
+/* ── 群組容器 ────────────────────────────────────────────────
+   收合時完全沒有樣式（整列與其他資料列同層）；展開時才成為 L2 薄膜面板。
+   條件寫成「這一組的母列沒有被藏起來，而且它的把手是展開的」：
+     · `> .rowdis__head` 限定只看這一組自己的母列——order-detail 的第二層
+       （`.rowdis__frame` 裡的成員列）也帶把手，不限定的話成員一展開會把外層
+       面板一起點亮。
+     · `:not([hidden])` 與 `:not(.hidden)` 是同一件事的兩種寫法：pickup-detail
+       用 hidden 屬性篩掉母列、events.html 用 shared.css 的 `.hidden` 工具 class。
+       母列被篩掉時整組沒有內容，不該留下一塊空面板。
+   `:has()` 站上已在用（見 ds-components/nest.css 的 `.form-section--outlined:has(> .nest)`）。 */
+/* 左右內距：面板往外長、列的 x 位置不動（負外距與等值內距相消）。
+   為什麼要有：面板圓角 --radius-lg（16px），內容若只距邊 10px（列自己的內距），
+   左上角的標題會卡進圓角的弧線裡。表格型的列自帶 --sp-10 內距，這裡再加 --sp-8，
+   內容距面板邊共 18px、超過圓角半徑（2026-09-04 使用者於 lab-rowdis-spacing.html
+   調參定案：左右 --sp-8、上下 --sp-12，外距與圓角維持原值）。
+   不掛在「面板亮著」的條件裡：兩個值相消，收合時本來就沒有視覺效果。 */
+.rowdis__group {
+  margin-inline: calc(var(--sp-8) * -1);
+  padding-inline: var(--sp-8);
+}
+
+/* 表格型的清單包在 `.product-list-scroll`（`overflow-x: auto`）裡，面板往外長的那
+   8px 會被它剪掉——左側的溢出在 LTR 下捲不到，圓角會被切平。這裡把捲動容器本身
+   往外撐同樣的 8px（一樣是負外距＋等值內距相消，表格的 x 位置不動），讓面板的
+   出血落在容器內。用 `:has()` 限定「裡面真的有群組面板」的清單，其餘清單不受影響。
+   為什麼寫在本檔而不是 product-list.css：這是本元件的出血造成的需求，跟著本元件
+   一起維護、一起退場才不會變成孤兒規則。 */
+.product-list-scroll:has(.rowdis__group) {
+  margin-inline: calc(var(--sp-8) * -1);
+  padding-inline: var(--sp-8);
+}
+
+.rowdis__group:is(
+  .rowdis__group--static,
+  :has(> .rowdis__head:not([hidden]):not(.hidden) .rowdis__toggle[aria-expanded="true"])
+) {
+  margin-block: var(--sp-8);
+  padding-block: var(--sp-12);
+  border-radius: var(--radius-lg);
+  background: var(--ztu-film);
+  /* 一圈邊用 inset box-shadow 畫、不用 border：border 會佔版位，母列與面板外的
+     資料列會因此差 1px、欄位對不齊。 */
+  box-shadow: inset 0 0 0 1px var(--border-soft);
+}
+/* 面板內部的列底線轉透明——邊界已經由面在說，裡面再畫幾條線就變成兩套說法。
+   用後代選擇器（不是 `> *`）才涵蓋第二層框裡的列；限定在本元件自己的兩個角色上，
+   免得掃到列裡其他有邊框的東西（例如 `.data-list__icon` 的 1px 晶片框）。 */
+.rowdis__group:is(
+  .rowdis__group--static,
+  :has(> .rowdis__head:not([hidden]):not(.hidden) .rowdis__toggle[aria-expanded="true"])
+) :is(.rowdis__head, .rowdis__child) {
+  border-bottom-color: transparent;
+}
+
+/* --gutter：容器的列自己沒有左右內距時（`.data-list__row` 是 `padding: --sp-12 0`），
+   由群組補上——負外距先讓面板往外長 16px，再用等值內距把列推回原本的 x 位置。
+   它是覆寫不是疊加：清單型的列內距是 0，一次補到 16px 才與表格型的 18px 視覺等距
+   （2026-09-04 調參定案，18px 不是 token，取最接近的 --sp-16）。
+   欄位起點因此完全不動（零縮排的硬要求），而面板不會貼著文字收邊。
+   表格型不掛這個變體：`.product-list__row` 自己帶了 --sp-10 左右內距，面板邊緣
+   與資料列外緣重合就是對的。 */
+.rowdis__group--gutter {
+  margin-inline: calc(var(--sp-16) * -1);
+  padding-inline: var(--sp-16);
+}
+
+/* --static：唯讀的群組（scanner 的 F3 名單）。名單不可展開、單位一律攤開，
+   但「這幾件屬於這位買家」要跟可展開的清單一樣清楚，所以面板恆亮。 */
+
+/* ── 面板內列 hover：H1 提亮一階 ＋ H4 動作浮現 ─────────────────
+   2026-09-04 使用者從探索頁 `lab-row-hover.html` 的六個候選（基準＋H1–H5）裡
+   裁定 **H1＋H4 相加、母列與子列同一階**（不分強弱）。取代這些列原本吃到的
+   站上通用「浮起玻璃卡」hover（`product-list.css` 66–84 行，Q34 2026-07-26
+   裁示全站統一、2026-08-28 Wave 2a 換裝成玻璃）——本規則是 Q34 的**範圍例外**
+   （見 `STYLE-DECISIONS.md` Q108）：只在面板亮著時生效（沿用 `.rowdis__group`
+   既有的面板條件，不另寫一套判斷），面板外的列與收合狀態的母列不受影響，
+   仍吃 Q34 的通用規則。選擇器同時掛 2 個 class（面板態＋角色），特異性蓋過
+   通用規則的 1 個 class，不需要 `!important`。
+
+   為什麼面板內不能沿用通用的浮起玻璃卡：
+     1. 方向反了——玻璃卡底色 `--ztu-glass-bg`（5% 白）比面板底 `--ztu-film`
+        （8.6% 白）更暗，hover 讀起來是往下沉、不是浮起，違反本專案 design
+        system 的 Surface-Layer Contrast 規則「淺灰填只在比自己亮的底上成立」。
+     2. 模糊沒有意義——`backdrop-filter` 在面板內只會取樣到面板自己
+        （同一教訓 `ds-components/nest.css` 檔頭已記過一次）。
+     3. 語意打架——一列浮出面板，跟「這一組是同一個平面」矛盾。
+
+   母列子列同一階（不分強弱）：母列的可點性已由手型游標（見下方
+   `[data-rowdis-row]` 規則）與 chevron 交代，再用亮度差分強弱既讀不出來，
+   又要多發明一個「半階」的新 token、多一條要維護的規則，不值得。
+   `:is(.rowdis__head, .rowdis__child)` 因此吃同一條規則，兩種容器
+   （`.product-list__row`／`.data-list__row`）都靠這兩個角色 class 命中，
+   不必分別為表格型與清單型各寫一份。 */
+.rowdis__group:is(
+  .rowdis__group--static,
+  :has(> .rowdis__head:not([hidden]):not(.hidden) .rowdis__toggle[aria-expanded="true"])
+) :is(.rowdis__head, .rowdis__child):hover {
+  background: var(--ztu-glass-strong);
+  /* 明確中和容器帶來的浮起效果——這裡只要提亮，不浮、不糊、不加影。
+     `product-list.css` 74–84 行的 `:hover` 疊了 `position:relative`／
+     `z-index`／`backdrop-filter`／`box-shadow`，逐項中和掉；圓角不動
+     （面板本身已經是圓角）。transition 沿用各容器原本在 `:hover` 上已定義
+     的時長與 easing，本規則不新增動效值。 */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  position: static;
+  z-index: auto;
+  border-bottom-color: transparent;
+}
+
+/* H4 動作浮現：面板內列右側的動作選單（⋮ kebab，站上統一走 `.dropdown`
+   元件）預設降低存在感，該列 hover／鍵盤聚焦到選單／選單已展開時變清楚。
+   數值與寫法照抄 `lab-row-hover.html` 已核准的 H4 demo（.5 → 1，不是 0——
+   動作項要維持可掃視、不是完全藏起來）；transition 用 `--duration`／
+   `--easing`（既有全站 token，非新值）。`:focus-within` 掛在 `.dropdown`
+   （`<details>`）本身：Tab 到 summary 或選單裡任一項目都算「聚焦」，鍵盤
+   使用者不會因為滑鼠移開就看不到已經 focus 的控制項；`[open]` 讓選單攤開
+   時維持不透明，避免「攤開的選單本身還是半透明」的怪狀態。
+   容器中立：截至本輪，只有 `.product-list__actions` 裡的 `.dropdown` 有真正
+   消費（pickup-detail.html／events.html）；`.data-list__row` 的三個消費頁
+   （order-detail／project-detail／scanner）目前都沒有列級 kebab。選擇器不寫
+   死 `.product-list__actions`，未來清單型容器若加上同款 kebab，一樣吃這條、
+   不必再寫一次。 */
+.rowdis__group:is(
+  .rowdis__group--static,
+  :has(> .rowdis__head:not([hidden]):not(.hidden) .rowdis__toggle[aria-expanded="true"])
+) :is(.rowdis__head, .rowdis__child) .dropdown {
+  opacity: .5;
+  transition: opacity var(--duration) var(--easing);
+}
+.rowdis__group:is(
+  .rowdis__group--static,
+  :has(> .rowdis__head:not([hidden]):not(.hidden) .rowdis__toggle[aria-expanded="true"])
+) :is(.rowdis__head, .rowdis__child):hover .dropdown,
+.rowdis__group:is(
+  .rowdis__group--static,
+  :has(> .rowdis__head:not([hidden]):not(.hidden) .rowdis__toggle[aria-expanded="true"])
+) :is(.rowdis__head, .rowdis__child) .dropdown:focus-within,
+.rowdis__group:is(
+  .rowdis__group--static,
+  :has(> .rowdis__head:not([hidden]):not(.hidden) .rowdis__toggle[aria-expanded="true"])
+) :is(.rowdis__head, .rowdis__child) .dropdown[open] {
+  opacity: 1;
+}
+
+/* ── 母列 ───────────────────────────────────────────────────
+   整列可點時（帶 data-rowdis-row）才給手指游標——只有把手可點的用法
+   （order-detail、project-detail）游標歸按鈕本身。 */
+.rowdis__head[data-rowdis-row] { cursor: pointer; }
+.rowdis__head[hidden] { display: none; }
+
+/* 把手與標題並排的那一格（選配）。用在「標題是單行截斷、把手不能被一起截掉」
+   的情境：文字吃剩下的寬度並自己截斷，把手固定寬不縮。 */
+.rowdis__label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+.rowdis__label > :first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 揭露把手：外觀吃 .btn.btn--icon（--xs／--sm 由消費頁決定），本支只擁有
+   「不被壓縮」與「會轉」。狀態放在按鈕上——它才是可聚焦、可用鍵盤操作的那個元素。 */
+.rowdis__toggle { flex: none; }
+.rowdis__toggle .ztor-icon { transition: transform var(--duration) var(--easing); }
+.rowdis__toggle[aria-expanded="true"] .ztor-icon { transform: rotate(180deg); }
+
+/* ── 子列 ───────────────────────────────────────────────────
+   零縮排：欄位起點與表頭同一像素，階層由群組那塊面說。這裡只留「字級與顏色
+   退一階」——同一塊面上，主從仍要分得出來。 */
+.rowdis__child {
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+}
+/* 容器的標題 class 自帶字級（.product-list__title 是 14），不明寫這一條的話
+   只有沒設字級的格子降下去、標題不降。 */
+.rowdis__child .product-list__title,
+.rowdis__child .data-list__title { font-size: var(--fs-13); }
+/* class 沒寫 display，但容器寫了（.product-list__row／.data-list__row 都是 grid），
+   所以 [hidden] 要在這裡贏回來。 */
+.rowdis__child[hidden] { display: none; }
+
+/* --compact：清單型容器的密度，上下留白收窄。
+   ⚠ 它現在**只管密度、不管階層**——列線與組尾線都已改由群組那塊面承擔。 */
+.rowdis__child--compact { padding-block: var(--sp-8); }
+
+/* ── 第二層：框 ─────────────────────────────────────────────
+   order-detail 有兩層展開（訂單品項 → 組合成員 → 成員各自的領取單位）。
+   縮排退場後第二層需要另一個訊號，依既有 DS 規則辦：`ds-components/nest.css`
+   檔頭明文「只有兩層填色（L1 卡片 --card／L2 薄膜），第三層以後不再疊填色、
+   改用 1px 邊框表達層級」。所以第二層是框，不是第三片填色——這不是新規則，
+   是那條既有規則在這個情境的套用（探索頁 L5 已先驗證，見 lab-row-layers.html）。
+   一樣用 inset box-shadow 畫、不佔版位，欄位不因為多一層而位移。
+   左右的負外距＋等值內距同 --gutter 的手法：框比裡面的列寬一點才不貼字，
+   而列的 x 位置一格都不動；沒被點亮時這兩個值互相抵銷，等於沒有效果。 */
+.rowdis__frame {
+  margin-inline: calc(var(--sp-6) * -1);
+  padding-inline: var(--sp-6);
+}
+.rowdis__frame:has(> .rowdis__head:not([hidden]):not(.hidden) .rowdis__toggle[aria-expanded="true"]) {
+  margin-block: var(--sp-4);
+  padding-block: var(--sp-4);
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+/* ✝ 墓碑 — 縮排模型整組退場（2026-09-04）
+   退場的是：`--rowdis-indent` 變數、`.rowdis__child--level-2`／`--level-3` 兩個
+   縮排刻度變體、`.rowdis__child` 的 `padding-inline-start`、`.rowdis__child::before`
+   的 2px 左緣階層線，以及 `--compact` 底下的 `border-bottom: 0` 與
+   `.rowdis__child--compact + *:not(.rowdis__child)` 那條組尾線。
+   退場原因：縮排把子項的欄位推離表頭，欄位對不齊；左緣線與組尾線是「用幾條線
+   拼出一個群組」，邊界因此永遠是暗示而非事實。2026-09-04 使用者看過探索頁
+   `lab-row-layers.html` 的五個候選後裁決採用 L3「整組換層」——階層改由整塊面說。
+   由誰取代：`.rowdis__group`（展開時成 L2 薄膜面板）＋ `.rowdis__frame`（第二層的框）。
+   依據：STYLE-DECISIONS.md Q107（元件的存在）＋ 2026-09-04 L3 裁決（本次的模型）。
+   連帶：`shared.css` 的 `.pd-deep` 曾覆寫 `--rowdis-indent` 對齊 44px 文字起點，
+   隨本次一併移除（零縮排之後沒有要對齊的東西）。
+   原規則見 git 歷史（2026-09-04 之前的版本）。 */

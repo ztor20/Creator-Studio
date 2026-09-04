@@ -262,10 +262,10 @@
     return s;
   }
 
-  /* ── F5 劇照：1–8 張（規格 F5，D182 定案）。永遠留一格空的在最後；填滿它就長出
-        下一格，清空中間某一格就把那一格移出。到第 8 張就不再長出空格——「沒有第 9 格
-        可以按」本身就是上限的說法，不必再多一句錯誤訊息。 */
-  var MAX_STILLS = 8;
+  /* ── F5 劇照：1–10 張（規格 F5，D182 定案 1–8 張，2026-09-04 D243 放寬為 1–10 張）。
+        永遠留一格空的在最後；填滿它就長出下一格，清空中間某一格就把那一格移出。到第 10 張
+        就不再長出空格——「沒有第 11 格可以按」本身就是上限的說法，不必再多一句錯誤訊息。 */
+  var MAX_STILLS = 10;
   function renderStills(host) {
     var s = section(host, 'pw.art.stills.title', 'Stills', 'pw.art.stills.sub', 'Frames that sell the film without spoiling it.');
     s.insertAdjacentHTML('beforeend', '<div class="upload-assets upload-assets--fill" data-pw-stills></div>');

@@ -100,6 +100,63 @@
 }
 .option-set__action:hover { color: var(--foreground); background: var(--accent); }
 
+/* ── 快捷選項（2026-09-04 使用者裁示 · D249）────────────────────────────────
+   「新增選項」上面先放兩顆快捷：尺寸／顏色。按下去直接把整組選項連值一起建好
+   （尺寸＝S·M·L，顏色＝黑·白），因為站上絕大多數的實體商品就是這兩個維度，
+   逐格打字是重複勞動。要別的維度才按下面那顆空白的「新增選項」。
+   視覺上與「新增選項」分得開：這兩顆是**已經有內容**的捷徑，用實線膠囊；
+   下面那顆是「這裡還沒有東西」，維持虛線（見下一段）。 */
+.option-set__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+}
+.option-set__preset {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+  padding: var(--sp-8) var(--sp-14);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--foreground);
+  cursor: pointer;
+  transition: color var(--duration) var(--easing),
+              border-color var(--duration) var(--easing),
+              background-color var(--duration) var(--easing);
+}
+.option-set__preset:hover { border-color: var(--muted-foreground); background: var(--accent); }
+.option-set__preset:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.option-set__preset .ztor-icon { width: 14px; height: 14px; flex: none; color: var(--muted-foreground); }
+/* 快捷鈕上的色點：一顆選項可能有好幾個顏色，並排幾顆小點就說得完「按下去會拿到什麼」。 */
+.option-set__preset-dots { display: inline-flex; gap: 3px; }
+
+/* ── 顏色值的色球（D249）─────────────────────────────────────────────────
+   顏色選項的值多一個色號（#RRGGBB），名稱前面放一顆實際渲染那個顏色的球——
+   文字寫「墨黑」跟真的看到那塊黑不是一回事，色號本身也不是給人腦內轉換的。
+   同一顆球用在三個地方：值編輯列、收合摘要列、右欄的粉絲端預覽。 */
+.opt-dot {
+  display: inline-block;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: var(--opt-dot, transparent);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.opt-dot--sm { width: 8px; height: 8px; }
+
+/* 顏色值的編輯列：色球＋名稱＋色號，色號欄固定窄寬（#RRGGBB 就那麼長）。 */
+.variant-option__value--colour { align-items: center; }
+.variant-option__hex {
+  flex: 0 0 auto;
+  width: 110px;                 /* #RRGGBB 就這麼長，站上沒有這一階的寬度 token */
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+}
+
 /* 兩顆「新增」鈕（新增選項／新增選項值）＝虛線邊框（2026-07-21 使用者裁示）。
    虛線是「這裡還沒有東西、按了會長出來」的既有語彙（同 upload-tile、payout-modal 的投放區），
    跟已存在的實線列區分得開。 */

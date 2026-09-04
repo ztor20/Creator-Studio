@@ -91,7 +91,7 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 3
 | `S13` | 　　排序                            | Sort                                             | 🟢 Phase 1 | 🟡 gap   |                                                           |
 | `S14` | 　　欄位（圖片/名稱/分類/價格/狀態/庫存）         | Columns                                          | 🟢 Phase 1 | ✅ built  |                                                           |
 |       | **　　狀態**                        | Statuses                                         |            |          |                                                           |
-| `S15` | 　　　已上架（上架開關、編輯）                 | Live (toggle, edit)                              | 🟢 Phase 1 | ✅ built  |                                                           |
+| `S15` | 　　　已上架（上架／顯示／開賣三開關、編輯）           | Listed (three switches, edit)                    | 🟢 Phase 1 | ✅ built  | 2026-09-03 D241：單一「上架」開關拆成上架／顯示／開賣三開關，見主規格 §7.14 |
 | `S16` | 　　　已隱藏                          | Hidden                                           | 🟢 Phase 1 | ✅ built  |                                                           |
 | `S17` | 　　　庫存過低                         | Low stock                                        | 🟢 Phase 1 | ✅ built  |                                                           |
 | `S18` | 　　　補貨流程（數量/供應商/到貨日/備註/確認）       | Restock flow                                     | 🟢 Phase 1 | ✅ built  |                                                           |
@@ -128,7 +128,7 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 3
 | `S46` | 　　發布貼文                          | Publish post                                     | 🟢 Phase 1 | ✅ built  | reuses Ztor's existing social-post feature                |
 | `S47` | 　組合包詳情 / 編輯                     | Bundle detail / edit                             | 🟢 Phase 1 | ✅ built  |                                                           |
 | `S48` | 　　銷售摘要                          | Sales summary                                    | 🟢 Phase 1 | ✅ built  | reads from Earnings                                       |
-| `S49` | 　　庫存與成員影響（= 最少成員）               | Stock = min(member)                              | 🟢 Phase 1 | ✅ built  |                                                           |
+| `S49` | 　　庫存與成員影響（各成員可售量取最小，鎖定量優先）       | Stock = min(member sellable)                     | 🟢 Phase 1 | ✅ built  | 2026-09-03 D241：取代舊「= 最少成員」，成員有鎖定用鎖定量、沒鎖定用沒有被鎖定的庫存量，見主規格 §7.14 |
 | `S50` | 　　以粉絲身份預覽                       | See-as-fan preview                               | 🟢 Phase 1 | ✅ built  |                                                           |
 | `S51` | 　商店優惠碼（清單／新增／編輯／期間／停用）           | Store discount codes                             | 🟢 Phase 1 | ✅ built  | D183。自用碼各版本皆有；代理碼（推廣者／分成／代理銷售紀錄）只在 Phase 4，走保留 gate `full`（D185） |
 
@@ -168,9 +168,9 @@ ID 起始 `O01…` ｜ 🟢 24 · 🔵 3 · ⚪ 3
 | `O24` | 　取貨管理入口（E-Shop 下拉第三個目的地）     | Pickup management entry          | 🟢 Phase 1 | ✅ built | 規格 5.1.5.11 |
 | `O25` | 　　取貨場次清單（篩選 / 搜尋 / 分批載入）     | Pickup session list              | 🟢 Phase 1 | ✅ built | 5.1.5.11 F4 |
 | `O26` | 　　建立取貨場次                          | Create pickup session            | 🟢 Phase 1 | ✅ built | 5.1.5.12 |
-| `O27` | 　　取貨場次詳情（名單 / 核銷紀錄 / 匯出）     | Pickup session detail            | 🟢 Phase 1 | ✅ built | 5.1.5.15 |
+| `O27` | 　　取貨場次詳情（名單 / 核銷紀錄 / 匯出）     | Pickup session detail            | 🟢 Phase 1 | ✅ built | 5.1.5.15；名單一列一領取單位（D240） |
 | `O28` | 　　Scanner URL 與密碼（交付 / 生命週期）    | Scanner URL & password           | 🟢 Phase 1 | ✅ built | 5.1.5.15 F2 |
-| `O29` | 　　手機 Scanner 掃碼核銷（二元核銷）        | Mobile scanner redemption        | 🟢 Phase 1 | ✅ built | 5.1.5.14；核銷為二元制（D122） |
+| `O29` | 　　手機 Scanner 掃碼核銷（二元核銷）        | Mobile scanner redemption        | 🟢 Phase 1 | ✅ built | 5.1.5.14；二元核銷、一碼一件（D122／D240） |
 | `O30` | 　　活動票券共用核銷（回寫 Events check-in）  | Event ticket redemption          | 🟢 Phase 1 | ✅ built | 5.1.5.14 F2；票券狀態仍以 Events 為來源 |
 
 ## E · 收入管理 — Earnings / Income

@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L3 群組面板間距 · 調參器 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* ============================================================
+     lab-rowdis-spacing — L3 群組面板（.rowdis__group，展開時的 L2 薄膜面板）
+     間距調參器（2026-09-04）。
+
+     用途：取貨名單頁 pickup-detail.html 的買家分組面板被反映「間距太少」——
+     面板左右內距是 0（內容只靠列自己的 --sp-10 撐開）、上下內距只有 --sp-4，
+     圓角卻有 --radius-lg(16px)，第一眼買家名會卡在圓角弧線裡。這頁讓使用者
+     當場拉四個滑桿試出合理值，調定後把畫面最下方的 CSS 片段交回去，由我們
+     寫回 ds-components/row-disclosure.css。這是探索頁，不是產品頁；沒有任何
+     既有頁面或元件被改動。
+
+     ── 邊界（刻意的自我約束）────────────────────────────────
+     本頁 <style> 不覆寫、不重新定義任何既有共用 class 或 token；所有結構性
+     選擇器一律 `lab-` 前綴。預覽區的表格骨架（.lab-roster*）是本頁自有的一套，
+     逐項對照 ds-components/product-list.css 的 .product-list--roster 欄寬
+     （見該檔第 587 行）與 .product-list__row 的列內距複刻，只是換了 class 名字；
+     這麼做是因為調參要即時改「面板」的 padding/margin/radius，若直接掛真的
+     .rowdis__group 再用行內樣式覆寫，會跟該檔既有的 CSS 特異度打架，也可能被
+     誤讀成改了正式元件。徽章、按鈕、下拉選單、連結這類通用原子元件
+     （.badge / .btn / .card__link）不屬於這次要調的對象，直接沿用既有 class。
+
+     四個滑桿只用「行內 CSS 變數」驅動即時預覽（style="--lab-pad-x: …" 這類），
+     不算裸值違規；<style> 區塊本身的固定值一律走 token。
+     ============================================================ */
+
+  /* ── 頁面骨架（沿用 lab-row-disclosure.html 已核准的節奏）───────── */
+  .lab-grid {
+    display: grid;
+    gap: var(--sp-24);
+    margin-bottom: var(--sp-40);
+  }
+  .lab-section-title { margin: 0 0 var(--sp-4); }
+  .lab-section-desc {
+    margin: 0 0 var(--sp-20);
+    font-size: var(--fs-13);
+    color: var(--muted-foreground);
+  }
+
+  /* ── 對齊檢查常駐列 ─────────────────────────────────────── */
+  .lab-check {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-10);
+    padding: var(--sp-12) var(--sp-16);
+    border-radius: var(--radius-md);
+    background: var(--ztu-film);
+    box-shadow: inset 0 0 0 1px var(--border-soft);
+    font-family: var(--font-mono);
+    font-size: var(--fs-13);
+  }
+  .lab-check__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+    flex: none;
+  }
+  .lab-check--pass { color: var(--status-success); }
+  .lab-check--fail { color: var(--status-error); }
+  .lab-check__detail {
+    color: var(--muted-foreground);
+    font-size: var(--fs-12);
+  }
+
+  /* ── 控制項 ─────────────────────────────────────────────── */
+  .lab-controls__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--sp-20);
+    margin-bottom: var(--sp-20);
+  }
+  .lab-control { display: flex; flex-direction: column; gap: var(--sp-8); }
+  .lab-control__label {
+    font-size: var(--fs-13);
+    font-weight: var(--fw-medium);
+    color: var(--foreground);
+  }
+  .lab-control__row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-10);
+  }
+  .lab-slider {
+    flex: 1;
+    accent-color: var(--primary);
+  }
+  .lab-control__value {
+    min-width: 3.6em;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: var(--fs-13);
+    color: var(--foreground);
+  }
+  .lab-control__hint {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-6);
+    font-size: var(--fs-12);
+    color: var(--muted-foreground);
+  }
+  .lab-token-chip {
+    display: inline-flex;
+    align-items: center;
+    height: var(--sp-20);
+    padding: 0 var(--sp-8);
+    border-radius: var(--radius-pill);
+    background: var(--ztu-accent-surface);
+    color: var(--ztu-accent-fg);
+    font-family: var(--font-mono);
+    font-size: var(--fs-11);
+    font-weight: var(--fw-semibold);
+    white-space: nowrap;
+  }
+  .lab-token-chip--warn {
+    background: color-mix(in srgb, var(--status-warning) 22%, transparent);
+    color: var(--status-warning-ink);
+  }
+  .lab-controls__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-12);
+    padding-top: var(--sp-16);
+    border-top: 1px solid var(--border-soft);
+  }
+  .lab-controls__actions-note {
+    font-size: var(--fs-12);
+    color: var(--muted-foreground);
+  }
+
+  /* ── 預覽：自有表格骨架（複刻 .product-list--roster / .product-list__row，
+     見檔頭邊界說明）───────────────────────────────────────── */
+  .lab-roster-wrap {
+    padding-inline: var(--sp-24);
+    margin-inline: calc(var(--sp-24) * -1);
+    overflow-x: auto;
+  }
+  .lab-roster { width: 100%; min-width: 760px; color: var(--foreground); }
+  .lab-roster__head,
+  .lab-roster__row {
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) 108px minmax(140px, 1.1fr) 64px 112px minmax(96px, 0.8fr) 104px 88px 40px;
+    gap: var(--sp-20);
+    align-items: center;
+  }
+  .lab-roster__head {
+    min-height: 44px;
+    padding: 0 var(--sp-10);
+    color: var(--column-head-ink);
+    font-family: var(--font-ui);
+    font-size: var(--fs-12);
+    font-weight: var(--fw-regular);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  .lab-roster__row {
+    min-height: 88px;
+    padding: var(--sp-14) var(--sp-10);
+    border-bottom: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+  }
+  .lab-roster__row:last-child { border-bottom-color: transparent; }
+  .lab-roster__product { display: flex; align-items: center; gap: var(--sp-14); min-width: 0; }
+  .lab-roster__body { min-width: 0; display: flex; flex-direction: column; }
+  .lab-roster__label { display: flex; align-items: center; gap: var(--sp-4); }
+  .lab-roster__title {
+    overflow: hidden;
+    color: var(--foreground);
+    font-family: var(--font-ui);
+    font-size: var(--fs-14);
+    font-weight: var(--fw-regular);
+    line-height: var(--lh-normal);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .lab-roster__meta {
+    overflow: hidden;
+    margin-top: var(--sp-2);
+    color: var(--muted-foreground);
+    font-size: var(--fs-12);
+    line-height: var(--lh-comfy);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .lab-roster__cell { min-width: 0; color: var(--foreground-muted); font-size: var(--fs-13); }
+  .lab-roster__code { font-variant-numeric: tabular-nums; letter-spacing: .02em; color: var(--foreground-muted); }
+  .lab-roster__none { color: var(--muted-foreground); }
+  .lab-roster__actions { display: flex; justify-content: flex-end; }
+  .lab-roster__toggle .ztor-icon { transform: rotate(180deg); }
+
+  /* ── 面板本身：四個滑桿驅動的行內變數，套在這裡 ─────────────
+     手法照 ds-components/row-disclosure.css 的 .rowdis__group--gutter：
+     padding-inline 往外推、margin-inline 用等值負數往外長，兩者相消，
+     裡面的列（.lab-roster__row）x 位置完全不動——這頁的滑桿只改變數值，
+     不改變這個手法本身，所以任何組合都不會讓欄位位移。
+     這裡本頁一律「常亮」（不做展開/收合互動），因為要調的正是展開態的樣子。 */
+  .lab-roster__group {
+    background: var(--ztu-film);
+    box-shadow: inset 0 0 0 1px var(--border-soft);
+    border-radius: var(--lab-radius, var(--radius-lg));
+    margin-block: var(--lab-margin-y, var(--sp-8));
+    padding-block: var(--lab-pad-y, var(--sp-4));
+    padding-inline: var(--lab-pad-x, 0px);
+    margin-inline: calc(var(--lab-pad-x, 0px) * -1);
+  }
+  .lab-roster__group .lab-roster__row { border-bottom-color: transparent; }
+  .lab-roster__child { font-size: var(--fs-13); color: var(--foreground-muted); }
+  .lab-roster__child .lab-roster__title { font-size: var(--fs-13); }
+
+  /* ── 輸出 CSS ───────────────────────────────────────────── */
+  .lab-code {
+    margin: 0;
+    padding: var(--sp-16);
+    border-radius: var(--radius-md);
+    background: var(--ztu-film);
+    box-shadow: inset 0 0 0 1px var(--border-soft);
+    font-family: var(--font-mono);
+    font-size: var(--fs-12);
+    line-height: var(--lh-comfy);
+    color: var(--foreground);
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .lab-output__note {
+    margin: var(--sp-12) 0 0;
+    font-size: var(--fs-12);
+    color: var(--muted-foreground);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page lab">
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title">L3 群組面板間距 · 調參器</h1>
+          <p class="page-intro__sub">取貨名單（pickup-detail.html）買家分組的 L2 薄膜面板被反映「間距太少」：面板左右內距是 0（內容只靠列自己的 10px 撐開）、上下內距只有 4px，圓角卻有 16px，買家名正好卡在圓角弧線裡。這頁用真實欄位版面即時預覽，拉四個滑桿試間距，調定後把最下方的 CSS 片段交回去，由我們寫回 <code>ds-components/row-disclosure.css</code>。沒有任何既有頁面或元件被改動。</p>
+        </div>
+      </div>
+
+      <div class="lab-grid">
+
+        <section class="card">
+          <div class="card__head"><h2 class="card__title">對齊檢查</h2></div>
+          <div class="lab-check lab-check--pass" id="lab-check">
+            <span class="lab-check__dot"></span>
+            <span id="lab-check-text">量測中…</span>
+          </div>
+          <p class="card__note">比對表頭第三欄（領取項目）、面板內母列第三欄、面板內子列第三欄三處的 <code>left</code>：三者相同才算對齊通過。這條線在任何滑桿組合下都應該維持通過——面板變胖是靠「內距＋等值負外距」相消，欄位不會跟著跑。</p>
+        </section>
+
+        <section class="card">
+          <div class="card__head"><h2 class="card__title">面板間距控制</h2></div>
+          <div class="lab-controls__grid">
+
+            <div class="lab-control">
+              <label class="lab-control__label" for="lab-pad-x">面板左右內距（往外長）</label>
+              <div class="lab-control__row">
+                <input type="range" class="lab-slider" id="lab-pad-x" min="0" max="24" step="4" value="0">
+                <span class="lab-control__value" id="lab-pad-x-val">0px</span>
+              </div>
+              <div class="lab-control__hint" id="lab-pad-x-hint"></div>
+            </div>
+
+            <div class="lab-control">
+              <label class="lab-control__label" for="lab-pad-y">面板上下內距</label>
+              <div class="lab-control__row">
+                <input type="range" class="lab-slider" id="lab-pad-y" min="0" max="24" step="4" value="4">
+                <span class="lab-control__value" id="lab-pad-y-val">4px</span>
+              </div>
+              <div class="lab-control__hint" id="lab-pad-y-hint"></div>
+            </div>
+
+            <div class="lab-control">
+              <label class="lab-control__label" for="lab-margin-y">面板上下外距</label>
+              <div class="lab-control__row">
+                <input type="range" class="lab-slider" id="lab-margin-y" min="0" max="24" step="4" value="8">
+                <span class="lab-control__value" id="lab-margin-y-val">8px</span>
+              </div>
+              <div class="lab-control__hint" id="lab-margin-y-hint"></div>
+            </div>
+
+            <div class="lab-control">
+              <label class="lab-control__label" for="lab-radius">面板圓角</label>
+              <div class="lab-control__row">
+                <input type="range" class="lab-slider" id="lab-radius" min="12" max="28" step="2" value="16">
+                <span class="lab-control__value" id="lab-radius-val">16px</span>
+              </div>
+              <div class="lab-control__hint" id="lab-radius-hint"></div>
+            </div>
+
+          </div>
+          <div class="lab-controls__actions">
+            <button class="btn btn--outline" type="button" id="lab-btn-current">現況</button>
+            <button class="btn btn--primary" type="button" id="lab-btn-suggested">建議</button>
+            <span class="lab-controls__actions-note">「現況」＝目前元件的實際值（左右 0／上下 4／外距 8／圓角 16）；「建議」見下方輸出區的說明。</span>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__head"><h2 class="card__title">即時預覽</h2></div>
+          <p class="lab-section-desc">資料取自 pickup-detail.html 現況：Mika L.（訂單 #ZT-10482）一張單五件領取單位，面板上下各放一列面板外的一般列，方便比較面板與相鄰列的關係。</p>
+
+          <div class="lab-roster-wrap">
+            <div class="lab-roster" id="lab-roster">
+
+              <div class="lab-roster__head" role="row">
+                <div role="columnheader">買家</div>
+                <div role="columnheader">來源</div>
+                <div role="columnheader" id="lab-align-head">領取項目</div>
+                <div role="columnheader">規格</div>
+                <div role="columnheader">領取碼</div>
+                <div role="columnheader">來源組合</div>
+                <div role="columnheader">狀態</div>
+                <div role="columnheader">最近核銷</div>
+                <div role="columnheader" aria-label="操作"></div>
+              </div>
+
+              <!-- 面板外的一般列：Yuki H.（#ZT-10471，退款即失效示範，收合狀態） -->
+              <div class="lab-roster__row" role="row">
+                <div class="lab-roster__product" role="cell">
+                  <div class="lab-roster__body">
+                    <div class="lab-roster__label"><span class="lab-roster__title">Yuki H.</span><button class="btn btn--icon btn--xs" type="button" aria-label="展開這位買家的領取單位" tabindex="-1"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                    <div class="lab-roster__meta">本場次已領 0／1・1 件已退款失效</div>
+                  </div>
+                </div>
+                <div class="lab-roster__cell" role="cell"><a class="card__link" href="#" tabindex="-1">#ZT-10471</a></div>
+                <div class="lab-roster__cell" role="cell"></div>
+                <div class="lab-roster__cell" role="cell"></div>
+                <div class="lab-roster__cell" role="cell"></div>
+                <div class="lab-roster__cell" role="cell"></div>
+                <div class="lab-roster__cell" role="cell"></div>
+                <div class="lab-roster__cell" role="cell"></div>
+                <div class="lab-roster__actions" role="cell"></div>
+              </div>
+
+              <!-- L3 群組面板：Mika L.（#ZT-10482），常亮展開態——這頁要調的就是這塊面板 -->
+              <div class="lab-roster__group" id="lab-group">
+
+                <div class="lab-roster__row" role="row">
+                  <div class="lab-roster__product" role="cell">
+                    <div class="lab-roster__body">
+                      <div class="lab-roster__label"><span class="lab-roster__title">Mika L.</span><button class="btn btn--icon btn--xs lab-roster__toggle" type="button" aria-label="收合這位買家的領取單位" aria-expanded="true" tabindex="-1"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                      <div class="lab-roster__meta">本場次已領 1／5</div>
+                    </div>
+                  </div>
+                  <div class="lab-roster__cell" role="cell"><a class="card__link" href="#" tabindex="-1">#ZT-10482</a></div>
+                  <div class="lab-roster__cell" role="cell" id="lab-align-mother"></div>
+                  <div class="lab-roster__cell" role="cell"></div>
+                  <div class="lab-roster__cell" role="cell"></div>
+                  <div class="lab-roster__cell" role="cell"></div>
+                  <div class="lab-roster__cell" role="cell"></div>
+                  <div class="lab-roster__cell" role="cell"></div>
+                  <div class="lab-roster__actions" role="cell"></div>
+                </div>
+
+                <div class="lab-roster__row lab-roster__child" role="row">
+                  <div class="lab-roster__product" role="cell"></div>
+                  <div class="lab-roster__cell" role="cell"><a class="card__link" href="#" tabindex="-1">#ZT-10482</a></div>
+                  <div class="lab-roster__cell" role="cell" id="lab-align-child">九龍夜行 紀念 T 恤</div>
+                  <div class="lab-roster__cell" role="cell">M</div>
+                  <div class="lab-roster__cell lab-roster__code" role="cell">PU-10482-01</div>
+                  <div class="lab-roster__cell" role="cell"><span class="lab-roster__none">—</span></div>
+                  <div class="lab-roster__cell" role="cell"><span class="badge badge--warning">待核銷</span></div>
+                  <div class="lab-roster__cell" role="cell"><span class="lab-roster__none">—</span></div>
+                  <div class="lab-roster__actions" role="cell"><button class="btn btn--icon btn--xs" type="button" aria-label="更多操作" tabindex="-1"><i data-lucide="more-vertical" class="ztor-icon"></i></button></div>
+                </div>
+
+                <div class="lab-roster__row lab-roster__child" role="row">
+                  <div class="lab-roster__product" role="cell"></div>
+                  <div class="lab-roster__cell" role="cell"><a class="card__link" href="#" tabindex="-1">#ZT-10482</a></div>
+                  <div class="lab-roster__cell" role="cell">九龍夜行 六片帽</div>
+                  <div class="lab-roster__cell" role="cell"><span class="lab-roster__none">—</span></div>
+                  <div class="lab-roster__cell lab-roster__code" role="cell">PU-10482-02</div>
+                  <div class="lab-roster__cell" role="cell">首賣夜 組合包</div>
+                  <div class="lab-roster__cell" role="cell"><span class="badge badge--success">已核銷</span></div>
+                  <div class="lab-roster__cell" role="cell">13:40</div>
+                  <div class="lab-roster__actions" role="cell"><button class="btn btn--icon btn--xs" type="button" aria-label="更多操作" tabindex="-1"><i data-lucide="more-vertical" class="ztor-icon"></i></button></div>
+                </div>
+
+                <div class="lab-roster__row lab-roster__child" role="row">
+                  <div class="lab-roster__product" role="cell"></div>
+                  <div class="lab-roster__cell" role="cell"><a class="card__link" href="#" tabindex="-1">#ZT-10482</a></div>
+                  <div class="lab-roster__cell" role="cell">九龍夜行 六片帽</div>
+                  <div class="lab-roster__cell" role="cell"><span class="lab-roster__none">—</span></div>
+                  <div class="lab-roster__cell lab-roster__code" role="cell">PU-10482-03</div>
+                  <div class="lab-roster__cell" role="cell">首賣夜 組合包</div>
+                  <div class="lab-roster__cell" role="cell"><span class="badge badge--warning">待核銷</span></div>
+                  <div class="lab-roster__cell" role="cell"><span class="lab-roster__none">—</span></div>
+                  <div class="lab-roster__actions" role="cell"><button class="btn btn--icon btn--xs" type="button" aria-label="更多操作" tabindex="-1"><i data-lucide="more-vertical" class="ztor-icon"></i></button></div>
+                </div>
+
+                <div class="lab-roster__row lab-roster__child" role="row">
+                  <div class="lab-roster__product" role="cell"></div>
+                  <div class="lab-roster__cell" role="cell"><a class="card__link" href="#" tabindex="-1">#ZT-10482</a></div>
+                  <div class="lab-roster__cell" role="cell">九龍夜行 六片帽</div>
+                  <div class="lab-roster__cell" role="cell"><span class="lab-roster__none">—</span></div>
+                  <div class="lab-roster__cell lab-roster__code" role="cell">PU-10482-04</div>
+                  <div class="lab-roster__cell" role="cell">首賣夜 組合包</div>
+                  <div class="lab-roster__cell" role="cell"><span class="badge badge--warning">待核銷</span></div>
+                  <div class="lab-roster__cell" role="cell"><span class="lab-roster__none">—</span></div>
+                  <div class="lab-roster__actions" role="cell"><button class="btn btn--icon btn--xs" type="button" aria-label="更多操作" tabindex="-1"><i data-lucide="more-vertical" class="ztor-icon"></i></button></div>
+                </div>
+
+                <div class="lab-roster__row lab-roster__child" role="row">
+                  <div class="lab-roster__product" role="cell"></div>
+                  <div class="lab-roster__cell" role="cell"><a class="card__link" href="#" tabindex="-1">#ZT-10482</a></div>
+                  <div class="lab-roster__cell" role="cell">九龍夜行 原聲黑膠 · 編號 1/50</div>
+                  <div class="lab-roster__cell" role="cell"><span class="lab-roster__none">—</span></div>
+                  <div class="lab-roster__cell lab-roster__code" role="cell">PU-10482-05</div>
+                  <div class="lab-roster__cell" role="cell">首賣夜 組合包</div>
+                  <div class="lab-roster__cell" role="cell"><span class="badge badge--warning">待核銷</span></div>
+                  <div class="lab-roster__cell" role="cell"><span class="lab-roster__none">—</span></div>
+                  <div class="lab-roster__actions" role="cell"><button class="btn btn--icon btn--xs" type="button" aria-label="更多操作" tabindex="-1"><i data-lucide="more-vertical" class="ztor-icon"></i></button></div>
+                </div>
+
+              </div>
+
+              <!-- 面板外的一般列：Jonas P.（#ZT-10473，組合品項只有被退成員失效，收合狀態） -->
+              <div class="lab-roster__row" role="row">
+                <div class="lab-roster__product" role="cell">
+                  <div class="lab-roster__body">
+                    <div class="lab-roster__label"><span class="lab-roster__title">Jonas P.</span><button class="btn btn--icon btn--xs" type="button" aria-label="展開這位買家的領取單位" tabindex="-1"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                    <div class="lab-roster__meta">本場次已領 0／1・2 件已退款失效</div>
+                  </div>
+                </div>
+                <div class="lab-roster__cell" role="cell"><a class="card__link" href="#" tabindex="-1">#ZT-10473</a></div>
+                <div class="lab-roster__cell" role="cell"></div>
+                <div class="lab-roster__cell" role="cell"></div>
+                <div class="lab-roster__cell" role="cell"></div>
+                <div class="lab-roster__cell" role="cell"></div>
+                <div class="lab-roster__cell" role="cell"></div>
+                <div class="lab-roster__cell" role="cell"></div>
+                <div class="lab-roster__actions" role="cell"></div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__head"><h2 class="card__title">輸出 CSS</h2></div>
+          <pre class="lab-code" id="lab-output">/* 調整滑桿以產生片段 */</pre>
+          <p class="lab-output__note" id="lab-output-suggest-note">「建議」值：左右內距 <code>--sp-8</code>、上下內距 <code>--sp-12</code>、上下外距與圓角維持現況。理由——左右加 8px 疊上列本身既有的 10px 內距，內容距面板邊緣共 18px，超過圓角 16px 的半徑，買家名不再卡進弧線；上下從 4px 加到 12px，首尾列不再貼邊，但沒有誇張到拉開面板與資料的距離感；外距 8px、圓角 16px 本來就跟站上其他薄膜面板一致，使用者反饋只針對內距太少，不用跟著調。</p>
+        </section>
+
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script>
+(function () {
+  'use strict';
+
+  var SPACING_TOKENS = [
+    ['--sp-4', 4], ['--sp-8', 8], ['--sp-10', 10], ['--sp-12', 12],
+    ['--sp-16', 16], ['--sp-20', 20], ['--sp-24', 24]
+  ];
+  var RADIUS_TOKENS = [
+    ['--radius-md', 10], ['--radius-lg', 16], ['--radius-xl', 24]
+  ];
+
+  var CURRENT = { padX: 0, padY: 4, marginY: 8, radius: 16 };
+  var SUGGESTED = { padX: 8, padY: 12, marginY: 8, radius: 16 };
+
+  var els = {
+    padX: document.getElementById('lab-pad-x'),
+    padY: document.getElementById('lab-pad-y'),
+    marginY: document.getElementById('lab-margin-y'),
+    radius: document.getElementById('lab-radius'),
+    padXVal: document.getElementById('lab-pad-x-val'),
+    padYVal: document.getElementById('lab-pad-y-val'),
+    marginYVal: document.getElementById('lab-margin-y-val'),
+    radiusVal: document.getElementById('lab-radius-val'),
+    padXHint: document.getElementById('lab-pad-x-hint'),
+    padYHint: document.getElementById('lab-pad-y-hint'),
+    marginYHint: document.getElementById('lab-margin-y-hint'),
+    radiusHint: document.getElementById('lab-radius-hint'),
+    group: document.getElementById('lab-group'),
+    check: document.getElementById('lab-check'),
+    checkText: document.getElementById('lab-check-text'),
+    output: document.getElementById('lab-output'),
+    btnCurrent: document.getElementById('lab-btn-current'),
+    btnSuggested: document.getElementById('lab-btn-suggested'),
+    alignHead: document.getElementById('lab-align-head'),
+    alignMother: document.getElementById('lab-align-mother'),
+    alignChild: document.getElementById('lab-align-child')
+  };
+
+  // 找最接近的 token；value 為 0 是合法的「不套用」，不算非 token 值。
+  function nearestToken(value, tokens) {
+    var best = null, bestDiff = Infinity;
+    for (var i = 0; i < tokens.length; i++) {
+      var diff = Math.abs(tokens[i][1] - value);
+      if (diff < bestDiff) { bestDiff = diff; best = tokens[i]; }
+    }
+    return { name: best[0], val: best[1], diff: value - best[1], exact: bestDiff === 0 };
+  }
+
+  function renderHint(el, value, tokens) {
+    el.innerHTML = '';
+    if (value === 0) {
+      var zero = document.createElement('span');
+      zero.textContent = '0px（不套用內距，非 token 值）';
+      el.appendChild(zero);
+      return;
+    }
+    var m = nearestToken(value, tokens);
+    var chip = document.createElement('span');
+    chip.className = 'lab-token-chip' + (m.exact ? '' : ' lab-token-chip--warn');
+    chip.textContent = m.name + '(' + m.val + ')';
+    el.appendChild(chip);
+    var text = document.createElement('span');
+    if (m.exact) {
+      text.textContent = '＝ 目前值';
+    } else {
+      text.textContent = '⚠ 非 token 值 — 最近 token 差 ' + (m.diff > 0 ? '+' : '') + m.diff + 'px';
+    }
+    el.appendChild(text);
+  }
+
+  function cssValueFor(value, tokens) {
+    if (value === 0) return '0';
+    var m = nearestToken(value, tokens);
+    return m.exact ? 'var(' + m.name + ')' : (value + 'px /* 非 token 值，最近 ' + m.name + '(' + m.val + ')，需人工挑一個 token */');
+  }
+
+  function state() {
+    return {
+      padX: Number(els.padX.value),
+      padY: Number(els.padY.value),
+      marginY: Number(els.marginY.value),
+      radius: Number(els.radius.value)
+    };
+  }
+
+  function applyPreview(s) {
+    els.group.style.setProperty('--lab-pad-x', s.padX + 'px');
+    els.group.style.setProperty('--lab-pad-y', s.padY + 'px');
+    els.group.style.setProperty('--lab-margin-y', s.marginY + 'px');
+    els.group.style.setProperty('--lab-radius', s.radius + 'px');
+  }
+
+  function updateValues(s) {
+    els.padXVal.textContent = s.padX + 'px';
+    els.padYVal.textContent = s.padY + 'px';
+    els.marginYVal.textContent = s.marginY + 'px';
+    els.radiusVal.textContent = s.radius + 'px';
+    renderHint(els.padXHint, s.padX, SPACING_TOKENS);
+    renderHint(els.padYHint, s.padY, SPACING_TOKENS);
+    renderHint(els.marginYHint, s.marginY, SPACING_TOKENS);
+    renderHint(els.radiusHint, s.radius, RADIUS_TOKENS);
+  }
+
+  function updateCheck() {
+    // rAF 確保樣式已經套用、layout 已經 reflow 過再量測。
+    requestAnimationFrame(function () {
+      var head = els.alignHead.getBoundingClientRect().left;
+      var mother = els.alignMother.getBoundingClientRect().left;
+      var child = els.alignChild.getBoundingClientRect().left;
+      var vals = [head, mother, child];
+      var max = Math.max.apply(null, vals), min = Math.min.apply(null, vals);
+      var diff = Math.round((max - min) * 10) / 10;
+      var pass = diff < 0.5;
+      els.check.className = 'lab-check ' + (pass ? 'lab-check--pass' : 'lab-check--fail');
+      var fmt = function (n) { return Math.round(n * 10) / 10; };
+      if (pass) {
+        els.checkText.innerHTML = '✓ 對齊通過 — 表頭／母列／子列第三欄 left 皆為 ' + fmt(head) + 'px';
+      } else {
+        els.checkText.innerHTML = '⚠ 欄位位移 — 表頭 ' + fmt(head) + 'px ／母列 ' + fmt(mother) + 'px ／子列 ' + fmt(child) + 'px（差 ' + diff + 'px）';
+      }
+    });
+  }
+
+  function updateOutput(s) {
+    var lines = [];
+    lines.push('/* .rowdis__group（面板間距）— 貼給我們寫回元件 */');
+    lines.push('.rowdis__group {');
+    lines.push('  padding-inline: ' + cssValueFor(s.padX, SPACING_TOKENS) + ';');
+    lines.push('  margin-inline: calc(' + cssValueFor(s.padX, SPACING_TOKENS) + ' * -1);');
+    lines.push('  padding-block: ' + cssValueFor(s.padY, SPACING_TOKENS) + ';');
+    lines.push('  margin-block: ' + cssValueFor(s.marginY, SPACING_TOKENS) + ';');
+    lines.push('  border-radius: ' + cssValueFor(s.radius, RADIUS_TOKENS) + ';');
+    lines.push('}');
+    if (s.padX === 0) {
+      lines.push('/* 左右內距為 0：等同現況（表格型面板不掛 --gutter 手法），可省略上面兩行 */');
+    }
+    els.output.textContent = lines.join('\n');
+  }
+
+  function update() {
+    var s = state();
+    applyPreview(s);
+    updateValues(s);
+    updateOutput(s);
+    updateCheck();
+  }
+
+  function setState(s) {
+    els.padX.value = s.padX;
+    els.padY.value = s.padY;
+    els.marginY.value = s.marginY;
+    els.radius.value = s.radius;
+    update();
+  }
+
+  [els.padX, els.padY, els.marginY, els.radius].forEach(function (el) {
+    el.addEventListener('input', update);
+  });
+  els.btnCurrent.addEventListener('click', function () { setState(CURRENT); });
+  els.btnSuggested.addEventListener('click', function () { setState(SUGGESTED); });
+
+  setState(CURRENT);
+})();
+</script>
+</body>
+</html>

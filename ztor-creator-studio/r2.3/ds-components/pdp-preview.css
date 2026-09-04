@@ -1,0 +1,241 @@
+/* ============================================================
+   pdp-preview.css · 粉絲端商品頁的手機版鏡像（建立流程的即時預覽）
+
+   建立商品時右欄那句「買家在 Ztor 看到的樣子」——2026-09-04 使用者裁示，
+   這句話要真的成立：預覽不再是 Studio 自己畫的一張小卡，而是**粉絲端商品頁
+   （ztor.vercel.app/shop-item.html）手機版的版型鏡像**，資料一律接建立流程當下
+   的欄位。原本的 `preview-card`（縮圖＋名稱＋價格＋一句描述）留給其他建立流程用。
+
+   ── 這支是「搬過來的設計」，不是 Studio 的控制項 ──────────────────────────
+   版型與比例照粉絲端量測（375 視窗、內容寬 343）：主圖框 2:3、縮圖列、
+   徽章列／標題 24px／價格 24px／描述三行截斷／規格選項／數量＋加入購物車／交付說明。
+   有幾個地方刻意與 Studio 的慣例不同，因為那就是粉絲端的樣子：
+
+     · 尺寸 chip 是直角（粉絲端 --radius-md 為 0），Studio 的控制項一律圓角
+     · 主要行動是白底深字的膠囊鈕（粉絲端 .btn--mono：畫面已經很多橘，CTA 再用橘就沒主次），
+       Studio 的主要動作是橘底
+     · 價格用近白色而不是品牌橘（粉絲端 LEVER 2「安靜的價格」）
+
+   所以這些值寫在本檔內、不外流成 Studio 的元件變體；要改粉絲端長相請改粉絲端，
+   這裡跟著對齊。顏色與間距仍走 r2.3 的 token（不寫死 hex），只是角色對應到
+   粉絲端的用法：--foreground≈text-primary、--muted-foreground≈text-secondary、
+   --faint-ink≈text-tertiary、--ztu-film≈white-alpha-4、--primary≈yellow-500。
+
+   ── 沒有資料時 ────────────────────────────────────────────────────────────
+   建立流程隨時都在半成品狀態，所以每一塊都有空狀態：沒填的欄位用 `.is-empty`
+   （斜體、淡色）顯示占位字，沒有圖的主圖框顯示圖示，沒有規格選項就整段不出現。
+   這一條沿用 preview-card 既有的做法，不另立第二種空狀態語言。
+
+   anatomy
+     .pdp-pv                      （整支預覽，寬度由 .preview-col 決定）
+       .pdp-pv__gallery
+         .pdp-pv__frame           （主圖框，2:3；空的時候放 __icon）
+         .pdp-pv__thumbs          （縮圖列，橫向捲動）
+           .pdp-pv__thumb（.is-active）
+       .pdp-pv__buy
+         .pdp-pv__eyebrow         （分類）
+         .pdp-pv__title           （商品名稱）
+         .pdp-pv__price           （+ .pdp-pv__was 劃線原價）
+         .pdp-pv__lead            （描述，三行截斷）
+         .pdp-pv__variants > .pdp-pv__variant
+           .pdp-pv__vlabel + .pdp-pv__opts > .pdp-pv__chip
+         .pdp-pv__actions
+           .pdp-pv__qty（__qbtn · __qval）+ .pdp-pv__add
+         .pdp-pv__delivery
+   ============================================================ */
+
+/* 顯示尺寸（2026-09-04 使用者裁示，先「縮小 1/3」再改「只要縮小 1/4」）：版型仍然是
+   手機的 360px，整支用 zoom 縮到 3/4 顯示——不是把欄位排窄。字級、間距、圖框比例一起縮，
+   看到的還是同一張手機畫面、只是小一號；排窄的話字級不會跟著變，就不再是那個版型了。
+   欄寬（.preview-split--phone）因此是 270px＝360 × 3/4 的實際佔位。 */
+.pdp-pv {
+  zoom: var(--pdp-pv-zoom, 0.75);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-24);            /* 粉絲端 .pdp__grid 的 gap（手機版 32，這裡的欄比 375 窄一階）*/
+  min-width: 0;
+}
+
+/* ── 圖庫 ───────────────────────────────────────────────────────────────── */
+.pdp-pv__gallery { display: flex; flex-direction: column; gap: var(--sp-8); min-width: 0; }
+
+.pdp-pv__frame {
+  position: relative;
+  aspect-ratio: var(--img-portrait, 2 / 3);   /* 粉絲端量到 343×515＝2:3，與站上上傳槽同比例 */
+  border: 1px solid var(--border-soft, var(--border));
+  background: var(--ztu-film);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.pdp-pv__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pdp-pv__frame .pdp-pv__icon { color: var(--faint-ink); }
+.pdp-pv__frame.is-filled .pdp-pv__icon { display: none; }
+
+.pdp-pv__thumbs {
+  display: flex;
+  gap: var(--sp-8);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.pdp-pv__thumbs::-webkit-scrollbar { display: none; }
+.pdp-pv__thumbs:empty { display: none; }
+
+.pdp-pv__thumb {
+  flex: 0 0 auto;
+  width: 56px;
+  aspect-ratio: var(--img-portrait, 2 / 3);
+  border: 2px solid transparent;
+  background: var(--ztu-film);
+  overflow: hidden;
+}
+.pdp-pv__thumb.is-active { border-color: var(--primary); }
+.pdp-pv__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ── 購買欄 ─────────────────────────────────────────────────────────────── */
+.pdp-pv__buy { display: flex; flex-direction: column; min-width: 0; }
+
+.pdp-pv__eyebrow {
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  color: var(--faint-ink);
+  margin-bottom: var(--sp-8);
+}
+
+.pdp-pv__title {
+  margin: 0 0 var(--sp-12);
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.pdp-pv__prices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-16);
+}
+/* 粉絲端 LEVER 2：價格用近白（--text-primary）而不是品牌橘——那一頁的橘留給
+   徽章、尺寸指南、願望清單這些細節，價格喊橘會跟主 CTA 搶。 */
+.pdp-pv__price {
+  font-size: var(--fs-24);
+  font-weight: var(--fw-bold);
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+.pdp-pv__was {
+  font-size: var(--fs-14);
+  color: var(--faint-ink);
+  text-decoration: line-through;
+  font-variant-numeric: tabular-nums;
+}
+
+.pdp-pv__lead {
+  margin: 0 0 var(--sp-20);
+  color: var(--muted-foreground);
+  font-size: var(--fs-14);
+  line-height: var(--lh-comfy);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── 規格選項 ───────────────────────────────────────────────────────────── */
+.pdp-pv__variants { display: flex; flex-direction: column; gap: var(--sp-16); margin-bottom: var(--sp-20); }
+.pdp-pv__variants:empty { display: none; }
+.pdp-pv__variant { display: flex; flex-direction: column; gap: var(--sp-8); min-width: 0; }
+
+.pdp-pv__vlabel {
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  color: var(--muted-foreground);
+}
+
+.pdp-pv__opts { display: flex; flex-wrap: wrap; gap: var(--sp-8); }
+
+/* 直角是粉絲端的做法（見檔頭）：那一頁的 --radius-md 是 0，尺寸 chip 因此是方的。 */
+.pdp-pv__chip {
+  min-height: 36px;
+  min-width: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6) var(--sp-12);
+  white-space: nowrap;
+  border: 1px solid var(--border);
+  background: var(--ztu-film);
+  color: var(--foreground);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+}
+.pdp-pv__chip.is-selected { border-color: var(--primary); border-width: 2px; }
+/* 顏色值的 chip 帶一顆色球（D249，球本身定義在 variant-builder.css）：
+   粉絲端看到的是顏色，不是「Black」這個字。 */
+.pdp-pv__chip .opt-dot { margin-right: var(--sp-6); }
+
+/* ── 動作列（預覽，不可互動）───────────────────────────────────────────── */
+.pdp-pv__actions {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-16);
+}
+
+.pdp-pv__qty {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--ztu-film);
+}
+.pdp-pv__qbtn { width: 36px; display: grid; place-items: center; color: var(--muted-foreground); }
+.pdp-pv__qbtn svg { width: 14px; height: 14px; }
+.pdp-pv__qval {
+  min-width: 28px;
+  text-align: center;
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 粉絲端的主 CTA 是白底深字的膠囊（.btn--mono）：商品頁本身已經有很多橘，
+   主鈕再用橘就沒有主次。這是粉絲端的決定，不是 Studio 按鈕的新變體。 */
+.pdp-pv__add {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-8);
+  padding: var(--sp-12) var(--sp-20);
+  border-radius: var(--radius-pill);
+  background: var(--foreground);
+  color: var(--background);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-bold);
+}
+.pdp-pv__add svg { width: 16px; height: 16px; }
+
+/* ── 交付說明 ───────────────────────────────────────────────────────────── */
+.pdp-pv__delivery {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  padding: var(--sp-12) var(--sp-16);
+  border: 1px solid var(--border-soft, var(--border));
+  background: var(--ztu-film);
+  color: var(--faint-ink);
+  font-size: var(--fs-12);
+  line-height: var(--lh-comfy);
+}
+.pdp-pv__delivery svg { width: 14px; height: 14px; flex: none; }
+
+/* ── 空狀態（沿用 preview-card 的 .is-empty 語言）─────────────────────────── */
+.pdp-pv .is-empty { font-style: italic; color: var(--faint-ink); font-weight: var(--fw-regular); }

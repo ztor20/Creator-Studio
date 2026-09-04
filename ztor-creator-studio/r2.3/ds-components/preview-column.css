@@ -22,6 +22,11 @@
    建立活動的右軌是 .wizard-split--narrow（264px／gap 24），建立商品原本是 320px／gap 40，
    兩個建立流程並排看時右欄一寬一窄。改成同一組數字，數值來源就是那支元件、不另立第三種。 */
 .preview-split--narrow { grid-template-columns: minmax(0, 1fr) 264px; gap: var(--sp-24); }
+/* --phone（2026-09-04 · D248）：右欄放的是粉絲端商品頁的手機版鏡像（pdp-preview）。
+   版型是手機的 360px 內容寬（接近 375 視窗扣掉頁面左右內距的 343），但同日使用者裁示
+   縮小顯示（先 1/3、再改成只縮 1/4），鏡像整支 zoom 到 3/4，所以欄的實際佔位是 270px。
+   縮的是顯示尺寸、不是版型——排窄的話字級不會跟著縮，就不是那張手機畫面了。 */
+.preview-split--phone { grid-template-columns: minmax(0, 1fr) 270px; gap: var(--sp-24); }
 
 .preview-col {
   position: sticky;
@@ -41,6 +46,17 @@
   margin: 0;
 }
 .preview-col__sub { font-size: var(--fs-14); color: var(--foreground-muted); margin: var(--sp-4) 0 0; }
+
+/* 預覽欄裡的區塊卡（2026-09-04 使用者裁示「字要在 section 內」「上下 padding 照標準、左右縮小」）：
+   標題與說明搬進卡內，所以 head 的下邊距收一階；內距改成**上下維持左欄的標準 24px、
+   左右收成 16px**——欄只有 270px，左右各 24px 會吃掉快兩成寬度，上下沒有這個問題。
+   只在預覽欄內生效，左欄的區塊卡不受影響。 */
+.preview-col .form-section--outlined {
+  /* --card-pad 一起改成水平值：卡內的子元素（如 .lctl__rule 的負外距）讀它來對齊卡的內緣。 */
+  --card-pad: var(--sp-16);
+  padding: var(--sp-24) var(--sp-16);
+}
+.preview-col .form-section--outlined .form-section__head { margin-bottom: var(--sp-16); }
 
 /* ── 墓碑（2026-08-28 Wave 2a，ztorUI 換裝）─────────────────────────────────
    刪掉的規則：`.preview-col .card, .preview-col .preview-card { border: 0;

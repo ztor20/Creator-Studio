@@ -200,6 +200,24 @@
 /* Disabled — e.g. a primary gated by a readiness check (2026-06-12) */
 .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; pointer-events: none; }
 
+/* 忙碌中（2026-09-02；首個消費情境：創作者活動管理的「重新檢查」）。
+   狀態鉤子用 `aria-busy` 而不是自訂 class：這個狀態本來就有語意屬性，螢幕閱讀器
+   也讀得到「這顆按鈕正在忙」。
+   **刻意不等同於 disabled**：停用態把按鈕退到 45% 不透明，那是「你現在不能按」；
+   忙碌是「你按過了，它正在做」——按鈕維持原來的重量，只有圖示在轉，字則由消費頁
+   換成進行式（「檢查中…」）。重複點擊由消費頁的 JS 擋（一個 flag），不靠 CSS 的
+   pointer-events，否則游標會在忙碌中失去 hover 回饋、讀起來像整顆壞掉。
+   `prefers-reduced-motion` 的人只拿到靜止的圖示與換過的字，不轉。
+   **為什麼不放一顆通用 spinner**（站上另有兩種畫法，見 STYLE-DECISIONS Q106）：按鈕上的
+   那顆 icon 本身就是動作的符號（重新檢查＝`refresh-ccw`），換掉會讓人以為按鈕變成了別的
+   東西；28px 高的次要按鈕也塞不下一顆獨立 spinner 再加文字。 */
+.btn[aria-busy="true"] { cursor: progress; }
+.btn[aria-busy="true"] .ztor-icon { animation: btn-busy-spin 0.7s linear infinite; }
+@keyframes btn-busy-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .btn[aria-busy="true"] .ztor-icon { animation: none; }
+}
+
 /* 填色按鈕的停用態改灰底灰字（2026-08-04 使用者裁示，Q50）。
    為什麼不沿用上面那條 opacity：把品牌橘調到 45% 只會變成「暗一點的橘」，
    在深色底上讀起來像另一種可以按的狀態，而不是不能按。灰是站上唯一表示

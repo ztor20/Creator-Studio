@@ -4,6 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Taipei signing — pickup · Ztor Creator Studio</title>
 <script src="js/theme.js?v=r2.2"></script>
+<script src="js/row-disclosure.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/button.css?v=r2.2">
@@ -23,6 +24,7 @@
 <link rel="stylesheet" href="ds-components/search-collapse.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/product-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/row-disclosure.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
@@ -93,7 +95,9 @@
             <!-- 值＝每人可領幾個（不是這場的總量；總量看側欄的核銷進度） -->
             <div class="pk-items" data-pk-items>
               <div class="kv kv--lead"><span class="kv__k" data-i18n="pk.r1.item">Pirate Queen zine vol. 02</span><span class="kv__v">×1</span></div>
-              <div class="kv"><span class="kv__k" data-i18n="pk.item.tee">Kowloon After Dark tee · M / L</span><span class="kv__v">×1</span></div>
+              <div class="kv"><span class="kv__k" data-i18n="pk.item.tee">Kowloon After Dark tee · M / L</span><span class="kv__v">×2</span></div>
+              <div class="kv"><span class="kv__k" data-i18n="od.item6.name">Kowloon After Dark six-panel cap</span><span class="kv__v">×3</span></div>
+              <div class="kv"><span class="kv__k" data-i18n="od.item4.name">Kowloon After Dark vinyl · numbered 1/50</span><span class="kv__v">×1</span></div>
               <div class="kv"><span class="kv__k" data-i18n="pk.tk.signing">Signing session · GA entry</span><span class="kv__v">×1</span></div>
             </div>
           </section>
@@ -104,20 +108,27 @@
                下段＝交給現場工作人員的網址與密碼。 -->
           <section class="form-section form-section--outlined pickup-rail">
             <div class="pickup-board__stage" data-pk-stage="active">
-              <div class="pickup-board__hero"><b>36</b> <span data-i18n="pk.board.left">still to collect</span></div>
+              <!-- D240：計數單位是「件」（領取單位），與掃描次數對得上；買家人數另列一行，
+                   因為一位買家可能有好幾件，兩個數字不會相等。
+                   D242（2026-09-03）：這張卡是整場次的示意總數，與下方名單列出的個別買家
+                   無逐一對應；口徑約定與 js/orders-store.js 的 unitSummary 一致——已因退款
+                   失效（void）的件不算進「待收」，也不算進已核銷。 -->
+              <div class="pickup-board__hero"><b>36</b> <span data-i18n="pk.board.left">units still to collect</span></div>
               <div class="pickup-board__bar">
                 <div class="stock-bar"><span class="stock-bar__fill" style="width:55%"></span></div>
                 <span class="pickup-board__pct">55%</span>
               </div>
-              <div class="kv mt-12"><span class="kv__k" data-i18n="pk.board.redeemed">Redeemed</span><span class="kv__v">44 / 80</span></div>
+              <div class="kv mt-12"><span class="kv__k" data-i18n="pk.board.redeemed">Redeemed</span><span class="kv__v" data-i18n="pk.board.redeemed.active">44 / 80 units</span></div>
+              <div class="kv"><span class="kv__k" data-i18n="pk.board.buyers">Buyers</span><span class="kv__v" data-i18n="pk.board.buyers.val">52</span></div>
             </div>
             <div class="pickup-board__stage" data-pk-stage="ended" hidden>
-              <div class="pickup-board__hero"><b>12</b> <span data-i18n="pk.board.noshow">did not collect</span></div>
+              <div class="pickup-board__hero"><b>12</b> <span data-i18n="pk.board.noshow">units not collected</span></div>
               <div class="pickup-board__bar">
                 <div class="stock-bar"><span class="stock-bar__fill" style="width:85%"></span></div>
                 <span class="pickup-board__pct">85%</span>
               </div>
-              <div class="kv mt-12"><span class="kv__k" data-i18n="pk.board.redeemed">Redeemed</span><span class="kv__v">68 / 80</span></div>
+              <div class="kv mt-12"><span class="kv__k" data-i18n="pk.board.redeemed">Redeemed</span><span class="kv__v" data-i18n="pk.board.redeemed.ended">68 / 80 units</span></div>
+              <div class="kv"><span class="kv__k" data-i18n="pk.board.buyers">Buyers</span><span class="kv__v" data-i18n="pk.board.buyers.val">52</span></div>
               <div class="pickup-board__acts">
                 <button class="btn btn--outline btn--sm" type="button"><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="pk.board.export">Export no-shows</span></button>
                 <button class="btn btn--primary btn--sm" type="button" data-i18n="pk.board.extend">Extend session</button>
@@ -145,8 +156,13 @@
         </aside>
       </div>
 
-      <!-- F4 · 取貨與入場名單：規格的七個欄位各自成欄（買家／來源／領取項目／規格／
-           數量／狀態／最近核銷），核銷紀錄降為右側次要入口，開 popup。 -->
+      <!-- F4 · 取貨與入場名單（D240 一物一碼，2026-09-03 改版）：
+           **一列＝一個領取單位**（一件商品的一個實例，spec §7.2 / 5.1.5.15 F4.1）。
+           欄位＝買家／來源／領取項目／規格／領取碼／來源組合／狀態／最近核銷＋⋯；
+           「數量」欄退場——一列本來就是一件，數字恆為 1。
+           買下多件的買家收成一列可展開的群組列（沿用 product-list 既有的
+           `row-disclosure` 元件的 `rowdis__head` / `rowdis__child`，Q107 裁決後站上的單一答案），
+           列首顯示「本場次已領 M／N」；只買一件的買家不分組、直接一列。 -->
       <!-- 工作列＝電子商店那條 `.list-toolbar`：左邊底線式 tabs 切狀態、右邊動作群
            （收合搜尋＋核銷紀錄）。 -->
       <div class="list-toolbar">
@@ -160,7 +176,7 @@
             <button class="btn btn--icon btn--sm search-collapse__toggle" type="button" data-pk-search-toggle aria-expanded="false" aria-label="Search roster" title="Search roster" data-i18n-aria-label="pk.btn.search" data-i18n-title="pk.btn.search"><i data-lucide="search" class="ztor-icon"></i></button>
             <label class="field-pill search-collapse__field" aria-label="Search roster">
               <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
-              <input class="field-pill__input" placeholder="Name, email, order #, ticket ID" data-i18n-placeholder="pk.roster.search.ph" data-pk-roster-search>
+              <input class="field-pill__input" placeholder="Name, email, order #, ticket ID, pickup code" data-i18n-placeholder="pk.roster.search.ph" data-pk-roster-search>
               <button class="btn btn--icon btn--xs search-collapse__close" type="button" data-pk-search-close aria-label="Close search" title="Close search" data-i18n-aria-label="pk.search.close" data-i18n-title="pk.search.close"><i data-lucide="x" class="ztor-icon"></i></button>
             </label>
           </div>
@@ -168,8 +184,6 @@
         </div>
       </div>
 
-      <!-- F4 · 名單：沿用電子商店的 .product-list（同一套列型：__head / __row / __cell /
-           __actions），不再用 .ztor-table。每一列都有 ⋯ 選單。 -->
       <div class="product-list-scroll">
         <section class="product-list product-list--roster" role="table" data-pk-roster-card>
           <div class="product-list__head" role="row">
@@ -177,49 +191,308 @@
             <div role="columnheader" data-i18n="pk.col.source">Source</div>
             <div role="columnheader" data-i18n="pk.col.item">Pickup item</div>
             <div role="columnheader" data-i18n="pk.col.variant">Variant</div>
-            <div role="columnheader" data-i18n="pk.col.qty">Qty</div>
+            <div role="columnheader" data-i18n="pk.col.code">Pickup code</div>
+            <div role="columnheader" data-i18n="pk.col.bundle">From bundle</div>
             <div role="columnheader" data-i18n="pk.col.status">Status</div>
             <div role="columnheader" data-i18n="pk.col.lastscan">Last redeemed</div>
             <div role="columnheader" aria-label="Actions"></div>
           </div>
-          <div class="product-list__row" role="row" data-pk-roster-row data-pk-roster-st="pending" data-pk-roster-text="mika l zt-10482 zine">
+          <!-- Mika L.＝訂單 #ZT-10482（js/orders-store.js 同一筆）：一張單五件領取單位——
+               單買的 T 恤 1 件，加上組合「Launch night bundle」展開的帽子 3 件與黑膠 1 件
+               （組合本身不產生領取碼，成員各自帶「來源組合」標記；ship 成員的別針不展開）。 -->
+          <div class="rowdis__group">
+          <div class="product-list__row rowdis__head" role="row" data-rowdis-row="mika" data-pk-roster-group data-pk-roster-text="mika l zt-10482">
             <div class="product-list__product" role="cell">
-              <div class="product-list__body"><div class="product-list__title">Mika L.</div></div>
+              <div class="product-list__body">
+                <div class="product-list__title rowdis__label"><span>Mika L.</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="mika" aria-expanded="false" aria-label="Show pickup units" data-i18n-aria-label="pk.roster.group.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                <div class="product-list__meta" data-i18n="pk.g.mika.progress">1 of 5 collected</div>
+              </div>
             </div>
             <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
-            <div class="product-list__cell" role="cell" data-i18n="pk.r1.item">Pirate Queen zine vol. 02</div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__actions" role="cell"></div>
+          </div>
+          <div class="product-list__row rowdis__child" role="row" data-rowdis-child="mika" hidden data-pk-roster-row data-pk-roster-st="pending" data-pk-roster-text="mika l zt-10482 tee m pu-10482-01">
+            <div class="product-list__product" role="cell"></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="pk.r2.item">Kowloon After Dark tee</div>
+            <div class="product-list__cell" role="cell">M</div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-01</div>
             <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
-            <div class="product-list__cell pickup-roster__num" role="cell">1</div>
             <div class="product-list__cell" role="cell"><span class="badge badge--warning"><span data-i18n="pk.st.pending">Pending</span></span></div>
             <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
             <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-manual><i data-lucide="check" class="ztor-icon"></i><span data-i18n="pk.roster.manual">Redeem manually</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
           </div>
-          <div class="product-list__row" role="row" data-pk-roster-row data-pk-roster-st="done" data-pk-roster-text="devon w zt-10475 tee m">
+          <div class="product-list__row rowdis__child" role="row" data-rowdis-child="mika" hidden data-pk-roster-row data-pk-roster-st="done" data-pk-roster-text="mika l zt-10482 cap pu-10482-02 launch night bundle">
+            <div class="product-list__product" role="cell"></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="od.item6.name">Kowloon After Dark six-panel cap</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-02</div>
+            <div class="product-list__cell" role="cell"><span data-i18n="od.item12.name">Launch night bundle</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--success"><span data-i18n="pk.st.done">Redeemed</span></span></div>
+            <div class="product-list__cell" role="cell">13:40</div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-reverse><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="pk.roster.reverse">Reverse redemption</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          <div class="product-list__row rowdis__child" role="row" data-rowdis-child="mika" hidden data-pk-roster-row data-pk-roster-st="pending" data-pk-roster-text="mika l zt-10482 cap pu-10482-03 launch night bundle">
+            <div class="product-list__product" role="cell"></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="od.item6.name">Kowloon After Dark six-panel cap</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-03</div>
+            <div class="product-list__cell" role="cell"><span data-i18n="od.item12.name">Launch night bundle</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--warning"><span data-i18n="pk.st.pending">Pending</span></span></div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-manual><i data-lucide="check" class="ztor-icon"></i><span data-i18n="pk.roster.manual">Redeem manually</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          <div class="product-list__row rowdis__child" role="row" data-rowdis-child="mika" hidden data-pk-roster-row data-pk-roster-st="pending" data-pk-roster-text="mika l zt-10482 cap pu-10482-04 launch night bundle">
+            <div class="product-list__product" role="cell"></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="od.item6.name">Kowloon After Dark six-panel cap</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-04</div>
+            <div class="product-list__cell" role="cell"><span data-i18n="od.item12.name">Launch night bundle</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--warning"><span data-i18n="pk.st.pending">Pending</span></span></div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-manual><i data-lucide="check" class="ztor-icon"></i><span data-i18n="pk.roster.manual">Redeem manually</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          <div class="product-list__row rowdis__child" role="row" data-rowdis-child="mika" hidden data-pk-roster-row data-pk-roster-st="pending" data-pk-roster-text="mika l zt-10482 vinyl pu-10482-05 launch night bundle">
+            <div class="product-list__product" role="cell"></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="od.item4.name">Kowloon After Dark vinyl · numbered 1/50</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-05</div>
+            <div class="product-list__cell" role="cell"><span data-i18n="od.item12.name">Launch night bundle</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--warning"><span data-i18n="pk.st.pending">Pending</span></span></div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-manual><i data-lucide="check" class="ztor-icon"></i><span data-i18n="pk.roster.manual">Redeem manually</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          </div>
+          <!-- 退款即失效示範（D242，2026-09-03；資料同 js/orders-store.js「退款即失效」節）：
+               Yuki H.（#ZT-10471）＝同一訂單一件因退款失效、一件不受影響的最小對照；
+               Jonas P.（#ZT-10473）＝組合品項只有被退成員失效、其餘成員不受影響。
+               失效的件用 status="void" ＋ badge--error，歸在「全部」tab（st !== pending/done，
+               不落入待核銷／已核銷 tab）；動作選單不給「手動核銷」或「反轉核銷」——已失效
+               的碼本來就不可核銷，也沒有核銷紀錄可反轉，只留「來源」可查。 -->
+          <div class="rowdis__group">
+          <div class="product-list__row rowdis__head" role="row" data-rowdis-row="yuki" data-pk-roster-group data-pk-roster-text="yuki h zt-10471">
             <div class="product-list__product" role="cell">
-              <div class="product-list__body"><div class="product-list__title">Devon W.</div></div>
+              <div class="product-list__body">
+                <div class="product-list__title rowdis__label"><span>Yuki H.</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="yuki" aria-expanded="false" aria-label="Show pickup units" data-i18n-aria-label="pk.roster.group.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                <div class="product-list__meta" data-i18n="pk.g.yuki.progress">0 of 1 collected · 1 refunded</div>
+              </div>
             </div>
-            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html">#ZT-10475</a></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10471">#ZT-10471</a></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__actions" role="cell"></div>
+          </div>
+          <div class="product-list__row rowdis__child" role="row" data-rowdis-child="yuki" hidden data-pk-roster-row data-pk-roster-st="void" data-pk-roster-text="yuki h zt-10471 vinyl pu-10471-01">
+            <div class="product-list__product" role="cell"></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10471">#ZT-10471</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="od.item4.name">Kowloon After Dark vinyl · numbered 1/50</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10471-01</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--error"><span data-i18n="pk.st.void">Cancelled / refunded</span></span></div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10471"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          <div class="product-list__row rowdis__child" role="row" data-rowdis-child="yuki" hidden data-pk-roster-row data-pk-roster-st="pending" data-pk-roster-text="yuki h zt-10471 cap pu-10471-02">
+            <div class="product-list__product" role="cell"></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10471">#ZT-10471</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="od.item6.name">Kowloon After Dark six-panel cap</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10471-02</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--warning"><span data-i18n="pk.st.pending">Pending</span></span></div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-manual><i data-lucide="check" class="ztor-icon"></i><span data-i18n="pk.roster.manual">Redeem manually</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10471"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          </div>
+          <div class="rowdis__group">
+          <div class="product-list__row rowdis__head" role="row" data-rowdis-row="jonas" data-pk-roster-group data-pk-roster-text="jonas p zt-10473">
+            <div class="product-list__product" role="cell">
+              <div class="product-list__body">
+                <div class="product-list__title rowdis__label"><span>Jonas P.</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="jonas" aria-expanded="false" aria-label="Show pickup units" data-i18n-aria-label="pk.roster.group.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                <div class="product-list__meta" data-i18n="pk.g.jonas.progress">0 of 1 collected · 2 refunded</div>
+              </div>
+            </div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10473">#ZT-10473</a></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__actions" role="cell"></div>
+          </div>
+          <div class="product-list__row rowdis__child" role="row" data-rowdis-child="jonas" hidden data-pk-roster-row data-pk-roster-st="void" data-pk-roster-text="jonas p zt-10473 cap pu-10473-01 launch night bundle">
+            <div class="product-list__product" role="cell"></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10473">#ZT-10473</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="od.item6.name">Kowloon After Dark six-panel cap</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10473-01</div>
+            <div class="product-list__cell" role="cell"><span data-i18n="od.item12.name">Launch night bundle</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--error"><span data-i18n="pk.st.void">Cancelled / refunded</span></span></div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10473"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          <div class="product-list__row rowdis__child" role="row" data-rowdis-child="jonas" hidden data-pk-roster-row data-pk-roster-st="void" data-pk-roster-text="jonas p zt-10473 cap pu-10473-02 launch night bundle">
+            <div class="product-list__product" role="cell"></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10473">#ZT-10473</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="od.item6.name">Kowloon After Dark six-panel cap</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10473-02</div>
+            <div class="product-list__cell" role="cell"><span data-i18n="od.item12.name">Launch night bundle</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--error"><span data-i18n="pk.st.void">Cancelled / refunded</span></span></div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10473"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          <div class="product-list__row rowdis__child" role="row" data-rowdis-child="jonas" hidden data-pk-roster-row data-pk-roster-st="pending" data-pk-roster-text="jonas p zt-10473 vinyl pu-10473-03 launch night bundle">
+            <div class="product-list__product" role="cell"></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10473">#ZT-10473</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="od.item4.name">Kowloon After Dark vinyl · numbered 1/50</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10473-03</div>
+            <div class="product-list__cell" role="cell"><span data-i18n="od.item12.name">Launch night bundle</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--warning"><span data-i18n="pk.st.pending">Pending</span></span></div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-manual><i data-lucide="check" class="ztor-icon"></i><span data-i18n="pk.roster.manual">Redeem manually</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10473"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          </div>
+          <div class="rowdis__group">
+          <div class="product-list__row rowdis__head" role="row" data-rowdis-row="noor" data-pk-roster-group data-pk-roster-text="noor p.">
+            <div class="product-list__product" role="cell">
+              <div class="product-list__body">
+                <div class="product-list__title rowdis__label"><span>Noor P.</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="noor" aria-expanded="false" aria-label="Show pickup units" data-i18n-aria-label="pk.roster.group.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                <div class="product-list__meta" data-i18n="pk.g.noor.progress">0 of 2 collected</div>
+              </div>
+            </div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10490">#ZT-10490</a></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__actions" role="cell"></div>
+          </div>
+          <div class="product-list__row rowdis__child" role="row" data-rowdis-child="noor" hidden data-pk-roster-row data-pk-roster-st="pending" data-pk-roster-text="noor p zt-10490 tee l pu-10490-01">
+            <div class="product-list__product" role="cell"></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10490">#ZT-10490</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="pk.r2.item">Kowloon After Dark tee</div>
+            <div class="product-list__cell" role="cell">L</div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10490-01</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--warning"><span data-i18n="pk.st.pending">Pending</span></span></div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-manual><i data-lucide="check" class="ztor-icon"></i><span data-i18n="pk.roster.manual">Redeem manually</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10490"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          <div class="product-list__row rowdis__child" role="row" data-rowdis-child="noor" hidden data-pk-roster-row data-pk-roster-st="pending" data-pk-roster-text="noor p zt-10490 tee l pu-10490-02">
+            <div class="product-list__product" role="cell"></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10490">#ZT-10490</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="pk.r2.item">Kowloon After Dark tee</div>
+            <div class="product-list__cell" role="cell">L</div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10490-02</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--warning"><span data-i18n="pk.st.pending">Pending</span></span></div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-manual><i data-lucide="check" class="ztor-icon"></i><span data-i18n="pk.roster.manual">Redeem manually</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10490"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          </div>
+          <div class="rowdis__group">
+          <div class="product-list__row rowdis__head" role="row" data-rowdis-row="kai" data-pk-roster-group data-pk-roster-text="kai t.">
+            <div class="product-list__product" role="cell">
+              <div class="product-list__body">
+                <div class="product-list__title rowdis__label"><span>Kai T.</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="kai" aria-expanded="false" aria-label="Show pickup units" data-i18n-aria-label="pk.roster.group.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                <div class="product-list__meta" data-i18n="pk.g.kai.progress">2 of 2 collected</div>
+              </div>
+            </div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10466">#ZT-10466</a></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__cell" role="cell"></div>
+            <div class="product-list__actions" role="cell"></div>
+          </div>
+          <div class="product-list__row rowdis__child" role="row" data-rowdis-child="kai" hidden data-pk-roster-row data-pk-roster-st="done" data-pk-roster-text="kai t zt-10466 zine pu-10466-01">
+            <div class="product-list__product" role="cell"></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10466">#ZT-10466</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="pk.r1.item">Pirate Queen zine vol. 02</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10466-01</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--success"><span data-i18n="pk.st.done">Redeemed</span></span></div>
+            <div class="product-list__cell" role="cell">13:58</div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-reverse><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="pk.roster.reverse">Reverse redemption</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10466"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          <div class="product-list__row rowdis__child" role="row" data-rowdis-child="kai" hidden data-pk-roster-row data-pk-roster-st="done" data-pk-roster-text="kai t zt-10466 tee l pu-10466-02">
+            <div class="product-list__product" role="cell"></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10466">#ZT-10466</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="pk.r2.item">Kowloon After Dark tee</div>
+            <div class="product-list__cell" role="cell">L</div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10466-02</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--success"><span data-i18n="pk.st.done">Redeemed</span></span></div>
+            <div class="product-list__cell" role="cell">14:31</div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-reverse><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="pk.roster.reverse">Reverse redemption</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10466"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          </div>
+          <div class="product-list__row" role="row" data-pk-roster-row data-pk-roster-st="done" data-pk-roster-text="devon w zt-10475 tee m pu-10475-01">
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Devon W.</div></div></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10475">#ZT-10475</a></div>
             <div class="product-list__cell" role="cell" data-i18n="pk.r2.item">Kowloon After Dark tee</div>
             <div class="product-list__cell" role="cell">M</div>
-            <div class="product-list__cell pickup-roster__num" role="cell">1</div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10475-01</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
             <div class="product-list__cell" role="cell"><span class="badge badge--success"><span data-i18n="pk.st.done">Redeemed</span></span></div>
             <div class="product-list__cell" role="cell">14:22</div>
-            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-reverse><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="pk.roster.reverse">Reverse redemption</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-reverse><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="pk.roster.reverse">Reverse redemption</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10475"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
           </div>
-          <div class="product-list__row" role="row" data-pk-roster-row data-pk-roster-st="done" data-pk-roster-text="aria s ticket ga signing checked">
-            <div class="product-list__product" role="cell">
-              <div class="product-list__body"><div class="product-list__title">Aria S.</div></div>
-            </div>
-            <!-- 2026-08-19 修正：href 原本沒帶 id，會落在 event-detail.html 的預設示例活動，
-                 不是這筆核銷紀錄真正對應的場次。這筆是「Signing GA entry」，對到 store
-                 （js/events-store.js）的 album-signing-taipei，補上 ?id=。 -->
+          <div class="product-list__row" role="row" data-pk-roster-row data-pk-roster-st="done" data-pk-roster-text="aria s tk-88213 signing ga entry">
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Aria S.</div></div></div>
             <div class="product-list__cell" role="cell"><a class="card__link" href="event-detail.html?id=album-signing-taipei">TK-88213</a></div>
             <div class="product-list__cell" role="cell" data-i18n="pk.r3.item">Signing GA entry</div>
             <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
-            <div class="product-list__cell pickup-roster__num" role="cell">1</div>
+            <div class="product-list__cell pickup-roster__code" role="cell">TK-88213</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
             <div class="product-list__cell" role="cell"><span class="badge badge--success"><span data-i18n="pk.st.checkedin">Checked in</span></span></div>
             <div class="product-list__cell" role="cell">14:05</div>
-            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-reverse><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="pk.roster.reverse">Reverse redemption</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-reverse><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="pk.roster.reverse">Reverse redemption</span></button><a class="dropdown__item" role="menuitem" href="event-detail.html?id=album-signing-taipei"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          <div class="product-list__row" role="row" data-pk-roster-row data-pk-roster-st="pending" data-pk-roster-text="jules r tk-88240 signing ga entry">
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Jules R.</div></div></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="event-detail.html?id=album-signing-taipei">TK-88240</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="pk.r3.item">Signing GA entry</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell pickup-roster__code" role="cell">TK-88240</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--warning"><span data-i18n="pk.st.waiting">To check in</span></span></div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-manual><i data-lucide="check" class="ztor-icon"></i><span data-i18n="pk.roster.manual">Redeem manually</span></button><a class="dropdown__item" role="menuitem" href="event-detail.html?id=album-signing-taipei"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
+          </div>
+          <div class="product-list__row" role="row" data-pk-roster-row data-pk-roster-st="pending" data-pk-roster-text="sora m zt-10484 vinyl pu-10484-01">
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Sora M.</div></div></div>
+            <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10484">#ZT-10484</a></div>
+            <div class="product-list__cell" role="cell" data-i18n="od.item4.name">Kowloon After Dark vinyl · numbered 1/50</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell pickup-roster__code" role="cell">PU-10484-01</div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--warning"><span data-i18n="pk.st.pending">Pending</span></span></div>
+            <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+            <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-manual><i data-lucide="check" class="ztor-icon"></i><span data-i18n="pk.roster.manual">Redeem manually</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10484"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.roster.source">Source</span></a></div></details></div>
           </div>
         </section>
       </div>
@@ -248,18 +521,33 @@
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="reversal"  data-i18n="pk.log.reversal">Reversal</button>
           </nav>
         <section>
+          <!-- D240：一筆紀錄＝一個領取單位的一次核銷事件（spec 5.1.5.15 F5.1）。
+               每一列都帶自己的領取碼，那是這筆紀錄對應到哪一件的依據；「×N」的數量寫法退場。 -->
           <div class="data-list">
             <div class="data-list__row" data-pk-log-row data-pk-log-st="success">
               <div class="data-list__row-main">
                 <div class="data-list__icon"><i data-lucide="check-circle" class="ztor-icon"></i></div>
                 <div class="data-list__body">
-                  <div class="data-list__title" data-i18n="pk.log.l1">Devon W. · Kowloon After Dark tee (M) ×1</div>
-                  <div class="data-list__meta" data-i18n="pk.log.l1.meta">14:22 · order #ZT-10475 · staff: Jo</div>
+                  <div class="data-list__title" data-i18n="pk.log.l1">Devon W. · Kowloon After Dark tee (M)</div>
+                  <div class="data-list__meta" data-i18n="pk.log.l1.meta">14:22 · PU-10475-01 · order #ZT-10475 · staff: Jo</div>
                 </div>
               </div>
               <div class="data-list__end data-list__end--row">
                 <span class="badge badge--success"><span data-i18n="pk.log.st.success">Success</span></span>
-                <a class="card__link" href="order-detail.html" data-i18n="pk.roster.source">Source</a>
+                <a class="card__link" href="order-detail.html?id=ZT-10475" data-i18n="pk.roster.source">Source</a>
+              </div>
+            </div>
+            <div class="data-list__row" data-pk-log-row data-pk-log-st="success">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="check-circle" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="pk.log.l5">Mika L. · Kowloon After Dark six-panel cap</div>
+                  <div class="data-list__meta" data-i18n="pk.log.l5.meta">13:40 · PU-10482-02 · from Launch night bundle · order #ZT-10482</div>
+                </div>
+              </div>
+              <div class="data-list__end data-list__end--row">
+                <span class="badge badge--success"><span data-i18n="pk.log.st.success">Success</span></span>
+                <a class="card__link" href="order-detail.html?id=ZT-10482" data-i18n="pk.roster.source">Source</a>
               </div>
             </div>
             <div class="data-list__row" data-pk-log-row data-pk-log-st="success">
@@ -267,13 +555,11 @@
                 <div class="data-list__icon"><i data-lucide="check-circle" class="ztor-icon"></i></div>
                 <div class="data-list__body">
                   <div class="data-list__title" data-i18n="pk.log.l2">Aria S. · Signing GA entry</div>
-                  <div class="data-list__meta" data-i18n="pk.log.l2.meta">14:05 · ticket TK-88213 · check-in written to Events</div>
+                  <div class="data-list__meta" data-i18n="pk.log.l2.meta">14:05 · TK-88213 · check-in written to Events</div>
                 </div>
               </div>
               <div class="data-list__end data-list__end--row">
                 <span class="badge badge--success"><span data-i18n="pk.log.st.success">Success</span></span>
-                <!-- 2026-08-19 修正：同上一筆（roster 那列的 TK-88213），補 ?id=album-signing-taipei，
-                     不然「Source」點過去也是落在預設示例活動。 -->
                 <a class="card__link" href="event-detail.html?id=album-signing-taipei" data-i18n="pk.roster.source">Source</a>
               </div>
             </div>
@@ -281,26 +567,26 @@
               <div class="data-list__row-main">
                 <div class="data-list__icon"><i data-lucide="alert-triangle" class="ztor-icon"></i></div>
                 <div class="data-list__body">
-                  <div class="data-list__title" data-i18n="pk.log.l3">Kai T. · Kowloon After Dark tee (L) ×1</div>
-                  <div class="data-list__meta" data-i18n="pk.log.l3.meta">14:31 · already redeemed 13:58 — blocked</div>
+                  <div class="data-list__title" data-i18n="pk.log.l3">Kai T. · Kowloon After Dark tee (L)</div>
+                  <div class="data-list__meta" data-i18n="pk.log.l3.meta">14:31 · PU-10466-02 · already redeemed 13:58 — blocked</div>
                 </div>
               </div>
               <div class="data-list__end data-list__end--row">
                 <span class="badge badge--warning"><span data-i18n="pk.log.st.duplicate">Duplicate</span></span>
-                <a class="card__link" href="order-detail.html" data-i18n="pk.roster.source">Source</a>
+                <a class="card__link" href="order-detail.html?id=ZT-10466" data-i18n="pk.roster.source">Source</a>
               </div>
             </div>
             <div class="data-list__row" data-pk-log-row data-pk-log-st="reversal">
               <div class="data-list__row-main">
                 <div class="data-list__icon"><i data-lucide="rotate-ccw" class="ztor-icon"></i></div>
                 <div class="data-list__body">
-                  <div class="data-list__title" data-i18n="pk.log.l4">Reversal · Nina P. · Pirate Queen zine vol. 02 ×1</div>
-                  <div class="data-list__meta" data-i18n="pk.log.l4.meta">13:40 · reversed wrong scan · order #ZT-10460 restored to pending</div>
+                  <div class="data-list__title" data-i18n="pk.log.l4">Reversal · Nina P. · Pirate Queen zine vol. 02</div>
+                  <div class="data-list__meta" data-i18n="pk.log.l4.meta">13:40 · PU-10460-01 · reversed wrong scan · that unit back to pending</div>
                 </div>
               </div>
               <div class="data-list__end data-list__end--row">
                 <span class="badge badge--neutral"><span data-i18n="pk.log.st.reversal">Reversal</span></span>
-                <a class="card__link" href="order-detail.html" data-i18n="pk.roster.source">Source</a>
+                <a class="card__link" href="order-detail.html?id=ZT-10460" data-i18n="pk.roster.source">Source</a>
               </div>
             </div>
           </div>
@@ -361,6 +647,8 @@
        取貨管理列表的三列各自帶自己的狀態進來，這一頁照那個狀態換：徽章、側欄那張
        數字卡、名單內容與工作列。三個狀態共用同一頁（IA 只有一頁 pickup-detail，
        新增頁面要先改 §3.2 sitemap）。 */
+    /* 名單的場次模式（由 ?s= 決定，見下）：mixed＝原樣、pending／done＝只留該狀態的領取單位。 */
+    var rosterMode = 'mixed';
     var SESSIONS = {
       scheduled: { name: 'pk.s2.name', loc: 'pk.s2.loc', time: 'pk.s2.time',
                    st: 'pk.st.scheduled', badge: 'badge badge--neutral', stage: null, roster: 'pending' },
@@ -382,10 +670,9 @@
       document.querySelectorAll('[data-pk-stage]').forEach(function (el) {
         el.hidden = el.getAttribute('data-pk-stage') !== cfg.stage;
       });
-      /* 名單：尚未開始＝全部待核銷（示範只留一列）、已結束＝全部已核銷 */
-      var rows = [].slice.call(document.querySelectorAll('[data-pk-roster-row]'));
-      if (cfg.roster === 'pending') rows.forEach(function (r) { r.hidden = r.getAttribute('data-pk-roster-st') !== 'pending'; });
-      if (cfg.roster === 'done')    rows.forEach(function (r) { r.hidden = r.getAttribute('data-pk-roster-st') !== 'done'; });
+      /* 名單：尚未開始＝只留待核銷的領取單位、已結束＝只留已核銷的。
+         實際的顯隱交給下方 rApply 一起算——群組列要看自己底下還剩幾件才知道該不該留。 */
+      if (cfg.roster) rosterMode = cfg.roster;
       if (window.applyI18n) window.applyI18n(document.body);
     })();
 
@@ -457,26 +744,76 @@
     var exp = document.querySelector('[data-pk-export]');
     if (exp) exp.addEventListener('click', function () { flash(exp, 'pk.log.exported', 'Exported'); });
 
-    /* F4 取貨／入場名單：狀態篩選 + 搜尋 */
+    /* F4 取貨／入場名單（D240 一物一碼）：狀態篩選 ＋ 搜尋，兩層資料——
+       單位列（一列一件，帶自己的狀態與領取碼）與買家群組列（買多件的買家）。
+       規則沿用活動清單的系列場次（design-system.md §4.117）：
+         · 子列可見 ＝ 自己過篩選 且 母列可見 且（母列展開／搜尋中／篩了狀態）
+         · 搜尋或篩狀態時一律攤開——搜到的碼可能就長在某一件身上，收著等於「找到了看不到」
+         · 子列不進計數，一個買家算一筆 */
     var rNav = document.querySelector('[data-pk-roster-status]');
-    var rRows = [].slice.call(document.querySelectorAll('[data-pk-roster-row]'));
+    var rUnits = [].slice.call(document.querySelectorAll('[data-pk-roster-row]'));
+    var rGroups = [].slice.call(document.querySelectorAll('[data-pk-roster-group]'));
     var rSearch = document.querySelector('[data-pk-roster-search]');
     var rNoRes = document.querySelector('[data-pk-roster-noresult]');
     var rCard = document.querySelector('[data-pk-roster-card]');
-    if (rNav && rRows.length) {
-      var rStatus = 'all';
-      function rApply() {
-        var q = (rSearch && rSearch.value.trim().toLowerCase()) || '';
-        var shown = 0;
-        rRows.forEach(function (r) {
-          var okS = rStatus === 'all' || r.getAttribute('data-pk-roster-st') === rStatus;
-          var okT = !q || (r.getAttribute('data-pk-roster-text') || '').indexOf(q) >= 0;
-          var vis = okS && okT; r.hidden = !vis; if (vis) shown++;
-        });
-        /* 全部篩掉時整張表收起來，只留空狀態卡——留一排孤兒表頭讀不出意義 */
-        if (rCard) rCard.hidden = shown === 0;
-        if (rNoRes) rNoRes.hidden = shown !== 0;
-      }
+    var rStatus = 'all';
+    /* 搜尋／篩狀態時整組強制攤開（見下方 openAll），子列的 hidden 直接算、不經過
+       window.rowDisclosure；但 L2 面板只認把手自己的 aria-expanded（見 row-disclosure.css
+       的 :has() 條件），繞過它就會出現「子列看得到、面板卻沒亮」。rForceOpen 記著
+       「開始強制前，這個把手原本是不是使用者自己展開的」，攤開條件解除時照原樣還原，
+       不讓一次搜尋動作意外把使用者手動收合的組永久留在展開態。 */
+    var rForceOpen = {};
+    function groupHead(key) {
+      for (var i = 0; i < rGroups.length; i++)
+        if (rGroups[i].getAttribute('data-rowdis-row') === key) return rGroups[i];
+      return null;
+    }
+    function rApply() {
+      var q = (rSearch && rSearch.value.trim().toLowerCase()) || '';
+      var matched = {}, shown = 0;
+      rUnits.forEach(function (r) {
+        var st = r.getAttribute('data-pk-roster-st');
+        var okMode = rosterMode === 'mixed' || st === rosterMode;
+        var okS = rStatus === 'all' || st === rStatus;
+        var okT = !q || (r.getAttribute('data-pk-roster-text') || '').indexOf(q) >= 0;
+        var ok = okMode && okS && okT;
+        r.setAttribute('data-pk-match', ok ? '1' : '0');
+        var g = r.getAttribute('data-rowdis-child');
+        if (g && ok) matched[g] = (matched[g] || 0) + 1;
+      });
+      /* openAll 只認「使用者當下下的篩選」——搜尋字串與狀態分頁。rosterMode 是
+         由 ?s= 決定的頁面變體（尚未開始只看待核銷、已結束只看已核銷），它是這一頁
+         的內容範圍、不是一次篩選動作；把它算進來會讓那兩個變體永遠強制攤開，
+         使用者按收合會被下一輪 rApply 立刻打開（2026-09-04 修，回報：都不能收合）。 */
+      var openAll = !!q || rStatus !== 'all';
+      rGroups.forEach(function (g) {
+        var gid = g.getAttribute('data-rowdis-row');
+        var vis = !!matched[gid];
+        g.hidden = !vis;
+        if (vis) shown++;
+        var handle = g.querySelector('[data-rowdis]');
+        if (!handle) return;
+        if (openAll) {
+          if (!(gid in rForceOpen)) rForceOpen[gid] = handle.getAttribute('aria-expanded') === 'true';
+          handle.setAttribute('aria-expanded', 'true');
+        } else if (gid in rForceOpen) {
+          handle.setAttribute('aria-expanded', rForceOpen[gid] ? 'true' : 'false');
+          delete rForceOpen[gid];
+        }
+      });
+      rUnits.forEach(function (r) {
+        var ok = r.getAttribute('data-pk-match') === '1';
+        var g = r.getAttribute('data-rowdis-child');
+        if (!g) { r.hidden = !ok; if (ok) shown++; return; }
+        var head = groupHead(g);
+        var open = head && !head.hidden &&
+          (openAll || window.rowDisclosure.isOpen(head.querySelector('[data-rowdis]')));
+        r.hidden = !(ok && open);
+      });
+      if (rCard) rCard.hidden = shown === 0;
+      if (rNoRes) rNoRes.hidden = shown !== 0;
+    }
+    if (rNav) {
       rNav.querySelectorAll('.tabs__item').forEach(function (btn) {
         btn.addEventListener('click', function () {
           rNav.querySelectorAll('.tabs__item').forEach(function (b) {
@@ -487,15 +824,23 @@
           rStatus = btn.getAttribute('data-status-val'); rApply();
         });
       });
-      if (rSearch) rSearch.addEventListener('input', rApply);
     }
+    if (rSearch) rSearch.addEventListener('input', rApply);
+    /* 展開／收合歸 row-disclosure 元件（整列可點、把手、鍵盤都在那裡）；本頁只在切換後
+       重算一次可見性——這份名單的子列可見 ＝ 展開 且 通過搜尋與狀態篩選。 */
+    if (rCard) window.rowDisclosure.init(rCard, { onToggle: rApply });
+    rApply();
 
-    /* F4 人工處理（demo）：反轉錯誤核銷（二元制無「標記有問題」，D122）*/
+    /* F4 人工處理（demo）：反轉錯誤核銷。D240 起操作對象是**單一領取單位**（這一列這一件），
+       同一位買家的其他件不受影響；二元制無「標記有問題」（D122）。 */
     document.querySelectorAll('[data-pk-reverse]').forEach(function (b) {
       b.addEventListener('click', function () {
         var row = b.closest('[data-pk-roster-row]');
-        var badge = row && row.querySelector('.badge');
-        if (badge) { badge.className = 'badge badge--warning'; badge.innerHTML = '<span data-i18n="pk.roster.pending">Pending</span>'; if (window.applyI18n) window.applyI18n(badge); }
+        if (!row) return;
+        row.setAttribute('data-pk-roster-st', 'pending');
+        var badge = row.querySelector('.badge');
+        if (badge) { badge.className = 'badge badge--warning'; badge.innerHTML = '<span data-i18n="pk.st.pending">Pending</span>'; if (window.applyI18n) window.applyI18n(badge); }
+        rApply();
       });
     });
   })();

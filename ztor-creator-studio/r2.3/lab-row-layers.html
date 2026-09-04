@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>母子列展開 · 用層來分 · 設計探索 II · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* ============================================================
+     lab-row-layers — 「母列展開看子項」的設計探索頁 第二版（2026-09-04）
+
+     第一版 lab-row-disclosure.html 的六個候選，使用者的回覆是「好像都不太理想，
+     可以用層的概念去做更明確的設計區分」。診斷：那六個候選（含站上現行做法）
+     全都把母列與子項放在同一個平面上，只靠縮排加一條細線分階層——那是同一層裡
+     的排版差異，怎麼調都不夠明確。
+
+     這一版換一條軸：階層由「表面階層（層）」承擔，不由縮排承擔。
+       · 子項欄位一律與表頭對齊，零縮排；
+       · 每個候選都明說母列坐在哪一層、子項坐在哪一層、兩層之間的邊界用什麼畫。
+
+     ── 層的詞彙（照 demo-layer-system.html 與 ds-components/nest.css）────
+       L0 畫布   --surface-page       頁面底，只有一個
+       L1 實色面 --card               卡片與面板，絕對色
+       L2 薄膜   --ztu-film           疊在 L1 上的半透明一層（站上 .nest 就是這一層）
+       L3 只有框 透明 ＋ 1px --border  第三層不再疊填色（會愈疊愈糊、洗掉色溫）
+
+     ⚠ demo-layer-system.html 的那組 --layer-* 是作用域限定在 .lyr 的提案 token、
+       沒有進 _tokens.css，本頁一律不使用；用的是上面這四支正式 token。
+
+     ── 邊界（刻意的自我約束）────────────────────────────────
+     本頁的 <style> 不覆寫、不重新定義任何既有共用 class 或 token：所有選擇器一律
+     lab- 前綴，所有值一律走既有 token，沒有任何 [data-theme] 覆寫。
+
+     表格骨架（.lab-tbl）是本頁自有的一套，不是站上的 .product-list：覆寫既有元件
+     的欄軌幾何會踩到上面那條邊界，而且五個候選必須共用同一套外框才比得公平——
+     欄寬、列高、表頭字級全部一致，差異才只剩「層怎麼分」。
+
+     展開／收合的行為原樣沿用 js/row-disclosure.js：母列把手掛 data-rowdis、
+     子區塊掛 data-rowdis-child，由那支的 document 級委派切 aria-expanded 與
+     hidden。沒有第二份 toggle。
+
+     ── 為什麼很多邊框寫成 inset box-shadow 而不是 border ────────
+     border 會把內容往內推 1px，子項的欄位就跟表頭錯開——那正是這一版要解掉的病。
+     inset 0 0 0 1px 畫出來的線在視覺上一樣是 1px 框，但不佔版位，欄位分毫不動。
+     ============================================================ */
+
+  /* 本頁所有 [hidden] 一律不顯示。列會設 display:grid，UA 的 [hidden]{display:none}
+     是 UA 層、作者規則一律贏，所以要自己寫回來。 */
+  .lab [hidden] { display: none !important; }
+
+  /* ── 頁面骨架 ───────────────────────────────────────────── */
+  .lab-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-16);
+    margin: var(--sp-24) 0 var(--sp-8);
+  }
+  .lab-toolbar__label {
+    font-size: var(--fs-12);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--column-head-ink);
+  }
+  .lab-note {
+    margin: 0 0 var(--sp-24);
+    font-size: var(--fs-13);
+    color: var(--muted-foreground);
+  }
+  .lab-cards { display: grid; gap: var(--sp-24); }
+  .lab-card { display: grid; gap: var(--sp-16); }
+  .lab-card__head { display: flex; align-items: center; gap: var(--sp-12); }
+  .lab-card__code {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--sp-28);
+    height: var(--sp-28);
+    padding: 0 var(--sp-8);
+    border-radius: var(--radius-sm);
+    background: var(--ztu-accent-surface);
+    color: var(--ztu-accent-fg);
+    font-family: var(--font-ui);
+    font-size: var(--fs-12);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.06em;
+  }
+  .lab-card__name { margin: 0; font-size: var(--fs-18); font-weight: var(--fw-semibold); }
+  .lab-lede { margin: 0; font-size: var(--fs-14); color: var(--foreground-muted); }
+
+  /* 三句話的層別聲明：母列在哪一層、子項在哪一層、邊界用什麼畫。 */
+  .lab-map {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--sp-14) var(--sp-24);
+    padding: var(--sp-14) var(--sp-16);
+    border-radius: var(--radius-lg);
+    background: var(--ztu-film);
+  }
+  .lab-map__k {
+    font-size: var(--fs-12);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--column-head-ink);
+  }
+  .lab-map__v { margin-top: var(--sp-4); font-size: var(--fs-13); color: var(--foreground); }
+  .lab-map__tok { font-family: var(--font-mono); font-size: var(--fs-12); color: var(--muted-foreground); }
+
+  /* 優缺點兩欄。項目一條一行，不用頓號串成一句。 */
+  .lab-pros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--sp-16) var(--sp-32);
+    padding-top: var(--sp-16);
+    border-top: 1px solid var(--border-soft);
+  }
+  .lab-pros__title {
+    margin: 0 0 var(--sp-8);
+    font-size: var(--fs-12);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--column-head-ink);
+  }
+  .lab-pros ul { margin: 0; padding-inline-start: var(--sp-16); }
+  .lab-pros li { font-size: var(--fs-13); color: var(--foreground-muted); margin-bottom: var(--sp-6); }
+  .lab-pros li:last-child { margin-bottom: 0; }
+
+  /* ── 層級對照（頁首的詞彙表）───────────────────────────── */
+  .lab-stack {
+    padding: var(--sp-16);
+    border-radius: var(--radius-lg);
+  }
+  .lab-stack__tag {
+    display: block;
+    margin-bottom: var(--sp-12);
+    font-size: var(--fs-12);
+    letter-spacing: 0.06em;
+    color: var(--foreground);
+  }
+  .lab-stack__tok { font-family: var(--font-mono); color: var(--muted-foreground); }
+  .lab-stack--l0 { background: var(--surface-page); }
+  .lab-stack--l1 { background: var(--card); }
+  .lab-stack--l2 { background: var(--ztu-film); }
+  .lab-stack--l3 { background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
+  .lab-stack--l3 .lab-stack__tag { margin-bottom: 0; }
+  .lab-rules { margin: var(--sp-16) 0 0; padding-inline-start: var(--sp-20); }
+  .lab-rules li { font-size: var(--fs-13); color: var(--foreground-muted); margin-bottom: var(--sp-8); }
+  .lab-rules li:last-child { margin-bottom: 0; }
+  .lab-rules b { color: var(--foreground); font-weight: var(--fw-semibold); }
+
+  /* ── 兩個狀態並列（每個候選都同時給收合與展開）─────────── */
+  .lab-states { display: grid; gap: var(--sp-20); }
+  .lab-state__cap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--sp-8);
+    margin: 0 0 var(--sp-6);
+    font-size: var(--fs-12);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--column-head-ink);
+  }
+  .lab-state__hint {
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: var(--fs-12);
+    color: var(--muted-foreground);
+  }
+
+  /* ── 共用表格骨架（本頁自有）───────────────────────────── */
+  .lab-scroll { overflow-x: auto; }
+  .lab-scroll > .lab-tbl { min-width: min-content; }
+  /* 浮層候選（L4）不能被裁：它的抽屜是絕對定位、要溢出到列的下方。 */
+  .lab-scroll--free { overflow: visible; }
+  .lab-tbl { width: 100%; color: var(--foreground); font-family: var(--font-ui); }
+  .lab-tbl__head,
+  .lab-tbl__row,
+  .lab-tbl__sub {
+    display: grid;
+    gap: var(--sp-16);
+    align-items: center;
+  }
+  .lab-tbl__head {
+    min-height: var(--sp-40);
+    padding: 0 var(--sp-10);
+    color: var(--column-head-ink);
+    font-size: var(--fs-12);
+    font-weight: var(--fw-regular);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  .lab-tbl__row {
+    min-height: var(--sp-56);
+    padding: var(--sp-12) var(--sp-10);
+    border-bottom: 1px solid var(--border-soft);
+    font-size: var(--fs-14);
+    transition: background-color var(--duration) var(--easing);
+  }
+  /* 子項列：欄軌、間距、左右內距全部與資料列相同 → 欄位與表頭對齊，零縮排。 */
+  .lab-tbl__sub {
+    min-height: var(--sp-40);
+    padding: var(--sp-10);
+    font-size: var(--fs-13);
+    color: var(--foreground-muted);
+  }
+  .lab-tbl__row--head { cursor: pointer; }
+  .lab-tbl__row--head:hover { background: var(--ztu-glass-bg); }
+
+  /* 欄軌：三個脈絡各一組，五個候選共用。母列、子列、表頭吃同一組值。 */
+  .lab-tbl--pk .lab-tbl__head,
+  .lab-tbl--pk .lab-tbl__row,
+  .lab-tbl--pk .lab-tbl__sub {
+    grid-template-columns: minmax(116px, 1fr) 92px minmax(148px, 1.2fr) 52px 116px minmax(96px, 0.8fr) 96px 76px;
+  }
+  .lab-tbl--ev .lab-tbl__head,
+  .lab-tbl--ev .lab-tbl__row,
+  .lab-tbl--ev .lab-tbl__sub {
+    grid-template-columns: 52px minmax(168px, 1.4fr) 152px minmax(104px, 1fr) 124px 108px 92px;
+  }
+  .lab-tbl--od .lab-tbl__head,
+  .lab-tbl--od .lab-tbl__row,
+  .lab-tbl--od .lab-tbl__sub {
+    grid-template-columns: minmax(180px, 1.6fr) 72px 64px 132px 112px 96px;
+  }
+
+  /* 儲存格語彙 */
+  .lab-title { font-size: var(--fs-14); }
+  .lab-tbl__sub .lab-title { font-size: var(--fs-13); color: var(--foreground); }
+  .lab-meta { margin-top: var(--sp-2); font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-mono { font-family: var(--font-mono); font-size: var(--fs-12); letter-spacing: 0.02em; }
+  .lab-none { color: var(--muted-foreground); }
+  .lab-num { font-variant-numeric: tabular-nums; }
+  .lab-thumb {
+    width: var(--sp-48);
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--muted);
+  }
+  .lab-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .lab-label { display: flex; align-items: center; gap: var(--sp-4); }
+  .lab-label > span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* 把手：外觀吃 .btn.btn--icon.btn--xs，本頁只加「不被壓縮」與「會轉」。
+     選擇器寫 svg 不寫 .ztor-icon——icon registry 把 <i> 換成 <svg>，
+     指元素就不必去碰共用 class。 */
+  .lab-toggle { flex: none; }
+  .lab-toggle svg { transition: transform var(--duration) var(--easing); }
+  .lab-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+  /* 票數（活動脈絡）。百分比由 --lab-pct 帶進來，不寫死顏色。 */
+  .lab-tix { font-size: var(--fs-13); font-variant-numeric: tabular-nums; }
+  .lab-tix__bar {
+    margin-top: var(--sp-6);
+    height: var(--sp-4);
+    border-radius: var(--radius-pill);
+    background: var(--border);
+    overflow: hidden;
+  }
+  .lab-tix__fill {
+    height: 100%;
+    width: var(--lab-pct, 0%);
+    border-radius: var(--radius-pill);
+    background: var(--primary);
+  }
+
+  /* ============================================================
+     L1 · 子層下沉（Nest 薄膜層）
+     母列 L1（卡面本身）／子項 L2（--ztu-film 薄膜）。
+     薄膜左右滿版貼齊資料列外緣：wrapper 不設左右內距，子列自己帶 --sp-10，
+     於是薄膜寬度＝表格寬度、子列的欄位起點＝表頭的欄位起點。
+     上下緣各一道 --border-soft 髮絲線收邊（站上 .nest 用 --nest-line，
+     那支在深色是全透明、只靠薄膜分層；探索頁把線留著，讓「邊界怎麼畫」看得見）。
+     ============================================================ */
+  .lab-sink {
+    padding-block: var(--sp-6);
+    background: var(--ztu-film);
+    border-top: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  /* ============================================================
+     L2 · 母列升層（母列變標頭）
+     母列 L2（展開時吃 --ztu-film ＋ 頂緣 --ztu-rim-soft 內光，升起來變標頭）／
+     子項 L1（回到卡面本身，沒有自己的填色）。
+     深色主題裡薄膜比卡面亮一階，所以「升」的方向是對的。
+     整組的收尾由 wrapper 下緣一道 --border 髮絲線負責。
+     ============================================================ */
+  .lab-lift__head:has([aria-expanded="true"]) {
+    background: var(--ztu-film);
+    box-shadow: inset 0 1px 0 var(--ztu-rim-soft);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    border-bottom-color: transparent;
+  }
+  .lab-lift__body { border-bottom: 1px solid var(--border); }
+
+  /* ============================================================
+     L3 · 整組換層（母子一起換成一塊面）
+     未展開時整列與其他資料列同層（L1 卡面）；展開時母列與子項一起被包進
+     一塊 L2 薄膜面板，四周一圈 1px --border-soft（inset 畫、不佔版位）、
+     圓角 --radius-lg。群組的邊界是一整塊面，不是幾條線。
+     ============================================================ */
+  .lab-swap:has([aria-expanded="true"]) {
+    margin-block: var(--sp-8);
+    padding-block: var(--sp-4);
+    border-radius: var(--radius-lg);
+    background: var(--ztu-film);
+    box-shadow: inset 0 0 0 1px var(--border-soft);
+  }
+  .lab-swap:has([aria-expanded="true"]) .lab-tbl__row { border-bottom-color: transparent; }
+
+  /* ============================================================
+     L4 · 浮層（往上一層）
+     母列 L1（卡面）／子項＝浮在表格之上的浮層：--popover 實色底 ＋
+     一圈 --ztu-glass-rim 頂緣內光 ＋ --ztu-shadow-pop 投影。
+     邊界＝陰影與內光構成的「離開平面」訊號。代價寫在卡片裡：它會遮住下方的列。
+
+     ⚠ 這裡刻意不是半透明毛玻璃。站上 Wave 2a 已經定案「浮層一律不透明」
+       （見 ds-components/zselect.css 第 112–119 行的註記）：內容表面本身換成玻璃
+       之後，浮層若也半透明就是看穿兩層、底下的字會浮上來。實測也是如此——半透明
+       版本疊在資料列上，兩層文字直接互相干擾，讀不了。所以填色用 --popover，
+       「浮起來」交給內光與投影說，這也才跟站上的下拉選單、彈出層是同一套語彙。
+     ============================================================ */
+  .lab-pop { position: relative; }
+  .lab-pop__panel {
+    position: absolute;
+    z-index: 5;
+    inset-inline: 0;
+    top: 100%;
+    padding-block: var(--sp-6);
+    border-radius: var(--radius-lg);
+    background: var(--popover);
+    box-shadow: inset 0 0 0 1px var(--ztu-glass-rim), var(--ztu-shadow-pop);
+  }
+  /* 抽屜是絕對定位、不佔版位，展開狀態的舞台自己留出落腳空間，才不會溢出卡片。 */
+  .lab-popstage { padding-bottom: calc(var(--sp-96) + var(--sp-64)); }
+
+  /* ============================================================
+     L5 · 層＋框的兩層（L2 薄膜 → L3 框線）
+     第一層子項 L2 薄膜（.lab-sink 同一支語彙）；第二層不再疊第三片填色，
+     改用 1px --border 的框（inset box-shadow 畫，不佔版位、欄位不位移）。
+     這是既有規則「填色最多兩層、第三層改用框」在真實情境的檢驗。
+     ============================================================ */
+  .lab-frame {
+    margin-block: var(--sp-4);
+    padding-block: var(--sp-4);
+    border-radius: var(--radius-md);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  .lab-frame__cap {
+    padding: var(--sp-4) var(--sp-10) var(--sp-6);
+    font-size: var(--fs-12);
+    color: var(--column-head-ink);
+  }
+
+  /* ── 頁尾提示 ─────────────────────────────────────────── */
+  .lab-foot { margin-top: var(--sp-32); }
+  .lab-foot ol { margin: 0; padding-inline-start: var(--sp-20); }
+  .lab-foot li { font-size: var(--fs-14); color: var(--foreground-muted); margin-bottom: var(--sp-10); }
+  .lab-foot li:last-child { margin-bottom: 0; }
+  .lab-foot b { color: var(--foreground); font-weight: var(--fw-semibold); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page lab">
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title">母子列展開 · 用層來分（設計探索 II）</h1>
+          <p class="page-intro__sub">這是一張比較用的探索頁，不是產品頁。<a class="card__link" href="lab-row-disclosure.html">第一版的六個候選</a>全都把母列與子項放在同一個平面上，只靠縮排加一條細線分階層，所以怎麼調都不夠明確。這一版換一條軸：階層由「這塊內容坐在哪一層平面上」承擔，縮排一律歸零，子項的欄位與表頭對齊。挑定之後才會另輪做成元件、遷移到取貨場次名單與活動清單。沒有任何既有頁面被改動。</p>
+        </div>
+      </div>
+
+      <section class="card">
+        <div class="card__head"><h2 class="card__title">先看層的詞彙</h2></div>
+        <p class="lab-lede">站上的表面階層只有四階，而且填色最多疊到第二層。下面這塊是實物：外面那圈是畫布，往內一層一層疊進去，每一層標了它用的正式 token。五個候選講的「母列在哪一層」就是指這四階。</p>
+        <div class="lab-stack lab-stack--l0">
+          <span class="lab-stack__tag">L0 畫布 · 頁面底，只有一個 <span class="lab-stack__tok">--surface-page</span></span>
+          <div class="lab-stack lab-stack--l1">
+            <span class="lab-stack__tag">L1 實色面 · 卡片與面板，絕對色 <span class="lab-stack__tok">--card</span></span>
+            <div class="lab-stack lab-stack--l2">
+              <span class="lab-stack__tag">L2 薄膜 · 疊在 L1 上的半透明一層 <span class="lab-stack__tok">--ztu-film</span></span>
+              <div class="lab-stack lab-stack--l3">
+                <span class="lab-stack__tag">L3 只有框 · 不再疊填色 <span class="lab-stack__tok">1px --border</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ol class="lab-rules">
+          <li><b>填色最多兩層</b>：L1 實色面到 L2 薄膜為止。再疊第三片薄膜顏色會愈疊愈糊、也會把畫布的冷色調洗掉，所以第三層改用一道 1px 框表達。候選 L5 就是在檢驗這條規則在「組合品項 → 成員 → 成員的領取單位」這種兩層展開時還成不成立。</li>
+          <li><b>深色主題裡「上面一層」＝比較亮</b>：薄膜是白色低透明疊加，疊在誰身上就比誰亮一階。所以在這一頁，母列若比子項亮，讀起來就是母列浮在上面。</li>
+          <li><b>層級不等於縮排</b>：五個候選的子項都與表頭切齊，一格也沒有右移。要看出從屬關係，看的是「這塊內容坐在哪一片面上」，不是它退了幾格。</li>
+        </ol>
+      </section>
+
+      <div class="lab-toolbar">
+        <span class="lab-toolbar__label">資料脈絡</span>
+        <div class="segmented" id="lab-ctx">
+          <button class="segmented__btn segmented__btn--active" type="button" data-ctx="pk">取貨場次名單</button>
+          <button class="segmented__btn" type="button" data-ctx="ev">活動系列</button>
+        </div>
+      </div>
+      <p class="lab-note">切換脈絡後，L1 到 L4 四張卡會同時換成該脈絡的資料。取貨名單＝一位買家的多件領取單位；活動系列＝一個巡演的多個場次日期。L5 固定用訂單詳情的組合品項，因為只有那裡才有真正的兩層展開，不隨脈絡切換。每張卡都同時擺出收合與展開兩個狀態，兩塊都可以直接點開來玩。</p>
+
+      <div class="lab-cards" id="lab-cards"></div>
+
+      <section class="card lab-foot">
+        <div class="card__head"><h2 class="card__title">怎麼挑</h2></div>
+        <ol>
+          <li><b>現場掃視速度</b>：取貨台是站著、趕時間、單手拿掃描槍的場合。哪一種能讓人一眼認出「這位買家還有幾件沒領、下一件在哪」？</li>
+          <li><b>一人多件時的可讀性</b>：五件、十件、二十件的時候會不會塌？重複的資訊有沒有被收掉？群組的開頭與結尾看不看得出來？</li>
+          <li><b>與站上 <span class="lab-mono">.nest</span> 既有語彙的一致性</b>：站上已經有一支「疊在母卡上的另一層」，愈接近它的候選，之後要維護的例外愈少。</li>
+          <li><b>兩層展開時還成不成立</b>：組合品項會長出第二層。第三層不准再疊填色，那條規則在你挑的這個候選上撐不撐得住？</li>
+        </ol>
+        <p class="card__note">四個判準會互相打架——層差最明顯的通常最耗版位，最一致的通常最安靜。挑的時候先決定哪一項優先。</p>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/row-disclosure.js?v=r2.2"></script>
+<script>
+/* ============================================================
+   探索頁的算繪。五個候選共用同一份資料，切脈絡就整批重畫，
+   這樣才保證每張卡看到的是同一批數字。
+
+   每個候選都畫兩座舞台：「收合」把整批關起來，「展開」打開其中一組。
+   兩座舞台的 markup 完全相同，差別只有初始的 aria-expanded 與 hidden，
+   所以兩個狀態的層差是同一份程式碼算出來的，不是各畫各的。
+
+   展開／收合不自己寫：母列把手掛 data-rowdis、子區塊掛 data-rowdis-child，
+   交給 js/row-disclosure.js 的 document 級委派。重畫之後呼叫
+   rowDisclosure.sync() 把 hidden 對回 aria-expanded。
+   ============================================================ */
+(function () {
+  'use strict';
+
+  /* ── 資料（與 pickup-detail.html／events.html 站上示範資料一致）── */
+  var TEE = 'Kowloon After Dark tee';
+  var CAP = 'Kowloon After Dark six-panel cap';
+  var VINYL = 'Kowloon After Dark vinyl · numbered 1/50';
+  var BUNDLE = 'Launch night bundle';
+
+  var PK = {
+    key: 'pk',
+    open: 'mika',
+    cols: ['買家', '來源', '領取項目', '規格', '領取碼', '來源組合', '狀態', '最近核銷'],
+    groups: [
+      { id: 'mika', name: 'Mika L.', order: '#ZT-10482', done: 1, total: 5, last: '13:40', units: [
+        { item: TEE, variant: 'M', code: 'PU-10482-01', bundle: '', st: 'pending', scan: '' },
+        { item: CAP, variant: '', code: 'PU-10482-02', bundle: BUNDLE, st: 'done', scan: '13:40' },
+        { item: CAP, variant: '', code: 'PU-10482-03', bundle: BUNDLE, st: 'pending', scan: '' },
+        { item: CAP, variant: '', code: 'PU-10482-04', bundle: BUNDLE, st: 'pending', scan: '' },
+        { item: VINYL, variant: '', code: 'PU-10482-05', bundle: BUNDLE, st: 'pending', scan: '' }
+      ] },
+      { id: 'noor', name: 'Noor P.', order: '#ZT-10490', done: 0, total: 2, last: '', units: [
+        { item: TEE, variant: 'L', code: 'PU-10490-01', bundle: '', st: 'pending', scan: '' },
+        { item: TEE, variant: 'L', code: 'PU-10490-02', bundle: '', st: 'pending', scan: '' }
+      ] },
+      { id: 'yuki', name: 'Yuki H.', order: '#ZT-10471', done: 0, total: 1, single: true, units: [
+        { item: VINYL, variant: '', code: 'PU-10471-01', bundle: '', st: 'void', scan: '' }
+      ] },
+      { id: 'devon', name: 'Devon W.', order: '#ZT-10475', done: 1, total: 1, single: true, units: [
+        { item: TEE, variant: 'L', code: 'PU-10475-01', bundle: '', st: 'done', scan: '14:22' }
+      ] }
+    ]
+  };
+
+  var EV = {
+    key: 'ev',
+    open: 'realive',
+    cols: ['', '活動', '日期時間', '場地', '票數', '營收', '狀態'],
+    groups: [
+      { id: 'realive', name: 'REALIVE World Tour — Asia leg', order: 'Concert · 3 dates',
+        img: 'images/projects/nick-realive.jpg',
+        date: '2026/09/12 – 2026/10/03', venue: '3 venues',
+        sold: 1240, cap: 1800, rev: '$3,732,000', st: 'on-sale',
+        units: [
+          { n: 'Date 1 of 3', date: '2026/09/12 · 7:30 PM', venue: '高雄巨蛋', sold: 600, cap: 600, rev: '$1,800,000', st: 'soldout' },
+          { n: 'Date 2 of 3', date: '2026/09/26 · 7:30 PM', venue: '台中洲際', sold: 440, cap: 600, rev: '$1,326,000', st: 'on-sale' },
+          { n: 'Date 3 of 3', date: '2026/10/03 · 7:30 PM', venue: '台北小巨蛋', sold: 200, cap: 600, rev: '$606,000', st: 'on-sale' }
+        ] }
+    ]
+  };
+
+  /* 訂單詳情：唯一有兩層展開的情境（組合 → 成員 → 成員的領取單位）。 */
+  var OD = {
+    key: 'od',
+    cols: ['品項', '規格', '數量', '領取碼', '狀態', '最近核銷'],
+    bundle: {
+      id: 'bundle', name: BUNDLE, meta: '組合 · 4 個領取單位', qty: 1, last: '13:40',
+      members: [
+        { id: 'cap', name: CAP, variant: '', qty: 3, last: '13:40', units: [
+          { code: 'PU-10482-02', st: 'done', scan: '13:40' },
+          { code: 'PU-10482-03', st: 'pending', scan: '' },
+          { code: 'PU-10482-04', st: 'pending', scan: '' }
+        ] },
+        { id: 'vinyl', name: VINYL, variant: '', qty: 1, last: '', units: [
+          { code: 'PU-10482-05', st: 'pending', scan: '' }
+        ] }
+      ]
+    },
+    loose: { name: TEE, variant: 'M', qty: 1, code: 'PU-10482-01', st: 'pending', scan: '' }
+  };
+
+  /* ── 小工具 ────────────────────────────────────────────── */
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function dash(s) { return s ? esc(s) : '<span class="lab-none">—</span>'; }
+  function pct(a, b) { return b ? Math.round(a / b * 100) : 0; }
+  function cell(html) { return '<div>' + html + '</div>'; }
+  function blanks(n) { var s = ''; for (var i = 0; i < n; i++) s += '<div></div>'; return s; }
+
+  var PK_BADGE = {
+    pending: '<span class="badge badge--warning">待核銷</span>',
+    done: '<span class="badge badge--success">已核銷</span>',
+    void: '<span class="badge badge--error">已失效</span>'
+  };
+  var EV_BADGE = {
+    'on-sale': '<span class="badge badge--success">On sale</span>',
+    soldout: '<span class="badge badge--success">Sold out</span>'
+  };
+
+  /* 母列的整組狀態：失效的件不能算成待領——現場拿著失效的碼來領是另一件事。 */
+  function pkBadge(g) {
+    var pending = 0, voided = 0;
+    g.units.forEach(function (u) { if (u.st === 'pending') pending++; if (u.st === 'void') voided++; });
+    if (pending) return '<span class="badge badge--warning">' + pending + ' 件待領</span>';
+    if (voided) return '<span class="badge badge--error">' + voided + ' 件已失效</span>';
+    return '<span class="badge badge--success">全部領完</span>';
+  }
+
+  function chev(gid, open) {
+    return '<button class="btn btn--icon btn--xs lab-toggle" type="button" data-rowdis="' + gid +
+      '" aria-expanded="' + (open ? 'true' : 'false') +
+      '" aria-label="展開子項"><i data-lucide="chevron-down" class="ztor-icon"></i></button>';
+  }
+  function thumb(g) {
+    return '<div class="lab-thumb"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>';
+  }
+  function tix(sold, cap) {
+    return '<div class="lab-tix">' + sold.toLocaleString() + ' / ' + cap.toLocaleString() +
+      '<div class="lab-tix__bar"><div class="lab-tix__fill" style="--lab-pct:' + pct(sold, cap) + '%"></div></div></div>';
+  }
+  function head(ctx) {
+    return '<div class="lab-tbl__head">' + ctx.cols.map(function (c) {
+      return '<div>' + esc(c) + '</div>';
+    }).join('') + '</div>';
+  }
+  function tbl(ctx, body, free) {
+    return '<div class="lab-scroll' + (free ? ' lab-scroll--free' : '') + '"><div class="lab-tbl lab-tbl--' +
+      ctx.key + '">' + head(ctx) + body + '</div></div>';
+  }
+
+  /* ── 母列與子列的儲存格（三個脈絡各一組，五個候選共用）──── */
+
+  /* 母列。headClass 讓候選替母列加自己的鉤子（L2 的升層就掛在這裡）。 */
+  function motherRow(ctx, g, gid, open, headClass) {
+    var cls = 'lab-tbl__row lab-tbl__row--head' + (headClass ? ' ' + headClass : '');
+    if (ctx.key === 'pk') {
+      return '<div class="' + cls + '" data-rowdis-row="' + gid + '">' +
+        cell('<div class="lab-label"><span class="lab-title">' + esc(g.name) + '</span>' + chev(gid, open) + '</div>' +
+             '<div class="lab-meta">' + g.done + ' / ' + g.total + ' 已領</div>') +
+        cell(esc(g.order)) +
+        cell(g.total + ' 件領取單位') +
+        cell('<span class="lab-none">—</span>') +
+        cell('<span class="lab-none">—</span>') +
+        cell('<span class="lab-none">—</span>') +
+        cell(pkBadge(g)) +
+        cell(dash(g.last)) + '</div>';
+    }
+    return '<div class="' + cls + '" data-rowdis-row="' + gid + '">' +
+      thumb(g) +
+      cell('<div class="lab-label"><span class="lab-title">' + esc(g.name) + '</span>' + chev(gid, open) + '</div>' +
+           '<div class="lab-meta">' + esc(g.order) + '</div>') +
+      cell(esc(g.date)) +
+      cell(esc(g.venue)) +
+      cell(tix(g.sold, g.cap)) +
+      cell('<span class="lab-num">' + esc(g.rev) + '</span>') +
+      cell(EV_BADGE[g.st]) + '</div>';
+  }
+
+  /* 單件的買家：沒有群組，就是一列普通資料列。 */
+  function singleRow(g) {
+    var u = g.units[0];
+    return '<div class="lab-tbl__row">' +
+      cell('<span class="lab-title">' + esc(g.name) + '</span>') +
+      cell(esc(g.order)) + cell(esc(u.item)) + cell(dash(u.variant)) +
+      cell('<span class="lab-mono">' + esc(u.code) + '</span>') +
+      cell(dash(u.bundle)) + cell(PK_BADGE[u.st]) + cell(dash(u.scan)) + '</div>';
+  }
+
+  /* 子項列。第一欄（買家／縮圖）刻意留白——「這是誰的」由層說了算，不重複寫。 */
+  function subRow(ctx, g, u) {
+    if (ctx.key === 'pk') {
+      return '<div class="lab-tbl__sub">' +
+        blanks(2) +
+        cell('<span class="lab-title">' + esc(u.item) + '</span>') +
+        cell(dash(u.variant)) +
+        cell('<span class="lab-mono">' + esc(u.code) + '</span>') +
+        cell(u.bundle ? esc(u.bundle) : '單買') +
+        cell(PK_BADGE[u.st]) +
+        cell(dash(u.scan)) + '</div>';
+    }
+    return '<div class="lab-tbl__sub">' +
+      blanks(1) +
+      cell('<span class="lab-title">' + esc(u.n) + '</span>') +
+      cell(esc(u.date)) +
+      cell(esc(u.venue)) +
+      cell(tix(u.sold, u.cap)) +
+      cell('<span class="lab-num">' + esc(u.rev) + '</span>') +
+      cell(EV_BADGE[u.st]) + '</div>';
+  }
+
+  function subRows(ctx, g) {
+    return g.units.map(function (u) { return subRow(ctx, g, u); }).join('');
+  }
+
+  /* ── 候選 L1 · 子層下沉 ────────────────────────────────── */
+  function buildL1(ctx, openId, tag) {
+    var out = '';
+    ctx.groups.forEach(function (g) {
+      if (g.single) { out += singleRow(g); return; }
+      var gid = 'l1-' + ctx.key + '-' + tag + '-' + g.id;
+      var open = openId === g.id;
+      out += motherRow(ctx, g, gid, open);
+      out += '<div class="lab-sink" data-rowdis-child="' + gid + '"' + (open ? '' : ' hidden') + '>' +
+        subRows(ctx, g) + '</div>';
+    });
+    return tbl(ctx, out);
+  }
+
+  /* ── 候選 L2 · 母列升層 ────────────────────────────────── */
+  function buildL2(ctx, openId, tag) {
+    var out = '';
+    ctx.groups.forEach(function (g) {
+      if (g.single) { out += singleRow(g); return; }
+      var gid = 'l2-' + ctx.key + '-' + tag + '-' + g.id;
+      var open = openId === g.id;
+      out += motherRow(ctx, g, gid, open, 'lab-lift__head');
+      out += '<div class="lab-lift__body" data-rowdis-child="' + gid + '"' + (open ? '' : ' hidden') + '>' +
+        subRows(ctx, g) + '</div>';
+    });
+    return tbl(ctx, out);
+  }
+
+  /* ── 候選 L3 · 整組換層 ────────────────────────────────── */
+  function buildL3(ctx, openId, tag) {
+    var out = '';
+    ctx.groups.forEach(function (g) {
+      if (g.single) { out += singleRow(g); return; }
+      var gid = 'l3-' + ctx.key + '-' + tag + '-' + g.id;
+      var open = openId === g.id;
+      out += '<div class="lab-swap">' +
+        motherRow(ctx, g, gid, open) +
+        '<div data-rowdis-child="' + gid + '"' + (open ? '' : ' hidden') + '>' + subRows(ctx, g) + '</div>' +
+        '</div>';
+    });
+    return tbl(ctx, out);
+  }
+
+  /* ── 候選 L4 · 玻璃浮層 ────────────────────────────────── */
+  function buildL4(ctx, openId, tag) {
+    var out = '';
+    ctx.groups.forEach(function (g) {
+      if (g.single) { out += singleRow(g); return; }
+      var gid = 'l4-' + ctx.key + '-' + tag + '-' + g.id;
+      var open = openId === g.id;
+      out += '<div class="lab-pop">' +
+        motherRow(ctx, g, gid, open) +
+        '<div class="lab-pop__panel" data-rowdis-child="' + gid + '"' + (open ? '' : ' hidden') + '>' +
+        subRows(ctx, g) + '</div></div>';
+    });
+    return tbl(ctx, out, true);
+  }
+
+  /* ── 候選 L5 · 層＋框的兩層（固定用訂單詳情）──────────── */
+  function odUnitRow(u) {
+    return '<div class="lab-tbl__sub">' +
+      blanks(1) +
+      cell('<span class="lab-none">—</span>') +
+      cell('<span class="lab-num">1</span>') +
+      cell('<span class="lab-mono">' + esc(u.code) + '</span>') +
+      cell(PK_BADGE[u.st]) +
+      cell(dash(u.scan)) + '</div>';
+  }
+
+  function buildL5(open2, open3, tag) {
+    var b = OD.bundle;
+    var gid = 'l5-' + tag + '-bundle';
+    var out = '<div class="lab-tbl__row lab-tbl__row--head" data-rowdis-row="' + gid + '">' +
+      cell('<div class="lab-label"><span class="lab-title">' + esc(b.name) + '</span>' + chev(gid, open2) + '</div>' +
+           '<div class="lab-meta">' + esc(b.meta) + '</div>') +
+      cell('<span class="lab-none">—</span>') +
+      cell('<span class="lab-num">' + b.qty + '</span>') +
+      cell('4 個領取單位') +
+      cell('<span class="badge badge--warning">3 件待領</span>') +
+      cell(esc(b.last)) + '</div>';
+
+    var inner = '';
+    b.members.forEach(function (m) {
+      var mid = 'l5-' + tag + '-' + m.id;
+      var mopen = open3 && m.id === 'cap';
+      var pending = m.units.filter(function (u) { return u.st === 'pending'; }).length;
+      inner += '<div class="lab-tbl__sub" data-rowdis-row="' + mid + '">' +
+        cell('<div class="lab-label"><span class="lab-title">' + esc(m.name) + '</span>' + chev(mid, mopen) + '</div>') +
+        cell(dash(m.variant)) +
+        cell('<span class="lab-num">' + m.qty + '</span>') +
+        cell(m.qty + ' 個領取單位') +
+        cell('<span class="badge badge--warning">' + pending + ' 件待領</span>') +
+        cell(dash(m.last)) + '</div>';
+      inner += '<div class="lab-frame" data-rowdis-child="' + mid + '"' + (mopen ? '' : ' hidden') + '>' +
+        '<div class="lab-frame__cap">這 ' + m.qty + ' 件的領取單位 · 一物一碼</div>' +
+        m.units.map(odUnitRow).join('') + '</div>';
+    });
+
+    out += '<div class="lab-sink" data-rowdis-child="' + gid + '"' + (open2 ? '' : ' hidden') + '>' + inner + '</div>';
+
+    var l = OD.loose;
+    out += '<div class="lab-tbl__row">' +
+      cell('<span class="lab-title">' + esc(l.name) + '</span>') +
+      cell(esc(l.variant)) +
+      cell('<span class="lab-num">' + l.qty + '</span>') +
+      cell('<span class="lab-mono">' + esc(l.code) + '</span>') +
+      cell(PK_BADGE[l.st]) +
+      cell(dash(l.scan)) + '</div>';
+
+    return tbl(OD, out);
+  }
+
+  /* ── 候選清單 ─────────────────────────────────────────── */
+  var CANDIDATES = [
+    {
+      code: 'L1',
+      name: '子層下沉（Nest 薄膜層）',
+      lede: '展開的子項是一塊薄膜層，左右滿版貼齊資料列外緣、上下緣各一道髮絲線。這是站上 .nest 的語彙直接延伸到清單上，一致性最高。',
+      mother: 'L1 實色面（卡面本身，沒有自己的填色）',
+      child: 'L2 薄膜（--ztu-film）',
+      edge: '薄膜色差 ＋ 上下緣各一道 --border-soft 髮絲線',
+      stages: true,
+      build: buildL1,
+      pros: [
+        '跟站上「切到多選項後長出設定表單」是同一個動作，工程與設計都不用學新語彙',
+        '子項欄位與表頭完全對齊，掃一整欄（例如領取碼）不必左右跳',
+        '群組的開頭與結尾就是薄膜的上下緣，五件、二十件都一樣清楚'
+      ],
+      cons: [
+        '深色主題裡薄膜只亮一階，遠看層差偏安靜，站在取貨台三公尺外可能讀不出來',
+        '母列與子項的層差只有一階，同一畫面裡連開兩組會出現兩片薄膜，需要間距幫忙分開',
+        '亮色主題的薄膜幾乎不著色，分層責任全落在那兩道髮絲線上'
+      ]
+    },
+    {
+      code: 'L2',
+      name: '母列升層（母列變標頭）',
+      lede: '展開時母列自己升上一層、頂緣帶一道內光，子項留在原本的卡面上。層差說的是「這一列現在是這一組的標頭，不是一筆資料」。',
+      mother: 'L2 薄膜（--ztu-film ＋ 頂緣 --ztu-rim-soft 內光）',
+      child: 'L1 實色面（回到卡面本身，沒有填色）',
+      edge: '母列的薄膜色差與頂緣內光，組尾一道 --border 髮絲線收邊',
+      stages: true,
+      build: buildL2,
+      pros: [
+        '被強調的是母列，符合「展開後這一列的角色變了」的實情',
+        '子項維持在卡面上，密度最高、最省版位，一次開十幾件也不會整片糊掉',
+        '只有展開的那一列會變，收合狀態的清單完全乾淨'
+      ],
+      cons: [
+        '子項沒有自己的面，靠的是母列的對比反推從屬，關係比 L1 弱一階',
+        '組尾那道線是唯一的結束訊號，兩組相鄰時邊界較細',
+        '母列吃了薄膜，之後若要在母列上再加 hover 或選取態，可用的層就用完了'
+      ]
+    },
+    {
+      code: 'L3',
+      name: '整組換層（母子一起換成一塊面）',
+      lede: '展開時母列與子項一起被包成一塊面板，從周圍的資料列裡整塊分出來；沒展開的列維持原樣。群組的邊界是一整塊面，不是幾條線。',
+      mother: 'L2 薄膜（與子項同一塊面板）',
+      child: 'L2 薄膜（與母列同一塊面板）',
+      edge: '面板本身：--ztu-film ＋ 一圈 1px --border-soft ＋ --radius-lg 圓角',
+      stages: true,
+      build: buildL3,
+      pros: [
+        '群組的範圍最好認：一塊面就是一組，開頭結尾都在面的邊上',
+        '同時展開多組時彼此不會混，每組各是一塊',
+        '母列與子項同層，讀起來是「這一整組被拉出來看」，不是「一列長出小字」'
+      ],
+      cons: [
+        '母列與子項同層，誰是標頭得靠字重與留白，不是靠層',
+        '面板要圓角與上下留白，展開時整張表會被推開，行距節奏跟著跳一次',
+        '面板往上一階之後，它跟站上「.nest 是往下沉的一層」方向相反，語彙要重新解釋'
+      ]
+    },
+    {
+      code: 'L4',
+      name: '浮層抽屜（往上一層）',
+      lede: '跟前三個相反方向：展開的內容浮在表格之上，像從那一列裡拉出來的抽屜。層差最強，代價也最直接——它會遮住下方的列。',
+      mother: 'L1 實色面（卡面本身，位置完全不動）',
+      child: '浮層（--popover 實色底，照站上「浮層一律不透明」的定案，不做毛玻璃）',
+      edge: '--ztu-shadow-pop 投影 ＋ 一圈 --ztu-glass-rim 內光，靠「離開平面」說話',
+      stages: true,
+      build: buildL4,
+      pros: [
+        '層差一眼認得出來，三公尺外也讀得到，是五個裡面最強的',
+        '表格本體不被推開，母列的位置不動，連續點開好幾組時視線不會被搬走',
+        '浮層有自己的邊界，內容可以做得比列更寬鬆，不受欄軌高度限制'
+      ],
+      cons: [
+        '會遮住下方的列——展開狀態那一塊裡，下面三位買家整個被蓋掉',
+        '同時只能開一組，「兩位買家對照著看」這件事做不到',
+        '站上目前只有下拉選單與彈出層在用浮層語彙，把它搬到資料列上會顯得很重',
+        '浮層必須是實色（半透明會看穿兩層、底下的字浮上來），所以它蓋住的那幾列是真的看不到，不是半遮'
+      ]
+    },
+    {
+      code: 'L5',
+      name: '層＋框的兩層（L2 薄膜 → L3 框線）',
+      lede: '專門檢驗兩層展開：訂單裡的組合品項先展開成員（薄膜層），成員再展開它自己的領取單位。第二層照既有規則不再疊填色，改用 1px 框。',
+      mother: 'L1 實色面（訂單品項列）',
+      child: '第一層成員 ＝ L2 薄膜（--ztu-film）；第二層領取單位 ＝ L3 只有框',
+      edge: '第一層靠薄膜色差 ＋ 髮絲線；第二層靠 1px --border 的框（用 inset 畫，不佔版位、欄位不位移）',
+      stages: false,
+      pros: [
+        '證明了「填色最多兩層」這條規則撐得住：第二層改用框之後，畫面沒有變糊',
+        '框有明確的開頭與結尾，三件同款的領取碼被關在一起，掃碼時不會拿錯',
+        '兩層都與表頭對齊，領取碼始終在同一欄，掃視路徑不變'
+      ],
+      cons: [
+        '兩層都打開時同一畫面有三種表面，資訊密度高，現場站著看偏吃力',
+        '框比薄膜安靜，第二層的存在感明顯低於第一層，得靠標題文字補',
+        '再往下就沒有第四層可用了，未來若組合裡還能包組合，這套要重想'
+      ]
+    }
+  ];
+
+  /* ── 算繪與互動 ───────────────────────────────────────── */
+  var ctxKey = 'pk';
+  var wrap = document.getElementById('lab-cards');
+
+  function ctxData() { return ctxKey === 'pk' ? PK : EV; }
+
+  function bullets(list) {
+    return '<ul>' + list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>';
+  }
+
+  function stage(cap, hint, body, extraClass) {
+    return '<div class="lab-state' + (extraClass ? ' ' + extraClass : '') + '">' +
+      '<p class="lab-state__cap">' + esc(cap) +
+      (hint ? '<span class="lab-state__hint">' + esc(hint) + '</span>' : '') + '</p>' +
+      body + '</div>';
+  }
+
+  function demo(c, ctx) {
+    if (!c.stages) {
+      return '<div class="lab-states">' +
+        stage('收合', '組合只顯示一列，四個領取單位收在裡面', buildL5(false, false, 'c')) +
+        stage('展開 · 兩層', '第一層成員坐在薄膜上，第二層領取單位改用 1px 框', buildL5(true, true, 'o')) +
+        '</div>';
+    }
+    var openHint = ctx.key === 'pk'
+      ? '打開 Mika L. 這一組，其餘三列維持收合'
+      : '打開這個巡演，三個場次日期展開';
+    return '<div class="lab-states">' +
+      stage('收合', ctx.key === 'pk' ? '四位買家全部關起來' : '整個巡演只有一列', c.build(ctx, null, 'c')) +
+      stage('展開', openHint, c.build(ctx, ctx.open, 'o'), c.code === 'L4' ? 'lab-popstage' : '') +
+      '</div>';
+  }
+
+  function paint() {
+    var ctx = ctxData();
+    wrap.innerHTML = CANDIDATES.map(function (c) {
+      return '<section class="card lab-card">' +
+        '<div class="lab-card__head">' +
+        '<span class="lab-card__code">' + esc(c.code) + '</span>' +
+        '<h2 class="lab-card__name">' + esc(c.name) + '</h2></div>' +
+        '<p class="lab-lede">' + esc(c.lede) + '</p>' +
+        '<div class="lab-map">' +
+        '<div><div class="lab-map__k">母列在哪一層</div><div class="lab-map__v">' + esc(c.mother) + '</div></div>' +
+        '<div><div class="lab-map__k">子項在哪一層</div><div class="lab-map__v">' + esc(c.child) + '</div></div>' +
+        '<div><div class="lab-map__k">邊界用什麼畫</div><div class="lab-map__v">' + esc(c.edge) + '</div></div>' +
+        '</div>' +
+        demo(c, ctx) +
+        '<div class="lab-pros">' +
+        '<div><h3 class="lab-pros__title">優點</h3>' + bullets(c.pros) + '</div>' +
+        '<div><h3 class="lab-pros__title">代價</h3>' + bullets(c.cons) + '</div>' +
+        '</div></section>';
+    }).join('');
+    if (window.ztorIcons) window.ztorIcons.applyIcons();
+    if (window.rowDisclosure) window.rowDisclosure.sync();
+  }
+
+  /* 脈絡切換 */
+  var seg = document.getElementById('lab-ctx');
+  seg.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-ctx]');
+    if (!btn) return;
+    ctxKey = btn.getAttribute('data-ctx');
+    Array.prototype.forEach.call(seg.querySelectorAll('[data-ctx]'), function (b) {
+      b.classList.toggle('segmented__btn--active', b === btn);
+    });
+    paint();
+  });
+
+  paint();
+})();
+</script>
+</body>
+</html>

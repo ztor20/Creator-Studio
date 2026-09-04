@@ -56,8 +56,16 @@
     return src ? src.replace(/js\/devtools\.js.*$/, '') : '';
   })();
 
+  /* 2026-09-01 由兩檔加到四檔（使用者裁示「補齊新 dashboard 的 UI 狀態」）：
+     「空」其實有兩種，而中間那一段——**已經建立過東西、但只有一兩筆**——才是新帳號
+     用最久的狀態，先前完全示範不出來。
+     `empty` 與 `has-data` 的鍵刻意不動：全站三十幾頁的空狀態都掛在
+     `html[data-data-state="empty"]` 上（見 shared.css），改鍵會一次弄壞所有頁。
+     中間那兩檔對其他頁而言等於「不是 empty」＝照常顯示，只有新總覽認得它們。 */
   var DATA = [
-    ['empty', 'Empty', '帳號下尚無任何內容（含第一次進站）'],
+    ['empty', 'Empty', '全新帳號，什麼都還沒建立（第一次進站）'],
+    ['only-product', 'Only product', '只建立了商品：右排沒有項目與活動，背景退用商品主圖'],
+    ['one-project', 'One project', '只有一個項目：右排一列、第二屏一張卡'],
     ['has-data', 'Has Data', '已建立過任何內容（預設）'],
   ];
   var EVENTDAY = [
@@ -111,7 +119,7 @@
   /* ✝ 2026-07-30：pickup.html／pickup-detail.html／scanner.html 移出本清單——取貨管理已列進
      feature-scope-map（O24–O30，🟢 Phase 1），不再是「未列 scope 的整頁功能」，各版本皆可進入（D157）。 */
   var FULL_ROUTES = {
-    'index.html': 1, 'home-canvas.html': 1, 'creators.html': 1, 'projects.html': 1, 'project-detail.html': 1, 'create-project.html': 1,
+    'index.html': 1, 'dashboard-classic.html': 1, 'creators.html': 1, 'projects.html': 1, 'project-detail.html': 1, 'create-project.html': 1,
     'create-campaign.html': 1, 'funding-simulate.html': 1, 'events.html': 1, 'event-detail.html': 1, 'create-event.html': 1, 'edit-event.html': 1,
     'fans-crm.html': 1, 'fan-detail.html': 1, 'tier-settings.html': 1, 'my-ip.html': 1, 'ip-detail.html': 1,
     'ip-market.html': 1, 'register-ip.html': 1, 'settings.html': 1,
@@ -525,7 +533,13 @@
     + '.ztd-onb__title svg{width:20px;height:20px;color:var(--primary)}'
     + '.ztd-onb__sub{font-size:var(--fs-13);color:var(--muted-foreground);margin-bottom:16px;line-height:1.5}'
     + '.ztd-onb__opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}'
-    + '.ztd-onb__ok{width:100%;padding:12px;border:0;border-radius:var(--radius-md,7px);background:var(--primary);color:var(--primary-foreground);font:inherit;font-weight:var(--fw-regular);font-size:var(--fs-14);cursor:pointer}'
+    /* 與上面那組選項之間留一段（2026-09-01 使用者回報「這個之間要有一個空格」）：
+       這一顆是「動作」不是「又一個選項」，貼著最後一張卡時兩者讀成同一塊——最後一張
+       正好是選中的（橘框），底下再接一顆橘色實心鈕，看起來像那張卡長出一截。
+       16px 取的是上面說明文字與清單之間的同一階，不新造一個間距。
+       **這一段本來是有的**：早期選項是 `.ztd-onb__opts`（帶 `margin-bottom:16px`），
+       改成分組清單（`.ztd__subgroup` ＋ `.ztd__rows-v`）之後那條規則就沒有對象了。 */
+    + '.ztd-onb__ok{margin-top:16px;width:100%;padding:12px;border:0;border-radius:var(--radius-md,7px);background:var(--primary);color:var(--primary-foreground);font:inherit;font-weight:var(--fw-regular);font-size:var(--fs-14);cursor:pointer}'
     + '.ztd-onb__ok:hover{filter:brightness(.96)}'
     + '@media (max-width:420px){.ztd-onb__opts{grid-template-columns:1fr}}';
   var style = document.createElement('style');

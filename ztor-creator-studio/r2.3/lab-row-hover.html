@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>面板內的列 Hover · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<script src="js/row-disclosure.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/product-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/row-disclosure.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* ============================================================
+     lab-row-hover — 「L3 群組面板內，列的 hover 該怎麼做」設計探索頁（2026-09-04）
+
+     背景：母子列展開已裁定用 L3 整組換層（ds-components/row-disclosure.css，
+     `.rowdis__group` 展開時整組包進一塊 --ztu-film 薄膜面板）。面板裡的列目前
+     繼承站上通用的列 hover（product-list.css 74-83 行：浮起成一張玻璃卡），
+     那組樣式是為「列坐在 L1 實色卡面上」設計的，疊到 L2 薄膜面板上有三個矛盾：
+
+       1. 方向反了 —— --ztu-glass-bg 是 5% 白、面板底是 --ztu-film 8.6% 白，
+          hover 的填色比它坐的底還暗，讀起來是往下沉、不是浮起。
+       2. 模糊沒有意義 —— backdrop-filter 在面板內取樣到面板自己（同一個教訓
+          ds-components/nest.css 檔頭已經記過一次：母卡已是玻璃，子層再模糊
+          只會取樣到母卡自己，讀不出層次還多耗 GPU）。
+       3. 語意打架 —— 一列浮出面板，跟「這一組是同一個平面」互相矛盾。
+
+     本頁比較六個候選（現況基準 + 五個新提案），母列與子列各給一次 hover 示範，
+     另外擺一列面板外的一般列做對照。
+
+     ── 邊界（刻意的自我約束）────────────────────────────────
+     本頁的 <style> 不覆寫、不重新定義任何既有共用 class 或 token。示範列刻意
+     不掛 `.product-list__row`（它自己就帶一條全站共用的 :hover 規則，掛上去
+     會跟本頁六個候選各自的 hover 設計互相打架）——改用本頁自有的 `.lab-row`，
+     手動複製 product-list.css 的欄軌／列高／內距／圓角等既有 token 值，讓外觀
+     與真正的元件一致，但 hover 這一塊完全由本頁六組 `.lab-hv-*` 規則決定，
+     互不干擾。`.rowdis__group` / `__head` / `__child` 本身沒有任何 :hover 規則，
+     直接沿用（真正的元件、沒有被複製）。
+
+     每個候選同時給「真 :hover」（滑鼠移上去有效）與「常駐模擬 hover」（疊
+     `.is-hover` class，供截圖用，旁邊都標了小字說明）。
+     ============================================================ */
+
+  .lab [hidden] { display: none !important; }
+
+  /* ── 候選卡骨架 ─────────────────────────────────────────── */
+  .lab-cards { display: grid; gap: var(--sp-24); margin-top: var(--sp-24); }
+  .lab-card__head { display: flex; align-items: center; gap: var(--sp-12); flex-wrap: wrap; }
+  .lab-card__code {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--sp-28);
+    height: var(--sp-28);
+    padding: 0 var(--sp-10);
+    border-radius: var(--radius-sm);
+    background: var(--ztu-accent-surface);
+    color: var(--ztu-accent-fg);
+    font-family: var(--font-ui);
+    font-size: var(--fs-12);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.06em;
+  }
+  .lab-card__name { margin: 0; font-size: var(--fs-18); font-weight: var(--fw-semibold); }
+  .lab-card__pos { margin: var(--sp-4) 0 0; font-size: var(--fs-13); color: var(--foreground-muted); }
+  .lab-card__intensity {
+    margin: var(--sp-12) 0 0;
+    padding: var(--sp-10) var(--sp-14);
+    border-radius: var(--radius-md);
+    background: var(--ztu-film);
+    font-size: var(--fs-12);
+    color: var(--foreground-muted);
+    line-height: var(--lh-comfy);
+  }
+  .lab-card__intensity b { color: var(--foreground); font-weight: var(--fw-semibold); }
+
+  /* ── 示範區塊標題與模擬 hover 小字 ──────────────────────── */
+  .lab-demo { margin-top: var(--sp-16); }
+  .lab-demo + .lab-demo { margin-top: var(--sp-20); }
+  .lab-demo__cap {
+    margin: 0 0 var(--sp-8);
+    font-size: var(--fs-12);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--column-head-ink);
+  }
+  .lab-hovertag {
+    margin: 0 0 var(--sp-2);
+    padding-inline: var(--sp-10);
+    font-size: var(--fs-12);
+    font-style: italic;
+    color: var(--muted-foreground);
+  }
+
+  /* ── 本頁自有的列骨架（不是 .product-list__row，理由見上方檔頭）──
+     欄軌數值照抄 product-list.css 的 .product-list--roster 變體，列高／
+     內距／圓角照抄 base .product-list__row，全部走既有 token。 */
+  .lab-row {
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) 108px minmax(140px, 1.1fr) 64px 112px minmax(96px, 0.8fr) 104px 88px 40px;
+    gap: var(--sp-20);
+    align-items: center;
+    min-height: 88px;
+    padding: var(--sp-14) var(--sp-10);
+    border-bottom: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    transition: background-color var(--duration) var(--easing),
+                box-shadow var(--duration) var(--easing),
+                border-color var(--duration) var(--easing);
+  }
+  .lab-row[hidden] { display: none; }
+  @media (max-width: 900px) {
+    .lab-row { grid-template-columns: minmax(0, 1fr) auto; }
+  }
+
+  /* ── 六組候選的 hover 規則 ─────────────────────────────── */
+
+  /* 基準 · 現況：複製 product-list.css 74-83 行的浮玻璃卡值，不觸碰
+     .product-list__row:hover 本身——這裡的選擇器是本頁自有的 .lab-hv-base，
+     跟共用元件的選擇器完全無關，只是數值抄一份。 */
+  .lab-row.lab-hv-base:hover,
+  .lab-row.lab-hv-base.is-hover {
+    position: relative;
+    z-index: 1;
+    background: var(--ztu-glass-bg);
+    backdrop-filter: blur(var(--ztu-blur-glass));
+    -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+    border-radius: var(--radius-lg);
+    border-bottom-color: transparent;
+    box-shadow: var(--shadow-lift-flat), var(--shadow-edge-top);
+  }
+
+  /* H1 · 提亮一階：只換底色，不浮起、不模糊、不加陰影。 */
+  .lab-row.lab-hv-h1:hover,
+  .lab-row.lab-hv-h1.is-hover {
+    background: var(--ztu-glass-strong);
+    border-bottom-color: transparent;
+  }
+
+  /* H2 · 左緣光條：底色不動，左緣加一條 2px 指示條。 */
+  .lab-row.lab-hv-h2:hover,
+  .lab-row.lab-hv-h2.is-hover {
+    box-shadow: inset 2px 0 0 0 var(--primary);
+  }
+
+  /* H3 · 內框：整列一圈 1px inset 邊，比面板自己那圈（--border-soft）更亮一階。 */
+  .lab-row.lab-hv-h3:hover,
+  .lab-row.lab-hv-h3.is-hover {
+    box-shadow: inset 0 0 0 1px var(--border);
+    border-bottom-color: transparent;
+  }
+
+  /* H4 · 只提字、動作浮現：底色與邊不動，文字由 muted 提到 foreground，
+     動作選單由淡轉實。母列標題本來就是 --foreground（非 muted），這招
+     在母列上幾乎沒有視覺效果——這件事本身就是候選卡裡要講的「強度差」。 */
+  .lab-row.lab-hv-h4 .product-list__cell {
+    transition: color var(--duration) var(--easing);
+  }
+  .lab-row.lab-hv-h4:hover .product-list__cell,
+  .lab-row.lab-hv-h4.is-hover .product-list__cell {
+    color: var(--foreground);
+  }
+  .lab-row.lab-hv-h4 .product-list__actions {
+    opacity: .5;
+    transition: opacity var(--duration) var(--easing);
+  }
+  .lab-row.lab-hv-h4:hover .product-list__actions,
+  .lab-row.lab-hv-h4.is-hover .product-list__actions {
+    opacity: 1;
+  }
+
+  /* H5 · 只有可操作的東西有 hover：整列（.lab-row.lab-hv-h5）不掛任何規則。
+     動作選單按鈕沿用 .btn--icon:hover 既有行為，真實、未改動。「來源」連結
+     本頁另補一條同語彙的 hover（muted → foreground，跟 card.css 既有的
+     .card__head .card__link:hover 是同一個設計決定，只是這裡的連結不在
+     .card__head 底下，所以另外用本頁自有的 .lab-h5-link 掛規則，不改
+     card.css、不影響其他頁面的 .card__link）。領取碼目前不是可點元素，
+     維持純文字、不給它假的可點暗示。 */
+  .lab-h5-link {
+    transition: color var(--duration) var(--easing), border-bottom-color var(--duration) var(--easing);
+  }
+  .lab-h5-link:hover,
+  .lab-h5-link.is-hover {
+    color: var(--foreground);
+    border-bottom-color: var(--foreground);
+  }
+  .lab-h5-btn.is-hover { background: var(--accent); color: var(--foreground); }
+
+  /* ── 優缺點兩欄 ─────────────────────────────────────────── */
+  .lab-pros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--sp-16) var(--sp-32);
+    margin-top: var(--sp-20);
+    padding-top: var(--sp-16);
+    border-top: 1px solid var(--border-soft);
+  }
+  .lab-pros__title {
+    margin: 0 0 var(--sp-8);
+    font-size: var(--fs-12);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--column-head-ink);
+  }
+  .lab-pros ul { margin: 0; padding-inline-start: var(--sp-16); }
+  .lab-pros li { font-size: var(--fs-13); color: var(--foreground-muted); margin-bottom: var(--sp-6); }
+  .lab-pros li:last-child { margin-bottom: 0; }
+
+  /* ── 頁尾判準 ───────────────────────────────────────────── */
+  .lab-foot { margin-top: var(--sp-32); }
+  .lab-foot ol { margin: 0; padding-inline-start: var(--sp-20); }
+  .lab-foot li { font-size: var(--fs-14); color: var(--foreground-muted); margin-bottom: var(--sp-10); }
+  .lab-foot li:last-child { margin-bottom: 0; }
+  .lab-foot b { color: var(--foreground); font-weight: var(--fw-semibold); }
+
+  /* ── 三行矛盾說明（頁首）───────────────────────────────── */
+  .lab-diag { margin: var(--sp-16) 0 0; padding-inline-start: var(--sp-20); }
+  .lab-diag li { font-size: var(--fs-13); color: var(--foreground-muted); margin-bottom: var(--sp-8); }
+  .lab-diag li:last-child { margin-bottom: 0; }
+  .lab-diag b { color: var(--foreground); font-weight: var(--fw-semibold); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page lab">
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title">面板內的列 Hover（設計探索）</h1>
+          <p class="page-intro__sub">母子列展開已裁定用 L3 整組換層：展開時母列與子項一起包進一塊 --ztu-film 薄膜面板。面板裡的列目前繼承站上通用的列 hover（浮起成一張玻璃卡），但那組樣式是為「列坐在實色卡面上」設計的，疊到薄膜面板上會打架。這是一張比較用的探索頁，不是產品頁，沒有任何既有頁面被改動。</p>
+        </div>
+      </div>
+
+      <section class="card">
+        <div class="card__head"><h2 class="card__title">現況的三個矛盾</h2></div>
+        <ol class="lab-diag">
+          <li><b>方向反了</b>：hover 的填色（5% 白）比它坐的面板底（8.6% 白）還暗，讀起來是往下沉，不是浮起。</li>
+          <li><b>模糊沒有意義</b>：backdrop-filter 在面板內只會取樣到面板自己，讀不出層次，還多耗 GPU。</li>
+          <li><b>語意打架</b>：一列「浮出」面板，跟「這一組是同一個平面」互相矛盾。</li>
+        </ol>
+      </section>
+
+      <div class="lab-cards">
+
+        <!-- ============================================================
+             基準 · 現況
+             ============================================================ -->
+        <section class="card">
+          <div class="card__head">
+            <span class="lab-card__code">基準</span>
+            <div>
+              <h2 class="lab-card__name">現況 · 浮玻璃卡</h2>
+              <p class="lab-card__pos">站上目前的通用列 hover，供對照——上面三個矛盾就是從這組樣式來的。</p>
+            </div>
+          </div>
+
+          <div class="lab-demo">
+            <p class="lab-demo__cap">面板內（rowdis__group 展開態）</p>
+            <div class="product-list-scroll">
+              <section class="product-list product-list--roster" role="table">
+                <div class="product-list__head" role="row">
+                  <div role="columnheader">買家</div>
+                  <div role="columnheader">來源</div>
+                  <div role="columnheader">領取項目</div>
+                  <div role="columnheader">規格</div>
+                  <div role="columnheader">領取碼</div>
+                  <div role="columnheader">來源組合</div>
+                  <div role="columnheader">狀態</div>
+                  <div role="columnheader">最近核銷</div>
+                  <div role="columnheader" aria-label="操作"></div>
+                </div>
+                <div class="rowdis__group">
+                  <p class="lab-hovertag">模擬滑鼠停留（母列）</p>
+                  <div class="lab-row rowdis__head lab-hv-base is-hover" role="row" data-rowdis-row="base-m">
+                    <div class="product-list__product" role="cell">
+                      <div class="product-list__body">
+                        <div class="product-list__title rowdis__label"><span>Mika L.</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="base-m" aria-expanded="true" aria-label="收合領取單位"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                        <div class="product-list__meta">已領 1 / 5</div>
+                      </div>
+                    </div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__actions" role="cell"></div>
+                  </div>
+                  <div class="lab-row rowdis__child lab-hv-base" role="row" data-rowdis-child="base-m">
+                    <div class="product-list__product" role="cell"></div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell">T恤</div>
+                    <div class="product-list__cell" role="cell">M</div>
+                    <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-01</div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__cell" role="cell"><span class="badge badge--warning">待核銷</span></div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="check" class="ztor-icon"></i><span>手動核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                  </div>
+                  <p class="lab-hovertag">模擬滑鼠停留（子列）</p>
+                  <div class="lab-row rowdis__child lab-hv-base is-hover" role="row" data-rowdis-child="base-m">
+                    <div class="product-list__product" role="cell"></div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell">六片帽</div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-02</div>
+                    <div class="product-list__cell" role="cell">首賣夜 組合包</div>
+                    <div class="product-list__cell" role="cell"><span class="badge badge--success">已核銷</span></div>
+                    <div class="product-list__cell" role="cell">13:40</div>
+                    <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="rotate-ccw" class="ztor-icon"></i><span>反轉核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <div class="lab-demo">
+            <p class="lab-demo__cap">面板外（一般資料列）</p>
+            <p class="lab-hovertag">模擬滑鼠停留</p>
+            <div class="product-list-scroll">
+              <section class="product-list product-list--roster" role="table">
+                <div class="lab-row lab-hv-base is-hover" role="row">
+                  <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Devon W.</div></div></div>
+                  <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10475">#ZT-10475</a></div>
+                  <div class="product-list__cell" role="cell">T恤</div>
+                  <div class="product-list__cell" role="cell">M</div>
+                  <div class="product-list__cell pickup-roster__code" role="cell">PU-10475-01</div>
+                  <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                  <div class="product-list__cell" role="cell"><span class="badge badge--success">已核銷</span></div>
+                  <div class="product-list__cell" role="cell">14:22</div>
+                  <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="rotate-ccw" class="ztor-icon"></i><span>反轉核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10475"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <p class="lab-card__intensity"><b>母列 / 子列強度</b>：同一條規則，強度沒有差。母列有「可點開整組」的語意、子列沒有，用同一種力度可能還是模糊了這個差異——但這正是現況，先如實照搬供對照，不預先修正。</p>
+
+          <div class="lab-pros">
+            <div>
+              <p class="lab-pros__title">優點</p>
+              <ul>
+                <li>已經在用，眼熟，零學習成本</li>
+                <li>浮起效果本身有質感，作為獨立列確實好看</li>
+              </ul>
+            </div>
+            <div>
+              <p class="lab-pros__title">代價</p>
+              <ul>
+                <li>填色比它坐的面板底還暗，讀起來是往下沉，方向反了</li>
+                <li>backdrop-filter 在面板內模糊沒有意義，白耗 GPU</li>
+                <li>「一列浮出面板」跟「這是同一組」語意打架</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             H1 · 提亮一階
+             ============================================================ -->
+        <section class="card">
+          <div class="card__head">
+            <span class="lab-card__code">H1</span>
+            <div>
+              <h2 class="lab-card__name">提亮一階</h2>
+              <p class="lab-card__pos">hover 只把該列底色在面板之上再提亮一階（--ztu-glass-strong），不浮起、不模糊、不加陰影——同一平面上的暫時強調。</p>
+            </div>
+          </div>
+
+          <div class="lab-demo">
+            <p class="lab-demo__cap">面板內（rowdis__group 展開態）</p>
+            <div class="product-list-scroll">
+              <section class="product-list product-list--roster" role="table">
+                <div class="product-list__head" role="row">
+                  <div role="columnheader">買家</div>
+                  <div role="columnheader">來源</div>
+                  <div role="columnheader">領取項目</div>
+                  <div role="columnheader">規格</div>
+                  <div role="columnheader">領取碼</div>
+                  <div role="columnheader">來源組合</div>
+                  <div role="columnheader">狀態</div>
+                  <div role="columnheader">最近核銷</div>
+                  <div role="columnheader" aria-label="操作"></div>
+                </div>
+                <div class="rowdis__group">
+                  <p class="lab-hovertag">模擬滑鼠停留（母列）</p>
+                  <div class="lab-row rowdis__head lab-hv-h1 is-hover" role="row" data-rowdis-row="h1-m">
+                    <div class="product-list__product" role="cell">
+                      <div class="product-list__body">
+                        <div class="product-list__title rowdis__label"><span>Mika L.</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="h1-m" aria-expanded="true" aria-label="收合領取單位"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                        <div class="product-list__meta">已領 1 / 5</div>
+                      </div>
+                    </div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__actions" role="cell"></div>
+                  </div>
+                  <div class="lab-row rowdis__child lab-hv-h1" role="row" data-rowdis-child="h1-m">
+                    <div class="product-list__product" role="cell"></div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell">T恤</div>
+                    <div class="product-list__cell" role="cell">M</div>
+                    <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-01</div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__cell" role="cell"><span class="badge badge--warning">待核銷</span></div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="check" class="ztor-icon"></i><span>手動核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                  </div>
+                  <p class="lab-hovertag">模擬滑鼠停留（子列）</p>
+                  <div class="lab-row rowdis__child lab-hv-h1 is-hover" role="row" data-rowdis-child="h1-m">
+                    <div class="product-list__product" role="cell"></div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell">六片帽</div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-02</div>
+                    <div class="product-list__cell" role="cell">首賣夜 組合包</div>
+                    <div class="product-list__cell" role="cell"><span class="badge badge--success">已核銷</span></div>
+                    <div class="product-list__cell" role="cell">13:40</div>
+                    <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="rotate-ccw" class="ztor-icon"></i><span>反轉核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <div class="lab-demo">
+            <p class="lab-demo__cap">面板外（一般資料列）</p>
+            <p class="lab-hovertag">模擬滑鼠停留</p>
+            <div class="product-list-scroll">
+              <section class="product-list product-list--roster" role="table">
+                <div class="lab-row lab-hv-h1 is-hover" role="row">
+                  <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Devon W.</div></div></div>
+                  <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10475">#ZT-10475</a></div>
+                  <div class="product-list__cell" role="cell">T恤</div>
+                  <div class="product-list__cell" role="cell">M</div>
+                  <div class="product-list__cell pickup-roster__code" role="cell">PU-10475-01</div>
+                  <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                  <div class="product-list__cell" role="cell"><span class="badge badge--success">已核銷</span></div>
+                  <div class="product-list__cell" role="cell">14:22</div>
+                  <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="rotate-ccw" class="ztor-icon"></i><span>反轉核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10475"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <p class="lab-card__intensity"><b>母列 / 子列強度</b>：母列與子列用同一階提亮。提亮的效果本身很輕，若要強調母列「可點開整組」，可以考慮母列再提亮半階、子列維持這一階，但本候選示範刻意先給同一種力度，看基本語彙成不成立。</p>
+
+          <div class="lab-pros">
+            <div>
+              <p class="lab-pros__title">優點</p>
+              <ul>
+                <li>一步解掉三個矛盾：不模糊、不浮起、方向對（比 8.6% 的面板底亮，讀起來對）</li>
+                <li>母列子列吃同一條規則，維護成本低</li>
+              </ul>
+            </div>
+            <div>
+              <p class="lab-pros__title">代價</p>
+              <ul>
+                <li>面板外的一般列若也套同一招，會跟 e-shop 玻璃卡的既有語彙不一致，得決定這招只用在面板內、還是全站換</li>
+                <li>亮度差是唯一線索，字多、掃得快的現場（取貨台）可能不夠抓眼</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             H2 · 左緣光條
+             ============================================================ -->
+        <section class="card">
+          <div class="card__head">
+            <span class="lab-card__code">H2</span>
+            <div>
+              <h2 class="lab-card__name">左緣光條</h2>
+              <p class="lab-card__pos">底色不變，列的左緣出現一條 2px 指示條（--primary）——平面感完全不動，只加一個位置固定的線索。</p>
+            </div>
+          </div>
+
+          <div class="lab-demo">
+            <p class="lab-demo__cap">面板內（rowdis__group 展開態）</p>
+            <div class="product-list-scroll">
+              <section class="product-list product-list--roster" role="table">
+                <div class="product-list__head" role="row">
+                  <div role="columnheader">買家</div>
+                  <div role="columnheader">來源</div>
+                  <div role="columnheader">領取項目</div>
+                  <div role="columnheader">規格</div>
+                  <div role="columnheader">領取碼</div>
+                  <div role="columnheader">來源組合</div>
+                  <div role="columnheader">狀態</div>
+                  <div role="columnheader">最近核銷</div>
+                  <div role="columnheader" aria-label="操作"></div>
+                </div>
+                <div class="rowdis__group">
+                  <p class="lab-hovertag">模擬滑鼠停留（母列）</p>
+                  <div class="lab-row rowdis__head lab-hv-h2 is-hover" role="row" data-rowdis-row="h2-m">
+                    <div class="product-list__product" role="cell">
+                      <div class="product-list__body">
+                        <div class="product-list__title rowdis__label"><span>Mika L.</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="h2-m" aria-expanded="true" aria-label="收合領取單位"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                        <div class="product-list__meta">已領 1 / 5</div>
+                      </div>
+                    </div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__actions" role="cell"></div>
+                  </div>
+                  <div class="lab-row rowdis__child lab-hv-h2" role="row" data-rowdis-child="h2-m">
+                    <div class="product-list__product" role="cell"></div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell">T恤</div>
+                    <div class="product-list__cell" role="cell">M</div>
+                    <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-01</div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__cell" role="cell"><span class="badge badge--warning">待核銷</span></div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="check" class="ztor-icon"></i><span>手動核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                  </div>
+                  <p class="lab-hovertag">模擬滑鼠停留（子列）</p>
+                  <div class="lab-row rowdis__child lab-hv-h2 is-hover" role="row" data-rowdis-child="h2-m">
+                    <div class="product-list__product" role="cell"></div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell">六片帽</div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-02</div>
+                    <div class="product-list__cell" role="cell">首賣夜 組合包</div>
+                    <div class="product-list__cell" role="cell"><span class="badge badge--success">已核銷</span></div>
+                    <div class="product-list__cell" role="cell">13:40</div>
+                    <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="rotate-ccw" class="ztor-icon"></i><span>反轉核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <div class="lab-demo">
+            <p class="lab-demo__cap">面板外（一般資料列）</p>
+            <p class="lab-hovertag">模擬滑鼠停留</p>
+            <div class="product-list-scroll">
+              <section class="product-list product-list--roster" role="table">
+                <div class="lab-row lab-hv-h2 is-hover" role="row">
+                  <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Devon W.</div></div></div>
+                  <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10475">#ZT-10475</a></div>
+                  <div class="product-list__cell" role="cell">T恤</div>
+                  <div class="product-list__cell" role="cell">M</div>
+                  <div class="product-list__cell pickup-roster__code" role="cell">PU-10475-01</div>
+                  <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                  <div class="product-list__cell" role="cell"><span class="badge badge--success">已核銷</span></div>
+                  <div class="product-list__cell" role="cell">14:22</div>
+                  <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="rotate-ccw" class="ztor-icon"></i><span>反轉核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10475"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <p class="lab-card__intensity"><b>母列 / 子列強度</b>：光條的粗細與顏色在母列子列上完全一致。若要分強度，比較合理的做法是母列用實心 --primary、子列降不透明度，但本候選示範刻意先給同一種力度看基本語彙成不成立。</p>
+
+          <div class="lab-pros">
+            <div>
+              <p class="lab-pros__title">優點</p>
+              <ul>
+                <li>完全不動底色與陰影，零回歸風險，跟面板語彙零衝突</li>
+                <li>視覺重量最輕，不會搶過內容本身</li>
+              </ul>
+            </div>
+            <div>
+              <p class="lab-pros__title">代價</p>
+              <ul>
+                <li>光條顏色用 --primary（橘），跟「待核銷」badge--warning 的橘系相近，可能被誤讀成「這一列有狀態變化」</li>
+                <li>面板外單獨出現時，一條橘色豎線的意圖不夠直覺，沒有上下文不容易猜到是 hover</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             H3 · 內框
+             ============================================================ -->
+        <section class="card">
+          <div class="card__head">
+            <span class="lab-card__code">H3</span>
+            <div>
+              <h2 class="lab-card__name">內框</h2>
+              <p class="lab-card__pos">hover 時整列出現一圈 1px inset 邊，比面板那圈邊（--border-soft）更亮一階（--border）——與面板的邊同語彙、只是更亮一階。</p>
+            </div>
+          </div>
+
+          <div class="lab-demo">
+            <p class="lab-demo__cap">面板內（rowdis__group 展開態）</p>
+            <div class="product-list-scroll">
+              <section class="product-list product-list--roster" role="table">
+                <div class="product-list__head" role="row">
+                  <div role="columnheader">買家</div>
+                  <div role="columnheader">來源</div>
+                  <div role="columnheader">領取項目</div>
+                  <div role="columnheader">規格</div>
+                  <div role="columnheader">領取碼</div>
+                  <div role="columnheader">來源組合</div>
+                  <div role="columnheader">狀態</div>
+                  <div role="columnheader">最近核銷</div>
+                  <div role="columnheader" aria-label="操作"></div>
+                </div>
+                <div class="rowdis__group">
+                  <p class="lab-hovertag">模擬滑鼠停留（母列）</p>
+                  <div class="lab-row rowdis__head lab-hv-h3 is-hover" role="row" data-rowdis-row="h3-m">
+                    <div class="product-list__product" role="cell">
+                      <div class="product-list__body">
+                        <div class="product-list__title rowdis__label"><span>Mika L.</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="h3-m" aria-expanded="true" aria-label="收合領取單位"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                        <div class="product-list__meta">已領 1 / 5</div>
+                      </div>
+                    </div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__actions" role="cell"></div>
+                  </div>
+                  <div class="lab-row rowdis__child lab-hv-h3" role="row" data-rowdis-child="h3-m">
+                    <div class="product-list__product" role="cell"></div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell">T恤</div>
+                    <div class="product-list__cell" role="cell">M</div>
+                    <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-01</div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__cell" role="cell"><span class="badge badge--warning">待核銷</span></div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="check" class="ztor-icon"></i><span>手動核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                  </div>
+                  <p class="lab-hovertag">模擬滑鼠停留（子列）</p>
+                  <div class="lab-row rowdis__child lab-hv-h3 is-hover" role="row" data-rowdis-child="h3-m">
+                    <div class="product-list__product" role="cell"></div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell">六片帽</div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-02</div>
+                    <div class="product-list__cell" role="cell">首賣夜 組合包</div>
+                    <div class="product-list__cell" role="cell"><span class="badge badge--success">已核銷</span></div>
+                    <div class="product-list__cell" role="cell">13:40</div>
+                    <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="rotate-ccw" class="ztor-icon"></i><span>反轉核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <div class="lab-demo">
+            <p class="lab-demo__cap">面板外（一般資料列）</p>
+            <p class="lab-hovertag">模擬滑鼠停留</p>
+            <div class="product-list-scroll">
+              <section class="product-list product-list--roster" role="table">
+                <div class="lab-row lab-hv-h3 is-hover" role="row">
+                  <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Devon W.</div></div></div>
+                  <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10475">#ZT-10475</a></div>
+                  <div class="product-list__cell" role="cell">T恤</div>
+                  <div class="product-list__cell" role="cell">M</div>
+                  <div class="product-list__cell pickup-roster__code" role="cell">PU-10475-01</div>
+                  <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                  <div class="product-list__cell" role="cell"><span class="badge badge--success">已核銷</span></div>
+                  <div class="product-list__cell" role="cell">14:22</div>
+                  <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="rotate-ccw" class="ztor-icon"></i><span>反轉核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10475"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <p class="lab-card__intensity"><b>母列 / 子列強度</b>：內框粗細一致。母列因為整列可點，理論上可以疊加更亮的 --primary 邊而不是中性 --border，但那樣會跟「待核銷／已核銷」badge 的橘色系混淆，所以本候選先給中性、同強度的版本。</p>
+
+          <div class="lab-pros">
+            <div>
+              <p class="lab-pros__title">優點</p>
+              <ul>
+                <li>跟面板自己的邊同語彙（都是 inset 1px 框），層級感一致、最不違和</li>
+                <li>面板外單獨出現也讀得通，是常見的「這一列被選中了」語言</li>
+              </ul>
+            </div>
+            <div>
+              <p class="lab-pros__title">代價</p>
+              <ul>
+                <li>面板內已經有一圈外框，列內再來一圈內框，兩圈框疊在一起可能分不清哪個是哪個的邊界</li>
+                <li>對比強度偏弱，光線暗的環境下可能要湊近看才發現</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             H4 · 只提字、動作浮現
+             ============================================================ -->
+        <section class="card">
+          <div class="card__head">
+            <span class="lab-card__code">H4</span>
+            <div>
+              <h2 class="lab-card__name">只提字、動作浮現</h2>
+              <p class="lab-card__pos">底色與邊完全不動，只把該列文字由 --foreground-muted 提到 --foreground，並讓右側的動作選單由低調變清楚——最安靜的一種。</p>
+            </div>
+          </div>
+
+          <div class="lab-demo">
+            <p class="lab-demo__cap">面板內（rowdis__group 展開態）</p>
+            <div class="product-list-scroll">
+              <section class="product-list product-list--roster" role="table">
+                <div class="product-list__head" role="row">
+                  <div role="columnheader">買家</div>
+                  <div role="columnheader">來源</div>
+                  <div role="columnheader">領取項目</div>
+                  <div role="columnheader">規格</div>
+                  <div role="columnheader">領取碼</div>
+                  <div role="columnheader">來源組合</div>
+                  <div role="columnheader">狀態</div>
+                  <div role="columnheader">最近核銷</div>
+                  <div role="columnheader" aria-label="操作"></div>
+                </div>
+                <div class="rowdis__group">
+                  <p class="lab-hovertag">模擬滑鼠停留（母列，效果幾乎看不出來——見下方強度說明）</p>
+                  <div class="lab-row rowdis__head lab-hv-h4 is-hover" role="row" data-rowdis-row="h4-m">
+                    <div class="product-list__product" role="cell">
+                      <div class="product-list__body">
+                        <div class="product-list__title rowdis__label"><span>Mika L.</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="h4-m" aria-expanded="true" aria-label="收合領取單位"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                        <div class="product-list__meta">已領 1 / 5</div>
+                      </div>
+                    </div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__actions" role="cell"></div>
+                  </div>
+                  <div class="lab-row rowdis__child lab-hv-h4" role="row" data-rowdis-child="h4-m">
+                    <div class="product-list__product" role="cell"></div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell">T恤</div>
+                    <div class="product-list__cell" role="cell">M</div>
+                    <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-01</div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__cell" role="cell"><span class="badge badge--warning">待核銷</span></div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="check" class="ztor-icon"></i><span>手動核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                  </div>
+                  <p class="lab-hovertag">模擬滑鼠停留（子列）</p>
+                  <div class="lab-row rowdis__child lab-hv-h4 is-hover" role="row" data-rowdis-child="h4-m">
+                    <div class="product-list__product" role="cell"></div>
+                    <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell">六片帽</div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-02</div>
+                    <div class="product-list__cell" role="cell">首賣夜 組合包</div>
+                    <div class="product-list__cell" role="cell"><span class="badge badge--success">已核銷</span></div>
+                    <div class="product-list__cell" role="cell">13:40</div>
+                    <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="rotate-ccw" class="ztor-icon"></i><span>反轉核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <div class="lab-demo">
+            <p class="lab-demo__cap">面板外（一般資料列）</p>
+            <p class="lab-hovertag">模擬滑鼠停留</p>
+            <div class="product-list-scroll">
+              <section class="product-list product-list--roster" role="table">
+                <div class="lab-row lab-hv-h4 is-hover" role="row">
+                  <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Devon W.</div></div></div>
+                  <div class="product-list__cell" role="cell"><a class="card__link" href="order-detail.html?id=ZT-10475">#ZT-10475</a></div>
+                  <div class="product-list__cell" role="cell">T恤</div>
+                  <div class="product-list__cell" role="cell">M</div>
+                  <div class="product-list__cell pickup-roster__code" role="cell">PU-10475-01</div>
+                  <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                  <div class="product-list__cell" role="cell"><span class="badge badge--success">已核銷</span></div>
+                  <div class="product-list__cell" role="cell">14:22</div>
+                  <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="rotate-ccw" class="ztor-icon"></i><span>反轉核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10475"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <p class="lab-card__intensity"><b>母列 / 子列強度</b>：母列的標題本來就是全墨色 --foreground（不是 muted），提字這招在母列上幾乎沒有視覺效果；子列才會有明顯的「變亮」。這正好對應母列可點、子列只讓動作選單浮現的差異——是本候選裡強度天生就不同的一個，不是刻意設計。</p>
+
+          <div class="lab-pros">
+            <div>
+              <p class="lab-pros__title">優點</p>
+              <ul>
+                <li>最安靜，不干擾掃視列表時的視覺噪音</li>
+                <li>動作選單預設收斂、hover 才浮現，減少未展開時的視覺負擔</li>
+              </ul>
+            </div>
+            <div>
+              <p class="lab-pros__title">代價</p>
+              <ul>
+                <li>變化幅度小，滑鼠移動快的情況可能感知不到「這一列被選中了」</li>
+                <li>母列幾乎沒有效果，跟子列的 hover 觀感不一致（見上方強度說明）</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             H5 · 只有可操作的東西有 hover
+             ============================================================ -->
+        <section class="card">
+          <div class="card__head">
+            <span class="lab-card__code">H5</span>
+            <div>
+              <h2 class="lab-card__name">只有可操作的東西有 hover</h2>
+              <p class="lab-card__pos">整列不反應，只有列內可點的元素（來源連結、動作選單按鈕）各自 hover——最保守的一種。領取碼目前不是可點元素，維持純文字。</p>
+            </div>
+          </div>
+
+          <div class="lab-demo">
+            <p class="lab-demo__cap">面板內（rowdis__group 展開態）</p>
+            <div class="product-list-scroll">
+              <section class="product-list product-list--roster" role="table">
+                <div class="product-list__head" role="row">
+                  <div role="columnheader">買家</div>
+                  <div role="columnheader">來源</div>
+                  <div role="columnheader">領取項目</div>
+                  <div role="columnheader">規格</div>
+                  <div role="columnheader">領取碼</div>
+                  <div role="columnheader">來源組合</div>
+                  <div role="columnheader">狀態</div>
+                  <div role="columnheader">最近核銷</div>
+                  <div role="columnheader" aria-label="操作"></div>
+                </div>
+                <div class="rowdis__group">
+                  <p class="lab-hovertag">模擬滑鼠停留（母列的「來源」連結）</p>
+                  <div class="lab-row rowdis__head lab-hv-h5" role="row" data-rowdis-row="h5-m">
+                    <div class="product-list__product" role="cell">
+                      <div class="product-list__body">
+                        <div class="product-list__title rowdis__label"><span>Mika L.</span><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="h5-m" aria-expanded="true" aria-label="收合領取單位"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+                        <div class="product-list__meta">已領 1 / 5</div>
+                      </div>
+                    </div>
+                    <div class="product-list__cell" role="cell"><a class="card__link lab-h5-link is-hover" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__cell" role="cell"></div>
+                    <div class="product-list__actions" role="cell"></div>
+                  </div>
+                  <div class="lab-row rowdis__child lab-hv-h5" role="row" data-rowdis-child="h5-m">
+                    <div class="product-list__product" role="cell"></div>
+                    <div class="product-list__cell" role="cell"><a class="card__link lab-h5-link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell">T恤</div>
+                    <div class="product-list__cell" role="cell">M</div>
+                    <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-01</div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__cell" role="cell"><span class="badge badge--warning">待核銷</span></div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="check" class="ztor-icon"></i><span>手動核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                  </div>
+                  <p class="lab-hovertag">模擬滑鼠停留（子列的動作選單按鈕）</p>
+                  <div class="lab-row rowdis__child lab-hv-h5" role="row" data-rowdis-child="h5-m">
+                    <div class="product-list__product" role="cell"></div>
+                    <div class="product-list__cell" role="cell"><a class="card__link lab-h5-link" href="order-detail.html?id=ZT-10482">#ZT-10482</a></div>
+                    <div class="product-list__cell" role="cell">六片帽</div>
+                    <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                    <div class="product-list__cell pickup-roster__code" role="cell">PU-10482-02</div>
+                    <div class="product-list__cell" role="cell">首賣夜 組合包</div>
+                    <div class="product-list__cell" role="cell"><span class="badge badge--success">已核銷</span></div>
+                    <div class="product-list__cell" role="cell">13:40</div>
+                    <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs lab-h5-btn is-hover" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="rotate-ccw" class="ztor-icon"></i><span>反轉核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10482"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <div class="lab-demo">
+            <p class="lab-demo__cap">面板外（一般資料列）</p>
+            <p class="lab-hovertag">模擬滑鼠停留（動作選單按鈕）</p>
+            <div class="product-list-scroll">
+              <section class="product-list product-list--roster" role="table">
+                <div class="lab-row lab-hv-h5" role="row">
+                  <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Devon W.</div></div></div>
+                  <div class="product-list__cell" role="cell"><a class="card__link lab-h5-link" href="order-detail.html?id=ZT-10475">#ZT-10475</a></div>
+                  <div class="product-list__cell" role="cell">T恤</div>
+                  <div class="product-list__cell" role="cell">M</div>
+                  <div class="product-list__cell pickup-roster__code" role="cell">PU-10475-01</div>
+                  <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+                  <div class="product-list__cell" role="cell"><span class="badge badge--success">已核銷</span></div>
+                  <div class="product-list__cell" role="cell">14:22</div>
+                  <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs lab-h5-btn is-hover" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="rotate-ccw" class="ztor-icon"></i><span>反轉核銷</span></button><a class="dropdown__item" role="menuitem" href="order-detail.html?id=ZT-10475"><i data-lucide="external-link" class="ztor-icon"></i><span>來源</span></a></div></details></div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <p class="lab-card__intensity"><b>母列 / 子列強度</b>：母列（可點開整組）與子列（不可點）在這個候選下都不給整行 hover。理論上母列該有一個「可以點開」的暗示，但本候選刻意保持「只有明確可操作的元素才有 hover」這條規則不打折——兩者視覺上沒有差異，只靠游標變成手指這一個信號分辨。</p>
+
+          <div class="lab-pros">
+            <div>
+              <p class="lab-pros__title">優點</p>
+              <ul>
+                <li>最誠實：不可點的列不給「看起來能點」的錯誤暗示</li>
+                <li>幾乎不需要新增列級樣式，維護成本最低</li>
+              </ul>
+            </div>
+            <div>
+              <p class="lab-pros__title">代價</p>
+              <ul>
+                <li>母列整列其實可點開整組，卻沒有整列 hover 提示，容易讓人以為只有連結和按鈕能點</li>
+                <li>視覺上跟其他候選相比幾乎沒有「探索性」新意，改動最小也最不顯眼</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <section class="card lab-foot">
+        <div class="card__head"><h2 class="card__title">怎麼挑</h2></div>
+        <ol>
+          <li><b>面板內外是否都成立</b>：面板裡好看的招，擺到面板外的一般列會不會變醜、變得不知所云？六個候選都各擺了一份對照。</li>
+          <li><b>可點與不可點的列要不要不同強度</b>：母列整列可點、子列不可點只有選單可點——這個語意差異，hover 強度該不該跟著分？每張候選卡下面都有一段話講這件事在該候選下的結果。</li>
+          <li><b>與站上其他清單的一致性成本</b>：挑定的招如果只用在展開面板內，其餘所有列表（e-shop、orders 等）維持現況玻璃卡，会不会讓站上同時存在兩套 hover 語言？如果要全站統一換，換血範圍多大？</li>
+        </ol>
+        <p class="card__note">三個判準會互相牽制——面板內外都成立的招通常最安靜，能分強度的招通常要多寫一條規則。挑的時候先決定哪一項優先。</p>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+</body>
+</html>

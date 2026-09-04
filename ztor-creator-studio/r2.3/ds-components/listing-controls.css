@@ -1,0 +1,161 @@
+/* ============================================================
+   listing-controls.css · 上架、顯示與開賣（spec 0-設計規格書 §7.14 · D241）
+   ------------------------------------------------------------
+   §7.14 把「這個管道能不能賣」拆成三個互相獨立的開關，這支元件就是那三列的骨架：
+
+     列 1 上架（Listed）    總閘門。下架＝所有管道都不能賣、連結全部失效。可排上架與下架日期與時間
+     列 2 顯示於商店（Shown）逛不逛得到。隱藏＝商店找不到，但非公開連結仍可買、也能被組合帶著賣
+     列 3 開賣（On sale）    此刻能不能結帳。開賣日期與時間與停售日期與時間兩個選填欄
+
+   三者不互相蘊含（隱藏的東西可以開賣、未開賣的東西可以顯示），所以畫面上是三列並列，
+   不是巢狀在一起的一組。
+
+   ── 它擁有什麼、不擁有什麼 ─────────────────────────────────────────
+   歸它的只有「一列長什麼樣」：標題與說明的排法、控制擺在哪、排程欄何時展開、三列的距離。
+   控制本身一律重用既有元件——`switch`／`radio-list--collapsible`／`.field` ＋ `.input`——
+   本檔不畫任何開關或輸入框。哪一列用哪種控制由消費頁決定：
+
+     建立頁（create-product／create-bundle／create-auction）
+       列 1 用 `radio-list--collapsible` 三選一（不上架／立刻上架／定時上架），
+       選「定時上架」才展開排程欄。理由：建立時「要不要上架」與「什麼時候上架」是同一個決定。
+     細節頁（product-detail／bundle-detail）
+       列 1 用 `switch`。理由：東西已經存在了，這裡只剩「現在開著還是關著」一個二元狀態，
+       再擺一份三選一等於要創作者重講一次已經發生過的決定。
+
+   ── 三列之間的距離歸容器 ───────────────────────────────────────────
+   `.lctl` 自己的 `gap` 持有節奏，不用 `.lctl__row + .lctl__row` 這種相鄰選擇器
+   （STYLE-DECISIONS Q103）。列內的 `.field` 明寫 `margin-bottom: 0`，把節奏交回容器。
+
+   anatomy
+     .lctl
+       .lctl__row  (.lctl__row--choice 控制改成整列寬、擺在標題下方)
+         .lctl__head
+           .lctl__titles > .lctl__title + .lctl__hint
+           .lctl__control            （switch 之類的行尾控制）
+         .lctl__body                 （整列寬的控制：radio-list、link-field）
+         .lctl__sched[hidden]        （排程欄；展開才顯示）
+       .lctl__rule                 （主決定與第 2 層之間的分隔線）
+       .lctl__derived              （第 2 層附屬設定；與 .control-group--plain 併用）
+           .lctl__grid > .field ×2   （兩欄並排，窄了自動收成一欄）
+       .lctl__note                   （整區共用的一句說明，如時區待確認）
+
+   surface：本支不畫底色也不畫外框，坐在既有的 `.card`（建立頁右欄）或
+   `.form-section--outlined`（細節頁）裡；白底與灰底皆可。
+   ============================================================ */
+
+.lctl {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-24);
+}
+.lctl[hidden] { display: none; }
+
+.lctl__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+}
+.lctl__row[hidden] { display: none; }
+
+/* 列內的欄位把垂直節奏交回容器：.field 自帶 16px 下邊距，留著會與 gap 疊成兩段距離。 */
+.lctl__row .field { margin-bottom: 0; }
+
+.lctl__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-12);
+}
+
+.lctl__titles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.lctl__title {
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+  color: var(--foreground);
+}
+
+/* 與 .field__hint 同一個角色（這一格還要注意什麼），字級與色一致，不另立第二種說明樣式。 */
+.lctl__hint {
+  font-size: var(--fs-12);
+  line-height: var(--lh-comfy);
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+/* 行尾控制（switch）：不被標題擠壓，並與標題第一行對齊。 */
+.lctl__control {
+  flex: none;
+  margin-top: var(--sp-2);
+}
+
+.lctl__body { display: flex; flex-direction: column; gap: var(--sp-10); }
+.lctl__body[hidden] { display: none; }
+
+/* --choice：控制是整列寬的 radio-list，標題與控制上下排，行尾不留控制位。 */
+.lctl__row--choice .lctl__head { display: block; }
+
+/* 排程欄區：受控展開，收起時整塊不佔位。 */
+.lctl__sched {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+}
+.lctl__sched[hidden] { display: none; }
+
+/* 兩個時間欄並排；欄寬不夠時收成一欄，避免 datetime 控件被壓到換行。 */
+.lctl__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-12);
+}
+@media (max-width: 720px) {
+  .lctl__grid { grid-template-columns: 1fr; }
+}
+/* 建立流程的右欄只有 264px（preview-column --narrow），兩欄放不下時間欄，
+   由消費頁掛 --stack 明說「這裡一律單欄」，不靠猜容器寬度。 */
+.lctl--stack .lctl__grid { grid-template-columns: 1fr; }
+
+/* ── __rule · 主決定與第 2 層之間的分隔線（2026-09-04 使用者裁示）──────────────
+   第 1 層是一個決定，第 2 層是那個決定成立之後才存在的設定。原本只靠 .lctl 的 gap
+   分開，兩者讀起來像同一串並列的東西；拉一條線才看得出「決定」與「決定之後的事」。
+   線畫到卡的內緣（負左右外距抵銷母卡內距）——它分的是這個區塊的兩段，
+   不是第 2 層那個盒子自己的邊，所以不能只在盒子上加 border-top。
+   母卡的內距值來自 --card-pad（form-section--outlined 與 card 都有定義），
+   讀不到時退回 --sp-24（左欄區塊卡的值）。 */
+.lctl__rule {
+  height: 1px;
+  background: var(--border);
+  margin-inline: calc(var(--card-pad, var(--sp-24)) * -1);
+}
+
+/* ── __derived · 第 2 層附屬設定（2026-09-04 · D245）───────────────────────────
+   主決定（上架三選一／開賣二選一）選完之後才成立的一組設定：上架與下架時間、
+   顯示於商店、開賣與停售時間。為什麼要有這一層——原本三件事平鋪成三列，
+   讀起來像三個對等的決定；實際上後面兩件都掛在第一件成立之後。
+   本類只管兩件事：內部節奏交給容器 gap，欄位交出自己的下邊距（節奏歸容器，Q103）；
+   要不要有外框由消費頁決定，加不加 `.control-group.control-group--plain`（1px 內描邊、
+   無填色、卡片級圓角）而定。2026-09-04 兩次裁示的結果：**上架設定的第 2 層有框**
+   （它可能同時裝上架時間與定時下架兩件事，框把「排程」圈成一組）、
+   **開賣設定的第 2 層沒有框**（使用者裁示「這個不用外框」）。
+   markup：<div class="control-group control-group--plain lctl__derived">…</div>（有框）
+           <div class="lctl__derived">…</div>（無框） */
+.lctl__derived {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+}
+.lctl__derived[hidden] { display: none; }
+.lctl__derived .field { margin-bottom: 0; }
+
+.lctl__note {
+  font-size: var(--fs-12);
+  color: var(--faint-ink);
+  margin: 0;
+}

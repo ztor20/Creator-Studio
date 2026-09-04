@@ -19,6 +19,10 @@
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<!-- D241（spec §7.14）：三開關與庫存池的兩支新元件 -->
+<link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
@@ -56,7 +60,8 @@
   .cb-autoprice { font-family: var(--font-display); font-size: var(--fs-18); font-weight: var(--fw-regular); color: var(--foreground); }
   .cb-basestrike { font-size: var(--fs-13); color: var(--muted-foreground); text-decoration: line-through; }
   .cb-basestrike[hidden] { display: none; }
-  /* 套組庫存＝min(成員) 與相容性提示（spec 5.1.5.4 §6.3/§6.4，顯示層 demo）*/
+  /* 成員摘要列與相容性提示（spec 5.1.5.4 §6.3／§6.4，顯示層 demo）。
+     舊註解寫「套組庫存＝min(成員)」，已由 D241 取代——組合可售量改問 ListingState.bundleQty()。 */
   /* 2026-08-13（Q66）：底色由 --muted（比卡暗）改成疊在卡上的薄膜 */
   .cb-summary { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--nest-line); border-radius: var(--radius-md); background: var(--nest-surface); font-size: var(--fs-13); }
   .cb-summary[hidden] { display: none; }
@@ -100,8 +105,10 @@
       </div>
       <div class="field" style="margin-bottom:0">
         <!-- 2026-08-09（使用者裁決）：全站直式上傳圖統一成 .upload-assets--fill＋逐格出現。
-             主圖大格＋附圖 2×2 的舊版面退場；五格同尺寸、四格撐滿一整列、第五格換行，
-             封面靠 __flag 表明身分（張數不變）。 -->
+             主圖大格＋附圖 2×2 的舊版面退場；同尺寸、四格撐滿一整列、滿一列就換行，
+             封面靠 __flag 表明身分。
+             2026-09-04（使用者裁決 D243）：張數上限由 8 張再放寬成 10 張（封面 1＋附圖 9），
+             與建立商品／拍賣對齊（前一版是 D237 的 8 張）。 -->
         <div class="upload-assets upload-assets--fill" data-upload-reveal>
           <div class="upload-tile upload-tile--portrait" data-cb-asset="hero" data-upload>
             <span class="upload-tile__flag" data-i18n="cp.media.cover-flag">Cover</span>
@@ -110,6 +117,11 @@
             <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span>
             <span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
           </div>
+          <div class="upload-tile upload-tile--portrait" data-cb-asset="gallery" data-upload hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cb-asset="gallery" data-upload hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cb-asset="gallery" data-upload hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cb-asset="gallery" data-upload hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cb-asset="gallery" data-upload hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
           <div class="upload-tile upload-tile--portrait" data-cb-asset="gallery" data-upload hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
           <div class="upload-tile upload-tile--portrait" data-cb-asset="gallery" data-upload hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
           <div class="upload-tile upload-tile--portrait" data-cb-asset="gallery" data-upload hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
@@ -203,9 +215,10 @@
 
       <div class="cb-count__hint" id="cb-count-hint" data-i18n="cb.min-items">Add at least 2 items</div>
 
-      <!-- 套組庫存＝min(成員) ＋ 成員相容性提示（spec §6.4 / D031 / UIA-008，顯示層）-->
+      <!-- 組合可售量摘要 ＋ 成員相容性提示（spec §6.4 / D031 / UIA-008，顯示層）。
+           數字來自 ListingState.bundleQty()；舊版的 min(成員) 算法已由 D241 取代。 -->
       <div class="cb-summary" id="cb-summary" hidden>
-        <div class="cb-summary__row"><span data-i18n="cb.stock.label">Bundle stock</span><span id="cb-stock">—</span></div>
+        <div class="cb-summary__row"><span data-i18n="cb.stock.label">Goods in stock</span><span id="cb-stock">—</span></div>
         <div id="cb-notes"></div>
       </div>
     </section>
@@ -233,10 +246,12 @@
       </div>
     </section>
 
-    <!-- ④ 庫存（Stock）：Edition 不限量/限量 + 唯讀目前在庫＝min(成員)（spec 5.1.5.4 §4 F4，比照建立商品 §4.1 F3.3）-->
+    <!-- ④ 庫存（Stock）：Edition 不限量／限量 ＋ 成員鎖定量分配表（spec 5.1.5.4 §4 F4 · 0-設計規格書 §7.14）。
+         舊版是一個唯讀「目前在庫」欄、算法寫死在頁內，已由 D241 取代。 -->
     <section class="form-section form-section--outlined">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cb.stock.title">Stock</h3>
+        <p class="form-section__sub" data-i18n="cb.stock.alloc-sub">Each member shares one stock pool with its own single sale. Lock what this bundle needs.</p>
       </div>
       <!-- 庫存版本：用 selection-card（同定價固定價/折扣卡），非 radio-card；包 .field 取 26px 下欄距（比照建立商品 Edition）-->
       <div class="field">
@@ -253,18 +268,30 @@
       </div>
       <div class="form-grid" style="margin-top:6px">
         <!-- 組合硬上限：限量才出現 -->
-        <div class="field" data-when-cb-edition="limited" data-feat="S45" hidden>
+        <div class="field" data-when-cb-edition="limited" data-feat="S45" hidden style="margin-bottom:0">
           <div class="field__label"><span data-i18n="cb.total">Total quantity</span> <span class="field__req">*</span></div>
           <input class="input" id="cb-total" placeholder="0">
           <div class="field__hint" data-i18n="cb.total.hint">Hard cap · still limited by member stock</div>
         </div>
-        <!-- 目前在庫：唯讀＝min(成員)（§6 ④），創作者不可手動編輯 -->
-        <div class="field" style="margin-bottom:0">
-          <div class="field__label" data-i18n="cb.avail.label">Available now</div>
-          <input class="input" id="cb-avail" readonly disabled>
-          <div class="field__hint" data-i18n="cb.avail.readonly">Auto · lowest member stock (min of members)</div>
+      </div>
+      <!-- D241（spec §7.14）：成員逐列的庫存分配。舊版這裡是一個唯讀「目前在庫」欄，
+           說明寫「自動＝取成員最低庫存」——那個模型已由 D241 取代：成員的庫存是一個池，
+           單售與每個組合包各是一個管道，本組合能拿到多少要嘛鎖定、要嘛與其他管道共用沒有被鎖定的庫存量。
+           每一列的可售量與末列的組合可售量一律由 ListingState 算，本頁不自己取 min。 -->
+      <div class="salloc salloc--bundle" id="cb-alloc" hidden>
+        <div class="salloc__row salloc__row--head">
+          <span></span>
+          <span style="text-align:right" data-i18n="stock.free">Unlocked</span>
+          <span data-i18n="stock.lock">Locked</span>
+          <span style="text-align:right" data-i18n="stock.sellable">Sellable</span>
+        </div>
+        <div class="salloc__row salloc__row--free" id="cb-alloc-total">
+          <span class="salloc__name"><span data-i18n="stock.bundle-min">Bundle sellable = lowest member stock</span></span>
+          <span class="salloc__qty" id="cb-bundle-qty">—</span>
         </div>
       </div>
+      <div class="cb-count__hint" id="cb-alloc-empty" data-i18n="cb.stock.empty">Add at least one member to see what this bundle can sell</div>
+      <p class="lctl__note" data-i18n="stock.restock-hint">Restocks land in unlocked stock; locked ones need to lock again</p>
     </section>
 
     <!-- ⑤ 折扣設定（spec 5.1.5.4 §4 F7 · D144）：組合折扣幅度＝定價區的折扣 %（衍生價、不在此設）；此區只放「開啟限時折扣」→ 起訖日 -->
@@ -300,10 +327,15 @@
 
     <!-- §4 F6 即時預覽欄：粉絲視角組合卡＋上架開關（比照建立商品 §5.2.5；spec 5.1.5.4 v1.8 / D091）-->
     <aside class="preview-col">
-      <div class="preview-col__head">
-        <h3 class="preview-col__title" data-i18n="cb.preview.heading">Bundle preview</h3>
-        <p class="preview-col__sub" data-i18n="cb.preview.sub">How fans see it on Ztor</p>
-      </div>
+      <!-- 2026-09-04（使用者裁示「建立商品改的東西，建立組合與建立拍賣都要同步改」）：
+           預覽包進一張與左欄同款的 form-section--outlined、標題與說明搬進卡內。
+           **預覽內容本身沒有換成粉絲端鏡像**——商品那支鏡像的是粉絲端商品頁，
+           組合在粉絲端走哪一頁尚未確認（見 ASSUMPTIONS）。 -->
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="cb.preview.heading">Bundle preview</h3>
+          <p class="form-section__sub" data-i18n="cb.preview.sub">How fans see it on Ztor</p>
+        </div>
       <div class="preview-card">
         <div class="preview-card__media"><i data-lucide="package" class="ztor-icon"></i></div>
         <div class="preview-card__body">
@@ -314,37 +346,136 @@
           <p class="preview-card__desc is-empty" id="cb-pv-desc" data-i18n="cb.pv.desc">Missing: description</p>
         </div>
       </div>
+      </section>
 
-      <!-- §4 F6 上架設定（spec 5.1.5.4 §4 F6 · D144；位置與選法 2026-07-17 微調）：移到預覽卡下方，改 radio-list（不上架／立刻上架／定時上架），選「定時上架」才展開上架時間。 -->
-      <div class="card">
-        <div class="card__head"><h3 class="card__title" data-i18n="cp.listing.title">Listing settings</h3></div>
-        <div class="radio-list radio-list--collapsible" id="cb-listing-mode">
-          <button class="radio-list__trigger" type="button" aria-expanded="false">
-            <span class="radio-list__dot"></span>
-            <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
-            <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
-          </button>
-          <div class="radio-list__options" hidden>
-            <button class="radio-list__item" type="button" data-cb-listing="none">
-              <span class="radio-list__dot"></span>
-              <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-list__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
-            </button>
-            <button class="radio-list__item radio-list__item--active" type="button" data-cb-listing="now">
-              <span class="radio-list__dot"></span>
-              <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
-            </button>
-            <button class="radio-list__item" type="button" data-cb-listing="schedule">
-              <span class="radio-list__dot"></span>
-              <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-list__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
-            </button>
+      <!-- §4 F6 上架設定／開賣設定 → D241（spec 0-設計規格書 §7.14）＋ D245（2026-09-04 拆兩張卡）：
+           原本一張卡三列平鋪（上架／顯示／開賣），拆成「上架設定」與「開賣設定」兩張卡，
+           每張卡第一層只有一個主決定，附屬設定收進第二層的線框盒（.control-group--plain.lctl__derived）。
+           不上架＝草稿：第二層與整張開賣設定卡一併收起。
+           建立流程不放非公開連結——連結是儲存後才產生的東西，這裡只說會發生什麼。
+           三個時間欄一律選填、不預設值；唯一校驗是停售要晚於開賣（ListingState.validateSaleWindow）。 -->
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="cp.listing.sec-listed">Listing</h3>
+        </div>
+        <div class="lctl lctl--stack">
+          <div class="lctl__row lctl__row--choice">
+            <div class="lctl__body">
+              <div class="radio-list radio-list--collapsible" id="cb-listing-mode">
+                <button class="radio-list__trigger" type="button" aria-expanded="false">
+                  <span class="radio-list__dot"></span>
+                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
+                  <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
+                </button>
+                <div class="radio-list__options" hidden>
+                  <button class="radio-list__item" type="button" data-cb-listing="none">
+                    <span class="radio-list__dot"></span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-list__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
+                  </button>
+                  <button class="radio-list__item radio-list__item--active" type="button" data-cb-listing="now">
+                    <span class="radio-list__dot"></span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
+                  </button>
+                  <button class="radio-list__item" type="button" data-cb-listing="schedule">
+                    <span class="radio-list__dot"></span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-list__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="lctl__rule"></div>
+          <!-- 顯示於商店自己一項（D247；2026-09-04 使用者再裁示：不要外框、與第 2 層對調位置）：
+               它回答的是「上架之後找不找得到」，緊接在上架的主決定後面；排程盒排在它下面。
+               隱藏時長出來的那句話用 .lctl__body（列自己的揭示區），不需要外框把兩者圈起來。 -->
+          <div class="lctl__row" data-cb-shown-row hidden>
+            <div class="lctl__head">
+              <div class="lctl__titles">
+                <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
+                <p class="lctl__hint" data-i18n="cp.listing.shown-hint">Hidden items stay purchasable via the private link and inside bundles</p>
+              </div>
+              <div class="switch switch--on lctl__control" role="switch" aria-checked="true" tabindex="0" id="cb-shown"></div>
+            </div>
+            <div class="lctl__body" data-cb-shown-body hidden>
+              <p class="lctl__hint" data-i18n="cb.listing.hidden-note">The private link is created once you save, on the bundle page</p>
+            </div>
+          </div>
+          <div class="control-group control-group--plain lctl__derived" data-cb-listed-body hidden>
+            <div class="field" data-cb-listing-fields hidden>
+              <div class="field__label"><span data-i18n="cp.listing.time">Listing time</span> <span class="field__req">*</span></div>
+              <input class="input" type="datetime-local" id="cb-listing-time">
+            </div>
+            <div class="lctl__row">
+              <div class="lctl__head">
+                <div class="lctl__titles">
+                  <span class="lctl__title" data-i18n="cp.listing.unlist-sched">Unlist at a set time</span>
+                  <p class="lctl__hint" data-i18n="cp.listing.unlist-sched-sub">Unlists automatically at the time you set</p>
+                </div>
+                <div class="switch lctl__control" id="cb-unlist-toggle" role="switch" aria-checked="false" tabindex="0"></div>
+              </div>
+              <div class="lctl__sched" data-cb-unlist-fields hidden>
+                <div class="field">
+                  <div class="field__label"><span data-i18n="cp.listing.unlist">Unlist time</span> <span class="field__req">*</span></div>
+                  <input class="input" type="datetime-local" id="cb-unlist-time">
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="field" data-cb-listing-fields hidden style="margin-top:12px;margin-bottom:0">
-          <div class="field__label"><span data-i18n="cp.listing.time">Listing time</span> <span class="field__req">*</span></div>
-          <input class="input" type="datetime-local" id="cb-listing-time">
-          <div class="field__hint" data-i18n="cp.listing.pending">Auto-downlist &amp; time zone pending spec.</div>
+      </section>
+
+      <section class="form-section form-section--outlined" data-cb-sale-section hidden>
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="cp.listing.sec-sale">Sale</h3>
         </div>
-      </div>
+        <div class="lctl lctl--stack">
+          <div class="lctl__row lctl__row--choice">
+            <div class="lctl__body">
+              <div class="radio-list radio-list--collapsible" id="cb-sale-mode">
+                <button class="radio-list__trigger" type="button" aria-expanded="false">
+                  <span class="radio-list__dot"></span>
+                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-list__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
+                  <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
+                </button>
+                <div class="radio-list__options" hidden>
+                  <button class="radio-list__item radio-list__item--active" type="button" data-cb-sale-mode="follow">
+                    <span class="radio-list__dot"></span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-list__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
+                  </button>
+                  <button class="radio-list__item" type="button" data-cb-sale-mode="schedule">
+                    <span class="radio-list__dot"></span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-list__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="lctl__rule"></div>
+          <div class="lctl__derived">
+            <div class="field" data-cb-sale-start-field hidden>
+              <div class="field__label"><span data-i18n="cp.listing.sale-start">Sale start</span> <span class="field__req">*</span></div>
+              <input class="input" type="datetime-local" id="cb-sale-open">
+            </div>
+            <div class="lctl__row">
+              <div class="lctl__head">
+                <div class="lctl__titles">
+                  <span class="lctl__title" data-i18n="cp.listing.saleend-sched">Close sales at a set time</span>
+                  <p class="lctl__hint" data-i18n="cp.listing.saleend-sched-sub">Checkout closes then; the item stays visible</p>
+                </div>
+                <div class="switch lctl__control" id="cb-saleend-toggle" role="switch" aria-checked="false" tabindex="0"></div>
+              </div>
+              <div class="lctl__sched" data-cb-saleend-fields hidden>
+                <div class="field">
+                  <div class="field__label"><span data-i18n="cp.listing.sale-end">Sale end</span> <span class="field__req">*</span></div>
+                  <input class="input" type="datetime-local" id="cb-sale-close">
+                  <p class="field__error" id="cb-sale-window-err" data-i18n="cp.listing.sale-err" hidden>Sale end must be after sale start</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="lctl__note" data-i18n="cp.listing.pending">Time zone &amp; exact timing pending spec.</p>
+        </div>
+      </section>
     </aside>
   </div>
 
@@ -365,9 +496,13 @@
   </div>
 </div>
 
+<!-- D241：狀態與可售量的唯一推導層（spec §7.14）。必須早於下面的頁內 script。 -->
+<script src="js/listing-state.js?v=r2.2"></script>
 <script>
-/* Create bundle 互動 · spec 5.1.5.4。新增（顯示層 demo，不重算後端）：
-   §6.4 套組庫存＝min(成員)、§6.3 固定價≤成員合計＋省下金額、成員限量/多規格相容性提示。 */
+/* Create bundle 互動 · spec 5.1.5.4。
+   D241（spec 0-設計規格書 §7.14）：組合可售量改由 ListingState.bundleQty() 算，
+   成員逐列可鎖定件數給本組合（validateLock 擋超過沒有被鎖定的庫存量）；上架設定拆成三個獨立開關。
+   歷史註解：舊版在本檔自己取 min(成員)，已由 D241 取代。 */
 (function () {
   const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -391,7 +526,19 @@
   /* F4 庫存 + F7 販售排程（spec 5.1.5.4 §4 F4／F7）*/
   const editionGrid = document.getElementById('cb-edition');
   const totalInput = document.getElementById('cb-total');
-  const availEl = document.getElementById('cb-avail');
+  /* ── D241 庫存池（spec 0-設計規格書 §7.14）───────────────────────────────────
+     建立流程還沒有真正的商品記錄，所以這裡就地把候選列的 data-stock 包成 ListingState
+     認得的形狀：一顆池 ＋ 三態鎖定量（null＝沒鎖定、數字含 0＝鎖定模式）。
+     本組合是一個還沒存檔的販售管道，暫時用 DRAFT_ID 當管道 id。 */
+  const DRAFT_ID = 'cb-draft';
+  const LS = window.ListingState;
+  const products = {};                       /* 列 id → 商品（帶池與鎖定） */
+  const bundleDraft = { id: DRAFT_ID, members: [], cap: null };
+  const lockErrors = {};                     /* 列 id → true（鎖定量超過沒有被鎖定的庫存量） */
+  const allocEl = document.getElementById('cb-alloc');
+  const allocEmpty = document.getElementById('cb-alloc-empty');
+  const allocTotalRow = document.getElementById('cb-alloc-total');
+  const bundleQtyEl = document.getElementById('cb-bundle-qty');
   const saleToggle = document.getElementById('cb-sale-toggle');
   const saleFields = document.querySelector('[data-cb-sale-fields]');
   const saleStart = document.getElementById('cb-sale-start');
@@ -400,7 +547,92 @@
   const limitedEdition = () => { const a = editionGrid && editionGrid.querySelector('.selection-card--active'); return !!a && a.dataset.cbEdition === 'limited'; };
   const saleOn = () => saleToggle && saleToggle.getAttribute('aria-checked') === 'true';
 
-  const numStock = v => (v === 'unlimited' || v === '∞') ? Infinity : (parseFloat(v) || 0);
+  let rowSeq = 0;
+  const poolTotal = v => (!v || v === 'unlimited' || v === '∞') ? 'unlimited' : (parseFloat(v) || 0);
+  /* 候選列 → 商品物件（同一列只包一次，鎖定量留在物件上，移除再加入時重置）*/
+  function productOf(row) {
+    if (!row.dataset.cbId) row.dataset.cbId = 'm' + (++rowSeq);
+    const id = row.dataset.cbId;
+    if (!products[id]) products[id] = {
+      id: id, name: row.dataset.name || '',
+      pool: { total: poolTotal(row.dataset.stock), locks: { single: null, bundles: {} } }
+    };
+    return products[id];
+  }
+  /* 數字欄：不限量掛 data-i18n（切語言時 applyI18n 自己接手），其餘寫數字。 */
+  function setQty(el, n) {
+    if (!el) return;
+    if (n === Infinity) { el.setAttribute('data-i18n', 'cb.stock.unlimited'); el.textContent = T('cb.stock.unlimited', 'Unlimited'); }
+    else { el.removeAttribute('data-i18n'); el.textContent = String(n); }
+  }
+  /* 成員逐列的分配表：一列一個成員（沒有被鎖定的庫存量唯讀／鎖定給本組合的量可填／本組合可售量唯讀）。
+     只在成員增減時重建，數字更新走 refreshAlloc()——否則打字時輸入框會被重建、失焦。 */
+  function renderAlloc() {
+    if (!allocEl) return;
+    [...allocEl.querySelectorAll('[data-cb-alloc-row]')].forEach(r => r.remove());
+    bundleDraft.members.forEach(m => {
+      const p = products[m.productId];
+      if (!p) return;
+      const row = document.createElement('div');
+      row.className = 'salloc__row';
+      row.setAttribute('data-cb-alloc-row', m.productId);
+      row.innerHTML = '<span class="salloc__name"><span>' + esc(p.name) + '</span></span>'
+        + '<span class="salloc__qty salloc__qty--muted" data-cb-free></span>'
+        + '<span class="salloc__lock"><div class="amount-field amount-field--suffix">'
+        + '<input class="input amount-field__input" inputmode="numeric" data-cb-lock data-i18n-aria-label="stock.lock" aria-label="Locked">'
+        + '<span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></div></span>'
+        + '<span class="salloc__qty" data-cb-sellable></span>'
+        + '<p class="salloc__error" data-i18n="stock.lock-err" hidden>Exceeds unlocked stock</p>';
+      allocEl.insertBefore(row, allocTotalRow);
+    });
+    if (window.applyI18n) window.applyI18n(allocEl);
+    refreshAlloc();
+  }
+  /* 數字與錯誤態。組合可售量一律問 ListingState.bundleQty()，本頁不自己取 min。 */
+  function refreshAlloc() {
+    if (!allocEl || !LS) return;
+    const has = bundleDraft.members.length > 0;
+    allocEl.hidden = !has;
+    if (allocEmpty) allocEmpty.hidden = has;
+    bundleDraft.members.forEach(m => {
+      const p = products[m.productId];
+      const row = allocEl.querySelector('[data-cb-alloc-row="' + m.productId + '"]');
+      if (!p || !row) return;
+      setQty(row.querySelector('[data-cb-free]'), LS.freeQty(p));
+      setQty(row.querySelector('[data-cb-sellable]'), LS.channelQty(p, { bundle: DRAFT_ID }));
+      const inp = row.querySelector('[data-cb-lock]');
+      const max = LS.validateLock(p, { bundle: DRAFT_ID }, 0).max;
+      if (inp) inp.placeholder = (max === Infinity) ? '' : T('stock.lock-max', 'Up to {n}').replace('{n}', max);
+      const bad = !!lockErrors[m.productId];
+      row.classList.toggle('salloc__row--error', bad);
+      const err = row.querySelector('.salloc__error');
+      if (err) err.hidden = !bad;
+      if (inp) { if (bad) inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid'); }
+    });
+    if (!has) { if (bundleQtyEl) { bundleQtyEl.removeAttribute('data-i18n'); bundleQtyEl.textContent = '—'; } }
+    else setQty(bundleQtyEl, LS.bundleQty(bundleDraft, products));
+  }
+  /* 切語言後把「最多 N」這種由 JS 寫進去的字重算一次（data-i18n 的部分 applyI18n 自己會接手）。 */
+  document.addEventListener('i18n:applied', () => refreshAlloc());
+  /* 鎖定量輸入：清空＝取消鎖定（回去共用沒有被鎖定的庫存量）；填數字＝鎖定模式。
+     超過上限就不寫進池——寫了沒有被鎖定的庫存量會被吃掉，下一次校驗的上限就跟著失準。 */
+  if (allocEl) allocEl.addEventListener('input', e => {
+    const inp = e.target.closest('[data-cb-lock]');
+    if (!inp || !LS) return;
+    const host = inp.closest('[data-cb-alloc-row]');
+    const id = host && host.getAttribute('data-cb-alloc-row');
+    const p = id && products[id];
+    if (!p) return;
+    const raw = inp.value.trim();
+    if (raw === '') { p.pool.locks.bundles[DRAFT_ID] = null; delete lockErrors[id]; }
+    else {
+      const n = Math.floor(Number(raw));
+      const v = (isNaN(n) || n < 0) ? { ok: false } : LS.validateLock(p, { bundle: DRAFT_ID }, n);
+      if (v.ok) { p.pool.locks.bundles[DRAFT_ID] = n; delete lockErrors[id]; }
+      else lockErrors[id] = true;
+    }
+    recompute();
+  });
   const sumMembers = () => [...selected.querySelectorAll('[data-cb-item]')].reduce((a, it) => a + (parseFloat(it.dataset.price) || 0), 0);
   /* 折扣 %（D103）：合法 0–100 才生效；空/0＝無折扣；非法（NaN/<0/>100）→ pct=0 且 discOk=false */
   function discInfo() {
@@ -435,32 +667,22 @@
     hint.hidden = ok2;
     summary.hidden = n === 0;
 
-    let minStock = Infinity, sum = 0, hasLimited = false, hasVariants = false;
+    let sum = 0, hasLimited = false, hasVariants = false;
     items.forEach(it => {
-      minStock = Math.min(minStock, numStock(it.dataset.stock));
       sum += parseFloat(it.dataset.price) || 0;
       if (it.dataset.edition === 'limited') hasLimited = true;
       if (it.dataset.variants) hasVariants = true;
     });
-    stockEl.textContent = n === 0 ? '—'
-      : (minStock === Infinity ? T('cb.stock.unlimited', 'Unlimited')
-        : minStock + ' ' + T('cb.stock.min', '(min of members)'));
 
-    /* F4 目前在庫（唯讀）＝min(成員)，限量時再受硬上限約束（§6 ④）*/
-    let editionOk = true;
-    if (availEl) {
-      const cap = totalInput ? parseFloat(totalInput.value) : NaN;
-      let availNum = minStock;
-      if (limitedEdition() && !isNaN(cap)) availNum = Math.min(availNum, cap);
-      if (n === 0) {
-        availEl.value = '';
-        availEl.disabled = true;   // 還沒有成員→無在庫數量，用 disabled 空欄（不顯示「—」）
-      } else {
-        availEl.disabled = false;
-        availEl.value = availNum === Infinity ? T('cb.stock.unlimited', 'Unlimited') : String(availNum);
-      }
-      if (limitedEdition() && (isNaN(cap) || cap <= 0)) editionOk = false;  // 限量需設有效硬上限（Total quantity ＊）
-    }
+    /* D241（§7.14）：限量硬上限先寫回草稿，組合可售量＝ListingState.bundleQty()
+       （成員在本組合的可售量取最小值，再與硬上限取最小）。摘要列與分配表同一個來源。 */
+    const cap = totalInput ? parseFloat(totalInput.value) : NaN;
+    bundleDraft.cap = (limitedEdition() && !isNaN(cap)) ? cap : null;
+    refreshAlloc();
+    if (n === 0) { stockEl.removeAttribute('data-i18n'); stockEl.textContent = '—'; }
+    else setQty(stockEl, LS ? LS.bundleQty(bundleDraft, products) : Infinity);
+    const editionOk = !(limitedEdition() && (isNaN(cap) || cap <= 0));  // 限量需設有效硬上限（Total quantity ＊）
+    const lockOk = Object.keys(lockErrors).length === 0;
 
     let notes = '';
     if (hasLimited) notes += '<div class="cb-note" data-i18n="cb.note.limited">A limited-edition member caps the bundle — it sells out when that member runs out.</div>';
@@ -525,7 +747,10 @@
     }
 
     const nameOk = nameEl && nameEl.value.trim() !== '';
-    createBtn.disabled = !(ok2 && nameOk && editionOk && saleOk && discOk);   // base 自動；折扣可選但填了需 0–100（D103）
+    /* D241：三開關唯一的校驗是「停售晚於開賣」；鎖定量超標時也不讓建立。
+       先算再合併——放進 && 串裡會被前面的條件短路掉，錯誤訊息就永遠不出現。 */
+    const windowOk = saleWindowOk();
+    createBtn.disabled = !(ok2 && nameOk && editionOk && saleOk && discOk && lockOk && windowOk);
   }
 
   /* 定價模式切換已移除（D102，組合價格自動、唯讀）*/
@@ -555,13 +780,88 @@
   if (saleStart) saleStart.addEventListener('input', recompute);
   if (saleEnd) saleEnd.addEventListener('input', recompute);
 
-  /* F6 上架設定 radio-list（移至預覽欄，2026-07-17；2026-07-21 改收合式）：選「定時上架」才展開上架時間欄
-     （spec 5.1.5.4 §4 F6 · D144）。開合與選中狀態由 partials/radio-list.js 統一處理。 */
+  /* ── D241 三開關（spec §7.14）────────────────────────────────────────────
+     上架列沿用收合式三選一（建立時「要不要上架」與「什麼時候上架」是同一個決定），
+     選「定時上架」才展開上架／下架日期與時間；顯示列與開賣列各自獨立，互不影響。 */
+  let listingMode = 'now';
+  let saleMode = 'follow';
   const cbLm = document.getElementById('cb-listing-mode');
+  const listingSched = document.querySelector('[data-cb-listing-fields]');
+  const listedBody = document.querySelector('[data-cb-listed-body]');
+  const saleSection = document.querySelector('[data-cb-sale-section]');
+  /* 上架成立才有第二層與開賣設定（D245）：不上架＝草稿，兩者一起收起。 */
+  function syncListing() {
+    const listed = listingMode !== 'none';
+    if (listedBody) listedBody.hidden = !listed;
+    const shownRow = document.querySelector('[data-cb-shown-row]');
+    if (shownRow) shownRow.hidden = !listed;
+    if (listingSched) listingSched.hidden = listingMode !== 'schedule';
+    if (saleSection) saleSection.hidden = !listed;
+  }
   if (cbLm) cbLm.addEventListener('radio-list:change', e => {
-    const f = document.querySelector('[data-cb-listing-fields]');
-    if (f) f.hidden = e.detail.item.dataset.cbListing !== 'schedule';
+    listingMode = e.detail.item.dataset.cbListing || 'now';
+    syncListing();
+    recompute();
   });
+  syncListing();
+
+  const cbSm = document.getElementById('cb-sale-mode');
+  const saleStartField = document.querySelector('[data-cb-sale-start-field]');
+  function syncSaleMode() { if (saleStartField) saleStartField.hidden = saleMode !== 'schedule'; }
+  if (cbSm) cbSm.addEventListener('radio-list:change', e => {
+    saleMode = e.detail.item.dataset.cbSaleMode || 'follow';
+    syncSaleMode();
+    recompute();
+  });
+  syncSaleMode();
+
+  /* 定時下架／定時停售（D246）：關著＝不排這個時間，開了才要填。關掉時清空欄位。 */
+  function wireSchedToggle(toggleId, fieldsSel) {
+    const t = document.getElementById(toggleId);
+    const f = document.querySelector(fieldsSel);
+    if (!t || !f) return;
+    const flip = () => {
+      const on = t.getAttribute('aria-checked') !== 'true';
+      t.setAttribute('aria-checked', on ? 'true' : 'false');
+      t.classList.toggle('switch--on', on);
+      f.hidden = !on;
+      if (!on) f.querySelectorAll('input').forEach(el => { el.value = ''; });
+      recompute();
+    };
+    t.addEventListener('click', flip);
+    t.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
+  }
+  wireSchedToggle('cb-unlist-toggle', '[data-cb-unlist-fields]');
+  wireSchedToggle('cb-saleend-toggle', '[data-cb-saleend-fields]');
+
+  const shownSwitch = document.getElementById('cb-shown');
+  const shownBody = document.querySelector('[data-cb-shown-body]');
+  const shownOn = () => !shownSwitch || shownSwitch.getAttribute('aria-checked') !== 'false';
+  if (shownSwitch) {
+    const flipShown = () => {
+      const on = !shownOn();
+      shownSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
+      shownSwitch.classList.toggle('switch--on', on);
+      /* 建立流程不放連結：連結是儲存後才產生的東西，這裡只說會發生什麼。 */
+      if (shownBody) shownBody.hidden = on;
+    };
+    shownSwitch.addEventListener('click', flipShown);
+    shownSwitch.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipShown(); } });
+  }
+
+  const saleOpen = document.getElementById('cb-sale-open');
+  const saleClose = document.getElementById('cb-sale-close');
+  const saleWinErr = document.getElementById('cb-sale-window-err');
+  const listingTime = document.getElementById('cb-listing-time');
+  const unlistTime = document.getElementById('cb-unlist-time');
+  /* 三個時間欄都選填、都沒有預設值；唯一的校驗是停售不得早於或等於開賣。 */
+  function saleWindowOk() {
+    if (!LS) return true;
+    const r = LS.validateSaleWindow(saleOpen && saleOpen.value, saleClose && saleClose.value);
+    if (saleWinErr) saleWinErr.hidden = r.ok;
+    return r.ok;
+  }
+  [saleOpen, saleClose, listingTime, unlistTime].forEach(el => { if (el) el.addEventListener('input', recompute); });
 
   /* 近期瀏覽 ⇄ 已選：點候選列或移除鈕在兩區間搬移 */
   function pick(row) {
@@ -575,12 +875,23 @@
     row.onclick = null;
     selected.appendChild(row);
     if (window.ztorIcons) window.ztorIcons.applyIcons(end);
+    /* D241：成員預設不鎖定（lock=null）＝與其他管道共用該商品的沒有被鎖定的庫存量。 */
+    const p = productOf(row);
+    if (!bundleDraft.members.some(m => m.productId === p.id)) bundleDraft.members.push({ productId: p.id, qty: 1 });
+    renderAlloc();
     recompute();
   }
   function unpick(row, rm) {
     rm.remove();
     row.onclick = () => pick(row);
     recent.appendChild(row);
+    const id = row.dataset.cbId;
+    if (id) {
+      bundleDraft.members = bundleDraft.members.filter(m => m.productId !== id);
+      if (products[id]) delete products[id].pool.locks.bundles[DRAFT_ID];   /* 移除成員＝連鎖定一起清掉 */
+      delete lockErrors[id];
+    }
+    renderAlloc();
     recompute();
   }
   recent.querySelectorAll('[data-cb-item]').forEach(row => {
@@ -660,6 +971,33 @@
     if (createBtn.disabled) return;
     const nm = (nameEl && nameEl.value.trim()) || '';
     let pr = (autopriceEl && autopriceEl.textContent.trim()) || '';   // 組合價格＝自動加總文字（D102，含「從 $X 起」）
+    /* D241（§7.14）：把三個開關與成員鎖定量收成一筆組合記錄。鎖定量掛在成員的
+       pool.locks.bundles[<組合 id>]——鎖定是管道的屬性，不是成員清單的裝飾。
+       原型無後端、ProductsStore 也還沒有寫入 API：有 addBundle 就交給它，沒有就掛在
+       window 上，讓下一頁至少拿得到這筆資料。 */
+    const bundleId = 'cb-' + Date.now().toString(36);
+    const rec = {
+      id: bundleId, name: nm,
+      members: bundleDraft.members.map(m => {
+        const locks = products[m.productId] ? products[m.productId].pool.locks.bundles : {};
+        const lock = (locks[DRAFT_ID] === undefined) ? null : locks[DRAFT_ID];
+        return { productId: m.productId, qty: m.qty || 1, lock: lock };
+      }),
+      cap: bundleDraft.cap,
+      listed: listingMode !== 'none',
+      listAt: (listingMode === 'schedule' && listingTime) ? (listingTime.value || null) : null,
+      unlistAt: (unlistTime && unlistTime.value) || null,
+      shown: shownOn(),
+      privateLink: shownOn() ? null : (LS ? LS.privateLinkFor(bundleId) : null),
+      saleStart: (saleMode === 'schedule' && saleOpen && saleOpen.value) || null,
+      saleEnd: (saleClose && saleClose.value) || null
+    };
+    rec.members.forEach(m => {
+      const p = window.ProductsStore && window.ProductsStore.get(m.productId);
+      if (p && p.pool && p.pool.locks) p.pool.locks.bundles[bundleId] = m.lock;
+    });
+    if (window.ProductsStore && typeof window.ProductsStore.addBundle === 'function') window.ProductsStore.addBundle(rec);
+    window.ZTOR_NEW_BUNDLE = rec;
     const q = new URLSearchParams({ posted: '1', type: 'bundle' });
     if (nm) q.set('name', nm);
     if (pr) q.set('price', pr);

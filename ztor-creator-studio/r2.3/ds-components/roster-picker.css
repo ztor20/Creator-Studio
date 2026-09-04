@@ -1,0 +1,258 @@
+/* ============================================================
+   Roster picker · 上面選人、下面看那一位（2026-09-02 建、同日改版；
+   首個消費者 admin-creator-events.html）
+
+   一個跨對象工作台的版型：上段是「平台上有哪些人」，一張卡一個人、橫著排；
+   下段是「選定那一位的內容」，佔整個內容寬度。
+
+   為什麼不是兩欄：這一支 2026-09-02 上午是「主從兩欄」殼（左 340px 名單、右內容），
+   同日使用者裁示「creator 選擇在上、活動列表在下」「creator 改成一張一張卡片橫著
+   排列」。上下堆疊之後那個名字與它的所有寬度理由（340px、左欄吸附、左欄自捲、窄畫面
+   折疊成一顆按鈕）都不再成立，所以整支改寫並改名，舊名全庫零殘留。
+
+   與站上另外兩支兩欄殼的分工（判準仍然有效，只是本支換到另一邊）：
+
+     · `.section-nav-layout`（section-nav.css）＝140px 的**分節**導覽，左欄裝的是
+       幾個短標籤（「基本資料」「售票紀錄」），選的是「同一個東西的哪一段」。
+     · `.settings-layout`（settings.css）＝同一件事的設定頁版本。
+     · 本支＝選的是「**哪一個對象**」，而且一個對象要帶頭像、名稱、狀態徽章與
+       進度數字——這些橫著排成一張卡比擠進一條 340px 的側欄列好讀，選完之後
+       內容也拿得回整個頁寬。
+
+   anatomy
+     .roster-picker                 直排容器（節奏由這一層的 gap 持有）
+       .roster-picker__pick         上段：選人區
+         .roster-picker__bar        工作列（搜尋 ＋ 篩選標籤，可換行）
+           .roster-picker__search   搜尋（與 .field-pill 同掛，只加寬度規則）
+         .roster-picker__grid       卡片網格（auto-fill，窄畫面自然掉成一欄）
+           .roster-picker__card     一張卡＝一個對象（與 .selection-card 同掛；橫排兩欄）
+             .roster-picker__card-media   32px 識別槽（放 .ztor-avatar--sm）
+             .roster-picker__card-text    右欄：名稱在上、狀態列在下
+               .roster-picker__card-name
+               .roster-picker__card-status  狀態列：綁定徽章 ＋ 小標籤數字
+                 .roster-picker__card-stats   數字（與 .stat-row--inline 同掛）
+       .roster-picker__body         下段：選定那一位的內容（直排，節奏歸它的 gap）
+         .roster-picker__detail     選定者那一段（標題列＋內容，同樣由 gap 持有節奏）
+           .roster-picker__head     標題列（名稱＋摘要數字在左、動作在右）
+             .roster-picker__head-actions  動作組（可整組 [hidden]）
+               .roster-picker__head-sync   動作前面的一行狀態字（如「最後檢查 …」）
+
+   卡的量體＝**兩列**（2026-09-02 第三輪，使用者「那些數字太佔空間 改小標籤就好」
+   ＋「需要整張卡片 UI 一起調整」）：左邊一個 32px 識別圓，右邊上列是名稱、下列是
+   一條狀態列（綁定徽章 ＋ 小標籤數字）。前一版是「身分兩層 ＋ 一條分隔線 ＋ 三個
+   20px 大數字」共四層、卡高 136px；本版 70px，同一排放得下的人數翻倍。
+
+   為什麼不是把 20px 的數字調小就好：兩層結構（欄名在上、數字在下）本身就是它佔掉
+   兩行高度的原因。數字換成 `.stat-row--inline`（欄名與值同一行、值 12／欄名 11）
+   之後，整排數字只佔一行，剛好與綁定徽章併成同一條狀態列——卡因此少掉兩層。
+
+   **哪些數字上卡**（2026-09-02 使用者裁示「未綁定：不會有匯入與設定資料」「已綁定：
+   有已匯入與待設定，可匯入不一定需要」）：
+
+     · 未綁定＝**卡上沒有任何場次數字**。沒綁 bookyay 帳號就沒有可匯入／已匯入／
+       待設定這回事，印三個 0 會被讀成「查過了、結果是零」。
+     · 已綁定＝「已匯入」與「待設定」兩個小標籤。**可匯入不上卡**：它留在下段標題列
+       的摘要與上方「有待匯入」篩選裡，兩處照舊計算，資料本身沒有被刪。
+     · 0 值退成 `--faint-ink`（`.stat__value--zero`；`--inline` 連欄名一起退）：
+       已綁定但兩欄都是 0，是真的查過之後的結果，與未綁定不是同一件事，照樣顯示。
+
+   狀態列因此是**二選一**：有數字就放數字，沒有數字就放「未綁定」徽章——那顆徽章
+   佔的正是數字的位置，等於就地說明「這裡為什麼是空的」。使用者本輪給的兩個選項是
+   「卡比較短」或「一句極短的說明佔位」，這裡取的是後者，佔位的還是本來就在的那顆
+   徽章、一個字都沒新增。**卡因此仍然等高**（徽章比一行小標籤高 6px，交給網格預設的
+   stretch 拉齊）：一排卡掃過去，眼睛比的是那一行寫了什麼，不是卡的輪廓差 6px。
+
+   為什麼已綁定的卡上不再印一顆「已綁定」徽章：(1) 它與那兩個數字說的是同一件事——
+   有已匯入／待設定的數字就代表帳號通了，一排卡裡每張都掛一顆「已綁定」是噪音，
+   真正需要被看見的是那顆例外的「未綁定」；(2) 量到的事實是塞不下——260px 的卡，
+   狀態列扣掉「Linked」徽章（58px）之後只剩 119px 給兩欄，而英文欄名「Imported」
+   單獨就要 50px，欄名會被截成「Import…」。中文塞得下、英文塞不下的版面等於只對
+   一種語言成立。**這是呈現決策**，綁定狀態這個欄位沒有從卡上消失，只是改由
+   「有沒有數字」與那顆例外徽章共同表達；記在 `ASSUMPTIONS.md`。
+
+   數字**不畫成進度條或圓餅**：可匯入 ＋ 已匯入 ＝ 池總數、待設定是已匯入的子集，
+   它們不是同一個整體的三份，那兩種畫法會宣稱一個不存在的整體。
+
+   卡面與已選態**整個交給 `.selection-card`（selection-card.css）**，本支一個字都不重畫：
+   已選＝1px 橘色 outline ＋ 中性陰影，是站上「可選取的卡被選中」的既有裁決
+   （2026-06-24／06-25 使用者指定：陰影不帶橘色、橘色是線匡）。本支只負責卡「裡面」
+   怎麼排，以及卡「外面」怎麼鋪成網格。
+
+   surface 層：卡坐在 `--background` 畫布上（`.selection-card` 自帶玻璃面＋陰影，
+   不需要再包一張 `.card`——玻璃疊玻璃會把卡的邊界糊掉）。工作列的
+   `.field-pill` 與 `.filter-tabs` 也都是直接坐畫布的元件。
+
+   組成：`.selection-card`（卡面／已選態）、`.ztor-avatar--sm`、`.badge`、
+   `.stat-row--inline`（數字）、`.field-pill`、`.filter-tabs`。
+
+   全值引用 _tokens.css。
+   ============================================================ */
+
+.roster-picker {
+  /* 上段與下段之間的距離歸容器（DS §2.3）：中間排進來別的東西也不會貼成 0。 */
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-24);
+  min-width: 0;
+}
+
+/* ── 上段：選人區 ───────────────────────────────────────────── */
+.roster-picker__pick {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+  min-width: 0;
+}
+
+.roster-picker__bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-12);
+}
+/* 搜尋撐一段就好：讓它吃滿整列，篩選標籤就會被推到第二行、工作列變兩層樓。 */
+.roster-picker__search { flex: 1 1 220px; max-width: 320px; }
+
+.roster-picker__grid {
+  display: grid;
+  /* auto-fill（不是 auto-fit）：示範名冊只有三位，auto-fit 會把空軌道收掉、
+     三張卡各自撐成三分之一頁寬的橫幅；auto-fill 保留空軌道，卡就維持在
+     一張卡該有的寬度、整組靠左排。260px＝頭像 40 ＋ 名稱 ＋ 狀態徽章一行放得下。 */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--sp-12);
+}
+
+/* ── 一張卡 ─────────────────────────────────────────────────
+   卡面、圓角、陰影、hover、已選 outline 全部由 `.selection-card` 提供
+   （markup 同時掛兩個 class）；這裡只把卡內排成「左識別圓、右兩列」。
+
+   `.selection-card` 的 base 是直排（標題＋一行說明），這裡橫過來；上下內距由 14
+   收成 12（卡只剩兩列，14 會讓那兩列浮在一格空白的中間），左右維持 16、與站上
+   其他 selection-card 一致。 */
+.roster-picker__card {
+  min-width: 0;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sp-10);
+  padding: var(--sp-12) var(--sp-16);
+}
+.roster-picker__card-media { flex: none; display: grid; place-items: center; }
+
+/* 右欄：名稱在上、狀態列在下。兩列之間的距離歸這一層的 gap（Q103）。 */
+.roster-picker__card-text {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-6);
+}
+/* 名稱可能很長，卡寬是固定的：一行放不下就截斷，不要把卡撐開。
+   徽章排在名稱**底下那一列**、不跟名稱搶同一行——擺在名稱右邊會從固定的卡寬裡
+   切走一段（英文「Not linked」比中文「未綁定」寬一半），長名字先被截斷的永遠
+   是名字。 */
+.roster-picker__card-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-15);
+  line-height: var(--lh-snug);
+  color: var(--foreground);
+}
+/* 這一行**刻意不用** `.selection-card__title`：站上那一支歸在 shared.css 的
+   「標題一律大寫」名單裡（`text-transform: uppercase`），而這裡放的是一個人的
+   名字——那是資料，不是區段標題，大寫會把 Denise Lonely 喊成 DENISE LONELY，
+   也跟下段標題列的同一個名字對不上。 */
+
+/* 狀態列：二選一——已綁定放小標籤數字，未綁定放「未綁定」徽章。兩者佔同一個位置，
+   所以卡與卡等高，一排掃過去比的是那一行寫了什麼，不是卡的輪廓。 */
+.roster-picker__card-status {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+}
+.roster-picker__card-status > .badge { flex: none; }
+/* 數字的呈現全部交給 `.stat-row--inline`（markup 同時掛兩個 class）；這裡只說它
+   吃滿狀態列。每張有數字的卡都是同樣的兩等分欄寬，所以值落在同一條垂直線上——
+   位數變多不會把後面那一欄往右推。 */
+.roster-picker__card-stats { flex: 1 1 auto; min-width: 0; }
+
+/* 墓碑 2026-09-02（第三輪，使用者「那些數字太佔空間 改小標籤就好」＋「需要整張
+   卡片 UI 一起調整」）：以下兩支隨卡片壓成兩列而退場，全庫零殘留——
+     · `__card-top`    身分那一段的橫排殼。卡本身現在就是那一列橫排，多包一層沒有意義。
+     · `__card-foot`   數字那一段的上分隔線（padding-top 12 ＋ 1px `--border`）。
+                       數字退成小標籤、與徽章併成同一條狀態列之後，沒有「另一段」要分。
+
+   墓碑 2026-09-02（第二輪，使用者裁示「卡片留這四個資訊就好」）：
+     · `__card-meta`   店鋪識別 `/shop/xxx`。搜尋仍然比對它（`ace.search.ph` 文案不動），
+                       只是不再顯示在卡上。
+     · `__card-last`   最後匯入時間（含「尚未匯入」退路）。上游同輪已把這一欄
+                       從規格 5.1.0.6 F2 移除（D235）。
+     · `__card-side`   徽章原本的「列尾」槽。徽章改排在名稱底下，這個槽不存在了。
+   之後若又要在卡上加一行次要資訊，別重建 `__card-meta`——先確認它該不該佔掉
+   狀態列的空間。 */
+
+/* 「沒有符合的對象」那一行，跟在網格後面 */
+.roster-picker__nomatch {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: var(--fs-13);
+}
+
+/* ── 下段：選定那一位的內容 ───────────────────────────────────
+   節奏由容器 gap 持有（DS §2.3）：下段會依狀態換成表格、空狀態或引導，
+   誰排進來距離都一樣，不由某一個成員自帶 margin。 */
+.roster-picker__body,
+.roster-picker__detail {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+}
+/* `__detail` 常常是 JS 用 `[hidden]` 切顯隱的那一段；class 寫了 display 就會蓋掉
+   `[hidden]` 的 display:none，該藏的會藏不住，所以補這一條。 */
+.roster-picker__body[hidden],
+.roster-picker__detail[hidden] { display: none; }
+
+/* 選定者的標題列：名稱在左、主要動作在右，下段的第一件事。 */
+.roster-picker__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-12);
+}
+.roster-picker__head-text { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-4); }
+.roster-picker__head-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-20);
+  font-weight: var(--fw-regular);
+  letter-spacing: -0.3px;
+}
+.roster-picker__head-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.roster-picker__head-actions { display: flex; align-items: center; gap: var(--sp-8); }
+/* 動作那一組常常是「這個對象才有」的東西（例：未綁定的 creator 沒有可檢查的來源），
+   由 JS 用 `[hidden]` 整組收起來；class 寫了 display 就會蓋掉 `[hidden]`。 */
+.roster-picker__head-actions[hidden] { display: none; }
+/* 動作前面的一行狀態字（2026-09-02，首個消費情境：創作者活動管理的「最後檢查 …」）。
+   它與旁邊那顆按鈕是同一件事的兩半——一個說上次什麼時候發生、一個把它再做一次——
+   所以放進動作組、不丟到左邊的摘要那一行去（隔了整個標題列寬度就讀不成一組了）。
+   與 `__head-meta` 同一套次要文字語彙（13／`--muted-foreground`／等寬數字）。 */
+.roster-picker__head-sync {
+  min-width: 0;
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

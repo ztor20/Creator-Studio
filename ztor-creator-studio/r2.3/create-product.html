@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="ds-components/album-tracks.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/vip-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/pdp-preview.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/readiness.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
@@ -34,7 +35,9 @@
 <link rel="stylesheet" href="ds-components/nest.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stack.css?v=r2.2">   <!-- 2026-09-04：折扣區的 .stack--tight 一直沒有這支 CSS，gap 是 0（使用者回報「要有間距」）-->
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
@@ -158,7 +161,7 @@
     </div>
   </header>
 
-  <div class="wizard__body wizard__body--form wizard__body--mid preview-split preview-split--narrow">
+  <div class="wizard__body wizard__body--form wizard__body--mid preview-split preview-split--phone">
     <div class="preview-split__form">
 
     <!-- Media Vault 交棒（2026-07-29）：從庫房的「做成 NFC 商品」過來時，網址帶
@@ -218,25 +221,28 @@
           <option data-i18n="cp.psub.home">Home &amp; Living</option>
           <option data-i18n="cp.psub.books">Books</option>
           <option data-i18n="cp.psub.collectibles">Collectibles</option>
-          <option data-i18n="cp.psub.music">Music (physical) · 音樂（實體）</option>
+          <option data-i18n="cp.psub.music">Song</option>
           <option data-i18n="cp.psub.album">Album</option>
-          <option data-i18n="cp.psub.documentary">Documentary</option>
+          <option data-i18n="cp.psub.instruments">Instruments</option>
+          <option data-i18n="cp.psub.art">Art</option>
+          <option data-i18n="cp.psub.equipment">Equipment</option>
+          <option data-i18n="cp.psub.memorabilia">Memorabilia</option>
+          <option data-i18n="cp.psub.limited">Limited &amp; signed</option>
           <option data-i18n="cp.psub.merch">Merch</option>
         </select></span>
       </div>
       <div class="field" data-cp-show="digital">
         <div class="field__label" data-i18n="cp.category">Category</div>
         <span class="select-wrap"><select class="select" id="cp-cat-digi" data-cp-cat-digi>
-          <option data-cfile="other" data-i18n="cp.dsub.digital">Digital content</option>
           <option data-cfile="video" data-i18n="cp.dsub.movie">Movie</option>
-          <option data-cfile="video" data-i18n="cp.dsub.short">Short drama</option>
+          <option data-cfile="video" data-i18n="cp.dsub.short">Short film</option>
           <option data-cfile="video" data-i18n="cp.dsub.series">Series</option>
-          <option data-cfile="music" data-i18n="cp.dsub.music">Music</option>
-          <option data-cfile="album" data-i18n="cp.dsub.album">Album</option>
-          <option data-cfile="video" data-i18n="cp.dsub.mv">MV · MV</option>
+          <option data-cfile="video" data-i18n="cp.dsub.mv">MV</option>
           <option data-cfile="video" data-i18n="cp.dsub.documentary">Documentary</option>
+          <option data-cfile="music" data-i18n="cp.dsub.music">Song</option>
+          <option data-cfile="album" data-i18n="cp.dsub.album">Album</option>
+          <option data-cfile="other" data-i18n="cp.dsub.document">Document</option>
           <option data-cfile="membership" data-i18n="cp.dsub.membership">Membership / VIP card</option>
-          <option data-cfile="other" data-i18n="cp.dsub.merch">Merch</option>
         </select></span>
       </div>
       <!-- §4.1② 詳細規格 Specifications（僅實體；併入商品資訊）· spec 5.1.5.2 §4.1② / v3.0 -->
@@ -285,11 +291,12 @@
       </div>
 
       <!-- 2026-08-09（使用者裁決）：主圖大格＋附圖 2×2 的並排版改成「同尺寸單排、逐格出現」。
-           五格同尺寸（.upload-assets--fill：四格剛好撐滿一整列、第五格換行，寬度隨容器等比縮放），
+           八格同尺寸（.upload-assets--fill：四格撐滿一整列，滿一列就換行，寬度隨容器等比縮放），
            一次只露出一個空格，填滿才長出下一格；主圖那格掛 __flag 標示身分（尺寸統一後，
            靠標籤而不是靠大小分辨），標籤等圖進來才出現。
-           張數不變：主圖 1＋附圖 4（規格 5.1.5.2 F1）。尺寸與檔型兩句說明都收在格子裡、
-           hover 才浮現（同日第二輪使用者指示：這兩件事該寫在一起）。 -->
+           2026-09-04（使用者裁決 D243）：張數上限由 8 張再放寬成 10 張（主圖 1＋附圖 9），
+           與建立活動、專案劇照的張數對齊（規格 5.1.5.2 F1；前一版是 D237 的 8 張）。
+           尺寸與檔型兩句說明都收在格子裡、hover 才浮現（同日第二輪使用者指示：這兩件事該寫在一起）。 -->
       <div data-cp-show="physical">
         <div class="upload-assets upload-assets--fill" data-upload-reveal>
           <div class="upload-tile upload-tile--portrait" data-cp-asset="p-hero" data-upload data-upload-ai>
@@ -302,10 +309,16 @@
           <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
           <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
           <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
         </div>
       </div>
 
-      <!-- 數位 F1 素材：封面＊＋附圖（下載檔移到 F11 內容檔案）· spec §4.2 F1 v4.3。版面同上。 -->
+      <!-- 數位 F1 素材：封面＊＋附圖（下載檔移到 F11 內容檔案）· spec §4.2 F1 v4.3。版面同上。
+           2026-09-04（D243）：附圖上限比照實體區一併放寬為 9 張（封面 1＋附圖 9＝10 張）。 -->
       <div data-cp-show="digital" hidden>
         <div class="upload-assets upload-assets--fill" data-upload-reveal>
           <div class="upload-tile upload-tile--portrait" data-cp-asset="d-cover" data-upload data-upload-ai>
@@ -314,6 +327,11 @@
             <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
             <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
           </div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
           <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
           <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
           <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
@@ -428,6 +446,9 @@
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.discount.title">Discount settings</h3>
       </div>
+      <!-- 節奏歸容器（Q103）：折扣群組與「可與優惠碼疊加」是同一區段的兩塊，
+           距離由 .stack--tight 的 gap 持有，不再由疊加列自己掛 inline margin-top。 -->
+      <div class="stack stack--tight">
       <div class="control-group">
         <div class="control-row">
         <div>
@@ -479,13 +500,14 @@
 
         <!-- 可與優惠碼疊加（spec 5.1.5.2 F13 · D183）：商店優惠碼（5.1.5.5 F8）能不能再疊在
              這個商品的特價／分級折扣上，由商品自己決定；預設關＝三者擇一，取對買家最有利的。 -->
-        <div class="control-row" style="margin-top:12px">
+        <div class="control-row">
           <div>
             <div class="control-row__main" data-i18n="cp.discount.stack">Stack with discount codes</div>
             <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means the buyer gets whichever single discount is best for them</div>
           </div>
           <div class="switch" role="switch" aria-checked="false" tabindex="0" data-cp-stack></div>
         </div>
+      </div><!-- /.stack -->
     </section>
 
     <!-- §4.1③⑤ 庫存（庫存版本 Edition 置頂，控制下方/表格欄位；單一規格在此填在庫，多規格改由表格）· spec 5.1.5.2 §4.1③⑤ / §4.2 / D064 -->
@@ -514,10 +536,12 @@
             <input class="input" placeholder="0" id="cp-total">
             <div class="field__hint" data-i18n="cp.total.hint">Hard cap · restock ceiling</div>
           </div>
-          <!-- 實體：目前在庫 -->
+          <!-- 實體：目前在庫（spec §7.14 · D241）。這一欄收的是「這件商品總共有幾件」，
+               分給單售與各組合包的鎖定量不在建立流程收（單售在商品細節頁、組合在建立組合流程）。 -->
           <div class="field" data-cp-show="physical">
-            <div class="field__label" data-i18n="cp.stock">Goods in stock</div>
+            <div class="field__label" data-i18n="stock.pool">Goods in stock</div>
             <input class="input" placeholder="0" id="cp-stock">
+            <div class="field__hint" data-i18n="cp.stock.pool-hint">Locking stock for single sale or a bundle happens on the product page and in the bundle flow.</div>
           </div>
           <!-- 數位限量：剩餘份數（數位不限量＝無上限下載，無此欄）-->
           <div class="field" data-cp-show="digital" data-when-edition="limited">
@@ -579,6 +603,9 @@
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.discount.title">Discount settings</h3>
       </div>
+      <!-- 節奏歸容器（Q103）：折扣群組與「可與優惠碼疊加」是同一區段的兩塊，
+           距離由 .stack--tight 的 gap 持有，不再由疊加列自己掛 inline margin-top。 -->
+      <div class="stack stack--tight">
       <div class="control-group">
         <div class="control-row">
         <div>
@@ -618,6 +645,18 @@
         </div>
       </div>
       </div>
+
+        <!-- 可與優惠碼疊加（spec 5.1.5.2 F13 · D183）：多選項模式漏了這一列（2026-09-02 使用者回報）。
+             F13 沒有按規格模式分岔——疊加與否是「這個商品」的決定，不是「這個選項組合」的決定，
+             所以多選項一樣要有，且同樣預設關＝三者擇一、取對買家最有利的。 -->
+        <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="cp.discount.stack">Stack with discount codes</div>
+            <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means the buyer gets whichever single discount is best for them</div>
+          </div>
+          <div class="switch" role="switch" aria-checked="false" tabindex="0" data-cp-vstack></div>
+        </div>
+      </div><!-- /.stack -->
     </section>
 
     <!-- §4.1 ⑥ 取貨方式 Delivery method（僅實體）· spec 5.1.5.2 §4.1⑥ / D064 -->
@@ -675,27 +714,29 @@
         </div>
       </div>
 
-      <!-- 現場 QR 領取（D111：串接取貨管理場次 → scanner URL 核銷）-->
+      <!-- 現場 QR 領取（D111：串接取貨管理場次 → scanner URL 核銷）
+           2026-09-04（使用者裁決 D244）：商品層的「領取說明」欄退場——同一份說明在取貨場次
+           已經有一欄（5.1.5.12 F1 取貨說明），商品再收一份就是兩個地方寫同一件事、
+           而且買家看到的是場次那一份。
+           同輪依用戶旅程重排：選了現場 QR 領取之後，第一件事是「這件事會怎麼運作」（說明橫幅），
+           知道了機制才有辦法決定要掛哪個場次，所以橫幅移到場次欄之前。
+           場次那一列的選單＋建立鈕改用 .input-action（原本是頁面自寫的 inline flex）。 -->
       <div class="cp-subfields" data-when-delivery="qr" hidden>
-        <div class="field">
-          <div class="field__label"><span data-i18n="cp.delivery.instr">Pickup instructions</span> <span class="text-sub" data-i18n="cp.optional">(optional)</span></div>
-          <textarea class="textarea" placeholder="e.g., Collect at the merch table after the show. Show this QR code." data-i18n-placeholder="cp.delivery.instr.ph"></textarea>
+        <div class="info-banner">
+          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+          <span data-i18n="cp.delivery.qr-note">Each unit gets its own pickup QR, shown in the buyer's ztor account — staff scan it one at a time at the session's scanner. Manage sessions, scanner and log in Pickup management.</span>
         </div>
         <div class="field">
           <div class="field__label" data-i18n="cp.delivery.session">Pickup session</div>
-          <div style="display:flex;gap:var(--sp-10);flex-wrap:wrap;align-items:center">
-            <select class="select" id="cp-pickup-session" style="flex:1 1 var(--w-220)">
+          <div class="input-action">
+            <select class="select" id="cp-pickup-session">
               <option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>
               <option value="tpe" data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>
               <option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>
             </select>
             <button class="btn btn--outline" type="button" data-cp-new-session><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="cp.delivery.session.new">Create pickup session</span></button>
           </div>
-          <div class="field__hint" data-i18n="cp.delivery.session.hint">On-site QR pickup is redeemed at a pickup session's scanner. Pick an existing session or create one — this product is pre-added. Scanner URL, password and roster live in Pickup management.</div>
-        </div>
-        <div class="info-banner">
-          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-          <span data-i18n="cp.delivery.qr-note">Buyers get a QR per order; staff scan it at the session's scanner URL to redeem. Manage sessions, scanner and log in Pickup management.</span>
+          <div class="field__hint" data-i18n="cp.delivery.session.hint">Pick one or create a new one — this product joins that session's pickup list.</div>
         </div>
       </div>
     </section>
@@ -756,7 +797,138 @@
       <div data-cp-film-picker></div>
     </section>
 
-    <!-- §4.6 上架設定已移至右側「商店預覽」欄（預覽卡下方），改用 radio-list（位置與選法 2026-07-17 微調，接續 D144）。 -->
+    <!-- §4.6 上架設定／開賣設定（2026-09-04 使用者裁決 D245：原本「上架、顯示與開賣」一個 section
+         三列平鋪，拆成兩個 section，並在每個 section 裡做出兩層）。
+         為什麼拆：三列雖然規格上互相獨立（§7.14 · D241），對創作者卻是兩個不同時間點的決定——
+         「這件東西要不要、什麼時候出現在商店」是現在就要決定的；「什麼時候可以結帳」是出現之後的事。
+         擠在同一張卡裡，第一個決定還沒做完就得看到第二個決定的欄位。
+         分層規則：每個 section 的第一層只有一個主決定（上架三選一／開賣二選一），
+         由它推導出來的附屬設定收進第二層的線框盒（.control-group--plain.lctl__derived），
+         主決定沒成立就整層不出現——「不上架」＝草稿，沒有下架時間、沒有顯示開關，也沒有開賣這回事。
+         列標題不重寫 section 標題已經說過的字（上架設定裡不再有一列叫「上架」）。
+         三個時間欄一律選填、不預設值；唯一校驗仍是「停售 > 開賣」（ListingState.validateSaleWindow）。 -->
+    <section class="form-section form-section--outlined" data-cp-show="physical digital">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cp.listing.sec-listed">Listing</h3>
+      </div>
+      <div class="lctl">
+        <div class="lctl__row lctl__row--choice">
+          <div class="lctl__body">
+            <div class="radio-list radio-list--collapsible" id="cp-listing-mode">
+              <button class="radio-list__trigger" type="button" aria-expanded="false">
+                <span class="radio-list__dot"></span>
+                <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
+                <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
+              </button>
+              <div class="radio-list__options" hidden>
+                <button class="radio-list__item" type="button" data-cp-listing="none">
+                  <span class="radio-list__dot"></span>
+                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-list__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
+                </button>
+                <button class="radio-list__item radio-list__item--active" type="button" data-cp-listing="now">
+                  <span class="radio-list__dot"></span>
+                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
+                </button>
+                <button class="radio-list__item" type="button" data-cp-listing="schedule">
+                  <span class="radio-list__dot"></span>
+                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-list__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="lctl__rule"></div>
+        <!-- 顯示於商店自己一項（D247；2026-09-04 使用者再裁示：不要外框、與第 2 層對調位置）：
+             它回答的是「上架之後找不找得到」，緊接在上架的主決定後面才是這個順序；
+             第 2 層那個線框盒裝的是排程（什麼時候上、什麼時候下），排在它下面。
+             無外框——有框會讀成「跟下面那個盒子是兩個對等的盒子」，實際上它只是一列開關。 -->
+        <div class="lctl__row" data-cp-shown-row hidden>
+          <div class="lctl__head">
+            <div class="lctl__titles">
+              <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
+              <p class="lctl__hint" data-i18n="cp.listing.shown-hint">Hidden items stay purchasable via the private link and inside bundles</p>
+            </div>
+            <div class="switch switch--on lctl__control" id="cp-shown-toggle" role="switch" aria-checked="true" tabindex="0"></div>
+          </div>
+        </div>
+        <!-- 第 2 層：上架成立之後才存在的設定（排程）。 -->
+        <div class="control-group control-group--plain lctl__derived" data-cp-listed-body hidden>
+          <div class="field" data-cp-listing-fields hidden>
+            <div class="field__label"><span data-i18n="cp.listing.time">Listing time</span> <span class="field__req">*</span></div>
+            <input class="input" type="datetime-local" id="cp-listing-time">
+          </div>
+          <div class="lctl__row">
+            <div class="lctl__head">
+              <div class="lctl__titles">
+                <span class="lctl__title" data-i18n="cp.listing.unlist-sched">Unlist at a set time</span>
+                <p class="lctl__hint" data-i18n="cp.listing.unlist-sched-sub">Unlists automatically at the time you set</p>
+              </div>
+              <div class="switch lctl__control" id="cp-unlist-toggle" role="switch" aria-checked="false" tabindex="0"></div>
+            </div>
+            <div class="lctl__sched" data-cp-unlist-fields hidden>
+              <div class="field">
+                <div class="field__label"><span data-i18n="cp.listing.unlist">Unlist time</span> <span class="field__req">*</span></div>
+                <input class="input" type="datetime-local" id="cp-unlist-time">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-section form-section--outlined" data-cp-show="physical digital" data-cp-sale-section hidden>
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cp.listing.sec-sale">Sale</h3>
+      </div>
+      <div class="lctl">
+        <div class="lctl__row lctl__row--choice">
+          <div class="lctl__body">
+            <div class="radio-list radio-list--collapsible" id="cp-sale-mode">
+              <button class="radio-list__trigger" type="button" aria-expanded="false">
+                <span class="radio-list__dot"></span>
+                <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-list__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
+                <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
+              </button>
+              <div class="radio-list__options" hidden>
+                <button class="radio-list__item radio-list__item--active" type="button" data-cp-sale-mode="follow">
+                  <span class="radio-list__dot"></span>
+                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-list__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
+                </button>
+                <button class="radio-list__item" type="button" data-cp-sale-mode="schedule">
+                  <span class="radio-list__dot"></span>
+                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-list__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="lctl__rule"></div>
+        <!-- 第 2 層：停售恆在（兩種開賣方式都可以設一個收攤時間）；開賣時間只有選「定時開賣」才有意義。 -->
+        <div class="lctl__derived">
+          <div class="field" data-cp-sale-start-field hidden>
+            <div class="field__label"><span data-i18n="cp.listing.sale-start">Sale start</span> <span class="field__req">*</span></div>
+            <input class="input" type="datetime-local" id="cp-listing-sale-start">
+          </div>
+          <div class="lctl__row">
+            <div class="lctl__head">
+              <div class="lctl__titles">
+                <span class="lctl__title" data-i18n="cp.listing.saleend-sched">Close sales at a set time</span>
+                <p class="lctl__hint" data-i18n="cp.listing.saleend-sched-sub">Checkout closes then; the item stays visible</p>
+              </div>
+              <div class="switch lctl__control" id="cp-saleend-toggle" role="switch" aria-checked="false" tabindex="0"></div>
+            </div>
+            <div class="lctl__sched" data-cp-saleend-fields hidden>
+              <div class="field">
+                <div class="field__label"><span data-i18n="cp.listing.sale-end">Sale end</span> <span class="field__req">*</span></div>
+                <input class="input" type="datetime-local" id="cp-listing-sale-end">
+              <p class="field__error" data-i18n="cp.listing.sale-err" hidden>Sale end must be after sale start</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="lctl__note" data-i18n="cp.listing.pending">Time zone &amp; exact timing pending spec.</p>
+      </div>
+    </section>
 
     <!-- §4.6 結帳與保障（共用）-->
     <div class="form-footnote" data-i18n="cp.stripe">Secure payments via Stripe. Buyer protection included.</div>
@@ -764,51 +936,58 @@
 
     <!-- §5.2.5 即時預覽：表單旁 sticky 常駐欄（取代舊右側滑出面板；使用者裁示 2026-06-24）-->
     <aside class="preview-col" data-cp-show="physical digital">
-      <div class="preview-col__head">
-        <h3 class="preview-col__title" id="cp-preview-title" data-i18n="cp.preview.heading">Product preview</h3>
-        <p class="preview-col__sub" data-i18n="cp.preview.title">How buyers see it on Ztor</p>
-      </div>
-      <div class="preview-card" data-cp-show="physical digital">
-        <div class="preview-card__media"><i data-lucide="package" class="ztor-icon" id="cp-pv-media"></i></div>
-        <div class="preview-card__body">
-          <div class="preview-card__row">
-            <h4 class="preview-card__name is-empty" id="cp-pv-name" data-i18n="cp.pv.name">Product name</h4>
-            <span class="preview-card__price is-empty" id="cp-pv-price">$0.00</span>
+      <!-- 2026-09-04（使用者裁決 D248）：預覽由 Studio 自己畫的小卡改成**粉絲端商品頁
+           （ztor.vercel.app/shop-item.html）手機版的版型鏡像**——右欄那句「買家在 Ztor
+           看到的樣子」要真的成立。版型與比例照粉絲端量測搬進來（見 ds-components/pdp-preview.css
+           檔頭，含刻意與 Studio 慣例不同的三處：直角 chip、白底 CTA、安靜的價格），
+           資料一律接建立流程當下的欄位，不帶粉絲端那件示範商品的假資料。
+           不畫手機外框（使用者裁示）：右欄本身就收窄到手機寬度（.preview-split--phone）。 -->
+      <!-- 2026-09-04（使用者裁示「預覽要包在一個 section 層裡面」）：鏡像本身不畫底也不畫框，
+           外面套一張與左欄同款的 form-section--outlined，兩欄的盒子語彙才一致——
+           右欄現在也是「一個區塊」，不是浮在頁面上的一段內容。 -->
+      <section class="form-section form-section--outlined" data-cp-show="physical digital">
+        <!-- 2026-09-04（使用者裁示「字要在 section 內」）：標題與說明從卡外面搬進來，
+             用左欄同一套 form-section__head——右欄現在是一個完整的區塊，不是「卡片＋外面一行標題」。
+             其他建立流程仍是卡外標題（.preview-col__head），那些頁的預覽還沒改成 section。 -->
+        <div class="form-section__head">
+          <h3 class="form-section__title" id="cp-preview-title" data-i18n="cp.preview.heading">Product preview</h3>
+          <p class="form-section__sub" data-i18n="cp.preview.title">How buyers see it on Ztor</p>
+        </div>
+      <div class="pdp-pv" data-cp-pv>
+        <div class="pdp-pv__gallery">
+          <div class="pdp-pv__frame" data-pv-frame>
+            <i data-lucide="package" class="ztor-icon pdp-pv__icon"></i>
           </div>
-          <p class="preview-card__desc is-empty" id="cp-pv-desc" data-i18n="cp.pv.desc">Missing: description</p>
+          <div class="pdp-pv__thumbs" data-pv-thumbs></div>
+        </div>
+        <div class="pdp-pv__buy">
+          <div class="pdp-pv__eyebrow is-empty" data-pv-cat data-i18n="cp.pv.cat">Category</div>
+          <h4 class="pdp-pv__title is-empty" id="cp-pv-name" data-i18n="cp.pv.name">Product name</h4>
+          <div class="pdp-pv__prices">
+            <span class="pdp-pv__price is-empty" id="cp-pv-price">$0.00</span>
+            <span class="pdp-pv__was" data-pv-was hidden></span>
+          </div>
+          <p class="pdp-pv__lead is-empty" id="cp-pv-desc" data-i18n="cp.pv.desc">Missing: description</p>
+          <div class="pdp-pv__variants" data-pv-variants></div>
+          <div class="pdp-pv__actions">
+            <div class="pdp-pv__qty">
+              <span class="pdp-pv__qbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></span>
+              <span class="pdp-pv__qval">1</span>
+              <span class="pdp-pv__qbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span>
+            </div>
+            <span class="pdp-pv__add">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle><path d="M2.5 3h2l2.2 12.3a1.5 1.5 0 0 0 1.5 1.2h8.2a1.5 1.5 0 0 0 1.5-1.2L21 7H6"></path></svg>
+              <span data-i18n="cp.pv.add">Add to cart</span>
+            </span>
+          </div>
+          <div class="pdp-pv__delivery" data-pv-delivery>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="1"></rect><path d="M16 8h4l3 5v4h-7V8z"></path><circle cx="5.5" cy="18.5" r="1.5"></circle><circle cx="18.5" cy="18.5" r="1.5"></circle></svg>
+            <span data-pv-delivery-text data-i18n="cp.delivery.shipping">Shipping</span>
+          </div>
         </div>
       </div>
+      </section>
 
-      <!-- §4.6 上架設定（spec 5.1.5.2 §4.6 · D144；位置與選法 2026-07-17 微調）：移到預覽卡下方，改 radio-list（不上架／立刻上架／定時上架），選「定時上架」才展開上架時間。 -->
-      <div class="card" data-cp-show="physical digital">
-        <div class="card__head"><h3 class="card__title" data-i18n="cp.listing.title">Listing settings</h3></div>
-        <div class="radio-list radio-list--collapsible" id="cp-listing-mode">
-          <button class="radio-list__trigger" type="button" aria-expanded="false">
-            <span class="radio-list__dot"></span>
-            <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
-            <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
-          </button>
-          <div class="radio-list__options" hidden>
-            <button class="radio-list__item" type="button" data-cp-listing="none">
-              <span class="radio-list__dot"></span>
-              <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-list__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
-            </button>
-            <button class="radio-list__item radio-list__item--active" type="button" data-cp-listing="now">
-              <span class="radio-list__dot"></span>
-              <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
-            </button>
-            <button class="radio-list__item" type="button" data-cp-listing="schedule">
-              <span class="radio-list__dot"></span>
-              <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-list__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
-            </button>
-          </div>
-        </div>
-        <div class="field" data-cp-listing-fields hidden style="margin-top:12px;margin-bottom:0">
-          <div class="field__label"><span data-i18n="cp.listing.time">Listing time</span> <span class="field__req">*</span></div>
-          <input class="input" type="datetime-local" id="cp-listing-time">
-          <div class="field__hint" data-i18n="cp.listing.pending">Auto-downlist &amp; time zone pending spec.</div>
-        </div>
-      </div>
     </aside>
   </div>
 
@@ -840,6 +1019,7 @@
 
 <!-- §5.2.5 即時預覽已移到表單旁 sticky 欄（.preview-col，見 .wizard__body 內）。 -->
 
+<script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
 <script>
@@ -868,9 +1048,22 @@
   const specCount = () => document.getElementById('spec-rows').children.length;
 
   /* ---- 多規格（Variations）模型 ---- */
-  let varOptions = [];      // [{ name, values: [] }]
+  /* 2026-09-04（D249）：顏色選項的值多帶一個色號。值本身仍是字串（組合鍵、逐選項組合表、
+     預覽全都吃字串，改成物件會一路擴散），色號另存在同一個 option 的 hex 對照表裡，
+     以「值的字面」當鍵。opt.kind === 'colour' 才有這張表。 */
+  let varOptions = [];      // [{ name, values: [], kind?: 'colour', hex?: { [value]: '#RRGGBB' } }]
+  const OPT_PRESETS = [
+    { id: 'size', nameKey: 'cp.var.preset.size', nameFallback: 'Size',
+      values: [{ label: 'S' }, { label: 'M' }, { label: 'L' }] },
+    { id: 'colour', kind: 'colour', nameKey: 'cp.var.preset.colour', nameFallback: 'Color',
+      values: [{ label: 'Black', hex: '#000000' }, { label: 'White', hex: '#FFFFFF' }] }
+  ];
+  /* 色號讀不到就給 transparent——球還在（版面不跳），但看得出來還沒設。 */
+  function hexOf(opt, val) {
+    const h = opt && opt.hex && opt.hex[val];
+    return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(h || '') ? h : 'transparent';
+  }
   const varData = {};       // comboKey -> { price, stock, total, sku, cost, excluded }
-  let seededVar = false;
 
   function currentCombos() {
     /* 逐值 input 模式（2026-07-21）允許值陣列裡有空字串（剛新增、還沒填的那列），
@@ -915,9 +1108,14 @@
         /* 2026-07-21 使用者裁示：值由「打字按 Enter 變 chip」改成逐值一個 input（可就地改字），
            底部一顆虛線「新增選項值」再長一列。至少保留一列空 input，新選項才有東西可填。 */
         const vals = opt.values.length ? opt.values : [''];
+        /* 顏色選項的值多一個色號欄與一顆實際渲染那個顏色的球（D249）：文字寫「墨黑」跟
+           真的看到那塊黑不是一回事，色號也不是給人腦內轉換的。其他選項維持單一欄。 */
+        const isColour = opt.kind === 'colour';
         const valRows = vals.map((val, vi) =>
-          `<div class="variant-option__value">`
+          `<div class="variant-option__value${isColour ? ' variant-option__value--colour' : ''}">`
+          + (isColour ? `<span class="opt-dot" data-val-dot="${oi}:${vi}" style="--opt-dot:${esc(hexOf(opt, val))}"></span>` : '')
           + `<input class="input" data-val-edit="${oi}:${vi}" value="${esc(val)}" placeholder="${esc(T('cp.var.opt.value.ph', 'Add value, press Enter'))}">`
+          + (isColour ? `<input class="input variant-option__hex" data-val-hex="${oi}:${vi}" value="${esc(hexOf(opt, val))}" placeholder="#000000" spellcheck="false">` : '')
           + `<button class="variant-option__value-remove" type="button" data-val-remove="${oi}:${vi}" aria-label="Remove value"><i data-lucide="x" class="ztor-icon"></i></button>`
           + `</div>`
         ).join('');
@@ -941,15 +1139,39 @@
         row.className = 'option-set__row';
         /* 過濾空字串：逐值 input 模式下「新增了一列但沒填字」是常態，不濾會 join 成「S、、M」 */
         const filled = opt.values.filter(v => v.trim());
-        const vals = filled.length ? filled.join('、') : T('cp.var.opt.novalue', 'no values yet');
+        /* 顏色選項的摘要也帶色球——收合之後只剩這一行，色號資訊不該在這裡消失。 */
+        const vals = filled.length
+          ? (opt.kind === 'colour'
+              ? filled.map(v => `<span class="opt-dot opt-dot--sm" style="--opt-dot:${esc(hexOf(opt, v))}"></span>${esc(v)}`).join('、')
+              : esc(filled.join('、')))
+          : esc(T('cp.var.opt.novalue', 'no values yet'));
         row.innerHTML =
           `<i data-lucide="tag" class="ztor-icon"></i>`
           + `<span class="option-set__name">${esc(opt.name || T('cp.var.opt.unnamed', 'Untitled option'))}</span>`
-          + `<span class="option-set__values">（${esc(vals)}）</span>`
+          + `<span class="option-set__values">（${vals}）</span>`
           + `<button class="option-set__action" type="button" data-opt-edit="${oi}">${esc(T('cp.var.opt.edit', 'Edit'))}</button>`;
         box.appendChild(row);
       }
     });
+    /* 快捷選項（D249）：站上絕大多數實體商品的變體維度就是尺寸與顏色，
+       按一下把整組連值一起建好，不必逐格打字。已經建過同名選項的那顆就不再出現。 */
+    const presetRow = document.createElement('div');
+    presetRow.className = 'option-set__presets';
+    OPT_PRESETS.forEach(pr => {
+      const preName = T(pr.nameKey, pr.nameFallback).trim().toLowerCase();
+      if (varOptions.some(o => (o.name || '').trim().toLowerCase() === preName)) return;
+      const b = document.createElement('button');
+      b.className = 'option-set__preset';
+      b.type = 'button';
+      b.dataset.optPreset = pr.id;
+      const dots = pr.kind === 'colour'
+        ? `<span class="option-set__preset-dots">${pr.values.map(v => `<span class="opt-dot opt-dot--sm" style="--opt-dot:${v.hex}"></span>`).join('')}</span>`
+        : '';
+      b.innerHTML = `<i data-lucide="plus" class="ztor-icon"></i> <span>${esc(T(pr.nameKey, pr.nameFallback))}</span>` + dots;
+      presetRow.appendChild(b);
+    });
+    if (presetRow.children.length) box.appendChild(presetRow);
+
     const add = document.createElement('button');
     add.className = 'option-set__add';
     add.type = 'button';
@@ -1034,6 +1256,22 @@
       varOptions.push({ name: '', values: [] });
       editingOpt = varOptions.length - 1;
       renderOptions();
+      return;
+    }
+    /* 快捷：整組建好就直接進逐選項組合表，不停在編輯器——值已經填好了，沒有東西要填。 */
+    const pre = e.target.closest('[data-opt-preset]');
+    if (pre) {
+      const def = OPT_PRESETS.find(x => x.id === pre.dataset.optPreset);
+      if (!def) return;
+      const opt = { name: T(def.nameKey, def.nameFallback), values: def.values.map(v => v.label) };
+      if (def.kind === 'colour') {
+        opt.kind = 'colour';
+        opt.hex = {};
+        def.values.forEach(v => { opt.hex[v.label] = v.hex; });
+      }
+      varOptions.push(opt);
+      editingOpt = null;
+      regenVariants();
     }
   });
 
@@ -1142,7 +1380,26 @@
       const vr = document.getElementById('cp-var-rows');
       variants = vr ? vr.children.length : 0;
     }
-    return { type: state.type, name: nm, price: pr, cat, edition: state.edition, stock, variants };
+    /* D241 的三開關與庫存池（spec §7.14）：欄位名是 ListingState／ProductsStore 的對外契約，
+       不得在這裡改名。「不上架」＝草稿：listed=false 且四個時間一個都不收、不產生連結。
+       鎖定量三態：null＝沒鎖定（共用沒有被鎖定的庫存量），數字（含 0）＝鎖定模式；建立流程不收鎖定
+       （單售鎖定在商品細節頁、組合鎖定在建立組合流程），所以一律送 null 與空的 bundles。 */
+    const listed = listingMode !== 'none';
+    const val = id => { const el = document.getElementById(id); return (el && el.value) ? el.value : null; };
+    const poolTotal = state.edition === 'limited'
+      ? (Number(stock) || 0)
+      : (fStock && fStock.value.trim() !== '' ? Number(fStock.value.trim()) : 'unlimited');
+    return {
+      type: state.type, name: nm, price: pr, cat, edition: state.edition, stock, variants,
+      listed: listed,
+      listAt: listed && listingMode === 'schedule' ? val('cp-listing-time') : null,
+      unlistAt: listed ? val('cp-unlist-time') : null,
+      shown: listed ? shownOn : false,
+      privateLink: null,
+      saleStart: listed && saleMode === 'schedule' ? val('cp-listing-sale-start') : null,
+      saleEnd: listed ? val('cp-listing-sale-end') : null,
+      pool: { total: poolTotal, locks: { single: null, bundles: {} } }
+    };
   }
 
   /* 真正發布（新品）：抽成獨立函式，讓「新發布」路徑先過發布前預覽確認層（D223）
@@ -1381,9 +1638,99 @@
     if (v) { dstEl.textContent = fmt ? fmt(v) : v; dstEl.classList.remove('is-empty'); }
     else { dstEl.textContent = emptyText; dstEl.classList.add('is-empty'); }
   }
+  /* ---- 粉絲端商品頁鏡像（D248）：分類／圖庫／規格選項／交付說明四塊 ----
+     資料全部來自建立流程當下的欄位；沒有值就進空狀態或整段不出現。 */
+  const pvCat = document.querySelector('[data-pv-cat]');
+  const pvFrame = document.querySelector('[data-pv-frame]');
+  const pvThumbs = document.querySelector('[data-pv-thumbs]');
+  const pvVariants = document.querySelector('[data-pv-variants]');
+  const pvWas = document.querySelector('[data-pv-was]');
+  const pvDeliveryText = document.querySelector('[data-pv-delivery-text]');
+
+  function renderPvCat() {
+    if (!pvCat) return;
+    const sel = state.type === 'digital' ? document.getElementById('cp-cat-digi') : document.getElementById('cp-cat-phys');
+    const label = sel && sel.value ? (sel.options[sel.selectedIndex] || {}).text : '';
+    if (label && label.trim()) { pvCat.textContent = label.trim(); pvCat.classList.remove('is-empty'); pvCat.removeAttribute('data-i18n'); }
+    else { pvCat.textContent = T('cp.pv.cat', 'Category'); pvCat.classList.add('is-empty'); pvCat.setAttribute('data-i18n', 'cp.pv.cat'); }
+  }
+
+  /* 圖片直接讀上傳格已經放進去的縮圖節點——沒有第二份資料來源，畫面上有什麼就預覽什麼。 */
+  function renderPvGallery() {
+    if (!pvFrame || !pvThumbs) return;
+    const prefix = state.type === 'digital' ? 'd-' : 'p-';
+    const tiles = [].slice.call(document.querySelectorAll('[data-cp-asset^="' + prefix + '"]'));
+    const srcs = tiles
+      .map(t => { const im = t.querySelector('.upload-tile__thumb'); return im && im.getAttribute('src'); })
+      .filter(Boolean);
+    const hero = pvFrame.querySelector('.pdp-pv__img');
+    if (srcs.length) {
+      if (hero) hero.setAttribute('src', srcs[0]);
+      else pvFrame.insertAdjacentHTML('afterbegin', '<img class="pdp-pv__img" alt="" src="' + srcs[0] + '">');
+      pvFrame.classList.add('is-filled');
+    } else {
+      if (hero) hero.remove();
+      pvFrame.classList.remove('is-filled');
+    }
+    /* 只有兩張以上才有「選第幾張」這件事，一張圖不長縮圖列（粉絲端同理）。 */
+    pvThumbs.innerHTML = srcs.length > 1
+      ? srcs.map((src, i) => '<span class="pdp-pv__thumb' + (i === 0 ? ' is-active' : '') + '"><img alt="" src="' + src + '"></span>').join('')
+      : '';
+  }
+
+  /* 規格選項：多選項模式才有；名稱與值就是選項建構器裡填的那些。 */
+  function renderPvVariants() {
+    if (!pvVariants) return;
+    const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const rows = (state.type === 'physical' && state.varMode === 'multiple')
+      ? varOptions.map(o => ({ name: (o.name || '').trim(), values: o.values.filter(v => v.trim()), opt: o }))
+                  .filter(o => o.name && o.values.length)
+      : [];
+    pvVariants.innerHTML = rows.map(o =>
+      '<div class="pdp-pv__variant"><span class="pdp-pv__vlabel">' + esc(o.name) + '</span>'
+      + '<div class="pdp-pv__opts">' + o.values.map((v, i) =>
+          '<span class="pdp-pv__chip' + (i === 0 ? ' is-selected' : '') + '">'
+          /* 顏色值同樣帶球（D249）：粉絲端看到的就是顏色本身，不是「Black」這個字。 */
+          + (o.opt.kind === 'colour' ? '<span class="opt-dot opt-dot--sm" style="--opt-dot:' + esc(hexOf(o.opt, v)) + '"></span>' : '')
+          + esc(v) + '</span>').join('')
+      + '</div></div>').join('');
+  }
+
+  function renderPvDelivery() {
+    if (!pvDeliveryText) return;
+    /* 數位商品沒有取貨方式這一段（F4 僅實體）：改說購買後可下載，與粉絲端一致。 */
+    const key = state.type === 'digital' ? 'cp.cfile.title'
+      : (state.delivery === 'qr' ? 'cp.pv.qr' : 'cp.delivery.shipping');
+    const fallback = state.type === 'digital' ? 'Content file'
+      : (state.delivery === 'qr' ? 'On-site QR pickup' : 'Shipping');
+    pvDeliveryText.setAttribute('data-i18n', key);
+    pvDeliveryText.textContent = T(key, fallback);
+  }
+
+  /* 折扣開著且填了折扣價時，粉絲端看到的是折後價＋劃線原價。 */
+  function renderPvPriceExtras() {
+    if (!pvWas) return;
+    const on = (document.getElementById('cp-discount-toggle') || {}).getAttribute
+      && document.getElementById('cp-discount-toggle').getAttribute('aria-checked') === 'true';
+    const sale = (document.getElementById('cp-sale-price') || {}).value;
+    const list = fPrice && fPrice.value.trim();
+    if (on && sale && String(sale).trim() && list) {
+      pvPrice.textContent = '$' + String(sale).replace(/^\$/, '');
+      pvPrice.classList.remove('is-empty');
+      pvWas.textContent = '$' + String(list).replace(/^\$/, '');
+      pvWas.hidden = false;
+    } else {
+      pvWas.hidden = true;
+    }
+  }
+
   function renderPreview() {
     bindText(fName, pvName, T('cp.pv.name', 'Product name'));
     bindText(fDesc, pvDesc, T('cp.pv.desc', 'Missing: description'));
+    renderPvCat();
+    renderPvGallery();
+    renderPvVariants();
+    renderPvDelivery();
     /* 多規格實體：價格顯示「From $最低」 */
     if (state.type === 'physical' && state.varMode === 'multiple') {
       const prices = currentCombos()
@@ -1395,6 +1742,7 @@
     } else {
       bindText(fPrice, pvPrice, '$0.00', v => (v[0] === '$' ? v : '$' + v));
     }
+    renderPvPriceExtras();
   }
 
   function refresh() { renderReadiness(); renderPreview(); }
@@ -1498,7 +1846,12 @@
   wireSegmented('cp-var-mode', 'cpVar', v => {
     state.varMode = v;
     applyVisibility();
-    if (v === 'multiple' && !seededVar) { seededVar = true; varOptions = [{ name: 'Size', values: ['S', 'M', 'L'] }]; renderOptions(); renderVariants(); }
+    /* 2026-09-04（D249）：切到多選項時自動塞一組 Size / S·M·L 的做法退場。
+       那組是「幫你先填好」，但名稱寫死英文、也不見得是這件商品要的維度，要改還得先刪。
+       現在建構器上方有尺寸／顏色兩顆快捷，按一下才建，預設維持空的（只有一顆新增選項）。
+       建構器本身仍要畫一次——快捷列與「新增選項」都在 renderOptions() 裡產生，
+       原本是靠那段自動塞值順便呼叫的，拿掉之後要自己補。 */
+    if (v === 'multiple') renderOptions();
     refresh();
   });
   wireSegmented('cp-edition', 'cpEdition', v => { state.edition = v; updateEditionHint(); applyVisibility(); syncVariantLimited(); refresh(); });
@@ -1518,10 +1871,29 @@
     t.addEventListener('click', flip);
     t.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
   }
-  wireReveal('cp-discount-toggle', '[data-cp-discount-fields]');
+  /* 折扣開關會換掉預覽上的價格（折後價＋劃線原價），所以切換後要重畫一次預覽。 */
+  document.getElementById('cp-discount-toggle')?.addEventListener('click', refresh);
+    wireReveal('cp-discount-toggle', '[data-cp-discount-fields]');
   wireReveal('cp-sale-toggle', '[data-cp-sale-fields]');
   wireReveal('cp-vdiscount-toggle', '[data-cp-vdiscount-fields]');   /* 多規格折扣（折扣%）*/
   wireReveal('cp-vsale-toggle', '[data-cp-vsale-fields]');
+  /* 可與優惠碼疊加（F13 · D183）：這兩顆開關 2026-09-02 補進畫面時只放了 markup、沒有接行為，
+     點了不會動（2026-09-04 使用者回報）。它不揭示任何欄位，所以不能借 wireReveal，
+     另給一個只切自身狀態的接法；單一規格與多規格各一顆，值互相獨立。 */
+  function wireSwitchOnly(sel) {
+    document.querySelectorAll(sel).forEach(function (t) {
+      var flip = function () {
+        var on = t.getAttribute('aria-checked') !== 'true';
+        t.setAttribute('aria-checked', on ? 'true' : 'false');
+        t.classList.toggle('switch--on', on);
+      };
+      t.addEventListener('click', flip);
+      t.addEventListener('keydown', function (e) {
+        if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
+      });
+    });
+  }
+  wireSwitchOnly('[data-cp-stack], [data-cp-vstack]');
   /* 單一規格折扣：折扣價 ↔ 折扣% 雙向連動（以定價 cp-price 為基準、最後編輯為準；程式設值不觸發 input 故無迴圈）*/
   (function () {
     const base = document.getElementById('cp-price');
@@ -1534,13 +1906,92 @@
     pc.addEventListener('input', () => { const b = baseVal(); if (b > 0) { const v = clamp(parseFloat(pc.value) || 0); sp.value = (b * (1 - v / 100)).toFixed(2); } });
     base.addEventListener('input', () => { const b = baseVal(); if (b > 0 && pc.value !== '') { const v = clamp(parseFloat(pc.value) || 0); sp.value = (b * (1 - v / 100)).toFixed(2); } });
   })();
-  /* 上架設定 radio-list（移至預覽欄，2026-07-17；2026-07-21 改收合式）：選「定時上架」才展開上架時間欄。
-     開合與選中狀態由 partials/radio-list.js 統一處理，這裡只留頁面級的欄位揭示。 */
+  /* ── 上架設定／開賣設定兩段（spec §7.14 · D241；版面拆兩段見 D245）──────────
+     每一段只有一個主決定，附屬設定收在第二層薄膜裡，主決定沒成立就整層不出現：
+       上架  none      草稿——§7.14「草稿還沒真正建立，沒有開關、沒有連結」，
+                       所以第二層（下架時間＋顯示開關）與整個開賣設定一併收起
+             now       第二層出現，只有下架時間；不問上架時間（就是現在）
+             schedule  第二層再多一個上架時間（必填）
+       開賣  follow    立即開賣——不問開賣時間，停售仍可另外排
+             schedule  定時開賣——開賣時間必填
+     販售窗口的校驗 D241 起只剩「停售 > 開賣」，由 ListingState.validateSaleWindow 判。 */
+  let listingMode = 'now';
+  let saleMode = 'follow';
   const cpLm = document.getElementById('cp-listing-mode');
-  if (cpLm) cpLm.addEventListener('radio-list:change', e => {
+  function syncListingRows() {
+    const listed = listingMode !== 'none';
+    const body = document.querySelector('[data-cp-listed-body]');
+    if (body) body.hidden = !listed;
+    const shownRow = document.querySelector('[data-cp-shown-row]');
+    if (shownRow) shownRow.hidden = !listed;
     const f = document.querySelector('[data-cp-listing-fields]');
-    if (f) f.hidden = e.detail.item.dataset.cpListing !== 'schedule';
+    if (f) f.hidden = listingMode !== 'schedule';
+    const saleSec = document.querySelector('[data-cp-sale-section]');
+    if (saleSec) saleSec.hidden = !listed;
+  }
+  if (cpLm) cpLm.addEventListener('radio-list:change', e => {
+    listingMode = e.detail.item.dataset.cpListing;
+    syncListingRows();
   });
+  syncListingRows();   /* 初始＝立刻上架：第二層與開賣設定一開始就在 */
+
+  const cpSm = document.getElementById('cp-sale-mode');
+  function syncSaleMode() {
+    const f = document.querySelector('[data-cp-sale-start-field]');
+    if (f) f.hidden = saleMode !== 'schedule';
+  }
+  if (cpSm) cpSm.addEventListener('radio-list:change', e => {
+    saleMode = e.detail.item.dataset.cpSaleMode;
+    syncSaleMode();
+    checkSaleWindow();
+  });
+  syncSaleMode();
+
+  /* 顯示於商店開關。建立流程只收這個值——非公開連結在商品細節頁取得與重置（規格 5.1.5.2 §4.6）。 */
+  let shownOn = true;
+  const cpShown = document.getElementById('cp-shown-toggle');
+  if (cpShown) cpShown.addEventListener('click', () => {
+    shownOn = !shownOn;
+    cpShown.classList.toggle('switch--on', shownOn);
+    cpShown.setAttribute('aria-checked', shownOn ? 'true' : 'false');
+  });
+
+  /* 販售窗口校驗：停售不得早於或等於開賣。推導問 ListingState，本頁不自己比時間。 */
+  const saleStartEl = document.getElementById('cp-listing-sale-start');
+  const saleEndEl = document.getElementById('cp-listing-sale-end');
+  function checkSaleWindow() {
+    if (!saleStartEl || !saleEndEl) return true;
+    const r = window.ListingState.validateSaleWindow(saleStartEl.value, saleEndEl.value);
+    const err = document.querySelector('[data-cp-sale-section] .field__error');
+    if (err) err.hidden = r.ok;
+    saleEndEl.setAttribute('aria-invalid', r.ok ? 'false' : 'true');
+    return r.ok;
+  }
+  if (saleStartEl && saleEndEl) {
+    saleStartEl.addEventListener('change', checkSaleWindow);
+    saleEndEl.addEventListener('change', checkSaleWindow);
+  }
+
+  /* 定時下架／定時停售（D246）：這兩個時間本來是裸欄位＋一句「留空＝不自動…」，
+     要從「沒填」推回「不會發生」。改成明示的開關——關著就是不排，開了才要填時間。 */
+  function wireSchedToggle(toggleId, fieldsSel, onFlip) {
+    const t = document.getElementById(toggleId);
+    const f = document.querySelector(fieldsSel);
+    if (!t || !f) return;
+    const flip = () => {
+      const on = t.getAttribute('aria-checked') !== 'true';
+      t.setAttribute('aria-checked', on ? 'true' : 'false');
+      t.classList.toggle('switch--on', on);
+      f.hidden = !on;
+      /* 關掉＝這個時間不成立，欄位一併清空，畫面與資料才不會各說各話。 */
+      if (!on) f.querySelectorAll('input').forEach(el => { el.value = ''; });
+      if (onFlip) onFlip(on);
+    };
+    t.addEventListener('click', flip);
+    t.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
+  }
+  wireSchedToggle('cp-unlist-toggle', '[data-cp-unlist-fields]');
+  wireSchedToggle('cp-saleend-toggle', '[data-cp-saleend-fields]', () => checkSaleWindow());
 
   /* ---- 低庫存提醒開關 → 顯示「自訂低庫存門檻」並預填 10% of cap（S31.1）----
      顯示條件＝實體 且 提醒開關開啟（版本 gate 另由 data-feat 控制）。預填基準：限量＝總量上限、
@@ -1641,9 +2092,28 @@
     const ve = e.target.closest('[data-val-edit]');
     if (ve) {
       const [oi, vi] = ve.dataset.valEdit.split(':').map(Number);
-      if (!varOptions[oi].values.length) varOptions[oi].values = [''];   // 首列是渲染時補的佔位，寫回時要先補進資料
-      varOptions[oi].values[vi] = ve.value;
+      const o = varOptions[oi];
+      if (!o.values.length) o.values = [''];   // 首列是渲染時補的佔位，寫回時要先補進資料
+      /* 顏色選項的色號以「值的字面」當鍵，值改名時要把色號一起搬過去，否則球會掉色。 */
+      const before = o.values[vi];
+      o.values[vi] = ve.value;
+      if (o.kind === 'colour' && o.hex && before !== ve.value) {
+        if (before in o.hex) { o.hex[ve.value] = o.hex[before]; delete o.hex[before]; }
+      }
       syncVariantsOnly();
+      return;
+    }
+    /* 色號欄：只改球的顏色與資料，不重繪整層（重繪會把游標踢出正在打的欄位）。 */
+    const vh = e.target.closest('[data-val-hex]');
+    if (vh) {
+      const [oi, vi] = vh.dataset.valHex.split(':').map(Number);
+      const o = varOptions[oi];
+      const val = o.values[vi];
+      o.hex = o.hex || {};
+      o.hex[val] = vh.value.trim();
+      const dot = optHost.querySelector(`[data-val-dot="${oi}:${vi}"]`);
+      if (dot) dot.style.setProperty('--opt-dot', hexOf(o, val));
+      refresh();
     }
   });
   optHost.addEventListener('keydown', e => {
