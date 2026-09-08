@@ -134,7 +134,7 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 3
 
 ## O · 訂單管理 — Order Management
 
-ID 起始 `O01…` ｜ 🟢 24 · 🔵 3 · ⚪ 3
+ID 起始 `O01…` ｜ 🟢 25 · 🔵 3 · ⚪ 3
 
 | ID | 功能 | English | Tier | Build | 備註 |
 |---|---|---|---|---|---|
@@ -172,6 +172,7 @@ ID 起始 `O01…` ｜ 🟢 24 · 🔵 3 · ⚪ 3
 | `O28` | 　　Scanner URL 與密碼（交付 / 生命週期）    | Scanner URL & password           | 🟢 Phase 1 | ✅ built | 5.1.5.15 F2 |
 | `O29` | 　　手機 Scanner 掃碼核銷（二元核銷）        | Mobile scanner redemption        | 🟢 Phase 1 | ✅ built | 5.1.5.14；二元核銷、一碼一件（D122／D240） |
 | `O30` | 　　活動票券共用核銷（回寫 Events check-in）  | Event ticket redemption          | 🟢 Phase 1 | ✅ built | 5.1.5.14 F2；票券狀態仍以 Events 為來源 |
+| `O31` | 　　作廢品項（Admin 專屬、取貨型）           | Void item (admin only)           | 🟢 Phase 1 | ✅ built | 2026-09-07 上游拍板列入 eShop 2.2；creator 態可見但停用（§4.4）；出貨型／數位待產品確認（§8.27） |
 
 ## E · 收入管理 — Earnings / Income
 

@@ -17,9 +17,10 @@
    Presented as a phone-framed demo with a scenario rail beside the frame
    (`.scanner-demo` — prototype-only tooling, not product UI).
 
-   Token-driven; the camera area stays on the frame's own surface (a live
-   camera image fills it in production, so no painted slab) and the sheet
-   scrim uses --overlay-tint (same as drawer). No raw hex. */
+   Token-driven; the camera area carries a static stand-in photo behind the
+   aiming furniture（2026-09-08，see `.scanner-cam__feed`；a live camera image
+   replaces that one layer in production）and the sheet scrim uses
+   --overlay-tint (same as drawer). No raw hex. */
 
 /* Phone frame sits dead-centre in the viewport; the demo rail lives in the
    right track so it never pulls the frame off-centre（1fr auto 1fr）. */
@@ -172,15 +173,36 @@
 }
 .scanner-body .scanner-screen { position: absolute; inset: 0; }
 
-/* Camera viewport — the live camera image fills this area in production, so
-   the prototype leaves it as the frame's own surface and only draws the
-   aiming furniture: four corner brackets + a sweeping line. */
+/* Camera viewport — 正式產品這一區是真的相機串流；原型 2026-09-08 起鋪一張
+   **靜態示意照片**（`images/scanner-cam-feed.jpg`：第一人稱視角、買家舉著手機、
+   螢幕上一個領取碼），對準框才有東西可以對，而不是浮在一片空白上。
+   分兩層畫：照片與暗紗歸 `__feed`（絕對定位、墊在最底），對準框／手動輸入鈕／
+   提示文字照原本的順序疊在它上面。要換成真實影像時只換 `__feed` 那一層。
+
+   這一區恆為暗色（照片本身暗，照片沒載入時退回 `--surface-inverse` 實色），
+   所以區內文字改吃 on-inverse 那一組 token——淺色主題下 `--muted-foreground`
+   是深灰，疊在暗照片上讀不到。 */
 .scanner-cam {
   position: relative;
   flex: 1 1 auto;
   display: grid;
   place-items: center;
   overflow: hidden;
+  background: var(--surface-inverse);
+  color: var(--foreground-on-inverse);
+}
+/* 示意照片＋暗紗。暗紗是同一顆 `--surface-inverse` 用 color-mix 調透明度做的
+   漸層（上淺下深）：上緣壓住背景的暖色光讓對準框的橘讀得出來，下緣壓得重一點，
+   手動輸入鈕與提示文字才有足夠對比。 */
+.scanner-cam__feed {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      color-mix(in srgb, var(--surface-inverse) 40%, transparent),
+      color-mix(in srgb, var(--surface-inverse) 62%, transparent)
+    ),
+    url("../images/scanner-cam-feed.jpg") center / cover no-repeat;
 }
 .scanner-cam__hint {
   position: absolute;
@@ -188,7 +210,7 @@
   left: var(--sp-14); right: var(--sp-14);
   text-align: center;
   font-size: var(--fs-12);
-  color: var(--muted-foreground);
+  color: var(--foreground-on-inverse-muted);
 }
 .scanner-cam__reticle {
   position: relative;
@@ -222,12 +244,23 @@
 @media (prefers-reduced-motion: reduce) {
   .scanner-cam__line { animation: none; top: 50%; }
 }
-/* Manual entry floats over the camera — the camera owns the whole pane */
+/* Manual entry floats over the camera — the camera owns the whole pane.
+   站在照片上，所以外框鈕的邊框與字色改吃 on-inverse 那組，並補一層半透明的
+   `--surface-inverse` 底把鈕從照片裡撐起來。這是 `.scanner-manual` 自己的組合
+   決定（本元件的 class），不是改 button.css 的 `--outline`。 */
 .scanner-manual {
   position: absolute;
   bottom: var(--sp-48);
   left: 50%;
   transform: translateX(-50%);
+  background: color-mix(in srgb, var(--surface-inverse) 52%, transparent);
+  border-color: var(--foreground-on-inverse-muted);
+  color: var(--foreground-on-inverse);
+}
+.scanner-manual:hover {
+  background: color-mix(in srgb, var(--surface-inverse) 74%, transparent);
+  border-color: var(--foreground-on-inverse);
+  color: var(--foreground-on-inverse);
 }
 .scanner-hint { text-align: center; font-size: var(--fs-12); color: var(--muted-foreground); }
 
@@ -268,6 +301,56 @@
 .scanner-rosterrow { cursor: pointer; width: 100%; text-align: left;
   background: none; border: 0; font: inherit; color: inherit; }
 .scanner-rosterrow:hover { background: var(--accent); }
+
+/* ── F3 名單的可讀性（2026-09-08 使用者反饋）─────────────────────
+   五件事一起改：群組列的識別圓、以「還剩幾件」為主的進度、子列序號、已核銷降階、
+   訂單編號弱化。全部靠既有元件（`avatar.css` 的 `.ztor-avatar--sm`、
+   `row-disclosure.css` 的 `.rowdis__lead`／`.rowdis__num`、`data-list.css` 的
+   `__end`）加本檔幾條排版規則完成，沒有新的可重用 pattern，故不 promote。 */
+
+/* 子列的列首欄要對齊群組列那顆 32px 的識別圓（`.ztor-avatar--sm`／
+   `.data-list__icon--sm` 同寬），序號才會落在圓的正下方、子列標題才會與買家名
+   切齊。值改的是元件自己的變數（row-disclosure 檔頭明訂「值一律引用
+   `--rowdis-lead-w`」），不是硬寫 `.rowdis__lead` 的寬。 */
+.scanner-rosterrow { --rowdis-lead-w: var(--sp-32); }
+
+/* 群組列右欄：現場唯一要回答的問題是「這個人還有幾件要領」，所以主行＝還剩幾件、
+   `已領 M／N` 退成註腳。數字的處理沿用同一支元件裡既有的兩處大數字
+   （`.scanner-count b`、`.scanner-progress__count`）——display 字、bold、
+   等寬數字，三處長得一樣。 */
+.scanner-rostercount {
+  font-family: var(--font-display);
+  font-size: var(--fs-18);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight, 1.2);
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* 整組領完：那一格不再是數字，就不該有數字的量體——退回內文字級並轉灰。 */
+.scanner-rostercount--done {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);
+  color: var(--muted-foreground);
+}
+.scanner-rostercount__sub {
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+/* 群組列的來源編號（`Order #ZT-10484`）弱化一階：同一組數字在子列的領取碼
+   （`PU-10484-01`）裡本來就唸過一次，這裡只是在說「這位買家從哪來」。 */
+.scanner-rosterhead__src { font-size: var(--fs-11); }
+
+/* 已核銷的子列降一階，讓還沒領的跳出來。 */
+.scanner-rosterrow--done { opacity: .58; }
+/* 整組都領完的群組再整體降一階，把注意力留給還有東西要領的人。降的是整塊的
+   存在感（透明度），L3 面板本身的填色、邊框與面板內 hover 一條都沒動
+   （那兩項 2026-09-04 才定案）。組內每一列都已核銷，不需要再互相比輕重，
+   所以把上一條在這個情境下歸位，避免疊加後淡到看不見。 */
+.scanner-rostergroup--done { opacity: .62; }
+.scanner-rostergroup--done .scanner-rosterrow--done { opacity: 1; }
 
 /* ── Bottom tab bar（Scan / Roster / Items）────────────────── */
 .scanner-tabbar {

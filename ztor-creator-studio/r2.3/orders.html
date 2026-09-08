@@ -84,6 +84,9 @@
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="shipped"><span data-i18n="orders.status.shipped">Shipped</span><span class="filter-tabs__count" data-status-count>0</span></button>
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="completed"><span data-i18n="orders.status.completed">Completed</span><span class="filter-tabs__count" data-status-count>0</span></button>
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="refund" data-feat="O09"><span data-i18n="orders.status.refund">Refund / dispute</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <!-- 已取消（2026-09-08 作廢明細）：訂單所有品項都被作廢後的終態，歸屬由
+                 js/orders-store.js 的 computeFilters() 算出，與徽章同一份資料 -->
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="cancelled"><span data-i18n="orders.status.cancelled">Cancelled</span><span class="filter-tabs__count" data-status-count>0</span></button>
           </nav>
         </div>
       </section>
@@ -156,10 +159,14 @@
         const href = 'order-detail.html?id=' + encodeURIComponent(o.id);
         const lines = o.items.map(it =>
           '<div class="product-list__line"><span data-i18n="' + it.nameKey + '">' + esc(it.name) + '</span> ×' + it.qty + '</div>').join('');
-        /* 待付款訂單還沒有履約動作（履約軸為空），該格用破折號佔位——留白會讓人以為是渲染壞了 */
-        const fulfil = o.fulfil.length
-          ? o.fulfil.map(v => badge(window.ztorOrders.fulfilBadge(v))).join('')
-          : '<span class="text-sub">—</span>';
+        /* 待付款訂單還沒有履約動作（履約軸為空），該格用破折號佔位——留白會讓人以為是渲染壞了。
+           全部品項都被作廢的訂單（2026-09-08）改顯示「已取消」終態徽章：履約不會再發生，
+           所以這一格不再講待出貨／待取貨；付款欄維持原值，兩軸仍不混用（PCR-001）。 */
+        const fulfil = o.cancelled
+          ? badge(window.ztorOrders.cancelledBadge())
+          : (o.fulfil.length
+            ? o.fulfil.map(v => badge(window.ztorOrders.fulfilBadge(v))).join('')
+            : '<span class="text-sub">—</span>');
         const row = document.createElement('div');
         row.className = 'product-list__row';
         row.setAttribute('role', 'row');

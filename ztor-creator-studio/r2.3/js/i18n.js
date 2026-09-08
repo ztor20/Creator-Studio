@@ -211,6 +211,11 @@
     'admin.back-review':     { en: 'Review queue',          zh: '審核佇列' },
     'admin.back-review-aria': { en: 'Back to video publishing review', zh: '返回影片上架審核' },
     'admin.studio':       { en: 'Admin Creator Studio', zh: 'Admin Creator Studio' },
+    /* Admin 頁門禁（2026-09-08）：role=general 進到 Admin 平台層頁面時的無權限狀態，
+       六頁共用同一段文案（注入實作在 js/sidebar.js 的 applyAdminGate）。 */
+    'admin.gate.title':   { en: 'Admin access required', zh: '需要 Admin 身分' },
+    'admin.gate.text':    { en: 'This page belongs to platform operations. Switch the Role to Admin in Cheat Codes, or sign in as an Admin.', zh: '這一頁屬於平台營運。請在 Cheat Code 的 Role 組切換為 Admin 身分，或由 Admin 帳號登入。' },
+    'admin.gate.back':    { en: 'Back to the workspace', zh: '回到工作區' },
     'admin.ip-bank':      { en: 'Admin IP Bank',      zh: 'Admin IP Bank' },
     'admin.ip-reporting': { en: 'IP Bank Reporting',  zh: 'IP Bank Reporting' },
     'admin.video-review': { en: 'Video publishing review', zh: '影片上架審核' },
@@ -5603,6 +5608,10 @@
     'orders.pay.disputed':    { en: 'Disputed',              zh: '爭議中' },
     'orders.status.completed':{ en: 'Completed',             zh: '已完成' },
     'orders.status.refund':   { en: 'Refund / dispute',      zh: '退款／爭議' },
+    /* 已取消（2026-09-08，上游 2026-09-07 訂單作廢政策）：訂單所有品項都被作廢後的終態。
+       與通用的 status.cancelled 分開建 key，理由同上一段——那把是全站通用詞，這把是訂單
+       狀態枚舉裡的一個值，日後任一邊改字不會誤動另一邊。 */
+    'orders.status.cancelled':{ en: 'Cancelled',              zh: '已取消' },
     /* F3 list rows */
     'orders.open':          { en: 'Open order',              zh: '開啟訂單' },
     'orders.col.order':     { en: 'Order',                   zh: '訂單' },
@@ -5648,14 +5657,17 @@
     'od.units.summary':     { en: '{done} of {total} redeemed', zh: '{total} 件中已核銷 {done} 件' },
     /* voided>0 時的變體（D242，2026-09-03）：退款成立後被退品項的領取單位轉 void，
        彙總要能分辨「還有幾件待領」與「幾件已因退款失效」（規格 5.1.5.3.1 §2.3.1）。 */
-    'od.units.summary.void': { en: '{done} of {total} redeemed · {voided} refunded', zh: '{total} 件中已核銷 {done} 件・{voided} 件已退款失效' },
+    'od.units.summary.void': { en: '{done} of {total} redeemed · {voided} cancelled', zh: '{total} 件中已核銷 {done} 件・{voided} 件已取消' },
     'od.units.unset':       { en: 'Pickup session not yet set', zh: '取貨場次待設定' },
-    'od.units.void':        { en: 'Cancelled / refunded',    zh: '已取消／已退款' },
+    /* 2026-09-08：領取單位與品項層彙總的終態統一叫「已取消（Cancelled）」。原本寫
+       「已取消」加「已退款」兩個詞是因為當時只有退款一個觸發源；現在有兩個（Admin 作廢品項、
+       退款成立 D242），狀態名不再跟著觸發源走。 */
+    'od.units.void':        { en: 'Cancelled',                zh: '已取消' },
     'od.units.expand':      { en: 'Expand',                  zh: '展開' },
     'od.unit.status.pending': { en: 'Awaiting redemption',   zh: '待核銷' },
     'od.unit.status.done':  { en: 'Redeemed',                zh: '已核銷' },
     'od.unit.status.unset': { en: 'Session not set',         zh: '場次待設定' },
-    'od.unit.status.void':  { en: 'Cancelled / refunded',    zh: '已取消／已退款' },
+    'od.unit.status.void':  { en: 'Cancelled',                zh: '已取消' },
     'od.unit.redeemed-at':  { en: 'Redeemed at {at}',        zh: '核銷於 {at}' },
     /* 組合品項（mode:'bundle'）：組合本身不產生領取碼，主列展開看成員；成員全非 pickup
        （沒有可核銷單位）時展開鈕仍在、只是顯示「查看成員」而非核銷彙總。 */
@@ -5664,6 +5676,26 @@
        `od.sub.placed`／`od.sub.placed1`（頁首「建立於 … · … 件品項」副標）四個 key 刪除——
        軸標籤改以 .status-axes--split 的細分隔線取代，副標拆成下面的 od.info.placed
        （右欄下單時間）與 od.items.count（品項明細的件數）。刪前已 grep 全站確認零消費。 */
+    /* ─── 作廢品項（Void，2026-09-08）───────────────────────────
+       Admin 專屬、逐筆品項、2.2 只做取貨型；規則見 documents/5.1.5.3.1-訂單詳情.md。
+       停用理由三句話各自對應一種不能按的原因，掛在按鈕的 title 上（＝可讀的原因）。 */
+    'od.col.actions':       { en: 'Actions',                 zh: '操作' },
+    'od.void.action':       { en: 'Void',                    zh: '作廢' },
+    'od.void.why.admin':    { en: 'Requires the Admin role',  zh: '需要 Admin 角色' },
+    'od.void.why.redeemed': { en: "Already picked up — can't be voided", zh: '已取貨，不可作廢' },
+    'od.void.why.unsupported': { en: 'Pending product decision', zh: '待產品確認' },
+    'od.void.title':        { en: 'Void item',               zh: '作廢品項' },
+    /* 彈窗第一行：動到的是哪一項（數量 × 單價，與品項表同一份數字）*/
+    'od.void.qty':          { en: '{n} × {price}',           zh: '{n} 件 × {price}' },
+    'od.void.stripe':       { en: 'Refund the buyer in Stripe first — voiding moves no money and never calls Stripe.', zh: '請先在 Stripe 完成人工退款；作廢不會處理任何金流，也不會呼叫 Stripe。' },
+    'od.void.effects':      { en: 'What voiding does',       zh: '作廢之後會發生' },
+    'od.void.effect.codes': { en: "This item's pickup codes stop working immediately — they can't be scanned at a session.", zh: '這個品項的領取碼即刻失效，場次現場掃不過。' },
+    'od.void.effect.stock': { en: 'Stock goes back on the shelf; a bundle restocks each of its members.', zh: '庫存回補；組合品項逐一回補它的成員。' },
+    'od.void.effect.email': { en: 'The buyer gets an order-cancelled email listing this item.', zh: '寄送「訂單已取消」信給買家，信中列出這個品項。' },
+    'od.void.irreversible': { en: "There's no undo — a voided item can't be reinstated.", zh: '作廢不可逆，已作廢的品項無法還原。' },
+    'od.void.cancel':       { en: 'Cancel',                  zh: '取消' },
+    'od.void.confirm':      { en: 'Void this item',          zh: '確認作廢' },
+    'od.void.toast':        { en: 'Voided {item} — the buyer will be notified.', zh: '已作廢 {item}，買家將收到訂單已取消通知' },
     'od.btn.refund':        { en: 'Refund',                  zh: '退款' },
     'od.btn.ship':          { en: 'Mark shipped',            zh: '標記出貨' },
     'od.btn.delivery':      { en: 'Digital delivery',        zh: '數位交付' },
@@ -5857,12 +5889,12 @@
     /* 退款即失效示範（D242，2026-09-03）：Yuki H.（#ZT-10471，一件失效一件仍可領）、
        Jonas P.（#ZT-10473，組合成員部分失效）。N＝總件數扣掉已失效的（見 js/orders-store.js
        同一輪的「退款即失效」節）。 */
-    'pk.g.yuki.progress': { en: '0 of 1 collected · 1 refunded', zh: '本場次已領 0／1・1 件已退款失效' },
-    'pk.g.jonas.progress': { en: '0 of 1 collected · 2 refunded', zh: '本場次已領 0／1・2 件已退款失效' },
+    'pk.g.yuki.progress': { en: '0 of 1 collected · 1 cancelled', zh: '本場次已領 0／1・1 件已取消' },
+    'pk.g.jonas.progress': { en: '0 of 1 collected · 2 cancelled', zh: '本場次已領 0／1・2 件已取消' },
     'pk.st.pending':    { en: 'Pending',      zh: '待核銷' },
     'pk.st.done':       { en: 'Redeemed',     zh: '已核銷' },
     /* D242：退款成立後該領取單位轉此狀態，與 od.unit.status.void 用同一組字樣 */
-    'pk.st.void':       { en: 'Cancelled / refunded', zh: '已取消／已退款' },
+    'pk.st.void':       { en: 'Cancelled',           zh: '已取消' },
     'pk.st.checkedin':  { en: 'Checked in',   zh: '已入場' },
     'pk.st.waiting':    { en: 'To check in',  zh: '待入場' },
     'pk.log.all':       { en: 'All',          zh: '全部' },
@@ -6015,10 +6047,11 @@
     'sc.lock.body':     { en: '5 wrong attempts — this device is locked for 10 minutes. The creator can still change the password in the studio. (Demo: 10 seconds.)', zh: '密碼連續錯誤 5 次，此裝置暫停輸入 10 分鐘；創作者仍可在後台修改密碼。（demo 以 10 秒代替）' },
     'sc.cnt.pending':   { en: 'Pending',        zh: '待核銷' },
     'sc.cnt.done':      { en: 'Redeemed',       zh: '已核銷' },
-    /* zh 統一成「已取消／已退款」與 od.unit.status.void／pk.st.void 同一組字樣（D242，2026-09-03）*/
-    'sc.res.refund':    { en: 'Cancelled / refunded', zh: '已取消／已退款' },
+    /* zh 統一成「已取消」，與 od.unit.status.void／pk.st.void 同一組字樣
+       （D242，2026-09-03；2026-09-08 隨作廢明細把原本的雙詞說法收成「已取消」）*/
+    'sc.res.refund':    { en: 'Cancelled',           zh: '已取消' },
     /* F1.3 明文要求：說明「碼已失效、不可核銷」，不只是講沒東西可交付（D242）*/
-    'sc.note.refund':   { en: 'This pickup code is void and can no longer be redeemed — the item was cancelled or refunded. There is nothing to hand over; point the buyer to the creator.', zh: '這個領取碼已失效、不可核銷——這一件已取消或退款。沒有東西可以交付，請買家聯繫創作者。' },
+    'sc.note.refund':   { en: 'This pickup code is cancelled and no longer valid — it can\'t be redeemed. There is nothing to hand over; point the buyer to the creator.', zh: '這個領取碼已取消、已失效，不可核銷。沒有東西可以交付，請買家聯繫創作者。' },
     'sc.last':          { en: 'Last redeemed',  zh: '最近核銷時間' },
     'sc.flash.done':    { en: 'Redeemed',       zh: '已完成核銷' },
     'sc.flash.sub':     { en: 'Roster and redemption log updated', zh: '已回寫名單與核銷紀錄' },
@@ -6043,7 +6076,7 @@
     'sc.demo.ok':       { en: 'Scan: success',  zh: '模擬掃描：成功' },
     'sc.demo.dup':      { en: 'Duplicate scan', zh: '重複掃描' },
     'sc.demo.notin':    { en: 'Not in this session', zh: '不屬於此場次' },
-    'sc.demo.refund':   { en: 'Cancelled / refunded', zh: '已取消／已退款' },
+    'sc.demo.refund':   { en: 'Cancelled',           zh: '已取消' },
     'sc.demo.offline':  { en: 'Toggle offline', zh: '切換離線' },
     'sc.demo.time':     { en: 'Cycle session time', zh: '切換場次時間狀態' },
     'sc.demo.lock':     { en: 'Password lockout', zh: '模擬密碼鎖定' },
@@ -6063,6 +6096,10 @@
     'sc.prog.clear':    { en: 'Nothing left for this buyer', zh: '這位買家已全數領完' },
     'sc.roster.search.ph': { en: 'Name, order #, ticket ID, pickup code', zh: '姓名、訂單編號、票號、領取碼' },
     'sc.roster.empty':  { en: 'No match in this session', zh: '本場次查無符合的資料' },
+    /* 2026-09-08 名單群組列：主行改成「還剩幾件」——現場唯一要回答的問題；
+       已領 M／N（sc.prog.count）退成註腳。 */
+    'sc.roster.left':   { en: '{n} left',       zh: '還剩 {n} 件' },
+    'sc.roster.alldone':{ en: 'All picked up',  zh: '已領完' },
     'sc.demo.next':     { en: 'Same buyer, next item', zh: '同買家第二件' },
     'sc.demo.bundle':   { en: 'Bundle member',     zh: '組合成員' },
 
@@ -7636,9 +7673,8 @@
     'vr.toast.start':       { en: 'You are reviewing this one', zh: '已接手這一件' },
     'vr.toast.approved':    { en: 'Approved — cleared for release', zh: '已通過，作品已放行' },
     'vr.toast.rejected':    { en: 'Sent back to the creator', zh: '已退回創作者' },
-    'vr.noaccess.title':    { en: 'Platform operators only', zh: '限平台營運' },
-    'vr.noaccess.text':     { en: 'Reviewing belongs to the ztor operations team. A creator workspace cannot review its own work or anyone else’s.', zh: '審核由 ztor 營運團隊執行。創作者工作區無法審核自己或他人的作品。' },
-    'vr.noaccess.back':     { en: 'Back to dashboard', zh: '回到儀表板' },
+    /* 墓碑 2026-09-08：`vr.noaccess.*` 三把隨影片上架審核的頁內無權限狀態一起退役，
+       Admin 頁門禁改用共用的 `admin.gate.*`（見上方 admin 區塊）。 */
     'vr.close':             { en: 'Close',            zh: '關閉' },
 
     /* ── Co-creation keys (`cocreate.*`) — now consumed by project-detail.html co-creation money tab
@@ -9540,42 +9576,36 @@
     }
   };
 
-  /* ── Persona API（cheat code 的「User」組呼叫）──────────────────
-     get()＝目前資料 persona（default/nick/userB）。set(id) 接受四個 cheat 選項：
-       default User → 資料 default、無 admin chrome
-       admin        → 資料 default、套 admin 代管 chrome（沿用 ztorCreator 名冊首位）
-       nick / userB → 對應資料 persona、無 admin chrome
-     set() 寫 localStorage 後 location.reload()，讓資料檔與覆蓋層在下次載入生效。 */
+  /* ── Persona API（cheat code「Persona · 資料人格」組呼叫）──────────────
+     2026-09-08 使用者裁決（persona × role 矩陣）：資料人格只有三個純資料選項
+     （default/nick/userB），它們同時就是 Creator 管理名冊的三位本人（handle ＝
+     persona id，見 js/sidebar.js 的 CREATORS）。「用什麼身分看」是另一個維度，
+     由 devtools.js 的「Role · 身分」組寫 `ztor.role`（general｜admin），set() 不碰它
+     ——換人格不會改身分，換身分不會換人格，2×3 就是全部組合。
+     get()／current()＝目前資料 persona（default/nick/userB）。set(id) 寫 localStorage
+     後 location.reload()，讓資料檔與覆蓋層在下次載入生效。
+     舊資料相容：`admin` 是拆分前的選項之一，已隨這次拆分移除；殘留在瀏覽器
+     localStorage 的舊值（或任何非 nick/userB 的值）一律當 default 讀，不報錯。
+     ⚠ 執行期由「建立 creator」精靈新增的 creator，其 handle 也會被寫成 persona
+     （js/theme.js 允許），但它沒有專屬資料集、各 store 自動退回 default——這裡的
+     正規化因此也回報 default，面板高亮與實際看到的資料一致。 */
+  function normalizePersonaId(id) {
+    return (id === 'nick' || id === 'userB') ? id : 'default';   // 含 admin 舊值 → default
+  }
   window.ztorPersona = {
-    /* [id, 顯示名, 說明]；devtools 直接渲染成 User 組四顆 */
+    /* [id, 顯示名, 說明]；devtools 直接渲染成「資料人格」組三顆 */
     list: function () {
       return [
         ['default', 'default User', '平台預設帳號 · 現有 demo 資料'],
-        ['admin',   'admin',        'admin 代管視角 · 資料維持 default'],
         ['nick',    'User A · 周湯豪', '全站 demo 資料切為周湯豪'],
         ['userB',   'User B',        '佔位（資料待補，暫沿用 default）']
       ];
     },
-    get: currentPersona,
-    /* 目前 cheat 高亮用：資料是 nick/userB 直接回；default 資料下若有 admin 代管回 'admin' */
-    current: function () {
-      const p = currentPersona();
-      if (p === 'nick' || p === 'userB') return p;
-      const c = window.ztorCreator && window.ztorCreator.get && window.ztorCreator.get();
-      return c ? 'admin' : 'default';
-    },
+    get: function () { return normalizePersonaId(currentPersona()); },
+    current: function () { return normalizePersonaId(currentPersona()); },
     set: function (id) {
-      const dataPersona = (id === 'nick' || id === 'userB') ? id : 'default';
+      const dataPersona = normalizePersonaId(id);
       try { localStorage.setItem(PERSONA_KEY, dataPersona); } catch (_) {}
-      /* chrome：admin 選項套用「代管名冊首位」的 admin chrome；其餘清成一般創作者 */
-      if (window.ztorCreator && window.ztorCreator.set) {
-        if (id === 'admin') {
-          const first = (window.ztorCreator.list && window.ztorCreator.list[0]) || null;
-          window.ztorCreator.set(first ? first.handle : null);
-        } else {
-          window.ztorCreator.set(null);
-        }
-      }
       location.reload();
     }
   };

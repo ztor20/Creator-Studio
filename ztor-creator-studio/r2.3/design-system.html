@@ -755,6 +755,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#pattern-modal"><span data-en>5.1.8 Modal shell</span><span data-zh>5.1.8 Modal shell</span></a>
     <a class="toc__link toc__link--sub" href="#pattern-split-preview"><span data-en>5.1.9 Split preview</span><span data-zh>5.1.9 Split preview</span></a>
     <a class="toc__link toc__link--sub" href="#pattern-detail-rail"><span data-en>5.1.10 Detail + persistent rail</span><span data-zh>5.1.10 Detail + persistent rail</span></a>
+    <a class="toc__link toc__link--sub" href="#pattern-destructive-confirm"><span data-en>5.1.11 Destructive confirm</span><span data-zh>5.1.11 Destructive confirm</span></a>
     <a class="toc__link" href="#voice"><span data-en>5.2 Voice</span><span data-zh>5.2 語氣</span></a>
     <a class="toc__link" href="#states"><span data-en>5.3 States</span><span data-zh>5.3 狀態</span></a>
     <a class="toc__link" href="#dataviz"><span data-en>5.4 Data viz</span><span data-zh>5.4 資料視覺化</span></a>
@@ -8478,9 +8479,11 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 
 <section class="sub" id="scanner">
   <div class="sub__head"><h3 class="sub__title">4.83 Mobile scanner</h3><span class="layer layer--organism">🟠 organism</span></div>
+  <p class="sub__desc" data-en><strong>2026-09-08 camera photo + roster legibility</strong>: the camera pane now carries a <em>static stand-in photo</em> behind the reticle (<code>.scanner-cam__feed</code> — image plus a <code>--surface-inverse</code> color-mix scrim; a live stream replaces that one layer in production), so the pane reads as a camera looking at something. Text in the pane switched to the <code>--foreground-on-inverse</code> pair because the photo is dark in both themes. Roster groups: the generic person icon became the shared <code>.ztor-avatar--sm</code> initial (ticket groups keep the ticket chip at the same 32px), the right column leads with <em>how many are left</em> and drops <em>M / N redeemed</em> to a footnote, child rows carry their in-group number in <code>.rowdis__lead</code> (same as pickup-detail, Q109), redeemed child rows step back, and a fully collected group dims as a whole.</p>
+  <p class="sub__desc" data-zh><strong>2026-09-08 相機示意照片＋名單可讀性</strong>：相機分頁在對準框背後鋪一張<em>靜態示意照片</em>（<code>.scanner-cam__feed</code>＝照片＋一層 <code>--surface-inverse</code> color-mix 暗紗；正式版換掉這一層就是真的相機串流），對準框才有東西可以對。照片恆為暗色，區內文字改吃 <code>--foreground-on-inverse</code> 那一組。名單群組列：通用人形圖示換成共用的 <code>.ztor-avatar--sm</code> 姓名首字（票券群組維持票券晶片、同為 32px），右欄主行改成<em>還剩幾件</em>、<em>已領 M／N</em> 退成註腳，子列在 <code>.rowdis__lead</code> 放組內序號（同 pickup-detail 的 Q109 做法），已核銷的子列降一階，整組領完則整塊降一階。</p>
   <p class="sub__desc" data-en><strong>2026-09-03 one code, one item (D240)</strong>: redemption now works on a <em>pickup unit</em> — one code redeems exactly one item. The result sheet shows only the unit just scanned (buyer, source order or ticket, item, option, source bundle) and a single confirm action; confirming returns to the camera and a persistent progress band (<code>.scanner-progress</code>) says how far that buyer has got in this session (redeemed / total, how many are left). The roster groups units under each buyer (parent row = buyer + M / N, child rows = one unit each), and the counts strip and item stats are summed from pickup units. The old multi-claim list (<code>.scanner-claims</code>) is retired.</p>
   <p class="sub__desc" data-zh><strong>2026-09-03 一物一碼（D240）</strong>：核銷單位改成「領取單位」——一個領取碼核銷一件。結果 bottom sheet 只顯示剛掃到的這一件（買家、來源訂單或票號、商品名、選項、來源組合）與一顆確認鈕；確認後回到相機連續掃描，並由常駐的進度 band（<code>.scanner-progress</code>）顯示這位買家在本場次已領幾件、還剩幾件。名單分頁改成按買家分組（父列＝買家＋已領 M／N，子列＝一個領取單位），頂部計數與項目統計都由領取單位加總。舊的多件清單（<code>.scanner-claims</code>）已退場。</p>
-  <p class="sub__desc" data-en>Standalone phone scanner (spec 5.1.5.14 · D111/D121/D122/D240) — a separate URL with no Studio nav. <strong>2026-08-19 flow redesign</strong>: the password gate shows the session identity (name / place / time / state) <em>before</em> unlocking, plus an optional staff name recorded on every redemption; after unlock the camera is the home screen with a live pending/redeemed counts strip on top and a Scan / Roster / Items bottom tab bar. Scan results come up as a bottom sheet inside the frame (success · duplicate · not-in-session · cancelled/refunded), so confirming returns straight to the camera — a continuous-scan rhythm for queues. Blocked (not started / ended), offline-hold and 5-attempt lockout states are first-class screens. The camera area keeps the frame's own surface — in production a live camera image fills it, so the prototype only draws the aiming furniture (four <code>--primary</code> corner brackets + sweep line) and floats manual entry over it; sheet scrim = <code>--overlay-tint</code>. Roster rows are tappable: they pre-fill manual entry with that buyer's code (identity check stays read-only, redeeming still goes through F1.1 manual input).</p>
+  <p class="sub__desc" data-en>Standalone phone scanner (spec 5.1.5.14 · D111/D121/D122/D240) — a separate URL with no Studio nav. <strong>2026-08-19 flow redesign</strong>: the password gate shows the session identity (name / place / time / state) <em>before</em> unlocking, plus an optional staff name recorded on every redemption; after unlock the camera is the home screen with a live pending/redeemed counts strip on top and a Scan / Roster / Items bottom tab bar. Scan results come up as a bottom sheet inside the frame (success · duplicate · not-in-session · cancelled), so confirming returns straight to the camera — a continuous-scan rhythm for queues. Blocked (not started / ended), offline-hold and 5-attempt lockout states are first-class screens. The camera area keeps the frame's own surface — in production a live camera image fills it, so the prototype only draws the aiming furniture (four <code>--primary</code> corner brackets + sweep line) and floats manual entry over it; sheet scrim = <code>--overlay-tint</code>. Roster rows are tappable: they pre-fill manual entry with that buyer's code (identity check stays read-only, redeeming still goes through F1.1 manual input).</p>
   <p class="sub__desc" data-zh>獨立手機 scanner（規格 5.1.5.14 · D111/D121/D122）——獨立 URL、無主工作台導航。<strong>2026-08-19 流程重規劃</strong>：密碼閘門在解鎖前就先亮場次身分（ztor 標記＋名稱／地點／時間／狀態），並提供選填的工作人員標示（記進每筆核銷紀錄）；解鎖後頂列只剩「正在掃哪一場」，相機即主畫面，其上常駐待核銷／已核銷即時計數，底部 掃描／名單／項目 三分頁。掃描結果改為框內 bottom sheet（成功·重複·不屬此場次·已取消退款），確認後直接回到相機——支撐現場排隊的連續掃描節奏。場次未開始／已結束、離線保留、密碼五次鎖定都是一等公民畫面。相機區維持手機框自身的底色（正式產品由實際相機畫面填滿），原型只畫對準用的四角括號（<code>--primary</code>）與掃描線，手動輸入鈕浮在其上；sheet 遮罩＝<code>--overlay-tint</code>。名單列可點：把該買家代碼帶入手動輸入（身分核對維持唯讀，核銷仍走 F1.1 手動輸入）。</p>
   <div class="demo">
     <div class="scanner-page" style="min-height:auto;padding:20px;border-radius:16px">
@@ -8505,6 +8508,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
             </div>
           </div>
           <div class="scanner-cam" style="min-height:300px">
+            <div class="scanner-cam__feed"></div>
             <div class="scanner-cam__reticle"><div class="scanner-cam__line"></div></div>
             <button class="btn btn--outline scanner-manual" type="button">Enter code manually</button>
             <span class="scanner-cam__hint">Point at a pickup code</span>
@@ -8616,22 +8620,52 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
             <div class="rowdis__group rowdis__group--gutter rowdis__group--static">
             <div class="data-list__row rowdis__head">
               <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
-                <div class="data-list__body"><div class="data-list__title">Mika L.</div><div class="data-list__meta">Order #ZT-10482</div></div>
+                <span class="ztor-avatar ztor-avatar--sm">M</span>
+                <div class="data-list__body"><div class="data-list__title">Mika L.</div><div class="data-list__meta scanner-rosterhead__src">Order #ZT-10482</div></div>
               </div>
-              <div class="data-list__end data-list__end--row"><span class="data-list__meta">2 / 5 redeemed</span></div>
+              <div class="data-list__end">
+                <span class="scanner-rostercount">3 left</span>
+                <span class="scanner-rostercount__sub">2 / 5 redeemed</span>
+              </div>
             </div>
             <button class="data-list__row rowdis__child rowdis__child--compact scanner-rosterrow" type="button">
-              <div class="data-list__row-main"><div class="data-list__body">
-                <div class="data-list__title">Kowloon After Dark tee · M</div><div class="data-list__meta">PU-10482-01</div>
-              </div></div>
+              <div class="data-list__row-main">
+                <div class="rowdis__lead"><span class="rowdis__num">1</span></div>
+                <div class="data-list__body">
+                  <div class="data-list__title">Kowloon After Dark tee · M</div><div class="data-list__meta">PU-10482-01</div>
+                </div>
+              </div>
               <div class="data-list__end data-list__end--row"><span class="badge badge--warning"><span>Pending</span></span></div>
             </button>
-            <button class="data-list__row rowdis__child rowdis__child--compact scanner-rosterrow" type="button">
-              <div class="data-list__row-main"><div class="data-list__body">
-                <div class="data-list__title">Kowloon After Dark six-panel cap</div><div class="data-list__meta">PU-10482-02 · from Launch night bundle</div>
-              </div></div>
+            <button class="data-list__row rowdis__child rowdis__child--compact scanner-rosterrow scanner-rosterrow--done" type="button">
+              <div class="data-list__row-main">
+                <div class="rowdis__lead"><span class="rowdis__num">2</span></div>
+                <div class="data-list__body">
+                  <div class="data-list__title">Kowloon After Dark six-panel cap</div><div class="data-list__meta">PU-10482-02 · from Launch night bundle</div>
+                </div>
+              </div>
               <div class="data-list__end data-list__end--row"><span class="badge badge--success"><span>Redeemed 13:40</span></span></div>
+            </button>
+            </div>
+            <div class="rowdis__group rowdis__group--gutter rowdis__group--static scanner-rostergroup--done">
+            <div class="data-list__row rowdis__head">
+              <div class="data-list__row-main">
+                <span class="ztor-avatar ztor-avatar--sm">A</span>
+                <div class="data-list__body"><div class="data-list__title">Aria S.</div><div class="data-list__meta scanner-rosterhead__src">Ticket TK-88213</div></div>
+              </div>
+              <div class="data-list__end">
+                <span class="scanner-rostercount scanner-rostercount--done">All picked up</span>
+                <span class="scanner-rostercount__sub">1 / 1 redeemed</span>
+              </div>
+            </div>
+            <button class="data-list__row rowdis__child rowdis__child--compact scanner-rosterrow scanner-rosterrow--done" type="button">
+              <div class="data-list__row-main">
+                <div class="rowdis__lead"><span class="rowdis__num">1</span></div>
+                <div class="data-list__body">
+                  <div class="data-list__title">Signing session · GA entry</div><div class="data-list__meta">TK-88213</div>
+                </div>
+              </div>
+              <div class="data-list__end data-list__end--row"><span class="badge badge--success"><span>Redeemed 14:05</span></span></div>
             </button>
             </div>
           </div>
@@ -12234,8 +12268,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 <section class="pillar" id="patterns">
       <div><span class="pillar__num">05.1 · Pattern ▸ Cards</span></div>
       <h2 class="pillar__title"><span data-en>How components assemble.</span><span data-zh>元件如何組合</span></h2>
-      <p class="pillar__intro" data-en>Best-practice assembly recipes — how components combine to meet a creator's goal. Ten cards across four categories (page-level and mid-level); each has trigger / must / should / must-not / edge-cases. Component sections demo the unit only — assembly rules live here.</p>
-      <p class="pillar__intro" data-zh>最佳實務的組合配方 — 元件如何組合起來達成創作者的目標。四個類別共十張卡（頁面級＋中間層），每張都列出 trigger / must / should / must-not / edge-cases。元件段只展示單元本身——組合規則一律寫在這裡（判準見 §4.0）。</p>
+      <p class="pillar__intro" data-en>Best-practice assembly recipes — how components combine to meet a creator's goal. Eleven cards across four categories (page-level and mid-level); each has trigger / must / should / must-not / edge-cases. Component sections demo the unit only — assembly rules live here.</p>
+      <p class="pillar__intro" data-zh>最佳實務的組合配方 — 元件如何組合起來達成創作者的目標。四個類別共十一張卡（頁面級＋中間層），每張都列出 trigger / must / should / must-not / edge-cases。元件段只展示單元本身——組合規則一律寫在這裡（判準見 §4.0）。</p>
       <div class="viz"><div class="wire-grid">
         <a class="wire-link" href="#pattern-dashboard"><div class="wire"><div class="wire__frame"><div class="wire__b wire__b--top"></div><div class="wire__b wire__b--hero"></div><div class="wire__kpi"><div class="wire__b"></div><div class="wire__b"></div><div class="wire__b"></div></div><div class="wire__row wire__row--grow"><div class="wire__b"></div><div class="wire__b"></div></div></div><div class="wire__cap"><b>Dashboard home</b> · <span data-en>hero + KPI + alerts</span><span data-zh>hero + KPI + alerts</span></div></div></a>
         <a class="wire-link" href="#pattern-tabbed"><div class="wire"><div class="wire__frame"><div class="wire__b wire__b--top"></div><div class="wire__row"><div class="wire__b" style="height:14px"></div><div class="wire__b" style="height:14px;background:var(--primary);opacity:.5"></div><div class="wire__b" style="height:14px"></div></div><div class="wire__b wire__b--grow"></div></div><div class="wire__cap"><b>Tabbed section</b> · <span data-en>tabs + one panel</span><span data-zh>tabs + 單一面板</span></div></div></a>
@@ -12247,6 +12281,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         <a class="wire-link" href="#pattern-modal"><div class="wire"><div class="wire__frame" style="justify-content:center;align-items:center"><div style="width:70%;border:1px solid var(--border);border-radius:4px;padding:4px;display:flex;flex-direction:column;gap:3px"><div class="wire__b" style="height:8px;width:50%"></div><div class="wire__b" style="height:16px"></div><div class="wire__b" style="height:8px;background:var(--primary);opacity:.5;align-self:flex-end;width:30%"></div></div></div><div class="wire__cap"><b>Modal shell</b> · <span data-en>one dialog chrome</span><span data-zh>單一 dialog 殼</span></div></div></a>
         <a class="wire-link" href="#pattern-split-preview"><div class="wire"><div class="wire__frame" style="flex-direction:row;gap:6px"><div class="wire__b" style="flex:1.6;height:auto"></div><div style="flex:1;border:1px solid var(--border);border-radius:4px;display:flex;flex-direction:column;gap:3px;padding:3px"><div class="wire__b" style="height:8px;width:60%"></div><div class="wire__b" style="flex:1"></div></div></div><div class="wire__cap"><b>Split preview</b> · <span data-en>editor + live preview</span><span data-zh>編輯 + 即時預覽</span></div></div></a>
         <a class="wire-link" href="#pattern-detail-rail"><div class="wire"><div class="wire__frame" style="flex-direction:row;gap:6px"><div style="display:flex;flex-direction:column;gap:4px;flex:1"><div class="wire__row"><div class="wire__b" style="height:8px;width:26px;background:var(--primary);opacity:.5"></div><div class="wire__b" style="height:8px;width:26px"></div></div><div class="wire__b" style="flex:1"></div></div><div style="display:flex;flex-direction:column;gap:4px;width:34%"><div class="wire__b" style="height:22px"></div><div class="wire__b" style="height:22px"></div></div></div><div class="wire__cap"><b>Detail + persistent rail</b> · <span data-en>tabs + sticky meta rail</span><span data-zh>分頁 + 常駐 meta 欄</span></div></div></a>
+        <a class="wire-link" href="#pattern-destructive-confirm"><div class="wire"><div class="wire__frame" style="justify-content:center;align-items:center"><div style="width:70%;border:1px solid var(--border);border-radius:4px;padding:4px;display:flex;flex-direction:column;gap:3px"><div class="wire__b" style="height:8px;width:45%"></div><div class="wire__b" style="height:6px"></div><div class="wire__b" style="height:6px;width:80%"></div><div class="wire__row" style="justify-content:flex-end;gap:3px"><div class="wire__b" style="height:8px;width:22%"></div><div class="wire__b" style="height:8px;width:30%;background:var(--destructive);opacity:.5"></div></div></div></div><div class="wire__cap"><b>Destructive confirm</b> · <span data-en>say the consequences first</span><span data-zh>先把後果講完</span></div></div></a>
       </div></div>
       <section class="sub" id="pattern-dashboard">
         <div class="sub__head"><h3 class="sub__title">5.1.1 Dashboard home</h3><span class="layer">Layout</span></div>
@@ -12620,6 +12655,58 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         </div></div>
         <p class="field-text" data-en>See it live: <a href="product-detail.html">product-detail.html</a></p>
         <p class="field-text" data-zh>實際頁面：<a href="product-detail.html">product-detail.html</a></p>
+      </section>
+
+      <section class="sub" id="pattern-destructive-confirm">
+        <div class="sub__head"><h3 class="sub__title">5.1.11 Destructive confirm</h3><span class="layer">Interaction</span></div>
+        <p class="field-label" data-en>Trigger</p><p class="field-label" data-zh>觸發</p>
+        <p class="field-text" data-en>An action that can't be taken back — voiding an order item, deleting a product / draft / event, disabling an account. Reversible actions (save draft, unlist, toggle visibility) just do it and show a toast.</p>
+        <p class="field-text" data-zh>一個按下去就收不回來的動作——作廢訂單明細、刪除商品／草稿／活動、停用帳號。可逆的動作（存草稿、下架、切換顯示）不走這張卡，做完給 toast 就好。</p>
+        <p class="field-label" data-en>Must</p><p class="field-label" data-zh>必須</p>
+        <p class="field-text" data-en>No new modal CSS — this is <a href="#pattern-modal">Modal shell</a> plus <a href="#button">.btn--destructive</a>, which is why the rule lives here and not in Pillar 4. The entry point is a quiet <code>.btn--ghost.btn--destructive</code> (red text, never the loudest thing in the row); only the commit button in the dialog foot is a full <code>.btn--destructive</code>. Body order is fixed, four blocks: <strong>what is being acted on</strong> (name it and quantify it — never "this item") → <strong>prerequisite</strong> (what must already be done elsewhere, e.g. "refund the buyer in Stripe first") → <strong>what happens</strong> (one line per consequence: codes voided, stock restocked, who gets emailed) → <strong>no undo</strong>. Afterwards the toast says what actually happened, not "success".</p>
+        <p class="field-text" data-zh>沒有新的 modal CSS——它是 <a href="#pattern-modal">Modal shell</a> 加上 <a href="#button">.btn--destructive</a>，所以規則寫在 Pattern、不寫成元件。入口是安靜的 <code>.btn--ghost.btn--destructive</code>（紅字，絕不是那一列裡最響的東西）；只有彈窗頁尾真正執行的那顆才是完整的 <code>.btn--destructive</code>。內容順序固定四段：<strong>動到哪一項</strong>（講出名稱與數量，不要只說「這個項目」）→ <strong>前置條件</strong>（要先在別的地方做完什麼，例如「請先在 Stripe 完成人工退款」）→ <strong>會發生什麼</strong>（一條後果一行：憑證失效、庫存回補、誰會收到信）→ <strong>不可逆</strong>。事後的 toast 要說出實際發生了什麼，不是只說「成功」。</p>
+        <p class="field-label" data-en>Should / must-not</p><p class="field-label" data-zh>建議／禁止</p>
+        <p class="field-text" data-en>Keep a blocked entry point visible and disabled with a <code>title</code> saying why (already picked up, needs the Admin role) — a hidden button reads as "this feature doesn't exist". Never use the native <code>confirm()</code>; never replace the consequence list with a single vague "this cannot be undone"; never change the screen before the user confirms.</p>
+        <p class="field-text" data-zh>不能按的入口留在畫面上、停用並用 <code>title</code> 說明為什麼（已取貨、需要 Admin 角色）——藏起來的按鈕會被讀成「沒有這個功能」。不可用原生 <code>confirm()</code>；不可把後果縮成一句籠統的「此操作無法復原」；不可在使用者確認之前就先改畫面。</p>
+        <p class="field-label" data-en>Rendered composition <span class="field-note">(<code>.payout-modal</code> shown inline via <code>.demo--inline-modal</code>)</span></p>
+        <p class="field-label" data-zh>渲染組合實例 <span class="field-note">（<code>.payout-modal</code> 用 <code>.demo--inline-modal</code> 壓成行內展示）</span></p>
+        <div class="demo demo--inline-modal"><div class="payout-modal" style="width:100%">
+          <div class="payout-dialog">
+            <div class="payout-dialog__head">
+              <h4 class="payout-dialog__title">Void item</h4>
+              <button class="btn btn--icon" aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+            </div>
+            <div class="payout-dialog__body">
+              <div class="data-list">
+                <div class="data-list__row">
+                  <div class="data-list__row-main"><div class="data-list__body">
+                    <div class="data-list__title">Kowloon After Dark vinyl · numbered 1/50</div>
+                    <div class="data-list__meta">1 × $180.00</div>
+                  </div></div>
+                </div>
+              </div>
+              <div class="field__hint mt-16">Refund the buyer in Stripe first — voiding moves no money and never calls Stripe.</div>
+              <div class="field__label mt-16">What voiding does</div>
+              <div class="field__hint">This item's pickup codes stop working immediately — they can't be scanned at a session.</div>
+              <div class="field__hint mt-8">Stock goes back on the shelf; a bundle restocks each of its members.</div>
+              <div class="field__hint mt-8">The buyer gets an order-cancelled email listing this item.</div>
+              <div class="field__hint mt-16">There's no undo — a voided item can't be reinstated.</div>
+            </div>
+            <div class="payout-dialog__foot">
+              <button class="btn btn--ghost btn--sm">Cancel</button>
+              <button class="btn btn--destructive btn--sm">Void this item</button>
+            </div>
+          </div>
+        </div></div>
+        <p class="field-label" data-en>Entry points in the row <span class="field-note">(enabled · blocked by item state · blocked by role)</span></p>
+        <p class="field-label" data-zh>列上的入口 <span class="field-note">（可按・被品項狀態擋下・被角色擋下）</span></p>
+        <div class="demo" style="display:flex;gap:var(--sp-12);flex-wrap:wrap;align-items:center">
+          <button class="btn btn--ghost btn--destructive btn--sm">Void</button>
+          <button class="btn btn--ghost btn--destructive btn--sm" disabled aria-disabled="true" title="Already picked up — can't be voided">Void</button>
+          <button class="btn btn--ghost btn--destructive btn--sm" disabled aria-disabled="true" title="Requires the Admin role">Void</button>
+        </div>
+        <p class="field-text" data-en>See it live: <a href="order-detail.html?id=ZT-10484">order-detail.html</a> — void an order item (Admin only)</p>
+        <p class="field-text" data-zh>實際頁面：<a href="order-detail.html?id=ZT-10484">order-detail.html</a>——作廢訂單品項（Admin 專屬）</p>
       </section>
     </section>
 
