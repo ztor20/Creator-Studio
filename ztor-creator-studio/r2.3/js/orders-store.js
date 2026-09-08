@@ -82,6 +82,23 @@
    不變，voided＝已因退款失效的件數、unset＝取貨場次待設定的件數；pending（待核銷）＝
    total − done − voided − unset，未另開欄位。三個消費頁共用同一口徑：**voided 的件
    不算進待核銷**（規格 5.1.5.3.1 §2.3.1／5.1.5.15 F4.1）。
+
+   ── 作廢明細（Void，2026-09-08，上游 2026-09-07 拍板的 eShop 2.2 訂單作廢政策）──
+   定義權威在 documents/5.1.5.3.1-訂單詳情.md 與 0-設計規格書.md §7.2；本檔只落地：
+     · 作廢以「品項（訂單明細）」為單位，逐筆執行，Admin 專屬（Creator 與買家不能作廢）。
+     · 可作廢條件＝取貨型品項（mode:'pickup'，或 mode:'bundle' 且含取貨成員），且該品項
+       所有領取單位皆未核銷（沒有任何一件 status === 'done'），且尚未作廢。
+     · 作廢效果＝該品項展開的全部領取單位（含組合成員的單位）status → 'void'，領取碼
+       即刻失效；領取單位的終態與退款成立（D242）同名同色，兩者只是觸發源不同。
+     · 訂單層＝所有品項皆已作廢時，訂單進終態「已取消（Cancelled）」；否則訂單狀態不變、
+       只有品項層顯示已取消。這個值是**衍生**的（isCancelled(order)），不是第三條狀態軸——
+       pay／fulfil 兩軸的語意不動（PCR-001），o.cancelled 只是把衍生結果快取起來給清單用。
+     · 原型不做的事：庫存回補與「訂單已取消」email **由後端執行**，本原型只在確認彈窗
+       提示會發生；作廢也不呼叫 Stripe——人工退款是營運人員在 Stripe 後台（平台外）先做完
+       的前置，平台不處理任何金流。
+   demo 資料補兩筆對照（都在下方 ORDERS 內，緊接著 D242 的兩筆退款範例）：
+     #ZT-10467 部分品項已作廢——黑膠整項作廢、帽子仍可領，訂單狀態不變。
+     #ZT-10466 全部品項已作廢——單品與組合成員全數失效，訂單進「已取消」。
    ------------------------------------------------------------------ */
 (function () {
   'use strict';
@@ -367,6 +384,109 @@
       total: '$86.00', totalAmt: 86,
       fx: { currency: 'TWD', paid: 'NT$2,709.00', rate: '1 USD = 31.5 TWD' },
       refund: { scope: 'partial', amount: '$58.00', on: '2026-06-10' }
+    },
+    {
+      /* 作廢示範 A（2026-09-08）：Admin 作廢了其中一個取貨品項，另一個品項仍可領——
+         品項層顯示已取消、訂單狀態不變（全部作廢才進「已取消」）。純現場領取，無寄送地址。
+         pay 是「已退款」因為作廢的前置就是營運人員已在 Stripe 完成人工退款。 */
+      id: 'ZT-10467', date: '2026-06-02', kind: 'pickup',
+      pay: 'refunded', fulfil: ['pickup'],
+      text: 'zt-10467 elena 九龍夜行 原聲黑膠 六片帽 作廢 已取消 現場領取 vinyl cap voided cancelled pickup',
+      buyer: {
+        name: 'Elena R.',
+        shipTo: '',
+        contact: 'elena.r@example.com'
+      },
+      items: [
+        {
+          nameKey: 'od.item4.name', name: 'Kowloon After Dark vinyl · numbered 1/50',
+          catKey: 'e-shop.cat.collectibles', qty: 1, unit: '$180.00', amt: 180, mode: 'pickup',
+          snap: {
+            price: '$180.00', variant: '',
+            desc: 'Hand-numbered acetate LP — limited run of 50, signed.',
+            manage: 'product-detail.html?id=acetate'
+          },
+          /* Admin 已作廢這一項：領取碼即刻失效。at 記的是作廢時間（已核銷的單位才把 at
+             讀成核銷時間，見消費頁的 status === 'done' 判斷）。 */
+          units: [
+            { code: 'PU-10467-01', status: 'void', at: '2026-06-06', session: PICKUP_SESSION }
+          ]
+        },
+        {
+          nameKey: 'od.item6.name', name: 'Kowloon After Dark six-panel cap',
+          catKey: 'e-shop.cat.apparel', qty: 2, unit: '$26.00', amt: 52, mode: 'pickup',
+          snap: {
+            price: '$26.00', variant: '',
+            desc: 'Embroidered six-panel cap with an adjustable strap.',
+            manage: 'product-detail.html?id=cap'
+          },
+          /* 沒有被作廢的品項不受影響，仍待核銷——這一筆就是拿來對照的 */
+          units: [
+            { code: 'PU-10467-02', status: 'pending', at: null, session: PICKUP_SESSION },
+            { code: 'PU-10467-03', status: 'pending', at: null, session: PICKUP_SESSION }
+          ]
+        }
+      ],
+      amounts: { goods: '$232.00', shipping: '', platform: '−$34.80', payment: '−$5.57', net: '$191.63' },
+      total: '$232.00', totalAmt: 232,
+      fx: { currency: 'TWD', paid: 'NT$7,308.00', rate: '1 USD = 31.5 TWD' },
+      refund: { scope: 'partial', amount: '$180.00', on: '2026-06-06' }
+    },
+    {
+      /* 作廢示範 B（2026-09-08）：整張單的品項都被作廢 → 訂單進終態「已取消」。
+         一個單品＋一個組合（組合的取貨成員逐件失效），驗證兩種展開結構在已取消態下的呈現。 */
+      id: 'ZT-10466', date: '2026-06-01', kind: 'pickup',
+      pay: 'refunded', fulfil: ['pickup'],
+      text: 'zt-10466 kai 九龍夜行 紀念 t 恤 首賣夜 組合包 整單作廢 已取消 tee launch night bundle voided cancelled order',
+      buyer: {
+        name: 'Kai T.',
+        shipTo: '',
+        contact: 'kai.t@example.com'
+      },
+      items: [
+        {
+          nameKey: 'od.item2.name', name: 'Kowloon After Dark tee (M)',
+          catKey: 'e-shop.cat.apparel', qty: 1, unit: '$32.00', amt: 32, mode: 'pickup',
+          snap: {
+            price: '$32.00', variant: 'M',
+            desc: 'Soft-washed cotton tee with a 九龍夜行 print. Unisex fit.',
+            manage: 'product-detail.html?id=tee'
+          },
+          units: [
+            { code: 'PU-10466-01', status: 'void', at: '2026-06-05', session: PICKUP_SESSION }
+          ]
+        },
+        {
+          nameKey: 'od.item12.name', name: 'Launch night bundle',
+          catKey: 'bundle', qty: 1, unit: '$86.00', amt: 86, mode: 'bundle',
+          snap: {
+            price: '$86.00', variant: '',
+            desc: 'Launch-night bundle — six-panel cap ×2 and numbered vinyl, both picked up on-site.',
+            manage: 'product-detail.html?id=bundle-launch'
+          },
+          members: [
+            {
+              nameKey: 'od.item6.name', name: 'Kowloon After Dark six-panel cap',
+              qty: 2, mode: 'pickup',
+              units: [
+                { code: 'PU-10466-02', status: 'void', at: '2026-06-05', session: PICKUP_SESSION, from: 'od.item12.name' },
+                { code: 'PU-10466-03', status: 'void', at: '2026-06-05', session: PICKUP_SESSION, from: 'od.item12.name' }
+              ]
+            },
+            {
+              nameKey: 'od.item4.name', name: 'Kowloon After Dark vinyl · numbered 1/50',
+              qty: 1, mode: 'pickup',
+              units: [
+                { code: 'PU-10466-04', status: 'void', at: '2026-06-05', session: PICKUP_SESSION, from: 'od.item12.name' }
+              ]
+            }
+          ]
+        }
+      ],
+      amounts: { goods: '$118.00', shipping: '', platform: '−$17.70', payment: '−$2.83', net: '$97.47' },
+      total: '$118.00', totalAmt: 118,
+      fx: { currency: 'TWD', paid: 'NT$3,717.00', rate: '1 USD = 31.5 TWD' },
+      refund: { scope: 'full', amount: '$118.00', on: '2026-06-05' }
     },
     {
       /* 純數位訂單：無實體物流（§2.5 區塊狀態）——出貨彈窗改呈現數位交付狀態 */
@@ -658,13 +778,24 @@
      待取貨（pickup）沒有對應頁籤（F2 只有七個），所以不產生 token。 */
   var PAY_TAB = { unpaid: 'unpaid', paid: 'paid', refunded: 'refund', disputed: 'refund' };
   var FULFIL_TAB = { toship: 'toship', shipped: 'shipped', completed: 'completed' };
-  ORDERS.forEach(function (o) {
+  function computeFilters(o) {
     var tabs = [];
     var push = function (v) { if (v && tabs.indexOf(v) < 0) tabs.push(v); };
     push(PAY_TAB[o.pay]);
+    /* 已取消是終態：履約不會再發生，所以不再落進待出貨／已出貨／已完成那些履約頁籤，
+       只留付款・結算軸的頁籤加上「已取消」，否則同一筆會同時出現在兩個互斥的分頁裡。 */
+    if (o.cancelled) { push('cancelled'); return tabs; }
     o.fulfil.forEach(function (v) { push(FULFIL_TAB[v]); });
-    o.filters = tabs;
-  });
+    return tabs;
+  }
+  /* 訂單層的衍生欄位一次算完：作廢會改變 cancelled，cancelled 又會改變篩選歸屬，
+     所以兩者永遠一起重算，不讓呼叫端各自記得要更新哪一個。 */
+  function refreshDerived(o) {
+    o.cancelled = isCancelled(o);
+    o.filters = computeFilters(o);
+    return o;
+  }
+  ORDERS.forEach(refreshDerived);
 
   /* ── F1 訂單摘要的四張 KPI 卡（5.1.5.3 F1）──────────────────────
      一樣由同一份資料算，不寫死數字——寫死的話補一筆訂單就會跟清單對不上。
@@ -755,6 +886,55 @@
     return { total: 0, done: 0, voided: 0, unset: 0 };
   }
 
+  /* ── 作廢明細（Void，2026-09-08）─────────────────────────────────
+     voidState(item) 把「這一項現在能不能作廢」收成一個字串，讓三處判斷（按不按得下去、
+     顯不顯示按鈕、要說哪一句原因）吃同一個答案，不各自重寫條件：
+       'ok'          取貨型、尚未有任何一件被核銷 → 可作廢
+       'redeemed'    這一項已有領取單位被核銷 → 已取貨、終態，不可作廢
+       'voided'      這一項已經全部作廢 → 不可再作廢、不可逆
+       'unsupported' 出貨型／數位／沒有取貨成員的組合 → 2.2 只做取貨型，其餘待產品確認
+     ⚠ 這裡只回答「能不能」，權限（Admin 代管態）不在這支——權限是誰在看的問題、與品項
+     本身的狀態無關，由呈現層另外判斷，兩者混在一起會讓資料層依賴登入狀態。 */
+  function voidState(item) {
+    var agg = unitSummary(item);
+    var hasPickup = (item.mode === 'pickup' && item.units && item.units.length) ||
+                    (item.mode === 'bundle' && agg.total > 0);
+    if (!hasPickup) return 'unsupported';
+    if (agg.voided === agg.total) return 'voided';
+    if (agg.done > 0) return 'redeemed';
+    return 'ok';
+  }
+
+  function markVoid(units, at) {
+    (units || []).forEach(function (u) { u.status = 'void'; u.at = at; });
+  }
+
+  /* voidItem(order, item)：把該品項展開的全部領取單位（含組合成員的單位）轉 void 並記下
+     作廢時間，然後重算訂單層的衍生狀態。回傳是否真的作廢了（狀態不允許時回 false，
+     呼叫端不必自己先判斷一次）。
+     ⚠ 原型只動狀態：**庫存回補與「訂單已取消」email 由後端執行**，這裡不模擬，也不呼叫
+     Stripe——人工退款是營運人員在平台外先完成的前置。確認彈窗會把這三件事告訴操作者。 */
+  function voidItem(order, item) {
+    if (voidState(item) !== 'ok') return false;
+    var at = new Date().toISOString().slice(0, 10);
+    if (item.mode === 'pickup') markVoid(item.units, at);
+    else (item.members || []).forEach(function (m) { if (m.mode === 'pickup') markVoid(m.units, at); });
+    refreshDerived(order);
+    return true;
+  }
+
+  /* 訂單層「已取消」＝所有品項都已作廢（終態）。衍生、不是第三條狀態軸：pay／fulfil
+     兩軸維持原值不動（PCR-001 兩軸不混用），清單與詳情頁只是改用這顆徽章呈現履約已終止。
+     含出貨型或數位品項的訂單因此永遠不會整單取消——那些品項在 2.2 還不能作廢。 */
+  function isCancelled(order) {
+    var items = order.items || [];
+    if (!items.length) return false;
+    for (var i = 0; i < items.length; i++) if (voidState(items[i]) !== 'voided') return false;
+    return true;
+  }
+
+  var CANCELLED_BADGE = { key: 'orders.status.cancelled', text: 'Cancelled', cls: 'badge--error' };
+
   window.ztorOrders = {
     list: function () { return ORDERS.slice(); },
     get: function (id) {
@@ -767,7 +947,11 @@
     kpi: kpi,
     fulfilBadge: function (v) { return FULFIL_BADGE[v] || null; },
     payBadge: function (v) { return PAY_BADGE[v] || null; },
+    cancelledBadge: function () { return CANCELLED_BADGE; },
     unitsOf: unitsOf,
-    unitSummary: unitSummary
+    unitSummary: unitSummary,
+    voidState: voidState,
+    voidItem: voidItem,
+    isCancelled: isCancelled
   };
 })();

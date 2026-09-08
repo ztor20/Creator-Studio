@@ -4,6 +4,68 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-08 · eShop 訂單明細作廢（Void）：Admin 專屬、取貨型限定（A spec-derived / D infra）
+
+**範圍**：`js/orders-store.js`（新增 `voidState`／`voidItem`／`isCancelled`／`cancelledBadge`，訂單層衍生 `o.cancelled`＋篩選 token `cancelled`，demo 訂單 ZT-10467 部分作廢／ZT-10466 全作廢→已取消）、`order-detail.html`（品項表第 6 欄動作＋逐筆作廢鈕、確認彈窗 `#od-void-modal`、作廢後重畫徽章＋toast）、`orders.html`（已取消徽章＋狀態篩選 tab）、`scanner.html`／`pickup-detail.html`（void 文案改名）、`js/i18n.js`（新增 17 把、改名 6 把；persona 區塊拆分）、`js/sidebar.js`（新增 `window.ztorCreator.adminScope()`）、`js/devtools.js`（Cheat Code「User」組拆為 Persona／Role 兩組）、`design-system.md`／`design-system.html`（Pillar 5 新增 pattern 卡 5.1.11 Destructive confirm）。
+
+**同日二次範圍（B 使用者反饋，見下方 B 小節）**：`js/theme.js`（`seedPersona()`→`seedPersonaAndRole()`＋舊 key 遷移）、`js/sidebar.js`（`CREATORS` 換成三個 persona、`ztor.role` 狀態、`adminView()`、共用 Admin 頁門禁 `applyAdminGate()`）、`js/devtools.js`（Role 組改兩態）、`js/i18n.js`（新增 `admin.gate.*` 三把、退役 `vr.noaccess.*` 三把）、`admin-video-review.html`（頁面級假開關與 `#vr-noaccess` 退役）、`admin-platform-fees.html`／`admin-ip-bank-entry.html`（門禁掛點：補 `empty-card.css`／`sidebar.js`）、`order-detail.html`（只改 sidebar 未載入時的退路 key）、`ASSUMPTIONS.md`（UIA-030／UIA-112／UIA-143／UIA-111(b)）、`BUILD-SPEC.md`（Admin 層段）。
+
+**依據**：上游 2026-09-07 拍板＋使用者 2026-09-08 四項裁決（`documents/decisions.md` D252）；規格已同步 `documents/0-設計規格書.md` §4.1／§4.4／§7.2／§8.27、`documents/5.1.5.3.1-訂單詳情.md` §2.8。
+
+### A · 逐筆作廢品項，不做整單作廢
+
+品項表新增第 6 欄「動作」，每一列一顆作廢鈕（`.btn--ghost.btn--destructive.btn--sm`）。停用時掛三種原因（title／`data-i18n-title`）：需要 Admin 角色、已取貨不可作廢、待產品確認——三者同時成立時目前取「品項事實優先於角色」的順序呈現，§4.4 未規定這個優先序（見 ASSUMPTIONS UIA-143 (b)）。確認彈窗 `#od-void-modal` 重用 `.payout-modal`／`.payout-dialog` 外殼＋`.btn--destructive`，零新 modal CSS；內容四段式：動到哪一項→平台外前置（Stripe 人工退款）→三條後果→不可逆提示。作廢成立後品項徽章與訂單層徽章即時重畫、跳 toast。
+
+### A · 訂單層「已取消」是衍生終態，不是新增狀態軸
+
+全部品項都作廢時，訂單層衍生顯示「已取消」（`badge--error`），`orders.html` 新增對應狀態篩選 tab；`scanner.html`／`pickup-detail.html` 的舊文案「已取消／已退款」統一改「已取消」。§7.2 只新增枚舉值、未指定掛在履約軸或付款軸，本輪放履約軸位置、付款・結算軸維持原值（見 ASSUMPTIONS UIA-143 (a)）。2.2 只做取貨型品項，出貨型與數位品項是否可作廢待產品確認（§8.27）。
+
+### B · 身分重構成 persona × role 矩陣
+
+使用者看過本輪稍早的 Cheat Code 改版後裁決（原意）：**Role 只有 General／Admin 兩態、Persona 三位就是 creator 名冊、2×3 矩陣就是全部組合**。所以打開周湯豪的頁面把身分切成 Admin 就是「Admin 代管周湯豪」，切回 General 就是周湯豪本人視角；Admin 頁只有 Admin 身分能進；從 Admin 的 Creator 管理進入周湯豪，等於以 Admin 代管身分進入他的頁面。
+
+改版前的問題是同一件事被記了兩遍：Creator 名冊有自己的三位假人（Denise／Aya／KMT），資料人格有自己的兩位（Gary Lin／周湯豪），從名冊點進誰都不會換掉工作區的資料——名冊上的人與畫面上的資料是兩組互不相干的假人。現在名冊就是三個 persona 本人（`handle` 即 persona id，單一來源），Enter 周湯豪落地看到的就是周湯豪的項目與商品。
+
+- **狀態只剩兩把**：`ztor.persona`（誰的資料）＋新的 `ztor.role`（用什麼身分看）。`ztor.activeCreator` 與 `ztor.adminHandoff` 退役，`js/theme.js` 讀到舊值就翻譯成新模型再刪掉，舊瀏覽器開站不報錯。
+- **Cheat Code**：Persona 組維持三個；Role 組從「一般創作者＋名冊每一位」收成兩顆（General creator／Admin）——列名冊等於把「代管誰」記第二遍，那件事已經由 Persona 組回答。
+- **Admin 頁門禁**：八個 Admin 路由在 General 身分下，主內容整段換成一則無權限狀態（「需要 Admin 身分」＋切換方式），Admin nav 整區不出現、導航退回一般創作者那一套，使用者走得出去。**一份共用實作**（`js/sidebar.js` 的 `applyAdminGate()`）注入，重用既有 `.empty-card` ＋ `.btn`，**零新 CSS、零新元件**；影片上架審核頁原本自己寫的那一份跟著退役。
+- **返回鍵**：從審核頁這類 Admin 頁進來時 `?from=` 留在網址上當返回目的地，不再為它多開一把 localStorage key。
+
+### D · `adminScope()` 開放＋Cheat Code 名單單一來源
+
+`js/sidebar.js` 新增 `window.ztorCreator.adminScope()`（等同既有 `isManagingCreator()`，`!!getCreator()`；不含 admin-video-review 交接路徑），供作廢鈕判斷「現在是不是代管態」。`js/devtools.js` 的 Cheat Code「User」組拆成「Persona · 資料人格」（`default`／`nick`／`userB`）與「Role · 身分」（一般創作者＋Admin 名冊 `window.ztorCreator.list` 逐一列出，含執行期新增的 creator），原本的死碼 `creatorOpts()`／`curCreator()` 改為實際渲染路徑。`js/i18n.js` 的 `window.ztorPersona.list()` 移除 `admin`、新增 `normalizePersonaId()`，`set()` 不再碰 `ztorCreator`——這一段解決了 ASSUMPTIONS UIA-112 記錄的既有落差（詳見該條 2026-09-08 更新）。
+
+**同日二次（狀態 key 收斂）**：身分狀態由三把收斂成一把 `ztor.role`——`ztor.activeCreator`（名冊選定的 creator）與 `ztor.adminHandoff`（Admin 頁交接）退役，遷移寫在 `js/theme.js` 的 `migrateLegacy()`（讀舊值→翻成 role/persona→刪除），全站只剩那一處還提到舊鍵名。`admin-video-review.html` 的頁面級假開關「檢視身分」（`ZTOR_DEV_PAGE_GROUPS`）與頁內 `#vr-noaccess` 一併退役，i18n 的 `vr.noaccess.*` 三把改由共用的 `admin.gate.*` 承接（原鍵位置留墓碑註解）。`js/sidebar.js` 的登出改成把身分歸零（`setRole('general')`）。
+
+**驗證（二次）**：http 實走 general／admin 兩種身分：`index.html`（general 無 Admin chrome、admin 顯示「Managing 周湯豪 NICKTHEREAL」＋返回 Creator 管理）、`creators.html`（general 無權限狀態、admin 三位 Gary Lin／周湯豪／User B）、名冊 Enter 周湯豪 → 落地 index.html 且 persona=nick／role=admin／專案資料是周湯豪的、`order-detail.html?id=ZT-10467`（general 作廢鈕 disabled＋「需要 Admin 角色」，admin 可按）、八個 Admin 路由在 general 全部出現門禁、舊 `ztor.activeCreator='denise'` 開頁 0 error 且被清掉。中英切換 0 raw key（掃 `[data-i18n]` 對 `i18nT` 回 null）。截圖 `../../screenshots/r2.3-cheatcode-persona-role.png`。
+
+**驗證**：`check_ds_sync.py` 全 PASS（既有兩則 WARN 為存量、不動）；http 開頁 `order-detail.html`／`orders.html`／`scanner.html`／`pickup-detail.html` console 0 error；中英切換 0 raw key。截圖 `../../screenshots/r2.3-order-detail-void-admin-enabled.png`、`r2.3-order-detail-void-disabled-non-admin.png`、`r2.3-order-detail-void-confirm.png`、`r2.3-order-detail-void-confirm-light.png`、`r2.3-order-detail-void-after-cancelled.png`、`r2.3-orders-list-cancelled-tab.png`、`r2.3-ds-pattern-destructive-confirm.png`。
+
+## 2026-09-08 · 手機 scanner：相機示意畫面＋名單可讀性（B 反饋導入）
+
+**範圍**：`scanner.html`（相機分頁補 `__feed` 層、F3 名單 `renderRoster()` 重寫）、`ds-components/scanner.css`（`.scanner-cam` 改暗底＋`__feed`／`.scanner-manual` 站暗底的配色／名單五條新規則）、`images/scanner-cam-feed.jpg`（新增，71 KB）、`js/i18n.js`（新增 `sc.roster.left`／`sc.roster.alldone` 兩鍵，中英齊）、`design-system.html`（4.83 Mobile scanner 的相機與名單 demo 卡更新、新增一組「整組領完」的群組）、`design-system.md`（同節條目）、`ASSUMPTIONS.md` UIA-046 (d)。
+
+**依據**：使用者當面反饋（相機分頁看不出是相機在看東西；名單上工作人員最需要的數字最弱）。無產品規則變動。
+
+### B · 相機分頁：對準框背後要有東西
+
+改版前 `.scanner-cam` 是一塊空的頁面底色，中間浮著一個橘色對準框——看起來像設定畫面，不像相機。現在對準框背後鋪一張靜態示意圖（昏暗取貨現場、買家舉著手機、螢幕上一個 faux QR），分成獨立的 `.scanner-cam__feed` 一層畫：照片＋一層 `--surface-inverse` 的 `color-mix` 漸層暗紗（上 40%／下 62%，下緣壓得重一點是因為手動輸入鈕與提示文字都在下面）。**正式產品換成真實相機串流時只換這一層**，對準框、掃描線、按鈕與提示文字都不用動。
+
+這一區從此恆為暗色，所以區內文字改吃 `--foreground-on-inverse` 那一組——淺色主題下 `--muted-foreground` 是深灰，疊在暗照片上讀不到（這個坑站上有前例，見 design-system.md 票券那節的「字色的坑」）。`.scanner-manual` 另補半透明 `--surface-inverse` 底與 on-inverse 邊框，讓外框鈕從照片裡撐起來；改的是 `.scanner-manual` 自己，沒動 `button.css` 的 `--outline`。圖沒載入時 `.scanner-cam` 自己的 `--surface-inverse` 底接手，退回改版前的深色相機意象，文字對比不會塌。
+
+### B · 名單：把工作人員真正在問的事放大
+
+現場只有一個問題——**這個人還有幾件要領**。改版前那個數字（`已領 0／1`）是列上最小最灰的字，而占掉最大視覺重量的是一顆每組都長一樣的人形圖示。五件事一起改，全部重用既有元件、沒有新元件：
+
+- **識別圓取代通用圖示**：群組列改用 `avatar.css` 的 `.ztor-avatar.ztor-avatar--sm`（姓名首字），那顆圓從此真的能分人。票券來源的群組維持票券圖示，但換成同為 32px 的 `.data-list__icon--sm`，兩種群組的標題落在同一條垂直線上。
+- **主數字換人**：右欄主行改成「還剩 N 件」（`.scanner-rostercount`，沿用同一支元件裡 `.scanner-count b`／`.scanner-progress__count` 的 display 字＋bold＋等寬數字），`已領 M／N` 降成註腳（`__sub`）。整組領完時那一格不再是數字，改成「已領完」並退回內文字級轉灰（`--done`）。
+- **子列有序號**：子列的列首欄放組內序號（`.rowdis__lead` ＋ `.rowdis__num`），與桌機版 `pickup-detail.html` 同一套做法（2026-09-04 Q109 裁決）——工作人員才說得出「第 3 件」。欄寬用元件自己的 `--rowdis-lead-w` 覆寫成 32px 對齊識別圓，序號因此落在圓的正下方。
+- **已核銷降階**：已核銷的子列 `.scanner-rosterrow--done` 降一階，待領的自然跳出來。
+- **整組領完再降一階**：`.scanner-rostergroup--done` 讓整塊退到背景，注意力留給還有東西要領的人。降的只有透明度——L3 群組面板的填色、邊框與面板內 hover（2026-09-04 才定案）一條都沒改。
+- **來源編號弱化**：群組列的 `Order #ZT-10484` 退到 `--fs-11`；同一組數字子列的領取碼（`PU-10484-01`）本來就唸過一次。
+
+**驗證**：`check_ds_sync.py` 全 PASS（既有兩則 WARN 不變）；400px 手機框下相機與名單皆不破版；中英切換 0 raw key；console 0 error。截圖 `screenshots/scanner-cam-feed.png`、`screenshots/scanner-roster-v2.png`。
+
 ## 2026-09-05 · 交易明細改成兩族一表（A spec-derived）
 
 **範圍**：`earnings.html`（交易明細分頁全段重做＋篩選腳本）、`js/i18n.js`（新增約 60 個 `tx.*` 鍵）、`ds-components/badge.css`（`--outline`／`--outline-danger`）、`ds-components/table.css`（`__row--ledger`／`__amt`／`.tx-status`／`.tx-na`／`.tx-detail__kv`）、`ds-components/chip.css`（`.filter-row--group`）、`design-system.md`（元件總表 Badge／Chip／Table 三列＋Table Class API 五列）、`design-system.html`（Badge matrix 兩列、Filter row 第二排 demo、Table「兩族一表」demo＋Class API 五列）、`ASSUMPTIONS.md` UIA-142、`STYLE-DECISIONS.md` Q110。

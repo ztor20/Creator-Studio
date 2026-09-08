@@ -49,68 +49,103 @@
    localStorage。之後任何讀取者拿到的都是實際存在的值，退路根本不會被觸發——
    就算日後有人新增第四個 store 又寫了不同的退路，也不會再分岐。
    ============================================================ */
-/* ── Admin 進入某位創作者的工作區（2026-08-07）────────────────────────
-   規格 §4.1：Admin 從 Creator 管理選定並進入某 Artist 工作區之後，導航才顯示
-   該 Artist 的模組。原型裡「這是誰的工作區」＝哪一份 demo 資料集（persona），
-   所以帶著身分的連結長這樣：
+/* ── Persona × Role 矩陣（2026-09-08 使用者裁決，取代 2026-08-07 的代管交接）──
+   模型只有兩個維度，2×3 就是全部組合：
+
+     Persona · 資料人格 ＝ 三個 creator 帳號（default／nick／userB），也就是
+       Creator 管理名冊的三位本人（js/sidebar.js 的 CREATORS，handle ＝ persona id）。
+     Role · 身分      ＝ general（creator 本人視角）｜admin（Admin 代管目前 persona，
+       且只有 admin 進得了 Admin 頁）。
+
+   所以「打開周湯豪的頁面把身分切成 Admin」＝ Admin 代管周湯豪；切回 General ＝
+   周湯豪本人視角。從 Admin 的 Creator 管理進入某位 creator ＝ 設定 persona ＋ role=admin。
+
+   帶著身分的連結（影片上架審核等 Admin 頁的「進入創作者」）仍是：
 
      project-detail.html?id=<項目 id>&creator=<persona>&from=<來源 Admin 頁>
 
-   `creator` 在這裡（每頁第一支 script、早於所有 store）就套用，落地頁的資料
-   才會是那位創作者的。同時把這趟代管記進 ztor.adminHandoff，供 js/sidebar.js
-   畫既有的「代管中 + 返回」列（站上只有那一套標示，不另做第二種）。
+   `creator` 在這裡（每頁第一支 script、早於所有 store）就套用成 persona ＋ role=admin，
+   落地頁的資料才會是那位創作者的；用完即從網址移除（留著的話每次重新載入都會再套一次，
+   cheat code 換人格時的 reload 會被它蓋回去）。`from` 刻意留在網址上——它只是「返回鍵指
+   哪裡」，重複套用沒有副作用，留在網址就不必再開第三把 localStorage key（舊的
+   ztor.adminHandoff 與 ztor.activeCreator 已於本輪退役，見下方 migrateLegacy）。
 
    ⚠ persona 是 demo 機制（cheat code 的假資料人物開關），不是產品功能——真實
      系統的「進入誰的工作區」由後端授權，不會是網址上的一個參數。見 ASSUMPTIONS。 */
-(function seedPersona() {
+(function seedPersonaAndRole() {
   var KEY = "ztor.persona";
-  var HANDOFF = "ztor.adminHandoff";
+  var ROLE_KEY = "ztor.role";
   var VALID = ["default", "nick", "userB"];
+  var ROLES = ["general", "admin"];
   /* 本機／demo 的預設人格＝周湯豪（沿用 i18n.js 原本的 [local-default]，
      也是 cheat code 面板本來就高亮的那一個）。上游為 'default'。 */
   var FALLBACK = "nick";
-  var asked = null, from = "";
-  function stripHandoffParams(q) {
+  var asked = null;
+  /* 執行期由「建立 creator」精靈新增的 creator（ztor.creatorAdds，js/sidebar.js 寫入）
+     也算合法 persona——它們沒有專屬資料集，各 store 讀不到就自己退回 default，
+     但名冊查得到本人，代管標示才會寫對名字。 */
+  function addedHandles() {
     try {
-      q.delete("creator"); q.delete("from");
+      var a = JSON.parse(localStorage.getItem("ztor.creatorAdds") || "[]");
+      return Array.isArray(a) ? a.map(function (c) { return c && (c.handle || c.seed); }) : [];
+    } catch (_) { return []; }
+  }
+  function isValidPersona(p) {
+    return VALID.indexOf(p) >= 0 || addedHandles().indexOf(p) >= 0;
+  }
+  function stripCreatorParam(q) {
+    try {
+      q.delete("creator");
       var s = q.toString();
       history.replaceState(null, "", location.pathname + (s ? "?" + s : "") + location.hash);
     } catch (_) {}
   }
+  /* 舊狀態遷移（2026-09-08）：ztor.activeCreator（Admin 從名冊選定的 creator）與
+     ztor.adminHandoff（從 Admin 頁交接進來的那一趟）兩把 key 一起退役，統一成
+     ztor.role。讀到舊值就翻成新模型再刪掉，舊瀏覽器開站不會報錯、也不會卡在
+     「看起來還在代管、但沒有任何狀態支撐」的中間態。 */
+  function migrateLegacy() {
+    var role = null, persona = null;
+    try {
+      var old = localStorage.getItem("ztor.activeCreator");
+      if (old) { role = "admin"; if (isValidPersona(old)) persona = old; }
+      localStorage.removeItem("ztor.activeCreator");
+    } catch (_) {}
+    try {
+      var h = JSON.parse(localStorage.getItem("ztor.adminHandoff") || "null");
+      if (h && h.persona) { role = "admin"; if (isValidPersona(h.persona)) persona = h.persona; }
+      localStorage.removeItem("ztor.adminHandoff");
+    } catch (_) {}
+    return { role: role, persona: persona };
+  }
   try {
     var q = new URLSearchParams(location.search);
     asked = q.get("creator");
-    from = q.get("from") || "";
-    if (VALID.indexOf(asked) < 0) asked = null;
+    if (!isValidPersona(asked)) asked = null;
   } catch (_) { asked = null; }
   try {
+    var legacy = migrateLegacy();
     var p = localStorage.getItem(KEY);
+    if (legacy.persona) p = legacy.persona;
     if (asked) p = asked;
-    if (VALID.indexOf(p) < 0) p = FALLBACK;
+    if (!isValidPersona(p)) p = FALLBACK;
     if (p !== localStorage.getItem(KEY)) localStorage.setItem(KEY, p);
-    if (asked) {
-      /* 顯示名由來源頁在點擊當下寫入（它手上就有創作者名字）；同一個人再進來一次
-         不要把名字洗掉，所以沿用既有那一份。 */
-      var prev = null;
-      try { prev = JSON.parse(localStorage.getItem(HANDOFF) || "null"); } catch (_) {}
-      localStorage.setItem(HANDOFF, JSON.stringify({
-        persona: asked,
-        from: from,
-        name: (prev && prev.persona === asked && prev.name) || ""
-      }));
-      /* 「現在代管誰」只有一個位子：從審核頁交接進來就取代掉先前從 Creator 名冊
-         選的那一位，否則導航會同時有兩個代管對象、返回鍵指錯地方。 */
-      localStorage.removeItem("ztor.activeCreator");
-      /* 交接參數是一次性的指令，用完就從網址上收掉——留著的話，這一頁往後每一次
-         重新載入都會再套用一次，cheat code 換人格時的 reload 會被它蓋回去，看起來
-         像切換失效。身分本身已經寫進 localStorage，網址不需要再記一份。 */
-      stripHandoffParams(q);
-    }
+
+    var r = localStorage.getItem(ROLE_KEY);
+    if (legacy.role) r = legacy.role;
+    /* 網址帶 creator ＝ 從某個 Admin 頁進入這位創作者的工作區，那一定是 admin 身分。 */
+    if (asked) r = "admin";
+    if (ROLES.indexOf(r) < 0) r = "general";
+    if (r !== localStorage.getItem(ROLE_KEY)) localStorage.setItem(ROLE_KEY, r);
+
+    if (asked) stripCreatorParam(q);
     window.ztorPersonaId = function () { return p; };
+    window.ztorRoleId = function () { return r; };
   } catch (_) {
     /* localStorage 被封鎖（無痕／第三方 cookie 政策）時仍要有一致的答案，
        否則就退回原本各自為政的狀態。 */
     window.ztorPersonaId = function () { return asked || FALLBACK; };
+    window.ztorRoleId = function () { return asked ? "admin" : "general"; };
   }
 })();
 
