@@ -755,6 +755,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#pattern-modal"><span data-en>5.1.8 Modal shell</span><span data-zh>5.1.8 Modal shell</span></a>
     <a class="toc__link toc__link--sub" href="#pattern-split-preview"><span data-en>5.1.9 Split preview</span><span data-zh>5.1.9 Split preview</span></a>
     <a class="toc__link toc__link--sub" href="#pattern-detail-rail"><span data-en>5.1.10 Detail + persistent rail</span><span data-zh>5.1.10 Detail + persistent rail</span></a>
+    <a class="toc__link toc__link--sub" href="#pattern-destructive-confirm"><span data-en>5.1.11 Destructive confirm</span><span data-zh>5.1.11 Destructive confirm</span></a>
     <a class="toc__link" href="#voice"><span data-en>5.2 Voice</span><span data-zh>5.2 語氣</span></a>
     <a class="toc__link" href="#states"><span data-en>5.3 States</span><span data-zh>5.3 狀態</span></a>
     <a class="toc__link" href="#dataviz"><span data-en>5.4 Data viz</span><span data-zh>5.4 資料視覺化</span></a>
@@ -1777,7 +1778,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <tr><th>orange</th><td><span class="badge badge--orange">Live</span></td><td><span style="color:var(--muted-foreground)">—</span></td></tr>
     <tr><th>neutral</th><td><span class="badge badge--neutral">Draft</span></td><td><span style="color:var(--muted-foreground)">—</span></td></tr>
     <tr><th>default</th><td><span class="badge">Default</span></td><td><span style="color:var(--muted-foreground)">—</span></td></tr>
-    <tr><th>--outline</th><td><span class="badge badge--outline">Paid</span></td><td><span data-en>Ledger states (payout / refund / deduction) in a table that also carries income rows — filled = money you earned, outlined = money moving</span><span data-zh>與收入列同表的帳務異動狀態（提款／退款／扣款）——填色＝賺到的錢，描邊＝帳的搬動</span></td></tr>
+    <tr><th>--outline</th><td><span class="badge badge--outline">Paid</span></td><td><span data-en>Ledger states (payout / void / deduction) in a table that also carries income rows — filled = money you earned, outlined = money moving</span><span data-zh>與收入列同表的帳務異動狀態（提款／作廢沖銷／扣款）——填色＝賺到的錢，描邊＝帳的搬動</span></td></tr>
     <tr><th>--outline-danger</th><td><span class="badge badge--outline-danger">Failed</span></td><td><span data-en>The failed state of that same shell (a payout returned by the bank); border + text go destructive, the fill stays transparent so it never reads as <code>.badge--error</code></span><span data-zh>同一個殼的失敗態（提款被銀行退回）；邊與字換成 destructive、底維持透明，才不會讀成 <code>.badge--error</code></span></td></tr>
     <tr><th>--inline</th><td><span style="font-weight:var(--fw-regular)">Coastline tee (M) ×1 <span class="badge badge--neutral badge--inline">Limit 2/person</span></span></td><td><span data-en>Quiet qualifier after a title (regular weight, middle-aligned, 6px lead) — list / detail titles</span><span data-zh>標題後的安靜限定詞（regular 字重、middle 對齊、左 6px）— 清單／細節標題</span></td></tr>
   </tbody></table>
@@ -2472,6 +2473,19 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   <p class="field-text" data-en>Which sections a form has, their order, and the field mix inside are the <a href="#patterns">Pillar 5 · Form assembly</a> recipe — the fields above are illustrative only.</p>
   <p class="field-text" data-zh>一張表單有哪些區段、什麼順序、段內放哪些欄位，屬 <a href="#patterns">Pillar 5 · Form assembly</a> 配方——上面的欄位內容只是示意。</p>
   <p class="field-label" data-en>Sub-head <span class="field-note">(<code>.form-section__subhead</code> — 2026-08-09 promoted from create-event.html's <code>.ce-subhead</code>; groups fields inside one section, e.g. "Date &amp; time" vs "Session details")</span></p>
+  <p class="field-label" data-en>Card-bottom actions <span class="field-note">(<code>.form-section__actions</code> — 2026-09-09: when a card enters an edit mode, Cancel / Save sit at the bottom right; the left slot carries a hint or the validation message. First consumer: in-place stock-lock editing on the product detail page)</span></p>
+  <p class="field-label" data-zh>卡底動作列 <span class="field-note">(<code>.form-section__actions</code>——2026-09-09：卡片進入編輯模式時，取消／儲存放卡底靠右，左側留給說明或擋錯訊息。首個消費者：商品明細的鎖定就地編輯)</span></p>
+  <div class="demo">
+    <section class="form-section form-section--outlined" style="padding:24px">
+      <div class="form-section__head"><h3 class="form-section__title">Current stock</h3></div>
+      <div class="field"><div class="field__label">Locked</div><input class="input" value="12" style="max-width:160px"></div>
+      <div class="form-section__actions">
+        <span class="field__error">Exceeds unlocked stock · Up to 8</span>
+        <button class="btn btn--ghost btn--sm" type="button">Cancel</button>
+        <button class="btn btn--primary btn--sm" type="button" disabled>Save</button>
+      </div>
+    </section>
+  </div>
   <p class="field-label" data-zh>區段內小標 <span class="field-note">（<code>__subhead</code>——2026-08-09 自 create-event.html 的 <code>.ce-subhead</code> promote；一個區段內再分組，如「場次日期與時間」／「場次細節」）</span></p>
   <div class="demo demo--preview">
     <div class="ds-preview ds-preview--narrow">
@@ -3283,6 +3297,30 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       </div>
     </div>
   </div>
+  <p class="field-label" data-en>Narrow-column table <span class="field-note">(<code>.variant-table--fluid</code> — 2026-09-09: for the read-only table on the product detail page, whose column is ~450px. The base table's six px columns add up past its 560px min-width, so in a narrow column it spilled straight out of the card — <code>--menu</code> lets overflow through so the kebab can float, which means there is no scrollbar to catch it. Min-width drops to 0 and the text columns become compressible fr; the number columns and gutters stay at the base values, 78px and 8px)</span></p>
+  <p class="field-label" data-zh>窄欄版表格 <span class="field-note">(<code>.variant-table--fluid</code>——2026-09-09：給商品明細那張唯讀表用，它的欄只有 ~450px。基礎版六欄寫死 px、加總超過 560px 最小寬，窄欄裡整張戳出卡片外；<code>--menu</code> 為了讓 kebab 選單浮出已放行 overflow，連橫捲都接不住。改成最小寬 0、文字欄可壓縮的 fr；數字欄與欄距照基礎版的 78px 與 8px)</span></p>
+  <div class="demo">
+    <div style="max-width:452px">
+      <div class="variant-table-wrap variant-table-wrap--menu">
+        <div class="variant-table variant-table--fluid">
+          <div class="variant-table__head"><span>Variant</span><span>Price</span><span>Stock</span><span>Locked</span><span>Unlocked</span><span>SKU</span><span>Cost</span><span></span></div>
+          <div class="variant-table__row"><span class="variant-cell--variant">S</span><span class="variant-cell--ro">NT$3,680</span><span class="variant-cell--stock">12</span><span class="variant-cell--ro">4</span><span class="variant-cell--ro variant-cell--free">8</span><span class="variant-cell--ro">CARGO-PANTS-S</span><span class="variant-cell--ro">—</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>Delist this option</span></button></div></details></div>
+          <div class="variant-table__row"><span class="variant-cell--variant">M</span><span class="variant-cell--ro">NT$3,680</span><span class="variant-cell--stock variant-cell--stock-low">2</span><span class="variant-cell--ro">0</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro">CARGO-PANTS-M</span><span class="variant-cell--ro">—</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>Delist this option</span></button></div></details></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="field-label" data-en>Lock edit mode <span class="field-note">(<code>.variant-cell--lockedit</code> + <code>.variant-lock</code> — 2026-09-09: the Locked cell turns into one input per sales channel (channel name shown only when there is more than one), Unlocked previews live, an over-locked row turns its Unlocked red. Entered from the card head “Edit locks” (all rows) or the row kebab “Lock stock” (that row); Cancel / Save live in <code>.form-section__actions</code>)</span></p>
+  <p class="field-label" data-zh>鎖定編輯態 <span class="field-note">(<code>.variant-cell--lockedit</code> ＋ <code>.variant-lock</code>——2026-09-09：「鎖定」格換成每個管道一格輸入（多於一個管道才標名稱），「未鎖定」即時預覽，鎖過頭那列的未鎖定轉紅。入口是卡頭「編輯鎖定」（全部列）或列尾 ⋯「鎖定庫存」（該列）；取消／儲存在 <code>.form-section__actions</code>)</span></p>
+  <div class="demo">
+    <div class="variant-table-wrap variant-table-wrap--menu">
+      <div class="variant-table variant-table--fluid">
+        <div class="variant-table__head"><span>Variant</span><span>Price</span><span>Stock</span><span>Locked</span><span>Unlocked</span><span>SKU</span><span>Cost</span><span></span></div>
+        <div class="variant-table__row variant-table__row--editing"><span class="variant-cell--variant">S</span><span class="variant-cell--ro">NT$3,680</span><span class="variant-cell--stock">12</span><span class="variant-cell--lockedit"><label class="variant-lock"><span class="variant-lock__ch">Single sale</span><input class="input" type="number" value="4"></label><label class="variant-lock"><span class="variant-lock__ch">Four-piece set</span><input class="input" type="number" value="2"></label></span><span class="variant-cell--ro variant-cell--free">6</span><span class="variant-cell--ro">CARGO-PANTS-S</span><span class="variant-cell--ro">—</span><span></span></div>
+        <div class="variant-table__row variant-table__row--editing variant-table__row--error"><span class="variant-cell--variant">M</span><span class="variant-cell--ro">NT$3,680</span><span class="variant-cell--stock">5</span><span class="variant-cell--lockedit"><label class="variant-lock"><span class="variant-lock__ch">Single sale</span><input class="input" type="number" value="9"></label><label class="variant-lock"><span class="variant-lock__ch">Four-piece set</span><input class="input" type="number" value="" placeholder="Unlocked"></label></span><span class="variant-cell--ro variant-cell--free">−4</span><span class="variant-cell--ro">CARGO-PANTS-M</span><span class="variant-cell--ro">—</span><span></span></div>
+      </div>
+    </div>
+  </div>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
     <p class="field-text"><strong>2026-09-04（D249）</strong>：<code>.option-set</code> 最後多一列快捷 <code>.option-set__presets</code> &gt; <code>.option-set__preset</code>（尺寸／顏色，按一下把整組選項連值一起建好；已經建過同名選項的那顆就不出現）。顏色選項的值多一個色號欄 <code>.variant-option__hex</code> 與一顆實際渲染那個顏色的球 <code>.opt-dot</code>（<code>--opt-dot</code> 帶色，<code>--sm</code> 為 8px 版）；同一顆球用在值編輯列、收合摘要列與右欄的粉絲端預覽 chip。切到多選項時自動塞一組 Size/S·M·L 的舊做法同輪退場。</p>
@@ -3721,8 +3759,21 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       <div class="data-list__row data-list__row--fact">
         <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title">周湯豪 NICKTHEREAL</div><div class="data-list__meta"><i data-lucide="user" class="ztor-icon"></i>創作者</div></div></div>
       </div>
+      <div class="data-list__row data-list__row--disabled" aria-disabled="true">
+        <div class="data-list__row-main">
+          <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+          <div class="data-list__body"><div class="data-list__title">林家維 官方後援會 <span class="text-sub">會員卡 · 上架後才能加入</span></div></div>
+        </div>
+        <div class="data-list__end data-list__end--row">
+          <span class="badge badge--neutral">已下架</span>
+          <span>$8.00</span>
+          <a class="btn btn--icon btn--xs" href="#data-list" aria-label="開新分頁看商品詳情"><i data-lucide="external-link" class="ztor-icon"></i></a>
+        </div>
+      </div>
     </div>
   </div>
+  <p class="field-note" data-en><code>.data-list__row--disabled</code> (2026-09-09) — the row stays in the list and stays readable, but can't be picked: only <code>__row-main</code> dims, so the status badge and any row link keep full strength (the badge is what explains why it can't be picked). First used by the Create bundle product picker: unlisted products stay listed and badged, can't be added to the bundle, and still link out to their detail page.</p>
+  <p class="field-note" data-zh><code>.data-list__row--disabled</code>（2026-09-09）——這一列還在清單裡、看得見，但不能被選：只淡化 <code>__row-main</code>，右邊的狀態徽章與列上的連結維持原強度（不能被選的理由正是那顆徽章在說的話）。首個消費情境是建立組合的候選商品清單：已下架的商品照列、標徽章、不可加入，但仍點得進商品詳情。</p>
   <p class="field-note" data-en>Shared <code>transaction-list</code> renderer (components.js) — Earnings and Dashboard F3 use the SAME row. The status pill is per-call: Earnings shows it; Dashboard F3 passes <code>hideStatus</code> so the column is dropped (F3 lists settled income only, status is always settled — spec 5.1.1 §F3).</p>
   <p class="field-note" data-zh>共用 <code>transaction-list</code> 渲染器（components.js）— Earnings 與儀表板 F3 用同一列。狀態徽章為 per-call：Earnings 顯示；儀表板 F3 傳 <code>hideStatus</code> 略去該欄（F3 只列已結算收入、狀態恆為 settled — 規格 5.1.1 §F3）。</p>
   <p class="field-label" data-en>Do &amp; Don't</p>
@@ -4052,7 +4103,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       <tr><td><code>.ztor-table__row</code> / <code>.ztor-table__chev</code></td><td><span data-en>Clickable row (<code>aria-expanded</code>) + leading chevron that rotates 90° when open</span><span data-zh>可點列（<code>aria-expanded</code>）＋列首 chevron，展開時轉 90°</span></td></tr>
       <tr><td><code>.ztor-table__detail</code> (<code>[hidden]</code>)</td><td><span data-en>Sibling detail row (<code>&lt;td colspan&gt;</code>), <code>--muted</code> bg; <code>[hidden]</code> hides it</span><span data-zh>相鄰詳情列（<code>&lt;td colspan&gt;</code>），<code>--muted</code> 底；<code>[hidden]</code> 隱藏</span></td></tr>
       <tr><td><code>.tx-detail</code> / <code>__meta</code> / <code>__id</code> / <code>__copy</code> / <code>__note</code> / <code>__ladder</code></td><td><span data-en>Trace block: Event ID <code>&lt;code&gt;</code> + copy button, rate version, note, and <code>.waterfall</code> mini-ladder</span><span data-zh>追溯區塊：Event ID <code>&lt;code&gt;</code>＋複製鈕、費率版本、註記、與 <code>.waterfall</code> 小階梯</span></td></tr>
-      <tr><td><code>.ztor-table__row--ledger</code></td><td><span data-en>Ledger row (payout / refund / deduction) sharing a table with income rows — whole row drops to <code>--muted-foreground</code>. Selector carries <code>tbody</code> to outweigh <code>.ztor-table tbody td</code></span><span data-zh>與收入列同表的帳務異動列（提款／退款／扣款）——整列降到 <code>--muted-foreground</code>。選擇器帶 <code>tbody</code> 才壓得過 <code>.ztor-table tbody td</code></span></td></tr>
+      <tr><td><code>.ztor-table__row--ledger</code></td><td><span data-en>Ledger row (payout / void / deduction) sharing a table with income rows — whole row drops to <code>--muted-foreground</code>. Selector carries <code>tbody</code> to outweigh <code>.ztor-table tbody td</code></span><span data-zh>與收入列同表的帳務異動列（提款／作廢沖銷／扣款）——整列降到 <code>--muted-foreground</code>。選擇器帶 <code>tbody</code> 才壓得過 <code>.ztor-table tbody td</code></span></td></tr>
       <tr><td><code>.ztor-table__amt</code> / <code>--muted</code></td><td><span data-en>Money cell: right-aligned, tabular figures, no wrap — a narrow column otherwise folds the minus sign of "−$5,202.50" onto its own line, where it reads as a dash. <code>--muted</code> is the secondary amount (fees)</span><span data-zh>金額欄：靠右、等寬數字、不換行——窄欄會把「−$5,202.50」的負號折到上一行，單獨一行的負號會被讀成破折號。<code>--muted</code> 是次要金額（扣項）</span></td></tr>
       <tr><td><code>.tx-status</code> / <code>__when</code></td><td><span data-en>Status cell: badge plus, on pending rows only, the date that amount unlocks</span><span data-zh>狀態格：徽章，待結算的列再接該筆可動用的日期</span></td></tr>
       <tr><td><code>.tx-na</code></td><td><span data-en>The em dash for a column that does not apply to this row's family. Never −$0.00 — a zero reads as "this one really was charged nothing"</span><span data-zh>不適用於該列所屬族別的欄位所寫的破折號。不寫 −$0.00——填零會被讀成「這筆真的扣了 0 元」</span></td></tr>
@@ -4870,7 +4921,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <table class="matrix"><thead><tr><th></th><th><code>__delta</code> (+)</th><th><code>__delta--neg</code></th><th><code>__meta</code></th><th><code>__link</code></th></tr></thead><tbody>
     <tr><th>kpi</th>
       <td><div class="kpi" style="min-width:160px"><div class="kpi__label">Gross revenue</div><div class="kpi__value">$24,830</div><div class="kpi__delta">+18.4% MoM</div></div></td>
-      <td><div class="kpi" style="min-width:160px"><div class="kpi__label">Refunds</div><div class="kpi__value">$1,204</div><div class="kpi__delta kpi__delta--neg">-4.2% MoM</div></div></td>
+      <td><div class="kpi" style="min-width:160px"><div class="kpi__label">Voids</div><div class="kpi__value">$1,204</div><div class="kpi__delta kpi__delta--neg">-4.2% MoM</div></div></td>
       <td><div class="kpi" style="min-width:160px"><div class="kpi__label">Active licenses</div><div class="kpi__value">37</div><div class="kpi__meta">across 12 projects</div></div></td>
       <td><div class="kpi" style="min-width:160px"><div class="kpi__label">Net income</div><div class="kpi__value">$19,672</div><div class="kpi__meta">Fees · splits · costs</div><a class="kpi__link" href="#">View breakdown →</a></div></td>
     </tr>
@@ -6348,7 +6399,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         <button type="button" class="section-nav__item section-nav__item--active">售票紀錄</button>
         <button type="button" class="section-nav__item">活動名單 <span class="section-nav__count">128</span></button>
         <button type="button" class="section-nav__item">通知</button>
-        <button type="button" class="section-nav__item">退款</button>
+        <button type="button" class="section-nav__item">作廢</button>
         <button type="button" class="section-nav__item">成本與營收摘要</button>
       </nav>
       <div class="section-nav__body">
@@ -6423,12 +6474,12 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       </div>
       <div class="todo-list">
         <div class="todo-list__row todo-list__row--system">
-          <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" aria-label="退款規則"><span class="zcheck__box"></span></span></label>
+          <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" aria-label="取消與作廢政策"><span class="zcheck__box"></span></span></label>
           <div class="todo-list__body">
-            <div class="todo-list__text">退款規則</div>
+            <div class="todo-list__text">取消與作廢政策</div>
             <div class="todo-list__meta">尚未設定 · 確認前粉絲只會看到「請聯絡主辦方」</div>
           </div>
-          <div class="todo-list__end"><a class="btn btn--outline btn--xs" href="#todo-list">設定退款規則</a></div>
+          <div class="todo-list__end"><a class="btn btn--outline btn--xs" href="#todo-list">設定取消政策</a></div>
         </div>
         <div class="todo-list__row">
           <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" aria-label="確認驗票人力"><span class="zcheck__box"></span></span></label>
@@ -7546,8 +7597,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <h3 class="sub__title">4.70 Status axes</h3>
     <span class="layer layer--molecule">🟡 molecule</span>
   </div>
-  <p class="sub__desc" data-en>Two <strong>independent</strong> order status tracks shown together (spec 5.1.5.3.1 §2.2 / PCR-001): fulfilment (履約: To ship / Awaiting pickup / Shipped / Completed) and payment·settlement (收入結算: Paid / Refunded / Disputed). The two axes are never combined into a single badge. <code>.status-axes</code> = badges side by side (list rows, fulfilment first); <code>.status-axes--split</code> gives each axis its own group, divided by a hairline rule (order detail header). <strong>2026-08-07:</strong> the older <code>.status-axes--labeled</code> variant (an uppercase label above each axis) was retired — the rule already delivers what PCR-001 asks for, and the badge wording (Shipped / Awaiting pickup vs Paid) already says which axis it belongs to, so the labels said the same thing twice. Badges come from <code>badge.css</code> — Paid uses <code>badge--success</code> (green, Q11 2026-07-13; was <code>badge--neutral</code>).</p>
-  <p class="sub__desc" data-zh>訂單兩條<strong>獨立</strong>狀態軸並列（規格 5.1.5.3.1 §2.2 / PCR-001）：履約（待出貨／待取貨／已出貨／已完成）與收入結算（Paid／Refunded／Disputed），不併成單一 badge。<code>.status-axes</code>＝badge 並排（清單列，履約在前）；<code>.status-axes--split</code> 每軸自成一組、中間以細分隔線區隔（訂單詳情頁首）。<strong>2026-08-07</strong>：原本每軸上方掛大寫標籤的 <code>.status-axes--labeled</code> 變體退場——分隔線已經達成 PCR-001 要的「兩軸不混成一顆徽章」，而徽章文字（已出貨／待取貨 vs 已付款）本身就說明它屬於哪一軸，標籤是把同一件事講兩次。badge 取自 <code>badge.css</code>——Paid 用 <code>badge--success</code>（綠色，Q11 2026-07-13；原為 <code>badge--neutral</code>）。</p>
+  <p class="sub__desc" data-en>Two <strong>independent</strong> order status tracks shown together (spec 5.1.5.3.1 §2.2 / PCR-001): fulfilment (履約: To ship / Awaiting pickup / Shipped / Completed) and payment·settlement (收入結算: Paid / Disputed / Cancelled). The two axes are never combined into a single badge. <code>.status-axes</code> = badges side by side (list rows, fulfilment first); <code>.status-axes--split</code> gives each axis its own group, divided by a hairline rule (order detail header). <strong>2026-08-07:</strong> the older <code>.status-axes--labeled</code> variant (an uppercase label above each axis) was retired — the rule already delivers what PCR-001 asks for, and the badge wording (Shipped / Awaiting pickup vs Paid) already says which axis it belongs to, so the labels said the same thing twice. Badges come from <code>badge.css</code> — Paid uses <code>badge--success</code> (green, Q11 2026-07-13; was <code>badge--neutral</code>). <strong>2026-09-09 (D253):</strong> the payment·settlement axis dropped Refunded — the platform doesn't refund in-app, so a fully-voided order shows Cancelled there instead (fulfilment axis goes blank, since nothing ships anymore); see order-detail.html's renderStatus().</p>
+  <p class="sub__desc" data-zh>訂單兩條<strong>獨立</strong>狀態軸並列（規格 5.1.5.3.1 §2.2 / PCR-001）：履約（待出貨／待取貨／已出貨／已完成）與收入結算（Paid／Disputed／Cancelled），不併成單一 badge。<code>.status-axes</code>＝badge 並排（清單列，履約在前）；<code>.status-axes--split</code> 每軸自成一組、中間以細分隔線區隔（訂單詳情頁首）。<strong>2026-08-07</strong>：原本每軸上方掛大寫標籤的 <code>.status-axes--labeled</code> 變體退場——分隔線已經達成 PCR-001 要的「兩軸不混成一顆徽章」，而徽章文字（已出貨／待取貨 vs 已付款）本身就說明它屬於哪一軸，標籤是把同一件事講兩次。badge 取自 <code>badge.css</code>——Paid 用 <code>badge--success</code>（綠色，Q11 2026-07-13；原為 <code>badge--neutral</code>）。<strong>2026-09-09（D253）</strong>：付款・結算軸拿掉已退款——平台不提供站內退款，全數品項作廢的訂單改在這軸顯示已取消（履約軸則因不會再出貨而留空），見 order-detail.html 的 renderStatus()。</p>
   <div class="demo" style="display:flex;flex-direction:column;gap:18px;align-items:flex-start">
     <div class="status-axes status-axes--split">
       <span class="status-axes"><span class="badge badge--warning">To ship</span><span class="badge badge--warning">Awaiting pickup</span></span>
@@ -8478,10 +8529,12 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 
 <section class="sub" id="scanner">
   <div class="sub__head"><h3 class="sub__title">4.83 Mobile scanner</h3><span class="layer layer--organism">🟠 organism</span></div>
+  <p class="sub__desc" data-en><strong>2026-09-08 camera photo + roster legibility</strong>: the camera pane now carries a <em>static stand-in photo</em> behind the reticle (<code>.scanner-cam__feed</code> — image plus a <code>--surface-inverse</code> color-mix scrim; a live stream replaces that one layer in production), so the pane reads as a camera looking at something. Text in the pane switched to the <code>--foreground-on-inverse</code> pair because the photo is dark in both themes. Roster groups: the generic person icon became the shared <code>.ztor-avatar--sm</code> initial (ticket groups keep the ticket chip at the same 32px), the right column leads with <em>how many are left</em> and drops <em>M / N redeemed</em> to a footnote, child rows carry their in-group number in <code>.rowdis__lead</code> (same as pickup-detail, Q109), redeemed child rows step back, and a fully collected group dims as a whole.</p>
+  <p class="sub__desc" data-zh><strong>2026-09-08 相機示意照片＋名單可讀性</strong>：相機分頁在對準框背後鋪一張<em>靜態示意照片</em>（<code>.scanner-cam__feed</code>＝照片＋一層 <code>--surface-inverse</code> color-mix 暗紗；正式版換掉這一層就是真的相機串流），對準框才有東西可以對。照片恆為暗色，區內文字改吃 <code>--foreground-on-inverse</code> 那一組。名單群組列：通用人形圖示換成共用的 <code>.ztor-avatar--sm</code> 姓名首字（票券群組維持票券晶片、同為 32px），右欄主行改成<em>還剩幾件</em>、<em>已領 M／N</em> 退成註腳，子列在 <code>.rowdis__lead</code> 放組內序號（同 pickup-detail 的 Q109 做法），已核銷的子列降一階，整組領完則整塊降一階。</p>
   <p class="sub__desc" data-en><strong>2026-09-03 one code, one item (D240)</strong>: redemption now works on a <em>pickup unit</em> — one code redeems exactly one item. The result sheet shows only the unit just scanned (buyer, source order or ticket, item, option, source bundle) and a single confirm action; confirming returns to the camera and a persistent progress band (<code>.scanner-progress</code>) says how far that buyer has got in this session (redeemed / total, how many are left). The roster groups units under each buyer (parent row = buyer + M / N, child rows = one unit each), and the counts strip and item stats are summed from pickup units. The old multi-claim list (<code>.scanner-claims</code>) is retired.</p>
   <p class="sub__desc" data-zh><strong>2026-09-03 一物一碼（D240）</strong>：核銷單位改成「領取單位」——一個領取碼核銷一件。結果 bottom sheet 只顯示剛掃到的這一件（買家、來源訂單或票號、商品名、選項、來源組合）與一顆確認鈕；確認後回到相機連續掃描，並由常駐的進度 band（<code>.scanner-progress</code>）顯示這位買家在本場次已領幾件、還剩幾件。名單分頁改成按買家分組（父列＝買家＋已領 M／N，子列＝一個領取單位），頂部計數與項目統計都由領取單位加總。舊的多件清單（<code>.scanner-claims</code>）已退場。</p>
-  <p class="sub__desc" data-en>Standalone phone scanner (spec 5.1.5.14 · D111/D121/D122/D240) — a separate URL with no Studio nav. <strong>2026-08-19 flow redesign</strong>: the password gate shows the session identity (name / place / time / state) <em>before</em> unlocking, plus an optional staff name recorded on every redemption; after unlock the camera is the home screen with a live pending/redeemed counts strip on top and a Scan / Roster / Items bottom tab bar. Scan results come up as a bottom sheet inside the frame (success · duplicate · not-in-session · cancelled/refunded), so confirming returns straight to the camera — a continuous-scan rhythm for queues. Blocked (not started / ended), offline-hold and 5-attempt lockout states are first-class screens. The camera area keeps the frame's own surface — in production a live camera image fills it, so the prototype only draws the aiming furniture (four <code>--primary</code> corner brackets + sweep line) and floats manual entry over it; sheet scrim = <code>--overlay-tint</code>. Roster rows are tappable: they pre-fill manual entry with that buyer's code (identity check stays read-only, redeeming still goes through F1.1 manual input).</p>
-  <p class="sub__desc" data-zh>獨立手機 scanner（規格 5.1.5.14 · D111/D121/D122）——獨立 URL、無主工作台導航。<strong>2026-08-19 流程重規劃</strong>：密碼閘門在解鎖前就先亮場次身分（ztor 標記＋名稱／地點／時間／狀態），並提供選填的工作人員標示（記進每筆核銷紀錄）；解鎖後頂列只剩「正在掃哪一場」，相機即主畫面，其上常駐待核銷／已核銷即時計數，底部 掃描／名單／項目 三分頁。掃描結果改為框內 bottom sheet（成功·重複·不屬此場次·已取消退款），確認後直接回到相機——支撐現場排隊的連續掃描節奏。場次未開始／已結束、離線保留、密碼五次鎖定都是一等公民畫面。相機區維持手機框自身的底色（正式產品由實際相機畫面填滿），原型只畫對準用的四角括號（<code>--primary</code>）與掃描線，手動輸入鈕浮在其上；sheet 遮罩＝<code>--overlay-tint</code>。名單列可點：把該買家代碼帶入手動輸入（身分核對維持唯讀，核銷仍走 F1.1 手動輸入）。</p>
+  <p class="sub__desc" data-en>Standalone phone scanner (spec 5.1.5.14 · D111/D121/D122/D240) — a separate URL with no Studio nav. <strong>2026-08-19 flow redesign</strong>: the password gate shows the session identity (name / place / time / state) <em>before</em> unlocking, plus an optional staff name recorded on every redemption; after unlock the camera is the home screen with a live pending/redeemed counts strip on top and a Scan / Roster / Items bottom tab bar. Scan results come up as a bottom sheet inside the frame (success · duplicate · not-in-session · cancelled), so confirming returns straight to the camera — a continuous-scan rhythm for queues. Blocked (not started / ended), offline-hold and 5-attempt lockout states are first-class screens. The camera area keeps the frame's own surface — in production a live camera image fills it, so the prototype only draws the aiming furniture (four <code>--primary</code> corner brackets + sweep line) and floats manual entry over it; sheet scrim = <code>--overlay-tint</code>. Roster rows are tappable: they pre-fill manual entry with that buyer's code (identity check stays read-only, redeeming still goes through F1.1 manual input).</p>
+  <p class="sub__desc" data-zh>獨立手機 scanner（規格 5.1.5.14 · D111/D121/D122）——獨立 URL、無主工作台導航。<strong>2026-08-19 流程重規劃</strong>：密碼閘門在解鎖前就先亮場次身分（ztor 標記＋名稱／地點／時間／狀態），並提供選填的工作人員標示（記進每筆核銷紀錄）；解鎖後頂列只剩「正在掃哪一場」，相機即主畫面，其上常駐待核銷／已核銷即時計數，底部 掃描／名單／項目 三分頁。掃描結果改為框內 bottom sheet（成功·重複·不屬此場次·已取消），確認後直接回到相機——支撐現場排隊的連續掃描節奏。場次未開始／已結束、離線保留、密碼五次鎖定都是一等公民畫面。相機區維持手機框自身的底色（正式產品由實際相機畫面填滿），原型只畫對準用的四角括號（<code>--primary</code>）與掃描線，手動輸入鈕浮在其上；sheet 遮罩＝<code>--overlay-tint</code>。名單列可點：把該買家代碼帶入手動輸入（身分核對維持唯讀，核銷仍走 F1.1 手動輸入）。</p>
   <div class="demo">
     <div class="scanner-page" style="min-height:auto;padding:20px;border-radius:16px">
       <div class="scanner-frame" style="height:auto;width:320px">
@@ -8505,6 +8558,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
             </div>
           </div>
           <div class="scanner-cam" style="min-height:300px">
+            <div class="scanner-cam__feed"></div>
             <div class="scanner-cam__reticle"><div class="scanner-cam__line"></div></div>
             <button class="btn btn--outline scanner-manual" type="button">Enter code manually</button>
             <span class="scanner-cam__hint">Point at a pickup code</span>
@@ -8616,22 +8670,52 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
             <div class="rowdis__group rowdis__group--gutter rowdis__group--static">
             <div class="data-list__row rowdis__head">
               <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
-                <div class="data-list__body"><div class="data-list__title">Mika L.</div><div class="data-list__meta">Order #ZT-10482</div></div>
+                <span class="ztor-avatar ztor-avatar--sm">M</span>
+                <div class="data-list__body"><div class="data-list__title">Mika L.</div><div class="data-list__meta scanner-rosterhead__src">Order #ZT-10482</div></div>
               </div>
-              <div class="data-list__end data-list__end--row"><span class="data-list__meta">2 / 5 redeemed</span></div>
+              <div class="data-list__end">
+                <span class="scanner-rostercount">3 left</span>
+                <span class="scanner-rostercount__sub">2 / 5 redeemed</span>
+              </div>
             </div>
             <button class="data-list__row rowdis__child rowdis__child--compact scanner-rosterrow" type="button">
-              <div class="data-list__row-main"><div class="data-list__body">
-                <div class="data-list__title">Kowloon After Dark tee · M</div><div class="data-list__meta">PU-10482-01</div>
-              </div></div>
+              <div class="data-list__row-main">
+                <div class="rowdis__lead"><span class="rowdis__num">1</span></div>
+                <div class="data-list__body">
+                  <div class="data-list__title">Kowloon After Dark tee · M</div><div class="data-list__meta">PU-10482-01</div>
+                </div>
+              </div>
               <div class="data-list__end data-list__end--row"><span class="badge badge--warning"><span>Pending</span></span></div>
             </button>
-            <button class="data-list__row rowdis__child rowdis__child--compact scanner-rosterrow" type="button">
-              <div class="data-list__row-main"><div class="data-list__body">
-                <div class="data-list__title">Kowloon After Dark six-panel cap</div><div class="data-list__meta">PU-10482-02 · from Launch night bundle</div>
-              </div></div>
+            <button class="data-list__row rowdis__child rowdis__child--compact scanner-rosterrow scanner-rosterrow--done" type="button">
+              <div class="data-list__row-main">
+                <div class="rowdis__lead"><span class="rowdis__num">2</span></div>
+                <div class="data-list__body">
+                  <div class="data-list__title">Kowloon After Dark six-panel cap</div><div class="data-list__meta">PU-10482-02 · from Launch night bundle</div>
+                </div>
+              </div>
               <div class="data-list__end data-list__end--row"><span class="badge badge--success"><span>Redeemed 13:40</span></span></div>
+            </button>
+            </div>
+            <div class="rowdis__group rowdis__group--gutter rowdis__group--static scanner-rostergroup--done">
+            <div class="data-list__row rowdis__head">
+              <div class="data-list__row-main">
+                <span class="ztor-avatar ztor-avatar--sm">A</span>
+                <div class="data-list__body"><div class="data-list__title">Aria S.</div><div class="data-list__meta scanner-rosterhead__src">Ticket TK-88213</div></div>
+              </div>
+              <div class="data-list__end">
+                <span class="scanner-rostercount scanner-rostercount--done">All picked up</span>
+                <span class="scanner-rostercount__sub">1 / 1 redeemed</span>
+              </div>
+            </div>
+            <button class="data-list__row rowdis__child rowdis__child--compact scanner-rosterrow scanner-rosterrow--done" type="button">
+              <div class="data-list__row-main">
+                <div class="rowdis__lead"><span class="rowdis__num">1</span></div>
+                <div class="data-list__body">
+                  <div class="data-list__title">Signing session · GA entry</div><div class="data-list__meta">TK-88213</div>
+                </div>
+              </div>
+              <div class="data-list__end data-list__end--row"><span class="badge badge--success"><span>Redeemed 14:05</span></span></div>
             </button>
             </div>
           </div>
@@ -10378,7 +10462,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <p class="field-text"><strong>第 1 場為什麼是唯讀鏡像</strong>：日期與場地在同一頁上面已經有一組正式欄位，這裡再給一組可編輯的，同一筆資料就有兩個真相來源——使用者改了下面那格，上面那格與 Review 摘要、發布前檢核不知道該聽誰的。改成鏡像後只有「第 2 場起」是這份清單自己的資料。</p>
     <p class="field-text"><strong>開關為什麼在「場地與時間」不在確認頁</strong>：使用者最初指定放最後的確認頁；確認頁的定位是「檢查每一項沒問題就發布」，在那裡開一個會生出 N 個活動的開關等於在檢查步驟做重大建立動作，而且日期與場地都在前一步填過、要改得跳回去。2026-08-06 與使用者確認後移到「場地與時間」。</p>
     <p class="field-text"><strong>清單頁的群組列＝<a href="#row-disclosure">Row disclosure</a>（§4.204，2026-09-04 改 L3 整組換層）</strong>：群組容器 <code>.rowdis__group</code> 包住母列＋所有子列（表格型不加 <code>--gutter</code>）、母列疊 <code>.rowdis__head</code>＋<code>data-rowdis-row</code>（整列可點）、把手 <code>.rowdis__toggle</code>＋<code>data-rowdis</code>、子列 <code>.rowdis__child</code>＋<code>data-rowdis-child</code>（零縮排，展開時階層由 <code>.rowdis__group</code> 那塊 L2 薄膜面板說），互動走 <code>js/row-disclosure.js</code>。<strong>把手站列首欄（2026-09-04 · Q109 改）</strong>——原本把手跟在名稱後面（列的中段），與列尾的 ⋮ 讀不出「這是同一列的兩個控制項」，各組名稱長度不同時把手的 x 位置還會浮動。現在它在 <code>.rowdis__lead</code>、列的最前緣，⋮ 維持最末端，子列在同一格放場次序號；一般列也有這一欄（留空），所以名稱欄的左緣仍是一條線。當初「不放最右操作欄」的顧慮依舊成立（清單頁的 <code>.main</code> 是 <code>overflow-x:hidden</code>，視窗窄一點時右側幾欄會被切掉且捲不到），列首欄剛好在被切掉的反方向。（2026-08-06 到 2026-09-03 之間，這件事由 <code>product-list.css</code> 自己的 <code>__row--group</code>／<code>--child</code> 承擔；Q107 裁決收斂成一支之後那組已退場，CSS 原處留墓碑。）<strong>系列母頁的入口要有名字</strong>：母列標題本身是連結（進系列母頁），但母列的整列點擊是「展開」，光靠標題沒人會發現那裡還能點去別的地方，所以操作欄的 ⋮ 另給一個具名項目「管理整個系列」，子場詳情頁的「系列」分頁也放一個。行為約定由消費頁負責：母列整列可點＝展開／收合（明確的展開鈕與 ⋮ 裡那一項一律有效，連結與選單本身放行）；子列不進分頁計數；子列可見＝母列過篩選且展開；搜尋中一律攤開（搜到的字可能長在某一場身上）。</p>
-    <p class="field-text"><strong>三種活動詳情頁</strong>（2026-08-06 使用者裁決）：單場活動（<code>event-detail.html</code>，無系列）／系列母頁（<code>series-detail.html</code>）／系列子場（<code>event-detail.html</code>，有系列）。母頁承載共用設定、改一次同步所有場次；判準是「這個欄位每一場一不一樣」——一樣的（名稱、描述、陣容、圖片、人數、票種與票價）住母頁，不一樣的（日期、場地）住子場。<strong>階層要在麵包屑上讀得出來</strong>：子場是「活動 / 系列母頁 / 這一場」三層、返回鈕回系列母頁；末層寫「第 N 場 · 場地」不寫活動名稱（同系列各場刻意同名，用名稱三場會一模一樣）。單場活動維持兩層。母頁不是一場活動，所以頁首不掛日期與場地、也沒有報到與名單。入口有兩個：活動清單的母列標題、子場詳情頁「系列」分頁的「管理整個系列 →」。頁面上刻意寫死兩則規則：已開賣的警示用 <code>.alert--row.--warning</code>（沿用編輯活動「改動的後果」同一種說法），以及「取消系列中的一場＝與取消一場獨立活動完全相同的退款規則」。</p>
+    <p class="field-text"><strong>三種活動詳情頁</strong>（2026-08-06 使用者裁決）：單場活動（<code>event-detail.html</code>，無系列）／系列母頁（<code>series-detail.html</code>）／系列子場（<code>event-detail.html</code>，有系列）。母頁承載共用設定、改一次同步所有場次；判準是「這個欄位每一場一不一樣」——一樣的（名稱、描述、陣容、圖片、人數、票種與票價）住母頁，不一樣的（日期、場地）住子場。<strong>階層要在麵包屑上讀得出來</strong>：子場是「活動 / 系列母頁 / 這一場」三層、返回鈕回系列母頁；末層寫「第 N 場 · 場地」不寫活動名稱（同系列各場刻意同名，用名稱三場會一模一樣）。單場活動維持兩層。母頁不是一場活動，所以頁首不掛日期與場地、也沒有報到與名單。入口有兩個：活動清單的母列標題、子場詳情頁「系列」分頁的「管理整個系列 →」。頁面上刻意寫死兩則規則：已開賣的警示用 <code>.alert--row.--warning</code>（沿用編輯活動「改動的後果」同一種說法），以及「取消系列中的一場＝與取消一場獨立活動完全相同的作廢規則」。</p>
     <p class="field-text"><code>ds-components/session-list.css</code> ＋ <code>ds-components/row-disclosure.css</code>／<code>js/row-disclosure.js</code>（群組列）。消費頁：<code>create-event.html</code>（步驟 3 場地與時間 › 系列場次，用 <code>.session-list--detailed</code> ＋ <code>__head</code>）、<code>create-event-legacy.html</code>（基準版）、<code>events.html</code>（系列母列與子列）、<code>series-detail.html</code>（系列母頁，場次表用頁內變體 <code>product-list--series</code>）、<code>pickup-detail.html</code>（2026-09-03／D240，取貨名單以買家分組：買多件的買家收成母列、每一件是一條子列；與活動清單同一支元件，未另開第二種分組列）。產品規格缺口見 ASSUMPTIONS SER-001。</p>
   </div>
   </details>
@@ -11407,9 +11491,21 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
             <span class="salloc__nolock" data-i18n="stock.free">Unlocked</span>
             <span class="salloc__qty">72</span>
           </div>
+          <div class="salloc__row salloc__row--cap">
+            <span class="salloc__name">
+              <span><span data-i18n="cb.total">Total quantity</span> <span class="field__req">*</span></span>
+              <span class="salloc__sub" data-i18n="cb.total.hint">Hard cap · still limited by member stock</span>
+            </span>
+            <span class="salloc__qty salloc__qty--muted">—</span>
+            <span class="salloc__lock"><div class="amount-field amount-field--suffix"><input class="input amount-field__input" value="12"><span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></div></span>
+            <span class="salloc__qty">12</span>
+          </div>
           <div class="salloc__row salloc__row--free">
-            <span class="salloc__name"><span data-i18n="stock.bundle-min">Bundle sellable = lowest member stock</span></span>
-            <span class="salloc__qty">20</span>
+            <span class="salloc__name">
+              <span data-i18n="stock.bundle-qty">Bundle sellable</span>
+              <span class="salloc__sub"><span data-en>Capped by Total quantity</span><span data-zh>受組合上限限制</span></span>
+            </span>
+            <span class="salloc__qty">12</span>
           </div>
         </div>
       </div>
@@ -11420,6 +11516,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <table class="spec"><tbody>
       <tr><td><code>.salloc</code></td><td><span data-en>The table. Column widths are local custom properties (<code>--salloc-lock-col</code>, <code>--salloc-qty-col</code>) so a consumer that needs different widths overrides the variable instead of writing px into a style attribute.</span><span data-zh>表本體。欄寬走本地變數（<code>--salloc-lock-col</code>、<code>--salloc-qty-col</code>），要調整就覆寫變數，不在 style 屬性寫死 px。</span></td></tr>
       <tr><td><code>.salloc__row</code></td><td><span data-en>One channel (or one member in the bundle view). Hairline <code>--border-soft</code> underneath; the last row drops it.</span><span data-zh>一個管道（組合視角則是一個成員）。底下一條 <code>--border-soft</code> 細線，最後一列不畫。</span></td></tr>
+      <tr><td><code>--cap</code></td><td><span data-en>The bundle's own hard cap (Limited edition), 2026-09-09. It sits in the table as a row of its own — same reading as a member row: the input goes in the Locked column, the Sellable column says how many that cap can give. Outside the table it read as an unrelated field: set 5, see 1 below, no visible link. The <code>--free</code> row then names which row decided the minimum (<code>stock.capped-by</code>).</span><span data-zh>組合自己的硬上限（限量版本），2026-09-09 新增。它在表裡佔一列，讀法與成員列相同：輸入框在「鎖定量」那一欄，「可售」欄寫出這道上限給得起幾件。擺在表格外面時它讀起來像無關的欄位——設 5、下面顯示 1，看不出關係。末列 <code>--free</code> 接著寫出這個最小值是被誰壓出來的（<code>stock.capped-by</code>）。</span></td></tr>
       <tr><td><code>--head</code> · <code>--pool</code> · <code>--free</code></td><td><span data-en>Column labels, the pool total, and the unlocked remainder. Pool and remainder are separated from the channel rows by a solid <code>--border</code>, because they are the premise and the leftover — not two more channels.</span><span data-zh>欄標題、目前在庫、沒有被鎖定的庫存量。池與沒有被鎖定的庫存量用實線 <code>--border</code> 與管道列隔開——它們是前提與剩餘，不是另外兩個管道。</span></td></tr>
       <tr><td><code>.salloc__qty</code></td><td><span data-en>Sellable count. Tabular numerals, right aligned: these are read down the column and compared (the bundle's stock is the smallest of them), so they must line up.</span><span data-zh>可售量。等寬數字、靠右：這一欄是要往下掃著比大小的（組合可售量＝取最小值），對不齊就掃不動。</span></td></tr>
       <tr><td><code>.salloc__chip</code> · <code>.salloc__error</code></td><td><span data-en>Both span the full row width on a second line. The chip carries "N unlocked — neither single sale nor bundles can reach them"; the error line carries the over-limit message and matches <code>.field__error</code> in size and colour, because it is the same role.</span><span data-zh>兩者都在第二行橫跨整列。chip 放「N 件未鎖定，沒有管道能賣」；錯誤行放超標訊息，字級與顏色比照 <code>.field__error</code>——那是同一個角色。</span></td></tr>
@@ -12234,8 +12331,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 <section class="pillar" id="patterns">
       <div><span class="pillar__num">05.1 · Pattern ▸ Cards</span></div>
       <h2 class="pillar__title"><span data-en>How components assemble.</span><span data-zh>元件如何組合</span></h2>
-      <p class="pillar__intro" data-en>Best-practice assembly recipes — how components combine to meet a creator's goal. Ten cards across four categories (page-level and mid-level); each has trigger / must / should / must-not / edge-cases. Component sections demo the unit only — assembly rules live here.</p>
-      <p class="pillar__intro" data-zh>最佳實務的組合配方 — 元件如何組合起來達成創作者的目標。四個類別共十張卡（頁面級＋中間層），每張都列出 trigger / must / should / must-not / edge-cases。元件段只展示單元本身——組合規則一律寫在這裡（判準見 §4.0）。</p>
+      <p class="pillar__intro" data-en>Best-practice assembly recipes — how components combine to meet a creator's goal. Eleven cards across four categories (page-level and mid-level); each has trigger / must / should / must-not / edge-cases. Component sections demo the unit only — assembly rules live here.</p>
+      <p class="pillar__intro" data-zh>最佳實務的組合配方 — 元件如何組合起來達成創作者的目標。四個類別共十一張卡（頁面級＋中間層），每張都列出 trigger / must / should / must-not / edge-cases。元件段只展示單元本身——組合規則一律寫在這裡（判準見 §4.0）。</p>
       <div class="viz"><div class="wire-grid">
         <a class="wire-link" href="#pattern-dashboard"><div class="wire"><div class="wire__frame"><div class="wire__b wire__b--top"></div><div class="wire__b wire__b--hero"></div><div class="wire__kpi"><div class="wire__b"></div><div class="wire__b"></div><div class="wire__b"></div></div><div class="wire__row wire__row--grow"><div class="wire__b"></div><div class="wire__b"></div></div></div><div class="wire__cap"><b>Dashboard home</b> · <span data-en>hero + KPI + alerts</span><span data-zh>hero + KPI + alerts</span></div></div></a>
         <a class="wire-link" href="#pattern-tabbed"><div class="wire"><div class="wire__frame"><div class="wire__b wire__b--top"></div><div class="wire__row"><div class="wire__b" style="height:14px"></div><div class="wire__b" style="height:14px;background:var(--primary);opacity:.5"></div><div class="wire__b" style="height:14px"></div></div><div class="wire__b wire__b--grow"></div></div><div class="wire__cap"><b>Tabbed section</b> · <span data-en>tabs + one panel</span><span data-zh>tabs + 單一面板</span></div></div></a>
@@ -12247,6 +12344,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         <a class="wire-link" href="#pattern-modal"><div class="wire"><div class="wire__frame" style="justify-content:center;align-items:center"><div style="width:70%;border:1px solid var(--border);border-radius:4px;padding:4px;display:flex;flex-direction:column;gap:3px"><div class="wire__b" style="height:8px;width:50%"></div><div class="wire__b" style="height:16px"></div><div class="wire__b" style="height:8px;background:var(--primary);opacity:.5;align-self:flex-end;width:30%"></div></div></div><div class="wire__cap"><b>Modal shell</b> · <span data-en>one dialog chrome</span><span data-zh>單一 dialog 殼</span></div></div></a>
         <a class="wire-link" href="#pattern-split-preview"><div class="wire"><div class="wire__frame" style="flex-direction:row;gap:6px"><div class="wire__b" style="flex:1.6;height:auto"></div><div style="flex:1;border:1px solid var(--border);border-radius:4px;display:flex;flex-direction:column;gap:3px;padding:3px"><div class="wire__b" style="height:8px;width:60%"></div><div class="wire__b" style="flex:1"></div></div></div><div class="wire__cap"><b>Split preview</b> · <span data-en>editor + live preview</span><span data-zh>編輯 + 即時預覽</span></div></div></a>
         <a class="wire-link" href="#pattern-detail-rail"><div class="wire"><div class="wire__frame" style="flex-direction:row;gap:6px"><div style="display:flex;flex-direction:column;gap:4px;flex:1"><div class="wire__row"><div class="wire__b" style="height:8px;width:26px;background:var(--primary);opacity:.5"></div><div class="wire__b" style="height:8px;width:26px"></div></div><div class="wire__b" style="flex:1"></div></div><div style="display:flex;flex-direction:column;gap:4px;width:34%"><div class="wire__b" style="height:22px"></div><div class="wire__b" style="height:22px"></div></div></div><div class="wire__cap"><b>Detail + persistent rail</b> · <span data-en>tabs + sticky meta rail</span><span data-zh>分頁 + 常駐 meta 欄</span></div></div></a>
+        <a class="wire-link" href="#pattern-destructive-confirm"><div class="wire"><div class="wire__frame" style="justify-content:center;align-items:center"><div style="width:70%;border:1px solid var(--border);border-radius:4px;padding:4px;display:flex;flex-direction:column;gap:3px"><div class="wire__b" style="height:8px;width:45%"></div><div class="wire__b" style="height:6px"></div><div class="wire__b" style="height:6px;width:80%"></div><div class="wire__row" style="justify-content:flex-end;gap:3px"><div class="wire__b" style="height:8px;width:22%"></div><div class="wire__b" style="height:8px;width:30%;background:var(--destructive);opacity:.5"></div></div></div></div><div class="wire__cap"><b>Destructive confirm</b> · <span data-en>say the consequences first</span><span data-zh>先把後果講完</span></div></div></a>
       </div></div>
       <section class="sub" id="pattern-dashboard">
         <div class="sub__head"><h3 class="sub__title">5.1.1 Dashboard home</h3><span class="layer">Layout</span></div>
@@ -12314,7 +12412,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
             <div class="bento" style="margin-bottom:var(--sp-16)">
               <div class="kpi bento--span-4"><div class="kpi__label">Gross revenue</div><div class="kpi__value">$24,830</div><div class="kpi__delta">+18.4% MoM</div></div>
               <div class="kpi bento--span-4"><div class="kpi__label">Net income</div><div class="kpi__value">$19,672</div><div class="kpi__meta">Fees · splits · costs</div></div>
-              <div class="kpi bento--span-4"><div class="kpi__label">Refunds</div><div class="kpi__value">$1,204</div><div class="kpi__delta kpi__delta--neg">-4.2% MoM</div></div>
+              <div class="kpi bento--span-4"><div class="kpi__label">Voids</div><div class="kpi__value">$1,204</div><div class="kpi__delta kpi__delta--neg">-4.2% MoM</div></div>
             </div>
             <div class="card"><div class="card__head"><h3 class="card__title">Recent activity</h3></div><p class="field-text">This panel only renders while "Overview" is the active tab.</p></div>
           </div>
@@ -12341,7 +12439,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
               <button class="chip chip--active">All <span class="chip__count">24</span></button>
               <button class="chip">Sales <span class="chip__count">16</span></button>
               <button class="chip">Payouts <span class="chip__count">6</span></button>
-              <button class="chip">Refunds <span class="chip__count">2</span></button>
+              <button class="chip">Void <span class="chip__count">2</span></button>
             </div>
             <div class="filter-row__actions"><button class="btn btn--outline btn--sm">Clear</button></div>
           </div>
@@ -12620,6 +12718,58 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         </div></div>
         <p class="field-text" data-en>See it live: <a href="product-detail.html">product-detail.html</a></p>
         <p class="field-text" data-zh>實際頁面：<a href="product-detail.html">product-detail.html</a></p>
+      </section>
+
+      <section class="sub" id="pattern-destructive-confirm">
+        <div class="sub__head"><h3 class="sub__title">5.1.11 Destructive confirm</h3><span class="layer">Interaction</span></div>
+        <p class="field-label" data-en>Trigger</p><p class="field-label" data-zh>觸發</p>
+        <p class="field-text" data-en>An action that can't be taken back — voiding an order item, deleting a product / draft / event, disabling an account. Reversible actions (save draft, unlist, toggle visibility) just do it and show a toast.</p>
+        <p class="field-text" data-zh>一個按下去就收不回來的動作——作廢訂單明細、刪除商品／草稿／活動、停用帳號。可逆的動作（存草稿、下架、切換顯示）不走這張卡，做完給 toast 就好。</p>
+        <p class="field-label" data-en>Must</p><p class="field-label" data-zh>必須</p>
+        <p class="field-text" data-en>No new modal CSS — this is <a href="#pattern-modal">Modal shell</a> plus <a href="#button">.btn--destructive</a>, which is why the rule lives here and not in Pillar 4. The entry point is a quiet <code>.btn--ghost.btn--destructive</code> (red text, never the loudest thing in the row); only the commit button in the dialog foot is a full <code>.btn--destructive</code>. Body order is fixed, four blocks: <strong>what is being acted on</strong> (name it and quantify it — never "this item") → <strong>prerequisite</strong> (what must already be done elsewhere, e.g. "refund the buyer in Stripe first") → <strong>what happens</strong> (one line per consequence: codes voided, stock restocked, who gets emailed) → <strong>no undo</strong>. Afterwards the toast says what actually happened, not "success".</p>
+        <p class="field-text" data-zh>沒有新的 modal CSS——它是 <a href="#pattern-modal">Modal shell</a> 加上 <a href="#button">.btn--destructive</a>，所以規則寫在 Pattern、不寫成元件。入口是安靜的 <code>.btn--ghost.btn--destructive</code>（紅字，絕不是那一列裡最響的東西）；只有彈窗頁尾真正執行的那顆才是完整的 <code>.btn--destructive</code>。內容順序固定四段：<strong>動到哪一項</strong>（講出名稱與數量，不要只說「這個項目」）→ <strong>前置條件</strong>（要先在別的地方做完什麼，例如「請先在 Stripe 完成人工退款」）→ <strong>會發生什麼</strong>（一條後果一行：憑證失效、庫存回補、誰會收到信）→ <strong>不可逆</strong>。事後的 toast 要說出實際發生了什麼，不是只說「成功」。</p>
+        <p class="field-label" data-en>Should / must-not</p><p class="field-label" data-zh>建議／禁止</p>
+        <p class="field-text" data-en>Keep a blocked entry point visible and disabled with a <code>title</code> saying why (already picked up, needs the Admin role) — a hidden button reads as "this feature doesn't exist". Never use the native <code>confirm()</code>; never replace the consequence list with a single vague "this cannot be undone"; never change the screen before the user confirms.</p>
+        <p class="field-text" data-zh>不能按的入口留在畫面上、停用並用 <code>title</code> 說明為什麼（已取貨、需要 Admin 角色）——藏起來的按鈕會被讀成「沒有這個功能」。不可用原生 <code>confirm()</code>；不可把後果縮成一句籠統的「此操作無法復原」；不可在使用者確認之前就先改畫面。</p>
+        <p class="field-label" data-en>Rendered composition <span class="field-note">(<code>.payout-modal</code> shown inline via <code>.demo--inline-modal</code>)</span></p>
+        <p class="field-label" data-zh>渲染組合實例 <span class="field-note">（<code>.payout-modal</code> 用 <code>.demo--inline-modal</code> 壓成行內展示）</span></p>
+        <div class="demo demo--inline-modal"><div class="payout-modal" style="width:100%">
+          <div class="payout-dialog">
+            <div class="payout-dialog__head">
+              <h4 class="payout-dialog__title">Void item</h4>
+              <button class="btn btn--icon" aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+            </div>
+            <div class="payout-dialog__body">
+              <div class="data-list">
+                <div class="data-list__row">
+                  <div class="data-list__row-main"><div class="data-list__body">
+                    <div class="data-list__title">Kowloon After Dark vinyl · numbered 1/50</div>
+                    <div class="data-list__meta">1 × $180.00</div>
+                  </div></div>
+                </div>
+              </div>
+              <div class="field__hint mt-16">Refund the buyer in Stripe first — voiding moves no money and never calls Stripe.</div>
+              <div class="field__label mt-16">What voiding does</div>
+              <div class="field__hint">This item's pickup codes stop working immediately — they can't be scanned at a session.</div>
+              <div class="field__hint mt-8">Stock goes back on the shelf; a bundle restocks each of its members.</div>
+              <div class="field__hint mt-8">The buyer gets an order-cancelled email listing this item.</div>
+              <div class="field__hint mt-16">There's no undo — a voided item can't be reinstated.</div>
+            </div>
+            <div class="payout-dialog__foot">
+              <button class="btn btn--ghost btn--sm">Cancel</button>
+              <button class="btn btn--destructive btn--sm">Void this item</button>
+            </div>
+          </div>
+        </div></div>
+        <p class="field-label" data-en>Entry points in the row <span class="field-note">(enabled · blocked by item state · blocked by role)</span></p>
+        <p class="field-label" data-zh>列上的入口 <span class="field-note">（可按・被品項狀態擋下・被角色擋下）</span></p>
+        <div class="demo" style="display:flex;gap:var(--sp-12);flex-wrap:wrap;align-items:center">
+          <button class="btn btn--ghost btn--destructive btn--sm">Void</button>
+          <button class="btn btn--ghost btn--destructive btn--sm" disabled aria-disabled="true" title="Already picked up — can't be voided">Void</button>
+          <button class="btn btn--ghost btn--destructive btn--sm" disabled aria-disabled="true" title="Requires the Admin role">Void</button>
+        </div>
+        <p class="field-text" data-en>See it live: <a href="order-detail.html?id=ZT-10484">order-detail.html</a> — void an order item (Admin only)</p>
+        <p class="field-text" data-zh>實際頁面：<a href="order-detail.html?id=ZT-10484">order-detail.html</a>——作廢訂單品項（Admin 專屬）</p>
       </section>
     </section>
 

@@ -122,6 +122,89 @@
     return locked === null ? freeQty(product) : locked;
   }
 
+  /* ── 逐選項組合的鎖定（2026-09-09 使用者裁決；規格未定義粒度，見 ASSUMPTIONS UIA-146）──
+     多選項商品的庫存住在每一個選項組合上，鎖定因此也逐組合各自記，形狀與池的鎖定相同：
+       variant.locks = { single: n|null, bundles: { <bundleId>: n|null } }
+     三態解讀不變（null／undefined＝沒鎖定，數字含 0＝鎖定模式），規則也不變——
+     鎖定的管道只吃自己那一份，沒鎖定的管道共用該組合剩下的量。
+     商品層的 pool.locks 仍然只服務單一規格商品；多選項商品的管道分配表改讀這裡的加總，
+     兩套數字不互相混算。 */
+  function vLocks(variant) {
+    var l = (variant && variant.locks) || {};
+    return { single: lockVal(l.single), bundles: l.bundles || {} };
+  }
+  /** 這個選項組合在某個管道的鎖定量；沒鎖定回 null。channel 形狀同 lockOf。 */
+  function variantLockOf(variant, channel) {
+    var l = vLocks(variant);
+    if (channel === 'single' || channel === undefined || channel === null) return l.single;
+    if (typeof channel === 'string') return lockVal(l.bundles[channel]);
+    if (channel.bundle) return lockVal(l.bundles[channel.bundle]);
+    return null;
+  }
+  /** 這個選項組合所有管道的鎖定量合計。 */
+  function variantLockedTotal(variant) {
+    var l = vLocks(variant), sum = l.single || 0, k, v;
+    for (k in l.bundles) {
+      if (!Object.prototype.hasOwnProperty.call(l.bundles, k)) continue;
+      v = lockVal(l.bundles[k]);
+      if (v !== null) sum += v;
+    }
+    return sum;
+  }
+  function variantStock(variant) { return num(variant && variant.stock); }
+  /** 這個選項組合還沒被鎖走的量；不會回負數。 */
+  function variantFree(variant) {
+    return Math.max(0, variantStock(variant) - variantLockedTotal(variant));
+  }
+  /** 這個選項組合在某個管道現在能賣幾件（規則同 channelQty，只是範圍縮到這一個組合）。 */
+  function variantChannelQty(variant, channel) {
+    var locked = variantLockOf(variant, channel);
+    return locked === null ? variantFree(variant) : locked;
+  }
+  /* 商品層的加總：多選項商品的管道分配表是唯讀彙總，數字全部由這三個函式算。 */
+  function variantsTotal(variants) {
+    return (variants || []).reduce(function (a, v) { return a + variantStock(v); }, 0);
+  }
+  function variantsFree(variants) {
+    return (variants || []).reduce(function (a, v) { return a + variantFree(v); }, 0);
+  }
+  function variantsChannelQty(variants, channel) {
+    return (variants || []).reduce(function (a, v) { return a + variantChannelQty(v, channel); }, 0);
+  }
+  /** 某個管道在這件商品身上有沒有任何一個組合設了鎖定（決定彙總列要顯示數字還是「未鎖定」）。 */
+  function variantsChannelLocked(variants, channel) {
+    var any = false, sum = 0;
+    (variants || []).forEach(function (v) {
+      var l = variantLockOf(v, channel);
+      if (l !== null) { any = true; sum += l; }
+    });
+    return any ? sum : null;
+  }
+  /**
+   * 「未鎖定的量沒有人拿得到」的判定（多選項版）：只有當每一個還有剩餘量的組合，
+   * 它的每一個管道都設了鎖定，剩下的才真的沒人能賣。
+   * 只看加總會誤判——M 鎖了、L 沒鎖時，單售仍然拿得到 L 的剩餘量。
+   */
+  function variantsAllLocked(variants, channels) {
+    var chs = channels || ['single'];
+    var any = false, all = true;
+    (variants || []).forEach(function (v) {
+      if (variantFree(v) <= 0) return;
+      any = true;
+      if (!chs.every(function (c) { return variantLockOf(v, c) !== null; })) all = false;
+    });
+    return any && all;
+  }
+
+  /** 逐組合的鎖定上限＝該組合沒被別的管道鎖走的量（含這個管道自己現有的鎖定量）。 */
+  function validateVariantLock(variant, channel, wanted) {
+    var own = variantLockOf(variant, channel);
+    var max = variantFree(variant) + (own === null ? 0 : own);
+    if (wanted === null || wanted === '' || wanted === undefined) return { ok: true, max: max };
+    var w = num(wanted);
+    return { ok: w >= 0 && w <= max, max: max };
+  }
+
   /**
    * 組合包可售量＝各成員在這個組合包的可售量取最小值，再與組合自己的限量硬上限取最小。
    * productsById：{ [productId]: product }。查不到的成員視為 0（不可售）。
@@ -307,6 +390,16 @@
     privateLinkFor: privateLinkFor,
     resetPrivateLink: resetPrivateLink,
     validateLock: validateLock,
+    variantLockOf: variantLockOf,
+    variantLockedTotal: variantLockedTotal,
+    variantFree: variantFree,
+    variantChannelQty: variantChannelQty,
+    variantsTotal: variantsTotal,
+    variantsFree: variantsFree,
+    variantsChannelQty: variantsChannelQty,
+    variantsChannelLocked: variantsChannelLocked,
+    variantsAllLocked: variantsAllLocked,
+    validateVariantLock: validateVariantLock,
     validateSaleWindow: validateSaleWindow
   };
 }));

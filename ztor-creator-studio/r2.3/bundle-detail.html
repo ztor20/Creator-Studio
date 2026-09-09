@@ -253,13 +253,6 @@
               </button>
             </div>
           </div>
-          <div class="form-grid">
-            <div class="field" data-when-bd-edition="limited" data-feat="S45" hidden style="margin-bottom:0">
-              <div class="field__label"><span data-i18n="cb.total">Total quantity</span> <span class="field__req">*</span></div>
-              <input class="input" id="bd-total" value="50">
-              <div class="field__hint" data-i18n="cb.total.hint">Hard cap · still limited by member stock</div>
-            </div>
-          </div>
           <div class="salloc salloc--bundle" id="bd-alloc">
             <div class="salloc__row salloc__row--head">
               <span></span>
@@ -267,8 +260,24 @@
               <span data-i18n="stock.lock">Locked</span>
               <span style="text-align:right" data-i18n="stock.sellable">Sellable</span>
             </div>
+            <!-- 硬上限與成員一樣佔一列（2026-09-09，與 create-bundle 同一套）：擺在表格外面時，
+                 設了上限卻看到另一個數字，兩件事讀起來像沒有關係。 -->
+            <div class="salloc__row salloc__row--cap" data-when-bd-edition="limited" data-feat="S45" hidden>
+              <span class="salloc__name">
+                <span><span data-i18n="cb.total">Total quantity</span> <span class="field__req">*</span></span>
+                <span class="salloc__sub" data-i18n="cb.total.hint">Hard cap · still limited by member stock</span>
+              </span>
+              <span class="salloc__qty salloc__qty--muted">—</span>
+              <span class="salloc__lock"><div class="amount-field amount-field--suffix">
+                <input class="input amount-field__input" id="bd-total" inputmode="numeric" value="50" data-i18n-aria-label="cb.total" aria-label="Total quantity">
+                <span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></div></span>
+              <span class="salloc__qty" data-bd-cap-qty>—</span>
+            </div>
             <div class="salloc__row salloc__row--free" id="bd-alloc-total">
-              <span class="salloc__name"><span data-i18n="stock.bundle-min">Bundle sellable = lowest member stock</span></span>
+              <span class="salloc__name">
+                <span data-i18n="stock.bundle-qty">Bundle sellable</span>
+                <span class="salloc__sub" data-bd-decider hidden></span>
+              </span>
               <span class="salloc__qty" id="bd-bundle-qty">—</span>
             </div>
           </div>
@@ -580,7 +589,7 @@
           + '<span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></div></span>'
           + '<span class="salloc__qty" data-bd-sellable></span>'
           + '<p class="salloc__error" data-i18n="stock.lock-err" hidden>Exceeds unlocked stock</p>';
-        allocEl.insertBefore(row, allocTotalRow);
+        allocEl.insertBefore(row, allocEl.querySelector('.salloc__row--cap') || allocTotalRow);   /* 成員在上、硬上限在下（同 create-bundle） */
         const inp = row.querySelector('[data-bd-lock]');
         if (inp && p && LS) {
           const lock = LS.lockOf(p, { bundle: bundleModel.id });
@@ -620,10 +629,32 @@
           if (lockEl) { if (lock === null) { lockEl.removeAttribute('data-i18n'); lockEl.textContent = '—'; } else setQty(lockEl, lock); }
         }
       });
+      /* 硬上限那一列：右欄寫出這道上限給得起幾件，與成員列同一種讀法。 */
+      const capRow = allocEl && allocEl.querySelector('.salloc__row--cap');
+      const capQty = capRow && capRow.querySelector('[data-bd-cap-qty]');
+      const capOn = bundleModel.cap !== null && bundleModel.cap >= 0;
+      if (capQty) { if (capOn) setQty(capQty, bundleModel.cap); else { capQty.removeAttribute('data-i18n'); capQty.textContent = '—'; } }
+
       const qty = LS.bundleQty(bundleModel, allProducts());
       setQty(bundleQtyEl, qty);
       if (railAvail) setQty(railAvail, qty);
       refreshBadges(qty);
+
+      /* 末列的數字是取最小的結果，說出是誰給的——某個成員，還是這個組合自己的硬上限。 */
+      const decider = allocEl && allocEl.querySelector('[data-bd-decider]');
+      if (decider) {
+        let name = null, min = Infinity;
+        bundleModel.members.forEach(m => {
+          const p = productOf(m.productId);
+          if (!p) return;
+          const q = LS.channelQty(p, { bundle: bundleModel.id });
+          if (q < min) { min = q; name = p.name; }
+        });
+        if (capOn && bundleModel.cap <= min) name = T('cb.total', 'Total quantity');
+        const show = !!name && qty !== Infinity;
+        decider.hidden = !show;
+        if (show) decider.textContent = T('stock.capped-by', 'Capped by {name}').replace('{name}', name);
+      }
     }
     /* 頁首徽章：主徽章走 deriveFlags（跳過 hidden 那一層），「已隱藏」另掛一顆。 */
     function refreshBadges(qty) {

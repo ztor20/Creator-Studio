@@ -363,20 +363,26 @@
   function curTheme() { return (window.ztorTheme && window.ztorTheme.getPreference && window.ztorTheme.getPreference()) || 'system'; }
   function curLang() { return document.documentElement.lang === 'zh-Hant' ? 'zh-Hant' : 'en'; }
   function curNav() { return (window.ztorNavMode && window.ztorNavMode.get && window.ztorNavMode.get()) || 'topbar'; }
-  /* Creator (Admin) — spec §4.1 / D086. Switch which creator the Admin is
-     operating as, or clear back to the roster (Tier 1 locked). Reads/sets the
-     shared model exposed by sidebar.js (window.ztorCreator). */
-  function creatorOpts() {
-    var list = (window.ztorCreator && window.ztorCreator.list) || [];
-    /* 一般創作者（無代管）排第一，其後才是各 creator 的 admin 代管。 */
-    var opts = [['__none__', '一般創作者', '一般創作者視角（無 admin chrome）']];
-    list.forEach(function (c) { opts.push([c.handle, c.name, c.shop]); });
-    return opts;
+  /* Role · 身分 — spec §4.1 / D086。2026-09-08 使用者裁決：身分只有兩態。
+     「代管誰」不再是這一組的事——那由上面的 Persona 組決定（打開周湯豪的頁面
+     把身分切成 Admin ＝ Admin 代管周湯豪，切回 General ＝ 周湯豪本人視角），
+     所以 2×3 就是全部組合。改版前這一組列的是名冊每一位，等於把同一件事
+     （代管誰）記了第二遍，與 persona 各說各話。
+     讀寫 sidebar.js 的共用模型（window.ztorCreator.role／setRole → ztor.role）。 */
+  function roleOpts() {
+    return [
+      ['general', 'General creator', 'creator 本人視角（無 admin chrome）'],
+      ['admin',   'Admin',           'Admin 代管目前 persona · 可進 Admin 頁']
+    ];
   }
-  function curCreator() {
-    var c = window.ztorCreator && window.ztorCreator.get && window.ztorCreator.get();
-    return c ? c.handle : '__none__';
+  function curRole() {
+    return (window.ztorCreator && window.ztorCreator.role && window.ztorCreator.role()) || 'general';
   }
+  /* 資料人格 Persona — window.ztorPersona（js/i18n.js）的薄包裝，僅供面板渲染用；
+     載入順序固定 theme→i18n→sidebar→devtools，window.ztorPersona 理論上必存在，
+     這裡的判斷式只是防禦寫法，不是像舊版那樣拿它當「有沒有 admin 選項」的岔路。 */
+  function personaOpts()    { return (window.ztorPersona && window.ztorPersona.list)    ? window.ztorPersona.list()    : [['default', 'default User', '']]; }
+  function personaCurrent() { return (window.ztorPersona && window.ztorPersona.current) ? window.ztorPersona.current() : 'default'; }
 
   /* ---- 頁面自訂 dev 預覽開關（page-scoped，非全站）----
      頁面在載入 devtools 前設 window.ZTOR_DEV_PAGE_GROUPS = [{ key, label,
@@ -608,8 +614,10 @@
       +         verRows(state.version, 'panel')
       +         '<button class="ztd__row' + (state.showFuture ? ' is-on' : '') + '" data-act="toggle-future" style="margin-top:9px"><span>顯示未來功能（淡色標記）</span><span class="ztd__sw"></span></button>'
       +       '</div>'
-      +       '<div class="ztd__group"><p class="ztd__group-label">User</p>'
-      +         '<div class="ztd__grid">' + optsHtml((window.ztorPersona ? window.ztorPersona.list() : creatorOpts()), (window.ztorPersona ? window.ztorPersona.current() : curCreator()), 'persona') + '</div></div>'
+      +       '<div class="ztd__group"><p class="ztd__group-label">Persona · 資料人格</p>'
+      +         '<div class="ztd__grid">' + optsHtml(personaOpts(), personaCurrent(), 'persona') + '</div></div>'
+      +       '<div class="ztd__group"><p class="ztd__group-label">Role · 身分</p>'
+      +         '<div class="ztd__grid">' + optsHtml(roleOpts(), curRole(), 'role') + '</div></div>'
       +       '<div class="ztd__group"><p class="ztd__group-label">Data State</p>'
       +         '<div class="ztd__grid">' + optsHtml(DATA, state.data, 'data') + '</div></div>'
       +       '<div class="ztd__group"><p class="ztd__group-label">Event Day</p>'
@@ -847,9 +855,13 @@
     if (kind === 'theme') { if (window.ztorTheme) window.ztorTheme.setPreference(val); return paint(); }
     if (kind === 'lang')  { if (window.setLang) window.setLang(val); return paint(); }
     if (kind === 'nav')   { if (window.ztorNavMode) window.ztorNavMode.set(val); return paint(); }
-    /* persona＝cheat「User」組：切換資料人格（default/admin/nick/userB）；set() 內部 reload */
+    /* persona＝「Persona · 資料人格」組：切換資料人格（default/nick/userB）；
+       set() 內部 reload，資料檔與覆蓋層在下次載入生效。
+       role＝「Role · 身分」組：general｜admin 兩態，走 window.ztorCreator.setRole()；
+       導覽由它派發的 ztor:creator-changed 事件即時重繪（sidebar.js mountAndRestore
+       ＋ Admin 頁門禁），不需要額外呼叫 reload。 */
     if (kind === 'persona') { if (window.ztorPersona) window.ztorPersona.set(val); return; }
-    if (kind === 'creator') { if (window.ztorCreator) window.ztorCreator.set(val === '__none__' ? null : val); return paint(); }
+    if (kind === 'role') { if (window.ztorCreator) window.ztorCreator.setRole(val); return paint(); }
     state[kind] = val; update();
   });
 

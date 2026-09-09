@@ -317,6 +317,38 @@
       catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾', options: options || []
     };
   }
+  /* 選項組合（variants）：wishProduct 只給「有哪些選項值」，這裡依笛卡兒積補出逐組合的列。
+     沒有這份清單，商品分頁「銷售設定 → 當前庫存」的逐規格表會只剩表頭（renderPageTable
+     是照 variants 畫列的）。庫存把 stock 平均分攤到各組合、餘數給前面幾列，總和＝目前在庫，
+     與庫存池對得起來；SKU 由 id 與選項值推導。皆為 demo 樣本值，非後端資料。 */
+  function wishSkuPart(v, i) {
+    var s = String(v).toUpperCase().replace(/[^A-Z0-9]/g, '');
+    return s || ('V' + (i + 1));
+  }
+  function wishVariants(id, options, stock) {
+    var combos = [[]];
+    (options || []).forEach(function (o) {
+      var vals = (o.values || []).filter(function (x) { return String(x).trim() !== ''; });
+      if (!vals.length) return;
+      var next = [];
+      combos.forEach(function (c) { vals.forEach(function (val) { next.push(c.concat([val])); }); });
+      combos = next;
+    });
+    if (!combos.length || !combos[0].length) return [];
+    var total = Math.max(0, Number(stock) || 0);
+    var base = Math.floor(total / combos.length), rest = total - base * combos.length;
+    /* SKU 前綴：id 去掉 wy- 之後只留最後兩段（wy-bundle-cargo-pants → CARGO-PANTS），
+       與 default 那批手寫的短碼（TEE-S／HOOD-BK-S）長度相當，窄欄裡才讀得完。 */
+    var seg = String(id).replace(/^wy-/, '').split('-');
+    var prefix = seg.slice(-2).join('-').toUpperCase();
+    return combos.map(function (c, i) {
+      return {
+        combo: c.slice(),
+        sku: [prefix].concat(c.map(wishSkuPart)).join('-'),
+        stock: String(base + (i < rest ? 1 : 0))
+      };
+    });
+  }
   var WISHYOU_PRODUCTS = {
     'wy-26ms-hoodie': wishProduct('26MS Hoodie', '26ms-hoodie-01.jpeg', 3680, '注意事項：不可水洗、緩和乾洗；50%棉50%滌綸。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 3, 'https://www.wishyouagoodlife.com/products/26ms-hoodie', ['26ms-hoodie-01.jpeg', '26ms-hoodie-02.jpeg']),
     'wy-26ms-socks': wishProduct('26MS Socks', '26ms-socks-01.jpeg', 688, '材質：棉 82%、彈性纖維 13%、彈性纖維 5%。', [{ name: 'Size / 尺寸', values: ['F'] }], 425, 'https://www.wishyouagoodlife.com/products/26ms-socks'),
@@ -335,6 +367,11 @@
     'wy-bundle-cargo-pants': wishProduct('祝你好命 束口工裝褲', 'wyagl-cargo-pants-generated.webp', '待確認', '以組合包配色延伸的黑色水洗束口工裝褲，側邊口袋與紅色車線細節。', [{ name: 'Size / 尺寸', values: ['S', 'M', 'L', 'XL'] }], 0, '', ['wyagl-cargo-pants-generated.webp']),
     'wy-bundle-lowtop-sneakers': wishProduct('祝你好命 紅白低筒球鞋', 'wyagl-lowtop-sneakers-generated.webp', '待確認', '以組合包配色延伸的紅白黑低筒球鞋，鞋跟有螢光綠點綴。', [{ name: 'Size / 尺寸', values: ['US 8', 'US 9', 'US 10', 'US 11'] }], 0, '', ['wyagl-lowtop-sneakers-generated.webp'])
   };
+  Object.keys(WISHYOU_PRODUCTS).forEach(function (id) {
+    var p = WISHYOU_PRODUCTS[id];
+    if (p.variants || !p.options || !p.options.length) return;
+    p.variants = wishVariants(id, p.options, p.stock);
+  });
   /* 既有入口保留，但內容與來源商品同步。 */
   /* 2026-07-27 使用者指定的列表排序：這四筆置頂（白 Tee → 老帽 → 束口褲 → 球鞋），
      其餘沿用 WISHYOU_PRODUCTS 的定義順序。只影響 e-shop 列表的產列順序，不動商品內容。 */
@@ -489,7 +526,24 @@
     /* 販售結束：停售日期與時間已過 */
     song:    { saleEnd: '2026-08-20T23:59:00' },
     /* 已下架：總閘門關掉，公開與非公開連結都失效 */
-    membership: { listed: false }
+    membership: { listed: false },
+    /* ⚠ 這裡曾經放過 hoodie 的「排定上架、時間還沒到」示範（2026-09-09 加、同日撤）。
+       撤掉的原因：hoodie 同時是 e-shop F5 粉絲端預覽的第 5 張卡，而那段的過濾只看
+       listed／shown、不看 listAt（既有淺層判斷，見 ASSUMPTIONS UIA-135），
+       於是清單與細節頁說「已下架」、預覽卡卻照樣露出。要補「排定上架未到」的示範，
+       請挑不在 e-shop.html 的 PREVIEW_IDS 裡、也不是組合成員的商品——nick persona 的
+       wy-24ce-rug 就是為此挑的。
+       nick persona 的下架示範（2026-09-09）：原本這個 persona 的 16 件商品全部上架中，
+       等於「已下架」這個狀態在周湯豪的資料裡不存在——建立組合的候選清單看不到停用列、
+       e-shop 也沒有已下架那一列可篩。兩件都刻意挑非組合成員、非別名的商品，
+       不影響既有的組合可售量與 product-detail 示範。 */
+    'wy-24ce-skateboard': { listed: false },
+    'wy-24ce-rug': { listAt: '2026-11-15T10:00:00' },
+    /* 販售軸的兩態（2026-09-09）：建立組合的候選清單要標「販售結束」與「即將開賣」，
+       但預設角色帶這兩態的商品（song／movie）依 D251 不能進組合，等於那兩顆徽章沒有資料可看。
+       同樣挑非組合成員、非別名、也不在 e-shop F5 預覽名單裡的商品。 */
+    'wy-24ce-wyagl-tee': { saleEnd: '2026-08-20T23:59:00' },
+    'wy-24ce-sock': { saleStart: '2026-11-01T12:00:00' }
   };
 
   /* 一個組合包＝一個販售管道。cap 是組合自己的限量硬上限（§7.2），null ＝ 無額外上限。 */

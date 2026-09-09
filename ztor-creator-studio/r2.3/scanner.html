@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/avatar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
@@ -95,6 +96,8 @@
           </div>
         </div>
         <div class="scanner-cam">
+          <!-- 靜態示意照片＋暗紗（原型，非真實相機串流；見 ASSUMPTIONS UIA-046 (d)）-->
+          <div class="scanner-cam__feed"></div>
           <div class="scanner-cam__reticle"><div class="scanner-cam__line"></div></div>
           <button class="btn btn--outline scanner-manual" type="button" data-sc-manual><span data-i18n="sc.scan.manual">Enter code manually</span></button>
           <span class="scanner-cam__hint" data-i18n="sc.cam.hint">Point the camera at a pickup code</span>
@@ -178,7 +181,7 @@
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="bundle"><i data-lucide="package" class="ztor-icon"></i> <span data-i18n="sc.demo.bundle">Bundle member</span></button>
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="dup"><i data-lucide="rotate-ccw" class="ztor-icon"></i> <span data-i18n="sc.demo.dup">Duplicate scan</span></button>
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="notin"><i data-lucide="x-circle" class="ztor-icon"></i> <span data-i18n="sc.demo.notin">Not in this session</span></button>
-    <button class="btn btn--outline btn--sm" type="button" data-sc-demo="refund"><i data-lucide="ban" class="ztor-icon"></i> <span data-i18n="sc.demo.refund">Cancelled / refunded</span></button>
+    <button class="btn btn--outline btn--sm" type="button" data-sc-demo="void"><i data-lucide="ban" class="ztor-icon"></i> <span data-i18n="sc.demo.void">Cancelled</span></button>
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="offline"><i data-lucide="alert-triangle" class="ztor-icon"></i> <span data-i18n="sc.demo.offline">Toggle offline</span></button>
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="time"><i data-lucide="clock" class="ztor-icon"></i> <span data-i18n="sc.demo.time">Cycle session time</span></button>
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="lock"><i data-lucide="lock" class="ztor-icon"></i> <span data-i18n="sc.demo.lock">Password lockout</span></button>
@@ -215,7 +218,7 @@
        variant 選項組合
        from    來源組合的 i18n key（由組合展開的成員才有，D240 裁決二）
        session 所屬取貨場次（null＝取貨場次待設定）
-       status  pending 待核銷 | done 已核銷 | unset 取貨場次待設定 | void 已取消退款
+       status  pending 待核銷 | done 已核銷 | unset 取貨場次待設定 | void 已取消（作廢）
        at      最近核銷時間
      訂單來源的單位讀 js/orders-store.js（window.ztorOrders.unitsOf，回傳的是複本，
      本頁核銷只改複本、不動 store）；票券單位不在 orders-store 裡，寫在本頁。 */
@@ -245,9 +248,10 @@
       itemKey: 'pk.tk.signing', itemName: 'Signing session · GA entry', variant: null,
       from: null, session: SESSION, status: 'done', at: '14:05' }
   ];
-  /* 已取消／已退款的單位（D242，2026-09-03）：orders-store 現在有真實 void 範例
+  /* 已取消的單位（D242 定義、2026-09-08 Admin 作廢；2026-09-09 隨 D253 收斂觸發源為
+     只剩 Admin 作廢）：orders-store 現在有真實 void 範例
      （#ZT-10471 的 PU-10471-01、#ZT-10473 的 PU-10473-01／02，見 js/orders-store.js
-     「退款即失效」節），退款情境直接從那份資料撈，不再於本頁另寫一份。 */
+     「作廢即失效」節），已取消情境直接從那份資料撈，不再於本頁另寫一份。 */
   var UNITS = unitsFromOrders().concat(TICKET_UNITS);
 
   var timeState = 'live';   /* notyet | live | ended */
@@ -264,6 +268,11 @@
     return hit;
   }
   function unitName(u) { return T(u.itemKey, u.itemName || u.code); }
+  /* 名單上「這是誰」的識別＝姓名首字，交給共用元件 .ztor-avatar 畫圓。 */
+  function initial(name) {
+    var s = String(name || '').trim();
+    return s ? s.charAt(0).toUpperCase() : '?';
+  }
   /* demo 資料有些品項名本身就帶了選項（如「… tee (M)」），同一件事不重覆說兩次 */
   function nameHasVariant(u) { return !!u.variant && unitName(u).indexOf('(' + u.variant + ')') >= 0; }
   function progressOf(buyer) {
@@ -365,32 +374,57 @@
     }
     host.innerHTML = order.map(function (g) {
       var p = progressOf(g.buyer);
+      var left = p.total - p.done;
+      var allDone = left <= 0;
+      /* 列首：訂單來源的群組放姓名首字識別圓（共用元件 .ztor-avatar）——原本每一組
+         都是同一顆人形圖示，佔掉列上最大的視覺重量卻分不出人；票券來源的群組維持
+         票券圖示（那裡要讀的是「這是票」），用 32px 的 --sm 晶片與識別圓同寬，
+         兩種群組的標題才落在同一條垂直線上。 */
+      var lead = g.kind === 'ticket'
+        ? '<span class="data-list__icon data-list__icon--sm"><i data-lucide="ticket" class="ztor-icon"></i></span>'
+        : '<span class="ztor-avatar ztor-avatar--sm">' + initial(g.buyer) + '</span>';
+      /* 右欄：主行＝還剩幾件（現場唯一要回答的問題），已領 M／N 退成註腳；
+         整組領完那一格不再是數字，改成一句「已領完」並降階。 */
       var head = '<div class="data-list__row rowdis__head">' +
-        '<div class="data-list__row-main">' +
-          '<div class="data-list__icon"><i data-lucide="' + (g.kind === 'ticket' ? 'ticket' : 'user') + '" class="ztor-icon"></i></div>' +
+        '<div class="data-list__row-main">' + lead +
           '<div class="data-list__body"><div class="data-list__title">' + g.buyer + '</div>' +
-          '<div class="data-list__meta">' + g.src + '</div></div>' +
+          '<div class="data-list__meta scanner-rosterhead__src">' + g.src + '</div></div>' +
         '</div>' +
-        '<div class="data-list__end data-list__end--row"><span class="data-list__meta">' +
-          fill(T('sc.prog.count', '{n} / {m} redeemed'), { n: p.done, m: p.total }) + '</span></div>' +
+        '<div class="data-list__end">' +
+          '<span class="scanner-rostercount' + (allDone ? ' scanner-rostercount--done' : '') + '">' +
+            (allDone ? T('sc.roster.alldone', 'All picked up')
+                     : fill(T('sc.roster.left', '{n} left'), { n: left })) + '</span>' +
+          '<span class="scanner-rostercount__sub">' +
+            fill(T('sc.prog.count', '{n} / {m} redeemed'), { n: p.done, m: p.total }) + '</span>' +
+        '</div>' +
       '</div>';
-      var body = head + g.units.map(function (u) {
+      var body = head + g.units.map(function (u, i) {
         var meta = u.code + (u.from ? ' · ' + fill(T('sc.r.from.meta', 'from {name}'), { name: T(u.from) }) : '');
         /* 子列＝共用元件 row-disclosure 的子列（Q107 裁決後站上唯一的「這幾列從屬於上面那一列」
            做法）。這份名單的母列不可展開——名單唯讀、單位一律攤開，所以只用它的階層視覺、
-           不掛 data-rowdis-child，也就不需要 js/row-disclosure.js。 */
-        return '<button class="data-list__row rowdis__child rowdis__child--compact scanner-rosterrow" type="button" data-sc-code="' + u.code + '">' +
-          '<div class="data-list__row-main"><div class="data-list__body">' +
-            '<div class="data-list__title">' + unitName(u) + (u.variant && !nameHasVariant(u) ? ' · ' + u.variant : '') + '</div>' +
-            '<div class="data-list__meta">' + meta + '</div>' +
-          '</div></div>' +
+           不掛 data-rowdis-child，也就不需要 js/row-disclosure.js。
+           列首欄（.rowdis__lead）放組內序號：桌機版 pickup-detail 已經這樣做（2026-09-04
+           Q109），工作人員才說得出「第 3 件」。已核銷的子列掛 --done 降一階。 */
+        return '<button class="data-list__row rowdis__child rowdis__child--compact scanner-rosterrow' +
+          (u.status === 'done' ? ' scanner-rosterrow--done' : '') +
+          '" type="button" data-sc-code="' + u.code + '">' +
+          '<div class="data-list__row-main">' +
+            '<div class="rowdis__lead"><span class="rowdis__num">' + (i + 1) + '</span></div>' +
+            '<div class="data-list__body">' +
+              '<div class="data-list__title">' + unitName(u) + (u.variant && !nameHasVariant(u) ? ' · ' + u.variant : '') + '</div>' +
+              '<div class="data-list__meta">' + meta + '</div>' +
+            '</div>' +
+          '</div>' +
           '<div class="data-list__end data-list__end--row">' + statusBadge(u) + '</div>' +
         '</button>';
       }).join('');
       /* L3 整組換層：唯讀群組用 `--static`，面板恆亮（沒有把手可展開／收合，
          「這幾件屬於這位買家」單靠面那塊面說），`--gutter` 讓面板往外長、
-         列的 x 位置不動（`.data-list__row` 自己沒有左右內距）。 */
-      return '<div class="rowdis__group rowdis__group--gutter rowdis__group--static">' + body + '</div>';
+         列的 x 位置不動（`.data-list__row` 自己沒有左右內距）。整組領完再掛
+         scanner-rostergroup--done 讓整塊降一階（只降透明度，面板本身的填色、
+         邊框與面板內 hover 不動）。 */
+      return '<div class="rowdis__group rowdis__group--gutter rowdis__group--static' +
+        (allDone ? ' scanner-rostergroup--done' : '') + '">' + body + '</div>';
     }).join('');
     host.querySelectorAll('[data-sc-code]').forEach(function (row) {
       /* 規格 F3：名單只做身分核對，核銷仍走手動輸入——點列預填領取碼、保留確認 */
@@ -467,7 +501,7 @@
   }
   function openSheet(kind, unit, rawCode) {
     var band = q('[data-sc-sheet-band]'), body = q('[data-sc-sheet-body]'), foot = q('[data-sc-sheet-foot]');
-    sheet.className = 'scanner-sheet is-on scanner-sheet--' + ({ ok: 'ok', dup: 'warn', notin: 'bad', refund: 'bad' }[kind]);
+    sheet.className = 'scanner-sheet is-on scanner-sheet--' + ({ ok: 'ok', dup: 'warn', notin: 'bad', void: 'bad' }[kind]);
     scrim.classList.add('is-on');
     var back = '<button class="btn btn--primary" type="button" data-sc-close data-i18n="sc.res.back">' + T('sc.res.back', 'Back') + '</button>';
     if (kind === 'ok') {
@@ -489,9 +523,9 @@
         ? buyerBlock(unit) + detailRows(unit) + note('sc.note.notin')
         : '<div class="scanner-buyer"><b>' + (rawCode || '—') + '</b><span data-i18n="sc.notin.unknown">' + T('sc.notin.unknown', 'Unknown code') + '</span></div>' + note('sc.note.unknown');
       foot.innerHTML = back;
-    } else if (kind === 'refund') {
-      band.innerHTML = '<i data-lucide="ban" class="ztor-icon"></i><span data-i18n="sc.res.refund">' + T('sc.res.refund', 'Cancelled / refunded') + '</span>';
-      body.innerHTML = buyerBlock(unit) + detailRows(unit) + note('sc.note.refund');
+    } else if (kind === 'void') {
+      band.innerHTML = '<i data-lucide="ban" class="ztor-icon"></i><span data-i18n="sc.res.void">' + T('sc.res.void', 'Cancelled') + '</span>';
+      body.innerHTML = buyerBlock(unit) + detailRows(unit) + note('sc.note.void');
       foot.innerHTML = back;
     }
     foot.querySelectorAll('[data-sc-close]').forEach(function (b) { b.addEventListener('click', closeSheet); });
@@ -546,7 +580,7 @@
     if (timeState !== 'live') return; /* blocked overlay 已擋 */
     var u = unitByCode(code);
     if (!u) { openSheet('notin', null, code || '—'); return; }
-    if (u.status === 'void') { openSheet('refund', u); return; }
+    if (u.status === 'void') { openSheet('void', u); return; }
     if (u.session !== SESSION) { openSheet('notin', u); return; }
     openSheet(u.status === 'done' ? 'dup' : 'ok', u);
   });
@@ -629,7 +663,7 @@
         var x = firstUnit(function (u) { return u.session !== SESSION; });
         openSheet('notin', x, x ? x.code : 'PU-10490-01');
       }
-      if (k === 'refund') openSheet('refund', firstUnit(function (u) { return u.status === 'void'; }));
+      if (k === 'void') openSheet('void', firstUnit(function (u) { return u.status === 'void'; }));
     });
   });
 

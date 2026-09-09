@@ -53,14 +53,10 @@
 
 <!-- 無權限狀態（規格 F6／§4.4／§6.4）：非平台營運身分進來時，說明需要什麼身分，
      不只把入口藏起來。原型用 Cheat Codes 的「檢視身分」切換示範（見頁尾 script）。 -->
-<div id="vr-noaccess" hidden>
-  <div class="empty-card">
-    <div class="empty-card__icon empty-card__icon--warning"><i data-lucide="lock" class="ztor-icon"></i></div>
-    <h2 class="empty-card__title" data-i18n="vr.noaccess.title">Platform operators only</h2>
-    <p class="empty-card__text" data-i18n="vr.noaccess.text">Reviewing belongs to the ztor operations team. A creator workspace cannot review its own work or anyone else's.</p>
-    <a class="btn btn--outline" href="index.html" data-i18n="vr.noaccess.back">Back to dashboard</a>
-  </div>
-</div>
+<!-- 墓碑 2026-09-08（persona × role 裁決）：這裡原本是本頁自己的無權限狀態
+     `#vr-noaccess`，由本頁專屬的「檢視身分」假開關控制。身分收斂成單一 `ztor.role`
+     之後，Admin 頁的門禁改由 js/sidebar.js 的共用實作注入（同一段 .empty-card），
+     六頁一份，不再每頁各寫一份。 -->
 
 <!-- ══════════════ 檢視一：待審清單（F2）══════════════ -->
 <div id="vr-queue" hidden>
@@ -232,15 +228,14 @@
      目前這位操作者。誰是審核者、能不能轉派屬〔產品待確認〕，本頁不自行拍板。 */
   var ME = 'ztor Ops · You';
 
-  /* ---- 權限：Cheat Codes 的「檢視身分」（page-scoped 預覽開關，見 js/devtools.js）----
-     真實系統由後端判斷；原型只需要能把「無權限」這個頁面狀態演出來。 */
-  window.ZTOR_DEV_PAGE_GROUPS = [{
-    key: 'vrRole', label: '檢視身分', def: 'admin',
-    options: [['admin', '平台營運', '可檢視與裁決'], ['creator', '創作者', '無權限，顯示說明']]
-  }];
-  function role() {
-    var st = window.ztorDevState && window.ztorDevState.get && window.ztorDevState.get();
-    return (st && st.pageOpts && st.pageOpts.vrRole) || 'admin';
+  /* ---- 權限（2026-09-08 改讀共用身分）----------------------------------
+     改版前這裡有一個本頁專屬的假開關「檢視身分」（Cheat Codes 的 page-scoped
+     群組「檢視身分」），與全站的代管狀態各說各話。身分收斂成單一 `ztor.role`
+     （general｜admin）之後，這一頁跟其他 Admin 頁讀同一個來源，假開關退役。
+     無權限狀態的畫面由 js/sidebar.js 的共用門禁注入，本頁只負責「被擋住時
+     不要再去畫清單與詳情」。真實系統由後端判權。 */
+  function isAdmin() {
+    return !!(window.ztorCreator && window.ztorCreator.adminScope && window.ztorCreator.adminScope());
   }
 
   /* ── 來源項目連結（規格 F2／F3）────────────────────────────────────────
@@ -254,17 +249,11 @@
            '&creator=' + encodeURIComponent(S.personaOf(rec)) +
            '&from=' + encodeURIComponent(HERE);
   }
-  /* 代管中要顯示的創作者名字，在這裡就知道（送審件本來就帶著），先存起來給落地頁的
-     全域導航用——那些頁面不一定載入項目資料，臨時查不到名字。 */
-  document.addEventListener('click', function (e) {
-    var a = e.target.closest('[data-vr-project]');
-    if (!a) return;
-    try {
-      localStorage.setItem('ztor.adminHandoff', JSON.stringify({
-        persona: a.getAttribute('data-vr-project'), from: HERE, name: a.getAttribute('data-vr-creator') || ''
-      }));
-    } catch (err) {}
-  });
+  /* 墓碑 2026-09-08：這裡原本在點擊當下把「代管誰、從哪來、叫什麼名字」寫進
+     localStorage 的代管交接 key（已退役）。身分收斂成 persona × role 之後，連結上的
+     `?creator=` 就是代管對象（落地頁由 js/theme.js 套成 persona ＋ role=admin）、
+     `?from=` 就是返回目的地，名字由 js/projects-store.js 的資料集擁有者提供，
+     三件事都不需要再多存一把 key。 */
 
   var params = new URLSearchParams(location.search);
   var currentId = params.get('id') || '';
@@ -273,7 +262,6 @@
 
   var queueEl = document.getElementById('vr-queue');
   var detailEl = document.getElementById('vr-detail');
-  var noAccessEl = document.getElementById('vr-noaccess');
 
   /* ── 等待時間：從送出到現在有多久（F2 Waiting Time）。逾時門檻〔產品待確認〕，
         所以只講長度、不標紅、不寫「逾期」。 ── */
@@ -562,9 +550,9 @@
 
   /* ── 繪製 ─────────────────────────────────────────────────────────── */
   function render() {
-    var denied = role() !== 'admin';
-    noAccessEl.hidden = !denied;
-    if (denied) { queueEl.hidden = true; detailEl.hidden = true; return; }
+    /* 無權限時什麼都不畫：畫面由 js/sidebar.js 的共用門禁接手（它會把主內容整段
+       收起來），這裡若照常把清單放出來，反而會蓋掉那一層。 */
+    if (!isAdmin()) return;
 
     var rec = currentId ? S.get(currentId) : null;
     if (currentId && !rec) currentId = '';   /* id 不存在時退回清單，不留白 */
@@ -576,6 +564,8 @@
   }
 
   document.addEventListener('ztor:devstate-changed', render);
+  /* 身分切換（Cheat Code Role 組）不重新載入頁面，所以要跟著重畫一次。 */
+  document.addEventListener('ztor:creator-changed', render);
   /* 切語言時本頁自己畫的那些內容（清單列、送審欄位、歷程）要重畫一次——它們是用
      i18nT() 直接產生的字串，沒有 data-i18n，i18n.js 的 apply() 掃不到。
      render() 內不再回頭呼叫 applyI18n：那會再觸發一次 i18n:applied，變成無限迴圈。 */
