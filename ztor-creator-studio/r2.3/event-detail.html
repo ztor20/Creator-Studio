@@ -288,6 +288,19 @@
                     </div>
                   </div>
                 </section>
+                <!-- 已作廢票券 KPI（§2.3，2026-09-09 新增，D253）：規格把它列為 KPI 快照四項之一，
+                     此前站上從未真的畫出這張卡（i18n key 早就定義好但零元素綁定）。呈現層已知落差：
+                     D188 要求售票中／進行中／已結束／已取消四階段可見，本輪只接售票中（這裡）與
+                     已結束＋已取消（#ed-glance-voided-card），進行中尚未接，見 ASSUMPTIONS。 -->
+                <section class="card bento--span-4" id="ed-sales-voided-card">
+                  <div class="stat-row">
+                    <div class="stat">
+                      <div class="stat__label" data-i18n="event-detail.kpi.voided">Voided tickets</div>
+                      <div class="stat__value" id="ed-sales-voided">—</div>
+                      <div class="stat__meta" data-i18n="event-detail.kpi.voided-meta">None yet</div>
+                    </div>
+                  </div>
+                </section>
               </div>
 
   <!-- ═══ 售票趨勢（售票中，2026-08-17 使用者指示改用收入趨勢那張圖的元件）═══
@@ -383,6 +396,18 @@
                   </div>
                 </div>
               </section>
+              <!-- 已作廢票券 KPI（§2.3，2026-09-09 新增，D253）：#ed-glance 這個 bento 同時涵蓋
+                   draft／scheduled／ended／cancelled 四階段，但 D188 只要求已結束與已取消可見
+                   （草稿與已排程沒有持票人）。這張卡自己掛 data-stage-show，通用的階段可見性迴圈
+                   （querySelectorAll('[data-stage-show]')）會單獨判斷它，不受父層四階段共用影響。 -->
+              <section class="card bento--span-4" id="ed-glance-voided-card" data-stage-show="ended cancelled" hidden>
+                <div class="stat-row">
+                  <div class="stat">
+                    <div class="stat__label" data-i18n="event-detail.kpi.voided">Voided tickets</div>
+                    <div class="stat__value" id="ed-glance-voided">—</div>
+                  </div>
+                </div>
+              </section>
             </div>
 
             <!-- 票種明細自成一張卡，與售票中的「各票種」同一個落點；卡頭右端那句
@@ -451,6 +476,8 @@
                  未回寫 documents/。
                  退款政策留成系統列（可勾不可刪）：它是唯一接著真設定的一列，刪掉等於連
                  「去設定退款規則」的入口一起沒了。
+                 〔2026-09-09 更新，D253〕本列已改名「取消與作廢政策」（event-detail.preflight.voidpolicy.*），
+                 上面「退款政策」與下面「設定退款規則」皆為 2026-08-17 當時的舊名，僅供沿革參考。
                  [data-edit-exempt]：勾一件準備事項不是在編輯這場活動（不改變粉絲看到的任何東西），
                  所以不受本頁兩段式編輯管轄——否則要「按編輯 → 打勾 → 存檔」才能劃掉一件待辦。
                  機制沿用 project-detail.html 的同名屬性，不另發明第二套。 -->
@@ -838,7 +865,7 @@
 
           <div class="info-banner mt-16">
             <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-            <span data-i18n="event-detail.ov.statemachine"><strong>Status follows a one-way state machine.</strong> Draft → Scheduled / On Sale → (event runs) → Completed. Only Draft → Cancelled is allowed as a reversal; cancelling auto-triggers refunds on all valid tickets (§7.2 F5).</span>
+            <span data-i18n="event-detail.ov.statemachine"><strong>Status follows a one-way state machine.</strong> Draft → Scheduled / On Sale → (event runs) → Completed. Only Draft → Cancelled is allowed as a reversal; cancelling does not automatically refund valid tickets — void them individually or all at once afterward (§7.2 F5).</span>
           </div>
         </section>
           </div>
@@ -1038,7 +1065,7 @@
           <div data-nav-panel="danger" id="ed-danger" hidden>
             <div class="section-head">
               <h2 class="section-head__title" data-i18n="event-detail.danger.title">Cancel this event</h2>
-              <div class="section-head__sub" data-i18n="event-detail.danger.sub">Cancelling refunds every valid ticket and cannot be undone (§7.2 F5).</div>
+              <div class="section-head__sub" data-i18n="event-detail.danger.sub">Cancelling does not refund tickets automatically, and cannot be undone (§7.2 F5). Void tickets afterward from the Sales record.</div>
             </div>
             <section class="card">
               <button class="btn btn--destructive" type="button" data-view-safe data-ed-cancelevent data-i18n="event-detail.btn.cancelevent">Cancel event</button>
@@ -1197,7 +1224,7 @@
             <button type="button" class="tabs__item" data-view-safe data-nav-item="tx" data-i18n="event-detail.sv.record">Sales record</button>
             <button type="button" class="tabs__item" data-view-safe data-nav-item="roster" data-i18n="event-detail.sv.roster">Attendee list</button>
             <button type="button" class="tabs__item" data-view-safe data-nav-item="notif" data-i18n="event-detail.sv.notif">Notifications</button>
-            <button type="button" class="tabs__item" data-view-safe data-nav-item="refund" data-i18n="event-detail.sv.refund">Refunds</button>
+            <button type="button" class="tabs__item" data-view-safe data-nav-item="void" data-i18n="event-detail.sv.void">Void record</button>
             <button type="button" class="tabs__item" data-view-safe data-nav-item="finance" data-i18n="event-detail.sv.finance">Cost & revenue</button>
               </nav>
           </div>
@@ -1214,16 +1241,18 @@
           <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.tx.gross">Gross</div><div class="kpi__value" id="ed-tx-gross">—</div><div class="kpi__meta" id="ed-tx-orders">—</div></div>
           <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.tx.fee">Platform fee</div><div class="kpi__value" id="ed-tx-fee">—</div><div class="kpi__meta" data-i18n="event-detail.tx.fee-meta">10% of gross</div></div>
           <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.tx.net">Net to you</div><div class="kpi__value" id="ed-tx-net">—</div><div class="kpi__meta" data-i18n="event-detail.tx.net-meta">Settles to Earnings</div></div>
-          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.tx.refunded">Refunded</div><div class="kpi__value" id="ed-tx-refunded">—</div><div class="kpi__meta" data-i18n="event-detail.tx.refunded-meta">Returned to inventory</div></div>
+          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.tx.cancelled">Cancelled</div><div class="kpi__value" id="ed-tx-cancelled">—</div><div class="kpi__meta" data-i18n="event-detail.tx.cancelled-meta">Voided — returned to inventory</div></div>
         </div>
 
         <!-- 2026-08-17 使用者指示：改用站上的 filter-tabs 元件。此前是三顆 .btn--outline
              排在頁面自製的 .ed-att-filter 裡——同一個角色（帶計數的清單篩選）在活動列表
-             已經有答案（filter-tabs），這裡卻自己畫了第二種。 -->
+             已經有答案（filter-tabs），這裡卻自己畫了第二種。
+             2026-09-09（D253）：篩選值第三態 data-tx-filter 內部值改 "voided"（對應 tx.status
+             ='voided'），顯示文字改「Cancelled／已取消」——與交易列的狀態徽章同一個詞。 -->
         <nav class="filter-tabs mt-16" role="tablist" aria-label="Filter transactions" data-i18n-aria-label="event-detail.tx.f.aria">
           <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-tx-filter="all"><span data-i18n="event-detail.tx.f.all">All</span><span class="filter-tabs__count" data-tx-count="all">0</span></button>
           <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tx-filter="paid"><span data-i18n="event-detail.tx.f.paid">Paid</span><span class="filter-tabs__count" data-tx-count="paid">0</span></button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tx-filter="refunded"><span data-i18n="event-detail.tx.f.refunded">Refunded</span><span class="filter-tabs__count" data-tx-count="refunded">0</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tx-filter="voided"><span data-i18n="event-detail.tx.f.cancelled">Cancelled</span><span class="filter-tabs__count" data-tx-count="voided">0</span></button>
         </nav>
 
         <section class="card" style="padding:0;overflow:hidden">
@@ -1240,6 +1269,7 @@
                   <th data-i18n="event-detail.tx.col.net">Net</th>
                   <th data-i18n="event-detail.tx.col.method">Method</th>
                   <th data-i18n="event-detail.tx.col.status">Status</th>
+                  <th data-i18n="event-detail.tx.col.actions">Actions</th>
                 </tr>
               </thead>
               <tbody id="ed-tx-body"></tbody>
@@ -1374,8 +1404,8 @@
           </div>
           <div class="settings-row" style="border-bottom:0">
             <div>
-              <div class="settings-row__label" data-i18n="event-detail.notif.cancel.label">Cancellation auto-refund</div>
-              <div class="settings-row__hint" data-i18n="event-detail.notif.cancel.hint">If the event is Cancelled, all valid tickets are auto-refunded per the refund flow. Always on.</div>
+              <div class="settings-row__label" data-i18n="event-detail.notif.cancel.label">Cancellation notice</div>
+              <div class="settings-row__hint" data-i18n="event-detail.notif.cancel.hint">If the event is Cancelled, ticket holders are notified. The creator can then void tickets individually or all at once — this does not happen automatically. Always on.</div>
             </div>
             <span class="badge badge--neutral"><span data-i18n="event-detail.notif.cancel.badge">System</span></span>
           </div>
@@ -1425,48 +1455,53 @@
         </section>
           </div>
 
-          <div data-nav-panel="refund">
+          <div data-nav-panel="void">
 
-        <!-- 退款（2026-08-13 使用者裁決，自「退款與招待票」分頁搬來）：退款是一筆交易的反向，
-             跟「這筆訂單後來怎麼了」是同一個問題，所以住在交易明細，不另開分頁。
-             共看派對不套用退款佇列（D149），整塊收起。 -->
+        <!-- 作廢紀錄（2026-09-09，D253 改寫自「退款」，位置不動——沿用 2026-08-13 使用者裁決
+             掛在同一個分頁槽；D191「位置不動」在 §2.9.2 仍然成立，變的只是內容）：
+             平台不提供退款動作，票券的取消一律由手動作廢執行（逐票或整場，不自動觸發）。
+             這裡列出已作廢的票券（票券編號／原持票人／作廢時間／作廢者），逐票的作廢動作
+             則在下面「銷售紀錄」分頁的表格裡（每一列一張／筆票券，動作欄可作廢）。
+             共看派對不套用作廢紀錄（沿用 D149 對「退款佇列」的既有排除），整塊收起。
+             執行者〔產品待確認〕：decisions.md D253／5.1.6 F5／5.1.6.3 §2.9.2 三處皆明文
+             「上游未定義，裁決前比照 eShop 以 Admin 專屬處理」——本頁比照現有頁面既有做法
+             （不加角色鎖定 UI），示例資料的「作廢者」欄暫填 Admin，不代表已裁決創作者不可執行。 -->
         <div class="section-head mt-24" data-hide-type="watchparty">
-          <h2 class="section-head__title" data-i18n="event-detail.ref.title2">Refunds</h2>
+          <h2 class="section-head__title" data-i18n="event-detail.void.title">Void record</h2>
           <div class="section-head__sub">
-            <span data-i18n="event-detail.ref.sub2">Requests from ticket holders, and how a refund is absorbed (§5.1.6 F5).</span>
-            <span class="badge badge--neutral"><span data-i18n="event-detail.ref.disabled">v1 disabled</span></span>
+            <span data-i18n="event-detail.void.sub">Tickets voided for this event, and how the write-off is absorbed (§5.1.6 F5).</span>
           </div>
         </div>
         <div data-hide-type="watchparty">
-          <!-- 2026-08-19 修復：這張卡此前固定寫「無退款請求」，但交易明細對同一場活動
-               明確列出 2 筆 refunded 交易、KPI 也顯示「Refunded: 2」——兩個分頁互相矛盾。
-               「無退款請求」講的是「粉絲主動申請」（v1 尚未開放），跟「有沒有發生過退款」
-               是兩件事，但畫面上沒有任何文字說明這個差異。改成有退款紀錄就從交易資料
-               （txAll，與交易明細分頁同一份）匯總一行摘要，真的 0 筆才顯示原本的空狀態。 -->
-          <section class="card" id="ed-refund-empty">
+          <section class="card" id="ed-void-empty">
             <div class="empty-card">
               <span class="empty-card__icon"><i data-lucide="inbox" class="ztor-icon"></i></span>
-              <h3 class="empty-card__title" data-i18n="event-detail.ref.empty.title">No refund requests</h3>
-              <p class="empty-card__text" data-i18n="event-detail.ref.empty.sub">Creator-initiated refunds are disabled in v1 (D041 · Refund Reserve 0%). When open, fans can request up to 24 h before doors; the creator approves/rejects one-tap.</p>
+              <h3 class="empty-card__title" data-i18n="event-detail.void.empty.title">No tickets voided yet</h3>
+              <p class="empty-card__text" data-i18n="event-detail.void.empty.sub">Void a ticket from the Sales record below, or void every remaining ticket at once.</p>
             </div>
           </section>
-          <section class="card" id="ed-refund-summary" hidden>
-            <div class="data-list">
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--warning"><i data-lucide="rotate-ccw" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="event-detail.ref.summary.title">Refunds issued</div>
-                    <div class="data-list__meta" id="ed-refund-summary-meta">—</div>
-                  </div>
-                </div>
-                <span class="badge badge--warning" id="ed-refund-summary-count">—</span>
-              </div>
+          <section class="card" id="ed-void-list-card" style="padding:0;overflow:hidden" hidden>
+            <div style="overflow-x:auto">
+              <table class="ztor-table">
+                <thead>
+                  <tr>
+                    <th data-i18n="event-detail.void.col.id">Ticket</th>
+                    <th data-i18n="event-detail.void.col.holder">Original holder</th>
+                    <th data-i18n="event-detail.void.col.tier">Tier</th>
+                    <th data-i18n="event-detail.void.col.at">Voided at</th>
+                    <th data-i18n="event-detail.void.col.by">Voided by</th>
+                  </tr>
+                </thead>
+                <tbody id="ed-void-body"></tbody>
+              </table>
             </div>
           </section>
+          <div class="flex-row mt-16" style="gap:8px">
+            <button class="btn btn--ghost btn--destructive btn--sm" type="button" data-view-safe data-ed-void-all data-i18n="event-detail.void.all">Void all remaining tickets</button>
+          </div>
           <div class="info-banner mt-16">
             <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-            <span data-i18n="event-detail.ref.absorb"><strong>Refund absorption order (TBD until refunds open, §7.3):</strong> Refund Reserve → current distributable profit → carry-forward deficit (no clawback). Approving a refund emits a refunded revenue event and voids the ticket QR. v1 refund scope is in §8.6.</span>
+            <span data-i18n="event-detail.void.absorb"><strong>Void write-off absorption order (§7.3, financial treatment proposed — pending approval):</strong> Void reserve → current distributable profit → carry-forward deficit (no clawback). Voiding a ticket writes off its revenue and immediately invalidates the ticket QR. Any refund actually owed to the buyer happens off-platform (e.g. Stripe) and is not tracked here. v1 void scope is in §8.6.</span>
           </div>
         </div>
           </div>
@@ -1515,7 +1550,7 @@
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.gross">Gross</span></div><span id="ed-fin-gross">—</span></div>
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.fee">Platform fee</span></div><span id="ed-fin-fee">—</span></div>
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.net">Net to you</span></div><span id="ed-fin-net">—</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.refunded">Refunded</span></div><span id="ed-fin-refunded">—</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.cancelled">Cancelled</span></div><span id="ed-fin-cancelled">—</span></div>
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.category">Category</span></div><span data-i18n="event-detail.fin.category-val">Event ticketing</span></div>
             </div>
           </section>
@@ -1531,7 +1566,7 @@
 
         <div class="info-banner mt-16">
           <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-          <span data-i18n="event-detail.fin.note"><strong>Settlement state machine:</strong> accrued → settled → (refunded / disputed) per §7.2. Refund / cancel effects on revenue follow the §7.3 absorption order; v1 refund scope is in §8.6.</span>
+          <span data-i18n="event-detail.fin.note"><strong>Settlement state machine:</strong> accrued → settled → (cancelled / disputed) per §7.2. A cancelled settlement means every ticket in it was voided; any refund to the buyer happens off-platform (§7.3 absorption order); v1 void scope is in §8.6.</span>
         </div>
           </div>
 
@@ -1646,6 +1681,7 @@
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script>
+<script src="js/toast.js?v=r2.2"></script><!-- 2026-09-09：作廢動作的完成回饋（D253），沿用 order-detail.html 同一支 -->
 <script src="js/linechart.js?v=r2.2"></script>   <!-- 2026-08-31：走勢圖的共用產生器 -->
 <script src="js/chart.js?v=r2.2"></script>
 <script src="partials/upload-tile.js?v=r2.2"></script>
@@ -2171,7 +2207,7 @@
      久了使用者就不信任這排導覽。前置條件：
        總覽／票種      → 永遠（草稿是在編輯票種，之後是在看它）
        通知            → 要有可通知的對象：草稿沒有觀眾
-       交易明細／名單／退款／收支 → 要有金流或持票人：售票中之後才有
+       交易明細／名單／作廢紀錄／收支 → 要有金流或持票人：售票中之後才有
        系列            → 這場活動真的屬於某個系列時才有（store 的 series 欄位）
      沒有 ?id= 時維持顯示全部（舊連結不受影響）。 */
   /* 2026-08-11 重新設計：場次與發布設定自總覽拆出，兩者跟總覽同命——設定一直都在，
@@ -2200,7 +2236,7 @@
   function applyTabs() {
     let allowed = (TABS_BY_STAGE[ev.status] || TABS_BY_STAGE['on-sale']).slice();
     if (ev.series) allowed.push('series');          // 系列分頁只在真的有系列時出現
-    /* 活動類型的排除（D149）：共看派對不套用票種／QR 報到／退款佇列／系列，
+    /* 活動類型的排除（D149）：共看派對不套用票種／QR 報到／作廢紀錄／系列，
        所以那四個分頁一律不出現。放在這裡而不是另外再設一次 hidden——分頁可見性
        只有這一個決策點，兩處都想決定就會互相覆蓋（本函式下方的註解講的就是這件事）。 */
     if (ev.type === 'watchparty') {
@@ -2272,8 +2308,8 @@
   /* ── 階段轉換（2026-08-13）─────────────────────────────────────
      §7.2 的狀態機此前只寫在總覽的說明橫幅裡，畫面上沒有任何一顆鈕能推進它。三顆鈕：
        發布開賣（draft／scheduled → on-sale）：先擋「還不能賣」的資料缺口，缺什麼直接列出來。
-       取消活動（draft／scheduled／on-sale）：按 §7.2 取消會對所有有效票自動退款，
-         確認彈窗要先講清楚會退掉幾張、多少錢，再讓人按。
+       取消活動（draft／scheduled／on-sale）：2026-09-09 起依 D253 不再自動退款，
+         確認彈窗改成講清楚有幾張票已售出、取消後要逐票或整場作廢，再讓人按。
        再開一場（ended／cancelled）：以這場為範本開新活動——巡演最常做的動作。
      ⚠ 與 §7.2 的出入：規格寫「僅 Draft → Cancelled 可逆」，這裡把取消開放到已排程與售票中
        （見 ASSUMPTIONS STAGE-001），待上游裁決。 */
@@ -2386,12 +2422,13 @@
       return;
     }
     if (e.target.closest('[data-ed-cancelevent]')) {
+      /* 2026-09-09（D253）：取消不再自動觸發退款，故不再需要算「這場總共要退多少錢」——
+         那個金額（refund）此前只是餵給下面這句文案，D253 後這句文案本身也改了語意。 */
       const sold = ev.sold || 0;
-      const refund = (ev.tiers || []).reduce((a, t) => a + (Number(t.price) || 0) * (Number(t.sold) || 0), 0);
       const impact = sold
-        ? T('event-detail.cancel.body', 'All {n} tickets sold are refunded automatically ({m}) and every holder is notified. This cannot be undone.')
-            .replace('{n}', fmtNum(sold)).replace('{m}', money0(refund))
-        : T('event-detail.cancel.body0', 'Nothing has sold yet, so there is nothing to refund. The event stops being publishable.');
+        ? T('event-detail.cancel.body', '{n} tickets sold are not refunded automatically — every holder is notified, and you can void tickets individually or all at once afterward from the Sales record. This cannot be undone.')
+            .replace('{n}', fmtNum(sold))
+        : T('event-detail.cancel.body0', 'Nothing has sold yet. The event stops being publishable.');
       openConfirm({
         title: T('event-detail.cancel.title', 'Cancel this event?'),
         body: '<p>' + impact + '</p>',
@@ -2429,11 +2466,15 @@
   /* ── 交易明細 ─────────────────────────────────────────────── */
   let txAll = [], txFilter = 'all';
   const money = n => '$' + fmtNum(n);
+  /* 2026-09-09（D253）：狀態 'refunded' 全面改成 'voided'——顯示徽章沿用 orders 模組
+     已定案的用詞「Cancelled／已取消」＋ badge--error（見 order-detail.html 的
+     od.unit.status.void，同一個視覺角色只有一個答案）。「作廢」是動作，「已取消」是
+     這個動作在付款．結算軸上留下的狀態，兩個詞分工不重複。 */
   function renderTx() {
     const body = $('#ed-tx-body');
     if (!body) return;
     const paid = txAll.filter(t => t.status === 'paid');
-    const refunded = txAll.filter(t => t.status === 'refunded');
+    const voided = txAll.filter(t => t.status === 'voided');
     const gross = paid.reduce((a, t) => a + t.gross, 0);
     const fee = paid.reduce((a, t) => a + t.fee, 0);
     $('#ed-tx-gross').textContent = money(gross);
@@ -2441,10 +2482,10 @@
       .replace('{n}', fmtNum(paid.length)).replace('{q}', fmtNum(paid.reduce((a, t) => a + t.qty, 0)));
     $('#ed-tx-fee').textContent = '−' + money(fee);
     $('#ed-tx-net').textContent = money(gross - fee);
-    $('#ed-tx-refunded').textContent = fmtNum(refunded.length);
+    $('#ed-tx-cancelled').textContent = fmtNum(voided.length);
     document.querySelector('[data-tx-count="all"]').textContent = txAll.length;
     document.querySelector('[data-tx-count="paid"]').textContent = paid.length;
-    document.querySelector('[data-tx-count="refunded"]').textContent = refunded.length;
+    document.querySelector('[data-tx-count="voided"]').textContent = voided.length;
 
     const list = txFilter === 'all' ? txAll : txAll.filter(t => t.status === txFilter);
     const CAP = 50;
@@ -2452,19 +2493,26 @@
     list.slice(0, CAP).forEach(t => {
       const tr = document.createElement('tr');
       tr.className = 'ztor-table__row';
+      const canVoid = window.ztorEvents.ticketVoidState(t) === 'ok';
       tr.innerHTML =
         '<td><code>' + t.id + '</code></td><td>' + t.buyer + '</td><td>' + t.tier + '</td>' +
         '<td>' + t.qty + '</td><td>' + money(t.gross) + '</td><td class="text-sub">−' + money(t.fee) + '</td>' +
         '<td>' + money(t.net) + '</td><td class="text-sub">' + t.method + '</td>' +
         '<td>' + (t.status === 'paid'
           ? '<span class="badge badge--success"><span>' + T('event-detail.tx.paid', 'Paid') + '</span></span>'
-          : '<span class="badge badge--warning"><span>' + T('event-detail.tx.refundedbadge', 'Refunded') + '</span></span>') + '</td>';
+          : '<span class="badge badge--error"><span>' + T('event-detail.tx.cancelledbadge', 'Cancelled') + '</span></span>') + '</td>' +
+        '<td>' + (canVoid
+          ? '<button class="btn btn--ghost btn--destructive btn--sm" type="button" data-view-safe data-ed-void-tx="' + t.id + '">' + T('event-detail.tx.void', 'Void') + '</button>'
+          : '—') + '</td>';
       body.appendChild(tr);
     });
     const note = $('#ed-tx-note');
     if (note) note.textContent = list.length > CAP
       ? T('event-detail.tx.more', 'Showing {n} of {m} orders — export for the full ledger').replace('{n}', CAP).replace('{m}', fmtNum(list.length))
       : T('event-detail.tx.showingall', 'Showing all {m} orders').replace('{m}', fmtNum(list.length));
+    refreshVoidedKpi();
+    renderVoidRecord();
+    refreshVoidAllButton();
   }
   function initTx() {
     txAll = window.ztorEvents.transactions(ev.id);
@@ -2480,11 +2528,11 @@
     renderTx();
   }
 
-  /* ── 收支（2026-08-19 修復）───────────────────────────────────────
+  /* ── 收支（2026-08-19 修復；2026-09-09 隨 D253 同步狀態值）─────────────
      此前整張卡 100% 寫死（固定三筆營收事件、固定 Gross/Accrued/Settled），跟這場活動
      的真實 sold／revenue 完全無關。改成跟交易明細分頁綁同一份 txAll（renderTx() 用的
      那一份、由 store 的 buildTx() 決定性生成），Gross/Fee/Net 沿用 renderTx() 的算式，
-     Refunded 用同一個 refunded 筆數——四個金額因此保證跟交易明細分頁完全一致。
+     Cancelled 用同一個已作廢（voided）筆數——四個金額因此保證跟交易明細分頁完全一致。
      表格行項改成「依票種的收入小計」（tier 名 × 單價 × 已售）＋手續費一行，不再是
      對不上任何活動的 $80/$30/$0 假列。 */
   function renderFinance() {
@@ -2496,13 +2544,13 @@
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
     const paid = txAll.filter(t => t.status === 'paid');
-    const refunded = txAll.filter(t => t.status === 'refunded');
+    const voided = txAll.filter(t => t.status === 'voided');
     const gross = paid.reduce((a, t) => a + t.gross, 0);
     const fee = paid.reduce((a, t) => a + t.fee, 0);
     setVal('ed-fin-gross', money(gross));
     setVal('ed-fin-fee', '−' + money(fee));
     setVal('ed-fin-net', money(gross - fee));
-    setVal('ed-fin-refunded', fmtNum(refunded.length));
+    setVal('ed-fin-cancelled', fmtNum(voided.length));
     const tiers = ev.tiers || [];
     if (!tiers.length || !(ev.sold || 0)) {
       body.innerHTML = '';
@@ -2527,32 +2575,111 @@
     body.innerHTML = rows.join('');
   }
 
-  /* ── 退款（2026-08-19 修復）───────────────────────────────────────
-     此前固定顯示「無退款請求」，但交易明細對同一場活動明確列出 refunded 交易——
-     「無退款請求」講的是「粉絲主動申請退款」（v1 尚未開放），跟「這場有沒有發生過
-     退款」是兩件事，畫面上卻沒有任何文字交代這個差異，讀起來就是兩個分頁互相矛盾。
-     改成從 txAll 匯總已退款筆數與金額，真的 0 筆才顯示原本的空狀態；v1 停用的
-     說明文字保留在空狀態卡與下方的吸收順序banner裡。 */
-  function renderRefunds() {
-    const emptyCard = document.getElementById('ed-refund-empty');
-    const summaryCard = document.getElementById('ed-refund-summary');
-    if (!emptyCard || !summaryCard) return;
-    const refunded = txAll.filter(t => t.status === 'refunded');
-    if (!refunded.length) {
+  /* ── 作廢紀錄（§2.9.2，2026-09-09 由「退款」改寫，D253）───────────────
+     位置不動（D191 掛在同一個分頁槽），內容從「退款彙總卡」換成逐筆作廢紀錄表格
+     ——票券編號／原持票人／票種／作廢時間／作廢者，資料就是 txAll 裡 status
+     === 'voided' 的列，跟交易明細（renderTx）與 KPI（refreshVoidedKpi）三處
+     保證同一份資料、不會互相矛盾。 */
+  function renderVoidRecord() {
+    const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const emptyCard = document.getElementById('ed-void-empty');
+    const listCard = document.getElementById('ed-void-list-card');
+    const body = document.getElementById('ed-void-body');
+    if (!emptyCard || !listCard || !body) return;
+    const voidedRows = txAll.filter(t => t.status === 'voided');
+    if (!voidedRows.length) {
       emptyCard.hidden = false;
-      summaryCard.hidden = true;
+      listCard.hidden = true;
       return;
     }
     emptyCard.hidden = true;
-    summaryCard.hidden = false;
-    const amount = refunded.reduce((a, t) => a + t.gross, 0);
-    const countEl = document.getElementById('ed-refund-summary-count');
-    const metaEl = document.getElementById('ed-refund-summary-meta');
-    if (countEl) countEl.textContent = fmtNum(refunded.length);
-    if (metaEl) metaEl.textContent = T('event-detail.ref.summary.meta',
-      '{amt} returned across {n} orders — see Transactions for detail')
-      .replace('{amt}', money(amount)).replace('{n}', fmtNum(refunded.length));
+    listCard.hidden = false;
+    body.innerHTML = voidedRows.map(t =>
+      '<tr class="ztor-table__row"><td><code>' + esc(t.id) + '</code></td><td>' + esc(t.buyer) + '</td><td>' +
+      esc(t.tier) + '</td><td>' + esc(t.voidedAt || '—') + '</td><td>' + esc(t.voidedBy || '—') + '</td></tr>'
+    ).join('');
   }
+  /* §5.1.11 should：停用的入口保留在畫面上並用 title 說明原因，不要直接隱藏。 */
+  function refreshVoidAllButton() {
+    const btn = document.querySelector('[data-ed-void-all]');
+    if (!btn) return;
+    const remaining = txAll.filter(t => window.ztorEvents.ticketVoidState(t) === 'ok').length;
+    btn.disabled = remaining === 0;
+    btn.title = remaining === 0 ? T('event-detail.void.all-disabled', 'No remaining tickets to void') : '';
+  }
+
+  /* ── 已作廢票券 KPI（§2.3，2026-09-09 新增，D253）─────────────────────
+     售票中（#ed-sales-voided）與已結束／已取消（#ed-glance-voided）兩處各放一張，
+     同一個計數：voided 交易的張數（qty）加總，不是筆數——一筆交易可能是 2 張票。
+     呈現層已知落差（見 ASSUMPTIONS）：規格 §2.3 D188 要求售票中／進行中／已結束／
+     已取消四階段皆可見，本輪只接了售票中與已結束＋已取消，進行中（#ed-live-bento）
+     尚未接，非本輪範圍（不影響本頁預設示例活動＝on-sale 階段的驗收）。 */
+  function refreshVoidedKpi() {
+    const voidedQty = txAll.filter(t => t.status === 'voided').reduce((a, t) => a + (t.qty || 0), 0);
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    set('ed-sales-voided', fmtNum(voidedQty));
+    set('ed-glance-voided', fmtNum(voidedQty));
+    /* meta 是靜態「尚無作廢」，張數 > 0 時會跟主數字互相矛盾（讀成「2 張／尚無作廢」），
+       這裡蓋掉成有意義的說明；歸零時交回原本的 data-i18n 靜態文字。 */
+    const metaEl = document.querySelector('#ed-sales-voided-card .stat__meta');
+    if (metaEl) metaEl.textContent = voidedQty > 0
+      ? T('event-detail.kpi.voided-meta-n', 'Returned to inventory').replace('{n}', fmtNum(voidedQty))
+      : T('event-detail.kpi.voided-meta', 'None yet');
+  }
+
+  /* ── 作廢確認彈窗（§5.1.11 Destructive confirm pattern）───────────────
+     重用既有的 openConfirm()（.payout-modal／.payout-dialog／danger:true 時
+     btn--destructive），不新建第二套彈窗——同一份殼，跟 order-detail.html 的
+     作廢彈窗一致。target 是單一 tx 物件（逐票作廢）或字串 'all'（整場作廢）。 */
+  function openVoidConfirm(target) {
+    const esc2 = t => String(t == null ? '' : t).replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const list = target === 'all' ? txAll.filter(t => window.ztorEvents.ticketVoidState(t) === 'ok') : [target];
+    if (!list.length) return;
+    const qty = list.reduce((a, t) => a + (t.qty || 0), 0);
+    const nameLine = target === 'all'
+      ? T('event-detail.void.confirm.all-name', '{n} remaining tickets across {m} orders')
+          .replace('{n}', fmtNum(qty)).replace('{m}', fmtNum(list.length))
+      : (esc2(target.buyer) + ' — ' + esc2(target.tier) + ' × ' + target.qty);
+    const body =
+      '<div class="data-list"><div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">' +
+        '<div class="data-list__title">' + nameLine + '</div>' +
+      '</div></div></div></div>' +
+      '<div class="field__hint mt-16">' + T('event-detail.void.confirm.stripe', 'Refund the buyer in Stripe first, if any refund is owed — voiding moves no money and never calls Stripe.') + '</div>' +
+      '<div class="field__label mt-16">' + T('event-detail.void.confirm.effects', 'What voiding does') + '</div>' +
+      '<div class="field__hint">' + T('event-detail.void.confirm.effect.qr', 'This ticket’s QR stops working immediately — it can’t be scanned at the door.') + '</div>' +
+      '<div class="field__hint mt-8">' + T('event-detail.void.confirm.effect.email', 'The ticket holder gets a cancellation email.') + '</div>' +
+      '<div class="field__hint mt-16">' + T('event-detail.void.confirm.irreversible', 'There’s no undo — a voided ticket can’t be reinstated.') + '</div>';
+    openConfirm({
+      title: target === 'all'
+        ? T('event-detail.void.confirm.all-title', 'Void all remaining tickets?')
+        : T('event-detail.void.confirm.title', 'Void this ticket?'),
+      body: body,
+      okLabel: target === 'all'
+        ? T('event-detail.void.confirm.all-ok', 'Void all')
+        : T('event-detail.void.confirm.ok', 'Void ticket'),
+      danger: true,
+      onOk: () => {
+        list.forEach(t => window.ztorEvents.voidTicket(t, 'Admin'));
+        renderTx();  // 內部已一併呼叫 refreshVoidedKpi／renderVoidRecord／refreshVoidAllButton
+        if (window.ztorToast) window.ztorToast.show(
+          target === 'all'
+            ? T('event-detail.void.toast.all', 'Voided {n} tickets — holders will be notified.').replace('{n}', fmtNum(qty))
+            : T('event-detail.void.toast.one', 'Voided {n} ticket(s) — the buyer will be notified.').replace('{n}', fmtNum(target.qty || 1))
+        );
+      }
+    });
+  }
+  document.addEventListener('click', e => {
+    const voidBtn = e.target.closest('[data-ed-void-tx]');
+    if (voidBtn) {
+      const tx = txAll.find(t => t.id === voidBtn.dataset.edVoidTx);
+      if (tx) openVoidConfirm(tx);
+      return;
+    }
+    if (e.target.closest('[data-ed-void-all]')) { openVoidConfirm('all'); return; }
+  });
 
   /* ══ 就地編輯（2026-08-06）══════════════════════════════════════════
      沿用項目詳情頁那套：面板永遠是編輯版面，[data-mode="view"] 只把「可以打字」
@@ -2849,8 +2976,8 @@
      一半：捨棄照規格停用，儲存維持可按（它同時是唯一的離開編輯態出口，停用會把人
      鎖在編輯模式）。差異記於 ASSUMPTIONS EDIT-002。 */
   const ED_ASPECTS = [
-    ['basics', s => s.name + ' ' + s.desc],
-    ['venue',  s => s.venue + ' ' + s.address],
+    ['basics', s => s.name + '' + s.desc],
+    ['venue',  s => s.venue + '' + s.address],
     ['dates',  s => s.sessions],
     ['lineup', s => s.lineup],
     ['images', s => s.gallery],
@@ -3009,7 +3136,13 @@
       return;
     }
     if (e.target.closest('[data-ed-delete]')) {
-      if (confirm(T('event-detail.edit.confirm-delete', 'Delete this event? Ticket holders will be refunded.'))) {
+      /* 2026-09-09（D253）：已售票的活動刪除前需先逐票或整場作廢（5.1.6.2 F13），
+         不再是「刪除即自動退款」。沿用既有 native confirm() 機制（非本輪範圍），只換文案。 */
+      const soldN = ev.sold || 0;
+      const delMsg = soldN
+        ? T('event-detail.edit.confirm-delete', 'Delete this event? {n} people hold tickets — void them individually or all at once first.').replace('{n}', fmtNum(soldN))
+        : T('event-detail.edit.confirm-delete0', 'Delete this event? This cannot be undone.');
+      if (confirm(delMsg)) {
         location.href = 'events.html';
       }
       return;
@@ -3385,7 +3518,7 @@
     /* 已取消：活動不會發生，名單與通知沒有對象——那兩節連同它們的入口一起收起。
        其餘階段五節都排在同一頁，上排只負責跳。 */
     const cancelled = ev.status === 'cancelled';
-    const has = { tx: true, refund: true, finance: true, roster: !cancelled, notif: !cancelled };
+    const has = { tx: true, void: true, finance: true, roster: !cancelled, notif: !cancelled };
     salesRoot.querySelectorAll('[data-nav-item]').forEach(b => { b.hidden = !has[b.dataset.navItem]; });
     salesRoot.querySelectorAll('[data-nav-panel]').forEach(p => { p.hidden = !has[p.dataset.navPanel]; });
   }
@@ -3635,10 +3768,11 @@
 
      退款政策是**系統列**：可勾、不可刪、帶一顆通往設定的按鈕。它是唯一接著真設定的一列，
      刪掉等於連入口一起沒了；其餘由創作者自己加。
+     〔2026-09-09 更新，D253〕本列已改名「取消與作廢政策」，「退款政策」為舊名沿革參考。
      存 localStorage（同 ztor.event-stage／ztor.event-notif 的做法）：原型沒有後端，
      但「打了勾重整就不見」會讓人以為功能壞了。 */
   const TODO_KEY = 'ztor.event-todo.' + ev.id;
-  const TODO_SYS = '__refund';
+  const TODO_SYS = '__voidpolicy'; // 2026-09-09（D253）：改名跟隨檢核項改名，這個常數本身無其他引用（既有死碼）
   function todoState() {
     try { return JSON.parse(localStorage.getItem(TODO_KEY) || '{}') || {}; } catch (e) { return {}; }
   }
@@ -3656,14 +3790,17 @@
       '<div class="todo-list__row todo-list__row--system' + (sysDone ? ' todo-list__row--done' : '') + '">' +
         '<label class="zcheck"><span class="zcheck__control">' +
           '<input class="zcheck__input" type="checkbox" data-todo-sys' + (sysDone ? ' checked' : '') +
-          ' aria-label="' + esc(T('event-detail.preflight.refund.title', 'Refund policy')) + '">' +
+          ' aria-label="' + esc(T('event-detail.preflight.voidpolicy.title', 'Cancellation & void policy')) + '">' +
           '<span class="zcheck__box"></span></span></label>' +
         '<div class="todo-list__body">' +
-          '<div class="todo-list__text">' + esc(T('event-detail.preflight.refund.title', 'Refund policy')) + '</div>' +
-          '<div class="todo-list__meta">' + esc(T('event-detail.preflight.refund.meta', 'Not set — fans see “contact organizer” until confirmed')) + '</div>' +
+          '<div class="todo-list__text">' + esc(T('event-detail.preflight.voidpolicy.title', 'Cancellation & void policy')) + '</div>' +
+          '<div class="todo-list__meta">' + esc(T('event-detail.preflight.voidpolicy.meta', 'Not set — fans see “contact organizer” until confirmed; refunds themselves are handled by the organizer off-platform (D253)')) + '</div>' +
         '</div>' +
         /* 墓碑 2026-08-18（使用者指示刪除）：這一列原本在右端帶一顆「設定退款規則」的連結。
-           i18n `event-detail.preflight.refund.cta` 保留未用。 */
+           i18n `event-detail.preflight.refund.cta` 保留未用。
+           2026-09-09（D253）：本列標題由「退款規則」改名「取消與作廢政策」，鍵名同步改為
+           event-detail.preflight.voidpolicy.*；舊鍵 event-detail.preflight.refund.title／.meta
+           本頁是唯一消費者、改名時一併從 i18n.js 移除（非墓碑，因為沒有其他頁面殘留引用）。 */
         '<div class="todo-list__end"></div>' +
       '</div>';
 
@@ -4296,8 +4433,10 @@
       set('#ed-wrap-noshow', '—');
     }
     set('#ed-wrap-net', money0(gross - fee));
+    /* 2026-09-09（D253）：已取消不再意味著「退款進行中」——改為手動作廢，這裡改顯示
+       「已取消」，與付款．結算軸的整體改名一致（見 renderTx／renderFinance）。 */
     set('#ed-wrap-settle', ev.status === 'cancelled'
-      ? T('event-detail.wrap.settle.refunding', 'Refunding')
+      ? T('event-detail.wrap.settle.cancelled', 'Cancelled')
       : T('event-detail.wrap.settle.done', 'Settled'));
   }
 
@@ -4496,9 +4635,8 @@
   renderNotif();
   syncAttendees();
   renderAttendeeSample();  // 2026-08-19：名單分頁的持票人清單，見函式註解
-  initTx();
+  initTx();                // 內部呼叫 renderTx()，已一併處理作廢紀錄／已作廢票券 KPI（2026-09-09 D253）
   renderFinance();         // 2026-08-19：收支分頁，依賴 initTx() 填好的 txAll
-  renderRefunds();         // 2026-08-19：退款摘要，同樣依賴 txAll
   if (isLive) initLive();
   renderTodo();
   syncNavSections();
@@ -4545,7 +4683,8 @@
     renderAttendeeSample();  // 2026-08-19：持票人名單／空狀態文字要跟著語言重畫
     renderComp();            // 2026-08-19：招待票的領用人標籤要跟著語言重畫
     renderFinance();         // 2026-08-19：收支的空狀態文字要跟著語言重畫
-    renderRefunds();         // 2026-08-19：退款摘要文字要跟著語言重畫
+    renderTx();              // 2026-09-09：交易列的狀態徽章／作廢鈕文字要跟著語言重畫（D253 新增）
+    renderVoidRecord();      // 2026-09-09（原 renderRefunds，D253 改寫）：作廢紀錄文字要跟著語言重畫
     syncStage();
     if (isLive) paintLive();
     setTimeout(() => { i18nBusy = false; }, 0);

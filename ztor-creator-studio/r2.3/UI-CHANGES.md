@@ -4,6 +4,325 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-09 · 候選商品列的狀態標示：一次一個徽章，沒貨用紅字（A spec-derived · D256）
+
+**範圍**：`create-bundle.html`（候選列徽章判斷與次要資訊）、`shared.css`（新增 `.text-error` 工具類）、`js/products-store.js`（`LISTING_SEED` 補「販售結束」「即將開賣」兩筆示範）。上游同步（不在 site）：`documents/5.1.5.4-建立組合流程.md` v2.10、`documents/decisions.md` D256。
+
+**依據**：使用者 2026-09-09 裁決，關閉 D254 留下的「售罄／販售結束要不要也擋」待確認——「提示就好，例如 0 件庫存用紅色字」「販售結束和已下架擇一顯示，以已下架為優先」「未開售的商品可以加入組合包」。
+
+### A · 一次只標一個狀態，優先序＝已下架 → 販售結束 → 即將開賣
+
+列上只有一個標示的位置，同時成立時先講最強的那一個（不能加入 → 已經結束 → 還沒開始）。只有已下架擋加入，另外兩顆純粹是說明。判斷不吃 `deriveStatus`：那支的優先序把「已隱藏」排在販售軸之前，而隱藏是顯示軸的事、與能不能進組合無關（§6 ④）；改用 `deriveFlags`（跳過隱藏那一層）＋自行判斷開賣時間。
+
+「即將開賣」自己看 `saleStart`，不用 `deriveFlags` 回的狀態：那支把售罄排在即將開賣之前（清單頁只有一顆徽章），而售罄在這裡已經由紅字講了——沒貨又還沒開賣的商品仍然應該說出「還沒開賣」。
+
+### A · 售罄退出徽章位置，改由庫存數字表達
+
+該列本來就有庫存數字，用徽章再講一次會讓「不能選」的訊號跟「沒貨」混在一起——前者是禁止，後者只是現況。0 件時庫存那一段轉紅（`.text-error`，`shared.css` 的 Utility 群組，與既有的 `.text-sub`／`.text-muted` 同族），列仍可點、仍可加入。
+
+### D · 兩筆販售軸示範資料
+
+預設角色帶「販售結束」「即將開賣」的商品（`song`／`movie`）依 D251 不能進組合，那兩顆徽章因此沒有資料可看。周湯豪那批補：`wy-24ce-wyagl-tee` 停售日已過（販售結束）、`wy-24ce-sock` 開賣日未到（即將開賣）。同樣挑非組合成員、非別名、也不在 e-shop F5 預覽名單裡的商品。
+
+**用語**：「還沒開賣」站上的既有說法是**即將開賣**（`shop.status.coming`，e-shop 清單與商品細節頁都用它），本輪沿用，沒有另造「未開售」——同一個狀態兩種說法會讓三個頁面的字對不起來。要改成「未開售」是全站改名，得一起換。
+
+**驗證**：dev server 實走（周湯豪角色）。`WYAGL RUG`／`24CE Skateboard` → 已下架＋停用；`Wish You A Good Life T-SHIRT` → 販售結束徽章＋0 件紅字＋可加入；`WYAGL Sock` → 即將開賣徽章＋0 件紅字＋實測可加入（選取數 +1）；`26MS T-Shirt (白)` → 無徽章、0 件紅字。0 console error；`validate_spec.py` OK。
+
+
+## 2026-09-09 · 庫存分配表：組合硬上限進表，末列說出被誰壓住（B 反饋導入）
+
+**範圍**：`create-bundle.html`、`bundle-detail.html`（庫存區）、`ds-components/stock-allocation.css`（新增 `.salloc__row--cap`）、`js/i18n.js`（`stock.bundle-min` 退役，新增 `stock.bundle-qty`／`stock.capped-by`）、`design-system.html`／`design-system.md`（§4.207 demo 補硬上限列與末列說明）。
+
+**依據**：使用者 2026-09-09 反饋「這裡的設定邏輯沒有互相關聯到」，並在三個修法中選「上限也進表」。
+
+### B · 三處對不上的地方
+
+實測重現（成員未鎖定 3 與 425、組合上限填 1）：
+
+- 末列寫「組合可售＝成員最低在庫」，畫面卻顯示 1，而成員最低是 3。D241 之後實際算的是「各成員在本組合的可售量取最小，再與硬上限取小」（§6 ④／主規格 §7.14），那句文案還停在舊模型，等於畫面自己打自己。
+- 「組合上限」是表格外的獨立欄位，上限壓低可售量時，表裡沒有任何地方說是被上限壓的。
+- 「未鎖定／鎖定量」兩欄看起來像互不相干的數字（鎖 2 之後未鎖定從 3 變 1）。
+
+### B · 硬上限與成員同表，一列一個限制
+
+`.salloc__row--cap`：組合自己的硬上限跟成員一樣佔一列，讀法相同——輸入框在「鎖定量」那一欄（這張表唯一可編輯的欄），「可售」欄寫出這道上限給得起幾件。列序是**成員在上、上限在下**，跟「限量」卡自己說的「在成員庫存之上再設一個硬上限」一致。與成員列之間畫一條組線（`--border`）表示它不是成員；下緣不畫線，讓末列的上緣線負責分隔，兩條 1px 不會貼在一起。
+
+限量時就算還沒加成員，表也留著——硬上限現在是表裡的一列，整張表收起來會連那個必填欄位一起藏掉。
+
+### B · 末列改名「組合可售量」，並說出是誰壓的
+
+`stock.bundle-min` 退役（原鍵位置留墓碑註解），改成兩把：末列標題只講它是什麼（`stock.bundle-qty`「組合可售量」），下面一行說明講這個數字被誰決定（`stock.capped-by`「受「X」限制」，X＝某個成員或「組合上限」）。名字用引號夾住，因為成員名多半是英數，直接接中文會黏在一起。全部不限量又沒設上限時不寫這一行——那時沒有誰在壓。
+
+**驗證**：dev server 實走兩頁。建立組合：上限 1 →「組合可售量 0／受成員限制」與「上限 5、成員 3／2 →可售 2」等組合逐一比對，上限 999 時末列改標「受「26MS Hoodie」限制」，切回不限量時上限列收起、末列仍標成員。組合細節頁：不限量時上限列不出現，切限量後帶出既有值 50、可售欄同步 50，末列標「受「26MS T-Shirt (白)」限制」。中英切換與 0 console error 均確認。`check_ds_sync.py` 本輪唯一 FAIL 來自另一個 session 尚未提交的 `variant-lock-grid.css`（缺 DS demo），與本輪無關。
+
+## 2026-09-09（二）· D253「作廢全面替代退款」三批改動收尾記錄＋殘留補正（A spec-derived / C 撤除 / D infra）
+
+**範圍**：三批原型改動（已完成，本則統一補記）——**eShop 訂單線**：`order-detail.html`（移除頁首 Refund 鈕與 `#od-refund-modal`、可退品項清單、退款事實列；作廢可用範圍擴大到取貨型未核銷／出貨型未出貨／數位未交付；停用收成「非 Admin」與「已完成履約」兩態；數位品項出貨徽章改依 `delivery.on` 切換）、`js/orders-store.js`（`pay` 值域移除 `refunded`；移除 `refund{}` 欄位；`voidState`／`voidItem`／`isCancelled` 支援出貨型與數位；6 筆 demo 訂單改寫，新增 #ZT-10488 數位預購未發行樣本）、`orders.html`（KPI／篩選改「已取消／爭議」＋獨立 Disputed tab）、`scanner.html`／`pickup-detail.html`（`refund` kind 改名 `void`）。**活動模組**：`event-detail.html`（Refunds 分頁改寫「作廢紀錄」，銷售紀錄加 Actions 欄與逐票／整場作廢鈕，新增「已作廢票券」KPI，取消活動／danger zone／通知／狀態機／財務文案全面改寫，新掛 `js/toast.js` 供作廢完成回饋）、`events.html`／`series-detail.html`（文案同步）、`js/events-store.js`（demo `status:'refunded'`→`'voided'`，新增 `ticketVoidState`／`voidTicket`／`voidAllRemaining`）、`js/components.js`（Home 提醒卡文案改名）。**Earnings**：`earnings.html`／`earnings-ztor.html`（篩選 chip／帳務異動樣本列／F8 KPI「沖銷準備金（Void reserve）」改名，出處由 D041 改記 D253）、`earnings-sony.html`（`fin.how.*` 的「退款期／退款爭議」改「爭議期」）。**全站**：`js/i18n.js`（`tx.cat.*`／`tx.st.*`／`tx.r.*`／`tx.detail.*`／`orders.*`／`od.*`／`sc.*`／`pk.*`／`event-detail.*` 等約 40 把改名並留墓碑，`nav.orders-sub` 改「出貨 · 取消 · 爭議」）。
+
+**本輪收尾另補三類殘留**（三批各自留在範圍外，逐項見下方 D 小節）：`js/i18n.js` 的 `event-detail.void.absorb`＋`event-detail.html` 對應行內 fallback——吸收順序文案仍寫著改名前的「Refund Reserve／退款準備金」，與 Earnings 已改的「Void reserve／沖銷準備金」不同步，一併改齊；`js/icons.js`／`js/components.js` 兩處程式註解仍用「退款」描述現已是作廢用途的空狀態與排除清單；`lab-rowdis-spacing.html`（設計探索頁，非正式產品頁）三處示範文案「退款即失效」改「作廢即失效」。
+
+**依據**：`documents/decisions.md` D253（平台不提供任何退款動作，取消一律走 Admin 作廢）；主規格 §2.6（訂單詳情退款/作廢政策）、§2.8（作廢動作）、§7.2（結算狀態機）、§7.3（作廢沖銷吸收順序）、§7.6（財務口徑，部分仍待上游核准）。
+
+### A · 平台不提供退款動作，取消統一走作廢
+
+三批改動的共同前提：站內不再有任何退款動作與退款金額記錄，人工退款一律發生在平台外（Stripe），Admin 回平台執行的作廢才是站內唯一能留痕的取消手段。訂單線、活動模組、Earnings 三處的狀態命名、KPI 與篩選因此同步收斂成「已取消 / 作廢 / 爭議」一套字典，取代原本的「已退款 / 退款 / 爭議」。
+
+### C · 撤除：退款動作、退款狀態、退款佇列、退款準備金舊名
+
+- **退款動作**：`order-detail.html` 頁首 Refund 主鈕、`#od-refund-modal`（範圍／部分退款勾選／金額試算／退款庫存回補）整段移除，改留墓碑。
+- **退款狀態**：付款・結算軸的 `refunded`／「已退款」全面退場，改以 `cancelled`／「已取消」表達（訂單、活動、交易明細三處狀態機同步）。
+- **退款佇列**：`event-detail.html` 舊「退款彙總」卡與退款佇列 v1 停用徽章整組撤除，改成逐筆「作廢紀錄」表格。
+- **退款準備金舊名**：Earnings F8 KPI「Refund reserve／退款準備金」改名「Void reserve／沖銷準備金」，`event-detail.void.absorb` 吸收順序文案同步（本輪收尾一併補上，見上）。
+
+### D · infra：i18n key 改名與墓碑、event-detail.html 新掛 js/toast.js
+
+`js/i18n.js` 大量 `tx.*`／`orders.*`／`od.*`／`sc.*`／`pk.*`／`event-detail.*` key 改名（`refund`→`void`／`cancelled`），舊 key 一律留 `/* 墓碑 */` 註解說明去向，不裸刪。`event-detail.html` 本輪新增載入 `js/toast.js`（原本沒有，作廢完成需要的 toast 回饋）。`feature-scope-map.md` 同步：`E18` 更名「提款與作廢沖銷 / Payout & void」；`O18`（退款）／`O23`（退款與爭議）標記為新增 Tier `⚫ 退場`（不再落在 ⚪ TBD／🔵 Next，避免誤讀成尚待實作）；`O04`／`O09` 更名「已取消 / 爭議」；統計行同步（🔵 Next 12→11、⚪ TBD 13→12、新增退場 2）。`design-system.html`／`design-system.md` 同步措辭（Pillar 4 badge／table 文件「提款／退款／扣款」→「提款／作廢沖銷／扣款」，Pillar 4 KPI 與 Pillar 5 Filter+list demo「Refunds」→「Voids」／「Void」，section-nav／todo-list 示範卡與 series 平行規則敘述同步）；`STYLE-DECISIONS.md` Q110／Q27 措辭同步，並註記本輪沿用既有裁決、無新增待裁決條目；`ASSUMPTIONS.md` 新增 UIA-145（活動端作廢執行者身分未鎖定、Earnings 財務口徑未落地、數位交付判準、已作廢票券 KPI 覆蓋範圍四項）。
+
+**驗證**：`python3 ../../Skills/project-ui-creator/scripts/check_ds_sync.py "site/r2.3"` → `RESULT: PASS + WARN (raw-color, sibling-rhythm)`（兩則 WARN 皆既有存量、與本輪無關）。dev server 實走（`devserver.py` port 56902）：`event-detail.html?id=realive-asia-taipei` 作廢紀錄分頁顯示「沖銷準備金 → 當期可分配淨利 → 結轉赤字」（zh）／「Void reserve → current distributable profit」（en），確認 Refund Reserve 殘留已修掉；`order-detail.html?id=ZT-10488` 數位品項出貨狀態徽章顯示「尚未發行」、作廢鈕可按；`design-system.html` 的 Pillar 4 KPI／Pillar 5 chip 兩處實際渲染為「Voids」／「Void」（`querySelector` 逐一核對，非文字搜尋誤判）。zh／en 各頁 `[data-i18n]` 元素逐一核對 textContent 是否等於 key 本身（raw key 判準）：`event-detail.html` 367／363 個皆 0 命中，`order-detail.html` 143 個皆 0 命中，`orders.html` 219 個皆 0 命中，`earnings.html` 497 個皆 0 命中。console 未見新增 error。本輪為文件收尾與措辭補正，未產生新截圖檔；視覺證據以上述即時渲染核對為準。
+
+## 2026-09-09（二）· 銷售設定整頁改版：數字列、鎖定就地編輯、彈窗拆開（B 反饋導入 / A spec-derived / C 撤除）
+
+**範圍**：`product-detail.html`（分頁重排、卡頭數字列、鎖定編輯模式、商品選項卡、價格卡的編輯入口、單列鎖定彈窗與編輯彈窗大表格退場）、`ds-components/form-section.css`（新增 `.form-section__actions`）、`ds-components/variant-builder.css`（鎖定編輯態 `.variant-cell--lockedit`／`.variant-lock`／`.variant-table__row--error`）、`ds-components/variant-lock-grid.css`（墓碑）、`js/i18n.js`（＋4 鍵、−3 鍵）、`design-system.html`／`design-system.md`、`ASSUMPTIONS.md`。上游同步：`documents/5.1.5.1-商品細節頁.md` §3 顯示序（D257）。
+
+**依據**：使用者 2026-09-09 指示「多選項的單項鎖定庫存／單選項的鎖定庫存／單選項與多選項的當前庫存編輯 這幾個 UI 都要優化，請從商品詳情頁／銷售設定這一整頁的用戶旅程與體驗思考怎麼改」，並對規劃四項建議全數採納（鎖定改編輯模式＋儲存、庫存卡置於價格前、直接改頁面）。**規劃裡「價格移出逐規格表」一項改回不動**：規格 5.1.5.2 §4.1 路線 B／F3.4 與 5.1.5.1 §2.8 明定多選項商品逐組合定價與成本，那不是呈現決策，表格維持價格與單件成本兩欄。
+
+### B · 整頁依使用頻率重排
+
+當前庫存（每天看、每週補貨、偶爾調鎖定）→ 商品選項（多選項才有，很少改）／價格（單一規格）→ 折扣／低庫存提醒／每人限購（設一次）。庫存置於價格前是對規格 §3 顯示序的調整，已回寫（D257）。
+
+### B · 卡頭數字列（`stat-row`）取代超大讀數與管道彙總
+
+目前在庫（限量時帶「/ 上限」）／已鎖定／未鎖定（底下 `__meta` 放「N 件沒人拿得到」提醒）／單售可售。原本的 `stock-readout` 超大數字（在 750px 卡裡孤零零靠右）、管道分配表的池列、限量的「上限數量」欄位、多選項的管道彙總表全部收進這一排——同一個數字只講一次（沿用 stat-row 2026-08-17 的取捨）。
+
+### B · 鎖定改就地編輯，不開彈窗
+
+卡頭「編輯鎖定」把全部列切成編輯態、列尾 ⋯「鎖定庫存」只切那一列；編輯態的「鎖定」格換成每個管道一格輸入（只有單售時不標管道名）、「未鎖定」即時預覽、鎖過頭整列轉紅並停用儲存；取消／儲存在卡底動作列（新元件 `.form-section__actions`），按儲存才寫回。單一規格同一套節奏：平常單售那格是唯讀讀數，進編輯模式才變輸入框——原本「打了就寫入」退場，打到一半不會生效。使用者要的「一次設定全部」與「單項設定」都保留，只是不再各開一個視窗。
+
+### B · 彈窗拆開、入口回到各自的卡
+
+改價從價格卡卡頭的「編輯」進（單一規格）；多選項新增「商品選項」卡（DS `kv` 列摘要「尺寸｜M、L、XL」）、從它的卡頭「編輯」進選項編輯彈窗（選項編輯器＋組合預覽，價格與成本欄仍在裡面，因為多選項的價格逐組合在表內）。庫存卡原本的 ⋯ 選單（編輯／補貨）退場：「補貨」升格成卡頭按鈕（outline，頁面主按鈕仍只有頂部「儲存」）。
+
+### C · 單列鎖定彈窗與編輯彈窗的大表格退場
+
+兩者都是同日早上建的，被編輯模式取代；`variant-lock-grid.css` 留墓碑（原始內容見 commit 31fe425），DS 頁 demo 與 md 條目移除、變體表條目補退場說明。
+
+**驗證**：Hoodie（多選項、1 管道）：列尾 ⋯ 只切 M 列成編輯態、輸入 5 → 該列轉紅＋儲存停用、輸入 1 → 儲存後表格 鎖定 1／未鎖定 0、數字列 3／1／2／3、store 同步；卡頭「編輯鎖定」全部三列進編輯態。Skateboard（單一規格、在庫 0）：進編輯模式輸入 2 → 卡底紅字「超過未鎖定量 · 最多 0」、儲存被擋、鎖定維持未鎖定。黑膠（單一規格、限量）：數字列「29 / 50」。分頁順序 當前庫存 → 商品選項 → 折扣 → 低庫存 → 每人限購；商品選項摘要「Size / 尺寸｜M、L、XL」。0 console error；`check_ds_sync.py` 全 PASS。
+
+## 2026-09-09（二）· 設定卡改一張一行、逐規格表欄距與數字欄回到 DS 值（B 反饋導入）
+
+**範圍**：`ds-components/detail-rail.css`（`.detail-cards` 由 auto-fit 並排改單欄）、`ds-components/variant-builder.css`（`--fluid` 的數字欄與欄距回基礎版）、`design-system.html`／`design-system.md` 同步。
+
+**依據**：使用者 2026-09-09 兩句裁示——指著底下三張設定卡「這個應該是一行行的」、指著逐規格表「這個要照 DS」。
+
+### B · 設定卡一張一行
+
+折扣設定／低庫存提醒／每人限購由三欄並排改成一張一行、各自吃滿整頁寬，與上方的庫存卡同寬。並排會在三張互不相關的設定之間多出兩條垂直切分線，讀起來像同一組；改成同寬單欄後，整個分頁由上往下是同一條軸線。
+
+### B · 逐規格表的欄距與數字欄回到 DS 值
+
+`--fluid` 是為了塞進 450px 主欄才把欄距壓成 `--sp-6`、數字欄壓成 44–56px；同日庫存卡已改整頁寬（可用寬度 694–748px），沒有理由再壓。庫存／鎖定／未鎖定三欄改回基礎版庫存欄的 78px、欄距改回 `--sp-8`，SKU 回到基礎版的 116px 級距；只有文字欄維持可壓縮的 fr，讓表格仍能跟著卡片寬度伸縮。
+
+**驗證**：襪子頁實測欄距 8px、三個數字欄各 78px、SKU 116px 不截斷、表格零溢出；三張設定卡各 734px、與庫存卡同寬。`check_ds_sync.py` 全 PASS。
+
+## 2026-09-09（二）· 逐組合鎖定寫回規格；沒有組合包時收起重複的管道分配（A spec-derived / C 撤除）
+
+**範圍**：`product-detail.html`（管道分配整塊在「多選項且沒有任何組合包」時收起）、`ASSUMPTIONS.md`（UIA-146 改記為已成立）。上游同步（不在 site）：`documents/0-設計規格書.md` v3.50 §7.14、`documents/5.1.5.1-商品細節頁.md` v1.28 §2.10、`5.1.5.4-建立組合流程.md` v2.9 §4 F4、`5.1.5.9-組合商品細節頁.md` v1.16 §2.3、`documents/decisions.md` D255、`backup_plan.md` Plan307。
+
+**依據**：使用者 2026-09-09 兩項指示——「要寫規格」（把逐組合鎖定的裁決寫回上游）、以及指著襪子那頁的管道分配問「這一塊是不是重複了」。
+
+### A · 逐組合鎖定成為正式規格
+
+主規格 §7.14 新增「多選項商品：鎖定逐選項組合」小節（粒度、該組合的未鎖定量、管道可售量＝各組合加總、逐組合判定的「沒人拿得到」提醒、在哪裡設）；5.1.5.1 §2.10 的管道分配清單對多選項商品整份改唯讀彙總並新增逐選項組合鎖定條。**組合包那一欄改在商品細節頁可編**也一併入規格，組合包端只呈現加總——逐選項組合要不要展開在組合包頁呈現仍〔產品待確認〕。site 端行為與前一則相同、無需改碼。
+
+### C · 沒有組合包時，管道分配整塊收起
+
+多選項商品又沒有被任何組合包收時，那張表只有「單售」一列，加總只有一個組合可加——講的跟上面逐規格表的鎖定／未鎖定是同一組數字。整塊收起，不把同一件事說兩次；有組合包（才有「哪個管道分到多少」可講）或單一規格商品（那裡是唯一的鎖定入口）維持顯示。
+
+**驗證**：襪子（多選項、無組合包）整塊不出現；束口褲（多選項、在四件組裡）維持顯示且兩列管道；Skateboard（單一規格）維持顯示且可直接編輯。0 console error；`validate_spec.py` OK；`check_ds_sync.py` 全 PASS。
+
+## 2026-09-09（二）· 逐選項組合的庫存鎖定：表格兩欄＋單列彈窗＋一次設定的大表格（B 反饋導入 / A spec-derived）
+
+**範圍**：`product-detail.html`（銷售設定分頁改整頁寬版面、逐規格表加鎖定／未鎖定兩欄、列尾 ⋯ 加「鎖定庫存」、新增單列鎖定彈窗、編輯彈窗加庫存鎖定大表、管道分配表改唯讀彙總）、`js/listing-state.js`（`variant*` 逐組合推導）、新元件 `ds-components/variant-lock-grid.css`、`ds-components/detail-rail.css`（新增 `.detail-cards`）、`ds-components/variant-builder.css`（`--fluid` 欄軌擴充）、`js/i18n.js`（7 把新鍵）、`design-system.html`／`design-system.md`。假設落檔：`ASSUMPTIONS.md` UIA-146 改寫。
+
+**依據**：使用者 2026-09-09 三項裁決——鎖定粒度採「逐管道各一個數字」、管道分配表改唯讀彙總、庫存卡改整頁寬；以及指示「三個點點再加一個鎖定庫存的設定」「編輯可以加入庫存鎖定的設置，直接是一個大表格一次設定所有多選項的庫存鎖定」。
+
+### A · 鎖定資料下沉到選項組合
+
+`variant.locks = { single: n|null, bundles: { <id>: n|null } }`，三態解讀與商品層的池鎖定相同。推導全部進 `ListingState`（`variantLockOf`／`variantLockedTotal`／`variantFree`／`variantChannelQty` 與四個 `variants*` 加總），頁面不自己算 §7.14 的規則。商品層 `pool.locks` 原封不動，只服務單一規格商品——兩套數字不混算。**鎖定粒度上游未定義**，且「組合包的鎖定量在商品頁可編」與 §2.10 現行寫法有落差，一併記入 UIA-146。
+
+### B · 三個入口寫同一份資料
+
+- **逐規格表**多「鎖定」（該組合各管道鎖定量合計）與「未鎖定」（庫存 − 鎖定，弱色＝推導值）兩欄。
+- **列尾 ⋯ →「鎖定庫存」**開單一組合的彈窗：一列一個管道，沿用 `stock-allocation` 的 `.salloc`，與商品層那張表同一套語彙、只是範圍縮到一個組合；鎖過頭紅字擋錯並停用儲存。
+- **編輯彈窗**底部新增「庫存鎖定」大表（新元件 `.lockgrid`）：列＝組合、欄＝管道、末欄＝未鎖定，一次設定全部。欄數走 `--lockgrid-channels` 變數（商品被幾個組合包用到就有幾欄），所以沒有直接擴充 `.variant-table`——那支的欄軌是寫死的字面值。
+
+### A · 管道分配表在多選項商品改唯讀彙總
+
+同一個數字有兩個地方可改遲早對不起來，所以多選項時該表的鎖定欄不再是輸入框，改顯示各組合在該管道的鎖定量加總，並補一行說明「鎖定量在上方的逐規格表逐組合設定」。單一規格商品的行為完全不變（仍可直接編輯）。
+
+### D · 銷售設定分頁改整頁寬
+
+逐規格表加到八欄後 450px 的主欄放不下。分頁內原本的兩欄（main 504／rail 300）退場：價格與當前庫存吃整頁寬，原本在右欄的折扣設定／低庫存提醒／每人限購三張小卡改成底下並排的 `.detail-cards`（新增於 `detail-rail.css`，`auto-fit` + 220px 下限，卡數不同的頁面不必改寫欄數）。
+
+### 附帶修正 · 編輯彈窗會清掉文字價格
+
+價格與成本欄只吃數字（`num()` 把非數字洗掉），而示範資料有「待確認」這種文字價格——開了編輯直接按儲存就會被清成「—」。改成欄位留空＝沒填、保留原值。編輯彈窗裡的組合預覽表也改用與頁面同一套幣別格式（原本一律前綴 `$`）。
+
+**驗證**：dev server 實走——襪子（425 件）在編輯大表輸入 400 → 未鎖定 25、輸入 999 → 該列轉紅並停用儲存；儲存後逐規格表顯示鎖定 400／未鎖定 25，管道分配表唯讀顯示 400、未鎖定 25 並掛出「25 件未鎖定」提示 chip，store 內 `variants[0].locks` 確為 `{single:400}`。Hoodie 走列尾 ⋯ 單列彈窗鎖 1（超額 5 有擋），逐規格表與彙總同步更新（單售 3＝1 鎖定＋2 未鎖定共用）。束口褲的大表出現兩欄管道（單售＋四件組）。單一規格（Skateboard）維持可直接編輯、無小標無表格。0 console error；`check_ds_sync.py` 全 PASS。
+
+## 2026-09-09（二）· 多選項商品也顯示管道分配表（A spec-derived）
+
+**範圍**：`product-detail.html`（庫存卡改版：管道分配表移出「僅單一規格」的條件、多選項時補一個小標；salloc 欄寬覆寫改 clamp）、`js/i18n.js`（新增 `stock.alloc`）。假設落檔：`ASSUMPTIONS.md` UIA-146。
+
+**依據**：使用者 2026-09-09 提問「鎖定庫存是不是沒有做在詳情頁」，確認多選項商品整塊看不到鎖定入口後裁決採 A 案（多選項也顯示同一張表、鎖定量設在商品層）。
+
+### A · 鎖定入口不再只給單一規格商品
+
+規格 5.1.5.1 §2.10 沒有把「庫存池與鎖定」限定在單一規格，原型卻把整塊掛在 `data-when-var="single"` 底下——多選項商品（周湯豪那批全部）等於沒有鎖定入口。改成兩種規格模式共用同一張表：多選項時擺在逐規格表下方、上面加一個 `.form-section__subhead`「管道分配」把兩塊分開（單一規格只有這一塊，不掛小標）；限量的「總量上限」讀數維持單一規格專屬，多選項的上限逐組合列在表內的「上限」欄。鎖定量、可售量、未鎖定與超標擋錯全部沿用既有的 `ListingState`，本輪沒有新增任何推導。**鎖定粒度（商品層 vs 逐選項組合）上游未定義**，記為產品變更提案 UIA-146。
+
+### 附帶 · 管道分配表的欄寬改成跟著欄寬縮放
+
+這張表的兩個數字欄原本在本頁固定覆寫成 168／150px，是為了讓英文的「3 / 50 units」與「Unlocked」放得下。細節頁主欄實際只有 ~360–500px（隨視窗變動），固定值會把管道名那一欄壓到剩二十幾 px——組合包名字整個直排一字一行。改成 `clamp(120px, 34%, 168px)`／`clamp(84px, 28%, 150px)`：窄的時候讓位給名稱，寬的時候回到原本的值。仍照 `stock-allocation.css` 的規定覆寫它自己的欄寬變數，不在 style 屬性寫死 px。
+
+**驗證**：dev server 實走——多選項（束口褲／Hoodie／預設角色 T 恤）都出現「管道分配」小標＋單售與組合包兩列；Hoodie 鎖 2 → 未鎖定 1 並跳出「1 件未鎖定」提示 chip，鎖 99 → 超標紅字擋錯；單一規格（Skateboard 不限量、黑膠限量）版面與改版前一致，總量上限仍在最後一項。中英雙語各走一輪。0 console error；`check_ds_sync.py` 全 PASS。
+
+## 2026-09-09（二）· 多選項商品補示範組合資料，逐規格表新增窄欄修飾子（D infra / B 反饋導入）
+
+**範圍**：`js/products-store.js`（`wishProduct` 那批商品依 options 補出 `variants`）、`product-detail.html`（缺 variants 時就地推導、表內價格改用幣別格式、SKU 補 title）、`ds-components/variant-builder.css`（新增 `.variant-table--fluid`）、`design-system.html`／`design-system.md`（§4 Variant builder 補 `--fluid` demo 與條目）。
+
+**依據**：使用者 2026-09-09 回報商品細節頁「銷售設定」的當前庫存表空白，修好之後回報表格「爆掉了」（列出來之後才看得出整張表戳出卡片外）。
+
+### D · 周湯豪那批商品補逐選項組合
+
+`wishProduct()` 只帶了 `options`（有哪些選項值），沒有 `variants`（逐組合一列）——商品細節頁的逐規格表是照 `variants` 畫列的，於是那個角色底下每一件多選項商品的當前庫存表都只有表頭。改由 options 笛卡兒積補出組合：庫存平均分攤到各組合、餘數給前面幾列，**總和＝目前在庫**，與庫存池對得起來；SKU 前綴取 id 去掉 `wy-` 後的最後兩段（`wy-bundle-cargo-pants` → `CARGO-PANTS-S`），與預設角色那批手寫短碼長度相當。`product-detail.html` 同輪加一道保險：拿到「有 options、沒 variants」的商品就就地笛卡兒積補列，資料再缺也不會空表。
+
+表內價格／成本改用與頁面唯讀價格欄同一套寫法（純數字才加幣別符號、TWD 給 `NT$` 與千分位，「待確認」這類文字原樣顯示）——原本一律前綴 `$`，周湯豪那批 TWD 商品會顯示成 `$3680`、`$待確認`。
+
+### B · `.variant-table--fluid`：表格坐在窄欄裡
+
+商品細節頁的主欄只有 ~450px，而 `.variant-table` 基礎版六欄是寫死的 px、`min-width` 560px——列一畫出來整張表就戳出卡片外，而且 `--menu` 為了讓列尾 kebab 選單浮出已經放行 overflow，連橫捲都接不住。新修飾子把最小寬歸零、欄寬換成可壓縮的 fr（SKU 分到最多，它最長）、欄距由 `--sp-8` 收到 `--sp-6`，並讓規格名也會截斷。命名與做法沿用 `admin-ip-bank-table` 的 `--fluid`（2026-09-02）。
+
+**驗證**：dev server 逐頁實走——老帽 1 列／束口褲 4 列／球鞋 4 列／Hoodie 3 列（1+1+1＝目前在庫 3）／襪子 425；四頁 `scrollWidth - 欄寬 = 0`（無溢出）；⋯ → 編輯 popup 開合與儲存重繪正常；DS 頁 `--fluid` demo 無溢出。0 console error；`check_ds_sync.py` 全 PASS（兩個 WARN 為既有存量）。
+
+## 2026-09-09（二）· 補下架示範資料，規則寫回規格（A spec-derived / D infra）
+
+**範圍**：`js/products-store.js`（`LISTING_SEED` 補兩筆下架示範）、`ASSUMPTIONS.md`（UIA-144 的產品變更提案改記為已成立）。上游同步（不在 site）：`documents/5.1.5.4-建立組合流程.md` v2.8、`documents/decisions.md` D254。
+
+**依據**：使用者 2026-09-09 兩項裁決——「1 補一些下架的資料」「2 已下架不可加入組合是規格 也就是規則，要跟著改」。
+
+### D · 三筆下架示範資料
+
+改版前站上只有預設角色的「林家維 官方後援會」一件是已下架的，周湯豪那批 16 件商品全部上架中——等於「已下架」這個狀態在那個角色的資料裡不存在，建立組合的候選清單看不到停用列、e-shop 也沒有那一列可篩。補：
+
+- 周湯豪 `wy-24ce-skateboard`（24CE Skateboard）：已下架。
+- 周湯豪 `wy-24ce-rug`（WYAGL RUG）：排定 2026-11-15 上架、時間還沒到。
+
+兩件都刻意挑非組合成員、非別名的商品，既有的組合可售量與商品細節頁示範不受影響。預設角色維持原有的「林家維 官方後援會」一件已下架，不另外加——同日驗收發現：一度加在 `hoodie` 上的「排定上架未到」會與 e-shop F5 粉絲端預覽打架（那段過濾只看 `listed`／`shown`、不看 `listAt`，既有淺層判斷，見 ASSUMPTIONS UIA-135），清單說已下架、預覽卡卻照樣露出，故當日撤除，`LISTING_SEED` 原處留註記說明挑選條件。狀態由 `js/listing-state.js` 推導，所以 e-shop 清單、商品細節頁與組合候選清單三處自動一致。
+
+### A · 「已下架不可加入組合」升格為產品規則
+
+前一則把這條記在 ASSUMPTIONS UIA-144 當產品變更提案；使用者裁決它就是規則，已寫回 `documents/5.1.5.4-建立組合流程.md`（§4 F2 新增成員資格、搜尋範圍涵蓋全部商品、候選列可前往商品細節頁三條；§6 檢核 2 補一句）與 `decisions.md` D254。site 端行為不變、無需改碼。**售罄與販售結束是否也該擋仍是產品待確認**，本版不擋。
+
+**驗證**：dev server 實走兩個角色。周湯豪：候選 16 筆、兩筆已下架（Skateboard／RUG），預設露出 6 筆含其中一筆停用列；e-shop 清單同兩列顯示「已下架」。預設角色：候選 8 筆、一筆已下架（官方後援會）。0 console error；`validate_spec.py` OK。
+
+## 2026-09-09 · 建立組合的候選商品清單接真實商品資料源（B 反饋導入 / A spec-derived）
+
+**範圍**：`create-bundle.html`（候選列改由 `js/products-store.js` 產生、全商品搜尋、已下架列停用、每列外開商品詳情）、`ds-components/data-list.css`（新增 `.data-list__row--disabled`）、`design-system.html`／`design-system.md`（§4.24 Data list 補停用列 demo 與條目）、`js/i18n.js`（新增 `cb.search.results`／`cb.detail`／`cb.member.unlisted` 三把）。
+
+**依據**：使用者 2026-09-09 兩項指示——「搜尋商品時要可以搜尋到所有商品，但未上架商品要有標示，且不可以選」「此商品列表上需要有一個前往商品詳情的按鈕，點擊後以新的視窗開啟」。資料源改接商品資料源一事，使用者在動工前確認採用。
+
+### B · 搜尋涵蓋全部商品，近期瀏覽只是預設露出的一批
+
+原本的候選列是寫死在 HTML 的五筆假資料（Art Print／Cassette…），搜尋只在那五筆裡找——「搜尋你的商品」實際上搜不到自己的商品。改由 `window.ZTOR_PRODUCTS` 產生全部候選：沒打字時只露出前 5 筆（＝近期瀏覽），一打字就在全部候選裡找，區塊標題同步在「近期瀏覽 / 搜尋結果」之間切換；無相符沿用既有空狀態引導「New item」。同名去重的做法沿用 `js/bundle-editor.js` 的目錄（示範資料把多個 persona 併在一起，同一件商品會以不同 key 重複出現）。
+
+規格 5.1.5.4 §4 F2 記的 site 範例列（Art Print 等五筆）隨之被真實商品取代——那五筆是截圖來的示範值、不是產品規則，但規格該段要同步更新。
+
+### A · 已下架的商品照列、標徽章、不可加入
+
+狀態一律問 `js/listing-state.js`（`ProductsStore.statusOf`），`unlisted`／`draft` 兩態的列掛 `.data-list__row--disabled`＋`aria-disabled`＋狀態徽章（文案走既有 `shop.status.*`，站上這個狀態叫「已下架」），點擊不生效。**列出來但不可選、而不是整列藏起來**：藏起來的話創作者會以為商品不見了；列著才看得到「它在、只是下架了」，而且還點得進詳情去把它上架。依據是既有產品規則——任一成員下架則整個組合不可售（§6 ④／主規格 §7.14），所以擋在選取這一步、不是等到建立後才壞掉。次要資訊在不可加入的列不報庫存、改寫「上架後才能加入」：那一列要回答的是為什麼不能選，而列寬只有一行，寫滿會把理由截掉。
+
+D251（數位影視類與音樂類不得成為組合成員）直接排除在候選之外，不列出來再擋——那 7 個次分類根本不該出現在這個清單裡。
+
+### A · 每列可外開商品詳情
+
+每列末端一顆 `.btn--icon.btn--xs` 外開連結（`external-link`）指向 `product-detail.html?id=<商品 id>`、`target="_blank"`，已加入組合的成員列一併保留。點連結不會順手把商品加進組合（列的點擊處理跳過 `a`）。理由：要判斷「這件商品該不該進組合」常常得看細節，但手上的組合還沒存檔，離開就沒了。
+
+### D · 候選列改用真實商品物件，庫存分配表跟著變準
+
+`productOf()` 現在對有 `data-id` 的列直接取 `ProductsStore.get(id)`，不再就地包一顆空池。因此成員的「沒有被鎖定的庫存量」會扣掉該商品在其他管道既有的鎖定量（例：寫真誌池 3、單售鎖 1、既有組合鎖 1 → 這裡只剩 1），建立後寫回 `pool.locks.bundles[bundleId]` 也才落在真的商品上。
+
+### D · 新增 `.data-list__row--disabled`（清單列的停用態）
+
+第一次出現就 promote 進 `ds-components/data-list.css`：只淡化 `__row-main`，右側的狀態徽章與列上的連結維持原強度——不能被選的理由正是那顆徽章在說的話，一起調淡等於把理由藏起來。`design-system.html` §4.24 補 demo 卡與說明、`design-system.md` 同步條目。
+
+**驗證**：dev server（port 4326）實走。預設 persona：候選 8 筆（song／movie／album 依 D251 排除）、預設露出 6 筆（前 5 ＋ 那筆已下架的）；搜尋「九龍」帶出未在近期清單的六片帽與低筒鞋、標題改「搜尋結果」；點已下架列選取數維持 0（cursor default、`__row-main` opacity .5、徽章「已下架」）；點列上的連結不觸發選取；連點兩列可加入、分配表列出 `tee:42`／`hoodie:48`（真實商品 id 與未鎖定量）、組合價「從 $90.00 起」。中英切換：meta 與標題重畫正確（`Membership / VIP card · List it first to add`／`Search results`），0 console error。`check_ds_sync.py` PASS（既有 WARN 為存量）。
+
+## 2026-09-08 · eShop 訂單明細作廢（Void）：Admin 專屬、取貨型限定（A spec-derived / D infra）
+
+**範圍**：`js/orders-store.js`（新增 `voidState`／`voidItem`／`isCancelled`／`cancelledBadge`，訂單層衍生 `o.cancelled`＋篩選 token `cancelled`，demo 訂單 ZT-10467 部分作廢／ZT-10466 全作廢→已取消）、`order-detail.html`（品項表第 6 欄動作＋逐筆作廢鈕、確認彈窗 `#od-void-modal`、作廢後重畫徽章＋toast）、`orders.html`（已取消徽章＋狀態篩選 tab）、`scanner.html`／`pickup-detail.html`（void 文案改名）、`js/i18n.js`（新增 17 把、改名 6 把；persona 區塊拆分）、`js/sidebar.js`（新增 `window.ztorCreator.adminScope()`）、`js/devtools.js`（Cheat Code「User」組拆為 Persona／Role 兩組）、`design-system.md`／`design-system.html`（Pillar 5 新增 pattern 卡 5.1.11 Destructive confirm）。
+
+**同日二次範圍（B 使用者反饋，見下方 B 小節）**：`js/theme.js`（`seedPersona()`→`seedPersonaAndRole()`＋舊 key 遷移）、`js/sidebar.js`（`CREATORS` 換成三個 persona、`ztor.role` 狀態、`adminView()`、共用 Admin 頁門禁 `applyAdminGate()`）、`js/devtools.js`（Role 組改兩態）、`js/i18n.js`（新增 `admin.gate.*` 三把、退役 `vr.noaccess.*` 三把）、`admin-video-review.html`（頁面級假開關與 `#vr-noaccess` 退役）、`admin-platform-fees.html`／`admin-ip-bank-entry.html`（門禁掛點：補 `empty-card.css`／`sidebar.js`）、`order-detail.html`（只改 sidebar 未載入時的退路 key）、`ASSUMPTIONS.md`（UIA-030／UIA-112／UIA-143／UIA-111(b)）、`BUILD-SPEC.md`（Admin 層段）。
+
+**依據**：上游 2026-09-07 拍板＋使用者 2026-09-08 四項裁決（`documents/decisions.md` D252）；規格已同步 `documents/0-設計規格書.md` §4.1／§4.4／§7.2／§8.27、`documents/5.1.5.3.1-訂單詳情.md` §2.8。
+
+### A · 逐筆作廢品項，不做整單作廢
+
+品項表新增第 6 欄「動作」，每一列一顆作廢鈕（`.btn--ghost.btn--destructive.btn--sm`）。停用時掛三種原因（title／`data-i18n-title`）：需要 Admin 角色、已取貨不可作廢、待產品確認——三者同時成立時目前取「品項事實優先於角色」的順序呈現，§4.4 未規定這個優先序（見 ASSUMPTIONS UIA-143 (b)）。確認彈窗 `#od-void-modal` 重用 `.payout-modal`／`.payout-dialog` 外殼＋`.btn--destructive`，零新 modal CSS；內容四段式：動到哪一項→平台外前置（Stripe 人工退款）→三條後果→不可逆提示。作廢成立後品項徽章與訂單層徽章即時重畫、跳 toast。
+
+### A · 訂單層「已取消」是衍生終態，不是新增狀態軸
+
+全部品項都作廢時，訂單層衍生顯示「已取消」（`badge--error`），`orders.html` 新增對應狀態篩選 tab；`scanner.html`／`pickup-detail.html` 的舊文案「已取消／已退款」統一改「已取消」。§7.2 只新增枚舉值、未指定掛在履約軸或付款軸，本輪放履約軸位置、付款・結算軸維持原值（見 ASSUMPTIONS UIA-143 (a)）。2.2 只做取貨型品項，出貨型與數位品項是否可作廢待產品確認（§8.27）。
+
+### B · 身分重構成 persona × role 矩陣
+
+使用者看過本輪稍早的 Cheat Code 改版後裁決（原意）：**Role 只有 General／Admin 兩態、Persona 三位就是 creator 名冊、2×3 矩陣就是全部組合**。所以打開周湯豪的頁面把身分切成 Admin 就是「Admin 代管周湯豪」，切回 General 就是周湯豪本人視角；Admin 頁只有 Admin 身分能進；從 Admin 的 Creator 管理進入周湯豪，等於以 Admin 代管身分進入他的頁面。
+
+改版前的問題是同一件事被記了兩遍：Creator 名冊有自己的三位假人（Denise／Aya／KMT），資料人格有自己的兩位（Gary Lin／周湯豪），從名冊點進誰都不會換掉工作區的資料——名冊上的人與畫面上的資料是兩組互不相干的假人。現在名冊就是三個 persona 本人（`handle` 即 persona id，單一來源），Enter 周湯豪落地看到的就是周湯豪的項目與商品。
+
+- **狀態只剩兩把**：`ztor.persona`（誰的資料）＋新的 `ztor.role`（用什麼身分看）。`ztor.activeCreator` 與 `ztor.adminHandoff` 退役，`js/theme.js` 讀到舊值就翻譯成新模型再刪掉，舊瀏覽器開站不報錯。
+- **Cheat Code**：Persona 組維持三個；Role 組從「一般創作者＋名冊每一位」收成兩顆（General creator／Admin）——列名冊等於把「代管誰」記第二遍，那件事已經由 Persona 組回答。
+- **Admin 頁門禁**：八個 Admin 路由在 General 身分下，主內容整段換成一則無權限狀態（「需要 Admin 身分」＋切換方式），Admin nav 整區不出現、導航退回一般創作者那一套，使用者走得出去。**一份共用實作**（`js/sidebar.js` 的 `applyAdminGate()`）注入，重用既有 `.empty-card` ＋ `.btn`，**零新 CSS、零新元件**；影片上架審核頁原本自己寫的那一份跟著退役。
+- **返回鍵**：從審核頁這類 Admin 頁進來時 `?from=` 留在網址上當返回目的地，不再為它多開一把 localStorage key。
+
+### D · `adminScope()` 開放＋Cheat Code 名單單一來源
+
+`js/sidebar.js` 新增 `window.ztorCreator.adminScope()`（等同既有 `isManagingCreator()`，`!!getCreator()`；不含 admin-video-review 交接路徑），供作廢鈕判斷「現在是不是代管態」。`js/devtools.js` 的 Cheat Code「User」組拆成「Persona · 資料人格」（`default`／`nick`／`userB`）與「Role · 身分」（一般創作者＋Admin 名冊 `window.ztorCreator.list` 逐一列出，含執行期新增的 creator），原本的死碼 `creatorOpts()`／`curCreator()` 改為實際渲染路徑。`js/i18n.js` 的 `window.ztorPersona.list()` 移除 `admin`、新增 `normalizePersonaId()`，`set()` 不再碰 `ztorCreator`——這一段解決了 ASSUMPTIONS UIA-112 記錄的既有落差（詳見該條 2026-09-08 更新）。
+
+**同日二次（狀態 key 收斂）**：身分狀態由三把收斂成一把 `ztor.role`——`ztor.activeCreator`（名冊選定的 creator）與 `ztor.adminHandoff`（Admin 頁交接）退役，遷移寫在 `js/theme.js` 的 `migrateLegacy()`（讀舊值→翻成 role/persona→刪除），全站只剩那一處還提到舊鍵名。`admin-video-review.html` 的頁面級假開關「檢視身分」（`ZTOR_DEV_PAGE_GROUPS`）與頁內 `#vr-noaccess` 一併退役，i18n 的 `vr.noaccess.*` 三把改由共用的 `admin.gate.*` 承接（原鍵位置留墓碑註解）。`js/sidebar.js` 的登出改成把身分歸零（`setRole('general')`）。
+
+**驗證（二次）**：http 實走 general／admin 兩種身分：`index.html`（general 無 Admin chrome、admin 顯示「Managing 周湯豪 NICKTHEREAL」＋返回 Creator 管理）、`creators.html`（general 無權限狀態、admin 三位 Gary Lin／周湯豪／User B）、名冊 Enter 周湯豪 → 落地 index.html 且 persona=nick／role=admin／專案資料是周湯豪的、`order-detail.html?id=ZT-10467`（general 作廢鈕 disabled＋「需要 Admin 角色」，admin 可按）、八個 Admin 路由在 general 全部出現門禁、舊 `ztor.activeCreator='denise'` 開頁 0 error 且被清掉。中英切換 0 raw key（掃 `[data-i18n]` 對 `i18nT` 回 null）。截圖 `../../screenshots/r2.3-cheatcode-persona-role.png`。
+
+**驗證**：`check_ds_sync.py` 全 PASS（既有兩則 WARN 為存量、不動）；http 開頁 `order-detail.html`／`orders.html`／`scanner.html`／`pickup-detail.html` console 0 error；中英切換 0 raw key。截圖 `../../screenshots/r2.3-order-detail-void-admin-enabled.png`、`r2.3-order-detail-void-disabled-non-admin.png`、`r2.3-order-detail-void-confirm.png`、`r2.3-order-detail-void-confirm-light.png`、`r2.3-order-detail-void-after-cancelled.png`、`r2.3-orders-list-cancelled-tab.png`、`r2.3-ds-pattern-destructive-confirm.png`。
+
+### B · 使用者反饋
+
+使用者原意：「待產品確認的按鈕不該出現在介面上」——停用理由若是內部寫規格用的「Pending product decision」，不該直接攤給操作者看，且一顆永遠按不下去的按鈕沒有操作上的用處。裁決 A 案：出貨型／數位品項的作廢鈕從「顯示但停用＋理由待產品確認」改為**完全不顯示**（比照已作廢品項的處理），該品項的動作欄留空；已取貨與非 Admin 兩種「顯示但停用」不變。改動：`order-detail.html`（`voidBtnHtml` 對 `unsupported` 狀態提早回空字串、`VOID_WHY` 移除對應鍵）、`js/i18n.js`（`od.void.why.unsupported` 退役，留墓碑註解）、`documents/5.1.5.3.1-訂單詳情.md` §2.8（「停用情況」改兩種＋新增「不提供作廢入口」條）、`ASSUMPTIONS.md` UIA-143（更新取捨順序範圍）。產品規則未變——2.2 仍只做取貨型可作廢，出貨型／數位仍〔產品待確認〕，見 `documents/0-設計規格書.md` §8.27。
+
+## 2026-09-08 · 手機 scanner：相機示意畫面＋名單可讀性（B 反饋導入）
+
+**範圍**：`scanner.html`（相機分頁補 `__feed` 層、F3 名單 `renderRoster()` 重寫）、`ds-components/scanner.css`（`.scanner-cam` 改暗底＋`__feed`／`.scanner-manual` 站暗底的配色／名單五條新規則）、`images/scanner-cam-feed.jpg`（新增，71 KB）、`js/i18n.js`（新增 `sc.roster.left`／`sc.roster.alldone` 兩鍵，中英齊）、`design-system.html`（4.83 Mobile scanner 的相機與名單 demo 卡更新、新增一組「整組領完」的群組）、`design-system.md`（同節條目）、`ASSUMPTIONS.md` UIA-046 (d)。
+
+**依據**：使用者當面反饋（相機分頁看不出是相機在看東西；名單上工作人員最需要的數字最弱）。無產品規則變動。
+
+### B · 相機分頁：對準框背後要有東西
+
+改版前 `.scanner-cam` 是一塊空的頁面底色，中間浮著一個橘色對準框——看起來像設定畫面，不像相機。現在對準框背後鋪一張靜態示意圖（昏暗取貨現場、買家舉著手機、螢幕上一個 faux QR），分成獨立的 `.scanner-cam__feed` 一層畫：照片＋一層 `--surface-inverse` 的 `color-mix` 漸層暗紗（上 40%／下 62%，下緣壓得重一點是因為手動輸入鈕與提示文字都在下面）。**正式產品換成真實相機串流時只換這一層**，對準框、掃描線、按鈕與提示文字都不用動。
+
+這一區從此恆為暗色，所以區內文字改吃 `--foreground-on-inverse` 那一組——淺色主題下 `--muted-foreground` 是深灰，疊在暗照片上讀不到（這個坑站上有前例，見 design-system.md 票券那節的「字色的坑」）。`.scanner-manual` 另補半透明 `--surface-inverse` 底與 on-inverse 邊框，讓外框鈕從照片裡撐起來；改的是 `.scanner-manual` 自己，沒動 `button.css` 的 `--outline`。圖沒載入時 `.scanner-cam` 自己的 `--surface-inverse` 底接手，退回改版前的深色相機意象，文字對比不會塌。
+
+### B · 名單：把工作人員真正在問的事放大
+
+現場只有一個問題——**這個人還有幾件要領**。改版前那個數字（`已領 0／1`）是列上最小最灰的字，而占掉最大視覺重量的是一顆每組都長一樣的人形圖示。五件事一起改，全部重用既有元件、沒有新元件：
+
+- **識別圓取代通用圖示**：群組列改用 `avatar.css` 的 `.ztor-avatar.ztor-avatar--sm`（姓名首字），那顆圓從此真的能分人。票券來源的群組維持票券圖示，但換成同為 32px 的 `.data-list__icon--sm`，兩種群組的標題落在同一條垂直線上。
+- **主數字換人**：右欄主行改成「還剩 N 件」（`.scanner-rostercount`，沿用同一支元件裡 `.scanner-count b`／`.scanner-progress__count` 的 display 字＋bold＋等寬數字），`已領 M／N` 降成註腳（`__sub`）。整組領完時那一格不再是數字，改成「已領完」並退回內文字級轉灰（`--done`）。
+- **子列有序號**：子列的列首欄放組內序號（`.rowdis__lead` ＋ `.rowdis__num`），與桌機版 `pickup-detail.html` 同一套做法（2026-09-04 Q109 裁決）——工作人員才說得出「第 3 件」。欄寬用元件自己的 `--rowdis-lead-w` 覆寫成 32px 對齊識別圓，序號因此落在圓的正下方。
+- **已核銷降階**：已核銷的子列 `.scanner-rosterrow--done` 降一階，待領的自然跳出來。
+- **整組領完再降一階**：`.scanner-rostergroup--done` 讓整塊退到背景，注意力留給還有東西要領的人。降的只有透明度——L3 群組面板的填色、邊框與面板內 hover（2026-09-04 才定案）一條都沒改。
+- **來源編號弱化**：群組列的 `Order #ZT-10484` 退到 `--fs-11`；同一組數字子列的領取碼（`PU-10484-01`）本來就唸過一次。
+
+**驗證**：`check_ds_sync.py` 全 PASS（既有兩則 WARN 不變）；400px 手機框下相機與名單皆不破版；中英切換 0 raw key；console 0 error。截圖 `screenshots/scanner-cam-feed.png`、`screenshots/scanner-roster-v2.png`。
+
 ## 2026-09-05 · 交易明細改成兩族一表（A spec-derived）
 
 **範圍**：`earnings.html`（交易明細分頁全段重做＋篩選腳本）、`js/i18n.js`（新增約 60 個 `tx.*` 鍵）、`ds-components/badge.css`（`--outline`／`--outline-danger`）、`ds-components/table.css`（`__row--ledger`／`__amt`／`.tx-status`／`.tx-na`／`.tx-detail__kv`）、`ds-components/chip.css`（`.filter-row--group`）、`design-system.md`（元件總表 Badge／Chip／Table 三列＋Table Class API 五列）、`design-system.html`（Badge matrix 兩列、Filter row 第二排 demo、Table「兩族一表」demo＋Class API 五列）、`ASSUMPTIONS.md` UIA-142、`STYLE-DECISIONS.md` Q110。

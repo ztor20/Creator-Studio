@@ -1720,7 +1720,7 @@
 
   var DATA = {
     // F3 — settled income only, no status column (spec 5.1.1 §F3: "狀態恆為 settled，故不另列狀態欄"；
-    // excludes refunds / payouts / fees / disputes and any non-settled rows). Sorted by settle time,
+    // excludes voids / payouts / fees / disputes and any non-settled rows). Sorted by settle time,
     // cross-source, ≤8 rows. hideStatus drops the status pill for this list only.
     'dash-recent': { table: true, hideStatus: true, rows: [TX.spotify, TX.merch, TX.licensing, TX.iproyalty, TX.ticketsSettled, TX.hoodie, TX.cdPreorder, TX.adshare] },
     // Earnings Overview — full recent ledger (income + a payout). Same renderer ⇒ identical format.
@@ -1741,7 +1741,8 @@
     // applied — never on a generic page): my-ip #rented + ?ip= flashes the license row;
     // e-shop ?status=low pre-activates the Low Stock chip; event-detail #overview opens
     // the tab holding the Pre-flight checklist card (2026-08-13: the card moved out of
-    // the Refunds tab — that tab is hidden before sales open, exactly when the checklist matters); settings #tax aliases to Payments
+    // the Refunds tab, since renamed Void record — that tab is hidden before sales open,
+    // exactly when the checklist matters); settings #tax aliases to Payments
     // and flashes the three tax rows.
     /* details／ago（2026-08-28，待處理事項面板）：
          details = 這一則牽涉到的細項，名稱一律從同一則的 desc 裡已經寫著的內容拆出來，
@@ -1762,10 +1763,10 @@
           { nameKey: 'alert.stock.d2.name', name: 'Kowloon After Dark tee (S)',     subKey: 'issue.sub.below-threshold', sub: 'Below restock threshold' },
           { nameKey: 'alert.stock.d3.name', name: 'Mong Kok Sniper concept poster', subKey: 'issue.sub.below-threshold', sub: 'Below restock threshold' }
         ] },
-      { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.event.title',     title: 'Event pre-flight incomplete',     descKey: 'alert.event.desc',     desc: '<em>REALIVE World Tour (China) — Chongqing · Oct 25</em> still needs refund policy and on-site staffing confirmed.',                 metaKey: 'alert.event.meta',     meta: 'Warning · Events · Open',       ctaKey: 'alert.event.cta',     cta: 'Complete checklist', ctaHref: 'event-detail.html?id=realive-chongqing#overview', id: 'event-preflight', kind: 'review', src: 'events', srcKey: 'nav.events',
+      { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.event.title',     title: 'Event pre-flight incomplete',     descKey: 'alert.event.desc',     desc: '<em>REALIVE World Tour (China) — Chongqing · Oct 25</em> still needs cancellation &amp; void policy and on-site staffing confirmed.',                 metaKey: 'alert.event.meta',     meta: 'Warning · Events · Open',       ctaKey: 'alert.event.cta',     cta: 'Complete checklist', ctaHref: 'event-detail.html?id=realive-chongqing#overview', id: 'event-preflight', kind: 'review', src: 'events', srcKey: 'nav.events',
         agoKey: 'issue.ago.3h', ago: '3 hours ago',
         details: [
-          { nameKey: 'alert.event.d1.name', name: 'Refund policy',    subKey: 'issue.sub.not-confirmed', sub: 'Not confirmed yet' },
+          { nameKey: 'alert.event.d1.name', name: 'Cancellation & void policy', subKey: 'issue.sub.not-confirmed', sub: 'Not confirmed yet' },
           { nameKey: 'alert.event.d2.name', name: 'On-site staffing', subKey: 'issue.sub.not-confirmed', sub: 'Not confirmed yet' }
         ] },
       // Blocking (compliance) — resolvable only in its source module; close control is disabled (spec §F4).

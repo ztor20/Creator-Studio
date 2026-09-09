@@ -1445,8 +1445,12 @@
        · 逐票種走過 sold，每 1–2 張併成一筆訂單（真實世界很少一人一張）。
        · 金額＝票種單價 × 張數；平台費 10%；淨額＝金額－平台費。
        · **已結算金額加總必須等於該場次的 revenue**，否則這張表會跟收入 KPI 互相打架。
-         因此退款筆是「額外」的交易（退掉的票已回到庫存、不在 sold 裡），不影響加總。
-       · 買家名字取自 roster 同一個名單池：名單與交易是同一場活動的兩個視角，不是兩套虛構。 */
+         因此作廢筆是「額外」的交易（作廢的票已回到庫存、不在 sold 裡），不影響加總。
+       · 買家名字取自 roster 同一個名單池：名單與交易是同一場活動的兩個視角，不是兩套虛構。
+       · 2026-09-09（D253）：平台不提供退款動作，票券的取消一律由手動作廢執行。原本這裡
+         固定產生 2 筆 status:'refunded' 的示例交易，只是把「退款」換成「作廢」的資料語意——
+         demo 筆改成 status:'voided'，並補上 voidedAt／voidedBy 兩欄供作廢紀錄（§2.9.2）顯示；
+         使用者透過 UI 執行的作廢（voidTicket／voidAllRemaining）也寫這兩欄，同一套欄位。 */
   function buildTx(ev) {
     var out = [], seq = 0, day = ev.date || '2026-01-01';
     (ev.tiers || []).forEach(function (t, ti) {
@@ -1467,8 +1471,12 @@
         left -= qty; seq++;
       }
     });
-    /* 退款筆：額外附加，不列入已結算加總（退掉的票不在 sold 裡）。每場固定兩筆，
-       金額取第一個票種單價，讓「退款」在明細與退款分頁都有東西可看。 */
+    /* 作廢筆（2026-09-09 由「退款筆」改寫，D253）：額外附加，不列入已結算加總
+       （作廢的票不在 sold 裡）。每場固定兩筆，金額取第一個票種單價，讓「作廢」在
+       明細與作廢紀錄分頁都有東西可看。voidedAt／voidedBy 供 §2.9.2 作廢紀錄顯示
+       ——執行者上游未定義（〔產品待確認〕，見 decisions.md D253），示例資料暫依
+       decisions.md 記載的過渡預設「比照 eShop 以 Admin 專屬處理」填 'Admin'，
+       不代表已裁決創作者不可執行。 */
     var t0 = (ev.tiers || [])[0];
     if (t0 && (ev.sold || 0) > 4) {
       for (var k = 0; k < 2; k++) {
@@ -1477,7 +1485,8 @@
           id: 'TX-' + String(90100 + k * 11).slice(-5),
           buyer: GIVEN[(k * 11) % GIVEN.length] + ' ' + FAMILY[(k * 9) % FAMILY.length],
           tier: t0.name, qty: 1, gross: g, fee: Math.round(g * 0.10), net: g - Math.round(g * 0.10),
-          method: 'Card', status: 'refunded', at: day, atMin: 9 * 60 + k * 25
+          method: 'Card', status: 'voided', at: day, atMin: 9 * 60 + k * 25,
+          voidedAt: day + ' ' + (14 + k) + ':00', voidedBy: 'Admin'
         });
       }
     }
@@ -1574,6 +1583,33 @@
     soldOf: function (ev) {
       if (!ev || !ev.tiers) return 0;
       return ev.tiers.reduce(function (n, t) { return n + (t.sold || 0); }, 0);
+    },
+
+    /* ── 票券作廢（Void ticket，D253）───────────────────────────
+       平台不提供退款動作，票券取消一律由手動作廢執行（逐票或整場）。
+       txAll（event-detail.html 的交易明細）是頁面自己 fetch 一次後留在記憶體的陣列，
+       這裡直接改傳入的 tx 物件（同 orders 模組 voidItem 對 order 物件的做法），
+       不寫回 localStorage——原型沒有後端，重新整理即回到 demo 初始值。
+       只有兩種狀態：'ok'（可作廢）／'voided'（已作廢，終態、不可逆）；
+       不像 orders 另有 'redeemed' 終態——demo 的交易明細與到場名單是兩份獨立
+       mock 資料，沒有「這張票是否已核銷」的欄位可查，此為呈現層簡化，見 ASSUMPTIONS。 */
+    ticketVoidState: function (tx) {
+      if (!tx) return 'ok';
+      return tx.status === 'voided' ? 'voided' : 'ok';
+    },
+    voidTicket: function (tx, actor) {
+      if (!tx || tx.status === 'voided') return false;
+      tx.status = 'voided';
+      var d = new Date();
+      tx.voidedAt = d.toISOString().slice(0, 16).replace('T', ' ');
+      tx.voidedBy = actor || 'Admin';
+      return true;
+    },
+    /* 整場作廢：對傳入清單裡所有還未作廢的交易逐一作廢，回傳實際作廢筆數。 */
+    voidAllRemaining: function (txList, actor) {
+      var n = 0, self = this;
+      (txList || []).forEach(function (t) { if (self.voidTicket(t, actor)) n++; });
+      return n;
     }
   };
 }());

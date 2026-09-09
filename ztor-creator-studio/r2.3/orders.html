@@ -48,7 +48,7 @@
       <div class="page-intro">
         <div>
           <h1 class="page-intro__title" data-i18n="orders.h1">Order management</h1>
-          <p class="page-intro__sub" data-i18n="orders.sub">Track orders, fulfilment, refunds and disputes. Amounts reconcile to Earnings.</p>
+          <p class="page-intro__sub" data-i18n="orders.sub">Track orders, fulfilment, cancellations and disputes. Amounts reconcile to Earnings.</p>
         </div>
       </div>
 
@@ -58,7 +58,7 @@
       <div class="bento mb-16">
         <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="orders.kpi.toship">To ship</div><div class="kpi__value"><span class="when-data" data-orders-kpi="toship">0</span><span class="when-empty">0</span></div></div>
         <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="orders.kpi.pending">Pending</div><div class="kpi__value"><span class="when-data" data-orders-kpi="pending">0</span><span class="when-empty">0</span></div></div>
-        <div class="kpi bento--span-3" data-feat="O04"><div class="kpi__label" data-i18n="orders.kpi.refund">Refunds / disputes</div><div class="kpi__value"><span class="when-data" data-orders-kpi="refund">0</span><span class="when-empty">0</span></div></div>
+        <div class="kpi bento--span-3" data-feat="O04"><div class="kpi__label" data-i18n="orders.kpi.canceldisp">Cancelled / disputed</div><div class="kpi__value"><span class="when-data" data-orders-kpi="cancelDisputed">0</span><span class="when-empty">0</span></div></div>
         <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="orders.kpi.completed">Completed · 30d</div><div class="kpi__value"><span class="when-data" data-orders-kpi="completed">0</span><span class="when-empty">0</span></div></div>
       </div>
 
@@ -83,7 +83,14 @@
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="toship"><span data-i18n="orders.status.toship">To ship</span><span class="filter-tabs__count" data-status-count>0</span></button>
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="shipped"><span data-i18n="orders.status.shipped">Shipped</span><span class="filter-tabs__count" data-status-count>0</span></button>
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="completed"><span data-i18n="orders.status.completed">Completed</span><span class="filter-tabs__count" data-status-count>0</span></button>
-            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="refund" data-feat="O09"><span data-i18n="orders.status.refund">Refund / dispute</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <!-- 爭議（2026-09-09 隨 D253 拆開「Refund / dispute」）：買家或銀行發起 chargeback，
+                 與作廢無關，歸屬由 js/orders-store.js 的 PAY_TAB 算出 -->
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="disputed" data-feat="O09"><span data-i18n="orders.status.disputed">Disputed</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <!-- 已取消（2026-09-08 作廢明細，2026-09-09 隨 D253 取代原本的「已退款」）：
+                 訂單所有品項都被作廢後的終態，歸屬由 js/orders-store.js 的
+                 computeFilters() 算出，與徽章同一份資料。平台不提供退款動作，
+                 此分頁涵蓋原本「Refund / dispute」裡的退款／作廢部分。 -->
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="cancelled"><span data-i18n="orders.status.cancelled">Cancelled</span><span class="filter-tabs__count" data-status-count>0</span></button>
           </nav>
         </div>
       </section>
@@ -132,7 +139,7 @@
         </div>
       </section>
 
-      <div class="field__hint mt-8 when-data" data-i18n="orders.reconcile">Amounts reconcile to Earnings. Refunds and disputes follow Earnings rules — order management never recomputes figures. Each order shows two status axes — fulfilment and payment·settlement — kept separate, never merged.</div>
+      <div class="field__hint mt-8 when-data" data-i18n="orders.reconcile">Amounts reconcile to Earnings. Cancellations and disputes follow Earnings rules — order management never recomputes figures. Each order shows two status axes — fulfilment and payment·settlement — kept separate, never merged.</div>
       <div class="field__hint mt-8 when-data" data-i18n="orders.pickup.note">On-site QR pickup items aren't shipped from here — their pickup status shows at the item level and is redeemed at a session scanner in <a class="card__link" href="pickup.html">Pickup management</a>. To-ship counts physical shipping only.</div>
 
     </div>
@@ -156,10 +163,15 @@
         const href = 'order-detail.html?id=' + encodeURIComponent(o.id);
         const lines = o.items.map(it =>
           '<div class="product-list__line"><span data-i18n="' + it.nameKey + '">' + esc(it.name) + '</span> ×' + it.qty + '</div>').join('');
-        /* 待付款訂單還沒有履約動作（履約軸為空），該格用破折號佔位——留白會讓人以為是渲染壞了 */
-        const fulfil = o.fulfil.length
-          ? o.fulfil.map(v => badge(window.ztorOrders.fulfilBadge(v))).join('')
-          : '<span class="text-sub">—</span>';
+        /* 待付款訂單還沒有履約動作（履約軸為空），該格用破折號佔位——留白會讓人以為是渲染壞了。
+           全部品項都被作廢的訂單（2026-09-08；2026-09-09 隨 D253 改掛付款軸）：履約不會
+           再發生，這一格改用破折號佔位；「已取消」改在付款欄顯示（取代原本的已退款），
+           兩軸仍不混用（PCR-001）。 */
+        const fulfil = o.cancelled
+          ? '<span class="text-sub">—</span>'
+          : (o.fulfil.length
+            ? o.fulfil.map(v => badge(window.ztorOrders.fulfilBadge(v))).join('')
+            : '<span class="text-sub">—</span>');
         const row = document.createElement('div');
         row.className = 'product-list__row';
         row.setAttribute('role', 'row');
@@ -173,7 +185,7 @@
           '<div class="product-list__cell product-list__items" role="cell">' + lines + '</div>' +
           '<div class="product-list__cell product-list__customer" role="cell">' + esc(o.buyer.name) + '</div>' +
           '<div class="product-list__cell product-list__price" role="cell">' + esc(o.total) + '</div>' +
-          '<div class="product-list__cell product-list__pay" role="cell">' + badge(window.ztorOrders.payBadge(o.pay)) + '</div>' +
+          '<div class="product-list__cell product-list__pay" role="cell">' + badge(window.ztorOrders.payBadge(o.cancelled ? 'cancelled' : o.pay)) + '</div>' +
           /* D111 混合訂單（配送＋現場取貨）：履約軸同時出現待出貨＋待取貨兩顆徽章，水平不換行 */
           '<div class="product-list__cell product-list__ship" role="cell">' + fulfil + '</div>' +
           '<div class="product-list__cell" role="cell">' + esc(o.date) + '</div>' +

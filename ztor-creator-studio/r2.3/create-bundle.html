@@ -166,49 +166,15 @@
       </button>
 
       <!-- 近期瀏覽的商品（Recently viewed）-->
-      <div class="cb-sublabel" data-i18n="cb.recent">Recently viewed</div>
+      <div class="cb-sublabel" id="cb-recent-label" data-i18n="cb.recent">Recently viewed</div>
       <div class="picker">
         <div class="picker__search">
           <input class="picker__search-input" placeholder="Search your products…" data-i18n-placeholder="cb.search.ph">
         </div>
         <div class="picker__list">
-          <div class="data-list" id="cb-recent">
-            <div class="data-list__row" data-cb-item data-price="11.00" data-stock="40" data-name="Art Print" data-cat="Posters &amp; prints">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                <div class="data-list__body"><div class="data-list__title">Art Print <span class="text-sub">Posters &amp; prints · 40 in stock</span></div></div>
-              </div>
-              <div class="data-list__end cb-row-end"><span class="cb-price">$11.00</span></div>
-            </div>
-            <div class="data-list__row" data-cb-item data-price="12.00" data-stock="12" data-edition="limited" data-name="Cassette" data-cat="Music">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                <div class="data-list__body"><div class="data-list__title">Cassette <span class="text-sub">Music · Limited · 12 left</span></div></div>
-              </div>
-              <div class="data-list__end cb-row-end"><span class="cb-price">$12.00</span></div>
-            </div>
-            <div class="data-list__row" data-cb-item data-price="13.00" data-stock="unlimited" data-name="Summer Preset Pack" data-cat="Digital">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                <div class="data-list__body"><div class="data-list__title">Summer Preset Pack <span class="text-sub">Digital · Unlimited</span></div></div>
-              </div>
-              <div class="data-list__end cb-row-end"><span class="cb-price">$13.00</span></div>
-            </div>
-            <div class="data-list__row" data-cb-item data-price="14.00" data-stock="8" data-name="Cookbook" data-cat="Books">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                <div class="data-list__body"><div class="data-list__title">Cookbook <span class="text-sub">Books · 8 in stock</span></div></div>
-              </div>
-              <div class="data-list__end cb-row-end"><span class="cb-price">$14.00</span></div>
-            </div>
-            <div class="data-list__row" data-cb-item data-price="15.00" data-stock="25" data-variants="3" data-name="Lanyard Special" data-cat="Accessories">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                <div class="data-list__body"><div class="data-list__title">Lanyard Special <span class="text-sub">Accessories · 3 variants · 25 in stock</span></div></div>
-              </div>
-              <div class="data-list__end cb-row-end"><span class="cb-price">$15.00</span></div>
-            </div>
-          </div>
+          <!-- 候選商品由 js/products-store.js 產生（2026-09-09）：搜尋涵蓋全部商品、
+               已下架的照列但不可加入、每列附「商品詳情」外開連結。見頁尾腳本 buildCandidates()。 -->
+          <div class="data-list" id="cb-recent"></div>
           <div class="cb-no-result" id="cb-no-result" hidden data-i18n="cb.search.noresult">No products match. Create a New item above to add it to this bundle.</div>
         </div>
       </div>
@@ -266,14 +232,6 @@
           </button>
         </div>
       </div>
-      <div class="form-grid" style="margin-top:6px">
-        <!-- 組合硬上限：限量才出現 -->
-        <div class="field" data-when-cb-edition="limited" data-feat="S45" hidden style="margin-bottom:0">
-          <div class="field__label"><span data-i18n="cb.total">Total quantity</span> <span class="field__req">*</span></div>
-          <input class="input" id="cb-total" placeholder="0">
-          <div class="field__hint" data-i18n="cb.total.hint">Hard cap · still limited by member stock</div>
-        </div>
-      </div>
       <!-- D241（spec §7.14）：成員逐列的庫存分配。舊版這裡是一個唯讀「目前在庫」欄，
            說明寫「自動＝取成員最低庫存」——那個模型已由 D241 取代：成員的庫存是一個池，
            單售與每個組合包各是一個管道，本組合能拿到多少要嘛鎖定、要嘛與其他管道共用沒有被鎖定的庫存量。
@@ -285,8 +243,26 @@
           <span data-i18n="stock.lock">Locked</span>
           <span style="text-align:right" data-i18n="stock.sellable">Sellable</span>
         </div>
+        <!-- 硬上限也是一道限制，2026-09-09 使用者裁決「上限也進表」後它跟成員一樣佔一列：
+             填在「鎖定量」那一欄（這張表唯一可編輯的欄），右邊直接寫出它給得起幾件，
+             末列的取最小才看得出這個組合是被誰壓住的。原本它是表格外的獨立欄位，
+             設了 5、下面卻顯示 1，兩件事讀起來像沒有關係。 -->
+        <div class="salloc__row salloc__row--cap" data-when-cb-edition="limited" data-feat="S45" hidden>
+          <span class="salloc__name">
+            <span><span data-i18n="cb.total">Total quantity</span> <span class="field__req">*</span></span>
+            <span class="salloc__sub" data-i18n="cb.total.hint">Hard cap · still limited by member stock</span>
+          </span>
+          <span class="salloc__qty salloc__qty--muted">—</span>
+          <span class="salloc__lock"><div class="amount-field amount-field--suffix">
+            <input class="input amount-field__input" id="cb-total" inputmode="numeric" placeholder="0" data-i18n-aria-label="cb.total" aria-label="Total quantity">
+            <span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></div></span>
+          <span class="salloc__qty" data-cb-cap-qty>—</span>
+        </div>
         <div class="salloc__row salloc__row--free" id="cb-alloc-total">
-          <span class="salloc__name"><span data-i18n="stock.bundle-min">Bundle sellable = lowest member stock</span></span>
+          <span class="salloc__name">
+            <span data-i18n="stock.bundle-qty">Bundle sellable</span>
+            <span class="salloc__sub" data-cb-decider hidden></span>
+          </span>
           <span class="salloc__qty" id="cb-bundle-qty">—</span>
         </div>
       </div>
@@ -498,6 +474,7 @@
 
 <!-- D241：狀態與可售量的唯一推導層（spec §7.14）。必須早於下面的頁內 script。 -->
 <script src="js/listing-state.js?v=r2.2"></script>
+<script src="js/products-store.js?v=r2.2"></script>
 <script>
 /* Create bundle 互動 · spec 5.1.5.4。
    D241（spec 0-設計規格書 §7.14）：組合可售量改由 ListingState.bundleQty() 算，
@@ -551,6 +528,14 @@
   const poolTotal = v => (!v || v === 'unlimited' || v === '∞') ? 'unlimited' : (parseFloat(v) || 0);
   /* 候選列 → 商品物件（同一列只包一次，鎖定量留在物件上，移除再加入時重置）*/
   function productOf(row) {
+    /* 候選列來自商品資料源時（data-id），直接用那一筆商品：它的庫存池與其他管道
+       既有的鎖定量都是真的，分配表算「沒有被鎖定的庫存量」才不會憑空多出可用件數。
+       嵌入建立流程臨時新增的商品沒有 id，走下面就地包一顆池的舊路。 */
+    const sid = row.dataset.id;
+    if (sid && window.ProductsStore && window.ProductsStore.get) {
+      const stored = window.ProductsStore.get(sid);
+      if (stored) { row.dataset.cbId = sid; products[sid] = stored; return stored; }
+    }
     if (!row.dataset.cbId) row.dataset.cbId = 'm' + (++rowSeq);
     const id = row.dataset.cbId;
     if (!products[id]) products[id] = {
@@ -583,7 +568,7 @@
         + '<span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></div></span>'
         + '<span class="salloc__qty" data-cb-sellable></span>'
         + '<p class="salloc__error" data-i18n="stock.lock-err" hidden>Exceeds unlocked stock</p>';
-      allocEl.insertBefore(row, allocTotalRow);
+      allocEl.insertBefore(row, allocEl.querySelector('.salloc__row--cap') || allocTotalRow);   /* 成員在上、硬上限在下：限量卡說的是「在成員庫存之上再設一個硬上限」 */
     });
     if (window.applyI18n) window.applyI18n(allocEl);
     refreshAlloc();
@@ -592,7 +577,9 @@
   function refreshAlloc() {
     if (!allocEl || !LS) return;
     const has = bundleDraft.members.length > 0;
-    allocEl.hidden = !has;
+    /* 限量時表格照樣留著：硬上限現在是表裡的一列，還沒加成員就把整張表收起來，
+       等於連那個必填欄位一起藏掉。 */
+    allocEl.hidden = !(has || limitedEdition());
     if (allocEmpty) allocEmpty.hidden = has;
     bundleDraft.members.forEach(m => {
       const p = products[m.productId];
@@ -609,8 +596,31 @@
       if (err) err.hidden = !bad;
       if (inp) { if (bad) inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid'); }
     });
+    /* 硬上限那一列：右欄寫出「這道上限給得起幾件」，讓它與成員列用同一種讀法。 */
+    const capRow = allocEl.querySelector('.salloc__row--cap');
+    const capQty = capRow && capRow.querySelector('[data-cb-cap-qty]');
+    const capOn = limitedEdition() && bundleDraft.cap !== null && bundleDraft.cap >= 0;
+    if (capQty) { if (capOn) setQty(capQty, bundleDraft.cap); else { capQty.removeAttribute('data-i18n'); capQty.textContent = '—'; } }
+
     if (!has) { if (bundleQtyEl) { bundleQtyEl.removeAttribute('data-i18n'); bundleQtyEl.textContent = '—'; } }
     else setQty(bundleQtyEl, LS.bundleQty(bundleDraft, products));
+
+    /* 末列的數字是「取最小」的結果，所以要說出是誰給的這個數字——成員還是硬上限。
+       不說的話，設了上限 5、下面顯示 1 的畫面看起來就像兩件無關的事。 */
+    const decider = allocEl.querySelector('[data-cb-decider]');
+    if (decider) {
+      let name = null, min = Infinity;
+      bundleDraft.members.forEach(m => {
+        const p = products[m.productId];
+        if (!p) return;
+        const q = LS.channelQty(p, { bundle: DRAFT_ID });
+        if (q < min) { min = q; name = p.name; }
+      });
+      if (capOn && bundleDraft.cap <= min) name = T('cb.total', 'Total quantity');
+      const show = has && !!name && LS.bundleQty(bundleDraft, products) !== Infinity;   /* 全部不限量又沒設上限＝沒有誰在壓，不寫這一行 */
+      decider.hidden = !show;
+      if (show) decider.textContent = T('stock.capped-by', 'Capped by {name}').replace('{name}', name);
+    }
   }
   /* 切語言後把「最多 N」這種由 JS 寫進去的字重算一次（data-i18n 的部分 applyI18n 自己會接手）。 */
   document.addEventListener('i18n:applied', () => refreshAlloc());
@@ -883,8 +893,10 @@
   }
   function unpick(row, rm) {
     rm.remove();
-    row.onclick = () => pick(row);
+    /* 回到候選清單＝重新可點，但列上的「商品詳情」連結仍不算選取（同 wireRows 的守則）。 */
+    row.onclick = e => { if (e.target.closest('a')) return; pick(row); };
     recent.appendChild(row);
+    applyFilter();                                   /* 搜尋中把它移回來時，該不該顯示由當下的關鍵字決定 */
     const id = row.dataset.cbId;
     if (id) {
       bundleDraft.members = bundleDraft.members.filter(m => m.productId !== id);
@@ -894,10 +906,6 @@
     renderAlloc();
     recompute();
   }
-  recent.querySelectorAll('[data-cb-item]').forEach(row => {
-    row.style.cursor = 'pointer';
-    row.onclick = () => pick(row);
-  });
 
   /* 臨時新增商品：以 popup 嵌入完整 create-product 流程（不離開組合）。
      一般入口（e-shop）仍走整頁；只有這裡用 ?embed=1。 */
@@ -950,21 +958,149 @@
   /* base 隨成員變動於 recompute 重算；折扣 % 輸入即時重算（D103）*/
   if (discEl) discEl.addEventListener('input', recompute);
 
-  /* 商品搜尋過濾「近期瀏覽」(spec §4 F2)；無相符列顯示空狀態引導 New item */
+  /* ── 候選商品清單（2026-09-09）─────────────────────────────────────────────
+     原本是寫死在 HTML 的五列示範資料，改由 js/products-store.js 產生，為的是三件事：
+       1. 搜尋要搜得到創作者的**全部**商品，不只近期瀏覽那幾件（清空搜尋時只留近期那批）
+       2. 已下架的商品照樣列出來、標狀態徽章，但不可加入——組合的任一成員下架，整個組合
+          就不可售（spec 5.1.5.4 §6 ④／主規格 §7.14），所以擋在「選取」這一步
+       3. 每列附一個「商品詳情」連結，另開分頁，不打斷手上正在編的組合
+     D251：數位的影視類與音樂類不得成為組合成員，直接不列入候選（不是列出來再擋）。 */
   const search = document.querySelector('.picker__search-input');
   const noResult = document.getElementById('cb-no-result');
-  if (search) search.addEventListener('input', () => {
-    const q = search.value.trim().toLowerCase();
+  const recentLabel = document.getElementById('cb-recent-label');
+  /* 近期瀏覽預設露出幾件（其餘商品要搜尋才出現）。 */
+  const RECENT_N = 5;
+  const CB_BLOCKED_SUBS = ['movie', 'short', 'short-film', 'series', 'mv', 'documentary', 'song', 'music', 'album'];
+  const isZh = () => document.documentElement.lang === 'zh-Hant';
+  /* subLabel 是「Books · 書籍」這種雙語合併字串，取當前語言那一邊（英文在前、中文在後）。 */
+  const catSide = row => (isZh() ? (row.dataset.catZh || row.dataset.catEn) : (row.dataset.catEn || row.dataset.catZh)) || '';
+  function metaHtml(row) {
+    const bits = [];
+    const cat = catSide(row);
+    if (cat) bits.push(esc(cat));
+    if (row.dataset.variants) bits.push(esc(row.dataset.variants + ' ' + T('cb.meta.variants', 'variants')));
+    /* 不可加入的列不報庫存：那一列現在要回答的是「為什麼不能選」，庫存幫不上這個決定，
+       而列寬只夠一行、寫滿就會把理由截掉。 */
+    if (row.dataset.blocked) bits.push(esc(T('cb.member.unlisted', 'List it first to add')));
+    else if (row.dataset.stock === 'unlimited') bits.push(esc(T('cb.stock.unlimited', 'Unlimited')));
+    else {
+      /* 沒貨照樣可以加入組合（規則只擋下架），所以不用徽章、不停用；用紅字提醒就夠——
+         創作者要嘛先補貨、要嘛知道這個組合現在賣不動（2026-09-09 使用者裁決）。 */
+      const txt = esc(row.dataset.stock + ' ' + T('cb.meta.instock', 'in stock'));
+      bits.push(Number(row.dataset.stock) === 0 ? '<span class="text-error">' + txt + '</span>' : txt);
+    }
+    return bits.join(' · ');
+  }
+  /* 次要資訊是 JS 拼出來的（含 i18n 片語），切語言時 applyI18n 接不了手，這裡自己重畫。 */
+  function paintMeta() {
+    [...document.querySelectorAll('[data-cb-item]')].forEach(r => {
+      const sub = r.querySelector('.text-sub');
+      if (sub) sub.innerHTML = metaHtml(r);
+    });
+  }
+  /* 定價字串混著 '24.00' 與 'NT$1,880' 兩種寫法：純數字才補 $，帶幣別的原樣顯示。 */
+  const priceText = (raw, n) => /^[0-9.]+$/.test(String(raw || '')) ? '$' + n.toFixed(2) : String(raw || '');
+  function buildCandidates() {
+    const P = window.ZTOR_PRODUCTS;
+    if (!P || !recent) return;
+    recent.innerHTML = '';
+    /* 同名去重：示範資料把幾個 persona 的商品併在一起，同一件商品會以不同 key 出現好幾次
+       （做法沿用 js/bundle-editor.js 的目錄）。請人在三個一模一樣的選項裡挑一個，
+       是把資料層的瑕疵當成使用者的問題。 */
+    const seen = {};
+    Object.keys(P).forEach(key => {
+      const p = (window.ProductsStore && window.ProductsStore.get) ? window.ProductsStore.get(key) : P[key];
+      if (!p || !p.name || seen[p.name]) return;
+      if (CB_BLOCKED_SUBS.indexOf(p.subKey) > -1) return;
+      seen[p.name] = true;
+      const n = parseFloat(String(p.price || '').replace(/[^0-9.]/g, '')) || 0;
+      /* 用 deriveFlags 不用 deriveStatus：deriveStatus 會讓「已隱藏」蓋掉販售軸的狀態，
+         而隱藏是顯示軸的事、與能不能進組合無關（§6 ④）。這裡要的是販售軸那一顆。 */
+      const flags = (window.ProductsStore && window.ProductsStore.flagsOf) ? window.ProductsStore.flagsOf(p, 'single') : { status: 'live' };
+      const status = flags.status;
+      const blocked = (status === 'unlisted' || status === 'draft');
+      /* 徽章講的是販售軸，優先序＝已下架 → 販售結束 → 即將開賣（2026-09-09 使用者裁決）。
+         已下架擋加入；販售結束與即將開賣只是說明，照樣可以加入。
+         售罄不掛徽章——庫存數字標紅就夠，掛徽章會讓「不能選」的訊號跟「沒貨」混在一起。
+         「即將開賣」自己判斷開賣時間，不吃 deriveFlags 的結果：那支的優先序把售罄排在
+         即將開賣前面（清單頁只有一顆徽章的位置），而這裡售罄已經由紅字講了，
+         沒貨又還沒開賣的商品仍然應該說出「還沒開賣」。 */
+      const nowMs = Date.now();
+      const notYet = v => { const t = v ? new Date(v).getTime() : NaN; return !isNaN(t) && t > nowMs; };
+      const badgeStatus = blocked ? status
+        : (status === 'ended' ? 'ended' : (notYet(p.saleStart) ? 'coming' : null));
+      const parts = String(p.subLabel || p.catLabel || '').split(' · ');
+      const row = document.createElement('div');
+      row.className = 'data-list__row' + (blocked ? ' data-list__row--disabled' : '');
+      row.setAttribute('data-cb-item', '');
+      row.dataset.id = key;
+      row.dataset.name = p.name || '';
+      row.dataset.price = n.toFixed(2);
+      row.dataset.catEn = parts[0] || '';
+      row.dataset.catZh = parts[1] || parts[0] || '';
+      row.dataset.stock = (p.pool && p.pool.total !== undefined) ? String(p.pool.total) : 'unlimited';
+      if (p.variants && p.variants.length) row.dataset.variants = String(p.variants.length);
+      if (p.edition === 'limited') row.dataset.edition = 'limited';
+      let end = '';
+      if (blocked) {
+        row.dataset.blocked = '1';
+        row.setAttribute('aria-disabled', 'true');
+      }
+      if (badgeStatus) {
+        const meta = LS && LS.STATUS_META[badgeStatus];
+        if (meta) end += '<span class="' + LS.badgeClass(badgeStatus) + '" data-i18n="' + meta.i18n + '">' + esc(T(meta.i18n, badgeStatus)) + '</span>';
+      }
+      end += '<span class="cb-price">' + esc(priceText(p.price, n)) + '</span>'
+        + '<a class="btn btn--icon btn--xs" href="product-detail.html?id=' + encodeURIComponent(key) + '" target="_blank" rel="noopener"'
+        + ' data-i18n-aria-label="cb.detail" aria-label="' + esc(T('cb.detail', 'Open product details in a new tab')) + '">'
+        + '<i data-lucide="external-link" class="ztor-icon"></i></a>';
+      row.innerHTML = '<div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>'
+        + '<div class="data-list__body"><div class="data-list__title">' + esc(row.dataset.name)
+        + ' <span class="text-sub"></span></div></div></div>'
+        + '<div class="data-list__end cb-row-end">' + end + '</div>';
+      recent.appendChild(row);
+    });
+    /* 近期瀏覽＝前 N 件，外加第一件不可加入的商品。原型的示範資料沒有真的瀏覽紀錄，
+       這一條是刻意的：不可加入的狀態若只在搜尋後才出現，等於在原型上看不到。 */
     const rows = [...recent.querySelectorAll('[data-cb-item]')];
+    rows.slice(0, RECENT_N).forEach(r => { r.dataset.recent = '1'; });
+    const firstBlocked = rows.filter(r => r.dataset.blocked)[0];
+    if (firstBlocked) firstBlocked.dataset.recent = '1';
+    wireRows();
+    paintMeta();
+    applyFilter();
+    if (window.ztorIcons) window.ztorIcons.applyIcons(recent);
+  }
+  /* 可加入的列才可點；已下架那幾列留在清單裡但不接受點擊。
+     列上的連結是另一件事（開商品詳情），點它不能順手把商品加進組合。 */
+  function wireRows() {
+    [...recent.querySelectorAll('[data-cb-item]')].forEach(row => {
+      if (row.dataset.blocked) { row.onclick = null; row.style.cursor = ''; return; }
+      row.style.cursor = 'pointer';
+      row.onclick = e => { if (e.target.closest('a')) return; pick(row); };
+    });
+  }
+  /* 沒打字＝只露近期瀏覽那批；打了字＝在全部候選商品裡找（spec §4 F2）。
+     無相符時沿用既有空狀態，引導改用「New item」新建。 */
+  function applyFilter() {
+    const q = search ? search.value.trim().toLowerCase() : '';
     let shown = 0;
-    rows.forEach(r => {
-      const hay = ((r.dataset.name || '') + ' ' + (r.dataset.cat || '')).toLowerCase();
-      const vis = !q || hay.includes(q);
+    [...recent.querySelectorAll('[data-cb-item]')].forEach(r => {
+      const hay = ((r.dataset.name || '') + ' ' + (r.dataset.catEn || '') + ' ' + (r.dataset.catZh || '') + ' ' + (r.dataset.cat || '')).toLowerCase();
+      const vis = q ? hay.indexOf(q) > -1 : (r.dataset.recent === '1' || !r.dataset.id);
       r.hidden = !vis;
       if (vis) shown++;
     });
     if (noResult) noResult.hidden = !(q && shown === 0);
-  });
+    if (recentLabel) {
+      const k = q ? 'cb.search.results' : 'cb.recent';
+      recentLabel.setAttribute('data-i18n', k);
+      recentLabel.textContent = T(k, q ? 'Search results' : 'Recently viewed');
+    }
+  }
+  if (search) search.addEventListener('input', applyFilter);
+  document.addEventListener('i18n:applied', () => { paintMeta(); applyFilter(); });
+  buildCandidates();
 
   /* 建立完成 → 回電子商店清單並彈出新品貼文（spec 5.1.5.7 v1.2 全類型皆開），帶入組合名/價 */
   createBtn.addEventListener('click', () => {

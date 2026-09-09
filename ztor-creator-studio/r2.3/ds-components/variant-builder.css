@@ -342,6 +342,42 @@
 .variant-table--preview .variant-table__row {
   grid-template-columns: minmax(96px, max-content) minmax(80px, 1fr) 72px minmax(92px, 1fr) minmax(72px, 1fr);
 }
+/* --fluid（2026-09-09）：表格坐在比整頁窄的欄裡時用（首個消費者＝商品明細「銷售設定 → 當前庫存」
+   那張唯讀表，主欄只有 ~450px）。基礎版六欄是寫死的 px，加總就超過 560px 最小寬——窄欄裡整張表
+   會戳出卡片外，而且 --menu 為了讓 kebab 選單浮出已放行 overflow，連橫捲都沒有，就只是溢出。
+   這裡把最小寬歸零、文字欄（規格組合／價格／SKU／單件成本）改成可壓縮的 fr。
+   **數字欄與欄距一律照基礎版**：數字欄 78px（＝基礎版庫存欄的寬度）、欄距 --sp-8——
+   2026-09-09 使用者裁示「要照 DS」，先前為了塞進 450px 主欄把它們壓成 48px/6px 的做法退場，
+   卡片改整頁寬之後沒有理由再壓。做法與 admin-ip-bank-table 的 --fluid 同一套（2026-09-02）。 */
+.variant-table--fluid { min-width: 0; }
+.variant-table--fluid .variant-table__head,
+.variant-table--fluid .variant-table__row {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) 78px 78px 78px minmax(0, 1.5fr) minmax(0, 0.9fr) 34px;
+}
+.variant-table--fluid.variant-table--limited .variant-table__head,
+.variant-table--fluid.variant-table--limited .variant-table__row {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) 78px 78px 78px 78px minmax(0, 1.5fr) minmax(0, 0.9fr) 34px;
+}
+/* 鎖定與未鎖定兩欄（2026-09-09）：數字靠左與庫存欄對齊，未鎖定用弱色——
+   它是推導值（該組合庫存 − 各管道鎖定量），不是使用者直接填的數字。 */
+.variant-table--fluid .variant-cell--free { color: var(--muted-foreground); }
+/* 鎖定編輯態（2026-09-09）：「鎖定」格換成每個管道一格輸入（只有單售時不標管道名），
+   列高隨管道數自然長高；「未鎖定」是即時預覽，鎖過頭整列的未鎖定轉紅，與 salloc 錯誤列同語彙。 */
+.variant-cell--lockedit { display: grid; gap: var(--sp-6); min-width: 0; }
+.variant-lock { display: grid; gap: 2px; min-width: 0; }
+.variant-lock__ch {
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.variant-table__row--error .variant-cell--free { color: var(--destructive); font-weight: var(--fw-medium); }
+/* 欄寬可壓縮之後，規格名也要會截斷（基礎版是 max-content 欄、撐得開所以不必） */
+.variant-table--fluid .variant-cell--variant {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .variant-table__head {
   /* 底色保留，分隔由它承擔。 */
   background: var(--muted);

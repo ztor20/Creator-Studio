@@ -10,6 +10,29 @@
 
 .form-section { padding: 44px 0; margin: 0; }            /* 上下寬鬆留白＝區段間隔 */
 .form-section[hidden] { display: none; }
+/* 卡片裡有開著的浮動選單（kebab 下拉）時，整張卡抬到後面的兄弟卡之上（2026-09-09）。
+   `.form-section--outlined` 帶 backdrop-filter，每一張卡都是自己的堆疊脈絡——選單的
+   z-index 只在自己的卡內有效，排在後面的卡照樣蓋過它（商品明細「當前庫存」的列尾選單
+   被下面三張設定卡蓋住就是這個）。用 :has() 只在真的開著時抬升，平常不動層級、
+   避免整頁卡片互相搶層。 */
+.form-section:has(.dropdown[open]) { position: relative; z-index: 2; }
+
+/* ── 卡底動作列（.form-section__actions，2026-09-09 promote）────────────────────
+   卡片進入「編輯模式」（例：商品明細的鎖定就地編輯）時，取消／儲存放卡底靠右，
+   左側留給說明或擋錯訊息；與 variant-option__actions 同一個配方（靠右、--sp-8）。
+   [hidden] 要顯式歸零 display——本元件是 flex，會蓋過瀏覽器對 hidden 的預設。 */
+.form-section__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-8);
+  margin-top: var(--sp-16);
+  padding-top: var(--sp-16);
+  border-top: 1px solid var(--border-soft);
+}
+.form-section__actions[hidden] { display: none; }
+.form-section__actions > .field__hint,
+.form-section__actions > .field__error { margin: 0 auto 0 0; }
 .form-section + .form-section { border-top: 1px solid var(--border-soft); }   /* 區段間分隔線 */
 
 /* (2026-07-17) `.form-section--modal` 已退場：pickup session modal 當日改用頂部頁籤

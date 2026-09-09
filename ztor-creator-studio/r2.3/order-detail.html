@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* Order amount breakdown · spec 5.1.5.3.1 §2.3 */
@@ -66,7 +67,9 @@
      .od-items 自己是 grid 並定義欄軌；表頭與每一列用 subgrid 共用同一組欄軌 → 表頭與資料欄對齊。
      （若表頭與各列各自 grid、欄用 auto，欄寬會依各自內容獨立計算而錯位，這是先前對不齊的原因。）
      只在 .od-items 範圍生效，不動全站 data-list。商品／出貨兩欄 minmax(0,fr) 可收縮換行防溢出。 */
-  .od-items { display:grid; grid-template-columns: minmax(0,1.4fr) auto auto minmax(0,1fr) auto; }
+  /* 第六欄＝列動作（2026-09-08 作廢品項）：與訂單清單頁一樣把逐列操作放在行尾，
+     欄寬 auto＝沒有按鈕的列不占寬。表頭那格留白（欄名由按鈕自己說），只掛 aria-label。 */
+  .od-items { display:grid; grid-template-columns: minmax(0,1.4fr) auto auto minmax(0,1fr) auto auto; }
   .od-items .data-list__row,
   .od-items__head { grid-column:1 / -1; display:grid; grid-template-columns:subgrid; gap:var(--sp-12); align-items:start; }
   /* L3 遷移（2026-09-04）新增：.rowdis__group／.rowdis__frame 把 .data-list__row 包了一層，
@@ -90,12 +93,9 @@
   .od-amt-group { border-top:1px solid var(--border); margin-top:var(--sp-16); padding-top:var(--sp-8); }
   /* 收入對帳降為右下角常駐入口 */
   .od-amt-foot { margin-top:var(--sp-12); text-align:right; }
-  /* §2.6 退款 popup：整筆／部分分支＋品項勾選 */
-  .od-refund-branch[hidden] { display:none; }
-  .od-refund-pick { cursor:pointer; }
-  /* 2026-07-27：原本這裡用 width/height + accent-color 手動修原生 checkbox。
-     現在改用 ds-components/checkbox.css 的 .zcheck 元件（畫出來的框＋原生 input），
-     尺寸與顏色都歸元件；留著這條會跟 .zcheck__input 的 inset:0 打架。 */
+  /* 墓碑（2026-09-09，D253）：§2.6 退款 popup 的 .od-refund-branch／.od-refund-pick
+     版面規則隨退款動作全面退場一起移除——平台不提供退款動作，作廢（§2.8）是唯一取消
+     路徑，見 documents/decisions.md D253。 */
 </style>
 </head>
 <body>
@@ -133,7 +133,8 @@
           </div>
         </div>
         <div class="page-intro__actions">
-          <button class="btn btn--outline" id="od-refund-open" data-feat="O18" data-i18n="od.btn.refund">Refund</button>
+          <!-- 墓碑（2026-09-09，D253）：頁首 Refund 主操作退場——平台不提供任何退款動作，
+               取消訂單品項的唯一路徑是 §2.8 作廢（見下方品項列的作廢鈕）。 -->
           <!-- 純數位訂單沒有出貨動作（§2.5「數位商品呈現下載／存取權限的交付狀態」）：
                同一顆按鈕改叫「數位交付」、開的是唯讀的交付狀態彈窗 -->
           <button class="btn btn--primary" id="od-ship-open" data-i18n="od.btn.ship">Mark shipped</button>
@@ -165,6 +166,7 @@
                 <span class="od-col-r" data-i18n="od.col.unit">Unit price</span>
                 <span data-i18n="od.col.fulfil">Fulfilment</span>
                 <span class="od-col-r" data-i18n="od.col.subtotal">Subtotal</span>
+                <span aria-label="Actions" data-i18n-aria-label="od.col.actions"></span>
               </div>
               <!-- 品項列由 js/orders-store.js 依 ?id= 產生（見頁末 renderOrder） -->
             </div>
@@ -173,11 +175,9 @@
             <div class="od-amt-group" data-od-amounts>
               <!-- 金額拆解由 renderOrder 依訂單產生（口徑引用 Earnings，本頁不重算）-->
             </div>
-            <!-- 已退款的訂單：在金額拆解下方陳述退了多少、哪一天退的（§2.6）。
-                 §7.2 規定單筆訂單只屬一個付款・結算狀態，所以「部分退款」在狀態徽章上
-                 一樣是「已退款」——退了整筆還是一部分，靠這一行講清楚。
-                 帶變數，由 paint() 依語言重畫。 -->
-            <div class="field__hint mt-8" data-od-refund-issued hidden></div>
+            <!-- 墓碑（2026-09-09，D253）：「已退款 {amt} on {on}」事實列移除——平台不記錄
+                 退款金額本身、也不提供退款查詢介面（§2.6）；作廢後的結果只呈現為品項層
+                 的已取消徽章，不再另外陳述退款事實。 -->
 
             <!-- §2.3.3 收入對帳降為右下角常駐入口（取代原獨立區塊）：到收入管理查看此訂單入帳。
                  2026-08-07 使用者裁示改成按鈕：沿用站上同類「前往某處 →」連結的既有樣式
@@ -229,7 +229,9 @@
 
       <!-- §2.5 出貨與履約已移入「標記出貨」popup（見頁末 #od-ship-modal）；不再是頁面常駐區塊（spec 5.1.5.3.1 §2.2/§2.5）。 -->
 
-      <!-- §2.6 退款已移入「退款」popup（見頁末 #od-refund-modal），由 §2.2 頁首 Refund 主操作觸發；不再是頁面常駐區塊（spec 5.1.5.3.1 §2.2/§2.6）。爭議降為 §2.2 付款·結算軸的 disputed 狀態＋退款 popup 末尾爭議區隔。 -->
+      <!-- §2.6 爭議與平台外退款（D253 改名，原「退款與爭議」）：平台不提供任何退款動作，
+           本頁沒有退款 popup。爭議呈現於 §2.2 付款·結算軸的 disputed 徽章；平台外退款完成後
+           的唯一呈現是 Admin 於 §2.8 執行的作廢結果（品項轉已取消），本頁不重述退款事實。 -->
 
     </div>
   </main>
@@ -307,44 +309,49 @@
   </div>
 </div>
 
-<!-- §2.6「退款」popup：§2.2 頁首 Refund 主操作觸發 · 整筆／部分退款、部分退款勾選品項 · spec 5.1.5.3.1 §2.2/§2.6 -->
-<div class="payout-modal" id="od-refund-modal" hidden>
-  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="od-refund-title">
+<!-- 墓碑（2026-09-09，D253）：§2.6「退款」popup（#od-refund-modal）整段移除——平台不提供
+     任何退款動作，退款範圍／部分退款勾選／金額試算／退款庫存回補等動作型內容全部退場
+     （原文備份於 documents/backup_plan.md）；取消訂單品項的唯一路徑是下方 §2.8 作廢 popup
+     （#od-void-modal）。爭議呈現於 §2.2 付款·結算軸的 disputed 徽章，不再掛在退款彈窗末尾。 -->
+
+<!-- §2.3.1「作廢品項」確認 popup：Admin 專屬、逐筆品項，可作廢範圍擴到所有未完成品項——
+     取貨型未核銷、出貨型未出貨、數位未交付皆可（D253 推翻 D252 原本僅取貨型的限制，
+     上游 2026-09-07 訂單作廢政策 · 2026-09-08 擴大範圍）。
+     這是站上第一個「破壞性確認彈窗」——用既有的 canonical 對話框殼（.payout-modal／.payout-dialog）
+     ＋ .btn--destructive 組成，沒有新的 modal CSS；組裝規則寫在 design-system.md §5.1.11 pattern 卡。
+     內容順序＝先確認動的是哪一項 → 前置提醒（金流在平台外）→ 會發生什麼 → 不可逆，
+     讓人在按下去之前就把後果讀完。 -->
+<div class="payout-modal" id="od-void-modal" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="od-void-title">
     <div class="payout-dialog__head">
-      <h3 class="payout-dialog__title" id="od-refund-title" data-i18n="od.refund.title">Refund</h3>
-      <button class="btn btn--icon btn--sm" type="button" data-od-refund-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+      <h3 class="payout-dialog__title" id="od-void-title" data-i18n="od.void.title">Void item</h3>
+      <button class="btn btn--icon btn--sm" type="button" data-od-void-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
     <div class="payout-dialog__body">
-      <!-- 退款範圍：整筆／部分 -->
-      <div class="segmented" id="od-refund-scope" style="margin-bottom:14px">
-        <button class="segmented__btn segmented__btn--active" type="button" data-od-refund-scope="full" data-i18n="od.refund.full">Full refund</button>
-        <button class="segmented__btn" type="button" data-od-refund-scope="partial" data-i18n="od.refund.partial">Partial refund</button>
+      <!-- 動到哪一項：品名＋數量，與 §2.3.1 品項表同一份資料 -->
+      <div class="data-list">
+        <div class="data-list__row">
+          <div class="data-list__row-main"><div class="data-list__body">
+            <div class="data-list__title" data-od-void-name>—</div>
+            <div class="data-list__meta" data-od-void-meta>—</div>
+          </div></div>
+        </div>
       </div>
-
-      <!-- 整筆退款：全額退、不需選品項 -->
-      <div class="field od-refund-branch" data-od-refund-branch="full">
-        <div class="field__hint" data-i18n="od.refund.full.note">Refunds the whole order (all items and shipping). No item selection needed.</div>
-      </div>
-
-      <!-- 部分退款：勾選要退的品項 -->
-      <div class="field od-refund-branch" data-od-refund-branch="partial" hidden>
-        <div class="field__label" data-i18n="od.refund.select">Select items to refund</div>
-        <!-- 可退品項由 renderOrder 依該筆訂單產生（與 §2.3.1 品項明細同一份資料）-->
-        <div class="data-list" data-od-refund-items></div>
-      </div>
-
-      <!-- 退款金額試算 -->
-      <div class="mt-16">
-        <div class="od-amt"><span data-i18n="od.refund.amount">Refund amount</span><span id="od-refund-total">$56.00</span></div>
-      </div>
-
-      <div class="field__hint mt-8" data-i18n="od.refund.restock">Approved refunds restock physical items (digital items are non-restockable); the refund is absorbed per Earnings and posted as an adjustment — the original revenue event is never edited.</div>
-      <div class="field__hint mt-8" data-i18n="od.refund.pickup-impact">Refunded items' pickup codes are voided immediately; for bundles, only the refunded members are voided. If a unit was already redeemed, its record stays — refunding doesn't reverse it.</div>
-      <div class="field__hint mt-8" data-i18n="od.refund.dispute">Disputes are buyer-initiated, not issued here: a disputed order shows Disputed on its Payment · settlement axis and the amount is held from Available until Earnings resolves it.</div>
+      <!-- 前置：人工退款在 Stripe 後台完成，平台不碰金流 -->
+      <div class="field__hint mt-16" data-i18n="od.void.stripe">Refund the buyer in Stripe first — voiding moves no money and never calls Stripe.</div>
+      <div class="field__label mt-16" data-i18n="od.void.effects">What voiding does</div>
+      <!-- 效果預告依品項型態顯示（D253 擴大作廢範圍後，不是每種型態都有領取碼／庫存）：
+           data-od-void-effect 由下方 JS 依 it.mode 與有無領取單位切換 hidden，
+           三段各自對應 §2.8「執行結果」的領取單位／庫存回補／通知三條，只是不是
+           每種型態都適用。email 一律顯示（三種型態都會通知買家）。 -->
+      <div class="field__hint" data-od-void-effect="codes" data-i18n="od.void.effect.codes">This item's pickup codes stop working immediately — they can't be scanned at a session.</div>
+      <div class="field__hint mt-8" data-od-void-effect="stock" data-i18n="od.void.effect.stock">Stock goes back on the shelf; a bundle restocks each of its members.</div>
+      <div class="field__hint mt-8" data-i18n="od.void.effect.email">The buyer gets an order-cancelled email listing this item.</div>
+      <div class="field__hint mt-16" data-i18n="od.void.irreversible">There's no undo — a voided item can't be reinstated.</div>
     </div>
     <div class="payout-dialog__foot">
-      <button class="btn btn--ghost btn--sm" type="button" data-od-refund-close data-i18n="od.refund.cancel">Cancel</button>
-      <button class="btn btn--primary btn--sm" id="od-refund-confirm" data-i18n="od.refund.confirm">Confirm refund</button>
+      <button class="btn btn--ghost btn--sm" type="button" data-od-void-close data-i18n="od.void.cancel">Cancel</button>
+      <button class="btn btn--destructive btn--sm" type="button" id="od-void-confirm" data-i18n="od.void.confirm">Void this item</button>
     </div>
   </div>
 </div>
@@ -400,7 +407,7 @@
      查無 id → 查詢失敗空狀態（不顯示別人的訂單）
 
    本段跑在 icons.js／i18n.js 之前，所以產生出來的 data-i18n 由 i18n.js 正常
-   在地化；只有帶變數的句子（標題摘要、退款品項列）要自己在 i18n:applied 時重畫。 */
+   在地化；只有帶變數的句子（標題摘要、領取單位彙總）要自己在 i18n:applied 時重畫。 */
 (function () {
   'use strict';
   var S = window.ztorOrders;
@@ -435,7 +442,7 @@
     return;
   }
 
-  window.ztorOrderCurrent = order;   /* 頁末的出貨／退款 popup 取用同一筆 */
+  window.ztorOrderCurrent = order;   /* 頁末的出貨／作廢 popup 取用同一筆 */
 
   var badge = function (b) {
     return '<span class="badge ' + b.cls + '"><span data-i18n="' + b.key + '">' + esc(b.text) + '</span></span>';
@@ -449,10 +456,20 @@
   $('[data-od-placed]').textContent = order.date;
   /* 待付款訂單的履約軸是空的（還沒付款就還沒有履約動作）：用破折號佔位，
      不要讓那一格空著——空白看起來像渲染壞掉，破折號才讀得出「這裡目前沒有值」。 */
-  $('#od-fulfil-badges').innerHTML = order.fulfil.length
-    ? order.fulfil.map(function (v) { return badge(S.fulfilBadge(v)); }).join('')
-    : '<span class="text-sub">—</span>';
-  $('#od-pay-badges').innerHTML = badge(S.payBadge(order.pay));
+  /* 訂單層「已取消」（2026-09-08 作廢明細，2026-09-09 隨 D253 改掛付款・結算軸）＝所有
+     品項都被作廢後的終態，衍生值，算法在 js/orders-store.js 的 isCancelled()。D253 拿掉
+     付款軸的「已退款」、改以「已取消」表達——所以已取消現在畫在付款・結算軸（取代
+     paid／unpaid／disputed），履約軸則因為不會再有履約動作而收起、以破折號佔位，
+     兩軸仍不混用（PCR-001）。沒有全部作廢的訂單，兩軸都維持原值不變。 */
+  function renderStatus() {
+    $('#od-fulfil-badges').innerHTML = order.cancelled
+      ? '<span class="text-sub">—</span>'
+      : (order.fulfil.length
+        ? order.fulfil.map(function (v) { return badge(S.fulfilBadge(v)); }).join('')
+        : '<span class="text-sub">—</span>');
+    $('#od-pay-badges').innerHTML = badge(S.payBadge(order.cancelled ? 'cancelled' : order.pay));
+  }
+  renderStatus();
 
   /* 主操作依訂單型態換臉（§2.5 區塊狀態）：
        純數位 → 唯讀的數位交付狀態
@@ -494,19 +511,22 @@
       pending: { cls: 'badge--warning badge--inline', key: 'od.unit.status.pending', text: 'Awaiting redemption' },
       done: { cls: 'badge--success badge--inline', key: 'od.unit.status.done', text: 'Redeemed' },
       unset: { cls: 'badge--neutral badge--inline', key: 'od.unit.status.unset', text: 'Session not set' },
-      'void': { cls: 'badge--error badge--inline', key: 'od.unit.status.void', text: 'Cancelled / refunded' }
+      /* 已取消（2026-09-08，2026-09-09 隨 D253 收斂）：終態唯一觸發源是 Admin 作廢品項——
+         D242 原本的第二觸發源「退款成立」隨平台不再提供退款動作而退場，字樣統一成
+         「已取消（Cancelled）」 */
+      'void': { cls: 'badge--error badge--inline', key: 'od.unit.status.void', text: 'Cancelled' }
     };
     return badge(MAP[u.status] || MAP.pending);
   };
   /* label 由 S.unitSummary() 的 {total,done,voided,unset} 推導（D242）：全 unset／全
      voided 各自講狀態本身；其餘情況照舊講「N 件中已核銷 M 件」，voided>0 時額外帶出
-     「X 件已退款失效」——彙總需要讓創作者分辨還有幾件待領、幾件因退款失效
+     「X 件已取消」——彙總需要讓創作者分辨還有幾件待領、幾件已因作廢失效
      （規格 5.1.5.3.1 §2.3.1）。voided 的件不算進待核銷，所以不影響 done/total 語意。 */
   var labelFromAgg = function (agg) {
     if (!agg || !agg.total) return null;
     if (agg.unset === agg.total) return { mode: 'unset' };
     if (agg.voided === agg.total) return { mode: 'void' };
-    /* 分母＝這個脈絡下還該領的件數（扣掉退款失效），與取貨場次名單、scanner 的計數同口徑；
+    /* 分母＝這個脈絡下還該領的件數（扣掉已取消的），與取貨場次名單、scanner 的計數同口徑；
        買了幾件由同列的 Qty 欄承擔，這裡不重複。 */
     return { mode: 'summary', done: agg.done, total: agg.total - agg.voided, voided: agg.voided };
   };
@@ -516,11 +536,13 @@
   var summaryHtml = function (label) {
     if (!label) return '';
     if (label.mode === 'unset') return '<span data-i18n="od.units.unset">Pickup session not yet set</span>';
-    if (label.mode === 'void') return '<span data-i18n="od.units.void">Cancelled / refunded</span>';
+    /* 已全數作廢的品項：終態用徽章講，與領取單位列、取貨名單、scanner 同一顆
+       badge--error（2026-09-08 作廢明細一併統一，原本這裡是一句素文字） */
+    if (label.mode === 'void') return badge({ cls: 'badge--error badge--inline', key: 'od.units.void', text: 'Cancelled' });
     if (label.voided) {
       return '<span data-od-unit-summary data-od-done="' + label.done + '" data-od-total="' + label.total +
         '" data-od-voided="' + label.voided + '">' +
-        label.done + ' of ' + label.total + ' redeemed · ' + label.voided + ' refunded</span>';
+        label.done + ' of ' + label.total + ' redeemed · ' + label.voided + ' cancelled</span>';
     }
     return '<span data-od-unit-summary data-od-done="' + label.done + '" data-od-total="' + label.total + '">' +
       label.done + ' of ' + label.total + ' redeemed</span>';
@@ -541,99 +563,163 @@
           (u.status === 'done' && u.at ? '<span class="text-sub" data-od-unit-at="' + esc(u.at) + '"></span>' : '') +
         '</div>' +
         '<span class="data-list__amount"></span>' +
+        '<span class="od-cell"></span>' +
       '</div>';
   };
 
-  order.items.forEach(function (it, i) {
-    var cellHtml, extraRowsHtml = '', isGroup = false;
-    if (it.mode === 'pickup' && it.units && it.units.length) {
-      isGroup = true;
-      var gid = 'i' + i;
-      cellHtml = '<div class="od-item-pickup__head">' + toggleHtml(gid) + summaryHtml(labelFromAgg(S.unitSummary(it))) + '</div>' +
-        '<a class="card__link" href="pickup.html" data-i18n="od.item.pickup.goto">Go to pickup session</a>';
-      it.units.forEach(function (u) { extraRowsHtml += unitChildRow(u, gid); });
-    } else if (it.mode === 'bundle' && it.members) {
-      /* 組合本身不產生領取碼（D240 裁決二）：主列彙總只合計成員裡 pickup 成員的 units，
-         展開後逐成員顯示各自的取貨方式；pickup 成員再帶自己的展開單位，ship 成員沿用
-         訂單層 shipStage 徽章（§2.6：混合取貨方式依各成員自己的取貨方式分別顯示）。
-         成員本身是第一層群組的子列；有自己單位的成員再連同其單位一起包進
-         `.rowdis__frame`（第二層，填色最多兩層、第三層改用 1px 框，見
-         ds-components/nest.css 檔頭與 row-disclosure.css §第二層）——成員列本身
-         兼任那個框的把手（rowdis__head），沒有自己單位的成員（ship）維持素樸子列。 */
-      isGroup = true;
-      var gid = 'i' + i;
-      var agg = S.unitSummary(it);
-      var label = labelFromAgg(agg);
-      cellHtml = '<div class="od-item-pickup__head">' + toggleHtml(gid) +
-        (label ? summaryHtml(label) : '<span data-i18n="od.bundle.members">View members</span>') +
-        '</div>';
-      it.members.forEach(function (m, j) {
-        var mgid = gid + '-' + j;
-        var memberFulfil, memberExtra = '', memberIsGroup = false;
-        if (m.mode === 'pickup' && m.units && m.units.length) {
-          memberIsGroup = true;
-          memberFulfil = '<div class="od-item-pickup__head">' + toggleHtml(mgid) + summaryHtml(labelFromAgg(S.unitSummary(m))) + '</div>';
-          m.units.forEach(function (u) { memberExtra += unitChildRow(u, mgid); });
-        } else {
-          memberFulfil = shipCell();
-        }
-        var memberRowHtml =
-          '<div class="data-list__row rowdis__child rowdis__child--compact' + (memberIsGroup ? ' rowdis__head' : '') + '" data-rowdis-child="' + gid + '" hidden>' +
-            '<div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title">' +
-              '<span data-i18n="' + esc(m.nameKey) + '">' + esc(m.name) + '</span></div></div></div>' +
-            '<span class="od-cell">' + m.qty + '</span><span class="od-cell"></span>' +
-            '<div class="od-item-pickup">' + memberFulfil + '</div>' +
-            '<span class="data-list__amount"></span>' +
+  /* ── 作廢品項的按鈕（2026-09-08；2026-09-09 隨 D253 擴大範圍到所有未完成品項）──
+     可不可以按由資料層的 S.voidState(it, order) 回答，誰可以按由 adminScope() 回答，
+     兩件事分開：停用的理由一律寫進 title（＝可讀的原因，滑鼠看得到、輔助技術當作描述
+     念得出來），不做「按了沒反應」這種沉默停用。理由的取捨順序是「品項本身的事實優先」——
+     已完成履約是這一項的永久事實，換誰來看都一樣；只有這一項本來可以作廢時，才輪到說
+     「需要 Admin 角色」。停用只剩兩種（D253）：已完成履約（終態，不可作廢）與非 Admin；
+     不再有「待產品確認」那種停用（2026-09-08 使用者裁決 A 案已把「出貨型／數位不提供
+     入口」的做法退場，D253 進一步把這兩型也納入可作廢範圍）。已作廢的品項不再出現按鈕，
+     狀態由履約欄的已取消徽章講。 */
+  var VOID_WHY_FULFILLED = {
+    pickup: { key: 'od.void.why.redeemed', en: "Already picked up — can't be voided" },
+    bundle: { key: 'od.void.why.redeemed', en: "Already picked up — can't be voided" },
+    ship:   { key: 'od.void.why.shipped',  en: "Already shipped — can't be voided" },
+    digital:{ key: 'od.void.why.delivered', en: "Already delivered — can't be voided" }
+  };
+  var VOID_WHY_ADMIN = { key: 'od.void.why.admin', en: 'Requires the Admin role' };
+  /* Admin 身分＝Role · 身分切在 Admin（§4.1／D086；2026-09-08 起是單一狀態
+     `ztor.role`，代管誰由 persona 決定）。正式訊號是 js/sidebar.js 的
+     window.ztorCreator.adminScope()；本頁的品項表在 sidebar.js 載入之前就先畫一次，
+     所以沒有它的時候直接讀同一把 key，語意一致。有 adminScope() 時一律以它為準。 */
+  function adminScope() {
+    if (window.ztorCreator && typeof window.ztorCreator.adminScope === 'function') {
+      return !!window.ztorCreator.adminScope();
+    }
+    try { return localStorage.getItem('ztor.role') === 'admin'; } catch (e) { return false; }
+  }
+  var voidBtnHtml = function (it, i) {
+    var st = S.voidState(it, order);
+    if (st === 'voided') return '';
+    var why = st === 'redeemed' ? (VOID_WHY_FULFILLED[it.mode] || VOID_WHY_FULFILLED.pickup)
+      : (adminScope() ? null : VOID_WHY_ADMIN);
+    return '<button class="btn btn--ghost btn--destructive btn--sm od-void-open" type="button"' +
+      ' data-od-void="' + i + '"' +
+      (why ? ' disabled aria-disabled="true" title="' + esc(why.en) + '" data-i18n-title="' + why.key + '"' : '') +
+      '><span data-i18n="od.void.action">Void</span></button>';
+  };
+
+  /* 重畫用（作廢之後）：把表頭以外的列全部清掉再重建。列的結構——群組容器、子列、
+     第六欄的按鈕——都跟品項狀態綁在一起，逐格 patch 比整段重畫更容易漏掉一處。 */
+  var rowdisReady = false;
+  function renderItems() {
+    [].slice.call(itemsHost.children).forEach(function (el) {
+      if (!el.classList.contains('od-items__head')) el.remove();
+    });
+    order.items.forEach(function (it, i) {
+      var cellHtml, extraRowsHtml = '', isGroup = false;
+      if (it.mode === 'pickup' && it.units && it.units.length) {
+        isGroup = true;
+        var gid = 'i' + i;
+        cellHtml = '<div class="od-item-pickup__head">' + toggleHtml(gid) + summaryHtml(labelFromAgg(S.unitSummary(it))) + '</div>' +
+          '<a class="card__link" href="pickup.html" data-i18n="od.item.pickup.goto">Go to pickup session</a>';
+        it.units.forEach(function (u) { extraRowsHtml += unitChildRow(u, gid); });
+      } else if (it.mode === 'bundle' && it.members) {
+        /* 組合本身不產生領取碼（D240 裁決二）：主列彙總只合計成員裡 pickup 成員的 units，
+           展開後逐成員顯示各自的取貨方式；pickup 成員再帶自己的展開單位，ship 成員沿用
+           訂單層 shipStage 徽章（§2.6：混合取貨方式依各成員自己的取貨方式分別顯示）。
+           成員本身是第一層群組的子列；有自己單位的成員再連同其單位一起包進
+           `.rowdis__frame`（第二層，填色最多兩層、第三層改用 1px 框，見
+           ds-components/nest.css 檔頭與 row-disclosure.css §第二層）——成員列本身
+           兼任那個框的把手（rowdis__head），沒有自己單位的成員（ship）維持素樸子列。 */
+        isGroup = true;
+        var gid = 'i' + i;
+        var agg = S.unitSummary(it);
+        var label = labelFromAgg(agg);
+        cellHtml = '<div class="od-item-pickup__head">' + toggleHtml(gid) +
+          (label ? summaryHtml(label) : '<span data-i18n="od.bundle.members">View members</span>') +
           '</div>';
-        extraRowsHtml += memberIsGroup
-          ? ('<div class="rowdis__frame">' + memberRowHtml + memberExtra + '</div>')
-          : memberRowHtml;
-      });
-    } else if (it.mode === 'digital') {
-      cellHtml = badge({ cls: 'badge--success badge--inline', key: 'orders.status.completed', text: 'Completed' });
-    } else {
-      cellHtml = shipCell();
-    }
+        it.members.forEach(function (m, j) {
+          var mgid = gid + '-' + j;
+          var memberFulfil, memberExtra = '', memberIsGroup = false;
+          if (m.mode === 'pickup' && m.units && m.units.length) {
+            memberIsGroup = true;
+            memberFulfil = '<div class="od-item-pickup__head">' + toggleHtml(mgid) + summaryHtml(labelFromAgg(S.unitSummary(m))) + '</div>';
+            m.units.forEach(function (u) { memberExtra += unitChildRow(u, mgid); });
+          } else {
+            memberFulfil = shipCell();
+          }
+          var memberRowHtml =
+            '<div class="data-list__row rowdis__child rowdis__child--compact' + (memberIsGroup ? ' rowdis__head' : '') + '" data-rowdis-child="' + gid + '" hidden>' +
+              '<div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title">' +
+                '<span data-i18n="' + esc(m.nameKey) + '">' + esc(m.name) + '</span></div></div></div>' +
+              '<span class="od-cell">' + m.qty + '</span><span class="od-cell"></span>' +
+              '<div class="od-item-pickup">' + memberFulfil + '</div>' +
+              '<span class="data-list__amount"></span>' +
+              '<span class="od-cell"></span>' +
+            '</div>';
+          extraRowsHtml += memberIsGroup
+            ? ('<div class="rowdis__frame">' + memberRowHtml + memberExtra + '</div>')
+            : memberRowHtml;
+        });
+      } else if (it.voided) {
+        /* 出貨型／數位品項作廢（D253）：沒有領取單位可失效，改讀品項自己的 voided
+           旗標——已作廢的品項一律顯示已取消徽章，不再讀 shipStage／交付狀態。 */
+        cellHtml = badge({ cls: 'badge--error badge--inline', key: 'od.unit.status.void', text: 'Cancelled' });
+      } else if (it.mode === 'digital') {
+        /* 數位交付狀態看訂單層 delivery.on：有日期＝已交付完成；預購／尚未發行沒有
+           日期，顯示待交付而不是已完成（D253 起這種品項可作廢）。 */
+        cellHtml = (order.delivery && order.delivery.on)
+          ? badge({ cls: 'badge--success badge--inline', key: 'orders.status.completed', text: 'Completed' })
+          : badge({ cls: 'badge--warning badge--inline', key: 'od.dig.pending', text: 'Not yet released' });
+      } else {
+        cellHtml = shipCell();
+      }
 
-    var catI18nKey = it.catKey === 'bundle' ? 'e-shop.cat.bundle' : it.catKey;
-    var iconName = it.mode === 'digital' ? 'download' : it.mode === 'bundle' ? 'boxes' : 'package';
-    var row = document.createElement('div');
-    row.className = 'data-list__row' + (isGroup ? ' rowdis__head' : '');
-    row.innerHTML =
-      '<div class="data-list__row-main">' +
-        '<div class="data-list__icon"><i data-lucide="' + iconName + '" class="ztor-icon"></i></div>' +
-        '<div class="data-list__body">' +
-          /* §2.3.1 品項名稱點擊開商品快照 popup，不直接連活商品 */
-          '<div class="data-list__title"><a class="card__link od-snap-open" role="button" href="#"' +
-            ' data-snap-name-key="' + esc(it.nameKey) + '" data-snap-name="' + esc(it.name) + '"' +
-            ' data-snap-price="' + esc(it.snap.price) + '" data-snap-cat-key="' + esc(it.catKey) + '"' +
-            (it.snap.variant ? ' data-snap-variant="' + esc(it.snap.variant) + '"' : '') +
-            ' data-snap-desc="' + esc(it.snap.desc) + '" data-snap-manage="' + esc(it.snap.manage) + '">' +
-            '<span data-i18n="' + esc(it.nameKey) + '">' + esc(it.name) + '</span></a></div>' +
-          '<div class="data-list__meta" data-i18n="' + esc(catI18nKey) + '">—</div>' +
+      var catI18nKey = it.catKey === 'bundle' ? 'e-shop.cat.bundle' : it.catKey;
+      var iconName = it.mode === 'digital' ? 'download' : it.mode === 'bundle' ? 'boxes' : 'package';
+      var row = document.createElement('div');
+      row.className = 'data-list__row' + (isGroup ? ' rowdis__head' : '');
+      row.innerHTML =
+        '<div class="data-list__row-main">' +
+          '<div class="data-list__icon"><i data-lucide="' + iconName + '" class="ztor-icon"></i></div>' +
+          '<div class="data-list__body">' +
+            /* §2.3.1 品項名稱點擊開商品快照 popup，不直接連活商品 */
+            '<div class="data-list__title"><a class="card__link od-snap-open" role="button" href="#"' +
+              ' data-snap-name-key="' + esc(it.nameKey) + '" data-snap-name="' + esc(it.name) + '"' +
+              ' data-snap-price="' + esc(it.snap.price) + '" data-snap-cat-key="' + esc(it.catKey) + '"' +
+              (it.snap.variant ? ' data-snap-variant="' + esc(it.snap.variant) + '"' : '') +
+              ' data-snap-desc="' + esc(it.snap.desc) + '" data-snap-manage="' + esc(it.snap.manage) + '">' +
+              '<span data-i18n="' + esc(it.nameKey) + '">' + esc(it.name) + '</span></a></div>' +
+            '<div class="data-list__meta" data-i18n="' + esc(catI18nKey) + '">—</div>' +
+          '</div>' +
         '</div>' +
-      '</div>' +
-      '<span class="od-cell">' + it.qty + '</span>' +
-      '<span class="od-cell od-col-r">' + esc(it.unit) + '</span>' +
-      '<div class="od-item-pickup">' + cellHtml + '</div>' +
-      '<span class="data-list__amount">$' + it.amt.toFixed(2) + '</span>';
-    /* L3 整組換層：可展開的品項（isGroup）與它的子列一起包進 `.rowdis__group
-       rowdis__group--gutter`（清單型容器要補內距，見 row-disclosure.css）；
-       不可展開的品項（digital／純出貨）維持素樸列，不套群組容器。 */
-    if (isGroup) {
-      var groupWrap = document.createElement('div');
-      groupWrap.className = 'rowdis__group rowdis__group--gutter';
-      groupWrap.appendChild(row);
-      if (extraRowsHtml) groupWrap.insertAdjacentHTML('beforeend', extraRowsHtml);
-      itemsHost.appendChild(groupWrap);
-    } else {
-      itemsHost.appendChild(row);
-    }
-  });
+        '<span class="od-cell">' + it.qty + '</span>' +
+        '<span class="od-cell od-col-r">' + esc(it.unit) + '</span>' +
+        '<div class="od-item-pickup">' + cellHtml + '</div>' +
+        '<span class="data-list__amount">$' + it.amt.toFixed(2) + '</span>' +
+        '<span class="od-cell od-col-r">' + voidBtnHtml(it, i) + '</span>';
+      /* L3 整組換層：可展開的品項（isGroup）與它的子列一起包進 `.rowdis__group
+         rowdis__group--gutter`（清單型容器要補內距，見 row-disclosure.css）；
+         不可展開的品項（digital／純出貨）維持素樸列，不套群組容器。 */
+      if (isGroup) {
+        var groupWrap = document.createElement('div');
+        groupWrap.className = 'rowdis__group rowdis__group--gutter';
+        groupWrap.appendChild(row);
+        if (extraRowsHtml) groupWrap.insertAdjacentHTML('beforeend', extraRowsHtml);
+        itemsHost.appendChild(groupWrap);
+      } else {
+        itemsHost.appendChild(row);
+      }
+    });
 
-  /* 展開／收合歸共用元件 row-disclosure（js/row-disclosure.js）：把手 data-rowdis="gid"、
-     子列 data-rowdis-child="gid"，組合主列與各成員的把手各自只操作自己 gid 底下的子列。 */
-  window.rowDisclosure.init(itemsHost);
+    /* 展開／收合歸共用元件 row-disclosure（js/row-disclosure.js）：把手 data-rowdis="gid"、
+       子列 data-rowdis-child="gid"，組合主列與各成員的把手各自只操作自己 gid 底下的子列。
+       點擊走 document 級委派，所以容器只登記一次；重畫後改呼叫 sync() 對齊新列的收合態
+       （每次都 init 會讓同一個容器被登記很多份）。 */
+    if (rowdisReady) window.rowDisclosure.sync(itemsHost);
+    else { window.rowDisclosure.init(itemsHost); rowdisReady = true; }
+    /* 重畫出來的節點沒經過 icons.js／i18n.js 的初次掃描，兩支都要對這一段再跑一次
+       （applyI18n 會發 i18n:applied，帶變數的彙總文字由下方 paint() 接手）。 */
+    if (window.ztorIcons) window.ztorIcons.applyIcons(itemsHost);
+    if (window.applyI18n) window.applyI18n(itemsHost);
+  }
+  renderItems();
 
   /* ── §2.3.2 金額拆解（數位訂單無運費列）───────────────────── */
   var A = order.amounts;
@@ -688,7 +774,15 @@
   document.querySelector('[data-od-ship-cancel]').hidden = readOnly;
   document.querySelector('[data-od-ship-done]').hidden = !readOnly;
   if (digital && order.delivery) {
-    $('[data-od-dig-on]').textContent = order.delivery.on;
+    /* 尚未交付（預購／未發行）沒有交付日與下載次數：改顯示「尚未發行」，避免空白格。 */
+    var digOn = $('[data-od-dig-on]');
+    if (order.delivery.on) {
+      digOn.textContent = order.delivery.on;
+      digOn.removeAttribute('data-i18n');
+    } else {
+      digOn.setAttribute('data-i18n', 'od.dig.pending');
+      digOn.textContent = (window.i18nT && window.i18nT('od.dig.pending')) || 'Not yet released';
+    }
     $('[data-od-dig-downloads]').textContent = order.delivery.downloads;
   }
   /* 已出貨的訂單帶出憑證（§2.5「完成後呈現對應憑證（追蹤碼）」）*/
@@ -700,22 +794,8 @@
     $('[data-od-tracking]').value = order.shipment.tracking;
   }
 
-  /* ── §2.6 退款 popup 的可退品項（與品項明細同源）──────────── */
-  var refundHost = $('[data-od-refund-items]');
-  order.items.forEach(function (it, i) {
-    var label = document.createElement('label');
-    label.className = 'data-list__row od-refund-pick';
-    label.innerHTML =
-      '<div class="data-list__row-main">' +
-        '<span class="zcheck__control"><input class="zcheck__input od-refund-check" type="checkbox" data-amt="' + it.amt + '"' + (i === 0 ? ' checked' : '') + '><span class="zcheck__box"></span></span>' +
-        '<div class="data-list__body">' +
-          '<div class="data-list__title" data-od-refund-title data-name-key="' + esc(it.nameKey) + '" data-qty="' + it.qty + '">' + esc(it.name) + ' ×' + it.qty + '</div>' +
-          '<div class="data-list__meta" data-od-refund-meta data-cat-key="' + esc(it.catKey) + '" data-price="' + esc(it.unit) + '">—</div>' +
-        '</div>' +
-      '</div>' +
-      '<span class="data-list__amount">$' + it.amt.toFixed(2) + '</span>';
-    refundHost.appendChild(label);
-  });
+  /* 墓碑（2026-09-09，D253）：§2.6 退款 popup 的可退品項清單渲染（.od-refund-check／
+     .od-refund-pick、data-od-refund-title／-meta）整段移除，隨退款彈窗一起退場。 */
 
   /* ── 帶變數的句子：i18n.js 每次套用後重畫（不呼叫 applyI18n，避免無限迴圈）── */
   function paint() {
@@ -724,26 +804,13 @@
     var key = n === 1 ? 'od.items.count1' : 'od.items.count';
     var fb = n === 1 ? '1 item' : '{n} items';
     $('[data-od-count]').textContent = T(key, fb).replace('{n}', n);
-    /* 退款事實那一行（只有已退款的訂單才有） */
-    var issued = $('[data-od-refund-issued]');
-    if (issued && order.refund) {
-      var full = order.refund.scope === 'full';
-      issued.textContent = T(full ? 'od.refund.issued.full' : 'od.refund.issued.partial',
-        full ? 'Fully refunded {amt} on {on}.' : 'Partially refunded {amt} on {on}.')
-        .replace('{amt}', order.refund.amount).replace('{on}', order.refund.on);
-      issued.hidden = false;
-    }
-    document.querySelectorAll('[data-od-refund-title]').forEach(function (el) {
-      el.textContent = T(el.dataset.nameKey, el.textContent.split(' ×')[0]) + ' ×' + el.dataset.qty;
-    });
-    document.querySelectorAll('[data-od-refund-meta]').forEach(function (el) {
-      el.textContent = T(el.dataset.catKey, '') + ' · ' + el.dataset.price;
-    });
+    /* 墓碑（2026-09-09，D253）：退款事實那一行與可退品項標題／分類的重畫邏輯移除，
+       隨 §2.6 退款彈窗與事實列一起退場——平台不記錄退款金額、不呈現退款事實。 */
     /* 領取單位彙總「N 件中已核銷 M 件」與單位子列的最近核銷時間：兩個變數，同一套
        data-od-done/-total／-od-unit-at 重畫慣例（見上方 §2.3.1 建列） */
     document.querySelectorAll('[data-od-unit-summary]').forEach(function (el) {
       if (el.dataset.odVoided) {
-        el.textContent = T('od.units.summary.void', '{done} of {total} redeemed · {voided} refunded')
+        el.textContent = T('od.units.summary.void', '{done} of {total} redeemed · {voided} cancelled')
           .replace('{done}', el.dataset.odDone).replace('{total}', el.dataset.odTotal).replace('{voided}', el.dataset.odVoided);
         return;
       }
@@ -756,6 +823,10 @@
   }
   paint();
   document.addEventListener('i18n:applied', paint);
+
+  /* 頁末的作廢彈窗（載在 sidebar.js 之後，才拿得到正式的 adminScope()）要能重畫品項表與
+     頁首狀態列；order 一起交出去，確認時直接對同一個物件呼叫 store 的 voidItem()。 */
+  window.ztorOrderView = { items: renderItems, status: renderStatus, order: order };
 })();
 </script>
 <script src="js/icons.js?v=r2.2"></script>
@@ -763,6 +834,7 @@
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/sticky-actions.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
+<script src="js/toast.js?v=r2.2"></script>
 <script>
   /* §2.2 標記出貨 popup（§2.5 出貨與履約內容）：
      - 頂部 Mark shipped 開窗；backdrop／Esc／Cancel 關窗（.is-modal-open 鎖背景捲動）。
@@ -800,45 +872,8 @@
     });
   })();
 
-  /* §2.6「退款」popup：§2.2 頁首 Refund 開窗（最終形態，v1 由 data-feat="O18" 版本閘控隱藏＝守 D041）；
-     整筆／部分切換，部分退款勾選品項即時試算退款金額。confirm 為 demo（真實退款經 Earnings §7.3 結算、不在此重算）。 */
-  (function () {
-    const modal = document.getElementById('od-refund-modal');
-    const openBtn = document.getElementById('od-refund-open');
-    if (!modal || !openBtn) return;
-    const scope = document.getElementById('od-refund-scope');
-    const totalEl = document.getElementById('od-refund-total');
-    const checks = modal.querySelectorAll('.od-refund-check');
-    /* 整筆退款金額＝該訂單品項合計（與 §2.3.1 同一份資料，不另外寫死）*/
-    const FULL = (window.ztorOrderCurrent && window.ztorOrderCurrent.totalAmt) || 0;
-    let scopeVal = 'full';
-
-    const open = () => { modal.hidden = false; document.body.classList.add('is-modal-open'); };
-    const close = () => { modal.hidden = true; document.body.classList.remove('is-modal-open'); };
-    openBtn.addEventListener('click', open);
-    modal.querySelectorAll('[data-od-refund-close]').forEach(el => el.addEventListener('click', close));
-    modal.addEventListener('click', e => { if (e.target === modal) close(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
-
-    function recalc() {
-      let total = FULL;
-      if (scopeVal === 'partial') {
-        total = 0;
-        checks.forEach(c => { if (c.checked) total += Number(c.dataset.amt || 0); });
-      }
-      totalEl.textContent = '$' + total.toFixed(2);
-    }
-    function setScope(v) {
-      scopeVal = v;
-      scope.querySelectorAll('.segmented__btn').forEach(b => b.classList.toggle('segmented__btn--active', b.dataset.odRefundScope === v));
-      modal.querySelectorAll('[data-od-refund-branch]').forEach(br => { br.hidden = br.dataset.odRefundBranch !== v; });
-      recalc();
-    }
-    scope.querySelectorAll('.segmented__btn').forEach(btn => btn.addEventListener('click', () => setScope(btn.dataset.odRefundScope)));
-    checks.forEach(c => c.addEventListener('change', recalc));
-    modal.querySelector('#od-refund-confirm').addEventListener('click', close);
-    setScope('full');
-  })();
+  /* 墓碑（2026-09-09，D253）：§2.6「退款」popup 的開關與整筆／部分試算邏輯整段移除——
+     平台不提供任何退款動作，頁首已無 Refund 主操作可觸發這個彈窗。 */
 
   /* §2.7 商品快照 popup：§2.3.1 品項名稱點擊開窗，呈現下單當時商品快照（買家視角預覽卡＋所購規格／次分類）。
      快照資料為 demo 固定值（真實為後端保存的下單當時 snapshot，D143）；「管理此商品」連回商品管理頁。 */
@@ -859,7 +894,11 @@
     modal.addEventListener('click', e => { if (e.target === modal) close(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
 
-    document.querySelectorAll('.od-snap-open').forEach(el => el.addEventListener('click', e => {
+    /* 事件委派（2026-09-08）：品項表在作廢之後會整段重畫，直接綁在每個連結上的 handler
+       會跟著舊節點一起被丟掉。改綁在 document 上用 closest 找回那顆連結，重畫幾次都還在。 */
+    document.addEventListener('click', e => {
+      const el = e.target.closest && e.target.closest('.od-snap-open');
+      if (!el) return;
       e.preventDefault();
       const d = el.dataset;
       /* 快照卡的品名跟著語系走（品名有中英兩版，key 與品項明細同一個）*/
@@ -879,7 +918,74 @@
       else { varRow.hidden = true; }
       if (d.snapManage) manage.setAttribute('href', d.snapManage);
       open();
-    }));
+    });
+  })();
+
+  /* §2.3.1「作廢品項」popup（2026-09-08）：品項列行尾的作廢 → 確認 → 呼叫 store 把該品項
+     展開的全部領取單位轉為已取消，然後重畫品項表與頁首狀態列。
+     這段刻意跑在 sidebar.js 之後：Admin 代管態的判斷（window.ztorCreator.adminScope()）
+     要等 sidebar.js 註冊完才拿得到，所以初始化時先重畫一次品項表，讓按鈕吃到正式訊號；
+     代管對象在頁內被切換（ztor:creator-changed）時同樣重畫。
+     ⚠ 原型只改狀態：庫存回補與「訂單已取消」email 由後端執行，這裡只在彈窗裡告知。 */
+  (function () {
+    const view = window.ztorOrderView;
+    const S = window.ztorOrders;
+    const modal = document.getElementById('od-void-modal');
+    if (!view || !S || !modal) return;
+    const order = view.order;
+    const nameEl = modal.querySelector('[data-od-void-name]');
+    const metaEl = modal.querySelector('[data-od-void-meta]');
+    const codesEffect = modal.querySelector('[data-od-void-effect="codes"]');
+    const stockEffect = modal.querySelector('[data-od-void-effect="stock"]');
+    const confirmBtn = document.getElementById('od-void-confirm');
+    const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb;
+    let target = null;
+
+    const open = () => { modal.hidden = false; document.body.classList.add('is-modal-open'); };
+    const close = () => { modal.hidden = true; document.body.classList.remove('is-modal-open'); target = null; };
+    modal.querySelectorAll('[data-od-void-close]').forEach(el => el.addEventListener('click', close));
+    modal.addEventListener('click', e => { if (e.target === modal) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
+
+    /* 委派：品項表會重畫，按鈕不是固定節點 */
+    document.addEventListener('click', e => {
+      const btn = e.target.closest && e.target.closest('[data-od-void]');
+      if (!btn || btn.disabled) return;
+      const item = order.items[Number(btn.dataset.odVoid)];
+      if (!item || S.voidState(item, order) !== 'ok') return;
+      target = item;
+      nameEl.setAttribute('data-i18n', item.nameKey);
+      nameEl.textContent = T(item.nameKey, item.name);
+      metaEl.textContent = T('od.void.qty', '{n} × {price}')
+        .replace('{n}', item.qty).replace('{price}', item.unit);
+      /* 效果預告依品項型態切換（D253）：領取碼那條只在有領取單位的品項出現
+         （取貨型、或含取貨成員的組合）；庫存回補那條只在實體品項出現
+         （取貨型／出貨型，數位商品無庫存不適用，§2.8「執行結果」）。 */
+      const agg = S.unitSummary(item);
+      const hasUnits = (item.mode === 'pickup' && item.units && item.units.length) ||
+        (item.mode === 'bundle' && agg.total > 0);
+      if (codesEffect) codesEffect.hidden = !hasUnits;
+      if (stockEffect) stockEffect.hidden = item.mode === 'digital';
+      open();
+    });
+
+    confirmBtn.addEventListener('click', () => {
+      if (!target) return close();
+      const label = T(target.nameKey, target.name);
+      const done = S.voidItem(order, target);
+      close();
+      if (!done) return;
+      view.items();
+      view.status();
+      if (window.applyI18n) window.applyI18n(document);
+      if (window.ztorToast) {
+        window.ztorToast.show(T('od.void.toast', 'Voided {item} — the buyer will be notified.').replace('{item}', label), { tone: 'success' });
+      }
+    });
+
+    /* sidebar.js 已就緒 → 用正式的 adminScope() 再畫一次；切換代管對象時同理 */
+    view.items();
+    document.addEventListener('ztor:creator-changed', () => { view.items(); });
   })();
 </script>
 <script src="js/devtools.js?v=r2.2"></script>

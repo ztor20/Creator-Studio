@@ -14,8 +14,9 @@
 | 🟢 Phase 1 | build now（本期內部要做） |
 | 🔵 Next | planned follow-up phase（已規劃的後續期） |
 | ⚪ TBD | business team to decide（商務團隊待定） |
+| ⚫ 退場 | retired（產品決策已全面撤除，不再規劃／不計入 Phase 1／Next／TBD 三態，2026-09-09 起新增） |
 
-本期統計：🟢 Phase 1 82 · 🔵 Next 12 · ⚪ TBD 13
+本期統計：🟢 Phase 1 82 · 🔵 Next 11 · ⚪ TBD 12 · ⚫ 退場 2
 
 ## Build 狀態圖例
 
@@ -63,7 +64,7 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 **商品專屬尺寸指南只在 Phase 4（2026-08-20 使用者裁示 / D213）**：建立商品 → 商品資訊 → 尺寸指南的「改用專屬指南」按鈕，以及按下去之後那一列「使用專屬尺寸指南」，Phase 1–3 都不出現（`create-product.html` 兩處 `data-feat="full"`）。這個能力是 D211 當天長出來的，功能表沒有它的編號，三個 tier 沒有一個能表達「只在 Phase 4」（⚪ TBD 在 Phase 3 就看得到），所以走保留 gate——同註冊入口（2026-08-04）與代理優惠碼（D185）那兩次。低版本那一格仍然看得到「沿用商店的尺寸指南」與目前有哪幾份，只是沒有覆寫的路。**商店層的尺寸指南設定（5.1.5.5 F7）不掛 gate**：各版本都要能把店裡的指南建起來。
 
-**data-feat 標註現況（2026-07-14 全面切割）**：S05/S06 商店設定付款·出貨、S11 拍賣入口/頁級、S24 專案引用卡、S45 組合限量、O04/O09 退款爭議 KPI·篩選、O17/O18/O22/O23 訂單詳情升級功能、E08/E09/E13–E18/E20/E22/E23/E24 收入與提款功能皆有 gate。scope 未列的產品頁以 `data-page-feat="full"` 限為 Phase 4；跨頁連結在低版本隱藏。S31.1 保持 `data-feat`／`data-feat-off` 成對切換。
+**data-feat 標註現況（2026-07-14 全面切割）**：S05/S06 商店設定付款·出貨、S11 拍賣入口/頁級、S24 專案引用卡、S45 組合限量、O04/O09 已取消／爭議 KPI·篩選、O17/O18/O22/O23 訂單詳情升級功能、E08/E09/E13–E18/E20/E22/E23/E24 收入與提款功能皆有 gate。scope 未列的產品頁以 `data-page-feat="full"` 限為 Phase 4；跨頁連結在低版本隱藏。S31.1 保持 `data-feat`／`data-feat-off` 成對切換。
 
 ---
 
@@ -134,20 +135,20 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 3
 
 ## O · 訂單管理 — Order Management
 
-ID 起始 `O01…` ｜ 🟢 24 · 🔵 3 · ⚪ 3
+ID 起始 `O01…` ｜ 🟢 25 · 🔵 2 · ⚪ 2 · ⚫ 退場 2
 
 | ID | 功能 | English | Tier | Build | 備註 |
 |---|---|---|---|---|---|
 | `O01` | 資料統計 | KPI stats | 🟢 Phase 1 | ✅ built |  |
 | `O02` | 　待出貨 | To ship | 🟢 Phase 1 | ✅ built |  |
 | `O03` | 　待處理 | Pending | 🟢 Phase 1 | ✅ built |  |
-| `O04` | 　退款 / 爭議 | Refund / dispute | ⚪ TBD | ✅⬆ ahead | refunds deferred |
+| `O04` | 　已取消 / 爭議 | Cancelled / dispute | ⚪ TBD | ✅⬆ ahead | 2026-09-09（D253）：由「退款 / 爭議」更名——平台不提供退款動作，KPI 改計已取消／爭議 |
 | `O05` | 　已完成 · 30天 | Completed · 30d | 🟢 Phase 1 | ✅ built |  |
 | `O06` | 匯出 | Export | 🟢 Phase 1 | ✅ built |  |
 | `O07` | 搜尋訂單 | Search orders | 🟢 Phase 1 | ✅ built |  |
 | | **狀態列** | Status filter | | | |
 | `O08` | 　全部 / 待付款 / 已付款 / 待出貨 / 已出貨 / 已完成 | All → Completed | 🟢 Phase 1 | ✅ built | 原文「代付款」為筆誤，依規格 Unpaid＝待付款更正 |
-| `O09` | 　退款 / 爭議 | Refund / dispute | ⚪ TBD | ✅⬆ ahead |  |
+| `O09` | 　已取消 / 爭議 | Cancelled / dispute | ⚪ TBD | ✅⬆ ahead | 2026-09-09（D253）：由「退款 / 爭議」更名，篩選新增獨立 Disputed tab |
 | `O10` | 訂單列表欄位 | Order list fields | 🟢 Phase 1 | ✅ built |  |
 | `O11` | 訂單詳情 | Order detail | 🟢 Phase 1 | ✅ built |  |
 | | **　內容** | Content | | | |
@@ -158,12 +159,12 @@ ID 起始 `O01…` ｜ 🟢 24 · 🔵 3 · ⚪ 3
 | `O16` | 　　買家資訊（名稱 / 地址 / 聯絡方式） | Buyer info | 🟢 Phase 1 | ✅ built |  |
 | `O17` | 　　檢視粉絲記錄 | View fan record | 🔵 Next | ✅⬆ ahead | Fans CRM module out of scope |
 | | **　功能** | Actions | | | |
-| `O18` | 　　退款 | Refund | ⚪ TBD | 🟡 gap | no in-system refunds in Phase 1 |
+| `O18` | 　　退款 | Refund | ⚫ 退場 | 🟡 gap | 2026-09-09（D253）已退場——平台不提供任何退款動作，取消訂單品項的唯一路徑改為 O31 作廢 |
 | `O19` | 　　標記出貨 / 履約 | Mark shipped / fulfillment | 🟢 Phase 1 | ✅ built |  |
 | `O20` | 　　　物流配送（物流商 / 追蹤碼 / 標記出貨） | Logistics (manual) | 🟢 Phase 1 | ✅ built | manual entry — no carrier API |
 | `O21` | 　　　QR 領取（二維碼 / 標記已領取） | QR pickup | 🟢 Phase 1 | ✅ built |  |
 | `O22` | 　　　數位（下載） | Digital download | 🔵 Next | ✅⬆ ahead | digital goods deferred |
-| `O23` | 　　退款與爭議（部分 / 整單退款） | Refund & dispute | 🔵 Next | 🟡 gap |  |
+| `O23` | 　　退款與爭議（部分 / 整單退款） | Refund & dispute | ⚫ 退場 | 🟡 gap | 2026-09-09（D253）已退場——平台不提供任何退款動作 |
 |       | **　取貨管理（Pickup Management）** — 2026-07-03 新增模組（D111），2026-07-30 併入 Phase 1（D157） | Pickup management |            |          |                                          |
 | `O24` | 　取貨管理入口（E-Shop 下拉第三個目的地）     | Pickup management entry          | 🟢 Phase 1 | ✅ built | 規格 5.1.5.11 |
 | `O25` | 　　取貨場次清單（篩選 / 搜尋 / 分批載入）     | Pickup session list              | 🟢 Phase 1 | ✅ built | 5.1.5.11 F4 |
@@ -172,6 +173,7 @@ ID 起始 `O01…` ｜ 🟢 24 · 🔵 3 · ⚪ 3
 | `O28` | 　　Scanner URL 與密碼（交付 / 生命週期）    | Scanner URL & password           | 🟢 Phase 1 | ✅ built | 5.1.5.15 F2 |
 | `O29` | 　　手機 Scanner 掃碼核銷（二元核銷）        | Mobile scanner redemption        | 🟢 Phase 1 | ✅ built | 5.1.5.14；二元核銷、一碼一件（D122／D240） |
 | `O30` | 　　活動票券共用核銷（回寫 Events check-in）  | Event ticket redemption          | 🟢 Phase 1 | ✅ built | 5.1.5.14 F2；票券狀態仍以 Events 為來源 |
+| `O31` | 　　作廢品項（Admin 專屬、取貨型）           | Void item (admin only)           | 🟢 Phase 1 | ✅ built | 2026-09-07 上游拍板列入 eShop 2.2；creator 態可見但停用（§4.4）；出貨型／數位待產品確認（§8.27） |
 
 ## E · 收入管理 — Earnings / Income
 
@@ -197,7 +199,7 @@ ID 起始 `E01…` ｜ 🟢 12 · 🔵 6 · ⚪ 6
 | `E15` | 　　授權 | Licensing | ⚪ TBD | ✅⬆ ahead |  |
 | `E16` | 　　平台 / 串流版稅 | Streaming royalty | ⚪ TBD | ✅⬆ ahead |  |
 | `E17` | 　　專案支持 | Project support | ⚪ TBD | ✅⬆ ahead |  |
-| `E18` | 　　提款與退款 | Payout & refund | 🔵 Next | ✅⬆ ahead |  |
+| `E18` | 　　提款與作廢沖銷 | Payout & void | 🔵 Next | ✅⬆ ahead | 2026-09-09（D253）：由「提款與退款」更名——平台不提供退款動作；feature ID／`data-feat` 掛點不變 |
 | `E19` | 　　載入更多 | Load more | 🟢 Phase 1 | ✅ built |  |
 | `E20` | 　　手動補登 | Manual entry | 🔵 Next | ✅⬆ ahead |  |
 | `E21` | 　　匯出 CSV | Export CSV | 🟢 Phase 1 | ✅ built |  |
