@@ -352,25 +352,29 @@
 .variant-table--fluid { min-width: 0; }
 .variant-table--fluid .variant-table__head,
 .variant-table--fluid .variant-table__row {
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) 78px 78px 78px minmax(0, 1.5fr) minmax(0, 0.9fr) 34px;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 64px 64px 64px minmax(0, 1.2fr) minmax(0, 1.1fr) 34px;
 }
 .variant-table--fluid.variant-table--limited .variant-table__head,
 .variant-table--fluid.variant-table--limited .variant-table__row {
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) 78px 78px 78px 78px minmax(0, 1.5fr) minmax(0, 0.9fr) 34px;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 64px 64px 64px 64px minmax(0, 1.2fr) minmax(0, 1.1fr) 34px;
 }
+/* 2026-09-10 欄軌調整的理由：商品明細那張表改成「可改的欄位平常就是輸入框」（Shopify／Webflow
+   的做法，D258），輸入框有邊框與內距，吃掉的橫向空間比純文字多。數字欄由 78 收到 64、
+   文字欄改吃 fr，整張表才塞得進整頁寬主體（實測不收會溢出 18px）。 */
 /* 鎖定與未鎖定兩欄（2026-09-09）：數字靠左與庫存欄對齊，未鎖定用弱色——
    它是推導值（該組合庫存 − 各管道鎖定量），不是使用者直接填的數字。 */
 .variant-table--fluid .variant-cell--free { color: var(--muted-foreground); }
-/* 鎖定編輯態（2026-09-09）：「鎖定」格換成每個管道一格輸入（只有單售時不標管道名），
-   列高隨管道數自然長高；「未鎖定」是即時預覽，鎖過頭整列的未鎖定轉紅，與 salloc 錯誤列同語彙。 */
-.variant-cell--lockedit { display: grid; gap: var(--sp-6); min-width: 0; }
-.variant-lock { display: grid; gap: 2px; min-width: 0; }
-.variant-lock__ch {
-  font-family: var(--font-ui);
-  font-size: var(--fs-11);
-  color: var(--muted-foreground);
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+/* 表格內的輸入格（2026-09-10 · D258）：可改的欄位平常就是輸入框，不再有「編輯模式」。
+   格子只負責讓輸入框吃滿欄寬並可縮——欄一窄輸入框就跟著窄，不會把欄軌頂開。
+   2026-09-09 的編輯態語彙（.variant-cell--lockedit／.variant-lock／.variant-table__row--editing）
+   同輪退場：那是「按編輯才變輸入」時代的東西，改成常駐輸入之後沒有消費者。 */
+.variant-cell--input { min-width: 0; }
+.variant-cell--input .input { width: 100%; min-width: 0; }
+/* 表格裡的金額欄位：`.variant-table .input { padding: 0 9px }`（上方 Q25 那條）會蓋掉
+   amount-field 給輸入框讓出的左內距，34px 寬的 $ 方塊就直接壓在數字上（實測只看得到最後一位）。
+   在表格這個情境把左內距補回來。 */
+.variant-table .amount-field .input { padding-left: var(--sp-40); }
+/* 鎖過頭（該組合的鎖定量 > 庫存）：整列的「未鎖定」轉紅，與 salloc 的錯誤列同語彙。 */
 .variant-table__row--error .variant-cell--free { color: var(--destructive); font-weight: var(--fw-medium); }
 /* 欄寬可壓縮之後，規格名也要會截斷（基礎版是 max-content 欄、撐得開所以不必） */
 .variant-table--fluid .variant-cell--variant {
@@ -379,8 +383,11 @@
   white-space: nowrap;
 }
 .variant-table__head {
-  /* 底色保留，分隔由它承擔。 */
-  background: var(--muted);
+  /* 2026-09-10 使用者裁示「表格的顏色必須依照 DS 的層級設計，現在是實色」：
+     表頭由實色 --muted 改薄膜 --ztu-film。這張表坐在已經是玻璃的卡（L1）上，
+     L2 一律用薄膜、L3 靠 1px 線（Q24／Q71／nest.css），再蓋一層不透明面會把卡的層次洗掉。
+     舊值：background: var(--muted)。 */
+  background: var(--ztu-film);
   /* 2026-07-31 使用者裁示：列表表頭不畫下框線（先做 e-shop 探索頁確認效果後全面套用）。
      分隔改由表頭與內容之間的留白承擔；每一列自己的分隔線不動。 */
   font-family: var(--font-ui);
@@ -389,7 +396,9 @@
   color: var(--column-head-ink);
 }
 .variant-table__row {
-  background: var(--card);
+  /* 同上（2026-09-10）：列不再鋪實色 --card，改透明——分隔本來就由下面這條 hairline 承擔。
+     舊值：background: var(--card)。 */
+  background: transparent;
   border-bottom: 1px solid var(--border);
 }
 /* 兩階層（顏色 × 尺寸）分組標題列（2026-07-23）：以第一個選項（顏色）分組，

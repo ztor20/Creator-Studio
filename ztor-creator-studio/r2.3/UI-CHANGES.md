@@ -80,6 +80,34 @@
 
 **驗證**：`python3 ../../Skills/project-ui-creator/scripts/check_ds_sync.py "site/r2.3"` → `RESULT: PASS + WARN (raw-color, sibling-rhythm)`（兩則 WARN 皆既有存量、與本輪無關）。dev server 實走（`devserver.py` port 56902）：`event-detail.html?id=realive-asia-taipei` 作廢紀錄分頁顯示「沖銷準備金 → 當期可分配淨利 → 結轉赤字」（zh）／「Void reserve → current distributable profit」（en），確認 Refund Reserve 殘留已修掉；`order-detail.html?id=ZT-10488` 數位品項出貨狀態徽章顯示「尚未發行」、作廢鈕可按；`design-system.html` 的 Pillar 4 KPI／Pillar 5 chip 兩處實際渲染為「Voids」／「Void」（`querySelector` 逐一核對，非文字搜尋誤判）。zh／en 各頁 `[data-i18n]` 元素逐一核對 textContent 是否等於 key 本身（raw key 判準）：`event-detail.html` 367／363 個皆 0 命中，`order-detail.html` 143 個皆 0 命中，`orders.html` 219 個皆 0 命中，`earnings.html` 497 個皆 0 命中。console 未見新增 error。本輪為文件收尾與措辭補正，未產生新截圖檔；視覺證據以上述即時渲染核對為準。
 
+## 2026-09-10（三）· 商品明細與組合包的庫存表定案（候選 U＋B）：同一張表、常駐輸入、表面吃層級（B 反饋導入 / C 撤除）
+
+**範圍**：`product-detail.html`、`bundle-detail.html`、`ds-components/variant-builder.css`、`ds-components/stock-allocation.css`、新元件 `ds-components/stock-split.css`、`js/listing-state.js`（`bundleQty` 對多選項成員改讀各組合加總）、`js/i18n.js`（＋5 鍵／−2 鍵）、`design-system.html`／`design-system.md`。上游待同步：D255 需改寫（見文末）。
+
+**依據**：使用者 2026-09-09～10 的四項裁示——「單選項與多選項的 UI 是否可以一樣都是表格」「欄位都要是橫的不要換行」「表格的顏色必須依照 DS 的層級設計，現在是實色」「在商品詳情中，目前單售只要顯示單售」，以及在探索頁（`lab-stock-card.html`）挑定候選 **U＋B**。探索頁先查過 Shopify／Webflow／Etsy／Salesforce／Whop／Fresha／Deel 與 PatternFly／Cloudscape 的同型畫面。
+
+### B · 商品明細：單選項與多選項同一張表（候選 U）
+
+一列一個選項組合——單一規格就是「只有一個組合」，用商品名當那一列，不再另做一套管道分配版面。欄位：選項組合／價格／庫存／鎖給單售／未鎖定／SKU／單件成本／⋯，**全部橫向、每列單行**。可改的欄位（價格、鎖給單售、SKU、單件成本）**平常就是輸入框**，庫存唯讀（要加量一律走補貨、每筆留紀錄）；改完按頁面右上那顆既有的「儲存」，該處新增「未儲存的變更」提示。**只呈現單售這一個管道**（使用者裁示）：組合包從各成員身上鎖走幾件，改在組合包自己的詳情頁設定。
+
+卡頭數字列由四格收成三格（目前在庫／未鎖定／單售可售），新增分配長條 `stock-split`——「已鎖定」恆等於在庫減未鎖定，用長條講比例比再放一個數字快。
+
+### B · 組合包詳情頁：成員分配可展開到選項組合（候選 B）
+
+成員是多選項商品時，「鎖給本組合」不能只有一個數字（組合包收的是「M 號 5 件」）。成員列改成母列（加總、唯讀）＋逐選項組合的子列（各自可填、各自擋錯），語彙沿用 row-disclosure 的展開與 `--ztu-film` 薄膜。銷售設定分頁同輪改整頁寬，常駐右欄退場、三張卡移進該分頁底下的 `.detail-cards`（移動不是複製——複製會產生重複 id，開關會綁到看不見的那一份）。
+
+### B · 表格表面改吃 DS 層級
+
+`variant-table` 的表頭由實色 `--muted` 改薄膜 `--ztu-film`、列由實色 `--card` 改透明（分隔本來就靠 hairline）。這張表坐在已經是玻璃的卡上，再蓋兩層不透明面會把層次洗掉（Q24／Q71／nest.css）。同輪修掉一個老問題：Q25 的 `.variant-table .input { padding: 0 9px }` 會蓋掉 amount-field 讓給輸入框的左內距，34px 的 `$` 方塊直接壓在數字上（實測只看得到最後一位）。
+
+### C · 退場
+
+管道分配表（商品明細）、鎖定編輯模式與卡底動作列、單列鎖定彈窗、價格卡（單一規格的價格現在是表格第一列的一格輸入，留著會有兩個入口改同一個數字）、前一日的編輯態語彙 `.variant-cell--lockedit`／`.variant-lock`／`.variant-table__row--editing`（改成常駐輸入後零消費）。`variant-lock-grid.css` 的墓碑維持。
+
+**驗證**：商品明細——襪子／Hoodie／束口褲（多選項）與 Skateboard（單一規格，一列、用商品名）逐頁實走；Hoodie 鎖 1 → 該列未鎖定 0、數字列 3／2／3、長條 1／2、store 寫入 `{single:1}`、「未儲存的變更」亮起；鎖 9（超過）→ 整列轉紅。組合包詳情——四個多選項成員各自展開成逐組合子列，子列填 0 寫進 `variants[0].locks.bundles`、填 5（超過上限 0）轉紅、清空回「未鎖定」；`#bd-listed` 只剩一份（無重複 id）。建立商品頁的表格表面同步變更、欄軌不受影響。0 console error；`check_ds_sync.py` 全 PASS。
+
+**上游待同步**：D255 寫的是「多選項商品的組合包鎖定在商品頁可編」，本輪改為商品頁只管單售、組合包鎖定回到組合包頁並細到選項組合——**規格尚未回寫**，下一輪處理（`ASSUMPTIONS.md` UIA-146 已標）。
+
 ## 2026-09-09（二）· 銷售設定整頁改版：數字列、鎖定就地編輯、彈窗拆開（B 反饋導入 / A spec-derived / C 撤除）
 
 **範圍**：`product-detail.html`（分頁重排、卡頭數字列、鎖定編輯模式、商品選項卡、價格卡的編輯入口、單列鎖定彈窗與編輯彈窗大表格退場）、`ds-components/form-section.css`（新增 `.form-section__actions`）、`ds-components/variant-builder.css`（鎖定編輯態 `.variant-cell--lockedit`／`.variant-lock`／`.variant-table__row--error`）、`ds-components/variant-lock-grid.css`（墓碑）、`js/i18n.js`（＋4 鍵、−3 鍵）、`design-system.html`／`design-system.md`、`ASSUMPTIONS.md`。上游同步：`documents/5.1.5.1-商品細節頁.md` §3 顯示序（D257）。

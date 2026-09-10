@@ -32,6 +32,7 @@
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-split.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/combobox.css?v=r2.2">
@@ -58,13 +59,6 @@
      字級／色階／頁寬屬 Q21 全站裁決，改在 ds-components 與 shared.css，不留頁面覆寫。 */
   .pd-subfields { margin-top: 14px; }
   .pd-subfields[hidden] { display: none; }
-  /* 庫存分配表的兩欄都要加寬：可售量欄放得下在庫總量那顆大數字（「3 / 50 units」），鎖定量欄
-     放得下「未鎖定」佔位字＋單位（英文的 units 比 DS demo 的「件」長得多）。照
-     stock-allocation.css 的規定覆寫它自己的欄寬變數，不在 style 屬性寫死 px。
-     2026-09-09 改成 clamp：這張表坐在細節頁的主欄（隨視窗在 ~360–500px 之間變動），
-     兩欄一律吃 168/150 時，管道名那欄會被壓到剩幾十 px——組合包名字整個直排一字一行。
-     百分比是對格線容器算的，所以欄寬跟著這一欄縮放，寬的時候仍回到原本的 168/150。 */
-  [data-pd-salloc] { --salloc-lock-col: clamp(120px, 34%, 168px); --salloc-qty-col: clamp(84px, 28%, 150px); }
 </style>
 </head>
 <body>
@@ -96,7 +90,8 @@
         </div>
         <div class="page-intro__actions">
           <button class="btn btn--outline" type="button" data-pd-preview-open data-i18n="product-detail.btn.preview">See as fan</button>
-          <button class="btn btn--primary" data-i18n="product-detail.btn.save">Save</button>
+          <span class="chip chip--static" data-pd-dirty hidden data-i18n="product-detail.unsaved">Unsaved changes</span>
+          <button class="btn btn--primary" data-pd-save data-i18n="product-detail.btn.save">Save</button>
         </div>
       </div>
 
@@ -441,9 +436,9 @@
 
       <!-- §3-5 · 庫存（僅實體）。單一規格＝唯讀數字（限量再加總量上限）；多規格＝逐規格表 -->
       <section class="form-section form-section--outlined" data-pd-cat="physical">
-        <!-- 卡頭動作（2026-09-09 改版）：三顆按鈕依頻率由右往左——補貨（最常做，outline）、編輯鎖定、補貨紀錄。
-             原本的 ⋯ 選單退場：「編輯」（改價／改選項）搬回各自的卡，「補貨」升格成按鈕。
-             頁面主按鈕只有頂部的「儲存」，這裡不再放第二顆 primary。 -->
+        <!-- 卡頭動作（2026-09-10 · D258）：補貨（最常做，outline）＋補貨紀錄。
+             「編輯鎖定」隨編輯模式一起退場——表格裡可改的欄位平常就是輸入框；
+             改完按頁面右上那顆既有的「儲存」，這裡不再有第二顆儲存。 -->
         <div class="form-section__head form-section__head--actions">
           <div class="form-section__head-titles">
             <h3 class="form-section__title" data-i18n="product-detail.stock.current">Current stock</h3>
@@ -452,22 +447,18 @@
           </div>
           <div class="form-section__head-actions">
             <button class="btn btn--ghost btn--sm" type="button" data-pd-history-open><i data-lucide="history" class="ztor-icon"></i><span data-i18n="product-detail.stock.history">Restock history</span></button>
-            <button class="btn btn--ghost btn--sm" type="button" data-pd-lock-edit><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="product-detail.lock.edit">Edit locks</span></button>
             <button class="btn btn--outline btn--sm" type="button" data-restock-open><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button>
           </div>
         </div>
 
-        <!-- 商品層數字列（DS stat-row，2026-09-09）：目前在庫（限量時帶「/ 上限」）／已鎖定／未鎖定／單售可售。
-             一件事只在這裡講一次——原本的超大讀數、管道分配表的「目前在庫」列、限量的「上限數量」欄位都收進來。
-             多選項商品是各組合的加總，單一規格就是池本身；數字全部問 ListingState（refreshAllocationNumbers）。 -->
+        <!-- 商品層數字列（DS stat-row）＋分配長條（DS stock-split），2026-09-10 · D258：
+             目前在庫（限量時帶「/ 上限」）／未鎖定／單售可售三格，底下一條長條講「這些庫存分給誰」。
+             「已鎖定」那一格退場——它恆等於目前在庫減未鎖定，讀的人得先做減法才知道比例，
+             改由長條的段落比例承擔。數字全部問 ListingState（refreshStockStats）。 -->
         <div class="stat-row" data-pd-stats>
           <div class="stat">
             <div class="stat__label" data-i18n="stock.pool">Goods in stock</div>
             <div class="stat__value"><span data-pd-stat-total>0</span><span class="stat__of" data-pd-stat-cap hidden></span></div>
-          </div>
-          <div class="stat">
-            <div class="stat__label" data-i18n="stock.locked-total">Locked</div>
-            <div class="stat__value" data-pd-stat-locked>0</div>
           </div>
           <div class="stat">
             <div class="stat__label" data-i18n="stock.free">Unlocked</div>
@@ -480,61 +471,44 @@
           </div>
         </div>
 
+        <div class="stock-split" data-pd-split>
+          <span class="stock-split__seg stock-split__seg--single" data-pd-split-single></span>
+          <span class="stock-split__seg stock-split__seg--free" data-pd-split-free></span>
+        </div>
+        <div class="stock-split__legend" data-pd-split-legend>
+          <span class="stock-split__item"><span class="stock-split__dot stock-split__dot--single"></span><span data-i18n="stock.locked-single">Locked for single sale</span> <span class="stock-split__v" data-pd-split-single-v>0</span></span>
+          <span class="stock-split__item"><span class="stock-split__dot stock-split__dot--free"></span><span data-i18n="stock.free">Unlocked</span> <span class="stock-split__v" data-pd-split-free-v>0</span></span>
+        </div>
+
         <!-- 自右欄併入（2026-07-21）：量條只在限量版出現——不限量沒有分母，畫不出「佔多少比例」。
              低於低庫存門檻時轉紅（demo：庫存 3 < 門檻 4）。 -->
         <div class="stock-bar" data-when-edition="limited" hidden><span class="stock-bar__fill stock-bar__fill--low" style="width:6%"></span></div>
 
-        <!-- 多規格：逐規格表＝資料驅動呈現（renderPageTable 依商品 options/variants 填列）。
-             單階層＝逐值一列；兩階層＝依第一個選項（顏色）分組，尺寸列在組底下。
-             價格／SKU／成本逐組合，改值走「商品選項」卡的編輯彈窗；
-             鎖定就地改（2026-09-09）：卡頭「編輯鎖定」把全部列切成編輯態、列尾 ⋯ 的「鎖定庫存」只切那一列，
-             鎖定欄變成每個管道一格輸入，卡底出現取消／儲存；列尾 ⋯ 另有「單獨下架／重新上架」。 -->
-        <div data-when-var="multiple" hidden>
-          <div class="variant-table-wrap variant-table-wrap--menu">
-            <div class="variant-table variant-table--fluid" data-pd-variant-table>
-              <div class="variant-table__head">
-                <span data-i18n="cp.var.col.variant">Variant</span>
-                <span data-i18n="cp.var.col.price">Price</span>
-                <span data-i18n="cp.var.col.stock">Stock</span>
-                <span class="variant-cell--total" data-i18n="cp.var.col.total">Total</span>
-                <span data-i18n="cp.var.col.locked">Locked</span>
-                <span data-i18n="cp.var.col.free">Unlocked</span>
-                <span data-i18n="cp.var.col.sku">SKU</span>
-                <span data-i18n="cp.var.col.cost">Cost</span>
-                <span></span>
-              </div>
-              <!-- 列（與分組標題）由 renderVariantTable() 依商品資料填入 -->
+        <!-- 逐選項組合表（2026-09-10 · D258）：**單一規格與多選項同一張表**——單一規格就是
+             「只有一個選項組合」，用商品名當那一列，不再另做一套管道分配版面。
+             一列一個選項組合，可改的欄位（價格／鎖給單售／SKU／單件成本）平常就是輸入框，
+             庫存唯讀（要加量一律走補貨、每筆留紀錄）；改完按頁面右上的儲存。
+             商品明細只呈現「單售」這一個管道（使用者裁示）：組合包從各成員身上鎖走幾件，
+             改在組合包自己的詳情頁設定（5.1.5.9），這張表不再列組合包。
+             兩階層商品（顏色×尺寸）仍依第一個選項分組。列尾 ⋯ 為補貨與「單獨下架／重新上架」。 -->
+        <div class="variant-table-wrap variant-table-wrap--menu">
+          <div class="variant-table variant-table--fluid" data-pd-variant-table>
+            <div class="variant-table__head">
+              <span data-i18n="cp.var.col.variant">Variant</span>
+              <span data-i18n="cp.var.col.price">Price</span>
+              <span data-i18n="cp.var.col.stock">Stock</span>
+              <span class="variant-cell--total" data-i18n="cp.var.col.total">Total</span>
+              <span data-i18n="stock.lock-single">Locked</span>
+              <span data-i18n="cp.var.col.free">Unlocked</span>
+              <span data-i18n="cp.var.col.sku">SKU</span>
+              <span data-i18n="cp.var.col.cost">Cost</span>
+              <span></span>
             </div>
+            <!-- 列（與分組標題）由 renderPageTable() 依商品資料填入 -->
           </div>
         </div>
 
-        <!-- §2.10 庫存池與鎖定（spec 5.1.5.1 §2.10、主規格 §7.14 · D241／D255）：單一規格商品的管道列，
-             一列一個販售管道（單售的鎖定量可編、組合包的鎖定量在該組合包管理故唯讀），末列是沒有被鎖定的量。
-             目前在庫已上移到卡頭的數字列，這裡不再放池列。多選項商品的鎖定住在上方逐規格表，
-             商品層只在數字列講加總，不另畫管道彙總表（2026-09-09 改版）。
-             鎖定量的編輯走「編輯模式」：按卡頭「編輯鎖定」單售那格才變成輸入，卡底取消／儲存；
-             平常是唯讀讀數，避免打到一半就寫入。列的畫法歸 ds-components/stock-allocation.css。 -->
-        <div class="field" data-when-var="single" style="margin-bottom:0">
-          <div class="salloc" data-pd-salloc>
-            <div class="salloc__row salloc__row--head">
-              <span></span><span data-i18n="stock.lock">Locked</span><span style="text-align:right" data-i18n="stock.sellable">Sellable</span>
-            </div>
-            <!-- 管道列（單售＋每個含此商品的組合包）由 renderAllocation() 插在沒有被鎖定的庫存量列之前。 -->
-            <div class="salloc__row salloc__row--free" data-pd-free-row>
-              <span class="salloc__name"><span data-i18n="stock.free">Unlocked</span></span>
-              <span class="salloc__qty salloc__qty--muted" data-pd-free>0</span>
-            </div>
-          </div>
-          <div class="field__hint" data-i18n="stock.restock-hint">Restocks land in unlocked stock; locked ones need to lock again</div>
-        </div>
-
-        <!-- 鎖定編輯模式的卡底動作列（單一規格與多選項共用）：留空的意思、擋錯訊息、取消／儲存。 -->
-        <div class="form-section__actions" data-pd-lock-bar hidden>
-          <span class="field__hint" data-i18n="product-detail.edit.locks-hint">Blank means the channel shares whatever is unlocked</span>
-          <span class="field__error" data-pd-lock-err hidden data-i18n="stock.lock-err">Exceeds unlocked stock</span>
-          <button class="btn btn--ghost btn--sm" type="button" data-pd-lock-cancel data-i18n="payout.cancel">Cancel</button>
-          <button class="btn btn--primary btn--sm" type="button" data-pd-lock-save data-i18n="product-detail.btn.save">Save</button>
-        </div>
+        <div class="field__hint" data-i18n="stock.restock-hint">Restocks land in unlocked stock; locked ones need to lock again</div>
       </section>
 
       <!-- §2.8 商品選項（多選項才有；2026-09-09 新增這張卡）：選項名稱與值的唯讀摘要（DS kv 列），
@@ -552,34 +526,9 @@
         <div data-pd-options-summary></div>
       </section>
 
-      <!-- §3-6 價格（獨立一區；D136 拆自舊 Price & stock 卡）。
-           2026-07-21 加 data-when-var="single"：多規格的定價與成本逐規格填在庫存卡的逐規格表裡，
-           再另開一個單一價格欄會出現兩個互相矛盾的答案。 -->
-      <section class="form-section form-section--outlined" data-when-var="single">
-        <div class="form-section__head form-section__head--actions">
-          <div class="form-section__head-titles">
-            <h3 class="form-section__title" data-i18n="product-detail.price2.title">Price</h3>
-            <p class="form-section__sub" data-i18n="product-detail.price2.sub">How this product is priced.</p>
-          </div>
-          <div class="form-section__head-actions">
-            <button class="btn btn--ghost btn--sm" type="button" data-pd-edit-open><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="product-detail.stock.edit">Edit</span></button>
-          </div>
-        </div>
-
-        <!-- 定價瘦身（spec 5.1.5.1 §2.9 / 5.1.5.2 F3.2 · D144，覆寫上游）：只留定價（現金）＋成本價；原價（特價時填）與 POPCORN 定價單位已移除。特價改由下方「折扣設定 → 排程特價」承擔；一律現金 $ 前綴、amount-field--readonly；成本僅創作者可見 -->
-        <!-- 唯讀呈現（2026-07-22）：頁面不再放可填寫 input；改價走本卡卡頭的「編輯」（2026-09-09 由庫存卡的 ⋯ 移到這裡——改價是價格卡的事）。 -->
-        <div class="form-grid" style="margin-bottom:0">
-          <div class="field">
-            <div class="field__label" data-i18n="product-detail.field.price">Price</div>
-            <div class="field-readout" data-pd-price-ro>$24.00</div>
-          </div>
-          <div class="field">
-            <div class="field__label"><span data-i18n="cp.cost">Cost</span> <span class="text-sub" data-i18n="cp.cost.note">creator only</span></div>
-            <div class="field-readout" data-pd-cost-ro>$9.00</div>
-          </div>
-        </div>
-      </section>
-
+      <!-- 2026-09-10 · D258：價格卡退場。單一規格的價格與成本現在是庫存表第一列的兩格輸入，
+           留著這張卡就會有兩個地方可以改同一個數字（多選項本來就沒有這張卡）。
+           §2.9 價格的內容定義不變，只是併進 §2.10 那張表呈現。 -->
       <div class="detail-cards">
 
       <!-- §2.15 折扣設定（spec 5.1.5.1 §2.15 · D144）：開啟折扣 → 折扣價＋（可選）限時折扣起訖日；取代原價劃線的特價呈現方式。 -->
@@ -1274,13 +1223,12 @@
       return window.ProductsStore.bundlesUsing(product.id) || [];
     }
     function qtyText(n) { return (n === Infinity) ? '∞' : String(n); }
-    /* 多選項商品（2026-09-09 使用者裁決）：鎖定量改在逐規格表逐組合設定，這張表退為唯讀彙總——
-       同一個數字有兩個地方可以改，遲早會對不起來。數字改問 ListingState 的 variants* 系列加總。 */
+    /* ── 卡頭的數字列與分配長條（2026-09-10 · D258）─────────────────────────
+       商品明細只呈現「單售」這一個管道：目前在庫、未鎖定、單售可售三個數字，
+       加一條長條講「鎖給單售 vs 還留在池裡」。組合包從各成員身上鎖走的量改在組合包
+       自己的詳情頁設定（5.1.5.9），本頁不再畫管道分配表。
+       數字一律問 ListingState：單一規格讀池、多選項讀各組合加總，本頁不自己算 §7.14 的規則。 */
     function isMultiVar() { return !!(product && product.variant === 'multiple' && (product.variants || []).length); }
-    function chLock(ch) {
-      const L = window.ListingState;
-      return isMultiVar() ? L.variantsChannelLocked(product.variants, ch) : L.lockOf(product, ch);
-    }
     function chQty(ch) {
       const L = window.ListingState;
       return isMultiVar() ? L.variantsChannelQty(product.variants, ch) : L.channelQty(product, ch);
@@ -1294,81 +1242,25 @@
       if (isMultiVar()) return L.variantsTotal(product.variants);
       return (product.pool && product.pool.total === 'unlimited') ? Infinity : Number(product.pool ? product.pool.total : 0);
     }
-    function lockCellHTML(editable, lock) {
-      const val = lock === null || lock === undefined ? '' : String(lock);
-      if (!editable) {
-        if (val === '') return '<span class="salloc__nolock" data-i18n="stock.free">' + esc(T('stock.free', 'Unlocked')) + '</span>';
-        return '<span class="salloc__lock"><span class="amount-field amount-field--readonly amount-field--suffix">'
-          + '<input class="input amount-field__input" readonly value="' + esc(val) + '">'
-          + '<span class="amount-field__unit" data-i18n="product-detail.stock.unit">' + esc(T('product-detail.stock.unit', 'units')) + '</span></span></span>';
+    function lockedSingleQty() {
+      const L = window.ListingState;
+      if (isMultiVar()) {
+        const sum = L.variantsChannelLocked(product.variants, 'single');
+        return sum === null ? 0 : sum;
       }
-      return '<span class="salloc__lock"><span class="amount-field amount-field--suffix">'
-        + '<input class="input amount-field__input" type="number" min="0" data-pd-lock-single value="' + esc(val) + '"'
-        + ' placeholder="' + esc(T('stock.free', 'Unlocked')) + '" data-i18n-placeholder="stock.free">'
-        + '<span class="amount-field__unit" data-i18n="product-detail.stock.unit">' + esc(T('product-detail.stock.unit', 'units')) + '</span></span></span>';
+      const l = L.lockOf(product, 'single');
+      return l === null ? 0 : l;
     }
-    /* 單一規格的鎖定編輯模式（2026-09-09）：平常是唯讀讀數，按卡頭「編輯鎖定」單售那格才變輸入框，
-       卡底取消／儲存；打字只驗證、按儲存才寫進 product.pool.locks。多選項商品的鎖定住在逐規格表那支腳本。 */
-    let LOCK_EDIT = false;
-    function lockBar(show) {
-      const bar = document.querySelector('[data-pd-lock-bar]');
-      if (bar) bar.hidden = !show;
-      const err = document.querySelector('[data-pd-lock-err]');
-      if (err) err.hidden = true;
-      const save = document.querySelector('[data-pd-lock-save]');
-      if (save) save.disabled = false;
-    }
-    function renderAllocation() {
-      const root = document.querySelector('[data-pd-salloc]');
+    /* 逐選項組合表改了鎖定量之後回頭叫這個重畫（兩支腳本各自封閉，用一個具名橋接）。 */
+    window.pdRefreshStock = function () { refreshStockStats(); };
+    function refreshStockStats() {
       const L = window.ListingState;
-      if (!root || !product || !L) return;
-      const freeRow = root.querySelector('[data-pd-free-row]');
-      root.querySelectorAll('[data-pd-channel-row]').forEach(r => r.remove());
-      if (isMultiVar()) { refreshAllocationNumbers(); return; }   /* 多選項：商品層只留數字列 */
-      const rows = [];
-      rows.push({ id: 'single', channel: 'single', editable: true,
-        nameHTML: '<span data-i18n="stock.channel-single">' + esc(T('stock.channel-single', 'Single sale')) + '</span>' });
-      bundlesOfProduct().forEach(b => {
-        rows.push({ id: b.id, channel: { bundle: b.id }, editable: false,
-          nameHTML: '<a class="card__link" href="bundle-detail.html?id=' + encodeURIComponent(b.id) + '" data-route-keep>' + esc(b.name || b.id) + '</a>'
-            + '<span class="salloc__sub" data-i18n="stock.channel-bundle">' + esc(T('stock.channel-bundle', 'Bundle')) + '</span>' });
-      });
-      rows.forEach(r => {
-        const el = document.createElement('div');
-        const editable = r.editable && LOCK_EDIT;
-        el.className = 'salloc__row';
-        el.setAttribute('data-pd-channel-row', r.id);
-        el.innerHTML = '<span class="salloc__name">' + r.nameHTML + '</span>'
-          + lockCellHTML(editable, chLock(r.channel))
-          + '<span class="salloc__qty" data-pd-row-qty>' + qtyText(chQty(r.channel)) + '</span>'
-          + (editable ? '<p class="salloc__error" data-i18n="stock.lock-err" hidden>' + esc(T('stock.lock-err', 'Exceeds unlocked stock')) + '</p>' : '');
-        root.insertBefore(el, freeRow);
-      });
-      bindLockInput();
-      refreshAllocationNumbers();
-      if (window.applyI18n) window.applyI18n(root);
-    }
-    /* 逐規格表那支腳本改完鎖定後回頭叫這個重畫（兩支腳本各自封閉，用一個具名橋接、不共用變數）。 */
-    window.pdRefreshAllocation = function () { renderAllocation(); };
-    function refreshAllocationNumbers() {
-      const root = document.querySelector('[data-pd-salloc]');
-      const L = window.ListingState;
-      if (!root || !product || !L) return;
-      root.querySelectorAll('[data-pd-channel-row]').forEach(el => {
-        const id = el.getAttribute('data-pd-channel-row');
-        const ch = id === 'single' ? 'single' : { bundle: id };
-        const q = el.querySelector('[data-pd-row-qty]');
-        if (q) q.textContent = qtyText(chQty(ch));
-      });
-      const free = poolFree();
-      const freeEl = root.querySelector('[data-pd-free]');
-      if (freeEl) freeEl.textContent = qtyText(free);
-      /* 卡頭數字列：一件事只講一次。多選項＝各組合加總，單一規格＝池本身。 */
+      if (!product || !L) return;
       const total = poolTotalQty();
-      const locked = (total === Infinity) ? 0 : Math.max(0, total - free);
+      const free = poolFree();
+      const lockedSingle = lockedSingleQty();
       const setStat = (sel, v) => { const el = document.querySelector(sel); if (el) el.textContent = qtyText(v); };
       setStat('[data-pd-stat-total]', total);
-      setStat('[data-pd-stat-locked]', locked);
       setStat('[data-pd-stat-free]', free);
       setStat('[data-pd-stat-single]', chQty('single'));
       const capEl = document.querySelector('[data-pd-stat-cap]');
@@ -1377,68 +1269,35 @@
         capEl.hidden = cap === null;
         capEl.textContent = cap === null ? '' : ' / ' + cap;
       }
-      /* 所有管道都鎖定＝沒有被鎖定的庫存量沒有人能賣，在「未鎖定」底下講清楚剩幾件（§7.14）。
-         多選項：逐組合判定——只有每一個還有剩餘量的組合、每個管道都鎖了才成立。 */
+      /* 分配長條：兩段（鎖給單售／未鎖定）。不限量的池畫不出比例，整條收起來。 */
+      const split = document.querySelector('[data-pd-split]');
+      const legend = document.querySelector('[data-pd-split-legend]');
+      const unlimited = (total === Infinity);
+      if (split) split.hidden = unlimited;
+      if (legend) legend.hidden = unlimited;
+      if (!unlimited) {
+        const segS = document.querySelector('[data-pd-split-single]');
+        const segF = document.querySelector('[data-pd-split-free]');
+        if (segS) segS.style.flex = String(lockedSingle);
+        if (segF) segF.style.flex = String(free);
+        const vS = document.querySelector('[data-pd-split-single-v]');
+        const vF = document.querySelector('[data-pd-split-free-v]');
+        if (vS) vS.textContent = qtyText(lockedSingle);
+        if (vF) vF.textContent = qtyText(free);
+      }
+      /* 所有管道都鎖定＝留在池裡的量沒有人能賣（使用者 2026-09-10 確認的語意）。
+         多選項逐組合判定；單一規格看商品層。 */
       const meta = document.querySelector('[data-pd-stat-free-meta]');
       if (meta) {
+        const chans = ['single'].concat(bundlesOfProduct().map(b => ({ bundle: b.id })));
         const allLocked = isMultiVar()
-          ? L.variantsAllLocked(product.variants, ['single'].concat(bundlesOfProduct().map(b => ({ bundle: b.id }))))
+          ? L.variantsAllLocked(product.variants, chans)
           : L.allChannelsLocked(product, bundlesOfProduct());
         const all = allLocked && free !== Infinity && free > 0;
         meta.hidden = !all;
-        if (all) meta.textContent = T('stock.all-locked', '{n} unlocked — neither single sale nor bundles can reach them').replace('{n}', free);
+        if (all) meta.textContent = T('stock.pool-left', '{n} left in the pool — no channel can sell them').replace('{n}', free);
       }
     }
-    function bindLockInput() {
-      const input = document.querySelector('[data-pd-lock-single]');
-      if (!input || input.__pdBound) return;
-      input.__pdBound = true;
-      input.addEventListener('input', () => validateSingleLock(input));
-    }
-    /* 回傳 { ok, value }：留空＝取消鎖定（null）；超過沒有被鎖定的量就標錯、停用儲存。 */
-    function validateSingleLock(input) {
-      const row = input.closest('.salloc__row');
-      const rowErr = row && row.querySelector('.salloc__error');
-      const barErr = document.querySelector('[data-pd-lock-err]');
-      const save = document.querySelector('[data-pd-lock-save]');
-      const raw = input.value.trim();
-      let ok = true, value = null, msg = '';
-      if (raw !== '') {
-        value = Number(raw);
-        const v = window.ListingState.validateLock(product, 'single', value);
-        ok = v.ok;
-        if (!ok) msg = T('stock.lock-err', 'Exceeds unlocked stock') + ' · ' + T('stock.lock-max', 'Up to {n}').replace('{n}', qtyText(v.max));
-      }
-      /* 訊息只在卡底動作列講一次（與多選項一致）；列本身只轉紅，不再重複一行字。 */
-      if (row) row.classList.toggle('salloc__row--error', !ok);
-      input.setAttribute('aria-invalid', ok ? 'false' : 'true');
-      if (rowErr) rowErr.hidden = true;
-      if (barErr) { barErr.hidden = ok; if (!ok) barErr.textContent = msg; }
-      if (save) save.disabled = !ok;
-      /* 可售量即時預覽：這一列的可售＝要鎖的量；未鎖定列先不動，儲存後才重算 */
-      const q = row && row.querySelector('[data-pd-row-qty]');
-      if (q && ok) q.textContent = qtyText(value === null ? window.ListingState.freeQty(product) : value);
-      return { ok, value };
-    }
-    document.addEventListener('click', (e) => {
-      if (!product || isMultiVar()) return;   /* 多選項的鎖定編輯由逐規格表那支腳本接手 */
-      if (e.target.closest('[data-pd-lock-edit]')) {
-        LOCK_EDIT = true; renderAllocation(); lockBar(true);
-        const input = document.querySelector('[data-pd-lock-single]');
-        if (input) input.focus();
-        return;
-      }
-      if (e.target.closest('[data-pd-lock-cancel]')) { LOCK_EDIT = false; renderAllocation(); lockBar(false); return; }
-      if (e.target.closest('[data-pd-lock-save]')) {
-        const input = document.querySelector('[data-pd-lock-single]');
-        if (input) {
-          const r = validateSingleLock(input);
-          if (!r.ok) return;
-          product.pool.locks.single = r.value;
-        }
-        LOCK_EDIT = false; renderAllocation(); renderBadges(); lockBar(false);
-      }
-    });
 
     /* 依商品資料配置整頁（e-shop 以 ?id 開啟）。 */
     function applyProduct(p) {
@@ -1515,15 +1374,8 @@
       // 次分類 select（依主分類選對的 select、設對的值）
       selectSub(p.cat === 'digital' ? 'pd-sub-digi' : 'pd-sub-phys', p.subKey);
       // 價格／成本／庫存（頁面唯讀呈現；改價走 ⋯ → 編輯 popup）
-      const priceRO = document.querySelector('[data-pd-price-ro]');
-      if (priceRO && p.price) {
-        var priceRaw = String(p.price);
-        priceRO.textContent = /^\d+(?:\.\d+)?$/.test(priceRaw)
-          ? (p.currency === 'TWD' ? 'NT$' + priceRaw.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '$' + priceRaw)
-          : priceRaw;
-      }
-      const costRO = document.querySelector('[data-pd-cost-ro]');
-      if (costRO) costRO.textContent = p.cost ? '$' + p.cost : '—';
+      /* 2026-09-10 · D258：價格與成本的唯讀欄位隨價格卡一起退場，兩個值現在是
+         庫存表第一列的輸入框，由 renderPageTable 帶。 */
       /* 限量的上限現在畫在卡頭數字列的「/ N」，由 refreshAllocationNumbers 帶。 */
       // 數位內容檔：專輯曲目 seed / 會員卡卡名（餵給 album-tracks / vip-card partial，其 init 在 DOMContentLoaded 讀取）
       const album = document.getElementById('pd-album');
@@ -1709,6 +1561,11 @@
       product = (window.ProductsStore && window.ProductsStore.get('zine'))
         || { id: 'zine', listed: true, shown: true, lowThreshold: 0, pool: { total: 'unlimited', locks: { single: null, bundles: {} } } };
     }
+    /* 兩支腳本要看同一筆商品記錄（2026-09-10 · D258）：逐選項組合表現在也負責單一規格那一列，
+       沒有 ?id 或 id 查不到時它自己 lookup 會拿到 null，整張表就空了。這裡把最終採用的記錄
+       廣播出去，由那支腳本接手重畫。 */
+    window.pdProduct = product;
+    document.dispatchEvent(new CustomEvent('pd:product', { detail: product }));
     (function initListingCard() {
       const setSwitch = (el, on) => {
         if (!el) return;
@@ -1726,11 +1583,11 @@
       paintSchedToggle('pd-unlist-toggle', '[data-pd-unlist-fields]', !!product.unlistAt);
       paintSchedToggle('pd-saleend-toggle', '[data-pd-saleend-fields]', !!product.saleEnd);
       put('pd-listing-sale-end', product.saleEnd);
-      renderAllocation();
+      refreshStockStats();
       syncListingCard();
       /* 「N 件未鎖定」這顆 chip 的文字帶變數、只能由 JS 組，切語言時 applyI18n 管不到它，
          所以重跑一次數字（徽章自己帶 data-i18n，由 applyI18n 處理）。 */
-      document.addEventListener('i18n:applied', refreshAllocationNumbers);
+      document.addEventListener('i18n:applied', refreshStockStats);
     })();
     /* 低庫存門檻＝百分比，旁邊即時換算成件數，讓使用者知道 10% 實際是幾件（demo 基準＝上限 50） */
     (function () {
@@ -1926,7 +1783,8 @@
       return out;
     }
     /* 當前商品的規格模型（可變）：由 ?id 讀 store，深拷貝 options/variants。 */
-    var product = (window.ztorGetProduct && window.ztorGetProduct(new URLSearchParams(location.search).get('id'))) || null;
+    var product = (window.ztorGetProduct && window.ztorGetProduct(new URLSearchParams(location.search).get('id')))
+      || window.pdProduct || null;
     function copyModel(p) {
       p = p || {};
       return {
@@ -1968,59 +1826,11 @@
     }
 
     function kebabHTML() {
-      return '<details class="dropdown"><summary class="btn btn--icon btn--xs" type="button" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-variant-lock><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="product-detail.var.lock">Lock stock</span></button><button class="dropdown__item" type="button" role="menuitem" data-variant-delist><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.var.delist">Delist this option</span></button><button class="dropdown__item" type="button" role="menuitem" data-variant-relist hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.var.relist">Relist this option</span></button></div></details>';
+      return '<details class="dropdown"><summary class="btn btn--icon btn--xs" type="button" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-restock-open><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button><button class="dropdown__item" type="button" role="menuitem" data-variant-delist><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.var.delist">Delist this option</span></button><button class="dropdown__item" type="button" role="menuitem" data-variant-relist hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.var.relist">Relist this option</span></button></div></details>';
     }
 
-    /* 鎖定／未鎖定兩欄的數字一律問 ListingState（本頁不自己算 §7.14 的規則）。 */
-    function lockedOf(v) { var L = window.ListingState; return L ? String(L.variantLockedTotal(v)) : '0'; }
-    function freeOf(v) { var L = window.ListingState; return L ? String(L.variantFree(v)) : esc(v.stock); }
-
-    /* 頁面主表：資料驅動、唯讀。兩階層依 options[0]（顏色）分組。 */
-    function renderPageTable() {
-      if (!pageTable) return;
-      pageTable.querySelectorAll('.variant-table__row, .variant-table__group').forEach(function (n) { n.remove(); });
-      var two = MODEL.variants.length > 0 && MODEL.variants[0].combo.length >= 2;
-      var price = money(MODEL.price), cost = money(MODEL.cost);
-      var lastGroup = null;
-      MODEL.variants.forEach(function (v, vi) {
-        if (two && v.combo[0] !== lastGroup) {
-          lastGroup = v.combo[0];
-          var g = document.createElement('div'); g.className = 'variant-table__group'; g.textContent = lastGroup; pageTable.appendChild(g);
-        }
-        var label = two ? v.combo.slice(1).join(' / ') : v.combo.join(' / ');
-        var editing = inLockEdit(vi);
-        var row = document.createElement('div');
-        row.className = 'variant-table__row' + (v.delisted ? ' variant-table__row--delisted' : '') + (editing ? ' variant-table__row--editing' : '');
-        row.setAttribute('data-vi', vi);   /* 列尾 ⋯ 的「鎖定庫存」與編輯態靠這個找回是哪一個組合 */
-        row.innerHTML =
-          '<span class="variant-cell--variant" data-vc="name">' + esc(label) + '</span>' +
-          '<span class="variant-cell--ro" data-vc="price">' + price + '</span>' +
-          '<span class="variant-cell--stock' + (isLow(v.stock) ? ' variant-cell--stock-low' : '') + '">' + esc(v.stock) + '</span>' +
-          '<span class="variant-cell--ro variant-cell--total" data-vc="total">' + esc(v.stock) + '</span>' +
-          (editing ? lockEditCellHTML(vi) : '<span class="variant-cell--ro" data-vc="locked">' + lockedOf(v) + '</span>') +
-          '<span class="variant-cell--ro variant-cell--free" data-vc="free">' + (editing ? String(Number(v.stock || 0) - lockedSum(LOCKEDIT.draft[vi])) : freeOf(v)) + '</span>' +
-          '<span class="variant-cell--ro" data-vc="sku" title="' + esc(v.sku) + '">' + (esc(v.sku) || '—') + '</span>' +
-          '<span class="variant-cell--ro" data-vc="cost">' + cost + '</span>' +
-          kebabHTML();
-        pageTable.appendChild(row);
-      });
-      if (window.ztorIcons) window.ztorIcons.applyIcons(pageTable);
-      if (window.applyI18n) window.applyI18n(pageTable);
-    }
-
-    /* ── 逐選項組合的庫存鎖定（2026-09-09 使用者裁決；規格未定義粒度，見 ASSUMPTIONS UIA-146）──
-       兩個入口寫的是同一份資料（MODEL.variants[i].locks）：列尾 ⋯ →「鎖定庫存」一次改一個組合，
-       編輯 popup 的大表格一次改全部。改完寫回 store，再請商品層那張唯讀彙總表重畫。
-       數字規則（鎖定的管道只吃自己那一份、沒鎖定的共用剩下的）一律問 ListingState。 */
-    function bundlesOf() {
-      return (window.ProductsStore && window.ProductsStore.bundlesUsing && product && product.id)
-        ? (window.ProductsStore.bundlesUsing(product.id) || []) : [];
-    }
-    /* 管道清單：單售一條，含這件商品的每個組合包各一條。 */
-    function channelsOf() {
-      return [{ id: 'single', ch: 'single', name: T('stock.channel-single', 'Single sale') }]
-        .concat(bundlesOf().map(function (b) { return { id: b.id, ch: { bundle: b.id }, name: b.name || b.id }; }));
-    }
+    /* 逐選項組合的鎖定（D255／D258）：形狀是 { single: n|null, bundles: { <id>: n|null } }。
+       商品明細只設定 single 這一格；組合包那幾格改在組合包詳情頁設定，本頁只讀不寫。 */
     function lockGet(v, id) {
       var l = v.locks || {};
       var raw = id === 'single' ? l.single : (l.bundles || {})[id];
@@ -2031,8 +1841,87 @@
       if (!v.locks.bundles) v.locks.bundles = {};
       if (id === 'single') v.locks.single = val; else v.locks.bundles[id] = val;
     }
-    function lockedSum(v) { return channelsOf().reduce(function (a, c) { var n = lockGet(v, c.id); return a + (n === null ? 0 : n); }, 0); }
-    function freeOfDraft(v) { return Math.max(0, Number(v.stock || 0) - lockedSum(v)); }
+
+    /* 頁面主表（2026-09-10 · D258）：**單一規格與多選項同一張表**。
+       單一規格＝只有一個選項組合，用商品名當那一列，價格／成本／SKU／鎖定量住在商品層；
+       多選項＝一列一個組合，逐組合各自有值（價格與成本沒填就沿用商品層的值）。
+       兩階層（顏色×尺寸）仍依第一個選項分組。可改的欄位是輸入框，庫存唯讀。 */
+    function moneyInput(field, val, vi) {
+      return '<span class="variant-cell--input"><span class="amount-field">'
+        + '<span class="amount-field__unit"><span class="amount-field__sym">$</span></span>'
+        + '<input class="input amount-field__input" data-vc-input="' + field + '" value="' + esc(val || '') + '"></span></span>';
+    }
+    function textInput(field, val) {
+      return '<span class="variant-cell--input"><input class="input" data-vc-input="' + field + '" value="' + esc(val || '') + '"></span>';
+    }
+    function lockInput(val) {
+      return '<span class="variant-cell--input"><input class="input" type="number" min="0" data-vc-input="locked"'
+        + ' value="' + (val === null || val === undefined ? '' : esc(String(val))) + '"'
+        + ' placeholder="' + esc(T('stock.free', 'Unlocked')) + '" data-i18n-placeholder="stock.free"></span>';
+    }
+    function rowHTML(o) {
+      return '<span class="variant-cell--variant" data-vc="name">' + esc(o.label) + '</span>'
+        + moneyInput('price', o.price, o.vi)
+        + '<span class="variant-cell--stock' + (isLow(o.stock) ? ' variant-cell--stock-low' : '') + '">' + esc(String(o.stock)) + '</span>'
+        + '<span class="variant-cell--ro variant-cell--total" data-vc="total">' + esc(String(o.stock)) + '</span>'
+        + lockInput(o.locked)
+        + '<span class="variant-cell--ro variant-cell--free" data-vc="free">' + esc(String(o.free)) + '</span>'
+        + textInput('sku', o.sku)
+        + moneyInput('cost', o.cost, o.vi)
+        + kebabHTML();
+    }
+    function renderPageTable() {
+      if (!pageTable) return;
+      pageTable.querySelectorAll('.variant-table__row, .variant-table__group').forEach(function (n) { n.remove(); });
+      var L = window.ListingState;
+      if (!product || !L) return;
+      if (product.variant !== 'multiple' || !MODEL.variants.length) {
+        /* 單一規格：整張表只有一列，數字讀商品層的池。 */
+        var total = (product.pool && product.pool.total === 'unlimited') ? '∞' : Number(product.pool ? product.pool.total : 0);
+        var lock = L.lockOf(product, 'single');
+        var free = total === '∞' ? '∞' : Math.max(0, Number(total) - (lock === null ? 0 : lock));
+        var only = document.createElement('div');
+        only.className = 'variant-table__row';
+        only.setAttribute('data-vi', 'single');
+        only.innerHTML = rowHTML({ label: product.name || '—', price: MODEL.price, stock: total, locked: lock, free: free, sku: product.sku || '', cost: MODEL.cost, vi: 'single' });
+        pageTable.appendChild(only);
+      } else {
+        var two = MODEL.variants[0].combo.length >= 2;
+        var lastGroup = null;
+        MODEL.variants.forEach(function (v, vi) {
+          if (two && v.combo[0] !== lastGroup) {
+            lastGroup = v.combo[0];
+            var g = document.createElement('div'); g.className = 'variant-table__group'; g.textContent = lastGroup; pageTable.appendChild(g);
+          }
+          var label = two ? v.combo.slice(1).join(' / ') : v.combo.join(' / ');
+          var lockV = lockGet(v, 'single');
+          var row = document.createElement('div');
+          row.className = 'variant-table__row' + (v.delisted ? ' variant-table__row--delisted' : '');
+          row.setAttribute('data-vi', vi);
+          row.innerHTML = rowHTML({
+            label: label,
+            price: v.price || MODEL.price,
+            stock: v.stock,
+            locked: lockV,
+            free: Math.max(0, Number(v.stock || 0) - (lockV === null ? 0 : lockV)),
+            sku: v.sku,
+            cost: v.cost || MODEL.cost,
+            vi: vi
+          });
+          pageTable.appendChild(row);
+        });
+      }
+      if (window.ztorIcons) window.ztorIcons.applyIcons(pageTable);
+      if (window.applyI18n) window.applyI18n(pageTable);
+    }
+
+    /* ---- 常駐輸入的寫入層（2026-09-10 · D258，取代 2026-09-09 的編輯模式）----
+       表格裡可改的格子平常就是輸入框，打字即寫進 MODEL 與 store（純前端 demo），
+       並把頁面標記成「有未儲存的變更」——真正的收尾是頁面右上那顆既有的「儲存」。
+       這樣就沒有「編輯模式」要進出，也不必分辨改的是鎖定還是價格（參考 Shopify／Webflow）。 */
+    function markDirty() {
+      if (window.pdMarkDirty) window.pdMarkDirty();
+    }
     /* 寫回 store：組合以 comboKey 對應（編輯過選項時可能多出新組合，補進去）。 */
     function syncLocksToStore() {
       if (product) {
@@ -2042,97 +1931,67 @@
         MODEL.variants.forEach(function (v) {
           var t = byKey[comboKey(v.combo)];
           if (!t) { t = { combo: v.combo.slice() }; product.variants.push(t); }
-          t.sku = v.sku; t.stock = v.stock; t.locks = copyLocks(v.locks);
+          t.sku = v.sku; t.stock = v.stock; t.price = v.price; t.cost = v.cost; t.locks = copyLocks(v.locks);
         });
       }
-      if (window.pdRefreshAllocation) window.pdRefreshAllocation();
+      if (window.pdRefreshStock) window.pdRefreshStock();
     }
-
-    /* ---- 鎖定編輯模式（2026-09-09 改版，取代單列彈窗與編輯彈窗裡的大表格）----
-       卡頭「編輯鎖定」＝全部列進編輯態；列尾 ⋯「鎖定庫存」＝只那一列。編輯態的「鎖定」格變成每個管道一格輸入
-       （只有單售時不標管道名），「未鎖定」格即時預覽；任一列鎖過頭就轉紅並停用儲存。
-       草稿（LOCKEDIT.draft）與畫面同步，按儲存才寫回 MODEL 與 store。 */
-    var LOCKEDIT = { on: false, rows: null, draft: null };   /* rows：null＝全部，或 Set(vi) */
-    function inLockEdit(vi) { return LOCKEDIT.on && (LOCKEDIT.rows === null || LOCKEDIT.rows.has(vi)); }
-    function lockBar(show) {
-      var bar = document.querySelector('[data-pd-lock-bar]');
-      if (bar) bar.hidden = !show;
-      var err = document.querySelector('[data-pd-lock-err]'); if (err) err.hidden = true;
-      var save = document.querySelector('[data-pd-lock-save]'); if (save) save.disabled = false;
+    /* 單一規格：這張表只有一列，它的價格／成本／鎖定量住在商品層（不是 variants）。 */
+    function writeSingle(field, raw) {
+      if (!product) return;
+      if (field === 'price') { MODEL.price = raw; product.price = raw; }
+      if (field === 'cost') { MODEL.cost = raw; product.cost = raw; }
+      if (field === 'sku') { MODEL.sku = raw; product.sku = raw; }
+      if (field === 'locked') {
+        if (!product.pool) return;
+        product.pool.locks = product.pool.locks || { single: null, bundles: {} };
+        product.pool.locks.single = raw === '' ? null : Math.max(0, Number(raw) || 0);
+      }
+      if (window.pdRefreshStock) window.pdRefreshStock();
     }
-    function lockEditStart(rows) {
-      if (LOCKEDIT.on && LOCKEDIT.rows === null) return;          /* 已經全開了，單列請求不用再處理 */
-      if (LOCKEDIT.on && rows && LOCKEDIT.rows) { rows.forEach(function (vi) { LOCKEDIT.rows.add(vi); }); renderPageTable(); return; }
-      LOCKEDIT.on = true; LOCKEDIT.rows = rows;
-      LOCKEDIT.draft = MODEL.variants.map(function (v) { return { stock: v.stock, locks: copyLocks(v.locks) }; });
-      renderPageTable(); lockBar(true); lockEditRefresh();
-      var first = pageTable && pageTable.querySelector('[data-le-vi]');
-      if (first) first.focus();
-    }
-    function lockEditStop() {
-      LOCKEDIT.on = false; LOCKEDIT.rows = null; LOCKEDIT.draft = null;
-      renderPageTable(); lockBar(false);
-    }
-    function lockEditSave() {
-      if (!LOCKEDIT.on || !LOCKEDIT.draft) return;
-      var bad = LOCKEDIT.draft.some(function (d, vi) { return inLockEdit(vi) && lockedSum(d) > Number(d.stock || 0); });
-      if (bad) return;
-      LOCKEDIT.draft.forEach(function (d, vi) { if (inLockEdit(vi) && MODEL.variants[vi]) MODEL.variants[vi].locks = copyLocks(d.locks); });
-      syncLocksToStore();
-      lockEditStop();
-    }
-    /* 編輯態的「鎖定」格：每個管道一格輸入。單一管道時不標名稱（整格就是那一個數字）。 */
-    function lockEditCellHTML(vi) {
-      var d = LOCKEDIT.draft[vi], chs = channelsOf();
-      return '<span class="variant-cell--lockedit" data-vc="locked">' + chs.map(function (c) {
-        var lock = lockGet(d, c.id);
-        return '<label class="variant-lock">'
-          + (chs.length > 1 ? '<span class="variant-lock__ch">' + esc(c.name) + '</span>' : '')
-          + '<input class="input" type="number" min="0" data-le-vi="' + vi + '" data-le-ch="' + esc(c.id) + '"'
-          + ' value="' + (lock === null ? '' : esc(String(lock))) + '"'
-          + ' placeholder="' + esc(T('stock.free', 'Unlocked')) + '" data-i18n-placeholder="stock.free"></label>';
-      }).join('') + '</span>';
-    }
-    /* 逐列重算：未鎖定預覽、超額轉紅；任一列超額就停用儲存。 */
-    function lockEditRefresh() {
-      if (!LOCKEDIT.on || !pageTable) return;
-      var bad = false;
-      pageTable.querySelectorAll('.variant-table__row[data-vi]').forEach(function (row) {
-        var vi = Number(row.getAttribute('data-vi'));
-        if (!inLockEdit(vi)) return;
-        var d = LOCKEDIT.draft[vi];
-        var over = lockedSum(d) > Number(d.stock || 0);
-        if (over) bad = true;
-        row.classList.toggle('variant-table__row--error', over);
-        var f = row.querySelector('[data-vc="free"]');
-        if (f) f.textContent = String(Number(d.stock || 0) - lockedSum(d));
-      });
-      var err = document.querySelector('[data-pd-lock-err]'); if (err) err.hidden = !bad;
-      var save = document.querySelector('[data-pd-lock-save]'); if (save) save.disabled = bad;
+    /* 逐列即時重算：未鎖定＝該列庫存 − 鎖定量；鎖過頭整列轉紅（不擋輸入，只標錯）。 */
+    function refreshRow(row) {
+      if (!row) return;
+      var vi = row.getAttribute('data-vi');
+      var stock, locked;
+      if (vi === 'single') {
+        var L = window.ListingState;
+        stock = (product.pool && product.pool.total === 'unlimited') ? Infinity : Number(product.pool ? product.pool.total : 0);
+        locked = L.lockOf(product, 'single');
+      } else {
+        var v = MODEL.variants[Number(vi)];
+        if (!v) return;
+        stock = Number(v.stock || 0);
+        locked = lockGet(v, 'single');
+      }
+      var lockedN = locked === null ? 0 : locked;
+      var free = stock === Infinity ? Infinity : stock - lockedN;
+      var over = free < 0;
+      row.classList.toggle('variant-table__row--error', over);
+      var f = row.querySelector('[data-vc="free"]');
+      if (f) f.textContent = free === Infinity ? '∞' : String(free);
     }
     if (pageTable) {
       pageTable.addEventListener('input', function (e) {
-        var inp = e.target.closest('[data-le-vi]');
-        if (!inp || !LOCKEDIT.on) return;
-        var d = LOCKEDIT.draft[Number(inp.getAttribute('data-le-vi'))];
-        if (!d) return;
+        var inp = e.target.closest('[data-vc-input]');
+        if (!inp) return;
+        var field = inp.getAttribute('data-vc-input');
+        var row = inp.closest('.variant-table__row');
+        var vi = row && row.getAttribute('data-vi');
         var raw = String(inp.value).trim();
-        lockSet(d, inp.getAttribute('data-le-ch'), raw === '' ? null : Math.max(0, Number(raw) || 0));
-        lockEditRefresh();
+        if (vi === 'single') {
+          writeSingle(field, raw);
+        } else {
+          var v = MODEL.variants[Number(vi)];
+          if (!v) return;
+          if (field === 'locked') lockSet(v, 'single', raw === '' ? null : Math.max(0, Number(raw) || 0));
+          else v[field] = raw;
+          syncLocksToStore();
+        }
+        refreshRow(row);
+        markDirty();
       });
     }
-    document.addEventListener('click', function (e) {
-      if (!product || product.variant !== 'multiple') return;   /* 單一規格的鎖定編輯由管道分配那支腳本接手 */
-      var act = e.target.closest('[data-variant-lock]');
-      if (act) {
-        var row = act.closest('.variant-table__row');
-        if (row && pageTable && pageTable.contains(row)) lockEditStart(new Set([Number(row.getAttribute('data-vi'))]));
-        return;
-      }
-      if (e.target.closest('[data-pd-lock-edit]')) { lockEditStart(null); return; }
-      if (e.target.closest('[data-pd-lock-cancel]')) { lockEditStop(); return; }
-      if (e.target.closest('[data-pd-lock-save]')) { lockEditSave(); return; }
-    });
 
     /* 商品選項卡的唯讀摘要（DS kv 列）：一個選項一列，值用頓號串。 */
     function renderOptionsSummary() {
@@ -2199,7 +2058,6 @@
     function refreshDraft() { renderOptEditor(DRAFT); renderEditCombos(DRAFT); }
 
     function openEdit() {
-      if (LOCKEDIT.on) lockEditStop();   /* 兩種編輯不同時開：選項一改組合就重算，鎖定草稿會對不上 */
       DRAFT = copyModel({ price: MODEL.price, cost: MODEL.cost, options: MODEL.options, variants: MODEL.variants });
       var ep = document.querySelector('[data-pd-edit-price]'), ec = document.querySelector('[data-pd-edit-cost]');
       if (ep) ep.value = MODEL.price || '';
@@ -2222,9 +2080,6 @@
       MODEL = DRAFT; DRAFT = null;
       syncLocksToStore();   /* 鎖定量寫回 store，商品層那張唯讀彙總表跟著重畫 */
       // 單規格：價格/成本回填頁面唯讀讀數（多規格的價格在表內，由 renderPageTable 帶）
-      var pr = document.querySelector('[data-pd-price-ro]'), co = document.querySelector('[data-pd-cost-ro]');
-      if (pr) pr.textContent = money(MODEL.price);
-      if (co) co.textContent = money(MODEL.cost);
       renderPageTable();
       renderOptionsSummary();
       close('[data-pd-edit-modal]');
@@ -2291,6 +2146,24 @@
     /* 初始渲染頁面主表（多規格才有列；單規格 variants 空、表格隱藏） */
     renderPageTable();
     renderOptionsSummary();
+    document.addEventListener('pd:product', function (e) {
+      if (!e.detail || e.detail === product) return;
+      product = e.detail;
+      MODEL = copyModel(product);
+      if (!MODEL.variants.length && MODEL.options.length) regen(MODEL);
+      renderPageTable();
+      renderOptionsSummary();
+    });
+  })();
+</script>
+<script>
+  /* 未儲存提示（2026-09-10 · D258）：表格改成常駐輸入之後，收尾靠頁面右上那顆既有的「儲存」，
+     所以它要看得出「有東西還沒存」。打字即標記，按儲存就收起來（純前端 demo，不寫後端）。 */
+  (function () {
+    var chip = document.querySelector('[data-pd-dirty]');
+    var save = document.querySelector('[data-pd-save]');
+    window.pdMarkDirty = function () { if (chip) chip.hidden = false; };
+    if (save) save.addEventListener('click', function () { if (chip) chip.hidden = true; });
   })();
 </script>
 <script src="js/devtools.js?v=r2.2"></script>

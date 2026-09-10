@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>當前庫存卡 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-readout.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* ============================================================
+     lab-stock-card — 商品明細「當前庫存」卡的設計探索頁（2026-09-09 · 第二版）
+
+     第一版（三個候選）只比了「編輯入口放哪」，使用者裁示：(1) 值一律吃 DS token、
+     (2) 先看外面怎麼做、(3) 樣式要更多、要重新規劃。這一版照做——
+
+     ── 參考（2026-09-09 查，Mobbin web ＋ 兩篇 inline-edit 指南）─────────
+       Shopify   逐選項組合表的價格／庫存／SKU **平常就是輸入框**，沒有編輯模式；
+                 選項本身在表格上方成組列出，每組自己一顆 Edit。
+       Webflow   同型表格的深色版：欄位唯讀、選項在上方成組，資訊密度接近本站。
+       Etsy      列內只放一個可改欄位（價格）＋列尾一個開關（上架與否），其餘唯讀。
+       Salesforce 表格上方「N 個變體」＋批次操作下拉；改過的格子留一個 dirty 底色。
+       Whop      深色表格：欄頭可排序、列內狀態用 chip、右上一顆 Edit 管整張表。
+       Fresha    庫存報表把「合計」做成表格的第一列，不另外做數字卡。
+       Deel      資產總覽用一條堆疊長條講「分佈在哪裡」，底下才是明細表。
+       PatternFly / Cloudscape / Liferay：逐列編輯（鉛筆 → 該列變輸入、列尾換成 ✓／✕）
+                 與常駐可編輯兩派的取捨；共識是「改的欄位少就 inline，欄位多就開頁」。
+
+     ── 這一版怎麼排 ────────────────────────────────────────
+     把問題拆成兩條互不相干的軸，各自挑一個就好：
+       軸一 · 上半的摘要怎麼講（S1／S2／S3）
+       軸二 · 編輯怎麼進（E1／E2／E3／E4）
+     每個候選單一規格與多選項各做一次（只有一種模式差異時只做多選項那張）。
+
+     ── 邊界（刻意的自我約束）────────────────────────────────
+     卡片、按鈕、數字列、管道列、逐選項組合表、chip、checkbox 全部用真的元件。
+     本頁自有的規則一律 lab- 前綴，**所有數值一律吃 DS token**（間距 --sp-*、
+     字級 --fs-*、圓角 --radius-*、顏色 --chart-*／--border／--ztu-film／
+     --muted-foreground），不寫任何裸值、不覆寫也不重新定義既有 class 與 token。
+     ============================================================ */
+
+  .lab [hidden] { display: none !important; }
+  .lab-cards { display: grid; gap: var(--sp-24); margin-top: var(--sp-24); }
+  .lab-card__head { display: flex; align-items: flex-start; justify-content: flex-start; gap: var(--sp-12); flex-wrap: wrap; }
+  .lab-card__code {
+    flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: var(--sp-32); height: var(--sp-24); padding: 0 var(--sp-8);
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    font-family: var(--font-ui); font-size: var(--fs-12); color: var(--foreground);
+  }
+  .lab-card__name { font-family: var(--font-display); font-size: var(--fs-16); margin: 0; }
+  .lab-card__pos { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-2) 0 0; }
+  .lab-card__src { font-size: var(--fs-12); color: var(--faint-ink); margin: var(--sp-4) 0 0; }
+  .lab-demo { margin-top: var(--sp-20); }
+  .lab-demo__cap { font-size: var(--fs-12); color: var(--muted-foreground); margin: 0 0 var(--sp-8); }
+  .lab-demo + .lab-demo { margin-top: var(--sp-28); }
+  .lab-note { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-16) 0 0; }
+  .lab-note b { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-diag { margin: var(--sp-12) 0 0; padding-left: var(--sp-20); font-size: var(--fs-14); line-height: var(--lh-relaxed, 1.7); }
+  .lab-diag li + li { margin-top: var(--sp-8); }
+  .lab-diag b { font-weight: var(--fw-medium); }
+  .lab-axis { margin-top: var(--sp-40); }
+  .lab-axis__title { font-family: var(--font-display); font-size: var(--fs-20); margin: 0; }
+  .lab-axis__sub { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-6) 0 0; }
+  /* 示範卡固定在產品頁的實際可用寬度，候選之間的差異才不會是「lab 頁比較寬」造成的。 */
+  .lab-stage { max-width: var(--lab-stage-w); }
+  .lab { --lab-stage-w: 760px; }
+
+  /* ── S2 的分配長條（參考 Deel）──────────────────────────────
+     一條看完「這些庫存分給誰」，取代「已鎖定＋未鎖定」兩個互補的數字。
+     段落顏色吃圖表色票（--chart-*），未鎖定段用薄膜色＝「還沒分出去」。 */
+  .lab-alloc { display: flex; gap: var(--sp-2); height: var(--sp-8); border-radius: var(--radius-pill); overflow: hidden; margin: var(--sp-4) 0 var(--sp-12); }
+  .lab-alloc__seg { height: 100%; }
+  .lab-alloc__seg--single { background: var(--chart-2); }
+  .lab-alloc__seg--bundle { background: var(--chart-5); }
+  .lab-alloc__seg--free { background: var(--ztu-film); }
+  .lab-legend { display: flex; flex-wrap: wrap; gap: var(--sp-16); font-family: var(--font-ui); font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-legend__item { display: inline-flex; align-items: center; gap: var(--sp-6); }
+  .lab-legend__dot { width: var(--sp-8); height: var(--sp-8); border-radius: var(--radius-pill); }
+  .lab-legend__dot--single { background: var(--chart-2); }
+  .lab-legend__dot--bundle { background: var(--chart-5); }
+  .lab-legend__dot--free { background: var(--ztu-film); }
+  .lab-legend__v { color: var(--foreground); }
+
+  /* ── 表面層級修正（2026-09-09 使用者裁示「表格的顏色必須依照 DS 的層級設計，
+     現在是實色，實色不是目前的規則」）────────────────────────────────
+     現況 variant-builder.css：表頭 `background: var(--muted)`、列 `background: var(--card)`，
+     兩個都是實色，疊在已經是玻璃的卡（L1）上等於再蓋一層不透明面，違反 ztorUI 的層級語彙
+     （L2 用 --ztu-film 薄膜、L3 靠 1px 線；見 nest.css 與 Q24／Q71）。
+     本頁先用 lab- 版驗證正確的做法：**列一律透明、分隔靠既有的 hairline，表頭用薄膜**。
+     定案後這兩行要改在 variant-builder.css 本體（會同時影響建立商品頁，需一起驗）。 */
+  .lab .variant-table__head { background: var(--ztu-film); }
+  .lab .variant-table__row { background: transparent; }
+  .lab .salloc__row--pool { background: transparent; }
+
+  /* ── S3 的合計列（參考 Fresha）：同一張表的第一列，欄位對齊、字重高一階 ── */
+  .lab-total .variant-cell--variant,
+  .lab-total .variant-cell--ro,
+  .lab-total .variant-cell--stock { font-weight: var(--fw-medium); }
+  .lab-total { border-bottom: 1px solid var(--border); }
+
+  /* ── E4 的表格工具列（參考 Salesforce／Whop）───────────────── */
+  .lab-tabletools { display: flex; align-items: center; gap: var(--sp-8); margin: var(--sp-20) 0 var(--sp-10); flex-wrap: wrap; }
+  .lab-tabletools__label { font-family: var(--font-ui); font-size: var(--fs-13); color: var(--foreground); }
+  .lab-tabletools__acts { margin-left: auto; display: flex; gap: var(--sp-4); }
+  /* E4 的選取欄：列首多一格核取方塊，欄軌由本頁覆寫（只作用在掛了 lab-pick 的表） */
+  .lab-pick .variant-table__head,
+  .lab-pick .variant-table__row {
+    grid-template-columns: var(--sp-20) minmax(0, 0.9fr) minmax(0, 1fr) 78px 78px 78px minmax(0, 1.5fr) minmax(0, 0.9fr) 34px;
+  }
+
+  /* ── E1 的常駐輸入（參考 Shopify）：可改的格子平常就是輸入框 ─────
+     dirty 提示沿用 chip；本頁不模擬頁面頂部的儲存列，只在卡頭掛一顆 chip 示意。 */
+  .lab-inline .input { min-width: 0; width: 100%; }
+  .lab-inline .variant-table__row .input { height: var(--control-h-xs); }
+  /* 常駐輸入要重新分配欄寬：輸入框有邊框與內距，吃掉的橫向空間比純文字多。
+     數字欄由 78 收到 64（三欄共讓出 42px），讓給價格與單件成本。這是 E1 的已知代價之一。 */
+  .lab-inline .variant-table__head,
+  .lab-inline .variant-table__row {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 64px 64px 64px minmax(0, 1.2fr) minmax(0, 1.1fr) 34px;
+  }
+  /* E2／E3 的編輯態同理——只要表裡有一列進了編輯態，整張表就要換成輸入框版的欄軌，
+     不然欄位加起來會比卡片寬（實測溢出 18px）。 */
+  .lab .variant-table:has(.variant-table__row--editing) .variant-table__head,
+  .lab .variant-table:has(.variant-table__row--editing) .variant-table__row {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 64px 64px 64px minmax(0, 1.2fr) minmax(0, 1.1fr) 34px;
+  }
+  /* 管道列的鎖定格同理：amount-field 裡的 input 預設有最小寬，不讓它縮就會頂出格子外。 */
+  .lab .salloc .amount-field__input { min-width: 0; width: 100%; }
+  /* 表格裡的金額欄位（$ 前綴）：variant-builder 的 `.variant-table .input { padding: 0 9px }`
+     蓋掉了 amount-field 給 input 的左內距，34px 寬的 $ 方塊就直接壓在數字上（實測只看得到最後一位）。
+     這是 E1 落地時要在元件層補的一條規則，本頁先用 lab- 版驗證外觀。 */
+  .lab-inline .amount-field .input { padding-left: var(--sp-40); }
+
+  /* ── U · 單選項與多選項同一張表（母子列）──────────────────────
+     母列＝選項組合（單一規格就只有一列），子列＝販售管道。逐管道的鎖定量因此變成
+     「一列一個管道」，不再是塞在同一格裡上下疊的兩個輸入框——欄位全部維持橫向。
+     視覺沿用站上既有的 row-disclosure：展開時整組坐進一塊 --ztu-film 薄膜。
+     本頁先用 lab- 版驗證欄軌與層級，正式做要接真的 row-disclosure 元件。 */
+  .lab-uni .variant-table__head,
+  .lab-uni .variant-table__row {
+    grid-template-columns: var(--sp-24) minmax(0, 0.9fr) minmax(0, 1.1fr) 64px 64px 64px minmax(0, 1.1fr) minmax(0, 1fr) 34px;
+  }
+  .lab-uni__toggle { display: inline-flex; align-items: center; justify-content: center; color: var(--muted-foreground); }
+  .lab-uni__group { background: var(--ztu-film); }
+  /* 子列前的說明列：只有一句話，跨到最後一欄，字級退到 --fs-11。 */
+  .lab-uni__caption .lab-uni__captiontext {
+    grid-column: 2 / -1;
+    font-family: var(--font-ui); font-size: var(--fs-11); color: var(--muted-foreground);
+  }
+  /* 組合包列在名字後面補一個次要標籤，讀得出「這一列是一個組合包」。 */
+  .lab-uni__tag {
+    margin-left: var(--sp-6);
+    font-family: var(--font-ui); font-size: var(--fs-11); color: var(--faint-ink);
+  }
+  /* 子列的管道名跨到價格欄（子列沒有價格），組合包的名字才放得下、不用截斷。 */
+  .lab-uni__child .variant-cell--variant { color: var(--muted-foreground); padding-left: var(--sp-8); grid-column: 2 / span 2; }
+  .lab-uni__child .lab-uni__sell { color: var(--muted-foreground); }
+
+  /* ── B · 組合包詳情頁的成員分配：成員列可展開到選項組合 ────────── */
+  .lab-bundle .lab-uni__child .salloc__name { padding-left: var(--sp-24); color: var(--muted-foreground); }
+  .lab-bundle .lab-uni__toggle { color: var(--muted-foreground); }
+
+  /* ── E2 的逐列編輯（參考 PatternFly／Turo）：列尾換成確認／取消兩顆 ── */
+  .lab-rowact { display: inline-flex; gap: var(--sp-2); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page lab">
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title">當前庫存卡（設計探索 · 第二版）</h1>
+          <p class="page-intro__sub">比較用的探索頁，不是產品頁，沒有任何既有頁面被改動。第一版只比了「編輯入口放哪」；這一版先看了 Shopify、Webflow、Etsy、Salesforce、Whop、Fresha、Deel 的同型畫面與兩篇 inline-edit 指南，再把問題拆成兩條互不相干的軸——<b>上半的摘要怎麼講</b>、<b>編輯怎麼進</b>——各挑一個即可組合。本頁所有自訂樣式一律吃 DS token（間距、字級、圓角、圖表色票），不寫裸值。</p>
+        </div>
+      </div>
+
+      <section class="card">
+        <div class="card__head"><h2 class="card__title">要解的三個問題</h2></div>
+        <ol class="lab-diag">
+          <li><b>編輯商品沒有入口</b>：價格、SKU、單件成本三欄就在這張卡的表格裡，改它們卻要捲到別張卡。</li>
+          <li><b>動作平權</b>：補貨紀錄／編輯鎖定／補貨三顆同權重的小按鈕，看不出哪個每週要做、哪個偶爾查。</li>
+          <li><b>數字重複</b>：已鎖定＋未鎖定＝目前在庫（構造上必然），單售可售又在底下的管道列再寫一次。</li>
+        </ol>
+        <p class="lab-note"><b>外面怎麼做</b>：Shopify 與 Webflow 都不做「編輯模式」——逐選項組合表的可改欄位平常就是輸入框，選項本身在表格上方成組列出、每組自己一顆 Edit。Salesforce 與 Whop 在表格上方放批次操作與篩選。Fresha 把「合計」做成表格的第一列，不另外做數字卡。Deel 用一條堆疊長條講分佈，底下才是明細。</p>
+      </section>
+
+      <div class="lab-axis">
+        <h2 class="lab-axis__title">先回答一個問題：兩種商品能不能用同一張表？</h2>
+        <p class="lab-axis__sub">可以。而且這是三個問題裡最值得先解的——同一個改法一次解掉「鎖定欄上下疊」與「兩種商品兩套版面」。以下是做法與代價。</p>
+      </div>
+      <div class="lab-cards">
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">U</span>
+            <div>
+              <h2 class="lab-card__name">單選項與多選項同一張表（一列一個選項組合）</h2>
+              <p class="lab-card__pos">一列一個選項組合——單一規格就只有一列（用商品名）。商品詳情只顯示單售這一個管道（2026-09-09 使用者裁示），所以「鎖給單售」就是一格輸入，欄位全部橫向、每列單行、沒有展開。</p>
+              <p class="lab-card__src">參考：表面層級沿用 nest／Q71 的薄膜語彙；欄位常駐可編沿用 Shopify／Webflow</p>
+            </div>
+          </div>
+          <div class="lab-demo lab-stage"><p class="lab-demo__cap">單一規格（整張表只有一列）</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">當前庫存</h3>
+                  <p class="form-section__sub">目前還剩多少。可改的欄位直接改，改完按頁面右上的儲存。</p>
+                </div>
+                <div class="form-section__head-actions"><span class="chip chip--static">未儲存的變更</span><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="history" class="ztor-icon"></i><span>補貨紀錄</span></button><button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button></div>
+              </div><div class="stat-row"><div class="stat"><div class="stat__label">目前在庫</div><div class="stat__value">3</div></div><div class="stat"><div class="stat__label">未鎖定</div><div class="stat__value">2</div></div><div class="stat"><div class="stat__label">單售可售</div><div class="stat__value">3</div></div></div><div class="lab-alloc"><span class="lab-alloc__seg lab-alloc__seg--single" style="flex:1"></span><span class="lab-alloc__seg lab-alloc__seg--free" style="flex:2"></span></div>
+              <div class="lab-legend">
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--single"></span>鎖給單售 <span class="lab-legend__v">1</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--free"></span>未鎖定 <span class="lab-legend__v">2</span></span>
+              </div><div class="variant-table-wrap variant-table-wrap--menu"><div class="variant-table variant-table--fluid lab-inline lab-uni"><div class="variant-table__head"><span></span><span>選項組合</span><span>價格</span><span>庫存</span><span>鎖給單售</span><span>未鎖定</span><span>SKU</span><span>單件成本</span><span></span></div><div class="variant-table__row"><span></span><span class="variant-cell--variant">26MS Socks</span><span class="variant-cell--lockedit"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" value="6.88"></span></span><span class="variant-cell--stock">3</span><span class="variant-cell--lockedit"><input class="input" type="number" value="1" placeholder="未鎖定"></span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--lockedit"><input class="input" value="SOCKS-F"></span><span class="variant-cell--lockedit"><input class="input" value="2.10"></span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div></div></div></section></div><div class="lab-demo lab-stage"><p class="lab-demo__cap">多選項（一列一個選項組合，結構與上面完全一樣）</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">當前庫存</h3>
+                  <p class="form-section__sub">每個選項組合各自的庫存。可改的欄位直接改，改完按頁面右上的儲存。</p>
+                </div>
+                <div class="form-section__head-actions"><span class="chip chip--static">未儲存的變更</span><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="history" class="ztor-icon"></i><span>補貨紀錄</span></button><button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button></div>
+              </div><div class="stat-row"><div class="stat"><div class="stat__label">目前在庫</div><div class="stat__value">35</div></div><div class="stat"><div class="stat__label">未鎖定</div><div class="stat__value">25</div></div><div class="stat"><div class="stat__label">單售可售</div><div class="stat__value">35</div></div></div><div class="lab-alloc"><span class="lab-alloc__seg lab-alloc__seg--single" style="flex:10"></span><span class="lab-alloc__seg lab-alloc__seg--free" style="flex:25"></span></div>
+              <div class="lab-legend">
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--single"></span>鎖給單售 <span class="lab-legend__v">10</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--free"></span>未鎖定 <span class="lab-legend__v">25</span></span>
+              </div><div class="variant-table-wrap variant-table-wrap--menu"><div class="variant-table variant-table--fluid lab-inline lab-uni"><div class="variant-table__head"><span></span><span>選項組合</span><span>價格</span><span>庫存</span><span>鎖給單售</span><span>未鎖定</span><span>SKU</span><span>單件成本</span><span></span></div><div class="variant-table__row"><span></span><span class="variant-cell--variant">S</span><span class="variant-cell--lockedit"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" value="32.00"></span></span><span class="variant-cell--stock variant-cell--stock-low">2</span><span class="variant-cell--lockedit"><input class="input" type="number" value="0" placeholder="未鎖定"></span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--lockedit"><input class="input" value="TEE-S"></span><span class="variant-cell--lockedit"><input class="input" value="11.00"></span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div><div class="variant-table__row"><span></span><span class="variant-cell--variant">M</span><span class="variant-cell--lockedit"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" value="32.00"></span></span><span class="variant-cell--stock">18</span><span class="variant-cell--lockedit"><input class="input" type="number" value="10" placeholder="未鎖定"></span><span class="variant-cell--ro variant-cell--free">8</span><span class="variant-cell--lockedit"><input class="input" value="TEE-M"></span><span class="variant-cell--lockedit"><input class="input" value="11.00"></span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div><div class="variant-table__row"><span></span><span class="variant-cell--variant">L</span><span class="variant-cell--lockedit"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" value="32.00"></span></span><span class="variant-cell--stock">15</span><span class="variant-cell--lockedit"><input class="input" type="number" value="0" placeholder="未鎖定"></span><span class="variant-cell--ro variant-cell--free">15</span><span class="variant-cell--lockedit"><input class="input" value="TEE-L"></span><span class="variant-cell--lockedit"><input class="input" value="11.00"></span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div></div></div></section></div>
+          <p class="lab-note"><b>取捨</b>：兩種商品完全同一張表——單一規格只是「只有一個選項組合」，不再是另一套版面；每列單行、欄位全橫向，沒有展開也沒有上下疊的格子。<br><b>兩件要你裁決的事</b>：<b>(1)</b> 組合包的分配退出這張卡之後，多選項商品「M 號鎖 5 件給四件組」要改在組合包那一頁設定——這與 D255（多選項的組合包鎖定在商品頁可編）相反，要回寫規格。<b>(2)</b> 這件商品如果沒有被任何組合包收，「鎖給單售」實際上不影響任何事（鎖或不鎖，單售都拿得到全部庫存）——那種商品要不要直接不顯示這兩欄？我建議要，多數商品因此少兩欄、更乾淨。</p>
+        </section>      </div>
+
+      <div class="lab-axis">
+        <h2 class="lab-axis__title">配套：組合包的分配長什麼樣</h2>
+        <p class="lab-axis__sub">商品詳情只顯示單售之後，「哪個組合包拿走幾件」回到組合包自己的詳情頁（站上已有 bundle-detail 的成員分配表，規格 §7.14／D241 原本也是這樣寫）。缺的是成員為多選項商品時要能指定選項組合。</p>
+      </div>
+      <div class="lab-cards">
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">B</span>
+            <div>
+              <h2 class="lab-card__name">組合包詳情頁 · 成員分配（多選項成員可展開到選項組合）</h2>
+              <p class="lab-card__pos">一列一個成員；成員是多選項商品時可以展開，逐選項組合填「鎖給本組合」。單一規格成員維持一列。末列仍是組合可售量＝各成員取最小值。</p>
+              <p class="lab-card__src">參考：站上既有的 salloc--bundle（bundle-detail 銷售設定）＋ 本頁 U 候選拆下來的母子列</p>
+            </div>
+          </div>
+          <div class="lab-demo lab-stage"><p class="lab-demo__cap">組合包詳情頁的銷售設定</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">庫存</h3>
+                  <p class="form-section__sub">設定這個組合從各成員身上鎖走幾件，或與成員的其他管道共用未鎖定的量。</p>
+                </div>
+                <div class="form-section__head-actions"></div>
+              </div><div class="salloc salloc--bundle lab-bundle"><div class="salloc__row salloc__row--head"><span></span><span style="text-align:right">未鎖定</span><span>鎖給本組合</span><span style="text-align:right">可售</span></div><div class="salloc__row "><span class="salloc__name"><i data-lucide="chevron-down" class="ztor-icon lab-uni__toggle"></i> 26MS T-Shirt (白)<span class="salloc__sub">多選項 · 3 個組合</span></span><span class="salloc__qty salloc__qty--muted">25</span><span></span><span class="salloc__qty">10</span></div><div class="lab-uni__group"><div class="salloc__row lab-uni__child"><span class="salloc__name">S</span><span class="salloc__qty salloc__qty--muted">2</span><span class="salloc__lock"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" value="0"><span class="amount-field__unit">件</span></span></span><span class="salloc__qty">0</span></div><div class="salloc__row lab-uni__child"><span class="salloc__name">M</span><span class="salloc__qty salloc__qty--muted">8</span><span class="salloc__lock"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" value="10"><span class="amount-field__unit">件</span></span></span><span class="salloc__qty">10</span></div><div class="salloc__row lab-uni__child"><span class="salloc__name">L</span><span class="salloc__qty salloc__qty--muted">15</span><span class="salloc__lock"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" value="0"><span class="amount-field__unit">件</span></span></span><span class="salloc__qty">0</span></div></div><div class="salloc__row "><span class="salloc__name"><span style="display:inline-block;width:var(--sp-16)"></span>祝你好命 老帽<span class="salloc__sub">單一規格</span></span><span class="salloc__qty salloc__qty--muted">12</span><span class="salloc__lock"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" value="10"><span class="amount-field__unit">件</span></span></span><span class="salloc__qty">10</span></div><div class="salloc__row salloc__row--free"><span class="salloc__name">組合可售量<span class="salloc__sub">＝各成員在本組合的可售量取最小值</span></span><span></span><span></span><span class="salloc__qty">10</span></div></div></section></div>
+          <p class="lab-note"><b>為什麼放這裡</b>：要鎖的是「這個組合要從那件商品拿走幾件」，站在組合包這一邊問才問得完整（一次看得到全部成員、也才算得出組合可售量＝取最小值）。站在商品那一邊只看得到片段。<b>要補的</b>：成員是多選項商品時展開到選項組合，這一層目前站上與規格都還沒有——就是 D255 想解、但放錯地方的那件事。</p>
+        </section>      </div>
+
+      <div class="lab-axis">
+        <h2 class="lab-axis__title">軸一 · 上半的摘要怎麼講</h2>
+        <p class="lab-axis__sub">同一組數字（在庫 3、單售鎖 1、組合包鎖 1、未鎖定 1）三種講法。挑一個。</p>
+      </div>
+      <div class="lab-cards">
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">S1</span>
+            <div>
+              <h2 class="lab-card__name">四格數字列（現況）</h2>
+              <p class="lab-card__pos">目前在庫／已鎖定／未鎖定／單售可售，四格並排。</p>
+              <p class="lab-card__src">參考：本站現況</p>
+            </div>
+          </div>
+          <div class="lab-demo lab-stage"><p class="lab-demo__cap">單一規格</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">當前庫存</h3>
+                  <p class="form-section__sub">目前還剩多少。</p>
+                </div>
+                <div class="form-section__head-actions"><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="history" class="ztor-icon"></i><span>補貨紀錄</span></button><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="lock" class="ztor-icon"></i><span>編輯鎖定</span></button><button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button></div>
+              </div><div class="stat-row"><div class="stat"><div class="stat__label">目前在庫</div><div class="stat__value">3</div></div><div class="stat"><div class="stat__label">已鎖定</div><div class="stat__value">2</div></div><div class="stat"><div class="stat__label">未鎖定</div><div class="stat__value">1</div><div class="stat__meta">1 件未鎖定，單售與組合包都拿不到</div></div><div class="stat"><div class="stat__label">單售可售</div><div class="stat__value">1</div></div></div><div class="field" style="margin-bottom:0">
+                <div class="salloc">
+                  <div class="salloc__row salloc__row--head"><span></span><span>鎖定量</span><span style="text-align:right">可售</span></div>
+                  <div class="salloc__row"><span class="salloc__name">單售</span><span class="salloc__lock"><span class="amount-field amount-field--readonly amount-field--suffix"><input class="input amount-field__input" readonly value="1"><span class="amount-field__unit">件</span></span></span><span class="salloc__qty">1</span></div><div class="salloc__row"><span class="salloc__name">九龍夜行 入門組合<span class="salloc__sub">組合包</span></span><span class="salloc__lock"><span class="amount-field amount-field--readonly amount-field--suffix"><input class="input amount-field__input" readonly value="1"><span class="amount-field__unit">件</span></span></span><span class="salloc__qty">1</span></div><div class="salloc__row salloc__row--free"><span class="salloc__name">未鎖定</span><span class="salloc__qty salloc__qty--muted">1</span></div>
+                </div>
+                <div class="field__hint">補貨會補進未鎖定的部分；已鎖定的要再鎖一次才能繼續賣</div>
+              </div></section></div><div class="lab-demo lab-stage"><p class="lab-demo__cap">多選項</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">當前庫存</h3>
+                  <p class="form-section__sub">每個選項組合各自的庫存。</p>
+                </div>
+                <div class="form-section__head-actions"><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="history" class="ztor-icon"></i><span>補貨紀錄</span></button><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="lock" class="ztor-icon"></i><span>編輯鎖定</span></button><button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button></div>
+              </div><div class="stat-row"><div class="stat"><div class="stat__label">目前在庫</div><div class="stat__value">35</div></div><div class="stat"><div class="stat__label">已鎖定</div><div class="stat__value">15</div></div><div class="stat"><div class="stat__label">未鎖定</div><div class="stat__value">20</div></div><div class="stat"><div class="stat__label">單售可售</div><div class="stat__value">30</div></div></div><div class="variant-table-wrap variant-table-wrap--menu">
+                <div class="variant-table variant-table--fluid">
+                  <div class="variant-table__head"><span>選項組合</span><span>價格</span><span>庫存</span><span>鎖定</span><span>未鎖定</span><span>SKU</span><span>單件成本</span><span></span></div>
+                  <div class="variant-table__row"><span class="variant-cell--variant">S</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock variant-cell--stock-low">2</span><span class="variant-cell--ro">0</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro">TEE-S</span><span class="variant-cell--ro">$11.00</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯這一列</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div><div class="variant-table__row"><span class="variant-cell--variant">M</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock">18</span><span class="variant-cell--ro">10</span><span class="variant-cell--ro variant-cell--free">8</span><span class="variant-cell--ro">TEE-M</span><span class="variant-cell--ro">$11.00</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯這一列</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div><div class="variant-table__row"><span class="variant-cell--variant">L</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock">15</span><span class="variant-cell--ro">5</span><span class="variant-cell--ro variant-cell--free">10</span><span class="variant-cell--ro">TEE-L</span><span class="variant-cell--ro">$11.00</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯這一列</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div>
+                </div>
+              </div></section></div>
+          <p class="lab-note"><b>取捨</b>：四個數字都攤開、不用心算。但「已鎖定＋未鎖定＝目前在庫」是構造上必然的重複，三格裡有一格永遠是另外兩格的差；單售可售又在底下的表再寫一次。</p>
+        </section>
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">S2</span>
+            <div>
+              <h2 class="lab-card__name">三格數字＋一條分配長條</h2>
+              <p class="lab-card__pos">數字收成三格（在庫／未鎖定／單售可售），底下一條堆疊長條講「這些庫存分給誰」，圖例帶數字。</p>
+              <p class="lab-card__src">參考：Deel（資產總覽用一條堆疊長條講分佈，底下才是明細表）</p>
+            </div>
+          </div>
+          <div class="lab-demo lab-stage"><p class="lab-demo__cap">單一規格</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">當前庫存</h3>
+                  <p class="form-section__sub">目前還剩多少。</p>
+                </div>
+                <div class="form-section__head-actions"><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="history" class="ztor-icon"></i><span>補貨紀錄</span></button><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="lock" class="ztor-icon"></i><span>編輯鎖定</span></button><button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button></div>
+              </div><div class="stat-row"><div class="stat"><div class="stat__label">目前在庫</div><div class="stat__value">3</div></div><div class="stat"><div class="stat__label">未鎖定</div><div class="stat__value">1</div><div class="stat__meta">1 件未鎖定，單售與組合包都拿不到</div></div><div class="stat"><div class="stat__label">單售可售</div><div class="stat__value">1</div></div></div><div class="lab-alloc"><span class="lab-alloc__seg lab-alloc__seg--single" style="flex:1"></span><span class="lab-alloc__seg lab-alloc__seg--bundle" style="flex:1"></span><span class="lab-alloc__seg lab-alloc__seg--free" style="flex:1"></span></div>
+              <div class="lab-legend">
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--single"></span>單售鎖定 <span class="lab-legend__v">1</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--bundle"></span>九龍夜行 入門組合 <span class="lab-legend__v">1</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--free"></span>未鎖定 <span class="lab-legend__v">1</span></span>
+              </div><div class="field" style="margin-bottom:0">
+                <div class="salloc">
+                  <div class="salloc__row salloc__row--head"><span></span><span>鎖定量</span><span style="text-align:right">可售</span></div>
+                  <div class="salloc__row"><span class="salloc__name">單售</span><span class="salloc__lock"><span class="amount-field amount-field--readonly amount-field--suffix"><input class="input amount-field__input" readonly value="1"><span class="amount-field__unit">件</span></span></span><span class="salloc__qty">1</span></div><div class="salloc__row"><span class="salloc__name">九龍夜行 入門組合<span class="salloc__sub">組合包</span></span><span class="salloc__lock"><span class="amount-field amount-field--readonly amount-field--suffix"><input class="input amount-field__input" readonly value="1"><span class="amount-field__unit">件</span></span></span><span class="salloc__qty">1</span></div><div class="salloc__row salloc__row--free"><span class="salloc__name">未鎖定</span><span class="salloc__qty salloc__qty--muted">1</span></div>
+                </div>
+                <div class="field__hint">補貨會補進未鎖定的部分；已鎖定的要再鎖一次才能繼續賣</div>
+              </div></section></div><div class="lab-demo lab-stage"><p class="lab-demo__cap">多選項</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">當前庫存</h3>
+                  <p class="form-section__sub">每個選項組合各自的庫存。</p>
+                </div>
+                <div class="form-section__head-actions"><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="history" class="ztor-icon"></i><span>補貨紀錄</span></button><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="lock" class="ztor-icon"></i><span>編輯鎖定</span></button><button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button></div>
+              </div><div class="stat-row"><div class="stat"><div class="stat__label">目前在庫</div><div class="stat__value">35</div></div><div class="stat"><div class="stat__label">未鎖定</div><div class="stat__value">20</div></div><div class="stat"><div class="stat__label">單售可售</div><div class="stat__value">30</div></div></div><div class="lab-alloc"><span class="lab-alloc__seg lab-alloc__seg--single" style="flex:10"></span><span class="lab-alloc__seg lab-alloc__seg--bundle" style="flex:5"></span><span class="lab-alloc__seg lab-alloc__seg--free" style="flex:20"></span></div>
+              <div class="lab-legend">
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--single"></span>單售鎖定 <span class="lab-legend__v">10</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--bundle"></span>九龍夜行 入門組合 <span class="lab-legend__v">5</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--free"></span>未鎖定 <span class="lab-legend__v">20</span></span>
+              </div><div class="variant-table-wrap variant-table-wrap--menu">
+                <div class="variant-table variant-table--fluid">
+                  <div class="variant-table__head"><span>選項組合</span><span>價格</span><span>庫存</span><span>鎖定</span><span>未鎖定</span><span>SKU</span><span>單件成本</span><span></span></div>
+                  <div class="variant-table__row"><span class="variant-cell--variant">S</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock variant-cell--stock-low">2</span><span class="variant-cell--ro">0</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro">TEE-S</span><span class="variant-cell--ro">$11.00</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯這一列</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div><div class="variant-table__row"><span class="variant-cell--variant">M</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock">18</span><span class="variant-cell--ro">10</span><span class="variant-cell--ro variant-cell--free">8</span><span class="variant-cell--ro">TEE-M</span><span class="variant-cell--ro">$11.00</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯這一列</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div><div class="variant-table__row"><span class="variant-cell--variant">L</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock">15</span><span class="variant-cell--ro">5</span><span class="variant-cell--ro variant-cell--free">10</span><span class="variant-cell--ro">TEE-L</span><span class="variant-cell--ro">$11.00</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯這一列</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div>
+                </div>
+              </div></section></div>
+          <p class="lab-note"><b>取捨</b>：一眼看出比例，「已鎖定」不必再寫成數字（長條本身就是）。組合包多的時候長條也不會爆——多一段就多一種顏色。代價是多一個視覺元件要維護，而且組合包超過四、五個時圖例會換行變長。</p>
+        </section>
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">S3</span>
+            <div>
+              <h2 class="lab-card__name">把合計做成表格的第一列</h2>
+              <p class="lab-card__pos">拿掉卡頭的數字列，總量改成表格最上面一列「合計」，欄位與資料列對齊。</p>
+              <p class="lab-card__src">參考：Fresha（庫存報表的 Total 列）</p>
+            </div>
+          </div>
+          <div class="lab-demo lab-stage"><p class="lab-demo__cap">單一規格（管道表最上面一列＝合計）</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">當前庫存</h3>
+                  <p class="form-section__sub">目前還剩多少。</p>
+                </div>
+                <div class="form-section__head-actions"><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="history" class="ztor-icon"></i><span>補貨紀錄</span></button><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="lock" class="ztor-icon"></i><span>編輯鎖定</span></button><button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button></div>
+              </div><div class="field" style="margin-bottom:0">
+                <div class="salloc">
+                  <div class="salloc__row salloc__row--head"><span></span><span>鎖定量</span><span style="text-align:right">可售</span></div>
+                  <div class="salloc__row salloc__row--pool"><span class="salloc__name">合計 · 目前在庫</span><span class="stock-readout" style="justify-content:flex-end"><span class="stock-readout__num">3</span><span class="stock-readout__unit">件</span></span></div><div class="salloc__row"><span class="salloc__name">單售</span><span class="salloc__lock"><span class="amount-field amount-field--readonly amount-field--suffix"><input class="input amount-field__input" readonly value="1"><span class="amount-field__unit">件</span></span></span><span class="salloc__qty">1</span></div><div class="salloc__row"><span class="salloc__name">九龍夜行 入門組合<span class="salloc__sub">組合包</span></span><span class="salloc__lock"><span class="amount-field amount-field--readonly amount-field--suffix"><input class="input amount-field__input" readonly value="1"><span class="amount-field__unit">件</span></span></span><span class="salloc__qty">1</span></div><div class="salloc__row salloc__row--free"><span class="salloc__name">未鎖定</span><span class="salloc__qty salloc__qty--muted">1</span></div>
+                </div>
+                <div class="field__hint">補貨會補進未鎖定的部分；已鎖定的要再鎖一次才能繼續賣</div>
+              </div></section></div><div class="lab-demo lab-stage"><p class="lab-demo__cap">多選項（表格最上面一列＝合計）</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">當前庫存</h3>
+                  <p class="form-section__sub">每個選項組合各自的庫存。</p>
+                </div>
+                <div class="form-section__head-actions"><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="history" class="ztor-icon"></i><span>補貨紀錄</span></button><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="lock" class="ztor-icon"></i><span>編輯鎖定</span></button><button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button></div>
+              </div><div class="variant-table-wrap variant-table-wrap--menu">
+                <div class="variant-table variant-table--fluid">
+                  <div class="variant-table__head"><span>選項組合</span><span>價格</span><span>庫存</span><span>鎖定</span><span>未鎖定</span><span>SKU</span><span>單件成本</span><span></span></div>
+                  <div class="variant-table__row lab-total"><span class="variant-cell--variant">合計 · 3 個選項組合</span><span class="variant-cell--ro">—</span><span class="variant-cell--stock">35</span><span class="variant-cell--ro">15</span><span class="variant-cell--ro variant-cell--free">20</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">—</span><span></span></div><div class="variant-table__row"><span class="variant-cell--variant">S</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock variant-cell--stock-low">2</span><span class="variant-cell--ro">0</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro">TEE-S</span><span class="variant-cell--ro">$11.00</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯這一列</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div><div class="variant-table__row"><span class="variant-cell--variant">M</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock">18</span><span class="variant-cell--ro">10</span><span class="variant-cell--ro variant-cell--free">8</span><span class="variant-cell--ro">TEE-M</span><span class="variant-cell--ro">$11.00</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯這一列</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div><div class="variant-table__row"><span class="variant-cell--variant">L</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock">15</span><span class="variant-cell--ro">5</span><span class="variant-cell--ro variant-cell--free">10</span><span class="variant-cell--ro">TEE-L</span><span class="variant-cell--ro">$11.00</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯這一列</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div>
+                </div>
+              </div></section></div>
+          <p class="lab-note"><b>取捨</b>：卡片最矮，總量與明細用同一組欄對齊、加總關係一看就懂，捲動時合計也跟著表頭。代價是失去大數字的份量感——「目前還剩多少」是這張卡最常被瞄一眼的東西，變成小字會慢一點；而且「單售可售」這種不屬於欄位的數字沒地方放。</p>
+        </section>      </div>
+      <div class="lab-axis">
+        <h2 class="lab-axis__title">軸二 · 編輯怎麼進</h2>
+        <p class="lab-axis__sub">四種都把「改價／改 SKU／改成本／改鎖定」放回這張卡。摘要一律用 S2 呈現，方便只比編輯這一件事。</p>
+      </div>
+      <div class="lab-cards">
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">E1</span>
+            <div>
+              <h2 class="lab-card__name">可改的欄位平常就是輸入框</h2>
+              <p class="lab-card__pos">沒有編輯模式、沒有彈窗：價格／鎖定／SKU／單件成本永遠是輸入框，庫存唯讀（要加量一律走補貨）。改了之後頁面頂部原本就有的「儲存」變成待儲存狀態。</p>
+              <p class="lab-card__src">參考：Shopify、Webflow（逐選項組合表的可改欄位常駐可編）</p>
+            </div>
+          </div>
+          <div class="lab-demo lab-stage"><p class="lab-demo__cap">多選項</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">當前庫存</h3>
+                  <p class="form-section__sub">每個選項組合各自的庫存。可改的欄位直接改，改完按頁面右上的儲存。</p>
+                </div>
+                <div class="form-section__head-actions"><span class="chip chip--static">未儲存的變更</span><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="history" class="ztor-icon"></i><span>補貨紀錄</span></button><button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button></div>
+              </div><div class="stat-row"><div class="stat"><div class="stat__label">目前在庫</div><div class="stat__value">35</div></div><div class="stat"><div class="stat__label">未鎖定</div><div class="stat__value">20</div></div><div class="stat"><div class="stat__label">單售可售</div><div class="stat__value">30</div></div></div><div class="lab-alloc"><span class="lab-alloc__seg lab-alloc__seg--single" style="flex:10"></span><span class="lab-alloc__seg lab-alloc__seg--bundle" style="flex:5"></span><span class="lab-alloc__seg lab-alloc__seg--free" style="flex:20"></span></div>
+              <div class="lab-legend">
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--single"></span>單售鎖定 <span class="lab-legend__v">10</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--bundle"></span>九龍夜行 入門組合 <span class="lab-legend__v">5</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--free"></span>未鎖定 <span class="lab-legend__v">20</span></span>
+              </div><div class="variant-table-wrap variant-table-wrap--menu">
+                <div class="variant-table variant-table--fluid lab-inline">
+                  <div class="variant-table__head"><span>選項組合</span><span>價格</span><span>庫存</span><span>鎖定</span><span>未鎖定</span><span>SKU</span><span>單件成本</span><span></span></div>
+                  <div class="variant-table__row"><span class="variant-cell--variant">S</span><span class="variant-cell--lockedit"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" value="32.00"></span></span><span class="variant-cell--stock variant-cell--stock-low">2</span><span class="variant-cell--lockedit"><label class="variant-lock"><span class="variant-lock__ch">單售</span><input class="input" type="number" value="0"></label><label class="variant-lock"><span class="variant-lock__ch">入門組合</span><input class="input" type="number" value="0"></label></span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--lockedit"><input class="input" value="TEE-S"></span><span class="variant-cell--lockedit"><input class="input" value="11.00"></span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div><div class="variant-table__row"><span class="variant-cell--variant">M</span><span class="variant-cell--lockedit"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" value="32.00"></span></span><span class="variant-cell--stock">18</span><span class="variant-cell--lockedit"><label class="variant-lock"><span class="variant-lock__ch">單售</span><input class="input" type="number" value="10"></label><label class="variant-lock"><span class="variant-lock__ch">入門組合</span><input class="input" type="number" value="0"></label></span><span class="variant-cell--ro variant-cell--free">8</span><span class="variant-cell--lockedit"><input class="input" value="TEE-M"></span><span class="variant-cell--lockedit"><input class="input" value="11.00"></span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div><div class="variant-table__row"><span class="variant-cell--variant">L</span><span class="variant-cell--lockedit"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" value="32.00"></span></span><span class="variant-cell--stock">15</span><span class="variant-cell--lockedit"><label class="variant-lock"><span class="variant-lock__ch">單售</span><input class="input" type="number" value="0"></label><label class="variant-lock"><span class="variant-lock__ch">入門組合</span><input class="input" type="number" value="5"></label></span><span class="variant-cell--ro variant-cell--free">10</span><span class="variant-cell--lockedit"><input class="input" value="TEE-L"></span><span class="variant-cell--lockedit"><input class="input" value="11.00"></span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div>
+                </div>
+              </div></section></div><div class="lab-demo lab-stage"><p class="lab-demo__cap">單一規格</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">當前庫存</h3>
+                  <p class="form-section__sub">目前還剩多少。可改的欄位直接改，改完按頁面右上的儲存。</p>
+                </div>
+                <div class="form-section__head-actions"><span class="chip chip--static">未儲存的變更</span><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="history" class="ztor-icon"></i><span>補貨紀錄</span></button><button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button></div>
+              </div><div class="stat-row"><div class="stat"><div class="stat__label">目前在庫</div><div class="stat__value">3</div></div><div class="stat"><div class="stat__label">未鎖定</div><div class="stat__value">1</div><div class="stat__meta">1 件未鎖定，單售與組合包都拿不到</div></div><div class="stat"><div class="stat__label">單售可售</div><div class="stat__value">1</div></div></div><div class="lab-alloc"><span class="lab-alloc__seg lab-alloc__seg--single" style="flex:1"></span><span class="lab-alloc__seg lab-alloc__seg--bundle" style="flex:1"></span><span class="lab-alloc__seg lab-alloc__seg--free" style="flex:1"></span></div>
+              <div class="lab-legend">
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--single"></span>單售鎖定 <span class="lab-legend__v">1</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--bundle"></span>九龍夜行 入門組合 <span class="lab-legend__v">1</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--free"></span>未鎖定 <span class="lab-legend__v">1</span></span>
+              </div><div class="field" style="margin-bottom:0">
+                <div class="salloc">
+                  <div class="salloc__row salloc__row--head"><span></span><span>鎖定量</span><span style="text-align:right">可售</span></div>
+                  <div class="salloc__row"><span class="salloc__name">單售</span><span class="salloc__lock"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" value="1"><span class="amount-field__unit">件</span></span></span><span class="salloc__qty">1</span></div><div class="salloc__row"><span class="salloc__name">九龍夜行 入門組合<span class="salloc__sub">組合包</span></span><span class="salloc__lock"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" value="1"><span class="amount-field__unit">件</span></span></span><span class="salloc__qty">1</span></div><div class="salloc__row salloc__row--free"><span class="salloc__name">未鎖定</span><span class="salloc__qty salloc__qty--muted">1</span></div>
+                </div>
+                <div class="field__hint">補貨會補進未鎖定的部分；已鎖定的要再鎖一次才能繼續賣</div>
+              </div></section></div>
+          <p class="lab-note"><b>取捨</b>：改一個字＝點一下打字，最少步驟；「編輯在哪」這個問題直接消失，也不必分辨要改的是鎖定還是價格。代價是整張表長期是輸入框的樣子（密度高、閱讀時比較吵），而且要靠頁面頂部那顆儲存收尾——現在那顆儲存跟這張卡沒有明顯關聯，得補一個「未儲存的變更」提示。</p>
+        </section>
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">E2</span>
+            <div>
+              <h2 class="lab-card__name">逐列鉛筆，改完打勾</h2>
+              <p class="lab-card__pos">平常整張表唯讀。列尾鉛筆把那一列切成輸入，列尾同時換成 ✕／✓；卡頭「編輯全部」一次切全部列。</p>
+              <p class="lab-card__src">參考：PatternFly／Cloudscape／Turo（row-level inline edit）</p>
+            </div>
+          </div>
+          <div class="lab-demo lab-stage"><p class="lab-demo__cap">多選項 · 平常</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">當前庫存</h3>
+                  <p class="form-section__sub">每個選項組合各自的庫存。</p>
+                </div>
+                <div class="form-section__head-actions"><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="history" class="ztor-icon"></i><span>補貨紀錄</span></button><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯全部</span></button><button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button></div>
+              </div><div class="stat-row"><div class="stat"><div class="stat__label">目前在庫</div><div class="stat__value">35</div></div><div class="stat"><div class="stat__label">未鎖定</div><div class="stat__value">20</div></div><div class="stat"><div class="stat__label">單售可售</div><div class="stat__value">30</div></div></div><div class="lab-alloc"><span class="lab-alloc__seg lab-alloc__seg--single" style="flex:10"></span><span class="lab-alloc__seg lab-alloc__seg--bundle" style="flex:5"></span><span class="lab-alloc__seg lab-alloc__seg--free" style="flex:20"></span></div>
+              <div class="lab-legend">
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--single"></span>單售鎖定 <span class="lab-legend__v">10</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--bundle"></span>九龍夜行 入門組合 <span class="lab-legend__v">5</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--free"></span>未鎖定 <span class="lab-legend__v">20</span></span>
+              </div><div class="variant-table-wrap variant-table-wrap--menu">
+                <div class="variant-table variant-table--fluid">
+                  <div class="variant-table__head"><span>選項組合</span><span>價格</span><span>庫存</span><span>鎖定</span><span>未鎖定</span><span>SKU</span><span>單件成本</span><span></span></div>
+                  <div class="variant-table__row"><span class="variant-cell--variant">S</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock variant-cell--stock-low">2</span><span class="variant-cell--ro">0</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro">TEE-S</span><span class="variant-cell--ro">$11.00</span><button class="btn btn--icon btn--xs" type="button" aria-label="編輯這一列"><i data-lucide="pencil" class="ztor-icon"></i></button></div><div class="variant-table__row"><span class="variant-cell--variant">M</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock">18</span><span class="variant-cell--ro">10</span><span class="variant-cell--ro variant-cell--free">8</span><span class="variant-cell--ro">TEE-M</span><span class="variant-cell--ro">$11.00</span><button class="btn btn--icon btn--xs" type="button" aria-label="編輯這一列"><i data-lucide="pencil" class="ztor-icon"></i></button></div><div class="variant-table__row"><span class="variant-cell--variant">L</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock">15</span><span class="variant-cell--ro">5</span><span class="variant-cell--ro variant-cell--free">10</span><span class="variant-cell--ro">TEE-L</span><span class="variant-cell--ro">$11.00</span><button class="btn btn--icon btn--xs" type="button" aria-label="編輯這一列"><i data-lucide="pencil" class="ztor-icon"></i></button></div>
+                </div>
+              </div></section></div><div class="lab-demo lab-stage"><p class="lab-demo__cap">多選項 · 第二列進編輯</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">當前庫存</h3>
+                  <p class="form-section__sub">每個選項組合各自的庫存。</p>
+                </div>
+                <div class="form-section__head-actions"><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="history" class="ztor-icon"></i><span>補貨紀錄</span></button><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯全部</span></button><button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button></div>
+              </div><div class="stat-row"><div class="stat"><div class="stat__label">目前在庫</div><div class="stat__value">35</div></div><div class="stat"><div class="stat__label">未鎖定</div><div class="stat__value">20</div></div><div class="stat"><div class="stat__label">單售可售</div><div class="stat__value">30</div></div></div><div class="lab-alloc"><span class="lab-alloc__seg lab-alloc__seg--single" style="flex:10"></span><span class="lab-alloc__seg lab-alloc__seg--bundle" style="flex:5"></span><span class="lab-alloc__seg lab-alloc__seg--free" style="flex:20"></span></div>
+              <div class="lab-legend">
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--single"></span>單售鎖定 <span class="lab-legend__v">10</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--bundle"></span>九龍夜行 入門組合 <span class="lab-legend__v">5</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--free"></span>未鎖定 <span class="lab-legend__v">20</span></span>
+              </div><div class="variant-table-wrap variant-table-wrap--menu">
+                <div class="variant-table variant-table--fluid">
+                  <div class="variant-table__head"><span>選項組合</span><span>價格</span><span>庫存</span><span>鎖定</span><span>未鎖定</span><span>SKU</span><span>單件成本</span><span></span></div>
+                  <div class="variant-table__row"><span class="variant-cell--variant">S</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock variant-cell--stock-low">2</span><span class="variant-cell--ro">0</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro">TEE-S</span><span class="variant-cell--ro">$11.00</span><button class="btn btn--icon btn--xs" type="button" aria-label="編輯這一列"><i data-lucide="pencil" class="ztor-icon"></i></button></div><div class="variant-table__row variant-table__row--editing"><span class="variant-cell--variant">M</span><span class="variant-cell--lockedit"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" value="32.00"></span></span><span class="variant-cell--stock">18</span><span class="variant-cell--lockedit"><label class="variant-lock"><span class="variant-lock__ch">單售</span><input class="input" type="number" value="10"></label><label class="variant-lock"><span class="variant-lock__ch">入門組合</span><input class="input" type="number" value="0"></label></span><span class="variant-cell--ro variant-cell--free">8</span><span class="variant-cell--lockedit"><input class="input" value="TEE-M"></span><span class="variant-cell--lockedit"><input class="input" value="11.00"></span><span class="lab-rowact"><button class="btn btn--icon btn--xs" type="button" aria-label="取消"><i data-lucide="x" class="ztor-icon"></i></button><button class="btn btn--icon btn--xs" type="button" aria-label="儲存"><i data-lucide="check" class="ztor-icon"></i></button></span></div><div class="variant-table__row"><span class="variant-cell--variant">L</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock">15</span><span class="variant-cell--ro">5</span><span class="variant-cell--ro variant-cell--free">10</span><span class="variant-cell--ro">TEE-L</span><span class="variant-cell--ro">$11.00</span><button class="btn btn--icon btn--xs" type="button" aria-label="編輯這一列"><i data-lucide="pencil" class="ztor-icon"></i></button></div>
+                </div>
+              </div></section></div>
+          <p class="lab-note"><b>取捨</b>：唯讀時很安靜、要改的那一列很明確，改動範圍小、誤觸成本低（一次只動一列）。代價是改三列要按三次鉛筆、按三次打勾；而且列尾同時要放鉛筆與 ⋯ 兩種東西，34px 那一格會擠。</p>
+        </section>
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">E3</span>
+            <div>
+              <h2 class="lab-card__name">卡頭一顆編輯，卡底儲存</h2>
+              <p class="lab-card__pos">按卡頭「編輯」→ 整張表所有可改欄位一起變輸入，卡底出現取消／儲存（目前站上已實作的做法）。</p>
+              <p class="lab-card__src">參考：本站現況（Whop 的右上一顆 Edit 管整張表同型）</p>
+            </div>
+          </div>
+          <div class="lab-demo lab-stage"><p class="lab-demo__cap">多選項 · 編輯中</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">當前庫存</h3>
+                  <p class="form-section__sub">每個選項組合各自的庫存。</p>
+                </div>
+                <div class="form-section__head-actions"><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯</span></button><button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button><details class="dropdown"><summary class="btn btn--icon btn--sm" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="history" class="ztor-icon"></i><span>補貨紀錄</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="sliders-horizontal" class="ztor-icon"></i><span>管理選項</span></button></div></details></div>
+              </div><div class="stat-row"><div class="stat"><div class="stat__label">目前在庫</div><div class="stat__value">35</div></div><div class="stat"><div class="stat__label">未鎖定</div><div class="stat__value">20</div></div><div class="stat"><div class="stat__label">單售可售</div><div class="stat__value">30</div></div></div><div class="lab-alloc"><span class="lab-alloc__seg lab-alloc__seg--single" style="flex:10"></span><span class="lab-alloc__seg lab-alloc__seg--bundle" style="flex:5"></span><span class="lab-alloc__seg lab-alloc__seg--free" style="flex:20"></span></div>
+              <div class="lab-legend">
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--single"></span>單售鎖定 <span class="lab-legend__v">10</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--bundle"></span>九龍夜行 入門組合 <span class="lab-legend__v">5</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--free"></span>未鎖定 <span class="lab-legend__v">20</span></span>
+              </div><div class="variant-table-wrap variant-table-wrap--menu">
+                <div class="variant-table variant-table--fluid">
+                  <div class="variant-table__head"><span>選項組合</span><span>價格</span><span>庫存</span><span>鎖定</span><span>未鎖定</span><span>SKU</span><span>單件成本</span><span></span></div>
+                  <div class="variant-table__row variant-table__row--editing"><span class="variant-cell--variant">S</span><span class="variant-cell--lockedit"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" value="32.00"></span></span><span class="variant-cell--stock variant-cell--stock-low">2</span><span class="variant-cell--lockedit"><label class="variant-lock"><span class="variant-lock__ch">單售</span><input class="input" type="number" value="0"></label><label class="variant-lock"><span class="variant-lock__ch">入門組合</span><input class="input" type="number" value="0"></label></span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--lockedit"><input class="input" value="TEE-S"></span><span class="variant-cell--lockedit"><input class="input" value="11.00"></span><span class="lab-rowact"><button class="btn btn--icon btn--xs" type="button" aria-label="取消"><i data-lucide="x" class="ztor-icon"></i></button><button class="btn btn--icon btn--xs" type="button" aria-label="儲存"><i data-lucide="check" class="ztor-icon"></i></button></span></div><div class="variant-table__row variant-table__row--editing"><span class="variant-cell--variant">M</span><span class="variant-cell--lockedit"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" value="32.00"></span></span><span class="variant-cell--stock">18</span><span class="variant-cell--lockedit"><label class="variant-lock"><span class="variant-lock__ch">單售</span><input class="input" type="number" value="10"></label><label class="variant-lock"><span class="variant-lock__ch">入門組合</span><input class="input" type="number" value="0"></label></span><span class="variant-cell--ro variant-cell--free">8</span><span class="variant-cell--lockedit"><input class="input" value="TEE-M"></span><span class="variant-cell--lockedit"><input class="input" value="11.00"></span><span class="lab-rowact"><button class="btn btn--icon btn--xs" type="button" aria-label="取消"><i data-lucide="x" class="ztor-icon"></i></button><button class="btn btn--icon btn--xs" type="button" aria-label="儲存"><i data-lucide="check" class="ztor-icon"></i></button></span></div><div class="variant-table__row variant-table__row--editing"><span class="variant-cell--variant">L</span><span class="variant-cell--lockedit"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" value="32.00"></span></span><span class="variant-cell--stock">15</span><span class="variant-cell--lockedit"><label class="variant-lock"><span class="variant-lock__ch">單售</span><input class="input" type="number" value="0"></label><label class="variant-lock"><span class="variant-lock__ch">入門組合</span><input class="input" type="number" value="5"></label></span><span class="variant-cell--ro variant-cell--free">10</span><span class="variant-cell--lockedit"><input class="input" value="TEE-L"></span><span class="variant-cell--lockedit"><input class="input" value="11.00"></span><span class="lab-rowact"><button class="btn btn--icon btn--xs" type="button" aria-label="取消"><i data-lucide="x" class="ztor-icon"></i></button><button class="btn btn--icon btn--xs" type="button" aria-label="儲存"><i data-lucide="check" class="ztor-icon"></i></button></span></div>
+                </div>
+              </div>
+              <div class="form-section__actions">
+                <span class="field__hint">留空＝這個管道與其他沒鎖定的管道共用未鎖定的量</span>
+                <button class="btn btn--ghost btn--sm" type="button">取消</button>
+                <button class="btn btn--primary btn--sm" type="button">儲存</button>
+              </div></section></div>
+          <p class="lab-note"><b>取捨</b>：有明確的「進入／離開編輯」與一次儲存，改多列一次收尾。代價是要先按一下才能改（比 E1 多一步），而且編輯態一次亮起整片輸入框——四欄乘上組合數，密度比 E2 高得多。</p>
+        </section>
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">E4</span>
+            <div>
+              <h2 class="lab-card__name">選取列＋批次操作</h2>
+              <p class="lab-card__pos">表格上方一條工具列：左邊「N 個選項組合」與篩選 chip，右邊批次操作下拉；列首多一格核取方塊，選幾列就對那幾列一次改。</p>
+              <p class="lab-card__src">參考：Salesforce（Bulk Actions）、Whop（欄位篩選 chip）</p>
+            </div>
+          </div>
+          <div class="lab-demo lab-stage"><p class="lab-demo__cap">多選項</p><section class="form-section form-section--outlined"><div class="form-section__head form-section__head--actions">
+                <div class="form-section__head-titles">
+                  <h3 class="form-section__title">當前庫存</h3>
+                  <p class="form-section__sub">每個選項組合各自的庫存。</p>
+                </div>
+                <div class="form-section__head-actions"><button class="btn btn--ghost btn--sm" type="button"><i data-lucide="history" class="ztor-icon"></i><span>補貨紀錄</span></button><button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>補貨</span></button></div>
+              </div><div class="stat-row"><div class="stat"><div class="stat__label">目前在庫</div><div class="stat__value">35</div></div><div class="stat"><div class="stat__label">未鎖定</div><div class="stat__value">20</div></div><div class="stat"><div class="stat__label">單售可售</div><div class="stat__value">30</div></div></div><div class="lab-alloc"><span class="lab-alloc__seg lab-alloc__seg--single" style="flex:10"></span><span class="lab-alloc__seg lab-alloc__seg--bundle" style="flex:5"></span><span class="lab-alloc__seg lab-alloc__seg--free" style="flex:20"></span></div>
+              <div class="lab-legend">
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--single"></span>單售鎖定 <span class="lab-legend__v">10</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--bundle"></span>九龍夜行 入門組合 <span class="lab-legend__v">5</span></span>
+                <span class="lab-legend__item"><span class="lab-legend__dot lab-legend__dot--free"></span>未鎖定 <span class="lab-legend__v">20</span></span>
+              </div>
+              <div class="lab-tabletools">
+                <span class="lab-tabletools__label">3 個選項組合</span>
+                <span class="chip chip--static">尺寸：全部</span>
+                <span class="lab-tabletools__acts">
+                  <details class="dropdown"><summary class="btn btn--ghost btn--xs">批次操作 <i data-lucide="chevron-down" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="dollar-sign" class="ztor-icon"></i><span>批次改價</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="lock" class="ztor-icon"></i><span>批次鎖定</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>批次下架</span></button></div></details>
+                </span>
+              </div><div class="variant-table-wrap variant-table-wrap--menu">
+                <div class="variant-table variant-table--fluid lab-pick">
+                  <div class="variant-table__head"><span><label class="checkbox"><input type="checkbox"><span class="checkbox__box"></span></label></span><span>選項組合</span><span>價格</span><span>庫存</span><span>鎖定</span><span>未鎖定</span><span>SKU</span><span>單件成本</span><span></span></div>
+                  <div class="variant-table__row"><span><label class="checkbox"><input type="checkbox"><span class="checkbox__box"></span></label></span><span class="variant-cell--variant">S</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock variant-cell--stock-low">2</span><span class="variant-cell--ro">0</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro">TEE-S</span><span class="variant-cell--ro">$11.00</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯這一列</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div><div class="variant-table__row"><span><label class="checkbox"><input type="checkbox"><span class="checkbox__box"></span></label></span><span class="variant-cell--variant">M</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock">18</span><span class="variant-cell--ro">10</span><span class="variant-cell--ro variant-cell--free">8</span><span class="variant-cell--ro">TEE-M</span><span class="variant-cell--ro">$11.00</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯這一列</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div><div class="variant-table__row"><span><label class="checkbox"><input type="checkbox"><span class="checkbox__box"></span></label></span><span class="variant-cell--variant">L</span><span class="variant-cell--ro">$32.00</span><span class="variant-cell--stock">15</span><span class="variant-cell--ro">5</span><span class="variant-cell--ro variant-cell--free">10</span><span class="variant-cell--ro">TEE-L</span><span class="variant-cell--ro">$11.00</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯這一列</span></button><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>單獨下架</span></button></div></details></div>
+                </div>
+              </div></section></div>
+          <p class="lab-note"><b>取捨</b>：組合一多（顏色×尺寸 12 列以上）這是唯一不用逐列點的做法，篩選 chip 也順便解決「找不到某一列」。代價是為了少數大商品，讓所有商品都多一欄核取方塊與一條工具列；本站目前的示範資料最多 4 個組合，撐不起這個複雜度。</p>
+        </section>      </div>
+      <section class="card lab-axis">
+        <div class="card__head"><h2 class="card__title">我的建議：S2 ＋ E1</h2></div>
+        <ol class="lab-diag">
+          <li><b>摘要用 S2</b>（三格數字＋分配長條）：長條把「已鎖定」講成比例而不是又一個數字，重複問題根治；大數字仍在，一眼掃得到還剩多少。</li>
+          <li><b>編輯用 E1</b>（常駐輸入）：這是 Shopify 與 Webflow 在同一個問題上的共同答案——賣家改價、改 SKU 是高頻動作，不該先按一次「編輯」。它同時消滅「編輯商品在哪」與「兩種編輯模式怎麼分」兩個問題。</li>
+          <li><b>要補的一件事</b>：E1 靠頁面右上那顆既有的「儲存」收尾，所以那顆按鈕要能顯示待儲存狀態（本頁在卡頭掛了一顆「未儲存的變更」chip 示意）。這是四個候選裡唯一需要動到卡片以外的東西。</li>
+          <li><b>如果不喜歡整張表都是輸入框</b>：退而求其次選 E2（逐列鉛筆）——它保住唯讀時的安靜，代價是改多列比較累。</li>
+        </ol>
+        <p class="lab-note">兩軸各挑一個編號告訴我（例如「S2 ＋ E1」），我再改產品頁、元件與 DS 文件；單一規格與多選項會用同一組節奏。</p>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+</body>
+</html>

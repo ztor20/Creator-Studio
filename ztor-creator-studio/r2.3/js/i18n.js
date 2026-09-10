@@ -2743,12 +2743,18 @@
     /* 逐選項組合的庫存鎖定（2026-09-09 · D-pending／ASSUMPTIONS UIA-146）：列尾 ⋯ 的單列入口、
        單列彈窗、編輯彈窗裡一次設定全部的大表格，以及管道分配表改唯讀後的去處說明。 */
     'product-detail.var.lock':      { en: 'Lock stock',   zh: '鎖定庫存' },
-    'product-detail.lock.edit':     { en: 'Edit locks',   zh: '編輯鎖定' },
+    'product-detail.unsaved':       { en: 'Unsaved changes', zh: '未儲存的變更' },
     'product-detail.edit.locks-hint': { en: 'Blank means the channel shares whatever is unlocked', zh: '留空＝這個管道與其他沒鎖定的管道共用未鎖定的量' },
     /* 商品選項卡（多選項才有）：價格卡在多選項時不出現，價格逐組合填在庫存表，這句告訴使用者去哪裡改。 */
     'product-detail.options.sub':   { en: 'Price and cost per combination are in the stock table above', zh: '價格與單件成本逐組合填在上方庫存表' },
     /* 庫存卡卡頭數字列 */
-    'stock.locked-total':           { en: 'Locked',       zh: '已鎖定' },
+    /* 商品明細只呈現單售這一個管道（2026-09-10 · D258）：表格欄名與長條圖例都講「鎖給單售」，
+       避免與組合包那一邊的「鎖給本組合」混淆；留在池裡的量沒有任何管道能賣時，用 pool-left 提示。 */
+    'stock.lock-single':            { en: 'Locked',       zh: '鎖給單售' },
+    /* 組合包詳情頁：成員是多選項商品時，母列標一句「逐選項組合設定」（D258）。 */
+    'stock.per-variant':            { en: 'Per option combination', zh: '逐選項組合設定' },
+    'stock.locked-single':          { en: 'Locked for single sale', zh: '鎖給單售' },
+    'stock.pool-left':              { en: '{n} left in the pool — no channel can sell them', zh: '{n} 件留在庫存池，沒有管道賣得到' },
     'stock.single-sellable':        { en: 'Single sale can sell', zh: '單售可售' },
     'product-detail.content.title': { en: 'Product content', zh: '商品內容' },
     'product-detail.field.media':   { en: 'Images & media', zh: '圖片與素材' },
