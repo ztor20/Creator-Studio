@@ -2303,6 +2303,7 @@
        葉節點是 服飾／配件，群組才叫服飾配件。墓碑：'store-settings.specs.type.apparel'。 */
     'store-settings.specs.type.apparelacc': { en: 'Apparel & accessories', zh: '服飾配件' },
     /* 預設帶的三組範本，名稱就是那類服飾的名字（D210）；可改名、可刪、可另外新增。 */
+    'store-settings.specs.untitled':     { en: 'Untitled guide',         zh: '未命名指南' },
     'store-settings.specs.row.tops':     { en: 'Tops',                   zh: '衣服' },
     'store-settings.specs.row.bottoms':  { en: 'Bottoms',                zh: '褲子' },
     'store-settings.specs.row.hats':     { en: 'Hats',                   zh: '帽子' },
@@ -2792,7 +2793,7 @@
     'product-detail.kpi.revenue':   { en: 'Revenue',       zh: '營收' },
     'product-detail.kpi.cvr':       { en: 'Conversion',    zh: '轉換率' },
     'product-detail.kpi.net-meta2': { en: 'Net of platform & payment fees', zh: '已扣平台與金流費' },
-    'product-detail.media.hero':    { en: 'Hero image',    zh: '主圖' },
+    'product-detail.media.hero':    { en: 'Hero shot',     zh: '主視覺' },
     'product-detail.media.more':    { en: 'more',          zh: 'more' },
     'product-detail.field.media2':  { en: 'Product images', zh: '商品圖片' },
     'product-detail.stock.current': { en: 'Current stock', zh: '當前庫存' },
@@ -2915,7 +2916,9 @@
        上游同批新增的兩個 key 保留——新版組合明細版型要用。 */
     'bd.sales.hint':        { en: 'Net figures pulled from Earnings; member revenue split is settled by Earnings.', zh: '淨額來自收入管理；成員收入分攤由收入管理結算。' },
     /* 2026-07-27 版型改成與商品明細同構（頁籤＋右側常駐欄）後新增 */
-    'bd.tab.members':       { en: 'Members',                 zh: '成員' },
+    /* 2026-09-10 使用者裁示改名：分頁名由「成員」改「組合商品」——「成員」是規格與程式的內部用詞，
+       畫面上看不出它指的是「這個組合裡裝了哪些商品」。英文沿用規格 5.1.5.9 §2.3 的 Items。 */
+    'bd.tab.members':       { en: 'Items',                   zh: '組合商品' },
     'bd.rail.summary':      { en: 'Bundle at a glance',      zh: '組合概況' },
 
     /* ─── Auction detail (spec 5.1.5.8 拍賣商品細節頁) ─────────── */
@@ -4068,8 +4071,8 @@
     /* 2026-08-06：兩個具名槽改成一列相簿，副標改成講「排第一的那張是主視覺」；
        ce.img.keyvisual 仍供相簿第一格的角落標記使用，ce.img.gallery(-hint) 已無消費者。 */
     'ce.images.sub':        { en: 'The first one is the key visual; the rest are the gallery.', zh: '排在第一張的是主視覺，其餘是圖庫。' },
-    'ce.img.add':           { en: 'Add image',                        zh: '新增圖片' },
-    'ce.img.note':          { en: 'Portrait 750 × 1125, up to 10. The first one is the key visual; hover an image to replace or delete it.', zh: '直式 750 × 1125，最多 10 張。排第一的是主視覺；游標移到圖片可替換或刪除。' },
+    'ce.img.add':           { en: 'Add image or video',               zh: '新增圖片或影片' },
+    'ce.img.note':          { en: 'Portrait 750 × 1125, up to 10 photos or videos. The first one is the key visual; hover one to replace or delete it.', zh: '直式 750 × 1125，圖片或影片最多 10 個。排第一的是主視覺；游標移上去可替換或刪除。' },
     'ce.img.keyvisual':     { en: 'Key visual',                       zh: '主視覺' },
     /* 2026-08-06：說明裡的「手機主視覺」把標籤（主視覺）又講了一次，砍掉；剩下的才是這一格真正的新資訊。
        本 key 僅剩 edit-event.html 消費，該頁待撤除。 */
@@ -4266,9 +4269,9 @@
     'cp.gate.back':         { en: 'Leave',                            zh: '離開' },
     'cp.type.switch':       { en: 'Switch type',                      zh: '換一種' },
     'cp.media.title':       { en: 'Show it off',                      zh: '展示它' },
-    'cp.media.sub':         { en: "Buyers can't touch it. Your photos do that job.", zh: '買家摸不到，照片替你做事。' },
-    'cp.media.hero-physical':{ en: 'Hero image\nThe first thing buyers see', zh: '主圖\n買家第一眼看到的' },
-    'cp.media.hero-auction':{ en: 'Hero image — show off the item',   zh: '主圖——展示這件物品' },
+    'cp.media.sub':         { en: "Buyers can't touch it. Your photos and videos do that job.", zh: '買家摸不到，照片與影片替你做事。' },
+    'cp.media.hero-physical':{ en: 'Hero shot\nThe first thing buyers see', zh: '主視覺\n買家第一眼看到的' },
+    'cp.media.hero-auction':{ en: 'Hero shot — show off the item',    zh: '主視覺——展示這件物品' },
     /* min800／min600 是舊的多比例上傳槽留下的最小邊長說明。2026-07-31 全站圖片上傳槽收斂成
        單一直式 750 × 1125 後，圖片槽一律改用 cp.media.portrait；min800 只剩拍賣「真實性證明」
        那個檔案槽（--file，非圖片上傳槽）在用，min600 已無消費者、暫留待 DS 示範改完一併清。 */
@@ -4285,15 +4288,15 @@
     'cp.media.hero-flag':   { en: 'Hero',                             zh: '主圖' },
     'cp.media.cover-flag':  { en: 'Cover',                            zh: '封面' },
     'cp.media.cover-hero':  { en: 'Cover art\nThe first thing buyers see', zh: '封面\n買家第一眼看到的' },
-    'cp.media.angles':      { en: 'Add multiple angles to build trust', zh: '多放幾個角度，建立信任' },
+    'cp.media.angles':      { en: 'Add more angles or a short clip to build trust', zh: '多放幾個角度或一段短片，建立信任' },
     'cp.media.uploading':   { en: 'Uploading…',                       zh: '上傳中…' },
     'cp.media.optimizing':  { en: 'Optimizing…',                      zh: '優化中…' },
     'cp.media.optimized':   { en: 'Optimized to spec',                zh: '已依規格優化' },
-    'cp.media.add':         { en: 'Add image',                        zh: '新增圖片' },
-    'cp.media.replace':     { en: 'Replace image',                    zh: '替換圖片' },
+    'cp.media.add':         { en: 'Add image or video',               zh: '新增圖片或影片' },
+    'cp.media.replace':     { en: 'Replace',                          zh: '替換' },        /* D259：這一格可能是圖也可能是片，名詞拿掉 */
     'cp.media.optimize':    { en: 'AI optimize',                      zh: 'AI 優化' },
     'cp.media.undo':        { en: 'Back to the original',             zh: '還原成優化前' },
-    'cp.media.remove':      { en: 'Remove image',                     zh: '刪除圖片' },
+    'cp.media.remove':      { en: 'Remove',                           zh: '刪除' },
     'cp.name':              { en: 'Product name',                     zh: '商品名稱' },
     'cp.name.ph':           { en: 'e.g., Summer Tour Hoodie',         zh: '例：Summer Tour Hoodie' },
     'cp.desc':              { en: "Tell your fans what they're getting", zh: '告訴粉絲他們會拿到什麼' },
@@ -4494,6 +4497,10 @@
     'cp.sg.shop.title':     { en: "Your shop's size guide",    zh: '商店的尺寸指南' },
     'cp.sg.shop.picker':    { en: 'Which guide',              zh: '看哪一份' },
     'cp.sg.shop.notice':    { en: 'Editing this changes it for every item that uses your shop guides. Manage them in Store settings.', zh: '這是商店的指南，改了會影響所有沿用中的商品；要管理整組請到商店設定。' },
+    /* 商店一份尺寸指南都沒有時的狀態（2026-09-10）：沿用什麼都沒有，就別假裝在沿用。 */
+    'cp.sg.none':           { en: 'No size guides set up',            zh: '尚未設定尺寸指南' },
+    'cp.sg.none.hint':      { en: 'Add one in store settings — every item uses it.', zh: '到商店設定新增一份，所有商品都會沿用。' },
+    'cp.sg.none.cta':       { en: 'Store settings',                   zh: '前往商店設定' },
     'cp.sg.switch':         { en: 'Use its own guide',           zh: '改用專屬指南' },
     'cp.sg.own':            { en: 'Using its own size guide',    zh: '使用專屬尺寸指南' },
     'cp.sg.own.hint':       { en: "Your shop's guides don't show here.", zh: '商店那幾份不會出現在這裡。' },
@@ -4775,7 +4782,7 @@
     'cb.create':            { en: 'Create bundle',                    zh: '建立組合' },
     /* 組合資訊：素材＋描述（spec 5.1.5.4 §4 F1）*/
     'cb.media.show':        { en: 'Show it off',                      zh: '秀出組合' },
-    'cb.media.sub':         { en: "Buyers can't touch it. Your photos do that job.", zh: '粉絲摸不到實品，照片替你說話。' },
+    'cb.media.sub':         { en: "Buyers can't touch it. Your photos and videos do that job.", zh: '粉絲摸不到實品，照片與影片替你說話。' },
     'cb.media.hero':        { en: 'Bundle cover — the first thing fans see', zh: '組合封面 — 粉絲第一眼看到的' },
     'cb.desc':              { en: "Tell fans what they'll get",        zh: '告訴粉絲他們會拿到什麼' },
     'cb.desc.hint':         { en: "Describe what's inside and why it's worth it.", zh: '說明組合內容與價值。' },
@@ -4918,7 +4925,7 @@
     'cpp.s2.keyvisual':     { en: 'Key visual',                       zh: '主視覺' },
     'cpp.s2.keyvisual-size':{ en: '750 × 1125 · portrait',             zh: '750 × 1125 · 直式' },
     'cpp.s2.gallery':       { en: 'Gallery',                          zh: '圖庫' },
-    'cpp.s2.gallery-size':  { en: '750 × 1125 · portrait · 1–10 images', zh: '750 × 1125 · 直式 · 1–10 張' },
+    'cpp.s2.gallery-size':  { en: '750 × 1125 · portrait · 1–10 photos or videos', zh: '750 × 1125 · 直式 · 圖片或影片 1–10 個' },
     'cpp.s2.add':           { en: 'Add images',                       zh: '新增圖片' },
     'cpp.s2.trailer':       { en: 'Trailer / behind-the-scenes',      zh: '預告片 / 幕後' },
     'cpp.s2.trailer-drop':  { en: 'Drop an MP4 or MOV',               zh: '拖入 MP4 或 MOV' },
@@ -7226,7 +7233,7 @@
     'project-detail.showcase.sub':{en: 'Portrait images shown to fans. The first one is the key visual.',zh: '粉絲端看到的直式圖片。第一張為主視覺。'},
     'project-detail.showcase.images-hint':{en: 'portrait 750 × 1125 · first is the key visual, the rest are the gallery',zh: '直式 750 × 1125 · 第一張為主視覺，其餘為圖庫'},
     'project-detail.showcase.cover':{en: 'Key visual',zh: '主視覺'},
-    'project-detail.showcase.add-image':{en: 'Add image',zh: '新增圖片'},
+    'project-detail.showcase.add-image':{en: 'Add image or video',zh: '新增圖片或影片'},
     'project-detail.showcase.hint':{en: 'Hover an image to replace or delete it.',zh: '游標移到圖片可替換或刪除。'},
     'project-detail.showcase.demo':{en: 'Demo media',zh: '展示媒體'},
     'project-detail.showcase.demo-video':{en: 'Demo video',zh: '展示影片'},
@@ -7511,7 +7518,7 @@
     'pw.art.cover.title':   { en: 'Cover',                            zh: '封面圖' },
     /* 2026-08-18 改口徑：原為「放上海報」／'Add the poster'，只說要什麼、沒說怎麼給。
        同輪四個空格補上常駐 CTA 後，這格是整個素材步驟裡唯一還用另一種說法的，改成同一句。 */
-    'pw.art.cover.cta':     { en: 'Drop an image or browse',         zh: '拖入圖片或點擊選檔' },
+    'pw.art.cover.cta':     { en: 'Drop an image or video, or browse', zh: '拖入圖片或影片，或點擊選檔' },
     'pw.art.stills.title':  { en: 'Stills',                           zh: '劇照' },
     'pw.art.stills.sub':    { en: 'Frames that sell the film without spoiling it. Up to 10.', zh: '讓人想看、又不爆雷的畫面。最多 10 張。' },
     'pw.art.trailer.title': { en: 'Trailer',                          zh: '預告片' },
@@ -7640,7 +7647,7 @@
     'pw.media.file.state.ready':      { en: 'Ready',        zh: '已就緒' },
     /* F5 劇照可多張、F6 花絮可多筆 */
     'pw.art.stills.add':    { en: 'Drop an image or browse — still',  zh: '劇照：拖入圖片或點擊選檔' },
-    'pw.art.stills.cta':    { en: 'Drop an image or browse',          zh: '拖入圖片或點擊選檔' },
+    'pw.art.stills.cta':    { en: 'Drop an image or video, or browse', zh: '拖入圖片或影片，或點擊選檔' },
     'pw.art.bts.addmore':   { en: 'Add another clip',                 zh: '再加一支' },
     'pw.art.bts.item':      { en: 'Clip',                             zh: '片段' },
     'pw.art.bts.drop':      { en: 'Remove this clip',                 zh: '移除這一支' },

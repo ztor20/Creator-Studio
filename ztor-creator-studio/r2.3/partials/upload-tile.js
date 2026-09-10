@@ -42,10 +42,14 @@
     var overlay = el('div', 'upload-tile__overlay', '<span class="upload-tile__spinner"></span><span class="upload-tile__status"></span>');
     var progress = el('div', 'upload-tile__progress', '<div class="upload-tile__bar"></div>');
 
-    // content 專屬：影片影格 / 檔案標記 / 隱藏 audio
+    /* 影片節點兩種模式都要（2026-09-10 · D259）：展示素材槽現在也收影片，
+       停在第一影格就是它的縮圖——瀏覽器不會替 <img> 解碼 mp4，得換一個 <video>。
+       muted 是必要的：自動顯示首影格時不該有聲音，播放鈕才是聲音的開關。
+       檔案標記與隱藏 audio 仍是內容檔專屬（展示槽不收音訊與文件）。 */
     var video, audioEl, filemark, fileIcon, fileName, media = null;
+    video = el('video', 'upload-tile__video');
+    video.setAttribute('playsinline', ''); video.setAttribute('preload', 'metadata'); video.muted = true;
     if (content) {
-      video = el('video', 'upload-tile__video'); video.setAttribute('playsinline', ''); video.setAttribute('preload', 'metadata');
       audioEl = document.createElement('audio'); audioEl.preload = 'metadata';
       filemark = el('div', 'upload-tile__filemark', '<i data-lucide="file" class="ztor-icon"></i><span class="upload-tile__filename"></span>');
       fileIcon = filemark.querySelector('.ztor-icon'); fileName = filemark.querySelector('.upload-tile__filename');
@@ -72,6 +76,9 @@
       /* 優化前後可來回：優化完成後第三顆換成「還原」（2026-08-09 使用者指示），
          按下回到剛上傳的那一版。兩顆互斥、由 CSS 依狀態顯隱（見 --ai / --undo）。 */
       actions.innerHTML =
+        act('data-upload-play', 'cp.cfile.play', 'Play',
+            '<i data-lucide="play" class="ztor-icon upload-tile__ic-play"></i><i data-lucide="pause" class="ztor-icon upload-tile__ic-pause"></i>',
+            'upload-tile__act--play') +
         act('data-upload-replace', 'cp.media.replace', 'Replace image', '<i data-lucide="refresh-cw" class="ztor-icon"></i>') +
         (ai ? act('data-upload-optimize', 'cp.media.optimize', 'AI optimize', '<i data-lucide="sparkles" class="ztor-icon"></i>', 'upload-tile__act--ai') : '') +
         (ai ? act('data-upload-undo', 'cp.media.undo', 'Undo optimize', '<i data-lucide="rotate-ccw" class="ztor-icon"></i>', 'upload-tile__act--undo') : '') +
@@ -83,14 +90,15 @@
 
     tile.append(input);
     if (ownThumb) tile.append(thumb);
-    if (content) tile.append(video, filemark, audioEl);
+    tile.append(video);
+    if (content) tile.append(filemark, audioEl);
     if (badge) tile.append(badge);
     tile.append(overlay, progress, actions);
     if (window.ztorIcons) window.ztorIcons.applyIcons(tile);
 
     var statusEl = overlay.querySelector('.upload-tile__status');
     var bar = progress.querySelector('.upload-tile__bar');
-    var playBtn = content ? actions.querySelector('[data-upload-play]') : null;
+    var playBtn = actions.querySelector('[data-upload-play]');
     var timer = null, url = null;
     var kbd = false;   // 這一輪互動是不是鍵盤觸發的（決定過場後要不要把焦點交還，見 refocusAfter）
 
@@ -128,11 +136,11 @@
       tile.dispatchEvent(new CustomEvent('upload:change', { bubbles: true, detail: { key: key, filled: filled, state: state } }));
     }
     function resetMedia() {
-      if (!content) return;
       try { if (media) media.pause(); } catch (e) {}
       if (playBtn) playBtn.classList.remove('is-playing');
-      tile.classList.remove('upload-tile--playable');
+      tile.classList.remove('upload-tile--playable', 'upload-tile--video');
       video.classList.remove('is-shown'); video.removeAttribute('src');
+      if (!content) return;
       filemark.classList.remove('is-shown');
       audioEl.removeAttribute('src'); media = null;
     }
@@ -167,7 +175,17 @@
       if (url) URL.revokeObjectURL(url);
       resetMedia();
       url = URL.createObjectURL(file);
-      if (!content) thumb.src = url;
+      /* 展示素材槽依檔型分流（D259）：影片停在第一影格當縮圖，圖片照舊塞 <img>。
+         塞錯節點的後果不是「沒有預覽」而是「破圖＋系統以為填好了」，所以兩邊互斥處理。 */
+      if (!content) {
+        if ((file.type || '').indexOf('video') === 0) {
+          thumb.removeAttribute('src');
+          video.src = url; video.classList.add('is-shown'); media = video;
+          tile.classList.add('upload-tile--playable', 'upload-tile--video');
+        } else {
+          thumb.src = url;
+        }
+      }
       setState('is-uploading'); statusEl.textContent = T('cp.media.uploading', 'Uploading…'); bar.style.width = '0%';
       /* 開始上傳也要通知一次：消費頁要能把「上傳中」寫進畫面，而不是等到傳完才有反應。
          此時 filled 為 false，就緒檢查照舊把它算成未完成。 */
@@ -217,13 +235,16 @@
       var hadFocus = tile.contains(document.activeElement);
       clearInterval(timer); clearTimeout(timer);
       if (url) { URL.revokeObjectURL(url); url = null; }
-      thumb.removeAttribute('src'); resetMedia(); input.value = ''; setState('is-empty'); emit();
+      thumb.removeAttribute('src'); resetMedia(); media = null; input.value = ''; setState('is-empty'); emit();
       /* 空狀態的動作列是 display:none，剛剛被按下的刪除鈕當場從版面消失、焦點會掉回 <body>，
          鍵盤使用者等於被丟回頁首。把焦點交還給整格（此時它是 role=button）。
          emit() 有可能讓消費頁把整格移除（如項目詳情相簿），所以先確認它還在文件裡。 */
       if (hadFocus && tile.isConnected) tile.focus();
     }
-    function pickAccept() { input.accept = content ? (tile.getAttribute('data-upload-accept') || '*/*') : 'image/*'; }
+    /* 展示素材槽預設收圖片與影片（D259）；要只收圖的頁面自己掛 data-upload-accept。
+       內容檔格維持原本「什麼都收」的退路。
+       ⚠ 註解裡不要寫出萬用型別的字面值——那兩個字元會提前收掉這段註解。 */
+    function pickAccept() { input.accept = tile.getAttribute('data-upload-accept') || (content ? '*/*' : 'image/*,video/*'); }
 
     /* 既有素材預填（data-upload-src，2026-07-27）——編輯態專用的起始狀態。
        此前這支只認得「使用者剛選的檔案」（createObjectURL），沒有「這格在伺服器上本來就有一張圖」

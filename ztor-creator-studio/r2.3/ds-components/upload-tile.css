@@ -354,3 +354,19 @@
 .upload-tile__act--play.is-playing .upload-tile__ic-pause { display: inline; }
 /* 非媒體檔（文件）隱藏播放鈕 */
 .upload-tile:not(.upload-tile--playable) .upload-tile__act--play { display: none; }
+
+/* ---- 展示素材槽裡的影片（2026-09-10 · D259）------------------------------
+   素材槽收影片之後，同一格可能是圖也可能是片。影片沿用 __video 節點，但兩點要跟
+   內容檔模式分開：
+     1. 鋪滿而不是置中——展示槽是 2:3 的直式框，contain 會在上下留兩塊黑，
+        跟旁邊鋪滿的圖片排在一起像壞掉；素材的職責是「這東西長什麼樣」，裁切可接受。
+     2. 底色不吃深色反相底——沒填滿時露出的是格子自己的底，不是播放器的黑幕。
+   「AI 優化」是圖片能力（依規格產出直式尺寸），影片格把那兩顆鈕與徽章收起來。 */
+.upload-tile[data-upload=""] .upload-tile__video,
+.upload-tile[data-upload]:not([data-upload="content"]) .upload-tile__video {
+  object-fit: cover;
+  background: transparent;
+}
+.upload-tile--video .upload-tile__act--ai,
+.upload-tile--video .upload-tile__act--undo,
+.upload-tile--video .upload-tile__badge { display: none; }

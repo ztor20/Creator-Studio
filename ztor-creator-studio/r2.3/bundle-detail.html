@@ -95,8 +95,8 @@
       <div class="section-nav-layout mt-24">
         <nav class="section-nav" role="tablist" data-tabs aria-label="Bundle detail sections">
           <button class="section-nav__item section-nav__item--active" role="tab" data-tab="overview" aria-selected="true" data-i18n="product-detail.tab.overview">Overview</button>
-          <button class="section-nav__item" role="tab" data-tab="price-stock" aria-selected="false" data-i18n="product-detail.tab.price-stock">Sales settings</button>
           <button class="section-nav__item" role="tab" data-tab="members" aria-selected="false" data-i18n="bd.tab.members">Members</button>
+          <button class="section-nav__item" role="tab" data-tab="price-stock" aria-selected="false" data-i18n="product-detail.tab.price-stock">Sales settings</button>
         </nav>
         <div class="section-nav__body">
 
@@ -183,6 +183,57 @@
       </div><!-- /tab-panel overview -->
 
       <!-- ════════ TAB · 銷售設定：§2.3 的組合價格／折扣設定／庫存 ════════ -->
+      <div class="tab-panel" data-panel="members" role="tabpanel">
+
+        <!-- 成員清單（≥2；少於 2 提示且不可上架，§2.3/§2.5）-->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-12)">
+            <div>
+              <h3 class="form-section__title" data-i18n="bd.members.title">In this bundle</h3>
+              <p class="form-section__sub" data-i18n="bd.members.edit">Add or remove members in the bundle builder. Members reference existing products.</p>
+            </div>
+            <span class="text-sub" id="bd-member-count" style="font-size: var(--fs-12)">(3)</span>
+          </div>
+          <div class="data-list" id="bd-members">
+            <div class="data-list__row" data-bd-pid="zine">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=zine">Pirate Queen zine vol. 02</a> <span class="text-sub">Books · $24.00</span></div></div>
+              </div>
+              <div class="data-list__end bd-member-end"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">$24.00</span></div>
+            </div>
+            <div class="data-list__row" data-bd-pid="tee">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=tee">Kowloon After Dark tee (M)</a> <span class="text-sub">Apparel · $32.00</span></div></div>
+              </div>
+              <div class="data-list__end bd-member-end"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">$32.00</span></div>
+            </div>
+            <div class="data-list__row" data-bd-pid="movie">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=movie">Summer Preset Pack</a> <span class="text-sub">Digital · $13.00</span></div></div>
+              </div>
+              <div class="data-list__end bd-member-end"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">$13.00</span></div>
+            </div>
+          </div>
+          <!-- D241：沒有被鎖定的庫存量與鎖定量在這裡只顯示，可編輯的那一份在「銷售設定」的庫存卡，
+               同一個數字不做兩個入口。 -->
+          <div class="field__hint mt-8" data-i18n="bd.members.alloc-hint">Lock amounts are edited in Sales settings.</div>
+        </section>
+
+        <!-- §2.5 成員與變更影響 -->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="bd.impact.title">Member impact</h3>
+          </div>
+          <!-- D241（spec §7.14 組合包成交條件）：舊文案把「下架」與「隱藏」寫成同一件事，
+               隱藏的成員照樣能被組合帶著成交，已由本條取代。 -->
+          <div class="field__hint" data-i18n="bd.impact.member-rule">A member stops this bundle when it is unlisted, off sale, or has nothing left to sell inside this bundle. Hiding it changes nothing — it still sells as part of a bundle. A member price rise can also push the bundle price above the members' total.</div>
+        </section>
+
+      </div><!-- /tab-panel members -->
+
       <!-- 版面（2026-09-10 · D258，與商品明細同一套）：這一分頁的成員分配表現在會展開到
            逐選項組合，欄位放不進兩欄版的主欄，所以整頁寬；原本擺在右欄的上架／開賣／概況三張卡
            由 tab JS 收起（.detail-grid--full），改由本分頁自己在底下用 .detail-cards 並列。 -->
@@ -410,56 +461,6 @@
       </div><!-- /tab-panel price-stock -->
 
       <!-- ════════ TAB · 成員：§2.3 成員清單 ＋ §2.5 成員與變更影響 ════════ -->
-      <div class="tab-panel" data-panel="members" role="tabpanel">
-
-        <!-- 成員清單（≥2；少於 2 提示且不可上架，§2.3/§2.5）-->
-        <section class="form-section form-section--outlined">
-          <div class="form-section__head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-12)">
-            <div>
-              <h3 class="form-section__title" data-i18n="bd.members.title">In this bundle</h3>
-              <p class="form-section__sub" data-i18n="bd.members.edit">Add or remove members in the bundle builder. Members reference existing products.</p>
-            </div>
-            <span class="text-sub" id="bd-member-count" style="font-size: var(--fs-12)">(3)</span>
-          </div>
-          <div class="data-list" id="bd-members">
-            <div class="data-list__row" data-bd-pid="zine">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=zine">Pirate Queen zine vol. 02</a> <span class="text-sub">Books · $24.00</span></div></div>
-              </div>
-              <div class="data-list__end bd-member-end"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">$24.00</span></div>
-            </div>
-            <div class="data-list__row" data-bd-pid="tee">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=tee">Kowloon After Dark tee (M)</a> <span class="text-sub">Apparel · $32.00</span></div></div>
-              </div>
-              <div class="data-list__end bd-member-end"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">$32.00</span></div>
-            </div>
-            <div class="data-list__row" data-bd-pid="movie">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=movie">Summer Preset Pack</a> <span class="text-sub">Digital · $13.00</span></div></div>
-              </div>
-              <div class="data-list__end bd-member-end"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">$13.00</span></div>
-            </div>
-          </div>
-          <!-- D241：沒有被鎖定的庫存量與鎖定量在這裡只顯示，可編輯的那一份在「銷售設定」的庫存卡，
-               同一個數字不做兩個入口。 -->
-          <div class="field__hint mt-8" data-i18n="bd.members.alloc-hint">Lock amounts are edited in Sales settings.</div>
-        </section>
-
-        <!-- §2.5 成員與變更影響 -->
-        <section class="form-section form-section--outlined">
-          <div class="form-section__head">
-            <h3 class="form-section__title" data-i18n="bd.impact.title">Member impact</h3>
-          </div>
-          <!-- D241（spec §7.14 組合包成交條件）：舊文案把「下架」與「隱藏」寫成同一件事，
-               隱藏的成員照樣能被組合帶著成交，已由本條取代。 -->
-          <div class="field__hint" data-i18n="bd.impact.member-rule">A member stops this bundle when it is unlisted, off sale, or has nothing left to sell inside this bundle. Hiding it changes nothing — it still sells as part of a bundle. A member price rise can also push the bundle price above the members' total.</div>
-        </section>
-
-      </div><!-- /tab-panel members -->
 
       </div><!-- /detail-main -->
 

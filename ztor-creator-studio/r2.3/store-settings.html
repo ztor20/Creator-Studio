@@ -158,56 +158,9 @@
                                             <th></th>
                     </tr>
                   </thead>
-                  <tbody data-spec-rows>
-                    <tr>
-                      <td class="ztor-table__feature" data-i18n="store-settings.specs.row.tops">Tops</td>
-                      <td data-i18n="store-settings.specs.type.apparelacc">Apparel &amp; accessories</td>
-                      <td>
-                        <div class="admin-table__actions">
-                          <details class="dropdown">
-                            <summary class="btn btn--ghost btn--icon btn--sm" aria-label="More actions" data-i18n-aria-label="store-settings.specs.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>
-                            <div class="dropdown__menu" role="menu">
-                              <button class="dropdown__item" type="button" role="menuitem" data-spec-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="store-settings.specs.edit">Edit</span></button>
-                              <button class="dropdown__item" type="button" role="menuitem" data-spec-duplicate><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="store-settings.specs.duplicate">Duplicate</span></button>
-                              <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-spec-delete><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="store-settings.specs.delete">Delete</span></button>
-                            </div>
-                          </details>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="ztor-table__feature" data-i18n="store-settings.specs.row.bottoms">Bottoms</td>
-                      <td data-i18n="store-settings.specs.type.apparelacc">Apparel &amp; accessories</td>
-                      <td>
-                        <div class="admin-table__actions">
-                          <details class="dropdown">
-                            <summary class="btn btn--ghost btn--icon btn--sm" aria-label="More actions" data-i18n-aria-label="store-settings.specs.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>
-                            <div class="dropdown__menu" role="menu">
-                              <button class="dropdown__item" type="button" role="menuitem" data-spec-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="store-settings.specs.edit">Edit</span></button>
-                              <button class="dropdown__item" type="button" role="menuitem" data-spec-duplicate><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="store-settings.specs.duplicate">Duplicate</span></button>
-                              <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-spec-delete><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="store-settings.specs.delete">Delete</span></button>
-                            </div>
-                          </details>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="ztor-table__feature" data-i18n="store-settings.specs.row.hats">Hats</td>
-                      <td data-i18n="store-settings.specs.type.apparelacc">Apparel &amp; accessories</td>
-                      <td>
-                        <div class="admin-table__actions">
-                          <details class="dropdown">
-                            <summary class="btn btn--ghost btn--icon btn--sm" aria-label="More actions" data-i18n-aria-label="store-settings.specs.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>
-                            <div class="dropdown__menu" role="menu">
-                              <button class="dropdown__item" type="button" role="menuitem" data-spec-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="store-settings.specs.edit">Edit</span></button>
-                              <button class="dropdown__item" type="button" role="menuitem" data-spec-duplicate><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="store-settings.specs.duplicate">Duplicate</span></button>
-                              <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-spec-delete><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="store-settings.specs.delete">Delete</span></button>
-                            </div>
-                          </details>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
+                  <!-- 列由 js/size-guides-store.js 產生（2026-09-10）：這份清單同時被建立商品的
+                       「沿用商店的尺寸指南」那一列消費，寫死在兩頁就會分岔。 -->
+                  <tbody data-spec-rows></tbody>
                 </table>
               </div>
 
@@ -571,6 +524,7 @@
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="partials/fan-store.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>
+<script src="js/size-guides-store.js?v=r2.2"></script>
 <script src="partials/size-guide-modal.js?v=r2.2"></script>
 <script>
   /* Store settings page · spec 5.1.5.5 (D035 IA). Storefront identity is
@@ -640,61 +594,80 @@
        資料不落地：儲存一律關閉彈窗（同其他三組設定）。 */
     (function sizeGuides() {
       const panel = document.getElementById('sec-specs');
-      if (!panel || !window.ztorSizeGuide) return;
+      if (!panel || !window.ztorSizeGuide || !window.ZtorSizeGuides) return;
+      const S = window.ZtorSizeGuides;
       const T = k => (window.i18nT && window.i18nT(k)) || '';
+      const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-      /* 清單空了就把表格換成空狀態卡（§6.1） */
       const table = panel.querySelector('[data-spec-table]');
       const empty = panel.querySelector('[data-spec-empty]');
       const rows = panel.querySelector('[data-spec-rows]');
-      const paintEmpty = () => {
-        const none = !rows.children.length;
+
+      /* 列由資料源產生（2026-09-10）：同一份清單也被建立商品的「沿用商店的尺寸指南」
+         那一列消費，兩頁各寫一份就會分岔——商店設定刪光了，建立商品卻還說沿用三份。 */
+      function menu() {
+        return '<div class="admin-table__actions"><details class="dropdown">'
+          + '<summary class="btn btn--ghost btn--icon btn--sm" aria-label="More actions" data-i18n-aria-label="store-settings.specs.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>'
+          + '<div class="dropdown__menu" role="menu">'
+          + '<button class="dropdown__item" type="button" role="menuitem" data-spec-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="store-settings.specs.edit">Edit</span></button>'
+          + '<button class="dropdown__item" type="button" role="menuitem" data-spec-duplicate><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="store-settings.specs.duplicate">Duplicate</span></button>'
+          + '<button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-spec-delete><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="store-settings.specs.delete">Delete</span></button>'
+          + '</div></details></div>';
+      }
+      /* applyI18n() 會再發一次 i18n:applied，而我們正掛在那個事件上重畫——沒有這道閘門
+         就會自己叫自己叫到爆堆疊（2026-09-10 實測 Maximum call stack size exceeded）。 */
+      let painting = false;
+      function render() {
+        if (painting) return;
+        painting = true;
+        const list = S.list();
+        rows.innerHTML = list.map(g => {
+          /* 示範那三份的名字走 i18n（切語言跟著換）；使用者自己建的是資料，不掛 key。 */
+          const nameCell = g.nameKey
+            ? '<td class="ztor-table__feature" data-i18n="' + g.nameKey + '">' + esc(T(g.nameKey)) + '</td>'
+            : '<td class="ztor-table__feature">' + esc(g.name) + '</td>';
+          return '<tr data-sg-id="' + esc(g.id) + '">' + nameCell
+            + '<td data-i18n="' + esc(g.typeKey) + '">' + esc(T(g.typeKey)) + '</td>'
+            + '<td>' + menu() + '</td></tr>';
+        }).join('');
+        const none = !list.length;
         if (table) table.hidden = none;
         if (empty) empty.hidden = !none;
-      };
+        if (window.ztorIcons) window.ztorIcons.applyIcons(rows);
+        if (window.applyI18n) window.applyI18n(rows);
+        painting = false;
+      }
 
       panel.addEventListener('click', e => {
         const t = e.target;
+        const row = t.closest('[data-sg-id]');
+        const id = row && row.getAttribute('data-sg-id');
 
-        /* 新增＝空白表單；編輯＝帶那一列的名字（示範值 demo 共用一份） */
+        /* 新增＝空白表單；存檔後才進清單 */
         if (t.closest('[data-spec-new]')) {
-          window.ztorSizeGuide.open({ titleKey: 'store-settings.specs.new', blank: true });
-          return;
-        }
-        const ed = t.closest('[data-spec-edit]');
-        if (ed) {
-          const cell = ed.closest('tr').cells[0];
           window.ztorSizeGuide.open({
-            titleKey: 'store-settings.specs.modal.edit',
-            name: cell.textContent.trim(),
-            nameKey: cell.dataset.i18n || ''
+            titleKey: 'store-settings.specs.new', blank: true,
+            onSave: function (data) { S.add((data && data.name) || T('store-settings.specs.untitled') || 'Untitled guide', 'store-settings.specs.type.apparelacc'); }
           });
           return;
         }
-
-        /* 複製：整列複製一份，名稱後綴 copy */
-        const dup = t.closest('[data-spec-duplicate]');
-        if (dup) {
-          const tr = dup.closest('tr');
-          const clone = tr.cloneNode(true);
-          /* 複本的名字是使用者的資料、不再是預設指南：拔掉 i18n key，
-             否則下一次 applyI18n 會把 ' copy' 抹掉、變回預設名。 */
-          clone.cells[0].removeAttribute('data-i18n');
-          clone.cells[0].textContent = tr.cells[0].textContent + ' copy';
-          tr.after(clone);
-          if (window.ztorIcons) window.ztorIcons.applyIcons(clone);
-          if (window.applyI18n) window.applyI18n(clone);
-          paintEmpty();
+        if (t.closest('[data-spec-edit]') && id) {
+          const g = S.get(id);
+          window.ztorSizeGuide.open({
+            titleKey: 'store-settings.specs.modal.edit',
+            name: S.labelOf(g),
+            nameKey: (g && g.nameKey) || '',
+            onSave: function (data) { if (data && data.name) S.rename(id, data.name); }
+          });
           return;
         }
+        if (t.closest('[data-spec-duplicate]') && id) { S.duplicate(id); return; }
 
         /* 刪除：規格要求讓創作者知道「所有沿用中的商品就少這一份」（D211），
            用刪完的 toast 說，不做攔截式確認彈窗。 */
-        const del = t.closest('[data-spec-delete]');
-        if (del) {
-          const name = del.closest('tr').cells[0].textContent.trim();
-          del.closest('tr').remove();
-          paintEmpty();
+        if (t.closest('[data-spec-delete]') && id) {
+          const name = S.labelOf(S.get(id));
+          S.remove(id);
           if (window.ztorToast) {
             window.ztorToast.show((T('store-settings.specs.deleted') || 'Removed from every item') + ' — ' + name);
           }
@@ -711,7 +684,9 @@
         });
       });
 
-      paintEmpty();
+      window.addEventListener(S.EVENT, render);
+      document.addEventListener('i18n:applied', render);
+      render();
     })();
 
     /* ── F8 優惠碼（spec 5.1.5.5 F8 / D183）· demo 互動，無後端 ──────────
@@ -861,6 +836,14 @@ document.querySelectorAll('[data-sec]').forEach(b => b.addEventListener('click',
   });
   document.querySelectorAll('.settings-section').forEach(sec => { sec.hidden = sec.id !== 'sec-' + b.dataset.sec; });
 }));
+/* 從別頁指定分頁進來（2026-09-10）：建立商品的「尚未設定尺寸指南」那一列會連到
+   store-settings.html#specs，落地就要停在該分頁，不然使用者還要自己找。 */
+(function openFromHash() {
+  const want = (location.hash || '').replace('#', '');
+  if (!want) return;
+  const tab = document.querySelector('[data-sec="' + want + '"]');
+  if (tab) tab.click();
+}());
 
 </script>
 </body>
