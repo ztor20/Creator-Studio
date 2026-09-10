@@ -4,6 +4,33 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-10 · 展示素材槽收影片；尺寸指南改由共用資料源回答（A spec-derived · D259 / B 反饋導入）
+
+**範圍**：`partials/upload-tile.js`、`ds-components/upload-tile.css`、`ds-components/pdp-preview.css`、`create-product.html`、`store-settings.html`、新檔 `js/size-guides-store.js`、`js/i18n.js`、`design-system.html`／`design-system.md`。上游同步（不在 site）：`documents/` 的素材規格與 `decisions.md` D259。
+
+**依據**：使用者 2026-09-10 兩項指示——「創建商品的上傳圖片要改成圖片或影片」（並裁決：全站素材槽都收、主圖可以是影片、縮圖自動抽首幀、影片尺寸與圖片同一套）；以及「商店設定的 Size guides 沒有任何設定時，建立商品那一格就會是未設定」。
+
+### A · 素材槽收影片（D259）
+
+改版前這件事三方互相矛盾：格子的提示已經寫著「JPG · PNG · GIF · MP4 · MOV · WEBM」，元件卻把 `accept` 寫死 `image/*`，而規格一路只寫「圖片上傳格」。真的硬選一支 mp4 進去會塞進 `<img>`——破圖，而且狀態照樣跳 `is-filled`，就緒檢查以為填好了。
+
+- **元件**：非 `data-upload="content"` 的格子預設收圖片與影片；影片沿用既有的 `.upload-tile__video` 節點，靜音、停在第一影格——那一格畫面就是它的縮圖。格上掛 `.upload-tile--video`＋`.upload-tile--playable`，播放鈕改成兩種模式都有（沒填影片時由 `--playable` 收起來）。
+- **視覺**：展示槽的影片是 `cover`＋透明底，不用內容檔那套 `contain`＋深色底——2:3 直式格上下兩塊黑，跟旁邊鋪滿的圖片排在一起會讀成壞掉。
+- **AI 優化在影片格收起來**：那是圖片能力（依規格產出直式尺寸），對影片沒有意義。
+- **下游**：建立商品的右欄即時預覽、逐規格小圖、送出前收集素材，三處原本都直接讀圖片節點的 `src`。改成共用的 `tileMedia()`／`mediaTagHTML()`——先問這一格是圖還是片，再決定畫 `<img>` 還是畫一個停在首幀的 `<video>`。`pdp-preview.css` 的縮圖規則同步吃 `video`。
+- **文案**：「新增圖片」→「新增圖片或影片」；替換／刪除的名詞直接拿掉（那一格可能是圖也可能是片）；素材區副標改「照片與影片替你說話」。同批 key 是跨頁共用的，活動、項目、作品上架一起到位。
+
+### B · 尺寸指南：兩頁改問同一份資料
+
+商店設定把指南全部刪掉之後，建立商品仍然寫著「沿用 衣服 · 褲子 · 帽子」——因為那三個名字是寫死在建立商品的程式裡的，兩頁各有一份資料。新增 `js/size-guides-store.js` 當單一資料源（localStorage，跨頁與重整都一致，變動發 `sizeguides:changed`）：
+
+- 商店設定的清單改由資料源產生，新增／編輯／複製／刪除都寫回同一份。
+- 建立商品的那一列變成三選一：**專屬指南 › 商店一份都沒有（尚未設定尺寸指南＋前往商店設定的連結）› 沿用商店的**。沒有指南時「點擊查看」不再開空彈窗。
+- `store-settings.html#specs` 這種帶 hash 的連結現在會直接停在對應分頁，從建立商品點過去不用自己找。
+
+**驗證**：dev server 實走。建立商品：主圖格塞一支 mp4 → 格子進 `--video`／`--playable`、圖片節點沒有 src、AI 鈕隱藏、右欄預覽渲染出 `<video>`；素材文案中英皆為「新增圖片或影片」。尺寸指南：清空 → 建立商品顯示「尚未設定尺寸指南」；新增一份 → 兩頁同步；`reset()` 回到三份示範。`store-settings.html#specs` 落地即停在尺寸指南分頁。0 console error（過程中修掉自己引入的兩個：註解裡寫出萬用型別字面值提前收掉註解、以及 `i18n:applied` 與 `applyI18n` 互叫造成的爆堆疊）。`check_ds_sync.py` PASS。
+
+
 ## 2026-09-09 · 候選商品列的狀態標示：一次一個徽章，沒貨用紅字（A spec-derived · D256）
 
 **範圍**：`create-bundle.html`（候選列徽章判斷與次要資訊）、`shared.css`（新增 `.text-error` 工具類）、`js/products-store.js`（`LISTING_SEED` 補「販售結束」「即將開賣」兩筆示範）。上游同步（不在 site）：`documents/5.1.5.4-建立組合流程.md` v2.10、`documents/decisions.md` D256。
@@ -79,6 +106,18 @@
 `js/i18n.js` 大量 `tx.*`／`orders.*`／`od.*`／`sc.*`／`pk.*`／`event-detail.*` key 改名（`refund`→`void`／`cancelled`），舊 key 一律留 `/* 墓碑 */` 註解說明去向，不裸刪。`event-detail.html` 本輪新增載入 `js/toast.js`（原本沒有，作廢完成需要的 toast 回饋）。`feature-scope-map.md` 同步：`E18` 更名「提款與作廢沖銷 / Payout & void」；`O18`（退款）／`O23`（退款與爭議）標記為新增 Tier `⚫ 退場`（不再落在 ⚪ TBD／🔵 Next，避免誤讀成尚待實作）；`O04`／`O09` 更名「已取消 / 爭議」；統計行同步（🔵 Next 12→11、⚪ TBD 13→12、新增退場 2）。`design-system.html`／`design-system.md` 同步措辭（Pillar 4 badge／table 文件「提款／退款／扣款」→「提款／作廢沖銷／扣款」，Pillar 4 KPI 與 Pillar 5 Filter+list demo「Refunds」→「Voids」／「Void」，section-nav／todo-list 示範卡與 series 平行規則敘述同步）；`STYLE-DECISIONS.md` Q110／Q27 措辭同步，並註記本輪沿用既有裁決、無新增待裁決條目；`ASSUMPTIONS.md` 新增 UIA-145（活動端作廢執行者身分未鎖定、Earnings 財務口徑未落地、數位交付判準、已作廢票券 KPI 覆蓋範圍四項）。
 
 **驗證**：`python3 ../../Skills/project-ui-creator/scripts/check_ds_sync.py "site/r2.3"` → `RESULT: PASS + WARN (raw-color, sibling-rhythm)`（兩則 WARN 皆既有存量、與本輪無關）。dev server 實走（`devserver.py` port 56902）：`event-detail.html?id=realive-asia-taipei` 作廢紀錄分頁顯示「沖銷準備金 → 當期可分配淨利 → 結轉赤字」（zh）／「Void reserve → current distributable profit」（en），確認 Refund Reserve 殘留已修掉；`order-detail.html?id=ZT-10488` 數位品項出貨狀態徽章顯示「尚未發行」、作廢鈕可按；`design-system.html` 的 Pillar 4 KPI／Pillar 5 chip 兩處實際渲染為「Voids」／「Void」（`querySelector` 逐一核對，非文字搜尋誤判）。zh／en 各頁 `[data-i18n]` 元素逐一核對 textContent 是否等於 key 本身（raw key 判準）：`event-detail.html` 367／363 個皆 0 命中，`order-detail.html` 143 個皆 0 命中，`orders.html` 219 個皆 0 命中，`earnings.html` 497 個皆 0 命中。console 未見新增 error。本輪為文件收尾與措辭補正，未產生新截圖檔；視覺證據以上述即時渲染核對為準。
+
+## 2026-09-10（三）· 組合包詳情頁的「成員」分頁改名「組合商品」（B 反饋導入）
+
+**範圍**：`js/i18n.js`（`bd.tab.members`）。
+
+**依據**：使用者 2026-09-10 裁示改名。「成員」是規格（5.1.5.9 §2.3「成員清單」）與程式的內部用詞，畫面上看不出它指的是「這個組合裡裝了哪些商品」。英文由 `Members` 改 `Items`，對齊規格該條的括號用詞。
+
+**注意**：站上「組合商品」原本也用來指組合這個商品本身（e-shop 清單與 5.1.5.9 的頁名）。同一個詞在這裡指的是「組合裡的商品」，兩者靠所在位置區分——分頁在組合詳情頁裡，讀起來是「這個組合的商品」。分頁裡的區塊標題維持「組合內含」。
+
+同輪把「組合商品」移到第二個（使用者裁示）：分頁序改為 總覽／組合商品／銷售設定——先看清楚這個組合裝了什麼，再去設定它怎麼賣。分頁本體在檔案裡也照同一順序排（顯隱由 class 控制，順序不影響行為，但檔案要讀得一致）。
+
+**驗證**：dev server 分頁序為 總覽／組合商品／銷售設定，三個分頁切換與內容（含成員分配表 19 列）皆正常；0 console error。
 
 ## 2026-09-10（三）· 商品明細與組合包的庫存表定案（候選 U＋B）：同一張表、常駐輸入、表面吃層級（B 反饋導入 / C 撤除）
 

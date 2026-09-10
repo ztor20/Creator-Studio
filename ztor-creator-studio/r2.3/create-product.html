@@ -272,6 +272,15 @@
                  走保留 gate；Phase 1–3 只看得到「沿用商店的尺寸指南」這一行。 -->
             <button class="btn btn--outline" type="button" data-feat="full" data-cp-sg-own><span data-i18n="cp.sg.switch">Use its own guide</span></button>
           </div>
+          <!-- 商店一份指南都沒有時的狀態（2026-09-10）：沿用什麼都沒有就別假裝在沿用；
+               清單由 js/size-guides-store.js 回答，與商店設定同一份資料。 -->
+          <div class="control-row" data-cp-sg="none" hidden>
+            <div>
+              <div class="control-row__main" data-i18n="cp.sg.none">No size guides set up</div>
+              <div class="control-row__sub"><span data-i18n="cp.sg.none.hint">Add one in store settings — every item uses it.</span> <a class="control-row__link" href="store-settings.html#specs" data-i18n="cp.sg.none.cta">Store settings</a></div>
+            </div>
+            <button class="btn btn--outline" type="button" data-feat="full" data-cp-sg-own><span data-i18n="cp.sg.switch">Use its own guide</span></button>
+          </div>
           <div class="control-row" data-cp-sg="own" data-feat="full" hidden>
             <div>
               <div class="control-row__main" data-i18n="cp.sg.own">Using its own size guide</div>
@@ -1189,18 +1198,44 @@
      點開彈窗換圖（欄寬只有 34px，塞不下上傳格與說明）。
      邊框語彙沿用上傳格：實線＝自己的圖、虛線＝沿用主圖或還沒有圖。
      **這是上游沒有的欄位**，記在 ASSUMPTIONS（PG-025）等裁決，不寫回 documents/。 */
-  function productHeroSrc() {
-    const t = document.querySelector('[data-cp-show="physical"] [data-cp-asset="p-hero"] .upload-tile__thumb');
-    return (t && t.getAttribute('src')) || '';
+  /* ---- 素材格的取值（2026-09-10 · D259）------------------------------------
+     一格素材現在可能是圖片，也可能是影片：圖片在 <img class="upload-tile__thumb">，
+     影片在 <video class="upload-tile__video">。凡是要把素材畫到別處（右欄預覽、
+     逐規格小圖、送出前收集）的地方，一律問這支，不要各自去撈 img 的 src——
+     那正是影片會變破圖的成因。 */
+  function tileMedia(tile) {
+    if (!tile) return null;
+    const v = tile.querySelector('.upload-tile__video');
+    if (v && v.getAttribute('src')) return { kind: 'video', src: v.getAttribute('src') };
+    const im = tile.querySelector('.upload-tile__thumb');
+    const src = im && im.getAttribute('src');
+    return src ? { kind: 'image', src: src } : null;
   }
-  function variantImgSrc(d) { return (d && d.img) || productHeroSrc(); }
+  /* 影片沒有可當 <img src> 的縮圖（瀏覽器不會替 img 解碼影片），所以要顯示縮圖的地方
+     改放一個靜音、不自動播、停在第一影格的 <video>。真實產品由後端轉檔產出首幀圖，
+     見 ASSUMPTIONS UIA-147。 */
+  function mediaTagHTML(m, cls) {
+    if (!m) return '';
+    const src = String(m.src).replace(/"/g, '&quot;');
+    return m.kind === 'video'
+      ? '<video class="' + cls + '" src="' + src + '" muted playsinline preload="metadata"></video>'
+      : '<img class="' + cls + '" alt="" src="' + src + '">';
+  }
+  function productHeroMedia() {
+    return tileMedia(document.querySelector('[data-cp-show="physical"] [data-cp-asset="p-hero"]'));
+  }
+  function productHeroSrc() { const m = productHeroMedia(); return m ? m.src : ''; }
+  /* 逐規格圖仍只收圖片（那一格是 34px 的辨識用小圖，換規格用的），沿用主素材時
+     若主素材是影片，就跟著顯示影片的第一影格。 */
+  function variantImgMedia(d) { return (d && d.img) ? { kind: 'image', src: d.img } : productHeroMedia(); }
+  function variantImgSrc(d) { const m = variantImgMedia(d); return m ? m.src : ''; }
   function variantThumbHTML(key, d) {
     const own = !!(d && d.img);
-    const src = variantImgSrc(d);
+    const m = variantImgMedia(d);
     const label = T('cp.var.img', 'Variant image') + ' · ' + key;
     return `<button class="variant-thumb${own ? ' variant-thumb--own' : ''}" type="button" data-vimg="${esc(key)}" aria-label="${esc(label)}" title="${esc(label)}">`
-      + (src ? `<img class="variant-thumb__img" src="${esc(src)}" alt="">`
-             : '<i data-lucide="plus" class="ztor-icon"></i>')
+      + (m ? mediaTagHTML(m, 'variant-thumb__img')
+           : '<i data-lucide="plus" class="ztor-icon"></i>')
       + '</button>';
   }
 
@@ -1429,8 +1464,8 @@
       if (tile.hidden) return;
       var container = tile.closest('[data-cp-show]');
       if (container && container.hidden) return;
-      var thumb = tile.querySelector('.upload-tile__thumb');
-      if (thumb && thumb.src) imgs.push(thumb.src);
+      var m = tileMedia(tile);
+      if (m) imgs.push(m.src);
     });
     return imgs;
   }
@@ -1663,21 +1698,19 @@
     if (!pvFrame || !pvThumbs) return;
     const prefix = state.type === 'digital' ? 'd-' : 'p-';
     const tiles = [].slice.call(document.querySelectorAll('[data-cp-asset^="' + prefix + '"]'));
-    const srcs = tiles
-      .map(t => { const im = t.querySelector('.upload-tile__thumb'); return im && im.getAttribute('src'); })
-      .filter(Boolean);
+    const items = tiles.map(tileMedia).filter(Boolean);
+    /* 主視覺可能是影片（D259）：整個節點換掉而不是改 src——img 與 video 是兩種標籤。 */
     const hero = pvFrame.querySelector('.pdp-pv__img');
-    if (srcs.length) {
-      if (hero) hero.setAttribute('src', srcs[0]);
-      else pvFrame.insertAdjacentHTML('afterbegin', '<img class="pdp-pv__img" alt="" src="' + srcs[0] + '">');
+    if (hero) hero.remove();
+    if (items.length) {
+      pvFrame.insertAdjacentHTML('afterbegin', mediaTagHTML(items[0], 'pdp-pv__img'));
       pvFrame.classList.add('is-filled');
     } else {
-      if (hero) hero.remove();
       pvFrame.classList.remove('is-filled');
     }
-    /* 只有兩張以上才有「選第幾張」這件事，一張圖不長縮圖列（粉絲端同理）。 */
-    pvThumbs.innerHTML = srcs.length > 1
-      ? srcs.map((src, i) => '<span class="pdp-pv__thumb' + (i === 0 ? ' is-active' : '') + '"><img alt="" src="' + src + '"></span>').join('')
+    /* 只有兩個以上才有「選第幾個」這件事，單一素材不長縮圖列（粉絲端同理）。 */
+    pvThumbs.innerHTML = items.length > 1
+      ? items.map((m, i) => '<span class="pdp-pv__thumb' + (i === 0 ? ' is-active' : '') + '">' + mediaTagHTML(m, '') + '</span>').join('')
       : '';
   }
 
@@ -2329,6 +2362,7 @@
 <div data-pickup-modal-host></div>
 <script src="partials/pickup-session-modal.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>
+<script src="js/size-guides-store.js?v=r2.2"></script>
 <script src="partials/size-guide-modal.js?v=r2.2"></script>
 <script>
   /* 尺寸指南（spec 5.1.5.2 §4.1 F2 / D211）· demo，無後端 ─────────────
@@ -2338,21 +2372,35 @@
     var section = document.querySelector('[data-cp-sg="inherit"]');
     if (!section || !window.ztorSizeGuide) return;
     var own = document.querySelector('[data-cp-sg="own"]');
+    var none = document.querySelector('[data-cp-sg="none"]');
     var list = document.querySelector('[data-cp-sg-list]');
     var T = function (k) { return (window.i18nT && window.i18nT(k)) || ''; };
+    var S = window.ZtorSizeGuides || null;
+    var hasOwn = false;
 
-    /* 沿用中的清單直接引商店那三份的 i18n key，切語言自動跟著換；
-       demo 沒有真的商店資料，這裡就是 store-settings 那三列的同一組 key。 */
-    var SHOP_GUIDES = ['store-settings.specs.row.tops', 'store-settings.specs.row.bottoms', 'store-settings.specs.row.hats'];
+    /* 沿用中的清單問商店那份資料源（2026-09-10）：清單住在商店設定，這裡只是說
+       「這件商品沿用哪幾份」。以前這裡把三個 i18n key 寫死，於是商店把指南全刪掉之後，
+       建立商品仍然寫著「沿用 衣服·褲子·帽子」——畫面在講一件不存在的事。 */
+    function guides() { return S ? S.list() : []; }
     function paintList() {
-      if (list) list.textContent = SHOP_GUIDES.map(T).filter(Boolean).join(' · ');
+      var names = S ? S.labels() : [];
+      if (list) list.textContent = names.join(' · ');
+      paintState();
+    }
+    /* 三選一的狀態：專屬指南 › 商店沒有任何指南 › 沿用商店的。 */
+    function paintState() {
+      var empty = guides().length === 0;
+      section.hidden = hasOwn || empty;
+      if (none) none.hidden = hasOwn || !empty;
+      own.hidden = !hasOwn;
     }
     paintList();
     document.addEventListener('i18n:applied', paintList);
+    if (S) window.addEventListener(S.EVENT, paintList);
 
-    function setOwn(hasOwn) {
-      section.hidden = hasOwn;
-      own.hidden = !hasOwn;
+    function setOwn(v) {
+      hasOwn = v;
+      paintState();
     }
 
     function openEditor(isNew) {
@@ -2372,13 +2420,16 @@
       /* 「點擊查看」開的是商店那一份（清單第一份），不是這件商品的——
          彈窗頂端寫明改動會影響所有沿用中的商品（D215）。 */
       if (e.target.closest('[data-cp-sg-view]')) {
+        var gs = guides();
+        if (!gs.length) return;                       /* 沒有指南就沒有東西可看 */
+        var keys = gs.map(function (g) { return g.nameKey || g.name; });
         window.ztorSizeGuide.open({
           titleKey: 'cp.sg.shop.title',
           noticeKey: 'cp.sg.shop.notice',
-          name: T(SHOP_GUIDES[0]),
-          nameKey: SHOP_GUIDES[0],
-          guides: SHOP_GUIDES,          /* 三份都能在彈窗裡換著看（D216） */
-          guideKey: SHOP_GUIDES[0],
+          name: S.labelOf(gs[0]),
+          nameKey: gs[0].nameKey || '',
+          guides: keys,                 /* 每一份都能在彈窗裡換著看（D216） */
+          guideKey: keys[0],
           showName: false               /* 切換列已經寫著在看哪一份，名稱欄再寫一次是重複；
                                            改名字屬於商店設定，不從商品頁做 */
         });
