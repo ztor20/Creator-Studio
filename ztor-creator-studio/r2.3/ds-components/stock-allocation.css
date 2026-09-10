@@ -136,6 +136,41 @@
   margin: 0;
 }
 
+/* ── 成員展開到選項組合（2026-09-10 · D258）─────────────────────────────
+   成員是多選項商品時，「鎖給本組合」不能只有一個數字——組合包收的是「M 號 5 件」，
+   不是「這件商品 5 件」。成員列因此變成母列（唯讀加總）＋逐選項組合的子列（各自可填）。
+   單一規格成員維持一列、不受影響。
+
+   展開語彙沿用站上 row-disclosure 的做法（Q107：可展開子列的單一答案）——整組坐進一塊
+   --ztu-film 薄膜，母列的把手用 .salloc__toggle；本元件只補「子列長什麼樣」，
+   不重做展開機制。預設展開：這一段的存在意義就是逐組合設定，收起來等於藏起要做的事。 */
+.salloc__group { background: var(--ztu-film); }
+.salloc__group[hidden] { display: none; }
+.salloc__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sp-20);
+  color: var(--muted-foreground);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.salloc__toggle .ztor-icon { width: var(--sp-16); height: var(--sp-16); }
+.salloc__toggle[aria-expanded="false"] .ztor-icon { transform: rotate(-90deg); }
+/* 母列：把手固定一欄、名稱吃剩下的寬度並自己截斷（名稱長就截，不要把把手擠到下一行）；
+   底下的次要說明對齊名稱、不對齊把手。子列的名稱縮排到把手之後，讀得出從屬關係。 */
+.salloc__name--parent {
+  display: grid;
+  grid-template-columns: var(--sp-20) minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--sp-6);
+}
+.salloc__name--parent > .card__link { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.salloc__name--parent > .salloc__sub { grid-column: 2; }
+.salloc__row--child .salloc__name { padding-left: var(--sp-28); color: var(--muted-foreground); }
+
 /* ── 組合包視角：多一欄「成員的沒有被鎖定的庫存量」──────────────────────────── */
 .salloc--bundle .salloc__row {
   grid-template-columns: minmax(0, 1fr) var(--salloc-qty-col) var(--salloc-lock-col) var(--salloc-qty-col);

@@ -218,7 +218,11 @@
       var p = map[m.productId || m.id];
       if (!p) return 0;
       var per = num(m.qty) > 0 ? num(m.qty) : 1;   /* 一套要用到同一件商品好幾件時 */
-      var q = channelQty(p, { bundle: bundle.id });
+      /* 成員是多選項商品時，這個組合拿得到的量＝各選項組合在本組合可售量之和
+         （D258：組合包的鎖定逐選項組合設定；買家挑哪一個組合出貨仍是產品待確認）。 */
+      var q = (p.variant === 'multiple' && (p.variants || []).length)
+        ? variantsChannelQty(p.variants, { bundle: bundle.id })
+        : channelQty(p, { bundle: bundle.id });
       var sets = (q === INF) ? INF : Math.floor(q / per);
       if (sets < min) min = sets;
     }

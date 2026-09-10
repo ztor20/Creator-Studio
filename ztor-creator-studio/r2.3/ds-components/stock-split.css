@@ -1,0 +1,56 @@
+/* ============================================================
+   stock-split.css · 庫存分配長條（.stock-split）
+
+   一條看完「這些庫存分給誰」：一段一個販售管道（單售、各組合包），末段是還沒被
+   鎖走、留在庫存池裡的量。底下的圖例逐段帶數字，所以長條只負責比例、不負責讀數。
+
+   為什麼要有它（2026-09-10 · D258）：商品明細原本用「已鎖定／未鎖定」兩個數字講同一件事，
+   但兩者相加恆等於目前在庫——三個數字裡有一個永遠是另外兩個的差，讀的人得先做減法才知道
+   比例。改用一條長條之後，「鎖走多少、剩多少」是一眼的事，「已鎖定」那一格數字就可以退場。
+   參考：Deel 的資產總覽（一條堆疊長條講分佈，底下才是明細表）。
+
+   與 `stock-bar` 的分工：`stock-bar` 是「賣掉多少／還剩多少」的單段進度（限量商品才有分母）；
+   本元件是「同一批庫存分給哪些管道」的多段分配，任何商品都成立。兩者不互相取代。
+
+   anatomy
+     .stock-split                  軌道（--ztu-film 底、pill 圓角）
+       .stock-split__seg           一段；寬度由消費端給 flex 比例
+         .--single                 單售（--chart-2）
+         .--bundle                 組合包（--chart-5）
+         .--free                   未鎖定（薄膜，等於「還沒分出去」）
+     .stock-split__legend          圖例（會換行）
+       .stock-split__item          一項：色點＋名稱＋數字
+         .stock-split__dot         色點（同段落色）
+         .stock-split__v           數字（前景色，與名稱的輔助色分開）
+
+   顏色走圖表色票（--chart-*）而不是狀態色：這裡的段落是「分給誰」的分類，不是好壞。
+   ============================================================ */
+
+.stock-split {
+  display: flex;
+  gap: var(--sp-2);
+  height: var(--sp-8);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: var(--ztu-film);
+  margin: var(--sp-4) 0 var(--sp-12);
+}
+.stock-split__seg { height: 100%; }
+.stock-split__seg--single { background: var(--chart-2); }
+.stock-split__seg--bundle { background: var(--chart-5); }
+.stock-split__seg--free { background: var(--ztu-film); }
+
+.stock-split__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-16);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.stock-split__item { display: inline-flex; align-items: center; gap: var(--sp-6); }
+.stock-split__dot { width: var(--sp-8); height: var(--sp-8); border-radius: var(--radius-pill); flex: none; }
+.stock-split__dot--single { background: var(--chart-2); }
+.stock-split__dot--bundle { background: var(--chart-5); }
+.stock-split__dot--free { background: var(--ztu-film); }
+.stock-split__v { color: var(--foreground); font-variant-numeric: tabular-nums; }
