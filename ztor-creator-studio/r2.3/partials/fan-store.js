@@ -36,6 +36,29 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     nick:    { avatar: 'images/ip/nick-portrait.jpg', nameKey: 'fan.profile.nick.name',    roleKey: 'fan.profile.nick.role',    followers: '215 萬', followersEn: '2.15M', bioKey: 'fan.profile.nick.bio' }
   };
   var P = PROFILE[persona] || PROFILE.default;
+  /* 店面資料（2026-09-11）：頭像／名字／身分／簡介／社群連結改問 js/store-profile-store.js——商店設定的
+     「店面」分頁在編輯同一份，這裡跟著畫；沒載那支（三個細節頁的預覽面板）就退回上面的人格檔案。 */
+  function profile() {
+    var st = window.ZtorStoreProfile; if (!st) return null;
+    try { return st.get(); } catch (e) { return null; }
+  }
+  /* 文字欄位：示範資料走 i18n key（切語言跟著換），使用者打的字用字面值 */
+  function textNode(field, key, tag, cls, fb) {
+    var pr = profile();
+    if (pr && pr[field] != null && pr[field] !== '') return '<' + tag + ' class="' + cls + '">' + esc(pr[field]) + '</' + tag + '>';
+    return '<' + tag + ' class="' + cls + '" data-i18n="' + esc((pr && pr[field + 'Key']) || key) + '">' + esc(fb) + '</' + tag + '>';
+  }
+  function avatarSrc() { var pr = profile(); return (pr && pr.avatar) || P.avatar; }
+  function socialsHtml() {
+    var pr = profile(), st = window.ZtorStoreProfile;
+    if (!pr || !st) return social('brand-instagram', 'Instagram') + social('brand-threads', 'Threads') + social('brand-x', 'X') + social('brand-tiktok', 'TikTok');
+    /* 有填網址的平台才出現在粉絲頁；順序＝店面設定裡的順序 */
+    return pr.socials.filter(function (s) { return s.url; }).map(function (s) {
+      var p = st.platform(s.platform); if (!p) return '';
+      var g = p.icon ? '<i data-lucide="' + esc(p.icon) + '" class="ztor-icon"></i>' : '<span class="fan-store__social-mark">' + esc(p.mark || p.label) + '</span>';
+      return '<a class="fan-store__social" href="#" aria-label="' + esc(st.platformLabel(p.id)) + '">' + g + '</a>';
+    }).join('');
+  }
 
   /* 商品卡：順序固定，e-shop 的 PREVIEW_IDS 對照表照這個順序。
      名稱／價格／圖優先問 ProductsStore（e-shop 有載）；沒載就用示範值。 */
@@ -106,22 +129,22 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
 '  <div class="fan-store__page">' +
 
 '    <header class="fan-store__profile">' +
-'      <img class="fan-store__avatar" src="' + esc(P.avatar) + '" alt="">' +
+'      <img class="fan-store__avatar" src="' + esc(avatarSrc()) + '" alt="">' +
 '      <div class="fan-store__ident">' +
-'        <h3 class="fan-store__name" data-i18n="' + P.nameKey + '">Creator</h3>' +
+'        ' + textNode('name', P.nameKey, 'h3', 'fan-store__name', 'Creator') +
 '        <div class="fan-store__meta">' +
-'          <span class="fan-store__role" data-i18n="' + P.roleKey + '">Musician</span>' +
+'          ' + textNode('role', P.roleKey, 'span', 'fan-store__role', 'Musician') +
 '          <span class="fan-store__followers"><b data-fs-followers data-zh="' + esc(P.followers) + '" data-en="' + esc(P.followersEn) + '">' + esc(P.followers) + '</b> <span data-i18n="fan.followers">followers</span></span>' +
 '        </div>' +
 '      </div>' +
 '      <i data-lucide="share" class="ztor-icon fan-store__share" aria-hidden="true"></i>' +
 '    </header>' +
 
-'    <p class="fan-store__bio"><span data-i18n="' + P.bioKey + '">Bio</span> <span class="fan-store__more" data-i18n="fan.more">More</span></p>' +
+'    <p class="fan-store__bio">' + textNode('bio', P.bioKey, 'span', 'fan-store__bio-text', 'Bio') + ' <span class="fan-store__more" data-i18n="fan.more">More</span></p>' +
 
 '    <div class="fan-store__socials">' +
        '<a class="fan-store__social fan-store__social--ztor" href="#" aria-label="ztor"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.0879 14.0938C22.6959 14.0939 23.9998 15.3043 24 16.7969C24 18.2896 22.6961 19.4998 21.0879 19.5C19.4796 19.5 18.1758 18.2897 18.1758 16.7969C18.176 15.3042 19.4797 14.0938 21.0879 14.0938ZM14.8906 4.5C15.2844 4.5 15.6034 4.8193 15.6035 5.21387C15.6035 5.35888 15.5612 5.49277 15.4873 5.60547L15.3975 5.71777L13.4912 8.08398L8.12109 14.7559C8.10547 14.7736 8.09069 14.7927 8.07715 14.8115C8.0012 14.9169 7.95612 15.0448 7.95605 15.1846C7.95605 15.5395 8.24348 15.828 8.59766 15.8281H15.1191L15.1201 15.8271C15.4826 15.8271 15.7752 16.1212 15.7754 16.4834V18.8037C15.7753 19.167 15.4816 19.46 15.1201 19.46H0.642578C0.287501 19.4598 0.000137745 19.1722 0 18.8164C0 18.6775 0.0460766 18.5478 0.121094 18.4424L0.166016 18.3867L2.22559 15.8281L8.05469 8.58594C8.05575 8.58492 8.05762 8.58403 8.05762 8.58301C8.092 8.53185 8.1123 8.47007 8.1123 8.4043C8.11208 8.22804 7.96891 8.08496 7.79297 8.08496H1.37207C1.00961 8.0849 0.716901 7.79087 0.716797 7.42871V5.15625C0.717001 4.79313 1.01071 4.50006 1.37207 4.5H14.8906Z"/></svg></a>' +
-       social('brand-instagram', 'Instagram') + social('brand-threads', 'Threads') + social('brand-x', 'X') + social('brand-tiktok', 'TikTok') +
+       socialsHtml() +
 '    </div>' +
 
 '    <div class="fan-store__ctas">' +
@@ -130,7 +153,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
 '    </div>' +
 
 '    <div class="fan-store__stick" data-fan-stick>' +
-'      <div class="fan-store__minihead" aria-hidden="true"><img class="fan-store__minihead-avatar" src="' + esc(P.avatar) + '" alt=""><span class="fan-store__minihead-name" data-i18n="' + P.nameKey + '">Creator</span></div>' +
+'      <div class="fan-store__minihead" aria-hidden="true"><img class="fan-store__minihead-avatar" src="' + esc(avatarSrc()) + '" alt="">' + textNode('name', P.nameKey, 'span', 'fan-store__minihead-name', 'Creator') + '</div>' +
 '      <nav class="fan-store__nav" aria-label="Fan page sections">' +
 '        <button class="fan-store__nav-item fan-store__nav-item--active" type="button" data-i18n="fan.nav.shop">Shop</button>' +
 '        <button class="fan-store__nav-item" type="button" data-i18n="fan.nav.events">Events</button>' +
@@ -207,6 +230,22 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchHosts); else watchHosts();
   window.ZTOR_PARTIALS.bindFanStore = bindStick;
+
+  /* 店面資料變了（商店設定在編輯）：已注入的預覽整份重畫，捲動位置與釘頂狀態盡量保留 */
+  function remount() {
+    document.querySelectorAll('[data-fan-store-host]').forEach(function (host) {
+      if (!host.firstElementChild) return;
+      var hidden = {};
+      host.querySelectorAll('.fan-store__card[hidden]').forEach(function (c) { hidden[c.getAttribute('data-fs-product')] = true; });
+      host.innerHTML = build();
+      Object.keys(hidden).forEach(function (id) { var c = host.querySelector('.fan-store__card[data-fs-product="' + id + '"]'); if (c) c.hidden = true; });
+      if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+      if (window.applyI18n) window.applyI18n(host);
+      bindStick(host);
+    });
+  }
+  window.addEventListener('storeprofile:changed', remount);
+  window.ZTOR_PARTIALS.remountFanStore = remount;
 
   /* 追蹤數是資料不是文案，但單位寫法依語言不同（1.2 萬 vs 12.4k）：切語言時自己換。 */
   document.addEventListener('i18n:applied', function () {
