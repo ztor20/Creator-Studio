@@ -123,6 +123,8 @@
 <link rel="stylesheet" href="ds-components/stock-history.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/state-check.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/profile-avatar-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/social-links.css?v=r2.2">
 <!-- r2.2 新進元件（19 支，2026-07-29 補齊 demo；zselect 原本就有 <link>，見上方 45 行） -->
 <link rel="stylesheet" href="ds-components/artist-picker.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/benefit-matrix.css?v=r2.2">
@@ -738,6 +740,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#stock-history">Stock history</a>
     <a class="toc__link toc__link--sub" href="#state-check">State check</a>
     <a class="toc__link toc__link--sub" href="#lock-sets">Lock sets</a>
+    <a class="toc__link toc__link--sub" href="#profile-avatar-row">Profile avatar row</a>
+    <a class="toc__link toc__link--sub" href="#social-links">Social links</a>
     <div class="toc__subgroup"><span data-en>JS components without their own CSS (9)</span><span data-zh>無自帶 CSS 的 JS 元件（9）</span></div>
     <a class="toc__link toc__link--sub" href="#work-fields">Work fields</a>
     <a class="toc__link toc__link--sub" href="#work-taxonomy">Work taxonomy</a>
@@ -1557,6 +1561,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#restock-log">Restock log ✝</a></td><td>🟡</td><td><span data-en>Retired 2026-09-11 — replaced by Stock history (one row per order, details on expand)</span><span data-zh>2026-09-11 退場——由 Stock history 取代（一張單一筆、點開看明細）</span></td><td><code>restock-log.css</code>（墓碑）</td></tr>
           <tr><td><a href="#stock-history">Stock history</a></td><td>🟡</td><td><span data-en>Stock history list — one row per restock order or lock change (date / type / per-combination summary / supplier · method / status), details on expand: quantities, supplier, ETA with mark-received, note</span><span data-zh>庫存歷史紀錄——一張補貨單或一次鎖定一筆（日期／類型／逐組合摘要／供應商 · 方式／狀態），點開看逐組合數量、供應商、預計到貨（附到貨確認）、備註</span></td><td><code>stock-history.css</code></td></tr>
           <tr><td><a href="#lock-sets">Lock sets</a></td><td>🟠</td><td><span data-en>Bundle stock lock by sets: one “locked sets” field plus a framed list of member items (stock · unlocked · locked = N × per set), multi-option members expand to optional per-option pinning</span><span data-zh>組合包鎖定套數：一個「鎖定套數」欄位＋外框清單（商品庫存 · 未鎖定 · 已鎖定＝N × 每套用量），多選項商品可展開逐規格選填分配</span></td><td><code>lock-sets.css</code></td></tr>
+          <tr><td><a href="#profile-avatar-row">Profile avatar row</a></td><td>🟡</td><td><span data-en>Avatar + name + “change photo” strip (store settings › storefront)</span><span data-zh>頭像＋名字＋「變更相片」橫條（商店設定 › 店面）</span></td><td><code>profile-avatar-row.css</code></td></tr>
+          <tr><td><a href="#social-links">Social links</a></td><td>🟠</td><td><span data-en>Social link list: one platform per row with URL field, dashed “add” button that opens a platform picker</span><span data-zh>社群連結清單：平台一列一格＋網址欄，虛線「新增」鈕展開平台清單</span></td><td><code>social-links.css</code></td></tr>
           <tr><td><a href="#state-check">State check</a></td><td>🟡</td><td><span data-en>Read-only on/off state row (listed · shown · on sale)</span><span data-zh>唯讀的開／關狀態排（上架 · 顯示 · 開賣）</span></td><td><code>state-check.css</code></td></tr>
           <tr><td><a href="#stock-tip">Stock tip</a></td><td>🟢</td><td><span data-en>Hover/focus any product row's status/stock cell → floating info card. Multi-option/bundle rows get a per-option stock breakdown (flattened to option combinations, bundle members too); single-variant rows (2026-07-23, scope widened) show current stock instead</span><span data-zh>hover/focus 任何商品列的狀態／庫存欄 → 浮出資訊卡。多選項／組合商品列顯示逐選項庫存明細（攤到選項組合，組合商品連成員也攤）；單一選項商品列（2026-07-23 擴大範圍）改顯示目前庫存</span></td><td><code>stock-tip.css</code></td></tr>
           <tr><td><a href="#pickup">Pickup management</a></td><td>🟠</td><td><span data-en>On-site QR redemption workspace (E-Shop 5.1.5.11): session-detail board (items left / staff scanning + progress right), roster table, scanner-access settings card, multi-select session rows</span><span data-zh>現場 QR 核銷工作區（E-Shop 5.1.5.11）：場次詳情行動卡（左＝領取項目／右＝工作人員掃碼與核銷進度）、名單表格、scanner 存取設定卡、建立場次多選列</span></td><td><code>pickup.css</code></td></tr>
@@ -11651,6 +11657,42 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <p class="field-text">bundle-detail.html › 組合庫存 › 商品庫存鎖定; create-bundle.html › F4. Numbers come from <code>js/listing-state.js</code> (<code>bundleLockSets</code> / <code>bundleMaxSets</code> / <code>bundleAllocOf</code> / <code>bundleQty</code>); write-back only via <code>applyBundleLock</code>. Exploration: <code>lab-bundle-lock.html</code>.</p>
   </div>
   </details>
+</section>
+
+<section class="sub" id="profile-avatar-row">
+  <div class="sub__head"><h3 class="sub__title">4.211 Profile avatar row</h3><span class="layer layer--molecule">🟡 molecule</span></div>
+  <p class="sub__desc" data-en>A film strip with a round avatar, the display name and a ghost “change photo” button — modelled on the fan-side “edit profile” drawer (2026-09-11). First use: store settings › storefront; the name mirrors the display-name field.</p>
+  <p class="sub__desc" data-zh>薄膜底的橫條：圓形頭像、顯示名稱、右端一顆 ghost「變更相片」——照粉絲端「編輯個人檔案」抽屜（2026-09-11）。首用商店設定「店面」分頁，名字跟著顯示名稱欄位變。</p>
+  <div class="demo">
+    <div class="profile-avatar-row" style="max-width:520px">
+      <img class="profile-avatar-row__img" src="images/ip/gary-portrait.jpg" alt="">
+      <span class="profile-avatar-row__name">Gary Lin</span>
+      <button class="btn btn--ghost btn--sm" type="button">變更相片</button>
+    </div>
+  </div>
+  <details class="sub__spec"><summary>Spec</summary>
+  <div class="sub__spec-body">
+    <p class="field-label">Source</p><p class="field-text"><code>ds-components/profile-avatar-row.css</code> · wiring in <code>partials/social-links.js</code></p>
+    <p class="field-label">Anatomy</p><p class="field-text"><code>.profile-avatar-row</code> &gt; <code>img.profile-avatar-row__img</code> + <code>.profile-avatar-row__name</code> + <code>.btn.btn--ghost.btn--sm</code> + <code>input[type=file][hidden]</code></p>
+    <p class="field-label">Token usage</p><p class="field-text"><code>--ztu-film</code> / <code>--ztu-rim-soft</code>, <code>--radius-lg</code>, <code>--sp-16/20</code>, <code>--fs-16</code> / <code>--fw-semibold</code></p>
+  </div></details>
+</section>
+
+<section class="sub" id="social-links">
+  <div class="sub__head"><h3 class="sub__title">4.212 Social links</h3><span class="layer layer--organism">🟠 organism</span></div>
+  <p class="sub__desc" data-en>List of linked platforms — one row per platform (label + trash button above a URL field), then a dashed “add” button that expands a picker of the platforms not yet added. Data in <code>js/store-profile-store.js</code>, rendering in <code>partials/social-links.js</code>. First use: store settings › storefront.</p>
+  <p class="sub__desc" data-zh>已加的平台一列一格（平台名＋垃圾桶在上、網址輸入在下），底下一條虛線「新增社群連結」，點開展出還沒加的平台清單。資料在 <code>js/store-profile-store.js</code>、畫與接線在 <code>partials/social-links.js</code>。首用商店設定「店面」分頁。</p>
+  <div class="demo">
+    <div class="social-links" style="max-width:520px">
+      <div class="social-links__row"><div class="social-links__head"><span class="social-links__label"><i data-lucide="brand-instagram" class="ztor-icon"></i><span>Instagram</span></span><button class="btn btn--icon btn--sm social-links__remove" type="button" aria-label="移除"><i data-lucide="trash-2" class="ztor-icon"></i></button></div><input class="input social-links__url" type="url" value="https://instagram.com/coastline" aria-label="Instagram"></div>
+      <button class="social-links__add" type="button"><i data-lucide="plus" class="ztor-icon"></i><span>新增社群連結</span></button>
+    </div>
+  </div>
+  <details class="sub__spec"><summary>Spec</summary>
+  <div class="sub__spec-body">
+    <p class="field-label">Source</p><p class="field-text"><code>ds-components/social-links.css</code> · <code>partials/social-links.js</code> · <code>js/store-profile-store.js</code></p>
+    <p class="field-label">Anatomy</p><p class="field-text"><code>.social-links</code> &gt; <code>.social-links__row</code>×n (<code>__head</code> &gt; <code>__label</code>[<code>__mark</code>] + <code>.btn--icon.social-links__remove</code> · <code>input.input.social-links__url</code>) + <code>button.social-links__add</code>[.is-open] + <code>.social-links__picker</code> &gt; <code>.social-links__option</code>×n</p>
+  </div></details>
 </section>
 
 <!-- ══ 無自帶 CSS 的 JS 元件（2026-08-11 起也進這一頁）════════════════════════════

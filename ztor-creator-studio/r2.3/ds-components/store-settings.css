@@ -51,98 +51,11 @@
    與 e-shop.html 的 #eshop-split 同一組數字——欄 320、鏡像 zoom 0.8＝360 的手機版型、sticky 頂距 16。
    店面編輯卡從右欄搬進第一個分頁「店面」，主欄裡它就是一張普通的區段卡。 */
 #ss-split { --preview-col-w: 320px; --fan-store-zoom: 0.8; --preview-col-top: var(--sp-16); }
-.ss-identity-card { padding: 0; overflow: hidden; }   /* cover bleeds to card edges */
+/* 墓碑（2026-09-11）：店面就地編輯卡 .ss-identity-card／.ss-band__*／.ss-edit* 整組退場——
+   使用者裁示「全部改成欄位設定，像創建那樣」，店面改成三張 form-section 區段卡（個人檔案／商店網址／社群連結），
+   頭像列與社群連結各自 promote 成 ds-components/profile-avatar-row.css、social-links.css。
+   舊規則刪除，只留 .ss-url（網址前綴輸入框）繼續服務新表單。 */
 
-.ss-band__cover {
-  position: relative;
-  height: 104px;
-  background-image: linear-gradient(135deg, color-mix(in srgb, var(--primary) 24%, var(--muted)), var(--muted));
-}
-.ss-band__cover-edit { position: absolute; top: 12px; right: 12px; }
-
-.ss-band__head {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sp-14);
-  padding: 0 22px;
-}
-.ss-band__avatar {
-  position: relative;
-  z-index: 1;
-  margin-top: -32px;            /* only the avatar overlaps the cover */
-  flex: none;
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  display: grid;
-  place-items: center;
-  font-family: var(--font-display);
-  font-weight: var(--fw-medium);
-  font-size: var(--fs-24);
-  box-shadow: 0 0 0 4px var(--card);
-}
-.ss-band__avatar-edit {
-  position: absolute;
-  right: -2px;
-  bottom: -2px;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  border-radius: 50%;
-  background: var(--ztu-film)   /* ztorUI 換裝補漏 2026-09-11（稽核 A 表）：舊值 var(--card) */;
-}
-.ss-band__namewrap { min-width: 0; flex: 1; padding-top: var(--sp-12); }
-.ss-band__body { padding: var(--sp-12) 22px var(--sp-20); }
-.ss-band__meta { margin-top: var(--sp-12); }
-
-/* ---- Inline edit-in-place field (read text ↔ inline editor) ---- */
-.ss-edit { display: block; }
-.ss-edit__read {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-6);
-  max-width: 100%;
-  padding: 3px var(--sp-8);
-  margin: -3px -8px;
-  border-radius: var(--radius-sm);
-  cursor: text;
-}
-.ss-edit__read:hover { background: var(--ztu-glass-strong)   /* ztorUI 換裝補漏 2026-09-11（稽核 A 表）：舊值 var(--accent) */; }
-.ss-edit__value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ss-edit--bio .ss-edit__value { white-space: normal; }
-.ss-edit__value:empty::before { content: attr(data-placeholder); color: var(--muted-foreground); }
-.ss-edit__pencil {
-  flex: none;
-  display: inline-grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  color: var(--muted-foreground);
-  opacity: 0;
-  transition: opacity .12s var(--easing);
-}
-.ss-edit__read:hover .ss-edit__pencil,
-.ss-edit.is-editing .ss-edit__pencil { opacity: 1; }
-.ss-edit__pencil .ztor-icon { width: 14px; height: 14px; }
-
-.ss-edit__form { display: none; gap: var(--sp-8); align-items: center; }
-.ss-edit.is-editing .ss-edit__read { display: none; }
-.ss-edit.is-editing .ss-edit__form { display: flex; }
-.ss-edit--bio .ss-edit__form { flex-direction: column; align-items: stretch; }
-.ss-edit__actions { display: inline-flex; gap: var(--sp-4); flex: none; align-self: flex-end; }
-.ss-edit__count { font-size: var(--fs-11); color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
-.ss-edit--bio .ss-edit__formrow { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8); }
-
-/* read-text flavours per field */
-.ss-edit--name .ss-edit__value { font-family: var(--font-display); font-size: var(--fs-22); font-weight: var(--fw-regular); letter-spacing: -0.4px; }
-.ss-edit--url .ss-edit__read { color: var(--foreground-muted); font-size: var(--fs-13); }
-.ss-edit--bio .ss-edit__value { font-size: var(--fs-13); color: var(--foreground); line-height: var(--lh-relaxed); }
-.ss-edit--currency .ss-edit__read { font-size: var(--fs-13); }
-.ss-edit--currency .ss-edit__label { color: var(--muted-foreground); }
-
-/* Shop URL: fixed domain prefix glued to an editable slug input */
 .ss-url {
   display: flex;
   align-items: stretch;

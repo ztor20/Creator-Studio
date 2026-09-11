@@ -1,0 +1,82 @@
+/* ============================================================
+   social-links.css · 社群連結清單（平台一列一格＋新增＋平台清單）
+   ------------------------------------------------------------
+   照粉絲端「編輯個人檔案」抽屜的「社群連結」段（2026-09-11 使用者：「可編輯欄位參考這裡」「點開還有」）：
+   已加的平台一列一格——平台名在上、右端垃圾桶、底下一格網址輸入；
+   「＋ 新增社群連結」是一條虛線鈕，點開底下長出可加的平台清單（icon＋名稱），已加過的不再列。
+   資料與行為：js/store-profile-store.js（資料）＋ partials/social-links.js（畫與接線）。
+   首個消費者＝商店設定「店面」分頁。
+   anatomy
+     .social-links[data-social-links]
+       .social-links__row  ×n
+         .social-links__head
+           .social-links__label（icon 或 .social-links__mark ＋ 平台名）
+           button.btn.btn--icon.btn--sm.social-links__remove
+         input.input.social-links__url
+       button.social-links__add        （虛線；is-open 時清單展開）
+       .social-links__picker[hidden]
+         button.social-links__option ×n（icon＋名稱）
+   ============================================================ */
+.social-links { display: flex; flex-direction: column; gap: var(--sp-16); }
+.social-links__row { display: flex; flex-direction: column; gap: var(--sp-8); }
+.social-links__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8); }
+.social-links__label {
+  display: inline-flex; align-items: center; gap: var(--sp-8);
+  font-size: var(--fs-14);
+  color: var(--muted-foreground);
+}
+.social-links__label .ztor-icon { width: 16px; height: 16px; }
+/* 沒有線條 icon 的平台（小紅書）用小字標記占同一格 */
+.social-links__mark {
+  display: inline-grid; place-items: center;
+  min-width: 16px; height: 16px;
+  font-size: var(--fs-11);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.social-links__remove { color: var(--muted-foreground); }
+.social-links__remove:hover { color: var(--destructive); }
+
+/* 新增：虛線鈕，整條寬；打開清單時邊框亮一階 */
+.social-links__add {
+  display: flex; align-items: center; justify-content: center; gap: var(--sp-8);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-10) var(--sp-16);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit; font-size: var(--fs-14);
+  cursor: pointer;
+  transition: border-color var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+.social-links__add:hover,
+.social-links__add.is-open { border-color: var(--muted-foreground); color: var(--foreground); }
+.social-links__add .ztor-icon { width: 16px; height: 16px; }
+.social-links__add[hidden] { display: none; }
+
+/* 平台清單：一張薄膜卡、每項一列，列與列之間一條細線 */
+.social-links__picker {
+  display: flex; flex-direction: column;
+  border-radius: var(--radius-lg);
+  background: var(--ztu-film);
+  border: 1px solid var(--ztu-rim-soft);
+  overflow: hidden;
+}
+.social-links__picker[hidden] { display: none; }
+.social-links__option {
+  display: flex; align-items: center; gap: var(--sp-12);
+  padding: var(--sp-12) var(--sp-16);
+  border: 0;
+  border-bottom: 1px solid var(--border-soft);
+  background: transparent;
+  color: var(--foreground);
+  font: inherit; font-size: var(--fs-14);
+  text-align: left;
+  cursor: pointer;
+}
+.social-links__option:last-child { border-bottom: 0; }
+.social-links__option:hover { background: var(--ztu-glass-strong); }
+.social-links__option .ztor-icon { width: 18px; height: 18px; color: var(--muted-foreground); }
+.social-links__option .social-links__mark { min-width: 18px; height: 18px; color: var(--muted-foreground); }

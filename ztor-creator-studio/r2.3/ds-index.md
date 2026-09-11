@@ -382,7 +382,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 152 支；主 class 前 5 個）
+## 元件（ds-components/，共 154 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -475,6 +475,7 @@
 - `preview-panel.css` — .preview-panel, .preview-panel--inset, .wizard, .main, .preview-panel__backdrop ｜ Preview Panel · 建立流程即時預覽的右側面板（spec §5.2.5）
 - `product-list.css` — .product-list, .product-list__head, .product-list__row, .product-list--eshop, .product-list--bundles ｜ Product list — borderless inventory table for E-
 - `product-post-modal.css` — .payout-dialog, .npp-intro, .npp-product, .npp-product__thumb, .npp-product__info ｜ New Product Post — composer popup for announcing
+- `profile-avatar-row.css` — .profile-avatar-row, .profile-avatar-row__img, .profile-avatar-row__name ｜ profile-avatar-row.css · 頭像列（頭像＋名字＋「變更相片」）
 - `progress-mark.css` — .pmark, .pmark--done, .pmark--doing, .pmark--alert, .pmark--today ｜ Progress mark · 進度記號（2026-08-18，使用者裁決方案 B ＋ 同日追加
 - `progress-stepper.css` — .progress-stepper, .progress-stepper__track, .progress-stepper__fill, .progress-stepper--segmented, .progress-stepper__labels ｜ ── Progress stepper
 - `progress-timeline.css` — .ptl, .ptl__node, .ptl__node--foot, .ptl__node--done, .ptl__date ｜ Progress timeline · 交付時間軸（規格 5.1.2.2 §2.2.10，D19
@@ -498,6 +499,7 @@
 - `session-list.css` — .session-list, .session-list__row, .session-list__no, .session-list__fields, .session-list__row--main ｜ Session list — 系列場次清單（2026-08-06）
 - `settings.css` — .settings-layout, .settings-layout--stacked, .settings-nav, .settings-section, .settings-section__title ｜ Ztor Creator Studio - Settings layout, nav, and 
 - `size-chart-editor.css` — .sce, .sce__wrap, .sce__table, .sce__head, .sce__row ｜ size-chart-editor — 尺寸表編輯矩陣（列＝尺碼、欄＝量測項，兩個維度都可增刪）
+- `social-links.css` — .social-links, .social-links__row, .social-links__head, .social-links__label, .social-links__mark ｜ social-links.css · 社群連結清單（平台一列一格＋新增＋平台清單）
 - `sortable.css` — .sort-th, .sort-th--end, .sort-th__ind, .ztor-table, .table-head ｜ Ztor — Sortable columns
 - `source-import.css` — .source-import, .source-gate, .source-gate__head, .source-gate__titles, .source-gate__acts ｜ Source import · 從外部平台搜尋一筆既有紀錄帶入表單
 - `source-status.css` — .src-status, .src-status__pill, .src-status__dot, .src-status__chevron, .src-status__panel ｜ Source status · 資料來源狀態（spec 5.1.7.8 F1 · D159）
@@ -517,7 +519,7 @@
 - `stock-history.css` — .shist__date, .shist__type, .shist__end, .shist__delta, .shist__child ｜ Stock history · 庫存歷史紀錄（2026-09-11，自 lab-stock-hi
 - `stock-readout.css` — .stock-readout, .stock-readout__num, .stock-readout__unit ｜ Stock Readout — 唯讀數量讀數（大數字＋單位＋狀態徽章）
 - `stock-tip.css` — .stock-tip, .stock-tip__pop, .stock-tip__row, .stock-tip__name, .stock-tip__qty ｜ Ztor — Stock tip (extra stock info on hover)
-- `store-settings.css` — .ss-stack, .ss-identity-card, .ss-band__cover, .ss-band__cover-edit, .ss-band__head
+- `store-settings.css` — .ss-stack, .ss-url, .ss-url__prefix, .ss-url__input, .ss-status
 - `switch.css` — .switch, .switch--on, .switch--locked ｜ Switch — binary on/off toggle (form control).
 - `table.css` — .ztor-table, .ztor-table-scroll, .card, .ztor-table__feature, .fee-tree__panel ｜ Ztor — Table
 - `tabs.css` — .tabs, .tabs__item, .tabs__item--active, .tabs__item-count, .tabs--count-plain ｜ Tabs — horizontal tab bar with hairline underlin

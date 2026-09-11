@@ -4,6 +4,28 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-11（二十一）· 商店設定「店面」改成欄位表單；店面資料成為單一資料源，預覽即時對應（A spec-derived / B 反饋導入 / C 撤除）
+
+**範圍**：`store-settings.html`（`#sec-storefront` 三張區段卡、編輯模式擴到店面、`spPaint` 綁定）、新檔 `js/store-profile-store.js`、新元件 `ds-components/profile-avatar-row.css`、`ds-components/social-links.css`＋`partials/social-links.js`、`partials/fan-store.js`（讀 store、`remountFanStore`）、`ds-components/fan-store.css`（`__social-mark`）、`js/icons.js`（brand-youtube／spotify／twitch）、`js/i18n.js`（`store-settings.sf.*`、`social.*`）、`e-shop.html`（載 store）、`ds-components/store-settings.css`（就地編輯卡墓碑）、`design-system.html`／`design-system.md`。
+
+**依據**：使用者 2026-09-11：「全部改成欄位設定，像創建那樣，先規劃再進行設計」「可編輯欄位參考（粉絲端編輯個人檔案抽屜）」「點開還有（新增社群連結展開平台清單）」「將假資料對應上預覽畫面」；規劃提出後裁示「都照你建議做完」（封面圖拿掉、預覽編輯中即時更新）。
+
+### A · 欄位（照粉絲端編輯個人檔案）
+
+三張 `form-section--outlined`：個人檔案（頭像列＝頭像＋名字＋「變更相片」；顯示名稱／身分／自我介紹）、商店網址（`ztor.com/shop/`＋slug）、社群連結（已加平台一列一格：平台名＋垃圾桶＋網址；「＋ 新增社群連結」虛線鈕展開平台清單 Instagram／X／Threads／小紅書／Spotify／Twitch／TikTok／YouTube，已加過的不列、全加完鈕收起；ztor 那顆固定不在清單）。追蹤數、加入社群、彩蛋解鎖、分頁列是粉絲端功能，不在這裡編輯。
+
+### B · 單一資料源＋即時預覽
+
+`js/store-profile-store.js`：依人格存 localStorage，示範值＝預覽原本畫的那組（Gary Lin／音樂人／簡介／IG・Threads・X・TikTok 四條示範網址）；文字示範值走 i18n key、使用者打的字用字面值。右欄預覽與電子商店 F5 的 `fan-store.js` 改讀它；欄位輸入即寫回、發 `storeprofile:changed`，預覽整份重畫（有填網址的平台才出現圓鈕、順序照設定）。編輯／儲存／取消沿用分頁列右側那組：進入編輯先拍整份快照，取消整份放回、預覽跟著回去。
+
+### C · 撤除
+
+封面圖（粉絲端頁面沒有封面）；`.ss-identity-card`／`.ss-band__*`／`.ss-edit*` 就地編輯卡與其 JS 整組退場（CSS 留墓碑，`.ss-url` 續用）。
+
+**踩到的坑**：social-links 重畫時呼叫 `applyI18n` 會再發 `i18n:applied`，而它自己正是聽那個事件重畫——無限迴圈把分頁卡死。改成文字直接用 `i18nT()` 翻好、不呼叫 `applyI18n`。
+
+**驗證**：dev server：店面分頁載入即顯示 Gary Lin 那組、預覽同值；按編輯改名→預覽名字與釘頂小頭像即時變；新增 YouTube 並填網址→預覽多一顆圓鈕；移除 X→少一顆；取消→欄位、預覽、社群清單全部回到編輯前；0 console error；`check_ds_sync.py` PASS。
+
 ## 2026-09-11（二十）· 預覽卡標題列釘頂；電子商店通知條與預覽欄與側欄頂齊；預覽藏兩顆 CTA（B 反饋導入）
 
 **範圍**：`ds-components/preview-column.css`（`--tall` 卡內 `__head--rule` sticky＋`--preview-head-h`）、`partials/preview-col.js`（量標題列高）、`ds-components/fan-store.css`（`__stick` 的 top 接 `--preview-head-h`、`__ctas` 隱藏）、`partials/fan-store.js`（釘頂判斷加自己的 sticky top）、`shared.css`（`.main::before` 高度改 `--main-gutter`）、`e-shop.html`（`--main-gutter: 0`、通知條與預覽欄頂距歸 0）。
@@ -248,9 +270,13 @@ D261：建立組合與組合詳情的「組合價格」＝成員原價合計（�
 
 組合列：內含商品欄退場，成員改寫在組合名底下（`.product-list__members`：一件一行、暗字、超寬 …、最多三行、第四件起併成「…」，只寫商品名）；組合價成員含多選項多價格時是區間「NT$5,984–6,144」（`variants[i].price` 逐組合價差，hoodie／jacket／白 Tee XL 給了示範價差；組合價欄 88→120px）；狀態欄兩顆徽章一律各自一行（商品／組合／競標三分頁同一條）。詳情頁：淨利磚整塊連到收入管理（`a.kpi--tappable`＋右上 chevron，取代磚內 `.kpi__link`）；關聯中註腳限一行（`.kpi__meta--clip`）、為 0 的段不寫、全 0 整行不出現。
 
+### D · check_ds_sync 檢查 15 補抓 partial 注入的 class；四頁補漏連 CSS
+
+使用者圈組合詳情與建立組合的電影關聯欄「似乎是沒改完或是改壞了」——`partials/film-picker.js` 在執行期注入 `.tag-input`／`.chip`，兩頁都沒連 `tag-input.css`／`chip.css`，靜態檢查看不到。檢查 15 改成把頁面 `<script src="partials/…">` 裡 `class="…"` 的 class 也算進「頁面用到的」，一口氣再抓到 pickup-detail（取貨場次彈窗的 combobox／tag-input／chip）與 create-event（通用預覽節點的 preview-card）。四頁補 `<link>`。
+
 ### B16 · ztorUI 換裝殘留一次補齊（稽核 A 表 115 處，45 支檔）
 
-使用者：「全面檢查所有 r2.3 的元件，是否還有沒換成新的 DS 的」→「改吧」。稽核報告 `docs/ztorUI換裝稽核-2026-09-11.md`：246 處實色背景分 A 漏換 115／B 刻意保留 106／C 待裁決 23。A 表全數改掉，規則一致：縮圖框／圖示晶片／徽章／軌道／控件底 `--muted`／`--card`／`--input-surface` → `--ztu-film`；hover／focus 的 `--accent`／`--muted`／`--card` → `--ztu-glass-strong`；卡片本體（`.ztor-card`／`.project-card`／`.ip-hero`）→ `--ztu-glass-bg`。每一處原地留「舊值」註解。影響最廣的：`.btn--icon:hover`（67 頁）、`.btn--ghost:hover`（46 頁）、`ztor-table` 列 hover／展開列／縮圖、頂欄高亮條與搜尋框、`.data-list__icon`、`a.data-list__row:hover`、`.alert--banner` 圖示框、`.empty-card__icon`。C 表 23 題待做 lab 比較頁請使用者裁。
+使用者：「全面檢查所有 r2.3 的元件，是否還有沒換成新的 DS 的」→「改吧」。稽核報告 `docs/ztorUI換裝稽核-2026-09-11.md`：246 處實色背景分 A 漏換 115／B 刻意保留 106／C 待裁決 23。A 表全數改掉，規則一致：縮圖框／圖示晶片／徽章／軌道／控件底 `--muted`／`--card`／`--input-surface` → `--ztu-film`；hover／focus 的 `--accent`／`--muted`／`--card` → `--ztu-glass-strong`；卡片本體（`.ztor-card`／`.project-card`／`.ip-hero`）→ `--ztu-glass-bg`。每一處原地留「舊值」註解。影響最廣的：`.btn--icon:hover`（67 頁）、`.btn--ghost:hover`（46 頁）、`ztor-table` 列 hover／展開列／縮圖、頂欄高亮條與搜尋框、`.data-list__icon`、`a.data-list__row:hover`、`.alert--banner` 圖示框、`.empty-card__icon`。C 表 23 題同日收掉（Q116）：改 13（金額欄 $ 前綴、combobox 欄內 chip、三種可互動填色面、四個 hover／focus、標籤紙 chip）、留 10（hero、票根撕孔、窄版側欄、彈窗內、停用態、DS 純色卡變體）。
 
 ### B15 · `.btn--icon-circle` 底改薄膜（ztorUI 換裝補漏）
 

@@ -30,6 +30,8 @@
 <link rel="stylesheet" href="ds-components/spec-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/size-chart-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/profile-avatar-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/social-links.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/store-settings.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
@@ -84,8 +86,8 @@
               <div class="tabs__item" role="tab" aria-selected="false" data-sec="codes" data-i18n="store-settings.group.codes">Discount codes</div>
             </nav>
             <!-- 與商品詳情「設定」分頁同一套（product-detail.html [data-pd-editmode]）：一顆「編輯」切成編輯態、
-                 同一顆變「儲存變更」，旁邊多一顆取消。只在銷售預設分頁出現（data-ss-edit-actions）。 -->
-            <div class="list-toolbar__actions" data-ss-edit-actions hidden>
+                 同一顆變「儲存變更」，旁邊多一顆取消。只在有欄位要改的分頁（店面、銷售預設）出現（data-ss-edit-actions）。 -->
+            <div class="list-toolbar__actions" data-ss-edit-actions>
               <button class="btn btn--ghost" type="button" data-ss-edit-cancel hidden data-i18n="payout.cancel">Cancel</button>
               <button class="btn btn--outline" type="button" data-ss-editmode aria-pressed="false">
                 <i data-lucide="pencil" class="ztor-icon"></i>
@@ -94,73 +96,56 @@
             </div>
           </div>
         <div class="ss-stack stack">
-          <!-- 店面（2026-09-11 自右欄搬進分頁）：封面／logo／店名／網址／簡介就地編輯；粉絲端長什麼樣看右欄的商店預覽。 -->
-          <section class="settings-section" id="sec-storefront">
-<section class="card ss-identity-card">
-          <!-- 封面（cover 品牌素材） -->
-          <div class="ss-band__cover">
-            <button class="btn btn--outline btn--sm ss-band__cover-edit" type="button" aria-label="Change cover image" data-i18n-aria-label="store-settings.edit.cover"><i data-lucide="camera" class="ztor-icon"></i><span data-i18n="store-settings.brand.cover">Cover image</span></button>
-          </div>
-
-          <!-- 頭像 logo（logo 品牌素材）＋ 店名／網址 -->
-          <div class="ss-band__head">
-            <div class="ss-band__avatar">M
-              <button class="ss-band__avatar-edit btn btn--icon btn--sm" type="button" aria-label="Change logo" data-i18n-aria-label="store-settings.edit.logo"><i data-lucide="camera" class="ztor-icon"></i></button>
-            </div>
-            <div class="ss-band__namewrap">
-              <!-- 店名（就地編輯） -->
-              <div class="ss-edit ss-edit--name" data-ss-edit="text" data-value="My Fan Store">
-                <span class="ss-edit__read" role="button" tabindex="0">
-                  <span class="ss-edit__value" data-ss-value data-placeholder="Your shop name">My Fan Store</span>
-                  <span class="ss-edit__pencil" aria-hidden="true"><i data-lucide="pencil" class="ztor-icon"></i></span>
-                </span>
-                <span class="ss-edit__form">
-                  <input class="input" type="text" aria-label="Shop name" data-i18n-aria-label="store-settings.edit.name" placeholder="e.g. Kowloon After Dark Studio" data-i18n-placeholder="ss.name.ph">
-                  <span class="ss-edit__actions">
-                    <button class="btn btn--icon btn--sm" type="button" data-ss-ok aria-label="Save" data-i18n-aria-label="store-settings.edit.save"><i data-lucide="check" class="ztor-icon"></i></button>
-                    <button class="btn btn--icon btn--sm" type="button" data-ss-cancel aria-label="Cancel" data-i18n-aria-label="store-settings.cancel"><i data-lucide="x" class="ztor-icon"></i></button>
-                  </span>
-                </span>
+          <!-- 店面（2026-09-11 二改，使用者：「全部改成欄位設定，像創建那樣；可編輯欄位參考（粉絲端）編輯個人檔案；
+               假資料對應上預覽畫面」）：三張區段卡＝個人檔案／商店網址／社群連結，欄位照建立商品那一套；
+               資料在 js/store-profile-store.js，右欄預覽（partials/fan-store.js）讀同一份、編輯中即時跟著變。
+               封面圖退場——粉絲端頁面沒有封面。舊的就地編輯卡（.ss-identity-card／.ss-edit）整組退場。 -->
+          <section class="settings-section" id="sec-storefront" data-editable data-mode="view">
+            <div class="stack">
+            <section class="form-section form-section--outlined">
+              <div class="form-section__head">
+                <h3 class="form-section__title" data-i18n="store-settings.sf.profile">Profile</h3>
+                <p class="form-section__sub" data-i18n="store-settings.sf.profile.sub">The top of your fan page: photo, name, what you do, and a short bio.</p>
               </div>
-              <!-- 商店網址（就地編輯 slug） -->
-              <div class="ss-edit ss-edit--url" data-ss-edit="text" data-value="creator-slug">
-                <span class="ss-edit__read" role="button" tabindex="0">
-                  <span class="ss-url__prefix">ztor.com/shop/</span><span class="ss-edit__value" data-ss-value data-placeholder="your-slug">creator-slug</span>
-                  <span class="ss-edit__pencil" aria-hidden="true"><i data-lucide="pencil" class="ztor-icon"></i></span>
-                </span>
-                <span class="ss-edit__form">
-                  <span class="ss-url"><span class="ss-url__prefix">ztor.com/shop/</span><input class="input ss-url__input" type="text" aria-label="Shop URL slug" data-i18n-aria-label="store-settings.edit.url" placeholder="e.g. coastline-studio" data-i18n-placeholder="ss.slug.ph"></span>
-                  <span class="ss-edit__actions">
-                    <button class="btn btn--icon btn--sm" type="button" data-ss-ok aria-label="Save" data-i18n-aria-label="store-settings.edit.save"><i data-lucide="check" class="ztor-icon"></i></button>
-                    <button class="btn btn--icon btn--sm" type="button" data-ss-cancel aria-label="Cancel" data-i18n-aria-label="store-settings.cancel"><i data-lucide="x" class="ztor-icon"></i></button>
-                  </span>
-                </span>
+              <div class="profile-avatar-row" data-sp-avatar>
+                <img class="profile-avatar-row__img" src="images/ip/gary-portrait.jpg" alt="" data-sp-avatar-img>
+                <span class="profile-avatar-row__name" data-sp-avatar-name>Gary Lin</span>
+                <button class="btn btn--ghost btn--sm" type="button" data-sp-avatar-pick data-i18n="store-settings.sf.avatar.change">Change photo</button>
+                <input type="file" accept="image/*" hidden>
               </div>
-            </div>
-          </div>
+              <div class="field" style="margin-top:var(--sp-20)">
+                <div class="field__label" data-i18n="store-settings.sf.name">Display name</div>
+                <input class="input" type="text" data-sp-field="name" placeholder="Your name on Ztor" data-i18n-placeholder="store-settings.sf.name.ph">
+              </div>
+              <div class="field">
+                <div class="field__label" data-i18n="store-settings.sf.role">What you do</div>
+                <div class="field__hint" data-i18n="store-settings.sf.role.hint">Shown under your name, e.g. Musician, Illustrator.</div>
+                <input class="input" type="text" data-sp-field="role" placeholder="e.g. Musician" data-i18n-placeholder="store-settings.sf.role.ph">
+              </div>
+              <div class="field">
+                <div class="field__label" data-i18n="store-settings.sf.bio">Bio</div>
+                <textarea class="textarea" rows="4" data-sp-field="bio" placeholder="Tell fans who you are and what you make" data-i18n-placeholder="store-settings.sf.bio.ph"></textarea>
+              </div>
+            </section>
 
-          <div class="ss-band__body">
-            <!-- 商店簡介（就地編輯，200 字） -->
-            <div class="ss-edit ss-edit--bio" data-ss-edit="textarea" data-value="Independent musician shipping merch, vinyl, and digital drops.">
-              <span class="ss-edit__read" role="button" tabindex="0">
-                <span class="ss-edit__value" data-ss-value data-placeholder="Tell fans what your shop is about…">Independent musician shipping merch, vinyl, and digital drops.</span>
-                <span class="ss-edit__pencil" aria-hidden="true"><i data-lucide="pencil" class="ztor-icon"></i></span>
-              </span>
-              <span class="ss-edit__form">
-                <textarea class="textarea" maxlength="200" aria-label="Shop bio" data-i18n-aria-label="store-settings.edit.bio" data-ss-count-src placeholder="e.g. Records, prints and tour merch from the east coast." data-i18n-placeholder="ss.bio.ph"></textarea>
-                <span class="ss-edit__formrow">
-                  <span class="ss-edit__count" data-ss-count>0/200</span>
-                  <span class="ss-edit__actions">
-                    <button class="btn btn--outline btn--sm" type="button" data-ss-cancel data-i18n="store-settings.cancel">Cancel</button>
-                    <button class="btn btn--primary btn--sm" type="button" data-ss-ok data-i18n="store-settings.edit.save">Save</button>
-                  </span>
-                </span>
-              </span>
-            </div>
+            <section class="form-section form-section--outlined">
+              <div class="form-section__head">
+                <h3 class="form-section__title" data-i18n="store-settings.sf.url">Shop URL</h3>
+                <p class="form-section__sub" data-i18n="store-settings.sf.url.sub">Where fans find your shop. Letters, numbers and dashes only.</p>
+              </div>
+              <div class="field">
+                <span class="ss-url"><span class="ss-url__prefix">ztor.com/shop/</span><input class="input ss-url__input" type="text" data-sp-field="slug" aria-label="Shop URL slug" data-i18n-aria-label="store-settings.edit.url" placeholder="your-slug" data-i18n-placeholder="ss.slug.ph"></span>
+              </div>
+            </section>
 
-          </div>
-        </section>
-            <p class="settings-row__hint" style="margin-top:var(--sp-12)" data-i18n="store-settings.storefront.sub">What fans see. Swap the images, edit the words, right here.</p>
+            <section class="form-section form-section--outlined">
+              <div class="form-section__head">
+                <h3 class="form-section__title" data-i18n="store-settings.sf.social">Social links</h3>
+                <p class="form-section__sub" data-i18n="store-settings.sf.social.sub">Added links show as round buttons on your fan page. Your Ztor link is always first.</p>
+              </div>
+              <div class="social-links" data-social-links></div>
+            </section>
+            </div>
           </section>
           <section class="settings-section" id="sec-payment" data-feat="S05" hidden>
             <section class="card">
@@ -533,7 +518,9 @@
 <!-- 粉絲端鏡像的商品卡問 ProductsStore（名稱／價格／圖依人格），所以要先載它與它的推導層。 -->
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="js/store-profile-store.js?v=r2.2"></script>
 <script src="partials/fan-store.js?v=r2.2"></script>
+<script src="partials/social-links.js?v=r2.2"></script>
 <script src="partials/preview-col.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>
 <script src="js/size-guides-store.js?v=r2.2"></script>
@@ -543,56 +530,7 @@
      always on top; product display / payment / shipping switch as tabs;
      See as fan opens a split preview. All demo interactions, no backend. */
   (function () {
-    /* Inline edit-in-place (storefront identity). Each .ss-edit shows its
-       value as text; clicking the read row swaps in an input/textarea/select
-       in place. ✓/Enter commits (updates the text), ✕/Esc cancels. The page
-       still commits everything via the top "Save changes" (demo, no backend). */
-    document.querySelectorAll('.ss-edit').forEach(ed => {
-      const type = ed.getAttribute('data-ss-edit');
-      const read = ed.querySelector('.ss-edit__read');
-      const valueEl = ed.querySelector('[data-ss-value]');
-      const field = ed.querySelector('.ss-edit__form input, .ss-edit__form textarea, .ss-edit__form select');
-      const okBtn = ed.querySelector('[data-ss-ok]');
-      const cancelBtn = ed.querySelector('[data-ss-cancel]');
-      const count = ed.querySelector('[data-ss-count]');
-      if (!field) return;
-
-      const labelFor = v => {
-        if (type !== 'select') return v;
-        const opt = [...field.options].find(o => o.value === v);
-        return opt ? opt.textContent.trim() : v;   /* empty → localized "Choose currency" */
-      };
-      const paintCount = () => {
-        if (!count) return;
-        const max = field.getAttribute('maxlength') || '0';
-        count.textContent = field.value.length + '/' + max;
-      };
-      const open = () => {
-        field.value = ed.dataset.value || '';
-        ed.classList.add('is-editing');
-        paintCount();
-        field.focus();
-        if (field.select) field.select();
-      };
-      const close = commit => {
-        if (commit) {
-          ed.dataset.value = field.value;
-          valueEl.textContent = labelFor(field.value);
-        }
-        ed.classList.remove('is-editing');
-      };
-      read.addEventListener('click', open);
-      read.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
-      okBtn && okBtn.addEventListener('click', () => close(true));
-      cancelBtn && cancelBtn.addEventListener('click', () => close(false));
-      if (count) field.addEventListener('input', paintCount);
-      field.addEventListener('keydown', e => {
-        if (e.key === 'Escape') { e.preventDefault(); close(false); }
-        else if (e.key === 'Enter' && type !== 'textarea') { e.preventDefault(); close(true); }
-      });
-      /* seed initial read text from data-value (handles select label) */
-      valueEl.textContent = labelFor(ed.dataset.value || '');
-    });
+    /* 店面的就地編輯（.ss-edit）已退場（2026-09-11）：改成欄位表單，資料走 js/store-profile-store.js，見頁尾。 */
 
     /* 設定群組分頁的切換已移到頁尾的 [data-sec] 版本（D184 改版時換的選擇器）；
        這裡原本還留著一份查 [data-ss-tab]／[data-ss-panel] 的舊實作，站上已無對應
@@ -841,21 +779,28 @@ document.querySelectorAll('[data-sec]').forEach(b => b.addEventListener('click',
     x.setAttribute('aria-selected', String(on));
   });
   document.querySelectorAll('.settings-section').forEach(sec => { sec.hidden = sec.id !== 'sec-' + b.dataset.sec; });
-  /* 分頁列右側的編輯鈕只屬於銷售預設；離開該分頁時若還在編輯，視同取消 */
+  /* 分頁列右側的編輯鈕屬於「有欄位要改」的分頁（店面、銷售預設）；換分頁時若還在編輯，視同取消 */
   const acts = document.querySelector('[data-ss-edit-actions]');
-  if (acts) { acts.hidden = b.dataset.sec !== 'selling'; if (acts.hidden) ssSetMode(false, true); }
+  if (acts) { if (ssEditing()) ssSetMode(false, true); acts.hidden = !SS_EDITABLE[b.dataset.sec]; ssActive = b.dataset.sec; }
 }));
 
-/* 銷售預設的兩段式編輯（2026-09-11，比照商品詳情設定分頁）：預設唯讀（readonly，幾何不動、只拿掉可打字的訊號），
-   按「編輯」放開欄位、同一顆變「儲存變更」、旁邊出現「取消」；取消還原進入編輯前的值。幣別本來就 disabled，不放開。 */
-const ssSec = document.getElementById('sec-selling');
-let ssSnap = null;
-function ssFields() { return ssSec ? [...ssSec.querySelectorAll('input, textarea')] : []; }
+/* 兩段式編輯（2026-09-11，比照商品詳情設定分頁）：店面與銷售預設兩個分頁都用，預設唯讀（readonly，幾何不動、
+   只拿掉可打字的訊號），按「編輯」放開欄位、同一顆變「儲存變更」、旁邊出現「取消」；取消還原進入編輯前的值。
+   店面的資料在 store-profile-store（編輯中即時寫入、預覽跟著變），取消＝把進入編輯前的整份快照放回去。 */
+const SS_EDITABLE = { storefront: 'sec-storefront', selling: 'sec-selling' };
+let ssActive = 'storefront';
+let ssSnap = null, ssProfileSnap = null;
+function ssSec() { return document.getElementById(SS_EDITABLE[ssActive] || ''); }
+function ssEditing() { const s = ssSec(); return !!(s && s.getAttribute('data-mode') === 'edit'); }
+function ssFields() { const s = ssSec(); return s ? [...s.querySelectorAll('input:not([type="file"]), textarea')] : []; }
 function ssSetMode(editing, silent) {
-  if (!ssSec) return;
-  if (editing) ssSnap = ssFields().map(el => [el, el.value]);
-  else if (silent && ssSnap) ssSnap.forEach(([el, v]) => { el.value = v; });
-  ssSec.setAttribute('data-mode', editing ? 'edit' : 'view');
+  const sec = ssSec(); if (!sec) return;
+  if (editing) { ssSnap = ssFields().map(el => [el, el.value]); ssProfileSnap = (ssActive === 'storefront' && window.ZtorStoreProfile) ? window.ZtorStoreProfile.get() : null; }
+  else if (silent) {
+    if (ssProfileSnap && window.ZtorStoreProfile) { window.ZtorStoreProfile.replace(ssProfileSnap); spPaint(); }
+    else if (ssSnap) ssSnap.forEach(([el, v]) => { el.value = v; });
+  }
+  sec.setAttribute('data-mode', editing ? 'edit' : 'view');
   ssFields().forEach(el => { el.readOnly = !editing; });
   const btn = document.querySelector('[data-ss-editmode]');
   const cancel = document.querySelector('[data-ss-edit-cancel]');
@@ -869,14 +814,38 @@ function ssSetMode(editing, silent) {
     label.setAttribute('data-i18n', key);
     label.textContent = (window.i18nT && window.i18nT(key)) || (editing ? 'Save changes' : 'Edit');
   }
-  if (!editing) ssSnap = null;
+  if (!editing) { ssSnap = null; ssProfileSnap = null; }
 }
 document.querySelector('[data-ss-editmode]')?.addEventListener('click', () => {
-  const editing = ssSec.getAttribute('data-mode') === 'edit';
-  if (editing) { ssSetMode(false); if (window.ztorToast) window.ztorToast.show((window.i18nT && window.i18nT('store-settings.selling.saved')) || 'Selling defaults saved'); }
-  else ssSetMode(true);
+  if (ssEditing()) {
+    ssSetMode(false);
+    const key = ssActive === 'storefront' ? 'store-settings.sf.saved' : 'store-settings.selling.saved';
+    if (window.ztorToast) window.ztorToast.show((window.i18nT && window.i18nT(key)) || 'Saved');
+  } else ssSetMode(true);
 });
 document.querySelector('[data-ss-edit-cancel]')?.addEventListener('click', () => ssSetMode(false, true));
+
+/* 店面欄位 ⇄ store-profile-store：畫（store → 欄位）與寫（欄位 → store，即時；預覽跟著 storeprofile:changed 重畫） */
+function spPaint() {
+  const st = window.ZtorStoreProfile; if (!st) return;
+  const p = st.get();
+  document.querySelectorAll('[data-sp-field]').forEach(el => {
+    const f = el.getAttribute('data-sp-field');
+    const v = f === 'slug' ? (p.slug || '') : st.text(f, p);
+    if (document.activeElement !== el) el.value = v;
+  });
+  document.querySelectorAll('[data-sp-avatar-img]').forEach(el => { el.src = p.avatar || ''; });
+  document.querySelectorAll('[data-sp-avatar-name]').forEach(el => { el.textContent = st.text('name', p); });
+  if (window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.socialLinks) window.ZTOR_PARTIALS.socialLinks.render();
+}
+document.querySelectorAll('[data-sp-field]').forEach(el => el.addEventListener('input', () => {
+  const st = window.ZtorStoreProfile; if (!st) return;
+  const f = el.getAttribute('data-sp-field'); const patch = {}; patch[f] = el.value; st.set(patch);
+}));
+window.addEventListener('storeprofile:changed', spPaint);
+document.addEventListener('i18n:applied', spPaint);
+document.addEventListener('ztor:devstate-changed', spPaint);
+spPaint();
 ssSetMode(false);
 /* 從別頁指定分頁進來（2026-09-10）：建立商品的「尚未設定尺寸指南」那一列會連到
    store-settings.html#specs，落地就要停在該分頁，不然使用者還要自己找。 */
