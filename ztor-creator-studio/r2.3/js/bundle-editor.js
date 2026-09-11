@@ -1216,7 +1216,7 @@
         '<div class="upload-assets upload-assets--fill">' +
           '<div class="upload-tile upload-tile--portrait' + (b.cover ? ' is-filled' : '') +
               '" data-bd-cover data-asset="bdcover-' + b.id + '" data-upload>' +
-            '<span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>' +
+            '<span class="upload-tile__icon"><i data-lucide="photo-video" class="ztor-icon ztor-icon--md"></i></span>' +
             '<span class="upload-tile__title">' + esc(T('cpp.bd.cover.cta')) + '</span>' +
             '<span class="upload-tile__hint">' + esc(T('cp.media.portrait')) + '</span>' +
             '<span class="upload-tile__hint">' + esc(T('cp.media.formats')) + '</span>' +
@@ -1398,7 +1398,7 @@
           '<div class="upload-assets upload-assets--fill">' +
             '<div class="upload-tile upload-tile--portrait' + (b.cover ? ' is-filled' : '') +
                 '" data-bd-cover data-asset="bdcover-' + b.id + '" data-upload>' +
-              '<span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>' +
+              '<span class="upload-tile__icon"><i data-lucide="photo-video" class="ztor-icon"></i></span>' +
               '<span class="upload-tile__title">' + esc(T('cpp.bd.cover.cta')) + '</span>' +
             '</div>' +
           '</div>' +

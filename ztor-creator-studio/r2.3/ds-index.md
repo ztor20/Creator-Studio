@@ -414,7 +414,7 @@
 - `data-list.css` — .data-list, .data-list__row, .data-list__row-main, .data-list__row--disabled, .data-list__icon ｜ Data list — row-divider list (no card per row).
 - `date-input.css` — .date-input, .date-input__icon, .date-input__ph ｜ date-input.css · 日期／時間欄位的 placeholder 外觀（2026-07
 - `detail-overview.css` — .detail-overview, .detail-overview--2col, .detail-overview__col, .detail-overview__kpis, .detail-overview__kpi-row ｜ detail-overview.css · 詳情頁總覽的三欄骨架（2026-08-31 使用者裁
-- `detail-rail.css` — .detail-grid, .detail-main, .detail-grid--full, .detail-cards, .detail-grid--norail ｜ Detail Rail — 詳情頁「主欄 + 右側常駐 meta 欄」版型殼
+- `detail-rail.css` — .detail-grid, .detail-main, .detail-grid--full, .detail-cards, .form-section--outlined ｜ Detail Rail — 詳情頁「主欄 + 右側常駐 meta 欄」版型殼
 - `detail-sheet.css` — .detail-sheet, .detail-sheet__panel, .detail-sheet__head, .detail-sheet__back, .detail-sheet__title ｜ detail-sheet — 清單點進細節時的覆蓋層（2026-07-28 使用者裁示）
 - `donut-mix.css` — .donut-mix, .donut-mix__ringwrap, .donut-mix__ring, .donut-mix__track, .donut-mix__seg ｜ donut-mix — 一個總數拆成幾塊的圓環（2026-08-31 建）
 - `drawer.css` — .drawer, .drawer__scrim, .drawer__panel, .drawer__head, .drawer__title

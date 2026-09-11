@@ -37,6 +37,7 @@
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">   <!-- 2026-09-04：折扣區的 .stack--tight 一直沒有這支 CSS，gap 是 0（使用者回報「要有間距」）-->
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
@@ -313,7 +314,7 @@
         <div class="upload-assets upload-assets--fill" data-upload-reveal>
           <div class="upload-tile upload-tile--portrait" data-cp-asset="p-hero" data-upload data-upload-ai>
             <span class="upload-tile__flag" data-i18n="cp.media.hero-flag">Hero</span>
-            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>
+            <span class="upload-tile__icon"><i data-lucide="photo-video" class="ztor-icon ztor-icon--md"></i></span>
             <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
             <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
           </div>
@@ -335,7 +336,7 @@
         <div class="upload-assets upload-assets--fill" data-upload-reveal>
           <div class="upload-tile upload-tile--portrait" data-cp-asset="d-cover" data-upload data-upload-ai>
             <span class="upload-tile__flag" data-i18n="cp.media.cover-flag">Cover</span>
-            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>
+            <span class="upload-tile__icon"><i data-lucide="photo-video" class="ztor-icon ztor-icon--md"></i></span>
             <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
             <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
           </div>
@@ -734,21 +735,28 @@
            知道了機制才有辦法決定要掛哪個場次，所以橫幅移到場次欄之前。
            場次那一列的選單＋建立鈕改用 .input-action（原本是頁面自寫的 inline flex）。 -->
       <div class="cp-subfields" data-when-delivery="qr" hidden>
-        <div class="info-banner">
-          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-          <span data-i18n="cp.delivery.qr-note">Each unit gets its own pickup QR, shown in the buyer's ztor account — staff scan it one at a time at the session's scanner. Manage sessions, scanner and log in Pickup management.</span>
-        </div>
+        <!-- 2026-09-11 使用者指示：上方的 info-banner 與欄位下方的 hint 合併成標籤底下的一段說明，
+             兩者都拿掉。做法同本頁「告訴粉絲他們會拿到什麼」那欄（label 下接 .field__hint）。 -->
         <div class="field">
           <div class="field__label" data-i18n="cp.delivery.session">Pickup session</div>
-          <div class="input-action">
-            <select class="select" id="cp-pickup-session">
-              <option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>
-              <option value="tpe" data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>
-              <option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>
-            </select>
-            <button class="btn btn--outline" type="button" data-cp-new-session><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="cp.delivery.session.new">Create pickup session</span></button>
+          <div class="field__hint" data-i18n="cp.delivery.session.desc">Pick an existing session or create one — this item joins that session's pickup list. Each item gets its own pickup QR in the buyer's ztor account; staff scan items one at a time at the session, and sessions, the scanner and redemption records live in Pickup management.</div>
+          <!-- 2026-09-11 使用者指示：「建立取貨場次」併進下拉最底下那一列（zselect 的動作列），
+               選單旁邊那顆獨立按鈕退場。 -->
+          <select class="select" id="cp-pickup-session"
+                  data-zselect-action="new-session" data-zselect-action-i18n="cp.delivery.session.new"
+                  data-zselect-action-label="Create pickup session" data-zselect-action-icon="plus">
+            <option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>
+            <option value="tpe" data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>
+            <option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>
+          </select>
+          <!-- 選定或剛建好的場次資訊（2026-09-11 使用者指示）：唯讀事實列 .fact-list（地點／時間／狀態／入口），
+               「尚未關聯」時整塊收起。資料由頁尾腳本 paintSessionInfo() 填。 -->
+          <div class="fact-list" data-cp-session-info hidden>
+            <div class="fact-list__item"><span data-i18n="cp.delivery.session.loc">Location</span><span data-cp-si-loc></span></div>
+            <div class="fact-list__item"><span data-i18n="cp.delivery.session.time">Time</span><span data-cp-si-time></span></div>
+            <div class="fact-list__item"><span data-i18n="cp.delivery.session.status">Status</span><span><span class="badge" data-cp-si-status><span></span></span></span></div>
+            <div class="fact-list__item"><span data-i18n="cp.delivery.session.manage">Pickup management</span><span><a class="card__link" href="pickup-detail.html" data-cp-si-link data-i18n="cp.delivery.session.view">View session</a></span></div>
           </div>
-          <div class="field__hint" data-i18n="cp.delivery.session.hint">Pick one or create a new one — this product joins that session's pickup list.</div>
         </div>
       </div>
     </section>
@@ -2467,13 +2475,18 @@
     var host = document.querySelector('[data-pickup-modal-host]');
     var pickup = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createPickupSession
       ? window.ZTOR_PARTIALS.createPickupSession(host, {
-          onCreate: function () {
-            var sel = document.getElementById('cp-pickup-session');
-            if (sel) { sel.value = 'tpe'; }
+          onCreate: function (session) {
+            /* 剛建的場次變成一個選項、選中，底下列出它的資訊（2026-09-11）。 */
+            if (info) info.addCreated(session);
           }
         }) : null;
-    var btn = document.querySelector('[data-cp-new-session]');
-    if (btn && pickup) btn.addEventListener('click', function () { pickup.openForProduct('zine'); });
+    /* 「建立取貨場次」現在住在下拉最底下的動作列（zselect:action），不是獨立按鈕。 */
+    var sel = document.getElementById('cp-pickup-session');
+    var info = (sel && window.ZTOR_PARTIALS.bindPickupSessionInfo)
+      ? window.ZTOR_PARTIALS.bindPickupSessionInfo(sel, document.querySelector('[data-cp-session-info]')) : null;
+    if (sel && pickup) sel.addEventListener('zselect:action', function (e) {
+      if (e.detail && e.detail.action === 'new-session') pickup.openForProduct('zine');
+    });
   })();
 </script>
 
@@ -2518,7 +2531,9 @@
     const hintKey = own ? 'cp.var.img.own' : (hero ? 'cp.var.img.inherit' : 'cp.var.img.none');
     body.innerHTML =
       '<div class="upload-tile-aside">' +
-        '<div class="upload-tile upload-tile--portrait ' + (src ? 'is-filled' : 'is-empty') + '" data-upload data-vimg-tile>' +
+        /* 只收圖片（2026-09-10）：這一格產出的是規格表列首那顆 34px 的辨識小圖，不是展示素材，
+           而且下面的 upload:change 只把 <img> 的 src 寫回規格——收了影片會靜默存不進去。 */
+        '<div class="upload-tile upload-tile--portrait ' + (src ? 'is-filled' : 'is-empty') + '" data-upload data-upload-accept="image/*" data-vimg-tile>' +
           (src ? '<img class="upload-tile__thumb" src="' + src + '" alt="">'
                : '<span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span>') +
         '</div>' +

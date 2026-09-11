@@ -306,11 +306,11 @@
     }
   };
 
-  /* 2026-07-27：Nick 商店改用 wishyouagoodlife.com/products 的實際商品資料。
-     原有 id 保留作為舊連結相容；新商品以 wy-* id 對應來源子頁。 */
-  function wishProduct(name, img, price, sub, options, stock, sourceUrl, gallery) {
+  /* 2026-07-27：Nick 商店的示範商品資料（wy-* id）。原有 id 保留作為舊連結相容。
+     2026-09-11 使用者裁示：示範資料只是參考素材，站上不得指向任何外部來源——來源網址欄位整個抹除。 */
+  function wishProduct(name, img, price, sub, options, stock, gallery) {
     return {
-      name: name, img: img, gallery: gallery || [img], sourceUrl: sourceUrl,
+      name: name, img: img, gallery: gallery || [img],
       currency: 'TWD',
       sub: sub, cat: 'physical', subKey: 'apparel', variant: options && options.length ? 'multiple' : 'single',
       edition: 'unlimited', status: stock === 0 ? 'live' : 'live', price: String(price), cost: '', stock: String(stock), threshold: '10',
@@ -318,19 +318,19 @@
     };
   }
   var WISHYOU_PRODUCTS = {
-    'wy-26ms-hoodie': wishProduct('26MS Hoodie', '26ms-hoodie-01.jpeg', 3680, '注意事項：不可水洗、緩和乾洗；50%棉50%滌綸。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 3, 'https://www.wishyouagoodlife.com/products/26ms-hoodie', ['26ms-hoodie-01.jpeg', '26ms-hoodie-02.jpeg']),
-    'wy-26ms-socks': wishProduct('26MS Socks', '26ms-socks-01.jpeg', 688, '材質：棉 82%、彈性纖維 13%、彈性纖維 5%。', [{ name: 'Size / 尺寸', values: ['F'] }], 425, 'https://www.wishyouagoodlife.com/products/26ms-socks'),
-    'wy-26ms-tshirt-white': wishProduct('26MS T-Shirt (白)', '26ms-t-shirt-w-01.jpeg', 1880, '注意事項：不可水洗、緩和乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, 'https://www.wishyouagoodlife.com/products/26ms-t-shirt-w', ['26ms-t-shirt-w-01.jpeg', '26ms-t-shirt-w-02.jpeg']),
-    'wy-26ms-tshirt-red': wishProduct('26MS T-Shirt (紅)', '26ms-t-shirt-r-01.jpeg', 1880, '注意事項：不可水洗、緩和乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, 'https://www.wishyouagoodlife.com/products/26ms-t-shirt-r', ['26ms-t-shirt-r-01.jpeg', '26ms-t-shirt-r-02.jpeg']),
-    'wy-24ce-pillow': wishProduct('WYAGL Pillow', 'wyagl-pillow-01.jpg', 1580, '材質：聚酯纖維；尺寸：40cm ±5%；可機洗、不可漂白、不可熨燙。', [{ name: 'Size / 尺寸', values: ['F'] }], 0, 'https://www.wishyouagoodlife.com/products/wyagl-pillow-1', ['wyagl-pillow-01.jpg', 'wyagl-pillow-02.jpg', 'wyagl-pillow-03.jpg']),
-    'wy-24ce-jersey': wishProduct('24CE High Shine Football Jersey', '24ce-high-shine-football-jersey-01.jpg', 3680, '注意事項：冷水溫和洗滌、不可漂白；尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, 'https://www.wishyouagoodlife.com/products/wish-you-a-good-life-high-shine-football-jersey', ['24ce-high-shine-football-jersey-01.jpg', '24ce-high-shine-football-jersey-02.jpg', '24ce-high-shine-football-jersey-03.jpg', '24ce-high-shine-football-jersey-04.jpg']),
-    'wy-24ce-skateboard': wishProduct('24CE Skateboard', '24ce-skateboard-01.jpg', 2880, '尺寸：8.0 吋；材質：加拿大楓木七層壓合。', [], 0, 'https://www.wishyouagoodlife.com/products/wyagl-24ce-skateboard', ['24ce-skateboard-01.jpg', '24ce-skateboard-02.jpg']),
-    'wy-24ce-mesh': wishProduct('WYAGL Mesh T-shirt', 'wyagl-mesh-t-shirt-01.jpg', 3580, '注意事項：冷水溫和洗滌、不可漂白；尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, 'https://www.wishyouagoodlife.com/products/wyagl-mesh-t-shirt', ['wyagl-mesh-t-shirt-01.jpg', 'wyagl-mesh-t-shirt-02.jpg', 'wyagl-mesh-t-shirt-03.jpg']),
-    'wy-24ce-rug': wishProduct('WYAGL RUG', 'wyagl-rug-01.jpg', 5680, '直徑90公分（±2公分）；100%聚酯纖維。建議使用地毯專用清潔劑清潔。', [{ name: 'Size / 尺寸', values: ['F'] }], 0, 'https://www.wishyouagoodlife.com/products/wyagl-24ce-rug'),
-    'wy-24ce-sock': wishProduct('WYAGL Sock', 'wyagl-sock-01.jpg', 1280, '材質：棉 82%、彈性纖維 13%、彈性纖維 5%。', [{ name: 'Colour / 顏色', values: ['一黑一白一紅組合'] }], 0, 'https://www.wishyouagoodlife.com/products/wyagl-sock', ['wyagl-sock-01.jpg', 'wyagl-sock-02.jpg']),
-    'wy-24ce-wyagl-tee': wishProduct('Wish You A Good Life T-SHIRT', 'wish-you-a-good-life-t-shirt-01.jpg', 1680, '低溫30°C洗滌、不可乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, 'https://www.wishyouagoodlife.com/products/wish-you-a-good-life-t-shirt', ['wish-you-a-good-life-t-shirt-01.jpg', 'wish-you-a-good-life-t-shirt-02.jpg', 'wish-you-a-good-life-t-shirt-03.jpg']),
-    'wy-24ce-tee': wishProduct('WYAGL T-SHIRT', 'wyagl-t-shirt-01.jpg', 1680, '低溫30°C洗滌、不可乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['L', 'M', 'XL'] }], 0, 'https://www.wishyouagoodlife.com/products/wyagl-t-shirt', ['wyagl-t-shirt-01.jpg', 'wyagl-t-shirt-02.jpg', 'wyagl-t-shirt-03.jpg']),
-    'wy-24ce-dupont-bag': wishProduct('Dupont Bag', 'wyagl-dupont-bag-01.jpg', 1080, '尺寸 M/L/XL；銀色；杜邦紙材質，防水可水洗。尺寸皆為水平手工測量。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, 'https://www.wishyouagoodlife.com/products/wyagl-dupont-bag', ['wyagl-dupont-bag-01.jpg', 'wyagl-dupont-bag-02.jpg', 'wyagl-dupont-bag-03.jpg']),
+    'wy-26ms-hoodie': wishProduct('26MS Hoodie', '26ms-hoodie-01.jpeg', 3680, '注意事項：不可水洗、緩和乾洗；50%棉50%滌綸。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 3, ['26ms-hoodie-01.jpeg', '26ms-hoodie-02.jpeg']),
+    'wy-26ms-socks': wishProduct('26MS Socks', '26ms-socks-01.jpeg', 688, '材質：棉 82%、彈性纖維 13%、彈性纖維 5%。', [{ name: 'Size / 尺寸', values: ['F'] }], 425),
+    'wy-26ms-tshirt-white': wishProduct('26MS T-Shirt (白)', '26ms-t-shirt-w-01.jpeg', 1880, '注意事項：不可水洗、緩和乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, ['26ms-t-shirt-w-01.jpeg', '26ms-t-shirt-w-02.jpeg']),
+    'wy-26ms-tshirt-red': wishProduct('26MS T-Shirt (紅)', '26ms-t-shirt-r-01.jpeg', 1880, '注意事項：不可水洗、緩和乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, ['26ms-t-shirt-r-01.jpeg', '26ms-t-shirt-r-02.jpeg']),
+    'wy-24ce-pillow': wishProduct('WYAGL Pillow', 'wyagl-pillow-01.jpg', 1580, '材質：聚酯纖維；尺寸：40cm ±5%；可機洗、不可漂白、不可熨燙。', [{ name: 'Size / 尺寸', values: ['F'] }], 0, ['wyagl-pillow-01.jpg', 'wyagl-pillow-02.jpg', 'wyagl-pillow-03.jpg']),
+    'wy-24ce-jersey': wishProduct('24CE High Shine Football Jersey', '24ce-high-shine-football-jersey-01.jpg', 3680, '注意事項：冷水溫和洗滌、不可漂白；尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, ['24ce-high-shine-football-jersey-01.jpg', '24ce-high-shine-football-jersey-02.jpg', '24ce-high-shine-football-jersey-03.jpg', '24ce-high-shine-football-jersey-04.jpg']),
+    'wy-24ce-skateboard': wishProduct('24CE Skateboard', '24ce-skateboard-01.jpg', 2880, '尺寸：8.0 吋；材質：加拿大楓木七層壓合。', [], 0, ['24ce-skateboard-01.jpg', '24ce-skateboard-02.jpg']),
+    'wy-24ce-mesh': wishProduct('WYAGL Mesh T-shirt', 'wyagl-mesh-t-shirt-01.jpg', 3580, '注意事項：冷水溫和洗滌、不可漂白；尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, ['wyagl-mesh-t-shirt-01.jpg', 'wyagl-mesh-t-shirt-02.jpg', 'wyagl-mesh-t-shirt-03.jpg']),
+    'wy-24ce-rug': wishProduct('WYAGL RUG', 'wyagl-rug-01.jpg', 5680, '直徑90公分（±2公分）；100%聚酯纖維。建議使用地毯專用清潔劑清潔。', [{ name: 'Size / 尺寸', values: ['F'] }], 0),
+    'wy-24ce-sock': wishProduct('WYAGL Sock', 'wyagl-sock-01.jpg', 1280, '材質：棉 82%、彈性纖維 13%、彈性纖維 5%。', [{ name: 'Colour / 顏色', values: ['一黑一白一紅組合'] }], 0, ['wyagl-sock-01.jpg', 'wyagl-sock-02.jpg']),
+    'wy-24ce-wyagl-tee': wishProduct('Wish You A Good Life T-SHIRT', 'wish-you-a-good-life-t-shirt-01.jpg', 1680, '低溫30°C洗滌、不可乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, ['wish-you-a-good-life-t-shirt-01.jpg', 'wish-you-a-good-life-t-shirt-02.jpg', 'wish-you-a-good-life-t-shirt-03.jpg']),
+    'wy-24ce-tee': wishProduct('WYAGL T-SHIRT', 'wyagl-t-shirt-01.jpg', 1680, '低溫30°C洗滌、不可乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['L', 'M', 'XL'] }], 0, ['wyagl-t-shirt-01.jpg', 'wyagl-t-shirt-02.jpg', 'wyagl-t-shirt-03.jpg']),
+    'wy-24ce-dupont-bag': wishProduct('Dupont Bag', 'wyagl-dupont-bag-01.jpg', 1080, '尺寸 M/L/XL；銀色；杜邦紙材質，防水可水洗。尺寸皆為水平手工測量。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, ['wyagl-dupont-bag-01.jpg', 'wyagl-dupont-bag-02.jpg', 'wyagl-dupont-bag-03.jpg']),
     'wy-bundle-cap': wishProduct('祝你好命 刺繡 Logo 老帽', 'wyagl-cap-generated.webp', '待確認', '以組合包紅白黑配色延伸的黑色六片老帽，紅色刺繡圓章細節。', [{ name: 'Colour / 顏色', values: ['Black'] }], 0, '', ['wyagl-cap-generated.webp']),
     'wy-bundle-cargo-pants': wishProduct('祝你好命 束口工裝褲', 'wyagl-cargo-pants-generated.webp', '待確認', '以組合包配色延伸的黑色水洗束口工裝褲，側邊口袋與紅色車線細節。', [{ name: 'Size / 尺寸', values: ['S', 'M', 'L', 'XL'] }], 0, '', ['wyagl-cargo-pants-generated.webp']),
     'wy-bundle-lowtop-sneakers': wishProduct('祝你好命 紅白低筒球鞋', 'wyagl-lowtop-sneakers-generated.webp', '待確認', '以組合包配色延伸的紅白黑低筒球鞋，鞋跟有螢光綠點綴。', [{ name: 'Size / 尺寸', values: ['US 8', 'US 9', 'US 10', 'US 11'] }], 0, '', ['wyagl-lowtop-sneakers-generated.webp'])

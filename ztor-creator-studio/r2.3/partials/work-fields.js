@@ -250,7 +250,7 @@
     s.insertAdjacentHTML('beforeend',
       '<div class="upload-assets upload-assets--fill">'
       + '<div class="upload-tile upload-tile--portrait" data-pw-asset="cover" data-upload>'
-      + '<span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>'
+      + '<span class="upload-tile__icon"><i data-lucide="photo-video" class="ztor-icon ztor-icon--md"></i></span>'
       + '<span class="upload-tile__title" data-i18n="pw.art.cover.cta">' + esc(T('pw.art.cover.cta', 'Add the poster')) + '</span>'
       + '<span class="upload-tile__hint" data-i18n="cp.media.portrait">' + esc(T('cp.media.portrait', '750 × 1125 · portrait')) + '</span>'
       + '</div></div>');

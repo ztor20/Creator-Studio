@@ -207,3 +207,15 @@
   top: 0;
   z-index: 7;
 }
+/* 頁面另有黏住的詳情頂列（`.detail-topbar.is-stuck`，fixed 在捲動容器上緣）時，分節橫列要讓出
+   那一條的高度，否則吸頂後被壓在頂列底下（2026-09-11 商品詳情實測）。高度由 js/detail-topbar.js
+   在黏住時寫進 `.page` 的 `--detail-bar-h`；沒寫（頁面自己管頂列）就回到 0，行為與從前相同。 */
+.page:has(> .detail-topbar.is-stuck) [data-nav] > .list-toolbar,
+.page:has(> .pd-detail__topbar.is-stuck) [data-nav] > .list-toolbar {
+  top: var(--detail-bar-h, 0px);
+}
+/* 跳到某一節時的上緣讓位也要加上同一段，否則節首被吸頂的橫列蓋住。 */
+.page:has(> .detail-topbar.is-stuck) .nav-sections > [data-nav-panel],
+.page:has(> .pd-detail__topbar.is-stuck) .nav-sections > [data-nav-panel] {
+  scroll-margin-top: calc(78px + var(--detail-bar-h, 0px));
+}
