@@ -74,7 +74,15 @@
 /* --tall（2026-09-11）：預覽內容比視窗高時（電子商店的粉絲端創作者頁鏡像），sticky 欄釘在頂端、
    下半截永遠看不到。限高在視窗內、欄自己捲，捲軸收成細的。 */
 .preview-col--tall {
-  max-height: calc(100vh - var(--preview-col-top, 96px) - var(--sp-24));
+  /* --preview-col-max 由 partials/preview-col.js 依欄當下離視窗頂的距離寫入（欄在自然位置時比 sticky 頂距低，
+     純 CSS 算式會讓卡的下緣破出視窗）；沒載那支時退回 CSS 算式。 */
+  max-height: var(--preview-col-max, calc(100vh - var(--preview-col-top, 96px) - var(--sp-24)));
+}
+/* 捲的是卡的內容、不是欄（2026-09-11 使用者：「範圍底部不要破窗」）：原本欄自己 overflow 捲、卡比欄高，
+   卡的下緣與圓角被欄切在視窗外，看起來像一張破出視窗的卡。改成卡限高在欄內（flex 子項 min-height:0）、
+   卡自己捲，四個角與邊框永遠在視窗裡。 */
+.preview-col--tall > .form-section--outlined {
+  min-height: 0;
   overflow-y: auto;
   scrollbar-width: thin;
 }
