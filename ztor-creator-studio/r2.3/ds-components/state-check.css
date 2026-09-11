@@ -7,8 +7,16 @@
    首用：商品／組合詳情總覽的「上架與開賣」列（listed／shown／on-sale 三態）。
      .state-checks               — 容器：橫排、可折行
        .state-check(--on)        — 一個狀態：標記＋標籤
-         .state-check__mark      — 16px 圓；--on 時內含 check icon
+         .state-check__mark      — 16px 圓；內含 icon（check／x／clock／minus）
          .state-check__label
+     四種長相（2026-09-11 探索 lab-state-check.html 定案）：
+       --on         成立（已上架／顯示／開賣中）：實色成功綠底＋畫布色勾
+       --scheduled  排定、未到（定時上架／下架／開賣／停售）：半透明藍底、無外框＋藍時鐘；字前景色
+       --off        不成立（未上架／隱藏）：薄膜圓底＋輔助色叉
+       --ended      已結束（已停售）：輔助色實心圓＋一橫
+       （沒上架時的顯示／開賣原本另有「不適用」破折號，2026-09-11 使用者裁示與「未上架」同款，用 --off）
+     一列要講兩件事時（已上架＋排了下架）用 .state-checks--stack 直排兩顆，第二顆自己是一個狀態（排定），
+     不是第一顆的副標（2026-09-11 使用者：「換行顯示的同時，也要是一個狀態，前面應該是時鐘那個狀態」）。
    ============================================================ */
 .state-checks {
   display: flex;
@@ -19,7 +27,7 @@
 .state-check {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-6);
+  gap: var(--sp-8);   /* 字符放大到 12 後標記與字的間距跟著開（2026-09-11 使用者：「間距就要加大一點」；原 --sp-6） */
   font-family: var(--font-ui);
   font-size: var(--fs-13);
   color: var(--muted-foreground);
@@ -34,9 +42,25 @@
   place-items: center;
   color: transparent;
 }
-.state-check__mark .ztor-icon { width: 10px; height: 10px; stroke-width: 2.4; }
+/* 字符 12（2026-09-11 使用者：「icon 可以再大一階，時鐘有點看不清楚」；原 10）：圓維持 16，時鐘的針才分得出來 */
+.state-check__mark .ztor-icon { width: 12px; height: 12px; stroke-width: 2.2; }
+/* 直排：同一格兩個狀態（現況＋排程）各自一顆 */
+.state-checks--stack { flex-direction: column; align-items: flex-start; gap: var(--sp-6); }
+/* 排定、未到：實色藍底、無外框＋畫布色時鐘（2026-09-11 兩輪：先半透明藍，成立態回實色綠後使用者裁示「時鐘那個也跟著改藍色背景」） */
+.state-check--scheduled { color: var(--foreground); }
+.state-check--scheduled .state-check__mark { border-color: transparent; background: var(--status-info); color: var(--background); }
+/* 不成立：薄膜圓底＋輔助色叉（原本是髮線空心圓；使用者：「未上架的那個 icon 要換一個」） */
+.state-check--off .state-check__mark { border-color: transparent; background: var(--ztu-glass-strong); color: var(--muted-foreground); }
+/* 已結束：輔助色實心圓＋一橫 */
+.state-check--ended .state-check__mark { border-color: transparent; background: var(--muted-foreground); color: var(--background); }
+
 .state-check--on .state-check__mark {
   border-color: transparent;
-  background: var(--status-success-fill);
-  color: var(--status-success-ink);
+  /* 2026-09-11 使用者：「icon 顏色髒髒的」——12% 淡染底配深綠勾在 16px 裡糊成一團；
+     改實色 --status-success 底、勾用畫布色（深色主題是深底、淺色是白），邊緣才乾淨。
+     舊值：background: var(--status-success-fill); color: var(--status-success-ink)。 */
+  /* 2026-09-11 試過 18% 淡染底＋同色勾，使用者比較後裁示「原本綠色背景比較好」：實色綠底＋畫布色勾定案；
+     「排定」也跟著改成實色藍底＋畫布色時鐘，五顆同一家族（實色底＝有事在發生，薄膜／實心灰＝沒有）。 */
+  background: var(--status-success);
+  color: var(--background);
 }

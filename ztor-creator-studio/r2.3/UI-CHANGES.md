@@ -4,6 +4,192 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-11（十八）· 檢視態全站改 disabled 外觀；預覽欄的暗膜只鋪內容區（B 反饋導入）
+
+**範圍**：`shared.css`（`[data-mode="view"]` 欄位外觀）、`ds-components/preview-column.css`（`--dim` 改鋪在 `__head--rule` 以下）、`design-system.html`／`design-system.md`（Preview column、`locked-field-ink` 補說明）。
+
+**依據**：使用者 2026-09-11：「未能編輯的狀態怎麼不是 disable」→ 三案中選「全站檢視態都改成 disabled 外觀（商品詳情設定分頁一起）」；另指著商店預覽卡：「（標題）綠色區塊用原本的玻璃質感背景，（內容）紅色區塊用現在的背景」。
+
+### B · 檢視態＝disabled 外觀
+
+`[data-mode="view"]` 下的 `.input`／`.textarea`／`.select`／`.tag-input`／`.zselect__trigger` 改成與 `.input:disabled` 同一種樣子：透明底、`--locked-field-ink` 淡墨、not-allowed 游標、不可選取。幾何仍不動（2026-07-27 那條「切模式版面不位移」的理由保留），屬性層仍是 readonly（值留在無障礙樹、五個頁面的 applyReadonly 不用改），「不能改」的訊號改由外觀承擔；站上因此仍只有一種「鎖住」的樣子（input.css 2026-08-09）。消費頁：商店設定銷售預設、商品詳情設定分頁、組合詳情、活動詳情。
+
+### B · 預覽欄暗膜只鋪內容區
+
+`--dim` 原本把整張卡換成暗膜；改成卡本體與標題列維持玻璃、分隔線以下的內容區（`__head--rule + *`）才鋪 24% 暗膜——負外距出血到卡的邊框內緣、下緣跟卡的圓角（radius 減 1px 邊框）；標題列的下距 24 改由內容區的 padding-top 承擔，暗膜從分隔線那一條開始。電子商店與商店設定兩頁同款。
+
+**驗證**：dev server：商店設定銷售預設檢視態欄位透明底、字色 25% 白、not-allowed、user-select none；按編輯恢復可打字外觀。預覽卡：內容區左緣 1027＝卡 1026＋1px、暗膜自分隔線起、標題列玻璃；電子商店同樣。0 console error；`check_ds_sync.py` PASS。
+
+## 2026-09-11（十七）· 商店設定：頁級「放棄／儲存」退場，銷售預設改成分頁列右側的「編輯」兩段式（B 反饋導入 / C 撤除）
+
+**範圍**：`store-settings.html`（刪 `.page-intro__actions`、分頁列加 `.list-toolbar__actions`＋`[data-ss-editmode]`／`[data-ss-edit-cancel]`、`#sec-selling` 掛 `data-editable data-mode`、模式切換 JS）、`js/i18n.js`（`store-settings.selling.saved`）、`design-system.md`（Store settings page 補說明）。
+
+**依據**：使用者 2026-09-11：「這個（放棄變更／儲存變更）應該不需要了。唯一會用到編輯儲存的是不是只有這一頁的這些（銷售預設的出貨地址、免運門檻）？如果是的話，將編輯按鈕放在選單 bar 的右側，如同詳情頁的選單 bar。」核對：店面就地編輯（每格自己有 ✓／✕）、尺寸指南與優惠碼各走彈窗、收款唯讀——需要「進入編輯→儲存」的確實只剩銷售預設。
+
+### B · 比照商品詳情設定分頁
+
+分頁列右側一顆「編輯」，只在銷售預設分頁出現；按下 `#sec-selling` 切成 `data-mode="edit"`（欄位放開 readonly、shared.css 的檢視態樣式解除）、同一顆變「儲存變更」（主色），旁邊出現「取消」；儲存回唯讀＋toast「銷售預設已儲存」；取消還原進入編輯前的值；換到別的分頁視同取消。幣別本來就 disabled、不放開。i18n 直接重用 `product-detail.btn.edit`／`.save-changes`／`payout.cancel`。
+
+### B · 預覽欄往上放
+
+使用者：「往上放」——麵包屑與頁首也包進 `.preview-split__form`，右欄的起點與麵包屑同高（原本從分頁列才開始）。
+
+### C · 撤除
+
+頁首右側的「放棄變更／儲存變更」兩顆退場（`store-settings.discard`／`.save` 字串暫留）。
+
+**驗證**：dev server 實走：預設店面分頁看不到編輯鈕；切銷售預設→出現「編輯」、欄位 readonly；按編輯→欄位可打字、鈕變「儲存變更」＋取消；改值後取消→值還原、回唯讀；再編輯→儲存→toast。0 console error；`check_ds_sync.py` PASS。
+
+## 2026-09-11（十六）· 商店設定：右欄改成常駐的商店預覽卡、店面編輯搬進分頁、「粉絲視角預覽」退場（B 反饋導入 / C 撤除）
+
+**範圍**：`store-settings.html`（分頁列加「店面」、店面編輯卡移入 `#sec-storefront`、右欄換成 e-shop 同款預覽卡、刪「粉絲視角預覽」鈕與 `#ss-preview` 滑出側欄及其開關 JS、改連 `form-section.css` 取代 `preview-panel.css`）、`ds-components/store-settings.css`（`#ss-split` 變數）、`design-system.html`／`design-system.md`（Fan store preview 消費頁、Store settings page 補說明）。
+
+**依據**：使用者 2026-09-11 三點：「這個（滑出側欄）怎麼長得和電子商店的列表頁的不一樣」「而且重複了」「或是這些都刪掉，預設在（右欄）的位置就預覽」；經確認選「預覽卡常駐右欄、店面編輯搬進分頁」。
+
+### B · 右欄＝商店預覽
+
+右欄改成與電子商店 F5 完全同一張卡（`preview-col--tall --dim`＋`form-section--outlined`＋`__head--rule`、欄 320、鏡像 zoom 0.8），常駐、沒有 ✕；粉絲端鏡像同一支 `partials/fan-store.js`。同一件事（粉絲看到的樣子）在兩頁長一樣。
+
+### B · 店面編輯進分頁
+
+原本右欄的店面編輯卡（封面／logo／店名／網址／簡介就地編輯）搬進上方分頁列，成為第一個分頁「店面」、預設開啟；其餘分頁順序不變（收款／銷售預設／尺寸指南設定／優惠碼），`#specs` 直達不受影響。編輯在左、預覽在右，同一頁不再有兩份「粉絲看到的樣子」。
+
+### C · 撤除
+
+「粉絲視角預覽」鈕、`preview-panel--inset` 滑出側欄與其開關／Esc 邏輯退場；`preview-panel.css` 不再由本頁載入。i18n 的 `store-settings.see-as-fan`／`store-settings.preview.*` 字串暫留。
+
+**驗證**：dev server 實走：預設停在「店面」分頁、右欄即顯示商店預覽；切到尺寸指南設定→只有該區可見；右欄往下捲分頁列釘頂、捲回收起。0 console error；`check_ds_sync.py` PASS。
+
+## 2026-09-11（十五）· 商店預覽欄標題列加分隔線與間距；釘頂偵測補「欄剛打開」（B 反饋導入）
+
+**範圍**：`ds-components/form-section.css`（新增 `__head--rule`）、`ds-components/preview-column.css`（欄內 `--rule` 下距 24）、`e-shop.html`（預覽欄標題列掛 `--rule`）、`partials/fan-store.js`（釘頂偵測）、`design-system.html`／`design-system.md`（Form section 補說明）。
+
+**依據**：使用者 2026-09-11 指著商店預覽欄標題列與內容之間：「加一條分隔線，並將間距做出來」。
+
+### B · 分隔線
+
+標題列（商店預覽／副標／✕）與底下的粉絲端鏡像之間原本只有 16px 空白，內容又是另一個世界的畫面，兩者黏在一起。新增 `.form-section__head--rule`：1px `--border-soft` 線，用 `--card-pad` 的負外距出血到卡的內緣，線上留 16、線下留 24。做成 form-section 的修飾詞而不是頁內樣式：這是「標題列＋非表單內容」的通用需求。`preview-column.css` 原本把欄內標題列下距收成 16（三個 class 的權重），對 `--rule` 補回 24。
+
+### 順手：釘頂偵測補「欄剛打開」
+
+預覽欄預設關閉，分頁列在 display:none 下量出來全是 0，「頂緣 ≤ 容器頂緣」成立，欄一打開就已經是釘住態（小頭像露出來）。改成量到 0 尺寸就不算釘住，並用 ResizeObserver 在欄打開那一刻重算。
+
+**驗證**：dev server 開商店預覽：線切齊卡內緣（head left 1027＝卡 1026＋1px 邊框）、線下到鏡像頂 24px；打開當下分頁列無 `.is-pinned`，捲動後才釘。0 console error；`check_ds_sync.py` PASS。
+
+## 2026-09-11（十四）· 清單頁三件：貼頂工作列改方形圓角並貼齊上緣、釘選框隨可見寬度、橫捲點字拉桿（B 反饋導入）
+
+**範圍**：`shared.css`（`.main` 上留白 margin→`::before` 佔位）、`ds-components/list-toolbar.css`（貼頂態四角圓角、凹角退場）、`ds-components/product-list.css`（`__divider` sticky＋`--pls-w`、新增 `.product-list-scrollbar`）、`partials/list-scroll.js`（寫 `--pls-w`、建代理拉桿並雙向同步）、`design-system.html`／`design-system.md`（§4.26、List toolbar 補說明）。
+
+**依據**：使用者 2026-09-11 三點（附截圖）：「（釘選框）要隨著寬度縮放，立即釘選要一直在右邊」「（貼頂工作列）改成方形圓角就好了，並且要靠上方那條線對齊」「當有遮蔽時，下方要有一條拉吧，粗一點好拖動，拖動的那條上面要有一些點點矩陣紋理，像是盲人點字那種」。
+
+### B · 貼頂工作列
+
+r2.3 的內容面板是透明的、直接浮在星空上，原本貼頂態「上緣切平＋兩側凹角接外框」的比喻沒有外框可接：凹角是用實色徑向漸層雕的，在星空上就是兩塊深色方角（使用者截圖圈出的那塊）。改成四角同 `--radius-xl` 的方形卡，凹角 `::before`／`::after` 整段退場。「靠上方那條線對齊」：貼頂的東西最高只能停在捲動容器 `.main` 的上緣，而 `.main` 原本以 16px margin 離側欄上緣一段——sticky 永遠比側欄低 16px。把留白搬進容器裡（flex column 的第一個 `::before` 佔位），容器上緣＝外殼上緣，貼頂正好與側欄同一條線；內容起始位置不變。不用 padding：Chrome 的 sticky 以 padding 內緣為界。
+
+### B · 釘選框隨可見寬度
+
+分隔列在清單本體裡，本體寬＝欄寬加總，框跟著被撐到看不見的右邊、「立即釘選」跟著跑掉。整條改 sticky 釘左緣、寬度寫 `--pls-w`（list-scroll.js 量容器 clientWidth），框永遠正好填滿看得到的那一段，右端就是「立即釘選」。上一輪只釘文字（`__divider-body`）的做法退場。
+
+### B · 橫捲拉桿
+
+清單容器自己的捲軸在整張表最底下（三十列＝好幾個螢幕），看不到也搆不到。list-scroll.js 在容器後面補一條代理拉桿 `.product-list-scrollbar`：只有橫向捲軸的空容器、內容寬跟清單本體一樣、兩邊 scrollLeft 互相同步，sticky 在頁面捲動容器的底緣——清單還在畫面裡時它就一直在螢幕下方；放得下時 `hidden`。拉桿本體 14px 膠囊，`::-webkit-scrollbar-thumb` 鋪一層 3px 間距的圓點（radial-gradient，點字那種矩陣），軌道透明。**同日二改**（使用者：「再粗一點，然後盲人點字不要這麼密，點點的顏色不要這麼亮」）：14→20px；點距 3→5px、點徑 0.8→1px；點色由 `--muted-foreground` 全值降到 45%（hover 才回全值）。**同日三改**（使用者：「還是太亮，而且點點的排列要考慮到範圍，有些點點被切掉」）：點只畫在 padding-box、膠囊底色畫在 border-box——透明 border 上下各 5（剛好兩排 5px 的點）、左右各 10（避開圓弧），橫向 `background-repeat: round` 讓整數個點填滿、末端不切半顆；點色降到 `--foreground` 22%，底色 `--ztu-glass-strong`→`--ztu-film`。踩到的坑：Chrome 121 起只要 `scrollbar-width`／`scrollbar-color` 有值，`::-webkit-scrollbar` 整組被忽略，第一版兩者並寫就畫不出來；Firefox 退回預設細捲軸。
+
+**驗證**：dev server 實走 e-shop（1400 寬、開商店預覽）：往下捲→貼頂工作列上緣 y=14＝側欄上緣，四角 24px 圓角，兩側沒有深色方角；釘選框寬 870＝容器可見寬、「立即釘選」在右端；底部出現 14px 拉桿、放大 4 倍確認圓點矩陣，拖拉桿清單跟著橫捲、捲清單拉桿跟著走。0 console error；`check_ds_sync.py` PASS。
+
+## 2026-09-11（八）· 商店預覽的分頁列：重量粉絲端樣式、往下捲時釘頂並長出小頭像（B 反饋導入）
+
+**範圍**：`partials/fan-store.js`（分頁列包進 `.fan-store__stick`、新增 `.fan-store__minihead`、釘頂偵測）、`ds-components/fan-store.css`（`__nav`／`__nav-item` 重寫、`__stick`／`__minihead` 新增）、`design-system.html`／`design-system.md`（§4.57 補說明、demo 同步）。
+
+**依據**：使用者 2026-09-11 兩點：「指出的部分（分頁列），樣式也和原本不同」「下滑的時候會有東西置頂在上面，請再查驗一次那個網站的設計並補上去」。
+
+### B · 分頁列照粉絲端重量
+
+在 ztor.vercel.app 創作者頁（375 視窗）逐項量 `.glass-tabs`：容器 48px 膠囊、padding 4/10、8.6% 白底、0.14 白邊、blur(8px) saturate(1.5)；項目高 40、padding 0 12、字 14、未選 65% 白 regular；選中橘字 bold、底是「只在頂端一線 18% 橘、往下即透明」的漸層，加左上／右下兩道橘色內光與一道極淡內陰影（粉絲端的 `--lg-fill-active`／`--lg-shine-active`）。舊版是站上自己的寫法（36px 項目、16% 橘底、medium 字重、無內光），肉眼就看得出不是同一個元件。重寫後全部走 token：橘走 `--primary` 的 `color-mix`，白 alpha 對應 `--ztu-film`／`--ztu-rim-soft`。項目改不換行（放不下橫捲、捲軸藏起），跟粉絲端一致。
+
+### B · 往下捲時釘頂
+
+粉絲端手機版往下捲，分頁列 sticky 釘在最上面、上方多出「小頭像 24＋名字 13 bold」一行（高 28、上下 12/8），整塊底下一片漸層毛玻璃（往外出血 12/16/24、70% 深色→透明、blur、下緣以 mask 淡出）壓暗滑過的內容——量自 `.tabstick-host.is-pinned`＋`.creator-minihead`。預覽照搬：分頁列包進 `.fan-store__stick`（`position: sticky; top: 0`），釘住了沒由 `partials/fan-store.js` 判斷（分頁列頂緣是否貼到捲動容器的頂緣；容器＝往上找第一個會捲的祖先，e-shop 是右欄 `.preview-col--tall`、商店設定是 `.preview-panel__body`；比對線要含容器 padding-top，Chrome 的 sticky top:0 貼的是內距以內那條線）寫 `.is-pinned`，小頭像列與毛玻璃帶才長出來。scroll 不冒泡，用 capture 在 document 上一次接住任何容器的捲動。兩個消費頁不用改：fan-store.js 自己盯著 `[data-fan-store-host]` 被注入就綁。
+
+**驗證**：dev server 實走 e-shop（1400 寬、開商店預覽）與商店設定（開粉絲視角預覽）：滾輪往下捲→`.is-pinned`、小頭像＋名字浮在分頁列上、底下內容被壓暗；捲回頂→屬性清掉、小頭像收起。分頁列五個項目一行放完、不換行；選中「商店」橘字＋橘色內光。0 console error；`check_ds_sync.py` PASS。
+
+## 2026-09-11（七）· 商店預覽欄：往上對齊通知條、放大一階、加 ✕、卡底暗一階（B 反饋導入）
+
+**範圍**：`e-shop.html`（分割容器搬到 main 最外層、右欄加 `--tall --dim`、標題列加 ✕）、`ds-components/preview-column.css`（欄寬改走 `--preview-col-w`，新增 `--tall`／`--dim` 修飾詞）。
+
+**依據**：使用者 2026-09-11 四點：「商店預覽應該往上移」「要再大一點點」「右邊要有一個叉叉」「區塊的背景要暗一點點」。
+
+- **往上移**：分割容器原本包在 `.page` 裡，右欄從頁標題那一層才開始、頂端還被低庫存通知條壓著。改成容器包住通知條＋整個 `.page`，右欄從最上面開始、與通知條的黏頂位置對齊（`--preview-col-top: 16`），通知條只跨左欄。容器自己承擔頁寬（1280＋28 內距），裡面的 `.alert-inset`／`.page` 不再各算一次，關掉預覽時版面與原本一模一樣。
+- **大一點點**：欄寬 270 → 320，鏡像 zoom 0.75 → 0.8——320 減卡內距 32＝288，÷0.8 剛好是 360 的手機版型，不是把版型排窄。欄寬改走 `--preview-col-w` 變數（建立商品維持 270／0.75），不另立第三個修飾詞。
+- **✕**：標題列改 `form-section__head--actions`，右端一顆 `btn--icon` ✕（`data-eshop-preview-close`），與眼睛鈕、Esc 三者都能關。
+- **暗一點點**：`--dim` 把那張卡的玻璃膜換成畫布色 24% 的暗膜，模糊與邊框不變——同一種材質、退後一層。
+- 順帶：`--tall` 讓比視窗高的鏡像在欄內自己捲（sticky 欄釘在頂端時下半截原本永遠看不到）。
+
+**驗證**：dev server 實走。開預覽：右欄與通知條頂端同高（46px）、欄寬 320、zoom 0.8、卡底 `rgba(0,0,0,.24)`、欄 `overflow-y:auto` 限高在視窗內；✕ 點了關閉、眼睛鈕 `aria-pressed=false`；關閉後通知條與 `.page` 同寬 1213（與改前一致）。0 console error；`check_ds_sync.py` PASS。
+
+
+## 2026-09-11（六）· 清單兩端固定欄：握把與動作欄釘住，中間先縮、縮不動才橫捲（B 反饋導入）
+
+**範圍**：`ds-components/product-list.css`（`.product-list-scroll` 內的 `__drag`／`__actions` 與表頭首末格改 sticky；中間每格條件式淡出 mask）、新檔 `partials/list-scroll.js`（捲動狀態）、十個掛 `.product-list-scroll` 的頁面補載它、`design-system.html`／`design-system.md`（§4.26 Product list 補說明）。
+
+**依據**：使用者 2026-09-11 指示「列表中的握把與動作欄固定；螢幕縮小時內部欄位先縮到一個程度，之後中間區塊右邊開始被遮、左右滾動看資訊。在還沒設計更小螢幕之前，每個列表都先這樣做。」
+
+### B · 釘住兩端
+
+握把（第一欄）與動作欄（最後一欄）在捲動容器內 `position: sticky` 各釘在左右緣，表頭同欄位跟著釘。中間的欄靠既有的 `minmax` 先縮到各自最小寬，`min-content` 到底才長出捲軸，內容從動作欄底下滑過去。釘住的格以 `--background` 當底（清單是透明鋪在畫布上的，沒有底滑過去的字會透出來），再用單向 `box-shadow` 把欄間 20px 的 gap 一起遮住——只往內側投、不往上下投，才不壓到相鄰列的分隔線。≤760px 的堆疊版型另有 absolute 定位，這一段以 `@media (min-width: 761px)` 圈開不介入。
+
+### B · 同日五次追加：被遮那一側的內容漸變透明——mask 掛在中間每一格
+
+前三個版本的失敗其實是同一件事：釘住的格自己沒有底、底下是四層會動的星空，凡是「在格上畫東西」的做法都畫出一塊看得見的方形——實色底→「黑黑一塊」；只在需要時畫、內側接漸層→「黑塊還是在，背景是圖片的」；毛玻璃＋漸進模糊→模糊過的星空比周圍亮一階，仍是一塊矩形（「好像還是不太對」，截圖紅框在握把欄與 ⋮ 欄）。而「在捲動容器上掛 mask」讓內容真的淡成透明，卻把釘住的格一起 mask 掉（「往左滑會壞掉」），hover 玻璃也被淡掉一截（「很怪的陰影」）。
+
+定案：mask 不掛容器、不掛釘住的格，**掛在中間每一格自己身上**。每格一條 `linear-gradient` 當 mask，位置由 `partials/list-scroll.js` 算好寫成變數——容器上的 `--pls-lx`／`--pls-rx`（淡出帶起點，以清單本體座標計＝釘住格內緣＋`scrollLeft`；該側沒有內容被遮就寫 ±99999px 把帶子推出視野＝關掉）與 `--pls-fade`（帶寬 `--sp-56`），每格自己的 `--cell-x`（在清單本體裡的 x，不隨捲動變、只在版面變時重量）。格的 mask 座標＝容器座標減 `--cell-x`，所以同一條 gradient 對每一格都對；捲動時 js 只改容器上兩個變數，格的 mask 由瀏覽器自己重算。釘住的格不在 mask 裡（握把、⋮ 永遠原樣），星空與列的 hover 玻璃也不在 mask 裡（它們是格的背景、不是格），真正淡掉的只有滑到底下的圖與字——沒有任何東西「畫」在星空上，所以沒有方塊。第三版為了 Chrome backdrop root 而關掉 hover 列 backdrop-filter 的規則一併撤除，hover 玻璃恢復原樣。`data-scrolled-left`／`-right` 沿用，沒被遮的清單不掛 mask、不多一層合成。
+
+順手：e-shop 的釘選分隔列不是一列商品、沒有握把，說明文字 `__divider-body` 另外 `sticky` 釘在左緣，不再跟著內容滑走被切半。
+
+**驗證**：dev server 實走 e-shop（1100 寬）：`scrollLeft` 0→只有 `data-scrolled-right`、`--pls-lx` 為 -99999px；60→兩側都有，縮圖朝握把方向淡出、顯示開關朝 ⋮ 方向淡出，握把與 ⋮ 欄底下沒有任何方塊；捲到底→只剩左側、`--pls-rx` 99999px。hover 列玻璃整列連續、無暗帶。首格 `--cell-x` 56px、mask 為 `transparent 130px → 186px` 與量測相符。0 console error；`check_ds_sync.py` PASS。
+
+## 2026-09-11（五）· 商店預覽改成頁內右欄；預覽內容重做成粉絲端創作者頁的手機鏡像（B 反饋導入）
+
+**範圍**：`e-shop.html`（F5 容器由固定分割面板改為 `.preview-split--phone.preview-split--toggle` 右欄；舊面板 CSS、接縫陰影、✕ 退場；改掛 `preview-column.css`＋`form-section.css`）、`ds-components/preview-column.css`（新增 `--toggle` 變體）、`partials/fan-store.js`／`ds-components/fan-store.css`（整份重寫）、`store-settings.html`（補載 `listing-state.js`＋`products-store.js`）、`js/icons.js`（brand-instagram／threads／x／tiktok）、`js/i18n.js`（人格檔案與新文案）、`design-system.html`／`design-system.md`（§4.57 重寫、§1.5 例外退場）。
+
+**依據**：使用者 2026-09-11 兩項指示——「改成像創建時的預覽顯示在畫面右邊一欄，不是整個版面切割出來」「商店預覽使用這個截圖畫面的設計，這是實際在前台看到的樣子」（附粉絲端創作者頁截圖，劃掉 app bar、底部導航與「情境展示」浮標）。
+
+### B · 預覽是頁內的一欄，不是把外殼切成兩半
+
+舊做法：預覽是一塊 fixed 的獨立面板，開啟時把主面板往左壓、兩塊之間畫接縫陰影、主面板疊在預覽之上——整個外殼被切成兩半。改成與建立商品同一套：`.page` 內容套 `.preview-split--phone`，右欄是 sticky 的 `.preview-col`、裡面一張與內容同款的 `form-section--outlined`（標題「商店預覽」＋「粉絲在 Ztor 看到的樣子」在卡內）。可開關由新加的 `.preview-split--toggle` 承擔：沒開就是單欄、右欄不佔位，眼睛鈕切 `is-open`；✕ 退場——右欄是頁面的一部分，關掉按同一顆眼睛。清單原本就有橫向捲動包層，左欄變窄後照樣捲得到。
+
+### B · 預覽內容＝粉絲端創作者頁的手機版鏡像
+
+做法比照建立商品的商品頁鏡像（D248）：版型與比例照使用者提供的粉絲端截圖搬進來（375 視窗），整支 `zoom: 0.75`、欄寬 270px、不畫手機外框。由上而下：頭像＋名字＋身分・追蹤數＋分享 → 簡介（兩行＋更多）→ 社群圓鈕（ztor／IG／Threads／X／TikTok）→ 加入社群＋彩蛋解鎖 → 分頁列（商店・活動・排行榜・貼文・項目）→ 精選商品橫列（下一張露一截）→ 商品・套組・競標子分頁 → 雙欄商品格（新品／限量徽章＋收藏愛心）。使用者劃掉的 app bar、底部導航、「情境展示」浮標不進預覽。舊版的手機外框、hero 漸層、頭號粉絲、關於、底部導航整份退場。
+
+- **顏色與間距只用 token**：舊版 scoped 的 `--fst-*` 寫死色盤（25 處裸色）刪掉，站上裸色由 44 處降到 19 處；design-system.md §1.5 那條 fan-store 例外標記退場。
+- **資料接真的**：人格決定頭像（Gary Lin／周湯豪的肖像）、名字、身分、追蹤數與簡介；商品卡問 `ProductsStore`——名稱、圖、價格（幣別寫法與清單同一套：nick＝NT$ 千分位），沒載的頁用示範值。`fanStore` 改成 getter，讀取當下才組樣板，ProductsStore 一定已經在。
+- **卡序固定**（`CARD_IDS`＝zine／tee／album／acetate／hoodie／pin），e-shop 的 `PREVIEW_IDS` 對齊，仍依上架／顯示狀態收起對應的卡。
+- 商店設定 F1 與三個細節頁的預覽面板吃同一份樣板，自動換新；商店設定原本沒載 ProductsStore，補上。
+
+**驗證**：dev server 實走。e-shop：眼睛鈕開→`grid 747px 270px`、右欄 sticky、預設角色顯示 Gary Lin／`gary-portrait.jpg`、精選＝九龍夜行 帆布低筒鞋、6 張卡（1 張依狀態收起）、五顆社群圓鈕；切周湯豪→周湯豪／歌手 / 主持人／215 萬／祝你好命 紅白低筒球鞋 NT$2,340。工具列與建立鈕在窄欄內未溢出（右緣 1030 < 欄右緣 1051）。商店設定 F1 面板、商品細節預覽面板同樣渲染。DS §4.57 demo 正常、舊 demo 殘段清乾淨。0 console error；`check_ds_sync.py` PASS。
+
+
+## 2026-09-11（四）· 帳戶選單加「商店設定」；帳戶頭像改放照片（B 反饋導入）
+
+**範圍**：`js/sidebar.js`（名冊補 `avatar`、`avatarHtml()`、帳戶選單兩份各加一項）、`js/i18n.js`（`nav.store-settings`）、`shared.css`／`ds-components/header.css`（頭像圓框裁切、`.app-avatar__img`）、新檔 `images/ip/gary-portrait.jpg`。
+
+**依據**：使用者 2026-09-11 兩項指示——「帳戶選單加一項商店設定，連到電子商店工具列那顆滑桿圖示開的畫面」「用一個頭像」。
+
+### B · 商店設定成為側欄動作區的一列
+
+第一版把它塞進帳戶選單，使用者澄清「擺在上層」的意思是動作區自己的一列：**搜尋 → 通知中心 → 商店設定 → 帳戶選單**。改成獨立的 `.app-sidebar__action` 連結，圖示用電子商店工具列那顆 `sliders-horizontal`、目的地同為 `store-settings.html`；帳戶子選單裡那一項拿掉。頂欄版面沒有動作清單可放獨立一列，商店設定留在頂欄的帳戶下拉（排第一）。放上層的理由：商店設定是創作者常回頭改的那一組（收款、幣別、尺寸指南、優惠碼），從電子商店以外的頁面也要一步到達。
+
+### B · 頭像放照片
+
+帳戶選單的頭像由名字首字改成照片：人格有照片就放，沒有才退回首字。照片路徑掛在 `sidebar.js` 的名冊 `CREATORS`（一開始放在 projects-store，實測 e-shop 等頁根本沒載那支、只會看到退路的「M」，改放名冊——頭像每一頁都要，名冊每一頁都在）。周湯豪沿用 IP 頁那張肖像；Gary Lin 沒有素材，用 AI 生成一張示範肖像（`images/ip/gary-portrait.jpg`，256px、8KB，非真人）。側欄 24px 與頂欄 32px 兩個圓共用 `.app-avatar__img`（填滿、置中裁切）。
+
+### B · 側欄圖示置中對齊（同日追加）
+
+使用者指著頭像說「icon 要置中對齊」。量出來有兩個錯位：搜尋／通知那幾列的左內距是 10、導航列是 12，圖示中線差 2px；頭像 24px 比圖示 18px 寬，圓心又多偏 3px。修法：`.app-sidebar__action` 左內距改與 `.app-sidebar__link` 同為 `--sp-12`；頭像左右各收 3px（`margin: 0 -3px`）讓圓心落在圖示中線。修後四種列的圖示中線同為一條、文字起點同為一條；收合成 76px 軌時同樣置中。同日再指示「箭頭要靠右」：帳戶列的 chevron 原本貼著文字，改讓 `.app-sidebar__action-label` 吃掉剩餘寬度（與導航列 `.app-sidebar__link-label` 同一做法），chevron 右緣與導航群組的 chevron、通知列的紅點同一條線。
+
+**驗證**：dev server 實走 e-shop：動作區四列＝搜尋／通知中心／商店設定／帳戶選單，帳戶子選單＝個人資料／設定／付款方式／語言／登出，商店設定連到 `store-settings.html`；預設人格頭像為 `gary-portrait.jpg`（24×24 圓）、切到周湯豪為 `nick-portrait.jpg`；0 console error。
+
+
 ## 2026-09-11（十三）· 示範資料全覆蓋、詳情頁讀 store；組合定價改折扣 % → 售價、限時折扣另設；清單三分頁都能拖曳重排；銷售摘要拆卡；收合式單選藏已選（A spec-derived / B 反饋導入 / D infra）
 
 **範圍**：`js/products-store.js`（預設 persona +9 商品／+7 組合、nick 找回數位與限量商品 +7 記錄／+7 組合、`DETAIL_SEED`／`seedBundle()`、`ztorGetBundle` 兩 persona 化、`patchBundleRows` 依 `data-bundle-id` 切列、`wishProduct()` status 修正）、`js/listing-state.js`（逐選項組合鎖定加總、草稿成員可售 0）、`product-detail.html`／`bundle-detail.html`（銷售摘要、折扣、限購、電影、項目引用、標籤、庫存歷史全改讀 store；銷售摘要四塊磚拆出卡片；數位次分類補文檔／IP 素材；組合上限自記錄帶入）、`bundle-detail.html`（取貨與核銷區 §2.6；組合價格＝合計＋折扣 % → 售價、限時折扣 %）、`create-bundle.html`（同上定價）、`e-shop.html`（單售 +9 列、組合 +12 列帶 `data-bundle-id`；組合與競標列加拖曳握把）、`ds-components/product-list.css`（`--bundles`／`--auctions` 軌道多一格握把）、`ds-components/radio-list.css`（收合式展開清單藏已選項）、`ds-components/field-system.css`（`.field__hint--ok`／`--warn` promote）、`js/i18n.js`、`docs/示範資料索引.md`（新）。
@@ -26,7 +212,41 @@ D261：建立組合與組合詳情的「組合價格」＝成員原價合計（�
 
 組合列：內含商品欄退場，成員改寫在組合名底下（`.product-list__members`：一件一行、暗字、超寬 …、最多三行、第四件起併成「…」，只寫商品名）；組合價成員含多選項多價格時是區間「NT$5,984–6,144」（`variants[i].price` 逐組合價差，hoodie／jacket／白 Tee XL 給了示範價差；組合價欄 88→120px）；狀態欄兩顆徽章一律各自一行（商品／組合／競標三分頁同一條）。詳情頁：淨利磚整塊連到收入管理（`a.kpi--tappable`＋右上 chevron，取代磚內 `.kpi__link`）；關聯中註腳限一行（`.kpi__meta--clip`）、為 0 的段不寫、全 0 整行不出現。
 
+### B15 · `.btn--icon-circle` 底改薄膜（ztorUI 換裝補漏）
+
+使用者指著黏住頂列裡的返回鍵：「顏色沒有照 DS」。原因：Wave 2 把控件底統一成薄膜時漏了這一支，還是實色 `--muted`；改 `--ztu-film` 底、`--foreground-muted` 字、hover `--ztu-glass-strong`。19 頁的麵包屑返回鍵一起生效。同輪：黏住態精簡列補返回鍵（自麵包屑複製）。
+
+### B14 · 詳情頁只留一條固定列（Q115）
+
+使用者：「如果有兩層固定的話，應該要合併成一個」→ 看過 demo（`lab-detail-dock.html`）後裁示「可以改到正式」。`js/detail-topbar.js` 新增收編：頂列黏住後，目前分頁的 `.list-toolbar` 捲到頂列底下時，tabs 進頂列的 `[data-dock-tabs]`（起點對齊內容欄，`--dock-id-w` 由 JS 量）、動作群進 `[data-dock-actions]`（整頁動作右邊）；黏住態的 `[data-dock-icon]` 按鈕只留 icon。`shared.css` 新增 Dock 段、有頂列的頁關掉橫列自己的 sticky；商品／組合／活動詳情三頁加槽位，scrollspy 的讓位改只算頂列。文案：「以粉絲身分預覽」→「預覽」、「編輯商品／組合／活動」→「編輯」。
+
+### B13 · 清單分隔線不再跟著 hover 圓角彎
+
+使用者：「列表的分隔線都變成有圓角的，因為 hover 有圓角，但預設狀態是不要圓角的」。`product-list.css` 的列分隔線由 `border-bottom` 改成 `::after` 絕對定位的 1px 直線，圓角只在 hover 浮起時看得到。同輪：`lock-sets.css` 的「未鎖定」字改 block，才對得齊「已鎖定」欄與兩行列的墊高。
+
+### B12 · 商品／組合設定概覽分四組
+
+使用者：「（概覽怎麼分類）好，照你的改」。照設定分頁的區段順序分四組，由靜到動：基本資料（資訊／圖片／標籤／電影關聯）→ 選項與定價（選項／定價／折扣／每人限購；組合為「商品與定價」：商品／組合價格／折扣）→ 庫存與交付（低庫存提醒／交付與取貨；組合為「鎖定套數」，點過去到組合庫存分頁）→ 上架與開賣（三態一列，列名「目前狀態」）。同日再改（使用者：「所以會是四個區塊…『商品設定概覽』這個標題就不用了」）：四組各自一張 outlined 卡、以組名為卡標題，總標題與「點任一列前往修改」撤除；`data-list__group-label` 保留為元件但這裡不再用。上架與開賣改三列各自顯示（上架／顯示於商店／開賣），每列一顆勾＋現況與排程（定時上架、定時下架、定時開賣、停售）；state-check 開的勾改實色綠底＋畫布色勾（使用者：「icon 顏色髒髒的」）。
+
+### B10 · 組合包鎖定改「鎖定套數」（lab-bundle-lock L3 定案 → 正式頁）
+
+使用者重定義規則：組合鎖「幾套 N」，不再逐商品填鎖定量；單一選項成員自動 N × 每套用量、多選項成員可展開逐規格選填分配（Σ ≤ N × 用量，少分配＝只限總數）；N 上限＝各成員 floor(未鎖定 ÷ 用量) 取最小；有鎖定時組合可售量＝N。落地：`js/listing-state.js` 新增 `lockSets`／`alloc` 模型與 `bundleLockSets`／`bundleMaxSets`／`bundleAllocOf`／`applyBundleLock`（成員商品身上的組合鎖定改為導出值，`products-store` 在 `get()` 時套用、示範資料改寫在 BUNDLE_SEED）；新元件 `ds-components/lock-sets.css`（§4.210，由 lab L3 promote：外框＋貼邊髮線、縮圖列、展開整組 hover、數字欄墨水內縮 12、規格輸入框 100px）；`bundle-detail.html` 組合庫存分頁改三塊 KPI（可售套數／鎖定套數／組合上限）＋「鎖定套數」欄位＋「指定鎖定項目」清單，操作紀錄改記「鎖定套數 前 → 後」＋逐商品明細；`create-bundle.html` F4 同步。單位統一「套」。規格（D266、§7.14、5.1.5.4 F4、5.1.5.9）待補。
+
+### B11 · 庫存歷史的「—」讀成「未指定」；單一規格明細列左欄寫「數量」；標籤欄內 chip 對比（Q114）
+
+使用者：「如果是未指定改成指定 1，那就寫 未指定 → 1」「（明細列的 —）不知道是什麼，改一個看得懂的名稱」「（電影關聯欄的 chip）這個都看不清楚」。product-detail／bundle-detail 的歷史列在畫面上把示範資料的「—」換成「未指定」（i18n `stock.history.unset`）；單一規格商品的明細列左欄改「數量」（`stock.history.k.qty`）；`tag-input.css` 欄內 `.chip--active` 改前景字＋髮線。
+
+### B9 · 密集控件高度 `--control-h-xs` 28 → 32（Q113）
+
+使用者看組合鎖定 demo 的規格輸入框：小的 input 再高一點點，而且要從元件層改、所有小控件一起。token 改一個數字，`.variant-table .input`／`.vault-tile__rename .input`／`.btn--sm` 同步長 4px；DS 控件尺寸表同步。
+
 ### B8 · 組合庫存分頁「成員分配」改名「商品庫存鎖定」；分頁內不再用「成員」
+
+同日追加：「鎖定歷史紀錄」改「操作紀錄」（en：Activity log），副標「點開看逐商品前 → 後」。
+
+### C · 組合庫存分頁第四格「卡住的商品」撤除
+
+使用者：「這是什麼？硬塞進去的資訊？」——一個 KPI 磚放商品名不像數字磚，且同一資訊已在鎖定表底部「組合可售量 · 受「…」限制」那一列；撤除，三塊磚各佔 4 欄。
 
 使用者：「成員分配 名稱請根據頁面的功能調整」——這一區做的事是把成員庫存鎖給本組合，名稱直接講功能、不用「成員」這個詞（使用者裁示；組合設定那一節就叫「商品」）：區塊標題「商品庫存鎖定」（en：Item stock locks），四塊磚改「已鎖定商品／未鎖定商品／卡住的商品」，副標「把商品的庫存鎖定給本組合…」；規格 5.1.5.9 §3 同步。
 

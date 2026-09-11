@@ -494,7 +494,9 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
   display: flex; align-items: center; gap: var(--sp-10); width: 100%;
   /* 2026-07-21 Q25：原 padding 9px 撐出 37.5px（側欄搜尋也吃這條），改吃 token 固定 36 */
   height: var(--control-h-sm);
-  padding: 0 var(--sp-10); border: 0; background: transparent; cursor: pointer;
+  /* 2026-09-11 使用者指示「icon 要置中對齊」：左內距由 --sp-10 改 --sp-12，與 .app-sidebar__link 同值，
+     搜尋／通知的圖示才跟導航列的圖示落在同一條中線上（原本差 2px）。 */
+  padding: 0 var(--sp-12); border: 0; background: transparent; cursor: pointer;
   border-radius: var(--radius-pill); text-align: left;   /* ztorUI 換裝（2026-08-28 Wave 2b §9）：舊值 --radius-md */
   font-size: var(--fs-13); color: var(--foreground-muted); font-family: inherit;
   text-decoration: none; position: relative;
@@ -551,6 +553,9 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
 }
 .app-sidebar__action .ztor-icon { width: 18px; height: 18px; flex: 0 0 auto; }
 .app-sidebar__action .app-topbar__badge-dot { position: static; margin-left: auto; }
+/* 2026-09-11 使用者指示「箭頭要靠右」：帳戶列的文字吃掉剩餘寬度，chevron 才會像導航群組那樣貼右緣
+   （導航列靠 .app-sidebar__link-label 的 flex:1 做同一件事）。通知列的紅點已是 margin-left:auto，不受影響。 */
+.app-sidebar__action-label { flex: 1 1 auto; min-width: 0; }
 .app-topbar__badge-dot[data-read="true"] { display: none; }
 .app-sidebar__search { gap: var(--sp-8); cursor: text; }
 .app-sidebar__search-input {
@@ -562,7 +567,14 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--muted); color: var(--foreground);
   font-size: var(--fs-12); font-weight: var(--fw-medium);
+  overflow: hidden;   /* 放照片時圓形裁切 */
+  /* 2026-09-11：頭像 24px 比同欄的圖示（18px）寬 6px，左右各收 3px 讓圓心落在圖示那條中線上，
+     旁邊的「帳戶選單」文字也才與其他列的文字對齊。 */
+  margin: 0 -3px;
 }
+/* 帳戶頭像的照片（2026-09-11）：側欄 24px 與頂欄 32px 兩個圓共用，填滿、置中裁切。
+   沒有照片的人格仍是名字首字，由 js/sidebar.js 的 avatarHtml() 決定放哪一種。 */
+.app-avatar__img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%; }
 
 /* Sidebar theme toggle reuses the topbar sun/moon visibility rules
    (those selectors key off [data-theme-toggle], not .app-topbar). */
@@ -707,7 +719,13 @@ html[data-nav-mode="sidebar"]       [data-nav-toggle] [data-lucide="panel-top"] 
 html[data-nav-mode="sidebar"] .main {
   min-height: 0;
   align-self: stretch;   /* row 版 .app 為 flex-start，需撐滿高度，內捲才有作用 */
-  margin-top: var(--space-shell-gutter);
+  /* 上方留白由 margin 改成面板內第一個 flex item（::before 佔位，2026-09-11）：
+     margin 讓 .main 這個捲動容器本身從外殼上緣往下 16px 才開始，貼頂的清單工作列
+     （position: sticky; top: 0）最高只能停在容器上緣＝比側欄上緣低 16px（使用者：「要靠上方那條線對齊」）。
+     留白搬進容器裡，容器上緣就是外殼上緣，sticky 的東西貼上去正好與側欄同一條線；
+     內容的起始位置不變（多了 16px 的佔位取代 16px 的 margin）。不用 padding：Chrome 的 sticky
+     以 padding 內緣為界，padding-top 16 仍會停在 +16。 */
+  margin-top: 0;
   background-color: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -724,6 +742,7 @@ html[data-nav-mode="sidebar"] .main {
   box-shadow: none;
   overflow-y: auto; overflow-x: hidden;   /* shell 固定、面板內容內部捲動 */
 }
+html[data-nav-mode="sidebar"] .main::before { content: ''; flex: none; height: var(--space-shell-gutter); }
 @media (max-width: 900px) {
   /* ztorUI 換裝（2026-08-28 熔接）：窄螢幕收掉 shell 留白與圓角，內容貼滿；
      否則手機上會浪費兩側各一段留白，而且圓角框在滿版內容上讀起來像沒關掉的彈窗。 */
@@ -740,6 +759,7 @@ html[data-nav-mode="sidebar"] .main {
     border-radius: 0;
     overflow: visible;
   }
+  html[data-nav-mode="sidebar"] .main::before { display: none; }
 }
 
 /* ---- Topbar-mode app shell（2026-06-14，依使用者反饋）----
@@ -831,7 +851,8 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   color: var(--foreground-muted); text-decoration: none;
   font-size: var(--fs-13); font-weight: var(--fw-regular);
 }
-.app-sidebar__back:hover { background: var(--accent); color: var(--foreground); }
+/* hover 照側欄導覽列（.app-sidebar__link:hover）：薄膜 --ztu-film，不是 --accent 實色（2026-09-11 使用者：「hover 顏色也沒有照 DS」） */
+.app-sidebar__back:hover { background: var(--ztu-film); color: var(--foreground); }
 .app-sidebar__context { display: flex; flex-direction: column; gap: 1px; padding: var(--sp-6) var(--sp-12) var(--sp-12); }
 .app-sidebar__context-label { font-size: var(--fs-11); color: var(--muted-foreground); }
 .app-sidebar__context-name { font-size: var(--fs-14); font-weight: var(--fw-regular); color: var(--foreground); }
@@ -1768,6 +1789,41 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   pointer-events: none;
 }
 /* 從上緣滑進來：它是「捲到這裡才出現」的東西，直接閃現會像畫面破圖。 */
+/* ── Dock（2026-09-11 使用者裁決「如果有兩層固定的話，應該要合併成一個」；探索頁 lab-detail-dock.html）──
+   詳情頁只准有**一條**固定列：這一列黏住之後多兩個槽——
+     .detail-topbar__tabs   分頁裡那條 .list-toolbar 捲到 dock 底下時，它的 .tabs 搬進來（收編）；
+                            起點對齊內容欄（工具列在流內時 tabs 的 x），左邊那段留給縮圖＋名稱
+     [data-dock-actions]    同一條工具列的動作群（編輯／取消／儲存）搬進來，放在整頁動作的**右邊**
+   黏住態的動作一律只留 icon（[data-dock-icon]，文字收進 title），編輯中（aria-pressed=true）例外、要看得到「儲存變更」。
+   收編與對齊由 js/detail-topbar.js 做；工具列原位留著高度、內容隱藏，捲動位置不跳。 */
+/* 精簡列裡的返回鍵（由 js/detail-topbar.js 自麵包屑複製）：貼在縮圖左邊 */
+/* 掛在內容欄左邊的溝裡（2026-09-11 使用者圈位置）：用負外距往左推出內容框，右緣離縮圖 --sp-24；
+   溝比較窄（內嵌模式 .page 內距只有 34.5）就退到只留 --sp-6 不出血 */
+.detail-topbar__back { flex: none; margin-right: var(--sp-14); /* ＋精簡列自己的 gap 10 ＝ 24，縮圖剛好落在內容欄左緣 */ margin-left: calc(-1 * min(28px + var(--sp-24), max(0px, var(--detail-bar-pl, 0px) - var(--sp-6)))); }
+.detail-topbar__tabs { display: none; min-width: 0; flex: 1 1 auto; overflow-x: auto; scrollbar-width: none; }
+.detail-topbar__tabs::-webkit-scrollbar { display: none; }
+.detail-topbar.is-stuck.has-tabs .detail-topbar__tabs { display: flex; align-items: stretch; align-self: stretch; }
+.detail-topbar__tabs .tabs { flex-wrap: nowrap; height: 100%; }
+.detail-topbar__tabs .tabs__item { min-height: 0; height: 100%; }
+.detail-topbar.is-stuck { flex-wrap: nowrap; }
+/* 有 tabs 時列高由 tabs 撐（上下內距歸零），跟沒 tabs 時同高，切分頁不會跳 */
+.detail-topbar.is-stuck.has-tabs { padding-block: 0; min-height: 64px; }
+/* 身分槽：黏住且有 tabs 時吃固定寬度（＝內容欄左緣到列左緣，JS 量），名稱太長截斷 */
+.detail-topbar.is-stuck .detail-topbar__mini { flex: 0 1 auto; min-width: 0; }
+.detail-topbar.is-stuck.has-tabs .detail-topbar__mini { flex: 0 0 var(--dock-id-w, auto); padding-right: var(--sp-16); }
+/* 動作槽：整頁動作在前、分頁動作（收編來的）在後 */
+.detail-topbar .page-intro__actions { display: flex; align-items: center; gap: var(--sp-8); flex: none; }
+.detail-topbar [data-dock-actions] { display: flex; align-items: center; gap: var(--sp-8); }
+.detail-topbar [data-dock-actions]:empty { display: none; }
+.detail-topbar.is-stuck [data-dock-actions]:not(:empty) { padding-left: var(--sp-12); margin-left: var(--sp-4); border-left: 1px solid var(--border-soft); }
+/* 黏住態只留 icon：36px 方鈕（--radius，同 .btn--icon 的圓角；使用者：「有不是圓形的嗎」→ 不用圓鈕）、文字藏起來（title 由 JS 補）；
+   編輯中的那顆要看得到「儲存變更」 */
+.detail-topbar.is-stuck .btn[data-dock-icon]:not([aria-pressed="true"]) { width: 36px; height: 36px; padding: 0; justify-content: center; border-radius: var(--radius); }
+.detail-topbar.is-stuck .btn[data-dock-icon]:not([aria-pressed="true"]) > span { display: none; }
+.list-toolbar.is-docked { visibility: hidden; }
+/* 有 dock 的頁面，分頁工具列不再自己 sticky（section-nav.css 那條只留給沒有頂列的頁） */
+.page:has(> .detail-topbar) [data-nav] > .list-toolbar { position: static; }
+
 @keyframes detail-topbar-in {
   from { transform: translateY(-100%); opacity: 0; }
   to   { transform: none; opacity: 1; }
@@ -1868,13 +1924,21 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
    就不再對齊；FAQ 的 textarea 塌成內容高度，項目之間的間隔變成沒有節奏的空洞。
    所以現在幾何完全不動（內距、高度、外框粗細都保留），只把「可以打字」的訊號拿掉。
    附帶好處：切換模式時版面完全不位移，因為沒有任何尺寸改變。 */
+/* 2026-09-11 使用者裁示（商店設定：「未能編輯的狀態怎麼不是 disable」→ 選「全站檢視態都改成 disabled 外觀」）：
+   幾何仍不動（內距、高度、外框都保留，切模式版面不位移），但外觀改成與 `.input:disabled` 同一種——
+   透明底、`--locked-field-ink` 淡墨、not-allowed 游標、不可選取；站上因此仍只有一種「鎖住」的樣子
+   （input.css 2026-08-09「整個元件庫只能有一個 disabled 樣子」）。屬性層仍用 readonly（值留在無障礙樹、
+   各頁的 applyReadonly 不用改），「不能改」的訊號由外觀承擔。zselect 的觸發鈕與標籤輸入框一起換。 */
 [data-mode="view"] .input,
 [data-mode="view"] .textarea,
 [data-mode="view"] .tag-input,
-[data-mode="view"] .select {
-  /* 幾何不動：不覆蓋 background／box-shadow／padding，框就留在原地。
-     只表明這裡點下去不會變成輸入狀態。 */
-  cursor: default;
+[data-mode="view"] .select,
+[data-mode="view"] .zselect__trigger {
+  background: transparent;
+  color: var(--locked-field-ink);
+  cursor: not-allowed;
+  user-select: none;
+  -webkit-user-select: none;
 }
 /* 唯讀的長文不該給拖曳把手 */
 [data-mode="view"] .textarea { resize: none; }

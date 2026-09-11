@@ -556,6 +556,7 @@
     'nav.account-label':      { en: 'Account',               zh: '帳戶選單' },
     'nav.profile':            { en: 'Profile',               zh: '個人資料' },
     'nav.settings':           { en: 'Settings',              zh: '設定' },
+    'nav.store-settings':     { en: 'Store settings',        zh: '商店設定' },   /* 帳戶選單（2026-09-11） */
     'nav.payments':           { en: 'Payments',              zh: '付款方式' },
     'nav.logout':             { en: 'Log out',               zh: '登出' },
     'nav.currency':           { en: 'Currency',              zh: '幣別' },
@@ -2213,7 +2214,7 @@
     'e-shop.create.bundle':   { en: 'Create bundle',                       zh: '建立組合' },
     'e-shop.create.auction':  { en: 'Create auction',                      zh: '建立拍賣' },
     'e-shop.create.more':     { en: 'More create options',                 zh: '更多建立選項' },
-    'e-shop.preview.sub':     { en: 'Live fan view',                       zh: '即時粉絲視角' },
+    'e-shop.preview.sub':     { en: 'How fans see it on Ztor',             zh: '粉絲在 Ztor 看到的樣子' },   /* 2026-09-11 對齊建立商品右欄那句 */
 
     /* Store settings modal · spec 5.1.5.5 */
     'store-settings.title':          { en: 'Store settings',                      zh: '商店設定' },
@@ -2222,6 +2223,7 @@
     'store-settings.cancel':         { en: 'Cancel',                               zh: '取消' },
     'store-settings.discard':        { en: 'Discard',                              zh: '放棄變更' },
     'store-settings.save':           { en: 'Save changes',                         zh: '儲存變更' },
+    'store-settings.selling.saved':  { en: 'Selling defaults saved',               zh: '銷售預設已儲存' },   /* 2026-09-11 分頁列右側的編輯／儲存 */
     'store-settings.group.basics':   { en: 'Shop basics',                          zh: '商店基本資料' },
     'store-settings.group.payment':  { en: 'Payment',                              zh: '收款' },
     'store-settings.group.shipping': { en: 'Shipping',                             zh: '出貨' },
@@ -2624,7 +2626,20 @@
     'fan.tagline':            { en: 'Independent musician shipping merch, vinyl, and digital drops.', zh: '獨立音樂人，販售周邊、黑膠與數位作品。' },
     'fan.role':               { en: 'Musician · 12.4k followers',            zh: '音樂人 · 1.2 萬 追蹤' },
     'fan.follow':             { en: 'Join community',                        zh: '加入社群' },
-    'fan.featured.tag':       { en: 'Featured',                              zh: '本月精選' },
+    /* 2026-09-11 粉絲端創作者頁鏡像：人格檔案（名字是內容、身分與簡介走 i18n）、新增的動作與徽章 */
+    'fan.profile.default.name': { en: 'Gary Lin',                            zh: 'Gary Lin' },
+    'fan.profile.default.role': { en: 'Musician',                            zh: '音樂人' },
+    'fan.profile.default.bio':  { en: 'Independent musician shipping merch, vinyl and digital drops from the studio — every order funds the next record.', zh: '獨立音樂人，周邊、黑膠與數位作品都從工作室出貨——每一筆訂單都在支持下一張專輯。' },
+    'fan.profile.nick.name':    { en: 'Nick Chou',                           zh: '周湯豪' },
+    'fan.profile.nick.role':    { en: 'Singer / Host',                       zh: '歌手 / 主持人' },
+    'fan.profile.nick.bio':     { en: 'Rhythm is my language and the stage is my home turf. I make music, produce, and host — a lot of lines, one thread.', zh: '節奏是我的語言，舞台是我的主場。做音樂、做製作、也主持節目——看起來很多線，其實同一條。' },
+    'fan.followers':          { en: 'followers',                             zh: '追蹤' },
+    'fan.more':               { en: 'More',                                  zh: '更多' },
+    'fan.unlock':             { en: 'Unlock secrets',                        zh: '彩蛋解鎖' },
+    'fan.nav.projects':       { en: 'Projects',                              zh: '項目' },
+    'fan.badge.new':          { en: 'New',                                   zh: '新品' },
+    'fan.badge.limited':      { en: 'Limited',                               zh: '限量' },
+    'fan.featured.tag':       { en: 'Featured',                              zh: '精選商品' },   /* 2026-09-11 對齊粉絲端用語 */
     'fan.featured.cta':       { en: 'Buy now',                               zh: '立即購買' },
     'fan.status.restocking':  { en: 'Sold out · restocking',                 zh: '售完補貨中' },
     'fan.empty.title':        { en: 'Your store is empty',                   zh: '商店尚無上架商品' },
@@ -2815,7 +2830,7 @@
     'product-detail.badge.physical':{ en: 'Physical merch', zh: '實體周邊' },
     'product-detail.badge.zine':    { en: 'Books',        zh: '書籍' },
     'product-detail.sub':           { en: '32-page photo zine documenting the east-coast tour. Letterpress cover.', zh: '記錄東岸巡演的 32 頁攝影雜誌書。凸版印刷封面。' },
-    'product-detail.btn.preview':   { en: 'See as fan',   zh: '以粉絲身分預覽' },
+    'product-detail.btn.preview':   { en: 'Preview',      zh: '預覽' },   /* 2026-09-11 使用者：所有「以粉絲身分預覽」都改成「預覽」 */
     'product-detail.btn.restock':   { en: 'Restock',      zh: '補貨' },
     'product-detail.btn.save':      { en: 'Save',         zh: '儲存' },
     /* 逐選項組合的庫存鎖定（2026-09-09 · D-pending／ASSUMPTIONS UIA-146）：列尾 ⋯ 的單列入口、
@@ -2868,6 +2883,8 @@
     'stock.history.type.restock':   { en: 'Restock',            zh: '補貨' },
     'stock.history.type.lock':      { en: 'Lock',               zh: '鎖定' },
     'stock.history.note.single':    { en: 'Locked for single sale', zh: '鎖給單售' },
+    'stock.history.unset':          { en: 'Unset',              zh: '未指定' },
+    'stock.history.k.qty':          { en: 'Quantity',           zh: '數量' },   /* 單一規格商品的明細列沒有規格名可寫，原本是「—」（2026-09-11 使用者：改一個看得懂的名稱） */   /* 2026-09-11 使用者：「— → 1」要寫成「未指定 → 1」 */
     'stock.history.k.supplier':     { en: 'Supplier',           zh: '供應商' },
     'stock.history.empty':            { en: 'No records yet.', zh: '暫無紀錄' },
     'stock.history.expand':         { en: 'Show details',       zh: '展開明細' },
@@ -2992,7 +3009,7 @@
     'product-detail.nav.pricing':     { en: 'Options & pricing', zh: '規格與價格' },
     'product-detail.nav.rules':       { en: 'Discounts & limits', zh: '折扣與限購' },
     'product-detail.nav.publish':     { en: 'Listing & sale',  zh: '上架與開賣' },
-    'product-detail.btn.edit':        { en: 'Edit product',    zh: '編輯商品' },
+    'product-detail.btn.edit':        { en: 'Edit',            zh: '編輯' },   /* 2026-09-11 使用者：「改成編輯」——按鈕坐在該分頁的工具列上，對象已在脈絡裡 */
     'product-detail.btn.save-changes': { en: 'Save changes',   zh: '儲存變更' },
     'product-detail.setov.title':     { en: 'Settings overview', zh: '商品設定概覽' },
     'product-detail.setov.sub':       { en: 'Select a row to edit it.', zh: '點任一列前往修改。' },
@@ -3004,6 +3021,25 @@
     'product-detail.setov.limit':     { en: '{n} per person',  zh: '每人 {n} 件' },
     'product-detail.setov.films':     { en: '{n} movies',      zh: '{n} 部' },
     'product-detail.setov.listing-sale': { en: 'Listing & sale', zh: '上架與開賣' },
+    /* 設定概覽分四組（2026-09-11 使用者：照設定分頁的區段順序分四組）：由靜到動——身份資料 → 定價策略 → 營運參數 → 開關 */
+    'product-detail.setov.group.basic':   { en: 'Basics',               zh: '基本資料' },
+    'product-detail.setov.group.pricing': { en: 'Options & pricing',    zh: '選項與定價' },
+    'product-detail.setov.group.ops':     { en: 'Stock & delivery',     zh: '庫存與交付' },
+    'product-detail.setov.group.listing': { en: 'Listing & sale',       zh: '上架與開賣' },
+    'bd.setov.group.pricing':             { en: 'Items & pricing',      zh: '商品與定價' },
+    'product-detail.setov.listing-state': { en: 'Current state',        zh: '目前狀態' },
+    /* 上架／顯示／開賣各自一列（2026-09-11 使用者：「目前狀態應該要個別顯示，因為有的有定時上下架或開賣」） */
+    'product-detail.setov.ls.listed':      { en: 'Listed',                 zh: '已上架' },
+    'product-detail.setov.ls.unlisted':    { en: 'Not listed',             zh: '未上架' },
+    'product-detail.setov.ls.list-at':     { en: 'Lists {t}',              zh: '{t} 上架' },
+    'product-detail.setov.ls.unlist-at':   { en: 'Unlists {t}',            zh: '{t} 下架' },
+    'product-detail.setov.ls.shown':       { en: 'Shown',                  zh: '顯示' },
+    'product-detail.setov.ls.hidden':      { en: 'Hidden · private link',  zh: '隱藏 · 非公開連結' },
+    'product-detail.setov.ls.on-sale':     { en: 'On sale',                zh: '開賣中' },
+    'product-detail.setov.ls.sale-at':     { en: 'Sale starts {t}',        zh: '{t} 開賣' },
+    'product-detail.setov.ls.sale-end':    { en: 'ends {t}',               zh: '{t} 停售' },
+    'product-detail.setov.ls.ended':       { en: 'Sale ended',             zh: '已停售' },
+    'product-detail.setov.ls.na':          { en: 'Needs listing first',    zh: '未上架，不開賣' },
     'product-detail.setov.st-listed': { en: 'Listed',          zh: '上架' },
     'product-detail.setov.st-shown':  { en: 'Shown in store',  zh: '顯示於商店' },
     'product-detail.setov.st-sale':   { en: 'On sale',         zh: '開賣' },
@@ -3068,16 +3104,35 @@
     'bd.tab.settings':      { en: 'Bundle settings',         zh: '組合設定' },
     'bd.hero.items':        { en: 'items',                   zh: '件商品' },
     'bd.setov.title':       { en: 'Settings overview',       zh: '組合設定概覽' },
-    'bd.btn.edit':          { en: 'Edit bundle',             zh: '編輯組合' },
+    'bd.btn.edit':          { en: 'Edit',                    zh: '編輯' },
     'bd.nav.pricing':       { en: 'Price & discount',        zh: '價格與折扣' },
     'bd.alloc.title':       { en: 'Item stock locks',        zh: '商品庫存鎖定' },   /* 2026-09-11 使用者：名稱依功能改、不用「成員」這個詞（組合設定那一節就叫「商品」） */
-    'bd.unit.sets':         { en: 'sets',                    zh: '組' },
+    'bd.unit.sets':         { en: 'sets',                    zh: '套' },   /* 2026-09-11 鎖定套數規則：組合的計數單位統一用「套」 */
     'bd.unit.members':      { en: 'members',                 zh: '件' },
     'bd.kpi.locked':        { en: 'Locked items',            zh: '已鎖定商品' },
     'bd.kpi.unlocked':      { en: 'Unlocked items',          zh: '未鎖定商品' },
-    'bd.kpi.capped':        { en: 'Capped by',               zh: '卡住的商品' },
-    'bd.history.title':     { en: 'Lock history',            zh: '鎖定歷史紀錄' },
-    'bd.history.sub':       { en: 'One row per lock change — open a row for each member.', zh: '一次改動一筆，點開看逐成員前 → 後。' },
+    /* 鎖定套數（2026-09-11 使用者重定義：組合鎖「幾套」，不逐商品填；規格 D266 待補） */
+    'bd.lock.sets':         { en: 'Locked sets',             zh: '鎖定套數' },
+    'bd.lock.sets.hint':    { en: 'Up to {n} sets',          zh: '最多 {n} 套' },
+    'bd.lock.sets.blank':   { en: '; blank = not locked',    zh: '；空白＝不鎖定' },
+    'bd.lock.sets.over':    { en: 'Over the limit: up to {n} sets', zh: '超過上限：最多 {n} 套' },
+    'bd.lock.items':        { en: 'Locked items',            zh: '指定鎖定項目' },
+    'bd.lock.items.hint':   { en: 'Single-option items lock N × quantity per set automatically; multi-option items can optionally pin which options to lock', zh: '單一選項商品自動鎖定 N × 每套用量；多選項商品可選填要鎖哪些規格' },
+    'bd.lock.col.item':     { en: 'Items in bundle',         zh: '組合中的商品' },
+    'bd.lock.col.stock':    { en: 'Item stock',              zh: '商品庫存' },
+    'bd.lock.col.locked':   { en: 'Locked',                  zh: '已鎖定' },
+    'bd.lock.shared':       { en: 'Not locked',              zh: '未鎖定' },   /* 2026-09-11 使用者：「未鎖定時，這裡要寫未鎖定」 */
+    'bd.lock.edit':         { en: 'Edit',                    zh: '編輯' },
+    'bd.lock.cancel':       { en: 'Cancel',                  zh: '取消' },
+    'bd.lock.assigned':     { en: '{n} pcs pinned',          zh: '已指定 {n} 件' },
+    'bd.lock.over':         { en: 'Exceeds locked qty',      zh: '超過鎖定量' },
+    'bd.lock.per':          { en: '{n} per set',             zh: '每套 {n}' },
+    'bd.lock.none':         { en: 'None',                    zh: '未鎖定' },
+    'bd.lock.meta.locked':  { en: 'Locked {n} sets',         zh: '鎖定 {n} 套' },
+    'bd.lock.expand':       { en: 'Show options',            zh: '展開規格' },
+    'bd.history.sets':      { en: 'Locked sets',             zh: '鎖定套數' },
+    'bd.history.title':     { en: 'Activity log',            zh: '操作紀錄' },   /* 2026-09-11 使用者：「改操作紀錄」 */
+    'bd.history.sub':       { en: 'One row per change — open a row to see each item before → after.', zh: '一次改動一筆，點開看逐商品前 → 後。' },
     'bd.history.meta':      { en: 'Locked for this bundle',  zh: '鎖給本組合' },
     'bd.ref.sub':           { en: 'Projects that use this bundle as a reward or reference it.', zh: '把這個組合當回饋、或引用它的項目。' },
     'product-detail.kpi.links-meta-items': { en: '{n} items', zh: '{n} 件商品' },
@@ -8252,7 +8307,7 @@
     'event-detail.badge.type': { en: 'Concert', zh: '演唱會' },
     'event-detail.h1': { en: 'Kowloon Café 10th Anniv. — Kowloon After Dark OST listening party', zh: '九龍冰室 十週年 — 九龍夜行 原聲帶 試聽派對' },
     'event-detail.sub': { en: 'Apr 12, 2026 · 8:00 PM · Legacy Taipei, Taipei', zh: '2026 年 4 月 12 日 · 晚上 8:00 · Legacy Taipei，台北' },
-    'event-detail.btn.edit': { en: 'Edit event', zh: '編輯活動' },
+    'event-detail.btn.edit': { en: 'Edit', zh: '編輯' },
     'event-detail.btn.preview': { en: 'View ticket page', zh: '檢視售票頁' },
     /* event-detail.note.scope 為孤兒 key（全頁無任何引用，2026-09-09 盤點確認），保留未用；
        文字已順手同步 D253（退款→撤銷），避免將來被誤用時內容過期。 */

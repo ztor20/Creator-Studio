@@ -122,6 +122,7 @@
 <link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stock-history.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/state-check.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
 <!-- r2.2 新進元件（19 支，2026-07-29 補齊 demo；zselect 原本就有 <link>，見上方 45 行） -->
 <link rel="stylesheet" href="ds-components/artist-picker.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/benefit-matrix.css?v=r2.2">
@@ -736,6 +737,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#stock-allocation">Stock allocation</a>
     <a class="toc__link toc__link--sub" href="#stock-history">Stock history</a>
     <a class="toc__link toc__link--sub" href="#state-check">State check</a>
+    <a class="toc__link toc__link--sub" href="#lock-sets">Lock sets</a>
     <div class="toc__subgroup"><span data-en>JS components without their own CSS (9)</span><span data-zh>無自帶 CSS 的 JS 元件（9）</span></div>
     <a class="toc__link toc__link--sub" href="#work-fields">Work fields</a>
     <a class="toc__link toc__link--sub" href="#work-taxonomy">Work taxonomy</a>
@@ -1327,7 +1329,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       <p class="field-text" data-en>Buttons + form controls share one height scale (all multiples of 4) so an input and a button at the same size line up. Drive heights from <code>--control-h-*</code>; never hard-code.</p>
       <p class="field-text" data-zh>按鈕與表單控件共用一套高度級（全部 4 的倍數），同尺寸的 input 與 button 對齊。高度一律走 <code>--control-h-*</code>，不寫死。</p>
       <div class="viz viz--col" style="overflow-x:auto">
-        <div class="ctl-row"><code>--control-h-xs · 28</code><button class="btn btn--outline" style="height:28px">Button</button><input class="input" style="height:28px;width:120px" value="Input" readonly></div>
+        <div class="ctl-row"><code>--control-h-xs · 32</code> <small>（2026-09-11 由 28 調高）</small><button class="btn btn--outline" style="height:32px">Button</button><input class="input" style="height:32px;width:120px" value="Input" readonly></div>
         <div class="ctl-row"><code>--control-h-sm · 36 ★ 單行控件預設</code><button class="btn btn--outline" style="height:36px">Button</button><input class="input" style="height:36px;width:120px" value="Input" readonly></div>
         <div class="ctl-row"><code>--control-h-md · 44</code><button class="btn btn--outline" style="height:44px">Button</button><input class="input" style="height:44px;width:120px" value="Input" readonly></div>
         <div class="ctl-row"><code>--control-h-lg · 52</code> <small>（待採用）</small><button class="btn btn--outline" style="height:52px">Button</button><input class="input" style="height:52px;width:120px" value="Input" readonly></div>
@@ -1554,6 +1556,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#detail-rail">Detail rail</a></td><td>🟠</td><td><span data-en>Detail-page two-column shell — editable main + sticky read-only meta rail; <code>--full</code> collapses it to one column (assembly rules in Pillar 5)</span><span data-zh>詳情頁兩欄版型殼——可編輯主欄＋sticky 唯讀 meta 右欄；<code>--full</code> 收成單欄（組合規則見 Pillar 5）</span></td><td><code>detail-rail.css</code></td></tr>
           <tr><td><a href="#restock-log">Restock log ✝</a></td><td>🟡</td><td><span data-en>Retired 2026-09-11 — replaced by Stock history (one row per order, details on expand)</span><span data-zh>2026-09-11 退場——由 Stock history 取代（一張單一筆、點開看明細）</span></td><td><code>restock-log.css</code>（墓碑）</td></tr>
           <tr><td><a href="#stock-history">Stock history</a></td><td>🟡</td><td><span data-en>Stock history list — one row per restock order or lock change (date / type / per-combination summary / supplier · method / status), details on expand: quantities, supplier, ETA with mark-received, note</span><span data-zh>庫存歷史紀錄——一張補貨單或一次鎖定一筆（日期／類型／逐組合摘要／供應商 · 方式／狀態），點開看逐組合數量、供應商、預計到貨（附到貨確認）、備註</span></td><td><code>stock-history.css</code></td></tr>
+          <tr><td><a href="#lock-sets">Lock sets</a></td><td>🟠</td><td><span data-en>Bundle stock lock by sets: one “locked sets” field plus a framed list of member items (stock · unlocked · locked = N × per set), multi-option members expand to optional per-option pinning</span><span data-zh>組合包鎖定套數：一個「鎖定套數」欄位＋外框清單（商品庫存 · 未鎖定 · 已鎖定＝N × 每套用量），多選項商品可展開逐規格選填分配</span></td><td><code>lock-sets.css</code></td></tr>
           <tr><td><a href="#state-check">State check</a></td><td>🟡</td><td><span data-en>Read-only on/off state row (listed · shown · on sale)</span><span data-zh>唯讀的開／關狀態排（上架 · 顯示 · 開賣）</span></td><td><code>state-check.css</code></td></tr>
           <tr><td><a href="#stock-tip">Stock tip</a></td><td>🟢</td><td><span data-en>Hover/focus any product row's status/stock cell → floating info card. Multi-option/bundle rows get a per-option stock breakdown (flattened to option combinations, bundle members too); single-variant rows (2026-07-23, scope widened) show current stock instead</span><span data-zh>hover/focus 任何商品列的狀態／庫存欄 → 浮出資訊卡。多選項／組合商品列顯示逐選項庫存明細（攤到選項組合，組合商品連成員也攤）；單一選項商品列（2026-07-23 擴大範圍）改顯示目前庫存</span></td><td><code>stock-tip.css</code></td></tr>
           <tr><td><a href="#pickup">Pickup management</a></td><td>🟠</td><td><span data-en>On-site QR redemption workspace (E-Shop 5.1.5.11): session-detail board (items left / staff scanning + progress right), roster table, scanner-access settings card, multi-select session rows</span><span data-zh>現場 QR 核銷工作區（E-Shop 5.1.5.11）：場次詳情行動卡（左＝領取項目／右＝工作人員掃碼與核銷進度）、名單表格、scanner 存取設定卡、建立場次多選列</span></td><td><code>pickup.css</code></td></tr>
@@ -2443,6 +2446,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   <p class="sub__desc" data-zh>建立／wizard 流程的無卡片區段骨架。每段＝標題＋灰副標＋上分隔線＋寬鬆留白；段內欄位沿用 Field system 與 Input／Select／Segmented。label／描述呈現只作用在 <code>.form-section</code> 內，欄位節奏維持基礎 Field system，不影響其他地方的 <code>.field</code>（Settings、e-shop）。</p>
   <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
   <div class="compose"><div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div><div class="compose__tier compose__tier--molecule"><span class="compose__tier-label">molecule</span><a class="compose-chip compose-chip--molecule" href="#field-system">Field system</a> <a class="compose-chip compose-chip--atom" href="#input">Input</a></div></div>
+  <p class="field-note" data-en><strong><code>.form-section__head--rule</code></strong> (2026-09-11, user on the E-Shop store-preview column: “add a divider and give it spacing”): a 1px <code>--border-soft</code> rule under the head, bleeding to the card’s inner edge via the negative <code>--card-pad</code> margin, 16px above the line and 24px below it. Use when the section body is not form fields but a picture of another world (the fan-page mirror) and the head needs a clear boundary.</p>
+  <p class="field-note" data-zh><strong><code>.form-section__head--rule</code></strong>（2026-09-11，使用者指著電子商店的商店預覽欄：「加一條分隔線，並將間距做出來」）：標題列下一條 1px <code>--border-soft</code> 線，用 <code>--card-pad</code> 的負外距出血到卡的內緣，線上留 16、線下留 24。卡內容不是表單欄位、而是另一個世界的畫面（粉絲端鏡像）時用它，標題列與內容之間要有明確界線。</p>
   <p class="field-label" data-en>Rendered preview <span class="field-note">(one section — the unit this component owns)</span></p>
   <p class="field-label" data-zh>視覺展示 <span class="field-note">（單一區段——本元件擁有的單位）</span></p>
   <div class="demo demo--preview" data-product-preview="form-section">
@@ -3470,6 +3475,18 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <p class="field-label" data-en>Class API <span class="field-note">(CSS classes — Props/API N/A, static prototype)</span></p>
     <p class="field-label" data-zh>Class API（樣式類別） <span class="field-note">（CSS classes — 無 Props/API，靜態原型）</span></p>
     <table class="spec"><thead><tr><th><span data-en>Class / modifier</span><span data-zh>Class／修飾子</span></th><th><span data-en>Effect</span><span data-zh>效果</span></th></tr></thead><tbody><tr><td><code>.selection-grid</code> / <code>--3</code></td><td><span data-en>Auto-fit grid / forced 3 columns</span><span data-zh>Auto-fit grid／強制 3 欄</span></td></tr><tr><td><code>.selection-grid--tiles</code></td><td><span data-en>Auto-fill min-124px tile grid for 8+ options (content-type gate); equal height + centered, density only</span><span data-zh>8 個以上選項用的方形磚格線（內容類型閘門），跨列等高＋內容置中，只改密度</span></td></tr><tr><td><code>.selection-card</code> / <code>--active</code></td><td><span data-en>Selectable card / selected (orange outline + tint)</span><span data-zh>可選卡片／已選取（橘色外框 + 帶色）</span></td></tr><tr><td><code>__title</code> / <code>__sub</code> / <code>__tag</code> / <code>__swatch</code></td><td><span data-en>Label / desc / corner chip / 64px theme preview</span><span data-zh>標籤／說明／角落 chip／64px 主題預覽</span></td></tr></tbody></table>
+  <p class="field-label" data-en>Group label <span class="field-note">(<code>.data-list__group-label</code> — 2026-09-11: caption row that splits one list into sections; no group line, spacing does the work; first use the settings overview of product / bundle detail, four groups)</span></p>
+  <p class="field-label" data-zh>分組標 <span class="field-note">(<code>.data-list__group-label</code>——2026-09-11：把一張清單分成幾段的小字標題列；不畫組線、靠留白；首用商品／組合詳情的設定概覽，分四組)</span></p>
+  <div class="demo" style="max-width:520px">
+    <div class="data-list">
+      <div class="data-list__group-label">基本資料</div>
+      <div class="data-list__row data-list__row--go" role="button" tabindex="0"><div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta">商品資訊</div><div class="data-list__title">海上霸姬 幕後寫真誌 vol.02 · 書籍</div></div></div><span class="data-list__go" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></span></div>
+      <div class="data-list__row data-list__row--go" role="button" tabindex="0"><div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta">商品圖片</div><div class="data-list__title">2 張</div></div></div><span class="data-list__go" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></span></div>
+      <div class="data-list__group-label">選項與定價</div>
+      <div class="data-list__row data-list__row--go" role="button" tabindex="0"><div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta">定價</div><div class="data-list__title">$24.00 · 成本價 $9.00</div></div></div><span class="data-list__go" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></span></div>
+    </div>
+  </div>
+
     <p class="field-label" data-en>Token usage <span class="field-note">(→ Pillar 2 Role)</span></p>
     <p class="field-label" data-zh>Token 使用 <span class="field-note">（→ Pillar 2 Role）</span></p>
     <ul class="field-list"><li data-en><code>--card</code> — bg</li><li data-zh><code>--card</code> — 底色</li><li data-en><code>--border</code> — idle ring</li><li data-zh><code>--border</code> — idle ring</li><li data-en><code>--foreground-muted</code> — hover ring + sub</li><li data-zh><code>--foreground-muted</code> — hover ring + 說明</li><li data-en><code>--muted-foreground</code> — tag</li><li data-zh><code>--muted-foreground</code> — tag</li><li data-en><code>--primary</code> / <code>--primary-foreground</code> — active outline / active tag</li><li data-zh><code>--primary</code> / <code>--primary-foreground</code> — active 外框／active tag</li><li data-en><code>--radius-md</code> / <code>--radius-sm</code>; <code>--font-ui</code></li><li data-zh><code>--radius-md</code> / <code>--radius-sm</code>；<code>--font-ui</code></li></ul>
@@ -4363,6 +4380,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · tokens · code</span><span data-zh>給工程師 — class · token · 程式碼</span></summary>
   <div class="code-fold__body">
     <p class="field-text"><strong>橫向捲動包層 <code>.product-list-scroll</code></strong>（2026-08-06，八個消費頁全數套用）：清單列有 7–9 欄、最窄 830–1160px，而 app 外殼的 <code>.main</code> 是 <code>overflow-x: hidden</code>——視窗一窄，右側的「狀態」「操作」幾欄會被切掉<strong>而且捲不到</strong>，每一列的 ⋮ 在那個寬度區間整個點不到（既有的 ≤760px 堆疊版型只救得了手機，760px 到各變體最小寬之間是漏的，筆電常見的 1280–1440 就落在裡面）。做法沿用站上既有的表格橫捲；<code>min-width: min-content</code> 讓清單撐到欄寬加總那麼寬，欄數少、放得下的變體不會長出捲軸。上下的 <code>padding-block</code> 是給 <code>:hover</code> 浮起陰影讓位（<code>overflow-x</code> 一旦不是 <code>visible</code>，<code>overflow-y</code> 也會被算成 <code>auto</code>），用等量負外距抵銷、版面高度不變。</p>
+    <p class="field-text"><strong>兩端固定欄（2026-09-11，使用者指示）</strong>：在 <code>.product-list-scroll</code> 內，握把（第一欄）與動作欄（最後一欄）<code>position: sticky</code> 各釘在左右緣，表頭同欄位跟著釘；中間的欄先依 <code>minmax</code> 縮到各自的最小寬，<code>min-content</code> 到底才長出捲軸，內容從動作欄底下滑過去、右側被遮住。≤760px 的堆疊版型另有自己的定位規則（動作欄 absolute），這一段以 <code>@media (min-width: 761px)</code> 圈開。在站上還沒設計更小螢幕的版型之前，每一張清單都先照這一套走。<strong>被遮那一側的內容漸變透明</strong>（同日第四版；前三版都失敗於同一件事：釘住的格自己沒有底、底下是會動的星空，凡是在格上畫東西——實色底、毛玻璃、漸進模糊——都是一塊看得見的方形，在容器上掛 mask 又把釘住的格一起 mask 掉）：mask 掛在<strong>中間每一格自己身上</strong>，一條 <code>linear-gradient</code> 由 <code>partials/list-scroll.js</code> 算好的變數定位——容器上的 <code>--pls-lx</code>／<code>--pls-rx</code>（淡出帶起點＝釘住格內緣＋scrollLeft；該側沒被遮就寫 ±99999px 推出視野＝關掉）與 <code>--pls-fade</code>（帶寬 <code>--sp-56</code>），每格自己的 <code>--cell-x</code>（在清單本體裡的 x，只在版面變時重量）；格的 mask 座標＝容器座標減 <code>--cell-x</code>，同一條 gradient 對每格都對。捲動只改容器上兩個變數，格的 mask 由瀏覽器重算。釘住的格、星空與列的 hover 玻璃都不在 mask 裡，真正淡掉的只有滑到底下的圖與字；同支 js 也依捲動位置在容器上寫 <code>data-scrolled-left</code>／<code>data-scrolled-right</code>，沒被遮的清單不掛 mask。釘選分隔列 <code>__divider</code> 整條 sticky 釘在左緣、寬度＝看得到的那一段（<code>--pls-w</code>＝容器 clientWidth，js 寫上），框的右緣永遠在視野裡、「立即釘選」永遠在右端（使用者：「這個要隨著寬度縮放，立即釘選要一直在右邊」）。<strong>橫捲拉桿 <code>.product-list-scrollbar</code></strong>（使用者：「當有遮蔽時，下方要有一條拉吧，粗一點好拖動，上面要有點點矩陣紋理，像盲人點字」）：清單自己的捲軸在整張表最底下搆不到，js 在容器後面補一條只有橫向捲軸的代理容器（內容寬＝清單本體、兩邊 scrollLeft 互相同步），sticky 在頁面捲動容器底緣；只在放不下時出現。拉桿本體 20px 膠囊（首版 14，使用者：「再粗一點」）、<code>::-webkit-scrollbar-thumb</code> 鋪 5px 間距、<code>--foreground</code> 22% 的圓點，點只畫在透明 border 內縮出的 padding-box（上下 5＝兩整排、左右 10 避開圓弧）、橫向 <code>background-repeat: round</code> 不切半顆（首版 3px／全值、直接鋪滿，使用者兩輪：「點字不要這麼密、顏色不要這麼亮」「還是太亮，有些點點被切掉」）；不寫 <code>scrollbar-width</code>／<code>scrollbar-color</code>——Chrome 121 起標準屬性一有值就忽略 <code>::-webkit-scrollbar</code>。</p>
     <p class="field-label" data-en>Behavior details</p>
     <p class="field-label" data-zh>行為細節</p>
     <table class="spec"><thead><tr><th><span data-en>State</span><span data-zh>狀態</span></th><th><span data-en>Selector</span><span data-zh>選擇器</span></th><th><span data-en>Change</span><span data-zh>變化</span></th></tr></thead><tbody>
@@ -4612,7 +4630,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   <p class="field-text" data-zh>active tab 的橘色底線貼在 <code>.tabs__item</code> 下緣。只有讓 tabs 撐滿整個 58px，底線才會落在殼層最底部、而不是浮在中間——所以是固定高度加 <code>align-items: stretch</code>。</p>
   <p class="field-label" data-en>Not part of this component</p><p class="field-label" data-zh>不屬於本元件的部分</p>
   <p class="field-text" data-en>Sticky pinning depends on each page's scroll container height and stacking, so it stays in the page's own <code>&lt;style&gt;</code>: E-Shop pins both layers (status row at <code>top: 74px</code> = 58px shell + 16px collapsed margin); Projects does not pin.</p>
-  <p class="field-text" data-zh>貼頂由共用的 snap dock 提供：把工作列（選配狀態列）包進 <code>.list-dock</code>，殼要往下包住內容（sticky 只能在親層 box 裡移動），<code>js/sticky-dock.js</code> 會在執行期包出 <code>.list-dock__bars</code> 並用哨兵切換 <code>.is-snapped</code>。貼頂態＝上緣切平與外框連成一體、毛玻璃、收成一行。<strong>狀態列選配</strong>（2026-08-01）：只有分頁的工作列也能用（首例 <code>earnings-sony.html</code>）。</p>
+  <p class="field-text" data-zh>貼頂由共用的 snap dock 提供：把工作列（選配狀態列）包進 <code>.list-dock</code>，殼要往下包住內容（sticky 只能在親層 box 裡移動），<code>js/sticky-dock.js</code> 會在執行期包出 <code>.list-dock__bars</code> 並用哨兵切換 <code>.is-snapped</code>。貼頂態＝毛玻璃、收成一行、四角同圓角的方形卡（<strong>2026-09-11</strong> 使用者：「改成方形圓角就好了，並且要靠上方那條線對齊」——r2.3 內容面板透明，原本「上緣切平＋兩側凹角接外框」沒有外框可接、凹角變成星空上兩塊深色方角，整段退場；貼頂位置與側欄上緣同一條線，由 <code>shared.css</code> 把 <code>.main</code> 的 16px 上留白從 margin 改成面板內 <code>::before</code> 佔位承擔）。<strong>狀態列選配</strong>（2026-08-01）：只有分頁的工作列也能用（首例 <code>earnings-sony.html</code>）。</p>
   <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
   <table class="spec" data-product-spec="list-toolbar"><tbody><tr><td>Source</td><td><code>ds-components/list-toolbar.css</code></td></tr><tr><td>Anatomy</td><td>Shell toolbar (tabs + absolute-right actions) over a transparent secondary filter row.</td></tr><tr><td>Behavior / usage</td><td>Actions are absolutely positioned so a changing tab count never pushes them; the shell stacks vertically under 900px and the actions return to flow under 640px.</td></tr><tr><td>Token usage</td><td><code>--surface-shell</code> (light: <code>--card</code> + <code>--shadow-card</code>), <code>--radius-xl</code>, <code>--sp-8</code> / <code>--sp-12</code> / <code>--sp-16</code> / <code>--sp-24</code>.</td></tr><tr><td>Classes</td><td><code>.list-toolbar</code> · <code>.list-toolbar__actions</code> · <code>.list-status-row</code></td></tr><tr><td>Evidence / usage</td><td>E-Shop · Projects.</td></tr></tbody></table>
 </section>
@@ -6463,7 +6481,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   <p class="sub__desc" data-en>The left-hand list for switching sections. Since 2026-08-26 (Q75 extended) it is also the page-level navigation on every detail page — product, project, auction, bundle, creator, fan, IP, series, settings — replacing the horizontal <code>.tabs</code> there. Division of labour with <code>tabs.css</code> now: <code>.section-nav</code> owns section switching on detail pages; horizontal <code>.tabs</code> stays for list-page toolbars and in-section filters. Five or more items in a horizontal bar wrap or truncate; a vertical list grows naturally.</p>
   <p class="sub__desc" data-zh>切換分節的左側清單。2026-08-26 起（Q75 擴大）它也是所有詳情頁的頁級導覽——商品、項目、拍賣、套組、創作者、粉絲、IP、系列、設定九頁同款——取代原本橫排的 <code>.tabs</code>。與 <code>tabs.css</code> 的分工改為：詳情頁的分節切換歸 <code>.section-nav</code>；橫排 <code>.tabs</code> 留給清單頁工具列與節內篩選。五項以上橫排會擠成兩行或被截斷，直排天生可長。原本叫 <code>.settings-nav</code>、只長在設定頁，2026-08-17 活動詳情要用同一個東西時提升成中性名稱；舊 class 仍列在同一組選擇器裡，設定頁的 markup 不必改。</p>
   <p class="sub__desc" data-zh><strong>組裝規則</strong>：主要區域用側欄（本元件），區域底下的分節用 <code>.list-toolbar</code> ＋ <code>.tabs--underline-short --underline-label --count-plain</code>（與清單頁的類型切換同一組，殼不能省），內容區用 <code>.nav-sections</code>。橫列與內容之間、內容各區塊之間都是 <code>--sp-18</code>。</p>
-   <p class="sub__desc" data-zh><strong>與黏住的詳情頂列共存（2026-09-11）</strong>：頁面同時有 <code>.detail-topbar</code>（黏住後 fixed 在捲動容器上緣）時，分節橫列的 <code>top</code> 與各節的 <code>scroll-margin-top</code> 都加上 <code>--detail-bar-h</code>（<code>js/detail-topbar.js</code> 黏住時寫進 <code>.page</code>），橫列才不會被壓在頂列底下。首個消費者：商品詳情的商品設定分頁。</p>
+   <p class="sub__desc" data-zh><strong>與詳情頂列的關係（2026-09-11，Q115）</strong>：有 <code>.detail-topbar</code> 的頁面，分節橫列不再自己 sticky——頂列黏住後把它<strong>收編</strong>：橫列捲到頂列底下時，<code>.tabs</code> 搬進頂列的 <code>[data-dock-tabs]</code>（起點對齊內容欄、左邊留給縮圖＋名稱）、動作群搬進 <code>[data-dock-actions]</code>（整頁動作右邊），原位留高不留內容；往回捲或切分頁還回去。黏住態的動作只留 icon（<code>[data-dock-icon]</code>），編輯中例外。邏輯在 <code>js/detail-topbar.js</code>，探索紀錄 <code>lab-detail-dock.html</code>。沒有頂列的頁（取貨場次詳情）維持原本的 sticky。</p>
   <div class="demo">
     <div class="section-nav-layout">
       <nav class="section-nav">
@@ -6922,6 +6940,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     </div>
   </div>
   <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
+  <p class="field-text"><strong>2026-09-11 三個新修飾詞</strong>（首個消費頁＝電子商店 F5 商店預覽）：<code>--toggle</code> 可開關——沒 <code>is-open</code> 就單欄、右欄不佔位，由頁面的開關鈕切；<code>--tall</code> 預覽比視窗高時欄限高在視窗內自己捲（sticky 欄釘頂時下半截原本永遠看不到）；<code>--dim</code> 分隔線（<code>__head--rule</code>）以下的內容區鋪畫布色 24% 暗膜（同日兩輪：「背景要暗一點點」→「標題那塊用原本的玻璃質感背景，內容那塊用現在的背景」），卡本體與標題列維持玻璃；內容區用負外距出血到卡邊、下緣跟卡的圓角。同輪 <code>--phone</code> 的欄寬改走 <code>--preview-col-w</code>（預設 270）：電子商店覆寫成 320 並把鏡像 zoom 提到 0.8＝剛好 360 的手機版型，建立商品維持 270／0.75。</p>
   <table class="spec" data-product-spec="preview-column"><tbody><tr><td>Source</td><td><code>preview-column.css</code></td></tr><tr><td>Anatomy</td><td><code>.preview-split</code> (on wizard__body) &gt; <code>.preview-split__form</code> + <code>.preview-col</code> (sticky) &gt; <code>.preview-col__head</code> (<code>__title</code> + <code>__sub</code>) + Preview card.</td></tr><tr><td>Behavior / usage</td><td>Right col 320px; sticky top via <code>--preview-col-top</code> (default 96px = header 80 + body pad 16); ≤1040px stacks + un-stickies. <strong>Card boundary</strong>: <code>.preview-col .card</code> and <code>.preview-col .preview-card</code> are set to <code>border: 0</code> + <code>--shadow-card, --shadow-edge-top</code> so the right column reads the same as the left column's outlined form sections. Scoped to <code>.preview-col</code> — cards elsewhere keep the Q3 1px border.</td></tr><tr><td>Token usage</td><td><code>--fs-18</code>, <code>--type-title-24-*</code>, <code>--foreground-muted</code>, <code>--shadow-card</code>, <code>--shadow-edge-top</code>.</td></tr><tr><td>Classes</td><td><code>.preview-split</code> · <code>.preview-split__form</code> · <code>.preview-col</code> · <code>.preview-col__head/__title/__sub</code></td></tr><tr><td>Evidence / usage</td><td>4 pages, 7 boxes: create-product · create-bundle · create-auction (2 each — Preview card + Listing settings card) and create-campaign (Preview card only).</td></tr></tbody></table>
 </section>
 <section class="sub" id="preview-panel">
@@ -6959,72 +6978,61 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <h3 class="sub__title">4.57 Fan store preview</h3>
     <span class="layer layer--organism">🟠 organism</span>
   </div>
-  <p class="sub__desc" data-en>The <strong>fan-side storefront</strong> rendered inside every “See as fan” preview — shared by <strong>E-Shop F5 (Store preview)</strong> and <strong>Store settings F1</strong>. Per spec §6.7 the preview <em>is</em> the fan end (same source, difference = defect), so both pages inject one shared markup (<code>partials/fan-store.js</code>). <strong>2026-07-02: presented as a mobile phone</strong> — a dark device shell (<code>.fan-store__phone</code>) whose self-scrolling screen (<code>.fan-store__screen</code>) is the fan-app store page: app bar (menu · ztor. · cart/user) + hero (artist name over a dark gradient cover + socials + Join community) + sticky app-section pills (Shop/Events/Ranks/Posts/About) + featured + Products/Bundles/Auctions underline sub-tabs + 2-col product grid with cart buttons + Top fans + About + sticky bottom app nav. Layout direction from the endgame creator-store mobile prototype (visual evidence only).</p>
-  <p class="sub__desc" data-zh>每個「See as fan」預覽內呈現的<strong>粉絲端店面</strong>，由 <strong>E-Shop F5（商店預覽）</strong>與 <strong>商店設定 F1</strong> 共用。依規格 §6.7，預覽＝粉絲端（同源、差異即缺陷），兩頁注入同一份 markup（<code>partials/fan-store.js</code>）。<strong>2026-07-02 改為手機呈現</strong>——深色手機外殼（<code>.fan-store__phone</code>）內的自捲動螢幕（<code>.fan-store__screen</code>）即粉絲 app 商店頁：app 頂列（menu · ztor. · 購物車/帳號）＋hero（名字壓深色漸層封面＋社群＋加入社群）＋sticky app 分頁列（商店/活動/排行榜/貼文/關於）＋本月精選＋商品/組合/拍賣底線子分頁＋雙欄商品格（含購物車圓鈕）＋頭號粉絲＋關於＋sticky 底部 app 導航。版型方向取自 endgame creator 商店手機版原型（僅視覺證據）。</p>
-  <p class="field-note" data-en>⚠ <strong>Theme exception</strong>: the phone screen is the fan app's <strong>fixed-dark surface</strong> (theme-independent, like the VIP-card art) — dark neutrals are scoped <code>--fst-*</code> custom props; brand orange stays <code>var(--primary)</code>. See “Raw-color exceptions” in design-system.md.</p>
-  <p class="field-note" data-zh>⚠ <strong>主題例外</strong>：手機螢幕是粉絲 app 的<strong>固定深色面</strong>（不跟隨後台主題，同 VIP 卡面前例）——深色中性色為 scoped <code>--fst-*</code> custom props；品牌橘仍用 <code>var(--primary)</code>。見 design-system.md「Raw-color exceptions」。</p>
-  <p class="field-note" data-en>⚠ Followers count, social links (YT/IG/TH/X), Join community, featured, Buy now, “sold out · restocking”, app section pills (Events/Ranks/Posts/About), Top fans, About-the-creator, cart buttons and the bottom app nav are <strong>product-change proposals</strong> pending upstream (ASSUMPTIONS UIA-026) — shown as proposal presentation, not yet written into <code>documents/</code>.</p>
-  <p class="sub__desc" data-en><strong>2026-07-31 user: both showcase image frames turned portrait <code>--img-portrait</code></strong> — <code>.fan-store__featured-media</code> (this-month featured, was 4:3) and <code>.fan-store__thumb</code> (2-col product grid, was 1:1; at ~140px column width a portrait tile runs ≈174px tall, still two rows fit one screen). Both are the same portrait original, center-cropped to fill.</p>
-  <p class="sub__desc" data-zh><strong>2026-07-31 使用者：兩個展示圖框都改直式 <code>--img-portrait</code></strong>——<code>.fan-store__featured-media</code>（本月精選，原 4:3）與 <code>.fan-store__thumb</code>（雙欄商品格，原 1:1；欄寬約 140px 時單格約長 174px，仍一屏兩排）。兩者皆由同一張直式原圖置中裁切填滿。</p>
+  <p class="sub__desc" data-en>The <strong>fan-side creator page</strong> rendered inside every “See as fan” preview — shared by <strong>E-Shop F5 (Store preview)</strong>, <strong>Store settings F1</strong> and the detail-page preview panels (§6.7: one source, any difference is a defect). <strong>2026-09-11 rebuilt as a mobile mirror of the real fan page</strong> (user supplied the live screenshot), the same move the product-page mirror made (§4.22g, D248): the layout and proportions are lifted from the fan app (375 viewport), the whole thing renders at <code>zoom: 0.75</code> so the column is 270px, no phone bezel. Three things the user crossed out stay out: the app bar (menu / logo / search / cart / login), the bottom app tab bar, and the “demo scene” chip — those are the app shell, not this creator's page. The old bezel version with hero gradient, top fans, about and tab bar is retired.</p>
+  <p class="sub__desc" data-zh>每個「See as fan」預覽內呈現的<strong>粉絲端創作者頁</strong>，由 <strong>E-Shop F5（商店預覽）</strong>、<strong>商店設定 F1</strong> 與三個細節頁的預覽面板共用（§6.7 同源，差異即缺陷）。<strong>2026-09-11 依使用者提供的粉絲端實際畫面重做成手機版鏡像</strong>，做法與商品頁鏡像（§4.22g，D248）一樣：版型與比例照粉絲端（375 視窗）搬進來、整支 <code>zoom: 0.75</code> 顯示、欄寬 270px、不畫手機外框。使用者劃掉的三樣不進預覽：app bar（選單／logo／搜尋／購物車／登入）、底部 app 導航、「情境展示」浮標——那些是 app 外殼，不是這位創作者的頁面。舊版（手機外框＋hero 漸層＋頭號粉絲＋關於＋底部導航）整份退場。</p>
+  <p class="field-note" data-en>Colors and spacing now use r2.3 tokens only — the old scoped <code>--fst-*</code> raw hex palette (25 raw values) is gone, so the fan-store raw-color exception in design-system.md §1.5 no longer applies. Role mapping to the fan app: <code>--foreground</code>≈text-primary, <code>--muted-foreground</code>≈text-secondary, <code>--ztu-film</code>≈white-alpha-4, <code>--primary</code>≈yellow-500. Data: the persona picks avatar, name, role, follower count and bio; product cards ask <code>ProductsStore</code> when the page has it (name, price in the list's currency format, image), else demo values. Card order is fixed (<code>CARD_IDS</code>) so E-Shop can hide unlisted / hidden items by position.</p>
+  <p class="field-note" data-zh>顏色與間距只用 r2.3 token——舊版 scoped 的 <code>--fst-*</code> 寫死色盤（25 處裸色）整組退場，design-system.md §1.5 那條 fan-store 裸色例外不再適用。角色對應到粉絲端：<code>--foreground</code>≈text-primary、<code>--muted-foreground</code>≈text-secondary、<code>--ztu-film</code>≈white-alpha-4、<code>--primary</code>≈yellow-500。資料：人格決定頭像、名字、身分、追蹤數與簡介；商品卡在頁面有載 <code>ProductsStore</code> 時問它（名稱、清單同一套幣別寫法的價格、圖），沒載用示範值。卡片順序固定（<code>CARD_IDS</code>），E-Shop 據此依上架／顯示狀態收起對應的卡。</p>
+  <p class="field-note" data-en><strong>Page tabs re-measured + sticky (2026-09-11, user: “the tab bar style differs from the original, and something pins to the top when you scroll”)</strong>: <code>.fan-store__nav</code> now copies the fan app’s <code>.glass-tabs</code> — 48px pill, 4/10 padding, <code>--ztu-film</code> fill, <code>--ztu-rim-soft</code> rim, blur(8px) saturate(1.5); items 40px, 14px, no wrap (overflow scrolls, scrollbar hidden); active = <code>--primary</code> bold text over a faint orange top-edge gradient plus two orange inner highlights (the fan app’s <code>--lg-fill-active</code> / <code>--lg-shine-active</code>, expressed as <code>color-mix</code> on tokens). The nav lives in <code>.fan-store__stick</code> (<code>position: sticky; top: 0</code>); when <code>partials/fan-store.js</code> sees it hit the top of its scroll container it adds <code>.is-pinned</code>: a 24px avatar + bold 13px name row (<code>.fan-store__minihead</code>) grows in above the tabs and a <code>::before</code> band (bleeds 12/16/24px, 70% <code>--ztu-canvas</code> → transparent, <code>--ztu-blur-shell</code> blur, bottom masked out) dims whatever scrolls underneath — the fan app’s <code>.tabstick-host.is-pinned</code> + <code>.creator-minihead</code>.</p>
+  <p class="field-note" data-zh><strong>分頁列重量＋釘頂（2026-09-11，使用者：「指出的部分樣式和原本不同」「下滑的時候有東西置頂在上面」）</strong>：<code>.fan-store__nav</code> 改照粉絲端 <code>.glass-tabs</code> 量——48px 膠囊、padding 4/10、<code>--ztu-film</code> 底、<code>--ztu-rim-soft</code> 邊、blur(8px) saturate(1.5)；項目高 40、字 14、不換行（放不下橫捲、捲軸藏起）；選中＝<code>--primary</code> 粗體字＋只在頂端一線的淡橘漸層底＋左上／右下兩道橘色內光（粉絲端的 <code>--lg-fill-active</code>／<code>--lg-shine-active</code>，以 token 的 <code>color-mix</code> 表達）。分頁列住在 <code>.fan-store__stick</code>（<code>position: sticky; top: 0</code>）；<code>partials/fan-store.js</code> 看到它貼到捲動容器頂緣就加 <code>.is-pinned</code>：上方長出 24px 小頭像＋13px 粗體名字一行（<code>.fan-store__minihead</code>），底下一片 <code>::before</code> 帶（出血 12/16/24、70% <code>--ztu-canvas</code>→透明、<code>--ztu-blur-shell</code> 模糊、下緣以 mask 淡出）把滑過的內容壓暗——即粉絲端的 <code>.tabstick-host.is-pinned</code>＋<code>.creator-minihead</code>。</p>
+  <p class="field-note" data-en><strong>Consumers (2026-09-11)</strong>: E-Shop F5 (toggleable right column) and Store settings (right column, always on — the “See as fan” button and slide-out sheet were retired; user: “why does this look different from the E-Shop list page, and it duplicates the storefront card”). Both use the same card: <code>preview-col--tall --dim</code> + <code>form-section--outlined</code> + <code>__head--rule</code>, 320px column, mirror zoom 0.8.</p>
+  <p class="field-note" data-zh><strong>消費頁（2026-09-11）</strong>：電子商店 F5（可開關的右欄）與商店設定（右欄常駐——「粉絲視角預覽」鈕與滑出側欄退場；使用者：「怎麼長得和電子商店的列表頁的不一樣，而且重複了」）。兩頁同一張卡：<code>preview-col--tall --dim</code>＋<code>form-section--outlined</code>＋<code>__head--rule</code>，欄 320、鏡像 zoom 0.8。</p>
+  <p class="field-note" data-en>⚠ Follower count, social buttons (ztor / IG / Threads / X / TikTok), Join community, Unlock secrets, featured row, wishlist heart and the page tabs (Shop / Events / Ranks / Posts / Projects) are product-change proposals (ASSUMPTIONS UIA-026) — this preview only mirrors what the fan app already shows.</p>
+  <p class="field-note" data-zh>⚠ 追蹤數、社群圓鈕（ztor／IG／Threads／X／TikTok）、加入社群、彩蛋解鎖、精選商品列、收藏愛心與頁面分頁（商店／活動／排行榜／貼文／項目）為產品變更提案（ASSUMPTIONS UIA-026）——這裡只是把粉絲端已經長出來的樣子照搬。</p>
   <div class="demo">
+    <div style="width:270px">
     <div class="fan-store">
-      <p class="fan-store__overline">Store preview</p>
-      <div class="fan-store__phone">
-        <div class="fan-store__screen" style="height:560px">
-          <div class="fan-store__appbar">
-            <i data-lucide="menu" class="ztor-icon"></i>
-            <span class="fan-store__wordmark">ztor.</span>
-            <span class="fan-store__appbar-end"><i data-lucide="shopping-cart" class="ztor-icon"></i><i data-lucide="user" class="ztor-icon"></i></span>
+      <div class="fan-store__page">
+        <header class="fan-store__profile">
+          <img class="fan-store__avatar" src="images/ip/gary-portrait.jpg" alt="">
+          <div class="fan-store__ident">
+            <h3 class="fan-store__name">Gary Lin</h3>
+            <div class="fan-store__meta"><span class="fan-store__role">Musician</span><span class="fan-store__followers"><b>12.4k</b> followers</span></div>
           </div>
-          <header class="fan-store__hero">
-            <h3 class="fan-store__artist">My Fan Store</h3>
-            <p class="fan-store__tagline">Independent musician shipping merch, vinyl, and digital drops.</p>
-            <div class="fan-store__meta"><span class="fan-store__role">Musician · 12.4k followers</span><span class="fan-store__socials"><a class="fan-store__social" href="#fan-store">YT</a><a class="fan-store__social" href="#fan-store">IG</a><a class="fan-store__social" href="#fan-store">TH</a><a class="fan-store__social" href="#fan-store">X</a></span></div>
-            <button class="fan-store__follow" type="button"><i data-lucide="plus" class="ztor-icon"></i><span>Join community</span></button>
-          </header>
-          <nav class="fan-store__nav" aria-label="Fan app sections"><button class="fan-store__nav-item fan-store__nav-item--active" type="button">Shop</button><button class="fan-store__nav-item" type="button">Events</button><button class="fan-store__nav-item" type="button">Ranks</button><button class="fan-store__nav-item" type="button">Posts</button><button class="fan-store__nav-item" type="button">About</button></nav>
-          <div class="fan-store__content">
-            <section class="fan-store__featured">
-              <div class="fan-store__featured-media"><i data-lucide="disc-3" class="ztor-icon"></i></div>
-              <div class="fan-store__featured-info"><span class="fan-store__featured-tag">Featured</span><div class="fan-store__featured-title">Coastline acetate · 1/50</div><div class="fan-store__featured-price">$180</div><button class="fan-store__featured-cta" type="button">Buy now</button></div>
-            </section>
-            <nav class="fan-store__tabs" aria-label="Store sections"><button class="fan-store__tab fan-store__tab--active" type="button">Products</button><button class="fan-store__tab" type="button">Bundles</button><button class="fan-store__tab" type="button">Auctions</button></nav>
-            <div class="fan-store__grid">
-              <article class="fan-store__card fan-store__card--out"><div class="fan-store__thumb"><i data-lucide="package" class="ztor-icon"></i></div><div class="fan-store__card-title">Tour zine vol. 02</div><div class="fan-store__card-status">Sold out · restocking</div></article>
-              <article class="fan-store__card"><div class="fan-store__thumb"><i data-lucide="package" class="ztor-icon"></i></div><div class="fan-store__card-title">Coastline tee</div><div class="fan-store__card-foot"><span class="fan-store__card-price">$32</span><button class="fan-store__cart" type="button" aria-label="Add to cart"><i data-lucide="shopping-cart" class="ztor-icon"></i></button></div></article>
-            </div>
-            <section class="fan-store__fans">
-              <div class="fan-store__section-head"><h4 class="fan-store__section-title">Top fans</h4><a class="fan-store__link" href="#fan-store">View all →</a></div>
-              <div class="fan-store__fans-row">
-                <div class="fan-store__fan"><span class="fan-store__fan-ava fan-store__fan-ava--r1">LY<span class="fan-store__fan-rank">1</span></span><span class="fan-store__fan-name">Lin Yiwen</span><span class="fan-store__fan-pts">204,370</span></div>
-                <div class="fan-store__fan"><span class="fan-store__fan-ava fan-store__fan-ava--r2">AS<span class="fan-store__fan-rank">2</span></span><span class="fan-store__fan-name">Ahmed Said</span><span class="fan-store__fan-pts">158,240</span></div>
-                <div class="fan-store__fan"><span class="fan-store__fan-ava fan-store__fan-ava--r3">SR<span class="fan-store__fan-rank">3</span></span><span class="fan-store__fan-name">Sofia Rossi</span><span class="fan-store__fan-pts">76,480</span></div>
-              </div>
-            </section>
-            <section class="fan-store__about">
-              <h4 class="fan-store__section-title">About</h4>
-              <p class="fan-store__about-text">Started uploading demos in 2019; the Coastline EP grew into a community of twelve thousand fans.</p>
-              <a class="fan-store__link" href="#fan-store">Read more →</a>
-            </section>
+          <i data-lucide="share" class="ztor-icon fan-store__share"></i>
+        </header>
+        <p class="fan-store__bio">Independent musician shipping merch, vinyl and digital drops from the studio — every order funds the next record. <span class="fan-store__more">More</span></p>
+        <div class="fan-store__socials">
+          <a class="fan-store__social" href="#fan-store" aria-label="ztor"><i data-lucide="sparkles" class="ztor-icon"></i></a>
+          <a class="fan-store__social" href="#fan-store" aria-label="Instagram"><i data-lucide="brand-instagram" class="ztor-icon"></i></a>
+          <a class="fan-store__social" href="#fan-store" aria-label="Threads"><i data-lucide="brand-threads" class="ztor-icon"></i></a>
+          <a class="fan-store__social" href="#fan-store" aria-label="X"><i data-lucide="brand-x" class="ztor-icon"></i></a>
+          <a class="fan-store__social" href="#fan-store" aria-label="TikTok"><i data-lucide="brand-tiktok" class="ztor-icon"></i></a>
+        </div>
+        <div class="fan-store__ctas">
+          <button class="fan-store__cta fan-store__cta--primary" type="button"><i data-lucide="plus" class="ztor-icon"></i><span>Join community</span></button>
+          <button class="fan-store__cta" type="button"><i data-lucide="gift" class="ztor-icon"></i><span>Unlock secrets</span></button>
+        </div>
+        <div class="fan-store__stick"><div class="fan-store__minihead" aria-hidden="true"><img class="fan-store__minihead-avatar" src="images/ip/gary-portrait.jpg" alt=""><span class="fan-store__minihead-name">Gary Lin</span></div><nav class="fan-store__nav" aria-label="Fan page sections"><button class="fan-store__nav-item fan-store__nav-item--active" type="button">Shop</button><button class="fan-store__nav-item" type="button">Events</button><button class="fan-store__nav-item" type="button">Ranks</button><button class="fan-store__nav-item" type="button">Posts</button><button class="fan-store__nav-item" type="button">Projects</button></nav></div>
+        <div class="fan-store__content">
+          <div class="fan-store__featured-row">
+            <article class="fan-store__featured">
+              <div class="fan-store__featured-media"><img src="images/products/nick-nike-01.jpg" alt=""></div>
+              <div class="fan-store__featured-info"><span class="fan-store__featured-tag">Featured</span><div class="fan-store__featured-title">Kowloon After Dark low-top sneakers</div><div class="fan-store__featured-price">$64</div><button class="fan-store__featured-cta" type="button">Buy now</button></div>
+            </article>
           </div>
-          <nav class="fan-store__tabbar" aria-label="Fan app navigation">
-            <span class="fan-store__tabbar-item"><i data-lucide="sparkles" class="ztor-icon"></i><span>Spotlight</span></span>
-            <span class="fan-store__tabbar-item"><i data-lucide="rocket" class="ztor-icon"></i><span>Co-create</span></span>
-            <span class="fan-store__tabbar-item"><i data-lucide="users" class="ztor-icon"></i><span>Community</span></span>
-            <span class="fan-store__tabbar-item"><i data-lucide="award" class="ztor-icon"></i><span>Contests</span></span>
-            <span class="fan-store__tabbar-item fan-store__tabbar-item--active"><i data-lucide="shopping-bag" class="ztor-icon"></i><span>Shop</span></span>
-          </nav>
+          <nav class="fan-store__tabs" aria-label="Store sections"><button class="fan-store__tab fan-store__tab--active" type="button">Products</button><button class="fan-store__tab" type="button">Bundles</button><button class="fan-store__tab" type="button">Auctions</button></nav>
+          <div class="fan-store__grid">
+            <article class="fan-store__card"><div class="fan-store__thumb"><img src="images/products/tour-zine-vol-02.webp" alt=""><span class="fan-store__badge fan-store__badge--new">New</span><span class="fan-store__heart"><i data-lucide="heart" class="ztor-icon"></i></span></div><div class="fan-store__card-title">Pirate Queen zine vol. 02</div><div class="fan-store__card-price">$24</div></article>
+            <article class="fan-store__card"><div class="fan-store__thumb"><img src="images/products/coastline-acetate.webp" alt=""><span class="fan-store__badge fan-store__badge--limited">Limited</span><span class="fan-store__heart"><i data-lucide="heart" class="ztor-icon"></i></span></div><div class="fan-store__card-title">Kowloon After Dark vinyl · 1/50</div><div class="fan-store__card-price">$180</div></article>
+          </div>
         </div>
       </div>
     </div>
+    </div>
   </div>
-  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
-  <div class="code-fold__body">
-    <p class="field-text"><code>.fan-store</code>（掛載層：置中）&gt; <code>__overline</code>（e-shop headerless 的「商店預覽」小標）· <code>__phone</code>（深色外殼＋scoped <code>--fst-*</code>）&gt; <code>__screen</code>（560–640px 自捲動、藏捲軸）&gt; <code>__appbar</code>(sticky · <code>__wordmark</code>/<code>__appbar-end</code>) · <code>__hero</code>(<code>__artist</code>/<code>__tagline</code>/<code>__meta</code>/<code>__role</code>/<code>__socials</code>/<code>__social</code>/<code>__follow</code>) · <code>__nav</code>(sticky pill 列)/<code>__nav-item</code>(<code>--active</code>) · <code>__content</code> &gt; <code>__featured</code>(<code>-media</code>/<code>-info</code>/<code>-tag</code>/<code>-title</code>/<code>-price</code>/<code>-cta</code>) · <code>__tabs</code>(底線式)/<code>__tab</code>(<code>--active</code>) · <code>__grid</code> &gt; <code>__card</code>(<code>--out</code>)(<code>__thumb</code>/<code>__card-title</code>/<code>__card-foot</code>(<code>__card-price</code>＋<code>__cart</code>)/<code>__card-status</code>) · <code>__fans</code>(<code>__section-head</code>/<code>__section-title</code>/<code>__link</code>/<code>__fans-row</code> &gt; <code>__fan</code>(<code>__fan-ava</code>(<code>--r1..--r5</code> 名次圈色)/<code>__fan-rank</code>/<code>__fan-name</code>/<code>__fan-pts</code>)) · <code>__about</code>(<code>__about-text</code>) · <code>__tabbar</code>(sticky bottom)/<code>__tabbar-item</code>(<code>--active</code>). Empty: <code>.when-empty</code> &gt; <code>.empty-card</code>（screen 內深色覆寫），grid/featured/tabs 於 <code>html[data-data-state="empty"]</code> 收起。</p>
-    <p class="field-text"><code>ds-components/fan-store.css</code> · <code>partials/fan-store.js</code> (injected into <code>[data-fan-store-host]</code> on e-shop.html + store-settings.html). Phone screen = fixed-dark fan-app surface（<code>--fst-*</code> raw color＝主題例外，見 design-system.md Raw-color exceptions）；brand accent = <code>var(--primary)</code>. Icons: menu / user / shopping-cart（新增）＋ sparkles / rocket / users / award / shopping-bag.</p>
-  </div>
-  </details>
+  <p class="field-text"><code>ds-components/fan-store.css</code> · <code>partials/fan-store.js</code>（<code>window.ZTOR_PARTIALS.fanStore</code> 是 getter，讀取當下才組樣板；注入 <code>[data-fan-store-host]</code>）。E-Shop F5 的容器＝<code>.preview-split--phone.preview-split--toggle</code> 右欄的 <code>form-section--outlined</code>（§4.22f Preview column）。Icons：share / gift / plus / heart / brand-instagram / brand-threads / brand-x / brand-tiktok；ztor 圓鈕內嵌 Ztor symbol path。</p>
 </section>
+
 <section class="sub" id="dropdown-menu">
   <div class="sub__head">
     <h3 class="sub__title">4.58 Dropdown menu</h3>
@@ -11590,7 +11598,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   <p class="sub__desc" data-zh>一排唯讀的開／關狀態——每個狀態一顆小圓標記＋標籤。它<strong>不是</strong>輸入控件：點的是它所在的整列（前往設定）。開＝成功綠 tint 圓底＋勾、標籤前景色；關＝髮線空心圓、標籤輔助色。首用（2026-09-11 使用者：「商品選單將上架／顯示／開賣拆出來，做成 checkbox 的形式，但設計不一定要用 checkbox」）：商品／組合詳情總覽的「上架與開賣」列，值由三組開關與排程推導。</p>
   <div class="demo">
     <div class="data-list" style="max-width:520px">
-      <div class="data-list__row data-list__row--go" role="button" tabindex="0"><div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta">上架與開賣</div><div class="data-list__title"><div class="state-checks"><span class="state-check state-check--on"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon" aria-hidden="true"></i></span><span class="state-check__label">上架</span></span><span class="state-check"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon" aria-hidden="true"></i></span><span class="state-check__label">顯示於商店</span></span><span class="state-check"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon" aria-hidden="true"></i></span><span class="state-check__label">開賣</span></span></div></div></div></div><span class="data-list__go" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></span></div>
+      <div class="data-list__row data-list__row--go" role="button" tabindex="0"><div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta">上架與開賣</div><div class="data-list__title"><div class="state-checks"><span class="state-check state-check--on"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon" aria-hidden="true"></i></span><span class="state-check__label">已上架</span></span><span class="state-check state-check--scheduled"><span class="state-check__mark"><i data-lucide="clock" class="ztor-icon" aria-hidden="true"></i></span><span class="state-check__label">2026-10-31 23:59 下架</span></span><span class="state-check state-check--off"><span class="state-check__mark"><i data-lucide="x" class="ztor-icon" aria-hidden="true"></i></span><span class="state-check__label">隱藏</span></span><span class="state-check state-check--ended"><span class="state-check__mark"><i data-lucide="minus" class="ztor-icon" aria-hidden="true"></i></span><span class="state-check__label">已停售</span></span></div></div></div></div><span class="data-list__go" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></span></div>
     </div>
   </div>
   <details class="sub__spec"><summary>Spec</summary>
@@ -11598,11 +11606,49 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <p class="field-label">Source</p>
     <p class="field-text"><code>ds-components/state-check.css</code></p>
     <p class="field-label">Anatomy</p>
-    <p class="field-text"><code>.state-checks</code> &gt; <code>.state-check</code>(<code>--on</code>) &gt; <code>.state-check__mark</code> (+ <code>check</code> icon) + <code>.state-check__label</code></p>
+    <p class="field-text"><code>.state-checks</code>(<code>--stack</code>) &gt; <code>.state-check</code>(<code>--on</code> / <code>--scheduled</code> / <code>--off</code> / <code>--ended</code>) &gt; <code>.state-check__mark</code> (check / clock / x / minus) + <code>.state-check__label</code>. Four looks settled 2026-09-11 (lab-state-check.html); a “now + scheduled” cell stacks two checks — the schedule is its own <code>--scheduled</code> state, not a sub-line.</p>
     <p class="field-label">Token usage</p>
-    <p class="field-text"><code>--status-success-fill</code> / <code>--status-success-ink</code> (on mark), <code>--border</code> (off ring), <code>--foreground</code> / <code>--muted-foreground</code>, <code>--fs-13</code>, <code>--sp-6/16</code></p>
+    <p class="field-text"><code>--status-success</code> / <code>--status-info</code> solid + <code>--background</code> glyph (on / scheduled marks; 2026-09-11 final after comparing a tint version), <code>--border</code> (off ring), <code>--foreground</code> / <code>--muted-foreground</code>, <code>--fs-13</code>, <code>--sp-8</code> mark↔label / <code>--sp-16</code> between checks / <code>--sp-6</code> stacked</p>
     <p class="field-label">Usage</p>
     <p class="field-text">Product detail &amp; bundle detail › Settings overview › “Listing &amp; sale” row. Read-only; never wire click handlers on the marks.</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="lock-sets">
+  <div class="sub__head"><h3 class="sub__title">4.210 Lock sets</h3><span class="layer layer--organism">🟠 organism</span></div>
+  <p class="sub__desc" data-en>A bundle’s stock lock, expressed in <strong>sets</strong>: one “Locked sets” field (blank = not locked; capped by the member with the least unlocked stock), then a framed list — one row per item in the bundle with its stock, unlocked count and “locked = N × per set”. Single-option items are read-only; multi-option items expand (row-disclosure) to optional per-option pinning — sum ≤ N × per set, under-pinning just constrains the total. Rule redefined by the user 2026-09-11; visual is the L3 outcome of <code>lab-bundle-lock.html</code>: 1px frame, edge-to-edge hairlines between rows, the expanded group hovers as one, three numeric columns end 12px from the column edge so the input’s unit lines up with the read-only “N pcs”.</p>
+  <p class="sub__desc" data-zh>組合包的庫存鎖定，以<strong>套</strong>為單位：一個「鎖定套數」欄位（空白＝不鎖定；上限受未鎖定量最少的那件商品限制），底下一張外框清單——組合內每件商品一列：商品庫存、未鎖定、已鎖定＝N × 每套用量。單一選項商品唯讀；多選項商品可展開（row-disclosure）逐規格選填分配——Σ ≤ N × 用量，少分配＝只限總數。規則由使用者 2026-09-11 重定義；視覺是 <code>lab-bundle-lock.html</code> L3 定案：1px 外框、列間貼邊髮線、展開的整組一起 hover、三個數字欄的墨水距欄右緣 12，輸入框的單位才跟唯讀的「N 件」對齊。</p>
+  <div class="demo">
+    <div style="width:100%;max-width:760px">
+      <div class="lockset__sets">
+        <div class="lockset__sets-titles"><span class="lockset__sets-title">鎖定套數</span><span class="lockset__sets-hint">最多 3 套（受「海上霸姬 幕後寫真誌 vol.02」限制）；空白＝不鎖定</span></div>
+        <div class="lockset__sets-ctl"><span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" value="3" aria-label="鎖定套數"><span class="amount-field__unit">套</span></span></div>
+      </div>
+      <div class="lockset__title"><span class="lockset__sets-title">指定鎖定項目</span><span class="lockset__sets-hint">單一選項商品自動鎖定 N × 每套用量；多選項商品可選填要鎖哪些規格</span></div>
+      <div class="lockset">
+        <div class="lockset__head"><span>組合中的商品</span><span>商品庫存</span><span>未鎖定</span><span>已鎖定</span><span></span></div>
+        <div class="lockset__row"><span class="lockset__name"><img class="data-list__thumb data-list__thumb--lg" src="images/products/coastline-acetate.webp" alt=""><span class="lockset__text"><span>九龍夜行 原聲黑膠 · 編號 1/50</span></span></span><span class="lockset__num">30</span><span class="lockset__num">24</span><span class="lockset__lockval"><span class="lockset__lockval-row"><span>3</span><span>件</span></span></span><span></span></div>
+        <div class="rowdis__group rowdis__group--gutter">
+          <div class="lockset__row lockset__row--sub rowdis__head" data-rowdis-row="ds-lockset-wb"><span class="lockset__name"><img class="data-list__thumb data-list__thumb--lg" src="images/products/wristband.webp" alt=""><span class="lockset__text"><span>九龍夜行 簽名會手環</span><span class="lockset__sub">多選項</span></span></span><span class="lockset__num">60</span><span class="lockset__num">45</span><span class="lockset__lockval"><span class="lockset__lockval-row"><span>3</span><span>件</span></span><span class="lockset__sub lockset__lockval-sub">已指定 3 件</span></span><span class="lockset__end"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="ds-lockset-wb" aria-expanded="true" aria-label="展開規格"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></div>
+          <div class="lockset__row lockset__child" data-rowdis-child="ds-lockset-wb"><span class="lockset__name">S</span><span class="lockset__num">20</span><span class="lockset__num">15</span><span><span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" value="1" aria-label="S"><span class="amount-field__unit">件</span></span></span><span></span></div>
+          <div class="lockset__row lockset__child" data-rowdis-child="ds-lockset-wb"><span class="lockset__name">M</span><span class="lockset__num">20</span><span class="lockset__num">15</span><span><span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" value="2" aria-label="M"><span class="amount-field__unit">件</span></span></span><span></span></div>
+          <div class="lockset__row lockset__child" data-rowdis-child="ds-lockset-wb"><span class="lockset__name">L</span><span class="lockset__num">20</span><span class="lockset__num">15</span><span><span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" placeholder="0" aria-label="L"><span class="amount-field__unit">件</span></span></span><span></span></div>
+        </div>
+        <div class="lockset__row"><span class="lockset__name"><img class="data-list__thumb data-list__thumb--lg" src="images/products/tour-zine-vol-02.webp" alt=""><span class="lockset__text"><span>海上霸姬 幕後寫真誌 vol.02</span></span></span><span class="lockset__num">10</span><span class="lockset__num">3</span><span class="lockset__lockval"><span class="lockset__lockval-row"><span>3</span><span>件</span></span></span><span></span></div>
+      </div>
+    </div>
+  </div>
+  <details class="sub__spec"><summary>Spec</summary>
+  <div class="sub__spec-body">
+    <p class="field-label">Source</p>
+    <p class="field-text"><code>ds-components/lock-sets.css</code> · depends on <a href="#amount-field">amount-field</a>, <a href="#row-disclosure">row-disclosure</a>, <a href="#data-list">data-list</a> (<code>__thumb--lg</code>)</p>
+    <p class="field-label">Anatomy</p>
+    <p class="field-text"><code>.lockset__sets</code> (<code>__sets-titles</code> &gt; <code>__sets-title</code> + <code>__sets-hint</code>[.is-over] · <code>__sets-ctl</code>) → <code>.lockset__title</code> → <code>.lockset</code> &gt; <code>.lockset__head</code> + <code>.lockset__row</code>[<code>--sub</code>] (<code>__name</code> &gt; thumb + <code>__text</code> &gt; name + <code>__sub</code> · <code>__num</code> ×2 · <code>__lockval</code> &gt; <code>__lockval-row</code> + <code>__lockval-sub</code>[.is-over] | <code>__nolock</code> · <code>__end</code> &gt; <code>.rowdis__toggle</code>); multi-option = <code>.rowdis__group--gutter</code> &gt; head row + <code>.lockset__child</code> ×options</p>
+    <p class="field-label">Token usage</p>
+    <p class="field-text"><code>--border</code> / <code>--border-soft</code> / <code>--radius-xl</code>, <code>--ztu-glass-strong</code> (hover), <code>--column-head-ink</code>, <code>--font-ui</code>, <code>--fs-12/13/14</code>, <code>--foreground(-muted)</code> / <code>--muted-foreground</code>, <code>--status-error</code>, <code>--sp-2…32</code>, <code>--control-h-xs</code>. Local vars <code>--lockset-col</code> minmax(64px, 100px) / <code>--lockset-colgap</code> clamp(<code>--sp-12</code>, 4%, <code>--sp-32</code>) — narrow hosts (create-bundle) collapse gracefully.</p>
+    <p class="field-label">Usage</p>
+    <p class="field-text">bundle-detail.html › 組合庫存 › 商品庫存鎖定; create-bundle.html › F4. Numbers come from <code>js/listing-state.js</code> (<code>bundleLockSets</code> / <code>bundleMaxSets</code> / <code>bundleAllocOf</code> / <code>bundleQty</code>); write-back only via <code>applyBundleLock</code>. Exploration: <code>lab-bundle-lock.html</code>.</p>
   </div>
   </details>
 </section>
@@ -13286,6 +13332,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   if (dsTkQr) dsTkQr.innerHTML = window.ztorFauxQr(5);
 </script>
 <script src="js/zselect.js?v=r2.2"></script>
+<script src="partials/list-scroll.js?v=r2.2"></script>
 <script>
 /* DS 頁的折疊 demo：與產品頁同一套行為（點整列開合、展開時摘要收起由 CSS 處理）。 */
 document.addEventListener('click', function (e) {

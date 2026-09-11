@@ -41,13 +41,26 @@
    hover 時才不會「先方後圓」地跳一下。
    舊值：無 border-radius；transition 只有 background-color 與 border-color。 */
 .product-list__row {
+  position: relative;
   min-height: 88px;
   padding: var(--sp-14) var(--sp-10);
-  border-bottom: 1px solid var(--border-soft);
+  border-bottom: 1px solid transparent;   /* 佔位；線本身由 ::after 畫（見下） */
   border-radius: var(--radius-lg);
   transition: background-color var(--duration) var(--easing),
-              box-shadow var(--duration) var(--easing),
-              border-color var(--duration) var(--easing);
+              box-shadow var(--duration) var(--easing);
+}
+/* 分隔線改用 ::after 畫成一條直線（2026-09-11 使用者：「列表的分隔線都變成有圓角的，因為 hover 有圓角，
+   但預設狀態是不要圓角的」）：列為了 hover 浮起先備好 --radius-lg，border-bottom 會跟著圓角在兩端彎起來；
+   絕對定位的一條 1px 線不受圓角影響，預設就是直的。hover／上一列被 hover／最後一列／釘選方框上一列
+   要收線時改隱藏 ::after（原本是把 border-bottom-color 設透明）。 */
+.product-list__row::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 1px;
+  background: var(--border-soft);
+  pointer-events: none;
+  transition: opacity var(--duration) var(--easing);
 }
 
 /* 2026-07-26 使用者：「有商品列表的都要改成這樣」——縮圖放大後，有縮圖的清單列
@@ -78,16 +91,17 @@
   backdrop-filter: blur(var(--ztu-blur-glass));
   -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
   border-radius: var(--radius-lg);
-  border-bottom-color: transparent;
   box-shadow: var(--shadow-lift-flat), var(--shadow-edge-top);
-  transition: box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease;
+  transition: box-shadow 150ms ease, background-color 150ms ease;
 }
-.product-list__row:has(+ .product-list__row:hover) {
-  border-bottom-color: transparent;
+.product-list__row:hover::after,
+.product-list__row.is-dragging::after,
+.product-list__row:has(+ .product-list__row:hover)::after {
+  opacity: 0;
 }
 /* 最後一列不畫分隔線（skin §5）：那條線下面沒有東西可分，只是把清單封起來的一道多餘的邊。 */
-.product-list__row:last-child {
-  border-bottom-color: transparent;
+.product-list__row:last-child::after {
+  opacity: 0;
 }
 
 .product-list__product {
@@ -515,7 +529,7 @@
 }
 /* 方框狀態才收掉上一列的分隔線：框自己有上緣，兩條疊在一起會看成雙線。
    線狀態不收——那條線本來就是它與上一段的分界。方框在每一個篩選狀態都會出現（2026-08-05）。 */
-.product-list__row:has(+ .product-list__divider--empty:not([hidden])) { border-bottom-color: transparent; }
+.product-list__row:has(+ .product-list__divider--empty:not([hidden]))::after { opacity: 0; }
 .product-list__divider[hidden] { display: none; }
 .product-list__divider-body {
   display: flex;
@@ -771,3 +785,111 @@
   margin-block: calc(-1 * var(--sp-6));
 }
 .product-list-scroll > .product-list { min-width: min-content; }
+
+/* ── 兩端固定欄（2026-09-11 使用者指示）─────────────────────────────────────
+   「列表中的握把與動作欄固定；螢幕縮小時中間的欄先縮，縮到底才開始橫向捲、右邊被遮住。」
+   在還沒設計更小螢幕的版型之前，站上每一張清單都先照這一套走。
+
+   做法：握把（第一欄）與動作欄（最後一欄）在捲動容器內 position: sticky，各自釘在左右緣；
+   中間的欄靠 grid 的 minmax 先縮到各自的最小寬，min-content 到底之後才長出捲軸，
+   內容從動作欄底下滑過去。
+
+   被遮那一側的內容「漸變透明」（第四版，2026-09-11）——前三版都失敗，原因都是同一個：
+   釘住的格自己沒有底、底下是四層會動的星空，凡是「在格上畫東西」的做法（實色底、毛玻璃、漸進模糊）
+   畫出來的都是一塊看得見的方形；「在捲動容器上掛 mask」則把釘住的格一起 mask 掉。
+   所以 mask 不掛在容器、不掛在格，掛在**中間每一格自己身上**：每格用一條 linear-gradient 當 mask，
+   漸層的位置由 partials/list-scroll.js 算好寫成變數——
+     --pls-lx／--pls-rx  容器上：淡出帶的起點（以清單本體座標計，＝釘住格的內緣＋捲動距離）；
+                          該側沒有內容被遮時寫成 ±99999px，把帶子推到看不見的地方＝關掉
+     --pls-fade          容器上：淡出帶的寬度
+     --cell-x            每一格：自己在清單本體裡的 x（不隨捲動變）
+   格自己的 mask 座標＝容器座標減去 --cell-x，所以同一條 gradient 對每一格都對。捲動時 js 只改容器上的
+   兩個變數，格的 mask 由瀏覽器自己重算。釘住的格不在 mask 裡（握把、⋮ 永遠原樣），星空與列的 hover
+   玻璃也不在 mask 裡（它們是格的背景，不是格），真正淡掉的只有滑到底下的圖與字。
+   ≤760px 的堆疊版型另有自己的定位規則（動作欄 absolute），這一段不介入。 */
+.product-list-scroll {
+  --pls-lx: -99999px;
+  --pls-rx: 99999px;
+  --pls-fade: var(--sp-56);
+}
+@media (min-width: 761px) {
+  .product-list-scroll .product-list__drag,
+  .product-list-scroll .product-list__actions,
+  .product-list-scroll .product-list__head > [role="columnheader"]:first-child,
+  .product-list-scroll .product-list__head > [role="columnheader"]:last-child {
+    position: sticky;
+    z-index: 2;
+  }
+  .product-list-scroll .product-list__drag,
+  .product-list-scroll .product-list__actions { align-self: stretch; display: flex; align-items: center; }
+  .product-list-scroll .product-list__actions { justify-content: flex-end; }
+  .product-list-scroll .product-list__drag,
+  .product-list-scroll .product-list__head > [role="columnheader"]:first-child { left: 0; }
+  .product-list-scroll .product-list__actions,
+  .product-list-scroll .product-list__head > [role="columnheader"]:last-child { right: 0; }
+  /* 釘選分隔列（e-shop）不是一列商品、沒有握把（2026-09-11 使用者：「這個要隨著寬度縮放，立即釘選要一直在右邊」）：
+     整條方框釘在左緣、寬度＝看得到的那一段（--pls-w，list-scroll.js 量容器 clientWidth 寫上），
+     不跟著清單本體撐到欄寬加總那麼寬，所以框的右緣永遠在視野裡、「立即釘選」永遠在右端。 */
+  .product-list-scroll .product-list__divider { position: sticky; left: 0; width: var(--pls-w, 100%); box-sizing: border-box; }
+
+  /* 橫捲拉桿（2026-09-11 使用者：「當有遮蔽時，下方要有一條拉吧，粗一點好拖動，拖動的那條上面要有
+     一些點點矩陣紋理，像是盲人點字那種」）。清單容器自己的捲軸在整張表的最底下（三十列＝好幾個螢幕），
+     看不到也搆不到；list-scroll.js 在容器後面補一條代理拉桿 .product-list-scrollbar——自己是一個只有
+     橫向捲軸的空容器、內容寬度跟清單本體一樣，兩邊的 scrollLeft 互相同步；sticky 在頁面捲動容器的底緣，
+     清單還在畫面裡時它就一直在螢幕下方。只在清單真的放不下時出現（[hidden]）。
+     拉桿本體：20px 高的膠囊，背景鋪一層 5px 間距的圓點（radial-gradient，點字那種矩陣），軌道透明。 */
+  .product-list-scrollbar {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: var(--sp-28);
+    margin-top: calc(-1 * var(--sp-6));
+    padding-block: var(--sp-4);
+    /* 不寫 scrollbar-width／scrollbar-color：Chrome 121 起只要標準屬性有值，::-webkit-scrollbar 整組被忽略，
+       點字紋理就畫不出來。Firefox 退回預設細捲軸。 */
+  }
+  .product-list-scrollbar[hidden] { display: none; }
+  .product-list-scrollbar > div { height: 1px; }
+  /* 2026-09-11 二改（使用者：「再粗一點，點字不要這麼密，點的顏色不要這麼亮」）：14→20px；
+     點距 3→5px、點徑 0.8→1px、點色由 --muted-foreground 降到它的 45%（hover 才回到全值）。 */
+  .product-list-scrollbar::-webkit-scrollbar { height: 20px; }
+  .product-list-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  /* 2026-09-11 三改（使用者：「還是太亮，而且點點的排列要考慮到範圍，有些點點被切掉」）：
+     點只畫在 padding-box、膠囊底色畫在 border-box——用透明 border 把點的區域從圓角兩端與上下緣內縮
+     （上下各 5 ＝ 剛好兩排 5px 的點、左右各 10 避開圓弧），橫向用 background-repeat: round 讓整數個點
+     剛好填滿、不會在末端切半顆。點色再降到 --foreground 的 22%，底色由 --ztu-glass-strong 降回 --ztu-film。 */
+  .product-list-scrollbar::-webkit-scrollbar-thumb {
+    border-radius: var(--radius-pill);
+    border: 5px solid transparent;
+    border-inline-width: 10px;
+    background-image:
+      radial-gradient(circle, color-mix(in srgb, var(--foreground) 22%, transparent) 1px, transparent 1.5px),
+      linear-gradient(var(--ztu-film), var(--ztu-film));
+    background-size: 5px 5px, auto;
+    background-repeat: round, no-repeat;
+    background-origin: padding-box, border-box;
+    background-clip: padding-box, border-box;
+  }
+  .product-list-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-image:
+      radial-gradient(circle, color-mix(in srgb, var(--foreground) 45%, transparent) 1px, transparent 1.5px),
+      linear-gradient(var(--ztu-glass-strong), var(--ztu-glass-strong));
+  }
+
+  /* 中間每一格的淡出 mask；只在有一側被遮時掛上，沒捲的清單不多一層合成。顏色只借 alpha。 */
+  .product-list-scroll:is([data-scrolled-left], [data-scrolled-right]) .product-list__row > :not(.product-list__drag):not(.product-list__actions),
+  .product-list-scroll:is([data-scrolled-left], [data-scrolled-right]) .product-list__head > [role="columnheader"]:not(:first-child):not(:last-child) {
+    -webkit-mask-image: linear-gradient(to right,
+      transparent      calc(var(--pls-lx) - var(--cell-x, 0px)),
+      var(--background) calc(var(--pls-lx) + var(--pls-fade) - var(--cell-x, 0px)),
+      var(--background) calc(var(--pls-rx) - var(--cell-x, 0px)),
+      transparent      calc(var(--pls-rx) + var(--pls-fade) - var(--cell-x, 0px)));
+            mask-image: linear-gradient(to right,
+      transparent      calc(var(--pls-lx) - var(--cell-x, 0px)),
+      var(--background) calc(var(--pls-lx) + var(--pls-fade) - var(--cell-x, 0px)),
+      var(--background) calc(var(--pls-rx) - var(--cell-x, 0px)),
+      transparent      calc(var(--pls-rx) + var(--pls-fade) - var(--cell-x, 0px)));
+  }
+}

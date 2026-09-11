@@ -24,6 +24,9 @@
 <!-- D241（spec §7.14）：三開關與庫存池的兩支新元件 -->
 <link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
+<!-- 2026-09-11：F4 庫存改鎖定套數模型，做法比照 bundle-detail 的「組合庫存」分頁 -->
+<link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/row-disclosure.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
@@ -218,8 +221,9 @@
       </div>
     </section>
 
-    <!-- ④ 庫存（Stock）：Edition 不限量／限量 ＋ 成員鎖定量分配表（spec 5.1.5.4 §4 F4 · 0-設計規格書 §7.14）。
-         舊版是一個唯讀「目前在庫」欄、算法寫死在頁內，已由 D241 取代。 -->
+    <!-- ④ 庫存（Stock）：Edition 不限量／限量 ＋ 鎖定套數（spec 5.1.5.4 §4 F4 · 0-設計規格書 §7.14）。
+         2026-09-11 使用者重新定義鎖定規則：組合改鎖「幾套」，不再逐商品填鎖定量，
+         做法逐字比照 bundle-detail.html「組合庫存」分頁，細節見下方區塊註解。 -->
     <section class="form-section form-section--outlined">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cb.stock.title">Stock</h3>
@@ -238,39 +242,51 @@
           </button>
         </div>
       </div>
-      <!-- D241（spec §7.14）：成員逐列的庫存分配。舊版這裡是一個唯讀「目前在庫」欄，
-           說明寫「自動＝取成員最低庫存」——那個模型已由 D241 取代：成員的庫存是一個池，
-           單售與每個組合包各是一個管道，本組合能拿到多少要嘛鎖定、要嘛與其他管道共用沒有被鎖定的庫存量。
-           每一列的可售量與末列的組合可售量一律由 ListingState 算，本頁不自己取 min。 -->
-      <div class="salloc salloc--bundle" id="cb-alloc" hidden>
-        <div class="salloc__row salloc__row--head">
-          <span></span>
-          <span style="text-align:right" data-i18n="stock.free">Unlocked</span>
-          <span data-i18n="stock.lock">Locked</span>
-          <span style="text-align:right" data-i18n="stock.sellable">Sellable</span>
+      <!-- 2026-09-11（使用者重新定義）：組合鎖「幾套」（lockSets N），不再逐商品填鎖定量：
+           單一選項成員自動鎖 N×每套用量（唯讀）；多選項成員可展開逐規格「選填」分配
+           （Σ ≤ N×用量，少分配＝只限總數）。N 的上限＝各成員 floor(未鎖定÷用量) 取最小。
+           做法逐字比照 bundle-detail.html「組合庫存」分頁（唯一標準），寫回一律走
+           ListingState.applyBundleLock，本頁不再自己算或校驗逐商品鎖定量。 -->
+      <!-- 硬上限（限量才顯示）：搬出分配表，獨立一列放在「鎖定套數」之前——它是在成員庫存
+           之上再加的天花板，讀的順序要先看到它，再看鎖定套數怎麼被它與成員一起夾住。 -->
+      <div class="lockset__sets" data-when-cb-edition="limited" data-feat="S45" hidden>
+        <div class="lockset__sets-titles">
+          <span class="lockset__sets-title"><span data-i18n="cb.total">Total quantity</span> <span class="field__req">*</span></span>
+          <span class="lockset__sets-hint" data-i18n="cb.total.hint">Hard cap · still limited by member stock</span>
         </div>
-        <!-- 硬上限也是一道限制，2026-09-09 使用者裁決「上限也進表」後它跟成員一樣佔一列：
-             填在「鎖定量」那一欄（這張表唯一可編輯的欄），右邊直接寫出它給得起幾件，
-             末列的取最小才看得出這個組合是被誰壓住的。原本它是表格外的獨立欄位，
-             設了 5、下面卻顯示 1，兩件事讀起來像沒有關係。 -->
-        <div class="salloc__row salloc__row--cap" data-when-cb-edition="limited" data-feat="S45" hidden>
-          <span class="salloc__name">
-            <span><span data-i18n="cb.total">Total quantity</span> <span class="field__req">*</span></span>
-            <span class="salloc__sub" data-i18n="cb.total.hint">Hard cap · still limited by member stock</span>
-          </span>
-          <span class="salloc__qty salloc__qty--muted">—</span>
-          <span class="salloc__lock"><div class="amount-field amount-field--suffix">
+        <div class="lockset__sets-ctl">
+          <span class="amount-field amount-field--suffix">
             <input class="input amount-field__input" id="cb-total" inputmode="numeric" placeholder="0" data-i18n-aria-label="cb.total" aria-label="Total quantity">
-            <span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></div></span>
-          <span class="salloc__qty" data-cb-cap-qty>—</span>
-        </div>
-        <div class="salloc__row salloc__row--free" id="cb-alloc-total">
-          <span class="salloc__name">
-            <span data-i18n="stock.bundle-qty">Bundle sellable</span>
-            <span class="salloc__sub" data-cb-decider hidden></span>
+            <span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span>
           </span>
-          <span class="salloc__qty" id="cb-bundle-qty">—</span>
         </div>
+      </div>
+      <!-- 組合可售量（唯讀）：受誰壓住（鎖定套數或硬上限）由 refreshAlloc() 的 decider 文字說明 -->
+      <div class="lockset__sets" id="cb-alloc-total" hidden>
+        <div class="lockset__sets-titles">
+          <span class="lockset__sets-title" data-i18n="stock.bundle-qty">Bundle sellable</span>
+          <span class="lockset__sets-hint" data-cb-decider hidden></span>
+        </div>
+        <div class="lockset__sets-ctl">
+          <span class="lockset__num" id="cb-bundle-qty">—</span>
+        </div>
+      </div>
+      <!-- 鎖定套數：整張清單的前提，一列講完（空白／0＝不鎖定） -->
+      <div class="lockset__sets" data-cb-sets-row hidden>
+        <div class="lockset__sets-titles">
+          <span class="lockset__sets-title" data-i18n="bd.lock.sets">Locked sets</span>
+          <span class="lockset__sets-hint" data-cb-sets-hint></span>
+        </div>
+        <div class="lockset__sets-ctl">
+          <span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" id="cb-lock-sets" placeholder="0" data-i18n-aria-label="bd.lock.sets" aria-label="Locked sets"><span class="amount-field__unit" data-i18n="bd.unit.sets">sets</span></span>
+        </div>
+      </div>
+      <div class="lockset__title" hidden>
+        <span class="lockset__sets-title" data-i18n="bd.lock.items">Locked items</span>
+        <span class="lockset__sets-hint" data-i18n="bd.lock.items.hint">Single-option items lock N × quantity per set automatically; multi-option items can optionally pin which options to lock</span>
+      </div>
+      <div class="lockset" id="cb-alloc" hidden>
+        <div class="lockset__head"><span data-i18n="bd.lock.col.item">Items in bundle</span><span data-i18n="bd.lock.col.stock">Item stock</span><span data-i18n="stock.free">Unlocked</span><span data-i18n="bd.lock.col.locked">Locked</span><span></span></div>
       </div>
       <div class="cb-count__hint" id="cb-alloc-empty" data-i18n="cb.stock.empty">Add at least one member to see what this bundle can sell</div>
       <p class="lctl__note" data-i18n="stock.restock-hint">Restocks land in unlocked stock; locked ones need to lock again</p>
@@ -514,11 +530,14 @@
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
+<script src="js/row-disclosure.js?v=r2.2"></script>
 <script>
 /* Create bundle 互動 · spec 5.1.5.4。
-   D241（spec 0-設計規格書 §7.14）：組合可售量改由 ListingState.bundleQty() 算，
-   成員逐列可鎖定件數給本組合（validateLock 擋超過沒有被鎖定的庫存量）；上架設定拆成三個獨立開關。
-   歷史註解：舊版在本檔自己取 min(成員)，已由 D241 取代。 */
+   2026-09-11 使用者重新定義鎖定規則（做法逐字比照 bundle-detail.html「組合庫存」分頁）：
+   組合可售量改由 ListingState.bundleQty() 算，成員不再逐商品填鎖定量，改填組合要鎖「幾套」
+   （lockSets N，見 renderAlloc／refreshAlloc）；上架設定拆成三個獨立開關。
+   歷史註解：D241 逐商品鎖定量（validateLock 擋超過沒有被鎖定的庫存量）的舊版已由本輪取代；
+   再更早的版本在本檔自己取 min(成員)，已由 D241 取代。 */
 (function () {
   const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -544,19 +563,27 @@
   /* F4 庫存 + F7 販售排程（spec 5.1.5.4 §4 F4／F7）*/
   const editionGrid = document.getElementById('cb-edition');
   const totalInput = document.getElementById('cb-total');
-  /* ── D241 庫存池（spec 0-設計規格書 §7.14）───────────────────────────────────
-     建立流程還沒有真正的商品記錄，所以這裡就地把候選列的 data-stock 包成 ListingState
+  /* ── 鎖定套數（2026-09-11 使用者重新定義；規格 D266 待補）────────────────────
+     組合鎖「幾套」（lockSets N），不再逐商品填鎖定量：單一選項成員自動鎖 N×每套用量、
+     多選項成員可展開逐規格「選填」分配。做法逐字比照 bundle-detail.html「組合庫存」
+     分頁（唯一標準），寫回一律走 ListingState.applyBundleLock。
+     建立流程還沒有真正的商品記錄，所以就地把候選列的 data-stock 包成 ListingState
      認得的形狀：一顆池 ＋ 三態鎖定量（null＝沒鎖定、數字含 0＝鎖定模式）。
      本組合是一個還沒存檔的販售管道，暫時用 DRAFT_ID 當管道 id。 */
   const DRAFT_ID = 'cb-draft';
   const LS = window.ListingState;
   const products = {};                       /* 列 id → 商品（帶池與鎖定） */
-  const bundleDraft = { id: DRAFT_ID, members: [], cap: null };
-  const lockErrors = {};                     /* 列 id → true（鎖定量超過沒有被鎖定的庫存量） */
+  const bundleDraft = { id: DRAFT_ID, members: [], cap: null, lockSets: null, alloc: {} };
+  let lockBad = false;                       /* 鎖定套數超過上限，或任一規格分配 bad／over */
   const allocEl = document.getElementById('cb-alloc');
   const allocEmpty = document.getElementById('cb-alloc-empty');
-  const allocTotalRow = document.getElementById('cb-alloc-total');
   const bundleQtyEl = document.getElementById('cb-bundle-qty');
+  const setsInput = document.getElementById('cb-lock-sets');
+  const setsHint = document.querySelector('[data-cb-sets-hint]');
+  const decider = document.querySelector('[data-cb-decider]');
+  const qtyRow = document.getElementById('cb-alloc-total');
+  const setsRow = document.querySelector('[data-cb-sets-row]');
+  const lockTitle = document.querySelector('.lockset__title');
   /* ---- 可與優惠碼疊加（純開關，同建立商品的 data-cp-stack）---- */
   document.querySelectorAll('[data-cb-stack]').forEach(t => {
     const flip = () => { const on = t.getAttribute('aria-checked') !== 'true'; t.setAttribute('aria-checked', on ? 'true' : 'false'); t.classList.toggle('switch--on', on); };
@@ -605,97 +632,207 @@
     if (n === Infinity) { el.setAttribute('data-i18n', 'cb.stock.unlimited'); el.textContent = T('cb.stock.unlimited', 'Unlimited'); }
     else { el.removeAttribute('data-i18n'); el.textContent = String(n); }
   }
-  /* 成員逐列的分配表：一列一個成員（沒有被鎖定的庫存量唯讀／鎖定給本組合的量可填／本組合可售量唯讀）。
-     只在成員增減時重建，數字更新走 refreshAlloc()——否則打字時輸入框會被重建、失焦。 */
+  /* ── 商品庫存鎖定（2026-09-11 鎖定套數規則；逐字比照 bundle-detail.html「組合庫存」分頁）──
+     組合填「鎖定幾套 N」，不再逐商品填鎖定量：
+       單一選項成員   已鎖定 ＝ N × 每套用量，系統算、唯讀
+       多選項成員     已鎖定同上；可展開逐規格「選填」分配，Σ ≤ N × 用量，少分配＝只限總數、規格不拘
+       N 的上限       各成員 floor(未鎖定 ÷ 用量) 取最小（ListingState.bundleMaxSets）
+       寫回商品       一律走 ListingState.applyBundleLock（成員商品身上的組合鎖定是導出值）
+     清單一列一個商品：縮圖＋名稱（一行 …）｜商品庫存｜未鎖定｜已鎖定；多選項母列末尾一個把手（row-disclosure）。
+     只在成員清單變動時重建，數字更新走 refreshAlloc()，免得打字時輸入框被重建、失焦。
+     建立流程嵌入新增的臨時商品（productOf() 沒 id 那條路）沒有 variants，一律當單一選項。 */
+  function isMultiMember(p) { return !!(p && p.variant === 'multiple' && (p.variants || []).length); }
+  function applyLock() { if (LS && LS.applyBundleLock) LS.applyBundleLock(bundleDraft, products); }
+  function thumbHTML(p) {
+    return p && p.img
+      ? '<img class="data-list__thumb data-list__thumb--lg" src="images/products/' + esc(p.img) + '" alt="">'
+      : '<span class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></span>';
+  }
+  function nameCellHTML(m, p, multi) {
+    const label = (p && p.name) || m.productId;
+    /* 候選清單來自商品資料源的成員才有真的商品詳情頁可連；建立流程臨時新增的商品沒有
+       真實 id，連了也是死連結，這裡就不包 <a>。 */
+    const isReal = !!(window.ProductsStore && window.ProductsStore.get && window.ProductsStore.get(m.productId));
+    const nameHtml = isReal
+      ? '<a class="card__link" href="product-detail.html?id=' + esc(m.productId) + '" target="_blank" rel="noopener">' + esc(label) + '</a>'
+      : esc(label);
+    return '<span class="lockset__name">' + thumbHTML(p) + '<span class="lockset__text">'
+      + '<span title="' + esc(label) + '">' + nameHtml + '</span>'
+      + (multi ? '<span class="lockset__sub" data-i18n="cp.var.multiple">Multiple options</span>' : '')
+      + '</span></span>';
+  }
   function renderAlloc() {
     if (!allocEl) return;
-    [...allocEl.querySelectorAll('[data-cb-alloc-row]')].forEach(r => r.remove());
+    [...allocEl.querySelectorAll('[data-cb-alloc-row], [data-cb-alloc-group]')].forEach(r => r.remove());
     bundleDraft.members.forEach(m => {
       const p = products[m.productId];
       if (!p) return;
+      const multi = isMultiMember(p);
+      const gid = 'alloc-' + m.productId;
       const row = document.createElement('div');
-      row.className = 'salloc__row';
+      row.className = 'lockset__row' + (multi ? ' lockset__row--sub rowdis__head' : '');
       row.setAttribute('data-cb-alloc-row', m.productId);
-      row.innerHTML = '<span class="salloc__name"><span>' + esc(p.name) + '</span></span>'
-        + '<span class="salloc__qty salloc__qty--muted" data-cb-free></span>'
-        + '<span class="salloc__lock"><div class="amount-field amount-field--suffix">'
-        + '<input class="input amount-field__input" inputmode="numeric" data-cb-lock data-i18n-aria-label="stock.lock" aria-label="Locked">'
-        + '<span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></div></span>'
-        + '<span class="salloc__qty" data-cb-sellable></span>'
-        + '<p class="salloc__error" data-i18n="stock.lock-err" hidden>Exceeds unlocked stock</p>';
-      allocEl.insertBefore(row, allocEl.querySelector('.salloc__row--cap') || allocTotalRow);   /* 成員在上、硬上限在下：限量卡說的是「在成員庫存之上再設一個硬上限」 */
+      row.innerHTML = nameCellHTML(m, p, multi)
+        + '<span class="lockset__num" data-cb-stock></span>'
+        + '<span class="lockset__num" data-cb-free></span>'
+        + '<span data-cb-lockcell></span>'
+        + (multi
+          ? '<span class="lockset__end"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="' + gid + '" aria-expanded="false" aria-label="Show options" data-i18n-aria-label="bd.lock.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span>'
+          : '<span></span>');
+      if (multi) {
+        const group = document.createElement('div');
+        group.className = 'rowdis__group rowdis__group--gutter';
+        group.setAttribute('data-cb-alloc-group', m.productId);
+        group.appendChild(row);
+        group.insertAdjacentHTML('beforeend', p.variants.map((v, vi) =>
+          '<div class="lockset__row lockset__child" data-rowdis-child="' + gid + '" hidden data-cb-alloc-child="' + esc(m.productId) + '" data-cb-vi="' + vi + '">'
+          + '<span class="lockset__name">' + esc((v.combo || []).join(' / ')) + '</span>'
+          + '<span class="lockset__num" data-cb-stock></span>'
+          + '<span class="lockset__num" data-cb-free></span>'
+          + '<span><span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" placeholder="0" data-cb-alloc-input data-cb-vi="' + vi + '" data-i18n-aria-label="stock.lock" aria-label="Locked"><span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></span></span>'
+          + '<span></span></div>').join(''));
+        allocEl.appendChild(group);
+        const a = (bundleDraft.alloc || {})[m.productId] || {};
+        group.querySelectorAll('[data-cb-alloc-input]').forEach(inp => {
+          const q = a[Number(inp.dataset.cbVi)];
+          inp.value = (q === null || q === undefined || q === '') ? '' : String(q);
+        });
+      } else {
+        allocEl.appendChild(row);
+      }
     });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(allocEl);
     if (window.applyI18n) window.applyI18n(allocEl);
+    if (window.rowDisclosure && window.rowDisclosure.sync) window.rowDisclosure.sync(allocEl);
     refreshAlloc();
   }
-  /* 數字與錯誤態。組合可售量一律問 ListingState.bundleQty()，本頁不自己取 min。 */
+
+  /* 數字、錯誤態與組合可售量：組合可售量一律問 ListingState.bundleQty()，本頁不自己取 min。
+     沒有成員時整塊鎖定 UI（可售量／鎖定套數／清單標題／清單）收起，只留空狀態提示。 */
   function refreshAlloc() {
     if (!allocEl || !LS) return;
     const has = bundleDraft.members.length > 0;
-    /* 限量時表格照樣留著：硬上限現在是表裡的一列，還沒加成員就把整張表收起來，
-       等於連那個必填欄位一起藏掉。 */
-    allocEl.hidden = !(has || limitedEdition());
+    allocEl.hidden = !has;
     if (allocEmpty) allocEmpty.hidden = has;
+    if (qtyRow) qtyRow.hidden = !has;
+    if (setsRow) setsRow.hidden = !has;
+    if (lockTitle) lockTitle.hidden = !has;
+    if (!has) {
+      lockBad = false;
+      if (bundleQtyEl) { bundleQtyEl.removeAttribute('data-i18n'); bundleQtyEl.textContent = '—'; }
+      return;
+    }
+
+    const lim = LS.bundleMaxSets(bundleDraft, products);
+    const n = LS.bundleLockSets(bundleDraft);
+    const wanted = setsInput ? Math.floor(Number(setsInput.value.trim())) : NaN;
+    const over = setsInput && setsInput.value.trim() !== '' && !isNaN(wanted) && wanted > lim.max;
+    /* 鎖定套數欄：提示寫上限與誰壓的；超過上限紅字、不寫進模型（模型停在上一個合法值） */
+    if (setsInput) { if (over) setsInput.setAttribute('aria-invalid', 'true'); else setsInput.removeAttribute('aria-invalid'); }
+    if (setsHint) {
+      const by = lim.by ? T('stock.capped-by', 'Capped by {name}').replace('{name}', lim.by.name || '') : '';
+      const maxTxt = (lim.max === Infinity) ? T('cb.stock.unlimited', 'Unlimited') : String(lim.max);
+      setsHint.textContent = over
+        ? T('bd.lock.sets.over', 'Over the limit: up to {n} sets').replace('{n}', maxTxt) + (by ? '（' + by + '）' : '')
+        : T('bd.lock.sets.hint', 'Up to {n} sets').replace('{n}', maxTxt) + (by ? '（' + by + '）' : '') + T('bd.lock.sets.blank', '; blank = not locked');
+      setsHint.classList.toggle('is-over', !!over);
+    }
+
+    let anyBad = false;
     bundleDraft.members.forEach(m => {
       const p = products[m.productId];
       const row = allocEl.querySelector('[data-cb-alloc-row="' + m.productId + '"]');
       if (!p || !row) return;
-      setQty(row.querySelector('[data-cb-free]'), LS.freeQty(p));
-      setQty(row.querySelector('[data-cb-sellable]'), LS.channelQty(p, { bundle: DRAFT_ID }));
-      const inp = row.querySelector('[data-cb-lock]');
-      const max = LS.validateLock(p, { bundle: DRAFT_ID }, 0).max;
-      if (inp) inp.placeholder = (max === Infinity) ? '' : T('stock.lock-max', 'Up to {n}').replace('{n}', max);
-      const bad = !!lockErrors[m.productId];
-      row.classList.toggle('salloc__row--error', bad);
-      const err = row.querySelector('.salloc__error');
-      if (err) err.hidden = !bad;
-      if (inp) { if (bad) inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid'); }
+      const multi = isMultiMember(p);
+      const stock = multi ? LS.variantsTotal(p.variants) : ((p.pool && (p.pool.total === 'unlimited')) ? Infinity : Number(p.pool && p.pool.total) || 0);
+      const free = LS.freeQty(p);
+      const locked = LS.bundleMemberLock(bundleDraft, m);
+      const per = LS.memberPer(m);
+      setQty(row.querySelector('[data-cb-stock]'), stock);
+      setQty(row.querySelector('[data-cb-free]'), free);
+      const cell = row.querySelector('[data-cb-lockcell]');
+      if (cell) {
+        if (locked === null) {
+          cell.innerHTML = '<span class="lockset__nolock" data-i18n="bd.lock.shared">' + esc(T('bd.lock.shared', 'Not locked')) + '</span>';
+        } else {
+          const al = multi ? LS.bundleAllocOf(bundleDraft, m, p) : null;
+          if (al && al.over) anyBad = true;
+          const sub = !multi ? '' : (al.over ? T('bd.lock.over', 'Exceeds locked qty') : (al.assigned ? T('bd.lock.assigned', '{n} pcs pinned').replace('{n}', al.assigned) : ''));
+          cell.innerHTML = '<span class="lockset__lockval"><span class="lockset__lockval-row"><span>' + locked
+            + (per > 1 ? '<span class="lockset__per">' + T('bd.lock.per', '{n} per set').replace('{n}', per) + '</span>' : '')
+            + '</span><span data-i18n="stock.unit-pcs">' + T('stock.unit-pcs', 'pcs') + '</span></span>'
+            + (multi ? '<span class="lockset__sub lockset__lockval-sub' + (al.over ? ' is-over' : '') + '">' + esc(sub) + '</span>' : '')
+            + '</span>';
+        }
+      }
+      if (multi) {
+        const al = LS.bundleAllocOf(bundleDraft, m, p);
+        al.rows.forEach(r => {
+          if (r.bad) anyBad = true;
+          const child = allocEl.querySelector('[data-cb-alloc-child="' + m.productId + '"][data-cb-vi="' + r.vi + '"]');
+          if (!child) return;
+          const v = p.variants[r.vi];
+          setQty(child.querySelector('[data-cb-stock]'), Number(v.stock) || 0);
+          setQty(child.querySelector('[data-cb-free]'), LS.variantFree(v));
+          const inp = child.querySelector('[data-cb-alloc-input]');
+          if (inp) {
+            inp.disabled = locked === null;
+            if (r.bad) inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid');
+          }
+        });
+      }
     });
-    /* 硬上限那一列：右欄寫出「這道上限給得起幾件」，讓它與成員列用同一種讀法。 */
-    const capRow = allocEl.querySelector('.salloc__row--cap');
-    const capQty = capRow && capRow.querySelector('[data-cb-cap-qty]');
-    const capOn = limitedEdition() && bundleDraft.cap !== null && bundleDraft.cap >= 0;
-    if (capQty) { if (capOn) setQty(capQty, bundleDraft.cap); else { capQty.removeAttribute('data-i18n'); capQty.textContent = '—'; } }
 
-    if (!has) { if (bundleQtyEl) { bundleQtyEl.removeAttribute('data-i18n'); bundleQtyEl.textContent = '—'; } }
-    else setQty(bundleQtyEl, LS.bundleQty(bundleDraft, products));
-
-    /* 末列的數字是「取最小」的結果，所以要說出是誰給的這個數字——成員還是硬上限。
-       不說的話，設了上限 5、下面顯示 1 的畫面看起來就像兩件無關的事。 */
-    const decider = allocEl.querySelector('[data-cb-decider]');
+    const qty = LS.bundleQty(bundleDraft, products);
+    setQty(bundleQtyEl, qty);
+    /* 組合可售量的一句說明：鎖定時「鎖定 N 套」；不鎖定時寫是誰壓出這個數字（成員或硬上限）。 */
     if (decider) {
-      let name = null, min = Infinity;
-      bundleDraft.members.forEach(m => {
-        const p = products[m.productId];
-        if (!p) return;
-        const q = LS.channelQty(p, { bundle: DRAFT_ID });
-        if (q < min) { min = q; name = p.name; }
-      });
-      if (capOn && bundleDraft.cap <= min) name = T('cb.total', 'Total quantity');
-      const show = has && !!name && LS.bundleQty(bundleDraft, products) !== Infinity;   /* 全部不限量又沒設上限＝沒有誰在壓，不寫這一行 */
-      decider.hidden = !show;
-      if (show) decider.textContent = T('stock.capped-by', 'Capped by {name}').replace('{name}', name);
+      let txt = '';
+      if (n !== null) txt = T('bd.lock.meta.locked', 'Locked {n} sets').replace('{n}', n);
+      else if (qty !== Infinity) {
+        let name = lim.by ? lim.by.name : null;
+        const capOn = limitedEdition() && bundleDraft.cap !== null && bundleDraft.cap >= 0;
+        if (capOn && bundleDraft.cap <= lim.max) name = T('cb.total', 'Total quantity');
+        if (name) txt = T('stock.capped-by', 'Capped by {name}').replace('{name}', name);
+      }
+      decider.hidden = !txt;
+      decider.textContent = txt;
     }
+    lockBad = anyBad || !!over;   /* recompute() 的 lockOk 讀這顆旗標 */
   }
-  /* 切語言後把「最多 N」這種由 JS 寫進去的字重算一次（data-i18n 的部分 applyI18n 自己會接手）。 */
-  document.addEventListener('i18n:applied', () => refreshAlloc());
-  /* 鎖定量輸入：清空＝取消鎖定（回去共用沒有被鎖定的庫存量）；填數字＝鎖定模式。
-     超過上限就不寫進池——寫了沒有被鎖定的庫存量會被吃掉，下一次校驗的上限就跟著失準。 */
-  if (allocEl) allocEl.addEventListener('input', e => {
-    const inp = e.target.closest('[data-cb-lock]');
-    if (!inp || !LS) return;
-    const host = inp.closest('[data-cb-alloc-row]');
-    const id = host && host.getAttribute('data-cb-alloc-row');
-    const p = id && products[id];
-    if (!p) return;
-    const raw = inp.value.trim();
-    if (raw === '') { p.pool.locks.bundles[DRAFT_ID] = null; delete lockErrors[id]; }
-    else {
-      const n = Math.floor(Number(raw));
-      const v = (isNaN(n) || n < 0) ? { ok: false } : LS.validateLock(p, { bundle: DRAFT_ID }, n);
-      if (v.ok) { p.pool.locks.bundles[DRAFT_ID] = n; delete lockErrors[id]; }
-      else lockErrors[id] = true;
+  /* 切語言後把「最多 N 套」這種由 JS 寫進去的字重算一次（data-i18n 的部分 applyI18n 自己會接手）。
+     這裡故意不接那個「套用完 i18n 就廣播」的事件——renderAlloc()/refreshAlloc() 自己也會呼叫
+     window.applyI18n()，接了會無限迴圈；改接使用者真的切換語言才廣播的 ztor:lang-changed
+     （同 bundle-detail 的做法）。 */
+  document.addEventListener('ztor:lang-changed', () => refreshAlloc());
+  /* 鎖定套數：空白／0＝不鎖定；填正數＝鎖定 N 套。超過上限不寫進模型（成員會被鎖到負數），只標紅。 */
+  if (setsInput) setsInput.addEventListener('input', () => {
+    if (!LS) return;
+    const raw = setsInput.value.trim();
+    const lim = LS.bundleMaxSets(bundleDraft, products);
+    const n = raw === '' ? null : Math.floor(Number(raw));
+    if (raw === '' || (!isNaN(n) && n >= 0 && n <= lim.max)) {
+      bundleDraft.lockSets = (n === null || n <= 0) ? null : n;
+      applyLock();
     }
+    recompute();
+  });
+  /* 逐規格分配（選填）：寫進 bundleDraft.alloc[商品][規格]，Σ 超過 N×用量只標紅、不擋；
+     單格超過該規格未鎖定量標紅。 */
+  if (allocEl) allocEl.addEventListener('input', e => {
+    const inp = e.target.closest('[data-cb-alloc-input]');
+    if (!inp || !LS) return;
+    const child = inp.closest('[data-cb-alloc-child]'); if (!child) return;
+    const pid = child.getAttribute('data-cb-alloc-child');
+    const vi = Number(child.getAttribute('data-cb-vi'));
+    const p = products[pid]; if (!p) return;
+    const m = bundleDraft.members.find(x => x.productId === pid); if (!m) return;
+    if (!bundleDraft.alloc) bundleDraft.alloc = {};
+    if (!bundleDraft.alloc[pid]) bundleDraft.alloc[pid] = {};
+    const raw = inp.value.trim();
+    const n = raw === '' ? null : Math.floor(Number(raw));
+    bundleDraft.alloc[pid][vi] = (n === null || isNaN(n) || n <= 0) ? null : n;
+    applyLock();
     recompute();
   });
   const sumMembers = () => [...selected.querySelectorAll('[data-cb-item]')].reduce((a, it) => a + (parseFloat(it.dataset.price) || 0), 0);
@@ -755,7 +892,7 @@
     if (n === 0) { stockEl.removeAttribute('data-i18n'); stockEl.textContent = '—'; }
     else setQty(stockEl, LS ? LS.bundleQty(bundleDraft, products) : Infinity);
     const editionOk = !(limitedEdition() && (isNaN(cap) || cap <= 0));  // 限量需設有效硬上限（Total quantity ＊）
-    const lockOk = Object.keys(lockErrors).length === 0;
+    const lockOk = !lockBad;   /* 鎖定套數超過上限，或任一規格分配 bad／over，都不讓建立 */
 
     let notes = '';
     if (hasLimited) notes += '<div class="cb-note" data-i18n="cb.note.limited">A limited-edition member caps the bundle — it sells out when that member runs out.</div>';
@@ -966,8 +1103,19 @@
     const id = row.dataset.cbId;
     if (id) {
       bundleDraft.members = bundleDraft.members.filter(m => m.productId !== id);
-      if (products[id]) delete products[id].pool.locks.bundles[DRAFT_ID];   /* 移除成員＝連鎖定一起清掉 */
-      delete lockErrors[id];
+      /* 移除成員＝連鎖定一起清掉：applyBundleLock 只認得還在 bundleDraft.members 裡的
+         成員，不會反過來替我們清掉已經離開的這一個，所以先手動歸零它自己的鎖定記錄。 */
+      const p = products[id];
+      if (p) {
+        if (p.pool && p.pool.locks) p.pool.locks.bundles[DRAFT_ID] = null;
+        if (isMultiMember(p) && p.variants) p.variants.forEach(v => {
+          if (!v.locks) v.locks = { single: null, bundles: {} };
+          if (!v.locks.bundles) v.locks.bundles = {};
+          v.locks.bundles[DRAFT_ID] = null;
+        });
+      }
+      if (bundleDraft.alloc) delete bundleDraft.alloc[id];
+      applyLock();
     }
     renderAlloc();
     recompute();
@@ -1166,7 +1314,7 @@
     }
   }
   if (search) search.addEventListener('input', applyFilter);
-  document.addEventListener('i18n:applied', () => { paintMeta(); applyFilter(); });
+  document.addEventListener('ztor:lang-changed', () => { paintMeta(); applyFilter(); });
   buildCandidates();
 
   /* 建立完成 → 回電子商店清單並彈出新品貼文（spec 5.1.5.7 v1.2 全類型皆開），帶入組合名/價 */
@@ -1174,19 +1322,19 @@
     if (createBtn.disabled) return;
     const nm = (nameEl && nameEl.value.trim()) || '';
     let pr = bundlePriceText();   // 組合售價文字（含「從 $X 起」）
-    /* D241（§7.14）：把三個開關與成員鎖定量收成一筆組合記錄。鎖定量掛在成員的
-       pool.locks.bundles[<組合 id>]——鎖定是管道的屬性，不是成員清單的裝飾。
+    /* D241／2026-09-11 鎖定套數規則（§7.14）：把三個開關與鎖定套數收成一筆組合記錄。
+       每個成員的鎖定總量改由 ListingState.bundleMemberLock 導出（＝N × 每套用量），
+       不再自己讀成員商品身上的 pool.locks.bundles[DRAFT_ID]；lockSets／alloc 兩個欄位
+       原樣收進記錄，下一頁（bundle-detail）才能照同一套規則重新推導。
        原型無後端、ProductsStore 也還沒有寫入 API：有 addBundle 就交給它，沒有就掛在
        window 上，讓下一頁至少拿得到這筆資料。 */
     const bundleId = 'cb-' + Date.now().toString(36);
     const rec = {
       id: bundleId, name: nm,
-      members: bundleDraft.members.map(m => {
-        const locks = products[m.productId] ? products[m.productId].pool.locks.bundles : {};
-        const lock = (locks[DRAFT_ID] === undefined) ? null : locks[DRAFT_ID];
-        return { productId: m.productId, qty: m.qty || 1, lock: lock };
-      }),
+      members: bundleDraft.members.map(m => ({ productId: m.productId, qty: m.qty || 1, lock: LS ? LS.bundleMemberLock(bundleDraft, m) : null })),
       cap: bundleDraft.cap,
+      lockSets: bundleDraft.lockSets,
+      alloc: bundleDraft.alloc || {},
       /* 「不上架」＝草稿語意（D245／D247，5.1.5.4 F6）：不收任何時間、不產生連結、shown 不成立——
          欄位只是被收起來，值可能還在，送出時一律歸零（2026-09-11 稽核補上，同 create-product 的做法）。 */
       listed: listingMode !== 'none',

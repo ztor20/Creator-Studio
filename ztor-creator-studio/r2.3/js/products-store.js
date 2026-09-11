@@ -227,7 +227,7 @@
       ],
       variants: [
         { combo: ['Black', 'S'], sku: 'JKT-BK-S', stock: '3' },
-        { combo: ['Black', 'M'], sku: 'JKT-BK-M', stock: '6', locks: { single: 2, bundles: { 'signing-set': 1 } } },
+        { combo: ['Black', 'M'], sku: 'JKT-BK-M', stock: '6', locks: { single: 2 } },
         { combo: ['Black', 'L'], sku: 'JKT-BK-L', stock: '4' },
         { combo: ['Olive', 'S'], sku: 'JKT-OL-S', stock: '3' },
         { combo: ['Olive', 'M'], sku: 'JKT-OL-M', stock: '4' },
@@ -274,9 +274,9 @@
       catLabel: 'Physical Merchandise', subLabel: 'Collectibles · 收藏品',
       options: [{ name: 'Size / 尺寸', values: ['S', 'M', 'L'] }],
       variants: [
-        { combo: ['S'], sku: 'WB-S', stock: '20', locks: { bundles: { 'signing-set': 5 } } },
-        { combo: ['M'], sku: 'WB-M', stock: '20', locks: { bundles: { 'signing-set': 5 } } },
-        { combo: ['L'], sku: 'WB-L', stock: '20', locks: { bundles: { 'signing-set': 5 } } }
+        { combo: ['S'], sku: 'WB-S', stock: '20' },
+        { combo: ['M'], sku: 'WB-M', stock: '20' },
+        { combo: ['L'], sku: 'WB-L', stock: '20' }
       ]
     },
     /* 實體 · 貼紙包：草稿（只有名稱與圖，其餘欄位空；listed:false 在 LISTING_SEED） */
@@ -483,9 +483,8 @@
       var p = WISHYOU_PRODUCTS[id];
       (p.variants || []).forEach(function (v) { if (value === '*' || v.combo[0] === value) v.locks = JSON.parse(JSON.stringify(locks)); });
     }
-    lockVariant('wy-24ce-jersey', 'M', { single: 5, bundles: { 'nick-signing-set': 2 } });
-    lockVariant('wy-26ms-tshirt-white', '*', { bundles: { 'wish-you-good-life-four-piece': 2 } });
-    lockVariant('wy-24ce-tee', '*', { bundles: { 'nick-signing-set': 3 } });
+    /* 組合鎖定不再寫在商品身上（2026-09-11 鎖定套數規則）：由 BUNDLE_SEED 的 lockSets／alloc 在 get() 時導出 */
+    lockVariant('wy-24ce-jersey', 'M', { single: 5 });
   }());
   /* 既有入口保留，但內容與來源商品同步。 */
   /* 2026-07-27 使用者指定的列表排序：這四筆置頂（白 Tee → 老帽 → 束口褲 → 球鞋），
@@ -681,11 +680,11 @@
        可售量看的是鎖定量（1），仍 ≤ 門檻 4，「低庫存」與「鎖定」兩個示範互不打架、同時成立。
        ⚠ 這條原本掛在 tee（多規格）身上，2026-09-04 D241 收尾移到這裡——多規格商品的庫存池
        與鎖定怎麼疊尚無定論（見 ASSUMPTIONS UIA-132），示範資料先避開這個未決問題。 */
-    zine:    { locks: { single: 1, bundles: { 'coastline-starter-set': 1, 'signing-set': 1 } } },
+    zine:    { locks: { single: 1 } },   /* 組合鎖定由 BUNDLE_SEED 導出：coastline-starter-set 1 套、signing-set 1 套 → 未鎖定 1 */
     /* 隱藏＋私下販售：商店找不到，持非公開連結仍可買（§7.14 狀態組合表第五列）。
        2026-09-11 疊上簽名會限定組的「成員全鎖」示範：單售鎖 2 ＋ 簽名會組鎖 3；黑膠＋海報典藏組沒鎖，仍共用剩下 24 件。 */
     /* single 2（2026-09-11 改）：原本寫 0 想表達「單售鎖定且賣完」，規格與使用者裁決「0＝不鎖定」，改成正數才是全鎖示範 */
-    acetate: { shown: false, privateLink: 'https://ztor.example/s/acetate?k=k3m8qr72', locks: { single: 2, bundles: { 'signing-set': 3 } } },
+    acetate: { shown: false, privateLink: 'https://ztor.example/s/acetate?k=k3m8qr72', locks: { single: 2 } },
     /* ── 2026-09-11 預設 persona 新增 9 筆的上架示範（商品本體在 P_DEFAULT）── */
     /* 定時下架排定：unlistAt 在未來（整個原型原本沒有任何一筆示範這個狀態） */
     poster:  { unlistAt: '2026-12-31T23:59:00' },
@@ -723,7 +722,7 @@
     'wy-24ce-sock': { saleStart: '2026-11-01T12:00:00' },
     /* ── 2026-09-11 nick persona 對照預設 persona 的九種狀態（商品改值在 WISHYOU_PRODUCTS 之後的覆寫段）── */
     /* 隱藏＋非公開連結＋三個管道都鎖定（單售 40、簽名會組 10、典藏組 12）→「所有管道都設了鎖定」提醒 */
-    'nick-vinyl': { shown: false, privateLink: 'https://ztor.example/s/nick-vinyl?k=v4c9xw27', locks: { single: 40, bundles: { 'nick-signing-set': 10, 'nick-vinyl-set': 12 } } },
+    'nick-vinyl': { shown: false, privateLink: 'https://ztor.example/s/nick-vinyl?k=v4c9xw27', locks: { single: 40 } },
     /* 隱藏＋待命（對照 tote） */
     'wy-24ce-mesh': { shown: false, privateLink: 'https://ztor.example/s/wy-24ce-mesh?k=m2h7kq58', saleStart: '2026-10-15T12:00:00' },
     /* 定時下架排定（對照 poster） */
@@ -866,6 +865,8 @@
       /* zine（2026-09-04 D241 收尾新增）：多收一個單一規格成員，讓 product-detail.html 的
          庫存分配表有單一規格＋組合包列＋鎖定示範可看（見上方 LISTING_SEED.zine）。 */
       members: [{ productId: 'tee' }, { productId: 'cap' }, { productId: 'shoes' }, { productId: 'zine' }],
+      /* 鎖定套數（2026-09-11）：鎖 1 套，四個成員各鎖 1 件（zine 池只有 3：單售 1 ＋ 本組合 1 ＋ 簽名會組 1） */
+      lockSets: 1, alloc: {},
       cap: null, listed: true, listAt: null, unlistAt: null,
       /* lowThreshold＝0（2026-09-04 修正，原本兩個組合都是 3）：e-shop 的 Bundles 狀態篩選
          沒有「急需補貨」tab（組合是否設低庫存門檻仍是產品待確認，ASSUMPTIONS UIA-133），
@@ -877,7 +878,7 @@
       sales: { units: 12, gross: '$1,536', net: '$1,230' },
       films: ['film-neon-harbor'],
       projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }],
-      history: [{ id: 'b1', date: '2026/09/05', items: [{ productId: 'zine', delta: '— → 1' }] }]
+      history: [{ id: 'b1', date: '2026/09/05', sets: '— → 1', items: [{ productId: 'tee', delta: '— → 1' }, { productId: 'cap', delta: '— → 1' }, { productId: 'shoes', delta: '— → 1' }, { productId: 'zine', delta: '— → 1' }] }]
     },
     /* 限量 20、含 QR 領取成員（acetate／wristband）、成員全鎖（每個成員在本組合都有鎖定量）；
        常態折扣 10%（合計 304）＋限時折扣 10%（10 月）可與優惠碼疊加 */
@@ -885,12 +886,14 @@
       id: 'signing-set', persona: 'default', name: '簽名會限定組', img: 'coastline-starter-pack.webp',
       description: '簽名會現場領取的黑膠與手環，加上舞台外套復刻版與幕後寫真誌。限量 20 組。',
       members: [{ productId: 'acetate' }, { productId: 'wristband' }, { productId: 'jacket' }, { productId: 'zine' }],
+      /* 鎖 1 套（zine 剩 1 件、壓住上限）；手環指定 S、外套指定 Black / M（各 1 件＝全部指定） */
+      lockSets: 1, alloc: { wristband: { 0: 1 }, jacket: { 1: 1 } },
       cap: 20, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 10, discount: { percent: 10, limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
       sales: { units: 5, gross: '$1,400', net: '$1,120' },
       films: ['film-zheng-yi-sao'],
-      history: [{ id: 'b1', date: '2026/09/08', items: [{ productId: 'jacket', delta: '— → 1' }, { productId: 'wristband', delta: '— → 15' }, { productId: 'acetate', delta: '— → 3' }, { productId: 'zine', delta: '— → 1' }] }]
+      history: [{ id: 'b1', date: '2026/09/08', sets: '— → 1', items: [{ productId: 'acetate', delta: '— → 1' }, { productId: 'wristband', combo: 'S', delta: '— → 1' }, { productId: 'jacket', combo: 'Black / M', delta: '— → 1' }, { productId: 'zine', delta: '— → 1' }] }]
     },
     /* 隱藏＋非公開連結（沿用 e-shop 既有第二列「Vinyl + poster set」）；無折扣 */
     'vinyl-poster-set': {
@@ -963,6 +966,8 @@
         { productId: 'wy-26ms-tshirt-white' }, { productId: 'wy-bundle-cap' },
         { productId: 'wy-bundle-cargo-pants' }, { productId: 'wy-bundle-lowtop-sneakers' }
       ],
+      /* 鎖 2 套；白 Tee 是多選項、不指定規格（少分配＝只限總數） */
+      lockSets: 2, alloc: {},
       cap: 50, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 3,
       discountPct: 20, discount: null,
@@ -970,8 +975,8 @@
       films: ['film-neon-harbor'],
       projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }],
       history: [
-        { id: 'b1', date: '2026/09/05', items: [{ productId: 'wy-26ms-tshirt-white', delta: '— → 2' }] },
-        { id: 'b2', date: '2026/08/28', items: [{ productId: 'wy-bundle-cap', delta: '4 → 6' }, { productId: 'wy-26ms-tshirt-white', delta: '2 → 2' }] }
+        { id: 'b1', date: '2026/09/05', sets: '6 → 2', items: [{ productId: 'wy-26ms-tshirt-white', delta: '6 → 2' }, { productId: 'wy-bundle-cap', delta: '6 → 2' }, { productId: 'wy-bundle-cargo-pants', delta: '6 → 2' }, { productId: 'wy-bundle-lowtop-sneakers', delta: '6 → 2' }] },
+        { id: 'b2', date: '2026/08/28', sets: '4 → 6', items: [{ productId: 'wy-26ms-tshirt-white', delta: '4 → 6' }, { productId: 'wy-bundle-cap', delta: '4 → 6' }, { productId: 'wy-bundle-cargo-pants', delta: '4 → 6' }, { productId: 'wy-bundle-lowtop-sneakers', delta: '4 → 6' }] }
       ]
     },
     /* 對照 signing-set：限量 30、含 QR 成員（nick-vinyl／wy-24ce-tee）、成員全鎖；常態折扣 10%＋限時 10% 可疊加 */
@@ -979,12 +984,14 @@
       id: 'nick-signing-set', persona: 'nick', name: 'REALIVE 簽名會限定組', img: 'nick-realive-cd.jpg',
       description: '簽名會現場領取的限量黑膠與 WYAGL T-SHIRT，加上 24CE 足球衣。限量 30 組。',
       members: [{ productId: 'nick-vinyl' }, { productId: 'wy-24ce-tee' }, { productId: 'wy-24ce-jersey' }],
+      /* 鎖 2 套；球衣指定 M 2 件、Tee 不指定規格 */
+      lockSets: 2, alloc: { 'wy-24ce-jersey': { 1: 2 } },
       cap: 30, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 10, discount: { percent: 10, limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
       sales: { units: 8, gross: 'NT$55,840', net: 'NT$47,464' },
       films: ['film-neon-harbor'],
-      history: [{ id: 'b1', date: '2026/09/08', items: [{ productId: 'wy-24ce-jersey', delta: '— → 2' }, { productId: 'wy-24ce-tee', delta: '— → 9' }, { productId: 'nick-vinyl', delta: '— → 10' }] }]
+      history: [{ id: 'b1', date: '2026/09/08', sets: '— → 2', items: [{ productId: 'nick-vinyl', delta: '— → 2' }, { productId: 'wy-24ce-tee', delta: '— → 2' }, { productId: 'wy-24ce-jersey', combo: 'M', delta: '— → 2' }] }]
     },
     /* 對照 vinyl-poster-set（沿用舊 BUNDLES_NICK 第二筆「LOVE RAGE HOPE 黑膠典藏組」）：隱藏＋非公開連結；無折扣 */
     'nick-vinyl-set': {
@@ -992,6 +999,7 @@
       description: '限量黑膠＋Wish You A Good Life T-SHIRT，只給持連結的歌迷。',
       /* 舊的 e-shop.bnick.vinyl.members 寫「巡演寫真誌」、與成員不符，改由成員名自動組出 */
       members: [{ productId: 'nick-vinyl' }, { productId: 'wy-24ce-wyagl-tee' }],
+      lockSets: 12, alloc: {},
       cap: null, listed: true, listAt: null, unlistAt: null,
       shown: false, privateLink: 'https://ztor.example/s/nick-vinyl-set?k=z3q8dm45', saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null,
@@ -1058,6 +1066,8 @@
     if (b.sales === undefined) b.sales = null;
     if (!b.history) b.history = [];
     if (b.draft === undefined) b.draft = false;
+    if (b.lockSets === undefined) b.lockSets = null;   /* 鎖定套數（2026-09-11）：null＝不鎖定 */
+    if (!b.alloc) b.alloc = {};
     return b;
   }
   Object.keys(BUNDLE_SEED).forEach(function (k) { seedBundle(BUNDLE_SEED[k]); });
@@ -1137,6 +1147,19 @@
      bundlesUsing(productId)     哪些組合包含這件商品（算「所有管道都鎖定了嗎」用） */
   function ls() { return LS || (typeof window !== 'undefined' && window.ListingState) || null; }
   /* 這個組合屬於當前 persona 嗎（userB 視同 default） */
+  /* 成員商品身上的組合鎖定是導出值（2026-09-11 鎖定套數規則）：第一次取用商品時，把這個 persona 底下
+     每一個含它的組合的 lockSets／alloc 寫進 pool.locks.bundles／variants[i].locks.bundles（唯一寫入口是
+     ListingState.applyBundleLock；組合詳情頁改 N 時也走它，改完數字即時生效）。 */
+  function applyBundleLocks(p) {
+    var L = ls();
+    if (!p || !L || !L.applyBundleLock || p._bundleLocksApplied) return p;
+    p._bundleLocksApplied = true;
+    var map = {}; map[p.id] = p;
+    bundlesOfPersona().forEach(function (b) {
+      if ((b.members || []).some(function (m) { return m.productId === p.id; })) L.applyBundleLock(b, map);
+    });
+    return p;
+  }
   function bundleBelongs(b) {
     var pid = persona() === 'nick' ? 'nick' : 'default';
     return !!b && b.persona === pid;
@@ -1151,7 +1174,7 @@
   }
   window.ProductsStore = {
     all: function () { return active(); },
-    get: function (id) { var p = active()[id]; return p ? seedListing(id, p) : null; },
+    get: function (id) { var p = active()[id]; return p ? applyBundleLocks(seedListing(id, p)) : null; },
     bundles: bundlesOfPersona,
     getBundle: function (id) { return BUNDLE_SEED[id] || null; },
     bundlesUsing: function (productId) {

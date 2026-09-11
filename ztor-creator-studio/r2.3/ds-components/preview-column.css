@@ -5,7 +5,7 @@
    左欄表單、右欄一條 sticky 預覽欄（標題＋描述＋預覽內容）。
    取代舊的滑出式 preview-panel；欄內的卡用 preview-card 元件。
    anatomy
-     .preview-split            (套在 wizard__body：表單｜預覽 兩欄 grid)
+     .preview-split            (套在 wizard__body：表單｜預覽 兩欄 grid；--toggle＝可開關，is-open 才兩欄)
        .preview-split__form    (左：表單欄)
        .preview-col            (右：sticky 預覽欄)
          .preview-col__head    (標題＋描述，緊排)
@@ -26,7 +26,9 @@
    版型是手機的 360px 內容寬（接近 375 視窗扣掉頁面左右內距的 343），但同日使用者裁示
    縮小顯示（先 1/3、再改成只縮 1/4），鏡像整支 zoom 到 3/4，所以欄的實際佔位是 270px。
    縮的是顯示尺寸、不是版型——排窄的話字級不會跟著縮，就不是那張手機畫面了。 */
-.preview-split--phone { grid-template-columns: minmax(0, 1fr) 270px; gap: var(--sp-24); }
+.preview-split--phone { grid-template-columns: minmax(0, 1fr) var(--preview-col-w, 270px); gap: var(--sp-24); }
+/* 欄寬走 --preview-col-w（2026-09-11）：電子商店的商店預覽要「再大一點點」（320，鏡像 zoom 0.8＝剛好 360 的手機版型），
+   建立商品維持 270／0.75。消費頁覆寫變數，不另立第三個修飾詞。 */
 
 .preview-col {
   position: sticky;
@@ -57,6 +59,8 @@
   padding: var(--sp-24) var(--sp-16);
 }
 .preview-col .form-section--outlined .form-section__head { margin-bottom: var(--sp-16); }
+/* 帶分隔線的標題列（--rule）線下要留足一格（2026-09-11 使用者：「加一條分隔線，並將間距做出來」） */
+.preview-col .form-section--outlined .form-section__head--rule { margin-bottom: var(--sp-24); }
 
 /* ── 墓碑（2026-08-28 Wave 2a，ztorUI 換裝）─────────────────────────────────
    刪掉的規則：`.preview-col .card, .preview-col .preview-card { border: 0;
@@ -66,6 +70,33 @@
    本輪左欄改玻璃、邊框回來了（玻璃需要那道 1px 把厚度畫出來），這條規則的效果因此
    反轉成「讓右欄跟左欄不一樣」，正好違背它自己的目的；box-shadow 那一半也已經與
    .card／.preview-card 本體同值、純屬重複。整條移除，兩欄自動同步。 */
+
+/* --tall（2026-09-11）：預覽內容比視窗高時（電子商店的粉絲端創作者頁鏡像），sticky 欄釘在頂端、
+   下半截永遠看不到。限高在視窗內、欄自己捲，捲軸收成細的。 */
+.preview-col--tall {
+  max-height: calc(100vh - var(--preview-col-top, 96px) - var(--sp-24));
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+/* --dim（2026-09-11 使用者指示「預覽區塊的背景要暗一點點」）：預覽內容那一段比左欄的區塊卡暗一階——
+   玻璃膜上再鋪一層畫布色 24% 的暗膜，模糊與邊框不變，讀起來仍是同一種材質、只是退後一層。
+   同日二改（使用者：「標題那塊用原本的玻璃質感背景，內容那塊用現在的背景」）：暗膜只鋪在分隔線
+   （.form-section__head--rule）以下的內容區，卡本體與標題列維持玻璃——內容區用 --card-pad 的負外距
+   出血到卡的邊框內緣，下緣跟著卡的圓角（卡 radius 減 1px 邊框）；標題列的下距 24 改由內容區的 padding-top 承擔，
+   暗膜才會從分隔線那一條開始。 */
+.preview-col--dim .form-section--outlined .form-section__head--rule { margin-bottom: 0; }
+.preview-col--dim .form-section--outlined .form-section__head--rule + * {
+  margin: 0 calc(-1 * var(--card-pad)) calc(-1 * var(--sp-24));
+  padding: var(--sp-24) var(--card-pad);
+  background: color-mix(in srgb, var(--surface-inverse) 24%, transparent);
+  border-radius: 0 0 calc(var(--radius-xl) - 1px) calc(var(--radius-xl) - 1px);
+}
+
+/* --toggle（2026-09-11）：可開關的預覽欄。首個消費情境是電子商店的 F5 商店預覽（規格 D084：
+   可開關、預設關閉）——沒開的時候版面就是單欄，右欄整個不佔位，開了才變兩欄。
+   與 --phone／--narrow 疊用；is-open 由頁面的開關鈕切。 */
+.preview-split--toggle:not(.is-open) { grid-template-columns: minmax(0, 1fr); }
+.preview-split--toggle:not(.is-open) > .preview-col { display: none; }
 
 @media (max-width: 1040px) {
   .preview-split { grid-template-columns: 1fr; gap: var(--sp-28); }

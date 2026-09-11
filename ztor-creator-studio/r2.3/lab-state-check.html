@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>上架與開賣的狀態標記 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/state-check.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* 2026-09-11 定案：五種長相與直排（--stack）已進 ds-components/state-check.css，本頁只剩版面樣式，作探索紀錄。 */
+  .lab-grid { display: grid; grid-template-columns: 160px 1fr 1fr; gap: var(--sp-12) var(--sp-24); align-items: center; font-size: var(--fs-13); }
+  .lab-grid > .h { font-size: var(--fs-12); letter-spacing: .05em; color: var(--column-head-ink); }
+  .lab-grid > .k { font-family: var(--font-ui); color: var(--foreground); }
+  .lab-grid > .why { color: var(--muted-foreground); }
+  .lab-note { font-size: var(--fs-13); color: var(--muted-foreground); line-height: var(--lh-relaxed, 1.7); }
+  .lab-cards { display: grid; gap: var(--sp-24); max-width: 880px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+  <main class="main">
+    <div class="page page--narrow">
+      <div class="page-intro">
+        <div class="page-intro__titles">
+          <h1 class="page-intro__title">上架與開賣的狀態標記（設計探索）</h1>
+          <p class="page-intro__sub">概覽「上架與開賣」三列的標記，現在只有「成立／不成立」兩種長相；排程還沒到、已停售、前提不成立（沒上架）都被畫成同一個空心圓。下面先列出實際會出現的狀態，五種長相與「現況＋排定」直排已定案進元件（2026-09-11）。</p>
+        </div>
+      </div>
+
+      <div class="lab-cards">
+        <section class="card">
+          <h2 class="card__title">一、實際會出現的狀態（三列 × 各自的值）</h2>
+          <div class="lab-grid">
+            <span class="h">列</span><span class="h">狀態</span><span class="h">意思</span>
+
+            <span class="k">上架</span><span class="state-check state-check--on"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon"></i></span><span class="state-check__label">已上架</span></span><span class="why">上架開關開、時間已到</span>
+            <span></span><span class="state-checks state-checks--stack"><span class="state-check state-check--on"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon"></i></span><span class="state-check__label">已上架</span></span><span class="state-check state-check--scheduled"><span class="state-check__mark"><i data-lucide="clock" class="ztor-icon"></i></span><span class="state-check__label">2026-10-31 23:59 下架</span></span></span><span class="why">同上，另排了定時下架</span>
+            <span></span><span class="state-check state-check--scheduled"><span class="state-check__mark"><i data-lucide="clock" class="ztor-icon"></i></span><span class="state-check__label">2026-10-01 12:00 上架</span></span><span class="why">定時上架、時間未到</span>
+            <span></span><span class="state-check state-check--off"><span class="state-check__mark"><i data-lucide="x" class="ztor-icon"></i></span><span class="state-check__label">未上架</span></span><span class="why">開關關著（或定時下架已過）</span>
+
+            <span class="k">顯示於商店</span><span class="state-check state-check--on"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon"></i></span><span class="state-check__label">顯示</span></span><span class="why">商店找得到</span>
+            <span></span><span class="state-check state-check--off"><span class="state-check__mark"><i data-lucide="x" class="ztor-icon"></i></span><span class="state-check__label">隱藏 · 非公開連結</span></span><span class="why">商店找不到、持連結可買</span>
+            <span></span><span class="state-check state-check--off"><span class="state-check__mark"><i data-lucide="x" class="ztor-icon"></i></span><span class="state-check__label">未上架</span></span><span class="why">前提不成立：沒上架就沒有顯示不顯示（同「未上架」那顆）</span>
+
+            <span class="k">開賣</span><span class="state-check state-check--on"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon"></i></span><span class="state-check__label">開賣中</span></span><span class="why">此刻在販售窗口內</span>
+            <span></span><span class="state-checks state-checks--stack"><span class="state-check state-check--on"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon"></i></span><span class="state-check__label">開賣中</span></span><span class="state-check state-check--scheduled"><span class="state-check__mark"><i data-lucide="clock" class="ztor-icon"></i></span><span class="state-check__label">2026-12-31 23:59 停售</span></span></span><span class="why">同上，另排了停售</span>
+            <span></span><span class="state-check state-check--scheduled"><span class="state-check__mark"><i data-lucide="clock" class="ztor-icon"></i></span><span class="state-check__label">2026-10-01 12:00 開賣</span></span><span class="why">定時開賣、時間未到</span>
+            <span></span><span class="state-check state-check--ended"><span class="state-check__mark"><i data-lucide="minus" class="ztor-icon"></i></span><span class="state-check__label">已停售</span></span><span class="why">停售時間已過</span>
+            <span></span><span class="state-check state-check--off"><span class="state-check__mark"><i data-lucide="x" class="ztor-icon"></i></span><span class="state-check__label">未上架，不開賣</span></span><span class="why">前提不成立（同「未上架」那顆）</span>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2 class="card__title">二、標記的四種長相（定案）</h2>
+          <div class="lab-grid">
+            <span class="h">長相</span><span class="h">用在</span><span class="h">畫法</span>
+            <span class="state-check state-check--on"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon"></i></span><span class="state-check__label">成立</span></span><span class="why">已上架／顯示／開賣中</span><span class="why">實色綠底 ＋ 畫布色勾（比較過淡染版後定案）</span>
+            <span class="state-check state-check--scheduled"><span class="state-check__mark"><i data-lucide="clock" class="ztor-icon"></i></span><span class="state-check__label">排定、未到</span></span><span class="why">定時上架／定時開賣，時間還沒到</span><span class="why">實色藍底、無外框 ＋ 畫布色時鐘；字用前景色（它是「會發生」，不是「沒有」）</span>
+            <span class="state-check state-check--off"><span class="state-check__mark"><i data-lucide="x" class="ztor-icon"></i></span><span class="state-check__label">不成立</span></span><span class="why">未上架／隱藏</span><span class="why">半透明薄膜圓底 ＋ 輔助色叉（原本是髮線空心圓）</span>
+            <span class="state-check state-check--ended"><span class="state-check__mark"><i data-lucide="minus" class="ztor-icon"></i></span><span class="state-check__label">已結束</span></span><span class="why">已停售</span><span class="why">輔助色實心圓 ＋ 一橫（發生過、停了）</span>
+          </div>
+          <p class="lab-note" style="margin-top:var(--sp-16)">取捨：「隱藏」我維持空心圓而不是另一種，因為它是創作者自己關掉的正常狀態，跟「未上架」同一類（都是「現在沒有」）；真正需要分出來的是「還沒到」與「已經過了」這兩個跟時間有關的，讀者看一眼就要知道現在該等還是該重設。</p>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script>if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);</script>
+</body>
+</html>

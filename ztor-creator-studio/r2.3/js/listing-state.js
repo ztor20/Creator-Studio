@@ -30,6 +30,15 @@
 //   組合包沒有池，只有成員與自己的限量硬上限：
 //     members = [{ productId, qty }]   qty 省略＝一套扣一件
 //     cap     = number | null          限量硬上限（§7.2 版本型態軸）
+//     lockSets = number | null         鎖定套數 N（2026-09-11 使用者重定義，規格 D266 待補）：
+//                                      null／0＝不鎖定（各成員與單售共用未鎖定量）；正數＝鎖定 N 套
+//     alloc   = { [productId]: { [variantIndex]: number|null } }
+//                                      多選項成員「選填」的逐規格分配；Σ ≤ N × 每套用量，少分配＝只限總數、規格不拘
+//   組合鎖定寫回成員商品的方式（applyBundleLock，唯一寫入口；成員商品身上的組合鎖定是導出值，不手改）：
+//     單一選項成員   product.pool.locks.bundles[bundleId] = N × 每套用量
+//     多選項成員     product.pool.locks.bundles[bundleId] = N × 每套用量（總量，含未指定規格的部分）
+//                    variants[i].locks.bundles[bundleId] = alloc[productId][i]（有指定的規格）
+//                    未指定的餘量 ＝ 總量 − Σ 已指定：從商品整體的未鎖定量扣、不落在任何一個規格上
 //
 // ── 兩條硬規則（§7.14）──────────────────────────────────────────────────────
 //   1. 鎖定的管道不吃沒有被鎖定的庫存量：某管道鎖了 N 件，它就只能賣那 N 件，池裡還有沒鎖的也不給它。
@@ -101,8 +110,22 @@
   }
 
   /** 沒有被鎖定的庫存量＝目前在庫 − 所有鎖定量。不限量的池回 Infinity；不會回負數。 */
+  /* 多選項商品：各組合鎖定裡「未指定規格」的餘量（商品層總量 − Σ 各規格已指定），這部分不落在任何規格上，
+     但已經是組合的配額，商品整體的未鎖定量要扣掉它。 */
+  function multiUnassigned(product, exceptBundle) {
+    var p = pool(product), sum = 0, k, total, assigned;
+    for (k in p.bundles) {
+      if (!Object.prototype.hasOwnProperty.call(p.bundles, k)) continue;
+      if (exceptBundle && k === exceptBundle) continue;
+      total = lockVal(p.bundles[k]);
+      if (total === null) continue;
+      assigned = variantsChannelLocked(product.variants, { bundle: k }) || 0;
+      if (total > assigned) sum += total - assigned;
+    }
+    return sum;
+  }
   function freeQty(product) {
-    if (isMulti(product)) return variantsFree(product.variants);
+    if (isMulti(product)) return Math.max(0, variantsFree(product.variants) - multiUnassigned(product));
     var p = pool(product);
     if (p.total === 'unlimited' || p.total === INF) return INF;
     return Math.max(0, num(p.total) - lockedTotal(product));
@@ -128,7 +151,12 @@
    * 有鎖定（>0）就是鎖定量——鎖定的管道不吃沒有被鎖定的庫存量；沒鎖定就與其他未鎖定管道共用沒有被鎖定的庫存量。
    */
   function channelQty(product, channel) {
-    if (isMulti(product)) return variantsChannelQty(product.variants, channel);
+    if (isMulti(product)) {
+      var bid = (channel && typeof channel === 'object') ? channel.bundle : ((typeof channel === 'string' && channel !== 'single') ? channel : null);
+      /* 組合管道有商品層鎖定（＝N × 用量）就是那個數；其餘管道逐規格加總，再扣掉別的組合「未指定規格」的餘量 */
+      if (bid) { var bl = lockOf(product, { bundle: bid }); if (bl !== null) return bl; }
+      return Math.max(0, variantsChannelQty(product.variants, channel) - multiUnassigned(product, bid));
+    }
     var locked = lockOf(product, channel);
     return locked === null ? freeQty(product) : locked;
   }
@@ -224,6 +252,7 @@
     var members = (bundle && bundle.members) || [];
     var map = productsById || {};
     var min = INF;
+    var sets = bundleLockSets(bundle);
     for (var i = 0; i < members.length; i++) {
       var m = members[i];
       var p = map[m.productId || m.id];
@@ -238,15 +267,82 @@
       var per = num(m.qty) > 0 ? num(m.qty) : 1;   /* 一套要用到同一件商品好幾件時 */
       /* 成員是多選項商品時，這個組合拿得到的量＝各選項組合在本組合可售量之和
          （D258：組合包的鎖定逐選項組合設定；買家挑哪一個組合出貨仍是產品待確認）。 */
-      var q = (p.variant === 'multiple' && (p.variants || []).length)
-        ? variantsChannelQty(p.variants, { bundle: bundle.id })
-        : channelQty(p, { bundle: bundle.id });
-      var sets = (q === INF) ? INF : Math.floor(q / per);
-      if (sets < min) min = sets;
+      /* 鎖定套數 N（2026-09-11）：有鎖定時組合可售量就是 N，不再逐成員取最小——成員身上的組合鎖定是由 N 導出的 */
+      if (sets !== null) { if (sets < min) min = sets; continue; }
+      var q = channelQty(p, { bundle: bundle.id });
+      var s = (q === INF) ? INF : Math.floor(q / per);
+      if (s < min) min = s;
     }
     var cap = (bundle && bundle.cap !== undefined && bundle.cap !== null) ? num(bundle.cap) : null;
     if (cap !== null && cap < min) min = cap;
     return min;
+  }
+
+  /* ── 組合包鎖定套數（2026-09-11 使用者重定義；規格 D266 待補）──────────── */
+  function memberPer(m) { return num(m && m.qty) > 0 ? num(m.qty) : 1; }
+  /** 組合目前鎖定幾套；不鎖定回 null。 */
+  function bundleLockSets(bundle) { return lockVal(bundle && bundle.lockSets); }
+  /** 某成員在這個組合的鎖定總量（＝N × 每套用量）；不鎖定回 null。 */
+  function bundleMemberLock(bundle, m) {
+    var n = bundleLockSets(bundle);
+    return n === null ? null : n * memberPer(m);
+  }
+  /**
+   * N 的上限＝各成員 floor((未鎖定 ＋ 本組合現有鎖定) ÷ 每套用量) 取最小。
+   * 回 { max, by }：by＝壓出這個上限的成員商品（同上限取先遇到的）；不限量成員不參與。查不到的成員視為 0。
+   */
+  function bundleMaxSets(bundle, productsById) {
+    var members = (bundle && bundle.members) || [], map = productsById || {};
+    var max = INF, by = null;
+    for (var i = 0; i < members.length; i++) {
+      var m = members[i], p = map[m.productId || m.id];
+      if (!p) return { max: 0, by: null };
+      var free = freeQty(p);
+      if (free === INF) continue;
+      var own = lockOf(p, { bundle: bundle.id }) || 0;
+      var n = Math.floor((free + own) / memberPer(m));
+      if (n < max) { max = n; by = p; }
+    }
+    return { max: max, by: by };
+  }
+  /** 多選項成員的逐規格分配（選填）。回 { assigned, total, over, rows:[{vi, qty, max, bad}] } */
+  function bundleAllocOf(bundle, m, product) {
+    var total = bundleMemberLock(bundle, m);
+    var a = ((bundle && bundle.alloc) || {})[m.productId] || {};
+    var assigned = 0, rows = [];
+    (product && product.variants || []).forEach(function (v, vi) {
+      var q = lockVal(a[vi]);
+      var own = variantLockOf(v, { bundle: bundle.id }) || 0;
+      var max = variantFree(v) + own;
+      if (q !== null) assigned += q;
+      rows.push({ vi: vi, qty: q, max: max, bad: q !== null && q > max });
+    });
+    return { assigned: assigned, total: total, over: total !== null && assigned > total, rows: rows };
+  }
+  /**
+   * 把組合的鎖定寫回各成員商品（唯一寫入口）。productsById 缺成員就跳過那一個。
+   * 單一選項：pool.locks.bundles[id] = N × 用量；多選項：商品層寫總量、各規格寫 alloc（沒指定＝null）。
+   */
+  function applyBundleLock(bundle, productsById) {
+    var members = (bundle && bundle.members) || [], map = productsById || {};
+    for (var i = 0; i < members.length; i++) {
+      var m = members[i], p = map[m.productId || m.id];
+      if (!p) continue;
+      if (!p.pool) p.pool = { total: 'unlimited', locks: { single: null, bundles: {} } };
+      if (!p.pool.locks) p.pool.locks = { single: null, bundles: {} };
+      if (!p.pool.locks.bundles) p.pool.locks.bundles = {};
+      var total = bundleMemberLock(bundle, m);
+      p.pool.locks.bundles[bundle.id] = total;
+      if (isMulti(p)) {
+        var a = ((bundle.alloc) || {})[m.productId] || {};
+        p.variants.forEach(function (v, vi) {
+          if (!v.locks) v.locks = { single: null, bundles: {} };
+          if (!v.locks.bundles) v.locks.bundles = {};
+          v.locks.bundles[bundle.id] = (total === null) ? null : lockVal(a[vi]);
+        });
+      }
+    }
+    return bundle;
   }
 
   /**
@@ -410,6 +506,12 @@
     hasLock: hasLock,
     channelQty: channelQty,
     bundleQty: bundleQty,
+    bundleLockSets: bundleLockSets,
+    bundleMemberLock: bundleMemberLock,
+    bundleMaxSets: bundleMaxSets,
+    bundleAllocOf: bundleAllocOf,
+    applyBundleLock: applyBundleLock,
+    memberPer: memberPer,
     allChannelsLocked: allChannelsLocked,
     deriveStatus: deriveStatus,
     deriveFlags: deriveFlags,
