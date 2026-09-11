@@ -185,7 +185,11 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       var sp = scrollParentOf(stick);
       /* sticky top:0 貼的是捲動容器「內距以內」的那條線（Chrome 實測：容器 padding-top 18 就停在 +18） */
       var top = sp ? sp.getBoundingClientRect().top + sp.clientTop + (parseFloat(getComputedStyle(sp).paddingTop) || 0) : 0;
-      stick.classList.toggle('is-pinned', stick.getBoundingClientRect().top <= top + 0.5);
+      /* 自己的 sticky top（預覽卡標題列釘頂時不是 0）；在 zoom 裡，算成螢幕像素要乘回 zoom */
+      var page = stick.closest('.fan-store__page');
+      var zoom = page ? (parseFloat(getComputedStyle(page).zoom) || 1) : 1;
+      var own = (parseFloat(getComputedStyle(stick).top) || 0) * zoom;
+      stick.classList.toggle('is-pinned', r.top <= top + own + 0.5);
     }
     /* scroll 不冒泡，用 capture 在 document 上一次接住任何容器的捲動（含視窗） */
     document.addEventListener('scroll', check, { passive: true, capture: true });

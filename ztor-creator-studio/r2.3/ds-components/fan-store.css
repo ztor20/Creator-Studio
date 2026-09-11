@@ -110,6 +110,8 @@
 
 /* ── 兩顆主要行動：加入社群（橘底）＋彩蛋解鎖（描邊） ─────────────────────── */
 .fan-store__ctas { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-12); }
+/* 2026-09-11 使用者指著這兩顆：「這個隱藏」——預覽裡不出現（markup 保留，粉絲端仍有）。 */
+.fan-store__ctas { display: none; }
 .fan-store__cta {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-6);
   height: 40px;
@@ -137,7 +139,10 @@
    顏色一律 token＋color-mix；粉絲端的 rgba(brand) 對應 --primary、白 alpha 對應 --ztu-film／--ztu-rim-soft。 */
 .fan-store__stick {
   position: sticky;
-  top: 0;
+  /* 預覽卡的標題列釘在最上面時（preview-column.css 量成 --preview-head-h），分頁列釘在它底下：
+     Chrome 的 sticky 以卡的 padding 內緣（24）為 0，所以扣掉 24；這裡在 zoom 裡，卡外量到的像素
+     要除以 zoom 才是這裡的一個 px。沒有標題列時就是 0。 */
+  top: calc(max(0px, var(--preview-head-h, 0px) - var(--sp-24)) / var(--fan-store-zoom, 0.75));
   z-index: 5;
   display: flex;
   flex-direction: column;
