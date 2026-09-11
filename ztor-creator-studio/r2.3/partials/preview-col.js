@@ -14,6 +14,9 @@
       var r = col.getBoundingClientRect();
       if (!r.height && !r.width) return;   /* 收著（display:none）不量 */
       col.style.setProperty('--preview-col-max', Math.max(240, window.innerHeight - r.top - GAP) + 'px');
+      /* 釘在卡頂的標題列有多高（它自己已把卡的上內距吃進 padding），卡內其他要釘頂的東西從它底下開始 */
+      var head = col.querySelector('.form-section--outlined > .form-section__head--rule');
+      if (head) col.style.setProperty('--preview-head-h', head.getBoundingClientRect().height + 'px');
     });
   }
   document.addEventListener('scroll', sync, { passive: true, capture: true });

@@ -86,6 +86,20 @@
   overflow-y: auto;
   scrollbar-width: thin;
 }
+/* 卡自己捲之後，標題列釘在卡的最上面（2026-09-11 使用者：「這塊滾動時可以 fix」）：
+   卡的 padding-top 24 用負外距吃掉再補回 padding，標題列才貼得到卡的上緣（Chrome 的 sticky 以 padding 內緣為界）。
+   底色＝外殼玻璃（卡本身是玻璃，滑到底下的內容要有東西擋）。標題列的高度由 partials/preview-col.js 量成
+   --preview-head-h，卡內其他要釘頂的東西（fan-store 的分頁列）用它當自己的 top，才不會被標題列蓋住。 */
+.preview-col--tall > .form-section--outlined > .form-section__head--rule {
+  position: sticky;
+  top: calc(-1 * var(--sp-24));
+  z-index: 6;
+  margin-top: calc(-1 * var(--sp-24));
+  padding-top: var(--sp-24);
+  background: color-mix(in srgb, var(--ztu-canvas) 82%, transparent);
+  backdrop-filter: blur(var(--ztu-blur-shell));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-shell));
+}
 /* --dim（2026-09-11 使用者指示「預覽區塊的背景要暗一點點」）：預覽內容那一段比左欄的區塊卡暗一階——
    玻璃膜上再鋪一層畫布色 24% 的暗膜，模糊與邊框不變，讀起來仍是同一種材質、只是退後一層。
    同日二改（使用者：「標題那塊用原本的玻璃質感背景，內容那塊用現在的背景」）：暗膜只鋪在分隔線

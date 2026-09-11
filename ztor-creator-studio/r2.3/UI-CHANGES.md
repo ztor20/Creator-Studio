@@ -4,6 +4,26 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-11（二十）· 預覽卡標題列釘頂；電子商店通知條與預覽欄與側欄頂齊；預覽藏兩顆 CTA（B 反饋導入）
+
+**範圍**：`ds-components/preview-column.css`（`--tall` 卡內 `__head--rule` sticky＋`--preview-head-h`）、`partials/preview-col.js`（量標題列高）、`ds-components/fan-store.css`（`__stick` 的 top 接 `--preview-head-h`、`__ctas` 隱藏）、`partials/fan-store.js`（釘頂判斷加自己的 sticky top）、`shared.css`（`.main::before` 高度改 `--main-gutter`）、`e-shop.html`（`--main-gutter: 0`、通知條與預覽欄頂距歸 0）。
+
+**依據**：使用者 2026-09-11 三點：「（預覽卡標題）這塊滾動時可以 fix」「通知與預覽的高度都要在這條線上與側邊欄頂部對齊」「（加入社群／彩蛋解鎖）這個隱藏」。
+
+### B · 標題列釘頂
+
+卡自己捲之後，標題列（商店預覽／副標／✕）sticky 在卡的最上面：負外距吃掉卡的 padding-top 再補回 padding，才貼得到卡的上緣；底色 82% 畫布色＋模糊，滑到底下的內容不穿出。標題列高度由 `preview-col.js` 量成 `--preview-head-h`，粉絲端鏡像的分頁列（`.fan-store__stick`）用它當自己的 sticky top（扣掉 Chrome 以 padding 內緣為界的 24、再除以鏡像 zoom），釘在標題列正下方而不是被它蓋住；釘頂判斷也把這個 top 算進去。
+
+### B · 與側欄頂齊
+
+`.main` 的 16px 上留白改由 `--main-gutter` 控制，電子商店設 0；通知條 `.alert-inset` 的黏頂距與預覽欄的 sticky 頂距都歸 0。三者的上緣＝外殼上緣 y=14＝側欄上緣。其他頁不受影響。
+
+### B · 預覽藏 CTA
+
+粉絲端鏡像的「加入社群／彩蛋解鎖」在預覽裡不出現（markup 保留）。
+
+**驗證**：dev server 1400×900：e-shop 側欄／通知條／預覽欄上緣皆 14；卡內往下捲，標題列停在卡頂、分頁列釘在標題列正下方（stick top＝head bottom 98.8）、捲回解除；商店設定同樣（162.8）。0 console error；`check_ds_sync.py` PASS。
+
 ## 2026-09-11（十九）· 預覽欄限高：卡自己捲、高度依當下位置量，底部不破窗（B 反饋導入）
 
 **範圍**：`ds-components/preview-column.css`（`--tall` 改卡捲、`--preview-col-max`）、新檔 `partials/preview-col.js`、`e-shop.html`／`store-settings.html`（載入）、`design-system.html`／`design-system.md`（Preview column 補說明）。
@@ -227,6 +247,10 @@ D261：建立組合與組合詳情的「組合價格」＝成員原價合計（�
 ### B2 · 同日追加（使用者圈選 e-shop 組合列與詳情頁 KPI 磚）
 
 組合列：內含商品欄退場，成員改寫在組合名底下（`.product-list__members`：一件一行、暗字、超寬 …、最多三行、第四件起併成「…」，只寫商品名）；組合價成員含多選項多價格時是區間「NT$5,984–6,144」（`variants[i].price` 逐組合價差，hoodie／jacket／白 Tee XL 給了示範價差；組合價欄 88→120px）；狀態欄兩顆徽章一律各自一行（商品／組合／競標三分頁同一條）。詳情頁：淨利磚整塊連到收入管理（`a.kpi--tappable`＋右上 chevron，取代磚內 `.kpi__link`）；關聯中註腳限一行（`.kpi__meta--clip`）、為 0 的段不寫、全 0 整行不出現。
+
+### B16 · ztorUI 換裝殘留一次補齊（稽核 A 表 115 處，45 支檔）
+
+使用者：「全面檢查所有 r2.3 的元件，是否還有沒換成新的 DS 的」→「改吧」。稽核報告 `docs/ztorUI換裝稽核-2026-09-11.md`：246 處實色背景分 A 漏換 115／B 刻意保留 106／C 待裁決 23。A 表全數改掉，規則一致：縮圖框／圖示晶片／徽章／軌道／控件底 `--muted`／`--card`／`--input-surface` → `--ztu-film`；hover／focus 的 `--accent`／`--muted`／`--card` → `--ztu-glass-strong`；卡片本體（`.ztor-card`／`.project-card`／`.ip-hero`）→ `--ztu-glass-bg`。每一處原地留「舊值」註解。影響最廣的：`.btn--icon:hover`（67 頁）、`.btn--ghost:hover`（46 頁）、`ztor-table` 列 hover／展開列／縮圖、頂欄高亮條與搜尋框、`.data-list__icon`、`a.data-list__row:hover`、`.alert--banner` 圖示框、`.empty-card__icon`。C 表 23 題待做 lab 比較頁請使用者裁。
 
 ### B15 · `.btn--icon-circle` 底改薄膜（ztorUI 換裝補漏）
 
