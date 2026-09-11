@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>組合包鎖定套數 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/row-disclosure.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* ============================================================
+     lab-bundle-lock — 組合包「鎖定套數」的設計探索（2026-09-11）
+
+     使用者重新定義規則：組合包的鎖定單位是**套數 N**，不是逐商品件數。
+       · 鎖 N 套 → 每個商品自動鎖 N × 每套用量（單一選項商品不用填，唯讀）
+       · 多選項商品可（選填）分配這些件數落在哪些規格：逐規格填，總和 ≤ N×用量；
+         少分配的部分只限定總數、不指定規格
+       · N 上限＝各商品「未鎖定量 ÷ 每套用量」取最小；空白或 0＝不鎖定
+       · 有鎖定：組合可售量＝N（再與組合上限取小）；不鎖定：各商品未鎖定量取最小
+     同時回應「這個 UI 要優化一下，一堆線」：拿掉名稱底線、列間髮線、表頭底線，
+     只留展開面板（薄膜）與底部摘要塊，靠留白分列。
+
+     兩種版面：
+       L1 套數在頂、商品列只讀、多選項展開分配（row-disclosure）
+       L2 套數在頂、多選項的分配不展開、直接列在商品底下（常駐）
+     邊界：本頁自有規則一律 lab- 前綴、數值吃 DS token；輸入框／徽章／把手都用真的元件。
+     ============================================================ */
+  .lab [hidden] { display: none !important; }
+  .lab { --lab-stage-w: 820px; }
+  .lab-stage { max-width: var(--lab-stage-w); }
+  .lab-cards { display: grid; gap: var(--sp-24); margin-top: var(--sp-24); }
+  .lab-card__head { display: flex; align-items: flex-start; gap: var(--sp-12); flex-wrap: wrap; }
+  .lab-card__code { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: var(--sp-32); height: var(--sp-24); padding: 0 var(--sp-8); border: 1px solid var(--border); border-radius: var(--radius-md); font-family: var(--font-ui); font-size: var(--fs-12); color: var(--foreground); }
+  .lab-card__name { font-family: var(--font-display); font-size: var(--fs-16); margin: 0; }
+  .lab-card__pos { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-2) 0 0; }
+  .lab-demo { margin-top: var(--sp-20); }
+  .lab-note { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-16) 0 0; }
+  .lab-note b { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-diag { margin: var(--sp-12) 0 0; padding-left: var(--sp-20); font-size: var(--fs-14); line-height: var(--lh-relaxed, 1.7); }
+  .lab-diag li + li { margin-top: var(--sp-8); }
+
+  /* ── 可售套數（2026-09-11 使用者：順序＝可售套數 → 鎖定套數 → 分配區塊；底部摘要重複、刪除）──
+     這一區的答案放最上面：大數字＋一句它怎麼來的（鎖定幾套／受誰限制／上限幾套） */
+  .lab-avail { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-16); flex-wrap: wrap; padding-bottom: var(--sp-12); }
+  .lab-avail__k { font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); }
+  .lab-avail__hint { display: block; font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-2); }
+  .lab-avail__v { font-family: var(--font-ui); font-size: var(--fs-24); color: var(--foreground); font-variant-numeric: tabular-nums; }
+  .lab-avail__v small { font-size: var(--fs-12); color: var(--muted-foreground); margin-left: var(--sp-4); }
+  /* ── 套數輸入列：這是整張表的前提，放在表上方、一列講完 ── */
+  .lab-sets { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-16); flex-wrap: wrap; padding: var(--sp-12) var(--sp-16); border-radius: var(--radius-lg); background: var(--ztu-film); box-shadow: inset 0 0 0 1px var(--border-soft); }
+  .lab-sets__titles { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+  .lab-sets__title { font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); }
+  .lab-sets__hint { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-sets__ctl { display: flex; align-items: center; gap: var(--sp-10); }
+  .lab-sets .amount-field { width: 132px; }
+
+  /* ── 商品列：三欄（商品庫存 ｜ 未鎖定 ｜ 已鎖定；2026-09-11 使用者定名），無髮線，靠 padding 分列 ── */
+  /* 欄距 32（2026-09-11 使用者：「增加間距」→「還是不夠」，24→32）：數字欄、輸入欄、把手欄之間拉開，數字才不會貼著輸入框 */
+  /* 數字欄 100（2026-09-11：輸入框要放 7 位數 → 100，欄寬跟著；名稱欄剩約 260 仍夠） */
+  .lab-lock { --lab-col: 100px; --lab-colgap: var(--sp-32); display: flex; flex-direction: column; margin-top: var(--sp-16); }
+  /* 第四欄 32px 給展開把手（2026-09-11 使用者：「展開箭頭要放最後面」）；單一選項列該格留空，數字欄才對齊 */
+  /* 列自帶左右內距（2026-09-11 使用者：「padding 要留出來，這樣 hover 時字才不會貼邊」）：
+     負外距往外長、等值內距推回原位，文字 x 不動，hover 亮面兩側就有呼吸；表頭同款才對齊。 */
+  .lab-lock__head, .lab-lock__row { display: grid; grid-template-columns: minmax(0, 1fr) var(--lab-col) var(--lab-col) var(--lab-col) 32px; align-items: center; gap: var(--lab-colgap); padding: var(--sp-10) var(--sp-12); margin-inline: calc(var(--sp-12) * -1); border-radius: var(--radius-md); }
+  .lab-lock__end { display: flex; justify-content: flex-end; }
+  .lab-lock__head { padding-top: 0; padding-bottom: var(--sp-6); font-size: var(--fs-12); letter-spacing: .05em; text-transform: uppercase; color: var(--column-head-ink); }
+  /* 三個數字欄的墨水一律在欄右緣內縮 12 收尾（2026-09-11 使用者：「已鎖定那欄看起來還是比較窄」——
+     已鎖定欄的「件」照輸入框內距離右緣 12，另外兩欄的數字卻貼到欄邊，表頭與數字的節奏就差了 12，看起來像那欄比較窄）。 */
+  .lab-lock__head > span:not(:first-child), .lab-lock__num { text-align: right; padding-right: var(--sp-12); font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
+  /* 「已鎖定」欄的唯讀值：數字靠左、單位靠右，左右內距同輸入框（--sp-12）——母列的「3｜件」才跟規格列輸入框裡的「1｜件」同 x
+     （2026-09-11 使用者：「這些字都沒有對齊」）。表頭這一欄也改靠左、同內距，才壓在數字上方。 */
+  .lab-lock__lockval { display: flex; flex-direction: column; align-items: flex-end; gap: var(--sp-2); padding-inline: var(--sp-12); font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
+  /* 數字貼著單位靠右（2026-09-11 使用者：「已輸入以後的數字是否可以靠右」）：間距 14 ＝ 輸入框裡數字尾（右內距 40）到「件」（右內距 12＋字寬 14）的距離 */
+  .lab-lock__lockval-row { display: flex; justify-content: flex-end; align-items: baseline; gap: var(--sp-14); }
+  /* 規格輸入框：數字與 placeholder 一律靠右貼著「件」（2026-09-11 使用者：「placeholder 還是靠右吧」） */
+  .lab-lock__child .input { text-align: right; }
+  .lab-lock__lockval-sub { white-space: nowrap; min-height: calc(var(--fs-12) * 1.5); }
+  .lab-lock__lockval-sub.is-over { color: var(--status-error); }
+  .lab-lock__title { display: flex; flex-direction: column; gap: var(--sp-2); margin-top: var(--sp-24); }
+  /* 展開把手小一階（2026-09-11 使用者：「稍微小一階」）：框 28（同 --rowdis-lead-w 用的 --sp-28）、字符 16；DS 的 .btn--icon 最小是 32／20，這裡先 lab 內覆寫 */
+  .lab-lock .rowdis__toggle.btn--icon { width: var(--sp-28); height: var(--sp-28); }
+  .lab-lock .rowdis__toggle.btn--icon .ztor-icon { width: 16px; height: 16px; }
+  /* 名稱格＝縮圖＋文字欄（2026-09-11 使用者：「加上商品圖」）；縮圖用 data-list 的 --lg（52px，同訂單明細品項列） */
+  .lab-lock__name { display: flex; align-items: center; gap: var(--sp-12); min-width: 0; font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); }
+  .lab-lock__text { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+  /* 名稱限一行，超過以「…」收（2026-09-11 使用者：「名稱超過一行就 …」）；完整名放 title 讓滑過可讀 */
+  .lab-lock__text > span:first-child { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .lab-lock__sub { font-size: var(--fs-12); color: var(--muted-foreground); }
+  /* 兩行列（名稱＋副標）：單行的格（未鎖定數、把手、不鎖定字樣）墊一個副標行高，讓它們的字跟名稱第一行同高，
+     而不是對齊到兩行的中線（2026-09-11 使用者：「他們要同高度」）。 */
+  .lab-lock__row--sub :is(.lab-lock__num, .lab-lock__end, .lab-lock__nolock) { padding-bottom: calc(var(--fs-12) * 1.5 + var(--sp-2)); }
+  .lab-lock__muted { color: var(--muted-foreground); }
+  .lab-lock__per { font-size: var(--fs-12); color: var(--muted-foreground); margin-left: var(--sp-4); }
+  /* 子列（規格分配）：縮排對齊母列名稱起點；輸入框在「已鎖定」那一欄 */
+  .lab-lock__child { padding-block: var(--sp-6); }
+  /* 規格列縮排＝縮圖寬＋縮圖與文字的間距，規格名對齊母列的商品名起點 */
+  .lab-lock__child .lab-lock__name { padding-left: calc(52px + var(--sp-12)); font-size: var(--fs-13); color: var(--foreground-muted); }
+  /* 規格輸入框寬度（2026-09-11 使用者：「寬度要調整小一點，算一下合理的件數」）：
+     使用者定 7 位數；12px 字級一位數字約 7px，左內距 12 ＋ 7 位 49 ＋ 右內距 40（讓出「件」）≈ 100。
+     靠欄右緣，「件」才跟母列的「件」同 x。
+     placeholder 由「最多 N」改成「0」——上限就在左邊「未鎖定」欄，不必再寫一次。 */
+  .lab-lock__child .amount-field { width: 100px; margin-left: auto; }
+  .lab-lock__child .input { height: var(--control-h-xs); font-size: var(--fs-12); }
+  /* 不鎖定時：已鎖定欄顯示「共用未鎖定量」一句，不擺數字 */
+  .lab-lock__nolock { font-size: var(--fs-12); color: var(--muted-foreground); text-align: left; padding-left: var(--sp-12); }
+
+
+  /* ── L3（2026-09-11 逐輪修訂）：外框＋貼邊分隔線 ──
+     使用者：「這一區塊可以有一個外框嗎」→「加上貼邊分隔線」。
+     清單一個 1px 外框（卡片級圓角），框內每一列（含展開中的整組）之間一條貼邊髮線——線從框的左緣到右緣、
+     不縮排；列的左右內距 16（Q112）。hover 亮面也是貼邊整條（框已經是圓角，列不再自己畫圓角）。
+     展開的那一組視為一列：組內母列、規格格、計數之間不畫線、靠留白，整組一起 hover。 */
+  .lab-l3 .lab-sets { background: transparent; box-shadow: none; padding: 0; border-radius: 0; }
+  .lab-l3 .lab-lock { margin-top: var(--sp-16); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 0; overflow: hidden; }
+  .lab-l3 .lab-lock__head, .lab-l3 .lab-lock__row { margin-inline: 0; padding-inline: var(--sp-16); border-radius: 0; }
+  .lab-l3 .lab-lock__head { padding-top: var(--sp-12); padding-bottom: var(--sp-8); border-bottom: 1px solid var(--border-soft); }
+  .lab-l3 .lab-lock__row { padding-block: var(--sp-14); }
+  /* 商品列高度一致（2026-09-11 使用者：「高度要一致」）：有無副標都撐到縮圖高＋上下內距 */
+  .lab-l3 .lab-lock__row:not(.lab-lock__child) { min-height: calc(52px + var(--sp-14) * 2); }
+  .lab-l3 .lab-lock { margin-top: var(--sp-12); }
+  .lab-l3 .lab-lock__child { padding-block: var(--sp-12); }   /* 規格列之間拉開（2026-09-11 使用者：「增加間距」→「還是不夠」，6→10→12） */
+  /* 貼邊分隔線：框的直接子項（單一選項列、整個群組）彼此之間一條，最後一個不畫 */
+  .lab-l3 .lab-lock > .lab-lock__row, .lab-l3 .lab-lock > .rowdis__group { border-bottom: 1px solid var(--border-soft); }
+  .lab-l3 .lab-lock > :last-child { border-bottom: 0; }
+  /* 群組：不出血、不圓角、不薄膜；展開時整組一起 hover。選擇器照抄元件的展開條件再掛 .lab-l3，特異度才蓋得過 */
+  .lab-l3 .rowdis__group { margin-inline: 0; padding-inline: 0; }
+  .lab-l3 .rowdis__group:has(> .rowdis__head:not([hidden]):not(.hidden) .rowdis__toggle[aria-expanded="true"]) { margin-block: 0; padding-block: 0 var(--sp-8); background: transparent; box-shadow: none; border-radius: 0; border-top: 0; }
+  .lab-l3 .rowdis__group:has(> .rowdis__head:not([hidden]):not(.hidden) .rowdis__toggle[aria-expanded="true"]):hover { background: var(--ztu-glass-strong); }
+  .lab-l3 .rowdis__group--gutter :is(.rowdis__head, .rowdis__child) { margin-inline: 0; padding-inline: var(--sp-16); border-radius: 0; }
+  .lab-l3 .rowdis__group:has(> .rowdis__head:not([hidden]):not(.hidden) .rowdis__toggle[aria-expanded="true"]) :is(.rowdis__head, .lab-lock__child):hover { background: transparent; }
+  .lab-l3 .lab-lock__row:not(.lab-lock__child):hover { background: var(--ztu-glass-strong); }
+  /* 規格列（.lab-lock__child）沒有 .rowdis__child 類別，上面兩條要點名 .lab-lock__child 才不會各自亮 */
+  /* 結果摘要：框外，不畫線 */
+
+  /* L2：多選項的分配常駐在母列底下，不用展開把手；分配區用薄膜框起來 */
+  .lab-l2 .lab-lock__group { margin: var(--sp-4) 0 var(--sp-8); padding: var(--sp-8) var(--sp-12); border-radius: var(--radius-lg); background: var(--ztu-film); box-shadow: inset 0 0 0 1px var(--border-soft); }
+  .lab-l2 .lab-lock__child .lab-lock__name { padding-left: 0; }
+  /* L2 分配區在薄膜框內，格線欄距跟外面一致即可，不另縮排 */
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+  <main class="main">
+    <div class="page lab lab-stage">
+      <div class="page-intro">
+        <div class="page-intro__titles">
+          <h1 class="page-intro__title">組合包鎖定套數（設計探索）</h1>
+          <p class="page-intro__sub">鎖定的單位改成「套」：填一個套數 N，每個商品自動鎖 N × 每套用量；多選項商品可以再分配這些件數落在哪些規格（選填、可少分）。同時把「商品庫存鎖定」表的線拿掉。兩種版面，挑一個。<br><b>2026-09-11 定案：L3</b>——已 promote 成 <code>ds-components/lock-sets.css</code>（design-system §4.210），正式頁見 <a class="card__link" href="bundle-detail.html?id=signing-set">bundle-detail.html?id=signing-set</a> 的「組合庫存」分頁；本頁保留作探索紀錄，樣式不再跟正式版同步。</p>
+        </div>
+      </div>
+
+      <section class="card">
+        <h2 class="card__title">規則（依 2026-09-11 裁示）</h2>
+        <ol class="lab-diag">
+          <li><b>套數 N</b>：一個輸入。空白或 0＝不鎖定（各商品共用未鎖定量，組合可售量＝各商品未鎖定量取最小）。</li>
+          <li><b>單一選項商品</b>：不用填，自動鎖 N × 每套用量，唯讀。</li>
+          <li><b>多選項商品</b>：可分配這些件數落在哪些規格，總和 ≤ N × 用量；少分的部分「只限定總數、不指定規格」。每格不得超過該規格的未鎖定量。</li>
+          <li><b>N 的上限</b>＝各商品「未鎖定量 ÷ 每套用量」取最小；超過表單擋。</li>
+          <li><b>有鎖定時組合可售量＝N</b>（再與組合上限取小）。</li>
+        </ol>
+        <p class="lab-note"><b>減線</b>：名稱不再有底線（列本身可點才需要底線暗示）、列間不畫髮線、表頭不畫底線；只有「展開的分配面板」與「底部摘要」是薄膜塊。</p>
+      </section>
+
+      <div class="lab-cards">
+        <!-- ══════════ L3 ══════════ -->
+        <section class="card lab-l3">
+          <div class="lab-card__head">
+            <span class="lab-card__code">L3</span>
+            <div><h3 class="lab-card__name">線分種類、間距分同類、不用層</h3><p class="lab-card__pos">清單自己一個外框（1px 髮線、卡片級圓角），框內每一列之間一條貼邊髮線（展開中的整組算一列，組內靠留白、整組一起 hover）。框外由上而下：可售套數（答案）、鎖定套數（控制）；原本底部的組合上限／可售量摘要與最上面重複，刪除。沒有薄膜——這一區沒有要特別突出的東西。</p></div>
+          </div>
+          <div class="lab-demo" data-lab="l3">
+            <div class="lab-avail">
+              <div><span class="lab-avail__k">可售套數</span><span class="lab-avail__hint" data-lab-sum-k>鎖定 3 套 · 上限 20 套</span></div>
+              <span class="lab-avail__v" data-lab-sum-v>3<small>套</small></span>
+            </div>
+            <div class="lab-sets">
+              <div class="lab-sets__titles">
+                <span class="lab-sets__title">鎖定套數</span>
+                <span class="lab-sets__hint" data-lab-hint>最多 3 套（受「海上霸姬 幕後寫真誌 vol.02」限制）；空白＝不鎖定</span>
+              </div>
+              <div class="lab-sets__ctl">
+                <span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" value="3" data-lab-sets aria-label="鎖定套數"><span class="amount-field__unit">套</span></span>
+              </div>
+            </div>
+            <!-- 清單標題（2026-09-11 使用者：「這區塊上面加一個標題『指定鎖定項目』」） -->
+            <div class="lab-lock__title">
+              <span class="lab-sets__title">指定鎖定項目</span>
+              <span class="lab-sets__hint">單一選項商品自動鎖定 N × 每套用量；多選項商品可選填要鎖哪些規格</span>
+            </div>
+            <div class="lab-lock" data-lab-table></div>
+          </div>
+          <p class="lab-note"><b>分隔的分工</b>：線＝不同種類資訊的交界（控制／清單／結果、以及正在編輯的那一組）；間距＝同種項目之間；層＝要突出的東西才用，這裡沒有。展開一個多選項商品看看：不多任何線，滑過去整組一起亮。</p>
+        </section>
+
+        <!-- ══════════ L1 ══════════ -->
+        <section class="card">
+          <div class="lab-card__head">
+            <span class="lab-card__code">L1</span>
+            <div><h3 class="lab-card__name">套數在頂 · 商品列唯讀 · 多選項展開分配</h3><p class="lab-card__pos">預設收合，多選項商品右邊有把手；展開才看到逐規格的分配格與「已分配 x／N」。單一選項商品永遠只有一行。</p></div>
+          </div>
+          <div class="lab-demo" data-lab="l1">
+            <div class="lab-avail">
+              <div><span class="lab-avail__k">可售套數</span><span class="lab-avail__hint" data-lab-sum-k>鎖定 3 套 · 上限 20 套</span></div>
+              <span class="lab-avail__v" data-lab-sum-v>3<small>套</small></span>
+            </div>
+            <div class="lab-sets">
+              <div class="lab-sets__titles">
+                <span class="lab-sets__title">鎖定套數</span>
+                <span class="lab-sets__hint" data-lab-hint>最多 3 套（受「海上霸姬 幕後寫真誌 vol.02」限制）；空白＝不鎖定</span>
+              </div>
+              <div class="lab-sets__ctl">
+                <span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" value="3" data-lab-sets aria-label="鎖定套數"><span class="amount-field__unit">套</span></span>
+              </div>
+            </div>
+            <div class="lab-lock" data-lab-table></div>
+          </div>
+          <p class="lab-note"><b>試一下</b>：把套數改成 4 會被擋（寫真誌只剩 3 件未鎖定）；改成空白＝不鎖定，商品列右欄變成「共用未鎖定量」，可售量回到「各商品未鎖定量取最小」。展開手環，S 填 2、M 填 1，計數變「已分配 3／3」；再多填會變紅。</p>
+        </section>
+
+        <!-- ══════════ L2 ══════════ -->
+        <section class="card lab-l2">
+          <div class="lab-card__head">
+            <span class="lab-card__code">L2</span>
+            <div><h3 class="lab-card__name">套數在頂 · 多選項的分配常駐列出</h3><p class="lab-card__pos">不用把手，多選項商品底下直接一塊薄膜列出規格分配；一眼看到全部，但商品多、規格多時會很長。</p></div>
+          </div>
+          <div class="lab-demo" data-lab="l2">
+            <div class="lab-avail">
+              <div><span class="lab-avail__k">可售套數</span><span class="lab-avail__hint" data-lab-sum-k>鎖定 3 套 · 上限 20 套</span></div>
+              <span class="lab-avail__v" data-lab-sum-v>3<small>套</small></span>
+            </div>
+            <div class="lab-sets">
+              <div class="lab-sets__titles">
+                <span class="lab-sets__title">鎖定套數</span>
+                <span class="lab-sets__hint" data-lab-hint>最多 3 套（受「海上霸姬 幕後寫真誌 vol.02」限制）；空白＝不鎖定</span>
+              </div>
+              <div class="lab-sets__ctl">
+                <span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" value="3" data-lab-sets aria-label="鎖定套數"><span class="amount-field__unit">套</span></span>
+              </div>
+            </div>
+            <div class="lab-lock" data-lab-table></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/row-disclosure.js?v=r2.2"></script>
+<script>
+(function () {
+  /* 示範資料＝簽名會限定組（預設 persona）：黑膠（單一，每套 1）、簽名會手環（多選項 S/M/L，每套 1）、
+     舞台外套（多選項 顏色×尺寸，每套 1）、寫真誌（單一，每套 1，未鎖定只剩 3 → 它決定 N 的上限）。 */
+  const MEMBERS = [
+    { id: 'acetate', name: '九龍夜行 原聲黑膠 · 編號 1/50', img: 'coastline-acetate.webp', per: 1, stock: 30, free: 24 },
+    { id: 'wristband', name: '九龍夜行 簽名會手環', img: 'wristband.webp', per: 1, variants: [['S', 20, 15], ['M', 20, 15], ['L', 20, 15]] },
+    { id: 'jacket', name: '九龍夜行 舞台外套 復刻版', img: 'stage-worn-jacket.webp', per: 1, variants: [['Black / S', 5, 3], ['Black / M', 5, 3], ['Black / L', 5, 4], ['Olive / S', 4, 3], ['Olive / M', 5, 4], ['Olive / L', 4, 3]] },
+    { id: 'zine', name: '海上霸姬 幕後寫真誌 vol.02', img: 'tour-zine-vol-02.webp', per: 1, stock: 10, free: 3 }
+  ];
+  const CAP = 20;
+  const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+  /* 商品列的名稱格：縮圖（data-list 的 --lg 52px，同訂單明細品項列）＋文字欄（名稱／副標）。2026-09-11 使用者：「加上商品圖」 */
+  const nameCell = (m, sub) => '<span class="lab-lock__name"><img class="data-list__thumb data-list__thumb--lg" src="images/products/' + m.img + '" alt=""><span class="lab-lock__text"><span title="' + esc(m.name) + '">' + esc(m.name) + '</span>' + (sub ? '<span class="lab-lock__sub">' + sub + '</span>' : '') + '</span></span>';
+  /* 商品庫存＝該商品總庫存（含被別的組合鎖走的）；未鎖定＝還沒被任何組合鎖走的量（2026-09-11 使用者：商品庫存是新的欄位） */
+  const stockOf = m => m.variants ? m.variants.reduce((n, v) => n + v[1], 0) : m.stock;
+  const freeOf = m => m.variants ? m.variants.reduce((n, v) => n + v[2], 0) : m.free;
+  const maxSets = () => Math.min(...MEMBERS.map(m => Math.floor(freeOf(m) / m.per)));
+  const capMember = () => MEMBERS.reduce((a, b) => (Math.floor(freeOf(a) / a.per) <= Math.floor(freeOf(b) / b.per) ? a : b));
+
+  function build(root, variant, key) {
+    const table = root.querySelector('[data-lab-table]');
+    const setsEl = root.querySelector('[data-lab-sets]');
+    const hint = root.querySelector('[data-lab-hint]');
+    const sumK = root.querySelector('[data-lab-sum-k]');
+    const sumV = root.querySelector('[data-lab-sum-v]');
+    const alloc = {};   // id → [qty per variant]
+    MEMBERS.forEach(m => { if (m.variants) alloc[m.id] = m.variants.map(() => ''); });
+
+    /* 未指定（0 件）不顯示字（2026-09-11 使用者：「未指定就不要顯示」）；格子留著撐行高、對齊不跳 */
+    const assignedText = (assigned, overAlloc) => overAlloc ? '超過鎖定量' : (assigned ? '已指定 ' + assigned + ' 件' : '');
+    function sets() {
+      const raw = setsEl.value.trim(); if (!raw) return null;
+      const n = parseInt(raw, 10); return isNaN(n) || n <= 0 ? null : n;
+    }
+    function render() {
+      const n = sets();
+      const max = maxSets();
+      const over = n !== null && n > max;
+      setsEl.setAttribute('aria-invalid', over ? 'true' : 'false');
+      hint.textContent = over
+        ? '超過上限：最多 ' + max + ' 套（受「' + capMember().name + '」限制）'
+        : '最多 ' + max + ' 套（受「' + capMember().name + '」限制）；空白＝不鎖定';
+      hint.style.color = over ? 'var(--status-error)' : '';
+
+      let html = '<div class="lab-lock__head"><span>組合中的商品</span><span>商品庫存</span><span>未鎖定</span><span>已鎖定</span><span></span></div>';
+      MEMBERS.forEach(m => {
+        const total = freeOf(m);
+        const numCells = '<span class="lab-lock__num lab-lock__muted">' + stockOf(m) + '</span><span class="lab-lock__num lab-lock__muted">' + total + '</span>';
+        const locked = n === null ? null : n * m.per;
+        /* 已鎖定格：第一行「N｜件」；多選項商品第二行「已指定 x 件」（2026-09-11 使用者：指定數搬到這裡、名稱下只留「多選項」、
+           原本展開面板底部的「已分配／未指定」計數與此重複、刪除）。超過鎖定量時第二行變紅寫「超過鎖定量」。 */
+        const lockCell = (sub, bad) => n === null
+          ? '<span class="lab-lock__nolock">共用未鎖定量</span>'
+          : '<span class="lab-lock__lockval"><span class="lab-lock__lockval-row"><span>' + locked + (m.per > 1 ? '<span class="lab-lock__per">每套 ' + m.per + '</span>' : '') + '</span><span>件</span></span>' +
+            (sub !== undefined ? '<span class="lab-lock__sub lab-lock__lockval-sub' + (bad ? ' is-over' : '') + '" data-lab-assigned>' + sub + '</span>' : '') + '</span>';
+        if (!m.variants) {
+          html += '<div class="lab-lock__row">' + nameCell(m) + numCells + lockCell() + '<span></span></div>';
+          return;
+        }
+        const gid = 'lab-' + (key || variant) + '-' + m.id;
+        const a = alloc[m.id];
+        const assigned = a.reduce((s, v) => s + (parseInt(v, 10) || 0), 0);
+        const overAlloc = n !== null && assigned > n * m.per;
+        const childRows = m.variants.map((v, i) => {
+          const bad = (parseInt(a[i], 10) || 0) > v[2];
+          return '<div class="lab-lock__row lab-lock__child"' + (variant === 'l1' ? ' data-rowdis-child="' + gid + '" hidden' : '') + '>' +
+            '<span class="lab-lock__name">' + esc(v[0]) + '</span><span class="lab-lock__num lab-lock__muted">' + v[1] + '</span><span class="lab-lock__num lab-lock__muted">' + v[2] + '</span>' +
+            '<span><span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" placeholder="0" value="' + esc(a[i]) + '" data-lab-alloc="' + m.id + '" data-idx="' + i + '"' + (bad ? ' aria-invalid="true"' : '') + (n === null ? ' disabled' : '') + '><span class="amount-field__unit">件</span></span></span><span></span></div>';
+        }).join('');
+        if (variant === 'l1') {
+          html += '<div class="rowdis__group rowdis__group--gutter">' +
+            '<div class="lab-lock__row lab-lock__row--sub rowdis__head" data-rowdis-row="' + gid + '">' +
+              nameCell(m, '多選項') +
+              numCells + lockCell(assignedText(assigned, overAlloc), overAlloc) +
+              '<span class="lab-lock__end"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="' + gid + '" aria-expanded="false" aria-label="展開分配"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></div>' +
+            childRows + '</div>';
+        } else {
+          html += '<div class="lab-lock__row lab-lock__row--sub">' + nameCell(m, '多選項') + numCells + lockCell(assignedText(assigned, overAlloc), overAlloc) + '<span></span></div>' +
+            (n === null ? '' : '<div class="lab-lock__group">' + childRows + '</div>');
+        }
+      });
+      table.innerHTML = html;
+      if (window.ztorIcons) window.ztorIcons.applyIcons(table);
+      if (window.rowDisclosure && window.rowDisclosure.sync) window.rowDisclosure.sync(table);
+      /* 底部摘要 */
+      if (n === null) {
+        const min = Math.min(...MEMBERS.map(m => Math.floor(freeOf(m) / m.per)));
+        sumK.textContent = '未鎖定，取各商品未鎖定量最小（受「' + capMember().name + '」限制） · 上限 ' + CAP + ' 套';
+        sumV.innerHTML = Math.min(min, CAP) + '<small>套</small>';
+      } else {
+        sumK.textContent = over ? '套數超過上限，請先修正' : '鎖定 ' + n + ' 套 · 上限 ' + CAP + ' 套';
+        sumV.innerHTML = (over ? '—' : Math.min(n, CAP)) + '<small>套</small>';
+      }
+    }
+    setsEl.addEventListener('input', render);
+    table.addEventListener('input', e => {
+      const inp = e.target.closest('[data-lab-alloc]'); if (!inp) return;
+      alloc[inp.dataset.labAlloc][Number(inp.dataset.idx)] = inp.value;
+      /* 只更新計數與該格的錯誤態，不重畫（重畫會踢掉焦點） */
+      const m = MEMBERS.find(x => x.id === inp.dataset.labAlloc);
+      const n = sets(); const a = alloc[m.id];
+      const assigned = a.reduce((s, v) => s + (parseInt(v, 10) || 0), 0);
+      inp.setAttribute('aria-invalid', (parseInt(inp.value, 10) || 0) > m.variants[Number(inp.dataset.idx)][2] ? 'true' : 'false');
+      const grp = inp.closest('.rowdis__group, .lab-lock__group') || table;
+      /* L2 的分配區在母列外面，往前找母列 */
+      const head = grp.classList.contains('lab-lock__group') ? grp.previousElementSibling : grp;
+      const sub = head && head.querySelector('[data-lab-assigned]');
+      if (sub && n !== null) {
+        const overAlloc = assigned > n * m.per;
+        sub.classList.toggle('is-over', overAlloc);
+        sub.textContent = assignedText(assigned, overAlloc);
+      }
+    });
+    render();
+  }
+  document.querySelectorAll('[data-lab]').forEach(root => build(root, root.dataset.lab === 'l3' ? 'l1' : root.dataset.lab, root.dataset.lab));
+})();
+</script>
+</body>
+</html>

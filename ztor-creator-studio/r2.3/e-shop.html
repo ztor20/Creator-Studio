@@ -26,7 +26,8 @@
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/store-settings.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-store.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
@@ -91,91 +92,22 @@
 
   /* F3 搜尋 · 收合式搜尋已 promote 至 ds-components/search-collapse.css（.search-collapse，內層重用 field-pill）。 */
 
-  /* F5 商店預覽 · 可開關、預設關閉（spec F5 / D084）。開啟時版面＝兩塊各自圓角面板、貼合無縫隙；
-     主面板疊在預覽之上（z 45），向右投 --shadow-seam 蓋到預覽上、順著主面板圓角填滿接縫凹口。
-     桌機（≥1101px）兩塊頂對齊、四個外角＋接縫側角皆圓；窄螢幕（≤1100px）改靜態堆疊在下方。 */
-  @media (min-width: 1101px) {
-    #eshop-preview {
-      /* 頂對齊 main：頂欄模式 main 自 64px 頂欄下 + gutter 開始；側邊欄模式無頂欄、
-         main 只自 gutter 開始（見 shared.css .main 兩模式 margin-top）。 */
-      top: calc(64px + var(--space-shell-gutter));
-      right: 0;
-      bottom: 0;
-      width: var(--preview-w);
-    }
-    html[data-nav-mode="sidebar"] #eshop-preview {
-      top: var(--space-shell-gutter);
-    }
-    #eshop-preview .preview-panel__sheet {
-      border: 0;
-      border-radius: var(--radius-shell) var(--radius-shell) 0 0;   /* 兩上角圓（含接縫側左上）*/
-      overflow: hidden;
-    }
-    /* 主面板疊在預覽之上（z 45 > 預覽 40，仍 < 頂欄 50）、兩塊貼合（無灰隙）。
-       main 右上角靠 corner-mask 補圓（角後露出 canvas，填灰 --surface-shell）。
-       ⚠ 陰影不可掛在 main：main 是捲動容器，瀏覽器把右上角畫成「方角」（圓角是 mask 補色假裝的），
-          box-shadow 會跟著真方角走 → 方角陰影。改用下方透明輔助層投影。 */
-    body.preview-open .main {
-      margin-right: var(--preview-w);
-      position: relative;
-      z-index: 45;
-    }
-    /* 接縫陰影輔助層：透明、真圓角、非捲動容器 → box-shadow 順著圓角走。貼在 main 右緣（右邊＝接縫），
-       向右投 --shadow-seam 蓋到預覽上（z 44：預覽 40 < 此層 < main 45，故 main 本體仍在最上、
-       陰影只落在預覽側）。讀作「主面板蓋在預覽之上」。 */
-    body.preview-open .eshop-seam-shadow {
-      display: block;
-      position: fixed;
-      top: calc(64px + var(--space-shell-gutter));
-      bottom: 0;
-      right: var(--preview-w);   /* 右緣＝接縫 */
-      width: 56px;
-      border-top-right-radius: var(--radius-shell);
-      box-shadow: var(--shadow-seam);
-      z-index: 44;
-      pointer-events: none;
-    }
-    html[data-nav-mode="sidebar"] body.preview-open .eshop-seam-shadow {
-      top: var(--space-shell-gutter);
-    }
+  /* F5 商店預覽（2026-09-11 使用者指示「像創建時的預覽顯示在畫面右邊一欄，不是整個版面切割出來」）：
+     舊做法是把預覽做成一塊獨立的固定面板、把主面板往左壓、兩塊之間畫接縫陰影——整個外殼被切成兩半。
+     改成與建立商品同一套：頁面內容套 .preview-split--phone，右欄是 sticky 的 .preview-col、
+     裡面一張與內容同款的 form-section--outlined。可開關由 .preview-split--toggle 承擔
+     （ds-components/preview-column.css）；本頁只給 sticky 的頂距——這頁沒有 wizard header。 */
+  #eshop-split {
+    /* 容器承擔 .page／.alert-inset 那一套頁寬（1280 ＋ 28 內距），裡面的兩個不再各算一次 */
+    max-width: 1280px; width: 100%; margin-inline: auto; padding-inline: var(--sp-28);
+    /* 右欄再大一點點（使用者指示）：320 － 卡內距 32 ＝ 288，鏡像 zoom 0.8 → 剛好 360 的手機版型 */
+    --preview-col-w: 320px; --fan-store-zoom: 0.8;
+    /* 與通知條的黏頂位置對齊（alert-inset top 16） */
+    --preview-col-top: var(--sp-16);
   }
-  .eshop-seam-shadow { display: none; }
-  @media (max-width: 1100px) {
-    body.preview-open .main { margin-right: 0; }
-    #eshop-preview {
-      position: static;
-      width: auto;
-      transform: none;
-      visibility: visible;
-      z-index: auto;
-      margin-top: 20px;
-    }
-    #eshop-preview .preview-panel__sheet {
-      position: relative;   /* 仍在流內堆疊，但作為浮動關閉鈕的定位基準 */
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-    }
-    #eshop-preview .preview-panel__body { overflow: visible; }
-  }
-  /* F5 預覽右上角浮動關閉鈕（headerless 預覽的關閉入口；spec F5 / D084）。
-     桌機 sheet 為 absolute（preview-panel.css）、窄螢幕改 relative，皆作為定位基準。 */
-  .eshop-preview-close {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 2;
-    background: var(--card);
-    box-shadow: var(--shadow-hairline);
-  }
-  /* 預覽移出 main 後成 .app 子項；側邊欄 901–1100px 時 .app 為 row（sidebar｜main），
-     讓預覽換行到主面板下方（而非並排右側）。topbar 與 ≤900 的 .app 本為 column，自然堆疊。 */
-  @media (min-width: 901px) and (max-width: 1100px) {
-    html[data-nav-mode="sidebar"] .app { flex-wrap: wrap; }
-    html[data-nav-mode="sidebar"] #eshop-preview { flex-basis: 100%; }
-  }
-
-  /* 商店預覽內容＝fan-store 元件（ds-components/fan-store.css，2026-07-02 起為深色手機呈現）。
-     無 header bar：「商店預覽」為手機上方置中 overline（mount JS 填字）；與 store-settings 同源。 */
+  #eshop-split > .preview-split__form > .alert-inset,
+  #eshop-split > .preview-split__form > .page { max-width: none; padding-inline: 0; }
+  #eshop-split > .preview-col { margin-top: var(--sp-16); }
 
   /* product-list 的 E-Shop 分頁欄位版型（--eshop/--bundles/--auctions grid＋欄色＋760px 重排）
      已 promote 至 ds-components/product-list.css（單一來源，design-system.html 同源 demo）。 */
@@ -215,6 +147,13 @@
          外層 #eshop-stock-bar 只管定位（跟 .page 同一套 max-width+margin:auto+padding，寬螢幕下經測
          `margin-inline: max(28px, calc(...))` 在這個 flex 直欄容器裡量到的寬度不會扣掉 margin、
          導致右側溢出，改用 .page 已驗證沒問題的寫法）；視覺卡（底色＋圓角＋內距）交給內層 __card。 -->
+    <!-- F5 商店預覽（2026-09-11）：頁面內容｜右欄預覽，與建立商品同一套 preview-split。
+         使用者同日指示「預覽要往上移」：分割容器包住通知條＋整個 .page，右欄從最上面開始，
+         通知條只跨左欄。容器自己承擔頁寬（1280＋28 內距），裡面的 .alert-inset／.page 不再各算一次。
+         預設關閉（--toggle 未 is-open 時只剩單欄），工作列的眼睛鈕開、卡右上的 ✕ 或 Esc 關。 -->
+    <div class="preview-split preview-split--phone preview-split--toggle" id="eshop-split">
+    <div class="preview-split__form">
+
     <div class="alert-inset when-data" id="eshop-stock-bar">
       <div class="alert alert--bar alert--inset-card" role="status">
         <div class="alert__body">
@@ -1053,29 +992,30 @@
 
       </div>
 
-    </div>
+    </div><!-- /.page -->
+    </div><!-- /.preview-split__form -->
+
+    <!-- F5 商店預覽（spec 5.1.5 F5 / D084 可開關）：粉絲端創作者頁的手機版鏡像（partials/fan-store.js ＋
+         ds-components/fan-store.css，§6.7 與商店設定同源）。右欄結構抄建立商品：sticky 欄裡一張
+         form-section--outlined，標題與說明在卡內；標題列右端一顆 ✕（使用者指示）。
+         --tall：鏡像比視窗高，欄在視窗內自己捲；--dim：卡底比左欄的區塊卡暗一階（使用者指示）。 -->
+    <aside class="preview-col preview-col--tall preview-col--dim" id="eshop-preview" aria-label="Store preview">
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head form-section__head--actions form-section__head--rule">
+          <div class="form-section__head-titles">
+            <h3 class="form-section__title" data-i18n="e-shop.preview.title">Store preview</h3>
+            <p class="form-section__sub" data-i18n="e-shop.preview.sub">How fans see your page on Ztor</p>
+          </div>
+          <div class="form-section__head-actions">
+            <button class="btn btn--icon btn--sm" type="button" data-eshop-preview-close aria-label="Close preview" data-i18n-aria-label="e-shop.preview.close" title="Close preview" data-i18n-title="e-shop.preview.close"><i data-lucide="x" class="ztor-icon"></i></button>
+          </div>
+        </div>
+        <div data-fan-store-host></div>
+      </section>
+    </aside>
+    </div><!-- /.preview-split -->
   </main>
 
-  <!-- F5 · 商店預覽 · 常駐畫面分割、不可關閉（spec 5.1.5 F5「常駐右側欄」）。
-       移出 .main、改為 .app 直接子層（sibling）：子元素無法被父層內容蓋住，要讓桌機
-       主內容頁「疊在預覽上」，必須兩者同層、再用 z-index 比序（main 45 > 預覽 40）。
-       桌機 ≥1101px fixed 脫離流；窄螢幕 ≤1100px static 堆疊在主面板下方（見 <style>）。
-       同一粉絲視角；可開關、預設關閉（spec F5 / D084，由工作列「預覽商店」鈕開啟）。 -->
-  <div class="preview-panel preview-panel--inset" id="eshop-preview">
-    <div class="preview-panel__sheet">
-      <!-- 無 header bar：「商店預覽」改成 fan-store hero 內、店名上方的 overline 小字（由下方 mount JS 填）。
-           關閉入口＝右上角浮動 ✕（headerless 預覽；spec F5 / D084）。 -->
-      <button class="btn btn--icon btn--sm eshop-preview-close" type="button" data-eshop-preview-close aria-label="Close preview" data-i18n-aria-label="e-shop.preview.close"><i data-lucide="x" class="ztor-icon"></i></button>
-      <div class="preview-panel__body">
-        <!-- F5 商店預覽內容＝粉絲端店面（§6.7 同源）→ ds-components/fan-store.css，
-             markup 由 partials/fan-store.js 注入，store-settings F1 共用同一份 -->
-        <div data-fan-store-host></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 接縫右向分隔陰影（桌機 ≥1101px）：固定細條、自 main 圓角下方起，右投影到預覽上 -->
-  <div class="eshop-seam-shadow" aria-hidden="true"></div>
 </div>
 
 <div data-restock-modal-host></div>
@@ -2097,15 +2037,17 @@
     document.addEventListener('i18n:applied', () => window.ztorEshopStatus.refreshAll());
 
     /* F5 商店預覽（See as fan）— 可開關、預設關閉（spec 5.1.5 F5 / D084）：由工作列「預覽商店」鈕
-       開啟、面板 ✕ 或 Esc 關閉。開啟時 body.preview-open 壓窄 .main；窄螢幕（≤1100px）CSS 改靜態堆疊。 */
+       開啟、Esc 關閉；2026-09-11 起預覽是頁內右欄（preview-split--toggle），開關只切 is-open。 */
     (function () {
-      const panel = document.getElementById('eshop-preview');
+      const split = document.getElementById('eshop-split');
       const toggle = document.getElementById('eshop-preview-toggle');
-      if (!panel || !toggle) return;
-      const sync = on => { panel.classList.toggle('is-open', on); document.body.classList.toggle('preview-open', on); toggle.setAttribute('aria-pressed', on ? 'true' : 'false'); };
-      toggle.addEventListener('click', () => sync(!panel.classList.contains('is-open')));
-      panel.querySelectorAll('[data-eshop-preview-close]').forEach(b => b.addEventListener('click', () => sync(false)));
-      document.addEventListener('keydown', e => { if (e.key === 'Escape' && panel.classList.contains('is-open')) sync(false); });
+      if (!split || !toggle) return;
+      /* 2026-09-11：預覽改成頁內右欄（preview-split--toggle），開關只切 is-open；
+         沒有 ✕——右欄是頁面的一部分，關掉就按同一顆眼睛。 */
+      const sync = on => { split.classList.toggle('is-open', on); toggle.setAttribute('aria-pressed', on ? 'true' : 'false'); };
+      toggle.addEventListener('click', () => sync(!split.classList.contains('is-open')));
+      split.querySelectorAll('[data-eshop-preview-close]').forEach(b => b.addEventListener('click', () => sync(false)));
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && split.classList.contains('is-open')) sync(false); });
     })();
 
     /* F5 預覽內容＝fan-store 元件（§6.7 同源，與 store-settings 共用 partials/fan-store.js） */
@@ -2117,14 +2059,13 @@
       if (window.ztorIcons) window.ztorIcons.applyIcons(host);
       if (window.applyI18n) window.applyI18n(host);
       /* 「商店預覽」overline：放在 hero 內、店名上方（e-shop 專屬，store-settings 用自己的 header） */
-      const ol = host.querySelector('[data-fan-overline]');
-      if (ol) { ol.textContent = T('e-shop.preview.title', 'Store preview'); ol.hidden = false; }
+      /* 2026-09-11：標題改寫在右欄卡的 form-section__head，fan-store 自己的 overline 不再開。 */
       /* D241：預覽是粉絲視角，只能出現「上架且顯示」的項目——隱藏的走非公開連結、
          下架的連結全失效，兩者都不入店面（spec 5.1.5 F5 預覽內容）。
          fan-store 是與商店設定共用的靜態樣板、卡片本身不帶商品身分，所以在這一頁就地
          給它一張「第幾張卡＝哪一筆商品」的對照表（順序與樣板一致；null＝樣板自有的示意卡，
          沒有對應商品就不判斷）。樣板改動時這張表要跟著改。 */
-      const PREVIEW_IDS = ['zine', 'tee', 'album', 'acetate', 'hoodie', null];
+      const PREVIEW_IDS = ['zine', 'tee', 'album', 'acetate', 'hoodie', 'pin'];   /* 2026-09-11 對齊 fan-store.js 的 CARD_IDS */
       const S = PS();
       if (S) host.querySelectorAll('.fan-store__grid .fan-store__card').forEach((card, i) => {
         const p = PREVIEW_IDS[i] && S.get(PREVIEW_IDS[i]);
@@ -2434,6 +2375,7 @@
 </script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/detail-sheet.js?v=r2.2"></script>
+<script src="partials/list-scroll.js?v=r2.2"></script>
 <script>
 (function () {
   /* ---- 清單狀態還原（D184）------------------------------------------------

@@ -301,7 +301,11 @@ html[data-theme="light"] .list-toolbar {
        底色，讀起來像一張「浮在框裡的卡」；切平之後它是那個外框往下長出來的一段。
        下緣的圓角留著：下面是會捲動的內容，那一側仍然是這條自己的邊界。
        （2026-08-01 曾改成四角全圓＋上緣留 8px 想解圓角問題，使用者看過後說「改回來」，已還原。） */
-    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    /* 2026-09-11 使用者：「這個改成方形圓角就好了，並且要靠上方那條線對齊」——r2.3 的內容面板
+       已經沒有實色外框（透明、直接浮在星空上），「從外框長出來的一段」這個比喻沒有東西可以長，
+       上緣切平反而像被裁掉。改回四角同圓角的方形卡；貼頂位置與側欄上緣同一條線由 shared.css
+       的 .main 留白改法承擔。舊值：0 0 var(--radius-xl) var(--radius-xl)。 */
+    border-radius: var(--radius-xl);
     /* 下緣不畫線（2026-08-01 使用者裁示：「tab 的下緣有一個白白的，不知道是線
        還是陰影，請刪掉那個效果」）——那條 1px --border 在深色主題上是一道偏亮的
        細線，貼頂時橫過整個內容欄特別顯眼。
@@ -323,50 +327,16 @@ html[data-theme="light"] .list-toolbar {
      分隔改回只靠 box-shadow（見上方）。之後若還要漸消效果，必須讓遮罩跟著面板的
      圓角走（例如掛在有 border-radius 的容器上並 overflow:hidden），不能再用方角矩形。 */
 
-  /* 貼頂列兩側的凹角（2026-08-01 使用者裁示，附手繪示意圖）。
-     形狀＝「方角減掉一個四分圓」，填色在靠近 bar 的那一側、弧線往外開，所以這一條
-     讀起來是**從外框長出來的一段**，而不是一張浮在裡面的方卡。這正是使用者要的
-     「向外的圓角」——不是把 bar 自己的角磨圓（那個試過、被否決）。
-     用徑向漸層雕出來，不加 DOM；`overflow: visible` 讓兩塊能長到 bar 之外。
-     半徑 16px（--radius-xl 同一階；先做 28px，使用者看過後裁示「可以小一點」）。
-     ::before／::after 兩個位置在此之前都空著（同日退場的漸層遮罩曾用過 ::after）。 */
-  .list-dock.is-snapped .list-dock__bars { overflow: visible; }
-  .list-dock.is-snapped .list-dock__bars::before,
-  .list-dock.is-snapped .list-dock__bars::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    width: var(--radius-xl);
-    height: var(--radius-xl);
-    pointer-events: none;
-  }
-  /* ztorUI 換裝（2026-08-28 Wave 2a 熔接自 skin §15.5）：兩塊凹角只能用徑向漸層填**實色**
-     （它是背景圖、吃不到 backdrop-filter），所以填 --ztu-shell-solid——那支就是外殼玻璃疊在
-     檯面上算出來的實色等價，肉眼跟上面那條玻璃同一階。舊值：var(--surface-shell)。 */
-  .list-dock.is-snapped .list-dock__bars::before {
-    left: calc(var(--radius-xl) * -1);
-    background: radial-gradient(circle var(--radius-xl) at bottom left,
-      transparent calc(var(--radius-xl) - 1px), var(--ztu-shell-solid) var(--radius-xl));
-  }
-  .list-dock.is-snapped .list-dock__bars::after {
-    right: calc(var(--radius-xl) * -1);
-    background: radial-gradient(circle var(--radius-xl) at bottom right,
-      transparent calc(var(--radius-xl) - 1px), var(--ztu-shell-solid) var(--radius-xl));
-  }
-  /* 淺色主題：bar 的底色是 --card，凹角填色要跟著換，否則會露出一塊深色。 */
-  html[data-theme="light"] .list-dock.is-snapped .list-dock__bars::before {
-    background: radial-gradient(circle var(--radius-xl) at bottom left,
-      transparent calc(var(--radius-xl) - 1px), var(--card) var(--radius-xl));
-  }
-  html[data-theme="light"] .list-dock.is-snapped .list-dock__bars::after {
-    background: radial-gradient(circle var(--radius-xl) at bottom right,
-      transparent calc(var(--radius-xl) - 1px), var(--card) var(--radius-xl));
-  }
+  /* 墓碑：貼頂列兩側的凹角 ::before／::after（2026-08-01 使用者裁示新增、2026-09-11 退場）。
+     那兩塊是用徑向漸層填實色雕出「從外框長出來」的弧，前提是面板有一圈實色外框可以接。
+     r2.3 內容面板透明之後，實色填塊變成星空上兩塊看得見的深色方角（使用者截圖圈出、
+     裁示改成方形圓角），整段刪除；`overflow: visible` 一併不需要。 */
 
   /* 工作列在 dock 裡讓出背景與圓角——那些現在歸 dock 管，避免卡中卡。
      ztorUI 換裝（2026-08-28 Wave 2a 熔接自 skin §15.4）：補上 backdrop-filter: none 與 border: 0。
      工作列本輪改成玻璃之後，貼頂時 dock 自己也是玻璃，裡面這層若還鋪一次就是玻璃疊玻璃、
-     邊界光學會出現兩圈。舊值：只歸零 background／border-radius／box-shadow。 */
+     邊界光學會出現兩圈。舊值：只歸零 background／border-radius／box-shadow。
+     （2026-09-11 凹角退場那次誤刪了這一條，貼頂態出現「兩層」；同日補回。） */
   .list-dock.is-snapped .list-toolbar {
     height: 44px;
     margin-bottom: 0;
@@ -389,6 +359,7 @@ html[data-theme="light"] .list-toolbar {
     flex: 1 1 auto;
     min-width: 0;
   }
+
 
   /* ══ 貼頂態的次層篩選：一律收進篩選鈕（2026-07-29 L 裁示）════════════════════
      「should we move the filter icon beside the tabs and keep it that way for all

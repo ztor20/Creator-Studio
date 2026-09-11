@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>詳情頁單一固定列（Detail dock）· 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* ── 探索頁專用（2026-09-11 使用者：「如果有兩層固定的話，應該要合併成一個…做成 demo 給我看」）──
+     結論版型：詳情頁只有一條固定列（dock）。三個槽位：身分（縮圖＋名稱）｜區段 tabs｜動作。
+     三段行為：頁首在畫面上→什麼都不黏；頁首捲掉→dock 滑進來（身分＋整頁動作）；
+     分頁裡的工具列捲到 dock 底下→它的 tabs 與動作「上交」給 dock，原位留空、畫面上只剩一條。 */
+
+  /* 分頁工具列不再自己 sticky（section-nav.css 那條 [data-nav] > .list-toolbar 的行為在這頁關掉） */
+  .lab-dock [data-nav] > .list-toolbar { position: static; }
+  /* 被 dock 收編時原位留空：高度不變、內容隱藏，捲動位置才不會跳 */
+  .lab-dock .list-toolbar.is-docked { visibility: hidden; }
+
+  /* dock 的 tabs 槽：只在黏住且有收編到 tabs 時出現；夾在身分與動作之間、可橫捲 */
+  .detail-topbar__tabs { display: none; min-width: 0; flex: 1 1 auto; overflow-x: auto; scrollbar-width: none; }
+  .detail-topbar__tabs::-webkit-scrollbar { display: none; }
+  .detail-topbar.is-stuck.has-tabs .detail-topbar__tabs { display: flex; align-items: stretch; align-self: stretch; }
+  .detail-topbar__tabs .tabs { flex-wrap: nowrap; height: 100%; }
+  .detail-topbar__tabs .tabs__item { min-height: 0; height: 100%; }
+  /* 有 tabs 時列高由 tabs 撐（上下內距歸零），跟沒 tabs 時同高，切分頁不會跳 */
+  .detail-topbar.is-stuck.has-tabs { padding-block: 0; min-height: 64px; }
+  /* 黏住態不換行、三槽一列；身分槽可截斷 */
+  .detail-topbar.is-stuck { flex-wrap: nowrap; }
+  .detail-topbar.is-stuck .detail-topbar__mini { flex: 0 1 auto; min-width: 0; }
+  .detail-topbar.is-stuck .detail-topbar__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* 動作槽：分頁動作在前、整頁動作在後，中間一道髮線分組 */
+  .detail-topbar__actions { display: flex; align-items: center; gap: var(--sp-8); flex: none; }
+  .detail-topbar__actions .list-toolbar__actions { display: flex; align-items: center; gap: var(--sp-8); padding-right: var(--sp-12); margin-right: var(--sp-4); border-right: 1px solid var(--border-soft); }
+  .detail-topbar__actions .list-toolbar__actions:empty { display: none; }
+
+  /* 說明卡 */
+  .lab-note { font-size: var(--fs-13); color: var(--muted-foreground); line-height: var(--lh-relaxed, 1.7); }
+  .lab-note b { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-state { display: inline-flex; align-items: center; gap: var(--sp-8); font-family: var(--font-ui); font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-state__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+  .lab-state.is-on .lab-state__dot { background: var(--status-success); }
+  .lab-filler { min-height: 320px; display: grid; place-items: center; color: var(--muted-foreground); font-size: var(--fs-13); }
+</style>
+</head>
+<body>
+<div class="app lab-dock">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page page--narrow">
+
+      <!-- 頂列（沿用 .detail-topbar；demo 多了一個 tabs 槽） -->
+      <div class="detail-topbar">
+        <div class="page-crumb page-crumb--back">
+          <a class="btn btn--icon-circle btn--sm page-crumb__back" href="e-shop.html" aria-label="返回上一層"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
+          <a href="e-shop.html" class="card__link">電子商店</a> <span style="margin:0 6px">/</span>
+          <a href="e-shop.html" class="card__link">組合</a> <span style="margin:0 6px">/</span>
+          <span>簽名會限定組</span>
+        </div>
+        <div class="detail-topbar__mini" hidden>
+          <img class="detail-topbar__cover" src="images/products/coastline-starter-pack.webp" alt="">
+          <span class="detail-topbar__name">簽名會限定組</span>
+        </div>
+        <div class="detail-topbar__tabs" data-dock-tabs></div>
+        <div class="detail-topbar__actions">
+          <div class="list-toolbar__actions" data-dock-actions></div>
+          <button class="btn btn--outline" type="button"><i data-lucide="eye" class="ztor-icon"></i><span>預覽</span></button>
+        </div>
+      </div>
+
+      <section class="pd-hero">
+        <img class="pd-hero__cover" src="images/products/coastline-starter-pack.webp" alt="">
+        <div class="pd-hero__main">
+          <div class="pd-hero__badges flex-row" style="gap:8px;flex-wrap:wrap">
+            <span class="badge badge--success"><span>販售中</span></span>
+            <span class="badge"><span>組合</span></span>
+          </div>
+          <div class="pd-hero__head"><h1 class="pd-hero__title">簽名會限定組</h1></div>
+          <p class="pd-hero__desc">$273.60 · 4 件商品</p>
+        </div>
+      </section>
+
+      <div class="section-nav-layout mt-24">
+        <nav class="section-nav" role="tablist" data-tabs aria-label="Bundle detail sections">
+          <button class="section-nav__item section-nav__item--active" role="tab" data-tab="overview" aria-selected="true">總覽</button>
+          <button class="section-nav__item" role="tab" data-tab="stock" aria-selected="false">組合庫存</button>
+          <button class="section-nav__item" role="tab" data-tab="settings" aria-selected="false">組合設定</button>
+          <button class="section-nav__item" role="tab" data-tab="links" aria-selected="false">關聯</button>
+        </nav>
+        <div class="section-nav__body">
+          <div class="detail-grid detail-grid--full mt-16">
+          <div class="detail-main">
+
+          <!-- 總覽：沒有分頁工具列 → dock 黏住時只有身分＋整頁動作 -->
+          <div class="tab-panel tab-panel--active" data-panel="overview" role="tabpanel">
+            <div class="detail-cards">
+              <section class="form-section form-section--outlined">
+                <div class="form-section__head"><h3 class="form-section__title">這一頁在示範什麼</h3></div>
+                <p class="lab-note"><b>2026-09-11 定案（Q115）、已改上正式</b>：收編邏輯進 <code>js/detail-topbar.js</code>、樣式進 <code>shared.css</code>「Dock」段，商品／組合／活動詳情三頁生效；本頁保留作探索紀錄（頁內那段 CSS 是定案前的草稿、與正式版不再同步）。</p>
+                <p class="lab-note" style="margin-top:var(--sp-12)"><b>結論版型：詳情頁只有一條固定列（dock）</b>，三個槽位＝身分（縮圖＋名稱）｜區段 tabs｜動作（分頁動作在前、整頁動作在後）。<br>
+                往下捲看三段行為：① 頁首還在畫面上，什麼都不黏；② 頁首捲掉，dock 滑進來、只有身分＋整頁動作；③ 切到「組合設定」分頁，再往下捲——分頁裡那條工具列碰到 dock 底下時，它的 tabs 與「編輯組合」上交給 dock，原位留空、畫面上只剩一條。往回捲又還回去。</p>
+                <p class="lab-note" style="margin-top:var(--sp-12)"><span class="lab-state" data-lab-state="stuck"><span class="lab-state__dot"></span>dock 黏住</span>　<span class="lab-state" data-lab-state="docked"><span class="lab-state__dot"></span>工具列已上交</span></p>
+              </section>
+              <section class="form-section form-section--outlined"><div class="form-section__head"><h3 class="form-section__title">銷售摘要</h3></div><div class="lab-filler">（總覽內容佔位）</div></section>
+              <section class="form-section form-section--outlined"><div class="form-section__head"><h3 class="form-section__title">基本資料</h3></div><div class="lab-filler">（總覽內容佔位）</div></section>
+              <section class="form-section form-section--outlined"><div class="form-section__head"><h3 class="form-section__title">上架與開賣</h3></div><div class="lab-filler">（總覽內容佔位）</div></section>
+            </div>
+          </div>
+
+          <div class="tab-panel" data-panel="stock" role="tabpanel">
+            <div class="detail-cards">
+              <section class="form-section form-section--outlined"><div class="form-section__head"><h3 class="form-section__title">商品庫存鎖定</h3></div><div class="lab-filler">（組合庫存內容佔位）</div></section>
+              <section class="form-section form-section--outlined"><div class="form-section__head"><h3 class="form-section__title">操作紀錄</h3></div><div class="lab-filler">（組合庫存內容佔位）</div></section>
+            </div>
+          </div>
+
+          <!-- 組合設定：有分頁工具列（區段 tabs ＋ 編輯組合） -->
+          <div class="tab-panel" data-panel="settings" role="tabpanel">
+            <div data-nav>
+              <div class="list-toolbar" data-dock-source>
+                <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist" aria-label="Bundle settings sections">
+                  <button type="button" class="tabs__item tabs__item--active" data-nav-item="info">組合包資訊</button>
+                  <button type="button" class="tabs__item" data-nav-item="members">商品</button>
+                  <button type="button" class="tabs__item" data-nav-item="pricing">價格與折扣</button>
+                  <button type="button" class="tabs__item" data-nav-item="publish">上架與開賣</button>
+                </nav>
+                <div class="list-toolbar__actions">
+                  <button class="btn btn--ghost" type="button" data-lab-cancel hidden>取消</button>
+                  <button class="btn btn--outline" type="button" data-lab-edit><i data-lucide="pencil" class="ztor-icon"></i><span>編輯</span></button>
+                </div>
+              </div>
+              <div class="nav-sections">
+                <div data-nav-panel="info"><section class="form-section form-section--outlined"><div class="form-section__head"><h3 class="form-section__title">組合包資訊</h3></div><div class="lab-filler" style="min-height:420px">（組合名稱、描述、素材）</div></section></div>
+                <div data-nav-panel="members"><section class="form-section form-section--outlined"><div class="form-section__head"><h3 class="form-section__title">商品</h3></div><div class="lab-filler" style="min-height:520px">（成員清單）</div></section></div>
+                <div data-nav-panel="pricing"><section class="form-section form-section--outlined"><div class="form-section__head"><h3 class="form-section__title">價格與折扣</h3></div><div class="lab-filler" style="min-height:420px">（定價、折扣設定）</div></section></div>
+                <div data-nav-panel="publish"><section class="form-section form-section--outlined"><div class="form-section__head"><h3 class="form-section__title">上架與開賣</h3></div><div class="lab-filler" style="min-height:520px">（上架設定、顯示設定、開賣設定）</div></section></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" data-panel="links" role="tabpanel">
+            <div class="detail-cards">
+              <section class="form-section form-section--outlined"><div class="form-section__head"><h3 class="form-section__title">關聯</h3></div><div class="lab-filler">（關聯內容佔位）</div></section>
+            </div>
+          </div>
+
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/detail-topbar.js?v=r2.2"></script>
+<script>
+(function () {
+  'use strict';
+  const bar = document.querySelector('.detail-topbar');
+  const hero = document.querySelector('.pd-hero');
+  const mini = bar.querySelector('.detail-topbar__mini');
+  const crumb = bar.querySelector('.page-crumb');
+  const tabsSlot = bar.querySelector('[data-dock-tabs]');
+  const actSlot = bar.querySelector('[data-dock-actions]');
+  const main = document.querySelector('main.main');
+  const stateDot = k => document.querySelector('[data-lab-state="' + k + '"]');
+
+  /* ① 黏附：沿用站上的 detail-topbar.js（頁首捲掉才 fixed） */
+  window.ZtorDetailTopbar.init({ bar: bar, hero: hero, mini: mini, crumb: crumb });
+
+  /* ② 收編：目前分頁裡的 .list-toolbar 碰到 dock 底下 → 它的 tabs 與動作搬進 dock；往回捲或切分頁 → 還回去 */
+  let docked = null;   /* 目前被收編的工具列 */
+  function activeToolbar() {
+    const panel = document.querySelector('.tab-panel--active');
+    return panel ? panel.querySelector('[data-dock-source]') : null;
+  }
+  function dock(tb) {
+    if (docked === tb) return;
+    undock();
+    const nav = tb.querySelector('.tabs'), acts = tb.querySelector('.list-toolbar__actions');
+    tb.dataset.h = tb.offsetHeight;
+    tb.style.height = tb.offsetHeight + 'px';
+    if (nav) tabsSlot.appendChild(nav);
+    if (acts) [...acts.children].forEach(c => actSlot.appendChild(c));
+    tb.classList.add('is-docked');
+    bar.classList.add('has-tabs');
+    docked = tb;
+  }
+  function undock() {
+    if (!docked) return;
+    const nav = tabsSlot.querySelector('.tabs'), acts = docked.querySelector('.list-toolbar__actions');
+    if (nav) docked.insertBefore(nav, acts);
+    [...actSlot.children].forEach(c => acts.appendChild(c));
+    docked.classList.remove('is-docked');
+    docked.style.height = '';
+    bar.classList.remove('has-tabs');
+    docked = null;
+  }
+  function sync() {
+    const stuck = bar.classList.contains('is-stuck');
+    const tb = activeToolbar();
+    if (stuck && tb) {
+      const barBottom = bar.getBoundingClientRect().bottom;
+      const top = (docked === tb ? tb : tb).getBoundingClientRect().top;
+      /* 工具列上緣到了 dock 底下就收編；還回去的門檻用同一條線（原位留著高度，量得到） */
+      if (top <= barBottom + 4) dock(tb); else undock();
+    } else undock();
+    stateDot('stuck').classList.toggle('is-on', stuck);
+    stateDot('docked').classList.toggle('is-on', !!docked);
+  }
+  main.addEventListener('scroll', sync, { passive: true });
+  window.addEventListener('resize', sync, { passive: true });
+
+  /* 分頁切換（同 bundle-detail 的 section-nav） */
+  const tablist = document.querySelector('[data-tabs]');
+  const tabs = tablist.querySelectorAll('.section-nav__item');
+  const panels = document.querySelectorAll('.tab-panel[data-panel]');
+  tablist.addEventListener('click', e => {
+    const btn = e.target.closest('.section-nav__item'); if (!btn) return;
+    undock();
+    tabs.forEach(t => { const on = t === btn; t.classList.toggle('section-nav__item--active', on); t.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    panels.forEach(p => p.classList.toggle('tab-panel--active', p.dataset.panel === btn.dataset.tab));
+    sync();
+  });
+
+  /* 區段 tabs：捲到那一節（不管 tabs 此刻住在工具列還是 dock 裡，事件都從 document 接） */
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-nav-item]'); if (!b) return;
+    const t = document.querySelector('[data-nav-panel="' + b.dataset.navItem + '"]'); if (!t) return;
+    document.querySelectorAll('[data-nav-item]').forEach(x => x.classList.toggle('tabs__item--active', x === b));
+    const scTop = main.getBoundingClientRect().top;
+    const offset = bar.classList.contains('is-stuck') ? bar.offsetHeight - scTop + 18 : 18;
+    main.scrollTo({ top: main.scrollTop + t.getBoundingClientRect().top - scTop - offset, behavior: 'smooth' });
+  });
+  /* 編輯／取消：示範動作群跟著 dock 走 */
+  document.addEventListener('click', e => {
+    const ed = e.target.closest('[data-lab-edit]'), cn = e.target.closest('[data-lab-cancel]');
+    if (ed) { const c = document.querySelector('[data-lab-cancel]'); c.hidden = !c.hidden; ed.querySelector('span').textContent = c.hidden ? '編輯' : '儲存變更'; }
+    if (cn) { cn.hidden = true; document.querySelector('[data-lab-edit] span').textContent = '編輯'; }
+  });
+
+  if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
+  sync();
+})();
+</script>
+</body>
+</html>

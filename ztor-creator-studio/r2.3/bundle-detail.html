@@ -29,6 +29,7 @@
 <link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-store.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
@@ -77,8 +78,11 @@
           <img class="detail-topbar__cover" id="bd-mini-cover" src="" alt="">
           <span class="detail-topbar__name" id="bd-mini-name"></span>
         </div>
+        <!-- Dock 槽（2026-09-11，詳情頁只准一條固定列）：分頁工具列捲到頂列底下時，它的 tabs 進 [data-dock-tabs]、動作進 [data-dock-actions]；js/detail-topbar.js -->
+        <div class="detail-topbar__tabs" data-dock-tabs></div>
         <div class="page-intro__actions">
-          <button class="btn btn--outline" type="button" data-bd-preview-open><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.preview">See as fan</span></button>
+          <button class="btn btn--outline" type="button" data-bd-preview-open data-dock-icon><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.preview">See as fan</span></button>
+          <div data-dock-actions></div>
         </div>
       </div>
 
@@ -146,67 +150,62 @@
 
         <!-- 組合設定概覽（同商品詳情）：組合設定分頁的每個區塊一行一句現值，點了前往那一節；「組合商品」那列切到組合商品分頁。
              由 JS renderBdSettingsOverview() 讀欄位現值算出，儲存後重算。 -->
-        <section class="form-section form-section--outlined">
-          <div class="form-section__head">
-            <h3 class="form-section__title" data-i18n="bd.setov.title">Settings overview</h3>
-            <p class="form-section__sub" data-i18n="product-detail.setov.sub">Select a row to edit it.</p>
-          </div>
-          <div class="data-list" data-bd-setov></div>
-        </section>
+        <!-- 2026-09-11 使用者：四組各自一張卡、總標題撤除；卡由 JS 渲染 -->
+        <div class="detail-cards" data-bd-setov></div>
 
 
       </div><!-- /detail-cards -->
       </div><!-- /tab-panel overview -->
 
-      <!-- ════════ TAB · 組合庫存（2026-09-11，對齊商品詳情的商品庫存分頁）：
-           四塊 KPI 磚（可售組數／已鎖定成員／未鎖定成員／卡住的成員）→ 成員分配表（鎖定量直接在表裡改，使用者裁決維持現狀）
-           → 鎖定歷史紀錄（一次儲存一筆、點開看逐成員前 → 後；組合沒有補貨）。 ════════ -->
+      <!-- ════════ TAB · 組合庫存（2026-09-11 鎖定套數規則，L3 定案自 lab-bundle-lock.html）：
+           三塊 KPI 磚（可售套數／鎖定套數／組合上限）→ 商品庫存鎖定（鎖定套數一個欄位 ＋「指定鎖定項目」清單：
+           單一選項商品自動 N × 用量、多選項商品可展開選填規格）→ 操作紀錄（一次改動一筆、點開看逐商品前 → 後）。 ════════ -->
       <div class="tab-panel" data-panel="stock" role="tabpanel">
       <div class="detail-cards">
         <div class="bento" data-bd-stock-kpi>
-          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="stock.bundle-qty">Bundle sellable</div><div class="kpi__value"><span data-bd-kpi-qty>—</span><span class="kpi__unit" data-i18n="bd.unit.sets">sets</span></div></div>
-          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="bd.kpi.locked">Locked members</div><div class="kpi__value"><span data-bd-kpi-locked>0</span><span class="kpi__unit" data-i18n="bd.unit.members">members</span></div></div>
-          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="bd.kpi.unlocked">Unlocked members</div><div class="kpi__value"><span data-bd-kpi-unlocked>0</span><span class="kpi__unit" data-i18n="bd.unit.members">members</span></div></div>
-          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="bd.kpi.capped">Capped by</div><div class="kpi__value" style="font-size: var(--fs-16)" data-bd-kpi-capped>—</div></div>
+          <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="stock.bundle-qty">Bundle sellable</div><div class="kpi__value"><span data-bd-kpi-qty>—</span><span class="kpi__unit" data-i18n="bd.unit.sets">sets</span></div><div class="kpi__meta kpi__meta--clip" data-bd-kpi-qty-meta hidden></div></div>
+          <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="bd.lock.sets">Locked sets</div><div class="kpi__value"><span data-bd-kpi-sets>—</span><span class="kpi__unit" data-i18n="bd.unit.sets">sets</span></div></div>
+          <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="cb.total">Total quantity</div><div class="kpi__value"><span data-bd-kpi-cap>—</span><span class="kpi__unit" data-i18n="bd.unit.sets">sets</span></div></div>
         </div>
 
         <section class="form-section form-section--outlined">
-          <div class="form-section__head">
-            <h3 class="form-section__title" data-i18n="bd.alloc.title">Item stock locks</h3>
-            <p class="form-section__sub" data-i18n="bd.stock.sub">Lock stock for this bundle, or leave it shared with the member’s other channels</p>
+          <div class="form-section__head form-section__head--actions">
+            <div class="form-section__head-titles">
+              <h3 class="form-section__title" data-i18n="bd.alloc.title">Item stock locks</h3>
+              <p class="form-section__sub" data-i18n="bd.stock.sub">Lock stock for this bundle, or leave it shared with the member’s other channels</p>
+            </div>
+            <!-- 編輯模式（2026-09-11 使用者）：預設唯讀，右上「編輯」開放欄位，卡底取消／儲存；同商品明細的鎖定就地編輯 -->
+            <div class="form-section__head-actions">
+              <button class="btn btn--outline btn--sm" type="button" data-bd-lock-edit><span data-i18n="bd.lock.edit">Edit</span></button>
+            </div>
           </div>
-          <div class="salloc salloc--bundle" id="bd-alloc">
-            <div class="salloc__row salloc__row--head">
-              <span></span>
-              <span style="text-align:right" data-i18n="stock.free">Unlocked</span>
-              <span data-i18n="stock.lock">Locked</span>
-              <span style="text-align:right" data-i18n="stock.sellable">Sellable</span>
+          <!-- 鎖定套數：整張清單的前提，一列講完（空白／0＝不鎖定） -->
+          <div class="lockset__sets">
+            <div class="lockset__sets-titles">
+              <span class="lockset__sets-title" data-i18n="bd.lock.sets">Locked sets</span>
+              <span class="lockset__sets-hint" data-bd-sets-hint></span>
             </div>
-            <!-- 硬上限與成員一樣佔一列（2026-09-09，與 create-bundle 同一套）：擺在表格外面時，
-                 設了上限卻看到另一個數字，兩件事讀起來像沒有關係。 -->
-            <div class="salloc__row salloc__row--cap" data-when-bd-edition="limited" data-feat="S45" hidden>
-              <span class="salloc__name">
-                <span><span data-i18n="cb.total">Total quantity</span> <span class="field__req">*</span></span>
-                <span class="salloc__sub" data-i18n="cb.total.hint">Hard cap · still limited by member stock</span>
-              </span>
-              <span class="salloc__qty salloc__qty--muted">—</span>
-              <span class="salloc__lock"><span class="salloc__qty" data-bd-cap-val>—</span></span>
-              <span class="salloc__qty" data-bd-cap-qty>—</span>
+            <div class="lockset__sets-ctl">
+              <span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" id="bd-lock-sets" placeholder="0" data-i18n-aria-label="bd.lock.sets" aria-label="Locked sets"><span class="amount-field__unit" data-i18n="bd.unit.sets">sets</span></span>
             </div>
-            <div class="salloc__row salloc__row--free" id="bd-alloc-total">
-              <span class="salloc__name">
-                <span data-i18n="stock.bundle-qty">Bundle sellable</span>
-                <span class="salloc__sub" data-bd-decider hidden></span>
-              </span>
-              <span class="salloc__qty" id="bd-bundle-qty">—</span>
-            </div>
+          </div>
+          <div class="lockset__title">
+            <span class="lockset__sets-title" data-i18n="bd.lock.items">Locked items</span>
+            <span class="lockset__sets-hint" data-i18n="bd.lock.items.hint">Single-option items lock N × quantity per set automatically; multi-option items can optionally pin which options to lock</span>
+          </div>
+          <div class="lockset" id="bd-alloc">
+            <div class="lockset__head"><span data-i18n="bd.lock.col.item">Items in bundle</span><span data-i18n="bd.lock.col.stock">Item stock</span><span data-i18n="stock.free">Unlocked</span><span data-i18n="bd.lock.col.locked">Locked</span><span></span></div>
+          </div>
+          <div class="form-section__actions" data-bd-lock-actions hidden>
+            <button class="btn btn--outline" type="button" data-bd-lock-cancel><span data-i18n="bd.lock.cancel">Cancel</span></button>
+            <button class="btn btn--primary" type="button" data-bd-lock-save><span data-i18n="product-detail.btn.save">Save</span></button>
           </div>
           </section>
 
         <!-- 鎖定歷史紀錄：一次儲存一筆（同商品詳情的 stock-history：data-list ＋ row-disclosure） -->
         <section class="form-section form-section--outlined">
           <div class="form-section__head">
-            <h3 class="form-section__title" data-i18n="bd.history.title">Lock history</h3>
+            <h3 class="form-section__title" data-i18n="bd.history.title">Activity log</h3>
             <p class="form-section__sub" data-i18n="bd.history.sub">One row per lock change — open a row for each member.</p>
           </div>
           <div class="data-list" data-bd-history></div>
@@ -230,7 +229,7 @@
             </nav>
             <div class="list-toolbar__actions">
               <button class="btn btn--ghost" type="button" data-view-safe data-bd-edit-cancel hidden data-i18n="payout.cancel">Cancel</button>
-              <button class="btn btn--outline" type="button" data-view-safe data-bd-editmode aria-pressed="false">
+              <button class="btn btn--outline" type="button" data-view-safe data-bd-editmode data-dock-icon aria-pressed="false">
                 <i data-lucide="pencil" class="ztor-icon"></i>
                 <span data-bd-editmode-label data-i18n="bd.btn.edit">Edit bundle</span>
               </button>
@@ -679,7 +678,10 @@
       saleStart: (seed && seed.saleStart) || null,
       saleEnd: (seed && seed.saleEnd) || null,
       lowThreshold: (seed && seed.lowThreshold) || 0,
-      draft: !!(seed && seed.draft)   /* 草稿：ListingState 讀 entity.draft，頁首徽章顯示「草稿」 */
+      draft: !!(seed && seed.draft),   /* 草稿：ListingState 讀 entity.draft，頁首徽章顯示「草稿」 */
+      /* 鎖定套數與逐規格分配（2026-09-11）：從組合記錄帶入；成員商品身上的組合鎖定是它導出的（applyBundleLock） */
+      lockSets: (seed && seed.lockSets !== undefined) ? seed.lockSets : null,
+      alloc: (seed && seed.alloc) ? JSON.parse(JSON.stringify(seed.alloc)) : {}
     };
 
     /* ── §2.6 取貨與核銷（5.1.5.9）：組合成員含現場 QR 領取商品才顯示這一區；規則本體在
@@ -724,8 +726,8 @@
     const lockErrors = {};
 
     const allocEl = document.getElementById('bd-alloc');
-    const allocTotalRow = document.getElementById('bd-alloc-total');
-    const bundleQtyEl = document.getElementById('bd-bundle-qty');
+    const setsInput = document.getElementById('bd-lock-sets');
+    const setsHint = document.querySelector('[data-bd-sets-hint]');
     const totalInput = document.getElementById('bd-total');
     const limitedEdition = () => {
       const a = document.querySelector('#bd-edition .selection-card--active');
@@ -737,171 +739,168 @@
       if (n === Infinity) { el.setAttribute('data-i18n', 'cb.stock.unlimited'); el.textContent = T('cb.stock.unlimited', 'Unlimited'); }
       else { el.removeAttribute('data-i18n'); el.textContent = String(n); }
     }
-    /* 一列一個成員：成員名、該商品的沒有被鎖定的庫存量（唯讀）、鎖定給本組合的量（可填）、本組合可售量。
-       **成員是多選項商品時（2026-09-10 · D258）**：組合包收的是「M 號 5 件」而不是「這件商品 5 件」，
-       所以那一列變成母列（唯讀加總）＋逐選項組合的子列（各自可填）。單一規格成員維持一列。
+    /* ── 商品庫存鎖定（2026-09-11 鎖定套數規則；視覺＝lab-bundle-lock.html L3 定案，元件 ds-components/lock-sets.css）──
+       組合填「鎖定幾套 N」，不再逐商品填鎖定量：
+         單一選項商品   已鎖定 ＝ N × 每套用量，系統算、唯讀
+         多選項商品     已鎖定同上；可展開逐規格「選填」分配，Σ ≤ N × 用量，少分配＝只限總數、規格不拘
+         N 的上限       各商品 floor(未鎖定 ÷ 用量) 取最小（ListingState.bundleMaxSets）
+         寫回商品       一律走 ListingState.applyBundleLock（成員商品身上的組合鎖定是導出值）
+       清單一列一個商品：縮圖＋名稱（一行 …）｜商品庫存｜未鎖定｜已鎖定；多選項母列末尾一個把手（row-disclosure）。
        只在成員清單變動時重建，數字更新走 refreshAlloc()，免得打字時輸入框被重建、失焦。 */
     function isMultiMember(p) { return !!(p && p.variant === 'multiple' && (p.variants || []).length); }
-    function lockInputHTML(attrs) {
-      return '<span class="salloc__lock"><div class="amount-field amount-field--suffix">'
-        + '<input class="input amount-field__input" inputmode="numeric" ' + attrs + ' data-i18n-aria-label="stock.lock" aria-label="Locked">'
-        + '<span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></div></span>';
+    const productsMap = () => { const map = {}; bundleModel.members.forEach(m => { const p = productOf(m.productId); if (p) map[m.productId] = p; }); return map; };
+    function applyLock() { if (LS && LS.applyBundleLock) LS.applyBundleLock(bundleModel, productsMap()); }
+    function memberLabel(m, p) {
+      const nameEl = document.querySelector('#bd-members [data-bd-pid="' + m.productId + '"] .data-list__title a');
+      return (nameEl && nameEl.textContent) || (p && p.name) || m.productId;
+    }
+    function thumbHTML(p) {
+      return p && p.img
+        ? '<img class="data-list__thumb data-list__thumb--lg" src="images/products/' + esc(p.img) + '" alt="">'
+        : '<span class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></span>';
+    }
+    function nameCellHTML(m, p, multi) {
+      const label = memberLabel(m, p);
+      return '<span class="lockset__name">' + thumbHTML(p) + '<span class="lockset__text">'
+        + '<span title="' + esc(label) + '"><a class="card__link" href="product-detail.html?id=' + esc(m.productId) + '">' + esc(label) + '</a></span>'
+        + (multi ? '<span class="lockset__sub" data-i18n="cp.var.multiple">Multiple options</span>' : '')
+        + '</span></span>';
     }
     function renderAlloc() {
       if (!allocEl) return;
       [...allocEl.querySelectorAll('[data-bd-alloc-row], [data-bd-alloc-group]')].forEach(r => r.remove());
-      const anchor = allocEl.querySelector('.salloc__row--cap') || allocTotalRow;
       bundleModel.members.forEach(m => {
         const p = productOf(m.productId);
-        const nameEl = document.querySelector('#bd-members [data-bd-pid="' + m.productId + '"] .data-list__title a');
-        const label = (nameEl && nameEl.textContent) || (p && p.name) || m.productId;
-        const link = '<a class="card__link" href="product-detail.html?id=' + esc(m.productId) + '">' + esc(label) + '</a>';
         const multi = isMultiMember(p);
-        /* 多選項成員：整組（母列＋逐組合子列）用站上的 row-disclosure（Q107 整組換層），
-           與鎖定歷史紀錄同一種展開語彙（2026-09-11 使用者裁示「1 要和 2 一樣的 UI」）；
-           把手是 .rowdis__toggle、展開由 js/row-disclosure.js 管，預設展開。 */
         const gid = 'alloc-' + m.productId;
         const row = document.createElement('div');
-        row.className = 'salloc__row' + (multi ? ' rowdis__head' : '');
+        row.className = 'lockset__row' + (multi ? ' lockset__row--sub rowdis__head' : '');
         row.setAttribute('data-bd-alloc-row', m.productId);
-        row.innerHTML = (multi
-            ? '<span class="salloc__name salloc__name--parent">'
-              + '<button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="' + gid + '" aria-expanded="true" aria-label="Show combinations" data-i18n-aria-label="stock.history.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button>'
-              + link + '<span class="salloc__sub" data-i18n="stock.per-variant">Per option combination</span></span>'
-            : '<span class="salloc__name">' + link + '</span>')
-          + '<span class="salloc__qty salloc__qty--muted" data-bd-free></span>'
-          + (multi ? '<span class="salloc__qty salloc__qty--muted" data-bd-lock-sum></span>' : lockInputHTML('data-bd-lock'))
-          + '<span class="salloc__qty" data-bd-sellable></span>'
-          + (multi ? '' : '<p class="salloc__error" data-i18n="stock.lock-err" hidden>Exceeds unlocked stock</p>');
+        row.innerHTML = nameCellHTML(m, p, multi)
+          + '<span class="lockset__num" data-bd-stock></span>'
+          + '<span class="lockset__num" data-bd-free></span>'
+          + '<span data-bd-lockcell></span>'
+          + (multi
+            ? '<span class="lockset__end"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="' + gid + '" aria-expanded="false" aria-label="Show options" data-i18n-aria-label="bd.lock.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span>'
+            : '<span></span>');
         if (multi) {
           const group = document.createElement('div');
           group.className = 'rowdis__group rowdis__group--gutter';
           group.setAttribute('data-bd-alloc-group', m.productId);
           group.appendChild(row);
           group.insertAdjacentHTML('beforeend', p.variants.map((v, vi) =>
-            '<div class="salloc__row rowdis__child salloc__row--child" data-rowdis-child="' + gid + '" data-bd-alloc-child="' + esc(m.productId) + '" data-bd-vi="' + vi + '">'
-            + '<span class="salloc__name">' + esc((v.combo || []).join(' / ')) + '</span>'
-            + '<span class="salloc__qty salloc__qty--muted" data-bd-free></span>'
-            + lockInputHTML('data-bd-lock data-bd-vi="' + vi + '"')
-            + '<span class="salloc__qty" data-bd-sellable></span>'
-            + '<p class="salloc__error" data-i18n="stock.lock-err" hidden>Exceeds unlocked stock</p></div>').join(''));
-          allocEl.insertBefore(group, anchor);
-          group.querySelectorAll('[data-bd-lock]').forEach((inp, vi) => {
-            const lock = LS && LS.variantLockOf(p.variants[vi], { bundle: bundleModel.id });
-            inp.value = (lock === null || lock === undefined) ? '' : String(lock);
+            '<div class="lockset__row lockset__child" data-rowdis-child="' + gid + '" hidden data-bd-alloc-child="' + esc(m.productId) + '" data-bd-vi="' + vi + '">'
+            + '<span class="lockset__name">' + esc((v.combo || []).join(' / ')) + '</span>'
+            + '<span class="lockset__num" data-bd-stock></span>'
+            + '<span class="lockset__num" data-bd-free></span>'
+            + '<span><span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" placeholder="0" data-bd-alloc-input data-bd-vi="' + vi + '" data-i18n-aria-label="stock.lock" aria-label="Locked"><span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></span></span>'
+            + '<span></span></div>').join(''));
+          allocEl.appendChild(group);
+          const a = (bundleModel.alloc || {})[m.productId] || {};
+          group.querySelectorAll('[data-bd-alloc-input]').forEach(inp => {
+            const q = a[Number(inp.dataset.bdVi)];
+            inp.value = (q === null || q === undefined || q === '') ? '' : String(q);
           });
         } else {
-          allocEl.insertBefore(row, anchor);
-          const inp = row.querySelector('[data-bd-lock]');
-          if (inp && p && LS) {
-            const lock = LS.lockOf(p, { bundle: bundleModel.id });
-            inp.value = lock === null ? '' : String(lock);
-          }
+          allocEl.appendChild(row);
         }
       });
       if (window.ztorIcons) window.ztorIcons.applyIcons(allocEl);
       if (window.applyI18n) window.applyI18n(allocEl);
+      if (window.rowDisclosure && window.rowDisclosure.sync) window.rowDisclosure.sync(allocEl);
       refreshAlloc();
     }
-    /* 母列的把手：展開／收合由 js/row-disclosure.js 管（2026-09-11 改接），數字仍在母列（加總）看得到。 */
 
     /* 數字、錯誤態、頁首徽章與右欄鏡射：組合可售量一律問 ListingState.bundleQty()。 */
     function refreshAlloc() {
       if (!LS) return;
       const cap = totalInput ? parseFloat(totalInput.value) : NaN;
       bundleModel.cap = (limitedEdition() && !isNaN(cap)) ? cap : null;
+      const map = productsMap();
+      const n = LS.bundleLockSets(bundleModel);
+      const lim = LS.bundleMaxSets(bundleModel, map);
+      const wanted = setsInput ? Math.floor(Number(setsInput.value.trim())) : NaN;
+      const over = setsInput && setsInput.value.trim() !== '' && !isNaN(wanted) && wanted > lim.max;
+      /* 鎖定套數欄：提示寫上限與誰壓的；超過上限紅字、不寫進模型（模型停在上一個合法值） */
+      if (setsInput) { if (over) setsInput.setAttribute('aria-invalid', 'true'); else setsInput.removeAttribute('aria-invalid'); }
+      if (setsHint) {
+        const by = lim.by ? T('stock.capped-by', 'Capped by {name}').replace('{name}', lim.by.name || '') : '';
+        const maxTxt = (lim.max === Infinity) ? T('cb.stock.unlimited', 'Unlimited') : String(lim.max);
+        setsHint.textContent = over
+          ? T('bd.lock.sets.over', 'Over the limit: up to {n} sets').replace('{n}', maxTxt) + (by ? '（' + by + '）' : '')
+          : T('bd.lock.sets.hint', 'Up to {n} sets').replace('{n}', maxTxt) + (by ? '（' + by + '）' : '') + T('bd.lock.sets.blank', '; blank = not locked');
+        setsHint.classList.toggle('is-over', !!over);
+      }
       bundleModel.members.forEach(m => {
-        const p = productOf(m.productId);
+        const p = map[m.productId];
         const row = allocEl && allocEl.querySelector('[data-bd-alloc-row="' + m.productId + '"]');
         const listRow = document.querySelector('#bd-members [data-bd-pid="' + m.productId + '"]');
-        const ch = { bundle: bundleModel.id };
         const multi = isMultiMember(p);
-        /* 多選項成員：母列讀各選項組合的加總，逐組合的數字與擋錯在子列。 */
-        const free = !p ? 0 : (multi ? LS.variantsFree(p.variants) : LS.freeQty(p));
+        const stock = !p ? 0 : (multi ? LS.variantsTotal(p.variants) : ((p.pool && (p.pool.total === 'unlimited')) ? Infinity : Number(p.pool && p.pool.total) || 0));
+        const free = !p ? 0 : LS.freeQty(p);
+        const locked = LS.bundleMemberLock(bundleModel, m);
+        const per = LS.memberPer(m);
         if (row) {
+          setQty(row.querySelector('[data-bd-stock]'), stock);
           setQty(row.querySelector('[data-bd-free]'), free);
-          setQty(row.querySelector('[data-bd-sellable]'), !p ? 0 : (multi ? LS.variantsChannelQty(p.variants, ch) : LS.channelQty(p, ch)));
-          if (multi) {
-            const sum = LS.variantsChannelLocked(p.variants, ch);
-            const sumEl = row.querySelector('[data-bd-lock-sum]');
-            if (sumEl) {
-              if (sum === null) { sumEl.setAttribute('data-i18n', 'stock.free'); sumEl.textContent = T('stock.free', 'Unlocked'); }
-              else { sumEl.removeAttribute('data-i18n'); sumEl.textContent = String(sum); }
+          const cell = row.querySelector('[data-bd-lockcell]');
+          if (cell) {
+            if (locked === null) {
+              cell.innerHTML = '<span class="lockset__nolock" data-i18n="bd.lock.shared">' + esc(T('bd.lock.shared', 'Not locked')) + '</span>';
+            } else {
+              const al = multi ? LS.bundleAllocOf(bundleModel, m, p) : null;
+              const sub = !multi ? '' : (al.over ? T('bd.lock.over', 'Exceeds locked qty') : (al.assigned ? T('bd.lock.assigned', '{n} pcs pinned').replace('{n}', al.assigned) : ''));
+              cell.innerHTML = '<span class="lockset__lockval"><span class="lockset__lockval-row"><span>' + locked
+                + (per > 1 ? '<span class="lockset__per">' + T('bd.lock.per', '{n} per set').replace('{n}', per) + '</span>' : '')
+                + '</span><span data-i18n="stock.unit-pcs">' + T('stock.unit-pcs', 'pcs') + '</span></span>'
+                + (multi ? '<span class="lockset__sub lockset__lockval-sub' + (al.over ? ' is-over' : '') + '">' + esc(sub) + '</span>' : '')
+                + '</span>';
             }
-            (p.variants || []).forEach((v, vi) => {
-              const child = allocEl && allocEl.querySelector('[data-bd-alloc-child="' + m.productId + '"][data-bd-vi="' + vi + '"]');
+          }
+          if (multi) {
+            const al = LS.bundleAllocOf(bundleModel, m, p);
+            al.rows.forEach(r => {
+              const child = allocEl.querySelector('[data-bd-alloc-child="' + m.productId + '"][data-bd-vi="' + r.vi + '"]');
               if (!child) return;
+              const v = p.variants[r.vi];
+              setQty(child.querySelector('[data-bd-stock]'), Number(v.stock) || 0);
               setQty(child.querySelector('[data-bd-free]'), LS.variantFree(v));
-              setQty(child.querySelector('[data-bd-sellable]'), LS.variantChannelQty(v, ch));
-              const cinp = child.querySelector('[data-bd-lock]');
-              const cmax = LS.validateVariantLock(v, ch, null).max;
-              if (cinp) cinp.placeholder = T('stock.lock-max', 'Up to {n}').replace('{n}', cmax);
-              const cbad = !!lockErrors[m.productId + '#' + vi];
-              child.classList.toggle('salloc__row--error', cbad);
-              const cerr = child.querySelector('.salloc__error');
-              if (cerr) cerr.hidden = !cbad;
-              if (cinp) { if (cbad) cinp.setAttribute('aria-invalid', 'true'); else cinp.removeAttribute('aria-invalid'); }
+              const inp = child.querySelector('[data-bd-alloc-input]');
+              if (inp) {
+                inp.disabled = (locked === null) || !lockEditing;
+                if (r.bad) inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid');
+              }
             });
-          } else {
-            const inp = row.querySelector('[data-bd-lock]');
-            const max = p ? LS.validateLock(p, ch, 0).max : 0;
-            if (inp) inp.placeholder = (max === Infinity) ? '' : T('stock.lock-max', 'Up to {n}').replace('{n}', max);
-            const bad = !!lockErrors[m.productId];
-            row.classList.toggle('salloc__row--error', bad);
-            const err = row.querySelector('.salloc__error');
-            if (err) err.hidden = !bad;
-            if (inp) { if (bad) inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid'); }
           }
         }
         /* 成員清單只顯示、不重複提供編輯：同一個數字不做兩個入口。 */
-        const lock = !p ? null : (multi ? LS.variantsChannelLocked(p.variants, ch) : LS.lockOf(p, ch));
         if (listRow) {
           setQty(listRow.querySelector('[data-bd-free]'), free);
           const lockEl = listRow.querySelector('[data-bd-lock]');
-          if (lockEl) { if (lock === null) { lockEl.removeAttribute('data-i18n'); lockEl.textContent = '—'; } else setQty(lockEl, lock); }
+          if (lockEl) { if (locked === null) { lockEl.removeAttribute('data-i18n'); lockEl.textContent = '—'; } else setQty(lockEl, locked); }
         }
       });
-      /* 硬上限那一列：右欄寫出這道上限給得起幾件，與成員列同一種讀法。 */
-      const capRow = allocEl && allocEl.querySelector('.salloc__row--cap');
-      const capQty = capRow && capRow.querySelector('[data-bd-cap-qty]');
-      const capOn = bundleModel.cap !== null && bundleModel.cap >= 0;
-      if (capQty) { if (capOn) setQty(capQty, bundleModel.cap); else { capQty.removeAttribute('data-i18n'); capQty.textContent = '—'; } }
-      const capVal = capRow && capRow.querySelector('[data-bd-cap-val]');
-      if (capVal) capVal.textContent = capOn ? String(bundleModel.cap) : '—';
 
       const qty = LS.bundleQty(bundleModel, allProducts());
-      setQty(bundleQtyEl, qty);
       if (kpiQty) setQty(kpiQty, qty);
-      refreshBadges(qty);
-
-      /* 末列的數字是取最小的結果，說出是誰給的——某個成員，還是這個組合自己的硬上限。 */
-      const decider = allocEl && allocEl.querySelector('[data-bd-decider]');
-      if (decider) {
-        let name = null, min = Infinity;
-        bundleModel.members.forEach(m => {
-          const p = productOf(m.productId);
-          if (!p) return;
-          const q = LS.channelQty(p, { bundle: bundleModel.id });
-          if (q < min) { min = q; name = p.name; }
-        });
-        if (capOn && bundleModel.cap <= min) name = T('cb.total', 'Total quantity');
-        const show = !!name && qty !== Infinity;
-        decider.hidden = !show;
-        if (show) decider.textContent = T('stock.capped-by', 'Capped by {name}').replace('{name}', name);
-        const capped = document.querySelector('[data-bd-kpi-capped]');
-        if (capped) capped.textContent = show ? name : '—';
+      const kSets = document.querySelector('[data-bd-kpi-sets]');
+      if (kSets) { if (n === null) { kSets.setAttribute('data-i18n', 'bd.lock.none'); kSets.textContent = T('bd.lock.none', 'None'); } else setQty(kSets, n); }
+      const kCap = document.querySelector('[data-bd-kpi-cap]');
+      const capOn = bundleModel.cap !== null && bundleModel.cap >= 0;
+      if (kCap) { if (capOn) setQty(kCap, bundleModel.cap); else setQty(kCap, Infinity); const u = kCap.parentElement && kCap.parentElement.querySelector('.kpi__unit'); if (u) u.hidden = !capOn; }   /* 「不限量」後面不接「套」 */
+      /* 可售套數的一句說明：鎖定時「鎖定 N 套」；不鎖定時寫是誰壓出這個數字（成員或組合上限） */
+      const meta = document.querySelector('[data-bd-kpi-qty-meta]');
+      if (meta) {
+        let txt = '';
+        if (n !== null) txt = T('bd.lock.meta.locked', 'Locked {n} sets').replace('{n}', n);
+        else if (qty !== Infinity) {
+          let name = lim.by ? lim.by.name : null;
+          if (capOn && bundleModel.cap <= lim.max) name = T('cb.total', 'Total quantity');
+          if (name) txt = T('stock.capped-by', 'Capped by {name}').replace('{name}', name);
+        }
+        meta.hidden = !txt; meta.textContent = txt;
       }
-      /* 組合庫存的四塊磚（2026-09-11）：可售組數（上面已設）、已鎖定成員／未鎖定成員（逐成員看本組合有沒有鎖定量）、卡住的成員 */
-      let lockedN = 0, unlockedN = 0;
-      bundleModel.members.forEach(m => {
-        const p = productOf(m.productId); if (!p) return;
-        const ch = { bundle: bundleModel.id };
-        const l = isMultiMember(p) ? LS.variantsChannelLocked(p.variants, ch) : LS.lockOf(p, ch);
-        if (l === null) unlockedN++; else lockedN++;
-      });
-      const kl = document.querySelector('[data-bd-kpi-locked]'), ku = document.querySelector('[data-bd-kpi-unlocked]');
-      if (kl) kl.textContent = String(lockedN);
-      if (ku) ku.textContent = String(unlockedN);
+      refreshBadges(qty);
     }
     /* 頁首徽章：主徽章走 deriveFlags（跳過 hidden 那一層），「已隱藏」另掛一顆。 */
     function refreshBadges(qty) {
@@ -917,63 +916,104 @@
       const hidden = document.getElementById('bd-hidden-badge');
       if (hidden) hidden.hidden = !f.hidden;
     }
-    /* 切語言後把「最多 N」這種由 JS 寫進去的字重算一次（data-i18n 的部分 applyI18n 自己會接手）。 */
-    document.addEventListener('i18n:applied', () => refreshAlloc());
-    /* 鎖定量：清空＝取消鎖定（回去共用沒有被鎖定的庫存量）；填數字＝鎖定模式（含 0）。
-       超過上限就不寫進池——寫了沒有被鎖定的庫存量會被吃掉，下一次校驗的上限就跟著失準。 */
-    if (allocEl) allocEl.addEventListener('input', e => {
-      const inp = e.target.closest('[data-bd-lock]');
-      if (!inp || !LS) return;
-      const child = inp.closest('[data-bd-alloc-child]');
-      const host = child || inp.closest('[data-bd-alloc-row]');
-      const pid = child ? child.getAttribute('data-bd-alloc-child') : (host && host.getAttribute('data-bd-alloc-row'));
-      const p = pid && productOf(pid);
-      if (!p) return;
-      const ch = { bundle: bundleModel.id };
-      const raw = inp.value.trim();
-      const memberName = p.name || pid;
-      let before;
-      if (child) {
-        /* 多選項成員：寫進那一個選項組合的 locks.bundles（D258）。 */
-        const vi = Number(child.getAttribute('data-bd-vi'));
-        const variant = (p.variants || [])[vi];
-        if (!variant) return;
-        const key = pid + '#' + vi;
-        before = LS.variantLockOf(variant, ch);
-        if (!variant.locks) variant.locks = { single: null, bundles: {} };
-        if (!variant.locks.bundles) variant.locks.bundles = {};
-        if (raw === '') { variant.locks.bundles[bundleModel.id] = null; delete lockErrors[key]; }
-        else {
-          const n = Math.floor(Number(raw));
-          const v = (isNaN(n) || n < 0) ? { ok: false } : LS.validateVariantLock(variant, ch, n);
-          if (v.ok) { variant.locks.bundles[bundleModel.id] = n; delete lockErrors[key]; }
-          else lockErrors[key] = true;
-        }
-      } else {
-        before = LS.lockOf(p, ch);
-        if (raw === '') { p.pool.locks.bundles[bundleModel.id] = null; delete lockErrors[pid]; }
-        else {
-          const n = Math.floor(Number(raw));
-          const v = (isNaN(n) || n < 0) ? { ok: false } : LS.validateLock(p, ch, n);
-          if (v.ok) { p.pool.locks.bundles[bundleModel.id] = n; delete lockErrors[pid]; }
-          else lockErrors[pid] = true;
-        }
-      }
-      refreshAlloc();
-      /* 鎖定歷史：每個欄位改完（離開欄位）記一筆，逐成員前 → 後 */
-      const after = child ? LS.variantLockOf((p.variants || [])[Number(child.getAttribute('data-bd-vi'))], ch) : LS.lockOf(p, ch);
-      inp.dataset.bdBefore = (inp.dataset.bdBefore === undefined) ? String(before === null ? '' : before) : inp.dataset.bdBefore;
-      inp.dataset.bdAfter = String(after === null ? '' : after);
-      inp.dataset.bdLabel = memberName + (child ? ' · ' + ((p.variants || [])[Number(child.getAttribute('data-bd-vi'))].combo || []).join(' / ') : '');
+    /* 切語言後把「最多 N 套」這種由 JS 寫進去的字重算一次（data-i18n 的部分 applyI18n 自己會接手）。 */
+    document.addEventListener('ztor:lang-changed', () => refreshAlloc());
+
+    /* ── 編輯模式（2026-09-11 使用者：「右上要有一個編輯按鈕，點了才能編輯，編輯完要儲存」）──
+       預設唯讀：套數欄與規格分配欄都停用。按「編輯」先拍快照（套數＋分配＋各成員導出量），欄位開放；
+       打字時模型即時更新、數字跟著跑（可售套數、未鎖定量都看得到後果）；「取消」把快照寫回；
+       「儲存」才記一筆操作紀錄（鎖定套數前 → 後＋逐成員導出量前 → 後；只改規格分配就記那幾格）。 */
+    const lockEditBtn = document.querySelector('[data-bd-lock-edit]');
+    const lockActions = document.querySelector('[data-bd-lock-actions]');
+    const lockSaveBtn = document.querySelector('[data-bd-lock-save]');
+    let lockEditing = false, lockSnap = null;
+    const memberDeltaSnapshot = () => bundleModel.members.map(m => ({ productId: m.productId, lock: LS ? LS.bundleMemberLock(bundleModel, m) : null }));
+    function lockSnapshot() {
+      return { lockSets: bundleModel.lockSets, alloc: JSON.parse(JSON.stringify(bundleModel.alloc || {})), members: memberDeltaSnapshot() };
+    }
+    function lockHasError() {
+      if (!LS) return false;
+      if (setsInput && setsInput.getAttribute('aria-invalid') === 'true') return true;
+      return bundleModel.members.some(m => {
+        const p = productOf(m.productId);
+        if (!isMultiMember(p) || LS.bundleLockSets(bundleModel) === null) return false;
+        const al = LS.bundleAllocOf(bundleModel, m, p);
+        return al.over || al.rows.some(r => r.bad);
+      });
+    }
+    function syncLockEditing() {
+      if (setsInput) setsInput.disabled = !lockEditing;
+      if (allocEl) allocEl.querySelectorAll('[data-bd-alloc-input]').forEach(inp => { inp.disabled = !lockEditing || (LS && LS.bundleLockSets(bundleModel) === null); });
+      if (lockEditBtn) lockEditBtn.hidden = lockEditing;
+      if (lockActions) lockActions.hidden = !lockEditing;
+      if (lockSaveBtn) lockSaveBtn.disabled = lockHasError();
+    }
+    if (lockEditBtn) lockEditBtn.addEventListener('click', () => {
+      lockSnap = lockSnapshot(); lockEditing = true; syncLockEditing();
+      if (setsInput) setsInput.focus();
     });
-    if (allocEl) allocEl.addEventListener('focusout', e => {
-      const inp = e.target.closest('[data-bd-lock]');
-      if (!inp || inp.dataset.bdBefore === undefined) return;
-      const b = inp.dataset.bdBefore, a = inp.dataset.bdAfter;
-      delete inp.dataset.bdBefore; delete inp.dataset.bdAfter;
-      if (b === a) return;
-      const fmt = v => (v === '' ? '—' : v);
-      bdHistory.add({ items: [{ combo: inp.dataset.bdLabel || '', delta: fmt(b) + ' → ' + fmt(a) }] });
+    document.querySelector('[data-bd-lock-cancel]')?.addEventListener('click', () => {
+      if (lockSnap) {
+        bundleModel.lockSets = lockSnap.lockSets; bundleModel.alloc = JSON.parse(JSON.stringify(lockSnap.alloc));
+        applyLock();
+        if (setsInput) setsInput.value = bundleModel.lockSets === null ? '' : String(bundleModel.lockSets);
+      }
+      lockEditing = false; lockSnap = null;
+      renderAlloc(); syncLockEditing();
+      if (window.bdRenderSettingsOverview) window.bdRenderSettingsOverview();
+    });
+    if (lockSaveBtn) lockSaveBtn.addEventListener('click', () => {
+      if (!LS || lockHasError()) return;
+      const fmt = v => ((v === '' || v === null || v === undefined) ? T('stock.history.unset', 'Unset') : String(v));
+      const before = lockSnap || lockSnapshot();
+      const b = before.lockSets, a = LS.bundleLockSets(bundleModel);
+      const items = [];
+      if (b !== a) {
+        bundleModel.members.forEach(m => {
+          const was = (before.members.find(x => x.productId === m.productId) || {}).lock;
+          items.push({ productId: m.productId, delta: fmt(was) + ' → ' + fmt(LS.bundleMemberLock(bundleModel, m)) });
+        });
+      }
+      /* 規格分配的變動：逐格比對快照 */
+      bundleModel.members.forEach(m => {
+        const p = productOf(m.productId); if (!isMultiMember(p)) return;
+        const was = (before.alloc || {})[m.productId] || {}, now = (bundleModel.alloc || {})[m.productId] || {};
+        p.variants.forEach((v, vi) => {
+          const x = was[vi] === undefined ? null : was[vi], y = now[vi] === undefined ? null : now[vi];
+          if (x !== y) items.push({ productId: m.productId, combo: (v.combo || []).join(' / '), delta: fmt(x) + ' → ' + fmt(y) });
+        });
+      });
+      if (items.length) bdHistory.add(Object.assign({ items: items }, b !== a ? { sets: fmt(b) + ' → ' + fmt(a) } : {}));
+      lockEditing = false; lockSnap = null;
+      syncLockEditing();
+    });
+    /* 鎖定套數：空白／0＝不鎖定；填正數＝鎖定 N 套。超過上限不寫進模型（成員會被鎖到負數），只標紅。 */
+    if (setsInput) setsInput.addEventListener('input', () => {
+      if (!LS) return;
+      const raw = setsInput.value.trim();
+      const lim = LS.bundleMaxSets(bundleModel, productsMap());
+      const n = raw === '' ? null : Math.floor(Number(raw));
+      if (raw === '' || (!isNaN(n) && n >= 0 && n <= lim.max)) {
+        bundleModel.lockSets = (n === null || n <= 0) ? null : n;
+        applyLock();
+      }
+      refreshAlloc(); syncLockEditing();
+      if (window.bdRenderSettingsOverview) window.bdRenderSettingsOverview();
+    });
+    /* 逐規格分配（選填）：寫進 bundleModel.alloc[商品][規格]，Σ 超過 N × 用量或單格超過該規格未鎖定量都標紅、儲存鈕停用。 */
+    if (allocEl) allocEl.addEventListener('input', e => {
+      const inp = e.target.closest('[data-bd-alloc-input]');
+      if (!inp || !LS) return;
+      const child = inp.closest('[data-bd-alloc-child]'); if (!child) return;
+      const pid = child.getAttribute('data-bd-alloc-child');
+      const vi = Number(child.getAttribute('data-bd-vi'));
+      if (!bundleModel.alloc) bundleModel.alloc = {};
+      if (!bundleModel.alloc[pid]) bundleModel.alloc[pid] = {};
+      const raw = inp.value.trim();
+      const n = raw === '' ? null : Math.floor(Number(raw));
+      bundleModel.alloc[pid][vi] = (n === null || isNaN(n) || n <= 0) ? null : n;
+      applyLock();
+      refreshAlloc(); syncLockEditing();
     });
 
     /* ── 三個開關（互相獨立，不互相蘊含）───────────────────────────────── */
@@ -1096,7 +1136,8 @@
 
     paintSwitch(listedSwitch, bundleModel.listed);
     syncShown();
-    renderAlloc();
+    if (setsInput) setsInput.value = (bundleModel.lockSets === null || bundleModel.lockSets === undefined) ? '' : String(bundleModel.lockSets);
+    renderAlloc(); syncLockEditing();
 
     /* 組合價格（D103）：base 自動（唯讀）＋折扣 %；折後＝base×(1−%)。
        2026-09-11：base 改成成員價加總（memberItems.price 的數字），折扣 % 讀組合記錄的 discountPct；
@@ -1256,14 +1297,17 @@
     const today = () => { const d = new Date(); return d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0'); };
     /* 初始紀錄從組合記錄的 history 深拷貝（2026-09-11 起不再由頁面對每個組合硬插 2 筆）；
        items 的 productId 在這裡換成成員商品名（combo），沒有 productId 就用 combo 字面值。 */
+    /* 明細列：商品名（多選項有指定規格時再接「 · 規格」）；沒有 productId 就用 combo 字面值 */
+    const histItem = it => {
+      const p = it.productId ? productOf(it.productId) : null;
+      const name = p ? p.name : (it.productId || '—');
+      return { combo: it.productId ? (name + (it.combo ? ' · ' + it.combo : '')) : (it.combo || '—'), delta: it.delta || '' };
+    };
     (function initHist() {
       const src = Array.isArray(detail.history) ? JSON.parse(JSON.stringify(detail.history)) : [];
       src.forEach((h, i) => {
         h.id = h.id || ('b' + (i + 1));
-        h.items = (h.items || []).map(it => {
-          const p = it.productId ? productOf(it.productId) : null;
-          return { combo: it.combo || (p ? p.name : (it.productId || '—')), delta: it.delta || '' };
-        });
+        h.items = (h.items || []).map(histItem);
         HIST.push(h);
       });
       hseq = HIST.length;
@@ -1272,13 +1316,17 @@
       const host = document.querySelector('[data-bd-history]'); if (!host) return;
       host.innerHTML = HIST.map(h => {
         const gid = 'bh-' + h.id;
-        const summary = h.items.map(i => esc(i.combo) + ' <span class="shist__delta">' + esc(i.delta) + '</span>').join('<span class="text-sub"> · </span>');
+        const unset = d => String(d || '').replace(/^—(?=\s*→)/, T('stock.history.unset', 'Unset'));
+        /* 摘要：有鎖定套數的改動就寫「鎖定套數 前 → 後」一句（逐商品在明細）；只改規格分配的寫那一筆 */
+        const summary = h.sets
+          ? '<span data-i18n="bd.history.sets">Locked sets</span> <span class="shist__delta">' + esc(unset(h.sets)) + '</span>'
+          : h.items.map(i => esc(i.combo) + ' <span class="shist__delta">' + esc(unset(i.delta)) + '</span>').join('<span class="text-sub"> · </span>');
         let out = '<div class="rowdis__group rowdis__group--gutter"><div class="data-list__row rowdis__head" data-rowdis-row="' + gid + '">' +
           '<div class="data-list__row-main"><span class="shist__date">' + esc(h.date) + '</span><span class="shist__type"><span class="badge badge--neutral"><span data-i18n="stock.history.type.lock">Lock</span></span></span>' +
           '<div class="data-list__body"><div class="data-list__title">' + summary + '</div><div class="data-list__meta" data-i18n="bd.history.meta">Locked for this bundle</div></div></div>' +
           '<div class="shist__end"><span class="badge badge--success"><span data-i18n="restock.status.done">Completed</span></span>' +
           '<button class="btn btn--icon btn--sm rowdis__toggle" type="button" data-rowdis="' + gid + '" aria-expanded="false" aria-label="Show details" data-i18n-aria-label="stock.history.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div></div>';
-        h.items.forEach(i => { out += '<div class="data-list__row rowdis__child rowdis__child--compact shist__child" data-rowdis-child="' + gid + '" hidden><div class="data-list__row-main"><span class="shist__k">' + esc(i.combo) + '</span><span class="shist__v"><span class="shist__delta">' + esc(i.delta) + '</span></span></div></div>'; });
+        h.items.forEach(i => { out += '<div class="data-list__row rowdis__child rowdis__child--compact shist__child" data-rowdis-child="' + gid + '" hidden><div class="data-list__row-main"><span class="shist__k">' + esc(i.combo) + '</span><span class="shist__v"><span class="shist__delta">' + esc(unset(i.delta)) + '</span></span></div></div>'; });
         return out + '</div>';
       }).join('');
       if (window.ztorIcons) window.ztorIcons.applyIcons(host);
@@ -1287,7 +1335,7 @@
       host.hidden = !HIST.length;
       if (empty) empty.hidden = !!HIST.length;
     }
-    const bdHistory = { add(entry) { HIST.unshift(Object.assign({ id: 'b' + (++hseq), date: today() }, entry)); renderHistory(); } };
+    const bdHistory = { add(entry) { HIST.unshift(Object.assign({ id: 'b' + (++hseq), date: today() }, entry, { items: (entry.items || []).map(histItem) })); renderHistory(); } };
     renderHistory();
     document.addEventListener('ztor:lang-changed', renderHistory);
 
@@ -1298,39 +1346,70 @@
       const on = id => { const el = document.getElementById(id); return !!(el && el.classList.contains('switch--on')); };
       const imgs = document.querySelectorAll('[data-nav-panel="info"] .upload-tile.is-filled').length;
       const rows = [];
-      rows.push({ go: 'info', key: 'cb.info.title', fb: 'Bundle info', v: v('bd-name') });
-      rows.push({ go: 'info', key: 'cb.media.show', fb: 'Show it off', v: imgs ? T('product-detail.setov.images', '{n} images').replace('{n}', imgs) : T('product-detail.setov.none', 'None') });
-      rows.push({ go: 'members', key: 'cb.items', fb: 'Items', v: T('product-detail.kpi.links-meta-items', '{n} items').replace('{n}', bundleModel.members.length) });
-      const disc = v('bd-discount');
-      rows.push({ go: 'pricing', key: 'cb.pricing', fb: 'Bundle price', v: (bdAuto ? bdAuto.textContent : '') + (disc && Number(disc) > 0 ? ' · −' + disc + '%' : '') });
-      const salePct = v('bd-sale-percent');
-      rows.push({ go: 'pricing', key: 'cp.discount.title', fb: 'Discount settings', v: [on('bd-sale-toggle') ? (T('cp.discount.limited', 'Limited-time discount') + (salePct ? ' −' + salePct + '%' : '')) : T('product-detail.setov.off', 'Off'), on('bd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : ''].filter(Boolean).join(' · ') });
+      /* 分四組（2026-09-11 使用者裁示，同商品詳情）：基本資料 → 商品與定價 → 庫存與交付 → 上架與開賣 */
+      rows.push({ g: 'basic', go: 'info', key: 'cb.info.title', fb: 'Bundle info', v: v('bd-name') });
+      rows.push({ g: 'basic', go: 'info', key: 'cb.media.show', fb: 'Show it off', v: imgs ? T('product-detail.setov.images', '{n} images').replace('{n}', imgs) : T('product-detail.setov.none', 'None') });
       const films = document.querySelectorAll('[data-bd-film-picker] .tag-input__field .chip').length;
-      rows.push({ go: 'tab:links', key: 'pd.films.title', fb: 'Linked movies', v: films ? T('product-detail.setov.films', '{n} movies').replace('{n}', films) : T('product-detail.setov.none', 'None') });
+      rows.push({ g: 'basic', go: 'tab:links', key: 'pd.films.title', fb: 'Linked movies', v: films ? T('product-detail.setov.films', '{n} movies').replace('{n}', films) : T('product-detail.setov.none', 'None') });
+      rows.push({ g: 'pricing', go: 'members', key: 'cb.items', fb: 'Items', v: T('product-detail.kpi.links-meta-items', '{n} items').replace('{n}', bundleModel.members.length) });
+      const disc = v('bd-discount');
+      rows.push({ g: 'pricing', go: 'pricing', key: 'cb.pricing', fb: 'Bundle price', v: (bdAuto ? bdAuto.textContent : '') + (disc && Number(disc) > 0 ? ' · −' + disc + '%' : '') });
+      const salePct = v('bd-sale-percent');
+      rows.push({ g: 'pricing', go: 'pricing', key: 'cp.discount.title', fb: 'Discount settings', v: [on('bd-sale-toggle') ? (T('cp.discount.limited', 'Limited-time discount') + (salePct ? ' −' + salePct + '%' : '')) : T('product-detail.setov.off', 'Off'), on('bd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : ''].filter(Boolean).join(' · ') });
+      /* 庫存與交付：鎖定套數（值＝N 套／未鎖定，點過去到組合庫存分頁） */
+      const lockN = LS ? LS.bundleLockSets(bundleModel) : null;
+      rows.push({ g: 'ops', go: 'tab:stock', key: 'bd.lock.sets', fb: 'Locked sets', v: lockN === null ? T('bd.lock.none', 'None') : lockN + ' ' + T('bd.unit.sets', 'sets') });
       /* 上架／顯示／開賣三態一列（2026-09-11，同商品詳情） */
       const nowT = Date.now();
       const sStart = v('bd-sale-open'), sEnd = v('bd-sale-close');
       const saleOn = !(bdSaleMode === 'schedule' && sStart && new Date(sStart).getTime() > nowT) && !(sEnd && new Date(sEnd).getTime() <= nowT);
       const listedOn = on('bd-listed');
-      rows.push({ go: 'publish', key: 'product-detail.setov.listing-sale', fb: 'Listing & sale', html: stateChecksHTML([
-        { key: 'product-detail.setov.st-listed', fb: 'Listed', on: listedOn },
-        { key: 'product-detail.setov.st-shown', fb: 'Shown in store', on: listedOn && on('bd-shown') },
-        { key: 'product-detail.setov.st-sale', fb: 'On sale', on: listedOn && saleOn }
-      ]) });
+      /* 三態各自一列（2026-09-11 使用者：有的有定時上下架或開賣，要個別顯示） */
+      const fmtT = x => String(x || '').replace('T', ' ').slice(0, 16);
+      const listAt = v('bd-list-at'), unlistAt = on('bd-unlist-toggle') ? v('bd-unlist-at') : '';
+      const listFuture = listedOn && listAt && new Date(listAt).getTime() > nowT;
+      const listedNow = listedOn && !listFuture;
+      /* 三列各自一到兩顆狀態：現況一顆，排了時間再加一顆「排定」（2026-09-11 使用者） */
+      const listItems = !listedOn ? [{ kind: 'off', text: T('product-detail.setov.ls.unlisted', 'Not listed') }]
+        : [listFuture ? { kind: 'scheduled', text: T('product-detail.setov.ls.list-at', 'Lists {t}').replace('{t}', fmtT(listAt)) } : { kind: 'on', text: T('product-detail.setov.ls.listed', 'Listed') }];
+      if (listedOn && unlistAt) listItems.push({ kind: 'scheduled', text: T('product-detail.setov.ls.unlist-at', 'Unlists {t}').replace('{t}', fmtT(unlistAt)) });
+      rows.push({ g: 'listing', go: 'publish', key: 'product-detail.setov.st-listed', fb: 'Listed', html: stateChecksHTML(listItems) });
+      const shownOn = listedNow && on('bd-shown');
+      rows.push({ g: 'listing', go: 'publish', key: 'product-detail.setov.st-shown', fb: 'Shown in store', html: stateChecksHTML([
+        !listedNow ? { kind: 'off', text: T('product-detail.setov.ls.unlisted', 'Not listed') }
+        : shownOn ? { kind: 'on', text: T('product-detail.setov.ls.shown', 'Shown') }
+        : { kind: 'off', text: T('product-detail.setov.ls.hidden', 'Hidden · private link') }]) });
+      const saleFuture = bdSaleMode === 'schedule' && sStart && new Date(sStart).getTime() > nowT;
+      const saleEnded = sEnd && new Date(sEnd).getTime() <= nowT;
+      const saleItems = !listedNow ? [{ kind: 'off', text: T('product-detail.setov.ls.na', 'Needs listing first') }]
+        : saleFuture ? [{ kind: 'scheduled', text: T('product-detail.setov.ls.sale-at', 'Sale starts {t}').replace('{t}', fmtT(sStart)) }]
+        : saleEnded ? [{ kind: 'ended', text: T('product-detail.setov.ls.ended', 'Sale ended') }]
+        : [{ kind: 'on', text: T('product-detail.setov.ls.on-sale', 'On sale') }];
+      if (listedNow && !saleEnded && sEnd) saleItems.push({ kind: 'scheduled', text: T('product-detail.setov.ls.sale-end', 'ends {t}').replace('{t}', fmtT(sEnd)) });
+      rows.push({ g: 'listing', go: 'publish', key: 'product-detail.setov.st-sale', fb: 'On sale', html: stateChecksHTML(saleItems) });
       return rows;
     }
 
-    /* 上架與開賣三態（2026-09-11 使用者：拆出來、做成 checkbox 形式）：唯讀的 state-check，值由三組開關與排程推導 */
-    function stateChecksHTML(states) {
-      return '<div class="state-checks">' + states.map(function (s) {
-        return '<span class="state-check' + (s.on ? ' state-check--on' : '') + '"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon" aria-hidden="true"></i></span><span class="state-check__label" data-i18n="' + s.key + '">' + esc(T(s.key, s.fb)) + '</span></span>';
+    /* 一格一到兩個狀態（2026-09-11：五種長相，排程是自己一顆「排定」狀態、直排在現況下面）
+       kind：on／scheduled／off／ended／na */
+    const STATE_ICON = { on: 'check', scheduled: 'clock', off: 'x', ended: 'minus', na: 'x' };
+    function stateChecksHTML(items) {
+      return '<div class="state-checks' + (items.length > 1 ? ' state-checks--stack' : '') + '">' + items.map(it => {
+        const icon = STATE_ICON[it.kind] ? '<i data-lucide="' + STATE_ICON[it.kind] + '" class="ztor-icon" aria-hidden="true"></i>' : '';
+        return '<span class="state-check state-check--' + it.kind + '"><span class="state-check__mark">' + icon + '</span><span class="state-check__label">' + esc(it.text) + '</span></span>';
       }).join('') + '</div>';
     }
     function renderBdSettingsOverview() {
       if (!setovHost) return;
-      setovHost.innerHTML = bdSetovRows().map(r => '<div class="data-list__row data-list__row--go" role="button" tabindex="0" data-bd-setov-go="' + r.go + '" aria-label="' + esc(T('product-detail.setov.go', 'Go to setting')) + '">' +
+      const groups = { basic: 'product-detail.setov.group.basic', pricing: 'bd.setov.group.pricing', ops: 'product-detail.setov.group.ops', listing: 'product-detail.setov.group.listing' };
+      const rows = bdSetovRows();
+      const rowHTML = r => '<div class="data-list__row data-list__row--go" role="button" tabindex="0" data-bd-setov-go="' + r.go + '" aria-label="' + esc(T('product-detail.setov.go', 'Go to setting')) + '">' +
         '<div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta" data-i18n="' + r.key + '">' + esc(T(r.key, r.fb)) + '</div><div class="data-list__title">' + (r.html || esc(r.v || '—')) + '</div></div></div>' +
-        '<span class="data-list__go" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></span></div>').join('');
+        '<span class="data-list__go" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></span></div>';
+      setovHost.innerHTML = Object.keys(groups).map(g => {
+        const mine = rows.filter(r => r.g === g); if (!mine.length) return '';
+        return '<section class="form-section form-section--outlined"><div class="form-section__head"><h3 class="form-section__title" data-i18n="' + groups[g] + '">' + esc(T(groups[g], g)) + '</h3></div><div class="data-list">' + mine.map(rowHTML).join('') + '</div></section>';
+      }).join('');
       if (window.ztorIcons) window.ztorIcons.applyIcons(setovHost);
     }
     window.bdRenderSettingsOverview = renderBdSettingsOverview;
@@ -1377,12 +1456,12 @@
         mark(key); spyOff = true;
         const sc = scroller(); const scTop = sc.getBoundingClientRect ? sc.getBoundingClientRect().top : 0;
         const bar = document.querySelector('.detail-topbar'); const tb = root.querySelector('.list-toolbar');
-        const offset = (bar ? Math.max(0, bar.offsetHeight - scTop) : 0) + (tb ? tb.offsetHeight : 0) + 18;
+        const offset = (bar ? Math.max(0, bar.offsetHeight - scTop) : 0) + 18;   /* Dock（2026-09-11）：工具列不再自己吸頂、會被頂列收編，讓位只算頂列 */
         sc.scrollTo({ top: Math.max(0, sc.scrollTop + t.getBoundingClientRect().top - scTop - offset), behavior: 'smooth' });
         clearTimeout(spyTimer); spyTimer = setTimeout(() => { spyOff = false; mark(key); }, 920);
       };
       root.addEventListener('click', e => { const b = e.target.closest('[data-nav-item]'); if (b && !b.hidden) go(b.dataset.navItem); });
-      const LINE = () => { const tb = root.querySelector('.list-toolbar'); return tb ? tb.getBoundingClientRect().bottom + 30 : 96; };
+      const LINE = () => { const bar = document.querySelector('.detail-topbar.is-stuck'); if (bar) return bar.getBoundingClientRect().bottom + 30; const tb = root.querySelector('.list-toolbar'); return tb ? tb.getBoundingClientRect().bottom + 30 : 96; };
       const sync = () => {
         if (spyOff) return;
         const panel = root.closest('.tab-panel'); if (panel && !panel.classList.contains('tab-panel--active')) return;

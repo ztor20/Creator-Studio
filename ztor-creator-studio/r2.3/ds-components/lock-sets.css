@@ -1,0 +1,129 @@
+/* ============================================================
+   lock-sets.css · 組合包「鎖定套數」區（規則：2026-09-11 使用者重定義；規格待補 D266）
+   ------------------------------------------------------------
+   組合包不再逐商品填鎖定量，改填「鎖定幾套」：
+     鎖定套數 N     一個數字欄位（空白／0＝不鎖定，與單售共用未鎖定量）
+     指定鎖定項目   一張唯讀為主的清單：一列一個組合內的商品
+       單一選項商品   已鎖定＝N × 每套用量，系統自動、唯讀
+       多選項商品     已鎖定同上，另可展開逐規格「選填」分配（Σ ≤ N × 用量；少分配＝只限總數、規格不拘）
+     N 的上限＝各商品 floor(未鎖定 ÷ 每套用量) 取最小；有鎖定時組合可售量＝N（再與限量上限取小）
+
+   視覺（lab-bundle-lock.html L3 定案，2026-09-11 逐輪修訂）：
+     · 清單一個 1px 外框（卡片級圓角 --radius-xl），框內每一列之間一條貼邊髮線、列的左右內距 16（Q112）
+     · 展開中的整組視為一列：組內不畫線靠留白、整組一起 hover
+     · 四欄：組合中的商品（縮圖 52 ＋ 名稱一行 …）｜商品庫存｜未鎖定｜已鎖定，末尾 32px 給展開把手
+     · 三個數字欄的墨水一律距欄右緣 12 收尾——「已鎖定」欄的「件」照輸入框內距，另外兩欄跟它對齊節奏
+     · 已鎖定欄：第一行「N｜件」數字靠右貼單位；多選項商品第二行「已指定 x 件」（0 件不寫；超量紅字「超過鎖定量」）
+     · 規格輸入框 100px（7 位數）、高度 --control-h-xs、數字與 placeholder 靠右
+     · 兩行列（名稱＋副標）裡的單行格墊一個副標行高，跟名稱第一行同高
+
+   anatomy
+     .lockset__sets                （鎖定套數：標題＋提示 ｜ amount-field）
+       .lockset__sets-titles > .lockset__sets-title + .lockset__sets-hint
+       .lockset__sets-ctl
+     .lockset__title               （清單標題：標題＋一句規則）
+     .lockset                      （清單外框）
+       .lockset__head              （表頭四欄）
+       .lockset__row [.lockset__row--sub]     （單一選項商品，或多選項母列 .rowdis__head）
+         .lockset__name > img.data-list__thumb.data-list__thumb--lg + .lockset__text > span + .lockset__sub
+         .lockset__num ×2          （商品庫存／未鎖定）
+         .lockset__lockval > .lockset__lockval-row + .lockset__lockval-sub[.is-over]
+         .lockset__nolock          （不鎖定時取代 lockval：「共用未鎖定量」）
+         .lockset__end > .rowdis__toggle
+       .rowdis__group.rowdis__group--gutter   （多選項：母列 ＋ .lockset__row.lockset__child ×規格）
+         .lockset__child > .lockset__name + .lockset__num ×2 + span > .amount-field + span
+
+   相依：amount-field.css（輸入框）、row-disclosure.css（展開整組）、data-list.css（縮圖 --lg）。
+   ============================================================ */
+
+/* ── 鎖定套數列 ── */
+.lockset__sets { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-16); flex-wrap: wrap; }
+.lockset__sets-titles { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.lockset__sets-title { font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); }
+.lockset__sets-hint { font-size: var(--fs-12); color: var(--muted-foreground); }
+.lockset__sets-hint.is-over { color: var(--status-error); }
+.lockset__sets-ctl { display: flex; align-items: center; gap: var(--sp-10); }
+.lockset__sets .amount-field { width: 132px; }
+
+/* ── 清單標題 ── */
+.lockset__title { display: flex; flex-direction: column; gap: var(--sp-2); margin-top: var(--sp-24); }
+
+/* ── 清單外框與欄軌 ──
+   數字欄 100（輸入框要放 7 位數）、欄距 32（使用者兩次要求拉開）、末欄 32 給把手。
+   窄容器（create-bundle 的左欄約 530px）：數字欄 minmax(64px, 100px) 隨空間縮、欄距用 % 收斂到最小 12，
+   名稱欄才不會被擠到每個字換行；寬容器仍是 100／32。 */
+.lockset {
+  --lockset-col: minmax(64px, 100px);
+  --lockset-colgap: clamp(var(--sp-12), 4%, var(--sp-32));
+  display: flex; flex-direction: column;
+  margin-top: var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+.lockset[hidden] { display: none; }
+.lockset__head, .lockset__row {
+  display: grid;
+  /* 名稱欄保底 200：grid 先滿足各欄的下限，剩餘空間才讓數字欄長回 100——窄容器時是數字欄縮、不是名稱欄被擠成一字一行 */
+  grid-template-columns: minmax(200px, 1fr) var(--lockset-col) var(--lockset-col) var(--lockset-col) 32px;
+  align-items: center;
+  gap: var(--lockset-colgap);
+  padding: var(--sp-14) var(--sp-16);
+}
+.lockset__head {
+  padding-top: var(--sp-12); padding-bottom: var(--sp-8);
+  border-bottom: 1px solid var(--border-soft);
+  font-size: var(--fs-12); letter-spacing: .05em; text-transform: uppercase; color: var(--column-head-ink);
+}
+/* 商品列等高：有無副標都撐到縮圖高＋上下內距 */
+.lockset__row:not(.lockset__child) { min-height: calc(52px + var(--sp-14) * 2); }
+/* 貼邊分隔線：框的直接子項（單一選項列、整個群組）彼此之間一條，最後一個不畫 */
+.lockset > .lockset__row, .lockset > .rowdis__group { border-bottom: 1px solid var(--border-soft); }
+.lockset > :last-child { border-bottom: 0; }
+.lockset__row:not(.lockset__child):hover { background: var(--ztu-glass-strong); }
+
+/* 數字欄：靠右、等寬數字、墨水距欄右緣 12 */
+.lockset__head > span:not(:first-child), .lockset__num {
+  text-align: right; padding-right: var(--sp-12);
+  font-family: var(--font-ui); font-variant-numeric: tabular-nums;
+}
+.lockset__num { color: var(--muted-foreground); }
+.lockset__end { display: flex; justify-content: flex-end; }
+
+/* 名稱格＝縮圖＋文字欄；名稱限一行加 … */
+.lockset__name { display: flex; align-items: center; gap: var(--sp-12); min-width: 0; font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); }
+.lockset__text { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.lockset__text > span:first-child { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.lockset__text .card__link { color: inherit; }
+.lockset__sub { font-size: var(--fs-12); color: var(--muted-foreground); }
+/* 兩行列：單行格墊一個副標行高，字跟名稱第一行同高 */
+.lockset__row--sub :is(.lockset__num, .lockset__end, .lockset__nolock) { padding-bottom: calc(var(--fs-12) * 1.5 + var(--sp-2)); }
+
+/* 已鎖定欄的唯讀值：數字靠右貼單位（間距 14 ＝ 輸入框裡數字尾到「件」的距離），第二行「已指定 x 件」 */
+.lockset__lockval { display: flex; flex-direction: column; align-items: flex-end; gap: var(--sp-2); padding-inline: var(--sp-12); font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
+.lockset__lockval-row { display: flex; justify-content: flex-end; align-items: baseline; gap: var(--sp-14); }
+.lockset__lockval-sub { white-space: nowrap; min-height: calc(var(--fs-12) * 1.5); }
+.lockset__lockval-sub.is-over { color: var(--status-error); }
+.lockset__per { font-size: var(--fs-12); color: var(--muted-foreground); margin-left: var(--sp-4); }
+/* 不鎖定時：已鎖定欄一句「共用未鎖定量」，不擺數字 */
+.lockset__nolock { display: block; font-size: var(--fs-12); color: var(--muted-foreground); text-align: right; padding-right: var(--sp-12); }   /* block：坐在格子裡才吃得到靠右與兩行列的墊高 */
+
+/* ── 多選項：整組用 row-disclosure，組內不出血、不圓角、不薄膜；展開時整組一起 hover ──
+   選擇器照抄元件的展開條件，特異度才蓋得過 row-disclosure.css 的展開態。 */
+.lockset .rowdis__group { margin-inline: 0; padding-inline: 0; }
+.lockset .rowdis__group:has(> .rowdis__head:not([hidden]):not(.hidden) .rowdis__toggle[aria-expanded="true"]) {
+  margin-block: 0; padding-block: 0 var(--sp-8); background: transparent; box-shadow: none; border-radius: 0; border-top: 0;
+}
+.lockset .rowdis__group:has(> .rowdis__head:not([hidden]):not(.hidden) .rowdis__toggle[aria-expanded="true"]):hover { background: var(--ztu-glass-strong); }
+.lockset .rowdis__group--gutter :is(.rowdis__head, .rowdis__child, .lockset__child) { margin-inline: 0; padding-inline: var(--sp-16); border-radius: 0; }
+.lockset .rowdis__group:has(> .rowdis__head:not([hidden]):not(.hidden) .rowdis__toggle[aria-expanded="true"]) :is(.rowdis__head, .lockset__child):hover { background: transparent; }
+/* 展開把手小一階（28，同 --rowdis-lead-w）、字符 16 */
+.lockset .rowdis__toggle.btn--icon { width: var(--sp-28); height: var(--sp-28); }
+.lockset .rowdis__toggle.btn--icon .ztor-icon { width: 16px; height: 16px; }
+
+/* 規格列：縮排＝縮圖寬＋間距，對齊母列商品名起點；輸入框在「已鎖定」欄、100px、靠右 */
+.lockset__child { padding-block: var(--sp-12); }
+.lockset__child .lockset__name { padding-left: calc(52px + var(--sp-12)); font-size: var(--fs-13); color: var(--foreground-muted); }
+.lockset__child .amount-field { width: min(100px, 100%); margin-left: auto; }
+.lockset__child .input { height: var(--control-h-xs); font-size: var(--fs-12); text-align: right; }
+.lockset__child[hidden] { display: none; }

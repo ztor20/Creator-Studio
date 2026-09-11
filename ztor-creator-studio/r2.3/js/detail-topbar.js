@@ -33,6 +33,15 @@
        crumb,        麵包屑，黏住時隱藏
        onStick       選配：第一次黏住時填縮圖與名稱（各頁資料來源不同）
      })
+     ZtorDetailTopbar.resync()   分頁切換或內容重排後呼叫，重新判定收編
+
+   ── Dock：收編分頁工具列（2026-09-11 使用者裁決「兩層固定要合併成一個」）──
+   頂列裡有 [data-dock-tabs] 槽時啟用：黏住之後，目前分頁（.tab-panel--active）裡
+   `[data-nav] > .list-toolbar`（或標了 [data-dock-source] 的 .list-toolbar）一旦捲到頂列底下，
+   它的 .tabs 搬進 [data-dock-tabs]、.list-toolbar__actions 的子項搬進 [data-dock-actions]；
+   原位留著高度（visibility hidden），往回捲或切分頁就還回去。tabs 的起點對齊內容欄：
+   量工具列在流內時 tabs 的 x，寫成 --dock-id-w 給身分槽當寬度。
+   黏住態的 [data-dock-icon] 按鈕只留 icon，文字複製到 title。CSS 在 shared.css「Dock」段。
    ============================================================ */
 (function () {
   'use strict';
@@ -46,6 +55,14 @@
     var scroller = embed ? document.scrollingElement : main;
     if (!scroller) return;
 
+    /* 返回鍵跟著進精簡列（2026-09-11 使用者：「少了返回上一頁的 icon」）：麵包屑黏住時整個藏起來，
+       裡面的「← 返回上一層」一起不見；複製一顆到縮圖前面，黏住態也回得去。 */
+    var back = crumb.querySelector('.page-crumb__back');
+    if (back && !mini.querySelector('.detail-topbar__back')) {
+      var b2 = back.cloneNode(true);
+      b2.classList.add('detail-topbar__back');
+      mini.insertBefore(b2, mini.firstChild);
+    }
     /* 黏住時頂替原位的佔位塊，避免內容往上跳一整列。 */
     var spacer = document.createElement('div');
     spacer.className = 'detail-topbar-spacer';
@@ -117,10 +134,72 @@
       if (gone && typeof o.onStick === 'function') o.onStick();
     }
 
-    (embed ? window : scroller).addEventListener('scroll', sync, { passive: true });
-    window.addEventListener('resize', function () { if (on) measure(); }, { passive: true });
-    sync();
+    /* ── Dock：收編分頁工具列 ── */
+    var tabsSlot = bar.querySelector('[data-dock-tabs]');
+    var actSlot = bar.querySelector('[data-dock-actions]');
+    var docked = null;
+    function activeToolbar() {
+      var panel = document.querySelector('.tab-panel--active');
+      if (!panel) return null;
+      return panel.querySelector('.list-toolbar[data-dock-source]') || panel.querySelector('[data-nav] > .list-toolbar');
+    }
+    function titleIcons() {
+      bar.querySelectorAll('.btn[data-dock-icon]').forEach(function (b) {
+        var sp = b.querySelector('span');
+        if (sp && sp.textContent.trim()) b.title = sp.textContent.trim();
+      });
+    }
+    function measureId(tb) {
+      /* 身分槽寬度＝工具列裡 tabs 的左緣 − 頂列內容框的左緣（都以視窗座標量；工具列原位還在流內，量得到） */
+      var tabs = tb.querySelector('.tabs') || tb;
+      var tabsLeft = tabs.getBoundingClientRect().left;
+      var br = bar.getBoundingClientRect();
+      var pl = parseFloat(getComputedStyle(bar).paddingLeft) || 0;
+      var w = Math.max(0, tabsLeft - (br.left + pl));
+      bar.style.setProperty('--dock-id-w', w + 'px');
+    }
+    function dock(tb) {
+      if (docked === tb) return;
+      undock();
+      measureId(tb);
+      var nav = tb.querySelector('.tabs'), acts = tb.querySelector('.list-toolbar__actions');
+      tb.style.height = tb.offsetHeight + 'px';
+      if (nav && tabsSlot) tabsSlot.appendChild(nav);
+      if (acts && actSlot) Array.prototype.slice.call(acts.children).forEach(function (c) { actSlot.appendChild(c); });
+      tb.classList.add('is-docked');
+      bar.classList.add('has-tabs');
+      titleIcons();
+      docked = tb;
+    }
+    function undock() {
+      if (!docked) return;
+      var nav = tabsSlot && tabsSlot.querySelector('.tabs'), acts = docked.querySelector('.list-toolbar__actions');
+      if (nav) docked.insertBefore(nav, acts || null);
+      if (actSlot && acts) Array.prototype.slice.call(actSlot.children).forEach(function (c) { acts.appendChild(c); });
+      docked.classList.remove('is-docked');
+      docked.style.height = '';
+      bar.classList.remove('has-tabs');
+      docked = null;
+    }
+    function syncDock() {
+      if (!tabsSlot) return;
+      var tb = on ? activeToolbar() : null;
+      if (tb) {
+        if (docked && docked !== tb) undock();
+        var barBottom = bar.getBoundingClientRect().bottom;
+        if (tb.getBoundingClientRect().top <= barBottom + 4) dock(tb); else undock();
+      } else undock();
+    }
+    function syncAll() { sync(); syncDock(); }
+
+    (embed ? window : scroller).addEventListener('scroll', syncAll, { passive: true });
+    window.addEventListener('resize', function () { if (on) measure(); if (docked) measureId(docked); }, { passive: true });
+    var origOnStick = o.onStick;
+    o.onStick = function () { if (typeof origOnStick === 'function') origOnStick(); titleIcons(); };
+    syncAll();
+    window.ZtorDetailTopbar.resync = syncAll;
+    window.ZtorDetailTopbar.isDocked = function () { return !!docked; };
   }
 
-  window.ZtorDetailTopbar = { init: init };
+  window.ZtorDetailTopbar = { init: init, resync: function () {}, isDocked: function () { return false; } };
 })();

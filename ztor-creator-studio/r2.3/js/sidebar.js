@@ -88,9 +88,12 @@
      nick＝周湯豪 NICKTHEREAL），代管標示與名冊才不會各叫各的名字。
      userB 目前是佔位人格（沒有專屬資料集，各 store 自動退回 default）。 */
   const CREATORS = [
-    { handle: "default", name: "Gary Lin",           shop: "/shop/gary",  status: "active", email: "gary@example.com",  phone: "",                 created: "2026-01-08",
+    /* avatar（2026-09-11 使用者指示「用一個頭像」）：帳戶選單的頭像放照片，沒有照片的人退回名字首字。
+       放在名冊而不是 projects-store：頭像每一頁都要，projects-store 不是每一頁都載（e-shop 就沒有）。
+       Gary Lin 是 AI 生成的示範肖像（非真人）；周湯豪沿用 IP 頁那張。 */
+    { handle: "default", name: "Gary Lin",           shop: "/shop/gary",  status: "active", email: "gary@example.com",  phone: "",                 created: "2026-01-08", avatar: "images/ip/gary-portrait.jpg",
       bookyayLinked: true,  bookyayPool: ["bky-1", "bky-2", "bky-3", "bky-4", "bky-5"], bookyayEvents: ["bky-1", "bky-2", "bky-3", "bky-4", "bky-5"], bookyaySetup: ["bky-1", "bky-3"], lastImportAt: "2026-08-28 14:20", lastCheckedAt: "2026-09-02 09:40" },
-    { handle: "nick",    name: "周湯豪 NICKTHEREAL", shop: "/shop/nick",  status: "active", email: "nick@example.com",  phone: "+886 912 000 111", created: "2026-02-19",
+    { handle: "nick",    name: "周湯豪 NICKTHEREAL", shop: "/shop/nick",  status: "active", email: "nick@example.com",  phone: "+886 912 000 111", created: "2026-02-19", avatar: "images/ip/nick-portrait.jpg",
       bookyayLinked: true,  bookyayPool: [], bookyayEvents: [], bookyaySetup: [], lastImportAt: null, lastCheckedAt: "2026-09-02 09:40" },
     { handle: "userB",   name: "User B",             shop: "/shop/userb", status: "active", email: "userb@example.com", phone: "",                 created: "2026-05-30",
       bookyayLinked: false, bookyayPool: [], bookyayEvents: [], bookyaySetup: [], lastImportAt: null, lastCheckedAt: null },
@@ -316,6 +319,17 @@
       if (n) return n.trim().charAt(0).toUpperCase();
     } catch (e) {}
     return "M";
+  }
+  /* 頭像（2026-09-11 使用者指示「用一個頭像」）：人格有照片就放照片，沒有才退回名字首字。
+     照片路徑由 projects-store 依人格回答（avatarSrc），同一個人在側欄與頂欄看到的是同一張。 */
+  function avatarHtml() {
+    var src = "";
+    try {
+      var id = (typeof window.ztorPersonaId === "function") ? window.ztorPersonaId() : "default";
+      var c = CREATORS.find(function (x) { return x.handle === id; });
+      src = (c && c.avatar) || "";
+    } catch (e) {}
+    return src ? '<img class="app-avatar__img" src="' + src + '" alt="">' : avatarInitial();
   }
 
   /* 這份 path 在站上有兩份複本：本檔是正本，login.html 是副本（登入頁刻意不載
@@ -684,8 +698,9 @@
       </div>
 
       <div class="app-topbar__nav-group" data-dropdown data-account>
-        <button class="app-topbar__avatar" aria-haspopup="true" aria-expanded="false" aria-label="Account" data-i18n-aria-label="nav.account-label" type="button">${avatarInitial()}</button>
+        <button class="app-topbar__avatar" aria-haspopup="true" aria-expanded="false" aria-label="Account" data-i18n-aria-label="nav.account-label" type="button">${avatarHtml()}</button>
         <ul class="app-topbar__dropdown app-topbar__dropdown--right" role="menu">
+          <li role="presentation"><a class="app-topbar__dropdown-option" href="store-settings.html" role="menuitem" data-i18n="nav.store-settings">Store settings</a></li>
           <li role="presentation"><a class="app-topbar__dropdown-option" href="settings.html#profile" role="menuitem" data-i18n="nav.profile">Profile</a></li>
           <li role="presentation"><a class="app-topbar__dropdown-option" href="settings.html" role="menuitem" data-i18n="nav.settings">Settings</a></li>
           <li role="presentation"><a class="app-topbar__dropdown-option" href="settings.html#payments" role="menuitem" data-i18n="nav.payments">Payments</a></li>
@@ -821,9 +836,16 @@
         <div class="app-topbar__dropdown app-notif__panel app-notif__panel--rail" role="dialog" aria-label="Notifications">${notifPanelHtml()}</div>
       </div>
 
+      <!-- 2026-09-11 使用者指示：商店設定是動作區自己的一列（搜尋 → 通知中心 → 商店設定 → 帳戶選單），
+           不收在帳戶選單裡；圖示與電子商店工具列那顆同為 sliders-horizontal，目的地同為 store-settings.html。 -->
+      <a class="app-sidebar__action" href="store-settings.html" aria-label="Store settings" data-i18n-aria-label="nav.store-settings">
+        <i data-lucide="sliders-horizontal" class="ztor-icon"></i>
+        <span class="app-sidebar__action-label" data-i18n="nav.store-settings">Store settings</span>
+      </a>
+
       <div class="app-sidebar__group" data-state="closed" data-account>
         <button class="app-sidebar__action app-sidebar__group-toggle" type="button" aria-expanded="false" aria-label="Account" data-i18n-aria-label="nav.account-label">
-          <span class="app-sidebar__avatar">${avatarInitial()}</span>
+          <span class="app-sidebar__avatar">${avatarHtml()}</span>
           <span class="app-sidebar__action-label" data-i18n="nav.account-label">Account</span>
           <i data-lucide="chevron-down" class="ztor-icon ztor-icon--sm app-sidebar__chevron"></i>
         </button>
@@ -1291,9 +1313,9 @@
      window.ztorProjects 還不存在，avatarInitial() 只會拿到退路值 "M"。
      DOM 就緒與 load 之後各補寫一次，此時 store 必定已經在。 */
   function refreshAvatar() {
-    var i = avatarInitial();
+    var h = avatarHtml();
     document.querySelectorAll(".app-topbar__avatar, .app-sidebar__avatar")
-      .forEach(function (el) { el.textContent = i; });
+      .forEach(function (el) { el.innerHTML = h; });
     /* 代管中的創作者名字同理：mount() 當下 projects-store 可能還沒載入，先寫進去的
        是交接時存的那一份，store 到位後改用它的擁有者名稱（雙語稱謂會跟著語言變）。 */
     var ctx = adminContext();

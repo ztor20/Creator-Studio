@@ -334,6 +334,12 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - **播放只有一顆鈕**（2026-09-10 使用者裁決）：hover 動作列的播放／暫停，就地播放、全站一次只播一個，不做進度條／音量／全螢幕。播放時解除靜音——靜音只是為了讓它安靜地停在首幀。粉絲端怎麼播不在本產品範圍。
 - **縮圖＝停在首影格的靜音影片**：純前端抽不出圖檔（瀏覽器不會替 `<img>` 解碼影片）。凡是縮圖版位，影片用 `muted playsinline preload="metadata"` 的 `<video>` 頂替；真實產品由後端轉檔產出首幀圖（ASSUMPTIONS UIA-147）。
 
+## 4e. 商店預覽＝粉絲端創作者頁的手機鏡像，放在頁內右欄（2026-09-11）
+
+- **容器**：e-shop 的 F5 不再是切開外殼的固定面板，而是 `.preview-split--phone.preview-split--toggle` 的右欄——與建立商品同一套（sticky `.preview-col` ＋ 卡內標題的 `form-section--outlined`）。`--toggle` 是 preview-column 的新變體：沒 `is-open` 就單欄、右欄不佔位。這一頁沒有 wizard header，sticky 頂距改 `--preview-col-top: var(--sp-24)`。
+- **內容**：`partials/fan-store.js`＋`fan-store.css` 是粉絲端創作者頁的鏡像（zoom 3/4、無外框），做法與 pdp-preview 相同：版型照粉絲端搬、值走 r2.3 token、資料接人格與 `ProductsStore`。`window.ZTOR_PARTIALS.fanStore` 是 getter——樣板在讀取當下才組，避免載入順序讓它拿不到 ProductsStore。
+- **同源**：商店設定 F1 與三個細節頁的預覽面板吃同一份樣板；要改粉絲端長相請改粉絲端，這裡跟著對齊（§6.7）。
+
 ## 4d. 尺寸指南的單一資料源（2026-09-10）
 
 `js/size-guides-store.js` 是商店層尺寸指南的唯一來源（localStorage，變動發 `sizeguides:changed`）。商店設定的清單與建立商品的「沿用商店的尺寸指南」都問它；兩頁各寫一份資料的舊做法會分岔——商店把指南刪光，建立商品仍宣稱沿用三份。資料層限制見 ASSUMPTIONS UIA-148。

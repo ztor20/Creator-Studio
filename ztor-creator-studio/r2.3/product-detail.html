@@ -89,8 +89,11 @@
           <img class="detail-topbar__cover" id="pd-mini-cover" src="" alt="">
           <span class="detail-topbar__name" id="pd-mini-name"></span>
         </div>
+        <!-- Dock 槽（2026-09-11，詳情頁只准一條固定列）：分頁工具列捲到頂列底下時，它的 tabs 進 [data-dock-tabs]、動作進 [data-dock-actions]；js/detail-topbar.js -->
+        <div class="detail-topbar__tabs" data-dock-tabs></div>
         <div class="page-intro__actions">
-          <button class="btn btn--outline" type="button" data-pd-preview-open><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.preview">See as fan</span></button>
+          <button class="btn btn--outline" type="button" data-pd-preview-open data-dock-icon><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.preview">See as fan</span></button>
+          <div data-dock-actions></div>
           <!-- 2026-09-11 撤除頁級「儲存」：商品設定分頁改成「編輯商品 → 儲存變更」的開關（同活動詳情），
                總覽分頁的補貨／鎖定各自在彈窗裡儲存，頁面上已沒有「整頁一起存」的東西。 -->
         </div>
@@ -174,15 +177,9 @@
            商品設定分頁的每個區塊在這裡一行一句摘要，行尾箭頭切到商品設定分頁並捲到那一節。
            總覽只回答「現在設成什麼」，要改就過去改——這張卡沒有任何輸入框。
            摘要由 JS 讀商品設定分頁的欄位現值算出（renderSettingsOverview），儲存後重算。 -->
-      <section class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="product-detail.setov.title">Settings overview</h3>
-          <p class="form-section__sub" data-i18n="product-detail.setov.sub">Select a row to edit it.</p>
-        </div>
-        <div class="data-list" data-pd-setov>
-          <!-- 列由 JS 依商品類型渲染（實體／數位、單一規格／多選項各自不同） -->
-        </div>
-      </section>
+      <!-- 2026-09-11 使用者：四組各自一張卡（基本資料／選項與定價／庫存與交付／上架與開賣），「商品設定概覽」總標題撤除；
+           卡由 JS 依商品類型渲染（實體／數位、單一規格／多選項各自不同）。 -->
+      <div class="detail-cards" data-pd-setov></div>
       </div><!-- /detail-cards -->
       </div><!-- /tab-panel overview（銷售摘要／商品設定概覽）-->
 
@@ -282,7 +279,7 @@
             <div class="list-toolbar__actions">
               <button class="btn btn--ghost" type="button" data-view-safe data-pd-edit-cancel hidden data-i18n="payout.cancel">Cancel</button>
               <!-- data-view-safe：這顆就是「進入編輯」的開關本身（同活動詳情的理由） -->
-              <button class="btn btn--outline" type="button" data-view-safe data-pd-editmode aria-pressed="false">
+              <button class="btn btn--outline" type="button" data-view-safe data-pd-editmode data-dock-icon aria-pressed="false">
                 <i data-lucide="pencil" class="ztor-icon"></i>
                 <span data-pd-editmode-label data-i18n="product-detail.btn.edit">Edit product</span>
               </button>
@@ -1191,10 +1188,12 @@
     function esc(x) { return String(x == null ? '' : x).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
     function modeText(h) { return h.mode === 'scheduled' ? T('restock.method.scheduled', 'Scheduled') + ' · ' + T('stock.pending.eta', 'ETA {d}').replace('{d}', h.eta || '—') : T('restock.method.now', 'Restock now'); }
     function summaryHTML(h) {
-      return h.items.map(function (i) { return (i.combo && i.combo !== '—' ? esc(i.combo) + ' ' : '') + '<span class="shist__delta">' + esc(i.delta) + '</span>'; }).join('<span class="text-sub"> · </span>');
+      return h.items.map(function (i) { return (i.combo && i.combo !== '—' ? esc(i.combo) + ' ' : '') + '<span class="shist__delta">' + esc(deltaText(i.delta)) + '</span>'; }).join('<span class="text-sub"> · </span>');
     }
     function typeBadge(h) { return h.type === 'lock' ? '<span class="badge badge--neutral"><span data-i18n="stock.history.type.lock">Lock</span></span>' : '<span class="badge badge--info"><span data-i18n="stock.history.type.restock">Restock</span></span>'; }
     function stateBadge(h) { return h.state === 'restocking' ? '<span class="badge badge--warning"><span data-i18n="restock.status.restocking">Restocking</span></span>' : '<span class="badge badge--success"><span data-i18n="restock.status.done">Completed</span></span>'; }
+    /* 「— → 1」的「—」是示範資料寫的佔位，畫面上讀成「未指定 → 1」（2026-09-11 使用者） */
+    function deltaText(d) { return String(d || '').replace(/^—(?=\s*→)/, T('stock.history.unset', 'Unset')); }
     function kv(gid, k, v, extra) {
       return '<div class="data-list__row rowdis__child rowdis__child--compact shist__child" data-rowdis-child="' + gid + '" hidden><div class="data-list__row-main"><span class="shist__k">' + k + '</span><span class="shist__v">' + v + '</span></div>' + (extra || '') + '</div>';
     }
@@ -1207,7 +1206,8 @@
           '<div class="data-list__body"><div class="data-list__title">' + summaryHTML(h) + '</div><div class="data-list__meta">' + meta + '</div></div></div>' +
           '<div class="shist__end">' + stateBadge(h) +
           '<button class="btn btn--icon btn--sm rowdis__toggle" type="button" data-rowdis="' + gid + '" aria-expanded="false" aria-label="Expand" data-i18n-aria-label="stock.history.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div></div>';
-      h.items.forEach(function (i) { var to = toOf(i); out += kv(gid, esc(i.combo || '—'), '<span class="shist__delta">' + esc(i.delta) + '</span>' + (to ? '<span class="text-sub"> · ' + esc(to) + '</span>' : '')); });
+      /* 明細列的左欄：多選項寫規格名；單一規格沒有規格可寫，寫「數量」（2026-09-11 使用者：「—」看不懂） */
+      h.items.forEach(function (i) { var to = toOf(i); out += kv(gid, (i.combo && i.combo !== '—') ? esc(i.combo) : '<span data-i18n="stock.history.k.qty">Quantity</span>', '<span class="shist__delta">' + esc(deltaText(i.delta)) + '</span>' + (to ? '<span class="text-sub"> · ' + esc(to) + '</span>' : '')); });
       if (h.type === 'restock') {
         out += kv(gid, '<span data-i18n="stock.history.k.supplier">Supplier</span>', esc(supplierOf(h) || '—'));
         if (h.mode === 'scheduled') out += kv(gid, '<span data-i18n="restock.f.eta">Expected arrival</span>', esc(h.eta || '—'),
@@ -2091,7 +2091,7 @@
       const scTop = sc && sc.getBoundingClientRect ? sc.getBoundingClientRect().top : 0;
       const bar = document.querySelector('.detail-topbar');
       const tb = root.querySelector('.list-toolbar');
-      const offset = (bar ? Math.max(0, bar.offsetHeight - scTop) : 0) + (tb ? tb.offsetHeight : 0) + 18;
+      const offset = (bar ? Math.max(0, bar.offsetHeight - scTop) : 0) + 18;   /* Dock（2026-09-11）：工具列不再自己吸頂、會被頂列收編，讓位只算頂列 */
       const y = sc.scrollTop + t.getBoundingClientRect().top - scTop - offset;
       sc.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
       clearTimeout(spyTimer);
@@ -2103,7 +2103,7 @@
     });
     /* 上緣參考線＝吸頂橫列的下緣再往下一點：頂列黏住時橫列會被推低（section-nav.css 的 --detail-bar-h），
        所以每次量、不寫死 96。 */
-    const LINE = () => { const tb = root.querySelector('.list-toolbar'); return tb ? tb.getBoundingClientRect().bottom + 30 : 96; };
+    const LINE = () => { const bar = document.querySelector('.detail-topbar.is-stuck'); if (bar) return bar.getBoundingClientRect().bottom + 30; const tb = root.querySelector('.list-toolbar'); return tb ? tb.getBoundingClientRect().bottom + 30 : 96; };
     const scroller = () => document.querySelector('.main') || document.scrollingElement;
     const sync = () => {
       if (spyOff) return;
@@ -2434,9 +2434,10 @@
       /* 每一筆改動寫進庫存歷史紀錄（2026-09-11 合併補貨與鎖定）。要在 syncLocksToStore 之後：
          add() 會廣播 pd:stock、讓 MODEL 從 store 重抄一份，先寫紀錄會把還沒寫回 store 的新鎖定量沖掉。 */
       if (window.pdStockHistory && changes.length) {
-        var fmt = function (v) { return (v === null || v === undefined) ? '—' : String(v); };
+        /* 沒鎖定寫「未指定」而不是「—」（2026-09-11 使用者：「如果是未指定改成指定 1，那就寫 未指定 → 1」） */
+        var fmt = function (v) { return (v === null || v === undefined) ? T('stock.history.unset', 'Unset') : String(v); };
         window.pdStockHistory.add({ type: 'lock', items: changes.map(function (c) {
-          return { combo: c.key === 'single' ? '—' : (MODEL.variants[c.key].combo || []).join(' / '), vi: c.key, delta: fmt(c.before) + ' → ' + fmt(c.after), to: T('stock.history.note.single', 'Locked for single sale') };
+          return { combo: c.key === 'single' ? '' : (MODEL.variants[c.key].combo || []).join(' / '), vi: c.key, delta: fmt(c.before) + ' → ' + fmt(c.after), to: T('stock.history.note.single', 'Locked for single sale') };
         }) });
       }
       close('[data-pd-lock-modal]');
@@ -2742,65 +2743,110 @@
       var digital = product && product.cat === 'digital';
       var multi = product && product.variant === 'multiple';
       var rows = [];
-      rows.push({ go: 'info', key: 'cp.info.title', fb: 'Product info',
+      /* 分四組（2026-09-11 使用者裁示）：基本資料 → 選項與定價 → 庫存與交付 → 上架與開賣；同組內照設定分頁的區段順序 */
+      rows.push({ g: 'basic', go: 'info', key: 'cp.info.title', fb: 'Product info',
         v: join([$v('pd-title-input'), product && product.catLabel, product && product.subLabel]) });
       var imgs = settingsPanel ? settingsPanel.querySelectorAll('[data-nav-panel="info"] .upload-tile.is-filled').length : 0;
-      rows.push({ go: 'info', key: 'product-detail.field.media2', fb: 'Product images',
+      rows.push({ g: 'basic', go: 'info', key: 'product-detail.field.media2', fb: 'Product images',
         v: imgs ? T('product-detail.setov.images', '{n} images').replace('{n}', imgs) : T('product-detail.setov.none', 'None') });
       if (digital) {
         var cf = document.getElementById('pd-cfile-title');
-        rows.push({ go: 'cfile', key: 'cp.cfile.title', fb: 'Content file', v: cf ? cf.textContent.trim() : '' });
+        rows.push({ g: 'basic', go: 'cfile', key: 'cp.cfile.title', fb: 'Content file', v: cf ? cf.textContent.trim() : '' });
       }
-      rows.push({ go: 'pricing', key: 'cp.var.title', fb: 'Product options',
+      var tags = document.querySelectorAll('#pd-tags-field .chip');
+      rows.push({ g: 'basic', go: 'relations', key: 'cp.tags', fb: 'Product tags',
+        v: tags.length ? Array.prototype.map.call(tags, function (c) { return c.firstChild ? c.firstChild.textContent.trim() : ''; }).join('、') : T('product-detail.setov.none', 'None') });
+      var films = document.querySelectorAll('[data-pd-film-picker] .tag-input__field .chip');
+      rows.push({ g: 'basic', go: 'tab:links', key: 'pd.films.title', fb: 'Linked movies',
+        v: films.length ? T('product-detail.setov.films', '{n} movies').replace('{n}', films.length) : T('product-detail.setov.none', 'None') });
+      rows.push({ g: 'pricing', go: 'pricing', key: 'cp.var.title', fb: 'Product options',
         v: multi
           ? join(MODEL.options.map(function (o) { return (o.name || '—') + '：' + (o.values || []).join('、'); }).concat([T('product-detail.setov.combos', '{n} combinations').replace('{n}', MODEL.variants.length)]))
           : T('cp.var.single', 'Single variant') });
-      rows.push({ go: 'pricing', key: 'cp.price.title', fb: 'Price',
+      rows.push({ g: 'pricing', go: 'pricing', key: 'cp.price.title', fb: 'Price',
         v: multi ? priceRange() : join([money(MODEL.price), MODEL.cost ? T('cp.cost', 'Cost') + ' ' + money(MODEL.cost) : '']) });
-      rows.push({ go: 'rules', key: 'cp.discount.title', fb: 'Discount settings',
+      rows.push({ g: 'pricing', go: 'rules', key: 'cp.discount.title', fb: 'Discount settings',
         v: on('pd-discount-toggle')
           ? join([money(num($v('pd-sale-price'))), on('pd-sale-toggle') ? join([$v('pd-sale-start'), $v('pd-sale-end')], ' – ') : '', on('pd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : ''])
           : join([T('product-detail.setov.off', 'Off'), on('pd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : '']) });
       if (!digital) {
         var pct = $v('pd-threshold-pct') || '10';
-        rows.push({ go: 'rules', key: 'product-detail.threshold.title', fb: 'Low-stock alert', v: pct + '%' });
+        rows.push({ g: 'ops', go: 'rules', key: 'product-detail.threshold.title', fb: 'Low-stock alert', v: pct + '%' });
       }
       var limitQty = settingsPanel ? settingsPanel.querySelector('[data-pd-limit-fields] input') : null;
-      rows.push({ go: 'rules', key: 'product-detail.limit2.title', fb: 'Purchase limit',
+      rows.push({ g: 'pricing', go: 'rules', key: 'product-detail.limit2.title', fb: 'Purchase limit',
         v: on('pd-limit-toggle') ? T('product-detail.setov.limit', '{n} per person').replace('{n}', limitQty ? limitQty.value : '') : T('product-detail.setov.off', 'Off') });
       var dt = document.getElementById('pd-delivery-title');
-      rows.push({ go: 'delivery', key: 'product-detail.delivery.card', fb: 'Delivery & pickup',
+      rows.push({ g: 'ops', go: 'delivery', key: 'product-detail.delivery.card', fb: 'Delivery & pickup',
         v: join([dt ? dt.textContent.trim() : '', product && product.delivery === 'qr' ? selText('pd-pickup-session') : '']) });
-      var tags = document.querySelectorAll('#pd-tags-field .chip');
-      rows.push({ go: 'relations', key: 'cp.tags', fb: 'Product tags',
-        v: tags.length ? Array.prototype.map.call(tags, function (c) { return c.firstChild ? c.firstChild.textContent.trim() : ''; }).join('、') : T('product-detail.setov.none', 'None') });
-      var films = document.querySelectorAll('[data-pd-film-picker] .tag-input__field .chip');
-      rows.push({ go: 'tab:links', key: 'pd.films.title', fb: 'Linked movies',
-        v: films.length ? T('product-detail.setov.films', '{n} movies').replace('{n}', films.length) : T('product-detail.setov.none', 'None') });
       /* 上架／顯示／開賣三態一列（2026-09-11）：開賣＝此刻在販售窗口內（立即開賣，或定時開賣已到且未停售） */
       var mode = document.querySelector('#pd-sale-mode .radio-list__item--active');
       var nowT = Date.now();
       var sStart = $v('pd-listing-sale-start'), sEnd = on('pd-saleend-toggle') ? $v('pd-listing-sale-end') : '';
       var saleOn = !(mode && mode.getAttribute('data-pd-sale-mode') === 'schedule' && sStart && new Date(sStart).getTime() > nowT) && !(sEnd && new Date(sEnd).getTime() <= nowT);
       var listedOn = on('pd-listed-toggle');
-      rows.push({ go: 'publish', key: 'product-detail.setov.listing-sale', fb: 'Listing & sale', html: stateChecksHTML([
-        { key: 'product-detail.setov.st-listed', fb: 'Listed', on: listedOn },
-        { key: 'product-detail.setov.st-shown', fb: 'Shown in store', on: listedOn && on('pd-shown-toggle') },
-        { key: 'product-detail.setov.st-sale', fb: 'On sale', on: listedOn && saleOn }
-      ]) });
+      /* 三態各自一列（2026-09-11 使用者：有的有定時上下架或開賣，要個別顯示）：一顆勾＋一句現況與排程 */
+      var listAt = $v('pd-listing-time'), unlistAt = on('pd-unlist-toggle') ? $v('pd-unlist-time') : '';
+      var listFuture = listedOn && listAt && new Date(listAt).getTime() > nowT;
+      var listedNow = listedOn && !listFuture;
+      /* 三列各自一到兩顆狀態：現況一顆，排了時間再加一顆「排定」（2026-09-11 使用者） */
+      var listAt = $v('pd-listing-time'), unlistAt = on('pd-unlist-toggle') ? $v('pd-unlist-time') : '';
+      var listFuture = listedOn && listAt && new Date(listAt).getTime() > nowT;
+      var listedNow = listedOn && !listFuture;
+      var listItems = !listedOn ? [{ kind: 'off', text: T('product-detail.setov.ls.unlisted', 'Not listed') }]
+        : [listFuture ? { kind: 'scheduled', text: T('product-detail.setov.ls.list-at', 'Lists {t}').replace('{t}', fmtT(listAt)) } : { kind: 'on', text: T('product-detail.setov.ls.listed', 'Listed') }];
+      if (listedOn && unlistAt) listItems.push({ kind: 'scheduled', text: T('product-detail.setov.ls.unlist-at', 'Unlists {t}').replace('{t}', fmtT(unlistAt)) });
+      rows.push({ g: 'listing', go: 'publish', key: 'product-detail.setov.st-listed', fb: 'Listed', html: stateChecksHTML(listItems) });
+      var shownOn = listedNow && on('pd-shown-toggle');
+      rows.push({ g: 'listing', go: 'publish', key: 'product-detail.setov.st-shown', fb: 'Shown in store', html: stateChecksHTML([
+        !listedNow ? { kind: 'off', text: T('product-detail.setov.ls.unlisted', 'Not listed') }
+        : shownOn ? { kind: 'on', text: T('product-detail.setov.ls.shown', 'Shown') }
+        : { kind: 'off', text: T('product-detail.setov.ls.hidden', 'Hidden · private link') }]) });
+      var saleFuture = mode && mode.getAttribute('data-pd-sale-mode') === 'schedule' && sStart && new Date(sStart).getTime() > nowT;
+      var saleEnded = sEnd && new Date(sEnd).getTime() <= nowT;
+      var saleItems = !listedNow ? [{ kind: 'off', text: T('product-detail.setov.ls.na', 'Needs listing first') }]
+        : saleFuture ? [{ kind: 'scheduled', text: T('product-detail.setov.ls.sale-at', 'Sale starts {t}').replace('{t}', fmtT(sStart)) }]
+        : saleEnded ? [{ kind: 'ended', text: T('product-detail.setov.ls.ended', 'Sale ended') }]
+        : [{ kind: 'on', text: T('product-detail.setov.ls.on-sale', 'On sale') }];
+      if (listedNow && !saleEnded && sEnd) saleItems.push({ kind: 'scheduled', text: T('product-detail.setov.ls.sale-end', 'ends {t}').replace('{t}', fmtT(sEnd)) });
+      rows.push({ g: 'listing', go: 'publish', key: 'product-detail.setov.st-sale', fb: 'On sale', html: stateChecksHTML(saleItems) });
       return rows;
     }
 
-    /* 上架與開賣三態（2026-09-11 使用者：拆出來、做成 checkbox 形式）：唯讀的 state-check，值由三組開關與排程推導 */
-    function stateChecksHTML(states) {
-      return '<div class="state-checks">' + states.map(function (s) {
-        return '<span class="state-check' + (s.on ? ' state-check--on' : '') + '"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon" aria-hidden="true"></i></span><span class="state-check__label" data-i18n="' + s.key + '">' + esc(T(s.key, s.fb)) + '</span></span>';
+    /* 一格一到兩個狀態（2026-09-11：五種長相，排程是自己一顆「排定」狀態、直排在現況下面）
+       kind：on／scheduled／off／ended／na */
+    var STATE_ICON = { on: 'check', scheduled: 'clock', off: 'x', ended: 'minus', na: 'x' };
+    function stateChecksHTML(items) {
+      return '<div class="state-checks' + (items.length > 1 ? ' state-checks--stack' : '') + '">' + items.map(function (it) {
+        var icon = STATE_ICON[it.kind] ? '<i data-lucide="' + STATE_ICON[it.kind] + '" class="ztor-icon" aria-hidden="true"></i>' : '';
+        return '<span class="state-check state-check--' + it.kind + '"><span class="state-check__mark">' + icon + '</span><span class="state-check__label">' + esc(it.text) + '</span></span>';
       }).join('') + '</div>';
     }
+    /* datetime-local 值轉成人讀的「YYYY-MM-DD HH:mm」 */
+    function fmtT(v) { return String(v || '').replace('T', ' ').slice(0, 16); }
+    /* 分組：依 groups 的鍵順序排，每組前插一個標題項（{label}）；沒有列的組不出現 */
+    function setovGrouped(rows, groups) {
+      var out = [];
+      Object.keys(groups).forEach(function (g) {
+        var mine = rows.filter(function (r) { return r.g === g; });
+        if (!mine.length) return;
+        out.push({ label: groups[g] });
+        out = out.concat(mine);
+      });
+      return out;
+    }
+    window.pdSetovGrouped = setovGrouped;
     function renderSettingsOverview() {
       if (!setovHost) return;
       /* 值比欄目名重要（2026-09-11 使用者指示）：欄目名是小字灰字在上，值是主字在下；整列可點。 */
-      setovHost.innerHTML = setovRows().map(function (r) {
+      var groups = { basic: 'product-detail.setov.group.basic', pricing: 'product-detail.setov.group.pricing', ops: 'product-detail.setov.group.ops', listing: 'product-detail.setov.group.listing' };
+      var all = setovRows();
+      setovHost.innerHTML = Object.keys(groups).map(function (g) {
+        var mine = all.filter(function (r) { return r.g === g; });
+        if (!mine.length) return '';
+        return '<section class="form-section form-section--outlined"><div class="form-section__head"><h3 class="form-section__title" data-i18n="' + groups[g] + '">' + esc(T(groups[g], g)) + '</h3></div><div class="data-list">' + mine.map(rowHTML).join('') + '</div></section>';
+      }).join('');
+      function rowHTML(r) {
         return '<div class="data-list__row data-list__row--go" role="button" tabindex="0" data-pd-setov-go="' + r.go + '" aria-label="' + esc(T('product-detail.setov.go', 'Go to setting')) + '">' +
           '<div class="data-list__row-main"><div class="data-list__body">' +
             '<div class="data-list__meta" data-i18n="' + r.key + '">' + esc(T(r.key, r.fb)) + '</div>' +
@@ -2808,7 +2854,7 @@
           '</div></div>' +
           '<span class="data-list__go" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></span>' +
         '</div>';
-      }).join('');
+      }
       if (window.ztorIcons) window.ztorIcons.applyIcons(setovHost);
     }
     document.addEventListener('ztor:lang-changed', function () { renderSettingsOverview(); });
