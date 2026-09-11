@@ -4789,7 +4789,7 @@
     'cp.var.opt.value.label': { en: 'Option values',  zh: '選項值' },
     'cp.var.opt.add-value':   { en: 'Add value',      zh: '新增選項值' },
     'cp.var.col.variant':   { en: 'Variant',                          zh: '選項組合' },
-    'cp.var.col.img':       { en: 'Image',                            zh: '圖片' },
+    /* 2026-09-12 退場 cp.var.col.img（表頭「圖片」）：縮圖併進規格名那一格、表頭不再有圖片欄（Q117），全站零消費後移除 */
     /* 逐規格圖片（2026-08-10）。三種狀態各一句：自己的圖／沿用主圖／還沒有圖可沿用。 */
     'cp.var.img':           { en: 'Variant image',                    zh: '規格圖片' },
     'cp.var.img.own':       { en: 'This variant has its own image.',  zh: '這個規格用的是自己的圖。' },
@@ -4799,6 +4799,9 @@
     'cp.var.img.done':      { en: 'Done',                             zh: '完成' },
     'cp.var.img.close':     { en: 'Close',                            zh: '關閉' },
     'cp.var.img.auto':      { en: 'Changes apply straight away.',     zh: '改了就生效，不用另外儲存。' },
+    /* 商品細節頁的規格圖片彈窗（2026-09-11 D268）：圖存在編輯草稿裡、按「儲存變更」才寫回，所以提示跟建立商品那句不同。
+       彈窗標題與三種狀態句沿用上面的 cp.var.img.*，不另開一套。 */
+    'pd.var.img.auto':      { en: 'Saved with the product when you save changes.', zh: '按「儲存變更」時一併存入。' },
     'cp.var.col.price':     { en: 'Price',                            zh: '價格' },
     'cp.var.col.stock':     { en: 'Stock',                            zh: '庫存' },
     'cp.var.col.total':     { en: 'Total',                            zh: '上限' },
