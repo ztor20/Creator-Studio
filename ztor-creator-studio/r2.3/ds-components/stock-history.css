@@ -1,0 +1,30 @@
+/* ============================================================
+   Stock history · 庫存歷史紀錄（2026-09-11，自 lab-stock-history.html 的 H1 promote）
+
+   一張單一筆：補貨單（方式／供應商／預計到貨／備註＋逐組合數量）或一次鎖定（逐組合前 → 後）。
+   主列只講「什麼時候、哪一種、補了誰、誰供的、什麼狀態」，細節收在展開層——
+   列的版面由 data-list 提供、展開由 row-disclosure 提供（Q107 整組換層），本檔只擁有
+   歷史紀錄專屬的幾格：固定寬的日期欄、類型徽章、變動數字、展開層的鍵／值兩欄。
+
+   Anatomy（清單型 row-disclosure 上疊一層）
+     .data-list
+       .rowdis__group.rowdis__group--gutter
+         .data-list__row.rowdis__head
+           .data-list__row-main
+             .shist__date            日期，固定寬（列與列的主體才對齊）
+             .shist__type            類型徽章（補貨 --info／鎖定 --neutral）
+             .data-list__body        __title＝逐組合變動摘要（.shist__delta 等寬數字）、__meta＝供應商 · 方式
+           .shist__end               狀態徽章＋ .rowdis__toggle
+         .data-list__row.rowdis__child.rowdis__child--compact.shist__child   明細一列一項
+           .data-list__row-main > .shist__k（鍵）＋ .shist__v（值）；補貨中的預計到貨列右側放到貨確認鈕
+   Consumers: product-detail.html（商品庫存分頁的頁內卡＋「查看全部」彈窗）
+   取代：restock-log.css（2026-09-11 退場，見該檔墓碑）
+   ============================================================ */
+.shist__date { flex: none; width: 92px; font-family: var(--font-ui); font-size: var(--fs-12); color: var(--muted-foreground); }
+.shist__type { flex: none; }
+.shist__end { display: flex; align-items: center; gap: var(--sp-8); }
+.shist__delta { font-family: var(--font-ui); font-variant-numeric: tabular-nums; color: var(--foreground); }
+/* 展開層：左側讓出日期欄的寬，明細與主體對齊（清單型的「零縮排」＝對齊主體，不是對齊左緣） */
+.shist__child .data-list__row-main { padding-left: calc(92px + var(--sp-12)); }
+.shist__k { flex: none; width: 88px; font-size: var(--fs-12); color: var(--muted-foreground); }
+.shist__v { font-size: var(--fs-13); color: var(--foreground); min-width: 0; }

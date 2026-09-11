@@ -789,7 +789,7 @@
     'alert.event.title':      { en: 'Event pre-flight incomplete', zh: '活動檢核尚未完成' },
     /* 2026-08-19：活動名再次對齊落地頁——卡片改顯式連 realive-chongqing（store 真實活動），
        舊文案的 Kowloon Café（Apr 12）已不在 store，落地頁也不再顯示它。 */
-    'alert.event.desc':       { en: '<em>REALIVE World Tour (China) — Chongqing · Oct 25</em> still needs cancellation &amp; void policy and on-site staffing confirmed.', zh: '「<em>REALIVE World Tour (China) — 重慶站 · 10/25</em>」尚未確認取消與作廢政策與現場人力配置。' },
+    'alert.event.desc':       { en: '<em>REALIVE World Tour (China) — Chongqing · Oct 25</em> still needs cancellation &amp; void policy and on-site staffing confirmed.', zh: '「<em>REALIVE World Tour (China) — 重慶站 · 10/25</em>」尚未確認取消與撤銷政策與現場人力配置。' },
     'alert.event.src':        { en: 'From · Events',          zh: '來自 · 活動' },
     'alert.event.cta':        { en: 'Complete checklist',     zh: '完成檢核' },
     'alert.payout-block.title':{ en: 'Payouts on hold — tax form required', zh: '提款已暫停 — 需補稅務表單' },
@@ -894,7 +894,7 @@
     'alert.stock.d1.name':        { en: 'Pirate Queen zine vol. 02',      zh: '海上霸姬 幕後寫真誌 vol.02' },
     'alert.stock.d2.name':        { en: 'Kowloon After Dark tee (S)',     zh: '九龍夜行 紀念 T 恤 (S)' },
     'alert.stock.d3.name':        { en: 'Mong Kok Sniper concept poster', zh: '旺角狙擊 概念海報' },
-    'alert.event.d1.name':        { en: 'Cancellation & void policy', zh: '取消與作廢政策' },
+    'alert.event.d1.name':        { en: 'Cancellation & void policy', zh: '取消與撤銷政策' },
     'alert.event.d2.name':        { en: 'On-site staffing',          zh: '現場人力配置' },
     'alert.payout-block.d1.name': { en: 'W-8 / W-9 tax form',        zh: 'W-8／W-9 稅務表單' },
     'alert.payout-block.d1.sub':  { en: 'Required before any withdrawal is released', zh: '提款釋出前必須先補交' },
@@ -1333,8 +1333,8 @@
     'tx.filter.streaming':    { en: 'Platform / streaming',  zh: '平台 / 串流版稅' },
     'tx.filter.project':      { en: 'Project support',       zh: '項目支持' },
     /* 2026-09-09（D253）：內容由「Payouts & refunds」改「Payouts & voids」——平台不再有
-       退款動作，這顆篩選涵蓋的帳務異動改稱作廢沖銷。 */
-    'tx.filter.payouts':      { en: 'Payouts & voids',       zh: '提款與作廢沖銷' },
+       退款動作，這顆篩選涵蓋的帳務異動改稱撤銷沖銷。 */
+    'tx.filter.payouts':      { en: 'Payouts & voids',       zh: '提款與撤銷沖銷' },
 
     /* Transactions table headers */
     'tx.col.date':            { en: 'Date',                  zh: '日期' },
@@ -1359,8 +1359,8 @@
     'tx.detail.payout-note':  { en: 'Payout · no revenue breakdown. A $2.50 bank transfer fee was applied.', zh: '提款 · 無收入拆解；已扣銀行轉帳費 $2.50。' },
     'tx.detail.manual-note':  { en: '<strong>Manual entry · unverified.</strong> Excluded from Available, payouts, and tax documents — at most it shows in display stats.', zh: '<strong>手動補登 · 未驗證。</strong>不計入可提領、提款與稅務文件，最多顯示在展示性統計。' },
     /* 墓碑（2026-09-09，D253）：tx.detail.refund-note 移除——平台不提供退款動作，
-       earnings-ztor.html 的作廢沖銷樣本列改用下方 tx.detail.void-note。 */
-    'tx.detail.void-note':    { en: '<strong>Void write-off.</strong> Comes out of the void reserve first, then this period’s distributable profit, then carry forward — nothing already paid out is clawed back.', zh: '<strong>作廢沖銷。</strong>依序由沖銷準備金、本期可分配淨利、再結轉赤字吸收；已經撥出去的款項不會被追回。' },
+       earnings-ztor.html 的撤銷沖銷樣本列改用下方 tx.detail.void-note。 */
+    'tx.detail.void-note':    { en: '<strong>Void write-off.</strong> Comes out of the void reserve first, then this period’s distributable profit, then carry forward — nothing already paid out is clawed back.', zh: '<strong>撤銷沖銷。</strong>依序由沖銷準備金、本期可分配淨利、再結轉赤字吸收；已經撥出去的款項不會被追回。' },
 
     /* ── 交易明細 · D250（2026-09-05）兩族一表 ────────────────────────────────
        分類名稱只有這一組 key：規格 §7.3 是收入分類的唯一來源，篩選 chip 與列上的
@@ -1386,8 +1386,8 @@
     'tx.cat.referral':        { en: 'Referral share',        zh: '推薦分潤' },
     'tx.cat.payout':          { en: 'Payout',                zh: '提款' },
     /* 墓碑（2026-09-09，D253）：tx.cat.refund（原「Refund」／「退款」）移除——帳務異動
-       分類改名「作廢沖銷」，見下方 tx.cat.void。 */
-    'tx.cat.void':            { en: 'Void',                  zh: '作廢沖銷' },
+       分類改名「撤銷沖銷」，見下方 tx.cat.void。 */
+    'tx.cat.void':            { en: 'Void',                  zh: '撤銷沖銷' },
     'tx.cat.deduction':       { en: 'Deduction',             zh: '扣款' },
 
     /* 收入族的狀態（填色徽章）與帳務異動族的狀態（描邊徽章）分開列：兩邊都有「已付款」，
@@ -1419,8 +1419,8 @@
     'tx.r.collab.item':       { en: 'FLAMES music video · featured artist share', zh: 'FLAMES MV · 客座演出分潤' },
     'tx.r.collab.meta':       { en: '15% of the project net', zh: '該項目淨額的 15%' },
     /* 墓碑（2026-09-09，D253）：tx.r.refund.qual（原「· 3 ticket refunds」／「· 退票 3 張」）
-       移除——樣本列改為作廢沖銷，見下方 tx.r.void.qual。 */
-    'tx.r.void.qual':         { en: '· 3 tickets voided',    zh: '· 3 張票券作廢' },
+       移除——樣本列改為撤銷沖銷，見下方 tx.r.void.qual。 */
+    'tx.r.void.qual':         { en: '· 3 tickets voided',    zh: '· 3 張票券撤銷' },
     'tx.r.deduct.item':       { en: 'October platform service fee', zh: '10 月平台服務費' },
 
     /* 展開層 · 帳務異動族（收入族用的是既有的 tx.detail.* 瀑布字串） */
@@ -1450,9 +1450,9 @@
     'tx.dv.period':           { en: 'Period',                zh: '期間' },
     'tx.detail.payout-note2': { en: 'A payout moves money you had already earned \u2014 it is not new income, so it carries no fee breakdown or rate version.', zh: '提款搬的是你已經賺到的錢，不是新的收入，所以沒有扣項拆解、也沒有費率版本。' },
     /* 墓碑（2026-09-09，D253）：tx.detail.refund-note2 移除——平台不提供退款動作，
-       earnings.html 的作廢沖銷樣本列改用下方 tx.detail.void-note2；準備金同步更名沖銷準備金
+       earnings.html 的撤銷沖銷樣本列改用下方 tx.detail.void-note2；準備金同步更名沖銷準備金
        （Void Reserve，§7.3）。 */
-    'tx.detail.void-note2':   { en: 'Void write-offs come out of the void reserve first, then this period\u2019s distributable profit, then carry forward \u2014 nothing already paid out is clawed back.', zh: '作廢沖銷依序由沖銷準備金、本期可分配淨利、再結轉赤字吸收；已經撥出去的款項不會被追回。' },
+    'tx.detail.void-note2':   { en: 'Void write-offs come out of the void reserve first, then this period\u2019s distributable profit, then carry forward \u2014 nothing already paid out is clawed back.', zh: '撤銷沖銷依序由沖銷準備金、本期可分配淨利、再結轉赤字吸收；已經撥出去的款項不會被追回。' },
     'tx.detail.disputed-note':{ en: '<strong>Under dispute.</strong> Held out of Available until the bank decides; it returns if you win.', zh: '<strong>爭議中。</strong>銀行裁定之前自可提領扣除；申訴成立就還原。' },
     'tx.detail.deduct-note':  { en: 'Charged against your balance, not against a single sale \u2014 so there is no per-transaction breakdown.', zh: '這筆從餘額扣，不是從某一筆銷售扣，所以沒有逐筆拆解。' },
 
@@ -1667,13 +1667,13 @@
     'payouts.history':             { en: 'Payout history',       zh: '提款紀錄' },
     'payouts.history-meta':        { en: 'Last 12 months',       zh: '近 12 個月' },
     /* 2026-09-09（D253）：Refund Reserve 改名沖銷準備金（Void Reserve，§7.3）——平台不提供
-       退款動作，這裡吸收的是作廢沖銷、不是退款本身；引用出處由 D041 改為 D253。 */
+       退款動作，這裡吸收的是撤銷沖銷、不是退款本身；引用出處由 D041 改為 D253。 */
     'payouts.pool-title':          { en: 'Distributable profit & void reserve', zh: '可分配淨利與沖銷準備金' },
     'payouts.pool-sub':            { en: 'Basis', zh: '口徑依 §7.3 / §5.2.2' },
     'payouts.pool.net':            { en: 'Distributable profit', zh: '可分配淨利' },
     'payouts.pool.net-meta':       { en: 'What you can distribute this period', zh: '這段期間可以分的錢' },
     'payouts.pool.reserve':        { en: 'Void reserve',       zh: '沖銷準備金' },
-    'payouts.pool.reserve-meta':   { en: '0% withheld in v1 · whether voids need a reserve is proposed, pending approval (D253)', zh: 'v1 維持 0%（不預扣）· 作廢沖銷是否需要預扣準備金為〔產品變更提案〕，待上游核准（D253）' },
+    'payouts.pool.reserve-meta':   { en: '0% withheld in v1 · whether voids need a reserve is proposed, pending approval (D253)', zh: 'v1 維持 0%（不預扣）· 撤銷沖銷是否需要預扣準備金為〔產品變更提案〕，待上游核准（D253）' },
     'payouts.pool-note':           { en: '<strong>Distributable profit is the last line of the ladder.</strong> If it turns negative, distribution pauses and the loss carries forward — already-paid funds are never clawed back.', zh: '<strong>可分配淨利是收入去向的最後一階。</strong>若可分配淨利轉為負值，分配會暫停、虧損結轉——已撥款項不會回收。' },
 
     /* Request-payout modal (partials/payout-request-modal.js) */
@@ -2437,7 +2437,14 @@
     'e-shop.tier.inner-only':    { en: 'Inner Circle only',                zh: '僅限核心圈' },
     'e-shop.col.status':         { en: 'Status',                           zh: '狀態' },
     'e-shop.col.stock':          { en: 'Stock',                            zh: '庫存' },
-    'e-shop.col.shop':          { en: 'Shop',                              zh: '上架開關' },
+    'e-shop.col.shown':         { en: 'Shown',                             zh: '顯示' },
+    'e-shop.shown.show-title':  { en: 'Show “{n}” in your shop?',          zh: '要在商店顯示「{n}」嗎？' },
+    'e-shop.shown.show-body':   { en: 'It goes back on the storefront; its private link stops working.', zh: '它會回到商店陳列，原本的非公開連結撤銷。' },
+    'e-shop.shown.hide-title':  { en: 'Hide “{n}” from your shop?',        zh: '要在商店隱藏「{n}」嗎？' },
+    'e-shop.shown.hide-body':   { en: 'Fans won’t find it in the shop. Anyone with the private link can still buy it, and bundles that include it keep selling.', zh: '粉絲在商店找不到它；持非公開連結的人仍可購買，含它的組合包也照樣賣。隱藏不等於下架。' },
+    'e-shop.shown.confirm':     { en: 'Confirm',                           zh: '確認' },
+    'e-shop.shown.cancel':      { en: 'Cancel',                            zh: '取消' },
+    'e-shop.shown.close':       { en: 'Close',                             zh: '關閉' },
     /* 分類欄主分類（2026-07-20，Figma node 845-12576）：子分類（各列 rowN.cat）白字在上，
        這兩個共用 key 是灰字在下的大類，依各列 data-type="physical"/"digital" 挑選 */
     'e-shop.cat.physical':    { en: 'Physical goods',                      zh: '實體商品' },
@@ -2468,7 +2475,15 @@
     'e-shop.anick.dunk.meta':   { en: 'New · Limited custom',              zh: '全新 · 限量客製' },
     /* nick persona 組合列的成員組成（品項名＋件數）。 */
     'e-shop.bnick.set.members':   { en: 'Tee + cap + cargo pants + sneakers · 4 items', zh: 'Tee ＋ 老帽 ＋ 束口褲 ＋ 球鞋 · 4 件' },
-    'e-shop.bnick.vinyl.members': { en: 'Limited vinyl + tour photobook · 2 items',     zh: '限量黑膠 ＋ 巡演寫真誌 · 2 件' },
+    /* 2026-09-11 組合列成員說明改由 products-store 的 ztorGetBundle() 組出「成員名 + … · N 件」，件數那段走這個 key */
+    'e-shop.bundle.members.n':    { en: '{n} items', zh: '{n} 件' },
+    /* 2026-09-11 nick persona 的數位商品列（從實體列複製）規格副標，依內容形態 */
+    'e-shop.meta.digital.song':       { en: 'Single · instant download',         zh: '單曲 · 購買後立即下載' },
+    'e-shop.meta.digital.video':      { en: 'Video · stream / download',         zh: '影片 · 串流／下載' },
+    'e-shop.meta.digital.album':      { en: 'Album · download with lyrics',      zh: '專輯 · 下載附歌詞' },
+    'e-shop.meta.digital.membership': { en: 'Membership · recurring',            zh: '會員卡 · 定期訂閱' },
+    'e-shop.meta.digital.document':   { en: 'Document · PDF',                    zh: '文件 · PDF' },
+    'e-shop.meta.digital.ip':         { en: 'IP assets · licence pack',          zh: 'IP 素材 · 授權包' },
     /* 規格副標（2026-07-20，Figma node 845-12576）：單一規格商品固定顯示此字串 */
     'e-shop.variant.single':  { en: 'Single variant',                      zh: '單一選項' },
     /* 常見選項組合（2026-07-27）：選項名與值都要換語言，故整串建 key，
@@ -2484,7 +2499,7 @@
        product-detail.badge.*、bd.badge.* 一律保留不刪——那些頁面還沒改版，改版時才切過來。 */
     /* 八態的推導條件寫在 js/listing-state.js 的 deriveStatus，這裡只放文案。
        中英各自道地：中文用賣家後台的口語（售罄／急需補貨），英文用電商後台的慣用詞。 */
-    'shop.status.draft':           { en: 'Draft',                              zh: '未完成' },
+    'shop.status.draft':           { en: 'Draft',                              zh: '草稿' },   /* 2026-09-11 使用者：「未完成應該是草稿」，對齊 §7.2 狀態名 */
     'shop.status.live':            { en: 'Live',                               zh: '販售中' },
     'shop.status.coming':          { en: 'Coming soon',                        zh: '即將開賣' },
     'shop.status.ended':           { en: 'Ended',                              zh: '販售結束' },
@@ -2529,7 +2544,7 @@
     'e-shop.status.in':       { en: 'Active',                              zh: '販售中' },
     'e-shop.status.low':      { en: 'Needs restock',                       zh: '急需補貨' },
     'e-shop.status.out':      { en: 'Sold Out',                            zh: '已售完' },
-    'e-shop.status.draft':    { en: 'Incomplete',                          zh: '未完成' },
+    'e-shop.status.draft':    { en: 'Draft',                               zh: '草稿' },   /* 2026-09-11 同 shop.status.draft：拍賣草稿也叫草稿 */
     'e-shop.draft.untitled':  { en: 'Untitled',                            zh: '未命名' },
     /* 價格未定（2026-07-27）：資料層以 '待確認' 當佔位值，那是系統字串不是賣家內容，
        要跟著語系走；priceText() 認出佔位值後改查這個 key。 */
@@ -2633,7 +2648,6 @@
     'fan.tabbar.shop':        { en: 'Shop',                                  zh: '商店' },
     /* Bundles list (spec 5.1.5 F3 · stock = min of members) */
     'e-shop.col.bundle':      { en: 'Bundle',                              zh: '組合' },
-    'e-shop.col.members':     { en: 'Members',                             zh: '內含商品' },
     'e-shop.col.bundleprice': { en: 'Bundle price',                        zh: '組合價' },
     /* Auctions list (spec 5.1.5 F4 競標清單 §87–91 → 5.1.5.8)。單一表格、欄位隨生命週期重解。 */
     'e-shop.col.item':        { en: 'Item',                                zh: '物品' },
@@ -2668,13 +2682,76 @@
     'e-shop.live.feature':    { en: 'Stage-worn leather jacket · $385 · Live', zh: '舞台穿著皮衣 · $385 · 競標中' },
     'e-shop.live.view':       { en: 'View →',                              zh: '查看 →' },
     'e-shop.b1.name':         { en: 'Kowloon After Dark starter pack',              zh: '九龍夜行 入門組' },
-    'e-shop.b1.members':      { en: 'Tee + EP + zine · 3 items',           zh: 'T 恤＋EP＋雜誌書 · 3 件' },
     'e-shop.b1.price':        { en: '$56',                                 zh: '$56' },
     'e-shop.b1.stock':        { en: '3 left (min)',                        zh: '剩 3 件（取最少）' },
     'e-shop.b2.name':         { en: 'Vinyl + poster set',                  zh: '黑膠＋海報組' },
     'e-shop.b2.members':      { en: 'Acetate LP + poster · 2 items',       zh: '黑膠＋海報 · 2 件' },
     'e-shop.b2.price':        { en: '$120',                                zh: '$120' },
     'e-shop.b2.stock':        { en: '21 left (min)',                       zh: '剩 21 件（取最少）' },
+    /* 2026-09-11 示範資料補齊計劃 §1/§2/§3/§4：新增單售商品與組合列的介面文案（doc-guide/ip-kit/
+       poster/jacket/tote/keychain/beanie/wristband 與 signing-set 等新組合），供 e-shop 清單顯示用。 */
+    'e-shop.rowDocGuide.meta': { en: 'PDF · behind-the-scenes notes', zh: 'PDF · 拍攝側記' },
+    'e-shop.rowDocGuide.cat': { en: 'Document', zh: '文件' },
+    'e-shop.rowDocGuide.price': { en: '$6.00', zh: '$6.00' },
+    'e-shop.rowDocGuide.stock': { en: '∞', zh: '∞' },
+    'e-shop.rowIpKit.meta': { en: 'IP kit · brand assets', zh: 'IP 授權 · 視覺素材' },
+    'e-shop.rowIpKit.cat': { en: 'IP kit', zh: '視覺素材' },
+    'e-shop.rowIpKit.price': { en: '$18.00', zh: '$18.00' },
+    'e-shop.rowPoster.meta': { en: 'Numbered 1/100', zh: '編號限定 1/100' },
+    'e-shop.rowPoster.cat': { en: 'Posters', zh: '海報' },
+    'e-shop.rowPoster.price': { en: '$45.00', zh: '$45.00' },
+    'e-shop.rowPoster.stock': { en: '3 / 100', zh: '3 / 100' },
+    'e-shop.rowJacket.meta': { en: 'Colour (Black/Olive) × Size (S/M/L)', zh: '顏色（黑／橄欖）× 尺寸（S/M/L）' },
+    'e-shop.rowJacket.cat': { en: 'Apparel', zh: '服飾' },
+    'e-shop.rowJacket.price': { en: '$88.00', zh: '$88.00' },
+    'e-shop.rowJacket.stock': { en: '24 / 30', zh: '24 / 30' },
+    'e-shop.rowTote.cat': { en: 'Merch', zh: '周邊商品' },
+    'e-shop.rowTote.price': { en: '$28.00', zh: '$28.00' },
+    'e-shop.rowTote.stock': { en: '40 / ∞', zh: '40 / ∞' },
+    'e-shop.rowKeychain.cat': { en: 'Merch', zh: '周邊商品' },
+    'e-shop.rowKeychain.price': { en: '$16.00', zh: '$16.00' },
+    'e-shop.rowKeychain.stock': { en: '120 / ∞', zh: '120 / ∞' },
+    'e-shop.rowBeanie.meta': { en: 'Colour (Black/Grey/Red)', zh: '顏色（黑／灰／紅）' },
+    'e-shop.rowBeanie.cat': { en: 'Apparel', zh: '服飾' },
+    'e-shop.rowBeanie.price': { en: '$30.00', zh: '$30.00' },
+    'e-shop.rowBeanie.stock': { en: '0 / ∞', zh: '0 / ∞' },
+    'e-shop.rowWristband.meta': { en: 'Size (S/M/L)', zh: '尺寸（S/M/L）' },
+    'e-shop.rowWristband.cat': { en: 'Collectibles', zh: '收藏品' },
+    'e-shop.rowWristband.price': { en: '$22.00', zh: '$22.00' },
+    'e-shop.rowWristband.stock': { en: '60 / ∞', zh: '60 / ∞' },
+    'e-shop.bSigning.members': { en: 'Acetate + wristband + jacket + zine · 4 items', zh: '黑膠＋手環＋外套＋雜誌書 · 4 件' },
+    'e-shop.bSigning.price': { en: '$252.00', zh: '$252.00' },
+    'e-shop.bSigning.stock': { en: '20 left (min)', zh: '剩 20 件（取最少）' },
+    'e-shop.bNeon.members': { en: 'Pin + sticker · 2 items', zh: '徽章＋貼紙包 · 2 件' },
+    'e-shop.bNeon.price': { en: '$0.00', zh: '$0.00' },
+    'e-shop.bNeon.stock': { en: '0 left (min)', zh: '剩 0 件（取最少）' },
+    'e-shop.bWinter.members': { en: 'Hoodie + cap · 2 items', zh: '連帽外套＋六片帽 · 2 件' },
+    'e-shop.bWinter.price': { en: '$71.00', zh: '$71.00' },
+    'e-shop.bWinter.stock': { en: '100 left (min)', zh: '剩 100 件（取最少）' },
+    'e-shop.bTour.members': { en: 'Tee + zine · 2 items', zh: 'T 恤＋雜誌書 · 2 件' },
+    'e-shop.bTour.price': { en: '$52.00', zh: '$52.00' },
+    'e-shop.bTour.stock': { en: '0 left (min)', zh: '剩 0 件（取最少）' },
+    'e-shop.bInternal.members': { en: 'Cap + shoes · 2 items', zh: '六片帽＋低筒鞋 · 2 件' },
+    'e-shop.bInternal.price': { en: '$82.00', zh: '$82.00' },
+    'e-shop.bInternal.stock': { en: '0 left (min)', zh: '剩 0 件（取最少）' },
+    'e-shop.bNickSigning.members': { en: 'Vinyl + WYAGL tee + 24CE jersey · 3 items', zh: '黑膠＋祝你好命 T＋24CE 球衣 · 3 件' },
+    'e-shop.bNickSigning.price': { en: '$258.00', zh: '$258.00' },
+    'e-shop.bNickSigning.stock': { en: '30 left (min)', zh: '剩 30 件（取最少）' },
+    'e-shop.bNickVinyl.members': { en: 'Vinyl + WYAGL tee · 2 items', zh: '黑膠＋祝你好命 T · 2 件' },
+    'e-shop.bNickVinyl.price': { en: '$168.00', zh: '$168.00' },
+    'e-shop.bNickVinyl.stock': { en: '15 left (min)', zh: '剩 15 件（取最少）' },
+    'e-shop.bNickSoldout.members': { en: 'Pillow + Dupont bag · 2 items', zh: '抱枕＋Dupont 提袋 · 2 件' },
+    'e-shop.bNickSoldout.price': { en: '$0.00', zh: '$0.00' },
+    'e-shop.bNickSoldout.stock': { en: '0 left (min)', zh: '剩 0 件（取最少）' },
+    'e-shop.bNickPreorder.members': { en: 'Hoodie + cap · 2 items', zh: '連帽外套＋帽子 · 2 件' },
+    'e-shop.bNickPreorder.price': { en: '$95.00', zh: '$95.00' },
+    'e-shop.bNickPreorder.stock': { en: '100 left (min)', zh: '剩 100 件（取最少）' },
+    'e-shop.bNickRecap.members': { en: 'T-shirt (white) + socks · 2 items', zh: 'T 恤（白）＋襪子 · 2 件' },
+    'e-shop.bNickRecap.price': { en: '$48.00', zh: '$48.00' },
+    'e-shop.bNickRecap.stock': { en: '0 left (min)', zh: '剩 0 件（取最少）' },
+    'e-shop.bNickInternal.members': { en: 'Cap + sneakers · 2 items', zh: '帽子＋球鞋 · 2 件' },
+    'e-shop.bNickInternal.price': { en: '$110.00', zh: '$110.00' },
+    'e-shop.bNickInternal.stock': { en: '0 left (min)', zh: '剩 0 件（取最少）' },
 
     'npp.title':              { en: 'Share your new product',              zh: '把新品發成貼文' },
     'npp.close':              { en: 'Close',                               zh: '關閉' },
@@ -2780,21 +2857,21 @@
     'stock.st.ok':                  { en: 'OK',                 zh: '正常' },
     'stock.st.threshold':           { en: 'At threshold',       zh: '到門檻' },
     'stock.st.low':                 { en: 'Low stock',          zh: '低庫存' },
-    'stock.dest.title':             { en: 'Where stock goes',   zh: '庫存去向' },
-    'stock.dest.sub':               { en: "Bundle locks are set on each bundle's own allocation table.", zh: '鎖給組合包的部分，由各組合自己的分配表決定。' },
+    'stock.dest.title':             { en: 'Bundles',            zh: '組合包' },
+    'stock.dest.sub':               { en: 'Bundles that include this product and how many units each locks; locks are set on the bundle.', zh: '用到這件商品的組合包，以及各自從它鎖走幾件；鎖定量在組合包詳情設定。' },
     'stock.dest.locked':            { en: '{n} locked',         zh: '鎖 {n} 件' },
     'stock.dest.unlocked':          { en: 'Not locked — ships from unlocked stock', zh: '未鎖定，出貨時從未鎖定的部分取' },
     'stock.dest.empty':             { en: 'Not part of any bundle.', zh: '沒有組合包用到這件商品。' },
     'stock.history.title':          { en: 'Stock history',      zh: '庫存歷史紀錄' },
-    'stock.history.sub':            { en: 'Every restock and lock change.', zh: '補貨與鎖定的每一筆變動。' },
-    'stock.history.col.type':       { en: 'Type',               zh: '類型' },
-    'stock.history.col.delta':      { en: 'Change',             zh: '變動' },
-    'stock.history.col.note':       { en: 'Note',               zh: '說明' },
+    'stock.history.sub':            { en: 'One row per restock order or lock change — open a row for details.', zh: '一張補貨單或一次鎖定一筆，點開看明細。' },
     'stock.history.type.restock':   { en: 'Restock',            zh: '補貨' },
     'stock.history.type.lock':      { en: 'Lock',               zh: '鎖定' },
     'stock.history.note.single':    { en: 'Locked for single sale', zh: '鎖給單售' },
-    'stock.history.note.now':       { en: 'Restock now',        zh: '立即補貨' },
-    'stock.history.note.scheduled': { en: 'Scheduled · ETA {d}', zh: '計時補貨，預計 {d} 到' },
+    'stock.history.k.supplier':     { en: 'Supplier',           zh: '供應商' },
+    'stock.history.empty':            { en: 'No records yet.', zh: '暫無紀錄' },
+    'stock.history.expand':         { en: 'Show details',       zh: '展開明細' },
+    'stock.history.k.note':         { en: 'Note',               zh: '備註' },
+    'stock.history.own':            { en: 'Own stock',          zh: '自有庫存' },
     'product-detail.content.title': { en: 'Product content', zh: '商品內容' },
     'product-detail.field.media':   { en: 'Images & media', zh: '圖片與素材' },
     'product-detail.field.title':   { en: 'Title',        zh: '標題' },
@@ -2826,10 +2903,9 @@
        改由 applyProduct 依 p.cat 在這兩個 key 之間切換。 */
     'product-detail.crumb.digital': { en: 'Digital merch', zh: '數位商品' },
     'product-detail.sales.sub':     { en: 'Reconciled with Earnings; not recalculated here.', zh: '數字與收入管理對帳，本頁不重算。' },
-    'product-detail.sales.more':    { en: 'View more →',   zh: '查看更多 →' },
+    'product-detail.sales.more':    { en: 'View in Earnings',   zh: '到收入管理查看' },
     'product-detail.kpi.sold':      { en: 'Units sold',    zh: '已售' },
     'product-detail.kpi.revenue':   { en: 'Revenue',       zh: '營收' },
-    'product-detail.kpi.cvr':       { en: 'Conversion',    zh: '轉換率' },
     'product-detail.kpi.net-meta2': { en: 'Net of platform & payment fees', zh: '已扣平台與金流費' },
     'product-detail.media.hero':    { en: 'Hero shot',     zh: '主視覺' },
     'product-detail.media.more':    { en: 'more',          zh: 'more' },
@@ -2839,8 +2915,6 @@
     'product-detail.ship.addr':     { en: 'Shipping address', zh: '發貨地址' },
     'product-detail.qr.pickup':     { en: 'QR pickup',     zh: 'QR 領取' },
     'product-detail.qr.session':    { en: 'Pickup session', zh: '領取場次' },
-    'product-detail.rail.inuse':    { en: 'In use',        zh: '使用中' },
-    'product-detail.rail.bundle':   { en: 'Bundle',        zh: '組合' },
     /* 2026-07-20 選項收合列（Webflow 樣式） */
     'pd.var.opt.size':      { en: 'Size',            zh: '尺寸' },
     'cp.var.opt.edit':      { en: 'Edit',            zh: '編輯' },
@@ -2849,7 +2923,7 @@
     'cp.var.opt.delete':    { en: 'Delete',          zh: '刪除' },
     'cp.var.opt.unnamed':   { en: 'Untitled option', zh: '未命名選項' },
     'cp.var.opt.novalue':   { en: 'no values yet',   zh: '尚未設定值' },
-    'product-detail.ref.label':     { en: 'Project',       zh: '項目' },
+    'product-detail.ref.label':     { en: 'Projects',      zh: '項目' },
     'product-detail.sales.source':  { en: 'Source · Earnings', zh: '來源 · 收入管理' },
     'product-detail.kpi.units':     { en: 'Units sold',     zh: '銷售件數' },
     'product-detail.kpi.gross':     { en: 'Gross',          zh: '毛收' },
@@ -2900,13 +2974,20 @@
     /* 分頁式佈局：tab 標題 ＋ 總覽庫存健康快照 */
     'product-detail.tab.overview':    { en: 'Overview',        zh: '總覽' },
     'product-detail.tab.basic':       { en: 'Basic info',      zh: '基本資訊' },
-    'product-detail.tab.price-stock': { en: 'Sales settings', zh: '銷售設定' },
     'product-detail.tab.delivery':    { en: 'Delivery',        zh: '交付與取貨' },
-    'product-detail.tab.relations':   { en: 'Promotion',       zh: '商品推廣' },
     /* 2026-09-11 單售商品詳情頁重組：總覽／商品設定兩個分頁；商品設定分頁的分節橫列與編輯開關；
        總覽的「商品設定概覽」一區一行的摘要用語。 */
     'product-detail.tab.stock':       { en: 'Stock',           zh: '商品庫存' },
     'product-detail.tab.settings':    { en: 'Product settings', zh: '商品設定' },
+    'product-detail.tab.links':       { en: 'Links',           zh: '關聯' },
+    'product-detail.kpi.links':       { en: 'In use',          zh: '關聯中' },
+    'kpi.links-meta.bundles':         { en: '{n} bundles',  zh: '{n} 個組合包' },
+    'kpi.links-meta.projects':        { en: '{n} projects', zh: '{n} 個項目' },
+    'kpi.links-meta.films':           { en: '{n} movies',   zh: '{n} 部電影' },
+    'bd.films.sub':                   { en: 'Released movies this bundle relates to (front-end catalog).', zh: '此組合關聯的前台已上架電影（可多部、選填）。' },
+    'cb.films.sub':                   { en: 'Tag released movies this bundle relates to. Shown on the movie page on Ztor.', zh: '標記此組合相關的前台已上架電影，供前台電影頁呈現（可多部）。' },
+    'product-detail.nav.tags':        { en: 'Tags',            zh: '標籤' },
+    'product-detail.ref.sub':         { en: 'Projects that use this product as a reward or reference it.', zh: '把這件商品當回饋、或引用它的項目。' },
     'product-detail.nav.pricing':     { en: 'Options & pricing', zh: '規格與價格' },
     'product-detail.nav.rules':       { en: 'Discounts & limits', zh: '折扣與限購' },
     'product-detail.nav.publish':     { en: 'Listing & sale',  zh: '上架與開賣' },
@@ -2940,8 +3021,7 @@
     'pd.cfile.ip.gap':                { en: 'IP asset slots follow the IP type (Media Pack). The per-type slot list isn’t defined upstream yet — this is an exploratory placeholder pending the spec.', zh: 'IP 素材槽依 IP 類型（Media Pack）而定。各類型的槽位明細上游尚未定義——此為待規格補齊的探索性 placeholder。' },
     'pd.cfile.ip.slot':               { en: 'Asset slot',       zh: '素材槽' },
     'product-detail.var.opts-locked': { en: 'Options are fixed after creation — edit price, stock, SKU and cost per variation in the table below.', zh: '選項建立後固定不可調整——各選項組合的價格、庫存、SKU 與成本改於下方的表格。' },
-    'product-detail.var.delist':    { en: 'Delist this option',                   zh: '單獨下架' },
-    'product-detail.var.relist':    { en: 'Relist this option',                   zh: '重新上架' },
+    'product-detail.var.listed':    { en: 'Listed',                               zh: '上架中' },
     'product-detail.stock.history': { en: 'Restock history',                      zh: '補貨紀錄' },
     'product-detail.stock.edit':    { en: 'Edit',                                 zh: '編輯' },
     'product-detail.edit.title':    { en: 'Edit pricing &amp; options',           zh: '編輯定價與規格' },
@@ -2958,19 +3038,19 @@
     'bd.badge.live':        { en: 'Live',                    zh: '已上架' },
     'bd.badge.bundle':      { en: 'Bundle',                  zh: '組合' },
     'bd.sub':               { en: 'Three fan favourites bundled at one price.', zh: '三件人氣商品，一個組合價。' },
-    'bd.content.title':     { en: 'Bundle content',          zh: '組合內容' },
-    'bd.members.title':     { en: 'In this bundle',          zh: '組合內含' },
-    'bd.members.edit':      { en: 'Add or remove members in the bundle builder. Members reference existing products.', zh: '在建立組合流程中加入或移除成員。成員引用既有商品。' },
     'bd.price.hint':        { en: "Saves $10.00 vs members' total $69.00. Bundle price must not exceed members' total.", zh: '比成員原價合計 $69.00 省下 $10.00。組合價不得高於成員原價合計。' },
     'bd.stock.title':       { en: 'Stock & member impact',   zh: '庫存與成員影響' },
     'bd.stock.min':         { en: '· min of members',        zh: '· 成員最小可售量' },
-    'bd.impact.title':      { en: 'Member impact',           zh: '成員影響' },
     'bd.impact.note':       { en: "Editing a member's price, stock or visibility can affect this bundle's sellable quantity and pricing validity — a sold-out or hidden member makes the bundle unsellable and pulls it from your shop; a member price rise can push the fixed price above members' total.", zh: '修改成員的價格、庫存或可見狀態，可能影響本組合的可售量與定價有效性——成員售罄或下架會使組合不可售並一併下架；成員漲價可能使固定價高於成員合計。' },
     /* D241（spec §7.14 組合包成交條件）：成員「隱藏」不再讓組合不可售——隱藏的成員照樣
        能被組合帶著成交。舊的 bd.impact.note 把下架與隱藏混為一談，改由這一條取代。 */
     'bd.impact.member-rule': { en: "A member stops this bundle when it is unlisted, off sale, or has nothing left to sell inside this bundle. Hiding it changes nothing — it still sells as part of a bundle. A member price rise can also push the bundle price above the members' total.", zh: '成員下架、未開賣，或在本組合的可售量歸零時，組合就不可售；成員隱藏不影響，照樣能被組合帶著賣。成員漲價則可能讓組合價高於成員合計。' },
     'bd.stock.sub':          { en: 'Lock stock for this bundle, or leave it shared with the member\u2019s other channels', zh: '把成員的庫存鎖定給本組合，或維持與其他管道共用' },
-    'bd.members.alloc-hint': { en: 'Lock amounts are edited in Sales settings.', zh: '鎖定量在「銷售設定」分頁調整。' },
+    'bd.members.alloc-hint': { en: 'Lock amounts are edited in Bundle stock.', zh: '鎖定量在「組合庫存」分頁調整。' },
+    /* §2.6 取貨與核銷（5.1.5.9）：組合成員含現場 QR 領取商品時才顯示，本區只呈現、不重定義規則本體。 */
+    'bd.pickup.title':      { en: 'Pickup & redemption',      zh: '取貨與核銷' },
+    'bd.pickup.sub':        { en: 'After checkout, members with on-site QR pickup expand into their own pickup units — the bundle itself issues no pickup code. Each unit is tagged “from bundle {name}”, and its pickup session follows that member’s own setting.', zh: '下單後，含現場 QR 領取的成員會展開為各自的領取單位；組合本身不產生領取碼，成員的領取單位會標記「來自組合「{name}」」，取貨場次沿用該成員商品自己的設定。' },
+    'bd.pickup.member-meta': { en: 'On-site QR pickup',       zh: '現場 QR 領取' },
     'bd.kpi.sold':          { en: 'Bundles sold',            zh: '已售組數' },
     'bd.sales.empty':       { en: 'No sales yet. Revenue appears here once fans buy this bundle.', zh: '尚無銷售紀錄。粉絲購買後，收入會顯示在這裡。' },
     /* 合併 2026-07-29：hint 取本機版（不帶規格編號，使用者可見字串不出現 §），
@@ -2979,8 +3059,28 @@
     /* 2026-07-27 版型改成與商品明細同構（頁籤＋右側常駐欄）後新增 */
     /* 2026-09-10 使用者裁示改名：分頁名由「成員」改「組合商品」——「成員」是規格與程式的內部用詞，
        畫面上看不出它指的是「這個組合裡裝了哪些商品」。英文沿用規格 5.1.5.9 §2.3 的 Items。 */
-    'bd.tab.members':       { en: 'Items',                   zh: '組合商品' },
-    'bd.rail.summary':      { en: 'Bundle at a glance',      zh: '組合概況' },
+    'cb.edition.sub':       { en: 'Unlimited sells while members have stock; Limited adds a hard cap on top.', zh: '不限量＝成員有貨就賣；限量＝在成員庫存之上再設一個硬上限。' },
+    'cb.add-item':          { en: 'Add',                     zh: '加入' },
+    'cb.remove':            { en: 'Remove',                  zh: '移除' },
+    'bd.pick.noresult':     { en: 'No products match.',      zh: '沒有符合的商品。' },
+    /* 2026-09-11 組合包詳情頁重組（對齊商品詳情）：四分頁、頁首小字、組合庫存 KPI、鎖定歷史、組合設定 */
+    'bd.tab.stock':         { en: 'Bundle stock',            zh: '組合庫存' },
+    'bd.tab.settings':      { en: 'Bundle settings',         zh: '組合設定' },
+    'bd.hero.items':        { en: 'items',                   zh: '件商品' },
+    'bd.setov.title':       { en: 'Settings overview',       zh: '組合設定概覽' },
+    'bd.btn.edit':          { en: 'Edit bundle',             zh: '編輯組合' },
+    'bd.nav.pricing':       { en: 'Price & discount',        zh: '價格與折扣' },
+    'bd.alloc.title':       { en: 'Member allocation',       zh: '成員分配' },
+    'bd.unit.sets':         { en: 'sets',                    zh: '組' },
+    'bd.unit.members':      { en: 'members',                 zh: '件' },
+    'bd.kpi.locked':        { en: 'Locked members',          zh: '已鎖定成員' },
+    'bd.kpi.unlocked':      { en: 'Unlocked members',        zh: '未鎖定成員' },
+    'bd.kpi.capped':        { en: 'Capped by',               zh: '卡住的成員' },
+    'bd.history.title':     { en: 'Lock history',            zh: '鎖定歷史紀錄' },
+    'bd.history.sub':       { en: 'One row per lock change — open a row for each member.', zh: '一次改動一筆，點開看逐成員前 → 後。' },
+    'bd.history.meta':      { en: 'Locked for this bundle',  zh: '鎖給本組合' },
+    'bd.ref.sub':           { en: 'Projects that use this bundle as a reward or reference it.', zh: '把這個組合當回饋、或引用它的項目。' },
+    'product-detail.kpi.links-meta-items': { en: '{n} items', zh: '{n} 件商品' },
 
     /* ─── Auction detail (spec 5.1.5.8 拍賣商品細節頁) ─────────── */
     'ad.crumb.eshop':       { en: 'E-Shop',                  zh: '電子商店' },
@@ -3141,7 +3241,7 @@
     'sd.act.open':       { en: 'Open this date',                        zh: '開啟這一場' },
     'sd.act.edit':       { en: 'Edit date & venue',                     zh: '改日期與場地' },
     'sd.act.cancel':     { en: 'Cancel this date',                      zh: '取消這一場' },
-    'sd.cancel.note':    { en: '<strong>Cancelling one date follows the same cancellation &amp; void rules as cancelling a standalone event (§5.1.6 F5).</strong> Being part of a series changes nothing about that date\u2019s tickets — the creator can void them individually or all at once after cancelling (not automatic, D253); the other dates are untouched.', zh: '<strong>取消一場的取消與作廢規則與取消一場獨立活動完全相同（§5.1.6 F5）。</strong>屬於系列不改變這一場票券的處理方式——取消後由創作者逐票或整場作廢仍有效的票券（不自動觸發，D253），其他場次不受影響。' },
+    'sd.cancel.note':    { en: '<strong>Cancelling one date follows the same cancellation &amp; void rules as cancelling a standalone event (§5.1.6 F5).</strong> Being part of a series changes nothing about that date\u2019s tickets — the creator can void them individually or all at once after cancelling (not automatic, D253); the other dates are untouched.', zh: '<strong>取消一場的取消與撤銷規則與取消一場獨立活動完全相同（§5.1.6 F5）。</strong>屬於系列不改變這一場票券的處理方式——取消後由創作者逐票或整場撤銷仍有效的票券（不自動觸發，D253），其他場次不受影響。' },
     'sd.footer1':        { en: 'REALIVE World Tour — Asia leg · 3 dates', zh: 'REALIVE 世界巡迴 — 亞洲段 · 共 3 場' },
     'sd.footer2':        { en: 'Ticket revenue rolls up to Earnings → Event ticketing', zh: '票券收入歸入收入管理 → 活動票券' },
     'event-detail.series.manage': { en: 'Manage all stops →',          zh: '管理整個多站活動 →' },
@@ -3159,7 +3259,7 @@
     'event-detail.leave.save':    { en: 'Save & leave',              zh: '儲存並離開' },
     'event-detail.leave.discard': { en: 'Leave without saving',      zh: '不儲存就離開' },
     'event-detail.edit.saved':    { en: 'Saved.',                    zh: '已儲存。' },
-    'event-detail.edit.confirm-delete': { en: 'Delete this event? {n} people hold tickets — void them individually or all at once first.', zh: '確定刪除這場活動？已有 {n} 人持票，需先逐票或整場作廢。' },
+    'event-detail.edit.confirm-delete': { en: 'Delete this event? {n} people hold tickets — void them individually or all at once first.', zh: '確定刪除這場活動？已有 {n} 人持票，需先逐票或整場撤銷。' },
     'event-detail.edit.confirm-delete0': { en: 'Delete this event? This cannot be undone.', zh: '確定刪除這場活動？此動作無法復原。' },
     'event-detail.edit.caphint':  { en: 'At least {n} — that many tickets are already sold.', zh: '不能低於 {n}——已經賣掉這麼多張了。' },
     /* 2026-08-18 使用者裁決：共用設定是母設定，子活動頁可以獨立變更。
@@ -3503,13 +3603,13 @@
     'event-detail.tx.net':        { en: 'Net to you',           zh: '實收淨額' },
     'event-detail.tx.net-meta':   { en: 'Settles to Earnings',  zh: '結算至收益' },
     'event-detail.tx.cancelled':   { en: 'Cancelled',            zh: '已取消' },
-    'event-detail.tx.cancelled-meta': { en: 'Voided — returned to inventory', zh: '已作廢 · 已退回庫存' },
+    'event-detail.tx.cancelled-meta': { en: 'Voided — returned to inventory', zh: '已撤銷 · 已退回庫存' },
     'event-detail.tx.f.all':      { en: 'All',                  zh: '全部' },
     'event-detail.tx.f.paid':     { en: 'Paid',                 zh: '已付款' },
     'event-detail.tx.f.cancelled': { en: 'Cancelled',            zh: '已取消' },
     'event-detail.tx.paid':       { en: 'Paid',                 zh: '已付款' },
     'event-detail.tx.cancelledbadge': { en: 'Cancelled',         zh: '已取消' },
-    'event-detail.tx.void': { en: 'Void', zh: '作廢' },
+    'event-detail.tx.void': { en: 'Void', zh: '撤銷' },
     'event-detail.tx.col.actions': { en: 'Actions', zh: '動作' },
     'event-detail.tx.col.order':  { en: 'Order',                zh: '訂單' },
     'event-detail.tx.col.buyer':  { en: 'Buyer',                zh: '買家' },
@@ -3614,9 +3714,9 @@
     'ee.lineup.remove':   { en: 'Remove',                         zh: '移除' },
     'ee.delete.confirm':  { en: 'Delete this event? This cannot be undone.', zh: '確定刪除這個活動？此動作無法復原。' },
     /* 2026-09-09（D253）：原文「would be refunded／將辦理退款」與現行政策矛盾——平台不提供
-       退款動作，已售票的活動要刪除得先逐票或整場作廢。此 key 目前零畫面消費，改對文案
+       退款動作，已售票的活動要刪除得先逐票或整場撤銷。此 key 目前零畫面消費，改對文案
        是為了將來被接回去用時不會沿用錯誤承諾。 */
-    'ee.delete.confirm.sold': { en: 'Delete this event? {n} people hold tickets — void them first, one by one or all at once. Deleting does not refund anyone. This cannot be undone.', zh: '確定刪除這場活動？有 {n} 人持票，請先逐票或整場作廢。刪除不會退款給任何人，且無法復原。' },
+    'ee.delete.confirm.sold': { en: 'Delete this event? {n} people hold tickets — void them first, one by one or all at once. Deleting does not refund anyone. This cannot be undone.', zh: '確定刪除這場活動？有 {n} 人持票，請先逐票或整場撤銷。刪除不會退款給任何人，且無法復原。' },
 
     /* ─── Fans CRM page ───────────────────────────────────── */
     'fans.h1':               { en: 'Your fans, ranked.',                    zh: '你的粉絲，依價值排序' },
@@ -4397,6 +4497,7 @@
     'cp.dsub.mv':           { en: 'MV · MV',                          zh: 'MV' },
     'cp.dsub.documentary':  { en: 'Documentary',               zh: '紀錄片' },
     'cp.dsub.document':     { en: 'Document',                  zh: '文檔' },
+    'cp.dsub.ip':           { en: 'IP assets',                 zh: 'IP 素材' },
     'cp.dsub.membership':   { en: 'Membership / VIP card',   zh: '會員卡' },
     'cp.dsub.merch':        { en: 'Merch',                     zh: '其他商品' },
     /* 建立拍賣流程（create-auction · spec 5.1.5.10）——種類、活動次分類、交付、就緒檢查 */
@@ -4823,8 +4924,12 @@
     'cb.price.vs':          { en: 'vs members total',                  zh: '相對成員合計' },
     'cb.pricing':           { en: 'Bundle price',                     zh: '組合價格' },
     'cb.price.auto-hint':   { en: "Auto-summed from members' prices — not editable. Members with variants show “from $X”.", zh: '由成員價格自動加總、不可編輯。成員含多選項時顯示「從 $X 起」。' },
-    'cb.price.discount':    { en: 'Discount % (optional)',             zh: '折扣 %（選填）' },
-    'cb.price.discount-hint': { en: 'Applied to the auto-summed total — fans pay the discounted price.', zh: '套用於自動加總的總額——粉絲付折扣後的價。' },
+    'cb.price.members-total': { en: "Members' list price total",      zh: '成員原價合計' },
+    'cb.price.bundle':      { en: 'Selling price',                    zh: '售價' },
+    'cb.price.discount':    { en: 'Bundle discount % (optional)',      zh: '折扣 %（選填）' },
+    'cb.price.discount-hint': { en: "Sells below the members' total by this much; the selling price is worked out for you.", zh: '比成員原價合計便宜幾 %；售價由系統算出，成員含多選項時是一個區間。' },
+    'cb.sale.percent':      { en: 'Limited-time discount %',          zh: '限時折扣 %' },
+    'cb.sale.percent-hint': { en: 'Taken off the bundle price during the window.', zh: '檔期內再從組合售價折抵。' },
     'cb.price.discount-bad':{ en: 'Discount must be 0–100.',           zh: '折扣須為 0–100。' },
     'cb.price.from':        { en: 'From',                             zh: '從' },
     'cb.price.from-suffix': { en: '',                                 zh: ' 起' },
@@ -4867,7 +4972,7 @@
     'cb.sale.end':          { en: 'Discount end date',                zh: '折扣結束日' },
     'cb.sale.endbefore':    { en: 'End date must be after start date', zh: '結束日需晚於開始日' },
     'cb.sale.pending':      { en: 'Sale price source & time zone pending spec (5.1.5.4 §4 F7).', zh: '特價價格來源與時區待規格確認（5.1.5.4 §4 F7）。' },
-    'cb.discount.note':     { en: 'The discount amount is the Discount % set in Bundle price above; turn on a limited-time window to schedule it.', zh: '折扣幅度＝上方「組合價格」的折扣 %；開啟限時折扣可排定套用檔期。' },
+    'cb.discount.note':     { en: 'A limited-time discount stacks on top of the bundle price above for a campaign window — set its own % and dates.', zh: '限時折扣疊在上方組合售價之上、依營運檔期另設：填自己的折扣 % 與起訖日。' },
     /* 即時預覽欄（spec 5.1.5.4 §4 F6）*/
     'cb.preview.heading':   { en: 'Bundle preview',                   zh: '組合預覽' },
     'cb.preview.sub':       { en: 'How fans see it on Ztor',          zh: '粉絲在 Ztor 上看到的樣子' },
@@ -5725,7 +5830,7 @@
     'orders.pay.unpaid':      { en: 'Unpaid',                zh: '待付款' },
     'orders.pay.paid':        { en: 'Paid',                  zh: '已付款' },
     /* 墓碑（2026-09-09，D253）：orders.pay.refunded 移除——平台不提供任何退款動作，
-       退款一律先發生在平台外且必先於作廢，故以「已取消」單一狀態表達，見
+       退款一律先發生在平台外且必先於撤銷，故以「已取消」單一狀態表達，見
        orders.pay.cancelled。 */
     'orders.pay.cancelled':   { en: 'Cancelled',              zh: '已取消' },
     'orders.pay.disputed':    { en: 'Disputed',              zh: '爭議中' },
@@ -5734,8 +5839,8 @@
        移除——平台已無退款動作，改拆成 orders.status.disputed（爭議）與下方
        orders.status.cancelled（已取消）兩個獨立頁籤。 */
     'orders.status.disputed': { en: 'Disputed',              zh: '爭議' },
-    /* 已取消（2026-09-08，上游 2026-09-07 訂單作廢政策；2026-09-09 隨 D253 取代原本
-       「Refund / dispute」裡的退款部分）：訂單所有品項都被作廢後的終態。與 orders.pay.*
+    /* 已取消（2026-09-08，上游 2026-09-07 訂單撤銷政策；2026-09-09 隨 D253 取代原本
+       「Refund / dispute」裡的退款部分）：訂單所有品項都被撤銷後的終態。與 orders.pay.*
        分開建 key，理由同上一段——那把是徽章的字，這把是篩選頁籤裡的一個值，日後任一邊
        改字不會誤動另一邊。 */
     'orders.status.cancelled':{ en: 'Cancelled',              zh: '已取消' },
@@ -5782,13 +5887,13 @@
        狀態、最近核銷時間；不顯示 QR，見 §7.2 裁決十）。summary 帶 {done}/{total}
        兩個變數、由 order-detail.html 的 paint() 填入（與 od.items.count 同一套慣例）。 */
     'od.units.summary':     { en: '{done} of {total} redeemed', zh: '{total} 件中已核銷 {done} 件' },
-    /* voided>0 時的變體（D242，2026-09-03；2026-09-09 隨 D253 收斂觸發源）：Admin 作廢後
-       被作廢品項的領取單位轉 void，彙總要能分辨「還有幾件待領」與「幾件已因作廢失效」
+    /* voided>0 時的變體（D242，2026-09-03；2026-09-09 隨 D253 收斂觸發源）：Admin 撤銷後
+       被撤銷品項的領取單位轉 void，彙總要能分辨「還有幾件待領」與「幾件已因撤銷失效」
        （規格 5.1.5.3.1 §2.3.1）。 */
     'od.units.summary.void': { en: '{done} of {total} redeemed · {voided} cancelled', zh: '{total} 件中已核銷 {done} 件・{voided} 件已取消' },
     'od.units.unset':       { en: 'Pickup session not yet set', zh: '取貨場次待設定' },
     /* 2026-09-08 建、2026-09-09 隨 D253 收斂：領取單位與品項層彙總的終態統一叫
-       「已取消（Cancelled）」。唯一觸發源是 Admin 作廢——D242 原本的第二觸發源
+       「已取消（Cancelled）」。唯一觸發源是 Admin 撤銷——D242 原本的第二觸發源
        「退款成立」隨平台不再提供退款動作而退場，狀態名不再跟著觸發源走。 */
     'od.units.void':        { en: 'Cancelled',                zh: '已取消' },
     'od.units.expand':      { en: 'Expand',                  zh: '展開' },
@@ -5804,35 +5909,35 @@
        `od.sub.placed`／`od.sub.placed1`（頁首「建立於 … · … 件品項」副標）四個 key 刪除——
        軸標籤改以 .status-axes--split 的細分隔線取代，副標拆成下面的 od.info.placed
        （右欄下單時間）與 od.items.count（品項明細的件數）。刪前已 grep 全站確認零消費。 */
-    /* ─── 作廢品項（Void，2026-09-08）───────────────────────────
+    /* ─── 撤銷品項（Void，2026-09-08）───────────────────────────
        Admin 專屬、逐筆品項、2.2 只做取貨型；規則見 documents/5.1.5.3.1-訂單詳情.md。
        停用理由兩句話各自對應一種不能按的原因，掛在按鈕的 title 上（＝可讀的原因）。
-       墓碑 2026-09-08：`od.void.why.unsupported` 隨出貨型／數位品項的作廢鈕一起退役——
+       墓碑 2026-09-08：`od.void.why.unsupported` 隨出貨型／數位品項的撤銷鈕一起退役——
        使用者裁決 A 案，「待產品確認」是內部寫規格用語不該上介面，該類品項改為完全不
        顯示按鈕（見 order-detail.html 的 voidBtnHtml），不再需要停用理由。 */
     'od.col.actions':       { en: 'Actions',                 zh: '操作' },
-    'od.void.action':       { en: 'Void',                    zh: '作廢' },
+    'od.void.action':       { en: 'Void',                    zh: '撤銷' },
     'od.void.why.admin':    { en: 'Requires the Admin role',  zh: '需要 Admin 角色' },
-    'od.void.why.redeemed': { en: "Already picked up — can't be voided", zh: '已取貨，不可作廢' },
-    /* 2026-09-09（D253 擴大可作廢範圍到出貨型／數位）：兩種型態各自的「已完成履約」
+    'od.void.why.redeemed': { en: "Already picked up — can't be voided", zh: '已取貨，不可撤銷' },
+    /* 2026-09-09（D253 擴大可撤銷範圍到出貨型／數位）：兩種型態各自的「已完成履約」
        停用原因，與 od.void.why.redeemed（取貨型／組合）並列，見 order-detail.html
        的 VOID_WHY_FULFILLED。 */
-    'od.void.why.shipped':  { en: "Already shipped — can't be voided", zh: '已出貨，不可作廢' },
-    'od.void.why.delivered':{ en: "Already delivered — can't be voided", zh: '已交付，不可作廢' },
-    'od.void.title':        { en: 'Void item',               zh: '作廢品項' },
+    'od.void.why.shipped':  { en: "Already shipped — can't be voided", zh: '已出貨，不可撤銷' },
+    'od.void.why.delivered':{ en: "Already delivered — can't be voided", zh: '已交付，不可撤銷' },
+    'od.void.title':        { en: 'Void item',               zh: '撤銷品項' },
     /* 彈窗第一行：動到的是哪一項（數量 × 單價，與品項表同一份數字）*/
     'od.void.qty':          { en: '{n} × {price}',           zh: '{n} 件 × {price}' },
-    'od.void.stripe':       { en: 'Refund the buyer in Stripe first — voiding moves no money and never calls Stripe.', zh: '請先在 Stripe 完成人工退款；作廢不會處理任何金流，也不會呼叫 Stripe。' },
-    'od.void.effects':      { en: 'What voiding does',       zh: '作廢之後會發生' },
+    'od.void.stripe':       { en: 'Refund the buyer in Stripe first — voiding moves no money and never calls Stripe.', zh: '請先在 Stripe 完成人工退款；撤銷不會處理任何金流，也不會呼叫 Stripe。' },
+    'od.void.effects':      { en: 'What voiding does',       zh: '撤銷之後會發生' },
     'od.void.effect.codes': { en: "This item's pickup codes stop working immediately — they can't be scanned at a session.", zh: '這個品項的領取碼即刻失效，場次現場掃不過。' },
     'od.void.effect.stock': { en: 'Stock goes back on the shelf; a bundle restocks each of its members.', zh: '庫存回補；組合品項逐一回補它的成員。' },
     'od.void.effect.email': { en: 'The buyer gets an order-cancelled email listing this item.', zh: '寄送「訂單已取消」信給買家，信中列出這個品項。' },
-    'od.void.irreversible': { en: "There's no undo — a voided item can't be reinstated.", zh: '作廢不可逆，已作廢的品項無法還原。' },
+    'od.void.irreversible': { en: "There's no undo — a voided item can't be reinstated.", zh: '撤銷不可逆，已撤銷的品項無法還原。' },
     'od.void.cancel':       { en: 'Cancel',                  zh: '取消' },
-    'od.void.confirm':      { en: 'Void this item',          zh: '確認作廢' },
-    'od.void.toast':        { en: 'Voided {item} — the buyer will be notified.', zh: '已作廢 {item}，買家將收到訂單已取消通知' },
+    'od.void.confirm':      { en: 'Void this item',          zh: '確認撤銷' },
+    'od.void.toast':        { en: 'Voided {item} — the buyer will be notified.', zh: '已撤銷 {item}，買家將收到訂單已取消通知' },
     /* 墓碑（2026-09-09，D253）：od.btn.refund（頁首 Refund 主操作）移除——平台不提供
-       任何退款動作，取消訂單品項的唯一路徑是作廢（od.void.action）。 */
+       任何退款動作，取消訂單品項的唯一路徑是撤銷（od.void.action）。 */
     'od.btn.ship':          { en: 'Mark shipped',            zh: '標記出貨' },
     'od.btn.delivery':      { en: 'Digital delivery',        zh: '數位交付' },
     'od.btn.pickup':        { en: 'Pickup status',           zh: '取貨狀態' },
@@ -6008,7 +6113,7 @@
     'pk.f4.products':   { en: 'Pickup items',  zh: '取貨商品' },
     'pk.f4.tickets':    { en: 'Event tickets', zh: '活動票券' },
     'pk.f4.add':        { en: 'Add items or tickets', zh: '加入商品或票券' },
-    'pk.f4.note':       { en: 'Stock, orders and revenue stay in E-Shop / Orders / Earnings; ticket status and voids stay in Events.', zh: '庫存、訂單與收入仍由電子商店／訂單管理／收入管理負責；票券狀態與作廢由活動模組負責。' },
+    'pk.f4.note':       { en: 'Stock, orders and revenue stay in E-Shop / Orders / Earnings; ticket status and voids stay in Events.', zh: '庫存、訂單與收入仍由電子商店／訂單管理／收入管理負責；票券狀態與撤銷由活動模組負責。' },
     'pk.item.zine':     { en: 'Pirate Queen zine vol. 02', zh: '海上霸姬 幕後寫真誌 vol.02' },
     'pk.item.tee':      { en: 'Kowloon After Dark tee · M / L', zh: '九龍夜行 紀念 T 恤 · M / L' },
     'pk.item.view':     { en: 'View product', zh: '查看商品' },
@@ -6032,14 +6137,14 @@
     'pk.g.mika.progress': { en: '1 of 5 collected', zh: '本場次已領 1／5' },
     'pk.g.noor.progress': { en: '0 of 3 collected', zh: '本場次已領 0／3' },
     'pk.g.kai.progress':  { en: '2 of 2 collected', zh: '本場次已領 2／2' },
-    /* 作廢即失效示範（D242，2026-09-03；2026-09-09 隨 D253 收斂觸發源）：Yuki H.
-       （#ZT-10471，一件已作廢一件仍可領）、Jonas P.（#ZT-10473，組合成員部分已作廢）。
-       N＝總件數扣掉已因作廢失效的（見 js/orders-store.js 同一輪的「作廢即失效」節）。 */
+    /* 撤銷即失效示範（D242，2026-09-03；2026-09-09 隨 D253 收斂觸發源）：Yuki H.
+       （#ZT-10471，一件已撤銷一件仍可領）、Jonas P.（#ZT-10473，組合成員部分已撤銷）。
+       N＝總件數扣掉已因撤銷失效的（見 js/orders-store.js 同一輪的「撤銷即失效」節）。 */
     'pk.g.yuki.progress': { en: '0 of 1 collected · 1 cancelled', zh: '本場次已領 0／1・1 件已取消' },
     'pk.g.jonas.progress': { en: '0 of 1 collected · 2 cancelled', zh: '本場次已領 0／1・2 件已取消' },
     'pk.st.pending':    { en: 'Pending',      zh: '待核銷' },
     'pk.st.done':       { en: 'Redeemed',     zh: '已核銷' },
-    /* D242：Admin 作廢後該領取單位轉此狀態，與 od.unit.status.void 用同一組字樣；
+    /* D242：Admin 撤銷後該領取單位轉此狀態，與 od.unit.status.void 用同一組字樣；
        原本的第二觸發源「退款成立」隨 D253 平台不再提供退款動作而退場 */
     'pk.st.void':       { en: 'Cancelled',           zh: '已取消' },
     'pk.st.checkedin':  { en: 'Checked in',   zh: '已入場' },
@@ -6195,8 +6300,8 @@
     'sc.cnt.pending':   { en: 'Pending',        zh: '待核銷' },
     'sc.cnt.done':      { en: 'Redeemed',       zh: '已核銷' },
     /* zh 統一成「已取消」，與 od.unit.status.void／pk.st.void 同一組字樣
-       （D242，2026-09-03；2026-09-08 隨作廢明細把原本的雙詞說法收成「已取消」）。
-       2026-09-09 隨 D253 改名 sc.res.refund → sc.res.void：這是作廢後的結果狀態，
+       （D242，2026-09-03；2026-09-08 隨撤銷明細把原本的雙詞說法收成「已取消」）。
+       2026-09-09 隨 D253 改名 sc.res.refund → sc.res.void：這是撤銷後的結果狀態，
        不是退款動作本身，key 名不該再帶「refund」。 */
     'sc.res.void':      { en: 'Cancelled',           zh: '已取消' },
     /* F1.3 明文要求：說明「碼已失效、不可核銷」，不只是講沒東西可交付（D242）。
@@ -6272,7 +6377,7 @@
     /* 墓碑（2026-09-09，D253）：od.refund.* 一整組（title／select／amount／confirm／
        cancel／full.note／restock／pickup-impact／dispute／sub／body／partial／full／
        issued.full／issued.partial）隨 §2.6 退款 popup 與退款事實列整段移除——平台不
-       提供任何退款動作，不記錄退款金額，取消訂單品項的唯一路徑是 §2.8 作廢
+       提供任何退款動作，不記錄退款金額，取消訂單品項的唯一路徑是 §2.8 撤銷
        （od.void.*）。od.refund.v1／.sub／.body 三把在退場前已是零消費孤兒 key
        （沿用站上「先確認零消費再清」的墓碑慣例）。 */
     'od.snap.title':        { en: 'Product snapshot',        zh: '商品快照' },
@@ -8149,16 +8254,16 @@
     'event-detail.btn.edit': { en: 'Edit event', zh: '編輯活動' },
     'event-detail.btn.preview': { en: 'View ticket page', zh: '檢視售票頁' },
     /* event-detail.note.scope 為孤兒 key（全頁無任何引用，2026-09-09 盤點確認），保留未用；
-       文字已順手同步 D253（退款→作廢），避免將來被誤用時內容過期。 */
-    'event-detail.note.scope': { en: '<strong>Operations console — product rules first, UI lands in R 2.1.1 (spec §5.1.6 F5).</strong> Figures are sample data. Ticket-tier, check-in, cancellation/void and series flows shown here reflect defined product rules; anything marked TBD or Phase 2 is intentionally not built.', zh: '<strong>營運主控台──產品規則先行，UI 於 R 2.1.1 落地（規格 §5.1.6 F5）。</strong>數字為示例資料。此處的票種、報到、取消與作廢、系列流程反映已定義的產品規則；標示 TBD 或 Phase 2 者為刻意未實作。' },
+       文字已順手同步 D253（退款→撤銷），避免將來被誤用時內容過期。 */
+    'event-detail.note.scope': { en: '<strong>Operations console — product rules first, UI lands in R 2.1.1 (spec §5.1.6 F5).</strong> Figures are sample data. Ticket-tier, check-in, cancellation/void and series flows shown here reflect defined product rules; anything marked TBD or Phase 2 is intentionally not built.', zh: '<strong>營運主控台──產品規則先行，UI 於 R 2.1.1 落地（規格 §5.1.6 F5）。</strong>數字為示例資料。此處的票種、報到、取消與撤銷、系列流程反映已定義的產品規則；標示 TBD 或 Phase 2 者為刻意未實作。' },
     'event-detail.kpi.sold': { en: 'Tickets sold', zh: '已售票數' },
     'event-detail.kpi.sold-meta': { en: 'Across 3 tiers', zh: '橫跨 3 個票種' },
     'event-detail.kpi.revenue': { en: 'Event revenue', zh: '活動營收' },
     'event-detail.kpi.revenue-meta': { en: 'Earnings figure · not recomputed', zh: '收益數字 · 不重新計算' },
     'event-detail.kpi.checkedin': { en: 'Checked in', zh: '已報到' },
     'event-detail.kpi.checkedin-meta': { en: 'Opens on event day', zh: '活動當天開放' },
-    'event-detail.kpi.voided': { en: 'Voided tickets', zh: '已作廢票券' },
-    'event-detail.kpi.voided-meta': { en: 'None yet', zh: '尚無作廢' },
+    'event-detail.kpi.voided': { en: 'Voided tickets', zh: '已撤銷票券' },
+    'event-detail.kpi.voided-meta': { en: 'None yet', zh: '尚無撤銷' },
     'event-detail.kpi.voided-meta-n': { en: 'Returned to inventory', zh: '已退回庫存' },
     /* 2026-08-13 活動詳情：階段轉換、結案、線上房間、寄送紀錄、變更通知確認 */
     'event-detail.ov.tiers': { en: 'Ticket types', zh: '票種' },
@@ -8226,7 +8331,7 @@
     'event-detail.golive.body': { en: 'The event page goes public and {n} tickets become buyable. From here on, changing the date or venue notifies everyone who bought.', zh: '活動頁會公開，{n} 張票開放購買。之後改日期或場地，會通知到每一位購票者。' },
     'event-detail.golive.ok': { en: 'Open sales', zh: '開始賣票' },
     'event-detail.cancel.title': { en: 'Cancel this event?', zh: '要取消這場活動嗎？' },
-    'event-detail.cancel.body': { en: '{n} tickets sold are not refunded automatically — every holder is notified, and you can void tickets individually or all at once afterward from the Sales record. This cannot be undone.', zh: '已售出的 {n} 張票不會自動退款——會通知每一位持票人，之後你可以在「銷售紀錄」逐票或整場作廢。這個動作無法復原。' },
+    'event-detail.cancel.body': { en: '{n} tickets sold are not refunded automatically — every holder is notified, and you can void tickets individually or all at once afterward from the Sales record. This cannot be undone.', zh: '已售出的 {n} 張票不會自動退款——會通知每一位持票人，之後你可以在「銷售紀錄」逐票或整場撤銷。這個動作無法復原。' },
     'event-detail.cancel.body0': { en: 'Nothing has sold yet. The event stops being publishable.', zh: '目前一張都還沒賣出。取消後這場活動不能再發布。' },
     'event-detail.cancel.ok': { en: 'Cancel event', zh: '取消活動' },
     'event-detail.dup.title': { en: 'Run this event again?', zh: '要照這場再辦一次嗎？' },
@@ -8267,7 +8372,7 @@
     'event-detail.ov.series-val': { en: 'Kowloon Café 10th Anniv. · 1 of 3', zh: '九龍冰室 十週年 · 第 1 場（共 3 場）' },
     'event-detail.ov.stream': { en: 'Stream entitlement', zh: '串流權益' },
     'event-detail.ov.stream-val': { en: 'VIP tier includes live stream', zh: 'VIP 票種含直播' },
-    'event-detail.ov.statemachine': { en: '<strong>Status follows a one-way state machine.</strong> Draft → Scheduled / On Sale → (event runs) → Completed. Only Draft → Cancelled is allowed as a reversal; cancelling does not automatically refund valid tickets — void them individually or all at once afterward (§7.2 F5).', zh: '<strong>狀態遵循單向狀態機。</strong>Draft → Scheduled / On Sale →（活動進行）→ Completed。唯一允許的回退是 Draft → Cancelled；取消不會自動退款有效票券——之後可逐票或整場作廢（§7.2 F5）。' },
+    'event-detail.ov.statemachine': { en: '<strong>Status follows a one-way state machine.</strong> Draft → Scheduled / On Sale → (event runs) → Completed. Only Draft → Cancelled is allowed as a reversal; cancelling does not automatically refund valid tickets — void them individually or all at once afterward (§7.2 F5).', zh: '<strong>狀態遵循單向狀態機。</strong>Draft → Scheduled / On Sale →（活動進行）→ Completed。唯一允許的回退是 Draft → Cancelled；取消不會自動退款有效票券——之後可逐票或整場撤銷（§7.2 F5）。' },
     'event-detail.ov.checkin.title': { en: 'Check-in snapshot', zh: '報到快照' },
     'event-detail.ov.checkin.pending': { en: 'Opens on event day', zh: '活動當天開放' },
     'event-detail.checkin.valid': { en: 'Valid (green)', zh: '有效（綠）' },
@@ -8340,7 +8445,7 @@
                                        zh: '不等上面設定的時間，立刻開賣。' },
     'event-detail.danger.title':     { en: 'Cancel this event',  zh: '取消活動' },
     'event-detail.danger.sub':       { en: 'Cancelling does not refund tickets automatically, and cannot be undone (§7.2 F5). Void tickets afterward from the Sales record.',
-                                       zh: '取消不會自動退款，且無法復原（§7.2 F5）。之後可在「銷售紀錄」逐票或整場作廢。' },
+                                       zh: '取消不會自動退款，且無法復原（§7.2 F5）。之後可在「銷售紀錄」逐票或整場撤銷。' },
     'event-detail.ov.nav.status': { en: 'Status',        zh: '狀態' },
     'event-detail.series.count':  { en: '{n} of {all}',  zh: '{all} 場中的第 {n} 場' },
     /* 2026-08-17 使用者裁決改名「多站場次」：一場巡演的每一站。「系列」在站上還指
@@ -8356,7 +8461,7 @@
     'event-detail.sv.record':  { en: 'Sales record',       zh: '售票紀錄' },
     'event-detail.sv.roster':  { en: 'Attendee list',      zh: '活動名單' },
     'event-detail.sv.notif':   { en: 'Notifications',      zh: '通知' },
-    'event-detail.sv.void':  { en: 'Void record',        zh: '作廢紀錄' },
+    'event-detail.sv.void':  { en: 'Void record',        zh: '撤銷紀錄' },
     'event-detail.sv.finance': { en: 'Cost & revenue',     zh: '成本與營收摘要' },
     'event-detail.sales.title':{ en: 'Sales progress',     zh: '售票進度' },
     'event-detail.sales.sold': { en: 'Sold',               zh: '已售出' },
@@ -8503,7 +8608,7 @@
     'event-detail.preflight.subn':       { en: '{n} items left before doors', zh: '開演前還有 {n} 項未完成' },
     'event-detail.preflight.title':       { en: 'Pre-flight checklist',    zh: '開演前檢核' },
     'event-detail.preflight.sub':         { en: '2 items left before doors', zh: '開場前還有 2 項待完成' },
-    'event-detail.preflight.voidpolicy.title':{ en: 'Cancellation & void policy', zh: '取消與作廢政策' },
+    'event-detail.preflight.voidpolicy.title':{ en: 'Cancellation & void policy', zh: '取消與撤銷政策' },
     'event-detail.preflight.voidpolicy.meta': { en: 'Not set · fans see "contact organizer" until confirmed; refunds themselves are handled by the organizer off-platform (D253)', zh: '尚未設定 · 確認前粉絲只會看到「請聯絡主辦方」；退款本身由主辦方於平台外處理（D253）' },
     /* 墓碑 2026-08-18（使用者指示刪除）維持：這一列右端原本帶一顆「設定退款規則」的連結，2026-08-18 已刪除，
        i18n key event-detail.preflight.refund.cta 保留未用（未受本次 D253 改動影響，沿用既有墓碑，鍵值本身不刪）。 */
@@ -8518,41 +8623,41 @@
     'event-detail.preflight.clear':       { en: 'All clear — ready for doors', zh: '全部完成，可以開場' },
     /* 2026-09-09（D253）：「退款與招待票」分頁 2026-08-13 已把退款搬進交易明細（見上方 event-detail.tab.refunds
        墓碑），本頁真正留用的分頁是「Refunds」（event-detail.sv.refund，現已改名 event-detail.sv.void）。
-       D253 平台不提供退款動作，這個分頁的內容由「退款彙總」改寫為「作廢紀錄」（§2.9.2，位置不動）。
+       D253 平台不提供退款動作，這個分頁的內容由「退款彙總」改寫為「撤銷紀錄」（§2.9.2，位置不動）。
        墓碑：event-detail.ref.title2／ref.sub2／ref.disabled／ref.summary.title／ref.summary.meta
-       （彙總卡整張撤除，改用逐筆作廢紀錄表格）保留未用；event-detail.ref.title／ref.sub／ref.queue.title
+       （彙總卡整張撤除，改用逐筆撤銷紀錄表格）保留未用；event-detail.ref.title／ref.sub／ref.queue.title
        三個鍵在本次盤點時已無任何頁面引用（更早被 title2／sub2 取代後的殘留），一併清除。 */
     'event-detail.ref.title2': { en: 'Refunds', zh: '退款' },
     'event-detail.ref.sub2': { en: 'Requests from ticket holders, and how a refund is absorbed (§5.1.6 F5).', zh: '持票人的退款申請，以及退款從哪裡吸收（§5.1.6 F5）。' },
     'event-detail.comp.sub2': { en: 'Zero-price tickets for performers and crew (§5.1.6 F5).', zh: '發給表演者與工作人員的 $0 票（§5.1.6 F5）。' },
     'event-detail.ref.disabled': { en: 'v1 disabled', zh: 'v1 已停用' },
-    'event-detail.void.title': { en: 'Void record', zh: '作廢紀錄' },
-    'event-detail.void.sub': { en: 'Tickets voided for this event, and how the write-off is absorbed (§5.1.6 F5).', zh: '本活動已作廢的票券，以及沖銷從哪裡吸收（§5.1.6 F5）。' },
-    'event-detail.void.empty.title': { en: 'No tickets voided yet', zh: '尚無作廢票券' },
-    'event-detail.void.empty.sub': { en: 'Void a ticket from the Sales record below, or void every remaining ticket at once.', zh: '可從下方「銷售紀錄」逐張作廢，或一次作廢所有尚未作廢的票券。' },
+    'event-detail.void.title': { en: 'Void record', zh: '撤銷紀錄' },
+    'event-detail.void.sub': { en: 'Tickets voided for this event, and how the write-off is absorbed (§5.1.6 F5).', zh: '本活動已撤銷的票券，以及沖銷從哪裡吸收（§5.1.6 F5）。' },
+    'event-detail.void.empty.title': { en: 'No tickets voided yet', zh: '尚無撤銷票券' },
+    'event-detail.void.empty.sub': { en: 'Void a ticket from the Sales record below, or void every remaining ticket at once.', zh: '可從下方「銷售紀錄」逐張撤銷，或一次撤銷所有尚未撤銷的票券。' },
     'event-detail.void.col.id': { en: 'Ticket', zh: '票券編號' },
     'event-detail.void.col.holder': { en: 'Original holder', zh: '原持票人' },
     'event-detail.void.col.tier': { en: 'Tier', zh: '票種' },
-    'event-detail.void.col.at': { en: 'Voided at', zh: '作廢時間' },
-    'event-detail.void.col.by': { en: 'Voided by', zh: '作廢者' },
-    'event-detail.void.all': { en: 'Void all remaining tickets', zh: '整場作廢' },
-    'event-detail.void.all-disabled': { en: 'No remaining tickets to void', zh: '沒有可作廢的票券' },
-    'event-detail.void.toast.all': { en: 'Voided {n} tickets — holders will be notified.', zh: '已作廢 {n} 張票——會通知持票人。' },
-    'event-detail.void.toast.one': { en: 'Voided {n} ticket(s) — the buyer will be notified.', zh: '已作廢 {n} 張票——會通知買家。' },
-    'event-detail.void.confirm.title': { en: 'Void this ticket?', zh: '要作廢這張票嗎？' },
-    'event-detail.void.confirm.ok': { en: 'Void ticket', zh: '作廢票券' },
-    'event-detail.void.confirm.all-title': { en: 'Void all remaining tickets?', zh: '要整場作廢嗎？' },
-    'event-detail.void.confirm.all-ok': { en: 'Void all', zh: '全部作廢' },
-    'event-detail.void.confirm.all-name': { en: '{n} remaining tickets across {m} orders', zh: '{m} 筆訂單、共 {n} 張尚未作廢的票券' },
-    'event-detail.void.confirm.stripe': { en: 'Refund the buyer in Stripe first, if any refund is owed — voiding moves no money and never calls Stripe.', zh: '若需退款，請先在 Stripe 後台完成——作廢本身不涉及金流、也不會呼叫 Stripe。' },
-    'event-detail.void.confirm.effects': { en: 'What voiding does', zh: '作廢會發生什麼' },
+    'event-detail.void.col.at': { en: 'Voided at', zh: '撤銷時間' },
+    'event-detail.void.col.by': { en: 'Voided by', zh: '撤銷者' },
+    'event-detail.void.all': { en: 'Void all remaining tickets', zh: '整場撤銷' },
+    'event-detail.void.all-disabled': { en: 'No remaining tickets to void', zh: '沒有可撤銷的票券' },
+    'event-detail.void.toast.all': { en: 'Voided {n} tickets — holders will be notified.', zh: '已撤銷 {n} 張票——會通知持票人。' },
+    'event-detail.void.toast.one': { en: 'Voided {n} ticket(s) — the buyer will be notified.', zh: '已撤銷 {n} 張票——會通知買家。' },
+    'event-detail.void.confirm.title': { en: 'Void this ticket?', zh: '要撤銷這張票嗎？' },
+    'event-detail.void.confirm.ok': { en: 'Void ticket', zh: '撤銷票券' },
+    'event-detail.void.confirm.all-title': { en: 'Void all remaining tickets?', zh: '要整場撤銷嗎？' },
+    'event-detail.void.confirm.all-ok': { en: 'Void all', zh: '全部撤銷' },
+    'event-detail.void.confirm.all-name': { en: '{n} remaining tickets across {m} orders', zh: '{m} 筆訂單、共 {n} 張尚未撤銷的票券' },
+    'event-detail.void.confirm.stripe': { en: 'Refund the buyer in Stripe first, if any refund is owed — voiding moves no money and never calls Stripe.', zh: '若需退款，請先在 Stripe 後台完成——撤銷本身不涉及金流、也不會呼叫 Stripe。' },
+    'event-detail.void.confirm.effects': { en: 'What voiding does', zh: '撤銷會發生什麼' },
     'event-detail.void.confirm.effect.qr': { en: 'This ticket’s QR stops working immediately — it can’t be scanned at the door.', zh: '這張票的 QR 立即失效，無法在現場報到掃描。' },
     'event-detail.void.confirm.effect.email': { en: 'The ticket holder gets a cancellation email.', zh: '持票人會收到取消通知信。' },
-    'event-detail.void.confirm.irreversible': { en: 'There’s no undo — a voided ticket can’t be reinstated.', zh: '沒有復原——已作廢的票券無法恢復。' },
+    'event-detail.void.confirm.irreversible': { en: 'There’s no undo — a voided ticket can’t be reinstated.', zh: '沒有復原——已撤銷的票券無法恢復。' },
     /* 2026-09-09（D253 殘留補正）：本鍵 en/zh 的吸收順序原仍寫「Refund Reserve」／「退款準備金」，
        與 earnings.html／earnings-ztor.html 已改名的 Void reserve／沖銷準備金（見上方 1669 行）不同步，
        一併改齊。 */
-    'event-detail.void.absorb': { en: '<strong>Void write-off absorption order (§7.3, financial treatment proposed — pending approval):</strong> Void reserve → current distributable profit → carry-forward deficit (no clawback). Voiding a ticket writes off its revenue and immediately invalidates the ticket QR. Any refund actually owed to the buyer happens off-platform (e.g. Stripe) and is not tracked here. v1 void scope is in §8.6.', zh: '<strong>作廢沖銷吸收順序（§7.3，財務口徑為〔產品變更提案〕、待上游核准）：</strong>沖銷準備金 → 當期可分配淨利 → 結轉赤字（不追討）。作廢一張票會沖銷其收入並立即讓票券 QR 失效。買家實際是否收到退款（如透過 Stripe）由創作者於平台外處理，本頁不追蹤。v1 作廢範圍見 §8.6。' },
+    'event-detail.void.absorb': { en: '<strong>Void write-off absorption order (§7.3, financial treatment proposed — pending approval):</strong> Void reserve → current distributable profit → carry-forward deficit (no clawback). Voiding a ticket writes off its revenue and immediately invalidates the ticket QR. Any refund actually owed to the buyer happens off-platform (e.g. Stripe) and is not tracked here. v1 void scope is in §8.6.', zh: '<strong>撤銷沖銷吸收順序（§7.3，財務口徑為〔產品變更提案〕、待上游核准）：</strong>沖銷準備金 → 當期可分配淨利 → 結轉赤字（不追討）。撤銷一張票會沖銷其收入並立即讓票券 QR 失效。買家實際是否收到退款（如透過 Stripe）由創作者於平台外處理，本頁不追蹤。v1 撤銷範圍見 §8.6。' },
     'event-detail.comp.title': { en: 'Comp tickets', zh: '招待票' },
     'event-detail.comp.row1': { en: 'VIP + Live stream · $0 · comp', zh: 'VIP + 直播 · $0 · 招待' },
     'event-detail.comp.row2': { en: 'General Admission · $0 · comp', zh: '一般入場 · $0 · 招待' },
@@ -8567,7 +8672,7 @@
     'event-detail.notif.change.label': { en: 'Event-change notice', zh: '活動異動通知' },
     'event-detail.notif.change.hint': { en: 'Notifies holders of time, venue or lineup changes.', zh: '通知持票人時間、場地或陣容的異動。' },
     'event-detail.notif.cancel.label': { en: 'Cancellation notice', zh: '取消通知' },
-    'event-detail.notif.cancel.hint': { en: 'If the event is Cancelled, ticket holders are notified. The creator can then void tickets individually or all at once — this does not happen automatically. Always on.', zh: '若活動被取消，會通知持票人。創作者之後可逐票或整場作廢票券——不會自動觸發。永遠開啟。' },
+    'event-detail.notif.cancel.hint': { en: 'If the event is Cancelled, ticket holders are notified. The creator can then void tickets individually or all at once — this does not happen automatically. Always on.', zh: '若活動被取消，會通知持票人。創作者之後可逐票或整場撤銷票券——不會自動觸發。永遠開啟。' },
     'event-detail.notif.cancel.badge': { en: 'System', zh: '系統' },
     'event-detail.fin.title': { en: 'Cost & revenue summary', zh: '成本與營收摘要' },
     'event-detail.fin.sub': { en: 'Each sale emits a ticket revenue event. This page never recomputes — figures roll up to Earnings & Project Net Income (§5.1.6 F5).', zh: '每筆售票會產生一筆票券營收事件。此頁從不重新計算──數字會彙整至收益與企劃淨收入（§5.1.6 F5）。' },
@@ -8589,7 +8694,7 @@
     'event-detail.fin.where.body': { en: 'Only settled revenue counts toward Available and the project distributable profit. Accrued does not. Costs and revenue flow to Earnings and Project Net Income; this page does not recompute.', zh: '只有已結算營收會計入可用餘額與項目可分配淨利。待結算不計入。成本與營收流向收益與企劃淨收入；此頁不重新計算。' },
     'event-detail.fin.link.earnings': { en: 'Open Earnings', zh: '開啟收益' },
     'event-detail.fin.link.netincome': { en: 'Project net income', zh: '企劃淨收入' },
-    'event-detail.fin.note': { en: '<strong>Settlement state machine:</strong> accrued → settled → (cancelled / disputed) per §7.2. A cancelled settlement means every ticket in it was voided; any refund to the buyer happens off-platform (§7.3 absorption order); v1 void scope is in §8.6.', zh: '<strong>結算狀態機：</strong>accrued → settled →（cancelled / disputed），依 §7.2。已取消代表其中的票券已全數作廢；買家實際退款由創作者於平台外處理（§7.3 吸收順序）；v1 作廢範圍見 §8.6。' },
+    'event-detail.fin.note': { en: '<strong>Settlement state machine:</strong> accrued → settled → (cancelled / disputed) per §7.2. A cancelled settlement means every ticket in it was voided; any refund to the buyer happens off-platform (§7.3 absorption order); v1 void scope is in §8.6.', zh: '<strong>結算狀態機：</strong>accrued → settled →（cancelled / disputed），依 §7.2。已取消代表其中的票券已全數撤銷；買家實際退款由創作者於平台外處理（§7.3 吸收順序）；v1 撤銷範圍見 §8.6。' },
     /* 墓碑 2026-08-17：本檔曾有第二個同名 key（'Stops' / 「多站管理」），
        定義在後面所以永遠蓋掉前面那個。原「系列」分頁退場、清單改成總覽的一節之後，
        節名統一為「系列場次」——它列的就是這個系列的每一場。 */
@@ -8614,8 +8719,8 @@
     'event-detail.comp.meta':              { en: '{tier} · $0 · comp', zh: '{tier} · $0 · 招待' },
     'event-detail.comp.empty.title':       { en: 'No comp tickets issued yet', zh: '尚未核發招待票' },
     'event-detail.fin.empty.title':        { en: 'No revenue yet', zh: '尚無收入' },
-    /* 墓碑 2026-09-09（D253）：這張彙總卡（顯示已退款金額與筆數）隨退款佇列改作廢紀錄一併撤除，
-       改用逐筆的作廢紀錄表格（event-detail.void.col.*）。i18n key event-detail.ref.summary.title／
+    /* 墓碑 2026-09-09（D253）：這張彙總卡（顯示已退款金額與筆數）隨退款佇列改撤銷紀錄一併撤除，
+       改用逐筆的撤銷紀錄表格（event-detail.void.col.*）。i18n key event-detail.ref.summary.title／
        ref.summary.meta 保留未用。 */
 
     /* Fan detail (5.1.7 F7 / F9–F12) */
@@ -8920,8 +9025,8 @@
     'earnings.empty.overview.title':  { en: 'No revenue to show yet', zh: '尚無收入可顯示' },
     'earnings.empty.overview.text':   { en: 'Your revenue trend, sources and recent transactions will appear here once income starts coming in.', zh: '收入開始入帳後，收入趨勢、收入來源與近期交易會顯示於此。' },
     'earnings.empty.tx.title':        { en: 'No transactions yet', zh: '尚無交易' },
-    /* 2026-09-09（D253）：「退款」改「作廢沖銷」——平台不提供退款動作。 */
-    'earnings.empty.tx.text':         { en: 'Income, payouts and voids show up here once they happen. You can also log income earned outside Ztor.', zh: '收入、提款與作廢沖銷發生後會出現於此；你也可以手動補登 Ztor 以外的收入。' },
+    /* 2026-09-09（D253）：「退款」改「撤銷沖銷」——平台不提供退款動作。 */
+    'earnings.empty.tx.text':         { en: 'Income, payouts and voids show up here once they happen. You can also log income earned outside Ztor.', zh: '收入、提款與撤銷沖銷發生後會出現於此；你也可以手動補登 Ztor 以外的收入。' },
     'earnings.empty.breakdown.title': { en: 'Nothing to break down yet', zh: '尚無可拆解的收益' },
     'earnings.empty.breakdown.text':  { en: 'Once you have settled income, this tab shows where the money goes and how each project builds its own profit.', zh: '有可結算收入後，這裡會說明收入去向，以及每個項目的收益怎麼累積出來。' },
     'earnings.empty.payouts.title':   { en: 'Nothing to withdraw yet', zh: '尚無可提領金額' },
@@ -9536,16 +9641,17 @@
            寫真誌→REALIVE 巡演精裝寫真誌、T 恤→REALIVE 白趴 官方 Tee、
            原聲帶→LOVE RAGE HOPE、黑膠→LOVE RAGE HOPE 限量黑膠 1/500。 */
       /* 訂單品項（2026-08-07 起清單與訂單詳情共用同一組 key，數量在 key 外面接）*/
-      'od.item1.name': { zh: 'REALIVE 巡演精裝寫真誌', en: 'REALIVE tour photobook' },
-      'od.item2.name': { zh: 'REALIVE 白趴 官方 Tee (M)', en: 'REALIVE White Party tee (M)' },
+      /* 2026-09-11：訂單明細改顯示商品圖（讀 products-store 的 nick 別名 zine／tee／hoodie／cap／pin），品名跟著對到實際商品、圖文才一致 */
+      'od.item1.name': { zh: '24CE High Shine Football Jersey', en: '24CE High Shine Football Jersey' },
+      'od.item2.name': { zh: '26MS T-Shirt (白) (M)', en: '26MS T-Shirt (White) (M)' },
       'od.item3.name': { zh: 'LOVE RAGE HOPE — 數位專輯', en: 'LOVE RAGE HOPE — digital album' },
       'od.item4.name': { zh: 'LOVE RAGE HOPE 限量黑膠 · 編號 1/500', en: 'LOVE RAGE HOPE vinyl · numbered 1/500' },
       /* 2026-08-07：訂單 demo 補到 12 筆後多出的七個品項，一樣取自他實際的發行物
          與周邊（REALIVE 巡演／白趴、祝你好命聯名、帥到分手、LOVE RAGE HOPE、後援會），
          不新造作品名；對應關係比照 products-store.js 的 nick 區塊。 */
-      'od.item5.name':  { zh: 'REALIVE 巡演連帽外套 (L)', en: 'REALIVE tour hoodie (L)' },
-      'od.item6.name':  { zh: 'REALIVE 白趴 六片帽', en: 'REALIVE White Party six-panel cap' },
-      'od.item7.name':  { zh: '祝你好命 紅包琺瑯徽章', en: 'Wish You A Good Life enamel pin' },
+      'od.item5.name':  { zh: '26MS Hoodie (L)', en: '26MS Hoodie (L)' },
+      'od.item6.name':  { zh: '祝你好命 刺繡 Logo 老帽', en: 'Wish You A Good Life embroidered cap' },
+      'od.item7.name':  { zh: '祝你好命 束口工裝褲', en: 'Wish You A Good Life cargo pants' },
       'od.item8.name':  { zh: '祝你好命 紅包主題低筒球鞋 (US 10)', en: 'Wish You A Good Life low-top sneakers (US 10)' },
       'od.item9.name':  { zh: '帥到分手 · 單曲', en: '“Too Handsome to Stay” single' },
       'od.item10.name': { zh: 'REALIVE (R2) 演唱會影像 數位版', en: 'REALIVE (R2) concert film — digital' },
@@ -9589,7 +9695,7 @@
       /* 2026-08-19：對齊 Dashboard 卡的新指向（realive-chongqing）——舊值點名的 R2 特仕版
          已是已結束場，掛在「檢核未完成」提醒上自相矛盾。persona 覆寫字典後定義蓋前，
          base 區塊（約 604 行）已同步改，這裡不改會被本行舊值蓋回去。 */
-      'alert.event.desc':     { zh: '「<em>REALIVE World Tour (China) — 重慶站 · 10/25</em>」尚未確認取消與作廢政策與現場人力配置。', en: '<em>REALIVE World Tour (China) — Chongqing · Oct 25</em> still needs cancellation &amp; void policy and on-site staffing confirmed.' },
+      'alert.event.desc':     { zh: '「<em>REALIVE World Tour (China) — 重慶站 · 10/25</em>」尚未確認取消與撤銷政策與現場人力配置。', en: '<em>REALIVE World Tour (China) — Chongqing · Oct 25</em> still needs cancellation &amp; void policy and on-site staffing confirmed.' },
       'e-shop.alert.meta':    { zh: 'REALIVE 巡演精裝寫真誌 · REALIVE 白趴 官方 Tee (S) · REALIVE 巡演海報', en: 'REALIVE tour photobook · REALIVE White Party tee (S) · REALIVE tour poster' },
       /* 收入／儀表板 */
       'tx.merch.title':     { zh: '<em>REALIVE 巡演精裝寫真誌</em> × 14', en: '<em>REALIVE tour photobook</em> × 14' },
@@ -9608,8 +9714,8 @@
       'fan-detail.tl.project1': { zh: '支持了「LOVE RAGE HOPE」', en: 'Backed “LOVE RAGE HOPE”' },
       'fan-detail.spend.r3':    { zh: '「LOVE RAGE HOPE」· 支持者級別 2', en: '“LOVE RAGE HOPE” · backer tier 2' },
       'fan-detail.projects.r1': { zh: 'LOVE RAGE HOPE（共創）', en: 'LOVE RAGE HOPE (co-create)' },
-      'od.item1.name': { zh: 'REALIVE 巡演精裝寫真誌', en: 'REALIVE tour photobook' },
-      'od.item2.name': { zh: 'REALIVE 白趴 官方 Tee (M)', en: 'REALIVE White Party tee (M)' },
+      'od.item1.name': { zh: '24CE High Shine Football Jersey', en: '24CE High Shine Football Jersey' },
+      'od.item2.name': { zh: '26MS T-Shirt (白) (M)', en: '26MS T-Shirt (White) (M)' },
       'project-detail.collab.owner-name': { zh: '周湯豪', en: 'Nick Chou' },
       'ee.name.ph':  { zh: '例：REALIVE 白趴', en: 'e.g. REALIVE White Party' },
       'ss.name.ph':  { zh: '例：NICKTHEREAL 工作室', en: 'e.g. NICKTHEREAL Studio' },

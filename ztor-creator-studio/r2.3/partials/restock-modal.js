@@ -19,7 +19,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
        (all member panels stay in the DOM; .tab-panel toggles visibility).
 
    createRestock(host, hooks) → { openProduct, openBundle, openSingle,
-   openVariants, close }. hooks: { onSubmit(entries, mode), onReceive(entries) }.
+   openVariants, close }. hooks: { onSubmit(entries, mode) }；entries 每筆帶單據層的 supplier／eta／note（同一單相同）（onReceive 2026-09-11 撤除：到貨確認改在商品庫存分頁的「補貨中」卡逐單做）.
    Each entry = { member, name, qty, current, supplier }. UI chrome = data-i18n;
    sample data literal. */
 (function () {
@@ -58,13 +58,14 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       </label>
       <label class="field">
         <span class="field__label" data-i18n="restock.f.notes">Notes (optional)</span>
-        <input class="input" placeholder="—">
+        <input class="input" placeholder="—" data-restock-notes>
       </label>
     </div>
     <div class="payout-dialog__foot">
       <button class="btn btn--ghost" type="button" data-restock-close data-i18n="payout.cancel">Cancel</button>
       <span style="display:flex;gap:10px">
-        <button class="btn btn--outline" type="button" data-restock-receive data-i18n="restock.receive" hidden>Mark received</button>
+        <!-- 2026-09-11 撤除彈窗裡的「到貨確認」：正在下一張新單的當下沒有東西可以收貨，而且已下的單現在在
+             商品庫存分頁的「補貨中」卡逐單確認——同一件事兩個入口。 -->
         <button class="btn btn--primary" type="button" data-restock-submit data-i18n="restock.submit">Submit restock</button>
       </span>
     </div>
@@ -151,8 +152,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       var eta = modal.querySelector('[data-restock-eta]');
       if (eta) eta.hidden = m !== 'scheduled';
       /* 方式提示行已隨 radio-cards 改版移除（Figma 無此行），不再切換 hint 文案 */
-      var recv = modal.querySelector('[data-restock-receive]');
-      if (recv) recv.hidden = m !== 'scheduled';
     }
     function collect() {
       var supEl = modal.querySelector('[data-restock-supplier]');
@@ -160,13 +159,15 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       /* eta：計時補貨的預計到貨日（yyyy-mm-dd → yyyy/mm/dd），立即補貨不帶。商品詳情的「補貨中」卡用它（2026-09-11）。 */
       var etaEl = modal.querySelector('[data-restock-eta] input');
       var eta = (mode() === 'scheduled' && etaEl && etaEl.value) ? String(etaEl.value).replace(/-/g, '/') : '';
+      var noteEl = modal.querySelector('[data-restock-notes]');
+      var note = (noteEl && noteEl.value) || '';
       var entries = [];
       modal.querySelectorAll('[data-restock-member]').forEach(function (mem) {
         var mname = mem.getAttribute('data-name') || '';
         mem.querySelectorAll('[data-restock-line]').forEach(function (line) {
           var q = num((line.querySelector('[data-restock-qty]') || {}).value);
           /* vi：呼叫端給的選項組合索引（同名組合分在不同群時靠它對回去），沒給就不帶 */
-          if (q > 0) entries.push({ member: mname, name: line.getAttribute('data-name'), vi: line.hasAttribute('data-vi') ? num(line.getAttribute('data-vi')) : null, qty: q, current: num(line.getAttribute('data-current')), supplier: supplier, eta: eta });
+          if (q > 0) entries.push({ member: mname, name: line.getAttribute('data-name'), vi: line.hasAttribute('data-vi') ? num(line.getAttribute('data-vi')) : null, qty: q, current: num(line.getAttribute('data-current')), supplier: supplier, eta: eta, note: note });
         });
       });
       return entries;
@@ -187,12 +188,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (hooks.onSubmit) hooks.onSubmit(entries, m);
       close();
     }
-    function receive() {
-      var entries = collect();
-      setOriginBadge('badge--success', 'e-shop.row.instock', 'In stock');
-      if (hooks.onReceive) hooks.onReceive(entries);
-      close();
-    }
     function onClick(e) {
       if (e.target === modal) { close(); return; }
       var modeBtn = e.target.closest('[data-restock-mode]');
@@ -201,7 +196,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (tab) { showMember(num(tab.getAttribute('data-restock-tab'))); return; }
       if (e.target.closest('[data-restock-close]')) { close(); return; }
       if (e.target.closest('[data-restock-submit]')) { submit(); return; }
-      if (e.target.closest('[data-restock-receive]')) { receive(); return; }
     }
     function ensure() {
       if (modal) return true;

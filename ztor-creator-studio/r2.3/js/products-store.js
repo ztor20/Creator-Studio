@@ -4,6 +4,8 @@
 // 開啟，本 store 提供該商品「該有的組合」讓細節頁 realize 對應版面，取代舊的 devtools
 // 預覽切換（pd-cat/pd-var/pd-edition）。全前端 mock、無後端；逐品的變體列/曲目/卡面內容
 // 為代表性樣本（UIA-055），重點是把「主分類×次分類×規格模式×庫存版本」的版面組合做出來。
+// 2026-09-11 第 2 步：兩個 persona 各自涵蓋詳情頁的全部類型與狀態（單售 20／16＋8 筆、組合 8／8 筆），
+// 對照表見 docs/示範資料索引.md；組合展示資料改由 ztorGetBundle(id) 推導（見該函式註解）。
 //
 // 每筆欄位：
 //   cat        主分類 physical | digital（E&E 由活動模組管理、不在此頁）
@@ -17,10 +19,33 @@
 //   vipName    數位·會員卡的預置卡面名稱
 //   img        e-shop 列表縮圖檔名（在 images/products/ 下）；供 persona 就地改列用
 //
+// ── 詳情頁的示範狀態欄位（2026-09-11，由頁面層寫死改成資料驅動；缺值＝頁面顯示既有空狀態）──
+//   sales      { units, gross, net } | null   銷售摘要 KPI；null＝尚無銷售（切到 .when-empty）。gross／net 為顯示字串（'$2,944'）
+//   discount   { price, limited: { start, end } | null, stack: bool } | null   單售折扣；null＝關。
+//              price 填折扣價、limited 有值＝限時折扣開＋起訖（YYYY-MM-DD）、stack＝可與優惠碼疊加
+//   limit      number | null   每人限購數；有值＝開關開＋數量填入
+//   films      string[]        電影關聯（js/films-store.js 的 id）；空＝picker 沒有已選 chip
+//   projects   [{ title | titleKey, href }]   被哪些項目引用；titleKey 走 i18n（persona 覆寫字典可換名）；空＝「尚未被任何項目引用」
+//   tags       string[]        商品標籤的初始 chip
+//   history    [{ id, type:'restock'|'lock', mode:'now'|'scheduled', supplier | supplierKey, eta, note,
+//                 state:'done'|'restocking', date, items:[{ combo, vi, delta, qty, to | toKey }] }]
+//              庫存歷史紀錄；state 'restocking' 的單同時是「補貨中」卡的內容（沒有就整卡收起）。
+//              vi＝多選項的 variants 索引、單一規格填 'single'；supplierKey／toKey 走 i18n（切語言會重譯）
+//   draft      bool            草稿：頁首徽章顯示「草稿」（ListingState 讀 entity.draft）
+//   delivery   'ship'（預設，可省略）| 'qr'   交付方式；'qr'＝現場 QR 領取（取貨場次欄位）
+//   currency   'TWD'（nick 商品）| 省略＝USD   價格幣別（priceText／product-detail 的 money() 讀它）
+//   variants[i].locks  { single: n|null, bundles: { <bundleId>: n|null } }   逐選項組合鎖定（D255／D258）；
+//              有它時商品層 pool.locks 由 seedListing() 加總得出（見該函式）
+//   組合（BUNDLE_SEED）另有（2026-09-11 使用者裁示的價格模型，見 BUNDLE_SEED 上方註解）：
+//              discountPct number|null（常態折扣 %；售價＝成員合計 ×(1−%)）、discount { percent, limited, stack } | null（限時折扣）、
+//              description、membersKey（e-shop 列的成員說明 i18n key，選填）；films／projects／sales／draft 同上、
+//              history 為鎖定歷史 [{ id, date, items:[{ productId | combo, delta }] }]（productId 由頁面換成成員名）
+//   草稿成員進組合的可售量規則：草稿商品視同可售 0（listing-state.js 的 bundleQty 實作），所以含草稿成員的組合＝售罄
+//
 // ── Persona（2026-07-24）──────────────────────────────────────────
 // cheat code「User」切換改 localStorage 'ztor.persona'：default＝原批（九龍夜行 巡迴
-// 世界觀）、nick＝周湯豪 NICKTHEREAL、userB＝佔位沿用 default。兩個 persona 用「相同的
-// 9 個商品 id」，所以 e-shop 列表既有的 ?id=<key> 連結與 product-detail 都自動對上。
+// 世界觀）、nick＝周湯豪 NICKTHEREAL、userB＝佔位沿用 default。nick 的商品用自己的 id
+// （wy-*／nick-*），舊的 9 個共用 id 只留作別名（見 P_NICK 組裝處），舊連結仍能開。
 // product-detail 依當前 persona 讀對應商品；e-shop 列表的商品名／圖是寫死在 HTML（非
 // i18n key），故由本檔的 patchEshopList() 在載入後就地改列（名＋圖＋價＋庫存＋分類一起換，
 // 不半套）。⚠ nick 圖沿用現有 images/products/ 檔、金額為示意值。
@@ -75,7 +100,8 @@
         { combo: ['Black', 'L'], sku: 'HOOD-BK-L', stock: '8' },
         { combo: ['Sand', 'S'],  sku: 'HOOD-SD-S', stock: '0' },
         { combo: ['Sand', 'M'],  sku: 'HOOD-SD-M', stock: '5' },
-        { combo: ['Sand', 'L'],  sku: 'HOOD-SD-L', stock: '20' }
+        /* 2026-09-11：L 尺寸貴 $6，讓含 hoodie 的組合在清單上顯示價格區間（多選項多價格 → 區間） */
+        { combo: ['Sand', 'L'],  sku: 'HOOD-SD-L', stock: '20', price: '64.00' }
       ]
     },
     acetate: {
@@ -158,135 +184,142 @@
         { combo: ['US 10'], sku: 'CL-SHO-10', stock: '21' },
         { combo: ['US 11'], sku: 'CL-SHO-11', stock: '13' }
       ]
-    }
-  };
+    },
 
-  /* ── nick：周湯豪 NICKTHEREAL（相同 9 個 id，換內容）─────────────
-     圖沿用現有 images/products/ 檔（非本人素材），價格為示意值。 */
-  var P_NICK = {
-    zine: {
-      name: 'REALIVE 巡演精裝寫真誌', img: 'tour-zine-vol-02.webp',
-      sub: '48 頁巡演幕後寫真＋精裝 EP 卡冊。',
-      cat: 'physical', subKey: 'zine', variant: 'single', edition: 'unlimited',
-      status: 'low', price: '32.00', cost: '11.00', stock: '5', threshold: '6',
-      catLabel: 'Physical Merchandise', subLabel: 'Books · 書籍'
+    /* ── 2026-09-11 示範資料補齊（第 2 步）：讓詳情頁的每一種類型與狀態在預設 persona 都有一筆能點進去看。
+       上架／鎖定示範值在 LISTING_SEED、詳情頁示範欄位在 DETAIL_SEED，這裡只放商品本體。
+       對照表見 docs/示範資料索引.md（由 B 維護）。 ── */
+    /* 數位 · 文件（PDF）：有銷售、有標籤、關聯 1 部電影、未被項目引用 */
+    'doc-guide': {
+      name: '九龍夜行 拍攝手記（PDF）', img: 'notebook.webp',
+      sub: '64-page shooting diary — production notes, storyboards and location scouting. PDF download.',
+      cat: 'digital', subKey: 'document', content: 'document', variant: 'single', edition: 'unlimited',
+      status: 'live', price: '6.00', cost: '', stock: '∞',
+      catLabel: 'Digital Merchandise', subLabel: 'Document · 文件'
     },
-    tee: {
-      name: 'REALIVE 白趴 官方 Tee', img: 'tee-black.webp',
-      sub: '白趴演唱會官方純棉 Tee，與「祝你好命」共同設計。4 種尺寸。',
-      cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
-      status: 'live', price: '38.00', cost: '13.00', stock: '160', threshold: '12',
-      catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
-      options: [{ name: 'Size / 尺寸', values: ['S', 'M', 'L', 'XL'] }],
-      variants: [
-        { combo: ['S'],  sku: 'RL-TEE-S',  stock: '24' },
-        { combo: ['M'],  sku: 'RL-TEE-M',  stock: '60' },
-        { combo: ['L'],  sku: 'RL-TEE-L',  stock: '52' },
-        { combo: ['XL'], sku: 'RL-TEE-XL', stock: '24' }
-      ]
+    /* 數位 · IP 素材包：尚無銷售（KPI 空狀態）、被 1 個項目引用 */
+    'ip-kit': {
+      name: '九龍夜行 視覺素材包', img: 'coastline-starter-pack.webp',
+      sub: 'Key-art, wave mark and typeface licence pack for fan creations. Personal use only.',
+      cat: 'digital', subKey: 'ip', content: 'ip', variant: 'single', edition: 'unlimited',
+      status: 'live', price: '45.00', cost: '', stock: '∞',
+      catLabel: 'Digital Merchandise', subLabel: 'IP assets · IP 素材'
     },
-    hoodie: {
-      name: '祝你好命 連帽外套', img: 'zip-hoodie.webp',
-      sub: '周湯豪主理品牌「祝你好命」刷毛連帽外套。6 種組合。',
-      cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
-      status: 'low', price: '78.00', cost: '30.00', stock: '58', threshold: '10',
-      catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
-      options: [
-        { name: 'Colour / 顏色', values: ['Black', 'Cream'] },
-        { name: 'Size / 尺寸', values: ['S', 'M', 'L'] }
-      ],
-      variants: [
-        { combo: ['Black', 'S'], sku: 'WY-HD-BK-S', stock: '5' },
-        { combo: ['Black', 'M'], sku: 'WY-HD-BK-M', stock: '16' },
-        { combo: ['Black', 'L'], sku: 'WY-HD-BK-L', stock: '11' },
-        { combo: ['Cream', 'S'], sku: 'WY-HD-CR-S', stock: '3' },
-        { combo: ['Cream', 'M'], sku: 'WY-HD-CR-M', stock: '9' },
-        { combo: ['Cream', 'L'], sku: 'WY-HD-CR-L', stock: '14' }
-      ]
+    /* 實體 · 海報（限量 1/100、剩 3 ＝ 低庫存）：定時下架排定、限時折扣＋可疊加、每人限購 2 */
+    poster: {
+      name: '海上霸姬 簽名海報 1/100', img: 'signed-tour-poster.webp',
+      sub: 'Hand-signed A2 tour poster — numbered edition of 100. Ships rolled in a tube.',
+      cat: 'physical', subKey: 'poster', variant: 'single', edition: 'limited',
+      status: 'low', price: '40.00', cost: '12.00', stock: '3', cap: '100', sold: '97', threshold: '5',
+      catLabel: 'Physical Merchandise', subLabel: 'Posters & prints · 海報'
     },
-    /* 黑膠單品（2026-07-25 使用者指定）：限量編號版，同時是「黑膠＋海報」組合包的成員。
-       ⚠ 圖沿用既有 coastline-acetate.webp（黑膠實拍），非周湯豪本人素材，之後可替換。 */
-    acetate: {
-      name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'coastline-acetate.webp',
-      sub: '第五張專輯 180g 雙碟裝黑膠，透明橘膠、內含歌詞海報。全球限量 500 張，附獨立編號。',
-      cat: 'physical', subKey: 'collectible', variant: 'single', edition: 'limited',
-      status: 'live', price: '68.00', cost: '26.00', stock: '312', cap: '500', sold: '188', threshold: '25',
-      catLabel: 'Physical Merchandise', subLabel: 'Music · 黑膠唱片'
-    },
-    /* 帽子單品（2026-07-25 使用者指定）：「選物四件組」成員之一，單獨也販售中。
-       ⚠ 圖沿用既有 cap.webp（非周湯豪本人素材），之後可替換。 */
-    cap: {
-      name: '祝你好命 刺繡 Logo 老帽', img: 'cap.webp',
-      sub: '周湯豪主理品牌「祝你好命」刺繡 Logo 六片老帽，可調式金屬後扣。4 色。',
-      cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
-      status: 'live', price: '32.00', cost: '11.00', stock: '124', threshold: '12',
-      catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
-      options: [{ name: 'Colour / 顏色', values: ['霧灰', '墨黑', '海軍藍', '米白'] }],
-      variants: [
-        { combo: ['霧灰'],   sku: 'WY-CAP-GY', stock: '31' },
-        { combo: ['墨黑'],   sku: 'WY-CAP-BK', stock: '42' },
-        { combo: ['海軍藍'], sku: 'WY-CAP-NV', stock: '28' },
-        { combo: ['米白'],   sku: 'WY-CAP-CR', stock: '23' }
-      ]
-    },
-    /* 鞋子單品（2026-07-25 使用者指定）：「選物四件組」成員之一，單獨也販售中。
-       圖＝nick-nike.jpg（祝你好命聯名球鞋實拍，紅包主題），由褲子那筆讓出、放回鞋款本身。 */
-    shoes: {
-      name: '祝你好命 紅包主題低筒球鞋', img: 'nick-nike-01.jpg',
-      sub: '周湯豪主理品牌「祝你好命」紅包主題低筒球鞋，紅／白／螢光綠配色，附品牌鞋盒。',
-      cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
-      status: 'live', price: '78.00', cost: '32.00', stock: '86', threshold: '10',
-      catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
-      options: [{ name: 'Size / 尺碼', values: ['US 8', 'US 9', 'US 10', 'US 11'] }],
-      variants: [
-        { combo: ['US 8'],  sku: 'WY-SHO-08', stock: '18' },
-        { combo: ['US 9'],  sku: 'WY-SHO-09', stock: '27' },
-        { combo: ['US 10'], sku: 'WY-SHO-10', stock: '25' },
-        { combo: ['US 11'], sku: 'WY-SHO-11', stock: '16' }
-      ]
-    },
-    /* 褲子單品（2026-07-25 使用者指定）：「選物四件組」成員之一，單獨也販售中。
-       ⚠ 圖：站上無棉褲實拍，暫用 socks.webp（同為下身著用品）佔位，之後可替換。 */
-    pin: {
-      name: '祝你好命 束口工裝褲', img: 'socks.webp',
-      sub: '周湯豪主理品牌「祝你好命」水洗棉束口工裝褲，側邊立體口袋。4 種腰圍 × 2 色。',
-      cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
-      status: 'live', price: '58.00', cost: '21.00', stock: '96', threshold: '10',
+    /* 實體 · 外套（限量 30、兩維選項）：逐選項組合鎖定示範——Black/M 鎖給單售 2＋簽名會組 1、Olive/L 鎖給單售 1，
+       其餘組合沒鎖定。商品層 pool.locks 由 seedListing() 從 variants 加總（見該函式註解）。 */
+    jacket: {
+      name: '九龍夜行 舞台外套 復刻版', img: 'stage-worn-jacket.webp',
+      sub: 'Replica of the stage-worn bomber — embroidered back panel. Limited run of 30.',
+      cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'limited',
+      status: 'live', price: '150.00', cost: '60.00', stock: '24', cap: '30', sold: '6', threshold: '2',
       catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
       options: [
         { name: 'Colour / 顏色', values: ['Black', 'Olive'] },
-        { name: 'Waist / 腰圍', values: ['28', '30', '32', '34'] }
+        { name: 'Size / 尺寸', values: ['S', 'M', 'L'] }
       ],
       variants: [
-        { combo: ['Black', '28'], sku: 'WY-PT-BK-28', stock: '9' },
-        { combo: ['Black', '30'], sku: 'WY-PT-BK-30', stock: '18' },
-        { combo: ['Black', '32'], sku: 'WY-PT-BK-32', stock: '16' },
-        { combo: ['Black', '34'], sku: 'WY-PT-BK-34', stock: '7' },
-        { combo: ['Olive', '28'], sku: 'WY-PT-OL-28', stock: '8' },
-        { combo: ['Olive', '30'], sku: 'WY-PT-OL-30', stock: '15' },
-        { combo: ['Olive', '32'], sku: 'WY-PT-OL-32', stock: '17' },
-        { combo: ['Olive', '34'], sku: 'WY-PT-OL-34', stock: '6' }
+        { combo: ['Black', 'S'], sku: 'JKT-BK-S', stock: '3' },
+        { combo: ['Black', 'M'], sku: 'JKT-BK-M', stock: '6', locks: { single: 2, bundles: { 'signing-set': 1 } } },
+        { combo: ['Black', 'L'], sku: 'JKT-BK-L', stock: '4' },
+        { combo: ['Olive', 'S'], sku: 'JKT-OL-S', stock: '3' },
+        { combo: ['Olive', 'M'], sku: 'JKT-OL-M', stock: '4' },
+        { combo: ['Olive', 'L'], sku: 'JKT-OL-L', stock: '4', price: '150.00', locks: { single: 1 } }
       ]
     },
-    song: {
-      name: '帥到分手 · 單曲', img: 'nick-single.jpg',
+    /* 實體 · 托特包：隱藏＋待命（隱藏、持非公開連結、開賣日在未來）；尚無銷售 */
+    tote: {
+      name: '九龍夜行 帆布托特包', img: 'tote-bag.webp',
+      sub: '12 oz canvas tote, screen-printed wave mark. One size.',
+      cat: 'physical', subKey: 'merch', variant: 'single', edition: 'unlimited',
+      status: 'live', price: '18.00', cost: '6.00', stock: '40', threshold: '5',
+      catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
+    },
+    /* 實體 · 鑰匙圈：排定上架、時間還沒到；尚無銷售 */
+    keychain: {
+      name: '霓虹招牌 壓克力鑰匙圈', img: 'keychain.webp',
+      sub: 'Double-sided acrylic charm of the neon sign. 6 cm.',
+      cat: 'physical', subKey: 'merch', variant: 'single', edition: 'unlimited',
+      status: 'live', price: '8.00', cost: '2.00', stock: '120', threshold: '10',
+      catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
+    },
+    /* 實體 · 毛帽（三色）：多選項全部售罄；有一筆已完成補貨的歷史、被 1 個項目引用 */
+    beanie: {
+      name: '九龍夜行 毛帽', img: 'beanie.webp',
+      sub: 'Ribbed acrylic beanie with woven label. Three colours.',
+      cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
+      status: 'soldout', price: '22.00', cost: '7.00', stock: '0', threshold: '6',
+      catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
+      options: [{ name: 'Colour / 顏色', values: ['Black', 'Grey', 'Red'] }],
+      variants: [
+        { combo: ['Black'], sku: 'BEAN-BK', stock: '0' },
+        { combo: ['Grey'],  sku: 'BEAN-GY', stock: '0' },
+        { combo: ['Red'],   sku: 'BEAN-RD', stock: '0' }
+      ]
+    },
+    /* 實體 · 簽名會手環（三尺寸）：現場 QR 領取；每個尺寸都鎖 5 件給簽名會限定組（逐選項組合鎖定） */
+    wristband: {
+      name: '九龍夜行 簽名會手環', img: 'wristband.webp',
+      sub: 'Woven fabric wristband — collect at the signing session. Three sizes.',
+      cat: 'physical', subKey: 'collectible', variant: 'multiple', edition: 'unlimited',
+      status: 'live', price: '10.00', cost: '2.50', stock: '60', threshold: '5',
+      delivery: 'qr',
+      catLabel: 'Physical Merchandise', subLabel: 'Collectibles · 收藏品',
+      options: [{ name: 'Size / 尺寸', values: ['S', 'M', 'L'] }],
+      variants: [
+        { combo: ['S'], sku: 'WB-S', stock: '20', locks: { bundles: { 'signing-set': 5 } } },
+        { combo: ['M'], sku: 'WB-M', stock: '20', locks: { bundles: { 'signing-set': 5 } } },
+        { combo: ['L'], sku: 'WB-L', stock: '20', locks: { bundles: { 'signing-set': 5 } } }
+      ]
+    },
+    /* 實體 · 貼紙包：草稿（只有名稱與圖，其餘欄位空；listed:false 在 LISTING_SEED） */
+    sticker: {
+      name: '九龍夜行 貼紙包', img: 'sticker-sheet.webp',
+      sub: '',
+      cat: 'physical', subKey: 'merch', variant: 'single', edition: 'unlimited',
+      status: 'live', price: '', cost: '', stock: '0', threshold: '0',
+      catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品',
+      draft: true
+    }
+  };
+
+  /* ── nick：周湯豪 NICKTHEREAL ───────────────────────────────────────────
+     2026-09-11 整理：原本這裡手寫了與預設 persona 同名的 11 個 id（zine／tee／hoodie／acetate／cap／
+     shoes／pin／song／movie／album／membership），但下方 P_NICK = Object.assign(...) 把它們整批覆寫成
+     wy-* 商品，等於死碼。現在：
+       - 五筆數位／限量記錄找回來、改成獨立 id（nick-single／nick-r2／nick-album／nick-member／nick-vinyl），
+         由 NICK_EXTRA 承載並納入 e-shop 清單；
+       - zine／tee／hoodie／cap／shoes／pin 的手寫版與 wy-* 商品重複，直接刪除（不再保留副本）；
+       - 舊 id 別名保留給舊連結相容：song／movie／album／membership／acetate 指向上面五筆，
+         zine／tee／hoodie／cap／shoes／pin 仍指向 wy-* 商品（見下方 P_NICK 的組裝）。
+     圖沿用現有 images/products/ 檔（非本人素材），金額為 TWD 示意值。 */
+  var NICK_EXTRA = {
+    'nick-single': {
+      name: '帥到分手 · 單曲', img: 'nick-single.jpg', currency: 'TWD',
       sub: 'LOVE RAGE HOPE 首波主打，購買後立即下載。',
       cat: 'digital', subKey: 'song', content: 'song', variant: 'single', edition: 'unlimited',
-      status: 'live', price: '1.50', cost: '', stock: '∞',
+      status: 'live', price: '45', cost: '', stock: '∞',
       catLabel: 'Digital Merchandise', subLabel: 'Song · 音樂單曲'
     },
-    movie: {
-      name: 'REALIVE (R2) 演唱會影像 數位版', img: 'nick-r2.jpg',
+    'nick-r2': {
+      name: 'REALIVE (R2) 演唱會影像 數位版', img: 'nick-r2.jpg', currency: 'TWD',
       sub: '小巨蛋 R2 特仕版演唱會影像，串流／下載。',
       cat: 'digital', subKey: 'movie', content: 'video', variant: 'single', edition: 'unlimited',
-      status: 'live', price: '12.00', cost: '', stock: '∞',
+      status: 'live', price: '380', cost: '', stock: '∞',
       catLabel: 'Digital Merchandise', subLabel: 'Movie · 電影'
     },
-    album: {
-      name: 'LOVE RAGE HOPE — 數位專輯', img: 'nick-album.jpg',
+    'nick-album': {
+      name: 'LOVE RAGE HOPE — 數位專輯', img: 'nick-album.jpg', currency: 'TWD',
       sub: '第五張錄音室專輯，十軌完整下載附歌詞。',
       cat: 'digital', subKey: 'album', content: 'album', variant: 'single', edition: 'unlimited',
-      status: 'live', price: '15.00', cost: '', stock: '∞',
+      status: 'live', price: '450', cost: '', stock: '∞',
       catLabel: 'Digital Merchandise', subLabel: 'Album · 音樂專輯',
       albumSeed: [
         { name: '未完成的夢', meta: 'weiwan-de-meng.mp3 · 3.4 MB · 2025', lyrics: true },
@@ -296,13 +329,47 @@
         { name: 'TIL THE END', meta: 'til-the-end.mp3 · 4.4 MB', lyrics: true }
       ]
     },
-    membership: {
-      name: 'NICKTHEREAL 官方後援會', img: 'inner-circle-membership.webp',
+    'nick-member': {
+      name: 'NICKTHEREAL 官方後援會', img: 'nick-member.jpg', currency: 'TWD',
       sub: '定期訂閱會員卡：搶先聽、優先購票、專屬社群。',
       cat: 'digital', subKey: 'membership', content: 'membership', variant: 'single', edition: 'unlimited',
-      status: 'live', price: '10.00', cost: '', stock: '∞',
+      status: 'live', price: '300', cost: '', stock: '∞',
       catLabel: 'Digital Merchandise', subLabel: 'Membership / VIP card · 會員卡',
       vipName: 'NICKTHEREAL Club'
+    },
+    /* 黑膠單品（2026-07-25 使用者指定）：限量編號版、現場 QR 領取，同時是「簽名會限定組」與「黑膠典藏組」的成員。
+       隱藏＋非公開連結＋三個管道都鎖定（單售 40、簽名會組 10、典藏組 12）→ 詳情頁會提醒「250 件未鎖定」。
+       ⚠ 圖沿用既有 coastline-acetate.webp（黑膠實拍），非周湯豪本人素材，之後可替換。 */
+    'nick-vinyl': {
+      name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'coastline-acetate.webp', currency: 'TWD',
+      sub: '第五張專輯 180g 雙碟裝黑膠，透明橘膠、內含歌詞海報。全球限量 500 張，附獨立編號。',
+      cat: 'physical', subKey: 'collectible', variant: 'single', edition: 'limited',
+      status: 'live', price: '2480', cost: '900', stock: '312', cap: '500', sold: '188', threshold: '25',
+      delivery: 'qr',
+      catLabel: 'Physical Merchandise', subLabel: 'Collectibles · 收藏品'
+    },
+    /* 對照預設 persona 的 doc-guide／ip-kit／sticker（2026-09-11 新增） */
+    'nick-doc': {
+      name: 'REALIVE 巡演手冊（PDF）', img: 'notebook.webp', currency: 'TWD',
+      sub: '巡演場次、舞台設計圖與幕後筆記，PDF 下載。',
+      cat: 'digital', subKey: 'document', content: 'document', variant: 'single', edition: 'unlimited',
+      status: 'live', price: '180', cost: '', stock: '∞',
+      catLabel: 'Digital Merchandise', subLabel: 'Document · 文件'
+    },
+    'nick-ip': {
+      name: '祝你好命 視覺素材包', img: 'nick-tee.jpg', currency: 'TWD',
+      sub: '品牌主視覺、Logo 與字型授權包，限個人創作使用。',
+      cat: 'digital', subKey: 'ip', content: 'ip', variant: 'single', edition: 'unlimited',
+      status: 'live', price: '1200', cost: '', stock: '∞',
+      catLabel: 'Digital Merchandise', subLabel: 'IP assets · IP 素材'
+    },
+    'wy-draft-tote': {
+      name: '祝你好命 托特包', img: 'tote-bag.webp', currency: 'TWD',
+      sub: '',
+      cat: 'physical', subKey: 'merch', variant: 'single', edition: 'unlimited',
+      status: 'live', price: '', cost: '', stock: '0', threshold: '0',
+      catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品',
+      draft: true
     }
   };
 
@@ -314,9 +381,16 @@
       name: name, img: img, gallery: gallery || [img],
       currency: 'TWD',
       sub: sub, cat: 'physical', subKey: 'apparel', variant: options && options.length ? 'multiple' : 'single',
-      edition: 'unlimited', status: stock === 0 ? 'live' : 'live', price: String(price), cost: '', stock: String(stock), threshold: '10',
+      edition: 'unlimited', status: wishStatus(stock, 10), price: String(price), cost: '', stock: String(stock), threshold: '10',
       catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾', options: options || []
     };
+  }
+  /* 2026-09-11 修死碼：原本寫成 `stock === 0 ? 'live' : 'live'`，兩個分支一樣，13 件 stock 0 的商品在
+     e-shop 退路徽章上仍是「販售中」、與詳情頁的 ListingState 推導（售罄）矛盾。現在與 ListingState 同判準：
+     0＝售罄、≤ 門檻＝低庫存、其餘販售中。e-shop 有 ztorEshopStatus 時徽章仍由 ListingState 算，這欄只是退路。 */
+  function wishStatus(stock, threshold) {
+    var n = Number(stock) || 0, t = Number(threshold) || 0;
+    return n === 0 ? 'soldout' : (t > 0 && n <= t ? 'low' : 'live');
   }
   /* 選項組合（variants）：wishProduct 只給「有哪些選項值」，這裡依笛卡兒積補出逐組合的列。
      沒有這份清單，商品分頁「銷售設定 → 當前庫存」的逐規格表會只剩表頭（renderPageTable
@@ -368,57 +442,87 @@
     'wy-bundle-cargo-pants': wishProduct('祝你好命 束口工裝褲', 'wyagl-cargo-pants-generated.webp', 1980, '以組合包配色延伸的黑色水洗束口工裝褲，側邊口袋與紅色車線細節。', [{ name: 'Size / 尺寸', values: ['S', 'M', 'L', 'XL'] }], 0, '', ['wyagl-cargo-pants-generated.webp']),
     'wy-bundle-lowtop-sneakers': wishProduct('祝你好命 紅白低筒球鞋', 'wyagl-lowtop-sneakers-generated.webp', 2340, '以組合包配色延伸的紅白黑低筒球鞋，鞋跟有螢光綠點綴。', [{ name: 'Size / 尺寸', values: ['US 8', 'US 9', 'US 10', 'US 11'] }], 0, '', ['wyagl-lowtop-sneakers-generated.webp'])
   };
+  /* 2026-09-11 示範資料補齊：wy-* 商品原本 13/16 件 stock 0，狀態幾乎只剩「售罄」。這裡把幾件改值，
+     讓 nick persona 也涵蓋預設 persona 的每一種狀態（對照 P_DEFAULT 新增的 9 筆；上架／鎖定示範在 LISTING_SEED）。
+     在產 variants 之前改，stock 才會照新值分攤到各選項組合。 */
+  (function () {
+    var W = WISHYOU_PRODUCTS;
+    /* 限量 200、已售 180、剩 20（對照 jacket）：Size M 逐選項組合鎖定在下面 variants 產好後再掛 */
+    Object.assign(W['wy-24ce-jersey'], { edition: 'limited', cap: '200', sold: '180', stock: '20', threshold: '3' });
+    /* 隱藏＋待命（對照 tote）：有貨但還沒開賣，持非公開連結也還買不到 */
+    W['wy-24ce-mesh'].stock = '30';
+    /* 定時下架排定＋限時折扣＋每人限購（對照 poster） */
+    W['wy-24ce-dupont-bag'].stock = '12';
+    /* 隱藏＋非公開連結（對照 acetate） */
+    W['wy-26ms-tshirt-red'].stock = '18';
+    /* 選物四件組的部分鎖示範（對照 zine）：每個尺寸鎖 2 件給組合，單售沒鎖 */
+    W['wy-26ms-tshirt-white'].stock = '25';
+    /* 現場 QR 領取＋逐選項組合鎖給簽名會組（對照 wristband） */
+    Object.assign(W['wy-24ce-tee'], { stock: '40', delivery: 'qr' });
+    /* ⚠ 計劃檔寫「其餘 wy 維持」，但選物四件組另外三個成員（老帽／工裝褲／球鞋）原本全是 stock 0，
+       整組會直接落成「售罄」，與計劃要它示範的「限量 50＋部分鎖＋販售中」互相矛盾（售罄另有 nick-soldout-set）。
+       故給這三件合理庫存；組合可售量因此由白 Tee 的鎖定量（3 尺寸 × 2 ＝ 6）決定，卡頭會寫「受 26MS T-Shirt (白) 限制」。 */
+    W['wy-bundle-cap'].stock = '24';
+    W['wy-bundle-cargo-pants'].stock = '32';
+    W['wy-bundle-lowtop-sneakers'].stock = '20';
+    Object.keys(W).forEach(function (id) { W[id].status = wishStatus(W[id].stock, W[id].threshold); });
+  }());
   Object.keys(WISHYOU_PRODUCTS).forEach(function (id) {
     var p = WISHYOU_PRODUCTS[id];
     if (p.variants || !p.options || !p.options.length) return;
     p.variants = wishVariants(id, p.options, p.stock);
   });
+  /* 逐組合價差示範（2026-09-11）：白 Tee 的 XL 多 NT$200，讓選物四件組在清單上是價格區間 */
+  (function () {
+    var v = WISHYOU_PRODUCTS['wy-26ms-tshirt-white'] && WISHYOU_PRODUCTS['wy-26ms-tshirt-white'].variants;
+    if (v) v.forEach(function (x) { if (x.combo.indexOf('XL') !== -1) x.price = 2080; });
+  })();
+  /* 逐選項組合鎖定（D255／D258）：variants 產好之後才掛得上去。形狀同 P_DEFAULT.jacket 的寫法。 */
+  (function () {
+    function lockVariant(id, value, locks) {
+      var p = WISHYOU_PRODUCTS[id];
+      (p.variants || []).forEach(function (v) { if (value === '*' || v.combo[0] === value) v.locks = JSON.parse(JSON.stringify(locks)); });
+    }
+    lockVariant('wy-24ce-jersey', 'M', { single: 5, bundles: { 'nick-signing-set': 2 } });
+    lockVariant('wy-26ms-tshirt-white', '*', { bundles: { 'wish-you-good-life-four-piece': 2 } });
+    lockVariant('wy-24ce-tee', '*', { bundles: { 'nick-signing-set': 3 } });
+  }());
   /* 既有入口保留，但內容與來源商品同步。 */
   /* 2026-07-27 使用者指定的列表排序：這四筆置頂（白 Tee → 老帽 → 束口褲 → 球鞋），
-     其餘沿用 WISHYOU_PRODUCTS 的定義順序。只影響 e-shop 列表的產列順序，不動商品內容。 */
+     2026-09-11 接著排找回的五筆數位／限量記錄與三筆新商品（含草稿 wy-draft-tote——它不另外產列，
+     由 e-shop 既有的草稿列連過去，見 patchEshopList），其餘沿用 WISHYOU_PRODUCTS 的定義順序。
+     只影響 e-shop 列表的產列順序，不動商品內容。 */
   var WISH_TOP_IDS = ['wy-26ms-tshirt-white', 'wy-bundle-cap', 'wy-bundle-cargo-pants', 'wy-bundle-lowtop-sneakers'];
-  var WISH_IDS = WISH_TOP_IDS.concat(Object.keys(WISHYOU_PRODUCTS).filter(function (id) {
+  var WISH_NEW_IDS = ['nick-single', 'nick-r2', 'nick-album', 'nick-member', 'nick-vinyl', 'nick-doc', 'nick-ip', 'wy-draft-tote'];
+  var WISH_IDS = WISH_TOP_IDS.concat(WISH_NEW_IDS).concat(Object.keys(WISHYOU_PRODUCTS).filter(function (id) {
     return WISH_TOP_IDS.indexOf(id) === -1;
   }));
-  P_NICK = Object.assign({}, WISHYOU_PRODUCTS, {
-    zine: WISHYOU_PRODUCTS['wy-26ms-hoodie'], tee: WISHYOU_PRODUCTS['wy-26ms-tshirt-white'],
-    hoodie: WISHYOU_PRODUCTS['wy-26ms-hoodie'], acetate: WISHYOU_PRODUCTS['wy-24ce-pillow'],
-    cap: WISHYOU_PRODUCTS['wy-bundle-cap'], shoes: WISHYOU_PRODUCTS['wy-bundle-lowtop-sneakers'],
-    pin: WISHYOU_PRODUCTS['wy-bundle-cargo-pants'], song: WISHYOU_PRODUCTS['wy-26ms-socks'],
-    movie: WISHYOU_PRODUCTS['wy-24ce-jersey'], album: WISHYOU_PRODUCTS['wy-24ce-mesh'],
-    membership: WISHYOU_PRODUCTS['wy-24ce-dupont-bag']
+  /* 組裝順序有意義：seedListing() 以第一次遇到的 key 當 p.id 並查 LISTING_SEED／DETAIL_SEED，
+     所以正式 id（wy-*／nick-*）必須排在別名（zine／song…）前面。 */
+  P_NICK = Object.assign({}, WISHYOU_PRODUCTS, NICK_EXTRA, {
+    /* zine 改指球衣（2026-09-11）：原本與 hoodie 同指 26MS Hoodie，訂單明細換成商品圖後同一張單裡兩列同圖；
+       nick 沒有書籍類商品，挑一件有庫存的實體衣物當「寫真誌」那筆訂單品項的對應。 */
+    zine: WISHYOU_PRODUCTS['wy-24ce-jersey'], tee: WISHYOU_PRODUCTS['wy-26ms-tshirt-white'],
+    hoodie: WISHYOU_PRODUCTS['wy-26ms-hoodie'], cap: WISHYOU_PRODUCTS['wy-bundle-cap'],
+    shoes: WISHYOU_PRODUCTS['wy-bundle-lowtop-sneakers'], pin: WISHYOU_PRODUCTS['wy-bundle-cargo-pants'],
+    /* 2026-09-11 別名重指：這五個舊 id 改回指找回的手寫記錄（原本指到 socks／jersey／mesh／dupont-bag／pillow） */
+    song: NICK_EXTRA['nick-single'], movie: NICK_EXTRA['nick-r2'], album: NICK_EXTRA['nick-album'],
+    membership: NICK_EXTRA['nick-member'], acetate: NICK_EXTRA['nick-vinyl']
   });
   var DATASETS = { default: P_DEFAULT, nick: P_NICK /* userB 未列＝沿用 default */ };
   function active() { return DATASETS[persona()] || DATASETS.default; }
 
   /* ── 組合包與拍賣（2026-07-25）──────────────────────────────────
-     e-shop 的「組合」與「競標」兩個分頁，列是寫死在 e-shop.html 的（沒有 ?id= 連結可查），
-     因此 persona 切換時原本不會跟著換，會露出 九龍夜行 的名字。這裡用列的 data-name
-     （內部查表鍵、不會被 i18n 覆寫）當 key，替換可見的名稱／圖／成員／價格／庫存。
-     組合包結構參考公開端 shop-item.html?id=fan-selection-set：一組多件、每件各自選規格、
-     組合價低於單買加總。⚠ 圖沿用既有 images/products/ 檔，之後可替換。 */
-  var BUNDLES_NICK = {
-    /* 2026-07-25 使用者指定：改成公開端「影迷選物四件組」（shop-item.html?id=fan-selection-set）
-       的同型組合——Tee／帽／褲／鞋各自挑尺寸顏色，組合價低於單買加總（206→178，省 $28）。
-       四件在 e-shop 都是可單買的獨立商品（cap／shoes／tee／pin，狀態皆販售中）。 */
-    '九龍夜行 入門組合': {
-      id: 'wish-you-good-life-four-piece',
-      name: '『祝你好命』選物四件組', img: 'set-outfit-model.webp',
-      description: '白 Tee、刺繡 Logo 老帽、束口工裝褲與低筒球鞋，以紅白黑配色組成的四件穿搭。',
-      /* 2026-09-11：三件延伸單品原本標「待確認」，使用者裁示發布前必填欄位不可留佔位值。
-         定價 1,280／1,980／2,340，與白 Tee 1,880 加總 7,480，組合價 5,980 ＝ 打 8 折（D103 的自動加總＋折扣 % 模型）。 */
-      membersKey: 'e-shop.bnick.set.members', price: 'NT$5,980', priceAmount: 5980, stockAvail: 16,
-      memberItems: [
-        { id: 'wy-26ms-tshirt-white', name: '26MS T-Shirt (白)', meta: 'Wish You A Good Life · NT$1,880', price: 'NT$1,880', img: '26ms-t-shirt-w-01.jpeg' },
-        { id: 'wy-bundle-cap', name: '祝你好命 刺繡 Logo 老帽', meta: 'Wish You A Good Life · NT$1,280', price: 'NT$1,280', img: 'wyagl-cap-generated.webp' },
-        { id: 'wy-bundle-cargo-pants', name: '祝你好命 束口工裝褲', meta: 'Wish You A Good Life · NT$1,980', price: 'NT$1,980', img: 'wyagl-cargo-pants-generated.webp' },
-        { id: 'wy-bundle-lowtop-sneakers', name: '祝你好命 紅白低筒球鞋', meta: 'Wish You A Good Life · NT$2,340', price: 'NT$2,340', img: 'wyagl-lowtop-sneakers-generated.webp' }
-      ]
-    },
-    'Vinyl + poster set': {
-      name: 'LOVE RAGE HOPE 黑膠典藏組', img: 'coastline-acetate.webp',
-      membersKey: 'e-shop.bnick.vinyl.members', price: '$92', stockAvail: 18
-    }
+     e-shop 的「組合」與「競標」兩個分頁，列是寫死在 e-shop.html 的，persona 切換時原本不會跟著換。
+     拍賣列仍用 data-name（內部查表鍵、不會被 i18n 覆寫）查 AUCTIONS_NICK 就地替換。
+
+     組合列（2026-09-11 改制）：舊的 BUNDLES_NICK（依 data-name 查表、只有 nick、展示資料手寫）已退場——
+     組合的展示資料一律由 ztorGetBundle(id) 從 BUNDLE_SEED＋成員商品記錄推導，兩個 persona 都可用。
+     e-shop 每個組合列帶 data-bundle-id（由 e-shop.html 寫），patchBundleRows() 依當前 persona 決定列去留
+     並覆寫列內容。還沒補 data-bundle-id 的舊列，用 BUNDLE_ROW_LEGACY 以 data-name 對回組合 id（維持舊行為）。 */
+  var BUNDLE_ROW_LEGACY = {
+    default: { '九龍夜行 入門組合': 'coastline-starter-set', 'Vinyl + poster set': 'vinyl-poster-set' },
+    nick:    { '九龍夜行 入門組合': 'wish-you-good-life-four-piece', 'Vinyl + poster set': 'nick-vinyl-set' }
   };
   var AUCTIONS_NICK = {
     /* 2026-07-26：改用使用者提供的 PRS Custom24 10-Top 實拍（PRS 10-Top.webp）。
@@ -447,30 +551,88 @@
       activityKey: 'e-shop.aNick.activity', gallery: ['nick-nike-00.jpg', 'nick-nike-01.jpg', 'nick-nike-02.jpg', 'nick-nike-03.jpg']
     }
   };
-  function patchBundlesAndAuctions() {
-    if (persona() !== 'nick') return;
-    document.querySelectorAll('.product-list__row[data-type="bundle"]').forEach(function (row) {
-      var b = BUNDLES_NICK[row.getAttribute('data-name') || ''];
-      if (!b) return;
-      var detail = row.querySelector('a[href*="bundle-detail.html"]');
-      if (detail && b.id) detail.setAttribute('href', 'bundle-detail.html?id=' + b.id);
-      /* 組合名＝賣家內容（維持中文）；成員組成是系統敘述（品項＋件數）故走 key。 */
+  /* e-shop 組合列（2026-09-11）：每列以 data-bundle-id 對 BUNDLE_SEED——
+       - 組合的 persona 與當前 persona 對不上（userB 視同 default）→ 整列從 DOM 移除。
+         用移除而不是只標 hidden，因為 e-shop 的 applyFilter() 每次篩選都會重設 row.hidden、
+         狀態分頁的計數也是數整個面板的列；persona 切換一律整頁重載（devtools.js），移除不會留後遺症。
+       - 對上 → 取消 hidden（e-shop.html 先以 hidden 標記 persona 不同的列），覆寫名稱／圖／成員說明／
+         價格／庫存與「編輯」連結；狀態徽章與庫存數字交給 e-shop 的 ztorEshopStatus（它讀 store.getBundle）。
+       - 草稿列（data-status="draft"）只處理去留、連結與標題，其餘欄位維持「—」。
+       - 沒有 data-bundle-id 的列：以 data-name 查 BUNDLE_ROW_LEGACY（舊行為），查不到就不碰。 */
+  function bundleIdOfRow(row) {
+    var id = row.getAttribute('data-bundle-id');
+    if (id) return id;
+    /* 只帶 ?id= 連結、沒標 data-bundle-id 的列（例如草稿列）也算 */
+    var a = row.querySelector('a[href*="bundle-detail.html?id="]');
+    var m = a && /[?&]id=([^&]+)/.exec(a.getAttribute('href'));
+    if (m) return decodeURIComponent(m[1]);
+    var legacy = BUNDLE_ROW_LEGACY[persona() === 'nick' ? 'nick' : 'default'] || {};
+    return legacy[row.getAttribute('data-name') || ''] || null;
+  }
+  function patchBundleRows() {
+    var rows = Array.prototype.slice.call(document.querySelectorAll('.product-list__row[data-type="bundle"]'));
+    if (!rows.length) return;
+    /* 當前 persona 有記錄、清單卻沒有列的組合（例：nick 的選物四件組原本借用第一列，那列現在標了
+       coastline-starter-set）：用第一個非草稿組合列當模板複製一列補上，插在清單最前面。
+       只在第一次執行時補（i18n:applied 會再進來，靠 data-bundle-id 判斷已經有了）。 */
+    var panel = rows[0].parentNode;
+    var template = rows.filter(function (r) { return r.getAttribute('data-status') !== 'draft'; })[0];
+    var present = {};
+    rows.forEach(function (r) { var id = bundleIdOfRow(r); if (id) present[id] = true; });
+    if (template) {
+      bundlesOfPersona().forEach(function (b) {
+        if (present[b.id] || b.draft) return;
+        var row = template.cloneNode(true);
+        row.setAttribute('data-bundle-id', b.id);
+        row.removeAttribute('data-name');
+        /* 插在模板列前面＝清單最前面（補的通常是該 persona 的主打組合）；模板列若屬別的 persona，下面會被移除 */
+        panel.insertBefore(row, template);
+        rows.push(row);
+      });
+    }
+    rows.forEach(function (row) {
+      var id = bundleIdOfRow(row);
+      if (!id) return;
+      var seed = BUNDLE_SEED[id];
+      if (!seed || !bundleBelongs(seed)) { row.remove(); return; }
+      row.removeAttribute('hidden'); row.hidden = false;
+      row.setAttribute('data-bundle-id', id);
+      var b = window.ztorGetBundle(id);
+      var detail = row.querySelector('a[href*="bundle-detail.html"], a[href*="create-bundle.html"]');
+      if (detail) detail.setAttribute('href', 'bundle-detail.html?id=' + id);
+      /* 組合名＝賣家內容（維持中文）。草稿沒有名字時沿用列上的「未命名」。 */
       var t = row.querySelector('.product-list__title');
-      if (t) { t.removeAttribute('data-i18n'); t.textContent = b.name; }
+      if (t && b.name) { t.removeAttribute('data-i18n'); t.textContent = b.name; }
+      row.setAttribute('data-name', b.name || '');
+      if (row.getAttribute('data-status') === 'draft') return;
       var img = row.querySelector('.product-list__image img');
-      if (img) { img.setAttribute('src', 'images/products/' + b.img); img.setAttribute('alt', ''); }
-      var mem = row.querySelector('.product-list__category-cell');
-      if (mem && b.membersKey) { mem.setAttribute('data-i18n', b.membersKey); mem.textContent = tr(b.membersKey); }
+      if (img && b.img) { img.setAttribute('src', 'images/products/' + b.img); img.setAttribute('alt', ''); }
+      /* 成員（2026-09-11 使用者裁示）：寫在組合名底下、一件一行、暗字、最多三行，第四件起併成「…」一行；
+         只寫商品名，不寫件數等細節。列上沒有容器就補一個（舊列結構）。 */
+      var body = row.querySelector('.product-list__body');
+      var mem = row.querySelector('.product-list__members');
+      if (body && !mem) { mem = document.createElement('div'); mem.className = 'product-list__members'; body.appendChild(mem); }
+      if (mem) {
+        var names = b.memberNames || [];
+        var lines = names.slice(0, 3);
+        if (names.length > 3) lines.push('…');
+        mem.innerHTML = lines.map(function (n) { return '<div class="product-list__members-line">' + String(n).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }) + '</div>'; }).join('');
+      }
       var pr = row.querySelector('.product-list__price');
       if (pr) { pr.removeAttribute('data-i18n'); pr.textContent = b.price; }
-      /* 庫存改走結構化數字＋共用格式器（xx / xx），與商品分頁一致；不再寫「16 組（最少件數）」
-         這種散文。實際的「取成員最低庫存」說明由 stock-tip 浮卡逐項列出。 */
-      if (b.stockAvail != null) {
-        row.setAttribute('data-stock-avail', b.stockAvail);
-        if (b.stockCap != null) row.setAttribute('data-stock-cap', b.stockCap);
-        if (window.ztorEshopStatus && window.ztorEshopStatus.renderStock) window.ztorEshopStatus.renderStock(row);
+      /* 庫存與狀態：e-shop 的 rowModel 看到 data-bundle-id 會直接問 store（bundleQtyOf／deriveStatus），
+         這裡只把結構化數字寫到列上給沒有那個推導層的頁面當退路。 */
+      row.setAttribute('data-stock-avail', b.stockAvail === Infinity ? '' : String(b.stockAvail));
+      if (b.stockCap != null) row.setAttribute('data-stock-cap', b.stockCap); else row.removeAttribute('data-stock-cap');
+      if (window.ztorEshopStatus) {
+        if (window.ztorEshopStatus.render) window.ztorEshopStatus.render(row);
+        if (window.ztorEshopStatus.renderStock) window.ztorEshopStatus.renderStock(row);
       }
     });
+  }
+  function patchBundlesAndAuctions() {
+    patchBundleRows();
+    if (persona() !== 'nick') return;
     document.querySelectorAll('.product-list__row[data-type="auction"]').forEach(function (row) {
       var a = AUCTIONS_NICK[row.getAttribute('data-name') || ''];
       if (!a) return;
@@ -519,9 +681,21 @@
        可售量看的是鎖定量（1），仍 ≤ 門檻 4，「低庫存」與「鎖定」兩個示範互不打架、同時成立。
        ⚠ 這條原本掛在 tee（多規格）身上，2026-09-04 D241 收尾移到這裡——多規格商品的庫存池
        與鎖定怎麼疊尚無定論（見 ASSUMPTIONS UIA-132），示範資料先避開這個未決問題。 */
-    zine:    { locks: { single: 1, bundles: { 'coastline-starter-set': 1 } } },
-    /* 隱藏＋私下販售：商店找不到，持非公開連結仍可買（§7.14 狀態組合表第五列） */
-    acetate: { shown: false, privateLink: 'https://ztor.example/s/acetate?k=k3m8qr72' },
+    zine:    { locks: { single: 1, bundles: { 'coastline-starter-set': 1, 'signing-set': 1 } } },
+    /* 隱藏＋私下販售：商店找不到，持非公開連結仍可買（§7.14 狀態組合表第五列）。
+       2026-09-11 疊上簽名會限定組的「成員全鎖」示範：單售鎖 0（＝鎖定的份賣完了，單售視為售罄、
+       不回頭吃未鎖定的量）＋ 簽名會組鎖 3；黑膠＋海報典藏組沒鎖，仍共用剩下 26 件。 */
+    acetate: { shown: false, privateLink: 'https://ztor.example/s/acetate?k=k3m8qr72', locks: { single: 0, bundles: { 'signing-set': 3 } } },
+    /* ── 2026-09-11 預設 persona 新增 9 筆的上架示範（商品本體在 P_DEFAULT）── */
+    /* 定時下架排定：unlistAt 在未來（整個原型原本沒有任何一筆示範這個狀態） */
+    poster:  { unlistAt: '2026-12-31T23:59:00' },
+    /* 隱藏＋待命（§7.14 狀態組合表第四列）：隱藏、持非公開連結、但開賣日還沒到 */
+    tote:    { shown: false, privateLink: 'https://ztor.example/s/tote?k=p7wq2m9d', saleStart: '2026-10-15T12:00:00' },
+    /* 排定上架、時間還沒到（預設 persona 原本缺；keychain 不在 e-shop 的 PREVIEW_IDS 裡，見上方 hoodie 的教訓） */
+    keychain: { listAt: '2026-11-01T10:00:00' },
+    /* 草稿：總閘門關著（draft 徽章優先於已下架，由 ListingState 排序） */
+    sticker: { listed: false },
+    /* jacket／wristband／beanie 的鎖定寫在 variants[i].locks（逐選項組合），商品層由 seedListing() 加總 */
     /* 售罄：池 0 */
     pin:     {},
     /* 即將開賣：上架且顯示，開賣日期與時間在未來 */
@@ -546,13 +720,149 @@
        但預設角色帶這兩態的商品（song／movie）依 D251 不能進組合，等於那兩顆徽章沒有資料可看。
        同樣挑非組合成員、非別名、也不在 e-shop F5 預覽名單裡的商品。 */
     'wy-24ce-wyagl-tee': { saleEnd: '2026-08-20T23:59:00' },
-    'wy-24ce-sock': { saleStart: '2026-11-01T12:00:00' }
+    'wy-24ce-sock': { saleStart: '2026-11-01T12:00:00' },
+    /* ── 2026-09-11 nick persona 對照預設 persona 的九種狀態（商品改值在 WISHYOU_PRODUCTS 之後的覆寫段）── */
+    /* 隱藏＋非公開連結＋三個管道都鎖定（單售 40、簽名會組 10、典藏組 12）→「所有管道都設了鎖定」提醒 */
+    'nick-vinyl': { shown: false, privateLink: 'https://ztor.example/s/nick-vinyl?k=v4c9xw27', locks: { single: 40, bundles: { 'nick-signing-set': 10, 'nick-vinyl-set': 12 } } },
+    /* 隱藏＋待命（對照 tote） */
+    'wy-24ce-mesh': { shown: false, privateLink: 'https://ztor.example/s/wy-24ce-mesh?k=m2h7kq58', saleStart: '2026-10-15T12:00:00' },
+    /* 定時下架排定（對照 poster） */
+    'wy-24ce-dupont-bag': { unlistAt: '2026-12-31T23:59:00' },
+    /* 隱藏＋非公開連結（對照 acetate） */
+    'wy-26ms-tshirt-red': { shown: false, privateLink: 'https://ztor.example/s/wy-26ms-tshirt-red?k=r8n3pz61' },
+    /* 草稿（對照 sticker） */
+    'wy-draft-tote': { listed: false }
   };
 
-  /* 一個組合包＝一個販售管道。cap 是組合自己的限量硬上限（§7.2），null ＝ 無額外上限。 */
+  /* 詳情頁示範狀態（2026-09-11）：原本 product-detail.html 對每個 id 都硬插同一組示範
+     （銷售摘要 92／$2,944／$2,372、折扣三開關關、每人限購關、電影 2 部、項目引用 1 列、標籤 2 顆、
+     seedHistory() 的 4 筆含 1 筆計時補貨），搬進資料層後才有「有／沒有」兩態可看。
+     沒列在這裡的商品吃 seedListing() 的預設（全部空狀態）。history 的 combo／vi 對應該商品 variants。 */
+  var DETAIL_SEED = {
+    /* hoodie＝主要示範頁：原 seedHistory() 那組（含計時補貨還在路上）整組搬到這裡，combo 依 hoodie 的 6 個組合展開 */
+    hoodie: {
+      sales: { units: 41, gross: '$2,378', net: '$1,915' },
+      films: ['film-neon-harbor'],
+      tags: ['Tour 2025'],
+      history: [
+        { id: 'h1', type: 'restock', mode: 'scheduled', date: '2026/09/11', supplier: 'Riso House', eta: '2026/09/18', note: '先補 Sand / L，巡演前要到。', state: 'restocking', items: [{ combo: 'Sand / L', vi: 5, delta: '+20', qty: 20 }] },
+        { id: 'h2', type: 'lock', date: '2026/09/05', state: 'done', items: [{ combo: 'Black / S', vi: 0, delta: '0 → 2', toKey: 'stock.history.note.single' }] },
+        { id: 'h3', type: 'restock', mode: 'now', date: '2026/09/02', supplier: 'Riso House', note: '第二批，含 5 件備品。', state: 'done', items: [{ combo: 'Black / S', vi: 0, delta: '+40', qty: 40 }, { combo: 'Black / M', vi: 1, delta: '+25', qty: 25 }] },
+        { id: 'h4', type: 'restock', mode: 'now', date: '2026/08/20', supplierKey: 'stock.history.own', note: '', state: 'done', items: [{ combo: 'Sand / L', vi: 5, delta: '+30', qty: 30 }] }
+      ]
+    },
+    /* zine＝頁面沒帶 ?id 時的預設樣本：原本寫死在 HTML 的銷售摘要、電影 2 部、項目引用、標籤都歸它；
+       歷史只留 1 筆已完成補貨＋對應 LISTING_SEED.zine 單售鎖 1 的鎖定紀錄，沒有補貨中（與 hoodie 成對比） */
+    zine: {
+      sales: { units: 92, gross: '$2,944', net: '$2,372' },
+      limit: 2,
+      films: ['film-zheng-yi-sao', 'film-neon-harbor'],
+      projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }],
+      tags: ['Tour 2025', 'Signed'],
+      history: [
+        { id: 'h1', type: 'lock', date: '2026/09/05', state: 'done', items: [{ combo: '—', vi: 'single', delta: '— → 1', toKey: 'stock.history.note.single' }] },
+        { id: 'h2', type: 'restock', mode: 'now', date: '2026/08/20', supplierKey: 'stock.history.own', note: '', state: 'done', items: [{ combo: '—', vi: 'single', delta: '+30', qty: 30 }] }
+      ]
+    },
+    /* tee＝折扣三開關全開的示範（折扣價、限時起訖、可與優惠碼疊加），其餘商品折扣關 */
+    tee: {
+      discount: { price: '28.00', limited: { start: '2026-09-15', end: '2026-10-15' }, stack: true },
+      history: [
+        { id: 'h1', type: 'restock', mode: 'now', date: '2026/08/28', supplier: 'Riso House', note: '', state: 'done', items: [{ combo: 'M', vi: 1, delta: '+20', qty: 20 }] }
+      ]
+    },
+    /* pin＝售罄：有銷售、沒有歷史、沒有補貨中 */
+    pin: { sales: { units: 120, gross: '$1,440', net: '$1,160' } },
+    /* ── 2026-09-11 既有商品補值（只補缺的示範）── */
+    cap:   { limit: 3 },
+    shoes: { films: ['film-fist-of-fury', 'film-last-typhoon'] },
+    song:  { sales: null },
+    album: { tags: ['OST', 'Digital'] },
+    /* ── 2026-09-11 預設 persona 新增 9 筆 ── */
+    'doc-guide': {
+      sales: { units: 63, gross: '$378', net: '$302' },
+      tags: ['Behind the scenes', 'Tour 2025'],
+      films: ['film-zheng-yi-sao']
+    },
+    'ip-kit': {
+      sales: null,
+      projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }]
+    },
+    poster: {
+      sales: { units: 97, gross: '$3,880', net: '$3,120' },
+      discount: { price: '32.00', limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
+      limit: 2
+    },
+    jacket: {
+      sales: { units: 6, gross: '$900', net: '$720' },
+      history: [
+        { id: 'h1', type: 'lock', date: '2026/09/08', state: 'done', items: [{ combo: 'Black / M', vi: 1, delta: '— → 2', toKey: 'stock.history.note.single' }, { combo: 'Olive / L', vi: 5, delta: '— → 1', toKey: 'stock.history.note.single' }] }
+      ]
+    },
+    tote: { sales: null },
+    keychain: { sales: null },
+    beanie: {
+      sales: { units: 50, gross: '$1,100', net: '$880' },
+      projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }],
+      history: [
+        { id: 'h1', type: 'restock', mode: 'now', date: '2026/08/30', supplier: 'Riso House', note: '', state: 'done', items: [{ combo: 'Black', vi: 0, delta: '+30', qty: 30 }, { combo: 'Grey', vi: 1, delta: '+20', qty: 20 }] }
+      ]
+    },
+    wristband: { sales: { units: 34, gross: '$340', net: '$272' } },
+    sticker: { draft: true },
+    /* ── 2026-09-11 nick persona（對照上面九筆）── */
+    'nick-doc': {
+      sales: { units: 210, gross: 'NT$37,800', net: 'NT$32,130' },
+      tags: ['REALIVE', 'Tour'],
+      films: ['film-neon-harbor']
+    },
+    'nick-ip': {
+      sales: null,
+      projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }]
+    },
+    'wy-24ce-jersey': {
+      sales: { units: 180, gross: 'NT$662,400', net: 'NT$563,040' },
+      history: [
+        { id: 'h1', type: 'lock', date: '2026/09/08', state: 'done', items: [{ combo: 'M', vi: 0, delta: '— → 5', toKey: 'stock.history.note.single' }] }
+      ]
+    },
+    'wy-24ce-dupont-bag': {
+      sales: { units: 88, gross: 'NT$95,040', net: 'NT$80,784' },
+      discount: { price: '880', limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
+      limit: 2
+    },
+    'wy-26ms-tshirt-white': {
+      sales: { units: 142, gross: 'NT$266,960', net: 'NT$226,916' },
+      projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }]
+    },
+    'wy-26ms-socks': {
+      sales: { units: 320, gross: 'NT$220,160', net: 'NT$187,136' },
+      /* 計時補貨還在路上（對照 hoodie）：vi 0 ＝ 唯一尺寸 F */
+      history: [
+        { id: 'h1', type: 'restock', mode: 'scheduled', date: '2026/09/10', supplier: '祝你好命 工作室', eta: '2026/09/20', note: '白趴加場前補到。', state: 'restocking', items: [{ combo: 'F', vi: 0, delta: '+200', qty: 200 }] },
+        { id: 'h2', type: 'restock', mode: 'now', date: '2026/08/15', supplierKey: 'stock.history.own', note: '', state: 'done', items: [{ combo: 'F', vi: 0, delta: '+300', qty: 300 }] }
+      ]
+    },
+    'wy-24ce-tee': { sales: { units: 96, gross: 'NT$161,280', net: 'NT$137,088' } },
+    'wy-draft-tote': { draft: true }
+  };
+
+  /* 一個組合包＝一個販售管道。cap 是組合自己的限量硬上限（§7.2），null ＝ 無額外上限。
+     ── 價格模型（2026-09-11 使用者裁示第二版；同日稍早的 discountWindow／stackCodes 兩欄併入 discount 後移除）──
+       discountPct number|null   「組合折扣」常態折扣 %（0–100；null／0 ＝ 無優惠）。售價＝成員合計 ×(1 − discountPct/100)。
+                                 成員是多選項時合計是區間、售價會是「從 $X 起」——本示範資料的 variants 沒有逐組合定價，
+                                 所以 ztorGetBundle() 只算單一值；區間顯示待頁面依 variants[i].price 補。不另存 price 欄。
+       discount    { percent, limited: { start, end } | null, stack: bool } | null
+                                 「限時折扣」：疊在常態售價之上、依營運需求另設，與單售商品的 discount 同形狀；null ＝ 關。
+     其餘詳情頁示範欄位（description／films／projects／sales／history／draft／membersKey）沒寫的由 seedBundle() 補預設。
+     展示資料（memberItems／price 顯示字串／img／stockAvail）不存這裡，由 ztorGetBundle(id) 從成員商品記錄推導。 */
   var BUNDLE_SEED = {
+    /* ══ 預設 persona（九龍夜行）══ */
+    /* 不限量、部分鎖（只有 zine 鎖）、販售中；常態折扣 10%（合計 146） */
     'coastline-starter-set': {
-      id: 'coastline-starter-set', persona: 'default', name: '九龍夜行 入門組合',
+      id: 'coastline-starter-set', persona: 'default', name: '九龍夜行 入門組合', img: 'coastline-starter-pack.webp',
+      description: '巡迴紀念 T 恤、六片帽、帆布低筒鞋與幕後寫真誌——入坑的第一套。',
+      /* 不用舊的 e-shop.b1.members（寫 3 件、與現在 4 個成員不符），改由成員名自動組出 */
       /* zine（2026-09-04 D241 收尾新增）：多收一個單一規格成員，讓 product-detail.html 的
          庫存分配表有單一規格＋組合包列＋鎖定示範可看（見上方 LISTING_SEED.zine）。 */
       members: [{ productId: 'tee' }, { productId: 'cap' }, { productId: 'shoes' }, { productId: 'zine' }],
@@ -562,18 +872,195 @@
          非 0 門檻卻沒有對應 tab 會讓組合列在某些成員量小時掉進 deriveStatus 判成 low、
          但 9 個分頁一個都篩不到它——加入 zine（池僅 3）當成員後這條路徑真的會被踩到，
          故收斂成 0，兩個組合統一不參與低庫存判斷。 */
-      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: 10, discount: null,
+      sales: { units: 12, gross: '$1,536', net: '$1,230' },
+      films: ['film-neon-harbor'],
+      projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }],
+      history: [{ id: 'b1', date: '2026/09/05', items: [{ productId: 'zine', delta: '— → 1' }] }]
     },
+    /* 限量 20、含 QR 領取成員（acetate／wristband）、成員全鎖（每個成員在本組合都有鎖定量）；
+       常態折扣 10%（合計 304）＋限時折扣 10%（10 月）可與優惠碼疊加 */
+    'signing-set': {
+      id: 'signing-set', persona: 'default', name: '簽名會限定組', img: 'coastline-starter-pack.webp',
+      description: '簽名會現場領取的黑膠與手環，加上舞台外套復刻版與幕後寫真誌。限量 20 組。',
+      members: [{ productId: 'acetate' }, { productId: 'wristband' }, { productId: 'jacket' }, { productId: 'zine' }],
+      cap: 20, listed: true, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: 10, discount: { percent: 10, limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
+      sales: { units: 5, gross: '$1,400', net: '$1,120' },
+      films: ['film-zheng-yi-sao'],
+      history: [{ id: 'b1', date: '2026/09/08', items: [{ productId: 'jacket', delta: '— → 1' }, { productId: 'wristband', delta: '— → 15' }, { productId: 'acetate', delta: '— → 3' }, { productId: 'zine', delta: '— → 1' }] }]
+    },
+    /* 隱藏＋非公開連結（沿用 e-shop 既有第二列「Vinyl + poster set」）；無折扣 */
+    'vinyl-poster-set': {
+      id: 'vinyl-poster-set', persona: 'default', name: '黑膠＋海報典藏組', img: 'vinyl-poster-set.webp',
+      description: '編號黑膠與簽名海報，只給持連結的人。',
+      membersKey: 'e-shop.b2.members',
+      members: [{ productId: 'acetate' }, { productId: 'poster' }],
+      cap: null, listed: true, listAt: null, unlistAt: null,
+      shown: false, privateLink: 'https://ztor.example/s/vinyl-poster-set?k=g6t2mw84', saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: null, discount: null,
+      sales: { units: 9, gross: '$1,350', net: '$1,080' }
+    },
+    /* 可售 0：pin 售罄、sticker 是草稿（草稿成員視同可售 0，規則寫在 listing-state.js 的 bundleQty） */
+    'neon-gift-box': {
+      id: 'neon-gift-box', persona: 'default', name: '霓虹徽章禮盒', img: 'enamel-pin-wave.webp',
+      description: '琺瑯徽章與貼紙包的小禮盒。',
+      members: [{ productId: 'pin' }, { productId: 'sticker' }],
+      cap: null, listed: true, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: null, discount: null,
+      sales: { units: 20, gross: '$240', net: '$192' }
+    },
+    /* 即將開賣（saleStart 在未來）、限量 100；常態折扣 15%；尚無銷售 */
+    'winter-preorder-set': {
+      id: 'winter-preorder-set', persona: 'default', name: '冬季預購組', img: 'coastline-hoodie.webp',
+      description: '連帽外套＋六片帽，11 月開放預購。',
+      members: [{ productId: 'hoodie' }, { productId: 'cap' }],
+      cap: 100, listed: true, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: '2026-11-01T12:00:00', saleEnd: null, lowThreshold: 0,
+      discountPct: 15, discount: null,
+      sales: null
+    },
+    /* 販售結束（saleEnd 已過）；被 1 個項目引用 */
+    'tour-recap-set': {
+      id: 'tour-recap-set', persona: 'default', name: '巡迴回顧組', img: 'coastline-tee.webp',
+      description: '巡迴收官的紀念組：T 恤＋寫真誌。',
+      members: [{ productId: 'tee' }, { productId: 'zine' }],
+      cap: null, listed: true, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: null, saleEnd: '2026-08-20T23:59:00', lowThreshold: 0,
+      discountPct: 10, discount: null,
+      sales: { units: 44, gross: '$2,200', net: '$1,760' },
+      projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }]
+    },
+    /* 已下架（listed:false） */
+    'internal-test-set': {
+      id: 'internal-test-set', persona: 'default', name: '內部測試組', img: 'cap.webp',
+      description: '內部測試用，不對外。',
+      members: [{ productId: 'cap' }, { productId: 'shoes' }],
+      cap: null, listed: false, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: null, discount: null, sales: null
+    },
+    /* 草稿：沒有圖（清單列用 placeholder）、名稱先叫「新組合」 */
+    'draft-set': {
+      id: 'draft-set', persona: 'default', name: '新組合', img: null,
+      description: '',
+      members: [{ productId: 'tee' }, { productId: 'cap' }],
+      cap: null, listed: false, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: null, discount: null, draft: true
+    },
+
+    /* ══ nick persona（周湯豪）══ 第一筆必須是選物四件組：ztorGetBundle() 沒帶 id 時回該 persona 的第一筆 */
+    /* 限量 50、部分鎖（只有白 Tee 逐尺寸鎖 2 件）、販售中；常態折扣 20%（合計 7,480 → 5,984，原手寫的 5,980 是自己四捨五入的結果） */
     'wish-you-good-life-four-piece': {
-      id: 'wish-you-good-life-four-piece', persona: 'nick', name: '『祝你好命』選物四件組',
+      id: 'wish-you-good-life-four-piece', persona: 'nick', name: '『祝你好命』選物四件組', img: 'set-outfit-model.webp',
+      description: '白 Tee、刺繡 Logo 老帽、束口工裝褲與低筒球鞋，以紅白黑配色組成的四件穿搭。',
+      membersKey: 'e-shop.bnick.set.members',
       members: [
         { productId: 'wy-26ms-tshirt-white' }, { productId: 'wy-bundle-cap' },
         { productId: 'wy-bundle-cargo-pants' }, { productId: 'wy-bundle-lowtop-sneakers' }
       ],
       cap: 50, listed: true, listAt: null, unlistAt: null,
-      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 3
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 3,
+      discountPct: 20, discount: null,
+      sales: { units: 38, gross: 'NT$227,240', net: 'NT$193,150' },
+      films: ['film-neon-harbor'],
+      projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }],
+      history: [
+        { id: 'b1', date: '2026/09/05', items: [{ productId: 'wy-26ms-tshirt-white', delta: '— → 2' }] },
+        { id: 'b2', date: '2026/08/28', items: [{ productId: 'wy-bundle-cap', delta: '4 → 6' }, { productId: 'wy-26ms-tshirt-white', delta: '2 → 2' }] }
+      ]
+    },
+    /* 對照 signing-set：限量 30、含 QR 成員（nick-vinyl／wy-24ce-tee）、成員全鎖；常態折扣 10%＋限時 10% 可疊加 */
+    'nick-signing-set': {
+      id: 'nick-signing-set', persona: 'nick', name: 'REALIVE 簽名會限定組', img: 'nick-realive-cd.jpg',
+      description: '簽名會現場領取的限量黑膠與 WYAGL T-SHIRT，加上 24CE 足球衣。限量 30 組。',
+      members: [{ productId: 'nick-vinyl' }, { productId: 'wy-24ce-tee' }, { productId: 'wy-24ce-jersey' }],
+      cap: 30, listed: true, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: 10, discount: { percent: 10, limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
+      sales: { units: 8, gross: 'NT$55,840', net: 'NT$47,464' },
+      films: ['film-neon-harbor'],
+      history: [{ id: 'b1', date: '2026/09/08', items: [{ productId: 'wy-24ce-jersey', delta: '— → 2' }, { productId: 'wy-24ce-tee', delta: '— → 9' }, { productId: 'nick-vinyl', delta: '— → 10' }] }]
+    },
+    /* 對照 vinyl-poster-set（沿用舊 BUNDLES_NICK 第二筆「LOVE RAGE HOPE 黑膠典藏組」）：隱藏＋非公開連結；無折扣 */
+    'nick-vinyl-set': {
+      id: 'nick-vinyl-set', persona: 'nick', name: 'LOVE RAGE HOPE 黑膠典藏組', img: 'coastline-acetate.webp',
+      description: '限量黑膠＋Wish You A Good Life T-SHIRT，只給持連結的歌迷。',
+      /* 舊的 e-shop.bnick.vinyl.members 寫「巡演寫真誌」、與成員不符，改由成員名自動組出 */
+      members: [{ productId: 'nick-vinyl' }, { productId: 'wy-24ce-wyagl-tee' }],
+      cap: null, listed: true, listAt: null, unlistAt: null,
+      shown: false, privateLink: 'https://ztor.example/s/nick-vinyl-set?k=z3q8dm45', saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: null, discount: null,
+      sales: { units: 15, gross: 'NT$59,700', net: 'NT$50,745' }
+    },
+    /* 對照 neon-gift-box：可售 0（pillow 售罄） */
+    'nick-soldout-set': {
+      id: 'nick-soldout-set', persona: 'nick', name: '24CE 紀念禮盒', img: '24ce-skateboard-01.jpg',
+      description: 'WYAGL 抱枕＋Dupont Bag 的紀念禮盒。',
+      members: [{ productId: 'wy-24ce-pillow' }, { productId: 'wy-24ce-dupont-bag' }],
+      cap: null, listed: true, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: null, discount: null,
+      sales: { units: 30, gross: 'NT$79,800', net: 'NT$67,830' }
+    },
+    /* 對照 winter-preorder-set：即將開賣、限量 100、常態折扣 15%；尚無銷售 */
+    'nick-preorder-set': {
+      id: 'nick-preorder-set', persona: 'nick', name: '冬季預購組', img: '26ms-hoodie-01.jpeg',
+      description: '26MS Hoodie＋刺繡 Logo 老帽，11 月開放預購。',
+      members: [{ productId: 'wy-26ms-hoodie' }, { productId: 'wy-bundle-cap' }],
+      cap: 100, listed: true, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: '2026-11-01T12:00:00', saleEnd: null, lowThreshold: 0,
+      discountPct: 15, discount: null,
+      sales: null
+    },
+    /* 對照 tour-recap-set：販售結束；被 1 個項目引用 */
+    'nick-recap-set': {
+      id: 'nick-recap-set', persona: 'nick', name: '白趴回顧組', img: '26ms-t-shirt-w-02.jpeg',
+      description: '白趴收官紀念：26MS 白 Tee＋襪子。',
+      members: [{ productId: 'wy-26ms-tshirt-white' }, { productId: 'wy-26ms-socks' }],
+      cap: null, listed: true, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: null, saleEnd: '2026-08-20T23:59:00', lowThreshold: 0,
+      discountPct: null, discount: null,
+      sales: { units: 60, gross: 'NT$144,000', net: 'NT$122,400' },
+      projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }]
+    },
+    /* 對照 internal-test-set：已下架 */
+    'nick-internal-set': {
+      id: 'nick-internal-set', persona: 'nick', name: '內部測試組', img: 'wyagl-cap-generated.webp',
+      description: '內部測試用，不對外。',
+      members: [{ productId: 'wy-bundle-cap' }, { productId: 'wy-bundle-lowtop-sneakers' }],
+      cap: null, listed: false, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: null, discount: null, sales: null
+    },
+    /* 對照 draft-set：草稿 */
+    'nick-draft-set': {
+      id: 'nick-draft-set', persona: 'nick', name: '新組合', img: null,
+      description: '',
+      members: [{ productId: 'wy-26ms-tshirt-red' }, { productId: 'wy-26ms-socks' }],
+      cap: null, listed: false, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: null, discount: null, draft: true
     }
   };
+  function seedBundle(b) {
+    if (!b) return b;
+    if (b.discountPct === undefined) b.discountPct = null;
+    if (b.discount === undefined) b.discount = null;
+    if (b.description === undefined) b.description = '';
+    if (b.img === undefined) b.img = null;
+    if (!b.films) b.films = [];
+    if (!b.projects) b.projects = [];
+    if (b.sales === undefined) b.sales = null;
+    if (!b.history) b.history = [];
+    if (b.draft === undefined) b.draft = false;
+    return b;
+  }
+  Object.keys(BUNDLE_SEED).forEach(function (k) { seedBundle(BUNDLE_SEED[k]); });
 
   /* 目前在庫：數位商品與 stock 為 ∞ 的一律 'unlimited'，其餘取現有庫存數。
      限量版本（edition==='limited'）的 stock 本來就是「還剩幾件」，直接當目前在庫。 */
@@ -602,18 +1089,44 @@
         bundles: (s.locks && s.locks.bundles) ? s.locks.bundles : {}
       }
     };
+    /* 逐選項組合鎖定（D255／D258，2026-09-11）：多選項商品的鎖定住在 variants[i].locks，商品層的 pool.locks
+       改由各組合加總得出（某管道只要有任一組合設了鎖定，商品層就視為該管道鎖定模式、量＝加總；
+       全部沒設就是 null）。這樣只讀商品層的頁面（product-detail 的頁首徽章走 channelQty(pool)、
+       e-shop 的 qtyOf）與讀 variants 的頁面（庫存管理表、bundle-detail 的分配表）算出同一個數字。
+       兩者同時寫時以 variants 為準（LISTING_SEED 的商品層值會被蓋掉）。 */
+    if (p.variant === 'multiple' && (p.variants || []).length && p.variants.some(function (v) { return v && v.locks; })) {
+      var sum = function (ch) {
+        var any = false, n = 0;
+        p.variants.forEach(function (v) {
+          var l = v.locks || {};
+          var val = (ch === 'single') ? l.single : (l.bundles || {})[ch];
+          if (val === undefined || val === null || val === '') return;
+          any = true; n += Number(val) || 0;
+        });
+        return any ? n : null;
+      };
+      var ids = {};
+      p.variants.forEach(function (v) { Object.keys((v.locks && v.locks.bundles) || {}).forEach(function (k) { ids[k] = true; }); });
+      p.pool.locks = { single: sum('single'), bundles: {} };
+      Object.keys(ids).forEach(function (k) { p.pool.locks.bundles[k] = sum(k); });
+    }
+    /* 詳情頁示範欄位：DETAIL_SEED 有就用，沒有就是空狀態（欄位定義見檔頭） */
+    var d = DETAIL_SEED[id] || {};
+    var pick = function (f, fallback) { return d[f] !== undefined ? d[f] : (p[f] !== undefined ? p[f] : fallback); };
+    p.sales = pick('sales', null);
+    p.discount = pick('discount', null);
+    p.limit = pick('limit', null);
+    p.films = pick('films', []);
+    p.projects = pick('projects', []);
+    p.tags = pick('tags', []);
+    p.history = pick('history', []);
+    p.draft = pick('draft', false);
     return p;
   }
 
   Object.keys(DATASETS).forEach(function (personaId) {
     var set = DATASETS[personaId];
     Object.keys(set).forEach(function (id) { seedListing(id, set[id]); });
-  });
-  /* 舊的組合記錄補上同一組欄位，讓組合細節頁能與商品頁走同一套推導。 */
-  Object.keys(BUNDLES_NICK).forEach(function (k) {
-    var b = BUNDLES_NICK[k];
-    var seed = b.id && BUNDLE_SEED[b.id];
-    if (seed) Object.keys(seed).forEach(function (f) { if (b[f] === undefined) b[f] = seed[f]; });
   });
 
   /* ── 對外 API（新頁面一律走這裡，別再自己算）────────────────────────────
@@ -623,11 +1136,16 @@
      bundleStatusOf(bundle)      組合包的主徽章狀態（可售量＝成員最小值再與 cap 取最小）
      bundlesUsing(productId)     哪些組合包含這件商品（算「所有管道都鎖定了嗎」用） */
   function ls() { return LS || (typeof window !== 'undefined' && window.ListingState) || null; }
+  /* 這個組合屬於當前 persona 嗎（userB 視同 default） */
+  function bundleBelongs(b) {
+    var pid = persona() === 'nick' ? 'nick' : 'default';
+    return !!b && b.persona === pid;
+  }
   function bundlesOfPersona() {
     var out = [], k;
     for (k in BUNDLE_SEED) {
       if (!Object.prototype.hasOwnProperty.call(BUNDLE_SEED, k)) continue;
-      if (BUNDLE_SEED[k].persona === persona() || (persona() === 'userB' && BUNDLE_SEED[k].persona === 'default')) out.push(BUNDLE_SEED[k]);
+      if (bundleBelongs(BUNDLE_SEED[k])) out.push(BUNDLE_SEED[k]);
     }
     return out;
   }
@@ -665,10 +1183,71 @@
   window.ZTOR_PRODUCTS = P;
   // 由 ?id 取商品；找不到回 null（頁面自帶預設 zine）。
   window.ztorGetProduct = function (id) { return (id && P[id]) ? P[id] : null; };
+  /* ── 組合的展示資料（2026-09-11 改制，兩個 persona 都可用）──────────────────────
+     ztorGetBundle(id)：從 BUNDLE_SEED[id]（persona 要對上當前 persona）＋成員商品記錄推導展示資料。
+     沒帶 id 時回當前 persona 的第一筆（舊行為：nick 的選物四件組）。回傳＝seed 的淺拷貝再加：
+       memberItems  [{ id, name, meta, price, img }]   成員清單（price 為顯示字串；meta＝次分類 · 單價）
+       membersText  string                              e-shop 清單用的「成員名 + … · N 件」（件數走 i18n）
+       baseAmount   number                              成員原價合計（草稿成員沒有定價＝0）
+       priceAmount  number                              售價＝baseAmount ×(1 − discountPct/100)（nick 取整數、default 到分）
+       price        string                              priceAmount 的顯示字串（幣別依 persona：default $、nick NT$）
+       basePrice    string                              baseAmount 的顯示字串（有折扣時頁面畫成刪除線原價）
+       currency     'USD' | 'TWD'
+       stockAvail   number | Infinity                   組合可售量（ListingState.bundleQty）
+       stockCap     number | null                       ＝seed.cap（給 e-shop 列的 data-stock-cap）
+     store.getBundle(id) 維持回 seed 本體（頁面改三開關時直接寫它）。 */
+  function moneyOfPersona(n) {
+    if (n === null || n === undefined || isNaN(n)) return '—';
+    if (persona() === 'nick') return 'NT$' + Math.round(n).toLocaleString('en-US');
+    return '$' + (Number.isInteger(n) ? String(n) : n.toFixed(2));
+  }
+  function priceAmountOf(p) {
+    var n = Number(String(p && p.price != null ? p.price : '').replace(/[^0-9.]/g, ''));
+    return isFinite(n) ? n : 0;
+  }
+  /* 商品價格區間：多選項商品逐組合可有自己的 price（沒有就用商品價），取 min／max（同 product-detail 的 priceRange）。 */
+  function priceRangeOf(p) {
+    var base = priceAmountOf(p);
+    var vals = (p && p.variants || []).map(function (v) { var n = Number(String(v.price != null && v.price !== '' ? v.price : base).replace(/[^0-9.]/g, '')); return isFinite(n) ? n : base; });
+    if (!vals.length) return { lo: base, hi: base };
+    return { lo: Math.min.apply(null, vals), hi: Math.max.apply(null, vals) };
+  }
   window.ztorGetBundle = function (id) {
-    if (persona() !== 'nick') return null;
-    var bundles = Object.keys(BUNDLES_NICK).map(function (key) { return BUNDLES_NICK[key]; });
-    return bundles.find(function (bundle) { return bundle.id === id; }) || (id == null ? bundles[0] : null);
+    var seed = null;
+    if (id == null) seed = bundlesOfPersona()[0] || null;
+    else if (BUNDLE_SEED[id] && bundleBelongs(BUNDLE_SEED[id])) seed = BUNDLE_SEED[id];
+    if (!seed) return null;
+    var products = active();
+    var memberItems = (seed.members || []).map(function (m) {
+      var p = products[m.productId];
+      if (!p) return { id: m.productId, name: m.productId, meta: '', price: '—', img: '' };
+      return {
+        id: p.id || m.productId, name: p.name,
+        meta: (p.subLabel ? bilingual(p.subLabel, ' · ') + ' · ' : '') + priceText(p),
+        price: priceText(p), img: p.img || ''
+      };
+    });
+    var baseAmount = (seed.members || []).reduce(function (n, m) { return n + priceAmountOf(products[m.productId]); }, 0);
+    /* 成員含多選項多價格時，合計與售價都是區間（2026-09-11 使用者：「組合價格，如果是多選項多價格商品就應該是一個區間」） */
+    var baseHi = (seed.members || []).reduce(function (n, m) { return n + priceRangeOf(products[m.productId]).hi; }, 0);
+    var pct = Number(seed.discountPct) || 0;
+    var roundP = function (n) { return persona() === 'nick' ? Math.round(n) : Math.round(n * 100) / 100; };
+    var priceAmount = roundP(baseAmount * (1 - pct / 100));
+    var priceHi = roundP(baseHi * (1 - pct / 100));
+    var rangeText = function (lo, hi) { return lo === hi ? moneyOfPersona(lo) : moneyOfPersona(lo) + '–' + moneyOfPersona(hi).replace(/^(NT\$|\$)/, ''); };
+    var L = ls();
+    var stockAvail = L ? L.bundleQty(seed, products) : Infinity;
+    var names = memberItems.map(function (it) { return it.name; }).join(' + ');
+    var countText = (tr('e-shop.bundle.members.n') || '{n} items').replace('{n}', String(memberItems.length));
+    return Object.assign({}, seed, {
+      memberItems: memberItems,
+      membersText: names ? (names + ' · ' + countText) : countText,
+      memberNames: memberItems.map(function (it) { return it.name; }),
+      baseAmount: baseAmount, baseHi: baseHi, basePrice: rangeText(baseAmount, baseHi),
+      priceAmount: priceAmount, priceHi: priceHi, price: rangeText(priceAmount, priceHi),
+      currency: persona() === 'nick' ? 'TWD' : 'USD',
+      stockAvail: stockAvail, stockCap: (seed.cap === undefined) ? null : seed.cap
+    });
   };
   window.ztorGetAuction = function (id) {
     if (persona() !== 'nick' || !id) return null;
@@ -727,12 +1306,22 @@
         panel.querySelectorAll('.product-list__row:not([data-status="draft"])').forEach(function (row) { row.remove(); });
         var draft = panel.querySelector('.product-list__row[data-status="draft"]');
         WISH_IDS.forEach(function (id) {
+          var p = active()[id];
+          /* 草稿商品不另外產列：e-shop 既有的草稿列（data-status="draft"）改連到它，見下方 */
+          if (!p || p.draft) return;
           var row = template.cloneNode(true);
           row.setAttribute('data-wishyou-id', id);
-          row.setAttribute('data-type', 'physical');
-          row.setAttribute('data-name', WISHYOU_PRODUCTS[id].name);
+          row.setAttribute('data-type', p.cat === 'digital' ? 'digital' : 'physical');
+          row.setAttribute('data-name', p.name);
           if (draft) panel.insertBefore(row, draft); else panel.appendChild(row);
         });
+        /* 草稿列（2026-09-11）：nick 下連到真的草稿商品 wy-draft-tote（預設 persona 的草稿列由 e-shop.html 寫死 ?id=sticker）。
+           草稿列的價格／規格／庫存欄本來就是「—」，下面的迴圈只換連結與標題、不動其餘欄位。 */
+        if (draft) {
+          var dp = active()['wy-draft-tote'];
+          var dl = draft.querySelector('.product-list__actions a[href*="create-product.html"], .product-list__actions a[href*="product-detail.html"]');
+          if (dp && dl) dl.setAttribute('href', 'product-detail.html?id=wy-draft-tote');
+        }
         list.__wishyouRows = true;
       }
     }
@@ -746,6 +1335,7 @@
       if (!p) return;
       var title = row.querySelector('.product-list__title');
       if (title) title.textContent = p.name;
+      if (row.getAttribute('data-status') === 'draft') { row.setAttribute('data-name', p.name); return; }
       var img = row.querySelector('.product-list__image img');
       if (img && p.img) { img.setAttribute('src', 'images/products/' + p.img); img.setAttribute('alt', ''); }
       /* 不動 data-name：它是補貨模組（PRODUCT_MATRIX/PRODUCT_VARIANTS）的內部查表鍵，
@@ -767,6 +1357,7 @@
          nick 換成有顏色×腰圍的工裝褲），沿用寫死的字會自相矛盾，故一併重寫。 */
       var meta = row.querySelector('.product-list__meta');
       if (meta && p.cat === 'physical') {
+        meta.removeAttribute('data-i18n');
         meta.textContent = (p.options && p.options.length)
           ? p.options.map(function (o) {
               /* o.name 是 'Colour / 顏色' 這種雙語字串——取對應語言那一邊，
@@ -774,6 +1365,10 @@
               return paren(bilingual(o.name, ' / '), o.values.join('/'));
             }).join(' × ')
           : tr('e-shop.variant.single');
+      } else if (meta && p.cat === 'digital') {
+        /* 數位商品的規格副標依內容形態走 key（nick 的數位商品列是從實體列複製來的，不換會留著「單一選項」） */
+        var mk = 'e-shop.meta.digital.' + (p.content || 'document');
+        meta.setAttribute('data-i18n', mk); meta.textContent = tr(mk);
       }
 
       /* 狀態徽章與 data-status：同理，nick 的售罄／低量狀態與 default 不同（例：default 的

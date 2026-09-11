@@ -45,12 +45,16 @@
   grid-template-columns: var(--sce-cols);
   gap: var(--sp-8);
   align-items: center;
-  padding: 9px var(--sp-12);
+  padding: 9px var(--sp-16);   /* Q112：--radius-xl 外框內的列，左右內距至少 --sp-16（舊值 --sp-12） */
 }
 
 /* 表頭：底色承擔分隔，不畫下框線（Q41 已裁決） */
 .sce__head {
-  background: var(--muted);
+  /* 表頭用薄膜、列透明（2026-09-11，使用者第二次抓到同一種錯——表格坐在玻璃卡上還用實色）：
+     卡內表格的層級照 Q24／Q71：L1 卡是玻璃，L2 表頭是薄膜 --ztu-film，列不再疊填色、只靠 hairline 分隔。
+     實色 --muted／--card 疊在玻璃上會變成一塊不透明的補丁。舊值：background: var(--muted)（表頭）／var(--card)（列）。
+     check_ds_sync 檢查 14 從此輪起會擋新的實色表頭／列。 */
+  background: var(--ztu-film);
   font-family: var(--font-ui);
   font-size: var(--fs-11);
   font-weight: var(--fw-regular);

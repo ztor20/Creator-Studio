@@ -91,8 +91,18 @@
     return sum;
   }
 
+  /* 多選項商品（2026-09-11）：鎖定住在 variants[i].locks，商品層的 pool.locks 只是加總（products-store 的
+     seedListing 補的、給「鎖給單售／鎖給組合」這種彙總數字看）。可售量與「全鎖了嗎」不能拿加總算——
+     M 鎖了、L 沒鎖時，單售仍拿得到 L 的剩餘量。所以 channelQty／freeQty／allChannelsLocked 遇到有 variants
+     的多選項商品，一律改走逐組合版本（variantsChannelQty／variantsFree／variantsAllLocked），
+     消費頁不必自己分支（product-detail 的 KPI 原本自己分支，結果與這裡一致）。 */
+  function isMulti(product) {
+    return !!(product && product.variant === 'multiple' && (product.variants || []).length);
+  }
+
   /** 沒有被鎖定的庫存量＝目前在庫 − 所有鎖定量。不限量的池回 Infinity；不會回負數。 */
   function freeQty(product) {
+    if (isMulti(product)) return variantsFree(product.variants);
     var p = pool(product);
     if (p.total === 'unlimited' || p.total === INF) return INF;
     return Math.max(0, num(p.total) - lockedTotal(product));
@@ -118,6 +128,7 @@
    * 有鎖定（>0）就是鎖定量——鎖定的管道不吃沒有被鎖定的庫存量；沒鎖定就與其他未鎖定管道共用沒有被鎖定的庫存量。
    */
   function channelQty(product, channel) {
+    if (isMulti(product)) return variantsChannelQty(product.variants, channel);
     var locked = lockOf(product, channel);
     return locked === null ? freeQty(product) : locked;
   }
@@ -217,6 +228,9 @@
       var m = members[i];
       var p = map[m.productId || m.id];
       if (!p) return 0;
+      /* 草稿成員（2026-09-11 示範資料補齊時定的規則；規格未寫）：草稿還沒定價、沒上架、庫存未確認，
+         視同可售 0——含草稿成員的組合整組售罄，直到那件商品完成建立。與「查不到成員視為 0」同一精神。 */
+      if (p.draft || p.isDraft || p.status === 'draft') return 0;
       var per = num(m.qty) > 0 ? num(m.qty) : 1;   /* 一套要用到同一件商品好幾件時 */
       /* 成員是多選項商品時，這個組合拿得到的量＝各選項組合在本組合可售量之和
          （D258：組合包的鎖定逐選項組合設定；買家挑哪一個組合出貨仍是產品待確認）。 */
@@ -236,8 +250,12 @@
    * bundlesUsingIt：包含這件商品的組合包（物件或 id 字串皆可）。
    */
   function allChannelsLocked(product, bundlesUsingIt) {
-    if (!hasLock(product, 'single')) return false;
     var list = bundlesUsingIt || [];
+    if (isMulti(product)) {
+      var chs = ['single'].concat(list.map(function (b) { return { bundle: (typeof b === 'string') ? b : b.id }; }));
+      return variantsAllLocked(product.variants, chs);
+    }
+    if (!hasLock(product, 'single')) return false;
     for (var i = 0; i < list.length; i++) {
       var id = (typeof list[i] === 'string') ? list[i] : list[i].id;
       if (!hasLock(product, { bundle: id })) return false;
