@@ -2719,8 +2719,8 @@
     'restock.note':           { en: '<strong>Restock now</strong> adds stock immediately; <strong>Scheduled</strong> marks items Restocking until you Mark received. Each restocked item is logged on the product page. Digital / unlimited items can\'t be restocked.', zh: '<strong>立即補貨</strong>送出即入庫；<strong>定時補貨</strong>會標記為補貨中，直到你按「到貨確認」。每個有補的品項都會記錄於商品頁。數位／不限量商品不適用補貨。' },
     'restock.receive':        { en: 'Mark received',                      zh: '到貨確認' },
     'restock.submit':         { en: 'Submit restock',                     zh: '送出補貨' },
-    'restock.history.title':  { en: 'Restock history',                    zh: '補貨紀錄' },
-    'restock.history.hint':   { en: 'Every restock (immediate or scheduled) is logged here — newest first.', zh: '每次補貨（立即或定時）都會記錄於此，最新在上。' },
+    'restock.history.title':  { en: 'Stock history',                      zh: '庫存歷史紀錄' },  /* 2026-09-11 補貨＋鎖定合併 */
+    'restock.history.hint':   { en: 'Every restock and lock change — newest first.', zh: '每一筆補貨與鎖定變動，最新在上。' },
     'restock.status.done':    { en: 'Completed',                          zh: '已完成' },
     'restock.status.restocking': { en: 'Restocking',                      zh: '補貨中' },
     'restock.justnow':        { en: 'Just now',                           zh: '剛剛' },
@@ -2733,7 +2733,6 @@
     'product-detail.badge.live':    { en: 'Active',       zh: '販售中' },
     /* 原始商品頁連結（2026-07-27）：此鈕由 JS 動態建立且只建一次，原本直接寫死繁中，
        英文語系永遠是中文。給 key 並掛 data-i18n，切語言時 applyI18n 才接得到。 */
-    'product-detail.source-link':   { en: 'View original listing', zh: '查看原商品頁' },
     'product-detail.badge.low':     { en: 'Low Stock · 3 left', zh: '庫存過低 · 剩 3 件' },
     'product-detail.badge.physical':{ en: 'Physical merch', zh: '實體周邊' },
     'product-detail.badge.zine':    { en: 'Books',        zh: '書籍' },
@@ -2744,10 +2743,13 @@
     /* 逐選項組合的庫存鎖定（2026-09-09 · D-pending／ASSUMPTIONS UIA-146）：列尾 ⋯ 的單列入口、
        單列彈窗、編輯彈窗裡一次設定全部的大表格，以及管道分配表改唯讀後的去處說明。 */
     'product-detail.var.lock':      { en: 'Lock stock',   zh: '鎖定庫存' },
-    'product-detail.unsaved':       { en: 'Unsaved changes', zh: '未儲存的變更' },
+    /* 鎖定庫存彈窗從卡頭打開時的副標（一次設定全部選項組合）；從列尾 ⋯ 打開時副標是該組合的名字。 */
+    'product-detail.lock.all-sub':  { en: 'All option combinations', zh: '全部選項組合' },
+    /* 編輯彈窗的「各選項組合價格與庫存」區副標：這裡沒有上限欄、庫存也不能直接改，不沿用建立頁那句。 */
+    'product-detail.edit.combos-sub': { en: 'Price, SKU and cost per combination. Add stock via Restock.', zh: '每個組合各自的價格、SKU 與單件成本；庫存要加量走補貨' },
     'product-detail.edit.locks-hint': { en: 'Blank means the channel shares whatever is unlocked', zh: '留空＝這個管道與其他沒鎖定的管道共用未鎖定的量' },
     /* 商品選項卡（多選項才有）：價格卡在多選項時不出現，價格逐組合填在庫存表，這句告訴使用者去哪裡改。 */
-    'product-detail.options.sub':   { en: 'Price and cost per combination are in the stock table above', zh: '價格與單件成本逐組合填在上方庫存表' },
+    'product-detail.options.sub':   { en: 'Price and cost per combination are edited here too', zh: '逐組合的價格與單件成本也在這裡編輯' },
     /* 庫存卡卡頭數字列 */
     /* 商品明細只呈現單售這一個管道（2026-09-10 · D258）：表格欄名與長條圖例都講「鎖給單售」，
        避免與組合包那一邊的「鎖給本組合」混淆；留在池裡的量沒有任何管道能賣時，用 pool-left 提示。 */
@@ -2757,6 +2759,42 @@
     'stock.locked-single':          { en: 'Locked for single sale', zh: '鎖給單售' },
     'stock.pool-left':              { en: '{n} left in the pool — no channel can sell them', zh: '{n} 件留在庫存池，沒有管道賣得到' },
     'stock.single-sellable':        { en: 'Single sale can sell', zh: '單售可售' },
+    /* 2026-09-11 商品庫存分頁（A 案）：四塊 KPI 磚、補貨中、庫存管理、庫存去向、庫存歷史紀錄 */
+    'stock.unit':                   { en: 'pcs',                zh: '件' },
+    'stock.kpi.onhand':             { en: 'On hand',            zh: '在庫' },
+    'stock.kpi.sellable':           { en: 'Sellable (single)',  zh: '單售可售' },
+    'stock.kpi.bundle':             { en: 'Locked for bundles', zh: '鎖給組合' },
+    'stock.kpi.incoming':           { en: 'Restocking',         zh: '補貨中' },
+    'stock.pending.title':          { en: 'Restocking',         zh: '補貨中' },
+    'stock.pending.sub':            { en: 'Scheduled restocks — confirm on arrival to add them to stock.', zh: '計時補貨的單，到貨後按確認才入庫。' },
+    'stock.pending.eta':            { en: 'ETA {d}',            zh: '預計 {d} 到貨' },
+    'stock.manage.title':           { en: 'Stock',              zh: '庫存管理' },
+    'stock.manage.sub-multi':       { en: 'One row per option combination. ', zh: '一列一個選項組合；' },
+    'stock.manage.sub':             { en: 'Red = below the threshold of {n}. Price, SKU and cost live in Product settings.', zh: '紅字＝低於門檻 {n} 件。價格、SKU、單件成本在商品設定。' },
+    'stock.bulk-lock':              { en: 'Bulk lock',          zh: '批次鎖定' },
+    'stock.bulk-restock':           { en: 'Bulk restock',       zh: '批次補貨' },
+    'stock.col.onhand':             { en: 'On hand',            zh: '在庫' },
+    'stock.col.bundle':             { en: 'Bundles',            zh: '鎖給組合' },
+    'stock.col.incoming':           { en: 'Restocking',         zh: '補貨中' },
+    'stock.col.status':             { en: 'Status',             zh: '狀態' },
+    'stock.st.ok':                  { en: 'OK',                 zh: '正常' },
+    'stock.st.threshold':           { en: 'At threshold',       zh: '到門檻' },
+    'stock.st.low':                 { en: 'Low stock',          zh: '低庫存' },
+    'stock.dest.title':             { en: 'Where stock goes',   zh: '庫存去向' },
+    'stock.dest.sub':               { en: "Bundle locks are set on each bundle's own allocation table.", zh: '鎖給組合包的部分，由各組合自己的分配表決定。' },
+    'stock.dest.locked':            { en: '{n} locked',         zh: '鎖 {n} 件' },
+    'stock.dest.unlocked':          { en: 'Not locked — ships from unlocked stock', zh: '未鎖定，出貨時從未鎖定的部分取' },
+    'stock.dest.empty':             { en: 'Not part of any bundle.', zh: '沒有組合包用到這件商品。' },
+    'stock.history.title':          { en: 'Stock history',      zh: '庫存歷史紀錄' },
+    'stock.history.sub':            { en: 'Every restock and lock change.', zh: '補貨與鎖定的每一筆變動。' },
+    'stock.history.col.type':       { en: 'Type',               zh: '類型' },
+    'stock.history.col.delta':      { en: 'Change',             zh: '變動' },
+    'stock.history.col.note':       { en: 'Note',               zh: '說明' },
+    'stock.history.type.restock':   { en: 'Restock',            zh: '補貨' },
+    'stock.history.type.lock':      { en: 'Lock',               zh: '鎖定' },
+    'stock.history.note.single':    { en: 'Locked for single sale', zh: '鎖給單售' },
+    'stock.history.note.now':       { en: 'Restock now',        zh: '立即補貨' },
+    'stock.history.note.scheduled': { en: 'Scheduled · ETA {d}', zh: '計時補貨，預計 {d} 到' },
     'product-detail.content.title': { en: 'Product content', zh: '商品內容' },
     'product-detail.field.media':   { en: 'Images & media', zh: '圖片與素材' },
     'product-detail.field.title':   { en: 'Title',        zh: '標題' },
@@ -2865,6 +2903,29 @@
     'product-detail.tab.price-stock': { en: 'Sales settings', zh: '銷售設定' },
     'product-detail.tab.delivery':    { en: 'Delivery',        zh: '交付與取貨' },
     'product-detail.tab.relations':   { en: 'Promotion',       zh: '商品推廣' },
+    /* 2026-09-11 單售商品詳情頁重組：總覽／商品設定兩個分頁；商品設定分頁的分節橫列與編輯開關；
+       總覽的「商品設定概覽」一區一行的摘要用語。 */
+    'product-detail.tab.stock':       { en: 'Stock',           zh: '商品庫存' },
+    'product-detail.tab.settings':    { en: 'Product settings', zh: '商品設定' },
+    'product-detail.nav.pricing':     { en: 'Options & pricing', zh: '規格與價格' },
+    'product-detail.nav.rules':       { en: 'Discounts & limits', zh: '折扣與限購' },
+    'product-detail.nav.publish':     { en: 'Listing & sale',  zh: '上架與開賣' },
+    'product-detail.btn.edit':        { en: 'Edit product',    zh: '編輯商品' },
+    'product-detail.btn.save-changes': { en: 'Save changes',   zh: '儲存變更' },
+    'product-detail.setov.title':     { en: 'Settings overview', zh: '商品設定概覽' },
+    'product-detail.setov.sub':       { en: 'Select a row to edit it.', zh: '點任一列前往修改。' },
+    'product-detail.setov.go':        { en: 'Go to setting',   zh: '前往設定' },
+    'product-detail.setov.none':      { en: 'None',            zh: '無' },
+    'product-detail.setov.off':       { en: 'Off',             zh: '未啟用' },
+    'product-detail.setov.images':    { en: '{n} images',      zh: '{n} 張' },
+    'product-detail.setov.combos':    { en: '{n} combinations', zh: '{n} 個組合' },
+    'product-detail.setov.limit':     { en: '{n} per person',  zh: '每人 {n} 件' },
+    'product-detail.setov.films':     { en: '{n} movies',      zh: '{n} 部' },
+    'product-detail.setov.listed':    { en: 'Listed',          zh: '已上架' },
+    'product-detail.setov.unlisted':  { en: 'Unlisted',        zh: '已下架' },
+    'product-detail.setov.shown':     { en: 'Shown in store',  zh: '顯示於商店' },
+    'product-detail.setov.hidden':    { en: 'Hidden from store', zh: '不顯示於商店' },
+    'product-detail.setov.sale-follow': { en: 'On sale while listed', zh: '上架即開賣' },
     'product-detail.health.title':    { en: 'Stock health',    zh: '庫存健康' },
     'product-detail.health.sub':      { en: 'Read-only snapshot · edit under Pricing &amp; stock', zh: '唯讀快照 · 編輯在「定價與庫存」' },
     'product-detail.health.thr-meta': { en: 'Auto · 10% of stock cap', zh: '自動 · 庫存上限的 10%' },
@@ -4611,7 +4672,7 @@
     /* 2026-09-03（D240 一物一碼）：QR 的粒度從「一筆訂單一組」改成「每一件商品一組」——
        買家的領取 QR 顯示在 ztor 前台的買家帳號，Creator Studio 不出示 QR（§7.2 裁決十）；
        工作人員在場次 scanner 逐件掃描核銷。 */
-    'cp.delivery.qr-note':  { en: 'Each unit gets its own pickup QR, shown in the buyer’s ztor account — staff scan it one at a time at the session’s scanner. Manage sessions, scanner and log in Pickup management.', zh: '每件商品各有一組領取 QR，顯示在買家的 ztor 前台帳號；工作人員在取貨場次逐件掃描核銷。場次、scanner 與核銷紀錄在取貨管理。' },
+    /* ✝ 墓碑 · 'cp.delivery.qr-note'（2026-09-11 退役）：原本是「現場 QR 領取」區塊頂端的 info-banner，使用者指示併進「取貨場次」欄位標籤底下的說明——見 cp.delivery.session.desc／pd.delivery.session.desc。 */
     /* §4.5 共用設定：每人限購 + 標籤 (D064) */
     /* 2026-07-21 拆成兩個 section：cp.limits.title（購買限制）＋ cp.tags（商品標籤）。
        cp.shared.title 已無消費頁，保留定義避免其他 session 正在用的分支炸掉。 */
@@ -5846,12 +5907,20 @@
 
     /* ── D111 · 建立商品／商品細節 取貨場次串接 ── */
     'cp.delivery.session':      { en: 'Pickup session',      zh: '取貨場次' },
+    /* 選單底下的場次資訊（2026-09-11）：地點／時間／狀態／入口 */
+    'cp.delivery.session.loc':    { en: 'Location',           zh: '地點' },
+    'cp.delivery.session.time':   { en: 'Time',               zh: '時間' },
+    'cp.delivery.session.status': { en: 'Status',             zh: '狀態' },
+    'cp.delivery.session.manage': { en: 'Pickup management',  zh: '取貨管理' },
+    'cp.delivery.session.view':   { en: 'View session',       zh: '查看場次' },
     'cp.delivery.session.none': { en: 'Not linked yet',      zh: '尚未關聯' },
     'cp.delivery.session.tpe':  { en: 'Taipei signing — pickup (today)', zh: '台北簽書會取貨（今日）' },
     'cp.delivery.session.khh':  { en: 'Kaohsiung fan-meet — pickup (Jul 12)', zh: '高雄粉絲見面會取貨（7/12）' },
     'cp.delivery.session.new':  { en: 'Create pickup session', zh: '建立取貨場次' },
-    'cp.delivery.session.hint': { en: 'Pick one or create a new one — this product joins that session’s pickup list.', zh: '選既有場次或新建一個，本商品會加進那個場次的取貨清單。' },
-    'pd.delivery.session.hint': { en: 'Redeemed at this session’s scanner — URL, password and roster live in Pickup management.', zh: '在這個場次的 scanner 核銷；scanner URL、密碼與名單在取貨管理。' },
+    /* ✝ 墓碑 · 'cp.delivery.session.hint'（2026-09-11 退役）：欄位下方那一行併進標籤底下的說明。 */
+    'cp.delivery.session.desc': { en: 'Pick an existing session or create one — this item joins that session’s pickup list. Each item gets its own pickup QR in the buyer’s ztor account; staff scan items one at a time at the session, and sessions, the scanner and redemption records live in Pickup management.', zh: '選既有場次或新建一個，本商品會加進那個場次的取貨清單。每件商品各有一組領取 QR，顯示在買家的 ztor 前台帳號；工作人員在場次逐件掃描核銷，場次、scanner 與核銷紀錄都在取貨管理。' },
+    /* ✝ 墓碑 · 'pd.delivery.session.hint'（2026-09-11 退役）：併進標籤底下的說明 pd.delivery.session.desc。 */
+    'pd.delivery.session.desc': { en: 'Redeemed at this session’s scanner. Each item has its own pickup QR in the buyer’s ztor account, scanned one at a time; the session’s URL, password, roster and redemption records live in Pickup management.', zh: '本商品在這個場次的 scanner 核銷。每件商品各有一組領取 QR，顯示在買家的 ztor 前台帳號，工作人員逐件掃描；場次的網址、密碼、名單與核銷紀錄都在取貨管理。' },
 
     /* ── D111 · 取貨管理主頁 pickup.html ── */
     'pk.crumb.eshop':   { en: 'E-Shop',            zh: '電子商店' },

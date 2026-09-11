@@ -136,9 +136,9 @@
       tile.dispatchEvent(new CustomEvent('upload:change', { bubbles: true, detail: { key: key, filled: filled, state: state } }));
     }
     function resetMedia() {
-      try { if (media) media.pause(); } catch (e) {}
+      try { if (media) { media.pause(); media.muted = true; } } catch (e) {}   /* 換檔後回到靜音的首幀狀態 */
       if (playBtn) playBtn.classList.remove('is-playing');
-      tile.classList.remove('upload-tile--playable', 'upload-tile--video');
+      tile.classList.remove('upload-tile--playable', 'is-video');
       video.classList.remove('is-shown'); video.removeAttribute('src');
       if (!content) return;
       filemark.classList.remove('is-shown');
@@ -181,7 +181,7 @@
         if ((file.type || '').indexOf('video') === 0) {
           thumb.removeAttribute('src');
           video.src = url; video.classList.add('is-shown'); media = video;
-          tile.classList.add('upload-tile--playable', 'upload-tile--video');
+          tile.classList.add('upload-tile--playable', 'is-video');
         } else {
           thumb.src = url;
         }
@@ -227,6 +227,9 @@
       if (media.paused) {
         // 一次只播一個
         document.querySelectorAll('.upload-tile__act--play.is-playing').forEach(function (b) { b.classList.remove('is-playing'); });
+        /* 靜音只是為了讓它安靜地停在第一影格當縮圖；真的按下播放就要有聲音，
+           否則創作者會以為自己上傳的影片沒有聲軌（2026-09-10 修）。 */
+        media.muted = false;
         media.play().catch(function () {}); playBtn.classList.add('is-playing');
         media.onended = function () { playBtn.classList.remove('is-playing'); };
       } else { media.pause(); playBtn.classList.remove('is-playing'); }

@@ -2318,7 +2318,6 @@
     'product-detail.badge.live':    { en: 'Active',       zh: '販售中' },
     /* 原始商品頁連結（2026-07-27）：此鈕由 JS 動態建立且只建一次，原本直接寫死繁中，
        英文語系永遠是中文。給 key 並掛 data-i18n，切語言時 applyI18n 才接得到。 */
-    'product-detail.source-link':   { en: 'View original listing', zh: '查看原商品頁' },
     'product-detail.badge.low':     { en: 'Low Stock · 3 left', zh: '庫存過低 · 剩 3 件' },
     'product-detail.badge.physical':{ en: 'Physical merch', zh: '實體周邊' },
     'product-detail.badge.zine':    { en: 'Books',        zh: '書籍' },

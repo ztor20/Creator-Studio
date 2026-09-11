@@ -261,6 +261,11 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       close();
       if (hooks.onCreate) hooks.onCreate({
         name: name,
+        /* 2026-09-11：建立商品要在選單下方列出剛建的場次資訊，所以地點、起訖與說明也交出去。 */
+        loc: val('[data-pks-loc]'),
+        start: val('[data-pks-start]'),
+        end: val('[data-pks-end]'),
+        instr: val('[data-pks-instr]'),
         items: selected.length,
         password: val('[data-pks-pw]'),
         url: 'ztor.app/scan/' + slug + '-' + Math.random().toString(36).slice(2, 7)
@@ -364,6 +369,87 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       /* from a product context: pre-add that product (id: zine/tee/lp) */
       openForProduct: function (id) { if (ensure()) open(id || 'zine', 'pks.title'); },
       close: close
+    };
+  };
+})();
+
+/* ── 選單底下的場次資訊（2026-09-11 使用者指示）────────────────────────────
+   建立商品／商品細節的「取貨場次」選了一個（或剛建好一個）之後，選單底下要列出那個場次
+   的地點、時間、狀態與前往取貨管理的入口。同一份邏輯兩頁共用，放在這裡是因為建立場次的
+   彈窗也住在這裡——「剛建好的場次長什麼樣」只有這支知道。
+
+   用法：
+     var info = window.ZTOR_PARTIALS.bindPickupSessionInfo(selectEl, hostEl);
+     info.addCreated(session)   // 彈窗 onCreate 交來的物件 → 新增一個選項、選中並列出資訊
+
+   host 是頁面放好的 .fact-list，裡面用 data-*-si-loc / -time / -status / -link 標出各格
+   （前綴由 host 的 data-*-session-info 屬性決定）。
+   已知的示範場次對應 pickup-detail 既有的 i18n key，切語言跟著換；剛建的場次是使用者輸入，
+   直接顯示字面值。 */
+(function () {
+  'use strict';
+  var T = function (k, fb) { return (window.i18nT && window.i18nT(k)) || fb || ''; };
+  /* 示範資料：與 pickup-detail.html 的 SESSIONS 同一批 key。 */
+  var KNOWN = {
+    tpe: { loc: 'pk.detail.loc', time: 'pk.detail.time', st: 'pk.status.active', tone: 'success', s: 'active' },
+    khh: { loc: 'pk.s2.loc',     time: 'pk.s2.time',     st: 'pk.st.scheduled',  tone: 'neutral', s: 'scheduled' }
+  };
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  /* datetime-local 兩個值 → 「7/12 13:00 – 17:00」；跨日就把日期各寫一次。 */
+  function fmtRange(start, end) {
+    var a = start ? new Date(start) : null, b = end ? new Date(end) : null;
+    if (!a || isNaN(a)) return '';
+    var day = function (d) { return (d.getMonth() + 1) + '/' + d.getDate(); };
+    var hm = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+    if (!b || isNaN(b)) return day(a) + ' ' + hm(a);
+    var same = a.toDateString() === b.toDateString();
+    return day(a) + ' ' + hm(a) + ' – ' + (same ? '' : day(b) + ' ') + hm(b);
+  }
+
+  window.ZTOR_PARTIALS.bindPickupSessionInfo = function (sel, host) {
+    if (!sel || !host) return null;
+    var attr = Array.prototype.filter.call(host.attributes, function (a) { return /^data-\w+-session-info$/.test(a.name); })[0];
+    var pfx = attr ? attr.name.replace(/^data-(\w+)-session-info$/, '$1') : 'cp';
+    var q = function (k) { return host.querySelector('[data-' + pfx + '-si-' + k + ']'); };
+    var created = {};   /* value → 使用者剛建的場次 */
+
+    function paint() {
+      var v = sel.value;
+      var k = KNOWN[v], c = created[v];
+      if (!k && !c) { host.hidden = true; return; }
+      host.hidden = false;
+      var loc = q('loc'), time = q('time'), st = q('status'), link = q('link');
+      if (k) {
+        if (loc)  { loc.setAttribute('data-i18n', k.loc);   loc.textContent = T(k.loc); }
+        if (time) { time.setAttribute('data-i18n', k.time); time.textContent = T(k.time); }
+        if (st)   { st.className = 'badge badge--' + k.tone; st.firstElementChild.setAttribute('data-i18n', k.st); st.firstElementChild.textContent = T(k.st); }
+        if (link) link.setAttribute('href', 'pickup-detail.html?s=' + k.s);
+      } else {
+        /* 使用者輸入的值是資料，不掛 i18n key——否則切語言會被抹掉。 */
+        if (loc)  { loc.removeAttribute('data-i18n');  loc.textContent = c.loc || '—'; }
+        if (time) { time.removeAttribute('data-i18n'); time.textContent = fmtRange(c.start, c.end) || '—'; }
+        if (st)   { st.className = 'badge badge--neutral'; st.firstElementChild.setAttribute('data-i18n', 'pk.st.scheduled'); st.firstElementChild.textContent = T('pk.st.scheduled', 'Scheduled'); }
+        if (link) link.setAttribute('href', 'pickup-detail.html?s=scheduled');
+      }
+    }
+    sel.addEventListener('change', paint);
+    document.addEventListener('i18n:applied', paint);
+    paint();
+
+    return {
+      paint: paint,
+      /* 剛建好的場次：加成一個選項、選中它、列出資訊。名字是使用者輸入，不進 i18n。 */
+      addCreated: function (session) {
+        var v = 'new-' + Date.now().toString(36);
+        created[v] = session || {};
+        var o = document.createElement('option');
+        o.value = v;
+        o.textContent = (session && session.name) || T('pks.title', 'New pickup session');
+        sel.appendChild(o);
+        sel.value = v;
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+        return v;
+      }
     };
   };
 })();

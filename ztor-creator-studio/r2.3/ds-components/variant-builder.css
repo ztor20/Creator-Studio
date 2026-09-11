@@ -350,17 +350,28 @@
    2026-09-09 使用者裁示「要照 DS」，先前為了塞進 450px 主欄把它們壓成 48px/6px 的做法退場，
    卡片改整頁寬之後沒有理由再壓。做法與 admin-ip-bank-table 的 --fluid 同一套（2026-09-02）。 */
 .variant-table--fluid { min-width: 0; }
+/* 庫存管理表（2026-09-11 · 商品庫存分頁 A 案）：只留庫存的欄位——
+   組合（底下一行 SKU 小字）／在庫／鎖給單售／鎖給組合／未鎖定／補貨中／狀態／補貨鈕／⋯。
+   價格、SKU、單件成本三欄搬去商品設定分頁的表，所以比 --fluid 少三欄、多兩欄（補貨中、狀態）。
+   跟 --fluid 一樣不設最小寬、吃滿卡片；**不與 --fluid 併用**（--fluid 的欄軌寫在後面會蓋掉這一組）。 */
+.variant-table--stock { min-width: 0; }
+.variant-table--stock .variant-table__head,
+.variant-table--stock .variant-table__row {
+  grid-template-columns: minmax(0, 1.7fr) 56px 72px 72px 60px 56px minmax(0, 1fr) 64px 34px;
+}
+.variant-table--stock .variant-cell--stock-warn { color: var(--status-warning-ink); }
+.variant-table--stock .variant-cell--incoming { color: var(--muted-foreground); }
+.variant-table--stock .variant-cell--incoming.is-on { color: var(--foreground); }
 .variant-table--fluid .variant-table__head,
 .variant-table--fluid .variant-table__row {
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 64px 64px 64px minmax(0, 1.2fr) minmax(0, 1.1fr) 34px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) 78px 78px 78px minmax(0, 1.5fr) minmax(0, 0.9fr) 34px;
 }
 .variant-table--fluid.variant-table--limited .variant-table__head,
 .variant-table--fluid.variant-table--limited .variant-table__row {
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 64px 64px 64px 64px minmax(0, 1.2fr) minmax(0, 1.1fr) 34px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) 78px 78px 78px 78px minmax(0, 1.5fr) minmax(0, 0.9fr) 34px;
 }
-/* 2026-09-10 欄軌調整的理由：商品明細那張表改成「可改的欄位平常就是輸入框」（Shopify／Webflow
-   的做法，D258），輸入框有邊框與內距，吃掉的橫向空間比純文字多。數字欄由 78 收到 64、
-   文字欄改吃 fr，整張表才塞得進整頁寬主體（實測不收會溢出 18px）。 */
+/* 欄軌沿革：2026-09-10 曾因「可改的欄位常駐輸入框」把數字欄收到 64px；2026-09-11 使用者裁示表格整張唯讀
+   （改動走各自的彈窗），數字欄回到基礎版的 78px、SKU 分到最多（它最長）。 */
 /* 鎖定與未鎖定兩欄（2026-09-09）：數字靠左與庫存欄對齊，未鎖定用弱色——
    它是推導值（該組合庫存 − 各管道鎖定量），不是使用者直接填的數字。 */
 .variant-table--fluid .variant-cell--free { color: var(--muted-foreground); }

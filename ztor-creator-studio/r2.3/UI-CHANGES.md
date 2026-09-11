@@ -4,6 +4,184 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-11（八）· 商品庫存分頁重做（A 案）：KPI 磚、補貨中、庫存管理、庫存去向、庫存歷史紀錄（B 反饋導入 / C 撤除 / D infra）
+
+**範圍**：`product-detail.html`（商品庫存分頁整個重排；`pdStockHistory` 歷史紀錄存放與「補貨中」渲染；鎖定儲存寫入紀錄；KPI 與去向計算）、`partials/restock-modal.js`（entries 多帶 `eta`）、`ds-components/kpi.css`（`.kpi__unit`）、`ds-components/variant-builder.css`（`.variant-table--stock`）、`ds-components/restock-log.css`（`.restock-log--history`、`__qty--lock`）、`ds-components/stock-split.css`（墓碑）、`js/i18n.js`（`stock.*` 三十餘鍵；`restock.history.*` 改名）、`design-system.md`／`.html`、`BUILD-SPEC.md` §4b.1、探索頁 `lab-stock-tab.html`。
+
+**依據**：使用者 2026-09-11 指示「探討這一頁的用戶旅程，將這裡的功能重新做規劃，再重新設計這一頁，先做 demo」→ 三案挑 A → 四點修訂（補貨紀錄合併鎖定紀錄成庫存歷史紀錄；庫存狀態去蕪存菁；鎖定與補貨鈕改線框、名詞含一次性修改；問「待到貨」來自哪個流程）→ 三點修訂（批次鈕移到明細卡、卡名改庫存管理；拿掉一句話；數字改 bento）→ 「bento 不需要外框」→ 「單位補在數字右下角小字」→ 「A 改上正式」。
+
+### B · 這一頁由上往下回答四個問題
+
+旅程分析（探索頁一節）：①每天瞄一眼還剩多少、②補貨（立即／計時→到貨確認）、③出事才看為什麼售罄／鎖去哪、④調鎖定、⑤某組合不賣了、⑥查紀錄。現況把六件事塞一張卡、動作平權，最常做的 ①② 反而最不順（三個數字 3／3／3 長一樣、紅字不知道紅在哪、計時補貨送出就消失、看不到鎖給哪個組合包）。
+
+重排：四塊 KPI 磚直接落在分頁上（在庫／單售可售／鎖給組合／補貨中，語彙參考 Shopify 五態、對上本站的池模型，數字右下小字「件」）→ 補貨中（計時補貨的單，一列一筆附「到貨確認」，來源 5.1.5.6 §4；沒有就整張不出現）→ 庫存管理（所有庫存操作都在這一張：卡頭「批次鎖定」「批次補貨」皆 outline，表格只留庫存欄位、組合底下一行 SKU 小字、狀態用 badge 且副標寫門檻數字，列上一顆「補貨」，列尾 ⋯ 鎖定／單獨下架）→ 庫存去向（一列一個組合包、鎖了幾件、可點進組合詳情）→ 庫存歷史紀錄（補貨與鎖定同一張表：日期／類型／選項組合／變動／說明／狀態，頁內最近四筆、查看全部開彈窗）。
+
+### C · 撤除
+
+- 「當前庫存」卡的三格數字列與分配長條（`stock-split.css` 墓碑）——分配已由四塊磚與明細表承擔。
+- 表格的價格／SKU／單件成本三欄（在商品設定分頁的表）；列尾 ⋯ 的「補貨」（改成列上的按鈕）。
+- 「補貨會補進未鎖定的部分…」那行提示、卡頭「補貨紀錄」鈕（改成歷史紀錄卡的「查看全部」）。
+
+### D · 元件與資料流
+
+- `.kpi__unit`／`.variant-table--stock`／`.restock-log--history` 三個修飾子 promote 進元件層並進 DS 兩份文件；`--stock` 不與 `--fluid` 併用（--fluid 欄軌寫在後面會蓋掉，實測踩過）。
+- 頁內單一份 `HISTORY`（`window.pdStockHistory`）同時餵頁內卡、彈窗、「補貨中」卡與 KPI 第四塊；補貨彈窗送出（立即／計時）與鎖定儲存都寫進去；到貨確認在頁內完成入庫。
+- ⚠ 紀錄的重畫只聽 `ztor:lang-changed`，不能聽 `i18n:applied`：renderHistory 自己呼叫 applyI18n、applyI18n 每次廣播 i18n:applied，聽它＝自己叫自己的無限迴圈（本輪把瀏覽器分頁卡死、桌面 app 炸了兩次才抓到）。
+
+**驗證**：dev server 實走 Hoodie：四塊磚；列上「補貨」只開 XL、選計時＋ETA 送出→補貨中卡出現、KPI 補貨中 20、XL 列 +20、紀錄第一筆「補貨中」；到貨確認→卡收起、在庫 3→23、紀錄轉已完成；批次鎖定 M=1→紀錄「鎖定 M — → 1」、表格鎖給單售 1／未鎖定 0；查看全部彈窗 5 筆；批次補貨列 M／L／XL；單一選項（Skateboard）一列＋售罄；T-Shirt（白）庫存去向列出四件組；表格無橫向溢出；check_ds_sync PASS。
+
+
+## 2026-09-11（七）· 抹除外部來源連結、頁首識別小字改價格＋選項模式、設定概覽值優先；活動詳情頂列接共用腳本（B 反饋導入 / C 撤除 / D infra）
+
+**範圍**：`js/products-store.js`（`wishProduct()` 拿掉來源網址參數與 13 筆網址；r2.2 同步）、`product-detail.html`（頁首小字改「價格 · 單一選項／多選項」；「查看原商品頁」整段移除；商品設定概覽列改欄目名在上小字、值在下主字、整列可點；r2.2 同步移除連結）、`js/i18n.js`（刪 `product-detail.source-link`；r2.2 同步）、`ds-components/data-list.css`（`.data-list__row--go`）、`design-system.md`／`.html`（data-list 條目）、`requirements-map.md`／`ASSUMPTIONS.md`（去掉來源網域字樣；r2.2 同步 requirements-map）、`event-detail.html`（頂列黏附改接 `js/detail-topbar.js`）。
+
+**依據**：使用者 2026-09-11 指示「1 為什麼會有這個（查看原商品頁），這個完全不應該存在，我們只是用參考資料而已，整個網站都不該提到這個東西，必須完全抹除；2 價錢, 選項（單選項顯示單一選項，多選項顯示多選項）；3 UI 設計優化一下，欄位內容的資訊要比欄位名稱更重要」；同輪指著活動詳情「這個 topbar 位置跑掉了 壞掉了」。
+
+### C · 外部來源全數抹除
+
+示範商品只是參考素材，站上不得指向任何外部來源：商品資料的來源網址欄位、詳情頁的「查看原商品頁」連結、對應的 i18n 鍵、文件裡的來源網域字樣一併移除（r2.3 與備援的 r2.2 都做；r2.1 凍結唯讀未動，見回報）。
+
+### B · 頁首小字與設定概覽
+
+頁首識別小字＝「NT$1,880 · 多選項」（多選項且逐組合價格不同時給區間）——次分類已在麵包屑上，不重述。商品設定概覽每一列改成欄目名小字灰字在上、值主字在下，整列可點（`.data-list__row--go`），行尾箭頭只是指示。
+
+### D · 活動詳情頂列
+
+shared.css 自 2026-09-01 把 `.detail-topbar.is-stuck` 改成 fixed、左緣／寬度／內距靠 `js/detail-topbar.js` 量出來寫進變數；活動詳情一直用自己那段捲動判定、沒有量，黏住後整條貼在視窗左上、只有半寬。改接共用腳本（項目／系列／商品之後第四個消費者），順帶拿到 spacer 與 `--detail-bar-h`。
+
+**驗證**：全站 grep 來源網域／`sourceUrl`／`source-link` 只剩歷史紀錄；dev server 實走 T-Shirt（白）：小字「NT$1,880 · 多選項」、概覽列點「折扣設定」切到商品設定並亮「折扣與限購」；活動詳情設定分頁捲動後頂列 left 276／寬 1109 與 main 對齊、分節橫列貼在頂列底下；check_ds_sync PASS。
+
+
+## 2026-09-11（六）· 商品詳情頁首對齊項目詳情、庫存自成分頁（B 反饋導入 / C 撤除 / D infra）
+
+**範圍**：`product-detail.html`（頁首改 `.detail-topbar`＋`.pd-hero`；「商品庫存」分頁；分節跳轉自算目標位置）、`js/detail-topbar.js`（spacer 連下外距一起撐；黏住時把 `--detail-bar-h` 寫進 `.page`）、`ds-components/section-nav.css`（分節橫列與節首讓出黏住的頂列）、`event-detail.html`（同步寫 `--detail-bar-h`）、`js/i18n.js`（`product-detail.tab.stock`）、`design-system.md`／`.html`（Section nav 條目補一段）、`BUILD-SPEC.md` §4b.1。
+
+**依據**：使用者 2026-09-11 指示「1 的設計與 2 統一、3,4 與 5,6 統一——商品詳情頁中的這幾個區塊應該都要同時考慮怎麼改得一致，可以參考項目詳情頁的做法」（1＝商品頁首 page-intro、2＝項目 hero、3＝商品麵包屑、4＝底部 sticky-actions、5／6＝項目頂列與其黏住態）；同輪「當前庫存可以改為一個新的分頁放在總覽下方」。
+
+### B · 頁首與項目詳情同一組
+
+頂列＝麵包屑＋頁面動作（以粉絲身分預覽）同一列，捲過頁首後換成主圖縮圖＋商品名黏在上緣（`js/detail-topbar.js`，項目／系列之後第三個消費者）。hero＝左主圖（與清單同一張、2:3）、右邊狀態徽章 → 名稱 → 描述（原本 `#pd-sub` 沒有落點，描述一直沒顯示）→ 價格與選項模式小字。「商品庫存」自成分頁排在總覽底下（僅實體）——它是總覽以外唯一會頻繁操作的區塊，混在總覽裡會把「現在怎麼樣」與「動手補貨」疊在同一頁。
+
+### C · 撤除
+
+- 底部浮出的 sticky-actions（`sticky-actions.css`／`.js` 不再載入）——頁面動作只剩頂列一個家，與活動詳情 2026-08-18 的撤除同一理由。
+- `page-intro` 版頁首（無縮圖、無描述）。
+
+### D · 分節橫列與黏住頂列共存
+
+`[data-nav] > .list-toolbar` 吸頂時要讓出黏住的頂列：`js/detail-topbar.js` 黏住時把「頂列下緣到捲動容器上緣」的距離寫進 `.page` 的 `--detail-bar-h`，section-nav.css 以 `.page:has(> .detail-topbar.is-stuck)` 把橫列 `top` 與各節 `scroll-margin-top` 加上它。順手修掉 spacer 少撐下外距的 20px 跳動（項目詳情實測黏住前後內容零位移）。商品詳情的分節跳轉改自算目標位置（捲過去頂列才黏住，scroll-margin 在起跑時量不到）。
+
+**驗證**：dev server 實走 Hoodie：hero 主圖／描述／次分類到位；捲 500px 頂列黏住、縮圖＋名稱正確；設定分頁捲動時橫列貼在頂列底下（top 65＝頂列下緣）；總覽點列跳「折扣與限購」節首落在橫列下 18px；project-detail 黏住前後 drift 0；console 無錯；check_ds_sync PASS。
+
+
+## 2026-09-11（五）· 單售商品詳情頁重組：總覽＋商品設定兩分頁（B 反饋導入 / C 撤除 / D infra）
+
+**範圍**：`product-detail.html`（分頁縮成兩個；商品設定分頁＝建立商品整頁＋分節橫列＋編輯開關；總覽新增「商品設定概覽」；編輯彈窗退場）、`js/i18n.js`（`product-detail.tab.settings`／`nav.*`／`btn.edit`／`btn.save-changes`／`setov.*`）、`shared.css`（檢視模式白名單放行 `.zselect__trigger`；`.switch`／`.radio-list` 在檢視模式不可點）、`design-system.md`／`design-system.html`（zselect 條目補檢視模式一段）、`BUILD-SPEC.md` §4b.1（區塊出現條件表改成新分頁結構）。
+
+**依據**：使用者 2026-09-11 指示「調整商品詳情頁/單售商品結構——總覽：銷售摘要、商品庫存（庫存設定）、商品設定概覽（新的，所有商品設定的簡要列表，並且可以前往去詳細設定裡做調整）；商品設定：創建時的整個頁面，但最上面要有活動詳情頁的 topbar 做快速前往區塊」。三個追問的裁決：預設唯讀＋「編輯商品」開關；逐組合價格／SKU／成本只留商品設定的表格（庫存卡的編輯彈窗退場）；概覽一區一行一句摘要。
+
+### B · 總覽只回答「現在怎麼樣」，商品設定回答「這個商品是什麼」
+
+總覽從上到下：銷售摘要 → 當前庫存（自原「銷售設定」分頁搬來，含補貨紀錄／鎖定庫存／補貨；卡頭的「編輯」拿掉）→ 商品設定概覽 → 使用中。商品設定概覽用 `.data-list` 一區一行：標題是那一節的名字、下一行一句現值（例「Size / 尺寸：M、L、XL · 3 個組合」「NT$3,500–NT$3,680」「已上架 · 顯示於商店」），行尾 chevron 切到商品設定分頁並捲到那一節；摘要讀商品設定分頁欄位的現值算出，儲存與切換語言後重算。
+
+商品設定分頁與建立商品同軌：商品資訊 → 內容檔案（數位）→ 規格與價格 → 折扣與限購 → 交付與取貨（分節名隨取貨方式）→ 商品推廣 → 上架與開賣，全部攤在同一頁；上方 `.list-toolbar` 是分節錨點＋捲動同步（做法照 event-detail 的 `initSectionNav`，`[data-nav]` 吸頂與節距由 section-nav.css 管）。預設 `data-mode="view"`（shared.css 統一壓平輸入框、藏掉會改資料的按鈕），右側「編輯商品」切成編輯態、同一顆變「儲存變更」、旁邊多一顆「取消」；取消會把進入編輯時拍的欄位快照還原（含開關與單選清單）。原編輯彈窗的三個區塊（定價／商品選項／各選項組合價格與庫存）原封搬進「規格與價格」分節，草稿與儲存邏輯沿用。
+
+### C · 撤除
+
+- 「銷售設定」「交付與取貨」「商品推廣」三個分頁（內容併入商品設定）。
+- 庫存卡的「編輯」按鈕與「編輯定價與規格」彈窗（`[data-pd-edit-modal]`）——同一個數字只留一個地方改。
+- 總覽的「商品選項」摘要卡與「交付與取貨」kv 摘要卡——由商品設定概覽的兩列取代。
+- 頁首的頁級「儲存」按鈕——頁面上已沒有「整頁一起存」的東西（設定走編輯開關、補貨與鎖定各自在彈窗存）。
+
+### D · 檢視模式的兩條共用規則
+
+- `[data-mode="view"]` 的「藏掉所有按鈕」白名單放行 `.zselect__trigger`：下拉選單升級後是一顆 button，此前要逐顆 `<select data-view-safe>`，商品設定分頁一次六七顆、漏一顆就少一個欄位；唯讀時觸發鈕跟原生 select 一起 disabled。
+- `.switch`／`.radio-list`（div 做的開關與單選清單，白名單掃不到）在檢視模式 `pointer-events: none`。
+
+**驗證**：dev server 實走 26MS Hoodie（多選項）與 24CE Skateboard（單一選項）：兩個分頁；概覽 12 列摘要正確；點「折扣設定」列→切到商品設定、橫列亮「折扣與限購」、捲到該節；編輯商品→欄位可改、M 價格改 3500 儲存→總覽庫存表 M 列 NT$3,500、概覽「NT$3,500–NT$3,680」、store 同步；改標題＋開折扣＋改 L 價格後取消→三者全部還原、回唯讀；1440 寬橫列七個錨點＋取消／儲存變更不重疊；console 無錯。規格已於同日以 D260 回寫（5.1.5.1 v1.32 §3）。
+
+
+## 2026-09-11（四）· 商品詳情補貨：多選項列出全部選項組合（B 反饋導入）
+
+**範圍**：`product-detail.html`（補貨入口改讀當下的商品資料；多選項商品開 `restock.openProduct(groups)`，列尾 ⋯ 的補貨只開那一個組合；立即補貨寫回 store 逐組合庫存並重畫庫存卡與表格，補貨紀錄的「選項組合」欄填組合名）、`partials/restock-modal.js`（列可帶 `vi` 索引，`onSubmit` 的 entries 一併交回；e-shop 的用法不受影響）。
+
+**依據**：使用者 2026-09-11 指示「多選項一次性補貨只有一個選項，應該要有所有的多選項」。
+
+### B · 補貨表跟銷售設定表同一種分法
+
+多選項商品從庫存卡頭按「補貨」，彈窗一列＝一個選項組合（M／L／XL），兩層選項時照第一層分組（Black › S／M），與銷售設定表的分組一致；列尾 ⋯ 的「補貨」只列那一個組合。送出「立即補貨」後該組合庫存直接加上去、總量與未鎖定同步更新；「定時補貨」只記紀錄，到貨確認才加。組合對回去靠索引不靠名字——兩層選項時「S」會同時出現在 Black 與 Grey 兩群，用名字對會加錯。
+
+**驗證**：dev server 實走 26MS Hoodie：卡頭補貨列 M／L／XL 三列；M 填 5 送出→表格 M 1→6、總量 3→8、紀錄「M +5」；列尾 ⋯ 補貨只列 L；臨時注入 Black／Grey × S／M 驗證分組與索引對回（Black/S +4 只加到 Black/S）。
+
+
+## 2026-09-11（三）· 取貨場次：選定或剛建好的場次在選單底下列出資訊（B 反饋導入）
+
+**範圍**：`partials/pickup-session-modal.js`（`onCreate` 多交出地點／起訖／說明；新增共用的 `bindPickupSessionInfo()`）、`create-product.html`／`product-detail.html`（選單底下加一組 `.fact-list`、補掛 `fact-list.css`）、`js/i18n.js`（`cp.delivery.session.loc／time／status／manage／view`）。
+
+**依據**：使用者 2026-09-11 指示「選擇或是創建以後，下方要列出該取貨場次的一些資訊」。
+
+### B · 四項事實，一個入口
+
+選了場次之後，選單底下用唯讀事實列（`.fact-list`，站上「回答問題、不能編輯」的內容用它）列出：地點、時間、狀態徽章、前往取貨管理的「查看場次」。「尚未關聯」時整塊收起。示範場次的值直接引 pickup-detail 既有的 i18n key（切語言跟著換）；剛建好的場次是使用者輸入，顯示字面值、不掛 key。
+
+**剛建好的場次變成真的選項**：以前彈窗建完只是把選單硬切到「台北簽書會」，商品細節頁則直接跳去場次詳情頁。現在建完的場次以使用者填的名字新增為一個選項並選中，底下立刻列出它的地點與時間（狀態＝尚未開始）；兩頁都留在原地。彈窗的 `onCreate` 因此多交出地點、起訖與說明——欄位本來就在表單裡，只是以前沒往外交。
+
+**沒有列的東西**：掃碼密碼與掃碼網址屬工作人員操作資訊，留在取貨管理；成員清單也不列——這一格回答的是「這個場次在哪、什麼時候」，不是場次的全貌。
+
+**驗證**：dev server 實走建立商品（實體 › 現場 QR 領取）：尚未關聯→收起；台北→典藏書店／今日 14:00–18:00／進行中／`?s=active`；高雄→駁二 B 館／7/12 13:00–17:00／尚未開始／`?s=scheduled`；透過動作列開彈窗填「新竹見面會取貨・新竹巨城 3F・8/2 14:00–18:00」建立→選單新增並選中該場次、底下列出 8/2 14:00 – 18:00 與尚未開始。商品細節頁預設選中台北、資訊直接展開。0 console error、`check_ds_sync.py` PASS。
+
+
+## 2026-09-11（二）· 「建立取貨場次」併進下拉：zselect 新增動作列（B 反饋導入 / D infra）
+
+**範圍**：`js/zselect.js`（新增 opt-in 動作列與 `zselect:action` 事件）、`ds-components/zselect.css`（`.zselect__option--action`）、`create-product.html`／`product-detail.html`（取貨場次的獨立「建立取貨場次」按鈕退場，改掛在 `<select>` 上）、`design-system.html`／`design-system.md`（§4.110 補 demo 與契約）。
+
+**依據**：使用者 2026-09-11 指示「將 2（建立取貨場次按鈕）加到 1（下拉）中，不確定目前的元件有沒有可以用的」。查過：zselect 原本沒有這種能力，Dropdown menu 是動作選單、沒有選中值，都不對；所以在 zselect 上補一個 opt-in 的動作列。
+
+### D · zselect 動作列
+
+`<select data-zselect-action="<id>" data-zselect-action-i18n="<key>" data-zselect-action-icon="plus">` 讓面板最底下多一列——它**不是選項**：與選項之間一條 hairline、沒有勾號、字色略退（動作不該與選項爭主角）；點了不改 value、不派 change，只在 `<select>` 上派 `zselect:action`（bubbles，`detail.action`）並關閉面板，頁面自己接去開彈窗。鍵盤 ↑↓ 走得到、Enter 觸發；打字跳選不會跳到它。原生 `<select>` 仍是唯一資料來源，這一列不會出現在表單值裡。
+
+### B · 取貨場次：一個控制項
+
+「選既有場次」與「建一個新的」原本是並排的兩個控制項（選單＋按鈕，`.input-action`）；現在只剩選單，建立入口在清單最底下——選單是「這裡有哪些」，動作列是「這裡沒有你要的，去建一個」，兩件事在同一個地方回答。商品細節頁同一段同步。`.input-action` 這個版面元件仍有其他消費頁，本身不動。
+
+**驗證**：dev server 實走建立商品（實體 › 現場 QR 領取）：面板四列＝三個選項＋動作列；點動作列 → `zselect:action` 派出、面板關閉、value 不變、建立取貨場次彈窗開啟；鍵盤 ↓×4 到動作列、Enter 同樣觸發；獨立按鈕已不存在。design-system §4.110 三組 demo 正常渲染。0 console error、`check_ds_sync.py` PASS。
+
+
+## 2026-09-11 · 現場 QR 領取：info-banner 與欄位 hint 併成「取貨場次」標籤底下的說明（B 反饋導入）
+
+**範圍**：`create-product.html`、`product-detail.html`（取貨方式 › 現場 QR 領取那一段）、`js/i18n.js`（`cp.delivery.qr-note`／`cp.delivery.session.hint`／`pd.delivery.session.hint` 退役留墓碑，新增 `cp.delivery.session.desc`／`pd.delivery.session.desc`）。
+
+**依據**：使用者 2026-09-11 指示——移除區塊頂端的 info-banner，把那段話寫進「取貨場次」的描述，欄位下方的 hint 也融合進去並移除。
+
+### B · 一個欄位，一段說明
+
+原本同一件事分三處講：頂端 banner 講 QR 機制、標籤只有四個字、控制項下面再一行講怎麼選。合併後標籤底下一段說明先講「這欄要你做什麼」（選既有場次或新建，商品進那個場次的取貨清單），再接機制（每件一組 QR、工作人員逐件掃描、場次與紀錄在取貨管理）。結構沿用本頁「告訴粉絲他們會拿到什麼」那欄的做法（`.field__label` 下接 `.field__hint`），沒有新元件。商品細節頁同一段同步——banner 文案是共用 key，只改一頁會分岔；它的說明以「在這個場次核銷」起頭，因為那頁的場次已經選好。
+
+**驗證**：dev server 實走兩頁（實體商品 › 現場 QR 領取）：banner 不存在、欄位子節點依序為 label → hint → input-action，hint 文案為合併後的版本；0 console error。
+
+
+## 2026-09-10（二）· 素材槽空狀態換圖示；影片播放維持單顆鈕（B 反饋導入）
+
+**範圍**：`js/icons.js`（registry 新增 `photo-video`）、素材槽空狀態的圖示共 14 處（`create-product.html`／`create-auction.html`／`create-bundle.html`／`project-detail.html`／`create-event-legacy.html`／`js/bundle-editor.js`／`partials/work-fields.js`／`design-system.html`）、`partials/upload-tile.js`（播放時解除靜音）。上游同步：`documents/0-設計規格書.md` §7.10 與 `decisions.md` D259 補充。
+
+**依據**：使用者 2026-09-10 追問「這樣 icon 是否要換更適合的」「上傳影片後的 UI 是否會有播放器」，並裁決：創作者端維持單顆播放鈕、粉絲端不是本產品要做的。
+
+### B · 空狀態圖示改「圖片或影片」
+
+標籤已經改成「新增圖片或影片」，圖示還是單張照片，兩者對不上。換成 Tabler 的 `photo-video`（兩張疊起來的框、後面那張帶播放三角），是這套圖示裡唯一直接說「圖片或影片」的一顆。照既有規矩補進策展 registry（`js/icons.js`），不掛全集。
+
+### B · 播放維持單顆鈕，並修掉「按了沒聲音」
+
+素材格的影片停在第一影格，hover 動作列有播放／暫停，就地播放、全站一次只播一個；不做進度條、音量、全螢幕——126px 的直式格塞不下，也與站上既有的內容檔上傳格一致。**修**：影片為了安靜地停在首幀被設成靜音，按播放時卻沒解除，等於按了是無聲的；現在播放即解除靜音，換檔或刪除後回到靜音的首幀狀態。
+
+### D · 粉絲端播放不在本產品範圍
+
+使用者裁示粉絲端商店由另一個產品負責。已寫進 §7.10 與 D259 補充，避免之後又被當成本站的待辦。
+
+**驗證**：dev server 實走 create-product：空狀態圖示 `photo-video` 正常渲染（5 條 path）、標題「新增圖片或影片」；塞 mp4 後格子進 `is-video`、比例仍 2:3、AI 鈕隱藏、右欄預覽為 `<video>`；0 console error。`check_ds_sync.py` PASS、`validate_spec.py` OK。
+
+
 ## 2026-09-10 · 展示素材槽收影片；尺寸指南改由共用資料源回答（A spec-derived · D259 / B 反饋導入）
 
 **範圍**：`partials/upload-tile.js`、`ds-components/upload-tile.css`、`ds-components/pdp-preview.css`、`create-product.html`、`store-settings.html`、新檔 `js/size-guides-store.js`、`js/i18n.js`、`design-system.html`／`design-system.md`。上游同步（不在 site）：`documents/` 的素材規格與 `decisions.md` D259。
@@ -14,7 +192,7 @@
 
 改版前這件事三方互相矛盾：格子的提示已經寫著「JPG · PNG · GIF · MP4 · MOV · WEBM」，元件卻把 `accept` 寫死 `image/*`，而規格一路只寫「圖片上傳格」。真的硬選一支 mp4 進去會塞進 `<img>`——破圖，而且狀態照樣跳 `is-filled`，就緒檢查以為填好了。
 
-- **元件**：非 `data-upload="content"` 的格子預設收圖片與影片；影片沿用既有的 `.upload-tile__video` 節點，靜音、停在第一影格——那一格畫面就是它的縮圖。格上掛 `.upload-tile--video`＋`.upload-tile--playable`，播放鈕改成兩種模式都有（沒填影片時由 `--playable` 收起來）。
+- **元件**：非 `data-upload="content"` 的格子預設收圖片與影片；影片沿用既有的 `.upload-tile__video` 節點，靜音、停在第一影格——那一格畫面就是它的縮圖。格上掛 `.is-video`＋`.upload-tile--playable`，播放鈕改成兩種模式都有（沒填影片時由 `--playable` 收起來）。
 - **視覺**：展示槽的影片是 `cover`＋透明底，不用內容檔那套 `contain`＋深色底——2:3 直式格上下兩塊黑，跟旁邊鋪滿的圖片排在一起會讀成壞掉。
 - **AI 優化在影片格收起來**：那是圖片能力（依規格產出直式尺寸），對影片沒有意義。
 - **下游**：建立商品的右欄即時預覽、逐規格小圖、送出前收集素材，三處原本都直接讀圖片節點的 `src`。改成共用的 `tileMedia()`／`mediaTagHTML()`——先問這一格是圖還是片，再決定畫 `<img>` 還是畫一個停在首幀的 `<video>`。`pdp-preview.css` 的縮圖規則同步吃 `video`。
@@ -106,6 +284,50 @@
 `js/i18n.js` 大量 `tx.*`／`orders.*`／`od.*`／`sc.*`／`pk.*`／`event-detail.*` key 改名（`refund`→`void`／`cancelled`），舊 key 一律留 `/* 墓碑 */` 註解說明去向，不裸刪。`event-detail.html` 本輪新增載入 `js/toast.js`（原本沒有，作廢完成需要的 toast 回饋）。`feature-scope-map.md` 同步：`E18` 更名「提款與作廢沖銷 / Payout & void」；`O18`（退款）／`O23`（退款與爭議）標記為新增 Tier `⚫ 退場`（不再落在 ⚪ TBD／🔵 Next，避免誤讀成尚待實作）；`O04`／`O09` 更名「已取消 / 爭議」；統計行同步（🔵 Next 12→11、⚪ TBD 13→12、新增退場 2）。`design-system.html`／`design-system.md` 同步措辭（Pillar 4 badge／table 文件「提款／退款／扣款」→「提款／作廢沖銷／扣款」，Pillar 4 KPI 與 Pillar 5 Filter+list demo「Refunds」→「Voids」／「Void」，section-nav／todo-list 示範卡與 series 平行規則敘述同步）；`STYLE-DECISIONS.md` Q110／Q27 措辭同步，並註記本輪沿用既有裁決、無新增待裁決條目；`ASSUMPTIONS.md` 新增 UIA-145（活動端作廢執行者身分未鎖定、Earnings 財務口徑未落地、數位交付判準、已作廢票券 KPI 覆蓋範圍四項）。
 
 **驗證**：`python3 ../../Skills/project-ui-creator/scripts/check_ds_sync.py "site/r2.3"` → `RESULT: PASS + WARN (raw-color, sibling-rhythm)`（兩則 WARN 皆既有存量、與本輪無關）。dev server 實走（`devserver.py` port 56902）：`event-detail.html?id=realive-asia-taipei` 作廢紀錄分頁顯示「沖銷準備金 → 當期可分配淨利 → 結轉赤字」（zh）／「Void reserve → current distributable profit」（en），確認 Refund Reserve 殘留已修掉；`order-detail.html?id=ZT-10488` 數位品項出貨狀態徽章顯示「尚未發行」、作廢鈕可按；`design-system.html` 的 Pillar 4 KPI／Pillar 5 chip 兩處實際渲染為「Voids」／「Void」（`querySelector` 逐一核對，非文字搜尋誤判）。zh／en 各頁 `[data-i18n]` 元素逐一核對 textContent 是否等於 key 本身（raw key 判準）：`event-detail.html` 367／363 個皆 0 命中，`order-detail.html` 143 個皆 0 命中，`orders.html` 219 個皆 0 命中，`earnings.html` 497 個皆 0 命中。console 未見新增 error。本輪為文件收尾與措辭補正，未產生新截圖檔；視覺證據以上述即時渲染核對為準。
+
+## 2026-09-11（四）· 庫存表回唯讀：鎖定走彈窗、逐組合定價在編輯彈窗、示範資料補定價（B 反饋導入 / A spec-derived / C 撤除 / D infra）
+
+**範圍**：`product-detail.html`（表格唯讀、卡頭四顆入口、列尾 ⋯ 三項、新增鎖定庫存彈窗、編輯彈窗改逐組合定價、未儲存提示退場）、`ds-components/variant-builder.css`（`--fluid` 欄軌回 78px）、`js/products-store.js`（三件商品補定價、佔位值分支退場）、`js/i18n.js`、`design-system.md`。
+
+**依據**：使用者 2026-09-11 三項指示——(1)「發布前必填的假資料都要有內容，不可能有待確認」且「此價格要在〔編輯彈窗〕中才能設定」；(2)「創建中的多選項商品的價格應該不是統一價格」（規格 5.1.5.2 F3.4 逐組合定價）；(3)「這裡的欄位都不能改，補貨和鎖定庫存都應該從右邊三個點點打開的下拉有各自的選項修改，或是在表單的右上角有各自的一次性編輯」。
+
+### C · 常駐輸入（前一日的 E1）退場，表格整張唯讀
+
+價格／SKU／單件成本／鎖給單售四欄回到純文字。同輪退場：常駐輸入的寫入層、頁面右上的「未儲存的變更」提示。`--fluid` 欄軌回到數字欄 78px（輸入框版才需要收到 64）。
+
+### B · 每一種改動各自的入口
+
+卡頭四顆：補貨紀錄／**鎖定庫存**（一次設定全部選項組合）／**編輯**（定價與規格彈窗）／補貨。列尾 ⋯ 三項：補貨／**鎖定庫存**（只改這一列）／單獨下架。鎖定用同一個彈窗，差別只在列數：一列一個組合，庫存（唯讀）／鎖給單售（可填）／未鎖定（即時重算），鎖過頭整列轉紅並停用儲存；表沿用 `stock-allocation` 的四欄版。
+
+### B · 編輯彈窗照建立流程分區
+
+使用者裁示「要像創建一樣有不同的 section」：彈窗內改用 `form-section--outlined` 分區（沿用 create-event 票務設定彈窗的做法），區塊標題沿用建立商品的 i18n 鍵——單一規格只有「定價」一區；多選項是「商品選項」＋「各選項組合價格與庫存 (N)」兩區，對位 5.1.5.2 §4.1 的 F3.1／F3.4。原本用 `field__label` 當小標的平鋪版退場。
+
+### A · 多選項商品在編輯彈窗逐組合定價
+
+「編輯定價與規格」彈窗：單一規格維持頂部的價格／成本價兩格；多選項把那兩格藏起來，組合表的價格／SKU／單件成本每列各自可填（對齊 5.1.5.2 F3.4——先前一律沿用商品層一個價，是實作簡化不是規格）。`variant.price`／`variant.cost` 隨之成為資料欄位，沒填時沿用商品層的值。
+
+### D · 示範資料不留「待確認」
+
+周湯豪商店三件延伸單品（老帽／束口褲／低筒球鞋）原本價格標「待確認」，補上 1,280／1,980／2,340——與白 Tee 1,880 加總 7,480，四件組 5,980 剛好 8 折，對得上 D103 的自動加總＋折扣 % 模型。組合成員清單的 meta 同步；`priceText()` 的佔位值分支退場。全庫掃過一次，示範商品的必填欄位（名稱／圖／描述／價格／分類）沒有其他佔位值。
+
+**驗證**：Hoodie 列尾 ⋯ → 鎖定庫存（只有 M 一列）鎖 5 擋、鎖 1 存 → 表格 1／0、數字列 3／2／3、store `{single:1}`；卡頭鎖定庫存開三列且帶入現值。編輯彈窗：多選項頂部價格隱藏、9 格逐組合輸入，L 改 3,980 存檔後只有 L 變。Skateboard（單一規格）：編輯彈窗頂部價格可見、改 2,980 反映到表格；鎖定彈窗一列、副標為商品名。老帽價格顯示 NT$1,280。0 console error；`check_ds_sync.py` 全 PASS。
+
+## 2026-09-11（四）· 商品明細：常駐右欄退場，四張卡排到總覽主體底下；設定卡間距統一 24（B 反饋導入 / C 撤除）
+
+**範圍**：`product-detail.html`（總覽分頁尾端新增 `.detail-cards` 收四張卡、`aside.detail-rail` 移除、外層 grid 一律 `--full`）、`ds-components/detail-rail.css`（`.detail-cards` 間距）、`design-system.md`、`BUILD-SPEC.md` §4b。
+
+**依據**：使用者 2026-09-11 兩項指示——圈出設定卡之間「間距不對」；圈出右欄與商品資訊卡「1 全部放到 2 下面」。
+
+### B · 右欄四張卡排到總覽主體底下
+
+上架設定／開賣設定／交付與取貨／使用中原本在常駐右欄，而右欄只在總覽分頁顯示（其餘分頁以 `--full`／`--norail` 收起），搬進總覽等於沒有少掉任何入口。整頁從此一律單欄，與銷售設定分頁、組合包詳情頁同一套版面；卡片寬度由 381px 變整頁寬 697px，上架卡裡原本為 250px 右欄準備的單欄堆疊（`lctl--stack`）不受影響。**移動不是複製**（複製會產生重複 id，開關會綁到看不見的那一份）。外層 grid 的 `--full` 直接寫在 markup 上——原本只在切分頁時由 JS 加，初始的總覽分頁吃不到。
+
+### B · `.detail-cards` 的節奏統一
+
+實測原本是三種距離：主體卡之間 24、最後一張主體卡到 `.detail-cards` **0**、容器內 16。容器與主體卡之間補 `--sp-24`、容器 gap 改 `--sp-24`，並壓掉容器內疊上去的 form-section 兄弟間距（不壓會變 48，那條選擇器權重 (0,4,0)，要照它的形狀再多掛容器才蓋得過）。
+
+**驗證**：商品明細總覽（6 張卡）、銷售設定（5 張）與組合包銷售設定（6 張）相鄰間距全部 24；上架開關點擊切換正常、`#pd-listed-toggle` 只剩一份；0 console error；`check_ds_sync.py` 全 PASS。
 
 ## 2026-09-10（三）· 組合包詳情頁的「成員」分頁改名「組合商品」（B 反饋導入）
 

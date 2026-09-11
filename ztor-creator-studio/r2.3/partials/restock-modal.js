@@ -90,7 +90,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       var cur = num(item.current);
       var imgInner = item.img ? '<img src="' + esc(item.img) + '" alt="">' : '<i data-lucide="package" class="ztor-icon"></i>';
       return '' +
-        '<div class="restock-table__row" data-restock-line data-current="' + cur + '" data-name="' + esc(item.name) + '">' +
+        '<div class="restock-table__row" data-restock-line data-current="' + cur + '" data-name="' + esc(item.name) + '"' + (item.vi != null ? ' data-vi="' + esc(item.vi) + '"' : '') + '>' +
           '<div class="restock-table__id">' +
             '<span class="restock-table__img">' + imgInner + '</span>' +
             '<span class="restock-table__name">' + esc(item.name) + '</span>' +
@@ -157,12 +157,16 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     function collect() {
       var supEl = modal.querySelector('[data-restock-supplier]');
       var supplier = (supEl && supEl.value) || '';
+      /* eta：計時補貨的預計到貨日（yyyy-mm-dd → yyyy/mm/dd），立即補貨不帶。商品詳情的「補貨中」卡用它（2026-09-11）。 */
+      var etaEl = modal.querySelector('[data-restock-eta] input');
+      var eta = (mode() === 'scheduled' && etaEl && etaEl.value) ? String(etaEl.value).replace(/-/g, '/') : '';
       var entries = [];
       modal.querySelectorAll('[data-restock-member]').forEach(function (mem) {
         var mname = mem.getAttribute('data-name') || '';
         mem.querySelectorAll('[data-restock-line]').forEach(function (line) {
           var q = num((line.querySelector('[data-restock-qty]') || {}).value);
-          if (q > 0) entries.push({ member: mname, name: line.getAttribute('data-name'), qty: q, current: num(line.getAttribute('data-current')), supplier: supplier });
+          /* vi：呼叫端給的選項組合索引（同名組合分在不同群時靠它對回去），沒給就不帶 */
+          if (q > 0) entries.push({ member: mname, name: line.getAttribute('data-name'), vi: line.hasAttribute('data-vi') ? num(line.getAttribute('data-vi')) : null, qty: q, current: num(line.getAttribute('data-current')), supplier: supplier, eta: eta });
         });
       });
       return entries;

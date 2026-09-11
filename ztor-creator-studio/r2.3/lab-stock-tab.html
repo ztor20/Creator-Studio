@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>商品庫存分頁 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-split.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-readout.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/restock-log.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* ============================================================
+     lab-stock-tab — 商品詳情「商品庫存」分頁的設計探索頁（2026-09-11）
+
+     使用者指示：「探討這一頁的用戶旅程，將這裡的功能重新做規劃，再重新設計這一頁，先做 demo」。
+     這一頁比的是**整個分頁**（不只當前庫存那張卡）：先寫旅程與功能規劃，再給三種版面。
+
+     ── 參考（2026-09-11 查）────────────────────────────────────
+       Shopify 庫存五態  On hand／Available／Committed／Unavailable／Incoming——
+                          「在庫」是總量，其餘是它的去向；「在途（Incoming）」是獨立一態，
+                          到貨前不算可售，到貨後自動轉可售。本站的池模型剛好對得上：
+                          在庫＝鎖給單售＋鎖給組合＋未鎖定，定時補貨＝在途。
+       Shopify 調整紀錄  每一筆增減都有紀錄頁，在商品層就看得到，不必進另一個彈窗。
+       Fresha            合計做成表格第一列，不另做數字卡。
+       Deel              一條堆疊長條講「分佈在哪裡」，底下才是明細。
+       UI Bakery／Visily 庫存儀表板通例：低庫存與待處理項目是首屏第一塊，明細表在下。
+
+     ── 邊界 ─────────────────────────────────────────────
+     卡片、按鈕、數字列、分配長條、逐組合表、清單、紀錄表全部用真的元件；
+     本頁自有規則一律 lab- 前綴、**所有數值吃 DS token**，不覆寫既有 class 與 token。
+     ============================================================ */
+  .lab [hidden] { display: none !important; }
+  .lab { --lab-stage-w: 820px; }
+  .lab-stage { max-width: var(--lab-stage-w); }
+  .lab-cards { display: grid; gap: var(--sp-24); margin-top: var(--sp-24); }
+  .lab-card__head { display: flex; align-items: flex-start; gap: var(--sp-12); flex-wrap: wrap; }
+  .lab-card__code {
+    flex: none; display: inline-flex; align-items: center; justify-content: center;
+    min-width: var(--sp-32); height: var(--sp-24); padding: 0 var(--sp-8);
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    font-family: var(--font-ui); font-size: var(--fs-12); color: var(--foreground);
+  }
+  .lab-card__name { font-family: var(--font-display); font-size: var(--fs-16); margin: 0; }
+  .lab-card__pos { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-2) 0 0; }
+  .lab-card__src { font-size: var(--fs-12); color: var(--faint-ink); margin: var(--sp-4) 0 0; }
+  .lab-demo { margin-top: var(--sp-20); }
+  .lab-demo__cap { font-size: var(--fs-12); color: var(--muted-foreground); margin: 0 0 var(--sp-8); }
+  .lab-demo + .lab-demo { margin-top: var(--sp-28); }
+  .lab-note { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-16) 0 0; }
+  .lab-note b { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-diag { margin: var(--sp-12) 0 0; padding-left: var(--sp-20); font-size: var(--fs-14); line-height: var(--lh-relaxed, 1.7); }
+  .lab-diag li + li { margin-top: var(--sp-8); }
+  .lab-diag b { font-weight: var(--fw-medium); }
+  .lab-axis { margin-top: var(--sp-40); }
+  .lab-axis__title { font-family: var(--font-display); font-size: var(--fs-20); margin: 0; }
+  .lab-axis__sub { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-6) 0 0; }
+  /* 旅程表：純資訊表格 */
+  .lab-table { width: 100%; border-collapse: collapse; margin-top: var(--sp-12); font-size: var(--fs-13); }
+  .lab-table th, .lab-table td { text-align: left; vertical-align: top; padding: var(--sp-8) var(--sp-10); border-bottom: 1px solid var(--border-soft); }
+  .lab-table th { font-weight: var(--fw-medium); color: var(--muted-foreground); font-size: var(--fs-12); }
+  .lab-table td:first-child { white-space: nowrap; font-weight: var(--fw-medium); }
+  .lab-table .is-bad { color: var(--status-warning-ink); }
+
+  /* 分頁內卡與卡之間的節奏（同 product-detail：form-section 之間 --sp-24） */
+  .lab-tab { display: flex; flex-direction: column; gap: var(--sp-24); }
+
+  /* ── 狀態行（A／B 共用）：徽章＋一句話＋主動作在同一列 ── */
+  .lab-headline { display: flex; align-items: center; gap: var(--sp-12); flex-wrap: wrap; }
+  .lab-headline__text { font-size: var(--fs-14); color: var(--foreground); margin: 0; flex: 1 1 auto; min-width: 0; }
+  .lab-headline__text b { font-weight: var(--fw-medium); }
+
+  /* ── 表面層級（同 lab-stock-card 定案）：列透明、表頭薄膜 ── */
+  .lab .variant-table__head { background: var(--ztu-film); }
+  .lab .variant-table__row { background: transparent; }
+
+  /* ── 逐組合表的欄軌：組合／在庫／鎖給單售／鎖給組合／未鎖定／補貨中／狀態／補貨／⋯
+     欄數比現況多兩欄（補貨中、狀態）、少三欄（價格、SKU、單件成本——那三欄是商品設定的事，
+     不是庫存的事，見規劃表）。 */
+  .lab-stock .variant-table__head,
+  .lab-stock .variant-table__row {
+    grid-template-columns: minmax(0, 1.7fr) 56px 72px 72px 60px 56px minmax(0, 1fr) 64px 34px;
+  }
+  /* B 案不放「補貨」快捷欄，少一欄 */
+  .lab-stock--nofast .variant-table__head,
+  .lab-stock--nofast .variant-table__row {
+    grid-template-columns: minmax(0, 1.7fr) 56px 72px 72px 60px 56px minmax(0, 1fr) 34px;
+  }
+  .lab-stock .variant-cell--stock-low { color: var(--status-error-ink); }
+  .lab-stock .variant-cell--stock-warn { color: var(--status-warning-ink); }
+  .lab-stock .variant-cell--in { color: var(--muted-foreground); }
+  .lab-stock .variant-cell--in.is-on { color: var(--foreground); }
+  /* 合計列（Fresha）：同一張表、字重高一階、底下一條組線 */
+  .lab-stock .variant-table__row--total > span { font-weight: var(--fw-medium); }
+  .lab-stock .variant-table__row--total { border-bottom: 1px solid var(--border); }
+
+  /* ── 去向清單：一列一個組合包，右側鎖定量 ── */
+  .lab-dest__qty { font-family: var(--font-numeric); font-size: var(--fs-14); color: var(--foreground); }
+
+  /* ── C 案的兩欄工作台：左 2/3 表、右 1/3 摘要（用 detail-grid 的軌） ── */
+  .lab-bench { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: var(--sp-16); align-items: start; }
+  .lab-bench__rail { display: flex; flex-direction: column; gap: var(--sp-16); }
+  .lab-bench .form-section--outlined { margin-top: 0; }
+  .lab-bench .fact-list { margin-top: var(--sp-8); }
+
+  /* ── KPI 磚的單位（2026-09-11 使用者指示「單位補在數字右下角小字」）：與數字同一行、對齊基線，
+     小一階、輔助色；定案後 promote 成 kpi.css 的 .kpi__unit ── */
+  .lab-kpi__unit { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--muted-foreground); margin-left: var(--sp-4); letter-spacing: 0; }
+
+  /* 紀錄表在卡裡不需要最小寬（元件預設 480px 是給彈窗的） */
+  .lab .restock-log { min-width: 0; }
+  /* ── 庫存歷史紀錄（2026-09-11 使用者裁示：補貨紀錄＋鎖定紀錄合併）──
+     沿用 restock-log 的列與表頭材質，欄軌改成：日期／類型／選項組合／變動／說明／狀態 */
+  .lab-hist .restock-log__head,
+  .lab-hist .restock-log__row {
+    grid-template-columns: 92px 56px minmax(0, .7fr) 88px minmax(0, 1.4fr) 72px;
+  }
+  .lab-hist .restock-log__opt { display: block; }
+  .lab-hist .restock-log__qty--lock { color: var(--foreground); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+  <main class="main">
+    <div class="page lab">
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title">商品庫存分頁（設計探索）</h1>
+          <p class="page-intro__sub">比較用的探索頁，不是產品頁，沒有任何既有頁面被改動。先把「創作者為什麼會打開這一頁」寫成旅程，據此重排功能，再給三種版面。示範資料：九龍夜行連帽外套（M／L／XL，門檻 4 件）。</p>
+        </div>
+      </div>
+
+      <!-- ═══ 1. 旅程 ═══ -->
+      <section class="card">
+        <div class="card__head"><h2 class="card__title">一、創作者什麼時候會打開這一頁</h2></div>
+        <p class="lab-note">這一頁沒有「瀏覽」這件事——每次打開都帶著一個問題。六個情境，依頻率排：</p>
+        <table class="lab-table">
+          <thead><tr><th>情境</th><th>觸發</th><th>要回答的問題</th><th>現況答得怎樣</th></tr></thead>
+          <tbody>
+            <tr><td>① 每天瞄一眼</td><td>清單上的「急需補貨」徽章、通知</td><td>還剩多少？哪個組合快沒了？要不要補？</td><td class="is-bad">三個數字 3／3／3 長一樣；紅字「1」不知道紅在哪（門檻在商品設定）</td></tr>
+            <tr><td>② 補貨</td><td>每週、或①之後</td><td>現貨在手直接加，還是向供應商下單？下單的到了沒？</td><td class="is-bad">定時補貨送出後就消失，「待到貨確認」只藏在補貨紀錄彈窗</td></tr>
+            <tr><td>③ 為什麼售罄／為什麼還在賣</td><td>粉絲反映、清單狀態看不懂</td><td>在庫 17 為什麼單售只能賣 9？剩下的鎖去哪了？</td><td class="is-bad">分配長條只講「鎖給單售／未鎖定」，看不到鎖給哪個組合包</td></tr>
+            <tr><td>④ 調整鎖定</td><td>組合包要上架、或③之後</td><td>要留幾件給單售？</td><td>有（卡頭「鎖定庫存」＋列尾 ⋯），可用</td></tr>
+            <tr><td>⑤ 某個組合不賣了</td><td>尺寸停產、賣完不補</td><td>怎麼讓它不再出現在商店？</td><td>有（列尾 ⋯ 單獨下架），可用但藏得深</td></tr>
+            <tr><td>⑥ 查紀錄</td><td>對帳、跟供應商核對</td><td>上次補多少、誰補的、什麼時候</td><td class="is-bad">要開彈窗；補貨與鎖定的變動也沒有一起記</td></tr>
+          </tbody>
+        </table>
+        <p class="lab-note"><b>結論</b>：①②是每天／每週的事，③⑥是「出事才看」，④⑤偶爾。現況把六件事塞進一張卡、動作平權，最常做的（①②）反而最不順。</p>
+      </section>
+
+      <!-- ═══ 2. 規劃 ═══ -->
+      <section class="card">
+        <div class="card__head"><h2 class="card__title">二、功能重新規劃：這一頁由上往下回答四個問題</h2></div>
+        <ol class="lab-diag">
+          <li><b>現在怎麼樣</b>——四塊 KPI 磚。數字改用去向語彙（參考 Shopify 五態）：<b>在庫</b>＝總量、<b>單售可售</b>、<b>鎖給組合</b>、<b>補貨中</b>（計時補貨送出、還沒到貨的量）。「未鎖定」不再單獨當一格——它是「單售可售」的一部分，講兩次只會讓人算。</li>
+          <li><b>要做什麼</b>——「庫存管理」卡頭「批次鎖定」「批次補貨」兩顆同權重（一次改全部組合），列上各自的「補貨」與 ⋯；有計時補貨還沒到貨時，「補貨中」那張卡直接排在這一頁、附「到貨確認」，不必進紀錄彈窗。</li>
+          <li><b>逐組合明細</b>——表格只留庫存的事：在庫／鎖給單售／鎖給組合／未鎖定／補貨中／狀態。<b>價格、SKU、單件成本三欄搬走</b>（它們是商品設定的事，已在商品設定分頁的表裡）。低庫存列標徽章，表頭寫門檻，紅字才有依據。</li>
+          <li><b>去向與紀錄</b>——「庫存去向」列出哪個組合包鎖了多少（可點進去）；「庫存歷史紀錄」把補貨與鎖定變動合併成一張表，頁內最近幾筆＋查看全部，彈窗只留完整清單。</li>
+        </ol>
+        <table class="lab-table">
+          <thead><tr><th>功能</th><th>現況</th><th>規劃</th></tr></thead>
+          <tbody>
+            <tr><td>狀態一句話</td><td>無</td><td>不加——頁首徽章已講狀態，再寫一句是重述（2026-09-11 第二輪裁示）</td></tr>
+            <tr><td>數字列</td><td>目前在庫／未鎖定／單售可售（各配一行說明）</td><td>在庫／單售可售／鎖給組合／補貨中，四塊 KPI 磚直接落在分頁上（bento，不包卡）</td></tr>
+            <tr><td>分配長條</td><td>鎖給單售／未鎖定（0 鎖定時像空進度條）</td><td>拿掉——它講的分配已在四個數字與明細表裡</td></tr>
+            <tr><td>補貨</td><td>卡頭「補貨」；列尾 ⋯ 內</td><td>卡頭「批次補貨」（一次改全部組合，outline）；列上直接一顆「補貨」（①②最常做，不進 ⋯）</td></tr>
+            <tr><td>補貨中（計時補貨的單）</td><td>藏在紀錄彈窗</td><td>頁內一列一筆，附「到貨確認」（來源：5.1.5.6 §4 計時補貨 → 補貨中 → 到貨確認）</td></tr>
+            <tr><td>逐組合表（卡名「庫存管理」，所有庫存操作都在這一張）欄位</td><td>組合／價格／庫存／鎖給單售／未鎖定／SKU／單件成本</td><td>組合／在庫／鎖給單售／鎖給組合／未鎖定／補貨中／狀態（價格／SKU／成本 → 商品設定）</td></tr>
+            <tr><td>庫存去向</td><td>無（總覽「使用中」只列名字）</td><td>新增：組合包 × 鎖定量，可點進組合詳情</td></tr>
+            <tr><td>鎖定庫存／單獨下架</td><td>卡頭「鎖定庫存」／列尾 ⋯</td><td>卡頭改「批次鎖定」（outline）；列尾 ⋯ 不變</td></tr>
+            <tr><td>庫存歷史紀錄</td><td>只有補貨紀錄、在彈窗</td><td>補貨＋鎖定變動合併成一張表，頁內最近幾筆＋「查看全部」開彈窗</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ═══ 3. 三種版面 ═══ -->
+      <div class="lab-axis">
+        <h2 class="lab-axis__title">三、同一套功能，三種版面</h2>
+        <p class="lab-axis__sub">同一組資料：在庫 17（M 12／L 4／XL 1）、鎖給單售 4、鎖給組合 8、未鎖定 5、補貨中 20（XL，9/18 到）、門檻 4 件。挑一個。</p>
+      </div>
+      <div class="lab-cards">
+
+        <!-- A ─────────────────────────────────────────── -->
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">A</span>
+            <div>
+              <h2 class="lab-card__name">狀態優先，一路往下讀（已選 · 依 2026-09-11 四點修訂）</h2>
+              <p class="lab-card__pos">四張卡對應四個問題：狀態與數字 → 補貨中 → 逐組合 → 去向與歷史紀錄。①②在第一屏就解決。修訂：狀態只剩四塊 KPI 磚、不包卡；批次鎖定／批次補貨移到「庫存管理」卡頭（皆 outline）；紀錄合併補貨與鎖定。</p>
+              <p class="lab-card__src">參考：Shopify 庫存五態、庫存儀表板通例（待處理在上、明細在下）</p>
+            </div>
+          </div>
+          <div class="lab-demo lab-stage"><div class="lab-tab" data-cand="A"></div></div>
+        </section>
+
+        <!-- B ─────────────────────────────────────────── -->
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">B</span>
+            <div>
+              <h2 class="lab-card__name">表格是主角，一張卡講完</h2>
+              <p class="lab-card__pos">不做數字列：合計是表格第一列，狀態一句話在卡頭，去向與紀錄縮成表底兩欄。最省高度，適合組合多的商品。</p>
+              <p class="lab-card__src">參考：Fresha 合計列、Whop 深色表格</p>
+            </div>
+          </div>
+          <div class="lab-demo lab-stage"><div class="lab-tab" data-cand="B"></div></div>
+        </section>
+
+        <!-- C ─────────────────────────────────────────── -->
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">C</span>
+            <div>
+              <h2 class="lab-card__name">工作台兩欄：左表右摘要</h2>
+              <p class="lab-card__pos">左邊是表與紀錄，右欄是狀態、補貨中、去向。每個問題各有位置，但 820px 寬給表只剩 540px，欄要縮。</p>
+              <p class="lab-card__src">參考：庫存儀表板的側欄摘要</p>
+            </div>
+          </div>
+          <div class="lab-demo lab-stage"><div class="lab-tab" data-cand="C"></div></div>
+        </section>
+      </div>
+
+      <!-- ═══ 4. 單一選項 ═══ -->
+      <div class="lab-axis">
+        <h2 class="lab-axis__title">四、單一選項的商品長什麼樣（以 A 案為例）</h2>
+        <p class="lab-axis__sub">沒有組合可分，逐組合表退成一列（同 D258 的做法），其餘四塊一樣。示範：24CE 滑板，在庫 30、鎖給組合 8、在途 0。</p>
+      </div>
+      <div class="lab-cards">
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">A′</span>
+            <div><h2 class="lab-card__name">單一選項</h2><p class="lab-card__pos">狀態一句話變成「庫存充足」，「補貨中」那張卡沒有東西就整張不出現。</p></div>
+          </div>
+          <div class="lab-demo lab-stage"><div class="lab-tab" data-cand="A1"></div></div>
+        </section>
+      </div>
+
+      <section class="card" style="margin-top:var(--sp-40)">
+        <div class="card__head"><h2 class="card__title">我的建議</h2></div>
+        <ol class="lab-diag">
+          <li><b>版面選 A</b>：①②是最常發生的事，A 把它們放在第一屏、由上往下讀不用找；B 省高度但把狀態塞進卡頭一行、去向與紀錄縮成小字，③⑥出事時不夠看；C 在 820px 寬下表格欄要縮到看不清 SKU 級的資訊，右欄又常常是空的（沒有在途、沒有組合包時剩一張卡）。</li>
+          <li><b>價格／SKU／成本三欄搬走</b>是最大的取捨：庫存表少了它們會更像庫存表，但有人習慣在這裡對 SKU——所以逐組合表的第一欄組合名底下留一行小字 SKU（A 案已這樣畫）。</li>
+          <li><b>需要回寫規格</b>：數字列語彙（在庫／單售可售／鎖給組合／補貨中）、補貨中那張卡與到貨確認的位置、庫存歷史紀錄合併鎖定變動、庫存去向這一塊，都動到 5.1.5.1 §2.10 與主規格 §7.14 的呈現；定案後另開決策。</li>
+        </ol>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script>
+(function () {
+  /* 示範資料：多選項（Hoodie）與單一選項（Skateboard）。數字刻意讓四態都不為零，才比得出版面差異。 */
+  var HOODIE = {
+    name: '九龍夜行 連帽外套', threshold: 4, cap: null,
+    rows: [
+      { name: 'M',  sku: '26MS-HOODIE-M',  onhand: 12, single: 4, bundle: 6, free: 2, incoming: 0 },
+      { name: 'L',  sku: '26MS-HOODIE-L',  onhand: 4,  single: 0, bundle: 2, free: 2, incoming: 0 },
+      { name: 'XL', sku: '26MS-HOODIE-XL', onhand: 1,  single: 0, bundle: 0, free: 1, incoming: 20 }
+    ],
+    incoming: [{ combo: 'XL', qty: 20, eta: '2026/09/18', supplier: 'Riso House' }],
+    dest: [
+      { name: '九龍夜行 Tour bundle', locks: 'M 6 · L 2', qty: 8, href: 'bundle-detail.html' },
+      { name: 'WYAGL 四件組', locks: '未鎖定，出貨時從未鎖定的部分取', qty: 0, href: 'bundle-detail.html' }
+    ],
+    log: [
+      { type: 'restock', combo: 'XL', delta: '+20', date: '2026/09/11', note: 'Riso House · 計時補貨，預計 09/18 到', state: 'restocking' },
+      { type: 'lock',    combo: 'M',  delta: '2 → 4', date: '2026/09/10', note: '鎖給單售', state: 'done' },
+      { type: 'restock', combo: 'M',  delta: '+40', date: '2026/09/10', note: 'Riso House · 立即補貨', state: 'done' },
+      { type: 'lock',    combo: 'L',  delta: '0 → 2', date: '2026/09/05', note: '鎖給組合 · 九龍夜行 Tour bundle', state: 'done' },
+      { type: 'restock', combo: 'L',  delta: '+25', date: '2026/09/02', note: 'Riso House · 立即補貨', state: 'done' }
+    ]
+  };
+  var BOARD = {
+    name: '24CE 滑板', threshold: 3, cap: 30, single: true,
+    rows: [{ name: '24CE 滑板', sku: '24CE-SKATEBOARD', onhand: 30, single: 10, bundle: 8, free: 12, incoming: 0 }],
+    incoming: [],
+    dest: [{ name: 'WYAGL 四件組', locks: '8', qty: 8, href: 'bundle-detail.html' }],
+    log: [
+      { type: 'lock', combo: '—', delta: '0 → 8', date: '2026/09/01', note: '鎖給組合 · WYAGL 四件組', state: 'done' },
+      { type: 'restock', combo: '—', delta: '+30', date: '2026/08/20', note: '自有庫存 · 立即補貨', state: 'done' }
+    ]
+  };
+
+  function sum(rows, k) { return rows.reduce(function (n, r) { return n + r[k]; }, 0); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+  function rowState(r, th) {
+    if (r.onhand === 0) return { cls: 'badge--neutral', txt: '售罄', level: 'low' };
+    if (r.onhand < th) return { cls: 'badge--error', txt: '低庫存', level: 'low' };
+    if (r.onhand === th) return { cls: 'badge--warning', txt: '到門檻', level: 'warn' };
+    return { cls: '', txt: '', level: '' };
+  }
+  function headline(d) {
+    var th = d.threshold;
+    var low = d.rows.filter(function (r) { return r.onhand < th; });
+    var inc = sum(d.rows, 'incoming');
+    if (!low.length) return { badge: '<span class="badge badge--success">庫存充足</span>', text: '所有' + (d.single ? '' : '組合') + '都在門檻 <b>' + th + ' 件</b>之上' + (inc ? '；<b>' + inc + ' 件</b>補貨中' : '') + '。' };
+    var names = low.map(function (r) { return '<b>' + esc(r.name) + '</b> 只剩 ' + r.onhand + ' 件'; }).join('、');
+    var incTxt = inc ? '；<b>' + inc + ' 件</b>補貨中，' + d.incoming[0].eta.slice(5) + ' 到' : '';
+    return { badge: '<span class="badge badge--error">急需補貨</span>', text: names + '，低於門檻 <b>' + th + ' 件</b>' + incTxt + '。' };
+  }
+  /* 卡頭兩顆都是「一次改全部組合」的入口：名詞用「批次」講清楚範圍，與列上單一組合的「補貨」「鎖定」區隔；
+     兩顆同權重（都 outline）——2026-09-11 使用者裁示。 */
+  function headActions() {
+    return '<div class="form-section__head-actions">' +
+      '<button class="btn btn--outline btn--sm" type="button"><i data-lucide="lock" class="ztor-icon"></i><span>批次鎖定</span></button>' +
+      '<button class="btn btn--outline btn--sm" type="button"><i data-lucide="package" class="ztor-icon"></i><span>批次補貨</span></button>' +
+      '</div>';
+  }
+  function statRow(d) {
+    var onhand = sum(d.rows, 'onhand'), single = sum(d.rows, 'single'), bundle = sum(d.rows, 'bundle'), free = sum(d.rows, 'free'), inc = sum(d.rows, 'incoming');
+    var sell = single + free;
+    /* 去蕪存菁（2026-09-11 使用者裁示）：只留四個數字，不再各配一行說明；限量才帶「/ 上限」。 */
+    return '<div class="stat-row">' +
+      '<div class="stat"><div class="stat__label">在庫</div><div class="stat__value">' + onhand + (d.cap ? '<span class="stat__of"> / ' + d.cap + '</span>' : '') + '</div></div>' +
+      '<div class="stat"><div class="stat__label">單售可售</div><div class="stat__value">' + sell + '</div></div>' +
+      '<div class="stat"><div class="stat__label">鎖給組合</div><div class="stat__value">' + bundle + '</div></div>' +
+      '<div class="stat"><div class="stat__label">補貨中</div><div class="stat__value' + (inc ? '' : ' stat__value--zero') + '">' + inc + '</div></div>' +
+      '</div>';
+  }
+  /* 四個數字改 bento（2026-09-11 使用者裁示）：與總覽「銷售摘要」同一套 KPI 磚，磚內只有欄目名＋數字。 */
+  function bento(d) {
+    var onhand = sum(d.rows, 'onhand'), single = sum(d.rows, 'single'), bundle = sum(d.rows, 'bundle'), free = sum(d.rows, 'free'), inc = sum(d.rows, 'incoming');
+    var tile = function (label, val) { return '<div class="kpi bento--span-3"><div class="kpi__label">' + label + '</div><div class="kpi__value">' + val + '<span class="lab-kpi__unit">件</span></div></div>'; };
+    return '<div class="bento">' + tile('在庫', onhand + (d.cap ? '<span class="stat__of"> / ' + d.cap + '</span>' : '')) + tile('單售可售', single + free) + tile('鎖給組合', bundle) + tile('補貨中', inc) + '</div>';
+  }
+  function split(d) {
+    var onhand = sum(d.rows, 'onhand'), single = sum(d.rows, 'single'), bundle = sum(d.rows, 'bundle'), free = sum(d.rows, 'free');
+    var pct = function (n) { return onhand ? (n / onhand * 100) : 0; };
+    var bar = (single + bundle) ? '<div class="stock-split">' +
+      '<div class="stock-split__seg stock-split__seg--single" style="width:' + pct(single) + '%"></div>' +
+      '<div class="stock-split__seg stock-split__seg--bundle" style="width:' + pct(bundle) + '%"></div>' +
+      '<div class="stock-split__seg stock-split__seg--free" style="width:' + pct(free) + '%"></div></div>' : '';
+    return bar + '<div class="stock-split__legend">' +
+      '<span class="stock-split__item"><span class="stock-split__dot stock-split__dot--single"></span>鎖給單售 <span class="stock-split__v">' + single + '</span></span>' +
+      '<span class="stock-split__item"><span class="stock-split__dot stock-split__dot--bundle"></span>鎖給組合 <span class="stock-split__v">' + bundle + '</span></span>' +
+      '<span class="stock-split__item"><span class="stock-split__dot stock-split__dot--free"></span>未鎖定 <span class="stock-split__v">' + free + '</span></span>' +
+      '</div>';
+  }
+  function incomingCard(d) {
+    if (!d.incoming.length) return '';
+    return '<section class="form-section form-section--outlined">' +
+      '<div class="form-section__head"><h3 class="form-section__title">補貨中</h3><p class="form-section__sub">計時補貨的單，到貨後按確認才入庫。</p></div>' +
+      d.incoming.map(function (i) {
+        return '<div class="alert alert--row alert--info"><span class="alert__icon"><i data-lucide="truck" class="ztor-icon"></i></span>' +
+          '<div class="alert__body"><div class="alert__title">' + esc(i.combo) + ' ＋' + i.qty + ' 件 · ' + esc(i.supplier) + '</div><div class="alert__meta">預計 ' + esc(i.eta) + ' 到貨</div></div>' +
+          '<button class="btn btn--outline btn--sm" type="button">到貨確認</button></div>';
+      }).join('') + '</section>';
+  }
+  function kebab() {
+    return '<details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="更多"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>' +
+      '<div class="dropdown__menu dropdown__menu--right"><button class="dropdown__item" type="button">鎖定庫存</button><button class="dropdown__item" type="button">單獨下架</button></div></details>';
+  }
+  function table(d, opts) {
+    opts = opts || {};
+    var th = d.threshold;
+    var fast = !opts.noFast;
+    var head = '<div class="variant-table__head"><span>' + (d.single ? '商品' : '選項組合') + '</span><span>在庫</span><span>鎖給單售</span><span>鎖給組合</span><span>未鎖定</span><span>補貨中</span><span>狀態</span>' + (fast ? '<span></span>' : '') + '<span></span></div>';
+    var rows = d.rows.map(function (r) {
+      var st = rowState(r, th);
+      return '<div class="variant-table__row">' +
+        '<span class="variant-cell--variant">' + esc(r.name) + '<br><span class="text-sub">' + esc(r.sku) + '</span></span>' +
+        '<span class="variant-cell--stock' + (st.level === 'low' ? ' variant-cell--stock-low' : st.level === 'warn' ? ' variant-cell--stock-warn' : '') + '">' + r.onhand + '</span>' +
+        '<span>' + (r.single || '—') + '</span><span>' + (r.bundle || '—') + '</span><span>' + r.free + '</span>' +
+        '<span class="variant-cell--in' + (r.incoming ? ' is-on' : '') + '">' + (r.incoming ? '+' + r.incoming : '—') + '</span>' +
+        '<span>' + (st.txt ? '<span class="badge ' + st.cls + '">' + st.txt + '</span>' : '<span class="text-sub">正常</span>') + '</span>' +
+        (fast ? '<span><button class="btn btn--ghost btn--xs" type="button">補貨</button></span>' : '') +
+        '<span>' + kebab() + '</span></div>';
+    }).join('');
+    var total = '';
+    if (opts.total) {
+      total = '<div class="variant-table__row variant-table__row--total"><span class="variant-cell--variant">合計</span><span>' + sum(d.rows, 'onhand') + '</span><span>' + sum(d.rows, 'single') + '</span><span>' + sum(d.rows, 'bundle') + '</span><span>' + sum(d.rows, 'free') + '</span><span>' + (sum(d.rows, 'incoming') ? '+' + sum(d.rows, 'incoming') : '—') + '</span><span></span>' + (fast ? '<span></span>' : '') + '<span></span></div>';
+    }
+    return '<div class="variant-table-wrap"><div class="variant-table variant-table--fluid lab-stock' + (fast ? '' : ' lab-stock--nofast') + '">' + head + total + rows + '</div></div>';
+  }
+  function destList(d) {
+    return '<div class="data-list">' + d.dest.map(function (x) {
+      return '<div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title"><a class="card__link" href="' + x.href + '">' + esc(x.name) + '</a></div><div class="data-list__meta">' + esc(x.locks) + '</div></div></div>' +
+        '<span class="lab-dest__qty">' + (x.qty ? '鎖 ' + x.qty + ' 件' : '<span class="text-sub">0</span>') + '</span></div>';
+    }).join('') + '</div>';
+  }
+  /* 庫存歷史紀錄：補貨與鎖定變動同一張表（2026-09-11 使用者裁示合併） */
+  function logTable(d, n) {
+    var rows = d.log.slice(0, n || 4).map(function (l) {
+      var isLock = l.type === 'lock';
+      var st = l.state === 'restocking' ? '<span class="badge badge--warning">補貨中</span>' : '<span class="badge badge--success">已完成</span>';
+      return '<div class="restock-log__row"><span class="restock-log__muted">' + esc(l.date) + '</span><span>' + (isLock ? '鎖定' : '補貨') + '</span><span class="restock-log__opt">' + esc(l.combo) + '</span><span class="restock-log__qty' + (isLock ? ' restock-log__qty--lock' : '') + '">' + esc(l.delta) + '</span><span class="restock-log__muted">' + esc(l.note) + '</span><span>' + st + '</span></div>';
+    }).join('');
+    return '<div class="restock-log-wrap"><div class="restock-log lab-hist">' +
+      '<div class="restock-log__head"><span>日期</span><span>類型</span><span class="restock-log__opt">' + (d.single ? '' : '選項組合') + '</span><span>變動</span><span>說明</span><span>狀態</span></div>' + rows + '</div></div>';
+  }
+  function card(title, sub, body, actions) {
+    return '<section class="form-section form-section--outlined"><div class="form-section__head' + (actions ? ' form-section__head--actions' : '') + '">' +
+      (actions ? '<div class="form-section__head-titles">' : '') +
+      '<h3 class="form-section__title">' + title + '</h3>' + (sub ? '<p class="form-section__sub">' + sub + '</p>' : '') +
+      (actions ? '</div>' + actions : '') + '</div>' + body + '</section>';
+  }
+  function moreLink(txt) { return '<div class="form-section__head-actions"><button class="btn btn--ghost btn--sm" type="button">' + txt + '</button></div>'; }
+
+  /* ── A：四張卡往下讀 ── */
+  function candA(d) {
+    var h = headline(d);
+    /* 修訂版（2026-09-11 使用者裁示）：狀態卡只剩一句話＋四個數字（分配長條與各格說明拿掉——
+       長條講的「鎖給單售／鎖給組合／未鎖定」已經是四個數字與明細表在講的事）；
+       卡頭兩顆 outline、名詞改「批次鎖定／批次補貨」；紀錄改「庫存歷史紀錄」含鎖定變動。 */
+    /* 2026-09-11 第二輪修訂：狀態一句話拿掉（頁首徽章已講了狀態）；四個數字改 bento；
+       批次鎖定／批次補貨搬到明細那張卡的卡頭——所有庫存操作都在那一張，卡名改「庫存管理」。 */
+    /* KPI 磚直接落在分頁上、不再包一張卡（2026-09-11 使用者裁示「bento 就不需要外面那個框了」）：
+       磚自己就是卡面，再包一層是卡中卡。 */
+    return bento(d) +
+      incomingCard(d) +
+      card('庫存管理', (d.single ? '' : '一列一個選項組合；') + '紅字＝低於門檻 ' + d.threshold + ' 件。價格、SKU、單件成本在商品設定。', table(d), headActions()) +
+      card('庫存去向', '鎖給組合包的部分，由各組合自己的分配表決定。', destList(d)) +
+      card('庫存歷史紀錄', '補貨與鎖定的每一筆變動。', logTable(d, 4), moreLink('查看全部'));
+  }
+  /* ── B：一張卡，表格是主角 ── */
+  function candB(d) {
+    var h = headline(d);
+    return card('商品庫存', null,
+        '<div class="lab-headline">' + h.badge + '<p class="lab-headline__text">' + h.text + '</p></div>' +
+        '<div style="margin-top:var(--sp-16)">' + table(d, { total: true, noFast: true }) + '</div>' +
+        (d.incoming.length ? '<div style="margin-top:var(--sp-16)">' + d.incoming.map(function (i) {
+          return '<div class="alert alert--row alert--info"><span class="alert__icon"><i data-lucide="truck" class="ztor-icon"></i></span><div class="alert__body"><div class="alert__title">補貨中：' + esc(i.combo) + ' ＋' + i.qty + ' 件 · 預計 ' + esc(i.eta) + '</div></div><button class="btn btn--outline btn--sm" type="button">到貨確認</button></div>'; }).join('') + '</div>' : '') +
+        '<div class="form-grid" style="margin-top:var(--sp-24)">' +
+          '<div><div class="form-section__grouplabel" style="margin-top:0">庫存去向</div>' + destList(d) + '</div>' +
+          '<div><div class="form-section__grouplabel" style="margin-top:0">庫存歷史紀錄 <a class="card__link" href="#">查看全部</a></div>' + logTable(d, 2) + '</div>' +
+        '</div>', headActions());
+  }
+  /* ── C：左表右摘要 ── */
+  function candC(d) {
+    var h = headline(d);
+    var onhand = sum(d.rows, 'onhand'), single = sum(d.rows, 'single'), bundle = sum(d.rows, 'bundle'), free = sum(d.rows, 'free'), inc = sum(d.rows, 'incoming');
+    var facts = '<div class="fact-list">' +
+      '<div class="fact-list__item"><span>在庫</span><span>' + onhand + ' / ' + d.cap + '</span></div>' +
+      '<div class="fact-list__item"><span>單售可售</span><span>' + (single + free) + '</span></div>' +
+      '<div class="fact-list__item"><span>鎖給組合</span><span>' + bundle + '</span></div>' +
+      '<div class="fact-list__item"><span>補貨中</span><span>' + inc + '</span></div></div>';
+    return '<div class="lab-bench"><div class="lab-tab">' +
+        card(d.single ? '庫存明細' : '各選項組合', null, table(d, { noFast: true }), headActions()) +
+        card('庫存歷史紀錄', null, logTable(d, 3), moreLink('查看全部')) +
+      '</div><div class="lab-bench__rail">' +
+        card('狀態', null, '<div class="lab-headline">' + h.badge + '</div><p class="lab-headline__text" style="margin-top:var(--sp-8)">' + h.text + '</p>' + facts + '<div style="margin-top:var(--sp-12)">' + split(d) + '</div>') +
+        (d.incoming.length ? card('補貨中', null, d.incoming.map(function (i) { return '<div class="fact-list"><div class="fact-list__item"><span>' + esc(i.combo) + ' ＋' + i.qty + '</span><span>' + esc(i.eta).slice(5) + '</span></div></div><button class="btn btn--outline btn--sm btn--block" type="button" style="margin-top:var(--sp-12)">到貨確認</button>'; }).join('')) : '') +
+        card('庫存去向', null, destList(d)) +
+      '</div></div>';
+  }
+
+  document.querySelectorAll('[data-cand]').forEach(function (host) {
+    var k = host.getAttribute('data-cand');
+    host.innerHTML = k === 'A' ? candA(HOODIE) : k === 'B' ? candB(HOODIE) : k === 'C' ? candC(HOODIE) : candA(BOARD);
+  });
+  if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
+})();
+</script>
+</body>
+</html>

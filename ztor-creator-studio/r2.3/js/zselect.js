@@ -17,6 +17,14 @@
    overflow-x:auto 容器裡，absolute 面板會被那一層直接裁掉。掛 body ＋ fixed 就不受
    任何祖先的 overflow 影響，代價是要自己算座標（開啟時算一次，捲動／縮放時重算）。
 
+   ── 動作列（opt-in，2026-09-11）────────────────────────────
+   <select data-zselect-action="new-session" data-zselect-action-i18n="cp.delivery.session.new"
+           data-zselect-action-label="Create pickup session" data-zselect-action-icon="plus">
+   面板最底下多一列「＋ 建立取貨場次」這種**不是選項**的動作：點了不改 value、不派 change，
+   只在 <select> 上派 `zselect:action`（bubbles，detail.action＝屬性值）並關閉面板，
+   由頁面接手開彈窗。首個消費情境：建立商品的取貨場次——原本是選單旁邊一顆獨立按鈕，
+   使用者指示併進下拉裡。鍵盤 ↑↓ 走得到、Enter 觸發；打字跳選不會跳到它。
+
    ── 不接手的情況 ───────────────────────────────────────
    · [multiple] 與 [size>1]：那是多選清單，不是下拉，語意不同
    · [data-no-zselect]：逐一 opt out 的逃生口
@@ -143,6 +151,15 @@
         state.opts.push(node);
       }
     });
+    var actionId = state.sel.getAttribute('data-zselect-action');
+    if (actionId) {
+      var key = state.sel.getAttribute('data-zselect-action-i18n') || '';
+      var label = (key && window.i18nT && window.i18nT(key)) || state.sel.getAttribute('data-zselect-action-label') || actionId;
+      var icon = state.sel.getAttribute('data-zselect-action-icon') || 'plus';
+      html += '<div class="zselect__option zselect__option--action" role="option" aria-selected="false" data-i="' + idx + '"' +
+        ' data-action="' + esc(actionId) + '" id="' + state.id + '-o' + idx + '">' +
+        '<i data-lucide="' + esc(icon) + '" class="ztor-icon zselect__icon"></i><span>' + esc(label) + '</span></div>';
+    }
     panel.innerHTML = html;
     document.body.appendChild(panel);
     /* 選項的 <i data-lucide> 要在進 DOM 之後才換得成 SVG。 */
@@ -258,6 +275,17 @@
 
   function commit(state, i) {
     var o = state.opts[i];
+    if (!o && state.panel) {
+      /* 動作列：不是選項，不動 value。關掉面板、焦點回觸發鈕，然後把球丟給頁面。 */
+      var act = state.panel.querySelector('.zselect__option--action');
+      if (act && Number(act.dataset.i) === i) {
+        var id = act.dataset.action;
+        close(state);
+        state.btn.focus();
+        state.sel.dispatchEvent(new CustomEvent('zselect:action', { bubbles: true, detail: { action: id } }));
+        return;
+      }
+    }
     if (o) {
       state.sel.selectedIndex = Array.prototype.indexOf.call(state.sel.options, o);
       syncLabel(state);

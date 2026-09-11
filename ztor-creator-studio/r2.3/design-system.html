@@ -113,7 +113,6 @@
 <link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/stock-split.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/avatar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/progress-timeline.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2">
@@ -2771,8 +2770,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <h3 class="sub__title">4.15 Upload tile</h3>
     <span class="layer layer--atom">🟢 atom</span>
   </div>
-  <p class="sub__desc" data-en><strong>Display slots take video too (2026-09-10 · D259).</strong> Any <code>[data-upload]</code> slot that is not <code>data-upload="content"</code> now accepts images and video: the file picker defaults to <code>image/*,video/*</code> (a page can narrow it with <code>data-upload-accept</code>), a video fills the slot through the existing <code>.upload-tile__video</code> node — muted, paused on its first frame, so the frame itself is the thumbnail — and the tile gains <code>.upload-tile--video</code> plus <code>.upload-tile--playable</code>. In display slots the video is <code>object-fit: cover</code> on a transparent ground, not the letterboxed dark player used by content slots: a 2:3 slot with black bars reads as broken next to the images beside it. AI optimize is an image capability, so its two buttons and the badge are hidden on a video tile. Anything that paints an uploaded asset elsewhere must ask which kind it is — reading <code>.upload-tile__thumb</code>'s <code>src</code> alone is exactly how a video turns into a broken image (see <code>tileMedia()</code> in create-product.html).</p>
-  <p class="sub__desc" data-zh><strong>展示素材槽也收影片（2026-09-10 · D259）。</strong>凡是 <code>[data-upload]</code> 而不是 <code>data-upload="content"</code> 的格子，現在圖片與影片都收：選檔預設 <code>image/*,video/*</code>（頁面可用 <code>data-upload-accept</code> 收窄），影片沿用既有的 <code>.upload-tile__video</code> 節點鋪滿格子——靜音、停在第一影格，那一格畫面就是它的縮圖——同時掛上 <code>.upload-tile--video</code> 與 <code>.upload-tile--playable</code>。展示槽的影片是 <code>object-fit: cover</code>、底透明，不用內容檔那套置中留黑的播放器外觀：2:3 的直式格上下兩塊黑，跟旁邊鋪滿的圖片排在一起會讀成壞掉。「AI 優化」是圖片能力，影片格把那兩顆鈕與徽章收起來。任何要把素材畫到別處的地方都得先問這一格是圖還是片——只讀 <code>.upload-tile__thumb</code> 的 <code>src</code> 正是影片變破圖的成因（見 create-product.html 的 <code>tileMedia()</code>）。</p>
+  <p class="sub__desc" data-en><strong>Display slots take video too (2026-09-10 · D259).</strong> Any <code>[data-upload]</code> slot that is not <code>data-upload="content"</code> now accepts images and video: the file picker defaults to <code>image/*,video/*</code> (a page can narrow it with <code>data-upload-accept</code>), a video fills the slot through the existing <code>.upload-tile__video</code> node — muted, paused on its first frame, so the frame itself is the thumbnail — and the tile gains <code>.is-video</code> plus <code>.upload-tile--playable</code> (the state, not the 16:9 <code>--video</code> layout modifier). In display slots the video is <code>object-fit: cover</code> on a transparent ground, not the letterboxed dark player used by content slots: a 2:3 slot with black bars reads as broken next to the images beside it. AI optimize is an image capability, so its two buttons and the badge are hidden on a video tile. Anything that paints an uploaded asset elsewhere must ask which kind it is — reading <code>.upload-tile__thumb</code>'s <code>src</code> alone is exactly how a video turns into a broken image (see <code>tileMedia()</code> in create-product.html).</p>
+  <p class="sub__desc" data-zh><strong>展示素材槽也收影片（2026-09-10 · D259）。</strong>凡是 <code>[data-upload]</code> 而不是 <code>data-upload="content"</code> 的格子，現在圖片與影片都收：選檔預設 <code>image/*,video/*</code>（頁面可用 <code>data-upload-accept</code> 收窄），影片沿用既有的 <code>.upload-tile__video</code> 節點鋪滿格子——靜音、停在第一影格，那一格畫面就是它的縮圖——同時掛上 <code>.is-video</code> 與 <code>.upload-tile--playable</code>（狀態，不是 16:9 版型修飾詞 <code>--video</code>）。展示槽的影片是 <code>object-fit: cover</code>、底透明，不用內容檔那套置中留黑的播放器外觀：2:3 的直式格上下兩塊黑，跟旁邊鋪滿的圖片排在一起會讀成壞掉。「AI 優化」是圖片能力，影片格把那兩顆鈕與徽章收起來。任何要把素材畫到別處的地方都得先問這一格是圖還是片——只讀 <code>.upload-tile__thumb</code> 的 <code>src</code> 正是影片變破圖的成因（見 create-product.html 的 <code>tileMedia()</code>）。</p>
     <p class="field-label" data-en>Video slot <span class="field-note">(<code>--video</code>, 2026-08-10)</span></p>
   <p class="field-label" data-zh>影片投放格 <span class="field-note">（<code>--video</code>，2026-08-10）</span></p>
   <p class="sub__desc" data-en>The one and only way to take a video upload on this site (user ruling). It carries the ratio of the thing it holds — 16:9, not a bar unrelated to its content — and takes two thirds of the container so a single trailer drop zone does not outweigh the form around it. Default and hover are inherited from the base tile, so every droppable slot on the site feels the same. Consumers: create-event, create-project, project-detail, publish-work (two).</p>
@@ -2826,7 +2825,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <div class="upload-assets upload-assets--fill" data-upload-reveal style="max-width:720px">
       <div class="upload-tile upload-tile--portrait" data-upload data-upload-ai>
         <span class="upload-tile__flag">Hero</span>
-        <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>
+        <span class="upload-tile__icon"><i data-lucide="photo-video" class="ztor-icon ztor-icon--md"></i></span>
         <span class="upload-tile__title">Add image</span>
         <span class="upload-tile__hint">750 × 1125 · portrait</span>
         <span class="upload-tile__hint">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
@@ -2875,7 +2874,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <div class="upload-assets upload-assets--fill" data-upload-reveal>
       <div class="upload-tile upload-tile--portrait" data-upload>
         <span class="upload-tile__flag">Hero</span>
-        <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>
+        <span class="upload-tile__icon"><i data-lucide="photo-video" class="ztor-icon ztor-icon--md"></i></span>
         <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
         <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span>
         <span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
@@ -2891,7 +2890,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   <div class="demo">
     <div class="upload-assets upload-assets--fill">
       <div class="upload-tile upload-tile--portrait" data-upload data-upload-ai>
-        <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>
+        <span class="upload-tile__icon"><i data-lucide="photo-video" class="ztor-icon ztor-icon--md"></i></span>
         <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
         <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span>
       </div>
@@ -3310,6 +3309,18 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <div class="variant-table__row"><span class="variant-cell--variant">S</span><span class="variant-cell--ro">NT$3,680</span><span class="variant-cell--stock">12</span><span class="variant-cell--ro">4</span><span class="variant-cell--ro variant-cell--free">8</span><span class="variant-cell--ro">CARGO-PANTS-S</span><span class="variant-cell--ro">—</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>Delist this option</span></button></div></details></div>
           <div class="variant-table__row"><span class="variant-cell--variant">M</span><span class="variant-cell--ro">NT$3,680</span><span class="variant-cell--stock variant-cell--stock-low">2</span><span class="variant-cell--ro">0</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro">CARGO-PANTS-M</span><span class="variant-cell--ro">—</span><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="eye-off" class="ztor-icon"></i><span>Delist this option</span></button></div></details></div>
         </div>
+      </div>
+    </div>
+  </div>
+  <p class="field-label" data-en>Stock table <span class="field-note">(<code>.variant-table--stock</code> — 2026-09-11: the Stock tab's management table. Stock columns only — combination + SKU sub-line / on hand / locked for single / locked for bundles / unlocked / restocking / status / restock button / ⋯; price, SKU and cost moved to Product settings. Do not combine with <code>--fluid</code>.)</span></p>
+  <p class="field-label" data-zh>庫存管理表 <span class="field-note">(<code>.variant-table--stock</code>——2026-09-11 商品庫存分頁：只留庫存欄位——組合＋SKU 小字／在庫／鎖給單售／鎖給組合／未鎖定／補貨中／狀態／補貨鈕／⋯；價格、SKU、成本搬去商品設定。狀態格用 badge、在庫格對應 <code>.variant-cell--stock-low</code>／<code>--stock-warn</code>、補貨中格 <code>.variant-cell--incoming</code>（有量 <code>.is-on</code>）。<strong>不與 <code>--fluid</code> 併用</strong>。)</span></p>
+  <div class="demo">
+    <div class="variant-table-wrap variant-table-wrap--menu">
+      <div class="variant-table variant-table--stock">
+        <div class="variant-table__head"><span>選項組合</span><span>在庫</span><span>鎖給單售</span><span>鎖給組合</span><span>未鎖定</span><span>補貨中</span><span>狀態</span><span></span><span></span></div>
+        <div class="variant-table__row"><span class="variant-cell--variant">M<br><span class="text-sub">26MS-HOODIE-M</span></span><span class="variant-cell--stock">12</span><span class="variant-cell--ro">4</span><span class="variant-cell--ro">6</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="text-sub">正常</span></span><span><button class="btn btn--ghost btn--xs" type="button">補貨</button></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
+        <div class="variant-table__row"><span class="variant-cell--variant">L<br><span class="text-sub">26MS-HOODIE-L</span></span><span class="variant-cell--stock variant-cell--stock-warn">4</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">2</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="badge badge--warning">到門檻</span></span><span><button class="btn btn--ghost btn--xs" type="button">補貨</button></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
+        <div class="variant-table__row"><span class="variant-cell--variant">XL<br><span class="text-sub">26MS-HOODIE-XL</span></span><span class="variant-cell--stock variant-cell--stock-low">1</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro variant-cell--free">1</span><span class="variant-cell--ro variant-cell--incoming is-on">+20</span><span><span class="badge badge--error">低庫存</span></span><span><button class="btn btn--ghost btn--xs" type="button">補貨</button></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
       </div>
     </div>
   </div>
@@ -3762,6 +3773,10 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       <div class="data-list__row data-list__row--fact">
         <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title">周湯豪 NICKTHEREAL</div><div class="data-list__meta"><i data-lucide="user" class="ztor-icon"></i>創作者</div></div></div>
       </div>
+      <div class="data-list__row data-list__row--go" role="button" tabindex="0">
+        <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta">定價</div><div class="data-list__title">NT$1,880</div></div></div>
+        <span class="data-list__go" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></span>
+      </div>
       <div class="data-list__row data-list__row--disabled" aria-disabled="true">
         <div class="data-list__row-main">
           <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
@@ -3775,6 +3790,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       </div>
     </div>
   </div>
+  <p class="field-note" data-zh><code>.data-list__row--go</code>（2026-09-11）——整列是入口（<code>role="button"</code>）：cursor pointer，hover／focus 只提亮行尾 <code>__go</code> 箭頭、列底不塗色。這種「一列一個設定、點了過去改」的列，欄目名放 <code>__meta</code> 在上、值放 <code>__title</code> 在下——值比欄目名重要。首個消費者：商品詳情總覽的「商品設定概覽」。</p>
   <p class="field-note" data-en><code>.data-list__row--disabled</code> (2026-09-09) — the row stays in the list and stays readable, but can't be picked: only <code>__row-main</code> dims, so the status badge and any row link keep full strength (the badge is what explains why it can't be picked). First used by the Create bundle product picker: unlisted products stay listed and badged, can't be added to the bundle, and still link out to their detail page.</p>
   <p class="field-note" data-zh><code>.data-list__row--disabled</code>（2026-09-09）——這一列還在清單裡、看得見，但不能被選：只淡化 <code>__row-main</code>，右邊的狀態徽章與列上的連結維持原強度（不能被選的理由正是那顆徽章在說的話）。首個消費情境是建立組合的候選商品清單：已下架的商品照列、標徽章、不可加入，但仍點得進商品詳情。</p>
   <p class="field-note" data-en>Shared <code>transaction-list</code> renderer (components.js) — Earnings and Dashboard F3 use the SAME row. The status pill is per-call: Earnings shows it; Dashboard F3 passes <code>hideStatus</code> so the column is dropped (F3 lists settled income only, status is always settled — spec 5.1.1 §F3).</p>
@@ -4935,6 +4951,13 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   </div>
   <p class="field-note" data-en>Dashboard F2 total-revenue tile pairs a week-over-week <code>.kpi__delta</code> (freshness in the meta line) with a deep-link into Earnings — <code>delta</code> and a linked <code>.kpi__meta</code> coexist on one tile.</p>
   <p class="field-note" data-zh>儀表板 F2 總收入卡同時用週環比 <code>.kpi__delta</code>（更新時間放 meta 行）與深連結 Earnings — 同一張卡 <code>delta</code> 與帶連結的 <code>.kpi__meta</code> 並存。</p>
+  <p class="field-label" data-en>Unit suffix <span class="field-note">(<code>.kpi__unit</code> — 2026-09-11: a small count unit after the number, baseline-aligned, subtle ink; for pieces / people, not money)</span></p>
+  <p class="field-label" data-zh>單位小字 <span class="field-note">(<code>.kpi__unit</code>——2026-09-11：跟在數字後面的計數單位「件／人」，對齊基線、輔助色；金額不用，貨幣符號在前面。首個消費者：商品詳情商品庫存分頁的四塊磚)</span></p>
+  <div class="demo" style="display:flex;gap:10px;flex-wrap:wrap">
+    <div class="kpi" style="min-width:150px"><div class="kpi__label">在庫</div><div class="kpi__value">17<span class="kpi__unit">件</span></div></div>
+    <div class="kpi" style="min-width:150px"><div class="kpi__label">單售可售</div><div class="kpi__value">9<span class="kpi__unit">件</span></div></div>
+    <div class="kpi" style="min-width:150px"><div class="kpi__label">補貨中</div><div class="kpi__value">20<span class="kpi__unit">件</span></div></div>
+  </div>
   <p class="field-label" data-en><code>--compact</code> variant <span class="field-note">(no min-height, tighter padding — side-column / summary tiles, e.g. Product detail Sales summary)</span></p>
   <p class="field-label" data-zh><code>--compact</code> 變體 <span class="field-note">(去 min-height、內距收小——側欄／摘要卡，如商品細節頁 Sales summary)</span></p>
   <div class="demo" style="display:flex;gap:10px;flex-wrap:wrap">
@@ -5565,23 +5588,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       </div>
     </div>
   </div>
-  <p class="field-label" data-en>Stock split <span class="field-note">(<code>.stock-split</code> — 2026-09-10: one bar for "who is this stock promised to" — a segment per sales channel, last segment is what is still in the pool. Replaces the "Locked" stat tile, which was always Goods-in-stock minus Unlocked)</span></p>
-  <p class="field-label" data-zh>庫存分配長條 <span class="field-note">(<code>.stock-split</code>——2026-09-10：一條看完「這些庫存分給誰」，一段一個販售管道、末段是還留在池裡的量。取代原本的「已鎖定」數字格——那一格恆等於目前在庫減未鎖定)</span></p>
-  <div class="demo">
-    <div style="max-width:420px">
-      <div class="stock-split">
-        <span class="stock-split__seg stock-split__seg--single" style="flex:10"></span>
-        <span class="stock-split__seg stock-split__seg--bundle" style="flex:5"></span>
-        <span class="stock-split__seg stock-split__seg--free" style="flex:20"></span>
-      </div>
-      <div class="stock-split__legend">
-        <span class="stock-split__item"><span class="stock-split__dot stock-split__dot--single"></span>Locked for single sale <span class="stock-split__v">10</span></span>
-        <span class="stock-split__item"><span class="stock-split__dot stock-split__dot--bundle"></span>Starter bundle <span class="stock-split__v">5</span></span>
-        <span class="stock-split__item"><span class="stock-split__dot stock-split__dot--free"></span>Unlocked <span class="stock-split__v">20</span></span>
-      </div>
-    </div>
-  </div>
-
+  <p class="field-note" data-zh>✝ <strong>Stock split（分配長條）2026-09-11 退場</strong>：2026-09-10 建、給商品明細「當前庫存」卡講「這些庫存分給誰」；商品庫存分頁改版後，分配已由四塊 KPI 磚（在庫／單售可售／鎖給組合／補貨中）與逐組合表承擔，長條是第二遍（使用者裁示去蕪存菁）。<code>stock-split.css</code> 留墓碑。</p>
+  <p class="field-note" data-en>✝ <strong>Stock split retired 2026-09-11</strong>: the allocation bar built on 2026-09-10 for the product-detail stock card. After the Stock tab redesign the four KPI tiles and the per-combination table already say who the stock is promised to; the bar repeated it. <code>stock-split.css</code> is a tombstone.</p>
   <p class="field-label" data-en>Do &amp; Don't</p>
   <p class="field-label" data-zh>該做與別做</p>
   <div class="dodont">
@@ -6354,7 +6362,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
                   <div class="field"><label class="field__label">內文</label><textarea class="textarea" rows="3" placeholder="向支持者分享最新進度…"></textarea></div>
                   <div class="post-composer__media post-composer__media--image">
                     <div class="post-composer__media-head"><span class="post-composer__media-title">圖片</span><button class="post-composer__media-drop" type="button" aria-label="移除夾帶"><i data-lucide="x" class="ztor-icon"></i></button></div>
-                    <div class="upload-tile upload-tile--portrait"><span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">新增圖片</span><span class="upload-tile__hint">直式 750 × 1125</span></div>
+                    <div class="upload-tile upload-tile--portrait"><span class="upload-tile__icon"><i data-lucide="photo-video" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">新增圖片</span><span class="upload-tile__hint">直式 750 × 1125</span></div>
                   </div>
                 </div>
                 <div class="post-composer__foot">
@@ -6413,6 +6421,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   <p class="sub__desc" data-en>The left-hand list for switching sections. Since 2026-08-26 (Q75 extended) it is also the page-level navigation on every detail page — product, project, auction, bundle, creator, fan, IP, series, settings — replacing the horizontal <code>.tabs</code> there. Division of labour with <code>tabs.css</code> now: <code>.section-nav</code> owns section switching on detail pages; horizontal <code>.tabs</code> stays for list-page toolbars and in-section filters. Five or more items in a horizontal bar wrap or truncate; a vertical list grows naturally.</p>
   <p class="sub__desc" data-zh>切換分節的左側清單。2026-08-26 起（Q75 擴大）它也是所有詳情頁的頁級導覽——商品、項目、拍賣、套組、創作者、粉絲、IP、系列、設定九頁同款——取代原本橫排的 <code>.tabs</code>。與 <code>tabs.css</code> 的分工改為：詳情頁的分節切換歸 <code>.section-nav</code>；橫排 <code>.tabs</code> 留給清單頁工具列與節內篩選。五項以上橫排會擠成兩行或被截斷，直排天生可長。原本叫 <code>.settings-nav</code>、只長在設定頁，2026-08-17 活動詳情要用同一個東西時提升成中性名稱；舊 class 仍列在同一組選擇器裡，設定頁的 markup 不必改。</p>
   <p class="sub__desc" data-zh><strong>組裝規則</strong>：主要區域用側欄（本元件），區域底下的分節用 <code>.list-toolbar</code> ＋ <code>.tabs--underline-short --underline-label --count-plain</code>（與清單頁的類型切換同一組，殼不能省），內容區用 <code>.nav-sections</code>。橫列與內容之間、內容各區塊之間都是 <code>--sp-18</code>。</p>
+   <p class="sub__desc" data-zh><strong>與黏住的詳情頂列共存（2026-09-11）</strong>：頁面同時有 <code>.detail-topbar</code>（黏住後 fixed 在捲動容器上緣）時，分節橫列的 <code>top</code> 與各節的 <code>scroll-margin-top</code> 都加上 <code>--detail-bar-h</code>（<code>js/detail-topbar.js</code> 黏住時寫進 <code>.page</code>），橫列才不會被壓在頂列底下。首個消費者：商品詳情的商品設定分頁。</p>
   <div class="demo">
     <div class="section-nav-layout">
       <nav class="section-nav">
@@ -8952,6 +8961,18 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       </div>
     </div>
   </div>
+   <p class="field-label" data-en>Stock history <span class="field-note">(<code>.restock-log--history</code> — 2026-09-11: restocks and lock changes merged into one table. Columns date / type / option / change / note / status; a lock change reads <code>2 → 4</code> with <code>.restock-log__qty--lock</code>, not as an increment. <code>min-width: 0</code>, so it sits in a card as well as the dialog.)</span></p>
+   <p class="field-label" data-zh>庫存歷史紀錄 <span class="field-note">(<code>.restock-log--history</code>——2026-09-11 使用者裁示補貨紀錄＋鎖定紀錄合併：日期／類型／選項組合／變動／說明／狀態六欄；鎖定的變動寫 <code>2 → 4</code> 並掛 <code>.restock-log__qty--lock</code>（不是增減，不走 __qty 的強調）。<code>min-width: 0</code>，頁內卡與彈窗共用。消費者：商品詳情商品庫存分頁。)</span></p>
+   <div class="demo">
+     <div class="restock-log-wrap">
+       <div class="restock-log restock-log--history">
+         <div class="restock-log__head"><span>日期</span><span>類型</span><span class="restock-log__opt">選項組合</span><span>變動</span><span>說明</span><span>狀態</span></div>
+         <div class="restock-log__row"><span class="restock-log__muted">2026/09/11</span><span>補貨</span><span class="restock-log__opt">XL</span><span class="restock-log__qty">+20</span><span class="restock-log__muted">Riso House · 計時補貨，預計 09/18 到</span><span><span class="badge badge--warning">補貨中</span></span></div>
+         <div class="restock-log__row"><span class="restock-log__muted">2026/09/10</span><span>鎖定</span><span class="restock-log__opt">M</span><span class="restock-log__qty restock-log__qty--lock">2 → 4</span><span class="restock-log__muted">鎖給單售</span><span><span class="badge badge--success">已完成</span></span></div>
+         <div class="restock-log__row"><span class="restock-log__muted">2026/09/10</span><span>補貨</span><span class="restock-log__opt">M</span><span class="restock-log__qty">+40</span><span class="restock-log__muted">Riso House · 立即補貨</span><span><span class="badge badge--success">已完成</span></span></div>
+       </div>
+     </div>
+   </div>
   <p class="field-label" data-en>Do &amp; Don't</p><p class="field-label" data-zh>該做與別做</p>
   <div class="dodont">
     <div class="dodont__do"><strong><span data-en>Do</span><span data-zh>該做</span></strong><ul><li data-en>Put quantities in <code>.restock-log__qty</code> so tabular numerals line the digits up across rows.</li><li data-zh>補貨數量放進 <code>.restock-log__qty</code>，等寬數字才會讓上下列的位數對齊。</li><li data-en>Let <code>.restock-log-wrap</code> scroll horizontally on narrow viewports — columns stay aligned instead of reflowing.</li><li data-zh>窄視窗讓 <code>.restock-log-wrap</code> 水平捲動——欄位維持對齊，不重排。</li></ul></div>
@@ -9849,7 +9870,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   <div class="sub__head"><h3 class="sub__title">4.110 Custom select (zselect)</h3><span class="layer layer--molecule">🟡 molecule</span></div>
   <p class="field-label">用途</p>
   <p class="sub__desc">自製下拉選單，取代瀏覽器原生 <code>&lt;select&gt;</code> 展開後的清單——那部分是作業系統畫的，任何瀏覽器都不開放樣式化。<code>js/zselect.js</code> 在執行期把每個 <code>&lt;select class="select"&gt;</code> 升級成「觸發鈕＋自繪 listbox」，原生 select 留在 DOM 當資料來源。</p>
-  <p class="sub__desc"><strong>坐在可切檢視／編輯的面板裡時要標 <code>data-view-safe</code></strong>（2026-08-10）。觸發鈕本體是 <code>&lt;button&gt;</code>，而 <code>shared.css</code> 有一條「<code>[data-mode="view"]</code> 底下藏掉所有按鈕」的規則——那條針對的是動作鈕，不是表單控件；沒標的下拉會在唯讀狀態整顆消失，只剩一個標籤底下空一塊。標了就一起搬到觸發鈕，唯讀時仍看得見選到的值（停用態的淡色）。首個消費者：<code>project-detail.html</code> 公開資訊的年齡分級。</p>
+  <p class="sub__desc"><strong>坐在可切檢視／編輯的面板裡時要標 <code>data-view-safe</code></strong>（2026-08-10）。觸發鈕本體是 <code>&lt;button&gt;</code>，而 <code>shared.css</code> 有一條「<code>[data-mode="view"]</code> 底下藏掉所有按鈕」的規則——那條針對的是動作鈕，不是表單控件；沒標的下拉會在唯讀狀態整顆消失，只剩一個標籤底下空一塊。標了就一起搬到觸發鈕，唯讀時仍看得見選到的值（停用態的淡色）。首個消費者：<code>project-detail.html</code> 公開資訊的年齡分級。<br><strong>2026-09-11 起不必逐顆標</strong>：<code>shared.css</code> 那條白名單直接放行 <code>.zselect__trigger</code>——商品詳情的商品設定分頁一次有六七顆下拉，逐顆補標漏一顆就少一個欄位；唯讀時觸發鈕跟著原生 select 一起 <code>disabled</code>，只顯示目前值。既有的 <code>data-view-safe</code> 留著無害。</p>
   <p class="field-label">視覺展示 <span class="field-note">(升級前／升級後併陳)</span></p>
   <div class="demo" style="flex-direction:column;align-items:flex-start;gap:20px;">
     <div>
@@ -9881,7 +9902,20 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         <div class="zselect__option"><i data-lucide="disc" class="ztor-icon zselect__icon"></i><span>Album</span><svg class="zselect__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
       </div>
     </div>
+    <div style="position:relative;">
+      <p class="field-text" style="margin:0 0 6px;">動作列（2026-09-11）——原生 <code>&lt;select data-zselect-action="new-session" data-zselect-action-i18n="…"&gt;</code>，面板最底下多一列不是選項的動作；點了派 <code>zselect:action</code>、不改 value</p>
+      <button class="zselect__trigger select" type="button" aria-expanded="true" style="width:260px;">
+        <span class="zselect__label">尚未關聯</span>
+        <svg class="zselect__caret" viewBox="0 0 16 16" width="16" height="16"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+      </button>
+      <div class="zselect__panel" style="position:static;margin-top:4px;width:260px;box-shadow:var(--shadow-card);">
+        <div class="zselect__option" aria-selected="true"><span>尚未關聯</span><svg class="zselect__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="zselect__option"><span>台北簽書會取貨（今日）</span></div>
+        <div class="zselect__option zselect__option--action"><i data-lucide="plus" class="ztor-icon zselect__icon"></i><span>建立取貨場次</span></div>
+      </div>
+    </div>
   </div>
+  <p class="sub__desc"><strong>動作列（2026-09-11）。</strong>原生 <code>&lt;select&gt;</code> 標 <code>data-zselect-action="&lt;id&gt;"</code>（文案走 <code>data-zselect-action-i18n</code>，退路 <code>data-zselect-action-label</code>，圖示 <code>data-zselect-action-icon</code> 預設 plus），面板最底下就多一列「這裡沒有你要的，去建一個」：與選項之間一條 hairline、沒有勾號、字色略退，鍵盤 ↑↓ 走得到、Enter 觸發。它<strong>不是選項</strong>——點了不改 value、不派 change，只在 <code>&lt;select&gt;</code> 上派 <code>zselect:action</code>（bubbles，<code>detail.action</code>＝屬性值）並關閉面板，由頁面接手開彈窗。首個消費情境：建立商品／商品細節的取貨場次，原本是選單旁一顆獨立的「建立取貨場次」按鈕（使用者指示併進下拉）。</p>
   <p class="sub__desc"><strong>選項圖示與列尾勾號（2026-08-18）。</strong>原生 <code>&lt;option&gt;</code> 標 <code>data-icon="&lt;icon registry 的鍵&gt;"</code>，腳本就在觸發鈕（<code>.zselect__lead</code>）與面板每一列的文字前畫同一顆 20px 中性灰圖示——收合與展開必須是同一顆，選完之後圖示消失會讀成「選到的不是剛剛那一個」。沒標 <code>data-icon</code> 的下拉整欄 <code>hidden</code>、版面一格不動。同日勾號由列首移到列尾（全站行為）：擺前面時每一列都得先跨過一個多數時候是空的欄位才讀得到文字。</p>
   <p class="field-text">面板語彙抄自 <a href="#dropdown-menu">Dropdown menu</a> 的 <code>.dropdown__menu</code>（<code>--card</code> 底、<code>--radius-lg</code>、<code>--shadow-float</code>）。2026-07-28 修過「double scroll bar」：<code>.zselect__native</code> 用 <code>position:absolute</code> 卻沒配 <code>top/left</code> 時會撐開文件、多出一條看不見的捲軸，補上 <code>top:0;left:0</code> 解決。消費頁（19 頁，全站消費範圍最廣元件）：<code>ip-bank-reporting.html</code>、<code>media-vault.html</code>、<code>create-project.html</code>、<code>create-auction.html</code>、<code>order-detail.html</code>、<code>projects.html</code>、<code>design-system.html</code>、<code>ip-market.html</code>、<code>project-detail.html</code>、<code>earnings.html</code>、<code>create-event.html</code>、<code>settings.html</code>、<code>admin-ip-bank-entry.html</code>、<code>brand-campaigns.html</code>、<code>create-product.html</code>、<code>product-detail.html</code>、<code>admin-platform-fees.html</code>、<code>store-settings.html</code>、<code>fans-crm.html</code>。</p>
 </section>

@@ -47,13 +47,21 @@
    一個分頁的主體需要整頁寬（例如商品明細「銷售設定」的逐規格表有八欄）時，原本擺在
    右欄的設定卡改放主體下方，**一張一行、各自吃滿整頁寬**（2026-09-09 使用者裁示）——
    與上方的主體卡同寬，整個分頁由上往下讀是同一條軸線；並排會多出一條垂直切分線，
-   讓三張互不相關的設定看起來像同一組。卡距沿用卡片間距 --sp-16。 */
+   讓三張互不相關的設定看起來像同一組。卡距與上方主體卡之間一律 --sp-24（見下）。 */
 .detail-cards {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--sp-16);
+  /* 卡距與上方主體卡之間的距離都吃 --sp-24（2026-09-11 修正）：整頁單欄之後，這裡的卡與上面的
+     主體卡是同一條軸線上的鄰居，節奏要跟 form-section--outlined 之間的 --sp-24 一樣；
+     原本 --sp-16 加上與主體卡之間 0，讀起來是 24／0／16 三種距離。 */
+  gap: var(--sp-24);
   align-items: start;
 }
+/* 接在可見的 outlined 主體卡後面時，與它之間留同一個節奏（同 form-section.css 那條一般兄弟選擇器）。 */
+.form-section--outlined:not([hidden]) ~ .detail-cards { margin-top: var(--sp-24); }
+/* 容器裡的卡靠 gap 排節奏，不再吃 form-section.css 那條兄弟間距——兩者疊加會變 48。
+   選擇器照抄那條的形狀再多掛容器，權重才蓋得過它（那條是 (0,4,0)）。 */
+.detail-cards > .form-section--outlined:not([hidden]) ~ .form-section--outlined:not([hidden]) { margin-top: 0; }
 /* 直接子代選擇器：只收起「這一層」的常駐右欄，不誤傷分頁內部自建的巢狀 detail-grid
    （商品明細定價與庫存分頁：外層 --full 收全域右欄，分頁內部另有自己的 main/rail 兩欄）。 */
 .detail-grid--full > .detail-rail { display: none; }

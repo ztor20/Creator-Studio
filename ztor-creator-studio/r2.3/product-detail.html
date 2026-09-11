@@ -32,7 +32,6 @@
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/stock-split.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/combobox.css?v=r2.2">
@@ -42,16 +41,17 @@
 <link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-store.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stock-bar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stock-readout.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/album-tracks.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/vip-card.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* product-detail 專屬：條件揭露子欄位的顯隱膠水。
@@ -68,6 +68,11 @@
   <main class="main">
     <div class="page page--narrow">
 
+      <!-- 頂列＋頁首（2026-09-11 使用者指示「商品詳情頁的這幾個區塊改得一致，參考項目詳情頁」）：
+           麵包屑、捲動後的縮圖＋名稱、頁面動作同一列（shared.css 的 `.detail-topbar`，項目／系列／活動詳情
+           已是三個消費者；黏附行為走 js/detail-topbar.js）；頁首改成項目詳情那組 `.pd-hero`——
+           左封面、右徽章→標題→描述→識別小字。底部浮出的 sticky-actions 同步撤除：頁面動作只剩一個家。 -->
+      <div class="detail-topbar">
       <div class="page-crumb page-crumb--back">
         <a class="btn btn--icon-circle btn--sm page-crumb__back" href="e-shop.html" aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
         <a href="e-shop.html" class="card__link" data-i18n="product-detail.crumb.eshop">E-Shop</a> <span style="margin:0 6px">/</span>
@@ -76,24 +81,33 @@
         <a href="e-shop.html" class="card__link" data-pd-crumb-cat data-i18n="product-detail.crumb.physical">Physical merch</a> <span style="margin:0 6px">/</span>
         <span data-pd-crumb-name>Pirate Queen zine vol. 02</span>
       </div>
+        <div class="detail-topbar__mini" data-pd-mini hidden>
+          <img class="detail-topbar__cover" id="pd-mini-cover" src="" alt="">
+          <span class="detail-topbar__name" id="pd-mini-name"></span>
+        </div>
+        <div class="page-intro__actions">
+          <button class="btn btn--outline" type="button" data-pd-preview-open><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.preview">See as fan</span></button>
+          <!-- 2026-09-11 撤除頁級「儲存」：商品設定分頁改成「編輯商品 → 儲存變更」的開關（同活動詳情），
+               總覽分頁的補貨／鎖定各自在彈窗裡儲存，頁面上已沒有「整頁一起存」的東西。 -->
+        </div>
+      </div>
 
-      <!-- 頁首（Figma 845-10300）：無縮圖、單一狀態徽章、無描述 -->
-      <div class="page-intro">
-        <div style="min-width:0">
-          <h1 class="page-intro__title" id="pd-title" style="margin:0">Pirate Queen zine vol. 02</h1>
-          <!-- 2026-07-27：原 class `pd-id__meta` 全站無定義（死類名，徽章列等於沒有間距）。
-               改用既有 utility，與組合／拍賣詳情頁的徽章列同一寫法。 -->
-          <div class="flex-row" style="gap:6px;margin-top:8px" id="pd-badges">
+      <section class="pd-hero">
+        <!-- 封面＝商品主圖（與清單同一張 p.img，由 applyProduct 設定；2:3 直式與商品圖規格一致） -->
+        <img class="pd-hero__cover" id="pd-hero-cover" data-pd-hero src="" alt="">
+        <div class="pd-hero__main">
+          <div class="pd-hero__badges flex-row" style="gap:8px;flex-wrap:wrap" id="pd-badges">
             <!-- 靜態佔位；載入後由 renderBadges() 以 ListingState.deriveFlags 重畫（spec §7.14 · D241）。 -->
             <span class="badge badge--success"><span data-i18n="shop.status.live">Live</span></span>
           </div>
+          <div class="pd-hero__head">
+            <h1 class="pd-hero__title" id="pd-title">Pirate Queen zine vol. 02</h1>
+          </div>
+          <p class="pd-hero__desc" id="pd-sub"></p>
+          <!-- 識別小字（2026-09-11 使用者指示）：價格 · 選項模式（單一選項／多選項）。由 applyProduct 填。 -->
+          <p class="pd-hero__meta" id="pd-hero-meta"><span data-pd-hero-price></span> · <span data-pd-hero-var></span></p>
         </div>
-        <div class="page-intro__actions">
-          <button class="btn btn--outline" type="button" data-pd-preview-open data-i18n="product-detail.btn.preview">See as fan</button>
-          <span class="chip chip--static" data-pd-dirty hidden data-i18n="product-detail.unsaved">Unsaved changes</span>
-          <button class="btn btn--primary" data-pd-save data-i18n="product-detail.btn.save">Save</button>
-        </div>
-      </div>
+      </section>
 
       <!-- 兩欄版型：左＝銷售摘要（常駐）＋編輯分頁；右＝唯讀 meta 欄（跨分頁常駐）-->
 
@@ -112,13 +126,12 @@
       <div class="section-nav-layout mt-24">
         <nav class="section-nav" role="tablist" data-tabs aria-label="Product detail sections">
           <button class="section-nav__item section-nav__item--active" role="tab" data-tab="overview" aria-selected="true" data-i18n="product-detail.tab.overview">Overview</button>
-          <button class="section-nav__item" role="tab" data-tab="price-stock" aria-selected="false" data-i18n="product-detail.tab.price-stock">Pricing &amp; stock</button>
-          <button class="section-nav__item" role="tab" data-tab="delivery" aria-selected="false" data-i18n="product-detail.tab.delivery">Delivery</button>
-          <button class="section-nav__item" role="tab" data-tab="relations" aria-selected="false" data-i18n="product-detail.tab.relations">Relations</button>
+          <button class="section-nav__item" role="tab" data-tab="stock" aria-selected="false" data-pd-cat="physical" data-i18n="product-detail.tab.stock">Stock</button>
+          <button class="section-nav__item" role="tab" data-tab="settings" aria-selected="false" data-i18n="product-detail.tab.settings">Product settings</button>
         </nav>
         <div class="section-nav__body">
 
-      <div class="detail-grid mt-16">
+      <div class="detail-grid detail-grid--full mt-16">
       <div class="detail-main">
 
 
@@ -150,11 +163,177 @@
         </div>
       </section>
 
+      <!-- 商品設定概覽（2026-09-11 使用者指示「總覽：銷售摘要、商品庫存、商品設定概覽」）：
+           商品設定分頁的每個區塊在這裡一行一句摘要，行尾箭頭切到商品設定分頁並捲到那一節。
+           總覽只回答「現在設成什麼」，要改就過去改——這張卡沒有任何輸入框。
+           摘要由 JS 讀商品設定分頁的欄位現值算出（renderSettingsOverview），儲存後重算。 -->
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="product-detail.setov.title">Settings overview</h3>
+          <p class="form-section__sub" data-i18n="product-detail.setov.sub">Select a row to edit it.</p>
+        </div>
+        <div class="data-list" data-pd-setov>
+          <!-- 列由 JS 依商品類型渲染（實體／數位、單一規格／多選項各自不同） -->
+        </div>
+      </section>
+
+      <!-- 使用中（S24）：被哪個專案／組合引用，屬狀態不屬設定，留在總覽。 -->
+      <div class="detail-cards">
+        <section class="form-section form-section--outlined" data-feat="S24">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="product-detail.rail.inuse">Related</h3>
+          </div>
+          <div class="when-data">
+            <div class="kv" style="align-items:flex-start">
+              <span class="kv__k" data-i18n="product-detail.ref.label">Project</span>
+              <span class="kv__v" style="max-width:170px">
+                <a class="card__link" href="create-project.html" data-route-keep data-i18n="product-detail.ref.row1">Kowloon After Dark OST · pre-order reward $50 tier</a>
+              </span>
+            </div>
+            <!-- 組合引用：規格 §2.4 只定義「項目引用」，組合尚未納入＝產品缺口，待上游確認 -->
+            <div class="kv" style="align-items:flex-start">
+              <span class="kv__k" data-i18n="product-detail.rail.bundle">Bundle</span>
+              <span class="kv__v" style="max-width:170px">
+                <a class="card__link" href="bundle-detail.html" data-route-keep>Tour bundle</a>
+              </span>
+            </div>
+          </div>
+          <div class="when-empty field__hint" data-i18n="product-detail.ref.empty">Not referenced by any project yet.</div>
+        </section>
+      </div><!-- /detail-cards -->
+
+      </div><!-- /tab-panel overview（銷售摘要／商品設定概覽／使用中）-->
+
+      <!-- ════════ TAB · 商品庫存 ════════ -->
+      <div class="tab-panel" data-panel="stock" role="tabpanel">
+      <!-- 商品庫存分頁（2026-09-11 使用者裁決 A 案，探索頁 lab-stock-tab.html）：由上往下回答四個問題——
+           現在怎麼樣（四塊 KPI 磚：在庫／單售可售／鎖給組合／補貨中，語彙參考 Shopify 五態、對上本站的池模型）
+           → 要做什麼（補貨中：計時補貨的單，到貨確認在頁內；5.1.5.6 §4）
+           → 逐組合明細（庫存管理：只留庫存的欄位，價格／SKU／成本在商品設定；卡頭批次鎖定／批次補貨，列上補貨，列尾 ⋯）
+           → 去向與紀錄（庫存去向：哪個組合包鎖了幾件；庫存歷史紀錄：補貨與鎖定合併一張表）。
+           分配長條（stock-split）與一句話狀態退場。僅實體（分頁按鈕掛 data-pd-cat）。 -->
+      <div class="detail-cards" data-pd-cat="physical">
+        <div class="bento" data-pd-stock-kpi>
+          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="stock.kpi.onhand">On hand</div><div class="kpi__value"><span data-pd-kpi-onhand>0</span><span class="stat__of" data-pd-kpi-cap hidden></span><span class="kpi__unit" data-i18n="stock.unit">pcs</span></div></div>
+          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="stock.kpi.sellable">Sellable (single)</div><div class="kpi__value"><span data-pd-kpi-sellable>0</span><span class="kpi__unit" data-i18n="stock.unit">pcs</span></div></div>
+          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="stock.kpi.bundle">Locked for bundles</div><div class="kpi__value"><span data-pd-kpi-bundle>0</span><span class="kpi__unit" data-i18n="stock.unit">pcs</span></div></div>
+          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="stock.kpi.incoming">Restocking</div><div class="kpi__value"><span data-pd-kpi-incoming>0</span><span class="kpi__unit" data-i18n="stock.unit">pcs</span></div></div>
+        </div>
+
+        <!-- 補貨中：計時補貨送出後、還沒按到貨確認的單（5.1.5.6 §4）。沒有就整張不出現。 -->
+        <section class="form-section form-section--outlined" data-pd-pending hidden>
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="stock.pending.title">Restocking</h3>
+            <p class="form-section__sub" data-i18n="stock.pending.sub">Scheduled restocks — confirm on arrival to add them to stock.</p>
+          </div>
+          <div data-pd-pending-list></div>
+        </section>
+
+        <!-- 庫存管理：所有庫存操作都在這一張。表格唯讀；卡頭批次（全部組合）、列上補貨、列尾 ⋯（鎖定／單獨下架）。 -->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head form-section__head--actions">
+            <div class="form-section__head-titles">
+              <h3 class="form-section__title" data-i18n="stock.manage.title">Stock</h3>
+              <p class="form-section__sub"><span data-when-var="multiple" hidden data-i18n="stock.manage.sub-multi">One row per option combination. </span><span data-i18n="stock.manage.sub">Red = below the threshold of {n}. Price, SKU and cost live in Product settings.</span></p>
+            </div>
+            <div class="form-section__head-actions">
+              <button class="btn btn--outline btn--sm" type="button" data-pd-lock-all><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="stock.bulk-lock">Bulk lock</span></button>
+              <button class="btn btn--outline btn--sm" type="button" data-restock-open><i data-lucide="package" class="ztor-icon"></i><span data-i18n="stock.bulk-restock">Bulk restock</span></button>
+            </div>
+          </div>
+          <div class="variant-table-wrap variant-table-wrap--menu">
+            <div class="variant-table variant-table--stock" data-pd-variant-table>
+              <div class="variant-table__head">
+                <span data-i18n="cp.var.col.variant">Variant</span>
+                <span data-i18n="stock.col.onhand">On hand</span>
+                <span data-i18n="stock.lock-single">Locked</span>
+                <span data-i18n="stock.col.bundle">Bundles</span>
+                <span data-i18n="cp.var.col.free">Unlocked</span>
+                <span data-i18n="stock.col.incoming">Restocking</span>
+                <span data-i18n="stock.col.status">Status</span>
+                <span></span>
+                <span></span>
+              </div>
+              <!-- 列（與分組標題）由 renderPageTable() 依商品資料填入 -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 庫存去向：哪個組合包從這件商品鎖走幾件（鎖定量在組合包自己的分配表設定，5.1.5.9）。 -->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="stock.dest.title">Where stock goes</h3>
+            <p class="form-section__sub" data-i18n="stock.dest.sub">Bundle locks are set on each bundle's own allocation table.</p>
+          </div>
+          <div class="data-list" data-pd-dest></div>
+          <div class="field__hint" data-pd-dest-empty hidden data-i18n="stock.dest.empty">Not part of any bundle.</div>
+        </section>
+
+        <!-- 庫存歷史紀錄：補貨與鎖定變動同一張表（使用者裁示合併）。頁內最近四筆，查看全部開彈窗。 -->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head form-section__head--actions">
+            <div class="form-section__head-titles">
+              <h3 class="form-section__title" data-i18n="stock.history.title">Stock history</h3>
+              <p class="form-section__sub" data-i18n="stock.history.sub">Every restock and lock change.</p>
+            </div>
+            <div class="form-section__head-actions">
+              <button class="btn btn--ghost btn--sm" type="button" data-pd-history-open data-i18n="btn.view-all">View all</button>
+            </div>
+          </div>
+          <div class="restock-log-wrap">
+            <div class="restock-log restock-log--history" data-pd-history-inline>
+              <div class="restock-log__head">
+                <span data-i18n="restock.col.date">Date</span>
+                <span data-i18n="stock.history.col.type">Type</span>
+                <span class="restock-log__opt" data-i18n="restock.col.option">Option</span>
+                <span data-i18n="stock.history.col.delta">Change</span>
+                <span data-i18n="stock.history.col.note">Note</span>
+                <span data-i18n="restock.col.status">Status</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div><!-- /detail-cards -->
+
+      </div><!-- /tab-panel stock -->
+
+      <!-- ════════ TAB · 商品設定：建立商品的整頁（2026-09-11 使用者指示）════════
+           同一件事在建立與編輯要長得一樣：區塊順序與建立商品同軌（商品資訊 → 內容檔 → 規格與價格 →
+           折扣與限購 → 交付與取貨 → 商品推廣 → 上架與開賣），全部攤在同一頁、上排是「跳到那一節」的錨點。
+           橫列沿用活動詳情那組（`[data-nav]` ＋ `.list-toolbar` ＋ `.nav-sections`，section-nav.css 管吸頂與節距）。
+           預設唯讀（`data-mode="view"`，shared.css 統一壓平輸入框、藏掉會改資料的按鈕），
+           右側「編輯商品」切成編輯態、同一顆變「儲存變更」，旁邊多一顆取消。 -->
+      <div class="tab-panel" data-panel="settings" role="tabpanel" data-editable data-mode="view">
+        <div data-nav="settings">
+          <div class="list-toolbar">
+            <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist" aria-label="Product settings sections">
+              <button type="button" class="tabs__item tabs__item--active" data-view-safe data-nav-item="info" data-i18n="cp.info.title">Product info</button>
+              <button type="button" class="tabs__item" data-view-safe data-nav-item="cfile" data-pd-cat="digital" hidden data-i18n="cp.cfile.title">Content file</button>
+              <button type="button" class="tabs__item" data-view-safe data-nav-item="pricing" data-i18n="product-detail.nav.pricing">Options &amp; pricing</button>
+              <button type="button" class="tabs__item" data-view-safe data-nav-item="rules" data-i18n="product-detail.nav.rules">Discounts &amp; limits</button>
+              <button type="button" class="tabs__item" data-view-safe data-nav-item="delivery" data-i18n="product-detail.tab.delivery">Delivery</button>
+              <button type="button" class="tabs__item" data-view-safe data-nav-item="relations" data-i18n="product-detail.tab.relations">Promotion</button>
+              <button type="button" class="tabs__item" data-view-safe data-nav-item="publish" data-i18n="product-detail.nav.publish">Listing &amp; sale</button>
+            </nav>
+            <div class="list-toolbar__actions">
+              <button class="btn btn--ghost" type="button" data-view-safe data-pd-edit-cancel hidden data-i18n="payout.cancel">Cancel</button>
+              <!-- data-view-safe：這顆就是「進入編輯」的開關本身（同活動詳情的理由） -->
+              <button class="btn btn--outline" type="button" data-view-safe data-pd-editmode aria-pressed="false">
+                <i data-lucide="pencil" class="ztor-icon"></i>
+                <span data-pd-editmode-label data-i18n="product-detail.btn.edit">Edit product</span>
+              </button>
+            </div>
+          </div>
+          <div class="nav-sections">
+            <div data-nav-panel="info">
 
       <!-- 以下併入總覽：§2.5 素材＋§2.6 資訊＋§2.7 內容檔 -->
 
       <!-- §3-3 商品素材（左）／§2.6 商品資訊（右）兩張獨立卡並排 -->
       <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="cp.info.title">Product info</h3>
+        </div>
           <!-- §2.5 商品圖片／素材 Media（實體＝主圖＋附圖；數位＝封面＋附圖）· 重用建立商品 5.1.5.2 §4 F1 的 .upload-assets--fill · D096 -->
           <!-- 實體：主圖＋附圖，同尺寸直式格、四格撐滿一列（2026-08-09 統一）。
                2026-09-04（使用者裁決 D243）：附圖上限由 7 張放寬成 9 張（主圖 1＋附圖 9＝10 張），
@@ -332,7 +511,8 @@
             <button class="btn btn--outline" id="pd-add-spec" type="button" style="width:100%;justify-content:center;margin-top:var(--sp-8)" data-i18n="cp.spec.add">＋ Add spec</button>
           </div>
       </section>
-
+            </div>
+            <div data-nav-panel="cfile" data-pd-cat="digital" hidden>
       <!-- §3-4 數位內容檔案（僅數位，獨立一區；買家下載／存取的內容檔，上傳格依數位次分類）· 重用建立商品 5.1.5.2 §4.2 F11 · D096 -->
       <section class="form-section form-section--outlined" data-pd-cat="digital" hidden>
         <div class="form-section__head">
@@ -414,123 +594,53 @@
           </div>
         </div>
       </section>
-
-      </div><!-- /tab-panel overview（含基本資訊）-->
-
-      <!-- ════════ TAB · 定價與庫存（Pricing &amp; stock）：§2.8 規格＋§2.9 價格＋§2.15 折扣設定＋§2.10 庫存＋§2.16 上架設定（D144）。
-           多規格時價格／庫存同在逐規格表、單一規格時各自獨立欄位——合在同一 tab 才不會把逐規格表拆兩半。 ════════ -->
-      <div class="tab-panel" data-panel="price-stock" role="tabpanel">
-
-      <!-- 版面（2026-09-09 使用者裁決；同日兩次改版）：整頁單欄，順序依使用頻率——
-           當前庫存（每天看、每週補貨、偶爾調鎖定）→ 商品選項（多選項才有，很少改）／價格（單一規格）
-           → 折扣／低庫存提醒／每人限購（設一次）。庫存置於價格之前是本頁對 §3 顯示序的調整，
-           已回寫規格（D257）。鎖定改「編輯模式」就地改、不開彈窗；價格與選項結構各自從自己的卡進編輯彈窗。
-           外層全域右欄在本分頁仍以 .detail-grid--full 收起（見 tab JS）。 -->
-
-      <!-- ═══ §2.8 商品規格＋§2.10 庫存，2026-07-21 重整（使用者裁決）═══
-           原本「商品規格」與「庫存」是兩張分開的卡，但多規格商品的庫存本來就住在逐規格表裡，
-           拆兩處會把同一張表的欄位切開。改為整個分頁只留一張逐規格表、位置放在「庫存」；
-           單一規格與多規格共用同一套三張卡的分層——庫存／低庫存提醒設定／補貨紀錄。
-           規格模式與庫存版本建立後固定不可編輯（D137），細節頁不再呈現切換器，
-           當前值改由右側常駐欄以唯讀一行呈現。 -->
-
-      <!-- §3-5 · 庫存（僅實體）。單一規格＝唯讀數字（限量再加總量上限）；多規格＝逐規格表 -->
-      <section class="form-section form-section--outlined" data-pd-cat="physical">
-        <!-- 卡頭動作（2026-09-10 · D258）：補貨（最常做，outline）＋補貨紀錄。
-             「編輯鎖定」隨編輯模式一起退場——表格裡可改的欄位平常就是輸入框；
-             改完按頁面右上那顆既有的「儲存」，這裡不再有第二顆儲存。 -->
-        <div class="form-section__head form-section__head--actions">
-          <div class="form-section__head-titles">
-            <h3 class="form-section__title" data-i18n="product-detail.stock.current">Current stock</h3>
-            <p class="form-section__sub" data-when-var="single" data-i18n="product-detail.stock2.sub">How much is left.</p>
-            <p class="form-section__sub" data-when-var="multiple" hidden data-i18n="product-detail.stock2.sub-multi">Stock for each option combination.</p>
+            </div>
+            <div data-nav-panel="pricing">
+      <section class="form-section form-section--outlined" data-when-var="single">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="cp.price.title">Price</h3>
+        </div>
+        <div class="form-grid" style="margin-bottom:0">
+          <div class="field" style="margin-bottom:0">
+            <div class="field__label" data-i18n="product-detail.field.price">Price</div>
+            <span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" data-pd-edit-price value="24.00"></span>
           </div>
-          <div class="form-section__head-actions">
-            <button class="btn btn--ghost btn--sm" type="button" data-pd-history-open><i data-lucide="history" class="ztor-icon"></i><span data-i18n="product-detail.stock.history">Restock history</span></button>
-            <button class="btn btn--outline btn--sm" type="button" data-restock-open><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button>
+          <div class="field" style="margin-bottom:0">
+            <div class="field__label"><span data-i18n="cp.cost">Cost</span> <span class="text-sub" data-i18n="cp.cost.note">creator only</span></div>
+            <span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" data-pd-edit-cost value="9.00"></span>
           </div>
         </div>
+      </section>
 
-        <!-- 商品層數字列（DS stat-row）＋分配長條（DS stock-split），2026-09-10 · D258：
-             目前在庫（限量時帶「/ 上限」）／未鎖定／單售可售三格，底下一條長條講「這些庫存分給誰」。
-             「已鎖定」那一格退場——它恆等於目前在庫減未鎖定，讀的人得先做減法才知道比例，
-             改由長條的段落比例承擔。數字全部問 ListingState（refreshStockStats）。 -->
-        <div class="stat-row" data-pd-stats>
-          <div class="stat">
-            <div class="stat__label" data-i18n="stock.pool">Goods in stock</div>
-            <div class="stat__value"><span data-pd-stat-total>0</span><span class="stat__of" data-pd-stat-cap hidden></span></div>
-          </div>
-          <div class="stat">
-            <div class="stat__label" data-i18n="stock.free">Unlocked</div>
-            <div class="stat__value" data-pd-stat-free>0</div>
-            <div class="stat__meta" data-pd-stat-free-meta hidden></div>
-          </div>
-          <div class="stat">
-            <div class="stat__label" data-i18n="stock.single-sellable">Single sale can sell</div>
-            <div class="stat__value" data-pd-stat-single>0</div>
-          </div>
+      <section class="form-section form-section--outlined" data-when-var="multiple" hidden>
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="cp.var.title">Variations</h3>
+          <p class="form-section__sub" data-i18n="product-detail.edit.options-hint">Add, rename or remove option values — combinations below update automatically.</p>
         </div>
+        <!-- 每個選項一塊：選項名 + 值清單（可加/改/移）。由 JS 依商品 options 渲染 -->
+        <div data-pd-opt-editor></div>
+      </section>
 
-        <div class="stock-split" data-pd-split>
-          <span class="stock-split__seg stock-split__seg--single" data-pd-split-single></span>
-          <span class="stock-split__seg stock-split__seg--free" data-pd-split-free></span>
+      <section class="form-section form-section--outlined" data-when-var="multiple" hidden>
+        <div class="form-section__head">
+          <h3 class="form-section__title"><span data-i18n="cp.var.table.title">Pricing per variation</span> <span class="text-sub" data-pd-combo-count></span></h3>
+          <p class="form-section__sub" data-i18n="product-detail.edit.combos-sub">Price, SKU and cost per combination. Add stock via Restock.</p>
         </div>
-        <div class="stock-split__legend" data-pd-split-legend>
-          <span class="stock-split__item"><span class="stock-split__dot stock-split__dot--single"></span><span data-i18n="stock.locked-single">Locked for single sale</span> <span class="stock-split__v" data-pd-split-single-v>0</span></span>
-          <span class="stock-split__item"><span class="stock-split__dot stock-split__dot--free"></span><span data-i18n="stock.free">Unlocked</span> <span class="stock-split__v" data-pd-split-free-v>0</span></span>
-        </div>
-
-        <!-- 自右欄併入（2026-07-21）：量條只在限量版出現——不限量沒有分母，畫不出「佔多少比例」。
-             低於低庫存門檻時轉紅（demo：庫存 3 < 門檻 4）。 -->
-        <div class="stock-bar" data-when-edition="limited" hidden><span class="stock-bar__fill stock-bar__fill--low" style="width:6%"></span></div>
-
-        <!-- 逐選項組合表（2026-09-10 · D258）：**單一規格與多選項同一張表**——單一規格就是
-             「只有一個選項組合」，用商品名當那一列，不再另做一套管道分配版面。
-             一列一個選項組合，可改的欄位（價格／鎖給單售／SKU／單件成本）平常就是輸入框，
-             庫存唯讀（要加量一律走補貨、每筆留紀錄）；改完按頁面右上的儲存。
-             商品明細只呈現「單售」這一個管道（使用者裁示）：組合包從各成員身上鎖走幾件，
-             改在組合包自己的詳情頁設定（5.1.5.9），這張表不再列組合包。
-             兩階層商品（顏色×尺寸）仍依第一個選項分組。列尾 ⋯ 為補貨與「單獨下架／重新上架」。 -->
-        <div class="variant-table-wrap variant-table-wrap--menu">
-          <div class="variant-table variant-table--fluid" data-pd-variant-table>
+        <div class="variant-table-wrap">
+          <div class="variant-table variant-table--preview" data-pd-edit-table>
             <div class="variant-table__head">
               <span data-i18n="cp.var.col.variant">Variant</span>
               <span data-i18n="cp.var.col.price">Price</span>
               <span data-i18n="cp.var.col.stock">Stock</span>
-              <span class="variant-cell--total" data-i18n="cp.var.col.total">Total</span>
-              <span data-i18n="stock.lock-single">Locked</span>
-              <span data-i18n="cp.var.col.free">Unlocked</span>
               <span data-i18n="cp.var.col.sku">SKU</span>
               <span data-i18n="cp.var.col.cost">Cost</span>
-              <span></span>
             </div>
-            <!-- 列（與分組標題）由 renderPageTable() 依商品資料填入 -->
+            <!-- 組合列由 JS 即時重算填入（唯讀預覽） -->
           </div>
         </div>
-
-        <div class="field__hint" data-i18n="stock.restock-hint">Restocks land in unlocked stock; locked ones need to lock again</div>
       </section>
-
-      <!-- §2.8 商品選項（多選項才有；2026-09-09 新增這張卡）：選項名稱與值的唯讀摘要（DS kv 列），
-           結構性的改動（加尺寸、改名）很少做，收成一顆「編輯」進彈窗；價格與單件成本逐組合，在上方庫存表。 -->
-      <section class="form-section form-section--outlined" data-when-var="multiple" hidden>
-        <div class="form-section__head form-section__head--actions">
-          <div class="form-section__head-titles">
-            <h3 class="form-section__title" data-i18n="cp.var.title">Product options</h3>
-            <p class="form-section__sub" data-i18n="product-detail.options.sub">Price and cost per combination are in the stock table above.</p>
-          </div>
-          <div class="form-section__head-actions">
-            <button class="btn btn--ghost btn--sm" type="button" data-pd-edit-open><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="product-detail.stock.edit">Edit</span></button>
-          </div>
-        </div>
-        <div data-pd-options-summary></div>
-      </section>
-
-      <!-- 2026-09-10 · D258：價格卡退場。單一規格的價格與成本現在是庫存表第一列的兩格輸入，
-           留著這張卡就會有兩個地方可以改同一個數字（多選項本來就沒有這張卡）。
-           §2.9 價格的內容定義不變，只是併進 §2.10 那張表呈現。 -->
-      <div class="detail-cards">
-
+            </div>
+            <div data-nav-panel="rules">
       <!-- §2.15 折扣設定（spec 5.1.5.1 §2.15 · D144）：開啟折扣 → 折扣價＋（可選）限時折扣起訖日；取代原價劃線的特價呈現方式。 -->
       <section class="form-section form-section--outlined">
         <div class="form-section__head">
@@ -626,13 +736,8 @@
         </div>
         </div>
       </section>
-      </div><!-- /detail-cards -->
-
-      </div><!-- /tab-panel price-stock -->
-
-      <!-- ════════ TAB · 交付與取貨（Delivery）：§2.11 取貨＋§2.12 限購 ════════ -->
-      <div class="tab-panel" data-panel="delivery" role="tabpanel">
-
+            </div>
+            <div data-nav-panel="delivery">
       <!-- §3-8 取貨與交付（獨立一區；D136 拆自舊 Delivery & buyer settings 卡；F4）-->
       <section class="form-section form-section--outlined">
         <div class="form-section__head">
@@ -676,21 +781,26 @@
         <!-- 2026-09-04（D244）：領取說明欄退場（改由取貨場次持有）；說明橫幅移到場次欄之前，
              與建立商品同一個順序——先知道機制，才決定掛哪個場次。 -->
         <div class="pd-subfields" data-when-delivery="qr" hidden>
-          <div class="info-banner">
-            <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-            <span data-i18n="cp.delivery.qr-note">Each unit gets its own pickup QR, shown in the buyer's ztor account — staff scan it one at a time at the session's scanner. Manage sessions, scanner and log in Pickup management.</span>
-          </div>
+          <!-- 2026-09-11（同 create-product）：info-banner 與欄位下方 hint 合併成標籤底下的說明。 -->
           <div class="field">
             <div class="field__label" data-i18n="cp.delivery.session">Pickup session</div>
-            <div class="input-action">
-              <select class="select">
-                <option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>
-                <option value="tpe" selected data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>
-                <option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>
-              </select>
-              <button class="btn btn--outline" type="button" data-pd-new-session><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="cp.delivery.session.new">Create pickup session</span></button>
+            <div class="field__hint" data-i18n="pd.delivery.session.desc">Redeemed at this session's scanner. Each item has its own pickup QR in the buyer's ztor account, scanned one at a time; the session's URL, password, roster and redemption records live in Pickup management.</div>
+            <!-- 2026-09-11（同 create-product）：「建立取貨場次」併進下拉的動作列。 -->
+            <select class="select" id="pd-pickup-session"
+                    data-zselect-action="new-session" data-zselect-action-i18n="cp.delivery.session.new"
+                    data-zselect-action-label="Create pickup session" data-zselect-action-icon="plus">
+              <option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>
+              <option value="tpe" selected data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>
+              <option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>
+            </select>
+            <!-- 選定或剛建好的場次資訊（2026-09-11 使用者指示）：唯讀事實列 .fact-list（地點／時間／狀態／入口），
+                 「尚未關聯」時整塊收起。資料由頁尾腳本 paintSessionInfo() 填。 -->
+            <div class="fact-list" data-pd-session-info hidden>
+              <div class="fact-list__item"><span data-i18n="cp.delivery.session.loc">Location</span><span data-pd-si-loc></span></div>
+              <div class="fact-list__item"><span data-i18n="cp.delivery.session.time">Time</span><span data-pd-si-time></span></div>
+              <div class="fact-list__item"><span data-i18n="cp.delivery.session.status">Status</span><span><span class="badge" data-pd-si-status><span></span></span></span></div>
+              <div class="fact-list__item"><span data-i18n="cp.delivery.session.manage">Pickup management</span><span><a class="card__link" href="pickup-detail.html" data-pd-si-link data-i18n="cp.delivery.session.view">View session</a></span></div>
             </div>
-            <div class="field__hint" data-i18n="pd.delivery.session.hint">Redeemed at this session's scanner — URL, password and roster live in Pickup management.</div>
           </div>
         </div>
         </div>
@@ -706,13 +816,8 @@
           </div>
         </div>
       </section>
-
-
-      </div><!-- /tab-panel delivery -->
-
-      <!-- ════════ TAB · 關聯（Relations）：§2.13 標籤＋§2.14 電影 ════════ -->
-      <div class="tab-panel" data-panel="relations" role="tabpanel">
-
+            </div>
+            <div data-nav-panel="relations">
       <!-- §3-10 商品標籤（獨立一區；D136；F10）-->
       <section class="form-section form-section--outlined">
         <div class="form-section__head">
@@ -738,13 +843,8 @@
         </div>
         <div data-pd-film-picker></div>
       </section>
-
-      </div><!-- /tab-panel relations -->
-
-      </div><!-- /detail-main -->
-
-      <!-- 右側唯讀 meta 欄（跨分頁常駐）-->
-      <aside class="detail-rail">
+            </div>
+            <div data-nav-panel="publish">
         <!-- §2.16 上架設定／開賣設定 ＋ §2.17 非公開連結（spec 5.1.5.1 §2.16／§2.17，定義本體在主規格
              §7.14 · D241；版面拆兩段見 D245，2026-09-04）：原本一張卡三列平鋪，改成兩張卡、
              每張卡兩層。細節頁的上架用開關而非三選一——商品已經存在了，這裡只剩「現在開著還是關著」
@@ -866,40 +966,17 @@
             <p class="lctl__note" data-i18n="cp.listing.pending">Time zone &amp; exact timing pending spec.</p>
           </div>
         </section>
-
-        <section class="form-section form-section--outlined">
-          <div class="form-section__head">
-            <h3 class="form-section__title" data-i18n="product-detail.delivery.card">Delivery &amp; pickup</h3>
-          </div>
-          <!-- 取貨方式二選一；選物流配送顯示發貨地址、選 QR 領取顯示領取場次（data-when-delivery 由交付分頁的切換連動）-->
-          <div class="kv" data-when-delivery="shipping"><span class="kv__k" data-i18n="cp.delivery.title">Delivery method</span><span class="kv__v" data-i18n="cp.delivery.shipping">Shipping</span></div>
-          <div class="kv" data-when-delivery="shipping"><span class="kv__k" data-i18n="product-detail.ship.addr">Shipping address</span><span class="kv__v" style="max-width:170px">Tainan studio · 700</span></div>
-          <div class="kv kv--lead" data-when-delivery="qr" hidden><span class="kv__k" data-i18n="cp.delivery.title">Delivery method</span><span class="kv__v" data-i18n="product-detail.qr.pickup">QR pickup</span></div>
-          <div class="kv" data-when-delivery="qr" hidden><span class="kv__k" data-i18n="product-detail.qr.session">Pickup session</span><span class="kv__v" style="max-width:170px">Taipei signing — pickup (today)</span></div>
-        </section>
-
-        <section class="form-section form-section--outlined" data-feat="S24">
-          <div class="form-section__head">
-            <h3 class="form-section__title" data-i18n="product-detail.rail.inuse">Related</h3>
-          </div>
-          <div class="when-data">
-            <div class="kv" style="align-items:flex-start">
-              <span class="kv__k" data-i18n="product-detail.ref.label">Project</span>
-              <span class="kv__v" style="max-width:170px">
-                <a class="card__link" href="create-project.html" data-route-keep data-i18n="product-detail.ref.row1">Kowloon After Dark OST · pre-order reward $50 tier</a>
-              </span>
             </div>
-            <!-- 組合引用：規格 §2.4 只定義「項目引用」，組合尚未納入＝產品缺口，待上游確認 -->
-            <div class="kv" style="align-items:flex-start">
-              <span class="kv__k" data-i18n="product-detail.rail.bundle">Bundle</span>
-              <span class="kv__v" style="max-width:170px">
-                <a class="card__link" href="bundle-detail.html" data-route-keep>Tour bundle</a>
-              </span>
-            </div>
-          </div>
-          <div class="when-empty field__hint" data-i18n="product-detail.ref.empty">Not referenced by any project yet.</div>
-        </section>
-      </aside>
+          </div><!-- /nav-sections -->
+        </div><!-- /data-nav settings -->
+      </div><!-- /tab-panel settings -->
+
+      </div><!-- /detail-main -->
+
+      <!-- 右側唯讀 meta 欄（跨分頁常駐）-->
+      <!-- 2026-09-11 使用者裁示：常駐右欄退場，四張卡（上架設定／開賣設定／交付與取貨／使用中）
+           改排在總覽分頁主體底下的 .detail-cards——與銷售設定分頁、組合包詳情頁同一套單欄版面。
+           右欄原本只在總覽分頁顯示（其餘分頁以 --full／--norail 收起），所以搬進總覽等於沒有少掉任何入口。 -->
       </div><!-- /detail-grid -->
 
         </div><!-- /section-nav__body -->
@@ -915,7 +992,7 @@
 <div data-restock-modal-host></div>
 
 <!-- 補貨紀錄 popup（2026-07-22）：內容＝原「補貨紀錄」section，改由庫存卡的「補貨紀錄」鈕開啟。
-     data-restock-log 仍在此，logRow()/markReceived() 照舊寫得到。 -->
+     data-restock-log 仍在此，由 pdStockHistory.render() 填列。 -->
 <div class="payout-modal" data-pd-history-modal hidden>
   <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-history-title">
     <div class="payout-dialog__head">
@@ -925,77 +1002,44 @@
     <div class="payout-dialog__body">
       <p class="form-section__sub" style="margin-bottom:var(--sp-16)" data-i18n="restock.history.hint">Every restock (immediate or scheduled) is logged here — newest first.</p>
       <div class="restock-log-wrap">
-        <div class="restock-log" data-restock-log>
+        <div class="restock-log restock-log--history" data-restock-log>
           <div class="restock-log__head">
-            <span class="restock-log__opt" data-i18n="restock.col.option">Option</span>
-            <span data-i18n="restock.col.qty">Quantity</span>
             <span data-i18n="restock.col.date">Date</span>
-            <span data-i18n="restock.col.supplier">Supplier</span>
+            <span data-i18n="stock.history.col.type">Type</span>
+            <span class="restock-log__opt" data-i18n="restock.col.option">Option</span>
+            <span data-i18n="stock.history.col.delta">Change</span>
+            <span data-i18n="stock.history.col.note">Note</span>
             <span data-i18n="restock.col.status">Status</span>
           </div>
-          <div class="restock-log__row">
-            <span class="restock-log__opt">M</span>
-            <span class="restock-log__qty">+40</span>
-            <span class="restock-log__muted">2026/06/18</span>
-            <span class="restock-log__muted">Riso House</span>
-            <span><span class="badge badge--success"><span data-i18n="restock.status.done">Completed</span></span></span>
-          </div>
-          <div class="restock-log__row">
-            <span class="restock-log__opt">S</span>
-            <span class="restock-log__qty">+25</span>
-            <span class="restock-log__muted">2026/05/02</span>
-            <span class="restock-log__muted">Riso House</span>
-            <span><span class="badge badge--success"><span data-i18n="restock.status.done">Completed</span></span></span>
-          </div>
+          <!-- 列由 pdStockHistory.render() 填入（示範資料在 JS） -->
         </div>
       </div>
     </div>
   </section>
 </div>
 
-<!-- 編輯 popup（2026-07-23 改版）：頁面表格唯讀，改價/成本＋管理規格在此。
-     單規格＝價格＋成本；多規格＝價格/成本（全組合共用）＋「選項值管理」（加值/改名/移除，
-     底下規格組合表即時重算）——兩階層商品（顏色×尺寸）由此增減值、不再是單一組合新增。 -->
-<div class="payout-modal" data-pd-edit-modal hidden>
-  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-edit-title">
+
+<!-- 鎖定庫存彈窗（2026-09-11 使用者裁示：表格唯讀，鎖定走一次性編輯）：
+     卡頭「鎖定庫存」開全部選項組合、列尾 ⋯ 只開那一列；兩者同一個彈窗，差別只在列數。
+     一列一個選項組合：庫存（唯讀）／鎖給單售（可填）／未鎖定（即時重算）。
+     表沿用 stock-allocation 的四欄版（.salloc--bundle）——欄數與節奏一樣，只是欄名換成單售的語意。 -->
+<div class="payout-modal" data-pd-lock-modal hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-lock-title">
     <div class="payout-dialog__head">
-      <h2 class="payout-dialog__title" id="pd-edit-title" data-i18n="product-detail.edit.title">Edit pricing &amp; options</h2>
-      <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="npp.close" data-pd-edit-close><i data-lucide="x" class="ztor-icon"></i></button>
+      <div>
+        <h2 class="payout-dialog__title" id="pd-lock-title" data-i18n="product-detail.var.lock">Lock stock</h2>
+        <p class="field__hint" data-pd-lock-sub></p>
+      </div>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="npp.close" data-pd-lock-close><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
     <div class="payout-dialog__body">
-      <div class="form-grid">
-        <div class="field">
-          <div class="field__label" data-i18n="product-detail.field.price">Price</div>
-          <span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" data-pd-edit-price value="24.00"></span>
-        </div>
-        <div class="field">
-          <div class="field__label"><span data-i18n="cp.cost">Cost</span> <span class="text-sub" data-i18n="cp.cost.note">creator only</span></div>
-          <span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" data-pd-edit-cost value="9.00"></span>
-        </div>
-      </div>
-      <div data-when-var="multiple" hidden>
-        <div class="field__label" style="margin-top:var(--sp-8)" data-i18n="product-detail.edit.options">Options</div>
-        <div class="field__hint" style="margin-bottom:var(--sp-10)" data-i18n="product-detail.edit.options-hint">Add, rename or remove option values — combinations below update automatically.</div>
-        <!-- 每個選項一塊：選項名 + 值清單（可加/改/移）。由 JS 依商品 options 渲染 -->
-        <div data-pd-opt-editor></div>
-        <div class="field__label" style="margin-top:var(--sp-16)"><span data-i18n="product-detail.edit.combos">Combinations</span> <span class="text-sub" data-pd-combo-count></span></div>
-        <div class="variant-table-wrap">
-          <div class="variant-table variant-table--preview" data-pd-edit-table>
-            <div class="variant-table__head">
-              <span data-i18n="cp.var.col.variant">Variant</span>
-              <span data-i18n="cp.var.col.price">Price</span>
-              <span data-i18n="cp.var.col.stock">Stock</span>
-              <span data-i18n="cp.var.col.sku">SKU</span>
-              <span data-i18n="cp.var.col.cost">Cost</span>
-            </div>
-            <!-- 組合列由 JS 即時重算填入（唯讀預覽） -->
-          </div>
-        </div>
-      </div>
+      <div class="salloc salloc--bundle" data-pd-lock-table></div>
+      <p class="field__error" data-pd-lock-err hidden data-i18n="stock.lock-err">Exceeds unlocked stock</p>
+      <div class="field__hint" data-i18n="product-detail.edit.locks-hint">Blank means the channel shares whatever is unlocked</div>
     </div>
     <div class="payout-dialog__foot">
-      <button class="btn btn--ghost" type="button" data-pd-edit-close data-i18n="payout.cancel">Cancel</button>
-      <button class="btn btn--primary" type="button" data-pd-edit-save data-i18n="product-detail.btn.save">Save</button>
+      <button class="btn btn--ghost" type="button" data-pd-lock-close data-i18n="payout.cancel">Cancel</button>
+      <button class="btn btn--primary" type="button" data-pd-lock-save data-i18n="product-detail.btn.save">Save</button>
     </div>
   </section>
 </div>
@@ -1018,7 +1062,7 @@
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="partials/field-more.js?v=r2.2"></script><script src="partials/date-input.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
-<script src="js/sticky-actions.js?v=r2.2"></script>
+<script src="js/detail-topbar.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="partials/restock-modal.js?v=r2.2"></script>
 <script src="partials/radio-list.js?v=r2.2"></script>
@@ -1061,62 +1105,181 @@
   (function () {
     const host = document.querySelector('[data-restock-modal-host]');
     if (!host || !window.ZTOR_PARTIALS || !window.ZTOR_PARTIALS.createRestock) return;
-    const log = document.querySelector('[data-restock-log]');
-    /* threshold = 10% of stock cap (spec §7.2 / D105); demo cap 40 → 4. current 3 < 4 → Low Stock.
-       2026-07-26 修：改讀 products-store 的同一筆商品，原本這裡寫死 Behind-the-scenes zine 的名稱與庫存數字，
-       補貨面板因此跟頁面上方、跟電子商店清單三邊對不起來。讀不到才退回原本的示範值。 */
-    const _p = window.ztorGetProduct && window.ztorGetProduct(new URLSearchParams(location.search).get('id'));
-    const PRODUCT = _p
-      ? { name: _p.name,
-          current: parseInt(_p.stock, 10) || 0,
-          threshold: parseInt(_p.threshold, 10) || 0,
-          status: _p.status }
-      : { name: 'Pirate Queen zine vol. 02', current: 3, threshold: 4, status: 'low' };
+    const _id = new URLSearchParams(location.search).get('id');
+    /* 每次開窗才讀，補貨／編輯後庫存數字才會是最新的 */
+    function storeProduct() {
+      return (window.ztorGetProduct && window.ztorGetProduct(_id)) || window.pdProduct || null;
+    }
+    function singleItem(p) {
+      return p
+        ? { name: p.name,
+            current: parseInt(p.stock, 10) || 0,
+            threshold: parseInt(p.threshold, 10) || 0,
+            status: p.status }
+        : { name: 'Pirate Queen zine vol. 02', current: 3, threshold: 4, status: 'low' };
+    }
+    /* 多選項商品：一列＝一個選項組合，兩層選項時照第一層分組（與銷售設定表同一種分法）。
+       2026-09-11 使用者反饋：多選項一次性補貨只列一列商品，應列出所有選項組合。 */
+    function isMulti(p) { return !!(p && p.variant === 'multiple' && (p.variants || []).length); }
+    function comboName(v, two) { return (two ? (v.combo || []).slice(1) : (v.combo || [])).join(' / '); }
+    function variantGroups(p, onlyVi) {
+      var vs = p.variants || [];
+      var two = vs[0] && (vs[0].combo || []).length >= 2 && onlyVi == null;
+      var groups = [], byLabel = {};
+      vs.forEach(function (v, i) {
+        if (onlyVi != null && i !== onlyVi) return;
+        var label = onlyVi != null ? (v.combo || []).join(' / ') : comboName(v, two);
+        var item = { name: label, current: parseInt(v.stock, 10) || 0, vi: i };
+        var gl = two ? (v.combo || [])[0] : null;
+        if (!byLabel[gl]) { byLabel[gl] = { label: gl, items: [] }; groups.push(byLabel[gl]); }
+        byLabel[gl].items.push(item);
+      });
+      return groups;
+    }
+    function openRestock(onlyVi) {
+      var p = storeProduct();
+      if (isMulti(p)) restock.openProduct(variantGroups(p, onlyVi));
+      else restock.openSingle(singleItem(p));
+    }
+    /* 立即補貨：把數量加回 store（多選項逐組合、單一規格加總量），再讓庫存卡與表格重畫 */
+    function applyNow(entries) {
+      var p = storeProduct();
+      if (!p) return;
+      if (isMulti(p)) {
+        entries.forEach(function (en) {
+          var v = en.vi != null ? p.variants[en.vi] : null;
+          if (v) v.stock = String((parseInt(v.stock, 10) || 0) + en.qty);
+        });
+        p.stock = String(p.variants.reduce(function (n, v) { return n + (parseInt(v.stock, 10) || 0); }, 0));
+      } else {
+        var add = entries.reduce(function (n, en) { return n + en.qty; }, 0);
+        p.stock = String((parseInt(p.stock, 10) || 0) + add);
+      }
+      if (window.pdRefreshStock) window.pdRefreshStock();
+      document.dispatchEvent(new CustomEvent('pd:stock', { detail: p }));
+    }
 
     function T(key, fallback) { return (window.i18nT && window.i18nT(key)) || fallback; }
-    function logRow(entry, state) {
-      const done = state !== 'restocking';
-      const cls = done ? 'badge--success' : 'badge--warning';
-      const key = done ? 'restock.status.done' : 'restock.status.restocking';
-      const txt = done ? 'Completed' : 'Restocking';
-      const supplier = entry.supplier || T('restock.nosupplier', 'No supplier');
+
+    /* ── 庫存歷史紀錄（2026-09-11 使用者裁示：補貨紀錄＋鎖定紀錄合併一張表）──────────
+       一筆＝{ type: 'restock'|'lock', combo, vi, delta, date, note, state: 'done'|'restocking', qty }。
+       補貨中（state 'restocking'）的筆同時是「補貨中」那張卡的內容，到貨確認後才入庫、轉 done。
+       頁內卡只列最近四筆，彈窗列全部；兩邊同一份資料、同一支 render。示範資料依商品替換（多選項給組合名）。 */
+    const HISTORY = [];
+    function today() { const d = new Date(); return d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0'); }
+    function seedHistory() {
+      HISTORY.length = 0;
+      const p = storeProduct();
+      const multi = isMulti(p);
+      const names = multi ? p.variants.map(function (v) { return (v.combo || []).join(' / '); }) : ['—'];
+      const n0 = names[0], n1 = names[1] || names[0];
+      HISTORY.push({ type: 'lock', combo: n0, vi: multi ? 0 : 'single', delta: '0 → 2', date: '2026/09/05', note: T('stock.history.note.single', 'Locked for single sale'), state: 'done' });
+      HISTORY.push({ type: 'restock', combo: n1, vi: multi ? Math.min(1, names.length - 1) : 'single', delta: '+25', date: '2026/09/02', note: 'Riso House · ' + T('stock.history.note.now', 'Restock now'), state: 'done', qty: 25 });
+      HISTORY.push({ type: 'restock', combo: n0, vi: multi ? 0 : 'single', delta: '+40', date: '2026/08/20', note: 'Riso House · ' + T('stock.history.note.now', 'Restock now'), state: 'done', qty: 40 });
+    }
+    function rowEl(h) {
       const row = document.createElement('div');
       row.className = 'restock-log__row';
+      const lock = h.type === 'lock';
+      const st = h.state === 'restocking'
+        ? '<span class="badge badge--warning"><span data-i18n="restock.status.restocking">Restocking</span></span>'
+        : '<span class="badge badge--success"><span data-i18n="restock.status.done">Completed</span></span>';
       row.innerHTML =
-        '<span class="restock-log__opt">' + (entry.variant || '—') + '</span>' +
-        '<span class="restock-log__qty">+' + entry.qty + '</span>' +
-        '<span class="restock-log__muted">' + T('restock.justnow', 'Just now') + '</span>' +
-        '<span class="restock-log__muted">' + supplier + '</span>' +
-        '<span><span class="badge ' + cls + '"><span data-i18n="' + key + '">' + txt + '</span></span></span>';
-      /* 插在表頭之後（表頭是第一個子元素），新的補貨排在最上面 */
-      if (log) {
-        const head = log.querySelector('.restock-log__head');
-        log.insertBefore(row, head ? head.nextSibling : log.firstChild);
-      }
-      if (window.ztorIcons) window.ztorIcons.applyIcons(row);
-      if (window.applyI18n) window.applyI18n(row);
+        '<span class="restock-log__muted">' + esc(h.date) + '</span>' +
+        '<span data-i18n="' + (lock ? 'stock.history.type.lock' : 'stock.history.type.restock') + '">' + (lock ? 'Lock' : 'Restock') + '</span>' +
+        '<span class="restock-log__opt">' + esc(h.combo || '—') + '</span>' +
+        '<span class="restock-log__qty' + (lock ? ' restock-log__qty--lock' : '') + '">' + esc(h.delta) + '</span>' +
+        '<span class="restock-log__muted">' + esc(h.note || '') + '</span>' +
+        '<span>' + st + '</span>';
+      return row;
     }
-    function markReceived() {
-      if (!log) return;
-      log.querySelectorAll('.restock-log__row .badge--warning').forEach(function (b) {
-        b.className = 'badge badge--success';
-        b.innerHTML = '<span data-i18n="restock.status.done">Completed</span>';
-        if (window.applyI18n) window.applyI18n(b);
+    function esc(x) { return String(x == null ? '' : x).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+    function renderHistory() {
+      [[document.querySelector('[data-restock-log]'), Infinity], [document.querySelector('[data-pd-history-inline]'), 4]].forEach(function (pair) {
+        const host = pair[0]; if (!host) return;
+        host.querySelectorAll('.restock-log__row').forEach(function (r) { r.remove(); });
+        HISTORY.slice(0, pair[1]).forEach(function (h) { host.appendChild(rowEl(h)); });
+        if (window.applyI18n) window.applyI18n(host);
       });
+      renderPending();
+      /* 補貨中的量會出現在 KPI 第四塊與表格的「補貨中」欄，紀錄一變就重算 */
+      if (window.pdRefreshStock) window.pdRefreshStock();
+      var p = storeProduct();
+      if (p) document.dispatchEvent(new CustomEvent('pd:stock', { detail: p }));
     }
+    /* 補貨中那張卡：一列一筆計時補貨、附到貨確認；沒有就整張收起 */
+    function renderPending() {
+      const card = document.querySelector('[data-pd-pending]');
+      const list = document.querySelector('[data-pd-pending-list]');
+      if (!card || !list) return;
+      const pend = HISTORY.filter(function (h) { return h.state === 'restocking'; });
+      card.hidden = !pend.length;
+      list.innerHTML = pend.map(function (h) {
+        const i = HISTORY.indexOf(h);
+        return '<div class="alert alert--row alert--info"><span class="alert__icon"><i data-lucide="truck" class="ztor-icon"></i></span>' +
+          '<div class="alert__body"><div class="alert__title">' + (h.combo && h.combo !== '—' ? esc(h.combo) + ' ' : '') + '+' + h.qty + ' ' + T('stock.unit', 'pcs') + (h.supplier ? ' · ' + esc(h.supplier) : '') + '</div>' +
+          '<div class="alert__meta">' + esc(T('stock.pending.eta', 'ETA {d}').replace('{d}', h.eta || '—')) + '</div></div>' +
+          '<button class="btn btn--outline btn--sm" type="button" data-pd-receive="' + i + '"><span data-i18n="restock.receive">Mark received</span></button></div>';
+      }).join('');
+      if (window.ztorIcons) window.ztorIcons.applyIcons(list);
+      if (window.applyI18n) window.applyI18n(list);
+    }
+    /* 到貨確認：該筆入庫（逐組合）、轉已完成，KPI 與表格重算 */
+    function receive(i) {
+      const h = HISTORY[i]; if (!h || h.state !== 'restocking') return;
+      h.state = 'done';
+      applyNow([{ vi: h.vi === 'single' ? null : h.vi, qty: h.qty, name: h.combo }]);
+      renderHistory();
+    }
+    window.pdStockHistory = {
+      add: function (entry) { HISTORY.unshift(Object.assign({ date: today(), state: 'done' }, entry)); renderHistory(); },
+      pendingFor: function (vi) {
+        return HISTORY.filter(function (h) { return h.state === 'restocking' && (vi === undefined || String(h.vi) === String(vi)); })
+          .reduce(function (n, h) { return n + (h.qty || 0); }, 0);
+      },
+      render: renderHistory
+    };
+    document.addEventListener('click', function (e) {
+      const b = e.target.closest('[data-pd-receive]');
+      if (b) receive(Number(b.getAttribute('data-pd-receive')));
+    });
+    /* ⚠ 只聽換語言那一發（ztor:lang-changed），不能聽 i18n:applied：renderHistory 自己會呼叫 applyI18n，
+       而 applyI18n 每次都會廣播 i18n:applied——聽它就是自己叫自己，無限迴圈把分頁卡死（2026-09-11 實際炸過兩次）。 */
+    document.addEventListener('ztor:lang-changed', function () { renderHistory(); });
 
-    /* Order model: onSubmit receives every restocked line (qty>0). Product
-       detail is a single-variant product so it's normally one line, but the
-       hooks handle N uniformly. */
     const restock = window.ZTOR_PARTIALS.createRestock(host, {
       onSubmit: function (entries, mode) {
-        (entries || []).forEach(function (en) { logRow(en, mode === 'scheduled' ? 'restocking' : 'done'); });
+        var p = storeProduct();
+        var sched = mode === 'scheduled';
+        /* 一筆一列寫進庫存歷史紀錄；計時補貨進「補貨中」，到貨確認才入庫 */
+        (entries || []).slice().reverse().forEach(function (en) {
+          window.pdStockHistory.add({
+            type: 'restock', combo: isMulti(p) ? en.name : '—', vi: en.vi == null ? 'single' : en.vi,
+            delta: '+' + en.qty, qty: en.qty, supplier: en.supplier || '', eta: en.eta || '',
+            note: (en.supplier ? en.supplier + ' · ' : '') + (sched ? T('stock.history.note.scheduled', 'Scheduled · ETA {d}').replace('{d}', en.eta || '—') : T('stock.history.note.now', 'Restock now')),
+            state: sched ? 'restocking' : 'done'
+          });
+        });
+        if (!sched) applyNow(entries || []);
       },
-      onReceive: function () { markReceived(); }
+      /* 彈窗裡的「到貨確認」：把所有補貨中的筆一次收貨 */
+      onReceive: function () {
+        HISTORY.forEach(function (h, i) { if (h.state === 'restocking') receive(i); });
+      }
     });
+    seedHistory();
+    renderHistory();
 
     document.addEventListener('click', function (e) {
-      if (e.target.closest('[data-restock-open]')) { e.preventDefault(); restock.openSingle(PRODUCT); }
+      var ro = e.target.closest('[data-restock-open]');
+      if (ro) {
+        e.preventDefault();
+        /* 列尾 ⋯ 的補貨只開那一個組合；卡頭的補貨開全部 */
+        var row = ro.closest('.variant-table__row[data-vi]');
+        var vi = row && row.getAttribute('data-vi');
+        openRestock(vi != null && vi !== 'single' ? parseInt(vi, 10) : null);
+        var dd = ro.closest('details.dropdown'); if (dd) dd.removeAttribute('open');
+      }
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') restock.close(); });
   })();
@@ -1253,50 +1416,61 @@
     }
     /* 逐選項組合表改了鎖定量之後回頭叫這個重畫（兩支腳本各自封閉，用一個具名橋接）。 */
     window.pdRefreshStock = function () { refreshStockStats(); };
+    /* 四塊 KPI 磚（2026-09-11 · A 案）：在庫／單售可售／鎖給組合／補貨中。
+       在庫＝池的總量（限量帶「/ 上限」）；單售可售＝鎖給單售＋未鎖定（單售管道能賣的量，問 ListingState）；
+       鎖給組合＝各組合包從這件商品鎖走的量加總；補貨中＝計時補貨還沒到貨確認的量（問 pdStockHistory）。 */
+    function bundleLockedQty() {
+      const L = window.ListingState;
+      let sum = 0;
+      bundlesOfProduct().forEach(b => {
+        const v = isMultiVar() ? L.variantsChannelLocked(product.variants, { bundle: b.id }) : L.lockOf(product, { bundle: b.id });
+        if (v !== null) sum += v;
+      });
+      return sum;
+    }
     function refreshStockStats() {
       const L = window.ListingState;
       if (!product || !L) return;
       const total = poolTotalQty();
-      const free = poolFree();
-      const lockedSingle = lockedSingleQty();
       const setStat = (sel, v) => { const el = document.querySelector(sel); if (el) el.textContent = qtyText(v); };
-      setStat('[data-pd-stat-total]', total);
-      setStat('[data-pd-stat-free]', free);
-      setStat('[data-pd-stat-single]', chQty('single'));
-      const capEl = document.querySelector('[data-pd-stat-cap]');
+      setStat('[data-pd-kpi-onhand]', total);
+      setStat('[data-pd-kpi-sellable]', chQty('single'));
+      setStat('[data-pd-kpi-bundle]', bundleLockedQty());
+      setStat('[data-pd-kpi-incoming]', window.pdStockHistory ? window.pdStockHistory.pendingFor() : 0);
+      const capEl = document.querySelector('[data-pd-kpi-cap]');
       if (capEl) {
         const cap = (state.edition === 'limited' && product.cap) ? Number(product.cap) : null;
         capEl.hidden = cap === null;
         capEl.textContent = cap === null ? '' : ' / ' + cap;
       }
-      /* 分配長條：兩段（鎖給單售／未鎖定）。不限量的池畫不出比例，整條收起來。 */
-      const split = document.querySelector('[data-pd-split]');
-      const legend = document.querySelector('[data-pd-split-legend]');
-      const unlimited = (total === Infinity);
-      if (split) split.hidden = unlimited;
-      if (legend) legend.hidden = unlimited;
-      if (!unlimited) {
-        const segS = document.querySelector('[data-pd-split-single]');
-        const segF = document.querySelector('[data-pd-split-free]');
-        if (segS) segS.style.flex = String(lockedSingle);
-        if (segF) segF.style.flex = String(free);
-        const vS = document.querySelector('[data-pd-split-single-v]');
-        const vF = document.querySelector('[data-pd-split-free-v]');
-        if (vS) vS.textContent = qtyText(lockedSingle);
-        if (vF) vF.textContent = qtyText(free);
-      }
-      /* 所有管道都鎖定＝留在池裡的量沒有人能賣（使用者 2026-09-10 確認的語意）。
-         多選項逐組合判定；單一規格看商品層。 */
-      const meta = document.querySelector('[data-pd-stat-free-meta]');
-      if (meta) {
-        const chans = ['single'].concat(bundlesOfProduct().map(b => ({ bundle: b.id })));
-        const allLocked = isMultiVar()
-          ? L.variantsAllLocked(product.variants, chans)
-          : L.allChannelsLocked(product, bundlesOfProduct());
-        const all = allLocked && free !== Infinity && free > 0;
-        meta.hidden = !all;
-        if (all) meta.textContent = T('stock.pool-left', '{n} left in the pool — no channel can sell them').replace('{n}', free);
-      }
+      /* 庫存管理卡的副標：門檻數字 */
+      const th = thresholdQty();
+      document.querySelectorAll('[data-i18n="stock.manage.sub"]').forEach(el => { el.textContent = T('stock.manage.sub', 'Red = below the threshold of {n}. Price, SKU and cost live in Product settings.').replace('{n}', th); });
+      renderDest();
+    }
+    /* 低庫存門檻：商品資料有數字就用它，否則 3（demo 退路）。 */
+    function thresholdQty() { const n = Number(product && product.threshold); return (isFinite(n) && n > 0) ? n : 3; }
+    window.pdThreshold = thresholdQty;
+    /* 庫存去向：一列一個組合包，右側鎖定量；多選項時列出逐組合的鎖定明細 */
+    function renderDest() {
+      const host = document.querySelector('[data-pd-dest]');
+      const empty = document.querySelector('[data-pd-dest-empty]');
+      if (!host) return;
+      const L = window.ListingState;
+      const bs = bundlesOfProduct();
+      if (empty) empty.hidden = !!bs.length;
+      host.innerHTML = bs.map(b => {
+        let qty = null, detail = '';
+        if (isMultiVar()) {
+          qty = L.variantsChannelLocked(product.variants, { bundle: b.id });
+          detail = product.variants.map(v => { const l = L.variantLockOf(v, { bundle: b.id }); return l ? (v.combo || []).join(' / ') + ' ' + l : ''; }).filter(Boolean).join(' · ');
+        } else qty = L.lockOf(product, { bundle: b.id });
+        const meta = (qty !== null && qty > 0) ? (detail || T('stock.dest.locked', '{n} locked').replace('{n}', qty)) : T('stock.dest.unlocked', 'Not locked — ships from unlocked stock');
+        return '<div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">' +
+          '<div class="data-list__title"><a class="card__link" href="bundle-detail.html?id=' + encodeURIComponent(b.id) + '">' + esc(b.name || b.id) + '</a></div>' +
+          '<div class="data-list__meta">' + esc(meta) + '</div></div></div>' +
+          '<div class="data-list__amount">' + (qty !== null && qty > 0 ? esc(T('stock.dest.locked', '{n} locked').replace('{n}', qty)) : '<span class="text-sub">0</span>') + '</div></div>';
+      }).join('');
     }
 
     /* 依商品資料配置整頁（e-shop 以 ?id 開啟）。 */
@@ -1313,13 +1487,30 @@
                  : (p.delivery === 'qr' ? 'cp.delivery.qr' : 'cp.delivery.shipping');
         var dtxt = (window.i18nT && window.i18nT(dkey)) ||
                    (p.cat === 'digital' ? 'Delivery & access' : p.delivery === 'qr' ? 'QR code pickup' : 'Shipping');
-        ['#pd-delivery-title', '[data-tab="delivery"]'].forEach(function (sel) {
+        ['#pd-delivery-title', '[data-nav-item="delivery"]'].forEach(function (sel) {
           var el = document.querySelector(sel);
           if (el) { el.setAttribute('data-i18n', dkey); el.textContent = dtxt; }
         });
       })();
       // 頁首：標題／副標／badge
       setText('pd-title', p.name); setVal('pd-title-input', p.name); setText('pd-sub', p.sub);
+      /* 頁首識別小字：價格（多選項給區間）＋選項模式 */
+      (function () {
+        var priceEl = document.querySelector('[data-pd-hero-price]'), varEl = document.querySelector('[data-pd-hero-var]');
+        var fmt = function (v) { var n = Number(String(v).replace(/[^0-9.]/g, '')); return isFinite(n) && String(v) !== '' ? 'NT$' + n.toLocaleString('en-US') : '—'; };
+        if (priceEl) {
+          var vals = (p.variants || []).map(function (v) { return Number(v.price || p.price); }).filter(isFinite);
+          if (p.variant === 'multiple' && vals.length) {
+            var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+            priceEl.textContent = lo === hi ? fmt(lo) : fmt(lo) + '–' + fmt(hi);
+          } else priceEl.textContent = fmt(p.price);
+        }
+        if (varEl) {
+          var key = p.variant === 'multiple' ? 'cp.var.multiple' : 'cp.var.single';
+          varEl.setAttribute('data-i18n', key);
+          varEl.textContent = T(key, p.variant === 'multiple' ? 'Multiple options' : 'Single option');
+        }
+      })();
       // 瀏覽器分頁標題也跟著商品走（原本固定寫死第一個商品名）
       if (p.name) document.title = p.name + ' · Product detail · Ztor';
       // 麵包屑：分類段依主分類切 key，末段換成商品名
@@ -1358,18 +1549,6 @@
          移掉 data-i18n，否則語言切換時 i18n 會把寫死的示範文案蓋回來。 */
       const descEl = document.getElementById('pd-desc');
       if (descEl && p.sub) { descEl.removeAttribute('data-i18n'); descEl.value = p.sub; }
-      if (p.sourceUrl) {
-        var sourceLink = document.getElementById('pd-source-link');
-        if (!sourceLink) {
-          sourceLink = document.createElement('a'); sourceLink.id = 'pd-source-link'; sourceLink.className = 'btn btn--ghost btn--sm';
-          /* 2026-07-27：原本寫死繁中，英文語系漏譯。掛 data-i18n 讓 applyI18n 在
-             每次切語言時重譯（這顆只建立一次，沒有 key 就永遠停在建立當下的語言）。 */
-          sourceLink.setAttribute('data-i18n', 'product-detail.source-link');
-          sourceLink.textContent = (window.i18nT && window.i18nT('product-detail.source-link')) || '';
-          var titleEl = document.getElementById('pd-title'); if (titleEl && titleEl.parentElement) titleEl.parentElement.appendChild(sourceLink);
-        }
-        sourceLink.href = p.sourceUrl; sourceLink.target = '_blank'; sourceLink.rel = 'noopener';
-      }
       renderBadges();
       // 次分類 select（依主分類選對的 select、設對的值）
       selectSub(p.cat === 'digital' ? 'pd-sub-digi' : 'pd-sub-phys', p.subKey);
@@ -1669,10 +1848,15 @@
     var pickup = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createPickupSession
       /* 2026-08-01：建立成功直接落地到場次詳情頁（彈窗的 result step 已撤除）*/
       ? window.ZTOR_PARTIALS.createPickupSession(host, {
-          onCreate: function () { location.href = 'pickup-detail.html'; }
+          /* 2026-09-11：不再跳走，剛建的場次直接成為選項並在底下列出資訊（同 create-product）。 */
+          onCreate: function (session) { if (info) info.addCreated(session); }
         }) : null;
-    var btn = document.querySelector('[data-pd-new-session]');
-    if (btn && pickup) btn.addEventListener('click', function () { pickup.openForProduct('zine'); });
+    var sel = document.getElementById('pd-pickup-session');
+    var info = (sel && window.ZTOR_PARTIALS.bindPickupSessionInfo)
+      ? window.ZTOR_PARTIALS.bindPickupSessionInfo(sel, document.querySelector('[data-pd-session-info]')) : null;
+    if (sel && pickup) sel.addEventListener('zselect:action', function (e) {
+      if (e.detail && e.detail.action === 'new-session') pickup.openForProduct('zine');
+    });
   })();
 </script>
 <script>
@@ -1712,8 +1896,8 @@
          · overview＝維持常駐右欄（上架設定／交付卡／使用中）。 */
       const grid = document.querySelector('.detail-grid');
       if (grid) {
-        grid.classList.toggle('detail-grid--full', name === 'price-stock');
-        grid.classList.toggle('detail-grid--norail', name === 'delivery' || name === 'relations');
+        /* 2026-09-11：右欄已退場（四張卡移進總覽分頁），版面一律單欄。 */
+        grid.classList.add('detail-grid--full');
       }
       if (push && window.history && history.replaceState) history.replaceState(null, '', '#' + name);
     }
@@ -1730,6 +1914,96 @@
     });
     const initial = (location.hash || '').replace('#', '');
     if (initial) activate(initial, false);
+    window.pdActivateTab = function (name) { activate(name, true); };
+  })();
+</script>
+<script>
+  /* 頂列黏附（2026-09-11，與項目／系列／活動詳情同一支 js/detail-topbar.js）：
+     麵包屑那一列跟著內容捲走，整個 hero 捲掉之後精簡列（主圖縮圖＋商品名＋頁面動作）從上緣滑進來。 */
+  (function () {
+    var bar = document.querySelector('.detail-topbar');
+    if (!window.ZtorDetailTopbar || !bar) return;
+    window.ZtorDetailTopbar.init({
+      bar: bar,
+      hero: document.querySelector('.pd-hero'),
+      mini: document.querySelector('[data-pd-mini]'),
+      crumb: bar.querySelector('.page-crumb'),
+      onStick: function () {
+        var cover = document.getElementById('pd-mini-cover'), poster = document.getElementById('pd-hero-cover');
+        var name = document.getElementById('pd-mini-name'), title = document.getElementById('pd-title');
+        if (cover && poster) { cover.hidden = !poster.getAttribute('src'); cover.src = poster.src; cover.alt = poster.alt || ''; }
+        if (name && title) name.textContent = title.textContent;
+      }
+    });
+  })();
+</script>
+<script>
+  /* 商品設定分頁的分節橫列（2026-09-11）：與 event-detail.html 的 initSectionNav 同一套做法——
+     [data-nav] 底下 [data-nav-item] 是入口、[data-nav-panel] 是內容，全部排在同一頁，
+     上排是「跳到那一節 ＋ 我現在在哪一節」。捲動同步照 event-detail 的幾何判斷
+     （上緣參考線、捲到底標最後一節、內容比視窗短時標第一節）。 */
+  (function () {
+    const root = document.querySelector('[data-nav="settings"]');
+    if (!root) return;
+    const items = () => Array.from(root.querySelectorAll('[data-nav-item]'));
+    const panels = () => Array.from(root.querySelectorAll('[data-nav-panel]'));
+    const mark = key => items().forEach(b => b.classList.toggle('tabs__item--active', b.dataset.navItem === key));
+    let spyOff = false, spyTimer = null;
+    const go = key => {
+      const t = panels().find(p => p.dataset.navPanel === key);
+      if (!t) return;
+      mark(key);
+      spyOff = true;
+      /* 自己算目標位置、不用 scrollIntoView：捲過去之後頂列才會黏住並把橫列往下推，
+         scroll-margin 在起跑那一刻量不到這一段，節首會停在橫列底下。
+         目標＝節首落在「頂列黏住高度＋橫列高度＋一個節距」之下。 */
+      const sc = scroller();
+      const scTop = sc && sc.getBoundingClientRect ? sc.getBoundingClientRect().top : 0;
+      const bar = document.querySelector('.detail-topbar');
+      const tb = root.querySelector('.list-toolbar');
+      const offset = (bar ? Math.max(0, bar.offsetHeight - scTop) : 0) + (tb ? tb.offsetHeight : 0) + 18;
+      const y = sc.scrollTop + t.getBoundingClientRect().top - scTop - offset;
+      sc.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+      clearTimeout(spyTimer);
+      spyTimer = setTimeout(() => { spyOff = false; mark(key); }, 920);
+    };
+    root.addEventListener('click', e => {
+      const b = e.target.closest('[data-nav-item]');
+      if (b && !b.hidden) go(b.dataset.navItem);
+    });
+    /* 上緣參考線＝吸頂橫列的下緣再往下一點：頂列黏住時橫列會被推低（section-nav.css 的 --detail-bar-h），
+       所以每次量、不寫死 96。 */
+    const LINE = () => { const tb = root.querySelector('.list-toolbar'); return tb ? tb.getBoundingClientRect().bottom + 30 : 96; };
+    const scroller = () => document.querySelector('.main') || document.scrollingElement;
+    const sync = () => {
+      if (spyOff) return;
+      const panel = root.closest('.tab-panel');
+      if (panel && !panel.classList.contains('tab-panel--active')) return;
+      const vis = panels().filter(p => !p.hidden);
+      if (!vis.length) return;
+      const sc = scroller();
+      if (sc && sc.scrollHeight > sc.clientHeight + 4 && sc.scrollHeight - sc.scrollTop - sc.clientHeight < 4) {
+        mark(vis[vis.length - 1].dataset.navPanel);
+        return;
+      }
+      let cur = vis[0];
+      const line = LINE();
+      for (const p of vis) { if (p.getBoundingClientRect().top <= line) cur = p; }
+      mark(cur.dataset.navPanel);
+    };
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(sync, { rootMargin: '0px 0px -60% 0px', threshold: [0, 0.01, 0.5, 1] });
+      panels().forEach(p => io.observe(p));
+    }
+    let raf = 0;
+    const onScroll = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; sync(); }); };
+    (document.querySelector('.main') || window).addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    /* 總覽的設定概覽列用：先切到商品設定分頁，下一幀（分頁顯示後）再捲到那一節 */
+    window.pdSettingsGo = function (key) {
+      if (window.pdActivateTab) window.pdActivateTab('settings');
+      requestAnimationFrame(() => go(key));
+    };
   })();
 </script>
 <script>
@@ -1790,7 +2064,7 @@
       return {
         price: p.price || '', cost: p.cost || '',
         options: (p.options || []).map(function (o) { return { name: o.name, values: (o.values || []).slice() }; }),
-        variants: (p.variants || []).map(function (v) { return { combo: (v.combo || []).slice(), sku: v.sku || '', stock: v.stock || '0', delisted: !!v.delisted, locks: copyLocks(v.locks) }; })
+        variants: (p.variants || []).map(function (v) { return { combo: (v.combo || []).slice(), sku: v.sku || '', stock: v.stock || '0', price: v.price || '', cost: v.cost || '', delisted: !!v.delisted, locks: copyLocks(v.locks) }; })
       };
     }
     var MODEL = copyModel(product);
@@ -1821,12 +2095,12 @@
       var prev = {}; m.variants.forEach(function (v) { prev[comboKey(v.combo)] = v; });
       m.variants = combos.map(function (c) {
         var old = prev[comboKey(c)];
-        return { combo: c, sku: old ? old.sku : '', stock: old ? old.stock : '0', delisted: old ? old.delisted : false, locks: copyLocks(old && old.locks) };
+        return { combo: c, sku: old ? old.sku : '', stock: old ? old.stock : '0', price: old ? (old.price || '') : '', cost: old ? (old.cost || '') : '', delisted: old ? old.delisted : false, locks: copyLocks(old && old.locks) };
       });
     }
 
     function kebabHTML() {
-      return '<details class="dropdown"><summary class="btn btn--icon btn--xs" type="button" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-restock-open><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button><button class="dropdown__item" type="button" role="menuitem" data-variant-delist><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.var.delist">Delist this option</span></button><button class="dropdown__item" type="button" role="menuitem" data-variant-relist hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.var.relist">Relist this option</span></button></div></details>';
+      return '<details class="dropdown"><summary class="btn btn--icon btn--xs" type="button" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-variant-lock><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="product-detail.var.lock">Lock stock</span></button><button class="dropdown__item" type="button" role="menuitem" data-variant-delist><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.var.delist">Delist this option</span></button><button class="dropdown__item" type="button" role="menuitem" data-variant-relist hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.var.relist">Relist this option</span></button></div></details>';
     }
 
     /* 逐選項組合的鎖定（D255／D258）：形狀是 { single: n|null, bundles: { <id>: n|null } }。
@@ -1846,44 +2120,54 @@
        單一規格＝只有一個選項組合，用商品名當那一列，價格／成本／SKU／鎖定量住在商品層；
        多選項＝一列一個組合，逐組合各自有值（價格與成本沒填就沿用商品層的值）。
        兩階層（顏色×尺寸）仍依第一個選項分組。可改的欄位是輸入框，庫存唯讀。 */
-    function moneyInput(field, val, vi) {
-      return '<span class="variant-cell--input"><span class="amount-field">'
-        + '<span class="amount-field__unit"><span class="amount-field__sym">$</span></span>'
-        + '<input class="input amount-field__input" data-vc-input="' + field + '" value="' + esc(val || '') + '"></span></span>';
-    }
-    function textInput(field, val) {
-      return '<span class="variant-cell--input"><input class="input" data-vc-input="' + field + '" value="' + esc(val || '') + '"></span>';
-    }
-    function lockInput(val) {
-      return '<span class="variant-cell--input"><input class="input" type="number" min="0" data-vc-input="locked"'
-        + ' value="' + (val === null || val === undefined ? '' : esc(String(val))) + '"'
-        + ' placeholder="' + esc(T('stock.free', 'Unlocked')) + '" data-i18n-placeholder="stock.free"></span>';
+    function lockText(v) { return (v === null || v === undefined) ? '—' : esc(String(v)); }
+    /* 庫存管理表（2026-09-11 · A 案）：表格整張唯讀，只留庫存的欄位——
+       組合（底下 SKU 小字）／在庫（限量帶 / 上限）／鎖給單售／鎖給組合／未鎖定／補貨中／狀態／補貨／⋯。
+       狀態依門檻：在庫 0＝售罄、低於門檻＝低庫存（紅字）、等於門檻＝到門檻（黃字）、其餘正常。
+       價格／SKU／單件成本改在商品設定分頁的表；鎖給單售在「鎖定」彈窗（卡頭批次、列尾 ⋯ 單列）；加量一律走補貨。 */
+    function stockState(onhand) {
+      var th = window.pdThreshold ? window.pdThreshold() : 3;
+      if (onhand === Infinity) return { key: 'stock.st.ok', fb: 'OK', cls: '', cell: '' };
+      if (onhand <= 0) return { key: 'shop.status.soldout', fb: 'Sold out', cls: 'badge--neutral', cell: ' variant-cell--stock-low' };
+      if (onhand < th) return { key: 'stock.st.low', fb: 'Low stock', cls: 'badge--error', cell: ' variant-cell--stock-low' };
+      if (onhand === th) return { key: 'stock.st.threshold', fb: 'At threshold', cls: 'badge--warning', cell: ' variant-cell--stock-warn' };
+      return { key: 'stock.st.ok', fb: 'OK', cls: '', cell: '' };
     }
     function rowHTML(o) {
-      return '<span class="variant-cell--variant" data-vc="name">' + esc(o.label) + '</span>'
-        + moneyInput('price', o.price, o.vi)
-        + '<span class="variant-cell--stock' + (isLow(o.stock) ? ' variant-cell--stock-low' : '') + '">' + esc(String(o.stock)) + '</span>'
-        + '<span class="variant-cell--ro variant-cell--total" data-vc="total">' + esc(String(o.stock)) + '</span>'
-        + lockInput(o.locked)
+      var st = stockState(o.stock === '∞' ? Infinity : Number(o.stock));
+      var inc = window.pdStockHistory ? window.pdStockHistory.pendingFor(o.vi) : 0;
+      return '<span class="variant-cell--variant" data-vc="name">' + esc(o.label) + (o.sku ? '<br><span class="text-sub" title="' + esc(o.sku) + '">' + esc(o.sku) + '</span>' : '') + '</span>'
+        + '<span class="variant-cell--stock' + st.cell + '">' + esc(String(o.stock)) + (o.cap ? '<span class="text-sub"> / ' + esc(String(o.cap)) + '</span>' : '') + '</span>'
+        + '<span class="variant-cell--ro" data-vc="locked">' + lockText(o.locked) + '</span>'
+        + '<span class="variant-cell--ro" data-vc="bundle">' + (o.bundle ? esc(String(o.bundle)) : '—') + '</span>'
         + '<span class="variant-cell--ro variant-cell--free" data-vc="free">' + esc(String(o.free)) + '</span>'
-        + textInput('sku', o.sku)
-        + moneyInput('cost', o.cost, o.vi)
+        + '<span class="variant-cell--ro variant-cell--incoming' + (inc ? ' is-on' : '') + '">' + (inc ? '+' + inc : '—') + '</span>'
+        + '<span>' + (st.cls ? '<span class="badge ' + st.cls + '"><span data-i18n="' + st.key + '">' + esc(T(st.key, st.fb)) + '</span></span>' : '<span class="text-sub" data-i18n="' + st.key + '">' + esc(T(st.key, st.fb)) + '</span>') + '</span>'
+        + '<span><button class="btn btn--ghost btn--xs" type="button" data-restock-open data-i18n="e-shop.restock">Restock</button></span>'
         + kebabHTML();
+    }
+    /* 某個組合被組合包鎖走的量（各組合包加總；沒有任何鎖定回 0） */
+    function bundleLockedOf(v) {
+      var sum = 0, l = (v && v.locks && v.locks.bundles) || {};
+      Object.keys(l).forEach(function (k) { var n = Number(l[k]); if (isFinite(n)) sum += n; });
+      return sum;
     }
     function renderPageTable() {
       if (!pageTable) return;
       pageTable.querySelectorAll('.variant-table__row, .variant-table__group').forEach(function (n) { n.remove(); });
       var L = window.ListingState;
       if (!product || !L) return;
+      var cap = (product.edition === 'limited' && product.cap) ? Number(product.cap) : null;
       if (product.variant !== 'multiple' || !MODEL.variants.length) {
         /* 單一規格：整張表只有一列，數字讀商品層的池。 */
         var total = (product.pool && product.pool.total === 'unlimited') ? '∞' : Number(product.pool ? product.pool.total : 0);
         var lock = L.lockOf(product, 'single');
-        var free = total === '∞' ? '∞' : Math.max(0, Number(total) - (lock === null ? 0 : lock));
+        var bl = 0; Object.keys((product.pool && product.pool.locks && product.pool.locks.bundles) || {}).forEach(function (k) { var n = Number(product.pool.locks.bundles[k]); if (isFinite(n)) bl += n; });
+        var free = total === '∞' ? '∞' : Math.max(0, Number(total) - (lock === null ? 0 : lock) - bl);
         var only = document.createElement('div');
         only.className = 'variant-table__row';
         only.setAttribute('data-vi', 'single');
-        only.innerHTML = rowHTML({ label: product.name || '—', price: MODEL.price, stock: total, locked: lock, free: free, sku: product.sku || '', cost: MODEL.cost, vi: 'single' });
+        only.innerHTML = rowHTML({ label: product.name || '—', stock: total, cap: cap, locked: lock, bundle: bl, free: free, sku: product.sku || '', vi: 'single' });
         pageTable.appendChild(only);
       } else {
         var two = MODEL.variants[0].combo.length >= 2;
@@ -1895,17 +2179,17 @@
           }
           var label = two ? v.combo.slice(1).join(' / ') : v.combo.join(' / ');
           var lockV = lockGet(v, 'single');
+          var blv = bundleLockedOf(v);
           var row = document.createElement('div');
           row.className = 'variant-table__row' + (v.delisted ? ' variant-table__row--delisted' : '');
           row.setAttribute('data-vi', vi);
           row.innerHTML = rowHTML({
             label: label,
-            price: v.price || MODEL.price,
             stock: v.stock,
             locked: lockV,
-            free: Math.max(0, Number(v.stock || 0) - (lockV === null ? 0 : lockV)),
+            bundle: blv,
+            free: Math.max(0, Number(v.stock || 0) - (lockV === null ? 0 : lockV) - blv),
             sku: v.sku,
-            cost: v.cost || MODEL.cost,
             vi: vi
           });
           pageTable.appendChild(row);
@@ -1915,14 +2199,7 @@
       if (window.applyI18n) window.applyI18n(pageTable);
     }
 
-    /* ---- 常駐輸入的寫入層（2026-09-10 · D258，取代 2026-09-09 的編輯模式）----
-       表格裡可改的格子平常就是輸入框，打字即寫進 MODEL 與 store（純前端 demo），
-       並把頁面標記成「有未儲存的變更」——真正的收尾是頁面右上那顆既有的「儲存」。
-       這樣就沒有「編輯模式」要進出，也不必分辨改的是鎖定還是價格（參考 Shopify／Webflow）。 */
-    function markDirty() {
-      if (window.pdMarkDirty) window.pdMarkDirty();
-    }
-    /* 寫回 store：組合以 comboKey 對應（編輯過選項時可能多出新組合，補進去）。 */
+    /* ---- 寫回 store：組合以 comboKey 對應（編輯過選項時可能多出新組合，補進去） ---- */
     function syncLocksToStore() {
       if (product) {
         if (!product.variants) product.variants = [];
@@ -1936,62 +2213,123 @@
       }
       if (window.pdRefreshStock) window.pdRefreshStock();
     }
-    /* 單一規格：這張表只有一列，它的價格／成本／鎖定量住在商品層（不是 variants）。 */
-    function writeSingle(field, raw) {
+
+    /* ---- 鎖定庫存彈窗（2026-09-11 使用者裁示：表格唯讀，鎖定走一次性編輯）----
+       targets：['single']（單一規格）或選項組合索引陣列；卡頭開全部、列尾 ⋯ 開那一列，同一個彈窗。
+       草稿只存 { stock, lock }，按儲存才寫回 MODEL／store。鎖過頭整列轉紅並停用儲存。 */
+    var LOCK = { targets: [], draft: [] };
+    function lockRowOf(t) {
+      var L = window.ListingState;
+      if (t === 'single') {
+        var total = (product.pool && product.pool.total === 'unlimited') ? Infinity : Number(product.pool ? product.pool.total : 0);
+        return { key: 'single', label: product.name || '—', stock: total, lock: L.lockOf(product, 'single') };
+      }
+      var v = MODEL.variants[t];
+      return { key: t, label: v.combo.join(' / '), stock: Number(v.stock || 0), lock: lockGet(v, 'single') };
+    }
+    function openLock(targets) {
       if (!product) return;
-      if (field === 'price') { MODEL.price = raw; product.price = raw; }
-      if (field === 'cost') { MODEL.cost = raw; product.cost = raw; }
-      if (field === 'sku') { MODEL.sku = raw; product.sku = raw; }
-      if (field === 'locked') {
-        if (!product.pool) return;
-        product.pool.locks = product.pool.locks || { single: null, bundles: {} };
-        product.pool.locks.single = raw === '' ? null : Math.max(0, Number(raw) || 0);
+      LOCK.targets = targets;
+      LOCK.draft = targets.map(lockRowOf);
+      var sub = document.querySelector('[data-pd-lock-sub]');
+      if (sub) sub.textContent = targets.length === 1 ? LOCK.draft[0].label : T('product-detail.lock.all-sub', 'All option combinations');
+      var host = document.querySelector('[data-pd-lock-table]');
+      if (host) {
+        host.innerHTML = '<div class="salloc__row salloc__row--head"><span></span>'
+          + '<span style="text-align:right" data-i18n="cp.var.col.stock">' + esc(T('cp.var.col.stock', 'Stock')) + '</span>'
+          + '<span data-i18n="stock.lock-single">' + esc(T('stock.lock-single', 'Locked')) + '</span>'
+          + '<span style="text-align:right" data-i18n="cp.var.col.free">' + esc(T('cp.var.col.free', 'Unlocked')) + '</span></div>'
+          + LOCK.draft.map(function (r, i) {
+            return '<div class="salloc__row" data-lock-i="' + i + '"><span class="salloc__name">' + esc(r.label) + '</span>'
+              + '<span class="salloc__qty salloc__qty--muted">' + (r.stock === Infinity ? '∞' : r.stock) + '</span>'
+              + '<span class="salloc__lock"><span class="amount-field amount-field--suffix">'
+              + '<input class="input amount-field__input" type="number" min="0" data-lock-input value="' + (r.lock === null ? '' : esc(String(r.lock))) + '"'
+              + ' placeholder="' + esc(T('stock.free', 'Unlocked')) + '" data-i18n-placeholder="stock.free">'
+              + '<span class="amount-field__unit" data-i18n="product-detail.stock.unit">' + esc(T('product-detail.stock.unit', 'units')) + '</span></span></span>'
+              + '<span class="salloc__qty" data-lock-free></span></div>';
+          }).join('');
+        if (window.applyI18n) window.applyI18n(host);
       }
-      if (window.pdRefreshStock) window.pdRefreshStock();
+      lockRefresh();
+      open('[data-pd-lock-modal]');
+      var first = host && host.querySelector('[data-lock-input]');
+      if (first) first.focus();
     }
-    /* 逐列即時重算：未鎖定＝該列庫存 − 鎖定量；鎖過頭整列轉紅（不擋輸入，只標錯）。 */
-    function refreshRow(row) {
-      if (!row) return;
-      var vi = row.getAttribute('data-vi');
-      var stock, locked;
-      if (vi === 'single') {
-        var L = window.ListingState;
-        stock = (product.pool && product.pool.total === 'unlimited') ? Infinity : Number(product.pool ? product.pool.total : 0);
-        locked = L.lockOf(product, 'single');
-      } else {
-        var v = MODEL.variants[Number(vi)];
-        if (!v) return;
-        stock = Number(v.stock || 0);
-        locked = lockGet(v, 'single');
-      }
-      var lockedN = locked === null ? 0 : locked;
-      var free = stock === Infinity ? Infinity : stock - lockedN;
-      var over = free < 0;
-      row.classList.toggle('variant-table__row--error', over);
-      var f = row.querySelector('[data-vc="free"]');
-      if (f) f.textContent = free === Infinity ? '∞' : String(free);
+    function lockRefresh() {
+      var host = document.querySelector('[data-pd-lock-table]');
+      if (!host) return;
+      var bad = false;
+      LOCK.draft.forEach(function (r, i) {
+        var row = host.querySelector('[data-lock-i="' + i + '"]');
+        if (!row) return;
+        var lockN = r.lock === null ? 0 : r.lock;
+        var free = r.stock === Infinity ? Infinity : r.stock - lockN;
+        var over = free < 0;
+        if (over) bad = true;
+        row.classList.toggle('salloc__row--error', over);
+        var f = row.querySelector('[data-lock-free]');
+        if (f) f.textContent = free === Infinity ? '∞' : String(free);
+      });
+      var err = document.querySelector('[data-pd-lock-err]'); if (err) err.hidden = !bad;
+      var save = document.querySelector('[data-pd-lock-save]'); if (save) save.disabled = bad;
     }
-    if (pageTable) {
-      pageTable.addEventListener('input', function (e) {
-        var inp = e.target.closest('[data-vc-input]');
-        if (!inp) return;
-        var field = inp.getAttribute('data-vc-input');
-        var row = inp.closest('.variant-table__row');
-        var vi = row && row.getAttribute('data-vi');
-        var raw = String(inp.value).trim();
-        if (vi === 'single') {
-          writeSingle(field, raw);
+    function lockSave() {
+      if (LOCK.draft.some(function (r) { return r.stock !== Infinity && (r.lock || 0) > r.stock; })) return;
+      var changes = [];
+      LOCK.draft.forEach(function (r) {
+        var before;
+        if (r.key === 'single') {
+          if (!product.pool) return;
+          product.pool.locks = product.pool.locks || { single: null, bundles: {} };
+          before = product.pool.locks.single;
+          product.pool.locks.single = r.lock;
         } else {
-          var v = MODEL.variants[Number(vi)];
-          if (!v) return;
-          if (field === 'locked') lockSet(v, 'single', raw === '' ? null : Math.max(0, Number(raw) || 0));
-          else v[field] = raw;
-          syncLocksToStore();
+          before = lockGet(MODEL.variants[r.key], 'single');
+          lockSet(MODEL.variants[r.key], 'single', r.lock);
         }
-        refreshRow(row);
-        markDirty();
+        if ((before === undefined ? null : before) !== r.lock) changes.push({ key: r.key, before: before, after: r.lock });
+      });
+      syncLocksToStore();
+      renderPageTable();
+      /* 每一筆改動寫進庫存歷史紀錄（2026-09-11 合併補貨與鎖定）。要在 syncLocksToStore 之後：
+         add() 會廣播 pd:stock、讓 MODEL 從 store 重抄一份，先寫紀錄會把還沒寫回 store 的新鎖定量沖掉。 */
+      if (window.pdStockHistory) changes.forEach(function (c) {
+        var combo = c.key === 'single' ? '—' : (MODEL.variants[c.key].combo || []).join(' / ');
+        var fmt = function (v) { return (v === null || v === undefined) ? '—' : String(v); };
+        window.pdStockHistory.add({ type: 'lock', combo: combo, vi: c.key, delta: fmt(c.before) + ' → ' + fmt(c.after), note: T('stock.history.note.single', 'Locked for single sale') });
+      });
+      close('[data-pd-lock-modal]');
+    }
+    var lockModal = document.querySelector('[data-pd-lock-modal]');
+    if (lockModal) {
+      lockModal.addEventListener('input', function (e) {
+        var inp = e.target.closest('[data-lock-input]');
+        if (!inp) return;
+        var i = Number(inp.closest('[data-lock-i]').getAttribute('data-lock-i'));
+        var raw = String(inp.value).trim();
+        LOCK.draft[i].lock = raw === '' ? null : Math.max(0, Number(raw) || 0);
+        lockRefresh();
+      });
+      lockModal.addEventListener('click', function (e) {
+        if (e.target.closest('[data-pd-lock-close]')) { close('[data-pd-lock-modal]'); return; }
+        if (e.target.closest('[data-pd-lock-save]')) lockSave();
       });
     }
+    document.addEventListener('click', function (e) {
+      if (!product) return;
+      var multi = product.variant === 'multiple' && MODEL.variants.length;
+      if (e.target.closest('[data-pd-lock-all]')) {
+        openLock(multi ? MODEL.variants.map(function (_, i) { return i; }) : ['single']);
+        return;
+      }
+      var act = e.target.closest('[data-variant-lock]');
+      if (act) {
+        var row = act.closest('.variant-table__row');
+        if (!row || !pageTable || !pageTable.contains(row)) return;
+        var vi = row.getAttribute('data-vi');
+        openLock(vi === 'single' ? ['single'] : [Number(vi)]);
+      }
+    });
 
     /* 商品選項卡的唯讀摘要（DS kv 列）：一個選項一列，值用頓號串。 */
     function renderOptionsSummary() {
@@ -2031,13 +2369,20 @@
       if (window.ztorIcons) window.ztorIcons.applyIcons(optEditor);
       if (window.applyI18n) window.applyI18n(optEditor);
     }
+    /* 組合表（編輯彈窗）：多選項商品逐組合定價（5.1.5.2 F3.4）——價格／SKU／單件成本每列各自可填
+       （2026-09-11 使用者裁示；先前一律沿用商品層一個價）。庫存唯讀（要加量走補貨）。
+       只在選項變動時重建，打字走 input 事件寫進草稿，不重建（免得輸入框失焦）。 */
+    function ecInput(field, vi, val, money) {
+      var inp = '<input class="input' + (money ? ' amount-field__input' : '') + '" data-ec-field="' + field + '" data-ec-vi="' + vi + '" value="' + esc(val || '') + '">';
+      if (money) return '<span class="variant-cell--input"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' + inp + '</span></span>';
+      return '<span class="variant-cell--input">' + inp + '</span>';
+    }
     function renderEditCombos(m) {
       if (!editTable) return;
       editTable.querySelectorAll('.variant-table__row, .variant-table__group').forEach(function (n) { n.remove(); });
       var two = m.variants.length > 0 && m.variants[0].combo.length >= 2;
-      var price = money(m.price), cost = money(m.cost);
       var lastGroup = null;
-      m.variants.forEach(function (v) {
+      m.variants.forEach(function (v, vi) {
         if (two && v.combo[0] !== lastGroup) {
           lastGroup = v.combo[0];
           var g = document.createElement('div'); g.className = 'variant-table__group'; g.textContent = lastGroup; editTable.appendChild(g);
@@ -2046,34 +2391,117 @@
         var r = document.createElement('div'); r.className = 'variant-table__row';
         r.innerHTML =
           '<span class="variant-cell--variant">' + esc(label) + '</span>' +
-          '<span class="variant-cell--ro">' + price + '</span>' +
+          ecInput('price', vi, v.price || m.price, true) +
           '<span class="variant-cell--stock' + (isLow(v.stock) ? ' variant-cell--stock-low' : '') + '">' + esc(v.stock) + '</span>' +
-          '<span class="variant-cell--ro">' + (esc(v.sku) || '—') + '</span>' +
-          '<span class="variant-cell--ro">' + cost + '</span>';
+          ecInput('sku', vi, v.sku, false) +
+          ecInput('cost', vi, v.cost || m.cost, true);
         editTable.appendChild(r);
       });
       if (comboCount) comboCount.textContent = '(' + m.variants.length + ')';
     }
+    if (editTable) {
+      editTable.addEventListener('input', function (e) {
+        var inp = e.target.closest('[data-ec-field]');
+        if (!inp || !DRAFT) return;
+        var v = DRAFT.variants[Number(inp.getAttribute('data-ec-vi'))];
+        if (!v) return;
+        var field = inp.getAttribute('data-ec-field');
+        v[field] = field === 'sku' ? inp.value.trim() : num(inp.value);
+      });
+    }
 
     function refreshDraft() { renderOptEditor(DRAFT); renderEditCombos(DRAFT); }
 
-    function openEdit() {
-      DRAFT = copyModel({ price: MODEL.price, cost: MODEL.cost, options: MODEL.options, variants: MODEL.variants });
+    /* ---- 編輯模式（2026-09-11 使用者裁決：商品設定分頁預設唯讀，「編輯商品」開關切成可改）----
+       進入：MODEL 抄成 DRAFT、把選項編輯器與組合表重畫成可填、其餘欄位解除唯讀，並把所有欄位現值
+       拍一張快照；儲存：DRAFT 收尾寫回 MODEL／store；取消：草稿丟掉、快照還原、表格照 MODEL 重畫。 */
+    var settingsPanel = document.querySelector('.tab-panel[data-panel="settings"]');
+    var SNAP = null;
+    function fillPriceFields(m) {
       var ep = document.querySelector('[data-pd-edit-price]'), ec = document.querySelector('[data-pd-edit-cost]');
-      if (ep) ep.value = MODEL.price || '';
-      if (ec) ec.value = MODEL.cost || '';
+      if (ep) ep.value = m.price || '';
+      if (ec) ec.value = m.cost || '';
+    }
+    function applyReadonly(ro) {
+      if (!settingsPanel) return;
+      settingsPanel.querySelectorAll('input, textarea').forEach(function (el) { el.readOnly = ro; });
+      /* 建立後鎖死的欄位（主分類／次分類，D137）本來就是 disabled，編輯態也不放開 */
+      settingsPanel.querySelectorAll('select:not([id="pd-main-cat"]):not([id="pd-sub-phys"]):not([id="pd-sub-digi"])').forEach(function (el) { el.disabled = ro; });
+    }
+    function setMode(editing) {
+      if (!settingsPanel) return;
+      settingsPanel.setAttribute('data-mode', editing ? 'edit' : 'view');
+      applyReadonly(!editing);
+      var btn = document.querySelector('[data-pd-editmode]');
+      var cancel = document.querySelector('[data-pd-edit-cancel]');
+      if (cancel) cancel.hidden = !editing;
+      if (btn) {
+        btn.setAttribute('aria-pressed', editing ? 'true' : 'false');
+        btn.classList.toggle('btn--primary', editing);
+        btn.classList.toggle('btn--outline', !editing);
+        var label = btn.querySelector('[data-pd-editmode-label]');
+        if (label) {
+          var key = editing ? 'product-detail.btn.save-changes' : 'product-detail.btn.edit';
+          label.setAttribute('data-i18n', key);
+          label.textContent = T(key, editing ? 'Save changes' : 'Edit product');
+        }
+      }
+    }
+    function isEditing() { return !!(settingsPanel && settingsPanel.getAttribute('data-mode') === 'edit'); }
+    /* 快照：一般欄位記值、開關記開／關、單選清單記哪一項亮著。取消時逐一還原並補發事件，
+       讓依賴這些欄位的顯隱（折扣欄位、限購數量、取貨方式子欄）跟著回去。 */
+    function snapshot() {
+      if (!settingsPanel) return null;
+      var snap = [];
+      settingsPanel.querySelectorAll('input:not([data-ec-field]):not([data-opt]):not([data-opt-name]), textarea, select').forEach(function (el) {
+        snap.push({ el: el, value: el.value });
+      });
+      settingsPanel.querySelectorAll('.switch').forEach(function (el) { snap.push({ el: el, on: el.classList.contains('switch--on') }); });
+      settingsPanel.querySelectorAll('.radio-list').forEach(function (rl) {
+        var act = rl.querySelector('.radio-list__item--active');
+        snap.push({ el: rl, active: act });
+      });
+      return snap;
+    }
+    function restore(snap) {
+      (snap || []).forEach(function (r) {
+        if ('value' in r) {
+          if (r.el.value !== r.value) { r.el.value = r.value; r.el.dispatchEvent(new Event('input', { bubbles: true })); r.el.dispatchEvent(new Event('change', { bubbles: true })); }
+        } else if ('on' in r) {
+          if (r.el.classList.contains('switch--on') !== r.on) r.el.click();
+        } else if ('active' in r) {
+          var cur = r.el.querySelector('.radio-list__item--active');
+          if (r.active && cur !== r.active) r.active.click();
+        }
+      });
+    }
+    function enterEdit() {
+      DRAFT = copyModel({ price: MODEL.price, cost: MODEL.cost, options: MODEL.options, variants: MODEL.variants });
+      fillPriceFields(MODEL);
       refreshDraft();
-      open('[data-pd-edit-modal]');
+      SNAP = snapshot();
+      setMode(true);
+    }
+    function cancelEdit() {
+      DRAFT = null;
+      restore(SNAP); SNAP = null;
+      fillPriceFields(MODEL);
+      renderOptEditor(MODEL); renderEditCombos(MODEL);
+      setMode(false);
+      renderSettingsOverview();
     }
     function saveEdit() {
       if (!DRAFT) DRAFT = copyModel(MODEL);
       var ep = document.querySelector('[data-pd-edit-price]'), ec = document.querySelector('[data-pd-edit-cost]');
       /* 欄位留空＝沒填，保留原值：這兩格只吃數字（num() 會把非數字洗掉），而示範資料裡有
          「待確認」這種文字價格——不留這道，開了編輯直接按儲存就會把它清成「—」。 */
-      var epv = ep ? num(ep.value) : '';
-      var ecv = ec ? num(ec.value) : '';
-      DRAFT.price = epv === '' ? DRAFT.price : epv;
-      DRAFT.cost = ecv === '' ? DRAFT.cost : ecv;
+      /* 多選項商品逐組合定價，頂部兩格是藏起來的、不採用（2026-09-11）。 */
+      if (!(product && product.variant === 'multiple')) {
+        var epv = ep ? num(ep.value) : '';
+        var ecv = ec ? num(ec.value) : '';
+        DRAFT.price = epv === '' ? DRAFT.price : epv;
+        DRAFT.cost = ecv === '' ? DRAFT.cost : ecv;
+      }
       /* 收尾清理：丟掉空值與整個沒有非空值的選項，再重算一次組合 */
       DRAFT.options = DRAFT.options.map(function (o) { return { name: o.name || '', values: o.values.filter(function (v) { return String(v).trim() !== ''; }) }; }).filter(function (o) { return o.values.length; });
       regen(DRAFT);
@@ -2082,7 +2510,12 @@
       // 單規格：價格/成本回填頁面唯讀讀數（多規格的價格在表內，由 renderPageTable 帶）
       renderPageTable();
       renderOptionsSummary();
-      close('[data-pd-edit-modal]');
+      /* 儲存後表格照 MODEL 重畫成唯讀現值 */
+      fillPriceFields(MODEL);
+      renderOptEditor(MODEL); renderEditCombos(MODEL);
+      SNAP = null;
+      setMode(false);
+      renderSettingsOverview();
     }
 
     /* 選項管理（草稿）：改值/改選項名 / 移除值·移除選項 / 新增值·新增選項 → 重算組合並重繪 */
@@ -2133,9 +2566,15 @@
     document.addEventListener('click', function (e) {
       if (e.target.closest('[data-pd-history-open]')) open('[data-pd-history-modal]');
       if (e.target.closest('[data-pd-history-close]')) close('[data-pd-history-modal]');
-      if (e.target.closest('[data-pd-edit-open]')) openEdit();
-      if (e.target.closest('[data-pd-edit-close]')) { close('[data-pd-edit-modal]'); DRAFT = null; }
-      if (e.target.closest('[data-pd-edit-save]')) saveEdit();
+      if (e.target.closest('[data-pd-editmode]')) { if (isEditing()) saveEdit(); else enterEdit(); }
+      if (e.target.closest('[data-pd-edit-cancel]')) cancelEdit();
+      /* 總覽的設定概覽列：切到商品設定分頁並捲到那一節 */
+      var go = e.target.closest('[data-pd-setov-go]');
+      if (go && window.pdSettingsGo) { e.preventDefault(); window.pdSettingsGo(go.getAttribute('data-pd-setov-go')); }
+    });
+    document.addEventListener('keydown', function (e) {
+      var go = (e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('[data-pd-setov-go]');
+      if (go && window.pdSettingsGo) { e.preventDefault(); window.pdSettingsGo(go.getAttribute('data-pd-setov-go')); }
       /* backdrop 點空白處關閉 */
       if (e.target.classList && e.target.classList.contains('payout-modal')) { e.target.hidden = true; DRAFT = null; }
     });
@@ -2143,9 +2582,101 @@
       if (e.key === 'Escape') { document.querySelectorAll('.payout-modal:not([hidden])').forEach(function (m) { m.hidden = true; }); DRAFT = null; }
     });
 
-    /* 初始渲染頁面主表（多規格才有列；單規格 variants 空、表格隱藏） */
+    /* ---- 商品設定概覽（總覽分頁那張卡，2026-09-11）：一區一行一句，讀商品設定分頁的欄位現值 ----
+       行尾箭頭帶 data-pd-setov-go=<分節 key>，點了切到商品設定分頁並捲到那一節。 */
+    var setovHost = document.querySelector('[data-pd-setov]');
+    function $v(id) { var el = document.getElementById(id); return el ? String(el.value || '').trim() : ''; }
+    function on(id) { var el = document.getElementById(id); return !!(el && el.classList.contains('switch--on')); }
+    function selText(id) { var el = document.getElementById(id); return el && el.options && el.selectedIndex >= 0 ? (el.options[el.selectedIndex].textContent || '').trim() : ''; }
+    function join(parts, sep) { return parts.filter(function (x) { return x && String(x).trim(); }).join(sep || ' · '); }
+    function dateText(v) { return v ? String(v).replace('T', ' ') : ''; }
+    function priceRange() {
+      var vals = MODEL.variants.map(function (v) { return Number(v.price || MODEL.price); }).filter(isFinite);
+      if (!vals.length) return money(MODEL.price);
+      var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+      return lo === hi ? money(lo) : money(lo) + '–' + money(hi);
+    }
+    function setovRows() {
+      var digital = product && product.cat === 'digital';
+      var multi = product && product.variant === 'multiple';
+      var rows = [];
+      rows.push({ go: 'info', key: 'cp.info.title', fb: 'Product info',
+        v: join([$v('pd-title-input'), product && product.catLabel, product && product.subLabel]) });
+      var imgs = settingsPanel ? settingsPanel.querySelectorAll('[data-nav-panel="info"] .upload-tile.is-filled').length : 0;
+      rows.push({ go: 'info', key: 'product-detail.field.media2', fb: 'Product images',
+        v: imgs ? T('product-detail.setov.images', '{n} images').replace('{n}', imgs) : T('product-detail.setov.none', 'None') });
+      if (digital) {
+        var cf = document.getElementById('pd-cfile-title');
+        rows.push({ go: 'cfile', key: 'cp.cfile.title', fb: 'Content file', v: cf ? cf.textContent.trim() : '' });
+      }
+      rows.push({ go: 'pricing', key: 'cp.var.title', fb: 'Product options',
+        v: multi
+          ? join(MODEL.options.map(function (o) { return (o.name || '—') + '：' + (o.values || []).join('、'); }).concat([T('product-detail.setov.combos', '{n} combinations').replace('{n}', MODEL.variants.length)]))
+          : T('cp.var.single', 'Single variant') });
+      rows.push({ go: 'pricing', key: 'cp.price.title', fb: 'Price',
+        v: multi ? priceRange() : join([money(MODEL.price), MODEL.cost ? T('cp.cost', 'Cost') + ' ' + money(MODEL.cost) : '']) });
+      rows.push({ go: 'rules', key: 'cp.discount.title', fb: 'Discount settings',
+        v: on('pd-discount-toggle')
+          ? join([money(num($v('pd-sale-price'))), on('pd-sale-toggle') ? join([$v('pd-sale-start'), $v('pd-sale-end')], ' – ') : ''])
+          : T('product-detail.setov.off', 'Off') });
+      if (!digital) {
+        var pct = $v('pd-threshold-pct') || '10';
+        rows.push({ go: 'rules', key: 'product-detail.threshold.title', fb: 'Low-stock alert', v: pct + '%' });
+      }
+      var limitQty = settingsPanel ? settingsPanel.querySelector('[data-pd-limit-fields] input') : null;
+      rows.push({ go: 'rules', key: 'product-detail.limit2.title', fb: 'Purchase limit',
+        v: on('pd-limit-toggle') ? T('product-detail.setov.limit', '{n} per person').replace('{n}', limitQty ? limitQty.value : '') : T('product-detail.setov.off', 'Off') });
+      var dt = document.getElementById('pd-delivery-title');
+      rows.push({ go: 'delivery', key: 'product-detail.delivery.card', fb: 'Delivery & pickup',
+        v: join([dt ? dt.textContent.trim() : '', product && product.delivery === 'qr' ? selText('pd-pickup-session') : '']) });
+      var tags = document.querySelectorAll('#pd-tags-field .chip');
+      rows.push({ go: 'relations', key: 'cp.tags', fb: 'Product tags',
+        v: tags.length ? Array.prototype.map.call(tags, function (c) { return c.firstChild ? c.firstChild.textContent.trim() : ''; }).join('、') : T('product-detail.setov.none', 'None') });
+      var films = document.querySelectorAll('[data-pd-film-picker] .chip, [data-pd-film-picker] .data-list__row');
+      rows.push({ go: 'relations', key: 'pd.films.title', fb: 'Linked movies',
+        v: films.length ? T('product-detail.setov.films', '{n} movies').replace('{n}', films.length) : T('product-detail.setov.none', 'None') });
+      rows.push({ go: 'publish', key: 'cp.listing.sec-listed', fb: 'Listing',
+        v: on('pd-listed-toggle')
+          ? join([T('product-detail.setov.listed', 'Listed'), on('pd-shown-toggle') ? T('product-detail.setov.shown', 'Shown in store') : T('product-detail.setov.hidden', 'Hidden from store')])
+          : T('product-detail.setov.unlisted', 'Unlisted') });
+      var mode = document.querySelector('#pd-sale-mode .radio-list__item--active');
+      rows.push({ go: 'publish', key: 'cp.listing.sec-sale', fb: 'Sale',
+        v: mode && mode.getAttribute('data-pd-sale-mode') === 'schedule'
+          ? join([dateText($v('pd-listing-sale-start')), on('pd-saleend-toggle') ? dateText($v('pd-listing-sale-end')) : ''], ' – ')
+          : T('product-detail.setov.sale-follow', 'On sale while listed') });
+      return rows;
+    }
+    function renderSettingsOverview() {
+      if (!setovHost) return;
+      /* 值比欄目名重要（2026-09-11 使用者指示）：欄目名是小字灰字在上，值是主字在下；整列可點。 */
+      setovHost.innerHTML = setovRows().map(function (r) {
+        return '<div class="data-list__row data-list__row--go" role="button" tabindex="0" data-pd-setov-go="' + r.go + '" aria-label="' + esc(T('product-detail.setov.go', 'Go to setting')) + '">' +
+          '<div class="data-list__row-main"><div class="data-list__body">' +
+            '<div class="data-list__meta" data-i18n="' + r.key + '">' + esc(T(r.key, r.fb)) + '</div>' +
+            '<div class="data-list__title">' + esc(r.v || '—') + '</div>' +
+          '</div></div>' +
+          '<span class="data-list__go" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></span>' +
+        '</div>';
+      }).join('');
+      if (window.ztorIcons) window.ztorIcons.applyIcons(setovHost);
+    }
+    document.addEventListener('ztor:lang-changed', function () { renderSettingsOverview(); });
+
+    /* 初始渲染頁面主表（多規格才有列；單規格 variants 空、表格隱藏）；
+       商品設定分頁的價格／選項／組合表同時畫成唯讀現值。 */
     renderPageTable();
     renderOptionsSummary();
+    fillPriceFields(MODEL);
+    renderOptEditor(MODEL); renderEditCombos(MODEL);
+    applyReadonly(true);
+    renderSettingsOverview();
+    /* 補貨寫回 store 之後重畫表格（庫存數字變了，MODEL 重抄一份） */
+    document.addEventListener('pd:stock', function () {
+      if (!product) return;
+      MODEL = copyModel(product);
+      if (!MODEL.variants.length && MODEL.options.length) regen(MODEL);
+      renderPageTable();
+    });
     document.addEventListener('pd:product', function (e) {
       if (!e.detail || e.detail === product) return;
       product = e.detail;
@@ -2153,17 +2684,11 @@
       if (!MODEL.variants.length && MODEL.options.length) regen(MODEL);
       renderPageTable();
       renderOptionsSummary();
+      fillPriceFields(MODEL);
+      renderOptEditor(MODEL); renderEditCombos(MODEL);
+      applyReadonly(!isEditing());
+      renderSettingsOverview();
     });
-  })();
-</script>
-<script>
-  /* 未儲存提示（2026-09-10 · D258）：表格改成常駐輸入之後，收尾靠頁面右上那顆既有的「儲存」，
-     所以它要看得出「有東西還沒存」。打字即標記，按儲存就收起來（純前端 demo，不寫後端）。 */
-  (function () {
-    var chip = document.querySelector('[data-pd-dirty]');
-    var save = document.querySelector('[data-pd-save]');
-    window.pdMarkDirty = function () { if (chip) chip.hidden = false; };
-    if (save) save.addEventListener('click', function () { if (chip) chip.hidden = true; });
   })();
 </script>
 <script src="js/devtools.js?v=r2.2"></script>

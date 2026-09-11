@@ -1881,6 +1881,10 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 /* select 沒有 readonly，JS 是用 disabled 擋（見 project-detail.html 的
    applyReadonly），瀏覽器自己會處理外觀，這裡不再另外壓平。 */
 [data-mode="view"] .select { pointer-events: none; }
+/* div 做的開關與單選清單（商品詳情的 .switch／.radio-list 不是 button，上面那條白名單掃不到）：
+   檢視模式下同樣不可點，只呈現目前值（2026-09-11 商品設定分頁改預設唯讀時補）。 */
+[data-mode="view"] .switch,
+[data-mode="view"] .radio-list { pointer-events: none; }
 /* 鎖住的欄位不該閃一個它無法履行的 focus ring，但仍可用鍵盤走到、供閱讀。 */
 [data-mode="view"] .input:focus,
 [data-mode="view"] .input:focus-visible,
@@ -1891,8 +1895,10 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 /* 白名單，不是黑名單：檢視模式下「所有按鈕」一律不出現，只放行明確標記為
    唯讀用途的（排序表頭、data-view-safe）。
    第一版是逐一列舉要藏的東西，結果漏掉卡司與 FAQ 的刪除鈕——面板裡還留著 18 顆
-   可以砍資料的按鈕。凡是「列舉要禁止的」都會漏，改成列舉「允許的」才收得乾淨。 */
-[data-mode="view"] button:not(.sort-th):not([data-view-safe]),
+   可以砍資料的按鈕。凡是「列舉要禁止的」都會漏，改成列舉「允許的」才收得乾淨。
+   `.zselect__trigger` 也放行（2026-09-11）：下拉選單由 js/zselect.js 換成一顆 button 當觸發器，
+   整顆藏掉等於欄位消失、只剩標籤；檢視模式下它跟著原生 select 一起 disabled，只顯示目前值。 */
+[data-mode="view"] button:not(.sort-th):not([data-view-safe]):not(.zselect__trigger),
 [data-mode="view"] a[data-modal-open],
 [data-mode="view"] .upload-tile__actions,
 [data-mode="view"] .upload-tile:not(.is-filled),

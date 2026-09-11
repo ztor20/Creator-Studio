@@ -4,6 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kowloon Café 10th Anniv. · Event detail · Ztor Creator Studio</title>
 <script src="js/theme.js?v=r2.2"></script>
+<script src="js/detail-topbar.js?v=r2.2"></script><!-- 2026-09-11：頂列黏附改走共用腳本 -->
 <link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/button.css?v=r2.2">
@@ -4269,23 +4270,20 @@
      用捲動位置判斷、不用 IntersectionObserver：站上的捲軸在 main.main 而不是視窗，
      observer 掛這種內層捲動容器時觸發時機不穩。門檻取頁首自己的高度，版面改了不用改數字。 */
   (function () {
-    const scroller = document.querySelector('main.main');
+    /* 2026-09-11 改接共用的 js/detail-topbar.js（項目／系列／商品詳情同一支）：
+       shared.css 自 2026-09-01 起把黏住態改成 fixed，左緣／寬度／內距全靠那支腳本量出來寫進 CSS 變數；
+       本頁原本自己一段捲動判定、沒有量，黏住後整條貼在視窗左上、只有半寬（使用者回報「位置跑掉了」）。 */
     const bar = document.querySelector('.detail-topbar');
-    const hero = document.querySelector('.page-intro');
     const mini = document.querySelector('[data-ed-mini]');
-    const crumb = bar && bar.querySelector('.page-crumb');
-    if (!scroller || !bar || !hero || !mini || !crumb) return;
+    if (!window.ZtorDetailTopbar || !bar || !mini) return;
     const cover = document.getElementById('ed-mini-cover');
     const name = document.getElementById('ed-mini-name');
-    let on = null;
-    function sync() {
-      const gone = scroller.scrollTop > hero.offsetTop + hero.offsetHeight - bar.offsetHeight;
-      if (gone === on) return;
-      on = gone;
-      mini.hidden = !gone;
-      crumb.hidden = gone;
-      bar.classList.toggle('is-stuck', gone);
-      if (gone) {
+    window.ZtorDetailTopbar.init({
+      bar: bar,
+      hero: document.querySelector('.page-intro'),
+      mini: mini,
+      crumb: bar.querySelector('.page-crumb'),
+      onStick: function () {
         const heroImg = document.querySelector('#ed-hero-img img');
         const title = document.querySelector('.page-intro__title');
         if (cover) {
@@ -4295,9 +4293,7 @@
         }
         if (name && title) name.textContent = title.textContent.trim();
       }
-    }
-    scroller.addEventListener('scroll', sync, { passive: true });
-    sync();
+    });
   })();
 
   renderPublish();

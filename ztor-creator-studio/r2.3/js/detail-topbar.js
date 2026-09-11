@@ -92,13 +92,28 @@
       /* 撐 spacer 要在切成 fixed **之前**量：切完之後元素已經離開文件流，
          offsetHeight 量到的是 fixed 之後的高度（內容換成精簡列、通常比較矮），
          用它撐 spacer 會讓內容往上跳一小段。 */
-      if (gone && !spacer.style.height) spacer.style.height = bar.offsetHeight + 'px';
+      /* 連同這一列的下外距一起撐（2026-09-11 修）：fixed 之後外距也跟著離開文件流，只撐列高
+         會讓內容仍往上跳 20px；商品詳情從總覽跳到設定分頁某一節時，節首因此被橫列蓋掉一截。 */
+      if (gone && !spacer.style.height) spacer.style.height = (bar.offsetHeight + (parseFloat(getComputedStyle(bar).marginBottom) || 0)) + 'px';
       on = gone;
       mini.hidden = !gone;
       crumb.hidden = gone;
       if (gone) measure();
       bar.classList.toggle('is-stuck', gone);
       if (!gone) spacer.style.height = '';
+      /* 黏住態的高度寫到 .page（2026-09-11）：頁內另有吸頂的分節橫列（[data-nav] > .list-toolbar，
+         商品詳情的商品設定分頁）時，它的 top 要讓出這一條，否則被壓在底下；規則在 section-nav.css。 */
+      if (bar.parentElement) {
+        /* 寫的是「頂列下緣到捲動容器上緣」的距離而不是列高：fixed 對視窗定位、sticky 對捲動容器定位，
+           全頁模式的 main.main 上緣不在視窗 0，直接用列高會多讓出那一段。 */
+        if (gone) requestAnimationFrame(function () {
+          /* 用 offsetHeight 而不是 getBoundingClientRect：黏住態有從上緣滑入的動畫，動畫途中量到的下緣還在上面。
+             fixed 的 top 是 0，所以下緣＝列高。 */
+          var origin = (embed || !main) ? 0 : main.getBoundingClientRect().top;
+          bar.parentElement.style.setProperty('--detail-bar-h', Math.max(0, bar.offsetHeight - origin) + 'px');
+        });
+        else bar.parentElement.style.removeProperty('--detail-bar-h');
+      }
       if (gone && typeof o.onStick === 'function') o.onStick();
     }
 

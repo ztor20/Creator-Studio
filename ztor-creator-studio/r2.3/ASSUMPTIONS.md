@@ -1,3 +1,12 @@
+## UIA-149 · 取貨場次選單底下的場次資訊（2026-09-11）— 呈現假設
+
+**狀態**：Open。`create-product.html`／`product-detail.html`（取貨方式 › 現場 QR 領取 › 取貨場次）。
+
+### 呈現假設（不改產品語意）
+
+- **列哪些欄位**：地點、時間、狀態、前往取貨管理的入口，四項。規格 5.1.5.2 §4.1 F6 只說商品要關聯一個取貨場次，沒有規定關聯後要回顯什麼；這四項是「這個場次在哪、什麼時候、還能不能用」的最小集合，掃碼密碼／網址（工作人員操作資訊）與場次的商品清單刻意不列。要不要列更多屬產品待確認。
+- **剛建好的場次直接成為選項**：原型沒有後端，建立場次彈窗的結果只活在這一頁（重整就沒了）；真實實作是場次寫進取貨管理後，選單重新載入清單。狀態一律先顯示「尚未開始」——原型不判斷開始時間是否已過。
+
 ## UIA-147 · 素材槽收影片後的兩個缺口（2026-09-10 · D259）— 工程缺口／呈現假設
 
 **狀態**：Open。`partials/upload-tile.js`、`create-product.html`、`e-shop.html`／`js/products-store.js`。
@@ -182,7 +191,7 @@ D253 裁決四把作廢範圍擴到**所有未完成履約的品項**：取貨�
 
 ### 資料缺口（seed 問題，待補；不涉及產品規則）
 
-- **`wish-you-good-life-four-piece` 組合的四個成員（`wy-26ms-tshirt-white`／`wy-bundle-cap`／`wy-bundle-cargo-pants`／`wy-bundle-lowtop-sneakers`）全部目前在庫 0**，`bundleQty()` 取成員最小值恆為 0——nick persona 下這個組合套上池模型後永遠是「售罄」，即使 `wish-you-good-life-four-piece.cap` 設了 50。這不是「組合真的賣光了」，是原始 wish 商品的 `stock` seed 本來就沒打算給真數字（沿用 wishyouagoodlife.com 的示意內容，見檔頭 2026-07-27 註解）。
+- **`wish-you-good-life-four-piece` 組合的四個成員（`wy-26ms-tshirt-white`／`wy-bundle-cap`／`wy-bundle-cargo-pants`／`wy-bundle-lowtop-sneakers`）全部目前在庫 0**，`bundleQty()` 取成員最小值恆為 0——nick persona 下這個組合套上池模型後永遠是「售罄」，即使 `wish-you-good-life-four-piece.cap` 設了 50。這不是「組合真的賣光了」，是原始 wish 商品的 `stock` seed 本來就沒打算給真數字（沿用參考素材的示意內容，見檔頭 2026-07-27 註解）。
 - **同理，nick persona 下大部分單售商品（tee／acetate／cap／shoes／pin／movie／album／membership）也會恆為售罄**，因為它們映射到的 wish 商品 `stock` 多半是 0；只有 `zine`／`hoodie`（映射 `wy-26ms-hoodie`，3）與 `song`（映射 `wy-26ms-socks`，425）例外。本輪未替 nick persona 補一組非零的示範庫存，D241 的八態在 nick persona 下因此看不全（多數落在 soldout）；default persona 的示範資料不受影響。
 
 ## UIA-135 · F5「粉絲端商店預覽」用位置對照表，非資料驅動（2026-09-04 · D241）— 呈現假設
