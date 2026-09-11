@@ -295,7 +295,10 @@
   grid-template-columns: minmax(110px, max-content) minmax(96px, 1fr) 78px 116px minmax(92px, 1fr) 34px;
   gap: var(--sp-8);
   align-items: center;
-  padding: 9px var(--sp-12);
+  /* Q112（2026-09-11 使用者：「這種大圓角的表格在左邊的 padding 要多一點」）：外框圓角是卡片級 --radius-xl，
+     列的左右內距至少 --sp-16——12px 會讓首欄文字貼在圓弧上；右側末欄是 icon 按鈕、自己有內距，視覺上本來就夠。
+     同 2026-09-04 收合式 radio-list 的裁示（8 → 16），這次寫成通則。 */
+  padding: 9px var(--sp-16);
 }
 .variant-table--limited .variant-table__head,
 .variant-table--limited .variant-table__row {
@@ -351,13 +354,13 @@
    卡片改整頁寬之後沒有理由再壓。做法與 admin-ip-bank-table 的 --fluid 同一套（2026-09-02）。 */
 .variant-table--fluid { min-width: 0; }
 /* 庫存管理表（2026-09-11 · 商品庫存分頁 A 案）：只留庫存的欄位——
-   組合（底下一行 SKU 小字）／在庫／鎖給單售／鎖給組合／未鎖定／補貨中／狀態／補貨鈕／⋯。
+   組合（底下一行 SKU 小字）／在庫／鎖給單售／鎖給組合／未鎖定／補貨中／狀態／⋯（補貨與鎖定都在 ⋯ 裡，2026-09-11 使用者裁示）。
    價格、SKU、單件成本三欄搬去商品設定分頁的表，所以比 --fluid 少三欄、多兩欄（補貨中、狀態）。
    跟 --fluid 一樣不設最小寬、吃滿卡片；**不與 --fluid 併用**（--fluid 的欄軌寫在後面會蓋掉這一組）。 */
 .variant-table--stock { min-width: 0; }
 .variant-table--stock .variant-table__head,
 .variant-table--stock .variant-table__row {
-  grid-template-columns: minmax(0, 1.7fr) 56px 72px 72px 60px 56px minmax(0, 1fr) 64px 34px;
+  grid-template-columns: minmax(0, 1.7fr) 56px 72px 72px 60px 56px minmax(0, 1fr) 34px;
 }
 .variant-table--stock .variant-cell--stock-warn { color: var(--status-warning-ink); }
 .variant-table--stock .variant-cell--incoming { color: var(--muted-foreground); }
@@ -420,7 +423,8 @@
   font-size: var(--fs-12);
   font-weight: var(--fw-regular);
   color: var(--muted-foreground);
-  background: var(--muted);
+  /* 分組列同表頭：薄膜、不實色（2026-09-11，同 Q24／Q71；舊值 var(--muted)） */
+  background: var(--ztu-film);
   border-bottom: 1px solid var(--border);
   padding: var(--sp-8) var(--sp-12);
 }

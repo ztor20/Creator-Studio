@@ -26,16 +26,23 @@
   gap: var(--sp-6);
   min-height: var(--control-h-sm);   /* 2026-07-21 Q25：44→36，與 .input／.btn 齊平 */
   padding: 7px var(--sp-10);
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  transition: box-shadow var(--duration) var(--easing),
-              border-color var(--duration) var(--easing);
+  /* 2026-09-11 使用者指出「這個要照 DS」：欄位是輸入控件，底與邊線一律跟 .input（input.css）走——
+     ztorUI Wave 2a 之後控件底是「比卡亮一階的半透明薄膜」，1px 邊線由 box-shadow 畫（不佔版面）。
+     舊值：background: var(--card)（實色，疊在玻璃卡上是一塊不透光的方塊）；border: 1px solid var(--border)。 */
+  background-color: var(--ztu-film);
+  border: 0;
+  box-shadow: 0 0 0 1px var(--border);
+  border-radius: var(--radius);
+  transition: box-shadow var(--duration) var(--easing);
 }
+/* focus 環同 .input:focus（舊值：outline 2px --ring、offset 2px——與 .input 不是同一種環） */
 .tag-input__field:focus-within {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
+  box-shadow: 0 0 0 1px var(--ring), 0 0 0 3px color-mix(in srgb, var(--ring) 20%, transparent);
 }
+/* 欄內已選 chip 的圓角跟欄位走（Q111 2026-09-11）：坐在 --radius 欄位裡的值是「已輸入的資料」，
+   不是 Q1 那種可篩選的 pill；同一格裡兩種圓角語彙會打架（使用者：「圓角也和裡面的標籤不一致」）。
+   欄位外的建議列（.chip-group）仍是 pill——那些是可點選的候選。 */
+.tag-input__field .chip { border-radius: var(--radius); }
 
 .tag-input__entry {
   flex: 1;

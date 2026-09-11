@@ -68,6 +68,18 @@
     ['one-project', 'One project', '只有一個項目：右排一列、第二屏一張卡'],
     ['has-data', 'Has Data', '已建立過任何內容（預設）'],
   ];
+  /* 商店層尺寸指南（2026-09-11 使用者：「我要如何看到沒有設定預設尺寸指南時的畫面」→「請改」）：
+     資料在 js/size-guides-store.js（localStorage 'ztor.sizeGuides'），這裡只切「預設三份」與「全部刪光」兩態，
+     建立商品／商品細節的尺寸指南列與商店設定的清單都跟著同一份資料變。devtools 每頁都在、store 只掛三頁，
+     所以直接動 localStorage、再 reload（那幾列是載入時算的）。 */
+  var SIZEGUIDES = [
+    ['seed', 'Default 3', '商店有預設的衣服／褲子／帽子三份（預設）'],
+    ['none', 'None', '商店一份指南都沒有：建立商品顯示「尚未設定尺寸指南」'],
+  ];
+  var SG_LS = 'ztor.sizeGuides';
+  function curSizeGuides() {
+    try { var raw = localStorage.getItem(SG_LS); if (raw === null) return 'seed'; var arr = JSON.parse(raw); return (Array.isArray(arr) && arr.length) ? 'seed' : 'none'; } catch (e) { return 'seed'; }
+  }
   var EVENTDAY = [
     ['no-event', 'No Event', '沒有進行中的活動（預設）'],
     ['pre-event', 'Pre-Event', '活動開始前'],
@@ -622,6 +634,8 @@
       +         '<div class="ztd__grid">' + optsHtml(DATA, state.data, 'data') + '</div></div>'
       +       '<div class="ztd__group"><p class="ztd__group-label">Event Day</p>'
       +         '<div class="ztd__grid">' + optsHtml(EVENTDAY, state.eventDay, 'eventDay') + '</div></div>'
+      +       '<div class="ztd__group"><p class="ztd__group-label">Size guides · 商店尺寸指南</p>'
+      +         '<div class="ztd__grid">' + optsHtml(SIZEGUIDES, curSizeGuides(), 'sizeguides') + '</div></div>'
       +     '</div>'
       /* ── 開發：本頁預覽開關（pageGroups，逐頁才有）＋Inspect＋Validation ── */
       +     '<div class="ztd__tabpanel" data-tab-panel="dev"' + (activeTab !== 'dev' ? ' hidden' : '') + '>'
@@ -862,6 +876,12 @@
        ＋ Admin 頁門禁），不需要額外呼叫 reload。 */
     if (kind === 'persona') { if (window.ztorPersona) window.ztorPersona.set(val); return; }
     if (kind === 'role') { if (window.ztorCreator) window.ztorCreator.setRole(val); return paint(); }
+    /* sizeguides：'seed'＝清掉 localStorage 讓 store 重鋪三份示範；'none'＝寫入空陣列（store 不會自己長回來）。 */
+    if (kind === 'sizeguides') {
+      try { if (val === 'none') localStorage.setItem(SG_LS, '[]'); else localStorage.removeItem(SG_LS); } catch (e) {}
+      location.reload();
+      return;
+    }
     state[kind] = val; update();
   });
 

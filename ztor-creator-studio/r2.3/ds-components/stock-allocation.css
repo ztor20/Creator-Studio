@@ -144,32 +144,23 @@
    展開語彙沿用站上 row-disclosure 的做法（Q107：可展開子列的單一答案）——整組坐進一塊
    --ztu-film 薄膜，母列的把手用 .salloc__toggle；本元件只補「子列長什麼樣」，
    不重做展開機制。預設展開：這一段的存在意義就是逐組合設定，收起來等於藏起要做的事。 */
-.salloc__group { background: var(--ztu-film); }
-.salloc__group[hidden] { display: none; }
-.salloc__toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--sp-20);
-  color: var(--muted-foreground);
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-}
-.salloc__toggle .ztor-icon { width: var(--sp-16); height: var(--sp-16); }
-.salloc__toggle[aria-expanded="false"] .ztor-icon { transform: rotate(-90deg); }
+/* ✝ 墓碑 2026-09-11：`.salloc__group`（自家薄膜面板）與 `.salloc__toggle`（自家把手）退場——
+   使用者裁示成員分配的展開要「和鎖定歷史紀錄一樣的 UI」，改直接用 row-disclosure：
+   整組掛 `.rowdis__group.rowdis__group--gutter`、母列 `.salloc__row.rowdis__head`（把手 `.btn.btn--icon.btn--xs.rowdis__toggle`）、
+   子列 `.salloc__row.rowdis__child.salloc__row--child`，展開由 js/row-disclosure.js 管。本檔只剩子列名稱縮排與母列的名稱格。 */
 /* 母列：把手固定一欄、名稱吃剩下的寬度並自己截斷（名稱長就截，不要把把手擠到下一行）；
    底下的次要說明對齊名稱、不對齊把手。子列的名稱縮排到把手之後，讀得出從屬關係。 */
 .salloc__name--parent {
   display: grid;
-  grid-template-columns: var(--sp-20) minmax(0, 1fr);
+  /* 第一欄放 row-disclosure 的把手（32px 的 .btn--icon.btn--xs），2026-09-11 起不再是 20px 的自家把手 */
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--sp-4);
   align-items: center;
   column-gap: var(--sp-6);
 }
 .salloc__name--parent > .card__link { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .salloc__name--parent > .salloc__sub { grid-column: 2; }
-.salloc__row--child .salloc__name { padding-left: var(--sp-28); color: var(--muted-foreground); }
+.salloc__row--child .salloc__name { padding-left: calc(var(--sp-32) + var(--sp-4)); color: var(--muted-foreground); }   /* 對齊母列名稱的起點（把手 32px ＋ 4px 間距） */
 
 /* ── 組合包視角：多一欄「成員的沒有被鎖定的庫存量」──────────────────────────── */
 .salloc--bundle .salloc__row {

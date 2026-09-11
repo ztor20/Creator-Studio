@@ -333,7 +333,7 @@
      2026-07-29：名稱與分類之間插入粉絲分級欄（144px）。寬度取自最長的值
      「Superfan or above」——這一欄的值是徽章或短句，不換行才讀得快；名稱欄的
      1.6fr 自動吸收掉這 144px，其餘固定欄不動。 */
-  grid-template-columns: 26px 68px minmax(220px, 1.6fr) 144px 88px 64px 96px 72px 40px;
+  grid-template-columns: 26px 68px minmax(220px, 1.6fr) 144px 88px 64px 96px 72px 56px 40px;
 }
 
 /* 粉絲分級欄在 Phase 1–3 不出現（D187）。格線是固定軌數，只把格子 display:none
@@ -341,22 +341,28 @@
    被藏起來，比在容器上再掛一個 class 少一層需要同步的狀態。 */
 .product-list--eshop:has([data-col="tier"].ztd-ver-hidden) .product-list__head,
 .product-list--eshop:has([data-col="tier"].ztd-ver-hidden) .product-list__row {
-  grid-template-columns: 26px 68px minmax(220px, 1.6fr) 88px 64px 96px 72px 40px;
+  grid-template-columns: 26px 68px minmax(220px, 1.6fr) 88px 64px 96px 72px 56px 40px;
 }
 .product-list--eshop .product-list__price,
 .product-list--eshop .product-list__stock,
 .product-list--eshop .product-list__category-cell { color: var(--foreground); }
 .product-list--eshop .product-list__actions { display: flex; justify-content: flex-end; }
+/* 顯示於商店（2026-09-11 D263）：開關自 kebab 選單獨立成一欄，只佔 56px（開關本身 36px）、置中；
+   點了先跳確認彈窗再改狀態（e-shop.html 借 leave-dialog 的殼）。三個分頁同一欄位、同一位置（動作欄之前）。 */
+.product-list__shown { display: flex; justify-content: center; }
 
 /* D241（spec 0-設計規格書 §7.14）：狀態欄可能同時掛兩顆徽章——一顆講販售軸（售罄／
    販售結束／即將開賣…），一顆講顯示軸（已隱藏）。「隱藏但照樣在賣」是規格裡真實存在
-   的組合（私下販售），一顆徽章講不完，欄寬不夠就換行。與拍賣分頁的狀態欄同一套處理。 */
+   的組合（私下販售），一顆徽章講不完。2026-09-11 使用者裁示「有兩個標籤就要換行」：
+   兩顆一律各自一行（直排），不再看欄寬夠不夠才折。與拍賣分頁的狀態欄同一套處理。 */
 .product-list--eshop .product-list__status,
-.product-list--bundles .product-list__status {
+.product-list--bundles .product-list__status,
+.product-list--auctions .product-list__status {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
   gap: var(--sp-4);
-  align-content: center;
+  justify-content: center;
 }
 /* 庫存欄的「N 件未鎖定」註記：所有管道都設了鎖定時，沒有被鎖定的庫存量沒有人能賣，提醒創作者重新
    分配（§7.14 庫存規則）。數字仍是主角，註記降一級、自己一行。 */
@@ -368,16 +374,29 @@
 }
 
 /* 套組分頁 — 同 product-list 外觀，較寬的成員欄；
-   欄位：Image / Bundle / Fan tier / Members / Price / Status / Stock / Actions
+   欄位：Reorder / Image / Bundle / Fan tier / Members / Price / Status / Stock / Actions
    （2026-07-29 加入粉絲分級，與商品分頁同一個位置：名稱之後、其餘資料欄之前，
-   兩個分頁掃起來是同一條線）。 */
+   兩個分頁掃起來是同一條線；2026-09-11 D262 最前多一格 26px 拖曳握把，同商品分頁）。 */
 .product-list--bundles .product-list__head,
 .product-list--bundles .product-list__row {
-  grid-template-columns: 68px minmax(180px, 1.4fr) 144px minmax(150px, 1fr) 88px 112px 100px 40px;
+  /* 2026-09-11 使用者裁示：內含商品欄退場、成員改寫在組合名底下（.product-list__members），名稱欄吸收那一欄的寬 */
+  /* 組合價欄 120px：多選項成員時是「NT$5,984–6,144」這種區間，88 會折行 */
+  grid-template-columns: 26px 68px minmax(220px, 1.6fr) 144px 120px 112px 100px 56px 40px;
 }
 .product-list--bundles:has([data-col="tier"].ztd-ver-hidden) .product-list__head,
 .product-list--bundles:has([data-col="tier"].ztd-ver-hidden) .product-list__row {
-  grid-template-columns: 68px minmax(180px, 1.4fr) minmax(150px, 1fr) 88px 112px 100px 40px;
+  grid-template-columns: 26px 68px minmax(220px, 1.6fr) 120px 112px 100px 56px 40px;
+}
+/* 組合列的成員清單（2026-09-11）：名字底下一件一行、暗字，每行超寬以 … 截斷；行數上限由寫入端控制
+   （最多三行、第四件起併成「…」一行）——清單列只回答「裡面大概有什麼」，明細在組合詳情。 */
+.product-list__members { margin-top: var(--sp-2); min-width: 0; }
+.product-list__members-line {
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-size: var(--fs-12);
+  line-height: var(--lh-comfy);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ── 粉絲分級門檻欄（2026-07-29 L 裁示：「creator 可以點選哪一級買得到」）─────────
@@ -420,12 +439,12 @@
 
 /* 競標分頁 — Image / Item(+狀況·資格 meta) / Category / Bid / Status(lifecycle) / Activity / Actions。
    單一表格、欄位隨生命週期重解意義（spec §87–91）：Bid＝起標/目前/成交價；Activity＝倒數·關注/出價·人數·剩餘/得標·實收。 */
+/* 2026-09-11 D262：競標分頁最前多一格 26px 拖曳握把，同商品／組合分頁。 */
 .product-list--auctions .product-list__head,
 .product-list--auctions .product-list__row {
-  grid-template-columns: 68px minmax(168px, 1.3fr) minmax(100px, 0.8fr) 92px minmax(104px, 0.6fr) minmax(170px, 1.4fr) 44px;
+  grid-template-columns: 26px 68px minmax(168px, 1.3fr) minmax(100px, 0.8fr) 92px minmax(104px, 0.6fr) minmax(170px, 1.4fr) 56px 44px;
 }
 .product-list--auctions .product-list__activity { font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-comfy); }
-.product-list--auctions .product-list__status { display: flex; flex-wrap: wrap; gap: var(--sp-4); align-content: center; }
 
 /* 商品分頁 ≤760px 重排（base 760 已處理 status/stock；此處補 --eshop 多出的分類/價格欄與左內距） */
 @media (max-width: 760px) {

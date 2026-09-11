@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>庫存歷史紀錄 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/row-disclosure.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/restock-log.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* ============================================================
+     lab-stock-history — 商品庫存分頁「庫存歷史紀錄」的設計探索（2026-09-11）
+
+     使用者指示：「補貨中有供應商與備註，在歷史紀錄中也要有，所以歷史紀錄的 UI 要重新思考怎麼設計」。
+     問題：現在的六欄表（日期／類型／選項組合／變動／說明／狀態）把供應商、方式、預計到貨全塞進「說明」一格，
+     備註（自由文字、可能很長）根本擠不進表格；而且一張補貨單可以同時補好幾個組合，逐組合一列會把
+     同一張單的供應商與備註重複好幾次。
+
+     資料模型改成「一張單一筆」（5.1.5.6 §5 的單據層／品項層）：
+       補貨單＝方式（立即／計時）＋供應商＋預計到貨＋備註＋逐組合數量
+       鎖定＝一次儲存＝一筆，逐組合的變動前 → 變動後
+     兩種版面：H1 一單一列、點開看明細（row-disclosure，Q107 定案的 L3 整組換層）；H2 兩行列、不展開。
+
+     邊界：列、徽章、按鈕、揭露把手全部用真的元件；本頁自有規則一律 lab- 前綴、數值吃 DS token。
+     ============================================================ */
+  .lab [hidden] { display: none !important; }
+  .lab { --lab-stage-w: 820px; }
+  .lab-stage { max-width: var(--lab-stage-w); }
+  .lab-cards { display: grid; gap: var(--sp-24); margin-top: var(--sp-24); }
+  .lab-card__head { display: flex; align-items: flex-start; gap: var(--sp-12); flex-wrap: wrap; }
+  .lab-card__code { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: var(--sp-32); height: var(--sp-24); padding: 0 var(--sp-8); border: 1px solid var(--border); border-radius: var(--radius-md); font-family: var(--font-ui); font-size: var(--fs-12); color: var(--foreground); }
+  .lab-card__name { font-family: var(--font-display); font-size: var(--fs-16); margin: 0; }
+  .lab-card__pos { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-2) 0 0; }
+  .lab-demo { margin-top: var(--sp-20); }
+  .lab-note { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-16) 0 0; }
+  .lab-note b { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-diag { margin: var(--sp-12) 0 0; padding-left: var(--sp-20); font-size: var(--fs-14); line-height: var(--lh-relaxed, 1.7); }
+  .lab-diag li + li { margin-top: var(--sp-8); }
+
+  /* ── 歷史列（H1／H2 共用）：日期固定寬在最左、類型徽章、主體、右側狀態 ──
+     日期欄固定寬，列與列的主體才會對齊；徽章不縮。 */
+  .lab-hist__date { flex: none; width: 92px; font-family: var(--font-ui); font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-hist__type { flex: none; }
+  .lab-hist__end { display: flex; align-items: center; gap: var(--sp-8); }
+  /* 變動數字：等寬數字、前景色 */
+  .lab-hist__delta { font-family: var(--font-ui); font-variant-numeric: tabular-nums; color: var(--foreground); }
+  /* H1 展開後的明細列：左側留出日期欄＋徽章的寬度，明細與主體對齊（零縮排原則的「對齊表頭」在清單型就是對齊主體） */
+  .lab-hist__child .data-list__row-main { padding-left: calc(92px + var(--sp-12)); }
+  .lab-hist__k { flex: none; width: 88px; font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-hist__v { font-size: var(--fs-13); color: var(--foreground); min-width: 0; }
+  /* H2 第二行：供應商 · 方式 · 預計到貨 · 備註，備註太長截斷一行 */
+  .lab-hist__meta2 { display: flex; gap: var(--sp-6); min-width: 0; }
+  .lab-hist__meta2 > span { white-space: nowrap; }
+  .lab-hist__meta2 .lab-hist__note { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+  <main class="main">
+    <div class="page lab">
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title">庫存歷史紀錄（設計探索）</h1>
+          <p class="page-intro__sub">補貨單有供應商、方式、預計到貨、備註，一張單可以同時補好幾個組合；鎖定一次儲存也可能改好幾個組合。六欄表塞不下，改成「一張單一筆」。兩種版面，挑一個。</p>
+        </div>
+      </div>
+
+      <section class="card">
+        <div class="card__head"><h2 class="card__title">現況的問題</h2></div>
+        <ol class="lab-diag">
+          <li><b>備註沒地方放</b>：自由文字、可能很長，放進固定欄會把整張表撐爆或截到看不懂。</li>
+          <li><b>同一張單重複講</b>：一單補 M＋L 兩個組合，逐組合一列就會把供應商、預計到貨寫兩遍。</li>
+          <li><b>「說明」一格三件事</b>：供應商、方式、預計到貨擠成一串，掃不出誰是誰。</li>
+        </ol>
+        <p class="lab-note"><b>資料模型</b>：紀錄以「單」為單位——補貨單（方式／供應商／預計到貨／備註＋逐組合數量）、鎖定（一次儲存＋逐組合前 → 後）。這對得上補貨流程規格 5.1.5.6 §5 的單據層／品項層兩層。</p>
+      </section>
+
+      <div class="lab-cards">
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">H1</span>
+            <div>
+              <h2 class="lab-card__name">一單一列，點開看明細（推薦）</h2>
+              <p class="lab-card__pos">主列只講「什麼時候、哪一種、補了誰、誰供的、現在什麼狀態」；供應商以外的細節（逐組合數量、方式與預計到貨、備註、到貨確認）收在展開層。用 DS 的 row-disclosure（Q107 定案的整組換層）。</p>
+            </div>
+          </div>
+          <div class="lab-demo lab-stage" id="h1"></div>
+        </section>
+
+        <section class="card">
+          <div class="card__head lab-card__head">
+            <span class="lab-card__code">H2</span>
+            <div>
+              <h2 class="lab-card__name">兩行列，不展開</h2>
+              <p class="lab-card__pos">第一行＝類型、逐組合變動、狀態；第二行＝供應商 · 方式 · 預計到貨 · 備註（備註截一行、滑過看全文）。一眼看完、但長備註看不完整，補貨中的到貨確認要放在第一行。</p>
+            </div>
+          </div>
+          <div class="lab-demo lab-stage" id="h2"></div>
+        </section>
+      </div>
+
+      <section class="card" style="margin-top:var(--sp-40)">
+        <div class="card__head"><h2 class="card__title">我的建議</h2></div>
+        <ol class="lab-diag">
+          <li><b>H1</b>：歷史紀錄多數時候是掃（上次補多少、隔多久），偶爾才查細節（備註寫了什麼、哪一批）；主列乾淨、細節收起，跟站上其他「母列收一行、點開看明細」的地方同一套（訂單品項、收支小計）。</li>
+          <li>H2 每一列都是兩行，紀錄一多會很高；備註截斷等於還是看不到。</li>
+          <li>不論哪個，「查看全部」彈窗用同一個版面，不再另做一張表。</li>
+        </ol>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/row-disclosure.js?v=r2.2"></script>
+<script>
+(function () {
+  var ORDERS = [
+    { id: 'o1', date: '2026/09/11', type: 'restock', mode: 'scheduled', eta: '2026/09/18', supplier: 'Riso House', note: '先補 XL，巡演前要到。', state: 'restocking', items: [{ combo: 'XL', delta: '+20' }] },
+    { id: 'o2', date: '2026/09/10', type: 'lock', note: '', state: 'done', items: [{ combo: 'M', delta: '2 → 4', to: '鎖給單售' }] },
+    { id: 'o3', date: '2026/09/10', type: 'restock', mode: 'now', supplier: 'Riso House', note: '第二批，含 5 件備品。', state: 'done', items: [{ combo: 'M', delta: '+40' }, { combo: 'L', delta: '+25' }] },
+    { id: 'o4', date: '2026/09/05', type: 'lock', note: '', state: 'done', items: [{ combo: 'L', delta: '0 → 2', to: '鎖給組合 · 九龍夜行 Tour bundle' }, { combo: 'M', delta: '0 → 6', to: '鎖給組合 · 九龍夜行 Tour bundle' }] },
+    { id: 'o5', date: '2026/08/20', type: 'restock', mode: 'now', supplier: '自有庫存', note: '', state: 'done', items: [{ combo: 'XL', delta: '+30' }] }
+  ];
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+  function typeBadge(o) { return o.type === 'lock' ? '<span class="badge badge--neutral">鎖定</span>' : '<span class="badge badge--info">補貨</span>'; }
+  function stateBadge(o) { return o.state === 'restocking' ? '<span class="badge badge--warning">補貨中</span>' : '<span class="badge badge--success">已完成</span>'; }
+  function summary(o) { return o.items.map(function (i) { return esc(i.combo) + ' <span class="lab-hist__delta">' + esc(i.delta) + '</span>'; }).join('<span class="text-sub"> · </span>'); }
+  function modeText(o) { return o.mode === 'scheduled' ? '計時補貨 · 預計 ' + o.eta + ' 到' : '立即補貨'; }
+
+  /* H1：一單一列＋展開 */
+  function h1() {
+    return '<div class="data-list">' + ORDERS.map(function (o) {
+      var head = '<div class="data-list__row rowdis__head" data-rowdis-row="' + o.id + '">' +
+        '<div class="data-list__row-main"><span class="lab-hist__date">' + o.date + '</span><span class="lab-hist__type">' + typeBadge(o) + '</span>' +
+        '<div class="data-list__body"><div class="data-list__title">' + summary(o) + '</div>' +
+        '<div class="data-list__meta">' + (o.type === 'restock' ? esc(o.supplier) + ' · ' + modeText(o) : esc(o.items[0].to)) + '</div></div></div>' +
+        '<div class="lab-hist__end">' + stateBadge(o) +
+        '<button class="btn btn--icon btn--sm rowdis__toggle" type="button" data-rowdis="' + o.id + '" aria-expanded="false" aria-label="展開"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div></div>';
+      var kids = '';
+      o.items.forEach(function (i) {
+        kids += '<div class="data-list__row rowdis__child rowdis__child--compact lab-hist__child" data-rowdis-child="' + o.id + '" hidden><div class="data-list__row-main"><span class="lab-hist__k">' + esc(i.combo) + '</span><span class="lab-hist__v"><span class="lab-hist__delta">' + esc(i.delta) + '</span>' + (i.to ? '<span class="text-sub"> · ' + esc(i.to) + '</span>' : '') + '</span></div></div>';
+      });
+      if (o.type === 'restock') kids += '<div class="data-list__row rowdis__child rowdis__child--compact lab-hist__child" data-rowdis-child="' + o.id + '" hidden><div class="data-list__row-main"><span class="lab-hist__k">供應商</span><span class="lab-hist__v">' + esc(o.supplier) + '</span></div></div>';
+      if (o.mode === 'scheduled') kids += '<div class="data-list__row rowdis__child rowdis__child--compact lab-hist__child" data-rowdis-child="' + o.id + '" hidden><div class="data-list__row-main"><span class="lab-hist__k">預計到貨</span><span class="lab-hist__v">' + esc(o.eta) + '</span></div>' + (o.state === 'restocking' ? '<button class="btn btn--outline btn--xs" type="button">到貨確認</button>' : '') + '</div>';
+      kids += '<div class="data-list__row rowdis__child rowdis__child--compact lab-hist__child" data-rowdis-child="' + o.id + '" hidden><div class="data-list__row-main"><span class="lab-hist__k">備註</span><span class="lab-hist__v">' + (o.note ? esc(o.note) : '<span class="text-sub">—</span>') + '</span></div></div>';
+      return '<div class="rowdis__group rowdis__group--gutter">' + head + kids + '</div>';
+    }).join('') + '</div>';
+  }
+  /* H2：兩行列 */
+  function h2() {
+    return '<div class="data-list">' + ORDERS.map(function (o) {
+      var line2 = o.type === 'restock'
+        ? '<span>' + esc(o.supplier) + '</span><span class="text-sub">·</span><span>' + modeText(o) + '</span>' + (o.note ? '<span class="text-sub">·</span><span class="lab-hist__note" title="' + esc(o.note) + '">' + esc(o.note) + '</span>' : '')
+        : '<span>' + esc(o.items[0].to) + '</span>';
+      return '<div class="data-list__row"><div class="data-list__row-main"><span class="lab-hist__date">' + o.date + '</span><span class="lab-hist__type">' + typeBadge(o) + '</span>' +
+        '<div class="data-list__body"><div class="data-list__title">' + summary(o) + '</div><div class="data-list__meta lab-hist__meta2">' + line2 + '</div></div></div>' +
+        '<div class="lab-hist__end">' + (o.state === 'restocking' ? '<button class="btn btn--outline btn--xs" type="button">到貨確認</button>' : '') + stateBadge(o) + '</div></div>';
+    }).join('') + '</div>';
+  }
+  document.getElementById('h1').innerHTML = h1();
+  document.getElementById('h2').innerHTML = h2();
+  if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
+  /* 示範：H1 第一筆預設展開 */
+  var first = document.querySelector('#h1 [data-rowdis="o1"]'); if (first) first.click();
+})();
+</script>
+</body>
+</html>

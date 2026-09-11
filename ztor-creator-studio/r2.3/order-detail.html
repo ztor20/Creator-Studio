@@ -395,6 +395,8 @@
   </div>
 </div>
 
+<script src="js/listing-state.js?v=r2.2"></script>
+<script src="js/products-store.js?v=r2.2"></script>
 <script src="js/orders-store.js?v=r2.2"></script>
 <script>
 /* ══ 依 ?id= 帶入該筆訂單（2026-08-07）══════════════════════════════════════
@@ -598,7 +600,7 @@
     if (st === 'voided') return '';
     var why = st === 'redeemed' ? (VOID_WHY_FULFILLED[it.mode] || VOID_WHY_FULFILLED.pickup)
       : (adminScope() ? null : VOID_WHY_ADMIN);
-    return '<button class="btn btn--ghost btn--destructive btn--sm od-void-open" type="button"' +
+    return '<button class="btn btn--soft btn--destructive btn--sm od-void-open" type="button"' +
       ' data-od-void="' + i + '"' +
       (why ? ' disabled aria-disabled="true" title="' + esc(why.en) + '" data-i18n-title="' + why.key + '"' : '') +
       '><span data-i18n="od.void.action">Void</span></button>';
@@ -673,11 +675,24 @@
 
       var catI18nKey = it.catKey === 'bundle' ? 'e-shop.cat.bundle' : it.catKey;
       var iconName = it.mode === 'digital' ? 'download' : it.mode === 'bundle' ? 'boxes' : 'package';
+      /* 品項縮圖（2026-09-11 使用者：「這些應該是商品圖片」）：從快照的管理連結取商品 id，
+         去 products-store 拿該 persona 的商品圖；store 裡沒有這個 id（示範的組合包）才退回通用圖示。 */
+      var pidM = String(it.snap && it.snap.manage || '').match(/[?&]id=([^&#]+)/);
+      var pRec = pidM && window.ztorGetProduct ? window.ztorGetProduct(pidM[1]) : null;
+      var bRec = !pRec && pidM && window.ztorGetBundle ? window.ztorGetBundle(pidM[1]) : null;
+      var thumbSrc = (pRec && pRec.img) || (bRec && bRec.img) || '';
+      /* 分類跟著找到的商品走（nick 別名對到的商品分類與訂單寫死的 catKey 可能不同，例：zine → 球衣）；
+         實體次分類對到 e-shop 的分類 key，對不到就維持訂單自己的。 */
+      var SUB2CAT = { apparel: 'e-shop.cat.apparel', zine: 'e-shop.cat.books', merch: 'e-shop.cat.accessories', collectible: 'e-shop.cat.collectibles', poster: 'e-shop.cat.prints' };
+      if (pRec && pRec.cat === 'physical' && SUB2CAT[pRec.subKey]) catI18nKey = SUB2CAT[pRec.subKey];
+      var thumbHtml = thumbSrc
+        ? '<img class="data-list__thumb data-list__thumb--lg" src="images/products/' + esc(thumbSrc) + '" alt="" loading="lazy">'
+        : '<div class="data-list__icon"><i data-lucide="' + iconName + '" class="ztor-icon"></i></div>';
       var row = document.createElement('div');
       row.className = 'data-list__row' + (isGroup ? ' rowdis__head' : '');
       row.innerHTML =
         '<div class="data-list__row-main">' +
-          '<div class="data-list__icon"><i data-lucide="' + iconName + '" class="ztor-icon"></i></div>' +
+          thumbHtml +
           '<div class="data-list__body">' +
             /* §2.3.1 品項名稱點擊開商品快照 popup，不直接連活商品 */
             '<div class="data-list__title"><a class="card__link od-snap-open" role="button" href="#"' +

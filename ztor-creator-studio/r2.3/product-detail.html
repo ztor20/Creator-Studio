@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
@@ -24,7 +25,8 @@
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/restock-modal.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/restock-log.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/row-disclosure.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-history.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
@@ -41,6 +43,7 @@
 <link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-store.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
@@ -103,9 +106,9 @@
           <div class="pd-hero__head">
             <h1 class="pd-hero__title" id="pd-title">Pirate Queen zine vol. 02</h1>
           </div>
-          <p class="pd-hero__desc" id="pd-sub"></p>
-          <!-- 識別小字（2026-09-11 使用者指示）：價格 · 選項模式（單一選項／多選項）。由 applyProduct 填。 -->
-          <p class="pd-hero__meta" id="pd-hero-meta"><span data-pd-hero-price></span> · <span data-pd-hero-var></span></p>
+          <!-- 描述那一行撤除（2026-09-11 使用者指示「這一個不需要」）：商品描述是給買家看的文案，在商品設定裡改；
+               頁首只留識別——價格 · 選項模式（單一選項／多選項），寫在原本描述的位置、用描述那一行的字級。由 applyProduct 填。 -->
+          <p class="pd-hero__desc" id="pd-hero-meta"><span data-pd-hero-price></span> · <span data-pd-hero-var></span></p>
         </div>
       </section>
 
@@ -128,6 +131,7 @@
           <button class="section-nav__item section-nav__item--active" role="tab" data-tab="overview" aria-selected="true" data-i18n="product-detail.tab.overview">Overview</button>
           <button class="section-nav__item" role="tab" data-tab="stock" aria-selected="false" data-pd-cat="physical" data-i18n="product-detail.tab.stock">Stock</button>
           <button class="section-nav__item" role="tab" data-tab="settings" aria-selected="false" data-i18n="product-detail.tab.settings">Product settings</button>
+          <button class="section-nav__item" role="tab" data-tab="links" aria-selected="false" data-i18n="product-detail.tab.links">Links</button>
         </nav>
         <div class="section-nav__body">
 
@@ -139,29 +143,31 @@
       <!-- ════════ TAB · 總覽：銷售摘要＋原側欄的唯讀狀態卡 ════════ -->
       <div class="tab-panel tab-panel--active" data-panel="overview" role="tabpanel">
 
-      <section class="form-section form-section--outlined">
-        <div class="form-section__head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-12)">
-          <div>
-            <h3 class="form-section__title" data-i18n="product-detail.sales.title">Sales summary</h3>
-            <p class="form-section__sub" data-i18n="product-detail.sales.sub">Reconciled with Earnings; not recalculated here.</p>
-          </div>
-          <a class="card__link" href="earnings.html" style="font-size: var(--fs-12);white-space:nowrap" data-i18n="product-detail.sales.more">View more →</a>
-        </div>
-
-        <div class="bento when-data" style="gap:var(--sp-10)">
-          <div class="kpi kpi--compact bento--span-3"><div class="kpi__label" data-i18n="product-detail.kpi.sold">Units sold</div><div class="kpi__value" style="font-size: var(--fs-22)">92</div></div>
-          <div class="kpi kpi--compact bento--span-3"><div class="kpi__label" data-i18n="product-detail.kpi.revenue">Revenue</div><div class="kpi__value" style="font-size: var(--fs-22)">$2,944</div></div>
-          <div class="kpi kpi--compact bento--span-3"><div class="kpi__label" data-i18n="product-detail.kpi.net">Net after fees</div><div class="kpi__value" style="font-size: var(--fs-22)">$2,372</div><div class="kpi__meta" data-i18n="product-detail.kpi.net-meta2">Net of platform &amp; payment fees</div></div>
-          <div class="kpi kpi--compact bento--span-3"><div class="kpi__label" data-i18n="product-detail.kpi.cvr">Conversion</div><div class="kpi__value" style="font-size: var(--fs-22)">4.2%</div></div>
+      <!-- 銷售摘要（2026-09-11 改資料驅動）：三個 KPI 讀 product.sales（{units, gross, net}），null＝尚無銷售，
+           由 applyDetailSeed() 把 .when-data 收起、.when-empty 露出（沿用 cheat code Empty 的同一組 class）。
+           2026-09-11 使用者裁示「四個 bento 可以拆出來不用 section 那層，但查看更多要找地方放」：
+           四塊磚直接坐在 .detail-cards 裡（同商品庫存分頁的四個數字），不再包 form-section；
+           「查看更多」改成淨利磚整塊可點（a.kpi--tappable，右上 chevron；同日使用者裁示「像關聯中一樣一個箭頭在右上就好」），
+           原標題與「數字與收入管理對帳，本頁不重算」副標退場——磚的標籤已經說明自己是什麼。 -->
+      <div class="detail-cards">
+      <div data-pd-sales>
+        <div class="bento when-data">
+          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="product-detail.kpi.sold">Units sold</div><div class="kpi__value" data-pd-sales-units>0</div></div>
+          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="product-detail.kpi.revenue">Revenue</div><div class="kpi__value" data-pd-sales-gross>—</div></div>
+          <!-- 淨利磚整塊連到收入管理（2026-09-11 使用者：「像關聯中一樣一個箭頭在右上就好」），取代磚內文字連結 -->
+          <a class="kpi kpi--tappable bento--span-3" href="earnings.html" data-i18n-aria-label="product-detail.sales.more" aria-label="View in Earnings"><i data-lucide="chevron-right" class="ztor-icon kpi__chevron" aria-hidden="true"></i><div class="kpi__label" data-i18n="product-detail.kpi.net">Net after fees</div><div class="kpi__value" data-pd-sales-net>—</div><div class="kpi__meta" data-i18n="product-detail.kpi.net-meta2">Net of platform &amp; payment fees</div></a>
+          <!-- 2026-09-11 撤除「轉換率」第四格（UIA-062 收案）：規格 5.1.5.1 §2.3 只定義三個 KPI，站上也沒有商品頁瀏覽數這種流量資料來源，那一格永遠只能是示意值。
+               同日使用者指示補「關聯中」第四格：這件商品被幾個組合包／項目用到（數字＝兩者加總，註腳拆開講），
+               點了切到「關聯」分頁。數字讀 products-store 的組合包與關聯分頁的項目列，由 renderDest() 一起算。 -->
+          <button class="kpi kpi--tappable bento--span-3" type="button" data-pd-kpi-links-go><i data-lucide="chevron-right" class="ztor-icon kpi__chevron" aria-hidden="true"></i><div class="kpi__label" data-i18n="product-detail.kpi.links">In use</div><div class="kpi__value" data-pd-kpi-links>0</div><div class="kpi__meta kpi__meta--clip" data-pd-kpi-links-meta hidden></div></button>
         </div>
         <div class="when-empty">
-          <div class="bento" style="gap:var(--sp-10)">
-            <div class="kpi kpi--compact bento--span-6"><div class="kpi__label" data-i18n="product-detail.kpi.sold">Units sold</div><div class="kpi__value" style="font-size: var(--fs-22)">0</div></div>
-            <div class="kpi kpi--compact bento--span-6"><div class="kpi__label" data-i18n="product-detail.kpi.revenue">Revenue</div><div class="kpi__value" style="font-size: var(--fs-22)">—</div></div>
+          <div class="bento">
+            <div class="kpi bento--span-6"><div class="kpi__label" data-i18n="product-detail.kpi.sold">Units sold</div><div class="kpi__value">0</div></div>
+            <div class="kpi bento--span-6"><div class="kpi__label" data-i18n="product-detail.kpi.revenue">Revenue</div><div class="kpi__value">—</div><div class="kpi__meta" data-i18n="product-detail.sales.empty">No sales yet.</div></div>
           </div>
-          <div class="field__hint mt-8" data-i18n="product-detail.sales.empty">No sales yet.</div>
         </div>
-      </section>
+      </div>
 
       <!-- 商品設定概覽（2026-09-11 使用者指示「總覽：銷售摘要、商品庫存、商品設定概覽」）：
            商品設定分頁的每個區塊在這裡一行一句摘要，行尾箭頭切到商品設定分頁並捲到那一節。
@@ -176,33 +182,8 @@
           <!-- 列由 JS 依商品類型渲染（實體／數位、單一規格／多選項各自不同） -->
         </div>
       </section>
-
-      <!-- 使用中（S24）：被哪個專案／組合引用，屬狀態不屬設定，留在總覽。 -->
-      <div class="detail-cards">
-        <section class="form-section form-section--outlined" data-feat="S24">
-          <div class="form-section__head">
-            <h3 class="form-section__title" data-i18n="product-detail.rail.inuse">Related</h3>
-          </div>
-          <div class="when-data">
-            <div class="kv" style="align-items:flex-start">
-              <span class="kv__k" data-i18n="product-detail.ref.label">Project</span>
-              <span class="kv__v" style="max-width:170px">
-                <a class="card__link" href="create-project.html" data-route-keep data-i18n="product-detail.ref.row1">Kowloon After Dark OST · pre-order reward $50 tier</a>
-              </span>
-            </div>
-            <!-- 組合引用：規格 §2.4 只定義「項目引用」，組合尚未納入＝產品缺口，待上游確認 -->
-            <div class="kv" style="align-items:flex-start">
-              <span class="kv__k" data-i18n="product-detail.rail.bundle">Bundle</span>
-              <span class="kv__v" style="max-width:170px">
-                <a class="card__link" href="bundle-detail.html" data-route-keep>Tour bundle</a>
-              </span>
-            </div>
-          </div>
-          <div class="when-empty field__hint" data-i18n="product-detail.ref.empty">Not referenced by any project yet.</div>
-        </section>
       </div><!-- /detail-cards -->
-
-      </div><!-- /tab-panel overview（銷售摘要／商品設定概覽／使用中）-->
+      </div><!-- /tab-panel overview（銷售摘要／商品設定概覽）-->
 
       <!-- ════════ TAB · 商品庫存 ════════ -->
       <div class="tab-panel" data-panel="stock" role="tabpanel">
@@ -252,46 +233,28 @@
                 <span data-i18n="stock.col.incoming">Restocking</span>
                 <span data-i18n="stock.col.status">Status</span>
                 <span></span>
-                <span></span>
               </div>
               <!-- 列（與分組標題）由 renderPageTable() 依商品資料填入 -->
             </div>
           </div>
         </section>
 
-        <!-- 庫存去向：哪個組合包從這件商品鎖走幾件（鎖定量在組合包自己的分配表設定，5.1.5.9）。 -->
-        <section class="form-section form-section--outlined">
-          <div class="form-section__head">
-            <h3 class="form-section__title" data-i18n="stock.dest.title">Where stock goes</h3>
-            <p class="form-section__sub" data-i18n="stock.dest.sub">Bundle locks are set on each bundle's own allocation table.</p>
-          </div>
-          <div class="data-list" data-pd-dest></div>
-          <div class="field__hint" data-pd-dest-empty hidden data-i18n="stock.dest.empty">Not part of any bundle.</div>
-        </section>
 
         <!-- 庫存歷史紀錄：補貨與鎖定變動同一張表（使用者裁示合併）。頁內最近四筆，查看全部開彈窗。 -->
         <section class="form-section form-section--outlined">
           <div class="form-section__head form-section__head--actions">
             <div class="form-section__head-titles">
               <h3 class="form-section__title" data-i18n="stock.history.title">Stock history</h3>
-              <p class="form-section__sub" data-i18n="stock.history.sub">Every restock and lock change.</p>
+              <p class="form-section__sub" data-i18n="stock.history.sub">One row per restock order or lock change — open a row for details.</p>
             </div>
             <div class="form-section__head-actions">
               <button class="btn btn--ghost btn--sm" type="button" data-pd-history-open data-i18n="btn.view-all">View all</button>
             </div>
           </div>
-          <div class="restock-log-wrap">
-            <div class="restock-log restock-log--history" data-pd-history-inline>
-              <div class="restock-log__head">
-                <span data-i18n="restock.col.date">Date</span>
-                <span data-i18n="stock.history.col.type">Type</span>
-                <span class="restock-log__opt" data-i18n="restock.col.option">Option</span>
-                <span data-i18n="stock.history.col.delta">Change</span>
-                <span data-i18n="stock.history.col.note">Note</span>
-                <span data-i18n="restock.col.status">Status</span>
-              </div>
-            </div>
-          </div>
+          <!-- 一單一筆、點開看明細（2026-09-11 使用者裁決 H1，探索頁 lab-stock-history.html）：列由 pdStockHistory.render() 填 -->
+          <div class="data-list" data-pd-history-inline></div>
+          <!-- 空狀態（2026-09-11 使用者：「當沒有紀錄時，要有一個空畫面的文字」）：同庫存去向那一行的寫法 -->
+          <div class="field__hint" data-pd-history-empty hidden data-i18n="stock.history.empty">No records yet.</div>
         </section>
       </div><!-- /detail-cards -->
 
@@ -312,7 +275,7 @@
               <button type="button" class="tabs__item" data-view-safe data-nav-item="pricing" data-i18n="product-detail.nav.pricing">Options &amp; pricing</button>
               <button type="button" class="tabs__item" data-view-safe data-nav-item="rules" data-i18n="product-detail.nav.rules">Discounts &amp; limits</button>
               <button type="button" class="tabs__item" data-view-safe data-nav-item="delivery" data-i18n="product-detail.tab.delivery">Delivery</button>
-              <button type="button" class="tabs__item" data-view-safe data-nav-item="relations" data-i18n="product-detail.tab.relations">Promotion</button>
+              <button type="button" class="tabs__item" data-view-safe data-nav-item="relations" data-i18n="product-detail.nav.tags">Tags</button>
               <button type="button" class="tabs__item" data-view-safe data-nav-item="publish" data-i18n="product-detail.nav.publish">Listing &amp; sale</button>
             </nav>
             <div class="list-toolbar__actions">
@@ -500,6 +463,9 @@
                 <option data-sub="mv" data-i18n="cp.dsub.mv">MV · MV</option>
                 <option data-sub="album" data-i18n="cp.dsub.album">Album</option>
                 <option data-sub="membership" data-i18n="cp.dsub.membership">Membership / VIP card</option>
+                <!-- 2026-09-11 示範資料補齊：文檔與 IP 素材兩種數位內容型的商品進了 store，這裡才選得到 -->
+                <option data-sub="document" data-i18n="cp.dsub.document">Document</option>
+                <option data-sub="ip" data-i18n="cp.dsub.ip">IP assets</option>
               </select>
             </div>
           </div>
@@ -646,6 +612,7 @@
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="cp.discount.title">Discount settings</h3>
         </div>
+        <div class="stack stack--tight">
         <div class="control-group">
           <div class="control-row">
           <div>
@@ -684,6 +651,16 @@
           </div>
         </div>
         </div>
+        <!-- 可與優惠碼疊加（同建立商品 F13 · D183；2026-09-11 使用者：「要有可以使用折扣優惠碼的選項，像創建單售商品一樣」）：
+             商店優惠碼（5.1.5.5 F8）能不能再疊在這個商品的折扣上，由商品自己決定；預設關＝擇一，取對買家最有利的。 -->
+        <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="cp.discount.stack">Stack with discount codes</div>
+            <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means the buyer gets whichever single discount is best for them</div>
+          </div>
+          <div class="switch" role="switch" aria-checked="false" tabindex="0" id="pd-stack-codes"></div>
+        </div>
+        </div><!-- /.stack -->
       </section>
 
       <!-- §3-6 · 低庫存提醒設定（僅實體）：自庫存卡拆出——它是通知設定，不是庫存本身 -->
@@ -732,7 +709,8 @@
         </div>
           <div class="field pd-subfields control-group__body" data-pd-limit-fields hidden style="margin-bottom:0">
           <div class="field__label"><span data-i18n="cp.limit.max">Maximum quantity per person</span> <span class="field__req">*</span></div>
-          <input class="input" value="2" style="max-width:220px">
+          <!-- 數量由 applyDetailSeed() 依 product.limit 填；null＝開關關、欄位空 -->
+          <input class="input" id="pd-limit-qty" inputmode="numeric" style="max-width:220px">
         </div>
         </div>
       </section>
@@ -826,23 +804,14 @@
         </div>
         <div class="field" style="margin-bottom:0">
           <div class="tag-input">
+            <!-- 初始 chip 由 applyDetailSeed() 依 product.tags 產生（2026-09-11 起不再寫死） -->
             <div class="tag-input__field" id="pd-tags-field">
-              <span class="chip chip--active chip--removable">Tour 2025<button class="chip__remove" type="button" data-pd-tag-remove aria-label="Remove tag"><i data-lucide="x" class="ztor-icon"></i></button></span>
-              <span class="chip chip--active chip--removable">Signed<button class="chip__remove" type="button" data-pd-tag-remove aria-label="Remove tag"><i data-lucide="x" class="ztor-icon"></i></button></span>
               <input class="tag-input__entry" id="pd-tags-entry" data-i18n-placeholder="cp.tags.ph" placeholder="Type a tag, press Enter">
             </div>
           </div>
         </div>
       </section>
 
-      <!-- §3-10b 電影關聯（可多部、選填；F12；D138；候選＝前台已上架電影 films-store）-->
-      <section class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="pd.films.title">Linked movies</h3>
-          <p class="form-section__sub" data-i18n="pd.films.sub">Released movies this product relates to (front-end catalog).</p>
-        </div>
-        <div data-pd-film-picker></div>
-      </section>
             </div>
             <div data-nav-panel="publish">
         <!-- §2.16 上架設定／開賣設定 ＋ §2.17 非公開連結（spec 5.1.5.1 §2.16／§2.17，定義本體在主規格
@@ -971,6 +940,45 @@
         </div><!-- /data-nav settings -->
       </div><!-- /tab-panel settings -->
 
+      <!-- ════════ TAB · 關聯（2026-09-11 使用者指示「新增一個分頁，商品被關聯或是組合使用都放在這」）════════
+           這件商品和站上其他東西的關係，兩個方向：被誰用（組合包、項目——只讀、可點過去）、它掛在哪（電影關聯——可改）。
+           原總覽的「使用中」卡撤除（組合那一列與庫存去向重複、且是寫死的示範；項目那一列搬來這裡成一區）；
+           原商品庫存分頁的「庫存去向」搬來這裡改名「組合包」；電影關聯自商品設定分頁搬來（商品標籤留在商品設定：
+           它是商品自己的屬性，不是關係）。 -->
+      <div class="tab-panel" data-panel="links" role="tabpanel">
+      <div class="detail-cards">
+        <!-- 組合包：哪個組合包用到這件商品、從它鎖走幾件（鎖定量在組合包自己的分配表設定，5.1.5.9）。 -->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="stock.dest.title">Bundles</h3>
+            <p class="form-section__sub" data-i18n="stock.dest.sub">Bundles that include this product and how many units each locks; locks are set on the bundle.</p>
+          </div>
+          <div class="data-list" data-pd-dest></div>
+          <div class="field__hint" data-pd-dest-empty hidden data-i18n="stock.dest.empty">Not part of any bundle.</div>
+        </section>
+
+        <!-- 項目：被哪個項目當回饋或引用（§2.4 項目引用；S24）。列由 applyDetailSeed() 依 product.projects 產生，
+             空陣列＝露出 .when-empty（2026-09-11 起不再寫死一列示範）。 -->
+        <section class="form-section form-section--outlined" data-feat="S24" data-pd-projects>
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="product-detail.ref.label">Projects</h3>
+            <p class="form-section__sub" data-i18n="product-detail.ref.sub">Projects that use this product as a reward or reference it.</p>
+          </div>
+          <div class="data-list when-data" data-pd-projects-list></div>
+          <div class="when-empty field__hint" data-i18n="product-detail.ref.empty">Not referenced by any project yet.</div>
+        </section>
+
+      <!-- §3-10b 電影關聯（可多部、選填；F12；D138；候選＝前台已上架電影 films-store）-->
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pd.films.title">Linked movies</h3>
+          <p class="form-section__sub" data-i18n="pd.films.sub">Released movies this product relates to (front-end catalog).</p>
+        </div>
+        <div data-pd-film-picker></div>
+      </section>
+      </div><!-- /detail-cards -->
+      </div><!-- /tab-panel links -->
+
       </div><!-- /detail-main -->
 
       <!-- 右側唯讀 meta 欄（跨分頁常駐）-->
@@ -1001,19 +1009,8 @@
     </div>
     <div class="payout-dialog__body">
       <p class="form-section__sub" style="margin-bottom:var(--sp-16)" data-i18n="restock.history.hint">Every restock (immediate or scheduled) is logged here — newest first.</p>
-      <div class="restock-log-wrap">
-        <div class="restock-log restock-log--history" data-restock-log>
-          <div class="restock-log__head">
-            <span data-i18n="restock.col.date">Date</span>
-            <span data-i18n="stock.history.col.type">Type</span>
-            <span class="restock-log__opt" data-i18n="restock.col.option">Option</span>
-            <span data-i18n="stock.history.col.delta">Change</span>
-            <span data-i18n="stock.history.col.note">Note</span>
-            <span data-i18n="restock.col.status">Status</span>
-          </div>
-          <!-- 列由 pdStockHistory.render() 填入（示範資料在 JS） -->
-        </div>
-      </div>
+      <div class="data-list" data-restock-log></div>
+      <div class="field__hint" data-pd-history-empty hidden data-i18n="stock.history.empty">No records yet.</div>
     </div>
   </section>
 </div>
@@ -1063,6 +1060,7 @@
 <script src="partials/field-more.js?v=r2.2"></script><script src="partials/date-input.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/detail-topbar.js?v=r2.2"></script>
+<script src="js/row-disclosure.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="partials/restock-modal.js?v=r2.2"></script>
 <script src="partials/radio-list.js?v=r2.2"></script>
@@ -1165,41 +1163,66 @@
        一筆＝{ type: 'restock'|'lock', combo, vi, delta, date, note, state: 'done'|'restocking', qty }。
        補貨中（state 'restocking'）的筆同時是「補貨中」那張卡的內容，到貨確認後才入庫、轉 done。
        頁內卡只列最近四筆，彈窗列全部；兩邊同一份資料、同一支 render。示範資料依商品替換（多選項給組合名）。 */
+    /* ── 庫存歷史紀錄（2026-09-11 使用者裁決 H1：一張單一筆、點開看明細）──────────
+       一筆＝{ id, type:'restock'|'lock', date, mode:'now'|'scheduled', supplier, eta, note, state:'done'|'restocking',
+              items:[{ combo, vi, delta, qty, to }] }。
+       補貨單的 supplier／eta／note 是單的屬性（5.1.5.6 §5 單據層）；items 是品項層。
+       補貨中（state 'restocking'）的單同時是「補貨中」那張卡的內容，到貨確認後逐項入庫、轉 done。
+       頁內卡只列最近四筆，彈窗列全部；同一份資料、同一支 render（清單型 row-disclosure，見 stock-history.css）。 */
     const HISTORY = [];
+    let seq = 0;
+    let histSrc = null;   /* 目前這份 HISTORY 是從哪一筆商品記錄抄來的 */
     function today() { const d = new Date(); return d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0'); }
-    function seedHistory() {
+    /* 2026-09-11 改資料驅動：初始紀錄從 product.history 深拷貝（欄位形狀見 js/products-store.js 檔頭），
+       不再由頁面對每個商品硬插同一組示範——「沒有補貨中」這一態終於看得到（補貨中卡由 state 'restocking' 推導）。
+       supplierKey／toKey 走 i18n，留到 render 時才翻，切語言會重譯。 */
+    function initHistory(p) {
       HISTORY.length = 0;
-      const p = storeProduct();
-      const multi = isMulti(p);
-      const names = multi ? p.variants.map(function (v) { return (v.combo || []).join(' / '); }) : ['—'];
-      const n0 = names[0], n1 = names[1] || names[0];
-      HISTORY.push({ type: 'lock', combo: n0, vi: multi ? 0 : 'single', delta: '0 → 2', date: '2026/09/05', note: T('stock.history.note.single', 'Locked for single sale'), state: 'done' });
-      HISTORY.push({ type: 'restock', combo: n1, vi: multi ? Math.min(1, names.length - 1) : 'single', delta: '+25', date: '2026/09/02', note: 'Riso House · ' + T('stock.history.note.now', 'Restock now'), state: 'done', qty: 25 });
-      HISTORY.push({ type: 'restock', combo: n0, vi: multi ? 0 : 'single', delta: '+40', date: '2026/08/20', note: 'Riso House · ' + T('stock.history.note.now', 'Restock now'), state: 'done', qty: 40 });
+      histSrc = p || null;
+      const src = (p && Array.isArray(p.history)) ? JSON.parse(JSON.stringify(p.history)) : [];
+      src.forEach(function (h, i) { if (!h.id) h.id = 'h' + (i + 1); if (!h.items) h.items = []; HISTORY.push(h); });
+      seq = HISTORY.length;
     }
-    function rowEl(h) {
-      const row = document.createElement('div');
-      row.className = 'restock-log__row';
-      const lock = h.type === 'lock';
-      const st = h.state === 'restocking'
-        ? '<span class="badge badge--warning"><span data-i18n="restock.status.restocking">Restocking</span></span>'
-        : '<span class="badge badge--success"><span data-i18n="restock.status.done">Completed</span></span>';
-      row.innerHTML =
-        '<span class="restock-log__muted">' + esc(h.date) + '</span>' +
-        '<span data-i18n="' + (lock ? 'stock.history.type.lock' : 'stock.history.type.restock') + '">' + (lock ? 'Lock' : 'Restock') + '</span>' +
-        '<span class="restock-log__opt">' + esc(h.combo || '—') + '</span>' +
-        '<span class="restock-log__qty' + (lock ? ' restock-log__qty--lock' : '') + '">' + esc(h.delta) + '</span>' +
-        '<span class="restock-log__muted">' + esc(h.note || '') + '</span>' +
-        '<span>' + st + '</span>';
-      return row;
-    }
+    function supplierOf(h) { return h.supplierKey ? T(h.supplierKey, h.supplier || '') : (h.supplier || ''); }
+    function toOf(i) { return i.toKey ? T(i.toKey, i.to || '') : (i.to || ''); }
     function esc(x) { return String(x == null ? '' : x).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+    function modeText(h) { return h.mode === 'scheduled' ? T('restock.method.scheduled', 'Scheduled') + ' · ' + T('stock.pending.eta', 'ETA {d}').replace('{d}', h.eta || '—') : T('restock.method.now', 'Restock now'); }
+    function summaryHTML(h) {
+      return h.items.map(function (i) { return (i.combo && i.combo !== '—' ? esc(i.combo) + ' ' : '') + '<span class="shist__delta">' + esc(i.delta) + '</span>'; }).join('<span class="text-sub"> · </span>');
+    }
+    function typeBadge(h) { return h.type === 'lock' ? '<span class="badge badge--neutral"><span data-i18n="stock.history.type.lock">Lock</span></span>' : '<span class="badge badge--info"><span data-i18n="stock.history.type.restock">Restock</span></span>'; }
+    function stateBadge(h) { return h.state === 'restocking' ? '<span class="badge badge--warning"><span data-i18n="restock.status.restocking">Restocking</span></span>' : '<span class="badge badge--success"><span data-i18n="restock.status.done">Completed</span></span>'; }
+    function kv(gid, k, v, extra) {
+      return '<div class="data-list__row rowdis__child rowdis__child--compact shist__child" data-rowdis-child="' + gid + '" hidden><div class="data-list__row-main"><span class="shist__k">' + k + '</span><span class="shist__v">' + v + '</span></div>' + (extra || '') + '</div>';
+    }
+    function groupHTML(h, scope) {
+      const gid = scope + '-' + h.id;
+      const meta = h.type === 'restock' ? esc(supplierOf(h) || '—') + ' · ' + modeText(h) : esc((h.items[0] && toOf(h.items[0])) || '');
+      let out = '<div class="rowdis__group rowdis__group--gutter">' +
+        '<div class="data-list__row rowdis__head" data-rowdis-row="' + gid + '">' +
+          '<div class="data-list__row-main"><span class="shist__date">' + esc(h.date) + '</span><span class="shist__type">' + typeBadge(h) + '</span>' +
+          '<div class="data-list__body"><div class="data-list__title">' + summaryHTML(h) + '</div><div class="data-list__meta">' + meta + '</div></div></div>' +
+          '<div class="shist__end">' + stateBadge(h) +
+          '<button class="btn btn--icon btn--sm rowdis__toggle" type="button" data-rowdis="' + gid + '" aria-expanded="false" aria-label="Expand" data-i18n-aria-label="stock.history.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div></div>';
+      h.items.forEach(function (i) { var to = toOf(i); out += kv(gid, esc(i.combo || '—'), '<span class="shist__delta">' + esc(i.delta) + '</span>' + (to ? '<span class="text-sub"> · ' + esc(to) + '</span>' : '')); });
+      if (h.type === 'restock') {
+        out += kv(gid, '<span data-i18n="stock.history.k.supplier">Supplier</span>', esc(supplierOf(h) || '—'));
+        if (h.mode === 'scheduled') out += kv(gid, '<span data-i18n="restock.f.eta">Expected arrival</span>', esc(h.eta || '—'),
+          h.state === 'restocking' ? '<button class="btn btn--outline btn--xs" type="button" data-pd-receive="' + h.id + '"><span data-i18n="restock.receive">Mark received</span></button>' : '');
+        out += kv(gid, '<span data-i18n="stock.history.k.note">Note</span>', h.note ? esc(h.note) : '<span class="text-sub">—</span>');
+      }
+      return out + '</div>';
+    }
     function renderHistory() {
-      [[document.querySelector('[data-restock-log]'), Infinity], [document.querySelector('[data-pd-history-inline]'), 4]].forEach(function (pair) {
-        const host = pair[0]; if (!host) return;
-        host.querySelectorAll('.restock-log__row').forEach(function (r) { r.remove(); });
-        HISTORY.slice(0, pair[1]).forEach(function (h) { host.appendChild(rowEl(h)); });
+      [[document.querySelector('[data-restock-log]'), Infinity, 'all'], [document.querySelector('[data-pd-history-inline]'), 4, 'inl']].forEach(function (t) {
+        const host = t[0]; if (!host) return;
+        host.innerHTML = HISTORY.slice(0, t[1]).map(function (h) { return groupHTML(h, t[2]); }).join('');
+        if (window.ztorIcons) window.ztorIcons.applyIcons(host);
         if (window.applyI18n) window.applyI18n(host);
+        /* 沒有紀錄：清單收起、露出「暫無紀錄」那一行 */
+        const empty = host.parentElement && host.parentElement.querySelector('[data-pd-history-empty]');
+        host.hidden = !HISTORY.length;
+        if (empty) empty.hidden = !!HISTORY.length;
       });
       renderPending();
       /* 補貨中的量會出現在 KPI 第四塊與表格的「補貨中」欄，紀錄一變就重算 */
@@ -1207,7 +1230,7 @@
       var p = storeProduct();
       if (p) document.dispatchEvent(new CustomEvent('pd:stock', { detail: p }));
     }
-    /* 補貨中那張卡：一列一筆計時補貨、附到貨確認；沒有就整張收起 */
+    /* 補貨中那張卡：一列一張單、附到貨確認；沒有就整張收起 */
     function renderPending() {
       const card = document.querySelector('[data-pd-pending]');
       const list = document.querySelector('[data-pd-pending-list]');
@@ -1215,33 +1238,34 @@
       const pend = HISTORY.filter(function (h) { return h.state === 'restocking'; });
       card.hidden = !pend.length;
       list.innerHTML = pend.map(function (h) {
-        const i = HISTORY.indexOf(h);
         return '<div class="alert alert--row alert--info"><span class="alert__icon"><i data-lucide="truck" class="ztor-icon"></i></span>' +
-          '<div class="alert__body"><div class="alert__title">' + (h.combo && h.combo !== '—' ? esc(h.combo) + ' ' : '') + '+' + h.qty + ' ' + T('stock.unit', 'pcs') + (h.supplier ? ' · ' + esc(h.supplier) : '') + '</div>' +
-          '<div class="alert__meta">' + esc(T('stock.pending.eta', 'ETA {d}').replace('{d}', h.eta || '—')) + '</div></div>' +
-          '<button class="btn btn--outline btn--sm" type="button" data-pd-receive="' + i + '"><span data-i18n="restock.receive">Mark received</span></button></div>';
+          /* 一行講完（使用者指示「放同一行」）：組合 +N 件 · 供應商 · 預計到貨，後半用弱色 */
+          '<div class="alert__body"><div class="alert__title">' + h.items.map(function (i) { return (i.combo && i.combo !== '—' ? esc(i.combo) + ' ' : '') + '+' + i.qty + ' ' + T('stock.unit', 'pcs'); }).join(' · ') + (supplierOf(h) ? ' · ' + esc(supplierOf(h)) : '') +
+          ' <span class="text-sub">· ' + esc(T('stock.pending.eta', 'ETA {d}').replace('{d}', h.eta || '—')) + '</span></div></div>' +
+          '<button class="btn btn--outline btn--sm" type="button" data-pd-receive="' + h.id + '"><span data-i18n="restock.receive">Mark received</span></button></div>';
       }).join('');
       if (window.ztorIcons) window.ztorIcons.applyIcons(list);
       if (window.applyI18n) window.applyI18n(list);
     }
-    /* 到貨確認：該筆入庫（逐組合）、轉已完成，KPI 與表格重算 */
-    function receive(i) {
-      const h = HISTORY[i]; if (!h || h.state !== 'restocking') return;
+    /* 到貨確認：整張單逐項入庫、轉已完成，KPI 與表格重算 */
+    function receive(id) {
+      const h = HISTORY.find(function (x) { return x.id === id; }); if (!h || h.state !== 'restocking') return;
       h.state = 'done';
-      applyNow([{ vi: h.vi === 'single' ? null : h.vi, qty: h.qty, name: h.combo }]);
+      applyNow(h.items.map(function (i) { return { vi: i.vi === 'single' ? null : i.vi, qty: i.qty, name: i.combo }; }));
       renderHistory();
     }
     window.pdStockHistory = {
-      add: function (entry) { HISTORY.unshift(Object.assign({ date: today(), state: 'done' }, entry)); renderHistory(); },
+      add: function (entry) { HISTORY.unshift(Object.assign({ id: 'h' + (++seq), date: today(), state: 'done', items: [] }, entry)); renderHistory(); },
       pendingFor: function (vi) {
-        return HISTORY.filter(function (h) { return h.state === 'restocking' && (vi === undefined || String(h.vi) === String(vi)); })
-          .reduce(function (n, h) { return n + (h.qty || 0); }, 0);
+        let n = 0;
+        HISTORY.forEach(function (h) { if (h.state !== 'restocking') return; h.items.forEach(function (i) { if (vi === undefined || String(i.vi) === String(vi)) n += (i.qty || 0); }); });
+        return n;
       },
       render: renderHistory
     };
     document.addEventListener('click', function (e) {
       const b = e.target.closest('[data-pd-receive]');
-      if (b) receive(Number(b.getAttribute('data-pd-receive')));
+      if (b) receive(b.getAttribute('data-pd-receive'));
     });
     /* ⚠ 只聽換語言那一發（ztor:lang-changed），不能聽 i18n:applied：renderHistory 自己會呼叫 applyI18n，
        而 applyI18n 每次都會廣播 i18n:applied——聽它就是自己叫自己，無限迴圈把分頁卡死（2026-09-11 實際炸過兩次）。 */
@@ -1251,24 +1275,25 @@
       onSubmit: function (entries, mode) {
         var p = storeProduct();
         var sched = mode === 'scheduled';
-        /* 一筆一列寫進庫存歷史紀錄；計時補貨進「補貨中」，到貨確認才入庫 */
-        (entries || []).slice().reverse().forEach(function (en) {
-          window.pdStockHistory.add({
-            type: 'restock', combo: isMulti(p) ? en.name : '—', vi: en.vi == null ? 'single' : en.vi,
-            delta: '+' + en.qty, qty: en.qty, supplier: en.supplier || '', eta: en.eta || '',
-            note: (en.supplier ? en.supplier + ' · ' : '') + (sched ? T('stock.history.note.scheduled', 'Scheduled · ETA {d}').replace('{d}', en.eta || '—') : T('stock.history.note.now', 'Restock now')),
-            state: sched ? 'restocking' : 'done'
-          });
+        var first = (entries || [])[0] || {};
+        /* 一張單一筆：單據層的供應商／預計到貨／備註＋逐組合數量；計時補貨進「補貨中」，到貨確認才入庫 */
+        window.pdStockHistory.add({
+          type: 'restock', mode: sched ? 'scheduled' : 'now', supplier: first.supplier || '', eta: first.eta || '', note: first.note || '',
+          state: sched ? 'restocking' : 'done',
+          items: (entries || []).map(function (en) { return { combo: isMulti(p) ? en.name : '—', vi: en.vi == null ? 'single' : en.vi, delta: '+' + en.qty, qty: en.qty }; })
         });
         if (!sched) applyNow(entries || []);
-      },
-      /* 彈窗裡的「到貨確認」：把所有補貨中的筆一次收貨 */
-      onReceive: function () {
-        HISTORY.forEach(function (h, i) { if (h.state === 'restocking') receive(i); });
       }
     });
-    seedHistory();
+    initHistory(storeProduct());
     renderHistory();
+    /* 沒帶 ?id 時 storeProduct() 在這個時間點還拿不到商品（pdProduct 由下方的資料驅動腳本才設），
+       等它廣播 pd:product 再從那筆記錄初始化一次；同一筆就不重抄（補貨後的廣播也走這個事件）。 */
+    document.addEventListener('pd:product', function (e) {
+      if (!e.detail || e.detail === histSrc) return;
+      initHistory(e.detail);
+      renderHistory();
+    });
 
     document.addEventListener('click', function (e) {
       var ro = e.target.closest('[data-restock-open]');
@@ -1314,9 +1339,6 @@
       /* 逐規格表的「總量上限」欄只在限量版出現（.variant-table--limited 控制） */
       const vt = document.querySelector('[data-pd-variant-table]');
       if (vt) vt.classList.toggle('variant-table--limited', state.edition === 'limited');
-      /* 補貨紀錄的「選項組合」欄只有多選項商品才開 */
-      const rl = document.querySelector('[data-restock-log]');
-      if (rl) rl.classList.toggle('restock-log--with-option', state.var === 'multiple');
     }
     /* 主分類（實體／數位）顯隱：data-pd-cat 由商品資料決定；同步把鎖定的 disabled select 顯示成目前值。
        兼掛 data-when-var 的元素交給 applyVis 統一算，這裡略過避免兩邊互相覆寫。 */
@@ -1451,6 +1473,8 @@
     /* 低庫存門檻：商品資料有數字就用它，否則 3（demo 退路）。 */
     function thresholdQty() { const n = Number(product && product.threshold); return (isFinite(n) && n > 0) ? n : 3; }
     window.pdThreshold = thresholdQty;
+    /* 電影關聯改了要重算「關聯中」（renderDest 一起算），關聯分頁的 film-picker 在另一個 IIFE，靠這個 hook。 */
+    window.pdRenderDest = () => renderDest();
     /* 庫存去向：一列一個組合包，右側鎖定量；多選項時列出逐組合的鎖定明細 */
     function renderDest() {
       const host = document.querySelector('[data-pd-dest]');
@@ -1459,6 +1483,24 @@
       const L = window.ListingState;
       const bs = bundlesOfProduct();
       if (empty) empty.hidden = !!bs.length;
+      /* 銷售摘要第四格「關聯中」：關聯分頁裡的列數＝組合包數＋項目數（S24 關掉時為 0）＋電影數（2026-09-11 與組合詳情對齊） */
+      (function () {
+        const v = document.querySelector('[data-pd-kpi-links]'), m = document.querySelector('[data-pd-kpi-links-meta]');
+        if (!v) return;
+        const projSec = document.querySelector('[data-panel="links"] [data-feat="S24"]');
+        const projects = (projSec && !projSec.hidden) ? projSec.querySelectorAll('.when-data .data-list__row').length : 0;
+        const films = document.querySelectorAll('[data-pd-film-picker] .tag-input__field .chip').length;
+        v.textContent = String(bs.length + projects + films);
+        /* 註腳只寫有東西的那幾段、單行截斷；全部為 0 就整行不出現（2026-09-11 使用者：「若沒有關聯的項目就不顯示，不用寫 0 個什麼什麼」） */
+        if (m) {
+          const parts = [];
+          if (bs.length) parts.push(T('kpi.links-meta.bundles', '{n} bundles').replace('{n}', bs.length));
+          if (projects) parts.push(T('kpi.links-meta.projects', '{n} projects').replace('{n}', projects));
+          if (films) parts.push(T('kpi.links-meta.films', '{n} movies').replace('{n}', films));
+          m.textContent = parts.join(' · ');
+          m.hidden = !parts.length;
+        }
+      })();
       host.innerHTML = bs.map(b => {
         let qty = null, detail = '';
         if (isMultiVar()) {
@@ -1493,7 +1535,7 @@
         });
       })();
       // 頁首：標題／副標／badge
-      setText('pd-title', p.name); setVal('pd-title-input', p.name); setText('pd-sub', p.sub);
+      setText('pd-title', p.name); setVal('pd-title-input', p.name);
       /* 頁首識別小字：價格（多選項給區間）＋選項模式 */
       (function () {
         var priceEl = document.querySelector('[data-pd-hero-price]'), varEl = document.querySelector('[data-pd-hero-var]');
@@ -1585,7 +1627,7 @@
 
     /* §2.15 折扣設定：開啟折扣→折扣價＋限時折扣；限時折扣→起訖日（spec 5.1.5.1 §2.15 · D144）*/
     const revealToggle = (tid, fsel) => {
-      const t = document.getElementById(tid), f = document.querySelector(fsel);
+      const t = document.getElementById(tid), f = fsel ? document.querySelector(fsel) : null;
       if (!t) return;
       t.addEventListener('click', () => {
         const on = t.getAttribute('aria-checked') !== 'true';
@@ -1596,6 +1638,7 @@
     };
     revealToggle('pd-discount-toggle', '[data-pd-discount-fields]');
     revealToggle('pd-sale-toggle', '[data-pd-sale-fields]');
+    revealToggle('pd-stack-codes', null);   /* 可與優惠碼疊加：純開關，沒有要揭露的欄位 */
     /* ── §2.16 三開關 ＋ §2.17 非公開連結（spec 5.1.5.1、主規格 §7.14 · D241）────────────
        上架、顯示、開賣三件事互相獨立，各自一個開關；細節頁的上架列用開關（商品已存在，
        只剩開著或關著），排程欄常駐不收合。取代 D145 的三選一（該模型 D241 已廢除）。
@@ -1744,6 +1787,79 @@
        沒有 ?id 或 id 查不到時它自己 lookup 會拿到 null，整張表就空了。這裡把最終採用的記錄
        廣播出去，由那支腳本接手重畫。 */
     window.pdProduct = product;
+    /* ── 詳情頁示範狀態欄位（2026-09-11 改資料驅動；欄位定義見 js/products-store.js 檔頭）──
+       銷售摘要／折扣三開關／每人限購／項目引用／標籤都從 product.* 帶入，缺值＝既有空狀態。
+       一定要在使用者按「編輯」之前跑完（snapshot 是進編輯態才拍），「取消」才會還原成這裡帶入的值而不是空白。
+       電影關聯與庫存歷史在各自的 IIFE 讀 window.pdProduct／pd:product。 */
+    function applyDetailSeed(p) {
+      if (!p) return;
+      /* .when-data／.when-empty 是 cheat code Empty 用的同一組 class（shared.css），這裡改成逐區塊依資料切：
+         有資料＝把 .when-empty 留給 CSS 預設（收起）；沒資料＝收起 .when-data、把 .when-empty 露出。 */
+      const setEmpty = (sec, empty) => {
+        if (!sec) return;
+        sec.querySelectorAll('.when-data').forEach(el => { el.hidden = !!empty; });
+        sec.querySelectorAll('.when-empty').forEach(el => { el.style.display = empty ? 'block' : ''; });
+      };
+      const paintSwitch = (id, on, fieldsSel) => {
+        const t = document.getElementById(id); if (!t) return;
+        t.classList.toggle('switch--on', !!on);
+        t.setAttribute('aria-checked', on ? 'true' : 'false');
+        const f = fieldsSel ? document.querySelector(fieldsSel) : null;
+        if (f) f.hidden = !on;
+      };
+      const setInput = (id, v) => { const el = document.getElementById(id); if (el) el.value = (v == null) ? '' : String(v); };
+      /* 銷售摘要 KPI：sales null ＝ 尚無銷售 */
+      const salesSec = document.querySelector('[data-pd-sales]');
+      const sales = p.sales || null;
+      setEmpty(salesSec, !sales);
+      if (salesSec && sales) {
+        /* 幣別前綴縮小（2026-09-11 使用者：「單位可以小一點，現在數字爆版了」）：NT$ 拆成 .kpi__cur 小字，數字才放得下 */
+        const put = (sel, v) => { const el = salesSec.querySelector(sel); if (!el) return; const s = (v == null || v === '') ? '—' : String(v); const m = s.match(/^(NT\$|US\$|\$)(.*)$/); el.innerHTML = m ? '<span class="kpi__cur">' + m[1] + '</span>' + m[2] : s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]); };
+        put('[data-pd-sales-units]', sales.units);
+        put('[data-pd-sales-gross]', sales.gross);
+        put('[data-pd-sales-net]', sales.net);
+      }
+      /* 折扣三開關：discount null ＝ 全關 */
+      const d = p.discount || null;
+      paintSwitch('pd-discount-toggle', !!d, '[data-pd-discount-fields]');
+      setInput('pd-sale-price', d ? d.price : '');
+      paintSwitch('pd-sale-toggle', !!(d && d.limited), '[data-pd-sale-fields]');
+      setInput('pd-sale-start', d && d.limited ? d.limited.start : '');
+      setInput('pd-sale-end', d && d.limited ? d.limited.end : '');
+      paintSwitch('pd-stack-codes', !!(d && d.stack), null);
+      /* 每人限購：limit 有數字＝開＋填量。state.limitOn 是限購開關 click handler 的真相，要一起對齊 */
+      const limitOn = p.limit != null && p.limit !== '';
+      state.limitOn = limitOn;
+      paintSwitch('pd-limit-toggle', limitOn, '[data-pd-limit-fields]');
+      setInput('pd-limit-qty', limitOn ? p.limit : '');
+      /* 項目引用：一列一個項目；titleKey 走 i18n（persona 覆寫字典可換名），title 為字面值 */
+      const projSec = document.querySelector('[data-pd-projects]');
+      const projList = document.querySelector('[data-pd-projects-list]');
+      const projects = Array.isArray(p.projects) ? p.projects : [];
+      if (projList) {
+        projList.innerHTML = projects.map(pr => {
+          const label = pr.titleKey ? esc(T(pr.titleKey, pr.title || pr.titleKey)) : esc(pr.title || '');
+          const attrs = pr.titleKey ? ' data-i18n="' + esc(pr.titleKey) + '"' : '';
+          return '<div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">' +
+            '<div class="data-list__title"><a class="card__link" href="' + esc(pr.href || '#') + '" data-route-keep' + attrs + '>' + label + '</a></div>' +
+            '</div></div></div>';
+        }).join('');
+      }
+      setEmpty(projSec, !projects.length);
+      /* 商品標籤：初始 chip */
+      const tf = document.getElementById('pd-tags-field'), te = document.getElementById('pd-tags-entry');
+      if (tf && te) {
+        tf.querySelectorAll('.chip').forEach(c => c.remove());
+        (Array.isArray(p.tags) ? p.tags : []).forEach(label => {
+          const chip = document.createElement('span');
+          chip.className = 'chip chip--active chip--removable';
+          chip.innerHTML = '<span>' + esc(label) + '</span><button class="chip__remove" type="button" data-pd-tag-remove aria-label="Remove tag"><i data-lucide="x" class="ztor-icon"></i></button>';
+          tf.insertBefore(chip, te);
+        });
+        if (window.ztorIcons) window.ztorIcons.applyIcons(tf);
+      }
+    }
+    applyDetailSeed(product);
     document.dispatchEvent(new CustomEvent('pd:product', { detail: product }));
     (function initListingCard() {
       const setSwitch = (el, on) => {
@@ -1860,12 +1976,14 @@
   })();
 </script>
 <script>
-  /* §2.14 電影關聯（可搜尋多選；spec §4.5 F12 / D140；共用 partials/film-picker）——預設示意關聯 2 部。 */
+  /* §2.14 電影關聯（可搜尋多選；spec §4.5 F12 / D140；共用 partials/film-picker）——
+     已選清單讀 product.films（2026-09-11 起不再寫死 2 部；window.pdProduct 由上方資料驅動腳本設定）。 */
   (function () {
     'use strict';
     var host = document.querySelector('[data-pd-film-picker]');
+    var selectedFilms = (window.pdProduct && Array.isArray(window.pdProduct.films)) ? window.pdProduct.films.slice() : [];
     if (host && window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createFilmPicker) {
-      window.ZTOR_PARTIALS.createFilmPicker(host, { selected: ['film-zheng-yi-sao', 'film-neon-harbor'] });
+      window.ZTOR_PARTIALS.createFilmPicker(host, { selected: selectedFilms, onChange: function () { if (window.pdRenderDest) window.pdRenderDest(); if (window.pdRenderSettingsOverview) window.pdRenderSettingsOverview(); } });
     }
   }());
 </script>
@@ -2001,6 +2119,8 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     /* 總覽的設定概覽列用：先切到商品設定分頁，下一幀（分頁顯示後）再捲到那一節 */
     window.pdSettingsGo = function (key) {
+      /* tab:<name>＝直接切分頁（設定概覽裡「電影關聯」那列指向關聯分頁，不在商品設定裡） */
+      if (key.indexOf('tab:') === 0) { if (window.pdActivateTab) window.pdActivateTab(key.slice(4)); return; }
       if (window.pdActivateTab) window.pdActivateTab('settings');
       requestAnimationFrame(() => go(key));
     };
@@ -2012,23 +2132,24 @@
      真正的下架狀態與後端待規格（ASSUMPTIONS UIA-078）。 */
   (function () {
     document.addEventListener('click', function (e) {
-      var act = e.target.closest('[data-variant-delist],[data-variant-relist]');
+      /* 2026-09-11：單獨下架／重新上架兩個動作項改成一列開關（照 DS 列操作選單的 --toggle） */
+      var act = e.target.closest('[data-variant-listed]');
       if (!act) return;
       var row = act.closest('.variant-table__row');
       if (!row) return;
-      var delist = act.hasAttribute('data-variant-delist');
-      row.classList.toggle('variant-table__row--delisted', delist);
-      row.querySelectorAll('.input').forEach(function (i) { i.disabled = delist; });
-      var d = row.querySelector('[data-variant-delist]');
-      var r = row.querySelector('[data-variant-relist]');
-      if (d) d.hidden = delist;
-      if (r) r.hidden = !delist;
+      var listed = act.getAttribute('aria-checked') !== 'true';
+      act.setAttribute('aria-checked', listed ? 'true' : 'false');
+      var sw = act.querySelector('.switch'); if (sw) sw.classList.toggle('switch--on', listed);
+      row.classList.toggle('variant-table__row--delisted', !listed);
+      var vi = row.getAttribute('data-vi');
+      var p = window.pdProduct;
+      if (p) { if (vi === 'single') p.delisted = !listed; else if (p.variants && p.variants[vi]) p.variants[vi].delisted = !listed; }
     });
     /* kebab 下拉：原生 <details> 不自動收——補上「點選單項收起」「點外部收起」「一次只開一個」（比照 e-shop 列操作） */
     document.addEventListener('click', function (e) {
       var item = e.target.closest('.dropdown__item');
       document.querySelectorAll('details.dropdown[open]').forEach(function (dd) {
-        if (item && dd.contains(item)) { dd.open = false; return; }
+        if (item && dd.contains(item)) { if (!item.hasAttribute('data-keep-open')) dd.open = false; return; }
         if (!dd.contains(e.target)) dd.open = false;
       });
     });
@@ -2099,8 +2220,15 @@
       });
     }
 
-    function kebabHTML() {
-      return '<details class="dropdown"><summary class="btn btn--icon btn--xs" type="button" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-variant-lock><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="product-detail.var.lock">Lock stock</span></button><button class="dropdown__item" type="button" role="menuitem" data-variant-delist><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.var.delist">Delist this option</span></button><button class="dropdown__item" type="button" role="menuitem" data-variant-relist hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.var.relist">Relist this option</span></button></div></details>';
+    /* 列尾 ⋯（2026-09-11 使用者裁示「補貨放進 ⋯，且照 DS」）：照 DS §4.58 的列操作選單——
+       最上面一列開關（這個組合上架與否，`.dropdown__item--toggle`，同 e-shop 列的「顯示於商店」），底下動作項各帶 icon：補貨、鎖定庫存。 */
+    function kebabHTML(listed) {
+      return '<details class="dropdown"><summary class="btn btn--icon btn--xs" type="button" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>'
+        + '<div class="dropdown__menu" role="menu">'
+        + '<button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="' + (listed ? 'true' : 'false') + '" data-variant-listed data-keep-open><span data-i18n="product-detail.var.listed">Listed</span><span class="switch' + (listed ? ' switch--on' : '') + '" aria-hidden="true"></span></button>'
+        + '<button class="dropdown__item" type="button" role="menuitem" data-restock-open><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button>'
+        + '<button class="dropdown__item" type="button" role="menuitem" data-variant-lock><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="product-detail.var.lock">Lock stock</span></button>'
+        + '</div></details>';
     }
 
     /* 逐選項組合的鎖定（D255／D258）：形狀是 { single: n|null, bundles: { <id>: n|null } }。
@@ -2143,8 +2271,7 @@
         + '<span class="variant-cell--ro variant-cell--free" data-vc="free">' + esc(String(o.free)) + '</span>'
         + '<span class="variant-cell--ro variant-cell--incoming' + (inc ? ' is-on' : '') + '">' + (inc ? '+' + inc : '—') + '</span>'
         + '<span>' + (st.cls ? '<span class="badge ' + st.cls + '"><span data-i18n="' + st.key + '">' + esc(T(st.key, st.fb)) + '</span></span>' : '<span class="text-sub" data-i18n="' + st.key + '">' + esc(T(st.key, st.fb)) + '</span>') + '</span>'
-        + '<span><button class="btn btn--ghost btn--xs" type="button" data-restock-open data-i18n="e-shop.restock">Restock</button></span>'
-        + kebabHTML();
+        + kebabHTML(!o.delisted);
     }
     /* 某個組合被組合包鎖走的量（各組合包加總；沒有任何鎖定回 0） */
     function bundleLockedOf(v) {
@@ -2167,7 +2294,7 @@
         var only = document.createElement('div');
         only.className = 'variant-table__row';
         only.setAttribute('data-vi', 'single');
-        only.innerHTML = rowHTML({ label: product.name || '—', stock: total, cap: cap, locked: lock, bundle: bl, free: free, sku: product.sku || '', vi: 'single' });
+        only.innerHTML = rowHTML({ label: product.name || '—', stock: total, cap: cap, locked: lock, bundle: bl, free: free, sku: product.sku || '', vi: 'single', delisted: !!product.delisted });
         pageTable.appendChild(only);
       } else {
         var two = MODEL.variants[0].combo.length >= 2;
@@ -2190,7 +2317,8 @@
             bundle: blv,
             free: Math.max(0, Number(v.stock || 0) - (lockV === null ? 0 : lockV) - blv),
             sku: v.sku,
-            vi: vi
+            vi: vi,
+            delisted: !!v.delisted
           });
           pageTable.appendChild(row);
         });
@@ -2293,11 +2421,12 @@
       renderPageTable();
       /* 每一筆改動寫進庫存歷史紀錄（2026-09-11 合併補貨與鎖定）。要在 syncLocksToStore 之後：
          add() 會廣播 pd:stock、讓 MODEL 從 store 重抄一份，先寫紀錄會把還沒寫回 store 的新鎖定量沖掉。 */
-      if (window.pdStockHistory) changes.forEach(function (c) {
-        var combo = c.key === 'single' ? '—' : (MODEL.variants[c.key].combo || []).join(' / ');
+      if (window.pdStockHistory && changes.length) {
         var fmt = function (v) { return (v === null || v === undefined) ? '—' : String(v); };
-        window.pdStockHistory.add({ type: 'lock', combo: combo, vi: c.key, delta: fmt(c.before) + ' → ' + fmt(c.after), note: T('stock.history.note.single', 'Locked for single sale') });
-      });
+        window.pdStockHistory.add({ type: 'lock', items: changes.map(function (c) {
+          return { combo: c.key === 'single' ? '—' : (MODEL.variants[c.key].combo || []).join(' / '), vi: c.key, delta: fmt(c.before) + ' → ' + fmt(c.after), to: T('stock.history.note.single', 'Locked for single sale') };
+        }) });
+      }
       close('[data-pd-lock-modal]');
     }
     var lockModal = document.querySelector('[data-pd-lock-modal]');
@@ -2571,6 +2700,7 @@
       /* 總覽的設定概覽列：切到商品設定分頁並捲到那一節 */
       var go = e.target.closest('[data-pd-setov-go]');
       if (go && window.pdSettingsGo) { e.preventDefault(); window.pdSettingsGo(go.getAttribute('data-pd-setov-go')); }
+      if (e.target.closest('[data-pd-kpi-links-go]') && window.pdActivateTab) window.pdActivateTab('links');
     });
     document.addEventListener('keydown', function (e) {
       var go = (e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('[data-pd-setov-go]');
@@ -2617,8 +2747,8 @@
         v: multi ? priceRange() : join([money(MODEL.price), MODEL.cost ? T('cp.cost', 'Cost') + ' ' + money(MODEL.cost) : '']) });
       rows.push({ go: 'rules', key: 'cp.discount.title', fb: 'Discount settings',
         v: on('pd-discount-toggle')
-          ? join([money(num($v('pd-sale-price'))), on('pd-sale-toggle') ? join([$v('pd-sale-start'), $v('pd-sale-end')], ' – ') : ''])
-          : T('product-detail.setov.off', 'Off') });
+          ? join([money(num($v('pd-sale-price'))), on('pd-sale-toggle') ? join([$v('pd-sale-start'), $v('pd-sale-end')], ' – ') : '', on('pd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : ''])
+          : join([T('product-detail.setov.off', 'Off'), on('pd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : '']) });
       if (!digital) {
         var pct = $v('pd-threshold-pct') || '10';
         rows.push({ go: 'rules', key: 'product-detail.threshold.title', fb: 'Low-stock alert', v: pct + '%' });
@@ -2632,8 +2762,8 @@
       var tags = document.querySelectorAll('#pd-tags-field .chip');
       rows.push({ go: 'relations', key: 'cp.tags', fb: 'Product tags',
         v: tags.length ? Array.prototype.map.call(tags, function (c) { return c.firstChild ? c.firstChild.textContent.trim() : ''; }).join('、') : T('product-detail.setov.none', 'None') });
-      var films = document.querySelectorAll('[data-pd-film-picker] .chip, [data-pd-film-picker] .data-list__row');
-      rows.push({ go: 'relations', key: 'pd.films.title', fb: 'Linked movies',
+      var films = document.querySelectorAll('[data-pd-film-picker] .tag-input__field .chip');
+      rows.push({ go: 'tab:links', key: 'pd.films.title', fb: 'Linked movies',
         v: films.length ? T('product-detail.setov.films', '{n} movies').replace('{n}', films.length) : T('product-detail.setov.none', 'None') });
       rows.push({ go: 'publish', key: 'cp.listing.sec-listed', fb: 'Listing',
         v: on('pd-listed-toggle')
@@ -2661,6 +2791,7 @@
       if (window.ztorIcons) window.ztorIcons.applyIcons(setovHost);
     }
     document.addEventListener('ztor:lang-changed', function () { renderSettingsOverview(); });
+    window.pdRenderSettingsOverview = renderSettingsOverview;
 
     /* 初始渲染頁面主表（多規格才有列；單規格 variants 空、表格隱藏）；
        商品設定分頁的價格／選項／組合表同時畫成唯讀現值。 */

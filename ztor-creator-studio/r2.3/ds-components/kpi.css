@@ -172,9 +172,15 @@ html[data-embed] .kpi {
   background: var(--destructive-fill);
 }
 .kpi__meta { font-size: var(--fs-12); color: var(--muted-foreground); }
+/* --clip（2026-09-11 使用者：「限一行，超過顯示 …」）：註腳只給一行，塞不下就截斷；首用商品／組合詳情「關聯中」磚的
+   「3 個組合包 · 1 個項目 · 2 部電影」——為 0 的那段不寫、全部為 0 就整行不出現（寫入端負責）。 */
+.kpi__meta--clip { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
 /* 單位（2026-09-11 使用者指示「單位補在數字右下角小字」）：跟在數字後面、對齊基線、小一階、輔助色。
    給「件」「人」這類計數單位；金額不用（貨幣符號在前面）。首個消費者：商品詳情商品庫存分頁的四塊磚。 */
 .kpi__unit { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--muted-foreground); margin-left: var(--sp-4); letter-spacing: 0; }
+/* 幣別前綴（2026-09-11 使用者：「單位可以小一點，現在數字爆版了」）：金額的 NT$／$ 縮成小字、貼在數字左下，
+   數字本身維持大字級；與 .kpi__unit 是同一個角色（單位）、只是位置在前面。首用商品／組合詳情銷售摘要。 */
+.kpi__cur { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--muted-foreground); margin-right: var(--sp-2); letter-spacing: 0; }
 
 /* --tappable：整塊 tile 是一顆 <button>，點了開 in-place popup（F2 兩張計數 tile）。
    互動語彙全部借既有階梯：hover ＝ .ztor-card--clickable 的 −2px 浮起＋E3 陰影；
@@ -189,6 +195,8 @@ html[data-embed] .kpi {
   text-align: left;
   border: 0;
   cursor: pointer;
+  /* 也可以是 <a>（2026-09-11：淨利磚整塊連到收入管理，取代磚內的 .kpi__link 文字連結）：去底線、字色跟磚 */
+  text-decoration: none;
   transition: box-shadow var(--duration) var(--easing),
               transform  var(--duration) var(--easing);
 }

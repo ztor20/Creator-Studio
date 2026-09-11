@@ -120,7 +120,7 @@
 <link rel="stylesheet" href="ds-components/meter-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/next-step.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/restock-log.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-history.css?v=r2.2">
 <!-- r2.2 新進元件（19 支，2026-07-29 補齊 demo；zselect 原本就有 <link>，見上方 45 行） -->
 <link rel="stylesheet" href="ds-components/artist-picker.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/benefit-matrix.css?v=r2.2">
@@ -600,7 +600,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#pager">Pager</a>
     <a class="toc__link toc__link--sub" href="#review-row">Review row</a>
     <a class="toc__link toc__link--sub" href="#kv-list">KV list</a>
-    <a class="toc__link toc__link--sub" href="#restock-log">Restock log</a>
+    <a class="toc__link toc__link--sub" href="#restock-log">Restock log ✝</a>
     <a class="toc__link toc__link--sub" href="#stock-tip">Stock tip</a>
     <a class="toc__link toc__link--sub" href="#table">Table</a>
     <a class="toc__link toc__link--sub" href="#product-list">Product list</a>
@@ -733,6 +733,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#listing-controls">Listing controls</a>
     <a class="toc__link toc__link--sub" href="#link-field">Link field</a>
     <a class="toc__link toc__link--sub" href="#stock-allocation">Stock allocation</a>
+    <a class="toc__link toc__link--sub" href="#stock-history">Stock history</a>
     <div class="toc__subgroup"><span data-en>JS components without their own CSS (9)</span><span data-zh>無自帶 CSS 的 JS 元件（9）</span></div>
     <a class="toc__link toc__link--sub" href="#work-fields">Work fields</a>
     <a class="toc__link toc__link--sub" href="#work-taxonomy">Work taxonomy</a>
@@ -1370,7 +1371,17 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         <div style="display:flex;flex-direction:column;gap:6px;align-items:center"><div style="height:44px;width:128px;background:var(--card);border:1px solid var(--border);border-radius:8px"></div><small style="color:var(--muted-foreground)"><span data-en>+ 1px border → forms</span><span data-zh>＋1px 邊 → 成形</span></small></div>
       </div>
 
-      <p class="field-label">③ Primary 保留用途</p>
+      <p class="field-label">③ 卡內表格與清單的表面（2026-09-11 立為機器檢查）</p>
+      <p class="field-text" data-en>Tables and lists inside a card use the film <code>--ztu-film</code> for the header, keep rows transparent and separate them with hairlines — never a solid surface (<code>--muted</code> / <code>--card</code>): the card is glass (L1), so a solid fill on top reads as an opaque patch (Q24 / Q71). The same slip was caught twice (2026-09-09 variant table, 09-11 stock history); <code>check_ds_sync</code> check 14 now ratchets it — no new solid <code>background</code> on <code>__head</code> / <code>__row</code> / <code>__group</code> / <code>th</code> / <code>tr</code> selectors in component CSS.</p>
+      <p class="field-text" data-zh>卡內的表格與清單：表頭用薄膜 <code>--ztu-film</code>、列透明、靠 hairline 分隔——不用 <code>--muted</code>／<code>--card</code> 這類實色表面：卡是玻璃（L1），實色疊上去是一塊不透明補丁（Q24／Q71）。同一種錯 09-09（逐選項組合表）與 09-11（庫存歷史紀錄）各被抓到一次，<code>check_ds_sync</code> 檢查 14 改以棘輪擋新的：元件 CSS 裡 <code>__head</code>／<code>__row</code>／<code>__group</code>／<code>th</code>／<code>tr</code> 這類選擇器不得新增實色 <code>background</code>；存量 7 處留基準逐步清。</p>
+      <div class="viz" style="gap:16px;align-items:stretch;flex-direction:column">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div><div style="background:var(--ztu-film);padding:8px 12px;font-size:var(--fs-11);color:var(--column-head-ink)">表頭 · 薄膜</div><div style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:var(--fs-13)">列 · 透明</div><div style="padding:8px 12px;font-size:var(--fs-13)">列 · 透明</div><small style="color:var(--muted-foreground)">✅ 該做</small></div>
+          <div><div style="background:var(--muted);padding:8px 12px;font-size:var(--fs-11);color:var(--column-head-ink)">表頭 · 實色</div><div style="background:var(--card);padding:8px 12px;border-bottom:1px solid var(--border);font-size:var(--fs-13)">列 · 實色</div><div style="background:var(--card);padding:8px 12px;font-size:var(--fs-13)">列 · 實色</div><small style="color:var(--muted-foreground)">❌ 別做（不透明補丁）</small></div>
+        </div>
+      </div>
+
+      <p class="field-label">④ Primary 保留用途</p>
       <p class="field-text" data-en><code>--primary</code> (orange) is <strong>only</strong> for primary CTA, brand mark and hero accent. Info banners, nav active, KPI highlights and status pills use neutral or semantic tokens.</p>
       <p class="field-text" data-zh><code>--primary</code>（橘）<strong>只</strong>用於主要 CTA + 便利貼 + 品牌標記 + hero 強調。絕不用在 nav active、KPI 高亮或狀態 pill——那些用 <code>--muted</code>/<code>--accent</code>。</p>
       <div class="viz" style="gap:16px;align-items:center"><div class="swatch__chip" style="background:var(--primary);width:40px;height:40px;border-radius:8px"></div><span style="color:var(--muted-foreground);font-size:var(--fs-13)"><strong style="color:var(--status-success)">✓</strong> CTA · 便利貼 · 品牌標記 · hero&nbsp;&nbsp;&nbsp;<strong style="color:var(--destructive)">✗</strong> nav active · KPI · status pill</span></div>
@@ -1539,7 +1550,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#kv-list">KV list</a></td><td>🟢</td><td><span data-en>Read-only key/value row — label left, value right, hairline per row; detail-page meta cards</span><span data-zh>唯讀鍵值列——鍵左值右、逐列 hairline；詳情頁 meta 卡</span></td><td><code>kv-list.css</code></td></tr>
           <tr><td><a href="#stock-bar">Stock bar</a></td><td>🟢</td><td><span data-en>5px quantity bar (stock level / usage ratio); brand fill, red below the low threshold</span><span data-zh>5px 量條（庫存水位／用量比例）；品牌橘填充，低於門檻轉紅</span></td><td><code>stock-bar.css</code></td></tr>
           <tr><td><a href="#detail-rail">Detail rail</a></td><td>🟠</td><td><span data-en>Detail-page two-column shell — editable main + sticky read-only meta rail; <code>--full</code> collapses it to one column (assembly rules in Pillar 5)</span><span data-zh>詳情頁兩欄版型殼——可編輯主欄＋sticky 唯讀 meta 右欄；<code>--full</code> 收成單欄（組合規則見 Pillar 5）</span></td><td><code>detail-rail.css</code></td></tr>
-          <tr><td><a href="#restock-log">Restock log</a></td><td>🟡</td><td><span data-en>Restock history table — one row per restock, columns aligned for comparison; <code>--with-option</code> opens the option column</span><span data-zh>補貨紀錄表——逐筆一列、欄位對齊方便比對；<code>--with-option</code> 開出選項組合欄</span></td><td><code>restock-log.css</code></td></tr>
+          <tr><td><a href="#restock-log">Restock log ✝</a></td><td>🟡</td><td><span data-en>Retired 2026-09-11 — replaced by Stock history (one row per order, details on expand)</span><span data-zh>2026-09-11 退場——由 Stock history 取代（一張單一筆、點開看明細）</span></td><td><code>restock-log.css</code>（墓碑）</td></tr>
+          <tr><td><a href="#stock-history">Stock history</a></td><td>🟡</td><td><span data-en>Stock history list — one row per restock order or lock change (date / type / per-combination summary / supplier · method / status), details on expand: quantities, supplier, ETA with mark-received, note</span><span data-zh>庫存歷史紀錄——一張補貨單或一次鎖定一筆（日期／類型／逐組合摘要／供應商 · 方式／狀態），點開看逐組合數量、供應商、預計到貨（附到貨確認）、備註</span></td><td><code>stock-history.css</code></td></tr>
           <tr><td><a href="#stock-tip">Stock tip</a></td><td>🟢</td><td><span data-en>Hover/focus any product row's status/stock cell → floating info card. Multi-option/bundle rows get a per-option stock breakdown (flattened to option combinations, bundle members too); single-variant rows (2026-07-23, scope widened) show current stock instead</span><span data-zh>hover/focus 任何商品列的狀態／庫存欄 → 浮出資訊卡。多選項／組合商品列顯示逐選項庫存明細（攤到選項組合，組合商品連成員也攤）；單一選項商品列（2026-07-23 擴大範圍）改顯示目前庫存</span></td><td><code>stock-tip.css</code></td></tr>
           <tr><td><a href="#pickup">Pickup management</a></td><td>🟠</td><td><span data-en>On-site QR redemption workspace (E-Shop 5.1.5.11): session-detail board (items left / staff scanning + progress right), roster table, scanner-access settings card, multi-select session rows</span><span data-zh>現場 QR 核銷工作區（E-Shop 5.1.5.11）：場次詳情行動卡（左＝領取項目／右＝工作人員掃碼與核銷進度）、名單表格、scanner 存取設定卡、建立場次多選列</span></td><td><code>pickup.css</code></td></tr>
           <tr><td><a href="#scanner">Mobile scanner</a></td><td>🟠</td><td><span data-en>Standalone phone scanner (5.1.5.14): gate shows the session identity → camera home screen with live counts → result bottom sheet → confirm, then straight back to the camera; Scan/Roster/Items bottom tabs (F2 verifiable items, F3 read-only roster); blocked / offline-hold / lockout states; separate URL, no Studio nav</span><span data-zh>獨立手機 scanner（5.1.5.14）：閘門先亮場次身分→相機主畫面＋即時計數→結果 bottom sheet→確認後直接回相機；掃描／名單／項目底部分頁（F2 可核銷項目、F3 唯讀名單）；含未開始已結束、離線保留、密碼鎖定狀態；獨立 URL、無主工作台導航</span></td><td><code>scanner.css</code></td></tr>
@@ -2389,6 +2401,14 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         <td><div class="field"><label class="field__label">Description</label><textarea class="textarea" rows="2" aria-invalid="true"></textarea><div class="field__error">Say something about it first</div></div></td>
       </tr>
     </tbody></table>
+  <div class="matrix-block"><div class="matrix-block__head"><span class="gallery__name">.field__hint--ok / --warn</span><span class="gallery__when" data-en>2026-09-11 promote: the hint line recolours as the user types a computed value — <code>--ok</code> success green (you save something), <code>--warn</code> status red (the number is invalid). Same size and slot as <code>.field__hint</code>. First use: bundle discount and limited-time discount on create-bundle / bundle-detail.</span><span class="gallery__when" data-zh>2026-09-11 promote：說明行依輸入即時換色——<code>--ok</code> 成功綠（有省到）、<code>--warn</code> 狀態紅（數字不合法），字級與位置同 <code>.field__hint</code>。首用建立組合／組合詳情的組合折扣與限時折扣提示句。</span></div>
+    <table class="matrix"><thead><tr><th></th><th>--ok</th><th>--warn</th></tr></thead><tbody>
+      <tr><th>hint</th>
+        <td><div class="field"><label class="field__label">Bundle discount %</label><input class="input" value="12.5"><div class="field__hint field__hint--ok">Saves $7.00 vs members total</div></div></td>
+        <td><div class="field"><label class="field__label">Bundle discount %</label><input class="input" value="140"><div class="field__hint field__hint--warn">Discount must be 0–100.</div></div></td>
+      </tr>
+    </tbody></table>
+  </div>
   </div>
   <p class="field-label" data-en>In context <span class="field-note">(fields stacked in a form — assembly belongs to Pillar 5 · Form assembly)</span></p>
   <p class="field-label" data-zh>實際情境 <span class="field-note">（欄位在表單中堆疊——組合規則見 <a href="#patterns">Pillar 5 · Form assembly</a>）</span></p>
@@ -3181,8 +3201,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <h3 class="sub__title">4.16 Tag input</h3>
     <span class="layer layer--molecule">🟡 molecule</span>
   </div>
-  <p class="sub__desc" data-en>Creator-built / selectable tags (Create product Product tags, spec 5.1.5.2 §4.5). Composes <code>.chip</code>: picked / custom tags render as <code>.chip--active.chip--removable</code> inside a bordered field; a borderless entry adds new ones (Enter); an optional suggestion <code>.chip-group</code> offers existing tags. Reusable for project / fan tags later.</p>
-  <p class="sub__desc" data-zh>創作者自建／可選的標籤（建立商品的商品標籤，規格 5.1.5.2 §4.5）。組合 <code>.chip</code>：已選／自建標籤以 <code>.chip--active.chip--removable</code> 顯示在框內；無邊框輸入按 Enter 新增；選配的建議 <code>.chip-group</code> 提供既有標籤。日後可重用於項目／粉絲標籤。</p>
+  <p class="sub__desc" data-en>Creator-built / selectable tags (Create product Product tags, spec 5.1.5.2 §4.5). Composes <code>.chip</code>: picked / custom tags render as <code>.chip--active.chip--removable</code> inside a bordered field; a borderless entry adds new ones (Enter); an optional suggestion <code>.chip-group</code> offers existing tags. Reusable for project / fan tags later. <strong>2026-09-11</strong>: the field is an input, so its surface follows <code>.input</code> — <code>--ztu-film</code> fill, 1px <code>--border</code> hairline via box-shadow, <code>--radius</code>, same focus ring; chips <em>inside</em> the field take the field's <code>--radius</code> (they are entered values, not pickable pills — Q111), while the suggestion row stays pill.</p>
+  <p class="sub__desc" data-zh>創作者自建／可選的標籤（建立商品的商品標籤，規格 5.1.5.2 §4.5）。組合 <code>.chip</code>：已選／自建標籤以 <code>.chip--active.chip--removable</code> 顯示在框內；無邊框輸入按 Enter 新增；選配的建議 <code>.chip-group</code> 提供既有標籤。日後可重用於項目／粉絲標籤。<strong>2026-09-11</strong>：欄位是輸入控件，表面跟 <code>.input</code> 走——<code>--ztu-film</code> 薄膜底、box-shadow 畫的 1px <code>--border</code> 髮線、<code>--radius</code>、同一種 focus 環；<strong>欄內</strong>的 chip 改吃欄位的 <code>--radius</code>（它們是已輸入的值，不是可點選的 pill——Q111），欄位外的建議列維持 pill。</p>
   <div class="demo" style="max-width:480px">
     <div class="tag-input">
       <div class="tag-input__field">
@@ -3312,15 +3332,15 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       </div>
     </div>
   </div>
-  <p class="field-label" data-en>Stock table <span class="field-note">(<code>.variant-table--stock</code> — 2026-09-11: the Stock tab's management table. Stock columns only — combination + SKU sub-line / on hand / locked for single / locked for bundles / unlocked / restocking / status / restock button / ⋯; price, SKU and cost moved to Product settings. Do not combine with <code>--fluid</code>.)</span></p>
-  <p class="field-label" data-zh>庫存管理表 <span class="field-note">(<code>.variant-table--stock</code>——2026-09-11 商品庫存分頁：只留庫存欄位——組合＋SKU 小字／在庫／鎖給單售／鎖給組合／未鎖定／補貨中／狀態／補貨鈕／⋯；價格、SKU、成本搬去商品設定。狀態格用 badge、在庫格對應 <code>.variant-cell--stock-low</code>／<code>--stock-warn</code>、補貨中格 <code>.variant-cell--incoming</code>（有量 <code>.is-on</code>）。<strong>不與 <code>--fluid</code> 併用</strong>。)</span></p>
+  <p class="field-label" data-en>Stock table <span class="field-note">(<code>.variant-table--stock</code> — 2026-09-11: the Stock tab's management table. Stock columns only — combination + SKU sub-line / on hand / locked for single / locked for bundles / unlocked / restocking / status / ⋯ (restock and lock both live in the ⋯ row menu, DS §4.58 pattern with a listed toggle on top); price, SKU and cost moved to Product settings. Do not combine with <code>--fluid</code>.)</span></p>
+  <p class="field-label" data-zh>庫存管理表 <span class="field-note">(<code>.variant-table--stock</code>——2026-09-11 商品庫存分頁：只留庫存欄位——組合＋SKU 小字／在庫／鎖給單售／鎖給組合／未鎖定／補貨中／狀態／⋯（補貨與鎖定都在 ⋯ 的列操作選單裡，照 §4.58：最上面一列「上架中」開關、底下動作項各帶 icon）；價格、SKU、成本搬去商品設定。狀態格用 badge、在庫格對應 <code>.variant-cell--stock-low</code>／<code>--stock-warn</code>、補貨中格 <code>.variant-cell--incoming</code>（有量 <code>.is-on</code>）。<strong>不與 <code>--fluid</code> 併用</strong>。)</span></p>
   <div class="demo">
     <div class="variant-table-wrap variant-table-wrap--menu">
       <div class="variant-table variant-table--stock">
-        <div class="variant-table__head"><span>選項組合</span><span>在庫</span><span>鎖給單售</span><span>鎖給組合</span><span>未鎖定</span><span>補貨中</span><span>狀態</span><span></span><span></span></div>
-        <div class="variant-table__row"><span class="variant-cell--variant">M<br><span class="text-sub">26MS-HOODIE-M</span></span><span class="variant-cell--stock">12</span><span class="variant-cell--ro">4</span><span class="variant-cell--ro">6</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="text-sub">正常</span></span><span><button class="btn btn--ghost btn--xs" type="button">補貨</button></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
-        <div class="variant-table__row"><span class="variant-cell--variant">L<br><span class="text-sub">26MS-HOODIE-L</span></span><span class="variant-cell--stock variant-cell--stock-warn">4</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">2</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="badge badge--warning">到門檻</span></span><span><button class="btn btn--ghost btn--xs" type="button">補貨</button></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
-        <div class="variant-table__row"><span class="variant-cell--variant">XL<br><span class="text-sub">26MS-HOODIE-XL</span></span><span class="variant-cell--stock variant-cell--stock-low">1</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro variant-cell--free">1</span><span class="variant-cell--ro variant-cell--incoming is-on">+20</span><span><span class="badge badge--error">低庫存</span></span><span><button class="btn btn--ghost btn--xs" type="button">補貨</button></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
+        <div class="variant-table__head"><span>選項組合</span><span>在庫</span><span>鎖給單售</span><span>鎖給組合</span><span>未鎖定</span><span>補貨中</span><span>狀態</span><span></span></div>
+        <div class="variant-table__row"><span class="variant-cell--variant">M<br><span class="text-sub">26MS-HOODIE-M</span></span><span class="variant-cell--stock">12</span><span class="variant-cell--ro">4</span><span class="variant-cell--ro">6</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="text-sub">正常</span></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
+        <div class="variant-table__row"><span class="variant-cell--variant">L<br><span class="text-sub">26MS-HOODIE-L</span></span><span class="variant-cell--stock variant-cell--stock-warn">4</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">2</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="badge badge--warning">到門檻</span></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
+        <div class="variant-table__row"><span class="variant-cell--variant">XL<br><span class="text-sub">26MS-HOODIE-XL</span></span><span class="variant-cell--stock variant-cell--stock-low">1</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro variant-cell--free">1</span><span class="variant-cell--ro variant-cell--incoming is-on">+20</span><span><span class="badge badge--error">低庫存</span></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
       </div>
     </div>
   </div>
@@ -3818,6 +3838,15 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       <tr><td><code>__icon--sm</code></td><td><span data-en>32px chip (matches <code>.btn--icon.btn--sm</code> height) + 16px glyph — for rows where the icon is a marker (＋/−/=) rather than a content thumbnail; the 52px default reads as an oversized frame there</span><span data-zh>32px 小晶片（與同列 <code>.btn--icon.btn--sm</code> 等高）＋16px 圖示——用於「圖示是記號（＋/−/=）而非內容縮圖」的列；那裡用 52px 預設會顯得框太大</span></td></tr>
       <tr><td><span data-en>Expandable child rows</span><span data-zh>可展開的子列</span></td><td><span data-en>Not this component's any more. <code>__row--child</code> retired on 2026-09-03 (STYLE-DECISIONS Q107); lay <a href="#row-disclosure">Row disclosure</a> (§4.204) over <code>.data-list__row</code> instead — <code>.rowdis__child.rowdis__child--compact</code>, wrapped together with the parent in <code>.rowdis__group.rowdis__group--gutter</code> (hierarchy is said by that panel now, not by indent).</span><span data-zh>已不歸本元件。<code>__row--child</code> 於 2026-09-03 退場（STYLE-DECISIONS Q107），改在 <code>.data-list__row</code> 上疊 <a href="#row-disclosure">Row disclosure</a>（§4.204）——<code>.rowdis__child.rowdis__child--compact</code>，並與母列一起包進 <code>.rowdis__group.rowdis__group--gutter</code>（階層改由那塊面板說，不是縮排）。</span></td></tr>
     </tbody></table>
+  <p class="field-label" data-en>Product thumbnail row <span class="field-note">(<code>.data-list__thumb--lg</code> — 2026-09-11: same 52px footprint as <code>__icon</code>, used when the row is a product; first use order-detail line items)</span></p>
+  <p class="field-label" data-zh>商品縮圖列 <span class="field-note">(<code>.data-list__thumb--lg</code>——2026-09-11：與 <code>__icon</code> 同 52px 佔位，這一列就是一件商品時用；首用訂單明細品項列)</span></p>
+  <div class="demo" style="max-width:520px">
+    <div class="data-list">
+      <div class="data-list__row"><div class="data-list__row-main"><img class="data-list__thumb data-list__thumb--lg" src="images/products/coastline-tee.webp" alt=""><div class="data-list__body"><div class="data-list__title">九龍夜行 紀念 T 恤 (M)</div><div class="data-list__meta">服飾</div></div></div><span class="data-list__amount">$32.00</span></div>
+      <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="boxes" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title">首賣夜 組合包</div><div class="data-list__meta">組合</div></div></div><span class="data-list__amount">$92.00</span></div>
+    </div>
+  </div>
+
     <p class="field-label" data-en>Token usage <span class="field-note">(→ Pillar 2 Role)</span></p>
     <p class="field-label" data-zh>Token 使用 <span class="field-note">（→ Pillar 2 Role）</span></p>
     <ul class="field-list">
@@ -4957,6 +4986,13 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <div class="kpi" style="min-width:150px"><div class="kpi__label">在庫</div><div class="kpi__value">17<span class="kpi__unit">件</span></div></div>
     <div class="kpi" style="min-width:150px"><div class="kpi__label">單售可售</div><div class="kpi__value">9<span class="kpi__unit">件</span></div></div>
     <div class="kpi" style="min-width:150px"><div class="kpi__label">補貨中</div><div class="kpi__value">20<span class="kpi__unit">件</span></div></div>
+    <div class="kpi" style="min-width:170px"><div class="kpi__label">營收 <span class="field-note">(.kpi__cur)</span></div><div class="kpi__value"><span class="kpi__cur">NT$</span>266,960</div></div>
+  </div>
+  <p class="field-label" data-en>Tile as a link + clipped footnote <span class="field-note">(<code>a.kpi--tappable</code> — 2026-09-11: the whole tile links out, chevron top-right, replacing an in-tile <code>.kpi__link</code>; <code>.kpi__meta--clip</code> keeps the footnote to one line)</span></p>
+  <p class="field-label" data-zh>整塊連結＋單行註腳 <span class="field-note">(<code>a.kpi--tappable</code>——2026-09-11：整塊磚連出去、箭頭在右上，取代磚內 <code>.kpi__link</code> 文字連結；<code>.kpi__meta--clip</code> 註腳限一行)</span></p>
+  <div class="demo" style="display:flex;gap:10px;flex-wrap:wrap">
+    <a class="kpi kpi--tappable" href="#kpi" style="min-width:180px"><i data-lucide="chevron-right" class="ztor-icon kpi__chevron" aria-hidden="true"></i><div class="kpi__label">扣費後淨利</div><div class="kpi__value">$2,372</div><div class="kpi__meta">已扣平台與金流費</div></a>
+    <button class="kpi kpi--tappable" type="button" style="min-width:180px;max-width:180px"><i data-lucide="chevron-right" class="ztor-icon kpi__chevron" aria-hidden="true"></i><div class="kpi__label">關聯中</div><div class="kpi__value">6</div><div class="kpi__meta kpi__meta--clip">3 個組合包 · 1 個項目 · 2 部電影</div></button>
   </div>
   <p class="field-label" data-en><code>--compact</code> variant <span class="field-note">(no min-height, tighter padding — side-column / summary tiles, e.g. Product detail Sales summary)</span></p>
   <p class="field-label" data-zh><code>--compact</code> 變體 <span class="field-note">(去 min-height、內距收小——側欄／摘要卡，如商品細節頁 Sales summary)</span></p>
@@ -8213,8 +8249,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <h3 class="sub__title">4.77 Leave dialog</h3>
     <span class="layer layer--organism">🟠 organism</span>
   </div>
-  <p class="sub__desc" data-en>Confirm-before-leaving dialog for every create / edit flow. Injected and driven by <code>partials/wizard-chrome.js</code>, shared by all 6 create pages. <strong>Two states, one shell</strong>: when the page has unsaved edits it asks about saving (Save and leave / Leave without saving); when nothing was edited it just confirms leaving (Leave) — no save question. Pages with no save affordance in the top bar can opt out of the save question entirely via <code>.wizard[data-leave-simple]</code> and always show the plain-leave state. Capped card, dimmed scrim, title + body + stacked actions + corner close.</p>
-  <p class="sub__desc" data-zh>建立／編輯流程的「返回離開確認」彈窗。由 <code>partials/wizard-chrome.js</code> 注入並控制，6 個建立頁共用。<strong>兩個型態、同一外殼</strong>：頁面有未存編輯時問儲存（儲存並離開／不儲存就離開）；沒編輯過則只確認離開（離開）、不問儲存。頂列沒有儲存入口的頁面可加 <code>.wizard[data-leave-simple]</code> 完全跳過問儲存那一態，一律走純離開版。有上限的卡、變暗 scrim、標題＋內文＋堆疊操作＋右上關閉。</p>
+  <p class="sub__desc" data-en>Confirm-before-leaving dialog for every create / edit flow. Injected and driven by <code>partials/wizard-chrome.js</code>, shared by all 6 create pages. <strong>Two states, one shell</strong>: when the page has unsaved edits it asks about saving (Save and leave / Leave without saving); when nothing was edited it just confirms leaving (Leave) — no save question. Pages with no save affordance in the top bar can opt out of the save question entirely via <code>.wizard[data-leave-simple]</code> and always show the plain-leave state. Capped card, dimmed scrim, title + body + stacked actions + corner close. <strong>2026-09-11</strong>: e-shop.html reuses this shell for the “Show in shop” confirmation (title switches per on/off state, D263) — it is the site’s only confirm-dialog idiom.</p>
+  <p class="sub__desc" data-zh>建立／編輯流程的「返回離開確認」彈窗。由 <code>partials/wizard-chrome.js</code> 注入並控制，6 個建立頁共用。<strong>兩個型態、同一外殼</strong>：頁面有未存編輯時問儲存（儲存並離開／不儲存就離開）；沒編輯過則只確認離開（離開）、不問儲存。頂列沒有儲存入口的頁面可加 <code>.wizard[data-leave-simple]</code> 完全跳過問儲存那一態，一律走純離開版。有上限的卡、變暗 scrim、標題＋內文＋堆疊操作＋右上關閉。 <strong>2026-09-11</strong>：e-shop.html 的「顯示於商店」確認彈窗直接用這個殼（標題依開／關換句，D263）——它是站上唯一的確認彈窗語彙，不另造。</p>
   <div class="demo" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
     <div class="leave-dialog__card" style="position:relative;box-shadow:var(--shadow-card)">
       <button class="leave-dialog__close" type="button" aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
@@ -8829,7 +8865,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <div class="dodont__dont"><strong><span data-en>Don't</span><span data-zh>別做</span></strong><ul><li data-en>Use it to switch the <em>view</em> of one dataset — that's <a href="#segmented">Segmented</a>.</li><li data-zh>別用在切換同一資料的<em>視角</em>（那是 <a href="#segmented">Segmented</a>）。</li><li data-en>Mix both variants for the same role on different pages — every create flow's listing row is collapsible. (A detail page using a switch instead is a different control for a different question, not a second variant of this one.)</li><li data-zh>別讓同一角色在不同頁用不同變體——建立流程的上架列一律收合式。（細節頁改用開關是換一個控制回答另一個問題，不是本元件的第二種變體。）</li></ul></div>
   </div>
   <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
-  <table class="spec" data-product-spec="radio-list"><tbody><tr><td>Source</td><td><code>radio-list.css</code> · <code>partials/radio-list.js</code> (collapsible behaviour)</td></tr><tr><td>Anatomy</td><td>Base: <code>.radio-list</code> &gt; <code>.radio-list__item</code> (<code>--active</code>) &gt; <code>.radio-list__dot</code> + <code>.radio-list__text</code> (<code>__title</code> + optional <code>__sub</code>).<br>Collapsible: <code>.radio-list.radio-list--collapsible[data-open]</code> &gt; <code>.radio-list__trigger</code> (dot + text + <code>.radio-list__chevron</code>) + <code>.radio-list__options[hidden]</code> &gt; <code>.radio-list__item</code>.</td></tr><tr><td>Variants</td><td><code>(base)</code> every option visible · <code>--collapsible</code> trigger + disclosure list, 1px <code>--border</code> frame at <code>--radius-xl</code>, open trigger fills <code>--input-surface</code>, chevron rotates 180°.</td></tr><tr><td>States</td><td>default · hover (<code>--accent</code>) · focus-visible (<code>--ring</code>) · selected (<code>--active</code>, orange filled dot) · open / closed (<code>[data-open]</code>, collapsible only).</td></tr><tr><td>Behavior / usage</td><td>Vertical flex; transparent rows, hover <code>--accent</code>; selected = orange filled dot (<code>--primary</code>), no bg/border change. Rows with no <code>.radio-list__sub</code> vertically center dot + title. <code>partials/radio-list.js</code> auto-mounts every <code>.radio-list--collapsible</code>: toggles open state, mirrors the selected row's text + <code>data-i18n</code> keys into the trigger, closes on outside click / Esc, and dispatches <code>radio-list:change</code> (detail.item) so pages only own their own field-reveal logic.</td></tr><tr><td>Token usage</td><td><code>--foreground</code>, <code>--accent</code>, <code>--muted-foreground</code>, <code>--primary</code>, <code>--border</code>, <code>--input-surface</code>, <code>--ring</code>, <code>--radius-md</code>, <code>--radius-xl</code>, <code>--sp-2/8/10</code>, <code>--fs-14/12</code>, <code>--duration</code>, <code>--easing</code>.</td></tr><tr><td>Classes</td><td><code>.radio-list</code> · <code>.radio-list--collapsible</code> · <code>.radio-list__trigger</code> · <code>.radio-list__chevron</code> · <code>.radio-list__options</code> · <code>.radio-list__item</code> · <code>.radio-list__item--active</code> · <code>.radio-list__dot</code> · <code>.radio-list__text</code> · <code>.radio-list__title</code> · <code>.radio-list__sub</code></td></tr><tr><td>Dependencies</td><td>Composes <a href="#icon">Icon</a> (<code>chevron-down</code>) in the collapsible trigger.</td></tr><tr><td>Evidence / usage</td><td>Create flows use <code>--collapsible</code> for the listing row (2026-07-21): create-product · create-bundle · create-auction (under the preview card). <strong>D241 (2026-09-04)</strong>: product-detail and bundle-detail move that row to a <a href="#switch">Switch</a> inside <a href="#listing-controls">Listing controls</a>, so they leave this list once migrated. <strong>2026-08-09</strong>: create-event.html uses the base variant for the ticket-tier rules block's radio choice (purchase condition / per-person limit / discount) — spacing rules live in <code>ticket-tier-card.css</code> (<code>.rule &gt; .radio-list</code>).</td></tr></tbody></table>
+  <table class="spec" data-product-spec="radio-list"><tbody><tr><td>Source</td><td><code>radio-list.css</code> · <code>partials/radio-list.js</code> (collapsible behaviour)</td></tr><tr><td>Anatomy</td><td>Base: <code>.radio-list</code> &gt; <code>.radio-list__item</code> (<code>--active</code>) &gt; <code>.radio-list__dot</code> + <code>.radio-list__text</code> (<code>__title</code> + optional <code>__sub</code>).<br>Collapsible: <code>.radio-list.radio-list--collapsible[data-open]</code> &gt; <code>.radio-list__trigger</code> (dot + text + <code>.radio-list__chevron</code>) + <code>.radio-list__options[hidden]</code> &gt; <code>.radio-list__item</code>.</td></tr><tr><td>Variants</td><td><code>(base)</code> every option visible · <code>--collapsible</code> trigger + disclosure list, 1px <code>--border</code> frame at <code>--radius-xl</code>, open trigger fills <code>--input-surface</code>, chevron rotates 180°; the open list hides the currently selected row (2026-09-11 — the trigger already represents it; CSS-only, JS state unchanged).</td></tr><tr><td>States</td><td>default · hover (<code>--accent</code>) · focus-visible (<code>--ring</code>) · selected (<code>--active</code>, orange filled dot) · open / closed (<code>[data-open]</code>, collapsible only).</td></tr><tr><td>Behavior / usage</td><td>Vertical flex; transparent rows, hover <code>--accent</code>; selected = orange filled dot (<code>--primary</code>), no bg/border change. Rows with no <code>.radio-list__sub</code> vertically center dot + title. <code>partials/radio-list.js</code> auto-mounts every <code>.radio-list--collapsible</code>: toggles open state, mirrors the selected row's text + <code>data-i18n</code> keys into the trigger, closes on outside click / Esc, and dispatches <code>radio-list:change</code> (detail.item) so pages only own their own field-reveal logic.</td></tr><tr><td>Token usage</td><td><code>--foreground</code>, <code>--accent</code>, <code>--muted-foreground</code>, <code>--primary</code>, <code>--border</code>, <code>--input-surface</code>, <code>--ring</code>, <code>--radius-md</code>, <code>--radius-xl</code>, <code>--sp-2/8/10</code>, <code>--fs-14/12</code>, <code>--duration</code>, <code>--easing</code>.</td></tr><tr><td>Classes</td><td><code>.radio-list</code> · <code>.radio-list--collapsible</code> · <code>.radio-list__trigger</code> · <code>.radio-list__chevron</code> · <code>.radio-list__options</code> · <code>.radio-list__item</code> · <code>.radio-list__item--active</code> · <code>.radio-list__dot</code> · <code>.radio-list__text</code> · <code>.radio-list__title</code> · <code>.radio-list__sub</code></td></tr><tr><td>Dependencies</td><td>Composes <a href="#icon">Icon</a> (<code>chevron-down</code>) in the collapsible trigger.</td></tr><tr><td>Evidence / usage</td><td>Create flows use <code>--collapsible</code> for the listing row (2026-07-21): create-product · create-bundle · create-auction (under the preview card). <strong>D241 (2026-09-04)</strong>: product-detail and bundle-detail move that row to a <a href="#switch">Switch</a> inside <a href="#listing-controls">Listing controls</a>, so they leave this list once migrated. <strong>2026-08-09</strong>: create-event.html uses the base variant for the ticket-tier rules block's radio choice (purchase condition / per-person limit / discount) — spacing rules live in <code>ticket-tier-card.css</code> (<code>.rule &gt; .radio-list</code>).</td></tr></tbody></table>
 </section>
 
 <section class="sub" id="date-input">
@@ -8890,105 +8926,9 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 </section>
 
 <section class="sub" id="restock-log">
-  <div class="sub__head"><h3 class="sub__title">4.88 Restock log</h3><span class="layer layer--molecule">🟡 molecule</span></div>
-  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
-  <p class="sub__desc" data-en>A restock history table: one row per restock, each field in its own aligned column. Restock records exist to be compared — how many more units than last time, how long since the previous restock — and columns are what make that scannable. It replaces the earlier <a href="#data-list">Data list</a> treatment that packed quantity, date and supplier into a title line plus a meta line, which could only be read one entry at a time. The <code>--with-option</code> modifier opens the option-combination column for multi-option products; without it that column disappears entirely, header included.</p>
-  <p class="sub__desc" data-zh>補貨紀錄表：每一筆補貨佔一列，每個欄位各自成欄地對齊。補貨紀錄是拿來比對的——這批比上批多幾件、上次補貨隔了多久——欄位對齊才掃得動。它取代原本用 <a href="#data-list">Data list</a> 把數量、日期、供應商擠成一行標題＋一行 meta 的寫法，那種寫法只能一筆一筆讀。多選項商品掛 <code>--with-option</code> 開出「選項組合」欄；不掛時該欄連同表頭整欄不顯示。</p>
-  <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
-  <div class="compose">
-    <div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div>
-    <div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="#badge">Badge</a></div>
-    <div class="compose__dir"><span data-en>Used by</span><span data-zh>被哪些元件使用</span> ↑</div>
-    <div class="compose__tier"><span class="compose__none"><span data-en>Sits directly in a Form section card on the consumer page</span><span data-zh>直接放在 consumer 頁的 Form section 卡裡</span></span></div>
-  </div>
-  <p class="field-label" data-en>Rendered preview <span class="field-note">(both states — four columns by default, five with <code>--with-option</code>)</span></p>
-  <p class="field-label" data-zh>視覺展示 <span class="field-note">(兩種狀態——預設四欄，掛 <code>--with-option</code> 為五欄)</span></p>
-  <div class="demo" style="flex-direction:column;align-items:stretch;gap:20px" data-product-preview="restock-log">
-    <div>
-      <p class="field-text"><span data-en>Single-option product — no option column</span><span data-zh>單選項商品——沒有選項組合欄</span></p>
-      <div class="restock-log-wrap">
-        <div class="restock-log">
-          <div class="restock-log__head">
-            <span class="restock-log__opt" data-en>Option</span><span class="restock-log__opt" data-zh>選項組合</span>
-            <span data-en>Quantity</span><span data-zh>補貨數量</span>
-            <span data-en>Date</span><span data-zh>日期</span>
-            <span data-en>Supplier</span><span data-zh>供應商</span>
-            <span data-en>Status</span><span data-zh>狀態</span>
-          </div>
-          <div class="restock-log__row">
-            <span class="restock-log__opt">—</span>
-            <span class="restock-log__qty">+40</span>
-            <span class="restock-log__muted">2026/06/18</span>
-            <span class="restock-log__muted">Riso House</span>
-            <span><span class="badge badge--success" data-en>Completed</span><span class="badge badge--success" data-zh>已入庫</span></span>
-          </div>
-          <div class="restock-log__row">
-            <span class="restock-log__opt">—</span>
-            <span class="restock-log__qty">+25</span>
-            <span class="restock-log__muted">2026/05/02</span>
-            <span class="restock-log__muted">Riso House</span>
-            <span><span class="badge badge--success" data-en>Completed</span><span class="badge badge--success" data-zh>已入庫</span></span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div>
-      <p class="field-text"><span data-en>Multi-option product — <code>.restock-log--with-option</code></span><span data-zh>多選項商品——<code>.restock-log--with-option</code></span></p>
-      <div class="restock-log-wrap">
-        <div class="restock-log restock-log--with-option">
-          <div class="restock-log__head">
-            <span class="restock-log__opt" data-en>Option</span><span class="restock-log__opt" data-zh>選項組合</span>
-            <span data-en>Quantity</span><span data-zh>補貨數量</span>
-            <span data-en>Date</span><span data-zh>日期</span>
-            <span data-en>Supplier</span><span data-zh>供應商</span>
-            <span data-en>Status</span><span data-zh>狀態</span>
-          </div>
-          <div class="restock-log__row">
-            <span class="restock-log__opt">Black / M</span>
-            <span class="restock-log__qty">+120</span>
-            <span class="restock-log__muted">2026/07/18</span>
-            <span class="restock-log__muted">Tainan Studio</span>
-            <span><span class="badge badge--success" data-en>Completed</span><span class="badge badge--success" data-zh>已入庫</span></span>
-          </div>
-          <div class="restock-log__row">
-            <span class="restock-log__opt">Black / S</span>
-            <span class="restock-log__qty">+8</span>
-            <span class="restock-log__muted">2026/07/02</span>
-            <span class="restock-log__muted">Tainan Studio</span>
-            <span><span class="badge badge--warning" data-en>Scheduled</span><span class="badge badge--warning" data-zh>已排程</span></span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-   <p class="field-label" data-en>Stock history <span class="field-note">(<code>.restock-log--history</code> — 2026-09-11: restocks and lock changes merged into one table. Columns date / type / option / change / note / status; a lock change reads <code>2 → 4</code> with <code>.restock-log__qty--lock</code>, not as an increment. <code>min-width: 0</code>, so it sits in a card as well as the dialog.)</span></p>
-   <p class="field-label" data-zh>庫存歷史紀錄 <span class="field-note">(<code>.restock-log--history</code>——2026-09-11 使用者裁示補貨紀錄＋鎖定紀錄合併：日期／類型／選項組合／變動／說明／狀態六欄；鎖定的變動寫 <code>2 → 4</code> 並掛 <code>.restock-log__qty--lock</code>（不是增減，不走 __qty 的強調）。<code>min-width: 0</code>，頁內卡與彈窗共用。消費者：商品詳情商品庫存分頁。)</span></p>
-   <div class="demo">
-     <div class="restock-log-wrap">
-       <div class="restock-log restock-log--history">
-         <div class="restock-log__head"><span>日期</span><span>類型</span><span class="restock-log__opt">選項組合</span><span>變動</span><span>說明</span><span>狀態</span></div>
-         <div class="restock-log__row"><span class="restock-log__muted">2026/09/11</span><span>補貨</span><span class="restock-log__opt">XL</span><span class="restock-log__qty">+20</span><span class="restock-log__muted">Riso House · 計時補貨，預計 09/18 到</span><span><span class="badge badge--warning">補貨中</span></span></div>
-         <div class="restock-log__row"><span class="restock-log__muted">2026/09/10</span><span>鎖定</span><span class="restock-log__opt">M</span><span class="restock-log__qty restock-log__qty--lock">2 → 4</span><span class="restock-log__muted">鎖給單售</span><span><span class="badge badge--success">已完成</span></span></div>
-         <div class="restock-log__row"><span class="restock-log__muted">2026/09/10</span><span>補貨</span><span class="restock-log__opt">M</span><span class="restock-log__qty">+40</span><span class="restock-log__muted">Riso House · 立即補貨</span><span><span class="badge badge--success">已完成</span></span></div>
-       </div>
-     </div>
-   </div>
-  <p class="field-label" data-en>Do &amp; Don't</p><p class="field-label" data-zh>該做與別做</p>
-  <div class="dodont">
-    <div class="dodont__do"><strong><span data-en>Do</span><span data-zh>該做</span></strong><ul><li data-en>Put quantities in <code>.restock-log__qty</code> so tabular numerals line the digits up across rows.</li><li data-zh>補貨數量放進 <code>.restock-log__qty</code>，等寬數字才會讓上下列的位數對齊。</li><li data-en>Let <code>.restock-log-wrap</code> scroll horizontally on narrow viewports — columns stay aligned instead of reflowing.</li><li data-zh>窄視窗讓 <code>.restock-log-wrap</code> 水平捲動——欄位維持對齊，不重排。</li></ul></div>
-    <div class="dodont__dont"><strong><span data-en>Don't</span><span data-zh>別做</span></strong><ul><li data-en>Don't hide the option cell row by row — the header and every row share one <code>grid-template-columns</code>, so removing a cell in only one place misaligns the table. Toggle <code>--with-option</code> on the container instead.</li><li data-zh>別逐列隱藏選項儲存格——表頭與每一列共用同一組 <code>grid-template-columns</code>，只在其中一處拿掉會讓欄位錯位。改為在容器上切換 <code>--with-option</code>。</li><li data-en>Don't put editable controls in a row — this is read-only history. For an editable priced spec table use the Variant builder.</li><li data-zh>別把可編輯控件放進列裡——本元件是唯讀歷史。要可編輯的逐規格價格表請用 <a href="#variant-builder">Variant builder</a>。</li></ul></div>
-  </div>
-  <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
-  <table class="spec" data-product-spec="restock-log"><tbody>
-    <tr><td>Source</td><td><code>restock-log.css</code></td></tr>
-    <tr><td>Anatomy</td><td><code>.restock-log-wrap</code> &gt; <code>.restock-log</code>(<code>--with-option</code>) &gt; <code>.restock-log__head</code> + <code>.restock-log__row</code>. Cells: <code>.restock-log__opt</code> (option combination — the header cell carries the same class) · <code>.restock-log__qty</code> (quantity, tabular numerals) · <code>.restock-log__muted</code> (date / supplier) · <a href="#badge">Badge</a> (status).</td></tr>
-    <tr><td>States</td><td>default — four columns, <code>.restock-log__opt</code> is <code>display:none</code> · <code>.restock-log--with-option</code> — five columns, the option cell returns to <code>display:block</code> in both header and rows · <code>.restock-log__row:last-child</code> — bottom hairline zeroed so it doesn't double with the wrapper border.</td></tr>
-    <tr><td>Behavior / usage</td><td>Read-only history, newest first. The wrapper owns the border, <code>--radius-xl</code> corners and horizontal scrolling; <code>.restock-log</code> holds a <code>min-width: 480px</code> floor so columns keep their alignment instead of collapsing. Column widths use the same grid technique as <a href="#variant-builder">Variant builder</a>'s spec table but deliberately share nothing with it — that one is editable configuration, this one is read-only history.</td></tr>
-    <tr><td>Token usage</td><td><code>--border</code> (wrapper border, per-row hairline) · <code>--radius-xl</code> · <code>--muted</code> (header fill) · <code>--card</code> (row fill) · <code>--font-ui</code> · <code>--fs-11</code> (header) · <code>--fs-13</code> (rows) · <code>--fw-medium</code> · <code>--foreground</code> · <code>--muted-foreground</code> · <code>--sp-8</code> (column gap) · <code>--sp-12</code> (inline padding).</td></tr>
-    <tr><td>Classes</td><td><code>.restock-log-wrap</code> · <code>.restock-log</code>(<code>--with-option</code>) · <code>.restock-log__head</code> · <code>.restock-log__row</code> · <code>.restock-log__opt</code> · <code>.restock-log__qty</code> · <code>.restock-log__muted</code></td></tr>
-    <tr><td>Dependencies</td><td>Composes <a href="#badge">Badge</a> for the status cell.</td></tr>
-    <tr><td>Evidence / usage</td><td><a href="product-detail.html">product-detail.html</a> — the Restock history card.</td></tr>
-  </tbody></table>
+  <div class="sub__head"><h3 class="sub__title">4.88 Restock log ✝</h3><span class="layer layer--molecule">🟡 molecule</span></div>
+  <p class="sub__desc" data-en>✝ <strong>Retired 2026-09-11.</strong> The fixed-column restock table (built 2026-07-22) was widened to six columns as "stock history" on the same day, then replaced by <a href="#stock-history">Stock history</a> after the user chose the "one row per order, details on expand" candidate (<code>lab-stock-history.html</code> H1): supplier, method, ETA and note belong to the <em>order</em>, and one order can restock several combinations — a per-combination table either repeats them or cannot fit the note. <code>restock-log.css</code> is a tombstone; original rules are in git history.</p>
+  <p class="sub__desc" data-zh>✝ <strong>2026-09-11 退場。</strong>固定欄的補貨紀錄表（2026-07-22 建）同日先擴成六欄的「庫存歷史紀錄」，再依使用者裁決（<code>lab-stock-history.html</code> H1）改成「一張單一筆、點開看明細」的 <a href="#stock-history">Stock history</a>：供應商、方式、預計到貨、備註是<em>單</em>的屬性，一單可同時補好幾個組合——逐組合一列的固定欄表不是重複講就是塞不下備註。<code>restock-log.css</code> 留墓碑，原始規則見 git 歷史。</p>
 </section>
 
 <section class="sub" id="stock-tip">
@@ -11192,6 +11132,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <p class="field-text"><code>ds-components/row-disclosure.css</code> · <code>js/row-disclosure.js</code></p>
   </div>
   </details>
+  <p class="field-note" data-zh><strong>2026-09-11 · --gutter 面板內列的 hover 亮面有自己的內距與圓角</strong>：列往外長 <code>--sp-8</code> 再用等值內距推回（文字 x 不動）、圓角 <code>--radius-md</code>（比面板的 <code>--radius-lg</code> 小一階）——使用者指出亮面「沒有 padding 也沒有圓角」像貼邊的方塊。同日商品／組合詳情的成員分配表（stock-allocation）也改直接用本元件展開，不再有自家的 <code>.salloc__group</code>／<code>.salloc__toggle</code>。</p>
+  <p class="field-note" data-en><strong>2026-09-11 · rows inside a --gutter panel get their own hover inset</strong>: each row bleeds <code>--sp-8</code> and pads it back (text x unchanged) with <code>--radius-md</code>, one step under the panel's <code>--radius-lg</code>. Same day the stock-allocation table switched to this component for its member groups (its own <code>.salloc__group</code> / <code>.salloc__toggle</code> retired).</p>
 </section>
 
 <section class="sub" id="listing-controls">
@@ -11582,6 +11524,56 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <p class="field-text"><code>ds-components/stock-allocation.css</code> · <code>js/listing-state.js</code></p>
   </div>
   </details>
+</section>
+
+<section class="sub" id="stock-history">
+  <div class="sub__head"><h3 class="sub__title">4.208 Stock history</h3><span class="layer layer--molecule">🟡 molecule</span></div>
+  <p class="sub__desc" data-en>Stock history for one product: restock orders and lock changes in one list, <strong>one row per order</strong>. The main row says when / which kind / what changed per combination / supplier · method / status; open the row for quantities, supplier, ETA (with Mark received while restocking) and the note. History is mostly scanned and only occasionally inspected, so the main row stays clean. Built on <a href="#data-list">Data list</a> + <a href="#row-disclosure">Row disclosure</a> (Q107 "whole group changes layer"); this file only owns the date column, badge slot, delta digits and the key / value cells of the expanded rows. 2026-09-11, promoted from <code>lab-stock-history.html</code> H1.</p>
+  <p class="sub__desc" data-zh>一件商品的庫存變動：補貨單與鎖定變動合併一張清單，<strong>一張單一筆</strong>。主列講什麼時候／哪一種／逐組合變了多少／供應商 · 方式／狀態；點開看逐組合數量、供應商、預計到貨（補貨中時附到貨確認）、備註。歷史紀錄多數時候是掃、偶爾才查細節，主列要乾淨。疊在 <a href="#data-list">Data list</a>＋<a href="#row-disclosure">Row disclosure</a>（Q107 整組換層）上，本檔只擁有日期欄、徽章槽、變動數字與展開層的鍵／值格。2026-09-11 自 <code>lab-stock-history.html</code> H1 promote。</p>
+  <div class="demo">
+    <div class="data-list" style="max-width:760px">
+      <div class="rowdis__group rowdis__group--gutter">
+        <div class="data-list__row rowdis__head" data-rowdis-row="shist-demo-1">
+          <div class="data-list__row-main"><span class="shist__date">2026/09/11</span><span class="shist__type"><span class="badge badge--info">補貨</span></span>
+            <div class="data-list__body"><div class="data-list__title">XL <span class="shist__delta">+20</span></div><div class="data-list__meta">Riso House · 定時補貨 · 預計 2026/09/18 到貨</div></div></div>
+          <div class="shist__end"><span class="badge badge--warning">補貨中</span><button class="btn btn--icon btn--sm rowdis__toggle" type="button" data-rowdis="shist-demo-1" aria-expanded="true" aria-label="展開明細"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+        </div>
+        <div class="data-list__row rowdis__child rowdis__child--compact shist__child" data-rowdis-child="shist-demo-1"><div class="data-list__row-main"><span class="shist__k">XL</span><span class="shist__v"><span class="shist__delta">+20</span></span></div></div>
+        <div class="data-list__row rowdis__child rowdis__child--compact shist__child" data-rowdis-child="shist-demo-1"><div class="data-list__row-main"><span class="shist__k">供應商</span><span class="shist__v">Riso House</span></div></div>
+        <div class="data-list__row rowdis__child rowdis__child--compact shist__child" data-rowdis-child="shist-demo-1"><div class="data-list__row-main"><span class="shist__k">預計到貨</span><span class="shist__v">2026/09/18</span></div><button class="btn btn--outline btn--xs" type="button">到貨確認</button></div>
+        <div class="data-list__row rowdis__child rowdis__child--compact shist__child" data-rowdis-child="shist-demo-1"><div class="data-list__row-main"><span class="shist__k">備註</span><span class="shist__v">先補 XL，巡演前要到。</span></div></div>
+      </div>
+      <div class="rowdis__group rowdis__group--gutter">
+        <div class="data-list__row rowdis__head" data-rowdis-row="shist-demo-2">
+          <div class="data-list__row-main"><span class="shist__date">2026/09/10</span><span class="shist__type"><span class="badge badge--neutral">鎖定</span></span>
+            <div class="data-list__body"><div class="data-list__title">M <span class="shist__delta">2 → 4</span></div><div class="data-list__meta">鎖給單售</div></div></div>
+          <div class="shist__end"><span class="badge badge--success">已完成</span><button class="btn btn--icon btn--sm rowdis__toggle" type="button" data-rowdis="shist-demo-2" aria-expanded="false" aria-label="展開明細"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+        </div>
+        <div class="data-list__row rowdis__child rowdis__child--compact shist__child" data-rowdis-child="shist-demo-2" hidden><div class="data-list__row-main"><span class="shist__k">M</span><span class="shist__v"><span class="shist__delta">2 → 4</span><span class="text-sub"> · 鎖給單售</span></span></div></div>
+      </div>
+      <div class="rowdis__group rowdis__group--gutter">
+        <div class="data-list__row rowdis__head" data-rowdis-row="shist-demo-3">
+          <div class="data-list__row-main"><span class="shist__date">2026/09/10</span><span class="shist__type"><span class="badge badge--info">補貨</span></span>
+            <div class="data-list__body"><div class="data-list__title">M <span class="shist__delta">+40</span><span class="text-sub"> · </span>L <span class="shist__delta">+25</span></div><div class="data-list__meta">Riso House · 立即補貨</div></div></div>
+          <div class="shist__end"><span class="badge badge--success">已完成</span><button class="btn btn--icon btn--sm rowdis__toggle" type="button" data-rowdis="shist-demo-3" aria-expanded="false" aria-label="展開明細"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
+        </div>
+        <div class="data-list__row rowdis__child rowdis__child--compact shist__child" data-rowdis-child="shist-demo-3" hidden><div class="data-list__row-main"><span class="shist__k">M</span><span class="shist__v"><span class="shist__delta">+40</span></span></div></div>
+        <div class="data-list__row rowdis__child rowdis__child--compact shist__child" data-rowdis-child="shist-demo-3" hidden><div class="data-list__row-main"><span class="shist__k">L</span><span class="shist__v"><span class="shist__delta">+25</span></span></div></div>
+        <div class="data-list__row rowdis__child rowdis__child--compact shist__child" data-rowdis-child="shist-demo-3" hidden><div class="data-list__row-main"><span class="shist__k">供應商</span><span class="shist__v">Riso House</span></div></div>
+        <div class="data-list__row rowdis__child rowdis__child--compact shist__child" data-rowdis-child="shist-demo-3" hidden><div class="data-list__row-main"><span class="shist__k">備註</span><span class="shist__v">第二批，含 5 件備品。</span></div></div>
+      </div>
+    </div>
+  </div>
+  <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
+  <table class="spec" data-product-spec="stock-history"><tbody>
+    <tr><td>Source</td><td><code>stock-history.css</code></td></tr>
+    <tr><td>Anatomy</td><td><code>.data-list &gt; .rowdis__group.rowdis__group--gutter &gt; .data-list__row.rowdis__head</code>（<code>.shist__date</code> · <code>.shist__type</code> · <code>.data-list__body</code>（title 含 <code>.shist__delta</code>）· <code>.shist__end</code>（狀態徽章＋<code>.rowdis__toggle</code>））＋ <code>.data-list__row.rowdis__child.rowdis__child--compact.shist__child</code>（<code>.shist__k</code> ＋ <code>.shist__v</code>）</td></tr>
+    <tr><td>States</td><td>補貨中 <code>badge--warning</code>（到貨確認鈕在展開層的預計到貨列）· 已完成 <code>badge--success</code></td></tr>
+    <tr><td>Behavior / usage</td><td>Newest first. Same data and renderer feed the in-card list (latest four) and the "view all" dialog. Expand / collapse is <code>js/row-disclosure.js</code>; the expanded panel is row-disclosure's L2 film.</td></tr>
+    <tr><td>Token usage</td><td><code>--muted-foreground</code> · <code>--foreground</code> · <code>--fs-12</code> · <code>--fs-13</code> · <code>--sp-12</code> · <code>--sp-8</code>（底色與列線來自 data-list／row-disclosure）</td></tr>
+    <tr><td>Dependencies</td><td><a href="#data-list">Data list</a> · <a href="#row-disclosure">Row disclosure</a> · <a href="#badge">Badge</a> · <a href="#button">Button</a></td></tr>
+    <tr><td>Evidence / usage</td><td><a href="product-detail.html">product-detail.html</a> — Stock tab, stock history card and dialog.</td></tr>
+  </tbody></table>
 </section>
 
 <!-- ══ 無自帶 CSS 的 JS 元件（2026-08-11 起也進這一頁）════════════════════════════

@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
@@ -58,8 +59,6 @@
   /* 組合價格（自動 base ＋ 折扣）D103：base 加總／「從 $X 起」；有折扣時大字＝折後價、旁邊劃掉 base */
   .cb-priceline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
   .cb-autoprice { font-family: var(--font-display); font-size: var(--fs-18); font-weight: var(--fw-regular); color: var(--foreground); }
-  .cb-basestrike { font-size: var(--fs-13); color: var(--muted-foreground); text-decoration: line-through; }
-  .cb-basestrike[hidden] { display: none; }
   /* 成員摘要列與相容性提示（spec 5.1.5.4 §6.3／§6.4，顯示層 demo）。
      舊註解寫「套組庫存＝min(成員)」，已由 D241 取代——組合可售量改問 ListingState.bundleQty()。 */
   /* 2026-08-13（Q66）：底色由 --muted（比卡暗）改成疊在卡上的薄膜 */
@@ -67,8 +66,7 @@
   .cb-summary[hidden] { display: none; }
   .cb-summary__row { display: flex; justify-content: space-between; font-weight: var(--fw-regular); }
   .cb-note { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: 6px; }
-  .cb-warn { color: var(--destructive); }
-  .cb-save { color: var(--status-success); }
+  /* .cb-warn／.cb-save 已於 2026-09-11 promote 為 ds-components/field-system.css 的 .field__hint--warn／--ok */
   /* 商品搜尋無結果引導（spec 5.1.5.4 §6.6）*/
   .cb-no-result { padding: 16px; text-align: center; font-size: var(--fs-12); color: var(--muted-foreground); }
   .cb-no-result[hidden] { display: none; }
@@ -189,26 +187,34 @@
       </div>
     </section>
 
-    <!-- ③ 組合價格：自動 base（唯讀）＋ 折扣 %（可填）· spec 5.1.5.4 §4 F3 / D103（修訂 D102）
-         base＝成員自動加總（不可編輯，多規格→「從 $X 起」）；折扣套在 base 上，折後＝粉絲付的價 -->
+    <!-- ③ 組合價格 · spec 5.1.5.4 §4 F3（2026-09-11 使用者裁示 D261，修訂 D103 的語意）：
+         成員原價合計（自動、唯讀，多規格→「從 $X 起」）＋ 組合折扣 %（創作者填）→ 售價由系統算出。
+         為什麼填折扣不填售價：成員多選項時合計是一個區間，填絕對售價落不到單一數字；填折扣，算出來的售價才會是同一個區間。
+         限時折扣（下方折扣設定）是疊在這個售價之上、依營運檔期另設的折扣，與這裡分開。 -->
     <section class="form-section form-section--outlined">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cb.pricing">Bundle price</h3>
       </div>
       <div class="field">
+        <div class="field__label" data-i18n="cb.price.members-total">Members' list price total</div>
         <div class="cb-priceline">
           <span class="cb-autoprice" id="cb-autoprice">$0.00</span>
-          <span class="cb-basestrike" id="cb-basestrike" hidden></span>
         </div>
         <div class="field__hint" data-i18n="cb.price.auto-hint">Auto-summed from members' prices — not editable. Members with variants show “from $X”.</div>
       </div>
       <div class="field">
-        <div class="field__label" data-i18n="cb.price.discount">Discount % (optional)</div>
+        <div class="field__label" data-i18n="cb.price.discount">Bundle discount % (optional)</div>
         <div class="cb-price-input">
           <input class="input" id="cb-discount" placeholder="0" inputmode="decimal" style="max-width:160px">
           <span class="cb-price-input__sym">%</span>
         </div>
-        <div class="field__hint" id="cb-disc-hint" data-i18n="cb.price.discount-hint">Applied to the auto-summed total — fans pay the discounted price.</div>
+        <div class="field__hint" id="cb-disc-hint" data-i18n="cb.price.discount-hint">Sells below the members' total by this much; the selling price is worked out for you.</div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <div class="field__label" data-i18n="cb.price.bundle">Selling price</div>
+        <div class="cb-priceline">
+          <span class="cb-autoprice" id="cb-sellprice">$0.00</span>
+        </div>
       </div>
     </section>
 
@@ -275,7 +281,9 @@
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.discount.title">Discount settings</h3>
       </div>
-      <div class="field__hint" style="margin-bottom:10px" data-i18n="cb.discount.note">The discount amount is the Discount % set in Bundle price above; turn on a limited-time window to schedule it.</div>
+      <div class="field__hint" style="margin-bottom:10px" data-i18n="cb.discount.note">A limited-time discount stacks on top of the bundle price above for a campaign window — set its own % and dates.</div>
+      <!-- 節奏歸容器（Q103，同建立商品）：限時折扣群組與「可與優惠碼疊加」是同一區段的兩塊，距離由 .stack--tight 持有。 -->
+      <div class="stack stack--tight">
       <div class="control-group">
         <div class="control-row">
         <div>
@@ -284,7 +292,16 @@
         </div>
         <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cb-sale-toggle"></div>
       </div>
-        <div class="form-grid control-group__body" data-cb-sale-fields hidden>
+        <div class="control-group__body" data-cb-sale-fields hidden>
+        <div class="field">
+          <div class="field__label"><span data-i18n="cb.sale.percent">Limited-time discount %</span> <span class="field__req">*</span></div>
+          <div class="cb-price-input">
+            <input class="input" id="cb-sale-percent" placeholder="0" inputmode="decimal" style="max-width:160px">
+            <span class="cb-price-input__sym">%</span>
+          </div>
+          <div class="field__hint" id="cb-sale-pct-hint" data-i18n="cb.sale.percent-hint">Taken off the bundle price during the window.</div>
+        </div>
+        <div class="form-grid">
         <div class="field" style="margin-bottom:0">
           <div class="field__label"><span data-i18n="cb.sale.start">Discount start date</span> <span class="field__req">*</span></div>
           <input class="input" type="date" id="cb-sale-start">
@@ -294,8 +311,28 @@
           <input class="input" type="date" id="cb-sale-end">
           <div class="field__hint" id="cb-sale-hint" data-i18n="cb.sale.pending">Sale price source &amp; time zone pending spec (5.1.5.4 §4 F7).</div>
         </div>
+        </div>
       </div>
       </div>
+        <!-- 可與優惠碼疊加（同建立商品 F13 · D183；2026-09-11 使用者：「要有可以使用折扣優惠碼的選項，像創建單售商品一樣」）：
+             商店優惠碼（5.1.5.5 F8）能不能再疊在這個組合的折扣上，由組合自己決定；預設關＝擇一，取對買家最有利的。 -->
+        <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="cp.discount.stack">Stack with discount codes</div>
+            <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means the buyer gets whichever single discount is best for them</div>
+          </div>
+          <div class="switch" role="switch" aria-checked="false" tabindex="0" data-cb-stack></div>
+        </div>
+      </div><!-- /.stack -->
+    </section>
+
+    <!-- ⑥ 電影關聯（2026-09-11 使用者：「創建組合包的流程中也要加入電影關聯」；同建立商品 §4.5；可多部、選填、可搜尋；共用 partials/film-picker）-->
+    <section class="form-section form-section--outlined">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cp.films">Linked movies</h3>
+        <p class="form-section__sub" data-i18n="cb.films.sub">Tag released movies this bundle relates to.</p>
+      </div>
+      <div data-cb-film-picker></div>
     </section>
 
     <!-- §4 F6 上架設定已移至右側「組合預覽」欄（預覽卡下方），改用 radio-list（位置與選法 2026-07-17 微調，接續 D144）。 -->
@@ -475,6 +512,8 @@
 <!-- D241：狀態與可售量的唯一推導層（spec §7.14）。必須早於下面的頁內 script。 -->
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="js/films-store.js?v=r2.2"></script>
+<script src="partials/film-picker.js?v=r2.2"></script>
 <script>
 /* Create bundle 互動 · spec 5.1.5.4。
    D241（spec 0-設計規格書 §7.14）：組合可售量改由 ListingState.bundleQty() 算，
@@ -484,8 +523,10 @@
   const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const autopriceEl = document.getElementById('cb-autoprice');
-  const baseStrike = document.getElementById('cb-basestrike');
   const discEl = document.getElementById('cb-discount');
+  const sellPriceEl = document.getElementById('cb-sellprice');
+  const salePctEl = document.getElementById('cb-sale-percent');
+  const salePctHint = document.getElementById('cb-sale-pct-hint');
   const discHintEl = document.getElementById('cb-disc-hint');
   const recent = document.getElementById('cb-recent');
   const selected = document.getElementById('cb-selected');
@@ -516,6 +557,20 @@
   const allocEmpty = document.getElementById('cb-alloc-empty');
   const allocTotalRow = document.getElementById('cb-alloc-total');
   const bundleQtyEl = document.getElementById('cb-bundle-qty');
+  /* ---- 可與優惠碼疊加（純開關，同建立商品的 data-cp-stack）---- */
+  document.querySelectorAll('[data-cb-stack]').forEach(t => {
+    const flip = () => { const on = t.getAttribute('aria-checked') !== 'true'; t.setAttribute('aria-checked', on ? 'true' : 'false'); t.classList.toggle('switch--on', on); };
+    t.addEventListener('click', flip);
+    t.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
+  });
+
+  /* ---- 電影關聯（可搜尋多選；同建立商品；共用 partials/film-picker）---- */
+  let linkedFilms = [];
+  const fpHost = document.querySelector('[data-cb-film-picker]');
+  if (fpHost && window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createFilmPicker) {
+    window.ZTOR_PARTIALS.createFilmPicker(fpHost, { selected: [], onChange: ids => { linkedFilms = ids; } });
+  }
+
   const saleToggle = document.getElementById('cb-sale-toggle');
   const saleFields = document.querySelector('[data-cb-sale-fields]');
   const saleStart = document.getElementById('cb-sale-start');
@@ -644,7 +699,8 @@
     recompute();
   });
   const sumMembers = () => [...selected.querySelectorAll('[data-cb-item]')].reduce((a, it) => a + (parseFloat(it.dataset.price) || 0), 0);
-  /* 折扣 %（D103）：合法 0–100 才生效；空/0＝無折扣；非法（NaN/<0/>100）→ pct=0 且 discOk=false */
+  /* 組合折扣 %（D261）：常態優惠；合法 0–100 才生效；空/0＝無折扣；非法（NaN/<0/>100）→ pct=0 且 ok=false。
+     售價＝合計×(1−pct)，成員多選項時合計是區間、售價跟著是區間（「從 $X 起」）——這就是填折扣不填售價的原因。 */
   function discInfo() {
     const raw = discEl ? discEl.value.trim() : '';
     if (!raw) return { pct: 0, ok: true, empty: true };
@@ -652,13 +708,20 @@
     if (isNaN(v) || v < 0 || v > 100) return { pct: 0, ok: false, empty: false };
     return { pct: v, ok: true, empty: false };
   }
-  /* 組合價格（D103）：base＝成員自動加總（多規格→「從 $X 起」）；折後＝base×(1−pct) */
+  /* 限時折扣 %（折扣設定；疊在組合售價之上）：開啟時必填 0–100 */
+  function salePctInfo() {
+    const raw = salePctEl ? salePctEl.value.trim() : '';
+    if (!raw) return { pct: 0, ok: false, empty: true };
+    const v = parseFloat(raw);
+    if (isNaN(v) || v < 0 || v > 100) return { pct: 0, ok: false, empty: false };
+    return { pct: v, ok: true, empty: false };
+  }
   function priceParts() {
     const items = [...selected.querySelectorAll('[data-cb-item]')];
     const base = sumMembers();
     const hasVar = items.some(it => it.dataset.variants);
     const d = discInfo();
-    return { n: items.length, base: base, hasVar: hasVar, pct: d.pct, discOk: d.ok, final: base * (1 - d.pct / 100) };
+    return { n: items.length, base: base, hasVar: hasVar, pct: d.pct, discOk: d.ok, final: base * (1 - d.pct / 100), empty: d.empty };
   }
   function money(v, hasVar) {
     return hasVar ? (T('cb.price.from', 'From') + ' $' + v.toFixed(2) + T('cb.price.from-suffix', '')) : ('$' + v.toFixed(2));
@@ -700,33 +763,36 @@
     notesEl.innerHTML = notes;
     if (window.applyI18n) window.applyI18n(notesEl);
 
-    /* 組合價格（D103）：base 自動加總（唯讀）＋ 折扣 %；大字＝折後價、有折扣時旁邊劃掉 base */
+    /* 組合價格：成員原價合計（唯讀）＋ 組合折扣 %（可填）→ 售價（算出來、多選項時是區間） */
     const pp = priceParts();
-    if (autopriceEl) autopriceEl.textContent = pp.n === 0 ? '$0.00' : money(pp.final, pp.hasVar);
-    if (baseStrike) {
-      const showStrike = pp.n > 0 && pp.pct > 0 && pp.discOk;
-      baseStrike.hidden = !showStrike;
-      if (showStrike) baseStrike.textContent = money(pp.base, pp.hasVar);
-    }
+    if (autopriceEl) autopriceEl.textContent = pp.n === 0 ? '$0.00' : money(pp.base, pp.hasVar);
+    if (sellPriceEl) sellPriceEl.textContent = pp.n === 0 ? '$0.00' : money(pp.final, pp.hasVar);
     let discOk = true;
     if (discHintEl) {
       discHintEl.removeAttribute('data-i18n');
-      const d = discInfo();
-      if (!d.ok) {
-        discHintEl.className = 'field__hint cb-warn';
+      if (!pp.discOk) {
+        discHintEl.className = 'field__hint field__hint--warn';
         discHintEl.textContent = T('cb.price.discount-bad', 'Discount must be 0–100.');
         discOk = false;
-      } else if (d.pct > 0 && pp.n > 0) {
-        discHintEl.className = 'field__hint cb-save';
-        discHintEl.textContent = '−' + d.pct + '% · ' + T('cb.price.saves', 'Saves') + ' $' + (pp.base - pp.final).toFixed(2);
+      } else if (pp.pct > 0 && pp.n > 0) {
+        discHintEl.className = 'field__hint field__hint--ok';
+        discHintEl.textContent = T('cb.price.saves', 'Saves') + ' $' + (pp.base - pp.final).toFixed(2) + ' ' + T('cb.price.vs', 'vs members total');
       } else {
         discHintEl.className = 'field__hint';
-        discHintEl.textContent = T('cb.price.discount-hint', 'Applied to the auto-summed total — fans pay the discounted price.');
+        discHintEl.textContent = T('cb.price.discount-hint', "Sells below the members' total by this much; the selling price is worked out for you.");
       }
     }
     /* F7 販售排程：啟用時起訖日必填且結束晚於開始*/
     let saleOk = true;
     if (saleOn()) {
+      const sp = salePctInfo();
+      if (salePctHint) {
+        salePctHint.removeAttribute('data-i18n');
+        if (!sp.ok && !sp.empty) { salePctHint.className = 'field__hint field__hint--warn'; salePctHint.textContent = T('cb.price.discount-bad', 'Discount must be 0–100.'); }
+        else if (sp.ok && pp.n > 0) { salePctHint.className = 'field__hint field__hint--ok'; salePctHint.textContent = T('cb.sale.percent-hint', 'Taken off the bundle price during the window.') + ' ' + money(pp.final * (1 - sp.pct / 100), pp.hasVar); }
+        else { salePctHint.className = 'field__hint'; salePctHint.textContent = T('cb.sale.percent-hint', 'Taken off the bundle price during the window.'); }
+      }
+      if (!sp.ok) saleOk = false;
       const s = saleStart ? saleStart.value : '', e = saleEnd ? saleEnd.value : '';
       if (saleHint) saleHint.removeAttribute('data-i18n');
       if (!s || !e) {
@@ -734,7 +800,7 @@
         if (saleHint) { saleHint.className = 'field__hint'; saleHint.textContent = T('cb.sale.pending', 'Sale price source & time zone pending spec (5.1.5.4 §4 F7).'); }
       } else if (e <= s) {
         saleOk = false;
-        if (saleHint) { saleHint.className = 'field__hint cb-warn'; saleHint.textContent = T('cb.sale.endbefore', 'End date must be after start date'); }
+        if (saleHint) { saleHint.className = 'field__hint field__hint--warn'; saleHint.textContent = T('cb.sale.endbefore', 'End date must be after start date'); }
       } else if (saleHint) {
         saleHint.className = 'field__hint'; saleHint.textContent = T('cb.sale.pending', 'Sale price source & time zone pending spec (5.1.5.4 §4 F7).');
       }
@@ -957,6 +1023,7 @@
   if (descEl) descEl.addEventListener('input', recompute);
   /* base 隨成員變動於 recompute 重算；折扣 % 輸入即時重算（D103）*/
   if (discEl) discEl.addEventListener('input', recompute);
+  if (salePctEl) salePctEl.addEventListener('input', recompute);
 
   /* ── 候選商品清單（2026-09-09）─────────────────────────────────────────────
      原本是寫死在 HTML 的五列示範資料，改由 js/products-store.js 產生，為的是三件事：
@@ -1106,7 +1173,7 @@
   createBtn.addEventListener('click', () => {
     if (createBtn.disabled) return;
     const nm = (nameEl && nameEl.value.trim()) || '';
-    let pr = (autopriceEl && autopriceEl.textContent.trim()) || '';   // 組合價格＝自動加總文字（D102，含「從 $X 起」）
+    let pr = bundlePriceText();   // 組合售價文字（含「從 $X 起」）
     /* D241（§7.14）：把三個開關與成員鎖定量收成一筆組合記錄。鎖定量掛在成員的
        pool.locks.bundles[<組合 id>]——鎖定是管道的屬性，不是成員清單的裝飾。
        原型無後端、ProductsStore 也還沒有寫入 API：有 addBundle 就交給它，沒有就掛在
@@ -1126,7 +1193,15 @@
       shown: shownOn(),
       privateLink: shownOn() ? null : (LS ? LS.privateLinkFor(bundleId) : null),
       saleStart: (saleMode === 'schedule' && saleOpen && saleOpen.value) || null,
-      saleEnd: (saleClose && saleClose.value) || null
+      saleEnd: (saleClose && saleClose.value) || null,
+      films: linkedFilms.slice(),
+      /* 組合折扣 %（常態優惠；售價由合計算出）與限時折扣（疊在售價上；同單售商品的 discount 形狀） */
+      discountPct: priceParts().pct || null,
+      discount: saleOn() ? {
+        percent: salePctInfo().pct,
+        limited: { start: (saleStart && saleStart.value) || null, end: (saleEnd && saleEnd.value) || null },
+        stack: !!(document.querySelector('[data-cb-stack]') && document.querySelector('[data-cb-stack]').getAttribute('aria-checked') === 'true')
+      } : null
     };
     rec.members.forEach(m => {
       const p = window.ProductsStore && window.ProductsStore.get(m.productId);
