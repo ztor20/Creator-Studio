@@ -3045,7 +3045,7 @@
     /* D241（spec §7.14 組合包成交條件）：成員「隱藏」不再讓組合不可售——隱藏的成員照樣
        能被組合帶著成交。舊的 bd.impact.note 把下架與隱藏混為一談，改由這一條取代。 */
     'bd.impact.member-rule': { en: "A member stops this bundle when it is unlisted, off sale, or has nothing left to sell inside this bundle. Hiding it changes nothing — it still sells as part of a bundle. A member price rise can also push the bundle price above the members' total.", zh: '成員下架、未開賣，或在本組合的可售量歸零時，組合就不可售；成員隱藏不影響，照樣能被組合帶著賣。成員漲價則可能讓組合價高於成員合計。' },
-    'bd.stock.sub':          { en: 'Lock stock for this bundle, or leave it shared with the member\u2019s other channels', zh: '把成員的庫存鎖定給本組合，或維持與其他管道共用' },
+    'bd.stock.sub':          { en: 'Lock stock for this bundle, or leave it shared with the item\u2019s other channels', zh: '把商品的庫存鎖定給本組合，或維持與其他管道共用' },
     'bd.members.alloc-hint': { en: 'Lock amounts are edited in Bundle stock.', zh: '鎖定量在「組合庫存」分頁調整。' },
     /* §2.6 取貨與核銷（5.1.5.9）：組合成員含現場 QR 領取商品時才顯示，本區只呈現、不重定義規則本體。 */
     'bd.pickup.title':      { en: 'Pickup & redemption',      zh: '取貨與核銷' },
@@ -3070,12 +3070,12 @@
     'bd.setov.title':       { en: 'Settings overview',       zh: '組合設定概覽' },
     'bd.btn.edit':          { en: 'Edit bundle',             zh: '編輯組合' },
     'bd.nav.pricing':       { en: 'Price & discount',        zh: '價格與折扣' },
-    'bd.alloc.title':       { en: 'Member allocation',       zh: '成員分配' },
+    'bd.alloc.title':       { en: 'Item stock locks',        zh: '商品庫存鎖定' },   /* 2026-09-11 使用者：名稱依功能改、不用「成員」這個詞（組合設定那一節就叫「商品」） */
     'bd.unit.sets':         { en: 'sets',                    zh: '組' },
     'bd.unit.members':      { en: 'members',                 zh: '件' },
-    'bd.kpi.locked':        { en: 'Locked members',          zh: '已鎖定成員' },
-    'bd.kpi.unlocked':      { en: 'Unlocked members',        zh: '未鎖定成員' },
-    'bd.kpi.capped':        { en: 'Capped by',               zh: '卡住的成員' },
+    'bd.kpi.locked':        { en: 'Locked items',            zh: '已鎖定商品' },
+    'bd.kpi.unlocked':      { en: 'Unlocked items',          zh: '未鎖定商品' },
+    'bd.kpi.capped':        { en: 'Capped by',               zh: '卡住的商品' },
     'bd.history.title':     { en: 'Lock history',            zh: '鎖定歷史紀錄' },
     'bd.history.sub':       { en: 'One row per lock change — open a row for each member.', zh: '一次改動一筆，點開看逐成員前 → 後。' },
     'bd.history.meta':      { en: 'Locked for this bundle',  zh: '鎖給本組合' },
