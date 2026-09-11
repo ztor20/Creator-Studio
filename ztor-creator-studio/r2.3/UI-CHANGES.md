@@ -4,6 +4,22 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-11（十九）· 預覽欄限高：卡自己捲、高度依當下位置量，底部不破窗（B 反饋導入）
+
+**範圍**：`ds-components/preview-column.css`（`--tall` 改卡捲、`--preview-col-max`）、新檔 `partials/preview-col.js`、`e-shop.html`／`store-settings.html`（載入）、`design-system.html`／`design-system.md`（Preview column 補說明）。
+
+**依據**：使用者 2026-09-11 指著商店預覽卡：「範圍底部不要破窗」。
+
+### B · 卡捲、不是欄捲
+
+原本 `--tall` 是欄限高＋欄 overflow 捲，卡比欄高，卡的下緣與兩個下圓角被欄切在視窗外，看起來像一張破出視窗的卡。改成卡限高在欄內（flex 子項 `min-height:0; overflow-y:auto`）、卡自己捲，四角與邊框永遠在視窗裡。
+
+### B · 高度依當下位置量
+
+限高的 CSS 算式 `100vh − sticky 頂距 − 24` 只在欄已釘住時對；頁面停在頂端、欄還在自然位置（比 sticky 頂距低了頁首那一段：e-shop 16px、商店設定 62px）時卡照樣多出那一段。新加 `partials/preview-col.js` 在捲動／改視窗時量欄離視窗頂的距離，寫成 `--preview-col-max`；沒載那支時退回 CSS 算式。
+
+**驗證**：dev server 1400×900：e-shop 開預覽，頁面在頂端卡底 876、往下捲釘住後卡底仍 876（視窗 900、底留白 24）；商店設定同樣 876；卡內可捲、分頁列釘頂照常。0 console error；`check_ds_sync.py` PASS。
+
 ## 2026-09-11（十八）· 檢視態全站改 disabled 外觀；預覽欄的暗膜只鋪內容區（B 反饋導入）
 
 **範圍**：`shared.css`（`[data-mode="view"]` 欄位外觀）、`ds-components/preview-column.css`（`--dim` 改鋪在 `__head--rule` 以下）、`design-system.html`／`design-system.md`（Preview column、`locked-field-ink` 補說明）。
