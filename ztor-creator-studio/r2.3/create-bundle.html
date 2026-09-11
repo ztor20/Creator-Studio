@@ -1187,13 +1187,15 @@
         return { productId: m.productId, qty: m.qty || 1, lock: lock };
       }),
       cap: bundleDraft.cap,
+      /* 「不上架」＝草稿語意（D245／D247，5.1.5.4 F6）：不收任何時間、不產生連結、shown 不成立——
+         欄位只是被收起來，值可能還在，送出時一律歸零（2026-09-11 稽核補上，同 create-product 的做法）。 */
       listed: listingMode !== 'none',
       listAt: (listingMode === 'schedule' && listingTime) ? (listingTime.value || null) : null,
-      unlistAt: (unlistTime && unlistTime.value) || null,
-      shown: shownOn(),
-      privateLink: shownOn() ? null : (LS ? LS.privateLinkFor(bundleId) : null),
-      saleStart: (saleMode === 'schedule' && saleOpen && saleOpen.value) || null,
-      saleEnd: (saleClose && saleClose.value) || null,
+      unlistAt: (listingMode !== 'none' && unlistTime && unlistTime.value) || null,
+      shown: listingMode !== 'none' && shownOn(),
+      privateLink: (listingMode === 'none' || shownOn()) ? null : (LS ? LS.privateLinkFor(bundleId) : null),
+      saleStart: (listingMode !== 'none' && saleMode === 'schedule' && saleOpen && saleOpen.value) || null,
+      saleEnd: (listingMode !== 'none' && saleClose && saleClose.value) || null,
       films: linkedFilms.slice(),
       /* 組合折扣 %（常態優惠；售價由合計算出）與限時折扣（疊在售價上；同單售商品的 discount 形狀） */
       discountPct: priceParts().pct || null,

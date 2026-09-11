@@ -121,6 +121,7 @@
 <link rel="stylesheet" href="ds-components/next-step.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stock-history.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/state-check.css?v=r2.2">
 <!-- r2.2 新進元件（19 支，2026-07-29 補齊 demo；zselect 原本就有 <link>，見上方 45 行） -->
 <link rel="stylesheet" href="ds-components/artist-picker.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/benefit-matrix.css?v=r2.2">
@@ -734,6 +735,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#link-field">Link field</a>
     <a class="toc__link toc__link--sub" href="#stock-allocation">Stock allocation</a>
     <a class="toc__link toc__link--sub" href="#stock-history">Stock history</a>
+    <a class="toc__link toc__link--sub" href="#state-check">State check</a>
     <div class="toc__subgroup"><span data-en>JS components without their own CSS (9)</span><span data-zh>無自帶 CSS 的 JS 元件（9）</span></div>
     <a class="toc__link toc__link--sub" href="#work-fields">Work fields</a>
     <a class="toc__link toc__link--sub" href="#work-taxonomy">Work taxonomy</a>
@@ -1552,6 +1554,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#detail-rail">Detail rail</a></td><td>🟠</td><td><span data-en>Detail-page two-column shell — editable main + sticky read-only meta rail; <code>--full</code> collapses it to one column (assembly rules in Pillar 5)</span><span data-zh>詳情頁兩欄版型殼——可編輯主欄＋sticky 唯讀 meta 右欄；<code>--full</code> 收成單欄（組合規則見 Pillar 5）</span></td><td><code>detail-rail.css</code></td></tr>
           <tr><td><a href="#restock-log">Restock log ✝</a></td><td>🟡</td><td><span data-en>Retired 2026-09-11 — replaced by Stock history (one row per order, details on expand)</span><span data-zh>2026-09-11 退場——由 Stock history 取代（一張單一筆、點開看明細）</span></td><td><code>restock-log.css</code>（墓碑）</td></tr>
           <tr><td><a href="#stock-history">Stock history</a></td><td>🟡</td><td><span data-en>Stock history list — one row per restock order or lock change (date / type / per-combination summary / supplier · method / status), details on expand: quantities, supplier, ETA with mark-received, note</span><span data-zh>庫存歷史紀錄——一張補貨單或一次鎖定一筆（日期／類型／逐組合摘要／供應商 · 方式／狀態），點開看逐組合數量、供應商、預計到貨（附到貨確認）、備註</span></td><td><code>stock-history.css</code></td></tr>
+          <tr><td><a href="#state-check">State check</a></td><td>🟡</td><td><span data-en>Read-only on/off state row (listed · shown · on sale)</span><span data-zh>唯讀的開／關狀態排（上架 · 顯示 · 開賣）</span></td><td><code>state-check.css</code></td></tr>
           <tr><td><a href="#stock-tip">Stock tip</a></td><td>🟢</td><td><span data-en>Hover/focus any product row's status/stock cell → floating info card. Multi-option/bundle rows get a per-option stock breakdown (flattened to option combinations, bundle members too); single-variant rows (2026-07-23, scope widened) show current stock instead</span><span data-zh>hover/focus 任何商品列的狀態／庫存欄 → 浮出資訊卡。多選項／組合商品列顯示逐選項庫存明細（攤到選項組合，組合商品連成員也攤）；單一選項商品列（2026-07-23 擴大範圍）改顯示目前庫存</span></td><td><code>stock-tip.css</code></td></tr>
           <tr><td><a href="#pickup">Pickup management</a></td><td>🟠</td><td><span data-en>On-site QR redemption workspace (E-Shop 5.1.5.11): session-detail board (items left / staff scanning + progress right), roster table, scanner-access settings card, multi-select session rows</span><span data-zh>現場 QR 核銷工作區（E-Shop 5.1.5.11）：場次詳情行動卡（左＝領取項目／右＝工作人員掃碼與核銷進度）、名單表格、scanner 存取設定卡、建立場次多選列</span></td><td><code>pickup.css</code></td></tr>
           <tr><td><a href="#scanner">Mobile scanner</a></td><td>🟠</td><td><span data-en>Standalone phone scanner (5.1.5.14): gate shows the session identity → camera home screen with live counts → result bottom sheet → confirm, then straight back to the camera; Scan/Roster/Items bottom tabs (F2 verifiable items, F3 read-only roster); blocked / offline-hold / lockout states; separate URL, no Studio nav</span><span data-zh>獨立手機 scanner（5.1.5.14）：閘門先亮場次身分→相機主畫面＋即時計數→結果 bottom sheet→確認後直接回相機；掃描／名單／項目底部分頁（F2 可核銷項目、F3 唯讀名單）；含未開始已結束、離線保留、密碼鎖定狀態；獨立 URL、無主工作台導航</span></td><td><code>scanner.css</code></td></tr>
@@ -2153,6 +2156,9 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 &lt;button class="switch switch--on switch--locked" role="switch" aria-checked="true" aria-disabled="true" aria-label="Payout confirmation email (required)"&gt;&lt;/button&gt;</pre>
     <p class="field-text"><code>ds-components/switch.css</code></p>
   </div>
+  <p class="field-label" data-en>Disabled <span class="field-note">(<code>aria-disabled="true"</code> — 2026-09-11 D265: an unlisted row's Show-in-shop switch stays visible but inert)</span></p>
+  <p class="field-label" data-zh>停用態 <span class="field-note">(<code>aria-disabled="true"</code>——2026-09-11 D265：已下架列的顯示開關留著但不可調)</span></p>
+  <div class="demo" style="display:flex;gap:16px;align-items:center"><div class="switch switch--on" role="switch" aria-checked="true" aria-disabled="true"></div><div class="switch" role="switch" aria-checked="false" aria-disabled="true"></div></div>
   </details>
 </section>
 <section class="sub" id="info-banner">
@@ -11308,6 +11314,9 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <p class="field-text"><span data-en>Consumers (planned)</span><span data-zh>採用頁（規劃中）</span>: <code>create-product.html</code> · <code>create-bundle.html</code> · <code>product-detail.html</code> · <code>bundle-detail.html</code> · <code>e-shop.html</code> <span class="field-note" data-en>— the D241 page migration is a separate pass; this round ships the shared foundation only.</span><span class="field-note" data-zh>—— D241 的頁面遷移另一輪處理，本輪只出共用地基。</span></p>
     <p class="field-text"><code>ds-components/listing-controls.css</code> · <code>js/listing-state.js</code>（狀態與可售量推導）</p>
   </div>
+  <p class="field-label" data-en>Locked while unlisted <span class="field-note">(<code>.lctl__row--locked</code> / <code>.lctl--locked</code> + <code>.lctl__lock-note</code> — 2026-09-11 D265)</span></p>
+  <p class="field-label" data-zh>下架時鎖住 <span class="field-note">(<code>.lctl__row--locked</code>／<code>.lctl--locked</code>＋<code>.lctl__lock-note</code>——2026-09-11 D265)</span></p>
+  <div class="demo" style="max-width:520px"><div class="lctl lctl--stack"><p class="lctl__lock-note">已下架：顯示與開賣設定要重新上架後才能調整。</p><div class="lctl__row lctl__row--locked"><div class="lctl__head"><div class="lctl__titles"><span class="lctl__title">顯示於商店</span><p class="lctl__hint">隱藏後商店找不到，但持非公開連結仍可買</p></div><div class="switch switch--on lctl__control" role="switch" aria-checked="true" aria-disabled="true"></div></div></div></div></div>
   </details>
 </section>
 
@@ -11574,6 +11583,28 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <tr><td>Dependencies</td><td><a href="#data-list">Data list</a> · <a href="#row-disclosure">Row disclosure</a> · <a href="#badge">Badge</a> · <a href="#button">Button</a></td></tr>
     <tr><td>Evidence / usage</td><td><a href="product-detail.html">product-detail.html</a> — Stock tab, stock history card and dialog.</td></tr>
   </tbody></table>
+</section>
+<section class="sub" id="state-check">
+  <div class="sub__head"><h3 class="sub__title">4.209 State check</h3><span class="layer layer--molecule">🟡 molecule</span></div>
+  <p class="sub__desc" data-en>A read-only row of on/off states — a small round mark plus a label per state. It is <strong>not</strong> an input: the row it sits in is what you click (it takes you to the setting). On = success-tint circle with a check and foreground label; off = hairline circle and muted label. First use (2026-09-11, user: “pull listing / shown / on-sale out of the settings overview, checkbox-like but not necessarily a checkbox”): the “Listing &amp; sale” row of the product and bundle detail overview, driven by the three switches and their schedules.</p>
+  <p class="sub__desc" data-zh>一排唯讀的開／關狀態——每個狀態一顆小圓標記＋標籤。它<strong>不是</strong>輸入控件：點的是它所在的整列（前往設定）。開＝成功綠 tint 圓底＋勾、標籤前景色；關＝髮線空心圓、標籤輔助色。首用（2026-09-11 使用者：「商品選單將上架／顯示／開賣拆出來，做成 checkbox 的形式，但設計不一定要用 checkbox」）：商品／組合詳情總覽的「上架與開賣」列，值由三組開關與排程推導。</p>
+  <div class="demo">
+    <div class="data-list" style="max-width:520px">
+      <div class="data-list__row data-list__row--go" role="button" tabindex="0"><div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta">上架與開賣</div><div class="data-list__title"><div class="state-checks"><span class="state-check state-check--on"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon" aria-hidden="true"></i></span><span class="state-check__label">上架</span></span><span class="state-check"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon" aria-hidden="true"></i></span><span class="state-check__label">顯示於商店</span></span><span class="state-check"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon" aria-hidden="true"></i></span><span class="state-check__label">開賣</span></span></div></div></div></div><span class="data-list__go" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></span></div>
+    </div>
+  </div>
+  <details class="sub__spec"><summary>Spec</summary>
+  <div class="sub__spec-body">
+    <p class="field-label">Source</p>
+    <p class="field-text"><code>ds-components/state-check.css</code></p>
+    <p class="field-label">Anatomy</p>
+    <p class="field-text"><code>.state-checks</code> &gt; <code>.state-check</code>(<code>--on</code>) &gt; <code>.state-check__mark</code> (+ <code>check</code> icon) + <code>.state-check__label</code></p>
+    <p class="field-label">Token usage</p>
+    <p class="field-text"><code>--status-success-fill</code> / <code>--status-success-ink</code> (on mark), <code>--border</code> (off ring), <code>--foreground</code> / <code>--muted-foreground</code>, <code>--fs-13</code>, <code>--sp-6/16</code></p>
+    <p class="field-label">Usage</p>
+    <p class="field-text">Product detail &amp; bundle detail › Settings overview › “Listing &amp; sale” row. Read-only; never wire click handlers on the marks.</p>
+  </div>
+  </details>
 </section>
 
 <!-- ══ 無自帶 CSS 的 JS 元件（2026-08-11 起也進這一頁）════════════════════════════

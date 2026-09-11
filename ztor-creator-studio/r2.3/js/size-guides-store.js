@@ -25,10 +25,16 @@
     { id: 'sg-hats', nameKey: 'store-settings.specs.row.hats', typeKey: 'store-settings.specs.type.apparelacc' }
   ];
 
+  /* cheat code「Data State＝Empty」＝全新帳號，什麼都還沒建立（devtools 把它寫在 <html data-data-state>）：
+     沒動過清單時就是一份都沒有，不鋪示範三份；使用者在 Empty 下自己新增的仍存 localStorage、照常讀。
+     （2026-09-11 使用者：「在 cheat code empty 的狀態下，尺寸指南並沒有顯示未設定的畫面」） */
+  function emptyAccount() {
+    try { return document.documentElement.getAttribute('data-data-state') === 'empty'; } catch (e) { return false; }
+  }
   function read() {
     try {
       var raw = localStorage.getItem(KEY);
-      if (raw === null) return SEED.map(function (g) { return Object.assign({}, g); });
+      if (raw === null) return emptyAccount() ? [] : SEED.map(function (g) { return Object.assign({}, g); });
       var arr = JSON.parse(raw);
       return Array.isArray(arr) ? arr : [];
     } catch (e) {
@@ -50,6 +56,9 @@
     if (g.name) return g.name;
     return (window.i18nT && g.nameKey && window.i18nT(g.nameKey)) || g.nameKey || '';
   }
+
+  /* Data State 一切換（Empty ↔ 其他），沒動過清單的瀏覽器會在兩種答案之間翻面，通知消費頁重畫 */
+  try { document.addEventListener('ztor:devstate-changed', function () { try { window.dispatchEvent(new CustomEvent(EVT, { detail: { list: read() } })); } catch (e) {} }); } catch (e) {}
 
   window.ZtorSizeGuides = {
     EVENT: EVT,
