@@ -382,7 +382,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 150 支；主 class 前 5 個）
+## 元件（ds-components/，共 151 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -451,7 +451,7 @@
 - `link-field.css` — .linkf, .linkf__label, .linkf__row, .linkf__input, .linkf__act ｜ link-field.css · 唯讀連結 ＋ 複製 ＋ 重置
 - `list-footer.css` — .list-footer, .list-footer__count, .list-footer--center ｜ List footer — paginated-list footer pairing a "S
 - `list-toolbar.css` — .list-toolbar, .list-toolbar__actions, .list-toolbar__filter, .list-toolbar__filter-count, .list-status-row ｜ List toolbar · 清單頁頭的兩層控制骨架
-- `listing-controls.css` — .lctl, .lctl__row, .lctl__head, .lctl__titles, .lctl__title ｜ listing-controls.css · 上架、顯示與開賣（spec 0-設計規格書 §7.
+- `listing-controls.css` — .lctl, .lctl__row, .lctl--locked, .lctl__row--locked, .lctl__lock-note ｜ listing-controls.css · 上架、顯示與開賣（spec 0-設計規格書 §7.
 - `live-item.css` — .live-bg, .is-live-bg, .live-rail__wrap, .live-rail__nav--prev, .live-rail__view ｜ live-item — 進行中的一件（2026-08-31 建）
 - `manage-ip.css` — .mi-chips, .mi-dot, .mi-verify, .mi-verify__title, .mi-verify__text ｜ manage-ip.css — 「管理我的 IP」頁專屬版面（manage-ip.html）。
 - `media-vault.css` — .vault-layout, .vault-layout--norail, .vault-rail, .vault-rail__head, .vault-rail__label ｜ Media Vault · 加密媒體庫（Fans → 媒體庫）
@@ -506,6 +506,7 @@
 - `split-button.css` — .split-button, .split-button__main, .split-button__caret ｜ Split button · a primary action joined to a care
 - `stack.css` — .stack, .stack--tight, .stack--loose, .stack--bento ｜ Stack · 區塊之間的垂直間距（2026-08-11 使用者指示）
 - `stat-row.css` — .stat-row, .stat, .stat__label, .stat__value, .stat__value--success ｜ stat-row.css · 卡內大數字排
+- `state-check.css` — .state-checks, .state-check, .state-check--on, .state-check__mark ｜ State check · 一列並排的「開／關」狀態指示
 - `status-axes.css` — .status-axes, .status-axes--split ｜ Status axes · two INDEPENDENT order status track
 - `step-list.css` — .step-list, .step-list__row, .step-list__row--interactive, .step-list__act, .step-list__body ｜ Step list · 階段清單（2026-08-18）
 - `stepper.css` — .zstep, .zstep--nounit, .zstep__btns, .zstep__btn ｜ Stepper — house up/down control for number input

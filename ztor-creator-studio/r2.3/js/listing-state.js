@@ -21,12 +21,12 @@
 //   單售商品另有庫存池：
 //     pool = { total: number | 'unlimited',
 //              locks: { single: number|null, bundles: { [bundleId]: number|null } } }
-//     鎖定量是三態，不是「0 就等於沒鎖」：
-//       null／欄位不存在 ＝ 這個管道沒鎖定，與其他未鎖定管道共用沒有被鎖定的庫存量
-//       數字（含 0）     ＝ 這個管道處於鎖定模式，只能賣這麼多；0 ＝ 鎖定的份賣完了，
-//                          在創作者「再鎖一次」之前它就是售罄，不會回頭吃沒有被鎖定的庫存量
-//     §7.14 的「組合包賣光 60 → 組合售罄、單售照常 40」正是靠這個三態成立的：
-//     賣掉一件同時扣池與扣該管道的鎖定量，鎖定量歸 0 時池裡還有 40 件未鎖定的。
+//     鎖定量兩態（2026-09-11 使用者裁決，對齊規格 5.1.5.4 F4／5.1.5.1 §2.10「0 或不填＝不鎖定」）：
+//       null／欄位不存在／0 ＝ 這個管道沒鎖定，與其他未鎖定管道共用沒有被鎖定的庫存量
+//       正數               ＝ 這個管道處於鎖定模式，只能賣這麼多
+//     「賣完」是剩餘數量的事，不是鎖定欄位的事：鎖定量是配額，售罄由該管道還剩幾件決定
+//     （原型沒有逐管道的已售數，鎖定量在示範上即等於剩餘配額）。舊版曾把 0 當「鎖定且賣完」，
+//     與規格相反，已撤。
 //   組合包沒有池，只有成員與自己的限量硬上限：
 //     members = [{ productId, qty }]   qty 省略＝一套扣一件
 //     cap     = number | null          限量硬上限（§7.2 版本型態軸）
@@ -69,8 +69,8 @@
     return isNaN(n) ? 0 : n;
   }
 
-  /* 鎖定量的三態解讀：null／undefined ＝ 沒鎖定；數字（含 0）＝ 鎖定模式。 */
-  function lockVal(v) { return (v === undefined || v === null || v === '') ? null : num(v); }
+  /* 鎖定量解讀：null／undefined／''／0 ＝ 沒鎖定；正數 ＝ 鎖定模式（規格「0 或不填＝不鎖定」，2026-09-11）。 */
+  function lockVal(v) { if (v === undefined || v === null || v === '') return null; var n = num(v); return n > 0 ? n : null; }
 
   function pool(product) {
     var p = (product && product.pool) || {};
@@ -136,7 +136,7 @@
   /* ── 逐選項組合的鎖定（2026-09-09 使用者裁決；規格未定義粒度，見 ASSUMPTIONS UIA-146）──
      多選項商品的庫存住在每一個選項組合上，鎖定因此也逐組合各自記，形狀與池的鎖定相同：
        variant.locks = { single: n|null, bundles: { <bundleId>: n|null } }
-     三態解讀不變（null／undefined＝沒鎖定，數字含 0＝鎖定模式），規則也不變——
+     解讀不變（null／undefined／0＝沒鎖定，正數＝鎖定模式），規則也不變——
      鎖定的管道只吃自己那一份，沒鎖定的管道共用該組合剩下的量。
      商品層的 pool.locks 仍然只服務單一規格商品；多選項商品的管道分配表改讀這裡的加總，
      兩套數字不互相混算。 */
@@ -231,6 +231,10 @@
       /* 草稿成員（2026-09-11 示範資料補齊時定的規則；規格未寫）：草稿還沒定價、沒上架、庫存未確認，
          視同可售 0——含草稿成員的組合整組售罄，直到那件商品完成建立。與「查不到成員視為 0」同一精神。 */
       if (p.draft || p.isDraft || p.status === 'draft') return 0;
+      /* §7.14／5.1.5.4 §6 ④（D087 語意由 D241 更新；2026-09-11 稽核補上）：任一成員下架、
+         或不在販售窗口內（未到開賣／已停售）→ 組合不可售，視同可售 0。 */
+      var at = nowMs();
+      if (isUnlisted(p, at) || future(p.saleStart, at) || passed(p.saleEnd, at)) return 0;
       var per = num(m.qty) > 0 ? num(m.qty) : 1;   /* 一套要用到同一件商品好幾件時 */
       /* 成員是多選項商品時，這個組合拿得到的量＝各選項組合在本組合可售量之和
          （D258：組合包的鎖定逐選項組合設定；買家挑哪一個組合出貨仍是產品待確認）。 */
@@ -289,6 +293,7 @@
   }
 
   function isUnlisted(entity, at) {
+    if (at === undefined) at = nowMs();   /* 對外（e-shop 顯示開關停用）呼叫時不帶時間 */
     if (!flag(entity && entity.listed, true)) return true;
     if (future(entity && entity.listAt, at)) return true;     /* 排定上架但還沒到 */
     if (passed(entity && entity.unlistAt, at)) return true;   /* 自動下架日期與時間已過 */
@@ -408,6 +413,7 @@
     allChannelsLocked: allChannelsLocked,
     deriveStatus: deriveStatus,
     deriveFlags: deriveFlags,
+    isUnlisted: isUnlisted,
     canBuy: canBuy,
     privateLinkFor: privateLinkFor,
     resetPrivateLink: resetPrivateLink,

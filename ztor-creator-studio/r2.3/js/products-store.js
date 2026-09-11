@@ -683,9 +683,9 @@
        與鎖定怎麼疊尚無定論（見 ASSUMPTIONS UIA-132），示範資料先避開這個未決問題。 */
     zine:    { locks: { single: 1, bundles: { 'coastline-starter-set': 1, 'signing-set': 1 } } },
     /* 隱藏＋私下販售：商店找不到，持非公開連結仍可買（§7.14 狀態組合表第五列）。
-       2026-09-11 疊上簽名會限定組的「成員全鎖」示範：單售鎖 0（＝鎖定的份賣完了，單售視為售罄、
-       不回頭吃未鎖定的量）＋ 簽名會組鎖 3；黑膠＋海報典藏組沒鎖，仍共用剩下 26 件。 */
-    acetate: { shown: false, privateLink: 'https://ztor.example/s/acetate?k=k3m8qr72', locks: { single: 0, bundles: { 'signing-set': 3 } } },
+       2026-09-11 疊上簽名會限定組的「成員全鎖」示範：單售鎖 2 ＋ 簽名會組鎖 3；黑膠＋海報典藏組沒鎖，仍共用剩下 24 件。 */
+    /* single 2（2026-09-11 改）：原本寫 0 想表達「單售鎖定且賣完」，規格與使用者裁決「0＝不鎖定」，改成正數才是全鎖示範 */
+    acetate: { shown: false, privateLink: 'https://ztor.example/s/acetate?k=k3m8qr72', locks: { single: 2, bundles: { 'signing-set': 3 } } },
     /* ── 2026-09-11 預設 persona 新增 9 筆的上架示範（商品本體在 P_DEFAULT）── */
     /* 定時下架排定：unlistAt 在未來（整個原型原本沒有任何一筆示範這個狀態） */
     poster:  { unlistAt: '2026-12-31T23:59:00' },

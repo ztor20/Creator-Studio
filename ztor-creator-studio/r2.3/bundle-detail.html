@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/state-check.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
@@ -453,7 +454,8 @@
             <!-- 顯示於商店自己一項（D247；2026-09-04 使用者再裁示：不要外框、與第 2 層對調位置）：
                  它回答的是「上架之後找不找得到」，緊接在上架那顆總開關後面；排程盒排在它下面。
                  隱藏時長出來的非公開連結用 .lctl__body（列自己的揭示區），不再用外框把兩者圈起來。 -->
-            <div class="lctl__row">
+            <p class="lctl__lock-note" data-bd-lock-note hidden data-i18n="cp.listing.unlisted-lock">Unlisted — show and sale settings are locked until it is listed again.</p>
+            <div class="lctl__row" data-bd-shown-row>
               <div class="lctl__head">
                 <div class="lctl__titles">
                   <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
@@ -496,7 +498,8 @@
           <div class="form-section__head">
             <h3 class="form-section__title" data-i18n="cp.listing.sec-sale">Sale</h3>
           </div>
-          <div class="lctl lctl--stack">
+          <div class="lctl lctl--stack" data-bd-sale-lctl>
+            <p class="lctl__lock-note" data-bd-lock-note hidden data-i18n="cp.listing.unlisted-lock">Unlisted — show and sale settings are locked until it is listed again.</p>
             <div class="lctl__row lctl__row--choice">
               <div class="lctl__body">
                 <div class="radio-list radio-list--collapsible" id="bd-sale-mode">
@@ -1001,11 +1004,24 @@
       el.addEventListener('click', flip);
       el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
     }
+    /* 下架的連帶（D245 裁決三＋D265）：非公開連結灰化不可操作；顯示列與開賣區鎖住、說明列露出 */
+    function syncListedLock() {
+      const on = bundleModel.listed !== false;
+      if (linkfEl) { linkfEl.classList.toggle('linkf--disabled', !on); linkfEl.querySelectorAll('input, button').forEach(el => { el.disabled = !on; }); }
+      const shownRow = document.querySelector('[data-bd-shown-row]');
+      const saleLctl = document.querySelector('[data-bd-sale-lctl]');
+      if (shownRow) shownRow.classList.toggle('lctl__row--locked', !on);
+      if (saleLctl) saleLctl.classList.toggle('lctl--locked', !on);
+      document.querySelectorAll('[data-bd-lock-note]').forEach(n => { n.hidden = on; });
+      if (shownSwitch) shownSwitch.setAttribute('aria-disabled', on ? 'false' : 'true');
+    }
     bindSwitch(listedSwitch, () => bundleModel.listed, on => {
       bundleModel.listed = on;
       paintSwitch(listedSwitch, on);
+      syncListedLock();
       refreshAlloc();
     });
+    syncListedLock();
     bindSwitch(shownSwitch, () => bundleModel.shown, on => {
       bundleModel.shown = on;
       syncShown();
@@ -1291,14 +1307,29 @@
       rows.push({ go: 'pricing', key: 'cp.discount.title', fb: 'Discount settings', v: [on('bd-sale-toggle') ? (T('cp.discount.limited', 'Limited-time discount') + (salePct ? ' −' + salePct + '%' : '')) : T('product-detail.setov.off', 'Off'), on('bd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : ''].filter(Boolean).join(' · ') });
       const films = document.querySelectorAll('[data-bd-film-picker] .tag-input__field .chip').length;
       rows.push({ go: 'tab:links', key: 'pd.films.title', fb: 'Linked movies', v: films ? T('product-detail.setov.films', '{n} movies').replace('{n}', films) : T('product-detail.setov.none', 'None') });
-      rows.push({ go: 'publish', key: 'cp.listing.sec-listed', fb: 'Listing', v: on('bd-listed') ? (T('product-detail.setov.listed', 'Listed') + ' · ' + (on('bd-shown') ? T('product-detail.setov.shown', 'Shown in store') : T('product-detail.setov.hidden', 'Hidden from store'))) : T('product-detail.setov.unlisted', 'Unlisted') });
-      rows.push({ go: 'publish', key: 'cp.listing.sec-sale', fb: 'Sale', v: bdSaleMode === 'schedule' ? (v('bd-sale-open') || '—').replace('T', ' ') : T('product-detail.setov.sale-follow', 'On sale while listed') });
+      /* 上架／顯示／開賣三態一列（2026-09-11，同商品詳情） */
+      const nowT = Date.now();
+      const sStart = v('bd-sale-open'), sEnd = v('bd-sale-close');
+      const saleOn = !(bdSaleMode === 'schedule' && sStart && new Date(sStart).getTime() > nowT) && !(sEnd && new Date(sEnd).getTime() <= nowT);
+      const listedOn = on('bd-listed');
+      rows.push({ go: 'publish', key: 'product-detail.setov.listing-sale', fb: 'Listing & sale', html: stateChecksHTML([
+        { key: 'product-detail.setov.st-listed', fb: 'Listed', on: listedOn },
+        { key: 'product-detail.setov.st-shown', fb: 'Shown in store', on: listedOn && on('bd-shown') },
+        { key: 'product-detail.setov.st-sale', fb: 'On sale', on: listedOn && saleOn }
+      ]) });
       return rows;
+    }
+
+    /* 上架與開賣三態（2026-09-11 使用者：拆出來、做成 checkbox 形式）：唯讀的 state-check，值由三組開關與排程推導 */
+    function stateChecksHTML(states) {
+      return '<div class="state-checks">' + states.map(function (s) {
+        return '<span class="state-check' + (s.on ? ' state-check--on' : '') + '"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon" aria-hidden="true"></i></span><span class="state-check__label" data-i18n="' + s.key + '">' + esc(T(s.key, s.fb)) + '</span></span>';
+      }).join('') + '</div>';
     }
     function renderBdSettingsOverview() {
       if (!setovHost) return;
       setovHost.innerHTML = bdSetovRows().map(r => '<div class="data-list__row data-list__row--go" role="button" tabindex="0" data-bd-setov-go="' + r.go + '" aria-label="' + esc(T('product-detail.setov.go', 'Go to setting')) + '">' +
-        '<div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta" data-i18n="' + r.key + '">' + esc(T(r.key, r.fb)) + '</div><div class="data-list__title">' + esc(r.v || '—') + '</div></div></div>' +
+        '<div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta" data-i18n="' + r.key + '">' + esc(T(r.key, r.fb)) + '</div><div class="data-list__title">' + (r.html || esc(r.v || '—')) + '</div></div></div>' +
         '<span class="data-list__go" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></span></div>').join('');
       if (window.ztorIcons) window.ztorIcons.applyIcons(setovHost);
     }

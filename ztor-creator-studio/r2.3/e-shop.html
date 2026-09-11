@@ -1930,6 +1930,11 @@
       if (isAuctionRow(row) || !row.querySelector('[data-eshop-shop]')) return;
       const m = rowModel(row);
       paintShopToggle(row, (m && m.store) ? (m.entity.shown !== false) : (row.dataset.shown !== 'false'));
+      /* D265（2026-09-11）：已下架的列，顯示開關留著但不可調（下架是總閘門，顯示此刻沒有效果） */
+      const L = LS();
+      const unlisted = (m && m.store && L) ? L.isUnlisted(m.entity) : (row.dataset.status === 'unlisted');
+      const t = row.querySelector('[data-eshop-shop]');
+      if (t) { t.setAttribute('aria-disabled', unlisted ? 'true' : 'false'); t.classList.toggle('switch--disabled', unlisted); t.title = unlisted ? (T('e-shop.shown.unlisted', 'Unlisted — listing must be on before this can be shown') ) : ''; }
     }
     /* 事件委派：清單會分批插入新列（載入更多／persona 換列），逐顆綁定會漏掉後來的列。 */
     /* 2026-09-11（D263）：開關獨立成欄，點了先問——顯示／隱藏會直接改粉絲看得到什麼，
@@ -1956,6 +1961,7 @@
       if (e.target.closest('[data-eshop-shown-cancel]')) { closeShownDialog(); return; }
       const btn = e.target.closest('[data-eshop-shop]');
       if (!btn) return;
+      if (btn.getAttribute('aria-disabled') === 'true') return;   /* 已下架：不可調（D265） */
       const row = btn.closest('.product-list__row');
       if (!row) return;
       askShopState(row, btn.getAttribute('aria-checked') !== 'true');

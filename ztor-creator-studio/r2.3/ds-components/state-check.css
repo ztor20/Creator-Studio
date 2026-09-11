@@ -1,0 +1,42 @@
+/* ============================================================
+   State check · 一列並排的「開／關」狀態指示
+   (2026-09-11 使用者裁示：商品設定概覽把上架／顯示／開賣拆出來，「做成 checkbox 的形式，
+   但設計不一定要用 checkbox」）。它是**唯讀**的狀態呈現，不是輸入控件——點的是整列
+   （前往設定），不是這幾顆；所以不用 checkbox 也不用 switch，用「小圓標記＋標籤」：
+   開＝成功綠 tint 圓底＋勾、標籤前景色；關＝髮線空心圓、標籤輔助色。
+   首用：商品／組合詳情總覽的「上架與開賣」列（listed／shown／on-sale 三態）。
+     .state-checks               — 容器：橫排、可折行
+       .state-check(--on)        — 一個狀態：標記＋標籤
+         .state-check__mark      — 16px 圓；--on 時內含 check icon
+         .state-check__label
+   ============================================================ */
+.state-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6) var(--sp-16);
+  align-items: center;
+}
+.state-check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+}
+.state-check--on { color: var(--foreground); }
+.state-check__mark {
+  width: 16px; height: 16px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: inline-grid;
+  place-items: center;
+  color: transparent;
+}
+.state-check__mark .ztor-icon { width: 10px; height: 10px; stroke-width: 2.4; }
+.state-check--on .state-check__mark {
+  border-color: transparent;
+  background: var(--status-success-fill);
+  color: var(--status-success-ink);
+}

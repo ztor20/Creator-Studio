@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/state-check.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
@@ -839,7 +840,8 @@
             <!-- 顯示於商店自己一項（D247；2026-09-04 使用者再裁示：不要外框、與第 2 層對調位置）：
                  它回答的是「上架之後找不找得到」，緊接在上架那顆總開關後面；排程盒排在它下面。
                  隱藏時長出來的非公開連結用 .lctl__body（列自己的揭示區），不再用外框把兩者圈起來。 -->
-            <div class="lctl__row">
+            <p class="lctl__lock-note" data-pd-lock-note hidden data-i18n="cp.listing.unlisted-lock">Unlisted — show and sale settings are locked until it is listed again.</p>
+            <div class="lctl__row" data-pd-shown-row>
               <div class="lctl__head">
                 <div class="lctl__titles">
                   <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
@@ -888,7 +890,8 @@
           <div class="form-section__head">
             <h3 class="form-section__title" data-i18n="cp.listing.sec-sale">Sale</h3>
           </div>
-          <div class="lctl lctl--stack">
+          <div class="lctl lctl--stack" data-pd-sale-lctl>
+            <p class="lctl__lock-note" data-pd-lock-note hidden data-i18n="cp.listing.unlisted-lock">Unlisted — show and sale settings are locked until it is listed again.</p>
             <div class="lctl__row lctl__row--choice">
               <div class="lctl__body">
                 <div class="radio-list radio-list--collapsible" id="pd-sale-mode">
@@ -1402,7 +1405,7 @@
        一列一個販售管道：單售的鎖定量在本頁可編（清空＝取消鎖定→ null，填了要 ≤ 沒有被鎖定的庫存量），
        每個含這件商品的組合包各一列、鎖定量在該組合包管理故唯讀。可售量與沒有被鎖定的庫存量全部問
        ListingState——「鎖定的管道不吃沒有被鎖定的庫存量」這條規則只在那裡實作一次。
-       鎖定量是三態：null＝沒鎖定（共用沒有被鎖定的庫存量）、數字含 0＝鎖定模式。 */
+       鎖定量：null／0＝沒鎖定（共用沒有被鎖定的庫存量）、正數＝鎖定模式（2026-09-11 使用者裁決，同規格）。 */
     function bundlesOfProduct() {
       if (!window.ProductsStore || !product || !product.id) return [];
       return window.ProductsStore.bundlesUsing(product.id) || [];
@@ -1654,6 +1657,15 @@
         /* 下架＝連結全失效：留在畫面上但不可操作，比整塊消失誠實（它還在，只是現在沒有用）。 */
         linkRoot.classList.toggle('linkf--disabled', !listedOn);
         linkRoot.querySelectorAll('input, button').forEach(el => { el.disabled = !listedOn; });
+      }
+      /* D265（2026-09-11）：下架時顯示列與整個開賣區鎖住（留在畫面、不可調），說明列露出 */
+      const shownRow = document.querySelector('[data-pd-shown-row]');
+      const saleLctl = document.querySelector('[data-pd-sale-lctl]');
+      if (shownRow) shownRow.classList.toggle('lctl__row--locked', !listedOn);
+      if (saleLctl) saleLctl.classList.toggle('lctl--locked', !listedOn);
+      document.querySelectorAll('[data-pd-lock-note]').forEach(n => { n.hidden = listedOn; });
+      if (shownToggle) shownToggle.setAttribute('aria-disabled', listedOn ? 'false' : 'true');
+      {
         if (!shownOn) {
           if (!product.privateLink) product.privateLink = window.ListingState.privateLinkFor(product.id);
           window.linkField.setValue(linkRoot, product.privateLink);
@@ -2765,16 +2777,25 @@
       var films = document.querySelectorAll('[data-pd-film-picker] .tag-input__field .chip');
       rows.push({ go: 'tab:links', key: 'pd.films.title', fb: 'Linked movies',
         v: films.length ? T('product-detail.setov.films', '{n} movies').replace('{n}', films.length) : T('product-detail.setov.none', 'None') });
-      rows.push({ go: 'publish', key: 'cp.listing.sec-listed', fb: 'Listing',
-        v: on('pd-listed-toggle')
-          ? join([T('product-detail.setov.listed', 'Listed'), on('pd-shown-toggle') ? T('product-detail.setov.shown', 'Shown in store') : T('product-detail.setov.hidden', 'Hidden from store')])
-          : T('product-detail.setov.unlisted', 'Unlisted') });
+      /* 上架／顯示／開賣三態一列（2026-09-11）：開賣＝此刻在販售窗口內（立即開賣，或定時開賣已到且未停售） */
       var mode = document.querySelector('#pd-sale-mode .radio-list__item--active');
-      rows.push({ go: 'publish', key: 'cp.listing.sec-sale', fb: 'Sale',
-        v: mode && mode.getAttribute('data-pd-sale-mode') === 'schedule'
-          ? join([dateText($v('pd-listing-sale-start')), on('pd-saleend-toggle') ? dateText($v('pd-listing-sale-end')) : ''], ' – ')
-          : T('product-detail.setov.sale-follow', 'On sale while listed') });
+      var nowT = Date.now();
+      var sStart = $v('pd-listing-sale-start'), sEnd = on('pd-saleend-toggle') ? $v('pd-listing-sale-end') : '';
+      var saleOn = !(mode && mode.getAttribute('data-pd-sale-mode') === 'schedule' && sStart && new Date(sStart).getTime() > nowT) && !(sEnd && new Date(sEnd).getTime() <= nowT);
+      var listedOn = on('pd-listed-toggle');
+      rows.push({ go: 'publish', key: 'product-detail.setov.listing-sale', fb: 'Listing & sale', html: stateChecksHTML([
+        { key: 'product-detail.setov.st-listed', fb: 'Listed', on: listedOn },
+        { key: 'product-detail.setov.st-shown', fb: 'Shown in store', on: listedOn && on('pd-shown-toggle') },
+        { key: 'product-detail.setov.st-sale', fb: 'On sale', on: listedOn && saleOn }
+      ]) });
       return rows;
+    }
+
+    /* 上架與開賣三態（2026-09-11 使用者：拆出來、做成 checkbox 形式）：唯讀的 state-check，值由三組開關與排程推導 */
+    function stateChecksHTML(states) {
+      return '<div class="state-checks">' + states.map(function (s) {
+        return '<span class="state-check' + (s.on ? ' state-check--on' : '') + '"><span class="state-check__mark"><i data-lucide="check" class="ztor-icon" aria-hidden="true"></i></span><span class="state-check__label" data-i18n="' + s.key + '">' + esc(T(s.key, s.fb)) + '</span></span>';
+      }).join('') + '</div>';
     }
     function renderSettingsOverview() {
       if (!setovHost) return;
@@ -2783,7 +2804,7 @@
         return '<div class="data-list__row data-list__row--go" role="button" tabindex="0" data-pd-setov-go="' + r.go + '" aria-label="' + esc(T('product-detail.setov.go', 'Go to setting')) + '">' +
           '<div class="data-list__row-main"><div class="data-list__body">' +
             '<div class="data-list__meta" data-i18n="' + r.key + '">' + esc(T(r.key, r.fb)) + '</div>' +
-            '<div class="data-list__title">' + esc(r.v || '—') + '</div>' +
+            '<div class="data-list__title">' + (r.html || esc(r.v || '—')) + '</div>' +
           '</div></div>' +
           '<span class="data-list__go" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></span>' +
         '</div>';
