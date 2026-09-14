@@ -53,8 +53,10 @@
    標題與說明搬進卡內，所以 head 的下邊距收一階；內距改成**上下維持左欄的標準 24px、
    左右收成 16px**——欄只有 270px，左右各 24px 會吃掉快兩成寬度，上下沒有這個問題。
    只在預覽欄內生效，左欄的區塊卡不受影響。 */
-.preview-col .form-section--outlined {
-  /* --card-pad 一起改成水平值：卡內的子元素（如 .lctl__rule 的負外距）讀它來對齊卡的內緣。 */
+.preview-col .form-section.form-section--outlined {
+  /* --card-pad 一起改成水平值：卡內的子元素（如 .lctl__rule 的負外距）讀它來對齊卡的內緣。
+     選擇器寫成 .form-section.form-section--outlined（2026-09-12）：與 form-section.css 本體同權重時輸給載入順序，
+     e-shop 先載本檔再載 form-section.css，內距被本體的 24 蓋回去、360 的鏡像被壓成 344。 */
   --card-pad: var(--sp-16);
   padding: var(--sp-24) var(--sp-16);
 }
@@ -84,8 +86,10 @@
 .preview-col--tall > .form-section--outlined {
   min-height: 0;
   overflow-y: auto;
-  scrollbar-width: thin;
+  /* 捲軸藏起來（2026-09-12）：鏡像要 1:1（360），古典捲軸會吃掉 16px 把版型壓成 344；手機本來就沒有看得見的捲軸。 */
+  scrollbar-width: none;
 }
+.preview-col--tall > .form-section--outlined::-webkit-scrollbar { display: none; }
 /* 卡自己捲之後，標題列釘在卡的最上面（2026-09-11 使用者：「這塊滾動時可以 fix」）：
    卡的 padding-top 24 用負外距吃掉再補回 padding，標題列才貼得到卡的上緣（Chrome 的 sticky 以 padding 內緣為界）。
    底色＝外殼玻璃（卡本身是玻璃，滑到底下的內容要有東西擋）。標題列的高度由 partials/preview-col.js 量成
