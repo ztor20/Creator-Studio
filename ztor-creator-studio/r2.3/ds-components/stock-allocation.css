@@ -23,12 +23,17 @@
    輸入框歸 `amount-field` ＋ `.input`，錯誤訊息歸 `.field__error`，
    大數字歸 `stock-readout`，提示 chip 歸 `chip`——本檔不重畫任何一個。
 
+   ── 逐選項組合列的縮圖（2026-09-11 D268，5.1.5.1 §2.10；2026-09-12 改併入名稱格、Q117）──────
+   商品細節頁「鎖定庫存」彈窗一列一個選項組合時，名稱格掛 `.salloc__name--thumb`：唯讀縮圖
+   `.variant-thumb--ro`（定義在 variant-builder.css：實線＝該組合自己的圖、虛線＝沿用主圖）與組合名
+   橫排在同一格，欄軌不變、不另開欄。表格層的 `--img` 修飾類（列首獨立 34px 欄）2026-09-12 退場。
+
    anatomy
      .salloc  (.salloc--bundle)
        .salloc__row--head        （欄標題，caption 字級）
        .salloc__row--pool        （池總量）
        .salloc__row  ×N          （各管道／各成員；.salloc__row--error 超標）
-         .salloc__name > .salloc__sub
+         .salloc__name(.--thumb) > [.variant-thumb--ro +] span + .salloc__sub
          .salloc__lock           （amount-field 欄位槽）
          .salloc__qty            （唯讀可售量，等寬數字）
        .salloc__row--cap         （組合自己的硬上限；輸入框在鎖定量那一欄）
@@ -165,6 +170,14 @@
 /* ── 組合包視角：多一欄「成員的沒有被鎖定的庫存量」──────────────────────────── */
 .salloc--bundle .salloc__row {
   grid-template-columns: minmax(0, 1fr) var(--salloc-qty-col) var(--salloc-lock-col) var(--salloc-qty-col);
+}
+
+/* ── 逐選項組合列：縮圖併在名稱格（2026-09-12 Q117；取代 09-11 的 --img 獨立欄）────────
+   .salloc__name 本來是直排（名稱＋副標），帶縮圖時改橫排、垂直置中，間距 --sp-12 與規格表同值。 */
+.salloc__name--thumb {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sp-12);
 }
 
 @media (max-width: 720px) {

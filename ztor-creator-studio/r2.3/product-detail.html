@@ -221,6 +221,8 @@
             </div>
           </div>
           <div class="variant-table-wrap variant-table-wrap--menu">
+            <!-- 逐組合縮圖（2026-09-11 · D268）：多選項商品每個組合一顆唯讀縮圖（.variant-thumb--ro），
+                 併在規格名那一格、不另開欄（2026-09-12 使用者裁決，STYLE-DECISIONS Q117）；單一規格那一列不長縮圖。 -->
             <div class="variant-table variant-table--stock" data-pd-variant-table>
               <div class="variant-table__head">
                 <span data-i18n="cp.var.col.variant">Variant</span>
@@ -591,6 +593,7 @@
           <p class="form-section__sub" data-i18n="product-detail.edit.combos-sub">Price, SKU and cost per combination. Add stock via Restock.</p>
         </div>
         <div class="variant-table-wrap">
+          <!-- 逐組合縮圖（2026-09-11 · D268）併在規格名格（Q117）：檢視態唯讀縮圖、編輯態可點開「規格圖片」彈窗（data-pd-vimg-modal）換圖 -->
           <div class="variant-table variant-table--preview" data-pd-edit-table>
             <div class="variant-table__head">
               <span data-i18n="cp.var.col.variant">Variant</span>
@@ -1127,7 +1130,9 @@
       vs.forEach(function (v, i) {
         if (onlyVi != null && i !== onlyVi) return;
         var label = onlyVi != null ? (v.combo || []).join(' / ') : comboName(v, two);
-        var item = { name: label, current: parseInt(v.stock, 10) || 0, vi: i };
+        /* 唯讀縮圖（2026-09-11 D268，5.1.5.6 §4 ①；併在名稱格，Q117）：該組合自己的圖或沿用主圖 */
+        var thumb = (window.ProductsStore && window.ProductsStore.variantThumb) ? window.ProductsStore.variantThumb(p, v, { label: (v.combo || []).join(' / ') }) : '';
+        var item = { name: label, current: parseInt(v.stock, 10) || 0, vi: i, thumb: thumb };
         var gl = two ? (v.combo || [])[0] : null;
         if (!byLabel[gl]) { byLabel[gl] = { label: gl, items: [] }; groups.push(byLabel[gl]); }
         byLabel[gl].items.push(item);
@@ -2197,10 +2202,36 @@
       return {
         price: p.price || '', cost: p.cost || '',
         options: (p.options || []).map(function (o) { return { name: o.name, values: (o.values || []).slice() }; }),
-        variants: (p.variants || []).map(function (v) { return { combo: (v.combo || []).slice(), sku: v.sku || '', stock: v.stock || '0', price: v.price || '', cost: v.cost || '', delisted: !!v.delisted, locks: copyLocks(v.locks) }; })
+        variants: (p.variants || []).map(function (v) { return { combo: (v.combo || []).slice(), sku: v.sku || '', stock: v.stock || '0', price: v.price || '', cost: v.cost || '', img: v.img || '', delisted: !!v.delisted, locks: copyLocks(v.locks) }; })
       };
     }
     var MODEL = copyModel(product);
+    /* 逐選項組合的商品圖（2026-09-11 · D268）：v.img 有值＝這個組合自己的圖、沒值＝沿用商品主圖。
+       主圖以頁上素材格 [data-pd-hero] 目前的 src 為準（使用者在頁上換主圖，沿用中的列要跟著換），
+       素材格還沒帶到時退回 store 的 p.img。 */
+    function heroSrc() {
+      var im = document.querySelector('[data-pd-hero]');
+      var src = im && im.getAttribute('src');
+      if (src) return src;
+      return (product && product.img) ? 'images/products/' + product.img : '';
+    }
+    function variantImgSrc(v) {
+      var own = v && v.img;
+      if (!own) return heroSrc();
+      return /^(data:|blob:|https?:|\/|images\/)/.test(own) ? own : 'images/products/' + own;
+    }
+    function thumbInner(src) {
+      return src ? '<img class="variant-thumb__img" alt="" src="' + esc(src) + '">' : '<i data-lucide="image" class="ztor-icon"></i>';
+    }
+    /* 唯讀縮圖（庫存管理表、編輯彈窗的檢視態）：<span>，不可點 */
+    function thumbRO(v, label) {
+      return '<span class="variant-thumb' + (v && v.img ? ' variant-thumb--own' : '') + ' variant-thumb--ro" title="' + esc(label) + '" aria-hidden="true">' + thumbInner(variantImgSrc(v)) + '</span>';
+    }
+    /* 可點縮圖（編輯彈窗的編輯態）：<button>，點開「規格圖片」彈窗換圖 */
+    function thumbBtn(v, vi, label) {
+      return '<button class="variant-thumb' + (v && v.img ? ' variant-thumb--own' : '') + '" type="button" data-pd-vimg="' + vi + '" aria-label="' + esc(label) + '" title="' + esc(label) + '">' + thumbInner(variantImgSrc(v)) + '</button>';
+    }
+    function thumbLabel(v) { return T('cp.var.img', 'Variant image') + ' · ' + (v.combo || []).join(' / '); }
     /* 商品資料只給了 options、沒給 variants 時，直接依笛卡兒積補出組合，避免整張表只剩表頭。 */
     if (!MODEL.variants.length && MODEL.options.length) regen(MODEL);
     /* 表內價格／成本與頁面唯讀價格欄同一套寫法：純數字才加幣別符號（TWD → NT$ 加千分位），
@@ -2228,7 +2259,7 @@
       var prev = {}; m.variants.forEach(function (v) { prev[comboKey(v.combo)] = v; });
       m.variants = combos.map(function (c) {
         var old = prev[comboKey(c)];
-        return { combo: c, sku: old ? old.sku : '', stock: old ? old.stock : '0', price: old ? (old.price || '') : '', cost: old ? (old.cost || '') : '', delisted: old ? old.delisted : false, locks: copyLocks(old && old.locks) };
+        return { combo: c, sku: old ? old.sku : '', stock: old ? old.stock : '0', price: old ? (old.price || '') : '', cost: old ? (old.cost || '') : '', img: old ? (old.img || '') : '', delisted: old ? old.delisted : false, locks: copyLocks(old && old.locks) };
       });
     }
 
@@ -2276,7 +2307,8 @@
     function rowHTML(o) {
       var st = stockState(o.stock === '∞' ? Infinity : Number(o.stock));
       var inc = window.pdStockHistory ? window.pdStockHistory.pendingFor(o.vi) : 0;
-      return '<span class="variant-cell--variant" data-vc="name">' + esc(o.label) + (o.sku ? '<br><span class="text-sub" title="' + esc(o.sku) + '">' + esc(o.sku) + '</span>' : '') + '</span>'
+      /* 縮圖併在規格名格（Q117）：thumb ＋ 文字區（規格名、底下 SKU 小字） */
+      return '<span class="variant-cell--variant" data-vc="name">' + (o.thumb || '') + '<span class="variant-cell__text">' + esc(o.label) + (o.sku ? '<br><span class="text-sub" title="' + esc(o.sku) + '">' + esc(o.sku) + '</span>' : '') + '</span></span>'
         + '<span class="variant-cell--stock' + st.cell + '">' + esc(String(o.stock)) + (o.cap ? '<span class="text-sub"> / ' + esc(String(o.cap)) + '</span>' : '') + '</span>'
         + '<span class="variant-cell--ro" data-vc="locked">' + lockText(o.locked) + '</span>'
         + '<span class="variant-cell--ro" data-vc="bundle">' + (o.bundle ? esc(String(o.bundle)) : '—') + '</span>'
@@ -2297,7 +2329,9 @@
       var L = window.ListingState;
       if (!product || !L) return;
       var cap = (product.edition === 'limited' && product.cap) ? Number(product.cap) : null;
-      if (product.variant !== 'multiple' || !MODEL.variants.length) {
+      /* 縮圖只給多選項商品（D268 是「每個選項組合各一張圖」）：單一規格那一列不長縮圖 */
+      var multi = product.variant === 'multiple' && MODEL.variants.length > 0;
+      if (!multi) {
         /* 單一規格：整張表只有一列，數字讀商品層的池。 */
         var total = (product.pool && product.pool.total === 'unlimited') ? '∞' : Number(product.pool ? product.pool.total : 0);
         var lock = L.lockOf(product, 'single');
@@ -2323,6 +2357,7 @@
           row.className = 'variant-table__row' + (v.delisted ? ' variant-table__row--delisted' : '');
           row.setAttribute('data-vi', vi);
           row.innerHTML = rowHTML({
+            thumb: thumbRO(v, thumbLabel(v)),
             label: label,
             stock: v.stock,
             locked: lockV,
@@ -2349,6 +2384,7 @@
           var t = byKey[comboKey(v.combo)];
           if (!t) { t = { combo: v.combo.slice() }; product.variants.push(t); }
           t.sku = v.sku; t.stock = v.stock; t.price = v.price; t.cost = v.cost; t.locks = copyLocks(v.locks);
+          if (v.img) t.img = v.img; else delete t.img;   /* 逐組合商品圖（D268）：空＝沿用主圖 */
         });
       }
       if (window.pdRefreshStock) window.pdRefreshStock();
@@ -2380,7 +2416,9 @@
           + '<span data-i18n="stock.lock-single">' + esc(T('stock.lock-single', 'Locked')) + '</span>'
           + '<span style="text-align:right" data-i18n="cp.var.col.free">' + esc(T('cp.var.col.free', 'Unlocked')) + '</span></div>'
           + LOCK.draft.map(function (r, i) {
-            return '<div class="salloc__row" data-lock-i="' + i + '"><span class="salloc__name">' + esc(r.label) + '</span>'
+            /* 唯讀縮圖（2026-09-11 D268，5.1.5.1 §2.10）併在名稱格（Q117）：一列一個選項組合才有；單一規格那一列不是組合、沒有 */
+            var v = r.key === 'single' ? null : MODEL.variants[r.key];
+            return '<div class="salloc__row" data-lock-i="' + i + '"><span class="salloc__name' + (v ? ' salloc__name--thumb' : '') + '">' + (v ? thumbRO(v, thumbLabel(v)) : '') + '<span>' + esc(r.label) + '</span></span>'
               + '<span class="salloc__qty salloc__qty--muted">' + (r.stock === Infinity ? '∞' : r.stock) + '</span>'
               + '<span class="salloc__lock"><span class="amount-field amount-field--suffix">'
               + '<input class="input amount-field__input" type="number" min="0" data-lock-input value="' + (r.lock === null ? '' : esc(String(r.lock))) + '"'
@@ -2519,7 +2557,9 @@
       if (money) return '<span class="variant-cell--input"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' + inp + '</span></span>';
       return '<span class="variant-cell--input">' + inp + '</span>';
     }
-    function renderEditCombos(m) {
+    /* editable（2026-09-11 · D268）：編輯態列首縮圖是 <button>（點開規格圖片彈窗）；檢視態是唯讀 <span>——
+       shared.css 在 data-mode="view" 會把所有 button 藏掉，唯讀縮圖不能是 button。 */
+    function renderEditCombos(m, editable) {
       if (!editTable) return;
       editTable.querySelectorAll('.variant-table__row, .variant-table__group').forEach(function (n) { n.remove(); });
       var two = m.variants.length > 0 && m.variants[0].combo.length >= 2;
@@ -2532,7 +2572,7 @@
         var label = two ? v.combo.slice(1).join(' / ') : v.combo.join(' / ');
         var r = document.createElement('div'); r.className = 'variant-table__row';
         r.innerHTML =
-          '<span class="variant-cell--variant">' + esc(label) + '</span>' +
+          '<span class="variant-cell--variant">' + (editable ? thumbBtn(v, vi, thumbLabel(v)) : thumbRO(v, thumbLabel(v))) + '<span class="variant-cell__text">' + esc(label) + '</span></span>' +
           ecInput('price', vi, v.price || m.price, true) +
           '<span class="variant-cell--stock' + (isLow(v.stock) ? ' variant-cell--stock-low' : '') + '">' + esc(v.stock) + '</span>' +
           ecInput('sku', vi, v.sku, false) +
@@ -2540,6 +2580,7 @@
         editTable.appendChild(r);
       });
       if (comboCount) comboCount.textContent = '(' + m.variants.length + ')';
+      if (window.ztorIcons) window.ztorIcons.applyIcons(editTable);
     }
     if (editTable) {
       editTable.addEventListener('input', function (e) {
@@ -2552,7 +2593,28 @@
       });
     }
 
-    function refreshDraft() { renderOptEditor(DRAFT); renderEditCombos(DRAFT); }
+    function refreshDraft() { renderOptEditor(DRAFT); renderEditCombos(DRAFT, true); }
+
+    /* ---- 規格圖片彈窗（2026-09-11 · D268）：接口給頁尾的彈窗控制器；狀態只有一個來源＝DRAFT.variants[vi].img。
+       只在編輯態能開（列首那顆是 button 才點得到），寫回 DRAFT、按「儲存變更」才進 MODEL／store。 ---- */
+    window.ztorVariantImage = {
+      heroSrc: heroSrc,
+      labelOf: function (vi) { var v = DRAFT && DRAFT.variants[Number(vi)]; return v ? (v.combo || []).join(' / ') : ''; },
+      getOwn: function (vi) { var v = DRAFT && DRAFT.variants[Number(vi)]; return (v && v.img) || ''; },
+      setOwn: function (vi, val) {
+        var v = DRAFT && DRAFT.variants[Number(vi)]; if (!v) return;
+        v.img = val || '';
+        renderEditCombos(DRAFT, true);
+      }
+    };
+    /* 商品主圖換了，沿用主圖的那幾列縮圖要跟著換（自己有圖的不受影響）。 */
+    document.addEventListener('upload:change', function (e) {
+      /* 事件由素材格（.upload-tile）發出，主圖那格是裡面有 [data-pd-hero] 的那一格 */
+      var tile = e.target && e.target.querySelector ? e.target : null;
+      if (!tile || !tile.querySelector('[data-pd-hero]')) return;
+      renderPageTable();
+      renderEditCombos(DRAFT || MODEL, !!DRAFT);
+    });
 
     /* ---- 編輯模式（2026-09-11 使用者裁決：商品設定分頁預設唯讀，「編輯商品」開關切成可改）----
        進入：MODEL 抄成 DRAFT、把選項編輯器與組合表重畫成可填、其餘欄位解除唯讀，並把所有欄位現值
@@ -2719,10 +2781,12 @@
       var go = (e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('[data-pd-setov-go]');
       if (go && window.pdSettingsGo) { e.preventDefault(); window.pdSettingsGo(go.getAttribute('data-pd-setov-go')); }
       /* backdrop 點空白處關閉 */
-      if (e.target.classList && e.target.classList.contains('payout-modal')) { e.target.hidden = true; DRAFT = null; }
+      /* DRAFT 現在是頁內編輯模式的草稿（2026-09-11 起編輯不在彈窗裡）：關掉任何彈窗（鎖定、規格圖片）都不能把它清掉，
+         否則編輯到一半按 Esc 關個彈窗，之後的改動全部落空。只有不在編輯模式時才順手清。 */
+      if (e.target.classList && e.target.classList.contains('payout-modal')) { e.target.hidden = true; if (!isEditing()) DRAFT = null; }
     });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') { document.querySelectorAll('.payout-modal:not([hidden])').forEach(function (m) { m.hidden = true; }); DRAFT = null; }
+      if (e.key === 'Escape') { document.querySelectorAll('.payout-modal:not([hidden])').forEach(function (m) { m.hidden = true; }); if (!isEditing()) DRAFT = null; }
     });
 
     /* ---- 商品設定概覽（總覽分頁那張卡，2026-09-11）：一區一行一句，讀商品設定分頁的欄位現值 ----
@@ -2888,6 +2952,101 @@
       renderSettingsOverview();
     });
   })();
+</script>
+
+<!-- 規格圖片彈窗（2026-09-11 · D268 每個選項組合各一張商品圖）：編輯態組合表列首那顆 34px 縮圖點開就是這裡。
+     移植自 create-product.html 的 #cp-vimg-modal（2026-08-10），ID 改 pd- 前綴；殼沿用 .payout-modal／.payout-dialog--narrow，
+     內容沿用 .upload-tile-aside（直式上傳格＋一句說明＋還原鈕）。狀態存在編輯草稿 DRAFT.variants[vi].img，
+     按「儲存變更」才寫回商品——所以底下那句提示跟建立商品的「改了就生效」不同。 -->
+<div class="payout-modal" id="pd-vimg-modal" data-pd-vimg-modal hidden>
+  <section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="pd-vimg-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="pd-vimg-title"></h2>
+      <button class="btn btn--icon" type="button" data-pd-vimg-close aria-label="Close" data-i18n-aria-label="cp.var.img.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body" id="pd-vimg-body"></div>
+    <div class="payout-dialog__foot">
+      <span class="field__hint" style="margin:0" data-i18n="pd.var.img.auto">Saved with the product when you save changes.</span>
+      <button class="btn btn--primary" type="button" data-pd-vimg-close data-i18n="cp.var.img.done">Done</button>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---- 規格圖片彈窗控制器（2026-09-11 · D268，移植自 create-product.html 2026-08-10 版）----
+   狀態只有一個來源：window.ztorVariantImage（由上方主控制器掛上，讀寫 DRAFT.variants[vi].img、重畫列）。
+   彈窗裡的上傳格走站上共用的互動上傳格（partials/upload-tile.js），選圖、假進度、hover 替換／刪除
+   全都跟其他上傳格一致，這裡只接 upload:change 把結果寫回。 */
+(function () {
+  var modal = document.getElementById('pd-vimg-modal');
+  if (!modal) return;
+  var body = document.getElementById('pd-vimg-body');
+  var title = document.getElementById('pd-vimg-title');
+  var openVi = null;
+
+  var T = function (k, fb) { return (window.i18nT ? window.i18nT(k) : null) || fb; };
+  var api = function () { return window.ztorVariantImage || null; };
+  function resolve(v) { return /^(data:|blob:|https?:|\/|images\/)/.test(v) ? v : 'images/products/' + v; }
+
+  function render() {
+    var a = api(); if (!a || openVi === null) return;
+    var own = a.getOwn(openVi);
+    var hero = a.heroSrc();
+    var src = own ? resolve(own) : hero;
+    var hintKey = own ? 'cp.var.img.own' : (hero ? 'cp.var.img.inherit' : 'cp.var.img.none');
+    body.innerHTML =
+      '<div class="upload-tile-aside">' +
+        /* 只收圖片：這一格產出的是組合表列首那顆 34px 的辨識小圖，不是展示素材 */
+        '<div class="upload-tile upload-tile--portrait ' + (src ? 'is-filled' : 'is-empty') + '" data-upload data-upload-accept="image/*" data-pd-vimg-tile>' +
+          (src ? '<img class="upload-tile__thumb" src="' + src.replace(/"/g, '&quot;') + '" alt="">'
+               : '<span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span>') +
+        '</div>' +
+        '<div class="upload-tile-aside__side">' +
+          '<p class="field__hint" style="margin:0" data-i18n="' + hintKey + '">' + T(hintKey, '') + '</p>' +
+          (own ? '<button type="button" class="btn btn--outline btn--sm" data-pd-vimg-reset data-i18n="cp.var.img.reset">' + T('cp.var.img.reset', 'Follow the main image') + '</button>' : '') +
+        '</div>' +
+      '</div>';
+    if (window.ztorIcons) window.ztorIcons.applyIcons(body);
+    if (window.ztorUploadTile) body.querySelectorAll('.upload-tile[data-upload]').forEach(window.ztorUploadTile.enhance);
+  }
+
+  function open(vi) {
+    var a = api(); if (!a) return;
+    openVi = vi;
+    title.textContent = T('cp.var.img', 'Variant image') + ' · ' + a.labelOf(vi);
+    render();
+    modal.hidden = false;
+    document.body.classList.add('is-modal-open');
+  }
+  function close() { modal.hidden = true; openVi = null; document.body.classList.remove('is-modal-open'); }
+
+  document.addEventListener('click', function (e) {
+    var open_ = e.target.closest('[data-pd-vimg]');
+    if (open_) { open(open_.getAttribute('data-pd-vimg')); return; }
+    if (e.target.closest('[data-pd-vimg-close]')) { close(); return; }
+    if (e.target.closest('[data-pd-vimg-reset]')) {
+      var a = api(); if (a && openVi !== null) { a.setOwn(openVi, ''); render(); }
+      return;
+    }
+    /* 點背景關閉：只認彈窗最外層，點到對話框內部不算 */
+    if (e.target === modal) close();
+  });
+  /* 以 openVi 判斷、不看 modal.hidden：頁面另有一個通用 Esc 處理器會先把所有 .payout-modal 藏掉，
+     這裡若只認 hidden 就不會走 close()，body 的 is-modal-open 會留著。 */
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && openVi !== null) close(); });
+
+  /* 上傳格傳完 → 把縮圖寫回這個組合；刪除 → 回到沿用主圖 */
+  modal.addEventListener('upload:change', function (e) {
+    var a = api(); if (!a || openVi === null) return;
+    var tile = e.target.closest('[data-pd-vimg-tile]'); if (!tile) return;
+    if (e.detail && e.detail.filled) {
+      var img = tile.querySelector('.upload-tile__thumb');
+      if (img && img.src) { a.setOwn(openVi, img.src); render(); }
+    } else if (e.detail && e.detail.state === 'empty') {
+      a.setOwn(openVi, ''); render();
+    }
+  });
+})();
 </script>
 <script src="js/devtools.js?v=r2.2"></script>
 
