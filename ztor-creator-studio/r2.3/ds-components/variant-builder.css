@@ -11,8 +11,10 @@
        .variant-table-wrap (scroll-x)
          .variant-table(.--limited)
            .variant-table__head | .variant-table__row(.is-excluded)
-             .variant-thumb（列首圖片格，需外層 .variant-table--img）
-             .variant-cell--variant / .variant-cell--total / .variant-row__remove
+             .variant-cell--variant（flex 橫排：.variant-thumb(.--own)(.--ro) ＋ .variant-cell__text）
+               縮圖併在規格名這一格、不另開欄（2026-09-12 使用者裁決，STYLE-DECISIONS Q117）；
+               --own＝這個組合自己的圖（實線）、--ro＝唯讀縮圖（不可點、無 hover）
+             .variant-cell--total / .variant-row__remove
    Editable cells reuse .input; value chips reuse .chip--removable.
    --limited adds the Total Quantity column (Limited Edition, §4.1⑤).
    ============================================================ */
@@ -304,23 +306,16 @@
 .variant-table--limited .variant-table__row {
   grid-template-columns: minmax(110px, max-content) minmax(96px, 1fr) 78px 84px 116px minmax(92px, 1fr) 34px;
 }
-/* --img（2026-08-10 使用者指示）：每一列開頭多一個「這個規格的圖片」小格。
-   欄寬 34px＝與列尾動作欄同寬，直式縮圖靠 aspect-ratio 自己長高，不撐大列高太多。
-   只有真的排了圖片格的表要掛這個修飾類——商品詳情那張唯讀表沿用原欄寬，
-   不掛就完全不受影響。 */
-.variant-table--img .variant-table__head,
-.variant-table--img .variant-table__row {
-  grid-template-columns: 34px minmax(110px, max-content) minmax(96px, 1fr) 78px 116px minmax(92px, 1fr) 34px;
-}
-.variant-table--img.variant-table--limited .variant-table__head,
-.variant-table--img.variant-table--limited .variant-table__row {
-  grid-template-columns: 34px minmax(110px, max-content) minmax(96px, 1fr) 78px 84px 116px minmax(92px, 1fr) 34px;
-}
-/* 圖片格本身：一顆可點的小直式縮圖，點開彈窗換圖。
+/* 2026-09-12 退場：表格層的 `--img` 修飾類（2026-08-10 建，列首獨立 34px 圖片欄）與它疊在 --limited／--preview／
+   --stock／--fluid 上的欄軌。使用者看商品細節庫存表「Image Variant」表頭擠在一起、看起來沒對齊，裁決縮圖併進
+   Variant 格（STYLE-DECISIONS Q117）；欄軌回到沒有縮圖欄的原狀，縮圖由 .variant-cell--variant 自己排。 */
+/* 縮圖本身：一顆小直式縮圖，坐在 .variant-cell--variant 的最前面（建立商品與商品細節編輯態是 button、點開彈窗換圖；
+   其他表是 --ro 的 span）。寬 34px 固定、flex:none，直式靠 aspect-ratio 自己長高。
    邊框語彙沿用上傳格（Q59）：**實線＝這個規格自己的圖、虛線＝沿用商品主圖或還沒有圖**，
    所以整列掃過去就看得出哪幾個規格被單獨換過圖，不必逐格點開。 */
 .variant-thumb {
-  width: 100%;
+  width: 34px;
+  flex: none;
   aspect-ratio: var(--img-portrait, 2 / 3);
   display: grid;
   place-items: center;
@@ -338,6 +333,15 @@
 .variant-thumb--own { border-style: solid; }
 .variant-thumb__img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .variant-thumb .ztor-icon { width: 12px; height: 12px; }
+/* --ro（2026-09-11 · D268）：唯讀縮圖。逐選項組合的圖只在建立商品流程與商品細節頁的編輯彈窗能改，
+   其他列出組合的表（庫存管理表、組合包的逐組合列、商品細節頁檢視態）只看不改——
+   用 <span> 不用 <button>、沒有指標手勢、hover 不變色；實線／虛線的「自己的圖／沿用主圖」語彙照舊。 */
+.variant-thumb--ro,
+.variant-thumb--ro:hover {
+  cursor: default;
+  border-color: var(--border);
+  background: var(--ztu-film);
+}
 
 /* --preview（2026-07-23）：編輯 popup 內的規格組合唯讀預覽表——5 欄（規格／價格／庫存／SKU／成本），
    無總量欄、無列尾動作欄（動作在上方選項值管理區）。與頁面主表分開一套欄寬。 */
@@ -390,8 +394,9 @@
 .variant-table .amount-field .input { padding-left: var(--sp-40); }
 /* 鎖過頭（該組合的鎖定量 > 庫存）：整列的「未鎖定」轉紅，與 salloc 的錯誤列同語彙。 */
 .variant-table__row--error .variant-cell--free { color: var(--destructive); font-weight: var(--fw-medium); }
-/* 欄寬可壓縮之後，規格名也要會截斷（基礎版是 max-content 欄、撐得開所以不必） */
-.variant-table--fluid .variant-cell--variant {
+/* 欄寬可壓縮之後，規格名也要會截斷（基礎版是 max-content 欄、撐得開所以不必）。
+   2026-09-12 起截斷落在文字區 .variant-cell__text（格子本身是 flex 容器、放縮圖＋文字，容器上的 ellipsis 不會作用在文字上）。 */
+.variant-table--fluid .variant-cell__text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -435,12 +440,20 @@
    無法只用 opacity:1 把 kebab 救回（合成階段會相乘），改成只壓「除下拉以外的直接子代」。 */
 .variant-table__row--delisted > :not(.dropdown) { opacity: 0.42; }
 
+/* 規格名格（2026-09-12 使用者裁決、Q117）：縮圖＋文字併在同一格、橫排垂直置中，像一般電商後台的商品欄。
+   之前縮圖是獨立的 34px 欄，表頭「Image Variant」兩個字擠在一起看起來沒對齊。
+   間距 --sp-12（使用者：8px 太擠）。文字區 .variant-cell__text 可以兩行（規格名＋SKU 小字），要 min-width:0 才截得斷。 */
 .variant-cell--variant {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  min-width: 0;
   font-family: var(--font-ui);
   font-size: var(--fs-13);
   font-weight: var(--fw-regular);
   color: var(--foreground);
 }
+.variant-cell__text { min-width: 0; }
 .variant-cell--total { display: none; }
 .variant-table--limited .variant-cell--total { display: block; }
 

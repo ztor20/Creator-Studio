@@ -30,6 +30,8 @@
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
+<!-- 2026-09-11 D268：多選項成員展開的逐組合列列首唯讀縮圖 .variant-thumb--ro（定義在 variant-builder.css） -->
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-store.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2"><!-- 電影關聯的 tag-input／chip 由 partials/film-picker.js 注入，靜態檢查看不到（2026-09-11 使用者：「沒改完或改壞了」） -->
@@ -792,7 +794,8 @@
           group.appendChild(row);
           group.insertAdjacentHTML('beforeend', p.variants.map((v, vi) =>
             '<div class="lockset__row lockset__child" data-rowdis-child="' + gid + '" hidden data-bd-alloc-child="' + esc(m.productId) + '" data-bd-vi="' + vi + '">'
-            + '<span class="lockset__name">' + esc((v.combo || []).join(' / ')) + '</span>'
+            /* 列首唯讀縮圖（2026-09-11 D268）：這個組合自己的圖（實線）或沿用商品主圖（虛線），只看不改 */
+            + '<span class="lockset__name">' + (window.ProductsStore && window.ProductsStore.variantThumb ? window.ProductsStore.variantThumb(p, v, { label: (v.combo || []).join(' / ') }) : '') + '<span>' + esc((v.combo || []).join(' / ')) + '</span></span>'
             + '<span class="lockset__num" data-bd-stock></span>'
             + '<span class="lockset__num" data-bd-free></span>'
             + '<span><span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" placeholder="0" data-bd-alloc-input data-bd-vi="' + vi + '" data-i18n-aria-label="stock.lock" aria-label="Locked"><span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></span></span>'

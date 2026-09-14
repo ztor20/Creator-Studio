@@ -86,14 +86,16 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       var on = modal && modal.querySelector('[data-restock-method] .segmented__btn--active');
       return on ? on.getAttribute('data-restock-mode') : 'now';
     }
-    /* 一列＝一個選項組合：縮圖＋名稱 ｜ 當前數量(唯讀) ｜ 補貨數量(可填) ｜ 補後數量(唯讀，＝當前＋補貨) */
+    /* 一列＝一個選項組合：縮圖＋名稱 ｜ 當前數量(唯讀) ｜ 補貨數量(可填) ｜ 補後數量(唯讀，＝當前＋補貨)
+       item.thumb（2026-09-11 D268）＝已經產好的唯讀縮圖 HTML（.variant-thumb--ro，由呼叫端用 ProductsStore.variantThumb 產），
+       有它就放在名稱格 __id 裡取代 __img 方塊（2026-09-12 使用者裁決：縮圖併在名稱格、不另開欄，Q117）；沒有就照舊。 */
     function lineHTML(item) {
       var cur = num(item.current);
       var imgInner = item.img ? '<img src="' + esc(item.img) + '" alt="">' : '<i data-lucide="package" class="ztor-icon"></i>';
       return '' +
         '<div class="restock-table__row" data-restock-line data-current="' + cur + '" data-name="' + esc(item.name) + '"' + (item.vi != null ? ' data-vi="' + esc(item.vi) + '"' : '') + '>' +
           '<div class="restock-table__id">' +
-            '<span class="restock-table__img">' + imgInner + '</span>' +
+            (item.thumb ? item.thumb : '<span class="restock-table__img">' + imgInner + '</span>') +
             '<span class="restock-table__name">' + esc(item.name) + '</span>' +
           '</div>' +
           '<input class="input restock-table__ro" value="' + cur + '" readonly tabindex="-1" aria-label="Current stock">' +
