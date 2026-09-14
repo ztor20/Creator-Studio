@@ -18,6 +18,8 @@
 //   albumSeed  數位·專輯的預置曲目（餵給 album-tracks 的 data-album-seed）
 //   vipName    數位·會員卡的預置卡面名稱
 //   img        e-shop 列表縮圖檔名（在 images/products/ 下）；供 persona 就地改列用
+//   variants[].img   （選填，2026-09-11 D268）這個選項組合自己的商品圖檔名（images/products/ 下）；
+//              沒給＝沿用商品主圖 img。呈現用 ProductsStore.variantThumb（實線＝自己的圖、虛線＝沿用）
 //
 // ── 詳情頁的示範狀態欄位（2026-09-11，由頁面層寫死改成資料驅動；缺值＝頁面顯示既有空狀態）──
 //   sales      { units, gross, net } | null   銷售摘要 KPI；null＝尚無銷售（切到 .when-empty）。gross／net 為顯示字串（'$2,944'）
@@ -76,8 +78,9 @@
       // 單階層（僅尺寸）：options 一組、variants 逐值一列（combo 只有一個值）。
       options: [{ name: 'Size / 尺寸', values: ['S', 'M', 'L', 'XL'] }],
       variants: [
-        { combo: ['S'],  sku: 'TEE-S',  stock: '2' },
-        { combo: ['M'],  sku: 'TEE-M',  stock: '18' },
+        /* 2026-09-11（D268）：部分組合各自一張圖（img）、其餘沿用主圖，讓表上同時看得到實線／虛線兩種列 */
+        { combo: ['S'],  sku: 'TEE-S',  stock: '2',  img: 'tee-black.webp' },
+        { combo: ['M'],  sku: 'TEE-M',  stock: '18', img: 'tee-black.webp' },
         { combo: ['L'],  sku: 'TEE-L',  stock: '15' },
         { combo: ['XL'], sku: 'TEE-XL', stock: '7' }
       ]
@@ -98,10 +101,11 @@
         { combo: ['Black', 'S'], sku: 'HOOD-BK-S', stock: '3' },
         { combo: ['Black', 'M'], sku: 'HOOD-BK-M', stock: '12' },
         { combo: ['Black', 'L'], sku: 'HOOD-BK-L', stock: '8' },
-        { combo: ['Sand', 'S'],  sku: 'HOOD-SD-S', stock: '0' },
-        { combo: ['Sand', 'M'],  sku: 'HOOD-SD-M', stock: '5' },
+        /* 2026-09-11（D268）：Sand 三個組合各自一張圖、Black 沿用主圖 */
+        { combo: ['Sand', 'S'],  sku: 'HOOD-SD-S', stock: '0',  img: 'zip-hoodie.webp' },
+        { combo: ['Sand', 'M'],  sku: 'HOOD-SD-M', stock: '5',  img: 'zip-hoodie.webp' },
         /* 2026-09-11：L 尺寸貴 $6，讓含 hoodie 的組合在清單上顯示價格區間（多選項多價格 → 區間） */
-        { combo: ['Sand', 'L'],  sku: 'HOOD-SD-L', stock: '20', price: '64.00' }
+        { combo: ['Sand', 'L'],  sku: 'HOOD-SD-L', stock: '20', price: '64.00', img: 'zip-hoodie.webp' }
       ]
     },
     acetate: {
@@ -179,7 +183,7 @@
       catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
       options: [{ name: 'Size / 尺碼', values: ['US 8', 'US 9', 'US 10', 'US 11'] }],
       variants: [
-        { combo: ['US 8'],  sku: 'CL-SHO-08', stock: '15' },
+        { combo: ['US 8'],  sku: 'CL-SHO-08', stock: '15', img: 'nick-nike-02.jpg' },
         { combo: ['US 9'],  sku: 'CL-SHO-09', stock: '23' },
         { combo: ['US 10'], sku: 'CL-SHO-10', stock: '21' },
         { combo: ['US 11'], sku: 'CL-SHO-11', stock: '13' }
@@ -476,6 +480,17 @@
   (function () {
     var v = WISHYOU_PRODUCTS['wy-26ms-tshirt-white'] && WISHYOU_PRODUCTS['wy-26ms-tshirt-white'].variants;
     if (v) v.forEach(function (x) { if (x.combo.indexOf('XL') !== -1) x.price = 2080; });
+  })();
+  /* 逐組合商品圖示範（2026-09-11 D268）：nick persona 也要看得到「自己的圖／沿用主圖」兩種列——
+     圖沿用該商品 gallery 的第二張（站內既有檔），只給部分尺寸。 */
+  (function () {
+    function give(id, sizes, img) {
+      var p = WISHYOU_PRODUCTS[id]; if (!p || !p.variants) return;
+      p.variants.forEach(function (x) { if (sizes.indexOf(x.combo[0]) !== -1) x.img = img; });
+    }
+    give('wy-26ms-hoodie', ['M', 'L'], '26ms-hoodie-02.jpeg');
+    give('wy-26ms-tshirt-white', ['M'], '26ms-t-shirt-w-02.jpeg');
+    give('wy-24ce-jersey', ['M', 'XL'], '24ce-high-shine-football-jersey-02.jpg');
   })();
   /* 逐選項組合鎖定（D255／D258）：variants 產好之後才掛得上去。形狀同 P_DEFAULT.jacket 的寫法。 */
   (function () {
@@ -1199,6 +1214,28 @@
     bundleStatusOf: function (bundle, now) {
       var L = ls(); if (!L || !bundle) return 'live';
       return L.deriveStatus(bundle, { qty: L.bundleQty(bundle, active()), lowThreshold: bundle.lowThreshold }, now);
+    },
+    /* 選項組合的縮圖（2026-09-11 · D268 每個選項組合各一張商品圖，選填、沒給就沿用商品主圖）。
+       站上凡是列出組合的表都用這一個函式產列首那顆 34px 直式縮圖，語彙只有一套：
+       實線（.variant-thumb--own）＝這個組合自己的圖、虛線＝沿用主圖；沒有任何圖時放一個 image icon。
+       預設產唯讀版（<span>.variant-thumb--ro，不可點）——只有建立商品流程與商品細節頁的編輯彈窗能改圖，
+       那兩處自己產 <button>（見 create-product.html／product-detail.html）。
+       圖值可以是檔名（images/products/ 下）或已經是完整路徑／data URL（頁內上傳的結果）。 */
+    variantImgSrc: function (product, variant) {
+      var own = variant && variant.img;
+      var v = own || (product && product.img) || '';
+      if (!v) return '';
+      return /^(data:|blob:|https?:|\/|images\/)/.test(v) ? v : 'images/products/' + v;
+    },
+    variantThumb: function (product, variant, opts) {
+      opts = opts || {};
+      var own = !!(variant && variant.img);
+      var src = window.ProductsStore.variantImgSrc(product, variant);
+      var label = String(opts.label || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+      var cls = 'variant-thumb' + (own ? ' variant-thumb--own' : '') + ' variant-thumb--ro';
+      return '<span class="' + cls + '"' + (label ? ' title="' + label + '"' : '') + ' aria-hidden="true">'
+        + (src ? '<img class="variant-thumb__img" alt="" src="' + src.replace(/"/g, '&quot;') + '">' : '<i data-lucide="image" class="ztor-icon"></i>')
+        + '</span>';
     }
   };
 
