@@ -4,6 +4,97 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-14（二十五）· 設定頁「個人檔案」重建為帳戶與登入方式（依粉絲端「我的帳戶」）；設定版面與輸入列補手機寬度回流（B 反饋導入 ＋ D infra）
+
+**範圍**：`settings.html`（`#profile` 區段重建、回到第一個分區：暱稱（讀 `js/store-profile-store.js` 的顯示名稱、唯讀、「到店面修改」）／真實姓名（未驗證徽章＋「驗證」→ `#compliance`）／Email（值＋編輯）／電話（未綁定徽章＋「綁定」）／密碼（自隱私與安全的安全組移入）＋「第三方登入」子組 Facebook／Google／Apple／LINE（Google 已連結顯示 Email＋解除，其餘「連結 ○○」）；隱私與安全的 Email 列撤回、密碼列移出；`HASH_ALIASES` 的 `profile` 別名移除；本頁載入 `store-profile-store.js`；inline `max-width:260px` 全數改掛 `.settings-row__control`）、`ds-components/settings.css`（新 `.settings-row__control`；<900px：`.settings-layout` 單欄、`.settings-nav` 橫向可捲、帶文字輸入框的 `.settings-row` 上下堆疊）、`js/i18n.js`（`settings.profile.*` 重建：title／sub／nickname(-hint)／edit-in-store／realname(-hint)／unverified／verify／email(-hint)／phone(-hint)／unlinked／link-phone／sso／link／unlink；`settings.nav.profile` 回來；`settings.priv.email(-hint)` 撤除；密碼列沿用 `settings.priv.password*` key；`settings.sub` 改「帳戶與登入方式」）、`design-system.html`／`design-system.md`（Settings row demo 加輸入列、規格補 `__control` 與響應式行為）。
+
+**依據**：使用者看過（二十四）的結果後——「所以在設定中還是有個人檔案的必要，手機和剛才的信箱可以放在這裡」「修」（指手機寬度下 Email 列被擠成一字一行）；接著附粉絲端「我的帳戶」與「第三方登入」截圖：「設定中的個人檔案中的訊息包含這些」。規格側 D269 更新／Plan322 → D270／Plan323：5.1.9 v6.2（F1＝帳戶與登入方式六項、密碼自 F4 移入）、0-設計規格書 v3.57、5.1.10 F3 引用改回 F1。
+
+### B · 個人檔案回來，裝的是帳戶與登入方式
+
+- 區段標題「個人檔案」、副標明寫「你的帳戶與登入方式，粉絲看不到；粉絲看到的身分在商店設定 › 店面」——跟店面那張「個人檔案」卡同名，靠副標分工。
+- 列的做法沿用本頁付款的稅務三列（值＋ghost 編輯鈕）與整合列（outline 連結鈕），沒有為了截圖的「值＋箭頭」另造一種列；未驗證／未綁定用既有 `badge--warning`。
+- 暱稱唯讀：值直接讀店面資料源，改要去店面——不然 D269 剛收掉的「兩處各改各的」會從這裡長回來。
+- 電話與第三方登入只做狀態與入口，不做驗證碼、對應既有帳號、解除最後一種登入方式的阻擋（待上游，UIA-150）。
+- 真實姓名的「驗證」開彈窗 `#realname-modal`（使用者附粉絲端截圖：「打開後只要有這兩個欄位的popup」）：殼用既有 `.payout-dialog`，內容只有「英文姓名」一個欄位標籤下兩格 `.form-grid` 唯讀輸入框、佔位「驗證後顯示」；X／Esc／點遮罩關閉，沒有送出鈕。本頁因此多連 `payout-modal.css`、`field-system.css`、`form-grid.css`。
+- 其餘三個彈窗（使用者：「其他電話綁定，密碼變更的popup都幫我做完」）同一套殼與開關（`data-modal-open="<id>"`／`data-modal-close`，`profileModals()`）：`#email-modal`（目前 Email 唯讀＋新的 Email；取消／儲存變更）、`#phone-modal`（電話一格；取消／綁定）、`#password-modal`（目前密碼／新密碼（hint「輸入時即時顯示強度」，對齊規格 F1 密碼的強度回饋）／再輸入一次；取消／變更）。原型不送資料、不做驗證信／驗證碼／強度計算（UIA-150）。
+- 列上的動作鈕統一 `btn--outline`（使用者指「到店面修改」與 Email「編輯」要線框）：原本值旁的 ghost 鉛筆鈕改成線框、去鉛筆 icon，與同列的「驗證」「綁定」「變更」「連結」一致；Google 的「解除連結」同步。
+
+### D · 設定版面的手機回流（此前一直沒落地）
+
+- `.settings-layout` 在 <900px 收成單欄、`.settings-nav` 變橫向可捲的一列，做法與斷點直接照 `section-nav.css` 的 `.section-nav-layout`（設定頁與詳情頁的分節導覽本來就是同一個視覺角色，settings.css 檔頭有寫兩處要一起改）。此前設定頁在 375px 仍是 140px 導覽＋擠扁的內容欄。
+- 輸入列：寬度歸元件管——右槽的文字輸入框掛 `.settings-row__control`（桌機 260px 上限），窄畫面該列改成標籤在上、輸入框吃滿；開關／徽章／按鈕／短值的列不受影響。`:has()` 選帶輸入框的列，避免把開關列也拆成兩行。
+- 消費頁盤點：`.settings-row` 共 13 頁在用，帶 inline `max-width` 的只有 settings.html（時間欄 120px、金額 160px、幣別 select 160px 這三種窄控制項維持同列，實測 375px 不擠）。
+
+**驗證**：`check_ds_sync.py` PASS＋既有 WARN；dev server 375px 實測 settings.html 七個分區（單欄、導覽橫捲、Email／手機列堆疊、付款列同列不擠）、tier-settings.html 無溢出；桌機不變。
+
+## 2026-09-14（二十四）· 設定頁「個人資料」分頁撤除，粉絲可見欄位併入商店設定店面（C 撤除 ＋ A spec-derived）
+
+**範圍**：`settings.html`（`#profile` 區段與左側分區項刪除、預設落在外觀；`HASH_ALIASES` 補 `profile → privacy`；隱私與安全的安全組新增 Email 列）、`store-settings.html`（店面 › 個人檔案新增「所在地」欄）、`js/store-profile-store.js`（資料模型加 `location`／`locationKey`；可加平台多一個 `website`＝個人網站、`world` icon；兩個人格的示範資料補所在地與個人網站）、`partials/fan-store.js`＋`ds-components/fan-store.css`（`__location`：map-pin＋文字，坐在身分與追蹤數之間、同一條分隔線節奏，沒填不畫）、`js/sidebar.js`（topbar 帳戶選單的「個人資料」項刪除——上面已有「商店設定」；側欄帳戶子選單的「個人資料」項刪除——側欄動作區 2026-09-11 起已有獨立的「商店設定」列，不重複）、`js/i18n.js`（`settings.profile.*` 整組、`settings.nav.profile`、`nav.profile`、`set.name.ph`／`set.handle.ph`／`set.location.ph` 撤除；新增 `settings.priv.email(-hint)`、`store-settings.sf.location(.hint/.ph)`、`social.website`、`fan.profile.*.location`；`settings.sub` 去掉「個人資料」）、`design-system.html`／`design-system.md`（Fan store preview demo 與條目補所在地）。
+
+**依據**：使用者 2026-09-14 指著設定頁個人資料——「這一頁和商店設定的店面有重複，將商店設定沒有的，而這頁有的資訊合併到商店設定中，並將這一頁刪除」；主對話兩個建議（Email 搬到隱私與安全、帳戶選單的個人資料改指向商店設定店面）使用者回「好」。規格側 D269／Plan321：5.1.9 v6（F1 撤除、F4 收 Email 與手機號碼）、5.1.5.5 v27（F2 加所在地與個人網站）、0-設計規格書 v3.55、5.1.10 F3 引用改指 F4。
+
+### C · 撤除
+
+- 個人資料分頁的頭像、顯示名稱、簡介、使用者名稱（@handle）：與店面的頭像、顯示名稱、自我介紹、商店網址 slug 重複，直接撤；粉絲看得到的身分從此只有店面一個編輯入口（店面自帶即時預覽，D267）。
+- 舊深連結 `settings.html#profile` 不留空：別名落到隱私與安全（Email 現在住那裡）。
+
+### A · 併入與新增
+
+- 所在地：店面個人檔案段、身分之後；粉絲端預覽名字下方那一列改成「身分 · 所在地 · 追蹤數」。示範值 Gary Lin＝台灣台南、周湯豪＝台灣台北（走 i18n key，切語言跟著換；使用者打的字用字面值）。
+- 個人網站：不另開欄位，做成社群連結可加平台的最後一個（與其他平台同一套規則：一條網址、有填才在粉絲端出現圓鈕、順序照此處）。理由：粉絲端本來就用一排圓鈕放外部連結，網站再開一格會是第二種「外部連結」呈現。
+- Email：搬到隱私與安全 › 安全組的第一列（密碼之前），hint 明寫「粉絲看不到」。規格 F4 同時收了手機號碼欄，原型未建（既有待確認多、見 ASSUMPTIONS UIA-150）。
+
+**驗證**：`check_ds_sync.py` PASS＋既有 WARN；dev server 實測 `settings.html`（預設外觀、`#profile` 落到隱私與安全、Email 列在密碼之前）、`store-settings.html`（所在地欄、社群連結可加「個人網站」、右欄預覽即時反映）、`e-shop.html` 商店預覽同步。
+
+## 2026-09-12（二十三）· 逐選項組合縮圖併進規格名格、不另開「圖片」欄（B 反饋導入）
+
+**範圍**：`ds-components/variant-builder.css`（`.variant-cell--variant` 改 flex 橫排＋新 `.variant-cell__text`；`.variant-thumb` 自帶 34px 寬；表格層 `--img` 修飾類與五組疊加欄軌退場）、`ds-components/lock-sets.css`（子列名稱格 gap）、`ds-components/stock-allocation.css`（`--img` 退場 → `.salloc__name--thumb`）、`ds-components/restock-modal.css`＋`partials/restock-modal.js`（`--img` 退場，`item.thumb` 進 `__id`；gap `--sp-10` → `--sp-12`）、`create-product.html`（`#cp-var-table` 縮圖進規格格、表頭去「Image」）、`product-detail.html`（`--stock`、`--preview`、鎖定庫存彈窗、補貨矩陣四處）、`create-bundle.html`／`bundle-detail.html`（成員展開列本來就在名稱格內、只受 gap 影響）、`js/i18n.js`（移除 `cp.var.col.img`）、`design-system.html`／`design-system.md`（Variant builder／Lock sets／Stock allocation／Restock table）、`STYLE-DECISIONS.md` Q117、`requirements-map.md` 5.1.5.2 一句。
+
+**依據**：使用者 2026-09-12 看商品細節 Stock 表（承（二十二）D268）：表頭「Image Variant」擠在一起看起來沒對齊，裁決「縮圖併進 Variant 欄，像一般電商後台那樣」；追加「圖片的表頭不需要」「縮圖與規格名／SKU 的間距要大一點（8px 太擠）」。
+
+### B · 改法
+
+- 縮圖不再佔獨立 grid 欄：`.variant-cell--variant` 改 `display:flex; align-items:center; gap: var(--sp-12)`，內容＝`.variant-thumb`（`--own`／`--ro` 語彙照舊，寬 34px、`flex:none`）＋ `.variant-cell__text`（規格名、底下 SKU 小字）。欄軌回到沒有縮圖欄的原狀，所有表的表頭從「Variant」開始，沒有「Image／圖片」。
+- 同一做法套到所有列出組合的表：建立商品、商品細節的庫存管理表／編輯彈窗表（檢視態 span、編輯態 button 開彈窗）／鎖定庫存彈窗（`.salloc__name--thumb` 把名稱格由直排改橫排）／補貨矩陣（`item.thumb` 放進 `__id` 取代 `__img` 方塊）、組合包建立與詳情的成員展開列。間距全站統一 `--sp-12`。
+- `--fluid` 的規格名截斷改落在 `.variant-cell__text`（flex 容器上的 ellipsis 不作用在文字上）。
+
+**驗證**：dev server `product-detail.html?id=hoodie` Stock 表與 Product settings 組合表：表頭「Variant」與格內縮圖的 x 起點一致、縮圖與文字垂直置中（見回報量測）；鎖定／補貨彈窗、create-product、bundle-detail 各表縮圖在名稱格內、0 console error；`grep` 三個退場修飾類零殘留（歷史紀錄除外）；`check_ds_sync.py` PASS。
+
+## 2026-09-11（二十二）· 逐選項組合商品圖正式納入規格，所有列出組合的表補列首縮圖（A spec-derived）
+
+**範圍**：`product-detail.html`（庫存管理表 `--stock` 列首唯讀縮圖、商品設定分頁編輯彈窗組合表 `--preview` 列首縮圖＋新「規格圖片」彈窗 `#pd-vimg-modal`、`copyModel`／`regen`／`syncLocksToStore` 帶 `img`；鎖定庫存彈窗與補貨彈窗逐組合列列首唯讀縮圖）、`ds-components/stock-allocation.css`（`.salloc--img`）、`ds-components/restock-modal.css`＋`partials/restock-modal.js`（`.restock-table--img`、`item.thumb`）、`create-bundle.html`／`bundle-detail.html`（鎖定清單多選項成員展開的逐組合列列首唯讀縮圖、補載 `variant-builder.css`）、`js/products-store.js`（`variants[].img` 欄位＋示範值、`ProductsStore.variantImgSrc`／`variantThumb` 共用產出）、`ds-components/variant-builder.css`（`--img` 可疊 `--preview`／`--stock`／`--fluid`、新增 `.variant-thumb--ro`）、`ds-components/lock-sets.css`（`.lockset__child .variant-thumb` 鎖 34px）、`js/i18n.js`（`pd.var.img.auto`）、`design-system.html`／`design-system.md`、`requirements-map.md`（5.1.5.1／5.1.5.4／5.1.5.9）、`ASSUMPTIONS.md`（PG-039 改已裁決）。
+
+**依據**：使用者 2026-09-11 裁決 D268（規格側 Plan320）：每個選項組合各自一張商品圖正式納入規格——選填、獨立上傳不佔 F1 額度、沿 §7.10 直式 750×1125、僅圖片、每個組合各一張；買家端商品頁選到該組合時換圖，其餘版位待確認。使用者看商品細節頁的逐選項組合表沒有圖：「相關的頁面或區塊都要加上商品圖片」。
+
+### A · 呈現規則（對齊裁決）
+
+- 縮圖放每列第一欄，欄寬與建立商品那張一致（34px 直式 chip）；視覺語彙沿用 create-product 2026-08-10 既有做法：虛線框＝沿用主圖、實線框＝這個組合自己的圖（`.variant-thumb`／`--own`）。
+- **只有建立商品流程與商品細節頁編輯彈窗的組合表可以改圖**，其他頁一律唯讀縮圖 `.variant-thumb--ro`（`<span>`、無指標手勢、hover 不變色）：商品細節頁庫存管理表、編輯彈窗的檢視態、組合包建立／詳情的逐組合列。
+- 商品細節頁：縮圖欄只給多選項商品（`renderPageTable()` 依是否多選項開關 `--img` 與表頭格），單一規格那一列不長縮圖；編輯態列首是 `<button>` 開「規格圖片」彈窗（移植 create-product 的 `#cp-vimg-modal`，ID 改 `pd-` 前綴），圖存編輯草稿 `DRAFT.variants[vi].img`、按「儲存變更」才寫回 store，所以彈窗底下提示改成「按儲存變更時一併存入」（`pd.var.img.auto`）；主圖換掉時沿用中的列跟著換。
+- 縮圖 HTML 統一由 `ProductsStore.variantThumb(product, variant)` 產出（`img` 可為 `images/products/` 檔名或完整路徑），三頁不各寫一套。
+- `create-product.html` 既有實作（列首縮圖＋彈窗、`varData[key].img`）維持不動。
+
+**示範資料**：`tee`（S／M 自己的圖、L／XL 沿用）、`hoodie`（Sand 三個組合自己的圖、Black 沿用）、`shoes`（US 8 自己的圖），表上同時看得到實線與虛線兩種列。
+
+**連帶修正**：`product-detail.html` 關閉任何彈窗（背景點擊／Esc）原本會把編輯草稿 `DRAFT` 清空——那是編輯還在彈窗裡時代的殘留，現在編輯在頁內，改成不在編輯模式才清，否則編輯到一半在規格圖片彈窗按 Esc 之後的改動會全部落空。
+
+**同日續作（規格 5.1.5.1 §2.10、5.1.5.6 §4 ① 已定案）**：商品細節頁「鎖定庫存」彈窗（`ds-components/stock-allocation.css` 新增 `.salloc--img`，可疊 `--bundle`）與補貨彈窗的逐選項組合矩陣（`ds-components/restock-modal.css` 新增 `.restock-table--img`；`partials/restock-modal.js` 接 `item.thumb`、任一列帶就整張掛 `--img`）列首都加唯讀縮圖，做法同 variant-builder 的 `--img` 疊欄軌（前面加 34px）；單一規格與組合包成員的列不掛。`design-system.html`／`.md` 的 Stock allocation 與 Restock table 條目與 demo 同步。
+
+**驗證**：dev server 實跑 `product-detail.html?id=hoodie`（庫存管理表六列縮圖、Sand 三列實線；編輯商品 → 組合表縮圖可點開彈窗、改回沿用主圖鈕）、`bundle-detail.html`／`create-bundle.html` 展開多選項成員看到逐組合縮圖；`check_ds_sync.py` PASS。
+
+## 2026-09-12（一）· 商店預覽 1:1：欄寬 394、鏡像不縮放、卡內捲軸藏起（B 反饋導入）
+
+**範圍**：`e-shop.html`（`#eshop-split` 變數）、`ds-components/store-settings.css`（`#ss-split` 變數）、`ds-components/preview-column.css`（卡捲軸藏起、`.preview-col` 卡內距選擇器提權）。
+
+**依據**：使用者 2026-09-12：「預覽的寬度要 fill 整個頁面寬，直到預覽的畫面 1:1（現在是 scale 內容對嗎）」——是，原本鏡像整支 zoom 0.8。
+
+### B · 1:1
+
+`--fan-store-zoom` 0.8→1，欄寬 320→394（＝手機版型 360＋卡內距 32＋邊框 2），電子商店與商店設定同步。兩個坑順手修：卡自己捲之後古典捲軸吃掉 16px 把版型壓成 344——捲軸藏起來（手機本來就沒有看得見的捲軸）；e-shop 的載入順序讓 form-section.css 本體的 24 內距蓋過預覽欄的 16（同權重輸給順序），選擇器提權成 `.preview-col .form-section.form-section--outlined`。
+
+**驗證**：dev server 1400×900：e-shop 開預覽鏡像寬 360、左欄 796 仍走橫捲；商店設定鏡像 360；建立商品的預覽欄內距仍 16。`check_ds_sync.py` PASS。
+
 ## 2026-09-11（二十一）· 商店設定「店面」改成欄位表單；店面資料成為單一資料源，預覽即時對應（A spec-derived / B 反饋導入 / C 撤除）
 
 **範圍**：`store-settings.html`（`#sec-storefront` 三張區段卡、編輯模式擴到店面、`spPaint` 綁定）、新檔 `js/store-profile-store.js`、新元件 `ds-components/profile-avatar-row.css`、`ds-components/social-links.css`＋`partials/social-links.js`、`partials/fan-store.js`（讀 store、`remountFanStore`）、`ds-components/fan-store.css`（`__social-mark`）、`js/icons.js`（brand-youtube／spotify／twitch）、`js/i18n.js`（`store-settings.sf.*`、`social.*`）、`e-shop.html`（載 store）、`ds-components/store-settings.css`（就地編輯卡墓碑）、`design-system.html`／`design-system.md`。

@@ -9,7 +9,8 @@
 //
 // 一份店面：
 //   { avatar: '<圖片路徑或 data URL>',
-//     name?, nameKey?, role?, roleKey?, bio?, bioKey?,   ← 示範資料走 i18n key（切語言跟著換）；使用者打的字用字面值
+//     name?, nameKey?, role?, roleKey?, location?, locationKey?, bio?, bioKey?,   ← 示範資料走 i18n key（切語言跟著換）；使用者打的字用字面值
+//     （location 2026-09-14 由 settings.html 個人資料併入，D269）
 //     slug: 'creator-slug',
 //     socials: [{ platform: 'instagram', url: 'https://…' }, …] }   ← 順序＝粉絲頁圓鈕順序；ztor 那顆固定、不在這裡
 (function () {
@@ -30,31 +31,34 @@
     { id: 'spotify',     label: 'Spotify',    icon: 'brand-spotify' },
     { id: 'twitch',      label: 'Twitch',     icon: 'brand-twitch' },
     { id: 'tiktok',      label: 'TikTok',     icon: 'brand-tiktok' },
-    { id: 'youtube',     label: 'YouTube',    icon: 'brand-youtube' }
+    { id: 'youtube',     label: 'YouTube',    icon: 'brand-youtube' },
+    { id: 'website',     labelKey: 'social.website', label: 'Website', icon: 'world' }   /* 個人網站：2026-09-14 由 settings.html 個人資料的「網站」併入（D269） */
   ];
 
   /* 示範資料＝預覽現在畫的那一組：頭像／名字／身分／簡介沿用 fan-store 的人格檔案，社群四條給示範網址。 */
   var SEED = {
     default: {
       avatar: 'images/ip/gary-portrait.jpg',
-      nameKey: 'fan.profile.default.name', roleKey: 'fan.profile.default.role', bioKey: 'fan.profile.default.bio',
+      nameKey: 'fan.profile.default.name', roleKey: 'fan.profile.default.role', locationKey: 'fan.profile.default.location', bioKey: 'fan.profile.default.bio',
       slug: 'garylin',
       socials: [
         { platform: 'instagram', url: 'https://instagram.com/garylin.music' },
         { platform: 'threads',   url: 'https://threads.net/@garylin.music' },
         { platform: 'x',         url: 'https://x.com/garylin_music' },
-        { platform: 'tiktok',    url: 'https://tiktok.com/@garylin.music' }
+        { platform: 'tiktok',    url: 'https://tiktok.com/@garylin.music' },
+        { platform: 'website',   url: 'https://garylin.studio' }
       ]
     },
     nick: {
       avatar: 'images/ip/nick-portrait.jpg',
-      nameKey: 'fan.profile.nick.name', roleKey: 'fan.profile.nick.role', bioKey: 'fan.profile.nick.bio',
+      nameKey: 'fan.profile.nick.name', roleKey: 'fan.profile.nick.role', locationKey: 'fan.profile.nick.location', bioKey: 'fan.profile.nick.bio',
       slug: 'nickchou',
       socials: [
         { platform: 'instagram', url: 'https://instagram.com/nickchou' },
         { platform: 'threads',   url: 'https://threads.net/@nickchou' },
         { platform: 'x',         url: 'https://x.com/nickchou' },
-        { platform: 'tiktok',    url: 'https://tiktok.com/@nickchou' }
+        { platform: 'tiktok',    url: 'https://tiktok.com/@nickchou' },
+        { platform: 'website',   url: 'https://nickchou.com' }
       ]
     }
   };
@@ -92,7 +96,7 @@
       var p = read();
       Object.keys(patch || {}).forEach(function (k) {
         p[k] = patch[k];
-        if (k === 'name' || k === 'role' || k === 'bio') delete p[k + 'Key'];
+        if (k === 'name' || k === 'role' || k === 'location' || k === 'bio') delete p[k + 'Key'];
       });
       return write(p);
     },
