@@ -34,6 +34,21 @@
   top: 78px;
   align-self: flex-start;
 }
+/* 窄畫面（2026-09-14）：左右兩欄收成單欄、導覽變成橫向可捲的一列——做法與斷點照
+   section-nav.css 的 `.section-nav-layout`（兩個版面是同一個視覺角色，見上方註解）。
+   此前設定頁在手機上仍是 140px 導覽＋擠扁的內容欄，主規格 §6 說的「設定的左右兩欄
+   在小螢幕收合成單欄」一直沒落地。 */
+@media (max-width: 899px) {
+  .settings-layout { grid-template-columns: minmax(0, 1fr); gap: var(--sp-20); }
+  .settings-nav {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: var(--sp-4);
+    padding-bottom: var(--sp-4);
+  }
+  .settings-nav .settings-nav__item { white-space: nowrap; }
+}
 
 /* 分區內放兩張以上的卡是常態（商店設定的「銷售預設」＝幣別一張、出貨一張），
    間距由容器的 gap 承擔、不由卡片各自加 margin——規則見 stack.css 檔頭。
@@ -85,4 +100,14 @@
 .settings-row__value {
   font-size: var(--fs-13);
   color: var(--foreground-muted);
+}
+
+/* 右槽放輸入框時的寬度（2026-09-14）：桌機上限 260px，讓標籤欄保有可讀寬度；
+   以前是每個 input 各自 inline `max-width:260px`，手機上改不掉、標籤被擠成一字一行。
+   現在寬度歸元件管：窄畫面時整列改成上下堆疊、輸入框吃滿。開關、徽章、按鈕、短值
+   這類窄控制項不受影響，仍與標籤同列。 */
+.settings-row__control { width: 100%; max-width: 260px; }
+@media (max-width: 899px) {
+  .settings-row:has(> .settings-row__control) { grid-template-columns: minmax(0, 1fr); gap: var(--sp-8); }
+  .settings-row__control { max-width: none; }
 }
