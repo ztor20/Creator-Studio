@@ -28,6 +28,8 @@
 <link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
 <!-- 2026-09-11：F4 庫存改鎖定套數模型，做法比照 bundle-detail 的「組合庫存」分頁 -->
 <link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
+<!-- 2026-09-11 D268：多選項成員展開的逐組合列列首唯讀縮圖 .variant-thumb--ro（定義在 variant-builder.css） -->
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/row-disclosure.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
@@ -688,7 +690,8 @@
         group.appendChild(row);
         group.insertAdjacentHTML('beforeend', p.variants.map((v, vi) =>
           '<div class="lockset__row lockset__child" data-rowdis-child="' + gid + '" hidden data-cb-alloc-child="' + esc(m.productId) + '" data-cb-vi="' + vi + '">'
-          + '<span class="lockset__name">' + esc((v.combo || []).join(' / ')) + '</span>'
+          /* 列首唯讀縮圖（2026-09-11 D268）：這個組合自己的圖（實線）或沿用商品主圖（虛線），只看不改 */
+            + '<span class="lockset__name">' + (window.ProductsStore && window.ProductsStore.variantThumb ? window.ProductsStore.variantThumb(p, v, { label: (v.combo || []).join(' / ') }) : '') + '<span>' + esc((v.combo || []).join(' / ')) + '</span></span>'
           + '<span class="lockset__num" data-cb-stock></span>'
           + '<span class="lockset__num" data-cb-free></span>'
           + '<span><span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" placeholder="0" data-cb-alloc-input data-cb-vi="' + vi + '" data-i18n-aria-label="stock.lock" aria-label="Locked"><span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></span></span>'
