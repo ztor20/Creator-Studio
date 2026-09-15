@@ -348,6 +348,22 @@
       <div class="field__hint mt-8" data-od-void-effect="stock" data-i18n="od.void.effect.stock">Stock goes back on the shelf; a bundle restocks each of its members.</div>
       <div class="field__hint mt-8" data-i18n="od.void.effect.email">The buyer gets an order-cancelled email listing this item.</div>
       <div class="field__hint mt-16" data-i18n="od.void.irreversible">There's no undo — a voided item can't be reinstated.</div>
+      <!-- 撤銷原因（D271，2026-09-15）：選填、自由填寫；下方預設理由 chip 一鍵帶入、帶入後可改寫。
+           有填才進買家信與品項列的撤銷紀錄。元件全用既有的 field／textarea／chip，沒有新 CSS。 -->
+      <div class="field mt-16">
+        <label class="field__label" for="od-void-reason" data-i18n="od.void.reason.label">Reason (optional)</label>
+        <textarea class="input textarea" id="od-void-reason" rows="2" data-i18n-placeholder="od.void.reason.ph" placeholder="Leave a note on why this line is being voided — it goes to the buyer's email and the order record."></textarea>
+        <div class="field__hint mt-8" data-i18n="od.void.reason.hint">Or pick a preset — you can still edit it.</div>
+        <div class="chip-group mt-8" data-od-void-presets>
+          <button class="chip" type="button" data-od-void-preset="od.void.reason.p1" data-i18n="od.void.reason.p1">Buyer requested cancellation by email</button>
+          <button class="chip" type="button" data-od-void-preset="od.void.reason.p2" data-i18n="od.void.reason.p2">Out of stock — can't be supplied</button>
+          <button class="chip" type="button" data-od-void-preset="od.void.reason.p3" data-i18n="od.void.reason.p3">Duplicate order</button>
+          <button class="chip" type="button" data-od-void-preset="od.void.reason.p4" data-i18n="od.void.reason.p4">Payment issue or suspected fraud</button>
+          <button class="chip" type="button" data-od-void-preset="od.void.reason.p5" data-i18n="od.void.reason.p5">Listing or price error</button>
+          <button class="chip" type="button" data-od-void-preset="od.void.reason.p6" data-i18n="od.void.reason.p6">Pickup session cancelled or changed</button>
+          <button class="chip" type="button" data-od-void-preset="od.void.reason.p7" data-i18n="od.void.reason.p7">Not collected by the pickup deadline</button>
+        </div>
+      </div>
     </div>
     <div class="payout-dialog__foot">
       <button class="btn btn--ghost btn--sm" type="button" data-od-void-close data-i18n="od.void.cancel">Cancel</button>
@@ -595,6 +611,19 @@
     }
     try { return localStorage.getItem('ztor.role') === 'admin'; } catch (e) { return false; }
   }
+  /* 撤銷紀錄（D271）：已取消的品項在名稱下多一行「撤銷於 日期 · 執行者」，有原因再接「· 原因」。
+     跨訂單的完整操作紀錄在 Creator 管理 F4，這裡只回答「這筆為什麼取消」。取貨型的日期
+     從領取單位的 at 取（作廢時 markVoid 會寫），其餘讀品項自己的 voidedAt。 */
+  var voidRecordHtml = function (it) {
+    if (S.voidState(it, order) !== 'voided') return '';
+    var at = it.voidedAt;
+    if (!at && it.units && it.units.length) at = it.units[0].at;
+    if (!at && it.members) it.members.some(function (m) { return (m.units || []).some(function (u) { if (u.status === 'void' && u.at) { at = u.at; return true; } return false; }); });
+    var who = T(it.voidedBy === 'creator' ? 'od.void.record.creator' : 'od.void.record.admin', it.voidedBy === 'creator' ? 'Creator' : 'Admin');
+    var line = T('od.void.record', 'Voided {date} · {who}').replace('{date}', esc(at || '—')).replace('{who}', who);
+    if (it.voidReason) line += ' · ' + esc(it.voidReason);
+    return '<div class="data-list__meta">' + line + '</div>';
+  };
   var voidBtnHtml = function (it, i) {
     var st = S.voidState(it, order);
     if (st === 'voided') return '';
@@ -702,6 +731,7 @@
               ' data-snap-desc="' + esc(it.snap.desc) + '" data-snap-manage="' + esc(it.snap.manage) + '">' +
               '<span data-i18n="' + esc(it.nameKey) + '">' + esc(it.name) + '</span></a></div>' +
             '<div class="data-list__meta" data-i18n="' + esc(catI18nKey) + '">—</div>' +
+            voidRecordHtml(it) +
           '</div>' +
         '</div>' +
         '<span class="od-cell">' + it.qty + '</span>' +
@@ -953,8 +983,20 @@
     const codesEffect = modal.querySelector('[data-od-void-effect="codes"]');
     const stockEffect = modal.querySelector('[data-od-void-effect="stock"]');
     const confirmBtn = document.getElementById('od-void-confirm');
+    const reasonEl = document.getElementById('od-void-reason');
+    const presetHost = modal.querySelector('[data-od-void-presets]');
     const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb;
     let target = null;
+    /* 撤銷原因（D271）：chip 點了把該理由的當前語言文字灌進 textarea 並標 active；
+       使用者自己改字就把 active 拿掉（帶入只是起手，最後以 textarea 內容為準）。 */
+    const clearPreset = () => { if (presetHost) presetHost.querySelectorAll('.chip--active').forEach(c => c.classList.remove('chip--active')); };
+    if (presetHost) presetHost.addEventListener('click', e => {
+      const chip = e.target.closest && e.target.closest('[data-od-void-preset]');
+      if (!chip) return;
+      clearPreset(); chip.classList.add('chip--active');
+      if (reasonEl) { reasonEl.value = T(chip.dataset.odVoidPreset, chip.textContent.trim()); reasonEl.focus(); }
+    });
+    if (reasonEl) reasonEl.addEventListener('input', clearPreset);
 
     const open = () => { modal.hidden = false; document.body.classList.add('is-modal-open'); };
     const close = () => { modal.hidden = true; document.body.classList.remove('is-modal-open'); target = null; };
@@ -981,13 +1023,15 @@
         (item.mode === 'bundle' && agg.total > 0);
       if (codesEffect) codesEffect.hidden = !hasUnits;
       if (stockEffect) stockEffect.hidden = item.mode === 'digital';
+      if (reasonEl) reasonEl.value = '';
+      clearPreset();
       open();
     });
 
     confirmBtn.addEventListener('click', () => {
       if (!target) return close();
       const label = T(target.nameKey, target.name);
-      const done = S.voidItem(order, target);
+      const done = S.voidItem(order, target, reasonEl ? reasonEl.value.trim() : '');
       close();
       if (!done) return;
       view.items();

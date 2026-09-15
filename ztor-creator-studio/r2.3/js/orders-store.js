@@ -339,6 +339,7 @@
             manage: 'product-detail.html?id=acetate'
           },
           /* Admin 作廢 → 領取單位轉 void、領取碼即刻失效（D242 裁決一，觸發源由 D253 收斂）*/
+          voidedAt: '2026-06-11', voidedBy: 'admin', voidReason: '買家來信申請取消',
           units: [
             { code: 'PU-10471-01', status: 'void', at: '2026-06-11', session: PICKUP_SESSION }
           ]
@@ -432,6 +433,7 @@
           },
           /* Admin 已作廢這一項：領取碼即刻失效。at 記的是作廢時間（已核銷的單位才把 at
              讀成核銷時間，見消費頁的 status === 'done' 判斷）。 */
+          voidedAt: '2026-06-06', voidedBy: 'admin', voidReason: '商品缺貨，無法供應',
           units: [
             { code: 'PU-10467-01', status: 'void', at: '2026-06-06', session: PICKUP_SESSION }
           ]
@@ -477,6 +479,7 @@
             desc: 'Soft-washed cotton tee with a 九龍夜行 print. Unisex fit.',
             manage: 'product-detail.html?id=tee'
           },
+          voidedAt: '2026-06-05', voidedBy: 'admin', voidReason: '重複下單，買家保留另一筆 #ZT-10465',
           units: [
             { code: 'PU-10466-01', status: 'void', at: '2026-06-05', session: PICKUP_SESSION }
           ]
@@ -489,6 +492,7 @@
             desc: 'Launch-night bundle — six-panel cap ×2 and numbered vinyl, both picked up on-site.',
             manage: 'product-detail.html?id=bundle-launch'
           },
+          voidedAt: '2026-06-05', voidedBy: 'admin', voidReason: '重複下單，買家保留另一筆 #ZT-10465',
           members: [
             {
               nameKey: 'od.item6.name', name: 'Kowloon After Dark six-panel cap',
@@ -667,7 +671,7 @@
           },
           /* 出貨型品項作廢：沒有領取單位可失效，改在品項自己身上記 voided（見檔頭
              「作廢明細」節）。at 為作廢時間。 */
-          voided: true, voidedAt: '2026-06-10'
+          voided: true, voidedAt: '2026-06-10', voidedBy: 'admin', voidReason: '重複下單，買家保留另一筆 #ZT-10465'
         }
       ],
       amounts: { goods: '$56.00', shipping: '$5.00', platform: '−$8.40', payment: '−$1.34', net: '$51.26' },
@@ -807,7 +811,7 @@
             desc: 'Canvas low-top sneaker on a rubber cup sole.',
             manage: 'product-detail.html?id=shoes'
           },
-          voided: true, voidedAt: '2026-06-11'
+          voided: true, voidedAt: '2026-06-11', voidedBy: 'admin', voidReason: '買家來信申請取消'
         }
       ],
       amounts: { goods: '$64.00', shipping: '$5.00', platform: '−$9.60', payment: '−$1.54', net: '$57.86' },
@@ -1004,9 +1008,13 @@
      判斷一次）。
      ⚠ 原型只動狀態：**庫存回補與「訂單已取消」email 由後端執行**，這裡不模擬，也不呼叫
      Stripe——人工退款是營運人員在平台外先完成的前置。確認彈窗會把這三件事告訴操作者。 */
-  function voidItem(order, item) {
+  function voidItem(order, item, reason) {
     if (voidState(item, order) !== 'ok') return false;
     var at = new Date().toISOString().slice(0, 10);
+    /* 撤銷紀錄（D271）：不分品項型態都在品項上記 voidedAt／voidedBy／voidReason（原因選填、
+       空字串不記），供品項列的撤銷紀錄與買家信讀。取貨型的領取單位仍各自轉 void。 */
+    item.voidedAt = at; item.voidedBy = 'admin';
+    if (reason) item.voidReason = String(reason).trim(); else delete item.voidReason;
     var agg = unitSummary(item);
     var hasPickup = (item.mode === 'pickup' && item.units && item.units.length) ||
                     (item.mode === 'bundle' && agg.total > 0);

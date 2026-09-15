@@ -4,6 +4,20 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-15（二十八）· 撤銷品項：選填原因＋預設理由、品項列撤銷紀錄、取消信不預設買家申請（A spec-derived）
+
+**範圍**：`order-detail.html`（§2.8 撤銷彈窗在「不可逆」之後加「撤銷原因（選填）」textarea＋七顆預設理由 chip；§2.3.1 已取消品項的名稱下多一行撤銷紀錄「日期 由 Admin 撤銷 · 原因」）、`js/orders-store.js`（`voidItem(order, item, reason)` 第三參數；不分品項型態都在品項上記 `voidedAt`／`voidedBy`／`voidReason`，空原因不記；四筆 demo 已撤銷品項補紀錄）、`js/i18n.js`（`od.void.reason.*` 10 鍵、`od.void.record*` 3 鍵）、`emails/shop-order-cancelled-zh.html`（開頭移除「依你提出的申請」；退款資料加「取消原因」列，有填才顯示，標 `[[#if voidReason]]`）。
+
+**依據**：`documents/decisions.md` D271（使用者 2026-09-15 裁決：撤銷發動方不限買家申請、可選填原因＋預設理由、原因進買家信、訂單詳情顯示撤銷紀錄）；`5.1.5.3.1` v2.7 §2.8「執行前確認 · 撤銷原因」「撤銷紀錄」「撤銷原因」。上游 Asana 1217989360065066 仍寫 Reason codes: None，D271 已標需回報。
+
+**設計取捨**：
+- 原因欄放在彈窗最後、所有後果讀完之後——先確認「要不要撤」，再問「為什麼」，不讓填寫打斷前面的風險閱讀。
+- 預設理由做成 chip 而不是下拉：七個理由一眼掃完、一鍵帶入、帶入後仍可在 textarea 改字（改字即取消 chip 的選中態，最後以 textarea 內容為準）。全用既有 `field`／`textarea`／`chip-group` 元件，沒有新 CSS。
+- 撤銷紀錄放品項列名稱下方的 `data-list__meta` 第二行，不另開區塊：它回答的是「這筆為什麼取消」，跟品項綁在一起最順；跨訂單的完整操作紀錄仍在 Creator 管理 F4。
+- 取貨型品項的撤銷日期從領取單位的 `at` 取（既有 demo 資料沒有品項層 voidedAt），新撤銷的一律寫品項層。
+
+**驗證**：dev server 實走 `order-detail.html?id=ZT-10471`（Admin 身分）——開彈窗 → 點「重複下單」chip 帶入 → 續打字後 chip 取消選中 → 確認撤銷 → 品項列出現「2026-09-15 由 Admin 撤銷 · 重複下單，買家保留 #ZT-10470」、整單轉已取消；console 0 error；中文介面全鍵有值。`check_ds_sync.py` PASS + WARN（兩則既有存量）。截圖 `screenshots/r2.3-order-detail-void-reason-modal.png`、`r2.3-order-detail-void-record-row.png`。
+
 ## 2026-09-14（二十七）· 新增 design-tokens.html：token 與 icon 的機器生成預覽頁（D infra／文件）
 
 **範圍**：新增 `design-tokens.html`（站根，與 `design-system.html` 並列）；`design-system.html`／`design-system.md` Pillar 1 段首各補一句連過去；`BUILD-SPEC.md` §5.5 加一條。沒有新 token、沒有新元件、沒有動任何產品頁。
