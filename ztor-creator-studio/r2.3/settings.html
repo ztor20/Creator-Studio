@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2"><link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/settings.css?v=r2.2"><link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2"><link rel="stylesheet" href="ds-components/field-system.css?v=r2.2"><link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/source-status.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -38,7 +38,7 @@
       <div class="page-intro">
         <div>
           <h1 class="page-intro__title" data-i18n="settings.h1">Settings</h1>
-          <p class="page-intro__sub" data-i18n="settings.sub">Profile, look &amp; feel, notifications, privacy, payments, and connected platforms.</p>
+          <p class="page-intro__sub" data-i18n="settings.sub">Account &amp; sign-in, look &amp; feel, language, notifications, privacy, payments, and connected platforms.</p>
         </div>
         <div class="page-intro__actions">
           <button class="btn btn--outline" data-i18n="settings.btn.discard">Discard</button>
@@ -60,36 +60,27 @@
 
         <div>
 
-          <!-- Profile -->
+          <!-- Profile（個人檔案）2026-09-14 D269：粉絲可見的身分欄位（頭像／顯示名稱／簡介／使用者名稱／網站／所在地）
+               統一搬到 store-settings.html 的店面；這裡只剩帳戶層的聯絡方式（同日補裁決保留本區承接 Email＋手機號碼）。 -->
           <section class="settings-section" id="profile">
             <h2 class="settings-section__title" data-i18n="settings.profile.title">Profile</h2>
-            <p class="settings-section__sub" data-i18n="settings.profile.sub">How fans recognise you across the platform.</p>
+            <p class="settings-section__sub" data-i18n="settings.profile.sub">Your account and how you sign in. Fans never see these; what fans see lives in Store settings › Storefront.</p>
 
+            <!-- 帳戶列（2026-09-14 使用者提供粉絲端「我的帳戶」截圖為參考）：值＋動作，做法同下方付款的稅務三列 -->
             <div class="settings-row">
               <div>
-                <div class="settings-row__label" data-i18n="settings.profile.pic">Profile picture</div>
-                <div class="settings-row__hint" data-i18n="settings.profile.pic-hint">JPG, PNG, GIF · up to 5 MB</div>
+                <div class="settings-row__label" data-i18n="settings.profile.nickname">Nickname</div>
+                <div class="settings-row__hint" data-i18n="settings.profile.nickname-hint">Same as your storefront display name.</div>
               </div>
-              <div class="flex-row">
-                <span style="width:48px;height:48px;border-radius:50%;background:var(--primary);color:var(--primary-foreground);display:inline-grid;place-items:center;font-family:var(--font-display);font-weight: var(--fw-regular);font-size: var(--fs-18)">M</span>
-                <button class="btn btn--outline btn--sm" data-i18n="settings.profile.upload">Upload new photo</button>
-              </div>
+              <div class="flex-row"><span class="text-muted" data-sp-nickname>Gary Lin</span><a class="btn btn--outline btn--sm" href="store-settings.html" data-i18n="settings.profile.edit-in-store">Edit in Storefront</a></div>
             </div>
 
             <div class="settings-row">
               <div>
-                <div class="settings-row__label" data-i18n="settings.profile.display">Display name</div>
-                <div class="settings-row__hint" data-i18n="settings.profile.display-hint">Public name on your fan profile.</div>
+                <div class="settings-row__label" data-i18n="settings.profile.realname">Legal name</div>
+                <div class="settings-row__hint" data-i18n="settings.profile.realname-hint">Verified through identity verification (KYC).</div>
               </div>
-              <input class="input" style="max-width:260px" value="Gary Lin" placeholder="e.g. Gary Lin" data-i18n-placeholder="set.name.ph">
-            </div>
-
-            <div class="settings-row">
-              <div>
-                <div class="settings-row__label" data-i18n="settings.profile.username">Username</div>
-                <div class="settings-row__hint" data-i18n="settings.profile.username-hint">Unique handle · changing this breaks short links.</div>
-              </div>
-              <input class="input" style="max-width:260px" value="@mayachou" placeholder="e.g. @mayachou" data-i18n-placeholder="set.handle.ph">
+              <div class="flex-row"><span class="badge badge--warning"><span data-i18n="settings.profile.unverified">Not verified</span></span><button class="btn btn--outline btn--sm" type="button" data-modal-open="realname-modal" data-i18n="settings.profile.verify">Verify</button></div>
             </div>
 
             <div class="settings-row">
@@ -97,32 +88,30 @@
                 <div class="settings-row__label" data-i18n="settings.profile.email">Email</div>
                 <div class="settings-row__hint" data-i18n="settings.profile.email-hint">Account &amp; transactional notifications.</div>
               </div>
-              <input class="input" style="max-width:260px" value="maya@九龍夜行.studio" placeholder="e.g. you@studio.com" data-i18n-placeholder="set.email.ph">
+              <div class="flex-row"><span class="text-muted">maya@九龍夜行.studio</span><button class="btn btn--outline btn--sm" type="button" data-modal-open="email-modal" data-i18n="settings.pay.edit">Edit</button></div>
             </div>
 
             <div class="settings-row">
               <div>
-                <div class="settings-row__label" data-i18n="settings.profile.bio">Bio</div>
-                <div class="settings-row__hint" data-i18n="settings.profile.bio-hint">280 character limit · plain text.</div>
+                <div class="settings-row__label" data-i18n="settings.profile.phone">Phone</div>
+                <div class="settings-row__hint" data-i18n="settings.profile.phone-hint">Optional. Once linked you can sign in with it.</div>
               </div>
-              <div style="width:340px"><textarea class="textarea" style="min-height:80px" data-i18n="settings.profile.bio-val">Independent musician between Tainan and Hualien. Currently pre-ordering the Kowloon After Dark OST.</textarea></div>
+              <div class="flex-row"><span class="badge badge--warning"><span data-i18n="settings.profile.unlinked">Not linked</span></span><button class="btn btn--outline btn--sm" type="button" data-modal-open="phone-modal" data-i18n="settings.profile.link-phone">Link phone</button></div>
             </div>
 
-            <div class="settings-row">
+            <div class="settings-row" style="border-bottom:0">
               <div>
-                <div class="settings-row__label" data-i18n="settings.profile.website">Website</div>
-                <div class="settings-row__hint" data-i18n="settings.profile.website-hint">Optional · shown on fan profile.</div>
+                <div class="settings-row__label" data-i18n="settings.priv.password">Password</div>
+                <div class="settings-row__hint" data-i18n="settings.priv.password-hint">Last updated 2 months ago.</div>
               </div>
-              <input class="input" style="max-width:260px" placeholder="https://" value="https://mayachou.studio">
+              <button class="btn btn--outline btn--sm" type="button" data-modal-open="password-modal" data-i18n="settings.priv.change">Change</button>
             </div>
 
-            <div class="settings-row">
-              <div>
-                <div class="settings-row__label" data-i18n="settings.profile.location">Location</div>
-              </div>
-              <input class="input" style="max-width:260px" value="Tainan, Taiwan" placeholder="e.g. Tainan, Taiwan" data-i18n-placeholder="set.location.ph">
-            </div>
-            <!-- D108: 語言偏好欄移除（v1 單一語言＝繁體中文，不提供切換）。 -->
+            <h3 style="font-family:var(--font-ui);font-size: var(--fs-13);font-weight: var(--fw-regular);letter-spacing:0.4px;text-transform:uppercase;color:var(--muted-foreground);margin:24px 0 0" data-i18n="settings.profile.sso">Third-party sign-in</h3>
+            <div class="settings-row"><div class="flex-row"><i data-lucide="brand-facebook" class="ztor-icon"></i><div class="settings-row__label">Facebook</div></div><button class="btn btn--outline btn--sm" type="button"><span data-i18n="settings.profile.link">Link</span> Facebook</button></div>
+            <div class="settings-row"><div class="flex-row"><i data-lucide="brand-google" class="ztor-icon"></i><div class="settings-row__label">Google</div></div><div class="flex-row"><span class="text-muted">maya@九龍夜行.studio</span><button class="btn btn--outline btn--sm" type="button" data-i18n="settings.profile.unlink">Unlink</button></div></div>
+            <div class="settings-row"><div class="flex-row"><i data-lucide="brand-apple" class="ztor-icon"></i><div class="settings-row__label">Apple</div></div><button class="btn btn--outline btn--sm" type="button"><span data-i18n="settings.profile.link">Link</span> Apple</button></div>
+            <div class="settings-row" style="border-bottom:0"><div class="flex-row"><i data-lucide="brand-line" class="ztor-icon"></i><div class="settings-row__label">LINE</div></div><button class="btn btn--outline btn--sm" type="button"><span data-i18n="settings.profile.link">Link</span> LINE</button></div>
           </section>
 
           <!-- Appearance -->
@@ -308,7 +297,7 @@
             <div class="settings-row" style="border-bottom:0"><div><div class="settings-row__label" data-i18n="settings.priv.dm">Allow direct messages</div><div class="settings-row__hint" data-i18n="settings.priv.dm-hint">Fans can DM through Ztor.</div></div><div class="switch switch--on"></div></div>
 
             <h3 style="font-family:var(--font-ui);font-size: var(--fs-13);font-weight: var(--fw-regular);letter-spacing:0.4px;text-transform:uppercase;color:var(--muted-foreground);margin:24px 0 0" data-i18n="settings.priv.security">Security</h3>
-            <div class="settings-row"><div><div class="settings-row__label" data-i18n="settings.priv.password">Password</div><div class="settings-row__hint" data-i18n="settings.priv.password-hint">Last updated 2 months ago.</div></div><button class="btn btn--outline btn--sm" data-i18n="settings.priv.change">Change</button></div>
+            <!-- 密碼列 2026-09-14 移到上方個人檔案（帳戶／登入方式一組），安全組只剩 2FA、登入裝置、匯出 -->
             <div class="settings-row"><div><div class="settings-row__label" data-i18n="settings.priv.2fa">Two-factor authentication</div><div class="settings-row__hint" data-i18n="settings.priv.2fa-hint">Authenticator app · backup codes generated.</div></div><span class="badge badge--success"><span data-i18n="settings.priv.enabled">Enabled</span></span></div>
 
             <!-- D5 · Active sessions (spec 5.1.9 F4 · revoke any device except this one) -->
@@ -567,8 +556,102 @@
   </main>
 </div>
 
+<!-- 個人檔案的四個彈窗（2026-09-14 使用者：「真實姓名驗證打開後只要有這兩個欄位的popup」「其他電話綁定，密碼變更的popup都幫我做完」）：
+     殼用站上既有的 .payout-dialog；開關走 data-modal-open="<id>" ／ data-modal-close，見下方 profileModals()。
+     真實姓名：只有英文姓名兩格，驗證完成前唯讀、佔位「驗證後顯示」，沒有送出鈕。
+     Email／電話／密碼：欄位＋取消／主動作；驗證信、驗證碼、強度門檻都待上游（ASSUMPTIONS UIA-150），原型不做流程。 -->
+<div class="payout-modal" id="realname-modal" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="realname-modal-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="realname-modal-title" data-i18n="settings.profile.realname">Legal name</h2>
+      <button class="btn btn--icon" type="button" data-modal-close aria-label="Close" data-i18n-aria-label="settings.profile.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div class="field">
+        <div class="field__label" data-i18n="settings.profile.realname-en">English name</div>
+        <div class="form-grid">
+          <input class="input" type="text" readonly placeholder="Shown after verification" data-i18n-placeholder="settings.profile.after-verify" aria-label="First name" data-i18n-aria-label="settings.profile.first-name">
+          <input class="input" type="text" readonly placeholder="Shown after verification" data-i18n-placeholder="settings.profile.after-verify" aria-label="Last name" data-i18n-aria-label="settings.profile.last-name">
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="payout-modal" id="email-modal" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="email-modal-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="email-modal-title" data-i18n="settings.profile.email-modal.title">Change email</h2>
+      <button class="btn btn--icon" type="button" data-modal-close aria-label="Close" data-i18n-aria-label="settings.profile.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div class="field">
+        <div class="field__label" data-i18n="settings.profile.email-modal.current">Current</div>
+        <input class="input" type="email" value="maya@九龍夜行.studio" readonly>
+      </div>
+      <div class="field">
+        <div class="field__label" data-i18n="settings.profile.email-modal.new">New email</div>
+        <div class="field__hint" data-i18n="settings.profile.email-modal.hint">Notifications switch to the new address once saved.</div>
+        <input class="input" type="email" placeholder="e.g. you@studio.com" data-i18n-placeholder="set.email.ph">
+      </div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--outline" type="button" data-modal-close data-i18n="settings.profile.cancel">Cancel</button>
+      <button class="btn btn--primary" type="button" data-modal-close data-i18n="settings.btn.save">Save changes</button>
+    </div>
+  </section>
+</div>
+
+<div class="payout-modal" id="phone-modal" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="phone-modal-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="phone-modal-title" data-i18n="settings.profile.phone-modal.title">Link phone</h2>
+      <button class="btn btn--icon" type="button" data-modal-close aria-label="Close" data-i18n-aria-label="settings.profile.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div class="field">
+        <div class="field__label" data-i18n="settings.profile.phone">Phone</div>
+        <div class="field__hint" data-i18n="settings.profile.phone-modal.hint">Once linked you can sign in with it.</div>
+        <input class="input" type="tel" placeholder="e.g. +886 912 345 678" data-i18n-placeholder="set.phone.ph">
+      </div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--outline" type="button" data-modal-close data-i18n="settings.profile.cancel">Cancel</button>
+      <button class="btn btn--primary" type="button" data-modal-close data-i18n="settings.profile.link-phone">Link phone</button>
+    </div>
+  </section>
+</div>
+
+<div class="payout-modal" id="password-modal" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="password-modal-title" data-i18n="settings.profile.password-modal.title">Change password</h2>
+      <button class="btn btn--icon" type="button" data-modal-close aria-label="Close" data-i18n-aria-label="settings.profile.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div class="field">
+        <div class="field__label" data-i18n="settings.profile.password-modal.current">Current password</div>
+        <input class="input" type="password" autocomplete="current-password">
+      </div>
+      <div class="field">
+        <div class="field__label" data-i18n="settings.profile.password-modal.new">New password</div>
+        <div class="field__hint" data-i18n="settings.profile.password-modal.hint">Strength shows as you type.</div>
+        <input class="input" type="password" autocomplete="new-password">
+      </div>
+      <div class="field">
+        <div class="field__label" data-i18n="settings.profile.password-modal.confirm">Confirm new password</div>
+        <input class="input" type="password" autocomplete="new-password">
+      </div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--outline" type="button" data-modal-close data-i18n="settings.profile.cancel">Cancel</button>
+      <button class="btn btn--primary" type="button" data-modal-close data-i18n="settings.priv.change">Change</button>
+    </div>
+  </section>
+</div>
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script><script src="partials/date-input.js?v=r2.2"></script>
+<script src="js/store-profile-store.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/sticky-actions.js?v=r2.2"></script>
 <script>
@@ -668,6 +751,32 @@
   focusTax();
   window.addEventListener("popstate", () => activateSection(requestedSection()));
   window.addEventListener("hashchange", () => { activateSection(requestedSection()); focusTax(); });
+
+  /* 個人檔案的「暱稱」＝店面的顯示名稱（單一資料源 js/store-profile-store.js），這裡只顯示、改要去店面 */
+  function paintNickname() {
+    const st = window.ZtorStoreProfile; if (!st) return;
+    document.querySelectorAll("[data-sp-nickname]").forEach(el => { el.textContent = st.text("name"); });
+  }
+  paintNickname();
+  window.addEventListener("storeprofile:changed", paintNickname);
+
+  /* 個人檔案的彈窗（真實姓名／Email／電話／密碼）：data-modal-open="<id>" 開、data-modal-close／Esc／點遮罩關，
+     做法同 store-settings 的優惠碼彈窗；原型不送資料 */
+  (function profileModals() {
+    const modals = Array.from(document.querySelectorAll(".payout-modal[id]"));
+    if (!modals.length) return;
+    const open = m => { m.hidden = false; document.body.classList.add("is-modal-open"); };
+    const close = m => { m.hidden = true; document.body.classList.remove("is-modal-open"); };
+    document.addEventListener("click", e => {
+      const t = e.target;
+      const opener = t.closest("[data-modal-open]");
+      if (opener) { const m = document.getElementById(opener.getAttribute("data-modal-open")); if (m) open(m); return; }
+      const m = t.closest(".payout-modal");
+      if (m && (t.closest("[data-modal-close]") || t === m)) close(m);
+    });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") modals.forEach(m => { if (!m.hidden) close(m); }); });
+  }());
+  document.addEventListener("i18n:applied", paintNickname);
 
   // Appearance cards reflect resolved theme
   function refreshAppearance() {

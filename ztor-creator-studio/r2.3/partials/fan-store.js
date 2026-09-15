@@ -32,8 +32,8 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
   /* 人格檔案：文字走 i18n key（切語言跟著換），頭像與追蹤數是資料。
      周湯豪的值抄自使用者提供的粉絲端截圖；Gary Lin 沿用舊預覽那一組示範值。 */
   var PROFILE = {
-    default: { avatar: 'images/ip/gary-portrait.jpg', nameKey: 'fan.profile.default.name', roleKey: 'fan.profile.default.role', followers: '1.2 萬', followersEn: '12.4k', bioKey: 'fan.profile.default.bio' },
-    nick:    { avatar: 'images/ip/nick-portrait.jpg', nameKey: 'fan.profile.nick.name',    roleKey: 'fan.profile.nick.role',    followers: '215 萬', followersEn: '2.15M', bioKey: 'fan.profile.nick.bio' }
+    default: { avatar: 'images/ip/gary-portrait.jpg', nameKey: 'fan.profile.default.name', roleKey: 'fan.profile.default.role', locationKey: 'fan.profile.default.location', followers: '1.2 萬', followersEn: '12.4k', bioKey: 'fan.profile.default.bio' },
+    nick:    { avatar: 'images/ip/nick-portrait.jpg', nameKey: 'fan.profile.nick.name',    roleKey: 'fan.profile.nick.role',    locationKey: 'fan.profile.nick.location', followers: '215 萬', followersEn: '2.15M', bioKey: 'fan.profile.nick.bio' }
   };
   var P = PROFILE[persona] || PROFILE.default;
   /* 店面資料（2026-09-11）：頭像／名字／身分／簡介／社群連結改問 js/store-profile-store.js——商店設定的
@@ -47,6 +47,15 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     var pr = profile();
     if (pr && pr[field] != null && pr[field] !== '') return '<' + tag + ' class="' + cls + '">' + esc(pr[field]) + '</' + tag + '>';
     return '<' + tag + ' class="' + cls + '" data-i18n="' + esc((pr && pr[field + 'Key']) || key) + '">' + esc(fb) + '</' + tag + '>';
+  }
+  /* 所在地（2026-09-14，D269 由設定頁個人資料併入店面）：有值才畫，map-pin＋文字，坐在身分與追蹤數之間 */
+  function locationHtml() {
+    var pr = profile();
+    var lit = pr && pr.location != null && pr.location !== '' ? pr.location : '';
+    var key = (pr && pr.locationKey) || P.locationKey;
+    if (!lit && !key) return '';
+    var txt = lit ? esc(lit) : '<span data-i18n="' + esc(key) + '">Tainan, Taiwan</span>';
+    return '<span class="fan-store__location"><i data-lucide="map-pin" class="ztor-icon ztor-icon--sm" aria-hidden="true"></i>' + txt + '</span>';
   }
   function avatarSrc() { var pr = profile(); return (pr && pr.avatar) || P.avatar; }
   function socialsHtml() {
@@ -134,6 +143,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
 '        ' + textNode('name', P.nameKey, 'h3', 'fan-store__name', 'Creator') +
 '        <div class="fan-store__meta">' +
 '          ' + textNode('role', P.roleKey, 'span', 'fan-store__role', 'Musician') +
+'          ' + locationHtml() +
 '          <span class="fan-store__followers"><b data-fs-followers data-zh="' + esc(P.followers) + '" data-en="' + esc(P.followersEn) + '">' + esc(P.followers) + '</b> <span data-i18n="fan.followers">followers</span></span>' +
 '        </div>' +
 '      </div>' +

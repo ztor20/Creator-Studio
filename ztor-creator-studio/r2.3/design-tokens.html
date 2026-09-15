@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Tokens · r2.3 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* ============================================================
+     design-tokens.html — token 總覽預覽頁（2026-09-14）
+
+     這一頁不手寫任何 token 清單：載入時 fetch `ds-components/_tokens.css` 原文，
+     解析 `:root`（亮色）與 `[data-theme="dark"]`（暗色覆寫）兩個區塊，連同每條
+     token 上方的註解一起渲染成活的預覽。所以它永遠跟 _tokens.css 同步，
+     不會像手寫的文件那樣漂移。icon 段同理，直接列 js/icons.js 的 REGISTRY。
+
+     頁面自身只用既有 token 排版，不宣告新 token、不新增元件；
+     `tk-` 前綴＝本頁專用的一次性版面。
+     ============================================================ */
+  .tk-page { max-width: 1280px; margin: 0 auto; padding: var(--sp-32) var(--sp-24) var(--sp-96); }
+
+  /* 頂部工具列：section 導覽＋搜尋＋主題切換，黏在上緣 */
+  .tk-bar {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; gap: var(--sp-12); flex-wrap: wrap;
+    padding: var(--sp-12) 0;
+    margin: 0 calc(var(--sp-24) * -1) var(--sp-24);
+    padding-inline: var(--sp-24);
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+  }
+  .tk-nav { display: flex; gap: var(--sp-4); flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
+  .tk-nav a {
+    display: inline-flex; align-items: center; gap: var(--sp-6);
+    height: var(--control-h-xs); padding: 0 var(--sp-12);
+    border-radius: var(--radius-pill);
+    font-size: var(--fs-13); font-weight: var(--fw-medium);
+    color: var(--muted-foreground);
+  }
+  .tk-nav a:hover { background: var(--ztu-glass-strong); color: var(--foreground); }
+  .tk-nav a .tk-count { font-size: var(--fs-11); color: var(--faint-ink); font-weight: var(--fw-regular); }
+  .tk-search { flex: 0 1 260px; min-width: 160px; }
+  .tk-search .input { height: var(--control-h-xs); }
+  .tk-bar .segmented { flex: 0 0 auto; }
+  .tk-hint { flex: 1 1 100%; font-size: var(--fs-11); color: var(--faint-ink); }
+
+  .tk-stats { display: flex; gap: var(--sp-8); flex-wrap: wrap; margin-top: var(--sp-8); }
+
+  /* section 與 group */
+  .tk-section { margin-top: var(--sp-56); scroll-margin-top: 128px; }
+  .tk-section__title {
+    font-family: var(--font-display); font-size: var(--fs-28); font-weight: var(--fw-light);
+    letter-spacing: -0.5px; margin: 0 0 var(--sp-6);
+  }
+  .tk-section__lead { color: var(--muted-foreground); font-size: var(--fs-14); margin: 0 0 var(--sp-24); max-width: 72ch; }
+  .tk-group { margin-top: var(--sp-28); }
+  .tk-group__title {
+    display: flex; align-items: baseline; gap: var(--sp-10);
+    font-family: var(--font-mono); font-size: var(--fs-13); color: var(--foreground);
+    margin: 0 0 var(--sp-12); padding-bottom: var(--sp-8); border-bottom: 1px solid var(--border-soft);
+  }
+  .tk-group__title small { font-family: var(--font-ui); color: var(--faint-ink); font-size: var(--fs-12); }
+
+  /* 卡片格：色票、陰影、圓角這類「一格一個預覽」 */
+  .tk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--sp-12); }
+  .tk-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    overflow: hidden; display: flex; flex-direction: column; min-width: 0;
+  }
+  .tk-card__preview {
+    position: relative; height: 64px; display: flex; align-items: center; justify-content: center;
+    /* 棋盤底：讓半透明色票看得出透明度 */
+    background-color: var(--surface-page);
+    background-image:
+      linear-gradient(45deg, var(--border) 25%, transparent 25%, transparent 75%, var(--border) 75%),
+      linear-gradient(45deg, var(--border) 25%, transparent 25%, transparent 75%, var(--border) 75%);
+    background-size: 12px 12px; background-position: 0 0, 6px 6px;
+  }
+  .tk-card__preview--plain { background-image: none; background-color: var(--surface-page); padding: var(--sp-12); }
+  .tk-card__preview--tall { height: 96px; }
+  .tk-card__swatch { position: absolute; inset: 0; }
+  .tk-card__body { padding: var(--sp-10) var(--sp-12) var(--sp-12); display: flex; flex-direction: column; gap: var(--sp-4); }
+
+  /* 列式：字級、間距、字重這類「一列一條」 */
+  .tk-rows { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .tk-row {
+    display: grid; grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+    gap: var(--sp-16); align-items: center;
+    padding: var(--sp-10) var(--sp-12); border-radius: var(--radius);
+  }
+  .tk-row:hover { background: var(--ztu-glass-bg); }
+  .tk-row__meta { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+  .tk-row__demo { min-width: 0; overflow: hidden; }
+
+  /* 共用小字 */
+  .tk-name {
+    font-family: var(--font-mono); font-size: var(--fs-12); color: var(--foreground);
+    cursor: copy; word-break: break-all; background: none; border: 0; padding: 0; text-align: left;
+  }
+  .tk-name:hover { color: var(--brand-ink); text-decoration: underline; text-underline-offset: 2px; }
+  .tk-val { font-family: var(--font-mono); font-size: var(--fs-11); color: var(--muted-foreground); word-break: break-all; }
+  .tk-val b { font-weight: var(--fw-medium); color: var(--faint-ink); font-family: var(--font-ui); margin-right: var(--sp-4); }
+  .tk-val--dark { color: var(--muted-foreground); }
+  .tk-val--resolved { color: var(--faint-ink); }
+  .tk-note { margin-top: var(--sp-4); }
+  .tk-note summary { font-size: var(--fs-11); color: var(--faint-ink); cursor: pointer; list-style: none; }
+  .tk-note summary::-webkit-details-marker { display: none; }
+  .tk-note summary::before { content: "ⓘ "; }
+  .tk-note[open] summary { color: var(--muted-foreground); }
+  .tk-note p {
+    margin: var(--sp-6) 0 0; font-size: var(--fs-12); line-height: var(--lh-relaxed);
+    color: var(--muted-foreground); white-space: pre-wrap; word-break: break-word;
+  }
+
+  /* 各種預覽 */
+  .tk-bar-demo { height: 12px; border-radius: var(--radius-pill); background: var(--primary); }
+  .tk-box-demo { background: var(--primary); width: 100%; }
+  .tk-radius-demo { width: 56px; height: 56px; background: var(--primary); border: 2px solid var(--brand-ink); }
+  .tk-shadow-demo { width: 72%; height: 40px; border-radius: var(--radius); background: var(--card); }
+  .tk-type-sample { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--foreground); }
+  .tk-family-sample { font-size: var(--fs-24); color: var(--foreground); line-height: var(--lh-snug); }
+  .tk-family-sample small { display: block; font-size: var(--fs-14); color: var(--muted-foreground); margin-top: var(--sp-4); }
+  .tk-lh-sample { font-size: var(--fs-14); color: var(--foreground); max-width: 46ch; }
+  .tk-motion-demo {
+    width: 48px; height: 24px; border-radius: var(--radius-pill); background: var(--primary);
+    transition-property: transform; cursor: pointer;
+  }
+  .tk-motion-demo:hover { transform: translateX(120px); }
+  .tk-filter-demo { position: absolute; inset: var(--sp-12); border-radius: var(--radius); background: var(--ztu-glass-bg); border: 1px solid var(--ztu-glass-rim); }
+  .tk-filter-bg {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(120deg, var(--chart-2), var(--chart-6), var(--chart-4));
+  }
+  .tk-ink-demo { font-size: var(--fs-20); font-weight: var(--fw-medium); color: var(--on-primary); }
+
+  /* 型別角色（--type-*）：一列一個 role，五個屬性摺成同一列 */
+  .tk-type-role { grid-template-columns: minmax(180px, 260px) minmax(0, 1fr); }
+  .tk-type-props { display: flex; flex-wrap: wrap; gap: var(--sp-4) var(--sp-12); margin-top: var(--sp-4); }
+
+  /* icon 格 */
+  .tk-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: var(--sp-8); }
+  .tk-icon {
+    display: flex; flex-direction: column; align-items: center; gap: var(--sp-8);
+    padding: var(--sp-14) var(--sp-8) var(--sp-10);
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    color: var(--foreground); cursor: copy; min-width: 0;
+  }
+  .tk-icon:hover { border-color: var(--ztu-glass-rim); background: var(--ztu-glass-bg); }
+  .tk-icon .tk-name { font-size: var(--fs-11); text-align: center; cursor: inherit; word-break: break-all; }
+
+  .tk-empty { color: var(--faint-ink); font-size: var(--fs-13); padding: var(--sp-24) 0; }
+  .tk-error {
+    padding: var(--sp-16) var(--sp-20); border-radius: var(--radius-lg);
+    background: var(--destructive-fill); color: var(--destructive); font-size: var(--fs-14);
+  }
+  .tk-toast {
+    position: fixed; bottom: var(--sp-24); left: 50%; transform: translateX(-50%);
+    padding: var(--sp-8) var(--sp-16); border-radius: var(--radius-pill);
+    background: var(--popover); color: var(--popover-foreground); border: 1px solid var(--border);
+    box-shadow: var(--shadow-float); font-family: var(--font-mono); font-size: var(--fs-12);
+    opacity: 0; pointer-events: none; transition: opacity var(--duration) var(--easing); z-index: 30;
+  }
+  .tk-toast[data-show] { opacity: 1; }
+
+  [hidden] { display: none !important; }
+
+  @media (max-width: 720px) {
+    .tk-page { padding-inline: var(--sp-16); }
+    /* 手機：工具列會疊到三四行、黏住會吃掉半個畫面，改成隨頁捲動 */
+    .tk-bar { position: static; margin-inline: calc(var(--sp-16) * -1); padding-inline: var(--sp-16); }
+    .tk-section { scroll-margin-top: var(--sp-16); }
+    .tk-row { grid-template-columns: 1fr; gap: var(--sp-8); }
+    .tk-type-role { grid-template-columns: 1fr; }
+    .tk-search { flex-basis: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="tk-page">
+  <header class="page-intro">
+    <div>
+      <h1 class="page-intro__title">Design Tokens</h1>
+      <p class="page-intro__sub">r2.3 · 直接讀 <code>ds-components/_tokens.css</code> 產生，與檔案永遠同步；icon 讀 <code>js/icons.js</code> 的 registry。點名稱可複製。</p>
+      <div class="tk-stats" id="tk-stats"></div>
+    </div>
+    <div class="page-intro__actions">
+      <a class="btn btn--outline btn--sm" href="design-system.html">← Design System</a>
+    </div>
+  </header>
+
+  <div class="tk-bar">
+    <nav class="tk-nav" id="tk-nav" aria-label="分區"></nav>
+    <div class="tk-search"><input class="input" id="tk-search" type="search" placeholder="搜尋 token 或 icon 名稱" autocomplete="off"></div>
+    <div class="segmented" role="group" aria-label="主題">
+      <button class="segmented__btn" type="button" data-theme-set="light">亮</button>
+      <button class="segmented__btn" type="button" data-theme-set="dark">暗</button>
+    </div>
+    <span class="tk-hint">亮色只供看 token 的亮色值；r2.3 的星空檯面尚未調亮色版，整站在亮色下不可讀。</span>
+  </div>
+
+  <main id="tk-main"><p class="tk-empty">載入中…</p></main>
+</div>
+<div class="tk-toast" id="tk-toast" role="status"></div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script>
+(function () {
+  'use strict';
+  const SRC = 'ds-components/_tokens.css?v=r2.2';
+  const main = document.getElementById('tk-main');
+  const root = document.documentElement;
+  const probe = document.createElement('span');
+  probe.setAttribute('aria-hidden', 'true');
+  probe.style.position = 'absolute'; probe.style.visibility = 'hidden'; probe.style.pointerEvents = 'none';
+  document.body.appendChild(probe);
+
+  /* ── 解析 ────────────────────────────────────────────── */
+  function stripComments(s) { return s.replace(/\/\*[\s\S]*?\*\//g, ''); }
+
+  function parseBlocks(text) {
+    // 去掉註解後抓最外層規則；_tokens.css 沒有 @media 巢狀，單層即可
+    const clean = stripComments(text);
+    const light = new Map(), dark = new Map();
+    const re = /([^{}]+)\{([^{}]*)\}/g;
+    let m;
+    while ((m = re.exec(clean))) {
+      const sel = m[1].trim();
+      const target = sel === ':root' ? light : (sel === '[data-theme="dark"]' ? dark : null);
+      if (!target) continue;
+      const dre = /(--[A-Za-z][\w-]*)\s*:\s*([^;]+)/g;
+      let d;
+      while ((d = dre.exec(m[2]))) {
+        const name = d[1], val = d[2].trim();
+        if (target.has(name)) target.set(name, val);   // 後宣告蓋前
+        else target.set(name, val);
+      }
+    }
+    return { light, dark };
+  }
+
+  function parseNotes(text) {
+    // 逐行走原文：把每條宣告「上方緊鄰的註解＋同列尾註」記成說明。同名只取第一次（亮色區）。
+    const notes = new Map();
+    const lines = text.split('\n');
+    let buf = [], inComment = false, i, line;
+    for (i = 0; i < lines.length; i++) {
+      line = lines[i];
+      let rest = line;
+      if (inComment) {
+        const end = rest.indexOf('*/');
+        if (end === -1) { buf.push(rest.trim()); continue; }
+        buf.push(rest.slice(0, end).trim()); inComment = false; rest = rest.slice(end + 2);
+      }
+      // 同列的宣告（可能在註解之前）
+      const decl = rest.match(/(--[A-Za-z][\w-]*)\s*:/);
+      let trailing = '';
+      let c;
+      while ((c = rest.indexOf('/*')) !== -1) {
+        const end = rest.indexOf('*/', c + 2);
+        if (end === -1) { trailing += rest.slice(c + 2).trim(); rest = rest.slice(0, c); inComment = true; break; }
+        trailing += rest.slice(c + 2, end).trim() + ' ';
+        rest = rest.slice(0, c) + rest.slice(end + 2);
+      }
+      if (decl) {
+        const note = [buf.join('\n').trim(), trailing.trim()].filter(Boolean).join('\n');
+        if (note && !notes.has(decl[1])) notes.set(decl[1], cleanNote(note));
+        buf = [];
+        if (inComment) buf.push(trailing.trim());
+      } else if (trailing && !inComment) {
+        buf.push(trailing.trim());
+      } else if (!inComment && rest.trim() === '' && buf.length && /^[─═]+/.test(buf[0])) {
+        // 分隔線式的大標留給下一條
+      }
+    }
+    return notes;
+  }
+  function cleanNote(s) {
+    return s.split('\n').map(l => l.replace(/^[\s─═-]+|[\s─═-]+$/g, '')).filter(Boolean).join('\n');
+  }
+
+  /* ── 型別推斷與 computed 值 ───────────────────────── */
+  function resolve(name, prop) {
+    probe.style.cssText = '';
+    probe.style.setProperty(prop, 'var(' + name + ')');
+    const v = getComputedStyle(probe)[prop];
+    return v;
+  }
+  function rawComputed(name) { return getComputedStyle(root).getPropertyValue(name).trim(); }
+
+  function kindOf(name, val) {
+    if (/^--font-/.test(name)) return 'family';
+    if (/^--fs-/.test(name)) return 'fs';
+    if (/^--fw-/.test(name)) return 'fw';
+    if (/^--lh-/.test(name)) return 'lh';
+    if (/^--type-/.test(name)) return 'type';
+    if (/^--radius/.test(name)) return 'radius';
+    if (/^--img-/.test(name)) return 'ratio';
+    if (/^--duration/.test(name)) return 'duration';
+    if (/^--easing/.test(name)) return 'easing';
+    if (/ink-shadow/.test(name)) return 'text-shadow';
+    if (/blur/.test(name) || /^blur\(/.test(val)) return 'filter';
+    if (/shadow|glow|highlight/.test(name)) return 'shadow';
+    if (/gradient/.test(name) || /gradient\(/.test(val)) return 'gradient';
+    if (/^-?\d+(\.\d+)?px$/.test(val)) return 'length';
+    if (/^-?\d+(\.\d+)?$/.test(val)) return 'number';
+    if (/^\d+(\.\d+)?ms$/.test(val)) return 'duration';
+    const c = resolve(name, 'color');
+    if (c && c !== 'rgba(0, 0, 0, 0)' && CSS.supports('color', val.replace(/var\((--[\w-]+)\)/g, 'red'))) return 'color';
+    if (CSS.supports('color', val)) return 'color';
+    if (/^(var\(--[\w-]+\))$/.test(val)) {
+      const bg = resolve(name, 'background-image');
+      if (bg && bg !== 'none') return 'gradient';
+      if (c) return 'color';
+    }
+    return 'other';
+  }
+
+  const SECTIONS = [
+    { id: 'color',  title: '色彩',       lead: '表面、文字、邊界、狀態與圖表用色。色票是活的：切換亮暗會跟著變，底下的棋盤讓半透明看得出透明度。' },
+    { id: 'type',   title: '字體',       lead: '字族、字級、字重、行距，以及把四者綁在一起的 --type-* 角色。' },
+    { id: 'space',  title: '間距與尺寸', lead: '--sp-* 是全站唯一的間距刻度（px 直命名）；--w-* 固定寬、--control-h-* 控件高度級。' },
+    { id: 'radius', title: '圓角',       lead: '' },
+    { id: 'shadow', title: '陰影與光',   lead: 'E0–E4 海拔階梯與上緣內光。陰影在亮暗兩邊值不同，切換主題看實際效果。' },
+    { id: 'motion', title: '動效與效果', lead: '過渡時間、緩動曲線、毛玻璃模糊。動效示範：把滑鼠移到膠囊上。' },
+    { id: 'ztu',    title: 'ztorUI 換裝', lead: '2026-08-28 起熔接進來的星空／玻璃／光語彙，全部以 --ztu- 為前綴。' },
+    { id: 'other',  title: '其他',       lead: '' },
+    { id: 'icons',  title: 'Icon',       lead: '' },
+  ];
+  function sectionOf(name, kind) {
+    if (name.startsWith('--ztu-')) return 'ztu';
+    if (['family', 'fs', 'fw', 'lh', 'type'].includes(kind)) return 'type';
+    if (kind === 'color' || kind === 'gradient') return 'color';
+    if (kind === 'length' || kind === 'ratio') return 'space';
+    if (kind === 'radius') return 'radius';
+    if (kind === 'shadow' || kind === 'text-shadow') return 'shadow';
+    if (['duration', 'easing', 'filter'].includes(kind)) return 'motion';
+    return 'other';
+  }
+  function prefixOf(name) {
+    const m = name.match(/^--([a-z0-9]+)/i);
+    return m ? '--' + m[1] + '-*' : name;
+  }
+
+  /* ── 渲染 ────────────────────────────────────────────── */
+  const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  function nameBtn(name) {
+    const b = h('button', 'tk-name', esc(name));
+    b.type = 'button'; b.title = '點一下複製';
+    b.addEventListener('click', () => copy(name));
+    return b;
+  }
+  function metaBlock(t) {
+    const m = h('div', 'tk-row__meta');
+    m.appendChild(nameBtn(t.name));
+    m.appendChild(h('span', 'tk-val', '<b>亮</b>' + esc(t.light)));
+    if (t.dark != null) m.appendChild(h('span', 'tk-val tk-val--dark', '<b>暗</b>' + esc(t.dark)));
+    const r = h('span', 'tk-val tk-val--resolved'); r.dataset.resolved = t.name; m.appendChild(r);
+    if (t.note) {
+      const d = h('details', 'tk-note');
+      d.appendChild(h('summary', null, '說明'));
+      d.appendChild(h('p', null, esc(t.note)));
+      m.appendChild(d);
+    }
+    return m;
+  }
+  function card(t, previewEl, plain) {
+    const c = h('article', 'tk-card'); c.dataset.search = (t.name + ' ' + t.light + ' ' + (t.dark || '') + ' ' + (t.note || '')).toLowerCase();
+    const p = h('div', 'tk-card__preview' + (plain ? ' tk-card__preview--plain' : ''));
+    p.appendChild(previewEl); c.appendChild(p);
+    const body = h('div', 'tk-card__body'); body.appendChild(metaBlock(t)); c.appendChild(body);
+    return c;
+  }
+  function row(t, demoEl, extraCls) {
+    const r = h('div', 'tk-row' + (extraCls ? ' ' + extraCls : '')); r.dataset.search = (t.name + ' ' + t.light + ' ' + (t.dark || '') + ' ' + (t.note || '')).toLowerCase();
+    r.appendChild(metaBlock(t));
+    const d = h('div', 'tk-row__demo'); d.appendChild(demoEl); r.appendChild(d);
+    return r;
+  }
+  const v = name => 'var(' + name + ')';
+
+  function renderToken(t) {
+    const n = t.name;
+    switch (t.kind) {
+      case 'color': { const s = h('div', 'tk-card__swatch'); s.style.background = v(n); return card(t, s); }
+      case 'gradient': { const s = h('div', 'tk-card__swatch'); s.style.background = v(n); return card(t, s); }
+      case 'shadow': {
+        const s = h('div', 'tk-shadow-demo'); s.style.boxShadow = v(n);
+        const c = card(t, s, true); c.querySelector('.tk-card__preview').classList.add('tk-card__preview--tall'); return c;
+      }
+      case 'text-shadow': { const s = h('div', 'tk-ink-demo', 'Aa 文字影'); s.style.textShadow = v(n); s.style.color = 'var(--ztu-accent-fg)'; const c = card(t, s, true); c.querySelector('.tk-card__preview').style.background = 'var(--primary)'; return c; }
+      case 'radius': { const s = h('div', 'tk-radius-demo'); s.style.borderRadius = v(n); const c = card(t, s, true); c.querySelector('.tk-card__preview').classList.add('tk-card__preview--tall'); return c; }
+      case 'filter': {
+        const wrap = h('div'); wrap.style.position = 'absolute'; wrap.style.inset = '0';
+        wrap.appendChild(h('div', 'tk-filter-bg'));
+        const g = h('div', 'tk-filter-demo');
+        g.style.backdropFilter = /px$/.test(t.light) ? 'blur(' + v(n) + ')' : v(n);
+        g.style.webkitBackdropFilter = g.style.backdropFilter;
+        wrap.appendChild(g);
+        const c = card(t, wrap, true); c.querySelector('.tk-card__preview').classList.add('tk-card__preview--tall'); return c;
+      }
+      case 'length': {
+        if (/^--control-h-/.test(n)) { const s = h('div', 'tk-box-demo'); s.style.height = v(n); s.style.borderRadius = 'var(--radius)'; s.style.maxWidth = '160px'; return row(t, s); }
+        const s = h('div', 'tk-bar-demo'); s.style.width = v(n); s.style.maxWidth = '100%'; return row(t, s);
+      }
+      case 'ratio': { const s = h('div', 'tk-box-demo'); s.style.aspectRatio = v(n); s.style.width = '64px'; s.style.borderRadius = 'var(--radius)'; return row(t, s); }
+      case 'family': { const s = h('div', 'tk-family-sample', 'The quick brown fox jumps over 敏捷的棕色狐狸跳過懶狗 0123456789<small>ABCDEFGHIJKLM abcdefghijklm 繁體中文 標題 內文</small>'); s.style.fontFamily = v(n); return row(t, s); }
+      case 'fs': { const s = h('div', 'tk-type-sample', 'Aa 字級 ' + esc(t.light) + ' — 敏捷的棕色狐狸'); s.style.fontSize = v(n); s.style.lineHeight = 'var(--lh-tight)'; return row(t, s); }
+      case 'fw': { const s = h('div', 'tk-type-sample', 'Aa 字重 ' + esc(t.light) + ' — The quick brown fox 敏捷的狐狸'); s.style.fontWeight = v(n); s.style.fontSize = 'var(--fs-20)'; return row(t, s); }
+      case 'lh': { const s = h('div', 'tk-lh-sample', '行距 ' + esc(t.light) + '：這一段文字用來看行與行之間的距離。同一段落多行排在一起時，行距決定了閱讀的呼吸感，太緊會擠、太鬆會散。'); s.style.lineHeight = v(n); return row(t, s); }
+      case 'duration': { const s = h('div', 'tk-motion-demo'); s.title = '滑鼠移過來'; s.style.transitionDuration = v(n); s.style.transitionTimingFunction = 'var(--easing)'; return row(t, s); }
+      case 'easing': { const s = h('div', 'tk-motion-demo'); s.title = '滑鼠移過來'; s.style.transitionDuration = '600ms'; s.style.transitionTimingFunction = v(n); return row(t, s); }
+      case 'number': { const s = h('div', 'tk-val', esc(t.light)); return row(t, s); }
+      default: { const s = h('div', 'tk-val', esc(t.light)); return row(t, s); }
+    }
+  }
+
+  // --type-* 角色：五個屬性摺成一列，直接用該角色渲染樣本字
+  const TYPE_PROPS = ['family', 'size', 'weight', 'line-height', 'tracking'];
+  function renderTypeRoles(tokens) {
+    const roles = new Map();
+    tokens.forEach(t => {
+      let role = null, prop = null;
+      for (const p of TYPE_PROPS) { if (t.name.endsWith('-' + p)) { role = t.name.slice(0, -(p.length + 1)); prop = p; break; } }
+      if (!role) { role = t.name; prop = '?'; }
+      if (!roles.has(role)) roles.set(role, []);
+      roles.get(role).push(Object.assign({ prop }, t));
+    });
+    const frag = document.createDocumentFragment();
+    roles.forEach((props, role) => {
+      const r = h('div', 'tk-row tk-type-role');
+      r.dataset.search = (role + ' ' + props.map(p => p.name + ' ' + p.light + ' ' + (p.note || '')).join(' ')).toLowerCase();
+      const meta = h('div', 'tk-row__meta');
+      meta.appendChild(nameBtn(role + '-*'));
+      const list = h('div', 'tk-type-props');
+      props.forEach(p => list.appendChild(h('span', 'tk-val', '<b>' + esc(p.prop) + '</b>' + esc(p.light))));
+      meta.appendChild(list);
+      const notes = props.map(p => p.note).filter(Boolean);
+      if (notes.length) { const d = h('details', 'tk-note'); d.appendChild(h('summary', null, '說明')); d.appendChild(h('p', null, esc(notes.join('\n')))); meta.appendChild(d); }
+      r.appendChild(meta);
+      const s = h('div', 'tk-type-sample', esc(role.replace('--type-', '')) + ' · 敏捷的棕色狐狸跳過懶狗 The quick brown fox');
+      const get = p => props.find(x => x.prop === p);
+      if (get('family')) s.style.fontFamily = v(get('family').name);
+      if (get('size')) s.style.fontSize = v(get('size').name);
+      if (get('weight')) s.style.fontWeight = v(get('weight').name);
+      if (get('line-height')) s.style.lineHeight = v(get('line-height').name);
+      if (get('tracking')) s.style.letterSpacing = v(get('tracking').name);
+      const d = h('div', 'tk-row__demo'); d.appendChild(s); r.appendChild(d);
+      frag.appendChild(r);
+    });
+    return frag;
+  }
+
+  function renderGroup(title, tokens, container) {
+    const g = h('section', 'tk-group');
+    g.appendChild(h('h3', 'tk-group__title', esc(title) + ' <small>' + tokens.length + ' 條</small>'));
+    const kinds = new Set(tokens.map(t => t.kind));
+    if (kinds.size === 1 && kinds.has('type')) { const w = h('div', 'tk-rows'); w.appendChild(renderTypeRoles(tokens)); g.appendChild(w); container.appendChild(g); return; }
+    const cardKinds = ['color', 'gradient', 'shadow', 'text-shadow', 'radius', 'filter'];
+    const cards = tokens.filter(t => cardKinds.includes(t.kind));
+    const rows = tokens.filter(t => !cardKinds.includes(t.kind) && t.kind !== 'type');
+    const types = tokens.filter(t => t.kind === 'type');
+    if (cards.length) { const w = h('div', 'tk-grid'); cards.forEach(t => w.appendChild(renderToken(t))); g.appendChild(w); }
+    if (rows.length) { const w = h('div', 'tk-rows'); if (cards.length) w.style.marginTop = 'var(--sp-16)'; rows.forEach(t => w.appendChild(renderToken(t))); g.appendChild(w); }
+    if (types.length) { const w = h('div', 'tk-rows'); w.appendChild(renderTypeRoles(types)); g.appendChild(w); }
+    container.appendChild(g);
+  }
+
+  function renderIcons(section) {
+    const reg = (window.ztorIcons && window.ztorIcons.REGISTRY) || {};
+    const names = Object.keys(reg);
+    section.querySelector('.tk-section__lead').textContent = '產品頁 registry（js/icons.js）策展的 ' + names.length + ' 顆 Tabler icon，HTML 用 <i data-lucide="名稱" class="ztor-icon"></i>。完整 Tabler 全集只在 design-system.html 載入。點一下複製名稱。';
+    const grid = h('div', 'tk-icons');
+    names.forEach(k => {
+      const c = h('button', 'tk-icon'); c.type = 'button'; c.dataset.search = k.toLowerCase();
+      const i = document.createElement('i'); i.setAttribute('data-lucide', k); i.className = 'ztor-icon ztor-icon--lg';
+      c.appendChild(i); c.appendChild(h('span', 'tk-name', esc(k)));
+      c.addEventListener('click', () => copy(k));
+      grid.appendChild(c);
+    });
+    section.appendChild(grid);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(grid);
+    return names.length;
+  }
+
+  function refreshResolved() {
+    document.querySelectorAll('[data-resolved]').forEach(el => {
+      const n = el.dataset.resolved;
+      const t = TOK.get(n);
+      let val = '';
+      if (t.kind === 'color') val = resolve(n, 'color');
+      else if (t.kind === 'gradient') val = resolve(n, 'background-image');
+      else if (t.kind === 'shadow') val = resolve(n, 'box-shadow');
+      else if (t.kind === 'family') val = resolve(n, 'font-family');
+      else val = rawComputed(n);
+      const shown = val.length > 140 ? val.slice(0, 140) + '…' : val;
+      el.title = val;
+      el.innerHTML = '<b>' + (root.getAttribute('data-theme') === 'dark' ? '暗' : '亮') + '＝</b>' + esc(shown);
+    });
+    const cur = root.getAttribute('data-theme');
+    document.querySelectorAll('[data-theme-set]').forEach(b => b.classList.toggle('segmented__btn--active', b.dataset.themeSet === cur));
+  }
+
+  const TOK = new Map();
+  function build(text) {
+    const { light, dark } = parseBlocks(text);
+    const notes = parseNotes(text);
+    light.forEach((val, name) => {
+      const kind = kindOf(name, val);
+      TOK.set(name, { name, light: val, dark: dark.has(name) ? dark.get(name) : null, note: notes.get(name) || '', kind, section: sectionOf(name, kind) });
+    });
+    const darkOnly = [...dark.keys()].filter(k => !light.has(k));
+
+    main.innerHTML = '';
+    const nav = document.getElementById('tk-nav');
+    const counts = {};
+    SECTIONS.forEach(s => {
+      const sec = h('section', 'tk-section'); sec.id = 'tk-' + s.id;
+      sec.appendChild(h('h2', 'tk-section__title', esc(s.title)));
+      sec.appendChild(h('p', 'tk-section__lead', esc(s.lead)));
+      if (s.id === 'icons') { counts[s.id] = renderIcons(sec); }
+      else {
+        const list = [...TOK.values()].filter(t => t.section === s.id);
+        counts[s.id] = list.length;
+        if (!list.length) { sec.hidden = true; }
+        const groups = new Map();
+        list.forEach(t => { const p = prefixOf(t.name); if (!groups.has(p)) groups.set(p, []); groups.get(p).push(t); });
+        // 間距區的群組照「刻度先、專用尺寸後」排，其餘區照檔內出現順序
+        const order = s.id === 'space' ? ['--sp-*', '--w-*', '--control-*', '--space-*', '--scrollbar-*', '--img-*'] : [];
+        [...groups.keys()].sort((a, b) => {
+          const ia = order.indexOf(a), ib = order.indexOf(b);
+          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+        }).forEach(p => renderGroup(p, groups.get(p), sec));
+      }
+      main.appendChild(sec);
+      if (!sec.hidden) { const a = h('a', null, esc(s.title) + ' <span class="tk-count">' + counts[s.id] + '</span>'); a.href = '#tk-' + s.id; nav.appendChild(a); }
+    });
+
+    const stats = document.getElementById('tk-stats');
+    stats.innerHTML = '';
+    stats.appendChild(h('span', 'ztor-badge', '亮色 token ' + light.size + ' 條'));
+    stats.appendChild(h('span', 'ztor-badge', '暗色覆寫 ' + dark.size + ' 條'));
+    stats.appendChild(h('span', 'ztor-badge', 'icon ' + counts.icons + ' 顆'));
+    if (darkOnly.length) stats.appendChild(h('span', 'ztor-badge ztor-badge--error', '只在暗色宣告：' + esc(darkOnly.join(', '))));
+
+    refreshResolved();
+    new MutationObserver(refreshResolved).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+
+  /* ── 搜尋 ────────────────────────────────────────────── */
+  document.getElementById('tk-search').addEventListener('input', e => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll('[data-search]').forEach(el => { el.hidden = q ? !el.dataset.search.includes(q) : false; });
+    document.querySelectorAll('.tk-group').forEach(g => { g.hidden = q ? !g.querySelector('[data-search]:not([hidden])') : false; });
+    document.querySelectorAll('.tk-section').forEach(s => {
+      const hasItems = s.querySelector('[data-search]');
+      if (!hasItems) return;
+      s.hidden = q ? !s.querySelector('[data-search]:not([hidden])') : false;
+    });
+  });
+
+  /* ── 複製回饋 ────────────────────────────────────────── */
+  let toastTimer;
+  function copy(text) {
+    const done = () => {
+      const t = document.getElementById('tk-toast'); t.textContent = '已複製 ' + text; t.setAttribute('data-show', '');
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => t.removeAttribute('data-show'), 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, done);
+    else done();
+  }
+
+  /* ── 啟動 ────────────────────────────────────────────── */
+  fetch(SRC).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(build)
+    .catch(err => {
+      main.innerHTML = '';
+      main.appendChild(h('div', 'tk-error', '讀不到 <code>ds-components/_tokens.css</code>（' + esc(err.message || err) + '）。這一頁要用 http 開（例如 dev server <code>ztor-r2.3</code>），用 file:// 直接開時瀏覽器不允許讀檔。'));
+    });
+})();
+</script>
+</body>
+</html>
