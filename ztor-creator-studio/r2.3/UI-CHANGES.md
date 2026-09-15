@@ -4,6 +4,23 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-15（二十九）· 優惠碼補齊四組欄位、Admin 平台折扣設定新頁、訂單詳情折抵兩列（A spec-derived）
+
+**範圍**：`store-settings.html`（F8 優惠碼彈窗：Discount 之後加「適用範圍」三個 zcheck 可混選——全部商店／特定品項（商品類型樹、父子連動含半選）／特定商品（`tag-input`＋`combobox` 搜尋加 chip，資料取 `ProductsStore` 商品＋組合、拍賣天然不在其中）；「使用次數」三格——每張訂單可折件數（預設 1）、每人總次數、總兌換次數（留空＝不限）；清單加「範圍」欄、「賣掉」改「已用」並顯示 `已用 / 上限`、狀態多「已用完」`badge--warning`，示意列 SUMMER25／AIKO10／LAUNCH50）、`ds-components/store-settings.css`（範圍區版面＋彈窗手機寬度單欄）、新頁 `admin-platform-discounts.html`（Admin 第七個同層目的地：規則／例外藝人／紀錄三分頁；滿額階層可增刪、%／固定切換、生效期間、啟用旗標、版本歷史 append-only；例外彈窗比照 `fee-exception-modal.js` 的搜尋做法；紀錄逐筆／依藝人切換）、`js/sidebar.js`（ADMIN_ROUTES／ADMIN_NAV／FULL_ROUTES 三處，icon `ticket-percent`）、`order-detail.html`＋`js/orders-store.js`（金額拆解在平台費、支付費之後加「優惠碼折抵 · 碼」「平台滿額折抵」兩列，無折扣訂單不產生；示意訂單 ZT-10486）、`js/i18n.js`（`store-settings.codes.*` 22 新 1 改、`admin.platform-discounts`＋`pdisc.*` 70 把、`od.amt.code`／`od.amt.threshold`）。
+
+**依據**：`documents/decisions.md` D272（適用範圍三級可混選、次數以件計拆兩條件＋總兌換、已用完、折抵落點）、D273（平台滿額折扣全平台、創作者吸收、Admin 例外藝人、新頁 5.1.0.7）、D274（平台費以標示售價計、支付費以實付計、折抵為獨立扣項）；規格 `5.1.5.5` v28 F8、`5.1.0.7` v1、主規格 §7.3／§7.6。
+
+**設計取捨**：
+- 適用範圍用三個可複選的 zcheck 而不是單選＋子選項：D272 明寫「可混選」，勾「全部商店」時另外兩個停用並清空，避免「全部」與「部分」同時成立。
+- 次數三格各自一列、hint 只寫決定需要的資訊（一次折一件、多件折最貴、留空不限）；不做「每單件數 ≤ 每人總次數」的校驗——兩者的優先關係規格未定（§8.22）。
+- 清單「已用」格式 `42 / 100`，未設上限只顯示已用數，不寫「∞」或「不限」佔位。
+- Admin 新頁骨架整份照平台費率設定抄（麵包屑、page-intro、list-toolbar＋短底線 tabs、門禁屬性），兩頁並列時視覺一致；階層表用 `ztor-table` 而不是 form-grid，因為列可增刪。
+- 訂單詳情折抵兩列放在平台費、支付費之後、淨額之前：對應 D274「折抵是平台費之後的獨立扣項」，讀者順著往下看就是「先扣費、再扣折抵、剩淨額」；平台費金額不因折扣改變，示意訂單刻意保留 $8.70 讓人對得出 58 × 15%。
+
+**驗證**：dev server 4326——三頁 zh／en 各零 raw key；`store-settings.html` 開彈窗勾特定品項展開類型樹（父勾＝子全勾、部分勾＝半選）、勾特定商品搜「Hoodie」選成 chip；手機寬度彈窗單欄、無橫向捲動；Admin 身分開 `admin-platform-discounts.html` 三分頁切換、加減階、例外彈窗、紀錄逐筆／依藝人；`order-detail.html?id=ZT-10486` 金額列：58 × 15% ＝ 8.70、實付 48 × 2.4% ＝ 1.15、淨額 38.15，無折扣訂單 ZT-10485 畫面不變。`check_ds_sync.py` PASS（既有 WARN 5／13 未變，棘輪 10／12／14 未升）。fresh-context 驗收見回報。產品缺口與呈現假設記 ASSUMPTIONS UIA-151。
+
+**同日追加（D275，第二輪裁決）**：優惠碼彈窗再加「固定金額的折法」（整單只折一次／每件各折一次，只在 `$` 且每單件數≠1 時出現；預設整單一次、待覆核）與「可與其他優惠碼疊加」switch（預設關）；三格次數 `min` 改 0、placeholder「0 ＝ 不限」。訂單詳情在優惠碼折抵之前加「分級折抵 · 等級」列（`od.amt.tier`），ZT-10486 補 Superfan −$2.90，支付費 45.10 × 2.4% ＝ 1.08、淨額 35.32；平台費仍 8.70（D275 第 6 項：一律看定價）。規則手冊 promo-rules.html 同步。
+
 ## 2026-09-15（二十八）· 撤銷品項：選填原因＋預設理由、品項列撤銷紀錄、取消信不預設買家申請（A spec-derived）
 
 **範圍**：`order-detail.html`（§2.8 撤銷彈窗在「不可逆」之後加「撤銷原因（選填）」textarea＋七顆預設理由 chip；§2.3.1 已取消品項的名稱下多一行撤銷紀錄「日期 由 Admin 撤銷 · 原因」）、`js/orders-store.js`（`voidItem(order, item, reason)` 第三參數；不分品項型態都在品項上記 `voidedAt`／`voidedBy`／`voidReason`，空原因不記；四筆 demo 已撤銷品項補紀錄）、`js/i18n.js`（`od.void.reason.*` 10 鍵、`od.void.record*` 3 鍵）、`emails/shop-order-cancelled-zh.html`（開頭移除「依你提出的申請」；退款資料加「取消原因」列，有填才顯示，標 `[[#if voidReason]]`）。

@@ -794,8 +794,31 @@
       '</span></div>';
   }
   amtHtml += amtRow('od.amt.platform', 'Platform fee · 15%', A.platform, true) +
-             amtRow('od.amt.payment', 'Payment fee · 2.4%', A.payment, true) +
-             amtRow('od.amt.net', 'Net to you', A.net, false);
+             amtRow('od.amt.payment', 'Payment fee · 2.4%', A.payment, true);
+  /* 優惠碼折抵／平台滿額折抵（D274）：創作者收入的獨立扣項，各列一行、放平台費／
+     支付費之後、淨額之前——兩項扣抵都不影響上面兩列費用的計算基礎（平台費仍以標示
+     售價、支付費仍以買家實付計）。訂單沒有折扣（order.discount 不存在，或個別欄位
+     為 0／undefined／空字串）時，對應那一列不產生。優惠碼那列要顯示碼本身，碼是
+     每筆訂單的資料、不是可翻譯字串，所以標籤只放可翻譯的「優惠碼折抵」，碼另外接在
+     後面（同站既有作法，見 fan-detail.html 徽章列 `<b>Inner Circle</b> · 2025`）。 */
+  var disc = order.discount;
+  /* 粉絲分級折抵（D275 決定 1）：比照優惠碼，是創作者收入的獨立扣項，列在優惠碼折抵
+     之前——分級折扣先套用、優惠碼再疊上去，跟平台滿額門檻「看買家層折後的品項小計」
+     的判斷順序一致。等級名是資料、不翻譯（同優惠碼那行的做法）。資料缺席不產生。 */
+  if (disc && disc.tierAmount) {
+    amtHtml += '<div class="od-amt"><span class="od-amt__neg">' +
+      '<span data-i18n="od.amt.tier">Tier discount</span> · ' + esc(disc.tier) +
+      '</span><span class="od-amt__neg">' + esc(disc.tierAmount) + '</span></div>';
+  }
+  if (disc && disc.codeAmount) {
+    amtHtml += '<div class="od-amt"><span class="od-amt__neg">' +
+      '<span data-i18n="od.amt.code">Coupon discount</span> · ' + esc(disc.code) +
+      '</span><span class="od-amt__neg">' + esc(disc.codeAmount) + '</span></div>';
+  }
+  if (disc && disc.thresholdAmount) {
+    amtHtml += amtRow('od.amt.threshold', 'Platform threshold discount', disc.thresholdAmount, true);
+  }
+  amtHtml += amtRow('od.amt.net', 'Net to you', A.net, false);
   $('[data-od-amounts]').innerHTML = amtHtml;
 
   /* ── §2.4 買家 ────────────────────────────────────────────── */
