@@ -17,7 +17,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
    The item picker reuses .tag-input (field + chips) + .combobox (dropdown).
 
    createPickupSession(host, hooks) → { openBlank, openExisting,
-   openForProduct(name), close }. hooks: { onCreate(session) }.
+   openForProduct(id | { name, meta }), close }. hooks: { onCreate(session) }.
    UI chrome = data-i18n; sample item/ticket lists are literals. */
 (function () {
   /* 2026-09-03（D240 一物一碼）：清單多一顆組合商品。組合下單時展開成成員原子商品的
@@ -40,6 +40,10 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     { id: 'meet', kind: 'ticket', name: 'Fan-meet · VIP', meta: 'Kaohsiung fan-meet · on-site entry' }
   ];
   var ITEMS = PRODUCTS.concat(TICKETS);
+  /* 2026-09-14（使用者：「預設應該要有當前創建的商品」）：從建立商品／商品細節開彈窗時，
+     預選的是**這件商品本身**（名字取自頁面），不再拿樣本清單的第一顆充數。它不在 ITEMS 裡，
+     用 CURRENT 掛著；只會出現在 chip，不會出現在下拉（開場就已選中）。 */
+  var CURRENT = null;
 
   window.ZTOR_PARTIALS.pickupSessionModal = `
 <div class="payout-modal" data-pickup-modal hidden>
@@ -139,7 +143,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (window.applyI18n) window.applyI18n(el);
     }
     function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-    function itemById(id) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id === id) return ITEMS[i]; return null; }
+    function itemById(id) { if (CURRENT && CURRENT.id === id) return CURRENT; for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id === id) return ITEMS[i]; return null; }
     function iconFor(kind) { return kind === 'ticket' ? 'ticket' : 'package'; }
 
     /* Search-to-add combobox (spec 5.1.5.12 §4 F2): ONE field. Selected items
@@ -234,12 +238,10 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       modal.querySelector('[data-pks-create]').hidden = n !== 2;
       modal.querySelector('[data-pks-form]').scrollTop = 0;
       syncCreateEnabled();
-      /* 進到第二步就把游標放進搜尋框並展開建議清單。延到下一輪 tick——在同一個 click
-         事件裡對剛從 [hidden] 放出來的元素呼叫 focus()，瀏覽器會忽略。 */
-      if (n === 2) setTimeout(function () {
-        var s = modal.querySelector('[data-pks-search]');
-        if (s) { s.focus(); openMenu(); }
-      }, 0);
+      /* 2026-09-14（使用者：「預設不用把下拉點開，現在點擊下一步就會是展開的」）：
+         進到第二步不再自動把游標放進搜尋框、也不展開建議清單——從商品開的場次已經帶著
+         這件商品，先讓人看到已選的 chip；要加別的再點搜尋框（focusin 才展開）。 */
+      if (n === 2) closeMenu();
     }
     function genPw() { return Math.random().toString(36).slice(2, 8) + '26'; }
     function validTime() {
@@ -367,7 +369,14 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       openBlank: function () { if (ensure()) open(null, 'pks.title'); },
       openExisting: function () { if (ensure()) open(null, 'pks.title.edit'); },
       /* from a product context: pre-add that product (id: zine/tee/lp) */
-      openForProduct: function (id) { if (ensure()) open(id || 'zine', 'pks.title'); },
+      /* openForProduct('zine') 仍可用（樣本 id）；傳 { name, meta? } 就以那件商品當預選（見 CURRENT） */
+      openForProduct: function (idOrItem) {
+        if (!ensure()) return;
+        if (idOrItem && typeof idOrItem === 'object') {
+          CURRENT = { id: 'current', kind: 'product', name: idOrItem.name || '', meta: idOrItem.meta || '' };
+          open('current', 'pks.title');
+        } else { CURRENT = null; open(idOrItem || 'zine', 'pks.title'); }
+      },
       close: close
     };
   };

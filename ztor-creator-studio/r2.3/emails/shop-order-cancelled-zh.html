@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>訂單已取消 — 你的 Ztor. 商店訂單 {{orderId}}</title>
+  <!--
+    shop-order-cancelled-zh · 訂單已取消（撤銷觸發）
+    模板來源：shop-order-confirmed-zh.html（2.0 深色皮膚，同一套外框、字級、色票）
+    觸發：Admin 在 Creator Studio 對訂單品項執行「撤銷」（Asana 1217989360065066；規格 5.1.5.3.1 §2.8、D252／D253）
+    前提：營運已在 Stripe 後台完成人工退款，撤銷本身不處理金流——信裡因此只「告知退款已完成」，不說「正在退款」
+    變數：
+      {{buyerName}} {{orderId}} {{orderDate}} {{cancelDate}} {{payMethod}}
+      {{voidedItems}}   逐件品項列（品項名 ×數量），產線以迴圈展開 .em-item 那一列
+      {{voidedQty}}     被取消的總件數
+      {{refundAmount}}  退款金額（＝被取消品項的合計）
+      {{remainingItems}} 訂單裡未被取消、仍可取貨的品項（部分撤銷才有）
+      {{ordersLink}} {{contactEmail}} {{currentYear}}
+    條件區塊：
+      [[#if partial]] … [[/if]]  只有部分品項被撤銷時才顯示「其餘商品不受影響」段；整單撤銷時整段拿掉
+    圖片：assets/ 三張自 ztor.vercel.app/emails/assets 複製，路徑與 ztor repo 的 emails/ 一致、可直接搬
+  -->
+  <!--[if mso]>
+  <noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+  <![endif]-->
+  <style>
+    /* Email clients that honour <style>. Everything critical is also inline. */
+    html, body { margin: 0 !important; padding: 0 !important; }
+    table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+    a { color: #ffa33f; }
+    @media (max-width: 640px) {
+      .em-col { padding-left: 20px !important; padding-right: 20px !important; }
+      .em-hero-pad { padding-top: 32px !important; padding-bottom: 28px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0;">
+  <!-- Preheader（收件匣預覽文字，畫面上不顯示） -->
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all;">
+    訂單 {{orderId}} 中有 {{voidedQty}} 件商品已取消，款項已退回你的原付款方式。
+  </div>
+
+  <!-- 外層：偏深底只包住容器（上下固定 24px），不滿版延伸 -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#262626" style="background:#262626; width:100%;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+
+        <!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center"><tr><td><![endif]-->
+        <!-- 固定 container：600px 深色信件本體 -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#131313" style="width:100%; max-width:600px; background:#131313;">
+
+          <!-- Header 橫幅：純黑、置中 logo -->
+          <tr>
+            <td align="center" class="em-hero-pad" bgcolor="#000000" style="background:#000000; padding:44px 32px 40px;">
+              <a href="https://www.ztor.com" style="text-decoration:none;">
+                <img src="assets/ztor-logo.png" width="96" height="30" alt="Ztor." style="display:block; width:96px; height:30px;">
+              </a>
+            </td>
+          </tr>
+
+          <!-- 內文區起始留白 -->
+          <tr><td style="padding:44px 0 0; font-size:0; line-height:0;">&nbsp;</td></tr>
+
+          <tr>
+            <td class="em-col" style="padding:0 32px;">
+              <p style="margin:0px 0 20px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:16.5px; line-height:1.8; color:#f2f2f2;">親愛的 {{buyerName}}，</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="em-col" style="padding:0 32px;">
+              <p style="margin:0px 0 28px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:16.5px; line-height:1.8; color:#f2f2f2;">依你提出的申請，你的 Ztor. 商店訂單 {{orderId}} 中，下列商品已取消。款項已退回你的原付款方式，實際入帳時間依發卡銀行作業而定，通常需要 5 到 10 個工作天。</p>
+            </td>
+          </tr>
+
+          <!-- 已取消的商品：逐件列出（產線以迴圈展開 .em-item 列） -->
+          <tr>
+            <td class="em-col" style="padding:0 32px;">
+              <p style="margin:0px 0 16px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:16.5px; line-height:1.8; color:#f2f2f2; font-weight:700;">已取消的商品：</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="em-col" style="padding:0 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #262626; border-bottom:1px solid #262626;">
+                <!-- .em-item：一件商品一列；示意放兩列 -->
+                <tr class="em-item">
+                  <td style="padding:16px 0 0;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7; color:#f2f2f2;">{{itemName}} ×{{qty}}</td>
+                        <td align="right" style="white-space:nowrap; padding-left:16px;">
+                          <span style="display:inline-block; padding:3px 10px; border:1px solid #3a3a3a; border-radius:999px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:12.5px; line-height:1.4; color:#a6a6a6;">已取消</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr class="em-item">
+                  <td style="padding:12px 0 16px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7; color:#f2f2f2;">{{itemName}} ×{{qty}}</td>
+                        <td align="right" style="white-space:nowrap; padding-left:16px;">
+                          <span style="display:inline-block; padding:3px 10px; border:1px solid #3a3a3a; border-radius:999px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:12.5px; line-height:1.4; color:#a6a6a6;">已取消</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <!-- /.em-item -->
+              </table>
+            </td>
+          </tr>
+
+          <!-- 取貨 QR 失效提醒（只對取貨型商品有意義；出貨型／數位商品可整段拿掉） -->
+          <tr>
+            <td class="em-col" style="padding:0 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#1c1c1c" style="margin-top:20px; background:#1c1c1c; border:1px solid #2e2e2e; border-radius:12px; border-collapse:separate;">
+                <tr>
+                  <td style="padding:20px 24px;">
+                    <p style="margin:0 0 6px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; font-weight:700; line-height:1.6; color:#f2f2f2;">這些商品的取貨 QR Code 已失效</p>
+                    <p style="margin:0; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:14px; line-height:1.7; color:#a6a6a6;">已取消商品的 QR Code 無法再用於領取，請勿再出示；「我的訂單」裡也會標示為已取消。</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- 退款資料 -->
+          <tr>
+            <td class="em-col" style="padding:0 32px;">
+              <p style="margin:28px 0 16px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:16.5px; line-height:1.8; color:#f2f2f2; font-weight:700;">退款資料：</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="em-col" style="padding:0 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="border-top:1px solid #262626; border-bottom:1px solid #262626; padding:24px 0;">
+                    <p style="margin:0 0 10px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">訂單編號：</span><span style="color:#f2f2f2;">{{orderId}}</span></p>
+                    <p style="margin:0 0 10px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">訂單日期：</span><span style="color:#f2f2f2;">{{orderDate}}</span></p>
+                    <p style="margin:0 0 10px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">取消日期：</span><span style="color:#f2f2f2;">{{cancelDate}}</span></p>
+                    <p style="margin:0 0 10px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">取消件數：</span><span style="color:#f2f2f2;">共 {{voidedQty}} 件</span></p>
+                    <p style="margin:0 0 10px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">退款方式：</span><span style="color:#f2f2f2;">退回原付款方式（{{payMethod}}）</span></p>
+                    <p style="margin:0; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">退款金額：</span><span style="color:#f2f2f2;">{{refundAmount}}</span></p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- [[#if partial]] 部分撤銷：其餘商品不受影響（整單撤銷時整段刪除） -->
+          <tr>
+            <td class="em-col" style="padding:0 32px;">
+              <p style="margin:28px 0 16px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:16.5px; line-height:1.8; color:#f2f2f2; font-weight:700;">其餘商品不受影響：</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="em-col" style="padding:0 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="border-top:1px solid #262626; border-bottom:1px solid #262626; padding:24px 0;">
+                    <p style="margin:0 0 10px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">仍可取貨：</span><span style="color:#f2f2f2;">{{remainingItems}}</span></p>
+                    <p style="margin:0; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:14px; line-height:1.7; color:#a6a6a6;">這些商品的取貨資訊與 QR Code 維持原狀，請依訂單成立信裡的取貨資訊領取。</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- [[/if]] -->
+
+          <!-- CTA：查看我的訂單 -->
+          <tr>
+            <td class="em-col" style="padding:0 32px;">
+              <p style="margin:28px 0 16px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.8; color:#d9d9d9;">訂單狀態與明細：</p><table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td bgcolor="#ffa33f" style="background:#ffa33f; border-radius:999px; mso-padding-alt:13px 32px;">
+                    <a href="{{ordersLink}}" style="display:inline-block; padding:13px 32px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; font-weight:700; line-height:1; color:#271302; text-decoration:none; border-radius:999px;">查看我的訂單</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td class="em-col" style="padding:0 32px;">
+              <p style="margin:32px 0 0px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.8; color:#d9d9d9;">若超過 10 個工作天仍未收到退款，或對這次取消有任何疑問，歡迎回信至 <a href="mailto:{{contactEmail}}" style="color:#ffa33f; text-decoration:none;">{{contactEmail}}</a>，我們會盡快協助。</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="em-col" style="padding:0 32px;">
+              <p style="margin:40px 0 8px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.8; color:#d9d9d9;">此致</p><p style="margin:0px 0 0px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.8; color:#f2f2f2;">Ztor. 團隊</p>
+            </td>
+          </tr>
+
+          <!-- Footer：社群＋聯絡我們＋版權（聯絡我們地址為 Asana 單要求的全站頁尾項目） -->
+          <tr>
+            <td class="em-col" align="center" style="padding:56px 32px 48px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+                <tr>
+                  <td style="padding:0 12px;">
+                    <a href="https://www.instagram.com/ztor.tw" style="text-decoration:none;">
+                      <img src="assets/icon-instagram.png" width="22" height="22" alt="Instagram" style="display:block; width:22px; height:22px; opacity:0.85;">
+                    </a>
+                  </td>
+                  <td style="padding:0 12px;">
+                    <a href="https://www.threads.net/@ztor.tw" style="text-decoration:none;">
+                      <img src="assets/icon-threads.png" width="22" height="22" alt="Threads" style="display:block; width:22px; height:22px; opacity:0.85;">
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:24px 0 0; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:13px; line-height:1.6; color:#737373;">
+                聯絡我們：<a href="mailto:{{contactEmail}}" style="color:#a6a6a6; text-decoration:none;">{{contactEmail}}</a>
+              </p>
+              <p style="margin:8px 0 0; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:13px; line-height:1.6; color:#737373;">
+                版權所有 © {{currentYear}} Ztor Limited 保留所有權利
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!--[if mso]></td></tr></table><![endif]-->
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

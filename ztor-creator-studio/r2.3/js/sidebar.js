@@ -701,7 +701,6 @@
         <button class="app-topbar__avatar" aria-haspopup="true" aria-expanded="false" aria-label="Account" data-i18n-aria-label="nav.account-label" type="button">${avatarHtml()}</button>
         <ul class="app-topbar__dropdown app-topbar__dropdown--right" role="menu">
           <li role="presentation"><a class="app-topbar__dropdown-option" href="store-settings.html" role="menuitem" data-i18n="nav.store-settings">Store settings</a></li>
-          <li role="presentation"><a class="app-topbar__dropdown-option" href="settings.html#profile" role="menuitem" data-i18n="nav.profile">Profile</a></li>
           <li role="presentation"><a class="app-topbar__dropdown-option" href="settings.html" role="menuitem" data-i18n="nav.settings">Settings</a></li>
           <li role="presentation"><a class="app-topbar__dropdown-option" href="settings.html#payments" role="menuitem" data-i18n="nav.payments">Payments</a></li>
           <li class="app-topbar__dropdown-divider" role="separator"></li>
@@ -850,7 +849,7 @@
           <i data-lucide="chevron-down" class="ztor-icon ztor-icon--sm app-sidebar__chevron"></i>
         </button>
         <ul class="app-sidebar__subnav"><div>
-          <li><a class="app-sidebar__sub-link" href="settings.html#profile" data-i18n="nav.profile">Profile</a></li>
+          <!-- 2026-09-14（D269）：原「個人資料」項撤除——設定頁沒有個人資料分頁了，粉絲可見身分在商店設定，而商店設定在上方動作區已有自己的一列，不重複列。 -->
           <li><a class="app-sidebar__sub-link" href="settings.html" data-i18n="nav.settings">Settings</a></li>
           <li><a class="app-sidebar__sub-link" href="settings.html#payments" data-i18n="nav.payments">Payments</a></li>
           ${langMenuHtml("sidebar")}
