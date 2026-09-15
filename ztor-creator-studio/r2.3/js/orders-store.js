@@ -157,9 +157,19 @@
           }
         }
       ],
-      amounts: { goods: '$58.00', shipping: '$5.00', platform: '−$8.70', payment: '−$1.39', net: '$52.91' },
+      /* 折抵示範（2026-09-15 D274，同日 D275 再加分級折抵）：粉絲分級折扣 Superfan
+         折 58 × 5% ＝2.90、優惠碼 SUMMER25 折 $10、平台滿額折扣再折 $5——三項都只扣
+         創作者收入、不動平台費基準（D275 決定 1／D274）：platform 仍是 goods × 15%
+         ＝8.70，與折扣前完全相同。買家實付（含運費）＝58 − 2.90 − 10 − 5 ＋ 5
+         ＝45.10，payment 改以這個買家實付數字 × 2.4% 算＝1.0824 → 1.08（D274 第 2
+         項，支付費基準是買家實付）；net＝58 ＋ 5 − 2.90 − 10 − 5 − 8.70 − 1.08
+         ＝35.32。fx.paid 同步改成買家實付的換算幣（45.10 × 31.5 ＝1420.65），不是
+         折扣前的 63.00 × 31.5。其餘 11 筆訂單無折扣，order.discount 不存在，畫面
+         不變。 */
+      discount: { tier: 'Superfan', tierAmount: '−$2.90', code: 'SUMMER25', codeAmount: '−$10.00', thresholdAmount: '−$5.00' },
+      amounts: { goods: '$58.00', shipping: '$5.00', platform: '−$8.70', payment: '−$1.08', net: '$35.32' },
       total: '$58.00', totalAmt: 58,
-      fx: { currency: 'TWD', paid: 'NT$1,984.50', rate: '1 USD = 31.5 TWD' }
+      fx: { currency: 'TWD', paid: 'NT$1,420.65', rate: '1 USD = 31.5 TWD' }
     },
     {
       /* 多品項（4 列）＋待出貨：清單的品項摘要與明細頁的品項表都要撐得住多列 */

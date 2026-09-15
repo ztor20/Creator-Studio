@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>平台折扣設定 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2"><!-- Admin 頁門禁的無權限狀態（js/sidebar.js applyAdminGate）重用這支，也用於紀錄分頁空狀態 -->
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2"><link rel="stylesheet" href="ds-components/accordion.css?v=r2.2"><link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/admin-ip-bank-table.css?v=r2.2"><!-- .admin-table__owner / .admin-table__avatar：例外藝人清單的頭像＋名稱 -->
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/split-button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2"><!-- 加入例外彈窗：藝人搜尋 -->
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2"><!-- 加入例外彈窗的對話框殼 -->
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2"><!-- 折抵方式（%／固定）切換 -->
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2"><!-- 啟用旗標 -->
+<link rel="stylesheet" href="ds-components/settings.css?v=r2.2"><!-- 生效期間／啟用／內部說明三列 settings-row -->
+<link rel="stylesheet" href="shared.css?v=r2.2">
+</head>
+<body>
+<div class="app"><header class="app-topbar" id="sidebar"></header><main class="main"><div class="page">
+
+<nav class="text-sub" aria-label="麵包屑" style="font-size:var(--fs-12);margin-bottom:var(--space-shell-gutter)">
+  <a class="card__link" href="creators.html" data-i18n="admin.studio">Admin Creator Studio</a>
+  <span aria-hidden="true"> / </span>
+  <span aria-current="page" data-i18n="admin.platform-discounts">Platform Discount Settings</span>
+</nav>
+
+<div class="page-intro">
+  <div>
+    <h1 class="page-intro__title" data-i18n="admin.platform-discounts">Platform Discount Settings</h1>
+    <p class="page-intro__sub" data-i18n="pdisc.sub">A threshold discount for every buyer on the platform. Creators absorb the cost; you can exclude individual creators below.</p>
+  </div>
+</div>
+
+<!-- 三分頁（規則／例外藝人／紀錄）＋右端動作鈕依分頁切換，結構沿用 admin-platform-fees.html。 -->
+<div class="list-toolbar">
+  <nav class="tabs tabs--underline-short" role="tablist" data-tabs>
+    <button class="tabs__item tabs__item--active" type="button" role="tab" data-tab="rules" aria-selected="true" data-i18n="pdisc.tab.rules">Rules</button>
+    <button class="tabs__item" type="button" role="tab" data-tab="excluded" aria-selected="false" data-i18n="pdisc.tab.excluded">Excluded creators</button>
+    <button class="tabs__item" type="button" role="tab" data-tab="records" aria-selected="false" data-i18n="pdisc.tab.records">Records</button>
+  </nav>
+  <div class="list-toolbar__actions" data-toolbar-action="rules">
+    <button class="btn btn--primary" type="button" id="pdisc-save" data-i18n="pdisc.save">Save</button>
+  </div>
+  <div class="list-toolbar__actions" data-toolbar-action="excluded" hidden>
+    <button class="btn btn--primary" type="button" id="pdisc-exc-add" data-i18n="pdisc.exc.add">＋ Add exception</button>
+  </div>
+</div>
+
+<!-- ===== Tab 1：規則（F2 滿額折扣階層／生效期間／啟用／說明＋F4 版本歷史）===== -->
+<div class="tab-panel tab-panel--active" data-panel="rules">
+
+<p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="pdisc.save.hint">Saving creates a new version that applies to future orders only — existing orders keep their frozen rule.</p>
+
+<section class="form-section form-section--outlined">
+  <div class="form-section__head">
+    <h3 class="form-section__title" data-i18n="pdisc.tiers.title">Threshold discount tiers</h3>
+  </div>
+  <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="pdisc.tiers.hint">An order only applies the highest tier it reaches, never more than one. The threshold looks at the item subtotal after discount codes, before shipping.</p>
+
+  <div class="admin-table-wrap">
+    <table class="ztor-table">
+      <thead>
+        <tr>
+          <th data-i18n="pdisc.tiers.col.threshold">Threshold</th>
+          <th data-i18n="pdisc.tiers.col.method">Discount</th>
+          <th data-i18n="pdisc.tiers.col.value">Amount</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="pdisc-tiers-body">
+        <tr class="pdisc-tier-row" data-tier-row>
+          <td><span class="amount-field" style="width:120px"><span class="amount-field__unit">$</span><input class="input amount-field__input" type="number" inputmode="decimal" value="100" data-tier-threshold></span></td>
+          <td>
+            <div class="segmented" data-tier-unit>
+              <button class="segmented__btn segmented__btn--active" type="button" data-unit="fixed" data-i18n="pdisc.tiers.unit.fixed">Fixed</button>
+              <button class="segmented__btn" type="button" data-unit="pct" data-i18n="pdisc.tiers.unit.pct">%</button>
+            </div>
+          </td>
+          <td><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="decimal" value="10" data-tier-value><span class="amount-field__unit" data-tier-value-unit>$</span></span></td>
+          <td style="text-align:right"><button class="btn btn--ghost btn--icon btn--sm" type="button" data-tier-remove aria-label="Remove tier" data-i18n-aria-label="pdisc.tiers.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button></td>
+        </tr>
+        <tr class="pdisc-tier-row" data-tier-row>
+          <td><span class="amount-field" style="width:120px"><span class="amount-field__unit">$</span><input class="input amount-field__input" type="number" inputmode="decimal" value="300" data-tier-threshold></span></td>
+          <td>
+            <div class="segmented" data-tier-unit>
+              <button class="segmented__btn segmented__btn--active" type="button" data-unit="fixed" data-i18n="pdisc.tiers.unit.fixed">Fixed</button>
+              <button class="segmented__btn" type="button" data-unit="pct" data-i18n="pdisc.tiers.unit.pct">%</button>
+            </div>
+          </td>
+          <td><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="decimal" value="40" data-tier-value><span class="amount-field__unit" data-tier-value-unit>$</span></span></td>
+          <td style="text-align:right"><button class="btn btn--ghost btn--icon btn--sm" type="button" data-tier-remove aria-label="Remove tier" data-i18n-aria-label="pdisc.tiers.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <button class="btn btn--outline btn--sm" type="button" id="pdisc-tier-add" style="margin-top:var(--sp-12)" data-i18n="pdisc.tiers.add">＋ Add a tier</button>
+
+  <p class="text-sub" style="margin-top:var(--sp-16)" data-i18n="pdisc.auction.note">Whether auction sales count toward the threshold: product decision pending.</p>
+</section>
+
+<section class="form-section form-section--outlined">
+  <div class="settings-row">
+    <div>
+      <div class="settings-row__label" data-i18n="pdisc.period.label">Effective period</div>
+      <div class="settings-row__hint" data-i18n="pdisc.period.hint">Leave the end date empty to keep it open-ended.</div>
+    </div>
+    <div class="flex-row">
+      <input class="input" type="date" id="pdisc-period-start" value="2026-09-10" aria-label="Starts" data-i18n-aria-label="pdisc.period.start-aria">
+      <span class="text-sub" aria-hidden="true">–</span>
+      <input class="input" type="date" id="pdisc-period-end" aria-label="Ends" data-i18n-aria-label="pdisc.period.end-aria">
+    </div>
+  </div>
+  <div class="settings-row">
+    <div>
+      <div class="settings-row__label" data-i18n="pdisc.enabled.label">Enabled</div>
+      <div class="settings-row__hint" data-i18n="pdisc.enabled.hint">Pausing stops the rule for orders placed from now on; existing orders are unaffected.</div>
+    </div>
+    <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" id="pdisc-enabled"></div>
+  </div>
+  <div class="settings-row" style="border-bottom:0">
+    <div>
+      <div class="settings-row__label" data-i18n="pdisc.notes.label">Internal note</div>
+      <div class="settings-row__hint" data-i18n="pdisc.notes.hint">Not shown to buyers.</div>
+    </div>
+    <input class="input settings-row__control" id="pdisc-notes" value="9 月檔期滿額折扣" data-i18n-placeholder="pdisc.notes.ph" placeholder="Campaign name, decision reference…">
+  </div>
+</section>
+
+<section class="form-section form-section--outlined">
+  <div class="form-section__head">
+    <h3 class="form-section__title" data-i18n="pdisc.version.title">Version history</h3>
+  </div>
+  <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="pdisc.version.hint">Append-only — corrections show up as a new version, never an edit in place.</p>
+  <div class="admin-table-wrap">
+    <table class="ztor-table">
+      <thead>
+        <tr>
+          <th data-i18n="pdisc.version.col.version">Version</th>
+          <th data-i18n="pdisc.version.col.effective">Effective</th>
+          <th data-i18n="pdisc.version.col.change">Change</th>
+        </tr>
+      </thead>
+      <tbody id="pdisc-version-body">
+        <tr><td class="ztor-table__feature">v3 <span class="badge badge--success" data-i18n="pdisc.version.active">Active</span></td><td>2026-09-10 →</td><td class="text-sub" data-i18n="pdisc.version.v3">Added tier 2: spend 300 get 40 off</td></tr>
+        <tr><td class="ztor-table__feature">v2</td><td>2026-08-01 — 2026-09-09</td><td class="text-sub" data-i18n="pdisc.version.v2">Tier 1 changed: spend 100 get 8 off → get 10 off</td></tr>
+        <tr><td class="ztor-table__feature">v1</td><td>2026-07-01 — 2026-07-31</td><td class="text-sub" data-i18n="pdisc.version.v1">Initial setup: spend 100 get 8 off</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</div><!-- /tab-panel rules -->
+
+<!-- ===== Tab 2：例外藝人（F3）===== -->
+<div class="tab-panel" data-panel="excluded">
+<section class="form-section form-section--outlined">
+  <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="pdisc.excluded.hint">Excluded creators' items are not counted toward the threshold and are never discounted.</p>
+
+  <div class="admin-table-wrap">
+    <table class="ztor-table" id="pdisc-exc-table">
+      <thead>
+        <tr>
+          <th data-i18n="pdisc.excluded.col.creator">Creator</th>
+          <th data-i18n="pdisc.excluded.col.added">Added</th>
+          <th data-i18n="pdisc.excluded.col.by">Added by</th>
+          <th data-i18n="pdisc.excluded.col.reason">Reason</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="pdisc-exc-body"></tbody>
+    </table>
+  </div>
+  <p class="text-sub" id="pdisc-exc-empty" hidden style="margin:var(--sp-16) 0 0" data-i18n="pdisc.excluded.empty">No excluded creators yet — the threshold discount applies to everyone.</p>
+</section>
+</div><!-- /tab-panel excluded -->
+
+<!-- ===== Tab 3：紀錄（F5）===== -->
+<div class="tab-panel" data-panel="records">
+<section class="form-section form-section--outlined">
+  <div class="segmented" id="pdisc-records-toggle" style="margin-bottom:var(--sp-16)">
+    <button class="segmented__btn segmented__btn--active" type="button" data-records-view="per-order" data-i18n="pdisc.records.toggle.per-order">Per order</button>
+    <button class="segmented__btn" type="button" data-records-view="per-creator" data-i18n="pdisc.records.toggle.per-creator">Per creator</button>
+  </div>
+
+  <div data-records-panel="per-order">
+    <div class="admin-table-wrap">
+      <table class="ztor-table">
+        <thead>
+          <tr>
+            <th data-i18n="pdisc.records.col.time">Time</th>
+            <th data-i18n="pdisc.records.col.order">Order</th>
+            <th data-i18n="pdisc.records.col.source">Source</th>
+            <th data-i18n="pdisc.records.col.subtotal">Item subtotal</th>
+            <th data-i18n="pdisc.records.col.tier">Tier applied</th>
+            <th data-i18n="pdisc.records.col.discount">Discount</th>
+            <th data-i18n="pdisc.records.col.allocation">Allocated to</th>
+            <th data-i18n="pdisc.records.col.version">Version</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>2026-09-14 10:22</td><td class="ztor-table__feature">#ZT-88213</td><td><span class="badge badge--neutral" data-i18n="pdisc.records.source.eshop">E-Shop</span></td><td>$320</td><td class="text-sub">$300 → $40</td><td>$40</td><td class="text-sub">Gary Lin $40</td><td>v3</td></tr>
+          <tr><td>2026-09-13 19:05</td><td class="ztor-table__feature">#ZT-88190</td><td><span class="badge badge--neutral" data-i18n="pdisc.records.source.events">Events</span></td><td>$150</td><td class="text-sub">$100 → $10</td><td>$10</td><td class="text-sub">周湯豪 NICKTHEREAL $10</td><td>v3</td></tr>
+          <tr><td>2026-09-12 08:47</td><td class="ztor-table__feature">#ZT-88144</td><td><span class="badge badge--neutral" data-i18n="pdisc.records.source.projects">Projects</span></td><td>$420</td><td class="text-sub">$300 → $40</td><td>$40</td><td class="text-sub">Gary Lin $24 · User B $16</td><td>v3</td></tr>
+          <tr><td>2026-09-10 16:30</td><td class="ztor-table__feature">#ZT-88079</td><td><span class="badge badge--neutral" data-i18n="pdisc.records.source.eshop">E-Shop</span></td><td>$110</td><td class="text-sub">$100 → $10</td><td>$10</td><td class="text-sub">Gary Lin $10</td><td>v2</td></tr>
+          <tr><td>2026-09-08 13:11</td><td class="ztor-table__feature">#ZT-88015</td><td><span class="badge badge--neutral" data-i18n="pdisc.records.source.eshop">E-Shop</span></td><td>$305</td><td class="text-sub">$300 → $40</td><td>$40</td><td class="text-sub">User B $40</td><td>v2</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="empty-card" id="pdisc-records-empty" hidden>
+      <div class="empty-card__icon"><i data-lucide="receipt" class="ztor-icon"></i></div>
+      <h2 class="empty-card__title" data-i18n="pdisc.records.empty.title">No discount records yet</h2>
+      <p class="empty-card__text" data-i18n="pdisc.records.empty.text">Orders that receive the platform threshold discount will show up here.</p>
+    </div>
+  </div>
+
+  <div data-records-panel="per-creator" hidden>
+    <div class="admin-table-wrap">
+      <table class="ztor-table">
+        <thead>
+          <tr>
+            <th data-i18n="pdisc.records.pc.col.creator">Creator</th>
+            <th data-i18n="pdisc.records.pc.col.total">Discount absorbed (period)</th>
+            <th data-i18n="pdisc.records.pc.col.orders">Orders</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="ztor-table__feature">Gary Lin</td><td>$74</td><td>2</td></tr>
+          <tr><td class="ztor-table__feature">周湯豪 NICKTHEREAL</td><td>$10</td><td>1</td></tr>
+          <tr><td class="ztor-table__feature">User B</td><td>$56</td><td>2</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+</div><!-- /tab-panel records -->
+
+</div>
+<footer class="app-footer"><span>Ztor Creator Studio · R 2.3 prototype</span><span>·</span><span data-i18n="admin.studio">Admin Creator Studio</span></footer>
+</main></div>
+
+<!-- 加入例外藝人彈窗：藝人搜尋（field-pill，打字才列建議，照 partials/fee-exception-modal.js 的做法）＋原因 input＋確認 -->
+<div class="payout-modal" id="pdisc-exc-modal" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pdisc-exc-modal-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="pdisc-exc-modal-title" data-i18n="pdisc.excluded.modal-title">Add excluded creator</h2>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="pdisc.excluded.cancel" data-pdisc-exc-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <label class="field" style="margin-bottom:var(--sp-18)">
+        <span class="field__label" style="font-size:var(--fs-18);font-weight:var(--fw-semibold)" data-i18n="pdisc.excluded.search">Search a creator</span>
+        <span class="field-pill" style="width:100%;margin-top:var(--sp-8)">
+          <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+          <input class="field-pill__input" type="search" id="pdisc-exc-search" autocomplete="off" data-i18n-placeholder="pdisc.excluded.search-ph" placeholder="Search a creator by name…">
+        </span>
+        <div id="pdisc-exc-suggest" style="margin-top:var(--sp-8);display:flex;flex-direction:column;gap:var(--sp-8)"></div>
+        <p class="field__hint" id="pdisc-exc-search-none" hidden data-i18n="pdisc.excluded.search-none">No matching creator.</p>
+      </label>
+      <label class="field">
+        <span class="field__label" data-i18n="pdisc.excluded.reason">Reason</span>
+        <input class="input" id="pdisc-exc-reason" data-i18n-placeholder="pdisc.excluded.reason-ph" placeholder="Optional, internal use only">
+      </label>
+    </div>
+    <div class="payout-dialog__foot" style="display:flex;gap:var(--sp-8);justify-content:flex-end;padding:var(--sp-16) var(--sp-24) var(--sp-24)">
+      <button class="btn btn--ghost" type="button" data-pdisc-exc-close data-i18n="pdisc.excluded.cancel">Cancel</button>
+      <button class="btn btn--primary" type="button" id="pdisc-exc-confirm" data-i18n="pdisc.excluded.confirm">Add exception</button>
+    </div>
+  </section>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="partials/date-input.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script>
+  /* 平台折扣設定頁互動（spec 5.1.0.7 F2–F5）——demo，非真後端。 */
+  (function () {
+    'use strict';
+    var t = function (k, fb) { return (window.i18nT && window.i18nT(k)) || fb || k; };
+    var i18n = function (el) { if (window.applyI18n) window.applyI18n(el); };
+
+    /* ===== 三分頁切換（沿用費率頁做法）===== */
+    var toolbarActions = document.querySelectorAll('[data-toolbar-action]');
+    function syncToolbarAction(name) {
+      Array.prototype.forEach.call(toolbarActions, function (el) {
+        el.hidden = el.getAttribute('data-toolbar-action') !== name;
+      });
+    }
+    var tablist = document.querySelector('[data-tabs]');
+    if (tablist) {
+      var tabBtns = tablist.querySelectorAll('.tabs__item'),
+          panels = document.querySelectorAll('.tab-panel[data-panel]');
+      tablist.addEventListener('click', function (e) {
+        var btn = e.target.closest('.tabs__item');
+        if (!btn || !btn.dataset.tab) return;
+        var name = btn.dataset.tab;
+        Array.prototype.forEach.call(tabBtns, function (b) {
+          var on = b.dataset.tab === name;
+          b.classList.toggle('tabs__item--active', on);
+          b.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        Array.prototype.forEach.call(panels, function (p) {
+          p.classList.toggle('tab-panel--active', p.dataset.panel === name);
+        });
+        syncToolbarAction(name);
+      });
+      syncToolbarAction('rules');
+    }
+
+    /* ===== F2 滿額折扣階層：加一階／刪一階／折抵方式切換 ===== */
+    var tiersBody = document.getElementById('pdisc-tiers-body'),
+        tierAdd = document.getElementById('pdisc-tier-add');
+
+    function tierRowHtml() {
+      return '' +
+        '<tr class="pdisc-tier-row" data-tier-row>' +
+          '<td><span class="amount-field" style="width:120px"><span class="amount-field__unit">$</span><input class="input amount-field__input" type="number" inputmode="decimal" value="" data-tier-threshold></span></td>' +
+          '<td><div class="segmented" data-tier-unit>' +
+            '<button class="segmented__btn segmented__btn--active" type="button" data-unit="fixed" data-i18n="pdisc.tiers.unit.fixed">' + t('pdisc.tiers.unit.fixed', 'Fixed') + '</button>' +
+            '<button class="segmented__btn" type="button" data-unit="pct" data-i18n="pdisc.tiers.unit.pct">' + t('pdisc.tiers.unit.pct', '%') + '</button>' +
+          '</div></td>' +
+          '<td><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="decimal" value="" data-tier-value><span class="amount-field__unit" data-tier-value-unit>$</span></span></td>' +
+          '<td style="text-align:right"><button class="btn btn--ghost btn--icon btn--sm" type="button" data-tier-remove aria-label="Remove tier" data-i18n-aria-label="pdisc.tiers.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button></td>' +
+        '</tr>';
+    }
+    if (tierAdd && tiersBody) tierAdd.addEventListener('click', function () {
+      tiersBody.insertAdjacentHTML('beforeend', tierRowHtml());
+      if (window.ztorIcons) window.ztorIcons.applyIcons(tiersBody);
+      i18n(tiersBody);
+    });
+    if (tiersBody) tiersBody.addEventListener('click', function (e) {
+      var rmBtn = e.target.closest('[data-tier-remove]');
+      if (rmBtn) {
+        var row = rmBtn.closest('[data-tier-row]');
+        /* 至少留一階：規則卡不能空著沒有任何門檻 */
+        if (tiersBody.querySelectorAll('[data-tier-row]').length > 1 && row) row.remove();
+        return;
+      }
+      var unitBtn = e.target.closest('[data-tier-unit] .segmented__btn');
+      if (unitBtn) {
+        var group = unitBtn.closest('[data-tier-unit]');
+        Array.prototype.forEach.call(group.querySelectorAll('.segmented__btn'), function (b) {
+          b.classList.toggle('segmented__btn--active', b === unitBtn);
+        });
+        var row2 = unitBtn.closest('[data-tier-row]'),
+            unitLabel = row2 && row2.querySelector('[data-tier-value-unit]');
+        if (unitLabel) unitLabel.textContent = unitBtn.getAttribute('data-unit') === 'pct' ? '%' : '$';
+      }
+    });
+
+    /* ===== F4 版本歷史：儲存即發版（demo，不真的改資料，只追加一列） ===== */
+    var versionBody = document.getElementById('pdisc-version-body');
+    function todayISO() { var d = new Date(); return d.toISOString().slice(0, 10); }
+    function addVersion(change) {
+      if (!versionBody) return;
+      var n = versionBody.querySelectorAll('tr').length + 1;
+      /* 上一版补上結束日、目前這列拿掉「生效中」badge */
+      var prevActive = versionBody.querySelector('.badge--success');
+      if (prevActive) {
+        var prevRow = prevActive.closest('tr');
+        prevActive.remove();
+        var effCell = prevRow && prevRow.children[1];
+        if (effCell) effCell.textContent = effCell.textContent.replace('→', '— ' + todayISO());
+      }
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td class="ztor-table__feature">v' + n + ' <span class="badge badge--success">' + t('pdisc.version.active', 'Active') + '</span></td>' +
+        '<td>' + todayISO() + ' →</td><td class="text-sub"></td>';
+      tr.children[2].textContent = change;
+      versionBody.insertBefore(tr, versionBody.firstChild);
+    }
+    var saveBtn = document.getElementById('pdisc-save');
+    if (saveBtn) saveBtn.addEventListener('click', function () {
+      addVersion(t('pdisc.version.manual-save', 'Rules or effective period updated'));
+    });
+
+    /* ===== F3 例外藝人：清單＋加入例外彈窗 ===== */
+    /* 名字取自 js/sidebar.js 的示範名冊（三個 persona：Gary Lin／周湯豪 NICKTHEREAL／User B）。 */
+    var ALL_CREATORS = [
+      { id: 'default', name: 'Gary Lin' },
+      { id: 'nick', name: '周湯豪 NICKTHEREAL' },
+      { id: 'userB', name: 'User B' }
+    ];
+    var excState = [
+      { id: 'default', name: 'Gary Lin', added: '2026-08-20 14:02', by: 'Admin · Yves', reason: '合約條款排除' },
+      { id: 'nick', name: '周湯豪 NICKTHEREAL', added: '2026-09-01 09:15', by: 'Admin · Zoe', reason: '限量款不參與平台滿額折扣' },
+      { id: 'userB', name: 'User B', added: '2026-09-10 11:40', by: 'Admin · Yves', reason: '' }
+    ];
+    function excFindIdx(id) { for (var i = 0; i < excState.length; i++) { if (excState[i].id === id) return i; } return -1; }
+    var excBody = document.getElementById('pdisc-exc-body'), excEmpty = document.getElementById('pdisc-exc-empty');
+    function renderExc() {
+      if (!excBody) return;
+      excBody.innerHTML = '';
+      excState.forEach(function (ex) {
+        var tr = document.createElement('tr');
+        tr.setAttribute('data-id', ex.id);
+        tr.innerHTML =
+          '<td><div class="admin-table__owner"><span class="admin-table__avatar">' + ex.name.slice(0, 1) + '</span><span>' + ex.name + '</span></div></td>' +
+          '<td>' + ex.added + '</td>' +
+          '<td class="text-sub">' + ex.by + '</td>' +
+          '<td class="text-sub">' + (ex.reason || '—') + '</td>' +
+          '<td style="text-align:right"><button class="btn btn--ghost btn--sm" type="button" data-exc-remove>' + t('pdisc.excluded.remove', 'Remove') + '</button></td>';
+        excBody.appendChild(tr);
+      });
+      if (excEmpty) excEmpty.hidden = excState.length > 0;
+    }
+    if (excBody) excBody.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-exc-remove]');
+      if (!btn) return;
+      var id = btn.closest('tr').getAttribute('data-id'), idx = excFindIdx(id);
+      if (idx >= 0) { excState.splice(idx, 1); renderExc(); }
+    });
+
+    var excModal = document.getElementById('pdisc-exc-modal'),
+        excSearch = document.getElementById('pdisc-exc-search'),
+        excSuggest = document.getElementById('pdisc-exc-suggest'),
+        excNone = document.getElementById('pdisc-exc-search-none'),
+        excReason = document.getElementById('pdisc-exc-reason'),
+        excConfirm = document.getElementById('pdisc-exc-confirm'),
+        excAddBtn = document.getElementById('pdisc-exc-add');
+    var pickedId = null, pickedName = '';
+
+    function closeExcModal() { if (excModal) excModal.hidden = true; }
+    Array.prototype.forEach.call(document.querySelectorAll('[data-pdisc-exc-close]'), function (b) { b.addEventListener('click', closeExcModal); });
+    if (excModal) {
+      excModal.addEventListener('click', function (e) { if (e.target === excModal) closeExcModal(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !excModal.hidden) closeExcModal(); });
+    }
+
+    function renderSuggest() {
+      if (!excSuggest) return;
+      var q = (excSearch.value || '').trim().toLowerCase();
+      excSuggest.innerHTML = '';
+      /* 打字才列建議，空查詢不預先列出全部（照 fee-exception-modal.js 的做法） */
+      if (!q) { if (excNone) excNone.hidden = true; return; }
+      var avail = ALL_CREATORS.filter(function (c) { return excFindIdx(c.id) < 0 && c.name.toLowerCase().indexOf(q) >= 0; });
+      avail.forEach(function (c) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'btn btn--ghost btn--sm' + (c.id === pickedId ? ' btn--soft' : '');
+        b.style.justifyContent = 'flex-start';
+        b.setAttribute('data-exc-pick', c.id);
+        b.textContent = c.name;
+        excSuggest.appendChild(b);
+      });
+      if (excNone) excNone.hidden = avail.length > 0;
+    }
+    if (excSearch) excSearch.addEventListener('input', renderSuggest);
+    if (excSuggest) excSuggest.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-exc-pick]');
+      if (!b) return;
+      pickedId = b.getAttribute('data-exc-pick');
+      var c = ALL_CREATORS.filter(function (x) { return x.id === pickedId; })[0];
+      pickedName = c ? c.name : '';
+      renderSuggest();
+    });
+
+    function openExcModal() {
+      pickedId = null; pickedName = '';
+      if (excSearch) excSearch.value = '';
+      if (excReason) excReason.value = '';
+      renderSuggest();
+      if (excModal) { excModal.hidden = false; i18n(excModal); }
+    }
+    if (excAddBtn) excAddBtn.addEventListener('click', openExcModal);
+    if (excConfirm) excConfirm.addEventListener('click', function () {
+      if (!pickedId) { if (excSearch) excSearch.focus(); return; }
+      excState.push({ id: pickedId, name: pickedName, added: todayISO() + ' ' + (new Date()).toTimeString().slice(0, 5), by: 'Admin · Yves', reason: excReason ? excReason.value.trim() : '' });
+      renderExc();
+      closeExcModal();
+    });
+
+    renderExc();
+    if (excModal) { if (window.ztorIcons) window.ztorIcons.applyIcons(excModal); i18n(excModal); }
+
+    /* ===== F5 紀錄：逐筆／依藝人 ===== */
+    var recordsToggle = document.getElementById('pdisc-records-toggle');
+    if (recordsToggle) recordsToggle.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-records-view]');
+      if (!btn) return;
+      var view = btn.getAttribute('data-records-view');
+      Array.prototype.forEach.call(recordsToggle.querySelectorAll('.segmented__btn'), function (b) {
+        b.classList.toggle('segmented__btn--active', b === btn);
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-records-panel]'), function (p) {
+        p.hidden = p.getAttribute('data-records-panel') !== view;
+      });
+    });
+
+    /* ===== 啟用 switch（沿用站上既有的 role=switch 手動切換寫法） ===== */
+    var enabledSwitch = document.getElementById('pdisc-enabled');
+    if (enabledSwitch) enabledSwitch.addEventListener('click', function () {
+      enabledSwitch.classList.toggle('switch--on');
+      enabledSwitch.setAttribute('aria-checked', enabledSwitch.classList.contains('switch--on'));
+    });
+  }());
+</script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script src="js/zselect.js?v=r2.2"></script>
+</body>
+</html>
