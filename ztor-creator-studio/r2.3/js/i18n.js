@@ -6036,6 +6036,20 @@
     'od.void.cancel':       { en: 'Cancel',                  zh: '取消' },
     'od.void.confirm':      { en: 'Void this item',          zh: '確認撤銷' },
     'od.void.toast':        { en: 'Voided {item} — the buyer will be notified.', zh: '已撤銷 {item}，買家將收到訂單已取消通知' },
+    /* 撤銷原因與紀錄（D271，2026-09-15）：原因選填、預設理由 p1–p7 為呈現參考；record 顯示在已取消品項列 */
+    'od.void.reason.label':  { en: 'Reason (optional)',        zh: '撤銷原因（選填）' },
+    'od.void.reason.ph':     { en: "Leave a note on why this line is being voided — it goes to the buyer's email and the order record.", zh: '寫一句為什麼撤銷這個品項——會附在買家的取消通知信與訂單紀錄裡' },
+    'od.void.reason.hint':   { en: 'Or pick a preset — you can still edit it.', zh: '也可以點下方預設理由帶入，帶入後仍可修改' },
+    'od.void.reason.p1':     { en: 'Buyer requested cancellation by email', zh: '買家來信申請取消' },
+    'od.void.reason.p2':     { en: "Out of stock — can't be supplied", zh: '商品缺貨，無法供應' },
+    'od.void.reason.p3':     { en: 'Duplicate order',            zh: '重複下單' },
+    'od.void.reason.p4':     { en: 'Payment issue or suspected fraud', zh: '付款異常或疑似盜刷' },
+    'od.void.reason.p5':     { en: 'Listing or price error',    zh: '商品資訊或價格有誤' },
+    'od.void.reason.p6':     { en: 'Pickup session cancelled or changed', zh: '取貨場次取消或變更' },
+    'od.void.reason.p7':     { en: 'Not collected by the pickup deadline', zh: '買家逾期未取貨' },
+    'od.void.record':        { en: 'Voided {date} · {who}',     zh: '{date} 由 {who} 撤銷' },
+    'od.void.record.admin':  { en: 'Admin',                     zh: 'Admin' },
+    'od.void.record.creator':{ en: 'Creator',                   zh: '創作者' },
     /* 墓碑（2026-09-09，D253）：od.btn.refund（頁首 Refund 主操作）移除——平台不提供
        任何退款動作，取消訂單品項的唯一路徑是撤銷（od.void.action）。 */
     'od.btn.ship':          { en: 'Mark shipped',            zh: '標記出貨' },

@@ -9,16 +9,18 @@
     shop-order-cancelled-zh · 訂單已取消（撤銷觸發）
     模板來源：shop-order-confirmed-zh.html（2.0 深色皮膚，同一套外框、字級、色票）
     觸發：Admin 在 Creator Studio 對訂單品項執行「撤銷」（Asana 1217989360065066；規格 5.1.5.3.1 §2.8、D252／D253）
-    前提：營運已在 Stripe 後台完成人工退款，撤銷本身不處理金流——信裡因此只「告知退款已完成」，不說「正在退款」
+    前提：營運已在 Stripe 後台完成人工退款，撤銷本身不處理金流——信裡因此只「告知退款已完成」，不說「正在退款」；撤銷可能由買家申請、也可能由官方自行發動，信裡不提取消的原因與發動方（2026-09-15 使用者更正）
     變數：
       {{buyerName}} {{orderId}} {{orderDate}} {{cancelDate}} {{payMethod}}
       {{voidedItems}}   逐件品項列（品項名 ×數量），產線以迴圈展開 .em-item 那一列
       {{voidedQty}}     被取消的總件數
       {{refundAmount}}  退款金額（＝被取消品項的合計）
       {{remainingItems}} 訂單裡未被取消、仍可取貨的品項（部分撤銷才有）
+      {{voidReason}}    撤銷原因（Admin 撤銷時選填，D271）
       {{ordersLink}} {{contactEmail}} {{currentYear}}
     條件區塊：
       [[#if partial]] … [[/if]]  只有部分品項被撤銷時才顯示「其餘商品不受影響」段；整單撤銷時整段拿掉
+      [[#if voidReason]] … [[/if]]  有填撤銷原因才顯示退款資料裡的「取消原因」列
     圖片：assets/ 三張自 ztor.vercel.app/emails/assets 複製，路徑與 ztor repo 的 emails/ 一致、可直接搬
   -->
   <!--[if mso]>
@@ -70,7 +72,7 @@
           </tr>
           <tr>
             <td class="em-col" style="padding:0 32px;">
-              <p style="margin:0px 0 28px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:16.5px; line-height:1.8; color:#f2f2f2;">依你提出的申請，你的 Ztor. 商店訂單 {{orderId}} 中，下列商品已取消。款項已退回你的原付款方式，實際入帳時間依發卡銀行作業而定，通常需要 5 到 10 個工作天。</p>
+              <p style="margin:0px 0 28px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:16.5px; line-height:1.8; color:#f2f2f2;">你的 Ztor. 商店訂單 {{orderId}} 中，下列商品已取消，款項已退回你的原付款方式；實際入帳時間依發卡銀行作業而定，通常需要 5 到 10 個工作天。</p>
             </td>
           </tr>
 
@@ -143,7 +145,10 @@
                     <p style="margin:0 0 10px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">取消日期：</span><span style="color:#f2f2f2;">{{cancelDate}}</span></p>
                     <p style="margin:0 0 10px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">取消件數：</span><span style="color:#f2f2f2;">共 {{voidedQty}} 件</span></p>
                     <p style="margin:0 0 10px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">退款方式：</span><span style="color:#f2f2f2;">退回原付款方式（{{payMethod}}）</span></p>
-                    <p style="margin:0; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">退款金額：</span><span style="color:#f2f2f2;">{{refundAmount}}</span></p>
+                    <p style="margin:0 0 10px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">退款金額：</span><span style="color:#f2f2f2;">{{refundAmount}}</span></p>
+                    <!-- [[#if voidReason]] 取消原因（D271）：Admin 撤銷時選填，有填才出現這一列 -->
+                    <p style="margin:0; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">取消原因：</span><span style="color:#f2f2f2;">{{voidReason}}</span></p>
+                    <!-- [[/if]] -->
                   </td>
                 </tr>
               </table>
