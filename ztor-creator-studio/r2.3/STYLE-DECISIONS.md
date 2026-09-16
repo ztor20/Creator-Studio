@@ -385,7 +385,18 @@ chevron），點了才展開四個語系選項。D222（同日）撤除 D221 引
 
 證據：`ds-components/_tokens.css:607`（`--card`）、`:612`（`--muted` 註解「比卡深」）、`:643`（`--nest-surface`）、`:676`（`--surface-shell`）、`demo-layer-system.html:33-37`、`ds-components/nest.css` 檔頭的兩層填色說明、`docs/bundle-popup-demo.html` 的 `.bdp-sec`、`docs/階層稽核-2026-08-13.md`。
 
-### Q61～Q64：表面階層要不要收成一組帶級數的 token（2026-08-11 提出，待裁決）
+### Q61～Q64：表面階層要不要收成一組帶級數的 token（2026-08-11 提出，**2026-09-15 使用者裁決：Q61 A／Q63 B／Q64 核可遷移**）
+
+**裁決（2026-09-15，使用者原話「Q61 : A／Q63 : B／Q64: ok」）與落地**：
+
+- **Q61 A ✅ 已執行**：`_tokens.css` 新增 `--layer-0-surface`／`--layer-1-surface`／`--layer-2-surface`／`--layer-2-line`／`--layer-3-surface`／`--layer-line` 六支 Role 別名（全部 `var()` 指向既有 Foundation，不帶新顏色、不另設暗色覆寫）。與 8/11 提案的差異：換裝之後 L1 已是玻璃，所以 `--layer-1-surface` 指 `--ztu-glass-bg`、`--layer-2-surface` 指 `--ztu-film`（不是提案時的 `--card`／4% 薄膜）；L2 邊界沿 Q66／Q98 現況用線（`--layer-2-line`＝`--nest-line`），提案的 `--layer-2-edge` 落影環未採用（未進 `_tokens.css`）。`.nest` 與 `.card--muted` 已改吃 `--layer-2-surface`／`--layer-2-line`，零視覺變動。文件：`design-system.md`／`.html` §2.5a。
+- **Q62**：8/11 已裁示，不變。
+- **Q63 B ✅ 已執行**：`--layer-line: var(--border)`，只把現行線色收進層級系統，不覆議 Q22 挑定的亮度。
+- **Q64 ✅ 已執行（2026-09-15 同日，使用者「改吧」）**：盤點清單 `docs/Q64-表面階層遷移清單-2026-09-15.md`。第一批 40 支純改名（L0 1／L1 29／L2 1／L3 9，別名零變動）＋第二批 15 支 `--nest-surface`→`--layer-2-surface`（4%→8.5%，`.funding-panel`／`.payout-bank-*`／`.scanner-access`／`.review-status`／`.ss-status`／`.msg-schedule`／`.bd-sec`／`.cb-summary` 等，同規則的 `--nest-line`→`--layer-2-line`）一次做完；第三批「不確定」9 支判為材質或效果、維持原 token；`demo-layer-system.html` 對照組未動。實測 `project-detail`／`store-settings`／`create-bundle` 三頁 computed 值 4%→8.6%，0 console error，check_ds_sync 全 PASS。原規劃（供對照）：L0（`shared.css` body 直接吃 `--ztu-canvas`）、L1（`card.css` 等直接吃 `--ztu-glass-bg` 的卡面）、L3（`--border` 消費者裡屬「分組線框」的那些）、以及 **`--nest-surface`（4%）22 支消費者與 `--ztu-film`（8.5%）並存的差**——這是 Q66 落地（8/13）與 ztorUI 換裝（8/28）先後改出來的兩種 L2 濃度，遷移時要逐支確認該併到 8.5% 還是它其實是凹槽。遷移清單另派盤點、按批走，每批附零視覺變動證據。
+- `demo-layer-system.html`：**2026-09-16 使用者要求「把 layer demo 以最終定案的方向再整理一次」**，改寫成只吃正式 `--layer-*` token 與正式元件（`.card`／`.card--muted`／`.form-section--outlined`／`.nest`／`.btn--outline`／`.segmented`）的定案示範頁，提案變數（`--lyrdemo-*`）全部拿掉；Q87「不熔接」對這一頁不再適用（其餘 C-4／C-5／C-8 頁不變）。內容：怎麼運作、階梯總表（即時算合成色與對比）、四階相套、疊到第幾層停（正確 vs 禁止）、浮層不透明／控件比所在層亮／凹槽往暗三例、裁決紀錄。
+
+---- 以下為 2026-08-11 提案原文 ----
+
 
 Figma `856:27798`（layer0／layer1／layer2／layer3）把「表面層級」畫成一個通用模型：L0 畫布實色、L1 卡片實色、L2 半透明薄膜（疊在誰身上就跟著誰亮一階、可再疊）、L3 不再疊填色只留 1px 邊框。站上目前有**三套各自管一段的層級語彙**並存，沒有一套是通用的：
 
