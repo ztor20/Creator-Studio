@@ -16,7 +16,8 @@
       {{voidedQty}}     被取消的總件數
       {{refundAmount}}  退款金額（＝被取消品項的合計）
       {{remainingItems}} 訂單裡未被取消、仍可取貨的品項（部分撤銷才有）
-      {{voidReason}}    撤銷原因（Admin 撤銷時選填，D271）
+      {{voidReason}}    撤銷原因——依收件人語言 AI 翻譯後的譯文（Admin 撤銷時選填，D271）
+      {{voidReasonOriginal}} 撤銷原因的原文（Admin 填寫時的語言），顯示在譯文下方的原文區塊
       {{ordersLink}} {{contactEmail}} {{currentYear}}
     條件區塊：
       [[#if partial]] … [[/if]]  只有部分品項被撤銷時才顯示「其餘商品不受影響」段；整單撤銷時整段拿掉
@@ -146,8 +147,28 @@
                     <p style="margin:0 0 10px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">取消件數：</span><span style="color:#f2f2f2;">共 {{voidedQty}} 件</span></p>
                     <p style="margin:0 0 10px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">退款方式：</span><span style="color:#f2f2f2;">退回原付款方式（{{payMethod}}）</span></p>
                     <p style="margin:0 0 10px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">退款金額：</span><span style="color:#f2f2f2;">{{refundAmount}}</span></p>
-                    <!-- [[#if voidReason]] 取消原因（D271）：Admin 撤銷時選填，有填才出現這一列 -->
-                    <p style="margin:0; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7;"><span style="color:#a6a6a6;">取消原因：</span><span style="color:#f2f2f2;">{{voidReason}}</span></p>
+                    <!-- [[#if voidReason]] 取消原因（D271）：Admin 撤銷時選填，有填才出現這一列。
+                         這一列改成「標籤格＋值格」兩欄，讓下方的原文區塊跟譯文的左緣對齊（2026-09-16 使用者標註）；
+                         標籤格 white-space:nowrap 取自然寬度，所以與上面各列的標籤等寬、值的起點不變。 -->
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="white-space:nowrap; vertical-align:top; padding-right:0; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7; color:#a6a6a6;">取消原因：</td>
+                        <td style="vertical-align:top; width:100%; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:15.5px; line-height:1.7; color:#f2f2f2;">
+                          {{voidReason}}
+                          <!-- 原文區塊：取消原因會依收件人的語言由 AI 翻譯，這裡保留 Admin 填寫的原文讓買家對照；
+                               {{voidReason}} 是譯文、{{voidReasonOriginal}} 是原文。原文與譯文同語言時可整塊拿掉。 -->
+                          <!-- 卡片外框沿用上方「取貨 QR Code 已失效」提示卡，文字維持小字說明＋淡灰原文（2026-09-16 使用者指定） -->
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#1c1c1c" style="margin-top:10px; background:#1c1c1c; border:1px solid #2e2e2e; border-radius:12px; border-collapse:separate;">
+                            <tr>
+                              <td style="padding:12px 16px;">
+                                <p style="margin:0 0 4px; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:12.5px; line-height:1.6; color:#737373;">以上為系統翻譯，原文如下</p>
+                                <p style="margin:0; font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; font-size:14px; line-height:1.7; color:#a6a6a6;">{{voidReasonOriginal}}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
                     <!-- [[/if]] -->
                   </td>
                 </tr>

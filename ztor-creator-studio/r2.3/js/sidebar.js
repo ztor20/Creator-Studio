@@ -39,14 +39,17 @@
   /* 2026-09-02（D233）：Admin 同層目的地由五個增為六個——新增創作者活動管理
      （spec 5.1.0.6，登記於 0-設計規格書 §3.2 產品地圖 Tier 0），排在 Creator 管理
      正下方：它是 creator 名冊衍生出來的工作，不是與 Admin IP Bank 平行的另一個領域。 */
-  const ADMIN_ROUTES = new Set(["creators.html", "creator-detail.html", "admin-creator-events.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-video-review.html"]);
+  const ADMIN_ROUTES = new Set(["creators.html", "creator-detail.html", "admin-creator-events.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-platform-promotions.html", "admin-video-review.html"]);
   const ADMIN_NAV = [
     { href: "creators.html",          key: "admin.creator-mgmt", icon: "users" },
     { href: "admin-creator-events.html", key: "admin.creator-events", icon: "download" },
     { href: "admin-video-review.html", key: "admin.video-review", icon: "file-check" },
     { href: "admin-ip-bank.html",     key: "admin.ip-bank",      icon: "landmark", match: ["admin-ip-bank-entry.html"] },
     { href: "ip-bank-reporting.html", key: "admin.ip-reporting", icon: "bar-chart-3" },
-    { href: "admin-platform-fees.html", key: "admin.platform-fees", icon: "percent" }
+    { href: "admin-platform-fees.html", key: "admin.platform-fees", icon: "percent" },
+    /* 平台優惠設定（D273 新增第七個同層目的地；D277 改名並改頁內模型——
+       由單一組滿額規則改為滿額折扣與平台優惠碼兩種逐筆設定）。 */
+    { href: "admin-platform-promotions.html", key: "admin.platform-promotions", icon: "ticket-percent" }
   ];
   const isRoster = path === ROSTER_PAGE;
   const isAdminPlatform = ADMIN_ROUTES.has(path);
@@ -434,7 +437,7 @@
   /* ✝ 2026-07-30：取貨管理三頁移出本清單，改由 feature-scope-map 的 O24–O30（🟢 Phase 1）管轄（D157）。
      這份清單與 devtools.js 的同名清單必須一致，改一邊就要改另一邊。 */
   const FULL_ROUTES = new Set([
-    "index.html", "dashboard-classic.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-video-review.html", "projects.html", "project-detail.html", "create-project.html",
+    "index.html", "dashboard-classic.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-platform-promotions.html", "admin-video-review.html", "projects.html", "project-detail.html", "create-project.html",
     "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "media-vault.html",
     "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "fan-analytics.html", "audience-report.html", "my-ip.html", "ip-detail.html",

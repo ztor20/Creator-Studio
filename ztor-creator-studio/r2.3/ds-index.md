@@ -5,7 +5,7 @@
 > 用途：**動手改 UI 前先掃這頁**——色彩／字體／間距／陰影一律用下列 token，版面一律先找既有元件；
 > 用法細節與規範看 `design-system.md`（AI 契約）／`design-system.html`（人看）。只列亮色值，暗色屬 Pillar 3。
 
-## Tokens（_tokens.css，亮色，共 289 條）
+## Tokens（_tokens.css，亮色，共 295 條）
 
 ### --accent-*
 - `--accent`: #F3F3F3
@@ -115,6 +115,14 @@
 ### --input-*
 - `--input`: #EAEAEA
 - `--input-surface`: var(--card)
+
+### --layer-*
+- `--layer-0-surface`: var(--ztu-canvas)
+- `--layer-1-surface`: var(--ztu-glass-bg)
+- `--layer-2-surface`: var(--ztu-film)
+- `--layer-2-line`: var(--nest-line)
+- `--layer-3-surface`: transparent
+- `--layer-line`: var(--border)
 
 ### --lh-*
 - `--lh-none`: 1

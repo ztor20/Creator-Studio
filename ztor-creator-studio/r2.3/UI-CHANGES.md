@@ -4,6 +4,156 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-15（三十）· Admin「平台折扣設定」改為「平台優惠設定」逐筆模型（A spec-derived）
+
+**範圍**：`admin-platform-discounts.html` → `admin-platform-promotions.html`（git mv＋整頁重寫）：四分頁——**滿額折扣**（逐筆清單：名稱／門檻→折抵／生效期間／狀態／啟用 switch／例外藝人數／kebab；新增與編輯共用彈窗：名稱、門檻、折抵 %／固定、生效期間、啟用、備註、本筆例外藝人（field-pill 搜尋加 chip）、修改歷史）、**平台優惠碼**（逐組清單＋彈窗，欄位語意複製自 `store-settings.html` 的創作者優惠碼：名稱、碼＋複製、折扣、固定金額折法、適用範圍（唯讀「全平台」）、生效期間、啟用、三格次數、可與其他優惠碼疊加、備註、本組例外、修改歷史）、**例外藝人**（全局清單，加「範圍：全部」欄）、**紀錄**（「套用階」改「套用的優惠」、撤除「版本」欄）。舊的單一組階層卡與整頁版本歷史卡撤除。`js/sidebar.js` 三處清單改檔名；`js/i18n.js` `admin.platform-discounts`→`admin.platform-promotions`、`pdisc.*`→`pprom.*`（121 把）。
+
+**依據**：`documents/decisions.md` D277（使用者 2026-09-15：頁名改平台優惠設定；滿額折扣與平台優惠碼各自逐筆設定，帶名稱／期間／啟用／備註；例外分全局與逐筆；版本改為修改歷史）；規格 `5.1.0.7-平台優惠設定.md` v2。
+
+**設計取捨**：
+- 逐筆＝一列一筆、一筆一彈窗；「啟用」直接做在列上的 switch，停用不必進彈窗。
+- 例外三層的呈現：全局例外獨立分頁，逐筆例外收進該筆彈窗最下方（跟修改歷史一起），列上只顯示數字——營運看清單時要的是「這筆排除了幾個人」，不是名單。
+- 修改歷史放彈窗尾端、唯讀 `data-list`，新增模式顯示「儲存後開始記錄」。
+- 平台優惠碼彈窗不跨頁 import 創作者優惠碼那段，複製一份改前綴：兩頁的欄位語意相同但資料來源與例外不同，硬共用會把「誰發的」邏輯混在一起。
+
+**驗證**：dev server 4326、Admin 身分——四分頁切換；滿額折扣與平台優惠碼「新增」與列 kebab「編輯」開同一彈窗帶入該列；固定金額折法列在 `$` 且每單件數≠1 時出現；全局例外與紀錄分頁互動；zh／en 零 raw key；全站 grep 舊檔名、舊 key 零殘留；`check_ds_sync.py` PASS（既有 WARN 5／13，棘輪未升）。呈現假設補進 ASSUMPTIONS UIA-151。
+
+## 2026-09-16（三十四）· 四個 DS 文件頁底色改純黑；combobox 下拉對齊浮層配方（B 反饋導入）
+
+**範圍**：`design-tokens.html`、`demo-layer-system.html`、`scripts/gen_design_gallery.py`（→ `design-components.html`）、`design-system.html` 各自的文件殼樣式；`ds-components/combobox.css`（`.combobox__menu`）；`design-system.md`／`.html` Combobox 條目。
+
+**依據**：使用者 2026-09-16「這些 DS 檔案背景都用純黑色」；同時圈出圖鑑裡 bundle-editor 的彈窗與 combobox 的下拉「下面那塊是不是做錯了」。
+
+### B · 文件頁純黑
+
+- 四頁 body 改 `--surface-inverse`（亮暗皆 #000000），星空偽元素在文件頁關掉。文件頁不是產品頁：星空的暖光讓同一塊 L1 玻璃在頁面各處看起來不一樣，看層次時是干擾。選擇器壓過 `shared.css` 的 `html[data-nav-mode="sidebar"] body`。產品頁不受影響。
+
+### B · combobox 下拉
+
+- `.combobox__menu` 原本吃 `--card`／`--border`（暗色面色與 `--popover` 相同，只有邊 10% vs 15%），語意上它是浮層、不是卡；改成與 `.dropdown__menu` 同一套（`--popover`＋`--ztu-glass-rim`＋`--shadow-float`，Q78）。消費頁 create-event、store-settings、pickup-session-modal 只有邊變亮一階。
+- 另一塊 bundle-editor 的彈窗（`.payout-dialog` 72% 透明）**不是錯**：2026-09-01 使用者裁示「彈窗要改成玻璃面」；圖鑑裡它沒有平常的遮罩與模糊墊底，所以透得比較明顯，是展示條件不同，不動。
+
+**驗證**：`check_ds_sync.py` 全 PASS；四頁 body computed `rgb(0,0,0)`、`::before` 隱藏；combobox 邊 0.15。
+
+## 2026-09-16（三十三）· 元件圖鑑量產：179 張卡、三頁導覽補「元件」、DS 示範容器全部改照 layer 規則（D infra ＋ B 反饋導入）
+
+**範圍**：`design-components.html`（全量生成）、`scripts/gen_design_gallery.py`（連結從整份文件收集去重；搬 DS 頁尾 20 支 `<script src>` 與 5 塊 inline script、各包 try/catch；`overflow-x: clip` 擋 fixed 浮層撐出橫向捲軸）、`design-system.html`（`.demo`／`.gallery`／`.viz` 改 L1、`.demo--preview` 改 L0；head 補掛 `detail-overview.css`）、`design-tokens.html`／`demo-layer-system.html`（導覽補「元件」）、`design-system.md`（裸值例外：圖鑑繼承規格全文 demo markup，基準 11）、`ds-baseline.json`。
+
+**依據**：使用者 2026-09-16 看過三張樣板「暫時沒問題」→「接著把剩下的改完」；同日對矩陣殼「這一頁元件和元件之間用分隔線和間距區分，現在是用第一層 layer 區分」。
+
+### D · 量產
+
+- 179 張卡全數生成，0 console error、0 未解析 icon；5 張在規格全文裡本來就沒渲染區（view-switch／restock-log／canvas-stage／kpi-rotator／canvas-home），卡內明說。
+- 量產抓到兩個規格全文自己的漏洞並在源頭修掉：`detail-overview` 的 demo 卡從沒連過自己的 CSS（檢查 15）；`.demo`／`.gallery`／`.viz` 三個示範容器與 `.matrix-block` 一樣還是換裝前的實色 `--card` 漸層，一起改成 L1。
+- 卡內 inline `style` 的裸值（主題色票、品牌漸層等示範資料）逐字來自規格全文，登記為繼承例外、基準 11，只准降。
+
+### B · 元件之間用分隔線＋間距
+
+- 圖鑑不再把每支元件包成卡；示範容器直接坐在檯面上，所以它們是 L1（不是先前試的 L2 薄膜），表格 L3 只畫線、表頭薄膜。改在規格全文的樣式來源，兩頁同時生效。
+
+**驗證**：`check_ds_sync.py` 全 PASS（兩個既有 WARN）；dev server 179 張卡載入無橫向捲軸、搜尋可過濾；fresh agent 抽樣逐字比對渲染區與規則區、核對卡數與順序、導覽一致。已知：頁高約 13 萬 px，靠頂部搜尋定位；之後若要目錄再議。
+
+## 2026-09-16（三十二）· 元件圖鑑樣板 design-components.html（機器生成）＋ DS 頁矩陣殼改照 layer 規則（D infra ＋ B 反饋導入）
+
+**範圍**：新增 `scripts/gen_design_gallery.py` 與其產物 `design-components.html`（本輪只生成 button／badge／input 三張樣板，`--only`）；`design-system.html` 自己 `<style>` 裡的 `.matrix-block`／`.matrix`／`.matrix thead th`／`.matrix tbody th` 四條規則。
+
+**依據**：使用者 2026-09-16 看過 DS 頁現況盤點後「好」（同意拆讀者：設計師視角頁＋規格全文）；看樣板時圈出矩陣區塊問「這些是照 layer 的規則嗎」→「先改來看看效果吧」。
+
+### D · 圖鑑
+
+- 不重寫內容：腳本從 `design-system.html` Pillar 4 每張 `<section class="sub">` 抽出標題、第一句用途（`.sub__desc[data-zh]`）、渲染區（`.matrix-block`／`.demo`／`.viz`／`.preview`／`.gallery` 逐字搬）；其餘內容收進卡底 `<details>`「規則與說明」，頁面固定 `data-lang="zh"`。DS 頁 `<style>` 只搬卡片用到的規則（三處裸值換等值 token）。共用 `.dsn` 頂部導覽，多一格「元件」（Tokens／Layers 兩頁的導覽等量產時再補）。
+- 全量試跑 179 張可生成；5 張無渲染區（`view-switch`／`restock-log`／`canvas-stage`／`kpi-rotator`／`canvas-home`，示範由 JS 畫或用別的容器名），量產時另處理。
+- 驗收抓到並修掉：DS 頁有一行黏 16 支 `<link>`，腳本原本漏抓；`balanced_div` 找不到結尾改為報錯而非吞掉整份文件。
+
+### B · 矩陣殼照 layer 規則
+
+- 舊：玻璃卡裡的 `.matrix-block` 是實色 `--card` 漸層、`.matrix` 再一層實色 `--card`、表頭與列標往暗（`--muted` 混色）——換裝前的展示殼，稽核掃不到（不在 ds-components）。
+- 新：`.matrix-block`＝L2 薄膜（`--layer-2-surface`＋上緣 `--layer-2-line`、`--radius-lg`）；`.matrix`＝L3 只畫線（`--layer-line`、透明底）；表頭與列標＝`--ztu-film`（Q41／檢查 14 的卡內表頭規則）。規格全文與圖鑑同時生效（圖鑑重跑即同步）。
+
+**驗證**：`check_ds_sync.py` 全 PASS；三張卡渲染區與規格全文逐字相同（fresh agent diff）；dev server 上 `.dg-card` 5% → `.matrix-block` 8.6% → `.matrix` 透明＋線 → th 8.6%，0 console error。
+
+## 2026-09-16（三十一）· Tokens／Layers 兩頁共用頂部導覽、文案瘦身（B 反饋導入 ＋ D 文件）
+
+**範圍**：`design-tokens.html`、`demo-layer-system.html`。`design-system.html` 本輪不動（使用者裁示：退到「規格全文」、只當連結目標）。
+
+**依據**：使用者 2026-09-16「現在變得好混亂，檔案都連在一起，但目錄切換很不統一……給設計師看的基本都要視覺化……還是有很多冗詞」；提案「一套殼＋文案瘦身＋Layers 再砍」後裁示「可以」「頂部導覽就夠」。
+
+### B · 一套殼
+
+- 兩頁同一條頂部導覽 `.dsn`（站名 · Tokens · Layers · 規格全文 · 亮暗），目前頁以 `aria-current` 標示（吃 `--selected-surface`／`--selected-ink`）。它是文件殼，與 `design-system.html` 的 `.toc` 同性質，不是產品元件，所以寫在兩頁各自的 `<style>`、逐字相同並互相註明「改一邊要同步另一邊」。
+- 同樣頁寬（1200）、同樣標題樣式；Tokens 頁的分區導覽＋搜尋改黏在導覽下方；主題切換與「亮色不可讀」提示搬進導覽與色彩區導言。
+
+### B · 文案瘦身
+
+- Tokens：頁首兩句、各區導言最多一句（多數為空）、`--layer-*` 群組的說明縮成一句＋「Layers →」連結、icon 導言一句。
+- Layers：七條規則縮成四張短卡；「三條相關規則實例」併進四階相套段當第二排小卡；裁決紀錄與沿革整段收進底部 `<details>`「出處與裁決」，預設收起；階梯總表移到最後。
+
+**驗證**：`check_ds_sync.py` 全 PASS；兩頁 0 console error、無橫向溢出；導覽目前頁標示與主題切換在兩頁皆正確。
+
+## 2026-09-16（三十）· demo-layer-system.html 改寫為表面階層的定案示範頁（D infra／文件）
+
+**範圍**：`demo-layer-system.html` 全檔重寫（810 → 約 260 行）；`design-system.md` §6.0.1 的引用句與「裸值例外」段更新；`STYLE-DECISIONS.md` Q61～Q64 段補記。
+
+**依據**：使用者 2026-09-16「把 layer demo 以最終定案的方向再整理一次」。
+
+### D · 做法
+
+- 提案變數（`--lyrdemo-*`、8/11 版的 `--layer-2-edge`／`--layer-lift`）全部拿掉，整頁只吃 `_tokens.css` 的六支 `--layer-*` 與正式元件：`.card`、`.card--muted`、`.form-section--outlined`＋`.nest`、`.btn--outline`、`.input`、`.segmented`。
+- 六段：怎麼運作（兩條正交軸＋七條規則）、階梯總表（依目前主題即時算每階合成色與對父層的對比）、四階相套（卡中卡與滿版巢狀層兩種版型）、疊到第幾層停（正確 vs 禁止並排）、三條相關規則實例（浮層不透明 Q78、控件比所在層亮 Q67、凹槽往暗 Q66 例外）、裁決紀錄（Q24／Q61～Q64／Q66／Q67／Q78／Q98／Q108）。
+- 頁面裸值歸零（原基準 18 處是提案變數與固定亮色預覽，隨提案退場一併消失）。標題去掉「[DEMO 提案]」。
+
+**驗證**：`check_ds_sync.py` 全 PASS（兩個既有 WARN）；dev server 載入 0 console error；階梯總表 6 列即時算出；切換明暗表格重算。
+
+## 2026-09-15（二十九）· 優惠碼補齊四組欄位、Admin 平台折扣設定新頁、訂單詳情折抵兩列（A spec-derived）
+
+**範圍**：`store-settings.html`（F8 優惠碼彈窗：Discount 之後加「適用範圍」三個 zcheck 可混選——全部商店／特定品項（商品類型樹、父子連動含半選）／特定商品（`tag-input`＋`combobox` 搜尋加 chip，資料取 `ProductsStore` 商品＋組合、拍賣天然不在其中）；「使用次數」三格——每張訂單可折件數（預設 1）、每人總次數、總兌換次數（留空＝不限）；清單加「範圍」欄、「賣掉」改「已用」並顯示 `已用 / 上限`、狀態多「已用完」`badge--warning`，示意列 SUMMER25／AIKO10／LAUNCH50）、`ds-components/store-settings.css`（範圍區版面＋彈窗手機寬度單欄）、新頁 `admin-platform-discounts.html`（Admin 第七個同層目的地：規則／例外藝人／紀錄三分頁；滿額階層可增刪、%／固定切換、生效期間、啟用旗標、版本歷史 append-only；例外彈窗比照 `fee-exception-modal.js` 的搜尋做法；紀錄逐筆／依藝人切換）、`js/sidebar.js`（ADMIN_ROUTES／ADMIN_NAV／FULL_ROUTES 三處，icon `ticket-percent`）、`order-detail.html`＋`js/orders-store.js`（金額拆解在平台費、支付費之後加「優惠碼折抵 · 碼」「平台滿額折抵」兩列，無折扣訂單不產生；示意訂單 ZT-10486）、`js/i18n.js`（`store-settings.codes.*` 22 新 1 改、`admin.platform-discounts`＋`pdisc.*` 70 把、`od.amt.code`／`od.amt.threshold`）。
+
+**依據**：`documents/decisions.md` D272（適用範圍三級可混選、次數以件計拆兩條件＋總兌換、已用完、折抵落點）、D273（平台滿額折扣全平台、創作者吸收、Admin 例外藝人、新頁 5.1.0.7）、D274（平台費以標示售價計、支付費以實付計、折抵為獨立扣項）；規格 `5.1.5.5` v28 F8、`5.1.0.7` v1、主規格 §7.3／§7.6。
+
+**設計取捨**：
+- 適用範圍用三個可複選的 zcheck 而不是單選＋子選項：D272 明寫「可混選」，勾「全部商店」時另外兩個停用並清空，避免「全部」與「部分」同時成立。
+- 次數三格各自一列、hint 只寫決定需要的資訊（一次折一件、多件折最貴、留空不限）；不做「每單件數 ≤ 每人總次數」的校驗——兩者的優先關係規格未定（§8.22）。
+- 清單「已用」格式 `42 / 100`，未設上限只顯示已用數，不寫「∞」或「不限」佔位。
+- Admin 新頁骨架整份照平台費率設定抄（麵包屑、page-intro、list-toolbar＋短底線 tabs、門禁屬性），兩頁並列時視覺一致；階層表用 `ztor-table` 而不是 form-grid，因為列可增刪。
+- 訂單詳情折抵兩列放在平台費、支付費之後、淨額之前：對應 D274「折抵是平台費之後的獨立扣項」，讀者順著往下看就是「先扣費、再扣折抵、剩淨額」；平台費金額不因折扣改變，示意訂單刻意保留 $8.70 讓人對得出 58 × 15%。
+
+**驗證**：dev server 4326——三頁 zh／en 各零 raw key；`store-settings.html` 開彈窗勾特定品項展開類型樹（父勾＝子全勾、部分勾＝半選）、勾特定商品搜「Hoodie」選成 chip；手機寬度彈窗單欄、無橫向捲動；Admin 身分開 `admin-platform-discounts.html` 三分頁切換、加減階、例外彈窗、紀錄逐筆／依藝人；`order-detail.html?id=ZT-10486` 金額列：58 × 15% ＝ 8.70、實付 48 × 2.4% ＝ 1.15、淨額 38.15，無折扣訂單 ZT-10485 畫面不變。`check_ds_sync.py` PASS（既有 WARN 5／13 未變，棘輪 10／12／14 未升）。fresh-context 驗收見回報。產品缺口與呈現假設記 ASSUMPTIONS UIA-151。
+
+**同日追加（D275，第二輪裁決）**：優惠碼彈窗再加「固定金額的折法」（整單只折一次／每件各折一次，只在 `$` 且每單件數≠1 時出現；預設整單一次、待覆核）與「可與其他優惠碼疊加」switch（預設關）；三格次數 `min` 改 0、placeholder「0 ＝ 不限」。訂單詳情在優惠碼折抵之前加「分級折抵 · 等級」列（`od.amt.tier`），ZT-10486 補 Superfan −$2.90，支付費 45.10 × 2.4% ＝ 1.08、淨額 35.32；平台費仍 8.70（D275 第 6 項：一律看定價）。規則手冊 promo-rules.html 同步。
+
+## 2026-09-15（二十九）· Q64 表面階層遷移：56 處改吃 `--layer-*`，L2 薄膜統一 8.5%（D infra ＋ B 反饋導入）
+
+**範圍**：32 個檔（`shared.css`、`create-bundle.html` 內嵌樣式、`ds-components/` 30 支：card、kpi、alert、form-section、preview-card、selection-card、media-vault、detail-sheet、funding-panel、payout-modal、pickup、review-status、store-settings、message-modal、picker、bundle-editor、variant-builder、control-row、album-tracks、row-disclosure 等）；`design-system.md`／`.html` §2.5a 改成「已遷移」狀態；`STYLE-DECISIONS.md` Q64 記執行；盤點清單存 `docs/Q64-表面階層遷移清單-2026-09-15.md`。
+
+**依據**：使用者 2026-09-15 看過三批分法後「改吧」。
+
+### D · 第一批 40 支純改名（零視覺變動）
+
+- L0：`shared.css` body 的 `--ztu-canvas` → `--layer-0-surface`
+- L1：29 支卡面本體 `--ztu-glass-bg` → `--layer-1-surface`；頂欄／側欄／wizard 殼／hover 浮起／按鈕 hover 共 10 支判為材質、不動
+- L2：`.kpi.card--muted` 的 `--ztu-film` → `--layer-2-surface`
+- L3：9 支「只畫框不填色」的卡內分組 `--border` → `--layer-line`
+
+### B · 第二批 15 支 L2 分組面，4% → 8.5%
+
+- Q66（8/13）落地時這些分組面吃 `--nest-surface`（4%），ztorUI 換裝（8/28）把 `.nest`／`.card--muted` 提到 `--ztu-film`（8.5%），站上因此有兩種 L2 濃度。這批全部併到 `--layer-2-surface`，同規則的 `--nest-line` 一起改 `--layer-2-line`；`--nest-surface` 在產品 CSS 不再有消費者（保留 token、標退役中）。
+- 影響頁：bundle-detail、create-bundle、project-detail、earnings、earnings-ztor、admin-creator-events、pickup、pickup-detail、e-shop、fans-crm、store-settings。變化是分組面比原本亮一點，與 `.card--muted` 一致。
+
+### 沒動的
+
+- 第三批「不確定」9 支：`canvas-stage`／`fan-store`／`detail-sheet`／`preview-column` 拿 `--ztu-canvas` 做漸層與遮罩、`list-toolbar`／`.detail-bar` 黏頂玻璃、`.lockset`／`.scanner-count` 線框——判為材質或效果，不屬層級系統。
+- `demo-layer-system.html:155` 的「現行做法」對照組（legacy 提案頁，Q87）。
+
+**驗證**：`check_ds_sync.py` 全 PASS（兩個既有 WARN）；dev server 開 `project-detail`（`.funding-panel`）、`store-settings`（`.ss-status`）、`create-bundle`（`.cb-summary`）computed 背景 4%→8.6%、0 console error；fresh agent 對照清單逐檔 read-back。已知限制：`--ztu-film` 159 處只重點讀約 40 處、`--border` 413 處靠註解找候選，L3 可能有漏網，下次巡檢再掃。
+
+## 2026-09-16（二十九）· 訂單已取消信：取消原因下加「翻譯前原文」卡（B 反饋導入）
+
+**範圍**：`emails/shop-order-cancelled-zh.html` 退款資料的「取消原因」列——改成標籤格＋值格兩欄，值格內在譯文 `{{voidReason}}` 下方加一張原文卡 `{{voidReasonOriginal}}`（小字「以上為系統翻譯，原文如下」＋淡灰原文）；整組仍在 `[[#if voidReason]]` 內。
+
+**依據**：使用者 2026-09-16「取消原因需要按照用戶的語言做 AI 翻譯，因此下方需要顯示一塊翻譯前的原文，只做 UI」；三輪標註：原文卡左緣對齊譯文起點、外框沿用「取貨 QR Code 已失效」提示卡、文字維持小字版本、內距縮小（12/16）。
+
+**取捨**：標籤格 `white-space:nowrap` 取自然寬度，所以與上面各列標籤等寬、值的起點不變；原文卡放值格內就自然對齊，不用寫死縮排。翻譯本身是後端／寄信服務的事，模板只留兩個變數。
+
 ## 2026-09-15（二十八）· 撤銷品項：選填原因＋預設理由、品項列撤銷紀錄、取消信不預設買家申請（A spec-derived）
 
 **範圍**：`order-detail.html`（§2.8 撤銷彈窗在「不可逆」之後加「撤銷原因（選填）」textarea＋七顆預設理由 chip；§2.3.1 已取消品項的名稱下多一行撤銷紀錄「日期 由 Admin 撤銷 · 原因」）、`js/orders-store.js`（`voidItem(order, item, reason)` 第三參數；不分品項型態都在品項上記 `voidedAt`／`voidedBy`／`voidReason`，空原因不記；四筆 demo 已撤銷品項補紀錄）、`js/i18n.js`（`od.void.reason.*` 10 鍵、`od.void.record*` 3 鍵）、`emails/shop-order-cancelled-zh.html`（開頭移除「依你提出的申請」；退款資料加「取消原因」列，有填才顯示，標 `[[#if voidReason]]`）。
@@ -17,6 +167,21 @@
 - 取貨型品項的撤銷日期從領取單位的 `at` 取（既有 demo 資料沒有品項層 voidedAt），新撤銷的一律寫品項層。
 
 **驗證**：dev server 實走 `order-detail.html?id=ZT-10471`（Admin 身分）——開彈窗 → 點「重複下單」chip 帶入 → 續打字後 chip 取消選中 → 確認撤銷 → 品項列出現「2026-09-15 由 Admin 撤銷 · 重複下單，買家保留 #ZT-10470」、整單轉已取消；console 0 error；中文介面全鍵有值。`check_ds_sync.py` PASS + WARN（兩則既有存量）。截圖 `screenshots/r2.3-order-detail-void-reason-modal.png`、`r2.3-order-detail-void-record-row.png`。
+
+## 2026-09-15（二十八）· 表面階層 `--layer-*` token 立法：Q61 A／Q63 B／Q64 核可（D infra）
+
+**範圍**：`ds-components/_tokens.css`（`:root` 新增 `--layer-0-surface`、`--layer-1-surface`、`--layer-2-surface`、`--layer-2-line`、`--layer-3-surface`、`--layer-line`，全為 Role 別名）、`ds-components/nest.css`（`.nest` 底與上緣線改吃 `--layer-2-surface`／`--layer-2-line`）、`ds-components/card.css`（`.card--muted` 同上）、`design-system.md`／`design-system.html`（新 §2.5a Surface layers）、`STYLE-DECISIONS.md`（Q61～Q64 記裁決與落地）。
+
+**依據**：使用者 2026-09-15 問「Layers 的堆疊有什麼規範嗎？」→ 看過整理後裁決「Q61 : A／Q63 : B／Q64: ok」。
+
+### D · 做法
+
+- 級數寫進名字：`--layer-N-surface` 看名字就知道第幾層；六支全是 `var()` 指向既有 Foundation（`--ztu-canvas`／`--ztu-glass-bg`／`--ztu-film`／`--nest-line`／`--border`），不帶新顏色、不另設暗色覆寫，所以本輪**零視覺變動**（`.nest`、`.card--muted` 換名前後 computed 值相同）。
+- Q63 選 B：`--layer-line` 直接等於 `--border`，不順手覆議 Q22 選定的線色。
+- Q64 分批：本輪只遷 L2 的 2 支元件；L0／L1／L3 與 `--nest-surface`（4%）對 `--ztu-film`（8.5%）並存的差，另派盤點後按批遷，進度記 STYLE-DECISIONS Q64。
+- `design-tokens.html` 會自動列出這六支（含 `_tokens.css` 的段落註解），不用手動加。
+
+**驗證**：`check_ds_sync.py` 全 PASS；dev server 開 `create-product.html`（`.nest`）與有 `.card--muted` 的頁面，切換前後 computed background／border 相同；fresh agent read-back。
 
 ## 2026-09-14（二十七）· 新增 design-tokens.html：token 與 icon 的機器生成預覽頁（D infra／文件）
 

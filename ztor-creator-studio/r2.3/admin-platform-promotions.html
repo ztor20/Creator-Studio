@@ -1,0 +1,1094 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>平台優惠設定 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2"><!-- Admin 頁門禁的無權限狀態（js/sidebar.js applyAdminGate）重用這支，也用於各清單與紀錄分頁空狀態 -->
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2"><!-- input／textarea -->
+<link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2"><!-- 門檻金額／折抵值的 $ 前後綴輸入 -->
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2"><!-- 麵包屑 .card__link -->
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/admin-ip-bank-table.css?v=r2.2"><!-- .admin-table-wrap／.admin-table__owner／.admin-table__avatar／.admin-table__actions -->
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2"><!-- 清單列 kebab -->
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2"><!-- 例外藝人搜尋 -->
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2"><!-- 新增／編輯彈窗的對話框殼 -->
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2"><!-- 折抵方式／折扣單位／固定金額折法／紀錄視圖切換 -->
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2"><!-- 啟用／疊加旗標 -->
+<link rel="stylesheet" href="ds-components/settings.css?v=r2.2"><!-- 生效期間／啟用／適用範圍等 settings-row -->
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2"><!-- 本筆／本組例外藝人的已選 chip -->
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2"><!-- 修改歷史（D277 逐筆） -->
+<link rel="stylesheet" href="shared.css?v=r2.2">
+</head>
+<body>
+<div class="app"><header class="app-topbar" id="sidebar"></header><main class="main"><div class="page">
+
+<nav class="text-sub" aria-label="麵包屑" style="font-size:var(--fs-12);margin-bottom:var(--space-shell-gutter)">
+  <a class="card__link" href="creators.html" data-i18n="admin.studio">Admin Creator Studio</a>
+  <span aria-hidden="true"> / </span>
+  <span aria-current="page" data-i18n="admin.platform-promotions">Platform Promotion Settings</span>
+</nav>
+
+<div class="page-intro">
+  <div>
+    <h1 class="page-intro__title" data-i18n="admin.platform-promotions">Platform Promotion Settings</h1>
+    <p class="page-intro__sub" data-i18n="pprom.sub">Two kinds of platform-wide promotion for buyers — threshold discounts and platform codes — each set up as its own record. Creators absorb the cost; exclude individual creators globally or per record below.</p>
+  </div>
+</div>
+
+<!-- 四分頁（D277 由三分頁增為四）：滿額折扣／平台優惠碼／例外藝人／紀錄。
+     右端動作鈕依分頁切換，結構沿用 admin-platform-fees.html 與本頁前一版的分頁列做法。 -->
+<div class="list-toolbar">
+  <nav class="tabs tabs--underline-short" role="tablist" data-tabs>
+    <button class="tabs__item tabs__item--active" type="button" role="tab" data-tab="threshold" aria-selected="true" data-i18n="pprom.tab.threshold">Threshold discounts</button>
+    <button class="tabs__item" type="button" role="tab" data-tab="codes" aria-selected="false" data-i18n="pprom.tab.codes">Platform codes</button>
+    <button class="tabs__item" type="button" role="tab" data-tab="excluded" aria-selected="false" data-i18n="pprom.tab.excluded">Excluded creators</button>
+    <button class="tabs__item" type="button" role="tab" data-tab="records" aria-selected="false" data-i18n="pprom.tab.records">Records</button>
+  </nav>
+  <div class="list-toolbar__actions" data-toolbar-action="threshold">
+    <button class="btn btn--primary" type="button" id="pprom-th-add"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="pprom.th.add">Add a threshold discount</span></button>
+  </div>
+  <div class="list-toolbar__actions" data-toolbar-action="codes" hidden>
+    <button class="btn btn--primary" type="button" id="pprom-code-add"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="pprom.code.add">Add a code</span></button>
+  </div>
+  <div class="list-toolbar__actions" data-toolbar-action="excluded" hidden>
+    <button class="btn btn--primary" type="button" id="pprom-gexc-add"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="pprom.gexc.add">Add exception</span></button>
+  </div>
+</div>
+
+<!-- ===== 分頁一：滿額折扣（F2）——逐筆清單＋新增／編輯彈窗 ===== -->
+<div class="tab-panel tab-panel--active" data-panel="threshold">
+<section class="form-section form-section--outlined">
+  <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="pprom.th.hint">Each order applies only the highest tier it reaches among the rules below, never more than one. The threshold looks at the buyer-side subtotal after fan-tier discounts and codes, before shipping.</p>
+
+  <div class="admin-table-wrap admin-table-wrap--menu">
+    <table class="ztor-table">
+      <thead>
+        <tr>
+          <th data-i18n="pprom.th.col.name">Name</th>
+          <th data-i18n="pprom.th.col.threshold">Threshold → discount</th>
+          <th data-i18n="pprom.th.col.period">Effective period</th>
+          <th data-i18n="pprom.th.col.status">Status</th>
+          <th data-i18n="pprom.th.col.enabled">Enabled</th>
+          <th data-i18n="pprom.th.col.exceptions">Excluded creators</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="pprom-th-body"></tbody>
+    </table>
+  </div>
+  <div class="empty-card" id="pprom-th-empty" hidden>
+    <div class="empty-card__icon"><i data-lucide="ticket-percent" class="ztor-icon"></i></div>
+    <h2 class="empty-card__title" data-i18n="pprom.th.empty.title">No threshold discounts yet</h2>
+    <p class="empty-card__text" data-i18n="pprom.th.empty.text">Create the first one so buyers get a discount when their order reaches a spend threshold.</p>
+    <button class="btn btn--outline" type="button" style="margin-top:var(--sp-12)" data-th-add-empty><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="pprom.th.add">Add a threshold discount</span></button>
+  </div>
+
+  <p class="text-sub" style="margin-top:var(--sp-16)" data-i18n="pprom.th.auction.note">Whether auction sales count toward the threshold: product decision pending.</p>
+</section>
+</div><!-- /tab-panel threshold -->
+
+<!-- ===== 分頁二：平台優惠碼（F3）——逐筆清單＋新增／編輯彈窗 ===== -->
+<div class="tab-panel" data-panel="codes">
+<section class="form-section form-section--outlined">
+  <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="pprom.code.hint">Platform-issued codes buyers type at checkout. Field semantics and buyer-side behavior mirror a creator's own store codes; the source and exceptions are different.</p>
+
+  <div class="admin-table-wrap admin-table-wrap--menu">
+    <table class="ztor-table">
+      <thead>
+        <tr>
+          <th data-i18n="pprom.code.col.name">Name</th>
+          <th data-i18n="pprom.code.col.code">Code</th>
+          <th data-i18n="pprom.code.col.discount">Discount</th>
+          <th data-i18n="pprom.code.col.period">Effective period</th>
+          <th data-i18n="pprom.code.col.status">Status</th>
+          <th data-i18n="pprom.code.col.used">Used</th>
+          <th data-i18n="pprom.code.col.exceptions">Excluded creators</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="pprom-code-body"></tbody>
+    </table>
+  </div>
+  <div class="empty-card" id="pprom-code-empty" hidden>
+    <div class="empty-card__icon"><i data-lucide="ticket-percent" class="ztor-icon"></i></div>
+    <h2 class="empty-card__title" data-i18n="pprom.code.empty.title">No platform codes yet</h2>
+    <p class="empty-card__text" data-i18n="pprom.code.empty.text">Issue a code so buyers have a reason to check out now, platform-wide.</p>
+    <button class="btn btn--outline" type="button" style="margin-top:var(--sp-12)" data-code-add-empty><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="pprom.code.add">Add a code</span></button>
+  </div>
+</section>
+</div><!-- /tab-panel codes -->
+
+<!-- ===== 分頁三：例外藝人（F5 全局）——保留現有清單與加入彈窗，標題與 hint 改全局語意 ===== -->
+<div class="tab-panel" data-panel="excluded">
+<section class="form-section form-section--outlined">
+  <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="pprom.gexc.hint">Creators listed here are excluded from every platform promotion. To exclude a creator from just one record, add the exception inside that record's own setup instead.</p>
+
+  <div class="admin-table-wrap">
+    <table class="ztor-table" id="pprom-gexc-table">
+      <thead>
+        <tr>
+          <th data-i18n="pprom.gexc.col.creator">Creator</th>
+          <th data-i18n="pprom.gexc.col.added">Added</th>
+          <th data-i18n="pprom.gexc.col.by">Added by</th>
+          <th data-i18n="pprom.gexc.col.reason">Reason</th>
+          <th data-i18n="pprom.gexc.col.scope">Scope</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="pprom-gexc-body"></tbody>
+    </table>
+  </div>
+  <p class="text-sub" id="pprom-gexc-empty" hidden style="margin:var(--sp-16) 0 0" data-i18n="pprom.gexc.empty">No global exceptions yet — every platform promotion applies to everyone unless excluded per record.</p>
+</section>
+</div><!-- /tab-panel excluded -->
+
+<!-- ===== 分頁四：紀錄（F6）===== -->
+<div class="tab-panel" data-panel="records">
+<section class="form-section form-section--outlined">
+  <div class="segmented" id="pprom-records-toggle" style="margin-bottom:var(--sp-16)">
+    <button class="segmented__btn segmented__btn--active" type="button" data-records-view="per-order" data-i18n="pprom.records.toggle.per-order">Per order</button>
+    <button class="segmented__btn" type="button" data-records-view="per-creator" data-i18n="pprom.records.toggle.per-creator">Per creator</button>
+  </div>
+
+  <div data-records-panel="per-order">
+    <div class="admin-table-wrap">
+      <table class="ztor-table">
+        <thead>
+          <tr>
+            <th data-i18n="pprom.records.col.time">Time</th>
+            <th data-i18n="pprom.records.col.order">Order</th>
+            <th data-i18n="pprom.records.col.source">Source</th>
+            <th data-i18n="pprom.records.col.subtotal">Item subtotal</th>
+            <th data-i18n="pprom.records.col.applied">Promotion applied</th>
+            <th data-i18n="pprom.records.col.discount">Discount</th>
+            <th data-i18n="pprom.records.col.allocation">Allocated to</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>2026-09-14 10:22</td><td class="ztor-table__feature">#ZT-88213</td><td><span class="badge badge--neutral" data-i18n="pprom.records.source.eshop">E-Shop</span></td><td>$420</td><td class="text-sub">開站慶 · 滿 100 折 10</td><td>$10</td><td class="text-sub">Gary Lin $10</td></tr>
+          <tr><td>2026-09-13 19:05</td><td class="ztor-table__feature">#ZT-88190</td><td><span class="badge badge--neutral" data-i18n="pprom.records.source.events">Events</span></td><td>$150</td><td class="text-sub">WELCOME50</td><td>$75</td><td class="text-sub">周湯豪 NICKTHEREAL $75</td></tr>
+          <tr><td>2026-09-12 08:47</td><td class="ztor-table__feature">#ZT-88144</td><td><span class="badge badge--neutral" data-i18n="pprom.records.source.projects">Projects</span></td><td>$620</td><td class="text-sub">開站慶 · 滿 100 折 10</td><td>$10</td><td class="text-sub">Gary Lin $6 · User B $4</td></tr>
+          <tr><td>2026-09-10 16:30</td><td class="ztor-table__feature">#ZT-88079</td><td><span class="badge badge--neutral" data-i18n="pprom.records.source.eshop">E-Shop</span></td><td>$210</td><td class="text-sub">WELCOME50</td><td>$105</td><td class="text-sub">Gary Lin $105</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="empty-card" id="pprom-records-empty" hidden>
+      <div class="empty-card__icon"><i data-lucide="receipt" class="ztor-icon"></i></div>
+      <h2 class="empty-card__title" data-i18n="pprom.records.empty.title">No discount records yet</h2>
+      <p class="empty-card__text" data-i18n="pprom.records.empty.text">Orders that receive a platform threshold discount or platform code will show up here.</p>
+    </div>
+  </div>
+
+  <div data-records-panel="per-creator" hidden>
+    <div class="admin-table-wrap">
+      <table class="ztor-table">
+        <thead>
+          <tr>
+            <th data-i18n="pprom.records.pc.col.creator">Creator</th>
+            <th data-i18n="pprom.records.pc.col.total">Discount absorbed (period)</th>
+            <th data-i18n="pprom.records.pc.col.orders">Orders</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="ztor-table__feature">Gary Lin</td><td>$121</td><td>3</td></tr>
+          <tr><td class="ztor-table__feature">周湯豪 NICKTHEREAL</td><td>$75</td><td>1</td></tr>
+          <tr><td class="ztor-table__feature">User B</td><td>$4</td><td>1</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+</div><!-- /tab-panel records -->
+
+</div>
+<footer class="app-footer"><span>Ztor Creator Studio · R 2.3 prototype</span><span>·</span><span data-i18n="admin.studio">Admin Creator Studio</span></footer>
+</main></div>
+
+<!-- 滿額折扣 新增／編輯彈窗（F2，共用）：名稱／門檻／折抵／生效期間／啟用／備註／本筆例外／本筆修改歷史（D277）。 -->
+<div class="payout-modal" id="pprom-th-modal" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pprom-th-modal-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="pprom-th-modal-title" data-i18n="pprom.th.modal.add">Add a threshold discount</h2>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="pprom.close" data-th-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <label class="field">
+        <span class="field__label"><span data-i18n="pprom.f.name">Name</span> <span class="field__req">*</span></span>
+        <input class="input" id="pprom-th-name" data-i18n-placeholder="pprom.th.f.name.ph" placeholder="e.g., Launch week">
+      </label>
+
+      <label class="field">
+        <span class="field__label" data-i18n="pprom.th.f.threshold">Threshold amount</span>
+        <span class="amount-field" style="width:160px;margin-top:var(--sp-8)">
+          <span class="amount-field__unit">$</span>
+          <input class="input amount-field__input" type="number" inputmode="decimal" id="pprom-th-threshold" min="0">
+        </span>
+      </label>
+
+      <div class="field">
+        <span class="field__label" data-i18n="pprom.th.f.discount">Discount</span>
+        <div class="flex-row" style="margin-top:var(--sp-8)">
+          <div class="segmented" id="pprom-th-unit" role="group" aria-label="Discount unit" data-i18n-aria-label="pprom.th.f.discount">
+            <button class="segmented__btn segmented__btn--active" type="button" data-unit="fixed" data-i18n="pprom.unit.fixed">Fixed</button>
+            <button class="segmented__btn" type="button" data-unit="pct" data-i18n="pprom.unit.pct">%</button>
+          </div>
+          <span class="amount-field amount-field--suffix" style="width:130px">
+            <input class="input amount-field__input" type="number" inputmode="decimal" id="pprom-th-value" min="0">
+            <span class="amount-field__unit" id="pprom-th-value-unit">$</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <div>
+          <div class="settings-row__label" data-i18n="pprom.f.period">Effective period</div>
+          <div class="settings-row__hint" data-i18n="pprom.f.period.hint">Leave the end date empty to keep it open-ended.</div>
+        </div>
+        <div class="flex-row">
+          <input class="input" type="date" id="pprom-th-start" aria-label="Starts" data-i18n-aria-label="pprom.f.period.start-aria">
+          <span class="text-sub" aria-hidden="true">–</span>
+          <input class="input" type="date" id="pprom-th-end" aria-label="Ends" data-i18n-aria-label="pprom.f.period.end-aria">
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <div>
+          <div class="settings-row__label" data-i18n="pprom.f.enabled">Enabled</div>
+          <div class="settings-row__hint" data-i18n="pprom.f.enabled.hint">Pausing stops the rule for orders placed from now on; existing orders are unaffected.</div>
+        </div>
+        <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" id="pprom-th-enabled"></div>
+      </div>
+
+      <label class="field">
+        <span class="field__label" data-i18n="pprom.f.notes">Notes</span>
+        <textarea class="textarea" id="pprom-th-notes" data-i18n-placeholder="pprom.f.notes.ph" placeholder="Optional, internal use only"></textarea>
+      </label>
+
+      <!-- 本筆例外藝人（field-pill 搜尋加 chip，做法比照全局例外彈窗的搜尋建議清單） -->
+      <div class="field">
+        <span class="field__label" data-i18n="pprom.exc.label">Excluded creators (this record)</span>
+        <span class="field-pill field-pill--block" style="margin-top:var(--sp-8)">
+          <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+          <input class="field-pill__input" type="search" data-exc-search autocomplete="off" data-i18n-placeholder="pprom.exc.search-ph" placeholder="Search a creator to exclude…">
+        </span>
+        <div data-exc-suggest style="margin-top:var(--sp-8);display:flex;flex-direction:column;gap:var(--sp-8)"></div>
+        <p class="field__hint" data-exc-none hidden data-i18n="pprom.exc.search-none">No matching creator.</p>
+        <div class="chip-group" data-exc-chips style="margin-top:var(--sp-8)"></div>
+      </div>
+
+      <!-- 修改歷史（F4，append-only；D277 取代原整頁版本歷史） -->
+      <div class="field">
+        <span class="field__label" data-i18n="pprom.history.label">Change history</span>
+        <div class="data-list" data-history-list style="margin-top:var(--sp-8)"></div>
+        <p class="text-sub" data-history-empty hidden data-i18n="pprom.history.new">Recording starts after you save.</p>
+      </div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--outline" type="button" data-th-close data-i18n="pprom.cancel">Cancel</button>
+      <button class="btn btn--primary" type="button" id="pprom-th-save" data-i18n="pprom.save">Save</button>
+    </div>
+  </section>
+</div>
+
+<!-- 平台優惠碼 新增／編輯彈窗（F3，共用）：欄位語意比照 store-settings.html 優惠碼彈窗（複製過來改 id 前綴，不跨頁 import）。 -->
+<div class="payout-modal" id="pprom-code-modal" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pprom-code-modal-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="pprom-code-modal-title" data-i18n="pprom.code.modal.add">Add a code</h2>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="pprom.close" data-code-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <label class="field">
+        <span class="field__label"><span data-i18n="pprom.f.name">Name</span> <span class="field__req">*</span></span>
+        <input class="input" id="pprom-code-name" data-i18n-placeholder="pprom.code.f.name.ph" placeholder="e.g., Welcome offer">
+      </label>
+
+      <div class="settings-row">
+        <div>
+          <div class="settings-row__label"><span data-i18n="pprom.code.f.code">Code</span> <span class="field__req">*</span></div>
+        </div>
+        <div class="flex-row">
+          <input class="input" id="pprom-code-code" data-i18n-placeholder="pprom.code.f.code.ph" placeholder="WELCOME50">
+          <button class="btn btn--icon btn--sm" type="button" id="pprom-code-copy" aria-label="Copy" title="Copy" data-i18n-aria-label="pprom.code.copy" data-i18n-title="pprom.code.copy"><i data-lucide="copy" class="ztor-icon"></i></button>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <div>
+          <div class="settings-row__label"><span data-i18n="pprom.code.f.discount">Discount</span> <span class="field__req">*</span></div>
+          <div class="settings-row__hint" data-i18n="pprom.code.f.discount.hint">Off the item price, before shipping.</div>
+        </div>
+        <div class="flex-row">
+          <div class="segmented" id="pprom-code-unit" role="group" aria-label="Discount unit" data-i18n-aria-label="pprom.code.f.discount">
+            <button class="segmented__btn segmented__btn--active" type="button" data-unit="pct">%</button>
+            <button class="segmented__btn" type="button" data-unit="amount">$</button>
+          </div>
+          <input class="input" style="width:90px" id="pprom-code-discount" min="1" inputmode="decimal">
+        </div>
+      </div>
+
+      <!-- 固定金額折法（D275 決定 2，比照 store-settings）：只在折扣單位為 $ 且每張訂單可折件數 ≠ 1 時出現。 -->
+      <div class="settings-row" id="pprom-code-fixedmode-row" hidden>
+        <div>
+          <div class="settings-row__label" data-i18n="pprom.code.f.fixedmode">Fixed-amount split</div>
+          <div class="settings-row__hint" data-i18n="pprom.code.f.fixedmode.hint">When multiple items qualify, whether the fixed amount discounts once for the order or once per item.</div>
+        </div>
+        <div class="segmented" id="pprom-code-fixedmode" role="group" aria-label="Fixed-amount split" data-i18n-aria-label="pprom.code.f.fixedmode">
+          <button class="segmented__btn segmented__btn--active" type="button" data-fixedmode="once" data-i18n="pprom.code.f.fixedmode.once">Once per order (default)</button>
+          <button class="segmented__btn" type="button" data-fixedmode="each" data-i18n="pprom.code.f.fixedmode.each">Once per item</button>
+        </div>
+      </div>
+
+      <!-- 適用範圍：本輪只做全平台，唯讀一行（D277／5.1.0.7 F3，模組限定待確認）。 -->
+      <div class="settings-row">
+        <div>
+          <div class="settings-row__label" data-i18n="pprom.code.f.scope">Applies to</div>
+          <div class="settings-row__hint" data-i18n="pprom.code.f.scope.hint">Limiting to a specific module: product decision pending.</div>
+        </div>
+        <span class="text-sub" data-i18n="pprom.code.f.scope.value">Platform-wide</span>
+      </div>
+
+      <div class="settings-row">
+        <div>
+          <div class="settings-row__label" data-i18n="pprom.f.period">Effective period</div>
+          <div class="settings-row__hint" data-i18n="pprom.f.period.hint">Leave the end date empty to keep it open-ended.</div>
+        </div>
+        <div class="flex-row">
+          <input class="input" type="date" id="pprom-code-start" aria-label="Starts" data-i18n-aria-label="pprom.f.period.start-aria">
+          <span class="text-sub" aria-hidden="true">–</span>
+          <input class="input" type="date" id="pprom-code-end" aria-label="Ends" data-i18n-aria-label="pprom.f.period.end-aria">
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <div>
+          <div class="settings-row__label" data-i18n="pprom.f.enabled">Enabled</div>
+          <div class="settings-row__hint" data-i18n="pprom.code.f.enabled.hint">Pausing stops the code for orders placed from now on; existing orders are unaffected.</div>
+        </div>
+        <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" id="pprom-code-enabled"></div>
+      </div>
+
+      <!-- 使用次數（D272／D275，以件計；留空或 0＝不限） -->
+      <div class="settings-row__label" style="margin-top:var(--sp-6)" data-i18n="pprom.code.f.usage">Usage limits</div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-row__label" data-i18n="pprom.code.f.perorder">Per order</div>
+          <div class="settings-row__hint" data-i18n="pprom.code.f.perorder.hint">One order, that many items — the highest-priced qualifying items get the discount first.</div>
+        </div>
+        <input class="input" style="width:110px" id="pprom-code-perorder" value="1" min="0" placeholder="0 = unlimited" data-i18n-placeholder="pprom.code.f.usage.ph" inputmode="numeric">
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-row__label" data-i18n="pprom.code.f.perbuyer">Per buyer total</div>
+          <div class="settings-row__hint" data-i18n="pprom.code.f.perbuyer.hint">Adds up across orders, for the same ztor account.</div>
+        </div>
+        <input class="input" style="width:110px" id="pprom-code-perbuyer" min="0" placeholder="0 = unlimited" data-i18n-placeholder="pprom.code.f.usage.ph" inputmode="numeric">
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-row__label" data-i18n="pprom.code.f.total">Total redemptions</div>
+          <div class="settings-row__hint" data-i18n="pprom.code.f.total.hint">Once it runs out, the code's status switches to Exhausted.</div>
+        </div>
+        <input class="input" style="width:110px" id="pprom-code-total" min="0" placeholder="0 = unlimited" data-i18n-placeholder="pprom.code.f.usage.ph" inputmode="numeric">
+      </div>
+
+      <!-- 可與其他優惠碼疊加（D275 決定 3）：預設關閉。 -->
+      <div class="settings-row">
+        <div>
+          <div class="settings-row__label" data-i18n="pprom.code.f.stack">Stack with other codes</div>
+          <div class="settings-row__hint" data-i18n="pprom.code.f.stack.hint">Both codes need this on to combine in one order — if either is off, only the one better for the buyer applies.</div>
+        </div>
+        <div class="switch" role="switch" aria-checked="false" tabindex="0" id="pprom-code-stack"></div>
+      </div>
+
+      <label class="field">
+        <span class="field__label" data-i18n="pprom.f.notes">Notes</span>
+        <textarea class="textarea" id="pprom-code-notes" data-i18n-placeholder="pprom.f.notes.ph" placeholder="Optional, internal use only"></textarea>
+      </label>
+
+      <!-- 本組例外藝人（field-pill 搜尋加 chip，做法同上） -->
+      <div class="field">
+        <span class="field__label" data-i18n="pprom.exc.label.code">Excluded creators (this code)</span>
+        <span class="field-pill field-pill--block" style="margin-top:var(--sp-8)">
+          <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+          <input class="field-pill__input" type="search" data-exc-search autocomplete="off" data-i18n-placeholder="pprom.exc.search-ph" placeholder="Search a creator to exclude…">
+        </span>
+        <div data-exc-suggest style="margin-top:var(--sp-8);display:flex;flex-direction:column;gap:var(--sp-8)"></div>
+        <p class="field__hint" data-exc-none hidden data-i18n="pprom.exc.search-none">No matching creator.</p>
+        <div class="chip-group" data-exc-chips style="margin-top:var(--sp-8)"></div>
+      </div>
+
+      <div class="field">
+        <span class="field__label" data-i18n="pprom.history.label">Change history</span>
+        <div class="data-list" data-history-list style="margin-top:var(--sp-8)"></div>
+        <p class="text-sub" data-history-empty hidden data-i18n="pprom.history.new">Recording starts after you save.</p>
+      </div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--outline" type="button" data-code-close data-i18n="pprom.cancel">Cancel</button>
+      <button class="btn btn--primary" type="button" id="pprom-code-save" data-i18n="pprom.save">Save</button>
+    </div>
+  </section>
+</div>
+
+<!-- 全局例外藝人 加入彈窗（F5）：藝人搜尋（field-pill，打字才列建議）＋原因 input＋確認。 -->
+<div class="payout-modal" id="pprom-gexc-modal" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pprom-gexc-modal-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="pprom-gexc-modal-title" data-i18n="pprom.gexc.modal-title">Add excluded creator</h2>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="pprom.gexc.cancel" data-gexc-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <label class="field" style="margin-bottom:var(--sp-18)">
+        <span class="field__label" style="font-size:var(--fs-18);font-weight:var(--fw-semibold)" data-i18n="pprom.gexc.search">Search a creator</span>
+        <span class="field-pill" style="width:100%;margin-top:var(--sp-8)">
+          <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+          <input class="field-pill__input" type="search" id="pprom-gexc-search" autocomplete="off" data-i18n-placeholder="pprom.gexc.search-ph" placeholder="Search a creator by name…">
+        </span>
+        <div id="pprom-gexc-suggest" style="margin-top:var(--sp-8);display:flex;flex-direction:column;gap:var(--sp-8)"></div>
+        <p class="field__hint" id="pprom-gexc-search-none" hidden data-i18n="pprom.gexc.search-none">No matching creator.</p>
+      </label>
+      <label class="field">
+        <span class="field__label" data-i18n="pprom.gexc.reason">Reason</span>
+        <input class="input" id="pprom-gexc-reason" data-i18n-placeholder="pprom.gexc.reason-ph" placeholder="Optional, internal use only">
+      </label>
+    </div>
+    <div class="payout-dialog__foot" style="display:flex;gap:var(--sp-8);justify-content:flex-end;padding:var(--sp-16) var(--sp-24) var(--sp-24)">
+      <button class="btn btn--ghost" type="button" data-gexc-close data-i18n="pprom.gexc.cancel">Cancel</button>
+      <button class="btn btn--primary" type="button" id="pprom-gexc-confirm" data-i18n="pprom.gexc.confirm">Add exception</button>
+    </div>
+  </section>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="partials/date-input.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script>
+  /* 平台優惠設定頁互動（spec 5.1.0.7 F2–F6，D277）——demo，非真後端。
+     兩種平台促銷（滿額折扣／平台優惠碼）改成逐筆獨立設定，各自帶名稱、期間、啟用、
+     備註、本筆例外與 append-only 修改歷史；例外藝人分全局（F5）與逐筆（各自模組內）。 */
+  (function () {
+    'use strict';
+    var t = function (k, fb) { return (window.i18nT && window.i18nT(k)) || fb || k; };
+    var i18n = function (el) { if (window.applyI18n) window.applyI18n(el); };
+    var esc = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+    function todayISO() { return (new Date()).toISOString().slice(0, 10); }
+    function nowStamp() { var d = new Date(); return d.toISOString().slice(0, 10) + ' ' + d.toTimeString().slice(0, 5); }
+
+    /* ===== 四分頁切換（沿用費率頁做法）===== */
+    var toolbarActions = document.querySelectorAll('[data-toolbar-action]');
+    function syncToolbarAction(name) {
+      Array.prototype.forEach.call(toolbarActions, function (el) {
+        el.hidden = el.getAttribute('data-toolbar-action') !== name;
+      });
+    }
+    var tablist = document.querySelector('[data-tabs]');
+    if (tablist) {
+      var tabBtns = tablist.querySelectorAll('.tabs__item'),
+          panels = document.querySelectorAll('.tab-panel[data-panel]');
+      tablist.addEventListener('click', function (e) {
+        var btn = e.target.closest('.tabs__item');
+        if (!btn || !btn.dataset.tab) return;
+        var name = btn.dataset.tab;
+        Array.prototype.forEach.call(tabBtns, function (b) {
+          var on = b.dataset.tab === name;
+          b.classList.toggle('tabs__item--active', on);
+          b.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        Array.prototype.forEach.call(panels, function (p) {
+          p.classList.toggle('tab-panel--active', p.dataset.panel === name);
+        });
+        syncToolbarAction(name);
+      });
+      syncToolbarAction('threshold');
+    }
+
+    /* ===== 共用小工具 ===== */
+    function setSegmented(group, attr, val) {
+      if (!group) return;
+      Array.prototype.forEach.call(group.querySelectorAll('.segmented__btn'), function (b) {
+        b.classList.toggle('segmented__btn--active', b.getAttribute(attr) === val);
+      });
+    }
+    function getSegmented(group, attr) {
+      if (!group) return null;
+      var active = group.querySelector('.segmented__btn--active');
+      return active ? active.getAttribute(attr) : null;
+    }
+    function setSwitch(el, on) {
+      if (!el) return;
+      el.classList.toggle('switch--on', !!on);
+      el.setAttribute('aria-checked', on ? 'true' : 'false');
+    }
+    function isSwitchOn(el) { return !!el && el.classList.contains('switch--on'); }
+    function setDate(el, val) {
+      if (!el) return;
+      el.value = val || '';
+      el.dispatchEvent(new Event('change'));
+    }
+    /* 狀態由期間與啟用旗標推導（規格 F2／F3；三筆示意資料的狀態是使用者口述的示意值，
+       不強制與「今天」的日期邏輯一致，見任務背景；此函式只用在互動新增／編輯之後重算）。 */
+    function deriveStatus(start, end, enabled, used, total) {
+      if (!enabled) return 'disabled';
+      if (total && used >= total) return 'exhausted';
+      var today = todayISO();
+      if (start && today < start) return 'upcoming';
+      if (end && today > end) return 'ended';
+      return 'active';
+    }
+    var STATUS_BADGE = { active: 'badge--success', upcoming: 'badge--neutral', ended: 'badge--neutral', disabled: 'badge--neutral', exhausted: 'badge--warning' };
+    function statusBadgeHtml(key) {
+      return '<span class="badge ' + (STATUS_BADGE[key] || 'badge--neutral') + '" data-i18n="pprom.status.' + key + '">' + esc(t('pprom.status.' + key, key)) + '</span>';
+    }
+    function periodText(start, end) { return (start || '—') + (end ? ' – ' + end : ' →'); }
+    function historyChangeText(key) { return t('pprom.hist.' + key, key); }
+
+    /* ===== 例外藝人（三層，D277）：名字取自 js/sidebar.js 的示範名冊（三個 persona）。 ===== */
+    var ALL_CREATORS = [
+      { id: 'default', name: 'Gary Lin' },
+      { id: 'nick', name: '周湯豪 NICKTHEREAL' },
+      { id: 'userB', name: 'User B' }
+    ];
+    function creatorName(id) { var c = ALL_CREATORS.filter(function (x) { return x.id === id; })[0]; return c ? c.name : id; }
+
+    /* 本筆／本組例外藝人的 field-pill 搜尋＋chip 多選（滿額折扣、平台優惠碼彈窗共用同一份邏輯，
+       做法比照全局例外彈窗的搜尋建議清單，只是選中結果落地成 chip 而非直接寫進表格）。 */
+    function makeExceptionPicker(scopeEl) {
+      var search = scopeEl.querySelector('[data-exc-search]'),
+          suggest = scopeEl.querySelector('[data-exc-suggest]'),
+          chips = scopeEl.querySelector('[data-exc-chips]'),
+          none = scopeEl.querySelector('[data-exc-none]'),
+          current = [];
+
+      function renderChips() {
+        chips.innerHTML = '';
+        current.forEach(function (id) {
+          var chip = document.createElement('span');
+          chip.className = 'chip chip--removable';
+          chip.innerHTML = '<span>' + esc(creatorName(id)) + '</span>' +
+            '<button class="chip__remove" type="button" data-id="' + esc(id) + '" aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button>';
+          chips.appendChild(chip);
+        });
+        if (window.ztorIcons) window.ztorIcons.applyIcons(chips);
+      }
+      function renderSuggest() {
+        var q = (search.value || '').trim().toLowerCase();
+        suggest.innerHTML = '';
+        /* 打字才列建議，空查詢不預先列出全部（照全局例外彈窗的做法）。 */
+        if (!q) { if (none) none.hidden = true; return; }
+        var avail = ALL_CREATORS.filter(function (c) { return current.indexOf(c.id) < 0 && c.name.toLowerCase().indexOf(q) >= 0; });
+        avail.forEach(function (c) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'btn btn--ghost btn--sm';
+          b.style.justifyContent = 'flex-start';
+          b.setAttribute('data-pick', c.id);
+          b.textContent = c.name;
+          suggest.appendChild(b);
+        });
+        if (none) none.hidden = avail.length > 0;
+      }
+      search.addEventListener('input', renderSuggest);
+      suggest.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-pick]');
+        if (!b) return;
+        var id = b.getAttribute('data-pick');
+        if (current.indexOf(id) < 0) current.push(id);
+        search.value = '';
+        renderChips(); renderSuggest();
+      });
+      chips.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-id]');
+        if (!b) return;
+        var idx = current.indexOf(b.getAttribute('data-id'));
+        if (idx >= 0) current.splice(idx, 1);
+        renderChips();
+      });
+      return {
+        load: function (ids) { current = (ids || []).slice(); search.value = ''; renderChips(); renderSuggest(); },
+        get: function () { return current.slice(); }
+      };
+    }
+
+    /* 修改歷史（F4，append-only）：每筆優惠自帶時間・操作者・改動摘要；新增模式顯示提示文字。 */
+    function renderHistory(scopeEl, history) {
+      var list = scopeEl.querySelector('[data-history-list]'),
+          empty = scopeEl.querySelector('[data-history-empty]');
+      list.innerHTML = '';
+      (history || []).forEach(function (h) {
+        var row = document.createElement('div');
+        row.className = 'data-list__row';
+        row.innerHTML =
+          '<div class="data-list__row-main"><div class="data-list__body">' +
+          '<div class="data-list__title">' + esc(historyChangeText(h.key)) + '</div>' +
+          '<div class="data-list__meta">' + esc(h.time) + ' · ' + esc(h.by) + '</div>' +
+          '</div></div>';
+        list.appendChild(row);
+      });
+      var has = (history || []).length > 0;
+      list.hidden = !has;
+      if (empty) empty.hidden = has;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       F2 · 平台滿額折扣（Threshold Discounts）——逐筆獨立設定
+       ══════════════════════════════════════════════════════════════════ */
+    var thState = [
+      { id: 'th-open', name: '開站慶', threshold: 100, unit: 'fixed', value: 10, start: '2026-10-01', end: '2026-10-31', enabled: true, statusKey: 'active', notes: '開站慶檔期滿額折扣', exceptions: ['nick'], history: [{ time: '2026-09-10 09:12', by: 'Admin · Yves', key: 'created' }] },
+      { id: 'th-1111', name: '雙11', threshold: 300, unit: 'fixed', value: 40, start: '2026-11-11', end: '2026-11-12', enabled: true, statusKey: 'upcoming', notes: '', exceptions: [], history: [{ time: '2026-09-12 15:30', by: 'Admin · Zoe', key: 'created' }] },
+      { id: 'th-summer', name: '夏季', threshold: 200, unit: 'fixed', value: 20, start: '2026-07-01', end: '2026-07-31', enabled: false, statusKey: 'ended', notes: '夏季檔期已結束', exceptions: [], history: [{ time: '2026-06-20 10:00', by: 'Admin · Yves', key: 'created' }, { time: '2026-08-01 09:00', by: 'Admin · Yves', key: 'disabled' }] }
+    ];
+    var thBody = document.getElementById('pprom-th-body'), thEmpty = document.getElementById('pprom-th-empty');
+
+    function thDiscountText(r) { return '$' + r.threshold + ' → ' + (r.unit === 'pct' ? r.value + '%' : '$' + r.value); }
+    function renderThresholdList() {
+      thBody.innerHTML = '';
+      thState.forEach(function (r) {
+        var tr = document.createElement('tr');
+        tr.setAttribute('data-id', r.id);
+        tr.innerHTML =
+          '<td class="ztor-table__feature">' + esc(r.name) + '</td>' +
+          '<td>' + thDiscountText(r) + '</td>' +
+          '<td class="text-sub">' + esc(periodText(r.start, r.end)) + '</td>' +
+          '<td>' + statusBadgeHtml(r.statusKey) + '</td>' +
+          '<td><div class="switch' + (r.enabled ? ' switch--on' : '') + '" role="switch" aria-checked="' + (r.enabled ? 'true' : 'false') + '" tabindex="0" data-th-toggle aria-label="Enabled" data-i18n-aria-label="pprom.f.enabled"></div></td>' +
+          '<td>' + r.exceptions.length + '</td>' +
+          '<td style="text-align:right"><div class="admin-table__actions"><details class="dropdown"><summary class="btn btn--ghost btn--icon btn--sm" aria-label="More actions" data-i18n-aria-label="pprom.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu">' +
+          '<button class="dropdown__item" type="button" role="menuitem" data-th-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="pprom.edit">Edit</span></button>' +
+          '<button class="dropdown__item" type="button" role="menuitem" data-th-duplicate><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="pprom.duplicate">Duplicate</span></button>' +
+          '<button class="dropdown__item" type="button" role="menuitem" data-th-disable><i data-lucide="ban" class="ztor-icon"></i><span data-i18n="pprom.disable">Disable</span></button>' +
+          '<button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-th-delete><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="pprom.delete">Delete</span></button>' +
+          '</div></details></div></td>';
+        thBody.appendChild(tr);
+      });
+      if (window.ztorIcons) window.ztorIcons.applyIcons(thBody);
+      i18n(thBody);
+      thEmpty.hidden = thState.length > 0;
+    }
+
+    var thModal = document.getElementById('pprom-th-modal'),
+        thPicker = makeExceptionPicker(thModal),
+        thEditingId = null;
+    var thUnitGroup = document.getElementById('pprom-th-unit'),
+        thValueUnit = document.getElementById('pprom-th-value-unit');
+    function updateThValueUnit() { thValueUnit.textContent = getSegmented(thUnitGroup, 'data-unit') === 'pct' ? '%' : '$'; }
+    thUnitGroup.addEventListener('click', function (e) {
+      var b = e.target.closest('.segmented__btn');
+      if (!b) return;
+      setSegmented(thUnitGroup, 'data-unit', b.getAttribute('data-unit'));
+      updateThValueUnit();
+    });
+
+    function openThresholdModal(id) {
+      thEditingId = id || null;
+      var r = id ? thState.filter(function (x) { return x.id === id; })[0] : null;
+      var titleEl = document.getElementById('pprom-th-modal-title'),
+          titleKey = id ? 'pprom.th.modal.edit' : 'pprom.th.modal.add';
+      titleEl.setAttribute('data-i18n', titleKey);
+      titleEl.textContent = t(titleKey, id ? 'Edit threshold discount' : 'Add a threshold discount');
+      document.getElementById('pprom-th-name').value = r ? r.name : '';
+      document.getElementById('pprom-th-threshold').value = r ? r.threshold : '';
+      document.getElementById('pprom-th-value').value = r ? r.value : '';
+      setSegmented(thUnitGroup, 'data-unit', r ? r.unit : 'fixed');
+      updateThValueUnit();
+      setDate(document.getElementById('pprom-th-start'), r ? r.start : '');
+      setDate(document.getElementById('pprom-th-end'), r ? r.end : '');
+      setSwitch(document.getElementById('pprom-th-enabled'), r ? r.enabled : true);
+      document.getElementById('pprom-th-notes').value = r ? (r.notes || '') : '';
+      thPicker.load(r ? r.exceptions : []);
+      renderHistory(thModal, r ? r.history : []);
+      thModal.hidden = false;
+      document.body.classList.add('is-modal-open');
+      i18n(thModal);
+      if (window.ztorIcons) window.ztorIcons.applyIcons(thModal);
+    }
+    function closeThresholdModal() { thModal.hidden = true; document.body.classList.remove('is-modal-open'); }
+    document.getElementById('pprom-th-add').addEventListener('click', function () { openThresholdModal(null); });
+    var thAddEmpty = document.getElementById('pprom-th-empty').querySelector('[data-th-add-empty]');
+    if (thAddEmpty) thAddEmpty.addEventListener('click', function () { openThresholdModal(null); });
+    Array.prototype.forEach.call(thModal.querySelectorAll('[data-th-close]'), function (b) { b.addEventListener('click', closeThresholdModal); });
+    thModal.addEventListener('click', function (e) { if (e.target === thModal) closeThresholdModal(); });
+
+    document.getElementById('pprom-th-save').addEventListener('click', function () {
+      var nameInput = document.getElementById('pprom-th-name');
+      var name = nameInput.value.trim();
+      if (!name) { nameInput.focus(); return; }
+      var threshold = Number(document.getElementById('pprom-th-threshold').value) || 0;
+      var unit = getSegmented(thUnitGroup, 'data-unit') || 'fixed';
+      var value = Number(document.getElementById('pprom-th-value').value) || 0;
+      var start = document.getElementById('pprom-th-start').value;
+      var end = document.getElementById('pprom-th-end').value;
+      var enabled = isSwitchOn(document.getElementById('pprom-th-enabled'));
+      var notes = document.getElementById('pprom-th-notes').value.trim();
+      var exceptions = thPicker.get();
+      var statusKey = deriveStatus(start, end, enabled, 0, 0);
+      if (thEditingId) {
+        var r = thState.filter(function (x) { return x.id === thEditingId; })[0];
+        if (r) {
+          r.name = name; r.threshold = threshold; r.unit = unit; r.value = value;
+          r.start = start; r.end = end; r.enabled = enabled; r.notes = notes;
+          r.exceptions = exceptions; r.statusKey = statusKey;
+          r.history.unshift({ time: nowStamp(), by: 'Admin · Yves', key: 'updated' });
+        }
+      } else {
+        thState.unshift({
+          id: 'th-' + Date.now(), name: name, threshold: threshold, unit: unit, value: value,
+          start: start, end: end, enabled: enabled, notes: notes, exceptions: exceptions, statusKey: statusKey,
+          history: [{ time: nowStamp(), by: 'Admin · Yves', key: 'created' }]
+        });
+      }
+      renderThresholdList();
+      closeThresholdModal();
+    });
+
+    thBody.addEventListener('click', function (e) {
+      var row = e.target.closest('tr[data-id]');
+      if (!row) return;
+      var id = row.getAttribute('data-id'), r = thState.filter(function (x) { return x.id === id; })[0];
+      if (e.target.closest('[data-th-edit]')) { openThresholdModal(id); return; }
+      if (e.target.closest('[data-th-toggle]')) {
+        var toggle = e.target.closest('[data-th-toggle]');
+        var on = toggle.classList.toggle('switch--on');
+        toggle.setAttribute('aria-checked', on ? 'true' : 'false');
+        if (r) { r.enabled = on; r.statusKey = deriveStatus(r.start, r.end, r.enabled, 0, 0); r.history.unshift({ time: nowStamp(), by: 'Admin · Yves', key: on ? 'enabled' : 'disabled' }); }
+        renderThresholdList();
+        return;
+      }
+      if (e.target.closest('[data-th-duplicate]')) {
+        if (r) {
+          var copy = JSON.parse(JSON.stringify(r));
+          copy.id = 'th-' + Date.now();
+          copy.name = r.name + ' - 2';
+          copy.history = [{ time: nowStamp(), by: 'Admin · Yves', key: 'created' }];
+          thState.splice(thState.indexOf(r) + 1, 0, copy);
+          renderThresholdList();
+        }
+        return;
+      }
+      if (e.target.closest('[data-th-disable]')) {
+        if (r) { r.enabled = false; r.statusKey = 'disabled'; r.history.unshift({ time: nowStamp(), by: 'Admin · Yves', key: 'disabled' }); renderThresholdList(); }
+        return;
+      }
+      if (e.target.closest('[data-th-delete]')) {
+        var idx = thState.indexOf(r);
+        if (idx >= 0) { thState.splice(idx, 1); renderThresholdList(); }
+        return;
+      }
+    });
+
+    /* ══════════════════════════════════════════════════════════════════
+       F3 · 平台優惠碼（Platform Codes）——逐組獨立設定，欄位語意比照 5.1.5.5 F8.2
+       ══════════════════════════════════════════════════════════════════ */
+    var codeState = [
+      { id: 'code-welcome', name: '歡迎折扣', code: 'WELCOME50', unit: 'pct', discount: 50, fixedMode: 'once', start: '2026-09-01', end: '', enabled: true, statusKey: 'active', perOrder: 1, perBuyer: 1, total: 1000, used: 128, stack: false, notes: '', exceptions: [], history: [{ time: '2026-08-25 11:00', by: 'Admin · Yves', key: 'created' }] },
+      { id: 'code-appfirst', name: '首次購物', code: 'APPFIRST', unit: 'amount', discount: 20, fixedMode: 'once', start: '2026-10-01', end: '2026-12-31', enabled: true, statusKey: 'upcoming', perOrder: 1, perBuyer: 1, total: 500, used: 0, stack: false, notes: '', exceptions: [], history: [{ time: '2026-09-14 09:00', by: 'Admin · Zoe', key: 'created' }] }
+    ];
+    var codeBody = document.getElementById('pprom-code-body'), codeEmpty = document.getElementById('pprom-code-empty');
+
+    function codeDiscountText(c) { return c.unit === 'pct' ? c.discount + '%' : '$' + c.discount; }
+    function codeUsedText(c) { return c.used + ' / ' + (c.total || '∞'); }
+    function renderCodeList() {
+      codeBody.innerHTML = '';
+      codeState.forEach(function (c) {
+        var tr = document.createElement('tr');
+        tr.setAttribute('data-id', c.id);
+        tr.innerHTML =
+          '<td class="ztor-table__feature">' + esc(c.name) + '</td>' +
+          '<td>' + esc(c.code) + '</td>' +
+          '<td>' + codeDiscountText(c) + '</td>' +
+          '<td class="text-sub">' + esc(periodText(c.start, c.end)) + '</td>' +
+          '<td>' + statusBadgeHtml(c.statusKey) + '</td>' +
+          '<td>' + esc(codeUsedText(c)) + '</td>' +
+          '<td>' + c.exceptions.length + '</td>' +
+          '<td style="text-align:right"><div class="admin-table__actions"><details class="dropdown"><summary class="btn btn--ghost btn--icon btn--sm" aria-label="More actions" data-i18n-aria-label="pprom.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu">' +
+          '<button class="dropdown__item" type="button" role="menuitem" data-code-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="pprom.edit">Edit</span></button>' +
+          '<button class="dropdown__item" type="button" role="menuitem" data-code-duplicate><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="pprom.duplicate">Duplicate</span></button>' +
+          '<button class="dropdown__item" type="button" role="menuitem" data-code-disable><i data-lucide="ban" class="ztor-icon"></i><span data-i18n="pprom.disable">Disable</span></button>' +
+          '<button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-code-delete><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="pprom.delete">Delete</span></button>' +
+          '</div></details></div></td>';
+        codeBody.appendChild(tr);
+      });
+      if (window.ztorIcons) window.ztorIcons.applyIcons(codeBody);
+      i18n(codeBody);
+      codeEmpty.hidden = codeState.length > 0;
+    }
+
+    var codeModal = document.getElementById('pprom-code-modal'),
+        codePicker = makeExceptionPicker(codeModal),
+        codeEditingId = null;
+    var codeUnitGroup = document.getElementById('pprom-code-unit'),
+        codeFixedModeRow = document.getElementById('pprom-code-fixedmode-row'),
+        codeFixedModeGroup = document.getElementById('pprom-code-fixedmode'),
+        codePerOrderInput = document.getElementById('pprom-code-perorder');
+
+    function updateFixedModeVisibility() {
+      var unit = getSegmented(codeUnitGroup, 'data-unit') || 'pct';
+      var raw = codePerOrderInput.value.trim();
+      var n = raw === '' ? 0 : Number(raw);
+      var notOne = isNaN(n) || n !== 1;
+      codeFixedModeRow.hidden = !(unit === 'amount' && notOne);
+    }
+    codeUnitGroup.addEventListener('click', function (e) {
+      var b = e.target.closest('.segmented__btn');
+      if (!b) return;
+      setSegmented(codeUnitGroup, 'data-unit', b.getAttribute('data-unit'));
+      var discountInput = document.getElementById('pprom-code-discount');
+      if (b.getAttribute('data-unit') === 'pct') { discountInput.min = '1'; discountInput.max = '100'; }
+      else { discountInput.min = '1'; discountInput.removeAttribute('max'); }
+      updateFixedModeVisibility();
+    });
+    codeFixedModeGroup.addEventListener('click', function (e) {
+      var b = e.target.closest('.segmented__btn');
+      if (!b) return;
+      setSegmented(codeFixedModeGroup, 'data-fixedmode', b.getAttribute('data-fixedmode'));
+    });
+    codePerOrderInput.addEventListener('input', updateFixedModeVisibility);
+
+    var codeStackSwitch = document.getElementById('pprom-code-stack');
+    codeStackSwitch.addEventListener('click', function () { setSwitch(codeStackSwitch, !isSwitchOn(codeStackSwitch)); });
+    var codeEnabledSwitch = document.getElementById('pprom-code-enabled');
+    codeEnabledSwitch.addEventListener('click', function () { setSwitch(codeEnabledSwitch, !isSwitchOn(codeEnabledSwitch)); });
+
+    document.getElementById('pprom-code-copy').addEventListener('click', function () {
+      var inp = document.getElementById('pprom-code-code');
+      try { navigator.clipboard && navigator.clipboard.writeText(inp.value); } catch (err) {}
+      var btn = document.getElementById('pprom-code-copy');
+      btn.innerHTML = '<i data-lucide="check" class="ztor-icon"></i>';
+      if (window.ztorIcons) window.ztorIcons.applyIcons(btn);
+      setTimeout(function () { btn.innerHTML = '<i data-lucide="copy" class="ztor-icon"></i>'; if (window.ztorIcons) window.ztorIcons.applyIcons(btn); }, 1200);
+    });
+
+    function openCodeModal(id) {
+      codeEditingId = id || null;
+      var c = id ? codeState.filter(function (x) { return x.id === id; })[0] : null;
+      var titleEl = document.getElementById('pprom-code-modal-title'),
+          titleKey = id ? 'pprom.code.modal.edit' : 'pprom.code.modal.add';
+      titleEl.setAttribute('data-i18n', titleKey);
+      titleEl.textContent = t(titleKey, id ? 'Edit code' : 'Add a code');
+      document.getElementById('pprom-code-name').value = c ? c.name : '';
+      document.getElementById('pprom-code-code').value = c ? c.code : '';
+      setSegmented(codeUnitGroup, 'data-unit', c ? c.unit : 'pct');
+      document.getElementById('pprom-code-discount').value = c ? c.discount : '';
+      setSegmented(codeFixedModeGroup, 'data-fixedmode', c ? c.fixedMode : 'once');
+      setDate(document.getElementById('pprom-code-start'), c ? c.start : '');
+      setDate(document.getElementById('pprom-code-end'), c ? c.end : '');
+      setSwitch(codeEnabledSwitch, c ? c.enabled : true);
+      document.getElementById('pprom-code-perorder').value = c ? c.perOrder : 1;
+      document.getElementById('pprom-code-perbuyer').value = c && c.perBuyer ? c.perBuyer : '';
+      document.getElementById('pprom-code-total').value = c && c.total ? c.total : '';
+      setSwitch(codeStackSwitch, c ? c.stack : false);
+      document.getElementById('pprom-code-notes').value = c ? (c.notes || '') : '';
+      updateFixedModeVisibility();
+      codePicker.load(c ? c.exceptions : []);
+      renderHistory(codeModal, c ? c.history : []);
+      codeModal.hidden = false;
+      document.body.classList.add('is-modal-open');
+      i18n(codeModal);
+      if (window.ztorIcons) window.ztorIcons.applyIcons(codeModal);
+    }
+    function closeCodeModal() { codeModal.hidden = true; document.body.classList.remove('is-modal-open'); }
+    document.getElementById('pprom-code-add').addEventListener('click', function () { openCodeModal(null); });
+    var codeAddEmpty = codeEmpty.querySelector('[data-code-add-empty]');
+    if (codeAddEmpty) codeAddEmpty.addEventListener('click', function () { openCodeModal(null); });
+    Array.prototype.forEach.call(codeModal.querySelectorAll('[data-code-close]'), function (b) { b.addEventListener('click', closeCodeModal); });
+    codeModal.addEventListener('click', function (e) { if (e.target === codeModal) closeCodeModal(); });
+
+    document.getElementById('pprom-code-save').addEventListener('click', function () {
+      var nameInput = document.getElementById('pprom-code-name'), codeInput = document.getElementById('pprom-code-code');
+      var name = nameInput.value.trim(), code = codeInput.value.trim().toUpperCase();
+      if (!name) { nameInput.focus(); return; }
+      if (!code) { codeInput.focus(); return; }
+      var unit = getSegmented(codeUnitGroup, 'data-unit') || 'pct';
+      var discount = Number(document.getElementById('pprom-code-discount').value) || 0;
+      var fixedMode = getSegmented(codeFixedModeGroup, 'data-fixedmode') || 'once';
+      var start = document.getElementById('pprom-code-start').value;
+      var end = document.getElementById('pprom-code-end').value;
+      var enabled = isSwitchOn(codeEnabledSwitch);
+      var perOrder = Number(document.getElementById('pprom-code-perorder').value) || 0;
+      var perBuyer = Number(document.getElementById('pprom-code-perbuyer').value) || 0;
+      var total = Number(document.getElementById('pprom-code-total').value) || 0;
+      var stack = isSwitchOn(codeStackSwitch);
+      var notes = document.getElementById('pprom-code-notes').value.trim();
+      var exceptions = codePicker.get();
+      if (codeEditingId) {
+        var c = codeState.filter(function (x) { return x.id === codeEditingId; })[0];
+        if (c) {
+          c.name = name; c.code = code; c.unit = unit; c.discount = discount; c.fixedMode = fixedMode;
+          c.start = start; c.end = end; c.enabled = enabled; c.perOrder = perOrder; c.perBuyer = perBuyer;
+          c.total = total; c.stack = stack; c.notes = notes; c.exceptions = exceptions;
+          c.statusKey = deriveStatus(start, end, enabled, c.used, total);
+          c.history.unshift({ time: nowStamp(), by: 'Admin · Yves', key: 'updated' });
+        }
+      } else {
+        codeState.unshift({
+          id: 'code-' + Date.now(), name: name, code: code, unit: unit, discount: discount, fixedMode: fixedMode,
+          start: start, end: end, enabled: enabled, perOrder: perOrder, perBuyer: perBuyer, total: total,
+          used: 0, stack: stack, notes: notes, exceptions: exceptions,
+          statusKey: deriveStatus(start, end, enabled, 0, total),
+          history: [{ time: nowStamp(), by: 'Admin · Yves', key: 'created' }]
+        });
+      }
+      renderCodeList();
+      closeCodeModal();
+    });
+
+    codeBody.addEventListener('click', function (e) {
+      var row = e.target.closest('tr[data-id]');
+      if (!row) return;
+      var id = row.getAttribute('data-id'), c = codeState.filter(function (x) { return x.id === id; })[0];
+      if (e.target.closest('[data-code-edit]')) { openCodeModal(id); return; }
+      if (e.target.closest('[data-code-duplicate]')) {
+        if (c) {
+          var copy = JSON.parse(JSON.stringify(c));
+          copy.id = 'code-' + Date.now();
+          copy.name = c.name + ' - 2';
+          copy.code = c.code + '2';
+          copy.used = 0;
+          copy.history = [{ time: nowStamp(), by: 'Admin · Yves', key: 'created' }];
+          codeState.splice(codeState.indexOf(c) + 1, 0, copy);
+          renderCodeList();
+        }
+        return;
+      }
+      if (e.target.closest('[data-code-disable]')) {
+        if (c) { c.enabled = false; c.statusKey = 'disabled'; c.history.unshift({ time: nowStamp(), by: 'Admin · Yves', key: 'disabled' }); renderCodeList(); }
+        return;
+      }
+      if (e.target.closest('[data-code-delete]')) {
+        var idx = codeState.indexOf(c);
+        if (idx >= 0) { codeState.splice(idx, 1); renderCodeList(); }
+        return;
+      }
+    });
+
+    /* ══════════════════════════════════════════════════════════════════
+       F5 · 例外藝人（全局，Excluded Creators）——三層例外的其中一層；
+       逐筆／逐組例外已隨各自的資料收在 thState[].exceptions／codeState[].exceptions。
+       ══════════════════════════════════════════════════════════════════ */
+    var gexcState = [
+      { id: 'default', name: 'Gary Lin', added: '2026-08-20 14:02', by: 'Admin · Yves', reason: '合約條款排除' },
+      { id: 'userB', name: 'User B', added: '2026-09-10 11:40', by: 'Admin · Yves', reason: '' }
+    ];
+    function gexcFindIdx(id) { for (var i = 0; i < gexcState.length; i++) { if (gexcState[i].id === id) return i; } return -1; }
+    var gexcBody = document.getElementById('pprom-gexc-body'), gexcEmpty = document.getElementById('pprom-gexc-empty');
+    function renderGexc() {
+      gexcBody.innerHTML = '';
+      gexcState.forEach(function (ex) {
+        var tr = document.createElement('tr');
+        tr.setAttribute('data-id', ex.id);
+        tr.innerHTML =
+          '<td><div class="admin-table__owner"><span class="admin-table__avatar">' + esc(ex.name.slice(0, 1)) + '</span><span>' + esc(ex.name) + '</span></div></td>' +
+          '<td>' + esc(ex.added) + '</td>' +
+          '<td class="text-sub">' + esc(ex.by) + '</td>' +
+          '<td class="text-sub">' + esc(ex.reason || '—') + '</td>' +
+          '<td><span class="badge badge--neutral" data-i18n="pprom.gexc.scope.all">All</span></td>' +
+          '<td style="text-align:right"><button class="btn btn--ghost btn--sm" type="button" data-gexc-remove data-i18n="pprom.gexc.remove">Remove</button></td>';
+        gexcBody.appendChild(tr);
+      });
+      if (window.ztorIcons) window.ztorIcons.applyIcons(gexcBody);
+      i18n(gexcBody);
+      if (gexcEmpty) gexcEmpty.hidden = gexcState.length > 0;
+    }
+    gexcBody.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-gexc-remove]');
+      if (!btn) return;
+      var id = btn.closest('tr').getAttribute('data-id'), idx = gexcFindIdx(id);
+      if (idx >= 0) { gexcState.splice(idx, 1); renderGexc(); }
+    });
+
+    var gexcModal = document.getElementById('pprom-gexc-modal'),
+        gexcSearch = document.getElementById('pprom-gexc-search'),
+        gexcSuggest = document.getElementById('pprom-gexc-suggest'),
+        gexcNone = document.getElementById('pprom-gexc-search-none'),
+        gexcReason = document.getElementById('pprom-gexc-reason'),
+        gexcConfirm = document.getElementById('pprom-gexc-confirm'),
+        gexcAddBtn = document.getElementById('pprom-gexc-add');
+    var gexcPickedId = null, gexcPickedName = '';
+
+    function closeGexcModal() { gexcModal.hidden = true; }
+    Array.prototype.forEach.call(document.querySelectorAll('[data-gexc-close]'), function (b) { b.addEventListener('click', closeGexcModal); });
+    gexcModal.addEventListener('click', function (e) { if (e.target === gexcModal) closeGexcModal(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      if (!gexcModal.hidden) { closeGexcModal(); return; }
+      if (!thModal.hidden) { closeThresholdModal(); return; }
+      if (!codeModal.hidden) { closeCodeModal(); return; }
+    });
+
+    function renderGexcSuggest() {
+      var q = (gexcSearch.value || '').trim().toLowerCase();
+      gexcSuggest.innerHTML = '';
+      if (!q) { if (gexcNone) gexcNone.hidden = true; return; }
+      var avail = ALL_CREATORS.filter(function (c) { return gexcFindIdx(c.id) < 0 && c.name.toLowerCase().indexOf(q) >= 0; });
+      avail.forEach(function (c) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'btn btn--ghost btn--sm' + (c.id === gexcPickedId ? ' btn--soft' : '');
+        b.style.justifyContent = 'flex-start';
+        b.setAttribute('data-gexc-pick', c.id);
+        b.textContent = c.name;
+        gexcSuggest.appendChild(b);
+      });
+      if (gexcNone) gexcNone.hidden = avail.length > 0;
+    }
+    gexcSearch.addEventListener('input', renderGexcSuggest);
+    gexcSuggest.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-gexc-pick]');
+      if (!b) return;
+      gexcPickedId = b.getAttribute('data-gexc-pick');
+      gexcPickedName = creatorName(gexcPickedId);
+      renderGexcSuggest();
+    });
+
+    function openGexcModal() {
+      gexcPickedId = null; gexcPickedName = '';
+      gexcSearch.value = ''; gexcReason.value = '';
+      renderGexcSuggest();
+      gexcModal.hidden = false;
+      i18n(gexcModal);
+      if (window.ztorIcons) window.ztorIcons.applyIcons(gexcModal);
+    }
+    gexcAddBtn.addEventListener('click', openGexcModal);
+    gexcConfirm.addEventListener('click', function () {
+      if (!gexcPickedId) { gexcSearch.focus(); return; }
+      gexcState.push({ id: gexcPickedId, name: gexcPickedName, added: nowStamp(), by: 'Admin · Yves', reason: gexcReason.value.trim() });
+      renderGexc();
+      closeGexcModal();
+    });
+
+    /* ===== F6 紀錄：逐筆／依藝人 ===== */
+    var recordsToggle = document.getElementById('pprom-records-toggle');
+    recordsToggle.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-records-view]');
+      if (!btn) return;
+      var view = btn.getAttribute('data-records-view');
+      Array.prototype.forEach.call(recordsToggle.querySelectorAll('.segmented__btn'), function (b) {
+        b.classList.toggle('segmented__btn--active', b === btn);
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-records-panel]'), function (p) {
+        p.hidden = p.getAttribute('data-records-panel') !== view;
+      });
+    });
+
+    /* ===== 初次渲染 ===== */
+    renderThresholdList();
+    renderCodeList();
+    renderGexc();
+  }());
+</script>
+<script src="js/devtools.js?v=r2.2"></script>
+</body>
+</html>

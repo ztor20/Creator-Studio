@@ -42,6 +42,13 @@
 <link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<!-- F8.2 適用範圍（D272）：類型樹用 checkbox.css 的 zcheck，特定商品的搜尋加 chip 多選重用
+     tag-input.css＋combobox.css（做法同 partials/pickup-session-modal.js），chip.css 是兩者的底。
+     這頁之前沒有勾選控件與搜尋加 chip 的用法，三支都要在這裡第一次連。 -->
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/combobox.css?v=r2.2">
 
 </head>
 <body>
@@ -259,13 +266,16 @@
                     <tr>
                       <th data-i18n="store-settings.codes.col.code">Code</th>
                       <th data-i18n="store-settings.codes.col.discount">Discount</th>
+                      <th data-i18n="store-settings.codes.col.applies">Applies to</th>
                       <th data-i18n="store-settings.codes.col.period">Period</th>
                       <th data-i18n="store-settings.codes.col.status">Status</th>
-                      <th data-i18n="store-settings.codes.col.sold">Sold</th>
+                      <th data-i18n="store-settings.codes.col.sold">Used</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody data-code-rows>
+                    <!-- 示意三列（D272）：SUMMER25 有上限、AIKO10 混選範圍（類型＋商品）、
+                         LAUNCH50 已用完（Exhausted，badge--warning）——涵蓋「已用／上限」兩種格式與新狀態。 -->
                     <tr data-code-kind="own">
                       <td class="ztor-table__feature">
                         <div class="ss-code-cell">
@@ -274,11 +284,12 @@
                         </div>
                       </td>
                       <td>25%</td>
+                      <td><span data-i18n="store-settings.codes.f.scope.all">All items</span></td>
                       <td>7/1 – 8/31</td>
                       <td><span class="badge badge--success" data-i18n="store-settings.codes.status.active">Active</span></td>
                       <td>
                         <div class="ss-code-sold">
-                          <span class="ss-code-sold__count">42 <span data-i18n="store-settings.codes.unit">sold</span></span>
+                          <span class="ss-code-sold__count">42 / 100</span>
                           <span class="ss-code-sold__amount">$1,180</span>
                         </div>
                       </td>
@@ -304,11 +315,12 @@
                         </div>
                       </td>
                       <td>10%</td>
+                      <td><span data-i18n="store-settings.codes.scope.apparel-plus">Apparel + 2 items</span></td>
                       <td>8/1 – 9/30</td>
                       <td><span class="badge badge--success" data-i18n="store-settings.codes.status.active">Active</span></td>
                       <td>
                         <div class="ss-code-sold">
-                          <span class="ss-code-sold__count">8 <span data-i18n="store-settings.codes.unit">sold</span></span>
+                          <span class="ss-code-sold__count">8</span>
                           <span class="ss-code-sold__amount">$432</span>
                         </div>
                       </td>
@@ -329,14 +341,20 @@
                     <tr data-code-kind="own">
                       <td class="ztor-table__feature">
                         <div class="ss-code-cell">
-                          <span class="ss-code-cell__code">WELCOME</span>
+                          <span class="ss-code-cell__code">LAUNCH50</span>
                           <span class="ss-code-cell__meta" data-feat="full"><span data-i18n="store-settings.codes.type.own">Own</span></span>
                         </div>
                       </td>
-                      <td>$5</td>
-                      <td>9/1 –</td>
-                      <td><span class="badge badge--neutral" data-i18n="store-settings.codes.status.scheduled">Scheduled</span></td>
-                      <td><span class="text-sub">—</span></td>
+                      <td>50%</td>
+                      <td><span data-i18n="store-settings.codes.f.scope.items">Specific items</span></td>
+                      <td>6/1 – 6/30</td>
+                      <td><span class="badge badge--warning" data-i18n="store-settings.codes.status.exhausted">Exhausted</span></td>
+                      <td>
+                        <div class="ss-code-sold">
+                          <span class="ss-code-sold__count">100 / 100</span>
+                          <span class="ss-code-sold__amount">$2,400</span>
+                        </div>
+                      </td>
                       <td>
                         <div class="admin-table__actions">
                           <details class="dropdown">
@@ -443,9 +461,88 @@
                     <button class="segmented__btn segmented__btn--active" type="button" data-code-unit="pct">%</button>
                     <button class="segmented__btn" type="button" data-code-unit="amount">$</button>
                   </div>
-                  <input class="input ss-code-num" id="ss-code-discount" value="10" inputmode="decimal">
+                  <input class="input ss-code-num" id="ss-code-discount" value="10" min="1" max="100" inputmode="decimal">
                 </div>
               </div>
+
+              <!-- 固定金額折法（D275 決定 2）：只在折扣單位為 $ 且每張訂單可折件數 ≠ 1（含 0＝不限）時出現——
+                   % 折扣沒有「折一次還是折每件」的差別（比例乘每件結果一樣），件數鎖 1 時也沒有多件可言。
+                   預設「整單只折一次」（主對話補的預設、D275 標待覆核）。JS 見 updateFixedModeVisibility()。 -->
+              <div class="settings-row" data-code-fixed-mode hidden>
+                <div>
+                  <div class="settings-row__label" data-i18n="store-settings.codes.f.fixedmode">Fixed-amount split</div>
+                  <div class="settings-row__hint" data-i18n="store-settings.codes.f.fixedmode.hint">When multiple items qualify, whether the fixed amount discounts once for the order or once per item.</div>
+                </div>
+                <div class="segmented" role="group" aria-label="Fixed-amount split" data-i18n-aria-label="store-settings.codes.f.fixedmode">
+                  <button class="segmented__btn segmented__btn--active" type="button" data-code-fixedmode="once" data-i18n="store-settings.codes.f.fixedmode.once">Once per order (default)</button>
+                  <button class="segmented__btn" type="button" data-code-fixedmode="each" data-i18n="store-settings.codes.f.fixedmode.each">Once per item</button>
+                </div>
+              </div>
+
+              <!-- 適用範圍（Applies to，D272）：三級可混選，不是 settings-row 的兩欄版面——
+                   類型樹與商品多選要吃滿寬度，改用整列堆疊（.ss-scope-row，store-settings.css）。
+                   「全部商店」預設勾選，勾了就停用並清空另外兩級（D272 決定 1）。 -->
+              <div class="ss-scope-row">
+                <div class="settings-row__label"><span data-i18n="store-settings.codes.f.scope">Applies to</span> <span class="field__req">*</span></div>
+                <div class="settings-row__hint" data-i18n="store-settings.codes.f.scope.hint">A code's range is whichever types and items you check, combined. Auctions never qualify.</div>
+
+                <div class="ss-scope-options">
+                  <label class="zcheck">
+                    <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="ss-scope-all" checked><span class="zcheck__box"></span></span>
+                    <span class="zcheck__label" data-i18n="store-settings.codes.f.scope.all">All items</span>
+                  </label>
+
+                  <label class="zcheck">
+                    <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="ss-scope-types" disabled><span class="zcheck__box"></span></span>
+                    <span class="zcheck__label" data-i18n="store-settings.codes.f.scope.types">Item types</span>
+                  </label>
+                  <!-- 商品類型樹：對應 §7.1 主分類×次分類（實體／數位）；子類型清單借用建立商品 F2 既有的
+                       cp.psub.*／cp.dsub.* key，不重造一份同義字。父層全選＝子類型全勾，部分勾選時父層半選。 -->
+                  <div class="ss-scope-tree" id="ss-scope-tree" hidden>
+                    <div class="ss-scope-tree__group">
+                      <label class="zcheck">
+                        <span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-scope-group="physical"><span class="zcheck__box"></span></span>
+                        <span class="zcheck__label" data-i18n="store-settings.codes.f.scope.physical">Physical merchandise</span>
+                      </label>
+                      <div class="ss-scope-tree__children">
+                        <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-scope-child="physical" value="apparel"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cp.psub.apparel">Apparel</span></label>
+                        <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-scope-child="physical" value="accessories"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cp.psub.accessories">Accessories</span></label>
+                        <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-scope-child="physical" value="poster"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cp.psub.poster">Posters &amp; prints</span></label>
+                        <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-scope-child="physical" value="books"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cp.psub.books">Books</span></label>
+                      </div>
+                    </div>
+                    <div class="ss-scope-tree__group">
+                      <label class="zcheck">
+                        <span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-scope-group="digital"><span class="zcheck__box"></span></span>
+                        <span class="zcheck__label" data-i18n="store-settings.codes.f.scope.digital">Digital merchandise</span>
+                      </label>
+                      <div class="ss-scope-tree__children">
+                        <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-scope-child="digital" value="movie"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cp.dsub.movie">Movie</span></label>
+                        <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-scope-child="digital" value="short"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cp.dsub.short">Short film</span></label>
+                        <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-scope-child="digital" value="series"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cp.dsub.series">Series</span></label>
+                        <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-scope-child="digital" value="documentary"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cp.dsub.documentary">Documentary</span></label>
+                        <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-scope-child="digital" value="music"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cp.dsub.music">Song</span></label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <label class="zcheck">
+                    <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="ss-scope-items" disabled><span class="zcheck__box"></span></span>
+                    <span class="zcheck__label" data-i18n="store-settings.codes.f.scope.items">Specific items</span>
+                  </label>
+                  <!-- 特定商品：單售或組合包多選，重用 tag-input（chip）＋ combobox（建議清單），
+                       做法同 partials/pickup-session-modal.js §107–170——focus／打字才展開建議清單。
+                       候選資料來源 ProductsStore（拍賣不在其中，D272 決定 2）。 -->
+                  <div class="combobox ss-scope-combo" id="ss-scope-combo" hidden>
+                    <div class="tag-input__field" data-ss-scope-field>
+                      <input class="tag-input__entry" type="search" id="ss-scope-search" role="combobox" aria-expanded="false" aria-autocomplete="list" autocomplete="off" placeholder="Search products or bundles…" data-i18n-placeholder="store-settings.codes.f.scope.items.ph">
+                      <i data-lucide="chevron-down" class="combobox__chevron ztor-icon"></i>
+                    </div>
+                    <div class="combobox__menu" id="ss-scope-menu" hidden></div>
+                  </div>
+                </div>
+              </div>
+
               <div class="settings-row">
                 <div>
                   <div class="settings-row__label" data-i18n="store-settings.codes.f.period">When it works</div>
@@ -456,6 +553,41 @@
                   <span class="text-sub">–</span>
                   <input class="input ss-code-date" type="date" id="ss-code-end" aria-label="Ends" data-i18n-aria-label="store-settings.codes.f.ends">
                 </div>
+              </div>
+
+              <!-- 使用次數（Usage limits，D272）：以「件」計，拆成三個各自獨立的條件——
+                   每張訂單可折件數／每人總次數／總兌換次數；留空＝不限。 -->
+              <div class="settings-row__label" style="margin-top:var(--sp-6)" data-i18n="store-settings.codes.f.usage">Usage limits</div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row__label" data-i18n="store-settings.codes.f.perorder">Per order</div>
+                  <div class="settings-row__hint" data-i18n="store-settings.codes.f.perorder.hint">One order, that many items — the highest-priced qualifying items get the discount first.</div>
+                </div>
+                <input class="input ss-code-num" id="ss-code-perorder" value="1" min="0" placeholder="0 = unlimited" data-i18n-placeholder="store-settings.codes.f.perbuyer.ph" inputmode="numeric">
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row__label" data-i18n="store-settings.codes.f.perbuyer">Per buyer total</div>
+                  <div class="settings-row__hint" data-i18n="store-settings.codes.f.perbuyer.hint">Adds up across orders, for the same ztor account.</div>
+                </div>
+                <input class="input ss-code-num" id="ss-code-perbuyer" min="0" placeholder="0 = unlimited" data-i18n-placeholder="store-settings.codes.f.perbuyer.ph" inputmode="numeric">
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row__label" data-i18n="store-settings.codes.f.total">Total redemptions</div>
+                  <div class="settings-row__hint" data-i18n="store-settings.codes.f.total.hint">Once it runs out, the code's status switches to Exhausted.</div>
+                </div>
+                <input class="input ss-code-num" id="ss-code-total" min="0" placeholder="0 = unlimited" data-i18n-placeholder="store-settings.codes.f.perbuyer.ph" inputmode="numeric">
+              </div>
+
+              <!-- 可與其他優惠碼疊加（D275 決定 3）：預設關閉；兩組碼都開才能同單並用，
+                   任一關閉即擇一取對買家最有利。與商品層 F13「可與優惠碼疊加」（特價／分級折扣）是兩個獨立開關。 -->
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row__label" data-i18n="store-settings.codes.f.stack">Stack with other codes</div>
+                  <div class="settings-row__hint" data-i18n="store-settings.codes.f.stack.hint">Both codes need this on to combine in one order — if either is off, only the one better for the buyer applies.</div>
+                </div>
+                <div class="switch" role="switch" aria-checked="false" tabindex="0" data-code-stack aria-label="Stack with other codes" data-i18n-aria-label="store-settings.codes.f.stack"></div>
               </div>
 
               <!-- 代理碼專屬（一組碼綁一位推廣者，D183）；Phase 4 才存在（D185）。
@@ -668,6 +800,7 @@
       const hint = modal.querySelector('[data-code-type-hint]');
       const title = document.getElementById('ss-code-modal-title');
       const T = k => (window.i18nT && window.i18nT(k)) || '';
+      const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
       function setKind(kind) {
         const partner = kind === 'partner';
@@ -677,13 +810,138 @@
         const hk = partner ? 'store-settings.codes.type.partner-sub' : 'store-settings.codes.type.own-sub';
         if (hint) { hint.setAttribute('data-i18n', hk); hint.textContent = T(hk) || hint.textContent; }
       }
+
+      /* ── 固定金額折法顯隱（D275 決定 2）：折扣單位為 $ 且每張訂單可折件數 ≠ 1
+         （含留空／0＝不限）才出現；單位切換與件數輸入都要重算。 ─────────── */
+      const fixedModeRow = modal.querySelector('[data-code-fixed-mode]');
+      function currentUnit() {
+        const active = modal.querySelector('[data-code-unit].segmented__btn--active');
+        return active ? active.dataset.codeUnit : 'pct';
+      }
+      function updateFixedModeVisibility() {
+        if (!fixedModeRow) return;
+        const perOrderEl = document.getElementById('ss-code-perorder');
+        const raw = perOrderEl ? perOrderEl.value.trim() : '1';
+        const n = raw === '' ? 0 : Number(raw);
+        const notOne = isNaN(n) || n !== 1;
+        fixedModeRow.hidden = !(currentUnit() === 'amount' && notOne);
+      }
+
+      /* ── F8.2 適用範圍（Applies to，D272）：三級可混選 ─────────────────────
+         「全部商店」預設勾選、勾了就停用並清空另外兩級；「特定品項」展開類型樹
+         （父層全選＝子類型全勾，部分勾選時父層半選 indeterminate）；「特定商品」
+         展開搜尋＋chip 多選（重用 tag-input＋combobox，候選來自 ProductsStore，
+         拍賣本來就不在 ProductsStore.all()／bundles() 裡，天然排除）。 */
+      const scopeAll = modal.querySelector('#ss-scope-all');
+      const scopeTypes = modal.querySelector('#ss-scope-types');
+      const scopeItemsChk = modal.querySelector('#ss-scope-items');
+      const scopeTree = modal.querySelector('#ss-scope-tree');
+      const scopeCombo = modal.querySelector('#ss-scope-combo');
+      const scopeField = modal.querySelector('[data-ss-scope-field]');
+      const scopeSearch = modal.querySelector('#ss-scope-search');
+      const scopeMenu = modal.querySelector('#ss-scope-menu');
+      let scopeSelected = [];
+
+      function scopeCatalog() {
+        const out = [];
+        const products = (window.ProductsStore && window.ProductsStore.all()) || {};
+        Object.keys(products).forEach(id => out.push({ id, kind: 'product', name: products[id].name }));
+        const bundles = (window.ProductsStore && window.ProductsStore.bundles()) || [];
+        bundles.forEach(b => out.push({ id: b.id, kind: 'bundle', name: b.name }));
+        return out;
+      }
+      function scopeItemById(id) { return scopeCatalog().find(it => it.id === id); }
+      function paintScopeChips() {
+        if (!scopeField || !scopeSearch) return;
+        scopeField.querySelectorAll('.chip').forEach(c => c.remove());
+        scopeSelected.forEach(id => {
+          const it = scopeItemById(id); if (!it) return;
+          const chip = document.createElement('span');
+          chip.className = 'chip chip--removable';
+          chip.innerHTML = '<span>' + esc(it.name) + '</span>' +
+            '<button class="chip__remove" type="button" data-scope-remove="' + esc(id) + '" aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button>';
+          scopeField.insertBefore(chip, scopeSearch);
+        });
+        if (window.ztorIcons) window.ztorIcons.applyIcons(scopeField);
+      }
+      function renderScopeMenu() {
+        if (!scopeMenu) return;
+        const q = (scopeSearch.value || '').trim().toLowerCase();
+        const groups = [['product', 'e-shop.tab.products'], ['bundle', 'e-shop.tab.bundles']];
+        let html = '', total = 0;
+        groups.forEach(g => {
+          const avail = scopeCatalog().filter(it => it.kind === g[0] && scopeSelected.indexOf(it.id) < 0 &&
+            (!q || it.name.toLowerCase().indexOf(q) >= 0));
+          if (!avail.length) return;
+          total += avail.length;
+          html += '<div class="combobox__group" data-i18n="' + g[1] + '"></div>';
+          avail.forEach(it => {
+            html += '<button type="button" class="combobox__opt" data-scope-add="' + esc(it.id) + '">' +
+              '<span class="combobox__opt-text"><span class="combobox__opt-name">' + esc(it.name) + '</span></span></button>';
+          });
+        });
+        if (!total) html = '<div class="combobox__empty" data-i18n="store-settings.codes.f.scope.items.empty">No items match your search.</div>';
+        scopeMenu.innerHTML = html;
+        if (window.ztorIcons) window.ztorIcons.applyIcons(scopeMenu);
+        if (window.applyI18n) window.applyI18n(scopeMenu);
+      }
+      function openScopeMenu() { renderScopeMenu(); if (scopeMenu) scopeMenu.hidden = false; if (scopeSearch) scopeSearch.setAttribute('aria-expanded', 'true'); }
+      function closeScopeMenu() { if (scopeMenu) scopeMenu.hidden = true; if (scopeSearch) scopeSearch.setAttribute('aria-expanded', 'false'); }
+      function addScopeItem(id) { if (id && scopeSelected.indexOf(id) < 0) scopeSelected.push(id); if (scopeSearch) scopeSearch.value = ''; paintScopeChips(); renderScopeMenu(); }
+      function removeScopeItem(id) { const i = scopeSelected.indexOf(id); if (i >= 0) scopeSelected.splice(i, 1); paintScopeChips(); renderScopeMenu(); }
+
+      function setGroupChildren(group, checked) {
+        if (!scopeTree) return;
+        scopeTree.querySelectorAll('[data-scope-child="' + group + '"]').forEach(c => { c.checked = checked; });
+      }
+      function syncTreeParent(group) {
+        if (!scopeTree) return;
+        const parent = scopeTree.querySelector('[data-scope-group="' + group + '"]');
+        const children = [...scopeTree.querySelectorAll('[data-scope-child="' + group + '"]')];
+        if (!parent || !children.length) return;
+        const checked = children.filter(c => c.checked).length;
+        parent.indeterminate = checked > 0 && checked < children.length;
+        parent.checked = checked === children.length;
+      }
+      /* 勾「全部商店」：停用並清空另外兩級（D272 決定 1）；取消勾選則解禁，維持空狀態。 */
+      function setScopeAllMode(on) {
+        if (scopeTypes) scopeTypes.disabled = on;
+        if (scopeItemsChk) scopeItemsChk.disabled = on;
+        if (on) {
+          if (scopeTypes) scopeTypes.checked = false;
+          if (scopeItemsChk) scopeItemsChk.checked = false;
+          if (scopeTree) { scopeTree.hidden = true; scopeTree.querySelectorAll('input[type=checkbox]').forEach(c => { c.checked = false; c.indeterminate = false; }); }
+          if (scopeCombo) scopeCombo.hidden = true;
+          scopeSelected = []; paintScopeChips();
+        }
+      }
+      function resetScope() {
+        if (scopeAll) scopeAll.checked = true;
+        setScopeAllMode(true);
+      }
+
       function openModal(kind, titleKey) {
         setKind(kind);
         if (title) { title.setAttribute('data-i18n', titleKey); title.textContent = T(titleKey) || title.textContent; }
+        /* 開彈窗重設為預設（共用背景 D 段）：全部商店、每單 1、每人與總次數留空；
+           編輯既有列時一併重設（不強求帶入示意值，見任務說明）。 */
+        resetScope();
+        const perOrder = document.getElementById('ss-code-perorder');
+        const perBuyer = document.getElementById('ss-code-perbuyer');
+        const total = document.getElementById('ss-code-total');
+        if (perOrder) perOrder.value = '1';
+        if (perBuyer) perBuyer.value = '';
+        if (total) total.value = '';
+        /* 固定金額折法回到預設「整單只折一次」；疊加開關回到預設關閉（D275 決定 2／3）。 */
+        modal.querySelectorAll('[data-code-fixedmode]').forEach(b =>
+          b.classList.toggle('segmented__btn--active', b.dataset.codeFixedmode === 'once'));
+        const stackSwitch = modal.querySelector('[data-code-stack]');
+        if (stackSwitch) { stackSwitch.classList.remove('switch--on'); stackSwitch.setAttribute('aria-checked', 'false'); }
+        updateFixedModeVisibility();
         modal.hidden = false;
         document.body.classList.add('is-modal-open');
       }
-      function closeModal() { modal.hidden = true; document.body.classList.remove('is-modal-open'); }
+      function closeModal() { modal.hidden = true; document.body.classList.remove('is-modal-open'); closeScopeMenu(); }
 
       document.addEventListener('click', e => {
         const t = e.target;
@@ -703,15 +961,45 @@
         if (unit) {
           modal.querySelectorAll('[data-code-unit]').forEach(b =>
             b.classList.toggle('segmented__btn--active', b === unit));
+          /* 折扣型態上下限（D272 決定 3）：% 模式 1–100，固定金額只設下限 1。 */
+          const discountInput = document.getElementById('ss-code-discount');
+          if (discountInput) {
+            if (unit.dataset.codeUnit === 'pct') { discountInput.min = '1'; discountInput.max = '100'; }
+            else { discountInput.min = '1'; discountInput.removeAttribute('max'); }
+          }
+          updateFixedModeVisibility();
           return;
         }
+
+        const fixedMode = t.closest('[data-code-fixedmode]');
+        if (fixedMode) {
+          modal.querySelectorAll('[data-code-fixedmode]').forEach(b =>
+            b.classList.toggle('segmented__btn--active', b === fixedMode));
+          return;
+        }
+
+        const stackSwitch = t.closest('[data-code-stack]');
+        if (stackSwitch) {
+          const on = stackSwitch.classList.toggle('switch--on');
+          stackSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
+          return;
+        }
+
+        const scopeAdd = t.closest('[data-scope-add]');
+        if (scopeAdd) { addScopeItem(scopeAdd.getAttribute('data-scope-add')); if (scopeSearch) scopeSearch.focus(); return; }
+        const scopeRemove = t.closest('[data-scope-remove]');
+        if (scopeRemove) { e.preventDefault(); removeScopeItem(scopeRemove.getAttribute('data-scope-remove')); return; }
+        if (t.closest('[data-ss-scope-field]')) { if (scopeSearch) scopeSearch.focus(); return; }
+        if (!t.closest('#ss-scope-combo')) closeScopeMenu();
 
         const dup = t.closest('[data-code-duplicate]');
         if (dup) {
           const tr = dup.closest('tr');
           const clone = tr.cloneNode(true);
           clone.querySelector('.ss-code-cell__code').textContent += '-2';
-          clone.cells[4].textContent = '—';
+          /* 欄序（D272 起）：Code／Discount／Applies to／Period／Status／Used — 已用歸零落在 cells[5] */
+          clone.cells[5].querySelector('.ss-code-sold__count').textContent = '—';
+          clone.cells[5].querySelector('.ss-code-sold__amount')?.remove();
           tr.after(clone);
           if (window.ztorIcons) window.ztorIcons.applyIcons(clone);
           if (window.applyI18n) window.applyI18n(clone);
@@ -722,7 +1010,7 @@
         /* 停用＝這組碼即刻停止受理，既有訂單與分成紀錄保留（規格 F8.1） */
         const off = t.closest('[data-code-disable]');
         if (off) {
-          const b = off.closest('tr').cells[3].querySelector('.badge');
+          const b = off.closest('tr').cells[4].querySelector('.badge');
           b.className = 'badge badge--neutral';
           b.setAttribute('data-i18n', 'store-settings.codes.status.disabled');
           b.textContent = T('store-settings.codes.status.disabled') || 'Disabled';
@@ -748,7 +1036,26 @@
         const del = t.closest('[data-code-delete]');
         if (del) { del.closest('tr').remove(); paintEmpty(); return; }
       });
-      document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
+      document.addEventListener('keydown', e => {
+        if (e.key !== 'Escape' || modal.hidden) return;
+        if (scopeMenu && !scopeMenu.hidden) { closeScopeMenu(); return; }
+        closeModal();
+      });
+      modal.addEventListener('change', e => {
+        const t = e.target;
+        if (t === scopeAll) { setScopeAllMode(t.checked); return; }
+        if (t === scopeTypes) { if (scopeTree) scopeTree.hidden = !t.checked; return; }
+        if (t === scopeItemsChk) { if (scopeCombo) scopeCombo.hidden = !t.checked; if (t.checked) paintScopeChips(); return; }
+        const grp = t.matches('[data-scope-group]') ? t.getAttribute('data-scope-group') : null;
+        if (grp) { setGroupChildren(grp, t.checked); t.indeterminate = false; return; }
+        const child = t.matches('[data-scope-child]') ? t.getAttribute('data-scope-child') : null;
+        if (child) { syncTreeParent(child); return; }
+      });
+      modal.addEventListener('input', e => {
+        if (e.target === scopeSearch) openScopeMenu();
+        if (e.target && e.target.id === 'ss-code-perorder') updateFixedModeVisibility();
+      });
+      modal.addEventListener('focusin', e => { if (e.target === scopeSearch) openScopeMenu(); });
 
       paintEmpty();
     })();

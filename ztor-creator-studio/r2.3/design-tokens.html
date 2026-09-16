@@ -2,7 +2,7 @@
 <html lang="zh-Hant" data-theme="dark">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Design Tokens · r2.3 · Ztor Creator Studio</title>
+<title>Tokens · Ztor Creator Studio Design</title>
 <script src="js/theme.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
@@ -11,7 +11,6 @@
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* ============================================================
@@ -25,11 +24,28 @@
      頁面自身只用既有 token 排版，不宣告新 token、不新增元件；
      `tk-` 前綴＝本頁專用的一次性版面。
      ============================================================ */
-  .tk-page { max-width: 1280px; margin: 0 auto; padding: var(--sp-32) var(--sp-24) var(--sp-96); }
+  /* ── 文件殼：底色純黑（2026-09-16 使用者裁示「這些 DS 檔案背景都用純黑色」）──
+     文件頁不是產品頁，不鋪星空檯面：星空的暖光會讓 L1 玻璃在頁面各處看起來不一樣，
+     看層次時反而干擾。純黑吃 --surface-inverse（亮暗皆 #000000）。
+     選擇器要壓過 shared.css 的 html[data-nav-mode="sidebar"] body（星空就掛在那條）。 */
+  html[data-nav-mode] body, body { background: var(--surface-inverse); }
+  html[data-nav-mode] body::before, html[data-nav-mode] body::after { display: none; }
+  /* ── 文件殼：頂部導覽（與 demo-layer-system.html 逐字相同，改一邊要同步另一邊）── */
+  .dsn { position: sticky; top: 0; z-index: 30; height: 52px; display: flex; align-items: center; gap: var(--sp-16); padding: 0 var(--sp-24); background: var(--background); border-bottom: 1px solid var(--border); }
+  .dsn__brand { font-family: var(--font-display); font-size: var(--fs-14); font-weight: var(--fw-medium); color: var(--foreground); white-space: nowrap; }
+  .dsn__brand span { color: var(--faint-ink); font-weight: var(--fw-regular); margin-left: var(--sp-6); }
+  .dsn__tabs { display: flex; gap: var(--sp-2); flex: 1 1 auto; min-width: 0; overflow-x: auto; }
+  .dsn__tabs a { display: inline-flex; align-items: center; height: var(--control-h-xs); padding: 0 var(--sp-12); border-radius: var(--radius-pill); font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--muted-foreground); white-space: nowrap; }
+  .dsn__tabs a:hover { background: var(--ztu-glass-strong); color: var(--foreground); }
+  .dsn__tabs a[aria-current="page"] { background: var(--selected-surface); color: var(--selected-ink); }
+  .dsn__theme { flex: 0 0 auto; }
+  @media (max-width: 720px) { .dsn { padding: 0 var(--sp-16); gap: var(--sp-10); } .dsn__brand span { display: none; } }
+
+  .tk-page { max-width: 1200px; margin: 0 auto; padding: var(--sp-24) var(--sp-24) var(--sp-96); }
 
   /* 頂部工具列：section 導覽＋搜尋＋主題切換，黏在上緣 */
   .tk-bar {
-    position: sticky; top: 0; z-index: 20;
+    position: sticky; top: 52px; z-index: 20;
     display: flex; align-items: center; gap: var(--sp-12); flex-wrap: wrap;
     padding: var(--sp-12) 0;
     margin: 0 calc(var(--sp-24) * -1) var(--sp-24);
@@ -50,12 +66,16 @@
   .tk-search { flex: 0 1 260px; min-width: 160px; }
   .tk-search .input { height: var(--control-h-xs); }
   .tk-bar .segmented { flex: 0 0 auto; }
-  .tk-hint { flex: 1 1 100%; font-size: var(--fs-11); color: var(--faint-ink); }
 
-  .tk-stats { display: flex; gap: var(--sp-8); flex-wrap: wrap; margin-top: var(--sp-8); }
+  /* 頁首：與 demo-layer-system.html 的 .lyr-title／.lyr-sub 同樣式 */
+  .tk-head { margin-bottom: var(--sp-24); }
+  .tk-title { font-family: var(--font-display); font-size: var(--fs-32); font-weight: var(--fw-light); letter-spacing: -0.6px; margin: 0 0 var(--sp-6); }
+  .tk-sub { margin: 0; color: var(--muted-foreground); font-size: var(--fs-14); }
+  .tk-sub code { font-family: var(--font-mono); font-size: var(--fs-12); }
+  .tk-stats { display: flex; gap: var(--sp-8); flex-wrap: wrap; margin-top: var(--sp-10); }
 
   /* section 與 group */
-  .tk-section { margin-top: var(--sp-56); scroll-margin-top: 128px; }
+  .tk-section { margin-top: var(--sp-56); scroll-margin-top: 132px; }
   .tk-section__title {
     font-family: var(--font-display); font-size: var(--fs-28); font-weight: var(--fw-light);
     letter-spacing: -0.5px; margin: 0 0 var(--sp-6);
@@ -156,6 +176,20 @@
   .tk-icon:hover { border-color: var(--ztu-glass-rim); background: var(--ztu-glass-bg); }
   .tk-icon .tk-name { font-size: var(--fs-11); text-align: center; cursor: inherit; word-break: break-all; }
 
+  /* 表面階層（--layer-*）：把四階實際疊給人看，一層包一層 */
+  .tk-stack { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 320px); gap: var(--sp-16); margin-bottom: var(--sp-16); }
+  .tk-stack__stage { padding: var(--sp-24); border-radius: var(--radius-xl); border: 1px solid var(--border); }
+  .tk-stack__l1 { padding: var(--sp-16); border-radius: var(--radius-xl); border: 1px solid var(--border); backdrop-filter: blur(var(--ztu-blur-glass)); -webkit-backdrop-filter: blur(var(--ztu-blur-glass)); box-shadow: var(--shadow-card), var(--shadow-edge-top); }
+  .tk-stack__l2 { margin-top: var(--sp-12); padding: var(--sp-14); border-radius: var(--radius-lg); }
+  .tk-stack__l3 { margin-top: var(--sp-12); padding: var(--sp-12); border-radius: var(--radius); border: 1px solid; }
+  .tk-stack__tag { display: block; font-family: var(--font-mono); font-size: var(--fs-11); color: var(--muted-foreground); }
+  .tk-stack__tag b { font-family: var(--font-ui); font-weight: var(--fw-medium); color: var(--foreground); margin-right: var(--sp-6); }
+  .tk-stack__note { font-size: var(--fs-13); line-height: var(--lh-relaxed); color: var(--muted-foreground); }
+  .tk-stack__note p { margin: 0 0 var(--sp-8); }
+  .tk-stack__note a { color: var(--brand-ink); text-decoration: underline; text-underline-offset: 2px; }
+  .tk-stack__note code { font-family: var(--font-mono); font-size: var(--fs-12); color: var(--foreground); }
+  @media (max-width: 720px) { .tk-stack { grid-template-columns: 1fr; } }
+
   .tk-empty { color: var(--faint-ink); font-size: var(--fs-13); padding: var(--sp-24) 0; }
   .tk-error {
     padding: var(--sp-16) var(--sp-20); border-radius: var(--radius-lg);
@@ -184,26 +218,29 @@
 </style>
 </head>
 <body>
+<nav class="dsn" aria-label="Design 導覽">
+  <a class="dsn__brand" href="design-tokens.html">Ztor Creator Studio <span>Design</span></a>
+  <div class="dsn__tabs">
+    <a href="design-tokens.html" aria-current="page">Tokens</a>
+    <a href="demo-layer-system.html">Layers</a>
+    <a href="design-components.html">元件</a>
+    <a href="design-system.html">規格全文</a>
+  </div>
+  <div class="segmented dsn__theme" role="group" aria-label="主題">
+    <button class="segmented__btn" type="button" data-theme-set="light">亮</button>
+    <button class="segmented__btn" type="button" data-theme-set="dark">暗</button>
+  </div>
+</nav>
 <div class="tk-page">
-  <header class="page-intro">
-    <div>
-      <h1 class="page-intro__title">Design Tokens</h1>
-      <p class="page-intro__sub">r2.3 · 直接讀 <code>ds-components/_tokens.css</code> 產生，與檔案永遠同步；icon 讀 <code>js/icons.js</code> 的 registry。點名稱可複製。</p>
-      <div class="tk-stats" id="tk-stats"></div>
-    </div>
-    <div class="page-intro__actions">
-      <a class="btn btn--outline btn--sm" href="design-system.html">← Design System</a>
-    </div>
+  <header class="tk-head">
+    <h1 class="tk-title">Tokens</h1>
+    <p class="tk-sub">從 <code>_tokens.css</code> 即時產生。點名稱複製；ⓘ 展開原始註解。</p>
+    <div class="tk-stats" id="tk-stats"></div>
   </header>
 
   <div class="tk-bar">
     <nav class="tk-nav" id="tk-nav" aria-label="分區"></nav>
-    <div class="tk-search"><input class="input" id="tk-search" type="search" placeholder="搜尋 token 或 icon 名稱" autocomplete="off"></div>
-    <div class="segmented" role="group" aria-label="主題">
-      <button class="segmented__btn" type="button" data-theme-set="light">亮</button>
-      <button class="segmented__btn" type="button" data-theme-set="dark">暗</button>
-    </div>
-    <span class="tk-hint">亮色只供看 token 的亮色值；r2.3 的星空檯面尚未調亮色版，整站在亮色下不可讀。</span>
+    <div class="tk-search"><input class="input" id="tk-search" type="search" placeholder="搜尋" autocomplete="off"></div>
   </div>
 
   <main id="tk-main"><p class="tk-empty">載入中…</p></main>
@@ -324,13 +361,13 @@
   }
 
   const SECTIONS = [
-    { id: 'color',  title: '色彩',       lead: '表面、文字、邊界、狀態與圖表用色。色票是活的：切換亮暗會跟著變，底下的棋盤讓半透明看得出透明度。' },
-    { id: 'type',   title: '字體',       lead: '字族、字級、字重、行距，以及把四者綁在一起的 --type-* 角色。' },
-    { id: 'space',  title: '間距與尺寸', lead: '--sp-* 是全站唯一的間距刻度（px 直命名）；--w-* 固定寬、--control-h-* 控件高度級。' },
+    { id: 'color',  title: '色彩',       lead: '棋盤底＝半透明。亮色值僅供查閱，整站亮色版尚未調整。' },
+    { id: 'type',   title: '字體',       lead: '' },
+    { id: 'space',  title: '間距與尺寸', lead: '' },
     { id: 'radius', title: '圓角',       lead: '' },
-    { id: 'shadow', title: '陰影與光',   lead: 'E0–E4 海拔階梯與上緣內光。陰影在亮暗兩邊值不同，切換主題看實際效果。' },
-    { id: 'motion', title: '動效與效果', lead: '過渡時間、緩動曲線、毛玻璃模糊。動效示範：把滑鼠移到膠囊上。' },
-    { id: 'ztu',    title: 'ztorUI 換裝', lead: '2026-08-28 起熔接進來的星空／玻璃／光語彙，全部以 --ztu- 為前綴。' },
+    { id: 'shadow', title: '陰影與光',   lead: 'E0–E4 海拔階梯。' },
+    { id: 'motion', title: '動效與效果', lead: '滑鼠移到膠囊上看動效。' },
+    { id: 'ztu',    title: 'ztorUI 換裝', lead: '星空／玻璃／光的原料，--ztu- 前綴。' },
     { id: 'other',  title: '其他',       lead: '' },
     { id: 'icons',  title: 'Icon',       lead: '' },
   ];
@@ -460,11 +497,31 @@
     return frag;
   }
 
+  // --layer-*：表面階層要「疊起來看」才有意義，單獨畫一個四階相套的舞台
+  function renderLayerStack() {
+    const wrap = h('div', 'tk-stack');
+    const stage = h('div', 'tk-stack__stage'); stage.style.background = 'var(--layer-0-surface)';
+    stage.appendChild(h('span', 'tk-stack__tag', '<b>L0 檯面</b>--layer-0-surface'));
+    const l1 = h('div', 'tk-stack__l1'); l1.style.background = 'var(--layer-1-surface)';
+    l1.appendChild(h('span', 'tk-stack__tag', '<b>L1 卡片</b>--layer-1-surface（玻璃）'));
+    const l2 = h('div', 'tk-stack__l2'); l2.style.background = 'var(--layer-2-surface)'; l2.style.borderTop = '1px solid var(--layer-2-line)';
+    l2.appendChild(h('span', 'tk-stack__tag', '<b>L2 薄膜</b>--layer-2-surface ＋ --layer-2-line'));
+    const l3 = h('div', 'tk-stack__l3'); l3.style.background = 'var(--layer-3-surface)'; l3.style.borderColor = 'var(--layer-line)';
+    l3.appendChild(h('span', 'tk-stack__tag', '<b>L3 線框</b>--layer-3-surface ＋ --layer-line'));
+    l2.appendChild(l3); l1.appendChild(l2); stage.appendChild(l1); wrap.appendChild(stage);
+    const note = h('div', 'tk-stack__note');
+    note.innerHTML = '<p>疊上去的一層要比父層亮；填色只疊兩層，第三層起只剩線框；浮層不透明。</p>'
+      + '<p><a href="demo-layer-system.html">Layers →</a> 四階相套、正確 vs 禁止、出處。</p>';
+    wrap.appendChild(note);
+    return wrap;
+  }
+
   function renderGroup(title, tokens, container) {
     const g = h('section', 'tk-group');
     g.appendChild(h('h3', 'tk-group__title', esc(title) + ' <small>' + tokens.length + ' 條</small>'));
     const kinds = new Set(tokens.map(t => t.kind));
     if (kinds.size === 1 && kinds.has('type')) { const w = h('div', 'tk-rows'); w.appendChild(renderTypeRoles(tokens)); g.appendChild(w); container.appendChild(g); return; }
+    if (title === '--layer-*') g.appendChild(renderLayerStack());
     const cardKinds = ['color', 'gradient', 'shadow', 'text-shadow', 'radius', 'filter'];
     const cards = tokens.filter(t => cardKinds.includes(t.kind));
     const rows = tokens.filter(t => !cardKinds.includes(t.kind) && t.kind !== 'type');
@@ -478,7 +535,7 @@
   function renderIcons(section) {
     const reg = (window.ztorIcons && window.ztorIcons.REGISTRY) || {};
     const names = Object.keys(reg);
-    section.querySelector('.tk-section__lead').textContent = '產品頁 registry（js/icons.js）策展的 ' + names.length + ' 顆 Tabler icon，HTML 用 <i data-lucide="名稱" class="ztor-icon"></i>。完整 Tabler 全集只在 design-system.html 載入。點一下複製名稱。';
+    section.querySelector('.tk-section__lead').textContent = names.length + ' 顆 Tabler icon（產品頁 registry）。點一下複製名稱；完整全集在規格全文。';
     const grid = h('div', 'tk-icons');
     names.forEach(k => {
       const c = h('button', 'tk-icon'); c.type = 'button'; c.dataset.search = k.toLowerCase();
@@ -526,7 +583,7 @@
     SECTIONS.forEach(s => {
       const sec = h('section', 'tk-section'); sec.id = 'tk-' + s.id;
       sec.appendChild(h('h2', 'tk-section__title', esc(s.title)));
-      sec.appendChild(h('p', 'tk-section__lead', esc(s.lead)));
+      if (s.lead || s.id === 'icons') sec.appendChild(h('p', 'tk-section__lead', esc(s.lead)));
       if (s.id === 'icons') { counts[s.id] = renderIcons(sec); }
       else {
         const list = [...TOK.values()].filter(t => t.section === s.id);
