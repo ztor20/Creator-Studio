@@ -46,6 +46,7 @@
      tag-input.css＋combobox.css（做法同 partials/pickup-session-modal.js），chip.css 是兩者的底。
      這頁之前沒有勾選控件與搜尋加 chip 的用法，三支都要在這裡第一次連。 -->
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/combobox.css?v=r2.2">
@@ -289,7 +290,7 @@
                       <td><span class="badge badge--success" data-i18n="store-settings.codes.status.active">Active</span></td>
                       <td>
                         <div class="ss-code-sold">
-                          <span class="ss-code-sold__count">42 / 100</span>
+                          <span class="ss-code-sold__count">42<span data-feat="full"> / 100</span></span>
                           <span class="ss-code-sold__amount">$1,180</span>
                         </div>
                       </td>
@@ -315,7 +316,7 @@
                         </div>
                       </td>
                       <td>10%</td>
-                      <td><span data-i18n="store-settings.codes.scope.apparel-plus">Apparel + 2 items</span></td>
+                      <td><span data-feat="full" data-i18n="store-settings.codes.scope.apparel-plus">Apparel + 2 items</span><span data-feat-off="full" data-i18n="store-settings.codes.scope.demo-item">26MS Hoodie</span></td>
                       <td>8/1 – 9/30</td>
                       <td><span class="badge badge--success" data-i18n="store-settings.codes.status.active">Active</span></td>
                       <td>
@@ -338,7 +339,7 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-code-kind="own">
+                    <tr data-code-kind="own" data-feat="full">
                       <td class="ztor-table__feature">
                         <div class="ss-code-cell">
                           <span class="ss-code-cell__code">LAUNCH50</span>
@@ -468,7 +469,7 @@
               <!-- 固定金額折法（D275 決定 2）：只在折扣單位為 $ 且每張訂單可折件數 ≠ 1（含 0＝不限）時出現——
                    % 折扣沒有「折一次還是折每件」的差別（比例乘每件結果一樣），件數鎖 1 時也沒有多件可言。
                    預設「整單只折一次」（主對話補的預設、D275 標待覆核）。JS 見 updateFixedModeVisibility()。 -->
-              <div class="settings-row" data-code-fixed-mode hidden>
+              <div class="settings-row" data-code-fixed-mode data-feat="full" hidden>
                 <div>
                   <div class="settings-row__label" data-i18n="store-settings.codes.f.fixedmode">Fixed-amount split</div>
                   <div class="settings-row__hint" data-i18n="store-settings.codes.f.fixedmode.hint">When multiple items qualify, whether the fixed amount discounts once for the order or once per item.</div>
@@ -484,9 +485,12 @@
                    「全部商店」預設勾選，勾了就停用並清空另外兩級（D272 決定 1）。 -->
               <div class="ss-scope-row">
                 <div class="settings-row__label"><span data-i18n="store-settings.codes.f.scope">Applies to</span> <span class="field__req">*</span></div>
-                <div class="settings-row__hint" data-i18n="store-settings.codes.f.scope.hint">A code's range is whichever types and items you check, combined. Auctions never qualify.</div>
+                <!-- 適用範圍的說明分 Phase 4／Phase 1 兩句（D279）：Phase 1 沒有類型樹與多選，
+                     開場白只講得出「全部或一件」，講不出「勾的類型加勾的商品」。 -->
+                <div class="settings-row__hint" data-feat="full" data-i18n="store-settings.codes.f.scope.hint">A code's range is whichever types and items you check, combined. Auctions never qualify.</div>
+                <div class="settings-row__hint" data-feat-off="full" data-i18n="store-settings.codes.f.scope.hint.p1">All stores, or just one item.</div>
 
-                <div class="ss-scope-options">
+                <div class="ss-scope-options" data-feat="full">
                   <label class="zcheck">
                     <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="ss-scope-all" checked><span class="zcheck__box"></span></span>
                     <span class="zcheck__label" data-i18n="store-settings.codes.f.scope.all">All items</span>
@@ -541,6 +545,26 @@
                     <div class="combobox__menu" id="ss-scope-menu" hidden></div>
                   </div>
                 </div>
+
+                <!-- Phase 1 版本（D279）：只有全部或指定單一商品，不選類型層——沿用既有的
+                     radio-list（1-of-N 資料選擇，ds-components/radio-list.css），不新造二選一元件。
+                     選「指定商品」才展開單選下拉（zselect，候選＝ProductsStore.all()＋bundles()，
+                     與 Phase 4 的 scopeCatalog() 共用同一份候選、天然排除拍賣）。 -->
+                <div class="ss-scope-options" data-feat-off="full" id="ss-scope-p1">
+                  <div class="radio-list" role="radiogroup" aria-label="Applies to" data-i18n-aria-label="store-settings.codes.f.scope">
+                    <button type="button" class="radio-list__item radio-list__item--active" data-p1-scope="all">
+                      <span class="radio-list__dot"></span>
+                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="store-settings.codes.f.scope.all">All items</span></span>
+                    </button>
+                    <button type="button" class="radio-list__item" data-p1-scope="item">
+                      <span class="radio-list__dot"></span>
+                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="store-settings.codes.f.scope.oneitem">One item</span></span>
+                    </button>
+                  </div>
+                  <div style="margin-left:22px;margin-top:var(--sp-10);max-width:420px" id="ss-scope-p1-item-wrap" hidden>
+                    <select class="select" id="ss-scope-p1-item" aria-label="Item" data-i18n-aria-label="store-settings.codes.f.scope.oneitem"></select>
+                  </div>
+                </div>
               </div>
 
               <div class="settings-row">
@@ -556,7 +580,9 @@
               </div>
 
               <!-- 使用次數（Usage limits，D272）：以「件」計，拆成三個各自獨立的條件——
-                   每張訂單可折件數／每人總次數／總兌換次數；留空＝不限。 -->
+                   每張訂單可折件數／每人總次數／總兌換次數；留空＝不限。整組（含標籤）Phase 4 才出現
+                   （D279：Phase 1 沒有次數上限，一組碼就是無限次直到期間結束）。 -->
+              <div data-feat="full">
               <div class="settings-row__label" style="margin-top:var(--sp-6)" data-i18n="store-settings.codes.f.usage">Usage limits</div>
               <div class="settings-row">
                 <div>
@@ -579,10 +605,12 @@
                 </div>
                 <input class="input ss-code-num" id="ss-code-total" min="0" placeholder="0 = unlimited" data-i18n-placeholder="store-settings.codes.f.perbuyer.ph" inputmode="numeric">
               </div>
+              </div>
 
               <!-- 可與其他優惠碼疊加（D275 決定 3）：預設關閉；兩組碼都開才能同單並用，
-                   任一關閉即擇一取對買家最有利。與商品層 F13「可與優惠碼疊加」（特價／分級折扣）是兩個獨立開關。 -->
-              <div class="settings-row">
+                   任一關閉即擇一取對買家最有利。與商品層 F13「可與優惠碼疊加」（特價／分級折扣）是兩個獨立開關。
+                   Phase 4 才出現（D279：Phase 1 一組碼只有自己，沒有第二組碼可疊）。 -->
+              <div class="settings-row" data-feat="full">
                 <div>
                   <div class="settings-row__label" data-i18n="store-settings.codes.f.stack">Stack with other codes</div>
                   <div class="settings-row__hint" data-i18n="store-settings.codes.f.stack.hint">Both codes need this on to combine in one order — if either is off, only the one better for the buyer applies.</div>
@@ -915,9 +943,34 @@
           scopeSelected = []; paintScopeChips();
         }
       }
+
+      /* ── Phase 1 版本的適用範圍（D279）：全部商店或指定單一商品，二選一 ──────────
+         沿用 radio-list（1-of-N），不重造二選一元件；候選與 Phase 4 共用同一份
+         scopeCatalog()（ProductsStore.all()＋bundles()，拍賣天然排除）。彈窗開啟時
+         （resetScope）與 Phase 4 那組一起重設，兩組各自的資料互不干擾。 */
+      const p1ScopeGroup = modal.querySelector('#ss-scope-p1');
+      const p1ScopeItemWrap = modal.querySelector('#ss-scope-p1-item-wrap');
+      const p1ScopeSelect = modal.querySelector('#ss-scope-p1-item');
+      function populateP1ScopeSelect() {
+        if (!p1ScopeSelect) return;
+        p1ScopeSelect.innerHTML = scopeCatalog().map(it =>
+          '<option value="' + esc(it.id) + '">' + esc(it.name) + '</option>').join('');
+        if (window.ztorSelect) window.ztorSelect.mount(modal);
+      }
+      function setP1Scope(val) {
+        if (p1ScopeGroup) p1ScopeGroup.querySelectorAll('[data-p1-scope]').forEach(b =>
+          b.classList.toggle('radio-list__item--active', b.dataset.p1Scope === val));
+        if (p1ScopeItemWrap) p1ScopeItemWrap.hidden = val !== 'item';
+      }
+      function resetP1Scope() {
+        populateP1ScopeSelect();
+        setP1Scope('all');
+      }
+
       function resetScope() {
         if (scopeAll) scopeAll.checked = true;
         setScopeAllMode(true);
+        resetP1Scope();
       }
 
       function openModal(kind, titleKey) {
@@ -984,6 +1037,9 @@
           stackSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
           return;
         }
+
+        const p1scope = t.closest('[data-p1-scope]');
+        if (p1scope) { setP1Scope(p1scope.getAttribute('data-p1-scope')); return; }
 
         const scopeAdd = t.closest('[data-scope-add]');
         if (scopeAdd) { addScopeItem(scopeAdd.getAttribute('data-scope-add')); if (scopeSearch) scopeSearch.focus(); return; }
