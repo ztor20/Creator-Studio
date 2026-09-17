@@ -318,9 +318,11 @@
       <div class="settings-row">
         <div>
           <div class="settings-row__label"><span data-i18n="pprom.code.f.code">Code</span> <span class="field__req">*</span></div>
+          <div class="settings-row__hint" data-i18n="pprom.code.f.code.hint">8–20 letters or digits, no symbols.</div>
         </div>
         <div class="flex-row">
-          <input class="input" id="pprom-code-code" data-i18n-placeholder="pprom.code.f.code.ph" placeholder="WELCOME50">
+          <input class="input" id="pprom-code-code" data-i18n-placeholder="pprom.code.f.code.ph" placeholder="WELCOME50" minlength="8" maxlength="20" pattern="[A-Za-z0-9]{8,20}" autocapitalize="characters">
+          <button class="btn btn--outline btn--sm" type="button" id="pprom-code-generate" data-i18n="pprom.code.generate">Generate</button>
           <button class="btn btn--icon btn--sm" type="button" id="pprom-code-copy" aria-label="Copy" title="Copy" data-i18n-aria-label="pprom.code.copy" data-i18n-title="pprom.code.copy"><i data-lucide="copy" class="ztor-icon"></i></button>
         </div>
       </div>
@@ -862,6 +864,13 @@
     var codeEnabledSwitch = document.getElementById('pprom-code-enabled');
     codeEnabledSwitch.addEventListener('click', function () { setSwitch(codeEnabledSwitch, !isSwitchOn(codeEnabledSwitch)); });
 
+    /* 自動產生（D280）：8–20 英數字；產生 10 碼大寫、去易混淆字元，可再改。 */
+    document.getElementById('pprom-code-generate').addEventListener('click', function () {
+      var A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', out = '', buf = new Uint32Array(10);
+      window.crypto.getRandomValues(buf);
+      for (var i = 0; i < 10; i++) out += A[buf[i] % A.length];
+      var inp = document.getElementById('pprom-code-code'); inp.value = out; inp.dispatchEvent(new Event('input', { bubbles: true }));
+    });
     document.getElementById('pprom-code-copy').addEventListener('click', function () {
       var inp = document.getElementById('pprom-code-code');
       try { navigator.clipboard && navigator.clipboard.writeText(inp.value); } catch (err) {}
