@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
+<link rel="stylesheet" href="ds-doc.css?v=r2.2">
 <style>
   /* ============================================================
      design-tokens.html — token 總覽預覽頁（2026-09-14）
@@ -24,24 +25,7 @@
      頁面自身只用既有 token 排版，不宣告新 token、不新增元件；
      `tk-` 前綴＝本頁專用的一次性版面。
      ============================================================ */
-  /* ── 文件殼：底色純黑（2026-09-16 使用者裁示「這些 DS 檔案背景都用純黑色」）──
-     文件頁不是產品頁，不鋪星空檯面：星空的暖光會讓 L1 玻璃在頁面各處看起來不一樣，
-     看層次時反而干擾。純黑吃 --surface-inverse（亮暗皆 #000000）。
-     選擇器要壓過 shared.css 的 html[data-nav-mode="sidebar"] body（星空就掛在那條）。 */
-  html[data-nav-mode] body, body { background: var(--surface-inverse); }
-  html[data-nav-mode] body::before, html[data-nav-mode] body::after { display: none; }
-  /* ── 文件殼：頂部導覽（與 demo-layer-system.html 逐字相同，改一邊要同步另一邊）── */
-  .dsn { position: sticky; top: 0; z-index: 30; height: 52px; display: flex; align-items: center; gap: var(--sp-16); padding: 0 var(--sp-24); background: var(--background); border-bottom: 1px solid var(--border); }
-  .dsn__brand { font-family: var(--font-display); font-size: var(--fs-14); font-weight: var(--fw-medium); color: var(--foreground); white-space: nowrap; }
-  .dsn__brand span { color: var(--faint-ink); font-weight: var(--fw-regular); margin-left: var(--sp-6); }
-  .dsn__tabs { display: flex; gap: var(--sp-2); flex: 1 1 auto; min-width: 0; overflow-x: auto; }
-  .dsn__tabs a { display: inline-flex; align-items: center; height: var(--control-h-xs); padding: 0 var(--sp-12); border-radius: var(--radius-pill); font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--muted-foreground); white-space: nowrap; }
-  .dsn__tabs a:hover { background: var(--ztu-glass-strong); color: var(--foreground); }
-  .dsn__tabs a[aria-current="page"] { background: var(--selected-surface); color: var(--selected-ink); }
-  .dsn__theme { flex: 0 0 auto; }
-  @media (max-width: 720px) { .dsn { padding: 0 var(--sp-16); gap: var(--sp-10); } .dsn__brand span { display: none; } }
 
-  .tk-page { max-width: 1200px; margin: 0 auto; padding: var(--sp-24) var(--sp-24) var(--sp-96); }
 
   /* 頂部工具列：section 導覽＋搜尋＋主題切換，黏在上緣 */
   .tk-bar {
@@ -67,11 +51,7 @@
   .tk-search .input { height: var(--control-h-xs); }
   .tk-bar .segmented { flex: 0 0 auto; }
 
-  /* 頁首：與 demo-layer-system.html 的 .lyr-title／.lyr-sub 同樣式 */
   .tk-head { margin-bottom: var(--sp-24); }
-  .tk-title { font-family: var(--font-display); font-size: var(--fs-32); font-weight: var(--fw-light); letter-spacing: -0.6px; margin: 0 0 var(--sp-6); }
-  .tk-sub { margin: 0; color: var(--muted-foreground); font-size: var(--fs-14); }
-  .tk-sub code { font-family: var(--font-mono); font-size: var(--fs-12); }
   .tk-stats { display: flex; gap: var(--sp-8); flex-wrap: wrap; margin-top: var(--sp-10); }
 
   /* section 與 group */
@@ -218,23 +198,23 @@
 </style>
 </head>
 <body>
-<nav class="dsn" aria-label="Design 導覽">
+<nav class="dsn" aria-label="Design">
   <a class="dsn__brand" href="design-tokens.html">Ztor Creator Studio <span>Design</span></a>
   <div class="dsn__tabs">
     <a href="design-tokens.html" aria-current="page">Tokens</a>
-    <a href="demo-layer-system.html">Layers</a>
-    <a href="design-components.html">元件</a>
-    <a href="design-system.html">規格全文</a>
+    <a href="design-layers.html">Layers</a>
+    <a href="design-components.html">Components</a>
+    <a href="design-system.html">Spec</a>
   </div>
-  <div class="segmented dsn__theme" role="group" aria-label="主題">
+  <div class="segmented dsn__theme" role="group" aria-label="Theme">
     <button class="segmented__btn" type="button" data-theme-set="light">亮</button>
     <button class="segmented__btn" type="button" data-theme-set="dark">暗</button>
   </div>
 </nav>
-<div class="tk-page">
+<div class="dsd-wrap tk-page">
   <header class="tk-head">
-    <h1 class="tk-title">Tokens</h1>
-    <p class="tk-sub">從 <code>_tokens.css</code> 即時產生。點名稱複製；ⓘ 展開原始註解。</p>
+    <h1 class="dsd-title">Tokens</h1>
+    <p class="dsd-sub">從 <code>_tokens.css</code> 即時產生。點名稱複製；ⓘ 展開原始註解。</p>
     <div class="tk-stats" id="tk-stats"></div>
   </header>
 
@@ -511,7 +491,7 @@
     l2.appendChild(l3); l1.appendChild(l2); stage.appendChild(l1); wrap.appendChild(stage);
     const note = h('div', 'tk-stack__note');
     note.innerHTML = '<p>疊上去的一層要比父層亮；填色只疊兩層，第三層起只剩線框；浮層不透明。</p>'
-      + '<p><a href="demo-layer-system.html">Layers →</a> 四階相套、正確 vs 禁止、出處。</p>';
+      + '<p><a href="design-layers.html">Layers →</a> 四階相套、正確 vs 禁止、出處。</p>';
     wrap.appendChild(note);
     return wrap;
   }

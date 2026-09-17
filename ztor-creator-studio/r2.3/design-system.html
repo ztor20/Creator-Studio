@@ -8,7 +8,7 @@
 <script src="js/row-disclosure.js?v=r2.2"></script>
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/link-field.js?v=r2.2"></script>
-<script>(function(){var h=document.documentElement;try{var l=localStorage.getItem('ztor.ds.lang')||'en';h.setAttribute('data-lang',l);h.setAttribute('lang',l==='zh'?'zh-Hant':'en');var m=localStorage.getItem('ztor.ds.docmode')||'fixed';var w=parseInt(localStorage.getItem('ztor.ds.docwidth')||'1440',10)||1440;h.setAttribute('data-docmode',m);h.style.setProperty('--doc-maxw',m==='rwd'?'none':w+'px');}catch(e){h.setAttribute('data-lang','en');h.setAttribute('data-docmode','fixed');}})();</script>
+<script>(function(){var h=document.documentElement;try{var l=localStorage.getItem('ztor.ds.lang')||'zh';h.setAttribute('data-lang',l);h.setAttribute('lang',l==='zh'?'zh-Hant':'en');var m=localStorage.getItem('ztor.ds.docmode')||'fixed';var w=parseInt(localStorage.getItem('ztor.ds.docwidth')||'1440',10)||1440;h.setAttribute('data-docmode',m);h.style.setProperty('--doc-maxw',m==='rwd'?'none':w+'px');}catch(e){h.setAttribute('data-lang','zh');h.setAttribute('data-docmode','fixed');}})();</script>
 <link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
@@ -157,19 +157,14 @@
 <!-- 2026-09-16 補掛：detail-overview 的 demo 卡（§4 詳情總覽三欄）一直沒連自己的 CSS，圖鑑抽出時檢查 15 抓到 -->
 <link rel="stylesheet" href="ds-components/detail-overview.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
+<link rel="stylesheet" href="ds-doc.css?v=r2.2">
 <style>
-/* ── 文件殼：底色純黑（2026-09-16 使用者裁示「這些 DS 檔案背景都用純黑色」）──
-   文件頁不是產品頁，不鋪星空檯面：星空的暖光會讓 L1 玻璃在頁面各處看起來不一樣，
-   看層次時反而干擾。純黑吃 --surface-inverse（亮暗皆 #000000）。
-   選擇器要壓過 shared.css 的 html[data-nav-mode="sidebar"] body（星空就掛在那條）。 */
-html[data-nav-mode] body, body { background: var(--surface-inverse); }
-html[data-nav-mode] body::before, html[data-nav-mode] body::after { display: none; }
 /* ===== Doc chrome (visualization shell only; tokens come from ds-components) ===== */
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--background); color: var(--foreground); font-family: var(--type-body-family); font-size: var(--type-body-size); line-height: var(--type-body-line-height); letter-spacing: var(--type-body-tracking); -webkit-font-smoothing: antialiased; }
 a { color: inherit; }
 .doc { display: grid; grid-template-columns: 264px 1fr; min-height: 100vh; }
-.toc { position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto; padding: 24px 16px 64px; border-right: 1px solid var(--border); background: var(--card); }
+.toc { position: sticky; top: 52px; align-self: start; height: calc(100vh - 52px);   /* 2026-09-17：讓出頂部 Design 導覽 */ overflow-y: auto; padding: 24px 16px 64px; border-right: 1px solid var(--border); background: var(--card); }
 .toc__brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-ui); font-size: var(--fs-18); font-weight: var(--fw-regular); letter-spacing: -0.5px; margin: 0 0 4px; }
 .toc__brand-mark { color: var(--primary); }
 .toc__sub { font-size: var(--fs-11); color: var(--muted-foreground); margin: 0 0 16px; }
@@ -544,6 +539,19 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 </style>
 </head>
 <body>
+<nav class="dsn" aria-label="Design">
+  <a class="dsn__brand" href="design-tokens.html">Ztor Creator Studio <span>Design</span></a>
+  <div class="dsn__tabs">
+    <a href="design-tokens.html">Tokens</a>
+    <a href="design-layers.html">Layers</a>
+    <a href="design-components.html">Components</a>
+    <a href="design-system.html" aria-current="page">Spec</a>
+  </div>
+  <div class="segmented dsn__theme" role="group" aria-label="Theme">
+    <button class="segmented__btn" type="button" data-theme-set="light">亮</button>
+    <button class="segmented__btn" type="button" data-theme-set="dark">暗</button>
+  </div>
+</nav>
 <div class="doc">
   <aside class="toc">
     <p class="toc__brand"><span class="toc__brand-mark">✻</span> Ztor Creator Studio · R 2.2</p>
@@ -13082,8 +13090,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       <!-- 6.0.1 表面階層（Q66，2026-08-13）：疊上去的一層要比父層亮 -->
       <div class="sub" id="surface-layers">
         <div class="sub__head"><h3 class="sub__title">6.0.1 <span data-en>Surface layers</span><span data-zh>表面階層</span></h3></div>
-        <p class="sub__desc" data-en>From Figma <code>856:27798</code> (visualised in <code>demo-layer-system.html</code>): L0 canvas solid → L1 card solid → L2 translucent film that brightens whatever it sits on, and can stack → L3 stops filling and keeps only a hairline.</p>
-        <p class="sub__desc" data-zh>模型出自 Figma <code>856:27798</code>（<code>demo-layer-system.html</code> 有可視化）：L0 畫布實色 → L1 卡片實色 → L2 半透明薄膜（疊在誰身上就跟著誰亮一階，可再疊）→ L3 不再疊填色、只留線框。</p>
+        <p class="sub__desc" data-en>From Figma <code>856:27798</code> (visualised in <code>design-layers.html</code>): L0 canvas solid → L1 card solid → L2 translucent film that brightens whatever it sits on, and can stack → L3 stops filling and keeps only a hairline.</p>
+        <p class="sub__desc" data-zh>模型出自 Figma <code>856:27798</code>（<code>design-layers.html</code> 有可視化）：L0 畫布實色 → L1 卡片實色 → L2 半透明薄膜（疊在誰身上就跟著誰亮一階，可再疊）→ L3 不再疊填色、只留線框。</p>
 
         <div class="demo demo--preview"><div class="ds-preview" style="padding:var(--sp-20); background:var(--surface-page); border-radius:var(--radius-lg)">
           <div class="card" style="padding:var(--sp-16)">
@@ -13213,7 +13221,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   </main>
 </div>
 
-<script src="js/icons-all.js?v=r2.2"></script>
+<!-- js/icons-all.js（1.8MB 全套 Tabler）2026-09-17 起改為展開「未使用」清單時才載，見下方 Icon gallery script -->
 <script src="js/icons.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/upload-tile.js?v=r2.2"></script>
@@ -13309,6 +13317,25 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     fold.addEventListener('toggle', function () {
       if (!fold.open || built) return;
       built = true;
+      // 2026-09-17：全套 Tabler（icons-all.js，1.8MB）改為此刻才載入——本頁的示範全用策展 registry 就夠，
+      // 不需要為了這個摺疊區一開頁就多下載 1.8MB。載完把缺的 key 併進 registry（icons.js 只在自己載入時合併一次）。
+      if (!window.ZTOR_ICONS_ALL) {
+        grid.textContent = '載入全套圖示中…';
+        var sc = document.createElement('script');
+        sc.src = 'js/icons-all.js?v=r2.2';
+        sc.onload = function () {
+          var reg = window.ztorIcons && window.ztorIcons.REGISTRY;
+          if (reg) { for (var k in window.ZTOR_ICONS_ALL) { if (!(k in reg)) reg[k] = window.ZTOR_ICONS_ALL[k]; } }
+          grid.textContent = '';
+          build();
+        };
+        sc.onerror = function () { grid.textContent = '載不到 js/icons-all.js'; };
+        document.body.appendChild(sc);
+        return;
+      }
+      build();
+    });
+    function build() {
       var all = window.ZTOR_ICONS_ALL || {};
       var used = new Set();
       document.querySelectorAll('[data-lucide]').forEach(function (el) {
@@ -13328,7 +13355,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       });
       grid.appendChild(frag);
       if (window.ztorIcons) window.ztorIcons.applyIcons(grid);
-    });
+    }
   })();
 </script>
 <script>
