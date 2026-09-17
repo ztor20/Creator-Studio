@@ -1,0 +1,50 @@
+/* ============================================================
+   ds-doc.css · Design 文件頁的殼（2026-09-17）
+
+   給四個 design 文件頁共用：design-tokens.html、design-layers.html、
+   design-components.html（機器生成）、design-system.html（Spec）。
+   它是「文件殼」——跟 design-system.html 自己的 .toc 同性質——不是產品元件：
+   不進 ds-components/、不受元件三件套管、產品頁不載。
+   沿革：2026-09-16 起四頁各留一份逐字相同的殼樣式、靠註解提醒同步；
+   2026-09-17 使用者「重新整理 Design system 與延伸分頁」→ 抽成本檔，四頁各留一行 <link>。
+
+   只用既有 token；不宣告 --*；dsn- 前綴＝導覽、dsd- 前綴＝頁面骨架。
+   ============================================================ */
+
+/* ── 底色純黑（2026-09-16 使用者裁示「這些 DS 檔案背景都用純黑色」）──
+   文件頁不鋪星空檯面：星空的暖光會讓同一塊 L1 玻璃在頁面各處看起來不一樣，看層次時是干擾。
+   純黑吃 --surface-inverse（亮暗皆 #000000）。選擇器要壓過 shared.css 的
+   html[data-nav-mode="sidebar"] body（星空就掛在那條）。 */
+html[data-nav-mode] body, body { background: var(--surface-inverse); }
+html[data-nav-mode] body::before, html[data-nav-mode] body::after { display: none; }
+
+/* ── 頂部導覽 ── */
+.dsn { position: sticky; top: 0; z-index: 30; height: 52px; display: flex; align-items: center; gap: var(--sp-16); padding: 0 var(--sp-24); background: var(--background); border-bottom: 1px solid var(--border); }
+.dsn__brand { font-family: var(--font-display); font-size: var(--fs-14); font-weight: var(--fw-medium); color: var(--foreground); white-space: nowrap; }
+.dsn__brand span { color: var(--faint-ink); font-weight: var(--fw-regular); margin-left: var(--sp-6); }
+.dsn__tabs { display: flex; gap: var(--sp-2); flex: 1 1 auto; min-width: 0; overflow-x: auto; }
+.dsn__tabs a { display: inline-flex; align-items: center; height: var(--control-h-xs); padding: 0 var(--sp-12); border-radius: var(--radius-pill); font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--muted-foreground); white-space: nowrap; }
+.dsn__tabs a:hover { background: var(--ztu-glass-strong); color: var(--foreground); }
+.dsn__tabs a[aria-current="page"] { background: var(--selected-surface); color: var(--selected-ink); }
+.dsn__theme { flex: 0 0 auto; }
+
+/* ── 頁面骨架：三個設計師頁同一套寬度與標題 ── */
+.dsd-wrap { max-width: 1200px; margin: 0 auto; padding: var(--sp-24) var(--sp-24) var(--sp-96); }
+.dsd-title { font-family: var(--font-display); font-size: var(--fs-32); font-weight: var(--fw-light); letter-spacing: -0.6px; margin: 0 0 var(--sp-6); }
+.dsd-sub { margin: 0 0 var(--sp-16); color: var(--muted-foreground); font-size: var(--fs-14); }
+.dsd-sub code { font-family: var(--font-mono); font-size: var(--fs-12); }
+/* 導覽下方第二列工具列（搜尋、分區）：黏在導覽底下 */
+.dsd-bar { position: sticky; top: 52px; z-index: 20; display: flex; gap: var(--sp-12); align-items: center; flex-wrap: wrap; padding: var(--sp-10) var(--sp-24); margin: 0 calc(var(--sp-24) * -1) var(--sp-24); background: var(--background); border-bottom: 1px solid var(--border); }
+.dsd-bar .input { height: var(--control-h-xs); max-width: 320px; }
+/* 出處／規則摺疊：預設收起，三頁同一種開關 */
+.dsd-fold > summary { cursor: pointer; font-size: var(--fs-13); color: var(--muted-foreground); list-style: none; }
+.dsd-fold > summary::-webkit-details-marker { display: none; }
+.dsd-fold > summary::before { content: "▸ "; }
+.dsd-fold[open] > summary::before { content: "▾ "; }
+
+@media (max-width: 720px) {
+  .dsn { padding: 0 var(--sp-16); gap: var(--sp-10); }
+  .dsn__brand span { display: none; }
+  .dsd-wrap { padding-inline: var(--sp-16); }
+  .dsd-bar { position: static; margin-inline: calc(var(--sp-16) * -1); padding-inline: var(--sp-16); }
+}
