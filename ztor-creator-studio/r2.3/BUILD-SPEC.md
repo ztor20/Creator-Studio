@@ -1,5 +1,7 @@
 # Ztor Creator Studio · R 2.1 BUILD-SPEC
 
+> **2026-09-17 · 平台費改以折後品項實付計（D278）**：訂單詳情示意訂單 ZT-10486 平台費 8.70 → 6.02（40.10 × 15%）、淨額 38.00；折抵三列位置不動，搬到平台費之前與否待下游收入拆解規格一併決定。
+
 > **2026-09-15 · Admin 平台折扣設定 → 平台優惠設定（D277）**：`admin-platform-discounts.html` 改名 `admin-platform-promotions.html`，由「單一組可多階的滿額規則＋整頁版本」改為**逐筆模型**——滿額折扣一列一筆、平台優惠碼一列一組，各自帶名稱／期間／啟用／備註／本筆例外／修改歷史；例外三層（全局分頁＋逐筆彈窗內）；紀錄分頁改顯示「套用的優惠」。平台優惠碼彈窗複製創作者優惠碼那段 markup 改前綴（不跨頁共用）。i18n 命名空間 `pdisc.*` 整批換 `pprom.*`。
 
 > **2026-09-15 · 優惠碼補齊＋Admin 平台折扣設定頁＋訂單詳情折抵列（D272／D273／D274）**：**優惠碼彈窗**（`store-settings.html` F8）在 Discount 之後長出「適用範圍」與「使用次數」兩組——範圍用三個可混選 zcheck，特定品項展開兩層商品類型樹（父子連動、`indeterminate` 半選），特定商品重用取貨場次那顆 `tag-input`＋`combobox` 搜尋加 chip；次數三格各一列 `settings-row`，留空＝不限；清單「賣掉」改「已用」並顯示 `已用 / 上限`、加「範圍」欄、狀態多「已用完」。彈窗在 ≤899px 收單欄（`store-settings.css` 頁專屬規則）。**Admin 新頁** `admin-platform-discounts.html` 整份照 `admin-platform-fees.html` 骨架（麵包屑／page-intro／list-toolbar＋短底線 tabs／門禁屬性），三分頁規則／例外藝人／紀錄；階層表用 `ztor-table` 可增刪；版本歷史 append-only、儲存追加新版。側欄三處清單補第七個 Admin 目的地（icon `ticket-percent`，registry 既有）。**訂單詳情**金額拆解在平台費、支付費之後加兩列折抵（`od-amt__neg`），淨額扣掉；平台費以標示售價計、支付費以買家實付（含運費）計，示意訂單 ZT-10486。零新元件、零新裸值；呈現假設與產品缺口見 ASSUMPTIONS UIA-151。
@@ -477,7 +479,7 @@ topbar 與 sidebar 兩種 shell 的帳戶選單都有一列語言切換（`js/si
 - **2026-07-09**：破壞性 ghost 按鈕（`.btn--ghost.btn--destructive`）與表單 footnote（`.form-footnote`）兩組跨頁重複頁內樣式一併 promote 進 ds-components，零視覺變動；細節見 UI-CHANGES.md 同日條目。
 - **2026-08-11（使用者裁決）：無自帶 CSS 的 JS 元件也要進 `design-system.html`**。這類元件建在既有元件的 class 之上、不擁有樣式，過去只登記在 `design-system.md`；但使用者檢視元件的唯一入口是 DS 頁，只寫進 `.md` 等於他看不到。全站七支（`partials/work-fields.js`、`js/work-taxonomy.js`、`partials/film-picker.js`、`partials/manual-entry-modal.js`、`partials/source-upload-modal.js`、`partials/fee-exception-modal.js`、`js/components.js`）各有 TOC 項、元件總表列與 demo 卡（§4.123–4.129）。**demo 一律載入那支 JS 當場產生**，不照模板手抄；純資料模組改用「值域一覽」並寫明為什麼沒有互動 demo；彈窗類的覆蓋層以 DS 頁的頁面級樣式（`.demo--inline-modal`）壓回文件流，元件本身不動。慣例與四條做法寫在 `design-system.md` §4.1 前言。`check_ds_sync.py` 以 `ds-components/*.css` 為起點，抓不到這一類，只能靠人維護。
 - **2026-09-14：`design-tokens.html`＝token 的機器生成預覽頁**。執行期 fetch `ds-components/_tokens.css` 解析 `:root`／`[data-theme="dark"]` 與每條 token 上方的註解，依前綴分成色彩、字體、間距與尺寸、圓角、陰影與光、動效與效果、ztorUI 換裝，逐條給活的預覽（色票、字級樣本、間距長條、陰影卡、模糊、動效），`--type-*` 角色五個屬性摺成一列直接渲染樣本字；同頁列 `js/icons.js` registry 全部 icon。可切亮暗、搜尋、點名稱複製。它不定義任何 token、不新增元件，是 `ds-index.md` 的視覺版；`design-system.html` Pillar 1 仍是人工策展的解說，只在段首連過去。要用 http 開（fetch 在 file:// 下不可用）。
-- **2026-09-16：設計師視角的三頁＝Tokens／Layers／元件，`design-system.html` 退為「規格全文」**。三頁共用同一條頂部導覽 `.dsn`（文件殼，寫在各頁 `<style>`、逐字相同）。`design-tokens.html` 讀 `_tokens.css` 生成；`demo-layer-system.html` 是表面階層的定案示範（只吃 `--layer-*` 與真元件）；`design-components.html` 由 `scripts/gen_design_gallery.py` 從 `design-system.html` Pillar 4 逐字抽出（標題、第一句用途、渲染區；其餘收進「規則與說明」摺疊，固定中文），**勿手改，規格全文改完重跑腳本**。規格全文仍是 md↔html 雙軌契約的 html 端，不因為多了這三頁而改變權責。
+- **2026-09-16：設計師視角的三頁＝Tokens／Layers／Components，`design-system.html` 退為 Spec**。四頁共用同一條頂部導覽 `.dsn`（2026-09-17 起殼抽成站根 `ds-doc.css`：純黑底、導覽、`.dsd-*` 骨架；文件殼不進 ds-components、產品頁不載）。`design-tokens.html` 讀 `_tokens.css` 生成；`design-layers.html` 是表面階層的定案示範（只吃 `--layer-*` 與真元件）；`design-components.html` 由 `scripts/gen_design_gallery.py` 從 `design-system.html` Pillar 4 逐字抽出（標題、第一句用途、渲染區；其餘收進「規則與說明」摺疊，固定中文），**勿手改，規格全文改完重跑腳本**。規格全文仍是 md↔html 雙軌契約的 html 端，不因為多了這三頁而改變權責。
 
 ### 5.6 作品欄位的跨頁共用（2026-08-10，直接發佈與作品上架整併）
 

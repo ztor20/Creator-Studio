@@ -4,6 +4,38 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-17（三十三）· 優惠碼欄加「自動產生」與 8–20 英數字規則（A spec-derived）
+
+**範圍**：`store-settings.html`（優惠碼彈窗碼欄：hint「8–20 個英數字，不含符號」、`minlength／maxlength／pattern`、欄旁 `btn--outline btn--sm`「自動產生」；`genCode()` 產 10 碼大寫英數、去 0／O／1／I）、`admin-platform-promotions.html`（平台優惠碼彈窗同樣一組）、`js/i18n.js`（`store-settings.codes.generate`／`.f.code.hint`、`pprom.code.generate`／`.f.code.hint`）。
+
+**依據**：`documents/decisions.md` D280（使用者 2026-09-17：「優惠碼有自動產生的按鈕 8-20 個字元沒有特殊符號」）；規格 5.1.5.5 v32 F8.2、5.1.0.7 v2.3 F3。
+
+**設計取捨**：產生 10 碼而不是下限 8 碼——夠短好唸、夠長不易撞；去掉易混淆字元是原型自行決定的呈現細節（規格寫「由 site 決定」）。規則放 hint 與 HTML 驗證屬性，不在輸入時硬擋字元。
+
+**同日補述**：使用者裁「大小寫不同」→ hint 補「區分大小寫」（D280 第 3 項）。
+
+**驗證**：兩頁按鈕各按一次，產出符合 `^[A-Z0-9]{8,20}$`；zh 零 raw key。
+
+## 2026-09-17（三十二）· 優惠碼 Phase 1 只留三組欄位，其餘掛 Phase 4 閘門（A spec-derived）
+
+**範圍**：`store-settings.html`（優惠碼彈窗「適用範圍」改成成對兩套：Phase 4 的三個 zcheck＋類型樹＋商品多選掛 `data-feat="full"`；Phase 1 的 `radio-list`「全部商店／指定商品」＋選指定商品才展開的 `zselect` 單選下拉掛 `data-feat-off="full"`，候選同一份 `scopeCatalog()`；使用次數三格、固定金額折法、疊加開關掛 `data-feat="full"`；清單「/ 上限」、LAUNCH50 列掛 `data-feat="full"`，AIKO10 範圍格成對顯示「26MS Hoodie」；補連 `radio-list.css`）、`js/i18n.js`（5 把）、`feature-scope-map.md`（D279 段）。
+
+**依據**：`documents/decisions.md` D279（使用者 2026-09-17：Phase 1 優惠只有藝人商店自用碼——期間、%／固定、全部或指定單一商品；平台優惠整支 Phase 4）；規格 `5.1.5.5` v31 F8 上線階段。
+
+**設計取捨**：Phase 1 的範圍用單選 radio-list＋單選下拉，而不是把 Phase 4 的多選元件限制成一顆——「一組碼綁一件」在畫面上就該長得像單選，硬用多選容器再擋第二顆會讓人以為壞了。閘門與既有 `hidden` 顯隱兩道各管各的（固定金額折法列在 Phase 1 即使條件成立也不出現，已實測）。
+
+**驗證**：`?version=p1`：彈窗只剩代碼／折扣／適用範圍（全部或指定商品）／生效期間，清單只剩 SUMMER25、已用欄無上限；`?version=full` 全部回來與改前一致；zh／en 零 raw key；`check_ds_sync.py` PASS（既有 WARN 5／13，棘輪未升）。
+
+## 2026-09-17（三十一）· 平台費改以折完的品項實付計（A spec-derived）
+
+**範圍**：`js/orders-store.js` ZT-10486——平台費由 58 × 15% ＝ 8.70 改為品項實付 40.10 × 15% ＝ 6.02，淨額 35.32 → 38.00；三列折抵、支付費 1.08、買家實付 45.10 不變。`order-detail.html` 不動（列的順序與標籤本來就沒寫基準）。
+
+**依據**：`documents/decisions.md` D278（使用者 2026-09-17：「平台費的計算是以所有折扣計算完的金額做計算」，推翻 D274／D275 第 6 項／D276 第 1 項）；規格 §7.6 計費基準段 v3.62。
+
+**設計取捨**：折抵三列維持在平台費之後顯示（讀者順著看仍是「先扣費、再看折了多少、剩淨額」），只改數字；要不要把折抵列搬到平台費之前、讓「平台費以折後算」在版面上也看得出來，等下游收入拆解頁的規格補齊時一併決定。
+
+**驗證**：`order-detail.html?id=ZT-10486` 讀回金額列：平台費 −6.02、支付費 −1.08、分級 −2.90、優惠碼 −10.00、滿額 −5.00、淨額 38.00；無折扣訂單不變。
+
 ## 2026-09-15（三十）· Admin「平台折扣設定」改為「平台優惠設定」逐筆模型（A spec-derived）
 
 **範圍**：`admin-platform-discounts.html` → `admin-platform-promotions.html`（git mv＋整頁重寫）：四分頁——**滿額折扣**（逐筆清單：名稱／門檻→折抵／生效期間／狀態／啟用 switch／例外藝人數／kebab；新增與編輯共用彈窗：名稱、門檻、折抵 %／固定、生效期間、啟用、備註、本筆例外藝人（field-pill 搜尋加 chip）、修改歷史）、**平台優惠碼**（逐組清單＋彈窗，欄位語意複製自 `store-settings.html` 的創作者優惠碼：名稱、碼＋複製、折扣、固定金額折法、適用範圍（唯讀「全平台」）、生效期間、啟用、三格次數、可與其他優惠碼疊加、備註、本組例外、修改歷史）、**例外藝人**（全局清單，加「範圍：全部」欄）、**紀錄**（「套用階」改「套用的優惠」、撤除「版本」欄）。舊的單一組階層卡與整頁版本歷史卡撤除。`js/sidebar.js` 三處清單改檔名；`js/i18n.js` `admin.platform-discounts`→`admin.platform-promotions`、`pdisc.*`→`pprom.*`（121 把）。
@@ -18,9 +50,29 @@
 
 **驗證**：dev server 4326、Admin 身分——四分頁切換；滿額折扣與平台優惠碼「新增」與列 kebab「編輯」開同一彈窗帶入該列；固定金額折法列在 `$` 且每單件數≠1 時出現；全局例外與紀錄分頁互動；zh／en 零 raw key；全站 grep 舊檔名、舊 key 零殘留；`check_ds_sync.py` PASS（既有 WARN 5／13，棘輪未升）。呈現假設補進 ASSUMPTIONS UIA-151。
 
+## 2026-09-17（三十五）· Design 文件頁收殼與正名：ds-doc.css、design-layers.html、全英文分頁、Spec 掛導覽、Components 分層目錄（D infra ＋ B 反饋導入）
+
+**範圍**：新增 `ds-doc.css`（文件殼：純黑底、`.dsn` 導覽、`.dsd-*` 頁面骨架與摺疊開關）；`demo-layer-system.html` → `design-layers.html`（`git mv`，全站引用含 docs/ 一併改）；`design-tokens.html`／`design-layers.html`／`scripts/gen_design_gallery.py`（各自的殼樣式刪除、改 `<link ds-doc.css>`；標題改 `.dsd-title`）；`design-system.html`（掛同一條導覽、左側目錄讓出 52px、預設中文、`icons-all.js` 改展開全集才載）；`design-components.html` 重生成。
+
+**依據**：使用者 2026-09-17「我想重新整理 Design system.html 與其他最近延伸出來的分頁。請分析以後給我建議」→ 對建議裁示「1. 全英文 2. 可以同時都有？實際不是 atom／molecule／organism 的結構嗎？ 3. ok」。
+
+### D · 收殼與正名
+
+- 四頁的殼從「四份逐字相同、靠註解同步」收成一支 `ds-doc.css`，各頁一行 `<link>`。它是文件殼，不進 `ds-components/`、產品頁不載。
+- 分頁全英文：Tokens／Layers／Components／Spec；`demo-layer-system.html` 正名 `design-layers.html`，三個設計師頁都是 `design-*`。
+- Spec（`design-system.html`）掛上同一條導覽，四頁真的是一家；預設語言改中文；1.8MB 的 Tabler 全集改成展開「未使用」清單時才下載（本頁示範全用策展 registry，實測 0 個圖示依賴全集）。
+
+### B · Components 分層目錄
+
+- 依使用者裁示「實際是 atom／molecule／organism 的結構」：卡片分四區 Atoms 26／Molecules 87／Organisms 59／Other 7，每區開頭一排名稱 chip 當索引；工具列多三個分區捷徑。
+- 卡片預設只展開第一個示範，其餘收進「更多示範（N）」（48 張卡有）。
+- 產品模組（表單、清單、詳情、彈窗）當第二軸的標籤：資料要從各元件的消費頁反推，另案。
+
+**驗證**：`check_ds_sync.py` 全 PASS；四頁 0 console error、body 純黑、導覽 `aria-current` 各在自己那格；Spec 頁開頁不再載 `icons-all.js`（resource entries 0）、`.toc` top 52px；Tokens 307／78／158 不變。
+
 ## 2026-09-16（三十四）· 四個 DS 文件頁底色改純黑；combobox 下拉對齊浮層配方（B 反饋導入）
 
-**範圍**：`design-tokens.html`、`demo-layer-system.html`、`scripts/gen_design_gallery.py`（→ `design-components.html`）、`design-system.html` 各自的文件殼樣式；`ds-components/combobox.css`（`.combobox__menu`）；`design-system.md`／`.html` Combobox 條目。
+**範圍**：`design-tokens.html`、`design-layers.html`、`scripts/gen_design_gallery.py`（→ `design-components.html`）、`design-system.html` 各自的文件殼樣式；`ds-components/combobox.css`（`.combobox__menu`）；`design-system.md`／`.html` Combobox 條目。
 
 **依據**：使用者 2026-09-16「這些 DS 檔案背景都用純黑色」；同時圈出圖鑑裡 bundle-editor 的彈窗與 combobox 的下拉「下面那塊是不是做錯了」。
 
@@ -37,7 +89,7 @@
 
 ## 2026-09-16（三十三）· 元件圖鑑量產：179 張卡、三頁導覽補「元件」、DS 示範容器全部改照 layer 規則（D infra ＋ B 反饋導入）
 
-**範圍**：`design-components.html`（全量生成）、`scripts/gen_design_gallery.py`（連結從整份文件收集去重；搬 DS 頁尾 20 支 `<script src>` 與 5 塊 inline script、各包 try/catch；`overflow-x: clip` 擋 fixed 浮層撐出橫向捲軸）、`design-system.html`（`.demo`／`.gallery`／`.viz` 改 L1、`.demo--preview` 改 L0；head 補掛 `detail-overview.css`）、`design-tokens.html`／`demo-layer-system.html`（導覽補「元件」）、`design-system.md`（裸值例外：圖鑑繼承規格全文 demo markup，基準 11）、`ds-baseline.json`。
+**範圍**：`design-components.html`（全量生成）、`scripts/gen_design_gallery.py`（連結從整份文件收集去重；搬 DS 頁尾 20 支 `<script src>` 與 5 塊 inline script、各包 try/catch；`overflow-x: clip` 擋 fixed 浮層撐出橫向捲軸）、`design-system.html`（`.demo`／`.gallery`／`.viz` 改 L1、`.demo--preview` 改 L0；head 補掛 `detail-overview.css`）、`design-tokens.html`／`design-layers.html`（導覽補「元件」）、`design-system.md`（裸值例外：圖鑑繼承規格全文 demo markup，基準 11）、`ds-baseline.json`。
 
 **依據**：使用者 2026-09-16 看過三張樣板「暫時沒問題」→「接著把剩下的改完」；同日對矩陣殼「這一頁元件和元件之間用分隔線和間距區分，現在是用第一層 layer 區分」。
 
@@ -74,7 +126,7 @@
 
 ## 2026-09-16（三十一）· Tokens／Layers 兩頁共用頂部導覽、文案瘦身（B 反饋導入 ＋ D 文件）
 
-**範圍**：`design-tokens.html`、`demo-layer-system.html`。`design-system.html` 本輪不動（使用者裁示：退到「規格全文」、只當連結目標）。
+**範圍**：`design-tokens.html`、`design-layers.html`。`design-system.html` 本輪不動（使用者裁示：退到「規格全文」、只當連結目標）。
 
 **依據**：使用者 2026-09-16「現在變得好混亂，檔案都連在一起，但目錄切換很不統一……給設計師看的基本都要視覺化……還是有很多冗詞」；提案「一套殼＋文案瘦身＋Layers 再砍」後裁示「可以」「頂部導覽就夠」。
 
@@ -90,9 +142,9 @@
 
 **驗證**：`check_ds_sync.py` 全 PASS；兩頁 0 console error、無橫向溢出；導覽目前頁標示與主題切換在兩頁皆正確。
 
-## 2026-09-16（三十）· demo-layer-system.html 改寫為表面階層的定案示範頁（D infra／文件）
+## 2026-09-16（三十）· design-layers.html 改寫為表面階層的定案示範頁（D infra／文件）
 
-**範圍**：`demo-layer-system.html` 全檔重寫（810 → 約 260 行）；`design-system.md` §6.0.1 的引用句與「裸值例外」段更新；`STYLE-DECISIONS.md` Q61～Q64 段補記。
+**範圍**：`design-layers.html` 全檔重寫（810 → 約 260 行）；`design-system.md` §6.0.1 的引用句與「裸值例外」段更新；`STYLE-DECISIONS.md` Q61～Q64 段補記。
 
 **依據**：使用者 2026-09-16「把 layer demo 以最終定案的方向再整理一次」。
 
@@ -142,7 +194,7 @@
 ### 沒動的
 
 - 第三批「不確定」9 支：`canvas-stage`／`fan-store`／`detail-sheet`／`preview-column` 拿 `--ztu-canvas` 做漸層與遮罩、`list-toolbar`／`.detail-bar` 黏頂玻璃、`.lockset`／`.scanner-count` 線框——判為材質或效果，不屬層級系統。
-- `demo-layer-system.html:155` 的「現行做法」對照組（legacy 提案頁，Q87）。
+- `design-layers.html:155` 的「現行做法」對照組（legacy 提案頁，Q87）。
 
 **驗證**：`check_ds_sync.py` 全 PASS（兩個既有 WARN）；dev server 開 `project-detail`（`.funding-panel`）、`store-settings`（`.ss-status`）、`create-bundle`（`.cb-summary`）computed 背景 4%→8.6%、0 console error；fresh agent 對照清單逐檔 read-back。已知限制：`--ztu-film` 159 處只重點讀約 40 處、`--border` 413 處靠註解找候選，L3 可能有漏網，下次巡檢再掃。
 
@@ -4573,7 +4625,7 @@ delta 改掛 `.kpi__value-row` 與金額同行，`.kpi__delta-ctx` 以絕對定�
 - **【B】admin 表格密集頁納入星空漸消（Q85）**：`shared.css` 的漸消 `:has()` 觸發條件從 `.list-dock` 擴到 `.list-dock, .admin-table-wrap`，同一條規則加 selector。admin-ip-bank／admin-platform-fees／admin-video-review／ip-bank-reporting／store-settings 五頁生效。
 - **【B】creator-detail 表單補玻璃卡（Q86）**：Account source／Shop and contact 兩段 `.form-section` 加 `form-section--outlined`，並移除頁面級的 `padding-top:28px` 微調（改由玻璃卡自身邊界與 24px 內距承接）。Import events（第二分頁）不在範圍。
 - **【B】頁尾版本字樣（C-7）**：全站 grep「R 2.1 prototype」，7 頁命中（admin-ip-bank／admin-platform-fees／admin-video-review／creators／index／ip-bank-reporting／manage-ip）全數改為「R 2.3 prototype」，全站零殘留。
-- **【D】範圍裁決（Q87）**：fans-guide 維持自成一格、funding-simulate（demo）與 section-test／demo-layer-system／create-event-legacy（測試／legacy 頁）不熔接，三題合併記一條裁決。
+- **【D】範圍裁決（Q87）**：fans-guide 維持自成一格、funding-simulate（demo）與 section-test／design-layers／create-event-legacy（測試／legacy 頁）不熔接，三題合併記一條裁決。
 - **【D】文件同步**：`design-system.md` §4.7、`design-system.html` info-banner 小節（States／Class API／Token usage）改寫；`STYLE-DECISIONS.md` 新增 Q83–Q87；`docs/wave3-巡檢-總表.md` 的 C 類 8 題補「裁決結果＋已執行／不執行」註記（C-6 fan-analytics 對比題本輪未裁決，留待下輪）。
 - `requirements-map.md`：本輪純呈現層裁決落地，無產品範圍變更，未動。
 
@@ -4657,7 +4709,7 @@ delta 改掛 `.kpi__value-row` 與金額同行，`.kpi__delta-ctx` 以絕對定�
 
 使用者：「照提案執行」。demo 定案已全部 promote 進 `ds-components/`（見上方同日「demo 定案 promote」條目）且 DS 文件同步完畢，探索檔使命結束；元件巡檢報告（`scratch/元件巡檢報告-20260825.md`）核實三支元件全站零真實消費，比照 `cookie-banner.css`／`footer.css` 既有慣例退場。
 
-- **【D】** 5 支 demo 探索檔刪除（git 歷史可回溯，不留墓碑）：`demo-nav-redesign.html`、`demo-eshop-styles.html`、`demo-layer-e-shop.html`、`demo-layer-create-product.html`、`demo-layer-preview.css`。全庫 grep 確認無產品頁 `<link>`/`<script>` 等活代碼引用；`demo-layer-system.html`（綁著未裁決的 Q61–Q64）與 `section-test.html`（8 處引用，另案）不動。
+- **【D】** 5 支 demo 探索檔刪除（git 歷史可回溯，不留墓碑）：`demo-nav-redesign.html`、`demo-eshop-styles.html`、`demo-layer-e-shop.html`、`demo-layer-create-product.html`、`demo-layer-preview.css`。全庫 grep 確認無產品頁 `<link>`/`<script>` 等活代碼引用；`design-layers.html`（綁著未裁決的 Q61–Q64）與 `section-test.html`（8 處引用，另案）不動。
 - **【C】** 三支零消費元件墓碑化：`inline-edit.css`（早已清空，統一成標準墓碑格式）、`avatar-stack.css`（`project-detail.html` 曾掛 `<link>` 但全檔無任何 markup 消費，等於連了線沒接電器，死 link 已移除）、`composer.css`（全庫只有 `design-system.html` 掛 `<link>` 展示，連產品頁 `<link>` 都沒有；與獨立在用的 `post-composer.css` 是不同構想，非誤植重複）。樣式整支清空、檔案保留為墓碑。
 - **【C】** `design-system.html` 同步撤除：avatar-stack／composer 各自的 demo 區塊、TOC 兩條、`<link>` 兩個、組成圖（compose-map／compose__tier）殘留 chip；`design-system.md` Pillar 4 兩列改標「已退場」、composer 的 §4.19 加退場說明並保留原文供追溯。`inline-edit.css` 在 DS 頁與 md 早已是「留卡標已退場」狀態，本輪只同步 CSS 檔頭格式。
 
@@ -4841,7 +4893,7 @@ T-B 的標題在卡外、卡片邊界本身已是硬邊界，只從 `--sp-12` �
 
 ## 2026-08-25 · 導覽元件重設計提案 demo（D infra／提案，不動現行頁面）
 
-**範圍**：新增 `demo-nav-redesign.html`（提案 demo，做法同 `demo-layer-system.html`——變體樣式只活在該頁 `<style>`、全走既有 token，未進 ds-components）。現行頁面與元件 CSS 一個字都沒動。
+**範圍**：新增 `demo-nav-redesign.html`（提案 demo，做法同 `design-layers.html`——變體樣式只活在該頁 `<style>`、全走既有 token，未進 ds-components）。現行頁面與元件 CSS 一個字都沒動。
 
 **動機**：使用者圈選三個導覽元件要求多風格重設計供挑選。每個元件給 4 個新方向＋現況對照，各自放在仿真的頁面脈絡（清單頁＝events、詳情頁＝event-detail Setup 版面）裡，分頁可點、可切明暗。三個元件：
 
@@ -7166,12 +7218,12 @@ Bug（照慣例不列入上面四區，但影響這批資料的呈現，記在�
 
 使用者給 Figma `856:27798`（layer0／layer1／layer2／layer3）：「參考這個 figma 修改現在的 DS，試做一個 Demo，必須要有階層概念，從 token 就有區分」。
 
-- **【D】新增 `demo-layer-system.html`**：提案 demo，六節——階層規則、階梯總表（合成色與對比由頁面即時算，換明暗會重算）、Figma 三欄研究復刻（父層＝面板 L1 與父層＝畫布 L0 兩種 context）、疊到第幾層停（連疊四層薄膜 vs 兩層填色＋邊框）、真實情境現行 vs 提案對照、待裁決四題。
+- **【D】新增 `design-layers.html`**：提案 demo，六節——階層規則、階梯總表（合成色與對比由頁面即時算，換明暗會重算）、Figma 三欄研究復刻（父層＝面板 L1 與父層＝畫布 L0 兩種 context）、疊到第幾層停（連疊四層薄膜 vs 兩層填色＋邊框）、真實情境現行 vs 提案對照、待裁決四題。
 - **【D】提案 token 只寫在該頁的 `.lyr` 作用域內，`ds-components/_tokens.css` 一行未動**：`--layer-0/1/2/3-surface`、`--layer-line`、`--layer-lift`、`--layer-radius`。其他 43 頁零影響。這是刻意的——把新的層級語彙直接灌進 foundation 會與既有三套語彙（離散實色階 Q15／Q42、E0–E4 陰影階、Nest 相對疊加 Q24）疊成第四種做法，違反「風格單一答案」鐵律。
 - **【D】亮色版走另一條規則**（同日使用者裁示：「我們主要顏色是黑夜，白色的主題，除了背景與第一層，其他 layers 的顏色都用白色就好，用陰影或線匡去做區分」）：亮色的 `--layer-2-surface` 指向 `var(--card)` 白底，新增 `--layer-2-edge`（`0 1px 3px` 落影 ＋ 1px 環）承擔分離感；深色的 `--layer-2-edge` 為透明，深色仍靠底色分層。原先草擬的「亮色疊深色薄膜 `rgba(16,17,20,.03)`」作廢——白底疊灰膜會把卡片染灰，層數愈多愈髒。同一份 markup 兩個主題共用同一組 token，只是表達手法不同。
 - **【D】待裁決登記 `STYLE-DECISIONS.md` Q61～Q64**：命名要不要帶級數（Q61）、亮色 L2 怎麼分層（Q62，同日已裁示）、hairline 要不要改成相對值（Q63）、124 支既有元件的遷移範圍（Q64）。Q61／Q63／Q64 裁完才 promote 進 `_tokens.css`。
 - 深色的數值全部沿用 Figma，與既有 `--nest-surface`／`--shadow-nest-up` 同值（該兩支 token 當初就是照同一張 Figma 定的）；亮色由同一條規則反推。實測：L2 疊 L1 合成 `#292A2B`（與 `_tokens.css:640` 註解的推算一致）、對父層 1.10:1；深色與亮色兩個主題四層都讀得出層次。
-- 實測：`http://localhost:4325/demo-layer-system.html` 六節全數算繪正確、console 無錯誤、明暗切換總表重算正確；`check_ds_sync` PASS。
+- 實測：`http://localhost:4325/design-layers.html` 六節全數算繪正確、console 無錯誤、明暗切換總表重算正確；`check_ds_sync` PASS。
 
 
 ## 2026-08-11 · 活動形式「巡迴活動」改名「多站活動」（B 反饋）
@@ -7545,7 +7597,7 @@ Bug（照慣例不列入上面四區，但影響這批資料的呈現，記在�
 - **【B】「賣掉」欄改成兩行**（同日）：件數一行、金額一行，並補上「件」這個單位。同一格裡兩個不同單位的數字並排時，眼睛得先分辨哪個是件、哪個是錢；拆成兩行之後，一欄掃下來比較的都是同一種東西。同輪清掉三選一比較時留下的殘骸（代碼欄裡那條看不到的「賣掉」行），並在元件層放開表格繼承來的 840px 最小寬度——那是給欄位多得多的另一張表用的，六欄的優惠碼撐不到，硬留著只會逼出一條沒必要的橫捲。
 - **【C】代碼欄只放代碼本身**（同日）：說明那句拿掉——這一格是什麼，欄名已經講完；旁邊補一顆小複製鈕，發碼給人時直接複製走。
 - **【C】e-shop 的 embed-modal 與 postMessage 撤除**，按鈕改成連結。連帶消滅 `ASSUMPTIONS.md` UIA-022（iframe 與父頁主題／語言不連動），並修好粉絲分析頁那個原本會落到孤兒文件的連結。
-- **【D】記一筆別人的例外**：`demo-layer-system.html`（另一個 session 本日新增）的六個 rgba 是它要示範的對象本身，已在 `design-system.md` 註記並調高棘輪基準，否則收尾檢查會一直擋。
+- **【D】記一筆別人的例外**：`design-layers.html`（另一個 session 本日新增）的六個 rgba 是它要示範的對象本身，已在 `design-system.md` 註記並調高棘輪基準，否則收尾檢查會一直擋。
 
 ## 2026-08-10（第三輪）· bookyay 帶入閘門改用下拉查找、進度條與步驟名對齊（B 反饋／C 撤除）
 
