@@ -482,7 +482,7 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px but
 **Raw-color exceptions (acknowledged WARN)** — `check_ds_sync` flags bare colors in three components, all intentional fixed artwork:
 - `upload-tile.css` video letterbox (`.upload-tile__video { background: #000 }`) — **irreducible**: media playback matte is pure black regardless of light/dark theme (standard video letterbox), same rationale as an embedded image; not a themeable surface.
 - `design-components.html`（2026-09-16 起，機器生成）— **irreducible（繼承）**：這一頁由 `scripts/gen_design_gallery.py` 從本頁（`design-system.html`）Pillar 4 逐字抽出渲染區，卡內 inline `style` 的裸值（主題色票 `#000000`／`#999`、品牌漸層 `#1b1b1b→#ffa33f` 等示範資料）全部來自規格全文的 demo markup，同一份內容；規格全文不受檢查 10 管轄，圖鑑作為它的投影也比照。要減少只能改規格全文的 demo，改了重跑腳本即同步。基準記 11（2026-09-16），只准降不准升。
-- `demo-layer-system.html`（2026-09-16 起）— 已無裸值：2026-08-11 的提案頁曾有 18 處作用域內的提案變數與固定亮色預覽，2026-09-16 依 Q61～Q64 定案改寫成只吃正式 `--layer-*` token 與正式元件的示範頁，那批例外全數消失（基準數字降為 0）。
+- `design-layers.html`（2026-09-16 起）— 已無裸值：2026-08-11 的提案頁曾有 18 處作用域內的提案變數與固定亮色預覽，2026-09-16 依 Q61～Q64 定案改寫成只吃正式 `--layer-*` token 與正式元件的示範頁，那批例外全數消失（基準數字降為 0）。
 - `progress-stepper.css` segmented track mask (`repeating-linear-gradient(90deg, #000 …, transparent …)`) — **irreducible**: the `#000` here is a *mask stop*, not a paint colour — a CSS mask only reads alpha, so any opaque value works and none of them reaches the screen; the visible colour still comes from the track's own token. Swapping in a theme token would imply a colour decision that doesn't exist（2026-08-10 記錄，供 check_ds_sync 檢查 10 的基準對照）。
 - `selection-card.css` theme-picker swatches (`--theme-light` / `--theme-dark` / `--theme-system`) — **irreducible**: each swatch must paint the *actual* literal theme colors (`#FAFAF7` / `#ffa33f` / `#191A1A`) so the preview shows what each mode looks like even when viewing a different mode; can't reference theme-reactive tokens.
 - `vip-card.css` VIP-card template (`.vip-card__frame` holographic gradients + `.vip-card__plate`/`__logo`/`__plate-sub` white/rgba) — the membership-card face is a **fixed, theme-independent artwork** (a CSS approximation of the platform template); its colors deliberately do not follow light/dark tokens, same rationale as an embedded illustration/image. Real template asset TBD.
@@ -727,7 +727,7 @@ E0–E4 管「抬多高」（陰影），`--layer-*` 管「疊上去該多亮」
 | L3 線框 | `--layer-3-surface` | `transparent` | 第三層起不再疊填色（待採用：L3 用例都只寫線、不寫底，這支目前無消費者） |
 | L3 線 | `--layer-line` | `--border` | L3 的 1px 框：`.bd-pick`／`.bd-tbl`／`.variant-option`／`.control-group`／`.control-row`／`.album-tracks__list`／`.rowdis__frame` 等 9 支（Q64 第一批已遷）；Q63 選 B＝現行線色收進系統、不覆議亮度 |
 
-規則不變：疊上去要比父層亮（Q66）、填色只疊兩層（Q24）、浮層不透明（Q78）、玻璃裡不套玻璃（Q108）。Q64 遷移（2026-09-15）後 `--nest-surface`（4%）在產品 CSS 已無消費者（只剩 `demo-layer-system.html` 對照組與本文件色票），L2 只剩 8.5% 一種濃度；`--nest-surface` 保留為退役中的 token，新寫法一律 `--layer-2-surface`。清單「不確定」的 9 支（`canvas-stage`／`fan-store`／`detail-sheet`／`preview-column` 的 `--ztu-canvas` 效果用法、`list-toolbar`／`.detail-bar` 的黏頂玻璃、`.lockset`／`.scanner-count` 的線框）判定為材質或效果、不屬層級系統，維持原 token。逐支清單：`docs/Q64-表面階層遷移清單-2026-09-15.md`。
+規則不變：疊上去要比父層亮（Q66）、填色只疊兩層（Q24）、浮層不透明（Q78）、玻璃裡不套玻璃（Q108）。Q64 遷移（2026-09-15）後 `--nest-surface`（4%）在產品 CSS 已無消費者（只剩 `design-layers.html` 對照組與本文件色票），L2 只剩 8.5% 一種濃度；`--nest-surface` 保留為退役中的 token，新寫法一律 `--layer-2-surface`。清單「不確定」的 9 支（`canvas-stage`／`fan-store`／`detail-sheet`／`preview-column` 的 `--ztu-canvas` 效果用法、`list-toolbar`／`.detail-bar` 的黏頂玻璃、`.lockset`／`.scanner-count` 的線框）判定為材質或效果、不屬層級系統，維持原 token。逐支清單：`docs/Q64-表面階層遷移清單-2026-09-15.md`。
 
 ### 2.6 Cross-component rules
 
@@ -6362,7 +6362,7 @@ All use the `wizard-focus` template (no main topbar), a centered `stepper`, a st
 
 ### 6.0.1 表面階層：疊上去的一層要比父層亮（Q66，2026-08-13）
 
-模型出自 Figma `856:27798`（`demo-layer-system.html` 是它的定案示範頁，2026-09-16 起只吃正式 `--layer-*` token；階梯總表、四階相套、疊到第幾層停、三條相關規則實例都在那一頁）：**L0 畫布實色 → L1 卡片實色 → L2 半透明薄膜（疊在誰身上就跟著誰亮一階）→ L3 不再疊填色、只留線框**。
+模型出自 Figma `856:27798`（`design-layers.html` 是它的定案示範頁，2026-09-16 起只吃正式 `--layer-*` token；階梯總表、四階相套、疊到第幾層停、三條相關規則實例都在那一頁）：**L0 畫布實色 → L1 卡片實色 → L2 半透明薄膜（疊在誰身上就跟著誰亮一階）→ L3 不再疊填色、只留線框**。
 
 **兩個方向相反的角色，不要混用**：
 

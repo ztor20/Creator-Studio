@@ -430,6 +430,8 @@
     'pprom.code.f.code': { en: 'Code', zh: '優惠碼' },
     'pprom.code.f.code.ph': { en: 'WELCOME50', zh: 'WELCOME50' },
     'pprom.code.copy': { en: 'Copy', zh: '複製' },
+    'pprom.code.generate': { en: 'Generate', zh: '自動產生' },
+    'pprom.code.f.code.hint': { en: '8–20 letters or digits, no symbols.', zh: '8–20 個英數字，不含符號。' },
     'pprom.code.f.discount': { en: 'Discount', zh: '折扣' },
     'pprom.code.f.discount.hint': { en: 'Off the item price, before shipping.', zh: '折抵商品售價，不含運費。' },
     'pprom.code.f.fixedmode': { en: 'Fixed-amount split', zh: '固定金額折法' },
@@ -2440,6 +2442,8 @@
     'store-settings.codes.new':        { en: 'Add a code',       zh: '新增優惠碼' },
     'store-settings.codes.close':      { en: 'Close',            zh: '關閉' },
     'store-settings.codes.copy':       { en: 'Copy',             zh: '複製' },
+    'store-settings.codes.generate':   { en: 'Generate',         zh: '自動產生' },
+    'store-settings.codes.f.code.hint': { en: '8–20 letters or digits, no symbols.', zh: '8–20 個英數字，不含符號。' },
     'store-settings.codes.cancel':     { en: 'Cancel',           zh: '取消' },
     'store-settings.codes.savecode':   { en: 'Save code',        zh: '儲存' },
     'store-settings.codes.type.partner-with': { en: 'Partner · Aiko', zh: '代理 · Aiko' },
@@ -2452,15 +2456,22 @@
        同一個概念，表單給說明、窄欄給掃描，字數各自對場合負責。 */
     'store-settings.codes.f.scope':    { en: 'Applies to',       zh: '適用範圍' },
     'store-settings.codes.f.scope.hint': { en: 'A code’s range is whichever types and items you check, combined. Auctions never qualify.', zh: '一組碼的範圍＝勾的類型加勾的商品；拍賣不折。' },
+    /* Phase 1 版本的說明（D279）：沒有類型樹與多選，只答得出「全部或一件」。 */
+    'store-settings.codes.f.scope.hint.p1': { en: 'All stores, or just one item.', zh: '全部商店，或只給一件商品。' },
     'store-settings.codes.f.scope.all':  { en: 'All items',      zh: '全部商店' },
     'store-settings.codes.f.scope.types': { en: 'Item types',    zh: '特定品項' },
     'store-settings.codes.f.scope.items': { en: 'Specific items', zh: '特定商品' },
+    /* Phase 1 的第二個範圍選項（D279）：一組碼只綁一件，不選類型層——跟 Phase 4 的
+       「特定商品」（可多選、可混類型）不是同一個字，不重用 f.scope.items。 */
+    'store-settings.codes.f.scope.oneitem': { en: 'One item',    zh: '指定商品' },
     'store-settings.codes.f.scope.physical': { en: 'Physical merchandise', zh: '實體商品' },
     'store-settings.codes.f.scope.digital':  { en: 'Digital merchandise',  zh: '數位商品' },
     'store-settings.codes.f.scope.items.ph': { en: 'Search products or bundles…', zh: '搜尋商品或組合包…' },
     'store-settings.codes.f.scope.items.empty': { en: 'No items match your search.', zh: '沒有符合的商品。' },
-    /* 清單欄「範圍」的混選示意值（AIKO10 那列）：類型＋商品都勾了幾個，不是單一層級。 */
+    /* 清單欄「範圍」的混選示意值（AIKO10 那列）：類型＋商品都勾了幾個，不是單一層級。
+       Phase 1 沒有類型樹與多選，同一列改看成「指定單一商品」的示意（26MS Hoodie，D279）。 */
     'store-settings.codes.scope.apparel-plus': { en: 'Apparel + 2 items', zh: '服飾＋2 件商品' },
+    'store-settings.codes.scope.demo-item': { en: '26MS Hoodie', zh: '26MS Hoodie' },
     /* ── F8.2 使用次數（Usage limits，D272）：以「件」計，拆成三個各自獨立的條件 ─────── */
     'store-settings.codes.f.usage':    { en: 'Usage limits',    zh: '使用次數' },
     'store-settings.codes.f.perorder': { en: 'Per order',       zh: '每張訂單可折件數' },
