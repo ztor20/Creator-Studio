@@ -731,6 +731,10 @@
     'notif.low-stock.title':  { en: 'Low-stock threshold hit', zh: '低庫存提醒' },
     'notif.low-stock.meta':   { en: '3 products are below the inventory threshold.', zh: '3 項商品低於庫存門檻。' },
     'notif.low-stock.time':   { en: '1h',                     zh: '1 小時前' },
+    /* 定時下架到期的自動連動通知（2026-09-18 · D288 裁決二）：靜態示範，對應 products-store 的 coaster／backstage-set */
+    'notif.auto-unlist.title': { en: '“Kowloon After Dark coaster set” unlisted on schedule', zh: '「九龍夜行 杯墊組」已依排程下架' },
+    'notif.auto-unlist.meta':  { en: '“Backstage tea set” includes it and was unlisted with it.', zh: '「後台茶水組」含這件商品，已一併下架。' },
+    'notif.auto-unlist.time':  { en: 'Yesterday',             zh: '昨天' },
     'notif.ip-expiring.title':{ en: 'IP license expires soon', zh: 'IP 授權即將到期' },
     'notif.ip-expiring.meta': { en: '“Mong Kok Sniper concept poster” expires in 7 days.', zh: '「旺角狙擊 概念海報」授權 7 天後到期。' },
     'notif.ip-expiring.time': { en: '2h',                     zh: '2 小時前' },
@@ -2668,9 +2672,24 @@
     'e-shop.archive.title':     { en: 'Archive “{n}”?',                    zh: '要封存「{n}」嗎？' },
     'e-shop.archive.body':      { en: 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can relist it anytime.', zh: '它會離開主清單，只在「已封存」篩選出現；頁面轉為唯讀，訂單與收入不受影響，隨時可以重新上架。' },
     'e-shop.archive.confirm':   { en: 'Archive',                           zh: '封存' },
-    'e-shop.archive.blocked-title': { en: '“{n}” is still in listed bundles', zh: '「{n}」仍在上架中的組合包裡' },
-    'e-shop.archive.blocked-body':  { en: 'Archiving it stops these bundles from selling. To continue, unlist them together:', zh: '封存後這些組合包就賣不了。要繼續，得把它們一同下架：' },
-    'e-shop.archive.blocked-confirm': { en: 'Unlist these bundles and archive', zh: '一同下架這些組合包並封存' },
+    /* 墓碑（2026-09-18，D288）：`e-shop.archive.blocked-title`／`blocked-body`／`blocked-confirm` 移除——封存不再檢查組合包，
+       「仍在上架中的組合包裡」的彈窗整組搬到下架動作上（下面的 e-shop.unlist.blocked-*）。 */
+    /* 下架確認與組合包連動（2026-09-18 · D288，§7.14「下架確認與組合包連動」）：三種販售管道的下架都先確認；
+       單售仍在上架中組合包裡時列出組合包、主鈕「一同下架這些組合包」。組合包重新上架擋下＝列出未上架成員、只有一顆「知道了」。 */
+    'e-shop.unlist.title':      { en: 'Unlist “{n}”?',                     zh: '要下架「{n}」嗎？' },
+    'e-shop.unlist.body':       { en: 'Public and private links stop working and fans no longer see its page. You can relist it anytime.', zh: '公開與非公開連結都會失效，粉絲端不再有它的頁面；隨時可以重新上架。' },
+    'e-shop.unlist.confirm':    { en: 'Unlist',                            zh: '下架' },
+    'e-shop.unlist.blocked-title': { en: '“{n}” is still in listed bundles', zh: '「{n}」仍在上架中的組合包裡' },
+    'e-shop.unlist.blocked-body':  { en: 'Unlisting it also unlists these bundles:', zh: '下架後這些組合包也會一同下架：' },
+    'e-shop.unlist.blocked-confirm': { en: 'Unlist these bundles too',     zh: '一同下架這些組合包' },
+    /* 組合包重新上架（D289，取代 D288 裁決三的「擋下」）：已下架成員先確認、一起重新上架；已封存成員才擋下 */
+    'e-shop.relist.title':         { en: 'Relist “{n}”?',                  zh: '要重新上架「{n}」嗎？' },
+    'e-shop.relist.members-body':  { en: 'These unlisted items go back on sale with it:', zh: '這些已下架的成員會一起重新上架：' },
+    'e-shop.relist.members-confirm': { en: 'Relist all',                   zh: '一併重新上架' },
+    'e-shop.relist.confirm':       { en: 'Relist',                         zh: '重新上架' },
+    'e-shop.relist.blocked-title': { en: '“{n}” has archived items',       zh: '「{n}」有成員已封存' },
+    'e-shop.relist.blocked-body':  { en: 'Relist these items first, then relist the bundle:', zh: '先把這些成員重新上架，再重新上架組合包：' },
+    'e-shop.relist.blocked-ok':    { en: 'Got it',                         zh: '知道了' },
     'e-shop.delete.title':      { en: 'Delete draft “{n}”?',               zh: '要刪除草稿「{n}」嗎？' },
     'e-shop.delete.body':       { en: 'A deleted draft cannot be recovered.', zh: '草稿刪除後無法復原。' },
     'e-shop.delete.confirm':    { en: 'Delete',                            zh: '刪除' },
@@ -2700,7 +2719,7 @@
     /* nick persona 競標列的品項副標（狀況 · 對象／狀態）。整串建 key，比照 e-shop.a2.meta。 */
     'e-shop.anick.guitar.meta': { en: 'Like new · Inner Circle',           zh: '九成新 · Inner Circle' },
     'e-shop.anick.poster.meta': { en: 'New · Superfan and above',          zh: '全新 · Superfan 以上' },
-    'e-shop.anick.tape.meta':   { en: 'Collectible · Ended',               zh: '收藏品 · 已結標' },
+    'e-shop.anick.tape.meta':   { en: 'Collectible · Sold',                zh: '收藏品 · 完售' },   /* 2026-09-18 D286：跟隨 e-shop.astatus.ended 同步改「完售／Sold」，避免同一列徽章與副標文字不一致 */
     'e-shop.anick.dunk.meta':   { en: 'New · Limited custom',              zh: '全新 · 限量客製' },
     /* nick persona 組合列的成員組成（品項名＋件數）。 */
     'e-shop.bnick.set.members':   { en: 'Tee + cap + cargo pants + sneakers · 4 items', zh: 'Tee ＋ 老帽 ＋ 束口褲 ＋ 球鞋 · 4 件' },
@@ -2913,6 +2932,21 @@
     'e-shop.a3.name':         { en: 'Vintage synth',                       zh: '古董合成器' },
     'e-shop.a3.meta':         { en: 'Well-loved · All fans',               zh: '痕跡明顯 · 全部粉絲' },
     'e-shop.a3.activity':     { en: 'Winner @luna · Earnings $1,116',      zh: '得標 @luna · 實收 $1,116' },
+    /* 2026-09-18（D284／D285）拍賣三開關與封存的示範三列：已下架／已封存／隱藏 */
+    'e-shop.a4.name':         { en: 'Handwritten lyric sheet',              zh: '手寫歌詞手稿' },
+    'e-shop.a4.meta':         { en: 'Good · All fans',                      zh: '良好 · 全部粉絲' },
+    'e-shop.a4.activity':     { en: 'Winner @kai · Earnings $410',          zh: '得標 @kai · 實收 $410' },
+    'e-shop.a5.name':         { en: 'Tour laminate set 2023',               zh: '2023 巡演工作證組' },
+    'e-shop.a5.meta':         { en: 'Well-loved · Superfan+',               zh: '痕跡明顯 · 超粉以上' },
+    'e-shop.a5.activity':     { en: 'Winner @nori · Earnings $180',         zh: '得標 @nori · 實收 $180' },
+    'e-shop.a6.name':         { en: 'Demo cassette · 1 of 1',               zh: 'Demo 卡帶 · 1/1' },
+    'e-shop.a6.meta':         { en: 'Like new · Inner Circle',              zh: '九成新 · 核心圈' },
+    'e-shop.a6.activity':     { en: '3 bids · 2 bidders · 6d left',         zh: '3 次出價 · 2 人 · 剩 6 天' },
+    /* 2026-09-18（D287）流標示範列：結標但無人出價 */
+    'e-shop.a7.name':         { en: 'Tour enamel pin set',                  zh: '巡演琺瑯別針組' },
+    'e-shop.a7.meta':         { en: 'New · All fans',                       zh: '全新 · 全部粉絲' },
+    'e-shop.a7.bid':          { en: 'From $65',                             zh: '起標 $65' },
+    'e-shop.a7.activity':     { en: '0 bids · No winner',                   zh: '0 次出價 · 無人得標' },
     'e-shop.a.nobid':         { en: '—',                                   zh: '—' },
     'e-shop.a.more':          { en: 'More actions',                        zh: '更多操作' },
     'e-shop.a.copylink':      { en: 'Copy link',                           zh: '複製連結' },
@@ -2920,7 +2954,8 @@
     'e-shop.a.track':         { en: 'Track fulfilment',                    zh: '追蹤履約' },
     'e-shop.astatus.live':    { en: 'Live',                                zh: '競標中' },
     'e-shop.astatus.upcoming':{ en: 'Upcoming',                            zh: '即將開始' },
-    'e-shop.astatus.ended':   { en: 'Ended',                               zh: '已結束' },
+    'e-shop.astatus.ended':   { en: 'Sold',                                zh: '完售' },   /* 2026-09-18 D285：拍賣的停售＝結標；D286 改文案「完售／Sold」，key 名沿用 ended 不改 */
+    'e-shop.astatus.unsold':  { en: 'Unsold',                              zh: '流標' },   /* 2026-09-18 D287：結標時無人出價，與 ended（完售）同層的新桶 */
     'e-shop.astatus.shipped': { en: 'Shipped',                             zh: '已出貨' },
     /* F6 拍賣即時橫條（spec §124–128）*/
     'e-shop.live.count':      { en: '1 auction live',                      zh: '1 場競標進行中' },
@@ -2956,6 +2991,20 @@
     'e-shop.rowKeychain.cat': { en: 'Merch', zh: '周邊商品' },
     'e-shop.rowKeychain.price': { en: '$16.00', zh: '$16.00' },
     'e-shop.rowKeychain.stock': { en: '120 / ∞', zh: '120 / ∞' },
+    /* 2026-09-18 封存示範三列（D284）：明信片組／馬克杯已封存、刺繡布章已下架仍在上架中組合包裡 */
+    'e-shop.rowPostcard.cat': { en: 'Merch', zh: '周邊商品' },
+    'e-shop.rowPostcard.price': { en: '$12.00', zh: '$12.00' },
+    'e-shop.rowPostcard.stock': { en: '58 / ∞', zh: '58 / ∞' },
+    'e-shop.rowMug.cat': { en: 'Merch', zh: '周邊商品' },
+    'e-shop.rowMug.price': { en: '$14.00', zh: '$14.00' },
+    'e-shop.rowMug.stock': { en: '25 / ∞', zh: '25 / ∞' },
+    'e-shop.rowPatch.cat': { en: 'Merch', zh: '周邊商品' },
+    'e-shop.rowPatch.price': { en: '$9.00', zh: '$9.00' },
+    'e-shop.rowPatch.stock': { en: '80 / ∞', zh: '80 / ∞' },
+    /* 2026-09-18 D288 示範列：定時下架已到期的杯墊組 */
+    'e-shop.rowCoaster.cat': { en: 'Merch', zh: '周邊商品' },
+    'e-shop.rowCoaster.price': { en: '$11.00', zh: '$11.00' },
+    'e-shop.rowCoaster.stock': { en: '40 / ∞', zh: '40 / ∞' },
     'e-shop.rowBeanie.meta': { en: 'Colour (Black/Grey/Red)', zh: '顏色（黑／灰／紅）' },
     'e-shop.rowBeanie.cat': { en: 'Apparel', zh: '服飾' },
     'e-shop.rowBeanie.price': { en: '$30.00', zh: '$30.00' },
@@ -3068,23 +3117,23 @@
     'product-detail.btn.restock':   { en: 'Restock',      zh: '補貨' },
     'product-detail.btn.save':      { en: 'Save',         zh: '儲存' },
     /* 逐選項組合的庫存鎖定（2026-09-09 · D-pending／ASSUMPTIONS UIA-146）：列尾 ⋯ 的單列入口、
-       單列彈窗、編輯彈窗裡一次設定全部的大表格，以及管道分配表改唯讀後的去處說明。 */
+       單列彈窗、編輯彈窗裡一次設定全部的大表格，以及販售管道分配表改唯讀後的去處說明。 */
     'product-detail.var.lock':      { en: 'Lock stock',   zh: '鎖定庫存' },
     /* 鎖定庫存彈窗從卡頭打開時的副標（一次設定全部選項組合）；從列尾 ⋯ 打開時副標是該組合的名字。 */
     'product-detail.lock.all-sub':  { en: 'All option combinations', zh: '全部選項組合' },
     /* 編輯彈窗的「各選項組合價格與庫存」區副標：這裡沒有上限欄、庫存也不能直接改，不沿用建立頁那句。 */
     'product-detail.edit.combos-sub': { en: 'Price, SKU and cost per combination. Add stock via Restock.', zh: '每個組合各自的價格、SKU 與單件成本；庫存要加量走補貨' },
-    'product-detail.edit.locks-hint': { en: 'Blank means the channel shares whatever is unlocked', zh: '留空＝這個管道與其他沒鎖定的管道共用未鎖定的量' },
+    'product-detail.edit.locks-hint': { en: 'Blank means the channel shares whatever is unlocked', zh: '留空＝這個販售管道與其他沒鎖定的販售管道共用未鎖定的量' },
     /* 商品選項卡（多選項才有）：價格卡在多選項時不出現，價格逐組合填在庫存表，這句告訴使用者去哪裡改。 */
     'product-detail.options.sub':   { en: 'Price and cost per combination are edited here too', zh: '逐組合的價格與單件成本也在這裡編輯' },
     /* 庫存卡卡頭數字列 */
-    /* 商品明細只呈現單售這一個管道（2026-09-10 · D258）：表格欄名與長條圖例都講「鎖給單售」，
-       避免與組合包那一邊的「鎖給本組合」混淆；留在池裡的量沒有任何管道能賣時，用 pool-left 提示。 */
+    /* 商品明細只呈現單售這一個販售管道（2026-09-10 · D258）：表格欄名與長條圖例都講「鎖給單售」，
+       避免與組合包那一邊的「鎖給本組合」混淆；留在池裡的量沒有任何販售管道能賣時，用 pool-left 提示。 */
     'stock.lock-single':            { en: 'Locked',       zh: '鎖給單售' },
     /* 組合包詳情頁：成員是多選項商品時，母列標一句「逐選項組合設定」（D258）。 */
     'stock.per-variant':            { en: 'Per option combination', zh: '逐選項組合設定' },
     'stock.locked-single':          { en: 'Locked for single sale', zh: '鎖給單售' },
-    'stock.pool-left':              { en: '{n} left in the pool — no channel can sell them', zh: '{n} 件留在庫存池，沒有管道賣得到' },
+    'stock.pool-left':              { en: '{n} left in the pool — no channel can sell them', zh: '{n} 件留在庫存池，沒有販售管道賣得到' },
     'stock.single-sellable':        { en: 'Single sale can sell', zh: '單售可售' },
     /* 2026-09-11 商品庫存分頁（A 案）：四塊 KPI 磚、補貨中、庫存管理、庫存去向、庫存歷史紀錄 */
     'stock.unit':                   { en: 'pcs',                zh: '件' },
@@ -3315,7 +3364,7 @@
     /* D241（spec §7.14 組合包成交條件）：成員「隱藏」不再讓組合不可售——隱藏的成員照樣
        能被組合帶著成交。舊的 bd.impact.note 把下架與隱藏混為一談，改由這一條取代。 */
     'bd.impact.member-rule': { en: "A member stops this bundle when it is unlisted, off sale, or has nothing left to sell inside this bundle. Hiding it changes nothing — it still sells as part of a bundle. A member price rise can also push the bundle price above the members' total.", zh: '成員下架、未開賣，或在本組合的可售量歸零時，組合就不可售；成員隱藏不影響，照樣能被組合帶著賣。成員漲價則可能讓組合價高於成員合計。' },
-    'bd.stock.sub':          { en: 'Lock stock for this bundle, or leave it shared with the item\u2019s other channels', zh: '把商品的庫存鎖定給本組合，或維持與其他管道共用' },
+    'bd.stock.sub':          { en: 'Lock stock for this bundle, or leave it shared with the item\u2019s other channels', zh: '把商品的庫存鎖定給本組合，或維持與其他販售管道共用' },
     'bd.members.alloc-hint': { en: 'Lock amounts are edited in Bundle stock.', zh: '鎖定量在「組合庫存」分頁調整。' },
     /* §2.6 取貨與核銷（5.1.5.9）：組合成員含現場 QR 領取商品時才顯示，本區只呈現、不重定義規則本體。 */
     'bd.pickup.title':      { en: 'Pickup & redemption',      zh: '取貨與核銷' },
@@ -3363,9 +3412,12 @@
     'bd.lock.per':          { en: '{n} per set',             zh: '每套 {n}' },
     'bd.lock.none':         { en: 'None',                    zh: '未鎖定' },
     'bd.lock.meta.locked':  { en: 'Locked {n} sets',         zh: '鎖定 {n} 套' },
-    /* 因成員封存而下架、成員已封存（2026-09-18 · D284，5.1.5.9 §2.3） */
-    'bd.unlist.reason':     { en: 'Unlisted because “{n}” was archived. Relist that item or remove it before relisting the bundle.', zh: '因成員「{n}」封存而下架；要重新上架組合包，先把該商品重新上架或移出組合。' },
+    /* 因成員下架而一同下架、成員已封存／已下架（2026-09-18 · D284 → D288 改文案：連動點從封存移到下架，key 沿用）
+       reason-auto＝成員定時下架到期的自動連動（unlistReason.auto）。 */
+    'bd.unlist.reason':     { en: 'Unlisted together with “{n}”. Relisting the bundle relists that item with it.', zh: '因成員「{n}」下架而一同下架；重新上架組合包時會一起重新上架該商品。' },
+    'bd.unlist.reason-auto': { en: '“{n}” was unlisted on schedule, so this bundle was unlisted with it. Relisting the bundle relists that item with it.', zh: '成員「{n}」已依排程下架，本組合一併下架；重新上架組合包時會一起重新上架該商品。' },
     'bd.member.archived':   { en: '“{n}” is archived — the bundle cannot sell', zh: '成員「{n}」已封存，組合不可售' },
+    'bd.member.unlisted':   { en: '“{n}” is unlisted — the bundle cannot sell', zh: '成員「{n}」已下架，組合不可售' },
     'bd.lock.expand':       { en: 'Show options',            zh: '展開規格' },
     'bd.history.sets':      { en: 'Locked sets',             zh: '鎖定套數' },
     'bd.history.title':     { en: 'Activity log',            zh: '操作紀錄' },   /* 2026-09-11 使用者：「改操作紀錄」 */
@@ -3413,6 +3465,9 @@
     'ad.info.elig':         { en: 'Eligibility',             zh: '競標資格' },
     'ad.info.start':        { en: 'Starting price',          zh: '起標價' },
     'ad.info.reserve':      { en: 'Reserve',                 zh: '保留價' },
+    /* 2026-09-18（D287）流標結果列：右欄競標狀態卡，結標無出價時才顯示（見 auction-detail.html data-ad-unsold-row） */
+    'ad.info.result':       { en: 'Result',                  zh: '結果' },
+    'ad.result.unsold':     { en: 'Unsold — no bids',        zh: '流標 · 無人出價' },
     'ad.info.fee':          { en: 'Platform fee',            zh: '平台費' },
     'ad.info.fee-v':        { en: '10%',              zh: '10%' },
     'ad.info.fulfil':       { en: 'After the auction ends, the winning order, shipping and fulfilment are handled in Order management.', zh: '結標後，得標訂單、出貨與履約由訂單管理承接。' },
@@ -3428,6 +3483,16 @@
     'ad.info.sub':          { en: 'Set when the auction was created; locked once bidding is live.', zh: '於建立拍賣時設定；進入競標後鎖定。' },
     'ad.fulfil.title':      { en: 'Settlement & fulfilment', zh: '結標與履約' },
     'ad.rail.status':       { en: 'Auction status',          zh: '競標狀態' },
+    /* 2026-09-18（D284／D285）拍賣三開關、封存與下架確認 */
+    'ad.archived.banner':   { en: 'Archived — read-only. Relist it to run this auction again.', zh: '已封存：整頁唯讀，重新上架後才能再拍。' },
+    /* 墓碑（2026-09-18，D286）：`ad.unlist.live-title`／`ad.unlist.live-body`／`ad.unlist.confirm`
+       移除——使用者裁決「競標中不能下架」，Live 時鈕直接停用，不再有下架確認彈窗這條路徑。
+       出價者如何處理改記 ASSUMPTIONS UIA-153（暫定：時間到、最高出價者得標）。 */
+    'ad.unlist.live-disabled': { en: 'Available after bidding ends.', zh: '競標結束後才能下架' },
+    'ad.sale.sec':          { en: 'Bidding window',           zh: '開拍設定' },
+    'ad.sale.started-lock': { en: 'Bidding has started — start time and duration are locked.', zh: '競標已開始：開拍時間與時長不可調。' },
+    'ad.sale.duration':     { en: 'Duration',                 zh: '競標時長' },
+    'ad.sale.days':         { en: '{n} days',                 zh: '{n} 天' },
 
     /* ─── Events page ─────────────────────────────────────── */
     'events.h1':               { en: 'Events',                              zh: '活動' },
@@ -4814,7 +4879,7 @@
     'ca.h1':                { en: 'New auction',                      zh: '建立拍賣' },
     'ca.subtitle':          { en: 'Auction',                          zh: '拍賣' },
     'ca.h1.edit':           { en: 'Edit auction',                     zh: '編輯拍賣' },
-    'ca.delete.confirm':    { en: 'Delete this auction? This cannot be undone.', zh: '刪除這個拍賣？此動作無法復原。' },
+    /* 墓碑 2026-09-18（D284「發布過即不可刪除」）：`ca.delete.confirm`（刪除這個拍賣？此動作無法復原。）——create-auction.html 編輯態 #ca-delete 與 window.confirm 一併撤除；草稿刪除在電子商店清單、走確認彈窗。 */
     'ca.type.physical':     { en: 'Physical',                         zh: '實體' },
     'ca.type.physical-sub': { en: 'A real item shipped to the winner', zh: '得標後寄給得標者的實體物' },
     'ca.type.digital':      { en: 'Digital',                          zh: '數位' },
@@ -4931,14 +4996,19 @@
     'cp.auc.sealed-sub':    { en: 'Each bidder gets one final hidden bid near the end; highest wins. Window pending spec.', zh: '結標前每位出價者各有一次最終不公開出價、最高者得標；時段規格待補。' },
     'cp.auc.increment':     { en: 'Minimum increment: 5% above the current highest bid (auto-calculated).', zh: '最低增額：高於當前最高價 5%（自動計算）。' },
     /* 上架設定 → 定時開拍（spec 5.1.5.10 shared operations · D144；拍賣不設排程特價）*/
-    'ca.start.none':        { en: "Don't start",                      zh: '不開拍' },
-    'ca.start.now':         { en: 'Start now',                        zh: '立刻開拍' },
-    'ca.start.schedule':    { en: 'Schedule',                         zh: '定時開拍' },
-    'ca.start.none-sub':    { en: 'Save as draft, no auction yet',    zh: '存成草稿，先不開拍' },
-    'ca.start.now-sub':     { en: 'Bidding opens right after saving', zh: '儲存後立刻開始競標' },
-    'ca.start.schedule-sub':{ en: 'Auto-starts at the time you set',  zh: '到指定時間自動開拍' },
+    /* 墓碑 2026-09-18（D285「拍賣採三開關」）：`ca.start.none`（不開拍）、`ca.start.none-sub`、`ca.start.now`（立刻開拍）、
+       `ca.start.now-sub`、`ca.start.pending`——舊的單卡「上架設定 → 定時開拍」退場，上架設定改用 cp.listing.*（與建立商品同構），
+       開拍設定只剩「跟著上架一起開拍／定時開拍」兩選一。`ca.start.schedule`／`-sub`／`ca.start.time` 留給定時開拍那一項。 */
+    'ca.start.sec':         { en: 'Bidding',                          zh: '開拍設定' },
+    'ca.start.follow':      { en: 'Start as soon as it is listed',    zh: '跟著上架一起開拍' },
+    'ca.start.follow-sub':  { en: 'Bidding opens the moment it goes live', zh: '上架那一刻就開始競標' },
+    'ca.start.schedule':    { en: 'Start at a set time',              zh: '定時開拍' },
+    'ca.start.schedule-sub':{ en: 'Fans can see it earlier; bidding opens then', zh: '粉絲可以先看到，到指定時間才開始競標' },
     'ca.start.time':        { en: 'Start time',                       zh: '開拍時間' },
-    'ca.start.pending':     { en: 'Time zone & exact timing pending spec.', zh: '時區與時間精度待規格確認。' },
+    'ca.start.end':         { en: 'Ends',                             zh: '結標時間' },
+    'ca.start.end-hint':    { en: 'Start time + duration; set automatically', zh: '開拍時間＋競標時長，由系統算出' },
+    'ca.start.end-follow':  { en: 'Duration after listing',           zh: '上架後起算競標時長' },
+    'ca.listing.shown-hint':{ en: 'Hidden auctions stay open to anyone with the private link', zh: '隱藏後商店找不到，持非公開連結仍可出價' },
     /* §4.3 F12 競標資格 */
     'cp.elig.title':        { en: 'Who can bid?',                     zh: '競標資格' },
     'cp.elig.sub':          { en: 'Limit which fan tiers can join this auction.', zh: '限定哪些粉絲分級可參與此次競標。' },
@@ -5040,8 +5110,8 @@
     'cp.var.col.price':     { en: 'Price',                            zh: '價格' },
     'cp.var.col.stock':     { en: 'Stock',                            zh: '庫存' },
     'cp.var.col.total':     { en: 'Total',                            zh: '上限' },
-    /* 逐選項組合的鎖定（2026-09-09）：庫存＝這個組合總共有幾件，鎖定＝其中被各管道鎖走的合計，
-       未鎖定＝還沒被鎖走、由沒設鎖定的管道共用的量。三欄合起來讀成一句話。 */
+    /* 逐選項組合的鎖定（2026-09-09）：庫存＝這個組合總共有幾件，鎖定＝其中被各販售管道鎖走的合計，
+       未鎖定＝還沒被鎖走、由沒設鎖定的販售管道共用的量。三欄合起來讀成一句話。 */
     'cp.var.col.locked':    { en: 'Locked',                           zh: '鎖定' },
     'cp.var.col.free':      { en: 'Unlocked',                         zh: '未鎖定' },
     'cp.var.col.sku':       { en: 'SKU',                              zh: 'SKU' },
@@ -5111,10 +5181,9 @@
     'cp.h1.edit':           { en: 'Edit product',                     zh: '編輯商品' },
     'cp.h1.edit.pre':       { en: 'Edit',                             zh: '編輯' },
     'cp.save.changes':      { en: 'Save changes',                     zh: '儲存變更' },
-    'cp.delete':            { en: 'Delete',                           zh: '刪除' },
     /* 墓碑 2026-09-18（D284「發布過即不可刪除」）：`cp.delete.confirm`（確定刪除這個商品？此動作無法復原。）——
-       建立商品流程的編輯態刪除鈕（#cp-delete／#cp-delete-top）與 window.confirm 一併撤除；
-       `cp.delete` 本身留著：create-auction.html 的拍賣刪除鈕還在用（拍賣下一波處理）。 */
+       建立商品流程的編輯態刪除鈕（#cp-delete／#cp-delete-top）與 window.confirm 一併撤除。
+       同日第二波：`cp.delete`（刪除）也立墓碑——最後一個消費者 create-auction.html #ca-delete 隨 D285 落地撤除。 */
     'cp.preview':           { en: 'Preview',                          zh: '預覽' },
     'cp.preview.heading':   { en: 'Product preview',                  zh: '商品預覽' },
     'cp.preview.title':     { en: 'How buyers see it on Ztor',        zh: '買家在 Ztor 看到的樣子' },
@@ -5151,7 +5220,7 @@
        建立頁的上架列用 radio-list 三選一（none／now／schedule 三把舊 key 續用，
        create-project 與 create-auction 也在借），細節頁改用 switch（listed-switch）。 */
     /* 2026-09-04 D245：原本一個 section 三列（上架／顯示／開賣）拆成兩個 section。
-       'cp.listing.title' 只剩建立拍賣那頁在用（該頁還是舊的單卡上架設定），故保留。
+       'cp.listing.title' 2026-09-18 起零消費者（建立拍賣改用 sec-listed／ca.start.sec 兩段，D285）——留作墓碑候選，下次巡檢處理。
        'cp.listing.listed-h'、'cp.listing.sale-h'、'cp.listing.sale-hint' 三支隨拆分退場（墓碑）：
        section 標題已經寫了「上架設定」「開賣設定」，列標題再寫一次是重述上下文；
        原本的 sale-hint 那句話由開賣二選一的兩條 sub ＋ 停售欄的 hint 分別承接。 */
@@ -5169,7 +5238,7 @@
     'cp.listing.saleend-sched': { en: 'Close sales at a set time',    zh: '定時停售' },
     'cp.listing.saleend-sched-sub': { en: 'Checkout closes then; the item stays visible', zh: '到指定時間停止結帳，商店仍看得到' },
     'cp.listing.listed-switch': { en: 'Listed',                        zh: '上架' },
-    'cp.listing.listed-hint': { en: 'Unlisting stops every channel and kills all links', zh: '下架後所有管道都不能賣，連結全部失效' },
+    'cp.listing.listed-hint': { en: 'Unlisting stops every channel and kills all links', zh: '下架後所有販售管道都不能賣，連結全部失效' },
     'cp.listing.unlisted-lock': { en: 'Unlisted — show and sale settings are locked until it is listed again.', zh: '已下架：顯示與開賣設定要重新上架後才能調整。' },
     'cp.listing.archived-lock': { en: 'Archived — switches and schedules stay locked until it is relisted.', zh: '已封存：開關與排程都不可調，重新上架後才能調整。' },
     'cp.listing.shown-h':   { en: 'Show in shop',                      zh: '顯示於商店' },

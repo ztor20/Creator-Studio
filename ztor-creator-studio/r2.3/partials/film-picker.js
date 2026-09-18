@@ -1,8 +1,10 @@
 /* film-picker.js — 可搜尋的電影關聯多選元件（BR-NEW-1，spec 5.1.5.2 §4.5 F12 / 5.1.5.1 §2.14 / D140）
    復用既有 tag-input + chip 元件（無自帶 CSS）：搜尋輸入格過濾候選、建議 chip 點選加入、已選 chip 可移除。
-   候選來自 window.ztorFilms（films-store.js）。create-product 與 product-detail 共用。
-   API：window.ZTOR_PARTIALS.createFilmPicker(hostEl, { selected?: string[], onChange?: (ids)=>void })
-        → { getSelected(): string[] }。host 內容由本元件接管。 */
+   候選來自 window.ztorFilms（films-store.js）。create-product／product-detail／create-bundle／bundle-detail 共用。
+   API：window.ZTOR_PARTIALS.createFilmPicker(hostEl, { selected?: string[], onChange?: (ids)=>void, readonly?: boolean })
+        → { getSelected(): string[], setReadonly(bool): void, isReadonly(): boolean }。host 內容由本元件接管。
+   唯讀模式（2026-09-18 · D288「封存唯讀涵蓋所有分頁與逐列操作」）：host 標 data-readonly，搜尋格與建議列收起、
+   已選 chip 拿掉 ×（只剩查看）；元件層自己不接受加入／移除，頁面即使漏擋也改不到資料。 */
 (function () {
   'use strict';
   window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
@@ -14,6 +16,7 @@
     var selected = (opts.selected || []).slice();
     var onChange = typeof opts.onChange === 'function' ? opts.onChange : function () {};
     var films = window.ztorFilms.list();
+    var readonly = !!opts.readonly;
 
     host.innerHTML =
       '<div class="tag-input">' +
@@ -30,18 +33,29 @@
     var field = host.querySelector('[data-fp-field]'),
         search = host.querySelector('[data-fp-search]'),
         suggest = host.querySelector('[data-fp-suggest]'),
-        none = host.querySelector('[data-fp-none]');
+        none = host.querySelector('[data-fp-none]'),
+        suggestWrap = suggest.parentNode;
 
     function renderSelected() {
       field.querySelectorAll('.chip').forEach(function (c) { c.remove(); });
       selected.forEach(function (id) {
         var chip = document.createElement('span');
-        chip.className = 'chip chip--active chip--removable';
-        chip.innerHTML = '<span>' + esc(window.ztorFilms.title(id)) + '</span><button class="chip__remove" type="button" data-fp-remove="' + id + '" aria-label="Remove movie"><i data-lucide="x" class="ztor-icon"></i></button>';
+        chip.className = 'chip chip--active' + (readonly ? '' : ' chip--removable');
+        chip.innerHTML = '<span>' + esc(window.ztorFilms.title(id)) + '</span>'
+          + (readonly ? '' : '<button class="chip__remove" type="button" data-fp-remove="' + id + '" aria-label="Remove movie"><i data-lucide="x" class="ztor-icon"></i></button>');
         field.insertBefore(chip, search);
       });
       if (window.ztorIcons) window.ztorIcons.applyIcons(field);
     }
+    /* 唯讀：搜尋格與建議列收起、chip 無 ×；host 標 data-readonly 給頁面與樣式判讀。可來回切（封存 ↔ 重新上架）。 */
+    function applyReadonly() {
+      host.toggleAttribute('data-readonly', readonly);
+      search.hidden = readonly;
+      search.disabled = readonly;
+      suggestWrap.hidden = readonly;
+      field.setAttribute('aria-readonly', readonly ? 'true' : 'false');
+    }
+    function setReadonly(on) { readonly = !!on; applyReadonly(); renderSelected(); }
     function renderSuggest() {
       var q = (search.value || '').trim().toLowerCase();
       var avail = films.filter(function (f) { return selected.indexOf(f.id) < 0 && (!q || f.title.toLowerCase().indexOf(q) >= 0); });
@@ -56,19 +70,26 @@
     function refresh() { renderSelected(); renderSuggest(); onChange(selected.slice()); }
 
     field.addEventListener('click', function (e) {
+      if (readonly) return;
       var rm = e.target.closest('[data-fp-remove]');
       if (rm) { var i = selected.indexOf(rm.dataset.fpRemove); if (i >= 0) selected.splice(i, 1); refresh(); return; }
       if (e.target === field) search.focus();
     });
     suggest.addEventListener('click', function (e) {
+      if (readonly) return;
       var add = e.target.closest('[data-fp-add]');
       if (add) { if (selected.indexOf(add.dataset.fpAdd) < 0) selected.push(add.dataset.fpAdd); search.value = ''; refresh(); }
     });
     search.addEventListener('input', renderSuggest);
 
+    applyReadonly();
     refresh();
     if (window.applyI18n) window.applyI18n(host);
-    return { getSelected: function () { return selected.slice(); } };
+    return {
+      getSelected: function () { return selected.slice(); },
+      setReadonly: setReadonly,
+      isReadonly: function () { return readonly; }
+    };
   }
 
   window.ZTOR_PARTIALS.createFilmPicker = createFilmPicker;

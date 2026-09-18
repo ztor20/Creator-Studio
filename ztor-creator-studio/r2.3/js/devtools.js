@@ -840,7 +840,12 @@
     if (act === 'close') return close();
     if (act === 'minimize') { var m = root.classList.toggle('is-min'); try { localStorage.setItem(MIN_LS, m ? '1' : '0'); } catch (e) {} return paint(); }
     if (act === 'tab') { activeTab = btn.getAttribute('data-tab'); try { localStorage.setItem(TAB_LS, activeTab); } catch (e) {} return paint(); }
-    if (act === 'reset') { state = Object.assign({}, DEFAULTS); state.pageOpts = {}; seedPageOpts(); setInspect(false); return update(); }
+    if (act === 'reset') {
+      state = Object.assign({}, DEFAULTS); state.pageOpts = {}; seedPageOpts(); setInspect(false);
+      /* 2026-09-18 D288：電子商店的下架／封存／連動結果記在 sessionStorage（products-store 的工作階段覆蓋），Reset 一併清掉回到 seed */
+      if (window.ProductsStore && window.ProductsStore.forgetSession) window.ProductsStore.forgetSession();
+      return update();
+    }
     if (act === 'reonboard') { try { localStorage.removeItem(ONBOARD_LS); } catch (e) {} showOnboarding(); return; }
     /* 清回四筆種子後重新整理：審核狀態塊、發文類型下拉、項目狀態徽章都是載入時算的，
        不 reload 的話畫面還停在舊結果，看起來像沒清掉。 */

@@ -573,7 +573,7 @@
      分頁（唯一標準），寫回一律走 ListingState.applyBundleLock。
      建立流程還沒有真正的商品記錄，所以就地把候選列的 data-stock 包成 ListingState
      認得的形狀：一顆池 ＋ 三態鎖定量（null＝沒鎖定、數字含 0＝鎖定模式）。
-     本組合是一個還沒存檔的販售管道，暫時用 DRAFT_ID 當管道 id。 */
+     本組合是一個還沒存檔的販售管道，暫時用 DRAFT_ID 當販售管道 id。 */
   const DRAFT_ID = 'cb-draft';
   const LS = window.ListingState;
   const products = {};                       /* 列 id → 商品（帶池與鎖定） */
@@ -614,7 +614,7 @@
   const poolTotal = v => (!v || v === 'unlimited' || v === '∞') ? 'unlimited' : (parseFloat(v) || 0);
   /* 候選列 → 商品物件（同一列只包一次，鎖定量留在物件上，移除再加入時重置）*/
   function productOf(row) {
-    /* 候選列來自商品資料源時（data-id），直接用那一筆商品：它的庫存池與其他管道
+    /* 候選列來自商品資料源時（data-id），直接用那一筆商品：它的庫存池與其他販售管道
        既有的鎖定量都是真的，分配表算「沒有被鎖定的庫存量」才不會憑空多出可用件數。
        嵌入建立流程臨時新增的商品沒有 id，走下面就地包一顆池的舊路。 */
     const sid = row.dataset.id;
@@ -1093,7 +1093,7 @@
     row.onclick = null;
     selected.appendChild(row);
     if (window.ztorIcons) window.ztorIcons.applyIcons(end);
-    /* D241：成員預設不鎖定（lock=null）＝與其他管道共用該商品的沒有被鎖定的庫存量。 */
+    /* D241：成員預設不鎖定（lock=null）＝與其他販售管道共用該商品的沒有被鎖定的庫存量。 */
     const p = productOf(row);
     if (!bundleDraft.members.some(m => m.productId === p.id)) bundleDraft.members.push({ productId: p.id, qty: 1 });
     renderAlloc();
