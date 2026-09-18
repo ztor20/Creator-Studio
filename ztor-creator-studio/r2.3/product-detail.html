@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2"><!-- 封存確認彈窗（D284） -->
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-more.css?v=r2.2"><link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
@@ -93,6 +94,13 @@
         <div class="detail-topbar__tabs" data-dock-tabs></div>
         <div class="page-intro__actions">
           <button class="btn btn--outline" type="button" data-pd-preview-open data-dock-icon><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.preview">See as fan</span></button>
+          <!-- 頁首主要動作依狀態互斥、一次只出現一個（spec 5.1.5.1 §2.2，主規格 §7.14「封存與不可刪除」· D284，2026-09-18）：
+               上架中→「下架」（＝把上架開關切關，同一份資料）；已下架→「封存」（先確認；仍在上架中組合包裡則列出並一同下架）；
+               已封存→「重新上架」（不確認、直接回到上架）。本頁沒有刪除——發布過的商品任何頁面都不提供刪除入口。
+               顯隱由 syncPrimaryAction() 依 ListingState 決定，這裡三顆都先 hidden。 -->
+          <button class="btn btn--outline" type="button" data-pd-unlist hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button>
+          <button class="btn btn--outline" type="button" data-pd-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
+          <button class="btn btn--primary" type="button" data-pd-relist hidden><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="product-detail.btn.relist">Relist</span></button>
           <div data-dock-actions></div>
           <!-- 2026-09-11 撤除頁級「儲存」：商品設定分頁改成「編輯商品 → 儲存變更」的開關（同活動詳情），
                總覽分頁的補貨／鎖定各自在彈窗裡儲存，頁面上已沒有「整頁一起存」的東西。 -->
@@ -115,6 +123,16 @@
           <p class="pd-hero__desc" id="pd-hero-meta"><span data-pd-hero-price></span> · <span data-pd-hero-var></span></p>
         </div>
       </section>
+      <!-- 封存態說明（D284）：整頁唯讀、只能重新上架。沿用 info-banner，icon 換 archive；未封存時整條收起。 -->
+      <div class="info-banner mt-16" data-pd-archived-banner hidden>
+        <i data-lucide="archive" class="ztor-icon info-banner__icon"></i>
+        <span data-i18n="product-detail.archived.banner">Archived — read-only. Relist it to edit or sell again.</span>
+      </div>
+      <!-- 未開賣提醒（2026-09-18 · D290）：上架中但開賣設定停在「未開賣」（下架後重新上架的常態）時露出，設了開賣就收起 -->
+      <div class="info-banner mt-16" data-pd-relist-sale-banner hidden>
+        <i data-lucide="clock" class="ztor-icon info-banner__icon"></i>
+        <span data-i18n="cp.listing.relist-sale-note">Relisted without a sale — set one so fans can buy.</span>
+      </div>
 
       <!-- 兩欄版型：左＝銷售摘要（常駐）＋編輯分頁；右＝唯讀 meta 欄（跨分頁常駐）-->
 
@@ -782,6 +800,13 @@
             </div>
           </div>
         </div>
+        <!-- 取貨與退貨說明（2026-09-18 D291，同 create-product）：兩種取貨方式共用一格，放在兩套子欄位之外；
+             編輯態由 applyReadonly 一併放開（它掃 settingsPanel 內所有 textarea）。 -->
+        <div class="field">
+          <div class="field__label" data-i18n="cp.delivery.returns">Pickup &amp; returns</div>
+          <div class="field__hint" data-i18n="cp.delivery.returns.hint">Shown on the product page for both shipping and on-site pickup. Optional — leave blank to hide the section.</div>
+          <textarea class="textarea" id="pd-delivery-returns" rows="3" maxlength="200" data-i18n-placeholder="cp.delivery.returns.ph" placeholder="e.g. Ready within 3–5 business days. Exchanges accepted within 7 days of delivery, unworn and with tags attached.">Ready within 3–5 business days. Exchanges accepted within 7 days of delivery, unworn and with tags attached.</textarea>
+        </div>
         </div>
 
         <!-- 數位交付：購買後即時下載／存取（內容檔於商品內容卡管理） 數位下載／存取規則。
@@ -908,6 +933,11 @@
                     <button class="radio-list__item" type="button" data-pd-sale-mode="schedule">
                       <span class="radio-list__dot"></span>
                       <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-list__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
+                    </button>
+                    <!-- 未開賣（2026-09-18 · D290）：下架後開賣退回這一項、重新上架後也停在這；只有細節頁有（建立頁不會處在「上架卻未開賣」） -->
+                    <button class="radio-list__item" type="button" data-pd-sale-mode="off">
+                      <span class="radio-list__dot"></span>
+                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-off">Not on sale</span><span class="radio-list__sub" data-i18n="cp.listing.sale-off-sub">Checkout stays closed until you set a sale</span></span>
                     </button>
                   </div>
                 </div>
@@ -1073,6 +1103,7 @@
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
+<script src="partials/archived-gate.js?v=r2.2"></script><!-- 封存態唯讀的事件層閘門（D288） -->
 <script src="partials/fan-store.js?v=r2.2"></script>
 <script src="partials/album-tracks.js?v=r2.2"></script>
 <script src="partials/vip-card.js?v=r2.2"></script>
@@ -1670,6 +1701,9 @@
       if (saleLctl) saleLctl.classList.toggle('lctl--locked', !listedOn);
       document.querySelectorAll('[data-pd-lock-note]').forEach(n => { n.hidden = listedOn; });
       if (shownToggle) shownToggle.setAttribute('aria-disabled', listedOn ? 'false' : 'true');
+      /* D290：上架中但未開賣（重新上架後的常態）→ 提醒 banner 露出；設了開賣（onSale 回 true）就收起 */
+      const saleBanner = document.querySelector('[data-pd-relist-sale-banner]');
+      if (saleBanner) saleBanner.hidden = !(listedOn && !window.ListingState.isArchived(product) && !window.ListingState.isOnSale(product));
       {
         if (!shownOn) {
           if (!product.privateLink) product.privateLink = window.ListingState.privateLinkFor(product.id);
@@ -1677,6 +1711,8 @@
         }
       }
       renderBadges();
+      /* 總覽分頁的「上架與開賣」列讀的是表單值，下架／重新上架／改開賣後要跟著重畫（D290） */
+      if (window.pdRenderSettingsOverview) window.pdRenderSettingsOverview();
     }
     const listedToggle = document.getElementById('pd-listed-toggle');
     const shownToggle = document.getElementById('pd-shown-toggle');
@@ -1690,7 +1726,8 @@
         syncListingCard();
       });
     }
-    bindSwitch(listedToggle, () => product.listed !== false, on => { product.listed = on; });
+    /* 切開＝重新上架（D290：走 ListingState.relist，回來是未開賣、排程全空，開賣卡由 paintSaleCard 重畫）；切關由 initArchiveState 攔下先確認 */
+    bindSwitch(listedToggle, () => product.listed !== false, on => { if (on) { window.ListingState.relist(product); if (window.pdPaintSaleCard) window.pdPaintSaleCard(); } else product.listed = false; });
     bindSwitch(shownToggle, () => product.shown !== false, on => {
       product.shown = on;
       /* 切回顯示：非公開連結作廢，欄位一併清空——留著會讓人以為那條還能用（§2.17）。 */
@@ -1766,10 +1803,22 @@
     if (pdSm) pdSm.addEventListener('radio-list:change', e => {
       pdSaleMode = e.detail.item.dataset.pdSaleMode || 'follow';
       syncPdSaleMode();
-      /* 切回「立即開賣」＝把排定的開賣時間收掉，否則畫面說立刻開賣、資料卻還排著。 */
-      if (pdSaleMode === 'follow' && pdSaleStart) { pdSaleStart.value = ''; product.saleStart = null; renderBadges(); }
+      /* 切回「立即開賣」＝把排定的開賣時間收掉，否則畫面說立刻開賣、資料卻還排著。
+         D290：「未開賣」＝onSale=false（開賣時間也清）；另外兩項都是開賣（onSale=true）。改完寫進工作階段。 */
+      if (pdSaleMode !== 'schedule' && pdSaleStart) { pdSaleStart.value = ''; product.saleStart = null; }
+      product.onSale = pdSaleMode !== 'off';
+      if (window.ProductsStore && window.ProductsStore.commit) window.ProductsStore.commit(product);
+      syncListingCard();
     });
     syncPdSaleMode();
+    /* 開賣卡的值由資料決定（D290）：下架／重新上架之後把二選一、開賣時間、定時停售同步回資料的樣子 */
+    function paintSaleCard() {
+      setPdSaleMode(product.onSale === false ? 'off' : (product.saleStart ? 'schedule' : 'follow'));
+      if (pdSaleStart) pdSaleStart.value = product.saleStart ? String(product.saleStart).slice(0, 16) : '';
+      if (pdSaleEnd) pdSaleEnd.value = product.saleEnd ? String(product.saleEnd).slice(0, 16) : '';
+      paintSchedToggle('pd-saleend-toggle', '[data-pd-saleend-fields]', !!product.saleEnd);
+    }
+    window.pdPaintSaleCard = paintSaleCard;
     /* 上架與下架日期與時間：改了就寫回記錄，徽章跟著重推（排定上架但還沒到＝已下架，由 ListingState 判）。 */
     [['pd-listing-time', 'listAt'], ['pd-unlist-time', 'unlistAt']].forEach(([id, field]) => {
       const el = document.getElementById(id);
@@ -1891,7 +1940,7 @@
       put('pd-listing-time', product.listAt);
       put('pd-unlist-time', product.unlistAt);
       put('pd-listing-sale-start', product.saleStart);
-      setPdSaleMode(product.saleStart ? 'schedule' : 'follow');
+      setPdSaleMode(product.onSale === false ? 'off' : (product.saleStart ? 'schedule' : 'follow'));   /* D290：未開賣是第三項 */
       paintSchedToggle('pd-unlist-toggle', '[data-pd-unlist-fields]', !!product.unlistAt);
       paintSchedToggle('pd-saleend-toggle', '[data-pd-saleend-fields]', !!product.saleEnd);
       put('pd-listing-sale-end', product.saleEnd);
@@ -1915,6 +1964,163 @@
       };
       pct.addEventListener('input', sync);
       sync();
+    })();
+
+    /* ── 頁首主要動作依狀態互斥＋下架確認與組合包連動＋封存態唯讀（spec 5.1.5.1 §2.2／§2.16／§4，主規格 §7.14 · D284／D288，2026-09-18）──
+       規則本體在 ListingState（canArchive／archive／relist／listedBundlesUsing／unlistWithBundles），這裡只負責：哪顆鈕露出、
+       下架前的確認（仍在上架中組合包裡＝列出組合包、主鈕「一同下架這些組合包」，D288 把這個彈窗從封存搬到下架）、
+       封存的單純確認（只看已下架、不再列組合包）、封存時把整頁收成唯讀。彈窗一律借 leave-dialog 的殼，與 e-shop 同一套文案。
+       唯讀的做法（雙保險）：(1) 商品設定分頁本來就預設檢視態（data-mode="view"），封存時把「編輯商品」入口藏掉、
+       上架卡整組上 .lctl--locked、總覽與庫存分頁裡會改資料的按鈕（補貨／鎖定／到貨確認）與逐列「⋯」裡的上架開關／鎖定一律 hidden——
+       庫存表是事件驅動重畫的，用 MutationObserver 在每次重畫後再收一次；關聯分頁的選片器切 readonly（元件層）。
+       (2) partials/archived-gate.js 在事件層再擋一次：main[data-archived] 時任何會改資料的控件都到不了 handler（D288 盤點到的三個漏洞：
+       逐列上架開關、逐列鎖定、選片器，都靠這層兜底）。 */
+    (function initArchiveState() {
+      const L = window.ListingState, S = window.ProductsStore;
+      if (!L || !product) return;
+      const main = document.querySelector('.main') || document.body;
+      const btnUnlist = document.querySelector('[data-pd-unlist]');
+      const btnArchive = document.querySelector('[data-pd-archive]');
+      const btnRelist = document.querySelector('[data-pd-relist]');
+      const banner = document.querySelector('[data-pd-archived-banner]');
+      const listing = document.querySelector('[data-pd-listing]');
+      /* 逐列「⋯」的三個項目（上架開關／補貨／鎖定）都是會改資料的動作，封存時全部收起（D288 盤點的漏洞）；
+         選單裡沒有查看類項目可留，所以整顆「⋯」一併收起，不留空選單。 */
+      const PRUNE = '[data-pd-editmode],[data-pd-edit-cancel],[data-pd-lock-all],[data-restock-open],[data-pd-lock-edit],[data-pd-receive],[data-pd-lock-open],[data-variant-listed],[data-variant-lock]';
+      let observer = null;
+      const KEBAB = '.variant-table__row details.dropdown';
+      const prune = () => {
+        document.querySelectorAll(PRUNE).forEach(el => { el.hidden = true; });
+        document.querySelectorAll(KEBAB).forEach(dd => {
+          const items = [...dd.querySelectorAll('.dropdown__item')];
+          dd.hidden = items.length > 0 && items.every(el => el.hidden);
+        });
+      };
+      /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「重新上架」永遠放行 */
+      if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { block: PRUNE + ',[data-pd-opt-editor] button,[data-pd-variant-table] button:not(summary)', allow: '[data-pd-relist],[data-pd-preview-open],[data-pd-preview-close],[data-rowdis]' });
+      const setSwitch = (el, on) => { if (!el) return; el.classList.toggle('switch--on', !!on); el.setAttribute('aria-checked', on ? 'true' : 'false'); };
+      function syncPrimaryAction() {
+        const archived = L.isArchived(product);
+        const draft = !!product.draft;
+        if (btnUnlist) btnUnlist.hidden = archived || draft || L.isUnlisted(product);
+        if (btnArchive) btnArchive.hidden = !L.canArchive(product);
+        if (btnRelist) btnRelist.hidden = !archived;
+      }
+      function applyArchived() {
+        const archived = L.isArchived(product);
+        main.toggleAttribute('data-archived', archived);
+        if (banner) banner.hidden = !archived;
+        if (listing) listing.classList.toggle('lctl--locked', archived);
+        if (listedToggle) { listedToggle.setAttribute('aria-disabled', archived ? 'true' : 'false'); listedToggle.classList.toggle('switch--disabled', archived); }
+        /* 鎖定說明改講封存（三開關與排程全部不可調，重新上架後才能調） */
+        document.querySelectorAll('[data-pd-lock-note]').forEach(n => {
+          const key = archived ? 'cp.listing.archived-lock' : 'cp.listing.unlisted-lock';
+          n.setAttribute('data-i18n', key);
+          n.textContent = T(key, archived ? 'Archived — switches and schedules stay locked until it is relisted.' : 'Unlisted — show and sale settings are locked until it is listed again.');
+        });
+        /* 關聯分頁的選片器：元件層唯讀（搜尋格與建議列收起、chip 無 ×），封存 ↔ 重新上架來回切 */
+        if (window.pdFilmPicker && window.pdFilmPicker.setReadonly) window.pdFilmPicker.setReadonly(archived);
+        if (archived) {
+          prune();
+          if (!observer) { observer = new MutationObserver(prune); observer.observe(main, { childList: true, subtree: true }); }
+        } else if (observer) {
+          observer.disconnect(); observer = null;
+          document.querySelectorAll(PRUNE).forEach(el => { if (!el.matches('[data-pd-edit-cancel]')) el.hidden = false; });
+          document.querySelectorAll(KEBAB).forEach(dd => { dd.hidden = false; });
+        }
+        syncPrimaryAction();
+      }
+      /* 上架卡的開關值由資料決定：下架／封存／重新上架之後把三顆開關與時間欄同步回資料的樣子 */
+      function paintListingCard() {
+        setSwitch(listedToggle, product.listed !== false);
+        setSwitch(shownToggle, product.shown !== false);
+        const lt = document.getElementById('pd-listing-time'); if (lt) lt.value = product.listAt ? String(product.listAt).slice(0, 16) : '';
+        const ut = document.getElementById('pd-unlist-time'); if (ut) ut.value = product.unlistAt ? String(product.unlistAt).slice(0, 16) : '';
+        paintSchedToggle('pd-unlist-toggle', '[data-pd-unlist-fields]', !!product.unlistAt);
+        if (window.pdPaintSaleCard) window.pdPaintSaleCard();   /* D290：下架清了開賣時間、退回未開賣，開賣卡跟著重畫 */
+        syncListingCard();
+        applyArchived();
+      }
+      /* 確認彈窗：同 e-shop 的三種內容之二（封存／擋下），殼在 </body> 前 */
+      /* 彈窗 markup 在 </body> 前、這段 script 在它之前執行，所以每次用時才查（同 e-shop 的做法） */
+      const getDialog = () => document.querySelector('[data-pd-confirm-dialog]');
+      let pending = null;
+      function askConfirm(opts) {
+        const dialog = getDialog();
+        if (!dialog) { opts.onConfirm(); return; }
+        const title = dialog.querySelector('[data-pd-confirm-title]'), body = dialog.querySelector('[data-pd-confirm-body]');
+        const list = dialog.querySelector('[data-pd-confirm-list]'), ok = dialog.querySelector('[data-pd-confirm-ok]');
+        if (title) title.textContent = opts.title || '';
+        if (body) body.textContent = opts.body || '';
+        if (list) {
+          const items = opts.items || [];
+          list.hidden = !items.length;
+          list.innerHTML = items.map(n => '<li class="leave-dialog__list-item"><i data-lucide="package" class="ztor-icon"></i><span>' + esc(n) + '</span></li>').join('');
+          if (items.length && window.ztorIcons) window.ztorIcons.applyIcons(list);
+        }
+        if (ok) { const sp = ok.querySelector('span') || ok; sp.setAttribute('data-i18n', opts.okKey); sp.textContent = T(opts.okKey, opts.okFallback); }
+        pending = opts.onConfirm;
+        dialog.setAttribute('data-open', '');
+        if (ok) ok.focus();
+      }
+      const closeConfirm = () => { pending = null; const dialog = getDialog(); if (dialog) dialog.removeAttribute('data-open'); };
+      document.addEventListener('click', e => {
+        if (e.target.closest('[data-pd-confirm-ok]')) { const fn = pending; closeConfirm(); if (fn) fn(); return; }
+        if (e.target.closest('[data-pd-confirm-cancel]')) closeConfirm();
+      });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && pending) closeConfirm(); });
+
+      const commit = () => { if (S && S.commit) S.commit(product); };
+      /* 下架一律先確認（§7.14「下架確認與組合包連動」· D288 裁決一）；仍在上架中組合包裡＝列出組合包、確認＝一同下架（裁決二）。
+         頁首「下架」鈕與上架卡的開關切關是同一個動作、走同一個彈窗；取消＝不下架、開關維持開著。 */
+      function askUnlist() {
+        if (L.isArchived(product) || L.isUnlisted(product)) return;
+        const blockers = S && S.unlistBlockers ? S.unlistBlockers(product.id) : [];
+        const name = product.name || '';
+        if (blockers.length) {
+          askConfirm({
+            title: T('e-shop.unlist.blocked-title', '“{n}” is still in listed bundles').replace('{n}', name),
+            body: T('e-shop.unlist.blocked-body', 'Unlisting it also unlists these bundles:'),
+            items: blockers.map(b => b.name),
+            okKey: 'e-shop.unlist.blocked-confirm', okFallback: 'Unlist these bundles too',
+            onConfirm: () => { L.unlistWithBundles(product, blockers); blockers.forEach(b => { if (S && S.commit) S.commit(b); }); commit(); paintListingCard(); }
+          });
+          return;
+        }
+        askConfirm({
+          title: T('e-shop.unlist.title', 'Unlist “{n}”?').replace('{n}', name),
+          body: T('e-shop.unlist.body', 'Public and private links stop working and fans no longer see its page. You can relist it anytime.'),
+          okKey: 'e-shop.unlist.confirm', okFallback: 'Unlist',
+          onConfirm: () => { L.unlist(product); commit(); paintListingCard(); }
+        });
+      }
+      if (btnUnlist) btnUnlist.addEventListener('click', askUnlist);
+      /* 封存只看「已下架」、單純確認，不再檢查組合包（D288 修正 D284 裁決四） */
+      if (btnArchive) btnArchive.addEventListener('click', () => {
+        if (!L.canArchive(product)) return;
+        askConfirm({
+          title: T('e-shop.archive.title', 'Archive “{n}”?').replace('{n}', product.name || ''),
+          body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can relist it anytime.'),
+          okKey: 'e-shop.archive.confirm', okFallback: 'Archive',
+          onConfirm: () => { L.archive(product); commit(); paintListingCard(); }
+        });
+      });
+      if (btnRelist) btnRelist.addEventListener('click', () => { L.relist(product); commit(); paintListingCard(); });
+      /* 上架開關切關＝下架，同樣先確認：capture 階段攔下、不讓開關自己翻面，確認後由 paintListingCard 畫成關。
+         切開（自已下架重新上架）不擋、只記錄。 */
+      if (listedToggle) {
+        const intercept = e => {
+          if (e.type === 'keydown' && e.key !== ' ' && e.key !== 'Enter') return;
+          if (listedToggle.getAttribute('aria-disabled') === 'true') return;
+          if (product.listed !== false) { e.stopImmediatePropagation(); e.preventDefault(); askUnlist(); }
+        };
+        listedToggle.addEventListener('click', intercept, true);
+        listedToggle.addEventListener('keydown', intercept, true);
+        /* 上架開關自己切開時，頁首那顆也要跟著換（同一份 product.listed），並記進工作階段 */
+        listedToggle.addEventListener('click', () => { commit(); syncPrimaryAction(); });
+      }
+      document.addEventListener('i18n:applied', syncPrimaryAction);
+      applyArchived();
     })();
 
     applyCat(); applyVis(); syncLocked();
@@ -2005,7 +2211,8 @@
     var host = document.querySelector('[data-pd-film-picker]');
     var selectedFilms = (window.pdProduct && Array.isArray(window.pdProduct.films)) ? window.pdProduct.films.slice() : [];
     if (host && window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createFilmPicker) {
-      window.ZTOR_PARTIALS.createFilmPicker(host, { selected: selectedFilms, onChange: function () { if (window.pdRenderDest) window.pdRenderDest(); if (window.pdRenderSettingsOverview) window.pdRenderSettingsOverview(); } });
+      /* readonly＝已封存（D288 封存唯讀涵蓋關聯分頁）；之後的封存／重新上架由 initArchiveState 的 applyArchived 呼叫 setReadonly */
+      window.pdFilmPicker = window.ZTOR_PARTIALS.createFilmPicker(host, { selected: selectedFilms, readonly: !!(window.pdProduct && window.pdProduct.archived), onChange: function () { if (window.pdRenderDest) window.pdRenderDest(); if (window.pdRenderSettingsOverview) window.pdRenderSettingsOverview(); } });
     }
   }());
 </script>
@@ -2872,12 +3079,14 @@
         : shownOn ? { kind: 'on', text: T('product-detail.setov.ls.shown', 'Shown') }
         : { kind: 'off', text: T('product-detail.setov.ls.hidden', 'Hidden · private link') }]) });
       var saleFuture = mode && mode.getAttribute('data-pd-sale-mode') === 'schedule' && sStart && new Date(sStart).getTime() > nowT;
+      var saleOff = mode && mode.getAttribute('data-pd-sale-mode') === 'off';   /* D290 未開賣 */
       var saleEnded = sEnd && new Date(sEnd).getTime() <= nowT;
       var saleItems = !listedNow ? [{ kind: 'off', text: T('product-detail.setov.ls.na', 'Needs listing first') }]
+        : saleOff ? [{ kind: 'off', text: T('product-detail.setov.ls.not-on-sale', 'Not on sale') }]
         : saleFuture ? [{ kind: 'scheduled', text: T('product-detail.setov.ls.sale-at', 'Sale starts {t}').replace('{t}', fmtT(sStart)) }]
         : saleEnded ? [{ kind: 'ended', text: T('product-detail.setov.ls.ended', 'Sale ended') }]
         : [{ kind: 'on', text: T('product-detail.setov.ls.on-sale', 'On sale') }];
-      if (listedNow && !saleEnded && sEnd) saleItems.push({ kind: 'scheduled', text: T('product-detail.setov.ls.sale-end', 'ends {t}').replace('{t}', fmtT(sEnd)) });
+      if (listedNow && !saleOff && !saleEnded && sEnd) saleItems.push({ kind: 'scheduled', text: T('product-detail.setov.ls.sale-end', 'ends {t}').replace('{t}', fmtT(sEnd)) });
       rows.push({ g: 'listing', go: 'publish', key: 'product-detail.setov.st-sale', fb: 'On sale', html: stateChecksHTML(saleItems) });
       return rows;
     }
@@ -3056,5 +3265,19 @@
 <script src="js/devtools.js?v=r2.2"></script>
 
 <script src="js/zselect.js?v=r2.2"></script>
+<!-- 下架／封存確認彈窗（2026-09-18 · D284／D288）：借 leave-dialog 的殼——下架＝標題帶品名＋後果；仍在上架中組合包裡＝列出組合包（.leave-dialog__list）＋主鈕「一同下架這些組合包」；封存＝單純確認（不再列組合包）。 -->
+<div class="leave-dialog" data-pd-confirm-dialog role="dialog" aria-modal="true" aria-labelledby="pd-confirm-title">
+  <div class="leave-dialog__scrim" data-pd-confirm-cancel></div>
+  <div class="leave-dialog__card">
+    <button class="leave-dialog__close" type="button" aria-label="Close" data-i18n-aria-label="e-shop.shown.close" data-pd-confirm-cancel><i data-lucide="x" class="ztor-icon"></i></button>
+    <h2 class="leave-dialog__title" id="pd-confirm-title" data-pd-confirm-title></h2>
+    <p class="leave-dialog__body" data-pd-confirm-body></p>
+    <ul class="leave-dialog__list" data-pd-confirm-list hidden></ul>
+    <div class="leave-dialog__actions">
+      <button class="btn btn--primary" type="button" data-pd-confirm-ok><span data-i18n="e-shop.archive.confirm">Archive</span></button>
+      <button class="btn btn--outline" type="button" data-pd-confirm-cancel data-i18n="e-shop.shown.cancel">Cancel</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

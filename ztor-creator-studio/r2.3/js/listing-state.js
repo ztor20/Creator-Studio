@@ -15,16 +15,26 @@
 //     unlistAt    string|null   下架日期與時間（ISO）。已過＝已下架
 //     shown       boolean       顯示於商店／隱藏。隱藏＝商店找不到，但非公開連結仍可買
 //     privateLink string|null   非公開連結（只有隱藏時才有值）
-//     saleStart   string|null   開賣日期與時間。null＝上架即開賣
+//     saleStart   string|null   開賣日期與時間。null＝上架即開賣（onSale 為 true 時）
 //     saleEnd     string|null   停售日期與時間。null＝不自動停售
+//     onSale      boolean       開賣設定（2026-09-18 · D290）。缺值視為 true（沿用 D241「上架即開賣」）；
+//                               false＝「未開賣」——上架、顯示都照舊，只是還沒開放結帳。下架（手動、定時到期、組合包連動、
+//                               成員連動）一律把它退回 false 並清掉四個排程時間；重新上架後維持 false，要販售須再設開賣。
+//                               推導：上架＋顯示＋未開賣 → coming（即將開賣，不帶日期）。拍賣同欄位＝「未開拍」。
 //     lowThreshold number       低庫存門檻（0＝不提醒）
 //     archived    boolean       已封存（2026-09-18 · D284，§7.14「封存與不可刪除」）。三開關之外的一態：
 //                               只有已下架的可以封存；封存＝離開主清單、細節頁唯讀、三開關與排程不可調；
 //                               唯一動作是重新上架（relist），直接回到 listed、不經過已下架。
 //                               封存必然是下架：isUnlisted() 對 archived 一律回 true。
-//     unlistReason { type: 'member-archived', productId, productName } | null
-//                               組合包被「一同下架」時記的原因（單售封存時仍在上架中組合包裡，D284）；
+//     unlistReason { type: 'member-unlisted', productId, productName, auto?: boolean } | null
+//                               組合包被「一同下架」時記的原因（2026-09-18 · D288：成員單售下架時創作者確認一同下架，
+//                               或成員定時下架到期自動連動＝auto:true；取代 D284 的 'member-archived'——封存不再檢查組合包）；
 //                               重新上架時清掉。純資訊欄位，推導不看它。
+//   拍賣（2026-09-18 · D285，§7.14「適用範圍」）：同一組三開關與 archived，欄位名完全相同，另加：
+//     saleStart   對拍賣＝開拍時間（null＝跟著上架一起開拍，開拍時間＝實際上架時間）
+//     duration    競標時長（天數）。停售時間＝結標時間＝開拍時間＋時長，由 auctionSaleEnd() 導出、不手填，
+//                 所以拍賣物件上不存 saleEnd（存了也會被忽略）。
+//     拍賣無庫存池、無鎖定量：推導一律 qty＝Infinity，soldout／low 不會出現。
 //   單售商品另有庫存池：
 //     pool = { total: number | 'unlimited',
 //              locks: { single: number|null, bundles: { [bundleId]: number|null } } }
@@ -270,7 +280,7 @@
       /* §7.14／5.1.5.4 §6 ④（D087 語意由 D241 更新；2026-09-11 稽核補上）：任一成員下架、
          或不在販售窗口內（未到開賣／已停售）→ 組合不可售，視同可售 0。 */
       var at = nowMs();
-      if (isUnlisted(p, at) || future(p.saleStart, at) || passed(p.saleEnd, at)) return 0;
+      if (isUnlisted(p, at) || !isOnSale(p) || future(p.saleStart, at) || passed(p.saleEnd, at)) return 0;
       var per = num(m.qty) > 0 ? num(m.qty) : 1;   /* 一套要用到同一件商品好幾件時 */
       /* 成員是多選項商品時，這個組合拿得到的量＝各選項組合在本組合可售量之和
          （D258：組合包的鎖定逐選項組合設定；買家挑哪一個組合出貨仍是產品待確認）。 */
@@ -407,7 +417,8 @@
     return isUnlisted(entity, nowMs(now));
   }
 
-  /** 封存：archived＝true、總閘門關上、尚未生效的上架排程一併取消（§7.14 封存前提第三句）。顯示與開賣沿用原值、不動。 */
+  /** 封存：archived＝true、總閘門關上、尚未生效的上架排程一併取消（§7.14 封存前提第三句）。顯示與開賣沿用原值、不動。
+      封存只看「已下架」，不檢查組合包（D288 修正 D284 裁決四）：成員的連動在下架時已處理（unlistWithBundles）。 */
   function archive(entity) {
     if (!entity) return entity;
     entity.archived = true;
@@ -417,30 +428,46 @@
     return entity;
   }
 
-  /** 重新上架（Relist）：解除封存並直接回到上架，不經過已下架；顯示與開賣沿用封存前保留的值。 */
+  /** 開賣設定（D290）：缺值視為開賣（舊資料與 seed 沿用 D241「上架即開賣」）。 */
+  function isOnSale(entity) { return flag(entity && entity.onSale, true); }
+
+  /* 開賣退回「未開賣」＋四個排程時間清空（D290）。下架與重新上架共用：兩邊之後都是「沒有任何排程、未開賣」。 */
+  function resetSale(entity) {
+    entity.listAt = null;
+    entity.unlistAt = null;
+    entity.saleStart = null;
+    entity.saleEnd = null;
+    entity.onSale = false;
+    if (entity.listedAt !== undefined) entity.listedAt = null;   /* 拍賣原型記的「實際上架時間」，這輪上架已結束 */
+    return entity;
+  }
+
+  /** 重新上架（Relist，含自封存、自已下架）：解除封存並直接回到上架，不經過已下架；顯示沿用。
+      D290（2026-09-18）：不再恢復開賣——回來是「上架＋顯示（沿用）＋未開賣」，四個排程時間維持空，要販售須再設開賣。 */
   function relist(entity) {
     if (!entity) return entity;
     entity.archived = false;
     entity.listed = true;
-    entity.listAt = null;
-    entity.unlistAt = null;
     entity.unlistReason = null;
+    resetSale(entity);
     return entity;
   }
 
-  /** 下架（Unlist）：總閘門關上、排程清空；reason 給「一同下架」的組合包記原因用（可省略）。 */
+  /** 下架（Unlist）：總閘門關上；D290：四個排程時間（listAt／unlistAt／saleStart／saleEnd）清空、開賣退回未開賣。
+      顯示／隱藏、內容、價格、庫存、鎖定等其他設定保留。reason 給「一同下架」的組合包記原因用（可省略）。
+      連動（unlistWithBundles）、定時到期（scheduledUnlistCascade／expireScheduled）都走這裡，規則只寫一次。
+      拍賣同一支：清上架排程與開拍時間（saleStart），重新上架後為未開拍。 */
   function unlist(entity, reason) {
     if (!entity) return entity;
     entity.listed = false;
-    entity.listAt = null;
-    entity.unlistAt = null;
     entity.unlistReason = reason || null;
+    resetSale(entity);
     return entity;
   }
 
   /**
-   * 單售封存前的擋下條件（§7.14）：這件商品仍是哪些「上架中」組合包的成員。
-   * 已下架、已封存、草稿的組合包不算（成員留在裡面、只是不能賣）。
+   * 單售下架前的連動清單（§7.14「下架確認與組合包連動」· D288；D284 時掛在封存、D288 移到下架）：
+   * 這件商品仍是哪些「上架中」組合包的成員。已下架、已封存、草稿的組合包不算（成員留在裡面、只是不能賣）。
    * bundles：候選組合包清單（通常是 ProductsStore.bundlesUsing(productId)）。回傳組合包物件陣列。
    */
   function listedBundlesUsing(productId, bundles, now) {
@@ -453,15 +480,101 @@
     return out;
   }
 
+  /* 墓碑（2026-09-18 · D288）：archiveWithBundles(product, bundles) 移除——封存不再檢查組合包，
+     「一同下架這些組合包」整組搬到下架動作上（unlistWithBundles）。 */
+
+  function memberReason(product, auto) {
+    return { type: 'member-unlisted', productId: product && product.id, productName: product && product.name, auto: !!auto };
+  }
+
   /**
-   * 「一同下架這些組合包並封存」：先把每個組合包下架並記原因（因成員封存），再封存單售。
-   * 呼叫端已經拿使用者確認過才呼叫；取消時什麼都不做即可。
+   * 「一同下架這些組合包」（§7.14 · D288 裁決二）：先把每個上架中的組合包下架並記原因（因成員下架），再下架單售。
+   * 呼叫端已經拿使用者確認過才呼叫；取消時什麼都不做即可。回傳被連動的組合包陣列（呼叫端拿去重畫／寫回）。
    */
-  function archiveWithBundles(product, bundles) {
-    (bundles || []).forEach(function (b) {
-      unlist(b, { type: 'member-archived', productId: product && product.id, productName: product && product.name });
+  function unlistWithBundles(product, bundles) {
+    var list = bundles || [];
+    list.forEach(function (b) { unlist(b, memberReason(product, false)); });
+    unlist(product);
+    return list;
+  }
+
+  function resolveProduct(map, id) {
+    if (!map) return null;
+    if (typeof map === 'function') return map(id) || null;
+    return map[id] || null;
+  }
+
+  /**
+   * 組合包重新上架前的成員盤點（§7.14 不變式：上架中的組合包，成員一律在上架中 · D288 裁決三；做法依 D289）：
+   *   unlisted＝目前已下架（含排定上架未到、定時下架已過）但未封存的成員——重新上架時會一起被拉上來（先確認）；
+   *   blocked ＝已封存的成員（不可由組合包順手解除封存，要先各自重新上架）＋草稿或查不到的成員（沒有可上架的東西）。
+   * productsById：{ [id]: product } 或 function(id)。兩個清單都是 [{ productId, product|null }]。
+   */
+  function bundleRelistPlan(bundle, productsById, now) {
+    var at = nowMs(now), unlisted = [], blocked = [];
+    ((bundle && bundle.members) || []).forEach(function (m) {
+      var id = m.productId || m.id, p = resolveProduct(productsById, id);
+      if (!p || isDraftOf(p, null) || isArchived(p)) blocked.push({ productId: id, product: p });
+      else if (isUnlisted(p, at)) unlisted.push({ productId: id, product: p });
     });
-    return archive(product);
+    return { unlisted: unlisted, blocked: blocked };
+  }
+  /** 相容別名：不在上架中的成員（unlisted ＋ blocked）。 */
+  function unlistedMembers(bundle, productsById, now) {
+    var plan = bundleRelistPlan(bundle, productsById, now);
+    return plan.blocked.concat(plan.unlisted);
+  }
+
+  /**
+   * 組合包重新上架（含自已下架、自封存），D289：
+   *   有已封存（或草稿）成員 → 擋下，回 { ok:false, blockers }，什麼都不改；
+   *   否則已下架的成員連帶重新上架（呼叫端已拿使用者確認過「這些單售會一起重新上架」才呼叫），再 relist 組合包，
+   *   回 { ok:true, relisted:[product…] }。反方向不連動：單售重新上架不會把組合包拉上來。
+   */
+  function relistBundle(bundle, productsById, now) {
+    var plan = bundleRelistPlan(bundle, productsById, now);
+    if (plan.blocked.length) return { ok: false, blockers: plan.blocked, relisted: [] };
+    var relisted = [];
+    plan.unlisted.forEach(function (m) { if (m.product) { relist(m.product); relisted.push(m.product); } });
+    relist(bundle);
+    return { ok: true, blockers: [], relisted: relisted };
+  }
+
+  /**
+   * 定時下架到期的自動連動（D288 裁決二後半）：成員單售的 unlistAt 已過，其「上架中」組合包一併自動下架、
+   * 記 unlistReason（auto:true）。純推導、可重複呼叫（已下架的組合包會被跳過）。
+   * 回傳 [{ bundle, product }]，呼叫端拿去寫回與通知。
+   */
+  function scheduledUnlistCascade(bundles, productsById, now) {
+    var at = nowMs(now), out = [];
+    (bundles || []).forEach(function (b) {
+      if (!b || isArchived(b) || isDraftOf(b, null) || isUnlisted(b, at)) return;
+      var hit = null;
+      ((b.members || []).some(function (m) {
+        var p = resolveProduct(productsById, m.productId || m.id);
+        if (p && !isArchived(p) && flag(p.listed, true) && passed(p.unlistAt, at)) { hit = p; return true; }
+        return false;
+      }));
+      if (!hit) return;
+      unlist(b, memberReason(hit, true));
+      out.push({ bundle: b, product: hit });
+    });
+    return out;
+  }
+
+  /**
+   * 定時下架到期的落實（D290，2026-09-18）：unlistAt 已過的上架中東西，原本只靠 isUnlisted() 推導成「已下架」、
+   * 欄位不動；D290 要求到期下架也清四個時間、退回未開賣，所以載入時把它真的 unlist() 一次（呼叫端寫回工作階段）。
+   * 要在 scheduledUnlistCascade 之後跑——連動判斷靠「成員 listed 且 unlistAt 已過」找出觸發的成員。
+   * entities：商品／組合包／拍賣任一清單。回傳被落實的實體陣列。
+   */
+  function expireScheduled(entities, now) {
+    var at = nowMs(now), out = [];
+    (entities || []).forEach(function (e) {
+      if (!e || isArchived(e) || isDraftOf(e, null)) return;
+      if (flag(e.listed, true) && passed(e.unlistAt, at)) { unlist(e); out.push(e); }
+    });
+    return out;
   }
 
   function isUnlisted(entity, at) {
@@ -493,6 +606,8 @@
 
   /* hidden 那一層之後的四態（細節頁與 deriveFlags 共用）。 */
   function saleStatus(entity, c, at) {
+    /* D290：未開賣（上架＋顯示、尚未設開賣）→ 即將開賣，不帶日期；排在停售／售罄之前——沒開賣談不上賣完或停售 */
+    if (!isOnSale(entity)) return 'coming';
     if (passed(entity && entity.saleEnd, at)) return 'ended';
     var qty = (c.qty === undefined) ? INF : c.qty;
     if (qty === 0) return 'soldout';
@@ -524,6 +639,7 @@
     var at = nowMs(now);
     if (isDraftOf(entity, null)) return false;
     if (isUnlisted(entity, at)) return false;
+    if (!isOnSale(entity)) return false;   /* D290 未開賣 */
     if (future(entity && entity.saleStart, at)) return false;
     if (passed(entity && entity.saleEnd, at)) return false;
     return (qty === undefined ? INF : qty) > 0;
@@ -576,6 +692,91 @@
     return { ok: true, reason: null };
   }
 
+
+  /* ── 拍賣（spec §7.14「適用範圍」· D285，2026-09-18）────────────────────────
+     拍賣用同一組三開關、同一套封存；差別只有兩件事：
+       1. 開賣＝開拍：saleStart 就是開拍時間；沒填＝跟著上架一起開拍（＝實際上架時間）。
+       2. 停售＝結標＝開拍時間＋競標時長（duration，天），由系統算、不可單獨手填。
+     沒有庫存池，所以推導固定 qty＝Infinity，soldout／low 兩態不會出現。
+     D290（2026-09-18）：下架清上架排程與開拍時間、onSale 退回 false；重新上架後為「未開拍」（onSale=false → coming＝Upcoming，
+     不帶開拍時間），須再設開拍（選「跟著上架一起開拍」或「定時開拍」都會把 onSale 設回 true）。
+     徽章文案對應（規格 §7.14「與 §7.2 狀態語言的關係」）：coming→Upcoming、live→Live（競標中）、ended→Sold（完售，2026-09-18 D286 改文案，key 名沿用 ended 不改）；
+     archived／draft／unlisted／hidden 與商品同義、同一組 key。Sealed 是競標模式不是狀態，不進推導。
+     2026-09-18（D287）流標：結標時「有無出價」分岔——deriveStatus 算出 ended 後，deriveAuctionStatus／
+     deriveAuctionFlags 再依 auctionBidCount() 改判：有出價維持 ended（＝完售／Sold，key 名沿用不改）、
+     無出價改成新 key unsold（＝流標／Unsold）。選這個做法而不是把 ended 整個改名，是因為 ended 已經是
+     D286 剛定案的「完售」語意、且被三處消費（頁面徽章、篩選 tab、i18n），沒有理由再动它；流標只是
+     新增一個同層的桶。未達保留價、流標能否重新開拍：待確認，不做 UI（見 ASSUMPTIONS UIA-153）。 */
+  var AUCTION_STATUS_META = {
+    archived: STATUS_META.archived,
+    draft:    STATUS_META.draft,
+    unlisted: STATUS_META.unlisted,
+    hidden:   STATUS_META.hidden,
+    ended:    { i18n: 'e-shop.astatus.ended',    tone: 'neutral' },
+    unsold:   { i18n: 'e-shop.astatus.unsold',   tone: 'neutral' },
+    coming:   { i18n: 'e-shop.astatus.upcoming', tone: 'info'    },
+    live:     { i18n: 'e-shop.astatus.live',     tone: 'success' }
+  };
+
+  /** 開拍時間：saleStart 優先；跟著上架一起開拍時＝上架時間（listAt，或原型記的 listedAt）。都沒有回 null。 */
+  function auctionStart(a) {
+    if (!a || !isOnSale(a)) return null;   /* D290 未開拍：沒有開拍時間，也就沒有結標時間 */
+    var t = time(a.saleStart);
+    if (t !== null) return t;
+    t = time(a.listAt);
+    if (t !== null) return t;
+    return time(a.listedAt);
+  }
+
+  /** 結標時間（＝停售時間）＝開拍時間＋競標時長；缺任一回 null。回 ISO 字串（與其他時間欄同型）。 */
+  function auctionSaleEnd(a) {
+    var start = auctionStart(a);
+    var days = num(a && a.duration);
+    if (start === null || days <= 0) return null;
+    return new Date(start + days * 86400000).toISOString();
+  }
+
+  /* 把拍賣攤成 deriveStatus 看得懂的樣子：saleEnd 用導出值蓋掉、其餘欄位原樣。 */
+  function auctionEntity(a) {
+    var e = {}, k;
+    for (k in (a || {})) if (Object.prototype.hasOwnProperty.call(a, k)) e[k] = a[k];
+    e.saleEnd = auctionSaleEnd(a);
+    /* 跟著上架一起開拍且還沒到上架時間：開拍時間＝上架時間，deriveStatus 會先判 unlisted，不必另補 */
+    return e;
+  }
+
+  /** 出價數（D287）：bids／bidCount 任一欄位，缺值或非正數一律當 0（＝流標判斷用）。 */
+  function auctionBidCount(a) {
+    var n = num(a && (a.bids !== undefined ? a.bids : a.bidCount));
+    return n > 0 ? n : 0;
+  }
+
+  /** 拍賣的單一狀態桶（清單篩選用）：archived → draft → unlisted → hidden → ended／unsold → coming → live。
+      ended 再依有無出價拆成 ended（完售）／unsold（流標，D287）。 */
+  function deriveAuctionStatus(a, now) {
+    var st = deriveStatus(auctionEntity(a), { qty: INF, isDraft: isDraftOf(a, null) }, now);
+    return (st === 'ended' && auctionBidCount(a) <= 0) ? 'unsold' : st;
+  }
+
+  /** 細節頁用：主徽章不含隱藏那一層，隱藏另外一顆。同樣把 ended 依出價數拆成 ended／unsold（D287）。 */
+  function deriveAuctionFlags(a, now) {
+    var flags = deriveFlags(auctionEntity(a), { qty: INF, isDraft: isDraftOf(a, null) }, now);
+    if (flags.status === 'ended' && auctionBidCount(a) <= 0) return { status: 'unsold', hidden: flags.hidden };
+    return flags;
+  }
+
+  /** 拍賣徽章的 class 字串（tone 與商品同一張 badge.css）。 */
+  function auctionBadgeClass(status) {
+    var meta = AUCTION_STATUS_META[status];
+    return 'badge badge--' + ((meta && meta.tone) || 'neutral');
+  }
+
+  /** 競標已經開始了嗎（Live 或 Ended）——開拍後設定受限（5.1.5.8 §2.2 限度編輯）。 */
+  function auctionStarted(a, now) {
+    var start = auctionStart(a);
+    return start !== null && start <= nowMs(now);
+  }
+
   return {
     STATUS_META: STATUS_META,
     STATUS_ORDER: ['archived', 'draft', 'unlisted', 'hidden', 'ended', 'soldout', 'coming', 'low', 'live'],
@@ -602,7 +803,13 @@
     relist: relist,
     unlist: unlist,
     listedBundlesUsing: listedBundlesUsing,
-    archiveWithBundles: archiveWithBundles,
+    unlistWithBundles: unlistWithBundles,
+    unlistedMembers: unlistedMembers,
+    bundleRelistPlan: bundleRelistPlan,
+    relistBundle: relistBundle,
+    scheduledUnlistCascade: scheduledUnlistCascade,
+    expireScheduled: expireScheduled,
+    isOnSale: isOnSale,
     canBuy: canBuy,
     privateLinkFor: privateLinkFor,
     resetPrivateLink: resetPrivateLink,
@@ -617,6 +824,15 @@
     variantsChannelLocked: variantsChannelLocked,
     variantsAllLocked: variantsAllLocked,
     validateVariantLock: validateVariantLock,
-    validateSaleWindow: validateSaleWindow
+    validateSaleWindow: validateSaleWindow,
+    /* 拍賣（D285） */
+    AUCTION_STATUS_META: AUCTION_STATUS_META,
+    auctionStart: auctionStart,
+    auctionSaleEnd: auctionSaleEnd,
+    auctionStarted: auctionStarted,
+    auctionBidCount: auctionBidCount,
+    deriveAuctionStatus: deriveAuctionStatus,
+    deriveAuctionFlags: deriveAuctionFlags,
+    auctionBadgeClass: auctionBadgeClass
   };
 }));
