@@ -4,6 +4,34 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-18（三十八）· 拍賣三開關追加三條裁決：競標中不可下架、結標改標「完售」、已封存不可釘選（A spec-derived）
+
+**範圍**：`auction-detail.html`（頁首「下架」在 Live 時改停用＋title 提示，外層新增 `[data-ad-unlist-tip]` 包住鈕以繞過 `.btn:disabled` 的 `pointer-events:none`；撤除 Live 下架確認彈窗流程）、`js/i18n.js`（`e-shop.astatus.ended` 中文改「完售」、英文改「Sold」，key 名沿用 `ended`；新增 `ad.unlist.live-disabled`；墓碑 `ad.unlist.live-title`／`live-body`／`confirm`）、`e-shop.html`（`canPin()` 排除已封存；`syncRowActions()` 新增已封存收起釘選 kebab 項＋自動解除已釘選；`updatePinChrome()`／「立即釘選」CTA 的可釘選判斷改排除已隱藏的釘選項）、`ASSUMPTIONS.md`（UIA-153／UIA-152 對應產品缺口改標已裁決／暫定）。
+
+**依據**：使用者 2026-09-18（D286）三條裁決——「競標中不能下架」「出價者處理(暫定)：時間到，最高出價者得標」「結標後，標示完售」；另補兩條：一同下架的組合包按「重新上架」不擋（現況正確，不改）；已封存的販售管道不可釘選。
+
+**動機**：D285 落地時「Live 下架先確認」把決定權留給使用者臨場判斷，這次使用者直接收斂成規則——競標進行中本來就不該下架，不必每次都問一遍；停用＋提示比彈窗更早攔下這個動作，也少一次互動。「已結標」改「完售」是用詞對齊——結標後這件拍賣品從買家角度就是賣完了，站上其他地方講完售都用這個詞。已封存與已釘選是兩種互斥的「這件事要不要被看見」語意（封存＝從主清單消失且唯讀，釘選＝強制留在最前面），封存時解除釘選避免兩者同時生效。
+
+**驗證**：`check_ds_sync.py` PASS；Playwright 實跑：`auction-detail.html?id=stage-worn-jacket`（Live）頁首「下架」呈 disabled 樣式、hover 出現「競標結束後才能下架」；`e-shop.html` Auctions 分頁篩選 tab 與 Ended 列徽章皆顯示「完售」；en 切換顯示「Sold」；已封存列 kebab 無「釘選」項；zh／en 零 raw key；console 無錯誤。截圖 `screenshots/r2.3/auction-d286-*.png`。
+
+## 2026-09-18（三十七）· 拍賣改採三開關與封存：清單推導、建立拍賣兩段分層、細節頁三開關卡與互斥動作、撤刪除（A spec-derived）
+
+**範圍**：`js/listing-state.js`（拍賣段：`AUCTION_STATUS_META`、`auctionStart`／`auctionSaleEnd`／`auctionStarted`、`deriveAuctionStatus`／`deriveAuctionFlags`、`auctionBadgeClass`）、`js/products-store.js`（`AUCTION_SEED` 8 筆＋`getAuction`／`auctions`／`auctionStatusOf`／`auctionFlagsOf`；nick patch 同步 `data-auction-id`）、`e-shop.html`（Auctions 分頁：列帶 `data-auction-id`、徽章／篩選／顯示開關／kebab 封存與重新上架走三開關推導；篩選集加已隱藏／已下架；新增已下架 `lyric-sheet`／已封存 `tour-laminate`／隱藏 `demo-cassette` 三列；Ended 列補編輯）、`create-auction.html`（右欄上架設定／開拍設定兩段分層；結標時間唯讀導出；`#ca-delete`＋`window.confirm` 撤除）、`auction-detail.html`（徽章推導、頁首下架／封存／重新上架互斥、封存態唯讀＋`.info-banner`、右欄上架設定卡＋開拍設定卡、競標中下架確認彈窗）、`js/i18n.js`（新 key 見 BUILD-SPEC 檔頭；`e-shop.astatus.ended` 中文改「已結標」；墓碑 `ca.start.none/now/pending`、`ca.delete.confirm`、`cp.delete`）。
+
+**依據**：`documents/decisions.md` D285（使用者 2026-09-18：「和其他販售管道一樣有上下架、顯示隱藏、是否開賣」）與 D284（發布過即不可刪除、下架後可封存、封存後只有重新上架、草稿可刪須確認）；主規格 §7.14「適用範圍」（拍賣：開賣＝開拍、停售＝開拍＋競標時長、無庫存池）與「封存與不可刪除」；5.1.5.8 v1.9 §2.2／§2.7／§4；5.1.5.10 v1.8 共用操作「上架設定／開賣設定」；5.1.5 F3 拍賣篩選、F4 競標列操作。
+
+**動機**：三種販售管道只有拍賣還是另一套模型（單卡「定時開拍」＋自訂徽章），封存（D284）要掛在三開關上時拍賣沒有地方掛。這一輪把拍賣接進同一支 `listing-state`：同一組欄位、同一支 `deriveStatus`（只差 qty 固定 ∞、saleEnd 由開拍＋時長導出、徽章文案換成 Upcoming／Live／Ended），清單、細節頁、建立頁三處讀同一份記錄，創作者與 Admin 不用記兩種模型。元件一支都沒新增——`listing-controls`、`leave-dialog`、`info-banner`、`link-field` 全部沿用，只換文案（開拍／結標）。呈現假設與產品缺口記 ASSUMPTIONS UIA-153（出價中下架、結標後是否視為未開賣、Sealed 與三開關、Live 後可編欄位）。
+
+## 2026-09-18（三十六）· 封存與不可刪除：清單篩選與列操作、細節頁互斥動作與唯讀態、建立商品撤刪除（A spec-derived）
+
+**範圍**：`js/listing-state.js`（`archived` 態第一優先；`isArchived`／`canArchive`／`archive`／`relist`／`unlist`／`listedBundlesUsing`／`archiveWithBundles`）、`js/products-store.js`（`archived`／`unlistReason` 欄位、`archiveBlockers()`、示範三單售 `postcard`／`mug`／`patch` 與三組合 `launch-set`／`postcard-set`／`roadie-set`）、`e-shop.html`（三分頁「已封存」篩選且不進 All；列徽章、顯示開關停用、kebab 依狀態互斥：已下架→封存、已封存→重新上架＋編輯、草稿→刪除須確認；封存擋下彈窗列出上架中組合包並一同下架；新增共用確認彈窗）、`product-detail.html`／`bundle-detail.html`（頁首下架／封存／重新上架一次只出現一顆；封存態整頁唯讀＋`.info-banner`；組合補「因成員封存而下架」原因、成員已封存標記與「組合不可售」）、`create-product.html`（頂列與編輯態刪除鈕撤除）、`ds-components/leave-dialog.css`（新增 `__list`／`__list-item`）、`design-system.html`／`design-system.md`／`design-components.html`（Leave dialog 卡補擋下與草稿刪除兩個示範）、`js/i18n.js`（新增 18 把＋示範列 9 把；`wiz.delete`／`cp.delete.confirm` 立墓碑）、`docs/示範資料索引.md`。
+
+**依據**：`documents/decisions.md` D284（使用者 2026-09-18：「單售商品與組合包不能刪除，只能在下架後封存」「下架狀態才有封存，封存狀態才有重新上架按鈕」「如果封存的單售商品在組合包中，必須擋下，設計一個 popup 彈窗，列出組合包名稱，詢問是否一同下架組合包」；草稿可刪但要確認彈窗）；主規格 §7.14「封存與不可刪除」與狀態組合表「已封存」列；5.1.5 F3／F4、5.1.5.1 §2.2／§2.16／§4、5.1.5.9 §2.2／§2.3／§4。
+
+**設計取捨**：狀態轉移寫進 `listing-state.js` 而不是各頁自己改欄位——它已經是三開關與徽章的單一推導層，封存只是多一態，五頁一起問同一支函式才不會再分岔。清單的封存／重新上架項目由 JS 按狀態長出來、不寫進靜態列（列會被 persona 與「載入更多」複製，寫死會漏）。三種確認共用一個 `.leave-dialog` 殼（站上唯一的確認彈窗語彙），只加一段清單元素，沒有第二種彈窗。封存可逆所以主鈕維持 primary，草稿刪除才用 destructive。細節頁的唯讀不做整頁 disabled，而是藏掉每一個會改資料的入口＋鎖上架卡——設定分頁本來就是檢視態，看得到、不能改。拍賣三頁刻意不動（D285 另一波）。
+
+**驗證**：`check_ds_sync.py` 全 PASS（既有 WARN 5／13 不變）；Playwright 實跑：e-shop 「已封存」篩選見兩列、All 計數不含；已下架單售按封存出確認彈窗；`patch` 按封存出擋下彈窗列「巡演工作組」，確認後組合列變已下架（seed 記 `unlistReason`）、單售進已封存；草稿刪除出紅框確認、確認才移除；`product-detail.html?id=postcard` 整頁唯讀＋banner＋「重新上架」，按下回到販售中；`bundle-detail.html?id=postcard-set` 顯示「因成員…封存而下架」；en／zh-Hant 零 raw key；console 無錯誤。截圖 `screenshots/r2.3/archive-01…11-*.png`。
+
 ## 2026-09-17（三十三）· 優惠碼欄加「自動產生」與 8–20 英數字規則（A spec-derived）
 
 **範圍**：`store-settings.html`（優惠碼彈窗碼欄：hint「8–20 個英數字，不含符號」、`minlength／maxlength／pattern`、欄旁 `btn--outline btn--sm`「自動產生」；`genCode()` 產 10 碼大寫英數、去 0／O／1／I）、`admin-platform-promotions.html`（平台優惠碼彈窗同樣一組）、`js/i18n.js`（`store-settings.codes.generate`／`.f.code.hint`、`pprom.code.generate`／`.f.code.hint`）。
