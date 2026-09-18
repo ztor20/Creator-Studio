@@ -35,7 +35,14 @@
 //              vi＝多選項的 variants 索引、單一規格填 'single'；supplierKey／toKey 走 i18n（切語言會重譯）
 //   draft      bool            草稿：頁首徽章顯示「草稿」（ListingState 讀 entity.draft）
 //   archived   bool            已封存（2026-09-18 · D284）：只在 LISTING_SEED 設；seedListing() 會一併關掉總閘門與排程。組合同名欄位在 BUNDLE_SEED
-//   unlistReason { type:'member-archived', productId, productName } | null   組合包被「一同下架」的原因（僅組合；重新上架時清掉）
+//   unlistReason { type:'member-unlisted', productId, productName, auto? } | null   組合包「因成員下架而一同下架」的原因（僅組合；D288；auto＝定時下架到期自動連動；重新上架時清掉）
+//   ── 工作階段覆蓋（2026-09-18 · D288 落地）：下架／封存／重新上架／連動的結果寫進 sessionStorage 'ztor.listing.session'，
+//      同一個分頁裡換頁仍看得到（在商品細節頁下架 patch → 回到 e-shop、開 bundle-detail 都是下架後的樣子）；關掉分頁即回到 seed。
+//      寫入口 ProductsStore.commit(entity)，只存上架軸欄位（listed／listAt／unlistAt／archived／unlistReason；
+//      D290 起再加 saleStart／saleEnd／onSale——下架會把四個時間清空、開賣退回未開賣，這三個也要跨頁看得到）；
+//      cheat code 的 Reset 會呼叫 forgetSession() 清掉。 ──
+//   onSale     bool（缺值＝true）   開賣設定（D290）：false＝未開賣（上架、顯示照舊、尚未開放結帳）。seed 不設（沿用上架即開賣）；
+//              下架（含連動、定時到期）後由 ListingState.unlist 寫成 false，重新上架維持 false，細節頁的開賣二選一因此多一項「未開賣」
 //   delivery   'ship'（預設，可省略）| 'qr'   交付方式；'qr'＝現場 QR 領取（取貨場次欄位）
 //   currency   'TWD'（nick 商品）| 省略＝USD   價格幣別（priceText／product-detail 的 money() 讀它）
 //   variants[i].locks  { single: n|null, bundles: { <bundleId>: n|null } }   逐選項組合鎖定（D255／D258）；
@@ -315,13 +322,23 @@
       status: 'live', price: '14.00', cost: '4.00', stock: '25', threshold: '5',
       catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
     },
-    /* 實體 · 刺繡布章：已下架、但仍是上架中組合包 roadie-set 的成員——示範封存前的擋下彈窗
-       （列出組合包名稱、提供「一同下架這些組合包」）。 */
+    /* 實體 · 刺繡布章：上架中、同時是上架中組合包 roadie-set 的成員——示範下架時的連動彈窗
+       （列出組合包名稱、主鈕「一同下架這些組合包」，D288；D284 時這個示範掛在封存、且 patch 是已下架）。 */
     patch: {
       name: '九龍夜行 刺繡布章', img: 'patch-set.webp',
       sub: 'Iron-on embroidered patch, 7 cm. Wave mark on black twill.',
       cat: 'physical', subKey: 'merch', variant: 'single', edition: 'unlimited',
       status: 'live', price: '9.00', cost: '2.50', stock: '80', threshold: '8',
+      catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
+    },
+    /* 實體 · 杯墊組（2026-09-18 · D288）：定時下架已到期（LISTING_SEED.coaster.unlistAt 在過去）——示範「定時下架到期的自動下架
+       同樣連動組合包」：它是上架中組合包 backstage-set 的成員，載入時 ListingState.scheduledUnlistCascade() 把那個組合包一併下架、
+       記 unlistReason（auto），通知中心（sidebar.js NOTIF_INFO）有一則對應的示範通知。 */
+    coaster: {
+      name: '九龍夜行 杯墊組', img: 'coaster-pack.webp',
+      sub: 'Set of 4 cork coasters, wave mark debossed.',
+      cat: 'physical', subKey: 'merch', variant: 'single', edition: 'unlimited',
+      status: 'live', price: '11.00', cost: '3.00', stock: '40', threshold: '5',
       catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
     }
   };
@@ -597,6 +614,79 @@
       activityKey: 'e-shop.aNick.activity', gallery: ['nick-nike-00.jpg', 'nick-nike-01.jpg', 'nick-nike-02.jpg', 'nick-nike-03.jpg']
     }
   };
+  /* ── 拍賣的三開關與封存示範（2026-09-18 · D285／D284，spec §7.14「適用範圍」）──────────
+     拍賣列與拍賣細節頁的「狀態」自此不再寫死在 markup：每一件拍賣一筆記錄、欄位名與單售／組合同一套
+     （listed／shown／listAt／unlistAt／saleStart／archived），推導走 ListingState.deriveAuctionStatus。
+     拍賣獨有：saleStart＝開拍時間、duration＝競標時長（天）；結標時間由 ListingState.auctionSaleEnd 算、不存。
+     沒有庫存池。兩個 persona 共用這一份（拍賣列的 persona 差異只有名稱與圖，由 AUCTIONS_NICK 就地換）。
+     時間用「相對今天」的 offset 產生——Live／Upcoming／Ended 是時間推出來的，寫死日期會在某天全部變成已結標。
+     顯示用欄位（bids／current／winner…）仍是示意值，出價引擎不在原型範圍。 */
+  function daysFromNow(days, hour) {
+    var d = new Date(); d.setHours(hour === undefined ? 20 : hour, 0, 0, 0);
+    d.setDate(d.getDate() + days);
+    /* 本地時間的 ISO（不帶 Z），與 LISTING_SEED 其他時間欄同型 */
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':00';
+  }
+  var AUCTION_SEED = {
+    /* Live（競標中）：開拍 4 天前、時長 5 天 → 剩 1 天 */
+    'stage-worn-jacket':  { id: 'stage-worn-jacket', nameKey: 'e-shop.a1.name', img: 'stage-worn-jacket.webp', listed: true, shown: true, saleStart: daysFromNow(-4), duration: 5, bids: 18, bidders: 12 },
+    /* Upcoming（未開始）：定時開拍在 2 天後 */
+    'signed-tour-poster': { id: 'signed-tour-poster', nameKey: 'e-shop.a2.name', img: 'signed-tour-poster.webp', listed: true, shown: true, saleStart: daysFromNow(2), duration: 7, bids: 0, bidders: 0 },
+    /* Ended（完售、已出貨，D286 徽章文案改「完售」）：三個月前結標 */
+    'vintage-synth':      { id: 'vintage-synth', nameKey: 'e-shop.a3.name', img: 'vintage-synth.webp', listed: true, shown: true, saleStart: daysFromNow(-100), duration: 7, bids: 23, bidders: 9, shipped: true },
+    /* 流標（結標、無人出價，D287）：四個月前結標、bids 0 → deriveAuctionStatus 判成 unsold（完售 ended 的同層新桶） */
+    'tour-enamel-pin':    { id: 'tour-enamel-pin', nameKey: 'e-shop.a7.name', img: 'enamel-pin-wave.webp', listed: true, shown: true, saleStart: daysFromNow(-120), duration: 7, bids: 0, bidders: 0 },
+    /* 已下架（Unlisted）：結標後創作者手動下架，等著封存 */
+    'lyric-sheet':        { id: 'lyric-sheet', nameKey: 'e-shop.a4.name', img: 'notebook.webp', listed: false, shown: true, saleStart: daysFromNow(-40), duration: 5, bids: 11, bidders: 6 },
+    /* 已封存（Archived）：只在「已封存」篩選下出現、細節頁唯讀 */
+    'tour-laminate':      { id: 'tour-laminate', nameKey: 'e-shop.a5.name', img: 'wristband.webp', listed: false, shown: true, archived: true, saleStart: daysFromNow(-70), duration: 3, bids: 7, bidders: 4 },
+    /* 隱藏（Hidden）＋競標中：商店找不到、持非公開連結可出價（§7.14「私下販售」） */
+    'demo-cassette':      { id: 'demo-cassette', nameKey: 'e-shop.a6.name', img: 'coastline-single.webp', listed: true, shown: false, privateLink: 'https://ztor.example/s/demo-cassette?k=w4nq8t2e', saleStart: daysFromNow(-1), duration: 7, bids: 3, bidders: 2 },
+    /* nick persona 的兩件（AUCTIONS_NICK 有 id 的那兩列）：狀態示範與對應的預設列相同 */
+    'realive-tour-guitar': { id: 'realive-tour-guitar', img: 'PRS 10-Top.webp', listed: true, shown: true, saleStart: daysFromNow(-4), duration: 5, bids: 18, bidders: 12 },
+    'wyagl-nike-dunk':     { id: 'wyagl-nike-dunk', img: 'nick-nike-00.jpg', listed: true, shown: true, saleStart: daysFromNow(2), duration: 7, bids: 0, bidders: 0 }
+  };
+  /* ── 工作階段覆蓋（2026-09-18 · D288 落地）──────────────────────────────
+     下架／封存／重新上架／組合包連動只改記憶體，換頁就回到 seed——D288 的流程要跨頁看（在商品細節頁下架 patch，
+     回到 e-shop 與組合詳情頁要看得到 roadie-set 已下架＋原因），所以把上架軸的五個欄位記進 sessionStorage，
+     seed 時套回去。只記這五個欄位、只活在同一個分頁；不是持久化、不模擬後端。 */
+  var SESSION_KEY = 'ztor.listing.session';
+  var SESSION_FIELDS = ['listed', 'listAt', 'unlistAt', 'archived', 'unlistReason', 'saleStart', 'saleEnd', 'onSale'];   /* 後三個：D290 */
+  function sessionRead() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}') || {}; } catch (_) { return {}; } }
+  function sessionWrite(o) { try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(o)); } catch (_) {} }
+  function kindOf(e) { return (e && e.members) ? 'bundle' : ((e && e.duration !== undefined) ? 'auction' : 'product'); }
+  function applySession(e) {
+    if (!e || !e.id) return e;
+    var o = sessionRead()[kindOf(e) + ':' + e.id];
+    if (!o) return e;
+    SESSION_FIELDS.forEach(function (k) { if (Object.prototype.hasOwnProperty.call(o, k)) e[k] = o[k]; });
+    return e;
+  }
+  function commit(e) {
+    if (!e || !e.id) return e;
+    var all = sessionRead(), o = {};
+    SESSION_FIELDS.forEach(function (k) { o[k] = (e[k] === undefined) ? null : e[k]; });
+    all[kindOf(e) + ':' + e.id] = o;
+    sessionWrite(all);
+    return e;
+  }
+  function forgetSession() { try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {} }
+
+  function seedAuction(a) {
+    if (!a || a.__seeded) return a;
+    if (a.listed === undefined) a.listed = true;
+    if (a.shown === undefined) a.shown = true;
+    if (a.listAt === undefined) a.listAt = null;
+    if (a.unlistAt === undefined) a.unlistAt = null;
+    if (a.privateLink === undefined) a.privateLink = null;
+    if (a.archived === undefined) a.archived = false;
+    if (a.archived) { a.listed = false; a.listAt = null; a.unlistAt = null; }
+    applySession(a);
+    a.__seeded = true;
+    return a;
+  }
+
   /* e-shop 組合列（2026-09-11）：每列以 data-bundle-id 對 BUNDLE_SEED——
        - 組合的 persona 與當前 persona 對不上（userB 視同 default）→ 整列從 DOM 移除。
          用移除而不是只標 hidden，因為 e-shop 的 applyFilter() 每次篩選都會重設 row.hidden、
@@ -685,6 +775,8 @@
       /* 上游 2026-07-27 的詳情頁連結修復——必須保留，否則拍賣列點進去會開到錯的頁。 */
       var detail = row.querySelector('a[href*="auction-detail.html"]');
       if (detail && a.id) detail.setAttribute('href', 'auction-detail.html?id=' + a.id);
+      /* 三開關記錄也要跟著換成 nick 那一筆（AUCTION_SEED 有同 id 的記錄），狀態推導才對得上細節頁 */
+      if (a.id && AUCTION_SEED[a.id]) row.setAttribute('data-auction-id', a.id);
       /* 品名＝賣家內容，維持原值並移除原本那格的 key（示意英文名已不代表這一列）。 */
       var t = row.querySelector('.product-list__title');
       if (t) { t.removeAttribute('data-i18n'); t.textContent = a.name; }
@@ -781,8 +873,11 @@
     /* ── 2026-09-18 封存示範（D284）：archived＝true 的商品由 seedListing() 一併關掉總閘門（封存必然下架） ── */
     postcard: { archived: true },
     mug:      { archived: true },
-    /* 已下架、仍在上架中的 roadie-set 裡：封存時會被擋下、列出組合包名稱 */
-    patch:    { listed: false }
+    /* patch（2026-09-18 D288 改）：上架中、仍在上架中的 roadie-set 裡——按下架時列出組合包、確認＝一同下架。
+       原 D284 示範把它設成已下架（listed:false）並讓 roadie-set 維持上架，D288 的不變式（上架中的組合包成員一律上架中）不允許那個組合。 */
+    patch:    {},
+    /* 定時下架已到期（D288）：coaster 在 2026-09-15 依排程下架，上架中的 backstage-set 由載入時的自動連動一併下架 */
+    coaster:  { unlistAt: '2026-09-15T23:59:00' }
   };
 
   /* 詳情頁示範狀態（2026-09-11）：原本 product-detail.html 對每個 id 都硬插同一組示範
@@ -898,7 +993,9 @@
     'wy-draft-tote': { draft: true },
     /* 2026-09-18 封存示範（D284）：明信片組有訂單歷史（封存不影響訂單與收入）；馬克杯沒有 */
     postcard: { sales: { units: 64, gross: '$768', net: '$614' }, tags: ['Tour 2025'] },
-    mug: { sales: null }
+    mug: { sales: null },
+    /* 2026-09-18 D288：定時下架到期示範，有一點銷售 */
+    coaster: { sales: { units: 9, gross: '$99', net: '$79' } }
   };
 
   /* 一個組合包＝一個販售管道。cap 是組合自己的限量硬上限（§7.2），null ＝ 無額外上限。
@@ -1021,19 +1118,19 @@
       discountPct: 10, discount: null,
       sales: { units: 50, gross: '$1,170', net: '$936' }
     },
-    /* 因成員封存而被一同下架的組合包：postcard 封存時創作者確認「一同下架」，本組合轉已下架並記原因
-       （unlistReason；組合詳情頁要看得出「因成員封存而下架」，§7.14）。成員資格不因封存而移除。 */
+    /* 因成員下架而被一同下架的組合包（D288，原 D284 寫「因成員封存」）：postcard 下架時創作者確認「一同下架」，本組合轉已下架並記原因
+       （unlistReason；組合詳情頁要看得出「因成員下架而一同下架」，§7.14）。postcard 之後才封存。成員資格不因下架而移除。 */
     'postcard-set': {
       id: 'postcard-set', persona: 'default', name: '明信片＋寫真誌組', img: 'postcard-set.webp',
       description: '明信片組搭配幕後寫真誌，寄給沒到場的朋友。',
       members: [{ productId: 'postcard' }, { productId: 'zine' }],
       cap: null, listed: false, listAt: null, unlistAt: null,
-      unlistReason: { type: 'member-archived', productId: 'postcard', productName: '九龍夜行 明信片組' },
+      unlistReason: { type: 'member-unlisted', productId: 'postcard', productName: '九龍夜行 明信片組' },
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 5, discount: null,
       sales: { units: 18, gross: '$612', net: '$490' }
     },
-    /* 上架中、但成員 patch 已下架：組合不可售（§7.14 成交條件）；patch 要封存時本組合會被列進擋下彈窗 */
+    /* 上架中、成員 patch 與 cap 都上架中（D288 不變式）；patch 按下架時本組合會被列進連動彈窗、確認後一同下架並記原因 */
     'roadie-set': {
       id: 'roadie-set', persona: 'default', name: '巡演工作組', img: 'patch-set.webp',
       description: '刺繡布章＋六片帽，隨行工作人員同款。',
@@ -1042,6 +1139,18 @@
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null,
       sales: { units: 7, gross: '$245', net: '$196' }
+    },
+    /* 定時下架到期的自動連動示範（2026-09-18 · D288）：seed 寫成上架中，但成員 coaster 的 unlistAt 已過——
+       載入時 ListingState.scheduledUnlistCascade() 會把本組合自動下架並記 unlistReason（auto:true）；
+       通知中心對應一則「杯墊組已依排程下架，後台茶水組一併下架」（sidebar.js NOTIF_INFO，靜態示範）。 */
+    'backstage-set': {
+      id: 'backstage-set', persona: 'default', name: '後台茶水組', img: 'coaster-pack.webp',
+      description: '杯墊組＋六片帽，後台休息時間的標配。',
+      members: [{ productId: 'coaster' }, { productId: 'cap' }],
+      cap: null, listed: true, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: 5, discount: null,
+      sales: { units: 4, gross: '$100', net: '$80' }
     },
 
     /* ══ nick persona（周湯豪）══ 第一筆必須是選物四件組：ztorGetBundle() 沒帶 id 時回該 persona 的第一筆 */
@@ -1160,6 +1269,7 @@
     if (b.archived === undefined) b.archived = false;
     if (b.archived) b.listed = false;
     if (b.unlistReason === undefined) b.unlistReason = null;
+    applySession(b);
     return b;
   }
   Object.keys(BUNDLE_SEED).forEach(function (k) { seedBundle(BUNDLE_SEED[k]); });
@@ -1225,6 +1335,7 @@
     p.tags = pick('tags', []);
     p.history = pick('history', []);
     p.draft = pick('draft', false);
+    applySession(p);
     return p;
   }
 
@@ -1232,6 +1343,28 @@
     var set = DATASETS[personaId];
     Object.keys(set).forEach(function (id) { seedListing(id, set[id]); });
   });
+
+  /* ── 定時下架到期的自動連動（2026-09-18 · D288 裁決二後半，§7.14「下架確認與組合包連動」）──
+     原型沒有排程器：載入時檢查一次——成員單售的 unlistAt 已過而它所在的組合包還上架中，就把那個組合包一併下架、
+     記 unlistReason（auto:true）並寫進工作階段覆蓋。判斷在 ListingState.scheduledUnlistCascade（純函式），
+     這裡只餵當前 persona 的組合包與商品。結果留在 AUTO_UNLISTED 給通知或 banner 讀（通知中心目前是靜態示範，
+     見 sidebar.js NOTIF_INFO 的 notif.auto-unlist）。 */
+  var AUTO_UNLISTED = [];
+  function runScheduledCascade() {
+    var L = (typeof window !== 'undefined' && window.ListingState) || LS;
+    if (!L || !L.scheduledUnlistCascade) return;
+    var map = active();
+    var hits = L.scheduledUnlistCascade(bundlesOfPersona(), function (id) { return map[id] || null; });
+    hits.forEach(function (h) { commit(h.bundle); });
+    AUTO_UNLISTED = hits;
+    /* D290：定時下架到期的東西真的下架一次（清四個時間、退回未開賣）並寫進工作階段——在連動之後跑，
+       連動要靠「成員 listed 且 unlistAt 已過」找觸發者。商品、組合包、拍賣三種都跑。 */
+    if (L.expireScheduled) {
+      var products = Object.keys(map).map(function (id) { return map[id]; });
+      var auctions = Object.keys(AUCTION_SEED).map(function (k) { return seedAuction(AUCTION_SEED[k]); });
+      L.expireScheduled(products.concat(bundlesOfPersona(), auctions)).forEach(commit);
+    }
+  }
 
   /* ── 對外 API（新頁面一律走這裡，別再自己算）────────────────────────────
      statusOf(product, channel)  單售或某個組合包視角的主徽章狀態
@@ -1268,6 +1401,11 @@
   }
   window.ProductsStore = {
     all: function () { return active(); },
+    /* 工作階段覆蓋（D288）：狀態轉移後呼叫 commit(entity) 記住；forgetSession() 回到 seed（cheat code Reset 也會呼叫） */
+    commit: commit,
+    forgetSession: forgetSession,
+    /* 載入時自動連動的結果 [{ bundle, product }]（定時下架到期→組合包一併下架） */
+    autoUnlisted: function () { return AUTO_UNLISTED.slice(); },
     get: function (id) { var p = active()[id]; return p ? applyBundleLocks(seedListing(id, p)) : null; },
     bundles: bundlesOfPersona,
     getBundle: function (id) { return BUNDLE_SEED[id] || null; },
@@ -1276,12 +1414,31 @@
         return (b.members || []).some(function (m) { return m.productId === productId; });
       });
     },
-    /* 封存前的擋下清單（§7.14 · D284）：這件單售仍是哪些「上架中」組合包的成員；已下架／已封存／草稿的組合包不算。
-       判斷在 ListingState.listedBundlesUsing，這裡只把當前 persona 的組合包餵進去。 */
-    archiveBlockers: function (productId) {
+    /* 下架前的連動清單（§7.14「下架確認與組合包連動」· D288；D284 時掛在封存）：這件單售仍是哪些「上架中」組合包的成員；
+       已下架／已封存／草稿的組合包不算。判斷在 ListingState.listedBundlesUsing，這裡只把當前 persona 的組合包餵進去。 */
+    unlistBlockers: function (productId) {
       var L = ls(); if (!L || !L.listedBundlesUsing) return [];
       return L.listedBundlesUsing(productId, window.ProductsStore.bundlesUsing(productId));
     },
+    /* 組合包重新上架（D288 裁決三＋D289）：先用 relistPlan 盤點——blocked（已封存／草稿）非空要擋下；unlisted 非空要先確認
+       「這些單售會一起重新上架」；確認後呼叫 relistBundle：已下架成員連帶 relist、組合包 relist，全部寫進工作階段。 */
+    relistPlan: function (bundle) {
+      var L = ls(); if (!L || !L.bundleRelistPlan) return { unlisted: [], blocked: [] };
+      var map = active();
+      return L.bundleRelistPlan(bundle, function (id) { return map[id] || null; });
+    },
+    relistBundle: function (bundle) {
+      var L = ls(); if (!L || !L.relistBundle) return { ok: true, blockers: [], relisted: [] };
+      var map = active();
+      var r = L.relistBundle(bundle, function (id) { return map[id] || null; });
+      if (r.ok) { commit(bundle); r.relisted.forEach(commit); }
+      return r;
+    },
+    /* 拍賣（2026-09-18 · D285）：三開關記錄，兩個 persona 共用；狀態一律問 ListingState 的拍賣版推導 */
+    getAuction: function (id) { return id && AUCTION_SEED[id] ? seedAuction(AUCTION_SEED[id]) : null; },
+    auctions: function () { return Object.keys(AUCTION_SEED).map(function (k) { return seedAuction(AUCTION_SEED[k]); }); },
+    auctionStatusOf: function (a, now) { var L = ls(); return (L && a) ? L.deriveAuctionStatus(a, now) : 'live'; },
+    auctionFlagsOf: function (a, now) { var L = ls(); return (L && a) ? L.deriveAuctionFlags(a, now) : { status: 'live', hidden: false }; },
     qtyOf: function (product, channel) {
       var L = ls(); return L ? L.channelQty(product, channel || 'single') : Infinity;
     },
@@ -1552,6 +1709,9 @@
       }
     });
   }
+  /* 定時下架到期的自動連動在所有 seed 補完之後跑一次（D288）；ListingState 已於本檔之前載入 */
+  runScheduledCascade();
+
   function patchAll() { patchEshopList(); patchBundlesAndAuctions(); }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', patchAll);

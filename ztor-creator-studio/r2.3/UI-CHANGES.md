@@ -4,6 +4,74 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-18（四十二）· 下架清除四個排程時間並退回未開賣、重新上架後須再設開賣、開賣卡加「未開賣」（D290）（A spec-derived）
+
+**範圍**：`js/listing-state.js`（`unlist()` 改為清 `listAt`／`unlistAt`／`saleStart`／`saleEnd`＋`onSale=false`（拍賣另清 `listedAt`），連動 `unlistWithBundles`／`scheduledUnlistCascade` 自然套用；`relist()`／`relistBundle` 不再恢復開賣（維持未開賣、時間空）；新增 `isOnSale`／`expireScheduled`；`saleStatus` 最前加「未開賣 → coming」、`canBuy` 與 `bundleQty` 成員條件補未開賣、`auctionStart` 未開拍回 null；檔頭欄位表加 `onSale`）、`js/products-store.js`（`SESSION_FIELDS` 加 `saleStart`／`saleEnd`／`onSale`；`runScheduledCascade` 之後跑 `expireScheduled`）、`product-detail.html`／`bundle-detail.html`／`auction-detail.html`（開賣／開拍二選一加第三項「未開賣」／「未開拍」；下架、重新上架後開賣卡由資料重畫 `paintSaleCard`／`paintBdSaleCard`／`paintCards`；hero 下新增未開賣提醒 `.info-banner`；上架開關切開改走 `ListingState.relist`；設定總覽的開賣列多「未開賣」；拍賣下架確認改用 `ad.unlist.body`）、`js/i18n.js`（新增 `cp.listing.sale-off`／`sale-off-sub`／`relist-sale-note`、`product-detail.setov.ls.not-on-sale`、`ca.start.off`／`off-sub`、`ad.sale.relist-note`、`ad.unlist.body`；`e-shop.unlist.body`／`blocked-body` 補句；`e-shop.relist.members-body` 英文改）、`ASSUMPTIONS.md`（UIA-155）、`BUILD-SPEC.md`、`requirements-map.md`。
+
+**依據**：`documents/decisions.md` D290（2026-09-18，修訂 D265／D289；主規格 §7.14、5.1.5 F4、5.1.5.1 §2.2／§2.16、5.1.5.9、5.1.5.8）：下架（手動、定時到期、被組合包連動、成員連動）時清除四個排程時間、開賣退回未開賣，其他設定保留；重新上架（含自封存、組合包連帶成員）後為上架＋顯示（沿用）＋未開賣，徽章依推導為即將開賣（不顯示日期），要販售須再設開賣；拍賣下架清上架排程與開拍時間、重新上架後未開拍。
+
+**動機**：三開關模型原本沒有「未開賣」一態（`saleStart` 空＝上架即開賣），重新上架就等於立刻開賣，與新規則相反。加一個缺值為 true 的 `onSale` 欄位是最小改動——所有 seed 與既有頁面行為不變，只有走過 `unlist()` 的東西會進入未開賣。規則集中在 `ListingState.unlist`／`relist` 一處，四條下架路徑（手動、定時到期、組合包連動、成員連動）與三條重新上架路徑（自已下架、自封存、組合包連帶）自然一致；定時到期原本只是推導、欄位不動，這輪補 `expireScheduled` 在載入時落實。提醒用 hero 下的 `.info-banner`，因為剛按完「重新上架」的人停在總覽分頁，看不到設定分頁裡開賣卡的字。
+
+**驗證**：`node --check` 三支 js；node 直接 require `listing-state.js` 跑下架→重新上架→設開賣、拍賣、組合包連帶、到期落實五組斷言；`check_ds_sync.py` PASS；起 `devserver.py` 用 Claude_Browser 實跑三個細節頁（截圖 `screenshots/r2.3/d290-*.png`）。
+
+## 2026-09-18（四十一）· 取貨方式區塊新增「取貨與退貨」短文字欄，物流配送與現場 QR 領取共用（D291）（A spec-derived）
+
+**範圍**：`create-product.html`（F4 取貨方式區塊底部新增 `textarea#cp-delivery-returns`——放在 shipping／qr 兩套 `.cp-subfields` 之外，所以切換取貨方式時欄位不動；`rows=3`、`maxlength=200`、標籤底下一句 hint；新增 `collectReturnsField()`，實體且有填才把它加進 `ztorPublishPreview` 的可翻譯欄位清單；`buildShopItemPreview` 的「取貨與退換」段改讀 `api.getValue('returns')`，有值才顯示並開放就地改譯文，留空整段收起；頁內補一條 `.cp-subfields > .info-banner { margin-bottom: var(--sp-16) }`——物流配送那套的最後一項是 info-banner、沒有 `.field` 的底距，使用者看原型後指出「要有間距」）、`product-detail.html`（交付分頁 `data-pd-cat="physical"` 內同位置新增 `#pd-delivery-returns`，帶示範值；唯讀／編輯態由既有 `applyReadonly` 掃 `textarea` 一併處理，沒有新增切換碼）、`js/i18n.js`（新增 `cp.delivery.returns`、`cp.delivery.returns.hint`、`cp.delivery.returns.ph`；`pp.mock.pickup-exchange-body` 立墓碑）、`requirements-map.md`。
+
+**依據**：`documents/decisions.md` D291（使用者 2026-09-18：「r2.3 創建商品流程與商品詳情中，增加一個"取貨與退貨"的短的文本編輯欄位在取貨方式的section，物流配送或現場QR領取都要有」；追問定義→「照推薦」：選填、短文字、兩種取貨方式共用一格、顯示於買家端商品頁「取貨與退換」段；追問可翻譯→「是，比照商品描述」）；5.1.5.2 v6.30 §4.1 F4 新子塊、§1 可翻譯欄位引用句、§7 第 11 項；5.1.5.1 v1.42 §2.11。
+
+**動機**：買家端商品頁本來就有「取貨與退換」這一段，原型的發布前預覽 mock 一直用固定假文填它，Creator Studio 卻沒有地方讓創作者寫。「兩種取貨方式都要有」最省的做法是一格共用——放在兩套子欄位外面、區塊底部，切換方式時欄位與內容都不動，不必各存一份也不必同步；創作者換取貨方式時退貨規則通常不會跟著變。用 `.textarea` 而不是單行 `.input`，因為退貨規則通常兩三句；`maxlength=200` 是規格「約 200 字」的呈現詮釋。預覽 mock 那段改成「有填才出現」，與規格「留空時買家端不顯示」同一行為，也順手讓固定假文退場。D244 拿掉的是場次那份現場指示在商品層的重複，這欄是商品自己的規則，不是同一欄復活——註解與 i18n 墓碑都寫明，避免下一輪誤判成回退。
+
+**驗證**：`check_ds_sync.py` PASS（既有 WARN 5／13 不變）；起 `devserver.py` 用 Claude_Browser 實跑：`create-product.html` 選實體 → 取貨方式區塊底部見「取貨與退貨」欄（物流配送態）；切「現場 QR 領取」欄位仍在、輸入內容不變；填名稱／描述後進發布前預覽，Preview 檢視底部「取貨與退換」段顯示所填文字、List 檢視多一列「取貨與退貨」四語欄；留空時預覽該段收起。`product-detail.html?id=patch` 商品設定 → 交付與取貨分頁見同欄（唯讀、帶示範值），按「編輯商品」後 `readOnly=false`；`?id=acetate`（現場 QR 領取）同欄在場次欄之下。zh／en 0 raw key、console 無錯誤。截圖 `screenshots/r2.3/d291-01…07-*.png`。
+
+## 2026-09-18（四十）· 下架先確認並連動組合包、組合包重新上架連帶已下架成員（已封存才擋）、封存改單純確認、封存唯讀補齊逐列與關聯（D288／D289）（A spec-derived）
+
+**範圍**：`js/listing-state.js`（新增 `unlistWithBundles`／`bundleRelistPlan`／`unlistedMembers`／`relistBundle`（D289：已下架成員連帶 relist、已封存擋下）／`scheduledUnlistCascade`；`archiveWithBundles` 立墓碑；`unlistReason.type` 改 `member-unlisted`＋`auto`）、`js/products-store.js`（`archiveBlockers` 改名 `unlistBlockers`、新增 `relistPlan`／`relistBundle`／`commit`／`forgetSession`／`autoUnlisted`；sessionStorage 工作階段覆蓋 `ztor.listing.session`；載入時跑定時下架到期的自動連動；示範 `patch` 改上架中、`postcard-set` 原因型別改、新增 `coaster`（定時下架已過）與 `backstage-set`）、`e-shop.html`（封存彈窗改單純確認；組合列「重新上架」：有已下架成員先確認「一併重新上架」、有已封存成員擋下列出、單一主鈕「知道了」；`askConfirm` 加 `noCancel`；`patch` 列改上架中、新增 `coaster` 列）、`product-detail.html`（頁首「下架」與上架開關切關先確認，仍在上架中組合包裡＝列出組合包＋主鈕「一同下架這些組合包」；封存單純確認；逐列「⋯」的上架開關／鎖定封存時收起、整顆「⋯」一併收起；選片器 readonly；裝 `archived-gate`）、`bundle-detail.html`（「下架」與開關切關先確認；「重新上架」與開關切開走成員盤點——已下架成員先確認後連帶上架、已封存成員擋下列出；原因文案改「因成員下架而一同下架」＋自動連動句；成員列補已封存／已下架徽章（`syncMemberBadges`）、成員已下架時「組合不可售」；選片器 readonly；裝 `archived-gate`；確認彈窗補 `.leave-dialog__list`）、`auction-detail.html`（Upcoming／Sold／Unsold 下架先確認、開關切關同；Live 停用維持；裝 `archived-gate`）、`partials/film-picker.js`（新增 `readonly` 選項與 `setReadonly()`／`isReadonly()`）、`partials/archived-gate.js`（新元件：封存態唯讀的事件層閘門）、`js/sidebar.js`（通知中心加一則「已依排程下架／一併下架」靜態示範）、`js/devtools.js`（Reset 清工作階段覆蓋）、`js/i18n.js`（新增 `e-shop.unlist.*`、`e-shop.relist.title/members-body/members-confirm/confirm/blocked-*`、`e-shop.rowCoaster.*`、`bd.unlist.reason-auto`、`bd.member.unlisted`、`notif.auto-unlist.*`；`bd.unlist.reason` 改文案；`e-shop.archive.blocked-*` 立墓碑）、`design-system.html`／`design-system.md`／`design-components.html`（Film picker 補唯讀示範與 API；新增 §4.202 Archived gate 卡＋TOC＋總表；Leave dialog 卡的示範改成 D288／D289 三種情境：下架時列組合包、重新上架時列會一起上架的成員、已封存成員擋下）、`docs/示範資料索引.md`、`ASSUMPTIONS.md`（UIA-154；UIA-152／153 被取代的條目標記）、`BUILD-SPEC.md`、`requirements-map.md`。
+
+**依據**：`documents/decisions.md` D288（使用者 2026-09-18：「下架要先確認…應該是下架就要確認是否商品有在組合包中…下架的商品不該存在於組合包之中」；「定時下架到期自動連動並通知創作者」→「可以」；「已封存的商品，其商品詳情頁中的內容都不能進行編輯」）＋ D289（同日追加，取代 D288 裁決三的「擋下」做法：組合包重新上架先確認、列出會一起重新上架的已下架成員，確認＝連帶上架；成員有已封存的才擋下並列出，不可由組合包順手解除封存；反方向不連動；下架後設定保留、重新上架恢復（D265）；下架態內容可編輯、封存才全頁唯讀）；主規格 §7.14「下架確認與組合包連動」（新）、「組合包成交條件」不變式句、「封存與不可刪除」四處改寫；5.1.5.1 v1.40 §2.2／§4；5.1.5.9 v1.27 §2.2／§2.3／§4；5.1.5 F4 三類列操作。
+
+**動機**：D284 把「仍在上架中的組合包裡」的檢查掛在封存上是講錯了——封存的前提是已下架，而已下架的單售不該還留在任何上架中的組合包裡，檢查點只能在下架。原型因此把整組彈窗從封存搬到下架（同一個 `leave-dialog` 殼、同一段 `__list`，只換文案與主鈕），封存回到單純確認；D286「一同下架的組合包重新上架不擋」與這條不變式衝突、一併推翻；D289 定案的做法是「連帶」而不是「擋」——已下架的成員本來就是跟著組合包一起被拉下來的，重新上架時一起拉回去最順手，只要先把「這些單售會一起重新上架」講清楚；已封存的成員是創作者另外做的決定，組合包不能順手解除，這種情況才擋下（列出、只有「知道了」——它是告知，沒有「仍要上架」這條路）。狀態轉移仍全部收在 `listing-state.js` 一支（下架連動、成員閘門、自動連動都是純函式），四個頁面只負責問與畫。封存唯讀的三個漏洞（逐列上架開關、逐列鎖定、選片器）盤點後不再只靠「藏入口」——`film-picker` 在元件層加唯讀模式（元件自己拒絕加入／移除），並新增 `archived-gate` 在事件層兜底：頁面根帶 `data-archived` 時任何會改資料的控件都到不了 handler，漏藏一個也改不到資料。跨頁看得到結果是驗證 D288 流程的必要條件（下架 patch 後要在組合詳情看到 roadie-set 已下架＋原因），所以 store 把上架軸五個欄位記進 sessionStorage，只活在同一個分頁。
+
+**驗證**：`check_ds_sync.py` PASS（既有 WARN 5／13 不變）；`node --check` 五支 JS 通過；起 `devserver.py` 用 Playwright 實跑（persona＝default）：`product-detail.html?id=patch` 按下架 → 彈窗列「巡演工作組」、主鈕「一同下架這些組合包」→ 確認後徽章 Unlisted、上架開關關；`bundle-detail.html?id=roadie-set` 顯示已下架＋「因成員「九龍夜行 刺繡布章」下架而一同下架…」、成員列 patch 標「已下架」，上架開關切開 → 確認彈窗列「九龍夜行 刺繡布章」、主鈕「一併重新上架」→ 確認後組合包與 patch 都回到上架（換頁到 patch 細節頁徽章 Live）；再把 patch 下架並封存後回 roadie-set 切開 → 擋下彈窗「有成員已封存」列 patch、只有「知道了」、開關維持關；patch 按封存 → 單純確認（無清單）→ Archived；已下架態的 patch「編輯商品」／補貨／鎖定入口都未被鎖（D289 第五點）；`product-detail.html?id=postcard`（已封存）庫存分頁逐列「⋯」整顆收起、強制派送點擊也不改資料、鎖定彈窗不開；關聯分頁選片器 `data-readonly`、搜尋格與建議列收起、無 ×；`bundle-detail.html?id=launch-set` 同、頁首「重新上架」被擋並列出兩個已封存成員；`bundle-detail.html?id=backstage-set` 載入即顯示「成員「九龍夜行 杯墊組」已依排程下架，本組合一併下架…」；通知中心有對應一則；`auction-detail.html?id=signed-tour-poster`（Upcoming）按下架與開關切關都先出確認、取消不下架、確認才下架，Live（`stage-worn-jacket`）下架仍停用；e-shop 已封存組合列 `launch-set`「重新上架」：兩成員都已封存 → 擋下列出兩者；把 postcard 重新上架、mug 改成只下架後再按 → 確認彈窗列 mug「一併重新上架」→ 確認後 mug 與 launch-set 都回到上架、列徽章 Live；未封存商品（`jacket`）逐列上架開關照常可切；DS 頁 Archived gate 示範閘門開關正常、`design-components.html` 圖鑑有卡；zh／en 八頁 0 raw key、0 console error。截圖 `screenshots/r2.3/d288-01…14-*.png`（D288 各情境）與 `d289-01…05-*.png`（重新上架連帶成員／已封存擋下）。
+
+## 2026-09-18（三十九）· 拍賣結標未出價即流標，與完售分桶（D287）（A spec-derived）
+
+**範圍**：`js/listing-state.js`（拍賣段：新增 `auctionBidCount()`；`AUCTION_STATUS_META` 加 `unsold`；`deriveAuctionStatus()`／`deriveAuctionFlags()` 把 `ended` 依出價數再分成 `ended`／`unsold` 兩桶）、`js/products-store.js`（`AUCTION_SEED` 新增流標示範 `tour-enamel-pin`，`bids:0`）、`e-shop.html`（Auctions 篩選集加「流標／Unsold」；新增流標示範列，kebab 只留「編輯」——沒有履約可追蹤）、`auction-detail.html`（右欄「競標狀態」卡新增流標結果列 `[data-ad-unsold-row]`，結標無出價時由 `renderBadges()` 顯示「流標 · 無人出價」，其餘狀態收起）、`js/i18n.js`（新增 `e-shop.astatus.unsold`、`e-shop.a7.*`、`ad.info.result`、`ad.result.unsold`）、`ASSUMPTIONS.md`（UIA-153 補 D287：流標判定已裁決，未達保留價與流標能否重新開拍兩項改列待確認）。
+
+**依據**：使用者 2026-09-18（D287）裁決——「拍賣時間到，未出價商品，即流標」；流標與完售同路（可下架→封存、無刪除），頁首互斥動作與封存流程沿用既有（D284／D286）。
+
+**動機**：D286 只定了「結標後標示完售」，沒有處理「結標但根本沒人出價」這種情形——直接沿用完售文案會讓創作者以為東西賣掉了。出價數（`bids`）D285 落地時就已經是 `AUCTION_SEED` 的既有欄位，不必新開資料源，只在推導層加一個分岔：`ended` 保留「完售」語意（D286 剛定案，三處消費不必再動），無出價時改判成同層新增的 `unsold`（「流標」）。判斷點放在 `deriveAuctionStatus`／`deriveAuctionFlags` 這一支既有的單一推導層，維持「算出來的結果一律問這裡」的既有結構，消費頁（清單、細節頁）不必自己判斷出價數。
+
+**驗證**：`check_ds_sync.py` PASS；起 `devserver.py` 用 Claude_Browser 實跑：`e-shop.html` Auctions 分頁篩選「流標」見 1 列（Tour enamel pin set）、徽章顯示「流標」；`auction-detail.html?id=tour-enamel-pin` 頁首徽章「流標」、右欄「結果：流標 · 無人出價」、頁首「下架」可用（非 Live）；`auction-detail.html?id=vintage-synth`（完售）徽章仍「完售」、流標結果列不顯示；en 切換顯示「Unsold」、零 raw key；console 無錯誤。截圖 `screenshots/r2.3/auction-d287-*.png`。
+
+## 2026-09-18（三十八）· 拍賣三開關追加三條裁決：競標中不可下架、結標改標「完售」、已封存不可釘選（A spec-derived）
+
+**範圍**：`auction-detail.html`（頁首「下架」在 Live 時改停用＋title 提示，外層新增 `[data-ad-unlist-tip]` 包住鈕以繞過 `.btn:disabled` 的 `pointer-events:none`；撤除 Live 下架確認彈窗流程）、`js/i18n.js`（`e-shop.astatus.ended` 中文改「完售」、英文改「Sold」，key 名沿用 `ended`；新增 `ad.unlist.live-disabled`；墓碑 `ad.unlist.live-title`／`live-body`／`confirm`）、`e-shop.html`（`canPin()` 排除已封存；`syncRowActions()` 新增已封存收起釘選 kebab 項＋自動解除已釘選；`updatePinChrome()`／「立即釘選」CTA 的可釘選判斷改排除已隱藏的釘選項）、`ASSUMPTIONS.md`（UIA-153／UIA-152 對應產品缺口改標已裁決／暫定）。
+
+**依據**：使用者 2026-09-18（D286）三條裁決——「競標中不能下架」「出價者處理(暫定)：時間到，最高出價者得標」「結標後，標示完售」；另補兩條：一同下架的組合包按「重新上架」不擋（現況正確，不改）；已封存的販售管道不可釘選。
+
+**動機**：D285 落地時「Live 下架先確認」把決定權留給使用者臨場判斷，這次使用者直接收斂成規則——競標進行中本來就不該下架，不必每次都問一遍；停用＋提示比彈窗更早攔下這個動作，也少一次互動。「已結標」改「完售」是用詞對齊——結標後這件拍賣品從買家角度就是賣完了，站上其他地方講完售都用這個詞。已封存與已釘選是兩種互斥的「這件事要不要被看見」語意（封存＝從主清單消失且唯讀，釘選＝強制留在最前面），封存時解除釘選避免兩者同時生效。
+
+**驗證**：`check_ds_sync.py` PASS；Playwright 實跑：`auction-detail.html?id=stage-worn-jacket`（Live）頁首「下架」呈 disabled 樣式、hover 出現「競標結束後才能下架」；`e-shop.html` Auctions 分頁篩選 tab 與 Ended 列徽章皆顯示「完售」；en 切換顯示「Sold」；已封存列 kebab 無「釘選」項；zh／en 零 raw key；console 無錯誤。截圖 `screenshots/r2.3/auction-d286-*.png`。
+
+## 2026-09-18（三十七）· 拍賣改採三開關與封存：清單推導、建立拍賣兩段分層、細節頁三開關卡與互斥動作、撤刪除（A spec-derived）
+
+**範圍**：`js/listing-state.js`（拍賣段：`AUCTION_STATUS_META`、`auctionStart`／`auctionSaleEnd`／`auctionStarted`、`deriveAuctionStatus`／`deriveAuctionFlags`、`auctionBadgeClass`）、`js/products-store.js`（`AUCTION_SEED` 8 筆＋`getAuction`／`auctions`／`auctionStatusOf`／`auctionFlagsOf`；nick patch 同步 `data-auction-id`）、`e-shop.html`（Auctions 分頁：列帶 `data-auction-id`、徽章／篩選／顯示開關／kebab 封存與重新上架走三開關推導；篩選集加已隱藏／已下架；新增已下架 `lyric-sheet`／已封存 `tour-laminate`／隱藏 `demo-cassette` 三列；Ended 列補編輯）、`create-auction.html`（右欄上架設定／開拍設定兩段分層；結標時間唯讀導出；`#ca-delete`＋`window.confirm` 撤除）、`auction-detail.html`（徽章推導、頁首下架／封存／重新上架互斥、封存態唯讀＋`.info-banner`、右欄上架設定卡＋開拍設定卡、競標中下架確認彈窗）、`js/i18n.js`（新 key 見 BUILD-SPEC 檔頭；`e-shop.astatus.ended` 中文改「已結標」；墓碑 `ca.start.none/now/pending`、`ca.delete.confirm`、`cp.delete`）。
+
+**依據**：`documents/decisions.md` D285（使用者 2026-09-18：「和其他販售管道一樣有上下架、顯示隱藏、是否開賣」）與 D284（發布過即不可刪除、下架後可封存、封存後只有重新上架、草稿可刪須確認）；主規格 §7.14「適用範圍」（拍賣：開賣＝開拍、停售＝開拍＋競標時長、無庫存池）與「封存與不可刪除」；5.1.5.8 v1.9 §2.2／§2.7／§4；5.1.5.10 v1.8 共用操作「上架設定／開賣設定」；5.1.5 F3 拍賣篩選、F4 競標列操作。
+
+**動機**：三種販售管道只有拍賣還是另一套模型（單卡「定時開拍」＋自訂徽章），封存（D284）要掛在三開關上時拍賣沒有地方掛。這一輪把拍賣接進同一支 `listing-state`：同一組欄位、同一支 `deriveStatus`（只差 qty 固定 ∞、saleEnd 由開拍＋時長導出、徽章文案換成 Upcoming／Live／Ended），清單、細節頁、建立頁三處讀同一份記錄，創作者與 Admin 不用記兩種模型。元件一支都沒新增——`listing-controls`、`leave-dialog`、`info-banner`、`link-field` 全部沿用，只換文案（開拍／結標）。呈現假設與產品缺口記 ASSUMPTIONS UIA-153（出價中下架、結標後是否視為未開賣、Sealed 與三開關、Live 後可編欄位）。
+
+## 2026-09-18（三十六）· 封存與不可刪除：清單篩選與列操作、細節頁互斥動作與唯讀態、建立商品撤刪除（A spec-derived）
+
+**範圍**：`js/listing-state.js`（`archived` 態第一優先；`isArchived`／`canArchive`／`archive`／`relist`／`unlist`／`listedBundlesUsing`／`archiveWithBundles`）、`js/products-store.js`（`archived`／`unlistReason` 欄位、`archiveBlockers()`、示範三單售 `postcard`／`mug`／`patch` 與三組合 `launch-set`／`postcard-set`／`roadie-set`）、`e-shop.html`（三分頁「已封存」篩選且不進 All；列徽章、顯示開關停用、kebab 依狀態互斥：已下架→封存、已封存→重新上架＋編輯、草稿→刪除須確認；封存擋下彈窗列出上架中組合包並一同下架；新增共用確認彈窗）、`product-detail.html`／`bundle-detail.html`（頁首下架／封存／重新上架一次只出現一顆；封存態整頁唯讀＋`.info-banner`；組合補「因成員封存而下架」原因、成員已封存標記與「組合不可售」）、`create-product.html`（頂列與編輯態刪除鈕撤除）、`ds-components/leave-dialog.css`（新增 `__list`／`__list-item`）、`design-system.html`／`design-system.md`／`design-components.html`（Leave dialog 卡補擋下與草稿刪除兩個示範）、`js/i18n.js`（新增 18 把＋示範列 9 把；`wiz.delete`／`cp.delete.confirm` 立墓碑）、`docs/示範資料索引.md`。
+
+**依據**：`documents/decisions.md` D284（使用者 2026-09-18：「單售商品與組合包不能刪除，只能在下架後封存」「下架狀態才有封存，封存狀態才有重新上架按鈕」「如果封存的單售商品在組合包中，必須擋下，設計一個 popup 彈窗，列出組合包名稱，詢問是否一同下架組合包」；草稿可刪但要確認彈窗）；主規格 §7.14「封存與不可刪除」與狀態組合表「已封存」列；5.1.5 F3／F4、5.1.5.1 §2.2／§2.16／§4、5.1.5.9 §2.2／§2.3／§4。
+
+**設計取捨**：狀態轉移寫進 `listing-state.js` 而不是各頁自己改欄位——它已經是三開關與徽章的單一推導層，封存只是多一態，五頁一起問同一支函式才不會再分岔。清單的封存／重新上架項目由 JS 按狀態長出來、不寫進靜態列（列會被 persona 與「載入更多」複製，寫死會漏）。三種確認共用一個 `.leave-dialog` 殼（站上唯一的確認彈窗語彙），只加一段清單元素，沒有第二種彈窗。封存可逆所以主鈕維持 primary，草稿刪除才用 destructive。細節頁的唯讀不做整頁 disabled，而是藏掉每一個會改資料的入口＋鎖上架卡——設定分頁本來就是檢視態，看得到、不能改。拍賣三頁刻意不動（D285 另一波）。
+
+**驗證**：`check_ds_sync.py` 全 PASS（既有 WARN 5／13 不變）；Playwright 實跑：e-shop 「已封存」篩選見兩列、All 計數不含；已下架單售按封存出確認彈窗；`patch` 按封存出擋下彈窗列「巡演工作組」，確認後組合列變已下架（seed 記 `unlistReason`）、單售進已封存；草稿刪除出紅框確認、確認才移除；`product-detail.html?id=postcard` 整頁唯讀＋banner＋「重新上架」，按下回到販售中；`bundle-detail.html?id=postcard-set` 顯示「因成員…封存而下架」；en／zh-Hant 零 raw key；console 無錯誤。截圖 `screenshots/r2.3/archive-01…11-*.png`。
+
 ## 2026-09-17（三十三）· 優惠碼欄加「自動產生」與 8–20 英數字規則（A spec-derived）
 
 **範圍**：`store-settings.html`（優惠碼彈窗碼欄：hint「8–20 個英數字，不含符號」、`minlength／maxlength／pattern`、欄旁 `btn--outline btn--sm`「自動產生」；`genCode()` 產 10 碼大寫英數、去 0／O／1／I）、`admin-platform-promotions.html`（平台優惠碼彈窗同樣一組）、`js/i18n.js`（`store-settings.codes.generate`／`.f.code.hint`、`pprom.code.generate`／`.f.code.hint`）。

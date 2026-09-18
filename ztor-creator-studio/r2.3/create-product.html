@@ -64,6 +64,9 @@
   /* segmented 切換後揭露的子欄位群（庫存版本/取貨方式）*/
   .cp-subfields { margin-top: var(--sp-14); }
   .cp-subfields[hidden] { display: none; }
+  /* 物流配送子欄位的最後一項是 info-banner（沒有 .field 的底部留白），下面接共用的「取貨與退貨」欄時會貼住——
+     補與 .field 同量的底距（2026-09-18 使用者：「要有間距」）。QR 那套最後是 .field，本來就有留白，不受影響。 */
+  .cp-subfields > .info-banner { margin-bottom: var(--sp-16); }
   /* 多規格建構器與上方 radio 卡之間留間距 */
   #cp-var-builder { margin-top: var(--sp-16); }
   /* 預覽欄／表單｜預覽兩欄版面用 ds-components/preview-column.css；本頁寬度與上內距改用 shared.css 的 .wizard__body--form/--narrow 修飾類（2026-07-09）。 */
@@ -157,7 +160,8 @@
         <span class="wizard__save-status" data-wizard-save data-state="saved"><span class="wizard__save-status__dot"></span><span data-wizard-save-text>Saved</span></span>
         <button class="btn btn--outline" type="button" data-wizard-savedraft data-i18n="wiz.savedraft">Save as draft</button>
         <button class="btn btn--icon btn--sm cp-edit-only" type="button" id="cp-duplicate" hidden aria-label="Duplicate" data-i18n-aria-label="wiz.duplicate"><i data-lucide="copy" class="ztor-icon"></i></button>
-        <button class="btn btn--icon btn--sm cp-edit-only" type="button" id="cp-delete-top" hidden aria-label="Delete" data-i18n-aria-label="wiz.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+        <!-- ✝ 2026-09-18 撤除頂列刪除鈕 #cp-delete-top（D284「發布過即不可刪除」：單售商品沒有任何刪除入口；
+             草稿的刪除在電子商店清單的列操作、且必須確認）。i18n `wiz.delete` 同日立墓碑。 -->
       </div>
     </div>
   </header>
@@ -759,6 +763,17 @@
           </div>
         </div>
       </div>
+
+      <!-- 取貨與退貨說明（2026-09-18 使用者裁決 D291）：物流配送與現場 QR 領取共用同一格，
+           所以放在兩套子欄位之外、區塊底部，切換取貨方式時不隨之顯隱。選填、短文字；
+           內容進買家端商品頁的「取貨與退換」段（發布前預覽 mock 那一段就是它），
+           屬可翻譯文案欄位（同商品描述，進 publish-preview 的 fields）。
+           與場次層的取貨說明（D244 退場那一欄）是不同東西——那份是現場指示，這份是商品規則。 -->
+      <div class="field">
+        <div class="field__label" data-i18n="cp.delivery.returns">Pickup &amp; returns</div>
+        <div class="field__hint" data-i18n="cp.delivery.returns.hint">Shown on the product page for both shipping and on-site pickup. Optional — leave blank to hide the section.</div>
+        <textarea class="textarea" id="cp-delivery-returns" rows="3" maxlength="200" placeholder="e.g. Ready within 3–5 business days. Exchanges accepted within 7 days of delivery, unworn and with tags attached." data-i18n-placeholder="cp.delivery.returns.ph"></textarea>
+      </div>
     </section>
 
     <!-- §4.5 共用商品設定（兩型）· spec 5.1.5.2 §4.5 / D064。
@@ -1020,8 +1035,8 @@
   <!-- 底部動作列在閘門上沒有意義（還沒開始填），跟著閘門一起收；enterWizard 才放出來 -->
   <footer class="wizard__bottom wizard__bottom--end hidden" data-cp-footer>
     <div class="wizard__bottom-actions">
-      <!-- 編輯態才出現：刪除（破壞性，確認流程待規格 §4.5）-->
-      <button class="btn btn--destructive" id="cp-delete" hidden data-i18n="cp.delete">Delete</button>
+      <!-- ✝ 2026-09-18 撤除編輯態「刪除」鈕 #cp-delete 與其 window.confirm（D284「發布過即不可刪除」，§7.14「封存與不可刪除」）：
+           發布過的商品只能在已下架後於細節頁「封存」；草稿可刪但入口在電子商店清單、必須確認。本頁不再有任何刪除。 -->
       <div class="readiness__anchor" id="cp-ready-anchor" tabindex="0" aria-describedby="readiness__pop">
         <button class="btn btn--primary" id="cp-primary" disabled data-i18n="cp.start.selling">Start selling</button>
         <!-- hover/focus 顯示的就緒檢查 tooltip（內容由 renderReadiness 填）-->
@@ -1485,6 +1500,14 @@
      mirroring 邏輯）。key 用陣列位置組——這批清單沒有穩定 id，兩次開預覽層之間
      若增刪列，舊草稿可能連到位置對不上的新列，這是本輪呈現假設，見 ASSUMPTIONS.md
      LANG-008。 */
+  /* 取貨與退貨說明（F4，D291）：實體商品且有填才進可翻譯欄位清單——數位沒有 F4，
+     空值也不該在列表檢視多出一列空白欄。 */
+  function collectReturnsField() {
+    const el = document.getElementById('cp-delivery-returns');
+    if (!el || state.type !== 'physical' || !el.value.trim()) return [];
+    return [{ key: 'returns', el: el, kind: 'textarea', labelKey: 'cp.delivery.returns', labelFallback: 'Pickup & returns' }];
+  }
+
   function collectSpecFields() {
     const out = [];
     const rows = Array.from(document.querySelectorAll('#spec-rows .spec-row'));
@@ -1568,7 +1591,9 @@
       '</div>' +
       '<div class="cp-shopmock__section"><h3 data-i18n="pp.mock.details">Product details</h3><p data-pp-detail></p></div>' +
       '<div class="cp-shopmock__section"><h3 data-i18n="pp.mock.specs">Specifications</h3><div class="kv-list" data-pp-specs></div></div>' +
-      '<div class="cp-shopmock__section"><h3 data-i18n="pp.mock.pickup-exchange">Pickup &amp; exchange</h3><p data-i18n="pp.mock.pickup-exchange-body">Ready within 3–5 business days. Exchanges accepted within 7 days of delivery, unworn and with tags attached.</p></div>';
+      /* 取貨與退換段（D291）：吃 F4 的「取貨與退貨說明」欄（可翻譯，讀 api.getValue 拿目前語系譯文），
+         留空就整段不出現——與買家端「留空不顯示」同一行為；原本的固定假文退場。 */
+      '<div class="cp-shopmock__section" data-pp-returns-section hidden><h3 data-i18n="pp.mock.pickup-exchange">Pickup &amp; exchange</h3><p data-pp-slot="returns"></p></div>';
 
     const heroEl = wrap.querySelector('[data-pp-hero]');
     if (heroSrc) { const img = document.createElement('img'); img.src = heroSrc; heroEl.appendChild(img); }
@@ -1650,6 +1675,13 @@
     api.bindEditable(wrap.querySelector('[data-pp-slot="desc"]'), 'desc');
     wrap.querySelector('[data-pp-crumb-name]').textContent = api.getValue('name');
     wrap.querySelector('[data-pp-detail]').textContent = api.getValue('desc');
+    /* 取貨與退換段：欄位有值才出現（D291）；有值時同名稱／描述一樣可在非預設語系就地改譯文 */
+    const retSec = wrap.querySelector('[data-pp-returns-section]');
+    if (retSec) {
+      const retVal = api.getValue('returns');
+      retSec.hidden = !(retVal && String(retVal).trim());
+      if (!retSec.hidden) api.bindEditable(retSec.querySelector('[data-pp-slot="returns"]'), 'returns');
+    }
   }
 
   primary.addEventListener('click', () => {
@@ -1663,7 +1695,7 @@
         fields: [
           { key: 'name', el: document.getElementById('cp-f-name'), kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
           { key: 'desc', el: document.getElementById('cp-f-desc'), kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
-        ].concat(collectSpecFields()).concat(collectOptionFields()),
+        ].concat(collectReturnsField()).concat(collectSpecFields()).concat(collectOptionFields()),
         previewRender: buildShopItemPreview,
         onConfirm: doPublishNew
       });
@@ -2344,12 +2376,7 @@
     if (titleEl) { titleEl.removeAttribute('data-i18n'); titleEl.textContent = nm ? (T('cp.h1.edit.pre', 'Edit') + ' ' + nm) : T('cp.h1.edit', 'Edit product'); }
     primary.setAttribute('data-i18n', 'cp.save.changes');
     primary.textContent = T('cp.save.changes', 'Save changes');
-    const del = document.getElementById('cp-delete');
-    if (del) {
-      del.hidden = false;
-      /* 破壞性，確認流程待規格；prototype 暫用原生 confirm */
-      del.addEventListener('click', () => { if (window.confirm(T('cp.delete.confirm', 'Delete this product? This cannot be undone.'))) location.href = 'e-shop.html'; });
-    }
+    /* ✝ 2026-09-18：編輯態的刪除鈕與 window.confirm 撤除（D284）。發布過的商品沒有刪除入口；封存在細節頁。 */
   }
 
   updateEditionHint();
