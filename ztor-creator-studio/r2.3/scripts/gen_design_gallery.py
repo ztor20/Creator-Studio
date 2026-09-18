@@ -16,52 +16,44 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "design-system.html"
 OUT = ROOT / "design-components.html"
 
-NAV = """<nav class="dsn" aria-label="Design 導覽">
+NAV = """<nav class="dsn" aria-label="Design">
   <a class="dsn__brand" href="design-tokens.html">Ztor Creator Studio <span>Design</span></a>
   <div class="dsn__tabs">
     <a href="design-tokens.html">Tokens</a>
-    <a href="demo-layer-system.html">Layers</a>
-    <a href="design-components.html" aria-current="page">元件</a>
-    <a href="design-system.html">規格全文</a>
+    <a href="design-layers.html">Layers</a>
+    <a href="design-components.html" aria-current="page">Components</a>
+    <a href="design-system.html">Spec</a>
   </div>
-  <div class="segmented dsn__theme" role="group" aria-label="主題">
+  <div class="segmented dsn__theme" role="group" aria-label="Theme">
     <button class="segmented__btn" type="button" data-theme-set="light">亮</button>
     <button class="segmented__btn" type="button" data-theme-set="dark">暗</button>
   </div>
 </nav>"""
 
-# 與 design-tokens.html／demo-layer-system.html 逐字相同的文件殼樣式
-NAV_CSS = """
-/* ── 文件殼：底色純黑（2026-09-16 使用者裁示「這些 DS 檔案背景都用純黑色」）──
-   文件頁不是產品頁，不鋪星空檯面：星空的暖光會讓 L1 玻璃在頁面各處看起來不一樣，
-   看層次時反而干擾。純黑吃 --surface-inverse（亮暗皆 #000000）。
-   選擇器要壓過 shared.css 的 html[data-nav-mode="sidebar"] body（星空就掛在那條）。 */
-html[data-nav-mode] body, body { background: var(--surface-inverse); }
-html[data-nav-mode] body::before, html[data-nav-mode] body::after { display: none; }
-/* ── 文件殼：頂部導覽（與 design-tokens.html／demo-layer-system.html 逐字相同）── */
-.dsn { position: sticky; top: 0; z-index: 30; height: 52px; display: flex; align-items: center; gap: var(--sp-16); padding: 0 var(--sp-24); background: var(--background); border-bottom: 1px solid var(--border); }
-.dsn__brand { font-family: var(--font-display); font-size: var(--fs-14); font-weight: var(--fw-medium); color: var(--foreground); white-space: nowrap; }
-.dsn__brand span { color: var(--faint-ink); font-weight: var(--fw-regular); margin-left: var(--sp-6); }
-.dsn__tabs { display: flex; gap: var(--sp-2); flex: 1 1 auto; min-width: 0; overflow-x: auto; }
-.dsn__tabs a { display: inline-flex; align-items: center; height: var(--control-h-xs); padding: 0 var(--sp-12); border-radius: var(--radius-pill); font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--muted-foreground); white-space: nowrap; }
-.dsn__tabs a:hover { background: var(--ztu-glass-strong); color: var(--foreground); }
-.dsn__tabs a[aria-current="page"] { background: var(--selected-surface); color: var(--selected-ink); }
-.dsn__theme { flex: 0 0 auto; }
-@media (max-width: 720px) { .dsn { padding: 0 var(--sp-16); gap: var(--sp-10); } .dsn__brand span { display: none; } }
-"""
 
 GALLERY_CSS = """
 /* ── 圖鑑版面（dg- 前綴，一次性） ── */
-.dg-wrap { max-width: 1200px; margin: 0 auto; padding: var(--sp-24) var(--sp-24) var(--sp-96); }
-.dg-title { font-family: var(--font-display); font-size: var(--fs-32); font-weight: var(--fw-light); letter-spacing: -0.6px; margin: 0 0 var(--sp-6); }
-.dg-sub { margin: 0 0 var(--sp-16); color: var(--muted-foreground); font-size: var(--fs-14); }
-.dg-bar { position: sticky; top: 52px; z-index: 20; display: flex; gap: var(--sp-12); align-items: center; flex-wrap: wrap; padding: var(--sp-10) var(--sp-24); margin: 0 calc(var(--sp-24) * -1) var(--sp-24); background: var(--background); border-bottom: 1px solid var(--border); }
-.dg-bar .input { height: var(--control-h-xs); max-width: 320px; }
 .dg-count { font-size: var(--fs-12); color: var(--faint-ink); }
+/* 分區（atom／molecule／organism）：標題＋名稱索引 chips，點了跳卡 */
+.dg-group { margin-top: var(--sp-56); scroll-margin-top: 110px; }
+.dg-group__head { display: flex; align-items: baseline; gap: var(--sp-10); margin-bottom: var(--sp-12); }
+.dg-group__title { font-family: var(--font-display); font-size: var(--fs-24); font-weight: var(--fw-light); margin: 0; }
+.dg-group__count { font-family: var(--font-mono); font-size: var(--fs-12); color: var(--faint-ink); }
+.dg-index { display: flex; flex-wrap: wrap; gap: var(--sp-6); margin-bottom: var(--sp-8); }
+.dg-index a { display: inline-flex; align-items: center; height: var(--control-h-xs); padding: 0 var(--sp-10); border-radius: var(--radius-pill); background: var(--ztu-film); color: var(--muted-foreground); font-size: var(--fs-12); }
+.dg-index a:hover { background: var(--ztu-glass-strong); color: var(--foreground); }
+.dg-index a[hidden] { display: none; }
+.dg-bar__groups { display: flex; gap: var(--sp-4); }
+.dg-bar__groups a { display: inline-flex; align-items: center; height: var(--control-h-xs); padding: 0 var(--sp-10); border-radius: var(--radius-pill); font-size: var(--fs-12); color: var(--muted-foreground); }
+.dg-bar__groups a:hover { background: var(--ztu-glass-strong); color: var(--foreground); }
+/* 卡片預設只展開第一個示範，其餘收進「更多示範」 */
+.dg-more { margin-top: var(--sp-4); }
+.dg-more[open] > summary { margin-bottom: var(--sp-12); }
+.dg-more > .dg-card__render { margin-top: 0; }
 /* 元件之間用分隔線＋間距分（2026-09-16 使用者裁示），不包卡：渲染區直接坐在 L0 檯面上，
    所以 .matrix-block 在這裡是第一層＝L1（規則寫在 design-system.html 的 <style>，本頁搬過來） */
 .dg-card { border-top: 1px solid var(--border-soft); padding: var(--sp-32) 0 var(--sp-24); margin-top: var(--sp-16); scroll-margin-top: 120px; }
-.dg-card:first-of-type { border-top: 0; margin-top: 0; }
+.dg-group .dg-card:first-of-type { border-top: 0; margin-top: 0; }
 .dg-card[hidden] { display: none; }
 .dg-card__head { display: flex; align-items: baseline; gap: var(--sp-10); flex-wrap: wrap; margin-bottom: var(--sp-4); }
 .dg-card__title { font-family: var(--font-display); font-size: var(--fs-20); font-weight: var(--fw-regular); margin: 0; }
@@ -74,14 +66,10 @@ GALLERY_CSS = """
 .dg-card__render > .demo, .dg-card__render > .matrix-block { overflow-x: auto; }
 .dg-card__render .field-text, .dg-card__render .field-label { display: none; }
 .dg-rules { margin-top: var(--sp-16); border-top: 1px solid var(--border-soft); padding-top: var(--sp-10); }
-.dg-rules > summary { cursor: pointer; font-size: var(--fs-13); color: var(--muted-foreground); list-style: none; }
-.dg-rules > summary::-webkit-details-marker { display: none; }
-.dg-rules > summary::before { content: "▸ "; }
-.dg-rules[open] > summary::before { content: "▾ "; }
 .dg-rules .sub__head, .dg-rules .sub__desc:first-of-type { display: none; }
 .dg-rules .field-label { margin-top: var(--sp-16); }
 .dg-empty { padding: var(--sp-24); color: var(--faint-ink); font-size: var(--fs-13); }
-@media (max-width: 720px) { .dg-wrap { padding-inline: var(--sp-16); } .dg-bar { margin-inline: calc(var(--sp-16) * -1); padding-inline: var(--sp-16); } .dg-card { padding: var(--sp-16); } }
+@media (max-width: 720px) { .dg-card { padding: var(--sp-16) 0; } }
 """
 
 RENDER_CLASSES = ("matrix-block", "demo", "viz", "preview", "gallery")
@@ -175,7 +163,7 @@ def build(only=None):
     html = SRC.read_text(encoding="utf-8")
     # 不用行首行尾錨點：design-system.html 有一行黏了 16 支 <link>（2026-09-16 驗收抓到的漏洞）
     # 從整份文件收集（DS 頁有幾支 <link> 是後來在 body 裡補掛的），去重保序
-    links = list(dict.fromkeys(re.findall(r'<link rel="stylesheet"[^>]*>', html)))
+    links = [l for l in dict.fromkeys(re.findall(r'<link rel="stylesheet"[^>]*>', html)) if "ds-doc.css" not in l]   # ds-doc.css 由下方固定加一次
     style = re.search(r"<style>(.*?)</style>", html, re.S).group(1)
     # Pillar 4 範圍
     p4 = html.index('<section class="pillar" id="component"')
@@ -198,18 +186,35 @@ def build(only=None):
         desc_m = re.search(r'<p class="sub__desc" data-zh>(.*?)</p>', sec, re.S)
         one = first_sentence(text_of(desc_m.group(1))) if desc_m else ""
         blocks, rest = extract_render_blocks(sec)
-        render = "\n".join(blocks) if blocks else '<p class="dg-empty">這張卡在規格全文裡沒有渲染區。</p>'
-        cards.append(f"""<article class="dg-card" id="{sid}" data-search="{(title + ' ' + one).lower().replace('"', '')}">
-  <div class="dg-card__head"><span class="dg-card__num">{num}</span><h2 class="dg-card__title">{name}</h2>{layer}<a class="dg-card__link" href="design-system.html#{sid}">規格全文 →</a></div>
+        if blocks:
+            render = '<div class="dg-card__render">\n' + blocks[0] + '\n</div>'
+            if len(blocks) > 1:
+                render += f'\n<details class="dg-more dsd-fold"><summary>更多示範（{len(blocks) - 1}）</summary><div class="dg-card__render">\n' + "\n".join(blocks[1:]) + '\n</div></details>'
+        else:
+            render = '<p class="dg-empty">這張卡在規格全文裡沒有渲染區。</p>'
+        tier = "atom" if "layer--atom" in layer else "molecule" if "layer--molecule" in layer else "organism" if "layer--organism" in layer else "other"
+        cards.append((tier, name, sid, f"""<article class="dg-card" id="{sid}" data-search="{(title + ' ' + one).lower().replace('"', '')}">
+  <div class="dg-card__head"><span class="dg-card__num">{num}</span><h2 class="dg-card__title">{name}</h2>{layer}<a class="dg-card__link" href="design-system.html#{sid}">Spec →</a></div>
   <p class="dg-card__one">{one}</p>
-  <div class="dg-card__render">
 {render}
-  </div>
-  <details class="dg-rules"><summary>規則與說明</summary>
+  <details class="dg-rules dsd-fold"><summary>規則與說明</summary>
 {rest}
   </details>
-</article>""")
-    style = prune_style(style, "\n".join(cards))
+</article>"""))
+    TIERS = [("atom", "Atoms", "最小的可重用單位：按鈕、輸入框、徽章、圖示"), ("molecule", "Molecules", "幾個 atom 組成的小任務單元：篩選列、搜尋框、表單列"), ("organism", "Organisms", "完整的功能區塊：表頭、資料表、編輯器、精靈流程"), ("other", "Other", "")]
+    groups_html, bar_groups = [], []
+    for tier, title, lead in TIERS:
+        items = [c for c in cards if c[0] == tier]
+        if not items:
+            continue
+        index = "".join(f'<a href="#{sid}" data-for="{sid}">{name}</a>' for _, name, sid, _ in items)
+        groups_html.append(f"""<section class="dg-group" id="tier-{tier}">
+  <div class="dg-group__head"><h2 class="dg-group__title">{title}</h2><span class="dg-group__count">{len(items)}</span><span class="dg-count">{lead}</span></div>
+  <div class="dg-index">{index}</div>
+{chr(10).join(c[3] for c in items)}
+</section>""")
+        bar_groups.append(f'<a href="#tier-{tier}">{title} <span class="dg-count">{len(items)}</span></a>')
+    style = prune_style(style, "\n".join(c[3] for c in cards))
     # DS 頁尾的 JS：示範有一部分是 JS 畫的（zselect、date-input、upload-tile…）。
     # <script src> 全搬（icons-all.js 1.8MB 例外：圖鑑用產品頁 registry 就夠）；
     # 頁尾 inline script 逐塊包 try/catch——它們有些只服務 DS 頁的目錄／語言切換，元素不在時會丟錯，包起來不讓一塊炸掉其餘。
@@ -228,20 +233,20 @@ def build(only=None):
 <!-- 機器生成：scripts/gen_design_gallery.py 從 design-system.html 抽出，勿手改；改 design-system.html 後重跑 -->
 <script src="js/theme.js?v=r2.2"></script>
 {chr(10).join(links)}
+<link rel="stylesheet" href="ds-doc.css?v=r2.2">
 <style>
 /* 以下第一段逐字取自 design-system.html 的 <style>（demo 容器與卡內排版靠它），之後是圖鑑自己的殼 */
 {style}
-{NAV_CSS}
 {GALLERY_CSS}
 </style>
 </head>
 <body>
 {NAV}
-<div class="dg-wrap">
-  <h1 class="dg-title">元件</h1>
-  <p class="dg-sub">每張卡＝一句用途＋真元件渲染；規則收在卡底展開。內容取自規格全文，重跑腳本即同步。</p>
-  <div class="dg-bar"><input class="input" id="dg-search" type="search" placeholder="搜尋元件" autocomplete="off"><span class="dg-count" id="dg-count">{len(cards)} 支</span></div>
-{chr(10).join(cards)}
+<div class="dsd-wrap dg-wrap">
+  <h1 class="dsd-title">Components</h1>
+  <p class="dsd-sub">一句用途＋真元件渲染，規則收在卡底。內容取自 Spec，重跑腳本即同步。</p>
+  <div class="dsd-bar"><input class="input" id="dg-search" type="search" placeholder="搜尋" autocomplete="off"><span class="dg-count" id="dg-count">{len(cards)} 支</span><span class="dg-bar__groups">{"".join(bar_groups)}</span></div>
+{chr(10).join(groups_html)}
 </div>
 {chr(10).join(tail_srcs)}
 {tail_inline}
@@ -253,7 +258,11 @@ def build(only=None):
   var cards = document.querySelectorAll('.dg-card'), count = document.getElementById('dg-count');
   document.getElementById('dg-search').addEventListener('input', function (e) {{
     var q = e.target.value.trim().toLowerCase(), n = 0;
-    cards.forEach(function (c) {{ var hit = !q || c.dataset.search.indexOf(q) !== -1; c.hidden = !hit; if (hit) n++; }});
+    cards.forEach(function (c) {{
+      var hit = !q || c.dataset.search.indexOf(q) !== -1; c.hidden = !hit; if (hit) n++;
+      var chip = document.querySelector('.dg-index a[data-for="' + c.id + '"]'); if (chip) chip.hidden = !hit;
+    }});
+    document.querySelectorAll('.dg-group').forEach(function (g) {{ g.hidden = !g.querySelector('.dg-card:not([hidden])'); }});
     count.textContent = n + ' 支';
   }});
 }})();

@@ -120,7 +120,7 @@
 - 點「Enter」會整個切換成該 creator 的儀表板視角（`dashboard`／側欄變成該 creator 的選單），非本頁範圍，另行核過該畫面無異常。
 - console 乾淨，無橫向溢出。
 
-## 19 · demo-layer-system.html — N/A（低優先，設計參考頁，不適用巡檢判準）
+## 19 · design-layers.html — N/A（低優先，設計參考頁，不適用巡檢判準）
 
 - 頁面自述「這是提案 demo，不是正式頁面」，白底、獨立配色系統，非產品頁面，不套用 ztorUI 新語彙判準。
 - console 乾淨。
@@ -139,7 +139,7 @@
 |---|---|---|
 | OK | 13 | admin-ip-bank-entry、auction-detail、audience-report、bundle-detail、create-auction、create-bundle、create-event-legacy、create-event、create-product、create-project、creator-detail、creators、e-shop |
 | B | 5 | admin-ip-bank、admin-platform-fees、admin-video-review、brand-campaign-detail、brand-campaigns |
-| N/A（非產品頁，不列判定） | 1 | demo-layer-system |
+| N/A（非產品頁，不列判定） | 1 | design-layers |
 | 覆蓋缺口（未能巡檢） | 1 | create-campaign |
 | A | 0 | — |
 

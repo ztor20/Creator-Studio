@@ -8,7 +8,7 @@
 <script src="js/row-disclosure.js?v=r2.2"></script>
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/link-field.js?v=r2.2"></script>
-<script>(function(){var h=document.documentElement;try{var l=localStorage.getItem('ztor.ds.lang')||'en';h.setAttribute('data-lang',l);h.setAttribute('lang',l==='zh'?'zh-Hant':'en');var m=localStorage.getItem('ztor.ds.docmode')||'fixed';var w=parseInt(localStorage.getItem('ztor.ds.docwidth')||'1440',10)||1440;h.setAttribute('data-docmode',m);h.style.setProperty('--doc-maxw',m==='rwd'?'none':w+'px');}catch(e){h.setAttribute('data-lang','en');h.setAttribute('data-docmode','fixed');}})();</script>
+<script>(function(){var h=document.documentElement;try{var l=localStorage.getItem('ztor.ds.lang')||'zh';h.setAttribute('data-lang',l);h.setAttribute('lang',l==='zh'?'zh-Hant':'en');var m=localStorage.getItem('ztor.ds.docmode')||'fixed';var w=parseInt(localStorage.getItem('ztor.ds.docwidth')||'1440',10)||1440;h.setAttribute('data-docmode',m);h.style.setProperty('--doc-maxw',m==='rwd'?'none':w+'px');}catch(e){h.setAttribute('data-lang','zh');h.setAttribute('data-docmode','fixed');}})();</script>
 <link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
@@ -157,19 +157,14 @@
 <!-- 2026-09-16 補掛：detail-overview 的 demo 卡（§4 詳情總覽三欄）一直沒連自己的 CSS，圖鑑抽出時檢查 15 抓到 -->
 <link rel="stylesheet" href="ds-components/detail-overview.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
+<link rel="stylesheet" href="ds-doc.css?v=r2.2">
 <style>
-/* ── 文件殼：底色純黑（2026-09-16 使用者裁示「這些 DS 檔案背景都用純黑色」）──
-   文件頁不是產品頁，不鋪星空檯面：星空的暖光會讓 L1 玻璃在頁面各處看起來不一樣，
-   看層次時反而干擾。純黑吃 --surface-inverse（亮暗皆 #000000）。
-   選擇器要壓過 shared.css 的 html[data-nav-mode="sidebar"] body（星空就掛在那條）。 */
-html[data-nav-mode] body, body { background: var(--surface-inverse); }
-html[data-nav-mode] body::before, html[data-nav-mode] body::after { display: none; }
 /* ===== Doc chrome (visualization shell only; tokens come from ds-components) ===== */
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--background); color: var(--foreground); font-family: var(--type-body-family); font-size: var(--type-body-size); line-height: var(--type-body-line-height); letter-spacing: var(--type-body-tracking); -webkit-font-smoothing: antialiased; }
 a { color: inherit; }
 .doc { display: grid; grid-template-columns: 264px 1fr; min-height: 100vh; }
-.toc { position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto; padding: 24px 16px 64px; border-right: 1px solid var(--border); background: var(--card); }
+.toc { position: sticky; top: 52px; align-self: start; height: calc(100vh - 52px);   /* 2026-09-17：讓出頂部 Design 導覽 */ overflow-y: auto; padding: 24px 16px 64px; border-right: 1px solid var(--border); background: var(--card); }
 .toc__brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-ui); font-size: var(--fs-18); font-weight: var(--fw-regular); letter-spacing: -0.5px; margin: 0 0 4px; }
 .toc__brand-mark { color: var(--primary); }
 .toc__sub { font-size: var(--fs-11); color: var(--muted-foreground); margin: 0 0 16px; }
@@ -544,6 +539,19 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 </style>
 </head>
 <body>
+<nav class="dsn" aria-label="Design">
+  <a class="dsn__brand" href="design-tokens.html">Ztor Creator Studio <span>Design</span></a>
+  <div class="dsn__tabs">
+    <a href="design-tokens.html">Tokens</a>
+    <a href="design-layers.html">Layers</a>
+    <a href="design-components.html">Components</a>
+    <a href="design-system.html" aria-current="page">Spec</a>
+  </div>
+  <div class="segmented dsn__theme" role="group" aria-label="Theme">
+    <button class="segmented__btn" type="button" data-theme-set="light">亮</button>
+    <button class="segmented__btn" type="button" data-theme-set="dark">暗</button>
+  </div>
+</nav>
 <div class="doc">
   <aside class="toc">
     <p class="toc__brand"><span class="toc__brand-mark">✻</span> Ztor Creator Studio · R 2.2</p>
@@ -8310,8 +8318,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <h3 class="sub__title">4.77 Leave dialog</h3>
     <span class="layer layer--organism">🟠 organism</span>
   </div>
-  <p class="sub__desc" data-en>Confirm-before-leaving dialog for every create / edit flow. Injected and driven by <code>partials/wizard-chrome.js</code>, shared by all 6 create pages. <strong>Two states, one shell</strong>: when the page has unsaved edits it asks about saving (Save and leave / Leave without saving); when nothing was edited it just confirms leaving (Leave) — no save question. Pages with no save affordance in the top bar can opt out of the save question entirely via <code>.wizard[data-leave-simple]</code> and always show the plain-leave state. Capped card, dimmed scrim, title + body + stacked actions + corner close. <strong>2026-09-11</strong>: e-shop.html reuses this shell for the “Show in shop” confirmation (title switches per on/off state, D263) — it is the site’s only confirm-dialog idiom.</p>
-  <p class="sub__desc" data-zh>建立／編輯流程的「返回離開確認」彈窗。由 <code>partials/wizard-chrome.js</code> 注入並控制，6 個建立頁共用。<strong>兩個型態、同一外殼</strong>：頁面有未存編輯時問儲存（儲存並離開／不儲存就離開）；沒編輯過則只確認離開（離開）、不問儲存。頂列沒有儲存入口的頁面可加 <code>.wizard[data-leave-simple]</code> 完全跳過問儲存那一態，一律走純離開版。有上限的卡、變暗 scrim、標題＋內文＋堆疊操作＋右上關閉。 <strong>2026-09-11</strong>：e-shop.html 的「顯示於商店」確認彈窗直接用這個殼（標題依開／關換句，D263）——它是站上唯一的確認彈窗語彙，不另造。</p>
+  <p class="sub__desc" data-en>Confirm-before-leaving dialog for every create / edit flow. Injected and driven by <code>partials/wizard-chrome.js</code>, shared by all 6 create pages. <strong>Two states, one shell</strong>: when the page has unsaved edits it asks about saving (Save and leave / Leave without saving); when nothing was edited it just confirms leaving (Leave) — no save question. Pages with no save affordance in the top bar can opt out of the save question entirely via <code>.wizard[data-leave-simple]</code> and always show the plain-leave state. Capped card, dimmed scrim, title + body + stacked actions + corner close. <strong>2026-09-11</strong>: e-shop.html reuses this shell for the “Show in shop” confirmation (title switches per on/off state, D263) — it is the site’s only confirm-dialog idiom. <strong>2026-09-18</strong>: a <code>.leave-dialog__list</code> element (one row per affected item, hairline dividers) sits between body and actions for the “archive while still in listed bundles” block (D284, e-shop.html and product-detail.html); the draft-delete confirm uses the same shell with a <code>.btn--destructive</code> primary.</p>
+  <p class="sub__desc" data-zh>建立／編輯流程的「返回離開確認」彈窗。由 <code>partials/wizard-chrome.js</code> 注入並控制，6 個建立頁共用。<strong>兩個型態、同一外殼</strong>：頁面有未存編輯時問儲存（儲存並離開／不儲存就離開）；沒編輯過則只確認離開（離開）、不問儲存。頂列沒有儲存入口的頁面可加 <code>.wizard[data-leave-simple]</code> 完全跳過問儲存那一態，一律走純離開版。有上限的卡、變暗 scrim、標題＋內文＋堆疊操作＋右上關閉。 <strong>2026-09-11</strong>：e-shop.html 的「顯示於商店」確認彈窗直接用這個殼（標題依開／關換句，D263）——它是站上唯一的確認彈窗語彙，不另造。<strong>2026-09-18</strong>：內文與操作之間可插一段 <code>.leave-dialog__list</code>（一列一項、細分隔線），給「封存時仍在上架中的組合包裡」的擋下彈窗列組合包名稱（D284，e-shop.html 與 product-detail.html）；草稿刪除確認用同一個殼、主鈕換 <code>.btn--destructive</code>。</p>
   <div class="demo" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
     <div class="leave-dialog__card" style="position:relative;box-shadow:var(--shadow-card)">
       <button class="leave-dialog__close" type="button" aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
@@ -8330,10 +8338,32 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         <button class="btn btn--primary">離開</button>
       </div>
     </div>
+    <div class="leave-dialog__card" style="position:relative;box-shadow:var(--shadow-card)">
+      <button class="leave-dialog__close" type="button" aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+      <h2 class="leave-dialog__title">「九龍夜行 刺繡布章」仍在上架中的組合包裡</h2>
+      <p class="leave-dialog__body">封存後這些組合包就賣不了。要繼續，得把它們一同下架：</p>
+      <ul class="leave-dialog__list">
+        <li class="leave-dialog__list-item"><i data-lucide="package" class="ztor-icon"></i>巡演工作組</li>
+        <li class="leave-dialog__list-item"><i data-lucide="package" class="ztor-icon"></i>冬季預購組</li>
+      </ul>
+      <div class="leave-dialog__actions">
+        <button class="btn btn--primary">一同下架這些組合包並封存</button>
+        <button class="btn btn--outline">取消</button>
+      </div>
+    </div>
+    <div class="leave-dialog__card" style="position:relative;box-shadow:var(--shadow-card)">
+      <button class="leave-dialog__close" type="button" aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+      <h2 class="leave-dialog__title">要刪除草稿「未命名」嗎？</h2>
+      <p class="leave-dialog__body">草稿刪除後無法復原。</p>
+      <div class="leave-dialog__actions">
+        <button class="btn btn--destructive">刪除</button>
+        <button class="btn btn--outline">取消</button>
+      </div>
+    </div>
   </div>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
-    <p class="field-text"><code>.leave-dialog</code>[data-open] (fixed scrim, z-index 100, flex-center) &gt; <code>.leave-dialog__scrim</code> + <code>.leave-dialog__card</code> &gt; <code>.leave-dialog__close</code> + <code>.leave-dialog__title</code> + <code>.leave-dialog__body</code> + <code>.leave-dialog__actions</code> (stacked, full-width <code>.btn</code>). <code>wizard-chrome.js</code> builds the two states from <code>edited</code>; actions = primary + outline (edited) or primary only (clean). <code>.wizard[data-leave-simple]</code> forces the clean state regardless of <code>edited</code>. Esc / scrim / × cancel.</p>
+    <p class="field-text"><code>.leave-dialog</code>[data-open] (fixed scrim, z-index 100, flex-center) &gt; <code>.leave-dialog__scrim</code> + <code>.leave-dialog__card</code> &gt; <code>.leave-dialog__close</code> + <code>.leave-dialog__title</code> + <code>.leave-dialog__body</code> + <code>.leave-dialog__actions</code> (stacked, full-width <code>.btn</code>); optional <code>.leave-dialog__list</code> &gt; <code>.leave-dialog__list-item</code> (icon + name, hairline dividers) between body and actions. <code>wizard-chrome.js</code> builds the two states from <code>edited</code>; actions = primary + outline (edited) or primary only (clean). <code>.wizard[data-leave-simple]</code> forces the clean state regardless of <code>edited</code>. Esc / scrim / × cancel.</p>
     <p class="field-text"><code>ds-components/leave-dialog.css</code> · <code>partials/wizard-chrome.js</code></p>
   </div>
   </details>
@@ -13082,8 +13112,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       <!-- 6.0.1 表面階層（Q66，2026-08-13）：疊上去的一層要比父層亮 -->
       <div class="sub" id="surface-layers">
         <div class="sub__head"><h3 class="sub__title">6.0.1 <span data-en>Surface layers</span><span data-zh>表面階層</span></h3></div>
-        <p class="sub__desc" data-en>From Figma <code>856:27798</code> (visualised in <code>demo-layer-system.html</code>): L0 canvas solid → L1 card solid → L2 translucent film that brightens whatever it sits on, and can stack → L3 stops filling and keeps only a hairline.</p>
-        <p class="sub__desc" data-zh>模型出自 Figma <code>856:27798</code>（<code>demo-layer-system.html</code> 有可視化）：L0 畫布實色 → L1 卡片實色 → L2 半透明薄膜（疊在誰身上就跟著誰亮一階，可再疊）→ L3 不再疊填色、只留線框。</p>
+        <p class="sub__desc" data-en>From Figma <code>856:27798</code> (visualised in <code>design-layers.html</code>): L0 canvas solid → L1 card solid → L2 translucent film that brightens whatever it sits on, and can stack → L3 stops filling and keeps only a hairline.</p>
+        <p class="sub__desc" data-zh>模型出自 Figma <code>856:27798</code>（<code>design-layers.html</code> 有可視化）：L0 畫布實色 → L1 卡片實色 → L2 半透明薄膜（疊在誰身上就跟著誰亮一階，可再疊）→ L3 不再疊填色、只留線框。</p>
 
         <div class="demo demo--preview"><div class="ds-preview" style="padding:var(--sp-20); background:var(--surface-page); border-radius:var(--radius-lg)">
           <div class="card" style="padding:var(--sp-16)">
@@ -13213,7 +13243,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   </main>
 </div>
 
-<script src="js/icons-all.js?v=r2.2"></script>
+<!-- js/icons-all.js（1.8MB 全套 Tabler）2026-09-17 起改為展開「未使用」清單時才載，見下方 Icon gallery script -->
 <script src="js/icons.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/upload-tile.js?v=r2.2"></script>
@@ -13309,6 +13339,25 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     fold.addEventListener('toggle', function () {
       if (!fold.open || built) return;
       built = true;
+      // 2026-09-17：全套 Tabler（icons-all.js，1.8MB）改為此刻才載入——本頁的示範全用策展 registry 就夠，
+      // 不需要為了這個摺疊區一開頁就多下載 1.8MB。載完把缺的 key 併進 registry（icons.js 只在自己載入時合併一次）。
+      if (!window.ZTOR_ICONS_ALL) {
+        grid.textContent = '載入全套圖示中…';
+        var sc = document.createElement('script');
+        sc.src = 'js/icons-all.js?v=r2.2';
+        sc.onload = function () {
+          var reg = window.ztorIcons && window.ztorIcons.REGISTRY;
+          if (reg) { for (var k in window.ZTOR_ICONS_ALL) { if (!(k in reg)) reg[k] = window.ZTOR_ICONS_ALL[k]; } }
+          grid.textContent = '';
+          build();
+        };
+        sc.onerror = function () { grid.textContent = '載不到 js/icons-all.js'; };
+        document.body.appendChild(sc);
+        return;
+      }
+      build();
+    });
+    function build() {
       var all = window.ZTOR_ICONS_ALL || {};
       var used = new Set();
       document.querySelectorAll('[data-lucide]').forEach(function (el) {
@@ -13328,7 +13377,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       });
       grid.appendChild(frag);
       if (window.ztorIcons) window.ztorIcons.applyIcons(grid);
-    });
+    }
   })();
 </script>
 <script>

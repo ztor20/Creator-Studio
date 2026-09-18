@@ -56,7 +56,7 @@
 - ip-bank-reporting／manage-ip 頁尾寫死「R 2.1 prototype」，內容非樣式，建議另行更新
 - **裁決結果（2026-08-28）**：更新。**已執行**——全站 grep 命中 7 頁（admin-ip-bank／admin-platform-fees／admin-video-review／creators／index／ip-bank-reporting／manage-ip），「R 2.1 prototype」→「R 2.3 prototype」，全站零殘留。
 
-### C-8 section-test／demo-layer-system／create-event-legacy
+### C-8 section-test／design-layers／create-event-legacy
 
 - 測試與 legacy 頁，低優先，建議不熔接、维持現狀
 - **裁決結果（2026-08-28，STYLE-DECISIONS Q87 範圍裁決）**：維持現狀。**不執行**。

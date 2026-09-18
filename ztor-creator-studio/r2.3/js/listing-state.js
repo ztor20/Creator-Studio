@@ -18,6 +18,13 @@
 //     saleStart   string|null   開賣日期與時間。null＝上架即開賣
 //     saleEnd     string|null   停售日期與時間。null＝不自動停售
 //     lowThreshold number       低庫存門檻（0＝不提醒）
+//     archived    boolean       已封存（2026-09-18 · D284，§7.14「封存與不可刪除」）。三開關之外的一態：
+//                               只有已下架的可以封存；封存＝離開主清單、細節頁唯讀、三開關與排程不可調；
+//                               唯一動作是重新上架（relist），直接回到 listed、不經過已下架。
+//                               封存必然是下架：isUnlisted() 對 archived 一律回 true。
+//     unlistReason { type: 'member-archived', productId, productName } | null
+//                               組合包被「一同下架」時記的原因（單售封存時仍在上架中組合包裡，D284）；
+//                               重新上架時清掉。純資訊欄位，推導不看它。
 //   單售商品另有庫存池：
 //     pool = { total: number | 'unlimited',
 //              locks: { single: number|null, bundles: { [bundleId]: number|null } } }
@@ -367,6 +374,7 @@
 
   /* 八態的徽章樣式對照。tone 直接對上 badge.css 的既有變體（badge--<tone>）。 */
   var STATUS_META = {
+    archived: { i18n: 'shop.status.archived', tone: 'neutral' },
     draft:    { i18n: 'shop.status.draft',    tone: 'neutral' },
     unlisted: { i18n: 'shop.status.unlisted', tone: 'neutral' },
     hidden:   { i18n: 'shop.status.hidden',   tone: 'neutral' },
@@ -388,8 +396,77 @@
     return !!(entity && (entity.isDraft || entity.draft || entity.status === 'draft'));
   }
 
+  /* ── 封存（spec §7.14「封存與不可刪除」· D284，2026-09-18）──────────────────
+     封存掛在販售管道上、與三開關同一層：封存單售不牽連組合包、封存組合包不牽連成員。
+     這裡只放判斷與最小的狀態轉移；「要不要先問、彈窗長什麼樣」是頁面的事。 */
+  function isArchived(entity) { return !!(entity && entity.archived); }
+
+  /** 可以封存嗎＝已下架（含排定上架未到、定時下架已過）、不是草稿、還沒封存。上架中不可封存（要先下架）。 */
+  function canArchive(entity, now) {
+    if (!entity || isArchived(entity) || isDraftOf(entity, null)) return false;
+    return isUnlisted(entity, nowMs(now));
+  }
+
+  /** 封存：archived＝true、總閘門關上、尚未生效的上架排程一併取消（§7.14 封存前提第三句）。顯示與開賣沿用原值、不動。 */
+  function archive(entity) {
+    if (!entity) return entity;
+    entity.archived = true;
+    entity.listed = false;
+    entity.listAt = null;
+    entity.unlistAt = null;
+    return entity;
+  }
+
+  /** 重新上架（Relist）：解除封存並直接回到上架，不經過已下架；顯示與開賣沿用封存前保留的值。 */
+  function relist(entity) {
+    if (!entity) return entity;
+    entity.archived = false;
+    entity.listed = true;
+    entity.listAt = null;
+    entity.unlistAt = null;
+    entity.unlistReason = null;
+    return entity;
+  }
+
+  /** 下架（Unlist）：總閘門關上、排程清空；reason 給「一同下架」的組合包記原因用（可省略）。 */
+  function unlist(entity, reason) {
+    if (!entity) return entity;
+    entity.listed = false;
+    entity.listAt = null;
+    entity.unlistAt = null;
+    entity.unlistReason = reason || null;
+    return entity;
+  }
+
+  /**
+   * 單售封存前的擋下條件（§7.14）：這件商品仍是哪些「上架中」組合包的成員。
+   * 已下架、已封存、草稿的組合包不算（成員留在裡面、只是不能賣）。
+   * bundles：候選組合包清單（通常是 ProductsStore.bundlesUsing(productId)）。回傳組合包物件陣列。
+   */
+  function listedBundlesUsing(productId, bundles, now) {
+    var at = nowMs(now), out = [];
+    (bundles || []).forEach(function (b) {
+      if (!b || isArchived(b) || isDraftOf(b, null) || isUnlisted(b, at)) return;
+      var inIt = (b.members || []).some(function (m) { return (m.productId || m.id) === productId; });
+      if (inIt) out.push(b);
+    });
+    return out;
+  }
+
+  /**
+   * 「一同下架這些組合包並封存」：先把每個組合包下架並記原因（因成員封存），再封存單售。
+   * 呼叫端已經拿使用者確認過才呼叫；取消時什麼都不做即可。
+   */
+  function archiveWithBundles(product, bundles) {
+    (bundles || []).forEach(function (b) {
+      unlist(b, { type: 'member-archived', productId: product && product.id, productName: product && product.name });
+    });
+    return archive(product);
+  }
+
   function isUnlisted(entity, at) {
     if (at === undefined) at = nowMs();   /* 對外（e-shop 顯示開關停用）呼叫時不帶時間 */
+    if (isArchived(entity)) return true;                    /* 封存必然下架（§7.14） */
     if (!flag(entity && entity.listed, true)) return true;
     if (future(entity && entity.listAt, at)) return true;     /* 排定上架但還沒到 */
     if (passed(entity && entity.unlistAt, at)) return true;   /* 自動下架日期與時間已過 */
@@ -398,7 +475,8 @@
 
   /**
    * 清單徽章的主徽章。優先序固定，不得各頁自行調換：
-   *   draft → unlisted → hidden → ended → soldout → coming → low → live
+   *   archived → draft → unlisted → hidden → ended → soldout → coming → low → live
+   * （已封存優先於其他所有徽章，§7.14「清單徽章與篩選」· D284）
    * ctx = { qty: number|Infinity, lowThreshold?: number, isDraft?: boolean }
    * qty 由呼叫端先用 channelQty()／bundleQty() 算好傳進來——同一件商品在不同管道
    * 的狀態本來就不同，元件層不猜是哪個管道。
@@ -406,6 +484,7 @@
   function deriveStatus(entity, ctx, now) {
     var at = nowMs(now);
     var c = ctx || {};
+    if (isArchived(entity)) return 'archived';
     if (isDraftOf(entity, c)) return 'draft';
     if (isUnlisted(entity, at)) return 'unlisted';
     if (!flag(entity && entity.shown, true)) return 'hidden';
@@ -431,6 +510,7 @@
   function deriveFlags(entity, ctx, now) {
     var at = nowMs(now);
     var c = ctx || {};
+    if (isArchived(entity)) return { status: 'archived', hidden: false };
     if (isDraftOf(entity, c)) return { status: 'draft', hidden: false };
     if (isUnlisted(entity, at)) return { status: 'unlisted', hidden: false };
     return { status: saleStatus(entity, c, at), hidden: !flag(entity && entity.shown, true) };
@@ -498,7 +578,7 @@
 
   return {
     STATUS_META: STATUS_META,
-    STATUS_ORDER: ['draft', 'unlisted', 'hidden', 'ended', 'soldout', 'coming', 'low', 'live'],
+    STATUS_ORDER: ['archived', 'draft', 'unlisted', 'hidden', 'ended', 'soldout', 'coming', 'low', 'live'],
     badgeClass: badgeClass,
     freeQty: freeQty,
     lockedTotal: lockedTotal,
@@ -516,6 +596,13 @@
     deriveStatus: deriveStatus,
     deriveFlags: deriveFlags,
     isUnlisted: isUnlisted,
+    isArchived: isArchived,
+    canArchive: canArchive,
+    archive: archive,
+    relist: relist,
+    unlist: unlist,
+    listedBundlesUsing: listedBundlesUsing,
+    archiveWithBundles: archiveWithBundles,
     canBuy: canBuy,
     privateLinkFor: privateLinkFor,
     resetPrivateLink: resetPrivateLink,
