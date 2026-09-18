@@ -597,6 +597,50 @@
       activityKey: 'e-shop.aNick.activity', gallery: ['nick-nike-00.jpg', 'nick-nike-01.jpg', 'nick-nike-02.jpg', 'nick-nike-03.jpg']
     }
   };
+  /* ── 拍賣的三開關與封存示範（2026-09-18 · D285／D284，spec §7.14「適用範圍」）──────────
+     拍賣列與拍賣細節頁的「狀態」自此不再寫死在 markup：每一件拍賣一筆記錄、欄位名與單售／組合同一套
+     （listed／shown／listAt／unlistAt／saleStart／archived），推導走 ListingState.deriveAuctionStatus。
+     拍賣獨有：saleStart＝開拍時間、duration＝競標時長（天）；結標時間由 ListingState.auctionSaleEnd 算、不存。
+     沒有庫存池。兩個 persona 共用這一份（拍賣列的 persona 差異只有名稱與圖，由 AUCTIONS_NICK 就地換）。
+     時間用「相對今天」的 offset 產生——Live／Upcoming／Ended 是時間推出來的，寫死日期會在某天全部變成已結標。
+     顯示用欄位（bids／current／winner…）仍是示意值，出價引擎不在原型範圍。 */
+  function daysFromNow(days, hour) {
+    var d = new Date(); d.setHours(hour === undefined ? 20 : hour, 0, 0, 0);
+    d.setDate(d.getDate() + days);
+    /* 本地時間的 ISO（不帶 Z），與 LISTING_SEED 其他時間欄同型 */
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':00';
+  }
+  var AUCTION_SEED = {
+    /* Live（競標中）：開拍 4 天前、時長 5 天 → 剩 1 天 */
+    'stage-worn-jacket':  { id: 'stage-worn-jacket', nameKey: 'e-shop.a1.name', img: 'stage-worn-jacket.webp', listed: true, shown: true, saleStart: daysFromNow(-4), duration: 5, bids: 18, bidders: 12 },
+    /* Upcoming（未開始）：定時開拍在 2 天後 */
+    'signed-tour-poster': { id: 'signed-tour-poster', nameKey: 'e-shop.a2.name', img: 'signed-tour-poster.webp', listed: true, shown: true, saleStart: daysFromNow(2), duration: 7, bids: 0, bidders: 0 },
+    /* Ended（完售、已出貨，D286 徽章文案改「完售」）：三個月前結標 */
+    'vintage-synth':      { id: 'vintage-synth', nameKey: 'e-shop.a3.name', img: 'vintage-synth.webp', listed: true, shown: true, saleStart: daysFromNow(-100), duration: 7, bids: 23, bidders: 9, shipped: true },
+    /* 已下架（Unlisted）：結標後創作者手動下架，等著封存 */
+    'lyric-sheet':        { id: 'lyric-sheet', nameKey: 'e-shop.a4.name', img: 'notebook.webp', listed: false, shown: true, saleStart: daysFromNow(-40), duration: 5, bids: 11, bidders: 6 },
+    /* 已封存（Archived）：只在「已封存」篩選下出現、細節頁唯讀 */
+    'tour-laminate':      { id: 'tour-laminate', nameKey: 'e-shop.a5.name', img: 'wristband.webp', listed: false, shown: true, archived: true, saleStart: daysFromNow(-70), duration: 3, bids: 7, bidders: 4 },
+    /* 隱藏（Hidden）＋競標中：商店找不到、持非公開連結可出價（§7.14「私下販售」） */
+    'demo-cassette':      { id: 'demo-cassette', nameKey: 'e-shop.a6.name', img: 'coastline-single.webp', listed: true, shown: false, privateLink: 'https://ztor.example/s/demo-cassette?k=w4nq8t2e', saleStart: daysFromNow(-1), duration: 7, bids: 3, bidders: 2 },
+    /* nick persona 的兩件（AUCTIONS_NICK 有 id 的那兩列）：狀態示範與對應的預設列相同 */
+    'realive-tour-guitar': { id: 'realive-tour-guitar', img: 'PRS 10-Top.webp', listed: true, shown: true, saleStart: daysFromNow(-4), duration: 5, bids: 18, bidders: 12 },
+    'wyagl-nike-dunk':     { id: 'wyagl-nike-dunk', img: 'nick-nike-00.jpg', listed: true, shown: true, saleStart: daysFromNow(2), duration: 7, bids: 0, bidders: 0 }
+  };
+  function seedAuction(a) {
+    if (!a || a.__seeded) return a;
+    if (a.listed === undefined) a.listed = true;
+    if (a.shown === undefined) a.shown = true;
+    if (a.listAt === undefined) a.listAt = null;
+    if (a.unlistAt === undefined) a.unlistAt = null;
+    if (a.privateLink === undefined) a.privateLink = null;
+    if (a.archived === undefined) a.archived = false;
+    if (a.archived) { a.listed = false; a.listAt = null; a.unlistAt = null; }
+    a.__seeded = true;
+    return a;
+  }
+
   /* e-shop 組合列（2026-09-11）：每列以 data-bundle-id 對 BUNDLE_SEED——
        - 組合的 persona 與當前 persona 對不上（userB 視同 default）→ 整列從 DOM 移除。
          用移除而不是只標 hidden，因為 e-shop 的 applyFilter() 每次篩選都會重設 row.hidden、
@@ -685,6 +729,8 @@
       /* 上游 2026-07-27 的詳情頁連結修復——必須保留，否則拍賣列點進去會開到錯的頁。 */
       var detail = row.querySelector('a[href*="auction-detail.html"]');
       if (detail && a.id) detail.setAttribute('href', 'auction-detail.html?id=' + a.id);
+      /* 三開關記錄也要跟著換成 nick 那一筆（AUCTION_SEED 有同 id 的記錄），狀態推導才對得上細節頁 */
+      if (a.id && AUCTION_SEED[a.id]) row.setAttribute('data-auction-id', a.id);
       /* 品名＝賣家內容，維持原值並移除原本那格的 key（示意英文名已不代表這一列）。 */
       var t = row.querySelector('.product-list__title');
       if (t) { t.removeAttribute('data-i18n'); t.textContent = a.name; }
@@ -1282,6 +1328,11 @@
       var L = ls(); if (!L || !L.listedBundlesUsing) return [];
       return L.listedBundlesUsing(productId, window.ProductsStore.bundlesUsing(productId));
     },
+    /* 拍賣（2026-09-18 · D285）：三開關記錄，兩個 persona 共用；狀態一律問 ListingState 的拍賣版推導 */
+    getAuction: function (id) { return id && AUCTION_SEED[id] ? seedAuction(AUCTION_SEED[id]) : null; },
+    auctions: function () { return Object.keys(AUCTION_SEED).map(function (k) { return seedAuction(AUCTION_SEED[k]); }); },
+    auctionStatusOf: function (a, now) { var L = ls(); return (L && a) ? L.deriveAuctionStatus(a, now) : 'live'; },
+    auctionFlagsOf: function (a, now) { var L = ls(); return (L && a) ? L.deriveAuctionFlags(a, now) : { status: 'live', hidden: false }; },
     qtyOf: function (product, channel) {
       var L = ls(); return L ? L.channelQty(product, channel || 'single') : Infinity;
     },

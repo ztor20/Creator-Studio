@@ -25,6 +25,11 @@
 //     unlistReason { type: 'member-archived', productId, productName } | null
 //                               組合包被「一同下架」時記的原因（單售封存時仍在上架中組合包裡，D284）；
 //                               重新上架時清掉。純資訊欄位，推導不看它。
+//   拍賣（2026-09-18 · D285，§7.14「適用範圍」）：同一組三開關與 archived，欄位名完全相同，另加：
+//     saleStart   對拍賣＝開拍時間（null＝跟著上架一起開拍，開拍時間＝實際上架時間）
+//     duration    競標時長（天數）。停售時間＝結標時間＝開拍時間＋時長，由 auctionSaleEnd() 導出、不手填，
+//                 所以拍賣物件上不存 saleEnd（存了也會被忽略）。
+//     拍賣無庫存池、無鎖定量：推導一律 qty＝Infinity，soldout／low 不會出現。
 //   單售商品另有庫存池：
 //     pool = { total: number | 'unlimited',
 //              locks: { single: number|null, bundles: { [bundleId]: number|null } } }
@@ -576,6 +581,73 @@
     return { ok: true, reason: null };
   }
 
+
+  /* ── 拍賣（spec §7.14「適用範圍」· D285，2026-09-18）────────────────────────
+     拍賣用同一組三開關、同一套封存；差別只有兩件事：
+       1. 開賣＝開拍：saleStart 就是開拍時間；沒填＝跟著上架一起開拍（＝實際上架時間）。
+       2. 停售＝結標＝開拍時間＋競標時長（duration，天），由系統算、不可單獨手填。
+     沒有庫存池，所以推導固定 qty＝Infinity，soldout／low 兩態不會出現。
+     徽章文案對應（規格 §7.14「與 §7.2 狀態語言的關係」）：coming→Upcoming、live→Live（競標中）、ended→Sold（完售，2026-09-18 D286 改文案，key 名沿用 ended 不改）；
+     archived／draft／unlisted／hidden 與商品同義、同一組 key。Sealed 是競標模式不是狀態，不進推導。 */
+  var AUCTION_STATUS_META = {
+    archived: STATUS_META.archived,
+    draft:    STATUS_META.draft,
+    unlisted: STATUS_META.unlisted,
+    hidden:   STATUS_META.hidden,
+    ended:    { i18n: 'e-shop.astatus.ended',    tone: 'neutral' },
+    coming:   { i18n: 'e-shop.astatus.upcoming', tone: 'info'    },
+    live:     { i18n: 'e-shop.astatus.live',     tone: 'success' }
+  };
+
+  /** 開拍時間：saleStart 優先；跟著上架一起開拍時＝上架時間（listAt，或原型記的 listedAt）。都沒有回 null。 */
+  function auctionStart(a) {
+    if (!a) return null;
+    var t = time(a.saleStart);
+    if (t !== null) return t;
+    t = time(a.listAt);
+    if (t !== null) return t;
+    return time(a.listedAt);
+  }
+
+  /** 結標時間（＝停售時間）＝開拍時間＋競標時長；缺任一回 null。回 ISO 字串（與其他時間欄同型）。 */
+  function auctionSaleEnd(a) {
+    var start = auctionStart(a);
+    var days = num(a && a.duration);
+    if (start === null || days <= 0) return null;
+    return new Date(start + days * 86400000).toISOString();
+  }
+
+  /* 把拍賣攤成 deriveStatus 看得懂的樣子：saleEnd 用導出值蓋掉、其餘欄位原樣。 */
+  function auctionEntity(a) {
+    var e = {}, k;
+    for (k in (a || {})) if (Object.prototype.hasOwnProperty.call(a, k)) e[k] = a[k];
+    e.saleEnd = auctionSaleEnd(a);
+    /* 跟著上架一起開拍且還沒到上架時間：開拍時間＝上架時間，deriveStatus 會先判 unlisted，不必另補 */
+    return e;
+  }
+
+  /** 拍賣的單一狀態桶（清單篩選用）：archived → draft → unlisted → hidden → ended → coming → live。 */
+  function deriveAuctionStatus(a, now) {
+    return deriveStatus(auctionEntity(a), { qty: INF, isDraft: isDraftOf(a, null) }, now);
+  }
+
+  /** 細節頁用：主徽章不含隱藏那一層，隱藏另外一顆。 */
+  function deriveAuctionFlags(a, now) {
+    return deriveFlags(auctionEntity(a), { qty: INF, isDraft: isDraftOf(a, null) }, now);
+  }
+
+  /** 拍賣徽章的 class 字串（tone 與商品同一張 badge.css）。 */
+  function auctionBadgeClass(status) {
+    var meta = AUCTION_STATUS_META[status];
+    return 'badge badge--' + ((meta && meta.tone) || 'neutral');
+  }
+
+  /** 競標已經開始了嗎（Live 或 Ended）——開拍後設定受限（5.1.5.8 §2.2 限度編輯）。 */
+  function auctionStarted(a, now) {
+    var start = auctionStart(a);
+    return start !== null && start <= nowMs(now);
+  }
+
   return {
     STATUS_META: STATUS_META,
     STATUS_ORDER: ['archived', 'draft', 'unlisted', 'hidden', 'ended', 'soldout', 'coming', 'low', 'live'],
@@ -617,6 +689,14 @@
     variantsChannelLocked: variantsChannelLocked,
     variantsAllLocked: variantsAllLocked,
     validateVariantLock: validateVariantLock,
-    validateSaleWindow: validateSaleWindow
+    validateSaleWindow: validateSaleWindow,
+    /* 拍賣（D285） */
+    AUCTION_STATUS_META: AUCTION_STATUS_META,
+    auctionStart: auctionStart,
+    auctionSaleEnd: auctionSaleEnd,
+    auctionStarted: auctionStarted,
+    deriveAuctionStatus: deriveAuctionStatus,
+    deriveAuctionFlags: deriveAuctionFlags,
+    auctionBadgeClass: auctionBadgeClass
   };
 }));

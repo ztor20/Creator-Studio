@@ -28,6 +28,8 @@
 <!-- D241（spec 0-設計規格書 §7.14）：三開關、非公開連結、成員庫存分配 -->
 <link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2"><!-- 封存態／因成員封存而下架的說明（D284） -->
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2"><!-- 封存確認彈窗（D284） -->
 <link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
 <!-- 2026-09-11 D268：多選項成員展開的逐組合列列首唯讀縮圖 .variant-thumb--ro（定義在 variant-builder.css） -->
@@ -86,6 +88,11 @@
         <div class="detail-topbar__tabs" data-dock-tabs></div>
         <div class="page-intro__actions">
           <button class="btn btn--outline" type="button" data-bd-preview-open data-dock-icon><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.preview">See as fan</span></button>
+          <!-- 頁首主要動作依狀態互斥、一次只出現一個（spec 5.1.5.9 §2.2，主規格 §7.14「封存與不可刪除」· D284，2026-09-18）：
+               上架中→「下架」；已下架→「封存」（先確認；封存組合包不牽連成員）；已封存→「重新上架」（不確認）。本頁沒有刪除。 -->
+          <button class="btn btn--outline" type="button" data-bd-unlist hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button>
+          <button class="btn btn--outline" type="button" data-bd-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
+          <button class="btn btn--primary" type="button" data-bd-relist hidden><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="product-detail.btn.relist">Relist</span></button>
           <div data-dock-actions></div>
         </div>
       </div>
@@ -107,6 +114,16 @@
           <p class="pd-hero__desc" id="bd-hero-meta"><span data-bd-hero-price>$69.00</span> · <span data-bd-hero-count>3</span> <span data-i18n="bd.hero.items">items</span></p>
         </div>
       </section>
+      <!-- 封存態說明（D284）：整頁唯讀、只能重新上架；未封存時收起。 -->
+      <div class="info-banner mt-16" data-bd-archived-banner hidden>
+        <i data-lucide="archive" class="ztor-icon info-banner__icon"></i>
+        <span data-i18n="product-detail.archived.banner">Archived — read-only. Relist it to edit or sell again.</span>
+      </div>
+      <!-- 因成員封存而下架（D284，5.1.5.9 §2.3）：讀組合記錄的 unlistReason，寫出是哪一個成員；已重新上架就收起。 -->
+      <div class="info-banner mt-16" data-bd-unlist-reason-banner hidden>
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <span data-bd-unlist-reason-text></span>
+      </div>
 
 
       <!-- 分頁（與商品明細同一組 DS 元件與切換邏輯）：
@@ -453,11 +470,13 @@
             </div>
           </div>
           <!-- --stack：右側常駐欄只有 300px，兩個時間欄並排會溢出（元件說明要求窄欄明說、不靠猜視窗寬度）。 -->
-          <div class="lctl lctl--stack">
+          <div class="lctl lctl--stack" data-bd-listing>
             <!-- 顯示於商店自己一項（D247；2026-09-04 使用者再裁示：不要外框、與第 2 層對調位置）：
                  它回答的是「上架之後找不找得到」，緊接在上架那顆總開關後面；排程盒排在它下面。
                  隱藏時長出來的非公開連結用 .lctl__body（列自己的揭示區），不再用外框把兩者圈起來。 -->
             <p class="lctl__lock-note" data-bd-lock-note hidden data-i18n="cp.listing.unlisted-lock">Unlisted — show and sale settings are locked until it is listed again.</p>
+            <!-- 下架原因（D284）：因成員封存而一同下架時多一句，寫出成員名；由 JS 依 unlistReason 填 -->
+            <p class="lctl__lock-note" data-bd-unlist-reason hidden></p>
             <div class="lctl__row" data-bd-shown-row>
               <div class="lctl__head">
                 <div class="lctl__titles">
@@ -650,7 +669,10 @@
       const members = document.getElementById('bd-members');
       if (members && bundle.memberItems) {
         members.innerHTML = bundle.memberItems.map(item =>
-          '<div class="data-list__row" data-bd-pid="' + esc(item.id) + '"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=' + esc(item.id) + '">' + esc(item.name) + '</a> <span class="text-sub">' + esc(item.meta) + '</span></div></div></div><div class="data-list__end data-list__end--row"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">' + esc(item.price) + '</span></div></div>'
+          '<div class="data-list__row" data-bd-pid="' + esc(item.id) + '"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=' + esc(item.id) + '">' + esc(item.name) + '</a> <span class="text-sub">' + esc(item.meta) + '</span>'
+          /* 成員已封存（D284，5.1.5.9 §2.3）：列上標「已封存」，成交條件提示另在可售套數那一句說明組合不可售 */
+          + ((window.ztorGetProduct && window.ztorGetProduct(item.id) && window.ztorGetProduct(item.id).archived) ? ' <span class="badge badge--neutral"><span data-i18n="shop.status.archived">Archived</span></span>' : '')
+          + '</div></div></div><div class="data-list__end data-list__end--row"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">' + esc(item.price) + '</span></div></div>'
         ).join('');
         if (window.ztorIcons) window.ztorIcons.applyIcons(members);
       }
@@ -683,6 +705,8 @@
       saleEnd: (seed && seed.saleEnd) || null,
       lowThreshold: (seed && seed.lowThreshold) || 0,
       draft: !!(seed && seed.draft),   /* 草稿：ListingState 讀 entity.draft，頁首徽章顯示「草稿」 */
+      archived: !!(seed && seed.archived),   /* 已封存（D284）：優先於其他所有徽章；整頁唯讀 */
+      unlistReason: (seed && seed.unlistReason) || null,   /* 因成員封存而一同下架的原因（D284） */
       /* 鎖定套數與逐規格分配（2026-09-11）：從組合記錄帶入；成員商品身上的組合鎖定是它導出的（applyBundleLock） */
       lockSets: (seed && seed.lockSets !== undefined) ? seed.lockSets : null,
       alloc: (seed && seed.alloc) ? JSON.parse(JSON.stringify(seed.alloc)) : {}
@@ -903,6 +927,9 @@
           if (capOn && bundleModel.cap <= lim.max) name = T('cb.total', 'Total quantity');
           if (name) txt = T('stock.capped-by', 'Capped by {name}').replace('{name}', name);
         }
+        /* 任一成員已封存 → 組合不可售（§7.14 成交條件，D284）：這一句蓋過鎖定／壓上限的說明 */
+        const archivedMember = bundleModel.members.map(m => map[m.productId]).find(p => p && p.archived);
+        if (archivedMember) txt = T('bd.member.archived', '“{n}” is archived — the bundle cannot sell').replace('{n}', archivedMember.name || '');
         meta.hidden = !txt; meta.textContent = txt;
       }
       refreshBadges(qty);
@@ -1602,6 +1629,106 @@
     })();
     renderBdSettingsOverview();
 
+    /* ── 頁首主要動作依狀態互斥＋封存態唯讀＋下架原因（spec 5.1.5.9 §2.2／§2.3／§4，主規格 §7.14 · D284，2026-09-18）──
+       做法同 product-detail：規則問 ListingState；封存時藏「編輯組合」與鎖定編輯入口、上架卡整組 .lctl--locked、
+       說明 banner 露出。組合記錄改在 bundleModel（本頁的工作副本）與 store 的 seed 兩處同步——e-shop 回來要看得到。 */
+    (function initArchiveState() {
+      if (!LS) return;
+      const main = document.querySelector('.main') || document.body;
+      const btnUnlist = document.querySelector('[data-bd-unlist]');
+      const btnArchive = document.querySelector('[data-bd-archive]');
+      const btnRelist = document.querySelector('[data-bd-relist]');
+      const bannerArchived = document.querySelector('[data-bd-archived-banner]');
+      const bannerReason = document.querySelector('[data-bd-unlist-reason-banner]');
+      const reasonText = document.querySelector('[data-bd-unlist-reason-text]');
+      const reasonNote = document.querySelector('[data-bd-unlist-reason]');
+      const listing = document.querySelector('[data-bd-listing]');
+      const PRUNE = '[data-bd-editmode],[data-bd-edit-cancel],[data-bd-lock-edit],[data-bd-lock-actions]';
+      let observer = null;
+      const prune = () => document.querySelectorAll(PRUNE).forEach(el => { el.hidden = true; });
+      const mirror = () => { if (seed) { seed.archived = bundleModel.archived; seed.listed = bundleModel.listed; seed.listAt = bundleModel.listAt; seed.unlistAt = bundleModel.unlistAt; seed.unlistReason = bundleModel.unlistReason; } };
+      function syncPrimaryAction() {
+        const archived = LS.isArchived(bundleModel);
+        if (btnUnlist) btnUnlist.hidden = archived || bundleModel.draft || LS.isUnlisted(bundleModel);
+        if (btnArchive) btnArchive.hidden = !LS.canArchive(bundleModel);
+        if (btnRelist) btnRelist.hidden = !archived;
+      }
+      function syncReason() {
+        const r = bundleModel.unlistReason;
+        const show = !!(r && r.type === 'member-archived' && LS.isUnlisted(bundleModel) && !LS.isArchived(bundleModel));
+        const txt = show ? T('bd.unlist.reason', 'Unlisted because “{n}” was archived. Relist that item or remove it before relisting the bundle.').replace('{n}', r.productName || r.productId || '') : '';
+        if (bannerReason) bannerReason.hidden = !show;
+        if (reasonText) reasonText.textContent = txt;
+        if (reasonNote) { reasonNote.hidden = !show; reasonNote.textContent = txt; }
+      }
+      function applyArchived() {
+        const archived = LS.isArchived(bundleModel);
+        main.toggleAttribute('data-archived', archived);
+        if (bannerArchived) bannerArchived.hidden = !archived;
+        if (listing) listing.classList.toggle('lctl--locked', archived);
+        if (listedSwitch) { listedSwitch.setAttribute('aria-disabled', archived ? 'true' : 'false'); listedSwitch.classList.toggle('switch--disabled', archived); }
+        document.querySelectorAll('[data-bd-lock-note]').forEach(n => {
+          const key = archived ? 'cp.listing.archived-lock' : 'cp.listing.unlisted-lock';
+          n.setAttribute('data-i18n', key);
+          n.textContent = T(key, archived ? 'Archived — switches and schedules stay locked until it is relisted.' : 'Unlisted — show and sale settings are locked until it is listed again.');
+        });
+        if (archived) {
+          prune();
+          if (!observer) { observer = new MutationObserver(prune); observer.observe(main, { childList: true, subtree: true }); }
+        } else if (observer) {
+          observer.disconnect(); observer = null;
+          document.querySelectorAll('[data-bd-editmode],[data-bd-lock-edit]').forEach(el => { el.hidden = false; });
+        }
+        syncPrimaryAction();
+        syncReason();
+      }
+      function paint() {
+        paintSwitch(listedSwitch, bundleModel.listed);
+        if (listAtEl) listAtEl.value = bundleModel.listAt ? String(bundleModel.listAt).slice(0, 16) : '';
+        if (unlistAtEl) unlistAtEl.value = bundleModel.unlistAt ? String(bundleModel.unlistAt).slice(0, 16) : '';
+        syncListedLock();
+        refreshAlloc();
+        renderBdSettingsOverview();
+        mirror();
+        applyArchived();
+      }
+      /* 確認彈窗（封存）：借 leave-dialog 的殼，與 e-shop 同一套文案 */
+      /* 彈窗 markup 在 </body> 前、這段 script 在它之前執行，所以每次用時才查（同 e-shop 的做法） */
+      const getDialog = () => document.querySelector('[data-bd-confirm-dialog]');
+      let pending = null;
+      const closeConfirm = () => { pending = null; const dialog = getDialog(); if (dialog) dialog.removeAttribute('data-open'); };
+      function askConfirm(opts) {
+        const dialog = getDialog();
+        if (!dialog) { opts.onConfirm(); return; }
+        const title = dialog.querySelector('[data-bd-confirm-title]'), body = dialog.querySelector('[data-bd-confirm-body]');
+        if (title) title.textContent = opts.title || '';
+        if (body) body.textContent = opts.body || '';
+        pending = opts.onConfirm;
+        dialog.setAttribute('data-open', '');
+        const ok = dialog.querySelector('[data-bd-confirm-ok]'); if (ok) ok.focus();
+      }
+      document.addEventListener('click', e => {
+        if (e.target.closest('[data-bd-confirm-ok]')) { const fn = pending; closeConfirm(); if (fn) fn(); return; }
+        if (e.target.closest('[data-bd-confirm-cancel]')) closeConfirm();
+      });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && pending) closeConfirm(); });
+
+      if (btnUnlist) btnUnlist.addEventListener('click', () => { LS.unlist(bundleModel); paint(); });
+      if (btnArchive) btnArchive.addEventListener('click', () => {
+        if (!LS.canArchive(bundleModel)) return;
+        askConfirm({
+          title: T('e-shop.archive.title', 'Archive “{n}”?').replace('{n}', (bundle && bundle.name) || ''),
+          body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can relist it anytime.'),
+          onConfirm: () => { LS.archive(bundleModel); paint(); }
+        });
+      });
+      if (btnRelist) btnRelist.addEventListener('click', () => { LS.relist(bundleModel); paint(); });
+      /* 上架開關自己切換時，頁首那顆與下架原因也跟著換 */
+      if (listedSwitch) listedSwitch.addEventListener('click', () => { if (bundleModel.listed) bundleModel.unlistReason = null; mirror(); syncPrimaryAction(); syncReason(); });
+      document.addEventListener('i18n:applied', () => { syncPrimaryAction(); syncReason(); });
+      applyArchived();
+    })();
+
     /* ── 頂列黏附（同商品／項目／系列／活動詳情，js/detail-topbar.js）── */
     (function () {
       const bar = document.querySelector('.detail-topbar');
@@ -1653,5 +1780,18 @@
   })();
 </script>
 <script src="js/devtools.js?v=r2.2"></script>
+<!-- 封存確認彈窗（2026-09-18 · D284）：借 leave-dialog 的殼；組合包封存不牽連成員，所以沒有擋下清單那一態。 -->
+<div class="leave-dialog" data-bd-confirm-dialog role="dialog" aria-modal="true" aria-labelledby="bd-confirm-title">
+  <div class="leave-dialog__scrim" data-bd-confirm-cancel></div>
+  <div class="leave-dialog__card">
+    <button class="leave-dialog__close" type="button" aria-label="Close" data-i18n-aria-label="e-shop.shown.close" data-bd-confirm-cancel><i data-lucide="x" class="ztor-icon"></i></button>
+    <h2 class="leave-dialog__title" id="bd-confirm-title" data-bd-confirm-title></h2>
+    <p class="leave-dialog__body" data-bd-confirm-body></p>
+    <div class="leave-dialog__actions">
+      <button class="btn btn--primary" type="button" data-bd-confirm-ok data-i18n="e-shop.archive.confirm">Archive</button>
+      <button class="btn btn--outline" type="button" data-bd-confirm-cancel data-i18n="e-shop.shown.cancel">Cancel</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

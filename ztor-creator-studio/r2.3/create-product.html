@@ -157,7 +157,8 @@
         <span class="wizard__save-status" data-wizard-save data-state="saved"><span class="wizard__save-status__dot"></span><span data-wizard-save-text>Saved</span></span>
         <button class="btn btn--outline" type="button" data-wizard-savedraft data-i18n="wiz.savedraft">Save as draft</button>
         <button class="btn btn--icon btn--sm cp-edit-only" type="button" id="cp-duplicate" hidden aria-label="Duplicate" data-i18n-aria-label="wiz.duplicate"><i data-lucide="copy" class="ztor-icon"></i></button>
-        <button class="btn btn--icon btn--sm cp-edit-only" type="button" id="cp-delete-top" hidden aria-label="Delete" data-i18n-aria-label="wiz.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+        <!-- ✝ 2026-09-18 撤除頂列刪除鈕 #cp-delete-top（D284「發布過即不可刪除」：單售商品沒有任何刪除入口；
+             草稿的刪除在電子商店清單的列操作、且必須確認）。i18n `wiz.delete` 同日立墓碑。 -->
       </div>
     </div>
   </header>
@@ -1020,8 +1021,8 @@
   <!-- 底部動作列在閘門上沒有意義（還沒開始填），跟著閘門一起收；enterWizard 才放出來 -->
   <footer class="wizard__bottom wizard__bottom--end hidden" data-cp-footer>
     <div class="wizard__bottom-actions">
-      <!-- 編輯態才出現：刪除（破壞性，確認流程待規格 §4.5）-->
-      <button class="btn btn--destructive" id="cp-delete" hidden data-i18n="cp.delete">Delete</button>
+      <!-- ✝ 2026-09-18 撤除編輯態「刪除」鈕 #cp-delete 與其 window.confirm（D284「發布過即不可刪除」，§7.14「封存與不可刪除」）：
+           發布過的商品只能在已下架後於細節頁「封存」；草稿可刪但入口在電子商店清單、必須確認。本頁不再有任何刪除。 -->
       <div class="readiness__anchor" id="cp-ready-anchor" tabindex="0" aria-describedby="readiness__pop">
         <button class="btn btn--primary" id="cp-primary" disabled data-i18n="cp.start.selling">Start selling</button>
         <!-- hover/focus 顯示的就緒檢查 tooltip（內容由 renderReadiness 填）-->
@@ -2344,12 +2345,7 @@
     if (titleEl) { titleEl.removeAttribute('data-i18n'); titleEl.textContent = nm ? (T('cp.h1.edit.pre', 'Edit') + ' ' + nm) : T('cp.h1.edit', 'Edit product'); }
     primary.setAttribute('data-i18n', 'cp.save.changes');
     primary.textContent = T('cp.save.changes', 'Save changes');
-    const del = document.getElementById('cp-delete');
-    if (del) {
-      del.hidden = false;
-      /* 破壞性，確認流程待規格；prototype 暫用原生 confirm */
-      del.addEventListener('click', () => { if (window.confirm(T('cp.delete.confirm', 'Delete this product? This cannot be undone.'))) location.href = 'e-shop.html'; });
-    }
+    /* ✝ 2026-09-18：編輯態的刪除鈕與 window.confirm 撤除（D284）。發布過的商品沒有刪除入口；封存在細節頁。 */
   }
 
   updateEditionHint();
