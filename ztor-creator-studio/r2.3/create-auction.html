@@ -344,7 +344,7 @@
       </div>
     </section>
 
-    <!-- 上架設定已移至右側「拍賣預覽」欄（預覽卡下方），改用 radio-list（位置與選法 2026-07-17 微調，接續 D144）。 -->
+    <!-- 上架設定與開拍設定在右側預覽欄（預覽卡下方）；2026-09-18 起改為兩段分層（D285）。 -->
 
     <div class="form-footnote" data-i18n="cp.stripe">Secure payments via Stripe. Buyer protection included.</div>
     </div><!-- /.preview-split__form -->
@@ -376,51 +376,118 @@
         </div>
       </div>
 
-      <!-- 上架設定（spec 5.1.5.10 shared operations · D144；位置與選法 2026-07-17 微調）：移到預覽卡下方，改 radio-list（不開拍／立刻開拍／定時開拍），選「定時開拍」才展開開拍時間。拍賣不設排程特價（競標無固定售價可折）。 -->
       </section>
 
-      <!-- 上架設定：與建立商品同一套骨架（主決定 → 分隔線 → 第 2 層），
-           但**欄位與規則不動**——拍賣的規格（5.1.5.10 §5 第 9 項）只有「開拍」這一個軸，
-           沒有商品那三個開關（顯示於商店、開賣／停售）。要不要比照商品改成三開關屬產品規則，
-           待上游裁決（記 ASSUMPTIONS）。 -->
+      <!-- 上架設定／開拍設定（2026-09-18 使用者裁決 D285，修訂 D144；本體見主規格 §7.14「適用範圍」）：
+           拍賣改採與建立商品 §4.6 同構的兩段分層（D245）——
+           上架設定：主決定三選一（不上架／立刻上架／定時上架）→ 顯示於商店 → 第 2 層線框盒（上架時間、定時下架）；
+           開拍設定：主決定二選一（跟著上架一起開拍／定時開拍）→ 第 2 層（開拍時間只在定時開拍出現；結標時間＝開拍時間＋競標時長，
+           由系統算出、唯讀，拍賣沒有「定時停售」這顆開關）。選「不上架」時第 2 層與整個開拍設定都不出現（D245／D247）。
+           拍賣不設排程特價（D144）、無庫存池（§7.14）。舊的單卡「上架設定 → 定時開拍」（ca.start.none／now）退場。 -->
       <section class="form-section form-section--outlined">
         <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="cp.listing.title">Listing settings</h3>
+          <h3 class="form-section__title" data-i18n="cp.listing.sec-listed">Listing</h3>
         </div>
         <div class="lctl lctl--stack">
-        <div class="lctl__row lctl__row--choice">
-          <div class="lctl__body">
-        <div class="radio-list radio-list--collapsible" id="ca-start-mode">
-          <button class="radio-list__trigger" type="button" aria-expanded="false">
-            <span class="radio-list__dot"></span>
-            <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.now">Start now</span><span class="radio-list__sub" data-i18n="ca.start.now-sub">Bidding opens right after saving</span></span>
-            <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
-          </button>
-          <div class="radio-list__options" hidden>
-            <button class="radio-list__item" type="button" data-ca-start="none">
-              <span class="radio-list__dot"></span>
-              <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.none">Don't start</span><span class="radio-list__sub" data-i18n="ca.start.none-sub">Save as draft, no auction yet</span></span>
-            </button>
-            <button class="radio-list__item radio-list__item--active" type="button" data-ca-start="now">
-              <span class="radio-list__dot"></span>
-              <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.now">Start now</span><span class="radio-list__sub" data-i18n="ca.start.now-sub">Bidding opens right after saving</span></span>
-            </button>
-            <button class="radio-list__item" type="button" data-ca-start="schedule">
-              <span class="radio-list__dot"></span>
-              <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.schedule">Schedule</span><span class="radio-list__sub" data-i18n="ca.start.schedule-sub">Auto-starts at the time you set</span></span>
-            </button>
+          <div class="lctl__row lctl__row--choice">
+            <div class="lctl__body">
+              <div class="radio-list radio-list--collapsible" id="ca-listing-mode">
+                <button class="radio-list__trigger" type="button" aria-expanded="false">
+                  <span class="radio-list__dot"></span>
+                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
+                  <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
+                </button>
+                <div class="radio-list__options" hidden>
+                  <button class="radio-list__item" type="button" data-ca-listing="none">
+                    <span class="radio-list__dot"></span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-list__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
+                  </button>
+                  <button class="radio-list__item radio-list__item--active" type="button" data-ca-listing="now">
+                    <span class="radio-list__dot"></span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
+                  </button>
+                  <button class="radio-list__item" type="button" data-ca-listing="schedule">
+                    <span class="radio-list__dot"></span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-list__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="lctl__rule"></div>
+          <div class="lctl__row" data-ca-shown-row>
+            <div class="lctl__head">
+              <div class="lctl__titles">
+                <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
+                <p class="lctl__hint" data-i18n="ca.listing.shown-hint">Hidden auctions stay open to anyone with the private link</p>
+              </div>
+              <div class="switch switch--on lctl__control" id="ca-shown-toggle" role="switch" aria-checked="true" tabindex="0"></div>
+            </div>
+          </div>
+          <div class="control-group control-group--plain lctl__derived" data-ca-listed-body>
+            <div class="field" data-ca-listing-fields hidden>
+              <div class="field__label"><span data-i18n="cp.listing.time">Listing time</span> <span class="field__req">*</span></div>
+              <input class="input" type="datetime-local" id="ca-listing-time">
+            </div>
+            <div class="lctl__row">
+              <div class="lctl__head">
+                <div class="lctl__titles">
+                  <span class="lctl__title" data-i18n="cp.listing.unlist-sched">Unlist at a set time</span>
+                  <p class="lctl__hint" data-i18n="cp.listing.unlist-sched-sub">Unlists automatically at the time you set</p>
+                </div>
+                <div class="switch lctl__control" id="ca-unlist-toggle" role="switch" aria-checked="false" tabindex="0"></div>
+              </div>
+              <div class="lctl__sched" data-ca-unlist-fields hidden>
+                <div class="field">
+                  <div class="field__label"><span data-i18n="cp.listing.unlist">Unlist time</span> <span class="field__req">*</span></div>
+                  <input class="input" type="datetime-local" id="ca-unlist-time">
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-          </div>
+      </section>
+
+      <section class="form-section form-section--outlined" data-ca-sale-section>
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="ca.start.sec">Bidding</h3>
         </div>
-        <div class="lctl__rule"></div>
-        <div class="lctl__derived" data-ca-start-fields hidden>
-          <div class="field">
-            <div class="field__label"><span data-i18n="ca.start.time">Start time</span> <span class="field__req">*</span></div>
-            <input class="input" type="datetime-local" id="ca-start-time">
+        <div class="lctl lctl--stack">
+          <div class="lctl__row lctl__row--choice">
+            <div class="lctl__body">
+              <div class="radio-list radio-list--collapsible" id="ca-start-mode">
+                <button class="radio-list__trigger" type="button" aria-expanded="false">
+                  <span class="radio-list__dot"></span>
+                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.follow">Start as soon as it is listed</span><span class="radio-list__sub" data-i18n="ca.start.follow-sub">Bidding opens the moment it goes live</span></span>
+                  <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
+                </button>
+                <div class="radio-list__options" hidden>
+                  <button class="radio-list__item radio-list__item--active" type="button" data-ca-start="follow">
+                    <span class="radio-list__dot"></span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.follow">Start as soon as it is listed</span><span class="radio-list__sub" data-i18n="ca.start.follow-sub">Bidding opens the moment it goes live</span></span>
+                  </button>
+                  <button class="radio-list__item" type="button" data-ca-start="schedule">
+                    <span class="radio-list__dot"></span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.schedule">Start at a set time</span><span class="radio-list__sub" data-i18n="ca.start.schedule-sub">Fans can see it earlier; bidding opens then</span></span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <p class="lctl__note" data-i18n="ca.start.pending">Time zone &amp; exact timing pending spec.</p>
+          <div class="lctl__rule"></div>
+          <!-- 第 2 層：開拍時間只在定時開拍出現；結標時間恆在、唯讀（＝開拍時間＋競標時長，由 F4 時長卡與開拍時間即時算出）。 -->
+          <div class="lctl__derived">
+            <div class="field" data-ca-start-fields hidden>
+              <div class="field__label"><span data-i18n="ca.start.time">Start time</span> <span class="field__req">*</span></div>
+              <input class="input" type="datetime-local" id="ca-start-time">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <div class="field__label" data-i18n="ca.start.end">Ends</div>
+              <input class="input" type="text" id="ca-sale-end" readonly value="" data-i18n-placeholder="ca.start.end-follow" placeholder="Duration after listing">
+              <div class="field__hint" data-i18n="ca.start.end-hint">Start time + duration; set automatically</div>
+            </div>
+          </div>
+          <p class="lctl__note" data-i18n="cp.listing.pending">Time zone &amp; exact timing pending spec.</p>
         </div>
       </section>
     </aside>
@@ -430,7 +497,8 @@
   <!-- §5.2.4 底部操作列（統一）：Save for later 左；就緒 chip＋主動作右 -->
   <footer class="wizard__bottom wizard__bottom--end">
     <div class="wizard__bottom-actions">
-      <button class="btn btn--destructive" id="ca-delete" hidden data-i18n="cp.delete">Delete</button>
+      <!-- ✝ 2026-09-18 撤除編輯態「刪除」鈕 #ca-delete 與其 window.confirm（D284「發布過即不可刪除」，§7.14「封存與不可刪除」）：
+           發布過的拍賣任何頁面都沒有刪除入口；草稿的刪除在電子商店清單的列操作、走確認彈窗。i18n `cp.delete`／`ca.delete.confirm` 同日立墓碑。 -->
       <span class="readiness__chip" id="ca-ready-chip" tabindex="0"><i data-lucide="circle" class="ztor-icon"></i><span id="ca-ready-chip-text" data-i18n="cp.ready.togo">6 items needed</span>
         <span class="readiness__pop">
           <section class="readiness" id="ca-readiness">
@@ -456,7 +524,7 @@
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const assets = {};
   const state = { kind: 'physical' };
-  let editMode = false;   // 編輯態（?edit）：主動作改 Save changes、顯示 Delete、不擋開拍（spec §4 共用操作）
+  let editMode = false;   // 編輯態（?edit）：主動作改 Save changes、不擋開拍（spec §4 共用操作）；無刪除（D284）
 
   const fName = document.getElementById('ca-f-name');
   const fStory = document.getElementById('ca-f-story');
@@ -652,13 +720,91 @@
     refresh();
   });
 
-  /* 上架設定 radio-list（移至預覽欄，2026-07-17；2026-07-21 改收合式）：選「定時開拍」才展開開拍時間欄
-     （spec 5.1.5.10 shared operations · D144）。開合與選中狀態由 partials/radio-list.js 統一處理。 */
+  /* ── 上架設定／開拍設定（2026-09-18 · D285，與建立商品 §4.6 同構）──────────────
+     listingMode：none＝草稿（第 2 層與開拍設定整段不出現，D245／D247）／now／schedule（上架時間必填）
+     startMode：follow＝跟著上架一起開拍／schedule＝定時開拍（開拍時間必填）
+     結標時間＝開拍時間＋競標時長（F4 時長卡），由 ListingState.auctionSaleEnd 算、唯讀；
+     跟著上架一起開拍時開拍時間＝實際上架時間（定時上架就是那個時間；立刻上架要到送出才知道，欄位顯示「上架後起算」）。
+     開合與選中狀態由 partials/radio-list.js 統一處理。 */
+  let listingMode = 'now';
+  let startMode = 'follow';
+  const saleEndEl = document.getElementById('ca-sale-end');
+  function currentDuration() {
+    const on = document.querySelector('#ca-duration .selection-card--active');
+    return on ? Number(on.dataset.caDur) : 0;
+  }
+  function fmtDT(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    const zh = document.documentElement.lang === 'zh-Hant';
+    /* 中文用數字年月日，與 date-input 的顯示格式（2026/10/03 下午08:00）一致 */
+    return d.toLocaleString(zh ? 'zh-TW' : 'en-US', zh ? { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' } : { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+  function renderSaleEnd() {
+    if (!saleEndEl) return;
+    const L = window.ListingState;
+    const startAt = startMode === 'schedule'
+      ? (document.getElementById('ca-start-time') || {}).value
+      : (listingMode === 'schedule' ? (document.getElementById('ca-listing-time') || {}).value : '');
+    const end = (L && L.auctionSaleEnd) ? L.auctionSaleEnd({ saleStart: startAt || null, duration: currentDuration() }) : null;
+    saleEndEl.value = end ? fmtDT(end) : '';
+    /* 沒有具體開拍時間時 placeholder 講「上架後起算 N 天」 */
+    const days = currentDuration();
+    saleEndEl.placeholder = end ? '' : (T('ca.start.end-follow', 'Duration after listing') + (days ? ' · ' + T('ad.sale.days', '{n} days').replace('{n}', days) : ''));
+  }
+  function syncListingRows() {
+    const listed = listingMode !== 'none';
+    const body = document.querySelector('[data-ca-listed-body]');
+    if (body) body.hidden = !listed;
+    const shownRow = document.querySelector('[data-ca-shown-row]');
+    if (shownRow) shownRow.hidden = !listed;
+    const f = document.querySelector('[data-ca-listing-fields]');
+    if (f) f.hidden = listingMode !== 'schedule';
+    const saleSec = document.querySelector('[data-ca-sale-section]');
+    if (saleSec) saleSec.hidden = !listed;
+    renderSaleEnd();
+  }
+  const caLm = document.getElementById('ca-listing-mode');
+  if (caLm) caLm.addEventListener('radio-list:change', e => { listingMode = e.detail.item.dataset.caListing; syncListingRows(); });
+  syncListingRows();
+
   const caSm = document.getElementById('ca-start-mode');
-  if (caSm) caSm.addEventListener('radio-list:change', e => {
+  function syncStartMode() {
     const f = document.querySelector('[data-ca-start-fields]');
-    if (f) f.hidden = e.detail.item.dataset.caStart !== 'schedule';
+    if (f) f.hidden = startMode !== 'schedule';
+    renderSaleEnd();
+  }
+  if (caSm) caSm.addEventListener('radio-list:change', e => { startMode = e.detail.item.dataset.caStart; syncStartMode(); });
+  syncStartMode();
+  ['ca-start-time', 'ca-listing-time'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('change', renderSaleEnd); });
+  if (durGrid) durGrid.addEventListener('click', renderSaleEnd);
+  document.addEventListener('i18n:applied', renderSaleEnd);
+
+  /* 顯示於商店開關。建立流程只收這個值——非公開連結在拍賣商品細節頁取得與重置（5.1.5.8 §2.2）。 */
+  let shownOn = true;
+  const caShown = document.getElementById('ca-shown-toggle');
+  if (caShown) caShown.addEventListener('click', () => {
+    shownOn = !shownOn;
+    caShown.classList.toggle('switch--on', shownOn);
+    caShown.setAttribute('aria-checked', shownOn ? 'true' : 'false');
   });
+
+  /* 定時下架（D246）：明示開關，開了才收時間；關掉一併清空。 */
+  (function wireSchedToggle(toggleId, fieldsSel) {
+    const t = document.getElementById(toggleId);
+    const f = document.querySelector(fieldsSel);
+    if (!t || !f) return;
+    const flip = () => {
+      const on = t.getAttribute('aria-checked') !== 'true';
+      t.setAttribute('aria-checked', on ? 'true' : 'false');
+      t.classList.toggle('switch--on', on);
+      f.hidden = !on;
+      if (!on) f.querySelectorAll('input').forEach(el => { el.value = ''; });
+    };
+    t.addEventListener('click', flip);
+    t.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
+  })('ca-unlist-toggle', '[data-ca-unlist-fields]');
 
   /* Cheat Codes（devtools）切換 Skip validation → 重算就緒 gating */
   document.addEventListener('ztor:devstate-changed', renderReadiness);
@@ -673,11 +819,6 @@
     if (titleEl) { titleEl.removeAttribute('data-i18n'); titleEl.textContent = nm ? (T('cp.h1.edit.pre', 'Edit') + ' ' + nm) : T('ca.h1.edit', 'Edit auction'); }
     primary.setAttribute('data-i18n', 'cp.save.changes');
     primary.textContent = T('cp.save.changes', 'Save changes');
-    const del = document.getElementById('ca-delete');
-    if (del) {
-      del.hidden = false;
-      del.addEventListener('click', () => { if (window.confirm(T('ca.delete.confirm', 'Delete this auction? This cannot be undone.'))) location.href = 'e-shop.html'; });
-    }
   }
 
   setKind(initKind);
@@ -688,6 +829,7 @@
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <script src="partials/radio-list.js?v=r2.2"></script>
+<script src="js/listing-state.js?v=r2.2"></script>
 <!-- 素材格（[data-upload]）：點擊選檔、hover 替換／刪除，由共用元件產生。 -->
 <script src="partials/upload-tile.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>

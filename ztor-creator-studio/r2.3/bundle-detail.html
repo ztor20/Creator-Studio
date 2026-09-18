@@ -28,6 +28,8 @@
 <!-- D241（spec 0-設計規格書 §7.14）：三開關、非公開連結、成員庫存分配 -->
 <link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2"><!-- 封存態／因成員封存而下架的說明（D284） -->
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2"><!-- 封存確認彈窗（D284） -->
 <link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
 <!-- 2026-09-11 D268：多選項成員展開的逐組合列列首唯讀縮圖 .variant-thumb--ro（定義在 variant-builder.css） -->
@@ -86,6 +88,11 @@
         <div class="detail-topbar__tabs" data-dock-tabs></div>
         <div class="page-intro__actions">
           <button class="btn btn--outline" type="button" data-bd-preview-open data-dock-icon><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.preview">See as fan</span></button>
+          <!-- 頁首主要動作依狀態互斥、一次只出現一個（spec 5.1.5.9 §2.2，主規格 §7.14「封存與不可刪除」· D284，2026-09-18）：
+               上架中→「下架」；已下架→「封存」（先確認；封存組合包不牽連成員）；已封存→「重新上架」（不確認）。本頁沒有刪除。 -->
+          <button class="btn btn--outline" type="button" data-bd-unlist hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button>
+          <button class="btn btn--outline" type="button" data-bd-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
+          <button class="btn btn--primary" type="button" data-bd-relist hidden><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="product-detail.btn.relist">Relist</span></button>
           <div data-dock-actions></div>
         </div>
       </div>
@@ -107,6 +114,16 @@
           <p class="pd-hero__desc" id="bd-hero-meta"><span data-bd-hero-price>$69.00</span> · <span data-bd-hero-count>3</span> <span data-i18n="bd.hero.items">items</span></p>
         </div>
       </section>
+      <!-- 封存態說明（D284）：整頁唯讀、只能重新上架；未封存時收起。 -->
+      <div class="info-banner mt-16" data-bd-archived-banner hidden>
+        <i data-lucide="archive" class="ztor-icon info-banner__icon"></i>
+        <span data-i18n="product-detail.archived.banner">Archived — read-only. Relist it to edit or sell again.</span>
+      </div>
+      <!-- 因成員下架而一同下架（D284 → D288，5.1.5.9 §2.3）：讀組合記錄的 unlistReason，寫出是哪一個成員（手動連動／定時下架自動連動各一句）；已重新上架就收起。 -->
+      <div class="info-banner mt-16" data-bd-unlist-reason-banner hidden>
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <span data-bd-unlist-reason-text></span>
+      </div>
 
 
       <!-- 分頁（與商品明細同一組 DS 元件與切換邏輯）：
@@ -453,11 +470,13 @@
             </div>
           </div>
           <!-- --stack：右側常駐欄只有 300px，兩個時間欄並排會溢出（元件說明要求窄欄明說、不靠猜視窗寬度）。 -->
-          <div class="lctl lctl--stack">
+          <div class="lctl lctl--stack" data-bd-listing>
             <!-- 顯示於商店自己一項（D247；2026-09-04 使用者再裁示：不要外框、與第 2 層對調位置）：
                  它回答的是「上架之後找不找得到」，緊接在上架那顆總開關後面；排程盒排在它下面。
                  隱藏時長出來的非公開連結用 .lctl__body（列自己的揭示區），不再用外框把兩者圈起來。 -->
             <p class="lctl__lock-note" data-bd-lock-note hidden data-i18n="cp.listing.unlisted-lock">Unlisted — show and sale settings are locked until it is listed again.</p>
+            <!-- 下架原因（D284 → D288）：因成員下架而一同下架時多一句，寫出成員名；由 JS 依 unlistReason 填 -->
+            <p class="lctl__lock-note" data-bd-unlist-reason hidden></p>
             <div class="lctl__row" data-bd-shown-row>
               <div class="lctl__head">
                 <div class="lctl__titles">
@@ -626,6 +645,7 @@
 <script src="partials/upload-tile.js?v=r2.2"></script>
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
+<script src="partials/archived-gate.js?v=r2.2"></script><!-- 封存態唯讀的事件層閘門（D288） -->
 <script>
   /* bundle-detail 互動：定價模式切換 + See as fan 分割預覽（§6.7 同源）。display-only demo。 */
   (function () {
@@ -650,15 +670,31 @@
       const members = document.getElementById('bd-members');
       if (members && bundle.memberItems) {
         members.innerHTML = bundle.memberItems.map(item =>
-          '<div class="data-list__row" data-bd-pid="' + esc(item.id) + '"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=' + esc(item.id) + '">' + esc(item.name) + '</a> <span class="text-sub">' + esc(item.meta) + '</span></div></div></div><div class="data-list__end data-list__end--row"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">' + esc(item.price) + '</span></div></div>'
+          '<div class="data-list__row" data-bd-pid="' + esc(item.id) + '"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=' + esc(item.id) + '">' + esc(item.name) + '</a> <span class="text-sub">' + esc(item.meta) + '</span>'
+          /* 成員已封存／已下架（D284／D288，5.1.5.9 §2.3）：列上標徽章（由 syncMemberBadges() 填、重新上架後重畫），成交條件提示另在可售套數那一句 */
+          + ' <span data-bd-member-badge></span>'
+          + '</div></div></div><div class="data-list__end data-list__end--row"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">' + esc(item.price) + '</span></div></div>'
         ).join('');
         if (window.ztorIcons) window.ztorIcons.applyIcons(members);
       }
+      syncMemberBadges();
       const memberCount = (bundle.memberItems && bundle.memberItems.length) || 0;
       setText('bd-member-count', '(' + memberCount + ')');
       const hc = document.querySelector('[data-bd-hero-count]'); if (hc) hc.textContent = String(memberCount);
       const kc = document.querySelector('[data-bd-kpi-members]'); if (kc) kc.textContent = String(memberCount);
       document.title = bundle.name + ' · Bundle detail · Ztor';
+    }
+    /* 成員列的狀態徽章（D284 已封存／D288 已下架）：讀 store 的商品記錄，重新上架連帶成員後要重畫，所以獨立成函式。 */
+    function syncMemberBadges() {
+      document.querySelectorAll('#bd-members [data-bd-pid]').forEach(row => {
+        const slot = row.querySelector('[data-bd-member-badge]'); if (!slot) return;
+        const p = window.ztorGetProduct && window.ztorGetProduct(row.getAttribute('data-bd-pid'));
+        const L = window.ListingState;
+        let key = null;
+        if (p && p.archived) key = 'shop.status.archived';
+        else if (p && L && L.isUnlisted(p) && !p.draft) key = 'shop.status.unlisted';
+        slot.innerHTML = key ? '<span class="badge badge--neutral"><span data-i18n="' + key + '">' + (window.i18nT ? (window.i18nT(key) || key) : key) + '</span></span>' : '';
+      });
     }
     /* ══ D241 · 三開關 × 庫存池（spec 0-設計規格書 §7.14）════════════════════════
        成員可售量、組合可售量、頁首徽章與非公開連結全部問 window.ListingState，本頁不自算。
@@ -683,6 +719,8 @@
       saleEnd: (seed && seed.saleEnd) || null,
       lowThreshold: (seed && seed.lowThreshold) || 0,
       draft: !!(seed && seed.draft),   /* 草稿：ListingState 讀 entity.draft，頁首徽章顯示「草稿」 */
+      archived: !!(seed && seed.archived),   /* 已封存（D284）：優先於其他所有徽章；整頁唯讀 */
+      unlistReason: (seed && seed.unlistReason) || null,   /* 因成員下架而一同下架的原因（D284 → D288） */
       /* 鎖定套數與逐規格分配（2026-09-11）：從組合記錄帶入；成員商品身上的組合鎖定是它導出的（applyBundleLock） */
       lockSets: (seed && seed.lockSets !== undefined) ? seed.lockSets : null,
       alloc: (seed && seed.alloc) ? JSON.parse(JSON.stringify(seed.alloc)) : {}
@@ -903,6 +941,12 @@
           if (capOn && bundleModel.cap <= lim.max) name = T('cb.total', 'Total quantity');
           if (name) txt = T('stock.capped-by', 'Capped by {name}').replace('{name}', name);
         }
+        /* 任一成員已下架或已封存 → 組合不可售（§7.14 成交條件，D284；D288 起是不變式的防線——常態下成員下架時組合會一同下架）：
+           這一句蓋過鎖定／壓上限的說明 */
+        const archivedMember = bundleModel.members.map(m => map[m.productId]).find(p => p && p.archived);
+        const unlistedMember = archivedMember ? null : bundleModel.members.map(m => map[m.productId]).find(p => p && LS && LS.isUnlisted(p));
+        if (archivedMember) txt = T('bd.member.archived', '“{n}” is archived — the bundle cannot sell').replace('{n}', archivedMember.name || '');
+        else if (unlistedMember) txt = T('bd.member.unlisted', '“{n}” is unlisted — the bundle cannot sell').replace('{n}', unlistedMember.name || '');
         meta.hidden = !txt; meta.textContent = txt;
       }
       refreshBadges(qty);
@@ -1441,7 +1485,8 @@
       const host = document.querySelector('[data-bd-film-picker]');
       if (host && window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createFilmPicker) {
         /* 已選清單讀組合記錄的 films（2026-09-11 起不再寫死 1 部） */
-        window.ZTOR_PARTIALS.createFilmPicker(host, { selected: Array.isArray(detail.films) ? detail.films.slice() : [], onChange: () => { refreshLinksKpi(); renderBdSettingsOverview(); } });
+        /* readonly＝已封存（D288 封存唯讀涵蓋關聯分頁）；封存／重新上架切換時由 initArchiveState 呼叫 setReadonly */
+        window.bdFilmPicker = window.ZTOR_PARTIALS.createFilmPicker(host, { selected: Array.isArray(detail.films) ? detail.films.slice() : [], readonly: !!(seed && seed.archived), onChange: () => { refreshLinksKpi(); renderBdSettingsOverview(); } });
       }
       refreshLinksKpi();
       document.addEventListener('ztor:lang-changed', refreshLinksKpi);
@@ -1602,6 +1647,185 @@
     })();
     renderBdSettingsOverview();
 
+    /* ── 頁首主要動作依狀態互斥＋下架確認＋重新上架擋下＋封存態唯讀＋下架原因（spec 5.1.5.9 §2.2／§2.3／§4，主規格 §7.14 · D284／D288，2026-09-18）──
+       做法同 product-detail：規則問 ListingState；下架一律先確認（D288 裁決一）；重新上架（含自已下架、自封存）前成員必須都在上架中，
+       否則擋下並列出未上架成員（D288 裁決三，取代 D286 裁決四）；封存時藏「編輯組合」與鎖定編輯入口、上架卡整組 .lctl--locked、
+       說明 banner 露出、選片器切 readonly，另由 partials/archived-gate.js 在事件層兜底（D288 封存唯讀涵蓋所有分頁與逐列操作）。
+       組合記錄改在 bundleModel（本頁的工作副本）與 store 的 seed 兩處同步，並 commit 進工作階段——e-shop 回來要看得到。 */
+    (function initArchiveState() {
+      if (!LS) return;
+      const main = document.querySelector('.main') || document.body;
+      const btnUnlist = document.querySelector('[data-bd-unlist]');
+      const btnArchive = document.querySelector('[data-bd-archive]');
+      const btnRelist = document.querySelector('[data-bd-relist]');
+      const bannerArchived = document.querySelector('[data-bd-archived-banner]');
+      const bannerReason = document.querySelector('[data-bd-unlist-reason-banner]');
+      const reasonText = document.querySelector('[data-bd-unlist-reason-text]');
+      const reasonNote = document.querySelector('[data-bd-unlist-reason]');
+      const listing = document.querySelector('[data-bd-listing]');
+      const PRUNE = '[data-bd-editmode],[data-bd-edit-cancel],[data-bd-lock-edit],[data-bd-lock-actions]';
+      let observer = null;
+      const prune = () => document.querySelectorAll(PRUNE).forEach(el => { el.hidden = true; });
+      const mirror = () => { if (seed) { seed.archived = bundleModel.archived; seed.listed = bundleModel.listed; seed.listAt = bundleModel.listAt; seed.unlistAt = bundleModel.unlistAt; seed.unlistReason = bundleModel.unlistReason; if (store && store.commit) store.commit(seed); } };
+      /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「重新上架」永遠放行 */
+      if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { block: PRUNE + ',[data-bd-lock-actions] button,[data-bd-alloc-row] button,[data-bd-alloc-group] button', allow: '[data-bd-relist],[data-bd-preview-open],[data-bd-preview-close]' });
+      function syncPrimaryAction() {
+        const archived = LS.isArchived(bundleModel);
+        if (btnUnlist) btnUnlist.hidden = archived || bundleModel.draft || LS.isUnlisted(bundleModel);
+        if (btnArchive) btnArchive.hidden = !LS.canArchive(bundleModel);
+        if (btnRelist) btnRelist.hidden = !archived;
+      }
+      /* 因成員下架而一同下架（D288，原 D284「因成員封存」）：手動確認的連動與定時下架到期的自動連動（auto）各一句 */
+      function syncReason() {
+        const r = bundleModel.unlistReason;
+        const show = !!(r && r.type === 'member-unlisted' && LS.isUnlisted(bundleModel) && !LS.isArchived(bundleModel));
+        const key = (r && r.auto) ? 'bd.unlist.reason-auto' : 'bd.unlist.reason';
+        const txt = show ? T(key, 'Unlisted together with “{n}”. Relist that item or remove it before relisting the bundle.').replace('{n}', r.productName || r.productId || '') : '';
+        if (bannerReason) bannerReason.hidden = !show;
+        if (reasonText) reasonText.textContent = txt;
+        if (reasonNote) { reasonNote.hidden = !show; reasonNote.textContent = txt; }
+      }
+      function applyArchived() {
+        const archived = LS.isArchived(bundleModel);
+        main.toggleAttribute('data-archived', archived);
+        if (bannerArchived) bannerArchived.hidden = !archived;
+        if (listing) listing.classList.toggle('lctl--locked', archived);
+        if (listedSwitch) { listedSwitch.setAttribute('aria-disabled', archived ? 'true' : 'false'); listedSwitch.classList.toggle('switch--disabled', archived); }
+        document.querySelectorAll('[data-bd-lock-note]').forEach(n => {
+          const key = archived ? 'cp.listing.archived-lock' : 'cp.listing.unlisted-lock';
+          n.setAttribute('data-i18n', key);
+          n.textContent = T(key, archived ? 'Archived — switches and schedules stay locked until it is relisted.' : 'Unlisted — show and sale settings are locked until it is listed again.');
+        });
+        /* 關聯分頁的選片器：元件層唯讀（搜尋格與建議列收起、chip 無 ×），封存 ↔ 重新上架來回切 */
+        if (window.bdFilmPicker && window.bdFilmPicker.setReadonly) window.bdFilmPicker.setReadonly(archived);
+        if (archived) {
+          prune();
+          if (!observer) { observer = new MutationObserver(prune); observer.observe(main, { childList: true, subtree: true }); }
+        } else if (observer) {
+          observer.disconnect(); observer = null;
+          document.querySelectorAll('[data-bd-editmode],[data-bd-lock-edit]').forEach(el => { el.hidden = false; });
+        }
+        syncPrimaryAction();
+        syncReason();
+      }
+      function paint() {
+        paintSwitch(listedSwitch, bundleModel.listed);
+        if (listAtEl) listAtEl.value = bundleModel.listAt ? String(bundleModel.listAt).slice(0, 16) : '';
+        if (unlistAtEl) unlistAtEl.value = bundleModel.unlistAt ? String(bundleModel.unlistAt).slice(0, 16) : '';
+        syncListedLock();
+        refreshAlloc();
+        renderBdSettingsOverview();
+        mirror();
+        applyArchived();
+      }
+      /* 確認彈窗（封存）：借 leave-dialog 的殼，與 e-shop 同一套文案 */
+      /* 彈窗 markup 在 </body> 前、這段 script 在它之前執行，所以每次用時才查（同 e-shop 的做法） */
+      const getDialog = () => document.querySelector('[data-bd-confirm-dialog]');
+      let pending = null;
+      const closeConfirm = () => { pending = null; const dialog = getDialog(); if (dialog) dialog.removeAttribute('data-open'); };
+      /* opts：title／body／items（.leave-dialog__list 列名稱）／okKey／okFallback／noCancel（純告知只留一顆主鈕）／onConfirm */
+      const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
+      function askConfirm(opts) {
+        const dialog = getDialog();
+        if (!dialog) { if (opts.onConfirm) opts.onConfirm(); return; }
+        const title = dialog.querySelector('[data-bd-confirm-title]'), body = dialog.querySelector('[data-bd-confirm-body]');
+        const list = dialog.querySelector('[data-bd-confirm-list]'), ok = dialog.querySelector('[data-bd-confirm-ok]');
+        if (title) title.textContent = opts.title || '';
+        if (body) body.textContent = opts.body || '';
+        if (list) {
+          const items = opts.items || [];
+          list.hidden = !items.length;
+          list.innerHTML = items.map(n => '<li class="leave-dialog__list-item"><i data-lucide="package" class="ztor-icon"></i><span>' + esc(n) + '</span></li>').join('');
+          if (items.length && window.ztorIcons) window.ztorIcons.applyIcons(list);
+        }
+        if (ok) { const sp = ok.querySelector('span') || ok; sp.setAttribute('data-i18n', opts.okKey || 'e-shop.archive.confirm'); sp.textContent = T(opts.okKey || 'e-shop.archive.confirm', opts.okFallback || 'Archive'); }
+        const cancelBtn = dialog.querySelector('.leave-dialog__actions [data-bd-confirm-cancel]');
+        if (cancelBtn) cancelBtn.hidden = !!opts.noCancel;
+        pending = opts.onConfirm;
+        dialog.setAttribute('data-open', '');
+        if (ok) ok.focus();
+      }
+      document.addEventListener('click', e => {
+        if (e.target.closest('[data-bd-confirm-ok]')) { const fn = pending; closeConfirm(); if (fn) fn(); return; }
+        if (e.target.closest('[data-bd-confirm-cancel]')) closeConfirm();
+      });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && pending) closeConfirm(); });
+
+      const bname = () => (bundle && bundle.name) || '';
+      /* 下架一律先確認（D288 裁決一）：頁首「下架」鈕與上架開關切關走同一個彈窗；組合包沒有連動清單 */
+      function askUnlist() {
+        if (LS.isArchived(bundleModel) || LS.isUnlisted(bundleModel)) return;
+        askConfirm({
+          title: T('e-shop.unlist.title', 'Unlist “{n}”?').replace('{n}', bname()),
+          body: T('e-shop.unlist.body', 'Public and private links stop working and fans no longer see its page. You can relist it anytime.'),
+          okKey: 'e-shop.unlist.confirm', okFallback: 'Unlist',
+          onConfirm: () => { LS.unlist(bundleModel); paint(); }
+        });
+      }
+      /* 重新上架（D288 不變式＋D289 做法）：成員有已封存的 → 擋下、列出、什麼都不改（不可由組合包順手解除封存）；
+         成員有已下架的 → 先確認「這些單售會一起重新上架」，確認後成員連帶重新上架、組合包上架（清 unlistReason）；
+         都上架中 → 直接上架。自已下架（上架開關切開）與自封存（頁首「重新上架」）都走這裡；反方向不連動。 */
+      function tryRelist() {
+        const getP = id => (store && store.get) ? store.get(id) : null;
+        const memberName = b => (b.product && b.product.name) || b.productId;
+        const plan = LS.bundleRelistPlan(bundleModel, getP);
+        if (plan.blocked.length) {
+          askConfirm({
+            title: T('e-shop.relist.blocked-title', '“{n}” has archived items').replace('{n}', bname()),
+            body: T('e-shop.relist.blocked-body', 'Relist these items first, then relist the bundle:'),
+            items: plan.blocked.map(memberName),
+            okKey: 'e-shop.relist.blocked-ok', okFallback: 'Got it', noCancel: true,
+            onConfirm: null
+          });
+          return;
+        }
+        const go = () => {
+          const r = LS.relistBundle(bundleModel, getP);
+          if (store && store.commit) r.relisted.forEach(p => store.commit(p));
+          paint();
+          /* 成員的狀態變了，成員列的徽章要重畫（可售套數已由 paint() 內的 refreshAlloc 重算） */
+          syncMemberBadges();
+        };
+        if (plan.unlisted.length) {
+          askConfirm({
+            title: T('e-shop.relist.title', 'Relist “{n}”?').replace('{n}', bname()),
+            body: T('e-shop.relist.members-body', 'These unlisted items go back on sale with it:'),
+            items: plan.unlisted.map(memberName),
+            okKey: 'e-shop.relist.members-confirm', okFallback: 'Relist all',
+            onConfirm: go
+          });
+          return;
+        }
+        go();
+      }
+      if (btnUnlist) btnUnlist.addEventListener('click', askUnlist);
+      /* 封存只看「已下架」、單純確認（D288 修正 D284 裁決四）；組合包封存本來就不牽連成員 */
+      if (btnArchive) btnArchive.addEventListener('click', () => {
+        if (!LS.canArchive(bundleModel)) return;
+        askConfirm({
+          title: T('e-shop.archive.title', 'Archive “{n}”?').replace('{n}', bname()),
+          body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can relist it anytime.'),
+          okKey: 'e-shop.archive.confirm', okFallback: 'Archive',
+          onConfirm: () => { LS.archive(bundleModel); paint(); }
+        });
+      });
+      if (btnRelist) btnRelist.addEventListener('click', tryRelist);
+      /* 上架開關：切關＝下架要先確認、切開＝重新上架要過成員閘門——兩個方向都在 capture 階段攔下，不讓開關自己翻面；
+         確認／放行後由 paint() 依資料畫成正確的樣子。 */
+      if (listedSwitch) {
+        const intercept = e => {
+          if (e.type === 'keydown' && e.key !== ' ' && e.key !== 'Enter') return;
+          if (listedSwitch.getAttribute('aria-disabled') === 'true') return;
+          e.stopImmediatePropagation(); e.preventDefault();
+          if (bundleModel.listed !== false) askUnlist(); else tryRelist();
+        };
+        listedSwitch.addEventListener('click', intercept, true);
+        listedSwitch.addEventListener('keydown', intercept, true);
+      }
+      document.addEventListener('i18n:applied', () => { syncPrimaryAction(); syncReason(); });
+      applyArchived();
+    })();
+
     /* ── 頂列黏附（同商品／項目／系列／活動詳情，js/detail-topbar.js）── */
     (function () {
       const bar = document.querySelector('.detail-topbar');
@@ -1653,5 +1877,21 @@
   })();
 </script>
 <script src="js/devtools.js?v=r2.2"></script>
+<!-- 下架／封存／重新上架確認彈窗（2026-09-18 · D284／D288／D289）：借 leave-dialog 的殼——下架＝確認；封存＝確認；
+     重新上架＝有已下架成員時列出「會一起重新上架的成員」（.leave-dialog__list）＋主鈕「一併重新上架」；
+     有已封存成員時擋下、列出、單一主鈕「知道了」（取消鈕收起）。 -->
+<div class="leave-dialog" data-bd-confirm-dialog role="dialog" aria-modal="true" aria-labelledby="bd-confirm-title">
+  <div class="leave-dialog__scrim" data-bd-confirm-cancel></div>
+  <div class="leave-dialog__card">
+    <button class="leave-dialog__close" type="button" aria-label="Close" data-i18n-aria-label="e-shop.shown.close" data-bd-confirm-cancel><i data-lucide="x" class="ztor-icon"></i></button>
+    <h2 class="leave-dialog__title" id="bd-confirm-title" data-bd-confirm-title></h2>
+    <p class="leave-dialog__body" data-bd-confirm-body></p>
+    <ul class="leave-dialog__list" data-bd-confirm-list hidden></ul>
+    <div class="leave-dialog__actions">
+      <button class="btn btn--primary" type="button" data-bd-confirm-ok><span data-i18n="e-shop.archive.confirm">Archive</span></button>
+      <button class="btn btn--outline" type="button" data-bd-confirm-cancel data-i18n="e-shop.shown.cancel">Cancel</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

@@ -22,9 +22,19 @@
 <link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-store.css?v=r2.2">
+<!-- 2026-09-18（D284／D285）三開關卡、非公開連結、封存態 banner 與確認彈窗 -->
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
-  /* auction-detail · 競標進程／出價活動／拍賣資訊（spec 5.1.5.8）。display-only demo。
+  /* auction-detail · 競標進程／出價活動／拍賣資訊（spec 5.1.5.8）。出價數字為示意；2026-09-18 起狀態、三開關與封存走 ListingState（D285／D284）。
      2026-07-27：版型改與商品明細（product-detail）同一套殼——page--narrow ＋ 頁籤 ＋
      detail-grid（主欄＋右側常駐欄）＋ form-section--outlined 卡；原本是一排 bento card。
      內容一項未增減，只重新分組進 tab-panel（規格 §3 明定分欄與版面由 UI 端決定、非約束）。 */
@@ -53,19 +63,35 @@
         <span id="ad-crumb-name">Stage-worn leather jacket</span>
       </div>
 
-      <!-- §2.2 頁首與狀態（與商品明細同構：標題在上、狀態徽章在標題下、動作在右）-->
+      <!-- §2.2 頁首與狀態（與商品明細同構：標題在上、狀態徽章在標題下、動作在右）
+           2026-09-18（D284／D285）：狀態徽章改由 §7.14 三開關推導（ListingState.deriveAuctionFlags：
+           Upcoming／Live／Ended／Unlisted／Draft／Archived，隱藏另一顆並排）；頁首主要動作依狀態互斥、一次只露一顆——
+           上架中「下架」／已下架「封存」／已封存「重新上架」，本頁無刪除。顯隱由下方 script 的 syncPrimaryAction() 決定。
+           2026-09-18（D286）：競標中（Live）不論有無出價一律不可下架——「下架」鈕改停用（disabled，非隱藏），
+           外層 `[data-ad-unlist-tip]` 掛 title 提示；停用時 `.btn:disabled` 的 `pointer-events:none` 會擋掉按鈕本身的 hover，
+           title 因此放在外層 span（span 有 pointer-events，滑到按鈕範圍時 hover 落在外層一樣觸發原生 tooltip）。
+           原本「Live 先出確認彈窗」整組撤除，見下方 script 與 i18n.js 墓碑。 -->
       <div class="page-intro">
         <div style="min-width:0">
           <h1 class="page-intro__title" id="ad-title" style="margin:0">Stage-worn leather jacket</h1>
-          <div class="flex-row" style="gap:6px;margin-top:8px">
-            <span class="badge badge--orange"><span data-i18n="ad.badge.live">Live</span></span>
+          <div class="flex-row" style="gap:6px;margin-top:8px" id="ad-badges">
+            <span class="badge badge--success" data-ad-badge-main><span data-i18n="e-shop.astatus.live">Live</span></span>
+            <span class="badge badge--neutral" data-ad-badge-hidden hidden><span data-i18n="shop.status.hidden">Hidden</span></span>
             <span class="badge"><span data-i18n="ad.badge.auction">Auction</span></span>
           </div>
         </div>
         <div class="page-intro__actions">
-          <button class="btn btn--outline" type="button" data-i18n="ad.btn.copy"><i data-lucide="link" class="ztor-icon"></i> Copy link</button>
+          <button class="btn btn--outline" type="button" data-ad-copy data-i18n="ad.btn.copy"><i data-lucide="link" class="ztor-icon"></i> Copy link</button>
           <button class="btn btn--outline" type="button" data-ad-preview-open data-i18n="ad.btn.preview"><i data-lucide="eye" class="ztor-icon"></i> Preview</button>
+          <span data-ad-unlist-tip hidden><button class="btn btn--outline" type="button" data-ad-unlist><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button></span>
+          <button class="btn btn--outline" type="button" data-ad-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
+          <button class="btn btn--primary" type="button" data-ad-relist hidden><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="product-detail.btn.relist">Relist</span></button>
         </div>
+      </div>
+      <!-- 封存態說明（D284）：整頁唯讀、只能重新上架。沿用 info-banner，icon 換 archive；未封存時整條收起。 -->
+      <div class="info-banner mt-16" data-ad-archived-banner hidden>
+        <i data-lucide="archive" class="ztor-icon info-banner__icon"></i>
+        <span data-i18n="ad.archived.banner">Archived — read-only. Relist it to run this auction again.</span>
       </div>
 
       <!-- §2.3 競標生命週期三階段列（預展／開放競標／結果）已於 2026-07-27 撤除（使用者裁示）：
@@ -176,10 +202,11 @@
             <p class="form-section__sub" data-i18n="ad.info.sub">Set when the auction was created; locked once bidding is live.</p>
           </div>
           <div class="data-list">
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.status">Status</span></div><span class="badge badge--orange"><span data-i18n="ad.badge.live">Live</span></span></div>
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.duration">Duration</span></div><span data-i18n="ad.info.duration-v">7 days</span></div>
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.started">Started</span></div><span>Jun 10 2026</span></div>
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.ends">Ends</span></div><span>Jun 17 2026</span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.status">Status</span></div><span class="badge badge--success" data-ad-badge-main><span data-i18n="e-shop.astatus.live">Live</span></span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.duration">Duration</span></div><span data-ad-duration data-i18n="ad.info.duration-v">7 days</span></div>
+            <!-- 開始＝開賣日期與時間（對拍賣即開拍時間）、結束＝停售＝開拍＋時長，由 ListingState.auctionSaleEnd 算（§2.7，D285） -->
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.started">Started</span></div><span data-ad-start-text>Jun 10 2026</span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.ends">Ends</span></div><span data-ad-end-text>Jun 17 2026</span></div>
             <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.sealed">Sealed final round</span></div><span data-i18n="ad.info.off">OFF</span></div>
             <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.elig">Eligibility</span></div><span data-i18n="ad.tag.elig">Inner Circle</span></div>
             <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.start">Starting price</span></div><span>$100</span></div>
@@ -201,19 +228,137 @@
 
       </div><!-- /detail-main -->
 
-      <!-- 右側常駐欄（跨分頁）：唯讀競標狀態，比照商品明細右欄「改東西前要先知道」的狀態卡 -->
+      <!-- 右側常駐欄（跨分頁）：唯讀競標狀態，比照商品明細右欄「改東西前要先知道」的狀態卡；
+           2026-09-18（D285）下方再加上架設定與開拍設定兩張三開關卡（與 product-detail 右欄同一套 lctl--stack）。 -->
       <aside class="detail-rail">
         <section class="form-section form-section--outlined">
           <div class="form-section__head">
             <h3 class="form-section__title" data-i18n="ad.rail.status">Auction status</h3>
           </div>
-          <div class="kv"><span class="kv__k" data-i18n="ad.info.status">Status</span><span class="kv__v"><span class="badge badge--orange"><span data-i18n="ad.badge.live">Live</span></span></span></div>
+          <div class="kv"><span class="kv__k" data-i18n="ad.info.status">Status</span><span class="kv__v"><span class="badge badge--success" data-ad-badge-main><span data-i18n="e-shop.astatus.live">Live</span></span></span></div>
           <div class="kv"><span class="kv__k" data-i18n="ad.stat.current">Current bid</span><span class="kv__v">$385</span></div>
           <div class="kv"><span class="kv__k" data-i18n="ad.stat.timeleft">Time left</span><span class="kv__v">2d 4h</span></div>
-          <div class="kv"><span class="kv__k" data-i18n="ad.info.ends">Ends</span><span class="kv__v">Jun 17 2026</span></div>
+          <div class="kv"><span class="kv__k" data-i18n="ad.info.ends">Ends</span><span class="kv__v" data-ad-end-text>Jun 17 2026</span></div>
           <div class="kv"><span class="kv__k" data-i18n="ad.info.reserve">Reserve</span><span class="kv__v"><span class="badge badge--success"><span data-i18n="ad.bids.reserve">Reserve met</span></span></span></div>
+          <!-- 流標結果列（D287）：結標且無出價才顯示，由下方 script 的 renderBadges() 依 deriveAuctionFlags().status==='unsold' 切換；
+               未達保留價、流標能否重新開拍待確認（不做 UI，見 ASSUMPTIONS UIA-153），這裡只呈現「無人出價」這一種已裁決情形。 -->
+          <div class="kv" data-ad-unsold-row hidden><span class="kv__k" data-i18n="ad.info.result">Result</span><span class="kv__v"><span class="badge badge--neutral"><span data-i18n="ad.result.unsold">Unsold — no bids</span></span></span></div>
+        </section>
+
+        <!-- 上架設定（spec 5.1.5.8 §2.2 三開關，主規格 §7.14 · D285／D284）：上架開關升到卡頭（同 product-detail）；
+             顯示於商店＋隱藏時的非公開連結；第 2 層＝上架時間、定時下架。下架時顯示與開拍鎖住（D265）；封存時整組鎖住。 -->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head form-section__head--actions">
+            <div class="form-section__head-titles">
+              <h3 class="form-section__title" data-i18n="cp.listing.sec-listed">Listing</h3>
+              <p class="form-section__sub" data-i18n="cp.listing.listed-hint">Unlisting stops every channel and kills all links</p>
+            </div>
+            <div class="form-section__head-actions">
+              <div class="switch switch--on" id="ad-listed-toggle" role="switch" aria-checked="true" tabindex="0" data-i18n-aria-label="cp.listing.sec-listed" aria-label="Listing"></div>
+            </div>
+          </div>
+          <div class="lctl lctl--stack" data-ad-listing>
+            <p class="lctl__lock-note" data-ad-lock-note hidden data-i18n="cp.listing.unlisted-lock">Unlisted — show and sale settings are locked until it is listed again.</p>
+            <!-- 2026-09-18（D286 補修）：競標中不可下架，連帶把「下架」的兩條路徑鎖住——
+                 上架開關（卡頭 #ad-listed-toggle）與「定時下架」欄，否則頁首下架鈕停用形同虛設。
+                 沿用 ad.unlist.live-disabled 同一把 key，文案通用（「競標結束後才能下架」）。 -->
+            <p class="lctl__lock-note" data-ad-live-lock-note hidden data-i18n="ad.unlist.live-disabled">Available after bidding ends.</p>
+            <div class="lctl__row" data-ad-shown-row>
+              <div class="lctl__head">
+                <div class="lctl__titles">
+                  <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
+                  <p class="lctl__hint" data-i18n="ca.listing.shown-hint">Hidden auctions stay open to anyone with the private link</p>
+                </div>
+                <div class="switch switch--on lctl__control" id="ad-shown-toggle" role="switch" aria-checked="true" tabindex="0"></div>
+              </div>
+              <div class="lctl__body" data-ad-link-body hidden>
+                <div class="linkf linkf--stack" data-linkf>
+                  <span class="linkf__label" data-i18n="link.private-h">Private link</span>
+                  <div class="linkf__row">
+                    <input class="input linkf__input" readonly value="">
+                    <button class="btn btn--outline btn--sm linkf__act linkf__act--copy" type="button" data-linkf-copy><span data-i18n="link.copy">Copy</span></button>
+                    <button class="btn btn--ghost btn--sm linkf__act" type="button" data-linkf-reset><span data-i18n="link.reset">Reset link</span></button>
+                  </div>
+                  <p class="linkf__hint" data-i18n="link.private-hint">Only people with the link can open it. Use it for internal test orders; it stops working once shown in shop</p>
+                </div>
+              </div>
+            </div>
+            <div class="lctl__rule"></div>
+            <div class="control-group control-group--plain lctl__derived">
+              <div class="field">
+                <div class="field__label" data-i18n="cp.listing.time">Listing time</div>
+                <input class="input" type="datetime-local" id="ad-listing-time">
+              </div>
+              <div class="lctl__row" data-ad-unlist-sched-row>
+                <div class="lctl__head">
+                  <div class="lctl__titles">
+                    <span class="lctl__title" data-i18n="cp.listing.unlist-sched">Unlist at a set time</span>
+                    <p class="lctl__hint" data-i18n="cp.listing.unlist-sched-sub">Unlists automatically at the time you set</p>
+                  </div>
+                  <div class="switch lctl__control" id="ad-unlist-toggle" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+                <div class="lctl__sched" data-ad-unlist-fields hidden>
+                  <div class="field">
+                    <div class="field__label"><span data-i18n="cp.listing.unlist">Unlist time</span> <span class="field__req">*</span></div>
+                    <input class="input" type="datetime-local" id="ad-unlist-time">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 開拍設定（§2.2／§2.7，D285）：開賣＝開拍——跟著上架一起開拍／定時開拍二選一；結標時間＝開拍＋競標時長，唯讀。
+             競標一旦開始（Live／Ended）開拍時間與時長不可調（§2.2 限度編輯；確切可編欄位產品待確認）。 -->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="ad.sale.sec">Bidding window</h3>
+          </div>
+          <div class="lctl lctl--stack" data-ad-sale-lctl>
+            <p class="lctl__lock-note" data-ad-lock-note hidden data-i18n="cp.listing.unlisted-lock">Unlisted — show and sale settings are locked until it is listed again.</p>
+            <p class="lctl__lock-note" data-ad-started-note hidden data-i18n="ad.sale.started-lock">Bidding has started — start time and duration are locked.</p>
+            <div class="lctl__row lctl__row--choice">
+              <div class="lctl__body">
+                <div class="radio-list radio-list--collapsible" id="ad-start-mode">
+                  <button class="radio-list__trigger" type="button" aria-expanded="false">
+                    <span class="radio-list__dot"></span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.follow">Start as soon as it is listed</span><span class="radio-list__sub" data-i18n="ca.start.follow-sub">Bidding opens the moment it goes live</span></span>
+                    <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
+                  </button>
+                  <div class="radio-list__options" hidden>
+                    <button class="radio-list__item radio-list__item--active" type="button" data-ad-start="follow">
+                      <span class="radio-list__dot"></span>
+                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.follow">Start as soon as it is listed</span><span class="radio-list__sub" data-i18n="ca.start.follow-sub">Bidding opens the moment it goes live</span></span>
+                    </button>
+                    <button class="radio-list__item" type="button" data-ad-start="schedule">
+                      <span class="radio-list__dot"></span>
+                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.schedule">Start at a set time</span><span class="radio-list__sub" data-i18n="ca.start.schedule-sub">Fans can see it earlier; bidding opens then</span></span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="lctl__rule"></div>
+            <div class="lctl__derived">
+              <div class="field" data-ad-start-field hidden>
+                <div class="field__label" data-i18n="ca.start.time">Start time</div>
+                <input class="input" type="datetime-local" id="ad-start-time">
+              </div>
+              <div class="field">
+                <div class="field__label" data-i18n="ad.sale.duration">Duration</div>
+                <input class="input" type="text" id="ad-duration" readonly value="">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <div class="field__label" data-i18n="ca.start.end">Ends</div>
+                <input class="input" type="text" id="ad-sale-end" readonly value="">
+                <div class="field__hint" data-i18n="ca.start.end-hint">Start time + duration; set automatically</div>
+              </div>
+            </div>
+            <p class="lctl__note" data-i18n="cp.listing.pending">Time zone &amp; exact timing pending spec.</p>
+          </div>
         </section>
       </aside>
+
       </div><!-- /detail-grid -->
 
         </div><!-- /section-nav__body -->
@@ -239,7 +384,13 @@
 
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
+<!-- listing-state 必須早於 products-store：store 在 IIFE 裡就抓 window.ListingState。 -->
+<script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="js/link-field.js?v=r2.2"></script>
+<script src="partials/date-input.js?v=r2.2"></script>
+<script src="partials/radio-list.js?v=r2.2"></script>
+<script src="partials/archived-gate.js?v=r2.2"></script><!-- 封存態唯讀的事件層閘門（D288） -->
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/sticky-actions.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
@@ -247,14 +398,30 @@
 <script>
   /* auction-detail 互動：出價活動 All/Open filter（demo）+ Preview 分割預覽（§6.7 同源）。 */
   (function () {
-    const auction = window.ztorGetAuction && window.ztorGetAuction(new URLSearchParams(window.location.search).get('id'));
+    const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
+    const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
+    const id = new URLSearchParams(window.location.search).get('id') || 'stage-worn-jacket';
+    /* nick persona 的展示資料（名稱／圖／輪播）仍走 ztorGetAuction；三開關記錄一律讀 ProductsStore.getAuction（D285） */
+    const auction = window.ztorGetAuction && window.ztorGetAuction(id);
+    const S = window.ProductsStore;
+    const rec = (S && S.getAuction) ? S.getAuction(id) : null;
+    const nameOf = () => auction ? auction.name : (rec && rec.nameKey ? T(rec.nameKey, '') : '');
+    function applyName() {
+      const nm = nameOf();
+      if (!nm) return;
+      const name = document.getElementById('ad-title'); if (name) name.textContent = nm;
+      const crumb = document.getElementById('ad-crumb-name'); if (crumb) crumb.textContent = nm;
+      document.title = nm + ' · Auction detail · Ztor';
+    }
+    applyName();
+    document.addEventListener('i18n:applied', applyName);
+    const heroImg = auction ? auction.img : (rec && rec.img);
+    if (heroImg) {
+      const hero = document.getElementById('ad-hero'); if (hero) hero.innerHTML = '<img src="images/products/' + esc(heroImg) + '" alt="">';
+    }
     if (auction) {
-      const name = document.getElementById('ad-title'); if (name) name.textContent = auction.name;
-      const crumb = document.getElementById('ad-crumb-name'); if (crumb) crumb.textContent = auction.name;
-      const hero = document.getElementById('ad-hero'); if (hero) hero.innerHTML = '<img src="images/products/' + auction.img + '" alt="' + auction.name.replace(/"/g, '&quot;') + '">';
       const gallery = document.getElementById('ad-gallery');
-      if (gallery && auction.gallery) gallery.innerHTML = auction.gallery.map(file => '<img src="images/products/' + file + '" alt="' + auction.name.replace(/"/g, '&quot;') + '">').join('');
-      document.title = auction.name + ' · Auction detail · Ztor';
+      if (gallery && auction.gallery) gallery.innerHTML = auction.gallery.map(file => '<img src="images/products/' + esc(file) + '" alt="">').join('');
     }
     const bf = document.querySelector('[data-ad-bidfilter]');
     if (bf) bf.querySelectorAll('.filter-tabs__item').forEach(btn => btn.addEventListener('click', () => {
@@ -277,6 +444,232 @@
       panel.querySelectorAll('[data-ad-preview-close]').forEach(b => b.addEventListener('click', close));
       document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
     }
+  })();
+</script>
+<script>
+  /* ── 三開關、封存與頁首互斥動作（spec 5.1.5.8 §2.2／§2.7／§4，主規格 §7.14 · D285／D284，2026-09-18）──
+     規則本體在 ListingState（deriveAuctionFlags／auctionSaleEnd／canArchive／archive／relist／unlist）；這裡只負責：
+     把 seed 畫進上架卡與開拍卡、哪顆頁首鈕露出、封存時整頁收成唯讀、封存的確認彈窗（借 leave-dialog 的殼）。
+     拍賣無庫存池：徽章推導固定 qty＝∞。開賣＝開拍、停售＝結標＝開拍＋時長（唯讀）。
+     2026-09-18（D286）：Live 時「下架」鈕直接停用（不論有無出價）；2026-09-18（D288）：Upcoming／Sold／Unsold 按下架
+     先確認（§7.14「下架確認與組合包連動」裁決一，三種販售管道一致），確認才下架；上架開關切關同樣先確認。
+     封存唯讀另由 partials/archived-gate.js 在事件層兜底（D288 封存唯讀涵蓋所有分頁與逐列操作）。 */
+  (function () {
+    const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
+    const S = window.ProductsStore, L = window.ListingState;
+    if (!S || !L || !S.getAuction) return;
+    const id = new URLSearchParams(window.location.search).get('id') || 'stage-worn-jacket';
+    const a = S.getAuction(id);
+    if (!a) return;
+    const main = document.querySelector('.main') || document.body;
+    const $ = sel => document.querySelector(sel);
+    /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「重新上架」永遠放行 */
+    if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { allow: '[data-ad-relist],[data-ad-preview-open],[data-ad-preview-close]' });
+    const commit = () => { if (S.commit) S.commit(a); };
+    const btnUnlist = $('[data-ad-unlist]'), unlistTip = $('[data-ad-unlist-tip]'), btnArchive = $('[data-ad-archive]'), btnRelist = $('[data-ad-relist]'), btnCopy = $('[data-ad-copy]');
+    const banner = $('[data-ad-archived-banner]');
+    const listing = $('[data-ad-listing]'), saleLctl = $('[data-ad-sale-lctl]');
+    const listedToggle = document.getElementById('ad-listed-toggle'), shownToggle = document.getElementById('ad-shown-toggle');
+    const linkBody = $('[data-ad-link-body]'), linkRoot = $('[data-ad-link-body] .linkf');
+    const startMode = document.getElementById('ad-start-mode');
+    const startField = $('[data-ad-start-field]'), startInput = document.getElementById('ad-start-time');
+    const durInput = document.getElementById('ad-duration'), endInput = document.getElementById('ad-sale-end');
+    const setSwitch = (el, on) => { if (!el) return; el.classList.toggle('switch--on', !!on); el.setAttribute('aria-checked', on ? 'true' : 'false'); };
+    const zh = () => document.documentElement.lang === 'zh-Hant';
+    function fmtDT(iso, dateOnly) {
+      if (!iso) return '—';
+      const d = new Date(iso); if (isNaN(d.getTime())) return '—';
+      /* 中文用數字年月日，與 date-input 的顯示格式一致 */
+      const opts = zh() ? (dateOnly ? { year: 'numeric', month: '2-digit', day: '2-digit' } : { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+        : (dateOnly ? { year: 'numeric', month: 'short', day: 'numeric' } : { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      return d.toLocaleString(zh() ? 'zh-TW' : 'en-US', opts);
+    }
+    const toLocal = iso => iso ? String(iso).slice(0, 16) : '';
+
+    /* 徽章：頁首主徽章（＋隱藏另一顆）、拍賣資訊分頁與右欄狀態列共用同一個結果 */
+    function renderBadges() {
+      const flags = L.deriveAuctionFlags(a);
+      const meta = L.AUCTION_STATUS_META[flags.status] || L.AUCTION_STATUS_META.live;
+      document.querySelectorAll('[data-ad-badge-main]').forEach(b => {
+        b.className = L.auctionBadgeClass(flags.status);
+        let sp = b.querySelector('span'); if (!sp) { sp = document.createElement('span'); b.appendChild(sp); }
+        sp.setAttribute('data-i18n', meta.i18n); sp.textContent = T(meta.i18n, flags.status);
+      });
+      const hb = $('[data-ad-badge-hidden]'); if (hb) hb.hidden = !flags.hidden;
+      /* D287：流標（結標、無出價）才露出右欄的「結果」列；其餘狀態（含完售）收起 */
+      const unsoldRow = $('[data-ad-unsold-row]'); if (unsoldRow) unsoldRow.hidden = flags.status !== 'unsold';
+      return flags;
+    }
+    /* 開始／結束：開始＝開拍時間（跟著上架一起開拍時＝上架時間）、結束＝開拍＋時長，兩處（拍賣資訊、右欄）同一份 */
+    function renderTimes() {
+      const start = L.auctionStart(a), end = L.auctionSaleEnd(a);
+      document.querySelectorAll('[data-ad-start-text]').forEach(el => { el.textContent = fmtDT(start ? new Date(start).toISOString() : null, true); });
+      document.querySelectorAll('[data-ad-end-text]').forEach(el => { el.textContent = fmtDT(end, true); });
+      const days = T('ad.sale.days', '{n} days').replace('{n}', a.duration || 0);
+      document.querySelectorAll('[data-ad-duration]').forEach(el => { el.removeAttribute('data-i18n'); el.textContent = days; });
+      if (durInput) durInput.value = days;
+      if (endInput) endInput.value = end ? fmtDT(end) : '';
+    }
+    /* 上架卡與開拍卡的值由資料決定；下架時顯示與開拍鎖住（D265）；競標已開始時開拍時間與時長鎖住（§2.2 限度編輯） */
+    function paintCards() {
+      const listedOn = a.listed !== false, shownOn = a.shown !== false;
+      const archived = L.isArchived(a);
+      /* D286 補修：競標中（Live）不可下架，「下架」有兩條繞路——上架開關切關、定時下架排程觸發——
+         兩條都要鎖，否則頁首下架鈕停用形同虛設。 */
+      const live = L.deriveAuctionStatus(a) === 'live';
+      setSwitch(listedToggle, listedOn);
+      setSwitch(shownToggle, shownOn);
+      const lt = document.getElementById('ad-listing-time'); if (lt) lt.value = toLocal(a.listAt);
+      const ut = document.getElementById('ad-unlist-time'); if (ut) ut.value = toLocal(a.unlistAt);
+      const unlistToggle = document.getElementById('ad-unlist-toggle'), unlistFields = $('[data-ad-unlist-fields]');
+      setSwitch(unlistToggle, a.unlistAt !== null && a.unlistAt !== undefined); if (unlistFields) unlistFields.hidden = (a.unlistAt === null || a.unlistAt === undefined);
+      const unlistSchedRow = $('[data-ad-unlist-sched-row]');
+      if (unlistSchedRow) unlistSchedRow.classList.toggle('lctl__row--locked', live);
+      if (unlistToggle) unlistToggle.setAttribute('aria-disabled', live ? 'true' : 'false');
+      const liveLockNote = $('[data-ad-live-lock-note]'); if (liveLockNote) liveLockNote.hidden = !live;
+      if (linkBody) linkBody.hidden = shownOn;
+      if (linkRoot) {
+        linkRoot.classList.toggle('linkf--disabled', !listedOn);
+        linkRoot.querySelectorAll('input, button').forEach(el => { el.disabled = !listedOn; });
+        if (!shownOn) { if (!a.privateLink) a.privateLink = L.privateLinkFor(a.id); window.linkField.setValue(linkRoot, a.privateLink); }
+      }
+      const shownRow = $('[data-ad-shown-row]');
+      if (shownRow) shownRow.classList.toggle('lctl__row--locked', !listedOn);
+      if (shownToggle) shownToggle.setAttribute('aria-disabled', listedOn ? 'false' : 'true');
+      /* 開拍卡：下架鎖整組；上架中但競標已開始 → 也鎖（開拍時間與時長不可調），說明列換一句 */
+      const started = L.auctionStarted(a);
+      if (saleLctl) saleLctl.classList.toggle('lctl--locked', !listedOn || started);
+      document.querySelectorAll('[data-ad-lock-note]').forEach(n => {
+        const key = archived ? 'cp.listing.archived-lock' : 'cp.listing.unlisted-lock';
+        n.setAttribute('data-i18n', key);
+        n.textContent = T(key, archived ? 'Archived — switches and schedules stay locked until it is relisted.' : 'Unlisted — show and sale settings are locked until it is listed again.');
+        n.hidden = listedOn;
+      });
+      const sn = $('[data-ad-started-note]'); if (sn) sn.hidden = !(listedOn && started);
+      /* 開拍方式：saleStart 有值（含空字串＝選了定時但還沒填）就是定時開拍 */
+      const sched = a.saleStart !== null && a.saleStart !== undefined;
+      if (startMode) {
+        startMode.querySelectorAll('.radio-list__item').forEach(it => it.classList.toggle('radio-list__item--active', (it.dataset.adStart === 'schedule') === sched));
+        const trig = startMode.querySelector('.radio-list__trigger .radio-list__text'), src = startMode.querySelector('.radio-list__item--active .radio-list__text');
+        if (trig && src) trig.innerHTML = src.innerHTML;
+      }
+      if (startField) startField.hidden = !sched;
+      if (startInput) startInput.value = toLocal(a.saleStart);
+      /* 封存：整組鎖、上架開關停用、banner、複製連結收起（連結已失效）、頁面標 data-archived */
+      main.toggleAttribute('data-archived', archived);
+      if (banner) banner.hidden = !archived;
+      if (listing) listing.classList.toggle('lctl--locked', archived);
+      /* 上架開關本身在卡頭外（不在 data-ad-listing 內），封存與競標中都要鎖：
+         封存不能動三開關，競標中則是關掉它＝下架，等同繞過頁首停用的「下架」鈕。 */
+      const listedLocked = archived || live;
+      if (listedToggle) { listedToggle.setAttribute('aria-disabled', listedLocked ? 'true' : 'false'); listedToggle.classList.toggle('switch--disabled', listedLocked); }
+      if (btnCopy) btnCopy.hidden = !listedOn;   /* 下架即無粉絲端頁面（D284 裁決六） */
+      renderTimes();
+      renderBadges();
+      syncPrimaryAction();
+    }
+    function syncPrimaryAction() {
+      const archived = L.isArchived(a);
+      const live = L.deriveAuctionStatus(a) === 'live';
+      if (unlistTip) unlistTip.hidden = archived || L.isUnlisted(a);
+      /* D286：競標中一律不可下架（不論有無出價）——鈕停用＋提示，不是隱藏；
+         title 放在外層 span，因為 `.btn:disabled` 的 pointer-events:none 會讓按鈕本身收不到 hover。 */
+      if (btnUnlist) btnUnlist.disabled = live;
+      if (unlistTip) {
+        unlistTip.title = live ? T('ad.unlist.live-disabled', 'Available after bidding ends.') : '';
+        if (live) unlistTip.setAttribute('data-i18n-title', 'ad.unlist.live-disabled'); else unlistTip.removeAttribute('data-i18n-title');
+      }
+      if (btnArchive) btnArchive.hidden = !L.canArchive(a);
+      if (btnRelist) btnRelist.hidden = !archived;
+    }
+
+    /* 開關與欄位寫回資料 */
+    function bindSwitch(el, read, write) {
+      if (!el) return;
+      const flip = () => { if (el.getAttribute('aria-disabled') === 'true') return; write(!read()); paintCards(); };
+      el.addEventListener('click', flip);
+      el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
+    }
+    bindSwitch(listedToggle, () => a.listed !== false, on => { if (on) { a.listed = true; a.unlistReason = null; commit(); } else { L.unlist(a); commit(); } });
+    bindSwitch(shownToggle, () => a.shown !== false, on => { a.shown = on; if (on) a.privateLink = null; });
+    bindSwitch(document.getElementById('ad-unlist-toggle'), () => a.unlistAt !== null && a.unlistAt !== undefined, on => { a.unlistAt = on ? '' : null; });
+    const lt = document.getElementById('ad-listing-time'); if (lt) lt.addEventListener('change', () => { a.listAt = lt.value || null; paintCards(); });
+    const ut = document.getElementById('ad-unlist-time'); if (ut) ut.addEventListener('change', () => { a.unlistAt = ut.value || ''; paintCards(); });
+    if (startInput) startInput.addEventListener('change', () => { a.saleStart = startInput.value || ''; paintCards(); });
+    if (startMode) startMode.addEventListener('radio-list:change', e => {
+      const follow = e.detail.item.dataset.adStart === 'follow';
+      a.saleStart = follow ? null : (a.saleStart || '');
+      /* 已上架的拍賣改成「跟著上架一起開拍」：上架早就發生了，開拍時間＝改定的這一刻（原型以 listedAt 記實際上架時間；
+         沒有後端的排程器，這裡就地記下來讓結標時間算得出來） */
+      if (follow && a.listed !== false && !a.listAt && !a.listedAt) a.listedAt = new Date().toISOString();
+      paintCards();
+    });
+    document.addEventListener('linkfield:reset', e => {
+      if (!e.target.closest('[data-ad-link-body]')) return;
+      window.linkField.setValue(e.detail.root, L.resetPrivateLink(a));
+    });
+
+    /* 確認彈窗：借 leave-dialog 的殼（與 e-shop／product-detail 同一套） */
+    const getDialog = () => document.querySelector('[data-ad-confirm-dialog]');
+    let pending = null;
+    function askConfirm(opts) {
+      const d = getDialog();
+      if (!d) { opts.onConfirm(); return; }
+      const title = d.querySelector('[data-ad-confirm-title]'), body = d.querySelector('[data-ad-confirm-body]'), ok = d.querySelector('[data-ad-confirm-ok]');
+      if (title) title.textContent = opts.title || '';
+      if (body) body.textContent = opts.body || '';
+      if (ok) {
+        ok.classList.toggle('btn--destructive', !!opts.destructive);
+        ok.classList.toggle('btn--primary', !opts.destructive);
+        const sp = ok.querySelector('span') || ok; sp.setAttribute('data-i18n', opts.okKey); sp.textContent = T(opts.okKey, opts.okFallback);
+      }
+      pending = opts.onConfirm;
+      d.setAttribute('data-open', '');
+      if (ok) ok.focus();
+    }
+    const closeConfirm = () => { pending = null; const d = getDialog(); if (d) d.removeAttribute('data-open'); };
+    document.addEventListener('click', e => {
+      if (e.target.closest('[data-ad-confirm-ok]')) { const fn = pending; closeConfirm(); if (fn) fn(); return; }
+      if (e.target.closest('[data-ad-confirm-cancel]')) closeConfirm();
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && pending) closeConfirm(); });
+
+    const name = () => (document.getElementById('ad-title') || {}).textContent || '';
+    /* 下架一律先確認（D288 裁決一）：Live 時鈕已停用（D286，見 syncPrimaryAction），這裡只擋一次防呆；
+       Upcoming／Sold／Unsold 按下先出確認彈窗，確認才下架、取消＝不下架。拍賣沒有組合包連動清單。 */
+    function askUnlist() {
+      if (L.deriveAuctionStatus(a) === 'live' || L.isArchived(a) || L.isUnlisted(a)) return;
+      askConfirm({
+        title: T('e-shop.unlist.title', 'Unlist “{n}”?').replace('{n}', name()),
+        body: T('e-shop.unlist.body', 'Public and private links stop working and fans no longer see its page. You can relist it anytime.'),
+        okKey: 'e-shop.unlist.confirm', okFallback: 'Unlist',
+        onConfirm: () => { L.unlist(a); commit(); paintCards(); }
+      });
+    }
+    if (btnUnlist) btnUnlist.addEventListener('click', askUnlist);
+    /* 上架開關切關＝下架，同樣先確認：capture 階段攔下、不讓開關自己翻面（切開不擋） */
+    if (listedToggle) {
+      const intercept = e => {
+        if (e.type === 'keydown' && e.key !== ' ' && e.key !== 'Enter') return;
+        if (listedToggle.getAttribute('aria-disabled') === 'true') return;
+        if (a.listed !== false) { e.stopImmediatePropagation(); e.preventDefault(); askUnlist(); }
+      };
+      listedToggle.addEventListener('click', intercept, true);
+      listedToggle.addEventListener('keydown', intercept, true);
+    }
+    /* 封存只看「已下架」、單純確認（D284；D288 明定不檢查組合包，拍賣本來就沒有） */
+    if (btnArchive) btnArchive.addEventListener('click', () => {
+      if (!L.canArchive(a)) return;
+      askConfirm({
+        title: T('e-shop.archive.title', 'Archive “{n}”?').replace('{n}', name()),
+        body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can relist it anytime.'),
+        okKey: 'e-shop.archive.confirm', okFallback: 'Archive',
+        onConfirm: () => { L.archive(a); commit(); paintCards(); }
+      });
+    });
+    if (btnRelist) btnRelist.addEventListener('click', () => { L.relist(a); commit(); paintCards(); });
+    document.addEventListener('i18n:applied', paintCards);
+    paintCards();
   })();
 </script>
 <script>
@@ -312,5 +705,18 @@
   })();
 </script>
 <script src="js/devtools.js?v=r2.2"></script>
+<!-- 確認彈窗（2026-09-18 · D284／D288）：借 leave-dialog 的殼——下架確認（非 Live 才可按）與封存確認共用一個殼，主鈕皆 primary（兩個動作都可逆）。 -->
+<div class="leave-dialog" data-ad-confirm-dialog role="dialog" aria-modal="true" aria-labelledby="ad-confirm-title">
+  <div class="leave-dialog__scrim" data-ad-confirm-cancel></div>
+  <div class="leave-dialog__card">
+    <button class="leave-dialog__close" type="button" aria-label="Close" data-i18n-aria-label="e-shop.shown.close" data-ad-confirm-cancel><i data-lucide="x" class="ztor-icon"></i></button>
+    <h2 class="leave-dialog__title" id="ad-confirm-title" data-ad-confirm-title></h2>
+    <p class="leave-dialog__body" data-ad-confirm-body></p>
+    <div class="leave-dialog__actions">
+      <button class="btn btn--primary" type="button" data-ad-confirm-ok><span data-i18n="e-shop.archive.confirm">Archive</span></button>
+      <button class="btn btn--outline" type="button" data-ad-confirm-cancel data-i18n="e-shop.shown.cancel">Cancel</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
