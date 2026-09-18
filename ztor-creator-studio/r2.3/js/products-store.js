@@ -34,6 +34,8 @@
 //              庫存歷史紀錄；state 'restocking' 的單同時是「補貨中」卡的內容（沒有就整卡收起）。
 //              vi＝多選項的 variants 索引、單一規格填 'single'；supplierKey／toKey 走 i18n（切語言會重譯）
 //   draft      bool            草稿：頁首徽章顯示「草稿」（ListingState 讀 entity.draft）
+//   archived   bool            已封存（2026-09-18 · D284）：只在 LISTING_SEED 設；seedListing() 會一併關掉總閘門與排程。組合同名欄位在 BUNDLE_SEED
+//   unlistReason { type:'member-archived', productId, productName } | null   組合包被「一同下架」的原因（僅組合；重新上架時清掉）
 //   delivery   'ship'（預設，可省略）| 'qr'   交付方式；'qr'＝現場 QR 領取（取貨場次欄位）
 //   currency   'TWD'（nick 商品）| 省略＝USD   價格幣別（priceText／product-detail 的 money() 讀它）
 //   variants[i].locks  { single: n|null, bundles: { <bundleId>: n|null } }   逐選項組合鎖定（D255／D258）；
@@ -291,6 +293,36 @@
       status: 'live', price: '', cost: '', stock: '0', threshold: '0',
       catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品',
       draft: true
+    },
+
+    /* ── 2026-09-18 封存示範（D284，§7.14「封存與不可刪除」）：三筆新商品各示範一種封存相關狀態，
+       不動既有商品——它們各自背著別的狀態示範，改了會連動組合可售量。上架值在 LISTING_SEED、
+       詳情示範在 DETAIL_SEED。 ── */
+    /* 實體 · 明信片組：已封存，且有訂單歷史（銷售摘要有數字）——示範「封存不影響訂單與收入」。
+       同時是 postcard-set 的成員：那個組合包因它封存而被一同下架（見 BUNDLE_SEED.postcard-set）。 */
+    postcard: {
+      name: '九龍夜行 明信片組', img: 'postcard-set.webp',
+      sub: 'Set of 6 postcards — stills from the tour film. 300gsm.',
+      cat: 'physical', subKey: 'merch', variant: 'single', edition: 'unlimited',
+      status: 'live', price: '12.00', cost: '3.00', stock: '58', threshold: '5',
+      catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
+    },
+    /* 實體 · 馬克杯：已封存、尚無銷售（KPI 空狀態）；不在任何組合包裡 */
+    mug: {
+      name: '九龍夜行 Logo 馬克杯', img: 'logo-mug.webp',
+      sub: '11 oz ceramic mug with the wave mark. Dishwasher safe.',
+      cat: 'physical', subKey: 'merch', variant: 'single', edition: 'unlimited',
+      status: 'live', price: '14.00', cost: '4.00', stock: '25', threshold: '5',
+      catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
+    },
+    /* 實體 · 刺繡布章：已下架、但仍是上架中組合包 roadie-set 的成員——示範封存前的擋下彈窗
+       （列出組合包名稱、提供「一同下架這些組合包」）。 */
+    patch: {
+      name: '九龍夜行 刺繡布章', img: 'patch-set.webp',
+      sub: 'Iron-on embroidered patch, 7 cm. Wave mark on black twill.',
+      cat: 'physical', subKey: 'merch', variant: 'single', edition: 'unlimited',
+      status: 'live', price: '9.00', cost: '2.50', stock: '80', threshold: '8',
+      catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
     }
   };
 
@@ -745,7 +777,12 @@
     /* 隱藏＋非公開連結（對照 acetate） */
     'wy-26ms-tshirt-red': { shown: false, privateLink: 'https://ztor.example/s/wy-26ms-tshirt-red?k=r8n3pz61' },
     /* 草稿（對照 sticker） */
-    'wy-draft-tote': { listed: false }
+    'wy-draft-tote': { listed: false },
+    /* ── 2026-09-18 封存示範（D284）：archived＝true 的商品由 seedListing() 一併關掉總閘門（封存必然下架） ── */
+    postcard: { archived: true },
+    mug:      { archived: true },
+    /* 已下架、仍在上架中的 roadie-set 裡：封存時會被擋下、列出組合包名稱 */
+    patch:    { listed: false }
   };
 
   /* 詳情頁示範狀態（2026-09-11）：原本 product-detail.html 對每個 id 都硬插同一組示範
@@ -858,7 +895,10 @@
       ]
     },
     'wy-24ce-tee': { sales: { units: 96, gross: 'NT$161,280', net: 'NT$137,088' } },
-    'wy-draft-tote': { draft: true }
+    'wy-draft-tote': { draft: true },
+    /* 2026-09-18 封存示範（D284）：明信片組有訂單歷史（封存不影響訂單與收入）；馬克杯沒有 */
+    postcard: { sales: { units: 64, gross: '$768', net: '$614' }, tags: ['Tour 2025'] },
+    mug: { sales: null }
   };
 
   /* 一個組合包＝一個販售管道。cap 是組合自己的限量硬上限（§7.2），null ＝ 無額外上限。
@@ -969,6 +1009,39 @@
       cap: null, listed: false, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null, draft: true
+    },
+    /* ── 2026-09-18 封存示範（D284，§7.14「封存與不可刪除」）── */
+    /* 已封存的組合包：listed:false＋archived:true；曾有銷售（封存不影響訂單與收入） */
+    'launch-set': {
+      id: 'launch-set', persona: 'default', name: '首發紀念組', img: 'coaster-pack.webp',
+      description: '首發週限定：Logo 馬克杯＋明信片組。',
+      members: [{ productId: 'mug' }, { productId: 'postcard' }],
+      cap: 50, listed: false, listAt: null, unlistAt: null, archived: true,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: 10, discount: null,
+      sales: { units: 50, gross: '$1,170', net: '$936' }
+    },
+    /* 因成員封存而被一同下架的組合包：postcard 封存時創作者確認「一同下架」，本組合轉已下架並記原因
+       （unlistReason；組合詳情頁要看得出「因成員封存而下架」，§7.14）。成員資格不因封存而移除。 */
+    'postcard-set': {
+      id: 'postcard-set', persona: 'default', name: '明信片＋寫真誌組', img: 'postcard-set.webp',
+      description: '明信片組搭配幕後寫真誌，寄給沒到場的朋友。',
+      members: [{ productId: 'postcard' }, { productId: 'zine' }],
+      cap: null, listed: false, listAt: null, unlistAt: null,
+      unlistReason: { type: 'member-archived', productId: 'postcard', productName: '九龍夜行 明信片組' },
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: 5, discount: null,
+      sales: { units: 18, gross: '$612', net: '$490' }
+    },
+    /* 上架中、但成員 patch 已下架：組合不可售（§7.14 成交條件）；patch 要封存時本組合會被列進擋下彈窗 */
+    'roadie-set': {
+      id: 'roadie-set', persona: 'default', name: '巡演工作組', img: 'patch-set.webp',
+      description: '刺繡布章＋六片帽，隨行工作人員同款。',
+      members: [{ productId: 'patch' }, { productId: 'cap' }],
+      cap: null, listed: true, listAt: null, unlistAt: null,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: null, discount: null,
+      sales: { units: 7, gross: '$245', net: '$196' }
     },
 
     /* ══ nick persona（周湯豪）══ 第一筆必須是選物四件組：ztorGetBundle() 沒帶 id 時回該 persona 的第一筆 */
@@ -1083,6 +1156,10 @@
     if (b.draft === undefined) b.draft = false;
     if (b.lockSets === undefined) b.lockSets = null;   /* 鎖定套數（2026-09-11）：null＝不鎖定 */
     if (!b.alloc) b.alloc = {};
+    /* 封存（2026-09-18 · D284）：archived 預設 false；封存必然下架。unlistReason＝被「一同下架」時記的原因 */
+    if (b.archived === undefined) b.archived = false;
+    if (b.archived) b.listed = false;
+    if (b.unlistReason === undefined) b.unlistReason = null;
     return b;
   }
   Object.keys(BUNDLE_SEED).forEach(function (k) { seedBundle(BUNDLE_SEED[k]); });
@@ -1099,9 +1176,11 @@
     if (p.pool) return p;                       /* 同一筆記錄被兩個 persona 共用時只補一次 */
     var s = LISTING_SEED[id] || {};
     p.id = p.id || id;
-    p.listed = (s.listed !== undefined) ? s.listed : true;
-    p.listAt = s.listAt || null;
-    p.unlistAt = s.unlistAt || null;
+    /* 封存（2026-09-18 · D284）：archived＝true 時總閘門一律關上、排程清空（封存必然下架、封存時取消未生效的上架排程） */
+    p.archived = !!s.archived;
+    p.listed = p.archived ? false : ((s.listed !== undefined) ? s.listed : true);
+    p.listAt = p.archived ? null : (s.listAt || null);
+    p.unlistAt = p.archived ? null : (s.unlistAt || null);
     p.shown = (s.shown !== undefined) ? s.shown : true;
     p.privateLink = p.shown ? null : (s.privateLink || null);
     p.saleStart = s.saleStart || null;
@@ -1196,6 +1275,12 @@
       return bundlesOfPersona().filter(function (b) {
         return (b.members || []).some(function (m) { return m.productId === productId; });
       });
+    },
+    /* 封存前的擋下清單（§7.14 · D284）：這件單售仍是哪些「上架中」組合包的成員；已下架／已封存／草稿的組合包不算。
+       判斷在 ListingState.listedBundlesUsing，這裡只把當前 persona 的組合包餵進去。 */
+    archiveBlockers: function (productId) {
+      var L = ls(); if (!L || !L.listedBundlesUsing) return [];
+      return L.listedBundlesUsing(productId, window.ProductsStore.bundlesUsing(productId));
     },
     qtyOf: function (product, channel) {
       var L = ls(); return L ? L.channelQty(product, channel || 'single') : Infinity;

@@ -430,6 +430,8 @@
     'pprom.code.f.code': { en: 'Code', zh: '優惠碼' },
     'pprom.code.f.code.ph': { en: 'WELCOME50', zh: 'WELCOME50' },
     'pprom.code.copy': { en: 'Copy', zh: '複製' },
+    'pprom.code.generate': { en: 'Generate', zh: '自動產生' },
+    'pprom.code.f.code.hint': { en: '8–20 letters or digits, no symbols. Case-sensitive.', zh: '8–20 個英數字，不含符號，區分大小寫。' },
     'pprom.code.f.discount': { en: 'Discount', zh: '折扣' },
     'pprom.code.f.discount.hint': { en: 'Off the item price, before shipping.', zh: '折抵商品售價，不含運費。' },
     'pprom.code.f.fixedmode': { en: 'Fixed-amount split', zh: '固定金額折法' },
@@ -2440,6 +2442,8 @@
     'store-settings.codes.new':        { en: 'Add a code',       zh: '新增優惠碼' },
     'store-settings.codes.close':      { en: 'Close',            zh: '關閉' },
     'store-settings.codes.copy':       { en: 'Copy',             zh: '複製' },
+    'store-settings.codes.generate':   { en: 'Generate',         zh: '自動產生' },
+    'store-settings.codes.f.code.hint': { en: '8–20 letters or digits, no symbols. Case-sensitive.', zh: '8–20 個英數字，不含符號，區分大小寫。' },
     'store-settings.codes.cancel':     { en: 'Cancel',           zh: '取消' },
     'store-settings.codes.savecode':   { en: 'Save code',        zh: '儲存' },
     'store-settings.codes.type.partner-with': { en: 'Partner · Aiko', zh: '代理 · Aiko' },
@@ -2452,15 +2456,22 @@
        同一個概念，表單給說明、窄欄給掃描，字數各自對場合負責。 */
     'store-settings.codes.f.scope':    { en: 'Applies to',       zh: '適用範圍' },
     'store-settings.codes.f.scope.hint': { en: 'A code’s range is whichever types and items you check, combined. Auctions never qualify.', zh: '一組碼的範圍＝勾的類型加勾的商品；拍賣不折。' },
+    /* Phase 1 版本的說明（D279）：沒有類型樹與多選，只答得出「全部或一件」。 */
+    'store-settings.codes.f.scope.hint.p1': { en: 'All stores, or just one item.', zh: '全部商店，或只給一件商品。' },
     'store-settings.codes.f.scope.all':  { en: 'All items',      zh: '全部商店' },
     'store-settings.codes.f.scope.types': { en: 'Item types',    zh: '特定品項' },
     'store-settings.codes.f.scope.items': { en: 'Specific items', zh: '特定商品' },
+    /* Phase 1 的第二個範圍選項（D279）：一組碼只綁一件，不選類型層——跟 Phase 4 的
+       「特定商品」（可多選、可混類型）不是同一個字，不重用 f.scope.items。 */
+    'store-settings.codes.f.scope.oneitem': { en: 'One item',    zh: '指定商品' },
     'store-settings.codes.f.scope.physical': { en: 'Physical merchandise', zh: '實體商品' },
     'store-settings.codes.f.scope.digital':  { en: 'Digital merchandise',  zh: '數位商品' },
     'store-settings.codes.f.scope.items.ph': { en: 'Search products or bundles…', zh: '搜尋商品或組合包…' },
     'store-settings.codes.f.scope.items.empty': { en: 'No items match your search.', zh: '沒有符合的商品。' },
-    /* 清單欄「範圍」的混選示意值（AIKO10 那列）：類型＋商品都勾了幾個，不是單一層級。 */
+    /* 清單欄「範圍」的混選示意值（AIKO10 那列）：類型＋商品都勾了幾個，不是單一層級。
+       Phase 1 沒有類型樹與多選，同一列改看成「指定單一商品」的示意（26MS Hoodie，D279）。 */
     'store-settings.codes.scope.apparel-plus': { en: 'Apparel + 2 items', zh: '服飾＋2 件商品' },
+    'store-settings.codes.scope.demo-item': { en: '26MS Hoodie', zh: '26MS Hoodie' },
     /* ── F8.2 使用次數（Usage limits，D272）：以「件」計，拆成三個各自獨立的條件 ─────── */
     'store-settings.codes.f.usage':    { en: 'Usage limits',    zh: '使用次數' },
     'store-settings.codes.f.perorder': { en: 'Per order',       zh: '每張訂單可折件數' },
@@ -2649,6 +2660,20 @@
     'e-shop.shown.cancel':      { en: 'Cancel',                            zh: '取消' },
     'e-shop.shown.close':       { en: 'Close',                             zh: '關閉' },
     'e-shop.shown.unlisted':    { en: 'Unlisted — list it first to change whether it shows', zh: '已下架：要先上架才能調整顯示' },
+    'e-shop.shown.archived':    { en: 'Archived — relist it first', zh: '已封存：要先重新上架' },
+    /* 封存／重新上架／草稿刪除（2026-09-18 · D284，§7.14「封存與不可刪除」）：列操作依狀態互斥——
+       已下架列有「封存」、已封存列只有「重新上架」、草稿列有「刪除」且必須確認。三個確認彈窗共用 leave-dialog 的殼。 */
+    'e-shop.a.archive':         { en: 'Archive',                           zh: '封存' },
+    'e-shop.a.relist':          { en: 'Relist',                            zh: '重新上架' },
+    'e-shop.archive.title':     { en: 'Archive “{n}”?',                    zh: '要封存「{n}」嗎？' },
+    'e-shop.archive.body':      { en: 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can relist it anytime.', zh: '它會離開主清單，只在「已封存」篩選出現；頁面轉為唯讀，訂單與收入不受影響，隨時可以重新上架。' },
+    'e-shop.archive.confirm':   { en: 'Archive',                           zh: '封存' },
+    'e-shop.archive.blocked-title': { en: '“{n}” is still in listed bundles', zh: '「{n}」仍在上架中的組合包裡' },
+    'e-shop.archive.blocked-body':  { en: 'Archiving it stops these bundles from selling. To continue, unlist them together:', zh: '封存後這些組合包就賣不了。要繼續，得把它們一同下架：' },
+    'e-shop.archive.blocked-confirm': { en: 'Unlist these bundles and archive', zh: '一同下架這些組合包並封存' },
+    'e-shop.delete.title':      { en: 'Delete draft “{n}”?',               zh: '要刪除草稿「{n}」嗎？' },
+    'e-shop.delete.body':       { en: 'A deleted draft cannot be recovered.', zh: '草稿刪除後無法復原。' },
+    'e-shop.delete.confirm':    { en: 'Delete',                            zh: '刪除' },
     /* 分類欄主分類（2026-07-20，Figma node 845-12576）：子分類（各列 rowN.cat）白字在上，
        這兩個共用 key 是灰字在下的大類，依各列 data-type="physical"/"digital" 挑選 */
     'e-shop.cat.physical':    { en: 'Physical goods',                      zh: '實體商品' },
@@ -2711,6 +2736,7 @@
     'shop.status.low':             { en: 'Low stock',                          zh: '急需補貨' },
     'shop.status.hidden':          { en: 'Hidden',                             zh: '已隱藏' },
     'shop.status.unlisted':        { en: 'Unlisted',                           zh: '已下架' },
+    'shop.status.archived':        { en: 'Archived',                           zh: '已封存' },   /* 2026-09-18 D284：三開關之外的一態，優先於其他所有徽章 */
     /* 非公開連結：切成隱藏時才產生，可隨時重置。 */
     'link.private-h':         { en: 'Private link',                       zh: '非公開連結' },
     'link.private-hint':      { en: 'Only people with the link can open it. Use it for internal test orders; it stops working once shown in shop', zh: '只有拿到連結的人能進，用來內部下單測試；切回顯示後失效' },
@@ -3034,6 +3060,11 @@
     'product-detail.badge.zine':    { en: 'Books',        zh: '書籍' },
     'product-detail.sub':           { en: '32-page photo zine documenting the east-coast tour. Letterpress cover.', zh: '記錄東岸巡演的 32 頁攝影雜誌書。凸版印刷封面。' },
     'product-detail.btn.preview':   { en: 'Preview',      zh: '預覽' },   /* 2026-09-11 使用者：所有「以粉絲身分預覽」都改成「預覽」 */
+    /* 頁首主要動作依狀態互斥（2026-09-18 · D284）：上架中→下架、已下架→封存、已封存→重新上架；單售與組合包共用 */
+    'product-detail.btn.unlist':    { en: 'Unlist',       zh: '下架' },
+    'product-detail.btn.archive':   { en: 'Archive',      zh: '封存' },
+    'product-detail.btn.relist':    { en: 'Relist',       zh: '重新上架' },
+    'product-detail.archived.banner': { en: 'Archived — read-only. Relist it to edit or sell again.', zh: '已封存：整頁唯讀，重新上架後才能編輯與販售。' },
     'product-detail.btn.restock':   { en: 'Restock',      zh: '補貨' },
     'product-detail.btn.save':      { en: 'Save',         zh: '儲存' },
     /* 逐選項組合的庫存鎖定（2026-09-09 · D-pending／ASSUMPTIONS UIA-146）：列尾 ⋯ 的單列入口、
@@ -3332,6 +3363,9 @@
     'bd.lock.per':          { en: '{n} per set',             zh: '每套 {n}' },
     'bd.lock.none':         { en: 'None',                    zh: '未鎖定' },
     'bd.lock.meta.locked':  { en: 'Locked {n} sets',         zh: '鎖定 {n} 套' },
+    /* 因成員封存而下架、成員已封存（2026-09-18 · D284，5.1.5.9 §2.3） */
+    'bd.unlist.reason':     { en: 'Unlisted because “{n}” was archived. Relist that item or remove it before relisting the bundle.', zh: '因成員「{n}」封存而下架；要重新上架組合包，先把該商品重新上架或移出組合。' },
+    'bd.member.archived':   { en: '“{n}” is archived — the bundle cannot sell', zh: '成員「{n}」已封存，組合不可售' },
     'bd.lock.expand':       { en: 'Show options',            zh: '展開規格' },
     'bd.history.sets':      { en: 'Locked sets',             zh: '鎖定套數' },
     'bd.history.title':     { en: 'Activity log',            zh: '操作紀錄' },   /* 2026-09-11 使用者：「改操作紀錄」 */
@@ -4443,7 +4477,7 @@
     'wiz.step.done':        { en: 'Done',                             zh: '已完成' },
     'wiz.step.todo':        { en: 'Not done',                         zh: '未完成' },
     'wiz.duplicate':        { en: 'Duplicate',                        zh: '複製' },
-    'wiz.delete':           { en: 'Delete',                           zh: '刪除' },
+    /* 墓碑 2026-09-18（D284）：`wiz.delete`（刪除）——唯一消費者 create-product.html 頂列 #cp-delete-top 已撤除。 */
     'wiz.more':             { en: 'More',                             zh: '更多' },
     'wiz.save':             { en: 'Save and come back anytime',       zh: '儲存草稿稍後再回來' },
     'wiz.savelater':        { en: 'Save for later',                   zh: '稍後再存' },
@@ -5078,7 +5112,9 @@
     'cp.h1.edit.pre':       { en: 'Edit',                             zh: '編輯' },
     'cp.save.changes':      { en: 'Save changes',                     zh: '儲存變更' },
     'cp.delete':            { en: 'Delete',                           zh: '刪除' },
-    'cp.delete.confirm':    { en: 'Delete this product? This cannot be undone.', zh: '確定刪除這個商品？此動作無法復原。' },
+    /* 墓碑 2026-09-18（D284「發布過即不可刪除」）：`cp.delete.confirm`（確定刪除這個商品？此動作無法復原。）——
+       建立商品流程的編輯態刪除鈕（#cp-delete／#cp-delete-top）與 window.confirm 一併撤除；
+       `cp.delete` 本身留著：create-auction.html 的拍賣刪除鈕還在用（拍賣下一波處理）。 */
     'cp.preview':           { en: 'Preview',                          zh: '預覽' },
     'cp.preview.heading':   { en: 'Product preview',                  zh: '商品預覽' },
     'cp.preview.title':     { en: 'How buyers see it on Ztor',        zh: '買家在 Ztor 看到的樣子' },
@@ -5135,6 +5171,7 @@
     'cp.listing.listed-switch': { en: 'Listed',                        zh: '上架' },
     'cp.listing.listed-hint': { en: 'Unlisting stops every channel and kills all links', zh: '下架後所有管道都不能賣，連結全部失效' },
     'cp.listing.unlisted-lock': { en: 'Unlisted — show and sale settings are locked until it is listed again.', zh: '已下架：顯示與開賣設定要重新上架後才能調整。' },
+    'cp.listing.archived-lock': { en: 'Archived — switches and schedules stay locked until it is relisted.', zh: '已封存：開關與排程都不可調，重新上架後才能調整。' },
     'cp.listing.shown-h':   { en: 'Show in shop',                      zh: '顯示於商店' },
     'cp.listing.shown-hint': { en: 'Hidden items stay purchasable via the private link and inside bundles', zh: '隱藏後商店找不到，但能經非公開連結購買，也能被組合包帶著賣' },
     'cp.listing.none':      { en: "Don't list",                       zh: '不上架' },

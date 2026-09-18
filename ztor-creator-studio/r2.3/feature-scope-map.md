@@ -60,7 +60,9 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 **粉絲分級欄只在 Phase 4（2026-08-13 使用者裁示 / D187）**：電子商店商品清單與組合清單的「粉絲分級」欄（誰買得到）Phase 1–3 不出現。這一欄沒有規格出處（PG-021，2026-07-29 直接在原型上長出來的），所以歸「scope 未列」、走保留 gate `data-feat="full"`；欄頭與每一格另外標 `data-col="tier"`，`product-list.css` 用 `:has([data-col="tier"].ztd-ver-hidden)` 換掉整條欄寬——格線是固定軌數，只把格子藏起來會讓後面每一欄往左錯一格。
 
-**平台滿額折扣與平台優惠碼是全平台協定（2026-09-15 D273／D277）**：Admin 平台優惠設定頁（`admin-platform-promotions.html`，原 `admin-platform-discounts.html`）與其他 Admin 目的地一樣不受開發版本 gate；創作者端沒有對應開關，只在訂單詳情看到「平台滿額折抵」扣項列（D274）。
+**平台滿額折扣與平台優惠碼是全平台協定（2026-09-15 D273／D277）**：Admin 平台優惠設定頁（`admin-platform-promotions.html`，原 `admin-platform-discounts.html`）與其他 Admin 目的地一樣不受開發版本 gate；創作者端沒有對應開關，只在訂單詳情看到「平台滿額折抵」扣項列（D274）。整頁 Phase 4（D279）。
+
+**優惠碼 Phase 1 只有期間、%／固定、全部或單一商品（2026-09-17 D279）**：Phase 1 的藝人商店優惠碼只留三組欄位——生效期間、折扣型態（百分比或固定金額）、適用範圍（全部商店或指定單一商品，一組碼綁一件、不選類型層）；碼字串本身當然也有。`store-settings.html` 優惠碼彈窗裡，類型樹與多件商品、每張訂單可折件數／每人總次數／總兌換次數三格、固定金額折法、可與其他優惠碼疊加，一律掛 `data-feat="full"`（使用次數三格連同標籤包一個容器一起掛，固定金額折法與疊加開關各自的既有 `hidden`／JS 顯隱照常，閘門與 hidden 兩道各管各的）。Phase 1 的適用範圍改成一組 `data-feat-off="full"` 的單選（`radio-list`：全部商店／指定商品，選「指定商品」才展開 zselect 單選下拉，候選與 Phase 4 共用 `ProductsStore.all()`＋`bundles()`）。清單同步：「已用」欄的「/ 上限」只在有次數上限時才有意義，包一個 `data-feat="full"` 的 span；LAUNCH50（已用完狀態）整列 `data-feat="full"`（Phase 1 沒有次數上限，不會有「已用完」）；「範圍」欄的混選示意（AIKO10「服飾＋2 件商品」）與 Phase 1 的單商品示意（「26MS Hoodie」）用 `data-feat`／`data-feat-off` 成對切換。**平台優惠設定（5.1.0.7）整頁 Phase 4**，見上一段。
 
 **代理優惠碼只在 Phase 4（2026-08-13 使用者裁示 / D185）**：商店設定的優惠碼分頁（S51）各版本都有，但「代理」這一支——彈窗裡的型別切換整列、推廣者與分成欄位、代理銷售紀錄，以及清單裡的代理碼示範列——Phase 1–3 都不出現。三個 tier 沒有一個能表達「只在 Phase 4」，所以沿用保留 gate `data-feat="full"`（同註冊入口那次的做法）。分頁開場白因此做成 `data-feat="full"`／`data-feat-off="full"` 成對：full 版講兩種碼的差別，低版本只講折扣本身；清單裡「自用」那個 meta 標籤也一起收起來——沒有第二種碼時，標它是自用只是廢話。彈窗預設就是以自用開場（`openModal('own', …)`），所以切換列藏掉不影響行為。
 
