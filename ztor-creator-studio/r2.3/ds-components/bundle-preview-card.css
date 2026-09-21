@@ -1,0 +1,111 @@
+/* ============================================================
+   bundle-preview-card.css · 粉絲端組合包預覽卡（建立組合包時右欄「粉絲看到的」）
+   ------------------------------------------------------------
+   2026-09-21 promote：由 `docs/bundle-create-demo-2026-09-21.html` 的 `lab-fan-*`
+   升進元件層（使用者看過 demo 後裁示「做上正式」）。第一個消費者是建立活動第 6 步的
+   組合包編輯器（`js/bundle-editor.js` 的 `layout:'split'`），電子商店的建立組合流程
+   （第 2 批）會是第二個。
+
+   它回答的是「粉絲買這一組會看到什麼」：內含清單（票券 → 商品 → 額外權益，與後台分卡
+   同一個順序）、原價劃線與售價、剩餘組數、一顆「加入購物車」示意鈕。**選擇器可以點**
+   （票種、場次、尺寸、顏色）——不點就看不到「從 $Y 起」怎麼收斂成一個數字，也看不到
+   剩餘不足的票種對粉絲的意思；點選只影響這張卡，不寫回左欄。
+   ⚠ 粉絲端組合包畫面上游未定案（ASSUMPTIONS BDL-001／BDL-002）：這張卡是呈現推導，
+   不是前台規格。
+
+   組成：`.preview-card.bpc`——外殼沿用 preview-card（媒體格、名稱列、說明），本檔只加
+   組合包多出來的段落；chip 選擇器沿用 chip.css（`.chip:disabled`＝剩餘不足／沒貨的選項）；
+   徽章沿用 badge.css；CTA 沿用 button.css。
+
+   anatomy
+     .bpc__title                     （右欄小標「粉絲看到的」，放在卡外）
+     .preview-card.bpc
+       .preview-card__media          （2:1，見下方說明）
+       .preview-card__body
+         .preview-card__row > __name + .ztor-badge   （名稱＋活動狀態徽章）
+         .preview-card__desc
+         .bpc__list > .bpc__row ×N   （icon ＋ .bpc__what[.is-empty] ＋ .bpc__pick ×N）
+           .bpc__pick > .bpc__picklabel + .chip-group > .chip[.chip--active][:disabled]
+         .bpc__price > .bpc__now + .bpc__was + .ztor-badge--warning（省 N%）
+         .bpc__meta                  （剩 N 組／售罄徽章／每場各一組的註記）
+         .btn.btn--primary.bpc__cta  （加入購物車示意；沒選齊或售罄停用）
+         .bpc__why                   （停用的理由）
+     .bpc__note                      （卡外一句：選擇器可以點、只影響這張卡）
+
+   相依：preview-card.css、chip.css、badge.css、button.css、icon.css。
+   ============================================================ */
+
+.bpc__title {
+  margin: 0 0 var(--sp-12);
+  font-family: var(--font-display);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+  color: var(--muted-foreground);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* 媒體格 2:1（不是 preview-card 預設的直式 2:3）：這張卡坐在彈窗右欄（340px），直式圖會
+   吃掉 510px、把粉絲真正要看的內含清單與價格推到第二屏；demo 定案採 2:1。與商品／拍賣
+   預覽卡的直式規則不同，登記在 STYLE-DECISIONS Q120 待裁決。 */
+.bpc .preview-card__media { aspect-ratio: 2 / 1; }
+.bpc .preview-card__row .ztor-badge { flex: none; white-space: nowrap; }
+
+/* 內含清單：票券 → 商品 → 額外權益，一列一個 icon ＋ 文字（＋選擇器）。 */
+.bpc__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+  margin-top: var(--sp-12);
+  padding-top: var(--sp-12);
+  border-top: 1px solid var(--border-soft);
+}
+.bpc__row {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: var(--sp-8);
+  align-items: start;
+}
+.bpc__row > .ztor-icon { width: 16px; height: 16px; margin-top: 2px; color: var(--muted-foreground); }
+.bpc__what { font-family: var(--font-ui); font-size: var(--fs-13); color: var(--foreground); }
+.bpc__what.is-empty { color: var(--muted-foreground); font-style: italic; }
+
+/* 選擇器：一組標籤（票種／場次／尺寸／顏色）＋一排 chip。 */
+.bpc__pick { display: flex; flex-direction: column; gap: var(--sp-6); margin-top: var(--sp-6); }
+.bpc__picklabel { font-size: var(--fs-11); color: var(--muted-foreground); }
+
+/* 價格：售價（大）＋劃線原價（小、弱化）＋「省 N%」徽章，基線對齊。
+   劃線原價的字級照 `.cb-basestrike`（--fs-13，STYLE-DECISIONS Q35 現況 A），不再開第三種。 */
+.bpc__price {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-8);
+  flex-wrap: wrap;
+  margin-top: var(--sp-14);
+  padding-top: var(--sp-12);
+  border-top: 1px solid var(--border-soft);
+}
+.bpc__now {
+  font-family: var(--font-numeric);
+  font-size: var(--fs-22);
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+.bpc__was {
+  font-family: var(--font-numeric);
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+  font-variant-numeric: tabular-nums;
+}
+.bpc__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  margin-top: var(--sp-6);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.bpc__cta { margin-top: var(--sp-12); width: 100%; justify-content: center; }
+.bpc__why { margin-top: var(--sp-6); font-size: var(--fs-12); color: var(--muted-foreground); text-align: center; }
+.bpc__note { margin: var(--sp-12) 0 0; font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-relaxed); }

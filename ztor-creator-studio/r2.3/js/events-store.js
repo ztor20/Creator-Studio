@@ -82,9 +82,11 @@
       /* 票務商品（2026-08-11）：建立流程第 6 步綁出來的組合包。與單賣的票共用同一個
          數量池——賣掉一組就從它含的那張票扣一張（BDL-001，編輯規則待上游）。
          2026-09-18（D292）：票務商品＝電子商店的組合包（成員含本活動票券），這裡只是
-         「含本活動票券的組合包」的篩選視圖資料；`tickets` 的形狀對齊 `js/bundle-editor.js`
-         第 1 批的 `[{ id, qty }]`（票種 id × 每套張數），舊欄名 `tier`／`n` 全數退場，
-         站上不留兩種形狀。`bundle-detail.html?id=<組合包 id>` 是它的細節頁（第 3 批接資料）。
+         「含本活動票券的組合包」的篩選視圖資料；`tickets` 的形狀對齊 `js/bundle-editor.js`：
+         2026-09-21（D296）起是**一個物件** `{ tierIds:[票種 id…], qty:n }`——tierIds＝允許票種
+         （粉絲購買時任選一種）、qty＝整組張數（拿到該票種 × n）；只列一種＝鎖定票種。
+         舊形狀 `[{ id, qty }]`（2026-09-18 D292，多筆＝同時內含）退場，讀取端（event-detail、
+         e-shop、bundle-detail）用 `ztorEvents.bundleTickets(b)` 相容讀取，站上不留兩種形狀。`bundle-detail.html?id=<組合包 id>` 是它的細節頁（第 3 批接資料）。
          2026-08-17：`products` 由字串陣列改為 `{ name, img }`——售票進度卡要把「這一組裡面
          裝了什麼」用圖顯示出來，光有名字排不出那排縮圖。商品名與圖沿用 js/products-store.js
          的 nick 批（同一件商品在電子商店與這裡不該長兩張臉）；圖路徑直接寫在這裡而不是
@@ -96,7 +98,7 @@
          同一個組合包 id（bd-vip-tee）在系列的高雄／台北兩場各出現一次＝「每場各一組」沿用同一份清單；
          細節頁沒帶 `&ev=` 時取第一場（示範資料的缺口，見 ASSUMPTIONS BDL-001 追記）。 */
       bundles: [
-        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', tickets: [{ id: 'tier-vip', qty: 1 }],
+        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-vip'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600 }],
           price: 4800, sold: 12, cap: 50 }
       ],
@@ -168,12 +170,13 @@
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 100, paused: true }
       ],
       bundles: [
-        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', tickets: [{ id: 'tier-vip', qty: 1 }],
+        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-vip'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600 }],
           price: 4800, sold: 3, cap: 50 },
-        { id: 'bd-vip-zine', name: 'VIP ＋ 精裝寫真誌', tickets: [{ id: 'tier-vip', qty: 1 }],
+        /* 2026-09-21（D296 示範）：允許兩種票種、粉絲任選——原價「從 $4,300 起」（最低票價 Floor 3,300 × 1 ＋ 1,000）。 */
+        { id: 'bd-vip-zine', name: 'VIP／Floor 任選 ＋ 精裝寫真誌', tickets: { tierIds: ['tier-vip', 'tier-floor'], qty: 1 },
           products: [{ name: 'REALIVE 巡演精裝寫真誌', img: 'images/products/tour-zine-vol-02.webp', price: 1000 }],
-          price: 5200, sold: 7, cap: 40 }
+          price: 4300, sold: 7, cap: 40 }
       ],
       publish: { onsale: 'scheduled', pickup: 'sf', visibility: 'public' },
       /* 只設開賣、不設停售的示範（`to: ''`）——賣到開演為止。 */
@@ -342,7 +345,7 @@
       /* 2026-08-13：多一筆組合包示範，讓「票券綁商品」不是只有巡演那兩場看得到
          （組合包與單賣的票共用同一個數量池，賣掉一組就從它含的那張票扣一張，BDL-001）。 */
       bundles: [
-        { id: 'bd-slot-vinyl', name: '簽名場次 ＋ 限量黑膠', tickets: [{ id: 'tier-slot', qty: 1 }],
+        { id: 'bd-slot-vinyl', name: '簽名場次 ＋ 限量黑膠', tickets: { tierIds: ['tier-slot'], qty: 1 },
           products: [{ name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'images/products/coastline-acetate.webp', price: 40 }],
           price: 45, sold: 26, cap: 60 }
       ],
@@ -566,7 +569,7 @@
       /* 2026-09-21（D294 決定三示範）：已排程（發布、尚未開賣）的活動也掛一組組合包——
          電子商店 Bundles 清單要列它（活動已發布），細節頁的開賣設定則因活動未開賣而停用（只收窄不回寫）。 */
       bundles: [
-        { id: 'bd-lower-program', name: '一樓票 ＋ 交響夜場刊', tickets: [{ id: 'tier-lower', qty: 1 }],
+        { id: 'bd-lower-program', name: '一樓票 ＋ 交響夜場刊', tickets: { tierIds: ['tier-lower'], qty: 1 },
           products: [{ name: 'NICK Symphonic Night 場刊', img: 'images/products/tour-zine-vol-02.webp', price: 400 }],
           price: 3200, sold: 0, cap: 100 }
       ],
@@ -734,7 +737,7 @@
         { id: 'tier-rear', name: 'Rear block', price: 800, qty: 2000, sold: 1198 }
       ],
       bundles: [
-        { id: 'bd-front-vinyl', name: '前區票 ＋ 限量黑膠', tickets: [{ id: 'tier-front', qty: 1 }],
+        { id: 'bd-front-vinyl', name: '前區票 ＋ 限量黑膠', tickets: { tierIds: ['tier-front'], qty: 1 },
           products: [{ name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'images/products/coastline-acetate.webp', price: 700 }],
           price: 1900, sold: 63, cap: 200 }
       ],
@@ -768,7 +771,7 @@
         { id: 'tier-bts', name: 'Stream + behind the scenes', price: 650, qty: 100, sold: 71 }
       ],
       bundles: [
-        { id: 'bd-stream-album', name: '直播票 ＋ 數位專輯', tickets: [{ id: 'tier-stream', qty: 1 }],
+        { id: 'bd-stream-album', name: '直播票 ＋ 數位專輯', tickets: { tierIds: ['tier-stream'], qty: 1 },
           products: [{ name: 'LOVE RAGE HOPE — 數位專輯', img: 'images/products/nick-album.jpg', price: 170 }],
           price: 520, sold: 88, cap: 150 }
       ],
@@ -801,9 +804,10 @@
         { id: 'tier-outfield', name: 'Outfield', price: 900, qty: 400, sold: 372 }
       ],
       bundles: [
-        { id: 'bd-infield-tee', name: '內野票 ＋ 官方 Tee', tickets: [{ id: 'tier-infield', qty: 1 }],
+        /* 2026-09-21（D296 示範）：內野／外野任選 × 2 張——每組兩張同一票種；內野已售罄，只剩外野可選，整組仍可售（D296 決定四 a）。 */
+        { id: 'bd-infield-tee', name: '內野／外野 任選 × 2 ＋ 官方 Tee', tickets: { tierIds: ['tier-infield', 'tier-outfield'], qty: 2 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 500 }],
-          price: 1700, sold: 41, cap: 120 }
+          price: 2300, sold: 41, cap: 120 }
       ],
       sold: 1172,
       revenue: 1294800,
@@ -1288,7 +1292,7 @@
         { id: 'tier-encore-ga', name: 'General admission', price: 2200, qty: 800, sold: 0 }
       ],
       bundles: [
-        { id: 'bd-encore-tee', name: '加場票 ＋ 官方 Tee', tickets: [{ id: 'tier-encore-ga', qty: 1 }],
+        { id: 'bd-encore-tee', name: '加場票 ＋ 官方 Tee', tickets: { tierIds: ['tier-encore-ga'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600 }],
           price: 2800, sold: 0, cap: 100 }
       ],
@@ -1539,7 +1543,24 @@
     try { localStorage.setItem(STAGE_KEY, JSON.stringify(m)); } catch (e) {}
   }
 
+  /* 組合包票券成員的相容讀取（2026-09-21 D296）：一律回 `{ tierIds:[…], qty:n }`。
+     舊 `[{ id, qty }]`／`['id']` 視為 tierIds＝各 id、qty＝第一筆的張數；沒有票券成員回空清單。 */
+  function bundleTickets(b) {
+    var v = b && b.tickets;
+    if (Array.isArray(v)) {
+      var ids = [], q = 1, first = true;
+      v.forEach(function (x) {
+        if (typeof x === 'string') ids.push(x);
+        else if (x && x.id != null) { ids.push(x.id); if (first) { q = Number(x.qty) > 0 ? Math.floor(Number(x.qty)) : 1; first = false; } }
+      });
+      return { tierIds: ids, qty: q };
+    }
+    if (v && typeof v === 'object') return { tierIds: (v.tierIds || []).slice(), qty: Number(v.qty) > 0 ? Math.floor(Number(v.qty)) : 1 };
+    return { tierIds: [], qty: 1 };
+  }
+
   window.ztorEvents = {
+    bundleTickets: bundleTickets,
     list: function () {
       var m = stageMap();
       return clone(EVENTS).map(function (e) {

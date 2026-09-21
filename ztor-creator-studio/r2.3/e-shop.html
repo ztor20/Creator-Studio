@@ -2461,13 +2461,17 @@
         onSale: st !== 'scheduled', saleStart: null, saleEnd: (st === 'ended' && ev.date) ? ev.date + 'T23:59' : null,
         archived: false, unlistReason: st === 'cancelled' ? { type: 'event-cancelled', eventName: ev.name } : null
       };
-      /* 可售套數＝各票種剩餘 ÷ 每套張數取最小，再與（上限 − 已售）取最小（同 bundle-detail 的算法；商品成員在 events-store 無池，視為不限量） */
+      /* 可售套數（2026-09-21 D296 決定四）＝各允許票種 floor(剩餘 ÷ 每組張數) **加總**（粉絲任選一種，任一票種剩餘 ≥ n 即可賣），
+         再與（上限 − 已售）取最小（同 bundle-detail 的算法；商品成員在 events-store 無池，視為不限量） */
+      const tk = EV.bundleTickets(b);
       let qty = Infinity;
-      (b.tickets || []).forEach(x => {
-        const t = (ev.tiers || []).find(tt => tt.id === x.id); if (!t) return;
-        const left = Math.max(0, (Number(t.qty) || 0) - (Number(t.sold) || 0));
-        qty = Math.min(qty, Math.floor(left / Math.max(1, Number(x.qty) || 1)));
-      });
+      if (tk.tierIds.length) {
+        qty = tk.tierIds.reduce((sum, id) => {
+          const t = (ev.tiers || []).find(tt => tt.id === id); if (!t) return sum;
+          const left = Math.max(0, (Number(t.qty) || 0) - (Number(t.sold) || 0));
+          return sum + Math.floor(left / Math.max(1, tk.qty));
+        }, 0);
+      }
       if (b.cap != null) qty = Math.min(qty, Math.max(0, Number(b.cap) - (Number(b.sold) || 0)));
       return { entity: entity, qty: qty, low: 0, cap: b.cap == null ? null : b.cap, free: null, store: true, eventBundle: true };
     }
@@ -2483,7 +2487,12 @@
         (ev.bundles || []).forEach(b => {
           const evName = (ev.name || '').trim() || T('event-detail.untitled', 'Untitled event');
           const lines = [];
-          (b.tickets || []).forEach(x => { const t = (ev.tiers || []).find(tt => tt.id === x.id); if (t) lines.push(t.name + ' × ' + (Number(x.qty) > 0 ? Number(x.qty) : 1)); });
+          /* 票券成員一行（2026-09-21 D296）：「VIP／Floor 任選 × n」，一種「VIP × n」 */
+          const tk = EV.bundleTickets(b);
+          const names = tk.tierIds.map(id => { const t = (ev.tiers || []).find(tt => tt.id === id); return t ? t.name : null; }).filter(Boolean);
+          if (names.length) lines.push(names.length > 1
+            ? T('cpp.bd.sum.any', '{names} (pick one) × {n}').replace('{names}', names.join('／')).replace('{n}', tk.qty)
+            : T('cpp.bd.sum.line', '{name} × {n}').replace('{name}', names[0]).replace('{n}', tk.qty));
           (b.products || []).forEach(pr => { const q = Number(pr.qty) > 0 ? Number(pr.qty) : 1; lines.push(pr.name + (q > 1 ? ' × ' + q : '')); });
           const shown = lines.slice(0, 3); if (lines.length > 3) shown.push('…');
           const img = (b.products && b.products[0] && b.products[0].img) || (ev.images && ev.images.keyvisual) || '';

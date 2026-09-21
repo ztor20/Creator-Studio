@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 探索頁（lab）。資產一律以 ../（r2.3 根）為前綴、不用 <base>，理由同 bundle-step-demo.html。
+     頁內 <style> 只放 demo 專用規則、一律 lab- 前綴、只吃既有 token；不建 ds-components、不動正式頁。 -->
+<title>LAB · 新增組合包（D296 之後的建立流程）</title>
+<script src="../js/theme.js?v=r2.3"></script>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/icon.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/empty-card.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/input.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/field-system.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/form-grid.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/form-section.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/checkbox.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/chip.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/segmented.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/radio-card.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/amount-field.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/stepper.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/control-row.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/switch.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/upload-tile.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/kv-list.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/insight-row.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/wizard-split.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/bundle-editor.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/lock-sets.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/preview-card.css?v=r2.3">
+<link rel="stylesheet" href="../shared.css?v=r2.3">
+<style>
+  /* ══════════════════════════════════════════════════════════════════════
+     LAB 專用樣式（探索頁；lab- 前綴；只用既有 token；不寫死 hex／font-size）
+     ══════════════════════════════════════════════════════════════════════ */
+
+  /* ── 頂部切換列：這一列不是提案的一部分，只是讓三種情境用同一個介面看 ── */
+  .lab-bar { display: flex; align-items: center; gap: var(--sp-12); flex-wrap: wrap;
+             padding: var(--sp-10) var(--sp-14); margin-bottom: var(--sp-28);
+             border: 1px dashed var(--border); border-radius: var(--radius-xl);
+             font-family: var(--font-ui); font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-bar__tag { font-weight: var(--fw-medium); color: var(--foreground); }
+  .lab-bar__spacer { margin-left: auto; }
+  .lab-bar .zcheck { gap: var(--sp-8); }
+
+  /* 淺色檯面（lab 限定）：shared.css 把 sidebar 模式的 body 壓成 ztorUI 星空畫布（深色語彙），
+     正式的建立流程頁靠 .wizard 自己鋪底才有淺色；本頁沒有 wizard 殼，淺色時直接給頁面底。 */
+  html[data-theme="light"] body { background-color: var(--surface-page); background-image: none; }
+  .lab-page { max-width: 1180px; margin: 0 auto; padding: var(--sp-32) var(--sp-24) var(--sp-96); }
+  /* 這頁沒有 wizard 的貼頂列，右軌的讓位高度歸零（正式頁由 create-event 執行期量測） */
+  .lab-page .wizard-split__rail { top: var(--sp-16); max-height: calc(100vh - var(--sp-96)); }
+  .lab-page .wizard-split { grid-template-columns: minmax(0, 1fr) 340px; }
+
+  /* ── 左欄三段：分段單頁（不是精靈），每段一張浮起卡 ── */
+  .lab-sec { display: flex; flex-direction: column; gap: var(--sp-20); }
+  .lab-sec > .field { margin-bottom: 0; }
+  .lab-sub { display: flex; align-items: baseline; gap: var(--sp-8); margin-top: var(--sp-8); }
+  .lab-sub__title { font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); }
+  .lab-sub__hint { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-sub__act { margin-left: auto; }
+
+  /* 票券表：多場次時「剩餘」逐場一欄（兩場＝兩欄）。這是 lab 頁對 bd-tbl 欄軌的暫時覆寫，
+     定案後要回 bundle-editor.css 開一個 --sess-n 變體，不留在頁面。 */
+  .lab-tix--2s .bd-tbl__head,
+  .lab-tix--2s .bd-tbl__row { grid-template-columns: 16px minmax(0, 1fr) 88px 80px 80px; }
+  .lab-tix__sub { display: block; font-size: var(--fs-12); color: var(--muted-foreground);
+                  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lab-tix--locked .bd-tbl__row--pick { cursor: default; }
+  .lab-tix--locked .bd-tbl__row--pick:hover { background: transparent; }
+
+  /* 語意句：這一組粉絲會怎麼買。放在票券表正下方，勾一下就換一句。 */
+  .lab-sem { margin-top: 0; }
+
+  /* 商品搜尋與候選 */
+  .lab-search { position: relative; }
+  .lab-search .input { padding-left: var(--sp-32); }
+  .lab-search__icon { position: absolute; left: var(--sp-10); top: 50%; transform: translateY(-50%);
+                      width: 16px; height: 16px; color: var(--muted-foreground); pointer-events: none; }
+  .lab-cand .bd-tbl__head,
+  .lab-cand .bd-tbl__row { grid-template-columns: minmax(0, 1fr) 88px 72px 64px; }
+  .lab-cand .bd-tbl__row { padding-block: var(--sp-6); }
+  .lab-cand__act { justify-self: end; }
+  .lab-items .bd-tbl__head,
+  .lab-items .bd-tbl__row { grid-template-columns: minmax(0, 1fr) 88px 72px 28px; }
+  .lab-items__rm { justify-self: end; }
+  .lab-items .bd-tbl__row { padding-block: var(--sp-8); }
+  .lab-items .bd-tbl__sub, .lab-cand .bd-tbl__sub { display: block; }
+
+  /* 活動挑選器（電子商店脈絡） */
+  .lab-events .bd-tbl__head,
+  .lab-events .bd-tbl__row { grid-template-columns: minmax(0, 1fr) 96px 88px 64px; }
+  .lab-events .bd-tbl__row { padding-block: var(--sp-8); }
+
+  /* 原價合計：算式一行一項（kv 列），合計列加粗一階 */
+  .lab-calc { padding: var(--sp-4) var(--sp-14); border: 1px solid var(--layer-line); border-radius: var(--radius-lg); }
+  .lab-calc .kv__v { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }
+  .lab-calc__how { display: block; font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-calc__total .kv__k { color: var(--foreground); }
+  .lab-calc__total .kv__v { font-size: var(--fs-16); }
+  .lab-disc { width: 132px; }
+  .lab-readout--big { font-family: var(--font-numeric); font-size: var(--fs-24); font-variant-numeric: tabular-nums; }
+  .lab-hint--over { color: var(--status-error); }
+
+  /* 名稱建議 */
+  .lab-name { display: flex; flex-direction: column; gap: var(--sp-6); }
+  /* 封面是辨識用縮圖，縮成一格擺左邊 */
+  .lab-cover .upload-tile { width: 120px; flex: none; }
+
+  /* 上架：只有一句話＋徽章 */
+  .lab-list { display: flex; flex-direction: column; }
+  .lab-list .kv__v { display: inline-flex; align-items: center; gap: var(--sp-8); }
+
+  /* ── 右欄：粉絲看到的那張卡 ── */
+  .lab-fan__title { font-family: var(--font-display); font-size: var(--fs-14); color: var(--muted-foreground);
+                    letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 var(--sp-12); }
+  .lab-fan .preview-card__media { aspect-ratio: 2 / 1; }
+  .lab-fan .preview-card__row .ztor-badge { flex: none; white-space: nowrap; }
+  .lab-fan__list { display: flex; flex-direction: column; gap: var(--sp-10); margin-top: var(--sp-12);
+                   padding-top: var(--sp-12); border-top: 1px solid var(--border-soft); }
+  .lab-fan__row { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: var(--sp-8); align-items: start; }
+  .lab-fan__row .ztor-icon { width: 16px; height: 16px; margin-top: 2px; color: var(--muted-foreground); }
+  .lab-fan__what { font-size: var(--fs-13); color: var(--foreground); }
+  .lab-fan__pick { display: flex; flex-direction: column; gap: var(--sp-6); margin-top: var(--sp-6); }
+  .lab-fan__picklabel { font-size: var(--fs-11); color: var(--muted-foreground); }
+  .lab-fan .chip[disabled] { opacity: .4; cursor: not-allowed; text-decoration: line-through; }
+  .lab-fan__price { display: flex; align-items: baseline; gap: var(--sp-8); flex-wrap: wrap;
+                    margin-top: var(--sp-14); padding-top: var(--sp-12); border-top: 1px solid var(--border-soft); }
+  .lab-fan__now { font-family: var(--font-numeric); font-size: var(--fs-22); font-variant-numeric: tabular-nums; }
+  .lab-fan__was { font-family: var(--font-numeric); font-size: var(--fs-13); color: var(--muted-foreground); text-decoration: line-through; }
+  .lab-fan__meta { display: flex; align-items: center; gap: var(--sp-8); margin-top: var(--sp-6);
+                   font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-fan__cta { margin-top: var(--sp-12); width: 100%; justify-content: center; }
+  .lab-fan__why { margin-top: var(--sp-6); font-size: var(--fs-12); color: var(--muted-foreground); text-align: center; }
+  .lab-fan__note { margin-top: var(--sp-12); font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-relaxed); }
+  .is-empty { font-style: italic; color: var(--muted-foreground); }
+
+  /* ── 底部固定列：粉絲實付＋完成 ── */
+  .lab-foot { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+              background: var(--background); border-top: 1px solid var(--border); }
+  .lab-foot__inner { max-width: 1180px; margin: 0 auto; padding: var(--sp-12) var(--sp-24);
+                     display: flex; align-items: center; gap: var(--sp-16); }
+  .lab-foot__k { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-foot__v { font-family: var(--font-numeric); font-size: var(--fs-20); font-variant-numeric: tabular-nums; color: var(--foreground); }
+  .lab-foot__sub { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-foot__acts { margin-left: auto; display: flex; align-items: center; gap: var(--sp-8); }
+  .lab-foot__why { font-size: var(--fs-12); color: var(--muted-foreground); }
+
+  /* ── 說明區（旁白，不是提案的一部分）── */
+  .lab-notes { max-width: 1180px; margin: var(--sp-56) auto 0; padding: 0 var(--sp-24) var(--sp-96); }
+  .lab-notes h2 { font-family: var(--font-display); font-size: var(--fs-20); color: var(--foreground); margin: 0 0 var(--sp-12); }
+  .lab-notes h3 { font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); margin: var(--sp-24) 0 var(--sp-8); }
+  .lab-notes p, .lab-notes li { font-size: var(--fs-13); color: var(--muted-foreground); line-height: var(--lh-relaxed); }
+  .lab-notes ul { margin: 0; padding-left: var(--sp-20); }
+  .lab-notes li { margin-bottom: var(--sp-6); }
+
+  @media (max-width: 1024px) {
+    .lab-page .wizard-split { grid-template-columns: minmax(0, 1fr); }
+    .lab-page .wizard-split__rail { position: static; max-height: none; grid-column: 1; grid-row: 2; }
+  }
+</style>
+</head>
+<body>
+
+<div class="lab-page">
+
+  <div class="lab-bar">
+    <span class="lab-bar__tag">LAB · 2026-09-21</span>
+    <span>同一個介面切三種情境</span>
+    <div class="segmented" role="radiogroup" aria-label="情境">
+      <button type="button" class="segmented__btn" data-lab-sc="A" role="radio">A 多票種任選 × 2 ＋ T 恤</button>
+      <button type="button" class="segmented__btn" data-lab-sc="B" role="radio">B 單票種 × 4 純套票</button>
+      <button type="button" class="segmented__btn" data-lab-sc="C" role="radio">C 純商品（電子商店）</button>
+    </div>
+    <span class="lab-bar__spacer"></span>
+    <label class="zcheck">
+      <span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-lab-sold><span class="zcheck__box"></span></span>
+      <span class="zcheck__label">已售出 3 組</span>
+    </label>
+    <button class="btn btn--outline btn--sm" type="button" data-lab-theme>淺色／深色</button>
+  </div>
+
+  <h1 class="wizard__step-title">新增組合包</h1>
+  <p class="wizard__step-sub" id="lab-context"></p>
+
+  <div class="wizard-split">
+    <div class="wizard-split__main" id="lab-main"></div>
+    <aside class="wizard-split__rail">
+      <div class="card">
+        <h3 class="lab-fan__title">粉絲看到的</h3>
+        <div id="lab-fan" class="lab-fan"></div>
+      </div>
+    </aside>
+  </div>
+
+</div>
+
+<div class="lab-foot">
+  <div class="lab-foot__inner" id="lab-foot"></div>
+</div>
+
+<div class="lab-notes">
+  <h2>為什麼這樣排</h2>
+
+  <h3>一、建構區在左、粉絲端在右：邊做邊看粉絲會怎麼買</h3>
+  <p>D296 之後的心智模型是「創作者決定粉絲能從哪幾種票裡挑、每組幾張；粉絲購買時自己挑」。這件事在後台只是一排勾選框，粉絲端卻會長出一個選擇器——同一個決定在兩邊長得完全不一樣。現行第 6 步的右欄報的是「這場的票被哪幾組用到」，那是影響範圍，不是粉絲會看到的東西。這裡把右欄換成粉絲會看到的那張組合包卡：勾第二種票種，卡上就長出票種選擇器；加進多規格的 T 恤，卡上就長出尺寸與顏色；改折扣，卡上的售價跟著跳成「從 $Y 起」。創作者不必在腦中翻譯「勾多種＝粉絲任選」這條規則，看右邊就知道。右欄的選擇器可以點——點過之後價格會從「從 $Y 起」收斂成一個數字，剩餘不足的票種會灰掉，跟前台一樣。</p>
+
+  <h3>二、三段分卡取代精靈：內容 → 定價與數量 → 命名與上架</h3>
+  <p>現行第 6 步把票種、商品、定價、上限、命名拆成好幾張分卡，且卡頭要先填名稱。這裡收成三段、可任意捲動：先定「粉絲拿到什麼」（票券表、每組張數、商品、額外權益），再定「賣多少、有幾組」（原價算式、組合折扣、鎖定套數、限量上限），最後才是「叫什麼、什麼時候上」。名稱由內容自動擬一個建議（「VIP／Floor 任選 × 2 ＋ 巡演 T 恤」），必填欄從空白格變成確認一下就好。</p>
+
+  <h3>三、票券表只回答「允許哪幾種、剩幾張」，張數是整組一個數字</h3>
+  <p>D296 把「每種票各自張數（同時內含）」退場之後，票券表不再需要逐列的張數欄與小計欄：表格收成勾選｜票種｜票價｜剩餘四欄，張數是表格底下一個「每組張數」，表尾一句「允許 2 種 · 每組 2 張 · 原價從 $6,600 起」。表格正下方一句語意句把規則講白：「粉絲從 VIP、Floor、Seated 任選一種，拿到 2 張」；只勾一種就變成「鎖定 Floor，每組 4 張」。「剩餘」留在表裡是因為它決定粉絲端哪個票種會灰掉（剩餘 &lt; n 的票種不可選），勾的當下就要看得到。</p>
+
+  <h3>定價：算式逐項列，區間標「從…起」</h3>
+  <p>原價合計不是一個數字就完事——多票種任選時票券成員是「從 $最低票價 × n 起」，多規格商品是「從 $X 起」，合計因此可能是區間。這裡把每一項怎麼算列成一行一項，合計列標「從 $8,480 起」；組合折扣填的是 %（不是售價），因為區間乘 % 還是區間；售價跟著顯示「從 $7,462 起」。鎖定套數的提示會寫「最多 N 套（受某成員限制）」，可售套數則寫出是誰壓出這個數字——票券成員的算法是各允許票種 floor(剩餘 ÷ n) 加總（粉絲任選一種，任一種夠就能賣），與商品庫存取最小。</p>
+
+  <h3>上架：從活動建的只有一句話</h3>
+  <p>D293／D294：從活動建的組合包跟著活動上架、開賣，三開關只能在活動允許範圍內收窄。所以在建立當下不問三開關，只寫「跟著活動 REALIVE 台北」加一顆與活動一致的狀態徽章；要單獨停售或隱藏，建立後到組合包細節頁做。情境 C（電子商店脈絡）沒有活動，才出現三列開關。</p>
+
+  <h2>與現行第 6 步的三個最大差異</h2>
+  <ul>
+    <li><strong>右欄從「影響範圍」換成「粉絲看到的」</strong>——即時預覽卡可點，票種選擇器、規格選擇器、灰掉的票種、「從 $Y 起」到單一價的收斂全部看得到。</li>
+    <li><strong>票券表四欄＋整組一個張數＋一句語意句</strong>——逐列張數與小計退場（D296），「多勾＝任選、單勾＝鎖定」這條規則由語意句與右欄同時講。</li>
+    <li><strong>三段分卡、命名放最後、上架只剩一句</strong>——名稱由內容自動建議；從活動建的不問三開關（D293／D294）。</li>
+  </ul>
+
+  <h2>偏離提案的地方</h2>
+  <ul>
+    <li>右欄的預覽卡做成<strong>可以點</strong>（票種、場次、尺寸、顏色），不只是示意——不點就看不到「從 $Y 起」怎麼收斂成一個數字，也看不到「剩餘不足的票種灰掉」對粉絲的意思。點選只影響右欄的價格與按鈕，不寫回左欄。</li>
+    <li>情境 B 做成<strong>兩場次</strong>（Day 1 ／ Day 2），否則「一組通用所有場次／每場各一組」的二選一沒有機會出現；Day 2 的 VIP 故意只剩 3 張，勾了 VIP 就能看到粉絲端的灰化。</li>
+    <li>頂部多了一顆「已售出 3 組」——D292 裁決七「已售出後成員內容鎖定」是這個表單最重要的第二態，不做出來會漏掉「哪些欄位還能改」這個問題。</li>
+    <li>鎖定套數用了既有 <code>lock-sets</code> 的「鎖定套數列」，但逐票種／逐規格分配表沒做（D266 既有、與本次無關）。</li>
+  </ul>
+
+  <h2>已知未做</h2>
+  <ul>
+    <li>封面上傳只做外觀；素材規則（主圖必填門檻）依 5.1.5.4 F8 待確認，這裡不擅自定。</li>
+    <li>情境 C 的上架三開關只畫成三列開關示意，沒做定時上架的展開欄；電影關聯、排程特價（F7／F10）不在本頁範圍。</li>
+    <li>「每場各一組」模式下逐場能否有不同的允許票種清單（D296 待確認第 1 項）——本頁採規格現寫的「沿用同一份」。</li>
+    <li>lab 頁對 <code>bd-tbl</code> 欄軌有兩處暫時覆寫（多場次剩餘欄、商品成員表），定案後回 <code>bundle-editor.css</code> 開變體，不留在頁面。</li>
+  </ul>
+</div>
+
+<script src="../js/icons.js?v=r2.3"></script>
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   LAB 控制器。純前端示意，不接 events-store，不做 i18n。
+   資料形狀對齊規格：票券成員＝允許票種清單 × 固定張數 n（D296）；
+   商品成員＝商品本身（單一規格／多規格由粉絲選，D295）。
+   ════════════════════════════════════════════════════════════════════════ */
+(function () {
+  "use strict";
+  var esc = function (s) { return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); };
+  var money = function (n) { return "$" + Math.round(Number(n || 0)).toLocaleString("en-US"); };
+  var fmt = function (n) { return Number(n || 0).toLocaleString("en-US"); };
+  var num = function (v) { if (v === "" || v == null) return NaN; var n = Number(v); return Number.isFinite(n) ? n : NaN; };
+  var icons = function () { if (window.ztorIcons) window.ztorIcons.applyIcons(); };
+
+  /* ── 示範資料 ────────────────────────────────────────────────────────── */
+  var EVENT_1 = { id: "ev1", name: "REALIVE 台北", status: "售票中", date: "2026-11-14",
+    sessions: [{ id: "s1", name: "Day 1" }],
+    tiers: [
+      { id: "vip",    name: "VIP",    price: 4200, left: { s1: 100 } },
+      { id: "floor",  name: "Floor",  price: 3300, left: { s1: 200 } },
+      { id: "seated", name: "Seated", price: 2400, left: { s1: 300 } }
+    ] };
+  var EVENT_2 = { id: "ev2", name: "REALIVE 台北", status: "售票中", date: "2026-11-14 ～ 15",
+    sessions: [{ id: "s1", name: "Day 1" }, { id: "s2", name: "Day 2" }],
+    tiers: [
+      { id: "vip",    name: "VIP",    price: 4200, left: { s1: 100, s2: 3 } },
+      { id: "floor",  name: "Floor",  price: 3300, left: { s1: 200, s2: 150 } },
+      { id: "seated", name: "Seated", price: 2400, left: { s1: 300, s2: 300 } }
+    ] };
+  /* 電子商店脈絡挑活動時的候選：草稿活動不列（D294 補述），已結束照列、標狀態、不可選。 */
+  var EVENT_CANDS = [
+    { ev: EVENT_1, ok: true },
+    { ev: { id: "ev3", name: "春季巡演 高雄", status: "已結束", date: "2026-04-18" }, ok: false }
+  ];
+  var PRODUCTS = [
+    { id: "tee",   name: "巡演 T 恤", price: 1880, stock: 120, icon: "shirt", variant: true,
+      options: [{ name: "尺寸", values: ["S", "M", "L"] }, { name: "顏色", values: ["白", "黑"] }],
+      /* L 貴 $100：多規格的價格區間才有意義（否則「從 $X 起」等於 $X） */
+      priceOf: function (sel) { return 1880 + (sel && sel["尺寸"] === "L" ? 100 : 0); }, priceMin: 1880, priceMax: 1980 },
+    { id: "vinyl", name: "黑膠唱片", price: 1200, stock: 80,  icon: "disc",    variant: false },
+    { id: "poster", name: "簽名海報", price: 480, stock: 300, icon: "image",   variant: false }
+  ];
+  var productById = function (id) { return PRODUCTS.filter(function (p) { return p.id === id; })[0]; };
+
+  /* ── 狀態 ───────────────────────────────────────────────────────────── */
+  var S = null;
+  function scenario(key) {
+    var base = { scenario: key, event: null, allowed: {}, n: 1, scope: "shared", items: [], perks: "",
+                 discOn: true, disc: "", lockN: "", limited: false, cap: "", name: "", desc: "",
+                 sold: false, q: "", pickingEvent: false,
+                 fan: { session: "s1", tier: null, variants: {} } };
+    if (key === "A") {
+      base.event = EVENT_1; base.allowed = { vip: true, floor: true, seated: true }; base.n = 2;
+      base.items = ["tee"]; base.disc = 12;
+    } else if (key === "B") {
+      base.event = EVENT_2; base.allowed = { floor: true }; base.n = 4; base.items = []; base.disc = 10;
+    } else {
+      base.event = null; base.items = ["vinyl", "tee"]; base.disc = 15;
+    }
+    return base;
+  }
+
+  /* ── 推導 ───────────────────────────────────────────────────────────── */
+  var tiers = function () { return S.event ? S.event.tiers : []; };
+  var sessions = function () { return S.event ? S.event.sessions : []; };
+  var allowedTiers = function () { return tiers().filter(function (t) { return S.allowed[t.id]; }); };
+  var multiSess = function () { return sessions().length > 1; };
+  var qty = function () { var n = num(S.n); return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1; };
+  var items = function () { return S.items.map(productById).filter(Boolean); };
+  var hasTicketMember = function () { return !!S.event && allowedTiers().length > 0; };
+  var memberCount = function () { return (hasTicketMember() ? 1 : 0) + items().length; };
+
+  /* 票券成員原價：一種＝票價 × n；多種＝從 $最低票價 × n 起（D296 決定三） */
+  function ticketBase() {
+    var A = allowedTiers(); if (!A.length) return null;
+    var prices = A.map(function (t) { return t.price; });
+    var min = Math.min.apply(null, prices), max = Math.max.apply(null, prices);
+    return { min: min * qty(), max: max * qty(), range: A.length > 1 && min !== max };
+  }
+  function productBase(p) {
+    return p.variant ? { min: p.priceMin, max: p.priceMax, range: p.priceMin !== p.priceMax } : { min: p.price, max: p.price, range: false };
+  }
+  function base() {
+    var min = 0, range = false, tb = ticketBase();
+    if (tb) { min += tb.min; range = range || tb.range; }
+    items().forEach(function (p) { var b = productBase(p); min += b.min; range = range || b.range; });
+    return { min: min, range: range };
+  }
+  var discPct = function () { if (!S.discOn) return 0; var d = num(S.disc); return Number.isFinite(d) ? Math.min(100, Math.max(0, d)) : 0; };
+  var sell = function (v) { return Math.round(v * (100 - discPct()) / 100); };
+  var fromText = function (v, range) { return range ? "從 " + money(v) + " 起" : money(v); };
+
+  /* 票券成員可售套數：各允許票種 floor(剩餘 ÷ n) 加總（D296 決定四）。
+     多場次：一組通用所有場次＝各場加總；每場各一組＝上限套在每一組，看最緊的那一場。 */
+  function ticketCap() {
+    var A = allowedTiers(); if (!A.length) return null;
+    var n = qty();
+    var per = sessions().map(function (s) {
+      return A.reduce(function (m, t) { return m + Math.floor((t.left[s.id] || 0) / n); }, 0);
+    });
+    if (per.length === 1) return per[0];
+    return S.scope === "per" ? Math.min.apply(null, per) : per.reduce(function (a, b) { return a + b; }, 0);
+  }
+  /* 自動可售套數＝票券成員與各商品成員取最小；回傳是誰壓的 */
+  function autoCap() {
+    var caps = [];
+    var tc = ticketCap(); if (tc !== null) caps.push({ n: tc, who: "票券" });
+    items().forEach(function (p) { caps.push({ n: p.stock, who: p.name }); });
+    if (!caps.length) return null;
+    return caps.reduce(function (m, c) { return c.n < m.n ? c : m; });
+  }
+  var lockN = function () { var n = num(S.lockN); return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0; };
+  var lockOver = function () { var a = autoCap(); return !!(lockN() && a && lockN() > a.n); };
+  var capN = function () { var c = num(S.cap); return S.limited && Number.isFinite(c) && c > 0 ? Math.floor(c) : 0; };
+  var capOver = function () { var s = setsBeforeCap(); return !!(capN() && s !== null && capN() > s); };
+  function setsBeforeCap() { var a = autoCap(); if (lockN() && !lockOver()) return lockN(); return a ? a.n : null; }
+  function sellableSets() {
+    var s = setsBeforeCap();
+    if (s === null) return null;
+    return capN() ? Math.min(s, capN()) : s;
+  }
+
+  /* 建議名稱＝票種（任選 × n）＋商品；沒內容不亂猜 */
+  function suggestName() {
+    var A = allowedTiers(), bits = [];
+    if (A.length === 1) bits.push(A[0].name + " × " + qty());
+    else if (A.length > 1) bits.push(A.map(function (t) { return t.name; }).join("／") + " 任選 × " + qty());
+    var its = items().map(function (p) { return p.name; });
+    if (its.length) bits.push(its.join("、"));
+    return bits.join(" ＋ ");
+  }
+  /* 語意句：這一組粉絲會怎麼買 */
+  function semantic() {
+    var A = allowedTiers(), n = qty();
+    if (!S.event) return "";
+    if (!A.length) return "還沒勾選票種——至少勾 1 種，粉絲才有票可買。";
+    if (A.length === 1) return "鎖定 " + A[0].name + "，每組 " + n + " 張，粉絲不用挑。";
+    return "粉絲從 " + A.map(function (t) { return t.name; }).join("、") + " 任選一種，拿到 " + n + " 張。";
+  }
+  function invalidReason() {
+    if (memberCount() < 1) return S.event ? "至少勾選 1 種票種" : "至少加入 1 個成員";
+    if (S.event && !allowedTiers().length) return "至少勾選 1 種票種";
+    if (lockOver()) return "鎖定套數超過可售上限";
+    if (capOver()) return "限量上限超過成員能供應的套數";
+    return "";
+  }
+
+  /* ── 左欄：內容 ─────────────────────────────────────────────────────── */
+  function zcheck(attr, on, dis) {
+    return '<span class="zcheck__control">' +
+      '<input class="zcheck__input" type="checkbox" ' + attr + (on ? ' checked' : '') + (dis ? ' disabled' : '') + '>' +
+      '<span class="zcheck__box"></span></span>';
+  }
+  function stepper(attr, val, unit, min, extra) {
+    return '<div class="amount-field amount-field--suffix amount-field--readonly zstep ' + (extra || '') + '">' +
+      '<span class="amount-field__unit"><span class="amount-field__sym">' + esc(unit) + '</span></span>' +
+      '<input class="amount-field__input input zstep__input" type="number" min="' + min + '" step="1" value="' + esc(val) + '" ' + attr + '>' +
+      '<span class="zstep__btns">' +
+        '<button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="增加"><i data-lucide="chevron-up" class="ztor-icon"></i></button>' +
+        '<button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="減少"><i data-lucide="chevron-down" class="ztor-icon"></i></button>' +
+      '</span></div>';
+  }
+  function scopeHTML() {
+    if (!multiSess()) return "";
+    var per = S.scope === "per";
+    function card(val, on, title, sub) {
+      return '<button type="button" class="segmented__btn' + (on ? ' segmented__btn--active' : '') + '" role="radio" aria-checked="' + on + '" data-scope="' + val + '"' + (S.sold ? ' disabled' : '') + '>' +
+        '<span class="radio-card__text"><span class="radio-card__title">' + esc(title) + '</span><span class="radio-card__sub">' + esc(sub) + '</span></span></button>';
+    }
+    var names = sessions().map(function (s) { return S.event.name + " · " + s.name; }).join("、");
+    return '<div class="field"><label class="field__label">場次</label>' +
+      '<div class="segmented radio-cards' + (S.sold ? ' segmented--locked' : '') + '" role="radiogroup" aria-label="場次">' +
+        card("shared", !per, "一組通用所有場次", "粉絲買的時候再挑哪一場") +
+        card("per", per, "每場各一組", "會建立 " + sessions().length + " 組，各綁自己的場次") +
+      '</div>' +
+      (per ? '<div class="field__hint">會建立：' + esc(names) + '。允許票種與每組張數沿用同一份。</div>' : '') +
+    '</div>';
+  }
+  function tixTableHTML() {
+    var ss = sessions(), n = qty(), locked = S.sold;
+    var head = '<div class="bd-tbl__head"><span></span><span class="bd-tbl__col">票種</span><span class="bd-tbl__col bd-tbl__col--num">票價</span>' +
+      (ss.length > 1
+        ? ss.map(function (s) { return '<span class="bd-tbl__col bd-tbl__col--num">剩餘 ' + esc(s.name) + '</span>'; }).join('')
+        : '<span class="bd-tbl__col bd-tbl__col--num">剩餘</span>') +
+      '</div>';
+    var rows = tiers().map(function (t) {
+      var on = !!S.allowed[t.id];
+      return '<label class="bd-tbl__row bd-tbl__row--pick' + (on ? '' : ' bd-tbl__row--off') + '">' +
+        zcheck('data-tier="' + esc(t.id) + '" aria-label="' + esc(t.name) + '"', on, locked) +
+        '<span class="bd-tbl__name">' + esc(t.name) + '</span>' +
+        '<span class="bd-tbl__num">' + money(t.price) + '</span>' +
+        ss.map(function (s) {
+          var left = t.left[s.id] || 0;
+          return '<span class="bd-tbl__num">' + fmt(left) + (on && left < n ? '<span class="lab-tix__sub">不足 ' + n + ' 張</span>' : '') + '</span>';
+        }).join('') +
+      '</label>';
+    }).join('');
+    var A = allowedTiers(), tb = ticketBase();
+    var foot = A.length
+      ? '允許 ' + A.length + ' 種 · 每組 ' + n + ' 張 · 原價' + (tb.range ? '從 ' + money(tb.min) + ' 起' : ' ' + money(tb.min))
+      : '還沒勾選票種';
+    return '<div class="bd-tbl bd-tbl--tix lab-tix' + (ss.length > 1 ? ' lab-tix--2s' : '') + (locked ? ' lab-tix--locked' : '') + '">' +
+      head + rows + '<div class="bd-tbl__foot" data-tix-foot>' + esc(foot) + '</div></div>';
+  }
+  function ticketBlockHTML() {
+    if (!S.event) {
+      if (S.pickingEvent) {
+        return '<div class="lab-sub"><span class="lab-sub__title">票券</span><span class="lab-sub__hint">挑一場活動，再勾粉絲可以買的票種</span>' +
+          '<button class="btn btn--ghost btn--sm lab-sub__act" type="button" data-pick-cancel>取消</button></div>' +
+          '<div class="bd-tbl lab-events">' +
+            '<div class="bd-tbl__head"><span class="bd-tbl__col">活動</span><span class="bd-tbl__col">日期</span><span class="bd-tbl__col">狀態</span><span></span></div>' +
+            EVENT_CANDS.map(function (c) {
+              return '<div class="bd-tbl__row' + (c.ok ? '' : ' bd-tbl__row--off') + '">' +
+                '<span class="bd-tbl__name">' + esc(c.ev.name) + '</span>' +
+                '<span class="bd-tbl__sub">' + esc(c.ev.date) + '</span>' +
+                '<span><span class="ztor-badge ' + (c.ok ? 'ztor-badge--success' : '') + '">' + esc(c.ev.status) + '</span></span>' +
+                '<span class="lab-cand__act">' + (c.ok
+                  ? '<button class="btn btn--outline btn--sm" type="button" data-pick-event="' + esc(c.ev.id) + '">選擇</button>'
+                  : '<span class="field__hint">不可選</span>') + '</span>' +
+              '</div>';
+            }).join('') +
+          '</div>' +
+          '<div class="field__hint">草稿活動不會出現在這裡；已結束、已取消的照列但不能選。</div>';
+      }
+      return '<div class="lab-sub"><span class="lab-sub__title">票券</span><span class="lab-sub__hint">選填</span></div>' +
+        '<div class="empty-card empty-card--framed">' +
+          '<span class="empty-card__icon"><i data-lucide="ticket" class="ztor-icon"></i></span>' +
+          '<div class="empty-card__title">沒有票券</div>' +
+          '<div class="empty-card__text">要把活動票券放進來，先挑一場活動、勾粉絲可以買的票種。含票券的組合包整筆走活動票務費率。</div>' +
+          '<button class="btn btn--outline empty-card__cta" type="button" data-pick-start>加入活動票券</button>' +
+        '</div>';
+    }
+    var lockNote = S.sold
+      ? '<div class="field__hint"><i data-lucide="lock" class="ztor-icon ztor-icon--xs"></i> 已售出 3 組，允許票種與張數鎖定；還能改的是折扣、鎖定套數與上限。</div>'
+      : '';
+    var fromShop = S.scenario === "C"
+      ? '<div class="lab-sub"><span class="lab-sub__title">票券</span><span class="lab-sub__hint">' + esc(S.event.name) + '</span>' +
+        (S.sold ? '' : '<button class="btn btn--ghost btn--sm lab-sub__act" type="button" data-pick-remove>移除票券</button>') + '</div>'
+      : '<div class="lab-sub"><span class="lab-sub__title">票券</span><span class="lab-sub__hint">預設本場全部票種都允許；取消勾選就是不讓粉絲挑那一種</span></div>';
+    return fromShop + scopeHTML() + lockNote +
+      '<div class="field"><label class="field__label">允許票種</label>' + tixTableHTML() +
+        '<div class="field__hint">只勾一種＝鎖定那一種；勾多種＝粉絲買的時候任選其一。剩餘不足一組的票種，粉絲端不能選。</div></div>' +
+      '<div class="field"><label class="field__label">每組張數</label>' +
+        stepper('data-f="n"' + (S.sold ? ' disabled' : ''), qty(), '張', 1, 'bd-tix-qty') +
+        '<div class="field__hint">粉絲選定票種後拿到這麼多張，一組內都是同一票種；賣掉一組就從那個票種扣這麼多張。</div></div>' +
+      '<div class="insight-row lab-sem" data-sem><i data-lucide="info" class="ztor-icon insight-row__icon"></i><p class="insight-row__text">' + esc(semantic()) + '</p></div>';
+  }
+  function productSpecText(p) {
+    return p.variant ? '多規格 · ' + p.options.map(function (o) { return o.name; }).join('、') + '，粉絲購買時選' : '單一規格';
+  }
+  function productsBlockHTML() {
+    var its = items();
+    var q = (S.q || "").trim();
+    var cands = PRODUCTS.filter(function (p) { return S.items.indexOf(p.id) < 0 && (!q || p.name.indexOf(q) >= 0); });
+    var search = S.sold ? '' :
+      '<div class="lab-search"><i data-lucide="search" class="ztor-icon lab-search__icon"></i>' +
+        '<input class="input" type="search" placeholder="搜尋商店商品" value="' + esc(S.q) + '" data-f="q"></div>' +
+      (cands.length && (q || S.qFocus)
+        ? '<div class="bd-tbl lab-cand" data-cand>' +
+            cands.map(function (p) {
+              return '<div class="bd-tbl__row">' +
+                '<span><span class="bd-tbl__name">' + esc(p.name) + '</span><span class="bd-tbl__sub">' + esc(productSpecText(p)) + '</span></span>' +
+                '<span class="bd-tbl__num">' + (p.variant ? '從 ' + money(p.priceMin) + ' 起' : money(p.price)) + '</span>' +
+                '<span class="bd-tbl__num">' + fmt(p.stock) + '</span>' +
+                '<span class="lab-cand__act"><button class="btn btn--outline btn--sm" type="button" data-add="' + esc(p.id) + '">加入</button></span>' +
+              '</div>';
+            }).join('') +
+          '</div>'
+        : (q && !cands.length ? '<div class="field__hint">找不到「' + esc(q) + '」</div>' : ''));
+    var table = its.length
+      ? '<div class="bd-tbl lab-items">' +
+          '<div class="bd-tbl__head"><span class="bd-tbl__col">已加入</span><span class="bd-tbl__col bd-tbl__col--num">原價</span><span class="bd-tbl__col bd-tbl__col--num">庫存</span><span></span></div>' +
+          its.map(function (p) {
+            var b = productBase(p);
+            return '<div class="bd-tbl__row">' +
+              '<span><span class="bd-tbl__name">' + esc(p.name) + '</span><span class="bd-tbl__sub">' + esc(productSpecText(p)) + '</span></span>' +
+              '<span class="bd-tbl__num">' + fromText(b.min, b.range) + '</span>' +
+              '<span class="bd-tbl__num">' + fmt(p.stock) + '</span>' +
+              '<span class="lab-items__rm">' + (S.sold ? '' : '<button class="btn btn--ghost btn--icon btn--xs" type="button" data-remove="' + esc(p.id) + '" aria-label="移除"><i data-lucide="x" class="ztor-icon"></i></button>') + '</span>' +
+            '</div>';
+          }).join('') +
+        '</div>'
+      : (S.event ? '' : '<div class="field__hint">至少加入 1 個成員。</div>');
+    return '<div class="lab-sub"><span class="lab-sub__title">商品</span><span class="lab-sub__hint">' + (S.event ? '選填；每組各 1 件' : '每組各 1 件') + '</span></div>' +
+      search + table;
+  }
+  function secContentHTML() {
+    return '<section class="form-section form-section--outlined"><div class="lab-sec">' +
+      '<div class="form-section__head"><h3 class="form-section__title">內容</h3><p class="form-section__sub">粉絲買一組會拿到什麼。</p></div>' +
+      ticketBlockHTML() +
+      productsBlockHTML() +
+      '<div class="field"><label class="field__label">額外權益</label>' +
+        '<textarea class="textarea" rows="2" placeholder="一行一項，例如：簽名會優先入場" data-f="perks">' + esc(S.perks) + '</textarea>' +
+        '<div class="field__hint">選填。票券與商品之外額外承諾的東西，會印在粉絲看到的內含清單裡。</div></div>' +
+    '</div></section>';
+  }
+
+  /* ── 左欄：定價與數量 ───────────────────────────────────────────────── */
+  function calcHTML() {
+    var rows = [], A = allowedTiers(), tb = ticketBase(), n = qty();
+    if (tb) {
+      var k = A.length === 1 ? A[0].name + ' × ' + n : A.map(function (t) { return t.name; }).join('／') + ' 任選 × ' + n;
+      var how = A.length === 1 ? money(A[0].price) + ' × ' + n : '最低票價 ' + money(tb.min / n) + ' × ' + n + '，粉絲選定後以該票種價計';
+      rows.push({ k: k, how: how, v: fromText(tb.min, tb.range) });
+    }
+    items().forEach(function (p) {
+      var b = productBase(p);
+      rows.push({ k: p.name, how: p.variant ? '多規格，粉絲選定後以該規格價計' : '單一規格', v: fromText(b.min, b.range) });
+    });
+    var b = base();
+    if (!rows.length) return '<div class="field__hint">加入成員後這裡會列出原價怎麼加出來。</div>';
+    return '<div class="lab-calc">' +
+      rows.map(function (r) {
+        return '<div class="kv"><span class="kv__k">' + esc(r.k) + '<span class="lab-calc__how">' + esc(r.how) + '</span></span><span class="kv__v">' + esc(r.v) + '</span></div>';
+      }).join('') +
+      '<div class="kv lab-calc__total"><span class="kv__k">原價合計</span><span class="kv__v" data-base>' + esc(fromText(b.min, b.range)) + '</span></div>' +
+    '</div>';
+  }
+  function secPriceHTML() {
+    var b = base(), on = S.discOn, d = discPct();
+    var a = autoCap();
+    var lockHint = a ? '空白＝不鎖定，與單賣共用剩餘。最多 ' + fmt(a.n) + ' 套（受' + esc(a.who) + '限制）' : '加入成員後才有可鎖定的對象';
+    var sets = sellableSets();
+    return '<section class="form-section form-section--outlined"><div class="lab-sec">' +
+      '<div class="form-section__head"><h3 class="form-section__title">定價與數量</h3><p class="form-section__sub">賣多少、最多賣幾組。</p></div>' +
+      '<div class="field"><label class="field__label">原價合計</label><div data-calc>' + calcHTML() + '</div></div>' +
+      '<div class="control-group">' +
+        '<div class="control-row"><div><div class="control-row__main">組合折扣</div>' +
+          '<div class="control-row__sub">比原價合計便宜幾 %。填的是折扣不是售價：原價是區間時，售價才會跟著是區間。</div></div>' +
+          '<div class="switch' + (on ? ' switch--on' : '') + '" role="switch" aria-checked="' + on + '" tabindex="0" data-disc-toggle></div></div>' +
+        '<div class="control-group__body"' + (on ? '' : ' hidden') + '>' +
+          '<div class="form-grid">' +
+            '<div class="field"><label class="field__label">折扣</label>' + stepper('data-f="disc" max="100"', S.disc, '%', 0, 'lab-disc') + '</div>' +
+            '<div class="field"><label class="field__label">售價</label><div class="field-readout lab-readout--big" data-sell>' + esc(fromText(sell(b.min), b.range)) + '</div>' +
+              '<div class="field__hint" data-save>' + esc(d ? '粉絲省 ' + money(b.min - sell(b.min)) + (b.range ? ' 起' : '') + '（' + d + '%）' : '折扣 0%，售價＝原價') + '</div></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      (on ? '' : '<div class="field__hint">沒有組合優惠，粉絲實付＝原價合計 <span data-sell-plain>' + esc(fromText(b.min, b.range)) + '</span>。</div>') +
+      '<div class="lockset__sets">' +
+        '<div class="lockset__sets-titles"><span class="lockset__sets-title">鎖定套數</span>' +
+          '<span class="lockset__sets-hint' + (lockOver() ? ' is-over' : '') + '" data-lock-hint>' + (lockOver() ? '超過可售上限 ' + fmt(a.n) + ' 套（受' + esc(a.who) + '限制）' : lockHint) + '</span></div>' +
+        '<div class="lockset__sets-ctl">' + stepper('data-f="lockN"' + (a ? '' : ' disabled'), S.lockN, '套', 0) + '</div>' +
+      '</div>' +
+      '<div class="field"><label class="field__label">可售套數</label>' +
+        '<div class="field-readout" data-sets>' + esc(setsText()) + '</div>' +
+        '<div class="field__hint">票券這一項＝各允許票種 floor(剩餘 ÷ 每組張數) 加總，再與商品庫存取最小；鎖定後＝鎖定套數。隨庫存自動變，不用填。</div></div>' +
+      '<div class="field"><label class="field__label">限量</label>' +
+        '<div class="segmented radio-cards" role="radiogroup" aria-label="限量">' +
+          '<button type="button" class="segmented__btn' + (S.limited ? '' : ' segmented__btn--active') + '" role="radio" aria-checked="' + !S.limited + '" data-limited="0"><span class="radio-card__text"><span class="radio-card__title">不限量</span><span class="radio-card__sub">可售套數隨成員庫存動</span></span></button>' +
+          '<button type="button" class="segmented__btn' + (S.limited ? ' segmented__btn--active' : '') + '" role="radio" aria-checked="' + S.limited + '" data-limited="1"><span class="radio-card__text"><span class="radio-card__title">限量</span><span class="radio-card__sub">另設一個更小的上限</span></span></button>' +
+        '</div>' +
+        (S.limited
+          ? '<div class="mt-8">' + stepper('data-f="cap"', S.cap, '組', 1, 'lab-disc') +
+            '<div class="field__hint' + (capOver() ? ' lab-hint--over' : '') + '" data-cap-hint>' + esc(capHint()) + '</div></div>'
+          : '') +
+      '</div>' +
+    '</div></section>';
+  }
+  function setsText() {
+    var a = autoCap(), s = sellableSets();
+    if (s === null) return '—';
+    if (lockN() && !lockOver()) return '最多 ' + fmt(s) + ' 組 · 鎖定 ' + fmt(lockN()) + ' 套' + (capN() && capN() < lockN() ? '，限量壓到 ' + fmt(capN()) : '');
+    return '最多 ' + fmt(s) + ' 組 · 受' + (capN() && capN() < a.n ? '限量上限' : a.who + (a.who === '票券' ? '剩餘' : '庫存')) + '限制';
+  }
+  function capHint() {
+    var s = setsBeforeCap();
+    if (s === null) return '賣完自動售罄，不另行通知。';
+    if (capOver()) return '超過成員能供應的 ' + fmt(s) + ' 組，只能填得比它小。';
+    return '成員最多供應 ' + fmt(s) + ' 組；填得比它小才有意義。賣完自動售罄。';
+  }
+
+  /* ── 左欄：命名與上架 ───────────────────────────────────────────────── */
+  function secNameHTML() {
+    var sug = suggestName();
+    var listing = S.event
+      ? '<div class="lab-list">' +
+          '<div class="kv kv--lead"><span class="kv__k">跟著活動</span><span class="kv__v">' + esc(S.event.name) + '<span class="ztor-badge ztor-badge--success">' + esc(S.event.status) + '</span></span></div>' +
+        '</div>' +
+        '<div class="field__hint">活動上架時一起上架、開賣時一起開賣，這裡不另外排時間。要單獨停售或隱藏，建立後到組合包細節頁。</div>'
+      : '<div class="lab-list">' +
+          '<div class="kv kv--lead"><span class="kv__k">上架</span><span class="kv__v">立刻<div class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></div></span></div>' +
+          '<div class="kv"><span class="kv__k">顯示於商店</span><span class="kv__v">開<div class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></div></span></div>' +
+          '<div class="kv"><span class="kv__k">開賣</span><span class="kv__v">立刻<div class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></div></span></div>' +
+        '</div>' +
+        '<div class="field__hint">三個各自獨立；定時上架與停售時間建立後在細節頁設。</div>';
+    return '<section class="form-section form-section--outlined"><div class="lab-sec">' +
+      '<div class="form-section__head"><h3 class="form-section__title">命名與上架</h3><p class="form-section__sub">粉絲看到的名字，以及什麼時候看得到。</p></div>' +
+      '<div class="field lab-name"><label class="field__label">名稱 <span class="field__req">*</span></label>' +
+        '<input class="input" type="text" placeholder="' + esc(sug || '例如：VIP 套票') + '" value="' + esc(S.name) + '" data-f="name">' +
+        (sug ? '<button class="bd-suggest" type="button" data-suggest>用建議：<span data-suggest-text>' + esc(sug) + '</span></button>' : '') +
+      '</div>' +
+      '<div class="field"><label class="field__label">說明</label>' +
+        '<textarea class="textarea" rows="3" placeholder="告訴粉絲他們會拿到什麼" data-f="desc">' + esc(S.desc) + '</textarea></div>' +
+      '<div class="field"><label class="field__label">封面</label>' +
+        '<div class="upload-tile-aside lab-cover"><div class="upload-tile">' +
+          '<span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>' +
+          '<span class="upload-tile__title">上傳</span></div>' +
+          '<div class="upload-tile-aside__side"><span class="upload-tile__sub">直式 750 × 1125，JPG／PNG</span>' +
+            '<span class="upload-tile__hint">粉絲看到的卡片就用這張。</span></div></div></div>' +
+      '<div class="field">' + (S.event ? '<label class="field__label">上架</label>' : '') + listing + '</div>' +
+    '</div></section>';
+  }
+
+  /* ── 右欄：粉絲看到的 ───────────────────────────────────────────────── */
+  function fanPrice() {
+    /* 粉絲選定票種與規格後，價格從「從 $Y 起」收斂成一個數字 */
+    var A = allowedTiers(), n = qty(), v = 0, resolved = true;
+    if (A.length) {
+      var t = A.length === 1 ? A[0] : A.filter(function (x) { return x.id === S.fan.tier; })[0];
+      if (t) v += t.price * n; else { v += Math.min.apply(null, A.map(function (x) { return x.price; })) * n; resolved = false; }
+    }
+    items().forEach(function (p) {
+      if (!p.variant) { v += p.price; return; }
+      var sel = S.fan.variants[p.id] || {};
+      var done = p.options.every(function (o) { return sel[o.name]; });
+      if (done) v += p.priceOf(sel); else { v += p.priceMin; resolved = false; }
+    });
+    var b = base();
+    return { base: v, sell: sell(v), range: b.range && !resolved };
+  }
+  function fanSessionLeft(t) { return t.left[S.fan.session] || 0; }
+  function fanHTML() {
+    var A = allowedTiers(), n = qty(), its = items();
+    var ss = sessions();
+    if (S.scope === "per" || !ss.some(function (s) { return s.id === S.fan.session; })) S.fan.session = ss.length ? ss[0].id : "s1";
+    var name = S.name || suggestName();
+    var rows = [];
+    if (S.event && A.length) {
+      var sessPick = (ss.length > 1 && S.scope === "shared")
+        ? '<div class="lab-fan__pick"><span class="lab-fan__picklabel">場次</span><div class="chip-group">' +
+            ss.map(function (s) { return '<button type="button" class="chip' + (S.fan.session === s.id ? ' chip--active' : '') + '" data-fan-sess="' + esc(s.id) + '">' + esc(s.name) + '</button>'; }).join('') +
+          '</div></div>'
+        : '';
+      var tierPick = A.length > 1
+        ? '<div class="lab-fan__pick"><span class="lab-fan__picklabel">票種（選一種）</span><div class="chip-group">' +
+            A.map(function (t) {
+              var left = fanSessionLeft(t), short = left < n;
+              return '<button type="button" class="chip' + (S.fan.tier === t.id ? ' chip--active' : '') + '"' + (short ? ' disabled title="剩 ' + left + ' 張，不足 ' + n + ' 張"' : '') + ' data-fan-tier="' + esc(t.id) + '">' + esc(t.name) + ' · ' + money(t.price) + '</button>';
+            }).join('') +
+          '</div>' + (A.some(function (t) { return fanSessionLeft(t) < n; }) ? '<span class="lab-fan__picklabel">劃掉的票種剩餘不足一組。</span>' : '') + '</div>'
+        : '';
+      var what = ss.length > 1 && S.scope === "per"
+        ? S.event.name + ' · ' + ss[0].name + ' · ' + (A.length === 1 ? A[0].name + ' × ' + n : n + ' 張')
+        : S.event.name + ' · ' + (A.length === 1 ? A[0].name + ' × ' + n : n + ' 張');
+      rows.push('<div class="lab-fan__row"><i data-lucide="ticket" class="ztor-icon"></i><div><div class="lab-fan__what">' + esc(what) + '</div>' + sessPick + tierPick + '</div></div>');
+    } else if (S.event) {
+      rows.push('<div class="lab-fan__row"><i data-lucide="ticket" class="ztor-icon"></i><div class="lab-fan__what is-empty">還沒勾選票種</div></div>');
+    }
+    its.forEach(function (p) {
+      var sel = S.fan.variants[p.id] || {};
+      var picks = p.variant
+        ? p.options.map(function (o) {
+            return '<div class="lab-fan__pick"><span class="lab-fan__picklabel">' + esc(o.name) + '</span><div class="chip-group">' +
+              o.values.map(function (v) { return '<button type="button" class="chip' + (sel[o.name] === v ? ' chip--active' : '') + '" data-fan-var="' + esc(p.id) + '" data-fan-opt="' + esc(o.name) + '" data-fan-val="' + esc(v) + '">' + esc(v) + '</button>'; }).join('') +
+            '</div></div>';
+          }).join('')
+        : '';
+      rows.push('<div class="lab-fan__row"><i data-lucide="' + esc(p.icon) + '" class="ztor-icon"></i><div><div class="lab-fan__what">' + esc(p.name) + ' × 1</div>' + picks + '</div></div>');
+    });
+    (S.perks || "").split(/\n/).map(function (l) { return l.trim(); }).filter(Boolean).forEach(function (l) {
+      rows.push('<div class="lab-fan__row"><i data-lucide="sparkles" class="ztor-icon"></i><div class="lab-fan__what">' + esc(l) + '</div></div>');
+    });
+    if (!rows.length) rows.push('<div class="lab-fan__what is-empty">還沒有內容</div>');
+
+    var fp = fanPrice(), d = discPct(), sets = sellableSets();
+    var needTier = A.length > 1 && !S.fan.tier;
+    var needVar = its.filter(function (p) { return p.variant && !p.options.every(function (o) { return (S.fan.variants[p.id] || {})[o.name]; }); });
+    var soldOut = sets !== null && sets <= 0;
+    var canBuy = memberCount() > 0 && !needTier && !needVar.length && !soldOut;
+    var why = '';
+    if (memberCount() < 1) why = '這一組還沒有內容';
+    else if (soldOut) why = '售罄';
+    else if (needTier || needVar.length) {
+      var bits = [];
+      if (needTier) bits.push('票種');
+      needVar.forEach(function (p) { p.options.forEach(function (o) { if (!(S.fan.variants[p.id] || {})[o.name]) bits.push(o.name); }); });
+      why = '先選' + bits.join('、');
+    }
+    return '<div class="preview-card">' +
+      '<div class="preview-card__media"><i data-lucide="image" class="ztor-icon"></i></div>' +
+      '<div class="preview-card__body">' +
+        '<div class="preview-card__row"><h4 class="preview-card__name' + (name ? '' : ' is-empty') + '">' + esc(name || '未命名組合包') + '</h4>' +
+          (S.event ? '<span class="ztor-badge ztor-badge--success">' + esc(S.event.status) + '</span>' : '') + '</div>' +
+        (S.desc ? '<p class="preview-card__desc">' + esc(S.desc) + '</p>' : '') +
+        '<div class="lab-fan__list">' + rows.join('') + '</div>' +
+        '<div class="lab-fan__price">' +
+          '<span class="lab-fan__now">' + esc(fromText(fp.sell, fp.range)) + '</span>' +
+          (d ? '<span class="lab-fan__was">' + esc(fromText(fp.base, fp.range)) + '</span><span class="ztor-badge ztor-badge--warning">省 ' + d + '%</span>' : '') +
+        '</div>' +
+        '<div class="lab-fan__meta">' + (sets === null ? '' : (soldOut ? '<span class="ztor-badge ztor-badge--error">售罄</span>' : '剩 ' + fmt(sets) + ' 組')) +
+          (multiSess() && S.scope === 'per' ? '<span>· 會建立 ' + ss.length + ' 組，這是第 1 組</span>' : '') + '</div>' +
+        '<button class="btn btn--primary lab-fan__cta" type="button"' + (canBuy ? '' : ' disabled') + '><i data-lucide="shopping-cart" class="ztor-icon"></i>加入購物車</button>' +
+        (why ? '<div class="lab-fan__why">' + esc(why) + '</div>' : '') +
+      '</div>' +
+    '</div>' +
+    '<p class="lab-fan__note">這張卡的選擇器可以點，看粉絲選定後價格怎麼落到一個數字。點選只影響這張卡，不會寫回左邊。</p>';
+  }
+
+  /* ── 底部固定列 ─────────────────────────────────────────────────────── */
+  function footHTML() {
+    var b = base(), sets = sellableSets(), why = invalidReason();
+    return '<div><div class="lab-foot__k">粉絲實付</div><div class="lab-foot__v">' + esc(memberCount() ? fromText(sell(b.min), b.range) : '—') + '</div></div>' +
+      '<div class="lab-foot__sub">' + (memberCount() ? '原價 ' + esc(fromText(b.min, b.range)) + (sets === null ? '' : ' · 最多 ' + fmt(sets) + ' 組') : '還沒有成員') + '</div>' +
+      '<div class="lab-foot__acts">' + (why ? '<span class="lab-foot__why">' + esc(why) + '</span>' : '') +
+        '<button class="btn btn--outline" type="button">取消</button>' +
+        '<button class="btn btn--primary" type="button"' + (why ? ' disabled' : '') + '>' + (S.sold ? '儲存變更' : '完成') + '</button></div>';
+  }
+
+  /* ── 繪製 ───────────────────────────────────────────────────────────── */
+  var $main = document.getElementById('lab-main'), $fan = document.getElementById('lab-fan'), $foot = document.getElementById('lab-foot'), $ctx = document.getElementById('lab-context');
+  function renderAll() {
+    $ctx.textContent = S.event && S.scenario !== 'C'
+      ? '從活動建立：' + S.event.name + '（' + S.event.status + '）。粉絲買一組拿到什麼，右邊那張卡就是他們會看到的。'
+      : '從電子商店建立。粉絲買一組拿到什麼，右邊那張卡就是他們會看到的。';
+    $main.innerHTML = secContentHTML() + secPriceHTML() + secNameHTML();
+    renderDerived();
+    icons();
+    document.querySelectorAll('[data-lab-sc]').forEach(function (b) {
+      var on = b.getAttribute('data-lab-sc') === S.scenario;
+      b.classList.toggle('segmented__btn--active', on); b.setAttribute('aria-checked', on);
+    });
+  }
+  /* 打字中的更新：只換推導值，不重繪輸入欄（重繪會丟焦點） */
+  function renderDerived() {
+    $fan.innerHTML = fanHTML();
+    $foot.innerHTML = footHTML();
+    var b = base(), d = discPct(), a = autoCap();
+    var set = function (sel, txt) { var el = $main.querySelector(sel); if (el) el.textContent = txt; };
+    var calc = $main.querySelector('[data-calc]'); if (calc) calc.innerHTML = calcHTML();
+    set('[data-sell]', fromText(sell(b.min), b.range));
+    set('[data-sell-plain]', fromText(b.min, b.range));
+    set('[data-save]', d ? '粉絲省 ' + money(b.min - sell(b.min)) + (b.range ? ' 起' : '') + '（' + d + '%）' : '折扣 0%，售價＝原價');
+    set('[data-sets]', setsText());
+    var sem = $main.querySelector('[data-sem] .insight-row__text'); if (sem) sem.textContent = semantic();
+    set('[data-suggest-text]', suggestName());
+    var nameEl = $main.querySelector('[data-f="name"]'); if (nameEl && !S.name) nameEl.placeholder = suggestName() || '例如：VIP 套票';
+    var lh = $main.querySelector('[data-lock-hint]');
+    if (lh) { lh.classList.toggle('is-over', lockOver());
+      lh.textContent = lockOver() ? '超過可售上限 ' + fmt(a.n) + ' 套（受' + a.who + '限制）' : (a ? '空白＝不鎖定，與單賣共用剩餘。最多 ' + fmt(a.n) + ' 套（受' + a.who + '限制）' : '加入成員後才有可鎖定的對象'); }
+    var ch = $main.querySelector('[data-cap-hint]'); if (ch) { ch.classList.toggle('lab-hint--over', capOver()); ch.textContent = capHint(); }
+    var tf = $main.querySelector('[data-tix-foot]');
+    if (tf) { var A = allowedTiers(), tb = ticketBase();
+      tf.textContent = A.length ? '允許 ' + A.length + ' 種 · 每組 ' + qty() + ' 張 · 原價' + (tb.range ? '從 ' + money(tb.min) + ' 起' : ' ' + money(tb.min)) : '還沒勾選票種'; }
+    icons();
+  }
+
+  /* ── 事件 ───────────────────────────────────────────────────────────── */
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-lab-sc],[data-lab-theme],[data-tier],[data-scope],[data-step],[data-disc-toggle],[data-limited],[data-add],[data-remove],[data-suggest],[data-pick-start],[data-pick-cancel],[data-pick-event],[data-pick-remove],[data-fan-sess],[data-fan-tier],[data-fan-var]');
+    if (!t) return;
+    if (t.hasAttribute('data-lab-sc')) { var sold = S.sold; S = scenario(t.getAttribute('data-lab-sc')); S.sold = sold; renderAll(); return; }
+    if (t.hasAttribute('data-lab-theme')) { var h = document.documentElement; h.setAttribute('data-theme', h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); return; }
+    if (t.hasAttribute('data-tier')) {
+      /* label 上的 click 會先進來一次（target=label），再由 input 觸發 change；這裡只處理 input */
+      if (t.tagName !== 'INPUT') return;
+      if (S.sold) { e.preventDefault(); return; }
+      S.allowed[t.getAttribute('data-tier')] = t.checked;
+      if (S.fan.tier && !S.allowed[S.fan.tier]) S.fan.tier = null;
+      renderAll(); return;
+    }
+    if (t.hasAttribute('data-scope')) { S.scope = t.getAttribute('data-scope'); renderAll(); return; }
+    if (t.hasAttribute('data-step')) {
+      var inp = t.closest('.zstep').querySelector('.zstep__input'); if (inp.disabled) return;
+      var v = num(inp.value); if (!Number.isFinite(v)) v = num(inp.min) || 0;
+      v += t.getAttribute('data-step') === 'up' ? 1 : -1;
+      var mn = num(inp.min), mx = num(inp.max);
+      if (Number.isFinite(mn)) v = Math.max(mn, v); if (Number.isFinite(mx)) v = Math.min(mx, v);
+      inp.value = v; inp.dispatchEvent(new Event('input', { bubbles: true })); return;
+    }
+    if (t.hasAttribute('data-disc-toggle')) { S.discOn = !S.discOn; renderAll(); return; }
+    if (t.hasAttribute('data-limited')) { S.limited = t.getAttribute('data-limited') === '1'; renderAll(); return; }
+    if (t.hasAttribute('data-add')) { S.items.push(t.getAttribute('data-add')); S.q = ''; S.qFocus = false; renderAll(); return; }
+    if (t.hasAttribute('data-remove')) { var id = t.getAttribute('data-remove'); S.items = S.items.filter(function (x) { return x !== id; }); delete S.fan.variants[id]; renderAll(); return; }
+    if (t.hasAttribute('data-suggest')) { S.name = suggestName(); renderAll(); return; }
+    if (t.hasAttribute('data-pick-start')) { S.pickingEvent = true; renderAll(); return; }
+    if (t.hasAttribute('data-pick-cancel')) { S.pickingEvent = false; renderAll(); return; }
+    if (t.hasAttribute('data-pick-event')) { S.event = EVENT_1; S.allowed = {}; S.n = 1; S.pickingEvent = false; S.fan.tier = null; renderAll(); return; }
+    if (t.hasAttribute('data-pick-remove')) { S.event = null; S.allowed = {}; S.fan.tier = null; renderAll(); return; }
+    if (t.hasAttribute('data-fan-sess')) { S.fan.session = t.getAttribute('data-fan-sess'); S.fan.tier = null; renderDerived(); return; }
+    if (t.hasAttribute('data-fan-tier')) { if (t.disabled) return; var id2 = t.getAttribute('data-fan-tier'); S.fan.tier = S.fan.tier === id2 ? null : id2; renderDerived(); return; }
+    if (t.hasAttribute('data-fan-var')) {
+      var pid = t.getAttribute('data-fan-var'), opt = t.getAttribute('data-fan-opt'), val = t.getAttribute('data-fan-val');
+      S.fan.variants[pid] = S.fan.variants[pid] || {};
+      S.fan.variants[pid][opt] = S.fan.variants[pid][opt] === val ? null : val;
+      renderDerived(); return;
+    }
+  });
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (t.hasAttribute('data-lab-sold')) { S.sold = t.checked; renderAll(); return; }
+    if (t.hasAttribute('data-tier')) {
+      if (S.sold) return;
+      S.allowed[t.getAttribute('data-tier')] = t.checked;
+      if (S.fan.tier && !S.allowed[S.fan.tier]) S.fan.tier = null;
+      renderAll();
+    }
+  });
+  document.addEventListener('input', function (e) {
+    var t = e.target, f = t.getAttribute && t.getAttribute('data-f'); if (!f) return;
+    if (f === 'q') { S.q = t.value; S.qFocus = true; var c = $main.querySelector('[data-cand]');
+      /* 候選清單要跟著輸入重繪，但不能重繪搜尋框本身 */
+      var wrap = t.closest('.lab-search'); var cand = wrap.nextElementSibling;
+      var tmp = document.createElement('div'); tmp.innerHTML = productsBlockHTML();
+      var fresh = tmp.querySelector('[data-cand]');
+      if (cand && cand.hasAttribute('data-cand')) cand.remove(); else if (cand && cand.classList.contains('field__hint') && cand.textContent.indexOf('找不到') === 0) cand.remove();
+      var hint = tmp.querySelector('.lab-search + .field__hint');
+      if (fresh) wrap.insertAdjacentElement('afterend', fresh); else if (hint) wrap.insertAdjacentElement('afterend', hint);
+      icons(); return; }
+    if (f === 'n') { S.n = t.value; if (!S.sold) { /* 張數變了，票種剩餘的「不足」標記要重算，這一格不是文字欄，重繪不丟焦點問題 */ } S.fan.tier = null; }
+    else if (f === 'disc') S.disc = t.value;
+    else if (f === 'lockN') S.lockN = t.value;
+    else if (f === 'cap') S.cap = t.value;
+    else S[f] = t.value;
+    if (f === 'n') {
+      /* 「不足 n 張」小字與 --off 淡化依 n 而變：只替換票券表的列，張數欄本身不動 */
+      var tbl = $main.querySelector('.lab-tix'); if (tbl) { var tmp2 = document.createElement('div'); tmp2.innerHTML = tixTableHTML(); tbl.replaceWith(tmp2.firstChild); }
+    }
+    renderDerived();
+  });
+  document.addEventListener('focusin', function (e) {
+    if (e.target.getAttribute && e.target.getAttribute('data-f') === 'q' && !S.qFocus) { S.qFocus = true; renderAll(); var q = $main.querySelector('[data-f="q"]'); if (q) q.focus(); }
+  });
+
+  S = scenario('A');
+  renderAll();
+})();
+</script>
+</body>
+</html>

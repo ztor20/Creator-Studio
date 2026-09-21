@@ -691,16 +691,21 @@
    （透明底、最輕墨色），`.zstep` 自己會把按鈕欄收起。
    表尾一行合計（`.bd-tbl__foot`）：「共 N 張 · 票券原價 $X」，右對齊在小計欄底下——
    它回答的是那一欄加起來多少，貼著那一欄才讀得出關係；上緣一條 `--border-soft`
-   與最後一列分隔，不畫底色（Q68：表格不畫底色帶）。 */
+   與最後一列分隔，不畫底色（Q68：表格不畫底色帶）。
+
+   2026-09-21（D296）票券成員改「允許票種清單 × 固定張數，粉絲任選一種」：每列的張數欄與
+   小計欄退場——張數是整組一個 n（表下方 `.bd-tix-qty` 一欄），小計沒有逐列張數就沒有意義。
+   欄軌收成四欄：勾選框｜票種｜單價｜剩餘（剩餘移進來是因為「剩餘 < n 的票種粉絲端不可選」
+   要在勾選當下看得到）。表尾改「允許 K 種 · 每組 n 張 · 原價從 $X 起」。
+   墓碑：`.bd-tbl__qty`／`.bd-tbl__step`（列內步進器容器；`.zstep` 家用步進器本身仍在用）。 */
 .bd-tbl--tix .bd-tbl__head,
-.bd-tbl--tix .bd-tbl__row { grid-template-columns: 16px minmax(0, 1fr) 80px 96px 88px; }
-.bd-tbl__qty { display: flex; justify-content: flex-end; }
-.bd-tbl__step { width: 96px; }
-.bd-tbl__step .amount-field__input.input {
-  height: var(--control-h-xs);
+.bd-tbl--tix .bd-tbl__row { grid-template-columns: 16px minmax(0, 1fr) 96px 96px; }
+/* 整組張數欄：`.zstep` 家用步進器＋「張」後綴（同 create-bundle 票券張數欄的組合），寬度收到
+   一個三位數＋後綴剛好的尺寸——它不是滿版文字欄，攤滿整列會讀成「這裡要填很多」。 */
+.bd-tix-qty { max-width: 160px; }
+.bd-tix-qty .amount-field__input.input {
   font-family: var(--font-numeric);
   font-variant-numeric: tabular-nums;
-  text-align: right;
 }
 .bd-tbl__foot {
   padding: var(--sp-8) var(--sp-12);
@@ -755,3 +760,99 @@
 @media (max-width: 1024px) {
   .bd-brand { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ══ 分段兩欄版型（`layout:'split'`，2026-09-21 第二輪）══════════════════════════
+   建立活動第 6 步改成 demo 定案的版面（`docs/bundle-create-demo-2026-09-21.html`，使用者
+   裁示「做上正式」）：彈窗改特寬（`.payout-dialog--xwide`）、body 用 payout-modal 自己的
+   `.payout-dialog__split`（主欄＋黏在上方的側欄）——左欄三段分卡「內容 → 定價與數量 →
+   命名與上架」、右欄粉絲看到的預覽卡（`bundle-preview-card.css`）、footer 粉絲實付。
+   demo 的 `lab-*` 樣式逐條判斷後落在這裡（版面與表格變體）與 bundle-preview-card.css
+   （預覽卡）；語意句用既有 insight-row、鎖定套數用既有 lock-sets、算式列用既有 kv-list。
+   淺色模式由彈窗殼自己鋪底，不覆寫 body（demo 那條 `html[data-theme="light"] body` 是 lab 權宜）。 */
+
+/* 側欄寬 340：預覽卡要放得下「票種 · $4,200」一排三顆 chip；`--payout-split-side` 是
+   payout-modal 開給消費者的變數，不覆寫元件本身。 */
+.bd-split { --payout-split-side: 340px; }
+/* 特寬彈窗的高度上限放到視窗高（payout-dialog 預設 760px）：右欄預覽卡連 CTA 約 640px，
+   760 減掉頭尾只剩 580，卡的按鈕永遠在摺線下、側欄又是自己內捲，看不出那裡還有東西。 */
+.bd-dialog--split { max-height: calc(100vh - var(--sp-48)); }
+.bd-split__main { display: flex; flex-direction: column; gap: var(--sp-12); min-width: 0; }
+.bd-split__main .bd-sec { margin-bottom: 0; }
+/* 側欄黏在 body 頂端（payout-dialog__split-side 自帶 sticky），上緣對齊第一張分卡。 */
+.bd-split__side { padding-top: 0; }
+
+/* 分卡內直排：段落之間由容器 gap 持有（Q103），`.field` 自己的下外距歸零。 */
+.bd-sec--stack { display: flex; flex-direction: column; gap: var(--sp-20); }
+.bd-sec--stack > .field { margin-bottom: 0; }
+.bd-sec--stack > .bd-sec__head { margin-bottom: 0; }
+
+/* 小標列：分卡裡再分「票券／商品」兩塊時的小標＋一句提示（比分卡標題小一階，Q54 的
+   「小標」這一級在這裡由 `.bd-sub` 承擔，與 lock-sets 的 `.lockset__sets-titles` 同一階）。 */
+.bd-sub { display: flex; align-items: baseline; gap: var(--sp-8); flex-wrap: wrap; }
+.bd-sub__title { font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); }
+.bd-sub__hint { font-size: var(--fs-12); color: var(--muted-foreground); }
+
+/* 已售出鎖定說明：鎖頭 icon ＋ 一句話，走 `.field__hint--fact`（事實說明，不是欄位附註）。 */
+.bd-lock-note { display: flex; align-items: center; gap: var(--sp-6); }
+.bd-lock-note .ztor-icon { width: 14px; height: 14px; flex: none; }
+
+/* 票券表「剩餘」欄底下的「不足 n 張」：剩餘 < 每組張數＝粉絲端選不到（D296 決定四）。 */
+.bd-tbl__short {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+/* 鎖定的表：整列不再是點擊區、hover 不變色（勾選框自己已 disabled）。 */
+.bd-tbl--locked .bd-tbl__row--pick { cursor: default; }
+.bd-tbl--locked .bd-tbl__row--pick:hover { background: transparent; }
+
+/* 已加入的商品成員表：名稱（＋規格小字）｜原價｜庫存｜移除。 */
+.bd-tbl--items .bd-tbl__head,
+.bd-tbl--items .bd-tbl__row { grid-template-columns: minmax(0, 1fr) 96px 72px 28px; }
+.bd-tbl--items .bd-tbl__row { padding-block: var(--sp-8); }
+.bd-tbl__cell { display: flex; flex-direction: column; min-width: 0; }
+.bd-tbl__cell .bd-tbl__sub { font-size: var(--fs-12); }
+.bd-tbl__act { justify-self: end; }
+/* 已加入表的「每組用量」變體（2026-09-21 第 2 批，電子商店建立組合）：電子商店的商品成員每套可用不只一件
+   （5.1.5.4 §4 F2 數量欄，D292 裁決二），表上多一欄放 `.zstep` 步進器；活動變體每組各 1 件、不用這一欄。
+   欄軌在四欄版的基礎上插入 112px（三位數＋「件」後綴剛好）；原價欄放寬到 120px（電子商店的兩位小數＋「從 … 起」
+   前後綴比活動票價長）、庫存欄收成 64px。 */
+.bd-tbl--items.bd-tbl--items-qty .bd-tbl__head,
+.bd-tbl--items.bd-tbl--items-qty .bd-tbl__row { grid-template-columns: minmax(0, 1fr) 120px 64px 112px 28px; }
+.bd-tbl__per { justify-self: end; }
+.bd-tbl__per .amount-field { width: 112px; }
+.bd-tbl__per .amount-field__input.input { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }
+/* 欄位群裡的表（適用場次、會建立的組合包）：標籤與表之間留一般欄位的節奏。 */
+.bd-field--table > .bd-tbl { margin-top: var(--sp-4); }
+
+/* 語意句貼在張數欄底下，不另留 insight-row 預設的上外距。 */
+.bd-sem { margin-top: 0; }
+
+/* 原價合計的算式：一行一項（kv 列）、每項底下一句怎麼算，合計列字色與字級上一階。 */
+.bd-calc-list { padding: var(--sp-4) var(--sp-14); border: 1px solid var(--layer-line); border-radius: var(--radius-lg); }
+.bd-calc-list .kv__v { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }
+.bd-calc-list__how { display: block; font-size: var(--fs-12); color: var(--muted-foreground); }
+.bd-calc-list__total .kv__k { color: var(--foreground); }
+.bd-calc-list__total .kv__v { font-size: var(--fs-16); }
+
+/* 折扣 %、鎖定套數、限量上限三格步進器：一個三位數＋後綴剛好的寬度（同 `.bd-tix-qty` 的理由）。 */
+.bd-disc { width: 132px; }
+.bd-disc .amount-field__input.input { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }
+/* 售價讀數放大：它是定價這一段的結果。選擇器疊上 `.field-readout`（2026-09-21 第 2 批修）：shared.css 末尾會再 @import 一次
+   field-system.css，單一 class 的 `.bd-readout--big` 在載入順序上輸給後載的 `.field-readout`（--fs-14），讀數一直是 14px。 */
+.field-readout.bd-readout--big { font-family: var(--font-numeric); font-size: var(--fs-24); font-variant-numeric: tabular-nums; }
+
+/* 封面是辨識用縮圖，縮成一格擺左邊（`.upload-tile-aside` 的側排版）。 */
+.bd-cover .upload-tile { width: 120px; flex: none; }
+
+/* 上架：只有一句「跟著活動 ＋ 徽章」。 */
+.bd-listing .kv__v { display: inline-flex; align-items: center; gap: var(--sp-8); }
+
+/* footer：粉絲實付底下多一句「原價 $X · 最多 N 組」；停用理由靠在取消鈕左邊。 */
+.bd-foot-price__sub { font-size: var(--fs-12); color: var(--muted-foreground); }
+.bd-foot-why { font-size: var(--fs-12); color: var(--muted-foreground); }
+.bd-foot-why[hidden] { display: none; }
+
+/* 窄視窗：payout-dialog__split 自己在 640px 以下收單欄，這裡不另寫。 */
