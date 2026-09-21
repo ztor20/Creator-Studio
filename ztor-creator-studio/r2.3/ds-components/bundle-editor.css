@@ -681,6 +681,37 @@
 .bd-tbl--per .bd-tbl__head,
 .bd-tbl--per .bd-tbl__row { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 96px; }
 
+/* ── 票券清單表（`.bd-tbl--tix`，2026-09-18，D292）──────────────────────────
+   票種卡從 `.radio-cards` 複選卡改成表格：勾選框｜票種｜單價｜張數｜小計。前身是
+   「粉絲擇一」語意下的挑法，一張卡只回答「納不納入」；改成票種 × 張數之後每列多了
+   一個要填的數字和一個要對照的小計，那是表格的事，和適用場次表同一套骨架、同一套
+   淡化規則（`--off`）。張數欄放 `.zstep` 家用步進器（站上唯一的步進器，鐵律 11 不另造
+   − ＋ 版）；表格密集列比一般欄位矮一階，吃刻度上的 `--control-h-xs`（同 Q25／Q113 的
+   `.variant-table .input`），不用 padding 湊。未勾選時 input 停用，停用態隨 Q58 全站規則
+   （透明底、最輕墨色），`.zstep` 自己會把按鈕欄收起。
+   表尾一行合計（`.bd-tbl__foot`）：「共 N 張 · 票券原價 $X」，右對齊在小計欄底下——
+   它回答的是那一欄加起來多少，貼著那一欄才讀得出關係；上緣一條 `--border-soft`
+   與最後一列分隔，不畫底色（Q68：表格不畫底色帶）。 */
+.bd-tbl--tix .bd-tbl__head,
+.bd-tbl--tix .bd-tbl__row { grid-template-columns: 16px minmax(0, 1fr) 80px 96px 88px; }
+.bd-tbl__qty { display: flex; justify-content: flex-end; }
+.bd-tbl__step { width: 96px; }
+.bd-tbl__step .amount-field__input.input {
+  height: var(--control-h-xs);
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.bd-tbl__foot {
+  padding: var(--sp-8) var(--sp-12);
+  border-top: 1px solid var(--border-soft);
+  font-family: var(--font-numeric);
+  font-size: var(--fs-13);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+  text-align: right;
+}
+
 /* 收合態：已選的票以 chip 呈現＋一顆「更改」 */
 .bd-chosen { display: flex; align-items: flex-start; gap: var(--sp-10); flex-wrap: wrap; }
 .bd-chosen .chip-group { flex: 1 1 auto; }

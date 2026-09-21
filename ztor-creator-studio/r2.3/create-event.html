@@ -49,6 +49,7 @@
 <link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stepper.css?v=r2.2">   <!-- 2026-09-18：票券清單表的張數步進器（.zstep） -->
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
@@ -1180,6 +1181,14 @@
           </div>
           <div class="review-row__value" data-rev="tickets" data-ph-key="ce.ph.0tiers"><span data-i18n="ce.ph.0tiers">0 tiers</span></div>
         </div>
+        <!-- 2026-09-18（5.1.6.1 §4.6 F20／D292）：步驟 6 建的組合包補一列摘要——幾組、內含票券共幾張；沒有就寫「無」。 -->
+        <div class="review-row__item">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ce.rev.bundles">Bundles</h3>
+            <a class="review-row__action" href="#" data-goto="6" data-i18n="ce.rev.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-rev="bundles" data-ph-key="ce.ph.nobundles"><span data-i18n="ce.ph.nobundles">None</span></div>
+        </div>
       </div>
 
       <section class="readiness" data-hide-type="watchparty">
@@ -1375,6 +1384,7 @@
 <script src="js/events-store.js?v=r2.2"></script>   <!-- 2026-08-13：「再辦一場」(?from=) 要讀來源活動 -->
 <!-- 套組銷售（步驟 5）掛共用套組編輯器；它從 products-store 取既有商品當候選 -->
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="partials/stepper.js?v=r2.2"></script>   <!-- 2026-09-18：.zstep 步進行為（票券清單表的張數） -->
 <script src="js/bundle-editor.js?v=r2.2"></script>
 <script>
 (function () {
@@ -1533,6 +1543,14 @@
     setRev("tickets",
       s.tiers > 0 ? T("ce.rev.tiersn", "{n} tiers").replace("{n}", s.tiers) : "",
       "ce.ph.0tiers", "0 tiers");
+    /* 組合包（2026-09-18）：只算已送出的組（`fresh` 的還在編輯、不是清單上的東西），
+       票券張數合計由編輯器算（ticketCount），不在這裡再掃一次票券清單。
+       bundleEd 宣告在後面（var，會被提升），初始化前這裡讀到 null → 顯示「無」。 */
+    const bl = (typeof bundleEd !== "undefined" && bundleEd) ? bundleEd.getBundles().filter(b => !b.fresh) : [];
+    const tixM = bl.reduce((sum, b) => sum + bundleEd.ticketCount(b), 0);
+    setRev("bundles",
+      bl.length ? T("ce.rev.bundlesn", "{n} bundles · {m} tickets inside").replace("{n}", bl.length).replace("{m}", tixM) : "",
+      "ce.ph.nobundles", "None");
 
     // A2 — Quality check 即時打勾
     const checks = {
@@ -3946,7 +3964,7 @@
   };
   /* 套組：掛共用模組（create-project／project-detail 同一支），不另做第二套組合規則。
      shares:false ＝ 沒有分潤名額那一套（活動套組賣的是票＋商品，不是名額）。 */
-  let bundleEd = null;    // mount 的回傳（getBundles 在實例上，不在 window.ZtorBundleEditor）
+  var bundleEd = null;    // mount 的回傳（getBundles 在實例上，不在 window.ZtorBundleEditor）；var 而非 let：syncReview 在它初始化前就會跑到
   if (window.ZtorBundleEditor && document.getElementById("ce-bd-list")) {
     bundleEd = window.ZtorBundleEditor.mount({
       list: "#ce-bd-list",
@@ -3979,7 +3997,7 @@
       pool: 0,
       perSlot: 0,
       collapsedByDefault: false,
-      onChange: () => { renderBundlePool(); syncBundleEmpty(); scheduleSave(); }
+      onChange: () => { renderBundlePool(); syncBundleEmpty(); syncReview(); scheduleSave(); }
     });
   }
 
@@ -4008,7 +4026,12 @@
     const bundles = bundleEd ? bundleEd.getBundles() : [];
     const list = savedTiers();
     if (!list.length) { box.innerHTML = '<p class="field__hint">' + esc(dT("d.quick.none")) + '</p>'; return; }
-    const usedN = t => bundles.filter(b => (b.tickets || []).indexOf(t.id) >= 0).length;
+    /* 票券清單是 [{id, qty}]（2026-09-18 D292；舊字串陣列視為 1 張）。
+       右軌每張票報「被幾組用到、每組幾張」——張數不同的組並列寫（例：每組 2／1 張）。 */
+    const usedIn = t => bundles.map(b => ((b.tickets || []).filter(x => (x && x.id != null ? x.id : x) === t.id)[0]))
+      .filter(Boolean).map(x => (x.qty != null ? Number(x.qty) || 1 : 1));
+    const usedN = t => usedIn(t).length;
+    const perSet = t => usedIn(t).filter((q, i, a) => a.indexOf(q) === i).join("／");
     const idle = list.filter(t => !usedN(t));
     if (idle.length === list.length) {
       box.innerHTML = '<p class="field__hint">' + esc(dT("d.bd.pool.none")) + '</p>';
@@ -4022,7 +4045,7 @@
         rows.map(t =>
           '<div class="kv"><span class="kv__k">' + esc(ticketNames(t)[0]) + '</span>' +
           '<span class="kv__v">' + esc(dT("d.quick.qtyn").replace("{n}", val(t).qty || 0)) +
-          ' · ' + esc(dT("d.bd.pool.n").replace("{n}", usedN(t))) + '</span></div>'
+          ' · ' + esc(dT("d.bd.pool.n").replace("{n}", usedN(t)).replace("{m}", perSet(t))) + '</span></div>'
         ).join("");
     }).join("") + '</div>' +
     (idle.length
@@ -4061,8 +4084,9 @@
     "d.step.session": { en: "Dates",             zh: "場次" },
     "d.step.bundle":  { en: "Bundles",           zh: "票務商品" },
     "d.s6.h1":        { en: "Bundles",           zh: "票務商品" },
-    "d.s6.sub":       { en: "Sell a ticket and products together as one package. A bundle has no stock of its own — selling one deducts a ticket from that tier's count.",
-                        zh: "將門票與商品組合成套組販售。數量與票券共用，售出一組即自其扣除一張。" },
+    /* 2026-09-18（D292）：一組可含多種票、各有張數，賣掉一組依各票種張數扣。 */
+    "d.s6.sub":       { en: "Sell tickets and products together as one package. A bundle has no stock of its own — selling one deducts each tier by the quantity inside.",
+                        zh: "將門票與商品組合成套組販售。數量與票券共用，售出一組即依各票種張數扣除。" },
     /* 墓碑 2026-08-13：`d.bd.h`／`d.bd.sub`（區塊小標與副標）隨外層填色卡一併撤除，
        庫存共用那條規則移進 `d.s6.sub`；`d.bd.empty.text`（舉例）與 `d.bd.empty.skip`
        （「本活動不設組合包」）同輪撤除，理由見上面 markup 的說明。 */
@@ -4070,7 +4094,7 @@
     "d.bd.pool":      { en: "What this step affects", zh: "影響範圍" },
     "d.bd.pool.none": { en: "No bundles yet — every ticket still sells on its own. Bundle some and this lists which tickets get pulled in.",
                         zh: "尚未建立組合包，各票券單獨販售。建立後將列出受影響的票券。" },
-    "d.bd.pool.n":    { en: "in {n} bundles",    zh: "由 {n} 組使用" },
+    "d.bd.pool.n":    { en: "in {n} bundles · {m} each", zh: "由 {n} 組使用 · 每組 {m} 張" },
     "d.bd.pool.idle": { en: "The other {n} tickets aren’t bundled — they sell on their own.",
                         zh: "其餘 {n} 張票券未納入組合包，單獨販售。" },
     "d.bd.empty.h":   { en: "No bundles yet",    zh: "尚未建立組合包" },
