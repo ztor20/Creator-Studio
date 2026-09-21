@@ -78,6 +78,9 @@
       if (sel.hasAttribute(a)) btn.setAttribute(a, sel.getAttribute(a));
     });
     if (sel.disabled) btn.disabled = true;
+    /* hidden 也要鏡射（2026-09-21）：原 <select> 被頁面切成 hidden（例如商品細節頁依主分類只留一顆次分類下拉）時，
+       觸發鈕若不跟著藏，畫面會多一顆沒人要的下拉。 */
+    if (sel.hidden) btn.hidden = true;
     btn.innerHTML = '<span class="zselect__lead" hidden></span><span class="zselect__label"></span>' + CHEVRON;
 
     sel.classList.add('zselect__native');
@@ -94,7 +97,7 @@
        按鈕上的字要跟著變。change 事件抓程式外的改動，MutationObserver 抓文字被換掉的情況。 */
     sel.addEventListener('change', function () { syncLabel(state); });
     new MutationObserver(function () { syncLabel(state); })
-      .observe(sel, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['disabled'] });
+      .observe(sel, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['disabled', 'hidden'] });
 
     btn.addEventListener('click', function () { toggle(state); });
     btn.addEventListener('keydown', function (e) { onTriggerKey(state, e); });
@@ -120,6 +123,7 @@
       }
     }
     state.btn.disabled = state.sel.disabled;
+    state.btn.hidden = state.sel.hidden;
   }
 
   /* ── 開關 ─────────────────────────────────────────────── */
