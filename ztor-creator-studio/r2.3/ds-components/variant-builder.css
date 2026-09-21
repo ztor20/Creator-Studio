@@ -349,6 +349,15 @@
 .variant-table--preview .variant-table__row {
   grid-template-columns: minmax(96px, max-content) minmax(80px, 1fr) 72px minmax(92px, 1fr) minmax(72px, 1fr);
 }
+/* --preview ＋ --limited（2026-09-21，spec 5.1.5.1 §2.8「上限（限量時）」／§2.10「上限只能 ≥ 已售」）：
+   商品細節頁編輯態的逐選項組合表在限量商品多一欄「上限」（可改的 .input，坐在 .variant-cell--input.variant-cell--total 裡），
+   欄軌在庫存欄後插一軌 84px（與基礎版 --limited 的上限欄同寬）；不限量商品不掛 --limited、欄軌不變。
+   上限欄的顯隱仍由下方 `.variant-cell--total { display:none }` ↔ `.variant-table--limited .variant-cell--total` 那一組控制，
+   與建立商品同一套 class，不另造。 */
+.variant-table--preview.variant-table--limited .variant-table__head,
+.variant-table--preview.variant-table--limited .variant-table__row {
+  grid-template-columns: minmax(96px, max-content) minmax(80px, 1fr) 72px 84px minmax(92px, 1fr) minmax(72px, 1fr);
+}
 /* --fluid（2026-09-09）：表格坐在比整頁窄的欄裡時用（首個消費者＝商品明細「銷售設定 → 當前庫存」
    那張唯讀表，主欄只有 ~450px）。基礎版六欄是寫死的 px，加總就超過 560px 最小寬——窄欄裡整張表
    會戳出卡片外，而且 --menu 為了讓 kebab 選單浮出已放行 overflow，連橫捲都沒有，就只是溢出。
@@ -365,6 +374,13 @@
 .variant-table--stock .variant-table__head,
 .variant-table--stock .variant-table__row {
   grid-template-columns: minmax(0, 1.7fr) 56px 72px 72px 60px 56px minmax(0, 1fr) 34px;
+}
+/* --stock ＋ --limited（2026-09-21，spec 5.1.5.1 §2.10「在庫（限量時帶上限）」、§7.2 多選項逐組合各自上限）：
+   限量商品的庫存管理表在「在庫」右邊多一欄「上限」（唯讀讀數 .variant-cell--ro.variant-cell--total），
+   單一規格與多選項都是同一張表、同一欄；不限量商品不掛 --limited，看不到這一欄。欄寬 56px 與在庫欄同。 */
+.variant-table--stock.variant-table--limited .variant-table__head,
+.variant-table--stock.variant-table--limited .variant-table__row {
+  grid-template-columns: minmax(0, 1.7fr) 56px 56px 72px 72px 60px 56px minmax(0, 1fr) 34px;
 }
 .variant-table--stock .variant-cell--stock-warn { color: var(--status-warning-ink); }
 .variant-table--stock .variant-cell--incoming { color: var(--muted-foreground); }
@@ -480,8 +496,55 @@
   font-weight: var(--fw-medium);
 }
 
-/* 2026-07-21 Q25：表格密集列維持比一般欄位矮一階，但改吃刻度上的 --control-h-xs，不再用 padding 撐高（2026-09-11 token 28 → 32） */
-.variant-table .input { height: var(--control-h-xs); padding: 0 9px; font-size: var(--fs-12); }
+/* 2026-07-21 Q25：表格密集列維持比一般欄位矮一階，但改吃刻度上的 --control-h-xs，不再用 padding 撐高（2026-09-11 token 28 → 32）。
+   2026-09-21：左右內距 9px 收成表格層變數 --vt-input-pad-x（值不變、不在 --sp 刻度上：8 太貼、10 在 32px 高的框裡偏鬆），
+   讓下面「不可編輯格對齊輸入框」那條吃同一個數字——改一處兩邊一起動。 */
+.variant-table { --vt-input-pad-x: 9px; }
+.variant-table .input { height: var(--control-h-xs); padding: 0 var(--vt-input-pad-x); font-size: var(--fs-12); }
+
+/* ============================================================
+   檢視態＝純文字、編輯態＝輸入框（2026-09-21 使用者反饋，STYLE-DECISIONS Q118）
+   「表格中的欄位在現在的狀態下是不能編輯的，不能編輯就用文字就好。輸入框在點擊編輯才出現。
+    stock 欄位不能編輯，間距也要加上去，讓它跟其他欄位的位置有一致性。」
+   規則：
+   (1) 檢視態（容器 [data-mode="view"]）的格子一律是純文字——正規做法是 JS 把價格／上限／SKU／成本畫成
+       DS 既有的唯讀讀數格 .variant-cell--ro（product-detail.html 的 ecText），不是把輸入框藏起來。
+       下面 [data-mode="view"] 那組是安全網：哪個消費者仍把 .input／.amount-field 留在檢視態的表裡，
+       也渲染成同一種純文字（無框、無底、無內距、--fs-13、前景色、$ 前綴變成一般文字），不會再出現灰框。
+   (2) 編輯態（表內有輸入框）的不可編輯格——庫存讀數 .variant-cell--stock、唯讀讀數 .variant-cell--ro——
+       補與輸入框相同的左內距 --vt-input-pad-x，文字起點跟相鄰輸入框裡的文字站在同一條線上。
+       用 :has(.input) 判「這張表現在有輸入框」，不另加狀態 class：create-product 的建立表、商品細節頁按了
+       「編輯商品」之後的定價表、DS 的示範表都自動成立；全是文字的表（--stock／--fluid、檢視態）不受影響。
+       表頭不動：表頭字對齊的是框的邊，內容字對齊的是框裡的字，兩層各自成一條線（與 create-product 現況一致）。
+   ============================================================ */
+.variant-table:has(.input) .variant-cell--stock,
+.variant-table:has(.input) .variant-cell--ro { padding-left: var(--vt-input-pad-x); }
+[data-mode="view"] .variant-table .input {
+  height: auto;
+  padding: 0;
+  box-shadow: none;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--foreground);
+  cursor: default;
+  user-select: text;
+  -webkit-user-select: text;
+}
+[data-mode="view"] .variant-table .amount-field { display: flex; align-items: center; gap: var(--sp-4); }
+[data-mode="view"] .variant-table .amount-field__unit {
+  position: static;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--foreground);
+  pointer-events: none;
+}
+[data-mode="view"] .variant-table .amount-field .input { padding-left: 0; }
+/* 檢視態全是文字，讀數格回到與表頭齊的起點（蓋掉上面 :has(.input) 那條，同權重、後寫者勝） */
+[data-mode="view"] .variant-table :is(.variant-cell--stock, .variant-cell--ro) { padding-left: 0; }
 
 .variant-row__remove {
   display: inline-flex;

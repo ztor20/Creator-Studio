@@ -15,6 +15,9 @@
 //   edition    庫存版本 unlimited | limited
 //   status     live | low | soldout（狀態 badge 與庫存呈現）
 //   price/cost 現金字串；stock 目前庫存；cap 限量上限（limited 才有）；sold 已售（limited 才有）
+//   variants[].cap / sold  （2026-09-21，spec §7.2「多選項商品的版本型態為逐選項組合」）限量的多選項商品每個組合各自的
+//              上限與已售；商品層的 cap／sold／stock 為各組合加總（清單庫存欄與頁首 KPI 讀商品層，呈現假設見 ASSUMPTIONS UIA-156）。
+//              不限量商品沒有這兩欄。細節頁編輯上限時守 5.1.5.1 §2.10「只能 ≥ 已售」。
 //   albumSeed  數位·專輯的預置曲目（餵給 album-tracks 的 data-album-seed）
 //   vipName    數位·會員卡的預置卡面名稱
 //   img        e-shop 列表縮圖檔名（在 images/products/ 下）；供 persona 就地改列用
@@ -227,24 +230,26 @@
       catLabel: 'Physical Merchandise', subLabel: 'Posters & prints · 海報'
     },
     /* 實體 · 外套（限量 30、兩維選項）：逐選項組合鎖定示範——Black/M 鎖給單售 2＋簽名會組 1、Olive/L 鎖給單售 1，
-       其餘組合沒鎖定。商品層 pool.locks 由 seedListing() 從 variants 加總（見該函式註解）。 */
+       其餘組合沒鎖定。商品層 pool.locks 由 seedListing() 從 variants 加總（見該函式註解）。
+       2026-09-21 逐選項組合上限（spec §7.2／5.1.5.2 F3.3 路線 B）：每個組合各自 cap／sold——Black/S 已售完（5/5、在庫 0）、
+       Olive/S 接近上限（4 只剩 1）、其餘還有量；商品層 cap 30＝各組合加總、sold 11、stock 19 同為加總。 */
     jacket: {
       name: '九龍夜行 舞台外套 復刻版', img: 'stage-worn-jacket.webp',
       sub: 'Replica of the stage-worn bomber — embroidered back panel. Limited run of 30.',
       cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'limited',
-      status: 'live', price: '150.00', cost: '60.00', stock: '24', cap: '30', sold: '6', threshold: '2',
+      status: 'live', price: '150.00', cost: '60.00', stock: '19', cap: '30', sold: '11', threshold: '2',
       catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
       options: [
         { name: 'Colour / 顏色', values: ['Black', 'Olive'] },
         { name: 'Size / 尺寸', values: ['S', 'M', 'L'] }
       ],
       variants: [
-        { combo: ['Black', 'S'], sku: 'JKT-BK-S', stock: '3' },
-        { combo: ['Black', 'M'], sku: 'JKT-BK-M', stock: '6', locks: { single: 2 } },
-        { combo: ['Black', 'L'], sku: 'JKT-BK-L', stock: '4' },
-        { combo: ['Olive', 'S'], sku: 'JKT-OL-S', stock: '3' },
-        { combo: ['Olive', 'M'], sku: 'JKT-OL-M', stock: '4' },
-        { combo: ['Olive', 'L'], sku: 'JKT-OL-L', stock: '4', price: '150.00', locks: { single: 1 } }
+        { combo: ['Black', 'S'], sku: 'JKT-BK-S', stock: '0', cap: '5', sold: '5' },
+        { combo: ['Black', 'M'], sku: 'JKT-BK-M', stock: '6', cap: '8', sold: '2', locks: { single: 2 } },
+        { combo: ['Black', 'L'], sku: 'JKT-BK-L', stock: '4', cap: '5', sold: '1' },
+        { combo: ['Olive', 'S'], sku: 'JKT-OL-S', stock: '1', cap: '4', sold: '3' },
+        { combo: ['Olive', 'M'], sku: 'JKT-OL-M', stock: '4', cap: '4', sold: '0' },
+        { combo: ['Olive', 'L'], sku: 'JKT-OL-L', stock: '4', cap: '4', sold: '0', price: '150.00', locks: { single: 1 } }
       ]
     },
     /* 實體 · 托特包：隱藏＋待命（隱藏、持非公開連結、開賣日在未來）；尚無銷售 */
@@ -307,11 +312,12 @@
        詳情示範在 DETAIL_SEED。 ── */
     /* 實體 · 明信片組：已封存，且有訂單歷史（銷售摘要有數字）——示範「封存不影響訂單與收入」。
        同時是 postcard-set 的成員：那個組合包因它封存而被一同下架（見 BUNDLE_SEED.postcard-set）。 */
+    /* 2026-09-21 改成限量 150（已售 64、在庫 58）：站上原本沒有「已封存＋限量」的商品，封存唯讀要涵蓋上限欄得有一筆看得到。 */
     postcard: {
       name: '九龍夜行 明信片組', img: 'postcard-set.webp',
-      sub: 'Set of 6 postcards — stills from the tour film. 300gsm.',
-      cat: 'physical', subKey: 'merch', variant: 'single', edition: 'unlimited',
-      status: 'live', price: '12.00', cost: '3.00', stock: '58', threshold: '5',
+      sub: 'Set of 6 postcards — stills from the tour film. 300gsm. Limited run of 150.',
+      cat: 'physical', subKey: 'merch', variant: 'single', edition: 'limited',
+      status: 'live', price: '12.00', cost: '3.00', stock: '58', cap: '150', sold: '64', threshold: '5',
       catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
     },
     /* 實體 · 馬克杯：已封存、尚無銷售（KPI 空狀態）；不在任何組合包裡 */
@@ -550,6 +556,12 @@
     /* 組合鎖定不再寫在商品身上（2026-09-11 鎖定套數規則）：由 BUNDLE_SEED 的 lockSets／alloc 在 get() 時導出 */
     lockVariant('wy-24ce-jersey', 'M', { single: 5 });
   }());
+  /* 逐選項組合上限（2026-09-21，對照 P_DEFAULT.jacket）：限量 200 的球衣把 cap／sold 分到三個尺寸——
+     M 70/63、L 70/63、XL 60/54（在庫 7／7／6 ＝ wishVariants 分攤 20 的結果；商品層 cap 200、sold 180 為加總）。 */
+  (function () {
+    var p = WISHYOU_PRODUCTS['wy-24ce-jersey'], caps = { M: ['70', '63'], L: ['70', '63'], XL: ['60', '54'] };
+    (p && p.variants || []).forEach(function (v) { var c = caps[v.combo[0]]; if (c) { v.cap = c[0]; v.sold = c[1]; } });
+  }());
   /* 既有入口保留，但內容與來源商品同步。 */
   /* 2026-07-27 使用者指定的列表排序：這四筆置頂（白 Tee → 老帽 → 束口褲 → 球鞋），
      2026-09-11 接著排找回的五筆數位／限量記錄與三筆新商品（含草稿 wy-draft-tote——它不另外產列，
@@ -706,7 +718,9 @@
     return legacy[row.getAttribute('data-name') || ''] || null;
   }
   function patchBundleRows() {
-    var rows = Array.prototype.slice.call(document.querySelectorAll('.product-list__row[data-type="bundle"]'));
+    /* 活動組合包列（2026-09-21 · D294）：e-shop.html 依 events-store 各場的 bundles[] 自己注入、標 data-event-bundle，
+       資料源在 events-store、不在 BUNDLE_SEED——這裡一律跳過，不當成「查無記錄的列」移除，也不當模板。 */
+    var rows = Array.prototype.slice.call(document.querySelectorAll('.product-list__row[data-type="bundle"]:not([data-event-bundle])'));
     if (!rows.length) return;
     /* 當前 persona 有記錄、清單卻沒有列的組合（例：nick 的選物四件組原本借用第一列，那列現在標了
        coastline-starter-set）：用第一個非草稿組合列當模板複製一列補上，插在清單最前面。
@@ -940,7 +954,7 @@
       limit: 2
     },
     jacket: {
-      sales: { units: 6, gross: '$900', net: '$720' },
+      sales: { units: 11, gross: '$1,650', net: '$1,320' },   /* 2026-09-21：與各組合 sold 加總（11）一致 */
       history: [
         { id: 'h1', type: 'lock', date: '2026/09/08', state: 'done', items: [{ combo: 'Black / M', vi: 1, delta: '— → 2', toKey: 'stock.history.note.single' }, { combo: 'Olive / L', vi: 5, delta: '— → 1', toKey: 'stock.history.note.single' }] }
       ]

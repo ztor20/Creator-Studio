@@ -245,6 +245,9 @@
               <div class="variant-table__head">
                 <span data-i18n="cp.var.col.variant">Variant</span>
                 <span data-i18n="stock.col.onhand">On hand</span>
+                <!-- 上限（2026-09-21，spec 5.1.5.1 §2.10「在庫（限量時帶上限）」）：只在限量商品出現，
+                     顯隱沿用建立商品的 .variant-cell--total ↔ .variant-table--limited（applyVis 依 edition 掛） -->
+                <span class="variant-cell--total" data-i18n="cp.var.col.total">Total</span>
                 <span data-i18n="stock.lock-single">Locked</span>
                 <span data-i18n="stock.col.bundle">Bundles</span>
                 <span data-i18n="cp.var.col.free">Unlocked</span>
@@ -596,6 +599,37 @@
         </div>
       </section>
 
+      <!-- §2.10 庫存版本 Edition（2026-09-21，spec 5.1.5.1 §2.10／0-設計規格書 §7.2；建立商品 5.1.5.2 F3.3 同一套元件）：
+           不限量／限量建立後鎖定、只呈現（D137）→ 沿用建立商品的 .segmented.radio-cards 加 DS 的 .segmented--locked，
+           各段 disabled＋data-view-safe（shared.css 的檢視態白名單會把沒標的 button 整顆藏掉，鎖定的選項卡同時是「現在是哪一種」的唯讀呈現）。
+           單一規格＋限量：上限（Total Quantity）可改、但不得低於已售（§2.10）；多選項的上限逐組合在下方定價表填。
+           實體與數位都有這個軸（§7.2），所以不掛 data-pd-cat。 -->
+      <section class="form-section form-section--outlined" data-pd-edition-section>
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="cp.edition">Edition</h3>
+          <p class="form-section__sub" data-i18n="product-detail.edition.sub">Fixed after creation — the cap can still change, but never below what's sold.</p>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <div class="segmented radio-cards segmented--locked" id="pd-edition" aria-disabled="true">
+            <button class="segmented__btn segmented__btn--active" type="button" disabled data-view-safe data-pd-edition="unlimited">
+              <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.edition.unlimited">Unlimited edition</span><span class="radio-card__sub" data-i18n="cp.edition.unlimited-hint">Restock anytime — never auto sells out.</span></span>
+            </button>
+            <button class="segmented__btn" type="button" disabled data-view-safe data-pd-edition="limited">
+              <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.edition.limited">Limited edition</span><span class="radio-card__sub" data-i18n="cp.edition.limited-hint">Hard cap with a visible total — fans see how many remain.</span></span>
+            </button>
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:var(--sp-16);margin-bottom:0" data-when-var="single" data-when-edition="limited" hidden>
+          <div class="field" style="margin-bottom:0">
+            <div class="field__label" data-i18n="cp.total">Total quantity</div>
+            <input class="input" placeholder="0" type="number" min="0" data-pd-edit-cap>
+            <div class="field__hint field__hint--fact" data-pd-cap-sold></div>
+            <p class="field__error" data-pd-cap-err hidden></p>
+          </div>
+        </div>
+        <div class="field__hint" style="margin-top:var(--sp-8)" data-when-var="multiple" data-when-edition="limited" hidden data-i18n="product-detail.edition.multi-hint">Caps are set per variation in the pricing table below.</div>
+      </section>
+
       <section class="form-section form-section--outlined" data-when-var="multiple" hidden>
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="cp.var.title">Variations</h3>
@@ -617,12 +651,16 @@
               <span data-i18n="cp.var.col.variant">Variant</span>
               <span data-i18n="cp.var.col.price">Price</span>
               <span data-i18n="cp.var.col.stock">Stock</span>
+              <!-- 上限（2026-09-21，5.1.5.1 §2.8 逐選項組合表欄位「上限（限量時）」）：限量才出現，同建立商品的 .variant-cell--total -->
+              <span class="variant-cell--total" data-i18n="cp.var.col.total">Total</span>
               <span data-i18n="cp.var.col.sku">SKU</span>
               <span data-i18n="cp.var.col.cost">Cost</span>
             </div>
             <!-- 組合列由 JS 即時重算填入（唯讀預覽） -->
           </div>
         </div>
+        <!-- 逐組合上限的驗證（§2.10 上限只能 ≥ 已售）：哪一列違反就點名哪一列 -->
+        <p class="field__error" style="margin-top:var(--sp-8)" data-pd-cap-err-rows hidden></p>
       </section>
             </div>
             <div data-nav-panel="rules">
@@ -763,7 +801,7 @@
           </div>
           <div class="field">
             <div class="field__label" data-i18n="cp.delivery.dim">Dimensions</div>
-            <div class="form-grid form-grid--3">
+            <div class="form-grid form-grid--3" data-vm-group=" × " data-vm-suffix=" cm"><!-- 檢視態併成一句「21 × 15 × 2 cm」（js/view-mode.js） -->
               <input class="input" value="21" data-i18n-placeholder="cp.delivery.dim.l" placeholder="L (CM)">
               <input class="input" value="15" data-i18n-placeholder="cp.delivery.dim.w" placeholder="W (CM)">
               <input class="input" value="2" data-i18n-placeholder="cp.delivery.dim.h" placeholder="H (CM)">
@@ -1091,6 +1129,7 @@
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="partials/field-more.js?v=r2.2"></script><script src="partials/date-input.js?v=r2.2"></script>
+<script src="js/view-mode.js?v=r2.2"></script><!-- 兩段式面板檢視態讀數（Q119）：欄位在檢視態畫成純文字、按「編輯」才變輸入框 -->
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/detail-topbar.js?v=r2.2"></script>
 <script src="js/row-disclosure.js?v=r2.2"></script>
@@ -1375,9 +1414,11 @@
         if (el.dataset.pdCat) vis = vis && el.dataset.pdCat === state.cat;
         el.hidden = !vis;
       });
-      /* 逐規格表的「總量上限」欄只在限量版出現（.variant-table--limited 控制） */
-      const vt = document.querySelector('[data-pd-variant-table]');
-      if (vt) vt.classList.toggle('variant-table--limited', state.edition === 'limited');
+      /* 逐規格表的「總量上限」欄只在限量版出現（.variant-table--limited 控制）：
+         庫存分頁的管理表與商品設定分頁的逐選項組合定價表都掛（2026-09-21） */
+      document.querySelectorAll('[data-pd-variant-table],[data-pd-edit-table]').forEach(vt => {
+        vt.classList.toggle('variant-table--limited', state.edition === 'limited');
+      });
     }
     /* 主分類（實體／數位）顯隱：data-pd-cat 由商品資料決定；同步把鎖定的 disabled select 顯示成目前值。
        兼掛 data-when-var 的元素交給 applyVis 統一算，這裡略過避免兩邊互相覆寫。 */
@@ -1396,7 +1437,9 @@
       seg.querySelectorAll('.segmented__btn').forEach(b => b.classList.toggle('segmented__btn--active', b.dataset[attr] === val));
     }
     function syncLocked() {
-      /* 規格模式（pd-var-mode）2026-07-21 起不再呈現切換器，只留庫存版本。 */
+      /* 規格模式（pd-var-mode）2026-07-21 起不再呈現切換器，只留庫存版本。
+         #pd-edition 於 2026-09-21 補進商品設定分頁（原本這一行呼叫的目標不存在、等於死呼叫）：
+         鎖定的 .segmented.radio-cards 只從資料同步哪一段亮著，不可點。 */
       syncLockedSeg('pd-edition', 'pdEdition', state.edition);
     }
 
@@ -2413,8 +2456,10 @@
       p = p || {};
       return {
         price: p.price || '', cost: p.cost || '',
+        /* 限量上限與已售（2026-09-21，§2.10）：cap 可改（不得低於 sold）、sold 唯讀事實；多選項時逐組合各自一份 */
+        cap: p.cap || '', sold: p.sold || '',
         options: (p.options || []).map(function (o) { return { name: o.name, values: (o.values || []).slice() }; }),
-        variants: (p.variants || []).map(function (v) { return { combo: (v.combo || []).slice(), sku: v.sku || '', stock: v.stock || '0', price: v.price || '', cost: v.cost || '', img: v.img || '', delisted: !!v.delisted, locks: copyLocks(v.locks) }; })
+        variants: (p.variants || []).map(function (v) { return { combo: (v.combo || []).slice(), sku: v.sku || '', stock: v.stock || '0', price: v.price || '', cost: v.cost || '', cap: v.cap || '', sold: v.sold || '', img: v.img || '', delisted: !!v.delisted, locks: copyLocks(v.locks) }; })
       };
     }
     var MODEL = copyModel(product);
@@ -2471,7 +2516,7 @@
       var prev = {}; m.variants.forEach(function (v) { prev[comboKey(v.combo)] = v; });
       m.variants = combos.map(function (c) {
         var old = prev[comboKey(c)];
-        return { combo: c, sku: old ? old.sku : '', stock: old ? old.stock : '0', price: old ? (old.price || '') : '', cost: old ? (old.cost || '') : '', img: old ? (old.img || '') : '', delisted: old ? old.delisted : false, locks: copyLocks(old && old.locks) };
+        return { combo: c, sku: old ? old.sku : '', stock: old ? old.stock : '0', price: old ? (old.price || '') : '', cost: old ? (old.cost || '') : '', cap: old ? (old.cap || '') : '', sold: old ? (old.sold || '') : '', img: old ? (old.img || '') : '', delisted: old ? old.delisted : false, locks: copyLocks(old && old.locks) };
       });
     }
 
@@ -2521,7 +2566,10 @@
       var inc = window.pdStockHistory ? window.pdStockHistory.pendingFor(o.vi) : 0;
       /* 縮圖併在規格名格（Q117）：thumb ＋ 文字區（規格名、底下 SKU 小字） */
       return '<span class="variant-cell--variant" data-vc="name">' + (o.thumb || '') + '<span class="variant-cell__text">' + esc(o.label) + (o.sku ? '<br><span class="text-sub" title="' + esc(o.sku) + '">' + esc(o.sku) + '</span>' : '') + '</span></span>'
-        + '<span class="variant-cell--stock' + st.cell + '">' + esc(String(o.stock)) + (o.cap ? '<span class="text-sub"> / ' + esc(String(o.cap)) + '</span>' : '') + '</span>'
+        + '<span class="variant-cell--stock' + st.cell + '">' + esc(String(o.stock)) + '</span>'
+        /* 上限（2026-09-21）：限量商品逐列各自的上限，獨立一欄（原本只有單一規格那一列以「在庫 / 上限」小字併在在庫格，
+           多選項列沒有）；不限量商品的表不掛 --limited，這一格藏起來。 */
+        + '<span class="variant-cell--ro variant-cell--total" data-vc="total">' + (o.cap ? esc(String(o.cap)) : '—') + '</span>'
         + '<span class="variant-cell--ro" data-vc="locked">' + lockText(o.locked) + '</span>'
         + '<span class="variant-cell--ro" data-vc="bundle">' + (o.bundle ? esc(String(o.bundle)) : '—') + '</span>'
         + '<span class="variant-cell--ro variant-cell--free" data-vc="free">' + esc(String(o.free)) + '</span>'
@@ -2572,6 +2620,7 @@
             thumb: thumbRO(v, thumbLabel(v)),
             label: label,
             stock: v.stock,
+            cap: (product.edition === 'limited' && v.cap) ? Number(v.cap) : null,   /* 逐選項組合上限（§7.2） */
             locked: lockV,
             bundle: blv,
             free: Math.max(0, Number(v.stock || 0) - (lockV === null ? 0 : lockV) - blv),
@@ -2596,8 +2645,15 @@
           var t = byKey[comboKey(v.combo)];
           if (!t) { t = { combo: v.combo.slice() }; product.variants.push(t); }
           t.sku = v.sku; t.stock = v.stock; t.price = v.price; t.cost = v.cost; t.locks = copyLocks(v.locks);
+          if (product.edition === 'limited') t.cap = v.cap;   /* 逐組合上限（§7.2）；sold 是事實、不由本頁改 */
           if (v.img) t.img = v.img; else delete t.img;   /* 逐組合商品圖（D268）：空＝沿用主圖 */
         });
+        /* 單一規格的上限寫回商品層；多選項的商品層 cap＝各組合加總（清單庫存欄與頁首 KPI 讀它，ASSUMPTIONS UIA-156） */
+        if (product.edition === 'limited') {
+          if (product.variant === 'multiple' && MODEL.variants.length) {
+            product.cap = String(MODEL.variants.reduce(function (n, v) { return n + (Number(v.cap) || 0); }, 0));
+          } else if (MODEL.cap !== '') product.cap = String(MODEL.cap);
+        }
       }
       if (window.pdRefreshStock) window.pdRefreshStock();
     }
@@ -2769,8 +2825,18 @@
       if (money) return '<span class="variant-cell--input"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' + inp + '</span></span>';
       return '<span class="variant-cell--input">' + inp + '</span>';
     }
+    /* 檢視態的格子＝純文字（2026-09-21 使用者反饋：「不能編輯就用文字就好，輸入框在點擊編輯才出現」）：
+       用 DS 既有的唯讀讀數格 .variant-cell--ro（與庫存欄 .variant-cell--stock 同族），金額走本頁唯讀金額同一套 money()
+       （純數字加幣別符號、空值「—」）、SKU 空值也是「—」；按「編輯商品」進編輯態才由 ecInput 畫成輸入框。
+       data-vc 標角色，與庫存分頁那張唯讀表同一個契約。 */
+    function ecText(field, val, isMoney) {
+      var raw = String(val == null ? '' : val).trim();
+      var txt = isMoney ? money(raw) : (raw || '—');
+      return '<span class="variant-cell--ro" data-vc="' + field + '">' + esc(txt) + '</span>';
+    }
     /* editable（2026-09-11 · D268）：編輯態列首縮圖是 <button>（點開規格圖片彈窗）；檢視態是唯讀 <span>——
-       shared.css 在 data-mode="view" 會把所有 button 藏掉，唯讀縮圖不能是 button。 */
+       shared.css 在 data-mode="view" 會把所有 button 藏掉，唯讀縮圖不能是 button。
+       2026-09-21 起 editable 同時決定價格／上限／SKU／成本四格是輸入框（編輯態）還是純文字（檢視態）。 */
     function renderEditCombos(m, editable) {
       if (!editTable) return;
       editTable.querySelectorAll('.variant-table__row, .variant-table__group').forEach(function (n) { n.remove(); });
@@ -2785,14 +2851,52 @@
         var r = document.createElement('div'); r.className = 'variant-table__row';
         r.innerHTML =
           '<span class="variant-cell--variant">' + (editable ? thumbBtn(v, vi, thumbLabel(v)) : thumbRO(v, thumbLabel(v))) + '<span class="variant-cell__text">' + esc(label) + '</span></span>' +
-          ecInput('price', vi, v.price || m.price, true) +
+          (editable ? ecInput('price', vi, v.price || m.price, true) : ecText('price', v.price || m.price, true)) +
           '<span class="variant-cell--stock' + (isLow(v.stock) ? ' variant-cell--stock-low' : '') + '">' + esc(v.stock) + '</span>' +
-          ecInput('sku', vi, v.sku, false) +
-          ecInput('cost', vi, v.cost || m.cost, true);
+          /* 上限（2026-09-21，§2.8 逐選項組合表「上限（限量時）」）：限量商品每列各自可改、不得低於該組合已售（§2.10）。
+             格子包在 .variant-cell--total 裡，顯隱與建立商品同一組 class（不限量的表沒掛 --limited、整欄藏起來）。
+             檢視態同其他欄改純文字（.variant-cell--ro.variant-cell--total，與庫存分頁的上限格同一格式）。 */
+          (editable
+            ? '<span class="variant-cell--input variant-cell--total"><input class="input" type="number" min="0" data-ec-field="cap" data-ec-vi="' + vi + '" value="' + esc(v.cap || '') + '" title="' + esc(T('product-detail.edition.sold', '{n} sold').replace('{n}', v.sold || '0')) + '"></span>'
+            : '<span class="variant-cell--ro variant-cell--total" data-vc="cap">' + (v.cap ? esc(String(v.cap)) : '—') + '</span>') +
+          (editable ? ecInput('sku', vi, v.sku, false) : ecText('sku', v.sku, false)) +
+          (editable ? ecInput('cost', vi, v.cost || m.cost, true) : ecText('cost', v.cost || m.cost, true));
         editTable.appendChild(r);
       });
       if (comboCount) comboCount.textContent = '(' + m.variants.length + ')';
       if (window.ztorIcons) window.ztorIcons.applyIcons(editTable);
+      checkCaps(m);
+    }
+    /* ---- 上限驗證（spec 5.1.5.1 §2.10：Total Quantity 可編輯，但只能 ≥ 已售、不可低於已售）----
+       單一規格看商品層的一格；多選項逐列看各組合。違反的格加 aria-invalid（shared.css 紅框）、
+       錯誤句用 DS 的 .field__error（單一規格放欄位底下、多選項放表格底下並點名列）。回傳是否全部合法，儲存前擋。 */
+    var capErrRows = document.querySelector('[data-pd-cap-err-rows]');
+    function capBelowSold(cap, sold) {
+      var c = String(cap == null ? '' : cap).trim();
+      if (c === '') return false;                       /* 留空＝沒填，儲存時保留原值（同價格欄的規則） */
+      return (Number(c) || 0) < (Number(sold) || 0);
+    }
+    function checkCaps(m) {
+      if (!(product && product.edition === 'limited')) return true;
+      var ok = true;
+      if (product.variant === 'multiple') {
+        var bad = [];
+        m.variants.forEach(function (v, vi) {
+          var inp = editTable ? editTable.querySelector('input[data-ec-field="cap"][data-ec-vi="' + vi + '"]') : null;
+          var below = capBelowSold(v.cap, v.sold);
+          if (inp) inp.setAttribute('aria-invalid', below ? 'true' : 'false');
+          if (below) bad.push(T('product-detail.edition.cap-err-row', '{v}: can\'t be lower than units sold ({n})').replace('{v}', v.combo.join(' / ')).replace('{n}', v.sold || '0'));
+        });
+        ok = bad.length === 0;
+        if (capErrRows) { capErrRows.hidden = ok; capErrRows.textContent = bad.join('；'); }
+      } else {
+        var capInp = document.querySelector('[data-pd-edit-cap]'), err = document.querySelector('[data-pd-cap-err]');
+        var belowS = capBelowSold(m.cap, m.sold);
+        if (capInp) capInp.setAttribute('aria-invalid', belowS ? 'true' : 'false');
+        if (err) { err.hidden = !belowS; err.textContent = T('product-detail.edition.cap-err', 'Can\'t be lower than units sold ({n})').replace('{n}', m.sold || '0'); }
+        ok = !belowS;
+      }
+      return ok;
     }
     if (editTable) {
       editTable.addEventListener('input', function (e) {
@@ -2802,6 +2906,7 @@
         if (!v) return;
         var field = inp.getAttribute('data-ec-field');
         v[field] = field === 'sku' ? inp.value.trim() : num(inp.value);
+        if (field === 'cap') checkCaps(DRAFT);   /* 逐組合上限：邊打邊驗（§2.10 不得低於已售） */
       });
     }
 
@@ -2837,13 +2942,30 @@
       var ep = document.querySelector('[data-pd-edit-price]'), ec = document.querySelector('[data-pd-edit-cost]');
       if (ep) ep.value = m.price || '';
       if (ec) ec.value = m.cost || '';
+      /* 單一規格的上限（限量）：值＋「已售 n」事實句（--fact，檢視態也顯示，改上限的人要知道底線在哪） */
+      var ecap = document.querySelector('[data-pd-edit-cap]'), esold = document.querySelector('[data-pd-cap-sold]');
+      if (ecap) ecap.value = m.cap || '';
+      if (esold) esold.textContent = T('product-detail.edition.sold', '{n} sold').replace('{n}', m.sold || '0');
+      checkCaps(m);
     }
+    (function () {
+      var ecap = document.querySelector('[data-pd-edit-cap]');
+      if (ecap) ecap.addEventListener('input', function () { if (DRAFT) { DRAFT.cap = num(ecap.value); checkCaps(DRAFT); } });
+    }());
     function applyReadonly(ro) {
       if (!settingsPanel) return;
       settingsPanel.querySelectorAll('input, textarea').forEach(function (el) { el.readOnly = ro; });
       /* 建立後鎖死的欄位（主分類／次分類，D137）本來就是 disabled，編輯態也不放開 */
       settingsPanel.querySelectorAll('select:not([id="pd-main-cat"]):not([id="pd-sub-phys"]):not([id="pd-sub-digi"])').forEach(function (el) { el.disabled = ro; });
+      /* 檢視態讀數（Q119，js/view-mode.js）：欄位畫成純文字；金額走本頁的 money()，與定價表（Q118）同一種寫法 */
+      if (window.ZtorViewMode) window.ZtorViewMode.sync(settingsPanel);
     }
+    if (window.ZtorViewMode && settingsPanel) window.ZtorViewMode.configure(settingsPanel, {
+      format: function (root, input) {
+        if (root.classList.contains('amount-field') && !root.classList.contains('amount-field--suffix')) return money(String(input.value == null ? '' : input.value).trim());
+        return null;
+      }
+    });
     function setMode(editing) {
       if (!settingsPanel) return;
       settingsPanel.setAttribute('data-mode', editing ? 'edit' : 'view');
@@ -2892,7 +3014,7 @@
       });
     }
     function enterEdit() {
-      DRAFT = copyModel({ price: MODEL.price, cost: MODEL.cost, options: MODEL.options, variants: MODEL.variants });
+      DRAFT = copyModel({ price: MODEL.price, cost: MODEL.cost, cap: MODEL.cap, sold: MODEL.sold, options: MODEL.options, variants: MODEL.variants });
       fillPriceFields(MODEL);
       refreshDraft();
       SNAP = snapshot();
@@ -2908,6 +3030,8 @@
     }
     function saveEdit() {
       if (!DRAFT) DRAFT = copyModel(MODEL);
+      /* 上限低於已售（§2.10）就不收：錯誤句已在欄位／表格底下，停在編輯態讓使用者改 */
+      if (!checkCaps(DRAFT)) return;
       var ep = document.querySelector('[data-pd-edit-price]'), ec = document.querySelector('[data-pd-edit-cost]');
       /* 欄位留空＝沒填，保留原值：這兩格只吃數字（num() 會把非數字洗掉），而示範資料裡有
          「待確認」這種文字價格——不留這道，開了編輯直接按儲存就會把它清成「—」。 */
@@ -2917,7 +3041,11 @@
         var ecv = ec ? num(ec.value) : '';
         DRAFT.price = epv === '' ? DRAFT.price : epv;
         DRAFT.cost = ecv === '' ? DRAFT.cost : ecv;
+        /* 單一規格的上限：留空＝保留原值 */
+        if (String(DRAFT.cap).trim() === '') DRAFT.cap = MODEL.cap;
       }
+      /* 多選項：空的上限格保留原值（同上） */
+      DRAFT.variants.forEach(function (v) { if (String(v.cap == null ? '' : v.cap).trim() === '') { var o = MODEL.variants.filter(function (x) { return comboKey(x.combo) === comboKey(v.combo); })[0]; if (o) v.cap = o.cap; } });
       /* 收尾清理：丟掉空值與整個沒有非空值的選項，再重算一次組合 */
       DRAFT.options = DRAFT.options.map(function (o) { return { name: o.name || '', values: o.values.filter(function (v) { return String(v).trim() !== ''; }) }; }).filter(function (o) { return o.values.length; });
       regen(DRAFT);
@@ -2925,6 +3053,7 @@
       syncLocksToStore();   /* 鎖定量寫回 store，商品層那張唯讀彙總表跟著重畫 */
       // 單規格：價格/成本回填頁面唯讀讀數（多規格的價格在表內，由 renderPageTable 帶）
       renderPageTable();
+      if (window.pdRefreshStock) window.pdRefreshStock();   /* 上限改了，頁首「在庫 / 上限」KPI 跟著換 */
       renderOptionsSummary();
       /* 儲存後表格照 MODEL 重畫成唯讀現值 */
       fillPriceFields(MODEL);
@@ -2942,7 +3071,7 @@
         if (nameInp) { var ni = +nameInp.getAttribute('data-opt-name'); if (DRAFT.options[ni]) DRAFT.options[ni].name = nameInp.value; return; }
         var inp = e.target.closest('input[data-opt]'); if (!inp) return;
         var oi = +inp.getAttribute('data-opt'), vi = +inp.getAttribute('data-vi');
-        if (DRAFT.options[oi]) { DRAFT.options[oi].values[vi] = inp.value; regen(DRAFT); renderEditCombos(DRAFT); }
+        if (DRAFT.options[oi]) { DRAFT.options[oi].values[vi] = inp.value; regen(DRAFT); renderEditCombos(DRAFT, true); }   /* 編輯中改值重畫，必須維持編輯態（漏傳 editable 會把整張表畫回純文字） */
       });
       optEditor.addEventListener('click', function (e) {
         if (!DRAFT) return;
@@ -3041,6 +3170,12 @@
           : T('cp.var.single', 'Single variant') });
       rows.push({ g: 'pricing', go: 'pricing', key: 'cp.price.title', fb: 'Price',
         v: multi ? priceRange() : join([money(MODEL.price), MODEL.cost ? T('cp.cost', 'Cost') + ' ' + money(MODEL.cost) : '']) });
+      /* 庫存版本（2026-09-21，§2.10／§7.2）：不限量／限量；限量時單一規格帶上限數、多選項寫「逐選項設定」（各組合的上限在定價表） */
+      var limited = product && product.edition === 'limited';
+      rows.push({ g: 'ops', go: 'pricing', key: 'cp.edition', fb: 'Edition',
+        v: !limited ? T('cp.edition.unlimited', 'Unlimited edition')
+          : multi ? T('product-detail.setov.edition.per-variant', 'Limited · per variation')
+          : T('product-detail.setov.edition.limited-total', 'Limited · {n} total').replace('{n}', MODEL.cap || '—') });
       rows.push({ g: 'pricing', go: 'rules', key: 'cp.discount.title', fb: 'Discount settings',
         v: on('pd-discount-toggle')
           ? join([money(num($v('pd-sale-price'))), on('pd-sale-toggle') ? join([$v('pd-sale-start'), $v('pd-sale-end')], ' – ') : '', on('pd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : ''])

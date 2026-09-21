@@ -1913,48 +1913,66 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 .pd-tabbar .tabs::-webkit-scrollbar { display: none; }
 .pd-tabbar__action { flex: none; margin-bottom: var(--sp-8); }
 
-/* ── 檢視模式：保留「編輯時的版面」，只是不能改 ──────────────────────────
-   用 readonly 而非 disabled——disabled 會把文字打灰、也從無障礙樹拿掉，
-   但檢視模式下那些「值」正是使用者要讀的內容，必須維持可讀、可選取。
+/* ── 檢視模式：表單欄位＝純文字，按「編輯」才變輸入框（2026-09-21 使用者裁決，STYLE-DECISIONS Q119）──
+   兩段式面板（[data-editable] ＋ data-mode="view"|"edit"）的檢視態，表單欄位與表格（Q118）同一個原則：
+   「檢視就是看、不該長得像能填」。讀數由 js/view-mode.js 產生——每個控件根（.amount-field／.date-input／
+   單獨的 input／textarea）後面一顆 <span class="field-readout" data-vm-readout>，這裡只管顯隱：
+   檢視態顯示讀數、藏控件；編輯態反過來。讀數的字級／字體／墨色＝.field-readout（field-system.css，
+   2026-07-22 起就是「欄位改成只顯示、不可填」的讀數元件），與面板正文一致；空值「—」、placeholder 不當值。
 
-   2026-07-27 L 裁示改版：這裡原本把欄位「攤平成值」——清掉背景、外框
-   （其實是 box-shadow 畫的 1px inset ring）與左右內距。L 的評語是那個結果很醜，
-   要求「回到編輯畫面的格式，只是不能編輯」。
-   為什麼攤平會醜：那些框同時在做版面工作，不只是裝飾。內距一清，角色／姓名兩欄
-   就不再對齊；FAQ 的 textarea 塌成內容高度，項目之間的間隔變成沒有節奏的空洞。
-   所以現在幾何完全不動（內距、高度、外框粗細都保留），只把「可以打字」的訊號拿掉。
-   附帶好處：切換模式時版面完全不位移，因為沒有任何尺寸改變。 */
-/* 2026-09-11 使用者裁示（商店設定：「未能編輯的狀態怎麼不是 disable」→ 選「全站檢視態都改成 disabled 外觀」）：
-   幾何仍不動（內距、高度、外框都保留，切模式版面不位移），但外觀改成與 `.input:disabled` 同一種——
-   透明底、`--locked-field-ink` 淡墨、not-allowed 游標、不可選取；站上因此仍只有一種「鎖住」的樣子
-   （input.css 2026-08-09「整個元件庫只能有一個 disabled 樣子」）。屬性層仍用 readonly（值留在無障礙樹、
-   各頁的 applyReadonly 不用改），「不能改」的訊號由外觀承擔。zselect 的觸發鈕與標籤輸入框一起換。 */
-[data-mode="view"] .input,
-[data-mode="view"] .textarea,
-[data-mode="view"] .tag-input,
-[data-mode="view"] .select,
-[data-mode="view"] .zselect__trigger {
+   取代的兩條舊裁示（都記在 STYLE-DECISIONS Q119）：
+   · 2026-07-27「回到編輯畫面的格式、只是不能編輯」——當時攤平的做法是清掉輸入框的框與內距、留輸入框本身，
+     角色／姓名兩欄失去對齊、textarea 塌成內容高度。現在的讀數是真正的文字節點，角色／姓名列仍坐在
+     .cast-row 的欄軌裡、FAQ 的答案是一段 pre-wrap 的文字，不再有「輸入框裝作文字」的中間態。
+   · 2026-09-11「全站檢視態＝disabled 外觀」（透明底、--locked-field-ink 淡墨、not-allowed）——那是「還是輸入框、
+     只是灰掉」；使用者看了 Q118 的表格之後裁定表單欄位一併改純文字。
+   屬性層仍用 readonly／disabled（各頁的 applyReadonly 沒改、快照／還原照舊），只是檢視態下控件不顯示。 */
+[data-vm-readout] { display: none; }
+[data-mode="view"] [data-vm-control] { display: none; }
+[data-mode="view"] [data-vm-readout] { display: block; }
+[data-mode="view"] [data-vm-readout][data-vm-kind="textarea"] { white-space: pre-wrap; overflow-wrap: anywhere; }
+/* 下拉：zselect 的觸發鈕（與沒升級的原生 .select）上的字就是目前值，檢視態去框、去底、去內距、去箭頭，
+   只留字——字級改吃 .field-readout 的 --fs-14 ui 字體、前景色（不再是 disabled 的淡墨）。
+   觸發鈕仍是 shared.css 白名單放行的 button（見下），disabled 由各頁 applyReadonly 設，pointer-events 關掉當雙保險。
+   [data-edit-exempt] 區段（自己有編輯態的方案編輯器、活動準備清單）不歸兩段式管，整組排除。 */
+[data-mode="view"] .select:not([data-edit-exempt] *),
+[data-mode="view"] .zselect__trigger:not([data-edit-exempt] *) {
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  box-shadow: none;
+  border: 0;
   background: transparent;
-  color: var(--locked-field-ink);
-  cursor: not-allowed;
-  user-select: none;
-  -webkit-user-select: none;
+  background-image: none;
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  line-height: var(--lh-normal);
+  color: var(--foreground);
+  cursor: default;
+  pointer-events: none;
+  appearance: none;
+  -webkit-appearance: none;
 }
-/* 唯讀的長文不該給拖曳把手 */
-[data-mode="view"] .textarea { resize: none; }
-/* select 沒有 readonly，JS 是用 disabled 擋（見 project-detail.html 的
-   applyReadonly），瀏覽器自己會處理外觀，這裡不再另外壓平。 */
-[data-mode="view"] .select { pointer-events: none; }
-/* div 做的開關與單選清單（商品詳情的 .switch／.radio-list 不是 button，上面那條白名單掃不到）：
-   檢視模式下同樣不可點，只呈現目前值（2026-09-11 商品設定分頁改預設唯讀時補）。 */
+[data-mode="view"] .zselect__trigger:disabled:not([data-edit-exempt] *),
+[data-mode="view"] .select:disabled:not([data-edit-exempt] *) { color: var(--foreground); cursor: default; opacity: 1; }
+[data-mode="view"] .zselect__trigger:not([data-edit-exempt] *) .zselect__caret { display: none; }
+/* 標籤輸入欄：chips 本身就是值——欄位框、薄膜底、內距與最小高度都收掉，只剩一排 chip；
+   × 由下方白名單藏掉（它是 button），chip 為 × 預留的 26px 對稱內距回到一般 chip 的 12px。 */
+[data-mode="view"] .tag-input__field {
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+[data-mode="view"] .tag-input__field .chip--removable { padding-inline: var(--sp-12); }
+/* 開關、單選卡、單選清單、選擇卡：本來就是「狀態展示」不是可填的框，維持原元件、不可操作
+   （Q119 例外清單）。div 做的 .switch／.radio-list 不是 button，上面那條白名單掃不到，這裡關 pointer-events。
+   .segmented 只鎖 .radio-cards 那種「單選卡」用法——同一個殼在總覽分頁也拿來當圖表區間切換（data-view-safe），
+   那是檢視態也要能點的檢視控制，不在此列；活動總覽的待辦清單 .zcheck 同理（本來就是檢視態打勾的清單）。 */
 [data-mode="view"] .switch,
 [data-mode="view"] .radio-list,
+[data-mode="view"] .segmented.radio-cards,
 [data-mode="view"] .selection-card { pointer-events: none; }   /* selection-card 是 button 做的單選卡（組合設定的庫存版本），同單選清單：唯讀時看得到選了哪個、不能點 */
-/* 鎖住的欄位不該閃一個它無法履行的 focus ring，但仍可用鍵盤走到、供閱讀。 */
-[data-mode="view"] .input:focus,
-[data-mode="view"] .input:focus-visible,
-[data-mode="view"] .textarea:focus,
-[data-mode="view"] .textarea:focus-visible { outline: none; }
 /* 會改動內容的入口在檢視模式一律不出現：上傳圖磚的替換／裁切／刪除、
    ＋新增類按鈕、開啟編輯彈窗的按鈕。純導覽或唯讀的按鈕不受影響。 */
 /* 白名單，不是黑名單：檢視模式下「所有按鈕」一律不出現，只放行明確標記為
@@ -1973,7 +1991,9 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 [data-mode="view"] .tag-input__entry,
 [data-mode="view"] .tag-input__suggest-label { display: none; }   /* 建議候選的標籤：候選 chip 是 button、已藏，標籤單獨留著是空標題 */
 /* 表單填寫用的提示語（「拖曳可換順序」「在這裡直接編輯」）在唯讀狀態是誤導 */
-[data-mode="view"] .field__hint { display: none; }
+[data-mode="view"] .field__hint:not(.field__hint--fact) { display: none; }
+/* 必填星號是「填寫」的提示，檢視態沒有東西要填（Q119 同輪） */
+[data-mode="view"] .field__req { display: none; }   /* --fact＝事實說明（算式、費率口徑），唯讀態照常顯示（ds-components/field-system.css，2026-09-18） */
 /* 元件層有一條 .upload-tile.is-filled .upload-tile__actions { display:flex }（ds-components/
    upload-tile.css），權重比上面那條 [data-mode="view"] .upload-tile__actions 高，會把已填圖格的
    替換／刪除留在畫面上。這裡補一條同樣帶 .is-filled/.is-optimized 的，權重才壓得過去，
