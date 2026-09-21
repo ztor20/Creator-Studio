@@ -44,6 +44,7 @@
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2"><!-- 2026-09-21 第 2 批：原價算式列 .bd-calc-list 與售價讀數 .bd-readout--big，對齊建立組合／建立活動第 6 步 -->
 <link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/picker.css?v=r2.2">
@@ -57,9 +58,8 @@
      且把名稱／描述／素材／成員／價格／庫存／折扣／上架設定八件事塞在同一張 span-7 卡裡。
      內容一項未增減，只重新分組進 tab-panel（規格 §3 明定分欄與版面由 UI 端決定、非約束）。
      折扣 % 後綴輸入用 ds-components/amount-field.css 的 --suffix --readonly 變體（2026-07-11）。 */
-  /* 組合價格（自動 base ＋ 折扣）D103 */
-  .cb-priceline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-  .cb-autoprice { font-family: var(--font-display); font-size: var(--fs-18); font-weight: var(--fw-regular); color: var(--foreground); }
+  /* 墓碑 2026-09-21 第 2 批：`.cb-priceline`／`.cb-autoprice`（組合價格的大字讀數）退場——原價合計改 bundle-editor.css 的
+     `.bd-calc-list`（逐項算式＋合計列）、售價改 `.field-readout.bd-readout--big`，與建立組合／建立活動第 6 步同一套。 */
   .cb-basestrike { font-size: var(--fs-13); color: var(--muted-foreground); text-decoration: line-through; }
   .cb-basestrike[hidden] { display: none; }
   /* 成員列的數量（每套用量）欄（2026-09-18 D292）：與未鎖定／已鎖定小字、單價同一列，寬度收到剛好放兩位數 */
@@ -389,9 +389,8 @@
           </div>
           <div class="field">
             <div class="field__label" data-i18n="cb.price.members-total">Members' list price total</div>
-            <div class="cb-priceline"><span class="cb-autoprice" id="bd-basetotal">$0.00</span></div>
-            <!-- 合計旁列算式（5.1.5.4 §4 F3，D292）：Σ（票價 × 張數）＋Σ（商品價 × 件數） -->
-            <div class="field__hint field__hint--fact" data-bd-calc-parts hidden></div>
+            <!-- 逐項算式（5.1.5.4 §4 F3，D292／D296；2026-09-21 第 2 批改 .bd-calc-list，同建立組合）：一成員一列＋怎麼算，末列合計 -->
+            <div data-bd-calc data-edit-exempt></div>
             <div class="field__hint" data-i18n="cb.price.auto-hint">Auto-summed from members' prices — not editable. Members with variants show “from $X”.</div>
             <!-- 平台費依成員型別分流（D292 裁決九／D293 裁決二，主規格 §7.6）：含票券整筆走活動票務費率；純商品維持組合商品葉節點。只呈現、不算數字 -->
             <div class="field__hint field__hint--fact" data-bd-fee-note hidden data-i18n="cb.fee.ticket-rate">Includes event tickets — the platform fee follows the event ticket rate for the whole bundle, not split by member.</div>
@@ -403,7 +402,8 @@
           </div>
           <div class="field" style="margin-bottom:0">
             <div class="field__label" data-i18n="cb.price.bundle">Selling price</div>
-            <div class="cb-priceline"><span class="cb-autoprice" id="bd-autoprice">$0.00</span></div>
+            <div class="field-readout bd-readout--big" id="bd-autoprice">$0.00</div>
+            <div class="field__hint field__hint--fact" data-bd-save></div><!-- 事實說明（粉絲省多少）：檢視態也要看得到，走 --fact -->
           </div>
         </section>
 
@@ -709,8 +709,15 @@
     }
     const EV_BADGE = { 'live': ['events.badge.live', 'warning'], 'on-sale': ['events.badge.on-sale', 'success'], 'draft': ['events.status.draft', 'neutral'],
                        'ended': ['events.badge.ended', 'neutral'], 'scheduled': ['events.badge.scheduled', 'neutral'], 'cancelled': ['event-detail.badge.cancelled', 'error'] };
-    const tixKey = (evId, tierId) => 'tix:' + evId + ':' + tierId;
+    const tixKey = (evId, tierIds) => 'tix:' + evId + ':' + [].concat(tierIds).join('+');
     const tierLeft = t => Math.max(0, (Number(t.qty) || 0) - (Number(t.sold) || 0));
+    /* 票券成員的池（2026-09-21 D296 決定四）：可售套數＝各允許票種 floor(剩餘 ÷ n) 加總。ListingState 的算法是
+       floor(池 ÷ 每套用量)，所以把池寫成 n × Σ floor(剩餘 ÷ n)，兩邊算出同一個數；n 改動時重算（refreshTicketPool）。 */
+    const tixPoolTotal = (lefts, n) => Math.max(1, n) * lefts.reduce((a, l) => a + Math.floor(l / Math.max(1, n)), 0);
+    const tixNamesText = (names, n) => names.length > 1
+      ? T0('cpp.bd.sum.any', '{names} (pick one) × {n}').replace('{names}', names.join('／')).replace('{n}', String(n))
+      : T0('cpp.bd.sum.line', '{name} × {n}').replace('{name}', names[0] || '').replace('{n}', String(n));
+    const moneyFromText = (txt, multi) => multi ? T0('cpp.bd.price.from', 'from {sum}').replace('{sum}', txt) : txt;
     /* 假商品（extraProducts）：票券成員與 products-store 查不到的活動組合包商品成員都包成 ListingState 認得的形狀
        （一顆池＋三態鎖定量），可售套數、鎖定套數上限與商品成員同一套算法；本頁 productOf()／allProducts() 先查這裡再查 store。 */
     const extraProducts = {};
@@ -719,15 +726,22 @@
       const evName = (ev.name || '').trim() || T0('event-detail.untitled', 'Untitled event');
       const listedByEv = ev.status === 'on-sale' || ev.status === 'live' || ev.status === 'scheduled' || ev.status === 'ended';
       const members = [], memberItems = [];
-      (b.tickets || []).forEach(x => {
-        const t = (ev.tiers || []).find(tt => tt.id === x.id); if (!t) return;
-        const key = tixKey(ev.id, t.id);
-        extraProducts[key] = { id: key, kind: 'ticket', eventId: ev.id, tierId: t.id, eventName: evName, tierName: t.name, name: evName + ' · ' + t.name,
-          price: Number(t.price) || 0, imgSrc: (ev.images && ev.images.keyvisual) || '',
-          pool: { total: tierLeft(t), locks: { single: null, bundles: {} } }, listed: listedByEv && ev.status !== 'ended', onSale: true };
-        members.push({ productId: key, kind: 'ticket', eventId: ev.id, tierId: t.id, qty: Number(x.qty) > 0 ? Number(x.qty) : 1 });
-        memberItems.push({ id: key, kind: 'ticket', name: t.name, eventName: evName, eventId: ev.id, meta: [ev.date || '', ev.venue || ''].filter(Boolean).join(' · '), priceAmount: Number(t.price) || 0, price: '$' + (Number(t.price) || 0).toLocaleString('en-US'), imgSrc: (ev.images && ev.images.keyvisual) || '', qty: Number(x.qty) > 0 ? Number(x.qty) : 1, left: tierLeft(t) });
-      });
+      /* 票券成員（2026-09-21 D296）：一筆＝允許票種清單 × 每組張數，粉絲任選一種。包成一顆假商品：
+         名稱「活動名 · VIP／Floor 任選 × n」、單價＝最低允許票價（多種時是下界、顯示「從 … 起」）、池＝n × Σ floor(剩餘 ÷ n)。 */
+      const tk = EV.bundleTickets(b);
+      const tiersIn = tk.tierIds.map(id => (ev.tiers || []).find(tt => tt.id === id)).filter(Boolean);
+      if (tiersIn.length) {
+        const key = tixKey(ev.id, tiersIn.map(t => t.id));
+        const names = tiersIn.map(t => t.name), lefts = tiersIn.map(tierLeft);
+        const minPrice = tiersIn.reduce((m, t) => Math.min(m, Number(t.price) || 0), Infinity);
+        extraProducts[key] = { id: key, kind: 'ticket', eventId: ev.id, tierIds: tiersIn.map(t => t.id), tierNames: names, tierLefts: lefts, eventName: evName,
+          name: evName + ' · ' + tixNamesText(names, tk.qty), price: minPrice, priceFrom: names.length > 1, imgSrc: (ev.images && ev.images.keyvisual) || '',
+          pool: { total: tixPoolTotal(lefts, tk.qty), locks: { single: null, bundles: {} } }, listed: listedByEv && ev.status !== 'ended', onSale: true };
+        members.push({ productId: key, kind: 'ticket', eventId: ev.id, tierIds: tiersIn.map(t => t.id), qty: tk.qty });
+        memberItems.push({ id: key, kind: 'ticket', name: names.join('／'), tierNames: names, tierLefts: lefts, priceFrom: names.length > 1, eventName: evName, eventId: ev.id,
+          meta: [ev.date || '', ev.venue || ''].filter(Boolean).join(' · '), priceAmount: minPrice, price: moneyFromText('$' + minPrice.toLocaleString('en-US'), names.length > 1),
+          imgSrc: (ev.images && ev.images.keyvisual) || '', qty: tk.qty });
+      }
       const store0 = window.ProductsStore;
       (b.products || []).forEach((pr, i) => {
         /* 商品成員：events-store 只記 { name, img, price }；先用名稱對回當前 persona 的商品記錄（真的池與鎖定），對不到就包一顆不限量的假商品 */
@@ -740,7 +754,8 @@
         const qty = Number(pr.qty) > 0 ? Number(pr.qty) : 1;
         const amt = real ? (Number(String(real.price || '').replace(/[^0-9.]/g, '')) || 0) : (Number(pr.price) || 0);
         members.push({ productId: key, kind: 'product', qty: qty });
-        memberItems.push({ id: key, kind: 'product', real: !!real, name: pr.name, meta: real && real.subLabel ? real.subLabel : '', priceAmount: amt, price: '$' + amt.toLocaleString('en-US'), imgSrc: real && real.img ? 'images/products/' + real.img : (pr.img || ''), qty: qty });
+        memberItems.push({ id: key, kind: 'product', real: !!real, name: pr.name, meta: real && real.subLabel ? real.subLabel : '', priceAmount: amt, price: '$' + amt.toLocaleString('en-US'), imgSrc: real && real.img ? 'images/products/' + real.img : (pr.img || ''), qty: qty,
+          multi: !!(real && real.variant === 'multiple' && (real.variants || []).length) });   /* D295：多選項商品標「規格由粉絲購買時選」 */
       });
       const evSeed = {
         id: b.id, isEventBundle: true, name: b.name, description: '', persona: null,
@@ -792,15 +807,28 @@
       + '<input class="amount-field__input input zstep__input" type="number" min="1" step="1" value="' + esc(String(v)) + '" data-bd-qty aria-label="Quantity per set" data-i18n-aria-label="cb.qty.label">'
       + '<span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button>'
       + '<button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>';
+    /* 規格說明（D295，同建立組合／建立活動第 6 步）：「單一規格」或「多規格 · 尺寸、顏色，粉絲購買時選」——選項名讀商品記錄的 options */
+    const optNameOf = name => { const parts = String(name || '').split(/\s*\/\s*/); if (parts.length < 2) return String(name || ''); return document.documentElement.lang === 'zh-Hant' ? parts[parts.length - 1] : parts[0]; };
+    function specTextOf(item) {
+      const p = (window.ztorGetProduct && window.ztorGetProduct(item.id)) || null;
+      const opts = p && p.variant === 'multiple' && Array.isArray(p.options) && p.options.length ? p.options : null;
+      if (!opts) return item.multi ? T0('cpp.bd.item.spec', 'Options chosen by the fan at purchase') : T0('cpp.bd.sp.spec.single', 'Single option');
+      return T0('cpp.bd.sp.spec.multi', 'Options · {opts}, chosen by the fan').replace('{opts}', opts.map(o => optNameOf(o.name)).join(document.documentElement.lang === 'zh-Hant' ? '、' : ', '));
+    }
     function memberRowHTML(item) {
       const tix = item.kind === 'ticket';
       const icon = item.imgSrc ? '<img class="data-list__thumb data-list__thumb--lg" src="' + esc(item.imgSrc) + '" alt="">' : '<div class="data-list__icon"><i data-lucide="' + (tix ? 'ticket' : 'package') + '" class="ztor-icon"></i></div>';
       /* 票券列：活動名太長，次要資訊（日期 · 場地 · 每張各自 QR）另起 .data-list__meta 一行，塞同一行會被截掉 */
+      /* 票券列標題（2026-09-21 D296）：「活動名 · VIP／Floor 任選 × n」（一種「VIP × n」）；meta 逐票種寫剩餘。
+         商品列（D295）：多選項商品補「規格由粉絲購買時選」。 */
+      const tixMany = tix && (item.tierNames || []).length > 1;
       const title = tix
-        ? '<a class="card__link" href="event-detail.html?id=' + esc(item.eventId) + '">' + esc(item.eventName) + '</a> · ' + esc(item.name) + ' × <span data-bd-qty-echo>' + esc(String(item.qty)) + '</span>'
-        : (item.real !== false ? '<a class="card__link" href="product-detail.html?id=' + esc(item.id) + '">' + esc(item.name) + '</a>' : esc(item.name)) + ' <span class="text-sub">' + esc(item.meta) + '</span>';
-      const metaLine = tix ? '<div class="data-list__meta">' + esc(item.meta) + ' · <span data-i18n="cb.tix.each-qr">' + esc(T0('cb.tix.each-qr', 'each ticket has its own QR')) + '</span></div>' : '';
-      return '<div class="data-list__row" data-bd-pid="' + esc(item.id) + '" data-bd-kind="' + (tix ? 'ticket' : 'product') + '" data-bd-per="' + esc(String(item.qty || 1)) + '" data-bd-price="' + esc(String(item.priceAmount != null ? item.priceAmount : '')) + '"><div class="data-list__row-main">' + icon
+        ? '<a class="card__link" href="event-detail.html?id=' + esc(item.eventId) + '">' + esc(item.eventName) + '</a> · ' + esc(item.name) + (tixMany ? ' <span data-i18n="ed.bd.any-suffix">' + esc(T0('ed.bd.any-suffix', '(pick one)')) + '</span>' : '') + ' × <span data-bd-qty-echo>' + esc(String(item.qty)) + '</span>'
+        : (item.real !== false ? '<a class="card__link" href="product-detail.html?id=' + esc(item.id) + '">' + esc(item.name) + '</a>' : esc(item.name)) + ' <span class="text-sub">' + esc(item.meta) + '</span>'
+          + ' <span class="text-sub">' + esc(specTextOf(item)) + '</span>';   /* 2026-09-21 第 2 批：單一規格／多規格 · 選項名（同建立組合的 specText） */
+      const leftBits = tix ? (item.tierNames || []).map((nm, i) => T0('cb.tix.left-of', '{name} {n} left').replace('{name}', nm).replace('{n}', String((item.tierLefts || [])[i] != null ? item.tierLefts[i] : '—'))) : [];
+      const metaLine = tix ? '<div class="data-list__meta">' + esc([item.meta].concat(leftBits).filter(Boolean).join(' · ')) + ' · <span data-i18n="cb.tix.each-qr">' + esc(T0('cb.tix.each-qr', 'each ticket has its own QR')) + '</span></div>' : '';
+      return '<div class="data-list__row" data-bd-pid="' + esc(item.id) + '" data-bd-kind="' + (tix ? 'ticket' : 'product') + '" data-bd-per="' + esc(String(item.qty || 1)) + '" data-bd-price="' + esc(String(item.priceAmount != null ? item.priceAmount : '')) + '"' + (tixMany ? ' data-bd-price-from="1"' : '') + '><div class="data-list__row-main">' + icon
         + '<div class="data-list__body"><div class="data-list__title">' + title
         /* 成員已封存／已下架（D284／D288，5.1.5.9 §2.3）：列上標徽章（由 syncMemberBadges() 填、重新上架後重畫），成交條件提示另在可售套數那一句 */
         + ' <span data-bd-member-badge></span>'
@@ -865,7 +893,7 @@
     const memberOfRow = r => {
       const m = { productId: r.getAttribute('data-bd-pid'), kind: r.getAttribute('data-bd-kind') || 'product', qty: Math.max(1, Math.floor(Number(r.getAttribute('data-bd-per'))) || 1) };
       const ex = extraProducts[m.productId];
-      if (ex && ex.kind === 'ticket') { m.eventId = ex.eventId; m.tierId = ex.tierId; }
+      if (ex && ex.kind === 'ticket') { m.eventId = ex.eventId; m.tierIds = ex.tierIds; }
       return m;
     };
     const bundleModel = {
@@ -1034,12 +1062,12 @@
       const over = setsInput && setsInput.value.trim() !== '' && !isNaN(wanted) && wanted > lim.max;
       /* 鎖定套數欄：提示寫上限與誰壓的；超過上限紅字、不寫進模型（模型停在上一個合法值） */
       if (setsInput) { if (over) setsInput.setAttribute('aria-invalid', 'true'); else setsInput.removeAttribute('aria-invalid'); }
+      /* 鎖定套數提示句（2026-09-21 第 2 批改 cpp.bd.sp.lock.*，同建立組合／建立活動第 6 步）：「空白＝不鎖定，與單賣共用剩餘。最多 N 套（受「票券／商品名」限制）」 */
       if (setsHint) {
-        const by = lim.by ? T('stock.capped-by', 'Capped by {name}').replace('{name}', lim.by.name || '') : '';
-        const maxTxt = (lim.max === Infinity) ? T('cb.stock.unlimited', 'Unlimited') : String(lim.max);
-        setsHint.textContent = over
-          ? T('bd.lock.sets.over', 'Over the limit: up to {n} sets').replace('{n}', maxTxt) + (by ? '（' + by + '）' : '')
-          : T('bd.lock.sets.hint', 'Up to {n} sets').replace('{n}', maxTxt) + (by ? '（' + by + '）' : '') + T('bd.lock.sets.blank', '; blank = not locked');
+        const who = lim.by ? (lim.by.kind === 'ticket' ? T('cpp.bd.sp.who.tix', 'tickets') : (lim.by.name || '')) : '';
+        setsHint.textContent = (lim.max === Infinity)
+          ? T('cpp.bd.sp.lock.none', 'Add a member first — nothing to lock yet')
+          : T(over ? 'cpp.bd.sp.lock.over' : 'cpp.bd.sp.lock.hint', 'Up to {n} sets (limited by {who})').replace('{n}', lim.max.toLocaleString('en-US')).replace('{who}', who);
         setsHint.classList.toggle('is-over', !!over);
       }
       bundleModel.members.forEach(m => {
@@ -1102,12 +1130,16 @@
       /* 可售套數的一句說明：鎖定時「鎖定 N 套」；不鎖定時寫是誰壓出這個數字（成員或組合上限） */
       const meta = document.querySelector('[data-bd-kpi-qty-meta]');
       if (meta) {
+        /* 2026-09-21 第 2 批：句型對齊建立組合的可售套數讀數（cpp.bd.sp.sets.*）——「最多 N 組 · 鎖定 N 套」／「· 受限量上限限制」／「· 受「票券剩餘／商品名庫存」限制」 */
         let txt = '';
-        if (n !== null) txt = T('bd.lock.meta.locked', 'Locked {n} sets').replace('{n}', n);
-        else if (qty !== Infinity) {
-          let name = lim.by ? lim.by.name : null;
-          if (capOn && bundleModel.cap <= lim.max) name = T('cb.total', 'Total quantity');
-          if (name) txt = T('stock.capped-by', 'Capped by {name}').replace('{name}', name);
+        const qtyTxt = qty === Infinity ? '' : qty.toLocaleString('en-US');
+        if (n !== null) {
+          txt = T('cpp.bd.sp.sets.locked', 'Up to {n} sets · {lock} locked').replace('{n}', qtyTxt || String(n)).replace('{lock}', String(n));
+          if (capOn && bundleModel.cap < n) txt += T('cpp.bd.sp.sets.capnote', ', capped at {cap}').replace('{cap}', String(bundleModel.cap));
+        } else if (qty !== Infinity) {
+          if (capOn && bundleModel.cap <= lim.max) txt = T('cpp.bd.sp.sets.capped', 'Up to {n} sets · limited by the cap').replace('{n}', qtyTxt);
+          else if (lim.by) txt = T('cpp.bd.sp.sets.by', 'Up to {n} sets · limited by {who}').replace('{n}', qtyTxt)
+            .replace('{who}', lim.by.kind === 'ticket' ? T('cpp.bd.sp.sets.by.tix', 'ticket supply') : T('cpp.bd.sp.sets.by.item', '{name} stock').replace('{name}', lim.by.name || ''));
         }
         /* 任一成員已下架或已封存 → 組合不可售（§7.14 成交條件，D284；D288 起是不變式的防線——常態下成員下架時組合會一同下架）：
            這一句蓋過鎖定／壓上限的說明 */
@@ -1478,21 +1510,35 @@
     const bdCurrency = (bundle && bundle.currency === 'TWD') ? 'NT$' : '$';
     const bdTWD = bdCurrency === 'NT$' || !!(bundle && bundle.intMoney);
     /* 算式文字（合計旁）：沿用活動側 bundle-editor 的 cpp.bd.calc.* 片語；件數 1 的商品不寫 × 1 */
-    function bdCalcPartsText() {
-      const rows = memberRows(); if (!rows.length) return '';
-      const parts = rows.map(r => {
-        const q = rowQty(r), pr = bdMoney(rowPrice(r));
+    /* 逐項算式（2026-09-21 第 2 批，同建立組合 calcListHTML）：票券列「VIP／Floor 任選 × n ＋ 最低票價 × n」、商品列名稱（× 件數）＋規格說明，末列合計 */
+    function bdCalcListHTML() {
+      const rows = memberRows();
+      if (!rows.length) return '<div class="field__hint">' + esc(T('cpp.bd.sp.calc.empty', 'Add members and the list price breaks down here.')) + '</div>';
+      const items = rows.map(r => {
+        const q = rowQty(r), pr = rowPrice(r), isTix = r.getAttribute('data-bd-kind') === 'ticket';
+        const ex = productOf(r.getAttribute('data-bd-pid'));
         const nameEl = r.querySelector('.data-list__title');
-        const nm = r.getAttribute('data-bd-kind') === 'ticket' ? ((productOf(r.getAttribute('data-bd-pid')) || {}).name || '') : ((nameEl && (nameEl.querySelector('a') || nameEl).childNodes[0] && (nameEl.querySelector('a') || nameEl).childNodes[0].textContent) || '').trim();
-        return (r.getAttribute('data-bd-kind') === 'ticket' || q > 1)
-          ? T('cpp.bd.calc.tix', '{name} {price} × {n}').replace('{name}', nm).replace('{price}', pr).replace('{n}', String(q))
-          : T('cpp.bd.calc.item', '{name} {price}').replace('{name}', nm).replace('{price}', pr);
+        const nm = isTix ? ((ex && ex.tierNames) ? ex.tierNames.join('／') : ((ex || {}).name || '')) : ((nameEl && (nameEl.querySelector('a') || nameEl).childNodes[0] && (nameEl.querySelector('a') || nameEl).childNodes[0].textContent) || '').trim();
+        if (isTix) {
+          const many = r.hasAttribute('data-bd-price-from');
+          return { k: many ? T('cpp.bd.sum.any', '{names} (pick one) × {n}').replace('{names}', nm).replace('{n}', String(q)) : T('cpp.bd.sum.line', '{name} × {n}').replace('{name}', nm).replace('{n}', String(q)),
+            how: T(many ? 'cpp.bd.sp.calc.how.any' : 'cpp.bd.sp.calc.how.one', '{price} × {n}').replace('{price}', bdMoney(pr)).replace('{n}', String(q)),
+            v: many ? T('cpp.bd.price.from', 'from {sum}').replace('{sum}', bdMoney(pr * q)) : bdMoney(pr * q) };
+        }
+        const multi = !!(ex && ex.variant === 'multiple' && (ex.variants || []).length);
+        const how = T(multi ? 'cpp.bd.sp.calc.how.item.multi' : 'cpp.bd.sp.calc.how.item.single', '');
+        return { k: q > 1 ? T('cpp.bd.sum.line', '{name} × {n}').replace('{name}', nm).replace('{n}', String(q)) : nm,
+          how: q > 1 ? bdMoney(pr) + ' × ' + q + (how ? ' · ' + how : '') : how,
+          v: bdMoney(pr * q) };
       });
-      return T('cpp.bd.calc.parts', '{parts} = {total}').replace('{parts}', parts.join(T('cpp.bd.price.calc.plus', ' + '))).replace('{total}', bdMoney(bdMemberSumNow()));
+      return '<div class="bd-calc-list">' + items.map(it => '<div class="kv"><span class="kv__k">' + esc(it.k) + (it.how ? '<span class="bd-calc-list__how">' + esc(it.how) + '</span>' : '') + '</span><span class="kv__v">' + esc(it.v) + '</span></div>').join('')
+        + '<div class="kv bd-calc-list__total"><span class="kv__k">' + esc(T('cpp.bd.calc.base', 'Full price')) + '</span><span class="kv__v" id="bd-basetotal">' + esc(bdMoneyFrom(bdMemberSumNow())) + '</span></div></div>';
     }
+    /* 允許多種票種時原價只是下界（D296 決定三）：原價合計、售價、hero 價都前綴「從 … 起」 */
+    const bdPriceFrom = () => memberRows().some(r => r.hasAttribute('data-bd-price-from'));
+    const bdMoneyFrom = v => bdPriceFrom() ? T('cpp.bd.price.from', 'from {sum}').replace('{sum}', bdMoney(v)) : bdMoney(v);
     const bdDisc = document.getElementById('bd-discount');
     if (bdDisc) bdDisc.value = (detail.discountPct != null && detail.discountPct !== '') ? String(detail.discountPct) : '';
-    const bdBaseEl = document.getElementById('bd-basetotal');
     const bdAuto = document.getElementById('bd-autoprice');
     const bdHint = document.getElementById('bd-disc-hint');
     const bdHeroPrice = document.querySelector('[data-bd-hero-price]');
@@ -1505,14 +1551,17 @@
       const pct = (ok && raw && v > 0) ? v : 0;
       const bdBase = bdBaseNow();
       const final = bdBase * (1 - pct / 100);
-      if (bdBaseEl) bdBaseEl.textContent = bdMoney(bdBase);
-      const partsEl = document.querySelector('[data-bd-calc-parts]');
-      if (partsEl) { const t = bdCalcPartsText(); partsEl.hidden = !t; partsEl.textContent = t; }
+      const calcEl = document.querySelector('[data-bd-calc]');
+      if (calcEl) calcEl.innerHTML = bdCalcListHTML();
       /* 平台費依成員型別分流（D293 裁決二）：含票券才露出說明 */
       const feeNote = document.querySelector('[data-bd-fee-note]');
       if (feeNote) feeNote.hidden = !hasTicketMember();
-      if (bdAuto) bdAuto.textContent = bdMoney(final);
-      if (bdHeroPrice) bdHeroPrice.textContent = bdMoney(final);
+      if (bdAuto) bdAuto.textContent = bdMoneyFrom(final);
+      /* 售價底下一句「粉絲省 $Z（12%）」／「折扣 0%，售價＝原價」（同建立組合 saveText） */
+      const saveEl = document.querySelector('[data-bd-save]');
+      if (saveEl) saveEl.textContent = !pct ? T('cpp.bd.sp.save.zero', '0% off — selling price = list price')
+        : T(bdPriceFrom() ? 'cpp.bd.sp.save.from' : 'cpp.bd.sp.save', 'Fans save {amt} ({pct}%)').replace('{amt}', bdMoney(bdBase - final)).replace('{pct}', String(Math.round(pct * 10) / 10));
+      if (bdHeroPrice) bdHeroPrice.textContent = bdMoneyFrom(final);
       if (window.bdRenderSettingsOverview) window.bdRenderSettingsOverview();
       if (bdHint) {
         bdHint.removeAttribute('data-i18n');
@@ -1877,7 +1926,7 @@
       /* 新加入的商品成員列：與載入時的列同一個模板（memberRowHTML），數量預設 1 */
       function memberRowHTML(p) {
         const amt = Number(String(p.price || '').replace(/[^0-9.]/g, '')) || 0;
-        return window.bdMemberRowHTML({ id: p.id, kind: 'product', real: true, name: p.name, meta: p.subLabel || p.catLabel || '', priceAmount: amt, price: bdMoney(amt), imgSrc: p.img ? 'images/products/' + p.img : '', qty: 1 });
+        return window.bdMemberRowHTML({ id: p.id, kind: 'product', real: true, name: p.name, meta: p.subLabel || p.catLabel || '', priceAmount: amt, price: bdMoney(amt), imgSrc: p.img ? 'images/products/' + p.img : '', qty: 1, multi: !!(p.variant === 'multiple' && (p.variants || []).length) });
       }
       /* 已售出後成員內容鎖定（D292 裁決七，5.1.5.9 §2.3）：已售任何一套之後，成員清單（票券與商品）與各成員數量不可再改——
          加入區收起、移除鈕藏起、數量欄停用，並在清單上方說明理由與仍可改的東西（售價／折扣／販售上限／停售）。 */
@@ -1904,6 +1953,9 @@
         row.setAttribute('data-bd-per', String(q));
         const m = bundleModel.members.find(x => x.productId === row.getAttribute('data-bd-pid')); if (m) m.qty = q;
         const echo = row.querySelector('[data-bd-qty-echo]'); if (echo) echo.textContent = String(q);
+        /* 票券成員改每組張數（D296）：池＝n × Σ floor(剩餘 ÷ n) 要跟著 n 重算，可售套數才對 */
+        const ex = extraProducts[row.getAttribute('data-bd-pid')];
+        if (ex && ex.kind === 'ticket' && ex.tierLefts) { ex.pool.total = tixPoolTotal(ex.tierLefts, q); ex.name = ex.eventName + ' · ' + tixNamesText(ex.tierNames, q); }
         applyLock(); renderAlloc(); refreshAlloc();
         if (window.bdRecalc) window.bdRecalc();
         renderBdSettingsOverview();

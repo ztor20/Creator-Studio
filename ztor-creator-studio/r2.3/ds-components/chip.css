@@ -16,6 +16,7 @@
          .chip__count  (optional · separator + faded number)
        .chip--active   (inverted bg)
        .chip--static   (read-only chip · no hover affordance)
+       .chip:disabled  (option currently unavailable · faded + struck, 2026-09-21)
      .filter-row       (chip-group + actions row · space-between)
        .filter-row__actions
    ============================================================ */
@@ -75,6 +76,18 @@
    不該有 hover 高亮暗示可點。
    ztorUI 換裝（2026-08-28 Wave 2b）：底跟著 .chip 改吃 --ztu-film。舊值：var(--input-surface)。 */
 .chip--static:hover { background: var(--ztu-film); color: var(--foreground-muted); }
+
+/* 停用（2026-09-21，首個消費者＝組合包預覽卡的票種／規格選擇器）：這個選項現在選不到——
+   剩餘不足一組的票種、沒貨的規格。淡化＋劃線＋禁止游標，hover 不變色；仍留在排上，
+   粉絲才看得出「本來有這一種、只是現在沒了」，藏起來會讀成從來沒有。 */
+.chip:disabled,
+.chip[aria-disabled="true"] {
+  opacity: .4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+.chip:disabled:hover,
+.chip[aria-disabled="true"]:hover { background: var(--ztu-film); color: var(--foreground-muted); }
 
 /* --value · 創作者剛輸入的值（多規格的選項值）。中性淡填、不反白：
    這種 chip 是「我剛打進去的資料」，不是被選中的篩選條件，不該是全頁最搶眼的東西

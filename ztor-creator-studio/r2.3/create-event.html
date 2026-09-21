@@ -50,6 +50,11 @@
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stepper.css?v=r2.2">   <!-- 2026-09-18：票券清單表的張數步進器（.zstep） -->
+<!-- 2026-09-21 第 6 步兩欄版型（bundle-editor `layout:'split'`）：語意句 insight-row、鎖定套數 lock-sets、
+     右欄「粉絲看到的」預覽卡 bundle-preview-card；markup 由 js/bundle-editor.js 動態產生，check 15 掃不到、要手動連 -->
+<link rel="stylesheet" href="ds-components/insight-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bundle-preview-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
@@ -908,7 +913,10 @@
              最大高度與疊卡間距全部沒生效（捲動時右軌跟著跑掉）。 -->
         <aside class="wizard-split__rail">
           <!-- 右軌報的是「這一步會牽動誰」，不是把左邊的票單再列一次（2026-08-13 改）：
-               用到的票排前面並標「被 N 組用到」，沒被綁到的收成一行。 -->
+               用到的票排前面並標「被 N 組用到」，沒被綁到的收成一行。
+               2026-09-21 保留：編輯器改兩欄版型後，「粉絲看到的」預覽卡住在彈窗右欄、只在編輯當下
+               出現；這一條右軌回答的是跨組合包的「這場的票被哪幾組綁到」，彈窗關掉後仍看得到，
+               兩者不重複。 -->
           <div class="card fd-ov">
             <h3 class="fd-ov__title" data-di="d.bd.pool">影響範圍</h3>
             <div id="ce-bd-pool"></div>
@@ -1543,13 +1551,13 @@
     setRev("tickets",
       s.tiers > 0 ? T("ce.rev.tiersn", "{n} tiers").replace("{n}", s.tiers) : "",
       "ce.ph.0tiers", "0 tiers");
-    /* 組合包（2026-09-18）：只算已送出的組（`fresh` 的還在編輯、不是清單上的東西），
-       票券張數合計由編輯器算（ticketCount），不在這裡再掃一次票券清單。
+    /* 組合包（2026-09-18；2026-09-21 D296 改語意）：只算已送出的組（`fresh` 的還在編輯、不是清單上的東西），
+       每組張數由編輯器算（ticketCount＝整組張數 n），不在這裡再掃一次票券清單；各組張數不同時並列寫「1／2」。
        bundleEd 宣告在後面（var，會被提升），初始化前這裡讀到 null → 顯示「無」。 */
     const bl = (typeof bundleEd !== "undefined" && bundleEd) ? bundleEd.getBundles().filter(b => !b.fresh) : [];
-    const tixM = bl.reduce((sum, b) => sum + bundleEd.ticketCount(b), 0);
+    const tixM = bl.map(b => bundleEd.ticketCount(b)).filter(n => n > 0).filter((n, i, a) => a.indexOf(n) === i).join("／") || "0";
     setRev("bundles",
-      bl.length ? T("ce.rev.bundlesn", "{n} bundles · {m} tickets inside").replace("{n}", bl.length).replace("{m}", tixM) : "",
+      bl.length ? T("ce.rev.bundlesn", "{n} bundles · {m} tickets per set").replace("{n}", bl.length).replace("{m}", tixM) : "",
       "ce.ph.nobundles", "None");
 
     // A2 — Quality check 即時打勾
@@ -3976,8 +3984,17 @@
       /* 多場活動時票名要帶場次：同一個票種在每一場各有一張，只寫票種名的話
          清單上會出現三個一模一樣的「搖滾區」，勾錯了也看不出來。 */
       /* 分段版型（2026-08-13 使用者裁決，源自 docs/bundle-step-demo.html）：
-         卡片改成內容 → 定價 → 包裝三段，票種挑選器依場次分組。 */
-      layout: "sections",
+         卡片改成內容 → 定價 → 包裝三段，票種挑選器依場次分組。
+         2026-09-21 改兩欄版型 `split`（使用者看過 docs/bundle-create-demo-2026-09-21.html 後裁示
+         「做上正式」）：彈窗左欄三段分卡（內容 → 定價與數量 → 命名與上架）、右欄粉絲看到的
+         預覽卡、footer 粉絲實付；名稱由內容自動建議；上架只寫「跟著活動」一句。 */
+      layout: "split",
+      /* 所屬活動（命名與上架段「跟著活動 {活動名}（草稿）」與預覽卡的徽章）：這一頁建的活動還沒發布，
+         狀態一律草稿——組合包隨活動發布（D293 裁決四／D294 決定二）。名稱即時讀步驟 2 的欄位。 */
+      event: () => {
+        const nameEl = document.querySelector('[data-ce="name"]');
+        return { name: (nameEl && nameEl.value.trim()) || "", status: "draft", label: T("events.badge.draft", "Draft") };
+      },
       /* group／kind 是挑選器的分組與跨場捷徑用的（見 bundle-editor.js 的說明）：
          group＝這張票屬於哪一場、kind＝它是哪一個票種。單場活動 group.name 留空，
          挑選器就不畫組頭——單場沒有「哪一場」要區分。 */
@@ -3996,6 +4013,8 @@
       }),
       pool: 0,
       perSlot: 0,
+      /* 預帶（2026-09-21 D296，5.1.6.1 §4.6 F20）：新增組合包時本活動全部票種都允許、張數 1，創作者取消勾選來收窄。 */
+      defaultAllTiers: true,
       collapsedByDefault: false,
       onChange: () => { renderBundlePool(); syncBundleEmpty(); syncReview(); scheduleSave(); }
     });
@@ -4026,10 +4045,10 @@
     const bundles = bundleEd ? bundleEd.getBundles() : [];
     const list = savedTiers();
     if (!list.length) { box.innerHTML = '<p class="field__hint">' + esc(dT("d.quick.none")) + '</p>'; return; }
-    /* 票券清單是 [{id, qty}]（2026-09-18 D292；舊字串陣列視為 1 張）。
-       右軌每張票報「被幾組用到、每組幾張」——張數不同的組並列寫（例：每組 2／1 張）。 */
-    const usedIn = t => bundles.map(b => ((b.tickets || []).filter(x => (x && x.id != null ? x.id : x) === t.id)[0]))
-      .filter(Boolean).map(x => (x.qty != null ? Number(x.qty) || 1 : 1));
+    /* 票券成員是 `{ tierIds, qty }`（2026-09-21 D296；舊 `[{id, qty}]` 由 events-store 的相容層讀）。
+       右軌每張票報「N 組可選 · 每組幾張」——被列進允許清單＝粉絲買那一組時可以選到它；張數不同的組並列寫（例：每組 2／1 張）。 */
+    const tixOf = b => (window.ztorEvents && window.ztorEvents.bundleTickets) ? window.ztorEvents.bundleTickets(b) : { tierIds: [], qty: 1 };
+    const usedIn = t => bundles.map(tixOf).filter(x => x.tierIds.indexOf(t.id) >= 0).map(x => x.qty);
     const usedN = t => usedIn(t).length;
     const perSet = t => usedIn(t).filter((q, i, a) => a.indexOf(q) === i).join("／");
     const idle = list.filter(t => !usedN(t));
@@ -4094,7 +4113,7 @@
     "d.bd.pool":      { en: "What this step affects", zh: "影響範圍" },
     "d.bd.pool.none": { en: "No bundles yet — every ticket still sells on its own. Bundle some and this lists which tickets get pulled in.",
                         zh: "尚未建立組合包，各票券單獨販售。建立後將列出受影響的票券。" },
-    "d.bd.pool.n":    { en: "in {n} bundles · {m} each", zh: "由 {n} 組使用 · 每組 {m} 張" },
+    "d.bd.pool.n":    { en: "pickable in {n} bundles · {m} per set", zh: "{n} 組可選 · 每組 {m} 張" },
     "d.bd.pool.idle": { en: "The other {n} tickets aren’t bundled — they sell on their own.",
                         zh: "其餘 {n} 張票券未納入組合包，單獨販售。" },
     "d.bd.empty.h":   { en: "No bundles yet",    zh: "尚未建立組合包" },

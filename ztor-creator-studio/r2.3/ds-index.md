@@ -390,7 +390,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 154 支；主 class 前 5 個）
+## 元件（ds-components/，共 155 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -405,6 +405,7 @@
 - `bento.css` — .bento, .bento--top, .bento__stack, .bento__stack--fill ｜ Bento — 12-column grid utility for dashboard / p
 - `brand-card.css` — .brand-grid, .brand-card, .brand-card__head, .brand-card__logo, .brand-card__mark ｜ Ztor — Brand partner card
 - `bundle-editor.css` — .fc-bundle-col, .fc-bundle, .fc-bundle__body, .bd-group, .bd-group__title ｜ bundle-editor.css · 套組編輯器（共創募資回饋方案）
+- `bundle-preview-card.css` — .bpc__title, .bpc, .bpc__list, .bpc__row, .bpc__what ｜ bundle-preview-card.css · 粉絲端組合包預覽卡（建立組合包時右欄「粉絲看
 - `button.css` — .btn, .btn--primary, .btn--outline, .btn--ghost, .btn--destructive ｜ Ztor Creator Studio · R 2.1 — Button
 - `canvas-home.css` — .canvas-home-shell, .canvas-hero, .canvas-below, .canvas-sheet, .canvas-sheet__foot ｜ canvas-home — 一屏不捲的展示版型（2026-08-31 建）
 - `canvas-stage.css` — .canvas-stage, .canvas-stage__bg, .canvas-stage__img, .canvas-stage__scrim, .canvas-stage__marker ｜ canvas-stage — 首頁展示版的滿版舞台（2026-08-31 建）

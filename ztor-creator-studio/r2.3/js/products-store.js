@@ -1540,7 +1540,9 @@
       return {
         id: p.id || m.productId, name: p.name,
         meta: (p.subLabel ? bilingual(p.subLabel, ' · ') + ' · ' : '') + priceText(p),
-        price: priceText(p), img: p.img || ''
+        price: priceText(p), img: p.img || '',
+        /* 2026-09-21（D295）：多選項成員在細節頁成員列標「規格由粉絲購買時選」 */
+        multi: p.variant === 'multiple' && (p.variants || []).length > 0
       };
     });
     var baseAmount = (seed.members || []).reduce(function (n, m) { return n + priceAmountOf(products[m.productId]); }, 0);

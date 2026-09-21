@@ -166,6 +166,25 @@ Q107 當時只裁決「要不要建新元件」，元件落地後使用者看過
 
 ## 待裁決
 
+### Q121 · 同一套「建立組合包」建構體驗有兩份實作：共用編輯器彈窗（活動第 6 步）vs 頁面級表單（電子商店建立組合）（2026-09-21 提出，暫維持兩份、待裁決）
+
+第 2 批把電子商店 `create-bundle.html` 對齊第 1 批的版面與文案後，站上「左三段建構、右粉絲預覽卡、底部粉絲實付」這一套體驗有兩份程式：
+
+- 現況 A（第 1 批）：`js/bundle-editor.js` `layout:'split'`——彈窗殼、一次只編輯一組、其餘收成列；消費者 `create-event.html` 第 6 步（募資兩頁走 `layout:'sections'`）。預覽卡 markup 由編輯器內的 `fanHTML()` 產生。
+- 現況 B（第 2 批）：`create-bundle.html` 自己的頁內 IIFE——頁面級三張 `form-section--outlined`、右欄 `preview-col`、`wizard__bottom`；重用同一批元件 CSS（`bundle-preview-card`、`bd-tbl--tix`／`--items`、`bd-calc-list`、`bd-disc`、`bd-readout--big`、`bd-listing`、`bd-foot-*`）與同一批文案 key（`cpp.bd.sp.*`），但 `fanHTML()`／算式／鎖定提示各有一份（證據：`create-bundle.html` 頁尾 script 的 `fanHTML()`／`calcListHTML()`／`setsText()`；`js/bundle-editor.js` 同名函式）。
+- 為什麼沒合流：電子商店脈絡多了挑活動子流程、候選商品的下架／封存資格、完整三開關、限時折扣、電影關聯、十格素材、嵌入建立商品、ListingState 鎖定分配表；要塞進編輯器得新增頁面級殼與六種插槽，而編輯器每次改動整卡重畫（`render()` 換 innerHTML），插槽裡的日期時間欄與開關會丟狀態——動到的是募資兩頁與建立活動共用的渲染迴圈。
+- 選項與取捨：**A** 把編輯器抽成「頁面級、可插槽、局部更新」的版本，電子商店改掛它（單一實作，但要重寫 render 策略、三個既有消費頁全部回歸）；**B** 維持兩份，但把純算式（最低票價 × n、規格價取最小、Σ floor(剩餘 ÷ n)、鎖定／限量取小、省多少）抽成 `js/bundle-calc.js` 共用，兩頁只各留 DOM 層；**C** 維持現況，靠元件 CSS＋文案 key 對齊、以截圖對照守住視覺一致。
+- 建議：B——算式是最容易分岔、也最不該分岔的一層；DOM 層兩份是因為兩個殼（彈窗 vs 頁面）本來就不同。裁決權在使用者，本輪先走 C 落地、不動編輯器。
+
+### Q120 · 粉絲端預覽卡的媒體格比例：商品／拍賣預覽卡直式 2:3，組合包預覽卡 2:1（2026-09-21 提出，暫依 demo 定案，待裁決）
+
+建立活動第 6 步的組合包編輯器改成兩欄版面（UI-CHANGES 五十三）時，右欄「粉絲看到的」預覽卡（新元件 `ds-components/bundle-preview-card.css`）沿用 `preview-card` 為底，但媒體格的比例與 2026-07-31 定下的規則不同。
+
+- 現況 A（既有，2026-07-31 使用者裁示）：`.preview-card__media { aspect-ratio: var(--img-portrait) }`（`ds-components/preview-card.css`）——「這張卡的職責是粉絲會看到的樣子，建立流程的主圖槽已是 750×1125；預覽框若還是橫式，剛上傳的直式圖會在預覽裡被切成橫帶，等於預覽騙人」。消費者：create-product／create-auction／create-bundle／create-project 的右欄預覽、order-detail 的商品快照。
+- 現況 B（本輪新增，demo 定案）：`.bpc .preview-card__media { aspect-ratio: 2 / 1 }`（`ds-components/bundle-preview-card.css`）——組合包預覽卡坐在彈窗 340px 側欄裡，直式 2:3 會吃掉 510px、把粉絲真正要看的內含清單與價格推到第二屏；demo `docs/bundle-create-demo-2026-09-21.html` 用 2:1，使用者看過裁示「做上正式」。組合包封面的上傳格仍是直式（`.upload-tile--portrait`），所以 A 的理由（預覽裁切與上傳不一致）在這裡同樣成立。
+- 選項與取捨：**A** 組合包預覽卡改回直式（與上傳格一致、規則單一；代價是側欄第一屏只剩圖）；**B** 維持 2:1 但寫成規則例外（「坐在窄側欄的預覽卡可用 2:1」，並在 DS 註明媒體格會裁切直式圖的中段）；**C** 組合包封面的上傳格與前台卡一起改橫式（需上游定組合包主圖尺寸——5.1.5.4 F8 未定）。
+- 建議：B——demo 是使用者看過裁示的，且側欄第一屏要看得到內含清單與價格是這張卡存在的理由；但 A 的「預覽不能騙人」要補一句說明或改成 `object-fit: cover` 取中段。裁決權在使用者。
+
 ### ~~Q119 · 兩段式編輯面板的檢視態，站上現在有兩種呈現：表格＝純文字、表單欄位＝disabled 外觀的輸入框~~（2026-09-21 提出，**同日裁決**，見上方「已裁決」表 Q119 列）
 
 > **2026-09-21 已裁決**：表單欄位跟進表格、檢視態一律純文字；清單列裡的步進器歸表單這邊。舊的 2026-07-27「回到編輯畫面的格式、只是不能編輯」與 2026-09-11「全站檢視態＝disabled 外觀」（UI-CHANGES 十八）兩條裁示**由 Q119 取代**。以下保留提出當時的現況快照供對照。
@@ -612,6 +631,7 @@ Q39 顯示端續作把清單縮圖與卡片封面收斂成單一直式 `--img-po
 - 兩者角色完全相同（「劃掉的原價，緊接在折後價之前」），色階相同（`--muted-foreground`），差別只有字級（13 vs 12）與 B 多一個 `margin-right`（A 沒有這個需求是因為它在按鈕式的價格列裡、天生有間距）。`.cb-basestrike` 目前是**頁內複本**（同一段 CSS 在兩個頁面各自貼一份），不是共用元件層的一部分；`.fc-sum__was` 是本輪直接 promote 進 `ds-components/bundle-editor.css` 的元件層 class。
 - 選項與取捨：**A** 統一成 13px（`.fc-sum__was` 改吃 `--fs-13`，理由是先出現、且已在兩頁使用）；**B** 統一成 12px（`.cb-basestrike` 改吃 `--fs-12`，理由是收合摘要列字級本來就比一般內文小一階，`.fc-sum__meta` 也是 `--fs-12`，跟着同列鄰居對齊比跟着別頁對齊更合理）；**C** 兩者維持現況不同字級，但把 `.cb-basestrike` 的頁內複本 promote 成共用元件（例如新增 `.price-strike` 或直接讓兩處都吃同一個 class 但保留字級參數化）。
 - 建議：B——`.fc-sum__was` 所在的收合摘要列（`.fc-sum`）本身字級體系是 12px 起跳（`.fc-sum__meta`、`.fc-bundle__index` 皆 12px），劃線原價應該跟着同一列的其他文字對齊，而不是套用另一頁的字級；同時建議順手把 `.cb-basestrike` 的頁內重複定義 promote 進元件層，消掉兩處逐字複製的 CSS。裁決權在使用者，本輪暫不動這兩處既有 CSS，只記錄矛盾。
+- **2026-09-21 追記**：組合包預覽卡（`ds-components/bundle-preview-card.css` 的 `.bpc__was`）與編輯器 footer 的 `.bd-foot-price__was`／收合列 `.bd-row__was` 又是同一個視覺角色；本輪新的 `.bpc__was` 刻意吃 `--fs-13`＝現況 A，不再開第三種字級，但站上「劃掉的原價」現在有 A（13）與 B（12）各兩處以上消費者，裁決後一次收攏。
 
 ### Q26：清單頁工作列的主軸分頁有兩種寫法（2026-07-26 提出，同日依使用者裁示落地）
 

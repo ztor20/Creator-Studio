@@ -4029,12 +4029,14 @@
     const bundleHTML = bds.map(b => {
         const cap = Number(b.cap) || 0, bsold = Number(b.sold) || 0;
         const pct = cap ? Math.round(bsold / cap * 100) : 0;
-        /* tickets 形狀＝[{ id, qty }]（2026-09-18 對齊 bundle-editor 第 1 批，D292） */
-        const tix = (b.tickets || []).map(x => {
-          const t = tiers.find(y => y.id === x.id);
-          const q = Number(x.qty) || 1;
-          return (t ? t.name : x.id) + (q > 1 ? ' ×' + q : '');
-        });
+        /* tickets 形狀＝{ tierIds, qty }（2026-09-21 D296，相容讀取走 ztorEvents.bundleTickets）：
+           量表列副標寫「VIP／Floor 任選 ×2」（一種「VIP ×2」，1 張不寫 ×1）。 */
+        const tk = window.ztorEvents.bundleTickets(b);
+        const tixNames = tk.tierIds.map(id => { const t = tiers.find(y => y.id === id); return t ? t.name : id; });
+        const tix = !tixNames.length ? [] : [
+          (tixNames.length > 1 ? T('ed.bd.any', '{names} (pick one)').replace('{names}', tixNames.join('／')) : tixNames[0])
+          + (tk.qty > 1 ? ' ×' + tk.qty : '')
+        ];
         const prods = (b.products || []).map(x => (x && x.name) || x);
         const cover = ((b.products || []).map(x => x && x.img).filter(Boolean)[0]) || kv;
         return '<div class="meter-list__row">' +
@@ -4357,18 +4359,20 @@
        `.card__link`（同一個目的地）當看得見的入口——整卡可點只有 hover 才知道，
        票種卡靠 ⋮ 選單補這個線索，組合包卡沒有選單，用文字連結補。那一頁目前讀 products-store 的組合資料、活動組合包
        在那邊還沒有對應紀錄（會顯示查無資料），第 3 批再讓它認得票券成員（ASSUMPTIONS EDIT-001）。
-       tickets 形狀＝[{ id, qty }]（票種 id × 每套張數），與 bundle-editor 第 1 批同形。 */
+       tickets 形狀＝{ tierIds, qty }（2026-09-21 D296：允許票種清單 × 每組張數，粉絲任選一種；
+       相容讀取走 ztorEvents.bundleTickets）。「內含票券」寫「VIP／Floor 任選 × n」（一種「VIP × n」）。 */
     list.innerHTML = '<div class="tier-grid">' + bds.map(b => {
-      const tix = (b.tickets || []).map(x => {
-        const t = (ev.tiers || []).find(y => y.id === x.id);
-        const q = Number(x.qty) || 1;
-        return (t ? t.name : x.id) + ' × ' + q;
-      });
+      const tk = window.ztorEvents.bundleTickets(b);
+      const tixNames = tk.tierIds.map(id => { const t = (ev.tiers || []).find(y => y.id === id); return t ? t.name : id; });
+      const tixLine = !tixNames.length ? '' : (tixNames.length > 1
+        ? T('cpp.bd.sum.any', '{names} (pick one) × {n}').replace('{names}', tixNames.join('／')).replace('{n}', tk.qty)
+        : T('cpp.bd.sum.line', '{name} × {n}').replace('{name}', tixNames[0]).replace('{n}', tk.qty));
       const sold = Number(b.sold) || 0;
       const cap = Number(b.cap) || 0;
-      /* 佔掉的票券張數＝Σ 每組含的張數 × 已售組數。組合包與單賣的票共用同一個數量池，
+      /* 已佔用票券張數＝已售組數 × 每組張數（D296：一組內 n 張同一票種）。示範資料沒有記粉絲各選了哪個票種，
+         逐票種分配不明時只顯總數（ASSUMPTIONS BDL-001 產品缺口）。組合包與單賣的票共用同一個數量池，
          這個數字才看得出「庫存被組合包吃掉多少」。 */
-      const tickets = (b.tickets || []).reduce((a, x) => a + (Number(x.qty) || 1), 0) * sold;
+      const tickets = (tixNames.length ? tk.qty : 0) * sold;
       const fact = (label, val) =>
         '<div class="tier-card__fact"><dt>' + esc(label) + '</dt><dd>' + val + '</dd></div>';
       /* 同一個組合包 id 會在系列多場各出現一次（每場各一組），帶 &ev= 讓細節頁開到這一場的那一組。 */
@@ -4380,7 +4384,7 @@
         '</div>' +
         '<dl class="tier-card__facts">' +
           fact(T('ed.bd.price', 'Bundle price'), '$' + fmtNum(b.price)) +
-          fact(T('ed.bd.tickets', 'Tickets inside'), esc(tix.join('，') || '—')) +
+          fact(T('ed.bd.tickets', 'Tickets inside'), esc(tixLine || '—')) +
           // products 是 { name, img }（2026-08-17 起）——直接 join 會印出 [object Object]
           fact(T('ed.bd.products', 'Products inside'),
                esc((b.products || []).map(x => (x && x.name) || x).join('，') || '—')) +
