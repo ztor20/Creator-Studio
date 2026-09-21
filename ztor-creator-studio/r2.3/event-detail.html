@@ -147,7 +147,12 @@
         <!-- Dock 槽（2026-09-11，詳情頁只准一條固定列）：分頁工具列捲到頂列底下時，它的 tabs 進 [data-dock-tabs]、動作進 [data-dock-actions]；js/detail-topbar.js -->
         <div class="detail-topbar__tabs" data-dock-tabs></div>
         <div class="page-intro__actions">
-          <button class="btn btn--destructive" type="button" data-ed-delete hidden data-i18n="ee.delete">Delete event</button>
+          <!-- 墓碑 2026-09-18（D281）：「刪除活動」鈕（`data-ed-delete`，編輯態才顯示的
+               `btn--destructive`）整顆退場。活動不可刪除、只可取消（5.1.6.2 §8 第 13 項）；
+               取消活動是頁首階段轉換動作，草稿／已排程／售票中都在「設定」分頁底部看得到
+               （D188，2026-08-17 搬到那裡）。對應的 JS 入口（syncEditMode 的顯隱、click 的
+               confirm() 分支）同輪一起退場；i18n 的 ee.delete／ee.delete.confirm／
+               ee.delete.confirm.sold／event-detail.edit.confirm-delete(0) 留值不消費。 -->
           <button class="btn btn--ghost" type="button" data-ed-cancel hidden data-i18n="ee.discard">Discard changes</button>
           <!-- 墓碑 2026-08-17：「取消活動」搬到「設定」分頁最下面（使用者指示）。
                頁首那一排是「常用動作」，取消活動是不可逆、而且很少按的一次性決定，
@@ -812,9 +817,12 @@
             <h3 class="card__title" data-i18n="event-detail.ov.details.title">Event details</h3>
           </div>
           <!-- 類型與系列不在這裡改：類型是建立時的閘門選擇、系列在系列母頁管理。
-               兩者留唯讀列，其餘欄位可就地編輯。 -->
+               兩者留唯讀列，其餘欄位可就地編輯。
+               2026-09-18（D281、5.1.6.2 F1）：類型「建立後即鎖死」，與是否開賣無關。鎖定說明
+               掛在類型列標籤底下、只在編輯態出現（`.field__hint` 在 [data-mode="view"] 由
+               shared.css 收起）——檢視態看到的是一列唯讀事實，不需要解釋為什麼不能改。 -->
           <div class="data-list">
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.type">Type</span></div><span data-i18n="event-detail.ov.type-val">Concert · in-person</span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.type">Type</span><div class="field__hint" data-i18n="ee.ov.type.locked">Locked after creation — the rest of the form depends on it. To change it, create a new event.</div></div><span data-i18n="event-detail.ov.type-val">Concert · in-person</span></div>
             <div class="data-list__row" data-hide-type="watchparty"><div class="data-list__row-main"><span data-i18n="event-detail.ov.series">Series</span></div><span data-i18n="event-detail.ov.series-val">Kowloon Café 10th Anniv. · 1 of 3</span></div>
             <!-- 票務摘要（2026-08-13）：票種與組合包本來只活在「票務」分頁，總覽看不出這場
                  賣的是什麼、有沒有綁商品。這兩列是唯讀摘要，點右邊的連結切到票務分頁去管理。 -->
@@ -1091,7 +1099,9 @@
           <div class="list-toolbar">
             <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist" aria-label="Ticket sections">
             <button type="button" class="tabs__item" data-view-safe data-nav-item="tiers" data-i18n="event-detail.tiers.title">Ticket tiers</button>
-            <button type="button" class="tabs__item" data-view-safe data-nav-item="bundle" data-i18n="ed.bd.title">Bundles</button>
+            <!-- 2026-09-18（D292 裁決一）：分頁名保留「票務商品」當活動脈絡的入口名（event-detail.tab.bundles），
+                 物件層一律叫組合包——底下區段標題改用 ed.bd.title「組合包」，兩者不再共用同一個 key。 -->
+            <button type="button" class="tabs__item" data-view-safe data-nav-item="bundle" data-i18n="event-detail.tab.bundles">Ticket bundles</button>
             <button type="button" class="tabs__item" data-view-safe data-nav-item="comp" data-i18n="event-detail.comp.title">Comp tickets</button>
             <button type="button" class="tabs__item" data-view-safe data-nav-item="resale" data-i18n="event-detail.resale.title">Resale</button>
               </nav>
@@ -1134,16 +1144,23 @@
 
         <!-- 標題只出現一次：分頁抬頭已經說了這是票務商品，卡片不再重述一遍
              （數量徽章跟著抬頭走，掃一眼就知道有沒有東西）。 -->
+        <!-- 2026-09-18（D292 第 14 條、5.1.6.3 §2.6.1）：這一節是「含本活動票券的組合包」的
+             **篩選視圖**——資料住在電子商店的組合包那一邊，這裡只挑出跟這場有關的。標題改
+             「組合包」（物件名）、副標講篩選條件；副標不是規則複述（2026-08-17 撤掉的那句是
+             數量池規則），它回答「這裡列的是哪一批」。 -->
         <div class="section-head">
-          <h2 class="section-head__title" data-i18n="ed.bd.title">Ticket bundles</h2>
+          <h2 class="section-head__title" data-i18n="ed.bd.title">Bundles</h2>
+          <div class="section-head__sub" data-i18n="ed.bd.sub">Bundles that include this event's tickets.</div>
           <!-- 墓碑 2026-08-17（使用者指示刪除）：這裡原本有一行說明「票與商品綁在一起賣的
                組合包，跟單賣的票共用同一個數量池——賣掉一組就從它含的那張票扣一張」，
                外加一個「無／N 組」的徽章。說明是規則的複述、不是這一頁的資訊；徽章講的事
-               底下的清單自己就看得出來。i18n 的 ed.bd.sub 保留未用。 -->
+               底下的清單自己就看得出來。（ed.bd.sub 於 2026-09-18 改寫成篩選條件後重新啟用。） -->
         </div>
 
         <!-- 票務商品（2026-08-11 使用者指示要在假資料上看得到）：唯讀清單，
-             組合包在建立流程設定，這裡的編輯能力等上游規格（ASSUMPTIONS BDL-001）。 -->
+             組合包在建立流程設定，這裡的編輯能力等上游規格（ASSUMPTIONS BDL-001）。
+             2026-09-18（D292）：編輯落點定案＝組合商品細節頁（5.1.5.9），卡片整張可點、
+             連到 bundle-detail.html?id=<組合包 id>；活動這一側不另開編輯器。 -->
         <!-- 2026-08-13：這張卡原本「沒有組合包就整張不見」，於是 14 場活動裡只有 2 場看得到，
              其餘的畫面沒有任何地方交代「這場有沒有綁商品」——使用者回報找不到組合包資訊。
              改成常駐，沒有資料時給空狀態說明它是在哪一步設定的。 -->
@@ -1158,6 +1175,9 @@
           <div class="empty-card empty-card--framed" id="ed-bundle-empty" hidden>
             <span class="empty-card__icon"><i data-lucide="package" class="ztor-icon"></i></span>
             <h3 class="empty-card__title" data-i18n="ed.bd.empty.title">No bundles on this event</h3>
+            <!-- 2026-09-18（5.1.6.3 §2.6.1 空狀態）：說明從哪裡建——「這場沒有」與「這個功能
+                 不存在」是兩件事，所以子集不隱藏、補一句建立入口。 -->
+            <p class="empty-card__text" data-i18n="ed.bd.empty.sub">Create one in step 6 of the create flow, or from the e-shop.</p>
           </div>
           <!-- 墓碑 2026-08-17（使用者指示刪除）：這裡原本有一則 info-banner 寫著
                「組合包在建立流程設定；這裡的編輯能力等上游規格定案後補（BDL-001）」。
@@ -2385,7 +2405,10 @@
     const s = ev.status;
     const show = (sel, on) => { const el = $(sel); if (el) el.hidden = !on; };
     syncGoLive();
-    /* 取消活動：尚未結束的階段都給，但改放設定的最末端 */
+    /* 取消活動：尚未結束的階段都給，但改放設定的最末端。
+       2026-09-18（D281）：刪除活動鈕退場後，這裡是「讓活動不再發生」的唯一出口——已排程與售票中
+       都看得到（D188／STAGE-001）。草稿不進本頁（下方 status==='draft' 導回建立流程，2026-08-17
+       裁決），草稿要怎麼「取消／放棄」是建立流程那一側的事，記 ASSUMPTIONS 產品缺口。 */
     const danger = document.getElementById('ed-danger');
     if (danger) danger.hidden = ['scheduled', 'on-sale'].indexOf(s) < 0;
     document.querySelectorAll('[data-ed-duplicate]').forEach(b => {
@@ -2945,7 +2968,7 @@
     /* 發布設定面板不掛 data-editable（理由見 syncPubLock），所以要在這裡一起翻 */
     syncPubLock();
     const show = (sel, on) => document.querySelectorAll(sel).forEach(el => { el.hidden = !on; });
-    show('[data-ed-delete]', editing);
+    /* 墓碑 2026-09-18（D281）：`show('[data-ed-delete]', editing)` 退場——刪除活動鈕已自頁首移除。 */
     show('[data-ed-cancel]', editing);
     const btn = document.querySelector('[data-ed-editmode]');
     if (btn) {
@@ -3139,18 +3162,10 @@
       });
       return;
     }
-    if (e.target.closest('[data-ed-delete]')) {
-      /* 2026-09-09（D253）：已售票的活動刪除前需先逐票或整場作廢（5.1.6.2 F13），
-         不再是「刪除即自動退款」。沿用既有 native confirm() 機制（非本輪範圍），只換文案。 */
-      const soldN = ev.sold || 0;
-      const delMsg = soldN
-        ? T('event-detail.edit.confirm-delete', 'Delete this event? {n} people hold tickets — void them individually or all at once first.').replace('{n}', fmtNum(soldN))
-        : T('event-detail.edit.confirm-delete0', 'Delete this event? This cannot be undone.');
-      if (confirm(delMsg)) {
-        location.href = 'events.html';
-      }
-      return;
-    }
+    /* 墓碑 2026-09-18（D281）：`[data-ed-delete]` 的 click 分支退場。原本依已售張數二選一
+       confirm() 文案（2026-09-09 D253 改成「先撤銷再刪」），確認後導回 events.html。
+       活動不可刪除、只可取消（5.1.6.2 F13 退場、§8 第 13 項）；取消走「設定」分頁底部的
+       「取消活動」（D188 階段轉換動作），這裡不再保留任何可觸發的刪除入口。 */
     const row = e.target.closest('[data-ed-lineup-row]');
     if (row && e.target.closest('[data-ed-lineup-remove]')) { row.remove(); return; }
     if (e.target.closest('#ed-lineup-add')) {
@@ -4010,9 +4025,11 @@
     const bundleHTML = bds.map(b => {
         const cap = Number(b.cap) || 0, bsold = Number(b.sold) || 0;
         const pct = cap ? Math.round(bsold / cap * 100) : 0;
+        /* tickets 形狀＝[{ id, qty }]（2026-09-18 對齊 bundle-editor 第 1 批，D292） */
         const tix = (b.tickets || []).map(x => {
-          const t = tiers.find(y => y.id === x.tier);
-          return (t ? t.name : x.tier) + (x.n > 1 ? ' ×' + x.n : '');
+          const t = tiers.find(y => y.id === x.id);
+          const q = Number(x.qty) || 1;
+          return (t ? t.name : x.id) + (q > 1 ? ' ×' + q : '');
         });
         const prods = (b.products || []).map(x => (x && x.name) || x);
         const cover = ((b.products || []).map(x => x && x.img).filter(Boolean)[0]) || kv;
@@ -4330,19 +4347,29 @@
     /* 一組一張卡（2026-08-13 使用者指示「補完」）：原本一列只寫得下名稱、售價與已售，
        「這一組到底包了什麼、還剩幾組、佔掉哪一張票的庫存」都要自己推。
        事實列沿用票種卡的 dt/dd 語彙——同一個分頁裡的兩種東西，讀法一致。 */
+    /* 2026-09-18（D292 第 14 條）：這裡是篩選視圖，編輯走組合商品細節頁——每張卡整張可點
+       （`tier-card--clickable`，同分頁票種卡「整卡開編輯」的既有做法），連到
+       `bundle-detail.html?id=<組合包 id>`；卡尾同時放一條「在電子商店管理 →」的
+       `.card__link`（同一個目的地）當看得見的入口——整卡可點只有 hover 才知道，
+       票種卡靠 ⋮ 選單補這個線索，組合包卡沒有選單，用文字連結補。那一頁目前讀 products-store 的組合資料、活動組合包
+       在那邊還沒有對應紀錄（會顯示查無資料），第 3 批再讓它認得票券成員（ASSUMPTIONS EDIT-001）。
+       tickets 形狀＝[{ id, qty }]（票種 id × 每套張數），與 bundle-editor 第 1 批同形。 */
     list.innerHTML = '<div class="tier-grid">' + bds.map(b => {
       const tix = (b.tickets || []).map(x => {
-        const t = (ev.tiers || []).find(y => y.id === x.tier);
-        return (t ? t.name : x.tier) + (x.n > 1 ? ' ×' + x.n : '');
+        const t = (ev.tiers || []).find(y => y.id === x.id);
+        const q = Number(x.qty) || 1;
+        return (t ? t.name : x.id) + ' × ' + q;
       });
       const sold = Number(b.sold) || 0;
       const cap = Number(b.cap) || 0;
-      /* 佔掉的票券張數＝每組含的票 × 已售組數。組合包與單賣的票共用同一個數量池，
+      /* 佔掉的票券張數＝Σ 每組含的張數 × 已售組數。組合包與單賣的票共用同一個數量池，
          這個數字才看得出「庫存被組合包吃掉多少」。 */
-      const tickets = (b.tickets || []).reduce((a, x) => a + (Number(x.n) || 1), 0) * sold;
+      const tickets = (b.tickets || []).reduce((a, x) => a + (Number(x.qty) || 1), 0) * sold;
       const fact = (label, val) =>
         '<div class="tier-card__fact"><dt>' + esc(label) + '</dt><dd>' + val + '</dd></div>';
-      return '<div class="card tier-card">' +
+      /* 同一個組合包 id 會在系列多場各出現一次（每場各一組），帶 &ev= 讓細節頁開到這一場的那一組。 */
+      const href = 'bundle-detail.html?id=' + encodeURIComponent(b.id) + '&ev=' + encodeURIComponent(ev.id);
+      return '<div class="card tier-card tier-card--clickable" role="link" tabindex="0" data-ed-bundle="' + esc(b.id) + '" data-href="' + esc(href) + '">' +
         '<div class="tier-card__head">' +
           '<span class="card__title-icon"><i data-lucide="package" class="ztor-icon"></i></span>' +
           '<h4 class="tier-card__name">' + esc(b.name) + '</h4>' +
@@ -4357,11 +4384,26 @@
           (cap ? fact(T('ed.bd.left', 'Left'), fmtNum(Math.max(0, cap - sold))) : '') +
           fact(T('ed.bd.pool', 'Tickets drawn from stock'), fmtNum(tickets)) +
         '</dl>' +
+        /* 入口連結放卡尾、不放卡頭：卡頭放的話三欄格裡名稱被擠成三行（1440 寬實測）。 */
+        '<div class="mt-8"><a class="card__link" href="' + esc(href) + '">' + esc(T('ed.bd.manage', 'Manage in e-shop →')) + '</a></div>' +
       '</div>';
     }).join('') + '</div>';
     if (window.ztorIcons) window.ztorIcons.applyIcons(list);
   }
   renderBundles();
+  /* 組合包卡的導頁：點卡或鍵盤 Enter／Space 都到細節頁（卡是 div 不是 <a>，避免整卡文字吃到連結色）。 */
+  (function () {
+    const list = document.getElementById('ed-bundle-list');
+    if (!list) return;
+    const go = el => { const card = el && el.closest('[data-ed-bundle]'); if (card && card.dataset.href) location.href = card.dataset.href; };
+    /* 卡頭的「在電子商店管理 →」是真 <a>（同一個目的地）：點它交給瀏覽器原生導頁，不重複導。 */
+    list.addEventListener('click', e => { if (e.target.closest('a')) return; go(e.target); });
+    list.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      if (!e.target.closest('[data-ed-bundle]')) return;
+      e.preventDefault(); go(e.target);
+    });
+  })();
 
   /* ── 招待票（2026-08-19 修復）───────────────────────────────
      原本兩列是寫死的假資料（樂團／場地人員的票種名跟這場活動的真實票種對不上）。

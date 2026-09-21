@@ -349,6 +349,15 @@
 .variant-table--preview .variant-table__row {
   grid-template-columns: minmax(96px, max-content) minmax(80px, 1fr) 72px minmax(92px, 1fr) minmax(72px, 1fr);
 }
+/* --preview ＋ --limited（2026-09-21，spec 5.1.5.1 §2.8「上限（限量時）」／§2.10「上限只能 ≥ 已售」）：
+   商品細節頁編輯態的逐選項組合表在限量商品多一欄「上限」（可改的 .input，坐在 .variant-cell--input.variant-cell--total 裡），
+   欄軌在庫存欄後插一軌 84px（與基礎版 --limited 的上限欄同寬）；不限量商品不掛 --limited、欄軌不變。
+   上限欄的顯隱仍由下方 `.variant-cell--total { display:none }` ↔ `.variant-table--limited .variant-cell--total` 那一組控制，
+   與建立商品同一套 class，不另造。 */
+.variant-table--preview.variant-table--limited .variant-table__head,
+.variant-table--preview.variant-table--limited .variant-table__row {
+  grid-template-columns: minmax(96px, max-content) minmax(80px, 1fr) 72px 84px minmax(92px, 1fr) minmax(72px, 1fr);
+}
 /* --fluid（2026-09-09）：表格坐在比整頁窄的欄裡時用（首個消費者＝商品明細「銷售設定 → 當前庫存」
    那張唯讀表，主欄只有 ~450px）。基礎版六欄是寫死的 px，加總就超過 560px 最小寬——窄欄裡整張表
    會戳出卡片外，而且 --menu 為了讓 kebab 選單浮出已放行 overflow，連橫捲都沒有，就只是溢出。
@@ -365,6 +374,13 @@
 .variant-table--stock .variant-table__head,
 .variant-table--stock .variant-table__row {
   grid-template-columns: minmax(0, 1.7fr) 56px 72px 72px 60px 56px minmax(0, 1fr) 34px;
+}
+/* --stock ＋ --limited（2026-09-21，spec 5.1.5.1 §2.10「在庫（限量時帶上限）」、§7.2 多選項逐組合各自上限）：
+   限量商品的庫存管理表在「在庫」右邊多一欄「上限」（唯讀讀數 .variant-cell--ro.variant-cell--total），
+   單一規格與多選項都是同一張表、同一欄；不限量商品不掛 --limited，看不到這一欄。欄寬 56px 與在庫欄同。 */
+.variant-table--stock.variant-table--limited .variant-table__head,
+.variant-table--stock.variant-table--limited .variant-table__row {
+  grid-template-columns: minmax(0, 1.7fr) 56px 56px 72px 72px 60px 56px minmax(0, 1fr) 34px;
 }
 .variant-table--stock .variant-cell--stock-warn { color: var(--status-warning-ink); }
 .variant-table--stock .variant-cell--incoming { color: var(--muted-foreground); }

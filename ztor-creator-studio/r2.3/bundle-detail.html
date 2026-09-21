@@ -39,6 +39,8 @@
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2"><!-- 電影關聯的 tag-input／chip 由 partials/film-picker.js 注入，靜態檢查看不到（2026-09-11 使用者：「沒改完或改壞了」） -->
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stepper.css?v=r2.2"><!-- 2026-09-18 D292：成員列的數量（每套用量）.zstep -->
+<link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2"><!-- 查無 id 的錯誤狀態（5.1.6.3 §2.2 口徑，同 event-detail） -->
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
@@ -60,6 +62,8 @@
   .cb-autoprice { font-family: var(--font-display); font-size: var(--fs-18); font-weight: var(--fw-regular); color: var(--foreground); }
   .cb-basestrike { font-size: var(--fs-13); color: var(--muted-foreground); text-decoration: line-through; }
   .cb-basestrike[hidden] { display: none; }
+  /* 成員列的數量（每套用量）欄（2026-09-18 D292）：與未鎖定／已鎖定小字、單價同一列，寬度收到剛好放兩位數 */
+  .data-list__end .bd-qty { max-width: 96px; }
 </style>
 </head>
 <body>
@@ -317,6 +321,11 @@
             </div>
             <span class="text-sub" id="bd-member-count" style="font-size: var(--fs-12)">(3)</span>
           </div>
+          <!-- 已售出後成員內容鎖定（D292 裁決七，5.1.5.9 §2.3）：說明鎖定理由、不是默默變唯讀；仍可改的欄位另在價格與上架卡 -->
+          <div class="info-banner" data-bd-members-locked hidden>
+            <i data-lucide="lock" class="ztor-icon info-banner__icon"></i>
+            <span data-bd-members-locked-text></span>
+          </div>
           <div class="data-list" id="bd-members">
             <div class="data-list__row" data-bd-pid="zine">
               <div class="data-list__row-main">
@@ -354,9 +363,11 @@
                 <div class="field__hint" data-bd-no-result hidden data-i18n="bd.pick.noresult">No products match.</div>
               </div>
             </div>
-            <div class="field__hint" data-bd-count-hint hidden data-i18n="cb.min-items">Add at least 2 items</div>
+            <div class="field__hint" data-bd-count-hint hidden data-i18n="cb.min-items">Add at least 1 item</div>
           </div>
           <div class="field__hint mt-8" data-i18n="bd.members.alloc-hint">Lock amounts are edited in Bundle stock.</div>
+          <!-- 票券成員（D292）：張數與單賣票共用同一個票種數量池；每張各自 QR、各自報到；已佔用張數＝每套張數 × 已售套數 -->
+          <div class="field__hint field__hint--fact mt-8" data-bd-ticket-note hidden data-i18n="bd.members.ticket-note">Ticket members draw from the tier's own pool — each set sold takes its tickets from the tier. Every ticket gets its own QR and checks in on its own.</div>
         </section>
 
         <!-- 取貨與核銷（spec 5.1.5.9 §2.6）：只在組合含現場 QR 領取成員時顯示；規則本體在
@@ -379,7 +390,11 @@
           <div class="field">
             <div class="field__label" data-i18n="cb.price.members-total">Members' list price total</div>
             <div class="cb-priceline"><span class="cb-autoprice" id="bd-basetotal">$0.00</span></div>
+            <!-- 合計旁列算式（5.1.5.4 §4 F3，D292）：Σ（票價 × 張數）＋Σ（商品價 × 件數） -->
+            <div class="field__hint field__hint--fact" data-bd-calc-parts hidden></div>
             <div class="field__hint" data-i18n="cb.price.auto-hint">Auto-summed from members' prices — not editable. Members with variants show “from $X”.</div>
+            <!-- 平台費依成員型別分流（D292 裁決九／D293 裁決二，主規格 §7.6）：含票券整筆走活動票務費率；純商品維持組合商品葉節點。只呈現、不算數字 -->
+            <div class="field__hint field__hint--fact" data-bd-fee-note hidden data-i18n="cb.fee.ticket-rate">Includes event tickets — the platform fee follows the event ticket rate for the whole bundle, not split by member.</div>
           </div>
           <div class="field">
             <div class="field__label" data-i18n="cb.price.discount">Bundle discount % (optional)</div>
@@ -480,6 +495,8 @@
                  它回答的是「上架之後找不找得到」，緊接在上架那顆總開關後面；排程盒排在它下面。
                  隱藏時長出來的非公開連結用 .lctl__body（列自己的揭示區），不再用外框把兩者圈起來。 -->
             <p class="lctl__lock-note" data-bd-lock-note hidden data-i18n="cp.listing.unlisted-lock">Unlisted — show and sale settings are locked until it is listed again.</p>
+            <!-- 跟著活動（D293 裁決四，5.1.5.9 §2.3）：含票券成員的組合包隨所屬活動走——活動未發布則草稿、隨活動上架與開賣、活動取消或下架一同下架；寫出跟著哪一場與其狀態 -->
+            <p class="lctl__lock-note" data-bd-follow-event hidden></p>
             <!-- 下架原因（D284 → D288）：因成員下架而一同下架時多一句，寫出成員名；由 JS 依 unlistReason 填 -->
             <p class="lctl__lock-note" data-bd-unlist-reason hidden></p>
             <div class="lctl__row" data-bd-shown-row>
@@ -640,6 +657,8 @@
 <!-- D241：狀態與可售量的唯一推導層（spec §7.14）。products-store 會用到它，須先載。 -->
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="js/events-store.js?v=r2.2"></script><!-- 2026-09-18 D292 第 3 批：活動組合包（含票券成員）的資料源，products-store 查不到 id 時合流查這裡 -->
+<script src="partials/stepper.js?v=r2.2"></script><!-- .zstep 步進行為（成員數量） -->
 <script src="js/link-field.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
@@ -660,32 +679,151 @@
   /* bundle-detail 互動：定價模式切換 + See as fan 分割預覽（§6.7 同源）。display-only demo。 */
   (function () {
     const params = new URLSearchParams(window.location.search);
-    const bundle = window.ztorGetBundle && window.ztorGetBundle(params.get('id'));
+    const idParam = params.get('id');
     const esc = s => String(s || '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[ch]);
+    const T0 = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
+    /* ── 資料來源合流（2026-09-18 D292 第 3 批）────────────────────────────────────────
+       `?id=` 先查電子商店的組合（products-store 的 BUNDLE_SEED，ztorGetBundle），查不到再查活動側：
+       events-store 每場活動的 `bundles[]` 是「含本活動票券的組合包」篩選視圖資料（D292 裁決十四），
+       這裡把它轉成本頁的組合物件——成員＝票券 `[{id, qty}]`（票種 × 張數）＋商品、已售／上限、售價。
+       兩邊都查不到 → 顯示「找不到這個組合包」錯誤狀態並給返回入口（5.1.6.3 §2.2 口徑：查無 id 不得替換成另一筆；
+       ASSUMPTIONS EDIT-001 第 2 批記的缺口）。完全沒帶 id 仍回示例組合（原型示例頁預設，同 events-store.get 的約定）。
+       同一個組合包 id 可能出現在系列的多場（每場各一組沿用同一份清單，例 bd-vip-tee 高雄／台北）：可帶 `&ev=<活動 id>` 指定，
+       沒帶就取第一場（示範資料缺口，見 ASSUMPTIONS BDL-001 追記）。 */
+    const EV = window.ztorEvents;
+    const evParam = params.get('ev');
+    function findEventBundle(id) {
+      if (!id || !EV || !EV.list) return null;
+      const all = EV.list();
+      let hit = null;
+      all.forEach(ev => { (ev.bundles || []).forEach(b => { if (b.id === id && (!hit || (evParam && ev.id === evParam))) hit = { ev: ev, b: b }; }); });
+      return hit;
+    }
+    const EV_BADGE = { 'live': ['events.badge.live', 'warning'], 'on-sale': ['events.badge.on-sale', 'success'], 'draft': ['events.status.draft', 'neutral'],
+                       'ended': ['events.badge.ended', 'neutral'], 'scheduled': ['events.badge.scheduled', 'neutral'], 'cancelled': ['event-detail.badge.cancelled', 'error'] };
+    const tixKey = (evId, tierId) => 'tix:' + evId + ':' + tierId;
+    const tierLeft = t => Math.max(0, (Number(t.qty) || 0) - (Number(t.sold) || 0));
+    /* 假商品（extraProducts）：票券成員與 products-store 查不到的活動組合包商品成員都包成 ListingState 認得的形狀
+       （一顆池＋三態鎖定量），可售套數、鎖定套數上限與商品成員同一套算法；本頁 productOf()／allProducts() 先查這裡再查 store。 */
+    const extraProducts = {};
+    function fromEventBundle(hit) {
+      const ev = hit.ev, b = hit.b;
+      const evName = (ev.name || '').trim() || T0('event-detail.untitled', 'Untitled event');
+      const listedByEv = ev.status === 'on-sale' || ev.status === 'live' || ev.status === 'scheduled' || ev.status === 'ended';
+      const members = [], memberItems = [];
+      (b.tickets || []).forEach(x => {
+        const t = (ev.tiers || []).find(tt => tt.id === x.id); if (!t) return;
+        const key = tixKey(ev.id, t.id);
+        extraProducts[key] = { id: key, kind: 'ticket', eventId: ev.id, tierId: t.id, eventName: evName, tierName: t.name, name: evName + ' · ' + t.name,
+          price: Number(t.price) || 0, imgSrc: (ev.images && ev.images.keyvisual) || '',
+          pool: { total: tierLeft(t), locks: { single: null, bundles: {} } }, listed: listedByEv && ev.status !== 'ended', onSale: true };
+        members.push({ productId: key, kind: 'ticket', eventId: ev.id, tierId: t.id, qty: Number(x.qty) > 0 ? Number(x.qty) : 1 });
+        memberItems.push({ id: key, kind: 'ticket', name: t.name, eventName: evName, eventId: ev.id, meta: [ev.date || '', ev.venue || ''].filter(Boolean).join(' · '), priceAmount: Number(t.price) || 0, price: '$' + (Number(t.price) || 0).toLocaleString('en-US'), imgSrc: (ev.images && ev.images.keyvisual) || '', qty: Number(x.qty) > 0 ? Number(x.qty) : 1, left: tierLeft(t) });
+      });
+      const store0 = window.ProductsStore;
+      (b.products || []).forEach((pr, i) => {
+        /* 商品成員：events-store 只記 { name, img, price }；先用名稱對回當前 persona 的商品記錄（真的池與鎖定），對不到就包一顆不限量的假商品 */
+        let key = null, real = null;
+        if (store0 && store0.all) Object.keys(store0.all()).forEach(k => { if (!key) { const p = store0.get(k); if (p && p.name === pr.name) { key = k; real = p; } } });
+        if (!key) {
+          key = 'evp:' + b.id + ':' + i;
+          extraProducts[key] = { id: key, kind: 'product', name: pr.name, imgSrc: pr.img || '', price: Number(pr.price) || 0, pool: { total: 'unlimited', locks: { single: null, bundles: {} } }, listed: true, onSale: true };
+        }
+        const qty = Number(pr.qty) > 0 ? Number(pr.qty) : 1;
+        const amt = real ? (Number(String(real.price || '').replace(/[^0-9.]/g, '')) || 0) : (Number(pr.price) || 0);
+        members.push({ productId: key, kind: 'product', qty: qty });
+        memberItems.push({ id: key, kind: 'product', real: !!real, name: pr.name, meta: real && real.subLabel ? real.subLabel : '', priceAmount: amt, price: '$' + amt.toLocaleString('en-US'), imgSrc: real && real.img ? 'images/products/' + real.img : (pr.img || ''), qty: qty });
+      });
+      const evSeed = {
+        id: b.id, isEventBundle: true, name: b.name, description: '', persona: null,
+        members: members, cap: (b.cap === undefined || b.cap === null) ? null : b.cap, lockSets: null, alloc: {},
+        listed: listedByEv, listAt: null, unlistAt: null, shown: true, privateLink: null,
+        saleStart: null, saleEnd: ev.status === 'ended' && ev.date ? ev.date + 'T23:59' : null, onSale: ev.status !== 'scheduled',
+        lowThreshold: 0, draft: ev.status === 'draft', archived: false,
+        unlistReason: ev.status === 'cancelled' ? { type: 'event-cancelled', eventName: evName } : null,
+        discountPct: null, discount: null, films: [], projects: [], history: [],
+        /* 銷售摘要：活動側只有已售套數；毛收與淨額由 Earnings 承接（5.1.5.9 §2.4），示範資料沒有那兩個數字 */
+        sales: (b.sold > 0) ? { units: b.sold, gross: null, net: null } : null
+      };
+      return { id: b.id, name: b.name, description: '', img: '', imgSrc: (ev.images && ev.images.keyvisual) || '', memberItems: memberItems, memberNames: memberItems.map(it => it.name),
+        currency: 'USD', intMoney: true, priceAmount: Number(b.price) || 0, evSeed: evSeed, event: ev, eventName: evName, sold: b.sold || 0 };
+    }
+    let bundle = window.ztorGetBundle && window.ztorGetBundle(idParam);
+    if (bundle) {
+      /* 電子商店的組合：成員記錄補 kind／qty（資料層本來就有 qty，UI 這一批才開，D292 裁決二） */
+      const seed0 = window.ProductsStore && window.ProductsStore.getBundle && window.ProductsStore.getBundle(bundle.id);
+      bundle.memberItems = (bundle.memberItems || []).map((it, i) => Object.assign({ kind: 'product', real: true, qty: (seed0 && seed0.members && seed0.members[i] && Number(seed0.members[i].qty) > 0) ? Number(seed0.members[i].qty) : 1, imgSrc: it.img ? 'images/products/' + it.img : '', priceAmount: Number(String(it.price || '').replace(/[^0-9.]/g, '')) || 0 }, it));
+      bundle.sold = (seed0 && seed0.sales && Number(seed0.sales.units)) || 0;
+    }
+    if (!bundle && idParam) {
+      const hit = findEventBundle(idParam);
+      if (hit) bundle = fromEventBundle(hit);
+    }
+    if (!bundle && idParam) {
+      /* 兩邊都查不到：錯誤狀態＋返回入口，不退回示例組合（同 event-detail 的 empty-stub 做法） */
+      const page = document.querySelector('.page');
+      if (page) {
+        page.innerHTML = '<div class="empty-stub"><div class="empty-stub__inner">'
+          + '<div class="empty-stub__mark">!</div>'
+          + '<h2 class="empty-stub__title" data-i18n="bd.notfound.title">Bundle not found</h2>'
+          + '<p class="empty-stub__sub" data-i18n="bd.notfound.sub">This link may be out of date, or the bundle was removed. Go back to the shop and pick one.</p>'
+          + '<div class="empty-stub__refs"><a class="btn btn--primary" href="e-shop.html" data-i18n="bd.notfound.back">Back to E-Shop</a></div>'
+          + '</div></div>';
+        if (window.applyI18n) window.applyI18n(page);
+      }
+      document.title = T0('bd.notfound.title', 'Bundle not found') + ' · Ztor';
+      const pv = document.getElementById('bd-preview'); if (pv) pv.hidden = true;
+      return;
+    }
+    const heroSrc = bundle ? (bundle.imgSrc || (bundle.img ? 'images/products/' + bundle.img : '')) : '';
+    /* 成員列（§2.3）：商品列＝縮圖｜名稱（可點到商品細節）· 次分類 · 單價｜未鎖定／已鎖定｜數量（每套用量）｜單價；
+       票券列＝「活動名 · 票種 × 張數」＋「每張各自 QR、各自報到」說明（D292 裁決十七），可點到活動詳情。
+       數量欄是 .zstep：檢視態唯讀（applyReadonly 把 input 設 readOnly、步進鈕自動收起），編輯態可改；已售出後停用（見 syncMembersLock）。 */
+    const qtyStepperHTML = (v, unitKey, unitFb) => '<span class="amount-field amount-field--suffix amount-field--readonly zstep bd-qty" data-bd-qty-wrap>'
+      + '<span class="amount-field__unit" data-i18n="' + unitKey + '">' + esc(T0(unitKey, unitFb)) + '</span>'
+      + '<input class="amount-field__input input zstep__input" type="number" min="1" step="1" value="' + esc(String(v)) + '" data-bd-qty aria-label="Quantity per set" data-i18n-aria-label="cb.qty.label">'
+      + '<span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button>'
+      + '<button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>';
+    function memberRowHTML(item) {
+      const tix = item.kind === 'ticket';
+      const icon = item.imgSrc ? '<img class="data-list__thumb data-list__thumb--lg" src="' + esc(item.imgSrc) + '" alt="">' : '<div class="data-list__icon"><i data-lucide="' + (tix ? 'ticket' : 'package') + '" class="ztor-icon"></i></div>';
+      /* 票券列：活動名太長，次要資訊（日期 · 場地 · 每張各自 QR）另起 .data-list__meta 一行，塞同一行會被截掉 */
+      const title = tix
+        ? '<a class="card__link" href="event-detail.html?id=' + esc(item.eventId) + '">' + esc(item.eventName) + '</a> · ' + esc(item.name) + ' × <span data-bd-qty-echo>' + esc(String(item.qty)) + '</span>'
+        : (item.real !== false ? '<a class="card__link" href="product-detail.html?id=' + esc(item.id) + '">' + esc(item.name) + '</a>' : esc(item.name)) + ' <span class="text-sub">' + esc(item.meta) + '</span>';
+      const metaLine = tix ? '<div class="data-list__meta">' + esc(item.meta) + ' · <span data-i18n="cb.tix.each-qr">' + esc(T0('cb.tix.each-qr', 'each ticket has its own QR')) + '</span></div>' : '';
+      return '<div class="data-list__row" data-bd-pid="' + esc(item.id) + '" data-bd-kind="' + (tix ? 'ticket' : 'product') + '" data-bd-per="' + esc(String(item.qty || 1)) + '" data-bd-price="' + esc(String(item.priceAmount != null ? item.priceAmount : '')) + '"><div class="data-list__row-main">' + icon
+        + '<div class="data-list__body"><div class="data-list__title">' + title
+        /* 成員已封存／已下架（D284／D288，5.1.5.9 §2.3）：列上標徽章（由 syncMemberBadges() 填、重新上架後重畫），成交條件提示另在可售套數那一句 */
+        + ' <span data-bd-member-badge></span>'
+        + '</div>' + metaLine + '</div></div><div class="data-list__end data-list__end--row"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span>'
+        + qtyStepperHTML(item.qty || 1, tix ? 'cb.tix.unit' : 'stock.unit-pcs', tix ? 'tickets' : 'pcs')
+        + '<span style="font-size: var(--fs-13)">' + esc(item.price) + '</span></div></div>';
+    }
+    window.bdMemberRowHTML = memberRowHTML;
     if (bundle) {
       const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
       setText('bd-crumb-name', bundle.name); setText('bd-title', bundle.name);
       const name = document.getElementById('bd-name'); if (name) name.value = bundle.name;
       const desc = document.getElementById('bd-desc'); if (desc) { desc.removeAttribute('data-i18n'); desc.value = bundle.description; }
       const hero = document.getElementById('bd-hero');
-      if (hero) { hero.src = 'images/products/' + bundle.img; hero.alt = bundle.name; hero.closest('.upload-tile').classList.add('is-filled'); }
+      if (hero) { if (heroSrc) { hero.src = heroSrc; hero.closest('.upload-tile').classList.add('is-filled'); } else { hero.closest('.upload-tile').classList.remove('is-filled'); hero.removeAttribute('src'); } hero.alt = bundle.name; }
       const cover = document.getElementById('bd-hero-cover');
-      if (cover) { cover.src = 'images/products/' + bundle.img; cover.alt = bundle.name; }
+      if (cover) { if (heroSrc) cover.src = heroSrc; cover.alt = bundle.name; }
       const gallery = document.querySelectorAll('[data-bd-asset="gallery"]');
+      /* 附圖槽：示範資料以成員縮圖填；活動組合包的票券成員沒有自己的圖，跳過 */
+      const galleryItems = (bundle.memberItems || []).filter(it => it.imgSrc && it.kind !== 'ticket');
       gallery.forEach((tile, i) => {
-        const item = bundle.memberItems && bundle.memberItems[i]; if (!item) return;
+        const item = galleryItems[i];
+        if (!item) { tile.classList.remove('is-filled'); if (tile.querySelector('.upload-tile__thumb')) tile.innerHTML = '<span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span>'; return; }
         tile.classList.add('is-filled');
-        tile.innerHTML = '<img class="upload-tile__thumb" src="images/products/' + esc(item.img) + '" alt="' + esc(item.name) + '">';
+        tile.innerHTML = '<img class="upload-tile__thumb" src="' + esc(item.imgSrc) + '" alt="' + esc(item.name) + '">';
       });
       const members = document.getElementById('bd-members');
       if (members && bundle.memberItems) {
-        members.innerHTML = bundle.memberItems.map(item =>
-          '<div class="data-list__row" data-bd-pid="' + esc(item.id) + '"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=' + esc(item.id) + '">' + esc(item.name) + '</a> <span class="text-sub">' + esc(item.meta) + '</span>'
-          /* 成員已封存／已下架（D284／D288，5.1.5.9 §2.3）：列上標徽章（由 syncMemberBadges() 填、重新上架後重畫），成交條件提示另在可售套數那一句 */
-          + ' <span data-bd-member-badge></span>'
-          + '</div></div></div><div class="data-list__end data-list__end--row"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><span style="font-size: var(--fs-13)">' + esc(item.price) + '</span></div></div>'
-        ).join('');
+        members.innerHTML = bundle.memberItems.map(memberRowHTML).join('');
         if (window.ztorIcons) window.ztorIcons.applyIcons(members);
+        if (window.applyI18n) window.applyI18n(members);
       }
       syncMemberBadges();
       const memberCount = (bundle.memberItems && bundle.memberItems.length) || 0;
@@ -714,11 +852,17 @@
     const LS = window.ListingState;
     const store = window.ProductsStore;
     const kpiQty = document.querySelector('[data-bd-kpi-qty]');
-    const seed = (store && bundle && store.getBundle && store.getBundle(bundle.id)) || null;
+    const seed = (store && bundle && store.getBundle && store.getBundle(bundle.id)) || (bundle && bundle.evSeed) || null;
+    /* 成員記錄逐筆帶型別與每套用量（D292）：讀成員列的 data-bd-kind／data-bd-per，清單與庫存表講的是同一批成員 */
+    const memberOfRow = r => {
+      const m = { productId: r.getAttribute('data-bd-pid'), kind: r.getAttribute('data-bd-kind') || 'product', qty: Math.max(1, Math.floor(Number(r.getAttribute('data-bd-per'))) || 1) };
+      const ex = extraProducts[m.productId];
+      if (ex && ex.kind === 'ticket') { m.eventId = ex.eventId; m.tierId = ex.tierId; }
+      return m;
+    };
     const bundleModel = {
       id: (bundle && bundle.id) || 'ultimate-fan-bundle',
-      members: [...document.querySelectorAll('#bd-members [data-bd-pid]')]
-        .map(r => ({ productId: r.getAttribute('data-bd-pid'), qty: 1 })),
+      members: [...document.querySelectorAll('#bd-members [data-bd-pid]')].map(memberOfRow),
       cap: null,
       listed: seed ? seed.listed !== false : true,
       listAt: (seed && seed.listAt) || null,
@@ -774,8 +918,11 @@
     /* 詳情頁示範狀態欄位（2026-09-11 改資料驅動；欄位定義見 js/products-store.js 檔頭）：
        沒有種子（default persona 或查不到 id）就全部空狀態。 */
     const detail = seed || {};
-    const allProducts = () => (store && store.all ? store.all() : {});
-    const productOf = pid => (store && store.get ? store.get(pid) : null);
+    /* 假商品（票券成員、對不回 store 的活動組合包商品）先查，再查 store */
+    const allProducts = () => Object.assign({}, (store && store.all ? store.all() : {}), extraProducts);
+    const productOf = pid => extraProducts[pid] || (store && store.get ? store.get(pid) : null);
+    const hasTicketMember = () => bundleModel.members.some(m => m.kind === 'ticket');
+    const soldUnits = () => (bundle && Number(bundle.sold)) || 0;
     const lockErrors = {};
 
     const allocEl = document.getElementById('bd-alloc');
@@ -808,14 +955,16 @@
       return (nameEl && nameEl.textContent) || (p && p.name) || m.productId;
     }
     function thumbHTML(p) {
+      if (p && p.imgSrc) return '<img class="data-list__thumb data-list__thumb--lg" src="' + esc(p.imgSrc) + '" alt="">';
       return p && p.img
         ? '<img class="data-list__thumb data-list__thumb--lg" src="images/products/' + esc(p.img) + '" alt="">'
-        : '<span class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></span>';
+        : '<span class="data-list__icon"><i data-lucide="' + (p && p.kind === 'ticket' ? 'ticket' : 'package') + '" class="ztor-icon"></i></span>';
     }
     function nameCellHTML(m, p, multi) {
-      const label = memberLabel(m, p);
+      const label = (p && p.kind === 'ticket') ? p.name : memberLabel(m, p);
+      const href = (p && p.kind === 'ticket') ? ('event-detail.html?id=' + esc(p.eventId)) : ((p && extraProducts[p.id]) ? null : ('product-detail.html?id=' + esc(m.productId)));
       return '<span class="lockset__name">' + thumbHTML(p) + '<span class="lockset__text">'
-        + '<span title="' + esc(label) + '"><a class="card__link" href="product-detail.html?id=' + esc(m.productId) + '">' + esc(label) + '</a></span>'
+        + '<span title="' + esc(label) + '">' + (href ? '<a class="card__link" href="' + href + '">' + esc(label) + '</a>' : esc(label)) + '</span>'
         + (multi ? '<span class="lockset__sub" data-i18n="cp.var.multiple">Multiple options</span>' : '')
         + '</span></span>';
     }
@@ -1104,6 +1253,19 @@
       el.addEventListener('click', flip);
       el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
     }
+    /* 跟著活動（D293 裁決四）：含票券成員的組合包在上架卡寫出跟著哪一場、那一場現在什麼狀態；沒有票券成員時收起 */
+    function syncFollowEvent() {
+      const note = document.querySelector('[data-bd-follow-event]'); if (!note) return;
+      const m = bundleModel.members.find(x => x.kind === 'ticket');
+      const ev = (m && m.eventId && window.ztorEvents) ? window.ztorEvents.get(m.eventId) : null;
+      if (!ev) { note.hidden = true; note.textContent = ''; return; }
+      const b = EV_BADGE[ev.status] || EV_BADGE.scheduled;
+      note.hidden = false;
+      note.textContent = T('cb.follow-event', 'Follows the event “{name}” ({status}): stays a draft until the event is published, lists and goes on sale with it, and is unlisted if the event is cancelled or unlisted.')
+        .replace('{name}', (ev.name || '').trim() || T('event-detail.untitled', 'Untitled event')).replace('{status}', T(b[0], ev.status));
+    }
+    syncFollowEvent();
+    document.addEventListener('ztor:lang-changed', syncFollowEvent);
     /* 下架的連帶（D245 裁決三＋D265）：非公開連結灰化不可操作；顯示列與開賣區鎖住、說明列露出 */
     function syncListedLock() {
       const on = bundleModel.listed !== false;
@@ -1226,11 +1388,29 @@
     /* 組合價格（D103）：base 自動（唯讀）＋折扣 %；折後＝base×(1−%)。
        2026-09-11：base 改成成員價加總（memberItems.price 的數字），折扣 % 讀組合記錄的 discountPct；
        原本 bundle.priceAmount 直接寫折後價、折扣欄永遠空白。memberItems 沒有價格時退回 priceAmount。 */
-    const bdMemberSum = (bundle && bundle.memberItems || []).reduce((n, it) => { const v = Number(String(it.price || '').replace(/[^0-9.]/g, '')); return n + (isFinite(v) ? v : 0); }, 0);
-    const bdBase = bundle ? (bdMemberSum > 0 ? bdMemberSum : bundle.priceAmount) : 69.00;
-    /* 幣別讀組合記錄（ztorGetBundle 推導的 currency：'TWD'｜'USD'），不再用「有沒有 bundle」猜 */
+    /* 原價合計＝Σ（商品價 × 件數）＋Σ（票價 × 張數）（5.1.5.4 §4 F3，D292 裁決四）：讀成員列的 data-bd-price／data-bd-per，
+       編輯態增減成員或改數量時跟著重算（舊版是載入時算一次的常數） */
+    const memberRows = () => [...document.querySelectorAll('#bd-members [data-bd-pid]')];
+    const rowQty = r => Math.max(1, Math.floor(Number(r.getAttribute('data-bd-per'))) || 1);
+    const rowPrice = r => { const v = Number(r.getAttribute('data-bd-price')); return isFinite(v) ? v : 0; };
+    const bdMemberSumNow = () => memberRows().reduce((n, r) => n + rowPrice(r) * rowQty(r), 0);
+    const bdBaseNow = () => { if (!bundle) return 69.00; const s = bdMemberSumNow(); return s > 0 ? s : (bundle.priceAmount || 0); };
+    /* 幣別讀組合記錄（ztorGetBundle 推導的 currency：'TWD'｜'USD'），不再用「有沒有 bundle」猜；活動組合包（intMoney）以整數顯示 */
     const bdCurrency = (bundle && bundle.currency === 'TWD') ? 'NT$' : '$';
-    const bdTWD = bdCurrency === 'NT$';
+    const bdTWD = bdCurrency === 'NT$' || !!(bundle && bundle.intMoney);
+    /* 算式文字（合計旁）：沿用活動側 bundle-editor 的 cpp.bd.calc.* 片語；件數 1 的商品不寫 × 1 */
+    function bdCalcPartsText() {
+      const rows = memberRows(); if (!rows.length) return '';
+      const parts = rows.map(r => {
+        const q = rowQty(r), pr = bdMoney(rowPrice(r));
+        const nameEl = r.querySelector('.data-list__title');
+        const nm = r.getAttribute('data-bd-kind') === 'ticket' ? ((productOf(r.getAttribute('data-bd-pid')) || {}).name || '') : ((nameEl && (nameEl.querySelector('a') || nameEl).childNodes[0] && (nameEl.querySelector('a') || nameEl).childNodes[0].textContent) || '').trim();
+        return (r.getAttribute('data-bd-kind') === 'ticket' || q > 1)
+          ? T('cpp.bd.calc.tix', '{name} {price} × {n}').replace('{name}', nm).replace('{price}', pr).replace('{n}', String(q))
+          : T('cpp.bd.calc.item', '{name} {price}').replace('{name}', nm).replace('{price}', pr);
+      });
+      return T('cpp.bd.calc.parts', '{parts} = {total}').replace('{parts}', parts.join(T('cpp.bd.price.calc.plus', ' + '))).replace('{total}', bdMoney(bdMemberSumNow()));
+    }
     const bdDisc = document.getElementById('bd-discount');
     if (bdDisc) bdDisc.value = (detail.discountPct != null && detail.discountPct !== '') ? String(detail.discountPct) : '';
     const bdBaseEl = document.getElementById('bd-basetotal');
@@ -1244,8 +1424,14 @@
       const v = parseFloat(raw);
       const ok = !raw || (!isNaN(v) && v >= 0 && v <= 100);
       const pct = (ok && raw && v > 0) ? v : 0;
+      const bdBase = bdBaseNow();
       const final = bdBase * (1 - pct / 100);
       if (bdBaseEl) bdBaseEl.textContent = bdMoney(bdBase);
+      const partsEl = document.querySelector('[data-bd-calc-parts]');
+      if (partsEl) { const t = bdCalcPartsText(); partsEl.hidden = !t; partsEl.textContent = t; }
+      /* 平台費依成員型別分流（D293 裁決二）：含票券才露出說明 */
+      const feeNote = document.querySelector('[data-bd-fee-note]');
+      if (feeNote) feeNote.hidden = !hasTicketMember();
       if (bdAuto) bdAuto.textContent = bdMoney(final);
       if (bdHeroPrice) bdHeroPrice.textContent = bdMoney(final);
       if (window.bdRenderSettingsOverview) window.bdRenderSettingsOverview();
@@ -1264,7 +1450,7 @@
       if (!bdSalePct || !bdSalePctHint) return;
       const raw = bdSalePct.value.trim(); const v = parseFloat(raw);
       const disc = parseFloat((bdDisc && bdDisc.value) || '0') || 0;
-      const sell = bdBase * (1 - disc / 100);
+      const sell = bdBaseNow() * (1 - disc / 100);
       bdSalePctHint.removeAttribute('data-i18n');
       if (raw && (isNaN(v) || v < 0 || v > 100)) { bdSalePctHint.className = 'field__hint mt-8 field__hint--warn'; bdSalePctHint.textContent = T('cb.price.discount-bad', 'Discount must be 0–100.'); }
       else if (raw && v > 0) { bdSalePctHint.className = 'field__hint mt-8 field__hint--ok'; bdSalePctHint.textContent = T('cb.sale.percent-hint', 'Taken off the bundle price during the window.') + ' ' + bdMoney(sell * (1 - v / 100)); }
@@ -1273,6 +1459,8 @@
     if (bdDisc) bdDisc.addEventListener('input', bdRecalc);
     if (bdSalePct) bdSalePct.addEventListener('input', bdSaleRecalc);
     if (bundle) bdRecalc();
+    window.bdRecalc = bdRecalc;
+    document.addEventListener('ztor:lang-changed', () => { if (bundle) bdRecalc(); });
 
     /* 庫存版本切換（限量才顯示硬上限欄）*/
     const eGrid = document.getElementById('bd-edition');
@@ -1581,6 +1769,7 @@
         applyReadonly(!editing);
         sp.querySelectorAll('[data-bd-edit-only]').forEach(el => { el.hidden = !editing; });
         if (editing) { ensureRemoveButtons(); buildCandidates(); }
+        syncMembersLock(editing);
         const btn = document.querySelector('[data-bd-editmode]'), cancel = document.querySelector('[data-bd-edit-cancel]');
         if (cancel) cancel.hidden = !editing;
         if (btn) {
@@ -1605,10 +1794,40 @@
       /* 成員增減（編輯態）：候選＝店裡其他商品（同名去重、已下架與草稿不可加入，比照 create-bundle 的 buildCandidates） */
       const candHost = sp.querySelector('[data-bd-candidates]');
       const searchEl = sp.querySelector('[data-bd-pick-search]');
+      /* 新加入的商品成員列：與載入時的列同一個模板（memberRowHTML），數量預設 1 */
       function memberRowHTML(p) {
-        return '<div class="data-list__row" data-bd-pid="' + esc(p.id) + '"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=' + esc(p.id) + '">' + esc(p.name) + '</a></div></div></div>' +
-          '<div class="data-list__end data-list__end--row"><span class="text-sub" data-bd-stockline><span data-i18n="stock.free">Unlocked</span> <span data-bd-free>—</span> · <span data-i18n="stock.lock">Locked</span> <span data-bd-lock>—</span></span><button class="btn btn--icon btn--xs" type="button" data-bd-remove="' + esc(p.id) + '" aria-label="Remove" data-i18n-aria-label="cb.remove"><i data-lucide="x" class="ztor-icon"></i></button></div></div>';
+        const amt = Number(String(p.price || '').replace(/[^0-9.]/g, '')) || 0;
+        return window.bdMemberRowHTML({ id: p.id, kind: 'product', real: true, name: p.name, meta: p.subLabel || p.catLabel || '', priceAmount: amt, price: bdMoney(amt), imgSrc: p.img ? 'images/products/' + p.img : '', qty: 1 });
       }
+      /* 已售出後成員內容鎖定（D292 裁決七，5.1.5.9 §2.3）：已售任何一套之後，成員清單（票券與商品）與各成員數量不可再改——
+         加入區收起、移除鈕藏起、數量欄停用，並在清單上方說明理由與仍可改的東西（售價／折扣／販售上限／停售）。 */
+      function syncMembersLock(editing) {
+        const sold = soldUnits();
+        const locked = sold > 0;
+        const banner = document.querySelector('[data-bd-members-locked]');
+        const txt = document.querySelector('[data-bd-members-locked-text]');
+        if (banner) banner.hidden = !locked;
+        if (txt) txt.textContent = locked ? T('bd.members.locked', '{n} sold — members and quantities are locked. You can still change the price, discount, cap and sale; to change what is inside, create a new bundle.').replace('{n}', String(sold)) : '';
+        if (locked) sp.querySelectorAll('[data-bd-edit-only]').forEach(el => { el.hidden = true; });
+        document.querySelectorAll('#bd-members [data-bd-remove]').forEach(b => { if (locked) b.hidden = true; });
+        document.querySelectorAll('#bd-members [data-bd-qty]').forEach(inp => { inp.disabled = locked; if (!locked) inp.readOnly = !editing; });
+        const tn = document.querySelector('[data-bd-ticket-note]'); if (tn) tn.hidden = !hasTicketMember();
+        if (window.ztorIcons && banner) window.ztorIcons.applyIcons(banner);
+      }
+      window.bdSyncMembersLock = syncMembersLock;
+      /* 數量（每套用量）改動：寫回列屬性與成員記錄，鎖定量（N × 用量）、可售套數、原價合計跟著重算 */
+      document.addEventListener('input', e => {
+        const inp = e.target.closest('#bd-members [data-bd-qty]'); if (!inp) return;
+        const row = inp.closest('[data-bd-pid]'); if (!row) return;
+        const n = Math.floor(Number(inp.value));
+        const q = (!isNaN(n) && n >= 1) ? n : 1;
+        row.setAttribute('data-bd-per', String(q));
+        const m = bundleModel.members.find(x => x.productId === row.getAttribute('data-bd-pid')); if (m) m.qty = q;
+        const echo = row.querySelector('[data-bd-qty-echo]'); if (echo) echo.textContent = String(q);
+        applyLock(); renderAlloc(); refreshAlloc();
+        if (window.bdRecalc) window.bdRecalc();
+        renderBdSettingsOverview();
+      });
       function buildCandidates() {
         if (!candHost || !store || !store.all) return;
         const q = (searchEl && searchEl.value || '').trim().toLowerCase();
@@ -1641,19 +1860,23 @@
       function afterMembersChange() {
         ensureRemoveButtons();
         const list = document.getElementById('bd-members');
-        if (list) { list.querySelectorAll('[data-bd-remove]').forEach(b => { b.hidden = bundleModel.members.length <= 2; }); }
-        const hint = sp.querySelector('[data-bd-count-hint]'); if (hint) hint.hidden = bundleModel.members.length >= 2;
+        /* 至少 1 個成員即成立（D293 裁決一）：只剩 1 個時藏移除鈕、0 個時露出提示 */
+        if (list) { list.querySelectorAll('[data-bd-remove]').forEach(b => { b.hidden = bundleModel.members.length <= 1; }); }
+        const hint = sp.querySelector('[data-bd-count-hint]'); if (hint) hint.hidden = bundleModel.members.length >= 1;
         const n = bundleModel.members.length;
         const hc = document.querySelector('[data-bd-hero-count]'); if (hc) hc.textContent = String(n);
         const kc = document.querySelector('[data-bd-kpi-members]'); if (kc) kc.textContent = String(n);
         const mc = document.getElementById('bd-member-count'); if (mc) mc.textContent = '(' + n + ')';
         renderAlloc(); refreshAlloc(); buildCandidates(); renderBdSettingsOverview();
+        if (window.bdRecalc) window.bdRecalc();
+        syncMembersLock(sp.getAttribute('data-mode') === 'edit');
+        syncFollowEvent();
       }
       document.addEventListener('click', e => {
         const add = e.target.closest('[data-bd-add]');
         if (add) {
           const p = productOf(add.getAttribute('data-bd-add')); if (!p) return;
-          bundleModel.members.push({ productId: add.getAttribute('data-bd-add'), qty: 1 });
+          bundleModel.members.push({ productId: add.getAttribute('data-bd-add'), kind: 'product', qty: 1 });
           const list = document.getElementById('bd-members');
           if (list) { list.insertAdjacentHTML('beforeend', memberRowHTML(Object.assign({ id: add.getAttribute('data-bd-add') }, p))); if (window.ztorIcons) window.ztorIcons.applyIcons(list); if (window.applyI18n) window.applyI18n(list); }
           afterMembersChange();
@@ -1667,6 +1890,7 @@
         }
       });
       applyReadonly(true);
+      syncMembersLock(false);
       document.addEventListener('click', e => {
         if (e.target.closest('[data-bd-editmode]')) {
           const editing = sp.getAttribute('data-mode') === 'edit';
@@ -1703,7 +1927,7 @@
       const PRUNE = '[data-bd-editmode],[data-bd-edit-cancel],[data-bd-lock-edit],[data-bd-lock-actions]';
       let observer = null;
       const prune = () => document.querySelectorAll(PRUNE).forEach(el => { el.hidden = true; });
-      const mirror = () => { if (seed) { seed.archived = bundleModel.archived; seed.listed = bundleModel.listed; seed.listAt = bundleModel.listAt; seed.unlistAt = bundleModel.unlistAt; seed.unlistReason = bundleModel.unlistReason; seed.saleStart = bundleModel.saleStart; seed.saleEnd = bundleModel.saleEnd; seed.onSale = bundleModel.onSale; if (store && store.commit) store.commit(seed); } };   /* D290：開賣三欄一併鏡射 */
+      const mirror = () => { if (seed) { seed.archived = bundleModel.archived; seed.listed = bundleModel.listed; seed.listAt = bundleModel.listAt; seed.unlistAt = bundleModel.unlistAt; seed.unlistReason = bundleModel.unlistReason; seed.saleStart = bundleModel.saleStart; seed.saleEnd = bundleModel.saleEnd; seed.onSale = bundleModel.onSale; if (store && store.commit && !seed.isEventBundle) store.commit(seed); } };   /* 活動組合包不寫進 products-store 的工作階段（它的資料源在 events-store） */   /* D290：開賣三欄一併鏡射 */
       window.bdMirror = mirror;
       /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「重新上架」永遠放行 */
       if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { block: PRUNE + ',[data-bd-lock-actions] button,[data-bd-alloc-row] button,[data-bd-alloc-group] button', allow: '[data-bd-relist],[data-bd-preview-open],[data-bd-preview-close]' });
@@ -1716,9 +1940,11 @@
       /* 因成員下架而一同下架（D288，原 D284「因成員封存」）：手動確認的連動與定時下架到期的自動連動（auto）各一句 */
       function syncReason() {
         const r = bundleModel.unlistReason;
-        const show = !!(r && r.type === 'member-unlisted' && LS.isUnlisted(bundleModel) && !LS.isArchived(bundleModel));
-        const key = (r && r.auto) ? 'bd.unlist.reason-auto' : 'bd.unlist.reason';
-        const txt = show ? T(key, 'Unlisted together with “{n}”. Relist that item or remove it before relisting the bundle.').replace('{n}', r.productName || r.productId || '') : '';
+        const evCancelled = !!(r && r.type === 'event-cancelled' && LS.isUnlisted(bundleModel));
+        const show = evCancelled || !!(r && r.type === 'member-unlisted' && LS.isUnlisted(bundleModel) && !LS.isArchived(bundleModel));
+        const key = evCancelled ? 'bd.unlist.reason-event' : ((r && r.auto) ? 'bd.unlist.reason-auto' : 'bd.unlist.reason');
+        /* 活動取消 → 含其票券的組合包一同下架（D292 裁決十二） */
+        const txt = show ? T(key, 'Unlisted together with “{n}”. Relist that item or remove it before relisting the bundle.').replace('{n}', evCancelled ? (r.eventName || '') : (r.productName || r.productId || '')) : '';
         if (bannerReason) bannerReason.hidden = !show;
         if (reasonText) reasonText.textContent = txt;
         if (reasonNote) { reasonNote.hidden = !show; reasonNote.textContent = txt; }

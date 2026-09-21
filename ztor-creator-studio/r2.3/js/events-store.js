@@ -81,14 +81,23 @@
       ],
       /* 票務商品（2026-08-11）：建立流程第 6 步綁出來的組合包。與單賣的票共用同一個
          數量池——賣掉一組就從它含的那張票扣一張（BDL-001，編輯規則待上游）。
+         2026-09-18（D292）：票務商品＝電子商店的組合包（成員含本活動票券），這裡只是
+         「含本活動票券的組合包」的篩選視圖資料；`tickets` 的形狀對齊 `js/bundle-editor.js`
+         第 1 批的 `[{ id, qty }]`（票種 id × 每套張數），舊欄名 `tier`／`n` 全數退場，
+         站上不留兩種形狀。`bundle-detail.html?id=<組合包 id>` 是它的細節頁（第 3 批接資料）。
          2026-08-17：`products` 由字串陣列改為 `{ name, img }`——售票進度卡要把「這一組裡面
          裝了什麼」用圖顯示出來，光有名字排不出那排縮圖。商品名與圖沿用 js/products-store.js
          的 nick 批（同一件商品在電子商店與這裡不該長兩張臉）；圖路徑直接寫在這裡而不是
          跨檔去查 products-store，理由同 images.keyvisual——那支是 persona 綁定的，
-         活動資料不該跟著 persona 切換而換掉組合包內容。 */
+         活動資料不該跟著 persona 切換而換掉組合包內容。
+         2026-09-18（D292 第 3 批）：`products[].price` 是該商品成員在這一組的示範單價——`bundle-detail.html`
+         合流讀這裡時要算「原價合計＝Σ（票價 × 張數）＋Σ（商品價 × 件數）」，活動資料不跨檔查 products-store
+         （同上理由：persona 綁定），示範值取「組合售價 − 票券小計」，等於這批組合都沒有另設組合折扣。
+         同一個組合包 id（bd-vip-tee）在系列的高雄／台北兩場各出現一次＝「每場各一組」沿用同一份清單；
+         細節頁沒帶 `&ev=` 時取第一場（示範資料的缺口，見 ASSUMPTIONS BDL-001 追記）。 */
       bundles: [
-        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', tickets: [{ tier: 'tier-vip', n: 1 }],
-          products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp' }],
+        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', tickets: [{ id: 'tier-vip', qty: 1 }],
+          products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600 }],
           price: 4800, sold: 12, cap: 50 }
       ],
       /* 發布設定（2026-08-11 新欄）：建立流程第 7 步的三個選擇，沒寫＝直接開賣／電子門票／公開。 */
@@ -159,11 +168,11 @@
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 100, paused: true }
       ],
       bundles: [
-        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', tickets: [{ tier: 'tier-vip', n: 1 }],
-          products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp' }],
+        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', tickets: [{ id: 'tier-vip', qty: 1 }],
+          products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600 }],
           price: 4800, sold: 3, cap: 50 },
-        { id: 'bd-vip-zine', name: 'VIP ＋ 精裝寫真誌', tickets: [{ tier: 'tier-vip', n: 1 }],
-          products: [{ name: 'REALIVE 巡演精裝寫真誌', img: 'images/products/tour-zine-vol-02.webp' }],
+        { id: 'bd-vip-zine', name: 'VIP ＋ 精裝寫真誌', tickets: [{ id: 'tier-vip', qty: 1 }],
+          products: [{ name: 'REALIVE 巡演精裝寫真誌', img: 'images/products/tour-zine-vol-02.webp', price: 1000 }],
           price: 5200, sold: 7, cap: 40 }
       ],
       publish: { onsale: 'scheduled', pickup: 'sf', visibility: 'public' },
@@ -333,8 +342,8 @@
       /* 2026-08-13：多一筆組合包示範，讓「票券綁商品」不是只有巡演那兩場看得到
          （組合包與單賣的票共用同一個數量池，賣掉一組就從它含的那張票扣一張，BDL-001）。 */
       bundles: [
-        { id: 'bd-slot-vinyl', name: '簽名場次 ＋ 限量黑膠', tickets: [{ tier: 'tier-slot', n: 1 }],
-          products: [{ name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'images/products/coastline-acetate.webp' }],
+        { id: 'bd-slot-vinyl', name: '簽名場次 ＋ 限量黑膠', tickets: [{ id: 'tier-slot', qty: 1 }],
+          products: [{ name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'images/products/coastline-acetate.webp', price: 40 }],
           price: 45, sold: 26, cap: 60 }
       ],
       /* 販售時間（2026-08-31 新欄 `sale`）：`from` 開賣、`to` 停售，皆為 'YYYY-MM-DD HH:MM'。
@@ -718,8 +727,8 @@
         { id: 'tier-rear', name: 'Rear block', price: 800, qty: 2000, sold: 1198 }
       ],
       bundles: [
-        { id: 'bd-front-vinyl', name: '前區票 ＋ 限量黑膠', tickets: [{ tier: 'tier-front', n: 1 }],
-          products: [{ name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'images/products/coastline-acetate.webp' }],
+        { id: 'bd-front-vinyl', name: '前區票 ＋ 限量黑膠', tickets: [{ id: 'tier-front', qty: 1 }],
+          products: [{ name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'images/products/coastline-acetate.webp', price: 700 }],
           price: 1900, sold: 63, cap: 200 }
       ],
       publish: { onsale: 'now', pickup: 'eticket', visibility: 'public' },
@@ -752,8 +761,8 @@
         { id: 'tier-bts', name: 'Stream + behind the scenes', price: 650, qty: 100, sold: 71 }
       ],
       bundles: [
-        { id: 'bd-stream-album', name: '直播票 ＋ 數位專輯', tickets: [{ tier: 'tier-stream', n: 1 }],
-          products: [{ name: 'LOVE RAGE HOPE — 數位專輯', img: 'images/products/nick-album.jpg' }],
+        { id: 'bd-stream-album', name: '直播票 ＋ 數位專輯', tickets: [{ id: 'tier-stream', qty: 1 }],
+          products: [{ name: 'LOVE RAGE HOPE — 數位專輯', img: 'images/products/nick-album.jpg', price: 170 }],
           price: 520, sold: 88, cap: 150 }
       ],
       publish: { onsale: 'now', pickup: 'eticket', visibility: 'public' },
@@ -785,8 +794,8 @@
         { id: 'tier-outfield', name: 'Outfield', price: 900, qty: 400, sold: 372 }
       ],
       bundles: [
-        { id: 'bd-infield-tee', name: '內野票 ＋ 官方 Tee', tickets: [{ tier: 'tier-infield', n: 1 }],
-          products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp' }],
+        { id: 'bd-infield-tee', name: '內野票 ＋ 官方 Tee', tickets: [{ id: 'tier-infield', qty: 1 }],
+          products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 500 }],
           price: 1700, sold: 41, cap: 120 }
       ],
       sold: 1172,
