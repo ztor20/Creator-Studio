@@ -4,6 +4,23 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-22（六十八）· 零成交的已下架／已封存販售管道可刪除：清單 kebab 與三個細節頁多「刪除」、單售仍在組合包裡擋下、有成交只能封存（A spec-derived · D307，修訂 D284；主規格 §7.14「封存與刪除」）
+
+**依據**：使用者裁決 D307（2026-09-22）——§7.14 由「封存與不可刪除」改名「封存與刪除」：零成交（自建立起沒有任何訂單品項，已取消／已撤銷也算曾有銷售）且已下架或已封存的單售、組合包、拍賣可刪除；上架中不可刪（要先下架）；有成交只能封存（既有）；草稿可刪（既有流程不動）；刪除必須確認、不可復原；單售仍是任何組合包的成員（不論該組合包上架／下架／封存）→ 擋下並列出、創作者自行去組合包移除；刪組合包不影響成員；拍賣零出價且未成交（流標或從未開拍）才可刪；刪除後離開所有清單與篩選。
+
+**範圍**：
+- `js/listing-state.js`——新增 `hasSales(entity)`（單售／組合包看 `sales.units`、`sold`、`variants[i].sold`；拍賣看 `auctionBidCount`）、`canDelete(entity)`＝（已下架或已封存）且零成交且非草稿、`deleteBlockers(productId, bundles)`＝仍含這件單售的所有組合包（不論狀態、草稿不算）、`remove(entity)`（標 `deleted`、總閘門關）；檔頭資料模型補 `deleted`
+- `js/products-store.js`——`ProductsStore.remove(entity)`（`ListingState.remove`＋工作階段同一把 key 下的 `__deleted` 清單＋`purgeDeleted()` 自三個資料集拿掉，別名 key 一併清）、`deleteBlockers(productId)`、`canDelete`／`hasSales` 轉問；載入時 seed 完先 `purgeDeleted()`，`patchAll()` 先 `pruneDeletedRows()` 移除 e-shop 對應列（單售看 `?id`、組合看 `data-bundle-id`、拍賣看 `data-auction-id`）。示範資料：新增 `sample-set`（零成交已封存組合包，成員 beanie／cap）、`setlist-sheet`（零出價流標後下架的拍賣）；`membership`／`coaster`／`mug` 註解補 D307 角色（mug 原註「不在任何組合包裡」與 launch-set 成員矛盾，一併改正）
+- `e-shop.html`——`ensureMenuItem` 加 `atEnd`；`syncRowActions` 對已下架／已封存且零成交的列長出 `[data-eshop-remove]`（`dropdown__item--danger`＋`trash-2`，排最後）；`askDelete(row)`：擋下＝`askConfirm` 列出組合包＋`noCancel`（沿用 `e-shop.relist.blocked-ok`）、確認＝標題帶品名＋不可復原＋`destructive` 主鈕 → `S.remove`＋`row.remove()`＋`applyFilter`＋`updateStatusCounts`；草稿列既有 `data-eshop-delete` 流程不動。新增拍賣列 `setlist-sheet`（已下架、零出價）
+- `product-detail.html`／`bundle-detail.html`／`auction-detail.html`——頁首在「封存」與「解除封存」之間加 `button.btn.btn--destructive[data-*-delete]`（`trash-2`＋`product-detail.btn.delete`）；`syncPrimaryAction()` 依 `canDelete` 露出（bundle 另看 seed 的 `hasSales`、活動組合包不露）；上架設定卡第一條鎖定說明底下加 `p.lctl__lock-note[data-*-sales-note]`（`cp.listing.sales-note`），已下架／已封存且有成交時露出；`askConfirm` 補 `destructive`（product／bundle 原本固定 `btn--primary`）與 `noCancel`（product）；`ZtorArchivedGate` 的 `allow` 補 `[data-*-delete]`；點擊：單售先 `deleteBlockers` 擋下、否則確認 → `S.remove` → 寫 `ztor.eshop.list` 指定分頁 → 導回 `e-shop.html`
+- `js/i18n.js`——新增 `e-shop.remove.title`／`body`／`bundle-body`／`blocked-title`／`blocked-body`、`product-detail.btn.delete`、`cp.listing.sales-note`、`e-shop.a8.name`／`meta`／`bid`（en／zh）
+- 元件——**無新元件、無 CSS 改動**：`leave-dialog.css`（含 `__list`）、`button.css`（`btn--destructive`）、`dropdown` 的 `--danger`、`listing-controls.css`（`lctl__lock-note`）全部既有；DS 三件套不動
+- 文件：`BUILD-SPEC.md`、`requirements-map.md`（5.1.5／5.1.5.1／5.1.5.8／5.1.5.9 列）、`ASSUMPTIONS.md` UIA-164、`docs/示範資料索引.md`
+
+**動機**：刪除的判斷全部收在 `ListingState`（與封存、下架同一層），三個細節頁與清單只問「能不能刪、被誰擋」，規則改一次就全站一致。擋下時入口照樣露出、按下才說原因——藏掉入口等於讓創作者找不到「為什麼」。確認彈窗沿用站上唯一的 leave-dialog 殼與草稿刪除同一顆紅框主鈕（Q37），不另造刪除專用彈窗。刪除是「記錄不存在」而不是三開關的值，所以工作階段另記 `__deleted` 清單而不塞進 `SESSION_FIELDS`，`commit` 機制不動。
+
+**驗證**：Playwright（1440×1000，`ztor.persona=default`）——`product-detail?id=membership` 頁首「刪除」露出 → 確認（主鈕 `btn--destructive`、內文不可復原）→ 導回 e-shop 商品分頁、列不見、`__deleted` 記 `product:membership`；`?id=coaster`（有成交已下架）無「刪除」、上架卡「已有銷售紀錄，只能封存。」；`?id=zine`（上架中）無「刪除」；`?id=mug`（已封存、在 launch-set 裡）「刪除」在「解除封存」旁 → 擋下列出「首發紀念組」、只有「知道了」、記錄仍在；`auction-detail?id=setlist-sheet` 刪除 → 回競標分頁、列消失，`?id=lyric-sheet` 無刪除＋說明；`bundle-detail?id=sample-set` 刪除 → 回組合分頁、列消失、成員 beanie／cap 仍在，`?id=launch-set` 無刪除＋說明。e-shop：已下架篩選 membership kebab 最後一項紅字「刪除」→ 確認 → 列移除、計數 28→27／已下架 3→2；coaster kebab 無刪除；zine 的刪除項 hidden；已封存篩選 mug → 擋下；組合分頁 sample-set 可刪、launch-set 不可；競標分頁 setlist-sheet 可刪、lyric-sheet 不可；重新整理後三筆仍不在。en／zh 五頁 0 raw key、console 0 錯誤。截圖 `screenshots/r2.3/d307-01…25`。`check_ds_sync.py` 全 PASS（WARN 為存量）；`node --check` listing-state／products-store／i18n 通過、四頁內嵌腳本逐塊通過。
+
 ## 2026-09-22（六十七）· 商品細節頁取貨區標題改回泛稱「取貨方式」（B 反饋）
 
 - 反饋：D304 補上取貨方式切換（物流／現場 QR）後，區塊標題與頁籤仍照 07-22「標題＝目前方式」顯示「現場 QR 領取」，與切換按鈕重述同一件事。使用者裁決改回泛稱。

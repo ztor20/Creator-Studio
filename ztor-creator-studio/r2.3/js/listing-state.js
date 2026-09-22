@@ -31,6 +31,8 @@
 //                               組合包被「一同下架」時記的原因（2026-09-18 · D288：成員單售下架時創作者確認一同下架，
 //                               或成員定時下架到期自動連動＝auto:true；取代 D284 的 'member-archived'——封存不再檢查組合包）；
 //                               重新上架時清掉。純資訊欄位，推導不看它。
+//     deleted     boolean       已刪除（2026-09-22 · D307，§7.14「封存與刪除」）：零成交且已下架或已封存的販售管道才能刪；
+//                               remove() 標上後由 ProductsStore.remove 自 store 拿掉並記進工作階段，之後任何清單與篩選都不再出現。
 //   拍賣（2026-09-18 · D285，§7.14「適用範圍」）：同一組三開關與 archived，欄位名完全相同，另加：
 //     saleStart   對拍賣＝開拍時間（null＝跟著上架一起開拍，開拍時間＝實際上架時間）
 //     duration    競標時長（天數）。停售時間＝結標時間＝開拍時間＋時長，由 auctionSaleEnd() 導出、不手填，
@@ -782,6 +784,53 @@
     return 'badge badge--' + ((meta && meta.tone) || 'neutral');
   }
 
+  /* ── 零成交可刪除（spec §7.14「封存與刪除」· D307，2026-09-22，修訂 D284「發布過即不可刪除」）──────────
+     零成交（No sales）＝該販售管道自建立起沒有任何訂單品項；已取消、已撤銷的訂單品項也算曾有銷售。
+     可刪除＝已下架或已封存，且零成交。上架中不可刪（要先下架）；有成交只能封存（既有）；草稿另有既有的刪除流程（不走這裡）。
+     拍賣的零成交＝從未有任何出價（含從未開拍、結標時無出價的流標 Unsold）；曾有出價不論是否得標都不可刪。
+     單售仍是任何組合包的成員（不論該組合包上架中、已下架或已封存）→ 擋下、列出組合包；刪組合包不影響成員。
+     這裡只放判斷與最小的狀態轉移（remove 標 deleted），「自 store 移除、工作階段記住」是 products-store 的事。 */
+  function isAuctionEntity(entity) { return !!(entity && entity.duration !== undefined); }
+
+  /** 曾有銷售嗎：單售／組合包看銷售摘要 sales.units、限量的已售 sold（含逐選項組合的 variants[i].sold）；拍賣看出價數。
+      原型沒有訂單品項流，這幾個既有欄位就是「有沒有留下訂單紀錄」的代理值。 */
+  function hasSales(entity) {
+    if (!entity) return false;
+    if (isAuctionEntity(entity)) return auctionBidCount(entity) > 0;
+    if (entity.sales && num(entity.sales.units) > 0) return true;
+    if (num(entity.sold) > 0) return true;
+    return (entity.variants || []).some(function (v) { return num(v && v.sold) > 0; });
+  }
+
+  /** 可以刪除嗎＝（已下架或已封存）且零成交、不是草稿。上架中一律 false。 */
+  function canDelete(entity, now) {
+    if (!entity || isDraftOf(entity, null) || entity.deleted) return false;
+    if (!(isArchived(entity) || isUnlisted(entity, nowMs(now)))) return false;
+    return !hasSales(entity);
+  }
+
+  /**
+   * 單售刪除前的擋下清單：這件商品仍是哪些組合包的成員——不論那個組合包上架中、已下架或已封存都算（D307）。
+   * 草稿組合包不算：草稿還沒真正建立（§7.14「草稿可刪除」）。bundles：候選組合包清單（通常是 ProductsStore.bundlesUsing）。
+   */
+  function deleteBlockers(productId, bundles) {
+    var out = [];
+    (bundles || []).forEach(function (b) {
+      if (!b || isDraftOf(b, null) || b.deleted) return;
+      var inIt = (b.members || []).some(function (m) { return (m.productId || m.id) === productId; });
+      if (inIt) out.push(b);
+    });
+    return out;
+  }
+
+  /** 刪除：標 deleted、總閘門關上。不檢查前提（呼叫端先過 canDelete 與 deleteBlockers）；從 store 拿掉由 ProductsStore.remove 負責。 */
+  function remove(entity) {
+    if (!entity) return entity;
+    entity.deleted = true;
+    entity.listed = false;
+    return entity;
+  }
+
   /** 競標已經開始了嗎（Live 或 Ended）——開拍後設定受限（5.1.5.8 §2.2 限度編輯）。 */
   function auctionStarted(a, now) {
     var start = auctionStart(a);
@@ -845,6 +894,11 @@
     auctionBidCount: auctionBidCount,
     deriveAuctionStatus: deriveAuctionStatus,
     deriveAuctionFlags: deriveAuctionFlags,
-    auctionBadgeClass: auctionBadgeClass
+    auctionBadgeClass: auctionBadgeClass,
+    /* 零成交可刪除（D307） */
+    hasSales: hasSales,
+    canDelete: canDelete,
+    deleteBlockers: deleteBlockers,
+    remove: remove
   };
 }));

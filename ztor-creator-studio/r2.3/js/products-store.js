@@ -46,6 +46,9 @@
 //      cheat code 的 Reset 會呼叫 forgetSession() 清掉。 ──
 //   onSale     bool（缺值＝true）   開賣設定（D290）：false＝未開賣（上架、顯示照舊、尚未開放結帳）。seed 不設（沿用上架即開賣）；
 //              下架（含連動、定時到期）後由 ListingState.unlist 寫成 false，重新上架維持 false，細節頁的開賣二選一因此多一項「未開賣」
+//   deleted    bool            已刪除（2026-09-22 · D307，§7.14「封存與刪除」）：零成交且已下架或已封存的販售管道（單售／組合包／拍賣）
+//              可刪；ProductsStore.remove(entity) 標上、自 store 拿掉、記進工作階段（sessionStorage 同一把 key 的 `__deleted` 清單），
+//              重新整理後 purgeDeleted() 再拿掉一次、e-shop 對應列由 pruneDeletedRows() 移除；cheat code Reset（forgetSession）一併還原
 //   delivery   'ship'（預設，可省略）| 'qr'   交付方式；'qr'＝現場 QR 領取（取貨場次欄位）
 //   currency   'TWD'（nick 商品）| 省略＝USD   價格幣別（priceText／product-detail 的 money() 讀它）
 //   variants[i].locks  { single: n|null, bundles: { <bundleId>: n|null } }   逐選項組合鎖定（D255／D258）；
@@ -320,7 +323,8 @@
       status: 'live', price: '12.00', cost: '3.00', stock: '58', cap: '150', sold: '64', threshold: '5',
       catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
     },
-    /* 實體 · 馬克杯：已封存、尚無銷售（KPI 空狀態）；不在任何組合包裡 */
+    /* 實體 · 馬克杯：已封存、尚無銷售（KPI 空狀態）；仍是已封存組合包 launch-set 的成員——D307（2026-09-22）零成交可刪除的「擋下」示範：
+       按刪除會列出 launch-set、要求先到組合包把它移除（不論該組合包上架／下架／封存都擋） */
     mug: {
       name: '九龍夜行 Logo 馬克杯', img: 'logo-mug.webp',
       sub: '11 oz ceramic mug with the wave mark. Dishwasher safe.',
@@ -651,6 +655,9 @@
     'tour-enamel-pin':    { id: 'tour-enamel-pin', nameKey: 'e-shop.a7.name', img: 'enamel-pin-wave.webp', listed: true, shown: true, saleStart: daysFromNow(-120), duration: 7, bids: 0, bidders: 0 },
     /* 已下架（Unlisted）：結標後創作者手動下架，等著封存 */
     'lyric-sheet':        { id: 'lyric-sheet', nameKey: 'e-shop.a4.name', img: 'notebook.webp', listed: false, shown: true, saleStart: daysFromNow(-40), duration: 5, bids: 11, bidders: 6 },
+    /* 零出價、已下架（2026-09-22 · D307「拍賣的刪除」）：兩個月前結標沒有人出價（流標），之後下架——清單「已下架」列與細節頁都有「刪除」。
+       對照 tour-enamel-pin（流標但仍上架中 → 要先下架才能刪）與 lyric-sheet（已下架但曾有出價 → 只能封存）。 */
+    'setlist-sheet':      { id: 'setlist-sheet', nameKey: 'e-shop.a8.name', img: 'notebook.webp', listed: false, shown: true, saleStart: daysFromNow(-60), duration: 5, bids: 0, bidders: 0 },
     /* 已封存（Archived）：只在「已封存」篩選下出現、細節頁唯讀 */
     'tour-laminate':      { id: 'tour-laminate', nameKey: 'e-shop.a5.name', img: 'wristband.webp', listed: false, shown: true, archived: true, saleStart: daysFromNow(-70), duration: 3, bids: 7, bidders: 4 },
     /* 隱藏（Hidden）＋競標中：商店找不到、持非公開連結可出價（§7.14「私下販售」） */
@@ -684,6 +691,54 @@
     return e;
   }
   function forgetSession() { try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {} }
+  /* ── 零成交可刪除（2026-09-22 · D307，§7.14「封存與刪除」）──────────────────────
+     刪除是「這筆記錄不存在了」，不是三開關的值，所以不走 SESSION_FIELDS：同一把 sessionStorage key 底下另記 `__deleted`
+     清單（'product:membership'／'bundle:sample-set'／'auction:setlist-sheet'），載入時 purgeDeleted() 把這些記錄從資料集拿掉、
+     pruneDeletedRows() 把 e-shop 對應列移除。判斷（canDelete／hasSales／deleteBlockers）在 ListingState，這裡只做「拿掉並記住」。 */
+  function deletedKeys() { var d = sessionRead().__deleted; return Array.isArray(d) ? d : []; }
+  function purgeDeleted() {
+    deletedKeys().forEach(function (k) {
+      var i = k.indexOf(':'), kind = k.slice(0, i), id = k.slice(i + 1);
+      if (kind === 'bundle') { if (BUNDLE_SEED[id]) BUNDLE_SEED[id].deleted = true; delete BUNDLE_SEED[id]; return; }
+      if (kind === 'auction') { if (AUCTION_SEED[id]) AUCTION_SEED[id].deleted = true; delete AUCTION_SEED[id]; return; }
+      /* 單售：同一筆記錄可能被兩個 persona 以不同 key 共用（別名），先標記再把指向它的 key 全部拿掉 */
+      Object.keys(DATASETS).forEach(function (pid) {
+        var set = DATASETS[pid];
+        if (set[id]) set[id].deleted = true;
+        Object.keys(set).forEach(function (key) { if (set[key] && set[key].deleted) delete set[key]; });
+      });
+    });
+  }
+  function removeEntity(e) {
+    if (!e || !e.id) return e;
+    var L = ls();
+    if (L && L.remove) L.remove(e); else { e.deleted = true; e.listed = false; }
+    var all = sessionRead(), k = kindOf(e) + ':' + e.id;
+    var d = Array.isArray(all.__deleted) ? all.__deleted : [];
+    if (d.indexOf(k) < 0) d.push(k);
+    all.__deleted = d;
+    delete all[k];   /* 三開關的覆蓋沒有對象了 */
+    sessionWrite(all);
+    purgeDeleted();
+    return e;
+  }
+  /* e-shop 清單：已刪除的列移除（單售看細節連結的 ?id、組合看 data-bundle-id、拍賣看 data-auction-id）。patchAll 每次都跑，等冪。 */
+  function pruneDeletedRows() {
+    var keys = deletedKeys();
+    if (!keys.length) return;
+    document.querySelectorAll('.product-list__row').forEach(function (row) {
+      var kind, id;
+      if (row.getAttribute('data-bundle-id')) { kind = 'bundle'; id = row.getAttribute('data-bundle-id'); }
+      else if (row.getAttribute('data-auction-id')) { kind = 'auction'; id = row.getAttribute('data-auction-id'); }
+      else {
+        var a = row.querySelector('a[href*="product-detail.html?id="]');
+        var m = a && /[?&]id=([^&]+)/.exec(a.getAttribute('href'));
+        if (!m) return;
+        kind = 'product'; id = decodeURIComponent(m[1]);
+      }
+      if (keys.indexOf(kind + ':' + id) >= 0) row.remove();
+    });
+  }
 
   function seedAuction(a) {
     if (!a || a.__seeded) return a;
@@ -854,7 +909,7 @@
     movie:   { saleStart: '2026-10-01T12:00:00' },
     /* 販售結束：停售日期與時間已過 */
     song:    { saleEnd: '2026-08-20T23:59:00' },
-    /* 已下架：總閘門關掉，公開與非公開連結都失效 */
+    /* 已下架：總閘門關掉，公開與非公開連結都失效。尚無銷售、不在任何組合包裡 → D307（2026-09-22）零成交可刪除的正例：清單列與細節頁都有「刪除」 */
     membership: { listed: false },
     /* ⚠ 這裡曾經放過 hoodie 的「排定上架、時間還沒到」示範（2026-09-09 加、同日撤）。
        撤掉的原因：hoodie 同時是 e-shop F5 粉絲端預覽的第 5 張卡，而那段的過濾只看
@@ -1010,7 +1065,7 @@
     /* 2026-09-18 封存示範（D284）：明信片組有訂單歷史（封存不影響訂單與收入）；馬克杯沒有 */
     postcard: { sales: { units: 64, gross: '$768', net: '$614' }, tags: ['Tour 2025'] },
     mug: { sales: null },
-    /* 2026-09-18 D288：定時下架到期示範，有一點銷售 */
+    /* 2026-09-18 D288：定時下架到期示範，有一點銷售。D307（2026-09-22）反例：已下架但有成交 → 沒有「刪除」、只能封存，上架卡說明多一句「已有銷售紀錄，只能封存」 */
     coaster: { sales: { units: 9, gross: '$99', net: '$79' } }
   };
 
@@ -1168,6 +1223,16 @@
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 5, discount: null,
       sales: { units: 4, gross: '$100', net: '$80' }
+    },
+    /* 零成交的已封存組合包（2026-09-22 · D307，§7.14「零成交可刪除」）：試賣沒賣出去就封存了——清單「已封存」篩選與細節頁頁首都有「刪除」；
+       刪除不影響成員（beanie／cap 的狀態與庫存照舊）。對照 launch-set（已封存但有成交 → 只能封存）。 */
+    'sample-set': {
+      id: 'sample-set', persona: 'default', name: '試賣樣品組', img: 'beanie.webp',
+      description: '毛帽＋六片帽的試賣組，沒有人買就先收起來。',
+      members: [{ productId: 'beanie' }, { productId: 'cap' }],
+      cap: null, listed: false, listAt: null, unlistAt: null, archived: true,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: null, discount: null, sales: null
     },
 
     /* ══ nick persona（周湯豪）══ 第一筆必須是選物四件組：ztorGetBundle() 沒帶 id 時回該 persona 的第一筆 */
@@ -1360,6 +1425,8 @@
     var set = DATASETS[personaId];
     Object.keys(set).forEach(function (id) { seedListing(id, set[id]); });
   });
+  /* 工作階段裡已刪除的販售管道（D307）：seed 補完後從三個資料集拿掉，之後的連動、清單、細節頁都看不到它 */
+  purgeDeleted();
 
   /* ── 定時下架到期的自動連動（2026-09-18 · D288 裁決二後半，§7.14「下架確認與組合包連動」）──
      原型沒有排程器：載入時檢查一次——成員單售的 unlistAt 已過而它所在的組合包還上架中，就把那個組合包一併下架、
@@ -1421,6 +1488,15 @@
     /* 工作階段覆蓋（D288）：狀態轉移後呼叫 commit(entity) 記住；forgetSession() 回到 seed（cheat code Reset 也會呼叫） */
     commit: commit,
     forgetSession: forgetSession,
+    /* 零成交可刪除（D307）：remove(entity) 標 deleted、自 store 拿掉、記進工作階段；deleteBlockers(productId)＝這件單售仍在哪些組合包裡
+       （不論那些組合包上架／下架／封存，草稿不算）；canDelete／hasSales 直接轉問 ListingState */
+    remove: removeEntity,
+    deleteBlockers: function (productId) {
+      var L = ls(); if (!L || !L.deleteBlockers) return [];
+      return L.deleteBlockers(productId, window.ProductsStore.bundlesUsing(productId));
+    },
+    canDelete: function (e, now) { var L = ls(); return !!(L && L.canDelete && L.canDelete(e, now)); },
+    hasSales: function (e) { var L = ls(); return !!(L && L.hasSales && L.hasSales(e)); },
     /* 載入時自動連動的結果 [{ bundle, product }]（定時下架到期→組合包一併下架） */
     autoUnlisted: function () { return AUTO_UNLISTED.slice(); },
     get: function (id) { var p = active()[id]; return p ? applyBundleLocks(seedListing(id, p)) : null; },
@@ -1731,7 +1807,7 @@
   /* 定時下架到期的自動連動在所有 seed 補完之後跑一次（D288）；ListingState 已於本檔之前載入 */
   runScheduledCascade();
 
-  function patchAll() { patchEshopList(); patchBundlesAndAuctions(); }
+  function patchAll() { pruneDeletedRows(); patchEshopList(); patchBundlesAndAuctions(); }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', patchAll);
   } else { patchAll(); }

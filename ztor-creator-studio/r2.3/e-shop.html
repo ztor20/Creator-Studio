@@ -1084,6 +1084,17 @@
             <div class="product-list__cell product-list__activity" role="cell" data-i18n="e-shop.a4.activity">Winner @kai · Earnings $410</div>          <div class="product-list__cell product-list__shown" role="cell"><div class="switch switch--on" role="switch" tabindex="0" aria-checked="true" data-eshop-shop aria-label="Show in shop" data-i18n-aria-label="e-shop.a.shoplist"></div></div><div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="auction-detail.html?id=lyric-sheet" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a><a class="dropdown__item" role="menuitem" href="orders.html" ><i data-lucide="truck" class="ztor-icon"></i><span data-i18n="e-shop.a.track">Track fulfilment</span></a></div></details></div>
           </div>
 
+          <!-- 已下架＋零出價（2026-09-22 · D307「拍賣的刪除」）：流標後下架、從未有人出價 → kebab 多一項「刪除」（對照上面 lyric-sheet：已下架但曾有出價，只能封存）-->
+          <div class="product-list__row" role="row" data-status="unlisted" data-type="auction" data-name="Handwritten setlist sheet" data-auction-id="setlist-sheet">
+            <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+            <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/notebook.webp" alt="" loading="lazy"></div></div>
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title" data-i18n="e-shop.a8.name">Handwritten setlist sheet</div><div class="product-list__meta" data-i18n="e-shop.a8.meta">Good · All fans</div></div></div>
+            <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="cp.acat.memorabilia">Memorabilia</div>
+            <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.a8.bid">From $120</div>
+            <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--neutral"><span data-i18n="shop.status.unlisted">Unlisted</span></span></div>
+            <div class="product-list__cell product-list__activity" role="cell" data-i18n="e-shop.a7.activity">0 bids · No winner</div>          <div class="product-list__cell product-list__shown" role="cell"><div class="switch switch--on" role="switch" tabindex="0" aria-checked="true" data-eshop-shop aria-label="Show in shop" data-i18n-aria-label="e-shop.a.shoplist"></div></div><div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="auction-detail.html?id=setlist-sheet" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a></div></details></div>
+          </div>
+
           <div class="product-list__row" role="row" data-status="archived" data-type="auction" data-name="Tour laminate set 2023" data-auction-id="tour-laminate">
             <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
             <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/wristband.webp" alt="" loading="lazy"></div></div>
@@ -1754,7 +1765,7 @@
 
     /* 草稿列「刪除」（破壞性、紅字）：2026-09-18 起先確認（§7.14「草稿可刪除…刪除前必須確認」· D284）——
        借 leave-dialog 的殼、標題帶品名、主鈕 .btn--destructive；確認才移除該列並重算清單（分批/end-cap/計數）。
-       發布過的列沒有這一項（kebab 靜態 markup 只在草稿列放 data-eshop-delete）。
+       發布過的列沒有這一項（kebab 靜態 markup 只在草稿列放 data-eshop-delete）；已下架／已封存且零成交的列另有 data-eshop-remove（D307，由 syncRowActions 長出、askDelete 處理），兩條流程不共用。
        彈窗函式（askConfirm）定義在下方推導段落，事件觸發時已存在。 */
     document.addEventListener('click', e => {
       const del = e.target.closest('[data-eshop-delete]');
@@ -2232,17 +2243,18 @@
        其餘狀態 → 兩項都不出現。項目由這裡按需長出來、不寫進靜態列——列會被 persona／載入更多複製，
        寫死在 markup 裡會漏。拍賣列 2026-09-18 起（D285）同一套：已下架→封存、已封存→解除封存＋編輯（唯讀）；
        複製連結在已下架與已封存都收起（連結已失效）。「下架」與「上架」都不在清單上：它們在細節頁的上架開關。
-       D298：已封存列的「重新上架（直接回上架）」退場，改成「解除封存」回到已下架、不確認、不自動上架。 */
+       D298：已封存列的「重新上架（直接回上架）」退場，改成「解除封存」回到已下架、不確認、不自動上架。
+       D307（2026-09-22）：已下架／已封存且零成交的列（單售、組合包、拍賣）最後多一項「刪除」（紅字），見下方 askDelete。 */
     const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
-    function ensureMenuItem(menu, attr, icon, key, fallback) {
+    function ensureMenuItem(menu, attr, icon, key, fallback, atEnd) {
       let el = menu.querySelector('[' + attr + ']');
       if (el) return el;
       el = document.createElement('button');
       el.type = 'button'; el.className = 'dropdown__item'; el.setAttribute('role', 'menuitem'); el.setAttribute(attr, '');
       el.innerHTML = '<i data-lucide="' + icon + '" class="ztor-icon"></i><span data-i18n="' + key + '">' + esc(T(key, fallback)) + '</span>';
-      /* 排在「編輯」前面：封存／解除封存是狀態動作，編輯是導覽 */
+      /* 排在「編輯」前面：封存／解除封存是狀態動作，編輯是導覽；atEnd＝排最後（破壞性的「刪除」，與草稿列的 Delete 同位置） */
       const edit = menu.querySelector('a[href*="-detail.html"]');
-      if (edit) menu.insertBefore(el, edit); else menu.appendChild(el);
+      if (edit && !atEnd) menu.insertBefore(el, edit); else menu.appendChild(el);
       if (window.ztorIcons) window.ztorIcons.applyIcons(el);
       return el;
     }
@@ -2256,6 +2268,11 @@
       const canArch = L.canArchive(m.entity);
       ensureMenuItem(menu, 'data-eshop-archive', 'archive', 'e-shop.a.archive', 'Archive').hidden = !canArch;
       ensureMenuItem(menu, 'data-eshop-unarchive', 'archive-restore', 'e-shop.a.unarchive', 'Unarchive').hidden = !archived;
+      /* 零成交可刪除（§7.14 · D307，2026-09-22）：已下架或已封存且零成交的列，kebab 最後多一項「刪除」（紅字，沿用草稿列 Delete 的樣式與 icon）；
+         有成交、上架中、草稿都不長這一項。擋下（單售仍在組合包裡）在按下時才判斷，入口照樣出現——讓創作者看得到「為什麼不能刪」。 */
+      const delItem = ensureMenuItem(menu, 'data-eshop-remove', 'trash-2', 'e-shop.delete', 'Delete', true);
+      delItem.classList.add('dropdown__item--danger');
+      delItem.hidden = !(L.canDelete && L.canDelete(m.entity));
       /* 已封存：連結已失效、庫存唯讀——複製連結與補貨兩項收起 */
       menu.querySelectorAll('[data-eshop-restock]').forEach(el => { el.hidden = archived; });
       /* 拍賣列的「複製連結」在已下架時也收起——下架即無粉絲端頁面（D284 裁決六），連結沒有可到的地方 */
@@ -2274,7 +2291,7 @@
       }
     }
 
-    /* ── 確認彈窗（封存／顯示隱藏／草稿刪除）：借 leave-dialog 的殼（站上唯一的確認彈窗語彙），
+    /* ── 確認彈窗（封存／顯示隱藏／草稿刪除／零成交刪除與擋下）：借 leave-dialog 的殼（站上唯一的確認彈窗語彙），
        多一段 .leave-dialog__list 列受影響的組合包或未上架成員（2026-09-18 promote 進 leave-dialog.css）。
        noCancel＝純告知（擋下）只留一顆主鈕。彈窗 markup 在 </body> 前，每次用時才查。 */
     const getConfirmDialog = () => document.querySelector('[data-eshop-confirm-dialog]');
@@ -2342,13 +2359,42 @@
       syncShopToggle(row); renderStatus(row); renderStock(row); syncRowActions(row);
       applyFilter(); updateStatusCounts();
     }
+    /* 零成交可刪除（§7.14「零成交可刪除」「拍賣的刪除」· D307，2026-09-22）：已下架或已封存且零成交才走到這裡（入口由 syncRowActions 決定）。
+       單售仍在任何組合包裡（不論上架／下架／封存）→ 擋下、列出組合包、只有「知道了」（沿用 relist 擋下那一組殼與文案鍵）；
+       否則確認（標題帶品名、內文講不可復原、主鈕紅框 btn--destructive，同草稿刪除）→ ProductsStore.remove 標記並記進工作階段、
+       列離開清單、篩選與計數重算。組合包與拍賣沒有擋下清單：刪組合包不影響成員，拍賣沒有成員。 */
+    function askDelete(row) {
+      const L = LS(), S = PS(), m = rowModel(row);
+      if (!L || !S || !m || !m.store || !L.canDelete || !L.canDelete(m.entity)) return;
+      const name = rowName(row);
+      const isBundle = row.dataset.type === 'bundle';
+      const blockers = (!m.auction && !isBundle && S.deleteBlockers) ? S.deleteBlockers(m.entity.id) : [];
+      if (blockers.length) {
+        askConfirm({
+          title: T('e-shop.remove.blocked-title', '“{n}” is still in bundles').replace('{n}', name),
+          body: T('e-shop.remove.blocked-body', 'Remove it from these bundles first, then delete:'),
+          items: blockers.map(b => b.name),
+          okKey: 'e-shop.relist.blocked-ok', okFallback: 'Got it', noCancel: true,
+          onConfirm: null
+        });
+        return;
+      }
+      askConfirm({
+        title: T('e-shop.remove.title', 'Delete “{n}”?').replace('{n}', name),
+        body: T(isBundle ? 'e-shop.remove.bundle-body' : 'e-shop.remove.body', isBundle ? 'Members keep their status and stock. This cannot be undone.' : 'It disappears from every list and filter. This cannot be undone.'),
+        okKey: 'e-shop.delete.confirm', okFallback: 'Delete', destructive: true,
+        onConfirm: () => { S.remove(m.entity); row.remove(); applyFilter(); updateStatusCounts(); }
+      });
+    }
     document.addEventListener('click', e => {
       if (e.target.closest('[data-eshop-confirm-ok]')) { const p = confirmPending; closeConfirm(); if (p && p.onConfirm) p.onConfirm(); return; }
       if (e.target.closest('[data-eshop-confirm-cancel]')) { closeConfirm(); return; }
       const arch = e.target.closest('[data-eshop-archive]');
       if (arch) { const row = arch.closest('.product-list__row'); if (row) askArchive(row); return; }
       const un = e.target.closest('[data-eshop-unarchive]');
-      if (un) { const row = un.closest('.product-list__row'); if (row) doUnarchive(row); }
+      if (un) { const row = un.closest('.product-list__row'); if (row) doUnarchive(row); return; }
+      const rm = e.target.closest('[data-eshop-remove]');
+      if (rm) { const row = rm.closest('.product-list__row'); if (row) askDelete(row); }
     });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && confirmPending) closeConfirm(); });
 

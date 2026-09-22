@@ -4,6 +4,12 @@
    .payout-dialog--xwide（STYLE-DECISIONS Q27：彈窗殼唯一元件）。本檔只放
    這個殼裡才會用到的排版微調——語言分頁＋預覽/列表切換那一列、翻譯提示條、
    預覽卡可編輯欄位的視覺提示、列表表格的儲存格。
+   2026-09-22（D305／D306）：工具列右側多一組幣別 .segmented（`.pp-currency`，與預覽/列表
+   切換同一個控件群 `.pp-toolbar__controls`）；列表檢視由一張表改兩張（翻譯表＋價格表，各自
+   `.pp-table-block` ＋ `.pp-table-title`）；價格表的儲存格：基準幣別欄唯讀 `.pp-cell--base`
+   （鎖定列附 `.pp-price-lock`）、其餘欄 `.pp-cell--price`＝數字輸入框＋ `.pp-price-meta`
+   （「已覆寫」徽章＋「重設為換算值」ghost 鈕，只在覆寫時露出）、`.pp-cell--overridden` 標示。
+   粉絲視角活動頁本體在 fan-event-page.css，不在這裡。
    consumer：partials/publish-preview.js（唯一掛載點）
    ============================================================ */
 
@@ -67,3 +73,64 @@
   border-top: 1px solid var(--border);
 }
 .pp-group-row:first-child td { border-top: 0; }
+
+/* ── D305／D306（2026-09-22）：幣別軸與價格表 ─────────────────────── */
+.pp-toolbar__controls {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  flex-wrap: wrap;
+}
+.pp-currency[hidden] { display: none; }
+.pp-currency .segmented__btn { font-variant-numeric: tabular-nums; }
+
+.pp-panel--list { display: flex; flex-direction: column; gap: var(--sp-24); }
+.pp-panel--list[hidden] { display: none; }
+.pp-table-block { display: flex; flex-direction: column; gap: var(--sp-8); }
+.pp-table-block[hidden] { display: none; }
+.pp-table-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-16);
+  font-weight: var(--fw-regular);
+}
+.pp-table-title[hidden] { display: none; }
+.pp-table-hint { margin: 0; }
+
+/* 價格表：數字右對齊、輸入框固定寬（五欄並排不擠成一團） */
+.pp-price-table th:not(:first-child),
+.pp-price-table .pp-cell--base,
+.pp-price-table .pp-cell--price { text-align: right; }
+.pp-price-num { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }
+.pp-cell--base {
+  color: var(--foreground);
+  white-space: nowrap;
+}
+.pp-price-lock {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: var(--sp-6);
+  color: var(--muted-foreground);
+}
+.pp-price-lock .ztor-icon { width: 14px; height: 14px; }
+.pp-cell--price { vertical-align: top; }
+.pp-price-input {
+  width: 120px;
+  min-width: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+}
+.pp-price-meta {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--sp-6);
+  margin-top: var(--sp-4);
+  min-height: var(--sp-20);
+}
+.pp-price-meta [hidden] { display: none; }
+.pp-price-reset { padding-inline: var(--sp-6); }
+/* 覆寫中的格子：輸入框外框換品牌墨色，一眼看出這欄已經不是換算值（Q8：已選中／已作用＝品牌橘） */
+.pp-cell--overridden .pp-price-input { border-color: var(--selected-ink); }

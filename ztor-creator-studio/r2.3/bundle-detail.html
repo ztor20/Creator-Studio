@@ -93,9 +93,11 @@
         <div class="page-intro__actions">
           <button class="btn btn--outline" type="button" data-bd-preview-open data-dock-icon><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.preview">See as fan</span></button>
           <!-- 頁首主要動作依狀態互斥、一次只出現一個（spec 5.1.5.9 §2.2，主規格 §7.14「封存與不可刪除」· D284，2026-09-18）：
-               上架中→「下架」；已下架→「封存」（先確認；封存組合包不牽連成員）；已封存→「解除封存」（不確認、回到已下架、不動成員；D298 2026-09-22）。本頁沒有刪除。 -->
+               上架中→「下架」；已下架→「封存」（先確認；封存組合包不牽連成員）；已封存→「解除封存」（不確認、回到已下架、不動成員；D298 2026-09-22）。
+               刪除（D307 2026-09-22）：已下架或已封存且零成交時另有「刪除」（紅框次要樣式）；刪組合包不影響成員；有成交只能封存、無刪除入口；活動組合包跟著活動走、不提供。 -->
           <button class="btn btn--outline" type="button" data-bd-unlist hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button>
           <button class="btn btn--outline" type="button" data-bd-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
+          <button class="btn btn--destructive" type="button" data-bd-delete hidden><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="product-detail.btn.delete">Delete</span></button>
           <button class="btn btn--primary" type="button" data-bd-unarchive hidden><i data-lucide="archive-restore" class="ztor-icon"></i><span data-i18n="product-detail.btn.unarchive">Unarchive</span></button>
           <div data-dock-actions></div>
         </div>
@@ -502,6 +504,8 @@
                  它回答的是「上架之後找不找得到」，緊接在上架那顆總開關後面；排程盒排在它下面。
                  隱藏時長出來的非公開連結用 .lctl__body（列自己的揭示區），不再用外框把兩者圈起來。 -->
             <p class="lctl__lock-note" data-bd-lock-note hidden data-i18n="cp.listing.unlisted-lock">Unlisted — show and sale settings are locked until it is listed again.</p>
+            <!-- 有成交、已下架或已封存（D307）：說明為什麼沒有「刪除」——只能封存 -->
+            <p class="lctl__lock-note" data-bd-sales-note hidden data-i18n="cp.listing.sales-note">Has sales — archive only.</p>
             <!-- 跟著活動（D293 裁決四，5.1.5.9 §2.3）：含票券成員的組合包隨所屬活動走——活動未發布則草稿、隨活動上架與開賣、活動取消或下架一同下架；寫出跟著哪一場與其狀態 -->
             <p class="lctl__lock-note" data-bd-follow-event hidden></p>
             <!-- 只收窄、不回寫（2026-09-21 · D294 決定三，5.1.5.9 §2.3）：活動組合包的三開關只能在活動允許的範圍內收窄——
@@ -2075,6 +2079,8 @@
       const btnUnlist = document.querySelector('[data-bd-unlist]');
       const btnArchive = document.querySelector('[data-bd-archive]');
       const btnUnarchive = document.querySelector('[data-bd-unarchive]');   /* D298：已封存態的唯一主要動作＝解除封存 */
+      const btnDelete = document.querySelector('[data-bd-delete]');   /* D307：已下架／已封存且零成交才露出；活動組合包不提供 */
+      const salesNote = document.querySelector('[data-bd-sales-note]');   /* D307：有成交 → 沒有刪除、只能封存 */
       const bannerArchived = document.querySelector('[data-bd-archived-banner]');
       const bannerReason = document.querySelector('[data-bd-unlist-reason-banner]');
       const reasonText = document.querySelector('[data-bd-unlist-reason-text]');
@@ -2086,12 +2092,19 @@
       const mirror = () => { if (seed) { seed.archived = bundleModel.archived; seed.listed = bundleModel.listed; seed.listAt = bundleModel.listAt; seed.unlistAt = bundleModel.unlistAt; seed.unlistReason = bundleModel.unlistReason; seed.saleStart = bundleModel.saleStart; seed.saleEnd = bundleModel.saleEnd; seed.onSale = bundleModel.onSale; if (store && store.commit && !seed.isEventBundle) store.commit(seed); } };   /* 活動組合包不寫進 products-store 的工作階段（它的資料源在 events-store） */   /* D290：開賣三欄一併鏡射 */
       window.bdMirror = mirror;
       /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「解除封存」永遠放行 */
-      if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { block: PRUNE + ',[data-bd-lock-actions] button,[data-bd-alloc-row] button,[data-bd-alloc-group] button', allow: '[data-bd-unarchive],[data-bd-preview-open],[data-bd-preview-close]' });
+      if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { block: PRUNE + ',[data-bd-lock-actions] button,[data-bd-alloc-row] button,[data-bd-alloc-group] button', allow: '[data-bd-unarchive],[data-bd-delete],[data-bd-preview-open],[data-bd-preview-close]' });   /* D307：已封存態「刪除」與「解除封存」都放行 */
       function syncPrimaryAction() {
         const archived = LS.isArchived(bundleModel);
         if (btnUnlist) btnUnlist.hidden = archived || bundleModel.draft || LS.isUnlisted(bundleModel);
         if (btnArchive) btnArchive.hidden = !LS.canArchive(bundleModel);
         if (btnUnarchive) btnUnarchive.hidden = !archived;
+        /* D307：零成交且已下架／已封存 → 「刪除」（銷售摘要在 seed 上，bundleModel 只有三開關）；有成交 → 上架卡多一句「已有銷售紀錄，只能封存」。
+           活動組合包跟著活動走（D294），兩者都不做。 */
+        const evb = !!(seed && seed.isEventBundle);
+        const sold = !!(seed && LS.hasSales && LS.hasSales(seed));
+        const canDel = !evb && !sold && !!(LS.canDelete && LS.canDelete(bundleModel));
+        if (btnDelete) btnDelete.hidden = !canDel;
+        if (salesNote) salesNote.hidden = !(!evb && sold && !bundleModel.draft && (archived || LS.isUnlisted(bundleModel)));
       }
       /* 因成員下架而一同下架（D288，原 D284「因成員封存」）：手動確認的連動與定時下架到期的自動連動（auto）各一句 */
       function syncReason() {
@@ -2161,7 +2174,12 @@
           list.innerHTML = items.map(n => '<li class="leave-dialog__list-item"><i data-lucide="package" class="ztor-icon"></i><span>' + esc(n) + '</span></li>').join('');
           if (items.length && window.ztorIcons) window.ztorIcons.applyIcons(list);
         }
-        if (ok) { const sp = ok.querySelector('span') || ok; sp.setAttribute('data-i18n', opts.okKey || 'e-shop.archive.confirm'); sp.textContent = T(opts.okKey || 'e-shop.archive.confirm', opts.okFallback || 'Archive'); }
+        if (ok) {
+          /* 刪除（D307）主鈕紅框 btn--destructive（STYLE-DECISIONS Q37 現行裁決），其餘主鈕 btn--primary */
+          ok.classList.toggle('btn--destructive', !!opts.destructive);
+          ok.classList.toggle('btn--primary', !opts.destructive);
+          const sp = ok.querySelector('span') || ok; sp.setAttribute('data-i18n', opts.okKey || 'e-shop.archive.confirm'); sp.textContent = T(opts.okKey || 'e-shop.archive.confirm', opts.okFallback || 'Archive');
+        }
         const cancelBtn = dialog.querySelector('.leave-dialog__actions [data-bd-confirm-cancel]');
         if (cancelBtn) cancelBtn.hidden = !!opts.noCancel;
         pending = opts.onConfirm;
@@ -2236,6 +2254,22 @@
       });
       /* 解除封存（D298）：不確認、回到已下架、成員不動（不連動）；paint() 會 mirror 進 store 並重畫上架卡與頁首動作 */
       if (btnUnarchive) btnUnarchive.addEventListener('click', () => { if (!LS.isArchived(bundleModel)) return; LS.unarchive(bundleModel); paint(); });
+      /* 刪除（§7.14「零成交可刪除」· D307，2026-09-22）：已下架或已封存且零成交才到得了這裡；刪組合包不影響成員（狀態與庫存照舊，鎖給它的套數
+         隨組合包消失而釋回——原型的成員鎖定由 applyBundleLock 依組合包記錄導出，記錄拿掉、下次載入就沒有這筆鎖定）。
+         確認（標題帶品名、內文講不可復原、主鈕紅框）→ ProductsStore.remove(seed) 記進工作階段，導回電子商店的組合分頁。 */
+      if (btnDelete) btnDelete.addEventListener('click', () => {
+        if (!seed || seed.isEventBundle || !LS.canDelete || !LS.canDelete(bundleModel) || (LS.hasSales && LS.hasSales(seed))) return;
+        askConfirm({
+          title: T('e-shop.remove.title', 'Delete “{n}”?').replace('{n}', bname()),
+          body: T('e-shop.remove.bundle-body', 'Members keep their status and stock. This cannot be undone.'),
+          okKey: 'e-shop.delete.confirm', okFallback: 'Delete', destructive: true,
+          onConfirm: () => {
+            if (store && store.remove) store.remove(seed);
+            try { sessionStorage.setItem('ztor.eshop.list', JSON.stringify({ tab: 'bundles', status: null, q: '' })); } catch (_) {}
+            window.location.href = 'e-shop.html';
+          }
+        });
+      });
       /* 上架開關：切關＝下架要先確認、切開＝重新上架要過成員閘門——兩個方向都在 capture 階段攔下，不讓開關自己翻面；
          確認／放行後由 paint() 依資料畫成正確的樣子。 */
       if (listedSwitch) {

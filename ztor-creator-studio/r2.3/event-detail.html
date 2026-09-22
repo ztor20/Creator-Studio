@@ -56,6 +56,8 @@
 <link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2">
 <!-- 2026-08-11 第二輪：票務卡點開的輕量編輯彈窗（沿用站上彈窗殼） -->
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- D305：發布後再開「預覽與在地化」（同一個發布前預覽確認層） -->
+<link rel="stylesheet" href="ds-components/fan-event-page.css?v=r2.2"><!-- D305：粉絲視角活動頁 mock -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* event-detail 專屬 layout/狀態 hook。可重用 chrome 由 ds-components 提供。
@@ -170,6 +172,10 @@
                它要編輯的東西全部住在那一頁，開關卻掛在頁首、離對象兩個層級遠；工作列採
                e-shop 那組骨架（左 tabs、右動作群）之後，那裡本來就是這一頁動作的落點。 -->
           <button class="btn btn--outline" type="button" data-ed-preview data-dock-icon><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="event-detail.btn.preview">View ticket page</span></button>
+          <!-- 預覽與在地化（2026-09-22 · D305／D306，5.1.6.3 §2.13）：與「檢視售票頁」相鄰（規格的呈現參考）——
+               再開發布前預覽確認層（mode:'save'），改翻譯與逐幣別價格；主動作「儲存」即生效、不改上架狀態。
+               data-view-safe：檢視態也能開（它不是編輯活動欄位的入口，翻譯與幣別價有自己的儲存）。 -->
+          <button class="btn btn--outline" type="button" data-ed-localize data-view-safe data-dock-icon><i data-lucide="globe" class="ztor-icon"></i><span data-i18n="ed.loc.btn">Preview &amp; localization</span></button>
           <div data-dock-actions></div>
         </div>
       </div>
@@ -796,6 +802,7 @@
             <button type="button" class="tabs__item" data-view-safe data-hide-type="watchparty virtual" data-nav-item="venue" data-i18n="ed.venue.title">Venue</button>
             <button type="button" class="tabs__item" data-view-safe data-nav-item="publish" data-i18n="ed.pub.title">Publish</button>
             <button type="button" class="tabs__item" data-view-safe data-nav-item="link" data-i18n="ed.pub.link">Link & QR</button>
+            <button type="button" class="tabs__item" data-view-safe data-nav-item="localization" data-i18n="ed.loc.title">Localization</button>
               </nav>
             <!-- 動作群（2026-08-18 使用者指示「這裡要像電子商店的 topbar 一樣的元件」）：
                  `.list-toolbar` 本來就是「左邊切分頁、右邊放這一頁的動作」那組骨架（e-shop
@@ -1198,6 +1205,30 @@
               <div class="field-readout" id="ed-pub-url">—</div>
               <p class="field__hint" data-i18n="ed.pub.link.hint">Where fans buy tickets. The QR points at the same page.</p>
             </div>
+          </div>
+        </section>
+          </div>
+
+          <!-- ═══ 預覽與在地化（2026-09-22 · D305／D306，5.1.6.3 §2.13）═══
+               設定分頁的一個子集：摘要（翻譯語系、基準幣別、覆寫格數）＋開啟同一個畫面的入口。
+               翻譯與幣別價的資料住在 partials/publish-preview.js 的草稿與 events-store 的覆寫（localStorage），
+               不走本頁的檢視／編輯模式；儲存即生效、不改上架狀態。 -->
+          <div data-nav-panel="localization">
+<section class="card mt-16" id="ed-loc-card">
+          <div class="card__head">
+            <h3 class="card__title" data-i18n="ed.loc.title">Localization</h3>
+          </div>
+          <div class="data-list">
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.loc.langs">Translations</span></div><span data-i18n="ed.loc.langs.val">4 languages · auto-generated, editable</span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.loc.base">Base currency</span></div><span id="ed-loc-base">—</span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.loc.overrides">Currency overrides</span></div><span id="ed-loc-overrides">—</span></div>
+          </div>
+          <div class="info-banner mt-16" id="ed-loc-locked" hidden>
+            <i data-lucide="lock" class="ztor-icon info-banner__icon"></i>
+            <span data-i18n="ed.loc.locked">Ticket prices are set by bookyay (HKD). Other currencies can be overridden.</span>
+          </div>
+          <div class="mt-16">
+            <button class="btn btn--outline" type="button" data-ed-localize data-view-safe><i data-lucide="globe" class="ztor-icon"></i><span data-i18n="ed.loc.btn">Preview &amp; localization</span></button>
           </div>
         </section>
           </div>
@@ -1838,6 +1869,8 @@
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script>
+<script src="partials/publish-preview.js?v=r2.2"></script><!-- D305：預覽與在地化＝發布前預覽確認層以 mode:save 再開 -->
+<script src="js/fan-event-page.js?v=r2.2"></script><!-- D305：粉絲視角活動頁 mock（與 create-event 共用） -->
 <script src="js/toast.js?v=r2.2"></script><!-- 2026-09-09：作廢動作的完成回饋（D253），沿用 order-detail.html 同一支 -->
 <script src="js/linechart.js?v=r2.2"></script>   <!-- 2026-08-31：走勢圖的共用產生器 -->
 <script src="js/chart.js?v=r2.2"></script>
@@ -3385,6 +3418,12 @@
       : T('ed.tix.early.nodoors', 'Set the doors-open time first — the actual entry time comes from it.');
   }
 
+  /* 有覆寫的幣別才列（US$135 · HK$1,050）；沒有回空字串 */
+  function overrideLine(po) {
+    const S = window.ztorEvents;
+    return Object.keys(po.override || {}).filter(c => po.override[c] != null && po.override[c] !== '' && S.CURRENCIES.indexOf(c) >= 0)
+      .map(c => S.fmtMoney(c, po.override[c])).join(' · ');
+  }
   function renderEdTiers() {
     const list = document.getElementById('ed-tier-list');
     if (!list) return;
@@ -3425,7 +3464,11 @@
           (kv ? '<img src="' + tixEsc(kv) + '" alt="">' : '<i data-lucide="image" class="ztor-icon"></i>') +
         '</div>' +
         '<dl class="tier-card__facts">' +
-          fact(T('ee.tix.price', 'Price'), Number(t.price) === 0 ? tixEsc(T('ce.tier.free', 'Free')) : '$' + fmtNum(Number(t.price) || 0)) +
+          /* 票價以基準幣別顯示（D306／5.1.6.3 §2.6：基準幣別＝建立當下的預設幣別，bookyay 帶入者為港幣）；
+             其他幣別不逐一列出、只在有覆寫時補一行「其他幣別」列出被改過的那幾格（呈現假設，UIA-165），
+             完整五幣別表在「設定 → 在地化」再開的價格表。 */
+          fact(T('ee.tix.price', 'Price'), Number(t.price) === 0 ? tixEsc(T('ce.tier.free', 'Free')) : tixEsc(window.ztorEvents.moneyIn(window.ztorEvents.priceOf(ev, t)))) +
+          (overrideLine(window.ztorEvents.priceOf(ev, t)) ? fact(T('ed.tix.other-cur', 'Other currencies'), tixEsc(overrideLine(window.ztorEvents.priceOf(ev, t)))) : '') +
           (Number(t.fee) > 0 ? fact(T('ed.tix.fee', 'Booking fee'), '$' + fmtNum(Number(t.fee))) : '') +
           fact(T('ee.tix.qty', 'Quantity'), fmtNum(Number(t.qty) || 0)) +
           fact(T('ed.tix.col.sold', 'Sold'), fmtNum(sold)) +
@@ -5053,8 +5096,130 @@
     renderVoidRecord();      // 2026-09-09（原 renderRefunds，D253 改寫）：作廢紀錄文字要跟著語言重畫
     syncStage();
     if (isLive) paintLive();
+    renderLocSummary();      // 2026-09-22（D306）：基準幣別／覆寫格數的文字要跟著語言重畫
     setTimeout(() => { i18nBusy = false; }, 0);
   });
+
+  /* ── 預覽與在地化（2026-09-22 · D305／D306，5.1.6.3 §2.13）──────────────────
+     再開與建立活動流程同一個發布前預覽確認層（partials/publish-preview.js）：
+       · fields＝5.1.6.1 §1 的可翻譯欄位（本頁有資料的：名稱、亮點、描述、領取與入場方式、票種名稱；
+         表演陣容只有人名沒有角色標籤、活動須知類與條款本頁 mock 沒有欄位 → 跳過）
+       · prices＝每個票種的票價＋含本活動票券的組合包售價 × 五幣別；基準＝ev.currency（沒寫＝TWD），
+         bookyay 帶入者基準 HKD 且鎖（§7.15）
+       · mode:'save'——主動作「儲存」：覆寫值寫進 events-store（localStorage），票種卡與摘要跟著重畫；
+         翻譯草稿留在 publish-preview 的模組變數（原型無後端，見 ASSUMPTIONS UIA-165）
+     視圖：本活動有組合包才給「票務商品頁」。 */
+  function locPrices() {
+    const S = window.ztorEvents;
+    const out = [];
+    edTiers.forEach(t => out.push({ key: 'tier:' + t.id, label: t.name || T('ce.tier.untitled', 'Untitled tier'),
+      groupKey: 'pp.price.tiers', groupFallback: 'Ticket types', priceObj: S.priceOf(ev, t), locked: ev.source === 'bookyay' }));
+    (ev.bundles || []).forEach(b => out.push({ key: 'bundle:' + b.id, label: b.name,
+      groupKey: 'pp.price.bundles', groupFallback: 'Ticket bundles', priceObj: S.bundlePriceOf(ev, b), locked: false }));
+    return out;
+  }
+  function locFields() {
+    const f = [
+      { key: 'name', el: { value: ev.name || '' }, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
+      { key: 'highlight', el: { value: ev.highlight || '' }, kind: 'input', labelKey: 'pp.field.highlight', labelFallback: 'Highlight' },
+      { key: 'desc', el: { value: ev.desc || '' }, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
+    ];
+    if (ev.publish && ev.publish.thirdParty && ev.publish.thirdPartyNote) {
+      f.push({ key: 'tp-note', el: { value: ev.publish.thirdPartyNote }, kind: 'textarea', labelKey: 'pp.field.entry-note', labelFallback: 'How to collect & enter' });
+    }
+    const g = T('pp.price.tiers', 'Ticket types');
+    edTiers.forEach(t => f.push({ key: 'tier-' + t.id, el: { value: t.name || '' }, kind: 'input', labelKey: null, labelFallback: T('pp.field.tier-name', 'Ticket type name'), group: g }));
+    return f;
+  }
+  function locModel() {
+    const S = window.ztorEvents;
+    const first = edSessions[0] || {};
+    const start = first.start || ev.start || '', end = first.end || ev.end || '';
+    let duration = '';
+    const a = hhmmToMin(start), b = hhmmToMin(end);
+    if (a != null && b != null && b > a) { const d = b - a; duration = ((d >= 60 ? Math.floor(d / 60) + ' h' : '') + (d % 60 ? ' ' + (d % 60) + ' min' : '')).trim(); }
+    const pickupKey = { eticket: 'fep.pickup.eticket', sf: 'fep.pickup.sf', pickup: 'fep.pickup.pickup', store: 'fep.pickup.pickup' }[(ev.publish || {}).pickup] || 'fep.pickup.eticket';
+    const statusKey = { 'on-sale': ['fep.status.on-sale', 'On sale', 'badge--success'], live: ['fep.status.on-sale', 'On sale', 'badge--success'],
+      scheduled: ['fep.status.soon', 'Coming soon', 'badge--info'], ended: ['fep.status.ended', 'Ended', 'badge--neutral'],
+      cancelled: ['fep.status.cancelled', 'Cancelled', 'badge--error'] }[ev.status] || ['fep.status.soon', 'Coming soon', 'badge--info'];
+    const tiers = edTiers.map(t => ({ key: t.id, name: { key: 'tier-' + t.id }, note: '', priceObj: S.priceOf(ev, t), priceKey: 'tier:' + t.id,
+      soldOut: Number(t.qty) > 0 && Number(t.sold) >= Number(t.qty) }));
+    const bundles = (ev.bundles || []).map(b => {
+      const tk = S.bundleTickets(b);
+      const names = tk.tierIds.map(id => { const t = edTiers.find(y => y.id === id); return t ? t.name : id; });
+      const line = !names.length ? '' : (names.length > 1
+        ? T('cpp.bd.sum.any', '{names} (pick one) × {n}').replace('{names}', names.join('／')).replace('{n}', tk.qty)
+        : T('cpp.bd.sum.line', '{name} × {n}').replace('{name}', names[0]).replace('{n}', tk.qty));
+      const contents = [];
+      if (line) contents.push({ icon: 'ticket', text: line });
+      (b.products || []).forEach(x => contents.push({ icon: 'package', text: (x && x.name) || String(x) }));
+      /* 原價＝票券小計＋商品小計（bundle-detail 同一算法：活動資料不跨檔查 products-store） */
+      const tixUnit = tk.tierIds.length ? Math.min.apply(null, tk.tierIds.map(id => { const t = edTiers.find(y => y.id === id); return t ? Number(t.price) || 0 : 0; })) : 0;
+      const listAmt = tixUnit * tk.qty + (b.products || []).reduce((n, x) => n + (Number(x && x.price) || 0), 0);
+      return { name: b.name, priceObj: S.bundlePriceOf(ev, b), priceKey: 'bundle:' + b.id,
+        listPriceObj: listAmt > Number(b.price) ? { base: S.bundlePriceOf(ev, b).base, amount: listAmt, override: {} } : null,
+        contents, perks: b.perks || [], desc: b.desc || '' };
+    });
+    return {
+      status: { labelKey: statusKey[0], fallback: statusKey[1], tone: statusKey[2] },
+      typeLabel: T(ev.typeLabelKey, ev.type), region: ev.city || '', keyvisual: (ev.images && ev.images.keyvisual) || '',
+      name: { key: 'name' }, highlight: ev.highlight ? { key: 'highlight' } : null,
+      organizer: (window.ztorCreator && window.ztorCreator.list && (window.ztorCreator.list.find(c => c.handle === (typeof window.ztorPersonaId === 'function' ? window.ztorPersonaId() : 'default')) || {}).name) || '',
+      date: fmtDate(first.date || ev.date), time: start ? (end ? start + ' – ' + end : start) : '', duration, doors: first.doors || ev.doors || '',
+      venue: ev.venue || '', address: ev.address || '', language: '',
+      priority: null, limit: null,
+      desc: { key: 'desc' },
+      lineup: (ev.lineup || []).map(n => ({ name: n, role: null })),
+      notes: [], bring: [], includes: [],
+      pickup: T(pickupKey, 'E-ticket'), entryNote: ev.publish && ev.publish.thirdParty && ev.publish.thirdPartyNote ? { key: 'tp-note' } : null,
+      refund: null, terms: null, tiers, bundles, related: true
+    };
+  }
+  function renderLocSummary() {
+    const S = window.ztorEvents;
+    const base = document.getElementById('ed-loc-base');
+    const ov = document.getElementById('ed-loc-overrides');
+    if (!base || !ov) return;
+    const baseCur = ev.currency || S.DEFAULT_CURRENCY;
+    base.textContent = baseCur + ' (' + S.SYMBOL[baseCur] + ')';
+    let n = 0;
+    edTiers.forEach(t => { n += overrideLine(S.priceOf(ev, t)) ? Object.keys(t.override || {}).length : 0; });
+    (ev.bundles || []).forEach(b => { n += Object.keys(b.override || {}).filter(c => b.override[c] != null && b.override[c] !== '').length; });
+    ov.textContent = n ? T('ed.loc.overrides.n', '{n} overridden').replace('{n}', n) : T('ed.loc.overrides.none', 'None — all converted');
+    const lock = document.getElementById('ed-loc-locked');
+    if (lock) lock.hidden = ev.source !== 'bookyay';
+  }
+  function openLocalization() {
+    if (!window.ztorPublishPreview) return;
+    const S = window.ztorEvents;
+    const hasBundles = !!(ev.bundles && ev.bundles.length);
+    window.ztorPublishPreview.open({
+      fields: locFields(),
+      prices: locPrices(),
+      currencies: S.CURRENCIES.slice(),
+      baseCurrency: ev.currency || S.DEFAULT_CURRENCY,
+      views: hasBundles ? [{ key: 'ticket', labelKey: 'fep.view.ticket' }, { key: 'bundles', labelKey: 'fep.view.bundles' }] : [{ key: 'ticket', labelKey: 'fep.view.ticket' }],
+      mode: 'save',
+      previewRender: (host, api) => { if (window.ztorFanEventPage) window.ztorFanEventPage.render(host, locModel(), api); },
+      onConfirm: result => {
+        const data = { tiers: {}, bundles: {} };
+        Object.keys(result.prices || {}).forEach(k => {
+          const [kind, id] = k.split(':');
+          if (kind === 'tier') data.tiers[id] = result.prices[k];
+          else if (kind === 'bundle') data.bundles[id] = result.prices[k];
+        });
+        S.setOverrides(ev.id, data);
+        edTiers.forEach(t => { t.override = data.tiers[t.id] || {}; });
+        (ev.tiers || []).forEach(t => { t.override = data.tiers[t.id] || {}; });
+        (ev.bundles || []).forEach(b => { b.override = data.bundles[b.id] || {}; });
+        renderEdTiers();
+        renderLocSummary();
+        if (window.ztorToast) window.ztorToast.show(T('ed.loc.saved', 'Saved — prices and translations are live.'));
+      }
+    });
+  }
+  document.querySelectorAll('[data-ed-localize]').forEach(b => b.addEventListener('click', openLocalization));
+  renderLocSummary();
 })();
 </script>
 <script>

@@ -1,3 +1,28 @@
+## UIA-164 · 零成交的已下架／已封存販售管道可刪除：清單 kebab 與三個細節頁的「刪除」、擋下清單、刪除的紀錄（2026-09-22 · D307，修訂 D284；spec 0-設計規格書 §7.14「封存與刪除」）— 呈現假設／產品缺口
+
+**狀態**：Open。`js/listing-state.js`（`hasSales`／`canDelete`／`deleteBlockers`／`remove`）、`js/products-store.js`（`ProductsStore.remove`／`deleteBlockers`、工作階段 `__deleted` 清單、`purgeDeleted()`／`pruneDeletedRows()`、示範資料 `sample-set`／`setlist-sheet`）、`e-shop.html`（`askDelete`）、`product-detail.html`／`bundle-detail.html`／`auction-detail.html`（`[data-*-delete]`、`[data-*-sales-note]`）。承 UIA-158（封存唯讀與解除封存）。
+
+### 呈現假設（不改產品語意，待使用者檢視）
+
+- **「零成交」在原型的代理值**：規格定義是「沒有任何訂單品項（含已取消、已撤銷）」，原型沒有訂單品項流；`hasSales()` 以既有欄位代理——單售與組合包看銷售摘要 `sales.units`、限量的已售 `sold`（含逐選項組合的 `variants[i].sold`），拍賣看出價數 `bids`。三個欄位任一為正就視為曾有銷售。
+- **刪除入口的位置**：清單 kebab 的「刪除」排最後、紅字（沿用草稿列 Delete 的 `dropdown__item--danger`＋`trash-2`）；細節頁頁首的「刪除」用 `btn--destructive`（紅框，STYLE-DECISIONS Q37 2026-08-06 現行裁決）放在主要動作旁——已下架態在「封存」右側、已封存態在「解除封存」左側，主要動作維持最右。
+- **擋下的入口照樣露出**：單售仍在組合包裡時，kebab 與頁首仍長出「刪除」，按下才擋下並列出組合包（沿用 `leave-dialog__list`＋只有「知道了」的殼）。理由：讓創作者看得到「為什麼不能刪、要去哪裡處理」，藏掉入口會變成找不到原因。
+- **擋下清單不含草稿組合包**：規格寫「任何組合包（上架中、已下架、已封存）」，草稿組合包還沒真正建立（§7.14「草稿可刪除」），原型不列入；刪除後草稿組合包裡的那個成員會查不到（原型視同可售 0）〔產品待確認：草稿組合包要不要也擋〕。
+- **確認文案**：標題帶品名、內文「它會從所有清單與篩選消失，刪除後無法復原」；組合包改講「成員商品的狀態與庫存不受影響，刪除後無法復原」——決定要知道的資訊只有這兩件（後果、不可復原），不重述頁面上下文（鐵律 12）。
+- **有成交的說明句放上架卡**：已下架或已封存但有成交時，上架設定卡的鎖定說明底下多一句「已有銷售紀錄，只能封存。」（`cp.listing.sales-note`，三頁同一鍵），沒有另做 banner——它回答的是「為什麼頁首沒有刪除」，與同卡的「已下架／已封存：…不可調」是同一類說明。
+- **刪除後的去處**：細節頁刪除確認後導回 `e-shop.html` 對應分頁（借 `keepListState` 既有的 `ztor.eshop.list` 鍵指定分頁）；清單刪除就地移除該列並重算篩選計數。刪除只活在同一個分頁（sessionStorage `__deleted`），cheat code Reset 一併還原——與 D288 的工作階段覆蓋同一層級、不模擬後端。
+- **活動組合包不提供刪除**：跟著活動走（D294），bundle-detail 對 `isEventBundle` 一律不露出「刪除」；規格 §7.14 活動比照條只講活動草稿可刪。
+- **示範資料**：`membership`（零成交已下架單售，可刪）、`keychain`（排定上架未到＝已下架、零成交，可刪）、`sample-set`（新增：零成交已封存組合包，可刪）、`internal-test-set`（既有：零成交已下架組合包，可刪）、`setlist-sheet`（新增：零出價流標後下架的拍賣，可刪）、`coaster`／`postcard`／`lyric-sheet`／`launch-set`（有成交或曾有出價，只能封存、上架卡多一句說明）、`mug`（零成交已封存、仍在已封存的 `launch-set` 裡 → 擋下）、`tour-enamel-pin`（流標但仍上架中 → 沒有刪除，要先下架）。
+
+### 產品缺口（未經上游確認，原型不補）
+
+- **刪除的操作紀錄**：規格要求「操作紀錄保留一筆『刪除』供稽核〔內容與查看位置待確認〕」；原型沒有上架軸的操作紀錄流（UIA-158 同一缺口），刪除後這筆紀錄無處可看，不另做假頁。
+- **刪組合包時鎖定套數的釋回**：規格寫「鎖給該組合包的套數隨組合包消失而釋回未鎖定量」；原型的成員鎖定由 `applyBundleLock` 依組合包記錄導出，記錄拿掉、下次載入就沒有這筆鎖定——但同一次工作階段裡已算好的 `pool.locks.bundles[id]` 不會即時清掉（`_bundleLocksApplied` 只跑一次），釋回在重新整理後才看得到；真正的釋回規則（是否記一筆鎖定歷史、多選項的逐規格分配怎麼退）〔產品待確認〕。
+- **刪除後的訂單／收入／領取單位**：零成交本來就沒有這些對象，規格因此允許刪除；已取消、已撤銷的訂單品項算曾有銷售——原型的 `sales.units` 是否含已取消品項無從表達，代理值以「有值就算」處理。
+- **粉絲端與非公開連結**：已下架或已封存本就沒有粉絲端頁面（D284 裁決六），刪除不另外處理連結；若上游之後允許「上架中直接刪」，連結失效與 SEO 才需要再議。
+
+**驗證**：Playwright（1440×1000，`ztor.persona=default`）五情境各截圖 `screenshots/r2.3/d307-01…25`；en／zh 五頁 0 raw key；console 0 錯誤；`check_ds_sync.py` PASS；見 UI-CHANGES 六十八。
+
 ## UIA-163 · 三個細節頁補齊建立流程已有的六個欄位：折扣 %、低庫存提醒開關、取貨方式切換、尺寸指南、組合包額外權益、拍賣商品標籤（2026-09-22 · D304；spec 5.1.5.1 §2.6／§2.10／§2.11／§2.15、5.1.5.9 §2.3、5.1.5.8 §2.4，規格由另一 session 同步）— 呈現假設／產品缺口
 
 **狀態**：Open。`product-detail.html`（`#pd-sale-percent`、`#pd-lowstock-toggle`、`#pd-delivery`、`[data-pd-sg]`＋頁尾 `sizeGuideField`）、`bundle-detail.html`（`[data-bd-perks]`）、`auction-detail.html`（`[data-ad-tags-section]`）、`js/products-store.js` 示範資料。承 UIA-060（折扣 % 這一項就是它 2026-07-17 寫下的「product-detail 待套」，本輪補上）。
