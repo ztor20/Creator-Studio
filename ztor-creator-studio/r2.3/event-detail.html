@@ -57,7 +57,7 @@
 <!-- 2026-08-11 第二輪：票務卡點開的輕量編輯彈窗（沿用站上彈窗殼） -->
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- D305：發布後再開「預覽與在地化」（同一個發布前預覽確認層） -->
-<link rel="stylesheet" href="ds-components/fan-event-page.css?v=r2.2"><!-- D305：粉絲視角活動頁 mock -->
+<link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- D305：粉絲視角活動頁（前台 shop-item 鏡像，2026-09-22 使用者裁決；只給 js/fan-event-page.js 用） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* event-detail 專屬 layout/狀態 hook。可重用 chrome 由 ds-components 提供。
@@ -958,7 +958,8 @@
             <!-- 第三方門票（2026-09-22 · D302）：電子門票且開著才有這一列——說明是粉絲入場要看的資訊，唯讀時要整段讀得到。 -->
             <div class="data-list__row" id="ed-pub-tp-row" hidden><div class="data-list__row-main"><span data-i18n="ed.pub.tp.note">How to collect &amp; enter</span></div><span id="ed-pub-tp-note">—</span></div>
             <!-- 動態 QR 與可轉贈（2026-09-22 · D303）：電子門票才有這兩列；第三方門票開著時動態 QR 列不出現（互斥）。 -->
-            <div class="data-list__row" id="ed-pub-dq-row" hidden><div class="data-list__row-main"><span data-i18n="ed.pub.dq">Dynamic QR</span></div><span id="ed-pub-dq">—</span></div>
+            <!-- D308：bookyay 端開著動態 QR 的帶入活動，標題後亮括號註記（ztor 只發靜態 QR，帶入時轉為靜態） -->
+            <div class="data-list__row" id="ed-pub-dq-row" hidden><div class="data-list__row-main"><span data-i18n="ed.pub.dq">Dynamic QR</span> <span class="text-sub" data-pub-dq-bky data-i18n="ed.pub.dq.bky" hidden>(bookyay's dynamic QR not applied here)</span></div><span id="ed-pub-dq">—</span></div>
             <div class="data-list__row" id="ed-pub-tf-row" hidden><div class="data-list__row-main"><span data-i18n="ed.pub.tf">Transferable</span></div><span id="ed-pub-tf">—</span></div>
             <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.pub.vis">Visibility</span></div><span id="ed-pub-vis">—</span></div>
           </div>
@@ -1038,9 +1039,17 @@
                 <span class="radio-card__text"><span class="radio-card__title" data-i18n="ed.pub.pickup.store">Store pickup</span><span class="radio-card__sub" data-i18n="ed.pub.pickup.store.sub">The fan collects it with ID at a named store or at the venue.</span></span>
               </button>
             </div>
+            <!-- bookyay 帶入者（2026-09-22 · D308 決定一）：取票方式與電子門票整組不分階段一律唯讀——值來自 bookyay、要改回 bookyay 改。
+                 用既有的 .info-banner（同上方票價鎖 #ed-loc-locked 的做法）說明為什麼這一區在編輯模式也不能改；syncPubLock 負責鎖。 -->
+            <div class="info-banner" id="ed-pub-bky-locked" hidden>
+              <i data-lucide="lock" class="ztor-icon info-banner__icon"></i>
+              <span data-i18n="ed.pub.bky-locked">Ticket delivery and e-ticket settings come from bookyay. Change them there.</span>
+            </div>
             <!-- 電子門票的附屬設定（2026-09-22 · D302／D303 · 5.1.6.1 F24／5.1.6.2 F14）：與建立流程第 7 步同一組三個
                  「開關列＋揭示區」（.control-group），三組距離由 .stack--tight 持有（Q103）。第三方門票開著時動態 QR 整組收起。
-                 草稿／已排程可改、開賣後整段唯讀（syncPubLock）。值住在 ev.publish.*，與 events-store 同名。 -->
+                 草稿／已排程可改、開賣後整段唯讀（syncPubLock）。值住在 ev.publish.*，與 events-store 同名。
+                 動態 QR（D308）：ztor 只發靜態 QR——自建活動的開關永遠關且鎖（.switch--locked），hint 只講這個事實，更新間隔不出現；
+                 bookyay 帶入且 bookyay 端開著的：開關顯示為開（鎖）、標題後亮 [data-pub-dq-bky] 括號註記、更新間隔照值顯示（鎖）。 -->
             <div class="stack stack--tight" data-pub-when="eticket" data-pub-eticket hidden>
               <div class="control-group" data-pub-tp-group>
                 <div class="control-row">
@@ -1062,13 +1071,13 @@
               <div class="control-group" data-pub-dq-group>
                 <div class="control-row">
                   <div>
-                    <div class="control-row__main" data-i18n="ed.pub.dq">Dynamic QR</div>
-                    <div class="control-row__sub" data-i18n="ed.pub.dq.hint">The ticket's QR refreshes every few minutes, so screenshots can't be passed around.</div>
+                    <div class="control-row__main"><span data-i18n="ed.pub.dq">Dynamic QR</span> <span class="text-sub" data-pub-dq-bky data-i18n="ed.pub.dq.bky" hidden>(bookyay's dynamic QR not applied here)</span></div>
+                    <div class="control-row__sub" data-i18n="ed.pub.dq.hint">Only static QR for now.</div>
                   </div>
-                  <button type="button" class="switch switch--on" data-pub-dq data-view-safe role="switch" aria-checked="true"
+                  <button type="button" class="switch switch--locked" data-pub-dq data-view-safe role="switch" aria-checked="false" aria-disabled="true" disabled
                           aria-label="Dynamic QR" data-i18n-aria-label="ed.pub.dq"></button>
                 </div>
-                <div class="control-group__body">
+                <div class="control-group__body" hidden>
                   <div class="field" style="margin-bottom:0">
                     <label class="field__label" for="ed-pub-dq-min"><span data-i18n="ed.pub.dq.min">Refresh every</span> <span class="field__req">*</span></label>
                     <span class="amount-field amount-field--suffix amount-field--readonly zstep">
@@ -1870,7 +1879,7 @@
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script>
 <script src="partials/publish-preview.js?v=r2.2"></script><!-- D305：預覽與在地化＝發布前預覽確認層以 mode:save 再開 -->
-<script src="js/fan-event-page.js?v=r2.2"></script><!-- D305：粉絲視角活動頁 mock（與 create-event 共用） -->
+<script src="js/fan-event-page.js?v=r2.2"></script><!-- D305：粉絲視角活動頁（前台鏡像，與 create-event 共用） -->
 <script src="js/toast.js?v=r2.2"></script><!-- 2026-09-09：作廢動作的完成回饋（D253），沿用 order-detail.html 同一支 -->
 <script src="js/linechart.js?v=r2.2"></script>   <!-- 2026-08-31：走勢圖的共用產生器 -->
 <script src="js/chart.js?v=r2.2"></script>
@@ -3469,7 +3478,7 @@
              完整五幣別表在「設定 → 在地化」再開的價格表。 */
           fact(T('ee.tix.price', 'Price'), Number(t.price) === 0 ? tixEsc(T('ce.tier.free', 'Free')) : tixEsc(window.ztorEvents.moneyIn(window.ztorEvents.priceOf(ev, t)))) +
           (overrideLine(window.ztorEvents.priceOf(ev, t)) ? fact(T('ed.tix.other-cur', 'Other currencies'), tixEsc(overrideLine(window.ztorEvents.priceOf(ev, t)))) : '') +
-          (Number(t.fee) > 0 ? fact(T('ed.tix.fee', 'Booking fee'), '$' + fmtNum(Number(t.fee))) : '') +
+          (Number(t.fee) > 0 ? fact(T('ed.tix.fee', 'Booking fee'), tixEsc(window.ztorEvents.fmtMoney(window.ztorEvents.priceOf(ev, t).base, Number(t.fee)))) : '') +
           fact(T('ee.tix.qty', 'Quantity'), fmtNum(Number(t.qty) || 0)) +
           fact(T('ed.tix.col.sold', 'Sold'), fmtNum(sold)) +
           (n > 0 && doorsM != null
@@ -3588,8 +3597,9 @@
         '<td>' + fmtNum(stock) + '</td>' +
         '<td>' + (resv ? fmtNum(resv) : '0') + '</td>' +
         '<td>' + fmtNum(sold) + '</td>' +
-        '<td>$' + fmtNum(Number(t.price) || 0) + '</td>' +
-        '<td>' + (Number(t.fee) ? '$' + fmtNum(Number(t.fee)) : '—') + '</td>' +
+        /* 基準幣別符號（D306）：票價與手續費都以該票種的基準幣別顯示 */
+        '<td>' + esc(window.ztorEvents.moneyIn(window.ztorEvents.priceOf(ev, t))) + '</td>' +
+        '<td>' + (Number(t.fee) ? esc(window.ztorEvents.fmtMoney(window.ztorEvents.priceOf(ev, t).base, Number(t.fee))) : '—') + '</td>' +
         '<td><span class="badge ' + (t.paused ? 'badge--neutral' : 'badge--success') + '">' +
           esc(T(t.paused ? 'ed.tix.status.paused' : 'ed.tix.status.on', t.paused ? 'Paused' : 'On sale')) + '</span></td>' +
         '<td><button type="button" class="btn btn--ghost btn--sm" data-tix-pause="' + esc(t.id) + '">' +
@@ -4427,7 +4437,29 @@
       sw.classList.toggle('switch--locked', !editing); sw.disabled = !editing; sw.setAttribute('aria-disabled', editing ? 'false' : 'true');
     });
     document.querySelectorAll('#ed-pub-edit .zstep__btn').forEach(b => { b.disabled = !editing; });
+    /* 動態 QR（2026-09-22 D308 決定二）：ztor 只發靜態 QR，這顆開關不分來源、不分模式一律鎖住——
+       自建活動顯示為關、bookyay 帶入且 bookyay 端開著的顯示為開（照原設定），都不能切。 */
+    document.querySelectorAll('#ed-pub-edit [data-pub-dq]').forEach(sw => {
+      sw.classList.add('switch--locked'); sw.disabled = true; sw.setAttribute('aria-disabled', 'true');
+    });
+    /* bookyay 帶入者（D308 決定一）：取票方式與電子門票整組（三顆開關＋子開關、說明欄、數字欄、日期欄、期限二選一）
+       在編輯模式也鎖——值是 bookyay 的，要改回 bookyay 改。鎖法沿用上面同一套（.switch--locked／.segmented--locked／disabled）。 */
+    if (isBky()) {
+      const pk = document.querySelector('#ed-pub-edit [data-pub="pickup"]');
+      const box = document.querySelector('#ed-pub-edit [data-pub-eticket]');
+      [pk, box].forEach(root => {
+        if (!root) return;
+        root.querySelectorAll('[data-pub]').forEach(g => { g.classList.add('segmented--locked'); g.setAttribute('aria-disabled', 'true'); });
+        if (root.matches('[data-pub]')) { root.classList.add('segmented--locked'); root.setAttribute('aria-disabled', 'true'); }
+        root.querySelectorAll('[data-pub-val]').forEach(b => { b.disabled = true; });
+        root.querySelectorAll('.switch').forEach(sw => { sw.classList.add('switch--locked'); sw.disabled = true; sw.setAttribute('aria-disabled', 'true'); });
+        root.querySelectorAll('input, textarea').forEach(el => { el.readOnly = true; el.disabled = true; });
+        root.querySelectorAll('.zstep__btn').forEach(b => { b.disabled = true; });
+      });
+    }
   }
+  /* bookyay 帶入的活動（站上目前只有 taipei-nye）：取票方式／電子門票整組唯讀的判準（D308） */
+  function isBky() { return !!ev && ev.source === 'bookyay'; }
 
   /* 第三方門票（2026-09-22 · D302）：開＝長出「領取與入場方式」（必填、≤250 字元，計數同建立流程）；
      關或取票方式不是電子門票＝整組收起。值住在 ev.publish.thirdParty／thirdPartyNote，與 events-store 同名。 */
@@ -4447,8 +4479,9 @@
       const n = ta.value.trim().length;
       if (cnt) { cnt.textContent = T('ed.pub.tp.count', '{n} / 250').replace('{n}', n); cnt.classList.toggle('field__hint--warn', n > 250); }
       const wrap = ta.closest('.field');
-      if (wrap) wrap.classList.toggle('is-invalid', on && (n === 0 || n > 250));
-      ta.setAttribute('aria-invalid', on && (n === 0 || n > 250) ? 'true' : 'false');
+      const bad = on && !isBky() && (n === 0 || n > 250);   // D308 決定五：bookyay 帶入者的值不可改，不標錯
+      if (wrap) wrap.classList.toggle('is-invalid', bad);
+      ta.setAttribute('aria-invalid', bad ? 'true' : 'false');
     };
     paint();
     if (!sw.dataset.wired) {
@@ -4471,10 +4504,12 @@
 
   /* 動態 QR 與可轉贈（2026-09-22 · D303）：與建立流程第 7 步同一組行為——每顆開關管自己的揭示區，
      值寫回 ev.publish（dynamicQr／qrRefreshMin／transferable／transferLimit／transferMax／transferDeadline／transferDate／transferDays）。
-     沒記的值走規格預設：動態 QR 開、5 分鐘；可轉贈關；子開關開、上限 1、開演前 1 天。 */
+     沒記的值走規格預設：可轉贈關；子開關開、上限 1、開演前 1 天。
+     動態 QR（2026-09-22 D308）：ztor 只發靜態 QR——自建活動一律關（資料寫了 true 也不算）；只有 bookyay 帶入且
+     bookyay 端明確開著的才顯示為開（鎖），更新間隔照 bookyay 的值。 */
   function pubDefaults(pub) {
     return {
-      dynamicQr: pub.dynamicQr !== false,
+      dynamicQr: isBky() && pub.dynamicQr === true,
       qrRefreshMin: pub.qrRefreshMin != null ? pub.qrRefreshMin : 5,
       transferable: !!pub.transferable,
       transferLimit: pub.transferLimit !== false,
@@ -4496,7 +4531,9 @@
     paintSw('[data-pub-dq]', d.dynamicQr);
     if (dqG) dqG.querySelector('.control-group__body').hidden = !d.dynamicQr;
     putVal('dq-min', d.qrRefreshMin);
-    invalid('dq-min', d.dynamicQr && String(d.qrRefreshMin).trim() === '');
+    invalid('dq-min', false);   // D308：開關開著只可能是 bookyay 帶入（值鎖、不檢核），自建永遠關
+    /* D308 決定三：bookyay 端開著動態 QR 的帶入活動，標題後亮括號註記（可編版與唯讀版兩處同一個 data 屬性） */
+    document.querySelectorAll('[data-pub-dq-bky]').forEach(n => { n.hidden = !d.dynamicQr; });
     /* 可轉贈 */
     const tfG = edit.querySelector('[data-pub-tf-group]');
     paintSw('[data-pub-tf]', d.transferable);
@@ -4623,6 +4660,8 @@
       renderPubTp(cur, pub);
       renderPubExtras(cur, pub);
       syncPubLock();
+      const bkyLock = document.getElementById('ed-pub-bky-locked');
+      if (bkyLock) bkyLock.hidden = !isBky();   // D308：bookyay 帶入者說明這一區為什麼鎖
     }
     syncGoLive();
     const set = (id, key, fb) => { const el = document.getElementById(id); if (el) el.textContent = T(key, fb); };
@@ -4743,7 +4782,7 @@
           '<h4 class="tier-card__name">' + esc(b.name) + '</h4>' +
         '</div>' +
         '<dl class="tier-card__facts">' +
-          fact(T('ed.bd.price', 'Bundle price'), '$' + fmtNum(b.price)) +
+          fact(T('ed.bd.price', 'Bundle price'), esc(window.ztorEvents.moneyIn(window.ztorEvents.bundlePriceOf(ev, b)))) +   // 基準幣別（D306）
           fact(T('ed.bd.tickets', 'Tickets inside'), esc(tixLine || '—')) +
           // products 是 { name, img }（2026-08-17 起）——直接 join 會印出 [object Object]
           fact(T('ed.bd.products', 'Products inside'),
@@ -5144,27 +5183,28 @@
       cancelled: ['fep.status.cancelled', 'Cancelled', 'badge--error'] }[ev.status] || ['fep.status.soon', 'Coming soon', 'badge--info'];
     const tiers = edTiers.map(t => ({ key: t.id, name: { key: 'tier-' + t.id }, note: '', priceObj: S.priceOf(ev, t), priceKey: 'tier:' + t.id,
       soldOut: Number(t.qty) > 0 && Number(t.sold) >= Number(t.qty) }));
+    /* 組合包（D296 形狀）→ 前台組合卡的成員列：票券＝允許票種名單 × 張數、商品＝名稱＋圖（示範資料沒有規格欄）；
+       封面＝第一件商品圖。 */
     const bundles = (ev.bundles || []).map(b => {
       const tk = S.bundleTickets(b);
       const names = tk.tierIds.map(id => { const t = edTiers.find(y => y.id === id); return t ? t.name : id; });
-      const line = !names.length ? '' : (names.length > 1
-        ? T('cpp.bd.sum.any', '{names} (pick one) × {n}').replace('{names}', names.join('／')).replace('{n}', tk.qty)
-        : T('cpp.bd.sum.line', '{name} × {n}').replace('{name}', names[0]).replace('{n}', tk.qty));
-      const contents = [];
-      if (line) contents.push({ icon: 'ticket', text: line });
-      (b.products || []).forEach(x => contents.push({ icon: 'package', text: (x && x.name) || String(x) }));
+      const goods = (b.products || []).map(x => ({ name: (x && x.name) || String(x), img: (x && x.img) || '', spec: false }));
       /* 原價＝票券小計＋商品小計（bundle-detail 同一算法：活動資料不跨檔查 products-store） */
       const tixUnit = tk.tierIds.length ? Math.min.apply(null, tk.tierIds.map(id => { const t = edTiers.find(y => y.id === id); return t ? Number(t.price) || 0 : 0; })) : 0;
       const listAmt = tixUnit * tk.qty + (b.products || []).reduce((n, x) => n + (Number(x && x.price) || 0), 0);
       return { name: b.name, priceObj: S.bundlePriceOf(ev, b), priceKey: 'bundle:' + b.id,
         listPriceObj: listAmt > Number(b.price) ? { base: S.bundlePriceOf(ev, b).base, amount: listAmt, override: {} } : null,
-        contents, perks: b.perks || [], desc: b.desc || '' };
+        tickets: names.length ? { names, qty: Number(tk.qty) || 1 } : null,
+        goods, img: (goods[0] && goods[0].img) || '',
+        perks: b.perks || [], desc: b.desc || '', note: '' };
     });
+    const persona = (window.ztorCreator && window.ztorCreator.list && window.ztorCreator.list.find(c => c.handle === (typeof window.ztorPersonaId === 'function' ? window.ztorPersonaId() : 'default'))) || null;
     return {
       status: { labelKey: statusKey[0], fallback: statusKey[1], tone: statusKey[2] },
       typeLabel: T(ev.typeLabelKey, ev.type), region: ev.city || '', keyvisual: (ev.images && ev.images.keyvisual) || '',
+      gallery: [(ev.images && ev.images.keyvisual) || ''].concat((ev.images && ev.images.gallery) || []).filter(Boolean), video: !!ev.video,
       name: { key: 'name' }, highlight: ev.highlight ? { key: 'highlight' } : null,
-      organizer: (window.ztorCreator && window.ztorCreator.list && (window.ztorCreator.list.find(c => c.handle === (typeof window.ztorPersonaId === 'function' ? window.ztorPersonaId() : 'default')) || {}).name) || '',
+      organizer: persona ? persona.name : '', organizerAvatar: persona ? (persona.avatar || '') : '',
       date: fmtDate(first.date || ev.date), time: start ? (end ? start + ' – ' + end : start) : '', duration, doors: first.doors || ev.doors || '',
       venue: ev.venue || '', address: ev.address || '', language: '',
       priority: null, limit: null,
@@ -5172,7 +5212,9 @@
       lineup: (ev.lineup || []).map(n => ({ name: n, role: null })),
       notes: [], bring: [], includes: [],
       pickup: T(pickupKey, 'E-ticket'), entryNote: ev.publish && ev.publish.thirdParty && ev.publish.thirdPartyNote ? { key: 'tp-note' } : null,
-      refund: null, terms: null, tiers, bundles, related: true
+      /* 退換票：交給渲染器用平台固定文案（UIA-167）；相關活動：同創作者的其他活動、標「非本活動」 */
+      terms: null, tiers, bundles,
+      related: window.ztorFanEventPage && window.ztorFanEventPage.relatedFromStore ? window.ztorFanEventPage.relatedFromStore(ev.id, 3) : true
     };
   }
   function renderLocSummary() {
@@ -5200,6 +5242,7 @@
       baseCurrency: ev.currency || S.DEFAULT_CURRENCY,
       views: hasBundles ? [{ key: 'ticket', labelKey: 'fep.view.ticket' }, { key: 'bundles', labelKey: 'fep.view.bundles' }] : [{ key: 'ticket', labelKey: 'fep.view.ticket' }],
       mode: 'save',
+      shell: 'fan',   /* 2026-09-22：粉絲視角活動頁是前台全寬版型的鏡像，殼放寬（見 publish-preview.js） */
       previewRender: (host, api) => { if (window.ztorFanEventPage) window.ztorFanEventPage.render(host, locModel(), api); },
       onConfirm: result => {
         const data = { tiers: {}, bundles: {} };

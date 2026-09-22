@@ -2492,6 +2492,7 @@
     'store-settings.codes.scope.kind.product': { en: 'Product', zh: '單售' },
     'store-settings.codes.scope.kind.bundle': { en: 'Bundle', zh: '組合包' },
     'store-settings.codes.scope.kind.ticket': { en: 'Ticket tier', zh: '活動票種' },
+    'store-settings.codes.scope.kind.ticket-bundle': { en: 'Ticket bundle', zh: '票務商品' },
     'store-settings.codes.scope.kind.type': { en: 'Item type', zh: '品項類型' },
     /* 儲存（D299）：格式、重複（不分大小寫）、範圍空的三種擋下＋成功提示。 */
     'store-settings.codes.err.format': { en: 'Use 8–20 letters or digits.', zh: '請用 8–20 個英數字。' },
@@ -4579,7 +4580,7 @@
     'pp.price.tiers':       { en: 'Ticket types',                     zh: '票種' },
     'pp.price.bundles':     { en: 'Ticket bundles',                   zh: '票務商品' },
     'pp.field.highlight':   { en: 'Highlight',                        zh: '亮點' },
-    'pp.field.role':        { en: 'Role',                             zh: '角色' },
+    /* 表演陣容的角色標籤（D305 決定三）：建立活動表單目前只有人名、沒有角色欄，鍵先不建（UIA-165） */
     'pp.field.includes':    { en: 'What’s included',                  zh: '活動內含物' },
     'pp.field.bring':       { en: 'What to bring',                    zh: '需攜帶物品' },
     'pp.field.notes':       { en: 'Good to know',                     zh: '活動須知' },
@@ -4629,6 +4630,32 @@
     'fep.pickup.pickup':    { en: 'In-store pickup',                  zh: '到店自取' },
     'fep.limit.order':      { en: 'Up to {n} per order',              zh: '每筆最多 {n} 張' },
     'fep.priority.tier':    { en: 'Top fans first',                   zh: '粉絲分級優先' },
+    /* 2026-09-22 前台鏡像：粉絲視角活動頁改照前台 shop-item 的 DOM／CSS 重畫（使用者裁決），前台固定文案補齊 */
+    'fep.price.k':          { en: 'Price',                            zh: '票價' },
+    'fep.price.bundles.k':  { en: 'Bundle price',                     zh: '組合價' },
+    'fep.bundles.link':     { en: '{n} bundles',                      zh: '{n} 種組合' },
+    'fep.bd.tag':           { en: 'Bundle',                           zh: '組合包' },
+    'fep.kind.mix':         { en: 'Ticket + goods',                   zh: '票 ＋ 商品' },
+    'fep.kind.tix':         { en: 'Ticket × {n}',                     zh: '票 × {n}' },
+    'fep.save':             { en: 'Save {amt} vs. buying separately', zh: '較單買省 {amt}' },
+    'fep.bd.pick':          { en: ' (pick a section at checkout)',    zh: '（座位區域下單時選）' },
+    'fep.bd.spec':          { en: ' (pick options at checkout)',      zh: '（規格下單時選）' },
+    'fep.bd.from':          { en: 'From {price}',                     zh: '{price} 起' },
+    'fep.cta.bundle.buy':   { en: 'Buy bundle',                       zh: '購買組合' },
+    'fep.cart':             { en: 'Cart',                             zh: '購物車' },
+    'fep.cart.add':         { en: 'Add to cart',                      zh: '加入購物車' },
+    'fep.wish':             { en: 'Add to wishlist',                  zh: '加入願望清單' },
+    'fep.back':             { en: 'Back',                             zh: '返回' },
+    'fep.host.more':        { en: 'Visit creator shop ›',             zh: '前往創作者商店 ›' },
+    'fep.crumb.label':      { en: 'Breadcrumb',                       zh: '麵包屑' },
+    'fep.details.label':    { en: 'Event details',                    zh: '活動詳情' },
+    'fep.gallery.label':    { en: 'Images',                           zh: '商品圖片' },
+    'fep.gallery.view':     { en: 'View image {n}',                   zh: '檢視圖片 {n}' },
+    'fep.gallery.video':    { en: 'Watch the video',                  zh: '觀看商品影片' },
+    'fep.zoom':             { en: 'Zoom',                             zh: '放大檢視' },
+    /* 退換票：表單沒有此欄，前台那句當平台固定文案（ASSUMPTIONS UIA-167） */
+    'fep.refund.fixed':     { en: 'Tickets sold are non-refundable; if the organizer cancels or postpones, the ticket price is refunded in full (excluding fees).',
+                              zh: '售出之票券恕不退換；主辦單位取消或延期時全額退還票款（手續費除外）。' },
     /* 活動詳情頁「預覽與在地化」入口（5.1.6.3 §2.13） */
     'ed.loc.btn':           { en: 'Preview & localization',           zh: '預覽與在地化' },
     'ed.loc.title':         { en: 'Localization',                     zh: '在地化' },
@@ -4745,7 +4772,10 @@
     /* 動態 QR 與可轉贈（2026-09-22 · D303 · 5.1.6.1 F24）：電子門票下另外兩組「開關列＋揭示區」。
        hint 只講後果（QR 會換新、票可以給別人、關掉會怎樣），不重述標籤；單位字沿用 amount-field 的後綴位。 */
     'ce.ship.dq':           { en: 'Dynamic QR',                       zh: '動態 QR' },
-    'ce.ship.dq.hint':      { en: "The ticket's QR refreshes every few minutes, so screenshots can't be passed around.", zh: '票的 QR 每隔幾分鐘自動換新，防截圖轉傳。' },
+    /* 2026-09-22 D308：ztor 目前只發靜態 QR——開關顯示為關且不可切換，hint 只講這個事實（原本那句「每隔幾分鐘換新」對 ztor 不成立）。
+       `.bky`＝bookyay 帶入且 bookyay 端開著動態 QR 時，標題後的括號註記（帶入時轉為靜態）。 */
+    'ce.ship.dq.hint':      { en: 'Only static QR for now.',          zh: '目前只提供靜態 QR。' },
+    'ce.ship.dq.bky':       { en: "(bookyay's dynamic QR not applied here)", zh: '（已關閉原設定的動態 QR）' },
     'ce.ship.dq.min':       { en: 'Refresh every',                    zh: '更新間隔' },
     'ce.unit.min':          { en: 'min',                              zh: '分鐘' },
     'ce.ship.tf':           { en: 'Transferable',                     zh: '可轉贈' },
@@ -9372,7 +9402,9 @@
     'ed.pub.tp.off':        { en: 'Off',                              zh: '關' },
     /* 動態 QR 與可轉贈（2026-09-22 · D303）：可編版沿用建立流程同一組字；唯讀版兩列各一句摘要。 */
     'ed.pub.dq':            { en: 'Dynamic QR',                       zh: '動態 QR' },
-    'ed.pub.dq.hint':       { en: "The ticket's QR refreshes every few minutes, so screenshots can't be passed around.", zh: '票的 QR 每隔幾分鐘自動換新，防截圖轉傳。' },
+    'ed.pub.dq.hint':       { en: 'Only static QR for now.',          zh: '目前只提供靜態 QR。' },   /* 2026-09-22 D308：ztor 只發靜態 QR，與建立流程同句 */
+    'ed.pub.dq.bky':        { en: "(bookyay's dynamic QR not applied here)", zh: '（已關閉原設定的動態 QR）' },   /* D308：bookyay 端開著動態 QR 的帶入活動，標題後的括號註記 */
+    'ed.pub.bky-locked':    { en: 'Ticket delivery and e-ticket settings come from bookyay. Change them there.', zh: '取票方式與電子門票設定來自 bookyay，要改請回 bookyay 改。' },   /* D308 決定一：詳情頁的整組鎖說明 banner（同 ed.loc.locked 的做法） */
     'ed.pub.dq.min':        { en: 'Refresh every',                    zh: '更新間隔' },
     'ed.pub.dq.every':      { en: 'Every {n} min',                    zh: '每 {n} 分鐘' },
     'ed.unit.min':          { en: 'min',                              zh: '分鐘' },

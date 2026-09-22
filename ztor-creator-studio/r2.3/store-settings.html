@@ -323,11 +323,12 @@
                       <td>15%</td>
                       <td>
                         <span class="stock-tip stock-tip--anchored ss-code-scope" tabindex="0">
-                          <span class="ss-code-scope__count" data-scope-count="3">3 items</span>
+                          <span class="ss-code-scope__count" data-scope-count="4">4 items</span>
                           <div class="stock-tip__pop" role="tooltip">
                             <div class="stock-tip__row"><span class="stock-tip__qty">26MS Hoodie</span><span class="stock-tip__name" data-i18n="store-settings.codes.scope.kind.product">Product</span></div>
                             <div class="stock-tip__row"><span class="stock-tip__qty">Tour zine vol.02</span><span class="stock-tip__name" data-i18n="store-settings.codes.scope.kind.product">Product</span></div>
                             <div class="stock-tip__row"><span class="stock-tip__qty">REALIVE World Tour — Asia leg 9/12 · VIP</span><span class="stock-tip__name" data-i18n="store-settings.codes.scope.kind.ticket">Ticket tier</span></div>
+                            <div class="stock-tip__row"><span class="stock-tip__qty">VIP ＋ 巡演官方 Tee</span><span class="stock-tip__name" data-i18n="store-settings.codes.scope.kind.ticket-bundle">Ticket bundle</span></div>
                           </div>
                         </span>
                       </td>
@@ -605,8 +606,8 @@
 
                 <!-- 指定商品的多選（D272 建、D299 起兩個版本共用）：重用 tag-input（chip）＋ combobox（建議清單），
                      做法同 partials/pickup-session-modal.js §107–170——focus／打字才展開建議清單。
-                     候選三組：單售、組合包（ProductsStore，拍賣不在其中，D272 決定 2）＋活動票種
-                     （ztorEvents，售票中／已排程／進行中的活動逐票種一筆，D299 決定 1）。
+                     候選三組：單售、組合包（ProductsStore，拍賣不在其中，D272 決定 2；票務商品＝活動組合包從 ztorEvents 各場
+                     bundles[] 另撈、掛同一群組，D309）＋活動票種（ztorEvents，售票中／已排程／進行中的活動逐票種一筆，D299 決定 1）。
                      顯隱由 JS 統一算：Phase 4 勾了「特定商品」或 Phase 1 選了「指定商品」就出現；
                      坐在兩組之外所以不受任一 data-feat 閘門影響。 -->
                 <div class="combobox ss-scope-combo" id="ss-scope-combo" hidden>
@@ -945,8 +946,16 @@
         const bundles = (window.ProductsStore && window.ProductsStore.bundles()) || [];
         bundles.forEach(b => out.push({ id: b.id, kind: 'bundle', name: b.name }));
         const events = (window.ztorEvents && window.ztorEvents.list()) || [];
+        /* 票務商品（D309）：活動組合包住在 events-store 各場的 bundles[]、不在 ProductsStore（同 e-shop 的 eventBundleModel），
+           所以要另外撈——它就是組合包，掛在組合包群組、meta 標「票務商品」讓人看得出含票券；活動狀態門檻同票種。
+           bookyay 帶入的活動（source:'bookyay'）不排除：優惠碼不在 bookyay 鎖定範圍（D309 決定 1）。 */
         events.forEach(ev => {
           if (['on-sale', 'scheduled', 'live'].indexOf(ev.status) < 0) return;
+          (ev.bundles || []).forEach(b => out.push({
+            id: 'evbundle:' + ev.id + ':' + b.id, kind: 'bundle', name: b.name,
+            /* 同系列多場同名（同票種的做法），meta 帶活動名＋日期分辨 */
+            meta: (T('store-settings.codes.scope.kind.ticket-bundle') || 'Ticket bundle') + ' · ' + ev.name + (ev.date ? ' ' + shortDate(ev.date) : '')
+          }));
           (ev.tiers || []).forEach(tier => out.push({
             id: 'ticket:' + ev.id + ':' + tier.id, kind: 'ticket',
             name: ev.name + (ev.date ? ' ' + shortDate(ev.date) : '') + ' · ' + tier.name,

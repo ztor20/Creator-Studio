@@ -1,3 +1,95 @@
+## UIA-167 · 發布前預覽確認的粉絲視角活動頁改為前台 shop-item 的 1:1 鏡像（票券頁／票務商品頁）——真實 markup ＋ CSS、只換資料（2026-09-22 · 使用者裁決，B 反饋；承 UIA-165／D305；spec 0-設計規格書 §7.4「呈現參考、非約束」、5.1.6.1 §1）— 呈現假設／產品缺口
+
+**狀態**：Open。`js/fan-event-page.js`（重寫：前台 DOM 結構與 class 名、`relatedFromStore()`）、`ds-components/fan-shop.css`（新：前台實際命中的 CSS 加 `.fep-shop` 前綴＋前台 :root token＋檔尾 CS 補丁）、`ds-components/fan-event-page.css`（墓碑）、`partials/publish-preview.js`＋`ds-components/publish-preview.css`（`shell:'fan'` → `.pp-dialog--fan`／`.pp-preview-slot--fan`、`.pp-fan-viewbar`）、`create-event.html`（`buildFanModel()` 補 `gallery`／`video`／`organizerAvatar`／`bundles[].tickets{names,qty}`／`goods[]`／`related`）、`event-detail.html`（`locModel()` 同上）、`js/i18n.js`（`fep.*` 前台固定文案 24 key）、`design-system.html`／`.md` §4.215、`docs/fe-mirror-2026-09-22/`。
+
+**來源與證據**：使用者原話（2026-09-22）「預覽 UI 必須做得和這兩個一模一樣，只是資料和機制套用我們的流程與功能」——票券頁 `https://ztor.vercel.app/shop-item.html?id=ev-score-live`、票務商品頁 `https://ztor.vercel.app/shop-item.html?id=ev-themesong-night&sets=1#bundles`。2026-09-22 由 Playwright（1440×1000）抓取：兩頁渲染後的 `<main>` DOM 存 `docs/fe-mirror-2026-09-22/ticket.main.html`／`bundles.main.html`；`<main>` 內元素實際命中的全部 CSS 規則（來自前台 `tokens.css`、`components.css?v=20260922c`、`section-themes.css`、`ds.css`、`refine-shop.css?v=20260915aA`、`shop-item-mobile.css`）整理成 `ds-components/fan-shop.css`。前台版型再改就重抓覆蓋，不手改。
+
+### 呈現假設（不改產品語意，待使用者檢視）
+
+- **鏡像的邊界**：前台的「情境展示」浮鈕、`pdp-sheet` 抽屜、購物車行為、放大檢視、影片播放全部不搬；`pdp-topbar`（手機頂欄）與 `.shop-buybar`（手機底部購買列）保留 markup 但不可點（桌機寬度本來就不顯示）；購票／購買／購買組合／收藏／購物車按鈕 `data-pp-inert`，外觀與前台一致但沒有動作。
+- **殼加寬到 1376px**（`.pp-dialog--fan`）：前台 `.container` 是 1280＋左右 48px；xwide 的 1180 會讓整頁同比例縮小，1440 視窗下內容寬因此與前台同為 1184。這是 Q27（唯一殼層）底下的寬度修飾、不是新殼；其他預覽層消費者不受影響。
+- **亮點（D300）**：前台沒有對應位置，放名稱下方一行 `.pdp-buy__highlight`（前台 `.pdp-host__k` 同級的次要字、`--fs-body-sm`／`--text-secondary`）。
+- **退換票**：表單沒有此欄（§8.26 第 15 項），前台那句「售出之票券恕不退換；主辦單位取消或延期時全額退還票款（手續費除外）。」當平台固定文案（`fep.refund.fixed`，en／zh）一律顯示；宿主給字串可覆蓋、給 `false` 不畫。
+- **描述整段放 lead**：前台把描述第一段當 `.pdp-details__lead`、其餘 `.pdp-details__para`；我們的描述是一個可翻譯欄位（一個 contenteditable 拆不成兩個節點），整段放 lead 並以 `white-space: pre-line` 保留換行。
+- **卡司 chip**：前台是「角色 人名」一顆 chip；我們的陣容只有人名（角色標籤欄目前沒有），有角色時照前台格式前置。
+- **注意事項合一**：活動內含物／需攜帶物品／活動須知三份清單合成前台的一份 `ul.pdp-notices`，內含物前綴類型（「餐飲：…」）、攜帶前綴「攜帶：」。
+- **取票方式文案**：F24 三選（電子門票／順豐寄送／到店自取）用 `fep.pickup.*`；第三方門票開著時「領取與入場方式」接在後面當第二段。
+- **票種列**：附註（`.pdp-tier__meta`）＝票種的販售標籤；「完售」＝`sold ≥ qty`（建立流程一律未完售）；沒有票種時畫一列佔位「票券即將開賣」。購票條款只在條款開關開著且有內容時畫（前台一律有）。
+- **組合包卡**（票務商品頁）：封面＝第一件商品圖（組合包的 cover 在原型只記有沒有、沒有素材；沒商品退回活動主圖）；eyebrow 有商品＝「票 ＋ 商品」、純票＝「票 × n」，有省錢才接「· 較單買省 NT$ X」（原價＝票券小計＋商品小計，與 bundle-detail 同算法）；票券成員＝允許票種名單以「／」分隔，多種時接「（座位區域下單時選）」、張數 > 1 時接「× n」；商品成員＝名稱＋有規格選項時「（規格下單時選）」＋ 28px 縮圖；權益列一行一項；`.pdp-rec-card__note`（前台「商品於活動現場領取」）我們沒有對應欄位、留空；售價多種票時「NT$ X 起」；原價劃線只在原價 > 售價時出現。成員列前綴「票券／商品／權益」是前台 CSS 的 content 字串，預覽語系英文時換 Ticket／Goods／Perk（前台英文版怎麼寫未查證，屬推導）。
+- **相關活動**：三張 `.pdp-rec-card`，內容由 `relatedFromStore(excludeId)` 從 events-store 撈其他活動（日期 · 場館、名稱、最低票價「起」），每張 `.rf-flag` 標「非本活動」——非本活動內容是否出現在預覽上游待確認（§8.26），先讓創作者看到「這裡還有一段不是你的」；store 撈不到就畫三張佔位卡。
+- **主辦**：persona 名冊名＋頭像（`.pdp-host` 創作者變體＋「前往創作者商店 ›」）；create-event 沒載名冊時退回「Gary Lin」＋首字圓。
+- **金額格式**：`events-store.fmtMoney` 是「NT$1,200」，渲染器補成前台的「NT$ 1,200」（符號後一個空格）；區間「NT$ 1,200 – 2,800」高價端不重複符號；不改站上其他頁的格式。
+- **靜態文案跟介面語言、內容跟預覽語系**（同 UIA-165）；預覽語系是英文時 `.fep-shop[lang=en]` 整頁換 Satoshi／Inter（前台 `html[lang=en]` 同一條規則）；zh-Hans／id 沿用 zh／en 字典。
+- **前台 token 自帶、不與站上混用**：`fan-shop.css` 檔頭 `.fep-shop { … }` 定義前台 80 支 token（含裸 rgb／px 字級），是 design-system.md §4.215 註記的例外；`ds-baseline.json` 手動登記 83 處裸色。與 shared.css 打架的只有 `.btn`（高度／字距）與 `h1–h6` 字重，補丁寫在 `fan-shop.css` 檔尾，不動 shared.css。
+- **與前台仍有的視覺差**（皆資料或欄位差，非樣式差）：時間「19:30 – 21:40」vs 前台「19:30 開演」、時長「2 h 10 min」vs「約 2 小時 10 分」（宿主既有格式，未改）；主圖是活動主視覺（多為方形）落在前台 2:3 框裡以 `contain` 置中；優先購／限購文案是原型示意。
+
+### 產品缺口（未經上游確認，原型不補）
+
+- **非本活動區塊是否出現在預覽**、**退換票文案的來源**（平台統一？活動條款？）——同 UIA-165。
+- **前台英文版的固定文案**（成員列前綴、eyebrow、購票條款標題…）未從前台英文頁抓證據，目前是 studio i18n 的英文推導。
+- **組合包的取貨說明**（前台「商品於活動現場領取」）在建立流程沒有欄位；粉絲端要顯示什麼待上游。
+- **前台版型的追蹤機制**：這份鏡像是 2026-09-22 的快照；前台 CSS 版本字串一變（`components.css?v=…`）就要重抓，目前沒有自動比對。
+
+**驗證**：headless Playwright（1440×1000，`ztor.persona=default`）——`event-detail.html?id=realive-asia-kaohsiung` › 預覽與在地化：票券頁／票務商品頁（截圖 `screenshots/2026-09-22-fan-shop-mirror-01…02`）；`create-event.html?from=nick-symphonic-taipei` 補場次與場地、第 6 步以 `ZtorBundleEditor.mounted[0]` 餵一組「VIP ＋ 官方 Tee」（兩票種任選 × 1＋多規格 Tee＋權益＋10% 折扣）→ 發布 → 票券頁／票務商品頁（`…-03…04`）、USD 切換價格重算、English 分頁 4 個可編輯 slot＋`lang=en`；`?id=taipei-nye`（bookyay，HKD 基準）（`…-05`）；`design-system.html#fan-event-page` 就地渲染（`…-06`）；create-product 呼叫 `open()` 不帶 `shell` → 殼維持 xwide；console 0 錯誤；`check_ds_sync.py` PASS＋既有 WARN；`?v=r2.2` 未 bump。
+
+## UIA-166 · bookyay 帶入活動的取票方式／電子門票整組鎖定（建立流程與詳情頁同規則）；ztor 只發靜態 QR——自建活動的動態 QR 關且不可開、bookyay 端開著的帶入後顯示為開但鎖並加括號註記（2026-09-22 · D308，拍板 D302 決定五／D303 決定八；spec 5.1.6.1 F21／F24／F11、5.1.6.2 F14）— 呈現假設／產品缺口
+
+**狀態**：Open。`create-event.html`（步驟 7 `[data-ship-dq]` 開關 markup 預設關＋`.switch--locked`、`bkyApply()` 的 `dqOn`／`[data-ce-dq-bky]` 註記、`tryPublish()` 對 `[data-ship-eticket]` 的跳過、`readState()` 的 `dqBky`、`dupFrom()` 不帶動態 QR）、`event-detail.html`（`isBky()`、`syncPubLock()` 的 bookyay 整組鎖、`pubDefaults()` 的 `dynamicQr`、`#ed-pub-bky-locked` banner、`[data-pub-dq-bky]` 註記）、`partials/stepper.js`（停用／唯讀欄兩顆鈕保持 disabled）、`js/events-store.js`（`taipei-nye` 補 `publish`：bookyay 端動態 QR 開、每 5 分鐘；`taiwan-fest-kenting`／`lrh-taichung-watchback` 動態 QR 改關）。收回 UIA-160「詳情頁不鎖 bookyay 欄位」對電子門票這組的說法；UIA-162「bookyay 帶入是否預填並鎖定」已裁決。
+
+### 呈現假設（不改產品語意，待使用者檢視）
+
+- **鎖的呈現沿用既有三套**：開關 `.switch--locked`＋`aria-disabled`（create-event）／`disabled`（event-detail）、欄位 `lockField()`＝`disabled`＋From bookyay 標籤（create-event）／`readOnly`＋`disabled`（event-detail）、二選一 `.is-source-locked`（create-event）／`.segmented--locked`（event-detail）——沒有為 D308 新造鎖定樣式。開關本身不掛 From bookyay 標籤（列上沒有標籤欄可以放），由子欄位的標籤與詳情頁的 banner 交代來源。
+- **自建活動的動態 QR 用同一種鎖定外觀**：「關且不可切換」與「bookyay 鎖」長得一樣（都是 `.switch--locked`），差別由 hint「目前只提供靜態 QR。」說明；沒有另做一種「平台尚未提供」的停用態。
+- **hint 全面換成「目前只提供靜態 QR。」**（`ce.ship.dq.hint`／`ed.pub.dq.hint`）：D308 只指定自建活動改這句，但原句「票的 QR 每隔幾分鐘自動換新」對 ztor 任何活動都不成立（bookyay 帶入者實際也是靜態），bookyay 帶入者一樣顯示這句，配合括號註記「（已關閉原設定的動態 QR）」。
+- **括號註記的位置與樣式**：接在「動態 QR」標題後、同一行，`.text-sub`（與「（選填）」同寫法），en 為 "(bookyay's dynamic QR not applied here)"。Review 步驟的取票方式列與詳情頁唯讀列同句跟著出現（「動態 QR 每 5 分鐘 （已關閉原設定的動態 QR）」）——Review 列是跨區摘要，讀者看不到開關列的註記，這裡不寫就等於告訴他 ztor 會發動態 QR。
+- **詳情頁補一條 `.info-banner`**（`#ed-pub-bky-locked`，「取票方式與電子門票設定來自 bookyay，要改請回 bookyay 改。」）放在取票方式分段最上方：編輯模式下這一區與其他可改的分段並排、卻整組不能動，沒有一句話會被讀成壞掉；做法同「預覽與在地化」的票價鎖 banner（`#ed-loc-locked`）。
+- **bookyay 沒明說的動態 QR 視為關**：`bkyApply()` 由「`dynamicQr !== false` 預設開」改成「`=== true` 才開」；示範資料只有 `bky-2` 開著。
+- **「再辦一場」不帶動態 QR**：`dupFrom()` 複製出來的是自建活動，開關維持關且鎖，即使來源是 bookyay 帶入且開著。
+- **發布前檢核的跳過範圍**＝`[data-ship-eticket]` 底下所有 `data-required` 欄位（領取與入場方式、更新間隔、次數上限、截止日）＋第三方門票 250 字元上限；其他必填照常。詳情頁對 bookyay 帶入者不標 `is-invalid`。
+- **stepper.js 對停用／唯讀欄保持兩顆鈕 disabled**：原本 `syncLimits` 只依 min／max 決定，重算時會把鎖定欄的鈕還原成可點外觀（點了沒反應）。CSS 本來就在 `input:disabled` 時整欄藏鈕，所以畫面沒差，改的是狀態一致性。
+
+### 產品缺口（未經上游確認，原型不補）
+
+- **自建活動的動態 QR「關且不可開」是推導**（D308 決定二〔產品待確認〕）；ztor 何時支援動態 QR、支援後 bookyay 帶入者是否解除「轉靜態」、那時的預設值——都未定。
+- **bookyay 端事後改取票設定是否回寫 ztor**：同 D301 名稱的待確認（UIA-160）。
+- **詳情頁其他 bookyay 欄位（描述、場地、時間、票種）的鎖定範圍**：D308 只裁決取票方式與電子門票這組，UIA-160 的落差對其餘欄位仍在。
+- **草稿續填（`?draft=`）走 `dupFrom()` 不帶來源標記**：bookyay 帶入的活動若以草稿續填，鎖會掉——示範資料沒有這種草稿，先記缺口。
+
+**驗證**：headless Playwright（1280×1000，zh-Hant）——`create-event.html?import=bky-2` 步驟 7：三組開關 `.switch--locked`＋`aria-disabled`、動態 QR 開＋註記可見、更新間隔 5 且 `disabled`、次數上限／截止日 `disabled`、期限二選一 `.is-source-locked`；清空更新間隔／次數上限／截止日後按發布 → 無 alert、直接進發布前預覽；自建（演唱會 → 略過帶入）步驟 7：動態 QR 關＋鎖、點擊不動、揭示區收起、`data-required` 未掛、hint「目前只提供靜態 QR。」；`event-detail.html?id=taipei-nye` 設定 › 發布 › 編輯模式：取票方式三卡 `disabled`、五顆開關 `disabled`＋`.switch--locked`、四個欄位 `disabled`、期限二選一 `.segmented--locked`、banner 可見、註記可見、點開關不變；`?id=taiwan-fest-kenting` 編輯模式：動態 QR 關＋鎖、可轉贈仍可切、無 banner 無註記。en：「Only static QR for now.」／"(bookyay's dynamic QR not applied here)"。console 0 錯誤。截圖 `screenshots/2026-09-22-eticket-bky-locked-01…03`。
+
+## UIA-165 · 發布前預覽確認改粉絲視角完整頁（票券頁／票務商品頁）、可翻譯欄位擴列、幣別軸與價格表、活動詳情「預覽與在地化」入口；定價幣別資料層（2026-09-22 · D305／D306；spec 0-設計規格書 §7.4／§7.15、5.1.6.1 §1／F9.1／F21／F12、5.1.6.3 §2.13）— 呈現假設／產品缺口
+
+**狀態**：Open。`partials/publish-preview.js`（`currencies`／`baseCurrency`／`prices`／`views`／`mode`、`PRICES` 草稿、價格表）、`js/fan-event-page.js`＋`ds-components/fan-event-page.css`（粉絲視角活動頁 mock；**2026-09-22 同日改為前台 1:1 鏡像 `ds-components/fan-shop.css`，見 UIA-167**）、`js/events-store.js`（`fx`／`priceIn`／`priceOf`／`bundlePriceOf`／`setOverrides`、三筆示範）、`create-event.html`（`buildPublishPreviewOpts()`／`buildFanModel()`、bookyay `priceBase`）、`event-detail.html`（`[data-ed-localize]`、`openLocalization()`／`locModel()`／`renderLocSummary()`）。活動側本輪；商品側（create-product／product-detail／bundle-detail）下一輪。承 PG-035（幣別模型）、LANG-007（買家前台 mock 先例）、BKY-002（bookyay 帶入鎖定）。
+
+### 呈現假設（不改產品語意，待使用者檢視）
+
+- **示範匯率固定**：沿用 PG-035 的 1 USD = 31.5 TWD／157 JPY，本輪補 7.8 HKD／1.35 SGD；全部是示範值、不隨時間變。匯率來源與時點上游待確認（§7.15）。取整＝票價整數、四捨五入（§7.15 已定；進位方式待確認）。
+- **幣別符號**：US$／NT$／HK$／S$／¥，千分位 en-US；創作者端與粉絲端 mock 都用同一套（`ztorEvents.SYMBOL`）。
+- **示範資料的基準幣別**：一般活動＝TWD（示範創作者的預設幣別，`ev.currency` 沒寫＝TWD）；bookyay 帶入的活動＝HKD（`taipei-nye` 標 `source:'bookyay'`＋`currency:'HKD'`，站上唯一一筆）。組合包基準一律 TWD（ztor 端建立，§7.15），即使活動本身是 bookyay。
+- **覆寫值怎麼存**：只記創作者手動改過的幣別（`tier.override`／`bundle.override`，如 `{ USD: 135 }`），換算值算得出來就不落地；詳情頁「儲存」寫 localStorage `ztor.event-fx`，重新整理仍在、cheat code／清鍵即回 mock 原值。建立流程發布時的覆寫與翻譯結果只留在記憶體（`window.__ceLocalization`），原型沒有後端可寫；發布後由詳情頁再開同一層處理。
+- **翻譯草稿只在記憶體**：與 D223 相同，四語系翻譯草稿住 `publish-preview.js` 模組變數；詳情頁「儲存」不落 localStorage（原型無真翻譯，落地也只是同一句話四份），頁面重新整理即回到鏡射預設語言。價格覆寫則落地——它會改變粉絲實付、要在票種卡看得到。
+- **mock 只重現結構**：粉絲視角活動頁鏡像前台 shop-item 頁的資訊順序與分區（麵包屑、標記、名稱、亮點、主辦／日期／時間／時長／場館／語言／優先購／限購、票價區間＋主鈕、活動介紹、卡司、注意事項、取票方式、退換票、票種與價格、購票條款、相關活動），用站上既有 token／badge／btn／segmented 重刻，不像素級複刻；前台版型改了這裡跟著改（§7.4「呈現參考、非約束」）。主辦＝目前 persona 的名冊名（原型沒有主辦欄）；優先購／限購只在建立流程的購票規則有設時才畫（bookyay 與 store 資料沒有這兩欄）。
+- **相關活動區塊**：畫三張灰底虛線佔位卡、標「非本活動」，不放真資料——非本活動內容在預覽中是否出現上游待確認（§8.26），先讓創作者看到「這裡還有一段不是你的」。
+- **mock 的靜態標籤跟介面語言走**：「活動介紹」「票種與價格」「購票」這類前台固定文案用 studio 的 i18n（en／zh），內容欄才跟預覽語系走；zh-Hans／id 的靜態標籤沿用 zh／en（原型字典只有兩語）。
+- **視圖切換的呈現**：兩個視圖時在頁頂畫一組 `.segmented`（票券頁／票務商品頁），另外在購買區與「票種與價格／組合方案」節標題右邊放前台同款的「組合方案 ›」／「只買票 ›」連結，兩者都切；只有一個視圖時不畫切換也不畫連結。幣別切換用 `.segmented` 而非下拉：Q8 控件層 toggle，五個三字碼並排剛好一列。
+- **價格表的儲存格**：基準幣別欄純文字＋「基準」徽章（bookyay 鎖定列多一把鎖 icon，title「由 bookyay 決定」）；其餘欄數字輸入框，沒改時顯示換算值，一輸入即覆寫並露出「已覆寫」徽章與「重設為換算值」ghost 鈕，清空輸入框等於重設。輸入框外框在覆寫中改品牌墨色（Q8）。
+- **基準價變更的重算**：發布前預覽再開時比對每列的基準金額，與上次不同就把該列覆寫整個清空（§7.15「比照翻譯」）；覆蓋前不提示（同 §7.4 產品待確認第 7 項）。
+- **票種卡的顯示**：詳情頁票種卡票價以基準幣別顯示（`NT$4,200`／`HK$200`），有覆寫時多一列「其他幣別」只列被改過的格（`US$135 · HK$1,050`）；完整五幣別表只在「預覽與在地化」的價格表——5.1.6.3 §2.6 說「本節不逐幣別列出」，這裡只列覆寫過的、讓「儲存後有生效」看得到。
+- **入口位置**：頁首「檢視售票頁」旁一顆「預覽與在地化」（規格的呈現參考），另在設定分頁加「在地化」子集放摘要卡（翻譯語系、基準幣別、覆寫格數、bookyay 鎖定 banner）＋同一個入口；兩處 `data-view-safe`，檢視態也能開（它不是編輯活動欄位的入口）。
+- **bookyay 帶入的建立流程**：bky 示範資料改給港幣原值 `priceHkd`，帶入時票種欄顯示換算成 TWD 的整數（唯讀，§7.15）、`types[].priceBase` 記港幣；發布前預覽價格表基準欄＝HKD 且鎖，其餘四幣別（含 TWD 換算值）可覆寫。
+- **組合包在預覽裡不可翻譯**：票務商品頁的組合方案卡名稱／說明／權益是純文字（組合包的可翻譯欄位屬 5.1.5.4 §1，商品側下一輪）；價格表則已納入組合包售價（§7.15 本輪納入）。
+- **create-event 的 fields 以表單實際有的欄位為準**：表演陣容只有人名沒有角色標籤欄（跳過，人名維持原文）；退換票說明表單沒有欄位（§8.26 第 15 項，跳過）；條款與細則／行銷同意只在開關開著且有內容時收；領取與入場方式只在第三方門票開著時收；活動內含物列的類型（餐飲／入場…）是選單值不翻、只翻後面的文字。
+
+### 產品缺口（未經上游確認，原型不補）
+
+- **匯率來源與時點、進位方式**（§7.15）；**改預設幣別後既有項目的處置**（§7.15）；**跨幣別成員加總的匯率時點**（含 bookyay 票券的組合包）。
+- **發布後改翻譯是否需審核或版本紀錄**（§8.26）；**退換票說明的來源**（活動條款？平台統一文案？）；**卡司人名不翻譯是否成立**；**非本活動區塊是否出現在預覽**。
+- **覆寫值的粉絲端與收款**：覆寫價＝粉絲以該幣別的實付價（§7.15 已定），但粉絲端用哪種幣別看價與付款不在本規格；原型不模擬。
+- **建立流程發布時的覆寫與翻譯要寫到哪裡**：原型沒有後端，發布結果只留記憶體；正式版要在發布那一刻把 `{ translations, prices }` 存進活動紀錄。
+- **組合包售價的重算連動**：成員價或折扣 % 一變售價覆寫重算（§7.15），本輪只在發布前預覽再開時比對基準金額實作；詳情頁改折扣 % 後的連動落在組合商品細節頁（下一輪）。
+
+**驗證**：Playwright／Browser（1440×1000，`ztor.persona=default`）——`event-detail.html?id=realive-asia-kaohsiung` 頁首「預覽與在地化」→ 票券頁／票務商品頁切換、USD 切換（VIP 覆寫 US$135、組合包 US$152）、列表檢視兩張表、Floor USD 改 110 → 儲存 → 票種卡「其他幣別 US$110」、localStorage `ztor.event-fx` 有值；`?id=taipei-nye` 基準欄 HK$200／HK$300 且鎖、TWD 覆寫 800／1,200；`create-event.html?from=nick-symphonic-taipei` 補場地與場次 → 發布 → 只有票券頁（無組合包）→ 加一組組合包後兩視圖、價格表三列；zh-Hant 改名稱＋USD 覆寫 → 返回編輯 → 再開仍在；步驟 4 改基準價 2800→3000 → 再開 USD 覆寫清空、換算 95；`create-product.html` 既有呼叫：無幣別軸、只有翻譯表、`.cp-shopmock` 正常；console 0 錯誤；`check_ds_sync.py` PASS（WARN 為存量）。截圖 `screenshots/2026-09-22-publish-preview-*`。見 UI-CHANGES 六十九。
+
 ## UIA-164 · 零成交的已下架／已封存販售管道可刪除：清單 kebab 與三個細節頁的「刪除」、擋下清單、刪除的紀錄（2026-09-22 · D307，修訂 D284；spec 0-設計規格書 §7.14「封存與刪除」）— 呈現假設／產品缺口
 
 **狀態**：Open。`js/listing-state.js`（`hasSales`／`canDelete`／`deleteBlockers`／`remove`）、`js/products-store.js`（`ProductsStore.remove`／`deleteBlockers`、工作階段 `__deleted` 清單、`purgeDeleted()`／`pruneDeletedRows()`、示範資料 `sample-set`／`setlist-sheet`）、`e-shop.html`（`askDelete`）、`product-detail.html`／`bundle-detail.html`／`auction-detail.html`（`[data-*-delete]`、`[data-*-sales-note]`）。承 UIA-158（封存唯讀與解除封存）。
@@ -69,7 +161,7 @@
 - **粉絲端通知規則**：bookyay 的「交易成功電郵附上門票連結、客人須登入查看門票」屬粉絲端通知與取票規則，原型不做粉絲端、規格記待確認（D303 決定三）。
 - **轉贈與領取單位／QR 的關係**：轉贈後 QR 是否換人、原持票人的 QR 是否即刻失效；動態 QR 輪換後是否仍是同一個領取單位（主規格 §7.2 一票一碼）——D303 決定五、落主規格 §8.1。原型的報到台、掃描器、名單不因這兩組設定改變。
 - **已售出後改轉贈規則對既有票的效力**：5.1.6.2 F14 開賣後唯讀，若上游放寬，已轉過的次數怎麼算、期限縮短時已轉的票怎麼辦〔產品待確認〕（D303 決定九）。
-- **bookyay 帶入是否預填並鎖定**：原型比照取票方式（預填並鎖），同 UIA-161／BKY-002。
+- ~~**bookyay 帶入是否預填並鎖定**：原型比照取票方式（預填並鎖），同 UIA-161／BKY-002。~~ **2026-09-22 D308 已裁決：預填並整組鎖定，建立流程與詳情頁同規則；動態 QR 在 ztor 只有靜態，見 UIA-166。**
 
 **驗證**：Playwright（headless）建立活動 32 項＋活動詳情 19 項全 PASS，見 UI-CHANGES 六十四；截圖 `screenshots/2026-09-22-eticket-settings-01…13`。
 
@@ -104,7 +196,7 @@
 - **名稱欄不加任何「來自 bookyay、可改」的提示**：欄位可輸入、bookyay 的名稱已預填在裡面，這就是全部訊息；From bookyay 標籤只留在真的鎖住的欄位上，讓「有標籤＝不能改」在同一張表單裡沒有例外（Q123 文案不重述上下文）。
 - **改名後分享連結與 QR 跟著換**：沿用既有 `renderShare()`（名稱 → slug），沒有為帶入活動另做「連結沿用 bookyay 原名」的分支——連結是 ztor 的，跟 bookyay 無關。
 - **`?import=` 深連結（Admin 繼續設定）同一套**：從創作者活動管理進來的活動一樣預填可改，沒有兩種行為。
-- **event-detail 編輯模式不加鎖**：`events-store.js` 沒有「這場來自 bookyay」的標記、編輯模式也沒有 bookyay 鎖定邏輯，所以帶入活動在詳情頁的描述、場地、時間等其實都可改——這是原型既有落差（建立流程鎖、詳情頁不鎖），D301 只裁決名稱與亮點，本輪不補詳情頁的鎖定、也不加來源標記。
+- **event-detail 編輯模式不加鎖**：`events-store.js` 沒有「這場來自 bookyay」的標記、編輯模式也沒有 bookyay 鎖定邏輯，所以帶入活動在詳情頁的描述、場地、時間等其實都可改——這是原型既有落差（建立流程鎖、詳情頁不鎖），D301 只裁決名稱與亮點，本輪不補詳情頁的鎖定、也不加來源標記。 **2026-09-22 D308 收回一部分：取票方式與電子門票整組在詳情頁也鎖**（`event-detail.html` 以 `ev.source === 'bookyay'` 判斷，`taipei-nye` 自 D306 起帶這個標記）；其餘欄位的落差仍在，見 UIA-166。
 
 ### 產品缺口（未經上游確認，原型不補）
 

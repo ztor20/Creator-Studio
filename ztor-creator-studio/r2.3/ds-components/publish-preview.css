@@ -9,7 +9,8 @@
    `.pp-table-block` ＋ `.pp-table-title`）；價格表的儲存格：基準幣別欄唯讀 `.pp-cell--base`
    （鎖定列附 `.pp-price-lock`）、其餘欄 `.pp-cell--price`＝數字輸入框＋ `.pp-price-meta`
    （「已覆寫」徽章＋「重設為換算值」ghost 鈕，只在覆寫時露出）、`.pp-cell--overridden` 標示。
-   粉絲視角活動頁本體在 fan-event-page.css，不在這裡。
+   粉絲視角活動頁本體在 fan-shop.css（前台鏡像），不在這裡；這裡只放它在殼裡的三條：加寬殼
+   `.pp-dialog--fan`、去內距的預覽槽 `.pp-preview-slot--fan`、CS 端的視圖切換列 `.pp-fan-viewbar`。
    consumer：partials/publish-preview.js（唯一掛載點）
    ============================================================ */
 
@@ -134,3 +135,24 @@
 .pp-price-reset { padding-inline: var(--sp-6); }
 /* 覆寫中的格子：輸入框外框換品牌墨色，一眼看出這欄已經不是換算值（Q8：已選中／已作用＝品牌橘） */
 .pp-cell--overridden .pp-price-input { border-color: var(--selected-ink); }
+
+/* ── 2026-09-22 前台鏡像（使用者裁決：預覽 UI 與前台一模一樣）──────────────────
+   粉絲視角活動頁（js/fan-event-page.js ＋ ds-components/fan-shop.css）是前台 1440 全寬雙欄版型的鏡像：
+   · `.pp-dialog--fan`：殼放寬到 1376px＝前台 .container（1280）＋左右 48px 內距，1440 視窗下內容寬與前台
+     一致（1184）；比 xwide（1180）寬是刻意的，窄了會整頁同比例縮小、看起來就不是前台。
+   · `.pp-preview-slot--fan`：預覽槽去掉上下內距、改成 block，讓黑底的 .fep-shop 直接貼著工具列。
+   · `.pp-fan-viewbar`：票券頁／票務商品頁切換（Q8 控件層 toggle）是 CS 的控件，畫在 .fep-shop 外面、靠右。
+   由 partials/publish-preview.js 的 `shell:'fan'` 掛上前兩個 class；其他消費者不受影響。 */
+.pp-dialog--fan {
+  max-width: 1376px;
+  width: min(1376px, calc(100vw - var(--sp-40)));
+}
+.pp-preview-slot--fan {
+  display: block;
+  padding: 0;
+}
+.pp-fan-viewbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--sp-12);
+}

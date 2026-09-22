@@ -4,6 +4,70 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-22（七十一）· 發布前預覽確認的粉絲視角活動頁改為前台 shop-item 的 1:1 鏡像——真實 markup ＋ CSS、只換資料；票務商品頁組合卡照前台格式；殼加寬（B 反饋 · 使用者裁決「預覽 UI 必須做得和前台一模一樣，只是資料和機制套用我們的流程與功能」；承 D305／UIA-165）
+
+**依據**：使用者裁決（2026-09-22，原話見 ASSUMPTIONS UIA-167）——票券頁 `shop-item.html?id=ev-score-live`、票務商品頁 `shop-item.html?id=ev-themesong-night&sets=1#bundles` 兩頁就是預覽的樣子。上午 D305 那版是用站上 token 重刻的「結構鏡像」（六十九），使用者看過後裁決不夠：要的是版型、間距、字級、顏色、圓角、標籤、卡片、按鈕全部與前台一致。
+
+**範圍**：
+- `ds-components/fan-shop.css`（新）——前台兩頁 `<main>` 實際命中的 288 條 CSS 規則（Playwright 抽出）加 `.fep-shop` 前綴；前台 `:root` token 只收用到的 80 支寫在檔頭；@font-face 改用站上自架 Satoshi／Inter／LINE Seed TW／Noto Sans TC；檔尾補丁：`.btn` 高度／字距放回前台（shared.css 的 `.btn` 釘死 36px）、`.ds-icon` 關掉 mask 改包 lucide、相關活動卡 media 定位、`[lang=en]` 字型與成員列前綴、亮點一行、缺圖空框、首字頭像。**不得在 CS 其他頁引用**；裸 rgb／px 為已註記例外（`design-system.md` §4.215、`ds-baseline.json` 登記 83）
+- `js/fan-event-page.js`（重寫）——輸出前台的 DOM 結構與 class 名（`docs/fe-mirror-2026-09-22/` 兩支 html 是對照證據）：topbar（不可點）→ 麵包屑 → 圖庫（縮圖條＋2:3 主圖＋影片縮圖）→ 購買欄（status-tag ×3～4、h1、亮點、主辦、資訊卡、票價／組合價區間＋「N 種票 ›」／「N 種組合 ›」、購票／選擇組合＋收藏）→ 活動詳情（介紹、卡司 chip、注意事項、取票方式、退換票、票種與價格 details、購票條款 details）→ 組合方案（票務商品頁：組合卡＝旗標／eyebrow「票 ＋ 商品 · 較單買省」／名稱／成員列票券＋商品／權益列／售價＋原價劃線／購買組合＋購物車；「只買票 ›」切回）→ 相關活動（三張、標「非本活動」）→ 手機購買列。金額補成「NT$ 1,200」；新增 `relatedFromStore()` 供宿主撈別的活動；model 多 `gallery`／`video`／`organizerAvatar`／`bundles[].tickets{names,qty}`／`goods[]`／`img`／`note`／`related[]`（舊 `contents[]` 仍相容）
+- `ds-components/fan-event-page.css`——墓碑（`.fep` 重刻版同日退場、零消費者）
+- `partials/publish-preview.js`＋`ds-components/publish-preview.css`——新選項 `shell:'fan'`：殼 `.pp-dialog--fan`（1376px）＋預覽槽 `.pp-preview-slot--fan`（去內距）；`.pp-fan-viewbar`（票券頁／票務商品頁切換，CS 的 `.segmented`，畫在 `.fep-shop` 外）。其他三個消費者不帶、殼不變
+- `create-event.html`——`buildFanModel()`：圖庫全部圖＋影片格、persona 頭像、組合包成員改 `tickets{names,qty}`（tierIds 先經 `savedTiers()` 回到票種才取名）＋`goods[]`（名稱／規格有無／圖）、相關活動走 `relatedFromStore()`；`open()` 帶 `shell:'fan'`
+- `event-detail.html`——`locModel()` 同上（示範資料 `products[]` 直接對到 goods）；`shell:'fan'`
+- `js/i18n.js`——`fep.*` 新 24 key（票價／組合價／N 種組合／組合包／票 ＋ 商品／票 × n／較單買省／座位區域下單時選／規格下單時選／起／購買組合／購物車／加入購物車／加入願望清單／返回／前往創作者商店／麵包屑／活動詳情／商品圖片／檢視圖片／觀看商品影片／放大檢視／退換票固定文案）
+- `design-system.html`／`design-system.md`——§4.215 改寫（前台鏡像、例外註記、就地渲染 demo：`fan-event-page.js` 用示範 model＋替身 api 當場畫，與宿主同一條路徑）；元件總表列改指 `fan-shop.css`；§4.130 demo 改帶 `shell:'fan'`＋新 model 形狀；`design-components.html`／`ds-index.md` 重生
+- 文件：`ASSUMPTIONS.md` UIA-167、`BUILD-SPEC.md` §5.1.6.1 追一段、`docs/fe-mirror-2026-09-22/`（前台兩頁 DOM 證據）
+
+**動機**：創作者在發布前看到的必須就是粉絲會看到的那一頁，用站上 token 重刻的「像前台」只能對資訊順序、對不到版型與質感，使用者看一眼就分得出來。真實 markup ＋ 真實 CSS 是唯一「一模一樣」的做法；代價是這支 CSS 帶著前台的 token 與裸值進站，所以用 `.fep-shop` 前綴隔離、註記例外、限定唯一消費者，前台改版就重抓整檔而不是手改——手改的那一刻它就不再是鏡像。
+
+**驗證**：見 ASSUMPTIONS UIA-167「驗證」段；截圖 `screenshots/2026-09-22-fan-shop-mirror-01…06`；console 0 錯誤；`check_ds_sync.py` PASS＋既有 WARN（raw-color／sibling-rhythm，fan-shop.css 例外已註記）；`?v=r2.2` 未 bump。
+
+## 2026-09-22（七十）· bookyay 帶入活動的取票方式／電子門票整組鎖定（建立流程與詳情頁同規則、發布前檢核跳過）；ztor 只發靜態 QR——自建活動的動態 QR 關且不可開、bookyay 端開著的帶入後顯示為開但鎖＋括號註記（A spec-derived · D308，拍板 D302 決定五／D303 決定八；5.1.6.1 F21／F24／F11、5.1.6.2 F14）
+
+**依據**：使用者裁決 D308（2026-09-22）——bookyay 帶入的活動，取票方式與電子門票下整組設定（第三方門票＋領取與入場方式、動態 QR＋更新間隔、可轉贈＋限制轉贈次數／次數上限／設定轉贈期限／統一截止日／開演前 N 天）全部不可改，bookyay 端開著的照樣顯示為開；ztor 目前只發靜態 QR，bookyay 端開著動態 QR 的帶入後轉為靜態，開關顯示為「開但不可改」並在標題後註明「（已關閉原設定的動態 QR）」；自建活動的動態 QR 開關關且不可開、hint 改「目前只提供靜態 QR」；發布前檢核對 bookyay 帶入者這組不檢核。
+
+**範圍**：
+- `create-event.html`——步驟 7 動態 QR 列：標題改 `<span>`＋`.text-sub[data-ce-dq-bky]` 括號註記（預設隱藏）、hint 換句、開關 markup 預設關＋`.switch--locked`＋`aria-disabled`、揭示區預設收起（既有共用 click handler 對 `.switch--locked` 不動作）。`bkyApply()`：動態 QR 由「沒明說就開」改「`dynamicQr === true` 才開」，開時亮註記；第三方門票／可轉贈兩段註解改寫為 D308 拍板（鎖定邏輯本來就覆蓋全部子欄位，實測補證）。`tryPublish()`：必填集濾掉 `[data-ship-eticket]` 底下的欄位、250 字元檢核在 bookyay 帶入時跳過。`readState()`／`syncReview()`：Review 取票方式列在 bookyay 動態 QR 開著時接同一句註記。`dupFrom()`（再辦一場／草稿續填）不再帶動態 QR
+- `event-detail.html`——設定 › 發布：取票方式分段頂部新增 `.info-banner#ed-pub-bky-locked`（bookyay 帶入者才顯示，做法同票價鎖 `#ed-loc-locked`）；動態 QR 列同 create-event（註記 `[data-pub-dq-bky]`、hint、開關預設關＋鎖）；唯讀列 `#ed-pub-dq-row` 標題也接註記。新增 `isBky()`；`syncPubLock()` 對動態 QR 開關一律鎖，bookyay 帶入者再鎖取票方式三卡、五顆開關、四個欄位、步進鈕與期限二選一；`pubDefaults()` 的 `dynamicQr`＝bookyay 帶入且明確為 true 才開；`renderPubExtras()` 更新間隔不再標必填錯誤、切註記顯示；`renderPubTp()` 對 bookyay 帶入者不標 `is-invalid`
+- `partials/stepper.js`——`syncLimits()` 對停用／唯讀欄把兩顆鈕保持 `disabled`（之前重算會還原成可點外觀）；`design-system.md` §4.105 補一句
+- `js/events-store.js`——`taipei-nye`（站上唯一 bookyay 帶入）補 `publish`：動態 QR 開、每 5 分鐘、可轉贈最多 1 次、開演前 1 天止；`taiwan-fest-kenting`／`lrh-taichung-watchback` 動態 QR 改關（自建活動一律關）
+- `js/i18n.js`——`ce.ship.dq.hint`／`ed.pub.dq.hint` 換句「目前只提供靜態 QR。」／"Only static QR for now."；新增 `ce.ship.dq.bky`／`ed.pub.dq.bky`「（已關閉原設定的動態 QR）」／"(bookyay's dynamic QR not applied here)"、`ed.pub.bky-locked`（en／zh）
+- 元件——**無新元件、無 CSS 改動**：`.switch--locked`、`.is-source-locked`、`.segmented--locked`、`.info-banner`、`.text-sub` 全部既有
+- 文件：`ASSUMPTIONS.md` UIA-166（UIA-160 詳情頁不鎖的說法對電子門票這組收回、UIA-162 待確認劃掉）
+
+**動機**：票是 bookyay 發的，取票規則的真相在 bookyay，ztor 端只呈現不編輯；ztor 沒有動態 QR 就不能假裝有，但也不能把 bookyay 的設定藏起來讓創作者以為沒設過——開關照原樣亮著、括號把「在 ztor 沒生效」講清楚。鎖定外觀不新造，三種既有鎖（開關／欄位／二選一）各自沿用；詳情頁多一條 banner 是因為編輯模式下這一區與可改的分段並排、沒有一句話會被讀成壞掉。
+
+**驗證**：見 ASSUMPTIONS UIA-166「驗證」段；console 0 錯誤；`check_ds_sync.py` PASS（WARN 為存量 raw-color／sibling-rhythm，與改前相同）；`?v=r2.2` 未 bump。截圖 `screenshots/2026-09-22-eticket-bky-locked-01…03`。
+
+## 2026-09-22（七十）· 優惠碼「指定商品」候選補票務商品（活動組合包）、示意列 TOURVIP15 補一筆（A spec-derived · D309；5.1.5.5 F8 適用範圍、5.1.6.3 §2.6.1）
+
+**依據**：使用者裁決 D309（2026-09-22）——票務商品（成員含活動票券的組合包）就是組合包，優惠碼可折、可被「指定商品」勾選；bookyay 帶入的活動票種同樣可用優惠碼；票券撤銷比照訂單撤銷；混單平台費逐品項各自維度費率（後兩點是規則層，原型無對應畫面）。
+
+**改動**：
+
+- `store-settings.html`——優惠碼表單「指定商品」候選：`scopeCatalog()` 從 `ztorEvents.list()` 各場活動的 `bundles[]` 另撈活動組合包（票務商品住在 events-store、不在 ProductsStore，同 e-shop 的 `eventBundleModel`），掛在組合包群組、meta 標「票務商品」；活動狀態門檻同票種（售票中／已排程／進行中），bookyay 帶入的活動不排除。示意列 TOURVIP15 的範圍浮卡補一筆「VIP ＋ 巡演官方 Tee · 票務商品」、件數 3 → 4。
+- `js/i18n.js`——新增 `store-settings.codes.scope.kind.ticket-bundle`（Ticket bundle／票務商品）。
+
+**驗證**：`store-settings.html?version=p1` 與 `?version=full` 開優惠碼表單選「指定商品」、在搜尋框打「VIP」，組合包群組出現「VIP ＋ 巡演官方 Tee」且 meta 為「票務商品」；清單 TOURVIP15 範圍欄顯示 4 項、hover 列出四筆。
+
+## 2026-09-22（六十九）· 發布前預覽確認改為粉絲視角完整頁（票券頁／票務商品頁）、可翻譯欄位擴到活動全部文案欄、語言旁加幣別軸、列表檢視兩張表；活動詳情「預覽與在地化」再開同一層；定價幣別資料層（A spec-derived · D305／D306；主規格 §7.4／§7.15、5.1.6.1 §1／F9.1／F21／F12、5.1.6.3 §2.13）
+
+**依據**：使用者裁決 D305／D306（2026-09-22）——預覽檢視＝粉絲視角完整頁（活動兩視圖，沒有組合包只有票券頁；前台版型是呈現參考）、可翻譯欄位擴到全部文案欄、語言切換旁加幣別切換（五種、兩軸獨立）、列表檢視＝翻譯表＋價格表（票種票價與組合包售價 × 五幣別，基準幣別唯讀、其餘可覆寫並可重設）、發布後在活動詳情 §2.13 可再開同一畫面（主動作「儲存」）；定價幣別：基準幣別＝建立當下的預設幣別、其他四幣別自動換算、基準價一改覆寫全重算、bookyay 帶入票價基準 HKD 鎖死但其他幣別可覆寫。活動側本輪；商品側下一輪。
+
+**範圍**：
+- `js/events-store.js`——定價幣別 helper：`CURRENCIES`／`FX_PER_USD`（固定示範匯率 1 USD = 31.5 TWD／7.8 HKD／1.35 SGD／157 JPY）／`SYMBOL`、`fx(from,to,amount)`、`priceIn(priceObj,cur)`（覆寫優先、否則換算、四捨五入整數）、`recalc`、`moneyIn`／`fmtMoney`、`priceOf(ev,tier)`／`bundlePriceOf(ev,b)`（收成 `{ base, amount, override, locked }`）、`setOverrides`／`getOverrides`／`resetOverrides`（localStorage `ztor.event-fx`，`get()`／`list()` 合併）。示範資料：`realive-asia-kaohsiung` VIP `override:{USD:135}`、組合包 `bd-vip-tee` `override:{HKD:1188}`；`nick-symphonic-taipei` Lower level `override:{JPY:13900}`；`taipei-nye` 改成 bookyay 帶入（`source:'bookyay'`、`currency:'HKD'`，票價 HK$200／300、TWD 覆寫 800／1,200）。票種 `price` 仍是基準幣別整數，既有讀取端不改形狀
+- `partials/publish-preview.js`＋`ds-components/publish-preview.css`——新選項 `currencies`／`baseCurrency`／`prices`／`views`／`mode`；工具列右側 `.pp-toolbar__controls`＝幣別 `.segmented`（`.pp-currency`）＋既有預覽/列表切換；價格草稿 `PRICES`（模組變數，返回編輯不丟；基準價變更該列覆寫清空重算）；列表檢視兩個 `.pp-table-block`（翻譯表＋價格表 `.pp-price-table`：`.pp-cell--base` 唯讀＋「基準」徽章＋`.pp-price-lock`、`.pp-cell--price` 數字輸入框＋`.pp-price-meta`「已覆寫」徽章＋「重設為換算值」ghost 鈕、`.pp-cell--overridden`）；previewRender 的 api 多 `currency`／`priceIn`／`money`／`fmt`／`view`／`views`／`setView`；`mode:'save'` 主鈕「儲存」、標題「預覽與在地化」、次鈕「取消」；`onConfirm(result)` 收 `{ translations, prices, mode }`；`ztorPublishPreview.drafts()`。向下相容：create-product／create-project／publish-work 呼叫不變
+- **新元件 Fan event page**（三件套）：`ds-components/fan-event-page.css`（`.fep`，坐在彈窗灰底上的玻璃卡）＋`js/fan-event-page.js`（`window.ztorFanEventPage.render(host, model, api)`，兩個宿主共用）＋`design-system.md` §4.215／Pillar 4 清單列＋`design-system.html` §4.215 demo、TOC、清單列（三件套由另一 session 先補、本輪補清單列與 Publish preview 條目）；`design-system.html` §4.130 demo 改成活動示範（兩視圖、五幣別、價格表 USD 已覆寫），載入 `js/events-store.js`／`js/fan-event-page.js`
+- `create-event.html`——`buildPublishPreviewOpts()`：fields＝名稱／亮點／描述／活動內含物／需攜帶物品／活動須知（三份動態清單逐列一 key、分組小標）／條款與細則／行銷同意（開關開著才收）／領取與入場方式（第三方門票開著才收）／票種名稱（`types`，分組「票種」）；prices＝票種（`priceBase` 或 TWD）＋組合包（`bundleEd.finalPrice`）；views 依有無組合包；`buildFanModel()` 組粉絲頁 model（狀態「即將開賣」、類型卡標題、國家、主視覺＝相簿第一張、主辦＝persona 名冊名、第 1 場日期／時間／時長、場地與地址、語言、購票規則的限購／優先購、卡司人名、取票方式、第三方門票說明、票種、組合包內容物／原價／售價）。bookyay 示範資料 `BKY[].tiers[].price` 改 `priceHkd`（港幣原值），`bkyApply()` 換算成 TWD 填欄位（唯讀）並記 `types[].priceBase`；發布結果留 `window.__ceLocalization`
+- `event-detail.html`——頁首「檢視售票頁」旁新增 `[data-ed-localize]`「預覽與在地化」（`data-view-safe`、`data-dock-icon`，icon globe）；設定分頁新增子集 `data-nav-item="localization"`／`#ed-loc-card`（data-list：翻譯／基準幣別／覆寫格數、bookyay 鎖定 info-banner、入口鈕）；`openLocalization()`（fields＝名稱／亮點／描述／領取與入場方式／票種名稱，prices＝票種＋組合包，`mode:'save'`，`previewRender`＝Fan event page）→ `onConfirm` 寫 `ztorEvents.setOverrides`、更新 `edTiers`／`ev`、`renderEdTiers()`、`renderLocSummary()`、toast；票種卡票價改 `ztorEvents.moneyIn(priceOf)`（基準幣別符號），有覆寫時多一列「其他幣別」（`overrideLine()`）；`i18n:applied` 重畫摘要
+- `js/i18n.js`——新增 `pp.modal-title-save`／`pp.save`／`pp.back-save`／`pp.currency-label`／`pp.table.translations`／`pp.table.prices`／`pp.table.prices-hint`／`pp.table.item`／`pp.price.*`／`pp.field.highlight`／`role`／`includes`／`bring`／`notes`／`line`／`tnc`／`marketing`／`entry-note`／`tier-name`、`fep.*`（視圖、麵包屑、事實列標籤、購買區、各節標題、狀態、取票方式、限購、優先購、相關活動佔位）、`ed.loc.*`、`ed.tix.other-cur`（en／zh）
+- 文件：`BUILD-SPEC.md` §5.3.1 補一條、`requirements-map.md`（5.1.6／5.1.6.1 列）、`ASSUMPTIONS.md` UIA-165
+
+**動機**：創作者發布前要看到的是「粉絲會看到的那一頁」，不是抽象的卡（D305）；翻譯與幣別價都是「來源一份、其他自動生成、可覆寫、來源一改就重生成」的東西，放同一個畫面、同一套操作（D306 比照 §7.4）。渲染函式抽成 `js/fan-event-page.js` 讓建立流程與詳情頁共用一份、前台版型改一次兩處跟著改；換算與符號集中在 `events-store`，publish-preview 不自帶匯率。幣別切換用 `.segmented`（Q8 控件層 toggle：切的是同一份價格用哪個幣別看，與語言分頁「看哪一份翻譯」不同層；五個三字碼並排剛好一列、不用下拉）；視圖切換放在頁裡而不是工具列——它切的是粉絲端會看到的哪一頁，前台本來就用頁內連結（「只買票 ›」）切。
+
+**驗證**：見 ASSUMPTIONS UIA-165「驗證」段；console 0 錯誤；`check_ds_sync.py` PASS（WARN 為存量 raw-color／sibling-rhythm）；`node --check` events-store／publish-preview／fan-event-page／i18n 通過、兩頁內嵌腳本逐塊通過；`?v=r2.2` 未 bump。截圖 `screenshots/2026-09-22-publish-preview-01…`。
+
 ## 2026-09-22（六十八）· 零成交的已下架／已封存販售管道可刪除：清單 kebab 與三個細節頁多「刪除」、單售仍在組合包裡擋下、有成交只能封存（A spec-derived · D307，修訂 D284；主規格 §7.14「封存與刪除」）
 
 **依據**：使用者裁決 D307（2026-09-22）——§7.14 由「封存與不可刪除」改名「封存與刪除」：零成交（自建立起沒有任何訂單品項，已取消／已撤銷也算曾有銷售）且已下架或已封存的單售、組合包、拍賣可刪除；上架中不可刪（要先下架）；有成交只能封存（既有）；草稿可刪（既有流程不動）；刪除必須確認、不可復原；單售仍是任何組合包的成員（不論該組合包上架／下架／封存）→ 擋下並列出、創作者自行去組合包移除；刪組合包不影響成員；拍賣零出價且未成交（流標或從未開拍）才可刪；刪除後離開所有清單與篩選。

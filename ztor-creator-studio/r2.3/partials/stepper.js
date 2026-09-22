@@ -38,8 +38,12 @@
     var v = num(input.value, null);
     var up = host.querySelector('[data-step="up"]');
     var down = host.querySelector('[data-step="down"]');
-    if (up) up.disabled = (v !== null && max !== null && v >= max);
-    if (down) down.disabled = (v !== null && min !== null && v <= min);
+    /* A disabled / read-only field keeps both buttons disabled (2026-09-22, D308 bookyay-locked
+       fields): step() already refuses to move such a field, but a re-sync used to hand the
+       buttons back their live look — a control that looks live and does nothing. */
+    var locked = input.disabled || input.readOnly;
+    if (up) up.disabled = locked || (v !== null && max !== null && v >= max);
+    if (down) down.disabled = locked || (v !== null && min !== null && v <= min);
   }
 
   function step(btn, dir) {

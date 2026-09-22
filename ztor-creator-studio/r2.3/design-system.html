@@ -158,6 +158,8 @@
 <link rel="stylesheet" href="ds-components/quick-result-list.css?v=r2.2">
 <!-- 2026-09-16 補掛：detail-overview 的 demo 卡（§4 詳情總覽三欄）一直沒連自己的 CSS，圖鑑抽出時檢查 15 抓到 -->
 <link rel="stylesheet" href="ds-components/detail-overview.css?v=r2.2">
+<!-- 2026-09-22：D305 粉絲視角活動頁改為前台 shop-item 鏡像（fan-shop.css，使用者裁決「預覽 UI 與前台一模一樣」）；fan-event-page.css 已墓碑化 -->
+<link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <link rel="stylesheet" href="ds-doc.css?v=r2.2">
 <style>
@@ -768,6 +770,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#social-links">Social links</a>
     <a class="toc__link toc__link--sub" href="#bundle-preview-card">Bundle preview card</a>
     <a class="toc__link toc__link--sub" href="#section-tabs">Section tabs</a>
+    <a class="toc__link toc__link--sub" href="#fan-event-page">Fan event page</a>
     <div class="toc__subgroup"><span data-en>JS components without their own CSS (9)</span><span data-zh>無自帶 CSS 的 JS 元件（9）</span></div>
     <a class="toc__link toc__link--sub" href="#work-fields">Work fields</a>
     <a class="toc__link toc__link--sub" href="#work-taxonomy">Work taxonomy</a>
@@ -1604,6 +1607,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#lock-sets">Lock sets</a></td><td>🟠</td><td><span data-en>Bundle stock lock by sets: one “locked sets” field plus a framed list of member items (stock · unlocked · locked = N × per set), multi-option members expand to optional per-option pinning</span><span data-zh>組合包鎖定套數：一個「鎖定套數」欄位＋外框清單（商品庫存 · 未鎖定 · 已鎖定＝N × 每套用量），多選項商品可展開逐規格選填分配</span></td><td><code>lock-sets.css</code></td></tr>
           <tr><td><a href="#profile-avatar-row">Profile avatar row</a></td><td>🟡</td><td><span data-en>Avatar + name + “change photo” strip (store settings › storefront)</span><span data-zh>頭像＋名字＋「變更相片」橫條（商店設定 › 店面）</span></td><td><code>profile-avatar-row.css</code></td></tr>
           <tr><td><a href="#bundle-preview-card">Bundle preview card</a></td><td>🟡</td><td><span data-en>Fan-facing bundle preview in the bundle editor’s right column: included list (tickets → items → perks) with clickable tier / date / option chips (unavailable ones struck), struck list price + selling price + “N% off”, sets left, an add-to-cart stand-in that stays disabled until every choice is made</span><span data-zh>組合包編輯器右欄的粉絲端預覽卡：內含清單（票券 → 商品 → 額外權益）＋可點的票種／場次／規格 chip（選不到的劃掉）、劃線原價＋售價＋「省 N%」、剩 N 組、沒選齊就停用的「加入購物車」示意鈕</span></td><td><code>bundle-preview-card.css</code></td></tr>
+          <tr><td><a href="#fan-event-page">Fan event page</a></td><td>🟠</td><td><span data-en>Fan-facing full event page for the publish preview / preview-and-localize screen (D305): a <strong>1:1 mirror of the front-of-house shop-item page</strong> (ticket page and ticket-bundles page views — user ruling 2026-09-22), rendered by js/fan-event-page.js from our flow’s data; markup and class names follow the front end’s DOM, CSS is the front end’s rules scoped under <code>.fep-shop</code></span><span data-zh>發布前預覽／預覽與在地化的粉絲視角活動頁（D305）：<strong>前台 shop-item 頁的 1:1 鏡像</strong>（票券頁與票務商品頁兩視圖——使用者 2026-09-22 裁決），由 js/fan-event-page.js 用我們流程的資料渲染；markup 與 class 名照前台 DOM，CSS 是前台規則加 <code>.fep-shop</code> 前綴</span></td><td><code>fan-shop.css</code></td></tr>
           <tr><td><a href="#section-tabs">Section tabs</a></td><td>🟡</td><td><span data-en>Fixed row of section tabs at the top of a long form: click scrolls smoothly to that section, scrolling highlights the section in view (scrollspy), arrow keys move between tabs; the shell hosts the Q38 underline tabs as a second row of an existing fixed header (dialog head / wizard top)</span><span data-zh>長表單頂端的固定分節分頁：點了平滑捲到那一段、捲動時亮目前那一段（scrollspy）、方向鍵可移；殼承接 Q38 底線分頁、併進既有固定頂列（彈窗標題列／建立流程頂列）當第二排</span></td><td><code>section-tabs.css</code></td></tr>
           <tr><td><a href="#social-links">Social links</a></td><td>🟠</td><td><span data-en>Social link list: one platform per row with URL field, dashed “add” button that opens a platform picker</span><span data-zh>社群連結清單：平台一列一格＋網址欄，虛線「新增」鈕展開平台清單</span></td><td><code>social-links.css</code></td></tr>
           <tr><td><a href="#state-check">State check</a></td><td>🟡</td><td><span data-en>Read-only on/off state row (listed · shown · on sale)</span><span data-zh>唯讀的開／關狀態排（上架 · 顯示 · 開賣）</span></td><td><code>state-check.css</code></td></tr>
@@ -12175,6 +12179,33 @@ Letterpress cover, uncoated stock.</textarea></div>
   </details>
 </section>
 
+<section class="sub" id="fan-event-page">
+  <div class="sub__head"><h3 class="sub__title">4.215 Fan event page</h3><span class="layer layer--organism">🟠 organism</span></div>
+  <p class="sub__desc" data-en>The fan-facing full event page used as the publish-preview / preview-and-localize content for events (D305, 2026-09-22). <strong>2026-09-22 user ruling: “the preview UI must look exactly like these two pages — only the data and mechanics follow our flow”</strong> (ticket page <code>shop-item.html?id=ev-score-live</code>, ticket-bundles page <code>shop-item.html?id=ev-themesong-night&amp;sets=1</code>). So this is no longer a structural re-draw in this site’s tokens: <code>js/fan-event-page.js</code> emits the front end’s DOM and class names (evidence: <code>docs/fe-mirror-2026-09-22/ticket.main.html</code> / <code>bundles.main.html</code>), and <code>ds-components/fan-shop.css</code> is every CSS rule those two pages actually hit, extracted by Playwright and scoped under <code>.fep-shop</code> (its <code>:root</code> tokens included). Only the data changes — name, highlight, description, lineup, notes, ticket delivery, ticket types, bundles (allowed tiers × qty, goods, perks, price / list price) all come from our create-event flow or events-store; purchase buttons are inert; the front end’s “scenario” fab and bottom sheet are not drawn; the three related-event cards are flagged “Not this event”.</p>
+  <p class="sub__desc" data-zh>活動的發布前預覽／預覽與在地化用的粉絲視角完整頁（D305，2026-09-22）。<strong>使用者 2026-09-22 裁決：「預覽 UI 必須做得和這兩個一模一樣，只是資料和機制套用我們的流程與功能」</strong>（票券頁 <code>shop-item.html?id=ev-score-live</code>、票務商品頁 <code>shop-item.html?id=ev-themesong-night&amp;sets=1</code>）。所以它不再是用站上 token 重刻的結構鏡像：<code>js/fan-event-page.js</code> 輸出的是前台的 DOM 與 class 名（證據：<code>docs/fe-mirror-2026-09-22/ticket.main.html</code>／<code>bundles.main.html</code>），<code>ds-components/fan-shop.css</code> 是那兩頁實際命中的全部 CSS 規則（Playwright 抽出、加 <code>.fep-shop</code> 前綴，含前台的 <code>:root</code> token）。只有資料換成我們的——名稱、亮點、描述、卡司、須知、取票方式、票種、組合包（允許票種 × 張數、商品、權益、售價／原價）全部來自建立活動流程或 events-store；購買類按鈕不動作；前台的「情境展示」浮鈕與底部抽屜不畫；相關活動三張卡標「非本活動」。</p>
+  <p class="sub__desc" data-en><strong>Exception (token discipline):</strong> <code>fan-shop.css</code> is a front-end mirror, not a component of this design system — it carries the front end’s raw <code>rgb()</code> values and px type sizes on purpose and must not be referenced by any other Creator Studio page. Its raw-color count is registered by hand in <code>ds-baseline.json</code>; when the front end changes, re-extract and overwrite the file instead of hand-tuning it.</p>
+  <p class="sub__desc" data-zh><strong>例外（token 紀律）：</strong><code>fan-shop.css</code> 是前台鏡像、不是本 design system 的元件——它刻意保留前台的裸 <code>rgb()</code> 與 px 字級，且不得被 Creator Studio 其他頁引用。它的裸色數量已手動登記在 <code>ds-baseline.json</code>；前台改了就重抓覆蓋，不在這裡手改。</p>
+  <p class="field-label" data-en>Rendered preview <span class="field-note">(rendered live by <code>js/fan-event-page.js</code> with a demo model and a stub <code>api</code> — same code path as the two hosts; ticket page view)</span></p>
+  <p class="field-label" data-zh>視覺展示 <span class="field-note">（由 <code>js/fan-event-page.js</code> 用示範 model 與替身 <code>api</code> 當場渲染——與兩個宿主同一條路徑；票券頁視圖）</span></p>
+  <div class="demo" style="display:block;padding:0;overflow:hidden">
+    <div data-ds-fep-demo></div>
+  </div>
+  <details class="sub__spec"><summary>Spec</summary>
+  <div class="sub__spec-body">
+    <p class="field-label">Source</p>
+    <p class="field-text"><code>ds-components/fan-shop.css</code>（<code>.fep-shop</code>，前台鏡像）· markup 由 <code>js/fan-event-page.js</code> 的 <code>window.ztorFanEventPage.render(host, model, api)</code> 產生，經 <a href="#publish-preview">Publish preview</a> 的 <code>previewRender</code>（<code>shell:'fan'</code> 加寬殼）掛進彈窗 · 相依 <a href="#segmented">segmented</a>（視圖切換，畫在 <code>.fep-shop</code> 外）、<a href="#icon">icon</a>（前台 <code>.ds-icon</code> 改包 lucide）、<a href="#publish-preview">publish-preview</a>（可翻譯 slot 外觀 <code>.pp-slot--editable</code>、加寬殼 <code>.pp-dialog--fan</code>、<code>.pp-fan-viewbar</code>）。前台原始 DOM：<code>docs/fe-mirror-2026-09-22/</code>。</p>
+    <p class="field-label">Anatomy（＝前台 shop-item 的 <code>&lt;main&gt;</code>）</p>
+    <p class="field-text"><code>.fep-shop</code> &gt; <code>main</code> &gt; <code>.section.section-bg-page.section--flush-top</code> &gt; <code>.pdp[data-type=event]</code> &gt; <code>.pdp-topbar</code>（手機頂欄，不可點）＋ <code>.pdp__page</code> &gt; <code>.container</code> &gt; <code>.page-head__crumbs</code>（活動 › 類型 › 名稱）＋ <code>.pdp__grid</code> &gt; <code>.pdp-gallery</code>（<code>__strip</code> 縮圖條＋ <code>__stage</code> &gt; <code>__frame</code> 2:3 主圖＋ <code>__thumbs-mobile</code>）＋ <code>.pdp-buy</code>（sticky）&gt; <code>.pdp-buy__meta</code>（<code>.status-tag</code>：狀態／組合包／類型／地區）＋ <code>h1.pdp-buy__title</code>（可翻譯）＋ <code>.pdp-buy__highlight</code>（亮點，本站加的一行）＋ <code>.pdp-host</code>（主辦頭像＋名＋「前往創作者商店 ›」）＋ <code>.pdp-event-meta</code> &gt; <code>__row</code> ×N（日期／時間／時長／場館＋<code>small</code> 地址／語言／優先購／限購）＋ <code>.pdp-event-price</code>（<code>__k</code> 票價｜組合價、<code>__v</code> 區間、<code>__link</code>「N 種票 ›」｜「N 種組合 ›」）＋ <code>.pdp-buy__actions</code>（<code>.btn--mono.btn--lg</code> 購票｜選擇組合＋ <code>.pdp-buy__heart</code>）；<code>section.pdp-details--event</code> &gt; <code>.pdp-details__inner.container</code> &gt; <code>h2.pdp-details__heading</code> 活動介紹＋ <code>p.pdp-details__lead</code>（描述，可翻譯）＋ <code>.pdp-details__cols</code> &gt; <code>__left</code>（<code>.pdp-lineup__list</code> &gt; <code>__chip</code> 卡司、<code>ul.pdp-notices</code> 注意事項）＋ <code>__right</code>（<code>.pdp-details__shipping-block</code> 取票方式、退換票）＋ <code>details.pdp-terms--tiers[open]</code>（票券頁：<code>.pdp-tiers--info</code> &gt; <code>.pdp-tier--info[.is-oos]</code> &gt; <code>__main</code>（<code>__label</code> 可翻譯＋ <code>__meta</code>）＋ <code>__price</code> ＋ <code>.btn--yellow-ghost.btn--sm.pdp-tier__buy</code> 購買｜完售）＋ <code>details.pdp-terms</code> 購票條款（收合）；票務商品頁多 <code>section.pdp-recs--bundles</code> &gt; <code>.pdp-recs__headrow</code>（組合方案＋「只買票 ›」）＋ <code>.pdp-recs__rail</code> &gt; <code>article.pdp-rec-card--bundle</code> ×N（<code>__media</code>＋ <code>.rf-flag</code> 組合包、<code>__cat</code>「票 ＋ 商品 · 較單買省 NT$ X」、<code>__title</code>、<code>ul.__parts</code> &gt; <code>li[data-kind=ticket|goods]</code>、<code>ul.__perks</code>、<code>__note</code>、<code>__price</code> ＋ <code>s</code> 原價、<code>__actions</code>「購買組合」＋購物車）；<code>section.pdp-recs</code> 相關活動 &gt; <code>a.pdp-rec-card</code> ×3（標「非本活動」）；<code>.shop-buybar</code>（手機底部購買列）。</p>
+    <p class="field-label">Behavior</p>
+    <p class="field-text">兩個宿主（<code>create-event.html</code> 發布前、<code>event-detail.html</code> 的「預覽與在地化」）把各自資料整理成同一份 <code>model</code>（結構見 <code>js/fan-event-page.js</code> 檔頭）交給本檔渲染。可翻譯欄位由宿主給 <code>{ key }</code>，本檔以 <code>api.getValue(key)</code> 取當前語系並掛 <code>api.bindEditable</code>；價格由 <code>api.money(priceObj, priceKey)</code> 依所選幣別格式化，再補成前台的「NT$ 1,200」（符號後一個空格）；區間「NT$ 1,200 – 2,800」高價端不重複符號。前台固定文案（票價／日期／場館／購票／組合方案／退換票那句…）走 studio i18n（en／zh）、跟介面語言；內容欄跟預覽語系；預覽語系是英文時 <code>.fep-shop[lang=en]</code> 整頁換 Satoshi／Inter（前台 <code>html[lang=en]</code> 的同一條規則）。票券頁／票務商品頁切換＝ <code>.pp-fan-viewbar</code> 的 Segmented（CS 控件、畫在頁外）與頁內「只買票 ›」；「N 種票 ›」捲到票種清單、「N 種組合 ›」捲到組合方案。購買類按鈕 <code>data-pp-inert</code>（不動作、不可聚焦）。相關活動用 <code>relatedFromStore(excludeId)</code> 從 events-store 撈三場別的活動（宿主呼叫、本檔不主動讀 store），每張標「非本活動」。</p>
+    <p class="field-label">Token usage</p>
+    <p class="field-text">全部是前台自己的 token（<code>--bg-primary</code>／<code>--text-*</code>／<code>--border-*</code>／<code>--yellow-500</code>／<code>--font-cjk-display</code>／<code>--fs-*</code>／<code>--space-*</code>／<code>--radius-*</code>／<code>--glass-*</code>／<code>--lg-*</code>），定義在 <code>fan-shop.css</code> 最前面的 <code>.fep-shop { … }</code>，與本站 <code>_tokens.css</code> 不混用；裸 <code>rgb()</code>／px 是前台鏡像的必要例外（見上）。</p>
+    <p class="field-label">Consumers</p>
+    <p class="field-text"><code>create-event.html</code>（發布前，<code>previewRender</code> 呼叫 <code>buildFanModel()</code>）、<code>event-detail.html</code>（「預覽與在地化」，<code>previewRender</code> 呼叫 <code>locModel()</code>）。<span data-en>Tombstone: </span><span data-zh>墓碑：</span><code>ds-components/fan-event-page.css</code>（<code>.fep</code> 重刻版，2026-09-22 同日退場）。</p>
+  </div>
+  </details>
+</section>
+
 <!-- ══ 無自帶 CSS 的 JS 元件（2026-08-11 起也進這一頁）════════════════════════════
      這七支元件不擁有任何 CSS，全部建在既有元件的 class 之上。過去只登記在
      design-system.md，理由是「沒有樣式可展示」；但使用者檢視元件只看這一頁，
@@ -12378,8 +12409,10 @@ Letterpress cover, uncoated stock.</textarea></div>
   <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
   <p class="sub__desc" data-en><strong>D223 (2026-08-24) retired Lang switch</strong> (<code>partials/lang-switch.js</code>, D220's page-top content-language tabs) and moved translation review to <strong>after</strong> the publish click, right before the real submit: the four create/publish flows (create-product, create-event, create-project, publish-work) open this modal, the creator checks the rendered content in each language — or edits every field × language at once in a table — and only then confirms. Shell is the canonical <code>.payout-modal</code> / <code>.payout-dialog--xwide</code> (STYLE-DECISIONS Q27 — the fan-tier settings screen dropped into an overlay is the precedent for "a whole screen inside a dialog"). Language switching is the primary view ("which translation am I looking at") so it uses <a href="#tabs">Tabs</a>; Preview/List is a control-layer toggle on the same data, so it uses <a href="#segmented">Segmented</a> (Q8's split, applied to two different jobs in one component).</p>
   <p class="sub__desc" data-zh><strong>D223（2026-08-24）撤除 Lang switch</strong>（<code>partials/lang-switch.js</code>，D220 的表單頂部內容語言分頁），把翻譯檢視挪到<strong>按下發布之後、真正送出之前</strong>：四個建立／發布流程（create-product、create-event、create-project、publish-work）打開這一層，創作者先看渲染後的各語系內容，或切到表格一次改完「每個欄位 × 每個語系」，確認才真的送出。殼固定用 <code>.payout-modal</code>／<code>.payout-dialog--xwide</code>（STYLE-DECISIONS Q27——粉絲分級設定整畫面裝進浮層是「把一整個畫面塞進彈窗」的先例）。語言切換是「現在看哪一份」的主要檢視，所以用 <a href="#tabs">Tabs</a>；預覽／列表是同一份資料的控件層切換，所以用 <a href="#segmented">Segmented</a>（Q8 的分工，這裡同一個元件裡各司其職）。</p>
-  <p class="field-label" data-en>Rendered preview <span class="field-note">(live — click to open the real modal, mounted by the module itself)</span></p>
-  <p class="field-label" data-zh>視覺展示 <span class="field-note">（真的由模組當場掛載，點下去開真的彈窗）</span></p>
+  <p class="sub__desc" data-en><strong>2026-09-22 (D305 / D306):</strong> the preview pane for events is now the full fan-facing page (<a href="#fan-event-page">Fan event page</a>, two views when the event has bundles), a five-currency <a href="#segmented">Segmented</a> sits beside the language tabs (two independent axes — language drives copy, currency drives prices; a control-layer toggle per Q8: it changes which currency the same price data is viewed in, unlike the language tabs which pick a different translation; five 3-letter codes fit one row, so no dropdown), and the list view becomes two tables — the translation table plus a <strong>price table</strong> (rows = ticket types / bundles, columns = five currencies; the base-currency column is read-only with a “Base” badge — and a lock when bookyay set the price — every other cell is a number input that shows the converted value until you type, then carries an “Overridden” badge and a “Reset to converted” ghost button). Price drafts live in the module like translations (Back to editing keeps them); changing the base price wipes that row’s overrides and reconverts (§7.15, mirroring §7.4 translation regeneration). <code>mode:'save'</code> (event detail › Preview &amp; localization) swaps the title to “Preview &amp; localization” and the primary to “Save”; <code>onConfirm</code> receives <code>{ translations, prices }</code>. Conversion and formatting are delegated to <code>js/events-store.js</code> (fixed demo rates, ASSUMPTIONS PG-035 / UIA-165). create-product / create-project / publish-work keep calling it exactly as before — no <code>currencies</code> means no currency axis, no <code>prices</code> means only the translation table.</p>
+  <p class="sub__desc" data-zh><strong>2026-09-22（D305／D306）：</strong>活動的預覽檢視改成粉絲視角完整頁（<a href="#fan-event-page">Fan event page</a>，有組合包時兩個視圖），語言分頁旁多一組五幣別 <a href="#segmented">Segmented</a>（兩軸獨立——語言決定文案、幣別決定價格；照 Q8 它是控件層 toggle：切的是「同一份價格用哪個幣別看」，語言分頁切的是「看哪一份翻譯」；五個三字碼並排剛好一列，不用下拉），列表檢視由一張表改兩張——翻譯表＋<strong>價格表</strong>（列＝票種／組合包、欄＝五幣別；基準幣別欄唯讀並標「基準」、bookyay 決定的票價再多一把鎖；其餘每格是數字輸入框，沒改時顯示換算值、一輸入就標「已覆寫」並露出「重設為換算值」ghost 鈕）。價格草稿與翻譯草稿一樣住在模組裡（返回編輯不丟）；基準價一改，該列覆寫整個清空重算（§7.15，比照 §7.4 翻譯重生成）。<code>mode:'save'</code>（活動詳情 › 預覽與在地化）把標題換成「預覽與在地化」、主鈕換成「儲存」；<code>onConfirm</code> 收到 <code>{ translations, prices }</code>。換算與格式化轉問 <code>js/events-store.js</code>（固定示範匯率，ASSUMPTIONS PG-035／UIA-165）。create-product／create-project／publish-work 的呼叫一字不改——沒給 <code>currencies</code> 就沒有幣別軸、沒給 <code>prices</code> 就只有翻譯表。</p>
+  <p class="field-label" data-en>Rendered preview <span class="field-note">(live — click to open the real modal, mounted by the module itself; the demo is an event with two ticket types, one bundle and an overridden USD price)</span></p>
+  <p class="field-label" data-zh>視覺展示 <span class="field-note">（真的由模組當場掛載，點下去開真的彈窗；示範是一場有兩種票、一組組合包、USD 已覆寫的活動）</span></p>
   <div class="demo">
     <button class="btn btn--primary" type="button" id="ds-pp-demo-btn" data-en>Open publish preview (demo)</button>
     <button class="btn btn--primary" type="button" id="ds-pp-demo-btn-zh" data-zh>開發布前預覽（示範）</button>
@@ -13689,6 +13722,8 @@ Letterpress cover, uncoated stock.</textarea></div>
 <script src="partials/manual-entry-modal.js?v=r2.2"></script>
 <script src="partials/source-upload-modal.js?v=r2.2"></script>
 <script src="partials/fee-exception-modal.js?v=r2.2"></script>
+<script src="js/events-store.js?v=r2.2"></script>   <!-- 2026-09-22：§4.130 demo 的幣別換算（D306）讀它的 fx／priceIn -->
+<script src="js/fan-event-page.js?v=r2.2"></script>  <!-- 2026-09-22：§4.130 demo 的預覽檢視＝§4.215 Fan event page（D305） -->
 <script src="partials/publish-preview.js?v=r2.2"></script>
 <script src="partials/login-lang-prompt.js?v=r2.2"></script>
 <script src="js/components.js?v=r2.2"></script>
@@ -13729,17 +13764,75 @@ Letterpress cover, uncoated stock.</textarea></div>
     });
   }
 
-  /* §4.130 Publish preview demo：呼叫式 API，用兩顆假欄位（沒有真的表單）示範
-     語言分頁＋預覽/列表切換＋草稿保留；沒有 previewClone，走內建 generic 卡。 */
-  var ppDemoName = { value: 'Summer Tour Hoodie' };
-  var ppDemoDesc = { value: 'Limited run, screen-printed in Tainan.' };
+  /* §4.130 Publish preview demo：呼叫式 API，用假欄位（沒有真的表單）示範語言分頁＋預覽/列表
+     切換＋草稿保留。2026-09-22（D305／D306）改成活動示範：previewRender＝§4.215 Fan event page、
+     兩個視圖（有組合包）、五幣別軸、價格表（VIP 的 USD 已覆寫、可重設）。 */
+  var ppDemoName = { value: 'NICK Symphonic Night — Taipei' };
+  var ppDemoHl = { value: 'Encore: one unreleased song' };
+  var ppDemoDesc = { value: 'The catalogue rearranged for a full orchestra. One night, seated only.' };
+  var ppDemoTierA = { value: 'Lower level' }, ppDemoTierB = { value: 'Upper level' };
+  var ppDemoPrices = [
+    { key: 'tier:a', label: 'Lower level', groupKey: 'pp.price.tiers', groupFallback: 'Ticket types', priceObj: { base: 'TWD', amount: 2800, override: { USD: 90 } }, locked: false },
+    { key: 'tier:b', label: 'Upper level', groupKey: 'pp.price.tiers', groupFallback: 'Ticket types', priceObj: { base: 'TWD', amount: 1800, override: {} }, locked: false },
+    { key: 'bundle:x', label: '一樓票 ＋ 交響夜場刊', groupKey: 'pp.price.bundles', groupFallback: 'Ticket bundles', priceObj: { base: 'TWD', amount: 3200, override: {} }, locked: false }
+  ];
+  /* §4.215／§4.130 共用的示範 model（前台鏡像版的 model 形狀，見 js/fan-event-page.js 檔頭） */
+  function ppDemoModel() {
+    return {
+      status: { labelKey: 'fep.status.on-sale', fallback: 'On sale', tone: 'badge--success' },
+      typeLabel: 'Concert', region: 'Taipei, Taiwan', keyvisual: 'images/projects/nick-lwh.jpg', gallery: ['images/projects/nick-lwh.jpg'], video: true,
+      name: { key: 'name' }, highlight: { key: 'highlight' }, organizer: 'NICKTHEREAL 周湯豪', organizerAvatar: 'images/ip/nick-portrait.jpg',
+      date: '2026-12-05', time: '19:30 – 21:30', duration: '2 h', venue: 'Taipei Music Center', address: '台北市南港區市民大道八段 99 號', language: 'Traditional Chinese',
+      priority: null, limit: 'Up to 4 per order', desc: { key: 'desc' }, lineup: [{ name: 'NICKTHEREAL 周湯豪', role: null }],
+      notes: [], bring: [], includes: [], pickup: 'E-ticket (QR)', entryNote: null, terms: null,
+      tiers: [
+        { key: 'a', name: { key: 'tier-a' }, note: '', priceObj: ppDemoPrices[0].priceObj, priceKey: 'tier:a', soldOut: false },
+        { key: 'b', name: { key: 'tier-b' }, note: 'Programme included', priceObj: ppDemoPrices[1].priceObj, priceKey: 'tier:b', soldOut: true }
+      ],
+      bundles: [{ name: '一樓票 ＋ 交響夜場刊', priceObj: ppDemoPrices[2].priceObj, priceKey: 'bundle:x',
+        listPriceObj: { base: 'TWD', amount: 3400, override: {} },
+        tickets: { names: ['Lower level'], qty: 1 }, goods: [{ name: 'NICK Symphonic Night 場刊', spec: false, img: 'images/products/tee-black.webp' }],
+        img: 'images/products/tee-black.webp', perks: ['Signed programme lottery'], desc: '', note: '' }],
+      related: window.ztorFanEventPage && window.ztorFanEventPage.relatedFromStore ? window.ztorFanEventPage.relatedFromStore(null, 3) : true
+    };
+  }
+  /* §4.215 就地渲染：替身 api（固定語系／幣別、不開 inline 編輯），同一條渲染路徑 */
+  var fepHost = document.querySelector('[data-ds-fep-demo]');
+  if (fepHost && window.ztorFanEventPage) {
+    var fepVals = { name: ppDemoName.value, highlight: ppDemoHl.value, desc: ppDemoDesc.value, 'tier-a': ppDemoTierA.value, 'tier-b': ppDemoTierB.value };
+    var S = window.ztorEvents;
+    var fepApi = {
+      lang: 'en', isDefault: true,
+      getValue: function (k) { return fepVals[k] || ''; },
+      bindEditable: function (el, k) { el.textContent = fepVals[k] || ''; el.classList.toggle('is-empty', !fepVals[k]); },
+      currency: 'TWD',
+      priceIn: function (po) { return S ? S.priceIn(po, 'TWD') : (po && po.amount) || 0; },
+      money: function (po) { return S ? S.fmtMoney('TWD', S.priceIn(po, 'TWD')) : 'NT$' + ((po && po.amount) || 0); },
+      fmt: function (n) { return S ? S.fmtMoney('TWD', n) : 'NT$' + n; },
+      view: 'ticket', views: ['ticket', 'bundles'], setView: function (v) { fepApi.view = v; window.ztorFanEventPage.render(fepHost, ppDemoModel(), fepApi); if (window.applyI18n) window.applyI18n(fepHost); }
+    };
+    window.ztorFanEventPage.render(fepHost, ppDemoModel(), fepApi);
+  }
   function openPpDemo() {
     if (!window.ztorPublishPreview) return;
     window.ztorPublishPreview.open({
       fields: [
         { key: 'name', el: ppDemoName, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
-        { key: 'desc', el: ppDemoDesc, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
+        { key: 'highlight', el: ppDemoHl, kind: 'input', labelKey: 'pp.field.highlight', labelFallback: 'Highlight' },
+        { key: 'desc', el: ppDemoDesc, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' },
+        { key: 'tier-a', el: ppDemoTierA, kind: 'input', labelKey: null, labelFallback: 'Ticket type name', group: 'Ticket types' },
+        { key: 'tier-b', el: ppDemoTierB, kind: 'input', labelKey: null, labelFallback: 'Ticket type name', group: 'Ticket types' }
       ],
+      prices: ppDemoPrices,
+      currencies: window.ztorEvents ? window.ztorEvents.CURRENCIES.slice() : ['USD', 'TWD', 'HKD', 'SGD', 'JPY'],
+      baseCurrency: 'TWD',
+      views: [{ key: 'ticket', labelKey: 'fep.view.ticket' }, { key: 'bundles', labelKey: 'fep.view.bundles' }],
+      mode: 'publish',
+      shell: 'fan',
+      previewRender: function (host, api) {
+        if (!window.ztorFanEventPage) return;
+        window.ztorFanEventPage.render(host, ppDemoModel(), api);
+      },
       onConfirm: function () {}
     });
   }
