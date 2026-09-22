@@ -27,7 +27,7 @@
  *   比照 §7.4 翻譯）。列表檢視多一張價格表（列＝票種／組合包，欄＝五幣別；基準幣別欄唯讀並
  *   標「基準」；其餘欄可輸入、有覆寫時標示並可「重設為換算值」；bookyay 鎖定列基準欄標鎖）。
  * · 視圖：宿主給 views（票券頁／票務商品頁）時，previewRender 的 api 帶 view／setView，
- *   切換的控件由宿主的渲染器自己畫（fan-event-page.js 畫在頁裡）。
+ *   切換的控件由宿主的渲染器自己畫（fan-event-page.js 畫在 .fep-shop 外面的 .pp-fan-viewbar）。
  * · mode：'publish'（預設，主鈕「確認發布」）｜'save'（詳情頁再開，主鈕「儲存」）；onConfirm
  *   同一個回呼，收到 `{ translations, prices }`（prices＝priceKey → 只含有覆寫的幣別）。
  *
@@ -49,6 +49,7 @@
  *     prices: [{ key:'tier:vip', label:'VIP', labelKey, groupKey, priceObj:{ base, amount, override }, locked:false }],
  *     views: [{ key:'ticket', labelKey:'fep.view.ticket' }, { key:'bundles', labelKey:'fep.view.bundles' }],
  *     mode: 'publish' | 'save',
+ *     shell: 'fan',                        // 選填（2026-09-22）：粉絲視角活動頁用的加寬殼（.pp-dialog--fan，1376px）
  *     onConfirm: function (result) { ... }  // 必填：使用者按主鈕之後的行為；result 見上
  *   });
  *
@@ -428,7 +429,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       var tr = document.createElement('tr');
       var tdLabel = document.createElement('td');
       tdLabel.className = 'ztor-table__feature';
-      tdLabel.textContent = T(f.labelKey, f.labelFallback || f.key);
+      tdLabel.textContent = f.labelKey ? T(f.labelKey, f.labelFallback || f.key) : (f.labelFallback || f.key);
       tr.appendChild(tdLabel);
       LANGS.forEach(function (l) {
         var td = document.createElement('td');
@@ -643,6 +644,13 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     var backBtn = modalEl.querySelector('[data-pp-close][data-i18n]');
     backBtn.setAttribute('data-i18n', isSave ? 'pp.back-save' : 'pp.back');
     backBtn.textContent = isSave ? T('pp.back-save', 'Cancel') : T('pp.back', 'Back to editing');
+
+    /* 殼層寬度（2026-09-22 前台鏡像）：`shell:'fan'` 把彈窗放寬到前台 .container（1280＋48×2）能完整攤開的
+       1376px、預覽槽去掉內距——粉絲視角活動頁是前台 1440 全寬雙欄版型的鏡像，1180 的 xwide 會讓它縮成
+       同比例的小一號（ASSUMPTIONS UIA-167）。其他消費者（create-product／create-project／publish-work）不帶
+       這個選項，殼維持 xwide 不變。 */
+    modalEl.querySelector('.pp-dialog').classList.toggle('pp-dialog--fan', opts.shell === 'fan');
+    modalEl.querySelector('[data-pp-preview]').classList.toggle('pp-preview-slot--fan', opts.shell === 'fan');
 
     buildTabs();
     buildCurrencySeg();

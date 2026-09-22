@@ -66,7 +66,7 @@
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2"><!-- partials/publish-preview.js 的通用預覽節點用 .preview-card，check 15 補抓（2026-09-11） -->
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/fan-event-page.css?v=r2.2"><!-- D305：發布前預覽的粉絲視角活動頁 mock -->
+<link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- D305：發布前預覽的粉絲視角活動頁（前台 shop-item 鏡像，2026-09-22 使用者裁決；只給 js/fan-event-page.js 用） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* create-event 專屬 layout hooks，非跨頁重用，比照 e-shop/events 留頁內。上緣留白改用 shared.css 的 .wizard__body--form 修飾類（2026-07-09），對齊募資創建（測試版）create-campaign 的 72px。
@@ -1075,9 +1075,13 @@
              三組之間的距離由 .stack--tight 持有（Q103：容器持有節奏，不由子元素各自加 margin）。
              1. 第三方門票（D302）：預設關；開了才長出「領取與入場方式」多行必填（≤250 字元，超過擋發布）；
                 開著時第 2 組整組收起——沒有 ztor 的票就沒有動態 QR（互斥為推導，ASSUMPTIONS UIA-162）。
-             2. 動態 QR（D303）：預設開；開了才問「更新間隔」（分鐘、必填、預設 5、原型 1–60）。
+             2. 動態 QR（D303，2026-09-22 D308 修訂）：ztor 目前只發靜態 QR——自建活動的開關顯示為關且不可切換
+                （.switch--locked ＋ aria-disabled，與 bookyay 鎖定同一套樣式），hint 只講「目前只提供靜態 QR」，更新間隔不出現。
+                bookyay 帶入且 bookyay 端開著的：開關顯示為開但不可切換、標題後加括號註記 [data-ce-dq-bky]（帶入時轉為靜態）、
+                更新間隔照 bookyay 的值顯示且不可改（bkyApply）。
              3. 可轉贈（D303）：預設關；開了長出兩個子開關（限制轉贈次數 → 次數上限；設定轉贈期限 → 統一截止日／開演前 N 天）。
-             整個堆疊在順豐寄送／到店自取時收起（data-ship-when 由 applyShipMode 統一管；必填由各開關決定，見 applyEticketSettings()）。 -->
+             整個堆疊在順豐寄送／到店自取時收起（data-ship-when 由 applyShipMode 統一管；必填由各開關決定，見 applyEticketSettings()）。
+             bookyay 帶入者（D308 決定一）：三組開關與全部子欄位一律鎖定、值照 bookyay 顯示；發布前檢核跳過這組（tryPublish）。 -->
         <div class="stack stack--tight" data-ship-when="eticket" data-ship-eticket hidden>
           <div class="control-group" data-ship-tp>
             <div class="control-row">
@@ -1099,13 +1103,13 @@
           <div class="control-group" data-ship-dq>
             <div class="control-row">
               <div>
-                <div class="control-row__main" data-i18n="ce.ship.dq">Dynamic QR</div>
-                <div class="control-row__sub" data-i18n="ce.ship.dq.hint">The ticket's QR refreshes every few minutes, so screenshots can't be passed around.</div>
+                <div class="control-row__main"><span data-i18n="ce.ship.dq">Dynamic QR</span> <span class="text-sub" data-ce-dq-bky data-i18n="ce.ship.dq.bky" hidden>(bookyay's dynamic QR not applied here)</span></div>
+                <div class="control-row__sub" data-i18n="ce.ship.dq.hint">Only static QR for now.</div>
               </div>
-              <button type="button" class="switch switch--on" data-ce-dq role="switch" aria-checked="true"
+              <button type="button" class="switch switch--locked" data-ce-dq role="switch" aria-checked="false" aria-disabled="true"
                       aria-label="Dynamic QR" data-i18n-aria-label="ce.ship.dq"></button>
             </div>
-            <div class="control-group__body">
+            <div class="control-group__body" hidden>
               <div class="field">
                 <label class="field__label" for="ce-ship-dq-min"><span data-i18n="ce.ship.dq.min">Refresh every</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
                 <span class="amount-field amount-field--suffix amount-field--readonly zstep">
@@ -1542,7 +1546,7 @@
 <script src="partials/field-more.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <script src="partials/publish-preview.js?v=r2.2"></script>
-<script src="js/fan-event-page.js?v=r2.2"></script>   <!-- D305：粉絲視角活動頁 mock 渲染（與 event-detail 共用） -->
+<script src="js/fan-event-page.js?v=r2.2"></script>   <!-- D305：粉絲視角活動頁渲染（前台鏡像，與 event-detail 共用） -->
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script>   <!-- 2026-08-13：「再辦一場」(?from=) 要讀來源活動 -->
 <!-- 套組銷售（步驟 5）掛共用套組編輯器；它從 products-store 取既有商品當候選 -->
@@ -1687,6 +1691,8 @@
     /* 動態 QR 與可轉贈（D303）：Review 列摘要用；第三方門票開著時動態 QR 不成立 */
     const dqOn = ship === "eticket" && !tpOn && document.querySelector("[data-ce-dq]")?.getAttribute("aria-checked") === "true";
     const dqMin = (document.querySelector("[data-ce=ship-dq-min]")?.value || "").trim();
+    /* D308：bookyay 端開著動態 QR 的帶入活動——註記是否亮著看 DOM（bkyOn 宣告在後面，初始化順序下不能直接讀） */
+    const dqBky = dqOn && document.querySelector("[data-ce-dq-bky]")?.hidden === false;
     const tfOn = ship === "eticket" && document.querySelector("[data-ce-tf]")?.getAttribute("aria-checked") === "true";
     const tfLimit = tfOn && document.querySelector("[data-ce-tf-limit]")?.getAttribute("aria-checked") === "true";
     const tfMax = (document.querySelector("[data-ce=ship-tf-max]")?.value || "").trim();
@@ -1695,7 +1701,7 @@
     const tfDate = (document.querySelector("[data-ce=ship-tf-date]")?.value || "").trim();
     const tfDays = (document.querySelector("[data-ce=ship-tf-days]")?.value || "").trim();
     return { typeName, name, highlight, date, venue, city, start, tiers, posterFilled, sessions, ship, tpOn, tpNote,
-             dqOn, dqMin, tfOn, tfLimit, tfMax, tfDl, tfDlMode, tfDate, tfDays };
+             dqOn, dqMin, dqBky, tfOn, tfLimit, tfMax, tfDl, tfDlMode, tfDate, tfDays };
   }
 
   function setRev(key, value, phKey, phFallback) {
@@ -1740,7 +1746,9 @@
     /* 電子門票的三組附屬設定各自接在方式名後面（D303）：「電子門票 · 第三方門票 · 動態 QR 每 5 分鐘 · 可轉贈（最多 1 次、開演前 1 天止）」 */
     const shipParts = [T(shipKey, "E-ticket")];
     if (s.tpOn) shipParts.push(T("ce.ship.tp", "Third-party ticket"));
-    if (s.dqOn) shipParts.push(T("ce.rev.dq", "Dynamic QR every {n} min").replace("{n}", s.dqMin || "—"));
+    /* D308：bookyay 端開著動態 QR 的帶入活動，Review 也帶同一句括號註記——ztor 實際發的是靜態 QR */
+    if (s.dqOn) shipParts.push(T("ce.rev.dq", "Dynamic QR every {n} min").replace("{n}", s.dqMin || "—")
+      + (s.dqBky ? " " + T("ce.ship.dq.bky", "(bookyay's dynamic QR not applied here)") : ""));
     if (s.tfOn) {
       const det = [];
       if (s.tfLimit) det.push(T("ce.rev.tf.max", "up to {n} times").replace("{n}", s.tfMax || "—"));
@@ -2005,7 +2013,9 @@
     const stepOf = isWP() ? { film: 2, room: 2, wpstart: 3 }
                           : { name: 2, desc: 2, venue: 3, date: 3, "sale-from-d": 7, "ship-fee": 7, "ship-spot": 7, "ship-tp-note": 7,
                             "ship-dq-min": 7, "ship-tf-max": 7, "ship-tf-date": 7 };
-    const reqEls = activeRequired();
+    /* bookyay 帶入者（2026-09-22 D308 決定五）：取票方式／電子門票整組的值來自 bookyay、不可改，檢核沒有意義——
+       這組欄位（第三方門票說明、更新間隔、次數上限、截止日）從必填集拿掉，250 字元上限也不擋。 */
+    const reqEls = activeRequired().filter(el => !(bkyOn && el.closest("[data-ship-eticket]")));
     let firstBad = null;
     reqEls.forEach(el => { if (!validateField(el) && !firstBad) firstBad = el; });
     if (firstBad) {
@@ -2018,7 +2028,7 @@
       return;
     }
     /* 第三方門票的說明超過 250 字元（D302）：不擋輸入（讓人看得到超了多少），發布前擋下並回步驟 7。 */
-    if (!isWP() && tpOver()) {
+    if (!isWP() && !bkyOn && tpOver()) {
       step = 7; render();
       tpNoteEl()?.focus();
       alert(T("ce.publish-blocked-tp", "The collect & entry note is over 250 characters. Shorten it before publishing."));
@@ -2125,6 +2135,7 @@
       currencies: S ? S.CURRENCIES.slice() : ["USD", "TWD", "HKD", "SGD", "JPY"],
       baseCurrency: types.some(t => t.priceBase) ? types.find(t => t.priceBase).priceBase.currency : CE_BASE_CURRENCY,
       mode: "publish",
+      shell: "fan",   /* 2026-09-22：粉絲視角活動頁是前台全寬版型的鏡像，殼放寬（見 publish-preview.js） */
       previewRender: (host, api) => {
         if (!window.ztorFanEventPage) return;
         window.ztorFanEventPage.render(host, buildFanModel({ includes, bring, notes, termFields, bundles, st }), api);
@@ -2151,7 +2162,9 @@
     const limit = cap.mode !== "none" && cap.order ? T("fep.limit.order", "Up to {n} per order").replace("{n}", cap.order) : null;
     const buy = eventRules.buy || {};
     const priority = buy.mode === "tier" || buy.mode === "both" ? { window: T("fep.priority.tier", "Top fans first"), state: "" } : null;
-    const kv = document.querySelector('#ce-gallery [data-gallery-tile].is-filled img');
+    const kvImgs = Array.from(document.querySelectorAll('#ce-gallery [data-gallery-tile].is-filled img')).map(i => i.getAttribute("src")).filter(Boolean);
+    const kv = kvImgs[0] || "";
+    const hasVideo = !!document.querySelector('[data-asset="video"].is-filled');
     const includes = ctx.includes.map(f => ({ key: f.key, tag: f.tag }));
     const bring = ctx.bring.map(f => ({ key: f.key }));
     const notes = ctx.notes.map(f => ({ key: f.key }));
@@ -2161,32 +2174,43 @@
       priceObj: { base: ty.priceBase ? ty.priceBase.currency : CE_BASE_CURRENCY, amount: ty.priceBase ? Number(ty.priceBase.amount) : Number(ty.price) || 0, override: ty.override || {} },
       priceKey: "tier:" + ty.id, soldOut: false
     }));
+    /* 組合包（D296 形狀 tickets:{ tierIds, qty }）→ 前台組合卡要的成員列：票券＝允許票種名單 × 張數、
+       商品＝名稱＋有無規格（規格「下單時選」）＋圖；封面＝第一件商品圖（原型的 cover 只記有沒有、沒有素材）。 */
+    const tixOf = b => (window.ztorEvents && window.ztorEvents.bundleTickets) ? window.ztorEvents.bundleTickets(b) : { tierIds: [], qty: 1 };
     const bundles = ctx.bundles.map(b => {
-      const contents = [];
-      const tl = bundleEd.ticketLine(b); if (tl) contents.push({ icon: "ticket", text: tl });
-      (b.items || []).forEach(it => {
-        const opts = it.variant === "multiple" && Array.isArray(it.options) && it.options.length ? it.options.map(o => String(o.name || o).split(/\s*\/\s*/)[0]).join(", ") : "";
-        contents.push({ icon: "package", text: it.name + (opts ? " · " + T("cpp.bd.sp.spec.multi", "{opts} · fan picks").replace("{opts}", opts) : "") });
+      const tk = tixOf(b);
+      /* tierIds 是 bundle-editor 的票券項目 id（savedTiers 的每場每票種一筆），要先回到票種（types）才拿得到名稱 */
+      const names = tk.tierIds.map(id => {
+        const inst = typeof savedTiers === "function" ? savedTiers().find(x => x.id === id) : null;
+        const ty = inst ? types.find(x => x.id === inst.type) : types.find(x => x.id === id);
+        return ty ? ((ty.name || "").trim() || T("ce.tier.untitled", "Untitled tier")) : id;
       });
+      const goods = (b.items || []).map(it => ({
+        name: it.name, img: it.img || "",
+        spec: it.variant === "multiple" && Array.isArray(it.options) && it.options.length > 0
+      }));
       return {
         name: (b.name || "").trim() || bundleEd.suggestName(b),
         priceObj: { base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.finalPrice(b)), override: b.override || {} },
         listPriceObj: bundleEd.listPrice(b) > bundleEd.finalPrice(b) ? { base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.listPrice(b)), override: {} } : null,
-        priceKey: "bundle:" + b.id, contents, perks: (b.perks || []).filter(Boolean), desc: (b.desc || "").trim()
+        priceKey: "bundle:" + b.id,
+        tickets: names.length ? { names, qty: Number(tk.qty) || 1 } : null,
+        goods, img: (goods[0] && goods[0].img) || "",
+        perks: (b.perks || []).filter(Boolean), desc: (b.desc || "").trim(), note: ""
       };
     });
+    const persona = (function () {
+      const id = typeof window.ztorPersonaId === "function" ? window.ztorPersonaId() : "default";
+      return (window.ztorCreator && window.ztorCreator.list ? window.ztorCreator.list.find(x => x.handle === id) : null) || null;
+    })();
     return {
       status: { labelKey: "fep.status.soon", fallback: "Coming soon", tone: "badge--info" },
       typeLabel: st.typeName,
       region: cSel ? (cSel.options[cSel.selectedIndex]?.textContent || "").trim() : "",
-      keyvisual: kv ? kv.getAttribute("src") : "",
+      keyvisual: kv, gallery: kvImgs, video: hasVideo,
       name: { key: "name" }, highlight: { key: "highlight" },
-      /* 主辦＝創作者本人（原型無主辦欄，取目前 persona 的名冊名） */
-      organizer: (function () {
-        const id = typeof window.ztorPersonaId === "function" ? window.ztorPersonaId() : "default";
-        const c = window.ztorCreator && window.ztorCreator.list ? window.ztorCreator.list.find(x => x.handle === id) : null;
-        return c ? c.name : "Gary Lin";
-      })(),
+      /* 主辦＝創作者本人（原型無主辦欄，取目前 persona 的名冊名＋頭像） */
+      organizer: persona ? persona.name : "Gary Lin", organizerAvatar: persona ? (persona.avatar || "") : "",
       date: dateLine, time: timeLine, duration, doors: first.doors || "",
       venue: st.venue, address: (document.querySelector('[data-ce="addr"]')?.value || "").trim(),
       language: lSel ? (lSel.options[lSel.selectedIndex]?.textContent || "").trim() : "",
@@ -2195,7 +2219,9 @@
       lineup: lineup.map(p => ({ name: p.name, role: null })),
       notes, bring, includes,
       pickup: T(pickupKey, st.ship), entryNote: st.tpOn && st.tpNote ? { key: "tp-note" } : null,
-      refund: null, terms, tiers, bundles, related: true
+      /* 退換票：表單沒有此欄，交給渲染器用平台固定文案（UIA-167）；相關活動：從 events-store 撈三場別的活動、標「非本活動」 */
+      terms, tiers, bundles,
+      related: window.ztorFanEventPage && window.ztorFanEventPage.relatedFromStore ? window.ztorFanEventPage.relatedFromStore(null, 3) : true
     };
   }
   function doPublish() {
@@ -5306,7 +5332,9 @@
     const box = document.querySelector("[data-ship-eticket]");
     return !!box && !box.hidden;
   }
-  /* 動態 QR：預設開；開了才問更新間隔（分鐘、必填、原型 1–60）。第三方門票開著時整組不在，必填也不在。 */
+  /* 動態 QR：開了才問更新間隔（分鐘、必填、原型 1–60）。第三方門票開著時整組不在，必填也不在。
+     2026-09-22 D308：ztor 只發靜態 QR——自建活動的開關在 markup 就是關＋.switch--locked（點擊被下面的共用 handler 擋掉），
+     所以這裡永遠算「關」；只有 bkyApply() 會把它設成開（照 bookyay 原設定顯示、仍鎖）。 */
   function dqIsOn() { return eticketVisible() && !tpIsOn() && swOn("[data-ce-dq]"); }
   function applyDynamicQr() {
     const sw = document.querySelector("[data-ce-dq]");
@@ -5580,8 +5608,8 @@
     /* 取票方式整組鎖住（.is-source-locked 會擋掉點擊）：那是 bookyay 那邊設定好的，這一側只顯示。
        入場方式那一組已於 2026-08-10 撤除，對應的 lockSeg 一併移除。 */
     lockSeg("ship", rec.ship);
-    /* 第三方門票（D302）：bookyay 表單本來就有這一欄；帶入時比照取票方式預填並鎖住
-       （是否預填與鎖定上游待確認，原型暫比照）。沒帶這一欄的來源就維持關。 */
+    /* 第三方門票（D302；2026-09-22 D308 決定一拍板）：bookyay 表單本來就有這一欄，帶入時預填並鎖住——
+       開關與說明欄都不可改，要改回 bookyay 改。沒帶這一欄的來源就維持關。 */
     (function () {
       const sw = document.querySelector("[data-ce-tp]");
       const ta = tpNoteEl();
@@ -5594,8 +5622,10 @@
       ta.value = on ? (rec.thirdPartyNote || "") : "";
       lockField(ta, true);
     })();
-    /* 動態 QR 與可轉贈（D303）：bookyay 表單本來就有這兩組，帶入時同樣預填並鎖住（是否預填與鎖定上游待確認，
-       原型暫比照取票方式）。開關鎖 .switch--locked、數字欄與日期欄 lockField、期限二選一鎖 .is-source-locked。 */
+    /* 動態 QR 與可轉贈（D303；2026-09-22 D308 決定一、三拍板）：bookyay 表單本來就有這兩組，帶入時預填並整組鎖住——
+       開關鎖 .switch--locked、數字欄與日期欄 lockField、期限二選一鎖 .is-source-locked，全部子欄位都不可改。
+       動態 QR：ztor 只發靜態 QR，bookyay 端開著的帶入後實際轉為靜態——開關照 bookyay 原設定顯示為開（鎖），
+       標題後亮出括號註記 [data-ce-dq-bky]，更新間隔照 bookyay 的值顯示（鎖）；bookyay 端關著的：關、無註記。 */
     (function () {
       const setSw = (sel, on) => {
         const sw = document.querySelector(sel);
@@ -5613,7 +5643,11 @@
         el.closest(".zstep")?.querySelectorAll(".zstep__btn").forEach(b => { b.disabled = true; });
       };
       const e = rec.ship === "eticket";
-      setSw("[data-ce-dq]", e && rec.dynamicQr !== false);
+      /* bookyay 沒明說的視為關（D308：ztor 端沒有動態 QR，不再預設開） */
+      const dqOn = e && rec.dynamicQr === true;
+      setSw("[data-ce-dq]", dqOn);
+      const dqNote = document.querySelector("[data-ce-dq-bky]");
+      if (dqNote) dqNote.hidden = !dqOn;
       setNum("ship-dq-min", rec.qrRefreshMin);
       setSw("[data-ce-tf]", e && !!rec.transferable);
       setSw("[data-ce-tf-limit]", rec.transferLimit !== false);
@@ -5906,12 +5940,12 @@
       set("ship-tp-note", src.publish.thirdPartyNote || "");
       applyThirdParty();
     }
-    /* 動態 QR 與可轉贈（D303）：同樣照來源活動帶回來（可改）；沒記的維持預設（動態 QR 開、可轉贈關） */
+    /* 可轉贈（D303）：同樣照來源活動帶回來（可改）；沒記的維持預設（可轉贈關）。
+       動態 QR 刻意不帶（2026-09-22 D308）：再辦的一場是 ztor 自建活動，ztor 只發靜態 QR，開關維持關且不可切換——
+       就算來源是 bookyay 帶入且動態 QR 開著，複製出來的這一場也不會有。 */
     if (src.publish && src.publish.pickup === "eticket") {
       const pub = src.publish;
       const putSw = (sel, on) => { const sw = document.querySelector(sel); if (sw) { sw.setAttribute("aria-checked", on ? "true" : "false"); sw.classList.toggle("switch--on", on); } };
-      putSw("[data-ce-dq]", pub.dynamicQr !== false);
-      if (pub.qrRefreshMin != null) set("ship-dq-min", pub.qrRefreshMin);
       putSw("[data-ce-tf]", !!pub.transferable);
       putSw("[data-ce-tf-limit]", pub.transferLimit !== false);
       if (pub.transferMax != null) set("ship-tf-max", pub.transferMax);

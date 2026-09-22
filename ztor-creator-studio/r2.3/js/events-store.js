@@ -258,10 +258,10 @@
       status: 'scheduled',
       images: { keyvisual: 'images/projects/nick-wln.jpg', banner: '', gallery: [] },
       video: false,
-      /* 動態 QR 與可轉贈（2026-09-22 · D303）：這一筆是已排程，詳情頁發布設定可編——動態 QR 每 10 分鐘、
-         可轉贈最多 2 次、期限用「開演前 N 天」（3 天）。 */
+      /* 動態 QR 與可轉贈（2026-09-22 · D303）：這一筆是已排程，詳情頁發布設定可編——可轉贈最多 2 次、
+         期限用「開演前 N 天」（3 天）。動態 QR 關（D308：ztor 目前只發靜態 QR，自建活動一律關且不可開）。 */
       publish: { onsale: 'scheduled', pickup: 'eticket', visibility: 'public',
-                 dynamicQr: true, qrRefreshMin: 10,
+                 dynamicQr: false,
                  transferable: true, transferLimit: true, transferMax: 2, transferDeadline: 'days', transferDays: 3 }
     },
     {
@@ -368,10 +368,10 @@
          `to` 留空＝只設開賣、賣到開演（見 ASSUMPTIONS SALE-001）；整個 `sale` 缺席＝
          `publish.onsale: 'now'`（發布後直接開賣），兩者不是同一件事，不要互相補值。
          這一筆示範「開賣＋停售」都設的完整區間。 */
-      /* 動態 QR 與可轉贈（2026-09-22 · D303）：這一筆售票中，詳情頁的發布設定唯讀——動態 QR 每 5 分鐘、
-         可轉贈不限次數、期限用「統一截止日」。 */
+      /* 動態 QR 與可轉贈（2026-09-22 · D303）：這一筆售票中，詳情頁的發布設定唯讀——可轉贈不限次數、
+         期限用「統一截止日」。動態 QR 關（D308：ztor 目前只發靜態 QR，自建活動一律關且不可開）。 */
       publish: { onsale: 'scheduled', pickup: 'eticket', visibility: 'public',
-                 dynamicQr: true, qrRefreshMin: 5,
+                 dynamicQr: false,
                  transferable: true, transferLimit: false, transferDeadline: 'date', transferDate: '2026-09-10' },
       sale: { from: '2026-08-01 10:00', to: '2026-09-11 23:59' },
       sold: 118,
@@ -443,7 +443,13 @@
       revenue: 0,
       status: 'scheduled',
       images: { keyvisual: 'images/hero-event.jpg', banner: '', gallery: [] },
-      video: false
+      video: false,
+      /* 發布設定（2026-09-22 · D308）：bookyay 帶入者的取票方式／電子門票整組在詳情頁也鎖（值來自 bookyay、要改回 bookyay 改）。
+         這一筆刻意讓 bookyay 端的動態 QR 開著（每 5 分鐘）——ztor 只發靜態 QR，帶入後開關顯示為開但鎖住、
+         標題後亮「（已關閉原設定的動態 QR）」、更新間隔照 bookyay 的值顯示；可轉贈最多 1 次、開演前 1 天止，同樣鎖。 */
+      publish: { onsale: 'scheduled', pickup: 'eticket', visibility: 'public',
+                 dynamicQr: true, qrRefreshMin: 5,
+                 transferable: true, transferLimit: true, transferMax: 1, transferDeadline: 'days', transferDays: 1 }
     },
     {
       id: 'realive-r2-watchparty',
