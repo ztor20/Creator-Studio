@@ -1,0 +1,209 @@
+/* ----------------------------------------------------------------
+   Publish stage — 發布前預覽確認的全頁版（D310，2026-09-22）
+
+   D223 起「發布前看一次」是一層浮層（payout-modal 殼），D305 又把浮層內容
+   擴成前台 1:1 的粉絲頁＋幣別軸＋兩張表。D310 裁決把它從浮層改成**全頁畫面**：
+   多步驟流程＝流程的最後一步（建立活動第 8 步），發布後再開＝一個獨立全頁
+   （event-localization.html）。本檔是那個畫面的版型。
+
+   結構：
+     .pstage                      兩欄 grid（主區｜側欄）
+       .pstage__main              粉絲視角前台預覽（js/fan-event-page.js 畫進來）
+         .pstage-edit             浮動「編輯」鈕（hover 某個預覽區塊才出現，跳回對應步驟）
+       .pstage__side              sticky 側欄
+         .pstage__side-inner      三段（語言／幣別／發布前檢核或未儲存的變更）可捲動
+           .pstage-sec            一段
+             .pstage-sec__title   段標題（群組小字標配方，Q123 補句）
+             .pstage-list         列清單
+               .pstage-row        一列＝名稱＋狀態（點選即切換預覽軸）
+         .pstage__foot            側欄底部主動作（發布／儲存）＋次動作
+
+   為什麼側欄不是 .wizard-split__rail：那支軌是「摘要卡」用的（320px、卡片式、
+   只讀），這裡的側欄是**控制台**——三段清單各自可點、底部帶主動作，且在沒有
+   wizard 的獨立頁也要成立。sticky 的位移靠 `--pstage-top`，wizard 宿主把它設成
+   頂列高度、獨立頁用預設值，不寫死數字。
+
+   翻譯表與價格表的滑出面板用站上既有 `.drawer`（`--wide` 變體，D310 指定「右側
+   滑出」）；表格本身沿用 publish-preview.css 的 `.pp-table`／`.pp-cell` 家族——
+   同一張表只是換了殼，不重寫一份。**消費頁要一併連 `publish-preview.css`。**
+
+   消費頁：create-event.html（第 8 步「預覽與發布」）、event-localization.html
+   （活動詳情的「預覽與在地化」全頁版）。
+   ---------------------------------------------------------------- */
+
+.pstage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--pstage-side-w, 320px);
+  gap: var(--sp-24);
+  align-items: start;
+}
+.pstage__main {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  /* 浮動編輯鈕以本欄為定位基準 */
+  position: relative;
+}
+.pstage__side {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+  position: sticky;
+  top: var(--pstage-top, var(--sp-24));
+  max-height: calc(100vh - var(--pstage-top, 24px) - var(--sp-32));
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-16);
+}
+.pstage__side-inner {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-20);
+}
+.pstage__foot {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  padding-top: var(--sp-16);
+  border-top: 1px solid var(--border);
+}
+.pstage__foot .btn { width: 100%; }
+
+/* ── 側欄的一段 ───────────────────────────────────────────────── */
+.pstage-sec { display: flex; flex-direction: column; gap: var(--sp-8); }
+/* 段標題＝站上「群組小字標」既有配方（Q123 補句：display 字型＋小型大寫＋字距＋muted） */
+.pstage-sec__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.pstage-sec__foot { display: flex; flex-direction: column; gap: var(--sp-6); }
+.pstage-sec__foot .btn { width: 100%; }
+
+.pstage-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* ── 可點的一列（語系／幣別）──────────────────────────────────── */
+.pstage-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  width: 100%;
+  padding: var(--sp-8) var(--sp-10);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: var(--fs-13);
+  text-align: left;
+  cursor: pointer;
+}
+.pstage-row:hover { background: var(--accent); }
+/* 已選中＝品牌橘 tint（Q8：nav／篩選這類小控件的持續選取用 tint） */
+.pstage-row--active { background: var(--selected-surface); color: var(--selected-ink); }
+.pstage-row--active:hover { background: var(--selected-surface-hover); }
+.pstage-row__name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pstage-row__state {
+  flex: none;
+  font-size: var(--fs-11);
+  color: var(--foreground-muted);
+  font-variant-numeric: tabular-nums;
+}
+.pstage-row--active .pstage-row__state { color: inherit; }
+/* 幣別代碼等寬，五列上下對齊 */
+.pstage-row__name--code { font-family: var(--font-mono); font-size: var(--fs-12); }
+
+/* ── 發布前檢核（沿用 .readiness 的列與 banner，只補「可點跳回」的按鈕）── */
+.pstage-check .readiness__item { align-items: flex-start; }
+.pstage-linkbtn {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pstage-linkbtn:hover { text-decoration: underline; }
+
+/* ── 未儲存的變更（全頁版的第三段）────────────────────────────── */
+.pstage-sum { display: flex; flex-direction: column; gap: var(--sp-6); }
+.pstage-sum__row { display: flex; align-items: baseline; gap: var(--sp-8); font-size: var(--fs-13); }
+.pstage-sum__k { flex: 1; min-width: 0; color: var(--foreground-muted); }
+.pstage-sum__v { flex: none; font-variant-numeric: tabular-nums; }
+.pstage-sum__none { margin: 0; font-size: var(--fs-13); color: var(--foreground-muted); }
+
+/* ── 預覽區塊的「編輯」入口 ───────────────────────────────────────
+   浮動一顆鈕、不插進前台鏡像的 DOM：那份 markup 是前台的 1:1 複製，塞東西進去
+   就不再是鏡像；可翻譯欄位還是 contenteditable，按鈕塞在裡面會被當成內容編輯。 */
+.pstage-edit {
+  position: absolute;
+  z-index: 5;
+  transform: translate(-100%, 0);
+}
+.pstage-edit[hidden] { display: none; }
+/* hover 中的區塊：一條品牌橘的外框，說明「這一塊是一個可編輯的單位」 */
+.pstage-zone--hot {
+  outline: 1px solid var(--selected-ink);
+  outline-offset: var(--sp-6);
+  border-radius: var(--radius-sm);
+}
+
+/* 預覽裡的價格可點（開價格表）：只加游標與底線提示，不改前台的字級與顏色 */
+.pstage__main [data-fep-price-key] { cursor: pointer; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+
+/* ── 抽屜裡的表 ───────────────────────────────────────────────── */
+.pstage-drawer__hint { margin: 0 0 var(--sp-12); }
+/* 翻譯表是「欄位 × 四語系」五欄：`.pp-cell-field` 的 min-width 200 是浮層版（一次只看一個
+   語系分頁）的尺度，五欄並排時第一欄會被擠成一個字一行、最後一欄還溢出面板。抽屜裡改成
+   固定表格版面，五欄平分面板寬，輸入框跟著欄寬。 */
+[data-stage-drawer="trans"] .pp-table { table-layout: fixed; }
+[data-stage-drawer="trans"] .pp-cell-field { min-width: 0; }
+
+/* 價格表是「項目 × 五幣別」六欄：輸入框用站上預設寬度（120）時整張表要 898px，連 --wide 都裝不下，
+   而且覆寫過的那幾欄還被底下「已覆寫」徽章＋「重設為換算值」那顆鈕撐得更寬（浮層版只有三欄可見、
+   撐得開）。這裡把輸入框收到 96、徽章與鈕改成上下疊（不是並排），六欄就攤得進面板、不必橫捲。 */
+[data-stage-drawer="price"] .pp-cell--price { max-width: 112px; }
+[data-stage-drawer="price"] .pp-price-input { width: 96px; min-width: 0; }
+[data-stage-drawer="price"] .pp-price-meta {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-2);
+}
+[data-stage-drawer="price"] .pp-price-reset { font-size: var(--fs-11); padding-inline: 0; text-align: right; }
+
+/* ── 1023 以下：側欄不再是軌 ──────────────────────────────────── */
+@media (max-width: 1023.98px) {
+  .pstage { grid-template-columns: minmax(0, 1fr); }
+  .pstage__side {
+    grid-column: 1;
+    grid-row: auto;
+    position: static;
+    max-height: none;
+  }
+  .pstage__main { grid-row: auto; }
+}

@@ -4589,6 +4589,38 @@
     'pp.field.marketing':   { en: 'Marketing consent',                zh: '行銷同意' },
     'pp.field.entry-note':  { en: 'How to collect & enter',           zh: '領取與入場方式' },
     'pp.field.tier-name':   { en: 'Ticket type name',                 zh: '票種名稱' },
+    /* ─── js/publish-stage.js — D310（2026-09-22）發布前預覽確認的**全頁**版 ───
+       浮層（pp.*）在活動側退場：建立活動第 8 步「預覽與發布」與活動詳情的「預覽與在地化」
+       全頁版（event-localization.html）都走這一組。兩張表的表格文案沿用 pp.table.*／pp.price.*，
+       不另開一份；這裡只新增全頁版才有的側欄三段、狀態徽章與主鈕。 */
+    'pstage.sec.lang':      { en: 'Language',                         zh: '語言' },
+    'pstage.sec.currency':  { en: 'Currency',                         zh: '幣別' },
+    'pstage.sec.checks':    { en: 'Pre-publish checks',               zh: '發布前檢核' },
+    'pstage.sec.changes':   { en: 'Unsaved changes',                  zh: '未儲存的變更' },
+    'pstage.lang.default':  { en: 'Default',                          zh: '預設' },
+    'pstage.lang.auto':     { en: 'Auto-translated',                  zh: '自動翻譯' },
+    'pstage.lang.edited':   { en: '{n} edited',                       zh: '已修改 {n} 欄' },
+    'pstage.lang.reset':    { en: 'Restore auto-translation',         zh: '還原自動翻譯' },
+    'pstage.lang.table':    { en: 'Field-by-field',                   zh: '逐欄位對照' },
+    'pstage.cur.base':      { en: 'Base',                             zh: '基準' },
+    'pstage.cur.converted': { en: 'Converted',                        zh: '換算' },
+    'pstage.cur.overridden':{ en: '{n} overridden',                   zh: '已覆寫 {n} 項' },
+    'pstage.cur.table':     { en: 'Price table',                      zh: '價格表' },
+    'pstage.changes.none':  { en: 'Nothing changed yet',              zh: '還沒有變更' },
+    'pstage.changes.fields':{ en: 'Text fields',                      zh: '文案欄位' },
+    'pstage.changes.prices':{ en: 'Price overrides',                  zh: '覆寫的價格' },
+    'pstage.drawer.trans':  { en: 'Translations',                     zh: '翻譯表' },
+    'pstage.drawer.price':  { en: 'Prices',                           zh: '價格表' },
+    'pstage.drawer.trans-hint': { en: 'The default language is read-only — edit it in the form.', zh: '預設語言那一欄是來源，要改回原本的欄位改。' },
+    'pstage.edit':          { en: 'Edit',                             zh: '編輯' },
+    'pstage.publish':       { en: 'Publish event',                    zh: '發布活動' },
+    'pstage.save':          { en: 'Save',                             zh: '儲存' },
+    'pstage.back':          { en: 'Back',                             zh: '上一步' },
+    'pstage.cancel':        { en: 'Cancel',                           zh: '取消' },
+    /* event-localization.html（活動詳情「預覽與在地化」的全頁版，5.1.6.3 §2.13） */
+    'evloc.title':          { en: 'Preview & localization',           zh: '預覽與在地化' },
+    'evloc.back':           { en: 'Back to event',                    zh: '返回活動' },
+    'evloc.notfound':       { en: 'Event not found.',                 zh: '找不到這場活動。' },
     /* 粉絲視角活動頁 mock（js/fan-event-page.js）：靜態標籤跟介面語言走，內容跟預覽語系走 */
     'fep.view.ticket':      { en: 'Ticket page',                      zh: '票券頁' },
     'fep.view.bundles':     { en: 'Ticket bundles page',              zh: '票務商品頁' },
@@ -4734,7 +4766,14 @@
     'ce.step.details':      { en: 'Details',                          zh: '細節' },
     'ce.step.venue':        { en: 'Venue & Time',                     zh: '場地與時間' },
     'ce.step.tickets':      { en: 'Tickets',                          zh: '票種' },
+    /* D310（2026-09-22）：第 8 步「確認（Review）」改名「預覽與發布」——這一步本身就是發布前
+       預覽確認畫面。舊鍵 ce.step.review 留給 create-event-legacy.html。 */
     'ce.step.review':       { en: 'Review',                           zh: '確認' },
+    'ce.step.preview':      { en: 'Preview & publish',                zh: '預覽與發布' },
+    /* 墓碑（2026-09-22 · D310）：第 8 步的各步摘要卡（F10）退場，只服務該卡的 10 把 key 一併刪除——
+       ce.rev.ship／ce.rev.dq／ce.rev.tf.max／.date／.days／.wrap／.sep（取票方式摘要句）、
+       ce.rev.bundles／ce.rev.bundlesn（組合包列）、ce.ph.nobundles（組合包佔位）。摘要的工作
+       改由預覽本身承擔，檢核與步驟名的 key（ce.qc.*／ce.ph.*／ce.rev.* 其餘）仍服務 create-event-legacy。 */
     /* Step 1 · Type */
     'ce.s1.h1':             { en: 'What kind of event?',              zh: '要辦哪種活動？' },
     'ce.s1.sub':            { en: 'This determines what settings you will see.', zh: '類型決定你接下來會看到哪些設定。' },
@@ -4767,7 +4806,6 @@
     'ce.ship.tp.note':      { en: 'How to collect & enter',           zh: '領取與入場方式' },
     'ce.ship.tp.note.ph':   { en: 'e.g. Show your KKTIX e-ticket at Gate 3 to get in', zh: '例：憑 KKTIX 電子票至 3 號門驗票入場' },
     'ce.ship.tp.count':     { en: '{n} / 250',                        zh: '{n} / 250' },
-    'ce.rev.ship':          { en: 'Ticket delivery',                  zh: '取票方式' },
     'ce.publish-blocked-tp': { en: 'The collect & entry note is over 250 characters. Shorten it before publishing.', zh: '領取與入場方式超過 250 字元，請縮短後再發布。' },
     /* 動態 QR 與可轉贈（2026-09-22 · D303 · 5.1.6.1 F24）：電子門票下另外兩組「開關列＋揭示區」。
        hint 只講後果（QR 會換新、票可以給別人、關掉會怎樣），不重述標籤；單位字沿用 amount-field 的後綴位。 */
@@ -4793,12 +4831,6 @@
     'ce.ship.tf.date':      { en: 'Deadline',                         zh: '截止日' },
     'ce.ship.tf.days':      { en: 'Days',                             zh: '天數' },
     'ce.unit.days':         { en: 'days',                             zh: '天' },
-    'ce.rev.dq':            { en: 'Dynamic QR every {n} min',         zh: '動態 QR 每 {n} 分鐘' },
-    'ce.rev.tf.max':        { en: 'up to {n} times',                  zh: '最多 {n} 次' },
-    'ce.rev.tf.date':       { en: 'until {d}',                        zh: '{d} 止' },
-    'ce.rev.tf.days':       { en: 'until {n} days before showtime',   zh: '開演前 {n} 天止' },
-    'ce.rev.tf.wrap':       { en: ' ({x})',                           zh: '（{x}）' },
-    'ce.rev.tf.sep':        { en: ', ',                               zh: '、' },
     'ce.desc':              { en: 'Description',                      zh: '描述' },
     'ce.desc.ph':           { en: 'What will fans experience? Make it vivid.', zh: '粉絲會體驗到什麼？寫得生動一點。' },
     'ce.lineup':            { en: 'Lineup / performers',              zh: '表演陣容' },
@@ -4923,10 +4955,7 @@
     'ce.rev.venue':         { en: 'Venue & time',                     zh: '場地與時間' },
     'ce.rev.tickets':       { en: 'Tickets',                          zh: '票種' },
     /* 步驟 8 摘要補一列組合包（2026-09-18，5.1.6.1 §4.6 F20／D292） */
-    'ce.rev.bundles':       { en: 'Bundles',                          zh: '組合包' },
     /* 2026-09-21（D296）：票券成員＝允許票種 × 每組張數，Review 改報每組幾張（張數不同時「1／2」並列） */
-    'ce.rev.bundlesn':      { en: '{n} bundles · {m} tickets per set', zh: '{n} 組 · 每組 {m} 張' },
-    'ce.ph.nobundles':      { en: 'None',                             zh: '無' },
     'ce.rev.edit':          { en: 'Edit →',                           zh: '編輯 →' },
     'ce.ph.notsel':         { en: 'Not selected',                     zh: '尚未選擇' },
     'ce.ph.notentered':     { en: 'Not entered',                      zh: '尚未填寫' },

@@ -390,7 +390,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 157 支；主 class 前 5 個）
+## 元件（ds-components/，共 158 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -426,7 +426,7 @@
 - `detail-rail.css` — .detail-grid, .detail-main, .detail-grid--full, .detail-cards, .form-section--outlined ｜ Detail Rail — 詳情頁「主欄 + 右側常駐 meta 欄」版型殼
 - `detail-sheet.css` — .detail-sheet, .detail-sheet__panel, .detail-sheet__head, .detail-sheet__back, .detail-sheet__title ｜ detail-sheet — 清單點進細節時的覆蓋層（2026-07-28 使用者裁示）
 - `donut-mix.css` — .donut-mix, .donut-mix__ringwrap, .donut-mix__ring, .donut-mix__track, .donut-mix__seg ｜ donut-mix — 一個總數拆成幾塊的圓環（2026-08-31 建）
-- `drawer.css` — .drawer, .drawer__scrim, .drawer__panel, .drawer__head, .drawer__title
+- `drawer.css` — .drawer, .drawer__scrim, .drawer__panel, .drawer--wide, .drawer__head
 - `dropdown-menu.css` — .dropdown, .dropdown__menu, .dropdown__item, .dropdown--left, .dropdown__item--toggle ｜ Ztor — Dropdown menu (action menu)
 - `earnings-feed.css` — .earnings-feed, .earnings-feed__item, .earnings-feed__name, .earnings-feed__amount, .earnings-feed__amount--neg ｜ earnings-feed.css · 近期收入：一筆一個框
 - `embed-modal.css` — .embed-modal, .embed-modal__sheet, .embed-modal__head, .embed-modal__title, .embed-modal__close ｜ Embed modal · full-viewport popup that hosts ano
@@ -491,6 +491,7 @@
 - `progress-timeline.css` — .ptl, .ptl__node, .ptl__node--foot, .ptl__node--done, .ptl__date ｜ Progress timeline · 交付時間軸（規格 5.1.2.2 §2.2.10，D19
 - `project-list.css` — .project-list, .project-list__head, .project-list__row, .project-list__status, .project-list__image ｜ Project list — borderless table list for the Pro
 - `publish-preview.css` — .pp-toolbar, .pp-lang-tabs, .pp-view-toggle, .pp-banner, .pp-preview-slot ｜ Publish preview · 發布前預覽確認層（D223，2026-08-24）
+- `publish-stage.css` — .pstage, .pstage__main, .pstage__side, .pstage__side-inner, .pstage__foot
 - `quick-result-list.css` — .quick-result, .quick-result__head, .quick-result__row, .quick-result__name, .quick-result__num ｜ Quick result list · 批次生成結果的唯讀預覽（一列一項）
 - `radio-card.css` — .segmented, .radio-cards, .radio-cards--icon, .radio-card__icon, .radio-card__text ｜ radio-card.css · 並排可選卡（radio 卡）
 - `radio-list.css` — .radio-list, .radio-list__item, .radio-list__trigger, .radio-list__dot, .radio-list__item--active ｜ radio-list.css · 輕量單選列（1-of-N，資料選擇）

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 預覽與在地化（全頁版）· 5.1.6.3 §2.13 · D310（2026-09-22）
+     D305 把活動詳情的「預覽與在地化」做成一層浮層；D310 裁決發布前預覽確認一律是全頁畫面，
+     發布後再開也一樣——所以這一頁存在：它是建立活動第 8 步那個畫面的「已發布」版本，
+     同一支 js/publish-stage.js、同一份粉絲視角預覽（js/fan-event-page.js），差別只有三處：
+       · 資料來源是 events-store（已發布的活動），不是建立流程的表單
+       · 側欄第三段換成「未儲存的變更」（沒有發布前檢核——活動已經在架上）
+       · 主鈕是「儲存」，存完回活動詳情；不改上架狀態
+     入口在 event-detail.html 的 [data-ed-localize]（頁首與設定分頁子集各一顆）。 -->
+<title>Preview &amp; localization · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2"><!-- 票券頁／票務商品頁的視圖切換（畫在預覽外） -->
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表／價格表的右側滑出面板（.drawer--wide） -->
+<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 兩張表沿用 .pp-table／.pp-cell 家族 -->
+<link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- D305：粉絲視角活動頁（前台 shop-item 鏡像；只給 js/fan-event-page.js 用） -->
+<link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- D310：全頁版型（主區預覽＋右側側欄） -->
+<link rel="stylesheet" href="shared.css?v=r2.2">
+</head>
+<body>
+<div class="wizard">
+  <div class="wizard__sheet wizard__sheet--sectioned">
+    <!-- 頁首：返回活動詳情的脈絡（§2.13「保有返回本頁的脈絡」）＋這場活動是哪一場 -->
+    <header class="wizard__top">
+      <div class="wizard__top-bar">
+        <div class="wizard__top-lead">
+          <a class="wizard__back" id="evloc-back" href="event-detail.html" aria-label="Back" data-i18n-aria-label="evloc.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
+          <div class="wizard__top-titlewrap">
+            <span class="wizard__top-title" data-i18n="evloc.title">Preview &amp; localization</span>
+            <span class="wizard__top-sub" id="evloc-subtitle">—</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="wizard__body wizard__body--stage">
+      <div data-evloc-stage></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script><!-- 本頁沒有導航殼；載它是為了 window.ztorCreator（預覽的主辦＝目前 persona），mount() 找不到 #sidebar 會自己退出 -->
+<script src="js/events-store.js?v=r2.2"></script>
+<script src="js/fan-event-page.js?v=r2.2"></script>
+<script src="js/publish-stage.js?v=r2.2"></script>
+<script src="js/toast.js?v=r2.2"></script>
+<script>
+(function () {
+  const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb || k;
+  const S = window.ztorEvents;
+  const qs = new URLSearchParams(location.search);
+  const id = qs.get('id') || '';
+  const ev = S ? S.get(id) : null;
+  const host = document.querySelector('[data-evloc-stage]');
+  const backHref = 'event-detail.html' + (id ? '?id=' + encodeURIComponent(id) : '');
+  document.getElementById('evloc-back').href = backHref;
+
+  if (!ev) {
+    host.innerHTML = '<div class="empty-card"><p class="empty-card__title" data-i18n="evloc.notfound">Event not found.</p></div>';
+    if (window.applyI18n) window.applyI18n(host);
+    return;
+  }
+  document.getElementById('evloc-subtitle').textContent = ev.name || '';
+  document.title = (ev.name ? ev.name + ' · ' : '') + 'Preview & localization · Ztor Creator Studio';
+
+  const edTiers = (ev.tiers || []).map(t => Object.assign({}, t));
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const isZh = () => (window.ztorLang ? String(window.ztorLang.get() || '') : '').indexOf('zh') === 0;
+  function fmtDate(d) {
+    if (!d) return '';
+    const p = String(d).split('-'); if (p.length !== 3) return d;
+    return isZh() ? `${p[0]}/${Number(p[1])}/${Number(p[2])}` : `${MON[Number(p[1]) - 1]} ${Number(p[2])}, ${p[0]}`;
+  }
+  const hhmmToMin = s => { const m = /^(\d{1,2}):(\d{2})$/.exec(String(s == null ? '' : s).trim()); return m ? +m[1] * 60 + +m[2] : null; };
+  const edSessions = (ev.sessions && ev.sessions.length) ? ev.sessions : [{ date: ev.date, start: ev.start, end: ev.end, doors: ev.doors }];
+
+  /* ── 備料（與 event-detail 的 §2.13 子集同一份定義，D310 起住在本頁）────────────
+     fields＝5.1.6.1 §1 的可翻譯欄位中本頁有資料的（名稱、亮點、描述、領取與入場方式、
+       票種名稱；表演陣容只有人名沒有角色標籤、活動須知類與條款示範資料沒有欄位 → 跳過）
+     prices＝每個票種的票價＋含本活動票券的組合包售價 × 五幣別；基準＝ev.currency（沒寫＝預設幣別），
+       bookyay 帶入者基準 HKD 且鎖（§7.15） */
+  function locFields() {
+    const f = [
+      { key: 'name', el: { value: ev.name || '' }, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
+      { key: 'highlight', el: { value: ev.highlight || '' }, kind: 'input', labelKey: 'pp.field.highlight', labelFallback: 'Highlight' },
+      { key: 'desc', el: { value: ev.desc || '' }, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
+    ];
+    if (ev.publish && ev.publish.thirdParty && ev.publish.thirdPartyNote) {
+      f.push({ key: 'tp-note', el: { value: ev.publish.thirdPartyNote }, kind: 'textarea', labelKey: 'pp.field.entry-note', labelFallback: 'How to collect & enter' });
+    }
+    const g = T('pp.price.tiers', 'Ticket types');
+    edTiers.forEach(t => f.push({ key: 'tier-' + t.id, el: { value: t.name || '' }, kind: 'input', labelKey: null, labelFallback: T('pp.field.tier-name', 'Ticket type name'), group: g }));
+    return f;
+  }
+  function locPrices() {
+    const out = [];
+    edTiers.forEach(t => out.push({ key: 'tier:' + t.id, label: t.name || T('ce.tier.untitled', 'Untitled tier'),
+      groupKey: 'pp.price.tiers', groupFallback: 'Ticket types', priceObj: S.priceOf(ev, t), locked: ev.source === 'bookyay' }));
+    (ev.bundles || []).forEach(b => out.push({ key: 'bundle:' + b.id, label: b.name,
+      groupKey: 'pp.price.bundles', groupFallback: 'Ticket bundles', priceObj: S.bundlePriceOf(ev, b), locked: false }));
+    return out;
+  }
+  function locModel() {
+    const first = edSessions[0] || {};
+    const start = first.start || ev.start || '', end = first.end || ev.end || '';
+    let duration = '';
+    const a = hhmmToMin(start), b = hhmmToMin(end);
+    if (a != null && b != null && b > a) { const d = b - a; duration = ((d >= 60 ? Math.floor(d / 60) + ' h' : '') + (d % 60 ? ' ' + (d % 60) + ' min' : '')).trim(); }
+    const pickupKey = { eticket: 'fep.pickup.eticket', sf: 'fep.pickup.sf', pickup: 'fep.pickup.pickup', store: 'fep.pickup.pickup' }[(ev.publish || {}).pickup] || 'fep.pickup.eticket';
+    const statusKey = { 'on-sale': ['fep.status.on-sale', 'On sale', 'badge--success'], live: ['fep.status.on-sale', 'On sale', 'badge--success'],
+      scheduled: ['fep.status.soon', 'Coming soon', 'badge--info'], ended: ['fep.status.ended', 'Ended', 'badge--neutral'],
+      cancelled: ['fep.status.cancelled', 'Cancelled', 'badge--error'] }[ev.status] || ['fep.status.soon', 'Coming soon', 'badge--info'];
+    const tiers = edTiers.map(t => ({ key: t.id, name: { key: 'tier-' + t.id }, note: '', priceObj: S.priceOf(ev, t), priceKey: 'tier:' + t.id,
+      soldOut: Number(t.qty) > 0 && Number(t.sold) >= Number(t.qty) }));
+    /* 組合包（D296 形狀）→ 前台組合卡的成員列：票券＝允許票種名單 × 張數、商品＝名稱＋圖（示範資料沒有規格欄）；
+       封面＝第一件商品圖。原價＝票券小計＋商品小計（bundle-detail 同一算法：活動資料不跨檔查 products-store）。 */
+    const bundles = (ev.bundles || []).map(b => {
+      const tk = S.bundleTickets(b);
+      const names = tk.tierIds.map(x => { const t = edTiers.find(y => y.id === x); return t ? t.name : x; });
+      const goods = (b.products || []).map(x => ({ name: (x && x.name) || String(x), img: (x && x.img) || '', spec: false }));
+      const tixUnit = tk.tierIds.length ? Math.min.apply(null, tk.tierIds.map(x => { const t = edTiers.find(y => y.id === x); return t ? Number(t.price) || 0 : 0; })) : 0;
+      const listAmt = tixUnit * tk.qty + (b.products || []).reduce((n, x) => n + (Number(x && x.price) || 0), 0);
+      return { name: b.name, priceObj: S.bundlePriceOf(ev, b), priceKey: 'bundle:' + b.id,
+        listPriceObj: listAmt > Number(b.price) ? { base: S.bundlePriceOf(ev, b).base, amount: listAmt, override: {} } : null,
+        tickets: names.length ? { names, qty: Number(tk.qty) || 1 } : null,
+        goods, img: (goods[0] && goods[0].img) || '',
+        perks: b.perks || [], desc: b.desc || '', note: '' };
+    });
+    const persona = (window.ztorCreator && window.ztorCreator.list && window.ztorCreator.list.find(c => c.handle === (typeof window.ztorPersonaId === 'function' ? window.ztorPersonaId() : 'default'))) || null;
+    return {
+      status: { labelKey: statusKey[0], fallback: statusKey[1], tone: statusKey[2] },
+      typeLabel: T(ev.typeLabelKey, ev.type), region: ev.city || '', keyvisual: (ev.images && ev.images.keyvisual) || '',
+      gallery: [(ev.images && ev.images.keyvisual) || ''].concat((ev.images && ev.images.gallery) || []).filter(Boolean), video: !!ev.video,
+      name: { key: 'name' }, highlight: ev.highlight ? { key: 'highlight' } : null,
+      organizer: persona ? persona.name : '', organizerAvatar: persona ? (persona.avatar || '') : '',
+      date: fmtDate(first.date || ev.date), time: start ? (end ? start + ' – ' + end : start) : '', duration, doors: first.doors || ev.doors || '',
+      venue: ev.venue || '', address: ev.address || '', language: '',
+      priority: null, limit: null,
+      desc: { key: 'desc' },
+      lineup: (ev.lineup || []).map(n => ({ name: n, role: null })),
+      notes: [], bring: [], includes: [],
+      pickup: T(pickupKey, 'E-ticket'), entryNote: ev.publish && ev.publish.thirdParty && ev.publish.thirdPartyNote ? { key: 'tp-note' } : null,
+      /* 退換票：交給渲染器用平台固定文案（UIA-167）；相關活動：同創作者的其他活動、標「非本活動」 */
+      terms: null, tiers, bundles,
+      related: window.ztorFanEventPage && window.ztorFanEventPage.relatedFromStore ? window.ztorFanEventPage.relatedFromStore(ev.id, 3) : true
+    };
+  }
+
+  const hasBundles = !!(ev.bundles && ev.bundles.length);
+  window.ztorPublishStage.mount(host, {
+    fields: locFields(),
+    prices: locPrices(),
+    currencies: S.CURRENCIES.slice(),
+    baseCurrency: ev.currency || S.DEFAULT_CURRENCY,
+    views: hasBundles ? [{ key: 'ticket' }, { key: 'bundles' }] : [{ key: 'ticket' }],
+    mode: 'save',
+    previewRender: (h, api) => { if (window.ztorFanEventPage) window.ztorFanEventPage.render(h, locModel(), api); },
+    /* 儲存：逐幣別覆寫寫回 events-store（localStorage），翻譯草稿留在 publish-stage 的模組
+       變數（原型無後端，UIA-165）。存完回詳情頁——那裡的票種卡與在地化摘要重新讀 store 就會反映。 */
+    onPrimary: result => {
+      const data = { tiers: {}, bundles: {} };
+      Object.keys(result.prices || {}).forEach(k => {
+        const parts = k.split(':');
+        if (parts[0] === 'tier') data.tiers[parts[1]] = result.prices[k];
+        else if (parts[0] === 'bundle') data.bundles[parts[1]] = result.prices[k];
+      });
+      S.setOverrides(ev.id, data);
+      window.__evLocalization = result;
+      location.href = backHref + (backHref.indexOf('?') >= 0 ? '&' : '?') + 'saved=loc';
+    },
+    onSecondary: () => { location.href = backHref; }
+  });
+})();
+</script>
+</body>
+</html>
