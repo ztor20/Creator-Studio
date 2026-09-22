@@ -984,9 +984,17 @@
        擠在「適用票種」的標籤底下會讀成那個欄位的附屬設定。
        控件也照那邊用 `.segmented.radio-cards`（帶標題與說明的二選一卡），
        不用 filter-tabs——filter-tabs 是「篩清單」的語彙，這裡是在設定模式。 */
-    function secScopeHTML(b) {
+    /* 多場活動的判定：票帶著有名字的 group 且不只一組。單場活動（或票沒帶 group）回 false，
+       場次相關的控制整個不出現。 */
+    function isMultiDate() {
       var groups = ticketGroups();
-      if (!(groups.length > 1 && groups[0].name)) return '';
+      return groups.length > 1 && !!groups[0].name;
+    }
+    /* 二選一卡本體（一組通用所有場次／每場各一組）。sections 版型由 secScopeHTML 包成自己的
+       欄位；SPLIT 由 datesFieldHTML 與適用場次表／每場預覽表合成同一個「場次」欄位（2026-09-22）。 */
+    function scopeCardsHTML(b) {
+      var groups = ticketGroups();
+      if (!isMultiDate()) return '';
       function card(val, on) {
         return '<button type="button" class="segmented__btn' + (on ? ' segmented__btn--active' : '') +
           '" role="radio" aria-checked="' + on + '" data-bd-scope="' + val + '"' + (isLocked(b) ? ' disabled' : '') + '>' +
@@ -998,15 +1006,15 @@
       /* 2026-08-13 使用者指示「放同一個 section」：與票種合併成一張分卡，這裡只回傳欄位群。
          兩者回答的是同一件事的兩半——這一組賣哪一種票、以及那一種票怎麼對應到場次；
          拆成兩張卡會讓人以為是兩個不相干的決定。 */
-      /* SPLIT：每場各一組時底下補一句會建立哪幾組（`cpp.bd.scope.per.names`），允許票種與張數沿用同一份。 */
-      var perNames = SPLIT && b.scope === 'per'
-        ? '<div class="field__hint">' + esc(T('cpp.bd.scope.per.names').replace('{names}', listJoin(groups.map(function (g) { return g.name; })))) + '</div>'
-        : '';
-      return '<div class="field">' +
-        '<div class="field__label">' + esc(T('cpp.bd.sec.scope')) + '</div>' +
-        '<div class="segmented radio-cards' + (isLocked(b) ? ' segmented--locked' : '') + '" role="radiogroup" aria-label="' + esc(T('cpp.bd.sec.scope')) + '">' +
+      return '<div class="segmented radio-cards' + (isLocked(b) ? ' segmented--locked' : '') + '" role="radiogroup" aria-label="' + esc(T('cpp.bd.sec.scope')) + '">' +
           card('shared', b.scope !== 'per') + card('per', b.scope === 'per') +
-        '</div>' + perNames +
+        '</div>';
+    }
+    function secScopeHTML(b) {
+      var cards = scopeCardsHTML(b);
+      if (!cards) return '';
+      return '<div class="field">' +
+        '<div class="field__label">' + esc(T('cpp.bd.sec.scope')) + '</div>' + cards +
       '</div>';
     }
 
@@ -1032,7 +1040,7 @@
     function isLocked(b) { return SPLIT && b.sold > 0; }
     function tixQtyFieldHTML(b) {
       var q = tixQty(b);
-      return '<div class="field mt-16">' +
+      return '<div class="field' + (SPLIT ? '' : ' mt-16') + '">' +
         '<label class="field__label">' + esc(T('cpp.bd.tix.per')) + '</label>' +
         '<span class="amount-field amount-field--suffix amount-field--readonly zstep bd-tix-qty">' +
           '<span class="amount-field__unit">' + esc(T('cb.tix.unit')) + '</span>' +
@@ -1656,50 +1664,77 @@
         : '';
       /* 2026-09-22 方案 A（三層收斂）：小標 hint、「允許票種」標籤、表下規則 hint 三個一起退場——
          「哪些票種」由表頭「票種」與勾選框本身說完，規則句收斂成張數欄底下唯一一句（tixQtyFieldHTML）。 */
-      return subHeadHTML(T('cpp.bd.sp.tix'), '') +
+      /* 2026-09-22 第二輪（使用者：「title 和區塊一樣沒有分清楚」）：小標底下第一個東西就是票種表，
+         再來每組張數；場次相關的控制（原本卡在小標與票種表之間的二選一卡、以及掛在後面的
+         「適用場次」表）合成最後一個欄位「場次」（datesFieldHTML）。整群包進 `.bd-group`，
+         小標到內容的距離比群與群之間近，讀得出「小標統轄底下這幾格」。 */
+      return groupHTML(
+        subHeadHTML(T('cpp.bd.sp.tix'), '') +
         lockNote +
-        secScopeHTML(b) +
         '<div class="field">' +
           tixTableHTML(b) +
         '</div>' +
         (rows.length ? tixQtyFieldHTML(b) : '') +
-        sessionsFieldHTML(b) +
-        perFieldHTML(b);
+        datesFieldHTML(b));
     }
-    /* 適用場次（多場 ＋ 一組通用所有場次 ＋ 已勾票種）與每場預覽（每場各一組）在 SPLIT 裡是
-       票券小節底下的兩個欄位群，不再各自一張分卡——分卡在這個版型只有三張。內容照舊
-       （secSessionsHTML／secPerHTML 的 `.bd-sec` 殼換成 `.field`）。 */
-    function sessionsFieldHTML(b) {
-      var table = sessionsTableHTML(b);
-      if (!table) return '';
-      return '<div class="field bd-field--table">' +
-        '<div class="field__label">' + esc(T('cpp.bd.sec.sess')) + '</div>' +
-        table +
-        '<div class="field__hint">' + esc(T('cpp.bd.sec.sess.sub')) + '</div>' +
+    /* 小標＋它統轄的欄位＝一個群組（`.bd-group`）。分卡裡的三個群組（票券／商品／額外權益）各包一層。 */
+    function groupHTML(inner) {
+      return '<div class="bd-group">' + inner + '</div>';
+    }
+    /* 「場次」欄位（SPLIT，多場活動才有；2026-09-22）：二選一卡在上，底下依所選接不同的表——
+       一組通用所有場次 → 適用場次表（已勾票種才有）＋「預設每一場都適用」一句；
+       每場各一組 → 每場預覽表（會建立哪幾組）＋「共 N 組」一句、還沒勾票種時換成引導句。
+       原本二選一卡是一個欄位、適用場次表是另一個欄位、每場預覽表又是第三個，三個欄位回答的
+       都是「這一組怎麼對應場次」；合成一格之後，模式與模式帶出的清單黏在一起，切換時
+       清單就在卡的正下方換掉。每場各一組底下原本那句「Day 1、Day 2、Day 3 各建立一組」退場——
+       預覽表本身就逐場列了（Q123 ④ 同一事實只出現一次）。單場活動整格不出現。 */
+    function datesFieldHTML(b) {
+      var cards = scopeCardsHTML(b);
+      if (!cards) return '';
+      var body = '', hint = '';
+      if (b.scope === 'per') {
+        if (ticketKinds().length) {
+          var rows = perRows(b);
+          body = perTableHTML(b);
+          hint = rows.length
+            ? T('cpp.bd.per.preview.sub').replace('{n}', rows.length)
+            : T('cpp.bd.per.preview.empty');
+        }
+      } else {
+        body = sessionsTableHTML(b);
+        if (body) hint = T('cpp.bd.sec.sess.sub');
+      }
+      return '<div class="field bd-field--table" data-bd-dates>' +
+        '<div class="field__label">' + esc(T('cpp.bd.sp.dates')) + '</div>' +
+        cards + body +
+        (hint ? '<div class="field__hint">' + esc(hint) + '</div>' : '') +
       '</div>';
     }
-    function perFieldHTML(b) {
-      if (b.scope !== 'per' || !ticketGroups().length || !ticketKinds().length) return '';
-      var rows = perRows(b);
-      return '<div class="field bd-field--table">' +
-        '<div class="field__label">' + esc(T('cpp.bd.per.preview')) + '</div>' +
-        perTableHTML(b) +
-        '<div class="field__hint">' + esc(rows.length
-          ? T('cpp.bd.per.preview.sub').replace('{n}', rows.length)
-          : T('cpp.bd.per.preview.empty')) + '</div>' +
-      '</div>';
-    }
+    /* 墓碑 2026-09-22：sessionsFieldHTML／perFieldHTML（SPLIT 裡「適用場次」與「會建立的組合包」
+       各自一個 `.bd-field--table` 欄位）併進 datesFieldHTML。表本體 sessionsTableHTML／perTableHTML 不變。 */
     function productsBlockHTML(b) {
       var locked = isLocked(b);
       /* 2026-09-22 方案 A：小標 hint「選填；每組各 1 件」退場——「選填」降進搜尋框 placeholder，
          「每組各 1 件」由表頭欄名承擔（活動變體每組固定 1 件，欄名就是「商品」）。 */
-      return subHeadHTML(T('cpp.bd.sp.items'), '') +
+      return groupHTML(
+        subHeadHTML(T('cpp.bd.sp.items'), '') +
         (locked ? '' :
           '<div class="fc-pick" data-bd-pick>' +
             '<input class="input" data-bd-search placeholder="' + esc(T('cpp.bd.sp.search')) + '" autocomplete="off">' +
             '<div class="fc-pick__results" data-bd-results hidden></div>' +
           '</div>') +
-        itemsTableHTML(b);
+        itemsTableHTML(b));
+    }
+    /* 額外權益：與票券、商品同一階的小標（2026-09-22 第二輪）。原本是一個 `.field__label`，
+       小標改成分得出來的樣式之後，它會讀成「商品」群組底下的一格，所以升成第三個群組。 */
+    function perksBlockHTML(b) {
+      return groupHTML(
+        subHeadHTML(T('cpp.bd.perks'), '') +
+        '<div class="field">' +
+          /* hint「選填。一行一項……」整條併進 placeholder（2026-09-22 方案 A）。 */
+          '<textarea class="input textarea bd-perks" rows="2" data-bd-perks aria-label="' + esc(T('cpp.bd.perks')) + '" placeholder="' + esc(T('cpp.bd.sp.perks.ph')) + '">' +
+            esc(b.perks.join('\n')) + '</textarea>' +
+        '</div>');
     }
     /* 三段的段頭一律只有段標題：段副標只能把段標題換句話說，2026-09-22 方案 A 整層退場。 */
     function secContentSplitHTML(b) {
@@ -1709,12 +1744,7 @@
         '</div>' +
         ticketBlockHTML(b) +
         productsBlockHTML(b) +
-        '<div class="field">' +
-          '<label class="field__label">' + esc(T('cpp.bd.perks')) + '</label>' +
-          /* hint「選填。一行一項……」整條併進 placeholder（2026-09-22 方案 A）。 */
-          '<textarea class="input textarea bd-perks" rows="2" data-bd-perks placeholder="' + esc(T('cpp.bd.sp.perks.ph')) + '">' +
-            esc(b.perks.join('\n')) + '</textarea>' +
-        '</div>' +
+        perksBlockHTML(b) +
       '</section>';
     }
 

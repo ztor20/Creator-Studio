@@ -96,11 +96,12 @@
           <button class="btn btn--outline" type="button" data-pd-preview-open data-dock-icon><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.preview">See as fan</span></button>
           <!-- 頁首主要動作依狀態互斥、一次只出現一個（spec 5.1.5.1 §2.2，主規格 §7.14「封存與不可刪除」· D284，2026-09-18）：
                上架中→「下架」（＝把上架開關切關，同一份資料）；已下架→「封存」（先確認；仍在上架中組合包裡則列出並一同下架）；
-               已封存→「重新上架」（不確認、直接回到上架）。本頁沒有刪除——發布過的商品任何頁面都不提供刪除入口。
+               已封存→「解除封存」（不確認、回到已下架、設定照舊、不自動上架；D298 2026-09-22 修訂 D284 的「直接回到上架」）。
+               本頁沒有刪除——發布過的商品任何頁面都不提供刪除入口。
                顯隱由 syncPrimaryAction() 依 ListingState 決定，這裡三顆都先 hidden。 -->
           <button class="btn btn--outline" type="button" data-pd-unlist hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button>
           <button class="btn btn--outline" type="button" data-pd-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
-          <button class="btn btn--primary" type="button" data-pd-relist hidden><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="product-detail.btn.relist">Relist</span></button>
+          <button class="btn btn--primary" type="button" data-pd-unarchive hidden><i data-lucide="archive-restore" class="ztor-icon"></i><span data-i18n="product-detail.btn.unarchive">Unarchive</span></button>
           <div data-dock-actions></div>
           <!-- 2026-09-11 撤除頁級「儲存」：商品設定分頁改成「編輯商品 → 儲存變更」的開關（同活動詳情），
                總覽分頁的補貨／鎖定各自在彈窗裡儲存，頁面上已沒有「整頁一起存」的東西。 -->
@@ -123,10 +124,10 @@
           <p class="pd-hero__desc" id="pd-hero-meta"><span data-pd-hero-price></span> · <span data-pd-hero-var></span></p>
         </div>
       </section>
-      <!-- 封存態說明（D284）：整頁唯讀、只能重新上架。沿用 info-banner，icon 換 archive；未封存時整條收起。 -->
+      <!-- 封存態說明（D284；D298 出口改講解除封存）：整頁唯讀、只能解除封存（回到已下架）。沿用 info-banner，icon 換 archive；未封存時整條收起。 -->
       <div class="info-banner mt-16" data-pd-archived-banner hidden>
         <i data-lucide="archive" class="ztor-icon info-banner__icon"></i>
-        <span data-i18n="product-detail.archived.banner">Archived — read-only. Relist it to edit or sell again.</span>
+        <span data-i18n="product-detail.archived.banner">Archived — read-only. Unarchiving returns it to Unlisted; settings are kept.</span>
       </div>
       <!-- 未開賣提醒（2026-09-18 · D290）：上架中但開賣設定停在「未開賣」（下架後重新上架的常態）時露出，設了開賣就收起 -->
       <div class="info-banner mt-16" data-pd-relist-sale-banner hidden>
@@ -2010,7 +2011,7 @@
     })();
 
     /* ── 頁首主要動作依狀態互斥＋下架確認與組合包連動＋封存態唯讀（spec 5.1.5.1 §2.2／§2.16／§4，主規格 §7.14 · D284／D288，2026-09-18）──
-       規則本體在 ListingState（canArchive／archive／relist／listedBundlesUsing／unlistWithBundles），這裡只負責：哪顆鈕露出、
+       規則本體在 ListingState（canArchive／archive／unarchive／relist／listedBundlesUsing／unlistWithBundles），這裡只負責：哪顆鈕露出、
        下架前的確認（仍在上架中組合包裡＝列出組合包、主鈕「一同下架這些組合包」，D288 把這個彈窗從封存搬到下架）、
        封存的單純確認（只看已下架、不再列組合包）、封存時把整頁收成唯讀。彈窗一律借 leave-dialog 的殼，與 e-shop 同一套文案。
        唯讀的做法（雙保險）：(1) 商品設定分頁本來就預設檢視態（data-mode="view"），封存時把「編輯商品」入口藏掉、
@@ -2024,7 +2025,7 @@
       const main = document.querySelector('.main') || document.body;
       const btnUnlist = document.querySelector('[data-pd-unlist]');
       const btnArchive = document.querySelector('[data-pd-archive]');
-      const btnRelist = document.querySelector('[data-pd-relist]');
+      const btnUnarchive = document.querySelector('[data-pd-unarchive]');   /* D298：已封存態的唯一主要動作＝解除封存（回到已下架） */
       const banner = document.querySelector('[data-pd-archived-banner]');
       const listing = document.querySelector('[data-pd-listing]');
       /* 逐列「⋯」的三個項目（上架開關／補貨／鎖定）都是會改資料的動作，封存時全部收起（D288 盤點的漏洞）；
@@ -2039,15 +2040,15 @@
           dd.hidden = items.length > 0 && items.every(el => el.hidden);
         });
       };
-      /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「重新上架」永遠放行 */
-      if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { block: PRUNE + ',[data-pd-opt-editor] button,[data-pd-variant-table] button:not(summary)', allow: '[data-pd-relist],[data-pd-preview-open],[data-pd-preview-close],[data-rowdis]' });
+      /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「解除封存」永遠放行 */
+      if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { block: PRUNE + ',[data-pd-opt-editor] button,[data-pd-variant-table] button:not(summary)', allow: '[data-pd-unarchive],[data-pd-preview-open],[data-pd-preview-close],[data-rowdis]' });
       const setSwitch = (el, on) => { if (!el) return; el.classList.toggle('switch--on', !!on); el.setAttribute('aria-checked', on ? 'true' : 'false'); };
       function syncPrimaryAction() {
         const archived = L.isArchived(product);
         const draft = !!product.draft;
         if (btnUnlist) btnUnlist.hidden = archived || draft || L.isUnlisted(product);
         if (btnArchive) btnArchive.hidden = !L.canArchive(product);
-        if (btnRelist) btnRelist.hidden = !archived;
+        if (btnUnarchive) btnUnarchive.hidden = !archived;
       }
       function applyArchived() {
         const archived = L.isArchived(product);
@@ -2055,13 +2056,13 @@
         if (banner) banner.hidden = !archived;
         if (listing) listing.classList.toggle('lctl--locked', archived);
         if (listedToggle) { listedToggle.setAttribute('aria-disabled', archived ? 'true' : 'false'); listedToggle.classList.toggle('switch--disabled', archived); }
-        /* 鎖定說明改講封存（三開關與排程全部不可調，重新上架後才能調） */
+        /* 鎖定說明改講封存（三開關與排程全部不可調，解除封存後才能調） */
         document.querySelectorAll('[data-pd-lock-note]').forEach(n => {
           const key = archived ? 'cp.listing.archived-lock' : 'cp.listing.unlisted-lock';
           n.setAttribute('data-i18n', key);
-          n.textContent = T(key, archived ? 'Archived — switches and schedules stay locked until it is relisted.' : 'Unlisted — show and sale settings are locked until it is listed again.');
+          n.textContent = T(key, archived ? 'Archived — switches and schedules stay locked until it is unarchived.' : 'Unlisted — show and sale settings are locked until it is listed again.');
         });
-        /* 關聯分頁的選片器：元件層唯讀（搜尋格與建議列收起、chip 無 ×），封存 ↔ 重新上架來回切 */
+        /* 關聯分頁的選片器：元件層唯讀（搜尋格與建議列收起、chip 無 ×），封存 ↔ 解除封存來回切 */
         if (window.pdFilmPicker && window.pdFilmPicker.setReadonly) window.pdFilmPicker.setReadonly(archived);
         if (archived) {
           prune();
@@ -2073,7 +2074,7 @@
         }
         syncPrimaryAction();
       }
-      /* 上架卡的開關值由資料決定：下架／封存／重新上架之後把三顆開關與時間欄同步回資料的樣子 */
+      /* 上架卡的開關值由資料決定：下架／封存／解除封存／重新上架之後把三顆開關與時間欄同步回資料的樣子 */
       function paintListingCard() {
         setSwitch(listedToggle, product.listed !== false);
         setSwitch(shownToggle, product.shown !== false);
@@ -2143,12 +2144,14 @@
         if (!L.canArchive(product)) return;
         askConfirm({
           title: T('e-shop.archive.title', 'Archive “{n}”?').replace('{n}', product.name || ''),
-          body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can relist it anytime.'),
+          body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can unarchive it anytime.'),
           okKey: 'e-shop.archive.confirm', okFallback: 'Archive',
           onConfirm: () => { L.archive(product); commit(); paintListingCard(); }
         });
       });
-      if (btnRelist) btnRelist.addEventListener('click', () => { L.relist(product); commit(); paintListingCard(); });
+      /* 解除封存（D298）：不確認、回到已下架（上架開關可用、「封存」鈕回來）、設定照舊、不自動上架；
+         D290 的「未開賣」提醒 banner 條件是上架中才露出，所以解除封存後不會出現、重新上架後才會。 */
+      if (btnUnarchive) btnUnarchive.addEventListener('click', () => { if (!L.isArchived(product)) return; L.unarchive(product); commit(); paintListingCard(); });
       /* 上架開關切關＝下架，同樣先確認：capture 階段攔下、不讓開關自己翻面，確認後由 paintListingCard 畫成關。
          切開（自已下架重新上架）不擋、只記錄。 */
       if (listedToggle) {
@@ -2254,7 +2257,7 @@
     var host = document.querySelector('[data-pd-film-picker]');
     var selectedFilms = (window.pdProduct && Array.isArray(window.pdProduct.films)) ? window.pdProduct.films.slice() : [];
     if (host && window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createFilmPicker) {
-      /* readonly＝已封存（D288 封存唯讀涵蓋關聯分頁）；之後的封存／重新上架由 initArchiveState 的 applyArchived 呼叫 setReadonly */
+      /* readonly＝已封存（D288 封存唯讀涵蓋關聯分頁）；之後的封存／解除封存由 initArchiveState 的 applyArchived 呼叫 setReadonly */
       window.pdFilmPicker = window.ZTOR_PARTIALS.createFilmPicker(host, { selected: selectedFilms, readonly: !!(window.pdProduct && window.pdProduct.archived), onChange: function () { if (window.pdRenderDest) window.pdRenderDest(); if (window.pdRenderSettingsOverview) window.pdRenderSettingsOverview(); } });
     }
   }());

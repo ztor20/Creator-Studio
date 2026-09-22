@@ -24,7 +24,8 @@
 //     lowThreshold number       低庫存門檻（0＝不提醒）
 //     archived    boolean       已封存（2026-09-18 · D284，§7.14「封存與不可刪除」）。三開關之外的一態：
 //                               只有已下架的可以封存；封存＝離開主清單、細節頁唯讀、三開關與排程不可調；
-//                               唯一動作是重新上架（relist），直接回到 listed、不經過已下架。
+//                               唯一動作是解除封存（unarchive，2026-09-22 · D298 修訂 D284／D289）：archived 回 false、
+//                               回到已下架（listed 維持 false）、設定照舊保留、不自動上架；要販售再走已下架→上架（relist）。
 //                               封存必然是下架：isUnlisted() 對 archived 一律回 true。
 //     unlistReason { type: 'member-unlisted', productId, productName, auto?: boolean } | null
 //                               組合包被「一同下架」時記的原因（2026-09-18 · D288：成員單售下架時創作者確認一同下架，
@@ -442,11 +443,21 @@
     return entity;
   }
 
-  /** 重新上架（Relist，含自封存、自已下架）：解除封存並直接回到上架，不經過已下架；顯示沿用。
-      D290（2026-09-18）：不再恢復開賣——回來是「上架＋顯示（沿用）＋未開賣」，四個排程時間維持空，要販售須再設開賣。 */
-  function relist(entity) {
-    if (!entity) return entity;
+  /** 解除封存（Unarchive，2026-09-22 · D298 修訂 D284／D289）：已封存 → 已下架。只把 archived 放回 false、listed 維持 false，
+      其他一律不動——排程與開賣在下架時已依 D290 清掉並退回未開賣，顯示沿用；不自動上架，要販售再走 relist。
+      不連動組合包（成員解除封存不會把含它的組合包拉上來；組合包解除封存也不動成員）。 */
+  function unarchive(entity) {
+    if (!entity || !isArchived(entity)) return entity;
     entity.archived = false;
+    entity.listed = false;
+    return entity;
+  }
+
+  /** 重新上架（Relist）：已下架 → 上架；顯示沿用。D298（2026-09-22）起只服務已下架——已封存的要先 unarchive，
+      這裡對已封存一律不動（回原物件），不再順手解除封存。
+      D290（2026-09-18）：不恢復開賣——回來是「上架＋顯示（沿用）＋未開賣」，四個排程時間維持空，要販售須再設開賣。 */
+  function relist(entity) {
+    if (!entity || isArchived(entity)) return entity;
     entity.listed = true;
     entity.unlistReason = null;
     resetSale(entity);
@@ -507,7 +518,7 @@
   /**
    * 組合包重新上架前的成員盤點（§7.14 不變式：上架中的組合包，成員一律在上架中 · D288 裁決三；做法依 D289）：
    *   unlisted＝目前已下架（含排定上架未到、定時下架已過）但未封存的成員——重新上架時會一起被拉上來（先確認）；
-   *   blocked ＝已封存的成員（不可由組合包順手解除封存，要先各自重新上架）＋草稿或查不到的成員（沒有可上架的東西）。
+   *   blocked ＝已封存的成員（不可由組合包順手解除封存，要先各自解除封存 · D298）＋草稿或查不到的成員（沒有可上架的東西）。
    * productsById：{ [id]: product } 或 function(id)。兩個清單都是 [{ productId, product|null }]。
    */
   function bundleRelistPlan(bundle, productsById, now) {
@@ -526,8 +537,8 @@
   }
 
   /**
-   * 組合包重新上架（含自已下架、自封存），D289：
-   *   有已封存（或草稿）成員 → 擋下，回 { ok:false, blockers }，什麼都不改；
+   * 組合包重新上架（自已下架；已封存的組合包要先 unarchive，D298），D289：
+   *   有已封存（或草稿）成員 → 擋下，回 { ok:false, blockers }，什麼都不改（提示改成「先解除封存」· D298）；
    *   否則已下架的成員連帶重新上架（呼叫端已拿使用者確認過「這些單售會一起重新上架」才呼叫），再 relist 組合包，
    *   回 { ok:true, relisted:[product…] }。反方向不連動：單售重新上架不會把組合包拉上來。
    */
@@ -800,6 +811,7 @@
     isArchived: isArchived,
     canArchive: canArchive,
     archive: archive,
+    unarchive: unarchive,
     relist: relist,
     unlist: unlist,
     listedBundlesUsing: listedBundlesUsing,

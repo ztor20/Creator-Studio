@@ -39,12 +39,18 @@
    它統轄的是欄位標籤（同樣 14px 的 ui 字型），靠字型與墨色分層，不再放大。 */
 .bd-group { padding-top: var(--sp-16); border-top: 1px solid var(--border); margin-top: var(--sp-16); }
 .bd-group:first-child { padding-top: 0; border-top: 0; margin-top: 0; }
+/* 2026-09-22 第二輪：小標配方與 SPLIT 的 `.bd-sub__title` 收成同一支（見下方「小標列」段）——
+   同一個元件裡「小標統轄欄位標籤」只留一種寫法。原本這裡用 `--fw-medium` 500 加重，
+   與 _tokens.css 的字重規則（500 只留給 active／染色底微型字）相違，同輪收掉；
+   分辨改靠字型、色階與小型大寫。這個版型目前沒有消費頁（備用版型），畫面不受影響。 */
 .bd-group__title {
   margin: 0 0 var(--sp-12);
   font-family: var(--font-display);
   font-size: var(--fs-14);
-  font-weight: var(--fw-medium);
-  color: var(--foreground);
+  font-weight: var(--fw-regular);
+  color: var(--muted-foreground);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 .fc-bundle__body .field__label + .field__hint { margin-top: calc(-1 * var(--sp-4)); }
 .fc-bundle__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-16); }
@@ -787,11 +793,34 @@
 .bd-sec--stack > .field { margin-bottom: 0; }
 .bd-sec--stack > .bd-sec__head { margin-bottom: 0; }
 
-/* 小標列：分卡裡再分「票券／商品」兩塊時的小標＋一句提示（比分卡標題小一階，Q54 的
-   「小標」這一級在這裡由 `.bd-sub` 承擔，與 lock-sets 的 `.lockset__sets-titles` 同一階）。 */
+/* 小標列：分卡裡再分「票券／商品／額外權益」三群時的小標＋一句提示（比分卡標題小一階，Q54 的
+   「小標」這一級在這裡由 `.bd-sub` 承擔，與 lock-sets 的 `.lockset__sets-titles` 同一階）。
+   2026-09-22 第二輪（使用者：「title 和區塊一樣沒有分清楚」）：小標與欄位標籤原本同字級同字色同字型
+   （14／--foreground／--font-ui），三個標題疊在一起分不出誰統轄誰。字級照 Q123 停在 14（小標與欄位
+   標籤同一階），改用站上「群組小字標」既有的配方分辨角色：display 字型＋小型大寫＋0.04em 字距＋
+   `--muted-foreground`——與同一個彈窗右欄預覽卡的 `.bpc__title`、票券表裡的場次組頭 `.bd-tbl__gname`、
+   下拉選單的 `.dropdown__cap` 同一支寫法。字重不動（500 只留給 active／染色底微型字，token 檔明訂）。
+   中文沒有大小寫，分辨靠色階＋字距；英文再多一層大小寫。 */
 .bd-sub { display: flex; align-items: baseline; gap: var(--sp-8); flex-wrap: wrap; }
-.bd-sub__title { font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); }
+.bd-sub__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+  color: var(--muted-foreground);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 .bd-sub__hint { font-size: var(--fs-12); color: var(--muted-foreground); }
+
+/* 群組在 SPLIT 分卡裡（`.bd-sec--stack > .bd-group`，2026-09-22 第二輪）：沿用檔頭三段式那支
+   `.bd-group`（hairline 上緣分段），小標＋它統轄的幾格包成一個直排容器。分卡的 gap（20）落在
+   段標題→第一群、群與群之間（群自己的 margin-top 歸零，否則與 gap 疊成 36）；群內小標到第一格、
+   格與格之間收成 12，讀得出「小標包著底下這幾格」而不是三個等距的獨立物件。第一群緊接段標題，
+   不畫線也不留上內距——上面就是段標題本人（同 form-section 的 `__head + __subhead` 規則）。
+   群內 `.field` 自己的下外距歸零（同 Q103）。 */
+.bd-sec--stack > .bd-group { display: flex; flex-direction: column; gap: var(--sp-12); min-width: 0; margin-top: 0; }
+.bd-sec--stack > .bd-sec__head + .bd-group { padding-top: 0; border-top: 0; }
+.bd-sec--stack > .bd-group > .field { margin-bottom: 0; }
 
 /* 已售出鎖定說明：鎖頭 icon ＋ 一句話，走 `.field__hint--fact`（事實說明，不是欄位附註）。 */
 .bd-lock-note { display: flex; align-items: center; gap: var(--sp-6); }

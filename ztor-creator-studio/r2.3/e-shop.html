@@ -1943,15 +1943,19 @@
       sp.setAttribute('data-i18n', key);
       sp.textContent = (window.i18nT && window.i18nT(key)) || sp.textContent;
     }
-    /* 主徽章講販售軸（售罄／販售結束／即將開賣…），第二顆講顯示軸。兩顆並存是刻意的：
-       §7.14 的「私下販售」＝隱藏但照樣在賣，一顆徽章講不完（例：售罄 ＋ 已隱藏）。
+    /* 只畫一顆徽章，講販售軸（售罄／販售結束／即將開賣…）。顯示軸（隱藏／顯示）改由同列右側
+       「顯示於商店」開關（.product-list__shown）單獨承載，不再另掛一顆「已隱藏」副徽章——
+       2026-09-22 使用者反饋：開關已經講了同一件事，兩個地方各講一次是重複。
+       （2026-09-22 前舊版：hidden 為真且 status 不是 'hidden' 時，會在主徽章旁動態插入一顆
+       帶專屬 data 屬性的「已隱藏」副徽章 span，用來表達 §7.14「私下販售」＝隱藏但照樣在賣；
+       該副徽章與 hidden 參數一併拿掉，主徽章推導本身不變，墓碑僅供回溯。）
        篩選用的 data-status 仍是單一值（deriveStatus，hidden 排在售罄之前），所以八個
        分頁的數字加起來就是 All，不會有一列同時算進兩個桶。 */
-    function paintBadges(row, status, hidden) {
+    function paintBadges(row, status) {
       const L = LS();
       const cell = row.querySelector('.product-list__status');
       if (!cell || !L) return;
-      const main = cell.querySelector(':scope > .badge:not([data-eshop-hidden-badge])');
+      const main = cell.querySelector(':scope > .badge');
       /* 拍賣列用拍賣那張對照表（coming→Upcoming、live→競標中、ended→完售，D286），其餘同商品 */
       const META = (isAuctionRow(row) && L.AUCTION_STATUS_META) ? L.AUCTION_STATUS_META : L.STATUS_META;
       const cls = isAuctionRow(row) && L.auctionBadgeClass ? L.auctionBadgeClass : L.badgeClass;
@@ -1968,17 +1972,6 @@
         main.className = cls(status);
         setBadgeText(main, META[status].i18n);
       }
-      let extra = cell.querySelector('[data-eshop-hidden-badge]');
-      if (hidden && status !== 'hidden') {
-        if (!extra) {
-          extra = document.createElement('span');
-          extra.setAttribute('data-eshop-hidden-badge', '');
-          extra.className = 'badge badge--neutral';
-          extra.appendChild(document.createElement('span'));
-          if (main && main.nextSibling) cell.insertBefore(extra, main.nextSibling); else cell.appendChild(extra);
-        }
-        setBadgeText(extra, 'shop.status.hidden');
-      } else if (extra) extra.remove();
     }
     /* 只重畫這一列——不重繪列、不重載頁（使用者要求：即時、只更新那顆 tag）。 */
     function renderStatus(row) {
@@ -1989,7 +1982,7 @@
         const st = L.deriveAuctionStatus(m.entity);
         const flags = L.deriveAuctionFlags(m.entity);
         row.dataset.status = (st === 'coming') ? 'upcoming' : st;
-        paintBadges(row, flags.status, flags.hidden);
+        paintBadges(row, flags.status);
         return row.dataset.status;
       }
       const L = LS(), m = rowModel(row);
@@ -2000,9 +1993,9 @@
       }
       const ctx = { qty: m.qty, lowThreshold: m.low };
       const st = L.deriveStatus(m.entity, ctx);          /* 篩選與計數的單一桶 */
-      const flags = L.deriveFlags(m.entity, ctx);        /* 徽章：販售軸 ＋ 顯示軸各一顆 */
+      const flags = L.deriveFlags(m.entity, ctx);        /* 徽章只取販售軸；顯示軸改由 .product-list__shown 開關承載 */
       row.dataset.status = st;
-      paintBadges(row, flags.status, flags.hidden);
+      paintBadges(row, flags.status);
       return st;
     }
     /* 庫存欄格式（2026-07-27 使用者反饋：組合的「16 組（最少件數）」與商品表的「0 / ∞」不一致）。
@@ -2085,7 +2078,7 @@
       const unlisted = (m && m.store && L) ? L.isUnlisted(m.entity) : (row.dataset.status === 'unlisted' || row.dataset.status === 'archived');
       const archived = (m && m.store && L) ? L.isArchived(m.entity) : (row.dataset.status === 'archived');   /* 已封存比照已下架停用（D284） */
       const t = row.querySelector('[data-eshop-shop]');
-      if (t) { t.setAttribute('aria-disabled', unlisted ? 'true' : 'false'); t.classList.toggle('switch--disabled', unlisted); t.title = archived ? T('e-shop.shown.archived', 'Archived — relist it first') : (unlisted ? (T('e-shop.shown.unlisted', 'Unlisted — listing must be on before this can be shown') ) : ''); }
+      if (t) { t.setAttribute('aria-disabled', unlisted ? 'true' : 'false'); t.classList.toggle('switch--disabled', unlisted); t.title = archived ? T('e-shop.shown.archived', 'Archived — unarchive it first') : (unlisted ? (T('e-shop.shown.unlisted', 'Unlisted — listing must be on before this can be shown') ) : ''); }
     }
     /* 事件委派：清單會分批插入新列（載入更多／persona 換列），逐顆綁定會漏掉後來的列。 */
     /* 2026-09-11（D263）：開關獨立成欄，點了先問——顯示／隱藏會直接改粉絲看得到什麼，
@@ -2233,12 +2226,13 @@
        產生的空標籤。 */
     document.addEventListener('i18n:applied', renderAllTiers);
 
-    /* ── 列操作依狀態互斥（spec 5.1.5 F4，主規格 §7.14「封存與不可刪除」· D284，2026-09-18）──────
+    /* ── 列操作依狀態互斥（spec 5.1.5 F4，主規格 §7.14「封存與不可刪除」· D284，2026-09-18；D298 修訂，2026-09-22）──────
        已下架列（含排定上架未到、定時下架已過）→ 多一項「封存」；
-       已封存列 → 只剩「重新上架」＋「編輯」（唯讀進詳情）：複製商店連結（連結已失效）、補貨（唯讀）都收起；
+       已封存列 → 只剩「解除封存」＋「編輯」（唯讀進詳情）：複製商店連結（連結已失效）、補貨（唯讀）都收起；
        其餘狀態 → 兩項都不出現。項目由這裡按需長出來、不寫進靜態列——列會被 persona／載入更多複製，
-       寫死在 markup 裡會漏。拍賣列 2026-09-18 起（D285）同一套：已下架→封存、已封存→重新上架＋編輯（唯讀）；
-       複製連結在已下架與已封存都收起（連結已失效）。「下架」不在清單上：它在細節頁的上架開關。 */
+       寫死在 markup 裡會漏。拍賣列 2026-09-18 起（D285）同一套：已下架→封存、已封存→解除封存＋編輯（唯讀）；
+       複製連結在已下架與已封存都收起（連結已失效）。「下架」與「上架」都不在清單上：它們在細節頁的上架開關。
+       D298：已封存列的「重新上架（直接回上架）」退場，改成「解除封存」回到已下架、不確認、不自動上架。 */
     const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
     function ensureMenuItem(menu, attr, icon, key, fallback) {
       let el = menu.querySelector('[' + attr + ']');
@@ -2246,7 +2240,7 @@
       el = document.createElement('button');
       el.type = 'button'; el.className = 'dropdown__item'; el.setAttribute('role', 'menuitem'); el.setAttribute(attr, '');
       el.innerHTML = '<i data-lucide="' + icon + '" class="ztor-icon"></i><span data-i18n="' + key + '">' + esc(T(key, fallback)) + '</span>';
-      /* 排在「編輯」前面：封存／重新上架是狀態動作，編輯是導覽 */
+      /* 排在「編輯」前面：封存／解除封存是狀態動作，編輯是導覽 */
       const edit = menu.querySelector('a[href*="-detail.html"]');
       if (edit) menu.insertBefore(el, edit); else menu.appendChild(el);
       if (window.ztorIcons) window.ztorIcons.applyIcons(el);
@@ -2256,12 +2250,12 @@
       const menu = row.querySelector('.product-list__actions .dropdown__menu');
       const m = rowModel(row);
       if (!menu || !m || !m.store) return;   /* 沒有 store 記錄的列（demo 填充列、草稿列）維持原樣 */
-      if (m.eventBundle) return;             /* 活動組合包：封存／重新上架／補貨都不屬於它（跟著活動，D294），列操作維持注入時的兩項 */
+      if (m.eventBundle) return;             /* 活動組合包：封存／解除封存／補貨都不屬於它（跟著活動，D294），列操作維持注入時的兩項 */
       const L = LS();
       const archived = L.isArchived(m.entity);
       const canArch = L.canArchive(m.entity);
       ensureMenuItem(menu, 'data-eshop-archive', 'archive', 'e-shop.a.archive', 'Archive').hidden = !canArch;
-      ensureMenuItem(menu, 'data-eshop-relist', 'rotate-ccw', 'e-shop.a.relist', 'Relist').hidden = !archived;
+      ensureMenuItem(menu, 'data-eshop-unarchive', 'archive-restore', 'e-shop.a.unarchive', 'Unarchive').hidden = !archived;
       /* 已封存：連結已失效、庫存唯讀——複製連結與補貨兩項收起 */
       menu.querySelectorAll('[data-eshop-restock]').forEach(el => { el.hidden = archived; });
       /* 拍賣列的「複製連結」在已下架時也收起——下架即無粉絲端頁面（D284 裁決六），連結沒有可到的地方 */
@@ -2280,7 +2274,7 @@
       }
     }
 
-    /* ── 確認彈窗（封存／重新上架擋下／草稿刪除）：借 leave-dialog 的殼（站上唯一的確認彈窗語彙），
+    /* ── 確認彈窗（封存／顯示隱藏／草稿刪除）：借 leave-dialog 的殼（站上唯一的確認彈窗語彙），
        多一段 .leave-dialog__list 列受影響的組合包或未上架成員（2026-09-18 promote 進 leave-dialog.css）。
        noCancel＝純告知（擋下）只留一顆主鈕。彈窗 markup 在 </body> 前，每次用時才查。 */
     const getConfirmDialog = () => document.querySelector('[data-eshop-confirm-dialog]');
@@ -2330,58 +2324,31 @@
       };
       askConfirm({
         title: T('e-shop.archive.title', 'Archive “{n}”?').replace('{n}', name),
-        body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can relist it anytime.'),
+        body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can unarchive it anytime.'),
         okKey: 'e-shop.archive.confirm', okFallback: 'Archive',
         onConfirm: () => { L.archive(m.entity); finish(); }
       });
     }
-    /* 重新上架：單售與拍賣直接回到上架、不確認（§7.14 Relist；顯示與開賣沿用封存前的值，徽章依三開關重推）。
-       組合包（D288 不變式＋D289 做法）：成員有已封存的 → 擋下、列出、什麼都不改（不可由組合包順手解除封存）；
-       成員有已下架的 → 先確認「這些單售會一起重新上架」，確認後成員連帶重新上架、組合包上架；都上架中 → 直接上架。
-       反方向不連動（單售重新上架不拉組合包）。 */
-    function doRelist(row) {
+    /* 解除封存（§7.14 · D298，2026-09-22，修訂 D284／D289）：單售、組合包、拍賣一律直接回到「已下架」、不確認、不自動上架——
+       設定照舊保留（排程與開賣在下架時已依 D290 清掉），列離開「已封存」篩選、出現在「已下架」，列操作換成「封存」。
+       上架（重新上架）這一步回到細節頁的上架開關：組合包在那裡才過成員閘門（D289；成員已封存 → 擋下提示「先解除封存」）。
+       不連動：單售解除封存不拉組合包、組合包解除封存不動成員。
+       墓碑：D289 版的 doRelist（已封存列直接重新上架，組合包在清單上盤點成員、擋下或確認一併上架）整段退場——
+       清單沒有上架入口了，相關文案 e-shop.relist.* 只剩 bundle-detail 在用。 */
+    function doUnarchive(row) {
       const L = LS(), S = PS(), m = rowModel(row);
       if (!L || !S || !m || !m.store || !L.isArchived(m.entity)) return;
-      const finish = () => {
-        syncShopToggle(row); renderStatus(row); renderStock(row); syncRowActions(row);
-        applyFilter(); updateStatusCounts();
-      };
-      if (row.dataset.type === 'bundle') {
-        const memberName = b => (b.product && b.product.name) || b.productId;
-        const plan = S.relistPlan(m.entity);
-        if (plan.blocked.length) {
-          askConfirm({
-            title: T('e-shop.relist.blocked-title', '“{n}” has archived items').replace('{n}', rowName(row)),
-            body: T('e-shop.relist.blocked-body', 'Relist these items first, then relist the bundle:'),
-            items: plan.blocked.map(memberName),
-            okKey: 'e-shop.relist.blocked-ok', okFallback: 'Got it', noCancel: true,
-            onConfirm: null
-          });
-          return;
-        }
-        const go = () => { S.relistBundle(m.entity); window.ztorEshopStatus.refreshAll(); };
-        if (plan.unlisted.length) {
-          askConfirm({
-            title: T('e-shop.relist.title', 'Relist “{n}”?').replace('{n}', rowName(row)),
-            body: T('e-shop.relist.members-body', 'These unlisted items go back on sale with it:'),
-            items: plan.unlisted.map(memberName),
-            okKey: 'e-shop.relist.members-confirm', okFallback: 'Relist all',
-            onConfirm: go
-          });
-          return;
-        }
-        go(); return;
-      }
-      L.relist(m.entity); S.commit(m.entity);
-      finish();
+      L.unarchive(m.entity); S.commit(m.entity);
+      syncShopToggle(row); renderStatus(row); renderStock(row); syncRowActions(row);
+      applyFilter(); updateStatusCounts();
     }
     document.addEventListener('click', e => {
       if (e.target.closest('[data-eshop-confirm-ok]')) { const p = confirmPending; closeConfirm(); if (p && p.onConfirm) p.onConfirm(); return; }
       if (e.target.closest('[data-eshop-confirm-cancel]')) { closeConfirm(); return; }
       const arch = e.target.closest('[data-eshop-archive]');
       if (arch) { const row = arch.closest('.product-list__row'); if (row) askArchive(row); return; }
-      const rel = e.target.closest('[data-eshop-relist]');
-      if (rel) { const row = rel.closest('.product-list__row'); if (row) doRelist(row); }
+      const un = e.target.closest('[data-eshop-unarchive]');
+      if (un) { const row = un.closest('.product-list__row'); if (row) doUnarchive(row); }
     });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && confirmPending) closeConfirm(); });
 

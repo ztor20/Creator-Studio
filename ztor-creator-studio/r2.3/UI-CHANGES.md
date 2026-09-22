@@ -4,6 +4,51 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-22（五十九）· 已封存的販售管道只能「解除封存」回到已下架，不再直接重新上架（A spec-derived · D298，修訂 D284／D289）
+
+**依據**：使用者裁決 D298（2026-09-22）——已封存的販售管道只有一個主要動作「解除封存（Unarchive）」→ 回到已下架；設定照舊保留（下架時已依 D290 清排程、退回未開賣），不自動上架；操作紀錄記一筆。已下架的主要動作維持「封存」與「上架」（上架＝既有的重新上架路徑，D290 不變）。主要動作互斥：上架中→下架；已下架→封存（另有上架開關）；已封存→解除封存。組合包重新上架（D289）：成員已封存仍擋下，提示改成「先解除封存」；解除封存不連動組合包。拍賣同理。
+
+**範圍**：
+- `js/listing-state.js`——新增 `unarchive(entity)`（`archived=false`、`listed` 維持 false、其他不動；未封存的直接回原物件）；`relist(entity)` 拆開只服務已下架→上架（不再順手 `archived=false`，對已封存一律不動）；`bundleRelistPlan`／`relistBundle` 註解與擋下語意改「先解除封存」；api 匯出 `unarchive`；檔頭資料模型註解同步。
+- `js/icons.js`——新 `archive-restore`（自繪：Tabler `archive` 的蓋子與箱身＋往上的箭頭，與 Lucide 同名字符同義；Tabler 的 `archive-off` 是斜線、`restore` 是倒轉箭頭，語意都不對）。
+- `e-shop.html`——`syncRowActions()` 已封存列改長出 `[data-eshop-unarchive]`（icon `archive-restore`、`e-shop.a.unarchive`），`data-eshop-relist` 不再產生；新 `doUnarchive(row)`：`L.unarchive`＋`S.commit`＋重畫該列＋`applyFilter`／`updateStatusCounts`（列離開「已封存」篩選、出現在「已下架」，kebab 換成「封存」）。D289 版的 `doRelist()`（清單上盤點成員、擋下或確認一併上架）整段退場——清單不再有上架入口，組合包成員閘門只在 bundle-detail 的上架開關上。
+- `product-detail.html`／`bundle-detail.html`／`auction-detail.html`——頁首 `[data-*-relist]` 鈕改 `[data-*-unarchive]`（icon `archive-restore`、`product-detail.btn.unarchive`，位置與 `btn--primary` 不變）；點擊 `unarchive`＋commit（bundle 走 `paint()` 的 mirror）＋重畫：上架開關回到可用、「封存」鈕出現、D290 的「未開賣／未開拍」提醒不出現（條件是上架中）；`ZtorArchivedGate.install` 的 `allow` 改放行 `[data-*-unarchive]`；bundle 的 `tryRelist()` 只從上架開關進來、對已封存直接 return；三頁封存 banner 與鎖定說明的 fallback 文案同步。
+- `js/i18n.js`——新 `e-shop.a.unarchive`／`product-detail.btn.unarchive`（Unarchive／解除封存）；墓碑 `e-shop.a.relist`／`product-detail.btn.relist`；改口 `e-shop.shown.archived`（要先解除封存）、`e-shop.archive.body`（隨時可以解除封存）、`e-shop.relist.blocked-body`（先解除封存這些成員，再上架組合包）、`product-detail.archived.banner`／`ad.archived.banner`（解除封存後回到已下架、設定照舊保留）、`cp.listing.archived-lock`（解除封存後才能調整）。`e-shop.relist.*` 其餘鍵保留（bundle-detail 上架開關仍用）。
+- `design-system.html`／`design-system.md`——Leave dialog 第三張擋下示範內文改口＋敘述補 D298；§4.202 Archived gate 示範鈕改「解除封存」（`archive-restore`，按下切換時 icon 跟著換）＋敘述；Icon 圖庫補「自繪的第三顆例外 `archive-restore`」；Film picker 條目「封存 ↔ 解除封存」；`design-components.html` 重生。
+- `BUILD-SPEC.md`、`requirements-map.md`、`docs/示範資料索引.md` 補 D298；`ASSUMPTIONS.md` 新增 UIA-158、UIA-152／153／154 相關條目標「已由 D298 取代」。
+
+**為什麼**：D284 讓已封存直接跳回上架，等於把「解除封存」與「上架」綁成一個動作——粉絲端會在創作者還沒檢查設定前就看到它；D298 把兩步拆開：解除封存只把東西從封存箱拿回已下架的清單，要不要賣、什麼時候賣，回到既有的上架開關與 D290 的開賣設定去決定。解除封存不需要確認（可逆、後果只是回到已下架），所以清單與細節頁都是一鍵。icon 與「封存」成對（同一顆箱子、箭頭向上）讓兩個動作一眼看出是正反面。
+
+**不動的部分**：封存的唯讀閘門（`partials/archived-gate.js`）、封存確認、下架確認與組合包連動（D288）、已下架→上架的路徑與 D290 的開賣退回、單售／組合／拍賣其他行為全部不變；`rotate-ccw` 在站上其他地方（取貨反轉核銷、上傳格還原、逐規格重新上架）照舊。
+
+**驗證**：`python3 ../../Skills/project-ui-creator/scripts/check_ds_sync.py "site/r2.3"` 15 項 PASS；`node --check` 三支 js；http 開頁：e-shop 已封存篩選（`d298-eshop-archived-kebab.png`）→ 點解除封存後列在已下架（`d298-eshop-unlisted-after.png`）；`product-detail.html?id=postcard`（`d298-pd-archived.png` → `d298-pd-unarchived.png` → `d298-pd-relisted.png`）；`bundle-detail.html?id=launch-set` 同流程＋`?id=postcard-set` 切上架擋下（`d298-bd-*.png`）；`auction-detail.html?id=tour-laminate`（`d298-ad-*.png`）；zh／en 0 raw key、console 0 錯誤。
+
+## 2026-09-22（五十八）· 電子商店清單列狀態欄拿掉「已隱藏」副徽章——同列右側「顯示於商店」開關已表達同一件事（B 反饋）
+
+> 編號說明：本則與下一則「五十七」為兩個並行 session 同時進行、各自接在五十六之後，落檔時發現編號撞在一起；本則改號五十八、順序移到最新，內容與範圍不變。
+
+**依據**：使用者反饋——「現在商品列表的右邊已經有顯示隱藏的 toggle，因此狀態欄位中的『已隱藏』標籤是重複的，可以移除。」
+
+**範圍**：`e-shop.html`——`paintBadges(row, status)` 拿掉 `hidden` 參數與副徽章插入／移除邏輯（原本 `hidden && status !== 'hidden'` 時在主徽章旁插入帶 data 屬性的「已隱藏」`badge--neutral` span），`main` 徽章選擇器同步簡化（不再需要排除副徽章）；兩處呼叫端 `paintBadges(row, flags.status, flags.hidden)` 改 `paintBadges(row, flags.status)`；相關註解更新墓碑說明。`ds-components/product-list.css`——`.product-list--eshop`／`--bundles`／`--auctions` 的 `__status` flex 規則註解更新（規則本身留著，垂直置中單顆徽章仍用得到，非只為兩顆徽章存在）。`design-system.html`——`--bundles` 變體示範卡拿掉 `<span class="badge badge--neutral">Hidden</span>`，只留「Sold out」；對應 HTML 註解同步。`design-system.md`——Pillar 4 Inventory 表與 §4.27 Product list 條目各補一則 2026-09-22 追記說明副徽章拿掉、推導不變。`BUILD-SPEC.md`（e-shop.html 條目補記）、`ASSUMPTIONS.md`（UIA-157，呈現假設：5.1.5 F4 徽章詞彙含 Hidden，本輪不在列上疊顯、由開關承載，篩選與細節頁兩顆並排不受影響）。
+
+**為什麼**：D241（§7.14）落地時，清單狀態欄曾同時掛兩顆徽章——一顆講販售軸（售罄／販售結束…），一顆講顯示軸（已隱藏），理由是「隱藏但照樣在賣」一顆徽章講不完。但同一列右側早已有「顯示於商店」開關直接呈現顯示軸的開／關，狀態欄的「已隱藏」副徽章因此與開關重複講同一件事。拿掉副徽章，狀態欄只留販售軸的主徽章（例如隱藏中但仍開賣的商品照樣顯示「販售中」），隱藏與否單純看開關。
+
+**不動的部分**：`js/listing-state.js` 的 `deriveStatus()`／`deriveFlags()` 推導本身未改——確認過 `deriveFlags()`（e-shop 清單走這支）的 `status` 從來不會是 `'hidden'`（那一層被 `deriveStatus()` 的單一桶另外處理），所以本輪之前清單主徽章本來就不會顯示「已隱藏」，副徽章是唯一講「隱藏」這件事的地方；拿掉它之後，「純隱藏、無其他主狀態」的商品仍會由 `deriveStatus()` 的單一桶正確歸進「已隱藏」篩選桶並顯示「已隱藏」主徽章（這條路徑走的是另一支函式、不受本次改動影響）。篩選 tab 的「已隱藏（Hidden）」與計數沿用 `deriveStatus()`，不受影響；`shop.status.hidden` 這把 i18n key 篩選桶與純隱藏主徽章仍在用，不需墓碑。細節頁（product-detail／bundle-detail）的兩顆徽章並排（`deriveFlags()` 分別暴露 `status`＋`hidden`）不在本輪範圍，因為那裡沒有同屏的顯示開關承載這件事。
+
+**驗證**：`python3 ../../Skills/project-ui-creator/scripts/check_ds_sync.py "site/r2.3"` 15 項 PASS（既有 WARN 與本次改動無關）；`grep -c "data-eshop-hidden-badge" e-shop.html`＝ 0；本機 devserver（Playwright 1440×1000，zh-Hant／en）——Products／Bundles／Auctions 三分頁「已隱藏」篩選各列出對應筆數（3／1／1），每列狀態欄僅餘單一主徽章（Live／Coming soon／Sold out／競標中等，視列而定）、無「已隱藏」副徽章，顯示開關皆為關；把一列的顯示開關切回開（跳確認彈窗、確認後）「已隱藏」計數與「販售中」計數即時同步變化（3→2、20→21）；zh／en 皆 0 raw key；console 僅既有 favicon 404（與本次改動無關）、無新增錯誤。截圖 `screenshots/r2.3/hidden-badge-removed-products.png`／`-bundles.png`／`-auctions.png`。
+
+## 2026-09-22（五十七）· 組合包內容物段：小標與欄位標籤分級、票券群改「票種表 → 每組張數 → 場次」、多場次的場次控制合成一格（B 反饋，承五十六／Q123）
+
+**使用者原話**：看線上版多場次活動（MIRROR FANMEETING 2026 高雄，三場）第 6 步彈窗，圈出內容物段上半部：「這邊的 title 和區塊一樣沒有分清楚」。現況由上到下：段標題 Contents → 小標 Tickets → 欄位標籤 Dates → 場次二選一卡 → 票種表 → Tickets per set → Dates it applies to → 適用場次表——三個標題視覺重量幾乎一樣、疊在一起看不出誰包含誰；小標「Tickets」底下第一個東西是「Dates」的選項卡，票種表反而沒掛在它下面；場次相關控制拆成上下兩處。
+
+**範圍**：`js/bundle-editor.js`（`layout:'split'`）——內容物段改成段標題 → 三個 `.bd-group`（`groupHTML`）：票券（小標 → 票種表 → 每組張數 → **「場次」一格**）、商品（小標 → 搜尋框 → 已加入表）、額外權益（由 `.field__label` 升成小標，`perksBlockHTML`）。新 `datesFieldHTML`＝多場活動才有的單一 `.field.bd-field--table[data-bd-dates]`：標籤「場次／Dates」（新 key `cpp.bd.sp.dates`）→ 二選一卡（`scopeCardsHTML`，從 `secScopeHTML` 拆出控件本體）→ 選「一組通用」接適用場次表＋「預設每一場都適用」一句、選「每場各一組」接每場預覽表＋「共 N 組」一句；墓碑 `sessionsFieldHTML`／`perFieldHTML`，「Day 1、Day 2、Day 3 各建立一組」那句在 SPLIT 不再產生。`ds-components/bundle-editor.css`——`.bd-sub__title` 改群組小字標配方（`--font-display`、`--fs-14`、`--fw-regular`、`--muted-foreground`、0.04em、uppercase）；`.bd-sec--stack > .bd-group` 直排 gap 12、群自己的 margin 歸零、緊接段標題的第一群不畫線；`.bd-group__title`（2026-09-01 三段式、目前無消費頁）收成同一支配方並拿掉 `--fw-medium`。`create-bundle.html`——額外權益升小標、選到的活動名改走 `.field__label`（它是值，不該被轉大寫）。DS 三件套同步：`design-system.html` Bundle editor 新增「小標 vs 欄位標籤＋合成一格的場次」demo、Classes 列補 `.bd-group`／`[data-bd-dates]`／`.bd-sub__title` 配方；`design-system.md` 敘述；`STYLE-DECISIONS.md` Q123 補「小標與欄位標籤的分別」一句（仍屬已裁決的延伸，不開新題）；`BUILD-SPEC.md`。
+
+**為什麼**：Q123 把小標與欄位標籤放在同一階（14），但兩者角色不同——小標回答「這一群在講什麼」、標籤回答「這一格是什麼」；同字級同字色同字型，三個標題疊在一起就是使用者說的「沒有分清楚」。分辨不能靠字級（會變回四階）、也不能靠字重（token 檔明訂 500 只留給 active／染色底微型字），所以借站上已經在用的「群組小字標」配方：同一個彈窗右欄預覽卡的 `.bpc__title`（「粉絲看到的」）、票券表裡的場次組頭 `.bd-tbl__gname`（「DAY 1」）、下拉選單抬頭 `.dropdown__cap` 都是 display 字型＋小型大寫＋0.04em＋muted——小標套上同一支，讀者一眼就知道它跟右欄那個「粉絲看到的」是同一種東西（分類的帽子），不是又一個欄位標籤。距離也要說話：原本段標題、小標、欄位三者等距（分卡 gap 20），現在小標到它的第一格是 12、群與群之間才是 20＋hairline，包含關係由距離帶出來。順序改成「票種表先、每組張數次之、場次最後」是因為小標叫「票券」，底下第一件事就該是票；場次是「這一組怎麼對應到場次」，是票決定之後的事，而且模式卡與模式帶出來的表（適用場次／每場預覽）回答的是同一個問題，拆成兩三格會讀成三個不相干的決定，合成一格之後切換模式時清單就在卡的正下方換掉。額外權益升成小標是連帶：小標一旦分得出來，「額外權益」若還是欄位標籤，就會讀成「商品」群底下的一格。
+
+**取捨**：①不動 Q123 的三層字級——小標仍是 14，分辨靠字型、色階與大小寫，不新增第四階。②小標用 muted 而不是 foreground：站上四處既有的群組小字標全是 muted，帽子本來就比內容淡；中文沒有大小寫可用，色階是中文唯一分得出來的手段。③沿用 2026-09-01 那支 `.bd-group`（hairline 分段）而不是另造容器——同一個元件裡「小標統轄欄位」只留一種寫法；代價是那支的 `__title` 也一起改配方（目前無消費頁，畫面無影響）。④`create-bundle.html` 的票券群沒有場次控制（電子商店組合綁單一活動的票種），只跟進小標與額外權益兩處；`bundle-detail.html` 不動。⑤`layout:'sections'`（募資兩頁）零改動：`secScopeHTML` 仍把二選一卡包成自己的欄位、`secSessionsHTML`／`secPerHTML` 照舊。
+
+**驗證**：本機 devserver（headless Chromium 1440×1000，`create-event.html?import=bky-2`＝MIRROR 三場）——內容物段直接子元素＝段標題＋3 個 `.bd-group`，間距 20／20／20，群內 12／12／12；票券群順序＝小標 → `.bd-tbl--tix` → 每組張數 → 「場次」（二選一卡 → `.bd-tbl--sess` → hint），`[data-bd-dates]` 1 個、`[data-bd-scope]` 2 個；切「每場次各一組」→ 卡底下換成 `.bd-tbl--per`（3 列）＋「共 3 組，一場一組…」；小標 computed：Poppins／14px／400／`rgba(255,255,255,.45)`／uppercase／0.56px，欄位標籤：14px／400／`.95`／none。zh／en 各掃彈窗文字 0 個裸 key。單場活動（`?from=realive-asia-taipei` 第 6 步）：`[data-bd-dates]` 0、`[data-bd-scope]` 0。募資（`create-project.html` 共創 › 回饋套組 › 新增套組）：五張分卡「含分潤名額／商店商品／額外權益／販售設定／販售數量」，`.bd-group`／`.bd-sub` 0 個。`create-bundle.html`：六個小標皆套上新配方、`[data-cb-tier-ev]` 為 `.field__label`。截圖 `screenshots/2026-09-22-bundle-content-regroup-{multi-shared-zh-Hant,multi-shared-en,multi-per-zh-Hant,multi-per-en,multi-light,single,funding-unchanged,create-bundle,ds-demo}.png`。`node --check` 兩支 js 通過；`check_ds_sync` PASS（WARN 5／13 為存量，未增）；`?v=r2.2` 未 bump。
+
 ## 2026-09-22（五十六）· 組合包三段的文字階層收斂成三層：段副標全刪、hint 每欄一句、同一事實只講一次、規則改用畫面表達（B 反饋，承五十五）
 
 **依據**：lab 頁 [`docs/bundle-copy-hierarchy-lab-2026-09-22.html`](./docs/bundle-copy-hierarchy-lab-2026-09-22.html)——把建立活動第 6 步三段（內容物／定價與庫存／命名與上架）的**每一個文字元素逐一稽核**成一張 67 列的表（元素／現行文字／問題類型／處置），再用同一份示範資料做「現況／方案 A 三層收斂／方案 B 行內合併」三欄對照。使用者裁示**方案 A（純 A，不吸收 B 的兩處）**；五條階層規則同輪記成 `STYLE-DECISIONS.md` Q123 已裁決，適用範圍＝表單分段。

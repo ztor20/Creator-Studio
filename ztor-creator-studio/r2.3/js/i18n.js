@@ -2664,13 +2664,15 @@
     'e-shop.shown.cancel':      { en: 'Cancel',                            zh: '取消' },
     'e-shop.shown.close':       { en: 'Close',                             zh: '關閉' },
     'e-shop.shown.unlisted':    { en: 'Unlisted — list it first to change whether it shows', zh: '已下架：要先上架才能調整顯示' },
-    'e-shop.shown.archived':    { en: 'Archived — relist it first', zh: '已封存：要先重新上架' },
-    /* 封存／重新上架／草稿刪除（2026-09-18 · D284，§7.14「封存與不可刪除」）：列操作依狀態互斥——
-       已下架列有「封存」、已封存列只有「重新上架」、草稿列有「刪除」且必須確認。三個確認彈窗共用 leave-dialog 的殼。 */
+    'e-shop.shown.archived':    { en: 'Archived — unarchive it first', zh: '已封存：要先解除封存' },   /* D298：已封存的出口是解除封存，不再是重新上架 */
+    /* 封存／解除封存／草稿刪除（2026-09-18 · D284，§7.14「封存與不可刪除」；2026-09-22 · D298 修訂）：列操作依狀態互斥——
+       已下架列有「封存」、已封存列只有「解除封存」（回到已下架、不確認）、草稿列有「刪除」且必須確認。確認彈窗共用 leave-dialog 的殼。 */
     'e-shop.a.archive':         { en: 'Archive',                           zh: '封存' },
-    'e-shop.a.relist':          { en: 'Relist',                            zh: '重新上架' },
+    /* 墓碑（2026-09-22，D298）：`e-shop.a.relist` 移除——已封存列的列操作由「重新上架（直接回上架）」改成「解除封存（回到已下架）」，
+       上架這一步回到細節頁的上架開關。接手的鍵是 `e-shop.a.unarchive`。 */
+    'e-shop.a.unarchive':       { en: 'Unarchive',                         zh: '解除封存' },
     'e-shop.archive.title':     { en: 'Archive “{n}”?',                    zh: '要封存「{n}」嗎？' },
-    'e-shop.archive.body':      { en: 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can relist it anytime.', zh: '它會離開主清單，只在「已封存」篩選出現；頁面轉為唯讀，訂單與收入不受影響，隨時可以重新上架。' },
+    'e-shop.archive.body':      { en: 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can unarchive it anytime.', zh: '它會離開主清單，只在「已封存」篩選出現；頁面轉為唯讀，訂單與收入不受影響，隨時可以解除封存。' },   /* D298：結尾改講解除封存 */
     'e-shop.archive.confirm':   { en: 'Archive',                           zh: '封存' },
     /* 墓碑（2026-09-18，D288）：`e-shop.archive.blocked-title`／`blocked-body`／`blocked-confirm` 移除——封存不再檢查組合包，
        「仍在上架中的組合包裡」的彈窗整組搬到下架動作上（下面的 e-shop.unlist.blocked-*）。 */
@@ -2683,13 +2685,14 @@
     'e-shop.unlist.blocked-title': { en: '“{n}” is still in listed bundles', zh: '「{n}」仍在上架中的組合包裡' },
     'e-shop.unlist.blocked-body':  { en: 'Listing and sale schedules are cleared; set the sale again after relisting. Unlisting it also unlists these bundles:', zh: '下架會清除上架與開賣排程，重新上架後需再設定開賣。下架後這些組合包也會一同下架：' },
     'e-shop.unlist.blocked-confirm': { en: 'Unlist these bundles too',     zh: '一同下架這些組合包' },
-    /* 組合包重新上架（D289，取代 D288 裁決三的「擋下」）：已下架成員先確認、一起重新上架；已封存成員才擋下 */
+    /* 組合包重新上架（D289，取代 D288 裁決三的「擋下」）：已下架成員先確認、一起重新上架；已封存成員才擋下。
+       2026-09-22 · D298 起這組只由 bundle-detail 的上架開關（已下架→上架）觸發，e-shop 的已封存列改走解除封存、不再進這裡。 */
     'e-shop.relist.title':         { en: 'Relist “{n}”?',                  zh: '要重新上架「{n}」嗎？' },
     'e-shop.relist.members-body':  { en: 'These unlisted items are relisted with it:', zh: '這些已下架的成員會一起重新上架：' },   /* D290：重新上架不等於開賣，英文原句 go back on sale 改掉 */
     'e-shop.relist.members-confirm': { en: 'Relist all',                   zh: '一併重新上架' },
     'e-shop.relist.confirm':       { en: 'Relist',                         zh: '重新上架' },
     'e-shop.relist.blocked-title': { en: '“{n}” has archived items',       zh: '「{n}」有成員已封存' },
-    'e-shop.relist.blocked-body':  { en: 'Relist these items first, then relist the bundle:', zh: '先把這些成員重新上架，再重新上架組合包：' },
+    'e-shop.relist.blocked-body':  { en: 'Unarchive these items first, then list the bundle:', zh: '先解除封存這些成員，再上架組合包：' },   /* D298：成員已封存要先解除封存（回到已下架），組合包上架時再連帶拉上來；解除封存不連動組合包 */
     'e-shop.relist.blocked-ok':    { en: 'Got it',                         zh: '知道了' },
     'e-shop.delete.title':      { en: 'Delete draft “{n}”?',               zh: '要刪除草稿「{n}」嗎？' },
     'e-shop.delete.body':       { en: 'A deleted draft cannot be recovered.', zh: '草稿刪除後無法復原。' },
@@ -3111,11 +3114,14 @@
     'product-detail.badge.zine':    { en: 'Books',        zh: '書籍' },
     'product-detail.sub':           { en: '32-page photo zine documenting the east-coast tour. Letterpress cover.', zh: '記錄東岸巡演的 32 頁攝影雜誌書。凸版印刷封面。' },
     'product-detail.btn.preview':   { en: 'Preview',      zh: '預覽' },   /* 2026-09-11 使用者：所有「以粉絲身分預覽」都改成「預覽」 */
-    /* 頁首主要動作依狀態互斥（2026-09-18 · D284）：上架中→下架、已下架→封存、已封存→重新上架；單售與組合包共用 */
+    /* 頁首主要動作依狀態互斥（2026-09-18 · D284；2026-09-22 · D298 修訂）：上架中→下架、已下架→封存（另有上架開關）、
+       已封存→解除封存（回到已下架，不自動上架）；單售、組合包、拍賣共用 */
     'product-detail.btn.unlist':    { en: 'Unlist',       zh: '下架' },
     'product-detail.btn.archive':   { en: 'Archive',      zh: '封存' },
-    'product-detail.btn.relist':    { en: 'Relist',       zh: '重新上架' },
-    'product-detail.archived.banner': { en: 'Archived — read-only. Relist it to edit or sell again.', zh: '已封存：整頁唯讀，重新上架後才能編輯與販售。' },
+    /* 墓碑（2026-09-22，D298）：`product-detail.btn.relist` 移除——三個細節頁頁首已封存態的「重新上架（直接回上架）」
+       改成「解除封存（回到已下架）」，上架由既有的上架開關承接。接手的鍵是 `product-detail.btn.unarchive`。 */
+    'product-detail.btn.unarchive': { en: 'Unarchive',    zh: '解除封存' },
+    'product-detail.archived.banner': { en: 'Archived — read-only. Unarchiving returns it to Unlisted; settings are kept.', zh: '已封存：整頁唯讀，解除封存後回到已下架、設定照舊保留。' },   /* D298：出口改講解除封存 */
     'product-detail.btn.restock':   { en: 'Restock',      zh: '補貨' },
     'product-detail.btn.save':      { en: 'Save',         zh: '儲存' },
     /* 逐選項組合的庫存鎖定（2026-09-09 · D-pending／ASSUMPTIONS UIA-146）：列尾 ⋯ 的單列入口、
@@ -3494,7 +3500,7 @@
     'ad.fulfil.title':      { en: 'Settlement & fulfilment', zh: '結標與履約' },
     'ad.rail.status':       { en: 'Auction status',          zh: '競標狀態' },
     /* 2026-09-18（D284／D285）拍賣三開關、封存與下架確認 */
-    'ad.archived.banner':   { en: 'Archived — read-only. Relist it to run this auction again.', zh: '已封存：整頁唯讀，重新上架後才能再拍。' },
+    'ad.archived.banner':   { en: 'Archived — read-only. Unarchiving returns it to Unlisted; settings are kept.', zh: '已封存：整頁唯讀，解除封存後回到已下架、設定照舊保留。' },   /* D298：出口改講解除封存 */
     /* 墓碑（2026-09-18，D286）：`ad.unlist.live-title`／`ad.unlist.live-body`／`ad.unlist.confirm`
        移除——使用者裁決「競標中不能下架」，Live 時鈕直接停用，不再有下架確認彈窗這條路徑。
        出價者如何處理改記 ASSUMPTIONS UIA-153（暫定：時間到、最高出價者得標）。 */
@@ -5279,7 +5285,7 @@
     'cp.listing.listed-switch': { en: 'Listed',                        zh: '上架' },
     'cp.listing.listed-hint': { en: 'Unlisting stops every channel and kills all links', zh: '下架後所有販售管道都不能賣，連結全部失效' },
     'cp.listing.unlisted-lock': { en: 'Unlisted — show and sale settings are locked until it is listed again.', zh: '已下架：顯示與開賣設定要重新上架後才能調整。' },
-    'cp.listing.archived-lock': { en: 'Archived — switches and schedules stay locked until it is relisted.', zh: '已封存：開關與排程都不可調，重新上架後才能調整。' },
+    'cp.listing.archived-lock': { en: 'Archived — switches and schedules stay locked until it is unarchived.', zh: '已封存：開關與排程都不可調，解除封存後才能調整。' },   /* D298 */
     'cp.listing.shown-h':   { en: 'Show in shop',                      zh: '顯示於商店' },
     'cp.listing.shown-hint': { en: 'Hidden items stay purchasable via the private link and inside bundles', zh: '隱藏後商店找不到，但能經非公開連結購買，也能被組合包帶著賣' },
     'cp.listing.none':      { en: "Don't list",                       zh: '不上架' },
@@ -5985,6 +5991,10 @@
     'cpp.bd.sp.sec.name':      { en: 'Name & listing',                 zh: '命名與上架' },
     'st.aria':                 { en: 'Jump to a section',              zh: '跳到區段' },   /* section-tabs 分節分頁的 nav 名稱（js/section-tabs.js 消費頁共用） */
     'cpp.bd.sp.tix':           { en: 'Tickets',                        zh: '票券' },
+    /* 2026-09-22 第二輪：多場活動的場次相關控制（二選一卡＋適用場次表／每場預覽表）在 SPLIT 合成
+       同一個欄位，標籤就叫「場次」——它底下就是場次本身，不必寫成「場次對應」或「適用場次」。
+       `cpp.bd.sec.scope`（radiogroup 的 aria-label）、`cpp.bd.sec.sess`（sections 版型）照舊。 */
+    'cpp.bd.sp.dates':         { en: 'Dates',                          zh: '場次' },
     'cpp.bd.sp.tix.short':     { en: 'under {n}',                      zh: '不足 {n} 張' },
     'cpp.bd.sp.sem.none':      { en: 'No tier checked yet — check at least one so fans have a ticket to buy.', zh: '還沒勾選票種——至少勾 1 種，粉絲才有票可買。' },
     'cpp.bd.sp.sem.one':       { en: 'Locked to {name}: {n} per set, nothing for fans to choose.', zh: '鎖定 {name}，每組 {n} 張，粉絲不用挑。' },
@@ -6124,6 +6134,8 @@
                               zh: '粉絲購買時再挑場次。' },
     'cpp.bd.scope.per.sub':  { en: 'Creates {n} bundles, each priced separately.',
                               zh: '建立時一次長出 {n} 組，可個別調整售價。' },
+    /* 墓碑 2026-09-22：SPLIT 的「場次」欄位改在二選一卡底下直接接每場預覽表，逐場列出會建立哪幾組，
+       這一句與表重複（Q123 ④）不再產生；key 留著給 layout:'sections' 相容，目前無消費者。 */
     'cpp.bd.scope.per.names':{ en: 'One each for {names}.',
                               zh: '{names} 各建立一組。' },
     'cpp.bd.sec.scope':     { en: 'Dates',                            zh: '場次對應' },

@@ -85,13 +85,13 @@
           <button class="btn btn--outline" type="button" data-ad-preview-open data-i18n="ad.btn.preview"><i data-lucide="eye" class="ztor-icon"></i> Preview</button>
           <span data-ad-unlist-tip hidden><button class="btn btn--outline" type="button" data-ad-unlist><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button></span>
           <button class="btn btn--outline" type="button" data-ad-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
-          <button class="btn btn--primary" type="button" data-ad-relist hidden><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="product-detail.btn.relist">Relist</span></button>
+          <button class="btn btn--primary" type="button" data-ad-unarchive hidden><i data-lucide="archive-restore" class="ztor-icon"></i><span data-i18n="product-detail.btn.unarchive">Unarchive</span></button>
         </div>
       </div>
-      <!-- 封存態說明（D284）：整頁唯讀、只能重新上架。沿用 info-banner，icon 換 archive；未封存時整條收起。 -->
+      <!-- 封存態說明（D284；D298 出口改講解除封存）：整頁唯讀、只能解除封存（回到已下架）。沿用 info-banner，icon 換 archive；未封存時整條收起。 -->
       <div class="info-banner mt-16" data-ad-archived-banner hidden>
         <i data-lucide="archive" class="ztor-icon info-banner__icon"></i>
-        <span data-i18n="ad.archived.banner">Archived — read-only. Relist it to run this auction again.</span>
+        <span data-i18n="ad.archived.banner">Archived — read-only. Unarchiving returns it to Unlisted; settings are kept.</span>
       </div>
       <!-- 未開拍提醒（2026-09-18 · D290）：上架中但開拍設定停在「未開拍」（重新上架後的常態）時露出，設了開拍就收起 -->
       <div class="info-banner mt-16" data-ad-relist-sale-banner hidden>
@@ -473,10 +473,10 @@
     if (!a) return;
     const main = document.querySelector('.main') || document.body;
     const $ = sel => document.querySelector(sel);
-    /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「重新上架」永遠放行 */
-    if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { allow: '[data-ad-relist],[data-ad-preview-open],[data-ad-preview-close]' });
+    /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「解除封存」永遠放行 */
+    if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { allow: '[data-ad-unarchive],[data-ad-preview-open],[data-ad-preview-close]' });
     const commit = () => { if (S.commit) S.commit(a); };
-    const btnUnlist = $('[data-ad-unlist]'), unlistTip = $('[data-ad-unlist-tip]'), btnArchive = $('[data-ad-archive]'), btnRelist = $('[data-ad-relist]'), btnCopy = $('[data-ad-copy]');
+    const btnUnlist = $('[data-ad-unlist]'), unlistTip = $('[data-ad-unlist-tip]'), btnArchive = $('[data-ad-archive]'), btnUnarchive = $('[data-ad-unarchive]'), btnCopy = $('[data-ad-copy]');
     const banner = $('[data-ad-archived-banner]');
     const listing = $('[data-ad-listing]'), saleLctl = $('[data-ad-sale-lctl]');
     const listedToggle = document.getElementById('ad-listed-toggle'), shownToggle = document.getElementById('ad-shown-toggle');
@@ -552,7 +552,7 @@
       document.querySelectorAll('[data-ad-lock-note]').forEach(n => {
         const key = archived ? 'cp.listing.archived-lock' : 'cp.listing.unlisted-lock';
         n.setAttribute('data-i18n', key);
-        n.textContent = T(key, archived ? 'Archived — switches and schedules stay locked until it is relisted.' : 'Unlisted — show and sale settings are locked until it is listed again.');
+        n.textContent = T(key, archived ? 'Archived — switches and schedules stay locked until it is unarchived.' : 'Unlisted — show and sale settings are locked until it is listed again.');
         n.hidden = listedOn;
       });
       const sn = $('[data-ad-started-note]'); if (sn) sn.hidden = !(listedOn && started);
@@ -593,7 +593,7 @@
         if (live) unlistTip.setAttribute('data-i18n-title', 'ad.unlist.live-disabled'); else unlistTip.removeAttribute('data-i18n-title');
       }
       if (btnArchive) btnArchive.hidden = !L.canArchive(a);
-      if (btnRelist) btnRelist.hidden = !archived;
+      if (btnUnarchive) btnUnarchive.hidden = !archived;   /* D298：已封存態的唯一主要動作＝解除封存（回到已下架） */
     }
 
     /* 開關與欄位寫回資料 */
@@ -680,12 +680,14 @@
       if (!L.canArchive(a)) return;
       askConfirm({
         title: T('e-shop.archive.title', 'Archive “{n}”?').replace('{n}', name()),
-        body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can relist it anytime.'),
+        body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can unarchive it anytime.'),
         okKey: 'e-shop.archive.confirm', okFallback: 'Archive',
         onConfirm: () => { L.archive(a); commit(); paintCards(); }
       });
     });
-    if (btnRelist) btnRelist.addEventListener('click', () => { L.relist(a); commit(); paintCards(); });
+    /* 解除封存（D298）：不確認、回到已下架（上架開關可用、「封存」鈕回來）、設定照舊、不自動上架；
+       D290 的「未開拍」提醒只在上架中露出，解除封存後不出現、重新上架後才會。 */
+    if (btnUnarchive) btnUnarchive.addEventListener('click', () => { if (!L.isArchived(a)) return; L.unarchive(a); commit(); paintCards(); });
     document.addEventListener('i18n:applied', paintCards);
     paintCards();
   })();
