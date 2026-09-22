@@ -1829,11 +1829,13 @@
 
     /* 取貨方式（2026-09-22 使用者裁決，取代 07-22「細節頁不可更改」）：#pd-delivery 是建立商品 F4 同一顆 segmented，
        切換寫回 state.delivery 與商品記錄，shipping／qr 兩套子欄位（既有 data-when-delivery）經 applyVis 換邊，
-       section 標題與頁籤標籤跟著換（07-22 裁決：標題＝目前方式）。只有編輯態能切（檢視態 shared.css 關掉 pointer-events）。
+       section 標題與頁籤維持泛稱「取貨方式」（2026-09-22 裁決，取代 07-22「標題＝目前方式」）。只有編輯態能切（檢視態 shared.css 關掉 pointer-events）。
        已有未完成訂單能不能切〔產品待確認〕，原型不擋（ASSUMPTIONS UIA-163）。 */
     function paintDeliveryTitle() {
-      var dkey = state.cat === 'digital' ? 'pd.digital-delivery.title' : (state.delivery === 'qr' ? 'cp.delivery.qr' : 'cp.delivery.shipping');
-      var dtxt = T(dkey, state.cat === 'digital' ? 'Delivery & access' : state.delivery === 'qr' ? 'QR code pickup' : 'Shipping');
+      /* 2026-09-22 使用者裁決：實體商品的標題改回泛稱「取貨方式」（cp.delivery.title），目前方式由 #pd-delivery 的 segmented 表達，
+         標題不再重述；數位商品維持「交付與存取」。 */
+      var dkey = state.cat === 'digital' ? 'pd.digital-delivery.title' : 'cp.delivery.title';
+      var dtxt = T(dkey, state.cat === 'digital' ? 'Delivery & access' : 'Delivery method');
       ['#pd-delivery-title', '[data-nav-item="delivery"]'].forEach(function (sel) {
         var el = document.querySelector(sel);
         if (el) { el.setAttribute('data-i18n', dkey); el.textContent = dtxt; }
@@ -3410,9 +3412,11 @@
       var limitQty = settingsPanel ? settingsPanel.querySelector('[data-pd-limit-fields] input') : null;
       rows.push({ g: 'pricing', go: 'rules', key: 'product-detail.limit2.title', fb: 'Purchase limit',
         v: on('pd-limit-toggle') ? T('product-detail.setov.limit', '{n} per person').replace('{n}', limitQty ? limitQty.value : '') : T('product-detail.setov.off', 'Off') });
-      var dt = document.getElementById('pd-delivery-title');
+      /* 概覽列的值顯示目前方式（標題已改泛稱，2026-09-22） */
+      var dmode = (product && product.cat === 'digital') ? T('pd.digital-delivery.title', 'Delivery & access')
+        : ((product && product.delivery === 'qr') ? T('cp.delivery.qr', 'QR code pickup') : T('cp.delivery.shipping', 'Shipping'));
       rows.push({ g: 'ops', go: 'delivery', key: 'product-detail.delivery.card', fb: 'Delivery & pickup',
-        v: join([dt ? dt.textContent.trim() : '', product && product.delivery === 'qr' ? selText('pd-pickup-session') : '']) });
+        v: join([dmode, product && product.delivery === 'qr' ? selText('pd-pickup-session') : '']) });
       /* 上架／顯示／開賣三態一列（2026-09-11）：開賣＝此刻在販售窗口內（立即開賣，或定時開賣已到且未停售） */
       var mode = document.querySelector('#pd-sale-mode .radio-list__item--active');
       var nowT = Date.now();
