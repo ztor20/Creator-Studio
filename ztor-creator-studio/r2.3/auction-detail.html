@@ -69,7 +69,8 @@
       <!-- §2.2 頁首與狀態（與商品明細同構：標題在上、狀態徽章在標題下、動作在右）
            2026-09-18（D284／D285）：狀態徽章改由 §7.14 三開關推導（ListingState.deriveAuctionFlags：
            Upcoming／Live／Ended／Unlisted／Draft／Archived，隱藏另一顆並排）；頁首主要動作依狀態互斥、一次只露一顆——
-           上架中「下架」／已下架「封存」／已封存「重新上架」，本頁無刪除。顯隱由下方 script 的 syncPrimaryAction() 決定。
+           上架中「下架」／已下架「封存」／已封存「解除封存」（D298）。顯隱由下方 script 的 syncPrimaryAction() 決定。
+           2026-09-22（D307）：已下架或已封存且從未有出價（含流標）時另有「刪除」（紅框次要樣式）；曾有出價只能封存、無刪除入口。
            2026-09-18（D286）：競標中（Live）不論有無出價一律不可下架——「下架」鈕改停用（disabled，非隱藏），
            外層 `[data-ad-unlist-tip]` 掛 title 提示；停用時 `.btn:disabled` 的 `pointer-events:none` 會擋掉按鈕本身的 hover，
            title 因此放在外層 span（span 有 pointer-events，滑到按鈕範圍時 hover 落在外層一樣觸發原生 tooltip）。
@@ -88,6 +89,7 @@
           <button class="btn btn--outline" type="button" data-ad-preview-open data-i18n="ad.btn.preview"><i data-lucide="eye" class="ztor-icon"></i> Preview</button>
           <span data-ad-unlist-tip hidden><button class="btn btn--outline" type="button" data-ad-unlist><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button></span>
           <button class="btn btn--outline" type="button" data-ad-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
+          <button class="btn btn--destructive" type="button" data-ad-delete hidden><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="product-detail.btn.delete">Delete</span></button>
           <button class="btn btn--primary" type="button" data-ad-unarchive hidden><i data-lucide="archive-restore" class="ztor-icon"></i><span data-i18n="product-detail.btn.unarchive">Unarchive</span></button>
         </div>
       </div>
@@ -297,6 +299,8 @@
           </div>
           <div class="lctl lctl--stack" data-ad-listing>
             <p class="lctl__lock-note" data-ad-lock-note hidden data-i18n="cp.listing.unlisted-lock">Unlisted — show and sale settings are locked until it is listed again.</p>
+            <!-- 曾有出價、已下架或已封存（D307）：說明為什麼沒有「刪除」——只能封存 -->
+            <p class="lctl__lock-note" data-ad-sales-note hidden data-i18n="cp.listing.sales-note">Has sales — archive only.</p>
             <!-- 2026-09-18（D286 補修）：競標中不可下架，連帶把「下架」的兩條路徑鎖住——
                  上架開關（卡頭 #ad-listed-toggle）與「定時下架」欄，否則頁首下架鈕停用形同虛設。
                  沿用 ad.unlist.live-disabled 同一把 key，文案通用（「競標結束後才能下架」）。 -->
@@ -508,9 +512,10 @@
     const main = document.querySelector('.main') || document.body;
     const $ = sel => document.querySelector(sel);
     /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「解除封存」永遠放行 */
-    if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { allow: '[data-ad-unarchive],[data-ad-preview-open],[data-ad-preview-close]' });
+    if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { allow: '[data-ad-unarchive],[data-ad-delete],[data-ad-preview-open],[data-ad-preview-close]' });   /* D307：已封存態「刪除」與「解除封存」都放行 */
     const commit = () => { if (S.commit) S.commit(a); };
     const btnUnlist = $('[data-ad-unlist]'), unlistTip = $('[data-ad-unlist-tip]'), btnArchive = $('[data-ad-archive]'), btnUnarchive = $('[data-ad-unarchive]'), btnCopy = $('[data-ad-copy]');
+    const btnDelete = $('[data-ad-delete]'), salesNote = $('[data-ad-sales-note]');   /* D307：零出價可刪／曾有出價只能封存 */
     const banner = $('[data-ad-archived-banner]');
     const listing = $('[data-ad-listing]'), saleLctl = $('[data-ad-sale-lctl]');
     const listedToggle = document.getElementById('ad-listed-toggle'), shownToggle = document.getElementById('ad-shown-toggle');
@@ -683,6 +688,9 @@
       }
       if (btnArchive) btnArchive.hidden = !L.canArchive(a);
       if (btnUnarchive) btnUnarchive.hidden = !archived;   /* D298：已封存態的唯一主要動作＝解除封存（回到已下架） */
+      /* D307：從未有出價且已下架／已封存 → 「刪除」；曾有出價且已下架／已封存 → 上架卡多一句「已有銷售紀錄，只能封存」 */
+      if (btnDelete) btnDelete.hidden = !(L.canDelete && L.canDelete(a));
+      if (salesNote) salesNote.hidden = !((archived || L.isUnlisted(a)) && L.hasSales && L.hasSales(a));
     }
 
     /* 開關與欄位寫回資料 */
@@ -777,6 +785,21 @@
     /* 解除封存（D298）：不確認、回到已下架（上架開關可用、「封存」鈕回來）、設定照舊、不自動上架；
        D290 的「未開拍」提醒只在上架中露出，解除封存後不出現、重新上架後才會。 */
     if (btnUnarchive) btnUnarchive.addEventListener('click', () => { if (!L.isArchived(a)) return; L.unarchive(a); commit(); paintCards(); });
+    /* 刪除（§7.14「拍賣的刪除」· D307，2026-09-22）：已下架或已封存且從未有出價（含流標）才到得了這裡；拍賣沒有成員，不需擋下清單。
+       確認（標題帶品名、內文講不可復原、主鈕紅框）→ ProductsStore.remove 記進工作階段，導回電子商店的競標分頁。 */
+    if (btnDelete) btnDelete.addEventListener('click', () => {
+      if (!L.canDelete || !L.canDelete(a)) return;
+      askConfirm({
+        title: T('e-shop.remove.title', 'Delete “{n}”?').replace('{n}', name()),
+        body: T('e-shop.remove.body', 'It disappears from every list and filter. This cannot be undone.'),
+        okKey: 'e-shop.delete.confirm', okFallback: 'Delete', destructive: true,
+        onConfirm: () => {
+          if (S.remove) S.remove(a);
+          try { sessionStorage.setItem('ztor.eshop.list', JSON.stringify({ tab: 'auctions', status: null, q: '' })); } catch (_) {}
+          window.location.href = 'e-shop.html';
+        }
+      });
+    });
     document.addEventListener('i18n:applied', paintCards);
     paintCards();
   })();

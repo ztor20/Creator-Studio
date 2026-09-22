@@ -66,6 +66,7 @@
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2"><!-- partials/publish-preview.js 的通用預覽節點用 .preview-card，check 15 補抓（2026-09-11） -->
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fan-event-page.css?v=r2.2"><!-- D305：發布前預覽的粉絲視角活動頁 mock -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* create-event 專屬 layout hooks，非跨頁重用，比照 e-shop/events 留頁內。上緣留白改用 shared.css 的 .wizard__body--form 修飾類（2026-07-09），對齊募資創建（測試版）create-campaign 的 72px。
@@ -1541,6 +1542,7 @@
 <script src="partials/field-more.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <script src="partials/publish-preview.js?v=r2.2"></script>
+<script src="js/fan-event-page.js?v=r2.2"></script>   <!-- D305：粉絲視角活動頁 mock 渲染（與 event-detail 共用） -->
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script>   <!-- 2026-08-13：「再辦一場」(?from=) 要讀來源活動 -->
 <!-- 套組銷售（步驟 5）掛共用套組編輯器；它從 products-store 取既有商品當候選 -->
@@ -2032,18 +2034,169 @@
     /* 五項硬閘與彙整阻擋都過了之後，才進發布前預覽確認層（D223）——create-event.html
        沒有編輯已上架活動的分支（那是另一個入口 edit-event.html），這裡永遠是新發布。 */
     if (window.ztorPublishPreview) {
-      window.ztorPublishPreview.open({
-        fields: [
-          { key: "name", el: document.querySelector('[data-ce="name"]'), kind: "input", labelKey: "pp.field.name", labelFallback: "Name" },
-          { key: "desc", el: document.querySelector('[data-ce="desc"]'), kind: "textarea", labelKey: "pp.field.desc", labelFallback: "Description" }
-        ],
-        previewClone: document.querySelector(".event-preview-card"),
-        previewSlots: { name: '[data-pv="name"]' },
-        onConfirm: doPublish
-      });
+      /* D305／D306（2026-09-22）：預覽檢視改成粉絲視角完整頁（票券頁／票務商品頁）、可翻譯欄位
+         擴到活動全部文案欄、語言旁加幣別軸、列表檢視兩張表（翻譯表＋價格表）。欄位與價格
+         都在按下發布的當下即時收集（動態清單沒有穩定 DOM，同 create-product 的做法）。 */
+      const pp = buildPublishPreviewOpts();
+      pp.onConfirm = function (result) {
+        /* 覆寫值與翻譯草稿在原型沒有後端可落，發布後由活動詳情頁的「預覽與在地化」再開同一層；
+           這裡只把結果留在記憶體供 cheat code／驗收讀（ASSUMPTIONS UIA-165）。 */
+        window.__ceLocalization = result;
+        doPublish();
+      };
+      window.ztorPublishPreview.open(pp);
       return;
     }
     doPublish();
+  }
+
+  /* ── 發布前預覽確認的宿主端資料（D305／D306）────────────────────────────
+     fields：5.1.6.1 §1 的可翻譯欄位清單（以表單實際有的欄位為準）——名稱、亮點、描述、
+       活動內含物／需攜帶物品／活動須知（三份動態清單，逐列一個 key）、條款與細則（開著才收）、
+       領取與入場方式（第三方門票開著才收）、票種名稱（步驟 4 的 types）。表演陣容的角色標籤：
+       本表單的表演者只有人名、沒有角色欄，跳過（人名維持原文，§7.4 顯示規則）；退換票說明：
+       表單沒有這個欄位（§8.26 第 15 項）。
+     prices：步驟 4 每個票種的票價＋步驟 6 每個組合包的售價；基準幣別＝創作者預設幣別 TWD
+       （示範值，ASSUMPTIONS PG-035／UIA-165）；bookyay 帶入的票種基準＝HKD 且鎖（§7.15）。 */
+  const CE_BASE_CURRENCY = "TWD";
+  function listFields(listId, groupKey, groupFb, prefix, labelKeyFb) {
+    const out = [];
+    document.querySelectorAll("#" + listId + " [data-list-row]").forEach((row, i) => {
+      const input = row.querySelector("input");
+      if (!input || !input.value.trim()) return;
+      const sel = row.querySelector("[data-list-kind-sel]");
+      const tag = sel ? (sel.options[sel.selectedIndex]?.textContent || "").trim() : "";
+      out.push({ key: prefix + "-" + i, el: { value: input.value.trim() }, kind: "input",
+                 labelKey: "pp.field.line", labelFallback: "Line " + (i + 1), labelN: i + 1,
+                 group: T(groupKey, groupFb), tag });
+    });
+    return out;
+  }
+  function buildPublishPreviewOpts() {
+    const q = sel => document.querySelector(sel);
+    const fields = [
+      { key: "name", el: q('[data-ce="name"]'), kind: "input", labelKey: "pp.field.name", labelFallback: "Name" },
+      { key: "highlight", el: q('[data-ce="highlight"]'), kind: "input", labelKey: "pp.field.highlight", labelFallback: "Highlight" },
+      { key: "desc", el: q('[data-ce="desc"]'), kind: "textarea", labelKey: "pp.field.desc", labelFallback: "Description" }
+    ];
+    const includes = listFields("ce-includes-list", "pp.field.includes", "What’s included", "inc");
+    const bring    = listFields("ce-bring-list",    "pp.field.bring",    "What to bring",   "bring");
+    const notes    = listFields("ce-notes-list",    "pp.field.notes",    "Good to know",    "note");
+    [includes, bring, notes].forEach(list => list.forEach(f => {
+      f.labelFallback = T("pp.field.line", "Line {n}").replace("{n}", f.labelN);
+      f.labelKey = null;
+      fields.push(f);
+    }));
+    const termOn = key => q('[data-ce-term="' + key + '"]')?.getAttribute("aria-checked") === "true";
+    const tnc = q('[data-ce="terms-tnc-text"]'), mkt = q('[data-ce="terms-marketing-text"]');
+    const termFields = [];
+    if (tnc && termOn("tnc") && tnc.value.trim()) termFields.push({ key: "tnc", el: tnc, kind: "textarea", labelKey: "pp.field.tnc", labelFallback: "Terms & conditions" });
+    if (mkt && termOn("marketing") && mkt.value.trim()) termFields.push({ key: "marketing", el: mkt, kind: "textarea", labelKey: "pp.field.marketing", labelFallback: "Marketing consent" });
+    termFields.forEach(f => fields.push(f));
+    const st = readState();
+    if (st.tpOn && st.tpNote) fields.push({ key: "tp-note", el: q('[data-ce="ship-tp-note"]'), kind: "textarea", labelKey: "pp.field.entry-note", labelFallback: "How to collect & enter" });
+    const tierGroup = T("pp.price.tiers", "Ticket types");
+    types.forEach(ty => fields.push({ key: "tier-" + ty.id, el: { value: (ty.name || "").trim() }, kind: "input",
+      labelKey: null, labelFallback: T("pp.field.tier-name", "Ticket type name"), group: tierGroup }));
+
+    /* 價格：票種（基準＝TWD；bookyay 帶入者 priceBase＝HKD 且鎖）＋組合包（基準＝TWD，售價＝finalPrice） */
+    const S = window.ztorEvents;
+    const prices = [];
+    types.forEach(ty => {
+      const base = ty.priceBase ? ty.priceBase.currency : CE_BASE_CURRENCY;
+      const amount = ty.priceBase ? Number(ty.priceBase.amount) : Number(ty.price) || 0;
+      prices.push({ key: "tier:" + ty.id, label: (ty.name || "").trim() || T("ce.tier.untitled", "Untitled tier"),
+                    groupKey: "pp.price.tiers", groupFallback: "Ticket types",
+                    priceObj: { base, amount, override: ty.override || {} }, locked: !!ty.fix });
+    });
+    const bundles = bundleEd ? bundleEd.getBundles().filter(b => !b.fresh || bundleEd.isValid(b)) : [];
+    bundles.forEach(b => {
+      prices.push({ key: "bundle:" + b.id, label: (b.name || "").trim() || bundleEd.suggestName(b) || T("cpp.bd.untitled", "Untitled bundle"),
+                    groupKey: "pp.price.bundles", groupFallback: "Ticket bundles",
+                    priceObj: { base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.finalPrice(b)), override: b.override || {} }, locked: false });
+    });
+
+    const views = bundles.length
+      ? [{ key: "ticket", labelKey: "fep.view.ticket" }, { key: "bundles", labelKey: "fep.view.bundles" }]
+      : [{ key: "ticket", labelKey: "fep.view.ticket" }];
+
+    return {
+      fields, prices, views,
+      currencies: S ? S.CURRENCIES.slice() : ["USD", "TWD", "HKD", "SGD", "JPY"],
+      baseCurrency: types.some(t => t.priceBase) ? types.find(t => t.priceBase).priceBase.currency : CE_BASE_CURRENCY,
+      mode: "publish",
+      previewRender: (host, api) => {
+        if (!window.ztorFanEventPage) return;
+        window.ztorFanEventPage.render(host, buildFanModel({ includes, bring, notes, termFields, bundles, st }), api);
+      }
+    };
+  }
+  /* 粉絲視角活動頁的 model（結構見 js/fan-event-page.js 檔頭）：文案欄給 { key }、資料值給字串 */
+  function buildFanModel(ctx) {
+    const st = ctx.st;
+    const cSel = document.getElementById("ce-country");
+    const lSel = document.getElementById("ce-lang");
+    const first = series.list[0] || {};
+    const timeLine = first.start ? (first.end ? first.start + " – " + first.end : first.start) : "";
+    let duration = "";
+    if (first.start && first.end) {
+      const toMin = s => { const m = /^(\d{1,2}):(\d{2})$/.exec(s); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
+      const a = toMin(first.start), b = toMin(first.end);
+      if (a != null && b != null && b > a) { const d = b - a; duration = (d >= 60 ? Math.floor(d / 60) + " h" : "") + (d % 60 ? " " + (d % 60) + " min" : ""); duration = duration.trim(); }
+    }
+    const sessionsN = series.list.length;
+    const dateLine = sessionsN > 1 ? series.list.map(x => x.date).filter(Boolean).join(" · ") : (first.date || st.date || "");
+    const pickupKey = { eticket: "fep.pickup.eticket", sf: "fep.pickup.sf", pickup: "fep.pickup.pickup" }[st.ship] || "fep.pickup.eticket";
+    const cap = eventRules.cap || {};
+    const limit = cap.mode !== "none" && cap.order ? T("fep.limit.order", "Up to {n} per order").replace("{n}", cap.order) : null;
+    const buy = eventRules.buy || {};
+    const priority = buy.mode === "tier" || buy.mode === "both" ? { window: T("fep.priority.tier", "Top fans first"), state: "" } : null;
+    const kv = document.querySelector('#ce-gallery [data-gallery-tile].is-filled img');
+    const includes = ctx.includes.map(f => ({ key: f.key, tag: f.tag }));
+    const bring = ctx.bring.map(f => ({ key: f.key }));
+    const notes = ctx.notes.map(f => ({ key: f.key }));
+    const terms = ctx.termFields.find(f => f.key === "tnc") ? { key: "tnc" } : null;
+    const tiers = types.map(ty => ({
+      key: ty.id, name: { key: "tier-" + ty.id }, note: ty.tag ? String(ty.tag) : "",
+      priceObj: { base: ty.priceBase ? ty.priceBase.currency : CE_BASE_CURRENCY, amount: ty.priceBase ? Number(ty.priceBase.amount) : Number(ty.price) || 0, override: ty.override || {} },
+      priceKey: "tier:" + ty.id, soldOut: false
+    }));
+    const bundles = ctx.bundles.map(b => {
+      const contents = [];
+      const tl = bundleEd.ticketLine(b); if (tl) contents.push({ icon: "ticket", text: tl });
+      (b.items || []).forEach(it => {
+        const opts = it.variant === "multiple" && Array.isArray(it.options) && it.options.length ? it.options.map(o => String(o.name || o).split(/\s*\/\s*/)[0]).join(", ") : "";
+        contents.push({ icon: "package", text: it.name + (opts ? " · " + T("cpp.bd.sp.spec.multi", "{opts} · fan picks").replace("{opts}", opts) : "") });
+      });
+      return {
+        name: (b.name || "").trim() || bundleEd.suggestName(b),
+        priceObj: { base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.finalPrice(b)), override: b.override || {} },
+        listPriceObj: bundleEd.listPrice(b) > bundleEd.finalPrice(b) ? { base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.listPrice(b)), override: {} } : null,
+        priceKey: "bundle:" + b.id, contents, perks: (b.perks || []).filter(Boolean), desc: (b.desc || "").trim()
+      };
+    });
+    return {
+      status: { labelKey: "fep.status.soon", fallback: "Coming soon", tone: "badge--info" },
+      typeLabel: st.typeName,
+      region: cSel ? (cSel.options[cSel.selectedIndex]?.textContent || "").trim() : "",
+      keyvisual: kv ? kv.getAttribute("src") : "",
+      name: { key: "name" }, highlight: { key: "highlight" },
+      /* 主辦＝創作者本人（原型無主辦欄，取目前 persona 的名冊名） */
+      organizer: (function () {
+        const id = typeof window.ztorPersonaId === "function" ? window.ztorPersonaId() : "default";
+        const c = window.ztorCreator && window.ztorCreator.list ? window.ztorCreator.list.find(x => x.handle === id) : null;
+        return c ? c.name : "Gary Lin";
+      })(),
+      date: dateLine, time: timeLine, duration, doors: first.doors || "",
+      venue: st.venue, address: (document.querySelector('[data-ce="addr"]')?.value || "").trim(),
+      language: lSel ? (lSel.options[lSel.selectedIndex]?.textContent || "").trim() : "",
+      priority, limit,
+      desc: { key: "desc" },
+      lineup: lineup.map(p => ({ name: p.name, role: null })),
+      notes, bring, includes,
+      pickup: T(pickupKey, st.ship), entryNote: st.tpOn && st.tpNote ? { key: "tp-note" } : null,
+      refund: null, terms, tiers, bundles, related: true
+    };
   }
   function doPublish() {
     markSaved();
@@ -5219,6 +5372,9 @@
   /* 每筆帶 type（2026-09-01）：正常流程是人先在類型閘門選完才進帶入閘門，但 admin 從
      創作者活動管理頁的「繼續設定」深連結（?import=）直接進來，沒有那一步——bookyay 自己
      知道活動是哪一種，跟著資料走。 */
+  /* 票價幣別（2026-09-22 D306／§7.15）：bookyay 的原幣是港幣，每筆票種只給 `priceHkd`；帶入時
+     `bkyApply()` 用示範匯率換成創作者預設幣別（TWD）填進票種欄（唯讀），並把港幣原值記在
+     `types[].priceBase`——發布前預覽的價格表以它為基準（鎖）、其他四幣別可覆寫。 */
   const BKY = [
     { id: "bky-1", type: "concert",
       label: "REALIVE World Tour — Taipei",
@@ -5236,9 +5392,9 @@
       thirdParty: true, thirdPartyNote: "憑 bookyay 電子票 QR 至小巨蛋 2 號門驗票入場；開演前 30 分鐘停止入場。",
       /* 可轉贈（D303）：bookyay 表單的「可以轉贈門票／限制轉贈次數／設定轉贈期限」——這一筆是第三方門票，動態 QR 整組不成立 */
       transferable: true, transferLimit: true, transferMax: 1, transferDeadline: "days", transferDays: 1,
-      tiers: [{ name: "VIP", price: "4200", qty: "100", fee: "150" },
-              { name: "搖滾區", price: "3300", qty: "200", fee: "120" },
-              { name: "看台", price: "2400", qty: "300", fee: "80" }] },
+      tiers: [{ name: "VIP", priceHkd: "1040", qty: "100", fee: "150" },
+              { name: "搖滾區", priceHkd: "820", qty: "200", fee: "120" },
+              { name: "看台", priceHkd: "600", qty: "300", fee: "80" }] },
     { id: "bky-2", type: "meet",
       label: "MIRROR FANMEETING 2026",
       note:  "2026/10/02–10/04 · 高雄流行音樂中心（三場）",
@@ -5256,8 +5412,8 @@
       transferable: true, transferLimit: true, transferMax: 2, transferDeadline: "date", transferDate: "2026-09-30",
       sessions: [{ date: "2026-10-03" }, { date: "2026-10-04" }],
       sessionNames: ["Day 1", "Day 2", "Day 3"],
-      tiers: [{ name: "搖滾區", price: "3800", qty: "150", fee: "120" },
-              { name: "一般席", price: "2200", qty: "400", fee: "80" }] },
+      tiers: [{ name: "搖滾區", priceHkd: "940", qty: "150", fee: "120" },
+              { name: "一般席", priceHkd: "545", qty: "400", fee: "80" }] },
     { id: "bky-3", type: "festival",
       label: "城市草地音樂節 2026",
       note:  "2026/11/08 · 大佳河濱公園",
@@ -5270,7 +5426,7 @@
       date: "2026-11-08", start: "14:00", end: "22:00", doors: "13:00",
       saleFromD: "2026-09-01", saleFromT: "12:00", saleToD: "", saleToT: "",
       ship: "pickup", sessions: [],
-      tiers: [{ name: "一日票", price: "1800", qty: "2000", fee: "" }] },
+      tiers: [{ name: "一日票", priceHkd: "445", qty: "2000", fee: "" }] },
     /* 這兩筆是為了示範「取票方式不是電子門票時要多問什麼」（2026-08-10 使用者指示）：
        順豐寄送要運費、到店自取要取貨地點。兩個欄位不是 bookyay 帶來的，
        帶入後仍要創作者自己填，所以刻意留空。 */
@@ -5286,8 +5442,8 @@
       date: "2026-12-06", start: "19:00", end: "21:00", doors: "18:00",
       saleFromD: "2026-10-20", saleFromT: "12:00", saleToD: "2026-12-01", saleToT: "23:59",
       ship: "sf", sessions: [],
-      tiers: [{ name: "黑膠套票", price: "2800", qty: "400", fee: "100" },
-              { name: "一般入場", price: "1200", qty: "200", fee: "60" }] },
+      tiers: [{ name: "黑膠套票", priceHkd: "690", qty: "400", fee: "100" },
+              { name: "一般入場", priceHkd: "300", qty: "200", fee: "60" }] },
     { id: "bky-5", type: "concert",
       label: "冬季特別公演 — 台南",
       note:  "2027/01/17 · 台南文化中心（到店自取）",
@@ -5300,8 +5456,8 @@
       date: "2027-01-17", start: "19:30", end: "21:40", doors: "18:45",
       saleFromD: "2026-11-15", saleFromT: "20:00", saleToD: "2027-01-10", saleToT: "23:59",
       ship: "pickup", sessions: [],
-      tiers: [{ name: "全票", price: "1600", qty: "900", fee: "80" },
-              { name: "學生票", price: "1100", qty: "300", fee: "50" }] },
+      tiers: [{ name: "全票", priceHkd: "400", qty: "900", fee: "80" },
+              { name: "學生票", priceHkd: "270", qty: "300", fee: "50" }] },
     /* 已經帶過的場次（2026-08-13 使用者指示）：同一場 bookyay 活動只會在 ztor 上存在一次，
        所以清單裡照樣找得到它——找到才回答得了「我上次是不是已經建過了」——但不能再選一次。
        這三筆刻意對上站上既有的活動（events-store.js 的 inner-circle-fanmeet／album-signing-taipei／
@@ -5492,8 +5648,12 @@
     /* 票種：帶入的票種標 fix，價格、張數、手續費不可改；名稱、標籤、加購商品仍可改 */
     /* 票種先建（名稱、預設價格與張數都來自 bookyay，鎖住），再讓矩陣照場次長出門票。
        各場的值一樣是資料一致，不是共用同一份。 */
+    /* 票價：港幣原值鎖在 priceBase，欄位顯示換算成 TWD 的整數（§7.15「建立流程中創作者看到的是
+       港幣換算成預設幣別的票價（唯讀）」）；沒有 ztorEvents 時退回原值。 */
+    const toTwd = v => (window.ztorEvents ? String(window.ztorEvents.fx("HKD", "TWD", Number(v) || 0)) : String(v));
     types = rec.tiers.map(t => ({
-      id: "type-" + (++typeSeq), name: t.name, price: t.price, qty: t.qty, fee: t.fee || "",
+      id: "type-" + (++typeSeq), name: t.name, price: toTwd(t.priceHkd), qty: t.qty, fee: t.fee || "",
+      priceBase: { currency: "HKD", amount: Number(t.priceHkd) || 0 },
       fix: true, fixFee: !!t.fee          // 文件「手續費(若有則fix)」：bookyay 有給才鎖
     }));
     tiers = [];

@@ -79,7 +79,9 @@
       capacity: 600,
       /* fee＝手續費、earlyMin＝比開放入場提早幾分鐘（皆 2026-08-11 新欄，沒寫＝無）。 */
       tiers: [
-        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 100, fee: 100, earlyMin: 30 },
+        /* override（2026-09-22 D306）＝創作者在價格表手動改過的幣別：USD 換算值是 133（4200 ÷ 31.5），
+           創作者覆寫成 135 讓數字好看；其餘幣別沒改＝顯示換算值。 */
+        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 100, fee: 100, earlyMin: 30, override: { USD: 135 } },
         { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 200, fee: 100 },
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 300 }
       ],
@@ -104,7 +106,7 @@
       bundles: [
         { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-vip'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600 }],
-          price: 4800, sold: 12, cap: 50 }
+          price: 4800, sold: 12, cap: 50, override: { HKD: 1188 } }   // HKD 換算 1,189 → 覆寫 1,188（D306 示範）
       ],
       /* 發布設定（2026-08-11 新欄）：建立流程第 7 步的三個選擇，沒寫＝直接開賣／電子門票／公開。
          2026-09-22 D302 補 thirdParty：這一筆售票中，詳情頁的發布設定唯讀，用來看鎖定態。 */
@@ -411,6 +413,10 @@
       typeLabelKey: 'ce.type.festival',
       category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
       series: null,
+      /* bookyay 帶入的活動示範（2026-09-22 D306／§7.15）：票種基準幣別強制港幣、票價鎖死（要改回 bookyay 改），
+         其他四種幣別——含創作者預設幣別 TWD 的換算值——都可在價格表覆寫。這一筆是站上唯一的 source:'bookyay'。 */
+      source: 'bookyay',
+      currency: 'HKD',
       name: "Taipei New Year's Eve countdown",
       desc: "Countdown stage set for Taipei's New Year's Eve city party.",
       lineup: ['NICKTHEREAL 周湯豪'],
@@ -429,8 +435,9 @@
          （2026-08-18 更正：原本這裡還寫著「其餘準備中的活動票種仍為空」——那批已於同日
          補上票種。票種是建立流程的必填，已排程卻沒有票種的活動在產品上生不出來。） */
       tiers: [
-        { id: 'tier-early', name: 'Early bird', price: 800, qty: 400, sold: 0 },
-        { id: 'tier-ga',    name: 'General admission', price: 1200, qty: 1600, sold: 0 }
+        /* 港幣票價（bookyay 原幣）：HK$200 ≈ NT$808、HK$300 ≈ NT$1,212（示範匯率）；TWD 覆寫成整數好看的 800／1,200 */
+        { id: 'tier-early', name: 'Early bird', price: 200, qty: 400, sold: 0, override: { TWD: 800 } },
+        { id: 'tier-ga',    name: 'General admission', price: 300, qty: 1600, sold: 0, override: { TWD: 1200 } }
       ],
       sold: 0,
       revenue: 0,
@@ -581,7 +588,7 @@
       doors: '18:30',
       capacity: 600,
       tiers: [
-        { id: 'tier-lower', name: 'Lower level', price: 2800, qty: 400, sold: 0 },
+        { id: 'tier-lower', name: 'Lower level', price: 2800, qty: 400, sold: 0, override: { JPY: 13900 } },   // JPY 換算 13,956 → 覆寫 13,900（D306）
         { id: 'tier-upper', name: 'Upper level', price: 1800, qty: 200, sold: 0 }
       ],
       /* 2026-09-21（D294 決定三示範）：已排程（發布、尚未開賣）的活動也掛一組組合包——
@@ -1582,13 +1589,105 @@
     return { tierIds: [], qty: 1 };
   }
 
+  /* ── 定價幣別（2026-09-22 D306，主規格 §7.15）────────────────────
+     基準幣別（base）＝建立當下創作者的預設幣別；其他四種幣別由系統依匯率換算；創作者可在
+     發布前預覽確認畫面／活動詳情「預覽與在地化」的價格表逐幣別覆寫；基準價一改覆寫全部重算。
+     資料怎麼放：
+       · 活動層 `currency`（沒寫＝'TWD'，示範資料的創作者預設幣別）＝該活動票種的基準幣別；
+         bookyay 帶入的活動 `source:'bookyay'` ＋ `currency:'HKD'`（票價鎖死、基準欄鎖，§7.15）。
+       · 票種 `price` 仍是**基準幣別的整數金額**（既有讀取端 event-detail／e-shop／bundle-detail／
+         check_events_store 全部照舊讀這個數字，不改形狀）；逐幣別覆寫放同一筆的 `override`
+         `{ USD: 135 }`——只記「創作者手動改過的幣別」，換算值不落地（示範匯率固定，算得出來就不存）。
+       · 組合包 `price`／`override` 同理；組合包是 ztor 端建立，基準幣別＝創作者預設幣別（'TWD'），
+         即使活動本身是 bookyay 帶入（§7.15「含 bookyay 票券的組合包」）。
+       · `priceOf(ev, tier)`／`bundlePriceOf(ev, b)` 把上述三樣收成一個 priceObj
+         `{ base, amount, override, locked }`，`priceIn(priceObj, cur)` 依「覆寫優先、否則換算」取價。
+     匯率是**固定示範值**（ASSUMPTIONS PG-035：1 USD = 31.5 TWD／157 JPY；本輪補 7.8 HKD／1.35 SGD），
+     不隨時間變；匯率來源與時點上游待確認（§7.15）。取整：票價整數、四捨五入（§7.15）。
+     覆寫值的持久化：活動詳情頁「儲存」後寫進 localStorage `ztor.event-fx`（同 stage 覆寫的做法），
+     `get()`／`list()` 讀出時合併到 `tier.override`／`bundle.override`；沒有後端，清鍵即回 mock 原值。 */
+  var CURRENCIES = ['USD', 'TWD', 'HKD', 'SGD', 'JPY'];
+  var FX_PER_USD = { USD: 1, TWD: 31.5, HKD: 7.8, SGD: 1.35, JPY: 157 };
+  var SYMBOL = { USD: 'US$', TWD: 'NT$', HKD: 'HK$', SGD: 'S$', JPY: '¥' };
+  var DEFAULT_CURRENCY = 'TWD';
+  function fx(from, to, amount) {
+    var a = Number(amount) || 0;
+    if (!FX_PER_USD[from] || !FX_PER_USD[to]) return Math.round(a);
+    if (from === to) return Math.round(a);
+    return Math.round(a / FX_PER_USD[from] * FX_PER_USD[to]);
+  }
+  function priceIn(po, cur) {
+    if (!po) return 0;
+    cur = cur || po.base;
+    if (cur === po.base) return Math.round(Number(po.amount) || 0);
+    var ov = po.override && po.override[cur];
+    if (ov != null && ov !== '' && !isNaN(Number(ov))) return Math.round(Number(ov));
+    return fx(po.base, cur, po.amount);
+  }
+  /* 基準價變更＝所有覆寫作廢、重新換算（§7.15 重算規則，比照 §7.4 翻譯）。回新物件、不改原本。 */
+  function recalc(po, amount) {
+    return { base: po.base, amount: amount == null ? po.amount : amount, override: {}, locked: !!po.locked };
+  }
+  function moneyIn(po, cur) {
+    var c = cur || (po && po.base) || DEFAULT_CURRENCY;
+    return SYMBOL[c] + (priceIn(po, c)).toLocaleString('en-US');
+  }
+  function fmtMoney(cur, amount) {
+    return SYMBOL[cur] + Math.round(Number(amount) || 0).toLocaleString('en-US');
+  }
+  function priceOf(ev, tier) {
+    var base = (tier && tier.currency) || (ev && ev.currency) || DEFAULT_CURRENCY;
+    return { base: base, amount: Number(tier && tier.price) || 0, override: (tier && tier.override) || {},
+             locked: !!(ev && ev.source === 'bookyay') };
+  }
+  function bundlePriceOf(ev, b) {
+    var base = (b && b.currency) || (ev && ev.bundleCurrency) || DEFAULT_CURRENCY;
+    return { base: base, amount: Number(b && b.price) || 0, override: (b && b.override) || {}, locked: false };
+  }
+  var FX_KEY = 'ztor.event-fx';
+  function fxMap() {
+    try { return JSON.parse(localStorage.getItem(FX_KEY) || '{}') || {}; }
+    catch (e) { return {}; }
+  }
+  function writeFx(id, data) {
+    var m = fxMap();
+    if (data) m[id] = data; else delete m[id];
+    try { localStorage.setItem(FX_KEY, JSON.stringify(m)); } catch (e) {}
+  }
+  /* 把本機儲存的覆寫合併進活動副本（tiers[].override／bundles[].override），沒有存過就原樣回傳。 */
+  function applyFx(ev) {
+    if (!ev) return ev;
+    var m = fxMap(), d = m[ev.id];
+    if (!d) return ev;
+    (ev.tiers || []).forEach(function (t) { if (d.tiers && d.tiers[t.id]) t.override = d.tiers[t.id]; });
+    (ev.bundles || []).forEach(function (b) { if (d.bundles && d.bundles[b.id]) b.override = d.bundles[b.id]; });
+    return ev;
+  }
+
   window.ztorEvents = {
     bundleTickets: bundleTickets,
+    /* 定價幣別（D306）：常數與 helper，見上方說明區塊 */
+    CURRENCIES: CURRENCIES,
+    DEFAULT_CURRENCY: DEFAULT_CURRENCY,
+    FX_PER_USD: FX_PER_USD,
+    SYMBOL: SYMBOL,
+    fx: fx,
+    priceIn: priceIn,
+    recalc: recalc,
+    moneyIn: moneyIn,
+    fmtMoney: fmtMoney,
+    priceOf: priceOf,
+    bundlePriceOf: bundlePriceOf,
+    /* 詳情頁「預覽與在地化」儲存覆寫：`{ tiers: { tierId: { USD: 135 } }, bundles: { bundleId: {…} } }`；
+       只存有值的幣別，空物件＝該列沒有覆寫。傳 null 清掉。 */
+    setOverrides: function (id, data) { if (id) writeFx(id, data); },
+    getOverrides: function (id) { return (fxMap()[id]) || null; },
+    resetOverrides: function (id) { if (id) writeFx(id, null); },
     list: function () {
       var m = stageMap();
       return clone(EVENTS).map(function (e) {
         if (m[e.id]) e.status = m[e.id];
-        return e;
+        return applyFx(e);
       });
     },
     /* id 有帶但查不到 → 回 null，由呼叫端顯示「找不到活動」。
@@ -1605,7 +1704,7 @@
       }
       if (!ev) return null;                  // 有 id 但查不到＝查詢失敗
       if (m[ev.id]) ev.status = m[ev.id];    // 本機改過階段的活動以覆寫值為準
-      return ev;
+      return applyFx(ev);                    // 本機存過的逐幣別覆寫（D306）一併合併
     },
     /* 階段轉換（原型層級）：寫進 localStorage，下一次 get() 就是新階段。
        允許哪些轉換由呼叫端（event-detail.html）依 §7.2 狀態機判斷，本檔只負責存。 */
