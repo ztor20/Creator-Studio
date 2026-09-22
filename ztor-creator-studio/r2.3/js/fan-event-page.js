@@ -2,8 +2,9 @@
  *
  * 發布前預覽確認（主規格 §7.4）的預覽檢視自 D305 起是「粉絲視角完整頁」：內容等同粉絲端
  * 活動頁會呈現的全部設定，活動有「票券頁」與「票務商品頁」兩個視圖（沒有組合包時只有
- * 票券頁）。兩個宿主——建立活動（create-event.html，發布前）與活動詳情（event-detail.html
- * 的「預覽與在地化」，發布後再開）——都把自己的資料整理成同一個 `model`，交給本檔畫；
+ * 票券頁）。兩個宿主——建立活動（create-event.html 第 8 步，發布前）與活動詳情的「預覽與在地化」
+ * 全頁版（event-localization.html，發布後再開；D310 起不是浮層）——都把自己的資料整理成
+ * 同一個 `model`，交給本檔畫；
  * 本檔只知道「粉絲頁長什麼樣」，不知道資料從表單還是從 events-store 來。
  *
  * ── 2026-09-22 使用者裁決：「預覽 UI 必須做得和這兩個一模一樣，只是資料和機制套用我們的流程與功能」──
@@ -55,7 +56,10 @@
  *     related: true | [{ name, cat, price:'NT$ 1,200 起', img }]   // true＝三張佔位卡；陣列＝指定內容（都標「非本活動」）
  *   }
  *
- * api（由 partials/publish-preview.js 的 previewRender 提供）：
+ * 價格節點帶 `data-fep-price-key`（票價、組合價、購買區的價格區間；區間給空字串＝不聚焦單列）：
+ * D310 起「價格不就地改」，宿主（js/publish-stage.js）接這個屬性把價格表滑出來。
+ *
+ * api（由 js/publish-stage.js 的 previewRender 提供；浮層版 partials/publish-preview.js 同介面）：
  *   lang；getValue(key) → 當前語系的值；bindEditable(el, key) → 掛 inline 編輯；
  *   priceIn(priceObj, priceKey) → 當前幣別的數字；money(priceObj, priceKey) → 格式化字串；fmt(n)；
  *   view：'ticket' | 'bundles'；views：可切的視圖清單；setView(v)。
@@ -311,6 +315,9 @@
       plink.textContent = T('fep.bundles.link', '{n} bundles').replace('{n}', bundles.length) + ' ›';
       plink.addEventListener('click', function () { var s = root.querySelector('[data-fep-bundles]'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     }
+    /* D310：預覽裡的價格點了開右側的價格表（價格不就地改）。區間不對應單一列，
+       key 給空字串＝開表但不聚焦任何一格；宿主（publish-stage.js）認 [data-fep-price-key]。 */
+    if (!pv.classList.contains('is-empty')) pv.setAttribute('data-fep-price-key', '');
     price.appendChild(pk); price.appendChild(pv); if (plink) price.appendChild(plink);
     buy.appendChild(price);
 
@@ -406,7 +413,9 @@
         mainEl.appendChild(slot(api, 'span', 'pdp-tier__label', t.name, T('ce.tier.untitled', 'Untitled tier')));
         if (t.note) mainEl.appendChild(el('span', 'pdp-tier__meta', esc(t.note)));
         tr.appendChild(mainEl);
-        tr.appendChild(el('span', 'pdp-tier__price', esc(moneyOf(api, t.priceObj, t.priceKey))));
+        var tprice = el('span', 'pdp-tier__price', esc(moneyOf(api, t.priceObj, t.priceKey)));
+        tprice.setAttribute('data-fep-price-key', t.priceKey || '');   /* D310：點價格開價格表 */
+        tr.appendChild(tprice);
         var b = el('button', 'btn btn--yellow-ghost btn--sm pdp-tier__buy'); b.type = 'button'; b.setAttribute('data-pp-inert', ''); b.tabIndex = -1;
         var tn = valueOf(api, t.name);
         if (t.soldOut) { b.disabled = true; b.setAttribute('data-i18n', 'fep.tier.soldout'); b.textContent = T('fep.tier.soldout', 'Sold out'); b.setAttribute('aria-label', tn + ' ' + T('fep.tier.soldout', 'Sold out')); }
@@ -493,6 +502,7 @@
         }
         body.appendChild(el('span', 'pdp-rec-card__note', esc(b.note || '')));
         var priceEl = el('span', 'pdp-rec-card__price');
+        priceEl.setAttribute('data-fep-price-key', b.priceKey || '');   /* D310：點價格開價格表 */
         var nowStr = moneyOf(api, b.priceObj, b.priceKey);
         priceEl.textContent = (tix && tix.names && tix.names.length > 1) ? T('fep.bd.from', 'From {price}').replace('{price}', nowStr) : nowStr;
         if (wasN > nowN) { priceEl.appendChild(document.createTextNode(' ')); priceEl.appendChild(el('s', '', esc(moneyOf(api, b.listPriceObj, null)))); }

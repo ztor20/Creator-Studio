@@ -1,3 +1,24 @@
+## UIA-168 · 發布前預覽確認的全頁畫面：第 8 步版面、預覽區塊「編輯」入口的呈現、詳情頁全頁版的路由（2026-09-22 · D310；spec 5.1.6.1 §4.8、5.1.6.3 §2.13、主規格 §7.4／§8.26 第 18／19 項）— 呈現假設
+
+**狀態**：Open。`ds-components/publish-stage.css`＋`js/publish-stage.js`（新）、`ds-components/drawer.css`（`--wide`）、`shared.css`（`.wizard__body--stage`）、`create-event.html`（第 8 步）、`event-localization.html`（新）、`event-detail.html`（入口改導頁）、`js/fan-event-page.js`（`data-fep-price-key`）、`js/i18n.js`、`design-system.html`／`.md` §4.216。承 UIA-165（發布前預覽確認層）、UIA-167（前台鏡像）。
+
+### 呈現假設（不改產品語意，待使用者檢視）
+
+- **預覽區塊的「編輯」入口＝hover 浮現**（§4.8 明文交 site 決定、§8.26 第 18 項）：滑到某一塊時該塊描一條品牌橘外框（`.pstage-zone--hot`）、右上角浮出一顆「編輯」鈕（`.pstage-edit`）。選 hover 而不是常駐，是因為主區是前台頁面的 1:1 鏡像——常駐的編輯鈕會讓「這是粉絲看到的樣子」這件事失真。**按鈕浮在預覽上方、不插進鏡像的 DOM**：那份 markup 是前台複製，塞東西進去就不再是鏡像，而且可翻譯欄位是 contenteditable，按鈕塞在裡面會被當成內容編輯。觸控裝置沒有 hover，本輪不另補常駐版（原型以桌機為準）。
+- **區塊 → 步驟的對應**（照 §4.8 那份清單）：名稱／亮點／描述 → 步驟 2、場地與時間 → 3、票種與票價 → 5、組合包 → 6、取票方式 → 7。取票方式那一塊用 `.pdp-details__shipping-block:first-child` 命中（右欄第二塊是退換票的平台固定文案、不可編）。圖庫與主視覺本輪不掛編輯入口（§4.8 的清單沒有列它）。
+- **詳情頁的全頁版＝獨立路由 `event-localization.html?id=`**（§2.13 明文交 UI 決定、§8.26 第 19 項）。選獨立頁而不是詳情頁內的全寬模式：詳情頁已經有「檢視／編輯」兩種模式與九個子集，再疊一個會吃掉整個寬度的第三種模式，離開與返回的規則會變成三維；獨立頁的返回語意只有一條（回詳情），而且網址可直接分享與重整。代價是備料要搬一份過去——所以 `locFields`／`locPrices`／`locModel` 整組搬走、不在兩處各留一份。
+- **第 8 步的頁面標題（h1／副標）不畫**：其餘步驟有 `wizard__step-title`，這一步沒有——頂列的進度條已經寫著「預覽與發布」，主區是一整頁前台預覽，再加一行標題只是把同一句話說第二次（鐵律 12）。
+- **第 8 步的底部動作列整條收起**：主鈕「發布活動」與次鈕「上一步」都在側欄底部（§4.8「主鈕在側欄底部」），底部再留一組就是同一個動作兩個家。
+- **版面寬度 1720**（`.wizard__body--stage`）＝前台內容寬 1280 ＋ 24 gap ＋ 320 側欄 ＋ 左右 48 內距。視窗比這窄時主區自己收窄（前台 CSS 本來就 responsive）、側欄寬度不變；1440 視窗下主區約 1040，比前台的 1280 窄，但比塞進 1376 浮層再內捲好讀。1023 以下側欄不再是軌、落到預覽下方。
+- **預覽語系與預覽幣別的初始值**：跟宿主走（語系＝介面語言＝預設語系、幣別＝基準幣別），使用者點過任一列之後才固定成他選的那個；第 8 步與其他步驟來回走不會被打回預設。
+- **兩張表的抽屜寬 880**（`.drawer--wide`）：翻譯表是欄位 × 四語系、價格表是項目 × 五幣別，預設的 480 會讓每一欄都窄到看不出對照關係。
+
+### 產品缺口（未自行補成正式行為）
+
+- **翻譯與覆寫沒有後端**：原型的翻譯草稿留在 `js/publish-stage.js` 的模組變數（換頁即散），逐幣別覆寫寫進 `ztorEvents.setOverrides()`（localStorage）。同 UIA-165，不改。
+- **共看派對（D149）的第 8 步**：一併改走全頁畫面，檢核用它自己的七項（`QC_ROWS_WP`）。共看派對沒有票種與組合包，預覽只有票券頁、價格段為空——上游沒有定義共看派對的發布前預覽長什麼樣（§4.10 只說共用 F11／F12），本輪照演出型同一條路徑走、不另做一版。
+- **單頁表單（建立商品／建立組合／建立專案／作品上架）仍是浮層**：D310 決定四說它們也要改成全頁、但明文「原型本輪只落活動側，商品側與其他流程下一輪」。`partials/publish-preview.js` 因此保留、只是活動宿主退場。
+
 ## UIA-167 · 發布前預覽確認的粉絲視角活動頁改為前台 shop-item 的 1:1 鏡像（票券頁／票務商品頁）——真實 markup ＋ CSS、只換資料（2026-09-22 · 使用者裁決，B 反饋；承 UIA-165／D305；spec 0-設計規格書 §7.4「呈現參考、非約束」、5.1.6.1 §1）— 呈現假設／產品缺口
 
 **狀態**：Open。`js/fan-event-page.js`（重寫：前台 DOM 結構與 class 名、`relatedFromStore()`）、`ds-components/fan-shop.css`（新：前台實際命中的 CSS 加 `.fep-shop` 前綴＋前台 :root token＋檔尾 CS 補丁）、`ds-components/fan-event-page.css`（墓碑）、`partials/publish-preview.js`＋`ds-components/publish-preview.css`（`shell:'fan'` → `.pp-dialog--fan`／`.pp-preview-slot--fan`、`.pp-fan-viewbar`）、`create-event.html`（`buildFanModel()` 補 `gallery`／`video`／`organizerAvatar`／`bundles[].tickets{names,qty}`／`goods[]`／`related`）、`event-detail.html`（`locModel()` 同上）、`js/i18n.js`（`fep.*` 前台固定文案 24 key）、`design-system.html`／`.md` §4.215、`docs/fe-mirror-2026-09-22/`。

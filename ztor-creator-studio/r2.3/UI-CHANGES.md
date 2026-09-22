@@ -4,6 +4,26 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-22（七十二）· 發布前預覽確認由浮層改為全頁畫面——建立活動第 8 步「確認」重做成「預覽與發布」（前台預覽＋側欄：語言／幣別／發布前檢核）、F10 摘要卡退場、發布浮層退場；活動詳情的「預覽與在地化」改開同一畫面的全頁版（A spec-derived · D310，修訂 D223／D305 的呈現層級；5.1.6.1 §4.8、5.1.6.3 §2.13、主規格 §7.4）
+
+**依據**：D310（2026-09-22）。同一件事（發布前看一次）不該問兩遍——第 8 步的摘要卡＋檢核與按下發布後才彈的浮層是兩層確認；1376px 的整頁前台被塞進對話框、內部再捲動；語言／幣別／預覽·列表三組控制擠在浮層頂部一列；改過哪些語系沒地方看；翻譯表與價格表共用一個「列表」開關。
+
+**範圍**：
+- `ds-components/publish-stage.css`（新）＋ `js/publish-stage.js`（新）——全頁畫面的版型與行為：`.pstage` 兩欄（主區預覽｜320 sticky 側欄），側欄三段＝語言（四語系列表、每列標預設／自動翻譯／已修改 N 欄，點選切換預覽語系；「還原自動翻譯」；「逐欄位對照」開翻譯表）、幣別（基準＋四換算、每列標基準／換算／已覆寫 N 項；點預覽裡的價格開價格表）、第三段依 `mode`（`'publish'`＝發布前檢核、每項可點跳回步驟；`'save'`＝未儲存的變更摘要），底部主鈕＋次鈕。翻譯與價格草稿沿用浮層那套（DRAFTS／EDITED／PRICES，模組變數、來回走不丟）；兩張表沿用 `.pp-table`／`.pp-cell` 家族、改掛在 `.drawer--wide` 的右側滑出面板
+- `ds-components/drawer.css`——新變體 `--wide`（面板 480 → 880）：表格型抽屜用，預設寬度下欄位 × 四語系與項目 × 五幣別都窄到看不出對照
+- `shared.css`——新修飾類 `.wizard__body--stage`（max-width 1720＝前台內容寬 1280 ＋ gap ＋ 320 側欄 ＋ 左右內距）；第 8 步用它，其餘步驟仍 `--mid`
+- `create-event.html`——第 8 步整段 markup 換成一個 `[data-ce-stage]` 空殼（兩組 `.review-row` 摘要卡與兩組 `.readiness` 檢核區塊移除、`review-row.css` 連結移除）；`render()` 在第 8 步套 `--stage` 寬度、收起底部動作列、掛／卸 stage；`syncReview()`／`syncReviewWP()` 只算檢核狀態寫進 `qcState`（`setRev()` 與摘要回填整段刪除，留墓碑註解）；新增 `CE_EDIT_ZONES`（預覽區塊 → 步驟 2 名稱／亮點／描述、3 場地與時間、5 票種、6 組合包、7 取票方式）、`QC_ROWS`／`QC_ROWS_WP`／`stageChecks()`／`mountStage()`；`buildPublishPreviewOpts()` 改名 `buildStageOpts()` 並補 `editZones`／`onEdit`／`checks`／`onPrimary`／`onSecondary`；`tryPublish()` 的必填彙整與三個阻擋不變，通過後直接 `doPublish()`（不再 `ztorPublishPreview.open()`）；進度條第 8 步標籤 `ce.step.review` → `ce.step.preview`；`partials/publish-preview.js` 在本頁退場
+- `event-localization.html`（新）——活動詳情「預覽與在地化」的全頁版：`?id=` 讀 events-store，頁首帶返回活動詳情，同一支 publish-stage（`mode:'save'`），儲存寫 `ztorEvents.setOverrides()` 後回 `event-detail.html?id=…&saved=loc`
+- `event-detail.html`——`openLocalization()` 改為導去新頁；`locFields()`／`locPrices()`／`locModel()` 整組搬走；`publish-preview.js`／`fan-event-page.js`／`publish-preview.css`／`fan-shop.css` 四個引用移除；回來帶 `?saved=loc` 時重讀 store 的覆寫、重畫票種卡與在地化摘要並回饋
+- `js/fan-event-page.js`——票價、組合價與購買區的價格區間補 `data-fep-price-key`（D310「價格不就地改，點了開價格表」）；檔頭兩個宿主更名
+- `js/i18n.js`——`ce.step.preview`、`pstage.*`（側欄三段標題、語系與幣別的狀態徽章、兩張表的入口與標題、主鈕與次鈕）、`evloc.*`（全頁版的標題／返回／查無活動）共 27 key
+- `design-system.html`／`design-system.md`——新增 §4.216 Publish stage（就地掛載 demo，與 §4.130 同一份示範資料）＋ TOC ＋元件總表列；Drawer 補 `--wide` 變體說明；§4.215 Consumers 改指兩個全頁宿主
+- 文件：`ASSUMPTIONS.md` UIA-168、`BUILD-SPEC.md`、`requirements-map.md`
+
+**動機**：發布前預覽確認需要整個寬度——它的內容是一整頁前台。把它併成流程的最後一步之後，摘要卡的工作由真實預覽承擔（預覽本身就是摘要，而且比摘要卡更接近創作者要確認的東西），檢核與發布動作跟預覽站在同一個畫面，語言與幣別「改了什麼」由側欄列表常駐呈現、不必點進去才發現。翻譯表與價格表是兩件工作，所以各自一個入口，不再共用一個「列表」開關。發布後再開用全頁而不是浮層，理由相同。
+
+**驗證**：Playwright 1440 實走建立活動到第 8 步（無組合包／有組合包各一次）、語系切換＋就地編輯後徽章轉「已修改 1 欄」、幣別列切換、點預覽價格開價格表改一格 → 「已覆寫 1 項」且預覽同步、逐欄位對照開翻譯表、檢核項點了跳回步驟 3 再回來草稿仍在、發布走 `doPublish()` 無浮層；`event-detail.html?id=realive-asia-kaohsiung` 入口 → 全頁版 → 覆寫 → 儲存回詳情且在地化摘要由「2 格已覆寫」變「3 格已覆寫」；`taipei-nye` 基準 HKD、價格表基準欄唯讀＋鎖；`create-product.html`「開始販售」浮層不受影響。console 0 錯誤；`check_ds_sync.py` PASS＋既有兩則 WARN（raw-color／sibling-rhythm，與改動前同數）；`?v=r2.2` 未 bump。截圖 `screenshots/2026-09-22-publish-stage-01…06`。
+
 ## 2026-09-22（七十一）· 發布前預覽確認的粉絲視角活動頁改為前台 shop-item 的 1:1 鏡像——真實 markup ＋ CSS、只換資料；票務商品頁組合卡照前台格式；殼加寬（B 反饋 · 使用者裁決「預覽 UI 必須做得和前台一模一樣，只是資料和機制套用我們的流程與功能」；承 D305／UIA-165）
 
 **依據**：使用者裁決（2026-09-22，原話見 ASSUMPTIONS UIA-167）——票券頁 `shop-item.html?id=ev-score-live`、票務商品頁 `shop-item.html?id=ev-themesong-night&sets=1#bundles` 兩頁就是預覽的樣子。上午 D305 那版是用站上 token 重刻的「結構鏡像」（六十九），使用者看過後裁決不夠：要的是版型、間距、字級、顏色、圓角、標籤、卡片、按鈕全部與前台一致。

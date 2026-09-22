@@ -37,7 +37,7 @@
 <link rel="stylesheet" href="ds-components/event-preview-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/review-row.css?v=r2.2">
+<!-- review-row.css 於 2026-09-22（D310）移除：第 8 步的各步摘要卡（F10）退場，本頁不再有 .review-row -->
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
@@ -67,6 +67,8 @@
 <link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2"><!-- partials/publish-preview.js 的通用預覽節點用 .preview-card，check 15 補抓（2026-09-11） -->
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- D305：發布前預覽的粉絲視角活動頁（前台 shop-item 鏡像，2026-09-22 使用者裁決；只給 js/fan-event-page.js 用） -->
+<link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- D310：第 8 步「預覽與發布」的全頁版型（主區預覽＋右側側欄） -->
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表／價格表的右側滑出面板（.drawer--wide） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* create-event 專屬 layout hooks，非跨頁重用，比照 e-shop/events 留頁內。上緣留白改用 shared.css 的 .wizard__body--form 修飾類（2026-07-09），對齊募資創建（測試版）create-campaign 的 72px。
@@ -277,7 +279,7 @@
             <span class="progress-stepper__label" data-step="5"><span data-di="d.step.tix">票務</span><span class="progress-stepper__state" data-step-state></span></span>
             <span class="progress-stepper__label" data-step="6"><span data-di="d.step.bundle">票務商品</span><span class="progress-stepper__state" data-step-state></span></span>
             <span class="progress-stepper__label" data-step="7"><span data-di="d.step.publish">發布設定</span><span class="progress-stepper__state" data-step-state></span></span>
-            <span class="progress-stepper__label" data-step="8"><span data-i18n="ce.step.review">Review</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="8"><span data-i18n="ce.step.preview">Preview &amp; publish</span><span class="progress-stepper__state" data-step-state></span></span>
           </div>
         </div>
       </div>
@@ -1250,140 +1252,15 @@
       </div><!-- /.wizard-split -->
     </section>
 
-    <!-- STEP 7 · Review -->
+    <!-- STEP 8 · 預覽與發布（Preview & publish，D310 · 5.1.6.1 §4.8）
+         D223／D305 的發布前預覽確認曾是「按下發布才彈」的浮層，第 8 步另有一組摘要卡＋檢核，
+         同一件事問了兩遍。D310 把兩者合併：這一步**就是**那個畫面——主區是粉絲視角前台預覽
+         （js/fan-event-page.js），右側固定側欄三段（語言／幣別／發布前檢核）＋底部主鈕「發布活動」。
+         F10 各步摘要卡整組退場（預覽本身就是摘要，Edit 去向改由預覽區塊的 hover「編輯」承接）；
+         F11 檢核換到側欄第三段（內容不變）；F12 主鈕併入側欄、按下即發布不再彈第二層。
+         版型與互動全部由 js/publish-stage.js 掛進下面這個空殼，本頁只負責備料（見 buildStageOpts）。 -->
     <section data-step-panel="8" class="hidden">
-      <h1 class="wizard__step-title" data-i18n="ce.s5.h1">Review your event</h1>
-      <p class="wizard__step-sub" data-i18n="ce.s5.sub">Make sure everything looks good before publishing.</p>
-
-
-      <!-- 共看派對分支（D149 §4.7）：Review 摘要五列。照 create-event.html 原樣搬過來。 -->
-      <div class="review-row" style="margin-bottom:18px" data-show-type="watchparty" hidden>
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.rev.type">Event type</h3>
-            <a class="review-row__action" href="#" data-goto="2" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="wp-type" data-ph-key="ce.ph.notsel"><span data-i18n="ce.ph.notsel">Not selected</span></div>
-        </div>
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.wp.rev.content">Watch content</h3>
-            <a class="review-row__action" href="#" data-goto="2" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="wp-content" data-ph-key="ce.ph.notsel"><span data-i18n="ce.ph.notsel">Not selected</span></div>
-        </div>
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.wp.rev.room">Room name</h3>
-            <a class="review-row__action" href="#" data-goto="2" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="wp-room" data-ph-key="ce.ph.notentered"><span data-i18n="ce.ph.notentered">Not entered</span></div>
-        </div>
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.wp.rev.schedule">Schedule</h3>
-            <a class="review-row__action" href="#" data-goto="3" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="wp-schedule" data-ph-key="ce.ph.notset"><span data-i18n="ce.ph.notset">Not set</span></div>
-        </div>
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.wp.rev.ticket">Admission</h3>
-            <a class="review-row__action" href="#" data-goto="4" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="wp-ticket" data-ph-key="ce.ph.notset"><span data-i18n="ce.ph.notset">Not set</span></div>
-        </div>
-      </div>
-
-      <div class="review-row" style="margin-bottom:18px" data-hide-type="watchparty">
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.rev.type">Event type</h3>
-            <a class="review-row__action" href="#" data-goto="2" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="type" data-ph-key="ce.ph.notsel"><span data-i18n="ce.ph.notsel">Not selected</span></div>
-        </div>
-
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.rev.name">Event name</h3>
-            <a class="review-row__action" href="#" data-goto="2" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="name" data-ph-key="ce.ph.notentered"><span data-i18n="ce.ph.notentered">Not entered</span></div>
-          <!-- 亮點（D300）：有填才出現在名稱下方，跟名稱共用同一顆 Edit -->
-          <div class="review-row__value review-row__value--highlight" data-rev="highlight" hidden></div>
-        </div>
-
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.rev.venue">Venue &amp; time</h3>
-            <a class="review-row__action" href="#" data-goto="3" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="venue" data-ph-key="ce.ph.notset"><span data-i18n="ce.ph.notset">Not set</span></div>
-        </div>
-
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.rev.series">Dates</h3>
-            <a class="review-row__action" href="#" data-goto="3" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="series" data-ph-key="ce.series.single"><span data-i18n="ce.series.single">Single date</span></div>
-        </div>
-
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.rev.tickets">Tickets</h3>
-            <a class="review-row__action" href="#" data-goto="5" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="tickets" data-ph-key="ce.ph.0tiers"><span data-i18n="ce.ph.0tiers">0 tiers</span></div>
-        </div>
-        <!-- 2026-09-18（5.1.6.1 §4.6 F20／D292）：步驟 6 建的組合包補一列摘要——幾組、內含票券共幾張；沒有就寫「無」。 -->
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.rev.bundles">Bundles</h3>
-            <a class="review-row__action" href="#" data-goto="6" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="bundles" data-ph-key="ce.ph.nobundles"><span data-i18n="ce.ph.nobundles">None</span></div>
-        </div>
-        <!-- 2026-09-22（D302）：取票方式補一列——第三方門票開著時在方式後面加註，說明另起一行摘要。
-             發布設定要不要進摘要卡在 5.1.6.1 F10 仍〔產品待確認〕（PUB-001），這一列是呈現假設。 -->
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.rev.ship">Ticket delivery</h3>
-            <a class="review-row__action" href="#" data-goto="7" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="ship" data-ph-key="ce.ph.notsel"><span data-i18n="ce.ph.notsel">Not selected</span></div>
-          <div class="review-row__value review-row__value--highlight" data-rev="ship-tp" hidden></div>
-        </div>
-      </div>
-
-      <section class="readiness" data-hide-type="watchparty">
-        <div class="readiness__head"><h3 class="readiness__title" data-i18n="ce.qc.title">Quality check</h3></div>
-        <ul class="readiness__list">
-          <li class="readiness__item" data-qc="type"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.qc.type">Event type selected</span></li>
-          <li class="readiness__item" data-qc="name"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.qc.name">Event name filled</span></li>
-          <li class="readiness__item" data-qc="date"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.qc.date">Date set</span></li>
-          <li class="readiness__item" data-qc="venue"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.qc.venue">Venue set</span></li>
-          <li class="readiness__item" data-qc="ticket"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.qc.ticket">At least 1 ticket tier</span></li>
-        </ul>
-        <div class="readiness__banner" id="ce-qc-banner" data-i18n="ce.qc.banner">5 items needed before publishing</div>
-      </section>
-
-      <!-- 共看派對分支（D149 §4.7）：發布前檢核 7 項 -->
-      <section class="readiness" data-show-type="watchparty" hidden>
-        <div class="readiness__head"><h3 class="readiness__title" data-i18n="ce.qc.title">Quality check</h3></div>
-        <ul class="readiness__list">
-          <li class="readiness__item" data-qc="wp-video"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.wp.qc.video">Video selected</span></li>
-          <li class="readiness__item" data-qc="wp-room"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.wp.qc.room">Room name filled</span></li>
-          <li class="readiness__item" data-qc="wp-start"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.wp.qc.start">Start time set</span></li>
-          <li class="readiness__item" data-qc="wp-capacity"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.wp.qc.capacity">Capacity set</span></li>
-          <li class="readiness__item" data-qc="wp-region"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.wp.qc.region">Region set</span></li>
-          <li class="readiness__item" data-qc="wp-privacy"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.wp.qc.privacy">Privacy set</span></li>
-          <li class="readiness__item" data-qc="wp-ticket"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.wp.qc.ticket">Admission set</span></li>
-        </ul>
-        <div class="readiness__banner" id="ce-wp-qc-banner" data-i18n="ce.wp.qc.banner">7 items needed before publishing</div>
-      </section>
-
+      <div data-ce-stage></div>
     </section>
 
   </div>
@@ -1545,8 +1422,10 @@
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/field-more.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
-<script src="partials/publish-preview.js?v=r2.2"></script>
-<script src="js/fan-event-page.js?v=r2.2"></script>   <!-- D305：粉絲視角活動頁渲染（前台鏡像，與 event-detail 共用） -->
+<!-- D310（2026-09-22）：發布前預覽確認由浮層改為全頁畫面，本頁的宿主改走 js/publish-stage.js；
+     partials/publish-preview.js（浮層）在本頁退場，仍服務 create-product／create-project／publish-work。 -->
+<script src="js/publish-stage.js?v=r2.2"></script>   <!-- D310：第 8 步「預覽與發布」的全頁畫面 -->
+<script src="js/fan-event-page.js?v=r2.2"></script>   <!-- D305：粉絲視角活動頁渲染（前台鏡像，與 event-localization 共用） -->
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script>   <!-- 2026-08-13：「再辦一場」(?from=) 要讀來源活動 -->
 <!-- 套組銷售（步驟 5）掛共用套組編輯器；它從 products-store 取既有商品當候選 -->
@@ -1630,8 +1509,18 @@
     /* 2026-08-09（使用者指示）：預覽卡從覆蓋面板搬成每一步常駐右軌，2～6 步都放寬到
        --mid（1140）才容得下右軌；只有 Review（7）維持 820 單欄——它本身已是整份摘要，
        旁邊再放一張預覽卡是同一件事講兩次。 */
-    document.querySelector(".wizard__body")
-      ?.classList.toggle("wizard__body--mid", step !== total);
+    const bodyEl = document.querySelector(".wizard__body");
+    if (bodyEl) {
+      bodyEl.classList.toggle("wizard__body--mid", step !== total);
+      /* D310：第 8 步是全頁預覽（前台鏡像的內容寬 ＋ 320 側欄），比 mid 寬得多 */
+      bodyEl.classList.toggle("wizard__body--stage", step === total);
+    }
+    /* D310：第 8 步的主動作（發布活動）與上一步都在側欄，底部動作列整條收起；
+       閘門畫面另有自己的收起邏輯，這裡只在流程頁裡動它。 */
+    const footEl = document.querySelector("[data-footer]");
+    if (footEl && !document.querySelector("[data-sheet]")?.classList.contains("hidden")) {
+      footEl.classList.toggle("hidden", step === total);
+    }
     /* 被跳過的步驟在進度列上也不該還看得到（共看派對跳票券銷售；不設門票跳票種＋票券銷售）。
        改成一律問 skipped()，不再逐一列舉——2026-08-06 新增「免票入場」時，原本寫死只藏第 5 格
        的版本會讓進度列還留著一格點不進去的「票種」。 */
@@ -1641,6 +1530,8 @@
     next.dataset.i18n = nextKeyOf(step);
     next.textContent = nextLabel(step);
     syncReview();
+    /* D310：走到第 8 步才備料掛畫面——欄位與價格是動態清單，離開再回來都要重收一次。 */
+    if (step === total) mountStage(); else unmountStage();
     /* 票務商品那一步的右軌報的是「每張票現在幾張、被幾組組合包用到」，
        票在上一步才剛改完，進來時要重算一次（宣告在後面，用 typeof 擋掉初始化順序）。 */
     if (typeof renderBundlePool === "function") renderBundlePool();
@@ -1704,65 +1595,15 @@
              dqOn, dqMin, dqBky, tfOn, tfLimit, tfMax, tfDl, tfDlMode, tfDate, tfDays };
   }
 
-  function setRev(key, value, phKey, phFallback) {
-    const el = document.querySelector('[data-rev="' + key + '"]');
-    if (!el) return;
-    el.textContent = value || T(phKey, phFallback);
-  }
+  /* 墓碑（2026-09-22 · D310）：`setRev()` 與 Review 摘要回填整段刪除——第 8 步的各步摘要卡
+     （F10）退場，改由粉絲視角前台預覽本身承擔摘要的工作，Edit 去向改成預覽區塊的「編輯」
+     入口（CE_EDIT_ZONES）。原本這裡把 readState() 的值寫進 [data-rev=…]（活動類型、名稱、
+     亮點、場地與時間、場次、票種、組合包、取票方式含第三方門票／動態 QR／可轉贈摘要句），
+     那批 markup 已隨本輪一併移除。 */
 
   function syncReview() {
-    if (isWP()) { syncReviewWP(); return; }     // D149：共看派對走專屬摘要/檢核
+    if (isWP()) { syncReviewWP(); return; }     // D149：共看派對走專屬檢核
     const s = readState();
-
-    // A3 — 摘要回填（未填顯佔位）
-    setRev("type",  s.typeName, "ce.ph.notsel",     "Not selected");
-    setRev("name",  s.name,     "ce.ph.notentered", "Not entered");
-    /* 亮點（D300）：名稱列下方附一行，沒填就整行收起（不顯佔位——選填欄位空著不是缺漏） */
-    const revHl = document.querySelector('[data-rev="highlight"]');
-    if (revHl) { revHl.textContent = s.highlight; revHl.hidden = !s.highlight; }
-    let venueLine = "";
-    if (s.venue || s.date) {
-      const parts = [];
-      if (s.venue) parts.push(s.city ? (s.venue + " · " + s.city) : s.venue);
-      if (s.date)  parts.push(s.start ? (s.date + " · " + s.start) : s.date);
-      venueLine = parts.join(" — ");
-    }
-    setRev("venue", venueLine, "ce.ph.notset", "Not set");
-    setRev("series", s.sessions, "ce.series.single", "Single date");
-    setRev("tickets",
-      s.tiers > 0 ? T("ce.rev.tiersn", "{n} tiers").replace("{n}", s.tiers) : "",
-      "ce.ph.0tiers", "0 tiers");
-    /* 組合包（2026-09-18；2026-09-21 D296 改語意）：只算已送出的組（`fresh` 的還在編輯、不是清單上的東西），
-       每組張數由編輯器算（ticketCount＝整組張數 n），不在這裡再掃一次票券清單；各組張數不同時並列寫「1／2」。
-       bundleEd 宣告在後面（var，會被提升），初始化前這裡讀到 null → 顯示「無」。 */
-    const bl = (typeof bundleEd !== "undefined" && bundleEd) ? bundleEd.getBundles().filter(b => !b.fresh) : [];
-    const tixM = bl.map(b => bundleEd.ticketCount(b)).filter(n => n > 0).filter((n, i, a) => a.indexOf(n) === i).join("／") || "0";
-    setRev("bundles",
-      bl.length ? T("ce.rev.bundlesn", "{n} bundles · {m} tickets per set").replace("{n}", bl.length).replace("{m}", tixM) : "",
-      "ce.ph.nobundles", "None");
-    /* 取票方式（D302）：方式名稱沿用選項卡的字；第三方門票開著就在後面加註，說明另起一行、
-       超過 60 字截斷（Review 只要看得出寫了什麼，全文回步驟 7 看）。 */
-    const shipKey = { eticket: "d.ship.e", sf: "d.ship.sf", pickup: "d.ship.pick" }[s.ship] || "d.ship.e";
-    /* 電子門票的三組附屬設定各自接在方式名後面（D303）：「電子門票 · 第三方門票 · 動態 QR 每 5 分鐘 · 可轉贈（最多 1 次、開演前 1 天止）」 */
-    const shipParts = [T(shipKey, "E-ticket")];
-    if (s.tpOn) shipParts.push(T("ce.ship.tp", "Third-party ticket"));
-    /* D308：bookyay 端開著動態 QR 的帶入活動，Review 也帶同一句括號註記——ztor 實際發的是靜態 QR */
-    if (s.dqOn) shipParts.push(T("ce.rev.dq", "Dynamic QR every {n} min").replace("{n}", s.dqMin || "—")
-      + (s.dqBky ? " " + T("ce.ship.dq.bky", "(bookyay's dynamic QR not applied here)") : ""));
-    if (s.tfOn) {
-      const det = [];
-      if (s.tfLimit) det.push(T("ce.rev.tf.max", "up to {n} times").replace("{n}", s.tfMax || "—"));
-      if (s.tfDl) det.push(s.tfDlMode === "date"
-        ? T("ce.rev.tf.date", "until {d}").replace("{d}", s.tfDate || "—")
-        : T("ce.rev.tf.days", "until {n} days before showtime").replace("{n}", s.tfDays || "—"));
-      shipParts.push(T("ce.ship.tf", "Transferable") + (det.length ? T("ce.rev.tf.wrap", " ({x})").replace("{x}", det.join(T("ce.rev.tf.sep", ", "))) : ""));
-    }
-    setRev("ship", shipParts.join(" · "), "ce.ph.notsel", "Not selected");
-    const revTp = document.querySelector('[data-rev="ship-tp"]');
-    if (revTp) {
-      revTp.textContent = s.tpNote.length > 60 ? s.tpNote.slice(0, 60) + "…" : s.tpNote;
-      revTp.hidden = !s.tpOn || !s.tpNote;
-    }
 
     // A2 — Quality check 即時打勾
     const checks = {
@@ -1775,30 +1616,16 @@
       /* 免票入場撤除後這一項恆為硬閘：一定要有票才發布得了（2026-08-10）。 */
       ticket: s.tiers > 0
     };
+    /* D310：檢核清單搬進第 8 步側欄第三段（js/publish-stage.js 的 checks()），本頁只算狀態。 */
+    qcState = checks;
     let done = 0;
-    Object.keys(checks).forEach(k => {
-      const li = document.querySelector('[data-qc="' + k + '"]');
-      if (li) li.classList.toggle("readiness__item--done", checks[k]);
-      if (checks[k]) done++;
-    });
+    Object.keys(checks).forEach(k => { if (checks[k]) done++; });
     const totalQc = Object.keys(checks).length, left = totalQc - done, allOk = left === 0;
 
-    // banner 計數即時更新；全通過轉 ready
-    const banner = document.getElementById("ce-qc-banner");
-    if (banner) {
-      banner.classList.toggle("readiness__banner--ready", allOk);
-      if (allOk) {
-        banner.removeAttribute("data-i18n");
-        banner.textContent = T("ce.qc.ready", "All set — ready to publish");
-      } else {
-        banner.removeAttribute("data-i18n");
-        banner.textContent = T("ce.qc.left", "{n} items needed before publishing").replace("{n}", left);
-      }
-    }
-
-    // 全通過才開放 Publish（就緒示意；step 5 時生效）
+    // 全通過才開放 Publish（就緒示意；側欄主鈕由 publish-stage 依 checks() 自己 gate）
     const next = document.querySelector("[data-action=next]");
     next.disabled = (step === total) && !allOk;
+    stageSyncChecks();
 
     // 即時預覽卡同步
     renderPreview(s);
@@ -2041,22 +1868,9 @@
       alert(T("ce.publish-blocked-cap", "Tier quantities add up to more than the capacity. Adjust the tiers or the capacity."));
       return;
     }
-    /* 五項硬閘與彙整阻擋都過了之後，才進發布前預覽確認層（D223）——create-event.html
-       沒有編輯已上架活動的分支（那是另一個入口 edit-event.html），這裡永遠是新發布。 */
-    if (window.ztorPublishPreview) {
-      /* D305／D306（2026-09-22）：預覽檢視改成粉絲視角完整頁（票券頁／票務商品頁）、可翻譯欄位
-         擴到活動全部文案欄、語言旁加幣別軸、列表檢視兩張表（翻譯表＋價格表）。欄位與價格
-         都在按下發布的當下即時收集（動態清單沒有穩定 DOM，同 create-product 的做法）。 */
-      const pp = buildPublishPreviewOpts();
-      pp.onConfirm = function (result) {
-        /* 覆寫值與翻譯草稿在原型沒有後端可落，發布後由活動詳情頁的「預覽與在地化」再開同一層；
-           這裡只把結果留在記憶體供 cheat code／驗收讀（ASSUMPTIONS UIA-165）。 */
-        window.__ceLocalization = result;
-        doPublish();
-      };
-      window.ztorPublishPreview.open(pp);
-      return;
-    }
+    /* D310：五項硬閘與彙整阻擋都過了就直接發布——第 8 步本身已經是發布前預覽確認畫面，
+       再彈一層浮層等於同一件事問兩遍（D223／D305 的浮層在本頁退場）。翻譯與逐幣別覆寫的
+       草稿由側欄主鈕帶進來，原型沒有後端可落，留在記憶體供 cheat code／驗收讀（UIA-165）。 */
     doPublish();
   }
 
@@ -2069,6 +1883,61 @@
      prices：步驟 4 每個票種的票價＋步驟 6 每個組合包的售價；基準幣別＝創作者預設幣別 TWD
        （示範值，ASSUMPTIONS PG-035／UIA-165）；bookyay 帶入的票種基準＝HKD 且鎖（§7.15）。 */
   const CE_BASE_CURRENCY = "TWD";
+
+  /* ── 第 8 步「預覽與發布」的全頁畫面（D310 · 5.1.6.1 §4.8）────────────────────
+     宿主只負責三件事：備料（buildStageOpts）、掛畫面（mountStage）、檢核狀態同步
+     （stageSyncChecks）。版型、語言／幣別兩軸、兩張表與主鈕都在 js/publish-stage.js。 */
+  const CE_EDIT_ZONES = [
+    { sel: ".pdp-buy__title", step: 2 },                              // 活動名稱
+    { sel: ".pdp-buy__highlight", step: 2 },                          // 亮點（D300）
+    { sel: ".pdp-details__lead", step: 2 },                           // 描述
+    { sel: ".pdp-event-meta", step: 3 },                              // 場地與時間
+    { sel: ".pdp-terms--tiers", step: 5 },                            // 票種與票價
+    { sel: "[data-fep-bundles]", step: 6 },                           // 組合包
+    { sel: ".pdp-details__shipping-block:first-child", step: 7 }      // 取票方式
+  ];
+  let stage = null;            // publish-stage 的 handle（只有停在第 8 步時是非 null）
+  let qcState = {};            // 五項硬閘（共看派對為七項）的當前狀態，由 syncReview 寫入
+  /* 檢核清單：側欄第三段要的 { key, label, ok, step }。內容與硬閘規則不變（F11 只換位置）。 */
+  const QC_ROWS = [
+    { key: "type",   labelKey: "ce.qc.type",   fb: "Event type selected",  step: 2 },
+    { key: "name",   labelKey: "ce.qc.name",   fb: "Event name filled",    step: 2 },
+    { key: "date",   labelKey: "ce.qc.date",   fb: "Date set",             step: 3 },
+    { key: "venue",  labelKey: "ce.qc.venue",  fb: "Venue set",            step: 3 },
+    { key: "ticket", labelKey: "ce.qc.ticket", fb: "At least 1 ticket tier", step: 5 }
+  ];
+  const QC_ROWS_WP = [
+    { key: "wp-video",    labelKey: "ce.wp.qc.video",    fb: "Video selected",    step: 2 },
+    { key: "wp-room",     labelKey: "ce.wp.qc.room",     fb: "Room name filled",  step: 2 },
+    { key: "wp-start",    labelKey: "ce.wp.qc.start",    fb: "Start time set",    step: 3 },
+    { key: "wp-capacity", labelKey: "ce.wp.qc.capacity", fb: "Capacity set",      step: 3 },
+    { key: "wp-region",   labelKey: "ce.wp.qc.region",   fb: "Region set",        step: 3 },
+    { key: "wp-privacy",  labelKey: "ce.wp.qc.privacy",  fb: "Privacy set",       step: 3 },
+    { key: "wp-ticket",   labelKey: "ce.wp.qc.ticket",   fb: "Admission set",     step: 4 }
+  ];
+  function stageChecks() {
+    return (isWP() ? QC_ROWS_WP : QC_ROWS).map(r =>
+      ({ key: r.key, label: T(r.labelKey, r.fb), ok: !!qcState[r.key], step: r.step }));
+  }
+  function stageSyncChecks() { if (stage) stage.syncChecks(); }
+  /* 上一個看得到的步驟（跳過的步不算），側欄「上一步」用 */
+  function prevStep(st) { let n = st - 1; while (n > first && skipped(n)) n--; return n; }
+  function goStep(st) { if (!st) return; step = st; render(); }
+  function mountStage() {
+    const host = document.querySelector("[data-ce-stage]");
+    if (!host || !window.ztorPublishStage) return;
+    /* 側欄 sticky 的位移要避開 .wizard__top（本身 sticky、含 stepper，高度隨內容變）：
+       publish-stage.css 只留 --pstage-top 這個缺口，宿主在掛載時量頂列高度填進去，
+       不寫死數字（頂列高度不是 token）。少了這行，往下捲時側欄的「語言」標題會被頂列蓋住。 */
+    const top = document.querySelector(".wizard__top");
+    host.style.setProperty("--pstage-top", "calc(" + (top ? top.offsetHeight : 0) + "px + var(--sp-24))");
+    stage = window.ztorPublishStage.mount(host, buildStageOpts());
+  }
+  function unmountStage() {
+    if (!stage) return;
+    stage.unmount();
+    stage = null;
+  }
   function listFields(listId, groupKey, groupFb, prefix, labelKeyFb) {
     const out = [];
     document.querySelectorAll("#" + listId + " [data-list-row]").forEach((row, i) => {
@@ -2082,7 +1951,7 @@
     });
     return out;
   }
-  function buildPublishPreviewOpts() {
+  function buildStageOpts() {
     const q = sel => document.querySelector(sel);
     const fields = [
       { key: "name", el: q('[data-ce="name"]'), kind: "input", labelKey: "pp.field.name", labelFallback: "Name" },
@@ -2135,11 +2004,17 @@
       currencies: S ? S.CURRENCIES.slice() : ["USD", "TWD", "HKD", "SGD", "JPY"],
       baseCurrency: types.some(t => t.priceBase) ? types.find(t => t.priceBase).priceBase.currency : CE_BASE_CURRENCY,
       mode: "publish",
-      shell: "fan",   /* 2026-09-22：粉絲視角活動頁是前台全寬版型的鏡像，殼放寬（見 publish-preview.js） */
+      /* 預覽區塊的「編輯」入口（D310 取代 F10 摘要卡的 Edit）：hover 到哪一塊就在該塊右上角
+         浮一顆鈕，點了跳回對應步驟。對應關係照 §4.8「預覽區塊的編輯入口」。 */
+      editZones: CE_EDIT_ZONES,
+      onEdit: goStep,
+      checks: stageChecks,
       previewRender: (host, api) => {
         if (!window.ztorFanEventPage) return;
         window.ztorFanEventPage.render(host, buildFanModel({ includes, bring, notes, termFields, bundles, st }), api);
-      }
+      },
+      onPrimary: result => { window.__ceLocalization = result; tryPublish(); },
+      onSecondary: () => goStep(prevStep(total))
     };
   }
   /* 粉絲視角活動頁的 model（結構見 js/fan-event-page.js 檔頭）：文案欄給 { key }、資料值給字串 */
@@ -4280,12 +4155,7 @@
 
   function syncReviewWP() {
     const w = readWP();
-    setRev("wp-type",     w.typeName,        "ce.ph.notsel",     "Not selected");
-    setRev("wp-content",  w.filmName,        "ce.ph.notsel",     "Not selected");
-    setRev("wp-room",     w.room,            "ce.ph.notentered", "Not entered");
-    setRev("wp-schedule", w.start,           "ce.ph.notset",     "Not set");
-    setRev("wp-ticket",   wpTicketLabel(w),  "ce.ph.notset",     "Not set");
-
+    /* D310：摘要卡（F10）退場，共看派對分支同步——這裡只算檢核狀態給側欄第三段用。 */
     const checks = {
       "wp-video":    !!w.filmName,
       "wp-room":     !!w.room,
@@ -4295,23 +4165,13 @@
       "wp-privacy":  !!w.privacy,
       "wp-ticket":   !!w.ticket
     };
+    qcState = checks;
     let done = 0;
-    Object.keys(checks).forEach(k => {
-      const li = document.querySelector('[data-qc="' + k + '"]');
-      if (li) li.classList.toggle("readiness__item--done", checks[k]);
-      if (checks[k]) done++;
-    });
-    const left = 7 - done, allOk = left === 0;
-    const banner = document.getElementById("ce-wp-qc-banner");
-    if (banner) {
-      banner.classList.toggle("readiness__banner--ready", allOk);
-      banner.removeAttribute("data-i18n");
-      banner.textContent = allOk
-        ? T("ce.qc.ready", "All set — ready to publish")
-        : T("ce.qc.left", "{n} items needed before publishing").replace("{n}", left);
-    }
+    Object.keys(checks).forEach(k => { if (checks[k]) done++; });
+    const allOk = done === 7;
     const next = document.querySelector("[data-action=next]");
     next.disabled = (step === total) && !allOk;
+    stageSyncChecks();
     renderPreviewWP(w);
   }
 
