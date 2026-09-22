@@ -642,9 +642,9 @@
   }
   var AUCTION_SEED = {
     /* Live（競標中）：開拍 4 天前、時長 5 天 → 剩 1 天 */
-    'stage-worn-jacket':  { id: 'stage-worn-jacket', nameKey: 'e-shop.a1.name', img: 'stage-worn-jacket.webp', listed: true, shown: true, saleStart: daysFromNow(-4), duration: 5, bids: 18, bidders: 12 },
+    'stage-worn-jacket':  { id: 'stage-worn-jacket', nameKey: 'e-shop.a1.name', img: 'stage-worn-jacket.webp', listed: true, shown: true, saleStart: daysFromNow(-4), duration: 5, bids: 18, bidders: 12, tags: ['Tour 2025', 'Signed'] },   /* tags：商品標籤（5.1.5.10 共用設定；2026-09-22 細節頁補欄，Live 唯讀示範） */
     /* Upcoming（未開始）：定時開拍在 2 天後 */
-    'signed-tour-poster': { id: 'signed-tour-poster', nameKey: 'e-shop.a2.name', img: 'signed-tour-poster.webp', listed: true, shown: true, saleStart: daysFromNow(2), duration: 7, bids: 0, bidders: 0 },
+    'signed-tour-poster': { id: 'signed-tour-poster', nameKey: 'e-shop.a2.name', img: 'signed-tour-poster.webp', listed: true, shown: true, saleStart: daysFromNow(2), duration: 7, bids: 0, bidders: 0, tags: ['Signed'] },   /* Upcoming：標籤可加減示範 */
     /* Ended（完售、已出貨，D286 徽章文案改「完售」）：三個月前結標 */
     'vintage-synth':      { id: 'vintage-synth', nameKey: 'e-shop.a3.name', img: 'vintage-synth.webp', listed: true, shown: true, saleStart: daysFromNow(-100), duration: 7, bids: 23, bidders: 9, shipped: true },
     /* 流標（結標、無人出價，D287）：四個月前結標、bids 0 → deriveAuctionStatus 判成 unsold（完售 ended 的同層新桶） */
@@ -924,9 +924,11 @@
         { id: 'h2', type: 'restock', mode: 'now', date: '2026/08/20', supplierKey: 'stock.history.own', note: '', state: 'done', items: [{ combo: '—', vi: 'single', delta: '+30', qty: 30 }] }
       ]
     },
-    /* tee＝折扣三開關全開的示範（折扣價、限時起訖、可與優惠碼疊加），其餘商品折扣關 */
+    /* tee＝折扣三開關全開的示範（限時起訖、可與優惠碼疊加），其餘商品折扣關。
+       2026-09-22：tee 是多選項商品，折扣改記 percent（套到每個組合、無絕對價）；單一規格商品（poster／wy-24ce-dupont-bag）
+       記 price、細節頁依定價反算 %——同 create-product 的模型（ASSUMPTIONS UIA-060） */
     tee: {
-      discount: { price: '28.00', limited: { start: '2026-09-15', end: '2026-10-15' }, stack: true },
+      discount: { percent: 12, limited: { start: '2026-09-15', end: '2026-10-15' }, stack: true },
       history: [
         { id: 'h1', type: 'restock', mode: 'now', date: '2026/08/28', supplier: 'Riso House', note: '', state: 'done', items: [{ combo: 'M', vi: 1, delta: '+20', qty: 20 }] }
       ]
@@ -934,7 +936,7 @@
     /* pin＝售罄：有銷售、沒有歷史、沒有補貨中 */
     pin: { sales: { units: 120, gross: '$1,440', net: '$1,160' } },
     /* ── 2026-09-11 既有商品補值（只補缺的示範）── */
-    cap:   { limit: 3 },
+    cap:   { limit: 3, lowAlert: false },   /* 2026-09-22：低庫存提醒關著的示範（門檻欄停用） */
     shoes: { films: ['film-fist-of-fury', 'film-last-typhoon'] },
     song:  { sales: null },
     album: { tags: ['OST', 'Digital'] },
@@ -1057,6 +1059,7 @@
       cap: 20, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 10, discount: { percent: 10, limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
+      perks: ['簽名會優先入場', '限量海報一張（現場領取）'],   /* 額外權益（D292）：一行一項；2026-09-22 細節頁補欄的示範 */
       sales: { units: 5, gross: '$1,400', net: '$1,120' },
       films: ['film-zheng-yi-sao'],
       history: [{ id: 'b1', date: '2026/09/08', sets: '— → 1', items: [{ productId: 'acetate', delta: '— → 1' }, { productId: 'wristband', combo: 'S', delta: '— → 1' }, { productId: 'jacket', combo: 'Black / M', delta: '— → 1' }, { productId: 'zine', delta: '— → 1' }] }]

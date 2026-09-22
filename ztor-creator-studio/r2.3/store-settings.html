@@ -49,6 +49,7 @@
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-tip.css?v=r2.2"><!-- 優惠碼清單「範圍」欄 hover 列出綁了哪幾件（D299） -->
 <link rel="stylesheet" href="ds-components/combobox.css?v=r2.2">
 
 </head>
@@ -275,8 +276,9 @@
                     </tr>
                   </thead>
                   <tbody data-code-rows>
-                    <!-- 示意三列（D272）：SUMMER25 有上限、AIKO10 混選範圍（類型＋商品）、
-                         LAUNCH50 已用完（Exhausted，badge--warning）——涵蓋「已用／上限」兩種格式與新狀態。 -->
+                    <!-- 示意四列（D272／D299）：SUMMER25 有上限、TOURVIP15 指定多件含票種（各版本都有）、
+                         AIKO10 混選範圍（類型＋商品）、LAUNCH50 已用完（Exhausted，badge--warning）
+                         ——涵蓋「已用／上限」兩種格式、多件範圍與新狀態。 -->
                     <tr data-code-kind="own">
                       <td class="ztor-table__feature">
                         <div class="ss-code-cell">
@@ -292,6 +294,49 @@
                         <div class="ss-code-sold">
                           <span class="ss-code-sold__count">42<span data-feat="full"> / 100</span></span>
                           <span class="ss-code-sold__amount">$1,180</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="admin-table__actions">
+                          <details class="dropdown">
+                            <summary class="btn btn--ghost btn--icon btn--sm" aria-label="More actions" data-i18n-aria-label="store-settings.codes.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>
+                            <div class="dropdown__menu" role="menu">
+                              <button class="dropdown__item" type="button" role="menuitem" data-code-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="store-settings.codes.edit">Edit</span></button>
+                              <button class="dropdown__item" type="button" role="menuitem" data-code-duplicate><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="store-settings.codes.duplicate">Duplicate</span></button>
+                              <button class="dropdown__item" type="button" role="menuitem" data-code-disable><i data-lucide="ban" class="ztor-icon"></i><span data-i18n="store-settings.codes.disable">Disable</span></button>
+                              <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-code-delete><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="store-settings.codes.delete">Delete</span></button>
+                            </div>
+                          </details>
+                        </div>
+                      </td>
+                    </tr>
+                    <!-- TOURVIP15（D299 示意）：指定商品綁多件、含活動票種——「範圍」欄只寫件數，
+                         hover／focus 浮出清單（.stock-tip--anchored，與電子商店庫存欄同一顆的貼格變體）；件數文案由 JS 依語言重填
+                         （i18n 沒有 {n} 參數，見 paintScopeCounts）。各版本都看得到：多選自 D299 起就是 Phase 1 的能力。 -->
+                    <tr data-code-kind="own">
+                      <td class="ztor-table__feature">
+                        <div class="ss-code-cell">
+                          <span class="ss-code-cell__code">TOURVIP15</span>
+                          <span class="ss-code-cell__meta" data-feat="full"><span data-i18n="store-settings.codes.type.own">Own</span></span>
+                        </div>
+                      </td>
+                      <td>15%</td>
+                      <td>
+                        <span class="stock-tip stock-tip--anchored ss-code-scope" tabindex="0">
+                          <span class="ss-code-scope__count" data-scope-count="3">3 items</span>
+                          <div class="stock-tip__pop" role="tooltip">
+                            <div class="stock-tip__row"><span class="stock-tip__qty">26MS Hoodie</span><span class="stock-tip__name" data-i18n="store-settings.codes.scope.kind.product">Product</span></div>
+                            <div class="stock-tip__row"><span class="stock-tip__qty">Tour zine vol.02</span><span class="stock-tip__name" data-i18n="store-settings.codes.scope.kind.product">Product</span></div>
+                            <div class="stock-tip__row"><span class="stock-tip__qty">REALIVE World Tour — Asia leg 9/12 · VIP</span><span class="stock-tip__name" data-i18n="store-settings.codes.scope.kind.ticket">Ticket tier</span></div>
+                          </div>
+                        </span>
+                      </td>
+                      <td>9/1 – 10/31</td>
+                      <td><span class="badge badge--success" data-i18n="store-settings.codes.status.active">Active</span></td>
+                      <td>
+                        <div class="ss-code-sold">
+                          <span class="ss-code-sold__count">12</span>
+                          <span class="ss-code-sold__amount">$980</span>
                         </div>
                       </td>
                       <td>
@@ -431,7 +476,7 @@
               <div class="settings-row">
                 <div>
                   <div class="settings-row__label"><span data-i18n="store-settings.codes.f.code">Code</span> <span class="field__req">*</span></div>
-                  <div class="settings-row__hint" data-i18n="store-settings.codes.f.code.hint">8–20 letters or digits, no symbols.</div>
+                  <div class="settings-row__hint" data-i18n="store-settings.codes.f.code.hint">8–20 letters or digits, not case-sensitive.</div>
                 </div>
                 <div class="flex-row">
                   <input class="input ss-code-partner" id="ss-code-code" value="AIKO10" placeholder="SUMMER25" data-i18n-placeholder="store-settings.codes.f.code.ph" minlength="8" maxlength="20" pattern="[A-Za-z0-9]{8,20}" autocapitalize="characters">
@@ -487,10 +532,11 @@
                    「全部商店」預設勾選，勾了就停用並清空另外兩級（D272 決定 1）。 -->
               <div class="ss-scope-row">
                 <div class="settings-row__label"><span data-i18n="store-settings.codes.f.scope">Applies to</span> <span class="field__req">*</span></div>
-                <!-- 適用範圍的說明分 Phase 4／Phase 1 兩句（D279）：Phase 1 沒有類型樹與多選，
-                     開場白只講得出「全部或一件」，講不出「勾的類型加勾的商品」。 -->
+                <!-- 適用範圍的說明分 Phase 4／Phase 1 兩句（D279→D299）：Phase 1 沒有類型樹，
+                     開場白講不出「勾的類型加勾的商品」；兩個選項各自的說明寫在 radio-list 的副行，
+                     這一句只留做決定才需要的規則（拍賣不折）。 -->
                 <div class="settings-row__hint" data-feat="full" data-i18n="store-settings.codes.f.scope.hint">A code's range is whichever types and items you check, combined. Auctions never qualify.</div>
-                <div class="settings-row__hint" data-feat-off="full" data-i18n="store-settings.codes.f.scope.hint.p1">All stores, or just one item.</div>
+                <div class="settings-row__hint" data-feat-off="full" data-i18n="store-settings.codes.f.scope.hint.p1">Auctions never qualify.</div>
 
                 <div class="ss-scope-options" data-feat="full">
                   <label class="zcheck">
@@ -536,36 +582,39 @@
                     <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="ss-scope-items" disabled><span class="zcheck__box"></span></span>
                     <span class="zcheck__label" data-i18n="store-settings.codes.f.scope.items">Specific items</span>
                   </label>
-                  <!-- 特定商品：單售或組合包多選，重用 tag-input（chip）＋ combobox（建議清單），
-                       做法同 partials/pickup-session-modal.js §107–170——focus／打字才展開建議清單。
-                       候選資料來源 ProductsStore（拍賣不在其中，D272 決定 2）。 -->
-                  <div class="combobox ss-scope-combo" id="ss-scope-combo" hidden>
-                    <div class="tag-input__field" data-ss-scope-field>
-                      <input class="tag-input__entry" type="search" id="ss-scope-search" role="combobox" aria-expanded="false" aria-autocomplete="list" autocomplete="off" placeholder="Search products or bundles…" data-i18n-placeholder="store-settings.codes.f.scope.items.ph">
-                      <i data-lucide="chevron-down" class="combobox__chevron ztor-icon"></i>
-                    </div>
-                    <div class="combobox__menu" id="ss-scope-menu" hidden></div>
-                  </div>
+                  <!-- 特定商品的多選 combobox 原本住在這一組底下；D299 起 Phase 1 也能多選，
+                       改成兩組共用同一顆（見下方 #ss-scope-combo），這裡只留勾選框。 -->
                 </div>
 
-                <!-- Phase 1 版本（D279）：只有全部或指定單一商品，不選類型層——沿用既有的
-                     radio-list（1-of-N 資料選擇，ds-components/radio-list.css），不新造二選一元件。
-                     選「指定商品」才展開單選下拉（zselect，候選＝ProductsStore.all()＋bundles()，
-                     與 Phase 4 的 scopeCatalog() 共用同一份候選、天然排除拍賣）。 -->
+                <!-- Phase 1 版本（D279→D299 改多選）：全部商店，或指定商品（可多選）——沿用既有的
+                     radio-list（1-of-N 資料選擇，ds-components/radio-list.css），不新造二選一元件；
+                     兩個選項各帶一行副說明（含活動票種是 D299 決定 2）。
+                     選「指定商品」展開的是下方與 Phase 4 共用的同一顆 combobox。 -->
                 <div class="ss-scope-options" data-feat-off="full" id="ss-scope-p1">
                   <div class="radio-list" role="radiogroup" aria-label="Applies to" data-i18n-aria-label="store-settings.codes.f.scope">
                     <button type="button" class="radio-list__item radio-list__item--active" data-p1-scope="all">
                       <span class="radio-list__dot"></span>
-                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="store-settings.codes.f.scope.all">All items</span></span>
+                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="store-settings.codes.f.scope.all">All items</span><span class="radio-list__sub" data-i18n="store-settings.codes.f.scope.all.sub">Every e-shop item and event ticket tier</span></span>
                     </button>
                     <button type="button" class="radio-list__item" data-p1-scope="item">
                       <span class="radio-list__dot"></span>
-                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="store-settings.codes.f.scope.oneitem">One item</span></span>
+                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="store-settings.codes.f.scope.multi">Specific items (pick as many as you like)</span><span class="radio-list__sub" data-i18n="store-settings.codes.f.scope.multi.sub">Products, bundles and ticket tiers</span></span>
                     </button>
                   </div>
-                  <div style="margin-left:22px;margin-top:var(--sp-10);max-width:420px" id="ss-scope-p1-item-wrap" hidden>
-                    <select class="select" id="ss-scope-p1-item" aria-label="Item" data-i18n-aria-label="store-settings.codes.f.scope.oneitem"></select>
+                </div>
+
+                <!-- 指定商品的多選（D272 建、D299 起兩個版本共用）：重用 tag-input（chip）＋ combobox（建議清單），
+                     做法同 partials/pickup-session-modal.js §107–170——focus／打字才展開建議清單。
+                     候選三組：單售、組合包（ProductsStore，拍賣不在其中，D272 決定 2）＋活動票種
+                     （ztorEvents，售票中／已排程／進行中的活動逐票種一筆，D299 決定 1）。
+                     顯隱由 JS 統一算：Phase 4 勾了「特定商品」或 Phase 1 選了「指定商品」就出現；
+                     坐在兩組之外所以不受任一 data-feat 閘門影響。 -->
+                <div class="combobox ss-scope-combo" id="ss-scope-combo" hidden>
+                  <div class="tag-input__field" data-ss-scope-field>
+                    <input class="tag-input__entry" type="search" id="ss-scope-search" role="combobox" aria-expanded="false" aria-autocomplete="list" autocomplete="off" placeholder="Search products, bundles or ticket tiers…" data-i18n-placeholder="store-settings.codes.f.scope.items.ph">
+                    <i data-lucide="chevron-down" class="combobox__chevron ztor-icon"></i>
                   </div>
+                  <div class="combobox__menu" id="ss-scope-menu" hidden></div>
                 </div>
               </div>
 
@@ -673,7 +722,7 @@
 
     <div class="payout-dialog__foot">
       <button class="btn btn--outline" type="button" data-code-close data-i18n="store-settings.codes.cancel">Cancel</button>
-      <button class="btn btn--primary" type="button" data-code-close data-i18n="store-settings.codes.savecode">Save code</button>
+      <button class="btn btn--primary" type="button" data-code-save data-i18n="store-settings.codes.savecode">Save code</button>
     </div>
   </section>
 </div>
@@ -685,6 +734,7 @@
 <!-- 粉絲端鏡像的商品卡問 ProductsStore（名稱／價格／圖依人格），所以要先載它與它的推導層。 -->
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="js/events-store.js?v=r2.2"></script><!-- 優惠碼「指定商品」的活動票種候選（D299）讀 ztorEvents.list() -->
 <script src="js/store-profile-store.js?v=r2.2"></script>
 <script src="partials/fan-store.js?v=r2.2"></script>
 <script src="partials/social-links.js?v=r2.2"></script>
@@ -882,12 +932,27 @@
       const scopeMenu = modal.querySelector('#ss-scope-menu');
       let scopeSelected = [];
 
+      /* 候選三組（D299 決定 1）：單售、組合包（ProductsStore，拍賣天然不在）＋活動票種——
+         ztorEvents.list() 裡售票中／已排程／進行中的活動，逐票種一筆；草稿、已結束、已取消不列
+         （沒有票可賣的活動，綁了也折不到）。票種顯示「活動名 M/D · 票種名」，價格放 meta；
+         同系列三場名稱相同（events-store 刻意如此），靠日期分辨。價格寫法同 events-store 的 money()。 */
+      const ticketMoney = n => '$' + Math.round(Number(n) || 0).toLocaleString('en-US');
+      const shortDate = d => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || ''); return m ? (Number(m[2]) + '/' + Number(m[3])) : ''; };
       function scopeCatalog() {
         const out = [];
         const products = (window.ProductsStore && window.ProductsStore.all()) || {};
         Object.keys(products).forEach(id => out.push({ id, kind: 'product', name: products[id].name }));
         const bundles = (window.ProductsStore && window.ProductsStore.bundles()) || [];
         bundles.forEach(b => out.push({ id: b.id, kind: 'bundle', name: b.name }));
+        const events = (window.ztorEvents && window.ztorEvents.list()) || [];
+        events.forEach(ev => {
+          if (['on-sale', 'scheduled', 'live'].indexOf(ev.status) < 0) return;
+          (ev.tiers || []).forEach(tier => out.push({
+            id: 'ticket:' + ev.id + ':' + tier.id, kind: 'ticket',
+            name: ev.name + (ev.date ? ' ' + shortDate(ev.date) : '') + ' · ' + tier.name,
+            meta: ticketMoney(tier.price)
+          }));
+        });
         return out;
       }
       function scopeItemById(id) { return scopeCatalog().find(it => it.id === id); }
@@ -907,7 +972,7 @@
       function renderScopeMenu() {
         if (!scopeMenu) return;
         const q = (scopeSearch.value || '').trim().toLowerCase();
-        const groups = [['product', 'e-shop.tab.products'], ['bundle', 'e-shop.tab.bundles']];
+        const groups = [['product', 'e-shop.tab.products'], ['bundle', 'e-shop.tab.bundles'], ['ticket', 'store-settings.codes.f.scope.group.tickets']];
         let html = '', total = 0;
         groups.forEach(g => {
           const avail = scopeCatalog().filter(it => it.kind === g[0] && scopeSelected.indexOf(it.id) < 0 &&
@@ -917,7 +982,8 @@
           html += '<div class="combobox__group" data-i18n="' + g[1] + '"></div>';
           avail.forEach(it => {
             html += '<button type="button" class="combobox__opt" data-scope-add="' + esc(it.id) + '">' +
-              '<span class="combobox__opt-text"><span class="combobox__opt-name">' + esc(it.name) + '</span></span></button>';
+              '<span class="combobox__opt-text"><span class="combobox__opt-name">' + esc(it.name) + '</span>' +
+              (it.meta ? '<span class="combobox__opt-meta">' + esc(it.meta) + '</span>' : '') + '</span></button>';
           });
         });
         if (!total) html = '<div class="combobox__empty" data-i18n="store-settings.codes.f.scope.items.empty">No items match your search.</div>';
@@ -951,41 +1017,58 @@
           if (scopeTypes) scopeTypes.checked = false;
           if (scopeItemsChk) scopeItemsChk.checked = false;
           if (scopeTree) { scopeTree.hidden = true; scopeTree.querySelectorAll('input[type=checkbox]').forEach(c => { c.checked = false; c.indeterminate = false; }); }
-          if (scopeCombo) scopeCombo.hidden = true;
           scopeSelected = []; paintScopeChips();
         }
+        syncComboVisibility();
       }
 
-      /* ── Phase 1 版本的適用範圍（D279）：全部商店或指定單一商品，二選一 ──────────
-         沿用 radio-list（1-of-N），不重造二選一元件；候選與 Phase 4 共用同一份
-         scopeCatalog()（ProductsStore.all()＋bundles()，拍賣天然排除）。彈窗開啟時
-         （resetScope）與 Phase 4 那組一起重設，兩組各自的資料互不干擾。 */
+      /* ── Phase 1 版本的適用範圍（D279 → D299 改多選）：全部商店，或指定商品（可多選）──
+         沿用 radio-list（1-of-N）當「全部／指定」的切換；選「指定商品」展開的多選 combobox
+         與 Phase 4 是同一顆（#ss-scope-combo 坐在兩組閘門之外），候選同一份 scopeCatalog()。
+         顯隱由 syncComboVisibility() 統一算：兩種版本各只有一組控件看得見，另一組在 reset 後
+         停在「全部」，所以不會互相打架；切版本（cheat code）時彈窗若開著就整組重設。 */
       const p1ScopeGroup = modal.querySelector('#ss-scope-p1');
-      const p1ScopeItemWrap = modal.querySelector('#ss-scope-p1-item-wrap');
-      const p1ScopeSelect = modal.querySelector('#ss-scope-p1-item');
-      function populateP1ScopeSelect() {
-        if (!p1ScopeSelect) return;
-        p1ScopeSelect.innerHTML = scopeCatalog().map(it =>
-          '<option value="' + esc(it.id) + '">' + esc(it.name) + '</option>').join('');
-        if (window.ztorSelect) window.ztorSelect.mount(modal);
+      let p1Mode = 'all';
+      const inPhase1 = () => !!(p1ScopeGroup && p1ScopeGroup.offsetParent !== null);
+      function syncComboVisibility() {
+        if (!scopeCombo) return;
+        const show = p1Mode === 'item' || !!(scopeItemsChk && scopeItemsChk.checked);
+        scopeCombo.hidden = !show;
+        if (!show) closeScopeMenu();
       }
       function setP1Scope(val) {
+        p1Mode = val;
         if (p1ScopeGroup) p1ScopeGroup.querySelectorAll('[data-p1-scope]').forEach(b =>
           b.classList.toggle('radio-list__item--active', b.dataset.p1Scope === val));
-        if (p1ScopeItemWrap) p1ScopeItemWrap.hidden = val !== 'item';
+        /* 回到「全部」就清掉已勾的商品——與 Phase 4 勾「全部商店」清空另外兩級同一條規則（D272 決定 1）。 */
+        if (val !== 'item') scopeSelected = [];
+        paintScopeChips();
+        syncComboVisibility();
       }
-      function resetP1Scope() {
-        populateP1ScopeSelect();
-        setP1Scope('all');
-      }
+      function resetP1Scope() { setP1Scope('all'); }
 
       function resetScope() {
         if (scopeAll) scopeAll.checked = true;
         setScopeAllMode(true);
         resetP1Scope();
       }
+      document.addEventListener('ztor:devstate-changed', () => { if (!modal.hidden) resetScope(); });
+
+      /* ── 讀回目前的適用範圍（儲存時用）：all＝全部商店；否則列出 Phase 4 類型樹勾的子類型
+         與 combobox 勾的商品／票種。看的是「哪一組控件現在看得見」——版本閘門決定的。 */
+      function readScope() {
+        const all = inPhase1() ? p1Mode !== 'item' : !!(scopeAll && scopeAll.checked);
+        if (all) return { all: true, types: [], items: [] };
+        const types = (!inPhase1() && scopeTree) ? [...scopeTree.querySelectorAll('[data-scope-child]:checked')].map(c => {
+          const lab = c.closest('label'); const t = lab && lab.querySelector('.zcheck__label');
+          return { key: t ? t.getAttribute('data-i18n') : '', name: t ? t.textContent : c.value };
+        }) : [];
+        const items = scopeSelected.map(id => scopeItemById(id)).filter(Boolean);
+        return { all: false, types, items };
+      }
 
       function openModal(kind, titleKey) {
+        modal.dataset.mode = titleKey === 'store-settings.codes.edit' ? 'edit' : 'new';
         setKind(kind);
         if (title) { title.setAttribute('data-i18n', titleKey); title.textContent = T(titleKey) || title.textContent; }
         /* 開彈窗重設為預設（共用背景 D 段）：全部商店、每單 1、每人與總次數留空；
@@ -1008,6 +1091,99 @@
       }
       function closeModal() { modal.hidden = true; document.body.classList.remove('is-modal-open'); closeScopeMenu(); }
 
+      /* ── 清單「範圍」欄（D299）：全部商店寫「全部商店」；綁了幾件就寫件數，hover／focus 浮出清單
+         （.stock-tip，與電子商店庫存欄同一顆；定位寫法同 e-shop.html 的 place()）。
+         件數文案依語言重填：i18n 沒有 {n} 參數，所以件數 span 帶 data-scope-count、在 i18n:applied 時補字。
+         Phase 4 若勾了類型，類型名寫在件數前面（「服飾＋2 件」的那種寫法），類型也列進浮卡。 ── */
+      const KIND_KEY = { product: 'store-settings.codes.scope.kind.product', bundle: 'store-settings.codes.scope.kind.bundle', ticket: 'store-settings.codes.scope.kind.ticket', type: 'store-settings.codes.scope.kind.type' };
+      /* 浮卡用 .stock-tip--anchored（絕對定位貼著觸發格）：清單的玻璃外框有 backdrop-filter，
+         fixed 的參考框會變成外框而不是視窗，e-shop 那套算座標的 place() 在這裡不適用。
+         這裡只決定開向：觸發格在視窗下半就往上開。 */
+      function placeTip(trigger) {
+        const r = trigger.getBoundingClientRect();
+        trigger.classList.toggle('stock-tip--up', r.top > window.innerHeight / 2);
+      }
+      function wireTip(trigger) {
+        const pop = trigger.querySelector('.stock-tip__pop');
+        if (!pop || trigger.dataset.tipWired) return;
+        trigger.dataset.tipWired = '1';
+        const open = () => { placeTip(trigger); trigger.classList.add('is-open'); };
+        const close = () => trigger.classList.remove('is-open');
+        trigger.addEventListener('mouseenter', open);
+        trigger.addEventListener('mouseleave', close);
+        trigger.addEventListener('focusin', open);
+        trigger.addEventListener('focusout', close);
+      }
+      function paintScopeCounts(root) {
+        (root || panel).querySelectorAll('[data-scope-count]').forEach(el => {
+          const n = Number(el.getAttribute('data-scope-count')) || 0;
+          const types = el.getAttribute('data-scope-types') || '';
+          const tpl = T(n === 1 ? 'store-settings.codes.scope.n-items.one' : 'store-settings.codes.scope.n-items') || '{n} items';
+          const count = n ? tpl.replace('{n}', String(n)) : '';
+          el.textContent = types ? (count ? types + ' + ' + count : types) : count;
+        });
+      }
+      function scopeCellHTML(scope) {
+        if (scope.all) return '<span data-i18n="store-settings.codes.f.scope.all">' + esc(T('store-settings.codes.f.scope.all') || 'All items') + '</span>';
+        const typeNames = scope.types.map(t => t.name).join(T('store-settings.codes.scope.join') || ', ');
+        const rows = scope.types.map(t => ({ name: t.name, kind: 'type' })).concat(scope.items);
+        return '<span class="stock-tip stock-tip--anchored ss-code-scope" tabindex="0">' +
+          '<span class="ss-code-scope__count" data-scope-count="' + scope.items.length + '"' + (typeNames ? ' data-scope-types="' + esc(typeNames) + '"' : '') + '></span>' +
+          '<div class="stock-tip__pop" role="tooltip">' +
+          rows.map(r => '<div class="stock-tip__row"><span class="stock-tip__qty">' + esc(r.name) + '</span><span class="stock-tip__name" data-i18n="' + KIND_KEY[r.kind] + '"></span></div>').join('') +
+          '</div></span>';
+      }
+      panel.querySelectorAll('.ss-code-scope').forEach(wireTip);
+      paintScopeCounts();
+      document.addEventListener('i18n:applied', () => paintScopeCounts());
+
+      /* ── 儲存（D299）：碼字串 8–20 英數字（D280）、重複檢查不分大小寫（D299 決定 3）、
+         指定商品至少一件。新增就在清單尾端長一列（示意，不落地）；編輯既有列只關閉——
+         開彈窗時一律重設為預設、沒帶入原值（UIA-151），把預設寫回去會抹掉示意值。 ── */
+      function fmtDate(v) { return v ? shortDate(v) : ''; }
+      function saveCode() {
+        const inp = document.getElementById('ss-code-code');
+        const raw = inp ? inp.value.trim() : '';
+        const toast = (key, tone) => { if (window.ztorToast) window.ztorToast.show(T(key) || key, { tone: tone || 'error' }); };
+        if (!/^[A-Za-z0-9]{8,20}$/.test(raw)) { if (inp) { inp.setAttribute('aria-invalid', 'true'); inp.focus(); } toast('store-settings.codes.err.format'); return; }
+        if (inp) inp.removeAttribute('aria-invalid');
+        const scope = readScope();
+        if (!scope.all && !scope.types.length && !scope.items.length) { toast('store-settings.codes.err.scope'); return; }
+        if (modal.dataset.mode === 'new') {
+          const taken = [...rows.querySelectorAll('.ss-code-cell__code')].some(el => el.textContent.trim().toUpperCase() === raw.toUpperCase());
+          if (taken) { if (inp) { inp.setAttribute('aria-invalid', 'true'); inp.focus(); } toast('store-settings.codes.err.taken'); return; }
+          const discountEl = document.getElementById('ss-code-discount');
+          const dv = discountEl ? discountEl.value.trim() : '';
+          const discount = currentUnit() === 'pct' ? dv + '%' : '$' + dv;
+          const start = fmtDate((document.getElementById('ss-code-start') || {}).value);
+          const end = fmtDate((document.getElementById('ss-code-end') || {}).value);
+          const period = start || end ? (start || '…') + ' – ' + (end || '…') : '—';
+          const template = rows.querySelector('tr');
+          const tr = document.createElement('tr');
+          tr.dataset.codeKind = 'own';
+          tr.innerHTML =
+            '<td class="ztor-table__feature"><div class="ss-code-cell"><span class="ss-code-cell__code">' + esc(raw) + '</span>' +
+            '<span class="ss-code-cell__meta" data-feat="full"><span data-i18n="store-settings.codes.type.own">Own</span></span></div></td>' +
+            '<td>' + esc(discount) + '</td>' +
+            '<td>' + scopeCellHTML(scope) + '</td>' +
+            '<td>' + esc(period) + '</td>' +
+            '<td><span class="badge badge--success" data-i18n="store-settings.codes.status.active">Active</span></td>' +
+            '<td><div class="ss-code-sold"><span class="ss-code-sold__count">—</span></div></td>' +
+            '<td>' + (template ? template.cells[6].innerHTML : '') + '</td>';
+          rows.appendChild(tr);
+          if (window.ztorIcons) window.ztorIcons.applyIcons(tr);
+          if (window.applyI18n) window.applyI18n(tr);
+          /* 新列帶 data-feat 閘門（「自用」meta 只在 Phase 4），devtools 沒有針對新節點的 API，
+             set({}) 會重跑一次 applyVersion（整頁重算，量小）。 */
+          if (window.ztorDevState && window.ztorDevState.set) window.ztorDevState.set({});
+          tr.querySelectorAll('.ss-code-scope').forEach(wireTip);
+          paintScopeCounts(tr);
+          paintEmpty();
+        }
+        toast('store-settings.codes.toast.saved', 'success');
+        closeModal();
+      }
+
       document.addEventListener('click', e => {
         const t = e.target;
 
@@ -1016,6 +1192,7 @@
         const edit = t.closest('[data-code-edit]');
         if (edit) { openModal(edit.closest('tr')?.dataset.codeKind || 'own', 'store-settings.codes.edit'); return; }
 
+        if (t.closest('[data-code-save]')) { saveCode(); return; }
         if (t.closest('[data-code-close]')) { closeModal(); return; }
         if (t === modal) { closeModal(); return; }
 
@@ -1071,6 +1248,9 @@
           tr.after(clone);
           if (window.ztorIcons) window.ztorIcons.applyIcons(clone);
           if (window.applyI18n) window.applyI18n(clone);
+          /* cloneNode 不帶事件：範圍欄的 hover 浮卡要重新接線（D299） */
+          clone.querySelectorAll('.ss-code-scope').forEach(el => { delete el.dataset.tipWired; wireTip(el); });
+          paintScopeCounts(clone);
           paintEmpty();
           return;
         }
@@ -1116,7 +1296,7 @@
         const t = e.target;
         if (t === scopeAll) { setScopeAllMode(t.checked); return; }
         if (t === scopeTypes) { if (scopeTree) scopeTree.hidden = !t.checked; return; }
-        if (t === scopeItemsChk) { if (scopeCombo) scopeCombo.hidden = !t.checked; if (t.checked) paintScopeChips(); return; }
+        if (t === scopeItemsChk) { syncComboVisibility(); if (t.checked) paintScopeChips(); return; }
         const grp = t.matches('[data-scope-group]') ? t.getAttribute('data-scope-group') : null;
         if (grp) { setGroupChildren(grp, t.checked); t.indeterminate = false; return; }
         const child = t.matches('[data-scope-child]') ? t.getAttribute('data-scope-child') : null;

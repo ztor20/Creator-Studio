@@ -49,6 +49,8 @@
 <link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/size-chart-editor.css?v=r2.2"><!-- 尺寸指南編輯器（partials/size-guide-modal.js 注入的彈窗，2026-09-22） -->
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
@@ -96,11 +98,12 @@
           <button class="btn btn--outline" type="button" data-pd-preview-open data-dock-icon><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.preview">See as fan</span></button>
           <!-- 頁首主要動作依狀態互斥、一次只出現一個（spec 5.1.5.1 §2.2，主規格 §7.14「封存與不可刪除」· D284，2026-09-18）：
                上架中→「下架」（＝把上架開關切關，同一份資料）；已下架→「封存」（先確認；仍在上架中組合包裡則列出並一同下架）；
-               已封存→「重新上架」（不確認、直接回到上架）。本頁沒有刪除——發布過的商品任何頁面都不提供刪除入口。
+               已封存→「解除封存」（不確認、回到已下架、設定照舊、不自動上架；D298 2026-09-22 修訂 D284 的「直接回到上架」）。
+               本頁沒有刪除——發布過的商品任何頁面都不提供刪除入口。
                顯隱由 syncPrimaryAction() 依 ListingState 決定，這裡三顆都先 hidden。 -->
           <button class="btn btn--outline" type="button" data-pd-unlist hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button>
           <button class="btn btn--outline" type="button" data-pd-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
-          <button class="btn btn--primary" type="button" data-pd-relist hidden><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="product-detail.btn.relist">Relist</span></button>
+          <button class="btn btn--primary" type="button" data-pd-unarchive hidden><i data-lucide="archive-restore" class="ztor-icon"></i><span data-i18n="product-detail.btn.unarchive">Unarchive</span></button>
           <div data-dock-actions></div>
           <!-- 2026-09-11 撤除頁級「儲存」：商品設定分頁改成「編輯商品 → 儲存變更」的開關（同活動詳情），
                總覽分頁的補貨／鎖定各自在彈窗裡儲存，頁面上已沒有「整頁一起存」的東西。 -->
@@ -123,10 +126,10 @@
           <p class="pd-hero__desc" id="pd-hero-meta"><span data-pd-hero-price></span> · <span data-pd-hero-var></span></p>
         </div>
       </section>
-      <!-- 封存態說明（D284）：整頁唯讀、只能重新上架。沿用 info-banner，icon 換 archive；未封存時整條收起。 -->
+      <!-- 封存態說明（D284；D298 出口改講解除封存）：整頁唯讀、只能解除封存（回到已下架）。沿用 info-banner，icon 換 archive；未封存時整條收起。 -->
       <div class="info-banner mt-16" data-pd-archived-banner hidden>
         <i data-lucide="archive" class="ztor-icon info-banner__icon"></i>
-        <span data-i18n="product-detail.archived.banner">Archived — read-only. Relist it to edit or sell again.</span>
+        <span data-i18n="product-detail.archived.banner">Archived — read-only. Unarchiving returns it to Unlisted; settings are kept.</span>
       </div>
       <!-- 未開賣提醒（2026-09-18 · D290）：上架中但開賣設定停在「未開賣」（下架後重新上架的常態）時露出，設了開賣就收起 -->
       <div class="info-banner mt-16" data-pd-relist-sale-banner hidden>
@@ -497,6 +500,39 @@
             <div id="pd-spec-rows"></div>
             <button class="btn btn--outline" id="pd-add-spec" type="button" style="width:100%;justify-content:center;margin-top:var(--sp-8)" data-i18n="cp.spec.add">＋ Add spec</button>
           </div>
+
+          <!-- 尺寸指南（2026-09-22 使用者裁決；建立商品 5.1.5.2 §4.1 F2／D211 的同一組線框層 .control-group--plain，
+               資料同 js/size-guides-store.js、編輯器同 partials/size-guide-modal.js）：沿用商店的全部（預設）／這件商品專屬一份，二選一。
+               檢視態＝三列裡亮著的那一列的字就是目前選擇（純文字）；「查看」是看不是改，掛 data-view-safe 留著；換／編輯／移除鈕檢視態自動收起。 -->
+          <div class="field" data-pd-cat="physical" style="margin-top:var(--sp-24);margin-bottom:0">
+            <div class="field__label" data-i18n="cp.sg.title">Size guide</div>
+            <div class="control-group control-group--plain">
+              <div class="control-row" data-pd-sg="inherit">
+                <div>
+                  <div class="control-row__main" data-i18n="cp.sg.inherit">Using your shop's size guides</div>
+                  <div class="control-row__sub"><span data-i18n="cp.sg.inherit.pre">Default size guides: </span><span data-pd-sg-list>Tops · Bottoms · Hats</span><span data-i18n="cp.sg.inherit.post">. </span><button type="button" class="control-row__link" data-view-safe data-pd-sg-view data-i18n="cp.sg.view">View</button></div>
+                </div>
+                <button class="btn btn--outline" type="button" data-feat="full" data-pd-sg-own><span data-i18n="cp.sg.switch">Use its own guide</span></button>
+              </div>
+              <div class="control-row" data-pd-sg="none" hidden>
+                <div>
+                  <div class="control-row__main" data-i18n="cp.sg.none">No size guides set up</div>
+                  <div class="control-row__sub"><span data-i18n="cp.sg.none.hint">Add one in store settings — every item uses it.</span> <a class="control-row__link" href="store-settings.html#specs" data-i18n="cp.sg.none.cta">Store settings</a></div>
+                </div>
+                <button class="btn btn--outline" type="button" data-feat="full" data-pd-sg-own><span data-i18n="cp.sg.switch">Use its own guide</span></button>
+              </div>
+              <div class="control-row" data-pd-sg="own" data-feat="full" hidden>
+                <div>
+                  <div class="control-row__main" data-i18n="cp.sg.own">Using its own size guide</div>
+                  <div class="control-row__sub" data-i18n="cp.sg.own.hint">Your shop&#39;s guides don&#39;t show here.</div>
+                </div>
+                <div class="control-row__actions">
+                  <button class="btn btn--outline btn--sm" type="button" data-pd-sg-edit data-i18n="cp.sg.edit">Edit</button>
+                  <button class="btn btn--ghost btn--sm" type="button" data-pd-sg-remove data-i18n="cp.sg.remove">Remove</button>
+                </div>
+              </div>
+            </div>
+          </div>
       </section>
             </div>
             <div data-nav-panel="cfile" data-pd-cat="digital" hidden>
@@ -669,23 +705,35 @@
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="cp.discount.title">Discount settings</h3>
         </div>
-        <div class="stack stack--tight">
         <div class="control-group">
           <div class="control-row">
           <div>
             <div class="control-row__main" data-i18n="cp.discount.enable">Enable discount</div>
-            <div class="control-row__sub" data-i18n="cp.discount.enable-sub">Sell this product at a set discount price</div>
+            <!-- 2026-09-22（使用者裁決，UIA-060 補套）：單一規格＝折扣價或折扣 % 擇一填、另一格依定價算；多選項＝只有折扣 %、套到每個選項組合——
+                 與建立商品 F13 的兩套（cp-sale-price／cp-sale-percent、cp-vsale-percent）同一模型；副標與提示依 data-when-var 切 -->
+            <div class="control-row__sub"><span data-when-var="single" data-i18n="cp.discount.enable-sub">Sell this product at a set discount price</span><span data-when-var="multiple" hidden data-i18n="cp.discount.enable-pct-sub">Take a percentage off every variation's price</span></div>
           </div>
           <div class="switch" role="switch" aria-checked="false" tabindex="0" id="pd-discount-toggle"></div>
         </div>
           <div class="control-group__body" data-pd-discount-fields hidden>
-          <div class="field" style="max-width:220px">
-            <div class="field__label"><span data-i18n="cp.sale.price">Discount price</span> <span class="field__req">*</span></div>
-            <span class="amount-field amount-field--readonly">
-              <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
-              <input class="input amount-field__input" id="pd-sale-price" placeholder="0.00">
-            </span>
+          <div class="form-grid">
+            <div class="field" style="margin-bottom:0" data-when-var="single">
+              <div class="field__label"><span data-i18n="cp.sale.price">Discount price</span> <span class="field__req">*</span></div>
+              <span class="amount-field amount-field--readonly">
+                <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+                <input class="input amount-field__input" id="pd-sale-price" placeholder="0.00" inputmode="decimal">
+              </span>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <div class="field__label"><span data-i18n="cp.sale.percent">Discount %</span> <span class="field__req" data-when-var="multiple" hidden>*</span></div>
+              <span class="amount-field amount-field--suffix amount-field--readonly">
+                <span class="amount-field__unit"><span class="amount-field__sym">%</span></span>
+                <input class="input amount-field__input" id="pd-sale-percent" placeholder="0" inputmode="decimal">
+              </span>
+            </div>
           </div>
+          <div class="field__hint" style="margin-top:var(--sp-6)" data-when-var="single" data-i18n="cp.sale.linkhint">Enter either — the other updates from your list price.</div>
+          <div class="field__hint" style="margin-top:var(--sp-6)" data-when-var="multiple" hidden data-i18n="cp.sale.pct-allhint">Applied to every variation — fans pay the discounted price.</div>
           <div class="control-group" style="margin-top:12px">
             <div class="control-row">
             <div>
@@ -706,18 +754,18 @@
             </div>
           </div>
           </div>
-        </div>
-        </div>
-        <!-- 可與優惠碼疊加（同建立商品 F13 · D183；2026-09-11 使用者：「要有可以使用折扣優惠碼的選項，像創建單售商品一樣」）：
-             商店優惠碼（5.1.5.5 F8）能不能再疊在這個商品的折扣上，由商品自己決定；預設關＝擇一，取對買家最有利的。 -->
-        <div class="control-row">
-          <div>
-            <div class="control-row__main" data-i18n="cp.discount.stack">Stack with discount codes</div>
-            <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means the buyer gets whichever single discount is best for them</div>
+          <!-- 可與優惠碼疊加（同建立商品 F13 · D183；2026-09-11 使用者：「要有可以使用折扣優惠碼的選項，像創建單售商品一樣」）：
+               商店優惠碼（5.1.5.5 F8）能不能再疊在這個商品的折扣上，由商品自己決定；預設關＝擇一，取對買家最有利的。
+               2026-09-22 使用者反饋：歸入 Enable discount 群組內、折扣關閉時一併收起（原本是獨立列，折扣關掉時仍留在畫面上）。 -->
+          <div class="control-row" style="margin-top:12px">
+            <div>
+              <div class="control-row__main" data-i18n="cp.discount.stack">Stack with discount codes</div>
+              <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means the buyer gets whichever single discount is best for them</div>
+            </div>
+            <div class="switch" role="switch" aria-checked="false" tabindex="0" id="pd-stack-codes"></div>
           </div>
-          <div class="switch" role="switch" aria-checked="false" tabindex="0" id="pd-stack-codes"></div>
         </div>
-        </div><!-- /.stack -->
+        </div>
       </section>
 
       <!-- §3-6 · 低庫存提醒設定（僅實體）：自庫存卡拆出——它是通知設定，不是庫存本身 -->
@@ -726,7 +774,17 @@
           <h3 class="form-section__title" data-i18n="product-detail.threshold.title">Low-stock alert</h3>
           <p class="form-section__sub" data-i18n="product-detail.threshold.sub">When to warn you that stock is running out.</p>
         </div>
-        <div class="field" style="margin-bottom:0">
+        <!-- 低庫存提醒開關（2026-09-22 使用者裁決；建立商品 F3.3 的 cp-lowstock-toggle 同一組 .control-group「開關列＋揭示區」）：
+             關閉＝門檻欄停用（disabled，仍顯示目前值），不是收起——細節頁看得到門檻曾設成多少。 -->
+        <div class="control-group">
+          <div class="control-row">
+            <div>
+              <div class="control-row__main" data-i18n="cp.lowstock">Alert me when running low</div>
+              <div class="control-row__sub" data-i18n="cp.lowstock.hint">Alerts you at 10% of your stock cap — the default low-stock threshold.</div>
+            </div>
+            <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" id="pd-lowstock-toggle"></div>
+          </div>
+        <div class="field control-group__body" style="margin-bottom:0" data-pd-lowstock-body>
           <div class="field__label" data-i18n="product-detail.field.threshold">Low-stock threshold</div>
           <!-- 2026-07-21（使用者裁決「存 %」）：門檻由件數改為百分比——以庫存上限為基準的比例，
                不再存算好的件數。ASSUMPTIONS UIA-069：屬資料模型變更，待上游確認。
@@ -748,6 +806,7 @@
           </div>
           <div class="field__hint" data-when-var="multiple" hidden data-i18n="product-detail.threshold.multi">Shared by every variation — you're warned as soon as any one of them drops below.</div>
         </div>
+        </div><!-- /.control-group -->
       </section>
 
       <!-- §3-9 每人限購（獨立一區；D136；F9）-->
@@ -783,6 +842,16 @@
         </div>
 
         <div data-pd-cat="physical">
+        <!-- 取貨方式切換（2026-09-22 使用者裁決；建立商品 F4 的 cp-delivery 同一顆 .segmented.radio-cards）：
+             2026-07-22 起本頁只唯讀顯示，這輪改回可切換——編輯態切物流／現場 QR 領取，下方兩套子欄位（既有 data-when-delivery）跟著換，
+             section 標題與頁籤標籤照 07-22 裁決仍＝目前方式。已有未完成訂單時能不能切〔產品待確認〕（ASSUMPTIONS UIA-163），原型不擋。
+             各段掛 data-view-safe：檢視態留著當「現在是哪一種」的狀態展示（Q119 例外），pointer-events 由 shared.css 關掉。 -->
+        <div class="field">
+          <div class="segmented radio-cards" id="pd-delivery">
+            <button class="segmented__btn segmented__btn--active" type="button" data-view-safe data-pd-delivery="shipping" data-i18n="cp.delivery.shipping">Shipping</button>
+            <button class="segmented__btn" type="button" data-view-safe data-pd-delivery="qr" data-i18n="cp.delivery.qr">QR code pickup</button>
+          </div>
+        </div>
         <div class="pd-subfields" data-when-delivery="shipping">
           <!-- 2026-07-22（使用者裁決）：物流配送欄位全部展開，不收合。原本除重量外都收進「顯示更多」，
                改為重量／運送分類／尺寸／取貨地點一律直接呈現。 -->
@@ -1148,6 +1217,77 @@
 <script src="partials/vip-card.js?v=r2.2"></script>
 <!-- 商品圖片格（[data-upload]）：hover 替換／刪除由共用元件產生（站上統一路徑）。 -->
 <script src="partials/upload-tile.js?v=r2.2"></script>
+<script src="js/toast.js?v=r2.2"></script>
+<script src="js/size-guides-store.js?v=r2.2"></script><!-- 尺寸指南：商店那份資料源與編輯器彈窗（同 create-product，2026-09-22） -->
+<script src="partials/size-guide-modal.js?v=r2.2"></script>
+<script>
+  /* 尺寸指南（2026-09-22 使用者裁決；規則同 create-product 的 sizeGuideField：spec 5.1.5.2 §4.1 F2／D211，demo 無後端）
+     二選一：沿用商店的全部（預設）／這件商品專屬的一份。設了專屬的，商店那幾份就不會出現在這件商品上。
+     清單問 js/size-guides-store.js（與商店設定同一份資料）；編輯器與商店設定共用 partials/size-guide-modal.js。
+     狀態（hasOwn）由 window.pdSizeGuide 讀寫，讓編輯模式的快照／取消能還原；商品記錄的 sizeGuide 欄位〔產品待確認〕，只留在頁面。 */
+  (function sizeGuideField() {
+    var section = document.querySelector('[data-pd-sg="inherit"]');
+    if (!section || !window.ztorSizeGuide) return;
+    var own = document.querySelector('[data-pd-sg="own"]');
+    var none = document.querySelector('[data-pd-sg="none"]');
+    var list = document.querySelector('[data-pd-sg-list]');
+    var T = function (k) { return (window.i18nT && window.i18nT(k)) || ''; };
+    var S = window.ZtorSizeGuides || null;
+    var hasOwn = false;
+    function guides() { return S ? S.list() : []; }
+    function paintState() {
+      var empty = guides().length === 0;
+      section.hidden = hasOwn || empty;
+      if (none) none.hidden = hasOwn || !empty;
+      own.hidden = !hasOwn;
+    }
+    function paintList() {
+      var names = S ? S.labels() : [];
+      if (list) list.textContent = names.join(' · ');
+      paintState();
+    }
+    paintList();
+    document.addEventListener('i18n:applied', paintList);
+    if (S) window.addEventListener(S.EVENT, paintList);
+    function setOwn(v) { hasOwn = !!v; paintState(); }
+    window.pdSizeGuide = { get: function () { return hasOwn; }, set: setOwn };
+    function openEditor(isNew) {
+      window.ztorSizeGuide.open({
+        titleKey: isNew ? 'cp.sg.modal.new' : 'cp.sg.modal.edit',
+        showName: false,
+        blank: isNew,
+        noticeKey: '',
+        onSave: function () {
+          setOwn(true);
+          if (window.ztorToast) window.ztorToast.show(T('cp.sg.toast.saved') || 'Size guide saved for this item');
+        }
+      });
+    }
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('[data-pd-sg-view]')) {
+        var gs = guides();
+        if (!gs.length) return;
+        var keys = gs.map(function (g) { return g.nameKey || g.name; });
+        window.ztorSizeGuide.open({
+          titleKey: 'cp.sg.shop.title',
+          noticeKey: 'cp.sg.shop.notice',
+          name: S.labelOf(gs[0]),
+          nameKey: gs[0].nameKey || '',
+          guides: keys,
+          guideKey: keys[0],
+          showName: false
+        });
+        return;
+      }
+      if (e.target.closest('[data-pd-sg-own]')) { openEditor(true); return; }
+      if (e.target.closest('[data-pd-sg-edit]')) { openEditor(false); return; }
+      if (e.target.closest('[data-pd-sg-remove]')) {
+        setOwn(false);
+        if (window.ztorToast) window.ztorToast.show(T('cp.sg.toast.removed') || "Back to your shop's size guides");
+      }
+    });
+  })();
+</script>
 <script>
   /* §2.2 See as fan：把粉絲端店面（共用 fan-store）注入分割預覽並開關（§6.7 同源）。 */
   (function () {
@@ -1606,16 +1746,8 @@
       state.delivery = p.delivery || 'shipping';   /* 取貨方式由商品資料決定（唯讀顯示）；未設＝物流配送 */
       /* 交付分頁的 section 標題與上方頁籤標籤＝取貨方式本身（實體＝物流配送／現場 QR 領取；數位＝交付與存取）。
          同時設 data-i18n（語言切換仍正確）與文字（即時生效，不依賴 i18n 執行順序）。 */
-      (function () {
-        var dkey = p.cat === 'digital' ? 'pd.digital-delivery.title'
-                 : (p.delivery === 'qr' ? 'cp.delivery.qr' : 'cp.delivery.shipping');
-        var dtxt = (window.i18nT && window.i18nT(dkey)) ||
-                   (p.cat === 'digital' ? 'Delivery & access' : p.delivery === 'qr' ? 'QR code pickup' : 'Shipping');
-        ['#pd-delivery-title', '[data-nav-item="delivery"]'].forEach(function (sel) {
-          var el = document.querySelector(sel);
-          if (el) { el.setAttribute('data-i18n', dkey); el.textContent = dtxt; }
-        });
-      })();
+      paintDeliveryTitle();
+      paintDeliverySeg();
       // 頁首：標題／副標／badge
       setText('pd-title', p.name); setVal('pd-title-input', p.name);
       /* 頁首識別小字：價格（多選項給區間）＋選項模式 */
@@ -1695,8 +1827,34 @@
       applyContentFile(p.content);
     }
 
-    /* 取貨方式 2026-07-22 起在商品明細不可更改（唯讀顯示），不再綁切換器；
-       shipping／qr 兩套欄位由 state.delivery（商品資料）經 applyVis 決定顯示哪一套。 */
+    /* 取貨方式（2026-09-22 使用者裁決，取代 07-22「細節頁不可更改」）：#pd-delivery 是建立商品 F4 同一顆 segmented，
+       切換寫回 state.delivery 與商品記錄，shipping／qr 兩套子欄位（既有 data-when-delivery）經 applyVis 換邊，
+       section 標題與頁籤標籤跟著換（07-22 裁決：標題＝目前方式）。只有編輯態能切（檢視態 shared.css 關掉 pointer-events）。
+       已有未完成訂單能不能切〔產品待確認〕，原型不擋（ASSUMPTIONS UIA-163）。 */
+    function paintDeliveryTitle() {
+      var dkey = state.cat === 'digital' ? 'pd.digital-delivery.title' : (state.delivery === 'qr' ? 'cp.delivery.qr' : 'cp.delivery.shipping');
+      var dtxt = T(dkey, state.cat === 'digital' ? 'Delivery & access' : state.delivery === 'qr' ? 'QR code pickup' : 'Shipping');
+      ['#pd-delivery-title', '[data-nav-item="delivery"]'].forEach(function (sel) {
+        var el = document.querySelector(sel);
+        if (el) { el.setAttribute('data-i18n', dkey); el.textContent = dtxt; }
+      });
+    }
+    function paintDeliverySeg() {
+      syncLockedSeg('pd-delivery', 'pdDelivery', state.delivery);
+    }
+    (function () {
+      var seg = document.getElementById('pd-delivery'); if (!seg) return;
+      seg.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-pd-delivery]'); if (!btn || btn.disabled) return;
+        var v = btn.getAttribute('data-pd-delivery');
+        if (v === state.delivery) return;
+        state.delivery = v;
+        if (product) product.delivery = v;
+        paintDeliverySeg(); applyVis(); paintDeliveryTitle();
+        /* 快照／設定總覽靠 change 事件知道切過（js/view-mode.js 與 renderSettingsOverview 都聽 change） */
+        seg.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }());
 
     const lt = document.getElementById('pd-limit-toggle');
     const lf = document.querySelector('[data-pd-limit-fields]');
@@ -1721,6 +1879,36 @@
     revealToggle('pd-discount-toggle', '[data-pd-discount-fields]');
     revealToggle('pd-sale-toggle', '[data-pd-sale-fields]');
     revealToggle('pd-stack-codes', null);   /* 可與優惠碼疊加：純開關，沒有要揭露的欄位 */
+    /* 單一規格折扣：折扣價 ↔ 折扣 % 雙向連動（2026-09-22，UIA-060 補套；與 create-product 同一段算法——以定價欄為基準、
+       最後編輯為準；程式設值不觸發 input 故無迴圈）。多選項商品只有 % 欄（折扣價欄由 data-when-var 收起），% 套到每個組合。 */
+    (function () {
+      const base = document.querySelector('[data-pd-edit-price]');
+      const sp = document.getElementById('pd-sale-price');
+      const pc = document.getElementById('pd-sale-percent');
+      if (!base || !sp || !pc) return;
+      const baseVal = () => parseFloat((base.value || '').replace(/[^0-9.]/g, '')) || 0;
+      const clamp = n => Math.max(0, Math.min(100, n));
+      sp.addEventListener('input', () => { const b = baseVal(); if (b > 0) { const v = parseFloat(sp.value) || 0; pc.value = clamp((1 - v / b) * 100).toFixed(1).replace(/\.0$/, ''); } });
+      pc.addEventListener('input', () => { if (state.var === 'multiple') return; const b = baseVal(); if (b > 0) { const v = clamp(parseFloat(pc.value) || 0); sp.value = (b * (1 - v / 100)).toFixed(2); } });
+      base.addEventListener('input', () => { if (state.var === 'multiple') return; const b = baseVal(); if (b > 0 && pc.value !== '') { const v = clamp(parseFloat(pc.value) || 0); sp.value = (b * (1 - v / 100)).toFixed(2); } });
+    })();
+    /* 低庫存提醒開關（2026-09-22 使用者裁決；同 create-product 的 cp-lowstock-toggle）：關＝門檻欄停用（disabled，值留著），開＝解除。 */
+    (function () {
+      const t = document.getElementById('pd-lowstock-toggle');
+      const pct = document.getElementById('pd-threshold-pct');
+      if (!t) return;
+      const apply = () => {
+        const on = t.getAttribute('aria-checked') === 'true';
+        if (pct) pct.disabled = !on;   /* .input:disabled＝全站唯一的停用外觀（input.css） */
+      };
+      t.addEventListener('click', () => {
+        const on = t.getAttribute('aria-checked') !== 'true';
+        t.classList.toggle('switch--on', on);
+        t.setAttribute('aria-checked', on ? 'true' : 'false');
+        apply();
+      });
+      apply();
+    })();
     /* ── §2.16 三開關 ＋ §2.17 非公開連結（spec 5.1.5.1、主規格 §7.14 · D241）────────────
        上架、顯示、開賣三件事互相獨立，各自一個開關；細節頁的上架列用開關（商品已存在，
        只剩開著或關著），排程欄常駐不收合。取代 D145 的三選一（該模型 D241 已廢除）。
@@ -1932,6 +2120,23 @@
       const d = p.discount || null;
       paintSwitch('pd-discount-toggle', !!d, '[data-pd-discount-fields]');
       setInput('pd-sale-price', d ? d.price : '');
+      /* 折扣 %（2026-09-22）：資料有 percent 就用；單一規格只給折扣價時依定價反算（與雙向連動同一條算式） */
+      (function () {
+        var pctIn = '';
+        if (d && d.percent != null && d.percent !== '') pctIn = String(d.percent);
+        else if (d && d.price != null && d.price !== '' && p.variant !== 'multiple') {
+          var b = parseFloat(String(p.price || '').replace(/[^0-9.]/g, '')) || 0, v = parseFloat(d.price) || 0;
+          if (b > 0) pctIn = String(Math.max(0, Math.min(100, (1 - v / b) * 100)).toFixed(1)).replace(/\.0$/, '');
+        }
+        setInput('pd-sale-percent', pctIn);
+      })();
+      /* 低庫存提醒開關（2026-09-22）：資料沒寫＝開（建立商品預設開） */
+      (function () {
+        var t = document.getElementById('pd-lowstock-toggle'); if (!t) return;
+        var on = p.lowAlert !== false;
+        t.classList.toggle('switch--on', on); t.setAttribute('aria-checked', on ? 'true' : 'false');
+        var pct = document.getElementById('pd-threshold-pct'); if (pct) pct.disabled = !on;
+      })();
       paintSwitch('pd-sale-toggle', !!(d && d.limited), '[data-pd-sale-fields]');
       setInput('pd-sale-start', d && d.limited ? d.limited.start : '');
       setInput('pd-sale-end', d && d.limited ? d.limited.end : '');
@@ -2010,7 +2215,7 @@
     })();
 
     /* ── 頁首主要動作依狀態互斥＋下架確認與組合包連動＋封存態唯讀（spec 5.1.5.1 §2.2／§2.16／§4，主規格 §7.14 · D284／D288，2026-09-18）──
-       規則本體在 ListingState（canArchive／archive／relist／listedBundlesUsing／unlistWithBundles），這裡只負責：哪顆鈕露出、
+       規則本體在 ListingState（canArchive／archive／unarchive／relist／listedBundlesUsing／unlistWithBundles），這裡只負責：哪顆鈕露出、
        下架前的確認（仍在上架中組合包裡＝列出組合包、主鈕「一同下架這些組合包」，D288 把這個彈窗從封存搬到下架）、
        封存的單純確認（只看已下架、不再列組合包）、封存時把整頁收成唯讀。彈窗一律借 leave-dialog 的殼，與 e-shop 同一套文案。
        唯讀的做法（雙保險）：(1) 商品設定分頁本來就預設檢視態（data-mode="view"），封存時把「編輯商品」入口藏掉、
@@ -2024,7 +2229,7 @@
       const main = document.querySelector('.main') || document.body;
       const btnUnlist = document.querySelector('[data-pd-unlist]');
       const btnArchive = document.querySelector('[data-pd-archive]');
-      const btnRelist = document.querySelector('[data-pd-relist]');
+      const btnUnarchive = document.querySelector('[data-pd-unarchive]');   /* D298：已封存態的唯一主要動作＝解除封存（回到已下架） */
       const banner = document.querySelector('[data-pd-archived-banner]');
       const listing = document.querySelector('[data-pd-listing]');
       /* 逐列「⋯」的三個項目（上架開關／補貨／鎖定）都是會改資料的動作，封存時全部收起（D288 盤點的漏洞）；
@@ -2039,15 +2244,15 @@
           dd.hidden = items.length > 0 && items.every(el => el.hidden);
         });
       };
-      /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「重新上架」永遠放行 */
-      if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { block: PRUNE + ',[data-pd-opt-editor] button,[data-pd-variant-table] button:not(summary)', allow: '[data-pd-relist],[data-pd-preview-open],[data-pd-preview-close],[data-rowdis]' });
+      /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「解除封存」永遠放行 */
+      if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { block: PRUNE + ',[data-pd-opt-editor] button,[data-pd-variant-table] button:not(summary),[data-pd-sg-own],[data-pd-sg-edit],[data-pd-sg-remove],[data-pd-delivery]', allow: '[data-pd-unarchive],[data-pd-preview-open],[data-pd-preview-close],[data-rowdis]' });
       const setSwitch = (el, on) => { if (!el) return; el.classList.toggle('switch--on', !!on); el.setAttribute('aria-checked', on ? 'true' : 'false'); };
       function syncPrimaryAction() {
         const archived = L.isArchived(product);
         const draft = !!product.draft;
         if (btnUnlist) btnUnlist.hidden = archived || draft || L.isUnlisted(product);
         if (btnArchive) btnArchive.hidden = !L.canArchive(product);
-        if (btnRelist) btnRelist.hidden = !archived;
+        if (btnUnarchive) btnUnarchive.hidden = !archived;
       }
       function applyArchived() {
         const archived = L.isArchived(product);
@@ -2055,13 +2260,13 @@
         if (banner) banner.hidden = !archived;
         if (listing) listing.classList.toggle('lctl--locked', archived);
         if (listedToggle) { listedToggle.setAttribute('aria-disabled', archived ? 'true' : 'false'); listedToggle.classList.toggle('switch--disabled', archived); }
-        /* 鎖定說明改講封存（三開關與排程全部不可調，重新上架後才能調） */
+        /* 鎖定說明改講封存（三開關與排程全部不可調，解除封存後才能調） */
         document.querySelectorAll('[data-pd-lock-note]').forEach(n => {
           const key = archived ? 'cp.listing.archived-lock' : 'cp.listing.unlisted-lock';
           n.setAttribute('data-i18n', key);
-          n.textContent = T(key, archived ? 'Archived — switches and schedules stay locked until it is relisted.' : 'Unlisted — show and sale settings are locked until it is listed again.');
+          n.textContent = T(key, archived ? 'Archived — switches and schedules stay locked until it is unarchived.' : 'Unlisted — show and sale settings are locked until it is listed again.');
         });
-        /* 關聯分頁的選片器：元件層唯讀（搜尋格與建議列收起、chip 無 ×），封存 ↔ 重新上架來回切 */
+        /* 關聯分頁的選片器：元件層唯讀（搜尋格與建議列收起、chip 無 ×），封存 ↔ 解除封存來回切 */
         if (window.pdFilmPicker && window.pdFilmPicker.setReadonly) window.pdFilmPicker.setReadonly(archived);
         if (archived) {
           prune();
@@ -2073,7 +2278,7 @@
         }
         syncPrimaryAction();
       }
-      /* 上架卡的開關值由資料決定：下架／封存／重新上架之後把三顆開關與時間欄同步回資料的樣子 */
+      /* 上架卡的開關值由資料決定：下架／封存／解除封存／重新上架之後把三顆開關與時間欄同步回資料的樣子 */
       function paintListingCard() {
         setSwitch(listedToggle, product.listed !== false);
         setSwitch(shownToggle, product.shown !== false);
@@ -2143,12 +2348,14 @@
         if (!L.canArchive(product)) return;
         askConfirm({
           title: T('e-shop.archive.title', 'Archive “{n}”?').replace('{n}', product.name || ''),
-          body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can relist it anytime.'),
+          body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can unarchive it anytime.'),
           okKey: 'e-shop.archive.confirm', okFallback: 'Archive',
           onConfirm: () => { L.archive(product); commit(); paintListingCard(); }
         });
       });
-      if (btnRelist) btnRelist.addEventListener('click', () => { L.relist(product); commit(); paintListingCard(); });
+      /* 解除封存（D298）：不確認、回到已下架（上架開關可用、「封存」鈕回來）、設定照舊、不自動上架；
+         D290 的「未開賣」提醒 banner 條件是上架中才露出，所以解除封存後不會出現、重新上架後才會。 */
+      if (btnUnarchive) btnUnarchive.addEventListener('click', () => { if (!L.isArchived(product)) return; L.unarchive(product); commit(); paintListingCard(); });
       /* 上架開關切關＝下架，同樣先確認：capture 階段攔下、不讓開關自己翻面，確認後由 paintListingCard 畫成關。
          切開（自已下架重新上架）不擋、只記錄。 */
       if (listedToggle) {
@@ -2254,7 +2461,7 @@
     var host = document.querySelector('[data-pd-film-picker]');
     var selectedFilms = (window.pdProduct && Array.isArray(window.pdProduct.films)) ? window.pdProduct.films.slice() : [];
     if (host && window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createFilmPicker) {
-      /* readonly＝已封存（D288 封存唯讀涵蓋關聯分頁）；之後的封存／重新上架由 initArchiveState 的 applyArchived 呼叫 setReadonly */
+      /* readonly＝已封存（D288 封存唯讀涵蓋關聯分頁）；之後的封存／解除封存由 initArchiveState 的 applyArchived 呼叫 setReadonly */
       window.pdFilmPicker = window.ZTOR_PARTIALS.createFilmPicker(host, { selected: selectedFilms, readonly: !!(window.pdProduct && window.pdProduct.archived), onChange: function () { if (window.pdRenderDest) window.pdRenderDest(); if (window.pdRenderSettingsOverview) window.pdRenderSettingsOverview(); } });
     }
   }());
@@ -2999,6 +3206,12 @@
         var act = rl.querySelector('.radio-list__item--active');
         snap.push({ el: rl, active: act });
       });
+      /* 取貨方式的 segmented（2026-09-22）：記哪一段亮著，取消時點回去（鎖定的庫存版本那顆不記——它本來就不能點） */
+      settingsPanel.querySelectorAll('.segmented.radio-cards:not(.segmented--locked)').forEach(function (seg) {
+        snap.push({ el: seg, seg: seg.querySelector('.segmented__btn--active') });
+      });
+      /* 尺寸指南（2026-09-22）：沿用商店／專屬一份，狀態住在頁尾的 sizeGuideField 腳本 */
+      if (window.pdSizeGuide) snap.push({ el: null, sg: window.pdSizeGuide.get() });
       return snap;
     }
     function restore(snap) {
@@ -3010,6 +3223,11 @@
         } else if ('active' in r) {
           var cur = r.el.querySelector('.radio-list__item--active');
           if (r.active && cur !== r.active) r.active.click();
+        } else if ('seg' in r) {
+          var curSeg = r.el.querySelector('.segmented__btn--active');
+          if (r.seg && curSeg !== r.seg) r.seg.click();
+        } else if ('sg' in r) {
+          if (window.pdSizeGuide) window.pdSizeGuide.set(r.sg);
         }
       });
     }
@@ -3161,6 +3379,11 @@
       var tags = document.querySelectorAll('#pd-tags-field .chip');
       rows.push({ g: 'basic', go: 'relations', key: 'cp.tags', fb: 'Product tags',
         v: tags.length ? Array.prototype.map.call(tags, function (c) { return c.firstChild ? c.firstChild.textContent.trim() : ''; }).join('、') : T('product-detail.setov.none', 'None') });
+      /* 尺寸指南（2026-09-22）：三列裡亮著的那一列的主句就是目前選擇 */
+      if (!digital) {
+        var sgRow = document.querySelector('[data-pd-sg]:not([hidden]) .control-row__main');
+        rows.push({ g: 'basic', go: 'info', key: 'cp.sg.title', fb: 'Size guide', v: sgRow ? sgRow.textContent.trim() : '' });
+      }
       var films = document.querySelectorAll('[data-pd-film-picker] .tag-input__field .chip');
       rows.push({ g: 'basic', go: 'tab:links', key: 'pd.films.title', fb: 'Linked movies',
         v: films.length ? T('product-detail.setov.films', '{n} movies').replace('{n}', films.length) : T('product-detail.setov.none', 'None') });
@@ -3178,11 +3401,11 @@
           : T('product-detail.setov.edition.limited-total', 'Limited · {n} total').replace('{n}', MODEL.cap || '—') });
       rows.push({ g: 'pricing', go: 'rules', key: 'cp.discount.title', fb: 'Discount settings',
         v: on('pd-discount-toggle')
-          ? join([money(num($v('pd-sale-price'))), on('pd-sale-toggle') ? join([$v('pd-sale-start'), $v('pd-sale-end')], ' – ') : '', on('pd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : ''])
+          ? join([multi ? '' : money(num($v('pd-sale-price'))), $v('pd-sale-percent') ? '-' + $v('pd-sale-percent') + '%' : '', on('pd-sale-toggle') ? join([$v('pd-sale-start'), $v('pd-sale-end')], ' – ') : '', on('pd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : ''])
           : join([T('product-detail.setov.off', 'Off'), on('pd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : '']) });
       if (!digital) {
         var pct = $v('pd-threshold-pct') || '10';
-        rows.push({ g: 'ops', go: 'rules', key: 'product-detail.threshold.title', fb: 'Low-stock alert', v: pct + '%' });
+        rows.push({ g: 'ops', go: 'rules', key: 'product-detail.threshold.title', fb: 'Low-stock alert', v: on('pd-lowstock-toggle') ? pct + '%' : T('product-detail.setov.off', 'Off') });
       }
       var limitQty = settingsPanel ? settingsPanel.querySelector('[data-pd-limit-fields] input') : null;
       rows.push({ g: 'pricing', go: 'rules', key: 'product-detail.limit2.title', fb: 'Purchase limit',

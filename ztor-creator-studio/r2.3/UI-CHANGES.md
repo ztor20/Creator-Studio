@@ -4,6 +4,165 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-22（六十六）· 三個細節頁補齊建立流程已有、細節頁缺的六個欄位：折扣 %、低庫存提醒開關、取貨方式切換、尺寸指南、組合包額外權益、拍賣商品標籤（A spec-derived · D304）
+
+**依據**：使用者裁決 D304（2026-09-22，盤點依據為建立流程 vs 細節頁欄位比對）——
+1. `product-detail.html` 折扣區補「折扣 %」，與折扣價連動（填一個另一個依定價算），行為與 `create-product.html` 的 `cp-sale-price`／`cp-sale-percent` 一致；多選項商品以 % 套到各選項組合（照建立流程做法）；檢視態依 Q119 純文字。
+2. `bundle-detail.html` 補「額外權益（Perks）」，與 `create-bundle.html` 的 `data-cb-perks` 同元件同規則；檢視態純文字。
+3. `product-detail.html` 補低庫存提醒開關（同 `cp-lowstock-toggle`），門檻值 `pd-threshold-pct` 維持；開關關閉時門檻欄停用。
+4. `product-detail.html` 取貨方式補切換（同 `cp-delivery` segmented），切換後顯示對應分支，既有 `data-when-delivery` 接上；已有未完成訂單的處理〔產品待確認〕、原型不擋。
+5. `product-detail.html` 補尺寸指南（沿用商店／專屬一份），沿用 `create-product.html` 的元件與 `js/size-guides-store.js`、`partials/size-guide-modal.js`；檢視態純文字顯示目前選擇。
+6. `auction-detail.html` 補商品標籤（同 `create-auction.html` 的 `ca-tags`）；Upcoming 可編輯；Live／完售／流標唯讀；檢視態純文字 chips。
+UIA-060（2026-07-17 記下的「product-detail 待套」）由第 1 項補上。規格由另一 session 同步 `documents/`，本輪不動規格。
+
+**範圍**：
+- `product-detail.html`——折扣設定：`data-pd-discount-fields` 內改 `.form-grid` 兩格（折扣價 `#pd-sale-price[data-when-var="single"]`＋折扣 % `#pd-sale-percent`）、開關副標與提示各兩句依 `data-when-var` 切（`cp.discount.enable-sub`／`enable-pct-sub`、`cp.sale.linkhint`／`pct-allhint`，全部既有 key）；雙向連動 IIFE 以 `[data-pd-edit-price]` 為基準（同 create-product 那段算法，多選項時 % 不反算價）；載入時 `discount.percent` 直接帶、單一規格只給 `price` 時依定價反算；設定概覽折扣列補 `-n%`。低庫存提醒：門檻欄外包一組 `.control-group`（開關列 `#pd-lowstock-toggle` ＋ `.control-group__body[data-pd-lowstock-body]`），關＝`#pd-threshold-pct.disabled`（`input.css` 唯一的停用外觀）、值留著；載入讀 `p.lowAlert`（未寫＝開）；概覽列關著寫「關」。取貨方式：交付分頁實體區頂部加 `.segmented.radio-cards#pd-delivery`（兩段 `data-pd-delivery`、`data-view-safe`），點擊寫 `state.delivery`／`product.delivery`、`applyVis()` 換分支、`paintDeliveryTitle()` 讓 section 標題與頁籤標籤照 07-22 裁決跟著換；`applyProduct` 的標題那段收成同一支函式；快照記 `.segmented.radio-cards:not(.segmented--locked)` 亮著的那段、取消點回去。尺寸指南：商品資訊分頁詳細規格之後複製建立商品的三列 `.control-group--plain`（`data-pd-sg="inherit|none|own"`，「查看」`data-view-safe`），頁尾新腳本 `sizeGuideField`（同 create-product：清單問 `ZtorSizeGuides`、編輯器 `ztorSizeGuide.open`）、狀態經 `window.pdSizeGuide` 進快照；補連 `size-chart-editor.css`／`toast.css`／`toast.js`／`size-guides-store.js`／`size-guide-modal.js`；概覽補「尺寸指南」列。封存閘門 block 補 `[data-pd-sg-own|edit|remove]`、`[data-pd-delivery]`
+- `bundle-detail.html`——成員區底部加 `.stack[data-bd-perks-group]`（`.bd-sub` 小標 `cpp.bd.perks`＋`textarea[data-bd-perks]`，同 create-bundle）；載入從 `ProductsStore.getBundle(id).perks`／活動組合 `evSeed.perks` 帶入；檢視態由 `js/view-mode.js` 畫成 pre-wrap 段落、編輯態 `applyReadonly` 既有掃描放開、快照既有掃描涵蓋；概覽補「額外權益」列
+- `auction-detail.html`——總覽分頁物品摘要之後加 `section[data-ad-tags-section][data-editable][data-mode]`（同 create-auction 的 `.tag-input#ad-tags`＋建議 chip-group）；`data-mode` 由拍賣狀態決定（`tagsEditable()`：未封存且開拍時間未到 → edit；否則 view），沒有「編輯」鈕；`renderTags()`／Enter 加標籤／× 移除／建議切換同 create-auction，寫回 `a.tags` 並 `commit()`；補連 `chip.css`／`tag-input.css`／`js/view-mode.js`
+- `js/products-store.js`——`tee`（多選項）折扣改記 `percent: 12`；`cap` 補 `lowAlert: false`；`signing-set` 補 `perks` 兩項；拍賣 `stage-worn-jacket`（Live）／`signed-tour-poster`（Upcoming）補 `tags`
+- `js/i18n.js`——新增 `ad.tags.sub`（en／zh）；其餘全部沿用建立流程既有 key
+- 元件——**無新元件、無 CSS 改動**：`control-row.css`（`.control-group`／`--plain`／`__body`）、`segmented.css`、`amount-field.css`、`tag-input.css`、`chip.css`、`bundle-editor.css`（`.bd-sub`）、`size-chart-editor.css` 全部既有；DS 三件套不動
+- 文件：`BUILD-SPEC.md`、`requirements-map.md` 5.1.5.1／5.1.5.9／5.1.5.8 列、`ASSUMPTIONS.md` UIA-163＋UIA-060 標已補
+
+**動機**：六個欄位在建立流程都已存在，細節頁缺的只是「同一顆元件再放一次」；全部沿用建立流程同一支元件與同一段邏輯，不另造第二種折扣輸入、第二種取貨切換或第二種標籤輸入（鐵律 11／Q123）。低庫存門檻關閉用停用而不是收起——細節頁的價值是看得到「曾經設成多少」；拍賣標籤的唯讀直接借兩段式面板的 view 態，讓「開拍後長什麼樣」與商品細節頁檢視態同一種樣子，不再發明一種只給拍賣用的唯讀 chips。取貨方式的 section 標題維持 07-22「標題＝目前方式」，切換後標題與頁籤同步——標題與 segmented 亮著的那段重複講同一件事，列 ASSUMPTIONS 供裁決。
+
+**驗證**：Playwright（1440×1000，`ztor.persona=default`）——`?id=zine` 編輯 → 定價 1000、折扣價 800 → % 自動 20；% 改 30 → 價 700.00；儲存後檢視態讀數「$700.00」「30%」、輸入框藏起；折扣關 → 疊加開關一併收起（六十五）；`?id=tee`（多選項）折扣價欄收起、% 讀 12、副標與提示切成多選項句。低庫存開關關 → `#pd-threshold-pct.disabled=true`、開 → false；取貨切 QR → `data-when-delivery="qr"` 分支出現、物流收起、標題與頁籤「現場 QR 領取」；尺寸指南「改用專屬指南」開編輯器、儲存後切到「使用專屬尺寸指南」列；取消編輯 → 取貨方式、尺寸指南、低庫存開關全部還原；檢視態尺寸指南只剩字＋「點擊查看」、換／編輯／移除鈕藏起。`bundle-detail?id=signing-set` 檢視態 perks 兩行純文字、編輯可改、取消還原。`auction-detail?id=signed-tour-poster`（Upcoming）`data-mode=edit`、Enter 加「Rare」、× 移除「Signed」；`?id=stage-worn-jacket`（Live）`data-mode=view`、輸入框／×／建議候選全藏、點建議無效；`?id=tour-laminate`（封存）view。`?id=postcard`（已封存商品）：切取貨、低庫存開關、折扣開關、專屬指南鈕、% 輸入全部被閘門擋下、值不變。五頁 en／zh 各 0 raw key、console 0 錯誤。截圖 `screenshots/r2.3/d301-01…18`＋`d301-stack-nested-on/off`（檔名沿用派工時的 d301 前綴，內容對應 D304）。`check_ds_sync.py` 全 PASS（WARN 為存量）；`node --check` products-store.js／i18n.js 通過、三頁內嵌腳本逐塊通過。
+
+## 2026-09-22（六十五）· 折扣設定：「與優惠碼疊加」開關歸入 Enable discount 群組（B 反饋）
+
+**依據**：使用者反饋——`create-product.html`／`product-detail.html` 折扣區的「Stack with discount codes／與優惠碼疊加」開關原本是折扣群組外的獨立一列，折扣關閉時仍留在畫面上，與「折扣關掉這塊就該收起」的直覺不符。裁示搬進「Enable discount」群組的 body（`data-cp-discount-fields`／`data-pd-discount-fields`）內、與「Limited-time discount」子群組同一層，只在折扣啟用時才出現。
+
+**範圍**：`create-product.html`——單一規格與多規格兩個折扣區塊（`cp-discount-toggle`／`cp-vdiscount-toggle`）的 `[data-cp-stack]`／`[data-cp-vstack]` 列各自搬進對應 `data-cp-discount-fields`／`data-cp-vdiscount-fields`，緊接在「Limited-time discount」`.control-group` 之後、同層縮排，移除外層多餘的 `.stack.stack--tight` 包裹（只剩一個子區塊時不需要）；`product-detail.html`——`#pd-stack-codes` 同樣搬進 `data-pd-discount-fields`。JS 掛勾不變（`wireReveal('cp-discount-toggle', '[data-cp-discount-fields]')`／`revealToggle('pd-discount-toggle', '[data-pd-discount-fields]')` 本就整塊控制顯隱，DOM 位置搬動不影響邏輯）。`create-bundle.html`／`bundle-detail.html` 的疊加開關（`data-cb-stack`／`bd-stack-codes`）經檢查不受影響——組合沒有對應的「Enable discount」總開關，疊加開關本就不掛在任何折扣啟用開關之下（沿用 D183：疊加與否與排程特價是否啟用無關），維持不動。
+
+**動機**：折扣關閉時買家根本拿不到任何折扣，「要不要疊優惠碼」這個問題此時不成立，讓開關留在畫面上只會讓創作者誤以為它仍有作用；收進同一個折扣群組後，「折扣開了才看得到疊加設定」與規格 D183 的語意（疊加是折扣本身的細部設定）在畫面上對得起來。
+
+**驗證**：本機 devserver（4326）手動核對——`create-product.html` 選 Physical item 後，Enable discount 關閉時折扣區只剩開關一列、Stack with discount codes 不可見；開啟後依序出現 Discount price／%、Limited-time discount、Stack with discount codes 三段，關閉後整段收合。`product-detail.html` 進 Product settings → Discounts & limits → Edit，同一行為核對通過（Cancel 放棄變更、未寫入示範資料）。
+
+## 2026-09-22（六十四）· 電子門票的附屬設定補齊：動態 QR（更新間隔）、可轉贈（次數上限、轉贈期限）；第三方門票 hint 補「ztor 不發 QR」（A spec-derived · D303）
+
+**依據**：使用者裁決 D303（2026-09-22）——「你現在做的第三方門票開關是截圖中的第一項『門票由主辦者自行提供』，把截圖中其他的欄位也補上」；參考 bookyay 表單的三組設定（門票由主辦者自行提供／使用動態 QR CODE 門票＋有效時間／可以轉贈門票＋限制轉贈次數＋設定轉贈期限）。規格落 5.1.6.1 v2.14 F24／F11／§5／§6、5.1.6.2 v3.7 F14、5.1.6.3 v13 §2.12、主規格 v3.82 §8.1。動態 QR 預設開、開啟後「更新間隔」分鐘必填預設 5；可轉贈預設關、開啟後兩個子開關（限制轉贈次數 → 次數上限必填預設 1；設定轉贈期限 → 統一截止日：日期必填／開演前 N 天：預設 1）；第三方門票開啟時動態 QR 整組不出現（互斥為推導、〔產品待確認〕）；順豐寄送與到店自取不出現；發布前檢核納入三個空白必填；bookyay 帶入時預填並鎖定；編輯模式草稿／已排程可改、開賣後唯讀。
+
+**範圍**：
+- `create-event.html`——步驟 7 取票方式的第二層由一組改為三組：D302 那組 `.control-group[data-ship-tp]` 外面包一層 `.stack.stack--tight[data-ship-when="eticket"][data-ship-eticket]`（三組距離由容器 gap 持有，Q103），新增 `[data-ship-dq]`（`.switch[data-ce-dq]` 預設開；揭示區一格「更新間隔」＝`.amount-field--suffix.zstep`＋後綴「分鐘」，`input[data-ce="ship-dq-min"]` min 1 max 60 value 5）與 `[data-ship-tf]`（`.switch[data-ce-tf]` 預設關；揭示區內再一層 `.stack--tight` 裝兩個巢狀 `.control-group`：`[data-ship-tf-limit]`（`.switch[data-ce-tf-limit]` 預設開 → 「次數上限」zstep 後綴「次」min 1）與 `[data-ship-tf-dl]`（`.switch[data-ce-tf-dl]` 預設開 → `.segmented.radio-cards[data-seg="tf-dl"]` 二選一「統一截止日／開演前 N 天」預設後者；`data-when="tf-dl"` 揭示 `input[type=date][data-ce="ship-tf-date"]` 或 「天數」zstep 後綴「天」min 0 max 365 value 1）。第三方門票 hint 改寫補「ztor 不發 QR 給買家」。JS：`applyShipMode()` 對 `[data-ship-eticket]` 這層跳過統一掛必填、改叫新 `applyEticketSettings()`＝`applyThirdParty()`（多做一件事：開著時 `[data-ship-dq]` 整組 `hidden`）＋`applyDynamicQr()`＋`applyTransfer()`，各自依開關決定揭示區與 `data-required`；五顆開關共用一段點擊行為；三個數字欄 blur 夾回 min–max；`[data-seg]` 集中處理器補 `seg === "tf-dl"` → `applyTransfer()`；`tryPublish()` 的 `stepOf` 補三個 key；`collect()`／`syncReview()` 的 Review「取票方式」列改為「方式 · 第三方門票 · 動態 QR 每 n 分鐘 · 可轉贈（最多 n 次、開演前 n 天止／{日期} 止）」；`bkyApply()` 對兩組預填並鎖（開關 `.switch--locked`、欄位 `lockField`、期限二選一 `.is-source-locked`）；`dupFrom()` 帶回來源活動的值。示範資料 `bky-1`（第三方門票＋可轉贈開演前 1 天）、`bky-2`（動態 QR 5 分鐘＋可轉贈上限 2、統一截止日）補欄
+- `event-detail.html`——設定分頁發布設定：唯讀版 `#ed-pub-read` 新增「動態 QR」（`#ed-pub-dq-row`：每 n 分鐘／關）與「可轉贈」（`#ed-pub-tf-row`：最多 n 次 · 開演前 n 天止／{日期} 止／關）兩列，電子門票才出現、第三方門票開著時動態 QR 列不出現；可編版 `#ed-pub-edit` 的 D302 那組外面包 `.stack.stack--tight[data-pub-when="eticket"][data-pub-eticket]`，新增 `[data-pub-dq-group]`／`[data-pub-tf-group]`（內含 `[data-pub-tf-limit-group]`、`[data-pub-tf-dl-group]`，期限二選一沿用頁內既有 `[data-pub="transferDeadline"][data-pub-val]` 群組機制），`renderPubExtras()` 依 `ev.publish.dynamicQr／qrRefreshMin／transferable／transferLimit／transferMax／transferDeadline／transferDate／transferDays` 畫並寫回、`pubDefaults()` 補規格預設、`pubExtrasText()` 產唯讀兩列文字；`syncPubLock()` 改為鎖 `#ed-pub-edit .switch` 全部與 `.zstep__btn`。補連 `stepper.css`＋`partials/stepper.js`
+- `js/events-store.js`——`taiwan-fest-kenting`（已排程：動態 QR 10 分鐘、可轉贈上限 2、開演前 3 天）、`album-signing-taipei`（售票中：動態 QR 5 分鐘、可轉贈不限次、統一截止日 2026-09-10）、`nick-symphonic-taipei`（已排程、第三方門票：可轉贈上限 1、開演前 1 天）
+- `js/i18n.js`——`ce.ship.tp.hint`／`ed.pub.tp.hint` 改寫；新增 `ce.ship.dq*`／`ce.ship.tf*`／`ce.unit.min|times|days`／`ce.rev.dq`／`ce.rev.tf.*`、`ed.pub.dq*`／`ed.pub.tf*`／`ed.unit.*`（en／zh）；步進鈕 aria-label 沿用 `cpp.step.up|down`
+- 元件——**無新元件、無 CSS 改動**：`control-row.css`（`.control-group` 巢狀）、`stack.css`（`.stack--tight`）、`switch.css`、`stepper.css`（`.zstep`）、`amount-field.css`（`--suffix.--readonly`）、`segmented.css`／`radio-card.css`、`date-input.css` 全部既有；DS 三件套不動
+- 文件：`BUILD-SPEC.md`、`requirements-map.md` 5.1.6.1／5.1.6 列、`ASSUMPTIONS.md` UIA-162
+
+**動機**：三組設定各自是「主決定（電子門票）選完才成立的一組附屬設定」，沿用 D302／D245 的 `.control-group` 開關列＋揭示區，不另造第三種做法（鐵律 11）；三組並排時距離交給 `.stack--tight`（Q103 容器持有節奏），可轉贈的兩個子開關也是同一結構往內套一層，讓「開關管這塊」的從屬關係一眼讀得出來。bookyay 的長句拆成開關＋子欄位，hint 只講後果（不發 QR、QR 會換新、關掉會怎樣），不重述標籤（鐵律 12）。數字欄一律用家用步進器 `.zstep`（站上唯一的步進器），單位字放後綴位而不是寫進標籤。
+
+**驗證**：Playwright（headless，1440×1000）建立活動 32 項＋活動詳情 19 項全 PASS、無 JS 錯誤——電子門票三組可見、第三方門票開 → 動態 QR 收起與必填拿掉、hint 含「不發 QR」；動態 QR 關開、步進 +1、99 夾回 60；可轉贈開 → 兩個子開關、上限 1 必填、開演前 1 天預設、切統一截止日 → 日期必填；統一截止日空白 → Publish 擋下回步驟 7 標紅；Review 摘要「電子門票 · 動態 QR 每 5 分鐘 · 可轉贈（最多 1 次、— 止）」；切順豐三組收起、必填全拿掉；`?import=bky-2` 四顆開關與欄位鎖定並預填、`?import=bky-1` 第三方門票開且動態 QR 收起；en／zh 零 raw key；`event-detail.html?id=taiwan-fest-kenting` 已排程檢視態鎖、編輯態可切可改、值保留；`?id=album-signing-taipei` 售票中唯讀兩列；`?id=nick-symphonic-taipei` 第三方門票收起動態 QR；`?id=realive-asia-kaohsiung` 唯讀無動態 QR 列。截圖 `screenshots/2026-09-22-eticket-settings-01…13`。`check_ds_sync.py` 全 PASS（WARN 為存量）；`node --check` 兩支 JS 通過。
+
+## 2026-09-22（六十三）· 取票方式「電子門票」下新增「第三方門票」開關；開啟後必填「領取與入場方式」（A spec-derived · D302）
+
+**依據**：使用者裁決 D302（2026-09-22）——「e-ticket 的選項下，新增這個欄位」→ 更正「這個選項下要有一個開關『第三方門票』，開啟後，才會有這個欄位」；參考 bookyay 表單的「＊請填寫自行提供的門票拎取方法/入場方式」（多行、0 / 250）。規格落 5.1.6.1 v2.13 F24／F11／§5／§6、5.1.6.2 v3.6 F14、主規格 v3.81 §8.1。開關預設關、只在電子門票下出現；開啟才出現「領取與入場方式」多行必填、≤250 字元、超過擋發布；順豐寄送與到店自取不出現；發布前檢核納入；bookyay 帶入時預填並鎖定（是否鎖定〔產品待確認〕）；編輯模式草稿／已排程可改、開賣後唯讀。
+
+**範圍**：
+- `create-event.html`——步驟 7 取票方式的三張選項卡下方加一組 `.control-group[data-ship-when="eticket"][data-ship-tp]`（本頁條款那組「開關列＋揭示區」同一結構、也是 D245 兩段式「主決定＋附屬設定」的既有做法）：`.control-row` 開關列（`ce.ship.tp`＋hint `ce.ship.tp.hint`、`.switch[data-ce-tp]`）＋`.control-group__body` 裡一格 `.field`＋`.textarea[data-ce="ship-tp-note"]`（必填標記、placeholder、`.field__hint[data-ce-count]` 計數「n / 250」沿用亮點欄做法）。`applyShipMode()` 對這組不再統一掛 `data-required`，改由新 `applyThirdParty()` 依開關決定：開＝揭示區出現、textarea 掛 `data-required`；關或取票方式不是電子門票＝收起、拿掉必填、清錯誤。`renderTpCount()` 超過 250 換 `.field__hint--warn`＋`.field.is-invalid`（不擋輸入）；`tryPublish()` 的 `stepOf` 補 `"ship-tp-note": 7`、空白走既有 ＊ 彙整阻擋、新增 `tpOver()` 超過 250 擋下並回步驟 7（`ce.publish-blocked-tp`）。`readState()` 補 `ship`／`tpOn`／`tpNote`，Review 新增「取票方式」列（`[data-rev="ship"]`：方式名＋「· 第三方門票」，`[data-rev="ship-tp"]` 說明摘要 60 字截斷、沿用 `.review-row__value--highlight`）。`bkyApply()` 在 `lockSeg("ship")` 之後把開關與說明依 `rec.thirdParty`／`thirdPartyNote` 預填並鎖（`.switch--locked`＋`lockField(textarea)`）；`?from=` 再辦一場帶回 `publish.thirdParty`。假資料 `bky-1` 補這兩個值
+- `event-detail.html`——設定分頁發布設定：唯讀版 `#ed-pub-read` 取票方式列在開著時加註「· 第三方門票」、新增「領取與入場方式」一列（`#ed-pub-tp-row`，關著整列收起）；可編版 `#ed-pub-edit` 取票方式卡下方同一組 `.control-group[data-pub-when="eticket"]`（`.switch[data-pub-tp][data-view-safe]`、`textarea[data-pub-f="tp-note"]`、`#ed-pub-tp-count`），`renderPubTp()` 依 `ev.publish.thirdParty`／`thirdPartyNote` 畫、開關與輸入寫回 `ev.publish`；`syncPubLock()` 檢視態把開關掛 `.switch--locked`＋`disabled`、textarea `readOnly`，編輯態解開。草稿／已排程走可編版、開賣後走唯讀版（`PUB_EDITABLE` 不變）
+- `js/events-store.js`——`nick-symphonic-taipei`（已排程，驗可編）與 `realive-asia-kaohsiung`（售票中，驗唯讀）補 `publish.thirdParty: true`＋`thirdPartyNote`
+- `js/i18n.js`——新增 `ce.ship.tp`／`.hint`／`.note`／`.note.ph`／`.count`、`ce.rev.ship`、`ce.publish-blocked-tp`；`ed.pub.tp`／`.hint`／`.note`／`.note.ph`／`.count`／`.on`／`.off`（en／zh）
+- 元件——**無新元件、無 CSS 改動**：`control-row.css`（`.control-group`＋`__body`）、`switch.css`、`input.css .textarea`、`field-system.css`（`.field__hint--warn`）、`review-row.css`（`__value--highlight`）全部既有；DS 三件套不動
+- 文件：`BUILD-SPEC.md`、`requirements-map.md` 5.1.6.1／5.1.6 列、`ASSUMPTIONS.md` UIA-161
+
+**動機**：開關而非直接多一欄——多數電子門票由 ztor 自己發，說明欄對他們是噪音；開關把「票不是 ztor 發的」記成一個明確事實，下游（QR、報到）才有依據分流。揭示區沿用 `.control-group`（本頁條款、販售方式都是這組），讓「開關管這塊」的從屬關係一眼讀得出來，不另造第三種「主決定＋附屬設定」做法（Q123／鐵律 11）。hint 只講粉絲會怎麼被影響（票由別的平台發、照你寫的走），不重述「第三方門票」四個字。
+
+**驗證**：Playwright（headless，1440×1000）30 項全 PASS、無 JS 錯誤——電子門票預設開關可見且關、無欄位 → 開啟出現必填欄＋「0 / 250」→ 輸入計數更新 → 251 字元計數轉警示色＋欄位錯誤態 → 關閉收起 → 切順豐寄送／到店自取整組收起 → 切回電子門票開關回來仍關；其餘 ＊ 填齊後開關開啟＋說明空白 → Publish 擋下、回步驟 7、欄位標紅；260 字元 → 擋下提示「超過 250 字元」；Review「電子門票 · 第三方門票」＋說明摘要；`import=bky-1` 帶入開關開＋鎖、說明預填＋鎖；en 零 raw key；`event-detail.html?id=nick-symphonic-taipei` 已排程檢視態鎖、編輯模式可切可改、計數、關再開值保留（zh／en）；`?id=realive-asia-kaohsiung` 售票中唯讀版加註＋說明列、可編版隱藏。截圖 `screenshots/2026-09-22-third-party-ticket-01…10`。`check_ds_sync.py` 全 PASS；`node --check` 兩支 JS 通過。
+
+## 2026-09-22（六十二）· bookyay 帶入的活動，名稱可修改；亮點不在帶入資料中、一律可改（A spec-derived · D301）
+
+**依據**：使用者裁決 D301（2026-09-22）——「匯入的活動名稱改成可以更改，亮點也可以改(亮點不在匯入資料中)」。活動名稱移出 F21 的 bookyay 鎖定範圍：帶入後預填 bookyay 名稱、可改，ztor 端改名不回寫 bookyay（bookyay 端事後改名是否覆蓋〔產品待確認〕）；亮點重申 D300 決定四；其餘鎖定範圍不變；編輯模式同樣可改、不列高影響。規格同輪回寫 5.1.6.1 v2.12 F21／F2／§6、5.1.6.2 v3.5 F2／§8。
+
+**範圍**：
+- `create-event.html`——`bkyApply()` 對 `[data-bky="name"]` 只預填不鎖：`lockField(el, el.dataset.bky !== "name")`，名稱欄不 `disabled`、不加 `.is-source-locked`、不掛 From bookyay 標籤；描述、國家／語言、場地、時間、票種、開賣時間、取票方式的鎖定照舊。改名照原本的 `input` 路徑更新分享連結、QR、預覽卡與 Review，未新增邏輯。亮點欄本就不掛 `data-bky`（六十一），本輪未動
+- `event-detail.html`／`js/events-store.js`——未改碼：編輯模式本來就沒有 bookyay 鎖定邏輯、store 也沒有來源標記，名稱與亮點本就可改；本輪只實測確認
+- 文案——bookyay 帶入閘門與欄位標籤沒有「名稱由 bookyay 決定」之類的句子，i18n 未動
+- 文件：`BUILD-SPEC.md`、`requirements-map.md` 5.1.6.1 列、`ASSUMPTIONS.md` UIA-160＋BKY-002 追記
+
+**動機**：不另外給名稱欄加「來自 bookyay、可改」的提示——欄位可輸入、值已經在裡面，就是可改的全部訊息；多一句只是重述（Q123 文案不重述上下文）。鎖定標籤只留在真的鎖住的欄位上，讓「有標籤＝不能改、沒標籤＝能改」這條規則在同一張表單裡不出現例外。
+
+**驗證**：Playwright（headless）實測 `create-event.html?import=bky-1` → 步驟 2：名稱欄 `disabled=false`、無 `.is-source-locked`、無 From bookyay 標籤、改成「REALIVE 世界巡迴 台北站」後預覽卡與分享連結同步；亮點欄可輸入「台北唯一一場」；描述欄仍 `disabled` 且掛 From bookyay 標籤。`event-detail.html?id=realive-asia-taipei` 設定分頁 → 編輯活動：名稱與亮點欄可輸入、無鎖定標籤。zh／en 各 0 raw key、console 0 錯誤；`check_ds_sync` 全 PASS；`node --check` 未涉及（只改 html 內嵌腳本，以瀏覽器實跑驗證）。截圖 `screenshots/2026-09-22-bky-name-editable-{create,detail}-{zh,en}.png`。
+
+## 2026-09-22（六十一）· 活動新增「亮點（Highlight）」欄位：名稱下方一句短文字、選填、只能一個（A spec-derived · D300）
+
+**依據**：使用者裁決 D300（2026-09-22）——建立活動步驟 2「基本資料」的活動名稱之後新增「亮點（Highlight）」：單行短文字、選填、一場只有一句（例「台北唯一一場」「安可加碼未發表新歌」）；粉絲端顯示在活動名稱下方或旁邊；bookyay 帶入不含此欄、不鎖；編輯模式可改、儲存後即時反映、不列高影響；活動清單不顯示、活動詳情頁首標題下方顯示；Review 摘要名稱列附亮點。規格同輪回寫 5.1.6.1 v2.11 F2／F10／F21／§5／§6、5.1.6.2 v3.4 F2／§3／§7、5.1.6.3 v12 §2.1、5.1.6 F1。
+
+**範圍**：
+- `create-event.html`——步驟 2 活動名稱之後新增亮點欄（`.field`＋`.input[data-ce="highlight"]`，placeholder「例：台北唯一一場」，`.field__hint[data-ce-count]` 即時計數「n / 30」、超過只換 `.field__hint--warn` 不擋；**不掛 `data-bky`**，bookyay 帶入時留空、不鎖、不顯 From bookyay 標籤）；`readState()` 帶 `highlight`；Review 名稱列下方新增 `[data-rev="highlight"]`（有才顯示，與名稱共用同一顆 Edit）；五份即時預覽卡名稱下方新增 `[data-pv="highlight"]`（有才顯示）；計數在 `i18n:applied` 後重算
+- `event-detail.html`——頁首 `<h1>` 與副標之間新增 `.page-intro__highlight#ed-highlight`（`hydrate()` 填、有才顯示）；設定分頁編輯模式活動名稱之後新增亮點欄（`[data-ed="highlight"]`＋計數 hint）；`fillEditForm`／`editSnapshot`／`ED_ASPECTS.basics` 納入亮點（改亮點算「基本資料」一項變更）；`commitEdit()` 把亮點寫回這一場的紀錄並重畫頁首（原型層級的「儲存後即時反映」）
+- `js/events-store.js`——`realive-asia-taipei`、`album-signing-taipei`、`nick-symphonic-taipei` 三筆補 `highlight` 示範，其餘留空；檔頭註明 bookyay 帶入的活動沒有這欄
+- `js/i18n.js`——新增 `ce.highlight`／`ce.highlight.ph`／`ce.highlight.count` 三把（en／zh），編輯模式沿用同一組、不另開 `ed.*`
+- 元件——`ds-components/event-preview-card.css` 新增 `__highlight`、`ds-components/review-row.css` 新增 `__value--highlight`、`ds-components/page-intro.css` 新增 `__highlight`：同一視覺角色同一配方（`--brand-ink`，預覽卡與 Review 12px、頁首 15px 與副標同級），空值由消費頁 `hidden` 收起、不顯佔位；DS 三件套同步（`design-system.html` 三張 demo＋review-row class 表、`design-system.md` 三條）
+- 文件：`BUILD-SPEC.md`、`requirements-map.md` 5.1.6／5.1.6.1 列、`ASSUMPTIONS.md` HL-001／HL-002
+
+**動機**：名稱是票面與清單的識別、要短要穩定；特殊訊息是行銷語、會變、只該有一句——分成兩個欄位讓兩種資料各守本分。呈現上用 `--brand-ink` 而不是字重：Q123 把 500 留給 active 與染色底微型字，亮點靠顏色說「這一句是重點」；字級跟副標同級（頁首）或跟 meta 同級（卡），讓它讀成「標題的註腳」而不是第二個標題。字數上限 30 與粉絲端最終位置都是呈現假設（HL-001／HL-002），上游拍板後回寫。
+
+**驗證**：Playwright 實測 create-event 步驟 2 填亮點 → 五份預覽卡名稱下方出現、Review 名稱列附亮點；bookyay 帶入草稿的亮點欄可輸入、無 From bookyay 標籤；event-detail 有亮點的活動頁首顯示、編輯模式改亮點 → 儲存 → 頁首更新；zh／en 0 raw key；`check_ds_sync` 全 PASS；`node --check` 兩支 js 通過。截圖 `screenshots/2026-09-22-event-highlight-*.png`。
+
+## 2026-09-22（六十）· 優惠碼 Phase 1「指定商品」改可多選、含活動票種；碼比對不分大小寫；清單範圍欄綁多件只寫件數＋hover 列出（A spec-derived · D299，修訂 D279／D280）
+
+**依據**：使用者裁決 D299（2026-09-22）——Phase 1 優惠碼的「指定商品」改成可多選：可勾單售、組合包、活動票種（活動下各票種）；類型樹仍 Phase 4；「全部商店」含活動票種；碼比對不分大小寫（碼仍 8–20 英數字、可自動產生）；Phase 1 不限每人使用次數（每人總次數欄留 Phase 4）；百分比套到訂單內所有符合數量、固定金額整單一次（D297）。
+
+**範圍**：
+- `store-settings.html`——優惠碼彈窗「適用範圍」：Phase 1 的 `radio-list` 第二項由「One item」改「指定商品（可多選）」，兩項各帶 `radio-list__sub`（全部商店＝含電子商店商品與活動票種；指定商品＝單售、組合包與活動票種），Phase 1 hint 只留「拍賣不折」；zselect 單選下拉退場；多選 `combobox`（`#ss-scope-combo`）從 Phase 4 那組搬到兩組閘門之外、兩版本共用（`syncComboVisibility()`：Phase 4 勾「特定商品」或 Phase 1 選「指定商品」就出現），`scopeCatalog()` 多出第三組活動票種（`ztorEvents.list()` 售票中／已排程／進行中逐票種，`__opt-meta` 放價格），切版本時彈窗開著就 `resetScope()`；碼欄 hint 改「8–20 個英數字，不分大小寫」；「儲存」改 `[data-code-save]` → `saveCode()`（格式、**不分大小寫的重複檢查**、範圍非空三道擋下＋toast；新增時清單尾端長一列，編輯只關閉）；清單新示意列 TOURVIP15（各版本可見）範圍欄「3 items」＋`.stock-tip--anchored` 浮卡列三件（含票種）；`readScope()`／`scopeCellHTML()`／`paintScopeCounts()`（件數依語言重填）；複製列重新接線浮卡；載入 `js/events-store.js`、連 `stock-tip.css`。
+- `ds-components/store-settings.css`——`.ss-scope-combo` 補 `margin-top: var(--sp-10)`（離開 flex 容器後自帶節奏）；新 `.ss-code-scope { display:inline-block }`。
+- `ds-components/stock-tip.css`——新變體 `--anchored`（絕對定位貼著觸發格、寬度上限 400px）＋`--up`（往上開）：清單的玻璃外框（`backdrop-filter`）會把 fixed 子孫的參考框換成外框，e-shop 那套算 viewport 座標設 fixed 的做法在這裡會把浮卡丟到卡的左上角（實測）。
+- `js/i18n.js`——`store-settings.codes.f.code.hint` 併成一把（原本同鍵兩把、後者蓋前者，D280 規則句從沒顯示過）並改口「不分大小寫」；`f.scope.hint.p1` 改「拍賣不折」；新 `f.scope.all.sub`、`f.scope.multi`／`.sub`、`f.scope.group.tickets`、`scope.n-items`／`.one`、`scope.join`、`scope.kind.product`／`bundle`／`ticket`／`type`、`err.format`／`taken`／`scope`、`toast.saved`；`f.scope.items.ph` 改「搜尋商品、組合包或票種」；墓碑 `f.scope.oneitem`。
+- `design-system.html`／`design-system.md`——Stock tip 卡補 `--anchored` 示範與 Class API／Consumers；Combobox 條目補優惠碼共用與票種組；Store settings 條目補 D299；`design-components.html` 重生。
+- `BUILD-SPEC.md`、`requirements-map.md`、`feature-scope-map.md`（D279 段改寫成 D299）補記；`ASSUMPTIONS.md` 新增 UIA-159、UIA-151 相關條目標「已由 D299 取代」。
+
+**為什麼**：D279 把 Phase 1 限成「一組碼綁一件」，畫面就該長得像單選（zselect）；D299 放寬成多選之後，再造一顆 Phase 1 專用的多選只會有兩份一模一樣的 combobox——改成一顆坐在兩組閘門之外、由 JS 依版本決定何時露出，Phase 1 與 Phase 4 差的只剩「有沒有類型樹」。清單的範圍欄綁了多件時把名稱全列出來會把表撐爆，件數＋hover 浮卡沿用電子商店庫存欄那顆 `stock-tip`；它的 fixed 定位在玻璃外框裡會跑掉，所以加了貼格的變體而不是在頁面裡硬算座標。碼比對不分大小寫落在儲存的重複檢查上——輸入欄仍建議大寫（`autocapitalize`）、既有清單照原樣顯示，只是「SUMMER25」與「summer25」算同一組。
+
+**不動的部分**：Phase 4 專屬——類型樹、每張訂單可折件數／每人總次數／總兌換次數、固定金額折法、疊加開關、代理碼——內容一字未改，只有共用的 combobox 多了票種組；`admin-platform-promotions.html` 的平台優惠碼不動（是否同樣不分大小寫待上游，見 UIA-159）；活動側沒有優惠碼的畫面，不加（記缺口）。
+
+**驗證**：`python3 ../../Skills/project-ui-creator/scripts/check_ds_sync.py "site/r2.3"` 15 項 PASS（既有 WARN 5／13）；`node --check` i18n.js 與兩段 inline script；http（`devserver.py 4399`）`?version=p1`：新增碼 → 指定商品勾 2 件單售＋1 個票種 → 儲存 → 清單列「3 items」、hover 列三件（`d299-04`／`d299-06`）；`summer25` 被擋「已經有了；大小寫不同也算同一組」（`d299-05`）；碼欄 hint「不分大小寫」（`d299-02`）；Phase 4 專屬欄位全隱藏；`?version=full` 類型樹／三格／折法／疊加／代理列全部回來、勾類型＋票種儲存顯示「Apparel + 1 item」（`d299-07`／`d299-08`）；zh（`d299-09`）／en 0 raw key；console 0 錯誤（favicon 404 既有）。
+
+## 2026-09-22（五十九）· 已封存的販售管道只能「解除封存」回到已下架，不再直接重新上架（A spec-derived · D298，修訂 D284／D289）
+
+**依據**：使用者裁決 D298（2026-09-22）——已封存的販售管道只有一個主要動作「解除封存（Unarchive）」→ 回到已下架；設定照舊保留（下架時已依 D290 清排程、退回未開賣），不自動上架；操作紀錄記一筆。已下架的主要動作維持「封存」與「上架」（上架＝既有的重新上架路徑，D290 不變）。主要動作互斥：上架中→下架；已下架→封存（另有上架開關）；已封存→解除封存。組合包重新上架（D289）：成員已封存仍擋下，提示改成「先解除封存」；解除封存不連動組合包。拍賣同理。
+
+**範圍**：
+- `js/listing-state.js`——新增 `unarchive(entity)`（`archived=false`、`listed` 維持 false、其他不動；未封存的直接回原物件）；`relist(entity)` 拆開只服務已下架→上架（不再順手 `archived=false`，對已封存一律不動）；`bundleRelistPlan`／`relistBundle` 註解與擋下語意改「先解除封存」；api 匯出 `unarchive`；檔頭資料模型註解同步。
+- `js/icons.js`——新 `archive-restore`（自繪：Tabler `archive` 的蓋子與箱身＋往上的箭頭，與 Lucide 同名字符同義；Tabler 的 `archive-off` 是斜線、`restore` 是倒轉箭頭，語意都不對）。
+- `e-shop.html`——`syncRowActions()` 已封存列改長出 `[data-eshop-unarchive]`（icon `archive-restore`、`e-shop.a.unarchive`），`data-eshop-relist` 不再產生；新 `doUnarchive(row)`：`L.unarchive`＋`S.commit`＋重畫該列＋`applyFilter`／`updateStatusCounts`（列離開「已封存」篩選、出現在「已下架」，kebab 換成「封存」）。D289 版的 `doRelist()`（清單上盤點成員、擋下或確認一併上架）整段退場——清單不再有上架入口，組合包成員閘門只在 bundle-detail 的上架開關上。
+- `product-detail.html`／`bundle-detail.html`／`auction-detail.html`——頁首 `[data-*-relist]` 鈕改 `[data-*-unarchive]`（icon `archive-restore`、`product-detail.btn.unarchive`，位置與 `btn--primary` 不變）；點擊 `unarchive`＋commit（bundle 走 `paint()` 的 mirror）＋重畫：上架開關回到可用、「封存」鈕出現、D290 的「未開賣／未開拍」提醒不出現（條件是上架中）；`ZtorArchivedGate.install` 的 `allow` 改放行 `[data-*-unarchive]`；bundle 的 `tryRelist()` 只從上架開關進來、對已封存直接 return；三頁封存 banner 與鎖定說明的 fallback 文案同步。
+- `js/i18n.js`——新 `e-shop.a.unarchive`／`product-detail.btn.unarchive`（Unarchive／解除封存）；墓碑 `e-shop.a.relist`／`product-detail.btn.relist`；改口 `e-shop.shown.archived`（要先解除封存）、`e-shop.archive.body`（隨時可以解除封存）、`e-shop.relist.blocked-body`（先解除封存這些成員，再上架組合包）、`product-detail.archived.banner`／`ad.archived.banner`（解除封存後回到已下架、設定照舊保留）、`cp.listing.archived-lock`（解除封存後才能調整）。`e-shop.relist.*` 其餘鍵保留（bundle-detail 上架開關仍用）。
+- `design-system.html`／`design-system.md`——Leave dialog 第三張擋下示範內文改口＋敘述補 D298；§4.202 Archived gate 示範鈕改「解除封存」（`archive-restore`，按下切換時 icon 跟著換）＋敘述；Icon 圖庫補「自繪的第三顆例外 `archive-restore`」；Film picker 條目「封存 ↔ 解除封存」；`design-components.html` 重生。
+- `BUILD-SPEC.md`、`requirements-map.md`、`docs/示範資料索引.md` 補 D298；`ASSUMPTIONS.md` 新增 UIA-158、UIA-152／153／154 相關條目標「已由 D298 取代」。
+
+**為什麼**：D284 讓已封存直接跳回上架，等於把「解除封存」與「上架」綁成一個動作——粉絲端會在創作者還沒檢查設定前就看到它；D298 把兩步拆開：解除封存只把東西從封存箱拿回已下架的清單，要不要賣、什麼時候賣，回到既有的上架開關與 D290 的開賣設定去決定。解除封存不需要確認（可逆、後果只是回到已下架），所以清單與細節頁都是一鍵。icon 與「封存」成對（同一顆箱子、箭頭向上）讓兩個動作一眼看出是正反面。
+
+**不動的部分**：封存的唯讀閘門（`partials/archived-gate.js`）、封存確認、下架確認與組合包連動（D288）、已下架→上架的路徑與 D290 的開賣退回、單售／組合／拍賣其他行為全部不變；`rotate-ccw` 在站上其他地方（取貨反轉核銷、上傳格還原、逐規格重新上架）照舊。
+
+**驗證**：`python3 ../../Skills/project-ui-creator/scripts/check_ds_sync.py "site/r2.3"` 15 項 PASS；`node --check` 三支 js；http 開頁：e-shop 已封存篩選（`d298-eshop-archived-kebab.png`）→ 點解除封存後列在已下架（`d298-eshop-unlisted-after.png`）；`product-detail.html?id=postcard`（`d298-pd-archived.png` → `d298-pd-unarchived.png` → `d298-pd-relisted.png`）；`bundle-detail.html?id=launch-set` 同流程＋`?id=postcard-set` 切上架擋下（`d298-bd-*.png`）；`auction-detail.html?id=tour-laminate`（`d298-ad-*.png`）；zh／en 0 raw key、console 0 錯誤。
+
+## 2026-09-22（五十八）· 電子商店清單列狀態欄拿掉「已隱藏」副徽章——同列右側「顯示於商店」開關已表達同一件事（B 反饋）
+
+> 編號說明：本則與下一則「五十七」為兩個並行 session 同時進行、各自接在五十六之後，落檔時發現編號撞在一起；本則改號五十八、順序移到最新，內容與範圍不變。
+
+**依據**：使用者反饋——「現在商品列表的右邊已經有顯示隱藏的 toggle，因此狀態欄位中的『已隱藏』標籤是重複的，可以移除。」
+
+**範圍**：`e-shop.html`——`paintBadges(row, status)` 拿掉 `hidden` 參數與副徽章插入／移除邏輯（原本 `hidden && status !== 'hidden'` 時在主徽章旁插入帶 data 屬性的「已隱藏」`badge--neutral` span），`main` 徽章選擇器同步簡化（不再需要排除副徽章）；兩處呼叫端 `paintBadges(row, flags.status, flags.hidden)` 改 `paintBadges(row, flags.status)`；相關註解更新墓碑說明。`ds-components/product-list.css`——`.product-list--eshop`／`--bundles`／`--auctions` 的 `__status` flex 規則註解更新（規則本身留著，垂直置中單顆徽章仍用得到，非只為兩顆徽章存在）。`design-system.html`——`--bundles` 變體示範卡拿掉 `<span class="badge badge--neutral">Hidden</span>`，只留「Sold out」；對應 HTML 註解同步。`design-system.md`——Pillar 4 Inventory 表與 §4.27 Product list 條目各補一則 2026-09-22 追記說明副徽章拿掉、推導不變。`BUILD-SPEC.md`（e-shop.html 條目補記）、`ASSUMPTIONS.md`（UIA-157，呈現假設：5.1.5 F4 徽章詞彙含 Hidden，本輪不在列上疊顯、由開關承載，篩選與細節頁兩顆並排不受影響）。
+
+**為什麼**：D241（§7.14）落地時，清單狀態欄曾同時掛兩顆徽章——一顆講販售軸（售罄／販售結束…），一顆講顯示軸（已隱藏），理由是「隱藏但照樣在賣」一顆徽章講不完。但同一列右側早已有「顯示於商店」開關直接呈現顯示軸的開／關，狀態欄的「已隱藏」副徽章因此與開關重複講同一件事。拿掉副徽章，狀態欄只留販售軸的主徽章（例如隱藏中但仍開賣的商品照樣顯示「販售中」），隱藏與否單純看開關。
+
+**不動的部分**：`js/listing-state.js` 的 `deriveStatus()`／`deriveFlags()` 推導本身未改——確認過 `deriveFlags()`（e-shop 清單走這支）的 `status` 從來不會是 `'hidden'`（那一層被 `deriveStatus()` 的單一桶另外處理），所以本輪之前清單主徽章本來就不會顯示「已隱藏」，副徽章是唯一講「隱藏」這件事的地方；拿掉它之後，「純隱藏、無其他主狀態」的商品仍會由 `deriveStatus()` 的單一桶正確歸進「已隱藏」篩選桶並顯示「已隱藏」主徽章（這條路徑走的是另一支函式、不受本次改動影響）。篩選 tab 的「已隱藏（Hidden）」與計數沿用 `deriveStatus()`，不受影響；`shop.status.hidden` 這把 i18n key 篩選桶與純隱藏主徽章仍在用，不需墓碑。細節頁（product-detail／bundle-detail）的兩顆徽章並排（`deriveFlags()` 分別暴露 `status`＋`hidden`）不在本輪範圍，因為那裡沒有同屏的顯示開關承載這件事。
+
+**驗證**：`python3 ../../Skills/project-ui-creator/scripts/check_ds_sync.py "site/r2.3"` 15 項 PASS（既有 WARN 與本次改動無關）；`grep -c "data-eshop-hidden-badge" e-shop.html`＝ 0；本機 devserver（Playwright 1440×1000，zh-Hant／en）——Products／Bundles／Auctions 三分頁「已隱藏」篩選各列出對應筆數（3／1／1），每列狀態欄僅餘單一主徽章（Live／Coming soon／Sold out／競標中等，視列而定）、無「已隱藏」副徽章，顯示開關皆為關；把一列的顯示開關切回開（跳確認彈窗、確認後）「已隱藏」計數與「販售中」計數即時同步變化（3→2、20→21）；zh／en 皆 0 raw key；console 僅既有 favicon 404（與本次改動無關）、無新增錯誤。截圖 `screenshots/r2.3/hidden-badge-removed-products.png`／`-bundles.png`／`-auctions.png`。
+
+## 2026-09-22（五十七）· 組合包內容物段：小標與欄位標籤分級、票券群改「票種表 → 每組張數 → 場次」、多場次的場次控制合成一格（B 反饋，承五十六／Q123）
+
+**使用者原話**：看線上版多場次活動（MIRROR FANMEETING 2026 高雄，三場）第 6 步彈窗，圈出內容物段上半部：「這邊的 title 和區塊一樣沒有分清楚」。現況由上到下：段標題 Contents → 小標 Tickets → 欄位標籤 Dates → 場次二選一卡 → 票種表 → Tickets per set → Dates it applies to → 適用場次表——三個標題視覺重量幾乎一樣、疊在一起看不出誰包含誰；小標「Tickets」底下第一個東西是「Dates」的選項卡，票種表反而沒掛在它下面；場次相關控制拆成上下兩處。
+
+**範圍**：`js/bundle-editor.js`（`layout:'split'`）——內容物段改成段標題 → 三個 `.bd-group`（`groupHTML`）：票券（小標 → 票種表 → 每組張數 → **「場次」一格**）、商品（小標 → 搜尋框 → 已加入表）、額外權益（由 `.field__label` 升成小標，`perksBlockHTML`）。新 `datesFieldHTML`＝多場活動才有的單一 `.field.bd-field--table[data-bd-dates]`：標籤「場次／Dates」（新 key `cpp.bd.sp.dates`）→ 二選一卡（`scopeCardsHTML`，從 `secScopeHTML` 拆出控件本體）→ 選「一組通用」接適用場次表＋「預設每一場都適用」一句、選「每場各一組」接每場預覽表＋「共 N 組」一句；墓碑 `sessionsFieldHTML`／`perFieldHTML`，「Day 1、Day 2、Day 3 各建立一組」那句在 SPLIT 不再產生。`ds-components/bundle-editor.css`——`.bd-sub__title` 改群組小字標配方（`--font-display`、`--fs-14`、`--fw-regular`、`--muted-foreground`、0.04em、uppercase）；`.bd-sec--stack > .bd-group` 直排 gap 12、群自己的 margin 歸零、緊接段標題的第一群不畫線；`.bd-group__title`（2026-09-01 三段式、目前無消費頁）收成同一支配方並拿掉 `--fw-medium`。`create-bundle.html`——額外權益升小標、選到的活動名改走 `.field__label`（它是值，不該被轉大寫）。DS 三件套同步：`design-system.html` Bundle editor 新增「小標 vs 欄位標籤＋合成一格的場次」demo、Classes 列補 `.bd-group`／`[data-bd-dates]`／`.bd-sub__title` 配方；`design-system.md` 敘述；`STYLE-DECISIONS.md` Q123 補「小標與欄位標籤的分別」一句（仍屬已裁決的延伸，不開新題）；`BUILD-SPEC.md`。
+
+**為什麼**：Q123 把小標與欄位標籤放在同一階（14），但兩者角色不同——小標回答「這一群在講什麼」、標籤回答「這一格是什麼」；同字級同字色同字型，三個標題疊在一起就是使用者說的「沒有分清楚」。分辨不能靠字級（會變回四階）、也不能靠字重（token 檔明訂 500 只留給 active／染色底微型字），所以借站上已經在用的「群組小字標」配方：同一個彈窗右欄預覽卡的 `.bpc__title`（「粉絲看到的」）、票券表裡的場次組頭 `.bd-tbl__gname`（「DAY 1」）、下拉選單抬頭 `.dropdown__cap` 都是 display 字型＋小型大寫＋0.04em＋muted——小標套上同一支，讀者一眼就知道它跟右欄那個「粉絲看到的」是同一種東西（分類的帽子），不是又一個欄位標籤。距離也要說話：原本段標題、小標、欄位三者等距（分卡 gap 20），現在小標到它的第一格是 12、群與群之間才是 20＋hairline，包含關係由距離帶出來。順序改成「票種表先、每組張數次之、場次最後」是因為小標叫「票券」，底下第一件事就該是票；場次是「這一組怎麼對應到場次」，是票決定之後的事，而且模式卡與模式帶出來的表（適用場次／每場預覽）回答的是同一個問題，拆成兩三格會讀成三個不相干的決定，合成一格之後切換模式時清單就在卡的正下方換掉。額外權益升成小標是連帶：小標一旦分得出來，「額外權益」若還是欄位標籤，就會讀成「商品」群底下的一格。
+
+**取捨**：①不動 Q123 的三層字級——小標仍是 14，分辨靠字型、色階與大小寫，不新增第四階。②小標用 muted 而不是 foreground：站上四處既有的群組小字標全是 muted，帽子本來就比內容淡；中文沒有大小寫可用，色階是中文唯一分得出來的手段。③沿用 2026-09-01 那支 `.bd-group`（hairline 分段）而不是另造容器——同一個元件裡「小標統轄欄位」只留一種寫法；代價是那支的 `__title` 也一起改配方（目前無消費頁，畫面無影響）。④`create-bundle.html` 的票券群沒有場次控制（電子商店組合綁單一活動的票種），只跟進小標與額外權益兩處；`bundle-detail.html` 不動。⑤`layout:'sections'`（募資兩頁）零改動：`secScopeHTML` 仍把二選一卡包成自己的欄位、`secSessionsHTML`／`secPerHTML` 照舊。
+
+**驗證**：本機 devserver（headless Chromium 1440×1000，`create-event.html?import=bky-2`＝MIRROR 三場）——內容物段直接子元素＝段標題＋3 個 `.bd-group`，間距 20／20／20，群內 12／12／12；票券群順序＝小標 → `.bd-tbl--tix` → 每組張數 → 「場次」（二選一卡 → `.bd-tbl--sess` → hint），`[data-bd-dates]` 1 個、`[data-bd-scope]` 2 個；切「每場次各一組」→ 卡底下換成 `.bd-tbl--per`（3 列）＋「共 3 組，一場一組…」；小標 computed：Poppins／14px／400／`rgba(255,255,255,.45)`／uppercase／0.56px，欄位標籤：14px／400／`.95`／none。zh／en 各掃彈窗文字 0 個裸 key。單場活動（`?from=realive-asia-taipei` 第 6 步）：`[data-bd-dates]` 0、`[data-bd-scope]` 0。募資（`create-project.html` 共創 › 回饋套組 › 新增套組）：五張分卡「含分潤名額／商店商品／額外權益／販售設定／販售數量」，`.bd-group`／`.bd-sub` 0 個。`create-bundle.html`：六個小標皆套上新配方、`[data-cb-tier-ev]` 為 `.field__label`。截圖 `screenshots/2026-09-22-bundle-content-regroup-{multi-shared-zh-Hant,multi-shared-en,multi-per-zh-Hant,multi-per-en,multi-light,single,funding-unchanged,create-bundle,ds-demo}.png`。`node --check` 兩支 js 通過；`check_ds_sync` PASS（WARN 5／13 為存量，未增）；`?v=r2.2` 未 bump。
+
 ## 2026-09-22（五十六）· 組合包三段的文字階層收斂成三層：段副標全刪、hint 每欄一句、同一事實只講一次、規則改用畫面表達（B 反饋，承五十五）
 
 **依據**：lab 頁 [`docs/bundle-copy-hierarchy-lab-2026-09-22.html`](./docs/bundle-copy-hierarchy-lab-2026-09-22.html)——把建立活動第 6 步三段（內容物／定價與庫存／命名與上架）的**每一個文字元素逐一稽核**成一張 67 列的表（元素／現行文字／問題類型／處置），再用同一份示範資料做「現況／方案 A 三層收斂／方案 B 行內合併」三欄對照。使用者裁示**方案 A（純 A，不吸收 B 的兩處）**；五條階層規則同輪記成 `STYLE-DECISIONS.md` Q123 已裁決，適用範圍＝表單分段。

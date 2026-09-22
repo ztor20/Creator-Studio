@@ -50,6 +50,7 @@
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stepper.css?v=r2.2">   <!-- 2026-09-18：票券清單表的張數步進器（.zstep） -->
+<link rel="stylesheet" href="ds-components/stack.css?v=r2.2">     <!-- 2026-09-22（D303）：第 7 步電子門票三組附屬設定的縱向堆疊（.stack--tight，Q103 容器持有節奏） -->
 <!-- 2026-09-21 第 6 步兩欄版型（bundle-editor `layout:'split'`）：語意句 insight-row、鎖定套數 lock-sets、
      右欄「粉絲看到的」預覽卡 bundle-preview-card；markup 由 js/bundle-editor.js 動態產生，check 15 掃不到、要手動連 -->
 <link rel="stylesheet" href="ds-components/insight-row.css?v=r2.2">
@@ -326,6 +327,7 @@
               </div>
               <div class="event-preview-card__body">
                 <h4 class="event-preview-card__name is-empty" data-pv="name" data-i18n="ce.pv.name">Event name</h4>
+                <p class="event-preview-card__highlight" data-pv="highlight" hidden></p>
                 <div class="event-preview-card__meta">
                   <span class="event-preview-card__meta-row"><i data-lucide="calendar" class="ztor-icon"></i><span data-pv="date" data-i18n="ce.pv.date">Date to be set</span></span>
                   <span class="event-preview-card__meta-row"><i data-lucide="globe" class="ztor-icon"></i><span data-pv="venue" data-i18n="ce.pv.venue">Venue to be set</span></span>
@@ -371,8 +373,17 @@
       <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="field">
           <label class="field__label"><span data-i18n="ce.name">Event name</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
+          <!-- data-bky="name" 只用來預填：bookyay 帶入時名稱可改、不鎖、不掛 From bookyay（2026-09-22 D301，bkyApply 排除） -->
           <input class="input" data-ce="name" data-bky="name" data-required placeholder="The name on the ticket" data-i18n-placeholder="ce.name.ph">
           <p class="ce-field-error" data-i18n="ce.err.name">Event name is required.</p>
+        </div>
+        <!-- 亮點（2026-09-22 D300）：名稱下方的一句特殊訊息（例：台北唯一一場），選填、一場只有一句。
+             不掛 data-bky：bookyay 沒有對應欄位，帶入時留空、不鎖。字數上限上游待確認，
+             這裡只給 30 字元的計數提示、不擋（ASSUMPTIONS HL-001）。 -->
+        <div class="field">
+          <label class="field__label" for="ce-highlight" data-i18n="ce.highlight">Highlight</label>
+          <input class="input" id="ce-highlight" data-ce="highlight" placeholder="e.g. The only Taipei date" data-i18n-placeholder="ce.highlight.ph">
+          <p class="field__hint" data-ce-count="highlight">0 / 30</p>
         </div>
         <div class="field">
           <label class="field__label"><span data-i18n="ce.desc">Description</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
@@ -562,6 +573,7 @@
               </div>
               <div class="event-preview-card__body">
                 <h4 class="event-preview-card__name is-empty" data-pv="name" data-i18n="ce.pv.name">Event name</h4>
+                <p class="event-preview-card__highlight" data-pv="highlight" hidden></p>
                 <div class="event-preview-card__meta">
                   <span class="event-preview-card__meta-row"><i data-lucide="calendar" class="ztor-icon"></i><span data-pv="date" data-i18n="ce.pv.date">Date to be set</span></span>
                   <span class="event-preview-card__meta-row"><i data-lucide="globe" class="ztor-icon"></i><span data-pv="venue" data-i18n="ce.pv.venue">Venue to be set</span></span>
@@ -768,6 +780,7 @@
               </div>
               <div class="event-preview-card__body">
                 <h4 class="event-preview-card__name is-empty" data-pv="name" data-i18n="ce.pv.name">Event name</h4>
+                <p class="event-preview-card__highlight" data-pv="highlight" hidden></p>
                 <div class="event-preview-card__meta">
                   <span class="event-preview-card__meta-row"><i data-lucide="calendar" class="ztor-icon"></i><span data-pv="date" data-i18n="ce.pv.date">Date to be set</span></span>
                   <span class="event-preview-card__meta-row"><i data-lucide="globe" class="ztor-icon"></i><span data-pv="venue" data-i18n="ce.pv.venue">Venue to be set</span></span>
@@ -838,6 +851,7 @@
               </div>
               <div class="event-preview-card__body">
                 <h4 class="event-preview-card__name is-empty" data-pv="name" data-i18n="ce.pv.name">Event name</h4>
+                <p class="event-preview-card__highlight" data-pv="highlight" hidden></p>
                 <div class="event-preview-card__meta">
                   <span class="event-preview-card__meta-row"><i data-lucide="calendar" class="ztor-icon"></i><span data-pv="date" data-i18n="ce.pv.date">Date to be set</span></span>
                   <span class="event-preview-card__meta-row"><i data-lucide="globe" class="ztor-icon"></i><span data-pv="venue" data-i18n="ce.pv.venue">Venue to be set</span></span>
@@ -944,6 +958,7 @@
               </div>
               <div class="event-preview-card__body">
                 <h4 class="event-preview-card__name is-empty" data-pv="name" data-i18n="ce.pv.name">Event name</h4>
+                <p class="event-preview-card__highlight" data-pv="highlight" hidden></p>
                 <div class="event-preview-card__meta">
                   <span class="event-preview-card__meta-row"><i data-lucide="calendar" class="ztor-icon"></i><span data-pv="date" data-i18n="ce.pv.date">Date to be set</span></span>
                   <span class="event-preview-card__meta-row"><i data-lucide="globe" class="ztor-icon"></i><span data-pv="venue" data-i18n="ce.pv.venue">Venue to be set</span></span>
@@ -1053,6 +1068,131 @@
           <button class="segmented__btn" type="button" data-val="pickup">
             <span class="radio-card__text"><span class="radio-card__title" data-di="d.ship.pick">到店自取</span><span class="radio-card__sub" data-di="d.ship.pick.sub">粉絲到指定門市或活動現場憑證件領票。</span></span>
           </button>
+        </div>
+        <!-- 電子門票的附屬設定（2026-09-22 · D302／D303 · 5.1.6.1 F24）：只在「電子門票」下成立的第二層，
+             三組各自「開關列＋揭示區」的 .control-group（本頁條款那組同一結構、D245 兩段式同一種做法），
+             三組之間的距離由 .stack--tight 持有（Q103：容器持有節奏，不由子元素各自加 margin）。
+             1. 第三方門票（D302）：預設關；開了才長出「領取與入場方式」多行必填（≤250 字元，超過擋發布）；
+                開著時第 2 組整組收起——沒有 ztor 的票就沒有動態 QR（互斥為推導，ASSUMPTIONS UIA-162）。
+             2. 動態 QR（D303）：預設開；開了才問「更新間隔」（分鐘、必填、預設 5、原型 1–60）。
+             3. 可轉贈（D303）：預設關；開了長出兩個子開關（限制轉贈次數 → 次數上限；設定轉贈期限 → 統一截止日／開演前 N 天）。
+             整個堆疊在順豐寄送／到店自取時收起（data-ship-when 由 applyShipMode 統一管；必填由各開關決定，見 applyEticketSettings()）。 -->
+        <div class="stack stack--tight" data-ship-when="eticket" data-ship-eticket hidden>
+          <div class="control-group" data-ship-tp>
+            <div class="control-row">
+              <div>
+                <div class="control-row__main" data-i18n="ce.ship.tp">Third-party ticket</div>
+                <div class="control-row__sub" data-i18n="ce.ship.tp.hint">Issued by another platform — ztor sends no QR to buyers; fans collect and enter the way you describe.</div>
+              </div>
+              <button type="button" class="switch" data-ce-tp role="switch" aria-checked="false"
+                      aria-label="Third-party ticket" data-i18n-aria-label="ce.ship.tp"></button>
+            </div>
+            <div class="control-group__body" hidden>
+              <div class="field">
+                <label class="field__label" for="ce-ship-tp-note"><span data-i18n="ce.ship.tp.note">How to collect &amp; enter</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
+                <textarea class="textarea" id="ce-ship-tp-note" data-ce="ship-tp-note" rows="3" placeholder="e.g. Show your KKTIX e-ticket at Gate 3 to get in" data-i18n-placeholder="ce.ship.tp.note.ph"></textarea>
+                <p class="field__hint" data-ce-count="ship-tp-note">0 / 250</p>
+              </div>
+            </div>
+          </div>
+          <div class="control-group" data-ship-dq>
+            <div class="control-row">
+              <div>
+                <div class="control-row__main" data-i18n="ce.ship.dq">Dynamic QR</div>
+                <div class="control-row__sub" data-i18n="ce.ship.dq.hint">The ticket's QR refreshes every few minutes, so screenshots can't be passed around.</div>
+              </div>
+              <button type="button" class="switch switch--on" data-ce-dq role="switch" aria-checked="true"
+                      aria-label="Dynamic QR" data-i18n-aria-label="ce.ship.dq"></button>
+            </div>
+            <div class="control-group__body">
+              <div class="field">
+                <label class="field__label" for="ce-ship-dq-min"><span data-i18n="ce.ship.dq.min">Refresh every</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
+                <span class="amount-field amount-field--suffix amount-field--readonly zstep">
+                  <span class="amount-field__unit" data-i18n="ce.unit.min">min</span>
+                  <input class="amount-field__input input zstep__input" id="ce-ship-dq-min" data-ce="ship-dq-min" type="number" min="1" max="60" step="1" value="5">
+                  <span class="zstep__btns">
+                    <button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase" data-i18n-aria-label="cpp.step.up"><i data-lucide="chevron-up" class="ztor-icon"></i></button>
+                    <button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease" data-i18n-aria-label="cpp.step.down"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="control-group" data-ship-tf>
+            <div class="control-row">
+              <div>
+                <div class="control-row__main" data-i18n="ce.ship.tf">Transferable</div>
+                <div class="control-row__sub" data-i18n="ce.ship.tf.hint">Ticket holders can pass the ticket to another ztor member.</div>
+              </div>
+              <button type="button" class="switch" data-ce-tf role="switch" aria-checked="false"
+                      aria-label="Transferable" data-i18n-aria-label="ce.ship.tf"></button>
+            </div>
+            <div class="control-group__body" hidden>
+              <div class="stack stack--tight">
+                <div class="control-group" data-ship-tf-limit>
+                  <div class="control-row">
+                    <div>
+                      <div class="control-row__main" data-i18n="ce.ship.tf.limit">Limit transfers</div>
+                      <div class="control-row__sub" data-i18n="ce.ship.tf.limit.hint">Off means a ticket can change hands any number of times.</div>
+                    </div>
+                    <button type="button" class="switch switch--on" data-ce-tf-limit role="switch" aria-checked="true"
+                            aria-label="Limit transfers" data-i18n-aria-label="ce.ship.tf.limit"></button>
+                  </div>
+                  <div class="control-group__body">
+                    <div class="field">
+                      <label class="field__label" for="ce-ship-tf-max"><span data-i18n="ce.ship.tf.max">Max transfers</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
+                      <span class="amount-field amount-field--suffix amount-field--readonly zstep">
+                  <span class="amount-field__unit" data-i18n="ce.unit.times">times</span>
+                  <input class="amount-field__input input zstep__input" id="ce-ship-tf-max" data-ce="ship-tf-max" type="number" min="1" max="99" step="1" value="1">
+                  <span class="zstep__btns">
+                    <button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase" data-i18n-aria-label="cpp.step.up"><i data-lucide="chevron-up" class="ztor-icon"></i></button>
+                    <button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease" data-i18n-aria-label="cpp.step.down"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
+                  </span>
+                </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="control-group" data-ship-tf-dl>
+                  <div class="control-row">
+                    <div>
+                      <div class="control-row__main" data-i18n="ce.ship.tf.dl">Transfer deadline</div>
+                      <div class="control-row__sub" data-i18n="ce.ship.tf.dl.hint">Off means transfers stay open right up to showtime.</div>
+                    </div>
+                    <button type="button" class="switch switch--on" data-ce-tf-dl role="switch" aria-checked="true"
+                            aria-label="Transfer deadline" data-i18n-aria-label="ce.ship.tf.dl"></button>
+                  </div>
+                  <div class="control-group__body">
+                    <div class="stack stack--tight">
+                      <div class="segmented radio-cards" data-seg="tf-dl" data-value="days" data-bky-seg="tf-dl">
+                        <button class="segmented__btn" type="button" data-val="date">
+                          <span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.ship.tf.dl.date">Same deadline for all dates</span><span class="radio-card__sub" data-i18n="ce.ship.tf.dl.date.sub">One cut-off, whichever date the ticket is for.</span></span>
+                        </button>
+                        <button class="segmented__btn segmented__btn--active" type="button" data-val="days">
+                          <span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.ship.tf.dl.days">Days before showtime</span><span class="radio-card__sub" data-i18n="ce.ship.tf.dl.days.sub">Counted back from each date's own start time.</span></span>
+                        </button>
+                      </div>
+                      <!-- 欄位自己的 16px 底距歸零、距離由外層 .stack--tight 持有（Q103），與 event-detail 發布設定同一寫法 -->
+                      <div class="field" data-when="tf-dl" data-when-val="date" style="margin-bottom:0" hidden>
+                        <label class="field__label" for="ce-ship-tf-date"><span data-i18n="ce.ship.tf.date">Deadline</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
+                        <input class="input" type="date" id="ce-ship-tf-date" data-ce="ship-tf-date">
+                      </div>
+                      <div class="field" data-when="tf-dl" data-when-val="days" style="margin-bottom:0">
+                        <label class="field__label" for="ce-ship-tf-days"><span data-i18n="ce.ship.tf.days">Days</span></label>
+                        <span class="amount-field amount-field--suffix amount-field--readonly zstep">
+                  <span class="amount-field__unit" data-i18n="ce.unit.days">days</span>
+                  <input class="amount-field__input input zstep__input" id="ce-ship-tf-days" data-ce="ship-tf-days" type="number" min="0" max="365" step="1" value="1">
+                  <span class="zstep__btns">
+                    <button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase" data-i18n-aria-label="cpp.step.up"><i data-lucide="chevron-up" class="ztor-icon"></i></button>
+                    <button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease" data-i18n-aria-label="cpp.step.down"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
+                  </span>
+                </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <!-- 選了才問的欄位（2026-08-10 使用者指示）：寄送要知道運費怎麼算，自取要知道去哪裡拿。
              兩者都是選了那個方式才成立的必填，沒選就不該佔版面、也不該擋發布。 -->
@@ -1165,6 +1305,8 @@
             <a class="review-row__action" href="#" data-goto="2" data-i18n="ce.rev.edit">Edit →</a>
           </div>
           <div class="review-row__value" data-rev="name" data-ph-key="ce.ph.notentered"><span data-i18n="ce.ph.notentered">Not entered</span></div>
+          <!-- 亮點（D300）：有填才出現在名稱下方，跟名稱共用同一顆 Edit -->
+          <div class="review-row__value review-row__value--highlight" data-rev="highlight" hidden></div>
         </div>
 
         <div class="review-row__item">
@@ -1197,6 +1339,16 @@
             <a class="review-row__action" href="#" data-goto="6" data-i18n="ce.rev.edit">Edit →</a>
           </div>
           <div class="review-row__value" data-rev="bundles" data-ph-key="ce.ph.nobundles"><span data-i18n="ce.ph.nobundles">None</span></div>
+        </div>
+        <!-- 2026-09-22（D302）：取票方式補一列——第三方門票開著時在方式後面加註，說明另起一行摘要。
+             發布設定要不要進摘要卡在 5.1.6.1 F10 仍〔產品待確認〕（PUB-001），這一列是呈現假設。 -->
+        <div class="review-row__item">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ce.rev.ship">Ticket delivery</h3>
+            <a class="review-row__action" href="#" data-goto="7" data-i18n="ce.rev.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-rev="ship" data-ph-key="ce.ph.notsel"><span data-i18n="ce.ph.notsel">Not selected</span></div>
+          <div class="review-row__value review-row__value--highlight" data-rev="ship-tp" hidden></div>
         </div>
       </div>
 
@@ -1513,6 +1665,7 @@
   function readState() {
     const typeName = typeLabel();   // 類型下拉已移除，名稱一律取自閘門那張卡（唯一來源）
     const name  = (document.querySelector("[data-ce=name]")?.value  || "").trim();
+    const highlight = (document.querySelector("[data-ce=highlight]")?.value || "").trim();   // D300 亮點，選填
     const date  = (document.querySelector("[data-ce=date]")?.value  || "").trim();
     const venue = (document.querySelector("[data-ce=venue]")?.value || "").trim();
     /* 場地那一步的「城市／國家」欄已移除（2026-08-05），改讀細節那一步的活動國家；
@@ -1525,7 +1678,22 @@
     /* 主視覺＝相簿的第一張（2026-08-06 起沒有具名的 keyvisual 槽了）。 */
     const posterFilled = !!document.querySelector('#ce-gallery [data-gallery-tile].is-filled');
     const sessions = seriesSummary();
-    return { typeName, name, date, venue, city, start, tiers, posterFilled, sessions };
+    /* 取票方式與第三方門票（D302）：Review 那一列要寫「電子門票 · 第三方門票」＋說明摘要 */
+    const ship = document.querySelector('[data-seg="ship"]')?.dataset.value || "eticket";
+    const tpOn = ship === "eticket" && document.querySelector("[data-ce-tp]")?.getAttribute("aria-checked") === "true";
+    const tpNote = tpOn ? (document.querySelector("[data-ce=ship-tp-note]")?.value || "").trim() : "";
+    /* 動態 QR 與可轉贈（D303）：Review 列摘要用；第三方門票開著時動態 QR 不成立 */
+    const dqOn = ship === "eticket" && !tpOn && document.querySelector("[data-ce-dq]")?.getAttribute("aria-checked") === "true";
+    const dqMin = (document.querySelector("[data-ce=ship-dq-min]")?.value || "").trim();
+    const tfOn = ship === "eticket" && document.querySelector("[data-ce-tf]")?.getAttribute("aria-checked") === "true";
+    const tfLimit = tfOn && document.querySelector("[data-ce-tf-limit]")?.getAttribute("aria-checked") === "true";
+    const tfMax = (document.querySelector("[data-ce=ship-tf-max]")?.value || "").trim();
+    const tfDl = tfOn && document.querySelector("[data-ce-tf-dl]")?.getAttribute("aria-checked") === "true";
+    const tfDlMode = document.querySelector('[data-seg="tf-dl"]')?.dataset.value || "days";
+    const tfDate = (document.querySelector("[data-ce=ship-tf-date]")?.value || "").trim();
+    const tfDays = (document.querySelector("[data-ce=ship-tf-days]")?.value || "").trim();
+    return { typeName, name, highlight, date, venue, city, start, tiers, posterFilled, sessions, ship, tpOn, tpNote,
+             dqOn, dqMin, tfOn, tfLimit, tfMax, tfDl, tfDlMode, tfDate, tfDays };
   }
 
   function setRev(key, value, phKey, phFallback) {
@@ -1541,6 +1709,9 @@
     // A3 — 摘要回填（未填顯佔位）
     setRev("type",  s.typeName, "ce.ph.notsel",     "Not selected");
     setRev("name",  s.name,     "ce.ph.notentered", "Not entered");
+    /* 亮點（D300）：名稱列下方附一行，沒填就整行收起（不顯佔位——選填欄位空著不是缺漏） */
+    const revHl = document.querySelector('[data-rev="highlight"]');
+    if (revHl) { revHl.textContent = s.highlight; revHl.hidden = !s.highlight; }
     let venueLine = "";
     if (s.venue || s.date) {
       const parts = [];
@@ -1561,6 +1732,27 @@
     setRev("bundles",
       bl.length ? T("ce.rev.bundlesn", "{n} bundles · {m} tickets per set").replace("{n}", bl.length).replace("{m}", tixM) : "",
       "ce.ph.nobundles", "None");
+    /* 取票方式（D302）：方式名稱沿用選項卡的字；第三方門票開著就在後面加註，說明另起一行、
+       超過 60 字截斷（Review 只要看得出寫了什麼，全文回步驟 7 看）。 */
+    const shipKey = { eticket: "d.ship.e", sf: "d.ship.sf", pickup: "d.ship.pick" }[s.ship] || "d.ship.e";
+    /* 電子門票的三組附屬設定各自接在方式名後面（D303）：「電子門票 · 第三方門票 · 動態 QR 每 5 分鐘 · 可轉贈（最多 1 次、開演前 1 天止）」 */
+    const shipParts = [T(shipKey, "E-ticket")];
+    if (s.tpOn) shipParts.push(T("ce.ship.tp", "Third-party ticket"));
+    if (s.dqOn) shipParts.push(T("ce.rev.dq", "Dynamic QR every {n} min").replace("{n}", s.dqMin || "—"));
+    if (s.tfOn) {
+      const det = [];
+      if (s.tfLimit) det.push(T("ce.rev.tf.max", "up to {n} times").replace("{n}", s.tfMax || "—"));
+      if (s.tfDl) det.push(s.tfDlMode === "date"
+        ? T("ce.rev.tf.date", "until {d}").replace("{d}", s.tfDate || "—")
+        : T("ce.rev.tf.days", "until {n} days before showtime").replace("{n}", s.tfDays || "—"));
+      shipParts.push(T("ce.ship.tf", "Transferable") + (det.length ? T("ce.rev.tf.wrap", " ({x})").replace("{x}", det.join(T("ce.rev.tf.sep", ", "))) : ""));
+    }
+    setRev("ship", shipParts.join(" · "), "ce.ph.notsel", "Not selected");
+    const revTp = document.querySelector('[data-rev="ship-tp"]');
+    if (revTp) {
+      revTp.textContent = s.tpNote.length > 60 ? s.tpNote.slice(0, 60) + "…" : s.tpNote;
+      revTp.hidden = !s.tpOn || !s.tpNote;
+    }
 
     // A2 — Quality check 即時打勾
     const checks = {
@@ -1630,6 +1822,10 @@
     });
     // 名稱
     setPv("name", s.name, "ce.pv.name", "Event name");
+    // 亮點（D300）：名稱下一行，有才顯示；粉絲端最終位置未定案（ASSUMPTIONS HL-002）
+    document.querySelectorAll('[data-pv="highlight"]').forEach(el => {
+      el.textContent = s.highlight; el.hidden = !s.highlight;
+    });
     // 日期（＋開始時間）
     const dateLine = s.date ? (s.start ? (s.date + " · " + s.start) : s.date) : "";
     setPv("date", dateLine, "ce.pv.date", "Date to be set");
@@ -1739,6 +1935,19 @@
 
   // 任何欄位輸入即時回填／打勾＋觸發自動儲存示意
   document.querySelectorAll("[data-ce]").forEach(el => el.addEventListener("input", () => { syncReview(); scheduleSave(); }));
+  /* 亮點字數計數（D300）：上限 30 為呈現假設（HL-001），超過只把 hint 換成警示色、不擋送出。
+     切語言時 hint 文字要重算，所以獨立一支、i18n:applied 之後再叫一次。 */
+  function renderHighlightCount() {
+    const inp = document.querySelector("[data-ce=highlight]");
+    const hint = document.querySelector("[data-ce-count=highlight]");
+    if (!inp || !hint) return;
+    const n = inp.value.trim().length;
+    hint.textContent = T("ce.highlight.count", "{n} / 30").replace("{n}", n);
+    hint.classList.toggle("field__hint--warn", n > 30);
+  }
+  document.querySelector("[data-ce=highlight]")?.addEventListener("input", renderHighlightCount);
+  document.addEventListener("i18n:applied", renderHighlightCount);
+  renderHighlightCount();
 
   /* ---- B：自動儲存狀態。任何輸入 → 短暫「Saving…」再回「Saved · just now」。
           純前端示意，不真的持久化。---- */
@@ -1792,7 +2001,8 @@
   /* ---- Publish：QC 五項硬閘（已由 syncReview gate disabled）＋ 彙整未過 ＊ 阻擋並聚焦 ---- */
   function tryPublish() {
     const stepOf = isWP() ? { film: 2, room: 2, wpstart: 3 }
-                          : { name: 2, desc: 2, venue: 3, date: 3, "sale-from-d": 7, "ship-fee": 7, "ship-spot": 7 };
+                          : { name: 2, desc: 2, venue: 3, date: 3, "sale-from-d": 7, "ship-fee": 7, "ship-spot": 7, "ship-tp-note": 7,
+                            "ship-dq-min": 7, "ship-tf-max": 7, "ship-tf-date": 7 };
     const reqEls = activeRequired();
     let firstBad = null;
     reqEls.forEach(el => { if (!validateField(el) && !firstBad) firstBad = el; });
@@ -1803,6 +2013,13 @@
       const badInStep = reqEls.find(el => (stepOf[el.getAttribute("data-ce")] || 0) === goStep && !el.value.trim());
       if (badInStep) { badInStep.focus(); }
       alert(T("ce.publish-blocked", "Some required (＊) fields are empty. Please complete the highlighted fields."));
+      return;
+    }
+    /* 第三方門票的說明超過 250 字元（D302）：不擋輸入（讓人看得到超了多少），發布前擋下並回步驟 7。 */
+    if (!isWP() && tpOver()) {
+      step = 7; render();
+      tpNoteEl()?.focus();
+      alert(T("ce.publish-blocked-tp", "The collect & entry note is over 250 characters. Shorten it before publishing."));
       return;
     }
     /* 票種數量加總超過容量＝Review 的彙整阻擋項（spec §4.5 F11）：
@@ -3847,6 +4064,7 @@
           sub.hidden = sub.dataset.whenVal !== btn.dataset.val;
         });
         if (seg === "ship")  applyShipMode();   // 順豐要運費、自取要地點（2026-08-10）
+        if (seg === "tf-dl") applyTransfer();   // 轉贈期限二選一：統一截止日才要日期必填（2026-09-22 · D303）
         if (seg === "shape") applyShape();      // 定點／巡迴決定場地問一次還是一站一次（2026-08-10）
         syncReview(); scheduleSave();
       });
@@ -4868,12 +5086,130 @@
     document.querySelectorAll("[data-ship-when]").forEach(box => {
       const on = box.dataset.shipWhen === cur;
       box.hidden = !on;
+      if (box.hasAttribute("data-ship-eticket")) return;   // 電子門票三組附屬設定的必填由各自的開關決定，見 applyEticketSettings()
       box.querySelectorAll("[data-ce]").forEach(el => {
         if (on) el.setAttribute("data-required", "");
         else { el.removeAttribute("data-required"); clearFieldError(el); }
       });
     });
+    applyEticketSettings();
   }
+
+  /* 第三方門票（2026-09-22 · D302）：電子門票底下的開關。開＝長出「領取與入場方式」並列為必填
+     （空白擋發布、超過 250 字元也擋）；關或取票方式不是電子門票＝欄位收起、必填拿掉、錯誤清掉。
+     關掉不清值（再打開回填）——關閉後保不保留上游未定，原型先保留、不顯示。 */
+  /* 上限用函式而不是 const：applyShipMode() 在本段之前就被叫過一次（初始態），const 會踩到暫時死區。 */
+  function tpMax() { return 250; }
+  function tpNoteEl() { return document.querySelector("[data-ce=ship-tp-note]"); }
+  function tpIsOn() {
+    const sw = document.querySelector("[data-ce-tp]");
+    const box = sw?.closest("[data-ship-eticket]");
+    return !!sw && !!box && !box.hidden && sw.getAttribute("aria-checked") === "true";
+  }
+  function tpOver() { const ta = tpNoteEl(); return !!ta && tpIsOn() && ta.value.trim().length > tpMax(); }
+  function renderTpCount() {
+    const ta = tpNoteEl();
+    const hint = document.querySelector("[data-ce-count=ship-tp-note]");
+    if (!ta || !hint) return;
+    const n = ta.value.trim().length;
+    hint.textContent = T("ce.ship.tp.count", "{n} / 250").replace("{n}", n);
+    hint.classList.toggle("field__hint--warn", n > tpMax());
+    const wrap = ta.closest(".field");
+    if (wrap && n > tpMax()) { wrap.classList.add("is-invalid"); ta.setAttribute("aria-invalid", "true"); }
+    else if (wrap && n > 0) { wrap.classList.remove("is-invalid"); ta.setAttribute("aria-invalid", "false"); }
+  }
+  function applyThirdParty() {
+    const sw = document.querySelector("[data-ce-tp]");
+    const ta = tpNoteEl();
+    const body = sw?.closest(".control-group")?.querySelector(".control-group__body");
+    if (!sw || !ta || !body) return;
+    const on = tpIsOn();
+    body.hidden = !on;
+    if (on) ta.setAttribute("data-required", "");
+    else { ta.removeAttribute("data-required"); clearFieldError(ta); }
+    renderTpCount();
+    /* 第三方門票 × 動態 QR 互斥（D303 決定二，推導、上游待確認）：票不是 ztor 發的就沒有 QR 可以輪換，
+       整組收起、必填一併拿掉（由 applyDynamicQr 依「組是否可見」判斷）。 */
+    const dq = document.querySelector("[data-ship-dq]");
+    if (dq) dq.hidden = on;
+  }
+  tpNoteEl()?.addEventListener("input", renderTpCount);
+  tpNoteEl()?.addEventListener("blur", function () { if (this.hasAttribute("data-required")) validateField(this); });
+  document.addEventListener("i18n:applied", renderTpCount);
+
+  /* ── 電子門票三組附屬設定的共用開關行為（2026-09-22 · D303）────────────────────────
+     每一顆 .switch[data-ce-*] 都是「開關列＋揭示區」：開＝揭示區出現、裡面的 ＊ 欄位掛 data-required；
+     關＝收起、必填拿掉、錯誤清掉。值不清（關再開回填），與第三方門票同一取捨（UIA-161）。 */
+  function swOn(sel) {
+    const sw = document.querySelector(sel);
+    return !!sw && sw.getAttribute("aria-checked") === "true";
+  }
+  function setRequired(el, on) {
+    if (!el) return;
+    if (on) el.setAttribute("data-required", "");
+    else { el.removeAttribute("data-required"); clearFieldError(el); }
+  }
+  function eticketVisible() {
+    const box = document.querySelector("[data-ship-eticket]");
+    return !!box && !box.hidden;
+  }
+  /* 動態 QR：預設開；開了才問更新間隔（分鐘、必填、原型 1–60）。第三方門票開著時整組不在，必填也不在。 */
+  function dqIsOn() { return eticketVisible() && !tpIsOn() && swOn("[data-ce-dq]"); }
+  function applyDynamicQr() {
+    const sw = document.querySelector("[data-ce-dq]");
+    const body = sw?.closest(".control-group")?.querySelector(".control-group__body");
+    if (!sw || !body) return;
+    const on = dqIsOn();
+    body.hidden = !swOn("[data-ce-dq]");
+    setRequired(document.querySelector("[data-ce=ship-dq-min]"), on);
+  }
+  /* 可轉贈：預設關；開了長出兩個子開關——限制轉贈次數（→ 次數上限必填）、設定轉贈期限（→ 統一截止日：日期必填／開演前 N 天）。 */
+  function tfIsOn() { return eticketVisible() && swOn("[data-ce-tf]"); }
+  function tfLimitOn() { return tfIsOn() && swOn("[data-ce-tf-limit]"); }
+  function tfDlOn() { return tfIsOn() && swOn("[data-ce-tf-dl]"); }
+  function tfDlMode() { return document.querySelector('[data-seg="tf-dl"]')?.dataset.value || "days"; }
+  function applyTransfer() {
+    const sw = document.querySelector("[data-ce-tf]");
+    const body = sw?.closest(".control-group")?.querySelector(".control-group__body");
+    if (!sw || !body) return;
+    body.hidden = !swOn("[data-ce-tf]");
+    const lim = document.querySelector("[data-ce-tf-limit]");
+    const limBody = lim?.closest(".control-group")?.querySelector(".control-group__body");
+    if (limBody) limBody.hidden = !swOn("[data-ce-tf-limit]");
+    setRequired(document.querySelector("[data-ce=ship-tf-max]"), tfLimitOn());
+    const dl = document.querySelector("[data-ce-tf-dl]");
+    const dlBody = dl?.closest(".control-group")?.querySelector(".control-group__body");
+    if (dlBody) dlBody.hidden = !swOn("[data-ce-tf-dl]");
+    setRequired(document.querySelector("[data-ce=ship-tf-date]"), tfDlOn() && tfDlMode() === "date");
+  }
+  function applyEticketSettings() { applyThirdParty(); applyDynamicQr(); applyTransfer(); }
+  /* 五顆開關同一套點擊行為：翻 aria-checked → 重算三組 → 摘要與自動儲存。bookyay 帶入時 .switch--locked 擋掉。 */
+  document.querySelectorAll("[data-ce-tp],[data-ce-dq],[data-ce-tf],[data-ce-tf-limit],[data-ce-tf-dl]").forEach(sw => {
+    sw.addEventListener("click", function () {
+      if (this.classList.contains("switch--locked")) return;
+      const on = this.getAttribute("aria-checked") !== "true";
+      this.setAttribute("aria-checked", on ? "true" : "false");
+      this.classList.toggle("switch--on", on);
+      applyEticketSettings(); syncReview(); scheduleSave();
+    });
+  });
+  /* 數字欄：blur 時夾回 min–max（步進鈕本來就會夾，手打的也要）；空白留給發布前檢核去擋。 */
+  ["ship-dq-min", "ship-tf-max", "ship-tf-days"].forEach(k => {
+    const el = document.querySelector("[data-ce=" + k + "]");
+    if (!el) return;
+    el.addEventListener("blur", function () {
+      if (this.value.trim() !== "") {
+        const v = Math.min(+this.max, Math.max(+this.min, Math.round(+this.value) || +this.min));
+        if (String(v) !== this.value) { this.value = v; if (window.ZStepper) window.ZStepper.sync(this.closest(".zstep")); }
+      }
+      if (this.hasAttribute("data-required")) validateField(this);
+      syncReview();
+    });
+    el.addEventListener("input", () => { if (el.value.trim()) clearFieldError(el); syncReview(); });
+  });
+  document.querySelector("[data-ce=ship-tf-date]")?.addEventListener("blur", function () { if (this.hasAttribute("data-required")) validateField(this); syncReview(); });
+  document.querySelector("[data-ce=ship-tf-date]")?.addEventListener("input", function () { if (this.value.trim()) clearFieldError(this); syncReview(); });
+  applyEticketSettings();
 
   /* 墓碑：`applySalesMode()` 於 2026-08-10 隨「入場方式」整組撤除。 */
 
@@ -4896,6 +5232,10 @@
       date: "2026-09-12", start: "19:30", end: "22:00", doors: "18:30",
       saleFromD: "2026-07-01", saleFromT: "12:00", saleToD: "2026-09-12", saleToT: "18:00",
       ship: "eticket", sessions: [],
+      /* 第三方門票（D302）：bookyay 表單的「自行提供的門票拎取方法/入場方式」對應到這兩個值 */
+      thirdParty: true, thirdPartyNote: "憑 bookyay 電子票 QR 至小巨蛋 2 號門驗票入場；開演前 30 分鐘停止入場。",
+      /* 可轉贈（D303）：bookyay 表單的「可以轉贈門票／限制轉贈次數／設定轉贈期限」——這一筆是第三方門票，動態 QR 整組不成立 */
+      transferable: true, transferLimit: true, transferMax: 1, transferDeadline: "days", transferDays: 1,
       tiers: [{ name: "VIP", price: "4200", qty: "100", fee: "150" },
               { name: "搖滾區", price: "3300", qty: "200", fee: "120" },
               { name: "看台", price: "2400", qty: "300", fee: "80" }] },
@@ -4911,6 +5251,9 @@
       date: "2026-10-02", start: "19:00", end: "21:30", doors: "18:00",
       saleFromD: "2026-08-15", saleFromT: "20:00", saleToD: "2026-10-02", saleToT: "12:00",
       ship: "eticket",
+      /* 動態 QR 與可轉贈（D303）：bookyay 這一場三天三場，期限用「統一截止日」示範 */
+      dynamicQr: true, qrRefreshMin: 5,
+      transferable: true, transferLimit: true, transferMax: 2, transferDeadline: "date", transferDate: "2026-09-30",
       sessions: [{ date: "2026-10-03" }, { date: "2026-10-04" }],
       sessionNames: ["Day 1", "Day 2", "Day 3"],
       tiers: [{ name: "搖滾區", price: "3800", qty: "150", fee: "120" },
@@ -5058,7 +5401,10 @@
          日期欄（partials/date-input.js）因此仍顯示「選擇日期」佔位符，畫面看起來像沒帶入。
          補一個 input 事件讓那些元件重算（2026-08-09 修，帶入路徑實測發現）。 */
       el.dispatchEvent(new Event("input", { bubbles: true }));
-      lockField(el, true);
+      /* 活動名稱只預填、不鎖（2026-09-22 D301）：bookyay 的原名只是起點，ztor 端的票面名稱
+         可以自己改；改了不回寫 bookyay。其餘 data-bky 欄位照舊鎖住（描述、國家／語言、
+         場地、時間、票種、開賣時間、取票方式）。亮點本來就不掛 data-bky。 */
+      lockField(el, el.dataset.bky !== "name");
     });
     /* 開賣日期與時間是 bookyay 決定的，不是「發布後直接開賣」：開關關掉、兩組時間欄現形
        （上面已經填值＋鎖住），開關本身也鎖住不給切回去——鎖定樣式沿用既有的
@@ -5078,6 +5424,58 @@
     /* 取票方式整組鎖住（.is-source-locked 會擋掉點擊）：那是 bookyay 那邊設定好的，這一側只顯示。
        入場方式那一組已於 2026-08-10 撤除，對應的 lockSeg 一併移除。 */
     lockSeg("ship", rec.ship);
+    /* 第三方門票（D302）：bookyay 表單本來就有這一欄；帶入時比照取票方式預填並鎖住
+       （是否預填與鎖定上游待確認，原型暫比照）。沒帶這一欄的來源就維持關。 */
+    (function () {
+      const sw = document.querySelector("[data-ce-tp]");
+      const ta = tpNoteEl();
+      if (!sw || !ta) return;
+      const on = rec.ship === "eticket" && !!rec.thirdParty;
+      sw.setAttribute("aria-checked", on ? "true" : "false");
+      sw.classList.toggle("switch--on", on);
+      sw.classList.add("switch--locked");
+      sw.setAttribute("aria-disabled", "true");
+      ta.value = on ? (rec.thirdPartyNote || "") : "";
+      lockField(ta, true);
+    })();
+    /* 動態 QR 與可轉贈（D303）：bookyay 表單本來就有這兩組，帶入時同樣預填並鎖住（是否預填與鎖定上游待確認，
+       原型暫比照取票方式）。開關鎖 .switch--locked、數字欄與日期欄 lockField、期限二選一鎖 .is-source-locked。 */
+    (function () {
+      const setSw = (sel, on) => {
+        const sw = document.querySelector(sel);
+        if (!sw) return;
+        sw.setAttribute("aria-checked", on ? "true" : "false");
+        sw.classList.toggle("switch--on", on);
+        sw.classList.add("switch--locked");
+        sw.setAttribute("aria-disabled", "true");
+      };
+      const setNum = (key, v) => {
+        const el = document.querySelector("[data-ce=" + key + "]");
+        if (!el) return;
+        if (v != null && v !== "") el.value = v;
+        lockField(el, true);
+        el.closest(".zstep")?.querySelectorAll(".zstep__btn").forEach(b => { b.disabled = true; });
+      };
+      const e = rec.ship === "eticket";
+      setSw("[data-ce-dq]", e && rec.dynamicQr !== false);
+      setNum("ship-dq-min", rec.qrRefreshMin);
+      setSw("[data-ce-tf]", e && !!rec.transferable);
+      setSw("[data-ce-tf-limit]", rec.transferLimit !== false);
+      setNum("ship-tf-max", rec.transferMax);
+      setSw("[data-ce-tf-dl]", !!rec.transferDeadline);
+      const seg = document.querySelector('[data-seg="tf-dl"]');
+      if (seg) {
+        const mode = rec.transferDeadline === "date" ? "date" : "days";
+        seg.querySelectorAll(".segmented__btn").forEach(b => b.classList.toggle("segmented__btn--active", b.dataset.val === mode));
+        seg.dataset.value = mode;
+        seg.classList.add("is-source-locked");
+        document.querySelectorAll('[data-when="tf-dl"]').forEach(sub => { sub.hidden = sub.dataset.whenVal !== mode; });
+      }
+      const dt = document.querySelector("[data-ce=ship-tf-date]");
+      if (dt) { if (rec.transferDate) { dt.value = rec.transferDate; dt.dispatchEvent(new Event("input", { bubbles: true })); } lockField(dt, true); }
+      setNum("ship-tf-days", rec.transferDays);
+    })();
+    applyShipMode();
     /* bookyay 上沒有巡迴這種活動（2026-08-10 使用者說明），帶入的一律是定點：鎖在定點，
        巡迴那張卡連同整塊一起變成唯讀。lockSeg 只改 dataset，畫面要跟著換得自己叫一次。 */
     lockSeg("shape", "fixed");
@@ -5339,7 +5737,36 @@
       el.dispatchEvent(new Event("input", { bubbles: true }));
     };
     set("name", src.name);
+    set("highlight", src.highlight);   // D300：草稿續填要把亮點帶回來；再辦一場也照名稱／描述一起帶、可改
     set("desc", src.desc);
+    /* 第三方門票（D302）：來源活動是電子門票且開著，就把開關與說明一起帶回來（可改） */
+    if (src.publish && src.publish.pickup === "eticket" && src.publish.thirdParty) {
+      const sw = document.querySelector("[data-ce-tp]");
+      if (sw) { sw.setAttribute("aria-checked", "true"); sw.classList.add("switch--on"); }
+      set("ship-tp-note", src.publish.thirdPartyNote || "");
+      applyThirdParty();
+    }
+    /* 動態 QR 與可轉贈（D303）：同樣照來源活動帶回來（可改）；沒記的維持預設（動態 QR 開、可轉贈關） */
+    if (src.publish && src.publish.pickup === "eticket") {
+      const pub = src.publish;
+      const putSw = (sel, on) => { const sw = document.querySelector(sel); if (sw) { sw.setAttribute("aria-checked", on ? "true" : "false"); sw.classList.toggle("switch--on", on); } };
+      putSw("[data-ce-dq]", pub.dynamicQr !== false);
+      if (pub.qrRefreshMin != null) set("ship-dq-min", pub.qrRefreshMin);
+      putSw("[data-ce-tf]", !!pub.transferable);
+      putSw("[data-ce-tf-limit]", pub.transferLimit !== false);
+      if (pub.transferMax != null) set("ship-tf-max", pub.transferMax);
+      putSw("[data-ce-tf-dl]", !!pub.transferDeadline);
+      const seg = document.querySelector('[data-seg="tf-dl"]');
+      if (seg) {
+        const mode = pub.transferDeadline === "date" ? "date" : "days";
+        seg.querySelectorAll(".segmented__btn").forEach(b => b.classList.toggle("segmented__btn--active", b.dataset.val === mode));
+        seg.dataset.value = mode;
+        document.querySelectorAll('[data-when="tf-dl"]').forEach(sub => { sub.hidden = sub.dataset.whenVal !== mode; });
+      }
+      if (pub.transferDate) set("ship-tf-date", pub.transferDate);
+      if (pub.transferDays != null) set("ship-tf-days", pub.transferDays);
+      applyEticketSettings();
+    }
     const imgs = [src.images && src.images.keyvisual]
       .concat((src.images && src.images.gallery) || []).filter(Boolean);
     renderGallery(imgs);

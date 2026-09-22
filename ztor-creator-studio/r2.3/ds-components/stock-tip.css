@@ -74,6 +74,24 @@
 .stock-tip__qty { font-weight: var(--fw-regular); color: var(--foreground); }
 .stock-tip__qty--low { color: var(--status-warning-ink); }
 .stock-tip__qty--out { color: var(--status-error); }
+/* --anchored（2026-09-22，D299 · 第二個消費者：商店設定優惠碼清單的「範圍」欄）：
+   浮卡改「貼著觸發格」的絕對定位，不用 fixed。原因——那張清單坐在玻璃外框
+   （.admin-table-wrap 的 backdrop-filter）裡，backdrop-filter 會把 fixed 子孫的參考框
+   從 viewport 換成外框本身，e-shop 那套「量 viewport 座標再設 fixed」的算法在這裡會把
+   浮卡丟到卡的左上角。外框本來就為 kebab 下拉放行了 overflow（--menu），絕對定位的
+   浮卡長出格子外也不會被裁。開向仍由消費頁 JS 決定：觸發格在視窗下半就加 --up 往上開。
+   內容是名稱＋種類（比逐選項庫存的「S／2」長得多），寬度上限放寬到 400px。 */
+.stock-tip--anchored .stock-tip__pop {
+  position: absolute;
+  top: calc(100% + var(--sp-6));
+  left: 0;
+  max-width: 400px;
+}
+.stock-tip--anchored.stock-tip--up .stock-tip__pop {
+  top: auto;
+  bottom: calc(100% + var(--sp-6));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .stock-tip__pop { transition: none; }
 }

@@ -25,6 +25,10 @@
    邊界說明：fans-meet 是以「實體的近距離接觸」定義，online 是以「媒介」定義，故線上的粉絲互動
    依使用者的定義歸 online。
 
+   highlight（2026-09-22 D300 / 5.1.6.1 F2）：名稱下方的一句特殊訊息（例「台北唯一一場」），選填、
+   一場只有一句；沒寫＝沒有。示範只放三筆，其餘留空——這是行銷語、不是每場都有。bookyay 帶入的
+   活動沒有這欄（bookyay 沒有對應資料，create-event 的帶入草稿亮點留空、不鎖）。
+
    sold／status 是編輯態的行為輸入、不只是顯示值：
      · sold > 0  → 場次已售出，容量不得低於 sold、已售票種不可刪。
      · status='on-sale' → 已公開販售，改日期／場地屬「會通知到購票者」的高影響欄位。
@@ -102,8 +106,10 @@
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600 }],
           price: 4800, sold: 12, cap: 50 }
       ],
-      /* 發布設定（2026-08-11 新欄）：建立流程第 7 步的三個選擇，沒寫＝直接開賣／電子門票／公開。 */
-      publish: { onsale: 'now', pickup: 'eticket', visibility: 'public' },
+      /* 發布設定（2026-08-11 新欄）：建立流程第 7 步的三個選擇，沒寫＝直接開賣／電子門票／公開。
+         2026-09-22 D302 補 thirdParty：這一筆售票中，詳情頁的發布設定唯讀，用來看鎖定態。 */
+      publish: { onsale: 'now', pickup: 'eticket', visibility: 'public', thirdParty: true,
+                 thirdPartyNote: '票由 bookyay 發出，開演當天憑 bookyay App 的電子票至高雄巨蛋 2 號門驗票入場。' },
       sold: 600,
       revenue: 1800000,
       status: 'on-sale',
@@ -153,6 +159,7 @@
          只有 sold 不同；名稱也刻意三場相同，靠日期與場地分辨（SER-001 ⑥）。 */
       series: { id: 'realive-asia', hasPage: true, name: 'REALIVE World Tour — Asia leg', index: 3, total: 3 },
       name: 'REALIVE World Tour — Asia leg',
+      highlight: 'Asia leg finale — Taipei only',   // D300 亮點示範
       desc: 'The Asia leg — three cities, one setlist.',
       lineup: ['NICKTHEREAL 周湯豪'],
       venue: 'Taipei Arena',
@@ -248,7 +255,12 @@
       revenue: 0,
       status: 'scheduled',
       images: { keyvisual: 'images/projects/nick-wln.jpg', banner: '', gallery: [] },
-      video: false
+      video: false,
+      /* 動態 QR 與可轉贈（2026-09-22 · D303）：這一筆是已排程，詳情頁發布設定可編——動態 QR 每 10 分鐘、
+         可轉贈最多 2 次、期限用「開演前 N 天」（3 天）。 */
+      publish: { onsale: 'scheduled', pickup: 'eticket', visibility: 'public',
+                 dynamicQr: true, qrRefreshMin: 10,
+                 transferable: true, transferLimit: true, transferMax: 2, transferDeadline: 'days', transferDays: 3 }
     },
     {
       id: 'lrh-taichung-watchback',
@@ -323,6 +335,7 @@
       category: 'fans-meet',
       series: null,
       name: 'Album signing — Taipei',
+      highlight: '150 numbered slots only',   // D300 亮點示範
       desc: 'In-store signing for the new record. 150 numbered slots, one item signed per slot.',
       lineup: ['NICKTHEREAL 周湯豪'],
       venue: 'Eslite Xinyi',
@@ -353,7 +366,11 @@
          `to` 留空＝只設開賣、賣到開演（見 ASSUMPTIONS SALE-001）；整個 `sale` 缺席＝
          `publish.onsale: 'now'`（發布後直接開賣），兩者不是同一件事，不要互相補值。
          這一筆示範「開賣＋停售」都設的完整區間。 */
-      publish: { onsale: 'scheduled', pickup: 'eticket', visibility: 'public' },
+      /* 動態 QR 與可轉贈（2026-09-22 · D303）：這一筆售票中，詳情頁的發布設定唯讀——動態 QR 每 5 分鐘、
+         可轉贈不限次數、期限用「統一截止日」。 */
+      publish: { onsale: 'scheduled', pickup: 'eticket', visibility: 'public',
+                 dynamicQr: true, qrRefreshMin: 5,
+                 transferable: true, transferLimit: false, transferDeadline: 'date', transferDate: '2026-09-10' },
       sale: { from: '2026-08-01 10:00', to: '2026-09-11 23:59' },
       sold: 118,
       revenue: 590,
@@ -552,6 +569,7 @@
       category: 'concert',
       series: null,
       name: 'NICK Symphonic Night — Taipei',
+      highlight: 'Encore: one unreleased song',   // D300 亮點示範
       desc: 'The catalogue rearranged for a full orchestra. One night, seated only.',
       lineup: ['NICKTHEREAL 周湯豪'],
       venue: 'Taipei Music Center',
@@ -573,7 +591,12 @@
           products: [{ name: 'NICK Symphonic Night 場刊', img: 'images/products/tour-zine-vol-02.webp', price: 400 }],
           price: 3200, sold: 0, cap: 100 }
       ],
-      publish: { onsale: 'scheduled', pickup: 'eticket', visibility: 'public' },
+      /* 第三方門票（2026-09-22 · D302）：票由 KKTIX 發、ztor 只賣；thirdPartyNote＝粉絲入場要看的說明（≤250 字元）。
+         這一筆是已排程，詳情頁的發布設定可編。 */
+      publish: { onsale: 'scheduled', pickup: 'eticket', visibility: 'public', thirdParty: true,
+                 thirdPartyNote: '憑 KKTIX 電子票 QR 至國家音樂廳 3 號門驗票入場，開演前 30 分鐘停止入場；一張 QR 只能用一次，請勿轉傳截圖。',
+                 /* D303：第三方門票開著＝動態 QR 整組不成立（互斥）；可轉贈照常，最多 1 次、開演前 1 天止 */
+                 transferable: true, transferLimit: true, transferMax: 1, transferDeadline: 'days', transferDays: 1 },
       sold: 0,
       revenue: 0,
       status: 'scheduled',

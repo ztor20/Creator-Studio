@@ -2447,11 +2447,13 @@
     'store-settings.codes.close':      { en: 'Close',            zh: '關閉' },
     'store-settings.codes.copy':       { en: 'Copy',             zh: '複製' },
     'store-settings.codes.generate':   { en: 'Generate',         zh: '自動產生' },
-    'store-settings.codes.f.code.hint': { en: '8–20 letters or digits, no symbols. Case-sensitive.', zh: '8–20 個英數字，不含符號，區分大小寫。' },
+    /* 碼字串規則（D280 → D299 決定 3：比對不分大小寫）。同鍵原本在下面幾行還有一把舊的
+       「Fans type this at checkout.」，物件字面量後者蓋前者，D280 的規則句其實一直沒顯示出來——
+       2026-09-22 併成這一把。 */
+    'store-settings.codes.f.code.hint': { en: '8–20 letters or digits, not case-sensitive.', zh: '8–20 個英數字，不分大小寫。' },
     'store-settings.codes.cancel':     { en: 'Cancel',           zh: '取消' },
     'store-settings.codes.savecode':   { en: 'Save code',        zh: '儲存' },
     'store-settings.codes.type.partner-with': { en: 'Partner · Aiko', zh: '代理 · Aiko' },
-    'store-settings.codes.f.code.hint':{ en: 'Fans type this at checkout.', zh: '粉絲結帳時要打的就是這串。' },
     'store-settings.codes.f.discount.hint': { en: 'Off the item price, before shipping.', zh: '折在商品價上，不含運費。' },
     'store-settings.codes.f.period':   { en: 'When it works',     zh: '生效期間' },
     'store-settings.codes.f.period.hint': { en: 'Leave the end date empty to keep it open.', zh: '結束留空就一直有效。' },
@@ -2460,22 +2462,42 @@
        同一個概念，表單給說明、窄欄給掃描，字數各自對場合負責。 */
     'store-settings.codes.f.scope':    { en: 'Applies to',       zh: '適用範圍' },
     'store-settings.codes.f.scope.hint': { en: 'A code’s range is whichever types and items you check, combined. Auctions never qualify.', zh: '一組碼的範圍＝勾的類型加勾的商品；拍賣不折。' },
-    /* Phase 1 版本的說明（D279）：沒有類型樹與多選，只答得出「全部或一件」。 */
-    'store-settings.codes.f.scope.hint.p1': { en: 'All stores, or just one item.', zh: '全部商店，或只給一件商品。' },
+    /* Phase 1 版本的說明（D279 → D299）：兩個選項各自的說明在 radio-list 副行，這一句只留規則。 */
+    'store-settings.codes.f.scope.hint.p1': { en: 'Auctions never qualify.', zh: '拍賣不折。' },
     'store-settings.codes.f.scope.all':  { en: 'All items',      zh: '全部商店' },
+    /* 「全部商店」含活動票種（D299 決定 2）——Phase 1 radio-list 的副行。 */
+    'store-settings.codes.f.scope.all.sub': { en: 'Every e-shop item and event ticket tier', zh: '含電子商店商品與活動票種' },
     'store-settings.codes.f.scope.types': { en: 'Item types',    zh: '特定品項' },
     'store-settings.codes.f.scope.items': { en: 'Specific items', zh: '特定商品' },
-    /* Phase 1 的第二個範圍選項（D279）：一組碼只綁一件，不選類型層——跟 Phase 4 的
-       「特定商品」（可多選、可混類型）不是同一個字，不重用 f.scope.items。 */
-    'store-settings.codes.f.scope.oneitem': { en: 'One item',    zh: '指定商品' },
+    /* Phase 1 的第二個範圍選項：D279 是「一組碼只綁一件」（oneitem），D299 改成可多選——
+       跟 Phase 4 的「特定商品」是同一顆多選，但 Phase 1 這一列要把「可多選」講出來（使用者裁決用語）。
+       oneitem 墓碑（2026-09-22，D299）：'One item'／'指定商品'，已無消費者。 */
+    'store-settings.codes.f.scope.multi': { en: 'Specific items (pick as many as you like)', zh: '指定商品（可多選）' },
+    'store-settings.codes.f.scope.multi.sub': { en: 'Products, bundles and ticket tiers', zh: '單售、組合包與活動票種' },
     'store-settings.codes.f.scope.physical': { en: 'Physical merchandise', zh: '實體商品' },
     'store-settings.codes.f.scope.digital':  { en: 'Digital merchandise',  zh: '數位商品' },
-    'store-settings.codes.f.scope.items.ph': { en: 'Search products or bundles…', zh: '搜尋商品或組合包…' },
+    'store-settings.codes.f.scope.items.ph': { en: 'Search products, bundles or ticket tiers…', zh: '搜尋商品、組合包或票種…' },
     'store-settings.codes.f.scope.items.empty': { en: 'No items match your search.', zh: '沒有符合的商品。' },
+    /* combobox 第三組：活動票種（D299 決定 1）。前兩組沿用 e-shop.tab.products／bundles。 */
+    'store-settings.codes.f.scope.group.tickets': { en: 'Ticket tiers', zh: '活動票種' },
     /* 清單欄「範圍」的混選示意值（AIKO10 那列）：類型＋商品都勾了幾個，不是單一層級。
-       Phase 1 沒有類型樹與多選，同一列改看成「指定單一商品」的示意（26MS Hoodie，D279）。 */
+       Phase 1 沒有類型樹，同一列改看成「指定單一商品」的示意（26MS Hoodie，D279）；
+       Phase 1 的多件示意在 TOURVIP15 那列（D299）。 */
     'store-settings.codes.scope.apparel-plus': { en: 'Apparel + 2 items', zh: '服飾＋2 件商品' },
     'store-settings.codes.scope.demo-item': { en: '26MS Hoodie', zh: '26MS Hoodie' },
+    /* 範圍欄綁多件時的件數（D299）：{n} 由頁面 JS 代入（i18n 沒有參數機制）；hover 浮卡逐列標種類。 */
+    'store-settings.codes.scope.n-items': { en: '{n} items', zh: '{n} 項' },
+    'store-settings.codes.scope.n-items.one': { en: '1 item', zh: '1 項' },
+    'store-settings.codes.scope.join': { en: ', ', zh: '、' },
+    'store-settings.codes.scope.kind.product': { en: 'Product', zh: '單售' },
+    'store-settings.codes.scope.kind.bundle': { en: 'Bundle', zh: '組合包' },
+    'store-settings.codes.scope.kind.ticket': { en: 'Ticket tier', zh: '活動票種' },
+    'store-settings.codes.scope.kind.type': { en: 'Item type', zh: '品項類型' },
+    /* 儲存（D299）：格式、重複（不分大小寫）、範圍空的三種擋下＋成功提示。 */
+    'store-settings.codes.err.format': { en: 'Use 8–20 letters or digits.', zh: '請用 8–20 個英數字。' },
+    'store-settings.codes.err.taken': { en: 'That code is already in use — letter case doesn’t make it different.', zh: '這組碼已經有了；大小寫不同也算同一組。' },
+    'store-settings.codes.err.scope': { en: 'Pick at least one item.', zh: '至少勾一件。' },
+    'store-settings.codes.toast.saved': { en: 'Code saved', zh: '已儲存優惠碼' },
     /* ── F8.2 使用次數（Usage limits，D272）：以「件」計，拆成三個各自獨立的條件 ─────── */
     'store-settings.codes.f.usage':    { en: 'Usage limits',    zh: '使用次數' },
     'store-settings.codes.f.perorder': { en: 'Per order',       zh: '每張訂單可折件數' },
@@ -2664,13 +2686,15 @@
     'e-shop.shown.cancel':      { en: 'Cancel',                            zh: '取消' },
     'e-shop.shown.close':       { en: 'Close',                             zh: '關閉' },
     'e-shop.shown.unlisted':    { en: 'Unlisted — list it first to change whether it shows', zh: '已下架：要先上架才能調整顯示' },
-    'e-shop.shown.archived':    { en: 'Archived — relist it first', zh: '已封存：要先重新上架' },
-    /* 封存／重新上架／草稿刪除（2026-09-18 · D284，§7.14「封存與不可刪除」）：列操作依狀態互斥——
-       已下架列有「封存」、已封存列只有「重新上架」、草稿列有「刪除」且必須確認。三個確認彈窗共用 leave-dialog 的殼。 */
+    'e-shop.shown.archived':    { en: 'Archived — unarchive it first', zh: '已封存：要先解除封存' },   /* D298：已封存的出口是解除封存，不再是重新上架 */
+    /* 封存／解除封存／草稿刪除（2026-09-18 · D284，§7.14「封存與不可刪除」；2026-09-22 · D298 修訂）：列操作依狀態互斥——
+       已下架列有「封存」、已封存列只有「解除封存」（回到已下架、不確認）、草稿列有「刪除」且必須確認。確認彈窗共用 leave-dialog 的殼。 */
     'e-shop.a.archive':         { en: 'Archive',                           zh: '封存' },
-    'e-shop.a.relist':          { en: 'Relist',                            zh: '重新上架' },
+    /* 墓碑（2026-09-22，D298）：`e-shop.a.relist` 移除——已封存列的列操作由「重新上架（直接回上架）」改成「解除封存（回到已下架）」，
+       上架這一步回到細節頁的上架開關。接手的鍵是 `e-shop.a.unarchive`。 */
+    'e-shop.a.unarchive':       { en: 'Unarchive',                         zh: '解除封存' },
     'e-shop.archive.title':     { en: 'Archive “{n}”?',                    zh: '要封存「{n}」嗎？' },
-    'e-shop.archive.body':      { en: 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can relist it anytime.', zh: '它會離開主清單，只在「已封存」篩選出現；頁面轉為唯讀，訂單與收入不受影響，隨時可以重新上架。' },
+    'e-shop.archive.body':      { en: 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can unarchive it anytime.', zh: '它會離開主清單，只在「已封存」篩選出現；頁面轉為唯讀，訂單與收入不受影響，隨時可以解除封存。' },   /* D298：結尾改講解除封存 */
     'e-shop.archive.confirm':   { en: 'Archive',                           zh: '封存' },
     /* 墓碑（2026-09-18，D288）：`e-shop.archive.blocked-title`／`blocked-body`／`blocked-confirm` 移除——封存不再檢查組合包，
        「仍在上架中的組合包裡」的彈窗整組搬到下架動作上（下面的 e-shop.unlist.blocked-*）。 */
@@ -2683,13 +2707,14 @@
     'e-shop.unlist.blocked-title': { en: '“{n}” is still in listed bundles', zh: '「{n}」仍在上架中的組合包裡' },
     'e-shop.unlist.blocked-body':  { en: 'Listing and sale schedules are cleared; set the sale again after relisting. Unlisting it also unlists these bundles:', zh: '下架會清除上架與開賣排程，重新上架後需再設定開賣。下架後這些組合包也會一同下架：' },
     'e-shop.unlist.blocked-confirm': { en: 'Unlist these bundles too',     zh: '一同下架這些組合包' },
-    /* 組合包重新上架（D289，取代 D288 裁決三的「擋下」）：已下架成員先確認、一起重新上架；已封存成員才擋下 */
+    /* 組合包重新上架（D289，取代 D288 裁決三的「擋下」）：已下架成員先確認、一起重新上架；已封存成員才擋下。
+       2026-09-22 · D298 起這組只由 bundle-detail 的上架開關（已下架→上架）觸發，e-shop 的已封存列改走解除封存、不再進這裡。 */
     'e-shop.relist.title':         { en: 'Relist “{n}”?',                  zh: '要重新上架「{n}」嗎？' },
     'e-shop.relist.members-body':  { en: 'These unlisted items are relisted with it:', zh: '這些已下架的成員會一起重新上架：' },   /* D290：重新上架不等於開賣，英文原句 go back on sale 改掉 */
     'e-shop.relist.members-confirm': { en: 'Relist all',                   zh: '一併重新上架' },
     'e-shop.relist.confirm':       { en: 'Relist',                         zh: '重新上架' },
     'e-shop.relist.blocked-title': { en: '“{n}” has archived items',       zh: '「{n}」有成員已封存' },
-    'e-shop.relist.blocked-body':  { en: 'Relist these items first, then relist the bundle:', zh: '先把這些成員重新上架，再重新上架組合包：' },
+    'e-shop.relist.blocked-body':  { en: 'Unarchive these items first, then list the bundle:', zh: '先解除封存這些成員，再上架組合包：' },   /* D298：成員已封存要先解除封存（回到已下架），組合包上架時再連帶拉上來；解除封存不連動組合包 */
     'e-shop.relist.blocked-ok':    { en: 'Got it',                         zh: '知道了' },
     'e-shop.delete.title':      { en: 'Delete draft “{n}”?',               zh: '要刪除草稿「{n}」嗎？' },
     'e-shop.delete.body':       { en: 'A deleted draft cannot be recovered.', zh: '草稿刪除後無法復原。' },
@@ -3111,11 +3136,14 @@
     'product-detail.badge.zine':    { en: 'Books',        zh: '書籍' },
     'product-detail.sub':           { en: '32-page photo zine documenting the east-coast tour. Letterpress cover.', zh: '記錄東岸巡演的 32 頁攝影雜誌書。凸版印刷封面。' },
     'product-detail.btn.preview':   { en: 'Preview',      zh: '預覽' },   /* 2026-09-11 使用者：所有「以粉絲身分預覽」都改成「預覽」 */
-    /* 頁首主要動作依狀態互斥（2026-09-18 · D284）：上架中→下架、已下架→封存、已封存→重新上架；單售與組合包共用 */
+    /* 頁首主要動作依狀態互斥（2026-09-18 · D284；2026-09-22 · D298 修訂）：上架中→下架、已下架→封存（另有上架開關）、
+       已封存→解除封存（回到已下架，不自動上架）；單售、組合包、拍賣共用 */
     'product-detail.btn.unlist':    { en: 'Unlist',       zh: '下架' },
     'product-detail.btn.archive':   { en: 'Archive',      zh: '封存' },
-    'product-detail.btn.relist':    { en: 'Relist',       zh: '重新上架' },
-    'product-detail.archived.banner': { en: 'Archived — read-only. Relist it to edit or sell again.', zh: '已封存：整頁唯讀，重新上架後才能編輯與販售。' },
+    /* 墓碑（2026-09-22，D298）：`product-detail.btn.relist` 移除——三個細節頁頁首已封存態的「重新上架（直接回上架）」
+       改成「解除封存（回到已下架）」，上架由既有的上架開關承接。接手的鍵是 `product-detail.btn.unarchive`。 */
+    'product-detail.btn.unarchive': { en: 'Unarchive',    zh: '解除封存' },
+    'product-detail.archived.banner': { en: 'Archived — read-only. Unarchiving returns it to Unlisted; settings are kept.', zh: '已封存：整頁唯讀，解除封存後回到已下架、設定照舊保留。' },   /* D298：出口改講解除封存 */
     'product-detail.btn.restock':   { en: 'Restock',      zh: '補貨' },
     'product-detail.btn.save':      { en: 'Save',         zh: '儲存' },
     /* 逐選項組合的庫存鎖定（2026-09-09 · D-pending／ASSUMPTIONS UIA-146）：列尾 ⋯ 的單列入口、
@@ -3491,10 +3519,11 @@
     'ad.item.title':        { en: 'Item summary',            zh: '物品摘要' },
     'ad.bids.sub':          { en: 'Every bid on this item, newest first.', zh: '本件所有出價，新到舊排序。' },
     'ad.info.sub':          { en: 'Set when the auction was created; locked once bidding is live.', zh: '於建立拍賣時設定；進入競標後鎖定。' },
+    'ad.tags.sub':          { en: 'Editable until bidding opens.', zh: '開拍前可改。' },   /* 商品標籤區（2026-09-22 D304）：Upcoming 可加減、開拍後唯讀 */
     'ad.fulfil.title':      { en: 'Settlement & fulfilment', zh: '結標與履約' },
     'ad.rail.status':       { en: 'Auction status',          zh: '競標狀態' },
     /* 2026-09-18（D284／D285）拍賣三開關、封存與下架確認 */
-    'ad.archived.banner':   { en: 'Archived — read-only. Relist it to run this auction again.', zh: '已封存：整頁唯讀，重新上架後才能再拍。' },
+    'ad.archived.banner':   { en: 'Archived — read-only. Unarchiving returns it to Unlisted; settings are kept.', zh: '已封存：整頁唯讀，解除封存後回到已下架、設定照舊保留。' },   /* D298：出口改講解除封存 */
     /* 墓碑（2026-09-18，D286）：`ad.unlist.live-title`／`ad.unlist.live-body`／`ad.unlist.confirm`
        移除——使用者裁決「競標中不能下架」，Live 時鈕直接停用，不再有下架確認彈窗這條路徑。
        出價者如何處理改記 ASSUMPTIONS UIA-153（暫定：時間到、最高出價者得標）。 */
@@ -4609,6 +4638,47 @@
     'ce.s2.sub':            { en: 'What will fans experience?',       zh: '粉絲會體驗到什麼？' },
     'ce.name':              { en: 'Event name',                       zh: '活動名稱' },
     'ce.name.ph':           { en: 'The name on the ticket',           zh: '票券上顯示的名稱' },
+    /* 亮點（2026-09-22 D300）：名稱下方的一句特殊訊息，選填、一場只有一句。
+       hint 只給計數（上限 30 為呈現假設 HL-001，不擋送出）；「選填」由 placeholder 承擔（Q123 ⑤）。 */
+    'ce.highlight':         { en: 'Highlight',                        zh: '亮點' },
+    'ce.highlight.ph':      { en: 'e.g. The only Taipei date',        zh: '例：台北唯一一場' },
+    'ce.highlight.count':   { en: '{n} / 30',                         zh: '{n} / 30' },
+    /* 第三方門票（2026-09-22 · D302 · 5.1.6.1 F24）：電子門票底下的開關與開啟後必填的說明欄。
+       hint 只講「做決定才需要的資訊」（票不是 ztor 發的、粉絲照你寫的走），不重述標籤。 */
+    'ce.ship.tp':           { en: 'Third-party ticket',               zh: '第三方門票' },
+    'ce.ship.tp.hint':      { en: 'Issued by another platform — ztor sends no QR to buyers; fans collect and enter the way you describe.', zh: '票由其他平台發出，ztor 不發 QR 給買家；粉絲依你寫的方式領取入場。' },   /* 2026-09-22 D303：補「不發 QR」這個後果 */
+    'ce.ship.tp.note':      { en: 'How to collect & enter',           zh: '領取與入場方式' },
+    'ce.ship.tp.note.ph':   { en: 'e.g. Show your KKTIX e-ticket at Gate 3 to get in', zh: '例：憑 KKTIX 電子票至 3 號門驗票入場' },
+    'ce.ship.tp.count':     { en: '{n} / 250',                        zh: '{n} / 250' },
+    'ce.rev.ship':          { en: 'Ticket delivery',                  zh: '取票方式' },
+    'ce.publish-blocked-tp': { en: 'The collect & entry note is over 250 characters. Shorten it before publishing.', zh: '領取與入場方式超過 250 字元，請縮短後再發布。' },
+    /* 動態 QR 與可轉贈（2026-09-22 · D303 · 5.1.6.1 F24）：電子門票下另外兩組「開關列＋揭示區」。
+       hint 只講後果（QR 會換新、票可以給別人、關掉會怎樣），不重述標籤；單位字沿用 amount-field 的後綴位。 */
+    'ce.ship.dq':           { en: 'Dynamic QR',                       zh: '動態 QR' },
+    'ce.ship.dq.hint':      { en: "The ticket's QR refreshes every few minutes, so screenshots can't be passed around.", zh: '票的 QR 每隔幾分鐘自動換新，防截圖轉傳。' },
+    'ce.ship.dq.min':       { en: 'Refresh every',                    zh: '更新間隔' },
+    'ce.unit.min':          { en: 'min',                              zh: '分鐘' },
+    'ce.ship.tf':           { en: 'Transferable',                     zh: '可轉贈' },
+    'ce.ship.tf.hint':      { en: 'Ticket holders can pass the ticket to another ztor member.', zh: '持票人可把票轉給其他 ztor 會員。' },
+    'ce.ship.tf.limit':     { en: 'Limit transfers',                  zh: '限制轉贈次數' },
+    'ce.ship.tf.limit.hint': { en: 'Off means a ticket can change hands any number of times.', zh: '關掉＝一張票想轉幾次都可以。' },
+    'ce.ship.tf.max':       { en: 'Max transfers',                    zh: '次數上限' },
+    'ce.unit.times':        { en: 'times',                            zh: '次' },
+    'ce.ship.tf.dl':        { en: 'Transfer deadline',                zh: '設定轉贈期限' },
+    'ce.ship.tf.dl.hint':   { en: 'Off means transfers stay open right up to showtime.', zh: '關掉＝到開演前都能轉。' },
+    'ce.ship.tf.dl.date':   { en: 'Same deadline for all dates',      zh: '統一截止日' },
+    'ce.ship.tf.dl.date.sub': { en: 'One cut-off, whichever date the ticket is for.', zh: '所有場次同一天截止。' },
+    'ce.ship.tf.dl.days':   { en: 'Days before showtime',             zh: '開演前 N 天' },
+    'ce.ship.tf.dl.days.sub': { en: "Counted back from each date's own start time.", zh: '每場從自己的開始時間往前算。' },
+    'ce.ship.tf.date':      { en: 'Deadline',                         zh: '截止日' },
+    'ce.ship.tf.days':      { en: 'Days',                             zh: '天數' },
+    'ce.unit.days':         { en: 'days',                             zh: '天' },
+    'ce.rev.dq':            { en: 'Dynamic QR every {n} min',         zh: '動態 QR 每 {n} 分鐘' },
+    'ce.rev.tf.max':        { en: 'up to {n} times',                  zh: '最多 {n} 次' },
+    'ce.rev.tf.date':       { en: 'until {d}',                        zh: '{d} 止' },
+    'ce.rev.tf.days':       { en: 'until {n} days before showtime',   zh: '開演前 {n} 天止' },
+    'ce.rev.tf.wrap':       { en: ' ({x})',                           zh: '（{x}）' },
+    'ce.rev.tf.sep':        { en: ', ',                               zh: '、' },
     'ce.desc':              { en: 'Description',                      zh: '描述' },
     'ce.desc.ph':           { en: 'What will fans experience? Make it vivid.', zh: '粉絲會體驗到什麼？寫得生動一點。' },
     'ce.lineup':            { en: 'Lineup / performers',              zh: '表演陣容' },
@@ -5279,7 +5349,7 @@
     'cp.listing.listed-switch': { en: 'Listed',                        zh: '上架' },
     'cp.listing.listed-hint': { en: 'Unlisting stops every channel and kills all links', zh: '下架後所有販售管道都不能賣，連結全部失效' },
     'cp.listing.unlisted-lock': { en: 'Unlisted — show and sale settings are locked until it is listed again.', zh: '已下架：顯示與開賣設定要重新上架後才能調整。' },
-    'cp.listing.archived-lock': { en: 'Archived — switches and schedules stay locked until it is relisted.', zh: '已封存：開關與排程都不可調，重新上架後才能調整。' },
+    'cp.listing.archived-lock': { en: 'Archived — switches and schedules stay locked until it is unarchived.', zh: '已封存：開關與排程都不可調，解除封存後才能調整。' },   /* D298 */
     'cp.listing.shown-h':   { en: 'Show in shop',                      zh: '顯示於商店' },
     'cp.listing.shown-hint': { en: 'Hidden items stay purchasable via the private link and inside bundles', zh: '隱藏後商店找不到，但能經非公開連結購買，也能被組合包帶著賣' },
     'cp.listing.none':      { en: "Don't list",                       zh: '不上架' },
@@ -5985,6 +6055,10 @@
     'cpp.bd.sp.sec.name':      { en: 'Name & listing',                 zh: '命名與上架' },
     'st.aria':                 { en: 'Jump to a section',              zh: '跳到區段' },   /* section-tabs 分節分頁的 nav 名稱（js/section-tabs.js 消費頁共用） */
     'cpp.bd.sp.tix':           { en: 'Tickets',                        zh: '票券' },
+    /* 2026-09-22 第二輪：多場活動的場次相關控制（二選一卡＋適用場次表／每場預覽表）在 SPLIT 合成
+       同一個欄位，標籤就叫「場次」——它底下就是場次本身，不必寫成「場次對應」或「適用場次」。
+       `cpp.bd.sec.scope`（radiogroup 的 aria-label）、`cpp.bd.sec.sess`（sections 版型）照舊。 */
+    'cpp.bd.sp.dates':         { en: 'Dates',                          zh: '場次' },
     'cpp.bd.sp.tix.short':     { en: 'under {n}',                      zh: '不足 {n} 張' },
     'cpp.bd.sp.sem.none':      { en: 'No tier checked yet — check at least one so fans have a ticket to buy.', zh: '還沒勾選票種——至少勾 1 種，粉絲才有票可買。' },
     'cpp.bd.sp.sem.one':       { en: 'Locked to {name}: {n} per set, nothing for fans to choose.', zh: '鎖定 {name}，每組 {n} 張，粉絲不用挑。' },
@@ -6124,6 +6198,8 @@
                               zh: '粉絲購買時再挑場次。' },
     'cpp.bd.scope.per.sub':  { en: 'Creates {n} bundles, each priced separately.',
                               zh: '建立時一次長出 {n} 組，可個別調整售價。' },
+    /* 墓碑 2026-09-22：SPLIT 的「場次」欄位改在二選一卡底下直接接每場預覽表，逐場列出會建立哪幾組，
+       這一句與表重複（Q123 ④）不再產生；key 留著給 layout:'sections' 相容，目前無消費者。 */
     'cpp.bd.scope.per.names':{ en: 'One each for {names}.',
                               zh: '{names} 各建立一組。' },
     'cpp.bd.sec.scope':     { en: 'Dates',                            zh: '場次對應' },
@@ -9195,6 +9271,38 @@
     'ed.pub.ship.fee.hint': { en: 'Fans pay this on top at checkout.', zh: '粉絲結帳時另外付這筆。' },
     'ed.pub.ship.spot':   { en: 'Pickup location',         zh: '取貨地點' },
     'ed.pub.ship.spot.hint': { en: 'Fans bring ID here to collect the ticket.', zh: '粉絲帶證件到這裡領票。' },
+    /* 第三方門票（2026-09-22 · D302）：唯讀版一行加註＋說明列；可編版沿用建立流程同一組字。 */
+    'ed.pub.tp':            { en: 'Third-party ticket',               zh: '第三方門票' },
+    'ed.pub.tp.hint':       { en: 'Issued by another platform — ztor sends no QR to buyers; fans collect and enter the way you describe.', zh: '票由其他平台發出，ztor 不發 QR 給買家；粉絲依你寫的方式領取入場。' },   /* 2026-09-22 D303：補「不發 QR」 */
+    'ed.pub.tp.note':       { en: 'How to collect & enter',           zh: '領取與入場方式' },
+    'ed.pub.tp.note.ph':    { en: 'e.g. Show your KKTIX e-ticket at Gate 3 to get in', zh: '例：憑 KKTIX 電子票至 3 號門驗票入場' },
+    'ed.pub.tp.count':      { en: '{n} / 250',                        zh: '{n} / 250' },
+    'ed.pub.tp.on':         { en: 'On',                               zh: '開' },
+    'ed.pub.tp.off':        { en: 'Off',                              zh: '關' },
+    /* 動態 QR 與可轉贈（2026-09-22 · D303）：可編版沿用建立流程同一組字；唯讀版兩列各一句摘要。 */
+    'ed.pub.dq':            { en: 'Dynamic QR',                       zh: '動態 QR' },
+    'ed.pub.dq.hint':       { en: "The ticket's QR refreshes every few minutes, so screenshots can't be passed around.", zh: '票的 QR 每隔幾分鐘自動換新，防截圖轉傳。' },
+    'ed.pub.dq.min':        { en: 'Refresh every',                    zh: '更新間隔' },
+    'ed.pub.dq.every':      { en: 'Every {n} min',                    zh: '每 {n} 分鐘' },
+    'ed.unit.min':          { en: 'min',                              zh: '分鐘' },
+    'ed.pub.tf':            { en: 'Transferable',                     zh: '可轉贈' },
+    'ed.pub.tf.hint':       { en: 'Ticket holders can pass the ticket to another ztor member.', zh: '持票人可把票轉給其他 ztor 會員。' },
+    'ed.pub.tf.limit':      { en: 'Limit transfers',                  zh: '限制轉贈次數' },
+    'ed.pub.tf.limit.hint': { en: 'Off means a ticket can change hands any number of times.', zh: '關掉＝一張票想轉幾次都可以。' },
+    'ed.pub.tf.max':        { en: 'Max transfers',                    zh: '次數上限' },
+    'ed.pub.tf.max.n':      { en: 'Up to {n} times',                  zh: '最多 {n} 次' },
+    'ed.unit.times':        { en: 'times',                            zh: '次' },
+    'ed.pub.tf.dl':         { en: 'Transfer deadline',                zh: '設定轉贈期限' },
+    'ed.pub.tf.dl.hint':    { en: 'Off means transfers stay open right up to showtime.', zh: '關掉＝到開演前都能轉。' },
+    'ed.pub.tf.dl.date':    { en: 'Same deadline for all dates',      zh: '統一截止日' },
+    'ed.pub.tf.dl.date.sub': { en: 'One cut-off, whichever date the ticket is for.', zh: '所有場次同一天截止。' },
+    'ed.pub.tf.dl.days':    { en: 'Days before showtime',             zh: '開演前 N 天' },
+    'ed.pub.tf.dl.days.sub': { en: "Counted back from each date's own start time.", zh: '每場從自己的開始時間往前算。' },
+    'ed.pub.tf.date':       { en: 'Deadline',                         zh: '截止日' },
+    'ed.pub.tf.days':       { en: 'Days',                             zh: '天數' },
+    'ed.unit.days':         { en: 'days',                             zh: '天' },
+    'ed.pub.tf.until':      { en: 'until {d}',                        zh: '{d} 止' },
+    'ed.pub.tf.until.days': { en: 'until {n} days before showtime',   zh: '開演前 {n} 天止' },
     'ed.pub.vis.sub':     { en: 'Who gets to find this event.', zh: '決定誰找得到這場活動。' },
     'ed.pub.vis.public.sub': { en: 'Shows up in the ztor event list and in search.',
                               zh: '出現在 ztor 活動列表與搜尋結果。' },
