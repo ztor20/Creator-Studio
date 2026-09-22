@@ -32,6 +32,9 @@
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
+<!-- 2026-09-22 商品標籤（建立拍賣共用設定 5.1.5.10 的 ca-tags 同一組 .tag-input；Upcoming 可編、開拍後唯讀） -->
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* auction-detail · 競標進程／出價活動／拍賣資訊（spec 5.1.5.8）。出價數字為示意；2026-09-18 起狀態、三開關與封存走 ListingState（D285／D284）。
@@ -85,13 +88,13 @@
           <button class="btn btn--outline" type="button" data-ad-preview-open data-i18n="ad.btn.preview"><i data-lucide="eye" class="ztor-icon"></i> Preview</button>
           <span data-ad-unlist-tip hidden><button class="btn btn--outline" type="button" data-ad-unlist><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button></span>
           <button class="btn btn--outline" type="button" data-ad-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
-          <button class="btn btn--primary" type="button" data-ad-relist hidden><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="product-detail.btn.relist">Relist</span></button>
+          <button class="btn btn--primary" type="button" data-ad-unarchive hidden><i data-lucide="archive-restore" class="ztor-icon"></i><span data-i18n="product-detail.btn.unarchive">Unarchive</span></button>
         </div>
       </div>
-      <!-- 封存態說明（D284）：整頁唯讀、只能重新上架。沿用 info-banner，icon 換 archive；未封存時整條收起。 -->
+      <!-- 封存態說明（D284；D298 出口改講解除封存）：整頁唯讀、只能解除封存（回到已下架）。沿用 info-banner，icon 換 archive；未封存時整條收起。 -->
       <div class="info-banner mt-16" data-ad-archived-banner hidden>
         <i data-lucide="archive" class="ztor-icon info-banner__icon"></i>
-        <span data-i18n="ad.archived.banner">Archived — read-only. Relist it to run this auction again.</span>
+        <span data-i18n="ad.archived.banner">Archived — read-only. Unarchiving returns it to Unlisted; settings are kept.</span>
       </div>
       <!-- 未開拍提醒（2026-09-18 · D290）：上架中但開拍設定停在「未開拍」（重新上架後的常態）時露出，設了開拍就收起 -->
       <div class="info-banner mt-16" data-ad-relist-sale-banner hidden>
@@ -153,6 +156,36 @@
             <span class="badge badge--neutral" data-i18n="ad.tag.elig">Inner Circle</span>
           </div>
           <p style="font-size: var(--fs-13);line-height:1.6;margin:0" data-i18n="ad.story">Wore this during the entire 2024 world tour — every show, every encore. Smells faintly of stage smoke. Comes with a hand-signed setlist from the final night.</p>
+        </section>
+
+        <!-- 商品標籤（2026-09-22 使用者裁決；建立拍賣 5.1.5.10 共用設定的 ca-tags 同一組 .tag-input）：
+             沿用本頁既有的限度編輯——Upcoming（還沒開拍）可加減，Live／完售／流標唯讀；封存另由 archived-gate 兜底。
+             唯讀怎麼畫：整區是一個兩段式面板（data-editable ＋ data-mode），開拍後切成 view，shared.css／js/view-mode.js 把 chips 畫成純文字（Q119）；
+             Upcoming 切成 edit，輸入框與建議候選露出。沒有「編輯」鈕——模式由拍賣狀態決定，不由使用者切。 -->
+        <section class="form-section form-section--outlined" data-ad-tags-section data-editable data-mode="view">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="ca.tags.title">Tags</h3>
+            <p class="form-section__sub" data-i18n="ad.tags.sub">Editable until bidding opens.</p>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <div class="field__label"><span data-i18n="cp.tags">Product tags</span> <span class="text-sub" data-i18n="cp.optional">(optional)</span></div>
+            <div class="field__hint" style="margin-bottom:var(--sp-8)" data-i18n="cp.tags.sub">Make it easier for fans to discover your work.</div>
+            <div class="tag-input" id="ad-tags">
+              <div class="tag-input__field" id="ad-tags-field">
+                <input class="tag-input__entry" placeholder="Type a tag, press Enter" id="ad-tags-entry" data-i18n-placeholder="cp.tags.ph">
+              </div>
+              <div>
+                <div class="tag-input__suggest-label" style="margin-bottom:var(--sp-6)" data-i18n="cp.tags.suggest">Suggested</div>
+                <div class="chip-group" id="ad-tags-suggest">
+                  <button class="chip" type="button" data-tag-suggest>Tour 2025</button>
+                  <button class="chip" type="button" data-tag-suggest>Signed</button>
+                  <button class="chip" type="button" data-tag-suggest>One of a kind</button>
+                  <button class="chip" type="button" data-tag-suggest>Memorabilia</button>
+                  <button class="chip" type="button" data-tag-suggest>Rare</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
       </div><!-- /tab-panel overview -->
@@ -399,6 +432,7 @@
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/link-field.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
+<script src="js/view-mode.js?v=r2.2"></script><!-- 標籤區的檢視態讀數（Q119）：開拍後 chips 去框去 ×、一顆都沒有時補「—」 -->
 <script src="partials/radio-list.js?v=r2.2"></script>
 <script src="partials/archived-gate.js?v=r2.2"></script><!-- 封存態唯讀的事件層閘門（D288） -->
 <script src="js/sidebar.js?v=r2.2"></script>
@@ -473,10 +507,10 @@
     if (!a) return;
     const main = document.querySelector('.main') || document.body;
     const $ = sel => document.querySelector(sel);
-    /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「重新上架」永遠放行 */
-    if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { allow: '[data-ad-relist],[data-ad-preview-open],[data-ad-preview-close]' });
+    /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「解除封存」永遠放行 */
+    if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { allow: '[data-ad-unarchive],[data-ad-preview-open],[data-ad-preview-close]' });
     const commit = () => { if (S.commit) S.commit(a); };
-    const btnUnlist = $('[data-ad-unlist]'), unlistTip = $('[data-ad-unlist-tip]'), btnArchive = $('[data-ad-archive]'), btnRelist = $('[data-ad-relist]'), btnCopy = $('[data-ad-copy]');
+    const btnUnlist = $('[data-ad-unlist]'), unlistTip = $('[data-ad-unlist-tip]'), btnArchive = $('[data-ad-archive]'), btnUnarchive = $('[data-ad-unarchive]'), btnCopy = $('[data-ad-copy]');
     const banner = $('[data-ad-archived-banner]');
     const listing = $('[data-ad-listing]'), saleLctl = $('[data-ad-sale-lctl]');
     const listedToggle = document.getElementById('ad-listed-toggle'), shownToggle = document.getElementById('ad-shown-toggle');
@@ -552,7 +586,7 @@
       document.querySelectorAll('[data-ad-lock-note]').forEach(n => {
         const key = archived ? 'cp.listing.archived-lock' : 'cp.listing.unlisted-lock';
         n.setAttribute('data-i18n', key);
-        n.textContent = T(key, archived ? 'Archived — switches and schedules stay locked until it is relisted.' : 'Unlisted — show and sale settings are locked until it is listed again.');
+        n.textContent = T(key, archived ? 'Archived — switches and schedules stay locked until it is unarchived.' : 'Unlisted — show and sale settings are locked until it is listed again.');
         n.hidden = listedOn;
       });
       const sn = $('[data-ad-started-note]'); if (sn) sn.hidden = !(listedOn && started);
@@ -580,6 +614,61 @@
       renderTimes();
       renderBadges();
       syncPrimaryAction();
+      syncTagsMode();
+    }
+    /* ── 商品標籤（2026-09-22）：資料在 a.tags；渲染同 create-auction 的 renderTags（chip--removable ＋ 建議候選 chip--active）。
+       模式＝拍賣狀態決定：還沒開拍（Upcoming，含跟著上架開拍但還沒到上架時間）且未封存 → edit；開拍後（Live／完售／流標）或封存 → view。 */
+    const tagsField = document.getElementById('ad-tags-field'), tagsEntry = document.getElementById('ad-tags-entry');
+    const tagsSection = $('[data-ad-tags-section]');
+    if (!Array.isArray(a.tags)) a.tags = [];
+    const escT = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    function renderTags() {
+      if (!tagsField) return;
+      tagsField.querySelectorAll('.chip').forEach(c => c.remove());
+      a.tags.forEach((t, i) => {
+        const chip = document.createElement('span');
+        chip.className = 'chip chip--active chip--removable';
+        chip.innerHTML = '<span>' + escT(t) + '</span><button class="chip__remove" type="button" data-tag-remove="' + i + '" aria-label="Remove tag"><i data-lucide="x" class="ztor-icon"></i></button>';
+        tagsField.insertBefore(chip, tagsEntry);
+      });
+      if (window.ztorIcons) window.ztorIcons.applyIcons(tagsField);
+      document.querySelectorAll('#ad-tags-suggest [data-tag-suggest]').forEach(b => b.classList.toggle('chip--active', a.tags.includes(b.textContent.trim())));
+      if (window.ZtorViewMode && tagsSection) window.ZtorViewMode.sync(tagsSection);
+    }
+    function tagsEditable() {
+      if (L.isArchived(a)) return false;
+      const start = L.auctionStart(a);
+      return !(start !== null && start <= Date.now());
+    }
+    function syncTagsMode() {
+      if (!tagsSection) return;
+      const editable = tagsEditable();
+      tagsSection.setAttribute('data-mode', editable ? 'edit' : 'view');
+      if (tagsEntry) tagsEntry.readOnly = !editable;
+      if (window.ZtorViewMode) window.ZtorViewMode.sync(tagsSection);
+    }
+    if (tagsField && tagsEntry) {
+      tagsEntry.addEventListener('keydown', e => {
+        if (e.key !== 'Enter' || !tagsEditable()) return;
+        e.preventDefault();
+        const v = tagsEntry.value.trim(); if (v && !a.tags.includes(v)) a.tags.push(v);
+        tagsEntry.value = ''; renderTags(); commit();
+      });
+      tagsField.addEventListener('click', e => {
+        if (!tagsEditable()) return;
+        const rm = e.target.closest('[data-tag-remove]');
+        if (rm) { a.tags.splice(+rm.dataset.tagRemove, 1); renderTags(); commit(); return; }
+        if (e.target === tagsField) tagsEntry.focus();
+      });
+      document.querySelectorAll('#ad-tags-suggest [data-tag-suggest]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (!tagsEditable()) return;
+          const label = btn.textContent.trim(); const i = a.tags.indexOf(label);
+          if (i >= 0) a.tags.splice(i, 1); else a.tags.push(label);
+          renderTags(); commit();
+        });
+      });
+      renderTags();
     }
     function syncPrimaryAction() {
       const archived = L.isArchived(a);
@@ -593,7 +682,7 @@
         if (live) unlistTip.setAttribute('data-i18n-title', 'ad.unlist.live-disabled'); else unlistTip.removeAttribute('data-i18n-title');
       }
       if (btnArchive) btnArchive.hidden = !L.canArchive(a);
-      if (btnRelist) btnRelist.hidden = !archived;
+      if (btnUnarchive) btnUnarchive.hidden = !archived;   /* D298：已封存態的唯一主要動作＝解除封存（回到已下架） */
     }
 
     /* 開關與欄位寫回資料 */
@@ -680,12 +769,14 @@
       if (!L.canArchive(a)) return;
       askConfirm({
         title: T('e-shop.archive.title', 'Archive “{n}”?').replace('{n}', name()),
-        body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can relist it anytime.'),
+        body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can unarchive it anytime.'),
         okKey: 'e-shop.archive.confirm', okFallback: 'Archive',
         onConfirm: () => { L.archive(a); commit(); paintCards(); }
       });
     });
-    if (btnRelist) btnRelist.addEventListener('click', () => { L.relist(a); commit(); paintCards(); });
+    /* 解除封存（D298）：不確認、回到已下架（上架開關可用、「封存」鈕回來）、設定照舊、不自動上架；
+       D290 的「未開拍」提醒只在上架中露出，解除封存後不出現、重新上架後才會。 */
+    if (btnUnarchive) btnUnarchive.addEventListener('click', () => { if (!L.isArchived(a)) return; L.unarchive(a); commit(); paintCards(); });
     document.addEventListener('i18n:applied', paintCards);
     paintCards();
   })();

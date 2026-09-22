@@ -164,6 +164,11 @@ const REGISTRY = {
   /* 2026-08-01：封存動作原本借用 'inbox'，語意是「收件匣」不是「封存」。改用真正的
      archive（有蓋子的收納箱＋提把），與 inbox 在視覺上也分得開。consumer: pickup.html 列選單 */
   'archive':        '<path d="M3 6a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2" /> <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" /> <path d="M10 12l4 0" />',  // 封存場次
+  /* 2026-09-22（D298）：解除封存。Tabler 沒有「從封存箱拿回來」的字符（archive-off 是斜線＝停用、restore 是
+     倒轉箭頭＝重做），所以沿用上面 archive 的蓋子與箱身、把提把換成往上的箭頭——同一顆箱子、東西往外走，
+     與 Lucide 的 archive-restore 同義。自繪例外，見 design-system.md「Icon 圖庫」。consumer: e-shop 已封存列的
+     列操作、product-detail／bundle-detail／auction-detail 頁首主要動作 */
+  'archive-restore': '<path d="M3 6a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2" /> <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" /> <path d="M12 17v-6" /> <path d="M9 14l3 -3l3 3" />',  // 解除封存
   'brand-instagram': '<path d="M4 8a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4l0 -8" /> <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /> <path d="M16.5 7.5v.01" />',   // 粉絲端創作者頁鏡像的社群圓鈕（fan-store，2026-09-11）
   'brand-threads': '<path d="M19 7.5c-1.333 -3 -3.667 -4.5 -7 -4.5c-5 0 -8 2.5 -8 9s3.5 9 8 9s7 -3 7 -5s-1 -5 -7 -5c-2.5 0 -3 1.25 -3 2.5c0 1.5 1 2.5 2.5 2.5c2.5 0 3.5 -1.5 3.5 -5s-2 -4 -3 -4s-1.833 .333 -2.5 1" />',   // 粉絲端創作者頁鏡像的社群圓鈕（fan-store，2026-09-11）
   'brand-x': '<path d="M4 4l11.733 16h4.267l-11.733 -16l-4.267 0" /> <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />',   // 粉絲端創作者頁鏡像的社群圓鈕（fan-store，2026-09-11）
