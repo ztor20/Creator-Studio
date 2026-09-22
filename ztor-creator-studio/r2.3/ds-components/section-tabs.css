@@ -1,0 +1,83 @@
+/* ============================================================
+   Section tabs · 長表單頂端的固定分節分頁（2026-09-21）
+   ------------------------------------------------------------
+   起因：使用者對「新增票務商品（活動票券組合包）」彈窗的反饋——三段分卡（內容物／
+   定價與庫存／命名與上架）疊成一長條，要「在最上面有固定的 tab 可以快速滾動到指定區塊」。
+   電子商店的建立組合頁是同一個心智模型（UI-CHANGES 五十四），同一支元件裝兩處。
+
+   角色：不是切換面板的分頁（那是 .tabs＋.tab-panel），而是**同一長頁裡的跳轉＋定位**——
+   點了平滑捲到那一段、捲動時亮著目前看到的那一段（scrollspy）。行為在 js/section-tabs.js。
+
+   ── 只做一條固定列（STYLE-DECISIONS Q115 的精神）──────────────────────────
+   兩個消費處都已經有一條固定的頂列（彈窗的 .payout-dialog__head、建立流程的 .wizard__top），
+   本元件不另外再 sticky 一條浮在內容上，而是**併進那條頂列當第二排**：
+     · 彈窗：放在 __head 與 __body 之間（都在捲動區之外），頂列＝標題排＋分頁排
+     · 建立流程：放在 .wizard__top 裡 .wizard__top-bar 之後（.wizard__top 本身 sticky）
+   好處：捲動偏移不必扣固定列高度（列根本不在捲動區裡），右欄預覽卡的 sticky 也不會被蓋到。
+   position:sticky 仍留著當第三種宿主（直接放進捲動區）的後備，在前兩種宿主裡不起作用。
+
+   ── 分頁本體沿用 Q38 的配方 ───────────────────────────────────────────────
+   內層是 `.tabs.tabs--underline-short.tabs--underline-label`（清單頁工作列那組發光底線）。
+   那組的鐵律是「底線照容器下緣畫、一定要有殼」——本元件就是那個殼：固定高度＋align-items:
+   stretch，讓 item 撐滿、底線落在殼的下緣（與 .list-toolbar 同一個機制，見 list-toolbar.css 檔頭）。
+   高度取 44px（`--control-h-md`）＝清單頁工作列貼頂態的高度，同一個角色同一個尺寸。
+
+   anatomy
+     nav.section-tabs[data-section-tabs]            殼（固定高度；modifier 決定內距與邊線）
+       .tabs.tabs--underline-short.tabs--underline-label
+         button.tabs__item[data-st-tab="key"] > span   （aria-current="location" ＝ 目前段）
+   modifiers
+     .section-tabs--dialog    彈窗頂列第二排：內距對齊 .payout-dialog__head、下緣 1px --border
+     .section-tabs--wizard    建立流程頂列第二排：寬度對齊 .wizard__body--narrow 的內容欄
+   data API（js/section-tabs.js）
+     data-st-scroller="sel"   捲動容器（預設＝最近的可捲祖先，沒有就 window）
+     data-st-offset="sel"     蓋在捲動區上緣的固定列（跳轉與定位都扣掉它的高度）
+     [data-st-section="key"]  捲動區裡的目標段
+   ============================================================ */
+
+.section-tabs {
+  position: sticky;
+  top: var(--section-tabs-top, 0px);
+  z-index: 20;                       /* 同 .list-dock 貼頂態：低於 app-topbar(50)、高於內容 */
+  flex: none;                        /* 宿主是 flex column（.payout-dialog／.wizard__top）時不被壓縮 */
+  display: flex;
+  align-items: stretch;
+  height: var(--control-h-md);       /* 44px＝清單頁工作列貼頂態的高度 */
+  box-sizing: border-box;
+  min-width: 0;
+}
+/* tabs 照內容寬、塞不下時橫向捲（與 .list-toolbar > .tabs 同一套處理，見該檔）。 */
+.section-tabs > .tabs {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-bottom: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.section-tabs > .tabs::-webkit-scrollbar { display: none; }
+.section-tabs .tabs__item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+/* 目前段（scrollspy 或剛點的那一顆）：與 .tabs__item--active 同款，多給一個語意鉤子。 */
+.section-tabs .tabs__item[aria-current="location"] { color: var(--foreground); }
+
+/* ── 彈窗頂列第二排 ──────────────────────────────────────────────────────
+   內距：__head 是 --sp-20，第一顆 tab 自帶 --sp-14 左內距，殼留 --sp-6 讓標籤文字與標題同一條左緣。
+   下緣 1px --border 承接 __head 的分隔線角色（標題排｜分頁排｜內容 三段各一條線）。 */
+.section-tabs--dialog {
+  padding-inline: var(--sp-6) var(--sp-20);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── 建立流程頂列第二排 ───────────────────────────────────────────────────
+   寬度與 .wizard__body--narrow（max 1000、左右 --sp-28）同一條內容欄；殼內距＝欄內距減去
+   第一顆 tab 的 --sp-14，標籤文字起點與底下分卡的左緣切齊。分隔線交給 .wizard__top 自己的
+   border-bottom，底線的光就落在那條線上。 */
+.section-tabs--wizard {
+  width: 100%;
+  max-width: 1000px;
+  margin-inline: auto;
+  padding-inline: calc(var(--sp-28) - var(--sp-14));
+}

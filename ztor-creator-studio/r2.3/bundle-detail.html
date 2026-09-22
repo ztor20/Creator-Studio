@@ -253,7 +253,7 @@
           <div class="list-toolbar">
             <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist" aria-label="Bundle settings sections">
               <button type="button" class="tabs__item tabs__item--active" data-view-safe data-nav-item="info" data-i18n="cb.info.title">Bundle info</button>
-              <button type="button" class="tabs__item" data-view-safe data-nav-item="members" data-i18n="cb.items">Items</button>
+              <button type="button" class="tabs__item" data-view-safe data-nav-item="members" data-i18n="cb.items">Contents</button>
               <button type="button" class="tabs__item" data-view-safe data-nav-item="pricing" data-i18n="bd.nav.pricing">Price &amp; discount</button>
               <button type="button" class="tabs__item" data-view-safe data-nav-item="publish" data-i18n="product-detail.nav.publish">Listing &amp; sale</button>
             </nav>
@@ -316,7 +316,7 @@
         <section class="form-section form-section--outlined">
           <div class="form-section__head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-12)">
             <div>
-              <h3 class="form-section__title" data-i18n="cb.items">Items</h3>
+              <h3 class="form-section__title" data-i18n="cb.items">Contents</h3>
               <p class="form-section__sub" data-i18n="bd.impact.member-rule">A member stops this bundle when it is unlisted, off sale, or has nothing left to sell inside this bundle.</p>
             </div>
             <span class="text-sub" id="bd-member-count" style="font-size: var(--fs-12)">(3)</span>
@@ -388,7 +388,7 @@
             <h3 class="form-section__title" data-i18n="cb.pricing">Bundle price</h3>
           </div>
           <div class="field">
-            <div class="field__label" data-i18n="cb.price.members-total">Members' list price total</div>
+            <!-- 「成員原價合計」標籤與算式末列的「原價合計」重複，2026-09-22 刪標籤、留合計列（同建立頁方案 A #27）。 -->
             <!-- 逐項算式（5.1.5.4 §4 F3，D292／D296；2026-09-21 第 2 批改 .bd-calc-list，同建立組合）：一成員一列＋怎麼算，末列合計 -->
             <div data-bd-calc data-edit-exempt></div>
             <div class="field__hint" data-i18n="cb.price.auto-hint">Auto-summed from members' prices — not editable. Members with variants show “from $X”.</div>
@@ -1067,7 +1067,9 @@
         const who = lim.by ? (lim.by.kind === 'ticket' ? T('cpp.bd.sp.who.tix', 'tickets') : (lim.by.name || '')) : '';
         setsHint.textContent = (lim.max === Infinity)
           ? T('cpp.bd.sp.lock.none', 'Add a member first — nothing to lock yet')
-          : T(over ? 'cpp.bd.sp.lock.over' : 'cpp.bd.sp.lock.hint', 'Up to {n} sets (limited by {who})').replace('{n}', lim.max.toLocaleString('en-US')).replace('{who}', who);
+          : (over
+              ? T('cpp.bd.sp.lock.over', 'Over the ceiling of {n} sets (limited by {who})').replace('{n}', lim.max.toLocaleString('en-US')).replace('{who}', who)
+              : T('cpp.bd.sp.lock.hint', 'Blank = shares what’s left with single sales'));
         setsHint.classList.toggle('is-over', !!over);
       }
       bundleModel.members.forEach(m => {
@@ -1133,12 +1135,15 @@
         /* 2026-09-21 第 2 批：句型對齊建立組合的可售套數讀數（cpp.bd.sp.sets.*）——「最多 N 組 · 鎖定 N 套」／「· 受限量上限限制」／「· 受「票券剩餘／商品名庫存」限制」 */
         let txt = '';
         const qtyTxt = qty === Infinity ? '' : qty.toLocaleString('en-US');
+        /* 2026-09-22：建立頁把「最多 N 組 · 受…限制」拆成讀數＋hint 兩層（方案 A），本頁的 KPI 副標
+           不重排，改由同一組新 key 拼回同一句話——句型與建立頁仍然一致。 */
+        const val = T('cpp.bd.sp.sets.val', 'Up to {n} sets').replace('{n}', qtyTxt || String(n));
         if (n !== null) {
-          txt = T('cpp.bd.sp.sets.locked', 'Up to {n} sets · {lock} locked').replace('{n}', qtyTxt || String(n)).replace('{lock}', String(n));
+          txt = val + ' · ' + T('cpp.bd.sp.sets.why.lock', '{lock} locked').replace('{lock}', String(n));
           if (capOn && bundleModel.cap < n) txt += T('cpp.bd.sp.sets.capnote', ', capped at {cap}').replace('{cap}', String(bundleModel.cap));
         } else if (qty !== Infinity) {
-          if (capOn && bundleModel.cap <= lim.max) txt = T('cpp.bd.sp.sets.capped', 'Up to {n} sets · limited by the cap').replace('{n}', qtyTxt);
-          else if (lim.by) txt = T('cpp.bd.sp.sets.by', 'Up to {n} sets · limited by {who}').replace('{n}', qtyTxt)
+          if (capOn && bundleModel.cap <= lim.max) txt = val + ' · ' + T('cpp.bd.sp.sets.why.cap', 'Limited by the cap');
+          else if (lim.by) txt = val + ' · ' + T('cpp.bd.sp.sets.why.by', 'Limited by {who}')
             .replace('{who}', lim.by.kind === 'ticket' ? T('cpp.bd.sp.sets.by.tix', 'ticket supply') : T('cpp.bd.sp.sets.by.item', '{name} stock').replace('{name}', lim.by.name || ''));
         }
         /* 任一成員已下架或已封存 → 組合不可售（§7.14 成交條件，D284；D288 起是不變式的防線——常態下成員下架時組合會一同下架）：
@@ -1751,7 +1756,7 @@
       rows.push({ g: 'basic', go: 'info', key: 'cb.media.show', fb: 'Show it off', v: imgs ? T('product-detail.setov.images', '{n} images').replace('{n}', imgs) : T('product-detail.setov.none', 'None') });
       const films = document.querySelectorAll('[data-bd-film-picker] .tag-input__field .chip').length;
       rows.push({ g: 'basic', go: 'tab:links', key: 'pd.films.title', fb: 'Linked movies', v: films ? T('product-detail.setov.films', '{n} movies').replace('{n}', films) : T('product-detail.setov.none', 'None') });
-      rows.push({ g: 'pricing', go: 'members', key: 'cb.items', fb: 'Items', v: T('product-detail.kpi.links-meta-items', '{n} items').replace('{n}', bundleModel.members.length) });
+      rows.push({ g: 'pricing', go: 'members', key: 'cb.items', fb: 'Contents', v: T('product-detail.kpi.links-meta-items', '{n} items').replace('{n}', bundleModel.members.length) });
       const disc = v('bd-discount');
       rows.push({ g: 'pricing', go: 'pricing', key: 'cb.pricing', fb: 'Bundle price', v: (bdAuto ? bdAuto.textContent : '') + (disc && Number(disc) > 0 ? ' · −' + disc + '%' : '') });
       const salePct = v('bd-sale-percent');

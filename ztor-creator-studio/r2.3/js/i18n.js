@@ -3296,7 +3296,7 @@
     'kpi.links-meta.projects':        { en: '{n} projects', zh: '{n} 個項目' },
     'kpi.links-meta.films':           { en: '{n} movies',   zh: '{n} 部電影' },
     'bd.films.sub':                   { en: 'Released movies this bundle relates to (front-end catalog).', zh: '此組合關聯的前台已上架電影（可多部、選填）。' },
-    'cb.films.sub':                   { en: 'Tag released movies this bundle relates to. Shown on the movie page on Ztor.', zh: '標記此組合相關的前台已上架電影，供前台電影頁呈現（可多部）。' },
+    'cb.films.sub':                   { en: 'Tagged movies show this bundle on their movie page.', zh: '標記後，這個組合會出現在該電影的前台頁面。' },
     'product-detail.nav.tags':        { en: 'Tags',            zh: '標籤' },
     'product-detail.ref.sub':         { en: 'Projects that use this product as a reward or reference it.', zh: '把這件商品當回饋、或引用它的項目。' },
     'product-detail.nav.pricing':     { en: 'Options & pricing', zh: '規格與價格' },
@@ -5316,7 +5316,7 @@
     'cb.info.title':        { en: 'Bundle info',                      zh: '組合包資訊' },
     'cb.name':              { en: 'Bundle name',                      zh: '組合名稱' },
     'cb.name.ph':           { en: 'e.g., Ultimate Fan Bundle',        zh: '例：終極粉絲組合' },
-    'cb.items':             { en: 'Items',                            zh: '成員' },   /* 2026-09-18 D292：成員含商品與活動票券，區段名由「商品」改「成員」 */
+    'cb.items':             { en: 'Contents',                         zh: '內容物' },   /* 2026-09-18 D292：成員含商品與活動票券，區段名由「商品」改「成員」；2026-09-21 對齊建立流程三段改名，改「內容物」 */
     'cb.items.sub':         { en: 'Add products, tickets, or anything from your shop', zh: '從你的商店加入商品、票券或任何品項' },
     'cb.search.ph':         { en: 'Search your products…',            zh: '搜尋你的商品…' },
     'cb.search.noresult':   { en: 'No products match. Create a New item above to add it to this bundle.', zh: '沒有相符的商品。用上方「New item」建立一件新商品加入組合。' },
@@ -5400,8 +5400,9 @@
     'cb.price.saves':       { en: 'Saves',                            zh: '省下' },
     'cb.price.vs':          { en: 'vs members total',                  zh: '相對成員合計' },
     'cb.pricing':           { en: 'Bundle price',                     zh: '組合價格' },
-    'cb.price.auto-hint':   { en: "Auto-summed from members' prices — not editable. Members with variants show “from $X”.", zh: '由成員價格自動加總、不可編輯。成員含多選項時顯示「從 $X 起」。' },
-    'cb.price.members-total': { en: "Members' list price total",      zh: '成員原價合計' },
+    'cb.price.auto-hint':   { en: 'Members with variants show “from $X”.', zh: '成員含多選項時顯示「從 $X 起」。' },
+    /* 墓碑 2026-09-22（方案 A #27）：`cb.price.members-total`（成員原價合計）——與算式末列的
+       「原價合計」重複，標籤退場、合計列自己說。 */
     'cb.price.bundle':      { en: 'Selling price',                    zh: '售價' },
     'cb.price.discount':    { en: 'Bundle discount % (optional)',      zh: '折扣 %（選填）' },
     'cb.price.discount-hint': { en: "Sells below the members' total by this much; the selling price is worked out for you.", zh: '比成員原價合計便宜幾 %；售價由系統算出，成員含多選項時是一個區間。' },
@@ -5449,7 +5450,7 @@
     'cb.sale.end':          { en: 'Discount end date',                zh: '折扣結束日' },
     'cb.sale.endbefore':    { en: 'End date must be after start date', zh: '結束日需晚於開始日' },
     'cb.sale.pending':      { en: 'Sale price source & time zone pending spec (5.1.5.4 §4 F7).', zh: '特價價格來源與時區待規格確認（5.1.5.4 §4 F7）。' },
-    'cb.discount.note':     { en: 'A limited-time discount stacks on top of the bundle price above for a campaign window — set its own % and dates.', zh: '限時折扣疊在上方組合售價之上、依營運檔期另設：填自己的折扣 % 與起訖日。' },
+    'cb.discount.note':     { en: 'Stacks on top of the bundle price above, for a campaign window.', zh: '疊在上方組合售價之上，依營運檔期另設。' },
     /* 即時預覽欄（spec 5.1.5.4 §4 F6）*/
     'cb.preview.heading':   { en: 'Bundle preview',                   zh: '組合預覽' },
     'cb.preview.sub':       { en: 'How fans see it on Ztor',          zh: '粉絲在 Ztor 上看到的樣子' },
@@ -5902,7 +5903,7 @@
     'cpp.bd.desc.ev':       { en: 'Short description', zh: '簡短說明' },
     'cpp.bd.desc.ph.ev':    { en: 'e.g. VIP ticket + limited tee + pre-show meet',
                               zh: '例：VIP 票＋限定 T 恤＋演出前見面會' },
-    'cpp.bd.cover':         { en: 'Cover',                           zh: '封面圖' },
+    'cpp.bd.cover':         { en: 'Cover',                           zh: '封面' },
     'cpp.bd.cover.cta':     { en: 'Upload cover',                    zh: '上傳封面' },
     'cpp.bd.tickets':       { en: 'Which tickets this applies to',   zh: '適用票種' },
     /* 2026-09-18（D292）：票券清單多筆＝同時內含，不再是粉絲擇一；組合包也可以不含票（D293）。 */
@@ -5943,7 +5944,7 @@
        「每套含幾張」——兩個都叫「張數」會把庫存讀成用量，所以前者改寫成剩餘。 */
     'cpp.bd.tbl.tier':      { en: 'Tier',                             zh: '票種' },
     'cpp.bd.tbl.price':     { en: 'Price',                            zh: '售價' },
-    'cpp.bd.tbl.qty':       { en: 'Left',                             zh: '剩餘張數' },
+    'cpp.bd.tbl.qty':       { en: 'Left',                             zh: '剩餘' },
     'cpp.bd.tbl.qtyper':    { en: 'Qty',                              zh: '張數' },
     'cpp.bd.tbl.sub':       { en: 'Subtotal',                         zh: '小計' },
     /* 2026-09-21（D296）：表尾改「允許 K 種 · 每組 n 張 · 原價從 $X 起」；一種時不寫「起」 */
@@ -5959,71 +5960,82 @@
        demo `docs/bundle-create-demo-2026-09-21.html` 定案。三段分卡、語意句、算式列、鎖定套數、
        可售套數、命名與上架、粉絲端預覽卡、footer。 */
     'cpp.bd.untitled.ev':      { en: 'Untitled bundle',                zh: '未命名組合包' },
-    'cpp.bd.sp.sec.content':   { en: 'Contents',                       zh: '內容' },
-    'cpp.bd.sp.sec.content.sub': { en: 'What a fan gets in one set.',   zh: '粉絲買一組會拿到什麼。' },
-    'cpp.bd.sp.sec.price':     { en: 'Pricing & quantity',             zh: '定價與數量' },
-    'cpp.bd.sp.sec.price.sub': { en: 'What it sells for, and how many sets.', zh: '賣多少、最多賣幾組。' },
+    /* 墓碑 2026-09-22（文字階層重整，方案 A · 三層收斂；lab `docs/bundle-copy-hierarchy-lab-2026-09-22.html`
+       稽核 67 個文字元素，使用者裁示採純 A）——以下 18 把在兩頁（建立活動第 6 步、電子商店建立組合）
+       都已無消費者，整條移除：
+         段副標三把 `cpp.bd.sp.sec.content.sub`／`.price.sub`／`.name.sub`（只是把段標題換句話說）
+         `cpp.bd.sp.tix.hint`（重述「三列本來就全勾著」這件畫面已表達的事）
+         `cpp.bd.sp.tix.allowed`（與小標「票券」＋表頭「票種」三重重複）
+         `cpp.bd.sp.tix.allowed.hint`（同一條規則的第 1 次；不足一組改用灰化列＋徽章表達）
+         `cpp.bd.sp.items.hint`（「選填」降進 placeholder、「每組各 1 件」由表頭欄名承擔）
+         `cpp.bd.sp.tbl.added`（「已加入」重述「這張表列的就是已加入的」，欄名改回 `cpp.bd.sp.items`）
+         `cpp.bd.sp.perks.hint`（整條併進 `cpp.bd.sp.perks.ph`）
+         `cpp.bd.sp.nodisc`（與底部固定列的「粉絲實付」同一個數字）
+         `cpp.bd.sp.unit.set`（套／組兩個單位講同一件事，統一成 `cpp.bd.sp.unit.group`＝組）
+         `cpp.bd.sp.sets.hint`（內部公式不是做決定要的資訊；「不用填」由「沒有輸入框」表達）
+         `cpp.bd.sp.sets.locked`／`.capped`／`.by`（拆成讀數 `sets.val` ＋ hint `sets.why.*` 兩層）
+         `cpp.bd.sp.limit.unlim.sub`（重述上一格讀數已經寫出來的數字）
+         `cpp.bd.sp.cap.none`（併進縮短後的 `cpp.bd.sp.cap.hint`）
+         `cpp.bd.sp.cover.hint`（重述標籤「封面」，右欄預覽卡已經示範過）
+       同輪縮短未刪：`tbl.qty`（剩餘張數→剩餘）、`spec.multi`、`calc.how.any`、`calc.how.item.multi`、
+       `disc.on.sub`、`lock.hint`、`cap.hint`、`cover`（封面圖→封面）、`follow.hint`、`perks.ph`。 */
+    /* 2026-09-21 三段改名（使用者反饋）：內容 → 內容物、定價與數量 → 定價與庫存；同一組 key 也當頂列分節分頁的標籤 */
+    'cpp.bd.sp.sec.content':   { en: 'Contents',                       zh: '內容物' },
+    'cpp.bd.sp.sec.price':     { en: 'Pricing & stock',                zh: '定價與庫存' },
     'cpp.bd.sp.sec.name':      { en: 'Name & listing',                 zh: '命名與上架' },
-    'cpp.bd.sp.sec.name.sub':  { en: 'The name fans see, and when they see it.', zh: '粉絲看到的名字，以及什麼時候看得到。' },
+    'st.aria':                 { en: 'Jump to a section',              zh: '跳到區段' },   /* section-tabs 分節分頁的 nav 名稱（js/section-tabs.js 消費頁共用） */
     'cpp.bd.sp.tix':           { en: 'Tickets',                        zh: '票券' },
-    'cpp.bd.sp.tix.hint':      { en: 'Every tier is allowed by default — uncheck the ones fans shouldn’t pick.', zh: '預設本場全部票種都允許；取消勾選就是不讓粉絲挑那一種' },
-    'cpp.bd.sp.tix.allowed':   { en: 'Allowed tiers',                  zh: '允許票種' },
-    'cpp.bd.sp.tix.allowed.hint': { en: 'One tier checked = locked to it; several = fans pick one. A tier with less than a set left can’t be picked.', zh: '只勾一種＝鎖定那一種；勾多種＝粉絲買的時候任選其一。剩餘不足一組的票種，粉絲端不能選。' },
     'cpp.bd.sp.tix.short':     { en: 'under {n}',                      zh: '不足 {n} 張' },
     'cpp.bd.sp.sem.none':      { en: 'No tier checked yet — check at least one so fans have a ticket to buy.', zh: '還沒勾選票種——至少勾 1 種，粉絲才有票可買。' },
     'cpp.bd.sp.sem.one':       { en: 'Locked to {name}: {n} per set, nothing for fans to choose.', zh: '鎖定 {name}，每組 {n} 張，粉絲不用挑。' },
     'cpp.bd.sp.sem.any':       { en: 'Fans pick one of {names} and get {n} tickets of it.', zh: '粉絲從 {names} 任選一種，拿到 {n} 張。' },
     'cpp.bd.sp.locked':        { en: '{n} sold — tiers, quantity and items are locked. Discount, locked sets and the cap can still change.', zh: '已售出 {n} 組，允許票種、張數與商品鎖定；還能改的是折扣、鎖定套數與上限。' },
     'cpp.bd.sp.items':         { en: 'Items',                          zh: '商品' },
-    'cpp.bd.sp.items.hint':    { en: 'Optional · one of each per set', zh: '選填；每組各 1 件' },
-    'cpp.bd.sp.tbl.added':     { en: 'In this bundle',                 zh: '已加入' },
+    'cpp.bd.sp.search':        { en: 'Search your products… (optional)', zh: '搜尋你的商品…（選填）' },
     'cpp.bd.sp.tbl.list':      { en: 'List price',                     zh: '原價' },
     'cpp.bd.sp.tbl.stock':     { en: 'Stock',                          zh: '庫存' },
     'cpp.bd.sp.spec.single':   { en: 'Single option',                  zh: '單一規格' },
-    'cpp.bd.sp.spec.multi':    { en: 'Options · {opts}, chosen by the fan', zh: '多規格 · {opts}，粉絲購買時選' },
-    'cpp.bd.sp.perks.hint':    { en: 'Optional. One per line — extras promised beyond tickets and items; they print in the fan’s included list.', zh: '選填。一行一項，票券與商品之外額外承諾的東西，會印在粉絲看到的內含清單裡。' },
-    'cpp.bd.sp.perks.ph':      { en: 'One per line, e.g. Priority entry to the signing', zh: '一行一項，例如：簽名會優先入場' },
+    'cpp.bd.sp.spec.multi':    { en: '{opts} · fan picks',            zh: '{opts} · 粉絲選' },
+    'cpp.bd.sp.perks.ph':      { en: 'Optional — one per line, e.g. Priority entry to the signing', zh: '選填，一行一項，例如：簽名會優先入場' },
     'cpp.bd.sp.calc.how.one':  { en: '{price} × {n}',                  zh: '{price} × {n}' },
-    'cpp.bd.sp.calc.how.any':  { en: 'Lowest tier {price} × {n}; priced at the tier the fan picks', zh: '最低票價 {price} × {n}，粉絲選定後以該票種價計' },
+    'cpp.bd.sp.calc.how.any':  { en: '{price} × {n} (lowest tier)',   zh: '{price} × {n}（取最低票價）' },
     'cpp.bd.sp.calc.how.item.single': { en: 'Single option',           zh: '單一規格' },
-    'cpp.bd.sp.calc.how.item.multi':  { en: 'Options — priced at the one the fan picks', zh: '多規格，粉絲選定後以該規格價計' },
+    'cpp.bd.sp.calc.how.item.multi':  { en: 'Options — lowest priced', zh: '多規格，取最低價' },
     'cpp.bd.sp.calc.empty':    { en: 'Add members and the list price breaks down here.', zh: '加入成員後這裡會列出原價怎麼加出來。' },
     'cpp.bd.sp.disc.on':       { en: 'Bundle discount',                zh: '組合折扣' },
-    'cpp.bd.sp.disc.on.sub':   { en: 'How many % under the list total. A discount, not a price: when the list price is a range, so is the selling price.', zh: '比原價合計便宜幾 %。填的是折扣不是售價：原價是區間時，售價才會跟著是區間。' },
+    'cpp.bd.sp.disc.on.sub':   { en: 'When the list price is a range, so is the selling price.', zh: '原價是區間時，售價才會跟著是區間。' },
     'cpp.bd.sp.disc':          { en: 'Discount',                       zh: '折扣' },
     'cpp.bd.sp.sell':          { en: 'Selling price',                  zh: '售價' },
     'cpp.bd.sp.save':          { en: 'Fans save {amt} ({pct}%)',       zh: '粉絲省 {amt}（{pct}%）' },
     'cpp.bd.sp.save.from':     { en: 'Fans save from {amt} ({pct}%)',  zh: '粉絲省 {amt} 起（{pct}%）' },
     'cpp.bd.sp.save.zero':     { en: '0% off — selling price = list price', zh: '折扣 0%，售價＝原價' },
-    'cpp.bd.sp.nodisc':        { en: 'No bundle discount — fans pay the list total {sum}.', zh: '沒有組合優惠，粉絲實付＝原價合計 {sum}。' },
     'cpp.bd.sp.lock':          { en: 'Locked sets',                    zh: '鎖定套數' },
-    'cpp.bd.sp.lock.hint':     { en: 'Blank = not locked, shares what’s left with single sales. Up to {n} sets (limited by {who})', zh: '空白＝不鎖定，與單賣共用剩餘。最多 {n} 套（受「{who}」限制）' },
+    'cpp.bd.sp.lock.hint':     { en: 'Blank = shares what’s left with single sales', zh: '空白＝與單賣共用剩餘' },
     'cpp.bd.sp.lock.none':     { en: 'Add a member first — nothing to lock yet', zh: '加入成員後才有可鎖定的對象' },
-    'cpp.bd.sp.lock.over':     { en: 'Over the ceiling of {n} sets (limited by {who})', zh: '超過可售上限 {n} 套（受「{who}」限制）' },
+    'cpp.bd.sp.lock.over':     { en: 'Over the ceiling of {n} sets (limited by {who})', zh: '超過可售上限 {n} 組（受「{who}」限制）' },
     'cpp.bd.sp.who.tix':       { en: 'tickets',                        zh: '票券' },
-    'cpp.bd.sp.unit.set':      { en: 'sets',                           zh: '套' },
     'cpp.bd.sp.unit.group':    { en: 'sets',                           zh: '組' },
     'cpp.bd.sp.sets':          { en: 'Sellable sets',                  zh: '可售套數' },
-    'cpp.bd.sp.sets.hint':     { en: 'Tickets = Σ over allowed tiers of floor(left ÷ per set), then min with item stock; locked = the locked count. Follows stock — nothing to fill.', zh: '票券這一項＝各允許票種 floor(剩餘 ÷ 每組張數) 加總，再與商品庫存取最小；鎖定後＝鎖定套數。隨庫存自動變，不用填。' },
-    'cpp.bd.sp.sets.locked':   { en: 'Up to {n} sets · {lock} locked', zh: '最多 {n} 組 · 鎖定 {lock} 套' },
+    /* 2026-09-22 方案 A：可售套數升成該段的大讀數（它是這一段的結果），數字與「受誰限制」拆成
+       讀數與 hint 兩層；「上限」這個事實全站只在這裡講一次（鎖定套數與限量不再各講一次）。 */
+    'cpp.bd.sp.sets.val':      { en: 'Up to {n} sets',                 zh: '最多 {n} 組' },
+    'cpp.bd.sp.sets.why.by':   { en: 'Limited by {who}',               zh: '受「{who}」限制' },
+    'cpp.bd.sp.sets.why.cap':  { en: 'Limited by the cap',             zh: '受限量上限限制' },
+    'cpp.bd.sp.sets.why.lock': { en: '{lock} locked',                  zh: '鎖定 {lock} 組' },
     'cpp.bd.sp.sets.capnote':  { en: ', capped at {cap}',              zh: '，限量壓到 {cap}' },
-    'cpp.bd.sp.sets.capped':   { en: 'Up to {n} sets · limited by the cap', zh: '最多 {n} 組 · 受限量上限限制' },
-    'cpp.bd.sp.sets.by':       { en: 'Up to {n} sets · limited by {who}', zh: '最多 {n} 組 · 受「{who}」限制' },
     'cpp.bd.sp.sets.by.tix':   { en: 'ticket supply',                  zh: '票券剩餘' },
     'cpp.bd.sp.sets.by.item':  { en: '{name} stock',                   zh: '{name}庫存' },
     'cpp.bd.sp.limit':         { en: 'Limit',                          zh: '限量' },
-    'cpp.bd.sp.limit.unlim.sub': { en: 'Sellable sets follow member stock', zh: '可售套數隨成員庫存動' },
     'cpp.bd.sp.limit.lim.sub': { en: 'Set a smaller cap of your own',  zh: '另設一個更小的上限' },
-    'cpp.bd.sp.cap.hint':      { en: 'Members can supply up to {n} sets; only a smaller number makes a difference. Sells out on its own.', zh: '成員最多供應 {n} 組；填得比它小才有意義。賣完自動售罄。' },
+    'cpp.bd.sp.cap.hint':      { en: 'Sells out on its own.',          zh: '賣完自動售罄。' },
     'cpp.bd.sp.cap.over':      { en: 'Over the {n} sets members can supply — it has to be smaller.', zh: '超過成員能供應的 {n} 組，只能填得比它小。' },
-    'cpp.bd.sp.cap.none':      { en: 'Sells out on its own, no notice.', zh: '賣完自動售罄，不另行通知。' },
     'cpp.bd.sp.name.ph':       { en: 'e.g. VIP set',                   zh: '例如：VIP 套票' },
     'cpp.bd.sp.desc':          { en: 'Description',                    zh: '說明' },
     'cpp.bd.sp.desc.ph':       { en: 'Tell fans what they get',        zh: '告訴粉絲他們會拿到什麼' },
-    'cpp.bd.sp.cover.hint':    { en: 'This is the image on the fan’s card.', zh: '粉絲看到的卡片就用這張。' },
+    /* 墓碑 2026-09-22：命名段「上架」標籤隨方案 A 刪除（Q123，跟著活動那一行自帶主詞），零消費；留值不刪。 */
     'cpp.bd.sp.listing':       { en: 'Listing',                        zh: '上架' },
     'cpp.bd.sp.follow':        { en: 'Follows the event',              zh: '跟著活動' },
-    'cpp.bd.sp.follow.hint':   { en: 'Lists when the event lists and goes on sale when it does — no separate schedule here. To pause or hide it on its own, use the bundle’s detail page after creating.', zh: '活動上架時一起上架、開賣時一起開賣，這裡不另外排時間。要單獨停售或隱藏，建立後到組合包細節頁。' },
+    'cpp.bd.sp.follow.hint':   { en: 'Goes on sale when the event does. To pause or hide it on its own, use the bundle’s detail page after creating.', zh: '活動開賣時一起開賣。要單獨停售或隱藏，建立後到組合包細節頁。' },
     'cpp.bd.sp.follow.draft':  { en: 'Publishes with the event. To pause or hide it on its own, use the bundle’s detail page after the event is published.', zh: '隨活動發布。要單獨停售或隱藏，活動發布後到組合包細節頁。' },
     'cpp.bd.sp.fan.title':     { en: 'What fans see',                  zh: '粉絲看到的' },
     'cpp.bd.sp.fan.session':   { en: 'Date',                           zh: '場次' },
