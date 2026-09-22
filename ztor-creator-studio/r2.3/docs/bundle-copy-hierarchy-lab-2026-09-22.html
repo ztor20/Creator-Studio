@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 探索頁（lab）。資產一律以 ../（r2.3 根）為前綴、不用 <base>，理由同 bundle-create-demo-2026-09-21.html。
+     頁內 <style> 只放本頁專用規則、一律 lab- 前綴、只吃既有 token；不建 ds-components、不動正式頁、不改 documents/。
+     主題：「新增組合包」左欄三段（內容物／定價與庫存／命名與上架）的文字階層與冗字重整。 -->
+<title>LAB · 組合包三段文字階層重整（2026-09-22）</title>
+<script src="../js/theme.js?v=r2.3"></script>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/icon.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/input.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/field-system.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/form-grid.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/form-section.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/checkbox.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/chip.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/segmented.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/radio-card.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/amount-field.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/stepper.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/control-row.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/switch.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/upload-tile.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/kv-list.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/insight-row.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/bundle-editor.css?v=r2.3">
+<link rel="stylesheet" href="../ds-components/lock-sets.css?v=r2.3">
+<link rel="stylesheet" href="../shared.css?v=r2.3">
+<style>
+  /* ══════════════════════════════════════════════════════════════════════
+     LAB 專用樣式（探索頁；lab- 前綴；只用既有 token；不寫死 hex／font-size）
+     ══════════════════════════════════════════════════════════════════════ */
+
+  /* 淺色檯面（lab 限定）：shared.css 把 sidebar 模式的 body 壓成星空畫布，本頁沒有 wizard 殼。 */
+  html[data-theme="light"] body { background-color: var(--surface-page); background-image: none; }
+
+  .lab-page { max-width: 1680px; margin: 0 auto; padding: var(--sp-32) var(--sp-24) var(--sp-96); }
+  .lab-h1 { font-family: var(--font-display); font-size: var(--fs-24); color: var(--foreground); margin: 0 0 var(--sp-6); }
+  .lab-lede { font-size: var(--fs-13); color: var(--muted-foreground); line-height: var(--lh-relaxed); margin: 0 0 var(--sp-24); max-width: 74ch; }
+
+  /* ── 頂部切換列（不是提案的一部分，只是讓三段用同一個介面逐段比）── */
+  .lab-bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: var(--sp-12); flex-wrap: wrap;
+             padding: var(--sp-10) var(--sp-14); margin-bottom: var(--sp-28);
+             background: var(--background); border: 1px dashed var(--border); border-radius: var(--radius-xl);
+             font-family: var(--font-ui); font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-bar__tag { font-family: var(--font-ui); color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-bar__spacer { margin-left: auto; }
+
+  /* ── 稽核表 ── */
+  .lab-block { margin-bottom: var(--sp-40); }
+  .lab-h2 { font-family: var(--font-display); font-size: var(--fs-20); color: var(--foreground); margin: 0 0 var(--sp-8); }
+  .lab-h2__n { color: var(--muted-foreground); margin-right: var(--sp-8); }
+  .lab-p { font-size: var(--fs-13); color: var(--muted-foreground); line-height: var(--lh-relaxed); margin: 0 0 var(--sp-16); max-width: 84ch; }
+
+  .lab-sum { display: flex; gap: var(--sp-10); flex-wrap: wrap; margin-bottom: var(--sp-16); }
+  .lab-sum__cell { flex: 1 1 160px; padding: var(--sp-12) var(--sp-14); border: 1px solid var(--layer-line); border-radius: var(--radius-lg); }
+  .lab-sum__k { display: block; font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-sum__v { display: block; font-family: var(--font-numeric); font-size: var(--fs-24); font-variant-numeric: tabular-nums; color: var(--foreground); margin-top: var(--sp-2); }
+
+  .lab-tblwrap { border: 1px solid var(--layer-line); border-radius: var(--radius-lg); overflow: hidden; }
+  .lab-tbl { width: 100%; border-collapse: collapse; }
+  .lab-tbl th { text-align: left; font-family: var(--font-ui); font-size: var(--fs-12); font-weight: var(--fw-regular);
+                color: var(--column-head-ink); padding: var(--sp-10) var(--sp-12); }
+  .lab-tbl td { font-size: var(--fs-13); color: var(--foreground); padding: var(--sp-8) var(--sp-12);
+                border-top: 1px solid var(--border-soft); vertical-align: top; line-height: var(--lh-relaxed); }
+  .lab-tbl td:nth-child(4), .lab-tbl td:nth-child(5) { color: var(--muted-foreground); }
+  .lab-tbl td:first-child { font-family: var(--font-numeric); color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+  .lab-tbl tr[data-band] td { background: transparent; }
+  .lab-tbl__band td { font-family: var(--font-ui); color: var(--foreground); background: var(--ztu-film); }
+  .lab-tag { display: inline-block; padding: 0 var(--sp-6); border-radius: var(--radius-sm);
+             font-family: var(--font-ui); font-size: var(--fs-12); border: 1px solid var(--border); color: var(--muted-foreground); }
+  .lab-tag--del { color: var(--status-error); border-color: var(--status-error); }
+  .lab-tag--merge { color: var(--status-warning); border-color: var(--status-warning); }
+  .lab-tag--demote { color: var(--primary); border-color: var(--primary); }
+  .lab-tag--keep { color: var(--muted-foreground); }
+
+  /* ── 規則清單 ── */
+  .lab-rules { counter-reset: labrule; display: flex; flex-direction: column; gap: var(--sp-10); }
+  .lab-rule { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--sp-12);
+              padding: var(--sp-12) var(--sp-14); border: 1px solid var(--layer-line); border-radius: var(--radius-lg); }
+  .lab-rule::before { counter-increment: labrule; content: counter(labrule);
+                      font-family: var(--font-numeric); font-size: var(--fs-16); color: var(--primary); }
+  .lab-rule__t { font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); }
+  .lab-rule__d { font-size: var(--fs-13); color: var(--muted-foreground); line-height: var(--lh-relaxed); margin-top: var(--sp-2); }
+
+  /* ── 三欄並排比較 ── */
+  .lab-band { margin-bottom: var(--sp-40); }
+  .lab-band[hidden] { display: none; }
+  .lab-block[hidden] { display: none; }
+  .lab-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-20); align-items: start; }
+  .lab-col { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-10); }
+  .lab-col__tag { display: flex; align-items: baseline; gap: var(--sp-8); font-family: var(--font-ui); font-size: var(--fs-13); color: var(--foreground); }
+  .lab-col__tag span { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-col__note { font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-relaxed); margin: 0; }
+  .lab-col .form-section { margin: 0; }
+
+  /* 段內節奏：照 .bd-sec--stack 的 20px 直排 */
+  .lab-stack { display: flex; flex-direction: column; gap: var(--sp-20); }
+  .lab-stack > .field { margin-bottom: 0; }
+  .lab-sectitle { font-family: var(--font-ui); font-size: var(--fs-16); color: var(--foreground); margin: 0; }
+  .lab-secsub { font-size: var(--fs-12); color: var(--muted-foreground); margin: var(--sp-4) 0 0; }
+
+  /* 小標列（＝正式頁的 .bd-sub） */
+  .lab-sub { display: flex; align-items: baseline; gap: var(--sp-8); flex-wrap: wrap; }
+  .lab-sub__title { font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); }
+  .lab-sub__hint { font-size: var(--fs-12); color: var(--muted-foreground); }
+  /* 方案 B：小標與控制合成一行 */
+  .lab-inline { display: flex; align-items: center; gap: var(--sp-10); flex-wrap: wrap; }
+  .lab-inline__sep { color: var(--muted-foreground); }
+  .lab-inline .amount-field { width: 108px; }
+
+  /* 票券表在窄欄裡收一點欄寬 */
+  .lab-tix .bd-tbl__head,
+  .lab-tix .bd-tbl__row { grid-template-columns: 16px minmax(0, 1fr) 72px 88px; gap: var(--sp-8); }
+  .lab-items .bd-tbl__head,
+  .lab-items .bd-tbl__row { grid-template-columns: minmax(0, 1fr) 92px 56px 24px; gap: var(--sp-8); }
+  .lab-off { opacity: .45; }
+
+  .lab-readout--big { font-family: var(--font-numeric); font-size: var(--fs-24); font-variant-numeric: tabular-nums; }
+  .lab-disc { width: 108px; }
+  .lab-picksearch .input { width: 100%; }
+
+  /* 方案 B：可售套數收成一個區塊底下的兩個選填控制 */
+  .lab-avail { border: 1px solid var(--layer-line); border-radius: var(--radius-lg); padding: var(--sp-14); }
+  .lab-avail__k { font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); }
+  .lab-avail__v { font-family: var(--font-numeric); font-size: var(--fs-24); font-variant-numeric: tabular-nums; color: var(--foreground); margin-top: var(--sp-2); }
+  .lab-avail__meta { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-2); }
+  .lab-avail__opts { display: flex; flex-direction: column; gap: var(--sp-10); margin-top: var(--sp-14); padding-top: var(--sp-12); border-top: 1px solid var(--border-soft); }
+  .lab-avail__opt { display: flex; align-items: center; gap: var(--sp-10); flex-wrap: wrap; font-size: var(--fs-13); color: var(--foreground); }
+  .lab-avail__opt .amount-field { width: 108px; }
+  .lab-avail__opt .segmented { flex: none; }
+
+  /* 封面：縮成一格擺左邊（同正式頁 .bd-cover） */
+  .lab-cover .upload-tile { width: 108px; flex: none; }
+
+  /* 底部固定列的仿製（只為了讓「粉絲實付重複」這條看得到對照） */
+  .lab-foot { display: flex; align-items: center; gap: var(--sp-12); margin-top: var(--sp-14);
+              padding: var(--sp-10) var(--sp-12); border: 1px dashed var(--border); border-radius: var(--radius-lg); }
+  .lab-foot__k { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-foot__v { font-family: var(--font-numeric); font-size: var(--fs-16); font-variant-numeric: tabular-nums; color: var(--foreground); }
+
+  @media (max-width: 1240px) {
+    .lab-cols { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="lab-page">
+
+  <h1 class="lab-h1">組合包三段文字階層重整</h1>
+  <p class="lab-lede">「新增組合包」左欄三段（內容物／定價與庫存／命名與上架）的文字元素逐一稽核、定一套階層規則，再用同一份示範資料做三欄對照：現況／方案 A 三層收斂／方案 B 行內合併。本頁是探索頁，正式頁未改動。示範資料：VIP $4,200 剩 100、Floor $3,300 剩 200、Seated $2,400 剩 300；勾 VIP＋Floor、每組 2 張；商品 26MS T-Shirt（白）多規格 $1,880、Socks 單規格 $688；折扣 12%；鎖定空白；不限量。</p>
+
+  <div class="lab-bar">
+    <span class="lab-bar__tag">LAB · 2026-09-22</span>
+    <span>逐段比</span>
+    <div class="segmented" role="radiogroup" aria-label="要看哪一段">
+      <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-lab-show="all">全部並排</button>
+      <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-lab-show="content">只看內容物</button>
+      <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-lab-show="price">只看定價與庫存</button>
+      <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-lab-show="name">只看命名與上架</button>
+    </div>
+    <span class="lab-bar__spacer"></span>
+    <button class="btn btn--outline btn--sm" type="button" data-lab-theme>淺色／深色</button>
+  </div>
+
+  <!-- ══ 第一步：稽核 ══════════════════════════════════════════════════ -->
+  <section class="lab-block">
+    <h2 class="lab-h2"><span class="lab-h2__n">第一步</span>稽核：三段現有的每一個文字元素</h2>
+    <p class="lab-p">以正式頁 <code>js/bundle-editor.js</code> 的 SPLIT 版型產生器（<code>secContentSplitHTML</code>／<code>secPriceSplitHTML</code>／<code>secNameSplitHTML</code>）與 <code>js/i18n.js</code> 的 <code>cpp.bd.sp.*</code> 為準逐條列出。條件出現的元素（多場次才有的「場次對應」「適用場次」「每場預覽」、已售出才有的鎖定提示）不在示範資料裡，未列入本表。</p>
+
+    <div class="lab-sum">
+      <div class="lab-sum__cell"><span class="lab-sum__k">文字元素總數</span><span class="lab-sum__v">67</span></div>
+      <div class="lab-sum__cell"><span class="lab-sum__k">刪</span><span class="lab-sum__v">18</span></div>
+      <div class="lab-sum__cell"><span class="lab-sum__k">併入他處／改寫縮短</span><span class="lab-sum__v">10</span></div>
+      <div class="lab-sum__cell"><span class="lab-sum__k">降級（placeholder／空狀態／畫面）</span><span class="lab-sum__v">3</span></div>
+      <div class="lab-sum__cell"><span class="lab-sum__k">留</span><span class="lab-sum__v">36</span></div>
+    </div>
+
+    <div class="lab-tblwrap">
+    <table class="lab-tbl">
+      <thead><tr><th style="width:44px">#</th><th style="width:132px">元素</th><th>現行文字</th><th style="width:240px">問題類型</th><th style="width:220px">處置</th></tr></thead>
+      <tbody>
+        <tr class="lab-tbl__band"><td colspan="5">① 內容物（24）</td></tr>
+        <tr><td>1</td><td>段標題</td><td>內容物</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>2</td><td>段副標</td><td>粉絲買一組會拿到什麼。</td><td>只是把段標題換句話說</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>3</td><td>小標</td><td>票券</td><td>必要（分組主詞）</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>4</td><td>小標 hint</td><td>預設本場全部票種都允許；取消勾選就是不讓粉絲挑那一種</td><td>重述畫面已表達的事（三列本來就全勾著）</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>5</td><td>欄位標籤</td><td>允許票種</td><td>與小標「票券」＋表頭「票種」三重重複</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>6</td><td>表頭</td><td>票種</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>7</td><td>表頭</td><td>售價</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>8</td><td>表頭</td><td>剩餘張數</td><td>「張數」重述票券脈絡</td><td><span class="lab-tag lab-tag--merge">併</span> 改「剩餘」</td></tr>
+        <tr><td>9</td><td>表尾</td><td>允許 2 種 · 每組 2 張 · 原價從 $6,600 起</td><td>三件事各自在別處已講：勾選數＝畫面、每組張數＝下一個欄位、原價＝定價段</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>10</td><td>hint</td><td>只勾一種＝鎖定那一種；勾多種＝粉絲買的時候任選其一。剩餘不足一組的票種，粉絲端不能選。</td><td>同一規則講三次的第 1 次；第 2 句能用畫面表達</td><td><span class="lab-tag lab-tag--demote">降</span> 改灰化列＋「不足 2 張」徽章</td></tr>
+        <tr><td>11</td><td>欄位標籤</td><td>每組張數</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>12</td><td>hint</td><td>粉絲購買時從勾選的票種挑一種，拿到該票種這個張數；只勾一種＝鎖定票種。</td><td>同一規則第 2 次</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>13</td><td>info 列</td><td>粉絲從 VIP、Floor 任選一種，拿到 2 張。</td><td>同一規則第 3 次，但只有這一版是用這一組的實際值在講</td><td><span class="lab-tag lab-tag--keep">留</span> 規則唯一的家</td></tr>
+        <tr><td>14</td><td>小標</td><td>商品</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>15</td><td>小標 hint</td><td>選填；每組各 1 件</td><td>「選填」是狀態不是說明；「每組各 1 件」是欄的語意</td><td><span class="lab-tag lab-tag--demote">降</span>「選填」進 placeholder／空狀態、「每組各 1 件」進表頭欄名</td></tr>
+        <tr><td>16</td><td>placeholder</td><td>搜尋你的商品…</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>17</td><td>表頭</td><td>已加入</td><td>重述「這張表列的就是已加入的」</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>18</td><td>表頭</td><td>原價</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>19</td><td>表頭</td><td>庫存</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>20</td><td>列副標</td><td>多規格 · 尺寸，粉絲購買時選</td><td>資訊必要，長度冗</td><td><span class="lab-tag lab-tag--merge">併</span> 改「尺寸 · 粉絲選」</td></tr>
+        <tr><td>21</td><td>列副標</td><td>單一規格</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>22</td><td>欄位標籤</td><td>額外權益</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>23</td><td>placeholder</td><td>一行一項，例如：簽名會優先入場</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>24</td><td>hint</td><td>選填。一行一項，票券與商品之外額外承諾的東西，會印在粉絲看到的內含清單裡。</td><td>「一行一項」重述 placeholder；「票券與商品之外」重述版面位置</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+
+        <tr class="lab-tbl__band"><td colspan="5">② 定價與庫存（28）</td></tr>
+        <tr><td>25</td><td>段標題</td><td>定價與庫存</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>26</td><td>段副標</td><td>賣多少、最多賣幾組。</td><td>只是把段標題換句話說</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>27</td><td>欄位標籤</td><td>原價合計</td><td>與算式表最後一列的「原價合計」一字不差</td><td><span class="lab-tag lab-tag--del">刪</span> 標籤，合計列自己說</td></tr>
+        <tr><td>28</td><td>算式列 鍵</td><td>VIP／Floor 任選 × 2</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>29</td><td>算式列 說明</td><td>最低票價 $3,300 × 2，粉絲選定後以該票種價計</td><td>後半與下一列的說明重複同一條規則</td><td><span class="lab-tag lab-tag--merge">併</span> 改「$3,300 × 2（取最低票價）」</td></tr>
+        <tr><td>30</td><td>算式列 鍵</td><td>26MS T-Shirt（白）</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>31</td><td>算式列 說明</td><td>多規格，粉絲選定後以該規格價計</td><td>同上，規則第 2 次</td><td><span class="lab-tag lab-tag--merge">併</span> 改「多規格，取最低價」</td></tr>
+        <tr><td>32</td><td>合計列</td><td>原價合計　從 $9,168 起</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>33</td><td>開關主標</td><td>組合折扣</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>34</td><td>開關副標</td><td>比原價合計便宜幾 %。填的是折扣不是售價：原價是區間時，售價才會跟著是區間。</td><td>第 1 句把標籤換句話說</td><td><span class="lab-tag lab-tag--merge">併</span> 只留第 2 句</td></tr>
+        <tr><td>35</td><td>欄位標籤</td><td>折扣</td><td>與上一行的「組合折扣」重複，步進器已帶 % 後綴</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>36</td><td>欄位標籤</td><td>售價</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>37</td><td>readout</td><td>從 $8,068 起</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>38</td><td>hint</td><td>粉絲省 $1,100 起（12%）</td><td>必要（折扣的結果）</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>39</td><td>hint（關折扣時）</td><td>沒有組合優惠，粉絲實付＝原價合計 從 $9,168 起。</td><td>與底部固定列的「粉絲實付」同一個數字</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>40</td><td>小標</td><td>鎖定套數</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>41</td><td>小標 hint</td><td>空白＝不鎖定，與單賣共用剩餘。最多 150 套（受「票券剩餘」限制）</td><td>後半與下面「可售套數」的 readout 是同一個事實</td><td><span class="lab-tag lab-tag--merge">併</span> 只留「空白＝與單賣共用剩餘」</td></tr>
+        <tr><td>42</td><td>單位</td><td>套</td><td>與限量欄的「組」同一件事兩個單位</td><td><span class="lab-tag lab-tag--merge">併</span> 統一「組」</td></tr>
+        <tr><td>43</td><td>欄位標籤</td><td>可售套數</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>44</td><td>readout</td><td>最多 150 組 · 受「票券剩餘」限制</td><td>必要（上限唯一的家）</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>45</td><td>hint</td><td>票券這一項＝各允許票種 floor(剩餘 ÷ 每組張數) 加總，再與商品庫存取最小；鎖定後＝鎖定套數。隨庫存自動變，不用填。</td><td>公式不是做決定要的資訊；「不用填」由「沒有輸入框」表達</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>46</td><td>欄位標籤</td><td>限量</td><td>與選項值「限量」一字不差</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>47</td><td>選項標題</td><td>不限量</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>48</td><td>選項副標</td><td>可售套數隨成員庫存動</td><td>重述上一格 readout 已經寫出來的數字</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>49</td><td>選項標題</td><td>限量</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>50</td><td>選項副標</td><td>另設一個更小的上限</td><td>必要（兩個選項的差異）</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>51</td><td>單位</td><td>組</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>52</td><td>hint</td><td>成員最多供應 150 組；填得比它小才有意義。賣完自動售罄。</td><td>前半＝同一個上限第 3 次出現</td><td><span class="lab-tag lab-tag--merge">併</span> 只留「賣完自動售罄」</td></tr>
+
+        <tr class="lab-tbl__band"><td colspan="5">③ 命名與上架（15）</td></tr>
+        <tr><td>53</td><td>段標題</td><td>命名與上架</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>54</td><td>段副標</td><td>粉絲看到的名字，以及什麼時候看得到。</td><td>只是把段標題換句話說</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>55</td><td>欄位標籤</td><td>名稱 *</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>56</td><td>欄位值（系統擬的建議名）</td><td>VIP／Floor 任選 × 2 ＋ 26MS T-Shirt（白）</td><td>直接填進欄位，讀起來像使用者自己打的，看不出是建議</td><td><span class="lab-tag lab-tag--demote">降</span> 改 placeholder</td></tr>
+        <tr><td>57</td><td>按鈕</td><td>套用建議名稱「…」</td><td>必要（改過名字才出現）</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>58</td><td>欄位標籤</td><td>說明</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>59</td><td>placeholder</td><td>告訴粉絲他們會拿到什麼</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>60</td><td>欄位標籤</td><td>封面圖</td><td>「圖」冗，上傳格本身就是圖</td><td><span class="lab-tag lab-tag--merge">併</span> 改「封面」</td></tr>
+        <tr><td>61</td><td>上傳格 CTA</td><td>上傳封面</td><td>與欄位標籤重複</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>62</td><td>側欄</td><td>直式 750 × 1125</td><td>必要（規格）</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>63</td><td>側欄 hint</td><td>粉絲看到的卡片就用這張。</td><td>重述「封面」，右欄預覽卡已經示範過</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>64</td><td>欄位標籤</td><td>上架</td><td>與段標題「命名與上架」的後半重複</td><td><span class="lab-tag lab-tag--del">刪</span></td></tr>
+        <tr><td>65</td><td>kv 鍵</td><td>跟著活動</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>66</td><td>kv 值</td><td>REALIVE World Tour — Asia leg ＋ 草稿徽章</td><td>必要</td><td><span class="lab-tag lab-tag--keep">留</span></td></tr>
+        <tr><td>67</td><td>hint</td><td>活動上架時一起上架、開賣時一起開賣，這裡不另外排時間。要單獨停售或隱藏，建立後到組合包細節頁。</td><td>「這裡不另外排時間」由「沒有排程欄位」表達</td><td><span class="lab-tag lab-tag--merge">併</span> 縮成一句</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ══ 第二步：階層規則 ══════════════════════════════════════════════ -->
+  <section class="lab-block">
+    <h2 class="lab-h2"><span class="lab-h2__n">第二步</span>階層規則（五條）</h2>
+    <p class="lab-p">現況一個區域出現六到七種文字層級：段標題 → 段副標 → 小標 → 小標 hint → 欄位標籤 → 表頭 → 表尾 → hint → info 列。字級其實只有三階（16／14／12），層級卻有七種，所以讀者分不出哪一行比較重要——難讀的來源是層級數量，不是字級。</p>
+    <div class="lab-rules">
+      <div class="lab-rule"><div><p class="lab-rule__t">一段內最多三個文字層級</p><p class="lab-rule__d">段標題（16）→ 欄位標籤與小標（14）→ 內文（12：表格、hint、readout 說明同一級）。段副標與表尾摘要這兩層整個退場。</p></div></div>
+      <div class="lab-rule"><div><p class="lab-rule__t">段副標一律移除</p><p class="lab-rule__d">段標題已經是主詞，副標只能把它換句話說。真的非講不可的事，貼到它實際作用的那一格去講。</p></div></div>
+      <div class="lab-rule"><div><p class="lab-rule__t">hint 只寫「做決定才需要的資訊」，每欄最多一句</p><p class="lab-rule__d">上限、單位、後果、留空會怎樣。把標籤換句話說、重述畫面已表達的操作、講內部公式，一律刪。</p></div></div>
+      <div class="lab-rule"><div><p class="lab-rule__t">同一事實只出現一次，放在最靠近操作的地方</p><p class="lab-rule__d">「可售上限」只在「可售套數」講一次，鎖定套數與限量的 hint 不再各講一次；「粉絲實付」只在底部固定列講。</p></div></div>
+      <div class="lab-rule"><div><p class="lab-rule__t">規則優先用畫面表達，不用句子</p><p class="lab-rule__d">剩餘不足一組的票種直接灰化＋「不足 2 張」徽章；「選填」由 placeholder 與空狀態承擔；「不用填」由「沒有輸入框」承擔。</p></div></div>
+    </div>
+  </section>
+
+  <h2 class="lab-h2"><span class="lab-h2__n">第三步</span>三欄對照</h2>
+  <p class="lab-p">同一份示範資料。右欄「粉絲看到的」預覽卡本題不看，三欄都省略。</p>
+
+  <!-- ══ ① 內容物 ═══════════════════════════════════════════════════════ -->
+  <section class="lab-band" data-lab-band="content">
+    <h3 class="lab-h2">① 內容物</h3>
+    <div class="lab-cols">
+
+      <!-- 現況 -->
+      <div class="lab-col">
+        <div class="lab-col__tag">現況 <span>9 個文字層級疊在一段裡</span></div>
+        <div class="form-section form-section--outlined"><div class="lab-stack">
+          <div>
+            <h4 class="lab-sectitle">內容物</h4>
+            <p class="lab-secsub">粉絲買一組會拿到什麼。</p>
+          </div>
+          <div class="lab-sub"><span class="lab-sub__title">票券</span><span class="lab-sub__hint">預設本場全部票種都允許；取消勾選就是不讓粉絲挑那一種</span></div>
+          <div class="field">
+            <label class="field__label">允許票種</label>
+            <div class="bd-tbl bd-tbl--tix lab-tix">
+              <div class="bd-tbl__head"><span></span><span class="bd-tbl__col">票種</span><span class="bd-tbl__col bd-tbl__col--num">售價</span><span class="bd-tbl__col bd-tbl__col--num">剩餘張數</span></div>
+              <label class="bd-tbl__row bd-tbl__row--pick"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked><span class="zcheck__box"></span></span><span class="bd-tbl__name">VIP</span><span class="bd-tbl__num">$4,200</span><span class="bd-tbl__num">100</span></label>
+              <label class="bd-tbl__row bd-tbl__row--pick"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked><span class="zcheck__box"></span></span><span class="bd-tbl__name">Floor</span><span class="bd-tbl__num">$3,300</span><span class="bd-tbl__num">200</span></label>
+              <label class="bd-tbl__row bd-tbl__row--pick bd-tbl__row--off"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="bd-tbl__name">Seated</span><span class="bd-tbl__num">$2,400</span><span class="bd-tbl__num">300</span></label>
+              <div class="bd-tbl__foot">允許 2 種 · 每組 2 張 · 原價從 $6,600 起</div>
+            </div>
+            <div class="field__hint">只勾一種＝鎖定那一種；勾多種＝粉絲買的時候任選其一。剩餘不足一組的票種，粉絲端不能選。</div>
+          </div>
+          <div class="field">
+            <label class="field__label">每組張數</label>
+            <span class="amount-field amount-field--suffix amount-field--readonly zstep lab-disc"><span class="amount-field__unit">張</span><input class="amount-field__input input zstep__input" type="number" value="2" aria-label="每組張數"><span class="zstep__btns"><button class="zstep__btn" type="button" tabindex="-1" aria-label="加一"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" tabindex="-1" aria-label="減一"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+            <div class="field__hint">粉絲購買時從勾選的票種挑一種，拿到該票種這個張數；只勾一種＝鎖定票種。</div>
+          </div>
+          <div class="insight-row bd-sem"><i data-lucide="info" class="ztor-icon insight-row__icon"></i><p class="insight-row__text">粉絲從 VIP、Floor 任選一種，拿到 2 張。</p></div>
+          <div class="lab-sub"><span class="lab-sub__title">商品</span><span class="lab-sub__hint">選填；每組各 1 件</span></div>
+          <div class="lab-picksearch">
+            <input class="input" placeholder="搜尋你的商品…">
+            <div class="bd-tbl bd-tbl--items lab-items">
+              <div class="bd-tbl__head"><span class="bd-tbl__col">已加入</span><span class="bd-tbl__col bd-tbl__col--num">原價</span><span class="bd-tbl__col bd-tbl__col--num">庫存</span><span></span></div>
+              <div class="bd-tbl__row"><span class="bd-tbl__cell"><span class="bd-tbl__name">26MS T-Shirt（白）</span><span class="bd-tbl__sub">多規格 · 尺寸，粉絲購買時選</span></span><span class="bd-tbl__num">從 $1,880 起</span><span class="bd-tbl__num">420</span><span class="bd-tbl__act"><button class="btn btn--ghost btn--icon btn--xs" type="button" aria-label="移除"><i data-lucide="x" class="ztor-icon"></i></button></span></div>
+              <div class="bd-tbl__row"><span class="bd-tbl__cell"><span class="bd-tbl__name">Socks</span><span class="bd-tbl__sub">單一規格</span></span><span class="bd-tbl__num">$688</span><span class="bd-tbl__num">1,200</span><span class="bd-tbl__act"><button class="btn btn--ghost btn--icon btn--xs" type="button" aria-label="移除"><i data-lucide="x" class="ztor-icon"></i></button></span></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label">額外權益</label>
+            <textarea class="input textarea" rows="2" placeholder="一行一項，例如：簽名會優先入場"></textarea>
+            <div class="field__hint">選填。一行一項，票券與商品之外額外承諾的東西，會印在粉絲看到的內含清單裡。</div>
+          </div>
+        </div></div>
+        <p class="lab-col__note">同一條「只勾一種＝鎖定、多種＝任選」規則在表下 hint、張數 hint、info 列各講一次；段副標把段標題換句話說；「允許票種」與表頭「票種」重複。</p>
+      </div>
+
+      <!-- 方案 A -->
+      <div class="lab-col">
+        <div class="lab-col__tag">方案 A · 三層收斂 <span>骨架不動，元素減到最少</span></div>
+        <div class="form-section form-section--outlined"><div class="lab-stack">
+          <h4 class="lab-sectitle">內容物</h4>
+          <div class="field">
+            <div class="lab-sub"><span class="lab-sub__title">票券</span></div>
+            <div class="bd-tbl bd-tbl--tix lab-tix" style="margin-top:var(--sp-8)">
+              <div class="bd-tbl__head"><span></span><span class="bd-tbl__col">票種</span><span class="bd-tbl__col bd-tbl__col--num">售價</span><span class="bd-tbl__col bd-tbl__col--num">剩餘</span></div>
+              <label class="bd-tbl__row bd-tbl__row--pick"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked><span class="zcheck__box"></span></span><span class="bd-tbl__name">VIP</span><span class="bd-tbl__num">$4,200</span><span class="bd-tbl__num">100</span></label>
+              <label class="bd-tbl__row bd-tbl__row--pick"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked><span class="zcheck__box"></span></span><span class="bd-tbl__name">Floor</span><span class="bd-tbl__num">$3,300</span><span class="bd-tbl__num">200</span></label>
+              <label class="bd-tbl__row bd-tbl__row--pick bd-tbl__row--off"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="bd-tbl__name">Seated</span><span class="bd-tbl__num">$2,400</span><span class="bd-tbl__num">300</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label">每組張數</label>
+            <span class="amount-field amount-field--suffix amount-field--readonly zstep lab-disc"><span class="amount-field__unit">張</span><input class="amount-field__input input zstep__input" type="number" value="2" aria-label="每組張數"><span class="zstep__btns"><button class="zstep__btn" type="button" tabindex="-1" aria-label="加一"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" tabindex="-1" aria-label="減一"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+            <div class="field__hint">粉絲從 VIP、Floor 任選一種，拿到 2 張。</div>
+          </div>
+          <div class="lab-picksearch">
+            <div class="lab-sub"><span class="lab-sub__title">商品</span></div>
+            <input class="input" placeholder="搜尋你的商品…（選填）">
+            <div class="bd-tbl bd-tbl--items lab-items">
+              <div class="bd-tbl__head"><span class="bd-tbl__col">商品</span><span class="bd-tbl__col bd-tbl__col--num">原價</span><span class="bd-tbl__col bd-tbl__col--num">庫存</span><span></span></div>
+              <div class="bd-tbl__row"><span class="bd-tbl__cell"><span class="bd-tbl__name">26MS T-Shirt（白）</span><span class="bd-tbl__sub">尺寸 · 粉絲選</span></span><span class="bd-tbl__num">從 $1,880 起</span><span class="bd-tbl__num">420</span><span class="bd-tbl__act"><button class="btn btn--ghost btn--icon btn--xs" type="button" aria-label="移除"><i data-lucide="x" class="ztor-icon"></i></button></span></div>
+              <div class="bd-tbl__row"><span class="bd-tbl__cell"><span class="bd-tbl__name">Socks</span><span class="bd-tbl__sub">單一規格</span></span><span class="bd-tbl__num">$688</span><span class="bd-tbl__num">1,200</span><span class="bd-tbl__act"><button class="btn btn--ghost btn--icon btn--xs" type="button" aria-label="移除"><i data-lucide="x" class="ztor-icon"></i></button></span></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label">額外權益</label>
+            <textarea class="input textarea" rows="2" placeholder="選填，一行一項，例如：簽名會優先入場"></textarea>
+          </div>
+        </div></div>
+        <p class="lab-col__note">多了：張數欄底下那一句現在是這一段唯一的規則句。少了：段副標、兩個小標 hint、「允許票種」標籤、表尾、兩句重複規則、權益 hint（併進 placeholder）—— 24 降到 15。風險：表尾的「原價從 $6,600 起」不見了，看原價要往下捲到定價段；剩餘不足一組的票種改由列本身表達（灰化＋徽章），示範資料剛好沒有這種列。</p>
+      </div>
+
+      <!-- 方案 B -->
+      <div class="lab-col">
+        <div class="lab-col__tag">方案 B · 行內合併 <span>張數與語意句合成一行</span></div>
+        <div class="form-section form-section--outlined"><div class="lab-stack">
+          <h4 class="lab-sectitle">內容物</h4>
+          <div class="field">
+            <div class="lab-inline">
+              <span class="lab-sub__title">票券</span>
+              <span class="lab-inline__sep">·</span>
+              <span class="lab-sub__hint">每組</span>
+              <span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit">張</span><input class="amount-field__input input zstep__input" type="number" value="2" aria-label="每組張數"><span class="zstep__btns"><button class="zstep__btn" type="button" tabindex="-1" aria-label="加一"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" tabindex="-1" aria-label="減一"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+              <span class="lab-sub__hint">粉絲從 VIP、Floor 任選一種</span>
+            </div>
+            <div class="bd-tbl bd-tbl--tix lab-tix" style="margin-top:var(--sp-10)">
+              <div class="bd-tbl__head"><span></span><span class="bd-tbl__col">票種</span><span class="bd-tbl__col bd-tbl__col--num">售價</span><span class="bd-tbl__col bd-tbl__col--num">剩餘</span></div>
+              <label class="bd-tbl__row bd-tbl__row--pick"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked><span class="zcheck__box"></span></span><span class="bd-tbl__name">VIP</span><span class="bd-tbl__num">$4,200</span><span class="bd-tbl__num">100</span></label>
+              <label class="bd-tbl__row bd-tbl__row--pick"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked><span class="zcheck__box"></span></span><span class="bd-tbl__name">Floor</span><span class="bd-tbl__num">$3,300</span><span class="bd-tbl__num">200</span></label>
+              <label class="bd-tbl__row bd-tbl__row--pick bd-tbl__row--off"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="bd-tbl__name">Seated</span><span class="bd-tbl__num">$2,400</span><span class="bd-tbl__num">300</span></label>
+            </div>
+          </div>
+          <div class="lab-picksearch">
+            <div class="lab-inline"><span class="lab-sub__title">商品</span></div>
+            <input class="input" placeholder="搜尋你的商品…（選填）">
+            <div class="bd-tbl bd-tbl--items lab-items">
+              <div class="bd-tbl__head"><span class="bd-tbl__col">每組各 1 件</span><span class="bd-tbl__col bd-tbl__col--num">原價</span><span class="bd-tbl__col bd-tbl__col--num">庫存</span><span></span></div>
+              <div class="bd-tbl__row"><span class="bd-tbl__cell"><span class="bd-tbl__name">26MS T-Shirt（白）</span><span class="bd-tbl__sub">尺寸 · 粉絲選</span></span><span class="bd-tbl__num">從 $1,880 起</span><span class="bd-tbl__num">420</span><span class="bd-tbl__act"><button class="btn btn--ghost btn--icon btn--xs" type="button" aria-label="移除"><i data-lucide="x" class="ztor-icon"></i></button></span></div>
+              <div class="bd-tbl__row"><span class="bd-tbl__cell"><span class="bd-tbl__name">Socks</span><span class="bd-tbl__sub">單一規格</span></span><span class="bd-tbl__num">$688</span><span class="bd-tbl__num">1,200</span><span class="bd-tbl__act"><button class="btn btn--ghost btn--icon btn--xs" type="button" aria-label="移除"><i data-lucide="x" class="ztor-icon"></i></button></span></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label">額外權益</label>
+            <textarea class="input textarea" rows="2" placeholder="選填，一行一項，例如：簽名會優先入場"></textarea>
+          </div>
+        </div></div>
+        <p class="lab-col__note">多了：一行就把「每組幾張、粉絲怎麼挑」講完，表格底下完全不留字；「每組各 1 件」搬進表頭當欄名。少了：獨立的「每組張數」欄位與 info 列 —— 24 降到 13。風險：那一行同時是標題、輸入與說明，行動版折行後關係會散；規則句寫死在一行裡，勾選數改變時要換句，長度不易控制。</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ ② 定價與庫存 ═══════════════════════════════════════════════════ -->
+  <section class="lab-band" data-lab-band="price">
+    <h3 class="lab-h2">② 定價與庫存</h3>
+    <div class="lab-cols">
+
+      <!-- 現況 -->
+      <div class="lab-col">
+        <div class="lab-col__tag">現況 <span>同一個上限講三次</span></div>
+        <div class="form-section form-section--outlined"><div class="lab-stack">
+          <div>
+            <h4 class="lab-sectitle">定價與庫存</h4>
+            <p class="lab-secsub">賣多少、最多賣幾組。</p>
+          </div>
+          <div class="field">
+            <label class="field__label">原價合計</label>
+            <div class="bd-calc-list">
+              <div class="kv"><span class="kv__k">VIP／Floor 任選 × 2<span class="bd-calc-list__how">最低票價 $3,300 × 2，粉絲選定後以該票種價計</span></span><span class="kv__v">從 $6,600 起</span></div>
+              <div class="kv"><span class="kv__k">26MS T-Shirt（白）<span class="bd-calc-list__how">多規格，粉絲選定後以該規格價計</span></span><span class="kv__v">從 $1,880 起</span></div>
+              <div class="kv"><span class="kv__k">Socks<span class="bd-calc-list__how">單一規格</span></span><span class="kv__v">$688</span></div>
+              <div class="kv bd-calc-list__total"><span class="kv__k">原價合計</span><span class="kv__v">從 $9,168 起</span></div>
+            </div>
+          </div>
+          <div class="control-group">
+            <div class="control-row"><div>
+              <div class="control-row__main">組合折扣</div>
+              <div class="control-row__sub">比原價合計便宜幾 %。填的是折扣不是售價：原價是區間時，售價才會跟著是區間。</div></div>
+              <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></div>
+            </div>
+            <div class="control-group__body">
+              <div class="form-grid">
+                <div class="field"><label class="field__label">折扣</label>
+                  <span class="amount-field amount-field--suffix amount-field--readonly zstep lab-disc"><span class="amount-field__unit">%</span><input class="amount-field__input input zstep__input" type="number" value="12" aria-label="折扣"><span class="zstep__btns"><button class="zstep__btn" type="button" tabindex="-1" aria-label="加一"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" tabindex="-1" aria-label="減一"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+                </div>
+                <div class="field"><label class="field__label">售價</label>
+                  <div class="field-readout lab-readout--big">從 $8,068 起</div>
+                  <div class="field__hint">粉絲省 $1,100 起（12%）</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="lockset__sets">
+            <div class="lockset__sets-titles"><span class="lockset__sets-title">鎖定套數</span>
+              <span class="lockset__sets-hint">空白＝不鎖定，與單賣共用剩餘。最多 150 套（受「票券剩餘」限制）</span></div>
+            <div class="lockset__sets-ctl"><span class="amount-field amount-field--suffix amount-field--readonly zstep lab-disc"><span class="amount-field__unit">套</span><input class="amount-field__input input zstep__input" type="number" value="" aria-label="鎖定套數"><span class="zstep__btns"><button class="zstep__btn" type="button" tabindex="-1" aria-label="加一"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" tabindex="-1" aria-label="減一"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span></div>
+          </div>
+          <div class="field"><label class="field__label">可售套數</label>
+            <div class="field-readout">最多 150 組 · 受「票券剩餘」限制</div>
+            <div class="field__hint">票券這一項＝各允許票種 floor(剩餘 ÷ 每組張數) 加總，再與商品庫存取最小；鎖定後＝鎖定套數。隨庫存自動變，不用填。</div>
+          </div>
+          <div class="field"><label class="field__label">限量</label>
+            <div class="segmented radio-cards" role="radiogroup" aria-label="限量">
+              <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true"><span class="radio-card__text"><span class="radio-card__title">不限量</span><span class="radio-card__sub">可售套數隨成員庫存動</span></span></button>
+              <button type="button" class="segmented__btn" role="radio" aria-checked="false"><span class="radio-card__text"><span class="radio-card__title">限量</span><span class="radio-card__sub">另設一個更小的上限</span></span></button>
+            </div>
+          </div>
+        </div></div>
+        <div class="lab-foot"><span class="lab-foot__k">粉絲實付</span><span class="lab-foot__v">從 $8,068 起</span><span class="lab-foot__k">原價 從 $9,168 起 · 最多 150 組</span></div>
+        <p class="lab-col__note">上限（150）在鎖定套數 hint、可售套數 readout、限量 hint 各出現一次；「原價合計」既是欄位標籤又是合計列；折扣關閉時還會多一句「粉絲實付＝原價合計…」，與底部固定列同一個數字。</p>
+      </div>
+
+      <!-- 方案 A -->
+      <div class="lab-col">
+        <div class="lab-col__tag">方案 A · 三層收斂 <span>上限只留一個家</span></div>
+        <div class="form-section form-section--outlined"><div class="lab-stack">
+          <h4 class="lab-sectitle">定價與庫存</h4>
+          <div class="bd-calc-list">
+            <div class="kv"><span class="kv__k">VIP／Floor 任選 × 2<span class="bd-calc-list__how">$3,300 × 2（取最低票價）</span></span><span class="kv__v">從 $6,600 起</span></div>
+            <div class="kv"><span class="kv__k">26MS T-Shirt（白）<span class="bd-calc-list__how">多規格，取最低價</span></span><span class="kv__v">從 $1,880 起</span></div>
+            <div class="kv"><span class="kv__k">Socks</span><span class="kv__v">$688</span></div>
+            <div class="kv bd-calc-list__total"><span class="kv__k">原價合計</span><span class="kv__v">從 $9,168 起</span></div>
+          </div>
+          <div class="control-group">
+            <div class="control-row"><div>
+              <div class="control-row__main">組合折扣</div>
+              <div class="control-row__sub">原價是區間時，售價才會跟著是區間。</div></div>
+              <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></div>
+            </div>
+            <div class="control-group__body">
+              <div class="form-grid" style="align-items:end">
+                <div class="field">
+                  <span class="amount-field amount-field--suffix amount-field--readonly zstep lab-disc"><span class="amount-field__unit">%</span><input class="amount-field__input input zstep__input" type="number" value="12" aria-label="折扣百分比"><span class="zstep__btns"><button class="zstep__btn" type="button" tabindex="-1" aria-label="加一"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" tabindex="-1" aria-label="減一"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+                </div>
+                <div class="field"><label class="field__label">售價</label>
+                  <div class="field-readout lab-readout--big">從 $8,068 起</div>
+                  <div class="field__hint">粉絲省 $1,100 起（12%）</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="field"><label class="field__label">可售套數</label>
+            <div class="field-readout lab-readout--big">最多 150 組</div>
+            <div class="field__hint">受「票券剩餘」限制</div>
+          </div>
+          <div class="lockset__sets">
+            <div class="lockset__sets-titles"><span class="lockset__sets-title">鎖定套數</span>
+              <span class="lockset__sets-hint">空白＝與單賣共用剩餘</span></div>
+            <div class="lockset__sets-ctl"><span class="amount-field amount-field--suffix amount-field--readonly zstep lab-disc"><span class="amount-field__unit">組</span><input class="amount-field__input input zstep__input" type="number" value="" aria-label="鎖定套數"><span class="zstep__btns"><button class="zstep__btn" type="button" tabindex="-1" aria-label="加一"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" tabindex="-1" aria-label="減一"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span></div>
+          </div>
+          <div class="segmented radio-cards" role="radiogroup" aria-label="限量">
+            <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true"><span class="radio-card__text"><span class="radio-card__title">不限量</span></span></button>
+            <button type="button" class="segmented__btn" role="radio" aria-checked="false"><span class="radio-card__text"><span class="radio-card__title">限量</span><span class="radio-card__sub">另設一個更小的上限</span></span></button>
+          </div>
+        </div></div>
+        <div class="lab-foot"><span class="lab-foot__k">粉絲實付</span><span class="lab-foot__v">從 $8,068 起</span><span class="lab-foot__k">原價 從 $9,168 起 · 最多 150 組</span></div>
+        <p class="lab-col__note">多了：可售套數升成大讀數並提到鎖定套數之前——它是這一段的結果，鎖定與限量是對它的兩個調整。少了：段副標、「原價合計」與「折扣」「限量」三個標籤、公式 hint、兩處重複的上限、「不限量」副標 —— 28 降到 19。風險：鎖定與限量少了 hint 之後，「填了會怎樣」要靠讀數即時反應來回答，靜態畫面看不出來。</p>
+      </div>
+
+      <!-- 方案 B -->
+      <div class="lab-col">
+        <div class="lab-col__tag">方案 B · 行內合併 <span>折扣一行、庫存一塊</span></div>
+        <div class="form-section form-section--outlined"><div class="lab-stack">
+          <h4 class="lab-sectitle">定價與庫存</h4>
+          <div class="bd-calc-list">
+            <div class="kv"><span class="kv__k">VIP／Floor 任選 × 2<span class="bd-calc-list__how">$3,300 × 2（取最低票價）</span></span><span class="kv__v">從 $6,600 起</span></div>
+            <div class="kv"><span class="kv__k">26MS T-Shirt（白）<span class="bd-calc-list__how">多規格，取最低價</span></span><span class="kv__v">從 $1,880 起</span></div>
+            <div class="kv"><span class="kv__k">Socks</span><span class="kv__v">$688</span></div>
+            <div class="kv bd-calc-list__total"><span class="kv__k">原價合計</span><span class="kv__v">從 $9,168 起</span></div>
+          </div>
+          <div class="control-group control-group--plain">
+            <div class="lab-inline">
+              <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></div>
+              <span class="lab-sub__title">組合折扣</span>
+              <span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit">%</span><input class="amount-field__input input zstep__input" type="number" value="12" aria-label="折扣百分比"><span class="zstep__btns"><button class="zstep__btn" type="button" tabindex="-1" aria-label="加一"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" tabindex="-1" aria-label="減一"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+              <span class="lab-inline__sep">→</span>
+              <span class="lab-foot__v">從 $8,068 起</span>
+              <span class="lab-sub__hint">省 $1,100 起</span>
+            </div>
+          </div>
+          <div class="lab-avail">
+            <span class="lab-avail__k">可售套數</span>
+            <div class="lab-avail__v">最多 150 組</div>
+            <div class="lab-avail__meta">受「票券剩餘」限制</div>
+            <div class="lab-avail__opts">
+              <div class="lab-avail__opt"><span>鎖定</span>
+                <span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit">組</span><input class="amount-field__input input zstep__input" type="number" value="" aria-label="鎖定套數"><span class="zstep__btns"><button class="zstep__btn" type="button" tabindex="-1" aria-label="加一"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" tabindex="-1" aria-label="減一"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+                <span class="lab-sub__hint">空白＝與單賣共用剩餘</span>
+              </div>
+              <div class="lab-avail__opt"><span>限量</span>
+                <div class="segmented" role="radiogroup" aria-label="限量">
+                  <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true">不限量</button>
+                  <button type="button" class="segmented__btn" role="radio" aria-checked="false">限量</button>
+                </div>
+                <span class="lab-sub__hint">另設一個更小的上限</span>
+              </div>
+            </div>
+          </div>
+        </div></div>
+        <div class="lab-foot"><span class="lab-foot__k">粉絲實付</span><span class="lab-foot__v">從 $8,068 起</span><span class="lab-foot__k">原價 從 $9,168 起 · 最多 150 組</span></div>
+        <p class="lab-col__note">多了：折扣一行讀完（開關 → % → 售價 → 省多少）；鎖定與限量降成「可售套數」底下的兩個選填控制，主從關係用版面而不是文字表達。少了：折扣展開區、三個欄位標籤、radio-card 的標題＋副標結構 —— 28 降到 16。風險：限量從 radio-card 降成 segmented，「另設一個更小的上限」變成整組一句而不是選項自己的說明；可售套數這一塊自成一個小容器，與段內其他欄位不是同一種殼。</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ ③ 命名與上架 ═══════════════════════════════════════════════════ -->
+  <section class="lab-band" data-lab-band="name">
+    <h3 class="lab-h2">③ 命名與上架</h3>
+    <div class="lab-cols">
+
+      <!-- 現況 -->
+      <div class="lab-col">
+        <div class="lab-col__tag">現況 <span>副標與標籤都在重述段標題</span></div>
+        <div class="form-section form-section--outlined"><div class="lab-stack">
+          <div>
+            <h4 class="lab-sectitle">命名與上架</h4>
+            <p class="lab-secsub">粉絲看到的名字，以及什麼時候看得到。</p>
+          </div>
+          <div class="field">
+            <label class="field__label">名稱 <span class="field__req">*</span></label>
+            <input class="input" value="VIP／Floor 任選 × 2 ＋ 26MS T-Shirt（白）">
+          </div>
+          <div class="field">
+            <label class="field__label">說明</label>
+            <textarea class="input textarea" rows="3" placeholder="告訴粉絲他們會拿到什麼"></textarea>
+          </div>
+          <div class="field">
+            <label class="field__label">封面圖</label>
+            <div class="upload-tile-aside lab-cover">
+              <div class="upload-tile upload-tile--portrait">
+                <span class="upload-tile__icon"><i data-lucide="photo-video" class="ztor-icon ztor-icon--md"></i></span>
+                <span class="upload-tile__title">上傳封面</span>
+              </div>
+              <div class="upload-tile-aside__side"><span class="upload-tile__sub">直式 750 × 1125</span>
+                <span class="upload-tile__hint">粉絲看到的卡片就用這張。</span></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label">上架</label>
+            <div class="kv-list">
+              <div class="kv kv--lead"><span class="kv__k">跟著活動</span><span class="kv__v">REALIVE World Tour — Asia leg <span class="ztor-badge">草稿</span></span></div>
+            </div>
+            <div class="field__hint">活動上架時一起上架、開賣時一起開賣，這裡不另外排時間。要單獨停售或隱藏，建立後到組合包細節頁。</div>
+          </div>
+        </div></div>
+        <p class="lab-col__note">段副標與「上架」標籤都在重述段標題「命名與上架」；「封面圖」的「圖」與上傳格重複；建議名直接填進欄位，讀起來像使用者自己打的。</p>
+      </div>
+
+      <!-- 方案 A -->
+      <div class="lab-col">
+        <div class="lab-col__tag">方案 A · 三層收斂 <span>只剩四個欄位標籤</span></div>
+        <div class="form-section form-section--outlined"><div class="lab-stack">
+          <h4 class="lab-sectitle">命名與上架</h4>
+          <div class="field">
+            <label class="field__label">名稱 <span class="field__req">*</span></label>
+            <input class="input" value="VIP／Floor 任選 × 2 ＋ 26MS T-Shirt（白）">
+          </div>
+          <div class="field">
+            <label class="field__label">說明</label>
+            <textarea class="input textarea" rows="3" placeholder="告訴粉絲他們會拿到什麼"></textarea>
+          </div>
+          <div class="field">
+            <label class="field__label">封面</label>
+            <div class="upload-tile-aside lab-cover">
+              <div class="upload-tile upload-tile--portrait">
+                <span class="upload-tile__icon"><i data-lucide="photo-video" class="ztor-icon ztor-icon--md"></i></span>
+              </div>
+              <div class="upload-tile-aside__side"><span class="upload-tile__sub">直式 750 × 1125</span></div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="kv-list">
+              <div class="kv kv--lead"><span class="kv__k">跟著活動</span><span class="kv__v">REALIVE World Tour — Asia leg <span class="ztor-badge">草稿</span></span></div>
+            </div>
+            <div class="field__hint">活動開賣時一起開賣。要單獨停售或隱藏，建立後到組合包細節頁。</div>
+          </div>
+        </div></div>
+        <p class="lab-col__note">多了：無。少了：段副標、「上架」標籤、上傳格 CTA、封面側欄那一句、「圖」字 —— 15 降到 10。風險：上傳格沒有文字後，第一次用的人要靠圖示與虛線框判斷那是可點的。</p>
+      </div>
+
+      <!-- 方案 B -->
+      <div class="lab-col">
+        <div class="lab-col__tag">方案 B · 行內合併 <span>建議名當 placeholder</span></div>
+        <div class="form-section form-section--outlined"><div class="lab-stack">
+          <h4 class="lab-sectitle">命名與上架</h4>
+          <div class="field">
+            <label class="field__label">名稱 <span class="field__req">*</span></label>
+            <input class="input" value="" placeholder="VIP／Floor 任選 × 2 ＋ 26MS T-Shirt（白）">
+            <div class="field__hint">留空就用上面這個名字。</div>
+          </div>
+          <div class="field">
+            <label class="field__label">說明</label>
+            <textarea class="input textarea" rows="3" placeholder="告訴粉絲他們會拿到什麼"></textarea>
+          </div>
+          <div class="field">
+            <label class="field__label">封面</label>
+            <div class="upload-tile-aside lab-cover">
+              <div class="upload-tile upload-tile--portrait">
+                <span class="upload-tile__icon"><i data-lucide="photo-video" class="ztor-icon ztor-icon--md"></i></span>
+              </div>
+              <div class="upload-tile-aside__side"><span class="upload-tile__sub">直式 750 × 1125</span></div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="lab-inline">
+              <span class="lab-sub__title">跟著活動</span>
+              <span class="lab-inline__sep">·</span>
+              <span>REALIVE World Tour — Asia leg</span>
+              <span class="ztor-badge">草稿</span>
+            </div>
+            <div class="field__hint">活動開賣時一起開賣。要單獨停售或隱藏，建立後到組合包細節頁。</div>
+          </div>
+        </div></div>
+        <p class="lab-col__note">多了：名稱欄一句「留空就用上面這個名字」——建議名降成 placeholder 之後，得有人說它會生效。少了：kv-list 這層殼（上架只有一列，用一行就夠） —— 15 降到 11。風險：placeholder 在部分瀏覽器對比偏低，建議名本身就是要讀的內容，灰字會被當成佔位提示略過。</p>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+<script src="../js/icons.js?v=r2.3"></script>
+<script>
+(function () {
+  'use strict';
+  /* 切換要看哪一段：只切 hidden，不重畫。 */
+  var bands = Array.prototype.slice.call(document.querySelectorAll('[data-lab-band]'));
+  function show(want) {
+    document.querySelectorAll('[data-lab-show]').forEach(function (b) {
+      var on = b.getAttribute('data-lab-show') === want;
+      b.classList.toggle('segmented__btn--active', on);
+      b.setAttribute('aria-checked', String(on));
+    });
+    bands.forEach(function (s) { s.hidden = (want !== 'all' && s.getAttribute('data-lab-band') !== want); });
+  }
+  document.querySelectorAll('[data-lab-show]').forEach(function (btn) {
+    btn.addEventListener('click', function () { show(btn.getAttribute('data-lab-show')); });
+  });
+  /* ?only=content|price|name：直接開在某一段（截圖與分享連結用），同時收起稽核表與規則。 */
+  var only = (location.search.match(/[?&]only=([a-z]+)/) || [])[1];
+  if (only && only !== 'all') {
+    show(only);
+    document.querySelectorAll('.lab-block').forEach(function (b) { b.hidden = true; });
+  }
+  /* 淺色／深色：沿用站上的 data-theme，不另造機制。 */
+  var t = document.querySelector('[data-lab-theme]');
+  if (t) t.addEventListener('click', function () {
+    var root = document.documentElement;
+    root.setAttribute('data-theme', root.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -764,8 +764,9 @@
 /* ══ 分段兩欄版型（`layout:'split'`，2026-09-21 第二輪）══════════════════════════
    建立活動第 6 步改成 demo 定案的版面（`docs/bundle-create-demo-2026-09-21.html`，使用者
    裁示「做上正式」）：彈窗改特寬（`.payout-dialog--xwide`）、body 用 payout-modal 自己的
-   `.payout-dialog__split`（主欄＋黏在上方的側欄）——左欄三段分卡「內容 → 定價與數量 →
-   命名與上架」、右欄粉絲看到的預覽卡（`bundle-preview-card.css`）、footer 粉絲實付。
+   `.payout-dialog__split`（主欄＋黏在上方的側欄）——左欄三段分卡「內容物 → 定價與庫存 →
+   命名與上架」（2026-09-21 同日改名；標題列下一排固定的分節分頁 `section-tabs.css` 可跳段）、
+   右欄粉絲看到的預覽卡（`bundle-preview-card.css`）、footer 粉絲實付。
    demo 的 `lab-*` 樣式逐條判斷後落在這裡（版面與表格變體）與 bundle-preview-card.css
    （預覽卡）；語意句用既有 insight-row、鎖定套數用既有 lock-sets、算式列用既有 kv-list。
    淺色模式由彈窗殼自己鋪底，不覆寫 body（demo 那條 `html[data-theme="light"] body` 是 lab 權宜）。 */
@@ -796,14 +797,18 @@
 .bd-lock-note { display: flex; align-items: center; gap: var(--sp-6); }
 .bd-lock-note .ztor-icon { width: 14px; height: 14px; flex: none; }
 
-/* 票券表「剩餘」欄底下的「不足 n 張」：剩餘 < 每組張數＝粉絲端選不到（D296 決定四）。 */
+/* 票券表「剩餘」欄底下的「不足 n 張」：剩餘 < 每組張數＝粉絲端選不到（D296 決定四）。
+   2026-09-22 文字階層重整（方案 A）：這件事原本是表格底下一句 hint（「剩餘不足一組的票種，
+   粉絲端不能選」），現在改由列自己表達——徽章（`.ztor-badge`）說是哪一列、`--short` 把整列
+   灰化說那一列現在不算數，句子退場。 */
 .bd-tbl__short {
-  display: block;
-  font-family: var(--font-ui);
-  font-size: var(--fs-12);
-  color: var(--muted-foreground);
+  margin-top: var(--sp-2);
   white-space: nowrap;
 }
+/* 灰化沿用未勾選列（`--off`）同一組 muted 色，語意一致：這一列現在不會成為粉絲買得到的選項。
+   勾選框本身不灰——它還能點（取消勾選、或回上一步補票），灰的是「這一列的內容」。 */
+.bd-tbl__row--short .bd-tbl__name,
+.bd-tbl__row--short .bd-tbl__num { color: var(--muted-foreground); }
 /* 鎖定的表：整列不再是點擊區、hover 不變色（勾選框自己已 disabled）。 */
 .bd-tbl--locked .bd-tbl__row--pick { cursor: default; }
 .bd-tbl--locked .bd-tbl__row--pick:hover { background: transparent; }
@@ -843,6 +848,9 @@
 /* 售價讀數放大：它是定價這一段的結果。選擇器疊上 `.field-readout`（2026-09-21 第 2 批修）：shared.css 末尾會再 @import 一次
    field-system.css，單一 class 的 `.bd-readout--big` 在載入順序上輸給後載的 `.field-readout`（--fs-14），讀數一直是 14px。 */
 .field-readout.bd-readout--big { font-family: var(--font-numeric); font-size: var(--fs-24); font-variant-numeric: tabular-nums; }
+/* 折扣那一列的兩欄（% 步進器｜售價讀數）：2026-09-22 方案 A 拿掉「折扣」標籤後，左欄少了一層，
+   兩欄用預設的頂端對齊會讓步進器浮在售價標籤那一行。底端對齊讓輸入格與讀數坐在同一條基線上。 */
+.bd-disc-grid { align-items: end; }
 
 /* 封面是辨識用縮圖，縮成一格擺左邊（`.upload-tile-aside` 的側排版）。 */
 .bd-cover .upload-tile { width: 120px; flex: none; }

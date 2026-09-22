@@ -64,7 +64,7 @@
    2026-09-21（第二輪，`layout:'split'`）建立活動第 6 步改成 demo 定案的版面（使用者看過
    `docs/bundle-create-demo-2026-09-21.html` 後裁示「做上正式」）：
      · 彈窗改特寬兩欄（`.payout-dialog--xwide` ＋ `.payout-dialog__split`）——左欄三段分卡
-       「內容 → 定價與數量 → 命名與上架」、右欄「粉絲看到的」預覽卡（`ds-components/
+       「內容物 → 定價與庫存 → 命名與上架」（2026-09-21 同日改名，原「內容／定價與數量」）、右欄「粉絲看到的」預覽卡（`ds-components/
        bundle-preview-card.css`，黏在上方、可點：票種／場次／尺寸顏色 chip 只影響預覽），
        footer＝粉絲實付（從 $Y 起）＋原價與最多組數一句＋取消／完成。兩步彈窗（第 2 步名稱
        與封面）在這個版型退場，名稱改由內容自動建議、使用者改過就不再覆蓋（`nameTouched`）。
@@ -1044,10 +1044,13 @@
             '<button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="' + esc(T('cpp.bd.qty.down')) + '"><i data-lucide="chevron-down" class="ztor-icon"></i></button>' +
           '</span>' +
         '</span>' +
-        '<div class="field__hint">' + esc(T('cpp.bd.tix.per.hint')) + '</div>' +
+        /* SPLIT（2026-09-22 方案 A）：這一格底下是整段唯一的規則句，用一般 hint 層級講這一組的
+           實際值（「粉絲從 VIP、Floor 任選一種，拿到 2 張」），原本的 info 列與另外兩處重複句退場。 */
+        '<div class="field__hint"' + (SPLIT ? ' data-bd-sem' : '') + '>' +
+          esc(SPLIT ? semanticText(b) : T('cpp.bd.tix.per.hint')) + '</div>' +
       '</div>';
     }
-    /* 表尾：「允許 K 種 · 每組 n 張 · 原價從 $X 起」（一種時「原價 $X」）。 */
+    /* 表尾：「允許 K 種 · 每組 n 張 · 原價從 $X 起」（一種時「原價 $X」）。SPLIT 不畫（方案 A）。 */
     function tixFootText(b) {
       var lines = setLines(b);
       if (!lines.length) return T('cpp.bd.tix.foot.none');
@@ -1076,7 +1079,10 @@
           var left = k.ids.reduce(function (m, id) { var t = ticketById(id), q = num(t && t.qty); return Number.isFinite(q) && q > 0 ? (m === null ? q : m + q) : m; }, null);
           /* 剩餘 < 每組張數：這個票種粉絲端選不到（D296 決定四），勾選當下就在剩餘底下標「不足 n 張」。 */
           var short = SPLIT && on && left !== null && left < q;
-          return '<label class="bd-tbl__row bd-tbl__row--pick' + (on ? '' : ' bd-tbl__row--off') + '">' +
+          /* 2026-09-22 方案 A：不足一組改用畫面表達——整列灰化（`--short`）＋「不足 n 張」徽章，
+             表下那句「剩餘不足一組的票種，粉絲端不能選」同輪刪掉。 */
+          return '<label class="bd-tbl__row bd-tbl__row--pick' + (on ? '' : ' bd-tbl__row--off') +
+              (short ? ' bd-tbl__row--short' : '') + '">' +
             '<span class="zcheck__control">' +
               '<input class="zcheck__input" type="checkbox" data-bd-kind-check="' + esc(k.id) + '"' + (on ? ' checked' : '') + (locked ? ' disabled' : '') + '>' +
               '<span class="zcheck__box"></span>' +
@@ -1084,10 +1090,10 @@
             '<span class="bd-tbl__name">' + esc(k.name) + '</span>' +
             '<span class="bd-tbl__num">' + esc(p === 0 ? T('ce.tier.free') : money(p)) + '</span>' +
             '<span class="bd-tbl__num">' + esc(left === null ? '—' : left.toLocaleString('en-US')) +
-              (short ? '<span class="bd-tbl__short">' + esc(T('cpp.bd.sp.tix.short').replace('{n}', String(q))) + '</span>' : '') + '</span>' +
+              (short ? '<span class="ztor-badge bd-tbl__short">' + esc(T('cpp.bd.sp.tix.short').replace('{n}', String(q))) + '</span>' : '') + '</span>' +
           '</label>';
         }).join('') +
-        '<div class="bd-tbl__foot" data-bd-tix-foot>' + esc(tixFootText(b)) + '</div>' +
+        (SPLIT ? '' : '<div class="bd-tbl__foot" data-bd-tix-foot>' + esc(tixFootText(b)) + '</div>') +
       '</div>';
     }
 
@@ -1568,7 +1574,7 @@
 
     /* ══ 分段兩欄版型（SPLIT，2026-09-21 第二輪）的產生器 ═══════════════════════
        設計依據 `docs/bundle-create-demo-2026-09-21.html`（使用者裁示「做上正式」）。
-       左欄三段分卡：內容 → 定價與數量 → 命名與上架；右欄粉絲看到的預覽卡；footer 粉絲實付。
+       左欄三段分卡：內容物 → 定價與庫存 → 命名與上架（頂列第二排的分節分頁可跳段）；右欄粉絲看到的預覽卡；footer 粉絲實付。
        只在 `layout:'split'` 時走這一條，其餘版型完全不會呼叫到。 */
 
     /* 粉絲端預覽卡的暫時狀態（點了哪個場次／票種／規格）。不放在 b 上：它不是這一組的
@@ -1616,13 +1622,14 @@
       return itemRange(it) ? T('cpp.bd.price.from').replace('{sum}', money(v)) : money(v);
     }
 
-    /* ── ① 內容 ────────────────────────────────────────────────────────── */
+    /* ── ① 內容物 ────────────────────────────────────────────────────────── */
     function itemsTableHTML(b) {
       if (!b.items.length) return '';
       var locked = isLocked(b);
       return '<div class="bd-tbl bd-tbl--items">' +
         '<div class="bd-tbl__head">' +
-          '<span class="bd-tbl__col">' + esc(T('cpp.bd.sp.tbl.added')) + '</span>' +
+          /* 表頭原本是「已加入」——這張表列的本來就是已加入的，欄名改回主詞「商品」（2026-09-22 方案 A）。 */
+          '<span class="bd-tbl__col">' + esc(T('cpp.bd.sp.items')) + '</span>' +
           '<span class="bd-tbl__col bd-tbl__col--num">' + esc(T('cpp.bd.sp.tbl.list')) + '</span>' +
           '<span class="bd-tbl__col bd-tbl__col--num">' + esc(T('cpp.bd.sp.tbl.stock')) + '</span>' +
           '<span></span>' +
@@ -1647,19 +1654,15 @@
         ? '<div class="field__hint field__hint--fact bd-lock-note"><i data-lucide="lock" class="ztor-icon"></i>' +
             esc(T('cpp.bd.sp.locked').replace('{n}', String(b.sold))) + '</div>'
         : '';
-      return subHeadHTML(T('cpp.bd.sp.tix'), rows.length ? T('cpp.bd.sp.tix.hint') : '') +
+      /* 2026-09-22 方案 A（三層收斂）：小標 hint、「允許票種」標籤、表下規則 hint 三個一起退場——
+         「哪些票種」由表頭「票種」與勾選框本身說完，規則句收斂成張數欄底下唯一一句（tixQtyFieldHTML）。 */
+      return subHeadHTML(T('cpp.bd.sp.tix'), '') +
         lockNote +
         secScopeHTML(b) +
         '<div class="field">' +
-          '<label class="field__label">' + esc(T('cpp.bd.sp.tix.allowed')) + '</label>' +
           tixTableHTML(b) +
-          (rows.length ? '<div class="field__hint">' + esc(T('cpp.bd.sp.tix.allowed.hint')) + '</div>' : '') +
         '</div>' +
         (rows.length ? tixQtyFieldHTML(b) : '') +
-        (rows.length
-          ? '<div class="insight-row bd-sem" data-bd-sem><i data-lucide="info" class="ztor-icon insight-row__icon"></i>' +
-              '<p class="insight-row__text">' + esc(semanticText(b)) + '</p></div>'
-          : '') +
         sessionsFieldHTML(b) +
         perFieldHTML(b);
     }
@@ -1688,32 +1691,34 @@
     }
     function productsBlockHTML(b) {
       var locked = isLocked(b);
-      return subHeadHTML(T('cpp.bd.sp.items'), T('cpp.bd.sp.items.hint')) +
+      /* 2026-09-22 方案 A：小標 hint「選填；每組各 1 件」退場——「選填」降進搜尋框 placeholder，
+         「每組各 1 件」由表頭欄名承擔（活動變體每組固定 1 件，欄名就是「商品」）。 */
+      return subHeadHTML(T('cpp.bd.sp.items'), '') +
         (locked ? '' :
           '<div class="fc-pick" data-bd-pick>' +
-            '<input class="input" data-bd-search placeholder="' + esc(T('cpp.bd.search')) + '" autocomplete="off">' +
+            '<input class="input" data-bd-search placeholder="' + esc(T('cpp.bd.sp.search')) + '" autocomplete="off">' +
             '<div class="fc-pick__results" data-bd-results hidden></div>' +
           '</div>') +
         itemsTableHTML(b);
     }
+    /* 三段的段頭一律只有段標題：段副標只能把段標題換句話說，2026-09-22 方案 A 整層退場。 */
     function secContentSplitHTML(b) {
-      return '<section class="bd-sec bd-sec--stack">' +
+      return '<section class="bd-sec bd-sec--stack" data-st-section="content">' +
         '<div class="bd-sec__head">' +
           '<h3 class="bd-sec__title">' + esc(T('cpp.bd.sp.sec.content')) + '</h3>' +
-          '<p class="bd-sec__sub">' + esc(T('cpp.bd.sp.sec.content.sub')) + '</p>' +
         '</div>' +
         ticketBlockHTML(b) +
         productsBlockHTML(b) +
         '<div class="field">' +
           '<label class="field__label">' + esc(T('cpp.bd.perks')) + '</label>' +
+          /* hint「選填。一行一項……」整條併進 placeholder（2026-09-22 方案 A）。 */
           '<textarea class="input textarea bd-perks" rows="2" data-bd-perks placeholder="' + esc(T('cpp.bd.sp.perks.ph')) + '">' +
             esc(b.perks.join('\n')) + '</textarea>' +
-          '<div class="field__hint">' + esc(T('cpp.bd.sp.perks.hint')) + '</div>' +
         '</div>' +
       '</section>';
     }
 
-    /* ── ② 定價與數量 ──────────────────────────────────────────────────── */
+    /* ── ② 定價與庫存 ──────────────────────────────────────────────────── */
     /* 原價合計的算式：一行一項（kv 列），每項底下一句「怎麼算」，合計列加粗一階。 */
     function calcListHTML(b) {
       var rows = [], lines = setLines(b), n = String(tixQty(b));
@@ -1728,12 +1733,15 @@
         });
       }
       b.items.forEach(function (it) {
-        rows.push({ k: it.name, how: T(itemOptions(it) ? 'cpp.bd.sp.calc.how.item.multi' : 'cpp.bd.sp.calc.how.item.single'), v: itemPriceText(it) });
+        /* 單一規格的商品在 SPLIT 不寫「怎麼算」：一個價錢乘以一件，沒有要解釋的（2026-09-22 方案 A）。 */
+        var multi = !!itemOptions(it);
+        rows.push({ k: it.name, how: (SPLIT && !multi) ? '' : T(multi ? 'cpp.bd.sp.calc.how.item.multi' : 'cpp.bd.sp.calc.how.item.single'), v: itemPriceText(it) });
       });
       if (!rows.length) return '<div class="field__hint">' + esc(T('cpp.bd.sp.calc.empty')) + '</div>';
       return '<div class="bd-calc-list">' +
         rows.map(function (r) {
-          return '<div class="kv"><span class="kv__k">' + esc(r.k) + '<span class="bd-calc-list__how">' + esc(r.how) + '</span></span>' +
+          return '<div class="kv"><span class="kv__k">' + esc(r.k) +
+              (r.how ? '<span class="bd-calc-list__how">' + esc(r.how) + '</span>' : '') + '</span>' +
             '<span class="kv__v">' + esc(r.v) + '</span></div>';
         }).join('') +
         '<div class="kv bd-calc-list__total"><span class="kv__k">' + esc(T('cpp.bd.calc.base')) + '</span>' +
@@ -1746,46 +1754,59 @@
       return T(priceRange(b) ? 'cpp.bd.sp.save.from' : 'cpp.bd.sp.save')
         .replace('{amt}', money(discountOf(b))).replace('{pct}', pctStr(effPct(b)));
     }
+    /* 鎖定套數的 hint 只回答「留空會怎樣」；上限那半句搬去「可售套數」講一次（2026-09-22 方案 A）。
+       超過上限是錯誤態，還是要把數字說清楚，所以 `lock.over` 保留完整句。 */
     function lockHintText(b) {
       var c = memberCapWho(b);
       if (c.n === Infinity) return T('cpp.bd.sp.lock.none');
-      return T(lockOver(b) ? 'cpp.bd.sp.lock.over' : 'cpp.bd.sp.lock.hint')
+      if (!lockOver(b)) return T('cpp.bd.sp.lock.hint');
+      return T('cpp.bd.sp.lock.over')
         .replace('{n}', c.n.toLocaleString('en-US')).replace('{who}', whoText(c.who));
     }
-    function setsText(b) {
+    /* 可售套數（2026-09-22 方案 A）：它是這一段的結果，升成大讀數並移到鎖定套數之前——
+       鎖定與限量是對它的兩個調整。數字（`setsValText`）與「受誰限制」（`setsWhyText`）拆成
+       讀數與 hint 兩層，上限這個事實全站只在這裡講一次。 */
+    function setsValText(b) {
+      var s = sellableSets(b);
+      return s === null ? '—' : T('cpp.bd.sp.sets.val').replace('{n}', s.toLocaleString('en-US'));
+    }
+    function setsWhyText(b) {
       var s = sellableSets(b), c = memberCapWho(b);
-      if (s === null) return '—';
-      var n = s.toLocaleString('en-US');
+      if (s === null) return '';
       if (lockN(b) && !lockOver(b)) {
-        var t = T('cpp.bd.sp.sets.locked').replace('{n}', n).replace('{lock}', lockN(b).toLocaleString('en-US'));
+        var t = T('cpp.bd.sp.sets.why.lock').replace('{lock}', lockN(b).toLocaleString('en-US'));
         return capN(b) && capN(b) < lockN(b) ? t + T('cpp.bd.sp.sets.capnote').replace('{cap}', capN(b).toLocaleString('en-US')) : t;
       }
-      if (capN(b) && (c.n === Infinity || capN(b) < c.n)) return T('cpp.bd.sp.sets.capped').replace('{n}', n);
-      return T('cpp.bd.sp.sets.by').replace('{n}', n)
+      if (capN(b) && (c.n === Infinity || capN(b) < c.n)) return T('cpp.bd.sp.sets.why.cap');
+      if (c.n === Infinity) return '';
+      return T('cpp.bd.sp.sets.why.by')
         .replace('{who}', c.who === 'tix' ? T('cpp.bd.sp.sets.by.tix') : T('cpp.bd.sp.sets.by.item').replace('{name}', String(c.who)));
     }
+    /* 限量上限的 hint：前半「成員最多供應 N 組」是同一個上限第 3 次出現，刪（2026-09-22 方案 A）；
+       只留「賣完自動售罄」。填超過還是要說數字，所以 `cap.over` 保留。 */
     function capHintSplit(b) {
       var s = setsBeforeCap(b);
-      if (s === null) return T('cpp.bd.sp.cap.none');
-      var n = s.toLocaleString('en-US');
-      return T(capOver(b) ? 'cpp.bd.sp.cap.over' : 'cpp.bd.sp.cap.hint').replace('{n}', n);
+      if (s !== null && capOver(b)) return T('cpp.bd.sp.cap.over').replace('{n}', s.toLocaleString('en-US'));
+      return T('cpp.bd.sp.cap.hint');
     }
     function secPriceSplitHTML(b) {
       var on = !!b.discountOn, lockable = memberCapWho(b).n !== Infinity;
       var limited = b.avail === 'limited';
+      /* 副標只在兩個選項真的有差異要講時才寫：「不限量」的副標只是把上一格讀數換句話說，刪。 */
       function card(val, on2, key, subKey) {
         return '<button type="button" class="segmented__btn' + (on2 ? ' segmented__btn--active' : '') +
           '" role="radio" aria-checked="' + on2 + '" data-bd-avail="' + val + '">' +
           '<span class="radio-card__text"><span class="radio-card__title">' + esc(T(key)) + '</span>' +
-            '<span class="radio-card__sub">' + esc(T(subKey)) + '</span></span></button>';
+            (subKey ? '<span class="radio-card__sub">' + esc(T(subKey)) + '</span>' : '') + '</span></button>';
       }
-      return '<section class="bd-sec bd-sec--stack">' +
+      /* 2026-09-22 方案 A：段副標、「原價合計」標籤（合計列自己說）、「折扣」標籤（步進器已帶 % 後綴）、
+         關折扣時那句「粉絲實付＝…」（底部固定列有同一個數字）、「限量」標籤（與選項值一字不差）全部退場；
+         可售套數升成大讀數並移到鎖定套數之前。 */
+      return '<section class="bd-sec bd-sec--stack" data-st-section="price">' +
         '<div class="bd-sec__head">' +
           '<h3 class="bd-sec__title">' + esc(T('cpp.bd.sp.sec.price')) + '</h3>' +
-          '<p class="bd-sec__sub">' + esc(T('cpp.bd.sp.sec.price.sub')) + '</p>' +
         '</div>' +
-        '<div class="field"><label class="field__label">' + esc(T('cpp.bd.calc.base')) + '</label>' +
-          '<div data-bd-calc>' + calcListHTML(b) + '</div></div>' +
+        '<div class="field"><div data-bd-calc>' + calcListHTML(b) + '</div></div>' +
         '<div class="control-group">' +
           '<div class="control-row"><div>' +
             '<div class="control-row__main">' + esc(T('cpp.bd.sp.disc.on')) + '</div>' +
@@ -1793,27 +1814,26 @@
             '<div class="switch' + (on ? ' switch--on' : '') + '" role="switch" aria-checked="' + on + '" tabindex="0" data-bd-disc-toggle></div>' +
           '</div>' +
           '<div class="control-group__body"' + (on ? '' : ' hidden') + '>' +
-            '<div class="form-grid">' +
-              '<div class="field"><label class="field__label">' + esc(T('cpp.bd.sp.disc')) + '</label>' +
-                stepperHTML('data-bd-f="discount"', b.discount, '%', 0, 100, 'bd-disc') + '</div>' +
+            '<div class="form-grid bd-disc-grid">' +
+              '<div class="field">' +
+                stepperHTML('data-bd-f="discount" aria-label="' + esc(T('cpp.bd.sp.disc')) + '"', b.discount, '%', 0, 100, 'bd-disc') + '</div>' +
               '<div class="field"><label class="field__label">' + esc(T('cpp.bd.sp.sell')) + '</label>' +
                 '<div class="field-readout bd-readout--big" data-bd-calc-final>' + esc(moneyFrom(b, finalPrice(b))) + '</div>' +
                 '<div class="field__hint" data-bd-save>' + esc(saveText(b)) + '</div></div>' +
             '</div>' +
           '</div>' +
         '</div>' +
-        (on ? '' : '<div class="field__hint bd-nodisc" data-bd-sell-plain>' + esc(T('cpp.bd.sp.nodisc').replace('{sum}', moneyFrom(b, listPrice(b)))) + '</div>') +
+        '<div class="field"><label class="field__label">' + esc(T('cpp.bd.sp.sets')) + '</label>' +
+          '<div class="field-readout bd-readout--big" data-bd-sets>' + esc(setsValText(b)) + '</div>' +
+          '<div class="field__hint" data-bd-sets-why>' + esc(setsWhyText(b)) + '</div></div>' +
         '<div class="lockset__sets">' +
           '<div class="lockset__sets-titles"><span class="lockset__sets-title">' + esc(T('cpp.bd.sp.lock')) + '</span>' +
             '<span class="lockset__sets-hint' + (lockOver(b) ? ' is-over' : '') + '" data-bd-lock-hint>' + esc(lockHintText(b)) + '</span></div>' +
-          '<div class="lockset__sets-ctl">' + stepperHTML('data-bd-f="lockSets"', b.lockSets, T('cpp.bd.sp.unit.set'), 0, null, 'bd-disc', !lockable) + '</div>' +
+          '<div class="lockset__sets-ctl">' + stepperHTML('data-bd-f="lockSets"', b.lockSets, T('cpp.bd.sp.unit.group'), 0, null, 'bd-disc', !lockable) + '</div>' +
         '</div>' +
-        '<div class="field"><label class="field__label">' + esc(T('cpp.bd.sp.sets')) + '</label>' +
-          '<div class="field-readout" data-bd-sets>' + esc(setsText(b)) + '</div>' +
-          '<div class="field__hint">' + esc(T('cpp.bd.sp.sets.hint')) + '</div></div>' +
-        '<div class="field"><label class="field__label">' + esc(T('cpp.bd.sp.limit')) + '</label>' +
+        '<div class="field">' +
           '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(T('cpp.bd.sp.limit')) + '">' +
-            card(AVAIL_OPEN, !limited, 'cpp.bd.qty.unlim', 'cpp.bd.sp.limit.unlim.sub') +
+            card(AVAIL_OPEN, !limited, 'cpp.bd.qty.unlim', '') +
             card('limited', limited, 'cpp.bd.avail.limited', 'cpp.bd.sp.limit.lim.sub') +
           '</div>' +
           (limited
@@ -1827,24 +1847,23 @@
     /* ── ③ 命名與上架 ──────────────────────────────────────────────────── */
     function coverFieldHTML(b) {
       if (!COVER) return '';
+      /* 2026-09-22 方案 A：欄位標籤「封面」與上傳格 CTA「上傳封面」擇一，留標籤；側欄那句
+         「粉絲看到的卡片就用這張」重述標籤，右欄預覽卡已經示範過，刪。 */
       return '<div class="field"><label class="field__label">' + esc(T('cpp.bd.cover')) + '</label>' +
         '<div class="upload-tile-aside bd-cover">' +
           '<div class="upload-tile upload-tile--portrait' + (b.cover ? ' is-filled' : '') +
-              '" data-bd-cover data-asset="bdcover-' + b.id + '" data-upload>' +
+              '" data-bd-cover data-asset="bdcover-' + b.id + '" data-upload aria-label="' + esc(T('cpp.bd.cover.cta')) + '">' +
             '<span class="upload-tile__icon"><i data-lucide="photo-video" class="ztor-icon ztor-icon--md"></i></span>' +
-            '<span class="upload-tile__title">' + esc(T('cpp.bd.cover.cta')) + '</span>' +
           '</div>' +
-          '<div class="upload-tile-aside__side"><span class="upload-tile__sub">' + esc(T('cp.media.portrait')) + '</span>' +
-            '<span class="upload-tile__hint">' + esc(T('cpp.bd.sp.cover.hint')) + '</span></div>' +
+          '<div class="upload-tile-aside__side"><span class="upload-tile__sub">' + esc(T('cp.media.portrait')) + '</span></div>' +
         '</div></div>';
     }
     function secNameSplitHTML(b) {
       var sug = suggestName(b), ev = eventInfo();
       var shown = b.nameTouched ? b.name : sug;
-      return '<section class="bd-sec bd-sec--stack">' +
+      return '<section class="bd-sec bd-sec--stack" data-st-section="name">' +
         '<div class="bd-sec__head">' +
           '<h3 class="bd-sec__title">' + esc(T('cpp.bd.sp.sec.name')) + '</h3>' +
-          '<p class="bd-sec__sub">' + esc(T('cpp.bd.sp.sec.name.sub')) + '</p>' +
         '</div>' +
         '<div class="field">' +
           '<label class="field__label">' + esc(T('cpp.bd.name')) + ' <span class="field__req">*</span></label>' +
@@ -1858,8 +1877,8 @@
           '<textarea class="input textarea bd-desc" rows="3" data-bd-f="desc" placeholder="' + esc(T('cpp.bd.sp.desc.ph')) + '">' + esc(b.desc) + '</textarea>' +
         '</div>' +
         coverFieldHTML(b) +
+        /* 「上架」標籤與段標題「命名與上架」的後半重複，刪；kv 列的「跟著活動」自己就是主詞。 */
         '<div class="field">' +
-          '<label class="field__label">' + esc(T('cpp.bd.sp.listing')) + '</label>' +
           '<div class="kv-list bd-listing">' +
             '<div class="kv kv--lead"><span class="kv__k">' + esc(T('cpp.bd.sp.follow')) + '</span>' +
               '<span class="kv__v">' + esc(ev.name || T('event-detail.untitled')) + eventBadgeHTML(ev) + '</span></div>' +
@@ -2015,6 +2034,21 @@
       return T(sets === null ? 'cpp.bd.sp.foot.sub.nosets' : 'cpp.bd.sp.foot.sub')
         .replace('{list}', moneyFrom(b, listPrice(b))).replace('{n}', sets === null ? '' : sets.toLocaleString('en-US'));
     }
+    /* 頂列第二排：分節分頁（2026-09-21 使用者：「popup 中要有 fix 在最上面的 tab 可以快速滾動到指定區塊」）。
+       放在 __head 與 __body 之間、捲動區之外——頂列＝標題排＋分頁排，只有一條固定列（Q115 精神），
+       右欄預覽卡的 sticky 不會被它蓋到。行為在 js/section-tabs.js（點了捲到段、scrollspy、鍵盤）；
+       每次 render() 換掉 innerHTML 之後都要再 init 一次。 */
+    var ST_SECTIONS = [['content', 'cpp.bd.sp.sec.content'], ['price', 'cpp.bd.sp.sec.price'], ['name', 'cpp.bd.sp.sec.name']];
+    function sectionTabsHTML() {
+      return '<nav class="section-tabs section-tabs--dialog" data-section-tabs data-st-scroller=".payout-dialog__body" aria-label="' + esc(T('st.aria')) + '">' +
+        '<div class="tabs tabs--underline-short tabs--underline-label">' +
+          ST_SECTIONS.map(function (it, i) {
+            return '<button type="button" class="tabs__item' + (i === 0 ? ' tabs__item--active' : '') + '" data-st-tab="' + it[0] + '"' +
+              (i === 0 ? ' aria-current="location"' : '') + '><span>' + esc(T(it[1])) + '</span></button>';
+          }).join('') +
+        '</div>' +
+      '</nav>';
+    }
     function splitCardHTML(b) {
       var groups = ticketGroups();
       var primaryLabel = b.sold > 0 ? T('cpp.bd.sp.savechanges')
@@ -2028,6 +2062,7 @@
             '<button class="btn btn--icon" type="button" data-bd-close aria-label="' + esc(T('cpp.bd.close')) + '">' +
               '<i data-lucide="x" class="ztor-icon"></i></button>' +
           '</div>' +
+          sectionTabsHTML() +
           '<div class="payout-dialog__body bd-form">' +
             '<div class="payout-dialog__split bd-split">' +
               '<div class="bd-split__main">' + secContentSplitHTML(b) + secPriceSplitHTML(b) + secNameSplitHTML(b) + '</div>' +
@@ -2060,16 +2095,16 @@
       var calc = card.querySelector('[data-bd-calc]'); if (calc) calc.innerHTML = calcListHTML(b);
       card.querySelectorAll('[data-bd-calc-final]').forEach(function (el) { el.textContent = hasContent(b) ? moneyFrom(b, finalPrice(b)) : '—'; });
       set('[data-bd-save]', saveText(b));
-      set('[data-bd-sell-plain]', T('cpp.bd.sp.nodisc').replace('{sum}', moneyFrom(b, listPrice(b))));
       var lh = card.querySelector('[data-bd-lock-hint]');
       if (lh) { lh.textContent = lockHintText(b); lh.classList.toggle('is-over', lockOver(b)); }
-      set('[data-bd-sets]', setsText(b));
+      set('[data-bd-sets]', setsValText(b));
+      set('[data-bd-sets-why]', setsWhyText(b));
       var cm = card.querySelector('[data-bd-capmax]');
       if (cm) { cm.textContent = capHintSplit(b); cm.classList.toggle('fc-hint--over', capOver(b)); }
       var capEl = card.querySelector('[data-bd-f="cap"]');
       if (capEl) { if (capOver(b)) capEl.setAttribute('aria-invalid', 'true'); else capEl.removeAttribute('aria-invalid'); }
-      set('[data-bd-tix-foot]', tixFootText(b));
-      var sem = card.querySelector('[data-bd-sem] .insight-row__text'); if (sem) sem.textContent = semanticText(b);
+      /* 語意句現在是張數欄底下的 hint（方案 A），表尾已退場，不再各自更新一次。 */
+      set('[data-bd-sem]', semanticText(b));
       /* 「不足 n 張」小字依張數而變：整張票券表就地換掉（勾選框不是文字欄，換掉不丟游標；表內有焦點時不動）。 */
       var tbl = card.querySelector('.bd-tbl--tix');
       if (tbl && !(document.activeElement && tbl.contains(document.activeElement))) {
@@ -2521,6 +2556,9 @@
         var body = list.querySelector('[data-bd-card="' + id + '"] .payout-dialog__body');
         if (body) body.scrollTop = scrolls[id];
       });
+      /* 分節分頁重新接線（SPLIT）：nav 跟著 innerHTML 一起重畫，舊實例隨舊節點消失；
+         排在捲動位置還原之後，第一次定位才對得上還原後的位置。 */
+      if (SPLIT && window.ZtorSectionTabs) window.ZtorSectionTabs.init(list);
 
       if (keep && keep.sel && !(o && o.blur)) {
         var target = list.querySelector('[data-bd-card="' + keep.id + '"] ' + keep.sel);
