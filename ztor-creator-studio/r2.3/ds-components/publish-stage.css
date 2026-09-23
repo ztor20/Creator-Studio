@@ -166,11 +166,22 @@
   transform: translate(-100%, 0);
 }
 .pstage-edit[hidden] { display: none; }
-/* hover 中的區塊：一條品牌橘的外框，說明「這一塊是一個可編輯的單位」 */
+/* hover 中的區塊：品牌橘外框＋淡橘底，說明「這一塊是一個可編輯的單位」。
+   2026-09-23 使用者裁示加上底色——只有一條線時，被框住的是「這一塊」還是「這一塊到
+   下一條線之間」要猜；填了色，範圍是面、一眼就是一塊。色用 `--selected-surface`
+   （品牌橘 14% 透明），與外框的 `--selected-ink` 同一個「已選中」語意家族。
+
+   **外框維持原本的 `outline`（2026-09-23 第二輪裁示「border 用原本的就好，現在太粗了」）**：
+   一度把框也改成 spread shadow 的第二層，但 1px 的 shadow ring 在非整數裝置像素上會被
+   抹成一道更粗更亮的邊；`outline` 是直接描邊、粗細與顏色都回到原值。底色仍用 shadow——
+   `background` 只畫到 border box、填不到 `outline-offset` 那 6px，用一層 spread 把色推到
+   框的位置，整塊才是一個完整的面。外陰影不畫在 border box 之內，不會疊出兩層橘。 */
 .pstage-zone--hot {
   outline: 1px solid var(--selected-ink);
   outline-offset: var(--sp-6);
   border-radius: var(--radius-sm);
+  background: var(--selected-surface);
+  box-shadow: 0 0 0 var(--sp-6) var(--selected-surface);
 }
 
 /* 預覽裡的價格可點（開價格表）：只加游標與底線提示，不改前台的字級與顏色 */
