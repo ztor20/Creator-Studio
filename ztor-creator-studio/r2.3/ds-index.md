@@ -5,7 +5,7 @@
 > 用途：**動手改 UI 前先掃這頁**——色彩／字體／間距／陰影一律用下列 token，版面一律先找既有元件；
 > 用法細節與規範看 `design-system.md`（AI 契約）／`design-system.html`（人看）。只列亮色值，暗色屬 Pillar 3。
 
-## Tokens（_tokens.css，亮色，共 295 條）
+## Tokens（_tokens.css，亮色，共 296 條）
 
 ### --accent-*
 - `--accent`: #F3F3F3
@@ -243,6 +243,7 @@
 ### --surface-*
 - `--surface-shell`: #F0F0EE
 - `--surface-page`: #FAFAFA
+- `--surface-preview`: #0A0A0A
 - `--surface-inverse`: #000000
 
 ### --tier-*
@@ -390,7 +391,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 158 支；主 class 前 5 個）
+## 元件（ds-components/，共 159 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -407,6 +408,7 @@
 - `bundle-editor.css` — .fc-bundle-col, .fc-bundle, .fc-bundle__body, .bd-group, .bd-group__title ｜ bundle-editor.css · 套組編輯器（共創募資回饋方案）
 - `bundle-preview-card.css` — .bpc__title, .bpc, .bpc__list, .bpc__row, .bpc__what ｜ bundle-preview-card.css · 粉絲端組合包預覽卡（建立組合包時右欄「粉絲看
 - `button.css` — .btn, .btn--primary, .btn--outline, .btn--ghost, .btn--destructive ｜ Ztor Creator Studio · R 2.1 — Button
+- `calc-list.css` — .calc-list, .form-section--card, .calc-list__how, .calc-list__sum, .calc-list__total ｜ Calc list — 一行一項的算式列表（加總／扣抵，最後一列是結果）
 - `canvas-home.css` — .canvas-home-shell, .canvas-hero, .canvas-below, .canvas-sheet, .canvas-sheet__foot ｜ canvas-home — 一屏不捲的展示版型（2026-08-31 建）
 - `canvas-stage.css` — .canvas-stage, .canvas-stage__bg, .canvas-stage__img, .canvas-stage__scrim, .canvas-stage__marker ｜ canvas-stage — 首頁展示版的滿版舞台（2026-08-31 建）
 - `card-group.css` — .group-title, .group-desc, .group-divider, .card-head, .card-head__title ｜ card-group.css · 卡內分組三件組（Q71 三級制）
@@ -446,7 +448,7 @@
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs--brand ｜ Filter Tabs — secondary, lighter pill row for na
 - `finding-card.css` — .finding, .finding__kicker, .finding__title, .finding__sub, .finding__basis ｜ Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160）
 - `form-grid.css` — .form-grid, .form-grid--3 ｜ form-grid.css · 表單欄位並排網格 helper
-- `form-section.css` — .form-section, .form-section__actions, .form-section--outlined, .form-section__head, .form-section__head--actions ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
+- `form-section.css` — .form-section, .form-section--dense, .form-section__actions, .form-section--outlined, .form-section__head ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
 - `funding-panel.css` — .funding-panel, .funding-panel__amount-row, .funding-panel__amount, .funding-panel__backers, .funding-panel__goal ｜ Funding panel · 募資概況面板（2026-07-24 promote）
 - `header.css` — .app-topbar, .app-topbar__brand, .app-topbar__brand-logo, .app-topbar__nav, .app-topbar__nav-group ｜ Ztor Creator Studio — Header (canonical app topb
 - `icon.css` — .ztor-icon, .ztor-icon--xs, .ztor-icon--sm, .ztor-icon--md, .ztor-icon--lg ｜ Ztor Creator Studio - Icon atom

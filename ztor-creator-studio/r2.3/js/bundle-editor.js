@@ -1768,13 +1768,13 @@
         rows.push({ k: it.name, how: (SPLIT && !multi) ? '' : T(multi ? 'cpp.bd.sp.calc.how.item.multi' : 'cpp.bd.sp.calc.how.item.single'), v: itemPriceText(it) });
       });
       if (!rows.length) return '<div class="field__hint">' + esc(T('cpp.bd.sp.calc.empty')) + '</div>';
-      return '<div class="bd-calc-list">' +
+      return '<div class="calc-list">' +
         rows.map(function (r) {
           return '<div class="kv"><span class="kv__k">' + esc(r.k) +
-              (r.how ? '<span class="bd-calc-list__how">' + esc(r.how) + '</span>' : '') + '</span>' +
+              (r.how ? '<span class="calc-list__how">' + esc(r.how) + '</span>' : '') + '</span>' +
             '<span class="kv__v">' + esc(r.v) + '</span></div>';
         }).join('') +
-        '<div class="kv bd-calc-list__total"><span class="kv__k">' + esc(T('cpp.bd.calc.base')) + '</span>' +
+        '<div class="kv calc-list__total"><span class="kv__k">' + esc(T('cpp.bd.calc.base')) + '</span>' +
           '<span class="kv__v" data-bd-calc-base>' + esc(moneyFrom(b, listPrice(b))) + '</span></div>' +
       '</div>';
     }
