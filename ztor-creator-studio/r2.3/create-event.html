@@ -69,7 +69,7 @@
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- D305：發布前預覽的粉絲視角活動頁（前台 shop-item 鏡像，2026-09-22 使用者裁決；只給 js/fan-event-page.js 用） -->
 <link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- D310：第 8 步「預覽與發布」的全頁版型（主區預覽＋右側側欄） -->
-<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表／價格表的右側滑出面板（.drawer--wide） -->
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表／價格表（2026-09-23 起整頁 .drawer--full） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* create-event 專屬 layout hooks，非跨頁重用，比照 e-shop/events 留頁內。上緣留白改用 shared.css 的 .wizard__body--form 修飾類（2026-07-09），對齊募資創建（測試版）create-campaign 的 72px。
@@ -150,11 +150,12 @@
      `.payout-dialog` 原本就是 max-height 同一個值，這裡把它從上限改成定值。 */
   .ce-tier-dialog { height: min(760px, calc(100vh - var(--sp-48))); }
   /* 每一場開哪些票：一場一組，組內一行一個票種（勾選｜票種名｜價格｜張數） */
-  /* 票種清單：一列一種（票種名｜販售標籤｜預設價格｜預設張數｜移除），沿用場次列的節奏。 */
+  /* 票種清單：一列一種（票種名｜預設價格｜預設張數｜移除），沿用場次列的節奏。
+     2026-09-23（D316）：預設手續費那一欄隨「手續費加價由粉絲負擔」整條退場，三欄變兩欄。 */
   .ce-types { display:flex; flex-direction:column; gap: var(--sp-8); }
   .ce-types__head, .ce-types__row {
     display:grid; gap: var(--sp-8); align-items:center;
-    grid-template-columns: minmax(0,1.6fr) repeat(3, minmax(0,1fr)) minmax(40px, auto);
+    grid-template-columns: minmax(0,1.6fr) repeat(2, minmax(0,1fr)) minmax(40px, auto);
   }
   .ce-types__head { font-size: var(--fs-12); color: var(--muted-foreground); }
   .ce-types__end { display:flex; justify-content:flex-end; }
@@ -821,7 +822,7 @@
       </div><!-- /.wizard-split -->
     </section>
 
-    <!-- STEP 5 · 票務（矩陣）：門票＝場次 × 票種，價格、張數、手續費、加購與規則都掛在
+    <!-- STEP 5 · 票務（矩陣）：門票＝場次 × 票種，價格、張數、加購與規則都掛在
          交叉出來的那一格。按場次列出每一場實際會賣的幾張門票；免票入場時整步跳過。 -->
     <section data-step-panel="5" class="hidden">
       <!-- 快速設定＝一次定義票種並看到會生成哪些門票。手動補一張的入口坐在每一場的門票後面
@@ -886,7 +887,7 @@
           </div>
         </aside>
         <div class="wizard-split__main">
-        <!-- 門票＝場次 × 票種的交叉結果（2026-08-08 使用者裁決）。價格、張數、手續費、
+        <!-- 門票＝場次 × 票種的交叉結果（2026-08-08 使用者裁決）。價格、張數、
              規則、加購商品全部掛在這一格身上，不是掛在「票種」上——票種只是這一格的名字。
              所以這裡以場次為主軸分組，每一場底下是那一場實際會賣的幾張票；一場一張的活動
              只有一組，不顯示組標題。卡片由 JS 依狀態渲染。 -->
@@ -1285,7 +1286,7 @@
      （.payout-modal / .payout-dialog），不自造第二種彈窗。 -->
 <!-- 票務設定彈窗（原「快速設定」，2026-08-09 使用者裁決併入購票規則）：票種、活動層的
      購票規則、生成的門票，三段合成一個上層設定入口，矩陣生成的每一張門票都繼承它。
-     上到下：票種（名稱＋預設價格／張數／手續費，一次定義完）→ 購票規則（原獨立的
+     上到下：票種（名稱＋預設價格／張數，一次定義完）→ 購票規則（原獨立的
      #ce-rules-modal，整段搬進來）→ 生成的門票（即時列出票種與場次交叉出來的每一張票）。
      bookyay 帶入時票種是鎖的，這個彈窗對票種等於「檢視」：要另外賣粉絲專屬票走分票，
      不在這裡新增票種；購票規則不受票種鎖定影響，仍可編輯（2026-08-09 使用者裁決）。 -->
@@ -1429,11 +1430,14 @@
 <script src="partials/field-more.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <!-- D310（2026-09-22）：發布前預覽確認由浮層改為全頁畫面，本頁的宿主改走 js/publish-stage.js；
-     partials/publish-preview.js（浮層）在本頁退場，仍服務 create-product／create-project／publish-work。 -->
+     partials/publish-preview.js（浮層）已於 2026-09-23（D317／D321／D322／D323）在 create-product／
+     create-bundle／create-project／publish-work 全部退場，僅剩 design-system.html／design-components.html
+     的 demo 卡在用，屬退場候選（待使用者確認）。 -->
 <script src="js/publish-stage.js?v=r2.2"></script>   <!-- D310：第 8 步「預覽與發布」的全頁畫面 -->
 <script src="js/fan-event-page.js?v=r2.2"></script>   <!-- D305：粉絲視角活動頁渲染（前台鏡像，與 event-localization 共用） -->
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script>   <!-- 2026-08-13：「再辦一場」(?from=) 要讀來源活動 -->
+<script src="js/currency.js?v=r2.2"></script>   <!-- D316：CE_BASE_CURRENCY 改讀 window.ztorCurrency.CREATOR（創作者幣別） -->
 <!-- 套組銷售（步驟 5）掛共用套組編輯器；它從 products-store 取既有商品當候選 -->
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="partials/stepper.js?v=r2.2"></script>   <!-- 2026-09-18：.zstep 步進行為（票券清單表的張數） -->
@@ -1451,7 +1455,7 @@
      票種、票根、套組，也沒有收入試算。 */
   /* 墓碑：`salesMode`／`noTickets()`（購票入場／免票入場）於 2026-08-10 依使用者指示撤除。 */
   /* 門票＝場次 × 票種（2026-08-08 使用者裁決）：每一格都是獨立的一張門票，
-     自己帶價格、張數、手續費、規則與加購商品。tier.sess 記它屬於哪一場。
+     自己帶價格、張數、規則與加購商品。tier.sess 記它屬於哪一場。
      bookyay 帶進來時各場的值剛好一樣，那是資料一致，不是「只有一份」。 */
   /* 共看派對走的是原本那條流程（2026-08-09 使用者指示補回）：基本資料（改成挑影片與房間名稱）、
      時間人數地區隱私、入場券、確認——所以票務（5）與發布設定（6）兩步整步跳過。
@@ -1886,9 +1890,11 @@
        領取與入場方式（第三方門票開著才收）、票種名稱（步驟 4 的 types）。表演陣容的角色標籤：
        本表單的表演者只有人名、沒有角色欄，跳過（人名維持原文，§7.4 顯示規則）；退換票說明：
        表單沒有這個欄位（§8.26 第 15 項）。
-     prices：步驟 4 每個票種的票價＋步驟 6 每個組合包的售價；基準幣別＝創作者預設幣別 TWD
-       （示範值，ASSUMPTIONS PG-035／UIA-165）；bookyay 帶入的票種基準＝HKD 且鎖（§7.15）。 */
-  const CE_BASE_CURRENCY = "TWD";
+     prices：步驟 4 每個票種的票價＋步驟 6 每個組合包的售價；基準幣別＝創作者幣別
+       （D316 window.ztorCurrency.CREATOR，示範值 TWD，ASSUMPTIONS PG-035／UIA-165）；
+       bookyay 帶入的票種基準＝HKD 且鎖（§7.15）。活動側維持可覆寫（D306），這裡只換
+       基準幣別的來源，不動 publish-stage.js 的 priceOverrides（不傳＝現行行為）。 */
+  const CE_BASE_CURRENCY = window.ztorCurrency ? window.ztorCurrency.CREATOR : "TWD";
 
   /* ── 第 8 步「預覽與發布」的全頁畫面（D310 · 5.1.6.1 §4.8）────────────────────
      宿主只負責三件事：備料（buildStageOpts）、掛畫面（mountStage）、檢核狀態同步
@@ -2104,7 +2110,8 @@
       pickup: T(pickupKey, st.ship), entryNote: st.tpOn && st.tpNote ? { key: "tp-note" } : null,
       /* 退換票：表單沒有此欄，交給渲染器用平台固定文案（UIA-167）；相關活動：從 events-store 撈三場別的活動、標「非本活動」 */
       terms, tiers, bundles,
-      related: window.ztorFanEventPage && window.ztorFanEventPage.relatedFromStore ? window.ztorFanEventPage.relatedFromStore(null, 3) : true
+      /* 「相關活動」不畫（2026-09-23 使用者：「一樣移除」，同建立商品拿掉「你可能也喜歡」）——發布前預覽只看這一場本身。 */
+      related: false
     };
   }
   function doPublish() {
@@ -2323,7 +2330,7 @@
      真正的門票是 tiers（場次 × 票種），名稱一律回頭讀 types，改一次全部跟著。 */
   let types   = [];            // {id, name, tag, price, qty}
   let typeSeq = 0;
-  let tiers   = [];            // 門票（矩陣格）{id, sess, type, price, qty, fee, addons, tname, rules}
+  let tiers   = [];            // 門票（矩陣格）{id, sess, type, price, qty, addons, tname, rules}
   let drafts  = {};            // id → 編輯中的值；有 draft 就代表那張卡在編輯態
   let newIds  = new Set();     // 還沒存過的新卡：Cancel 要整張移除、也不計入「已建立」
   let errIds  = new Set();     // 按過 Save 的卡才開始標紅，邊打字邊標紅太吵
@@ -2372,13 +2379,9 @@
     const d = val(t);
     /* 名稱不再是這一格的欄位（2026-08-08：票種獨立成一步，名稱與撞名都歸票種那邊管），
        這裡只驗這一格自己的數字。e.name 保留成空字串，讓 tierValid 與提示邏輯不用改。 */
-    const e = { name: "", price: "", qty: "", ntype: "", excpct: "" };
-    /* 例外平台費開了就必填、且必須落在 0–100（D311 決定三；小數位數上游待確認）。 */
-    if (d.feeExc && d.feeExc.on) {
-      const v = String(d.feeExc.pct == null ? "" : d.feeExc.pct).trim();
-      const n = Number(v);
-      if (v === "" || !isFinite(n) || n < 0 || n > 100) e.excpct = dT("d.tm.exc.err");
-    }
+    const e = { name: "", price: "", qty: "", ntype: "" };
+    /* 墓碑 2026-09-23（D315）：`excpct`（例外平台費的費率欄，D311 決定三）連同它的
+       0–100 驗證退場——平台費率只在 Admin 的費率設定頁設，門票彈窗沒有可填的費率。 */
     /* 手動新增又選了「新建票種」時，票種名稱是必填——沒有名字的票種在清單上讀不出是什麼 */
     if (t.manual && !t.type && !String(d.ntype || "").trim())
       e.ntype = dT(d.tmode === "solo" ? "d.tier.soloname.err" : "d.type.err.name");
@@ -2389,23 +2392,20 @@
                 .replace("{n}", sumQty()).replace("{cap}", capacity());
     return e;
   }
-  /* 欄位一多就不再逐個列名（2026-09-22 D311 加了例外平台費）：有任何一格有訊息就是不過。 */
+  /* 欄位一多就不再逐個列名（2026-09-22 D311 起）：有任何一格有訊息就是不過。 */
   const tierErrCount = t => { const e = tierErrors(t); return Object.keys(e).filter(k => e[k]).length; };
   const tierValid = t => tierErrCount(t) === 0;
 
   function commitTier(t) {                              // 把草稿寫回卡片本身
     const d = drafts[t.id];
     t.price = String(Number(d.price)); t.qty = String(Number(d.qty));
-    t.fee = String(d.fee || "").trim(); t.tag = d.tag || ""; t.addons = (d.addons || []).slice();
+    t.tag = d.tag || ""; t.addons = (d.addons || []).slice();
+    /* 墓碑 2026-09-23（D316）：票不再帶 `fee`（加在票價之上、由粉絲負擔的手續費）。 */
     t.tname = (d.tname || "").trim();
     t.img = (d.img || "").trim();                       // 留空＝跟著活動主視覺走
     t.earlymin = String(d.earlymin || "").trim();        // 留空或 0＝跟著場次的開放入場時間
     t.early = (d.early || "").trim();                    // 留空＝跟著這一場的設定
-    /* 例外平台費（D311）：開關關著或費率留空＝沒有例外，欄位整個拿掉而不是存一個空物件
-       ——留著空殼會讓「有沒有例外」多一種要判斷的形狀。 */
-    if (d.feeExc && d.feeExc.on && String(d.feeExc.pct).trim() !== "")
-      t.feeException = { pct: String(d.feeExc.pct).trim() };
-    else delete t.feeException;
+    /* 墓碑 2026-09-23（D315）：票不再帶 `feeException`（D311 的逐門票例外平台費率）。 */
     /* 手動新增的那張票在這裡收尾。票務有兩種，分岔就在這裡（2026-08-11 使用者裁示）：
        **打的名字對得上既有票種** → 這張票掛進那個票種的階層，跟著它的預設值走、
          也跟著它出現在快速設定的矩陣裡。
@@ -2420,15 +2420,15 @@
         if (!(t.tname || "").trim()) t.tname = nm;
       } else if (!t.type) {
         /* 以票種建立：名字對得上既有票種就掛進去，對不上就把票種真的建出來，
-           這張票的價格／張數／手續費順便成為那個票種的預設值。 */
+           這張票的價格／張數順便成為那個票種的預設值。 */
         const hit = types.find(y => (y.name || "").trim().toLowerCase() === nm.toLowerCase());
         if (hit) t.type = hit.id;
         else {
-          /* 種子值（_sp/_sq/_sf）要一起寫進去：這個票種是從一張已經有值的票長出來的，
+          /* 種子值（_sp/_sq）要一起寫進去：這個票種是從一張已經有值的票長出來的，
              不先記下「預設值＝這張票現在的值」，之後在票務設定改預設價時，
              這張票會被判成「已自訂」而不跟著走。 */
-          const ty = { id: "type-" + (++typeSeq), name: nm, price: t.price, qty: t.qty, fee: t.fee,
-                       _sp: t.price, _sq: t.qty, _sf: t.fee };
+          const ty = { id: "type-" + (++typeSeq), name: nm, price: t.price, qty: t.qty,
+                       _sp: t.price, _sq: t.qty };
           types.push(ty);
           t.type = ty.id;
           /* 這個票種是為了「這一場的一張票」建的，不代表每一場都要賣：其餘場次先記進 dropped，
@@ -2612,8 +2612,8 @@
       /* 選了一個票種＝一律帶入它的預設值（2026-08-11 使用者指示）。此前只填空著的欄位，
          所以「先打了價格再選票種」會留著手打的那個數字，畫面上看不出它其實沒跟著票種走。
          選票種是明確的動作，帶入是它的定義；帶進來之後再改，那張票就成為複寫狀態
-         （`customOf` 比對票種的種子值 `_sp/_sq/_sf`，票務設定的清單會標「已自訂」）。 */
-      ["price", "qty", "fee"].forEach(k => { d[k] = ty[k] || ""; });
+         （`customOf` 比對票種的種子值 `_sp/_sq`，票務設定的清單會標「已自訂」）。 */
+      ["price", "qty"].forEach(k => { d[k] = ty[k] || ""; });
       if (!d.tnameOwn) d.tname = autoTicketName(t);
       renderTierModal();
       return;
@@ -2714,8 +2714,8 @@
           '</details>' +
         '</div>' +
       '</div>' +
-      /* 卡面列這五項（2026-08-09 使用者指定）：價格、數量、手續費、有設定才出現的購買條件、
-         商品組合（沒綁商品就寫「單一票券」）。售出總價移進編輯彈窗的商品組合分頁——
+      /* 卡面列這四項（2026-08-09 使用者指定，2026-09-23 D316 移除手續費）：價格、數量、
+         有設定才出現的購買條件、商品組合（沒綁商品就寫「單一票券」）。售出總價移進編輯彈窗的商品組合分頁——
          那是「這張票怎麼賣」的細節，卡面要的是一眼認得出這張票是什麼。
          原本卡底那行門票名預覽已移除：卡標是票種、上方分組標題是場次，
          「Day 1・VIP」等於把同一組資訊再講第三遍。 */
@@ -2732,7 +2732,7 @@
         '<div class="tier-card__fact"><dt>' + esc(dT("d.tier.face")) + '</dt><dd>' +
           (Number(dv.price) === 0 ? esc(T("ce.tier.free", "Free ticket")) : '$' + esc(dv.price)) + '</dd></div>' +
         '<div class="tier-card__fact"><dt>' + esc(T("ce.tier.qty", "Quantity")) + '</dt><dd>' + esc(dv.qty) + '</dd></div>' +
-        (Number(dv.fee) > 0 ? '<div class="tier-card__fact"><dt>' + esc(T("d.tier.fee", "Booking fee")) + '</dt><dd>$' + esc(dv.fee) + '</dd></div>' : '') +
+        /* 墓碑 2026-09-23（D316）：卡面的「手續費」事實列隨欄位退場。 */
         /* 提前入場只在真的設了才出現（2026-08-11 使用者指示）：跟場次一樣的票不用特別標，
            掃一眼票務清單，看得到這一列的才是「跟其他票不一樣、能早進」的那幾張。 */
         (Number(dv.earlymin) > 0 ? '<div class="tier-card__fact"><dt>' + esc(dT("d.tier.early.fact")) + '</dt><dd>' +
@@ -2759,7 +2759,7 @@
       if (!card) return;
       const errs = tierErrors(t);
       const d = drafts[t.id];
-      ["price", "qty", "ntype", "excpct"].forEach(k => {
+      ["price", "qty", "ntype"].forEach(k => {
         const hint  = card.querySelector('[data-tier-hint="' + k + '"]');
         const wrap  = card.querySelector('[data-tier-wrap="' + k + '"]');
         const input = card.querySelector('[data-tier-f="' + k + '"]');
@@ -2775,9 +2775,6 @@
         /* 名字那一欄的常駐說明要跟著「以票種建立／以獨立票建立」換一句，
            不能寫死票種那一版——切到獨立票之後說明會與欄位標籤互相矛盾。 */
         else if (k === "ntype") hint.textContent = newTypeHintText(t);
-        /* 例外平台費的費率欄沒有錯誤時，說明句要留著（「取代系統的 N%」）——那是
-           做決定需要的資訊，不是可有可無的裝飾。 */
-        else if (k === "excpct") hint.textContent = excHintText(d);
         else hint.textContent = "";
         if (input) input.setAttribute("aria-invalid", show ? "true" : "false");
       });
@@ -2965,54 +2962,34 @@
       : dT("d.tier.early.fact.value.nodoors").replace("{n}", mins);
   }
 
-  /* ---- 平台費（2026-09-22，D311）------------------------------------------------
-     一張票的費率＝**本票例外 → 該 creator 的覆寫 → General** 三層解析，解析本身住在
+  /* ---- 平台費（2026-09-22 D311 建立，2026-09-23 D315 收回一層）--------------------
+     一張票的費率＝**該 creator 的覆寫 → General** 兩層解析，解析本身住在
      js/platform-fees.js（建立流程與活動詳情共用同一支，不各寫一份常數）。活動票券走
      「活動 › 現場活動票券」這個葉節點。
-     例外是 **Admin 專屬**（D086 代操模式）：站上「現在是不是 Admin 代操」的既有答案是
-     `window.ztorCreator.adminScope()`（身分＝Admin，見 js/sidebar.js）。**建立流程沒有側欄、
-     不載 sidebar.js**，所以退回讀同一把 key `ztor.role`——與 order-detail.html 的作廢鈕
-     一模一樣的寫法（它的品項表也在 sidebar.js 之前就先畫一次），語意一致、不另造第二種判斷。
-     另外，Admin 從創作者活動管理頁的「繼續設定」深連結進來時網址帶 `?import=…&handle=…`
-     （見下方發布後的返回邏輯），那一趟本身就是代操，一併認。 */
+     **這一列是純顯示**：費率的唯一設定處是 Admin 的平台費率設定頁（5.1.0.3），創作者端
+     與 Admin 代操看到的是同一個唯讀列（D315 決定三／決定四）。
+     墓碑 2026-09-23（D315）：本段原本還有 `adminScope()`（判斷 Admin 代操，用來決定要不要
+     長出例外平台費開關）、`excPct()`（讀草稿上的例外）與解析的第三層——例外整組退場後，
+     這一頁沒有第二個消費者，三者一併移除。要復活先看 decisions.md 的 D311。 */
   const FEE_LEAF = "events.onsite";
-  function adminScope() {
-    if (window.ztorCreator && typeof window.ztorCreator.adminScope === "function")
-      return !!window.ztorCreator.adminScope();
-    try { if (localStorage.getItem("ztor.role") === "admin") return true; } catch (_) {}
-    try {
-      const q = new URLSearchParams(location.search);
-      return !!(q.get("import") && q.get("handle"));
-    } catch (_) { return false; }
-  }
-  /* 草稿上的例外＝{ on, pct }。開關關著或費率留空都當作「沒有例外」，解析就落回下一層。 */
-  function excPct(d) {
-    const e = d && d.feeExc;
-    const v = e && e.on ? String(e.pct == null ? "" : e.pct).trim() : "";
-    return v === "" ? null : v;
-  }
-  function feeOf(d) {
-    return window.ztorFees ? window.ztorFees.resolve(FEE_LEAF, excPct(d))
+  function feeOf() {
+    return window.ztorFees ? window.ztorFees.resolve(FEE_LEAF)
                            : { pct: EVENT_FEE_PCT, source: "general" };
   }
   const feeLeafText = () => (window.ztorFees ? window.ztorFees.pathText(FEE_LEAF) : "");
-  const feeSrcText = src => dT(src === "exception" ? "d.tm.fee.src.exc"
-                            : src === "creator"    ? "d.tm.fee.src.creator"
-                                                   : "d.tm.fee.src.general");
-  /* 計算列表的四個數字。**平台費的計費基準（抽票價還是抽粉絲付）產品未定**
-     （TIX-001／D311 待確認），本輪一律以票價計，並在「創作者實收」那一列的說明句標明。 */
+  const feeSrcText = src => dT(src === "creator" ? "d.tm.fee.src.creator"
+                                                 : "d.tm.fee.src.general");
+  /* 計算列表的三個數字。**平台費與支付手續費一律由創作者負擔、自其收入內扣**（D316）：
+     粉絲付＝票價（票價之上沒有任何加價），創作者實收＝票價 − 平台費。計費基準（TIX-001）
+     隨 D316 裁決為「折後品項實付」＝票價，不再是待確認。 */
   function tierMoney(t, d) {
     const price = Number(d.price) || 0;
-    const fee   = Number(d.fee) || 0;
-    const f     = feeOf(d);
+    const f     = feeOf();
     const pct   = Number(f.pct) || 0;
     const plat  = Math.round(price * pct / 100);
-    return { price: price, fee: fee, gross: price + fee, pct: pct, source: f.source,
+    return { price: price, gross: price, pct: pct, source: f.source,
              plat: plat, net: price - plat };
   }
-  const excHintText = d => dT("d.tm.exc.hint")
-    .replace("{n}", String(window.ztorFees ? (window.ztorFees.creator(FEE_LEAF) == null
-      ? window.ztorFees.general(FEE_LEAF) : window.ztorFees.creator(FEE_LEAF)) : EVENT_FEE_PCT));
 
   /* ---- 計算列表（.calc-list，promote 自組合包定價段）-----------------------------
      一列一項、列首一個運算子、末列是結果。把加法關係畫出來，「粉絲付是那兩個加起來的」
@@ -3039,28 +3016,8 @@
       '<input class="input amount-field__input" type="number" min="0" step="1" data-tier-f="' + key +
         '" value="' + esc(value == null ? "" : value) + '" placeholder="0"' + (dis ? " disabled" : "") + '></span>';
   }
-  /* 例外平台費：掛在平台費那一列底下，只有 Admin 代操時出現。關閉＝清除例外，
-     所以關掉的當下費率欄就跟著消失——留一個關不掉的舊數字在畫面上會讓人以為它還算數。 */
-  function feeExcHTML(t, d) {
-    if (!adminScope()) return "";
-    const e = d.feeExc || { on: false, pct: "" };
-    return '<div class="calc-list__extra">' +
-      '<div class="calc-list__extra-row">' +
-        '<span class="field__label">' + esc(dT("d.tm.exc")) + '</span>' +
-        '<button type="button" class="switch' + (e.on ? " switch--on" : "") + '" role="switch" aria-checked="' +
-          (e.on ? "true" : "false") + '" data-tier-fee-exc aria-label="' + esc(dT("d.tm.exc")) + '"></button>' +
-      '</div>' +
-      (e.on
-        ? '<div class="field">' +
-            '<label class="field__label"><span>' + esc(dT("d.tm.exc.pct")) + '</span> <span class="field__req">*</span></label>' +
-            '<span class="amount-field amount-field--suffix amount-field--readonly">' +
-              '<input class="input amount-field__input" type="number" min="0" max="100" step="0.1" data-tier-f="excpct" value="' +
-                esc(e.pct == null ? "" : e.pct) + '" placeholder="0"><span class="amount-field__unit">%</span></span>' +
-            '<p class="field__hint" data-tier-hint="excpct">' + esc(excHintText(d)) + '</p>' +
-          '</div>'
-        : '') +
-    '</div>';
-  }
+  /* 墓碑 2026-09-23（D315）：`feeExcHTML()`——掛在平台費那一列底下的例外平台費開關與
+     費率欄（Admin 專屬，D311 決定三）——整支退場。平台費列只剩唯讀的葉節點、費率與來源。 */
 
   /* 區塊殼：四個區塊共用。標題右側可掛一個東西（bookyay 徽章／跟隨活動預設開關）。
      2026-09-23（使用者裁決，STYLE-DECISIONS Q125）：**區塊標題要由「區塊層的控制項」或
@@ -3088,7 +3045,7 @@
 
   /* 區塊 2：價格與數量。bookyay 帶入的票整段改成唯讀事實列（D311 決定二，與 D308 同一口徑）
      ——值照顯示、區塊標題掛一枚「bookyay 帶入」，不再逐欄掛鎖徽章與清空鈕。
-     例外平台費仍留給 Admin：它是 ztor 這一側的合約設定，不是 bookyay 給的資料。 */
+     平台費那一列本來就是唯讀（D315：費率只在 Admin 的費率設定頁設），bookyay 與否都一樣。 */
   function tierPriceSecHTML(t, d) {
     const m = tierMoney(t, d);
     const bky = !!t.fix;
@@ -3096,11 +3053,11 @@
     const rows =
       calcRowHTML({ k: dT("d.tier.face"), req: !bky, how: "", hintFor: "price",
                     v: bky ? calcRO(money(m.price)) : calcMoneyInput("price", d.price) }) +
-      calcRowHTML({ op: "＋", k: dT("d.tier.fee"),
-                    v: bky ? calcRO(money(m.fee)) : calcMoneyInput("fee", d.fee == null ? "" : d.fee) }) +
+      /* 墓碑 2026-09-23（D316）：「＋ 手續費」那一列退場——票價之上沒有粉絲加價。
+         「粉絲付」保留為自成一列的結果：它要回答的是「粉絲實際付多少」，答案就是票價。 */
       calcRowHTML({ op: "＝", k: dT("d.tm.gross"), cls: "calc-list__sum", v: calcRO(money(m.gross), "gross") }) +
       calcRowHTML({ op: "−", k: dT("d.tm.plat"), how: feeHow, howAttr: ' data-tier-calc-how',
-                    v: calcRO(money(m.plat), "plat"), extra: feeExcHTML(t, d) }) +
+                    v: calcRO(money(m.plat), "plat") }) +
       calcRowHTML({ op: "＝", k: dT("d.tm.net"), how: dT("d.tm.net.how"), cls: "calc-list__total",
                     v: calcRO(money(m.net), "net") });
     const qty = bky
@@ -3219,13 +3176,13 @@
   function startTier(t, sid) {                         // 開一張門票的編輯彈窗（新增或編輯既有）
     tiers.filter(editing).forEach(dropDraft);          // 一次只編輯一張
     if (!t) {
-      t = { id: "tier-" + (++tierSeq), name: "", price: "", qty: "", fee: "", addons: [], tname: "",
+      t = { id: "tier-" + (++tierSeq), name: "", price: "", qty: "", addons: [], tname: "",
             sess: sid || "" };
       tiers.push(t); newIds.add(t.id);
     }
     /* 門票名稱預設就填好自動生成的那個名字（2026-08-09 使用者指示），不再只放 placeholder——
        它是這張票真正的名字，讓人一打開就看得到、要改再改，而不是猜留空會變成什麼。 */
-    drafts[t.id] = { price: t.price, qty: t.qty, fee: t.fee == null ? "" : t.fee,
+    drafts[t.id] = { price: t.price, qty: t.qty,
                      earlymin: t.earlymin == null ? "" : t.earlymin,
                      early: t.early == null ? "" : t.early,
                      addons: (t.addons || []).slice(),
@@ -3234,9 +3191,7 @@
                      /* 預設「以票種建立」＝站上主要的模型；要獨立票就在彈窗裡切一下。
                         這一格只服務新增的手動票（comboFieldHTML 對既有票回傳空字串）。 */
                      tmode: "type",
-                     /* 例外平台費（D311，Admin 專屬）：{ on, pct }。沒存過例外就是關著。 */
-                     feeExc: { on: !!(t.feeException && t.feeException.pct !== ""),
-                               pct: t.feeException ? t.feeException.pct : "" },
+                     /* 墓碑 2026-09-23（D315）：草稿上的 `feeExc`（例外平台費的 { on, pct }）退場。 */
                      /* 購買條件「跟隨活動預設」開關的初始態：已經有自己那一份規則的票，
                         一打開就該是攤開可改的樣子。純 UI 狀態，不寫回票本身。 */
                      rulesOpen: !!t.rules,
@@ -3289,18 +3244,10 @@
         const h = card.querySelector('[data-tier-hint="tname"]');
         if (t0 && h) h.textContent = tnameHint(t0, drafts[card.dataset.tier]);
       }
-      /* 例外平台費的費率住在 `d.feeExc.pct`（開關與費率是同一件事的兩半），
-         一般欄位的寫法會把它寫成 `d.excpct`，所以這一格自己接。 */
-      if (f.dataset.tierF === "excpct") {
-        const d0 = drafts[card.dataset.tier];
-        d0.feeExc = d0.feeExc || { on: true, pct: "" };
-        d0.feeExc.pct = f.value;
-        delete d0.excpct;
-      }
       /* 計算列表的三個算出來的數字（粉絲付／平台費／創作者實收）與費率那一行說明，
-         改票價、手續費或例外費率時立刻跟上。只換那幾格的文字、不重繪——
+         改票價時立刻跟上。只換那幾格的文字、不重繪——
          重繪會把游標從正在打的欄位彈出去（同「總價」那一格原本的做法）。 */
-      if (["price", "fee", "excpct"].indexOf(f.dataset.tierF) >= 0) {
+      if (f.dataset.tierF === "price") {
         const t0 = tiers.find(x => x.id === card.dataset.tier);
         if (t0) syncTierCalc(card, t0);
       }
@@ -3380,17 +3327,7 @@
         renderTierModal();
         return;
       }
-      /* 例外平台費的開關（D311，Admin 專屬）：關掉＝清除例外，費率欄同時收起來——
-         留一個關不掉的舊數字在畫面上會讓人以為它還算數。 */
-      if (e.target.closest("[data-tier-fee-exc]") && drafts[t.id]) {
-        const d0 = drafts[t.id];
-        d0.feeExc = d0.feeExc || { on: false, pct: "" };
-        d0.feeExc.on = !d0.feeExc.on;
-        if (!d0.feeExc.on) d0.feeExc.pct = "";
-        renderTierModal();
-        scheduleSave();
-        return;
-      }
+      /* 墓碑 2026-09-23（D315）：例外平台費開關（`[data-tier-fee-exc]`）的委派分支退場。 */
       /* 「跟隨活動預設」開關（D311 取代原本那一行提示＋「改回跟隨」按鈕）：
          打開＝丟掉這張票自己的那一份規則、回到跟隨；關掉＝攤開可改（此時還沒複製，
          動了任一個選項才 copy-on-write，見 rulesForEdit）。 */
@@ -4625,7 +4562,7 @@
     "d.types.add":    { en: "Add a ticket type",  zh: "新增票種" },
     "d.types.price":  { en: "Default price",      zh: "預設價格" },
     "d.types.qty":    { en: "Default quantity",   zh: "預設張數" },
-    "d.types.fee":    { en: "Default booking fee", zh: "預設手續費" },
+    /* 墓碑 2026-09-23（D316）：`d.types.fee`（預設手續費）——票種預設值不再有這一欄。 */
     "d.types.remove": { en: "Remove this type",   zh: "移除這個票種" },
     "d.types.empty":  { en: "No ticket type yet — add one and it appears on every date.", zh: "還沒有票種。加一種，每一場就會各生一張門票。" },
     "d.quick.h":      { en: "Ticket setup",       zh: "票務設定" },
@@ -4700,20 +4637,17 @@
        區塊容器留著（維持段間節奏），只是不畫標題列。 */
     "d.tm.sec.price": { en: "Price & quantity",   zh: "價格與數量" },
     "d.tm.sec.entry": { en: "Entry",              zh: "入場" },
-    /* 計算列表的三個算出來的數字。「粉絲付」＝票價＋手續費，「創作者實收」＝票價−平台費。 */
+    /* 計算列表的三個算出來的數字（D316）：「粉絲付」＝票價，「創作者實收」＝票價−平台費。 */
     "d.tm.gross":     { en: "Fans pay",           zh: "粉絲付" },
     "d.tm.plat":      { en: "Platform fee",       zh: "平台費" },
     "d.tm.net":       { en: "You receive",        zh: "創作者實收" },
-    "d.tm.net.how":   { en: "On the ticket price — fee basis to be confirmed",
-                        zh: "以票價計算，計費基準待確認" },
-    /* 費率來自哪一層（D311 解析順序：本票例外 → creator 覆寫 → General）。 */
+    "d.tm.net.how":   { en: "On the ticket price",
+                        zh: "以票價計算" },
+    /* 費率來自哪一層（D315 解析順序：creator 覆寫 → General）。 */
     "d.tm.fee.src.general": { en: "Platform default", zh: "平台預設" },
     "d.tm.fee.src.creator": { en: "Set for this creator", zh: "這位創作者的覆寫" },
-    "d.tm.fee.src.exc":     { en: "Exception for this ticket (set by Admin)", zh: "本票例外（Admin 設定）" },
-    "d.tm.exc":       { en: "Fee exception",      zh: "例外平台費" },
-    "d.tm.exc.pct":   { en: "Rate",               zh: "費率" },
-    "d.tm.exc.hint":  { en: "Replaces the system's {n}%.", zh: "取代系統的 {n}%。" },
-    "d.tm.exc.err":   { en: "Enter a rate between 0 and 100.", zh: "費率要填 0 到 100 之間。" },
+    /* 墓碑 2026-09-23（D315）：`d.tm.fee.src.exc`（本票例外的來源字串）與例外平台費自己的
+       四把 key（`d.tm.exc`／`d.tm.exc.pct`／`d.tm.exc.hint`／`d.tm.exc.err`）隨欄位退場。 */
     "d.tm.follow":    { en: "Follow event defaults", zh: "跟隨活動預設" },
     "d.tm.fix.n":     { en: "{n} fields need fixing", zh: "{n} 個欄位待修正" },
     "d.tier.gross":   { en: "Total price",        zh: "總價" },
@@ -4798,7 +4732,8 @@
     "d.vis.url":      { en: "Event link",        zh: "活動連結" },
     "d.vis.url.hint": { en: "Live once you publish — copyable now, not openable.", zh: "發布後才會生效，現在複製得到、點不開。" },
     "d.vis.qr.hint":  { en: "The same link, as a QR.", zh: "同一個連結的 QR。" },
-    "d.tier.fee":     { en: "Booking fee",       zh: "手續費" },
+    /* 墓碑 2026-09-23（D316）：`d.tier.fee`（手續費）——平台費與支付費改由創作者負擔，
+       票價之上沒有加給粉絲的手續費，欄位、卡面事實列與計算列表那一列一起退場。 */
     /* 墓碑 2026-09-22（D311）：`d.tier.fee.ph`（手續費欄的 placeholder）——手續費改住進計算列表，
        列裡的金額欄一律用 "0" 當 placeholder（金額欄的空值就是 0，不分欄位），不再逐欄開一把 key。 */
     /* 提前入場（2026-08-11 使用者指示）：填分鐘數，說明句換算成實際時間顯示，
@@ -4927,8 +4862,8 @@
   const typeList = document.getElementById("ce-type-list");
   const newCell = (ss, ty) => ({
     id: "tier-" + (++tierSeq), sess: ss.id, type: ty.id,
-    price: ty.price || "", qty: ty.qty || "", fee: ty.fee || "", addons: [], tname: "",
-    fix: !!ty.fix, fixFee: !!ty.fixFee
+    price: ty.price || "", qty: ty.qty || "", addons: [], tname: "",
+    fix: !!ty.fix
   });
   /* 逐格改過價格或張數之後，那一格就脫離種子（見 typeList 的 input handler）。 */
   function syncMatrix() {
@@ -4951,7 +4886,6 @@
       '<span>' + esc(dT("d.tier.type")) + '</span>' +
       '<span>' + esc(dT("d.types.price")) + '</span>' +
       '<span>' + esc(dT("d.types.qty")) + '</span>' +
-      '<span>' + esc(dT("d.types.fee")) + '</span>' +
       '<span></span></div>';
     const rows = types.map(ty =>
       '<div class="ce-types__row" data-type="' + ty.id + '">' +
@@ -4962,8 +4896,6 @@
           '" placeholder="0" aria-label="' + esc(dT("d.types.price")) + '"' + (ty.fix ? " disabled" : "") + '>' +
         '<input class="input" type="number" min="1" step="1" data-type-f="qty" value="' + esc(ty.qty) +
           '" placeholder="0" aria-label="' + esc(dT("d.types.qty")) + '"' + (ty.fix ? " disabled" : "") + '>' +
-        '<input class="input" type="number" min="0" step="1" data-type-f="fee" value="' + esc(ty.fee || "") +
-          '" placeholder="0" aria-label="' + esc(dT("d.types.fee")) + '"' + (ty.fixFee ? " disabled" : "") + '>' +
         '<span class="ce-types__end">' + (ty.fix ? srcChip() :
           '<button type="button" class="btn btn--icon btn--sm" data-type-remove aria-label="' +
           esc(dT("d.types.remove")) + '"><i data-lucide="x" class="ztor-icon"></i></button>') + '</span>' +
@@ -4980,7 +4912,7 @@
     if (sub) sub.hidden = !types.length;
   }
   function addType(init) {
-    types.push(Object.assign({ id: "type-" + (++typeSeq), name: "", price: "", qty: "", fee: "" }, init || {}));
+    types.push(Object.assign({ id: "type-" + (++typeSeq), name: "", price: "", qty: "" }, init || {}));
     syncMatrix(); renderTypes(); renderTiers(); scheduleSave();
   }
   document.getElementById("ce-type-add")?.addEventListener("click", () => addType());
@@ -4991,11 +4923,11 @@
     const ty = types.find(x => x.id === row.dataset.type);
     if (!ty) return;
     const k = f.dataset.typeF, v = e.target.value;
-    if (k === "price" || k === "qty" || k === "fee") {
+    if (k === "price" || k === "qty") {
       /* 種子值：**還沒被逐格改過**的門票跟著走（判準＝那一格現在的值仍等於上一次的種子）。
          逐格改過的就此脫鉤，不會被上游覆蓋回去——這才是「種子」而不是連動。
          沒有這一層的話，先新增票種、再填預設值的順序會讓已生成的格子永遠停在空白。 */
-      const SEED = { price: "_sp", qty: "_sq", fee: "_sf" };
+      const SEED = { price: "_sp", qty: "_sq" };
       const prev = ty[SEED[k]];
       tiers.filter(t => t.type === ty.id).forEach(t => {
         if ((t[k] || "") === (prev == null ? "" : prev)) t[k] = v;
@@ -5018,9 +4950,9 @@
      場次 × 票種交叉出來的每一張門票，並標出哪幾張還跟著預設走、哪幾張已經單獨改過。
 
      「跟著預設」的判準沿用原本的種子機制：那一格現在的值仍等於上一次的預設值。
-     覆蓋範圍是使用者指定的四項——票種名稱、預設價格、預設張數、預設手續費；
+     覆蓋範圍是三項——票種名稱、預設價格、預設張數（預設手續費 2026-09-23 隨 D316 退場）；
      加購商品、購買條件、圖片沒有預設層，一律逐格自己設。 */
-  const SEEDK = { price: "_sp", qty: "_sq", fee: "_sf" };
+  const SEEDK = { price: "_sp", qty: "_sq" };
   const seedOf = (ty, k) => { const v = ty[SEEDK[k]]; return v == null ? (ty[k] || "") : v; };
   const followsSeed = (t, ty, k) => (t[k] || "") === seedOf(ty, k);
   /* 這一格哪幾項已經脫離預設。空陣列＝完全跟著預設走。 */
@@ -5031,7 +4963,6 @@
     if ((t.tname || "").trim() && (t.tname || "").trim() !== autoTicketName(t)) out.push(dT("d.tier.tname"));
     if (!followsSeed(t, ty, "price")) out.push(dT("d.tier.face"));
     if (!followsSeed(t, ty, "qty"))   out.push(T("ce.tier.qty", "Quantity"));
-    if (!followsSeed(t, ty, "fee"))   out.push(dT("d.tier.fee"));
     return out;
   }
   /* 分票不給「改回跟著預設」：它的張數是從原本那張切出來的，還原會把總量算爛。 */
@@ -5040,7 +4971,7 @@
     const ty = typeOf(t);
     if (!ty) return;
     t.tname = "";
-    ["price", "qty", "fee"].forEach(k => { t[k] = seedOf(ty, k); });
+    ["price", "qty"].forEach(k => { t[k] = seedOf(ty, k); });
     if (drafts[t.id]) { delete drafts[t.id]; errIds.delete(t.id); }
   }
 
@@ -5145,7 +5076,7 @@
     const ty = types.find(y => !tiers.some(t => t.sess === ss.id && t.type === y.id)) || types[0];
     const t = ty
       ? Object.assign(newCell(ss, ty), { manual: true })
-      : { id: "tier-" + (++tierSeq), sess: ss.id, type: "", price: "", qty: "", fee: "",
+      : { id: "tier-" + (++tierSeq), sess: ss.id, type: "", price: "", qty: "",
           addons: [], tname: "", manual: true };
     tiers.push(t); newIds.add(t.id);
     startTier(t);
@@ -5261,7 +5192,7 @@
   const finalPrice = t => Math.round(netPrice(t));
   /* 墓碑 2026-09-22（D311）：`grossFieldHTML`（彈窗裡的「總價」唯讀欄）退場——
      它把一個算出來的數字做成看起來能填的欄位，而且排在票價之前、加法關係完全看不見。
-     改由價格與數量區的計算列表承擔（票價 ＋ 手續費 ＝ 粉絲付 − 平台費 ＝ 創作者實收）。
+     改由價格與數量區的計算列表承擔（票價 ＝ 粉絲付 − 平台費 ＝ 創作者實收，D316）。
      卡面那一列「總價」不受影響，仍讀 `finalPrice()`。 */
   function addonFieldHTML(t, d) {
     const list = d.addons || [];
@@ -5514,7 +5445,7 @@
 
   /* ---- 假的 bookyay 活動 ------------------------------------------------------
      三筆刻意做出差異：單場／三日系列（同一個場地，照文件「無論哪個場次，地點都一樣」）／
-     沒有手續費也沒有折扣的那種。 */
+     沒有折扣的那種。 */
   /* 每筆帶 type（2026-09-01）：正常流程是人先在類型閘門選完才進帶入閘門，但 admin 從
      創作者活動管理頁的「繼續設定」深連結（?import=）直接進來，沒有那一步——bookyay 自己
      知道活動是哪一種，跟著資料走。 */
@@ -5538,9 +5469,9 @@
       thirdParty: true, thirdPartyNote: "憑 bookyay 電子票 QR 至小巨蛋 2 號門驗票入場；開演前 30 分鐘停止入場。",
       /* 可轉贈（D303）：bookyay 表單的「可以轉贈門票／限制轉贈次數／設定轉贈期限」——這一筆是第三方門票，動態 QR 整組不成立 */
       transferable: true, transferLimit: true, transferMax: 1, transferDeadline: "days", transferDays: 1,
-      tiers: [{ name: "VIP", priceHkd: "1040", qty: "100", fee: "150" },
-              { name: "搖滾區", priceHkd: "820", qty: "200", fee: "120" },
-              { name: "看台", priceHkd: "600", qty: "300", fee: "80" }] },
+      tiers: [{ name: "VIP", priceHkd: "1040", qty: "100" },
+              { name: "搖滾區", priceHkd: "820", qty: "200" },
+              { name: "看台", priceHkd: "600", qty: "300" }] },
     { id: "bky-2", type: "meet",
       label: "MIRROR FANMEETING 2026",
       note:  "2026/10/02–10/04 · 高雄流行音樂中心（三場）",
@@ -5558,8 +5489,8 @@
       transferable: true, transferLimit: true, transferMax: 2, transferDeadline: "date", transferDate: "2026-09-30",
       sessions: [{ date: "2026-10-03" }, { date: "2026-10-04" }],
       sessionNames: ["Day 1", "Day 2", "Day 3"],
-      tiers: [{ name: "搖滾區", priceHkd: "940", qty: "150", fee: "120" },
-              { name: "一般席", priceHkd: "545", qty: "400", fee: "80" }] },
+      tiers: [{ name: "搖滾區", priceHkd: "940", qty: "150" },
+              { name: "一般席", priceHkd: "545", qty: "400" }] },
     { id: "bky-3", type: "festival",
       label: "城市草地音樂節 2026",
       note:  "2026/11/08 · 大佳河濱公園",
@@ -5572,7 +5503,7 @@
       date: "2026-11-08", start: "14:00", end: "22:00", doors: "13:00",
       saleFromD: "2026-09-01", saleFromT: "12:00", saleToD: "", saleToT: "",
       ship: "pickup", sessions: [],
-      tiers: [{ name: "一日票", priceHkd: "445", qty: "2000", fee: "" }] },
+      tiers: [{ name: "一日票", priceHkd: "445", qty: "2000" }] },
     /* 這兩筆是為了示範「取票方式不是電子門票時要多問什麼」（2026-08-10 使用者指示）：
        順豐寄送要運費、到店自取要取貨地點。兩個欄位不是 bookyay 帶來的，
        帶入後仍要創作者自己填，所以刻意留空。 */
@@ -5588,8 +5519,8 @@
       date: "2026-12-06", start: "19:00", end: "21:00", doors: "18:00",
       saleFromD: "2026-10-20", saleFromT: "12:00", saleToD: "2026-12-01", saleToT: "23:59",
       ship: "sf", sessions: [],
-      tiers: [{ name: "黑膠套票", priceHkd: "690", qty: "400", fee: "100" },
-              { name: "一般入場", priceHkd: "300", qty: "200", fee: "60" }] },
+      tiers: [{ name: "黑膠套票", priceHkd: "690", qty: "400" },
+              { name: "一般入場", priceHkd: "300", qty: "200" }] },
     { id: "bky-5", type: "concert",
       label: "冬季特別公演 — 台南",
       note:  "2027/01/17 · 台南文化中心（到店自取）",
@@ -5602,8 +5533,8 @@
       date: "2027-01-17", start: "19:30", end: "21:40", doors: "18:45",
       saleFromD: "2026-11-15", saleFromT: "20:00", saleToD: "2027-01-10", saleToT: "23:59",
       ship: "pickup", sessions: [],
-      tiers: [{ name: "全票", priceHkd: "400", qty: "900", fee: "80" },
-              { name: "學生票", priceHkd: "270", qty: "300", fee: "50" }] },
+      tiers: [{ name: "全票", priceHkd: "400", qty: "900" },
+              { name: "學生票", priceHkd: "270", qty: "300" }] },
     /* 已經帶過的場次（2026-08-13 使用者指示）：同一場 bookyay 活動只會在 ztor 上存在一次，
        所以清單裡照樣找得到它——找到才回答得了「我上次是不是已經建過了」——但不能再選一次。
        這三筆刻意對上站上既有的活動（events-store.js 的 inner-circle-fanmeet／album-signing-taipei／
@@ -5797,16 +5728,17 @@
         start: x.start || rec.start, end: x.end || rec.end, doors: x.doors || rec.doors })));
     renderSessions();
     lockSessions(true);
-    /* 票種：帶入的票種標 fix，價格、張數、手續費不可改；名稱、標籤、加購商品仍可改 */
+    /* 票種：帶入的票種標 fix，價格、張數不可改；名稱、標籤、加購商品仍可改。
+       2026-09-23（D316）：鎖定範圍不再含手續費——那個欄位整條退場了。 */
     /* 票種先建（名稱、預設價格與張數都來自 bookyay，鎖住），再讓矩陣照場次長出門票。
        各場的值一樣是資料一致，不是共用同一份。 */
     /* 票價：港幣原值鎖在 priceBase，欄位顯示換算成 TWD 的整數（§7.15「建立流程中創作者看到的是
        港幣換算成預設幣別的票價（唯讀）」）；沒有 ztorEvents 時退回原值。 */
     const toTwd = v => (window.ztorEvents ? String(window.ztorEvents.fx("HKD", "TWD", Number(v) || 0)) : String(v));
     types = rec.tiers.map(t => ({
-      id: "type-" + (++typeSeq), name: t.name, price: toTwd(t.priceHkd), qty: t.qty, fee: t.fee || "",
+      id: "type-" + (++typeSeq), name: t.name, price: toTwd(t.priceHkd), qty: t.qty,
       priceBase: { currency: "HKD", amount: Number(t.priceHkd) || 0 },
-      fix: true, fixFee: !!t.fee          // 文件「手續費(若有則fix)」：bookyay 有給才鎖
+      fix: true
     }));
     tiers = [];
     series.list.forEach(ss => types.forEach(ty => tiers.push(newCell(ss, ty))));
@@ -6083,7 +6015,7 @@
       .concat((src.images && src.images.gallery) || []).filter(Boolean);
     renderGallery(imgs);
     if ((src.tiers || []).length) {
-      types = src.tiers.map(t => ({ id: "type-" + (++typeSeq), name: t.name, price: t.price, qty: t.qty, fee: t.fee || "" }));
+      types = src.tiers.map(t => ({ id: "type-" + (++typeSeq), name: t.name, price: t.price, qty: t.qty }));
       tiers = [];
       series.list.forEach(ss => types.forEach(ty => tiers.push(newCell(ss, ty))));
       renderTypes();

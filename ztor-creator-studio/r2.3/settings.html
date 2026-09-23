@@ -371,20 +371,23 @@
               </select>
             </div>
             <div class="settings-row">
-              <div><div class="settings-row__label" data-i18n="settings.pay.min">Minimum payout threshold</div><div class="settings-row__hint" data-i18n="settings.pay.min-hint">Available balance must exceed this, in USD.</div></div>
+              <!-- 2026-09-23（D316b）：說明句的幣別改跟創作者幣別（值讀 js/currency.js 的
+                   CREATOR，見 data-currency-hint），不再寫死 USD；{cur} 佔位定義在 js/i18n.js
+                   的 settings.pay.min-hint。 -->
+              <div><div class="settings-row__label" data-i18n="settings.pay.min">Minimum payout threshold</div><div class="settings-row__hint" data-i18n="settings.pay.min-hint" data-currency-hint="settings.pay.min-hint">Available balance must exceed this, in USD.</div></div>
               <span class="amount-field amount-field--readonly" style="max-width:160px">
                 <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
                 <input class="input amount-field__input" value="100">
               </span>
             </div>
             <div class="settings-row" style="border-bottom:0">
-              <div><div class="settings-row__label" data-i18n="settings.pay.currency">Default currency</div><div class="settings-row__hint" data-i18n="settings.pay.currency-hint">Conversions happen at transaction time.</div></div>
-              <!-- 幣別值域（2026-08-25 使用者裁示「預設幣種要有新幣和港幣」加入 SGD／HKD）：
-                   排序＝美元先（現行預設），其餘按 ztor 的營運地區。與商店設定（store-settings.html
-                   的商店幣別，HKD／TWD／SGD／USD）的交集一致；JPY 是本頁原有、保留。
-                   規格只定義了「預設幣別」這個欄位、沒有列值域，本清單目前的權威是本輪裁示，
-                   已同步回 documents/5.1.9-設定.md F5。 -->
-              <select class="select" style="max-width:160px"><option selected>USD</option><option>TWD</option><option>HKD</option><option>SGD</option><option>JPY</option></select>
+              <div><div class="settings-row__label" data-i18n="settings.pay.currency">Currency</div><div class="settings-row__hint" data-i18n="currency.contact-support">Contact support to change it.</div></div>
+              <!-- 創作者幣別（2026-09-23 D316）：一位創作者只有一個幣別，建立帳號時設定，
+                   之後創作者與 Admin 都不能改——所以這裡本來就沒有「切換」這件事，不是把
+                   下拉停用。值由 js/currency.js 填（同一個常數也餵商店設定那一格），
+                   本頁不再自己維護一份幣別清單。原本的五選一 <select>（USD／TWD／HKD／
+                   SGD／JPY，2026-08-25 裁示）隨本則退場；值域本身沒有變，只是不再可選。 -->
+              <div class="field-readout" data-currency-readout>—</div>
             </div>
 
             <h3 style="font-family:var(--font-ui);font-size: var(--fs-13);font-weight: var(--fw-regular);letter-spacing:0.4px;text-transform:uppercase;color:var(--muted-foreground);margin:24px 0 0" data-i18n="settings.pay.tax-title">Tax information</h3>
@@ -651,6 +654,8 @@
 </div>
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script><script src="partials/date-input.js?v=r2.2"></script>
+<script src="js/events-store.js?v=r2.2"></script><!-- 幣別換算的匯率表（D316：js/currency.js 委派 ztorEvents.fx，不另開第二張表） -->
+<script src="js/currency.js?v=r2.2"></script><!-- 創作者幣別（D316）：唯讀讀數的單一來源，商店設定同一支 -->
 <script src="js/store-profile-store.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/sticky-actions.js?v=r2.2"></script>

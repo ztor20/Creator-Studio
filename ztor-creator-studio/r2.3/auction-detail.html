@@ -88,6 +88,14 @@
           <button class="btn btn--outline" type="button" data-ad-copy data-i18n="ad.btn.copy"><i data-lucide="link" class="ztor-icon"></i> Copy link</button>
           <button class="btn btn--outline" type="button" data-ad-preview-open data-i18n="ad.btn.preview"><i data-lucide="eye" class="ztor-icon"></i> Preview</button>
           <span data-ad-unlist-tip hidden><button class="btn btn--outline" type="button" data-ad-unlist><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button></span>
+          <!-- 上架（2026-09-23 使用者裁決）：已下架態的主要動作，排在「封存」之前；與上架設定卡的上架開關是同一個動作、同一支 doRelist()，
+               兩邊狀態連動。上架後為未開拍（D290），開拍要另設。已封存不提供上架，要先解除封存。
+               顯示／隱藏（2026-09-23 使用者裁決）：上架中多一顆「隱藏」／「顯示」（outline 樣式，排在下架／上架之後、封存之前），
+               與上架卡的顯示開關（`#ad-shown-toggle`）是同一個動作——點擊直接觸發該開關的 click，不複製一份判斷邏輯，沿用它現行
+               「不確認」的行為。只有上架中才出現（D265／§7.14：已下架、已封存時顯示軸本來就不可調）。 -->
+          <button class="btn btn--primary" type="button" data-ad-relist hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.list">List</span></button>
+          <button class="btn btn--outline" type="button" data-ad-hide hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.hide">Hide</span></button>
+          <button class="btn btn--outline" type="button" data-ad-show hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.show">Show</span></button>
           <button class="btn btn--outline" type="button" data-ad-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
           <button class="btn btn--destructive" type="button" data-ad-delete hidden><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="product-detail.btn.delete">Delete</span></button>
           <button class="btn btn--primary" type="button" data-ad-unarchive hidden><i data-lucide="archive-restore" class="ztor-icon"></i><span data-i18n="product-detail.btn.unarchive">Unarchive</span></button>
@@ -515,6 +523,8 @@
     if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { allow: '[data-ad-unarchive],[data-ad-delete],[data-ad-preview-open],[data-ad-preview-close]' });   /* D307：已封存態「刪除」與「解除封存」都放行 */
     const commit = () => { if (S.commit) S.commit(a); };
     const btnUnlist = $('[data-ad-unlist]'), unlistTip = $('[data-ad-unlist-tip]'), btnArchive = $('[data-ad-archive]'), btnUnarchive = $('[data-ad-unarchive]'), btnCopy = $('[data-ad-copy]');
+    const btnRelist = $('[data-ad-relist]');   /* 2026-09-23：已下架態的主要動作＝上架，與上架開關同一支 doRelist() */
+    const btnHide = $('[data-ad-hide]'), btnShow = $('[data-ad-show]');   /* 2026-09-23：只在上架中才出現，與 #ad-shown-toggle 同一個動作 */
     const btnDelete = $('[data-ad-delete]'), salesNote = $('[data-ad-sales-note]');   /* D307：零出價可刪／曾有出價只能封存 */
     const banner = $('[data-ad-archived-banner]');
     const listing = $('[data-ad-listing]'), saleLctl = $('[data-ad-sale-lctl]');
@@ -686,11 +696,17 @@
         unlistTip.title = live ? T('ad.unlist.live-disabled', 'Available after bidding ends.') : '';
         if (live) unlistTip.setAttribute('data-i18n-title', 'ad.unlist.live-disabled'); else unlistTip.removeAttribute('data-i18n-title');
       }
+      /* 已下架（未封存）→ 「上架」與「封存」並列，上架在前（2026-09-23 使用者裁決）；已封存不提供上架 */
+      if (btnRelist) btnRelist.hidden = archived || !L.isUnlisted(a);
       if (btnArchive) btnArchive.hidden = !L.canArchive(a);
       if (btnUnarchive) btnUnarchive.hidden = !archived;   /* D298：已封存態的唯一主要動作＝解除封存（回到已下架） */
       /* D307：從未有出價且已下架／已封存 → 「刪除」；曾有出價且已下架／已封存 → 上架卡多一句「已有銷售紀錄，只能封存」 */
       if (btnDelete) btnDelete.hidden = !(L.canDelete && L.canDelete(a));
       if (salesNote) salesNote.hidden = !((archived || L.isUnlisted(a)) && L.hasSales && L.hasSales(a));
+      /* 頁首「隱藏／顯示」（2026-09-23 使用者裁決）：與上架卡的顯示開關同一份資料，只在上架中才出現（D265／§7.14） */
+      const listedNow = !archived && !L.isUnlisted(a);
+      if (btnHide) btnHide.hidden = !(listedNow && a.shown !== false);
+      if (btnShow) btnShow.hidden = !(listedNow && a.shown === false);
     }
 
     /* 開關與欄位寫回資料 */
@@ -700,9 +716,17 @@
       el.addEventListener('click', flip);
       el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
     }
-    /* 切開＝重新上架（D290：走 ListingState.relist，回來是未開拍、排程全空）；切關由下方 intercept 攔下先確認 */
-    bindSwitch(listedToggle, () => a.listed !== false, on => { if (on) { L.relist(a); commit(); } else { L.unlist(a); commit(); } });
+    /* 上架（2026-09-23 使用者裁決）：頁首「上架」鈕與上架開關切開是同一個動作，兩個入口共用這一支——
+       D290：走 ListingState.relist，回來是未開拍、排程全空，開拍要另設。 */
+    function doRelist() {
+      if (L.isArchived(a) || !L.isUnlisted(a)) return;
+      L.relist(a); commit();
+    }
+    /* 切開＝上架；切關由下方 intercept 攔下先確認 */
+    bindSwitch(listedToggle, () => a.listed !== false, on => { if (on) doRelist(); else { L.unlist(a); commit(); } });
     bindSwitch(shownToggle, () => a.shown !== false, on => { a.shown = on; if (on) a.privateLink = null; });
+    /* 頁首「隱藏／顯示」直接觸發上架卡的顯示開關，不複製一份切換邏輯；沿用該開關現行「不確認」的行為。 */
+    document.querySelectorAll('[data-ad-hide],[data-ad-show]').forEach(b => b.addEventListener('click', () => { if (shownToggle) shownToggle.click(); }));
     bindSwitch(document.getElementById('ad-unlist-toggle'), () => a.unlistAt !== null && a.unlistAt !== undefined, on => { a.unlistAt = on ? '' : null; });
     const lt = document.getElementById('ad-listing-time'); if (lt) lt.addEventListener('change', () => { a.listAt = lt.value || null; paintCards(); });
     const ut = document.getElementById('ad-unlist-time'); if (ut) ut.addEventListener('change', () => { a.unlistAt = ut.value || ''; paintCards(); });
@@ -762,6 +786,9 @@
       });
     }
     if (btnUnlist) btnUnlist.addEventListener('click', askUnlist);
+    /* 頁首「上架」＝上架開關切開，同一支 doRelist()；不確認（拍賣沒有連帶對象）。
+       paintCards() 把開關、排程欄、徽章與未開拍提醒一起畫回資料的樣子，頁首那顆也跟著換成「封存」（反向連動）。 */
+    if (btnRelist) btnRelist.addEventListener('click', () => { doRelist(); paintCards(); });
     /* 上架開關切關＝下架，同樣先確認：capture 階段攔下、不讓開關自己翻面（切開不擋） */
     if (listedToggle) {
       const intercept = e => {

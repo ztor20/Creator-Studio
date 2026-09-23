@@ -76,24 +76,29 @@
 
 <!-- 支付手續費：逐金流商（Atom／Stripe）各自的百分比＋每筆固定額，套用所有交易（OTT 除外）。
      雙金流商＝產品範圍提案（現行 spec 5.1.0.3 為單一費率），記 ASSUMPTIONS UIA-081。
-     固定額只掛靜態「$」符號（不寫死 HK$／NT$）——實際幣別由 Admin 側欄的全站幣別統一，現只 HKD（使用者裁示 2026-07-23）。 -->
+     每筆固定額的幣別（2026-09-23 D316）：以**平台基準幣別**記錄（預設 HKD），站上不再有
+     「全站幣別」這個概念。前綴符號與底下那行換算都由 js/currency.js 填，套用到創作者時
+     依當時匯率換算成該創作者的幣別，所以畫面同時給換算後金額與匯率時點。 -->
 <section class="form-section form-section--outlined">
   <div class="form-section__head">
     <h3 class="form-section__title" data-i18n="fees.payment.title">Payment fee</h3>
   </div>
   <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="fees.payment.sub">Each payment provider has its own rate.</p>
+  <p class="text-sub" style="margin:0 0 var(--sp-12)" data-i18n="fees.payment.fixed.base">The fixed amount is recorded in the platform base currency and converted at the prevailing rate when it applies to a creator.</p>
   <div style="display:flex;flex-direction:column;gap:var(--sp-12)">
     <div style="display:flex;align-items:center;gap:var(--sp-12);flex-wrap:wrap">
       <span style="width:72px;font-family:var(--font-ui);font-size:var(--fs-14);font-weight:var(--fw-regular)">Atom</span>
       <span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" id="fee-payment-atom" type="number" inputmode="decimal" value="3.4"><span class="amount-field__unit">%</span></span>
       <span class="text-sub" aria-hidden="true">＋</span>
-      <span class="amount-field amount-field--readonly" style="width:110px"><span class="amount-field__unit">$</span><input class="input amount-field__input" id="fee-payment-atom-fixed" type="number" inputmode="decimal" value="2.40" aria-label="Atom fixed fee per transaction"></span>
+      <span class="amount-field amount-field--readonly" style="width:120px"><span class="amount-field__unit" data-currency-base-symbol>$</span><input class="input amount-field__input" id="fee-payment-atom-fixed" type="number" inputmode="decimal" value="2.40" aria-label="Atom fixed fee per transaction"></span>
+      <span class="text-sub" data-currency-fx-for="fee-payment-atom-fixed"></span>
     </div>
     <div style="display:flex;align-items:center;gap:var(--sp-12);flex-wrap:wrap">
       <span style="width:72px;font-family:var(--font-ui);font-size:var(--fs-14);font-weight:var(--fw-regular)">Stripe</span>
       <span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" id="fee-payment-stripe" type="number" inputmode="decimal" value="3.4"><span class="amount-field__unit">%</span></span>
       <span class="text-sub" aria-hidden="true">＋</span>
-      <span class="amount-field amount-field--readonly" style="width:110px"><span class="amount-field__unit">$</span><input class="input amount-field__input" id="fee-payment-stripe-fixed" type="number" inputmode="decimal" value="2.35" aria-label="Stripe fixed fee per transaction"></span>
+      <span class="amount-field amount-field--readonly" style="width:120px"><span class="amount-field__unit" data-currency-base-symbol>$</span><input class="input amount-field__input" id="fee-payment-stripe-fixed" type="number" inputmode="decimal" value="2.35" aria-label="Stripe fixed fee per transaction"></span>
+      <span class="text-sub" data-currency-fx-for="fee-payment-stripe-fixed"></span>
     </div>
   </div>
 </section>
@@ -270,6 +275,8 @@
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/events-store.js?v=r2.2"></script><!-- 幣別換算的匯率表（D316：js/currency.js 委派 ztorEvents.fx） -->
+<script src="js/currency.js?v=r2.2"></script><!-- 平台基準幣別（D316）：固定額的符號與換算讀數 -->
 <script src="partials/fee-exception-modal.js?v=r2.2"></script>
 <script>
   /* 平台費率頁互動（spec 5.1.0.3 F2–F4）——demo，非真後端。

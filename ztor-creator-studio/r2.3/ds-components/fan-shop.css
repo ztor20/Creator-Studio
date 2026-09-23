@@ -12,8 +12,11 @@
    ⚠ 這是前台鏡像、不是 Creator Studio design system 的元件：
      · 不得在 CS 其他頁引用——消費者只有 js/fan-event-page.js 渲染的粉絲視角活動頁
        （create-event.html 發布前預覽、event-detail.html 預覽與在地化、design-system.html demo），
-       以及 js/fan-product-page.js 渲染的粉絲視角商品頁（create-product.html 發布前預覽，第 4 段，2026-09-23）。
-     · token 不與 shared.css／_tokens.css 混用；本檔第 1–3 段的裸 rgb()／px 字級是前台鏡像的必要例外（第 4 段不新增），
+       以及 js/fan-product-page.js 渲染的粉絲視角商品頁（create-product.html 發布前預覽，第 4 段，2026-09-23）、
+       js/fan-bundle-page.js 渲染的粉絲視角組合包頁（create-bundle.html 發布前預覽，第 5 段，2026-09-23）、
+       js/fan-project-page.js 渲染的粉絲視角專案頁（create-project.html 最後一步預覽與發布，第 6 段，2026-09-23；
+       同一支也畫 publish-work.html 最後一步的作品頁＝前台 title.html，第 6 段末「作品模式」兩段）。
+     · token 不與 shared.css／_tokens.css 混用；本檔第 1–3 段的裸 rgb()／px 字級是前台鏡像的必要例外（第 4–6 段不新增），
        已在 design-system.md §4.215 註記、ds-baseline.json 手動登記。
      · 前台版型改了就重抓一次覆蓋本檔，不在這裡手改視覺（改了就不是鏡像）。
    使用者原話（2026-09-22）：「預覽 UI 必須做得和這兩個一模一樣，只是資料和機制套用我們的流程與功能」。
@@ -658,3 +661,226 @@
 /* 素材槽可放影片（D259）：主圖框與縮圖裡的 <video> 比照 <img> 的填滿方式（前台只有 img，這是鏡像的延伸） */
 .fep-shop .pdp-gallery__thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .fep-shop video.pdp-gallery__img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* ── 5. 組合包頁（js/fan-bundle-page.js，D310 組合側，2026-09-23）──────────────────────
+   建立組合「下一步：預覽」後的全頁預覽主區。第 1–3 段是共用的前台殼、第 4 段的價格塊／庫存提醒／
+   數量步進器／選項列直接重用，這一段只補前台兩個組合分支才有的元件：
+   純商品套組（renderBundle）的購買欄規格 chip 與主鈕右箭頭、含票券組合（renderEventSet）的
+   活動名 kicker，以及兩者共用的「套組內容」卡片格、「座位區域」的剩餘張數、「組合專屬權益」清單。
+   來源＝前台 components.css?v=20260922j 同名規則（2026-09-23 讀原始碼，未開瀏覽器），加 `.fep-shop` 前綴；
+   前台寫死的 rgba()／#fff 改用本檔第 1 段的前台 token 或 color-mix() 推（本段不新增裸色值與裸字級）。
+   互動態只留 hover：預覽裡這些控件都是 data-pp-inert。 */
+.fep-shop .pdp-chip { position: relative; min-width: 48px; min-height: 44px; padding: 0 var(--space-4); display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--white-alpha-4); color: var(--text-primary); font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); font-weight: var(--fw-medium); cursor: pointer; transition: border-color 160ms var(--ease-out), background 160ms var(--ease-out), color 160ms var(--ease-out); }
+.fep-shop .pdp-chip:hover { border-color: var(--border-strong); }
+.fep-shop .pdp-chip.is-selected { border-color: var(--yellow-500); background: color-mix(in srgb, var(--yellow-500) 8%, transparent); }
+.fep-shop .pdp-bundle-picker .pdp-variant__opts { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.fep-shop .pdp-buy__add-chev { transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1); }
+.fep-shop .pdp-buy__add:hover .pdp-buy__add-chev { transform: translateX(3px); }
+.fep-shop .pdp-buy__kicker { display: block; margin: 0 0 var(--space-2); font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); font-weight: var(--fw-medium); line-height: 1.4; text-wrap: balance; word-break: keep-all; }
+.fep-shop .pdp-set__host { color: var(--yellow-500); text-decoration: none; }
+.fep-shop .pdp-set__host:hover { color: var(--yellow-400); }
+.fep-shop .pdp-bundle { margin-top: var(--space-section); }
+.fep-shop .pdp-bundle__title { margin: 0 0 var(--space-6); font-size: var(--fs-h4); color: var(--text-primary); }
+.fep-shop .pdp-bundle__grid { display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
+@media (min-width: 768px) { .fep-shop .pdp-bundle__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); } }
+.fep-shop .pdp-bundle-item { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); background: var(--bg-secondary); }
+.fep-shop .pdp-bundle-item__media { position: relative; aspect-ratio: 2 / 3; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-tertiary); }
+.fep-shop .pdp-bundle-item__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fep-shop .pdp-bundle-item__media--empty { display: grid; place-items: center; color: var(--text-disabled); }
+.fep-shop .pdp-bundle-item__media--empty .ztor-icon { width: 32px; height: 32px; }
+.fep-shop .pdp-bundle-item__body { display: flex; flex-direction: column; gap: var(--space-2); }
+.fep-shop .pdp-bundle-item__name { margin: 0; font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); font-weight: var(--fw-medium); color: var(--text-primary); line-height: 1.4; }
+.fep-shop .pdp-bundle-item__spec { font-family: var(--font-cjk-text); font-size: var(--fs-caption); line-height: 1.5; color: var(--text-tertiary); text-wrap: pretty; }
+.fep-shop .pdp-bundle-item__link { margin-top: var(--space-1); align-self: flex-start; font-family: var(--font-cjk-text); font-size: var(--fs-caption); color: var(--yellow-500); }
+.fep-shop .pdp-bundle-item__link:hover { color: var(--yellow-400); }
+/* 剩 N 張：前台用 --warning-500，本檔第 1 段沒有這支 token，改用同為提醒語氣的品牌橘（同 .pdp-stock） */
+.fep-shop .pdp-tier__low { font-style: normal; color: var(--brand-500); white-space: nowrap; }
+.fep-shop .pdp-perks__list { display: grid; grid-template-columns: 1fr; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+@media (min-width: 768px) { .fep-shop .pdp-perks__list { grid-template-columns: repeat(2, 1fr); } }
+.fep-shop .pdp-perks__item { display: grid; grid-template-columns: auto 1fr; align-items: start; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--white-alpha-4); }
+/* 前台是 mask 圖示（icons/star_outline.svg）＋黃底；站上改包 lucide star，顏色走 currentColor */
+.fep-shop .pdp-perks__icon { width: 20px; height: 20px; flex: none; color: var(--yellow-500); }
+.fep-shop .pdp-perks__icon .ztor-icon { width: 100%; height: 100%; }
+.fep-shop .pdp-perks__text { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.fep-shop .pdp-perks__title { font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); font-weight: var(--fw-bold); color: var(--text-primary); text-wrap: balance; word-break: keep-all; }
+
+/* ── 6. 專案頁元件（js/fan-project-page.js，D310 專案側，2026-09-23）──────────────────────
+   建立專案最後一步「預覽與發布」的全頁預覽主區（5.1.2.1 §4.3）。第 1–3 段的前台殼（.container／.section／
+   .btn--ghost／.btn--yellow-ghost／.icon-btn／.status-tag--yellow）直接重用，這一段只補前台專案頁才有的元件：
+   返回列、hero（模糊背景＋2:3 海報＋標題列＋發起人＋狀態／資訊列＋關鍵字）、共創募資面板、標題頁的描述與價格鈕、
+   內文段（.detail-section）、方案卡（.reward-tier）、說明文字（.cocreate-prose）、預算分配（.budget-split）、圖片格。
+   來源＝前台 https://ztor.vercel.app/cocreate-project.html 與 title.html 所引用的 components.css?v=20260922j／tokens.css
+   同名規則（2026-09-23 讀原始碼，未開瀏覽器），加 `.fep-shop` 前綴；前台寫死的 rgba()／px 字級改用本檔第 1 段的前台 token、
+   color-mix() 或 calc() 推（本段不新增裸色值與裸字級）。前台 tokens.css 有、第 1 段沒收的幾支
+   （--white-alpha-8／16、--yellow-600、--fs-body-lg、--lh-h1／h3／body-lg／body-sm、--chart-1..3）在這裡就地換算，不另立 token。
+   互動態只留 hover：預覽裡的按鈕都是 data-pp-inert（價格鈕除外——金額要點得到價格表）。
+   不收：sticky 返回列（預覽在側欄版面裡，不黏頂）、描述三行截斷（預覽要看全文才能校翻譯）、浮動支持條、時間軸、留言。 */
+.fep-shop .container--wide { max-width: 1440px; }
+.fep-shop .cocreate-detail { --ccd-back-h: 56px; --ccd-back-rest: var(--space-5); --detail-hero-lift: calc((var(--ccd-back-h) + var(--ccd-back-rest)) * -1); }
+.fep-shop .detail-back { position: relative; z-index: 1; display: flex; align-items: center; gap: var(--space-4); height: 56px; }
+.fep-shop .cocreate-detail > .detail-back { margin-top: var(--ccd-back-rest); height: var(--ccd-back-h); }
+.fep-shop .detail-back__nav { display: inline-flex; align-items: center; gap: var(--space-4); text-decoration: none; }
+.fep-shop .detail-back__title { margin: 0; font-family: var(--font-cjk-text); font-size: var(--fs-body); font-weight: var(--fw-medium); color: var(--text-primary); }
+.fep-shop .detail-back__spacer { flex: 1; }
+.fep-shop .detail-back .icon-btn svg { width: 18px; height: 18px; }
+.fep-shop .detail-hero { position: relative; isolation: isolate; overflow-x: clip; }
+.fep-shop .detail-hero__bg { position: absolute; top: var(--detail-hero-lift, 0px); left: 0; right: 0; height: calc(480px - var(--detail-hero-lift, 0px)); z-index: -1; background-position: center top; background-size: cover; background-repeat: no-repeat; filter: blur(10px); transform: scale(1.08); transform-origin: center top; }
+.fep-shop .detail-hero__bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--bg-primary) 92%, transparent) 0%, color-mix(in srgb, var(--bg-primary) 55%, transparent) 42%, color-mix(in srgb, var(--bg-primary) 30%, transparent) 100%), linear-gradient(180deg, color-mix(in srgb, var(--bg-primary) 30%, transparent) 0%, color-mix(in srgb, var(--bg-primary) 55%, transparent) 56%, var(--bg-primary) 100%); }
+.fep-shop .detail-hero__inner { padding-top: 20px; padding-bottom: 8px; }
+.fep-shop .cocreate-detail .detail-hero__inner { padding-top: 0; }
+.fep-shop .detail-head { display: flex; gap: 40px; align-items: flex-start; padding-top: 8px; }
+.fep-shop .detail-head__poster { flex: 0 0 240px; width: 240px; aspect-ratio: 2 / 3; border-radius: var(--radius-lg); object-fit: cover; background: var(--bg-tertiary); border: 1px solid var(--border-subtle); box-shadow: 0 24px 60px color-mix(in srgb, var(--neutral-900) 50%, transparent); }
+@media (min-width: 1025px) { .fep-shop .cocreate-detail .detail-head__poster { flex-basis: 352px; width: 352px; } }
+/* 還沒放主視覺：前台 onerror 會掛品牌磚，站上沒有那支樣式，改空框＋置中 icon（同第 3 段的空圖庫框） */
+.fep-shop .detail-head__poster--empty { display: grid; place-items: center; color: var(--text-disabled); }
+.fep-shop .detail-head__poster--empty .ztor-icon { width: 40px; height: 40px; }
+.fep-shop .detail-head__main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 24px; }
+.fep-shop .cocreate-detail .detail-head__main { gap: var(--space-4); }
+.fep-shop .detail-titlebar { display: flex; align-items: flex-start; gap: var(--space-4); }
+.fep-shop .detail-titlebar__lead { flex: 1 1 auto; min-width: 0; }
+/* 前台寫死 40px（tokens 的 --fs-h2 是 42）：本段不寫裸字級，由 --fs-h2 − 2px 推 */
+.fep-shop .detail-title { margin: 0; display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); font-family: var(--font-cjk-display); font-size: calc(var(--fs-h2) - 2px); line-height: 1.4; font-weight: var(--fw-bold); color: var(--text-primary); letter-spacing: -0.01em; }
+.fep-shop .detail-titlebar__aside { display: inline-flex; align-items: center; gap: var(--space-2); flex: 0 0 auto; color: var(--text-secondary); font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); text-decoration: none; white-space: nowrap; }
+.fep-shop .cocreate-hero__info-icon { display: inline-grid; place-items: center; width: 16px; height: 16px; }
+.fep-shop .cocreate-hero__info-icon svg { width: 100%; height: 100%; }
+.fep-shop .cocreate-hero__by { display: inline-flex; align-items: center; gap: var(--space-2); font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); color: var(--text-secondary); }
+.fep-shop .cocreate-hero__by strong { color: var(--text-primary); font-weight: var(--fw-medium); }
+.fep-shop .cocreate-hero__by-avatar { width: 24px; height: 24px; border-radius: var(--radius-pill); object-fit: cover; background: var(--bg-tertiary); }
+.fep-shop .cocreate-hero__by-avatar--initial { display: inline-grid; place-items: center; font-family: var(--font-latin); font-size: var(--fs-caption); font-weight: var(--fw-bold); color: var(--text-primary); }
+.fep-shop .detail-meta { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); color: var(--text-secondary); }
+.fep-shop .detail-meta__sep { width: 1px; height: 12px; background: var(--border-default); }
+.fep-shop .detail-meta__label { color: var(--text-tertiary); }
+.fep-shop .cocreate-hero__status-line .cocreate-status-text { color: var(--text-primary); font-weight: var(--fw-medium); }
+.fep-shop .cocreate-hero__status-group { display: inline-flex; align-items: center; gap: var(--space-3); }
+.fep-shop .detail-keywords { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.fep-shop .detail-chip { display: inline-flex; align-items: center; padding: 2px 12px 4px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--text-primary) 16%, transparent); color: var(--text-secondary); font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); white-space: nowrap; }
+.fep-shop .detail-desc { margin: 0; max-width: 920px; font-family: var(--font-cjk-text); font-size: var(--fs-body); line-height: var(--lh-body); color: var(--text-secondary); }
+.fep-shop .detail-desc__text { white-space: pre-line; }
+/* 募資面板 */
+.fep-shop .cocreate-fund { display: flex; flex-direction: column; gap: var(--space-3); padding: clamp(16px, 1.8vw, 24px); border-radius: var(--radius-xl); background: var(--white-alpha-4); border: 1px solid var(--border-default); backdrop-filter: var(--glass-blur); font-family: var(--font-cjk-text); }
+.fep-shop .cocreate-fund__amount-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; }
+.fep-shop .cocreate-fund__amount { font-family: var(--font-latin); font-size: calc(var(--fs-h2) - 4px); line-height: 1; font-weight: var(--fw-bold); color: var(--text-primary); font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+.fep-shop .cocreate-fund__goal { font-size: var(--fs-body-sm); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.fep-shop .cocreate-fund__backers { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--fs-body-sm); color: var(--text-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fep-shop .cocreate-fund__backers-icon { display: inline-grid; width: 16px; height: 16px; }
+.fep-shop .cocreate-fund__backers-icon svg, .fep-shop .cocreate-fund__note-icon svg, .fep-shop .cocreate-hero__io-icon svg { width: 100%; height: 100%; display: block; }
+.fep-shop .cocreate-fund__bar-row { position: relative; display: flex; align-items: center; min-height: 24px; }
+.fep-shop .cocreation-card__bar { height: 3px; background: color-mix(in srgb, var(--text-primary) 8%, transparent); border-radius: var(--radius-pill); overflow: hidden; }
+.fep-shop .cocreate-fund .cocreation-card__bar { height: 6px; flex: 1; }
+.fep-shop .cocreation-card__bar-fill { width: var(--bar-fill, 0%); height: 100%; background: linear-gradient(90deg, color-mix(in srgb, var(--yellow-500) 85%, var(--neutral-900)), var(--yellow-400)); box-shadow: 0 0 12px color-mix(in srgb, var(--brand-500) 35%, transparent); border-radius: var(--radius-pill); }
+/* 前台寫死 11.5px：由 --fs-caption（12）− 0.5px 推 */
+.fep-shop .cocreate-fund__pct-pill { position: absolute; top: 50%; left: clamp(20px, var(--bar-fill, 0%), calc(100% - 20px)); transform: translate(-50%, -50%); padding: 2px 8px; border-radius: var(--radius-pill); background: var(--yellow-500); color: var(--yellow-ink); font-family: var(--font-latin); font-size: calc(var(--fs-caption) - 0.5px); line-height: 1.4; font-weight: var(--fw-bold); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fep-shop .cocreate-fund__status-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); flex-wrap: wrap; }
+.fep-shop .cocreate-fund__countdown { font-size: var(--fs-body-sm); font-weight: var(--fw-medium); color: var(--yellow-500); font-variant-numeric: tabular-nums; }
+.fep-shop .cocreate-fund__meta-period { font-size: var(--fs-caption); color: var(--text-tertiary); font-variant-numeric: tabular-nums; margin-left: auto; }
+.fep-shop .cocreate-hero__actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-2); }
+.fep-shop .cocreate-hero__io { display: inline-flex; align-items: center; gap: var(--space-2); margin-left: auto; color: var(--text-secondary); font-size: var(--fs-body-sm); font-variant-numeric: tabular-nums; }
+.fep-shop .cocreate-hero__io-btn { width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border-radius: var(--radius-pill); border: 1px solid var(--border-default); background: var(--glass-bg-default); color: var(--text-primary); }
+.fep-shop .cocreate-hero__io-icon { display: block; width: 18px; height: 18px; }
+.fep-shop .cocreate-fund__note { display: flex; gap: var(--space-2); margin: var(--space-2) 0 0; font-size: var(--fs-caption); line-height: 1.6; color: var(--text-tertiary); }
+.fep-shop .cocreate-fund__note-icon { flex-shrink: 0; width: 15px; height: 15px; margin-top: 2px; color: var(--success-500); }
+/* 標題頁（直接發行）的動作列與價格鈕 */
+.fep-shop .detail-actions { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; margin-top: 4px; }
+.fep-shop .detail-actions__primary { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.fep-shop .detail-actions .btn--lg { min-width: 168px; height: 58px; }
+.fep-shop .detail-price { flex-direction: column; gap: 6px; line-height: 1; }
+.fep-shop .detail-price__main { display: inline-flex; align-items: center; gap: 6px; }
+.fep-shop .detail-price__amount { font-family: var(--font-cjk-display); font-size: var(--fs-h4); line-height: 1; font-weight: var(--fw-bold); }
+.fep-shop .detail-price__label { font-family: var(--font-cjk-text); font-size: var(--fs-caption); font-weight: var(--fw-regular); line-height: 1; color: color-mix(in srgb, var(--brand-500) 85%, var(--neutral-900)); }
+/* 內文段 */
+.fep-shop .section:has(> .detail-body) { padding-top: 48px; }
+.fep-shop .detail-body { display: flex; flex-direction: column; gap: 56px; padding-top: 8px; }
+.fep-shop .detail-section { display: flex; flex-direction: column; gap: 24px; }
+.fep-shop .detail-section__head { display: flex; align-items: center; gap: var(--space-2); }
+.fep-shop .detail-section__title { margin: 0; font-family: var(--font-cjk-display); font-size: var(--fs-h4); line-height: 1.55; font-weight: var(--fw-bold); color: var(--text-primary); }
+.fep-shop .detail-section__count { font-family: var(--font-cjk-text); font-size: var(--fs-h4); color: var(--text-tertiary); }
+/* 方案卡 */
+.fep-shop .reward-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); align-items: stretch; }
+.fep-shop .reward-tier { position: relative; display: flex; flex-direction: column; gap: var(--space-4); padding: 24px; border-radius: var(--radius-xl); background: var(--bg-secondary); border: 1px solid var(--border-default); transition: border-color 200ms var(--ease-out), transform 200ms var(--ease-out); }
+.fep-shop .reward-tier:hover { border-color: var(--border-strong); }
+.fep-shop .reward-tier__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.fep-shop .reward-tier__name { font-family: var(--font-cjk-display); font-size: var(--fs-h5); font-weight: var(--fw-bold); color: var(--text-primary); }
+/* 前台寫死 28px：由 --fs-h3（24）＋ 4px 推 */
+.fep-shop .reward-tier__price { font-family: var(--font-latin); font-size: calc(var(--fs-h3) + 4px); line-height: 1; font-weight: var(--fw-bold); color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.fep-shop .reward-tier__benefits { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.fep-shop .reward-tier__benefits li { position: relative; padding-left: var(--space-5); font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); line-height: 1.6; color: var(--text-secondary); }
+.fep-shop .reward-tier__benefits li::before { content: ''; position: absolute; left: 2px; top: 4px; width: 6px; height: 10px; border: solid var(--yellow-500); border-width: 0 2px 2px 0; transform: rotate(40deg); }
+.fep-shop .reward-tier__backers { display: flex; align-items: center; gap: var(--space-2); margin-top: auto; }
+.fep-shop .reward-tier__count { font-family: var(--font-cjk-text); font-size: var(--fs-caption); color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+.fep-shop .reward-tier__foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border-subtle); }
+.fep-shop .reward-tier__slots { font-family: var(--font-cjk-text); font-size: var(--fs-caption); font-weight: var(--fw-medium); color: var(--text-tertiary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fep-shop .reward-tier__cta { display: inline-flex; align-items: center; padding: 0; border: none; background: none; font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); font-weight: var(--fw-bold); color: var(--yellow-500); }
+/* 說明文字 */
+.fep-shop .cocreate-prose { display: flex; flex-direction: column; gap: var(--space-4); max-width: 760px; }
+.fep-shop .cocreate-prose__lead { margin: 0; font-family: var(--font-cjk-text); font-size: calc(var(--fs-body) + 2px); line-height: 1.65; color: var(--text-primary); white-space: pre-line; }
+.fep-shop .cocreate-prose p { margin: 0; font-family: var(--font-cjk-text); font-size: var(--fs-body); line-height: var(--lh-body); color: var(--text-secondary); }
+/* 故事是一個可翻譯欄位（一個 contenteditable）：前台是多個 <p>，這裡整段一格、換行靠 pre-line 保留 */
+.fep-shop .cocreate-prose .fpj-prose__story { white-space: pre-line; }
+.fep-shop .cocreate-meta-list { display: flex; flex-direction: column; gap: var(--space-2); font-family: var(--font-cjk-text); font-size: var(--fs-body); color: var(--text-secondary); }
+.fep-shop .cocreate-meta-list strong { color: var(--text-primary); font-weight: var(--fw-medium); margin-right: var(--space-2); }
+/* 預算分配：前台三段固定配色（--chart-1 綠／--chart-2 紫／--chart-3 天藍）；本頁分類數量不定，依序輪替站上圖表色
+   （深色主題值：--chart-3 #4ADE80 與前台第 1 色同值、--chart-5 近前台第 2 色、--chart-7 近前台第 3 色） */
+.fep-shop .budget-split { display: flex; flex-direction: column; gap: var(--space-4); }
+.fep-shop .budget-split__bar { display: flex; height: 10px; border-radius: var(--radius-pill); overflow: hidden; gap: 2px; background: color-mix(in srgb, var(--text-primary) 8%, transparent); }
+.fep-shop .budget-split__seg { height: 100%; border-radius: var(--radius-pill); }
+.fep-shop .budget-split__legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
+.fep-shop .budget-split__item { display: flex; flex-direction: column; gap: var(--space-1); }
+.fep-shop .budget-split__item-label { display: inline-flex; align-items: center; gap: var(--space-2); font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); color: var(--text-secondary); }
+.fep-shop .budget-split__dot { flex: none; width: 10px; height: 10px; border-radius: var(--radius-pill); }
+.fep-shop .budget-split__seg:nth-child(5n+1), .fep-shop .budget-split__item:nth-child(5n+1) .budget-split__dot { background: var(--chart-3); }
+.fep-shop .budget-split__seg:nth-child(5n+2), .fep-shop .budget-split__item:nth-child(5n+2) .budget-split__dot { background: var(--chart-5); }
+.fep-shop .budget-split__seg:nth-child(5n+3), .fep-shop .budget-split__item:nth-child(5n+3) .budget-split__dot { background: var(--chart-7); }
+.fep-shop .budget-split__seg:nth-child(5n+4), .fep-shop .budget-split__item:nth-child(5n+4) .budget-split__dot { background: var(--chart-6); }
+.fep-shop .budget-split__seg:nth-child(5n+5), .fep-shop .budget-split__item:nth-child(5n+5) .budget-split__dot { background: var(--chart-4); }
+.fep-shop .budget-split__pct { font-family: var(--font-latin); font-size: var(--fs-h4); font-weight: var(--fw-bold); color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.fep-shop .budget-split__amount { font-family: var(--font-cjk-text); font-size: var(--fs-caption); color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+/* 圖片格 */
+.fep-shop .media-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.fep-shop .media-card { position: relative; display: block; aspect-ratio: 16 / 9; border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-tertiary); border: 1px solid var(--border-subtle); }
+.fep-shop .media-card__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* 交付時程（D322：原 F10 併入前台預覽）：里程碑沿用前台 .project-timeline 三段殼；前台的階段色是依
+   [data-project-state] 算第幾段，這裡改由每段自帶的 .is-done／.is-current 決定（里程碑三態＝已完成／進行中／未開始）。 */
+.fep-shop .project-timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-6); padding: clamp(20px, 2.2vw, 32px); padding-top: var(--space-12); border-radius: var(--radius-xl); background: var(--bg-secondary); border: 1px solid var(--border-subtle); }
+.fep-shop .project-timeline__phase { position: relative; display: flex; flex-direction: column; gap: var(--space-3); padding-top: var(--space-10); }
+.fep-shop .project-timeline__phase::before { content: ''; position: absolute; top: 7px; left: 0; right: 0; height: 2px; background: var(--border-default); }
+.fep-shop .project-timeline__phase:first-child::before { left: 7px; border-radius: var(--radius-pill) 0 0 var(--radius-pill); }
+.fep-shop .project-timeline__phase:last-child::before { right: 7px; border-radius: 0 var(--radius-pill) var(--radius-pill) 0; }
+.fep-shop .project-timeline__node { position: absolute; top: 0; left: 0; width: 16px; height: 16px; border-radius: var(--radius-pill); background: var(--neutral-700); border: 2px solid var(--border-strong); z-index: 1; }
+.fep-shop .project-timeline__badge { position: absolute; top: -34px; left: 8px; transform: translateX(-50%); padding: 3px var(--space-2); border-radius: var(--radius-pill); background: var(--yellow-500); color: var(--yellow-ink); font-family: var(--font-cjk-text); font-size: var(--fs-caption); font-weight: var(--fw-bold); white-space: nowrap; }
+.fep-shop .project-timeline__phase-title { font-family: var(--font-cjk-display); font-size: var(--fs-h5); font-weight: var(--fw-bold); color: var(--text-secondary); }
+.fep-shop .project-timeline__phase.is-current .project-timeline__node { background: var(--yellow-500); border-color: var(--yellow-500); box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-500) 18%, transparent); }
+.fep-shop .project-timeline__phase.is-current .project-timeline__phase-title { color: var(--yellow-500); }
+.fep-shop .project-timeline__phase.is-done .project-timeline__node { background: var(--success-500); border-color: var(--success-500); }
+.fep-shop .project-timeline__phase.is-done .project-timeline__phase-title { color: var(--text-primary); }
+/* 預期交付的就地日期欄：前台只有日期文字，這是鏡像裡唯一的表單控件（D322 規定本步可調整），外觀取前台 .pdp-size-chip 的邊框與底 */
+.fep-shop .fpj-delivery__row { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); font-family: var(--font-cjk-text); font-size: var(--fs-body); color: var(--text-secondary); }
+.fep-shop .fpj-delivery__k { color: var(--text-primary); font-weight: var(--fw-medium); }
+.fep-shop .fpj-delivery__input { min-height: 44px; padding: var(--space-2) var(--space-4); border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--white-alpha-4); color: var(--text-primary); font-family: var(--font-latin); font-size: var(--fs-body-sm); color-scheme: dark; }
+.fep-shop .fpj-delivery__input:hover { border-color: var(--border-strong); }
+.fep-shop .fpj-delivery__input:focus-visible { outline: 2px solid var(--yellow-500); outline-offset: 2px; }
+.fep-shop .fpj-delivery__hint { font-size: var(--fs-caption); color: var(--yellow-500); }
+/* 作品模式（2026-09-23，publish-work.html 最後一步「預覽與送審」；js/fan-project-page.js 的 credits／clips）：
+   前台 title.html 的「創作團隊」與「預告與花絮」兩段，來源＝前台 components.css?v=20260922j 的 .detail-castwrap／
+   .detail-crew（含「沒有演員卡」那條緊湊行距）與 .media-card__play 同名規則，加 `.fep-shop` 前綴。
+   前台播放鈕寫死的黑色／白色半透明值，改由第 1 段 --neutral-900／--text-primary 以 color-mix() 推；
+   前台是 ::before 背景圖（assets/icons/media/play.svg），站上沒有那支圖，改成內層 span 包 lucide play。 */
+.fep-shop .detail-castwrap { display: flex; gap: 64px; align-items: flex-start; justify-content: space-between; }
+.fep-shop .detail-castwrap .cast-main { flex: 1 1 auto; min-width: 0; }
+.fep-shop .detail-crew { flex: 0 0 auto; margin: 0; padding-right: 24px; display: grid; grid-template-columns: auto auto; gap: 14px 28px; align-content: start; justify-content: start; }
+.fep-shop [data-cast-main][hidden] + .detail-crew { gap: 10px 12px; padding-right: 0; }
+.fep-shop .detail-crew dt { font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); color: var(--text-secondary); }
+.fep-shop .detail-crew dd { margin: 0; font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); font-weight: var(--fw-medium); color: var(--text-primary); }
+.fep-shop .media-card__play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--neutral-900) 30%, transparent); transition: background 150ms var(--ease-out); }
+.fep-shop .media-card:hover .media-card__play { background: color-mix(in srgb, var(--neutral-900) 45%, transparent); }
+.fep-shop .media-card__play-btn { display: grid; place-items: center; width: 56px; height: 56px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--neutral-900) 55%, transparent); border: 1px solid color-mix(in srgb, var(--text-primary) 70%, transparent); color: var(--text-primary); backdrop-filter: blur(6px); }
+.fep-shop .media-card__play-btn .ztor-icon { width: 22px; height: 22px; }
+@media (max-width: 1024px) {
+  .fep-shop .detail-castwrap { flex-direction: column; gap: 28px; align-items: stretch; }
+  .fep-shop .detail-crew { grid-template-columns: auto 1fr; padding-right: 0; }
+}
+/* 窄寬收合（前台行動版另有一整份 rwd css，這裡只做到不擠爆：海報上疊、方案與圖例改一欄／兩欄） */
+@media (max-width: 900px) {
+  .fep-shop .detail-head { flex-direction: column; gap: var(--space-6); }
+  .fep-shop .reward-tiers, .fep-shop .project-timeline { grid-template-columns: 1fr; }
+  .fep-shop .budget-split__legend, .fep-shop .media-grid { grid-template-columns: repeat(2, 1fr); }
+}

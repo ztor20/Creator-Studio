@@ -42,8 +42,6 @@
 <link rel="stylesheet" href="ds-components/spec-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/variant-builder.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/fan-store.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
@@ -95,14 +93,25 @@
         <!-- Dock 槽（2026-09-11，詳情頁只准一條固定列）：分頁工具列捲到頂列底下時，它的 tabs 進 [data-dock-tabs]、動作進 [data-dock-actions]；js/detail-topbar.js -->
         <div class="detail-topbar__tabs" data-dock-tabs></div>
         <div class="page-intro__actions">
-          <button class="btn btn--outline" type="button" data-pd-preview-open data-dock-icon><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.preview">See as fan</span></button>
+          <!-- 預覽與在地化（§2.2 主操作 · D319，2026-09-23）：取代原本的「粉絲視角預覽（See as fan）」分割預覽——
+               §2.18 那個畫面主區本身就是同一份粉絲視角完整商品頁，還能改翻譯，頁首不再另設一顆唯讀預覽鈕。
+               href 由下方 inline script 依 ?id 補上；已封存也走得進去（那頁自己唯讀，見 product-localization.html）。 -->
+          <a class="btn btn--outline" href="product-localization.html" data-pd-localize data-dock-icon><i data-lucide="globe" class="ztor-icon"></i><span data-i18n="product-detail.btn.localize">Preview &amp; localization</span></a>
           <!-- 頁首主要動作依狀態互斥、一次只出現一個（spec 5.1.5.1 §2.2，主規格 §7.14「封存與不可刪除」· D284，2026-09-18）：
                上架中→「下架」（＝把上架開關切關，同一份資料）；已下架→「封存」（先確認；仍在上架中組合包裡則列出並一同下架）；
                已封存→「解除封存」（不確認、回到已下架、設定照舊、不自動上架；D298 2026-09-22 修訂 D284 的「直接回到上架」）。
                刪除（D307 2026-09-22，修訂 D284「發布過即不可刪除」）：已下架或已封存且零成交時，主要動作旁多一顆「刪除」（紅框次要樣式，不搶主動作）；
                有成交只能封存、任何頁面都沒有刪除入口；上架中要先下架。
-               顯隱由 syncPrimaryAction() 依 ListingState 決定，這裡四顆都先 hidden。 -->
+               上架（2026-09-23 使用者裁決）：已下架態多一顆「上架」（主要樣式，排在「封存」之前），與上架設定卡的上架開關是同一個動作、
+               同一支 pdRelist()；兩邊狀態連動（切一邊另一邊跟著變）。已封存不提供上架，要先解除封存。
+               顯示／隱藏（2026-09-23 使用者裁決）：上架中多一顆「隱藏」／「顯示」（outline 樣式，排在下架／上架之後、封存之前），
+               與上架設定卡的「顯示於商店」開關（`#pd-shown-toggle`）是同一個動作——點擊直接觸發該開關的 click，不複製一份判斷邏輯，
+               沿用它現行「不確認」的行為。只有上架中才出現（D265／§7.14：已下架、已封存、草稿時顯示軸本來就不可調）。
+               顯隱由 syncPrimaryAction() 依 ListingState 決定，這裡七顆都先 hidden。 -->
           <button class="btn btn--outline" type="button" data-pd-unlist hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button>
+          <button class="btn btn--primary" type="button" data-pd-relist hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.list">List</span></button>
+          <button class="btn btn--outline" type="button" data-pd-hide hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.hide">Hide</span></button>
+          <button class="btn btn--outline" type="button" data-pd-show hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.show">Show</span></button>
           <button class="btn btn--outline" type="button" data-pd-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
           <button class="btn btn--destructive" type="button" data-pd-delete hidden><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="product-detail.btn.delete">Delete</span></button>
           <button class="btn btn--primary" type="button" data-pd-unarchive hidden><i data-lucide="archive-restore" class="ztor-icon"></i><span data-i18n="product-detail.btn.unarchive">Unarchive</span></button>
@@ -914,7 +923,9 @@
         <div class="field">
           <div class="field__label" data-i18n="cp.delivery.returns">Pickup &amp; returns</div>
           <div class="field__hint" data-i18n="cp.delivery.returns.hint">Shown on the product page for both shipping and on-site pickup. Optional — leave blank to hide the section.</div>
-          <textarea class="textarea" id="pd-delivery-returns" rows="3" maxlength="200" data-i18n-placeholder="cp.delivery.returns.ph" placeholder="e.g. Ready within 3–5 business days. Exchanges accepted within 7 days of delivery, unworn and with tags attached.">Ready within 3–5 business days. Exchanges accepted within 7 days of delivery, unworn and with tags attached.</textarea>
+          <!-- 值由 applyProduct() 依 ?id 從 window.pdProduct.deliveryReturns 帶入（2026-09-23 D319 補，
+               取代原本不分商品寫死的同一句示範文案）；沒有值的商品留空，不是頁面壞掉。 -->
+          <textarea class="textarea" id="pd-delivery-returns" rows="3" maxlength="200" data-i18n-placeholder="cp.delivery.returns.ph" placeholder="e.g. Ready within 3–5 business days. Exchanges accepted within 7 days of delivery, unworn and with tags attached."></textarea>
         </div>
         </div>
 
@@ -1185,19 +1196,11 @@
   </section>
 </div>
 
-<!-- §2.2 See as fan · 畫面分割預覽（reuses preview-panel split；內容＝粉絲端店面，§6.7 同源，與 E-Shop F5／商店設定共用 partials/fan-store.js）-->
-<div class="preview-panel preview-panel--inset" id="pd-preview">
-  <div class="preview-panel__backdrop" data-pd-preview-close></div>
-  <div class="preview-panel__sheet">
-    <div class="preview-panel__head">
-      <h3 class="preview-panel__title" data-i18n="product-detail.preview.title">How buyers see your shop</h3>
-      <button class="btn btn--icon btn--sm" data-pd-preview-close aria-label="Close preview"><i data-lucide="x" class="ztor-icon"></i></button>
-    </div>
-    <div class="preview-panel__body">
-      <div data-fan-store-host></div>
-    </div>
-  </div>
-</div>
+<!-- ✝ 墓碑 2026-09-23（D319）：§2.2「粉絲視角預覽（See as fan）」的 .preview-panel--inset 分割預覽整組退場——
+     面板 markup（#pd-preview／[data-pd-preview-open|close]／[data-fan-store-host]）、開關與 Esc 的 IIFE、
+     ds-components/preview-panel.css 與 fan-store.css 的 stylesheet 連結、partials/fan-store.js 的 script 連結都在本輪拿掉。
+     取代者＝頁首的「預覽與在地化」（product-localization.html，同一份粉絲視角完整商品頁再加翻譯與幣別）。
+     兩支 CSS 與 partials/fan-store.js 本身不刪：e-shop.html 的 F5 商店預覽與 store-settings.html 仍在消費。 -->
 
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
@@ -1216,7 +1219,6 @@
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
 <script src="partials/archived-gate.js?v=r2.2"></script><!-- 封存態唯讀的事件層閘門（D288） -->
-<script src="partials/fan-store.js?v=r2.2"></script>
 <script src="partials/album-tracks.js?v=r2.2"></script>
 <script src="partials/vip-card.js?v=r2.2"></script>
 <!-- 商品圖片格（[data-upload]）：hover 替換／刪除由共用元件產生（站上統一路徑）。 -->
@@ -1293,23 +1295,18 @@
   })();
 </script>
 <script>
-  /* §2.2 See as fan：把粉絲端店面（共用 fan-store）注入分割預覽並開關（§6.7 同源）。 */
+  /* 預覽與在地化的入口（§2.2 · D319）：頁首那顆是 <a>，href 要帶目前這件商品的 ?id。
+     取代的舊分割預覽 IIFE 見上方墓碑。 */
   (function () {
-    const panel = document.getElementById('pd-preview');
-    if (!panel) return;
-    (function mountFanStore() {
-      const host = panel.querySelector('[data-fan-store-host]');
-      const html = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.fanStore;
-      if (!host || !html) { if (host) console.warn('[product-detail] fan-store template missing — is partials/fan-store.js loaded?'); return; }
-      host.innerHTML = html;
-      if (window.ztorIcons) window.ztorIcons.applyIcons(host);
-      if (window.applyI18n) window.applyI18n(host);
-    })();
-    const open = () => { panel.classList.add('is-open'); document.body.classList.add('preview-open'); };
-    const close = () => { panel.classList.remove('is-open'); document.body.classList.remove('preview-open'); };
-    document.querySelectorAll('[data-pd-preview-open]').forEach(b => b.addEventListener('click', open));
-    panel.querySelectorAll('[data-pd-preview-close]').forEach(b => b.addEventListener('click', close));
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    const pid = new URLSearchParams(location.search).get('id');
+    if (!pid) return;
+    document.querySelectorAll('[data-pd-localize]').forEach(a => { a.href = 'product-localization.html?id=' + encodeURIComponent(pid); });
+  })();
+  /* 從那一頁存完回來（帶 ?saved=loc）：只提示，不動上架狀態——翻譯與幣別的儲存不改三開關（D319 決定一）。 */
+  (function () {
+    if (new URLSearchParams(location.search).get('saved') !== 'loc') return;
+    const msg = (window.i18nT && window.i18nT('product-detail.loc.saved')) || 'Saved — translations are live.';
+    if (window.ztorToast) window.ztorToast.show(msg);
   })();
 </script>
 <script>
@@ -1947,6 +1944,14 @@
           window.linkField.setValue(linkRoot, product.privateLink);
         }
       }
+      /* 頁首「隱藏／顯示」（2026-09-23 使用者裁決）：與這張卡的顯示開關同一份資料，只在上架中才出現（D265／§7.14） */
+      {
+        const btnHide = document.querySelector('[data-pd-hide]');
+        const btnShow = document.querySelector('[data-pd-show]');
+        const listedNow = !(window.ListingState.isArchived(product) || product.draft || window.ListingState.isUnlisted(product));
+        if (btnHide) btnHide.hidden = !(listedNow && shownOn);
+        if (btnShow) btnShow.hidden = !(listedNow && !shownOn);
+      }
       renderBadges();
       /* 總覽分頁的「上架與開賣」列讀的是表單值，下架／重新上架／改開賣後要跟著重畫（D290） */
       if (window.pdRenderSettingsOverview) window.pdRenderSettingsOverview();
@@ -1963,8 +1968,16 @@
         syncListingCard();
       });
     }
-    /* 切開＝重新上架（D290：走 ListingState.relist，回來是未開賣、排程全空，開賣卡由 paintSaleCard 重畫）；切關由 initArchiveState 攔下先確認 */
-    bindSwitch(listedToggle, () => product.listed !== false, on => { if (on) { window.ListingState.relist(product); if (window.pdPaintSaleCard) window.pdPaintSaleCard(); } else product.listed = false; });
+    /* 頁首「隱藏／顯示」直接觸發上架卡的顯示開關，不複製一份切換邏輯；沿用該開關現行「不確認」的行為。 */
+    document.querySelectorAll('[data-pd-hide],[data-pd-show]').forEach(b => b.addEventListener('click', () => { if (shownToggle) shownToggle.click(); }));
+    /* 上架（2026-09-23 使用者裁決）：頁首「上架」鈕與上架開關切開是同一個動作，兩個入口共用這一支——
+       D290：走 ListingState.relist，回來是未開賣、排程全空，開賣卡由 paintSaleCard 重畫。 */
+    function pdRelist() {
+      window.ListingState.relist(product);
+      if (window.pdPaintSaleCard) window.pdPaintSaleCard();
+    }
+    /* 切開＝上架；切關由 initArchiveState 攔下先確認 */
+    bindSwitch(listedToggle, () => product.listed !== false, on => { if (on) pdRelist(); else product.listed = false; });
     bindSwitch(shownToggle, () => product.shown !== false, on => {
       product.shown = on;
       /* 切回顯示：非公開連結作廢，欄位一併清空——留著會讓人以為那條還能用（§2.17）。 */
@@ -2090,6 +2103,13 @@
        沒有 ?id 或 id 查不到時它自己 lookup 會拿到 null，整張表就空了。這裡把最終採用的記錄
        廣播出去，由那支腳本接手重畫。 */
     window.pdProduct = product;
+    /* 取貨與退貨說明（2026-09-18 D291；2026-09-23 D319 補改資料驅動）：讀 product.deliveryReturns，
+       與 collectReturnsField() 同一個 store 欄位；放在 window.pdProduct 確定之後，無 ?id 的預設樣本
+       （zine 回退）與有 ?id 的一般路徑因此讀到同一份資料。沒有值就留空，不寫死示範文案。 */
+    (function () {
+      const retEl = document.getElementById('pd-delivery-returns');
+      if (retEl) retEl.value = (product && product.deliveryReturns) || '';
+    })();
     /* ── 詳情頁示範狀態欄位（2026-09-11 改資料驅動；欄位定義見 js/products-store.js 檔頭）──
        銷售摘要／折扣三開關／每人限購／項目引用／標籤都從 product.* 帶入，缺值＝既有空狀態。
        一定要在使用者按「編輯」之前跑完（snapshot 是進編輯態才拍），「取消」才會還原成這裡帶入的值而不是空白。
@@ -2234,6 +2254,7 @@
       if (!L || !product) return;
       const main = document.querySelector('.main') || document.body;
       const btnUnlist = document.querySelector('[data-pd-unlist]');
+      const btnRelist = document.querySelector('[data-pd-relist]');   /* 2026-09-23：已下架態的主要動作＝上架，與上架開關同一支 pdRelist() */
       const btnArchive = document.querySelector('[data-pd-archive]');
       const btnUnarchive = document.querySelector('[data-pd-unarchive]');   /* D298：已封存態的唯一主要動作＝解除封存（回到已下架） */
       const btnDelete = document.querySelector('[data-pd-delete]');   /* D307：已下架／已封存且零成交才露出 */
@@ -2253,12 +2274,14 @@
         });
       };
       /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「解除封存」永遠放行 */
-      if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { block: PRUNE + ',[data-pd-opt-editor] button,[data-pd-variant-table] button:not(summary),[data-pd-sg-own],[data-pd-sg-edit],[data-pd-sg-remove],[data-pd-delivery]', allow: '[data-pd-unarchive],[data-pd-delete],[data-pd-preview-open],[data-pd-preview-close],[data-rowdis]' });   /* D307：已封存態「刪除」與「解除封存」都放行 */
+      if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { block: PRUNE + ',[data-pd-opt-editor] button,[data-pd-variant-table] button:not(summary),[data-pd-sg-own],[data-pd-sg-edit],[data-pd-sg-remove],[data-pd-delivery]', allow: '[data-pd-unarchive],[data-pd-delete],[data-rowdis]' });   /* D307：已封存態「刪除」與「解除封存」都放行 */
       const setSwitch = (el, on) => { if (!el) return; el.classList.toggle('switch--on', !!on); el.setAttribute('aria-checked', on ? 'true' : 'false'); };
       function syncPrimaryAction() {
         const archived = L.isArchived(product);
         const draft = !!product.draft;
         if (btnUnlist) btnUnlist.hidden = archived || draft || L.isUnlisted(product);
+        /* 已下架（未封存、非草稿）→ 「上架」與「封存」並列，上架在前（2026-09-23 使用者裁決）；已封存不提供上架 */
+        if (btnRelist) btnRelist.hidden = archived || draft || !L.isUnlisted(product);
         if (btnArchive) btnArchive.hidden = !L.canArchive(product);
         if (btnUnarchive) btnUnarchive.hidden = !archived;
         /* D307：零成交且已下架／已封存 → 「刪除」；有成交且已下架／已封存 → 上架卡多一句「已有銷售紀錄，只能封存」 */
@@ -2362,6 +2385,12 @@
         });
       }
       if (btnUnlist) btnUnlist.addEventListener('click', askUnlist);
+      /* 上架（2026-09-23 使用者裁決）：頁首「上架」＝上架開關切開，同一支 pdRelist()；不確認（單售沒有連帶對象，反方向不拉組合包）。
+         paintListingCard() 把開關、排程欄、徽章與未開賣提醒一起畫回資料的樣子，頁首那顆也跟著換成「封存」（反向連動）。 */
+      if (btnRelist) btnRelist.addEventListener('click', () => {
+        if (L.isArchived(product) || !L.isUnlisted(product)) return;
+        pdRelist(); commit(); paintListingCard();
+      });
       /* 封存只看「已下架」、單純確認，不再檢查組合包（D288 修正 D284 裁決四） */
       if (btnArchive) btnArchive.addEventListener('click', () => {
         if (!L.canArchive(product)) return;
@@ -2436,7 +2465,10 @@
      繼續依 ?id 換圖），不會再多疊一張。原實作見 git 歷史。 */
 
   /* §2.3 詳細規格 Specifications（僅實體）：逐筆規格名稱＋規格值，可新增／刪除。
-     重用 ds-components/spec-row.css 與 cp.spec.* i18n；前端 demo（無持久化）。 */
+     重用 ds-components/spec-row.css 與 cp.spec.* i18n；前端 demo（無持久化，改動只反映在畫面）。
+     2026-09-23（D319 補）：初始列改讀 window.pdProduct.specs（js/products-store.js 商品記錄，
+     與 create-product.html collectSpecFields()／product-localization.html 同一套 { name, value } 形狀），
+     不再不分商品一律預填 zine 的 Material／Size／Pages 三列。沒有 specs 的商品＝空清單，使用者可自行新增。 */
   (function () {
     const host = document.getElementById('pd-spec-rows');
     if (!host) return;
@@ -2452,8 +2484,9 @@
       host.appendChild(row);
       if (window.ztorIcons) window.ztorIcons.applyIcons(row);
     }
-    /* 預填 zine 範例規格（與商品內容描述一致）*/
-    [['Material', 'Letterpress cover · uncoated stock'], ['Size', '21 × 15 cm'], ['Pages', '32 pages']].forEach(s => addRow(s[0], s[1]));
+    (window.pdProduct && window.pdProduct.specs || []).forEach(s => addRow(s.name, s.value));
+    /* ✝ 墓碑 2026-09-23（D319 補）：原本不分商品一律預填的 [['Material', 'Letterpress cover · uncoated stock'],
+       ['Size', '21 × 15 cm'], ['Pages', '32 pages']] 三列已移除，改由上一行的資料驅動 forEach 取代。 */
     const add = document.getElementById('pd-add-spec');
     if (add) add.addEventListener('click', () => addRow('', ''));
     host.addEventListener('click', e => { const rm = e.target.closest('[data-spec-remove]'); if (rm) rm.closest('.spec-row').remove(); });

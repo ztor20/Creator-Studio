@@ -4,8 +4,9 @@
  * 一整頁前台被塞進對話框、第 8 步的摘要卡與浮層變成兩層確認。D310 裁決改成全頁：
  *   · 多步驟流程＝流程的最後一步（建立活動第 8 步「預覽與發布」）
  *   · 發布後再開＝一個獨立全頁（event-localization.html），主鈕「儲存」
- * 兩邊用的是同一支：本檔。浮層（partials/publish-preview.js）只剩 create-product
- * 等單頁表單在用，活動宿主已全部改走這裡。
+ * 兩邊用的是同一支：本檔。浮層（partials/publish-preview.js）已於 2026-09-23 在所有單頁表單
+ * （create-product／create-bundle／create-project／publish-work）退場，改走這裡；浮層目前僅剩
+ * design-system.html／design-components.html 的 demo 卡在用，屬退場候選。
  *
  * 畫面（版型見 ds-components/publish-stage.css）：
  *   主區＝粉絲視角前台預覽（宿主用 previewRender 把 js/fan-event-page.js 畫進來；
@@ -35,6 +36,10 @@
  *     translation: 'auto' | 'manual',                       // 選填，預設 'auto'＝現行行為（原文抄成譯文）。
  *       'manual'（D312，活動側）＝非預設語系不自動帶原文，只存使用者填的譯文；沒填時預覽/表格
  *       fallback 顯示原文，翻譯表格子沒填時以原文當 placeholder（不預填值）。
+ *     priceOverrides: true | false,                          // 選填，預設 true＝現行行為（各幣別皆可覆寫）。
+ *       false（2026-09-23 裁示，電子商店側）＝非基準幣別全面唯讀，只顯示換算值：無輸入框／
+ *       「已覆寫」徽章／重設鈕，側欄幣別段不計覆寫筆數。prices[] 每列可用 overridable:true/false
+ *       個別覆寫這個全域設定（列級優先於全域）——活動側（D306）不傳這個選項，維持可覆寫。
  *     editZones: [{ sel:'.pdp-buy__title', step:2 }],       // 選填：hover 出現「編輯」跳回哪一步
  *     onEdit: function (step) {},                           // editZones 的點擊行為
  *     checks: function () { return [{ key, label, ok, step }]; },   // mode:'publish'
@@ -154,11 +159,18 @@
     var v = rec.override && rec.override[cur];
     return v != null && v !== '' && !isNaN(Number(v));
   }
+  /* priceOverrides（全域）／prices[i].overridable（列級，優先於全域）：該列非基準幣別
+     能不能覆寫。electronic 商店側傳 priceOverrides:false 全關；活動側不傳＝現行可覆寫。 */
+  function rowOverridable(p) {
+    if (p && p.overridable === false) return false;
+    if (p && p.overridable === true) return true;
+    return opts.priceOverrides !== false;
+  }
   function overrideCount(cur) {
     var n = 0;
     (opts.prices || []).forEach(function (p) {
       var rec = priceRec(p.key);
-      if (rec && rec.base !== cur && isOverridden(rec, cur)) n++;
+      if (rec && rec.base !== cur && rowOverridable(p) && isOverridden(rec, cur)) n++;
     });
     return n;
   }
@@ -166,7 +178,7 @@
     var n = 0;
     (opts.prices || []).forEach(function (p) {
       var rec = priceRec(p.key);
-      if (!rec) return;
+      if (!rec || !rowOverridable(p)) return;
       currencies().forEach(function (c) { if (c !== rec.base && isOverridden(rec, c)) n++; });
     });
     return n;
@@ -402,7 +414,9 @@
   /* ── 抽屜：翻譯表／價格表 ─────────────────────────────────────── */
   function ensureDrawer(key, titleKey, titleFb) {
     if (drawers[key]) return drawers[key];
-    var wrap = el('div', 'drawer drawer--wide');
+    /* 翻譯表、價格表都整頁（2026-09-23 使用者：「翻譯表的 popup 要整頁，同時裡面的每一個欄位都要變大」，
+       價格表隨後「可以統一」）：880 的抽屜把每格壓成一小塊，兩張表同一種殼。 */
+    var wrap = el('div', 'drawer drawer--full');
     wrap.setAttribute('data-stage-drawer', key);
     wrap.setAttribute('aria-hidden', 'true');
     wrap.innerHTML =
@@ -518,8 +532,14 @@
     host.innerHTML = '';
     var list = currencies();
     var base = opts.baseCurrency;
+    var rows = opts.prices || [];
+    /* 全部列都唯讀（電子商店）才換提示句；有些列可覆寫、有些不行（混合）時沿用舊句，
+       因為舊句「其餘幣別是換算值，輸入數字即覆寫」對可覆寫的列仍然成立。 */
+    var allReadonly = rows.length > 0 && rows.every(function (p) { return !rowOverridable(p); });
     var hint = el('p', 'field__hint pstage-drawer__hint');
-    hint.textContent = T('pp.table.prices-hint', 'Base currency is read-only — change the price in the form. Other currencies are converted; type a number to override it.');
+    hint.textContent = allReadonly
+      ? T('pstage.drawer.price-hint-readonly', 'Other currencies convert automatically at the exchange rate — the store can’t adjust them individually.')
+      : T('pp.table.prices-hint', 'Base currency is read-only — change the price in the form. Other currencies are converted; type a number to override it.');
     host.appendChild(hint);
     var scroll = el('div', 'ztor-table-scroll');
     var table = el('table', 'ztor-table pp-table pp-price-table');
@@ -545,6 +565,7 @@
         tbody.appendChild(gr);
       }
       lastGroup = group || null;
+      var overridable = rowOverridable(p);
       var tr = el('tr');
       tr.appendChild(el('td', 'ztor-table__feature', esc(p.labelKey ? T(p.labelKey, p.label || p.key) : (p.label || p.key))));
       list.forEach(function (c) {
@@ -553,6 +574,12 @@
           td.className = 'pp-cell pp-cell--readonly pp-cell--base';
           td.innerHTML = '<span class="pp-price-num">' + esc(fmtAmount(rec.amount, c)) + '</span>' +
             (p.locked ? '<span class="pp-price-lock" title="' + esc(T('pp.price.locked', 'Set by bookyay')) + '"><i data-lucide="lock" class="ztor-icon"></i></span>' : '');
+        } else if (!overridable) {
+          /* priceOverrides:false（或該列 overridable:false）＝只顯示換算值，沿用基準格
+             同一套唯讀樣式（.pp-cell--base 負責右對齊與列高對齊），不掛鎖圖示（不是
+             bookyay 鎖定，是電子商店規則本身不給覆寫）。 */
+          td.className = 'pp-cell pp-cell--readonly pp-cell--base';
+          td.innerHTML = '<span class="pp-price-num">' + esc(fmtAmount(convertedOf(rec, c), c)) + '</span>';
         } else {
           td.className = 'pp-cell pp-cell--price';
           var input = document.createElement('input');
@@ -642,7 +669,11 @@
       var rec = priceRec(p.key);
       if (!rec) return;
       var out = {};
-      currencies().forEach(function (c) { if (c !== rec.base && isOverridden(rec, c)) out[c] = Math.round(Number(rec.override[c])); });
+      /* 唯讀列（priceOverrides:false 或該列 overridable:false）不輸出覆寫——即使草稿裡
+         殘留舊值（例如全域選項中途切換），落地結果也不帶出來。 */
+      if (rowOverridable(p)) {
+        currencies().forEach(function (c) { if (c !== rec.base && isOverridden(rec, c)) out[c] = Math.round(Number(rec.override[c])); });
+      }
       prices[p.key] = out;
     });
     return { translations: translations, prices: prices, mode: opts.mode || 'publish' };

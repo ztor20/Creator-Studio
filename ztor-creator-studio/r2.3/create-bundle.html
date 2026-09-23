@@ -48,6 +48,13 @@
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<!-- D321（D321，D310 組合側，2026-09-23，比照建立商品 D317）：兩步驟——第 2 步「預覽與發布」全頁畫面（js/publish-stage.js）＋主區粉絲視角組合包頁（js/fan-bundle-page.js） -->
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2"><!-- 頁首兩段進度條（內容／預覽與發布） -->
+<link rel="stylesheet" href="ds-components/readiness.css?v=r2.2"><!-- 全頁畫面側欄的發布前檢核清單 -->
+<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 全頁畫面的翻譯表／價格表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- 翻譯表／價格表的滑出面板 -->
+<link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- 粉絲視角組合包頁（前台 shop-item 組合分支鏡像，第 5 段；只給 js/fan-bundle-page.js 用） -->
+<link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- 「預覽與發布」全頁版型（主區預覽＋右側側欄） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* page-specific：Create bundle 表單 · spec 5.1.5.4
@@ -87,7 +94,7 @@
 </head>
 <body>
 <div class="wizard">
-  <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中欄空（無 stepper）；右＝自動儲存。 -->
+  <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中欄＝兩段進度條（2026-09-23）；右＝自動儲存。 -->
   <div class="wizard__sheet wizard__sheet--sectioned">
   <header class="wizard__top">
     <div class="wizard__top-bar">
@@ -96,6 +103,17 @@
         <div class="wizard__top-titlewrap">
           <span class="wizard__top-title" data-i18n="cb.h1">Create bundle</span>
           <span class="wizard__top-sub" data-i18n="cb.subtitle">Bundle</span>
+        </div>
+      </div>
+      <!-- 2026-09-23 D321（D310 組合側，比照建立商品 D317）：兩步驟進度條——內容／預覽與發布（.progress-stepper--anystep：兩段都能點，
+           點擊處理器見頁尾腳本 stepperLabels.forEach）。步驟名不重述「組合」：頁面標題已是建立組合（鐵律 12）。 -->
+      <div class="wizard__progress" id="cb-progress">
+        <div class="progress-stepper progress-stepper--segmented progress-stepper--anystep" id="cb-stepper" style="--steps:2;--at:1;--progress:0%">
+          <div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>
+          <div class="progress-stepper__labels">
+            <span class="progress-stepper__label progress-stepper__label--current" data-step="1"><span data-i18n="cb.step.details">Details</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="2"><span data-i18n="cb.step.preview">Preview &amp; publish</span><span class="progress-stepper__state" data-step-state></span></span>
+          </div>
         </div>
       </div>
       <div class="wizard__top-actions">
@@ -536,6 +554,11 @@
         <p class="bpc__note" data-i18n="cpp.bd.sp.fan.note">The pickers on this card work — see how the price settles once a fan chooses. Picking here only affects this card.</p>
       </section>
     </aside>
+
+    <!-- 第 2 步「預覽與發布」全頁畫面（D321，D310 組合側，2026-09-23，比照建立商品）：按「下一步：預覽」→ 擋關通過 → 本容器由
+         js/publish-stage.js 掛主區（js/fan-bundle-page.js 畫粉絲視角組合包頁）＋右側側欄三段（語言／幣別／發布前檢核）；
+         返回表單＝卸載、表單欄與預覽欄原樣回來（內容不清空）。本頁只負責備料（見頁尾 buildStageOpts）。 -->
+    <div data-cb-stage hidden></div>
   </div>
 
   </div><!-- /.wizard__sheet -->
@@ -549,7 +572,7 @@
     <div class="bd-foot-actions">
       <span class="bd-foot-why" data-cb-why hidden></span>
       <button class="btn btn--outline" type="button" data-wizard-back data-i18n="cpp.bd.sp.cancel">Cancel</button>
-      <button class="btn btn--primary" id="cb-create" disabled data-i18n="cb.create">Create bundle</button>
+      <button class="btn btn--primary" id="cb-create" disabled data-i18n="cb.next-preview">Next: Preview</button><!-- 2026-09-23：按下＝進第 2 步預覽（最終的「建立組合」在全頁畫面側欄） -->
     </div>
   </footer>
 </div>
@@ -617,6 +640,13 @@
   const footSub = document.querySelector('[data-cb-foot-sub]');
   const whyEl = document.querySelector('[data-cb-why]');
   const sugBtn = document.querySelector('[data-cb-usesug]');
+  /* 2026-09-23 兩步驟（D321，D310 組合側，比照建立商品 D317）：頁首進度條與第 2 步全頁畫面的狀態。
+     宣告放最前面——recompute() 每次都會 renderStepper()，而 recompute 在頁尾以外也可能早跑。 */
+  const stepperEl = document.getElementById('cb-stepper');
+  const stepperLabels = stepperEl ? Array.from(stepperEl.querySelectorAll('.progress-stepper__label')) : [];
+  let cbStep = 1;
+  let stage = null;            // publish-stage 的 handle（只有在全頁畫面時是非 null）
+  let stageScroll = null;      // 進全頁前表單捲到哪（返回時還原）
 
   /* ── 鎖定套數（2026-09-11 使用者重新定義；D266）────────────────────
      組合鎖「幾套」（lockSets N），單一選項成員自動鎖 N×每套用量、多選項成員可展開逐規格「選填」分配。
@@ -1276,6 +1306,7 @@
     const why = gateWhy();
     if (whyEl) { whyEl.hidden = !why; whyEl.textContent = why; }
     createBtn.disabled = !!why;
+    renderStepper();
   }
 
   /* 組合折扣開關 */
@@ -1633,9 +1664,11 @@
   /* 切語言：JS 拼出來的字重算一次（data-i18n 的部分 applyI18n 自己會接手） */
   document.addEventListener('ztor:lang-changed', () => { buildEvents(); renderTierTable(); renderItems(); markCandidates(); applyFilter(); renderAlloc(); recompute(); });
 
-  /* 建立完成 → 回電子商店清單並彈出新品貼文（spec 5.1.5.7），帶入組合名／價 */
-  createBtn.addEventListener('click', () => {
-    if (createBtn.disabled) return;
+  /* 建立完成 → 回電子商店清單並彈出新品貼文（spec 5.1.5.7），帶入組合名／價。
+     2026-09-23：原本是 #cb-create 的 click handler，抽成函式——現在由第 2 步全頁畫面側欄的主鈕「建立組合」呼叫（onPrimary），
+     存檔內容與跳轉照舊；擋關仍以 gateWhy() 為準（第 2 步只有擋關全過才進得來，這裡再守一次）。 */
+  function doCreate() {
+    if (gateWhy()) return;
     const nm = bundleName();
     const pr = moneyFrom(finalPrice(), priceRange());
     const bundleId = 'cb-' + Date.now().toString(36);
@@ -1678,7 +1711,268 @@
     if (nm) q.set('name', nm);
     if (pr) q.set('price', pr);
     location.href = 'e-shop.html?' + q.toString();
+  }
+  /* ── 兩步驟：頁首進度條＋第 2 步「預覽與發布」全頁畫面（D321，D310 組合側，2026-09-23，比照建立商品 D317）──────
+     第 1 步「內容」＝上面整張表單；第 2 步「預覽與發布」＝建立活動第 8 步／建立商品同一個組件（js/publish-stage.js）：
+     主區由 js/fan-bundle-page.js 畫前台組合包頁的鏡像，側欄三段（語言／幣別／發布前檢核）＋主鈕「建立組合」。
+     表單主鈕改成「下一步：預覽」：擋關照舊（gateWhy()），通過才進第 2 步；真正存檔搬到側欄主鈕（onPrimary → doCreate()）。
+     本頁只負責備料（buildStageOpts）、進出（enterStage／exitStage）；版型、兩軸、兩張表都在 publish-stage.js。
+     翻譯模式不傳：電子商店的多語規則是自動翻譯（主規格 §7.4 通則；D312 只把活動改成手動），用元件預設值。
+     幣別覆寫依 D318：組合成員含活動票券時可覆寫、只含商品時唯讀——用 prices[i].overridable 列級旗標，不傳全域 priceOverrides。
+     本頁沒有編輯態／嵌入態（沒有 ?edit／?embed 分支），進度條一律顯示。 */
+  const CB_STEP = { content: 1, price: 2, name: 3, perks: 4, media: 5, desc: 6 };
+  const stageBody = document.querySelector('.wizard__body');
+  const stageHost = document.querySelector('[data-cb-stage]');
+  const stageSheet = document.querySelector('.wizard__sheet');
+  const stageForm = stageBody ? stageBody.querySelector('.preview-split__form') : null;
+  const stageCol = stageBody ? stageBody.querySelector('.preview-col') : null;
+  const stageFoot = document.querySelector('.wizard__bottom');
+  const stNav = document.querySelector('.wizard__top [data-section-tabs]');
+
+  /* 進度條：第 1 段狀態＝頁面既有擋關（gateWhy() 為空＝已完成），不另訂規則；第 2 段沒有「已完成」——
+     側欄按「建立組合」直接離站，走不到第 2 段打勾的畫面（同建立商品）。 */
+  function renderStepper() {
+    if (!stepperEl) return;
+    stepperEl.style.setProperty('--at', String(cbStep));
+    stepperEl.style.setProperty('--progress', ((cbStep - 1) / 2 * 100) + '%');
+    const detailsDone = !gateWhy();
+    stepperLabels.forEach(l => {
+      const n = Number(l.dataset.step);
+      l.classList.toggle('progress-stepper__label--current', n === cbStep);
+      l.classList.toggle('progress-stepper__label--done', n < cbStep);
+      const box = l.querySelector('[data-step-state]');
+      if (!box) return;
+      const done = n === 1 ? detailsDone : false;
+      box.innerHTML = done
+        ? '<i data-lucide="check" class="ztor-icon"></i>' + esc(T('wiz.step.done', 'Done'))
+        : esc(T('wiz.step.todo', 'Not done'));
+    });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(stepperEl);
+  }
+
+  /* 基準幣別＝創作者幣別（D316，同建立商品 cpBaseCurrency）；currency.js 載在本段之後，用到時才問 */
+  function cbBaseCurrency() {
+    if (window.ztorCurrency) return window.ztorCurrency.CREATOR;
+    return (window.ztorEvents && window.ztorEvents.DEFAULT_CURRENCY) || 'TWD';
+  }
+
+  /* 可翻譯欄位：名稱（使用者沒填＝自動建議名，與存檔的 bundleName() 同一個值）、說明（有填才收）、權益每行一欄。
+     成員名稱是各自商品／活動的內容，不在這裡翻。el 只要有 .value（publish-stage 的 syncData 只讀 f.el.value）。 */
+  function stageFields() {
+    const perkLabel = T('cpp.bd.perks', 'Perks');
+    const out = [{ key: 'name', el: { get value() { return bundleName(); } }, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' }];
+    if (descEl && descEl.value.trim()) out.push({ key: 'desc', el: descEl, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' });
+    perkLines().forEach((l, i) => out.push({ key: 'perk-' + i, el: { value: l }, kind: 'input', group: perkLabel, labelFallback: perkLabel + ' ' + (i + 1) }));
+    return out;
+  }
+  /* 價格：組合售價一列（＝表單「售價」：原價合計最低組合 × (1 − 組合折扣 %)）。
+     D318：含活動票券成員＝其他幣別可覆寫（overridable:true）；只含商品＝唯讀換算（overridable:false）。 */
+  function stagePrices() {
+    return [{ key: 'bundle', labelKey: 'cpp.bd.sp.sell', label: 'Selling price',
+              priceObj: { base: cbBaseCurrency(), amount: finalPrice(), override: {} },
+              overridable: !!ticketMember() }];
+  }
+  /* 素材：封面＋附圖十格（同建立商品 tileMedia：影片格給 video、圖片格給 img） */
+  function tileMedia(tile) {
+    if (!tile) return null;
+    const v = tile.querySelector('.upload-tile__video');
+    if (v && v.getAttribute('src')) return { kind: 'video', src: v.getAttribute('src') };
+    const im = tile.querySelector('.upload-tile__thumb');
+    const src = im && im.getAttribute('src');
+    return src ? { kind: 'image', src: src } : null;
+  }
+  const stageGallery = () => Array.from(document.querySelectorAll('[data-cb-asset="hero"], [data-cb-asset="gallery"]')).map(tileMedia).filter(Boolean);
+  /* 活動狀態 → 前台狀態膠囊（售票中／進行中＝綠、即將開賣＝黃、其餘無色） */
+  const FAN_EV_STATUS = { 'on-sale': ['fep.status.on-sale', 'green'], 'live': ['events.badge.live', 'green'], 'scheduled': ['fep.status.soon', 'yellow'],
+                          'ended': ['fep.status.ended', 'cat'], 'cancelled': ['fep.status.cancelled', 'cat'] };
+  function stageEvent() {
+    const ev = tix.event && ticketMember() ? ((EV && EV.get(tix.event.id)) || tix.event) : null;
+    if (!ev) return null;
+    const st = FAN_EV_STATUS[ev.status] || null;
+    return {
+      name: evName(ev), typeLabel: ev.typeLabelKey ? T(ev.typeLabelKey, '') : '',
+      date: ev.date || '', time: ev.start || '', venue: ev.venue || '', online: ev.category === 'online',
+      img: (ev.images && ev.images.keyvisual) || '',
+      status: st ? { label: T(st[0], ev.status), tone: st[1] } : null
+    };
+  }
+  /* 粉絲視角組合包頁的 model（結構見 js/fan-bundle-page.js 檔頭）：文案欄給 { key }、資料值給字串／priceObj */
+  function buildFanBundleModel(prices) {
+    const base = cbBaseCurrency();
+    const members = [];
+    const tm = ticketMember();
+    if (tm) {
+      const evTiers = (tix.event && tix.event.tiers) || [];
+      members.push({ kind: 'ticket', qty: tix.qty, tiers: tixLines().map(l => {
+        const src = evTiers.find(t => t.id === l.id) || {};
+        return { id: l.id, name: l.name, left: l.left, qty: Number(src.qty) || null, priceObj: { base, amount: l.price, override: {} } };
+      }) });
+    }
+    productMembers().forEach(m => {
+      const p = products[m.productId]; if (!p) return;
+      const opts = itemOptions(p);
+      members.push({ kind: 'product', name: p.name || '', qty: m.qty > 0 ? m.qty : 1,
+        img: p.imgSrc || (p.img ? 'images/products/' + p.img : ''),
+        priceObj: { base, amount: itemMin(p), override: {} }, from: itemRange(p),
+        options: opts ? opts.map(o => ({ name: optName(o.name), values: (o.values || []).slice() })) : [] });
+    });
+    const persona = (function () {
+      const id = typeof window.ztorPersonaId === 'function' ? window.ztorPersonaId() : 'default';
+      return (window.ztorCreator && window.ztorCreator.list ? window.ztorCreator.list.find(x => x.handle === id) : null) || null;
+    })();
+    return {
+      kind: tm ? 'eventset' : 'goods',
+      gallery: stageGallery(),
+      name: { key: 'name' },
+      desc: (descEl && descEl.value.trim()) ? { key: 'desc' } : null,
+      shop: persona ? { name: persona.name, avatar: persona.avatar || '' } : null,
+      event: stageEvent(),
+      members,
+      price: { priceObj: prices[0].priceObj, priceKey: prices[0].key, wasObj: { base, amount: baseTotal(), override: {} },
+               from: priceRange(), pct: discInfo().pct },
+      stock: sellableSets(),
+      perks: perkLines().map((l, i) => ({ key: 'perk-' + i }))
+    };
+  }
+  /* 發布前檢核＝表單擋關 gateWhy() 的同一組條件（只換成「項目＋是否通過」的形狀，同建立商品 stageChecks），
+     不適用的項目不列（例：沒開限量就沒有「限量上限」）。進得來第 2 步＝全部通過。 */
+  function stageChecks() {
+    const out = [];
+    const push = (key, labelKey, fb, ok, step) => out.push({ key, label: T(labelKey, fb), ok: !!ok, step });
+    push('members', 'cb.qc.members', 'At least 1 item or ticket', hasContent(), CB_STEP.content);
+    push('name', 'cb.qc.name', 'Name', !!bundleName(), CB_STEP.name);
+    if (state.discountOn) push('disc', 'cb.qc.disc', 'Discount between 0–100%', discInfo().ok, CB_STEP.price);
+    if (bundleDraft.lockSets || (setsInput && setsInput.value.trim())) push('lock', 'cb.qc.lock', 'Locked sets within the ceiling', !(lockOver() || lockBad), CB_STEP.price);
+    if (limitedEdition()) push('cap', 'cb.qc.cap', 'Cap filled in, within supply', !!capN() && !capOver(), CB_STEP.price);
+    if (saleOn()) {
+      const sp = salePctInfo(), s = saleStart ? saleStart.value : '', e = saleEnd ? saleEnd.value : '';
+      push('sale', 'cb.qc.sale', 'Limited-time discount complete', sp.ok && s && e && e > s, CB_STEP.price);
+    }
+    if (!ticketMember()) push('listing', 'cb.qc.listing', 'Listing & sale times', saleWindowOk() && !(listingMode === 'schedule' && listingTime && !listingTime.value), CB_STEP.name);
+    return out;
+  }
+  /* 預覽區塊的「編輯」入口：hover 到哪一塊，點了就回表單對應的分卡（先比對的先贏，內層放前面） */
+  function stageEditZones() {
+    return [
+      { sel: '[data-fbp-gallery]', step: CB_STEP.media },
+      { sel: '.pdp-buy__title', step: CB_STEP.name },
+      { sel: '[data-fbp-meta]', step: CB_STEP.content },
+      { sel: '[data-fbp-price]', step: CB_STEP.price },
+      { sel: '[data-fbp-stock]', step: CB_STEP.price },
+      { sel: '[data-fbp-picker]', step: CB_STEP.content },
+      { sel: '[data-fbp-tiers]', step: CB_STEP.content },
+      { sel: '[data-fbp-members]', step: CB_STEP.content },
+      { sel: '[data-fbp-perks]', step: CB_STEP.perks },
+      { sel: '[data-fbp-desc]', step: CB_STEP.desc }
+    ];
+  }
+  /* 區段代號 → 表單上要捲到的節點（＋要聚焦的欄位）；三張分卡就是頂列分節分頁的三段 */
+  function cbSectionOf(step) {
+    const q = s => document.querySelector(s);
+    switch (step) {
+      case CB_STEP.content: return { target: q('[data-st-section="content"]') };
+      case CB_STEP.price: return { target: q('[data-st-section="price"]') };
+      case CB_STEP.name: return { target: q('[data-st-section="name"]'), focus: nameEl };
+      case CB_STEP.perks: return { target: q('[data-cb-perks-group]'), focus: perksEl };
+      case CB_STEP.media: { const t = q('[data-cb-asset="hero"]'); return { target: t ? (t.closest('.field') || t) : null }; }
+      case CB_STEP.desc: return { target: descEl ? (descEl.closest('.field') || descEl) : null, focus: descEl };
+    }
+    return { target: null };
+  }
+  function buildStageOpts() {
+    const prices = stagePrices();
+    const S = window.ztorEvents;
+    return {
+      fields: stageFields(), prices,
+      currencies: S ? S.CURRENCIES.slice() : ['USD', 'TWD', 'HKD', 'SGD', 'JPY'],
+      baseCurrency: cbBaseCurrency(),
+      mode: 'publish',
+      editZones: stageEditZones(),
+      onEdit: step => exitStage(step),
+      checks: stageChecks,
+      previewRender: (host, api) => {
+        if (!window.ztorFanBundlePage) return;
+        window.ztorFanBundlePage.render(host, buildFanBundleModel(prices), api);
+      },
+      primaryKey: 'cb.create',
+      secondaryKey: 'cb.stage.back',
+      /* 翻譯與逐幣別覆寫的落地是後端的事（原型沒有後端）：先掛在 window 上給之後的頁讀，再走原本的建立路徑 */
+      onPrimary: result => { window.__cbLocalization = result; doCreate(); },
+      onSecondary: () => exitStage(0)
+    };
+  }
+
+  /* 進第 2 步：表單欄、右欄預覽、底部操作列、頂列分節分頁收起（都只是藏起來、不清空），容器掛全頁畫面。
+     .preview-split 的兩欄 grid 與 --narrow 的 1000 寬在全頁時拿掉（全頁畫面自己是 .pstage 兩欄、寬度走 --stage），
+     用 class 進出切換，不在頁內 <style> 覆寫共用 class。 */
+  function enterStage() {
+    if (!stageHost || !stageBody || !window.ztorPublishStage || !window.ztorFanBundlePage) return false;
+    stageScroll = { sheet: stageSheet ? stageSheet.scrollTop : 0, win: window.scrollY };
+    stageBody.classList.remove('preview-split', 'wizard__body--narrow');
+    stageBody.classList.add('wizard__body--stage');
+    if (stageForm) stageForm.hidden = true;
+    if (stageCol) stageCol.hidden = true;
+    if (stageFoot) stageFoot.hidden = true;
+    if (stNav) stNav.hidden = true;
+    stageHost.hidden = false;
+    /* 側欄 sticky 要避開 .wizard__top（本身 sticky）：分節分頁收起後再量頂列高度（同建立商品 enterStage） */
+    const top = document.querySelector('.wizard__top');
+    stageHost.style.setProperty('--pstage-top', 'calc(' + (top ? top.offsetHeight : 0) + 'px + var(--sp-24))');
+    stage = window.ztorPublishStage.mount(stageHost, buildStageOpts());
+    if (stageSheet) stageSheet.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    cbStep = 2;
+    renderStepper();
+    return true;
+  }
+  /* 回第 1 步：卸載、清空容器，表單欄／預覽欄／底部列／分節分頁原樣回來（表單 DOM 從沒被動過，內容保留）。
+     step 有給＝從預覽的「編輯」或檢核項過來：捲到對應分卡並讓分節分頁亮那一段；沒給＝「返回表單」：還原進來前的捲動位置。 */
+  function exitStage(step) {
+    if (!stage) return;
+    stage.unmount();
+    stage = null;
+    stageHost.innerHTML = '';
+    stageHost.hidden = true;
+    stageBody.classList.remove('wizard__body--stage');
+    stageBody.classList.add('preview-split', 'wizard__body--narrow');
+    if (stageForm) stageForm.hidden = false;
+    if (stageCol) stageCol.hidden = false;
+    if (stageFoot) stageFoot.hidden = false;
+    if (stNav) stNav.hidden = false;
+    cbStep = 1;
+    renderStepper();
+    const dest = step ? cbSectionOf(step) : null;
+    if (dest && dest.target) {
+      const top = document.querySelector('.wizard__top');
+      dest.target.style.scrollMarginTop = 'calc(' + (top ? top.offsetHeight : 0) + 'px + var(--sp-16))';
+      dest.target.scrollIntoView({ block: 'start', behavior: 'instant' });
+      if (dest.focus && typeof dest.focus.focus === 'function') dest.focus.focus({ preventScroll: true });
+    } else if (stageScroll) {
+      if (stageSheet) stageSheet.scrollTop = stageScroll.sheet;
+      window.scrollTo({ top: stageScroll.win, behavior: 'instant' });
+    }
+    /* 分節分頁在全頁時是 display:none，scrollspy 量不到位置；回來後立刻重新定位一次 */
+    if (window.ZtorSectionTabs) window.ZtorSectionTabs.sync();
+  }
+
+  /* 表單主鈕「下一步：預覽」：擋關照舊，通過進第 2 步；元件沒載到時退回原本的直接建立 */
+  createBtn.addEventListener('click', () => {
+    if (createBtn.disabled || gateWhy()) return;
+    if (enterStage()) return;
+    doCreate();
   });
+
+  /* 進度條點擊（--anystep，同建立商品）：第 1 段＝回表單（與側欄「返回表單」同一條路）；
+     第 2 段＝與主鈕同一條路（createBtn.click()，擋關照舊）；點目前所在段不做事。 */
+  stepperLabels.forEach(l => {
+    l.addEventListener('click', () => {
+      const n = Number(l.dataset.step);
+      if (n === cbStep) return;
+      if (n === 1 && cbStep === 2) { exitStage(); return; }
+      if (n === 2 && cbStep === 1) { createBtn.click(); return; }
+    });
+  });
+
 
   renderItems();
   renderAlloc();
@@ -1687,6 +1981,9 @@
 </script>
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
+<script src="js/currency.js?v=r2.2"></script>   <!-- D316：基準幣別＝創作者幣別（window.ztorCurrency.CREATOR），供 cbBaseCurrency() 讀 -->
+<script src="js/publish-stage.js?v=r2.2"></script>   <!-- D310 組合側：第 2 步「預覽與發布」全頁畫面 -->
+<script src="js/fan-bundle-page.js?v=r2.2"></script>   <!-- D310 組合側：粉絲視角組合包頁渲染（前台 shop-item 組合分支鏡像） -->
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <script src="partials/radio-list.js?v=r2.2"></script>

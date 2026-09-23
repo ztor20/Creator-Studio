@@ -33,12 +33,17 @@
 <link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2">
 <!-- 送出後回項目詳情頁才顯示成功提示（js/toast.js 的跨頁佇列），樣式在這裡就要備好。 -->
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
-<!-- 發布前預覽確認層（D223）：彈窗殼＋語言分頁＋列表 -->
+<!-- 原為發布前預覽確認層（D223）的彈窗殼＋語言分頁＋列表。浮層已於 2026-09-23 退場（最後一步改全頁
+     「預覽與送審」，見頁尾 buildStageOpts）；publish-preview.css 仍要留著——全頁畫面的翻譯表／價格表沿用它的
+     .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭）。其餘三支本輪不動，是否還有消費者留待元件巡檢。 -->
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- 2026-09-23：最後一步的翻譯表／價格表（整頁 .drawer--full） -->
+<link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- 2026-09-23：最後一步的粉絲視角作品頁（前台 title.html 鏡像，第 6 段；js/fan-project-page.js 作品模式） -->
+<link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- 2026-09-23：最後一步「預覽與送審」的全頁版型（主區預覽＋右側側欄） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 </head>
 <body>
@@ -123,6 +128,18 @@
         </select>
       </div>
     </section>
+
+    <!-- ───── 最後一步 · 預覽與送審（Preview & submit）─────
+         2026-09-23（比照建立專案 D322；作品上架規格的決策編號由上游回寫）：第一次上架的最後一步**就是**
+         發布前預覽確認的全頁畫面——主區是粉絲視角作品頁（前台 title.html 鏡像，js/fan-project-page.js 作品模式），
+         右側固定側欄三段（語言／幣別／發布前檢核）＋底部主鈕「送出審核」，按下即送審、不再彈第二層。
+         版型與互動全部由 js/publish-stage.js 掛進下面這個空殼，本頁只負責備料（見頁尾 buildStageOpts）。
+         墓碑（2026-09-23）：原本「給粉絲的話」就是最後一步，按「送出審核」才開 partials/publish-preview.js 浮層
+         （D223，只帶名稱與簡介兩欄），同一件事問兩遍；就緒檢查（readiness chip）也改由側欄第三段承接。
+         編輯已上架作品（?mode=edit）不經過這一步：原本就不進浮層、直接存檔，維持不變。 -->
+    <section data-panel="preview" class="hidden">
+      <div data-pw-stage></div>
+    </section>
   </div>
   </div><!-- /.wizard__sheet -->
 
@@ -158,7 +175,12 @@
 <!-- 提供 window.ztorToast.queue()：上架成功的提示排到項目詳情頁再顯示。 -->
 <script src="js/toast.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
-<script src="partials/publish-preview.js?v=r2.2"></script>
+<!-- partials/publish-preview.js 已移除（2026-09-23）：最後一步改成全頁「預覽與送審」，本頁不再開浮層。 -->
+<!-- 匯率與金額格式（window.ztorEvents 的 fx／priceIn／fmtMoney）：publish-stage 的幣別段與價格表靠它換算。 -->
+<script src="js/events-store.js?v=r2.2"></script>
+<script src="js/publish-stage.js?v=r2.2"></script>
+<!-- 粉絲視角作品頁：前台作品上線後就是 title.html，與建立專案直接發行 × 影片同一支渲染器（作品模式）。 -->
+<script src="js/fan-project-page.js?v=r2.2"></script>
 <!-- 素材格（[data-upload]）：點擊選檔、hover 替換／刪除，由共用元件產生。 -->
 <script src="partials/upload-tile.js?v=r2.2"></script>
 <!-- 分類與年齡分級的值域（主規格 §7.1.2／§7.11）：建立項目流程與項目公開資訊吃同一份，
@@ -249,7 +271,7 @@
      D220 曾在此傳 lsField:true 讓 F8 名稱與說明卡掛 data-ls-field，交給頁級
      partials/lang-switch.js 接手內容檢視語言切換；D223 撤除 lang-switch.js，
      翻譯檢視改在送出（submit()）時交給 partials/publish-preview.js，這裡不再需要
-     那個旗標。 */
+     那個旗標。2026-09-23 起翻譯檢視改在最後一步的全頁畫面（js/publish-stage.js，見 buildStageOpts）。 */
   document.querySelectorAll('[data-wf]').forEach(host => {
     window.ZtorWorkFields.renderAll(host, host.dataset.wf.split(','), { onChange: () => renderReadiness() });
   });
@@ -296,8 +318,10 @@
   /* ---- 分步 ---- */
   /* 最後一步「給粉絲的話」只在第一次上架時出現（D207）：編輯已上架作品不產生新的
      貼文（那則早就發過了），多一步問一次只會讓人以為改了會再發一次。 */
-  const FLOW = editMode ? ['media', 'art', 'info', 'credits'] : ['media', 'art', 'info', 'credits', 'announce'];
-  const STEP_LABEL = { media: 'pw.step.media', art: 'pw.step.art', info: 'pw.step.info', credits: 'pw.step.credits', announce: 'pw.step.announce' };
+  /* 第一次上架多一個最後一步「預覽與送審」（2026-09-23，比照建立專案 D322）：全頁預覽就是送出前的最後一站。
+     編輯已上架作品不加這一步——原本就不進發布前預覽（見 submit()），維持直接存檔。 */
+  const FLOW = editMode ? ['media', 'art', 'info', 'credits'] : ['media', 'art', 'info', 'credits', 'announce', 'preview'];
+  const STEP_LABEL = { media: 'pw.step.media', art: 'pw.step.art', info: 'pw.step.info', credits: 'pw.step.credits', announce: 'pw.step.announce', preview: 'pw.step.preview' };
   /* 就緒檢查項屬於哪一步：模組不知道宿主頁怎麼分步，所以由這裡對應（規格 §8）。 */
   const STEP_OF = { file: 'media', audio: 'media', cover: 'art', copy: 'info', spec: 'info', genres: 'info', age: 'info', pricing: 'info' };
   let idx = 0;
@@ -339,7 +363,17 @@
 
   function render(scroll) {
     const cur = FLOW[idx];
+    const onStage = cur === 'preview';
     document.querySelectorAll('[data-panel]').forEach(p => p.classList.toggle('hidden', p.dataset.panel !== cur));
+    /* 最後一步是全頁預覽（前台鏡像的內容寬 ＋ 320 側欄）：內容欄由 narrow 換成 stage（同 create-project 的 review 步） */
+    const body = document.querySelector('.wizard__body');
+    if (body) {
+      body.classList.toggle('wizard__body--narrow', !onStage);
+      body.classList.toggle('wizard__body--stage', onStage);
+    }
+    /* 主動作（送出審核）與上一步都在側欄，底部動作列整條收起 */
+    const foot = document.querySelector('[data-footer]');
+    if (foot) foot.classList.toggle('hidden', onStage);
     backBtn.classList.toggle('hidden', idx === 0);
     /* 最後一步的主動作就是送出上架，所以按鈕自己換名字——底下不另加第二顆送出鈕，
        否則同一列會同時出現「繼續」與「發布」，使用者得先猜哪一顆才是結尾。 */
@@ -347,6 +381,8 @@
     buildStepper();
     syncSub();
     renderReadiness();
+    /* 走到最後一步才備料掛畫面——欄位、畫質價格與名單都是動態的，離開再回來都要重收一次。 */
+    if (onStage) mountStage(); else unmountStage();
     if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' });
     if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
   }
@@ -360,21 +396,16 @@
 
   /* 走完＝把這一件送進平台審核。貼文與作品內容一起交給 store 保管，等審核通過
      那一刻才由項目詳情頁播出「發貼文＋轉已上線」。為什麼三件事不在這裡做：
-     它們的觸發條件是審核通過，不是送出（規格 §3.3、5.1.0.4 F4）。 */
+     它們的觸發條件是審核通過，不是送出（規格 §3.3、5.1.0.4 F4）。
+     底部主動作只在編輯態走到這裡（第一次上架的最後一步是全頁預覽，底部動作列收起，
+     送審由側欄主鈕 onPrimary 直接呼叫 doSubmitNew()）。 */
   function submit() {
     /* 編輯已上架作品是另一條路：它不產生新的貼文，也不一定產生新的送審件——
-       這條分支不算「新發布」，不進發布前預覽確認層（D223，見 ASSUMPTIONS.md）。 */
+       這條分支不算「新發布」，不進發布前預覽確認（D223，見 ASSUMPTIONS.md；2026-09-23 起同樣不進全頁預覽）。 */
     if (editMode) { saveEdit(); return; }
-    if (window.ztorPublishPreview) {
-      window.ztorPublishPreview.open({
-        fields: [
-          { key: 'name', el: document.getElementById('pw-title'), kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
-          { key: 'desc', el: document.getElementById('pw-desc'), kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
-        ],
-        onConfirm: doSubmitNew
-      });
-      return;
-    }
+    /* 墓碑（2026-09-23）：這裡原本先開 partials/publish-preview.js 浮層（window.ztorPublishPreview.open，
+       fields＝#pw-title 名稱、#pw-desc 簡介，onConfirm: doSubmitNew），確認後才送審。最後一步本身就是全頁預覽之後，
+       浮層退場；同樣兩欄改由 stageFields() 交給側欄的翻譯表，doSubmitNew() 改由側欄主鈕直接呼叫。 */
     doSubmitNew();
   }
   function doSubmitNew() {
@@ -451,6 +482,144 @@
     location.href = 'project-detail.html?id=' + encodeURIComponent(pid) + hash;
   }
 
+  /* ══ 最後一步「預覽與送審」全頁畫面（2026-09-23，比照建立專案 D322／建立活動第 8 步 D310）══════════
+     宿主只負責三件事：備料（buildStageOpts）、掛畫面（mountStage）、檢核同步（stage.syncChecks）。
+     版型、語言／幣別兩軸、兩張表與主鈕都在 js/publish-stage.js；主區畫面在 js/fan-project-page.js（作品模式）。
+     翻譯模式不傳：作品上架不受 D312 活動例外影響，仍自動翻譯。
+     幣別不傳 priceOverrides：維持 D306 通則＝可逐幣別覆寫；基準＝作品自己的定價幣別（F14，HKD／TWD）。 */
+  let stage = null;            // publish-stage 的 handle（只有停在最後一步時是非 null）
+  let stageBusy = false;       // 掛載期間 applyI18n 丟出的 i18n:applied 不回頭 render（見頁尾監聽）
+  /* publish-stage 的 step 是 1 起算的數字（0＝不跳），本頁的步驟是 FLOW 裡的代號：兩邊在這裡換算。 */
+  const stepNum = key => { const i = FLOW.indexOf(key); return i >= 0 ? i + 1 : 0; };
+  function goStep(n) { if (!n) return; idx = Math.min(n, FLOW.length) - 1; render(true); }
+  const numVal = v => { const n = parseFloat(String(v == null ? '' : v).replace(/[^0-9.]/g, '')); return Number.isFinite(n) ? n : 0; };
+  const skipOn = () => !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
+  function pwBaseCurrency() { return (window.ZtorWorkFields && window.ZtorWorkFields.collect().currency) || 'HKD'; }
+
+  /* 可翻譯欄位（翻譯表的列）：作品名稱與簡介（F8），與原浮層帶的兩欄相同。 */
+  function stageFields() {
+    const blank = { value: '' };
+    return [
+      { key: 'name', el: document.getElementById('pw-title') || blank, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
+      { key: 'desc', el: document.getElementById('pw-desc') || blank, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
+    ];
+  }
+
+  /* 價格表的列：付費作品的逐畫質租賃價（F14），基準幣別跟著作品自己的幣別欄。免費作品沒有價格列。 */
+  function stagePrices() {
+    const w = window.ZtorWorkFields.collect();
+    const base = pwBaseCurrency();
+    if (!w.paid) return [];
+    return w.qualities.map(q => ({
+      key: 'q:' + q.name, label: q.name, groupKey: 'pw.price.title', groupFallback: 'Pricing',
+      priceObj: { base, amount: numVal(q.price), override: {} }, locked: false }));
+  }
+
+  /* 發布前檢核（側欄第三段）：就是原本底部 readiness chip 那一份清單（規格 §8，readinessItems()），
+     轉成 { key, label, ok, step }，step 是可點回去的步驟。沒有新增或刪減檢查項。
+     Cheat Codes 的 Skip validation 開著就全部放行、標一句「已略過驗證」，與建立專案同一個做法。 */
+  function stageChecks() {
+    const skip = skipOn();
+    return readinessItems().map(c => {
+      const ok = !!c.done();
+      return { key: c.block || c.k, step: stepNum(c.step), ok: ok || skip,
+               label: c.label + (!ok && skip ? ' · ' + T('cp.ready.chip.skip', 'Validation skipped') : '') };
+    });
+  }
+
+  /* 預覽區塊的「編輯」入口：hover 到哪一塊就跳回哪一步（publish-stage 取第一個命中的祖先，順序有意義）。 */
+  function stageEditZones() {
+    const z = [];
+    const add = (sel, key) => { const n = stepNum(key); if (n) z.push({ sel, step: n }); };
+    add('[data-fpj-poster]', 'art');
+    add('[data-fpj-title]', 'info');
+    add('[data-fpj-keywords]', 'info');
+    add('[data-fpj-desc]', 'info');
+    add('[data-fpj-price]', 'info');
+    add('[data-fpj-credits]', 'credits');
+    add('[data-fpj-media]', 'art');
+    add('[data-fpj-clips]', 'art');
+    return z;
+  }
+
+  /* 粉絲視角作品頁的 model（結構見 js/fan-project-page.js 檔頭）：直接發行 × 影片版型＋作品模式三欄。
+     影片資訊列、關鍵字與價格鈕的算法與 create-project.html 影片路徑的 buildFanModel() 相同（同一份作品欄位）。 */
+  function buildFanModel() {
+    const w = window.ZtorWorkFields.collect();
+    const base = pwBaseCurrency();
+    const thumbOf = tile => {
+      if (!tile || !(tile.classList.contains('is-filled') || tile.classList.contains('is-optimized'))) return null;
+      const v = tile.querySelector('video');
+      if (v && v.getAttribute('src')) return { src: v.getAttribute('src'), kind: 'video' };
+      const im = tile.querySelector('img');
+      return im && im.getAttribute('src') ? { src: im.getAttribute('src'), kind: 'image' } : null;
+    };
+    const m = { kind: 'golive', film: true, work: true, name: { key: 'name' }, desc: { key: 'desc' }, story: null,
+                access: w.paid ? 'ppv' : 'free', creator: '', meta: [] };
+    m.poster = thumbOf(document.querySelector('[data-pw-asset="cover"]'));
+    m.media = Array.prototype.slice.call(document.querySelectorAll('[data-pw-stills] .upload-tile')).map(thumbOf).filter(Boolean);
+    m.hasTrailer = !!w.trailer;
+    const rt = String(w.runtime || '').split(':').map(Number);
+    const runtime = rt.length === 3 && (rt[0] || rt[1]) ? ((rt[0] ? rt[0] + 'h ' : '') + (rt[1] ? rt[1] + 'm' : '')).trim() : '';
+    m.facts = [w.release, w.age ? T(w.age) : '', runtime];
+    if (w.audio) { m.langLabel = T('pw.media.audio.lang'); m.langValue = T(w.audio); }
+    m.keywords = w.genres.map(g => T(g));
+    const qs = w.paid ? w.qualities.filter(q => numVal(q.price) > 0) : [];
+    if (qs.length) {
+      const min = qs.reduce((a, q) => (numVal(q.price) < numVal(a.price) ? q : a), qs[0]);
+      m.price = { priceObj: { base, amount: numVal(min.price) }, priceKey: 'q:' + min.name,
+                  from: qs.some(q => numVal(q.price) !== numVal(min.price)) };
+    } else m.price = null;
+    /* 創作團隊：演員與劇組全部照 F15 的角色順序列（角色名是介面字、名字原樣） */
+    m.credits = w.credits.map(r => ({ role: T(r.role, r.role), names: r.names }));
+    /* 預告與花絮：預告片一支＋花絮 N 支；縮圖取影片格抽得到的影格，否則退回主視覺圖片 */
+    const cover = m.poster && m.poster.kind === 'image' ? m.poster : null;
+    m.clips = [];
+    if (w.trailer) m.clips.push({ kind: 'trailer', thumb: thumbOf(document.querySelector('[data-pw-asset="trailer"]')) || cover });
+    document.querySelectorAll('[data-pw-bts] [data-pw-asset="bts"]').forEach(tile => {
+      if (tile.classList.contains('is-filled')) m.clips.push({ kind: 'bts', thumb: thumbOf(tile) || cover });
+    });
+    return m;
+  }
+
+  function buildStageOpts() {
+    const S = window.ztorEvents;
+    return {
+      fields: stageFields(),
+      prices: stagePrices(),
+      currencies: S ? S.CURRENCIES.slice() : ['USD', 'TWD', 'HKD', 'SGD', 'JPY'],
+      baseCurrency: pwBaseCurrency(),
+      mode: 'publish',
+      /* 主鈕＝原本最後一步的最終動作「送出審核」（D179：送出＝送審，不是上線）；按下即執行原本的送審邏輯 */
+      primaryKey: 'pw.submit',
+      editZones: stageEditZones(),
+      onEdit: goStep,
+      checks: stageChecks,
+      previewRender: (host, api) => {
+        if (!window.ztorFanProjectPage) return;
+        window.ztorFanProjectPage.render(host, buildFanModel(), api);
+      },
+      onPrimary: result => { window.__pwLocalization = result; doSubmitNew(); },
+      onSecondary: () => goStep(FLOW.length - 1)
+    };
+  }
+  function mountStage() {
+    const host = document.querySelector('[data-pw-stage]');
+    if (!host || !window.ztorPublishStage) return;
+    /* 側欄 sticky 要避開 .wizard__top（本身 sticky）：量頂列高度填進 --pstage-top（同 create-project 的 mountStage） */
+    const top = document.querySelector('.wizard__top');
+    host.style.setProperty('--pstage-top', 'calc(' + (top ? top.offsetHeight : 0) + 'px + var(--sp-24))');
+    stageBusy = true;
+    try { stage = window.ztorPublishStage.mount(host, buildStageOpts()); } finally { stageBusy = false; }
+  }
+  function unmountStage() {
+    if (!stage) return;
+    stage.unmount();
+    stage = null;
+    const host = document.querySelector('[data-pw-stage]');
+    if (host) host.innerHTML = '';
+  }
+
   /* ---- 送出前的就緒檢查（規格 §8）--------------------------------------------
      項目清單來自 work-fields 模組（欄位在哪、算不算填好都是它的事），本頁只負責
      把它畫成清單、決定擋不擋關。做法沿用建立商品／建立拍賣的 readiness chip。 */
@@ -461,21 +630,29 @@
   const readyChipIcon = readyChip.querySelector('.ztor-icon');
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-  function renderReadiness() {
-    if (!readinessOn) return;
-    /* 每一格改動都可能讓「這次要不要重新送審」翻面，主動作與頂部那句話跟著重算。 */
-    syncPrimary(); renderEditBanner();
-    const last = idx === FLOW.length - 1;
+  /* 就緒檢查項（規格 §8）：底部 chip（編輯態）與最後一步側欄第三段（第一次上架）吃同一份清單。 */
+  function readinessItems() {
     /* 「給粉絲的話」不是作品欄位，所以不在 ZtorWorkFields 那份清單裡（那份的權威是
        5.1.2.2.1 F1–F15），但它跟作品一起送出、送出後就發得出去，缺了要擋——所以
        在這裡補一項就緒檢查。必填的理由：這則貼文會直接推播給所有支持者，內文空白時
        他們收到的是一個只有作品名的通知。 */
     const annBody = document.getElementById('pw-ann-body');
     const annCheck = (editMode || !annBody) ? [] : [{
+      block: 'announce', step: 'announce',
       label: T('pw.ready.ann', 'A message for your backers'),
       done: () => !!annBody.value.trim()
     }];
-    const checks = window.ZtorWorkFields.checks({ stepOf: STEP_OF, stepLabel: k => T(STEP_LABEL[k], k) }).concat(annCheck);
+    return window.ZtorWorkFields.checks({ stepOf: STEP_OF, stepLabel: k => T(STEP_LABEL[k], k) }).concat(annCheck);
+  }
+
+  function renderReadiness() {
+    if (!readinessOn) return;
+    /* 每一格改動都可能讓「這次要不要重新送審」翻面，主動作與頂部那句話跟著重算。 */
+    syncPrimary(); renderEditBanner();
+    /* 底部 chip 與擋關只剩編輯態的最後一步在用：第一次上架的最後一步是全頁預覽，送出與檢核都在側欄
+       （stageChecks()），底部動作列在那一步整條收起。 */
+    const last = editMode && idx === FLOW.length - 1;
+    const checks = readinessItems();
     const remaining = checks.filter(c => !c.done()).length;
     readyList.innerHTML = '';
     checks.forEach(c => {
@@ -505,7 +682,7 @@
       readyChip.classList.remove('readiness__chip--ready');
       readyChipIcon.setAttribute('data-lucide', 'circle');
     }
-    /* 只有最後一步的主動作是「送出」，擋關與 chip 都跟著它走。 */
+    /* 只有（編輯態）最後一步的底部主動作是「送出／儲存」，擋關與 chip 都跟著它走。 */
     readyChip.hidden = !last;
     nextBtn.disabled = last && !(ready || skip);
     if (window.ztorIcons) window.ztorIcons.applyIcons(readyList), window.ztorIcons.applyIcons(readyChip);
@@ -519,8 +696,21 @@
   readinessOn = true;
 
   /* 切語言時步驟名與主動作文案都要跟著換；主動作的字隨「是不是最後一步」而不同，
-     所以整個 render() 重跑一次最省事（面板顯隱本來就冪等）。 */
-  document.addEventListener('i18n:applied', () => { render(false); renderEditBanner(); });
+     所以整個 render() 重跑一次最省事（面板顯隱本來就冪等）。
+     例外（2026-09-23，同 create-project D322 的防護）：i18n.js 每跑一次 apply()（連只翻一個子樹也算）結尾都會
+     dispatch 'i18n:applied'，而全頁預覽每次重畫預覽區都會 applyI18n(預覽區)——照舊直接 render() 就是
+     「掛畫面 → 翻譯 → render → 再掛」無限迴圈。所以掛載中收到的一律忽略；停在最後一步時只有介面語言真的換了
+     才重畫（切預覽語系、換幣別都只是預覽區自己重畫，不該把整頁重掛、捲回頂端）。 */
+  let lastUiLang = document.documentElement.lang;
+  document.addEventListener('i18n:applied', () => {
+    if (stageBusy) return;
+    const uiLang = document.documentElement.lang;
+    if (stage && FLOW[idx] === 'preview' && uiLang === lastUiLang) return;
+    lastUiLang = uiLang;
+    render(false); renderEditBanner();
+  });
+  /* Cheat Codes 的 Skip validation 是即時切換的，切了就要重算側欄檢核（否則主鈕還灰著）。 */
+  document.addEventListener('ztor:devstate-changed', () => { if (stage) stage.syncChecks(); });
   render(false);
   renderEditBanner();
 })();

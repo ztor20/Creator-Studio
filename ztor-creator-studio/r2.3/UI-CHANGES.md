@@ -4,6 +4,286 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-23（九十九）· 作品上架最後一步改為全頁「預覽與送審」，沿用粉絲視角專案頁渲染器（A spec-derived · D323，比照 D310／D317／D321／D322；5.1.2.2.1、主規格 §8.26 第 21、23 項已關閉）
+
+**依據**：使用者裁決 D323——作品上架流程（`publish-work.html`）的送審前確認比照建立專案（D322）、建立商品／組合（D317／D321）與建立活動（D310）的做法，改成流程最後一步的全頁「預覽與送審」。與 D322 不同：作品上架原本沒有可替換的摘要步，是在既有 5 步（音訊與字幕／封面與素材／影片詳情／演職人員／給粉絲的話）之後新增第 6 步。
+
+**改動**：
+
+- `publish-work.html`：精靈 5 步改 6 步，新增最後一步 `data-panel="preview"`「預覽與送審」（i18n `pw.step.preview`）；`render()` 進入最後一步時切全頁版型（`wizard__body--stage`）、收起底部動作列（`syncPrimary()`／`foot` 隱藏）、掛載／卸載預覽（`mountStage()`／`unmountStage()`）。新函式：`stageFields()`（可翻譯欄位＝作品名稱、簡介）、`stagePrices()`（付費作品逐畫質租賃價，免費作品無價格列）、`stageChecks()`（就緒檢查轉可點跳回步驟）、`stageEditZones()`（預覽區塊 hover 可跳回步驟）、`buildFanModel()`（組出 Fan project page 的 `model`，`kind:'golive'`、`work:true`，另帶 `credits`／`clips`）、`buildStageOpts()`、`mountStage()`／`unmountStage()`。檢查清單抽成 `readinessItems()`，供底部就緒 chip（編輯態）與最後一步側欄第三段（新發布態）共用；`submit()` 移除呼叫 `partials/publish-preview.js` 浮層（墓碑，見程式內註解），改由側欄主鈕直接呼叫 `doSubmitNew()`。側欄主鈕沿用 `pw.submit`「送出審核」（D179：送出＝送審）；不傳 `translation`（沿用 `'auto'`，作品上架不受 D312 活動例外影響）；不傳 `priceOverrides`（沿用 D306 通則可逐幣別覆寫，基準＝作品自己的定價幣別 F14，HKD／TWD）；語言切換重繪防護沿用 D322 同一種做法（掛載中忽略 `i18n:applied`、停在最後一步時只有介面語言真的換了才重畫）。補連 `ds-components/drawer.css`（`--full`）、`ds-components/fan-shop.css`（第 6 段）；`ds-components/publish-preview.css` 保留載入（全頁畫面的翻譯表／價格表沿用它的 `.pp-table`／`.pp-cell` 家族）。`?mode=edit` 編輯態不受影響，仍是 4 步、不掛最後一步全頁預覽，「儲存變更」／「儲存並重新送審」直接存檔。
+- `js/fan-project-page.js`：沿用（不改邏輯），新增三個選填 model 欄位供本輪消費——`work`（布林旗標，作品模式下沒有故事也沒有條列時不畫空的「關於這部作品」段）、`credits`（`creditsSection()`「創作團隊」，有值才畫，沒有演員照片、走文字名單緊湊排法）、`clips`（`clipsSection()`「預告與花絮」，有值才畫，縮圖退階序：影格 → 主視覺 → 空白底＋`play` 圖示）。create-project.html 不傳這三欄，畫面與 D322 落地時一致。
+- `js/i18n.js`：新增 `pw.step.preview`、`fpj.sec.team`、`fpj.sec.clips`、`fpj.clip.trailer`、`fpj.clip.bts`。
+- 舊註解更正（僅註解、未動邏輯）：`create-event.html`、`js/publish-stage.js`、`partials/work-fields.js`（兩處）——把「浮層仍服務 create-product／create-project／publish-work」之類已過時的說法改成「六個消費頁已全部退場，浮層僅剩 DS demo 在用，屬退場候選」。
+
+**驗證**（瀏覽器實測，`publish-work.html` 不帶參數）：步驟依序為影片上傳／素材／詳情／演職人員／給粉絲的話／預覽與送審；側欄語言自動翻譯、幣別基準 HKD、檢核 9 項（還差 7 項時主鈕停用，符合就緒判斷）；`?mode=edit` 仍為 4 步、不掛全頁預覽；console 無錯誤、預覽不畫相關推薦。`node --check js/publish-stage.js partials/work-fields.js` 通過。
+
+**元件**：`Fan project page`（§4.220）補三個選填欄位（`work`／`credits`／`clips`）與 `publish-work.html` 消費頁，design-system.md／.html 同輪同步；`Publish stage`（§4.216）消費頁清單同輪補 `publish-work.html`；舊浮層 `Publish preview`（§4.130）消費頁清單改寫為僅剩 DS demo，標退場候選（不刪檔），design-system.md／.html／design-components.html 三處同輪更正。呈現假設見 ASSUMPTIONS UIA-178。
+
+## 2026-09-23（九十八）· 建立專案最後一步改為全頁「預覽與發布」，新增粉絲視角專案頁渲染器（A spec-derived · D322，比照 D310／D317／D321；5.1.2.1 v4.11、主規格 v4.00）
+
+**依據**：使用者裁決 D322——建立專案的「發布確認（Review）」步驟改為全頁「預覽與發布」畫面，比照建立活動第 8 步（D310）與建立商品／建立組合的兩步驟化（D317／D321）。原摘要步四塊職責分別併入新版面：F9 各步摘要卡整組退場（預覽本身即摘要，Edit 入口改為預覽區塊 hover 編輯）；F10 交付時程併入前台預覽的「交付時程」段；F11「接下來會發生什麼」與 F12 發布前檢查併入側欄第三段。
+
+**改動**：
+
+- 新檔 `js/fan-project-page.js`（`window.ztorFanProjectPage.render(host, model, api)`，約 509 行），回傳 `.fep-shop` 根節點。共創／預購鏡像前台 `https://ztor.vercel.app/cocreate-project.html?kind=music&state=active`（預購改 `?kind=preorder`）、直接發行鏡像 `https://ztor.vercel.app/title.html`，樣式取自前台 `components.css?v=20260922j`／`tokens.css`。依 `model.kind`（`golive`／`fund`／`preorder`）畫海報、標題列、募資面板或直接發行價格鈕、方案卡（`tiersSection()`）、預算分配（`budgetSection()`，共創限定）、交付時程（`deliverySection()`）；不畫相關推薦、創作團隊、留言討論、浮動支持條、製作進度時間軸（建立流程沒有這批資料）。價格節點帶 `data-fep-price-key`（沿用活動頁屬性名）與 `data-fpj-price-key`；`editZones` 可選節點 `[data-fpj-poster]`／`[data-fpj-title]`／`[data-fpj-keywords]`／`[data-fpj-desc]`／`[data-fpj-fund]`／`[data-fpj-price]`／`[data-fpj-tiers]`／`[data-fpj-about]`／`[data-fpj-story]`／`[data-fpj-budget]`／`[data-fpj-delivery]`／`[data-fpj-media]`。icon 只用 `image`、`check`。
+- `ds-components/fan-shop.css` 新第 6 段「專案頁元件」（第 706 行起），檔頭消費者清單同輪更新。
+- `create-project.html`：最後一步（`data-panel="review"`）改空殼 `[data-cpp-stage]` ＋墓碑（第 770–784 行附近，`#cpp-delivery` 隱藏欄留作共創預期交付的資料落點）；`render()` 進入最後一步時切全頁版型、收起底部動作列（`syncStageFooter()`）、掛載／卸載預覽（`mountStage()`／`unmountStage()`）。步驟名讀 `cpp.step.preview`「預覽與發布」，直接發行影片家族改 `cpp.step.preview-submit`「預覽與送審」；新函式 `filmChecks()`（第 1143 行，原名 `renderFilmReview()` 改寫改名）、`stageFields()`（1590）、`stagePrices()`（1619）、`stageChecks()`（1642）、`stageNextSync()`（1689）、`stageEditZones()`（1708）、`buildFanModel()`（1729）、`buildStageOpts()`（1837）、`mountStage()`（1858）、`syncStageFooter()`（1876）。側欄主鈕依類型：非影片家族「發布項目 Publish project」，直接發行影片家族「送出審核 Submit for review」（`buildStageOpts().primaryKey`）；「接下來會發生什麼」由 `stageNextSync()`（`MutationObserver` 監看重畫）補進側欄第三段檢核清單下方。撤除：`publish()` 的舊浮層呼叫、`partials/publish-preview.js` 的 `<script>`、`review-row.css` 的 `<link>`（原位留墓碑）。補連 `drawer.css`、`fan-shop.css`、`publish-stage.css`、`events-store.js`、`publish-stage.js`、`fan-project-page.js`。`buildStageOpts()` 不傳 `translation`（沿用 `'auto'`）、不傳 `priceOverrides`（沿用可覆寫，D306；專案是否應比照電子商店唯讀待確認，見主規格 §8.28 第 10 項）。
+- 行為差異：「必要圖片」「交付時程」兩項檢核現依 D322 F12 照實際欄位值判斷（`stageChecks()`），取代舊摘要步固定寫死「是」；未上傳圖片或未填交付日期時側欄主鈕停用。預期交付日期在預覽主區可就地改（`[data-fpj-delivery-input]` 的 change 事件寫回 `#cpp-delivery` 或預購的 `#po-delivery`，並呼叫 `stage.refresh()`）。
+- `js/i18n.js`：新增 `fpj.*` 命名空間（46 個 key）、`cpp.step.preview`、`cpp.step.preview-submit`、`cpp.pv.chk.tiers`。
+
+**驗證**（瀏覽器實測）：直接發行非影片（單曲）→ 步驟為基本資料／作品呈現／變現方式／預覽與發布，主鈕「發布項目」；影片（電影）→ 關於作品／作品檔案／展示內容／詳情與定價／預覽與送審，主鈕「送出審核」；共創（專輯）→ 募資面板顯示目標 USD 20,000，預覽內有就地可改的交付日期欄，檢核含「已建立至少 1 個回饋套組」「交付時程清楚」；預購 → 預購設定／預購方案／預覽與發布。四型皆為點第 1 段回表單、底部動作列恢復；console 無錯誤、預覽不畫相關推薦。
+
+**元件**：新元件 `Fan project page`（§4.220，design-system.md／.html 同輪同步，格式照 §4.219 Fan bundle page；直接發行與共創各一份就地渲染 demo）；`Publish stage`（§4.216）的消費頁清單同輪補上 `create-project.html`。
+
+## 2026-09-23（九十七）· 優惠碼「適用範圍」Phase 4 改用與 Phase 1 同一種選項列，記號換成 checkbox（B 使用者反饋 · 呈現層，規則不動；Q126）
+
+**依據**：使用者反饋「Phase 4 的適用範圍是否也能改成 Phase 1 的 UI」，裁示照推薦做——列的長相統一、記號分家。規則沒改：Phase 4 的三級仍可混選（D272 類型與商品可同時勾），所以下面兩層維持複選，只是換成方框記號。
+
+**改動**：
+
+- `ds-components/radio-list.css`——新增變體 `--check`：同一種列（標題＋副說明、同樣 hover 與節奏），左側記號改用 checkbox atom（`.zcheck__control`，重用 checkbox.css、不另刻方塊），列本體是 `<label>`，選中態由 `:checked` 自己畫；停用列整列轉灰、不吃 hover。
+- `store-settings.html`——優惠碼彈窗「適用範圍」的 Phase 4 三列由裸 `.zcheck` 改為 `.radio-list.radio-list--check` 的三列並各補一行副說明；id 與 input class 不動，JS（`setScopeAllMode`／`readScope`／類型樹父子連動）完全沿用。
+- `js/i18n.js`——新增 `store-settings.codes.f.scope.types.sub`；「特定商品」的副說明沿用 Phase 1 的 `...multi.sub`，不另造同義字。
+- `design-system.html`／`design-system.md`——4.84 Radio list 補 `--check` demo（含停用列）與規格表的 Variants 列；md 條目補變體段與「圓點單選／方框複選不可互換」。
+- `STYLE-DECISIONS.md`——Q126 已裁決。
+
+**驗證**：`?version=full` 開優惠碼表單→三列同 Phase 1 的列型，「全部商店」預設勾、其餘兩列灰掉；取消「全部」後兩列可同時勾，類型樹展開且父層全選＝子類型全勾，「特定商品」展開共用的多選 combobox。`?version=p1` 維持兩列圓點單選。console 0 錯誤；`check_ds_sync.py` PASS。
+
+## 2026-09-23（九十七）· 商品記錄補「詳細規格」「取貨與退貨說明」兩欄示範資料，product-localization 翻譯表與 product-detail 設定分頁跟進接上（A spec-derived · D319 補；ASSUMPTIONS UIA-175）
+
+**依據**：D319 落地 `product-localization.html` 時（UI-CHANGES 九十五）記下一個示範資料缺口——`js/products-store.js` 的商品記錄沒有 `specs`（詳細規格）與 `deliveryReturns`（取貨與退貨說明）兩欄，只有建立商品表單才有，導致翻譯表少了規格 §2.18 清單裡的這兩組可翻譯列（`5.1.5.2-建立商品流程.md` F2 詳細規格、D291 取貨與退貨說明列入可翻譯文案欄位）。這是示範資料缺欄，不是規則縮水；使用者裁決本輪補齊。
+
+**改動**：
+
+- `js/products-store.js`：`P_DEFAULT` 四筆實體商品（`zine`／`tee`／`hoodie`／`acetate`）補 `specs`（逐列 `{ name, value }`，形狀同 `create-product.html` 的 `collectSpecFields()`）與 `deliveryReturns`（短文字），皆為含中文的真實感示範值（`acetate` 因是現場 QR 領取的限量手燒版，文案改寫成「一經領取恕不接受退換」而非物流版套句）。其餘商品留空，不動。
+- `product-localization.html`：`locFields()` 為非組合包分支補兩組欄位——規格逐列（`spec-name-i`／`spec-value-i`，兩者皆可翻譯，key 命名與建立流程 `collectSpecFields()`／`collectReturnsField()` 一致）與取貨退貨（`returns`，只有值可翻譯，`item.deliveryReturns` 為空就不出現）；`productModel()` 同步把這兩組資料接進粉絲視角預覽（`specs` 陣列補規格逐列、`returns` 依 `item.deliveryReturns` 有無決定要不要畫）。
+- `product-detail.html`：`pd-spec-rows` 初始列改讀 `window.pdProduct.specs`（原本不分商品一律預填「Material／Size／Pages」三列示範值，屬另一個未記錄的小缺口，順手接上資料驅動）；`pd-delivery-returns` 的值改在 `window.pdProduct` 確定後由 `product.deliveryReturns` 帶入（原本文字框在 markup 裡直接寫死同一句英文示範文案，不分商品）。兩處改動只影響初始顯示，本頁的規格列編輯仍是純前端 demo、無持久化（沿用既有行為，不在本輪擴大範圍）。
+- `docs/示範資料索引.md`：四筆商品的示範狀態欄註記「有詳細規格＋取貨與退貨說明（D319 補）」，並新增一段說明本輪範圍與理由。
+
+**驗證**（瀏覽器實測，persona=default）：`product-detail.html?id=tee` 商品設定分頁「詳細規格」唯讀摘要與編輯態的三列 spec-row 皆顯示 T 恤自己的規格（材質／版型／印刷），非固定的 zine 示範值；「Pickup & returns」欄位顯示 T 恤自己的取貨退貨文案。`product-localization.html?id=tee` 開啟翻譯表：新增「Spec」分組（規格 1–3 的名稱與值皆為輸入框）與「Pickup & returns」一列，四語言欄皆可編輯；改繁體中文欄一個規格值後，切換預覽語言到繁體中文立即反映；按「儲存」正確導回 `product-detail.html?id=tee&saved=loc`，`window.pdProduct.specs` 維持原值（不寫回 store，同 D319 決定一）。`?id=acetate` 同樣通過，取貨退貨文案顯示「現場簽名會 QR 領取…」；`?id=pin`（無 specs/deliveryReturns 的商品）翻譯表沒有多出空的 Spec 分組或 Pickup & returns 列，預覽也不畫空段落。en／zh-Hant 掃描皆 0 個殘留 raw i18n key；四頁 console 錯誤 0。`check_ds_sync.py` PASS＋既有 WARN（無新增 FAIL）；`node --check js/products-store.js` 通過。截圖：`screenshots/r2.3/d319b-product-detail-tee-settings.png`、`d319b-product-localization-tee-transtable.png`、`d319b-product-localization-tee-spec-group.png`。
+
+**元件**：未新增元件，沿用既有 `spec-row`／`pp-table`／`pstage-drawer` 家族。
+
+## 2026-09-23（九十六）· 建立組合改為兩步驟流程，新增粉絲視角組合包頁渲染器（A spec-derived · D321，比照 D317；5.1.5.4 v2.30、主規格 v3.99）
+
+**依據**：使用者裁決 D321（2026-09-23）——建立組合比照 D317 建立商品的先例，改成兩步驟：第 1 步「內容」＝既有整張表單，第 2 步「預覽與發布」＝與建立活動第 8 步／建立商品同一個全頁組件（`js/publish-stage.js`），主區改畫粉絲視角完整組合包頁（前台 1:1 鏡像），而不是只給一顆存檔鈕。
+
+**改動**：
+
+- 新檔 `js/fan-bundle-page.js`（`window.ztorFanBundlePage.render(host, model, api)`）：讀前台 `assets/shop-detail-render.js` 的兩個組合分支原始碼，依成員組成畫兩種——`kind:'goods'`（只含商品，前台 `renderBundle`）與 `kind:'eventset'`（含票券，前台 `renderEventSet`，多一段座位區域與活動資訊框）。內部拆 `tierRows()`／`contents()`／`perksSection()`／`details()` 四個區塊函式；`model` 結構含 `kind`／`gallery`／`name`／`desc`／`shop`／`event`／`members`／`price`／`stock`／`perks`（完整欄位說明見檔頭）；api 與 Fan event page／Fan product page 同一組。`editZones` 可選區塊標 `data-fbp-gallery`／`.pdp-buy__title`／`data-fbp-meta`／`data-fbp-price`／`data-fbp-stock`／`data-fbp-picker`／`data-fbp-tiers`／`data-fbp-members`／`data-fbp-perks`／`data-fbp-desc`；價格節點同帶 `data-fep-price-key`。相關推薦（你可能也喜歡）不畫。
+- `ds-components/fan-shop.css` 新第 5 段「組合包頁元件」，延續第 1–4 段既有的 `.fep-shop` 前台 token，不新增裸值例外；檔頭消費者清單已更新。
+- `create-bundle.html`：頁首新增兩段進度條 `#cb-stepper`（`cb.step.details`「內容」／`cb.step.preview`「預覽與發布」）；表單主鈕改 `cb.next-preview`「下一步：預覽」；原存檔邏輯抽成 `doCreate()`，改由第 2 步側欄主鈕「建立組合」（`onPrimary`）呼叫；新增 `renderStepper()`／`stageFields()`／`stagePrices()`（幣別覆寫依 D318 用列級 `overridable: !!ticketMember()`——含票券成員可覆寫、只含商品唯讀，不傳全域 `priceOverrides`）／`buildFanBundleModel()`／`stageChecks()`（把 `gateWhy()` 的擋關條件轉成正面短標籤：`cb.qc.members`／`.name`／`.disc`／`.lock`／`.cap`／`.sale`／`.listing`）／`stageEditZones()`／`cbSectionOf()`／`buildStageOpts()`／`enterStage()`／`exitStage()`；進第 2 步時表單欄、預覽欄、底部操作列、頂列分節分頁（section-tabs）一併收起（只藏不清空），回表單時原樣還原。本頁沒有編輯態／嵌入態分支，進度條一律顯示；不傳翻譯模式（電子商店多語規則是自動翻譯，D312 只把活動改手動）。補載 `js/currency.js`、`js/publish-stage.js`、`js/fan-bundle-page.js` 與 `ds-components/fan-shop.css`。
+- `js/i18n.js`：新增 `cb.step.*`／`cb.next-preview`／`cb.stage.back`／`cb.qc.*`（共 11 個 key）、`fbp.*`（21 個 key，組合包頁專用文案：庫存提醒、購買欄 CTA、座位區域、套組內容、組合專屬權益、組合介紹等），en／zh 成對。
+
+**驗證**（瀏覽器實測）：純商品組合（`kind:'goods'`）→ 第 2 步主區畫出規格 chip 選擇器與套組內容卡，價格表 0 個輸入框（唯讀，因只含商品成員）；含票券組合（REALIVE 台中場 VIP×2）→ 主區畫出座位區域、活動資訊框、含票券組合購買欄，價格表 4 個輸入框（可覆寫）；點「返回表單」回到第 1 步、表單內容保留、section-tabs 恢復；進度條兩段狀態正確、可點跳轉；console 無錯誤。
+
+**呈現假設**（寫進 `ASSUMPTIONS.md` UIA-176，續號自 UIA-175）：1 含票券組合不畫主辦活動的活動介紹／注意事項／購票條款，改畫組合自己的說明（標題「組合介紹」，空則不畫）；2 前台寫死的交付說明（「現場 QR 領取 · 免運」、含票券頁的「領取」列）不照抄；3 規格 chip 只出現在只含商品的組合購買欄，含票券組合只在套組內容卡寫「尺寸 下單時選」，顏色選項用一般 chip；4 剩餘數量照前台規則（≤10 顯示「僅剩 N 組」、0＝售完），含票券頁也加了這行（前台原本沒有）；5 座位區域每列價格＝最低組合售價＋票種價差 × 每套張數 × (1−折扣%)，價差依匯率換算、不套其他幣別手動覆寫；6 權益兩種組合都畫「組合專屬權益」（前台純商品套組頁沒有此區），限時折扣不顯示在預覽價；7「剩 N 張」用品牌橘（`fan-shop.css` 未定義前台的 `--warning-500`）；8 發布前檢核由 `gateWhy()` 條件改寫成正面短標籤、不適用的不列。
+
+**元件**：新元件 `Fan bundle page`（§4.219，design-system.md／.html 同輪同步，格式照 Fan product page §4.218；純商品套組／含票券組合各一份就地渲染 demo）；`Publish stage`（§4.216）與 `Progress stepper`（§4.49）的消費頁清單同輪補上 `create-bundle.html`。
+
+## 2026-09-23（九十五）· 商品與組合商品細節頁頁首改「預覽與在地化」、取代 See as fan 分割預覽；新增 product-localization.html（A spec-derived · D319）
+
+**動機**：使用者裁決（D319）——商品細節頁與組合商品細節頁自 D305／D306／D310 起就有「預覽與在地化」這個畫面，但入口只在設定分頁裡，頁首擺的是另一顆功能更弱的「粉絲視角預覽（See as fan）」（唯讀、沒有翻譯與幣別入口）。同一份粉絲視角完整頁被兩個入口重複提供，創作者得先猜按哪一顆。本輪把頁首入口直接指向功能完整的那個畫面，See as fan 整組退場；商品、組合包與活動三個模組在「發布後怎麼改翻譯」這件事上入口位置因此一致。
+
+**範圍**：
+
+- **新頁 `product-localization.html`**：電子商店側的「預覽與在地化」全頁版，與活動端 `event-localization.html` 同一個骨架、同一支 `js/publish-stage.js`（`mode:'save'`、主鈕「儲存」、側欄第三段＝未儲存的變更），主區預覽改用 `js/fan-product-page.js`。**一頁吃兩種**：`?id=<productId>` 單售商品、`?type=bundle&id=<bundleId>` 組合包（不另開 `bundle-localization.html`——骨架完全相同，差別只在三個備料函式，理由見 ASSUMPTIONS UIA-175）。資料源＝`ProductsStore.get()`／`ztorGetBundle()`。可翻譯欄位：商品＝名稱、描述、選項組名與選項值；組合包＝名稱、描述、逐項額外權益。價格列：單售單一選項一列、多選項逐選項組合一列；組合包一列＝組合售價。基準幣別讀 `window.ztorCurrency.CREATOR`（D316），五幣別清單沿用 `js/events-store.js`。
+- **幣別軸唯讀**：`priceOverrides:false`（D318 決定 2，電子商店非基準幣別只顯示換算值）；組合包依成員組成分流寫成列級 `prices[].overridable`（成員含票券才可覆寫，D318 決定 3／4），示範資料的組合包全是純商品成員，實際只走唯讀那一支。
+- **封存態**：提供入口、進去唯讀。頁面容器加 `data-archived` 並掛同一支 `partials/archived-gate.js`（站上「封存＝唯讀」只有這一種語彙），就地編輯與兩張表的輸入框在事件層被攔；側欄主鈕「儲存」收起只留「取消」，頁首右上加「已封存 · 只可查看」徽章（放進既有的 `.wizard__top-actions`＝頂列三欄 grid 的 col3）。
+- `product-detail.html`、`bundle-detail.html`：頁首 `<button data-pd-preview-open>`／`[data-bd-preview-open]`（「See as fan」，eye icon）改為 `<a data-pd-localize>`／`[data-bd-localize]`（「預覽與在地化」，globe icon，對齊 `event-detail.html` 的 `[data-ed-localize]`），href 由頁內 script 依 `?id` 補上。存完回來帶 `?saved=loc` 跳一則提示（`bundle-detail.html` 為此補掛 `js/toast.js`＋`toast.css`）。**活動組合包**（`bundle-detail.html` 走 events-store 的那一支）指向 `event-localization.html?id=<eventId>`——規格 5.1.5.9 §2.8 本來就說那份資料在活動的票務商品頁視圖裡是同一份。
+- `js/i18n.js`：新增 `product-detail.btn.localize`、`product-detail.loc.saved` 與 `pdloc.*` 六個 key（title／back／notfound／notfound.bundle／readonly／spec.includes），en／zh 成對；側欄與兩張表沿用既有 `pstage.*`，未重複造。
+
+**C 撤除（同輪）**：`product-detail.html`／`bundle-detail.html` 的 `.preview-panel--inset` 分割預覽整組退場——面板 markup（`#pd-preview`／`#bd-preview`、`[data-*-preview-open|close]`、`[data-fan-store-host]`）、開關與 Esc 的 IIFE、`ds-components/preview-panel.css` 與 `fan-store.css` 的 `<link>`、`partials/fan-store.js` 的 `<script>`、兩頁封存閘門 allow 清單裡的 `[data-*-preview-open|close]` 全部拿掉，原位留墓碑註解。i18n 的 `product-detail.btn.preview` 與 `product-detail.preview.title` 立墓碑。**三支被退掉的共用資源本身不刪**：`preview-panel.css`、`fan-store.css`、`partials/fan-store.js` 仍由 `e-shop.html` F5 商店預覽與 `store-settings.html` 消費。
+
+**驗證**：`check_ds_sync.py` PASS + 既有 WARN（無新增 FAIL，檢查 15 涵蓋頁數 75 → 76）；`node --check js/i18n.js` 通過。Playwright 實測（`ztor.persona=default`）——`product-detail.html?id=tee` 頁首「預覽與在地化」→ `product-localization.html?id=tee`：主區粉絲視角商品頁、側欄語言／幣別／未儲存的變更三段，幣別段 TWD 標「基準」、其餘四個標「換算」（無「已覆寫」），價格表 4 列選項組合、**0 個輸入框**、提示句為唯讀版；切到 English 標題 contenteditable、改字後側欄跳「已修改 1 欄」「文案欄位 1」；按「儲存」回 `product-detail.html?id=tee&saved=loc`，狀態徽章與上架開關與進去前一致（販售中／`aria-checked=true`），提示「已儲存，翻譯立即生效。」。`bundle-detail.html?id=signing-set` 同流程通過（價格 NT$247／原價 NT$274／省 NT$27，規格表＝內容物一列＋兩項額外權益可翻譯），存完回來三個開關值不變。活動組合包 `?id=bd-vip-zine` 的入口正確指向 `event-localization.html?id=realive-asia-taipei`。已封存：商品 `postcard`／組合包 `launch-set` 都進得去，徽章「已封存 · 只可查看」、主鈕 `display:none`、送出 input 事件被閘門攔下（側欄維持「還沒有變更」）。en／zh 各掃一次 0 raw key；四頁 console 錯誤 0。截圖：`screenshots/r2.3/d319-product-localization.png`、`d319-bundle-localization.png`、`d319-archived-readonly.png`、`d319-detail-entry.png`。
+
+**元件**：`Publish stage`（§4.216）與 `Fan product page`（§4.218）的 consumers 清單同輪補上本頁（design-system.html ＋ design-system.md 雙軌）。未新增元件。
+
+## 2026-09-23（九十四）· Phase 1 優惠碼只發百分比：折扣型態切換（%／$）改 Phase 4 才出現，Phase 1 改成帶「%」後綴的數值欄（A spec-derived · D320；5.1.5.5 F8 上線階段／折扣）
+
+**依據**：使用者裁決 D320（2026-09-23）——Phase 1 刪除固定金額折扣、只保留百分比；固定金額整支（型態選項、金額下限、「固定金額的折法」欄）自 Phase 4 起才有。
+
+**改動**：
+
+- `store-settings.html`——優惠碼表單「折扣」欄拆成版本成對：`#ss-code-unit` segmented 與其數值欄標 `data-feat="full"`，Phase 1 改用 `amount-field --suffix` 的 `%` 後綴欄（`#ss-code-discount-p1`）。不留只有單一選項的 segmented——看起來可點、其實不能切。JS：`currentUnit()` 在 segmented 被閘門藏起來時一律回 `pct`；新增 `discountValue()` 讀當前可見的那一欄，存檔時沿用。
+- `ds-components/store-settings.css`——新增 `.ss-code-pct` 寬度（amount-field 預設 width:100%，這裡收成與 `.ss-code-num` 同量體）、數值右對齊。
+
+**驗證**：`?version=p1` 開優惠碼表單→只有「12 %」一欄、無型態切換，存檔後清單折扣欄寫「12%」；`?version=full` 切到 `$`、每張訂單可折件數設 0 →「固定金額的折法」照常出現，`%` 後綴欄不顯示。console 0 錯誤；`check_ds_sync.py` PASS。
+
+## 2026-09-23（九十三）· 定價幣別逐幣別覆寫收窄：電子商店改唯讀換算、活動維持可覆寫（A spec-derived · D318，修訂 D306）
+
+**動機**：使用者裁決（D318）——「這個幣別基準為創作者幣別，在電子商店中，其他幣別是預算的，因此是 disable。在活動中，幣別是可微調的。」D306 原本電子商店與活動共用同一套「基準幣別唯讀、其餘四欄可覆寫」規則，本則收窄：電子商店（單售商品、只含商品成員的組合包）其他幣別一律唯讀換算，活動（票價、含票券成員的組合包）維持 D306 可逐幣別覆寫。
+
+**範圍**：
+
+- `js/publish-stage.js`：新選項 `priceOverrides: true|false`（檔頭第 38 行起說明，選填、預設 `true`＝現行行為）＋列級 `prices[i].overridable === false`（列級優先於全域）；新函式 `rowOverridable(p)`（第 163–167 行）統一判斷。`overrideCount()`（第 168–174 行）／`overrideTotal()`（第 176–182 行）跳過唯讀列，側欄幣別段不把唯讀列算進「已覆寫 N 項」。`renderPriceTable()`（第 530 行起）：全部列都唯讀時提示句改用 `pstage.drawer.price-hint-readonly`（第 537–541 行）；唯讀列的非基準欄套用既有 `.pp-cell--readonly.pp-cell--base`（第 572–580 行）——只顯示換算值，無輸入框、無「已覆寫」徽章、無「重設為換算值」（不是 bookyay 鎖定，不掛鎖圖示）。`collectResult()`（第 663–679 行）唯讀列不輸出覆寫，即使草稿裡有殘留舊值也不帶出來。
+- `create-product.html`：`buildStageOpts()` 傳 `priceOverrides: false`（第 1753 行）；`cpBaseCurrency()`（第 1569–1570 行）改先讀 `window.ztorCurrency.CREATOR`（沒有時退回 `ztorEvents.DEFAULT_CURRENCY`）；補載 `js/currency.js?v=r2.2`（第 2539 行）。
+- `create-event.html`：`CE_BASE_CURRENCY`（第 1895 行）改讀 `window.ztorCurrency ? window.ztorCurrency.CREATOR : "TWD"`，補載 `js/currency.js`（第 1438 行）；未傳 `priceOverrides`——票價（第 6 步組合包同）維持可覆寫，行為不變。
+- `js/i18n.js`：新增 `pstage.drawer.price-hint-readonly`（第 4657 行，en／zh 成對）。
+- `product-detail.html`、`bundle-detail.html` 查過沒有逐幣別覆寫入口，不需改。
+
+**驗證**：瀏覽器實測——建立商品第 2 步側欄幣別段非基準全顯示「換算」、價格表 0 個輸入框，整列 US$60／NT$1,880／HK$466／S$81／¥9,370 唯讀，提示句換成唯讀版；create-event.html 載入 `ztorCurrency.CREATOR`＝TWD、console 0 錯誤；design-system.html §4.216 demo（預設可覆寫）價格表仍有 12 個輸入框與原提示，未受影響。
+
+**元件**：`Publish stage`（§4.216）design-system.md／.html 同輪補 `priceOverrides` 選項說明。組合包依成員分流的判準（含票券成員＝比照活動）屬〔產品待確認〕（主規格 §8.28 第 9 項），`create-bundle.html` 尚未接發布前預覽畫面，下一輪做兩步驟時才接，記 ASSUMPTIONS UIA-174。
+
+## 2026-09-23（九十二）· 側欄收起時幣別列只留代碼、不顯示錢幣圖示（B 反饋）
+
+- 反饋：側欄縮窄（rail）時幣別列顯示「$ TWD」，使用者要只留幣別代碼。
+- 改法：`ds-components/header.css` 的 `.app.is-nav-rail` 段補兩條——幣別那一列的 `.ztor-icon` 收起、`[data-currency-creator]` 取消 `margin-left:auto` 並用 `--fs-12`；展開態不受影響。
+- 驗證：`index.html` 收起後實測 icon `display:none`、值 `TWD`、`margin-left:0`、字級 12px；展開態 icon 仍在；check_ds_sync PASS。
+
+## 2026-09-23（九十一）· 側欄創作者幣別列在未掛 currency.js 的頁面自行補載（D316b 收尾）
+
+- 問題：D316b 把創作者幣別列加進側欄，但值來自 `js/currency.js`，只有少數頁面掛了那支，其餘幾十頁顯示 em dash。
+- 改法：`js/sidebar.js` 的 `applySavedCurrency()` 讀不到 `window.ztorCurrency` 時注入一次 `js/currency.js` 再重畫（`window.__ztorCurrencyLoading` 去重、`onerror` 才退回 em dash）；不在側欄放第二份幣別值，單一來源仍是 `currency.js`，也不必逐一改 40+ 頁。
+- 驗證：`orders.html`（未掛該 script）側欄顯示 `TWD`、console 0 錯誤；check_ds_sync PASS。
+
+## 2026-09-23（九十）· 低庫存提醒的品名改品牌橘（B 反饋）
+
+- 反饋：電子商店低庫存提醒條裡 `( 品名… )` 那串是淡灰（`--muted-foreground` 混 `--card`），使用者要改橘色。
+- 改法：`e-shop.html` 頁內 `.eshop-stock-bar__names` 改 `var(--ztu-orange-hi)`——站上「橘字」統一用這支（同 chip／info-banner／filter-tabs），不新增 token、不寫死值。
+- 驗證：`e-shop.html` 實測 computed color `rgb(255, 193, 120)`；console 0 錯誤；check_ds_sync PASS。
+
+## 2026-09-23（八十九）· 幣別 D316 收尾：側欄底部幣別列依身分分流、設定頁最低提款金額說明改讀創作者幣別 · B 反饋
+
+**動機**：D316 落地時留下兩個未處理點（記在 ASSUMPTIONS UIA-173 的「產品缺口」），使用者本輪裁決——(1) 側欄底部那顆「幣別 HKD」，Admin 情境維持 HKD 並保留；創作者情境改顯示創作者幣別；(2) 設定頁「最低提款金額」說明別再寫死 USD，改跟創作者幣別走。
+
+**範圍**：
+
+- `js/sidebar.js`：創作者側欄底部新增一列唯讀幣別顯示（緊接在商店設定之後、帳戶選單之前，延伸 2026-09-11 使用者訂下的固定順序），不做成 Admin 那顆的可展開選單——D316 幣別本身唯讀，沒有「切換」這件事。值讀 `window.ztorCurrency.CREATOR`（新掛勾 `[data-currency-creator]`），由既有的 `applySavedCurrency()` 在 mount 後填字；頁面沒掛 `js/currency.js` 時顯示 em dash，不另外存一份幣別值頂替。角色判斷沿用既有機制、未新增：`adminView()`（＝`isAdminPlatform && isAdminRole()`，讀 `ztor.role` 這把 localStorage）為真才畫 Admin 幣別群組，其餘情況（含 role=general 誤點進 Admin 頁時既有的「退回創作者導覽」邏輯）畫創作者列。Admin 幣別群組本身不動——維持硬寫 `HKD`，只補註解說明它與 `currency.js` 的 `BASE`（平台基準幣別）同值。
+- `e-shop.html`：`events-store.js` 之後補掛 `js/currency.js`，側欄幣別列才讀得到 `CREATOR`。其餘會顯示側欄的創作者頁本輪未逐一補掛（殘留，見 ASSUMPTIONS UIA-173）。
+- `settings.html`：「最低提款金額」說明格新增 `data-currency-hint="settings.pay.min-hint"`，與既有 `data-i18n` 並存、不衝突。
+- `js/currency.js`：`paint()` 新增 `[data-currency-hint]` 掛勾——直接呼叫既有的 `T()` 取 i18n 模板（不依賴 `data-i18n` 先跑過，兩者都吃 `i18n:applied`、順序不保證），把 `{cur}` 代入 `CREATOR`。單一來源沿用不變，本輪沒有新開第二個幣別常數。
+- `js/i18n.js`：`settings.pay.min-hint` 改樣板——en `Available balance must exceed this, in {cur}.`、zh `可提領餘額需超過此值（單位 {cur}）。`，不再寫死 USD。
+
+**一併檢查、本輪未動的其他寫死幣別金額**（settings.html，交使用者裁決要不要一起改）：
+
+- 最低提款金額輸入框前綴 `<span class="amount-field__sym">$</span>`（第 376 行）——固定 `$`，創作者幣別非 TWD／USD 時會失真。
+- 合規分頁「年度提領額度」`.completeness__count`（第 516 行）硬寫 `$42,500 / $50,000`。
+- 合規分頁「月結算量」`.completeness__count`（第 523 行）硬寫 `$9,640 / $20,000`。
+
+**驗證**：`check_ds_sync.py` PASS + 既有 WARN（無新增 FAIL）；`node --check` 三支改動 JS 皆過；Playwright headless 實測——e-shop.html／settings.html（`ztor.role` 預設 general）側欄顯示「Currency TWD」；admin-platform-fees.html 設 `ztor.role=admin` 後側欄顯示「Currency HKD」不變；settings.html 切 en／zh，提款說明分別讀出「in TWD」「單位 TWD」，皆非 raw key；四頁 console 錯誤數 0。截圖：`screenshots/r2.3/d316b-eshop-creator-sidebar.png`、`d316b-settings-creator-sidebar.png`、`d316b-settings-payout-hint.png`、`d316b-admin-sidebar.png`。
+
+**元件**：無新元件。`js/currency.js` 沿用上一輪（UI-CHANGES 八十七）「新非元件模組」的定性——它不輸出自己的視覺形態，只把值畫進宿主頁既有節點，因此上一輪就沒有 design-system.md 條目，本輪追加的 `[data-currency-hint]` 掛勾同理不建。
+
+## 2026-09-23（八十八）· 發布前預覽兩張抽屜統一整頁；建立商品與建立活動的預覽都移除「你可能也喜歡／相關活動」 · B 反饋
+
+**動機**：使用者連續三則回饋——(1)「翻譯表的 popup 要整頁，同時裡面的每一個欄位都要變大」；(2)「你可能也喜歡都移除」；同輪追加 (3)「（價格表）可以統一」「活動預覽的相關活動一樣移除」。
+
+**範圍**：
+
+- `ds-components/drawer.css` 新變體 `--full`：`.drawer__panel { width: 100vw; border-left: 0; }`，`__head`／`__body` 內距各放大一階（`--sp-24 --sp-40`／`--sp-24 --sp-40 --sp-40`）。`js/publish-stage.js` `ensureDrawer()` 翻譯表與價格表**都**用 `drawer drawer--full`（先只讓翻譯表用，使用者同輪追加「可以統一」後價格表跟進）。
+- `ds-components/publish-stage.css`：
+  - 翻譯表（`[data-stage-drawer="trans"]`）：`table-layout:fixed`、欄位名欄固定 160px（其餘四語系平分）；`input.pp-cell-field` 提高到 `--control-h-md`、`textarea.pp-cell-field` 提高到 `calc(var(--control-h-md) * 4)`；全欄 `vertical-align:top`，欄位名格與唯讀原文格補頂距對齊輸入框第一行。
+  - 價格表（`[data-stage-drawer="price"]`）：原本為塞進 880 的 `--wide` 面板把輸入框收到 96、`.pp-cell--price` 限寬 112，整頁後改回一般尺度——`table-layout:fixed`、項目欄固定 200px（五幣別平分其餘）、`.pp-price-input` 寬度 100%、高度升到 `--control-h-md`（與翻譯表同一階），項目名格與基準幣別格同樣補頂距對齊；「已覆寫」徽章與「重設為換算值」維持上下疊（不隨整頁改變）。
+  - `.drawer--wide` 目前**零消費**（全庫 grep 只剩 `drawer.css` 自己的規則），CSS 保留不刪，列為退場候選、待使用者確認後才走墓碑；三頁（`create-event.html`／`create-product.html`／`event-localization.html`）`<link>` 旁引用 `--wide` 的過期註解已改寫成「整頁 `.drawer--full`」。
+- `create-product.html` 的 `buildFanProductModel()`：給 Fan product page 的 `related` 由 `true` 改 `false`——「你可能也喜歡」四張佔位卡不再畫。
+- `create-event.html`（`buildFanModel()`）與 `event-localization.html`（`locModel()`）：給 Fan event page 的 `related` 都改 `false`——建立活動第 8 步與活動詳情「預覽與在地化」都不再畫「相關活動」段。兩個元件（`js/fan-product-page.js`／`js/fan-event-page.js`）本身渲染邏輯與能力未改，`related` 為真時仍會畫，只是這幾個消費頁選擇不用。
+
+**驗證**：瀏覽器實測——翻譯表與價格表抽屜面板寬皆＝視窗寬；價格表輸入框 44px 高，項目名／基準幣別／輸入框數字垂直中線誤差 1px 內；建立商品全頁預覽的 `.pdp-recs` 查無節點；建立活動第 8 步與活動詳情「預覽與在地化」皆無「相關活動」段。
+
+**元件**：`Drawer`（`--full` 收兩張表，`--wide` 標零消費／退場候選）、`Publish stage`（兩張表都改吃 `--full`）、`Fan product page`（`related` 消費值 false）、`Fan event page`（兩個消費頁 `related` 改 false）四份 design-system.md／.html 條目同輪同步。
+
+## 2026-09-23（八十七）· 幣別收斂成「創作者幣別」唯讀顯示、Admin 金額欄改記平台基準幣別；活動票務的粉絲加價手續費整條退場（D316） · A spec-derived
+
+**動機**：使用者裁決（D316）——(1)「創作者的幣別在創建時設定後就不能更改」，所以站上沒有幣別切換這件事，只有顯示；(2)「不同創作者可以有不同的幣別設定」，站上因此**不存在「全站幣別」**，Admin 的營運金額欄改以**平台基準幣別**記錄、套用時依匯率換算；(3)「支付手續費與平台費是向創作者收取」，票價之上那筆由粉絲負擔的手續費沒有存在的理由。
+
+**新增範圍**：
+
+- `js/currency.js`（新，非元件）：D316 兩個名詞在原型裡的單一來源——`CREATOR`（創作者幣別，示範值 TWD，與 `js/events-store.js` 的 `DEFAULT_CURRENCY` 同值）、`BASE`（平台基準幣別 HKD）、`AS_OF`（示範匯率時點）。換算與符號**一律委派** `js/events-store.js` 既有的 `fx()`／`fmtMoney()`／`SYMBOL`，不自帶第二張匯率表。頁面只擺空節點：`[data-currency-readout]`、`[data-currency-base-symbol]`、`[data-currency-fx-for="<輸入框 id>"]`（跟著輸入即時換算）。
+- `settings.html`：付款區「預設幣別」下拉（USD／TWD／HKD／SGD／JPY）改成 `.field-readout` 純文字讀數，標籤改「幣別」（「預設」在只有一個值的情況下沒有對照對象），說明改「欲更改幣別請聯繫客服。」；補掛 `js/events-store.js` ＋ `js/currency.js`。
+- `store-settings.html`：銷售預設分頁的幣別欄同樣改讀數、與設定頁**同一個值**；本頁自己那份四選一清單（HKD／TWD／SGD／USD，2026-08-13 鎖成 `disabled`）整組移除。
+- `admin-platform-fees.html`：支付手續費兩個金流商的「每筆固定額」前綴由靜態 `$` 改成平台基準幣別符號（HK$），欄後補一行「≈ NT$9.69 · 匯率時點 2026-09-23 09:00 GMT+8」，區段補一句「每筆固定額以平台基準幣別記錄，套用到創作者時依當時匯率換算」。**平台費率樹一格未動**（本則只改負擔方與幣別，不改費率）。
+- `admin-platform-promotions.html`：滿額折扣彈窗的「門檻金額」同一套做法（基準幣別符號＋換算讀數＋說明句）。
+- `js/i18n.js`：新增共用命名空間 `currency.*`（五種幣別全名 `currency.name.<代碼>`、`currency.contact-support`、`currency.platform-base`、`currency.fx.asof`）＋ `fees.payment.fixed.base`、`pprom.th.f.threshold.base`。
+
+**撤除範圍**（票務的粉絲加價手續費）：
+
+- `create-event.html`：單張門票彈窗計算列表的「＋ 手續費」列、票種預設值的「預設手續費」欄（`.ce-types` 格線四欄收成三欄）、門票卡的「手續費」事實列全部退場；票與票種的 `fee`／`_sf`／`fixFee` 欄位、`customOf()` 的手續費判斷、`tierMoney()` 的 `fee`、`["price","qty","fee"]` 三處迭代、bookyay 帶入的 `fixFee` 鎖定與五筆假活動票種的 `fee` 示範值一併移除。字典刪 `d.tier.fee`／`d.types.fee` 兩把 key，原地留墓碑。
+- `event-detail.html`：票種彈窗的 `#ed-tm-fee` 那一列、票務卡的「手續費」事實列、列表檢視的「手續費」欄與表頭一起退場；`syncTmCalc()` 的 `fee`、開啟／儲存／新增票種的 `fee` 讀寫、兩條 input listener 收成一條。
+- `js/i18n.js`：`ed.tix.fee`／`ed.tix.col.fee` 刪定義留墓碑；`ed.tm.net.how`（兩頁共用的「創作者實收」說明）由「以票價計算，計費基準待確認」改「以票價計算」——計費基準（TIX-001）隨 D316 裁決為折後品項實付＝票價，不再是待確認。
+
+**保留不改**：計算列表仍保留「粉絲付」那一列（它要回答的是粉絲實際付多少，答案就是票價，刪掉反而讓人猜票價之上還有東西）；平台費列與兩層解析（creator 覆寫 → General，D315）照舊；bookyay 帶入票的唯讀事實列、入場二選一、購買條件跟隨開關照舊；Admin 平台費率樹的活動三個葉節點費率一格未動。
+
+**元件**：零新增。`ds-components/calc-list.css` 只改檔頭註解（列組成變了、CSS 沒變）；`design-system.html`／`design-components.html`／`design-system.md` 的 calc-list demo 與單張門票彈窗敘述同輪同步——demo 的「＋ 手續費」列退場、`--form` 敘述與「實際情境」註記補 D316。
+
+**驗證**（Playwright／Claude Browser headless 1440×900，devserver 4391，`ztor.persona=default`）：設定頁與商店設定的幣別皆為純文字、無 `<select>`、同為「TWD · 新台幣」／「TWD · New Taiwan Dollar」，說明句 zh「欲更改幣別請聯繫客服。」en「Contact support to change it.」；建立活動（`?import=bky-1`）與活動詳情（`?id=realive-asia-kaohsiung`）的門票彈窗計算列表皆為四列「票價｜＝粉絲付｜− 平台費｜＝ 創作者實收」，`[data-tier-f="fee"]`／`#ed-tm-fee` 查無，票種預設值列的輸入框剩 name／price／qty、格線 `repeat(2,…)`，票務列表檢視表頭無「手續費」；平台費率設定頁固定額顯示 `HK$2.40` ＋「≈ NT$9.69 · 匯率時點 …」（Stripe `HK$2.35` ＋「≈ NT$9.49」），平台優惠設定門檻 100 顯示「≈ NT$403.85」。zh／en 兩語 raw key 0、六個情境 console 0 錯誤。截圖 `screenshots/r2.3/d316-01…08`。
+
+**規格**：`documents/` 同輪 D316（主規格 §7.3 費用負擔方、§7.6 計費基準與票務例外、§7.15「創作者幣別」「平台基準幣別」兩個新小節、§8.1 TIX-001 已裁決、§8.28；5.1.9 F5、5.1.5.5 F6、5.1.0.3 F2、5.1.0.7 F2、5.1.6.1 §4.5 F22、5.1.6.3 §2.6、5.1.6.2 F9）。呈現假設與兩個未處置的缺口（Admin 側欄那顆「幣別 HKD」、設定頁「最低提款金額」仍寫單位 USD）見 ASSUMPTIONS UIA-173。
+
+## 2026-09-23（八十六）· 建立商品改為兩步驟流程：表單主鈕「開始販售」拆成「下一步：預覽」與側欄「開始販售」兩個動作（D317） · A spec-derived
+
+**依據**：D317（2026-09-23，使用者裁決；規格由另一輪 agent 同步回寫 `5.1.5.2` 與主規格 §7.4，本輪只落地 site r2.3）。**編號說明**：本則原定 D313，因同日稍早 D313 已用於「退換票說明」決策，順延編為 D317。
+
+**動機**：原本表單主鈕文案是「開始販售」，按下卻只是進 D310 的全頁「預覽與發布」畫面；真正送出上架的「開始販售」在預覽側欄又出現一次，同一句話在同一段流程裡代表兩個不同動作。
+
+**範圍**：
+
+- `create-product.html` 補連 `ds-components/progress-stepper.css`（第 57 行，原本缺連）。
+- 頁首中欄新增兩段進度條 `#cp-progress > .progress-stepper.progress-stepper--segmented.progress-stepper--anystep#cp-stepper`（`--steps:2`，約第 131–137 行）。段名「內容／Details」「預覽與發布／Preview & publish」——中文刻意不寫「商品內容」，頁面標題已是「新增商品」、步驟名不重述主詞（鐵律 12／check_ds_sync 檢查 12）；規格文件與內部註解仍以「商品內容」稱呼這一步。狀態小字沿用既有 `wiz.step.done`／`wiz.step.todo`。
+- `cpDetailsReady()`＋`renderStepper()`（約第 1411–1441 行）：第 1 段狀態讀既有「Ready to sell?」的 `buildChecks()`（開發用 Skip validation 開啟時視為完成），不新增規則；欄位一變就由既有 `refresh()`（約第 1946 行）重算。
+- `enterStage()` 成功進入第 2 步後 `cpStep = 2`（約第 1773 行）；`exitStage()` 回表單時 `cpStep = 1`（約第 1788 行）。
+- 進度條點擊（約第 1815–1827 行）：點目前所在段不動作；第 2 步點第 1 段＝`exitStage()`（與側欄「返回表單」同一條路）；第 1 步點第 2 段＝`primary.click()`，與表單主鈕同一條路（照樣驗證擋關）。
+- `setType()`（約第 2011–2015 行）：一般建立流程的表單主鈕文案改 `cp.next-preview`「下一步：預覽／Next: Preview」；嵌入態（`?embed=1`）維持「開始販售」單鈕不變（D310 的預覽與發布不經過嵌入態）；編輯態（`?edit=1`）主鈕仍是「Save changes」，不受影響。
+- 編輯態與嵌入態隱藏 `#cp-progress`（約第 2509–2512 行），兩步驟只服務一般建立流程。
+- 第 2 步側欄主鈕仍是「開始販售」，D310 的 `js/publish-stage.js` 元件本輪未改。
+- `js/i18n.js` 新增 `cp.step.details`／`cp.step.preview`／`cp.next-preview` 三把 key（中英，第 5494–5496 行）。
+
+**驗證**：未通過驗證時按主鈕被擋、第 1 段狀態顯示「未完成」；通過後進第 2 步、進度條切到第 2 段、側欄「開始販售」／「返回表單」正常；點第 1 段回表單、表單內容保留、進度條還原回第 1 步（瀏覽器實測通過）。
+
+**元件**：沿用 `progress-stepper.css` 既有 `--segmented --anystep` 變體（首個消費頁 `create-event.html`），零新增零改動；`design-system.md`／`.html` 消費頁清單本輪補 create-product。
+
+## 2026-09-23（八十五）· 三個細節頁頁首多一顆「隱藏／顯示」：與上架卡的顯示開關同一個動作、雙向連動 · A spec-derived
+
+**動機**：使用者裁決——商品細節頁的頁首動作列（`.page-intro__actions`，目前有預覽、下架／上架、封存／解除封存、刪除）要有一個「顯示／隱藏」切換，與「上架設定」卡裡的「顯示於商店」開關是同一個動作、狀態連動。三個細節頁（商品、組合包、拍賣）都要做。
+
+**範圍**：
+
+- `product-detail.html`／`bundle-detail.html`／`auction-detail.html`：頁首新增 `[data-pd-hide]`／`[data-pd-show]`（bundle／auction 同名式樣）兩顆 `btn btn--outline`，排在「下架／上架」之後、「封存」之前；icon 借用既有 `eye-off`／`eye`（與預覽鈕的 `eye` 重複，未新增註冊）。目前是「顯示」狀態 → 露出「隱藏」；目前是「隱藏」→ 露出「顯示」。
+- 顯隱規則照 D265／§7.14：只有上架中才出現（已下架、已封存、草稿都不出現），與既有「下架」鈕同一個可見條件（`!archived && !draft && !isUnlisted`）。
+- 點擊直接觸發該頁上架卡顯示開關（`#pd-shown-toggle`／`#bd-shown`／`#ad-shown-toggle`）的 `click()`，不複製一份判斷邏輯；沿用該開關現行「不確認」的行為。反向（開關→頁首鈕）沿用既有重畫點：product-detail／auction-detail 掛在既有的 `syncListingCard()`／`paintCards()`；bundle-detail 因 `#bd-shown` 的 `bindSwitch` 原本不會重畫頁首動作，新增 `window.bdSyncPrimaryAction` 這個跨閉包 hook（同檔既有 `window.bdMirror`／`window.bdSyncEventBounds` 同一種寫法）。
+- `js/i18n.js`：新增 `product-detail.btn.hide`／`product-detail.btn.show`（en `Hide`／`Show`，zh `隱藏`／`顯示`），三頁共用。
+
+**沿用不改**：隱藏／顯示本身的資料寫入、私密連結產生與作廢、徽章重畫全部走各頁原本的開關邏輯；清單列的顯示開關（D263，先確認才生效）與細節頁上架卡開關（不確認）兩者行為不同，這顆頁首鈕沿用細節頁開關現行行為，是否要對齊清單列先確認待產品裁決（ASSUMPTIONS UIA-172）。
+
+**元件**：零新增零改動（沿用 `btn--outline`、既有 icon 注冊），DS 兩份文件不動。
+
+## 2026-09-23（八十四）· 例外平台費整組退場：門票彈窗的平台費列改為純顯示、費率解析回到兩層（D315 撤銷 D311） · C 撤除
+
+**動機**：使用者裁決（D315）——「不需要例外平台費了，只有原本從 admin 設置的平台費」。費率是合約層的事、設定處已經在 Admin 的平台費率設定頁（5.1.0.3），逐張門票再開一個編輯入口等於同一件事有兩個真相來源，稽核與凍結都要多記一層。D311 決定三／四／五撤銷，決定一（計算列表）、二（bookyay 唯讀事實列）與其餘部分全部維持。
+
+**撤除範圍**：
+
+- `create-event.html`：`feeExcHTML()`（平台費列底下的開關＋費率欄）整支退場；草稿欄位 `feeExc`、驗證用的 `excpct`（0–100 檢核與 hint `excHintText()`）、`renderTierErrors` 的 excpct 分支、input／click 兩條委派、`commitTier` 寫回 `t.feeException`、以及只服務例外的 `adminScope()`（全檔 grep 後確認沒有第二個消費者）全部移除。本頁字典刪五把 key（`d.tm.exc`／`.pct`／`.hint`／`.err` 與來源字串 `d.tm.fee.src.exc`），原地留墓碑註解。
+- `event-detail.html`：票種彈窗的 `#ed-tm-exc-box` 整塊 markup 退場；`tmExc` 草稿、`tmAdminScope()`、`tmSysPct()`、`syncTmExc()`、兩條 listener、`tmErrors` 的 excpct 條、`syncTmFoot` 的錯誤描邊、儲存時寫回 `feeException` 全部移除。
+- `js/platform-fees.js`：`resolve(leafKey, exceptionPct, who)` → `resolve(leafKey, who)`，三層解析（門票例外 → creator 覆寫 → General）收回**兩層**（creator 覆寫 → General），`source` 不再有 `"exception"`；檔頭註解同步改寫，兩個宿主一起改。
+- `js/events-store.js`：高雄場 `tier-vip` 的示範 `feeException: { pct: '3' }` 移除（該張票現在顯示 5% · 平台預設）。
+- `js/i18n.js`：`ed.tm.exc`／`.pct`／`.hint`／`.err`／`.hint.sold` 與 `ed.tm.fee.exc` 六把 key 刪定義、留墓碑註解；全庫 grep 確認零殘留消費者。
+- `ds-components/calc-list.css`：`.calc-list__extra`／`.calc-list__extra-row` 退場——唯一的消費者就是這個開關，例外撤掉後零消費。`design-system.html`／`design-components.html`／`design-system.md` 三份文件的 anatomy、demo 與 §4.217／單張門票彈窗敘述同輪同步（demo 的平台費列改成「5% · 平台預設」，數字跟著換成 $165／$3,135）。
+
+**保留不動**：計算列表五列完整（票價 ＋ 手續費 ＝ 粉絲付 − 平台費 ＝ 創作者實收，數量獨立一列）；平台費列仍標所屬葉節點、費率與來源，只是來源剩「平台預設」與「這位創作者的覆寫」兩種、creator 與 Admin 看到同一個唯讀列；bookyay 帶入票的唯讀事實列＋徽章、入場二選一、購買條件的跟隨開關、單欄四區塊全部照舊。「創作者實收」的算式與註記維持現況——計費基準（TIX-001）與「平台費向創作者收取」是另一案，本輪不碰。
+
+**驗證**（Playwright headless 1440 寬，devserver 4326）：Admin／creator／bookyay（`?import=bky-1`）三種建立流程視角與 `event-detail.html?id=realive-asia-kaohsiung` 的票種彈窗，`[data-tier-fee-exc]`／`#ed-tm-exc-box`／`[data-tier-f="excpct"]`／`.calc-list__extra` 全數查無；五列計算列表完整、平台費列顯示「Events › On-site event ticket 5% · Platform default」、$4,200 票價算出 $210 平台費與 $3,990 實收；四個情境 console 0 錯誤；check_ds_sync 與改動前同結果（PASS + 兩則存量 WARN）。截圖 `screenshots/2026-09-23-tier-modal-no-fee-exception-0{1..4}-*.png`。
+
+**規格**：`documents/` 同輪 D315／Plan365（主規格 §7.6 兩層、§4.1、§8.1；5.1.0.3 F3／F4；5.1.6.1 §4.5 F22；5.1.6.3 §2.6；5.1.6.2 §4.5 F9）。
+
+## 2026-09-23（八十三）· 已下架的販售管道多一個「上架」入口：三個細節頁頁首＋電子商店三分頁列操作 · A spec-derived
+
+**動機**：使用者裁決——已下架的東西要回到販售，目前只能進細節頁、找到「上架設定」卡、把上架開關切開。「上架」是這個狀態下最常做的事，卻藏在頁面深處；頁首與清單這兩個最先看到的位置反而只給得出「封存」與「刪除」，等於把不可逆的動作排在可逆的動作前面。
+
+**範圍**：
+
+- `product-detail.html`／`bundle-detail.html`／`auction-detail.html`：頁首新增 `[data-pd-relist]`／`[data-bd-relist]`／`[data-ad-relist]`（`btn--primary`＋icon `eye`＋`product-detail.btn.list`），排在「封存」之前；`syncPrimaryAction()` 依「未封存、非草稿、已下架」露出。點擊呼叫與上架開關同一支函式（product＝新抽出的 `pdRelist()`、bundle＝`tryRelist()`、auction＝新抽出的 `doRelist()`），重畫走既有的 `paintListingCard()`／`paint()`／`paintCards()`，所以開關、排程欄、徽章、未開賣提醒與頁首按鈕永遠是同一份資料畫出來的——切哪一邊另一邊都跟著變。
+- `partials/bundle-relist.js`（新）：組合包上架的成員閘門抽成共用件，`ZtorBundleRelist.run({ bundle, getProduct, name, askConfirm, T, commit, onDone })`。判斷（已封存成員擋下／已下架成員連帶確認／直接上架）與三段文案只有這一份，確認彈窗殼由呼叫端傳入。`bundle-detail.html` 的 `tryRelist()` 改成薄殼呼叫它。
+- `e-shop.html`：`syncRowActions()` 為已下架列長出 `[data-eshop-relist]`（icon `eye`、`e-shop.a.list`），排在「封存」之前；已封存列不長。新增 `doRelist(row)`——組合列走共用件、單售與拍賣直接 `ListingState.relist` 後 `refreshAll()`；click 委派補一條。
+- `js/i18n.js`：新增 `e-shop.a.list`／`product-detail.btn.list`（en `List`／zh `上架`），D298 兩則墓碑註解補上接手鍵。
+
+**為什麼不復用 D298 的墓碑鍵**：`e-shop.a.relist`／`product-detail.btn.relist` 當時指的是「已封存列直接回到上架」，D298 把那條路拆成「解除封存 → 上架」兩步。這一輪加的是第二步，與墓碑上的動作不是同一件事，沿用會讓那兩則墓碑說的話變成假的。
+
+**沿用不改**：上架後排程已清、開賣退回未開賣（D290），細節頁露出既有的「重新上架後未開賣，請設定開賣」提醒；組合包連帶已下架成員、成員已封存則擋下提示先解除封存（D289／D298）；拍賣上架後為未開拍；已封存一律不提供上架，要先解除封存（D298）；封存唯讀閘門不受影響（「上架」在封存態本來就不露出）。
+
+**元件**：零新增零改動（沿用 `btn--primary`、`dropdown__item`、`leave-dialog`），DS 兩份文件不動。
+
 ## 2026-09-23（八十二）· 退換票說明拍板為平台統一文案（D313）· A spec
 
 **動機**：使用者問「Refunds & exchanges 是不是沒有對應的欄位」——確認建立活動流程從來沒有這個欄位（原型先以平台固定文案呈現、列為 §8.26 第 15 項待確認），列出三個選項後裁示「**平台統一文案**」。
