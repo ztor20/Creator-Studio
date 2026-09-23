@@ -3,7 +3,7 @@
 
 用法:
     python3 devserver.py [port] [directory]
-    python3 devserver.py 4325 r2.2
+    python3 devserver.py 4325 app
 
 為什麼需要這支（2026-07-26）:
     站上每個資產連結原本都掛 `?v=<日期字母>` 來打掉瀏覽器快取，改一次 CSS 就要用
@@ -66,8 +66,8 @@ def main() -> int:
 
     解析規則：第一個純數字的參數當 port，其餘第一個參數當 directory。
     這樣三種寫法都成立，舊的呼叫方式一字不用改——
-        devserver.py 4325 r2.2   （舊用法，port 明寫）
-        devserver.py r2.2        （port 走 PORT 環境變數）
+        devserver.py 4325 app    （舊用法，port 明寫）
+        devserver.py app         （port 走 PORT 環境變數）
         devserver.py             （兩者都用預設）
     """
     port = None

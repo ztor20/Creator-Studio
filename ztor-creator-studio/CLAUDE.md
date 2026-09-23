@@ -4,7 +4,7 @@ ztor Creator Studio 的原型 site。**2026-06-18 起站點搬進 monorepo [`zto
 
 ## 編輯 → 提交流程（鐵律）
 
-- **本機預覽用 `python3 devserver.py <port> r2.2`**（2026-07-26 新增），不要用 `python3 -m http.server`：後者不送 `Cache-Control`，瀏覽器會用啟發式快取給你舊檔。devserver 一律送 `no-store`。
+- **本機預覽用 `python3 devserver.py <port> app`**（2026-07-26 新增），不要用 `python3 -m http.server`：後者不送 `Cache-Control`，瀏覽器會用啟發式快取給你舊檔。devserver 一律送 `no-store`。
 - **PR merge 之後立刻再跑一次 `./pull.sh`**：發版是把快照灌進 monorepo、不是推你的 commit，所以 PR 的提交跟你本機的提交是「同樹不同血統」，merge 後兩邊就分歧了。此刻內容相同、pull 會無痛自動合併；若先改東西再 pull，同一段落會撞出假衝突。
 - **資產版本字串 `?v=r2.2` 是固定的，不要逐次 bump**：線上由 Vercel 的 `must-revalidate` ＋ ETag 負責，本機由 devserver 負責。逐次 bump 會讓每個檔在版本號那一行相撞，兩人並行時全庫衝突。
 - **`./pull.sh` ＝ 真正的 `git merge`**（2026-07-26 改寫）：它 clone monorepo、用 `git subtree split --prefix=ztor-creator-studio` 把子目錄攤平成與本機 `site/` 對齊的分支，再 `git merge` 進來。所以有共同祖先、有三方合併——**撞到同一行才衝突，撞到了會停下來要你解，其餘自動合併**。未追蹤檔（`fonts/`、scratch）不會被碰；未提交的編輯會自動 stash／pop。
@@ -39,7 +39,14 @@ ztor Creator Studio 的原型 site。**2026-06-18 起站點搬進 monorepo [`zto
 
 merge 一律由具 merge 權限的協作者在 GitHub 上操作。各協作者的個人帳號路由屬本機設定，不寫在此共編檔。
 
+## 版本分支（2026-09-23 起）
+
+- `main`＝`app/`，唯一開發版；資料夾名稱固定，版本號記在文件與分支名稱。
+- `phase1` 分支＝開發依據，受保護、只能 PR，不可直推。
+- 修正流程：在 `main` 改好 → cherry-pick 到 `phase1` 開 PR → 合併後另行部署。
+- 版本切換面板只剩四個選項：最終版、下一版預覽、funding-test、Deck for Sony。
+
 ## 其他
 
 - 版本與治理見 [README.md](README.md)：`site/` 不得把畫面、截圖、互動或既有程式靜默反向同步成產品規則。
-- 共用大檔（`r2.2/js/i18n.js`、`shared.css`、`design-system.html`）多人同改最易衝突，先講好分工。
+- 共用大檔（`app/js/i18n.js`、`shared.css`、`design-system.html`）多人同改最易衝突，先講好分工。
