@@ -10,9 +10,10 @@
    前台的 :root token 只收本檔實際引用到的那一批（含遞迴引用），寫在最前面的 `.fep-shop { … }`。
 
    ⚠ 這是前台鏡像、不是 Creator Studio design system 的元件：
-     · 不得在 CS 其他頁引用——唯一消費者是 js/fan-event-page.js 渲染的粉絲視角活動頁
-       （create-event.html 發布前預覽、event-detail.html 預覽與在地化、design-system.html demo）。
-     · token 不與 shared.css／_tokens.css 混用；本檔的裸 rgb()／px 字級是前台鏡像的必要例外，
+     · 不得在 CS 其他頁引用——消費者只有 js/fan-event-page.js 渲染的粉絲視角活動頁
+       （create-event.html 發布前預覽、event-detail.html 預覽與在地化、design-system.html demo），
+       以及 js/fan-product-page.js 渲染的粉絲視角商品頁（create-product.html 發布前預覽，第 4 段，2026-09-23）。
+     · token 不與 shared.css／_tokens.css 混用；本檔第 1–3 段的裸 rgb()／px 字級是前台鏡像的必要例外（第 4 段不新增），
        已在 design-system.md §4.215 註記、ds-baseline.json 手動登記。
      · 前台版型改了就重抓一次覆蓋本檔，不在這裡手改視覺（改了就不是鏡像）。
    使用者原話（2026-09-22）：「預覽 UI 必須做得和這兩個一模一樣，只是資料和機制套用我們的流程與功能」。
@@ -600,3 +601,60 @@
 .fep-shop .pdp-host__avatar--initial { display: grid; place-items: center; font-family: var(--font-latin); font-size: var(--fs-body-sm); font-weight: var(--fw-bold); color: var(--text-primary); }
 /* 前台 html[lang="en"] 的字型切換（tokens.css）：預覽語系是英文時整頁走 Satoshi／Inter。 */
 .fep-shop[lang="en"] { --font-cjk-display: 'Satoshi', 'Inter', system-ui, -apple-system, sans-serif; --font-cjk-text: 'Satoshi', 'Inter', system-ui, -apple-system, sans-serif; }
+
+/* ── 4. 商品頁（js/fan-product-page.js，D310 商品側，2026-09-23）──────────────────────
+   建立商品「開始販售」後的全頁預覽主區（5.1.5.2 §4.6）。第 1–3 段是活動頁與商品頁共用的前台殼
+   （麵包屑／圖庫／購買欄／詳情／相關卡），這一段只補前台商品（goods）分支才有的元件：
+   價格塊、庫存提醒、選項（色票／尺寸格）、尺寸指南連結、數量步進器、購物車圖示、交付一行、
+   規格表、店家列。來源＝前台 components.css?v=20260922d 同名規則（2026-09-23 讀原始碼，未開瀏覽器），
+   加 `.fep-shop` 前綴；前台原本寫死的 rgba()／px 字級改用本檔第 1 段的前台 token
+   或 color-mix() 從前台 token 推（本段不新增裸色值與裸字級）。
+   互動態（:hover／.is-flagged 抖動／focus 外框）只留 hover：預覽裡這些控件都是 data-pp-inert。 */
+.fep-shop .pdp-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-3); margin-bottom: var(--space-5); }
+.fep-shop .pdp-price:has(+ .pdp-stock) { margin-bottom: var(--space-2); }
+.fep-shop .pdp-price__now { font-family: var(--font-latin); font-size: var(--fs-h3); font-weight: var(--fw-bold); color: var(--yellow-500); font-variant-numeric: tabular-nums; }
+.fep-shop .pdp-price__was { font-family: var(--font-latin); font-size: var(--fs-body-sm); color: var(--text-tertiary); text-decoration: line-through; }
+.fep-shop .pdp-price__save { font-family: var(--font-cjk-text); font-size: var(--fs-caption); font-weight: var(--fw-bold); color: var(--yellow-500); padding: 2px var(--space-2); border: 1px solid var(--yellow-500); border-radius: var(--radius-pill); }
+.fep-shop .pdp-stock { margin: 0 0 var(--space-5); font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); font-weight: var(--fw-medium); color: var(--brand-500); }
+.fep-shop .pdp-variants { display: flex; flex-direction: column; gap: var(--space-5); margin-bottom: var(--space-6); }
+.fep-shop .pdp-variant__header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-2); }
+.fep-shop .pdp-variant__label { font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); font-weight: var(--fw-medium); color: var(--text-secondary); }
+.fep-shop .pdp-variant__colour-name { font-weight: var(--fw-regular); color: var(--text-tertiary); }
+.fep-shop .pdp-variant__guide { display: inline-flex; align-items: center; gap: var(--space-1); padding: 0; border: none; background: none; font-family: var(--font-cjk-text); font-size: var(--fs-caption); color: var(--yellow-500); cursor: pointer; transition: color 160ms var(--ease-out); }
+.fep-shop .pdp-variant__guide:hover { color: var(--yellow-400); }
+.fep-shop .pdp-variant__guide-icon { display: inline-grid; place-items: center; }
+.fep-shop .pdp-variant__guide-icon svg { width: 14px; height: 14px; }
+.fep-shop .pdp-variant--reflone { display: flex; justify-content: flex-end; margin-bottom: var(--space-3); }
+.fep-shop .pdp-variant__opts--swatches { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.fep-shop .pdp-swatch { position: relative; width: 32px; height: 32px; padding: 0; border-radius: var(--radius-pill); border: 2px solid transparent; background: transparent; cursor: pointer; transition: border-color 160ms var(--ease-out), transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out); }
+.fep-shop .pdp-swatch__fill { display: block; width: 100%; height: 100%; border-radius: var(--radius-pill); background: var(--swatch-bg, var(--border-strong)); box-shadow: inset 0 0 0 1px var(--border-strong), inset 0 1px 2px color-mix(in srgb, var(--neutral-900) 30%, transparent); }
+.fep-shop .pdp-swatch:hover { transform: scale(1.1); }
+.fep-shop .pdp-swatch.is-selected { border-color: var(--yellow-500); box-shadow: 0 0 0 1px var(--bg-primary), 0 0 0 3px var(--yellow-500); }
+.fep-shop .pdp-variant__opts--sizes { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.fep-shop .pdp-size-chip { position: relative; min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center; padding: var(--space-2) var(--space-4); white-space: nowrap; border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--white-alpha-4); color: var(--text-primary); font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); font-weight: var(--fw-medium); cursor: pointer; transition: border-color 160ms var(--ease-out), background 160ms var(--ease-out); }
+.fep-shop .pdp-size-chip:hover { border-color: var(--border-strong); background: color-mix(in srgb, var(--text-primary) 8%, transparent); }
+.fep-shop .pdp-size-chip.is-selected { border-color: var(--yellow-500); border-width: 2px; background: color-mix(in srgb, var(--yellow-500) 8%, transparent); color: var(--text-primary); }
+.fep-shop .pdp-qty { display: inline-flex; align-items: center; flex: 0 0 auto; border: 1px solid var(--border-default); border-radius: var(--radius-pill); background: var(--white-alpha-4); }
+.fep-shop .pdp-qty__btn { width: 44px; height: 52px; display: grid; place-items: center; padding: 0; border: none; background: none; cursor: pointer; color: var(--text-secondary); border-radius: var(--radius-pill); transition: color 160ms var(--ease-out), background 160ms var(--ease-out); }
+.fep-shop .pdp-qty__btn svg { width: 16px; height: 16px; }
+.fep-shop .pdp-qty__val { min-width: 36px; text-align: center; font-family: var(--font-latin); font-size: var(--fs-body); font-weight: var(--fw-semibold); color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.fep-shop .pdp-buy__add-glyph { display: inline-grid; place-items: center; }
+.fep-shop .pdp-buy__add-glyph svg { width: 18px; height: 18px; }
+.fep-shop .pdp-delivery { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--white-alpha-4); margin-bottom: var(--space-4); }
+.fep-shop .pdp-delivery__icon { display: inline-grid; place-items: center; color: var(--text-tertiary); flex: none; }
+.fep-shop .pdp-delivery__icon svg { width: 16px; height: 16px; }
+.fep-shop .pdp-delivery__text { font-family: var(--font-cjk-text); font-size: var(--fs-caption); color: var(--text-tertiary); line-height: 1.4; }
+.fep-shop .pdp-specs { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; }
+.fep-shop .pdp-specs__row { display: grid; grid-template-columns: 88px 1fr; gap: var(--space-3); padding-block: var(--space-2); border-bottom: 1px solid var(--border-subtle); }
+.fep-shop .pdp-specs__row:last-child { border-bottom: none; }
+.fep-shop .pdp-specs__row dt { font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); color: var(--text-tertiary); }
+.fep-shop .pdp-specs__row dd { margin: 0; font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); color: var(--text-secondary); }
+.fep-shop .pdp-host__name-row { display: flex; align-items: center; gap: 4px; }
+.fep-shop .pdp-host--shop .pdp-host__name-row { min-width: 0; }
+.fep-shop .pdp-host--shop .pdp-host__avatar { width: 28px; height: 28px; }
+/* 前台寫死 15px／13px；本段不寫裸字級，改由前台 token 推（--fs-body 16 − 1、--fs-body-sm 14 − 1） */
+.fep-shop .pdp-host--shop .pdp-host__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: calc(var(--fs-body) - 1px); font-weight: var(--fw-semibold); }
+.fep-shop .pdp-host--shop .pdp-host__more { font-size: calc(var(--fs-body-sm) - 1px); }
+/* 素材槽可放影片（D259）：主圖框與縮圖裡的 <video> 比照 <img> 的填滿方式（前台只有 img，這是鏡像的延伸） */
+.fep-shop .pdp-gallery__thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fep-shop video.pdp-gallery__img { width: 100%; height: 100%; object-fit: contain; display: block; }

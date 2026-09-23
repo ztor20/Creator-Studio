@@ -54,6 +54,8 @@
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/collapse-group.css?v=r2.2">   <!-- 2026-08-13：場次盒的折疊列＋一行摘要 -->
 <link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2"><!-- D311：算式列表的列（.calc-list 內的 .kv） -->
+<link rel="stylesheet" href="ds-components/calc-list.css?v=r2.2"><!-- D311：票種彈窗的價格算式列表 -->
 <!-- 2026-08-11 第二輪：票務卡點開的輕量編輯彈窗（沿用站上彈窗殼） -->
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <!-- 2026-09-22（D310）：預覽與在地化由浮層改為全頁（event-localization.html），
@@ -1801,55 +1803,117 @@
   </main>
 </div>
 
-<!-- ═══ 票務的輕量編輯彈窗（2026-08-11 重新設計，使用者裁決「輕量」）：
-     名稱／票價／張數／手續費／提前入場五欄＋暫停販售開關。建立頁彈窗裡的購買條件、
-     商品綁定屬上游未定規則，發布後先不開放改。系列子場唯讀（共用設定在母頁改）。 -->
+<!-- ═══ 票務的編輯彈窗（2026-08-11 重新設計，使用者裁決「輕量」；2026-09-22 D311 改為
+     與建立流程第 5 步同一套資訊結構）：單欄區塊——基本／價格與數量（計算列表＋Admin 專屬的
+     例外平台費）／入場／販售。**購買條件在這裡沒有**：建立頁彈窗裡的購買條件與商品綁定屬
+     上游未定規則，發布後先不開放改（2026-08-11 裁決未變），所以最後一個區塊是「販售」
+     （暫停販售——它是只有發布後才存在的營運動作）。系列子場唯讀（共用設定在母頁改）。 -->
 <div class="payout-modal" id="ed-tier-modal" hidden>
-  <section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="ed-tm-title">
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ed-tm-title">
     <div class="payout-dialog__head">
-      <h2 class="payout-dialog__title" id="ed-tm-title"></h2>
+      <div class="payout-dialog__head-titles">
+        <h2 class="payout-dialog__title" id="ed-tm-title"></h2>
+        <p class="payout-dialog__sub" id="ed-tm-sub" hidden></p>
+      </div>
       <button class="btn btn--icon" type="button" data-tm-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
     <div class="payout-dialog__body">
-      <div class="field">
-        <label class="field__label" for="ed-tm-name"><span data-i18n="ee.tix.name">Tier name</span> <span class="field__req">*</span></label>
-        <input class="input" id="ed-tm-name">
-      </div>
-      <div class="form-grid">
+      <!-- 「基本」沒有區塊標題（2026-09-23 Q125）：彈窗標題（票種名）與副標已經是脈絡，
+           這一段只有一格、標籤自己說完了。區塊容器留著撐段間節奏。 -->
+      <section class="form-section form-section--dense form-section--card">
         <div class="field">
-          <label class="field__label" for="ed-tm-price" data-i18n="ee.tix.price">Price</label>
-          <input class="input" id="ed-tm-price" type="number" min="0" step="1">
+          <label class="field__label" for="ed-tm-name"><span data-i18n="ee.tix.name">Tier name</span> <span class="field__req">*</span></label>
+          <input class="input" id="ed-tm-name">
+        </div>
+      </section>
+
+      <section class="form-section form-section--dense form-section--card">
+        <div class="form-section__head"><h3 class="form-section__title" data-i18n="ed.tm.sec.price">Price &amp; quantity</h3></div>
+        <!-- 計算列表（D311）：票價 ＋ 手續費 ＝ 粉絲付 − 平台費 ＝ 創作者實收。
+             唯讀那三格由 JS（syncTmCalc）填，平台費率走 js/platform-fees.js 的三層解析。 -->
+        <div class="calc-list calc-list--form">
+          <div class="kv">
+            <span class="kv__k"><span data-i18n="ee.tix.price">Price</span> <span class="field__req">*</span></span>
+            <span class="kv__v"><span class="amount-field amount-field--readonly">
+              <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+              <input class="input amount-field__input" id="ed-tm-price" type="number" min="0" step="1" placeholder="0">
+            </span></span>
+          </div>
+          <div class="kv">
+            <span class="kv__k"><span class="calc-list__op">＋</span><span data-i18n="ed.tix.fee">Booking fee</span></span>
+            <span class="kv__v"><span class="amount-field amount-field--readonly">
+              <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+              <input class="input amount-field__input" id="ed-tm-fee" type="number" min="0" step="1" placeholder="0">
+            </span></span>
+          </div>
+          <div class="kv calc-list__sum">
+            <span class="kv__k"><span class="calc-list__op">＝</span><span data-i18n="ed.tm.gross">Fans pay</span></span>
+            <span class="kv__v"><span class="calc-list__ro" id="ed-tm-gross">—</span></span>
+          </div>
+          <div class="kv">
+            <span class="kv__k"><span class="calc-list__op">−</span><span data-i18n="ed.tm.plat">Platform fee</span>
+              <span class="calc-list__how" id="ed-tm-fee-how"></span></span>
+            <span class="kv__v"><span class="calc-list__ro" id="ed-tm-plat">—</span></span>
+          </div>
+          <!-- 例外平台費（D311 決定三／決定六）：只有 Admin 代操時出現；開賣後改只影響之後的購買。 -->
+          <div class="calc-list__extra" id="ed-tm-exc-box" hidden>
+            <div class="calc-list__extra-row">
+              <span class="field__label" data-i18n="ed.tm.exc">Fee exception</span>
+              <button class="switch" type="button" role="switch" id="ed-tm-exc" aria-checked="false"
+                      aria-label="Fee exception" data-i18n-aria-label="ed.tm.exc"></button>
+            </div>
+            <div class="field" id="ed-tm-exc-field" hidden>
+              <label class="field__label" for="ed-tm-exc-pct"><span data-i18n="ed.tm.exc.pct">Rate</span> <span class="field__req">*</span></label>
+              <span class="amount-field amount-field--suffix amount-field--readonly">
+                <input class="input amount-field__input" id="ed-tm-exc-pct" type="number" min="0" max="100" step="0.1" placeholder="0">
+                <span class="amount-field__unit">%</span>
+              </span>
+              <p class="field__hint" id="ed-tm-exc-hint"></p>
+            </div>
+          </div>
+          <div class="kv calc-list__total">
+            <span class="kv__k"><span class="calc-list__op">＝</span><span data-i18n="ed.tm.net">You receive</span>
+              <span class="calc-list__how" data-i18n="ed.tm.net.how">On the ticket price — fee basis to be confirmed</span></span>
+            <span class="kv__v"><span class="calc-list__ro" id="ed-tm-net">—</span></span>
+          </div>
         </div>
         <div class="field">
-          <label class="field__label" for="ed-tm-qty" data-i18n="ee.tix.qty">Quantity</label>
+          <label class="field__label" for="ed-tm-qty"><span data-i18n="ee.tix.qty">Quantity</span> <span class="field__req">*</span></label>
           <input class="input" id="ed-tm-qty" type="number" min="0" step="1">
           <p class="field__hint" id="ed-tm-qty-hint"></p>
         </div>
-      </div>
-      <div class="form-grid">
-        <div class="field">
-          <label class="field__label" for="ed-tm-fee" data-i18n="ed.tix.fee">Booking fee</label>
-          <input class="input" id="ed-tm-fee" type="number" min="0" step="1">
-        </div>
+      </section>
+
+      <section class="form-section form-section--dense form-section--card">
+        <!-- 「入場」的標題做輕（Q125）：這一層沒有區塊級控制項、段內也只是一格獨立欄位，
+             分量比「價格與數量」（算式單元）與「販售」（暫停開關）低一階。 -->
+        <div class="form-section__head"><h3 class="form-section__title form-section__title--quiet" data-i18n="ed.tm.sec.entry">Entry</h3></div>
         <div class="field">
           <label class="field__label" for="ed-tm-early" data-i18n="ed.tix.early">Early entry (min)</label>
           <input class="input" id="ed-tm-early" type="number" min="0" step="5">
           <p class="field__hint" id="ed-tm-early-hint"></p>
         </div>
-      </div>
-      <div class="field">
-        <div style="display:flex;align-items:center;gap:var(--sp-8)">
-          <button class="switch" type="button" role="switch" id="ed-tm-paused" aria-checked="false"></button>
-          <span class="field__label" style="margin:0" data-i18n="ed.tix.pause">Pause sales</span>
+      </section>
+
+      <section class="form-section form-section--dense form-section--card">
+        <div class="form-section__head form-section__head--actions">
+          <div class="form-section__head-titles"><h3 class="form-section__title" data-i18n="ed.tm.sec.sale">Selling</h3></div>
+          <div class="form-section__head-actions">
+            <span class="field__label" data-i18n="ed.tix.pause">Pause sales</span>
+            <button class="switch" type="button" role="switch" id="ed-tm-paused" aria-checked="false"
+                    aria-label="Pause sales" data-i18n-aria-label="ed.tix.pause"></button>
+          </div>
         </div>
         <p class="field__hint" data-i18n="ed.tm.pause.hint">Rejects new purchases; tickets already sold stay valid.</p>
-      </div>
+      </section>
     </div>
     <div class="payout-dialog__foot">
       <button class="btn btn--ghost btn--sm" type="button" id="ed-tm-delete" data-i18n="ed.tm.delete">Delete tier</button>
-      <span style="flex:1"></span>
-      <button class="btn btn--outline" type="button" data-tm-close data-i18n="ce.tier.cancel">Cancel</button>
-      <button class="btn btn--primary" type="button" id="ed-tm-save" data-i18n="ce.tier.save">Save</button>
+      <span class="payout-dialog__foot-note" id="ed-tm-foot-note" hidden></span>
+      <span class="payout-dialog__foot-actions">
+        <button class="btn btn--outline" type="button" data-tm-close data-i18n="ce.tier.cancel">Cancel</button>
+        <button class="btn btn--primary" type="button" id="ed-tm-save" data-i18n="ce.tier.save">Save</button>
+      </span>
     </div>
   </section>
 </div>
@@ -1877,6 +1941,7 @@
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/platform-fees.js?v=r2.2"></script><!-- D311：平台費率三層解析 -->
 <script src="js/events-store.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script><!-- 2026-09-09：作廢動作的完成回饋（D253），沿用 order-detail.html 同一支 -->
 <script src="js/linechart.js?v=r2.2"></script>   <!-- 2026-08-31：走勢圖的共用產生器 -->
@@ -3493,11 +3558,84 @@
     if (window.ztorIcons) window.ztorIcons.applyIcons(list);
   }
 
-  /* 點卡開彈窗（輕量：五欄＋暫停販售）。系列子場唯讀——共用設定在母頁改。 */
+  /* 點卡開彈窗（2026-09-22 D311：單欄區塊＋計算列表）。系列子場唯讀——共用設定在母頁改。 */
   const tmEl = id => document.getElementById(id);
   let tmTier = null;
+
+  /* ---- 平台費（D311）----------------------------------------------------------
+     費率＝本票例外 → 該 creator 的覆寫 → General，解析走 js/platform-fees.js（與建立
+     流程同一支）。例外是 Admin 專屬（D086 代操模式），判斷沿用站上既有的 adminScope
+     （order-detail 的作廢鈕同一支；sidebar.js 還沒載好時退回讀同一把 key）。 */
+  const TM_FEE_LEAF = 'events.onsite';
+  function tmAdminScope() {
+    if (window.ztorCreator && typeof window.ztorCreator.adminScope === 'function')
+      return !!window.ztorCreator.adminScope();
+    try { return localStorage.getItem('ztor.role') === 'admin'; } catch (e) { return false; }
+  }
+  let tmExc = { on: false, pct: '' };      // 彈窗開著的期間才存在的草稿；儲存才寫回票種
+  function tmSysPct() {
+    if (!window.ztorFees) return 5;
+    const ov = window.ztorFees.creator(TM_FEE_LEAF);
+    return ov == null ? window.ztorFees.general(TM_FEE_LEAF) : ov;
+  }
+  function tmMoney(n) { return (n < 0 ? '-$' : '$') + Math.abs(Math.round(n)).toLocaleString('en-US'); }
+  /* 計算列表的三個數字與費率那一行說明。**計費基準（抽票價還是抽粉絲付）產品未定**
+     （TIX-001／D311 待確認），本輪一律以票價計，並在創作者實收那一列標明。 */
+  function syncTmCalc() {
+    const price = Number(tmEl('ed-tm-price').value) || 0;
+    const fee   = Number(tmEl('ed-tm-fee').value) || 0;
+    const exc   = tmExc.on && String(tmExc.pct).trim() !== '' ? tmExc.pct : null;
+    const r     = window.ztorFees ? window.ztorFees.resolve(TM_FEE_LEAF, exc)
+                                  : { pct: 5, source: 'general' };
+    const pct   = Number(r.pct) || 0;
+    const plat  = Math.round(price * pct / 100);
+    tmEl('ed-tm-gross').textContent = tmMoney(price + fee);
+    tmEl('ed-tm-plat').textContent  = tmMoney(plat);
+    tmEl('ed-tm-net').textContent   = tmMoney(price - plat);
+    const leaf = window.ztorFees ? window.ztorFees.pathText(TM_FEE_LEAF) : '';
+    tmEl('ed-tm-fee-how').textContent = leaf + ' ' + pct + '% · ' +
+      T('ed.tm.fee.' + (r.source === 'exception' ? 'exc' : r.source === 'creator' ? 'creator' : 'general'), r.source);
+  }
+  /* 例外那一塊：只有 Admin 代操時整塊出現；開關關著＝沒有例外，費率欄跟著收起來
+     （留一個關不掉的舊數字在畫面上會讓人以為它還算數）。已售出的票多一句說明——
+     改例外只影響之後的購買（D311 決定六）。 */
+  function syncTmExc() {
+    const box = tmEl('ed-tm-exc-box');
+    box.hidden = !tmAdminScope();
+    const sw = tmEl('ed-tm-exc');
+    sw.classList.toggle('switch--on', !!tmExc.on);
+    sw.setAttribute('aria-checked', tmExc.on ? 'true' : 'false');
+    tmEl('ed-tm-exc-field').hidden = !tmExc.on;
+    tmEl('ed-tm-exc-pct').value = tmExc.pct == null ? '' : tmExc.pct;
+    const sold = Number(tmTier && tmTier.sold) || 0;
+    tmEl('ed-tm-exc-hint').textContent = (sold > 0
+      ? T('ed.tm.exc.hint.sold', "Replaces the system's {n}% — for purchases from now on.")
+      : T('ed.tm.exc.hint', "Replaces the system's {n}%.")).replace('{n}', tmSysPct());
+  }
+  /* 頁尾左側的「N 個欄位待修正」：擋下儲存的理由要跟主鈕在同一條視線上。 */
+  function tmErrors() {
+    const e = [];
+    if (!tmEl('ed-tm-name').value.trim()) e.push('name');
+    if (!/^\d+$/.test(String(tmEl('ed-tm-price').value).trim())) e.push('price');
+    if (tmExc.on) {
+      const v = String(tmExc.pct == null ? '' : tmExc.pct).trim(), n = Number(v);
+      if (v === '' || !isFinite(n) || n < 0 || n > 100) e.push('excpct');
+    }
+    return e;
+  }
+  let tmTried = false;
+  function syncTmFoot() {
+    const el = tmEl('ed-tm-foot-note');
+    const n = tmTried ? tmErrors().length : 0;
+    el.textContent = n ? T('ce.tier.fixn', '{n} fields need fixing').replace('{n}', n) : '';
+    el.hidden = !n;
+    tmEl('ed-tm-exc-hint').classList.toggle('tier-card__err', tmTried && tmErrors().indexOf('excpct') >= 0);
+  }
+
   function openTierModal(t) {
     tmTier = t;
+    tmTried = false;
+    tmExc = { on: !!(t.feeException && t.feeException.pct !== ''), pct: t.feeException ? t.feeException.pct : '' };
     tmEl('ed-tm-title').textContent = (t.name || T('ce.tier.untitled', 'Untitled tier'));
     tmEl('ed-tm-name').value = t.name || '';
     tmEl('ed-tm-price').value = t.price == null ? '' : t.price;
@@ -3520,9 +3658,18 @@
     tmEl('ed-tm-save').hidden = false;
     del.hidden = false;
     p.style.pointerEvents = '';
+    /* 副標＝這張票屬於哪一場（D311）：日期・場地。 */
+    const subEl = tmEl('ed-tm-sub');
+    if (subEl) {
+      const dt = (ev && ev.date ? String(ev.date).replace(/-/g, '/') : '');
+      subEl.textContent = [dt, (ev && ev.venue) || ''].filter(Boolean).join(' · ');
+      subEl.hidden = !subEl.textContent;
+    }
+    syncTmExc(); syncTmCalc(); syncTmFoot();
     tmEl('ed-tier-modal').hidden = false;
     document.body.style.overflow = 'hidden';
     if (window.ztorIcons) window.ztorIcons.applyIcons(tmEl('ed-tier-modal'));
+    if (window.applyI18n) window.applyI18n(tmEl('ed-tier-modal'));
   }
   function closeTierModal() {
     tmEl('ed-tier-modal').hidden = true;
@@ -3542,6 +3689,14 @@
   tmEl('ed-tm-early')?.addEventListener('input', () => {
     tmEl('ed-tm-early-hint').textContent = earlyHintFor(tmEl('ed-tm-early').value);
   });
+  /* 票價／手續費／例外費率一改，計算列表立刻跟上（只換那幾格的字、不重畫，游標留在欄位裡）。 */
+  ['ed-tm-price', 'ed-tm-fee'].forEach(id => tmEl(id)?.addEventListener('input', () => { syncTmCalc(); syncTmFoot(); }));
+  tmEl('ed-tm-exc-pct')?.addEventListener('input', () => { tmExc.pct = tmEl('ed-tm-exc-pct').value; syncTmCalc(); syncTmFoot(); });
+  tmEl('ed-tm-exc')?.addEventListener('click', () => {
+    tmExc.on = !tmExc.on;
+    if (!tmExc.on) tmExc.pct = '';
+    syncTmExc(); syncTmCalc(); syncTmFoot();
+  });
   tmEl('ed-tm-paused')?.addEventListener('click', () => {
     const p = tmEl('ed-tm-paused');
     const on = !p.classList.contains('switch--on');
@@ -3550,6 +3705,11 @@
   });
   tmEl('ed-tm-save')?.addEventListener('click', () => {
     if (!tmTier) return;
+    tmTried = true;
+    if (tmErrors().length) { syncTmFoot(); return; }   // 沒過驗證就不關，理由留在頁尾
+    /* 例外平台費（D311）：關著或留空＝沒有例外，欄位整個拿掉而不是存一個空物件。 */
+    if (tmExc.on && String(tmExc.pct).trim() !== '') tmTier.feeException = { pct: String(tmExc.pct).trim() };
+    else delete tmTier.feeException;
     tmTier.name = tmEl('ed-tm-name').value.trim();
     tmTier.price = tmEl('ed-tm-price').value;
     const sold = Number(tmTier.sold) || 0;

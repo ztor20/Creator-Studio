@@ -6,10 +6,53 @@
    .form-section 作用域內微調 field 間距與 label 字級，
    不影響全站其他地方的 .field（Settings、e-shop 等）。
    取代各建立頁原本頁內的 .cp-section / .ce-section… 散裝樣式。
+
+   變體：--dense（彈窗裡的密集節奏）、--card（分段改由卡面承擔、分隔線退場，
+   內距 --sp-20＝與卡間 gap 同值，理由寫在該段）、--outlined（頁面級填色卡）。
    ============================================================ */
 
 .form-section { padding: 44px 0; margin: 0; }            /* 上下寬鬆留白＝區段間隔 */
-.form-section[hidden] { display: none; }
+/* 密集變體（--dense，2026-09-22 D311）：同一套段標題與分隔線，但留白收得比頁面級的
+   44 緊——彈窗裡一次要放四個區段，44px 的段距會讓第二段以後都在捲動區外。只改節奏、
+   不改層級語彙，所以標題仍是 .form-section__title、段與段之間仍是一條 hairline。
+   首段不留上內距、末段不留下內距：彈窗 body 自己已經有內距。
+
+   2026-09-23（使用者反饋，STYLE-DECISIONS Q125）：本變體自己持有一把完整的節奏梯子，
+   取代原本「段上下各 20 ＋ 成員自帶 margin-bottom」的湊法。梯子（由小到大）：
+
+     標籤 → 控制項          --sp-6    （.field 自己的 gap，不動）
+     欄位 → 欄位            --sp-16   （本變體的 row-gap）
+     區塊標題 → 第一個內容   --sp-12   （比欄位間距小，標題才會貼住自己那一組）
+     區塊 → 區塊            --sp-32   （上下各 --sp-16）
+     彈窗 body 內距          --sp-24   （見 payout-modal.css，對齊卡片的 --card-pad）
+
+   兩個「為什麼」：
+   ①**為什麼把節奏寫在這個變體、不改全站 .field**：`.field { margin-bottom: --sp-16 }`
+     是全站共用的，動它會牽動 Settings、e-shop、所有建立頁；而 --dense 的消費者只有
+     建立活動與活動詳情的兩個單張門票彈窗，節奏收在這一層是最小侵入的作用域。
+   ②**為什麼用容器 row-gap 而不是成員自帶 margin**：Q103——距離綁在「成員是誰」上時，
+     排進來一個不是 .field 的鄰居（calc-list、選項卡群組、摘要列）就貼成 0px。改成 grid
+     容器發 gap 之後，區段內放什麼都有同一段呼吸，區段最後一個成員也不會多留一段
+     margin 疊進段內距（原本段間實際是 20+16+20＝56px）。
+   標題那一條是「相鄰收緊」（Q103 允許的用法）：row-gap 已發 16，再用負外距收成 12。 */
+.form-section--dense {
+  display: grid;
+  row-gap: var(--sp-16);                                 /* 欄位 → 欄位 */
+  padding: var(--sp-16) 0;                               /* 上下各 16 ⇒ 區塊 → 區塊 32 */
+}
+/* 首段／末段不留該側內距——只在「沒有卡面」的情形成立：卡片式（--card）的內距是卡自己的
+   四邊留白，不是段間節奏的一半，收掉會讓第一張與最後一張卡的內容貼著卡緣。 */
+.form-section--dense:not(.form-section--card):first-child { padding-top: 0; }
+.form-section--dense:not(.form-section--card):last-child { padding-bottom: 0; }
+.form-section--dense > .form-section__head {
+  margin-bottom: calc(var(--sp-12) - var(--sp-16));      /* 區塊標題 → 第一個內容 12 */
+}
+.form-section--dense > .field { margin-bottom: 0; }      /* 節奏歸容器（Q103） */
+/* 選項卡群組在頁面級區段要自己補下距（見檔尾那條 :has 規則）；密集變體的 gap 已經發過了，
+   再留著會疊成 32。選擇器刻意比檔尾那條長一節（多一個類名），否則同權重時晚出現的那條贏。 */
+.form-section.form-section--dense > .segmented.radio-cards:has(~ :not([hidden])) { margin-bottom: 0; }
+.form-section[hidden],
+.form-section--dense[hidden] { display: none; }          /* grid 會蓋掉 hidden 的預設 display */
 /* 卡片裡有開著的浮動選單（kebab 下拉）時，整張卡抬到後面的兄弟卡之上（2026-09-09）。
    `.form-section--outlined` 帶 backdrop-filter，每一張卡都是自己的堆疊脈絡——選單的
    z-index 只在自己的卡內有效，排在後面的卡照樣蓋過它（商品明細「當前庫存」的列尾選單
@@ -34,6 +77,38 @@
 .form-section__actions > .field__hint,
 .form-section__actions > .field__error { margin: 0 auto 0 0; }
 .form-section + .form-section { border-top: 1px solid var(--border-soft); }   /* 區段間分隔線 */
+
+/* ── 卡片式區塊（`--card`，2026-09-23，STYLE-DECISIONS Q125 修訂）──────────────
+   **分段改由卡片承擔，不再靠分隔線。** 使用者看過上一輪的「32px 留白＋1px 淡分隔線」後
+   說「用分隔線好像不是很明確」「間距還是太小」——站上既有的分段答案本來就不是分隔線而是
+   卡片（`settings.css` 的 `.settings-section` 就是「把卡片用 gap 排開」），彈窗照同一套走。
+
+   配方＝巢狀層（L2）：表面 `--layer-2-surface` ＋ 一圈 `--layer-2-line` 內陰影，不掛
+   backdrop-filter——它坐在彈窗（`.payout-dialog`，本身已是玻璃）上，巢狀層再模糊只取樣得到
+   母層那一片平色（同 `.form-section--outlined .form-section--outlined` 與 `.payout-bank-card`
+   的判斷）。`border: 0` 同時把 `.form-section + .form-section` 那條分隔線收掉——卡的邊界
+   已經承擔分界，兩種分段做法不並存。
+
+   **內距選 `--sp-20`、不選卡片既有的 `--card-pad`（--sp-24）**：①這一階卡坐在 620px 的彈窗
+   裡、不是頁面欄寬，四邊各 24 會把可填寬度再吃掉 8px；②20 與卡間 gap 同值，卡內留白＝卡間
+   留白，一把尺量到底，不必為「卡內 24／卡間 20」再解釋一次；③`--card-pad` 是頁面級卡的尺度
+   （`.form-section--outlined` 宣告 24），彈窗內的巢狀卡本來就該比它小一階。
+
+   **卡與卡之間的 gap 歸容器**（Q103）：寫在 `payout-modal.css` 的 `.payout-dialog__body`，
+   不用相鄰 margin。段內節奏（標籤→控制 6／欄位→欄位 16／標題→第一個內容 12）由 `--dense`
+   那一段原樣提供，本修飾類只換「分界怎麼畫」與「四邊留白」。 */
+/* **圓角降一階（2026-09-23 使用者裁示，Q125 修訂）**：`--radius-lg` 而非 `--radius-xl`。
+   token 檔本來就把 `--radius-lg`（16）定義成「卡內子卡、下拉面板」、`--radius-xl`（24）留給
+   「一般卡、form-section」——這一階卡坐在圓角 24 的彈窗殼裡、又內縮 24，同心圓角的內圈跟
+   外圈一樣大就會鼓起來（外圈 24 − 內距 24 ⇒ 內圈理論值趨近 0，取現成的 16 最近）。
+   `.form-section--outlined` 的巢狀規則（第 165 行）同一個理由、同一個做法。 */
+.form-section.form-section--card {
+  padding: var(--sp-20);
+  background: var(--layer-2-surface);
+  border: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 0 0 1px var(--layer-2-line);
+}
 
 /* (2026-07-17) `.form-section--modal` 已退場：pickup session modal 當日改用頂部頁籤
    （shared .tabs + .tab-panel）分區，不再套填色面板；此變體無其他消費者，故移除。 */
@@ -145,6 +220,23 @@
   line-height: var(--lh-normal);
   margin: 0 0 var(--sp-4);
 }
+/* 輕標題（`--quiet`，2026-09-23，STYLE-DECISIONS Q125）：區塊標題的分量由「這一層有沒有
+   自己的控制項」決定——標題列掛了開關／徽章，或段內是一個必須連著讀的算式單元時，標題是
+   正常那一階；兩者都沒有、只是幾個各自獨立的欄位湊在一起時（單張門票彈窗的「入場」），
+   標題退成站上「群組小字標」那一階：display 字型不變，字級降一階、字重回 regular、色階退到
+   `--muted-foreground`、字距放寬到 0.04em——與 `.bd-sub__title`／`.bpc__title`／
+   `.bd-tbl__gname`／`.dropdown__cap` 同一支寫法，不另造第四種標題樣式。
+   小型大寫是站上所有標題的共同設定（shared.css 已把 `.form-section__title` 一起 uppercase），
+   這裡照配方把它寫全，好讓這個修飾類單獨看也完整；真正分辨兩階的是字級、色階與字距。
+   中文沒有大小寫，所以分辨完全靠那三項（同 bundle-editor 檔內說明）。 */
+.form-section__title--quiet {
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+  color: var(--muted-foreground);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 /* 2026-07-20（Q21）：14→11 且色階壓暗（--foreground-muted → --muted-foreground），
    與 .field__hint 同級——區塊副標與欄位說明是同一種「輔助說明」角色。 */
 /* 描述字級 --fs-12（Q73，2026-08-25 使用者裁示「用 12、偶數為主」）：

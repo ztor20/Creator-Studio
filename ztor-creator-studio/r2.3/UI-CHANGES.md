@@ -4,6 +4,133 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-23（八十）· 彈窗內卡片圓角降一階（`--radius-lg`）· B 反饋
+
+**動機**：使用者看過七十九的卡片化版本後裁示「改」——卡片圓角是 `--radius-xl`（24），與彈窗殼本身的圓角同值，但卡是內縮 24px 的；同心圓角的內圈必須比外圈小（外 24 − 內距 24 ⇒ 內圈理論值趨近 0），內外同角視覺上會鼓起來。
+
+**範圍**：
+- `ds-components/form-section.css`：`.form-section--card` 的 `border-radius` 由 `--radius-xl` 改 `--radius-lg`（16），並在規則上方寫明理由與同源先例（`.form-section--outlined` 的巢狀規則同一做法）。
+- `design-system.md` / `design-system.html`：卡片變體條目與 demo 說明的 token 名同步。
+- `STYLE-DECISIONS.md`：Q125 追加第（五）條裁決。
+
+**不變**：卡片內距 20、卡間 gap 20、卡內節奏 12／16／6、calc-list 在卡內去框、標題三階——全部沿用七十九。
+
+## 2026-09-23（七十九）· 單張門票彈窗：區塊分界由分隔線改成卡片，卡間留白 20、卡內算式列表去框（B 反饋；STYLE-DECISIONS Q125 修訂）
+
+**動機**：使用者看過上一輪（七十六）做出來的「區塊之間 32px 留白＋1px 淡分隔線＋三階區塊標題」後，連續兩則回饋：「用分隔線好像不是很明確」、「間距還是太小」。1px hairline 疊在玻璃彈窗上本來就是站上最弱的分界訊號；而「一個區塊到哪裡結束」在這個站的既有答案本來就不是線而是**卡片**——`ds-components/settings.css` 的 `.settings-section` 檔頭寫明「分區內放兩張以上的卡是常態，間距由容器的 gap 承擔」。彈窗照同一套走，不新增第三種分段語彙；改成卡片同時把「分界不明確」與「間距太小」兩個抱怨一次解決（卡面自己就是邊界，內容對內容的距離從 32 自然長到 60）。純呈現調整，欄位、資訊群組、產品規則一個沒動。
+
+**範圍**：
+- `ds-components/form-section.css`：
+  - 新增 `.form-section--card`（寫成 `.form-section.form-section--card` 提權）：`padding: var(--sp-20)`、`background: var(--layer-2-surface)`、`box-shadow: inset 0 0 0 1px var(--layer-2-line)`、`border-radius: var(--radius-xl)`、`border: 0`。**不掛 `backdrop-filter`**——卡坐在已經是玻璃的 `.payout-dialog` 上，巢狀層再模糊只取樣得到母層那一片平色（同 `.form-section--outlined .form-section--outlined` 與 `.payout-bank-card` 的既有判斷）。`border: 0` 同時把 `.form-section + .form-section` 的 hairline 在這個作用域收掉——**全域那條規則一行未改**
+  - **內距選 `--sp-20`、不選頁面級卡的 `--card-pad`（24）**：與卡間 gap 同值（卡內留白＝卡間留白，一把尺量到底）；620px 的彈窗再讓出 8px 寬度不划算；`--card-pad` 是頁面欄寬那一階的尺度，彈窗內的巢狀卡本來就該小一階。理由寫在檔頭與該段註解
+  - `--dense` 的首段／末段歸零內距改成 `:not(.form-section--card)`——卡的內距是卡自己的四邊留白，不是段距的一半，收掉會讓第一張與最後一張卡的內容貼著卡緣
+- `ds-components/payout-modal.css`：`.payout-dialog__body:has(> .form-section--card)` 改 `display: grid` ＋ `gap: var(--sp-20)` ＋ `align-content: start`——**卡與卡的節奏歸容器（Q103）**，不用相鄰 margin；`align-content: start` 是必要的，body 是 `flex:1` 撐滿高度的捲動區，grid 預設 stretch 會在內容短時把卡拉高。沿用 `:has` 而不是新開修飾類，理由同上一輪：條件是「裡面裝的是什麼」，不是「這個彈窗叫什麼」
+- `ds-components/calc-list.css`：新增 `.form-section--card .calc-list { padding: 0; border: 0; border-radius: 0 }`——「價格與數量」整段變成一張卡之後，算式列表再自帶外框就是卡中卡（同一條邊界畫兩次）。**列與列之間的分隔線與列內距保留**：那是一個算式單元自己的內部結構（哪幾項加起來等於哪一項），不是分區。寫成情境規則而不是修飾類，因為條件是「它坐在哪裡」，放進卡就該去框、沒有第二種選擇
+- `create-event.html`：`tierSecHTML()` 產出的 `<section>` 加 `form-section--card`（四個區塊一次到位）
+- `event-detail.html`：票種彈窗四個區塊的 `<section>` 加 `form-section--card`
+- DS 三件套：`design-system.md` 的 Form section 與 Calc list 兩條各補一段；`design-system.html` 的密集變體示範改用真正的 `.payout-dialog__body` 當容器（gap 由它持有，DS 頁不另發明第二個排法）、三個示範區塊掛 `--card`、新增「為什麼是卡片不是分隔線」與「卡內算式列表去框」兩段說明、Classes 列補 `--dense`／`--card`／`__title--quiet`
+
+**取捨**：彈窗會變長、捲動變多（四張卡＋卡間 20＋body 24），這是刻意的——使用者兩次都是嫌太擠，不為了塞進一屏而回頭壓縮間距。
+
+**驗證**：Playwright 1440 寬四情境（creator／Admin 例外／bookyay 帶入／`event-detail`）實測——卡內距 20px、卡與卡 gap 20px、卡最後內容底→下一張卡第一個內容頂 60px、區塊標題→第一個內容 12px、欄位→欄位 16px、標籤→控制項 6px、四張卡 `border-top-width` 皆 0px、body `display:grid`／`gap:20px`／`padding:24px`；卡內 `.calc-list` padding 0／border 0／radius 0，內部 `.kv` 列線 1px、列內距 `8px 0` 原樣保留。回歸：`create-bundle.html` 的 `.calc-list`（4px 14px／1px solid／16px）與 `bundle-detail.html` 的 `.bd-calc-list` 外觀未變、兩頁 0 個 `.form-section--card`。四頁 console 0 錯誤；`check_ds_sync.py` 全 PASS＋既有兩則 WARN（裸色 102、相鄰節奏 3 處，皆為存量、數字未增）；`?v=r2.2` 未 bump。截圖 `screenshots/2026-09-23-tier-modal-cards-01…06`。
+
+## 2026-09-23（七十八）· 建立商品改用全頁「預覽與發布」畫面，主區為前台商品頁 1:1 鏡像；舊浮層與頁內 mock 退場（A spec-derived · D310 決定四；主規格 §7.4、5.1.5.2 §4.6 v6.33）
+
+**依據**：D310（2026-09-22）決定四。建立活動的第 8 步已改為全頁「預覽與發布」（UI-CHANGES 七十二），建立商品的「開始販售」當時仍留在舊浮層＋頁內重刻的 `.cp-shopmock`——同一件事（發布前看一次成品）站上留了兩套做法，決定四把商品這一側排進下一輪補齊。
+
+**範圍**：
+- 新檔 `js/fan-product-page.js`：`window.ztorFanProductPage.render(host, model, api)`，回傳 `.fep-shop` 根節點；前台商品頁 1:1 鏡像（結構照前台 `shop-detail-render.js` 的商品分支），api 與 `ztorFanEventPage` 同一組、由 `js/publish-stage.js` 的 `previewRender` 提供；editZones 可選 `[data-fpp-gallery]`／`.pdp-buy__title`／`[data-fpp-price]`／`[data-fpp-variants]`／`[data-fpp-stock]`／`[data-fpp-delivery]`／`.pdp-details__lead`／`[data-fpp-specs]`／`[data-fpp-returns]`，價格節點同帶 `data-fep-price-key`（沿用活動頁屬性名，供側欄開價格表）
+- `ds-components/fan-shop.css`：新增第 4 段「商品頁元件」（價格、庫存提醒、色票、尺寸格、數量、交付一行、規格表、店家列、相關商品卡等約 50 條規則），檔頭消費者說明同步補上這支渲染器
+- `create-product.html`：主鈕「開始販售」驗證通過後進入全頁「預覽與發布」（`.wizard__body--stage`，`js/publish-stage.js` mount，未傳 `translation` 選項、沿用預設 `'auto'`）；側欄語言（自動翻譯）／幣別／發布前檢核三段同 5.1.6.1；次鈕「返回表單」還原表單內容與捲動位置；editZones 點預覽區塊回表單對應區段；舊浮層 `ztorPublishPreview.open()` 呼叫、頁內 `buildShopItemPreview()`／`.cp-shopmock`（約 30 條規則）撤除，留墓碑註解（約 1318、1512–1760 行）
+- `js/i18n.js`：`fpp.*` 新增 20 個 key、`cp.stage.*`／`cp.qc.*` 共 14 個 key
+- 文件：`ASSUMPTIONS.md` UIA-170、`BUILD-SPEC.md`
+
+**驗證**：使用者已在瀏覽器實測通過（開始販售進全頁畫面、側欄三段運作、返回表單內容保留、發布走原上架路徑）；本輪另跑 `check_ds_sync.py` 確認無新增 FAIL／WARN。
+
+## 2026-09-23（七十七）· 活動預覽的多語改手動翻譯，不再把原文自動抄成譯文（A spec-derived · D312；主規格 §7.4「活動例外：手動翻譯」、5.1.6.1 v2.19、5.1.6.3 v18、5.1.6.2 v3.11）
+
+**依據**：D312（2026-09-23）。活動的發布前預覽（D310）沿用 `js/publish-stage.js` 既有的自動翻譯行為——切到還沒填的語系會直接把預設語言的值當成譯文顯示，讀者分不出「這是原文」還是「這是已確認的譯文」。D312 訂為活動側的例外：翻譯要看得出有沒有人填過，商品側維持原行為。
+
+**範圍**：
+- `js/publish-stage.js`：新選項 `translation: 'auto' | 'manual'`（選填，預設 `'auto'`＝原行為）；新增 `isManual()`／`displayValue()`／`filledCount()`／`totalFields()`，`syncData()`、`resetLang()`、`applyFieldToSlot()`、`previewApi().getValue`、`langSection()`、`renderTransTable()` 依模式分岔——manual 模式下其他語系不把原文抄成譯文（沒填＝空字串），預覽與翻譯表 fallback 顯示原文；側欄語言狀態改顯示「未翻譯 Not translated」／「已翻譯 n of N translated」（N＝翻譯表列數）；翻譯表未填的格子以原文當淡色 placeholder；「還原自動翻譯」換成「清除譯文 Clear translation」；預設語言被改動不覆蓋已填的譯文；`result()` 結構不變（`translations[key][lang]` 空字串＝未翻譯）
+- `ds-components/publish-stage.css`：`[data-stage-drawer="trans"] .pp-cell-field::placeholder` 改用 `--muted-foreground`
+- `js/i18n.js`：新增 `pstage.lang.untranslated`／`pstage.lang.translated`／`pstage.lang.clear`
+- `create-event.html` 的 `buildStageOpts()` 與 `event-localization.html` 的 mount 選項各加 `translation: 'manual'`；`create-product.html` 未傳此選項，沿用 `'auto'`
+
+**驗證**：create-event 第 8 步切繁中就地改名稱後側欄顯示「1 of 3 translated」；簡中未填時預覽顯示原文；翻譯表未填格 value 為空、placeholder 為原文；按「清除譯文」回到「Not translated」；回表單改動原文後，繁中已填的譯文保留不被覆蓋。
+
+## 2026-09-23（七十六）· 單張門票彈窗：區塊標題砍成三階（基本無標題、入場輕標題）、彈窗內垂直節奏收成一把 token 梯子（B 反饋；STYLE-DECISIONS Q125）
+
+**動機**：使用者實測 D311 做出來的單張門票彈窗後指出兩件事。①四個區塊標題「一樣重，但有些根本沒有東西要控制」——標題應該由「區塊層的控制項」或「必須連著讀的一組」換來。②間距不對：標題到自己的內容是 24、欄位彼此才 16（標題離自己的內容比離別人遠），段內最後一個 `.field` 的 16 又疊進段上下各 20，段與段之間實際 56px，在 620px 的彈窗裡太鬆；而且欄位間距是靠 `.field` 自帶 `margin-bottom` 相鄰疊出來的，正是 Q103 點名的病。純呈現調整，資訊群組與欄位一個沒動。
+
+**範圍**：
+- `ds-components/form-section.css`：
+  - `.form-section--dense` 自己持有一把節奏梯子——`display:grid` ＋ `row-gap: var(--sp-16)`（欄位→欄位）、`padding: var(--sp-16) 0`（段→段 32）；`> .form-section__head` 用 `calc(var(--sp-12) - var(--sp-16))` 把標題→內容收成 12（Q103 允許的「相鄰收緊」）；`> .field { margin-bottom: 0 }` 把節奏交還容器；`> .segmented.radio-cards:has(~ :not([hidden]))` 在本變體內歸零（檔尾那條頁面級補距會疊成 32）；補 `.form-section--dense[hidden] { display:none }`（grid 會蓋掉 hidden 的預設值）
+  - 新增 `.form-section__title--quiet` 輕標題：字級降一階、字重 regular、`--muted-foreground`、0.04em 字距——站上群組小字標既有配方（`.bd-sub__title`／`.bpc__title`／`.bd-tbl__gname`／`.dropdown__cap`），不另造第四種標題樣式
+  - **作用域刻意停在 `--dense`**：`.field { margin-bottom }` 是全站共用、動它會牽動每個表單頁；`--dense` 的消費者只有兩個票券彈窗
+- `ds-components/payout-modal.css`：`.payout-dialog__body:has(> .form-section--dense)` 內距 `--sp-20` → `--sp-24`（＝卡片的 `--card-pad`）。用 `:has` 而不是再發明一個修飾類——條件是「裡面裝的是什麼」，不是「這個彈窗叫什麼」
+- `create-event.html`：`tierSecHTML(titleKey, body, tail, quiet)` 多兩種標題分量——`titleKey` 傳 `null` 整個標題列不畫（基本）、`quiet` 走輕標題（入場）；價格與數量（算式列表＋bookyay 徽章）與購買條件（跟隨開關）維持正常那一階
+- `event-detail.html`：票種彈窗同一套判斷——基本無標題、入場輕標題、價格與數量與販售（暫停開關）維持正常
+- i18n 墓碑：頁內字典 `d.tm.sec.basic`、`js/i18n.js` 的 `ed.tm.sec.basic`（兩把都只服務被拿掉的「基本」標題）
+- `design-system.html`／`design-components.html`：Form section 的密集變體 demo 改成三階標題對照（無標題／輕標題／正常），補「區塊標題的分量」段（中英）；`design-system.md` Form section 與 Payout dialog 兩條、以及 §5 D311 那段同步
+
+**驗證**：dev server 1440 寬 Playwright 實測四個情境（creator 第 5 步、Admin 例外開啟、bookyay 帶入、`event-detail` 票種彈窗），四者量到的梯子完全一致——標籤→控制 6、欄位→欄位 16、標題→第一個內容 12、段→段 33（＝上下各 16 ＋ 中間 1px hairline）、body 內距 24；console 0 錯誤。截圖 `screenshots/2026-09-23-tier-modal-spacing-01…05`。`check_ds_sync` 無新 FAIL，檢查 13（同類相鄰 margin 盤點）維持 3 處未增加。
+
+## 2026-09-23（七十五）· 預覽與發布全頁畫面的整頁背景改成前台頁的黑（B 反饋）
+
+**動機**：預覽與發布畫面（D310）的主區是前台頁的 1:1 鏡像，底色 `#0A0A0A`；外圍的內容卡卻是 `--surface-page` `#0C0D0D` 加點陣，前台鏡像讀起來像一塊貼在畫布上的方板。使用者指定「預覽頁的整個背景要和前台預覽一樣的黑色」。
+
+**範圍**：
+- `ds-components/_tokens.css`：新增 `--surface-preview: #0A0A0A`（[ext]，淺色與深色同值——前台永遠是深色；值取自 `fan-shop.css` `.fep-shop` 的 `--neutral-900`，那組變數只在前台鏡像範圍內，站上沒有可用的全域 token）
+- `shared.css`：`.wizard:has(.wizard__body--stage)` 把 `--wizard-mask` 換成 `--surface-preview`、拿掉點陣；`.wizard__sheet:has(.wizard__body--stage)` 同色、無點陣（寫在深色覆寫之後）
+- `design-system.md` Pillar 2 表格、`design-system.html` 色票與說明補 `--surface-preview`
+- 消費頁：create-event 第 8 步、event-localization（markup 不動）
+
+**驗證**：create-event 第 8 步實測內容卡與 `.wizard` 皆 `rgb(10,10,10)`、`background-image: none`；check_ds_sync PASS。
+
+## 2026-09-23（七十四）· 建立流程頂列改成浮起的磨砂膠囊（同活動清單工作列）、底列改成疊在內容上的同色遮色片＋上緣淡出（B 反饋；STYLE-DECISIONS Q124）
+
+**動機**：使用者把建立活動的頂列（頂到兩側的玻璃橫帶、只靠一條底線分界）跟活動清單的工作列（浮起的圓角膠囊）並排，指定「所有創建頁的 header 都要改成像工作列」；底列則是「一整條與背景相同顏色的色塊，不用特別有一塊色塊」——內容卡的背景一路延伸到底，底列只是疊在上面的遮色片。先做 `lab-wizard-chrome.html` 比較頁（iframe 載真正的建立頁、注入覆寫、現況／新版對照）給使用者看，第二輪依回饋修三處：底列上緣「要漸消」、膠囊外圍「不該黑底」、膠囊「要半透明磨砂背景」。定案時選「保留進度軌」（另一個變體＝把步驟列改成分頁底線，未採用）。
+
+**範圍**：
+- `shared.css` Wizard frame 段：
+  - `.wizard`：畫布色改 `--wizard-mask`（預設 `--surface-page`＝內容卡同色；舊值 `--surface-shell` 較淺畫布），加 `position:relative`；非 `--sectioned` 內容卡的頁（create-campaign／funding-simulate）用 `:has()` 把遮色換成內容卡色、拿掉點陣（淺色 `--card`、深色 `--surface-page`）
+  - `.wizard__sheet`：拿掉下緣 `--radius-shell` 圓角與向下投影，`padding-bottom: var(--wizard-foot-h, 72px)`；沒有底列的頁（event-localization）歸零；≤900px 歸零（底列在文件流裡 sticky）
+  - `.wizard__top`：玻璃底／模糊／底線／內光全部拿掉、變透明外距（`--wizard-top-pad-t/-x/-b` 16/28/12），`pointer-events:none`、子元素 auto
+  - `.wizard__top::before`：改當膠囊本體（原為與 `.edge-shadow` 共用、已歸零的下緣陰影，自共用選擇器移出並留墓碑），材質照抄 `.list-toolbar`：`--ztu-glass-bg`＋`blur(--ztu-blur-glass)`＋1px `--border`＋`--shadow-card`/`--shadow-edge-top`＋`--radius-xl`；淺色 `--card`＋`--shadow-card`
+  - `.wizard__top-bar`：內距 20/28 → 12/20/12/24；後面還有一排時（create-bundle 的 Section tabs）加一條 `--border-soft` 分隔
+  - `.wizard__bottom`：改絕對定位疊在內容卡底部，`background: inherit`＋`background-attachment: fixed`，玻璃／上邊線／內光拿掉；`::before` 上緣 `--sp-56` 漸層淡出到 `--wizard-mask`
+  - 深色 `.wizard` 覆寫改讀 `--wizard-mask`
+- `partials/wizard-chrome.js`：`watchFooterHeight()`——ResizeObserver 量底列高度寫成 `.wizard` 的 `--wizard-foot-h`（各頁底列高度不同，建立組合包 101px、建立活動 68px；閘門上底列收起＝0）；DS 頁的縮小 demo 跳過
+- `design-system.html`／`design-components.html`：`.ds-preview .wizard__top` 改設三個外距變數、`.ds-preview .wizard__sheet { padding-bottom:0 }`；§4.50 Wizard frame 卡補改版說明（中英）、第一個 demo 換成現行頂列結構（`.wizard__top-bar` 三欄）、規格表 Anatomy／Token／Classes 同步；§1.5 `.edge-shadow` 用途移除 wizard header
+- `design-system.md`：Wizard frame 條目補 2026-09-23 段；`--ztu-glass-bg` 消費者改列 `.wizard__top::before`、移除 `.wizard__bottom`；`shadow-header`／Edge shadow 兩條移除 wizard header
+- 消費頁（markup 不動，元件層一次生效）：create-event／-product／-project／-bundle／-auction／-campaign／-event-legacy、register-ip、publish-work、admin-ip-bank-entry、funding-simulate、event-localization
+- `lab-wizard-chrome.html`：比較頁，定案後刪除
+
+**驗證**：dev server 實測 create-event（閘門→表單，底列 68px、頂列 100px）、create-bundle（兩排包在同一顆膠囊、右欄預覽貼頂 140px 仍落在膠囊下緣之下，`--preview-col-top` 不必改）、create-product、funding-simulate（非 sectioned，淺色模式遮色＝`#FFFFFF`、無點陣）、register-ip 手機寬（底列 sticky、內容卡不留底距）；`check_ds_sync` PASS。
+
+**已知**：手機寬度下頂列三欄原本就擠不下（右側儲存狀態超出），膠囊讓溢出變得看得見；不在本輪範圍。
+
+## 2026-09-22（七十三）· 單張門票彈窗重做成單欄四區塊（基本／價格與數量／入場／購買條件）、價格區改計算列表、新增 Admin 專屬的「例外平台費」；分頁與「總價」唯讀欄退場（A spec-derived · D311；5.1.6.1 F22、5.1.0.3 F3、5.1.6.3 §2.6）
+
+**依據**：D311（2026-09-22）。現行彈窗分「設定／購買條件」兩個分頁，把一張票拆成兩半；「總價」唯讀欄排在票價與手續費之前，加法關係完全看不見；bookyay 帶入的票價／數量／手續費各掛一個鎖徽章又保留清空鈕；門票圖片佔右半欄、要填的欄位反而在框內捲動；「跟隨場次／自訂」與「跟隨活動預設／自訂」都沒有明確開關、靠 hint 暗示；標題只有票名，多場次活動看不出屬於哪一場。平台費此前只有 General 與逐 Creator 覆寫兩層（D141），沒有逐門票的粒度。
+
+**範圍**：
+- `ds-components/calc-list.css`（新）——**自 `bundle-editor.css` 的 `.bd-calc-list` promote**：`.calc-list`（1px `--layer-line` 外框）> `.kv`（複用 kv-list）> `.kv__k`（列首 `.calc-list__op` 運算子欄＋`.calc-list__how` 一句怎麼算）＋`.kv__v`（等寬數字）；`.calc-list__sum` 小計列、`.calc-list__total` 結果列、`.calc-list__extra`(`__extra-row`) 掛在某一列底下的附屬控制；新增 `--form` 變體（列裡有輸入控件時改置中對齊、右欄收 140px，唯讀格 `.calc-list__ro` 補右內距對齊）。兩個舊消費點（`js/bundle-editor.js` SPLIT 版、`create-bundle.html`）改吃新 class；`bundle-detail.html` 本輪由另一個 session 持有，所以 `bundle-editor.css` 的三個舊 class 暫留成**遷移別名**（值與新元件同步，該頁遷移那一輪一起刪）
+- `ds-components/form-section.css`——新變體 `.form-section--dense`（段上下留白 44 → `--sp-20`、首段無上內距、末段無下內距）：彈窗裡一次放四個區段時，44px 的段距會把第二段以後推出捲動區；只改節奏、不改層級語彙
+- `ds-components/payout-modal.css`——新增 `.payout-dialog__head-titles` ＋ `.payout-dialog__sub`（標題列副標）與 `.payout-dialog__foot-note`／`__foot-actions`（footer 左右兩槽）：foot 本來就是 space-between，只放兩顆裸按鈕會被推到兩端，擋關理由該與主鈕同一條視線
+- `js/platform-fees.js`（新）——平台費率的共用讀取：葉節點表（活動三個）、General 值（＝`admin-platform-fees.html` 的 `data-general`）、逐 creator 覆寫示範、`resolve(leaf, exceptionPct)` 三層解析（本票例外 → creator 覆寫 → General）、`pathText()` 共用費率設定頁的 `fees.dim.*`／`fees.leaf.*` i18n key。`create-event.html` 的 `EVENT_FEE_PCT` 改讀它
+- `create-event.html`——彈窗殼去掉 `#ce-tier-modal-tabs`、標題列加副標槽、頁尾加兩個槽；`tierModalHTML()` 改成四個 `.form-section--dense`（`tierSecHTML()`／`tierPriceSecHTML()`／`tierRulesSecHTML()`／`tierRuleSummaryHTML()` 新增）；價格區＝`calcRowHTML()`／`calcMoneyInput()`／`calcRO()` 畫的計算列表（票價＋手續費＝粉絲付−平台費＝創作者實收；數量以一般欄位排在列表之外），`tierMoney()`／`feeOf()`／`excPct()`／`adminScope()`／`feeExcHTML()` 新增，`syncTierCalc()` 逐格即時重算（不重繪、游標留在欄位裡）；`tierEarlyPolicyHTML()` 改成「跟隨場次（顯示場次值）／自訂」二選一＋選自訂才出現的仍可／不能入場；購買條件改由區塊標題右側的開關控制（`d.rulesOpen`，copy-on-write 不變）；`tierErrors()` 加 `excpct` 驗證、`renderTierErrors()` 加 `syncTierFootNote()`；`startTier()` 草稿補 `feeExc`／`rulesOpen`、`commitTier()` 寫 `t.feeException`；墓碑 `modalTab`／`ruleHeadHTML`／`syncModalRuleHead`／`grossFieldHTML`／`d.tm.ticket`／`d.tm.rules`／`d.rule.followback`／`d.early.follow`／`d.early.own`／`d.early.followback`；頁內字典新增 `d.tm.*` 17 把、`d.early.mode.*` 2 把
+- `event-detail.html`——票種彈窗同一套結構（基本／價格與數量／入場／販售）：殼由 `--narrow` 改回預設 620、標題列副標、頁尾兩槽；同一組算式列（唯讀三格由 `syncTmCalc()` 填）與 Admin 專屬的例外平台費（`tmAdminScope()`／`syncTmExc()`）；儲存前 `tmErrors()` 擋關並在頁尾寫「N 個欄位待修正」；補連 `kv-list.css`／`calc-list.css` 與 `js/platform-fees.js`。**購買條件不在這裡**——發布後改購買條件的規則上游未定（2026-08-11 裁決未變），最後一個區塊是「販售」（暫停販售）
+- `js/events-store.js`——`realive-asia-kaohsiung` 的 VIP 補一筆 `feeException: { pct: '3' }` 示範（creator 視角看到的就是唯讀的「例外 3%（Admin 設定）」）
+- `js/i18n.js`——新增 `ed.tm.sec.*`／`ed.tm.gross`／`ed.tm.plat`／`ed.tm.net`／`ed.tm.net.how`／`ed.tm.fee.*`／`ed.tm.exc*` 共 15 把與 `ce.tier.fixn`；`ed.tm.pause.hint` 沿用
+- `design-system.html`／`design-system.md`——新增 §4.217 Calc list（唯讀版＋`--form` 版兩張 demo、In context 說明「數量為何排在列表之外」）＋TOC＋元件總表列；Form section 補 `--dense` demo 與說明；Payout dialog 補副標與 footer 兩槽的 demo 與說明；§4.114 Ticket tier card 補整段「單張門票彈窗改單欄四區塊」；Bundle editor 條目的 `.bd-calc-list` 引用改指新元件並註明遷移別名
+- 文件：`ASSUMPTIONS.md` UIA-169、`BUILD-SPEC.md` 票務段
+
+**動機**：分頁把一張票拆兩半、加法關係藏在唯讀欄裡、繼承與自訂靠 hint 猜——三件事都用「一欄四區塊＋明確開關＋計算列表」解掉。計算列表是關鍵：金額之間有運算關係時，做成一欄一欄的獨立欄位，關係就只存在讀者的腦子裡；把運算子畫出來、結果列坐在同一個框裡，「這個數字是那兩個加出來的」用看的就成立。例外平台費是合約層的事（跟逐 Creator 覆寫同一性質），所以 Admin 專屬、creator 只看結果；解析順序收進一支共用 store，建立流程與活動詳情才不會各算各的。
+
+**驗證**：Playwright 1440 實走——creator 視角開 VIP 彈窗（四區塊、副標「2026/09/12 · 台北小巨蛋」、計算列表五列、平台費唯讀且無例外開關、購買條件開關開＝三列摘要／關＝規則攤開、早於開放時間二選一切到自訂後長出仍可／不能入場）；Admin 代操視角（`ztor.role=admin`）同一張票：例外開關出現 → 開 → 填 12 → 平台費 $165→$396、創作者實收 $3,135→$2,904、來源改「本票例外（Admin 設定）」；存檔後切回 creator 視角：例外開關消失、平台費列唯讀顯示 12% 與例外來源；清空票價按儲存 → 彈窗不關、頁尾「1 個欄位待修正」、票價 hint 轉紅；bookyay 帶入（`?import=bky-1`）：價格與數量整段唯讀事實列＋區塊標題「bookyay 帶入」徽章、數量是讀數；`event-detail.html?id=realive-asia-kaohsiung` 票務分頁開 VIP：四區塊、示範例外 3% 生效（$210→$126、實收 $3,990→$4,074），Admin 視角才出現例外開關。console 0 錯誤；`check_ds_sync.py` PASS＋既有兩則 WARN（raw-color／sibling-rhythm，與改動前同數）；`?v=r2.2` 未 bump。截圖 `screenshots/2026-09-22-tier-modal-01…06`。
+
 ## 2026-09-22（七十二）· 發布前預覽確認由浮層改為全頁畫面——建立活動第 8 步「確認」重做成「預覽與發布」（前台預覽＋側欄：語言／幣別／發布前檢核）、F10 摘要卡退場、發布浮層退場；活動詳情的「預覽與在地化」改開同一畫面的全頁版（A spec-derived · D310，修訂 D223／D305 的呈現層級；5.1.6.1 §4.8、5.1.6.3 §2.13、主規格 §7.4）
 
 **依據**：D310（2026-09-22）。同一件事（發布前看一次）不該問兩遍——第 8 步的摘要卡＋檢核與按下發布後才彈的浮層是兩層確認；1376px 的整頁前台被塞進對話框、內部再捲動；語言／幣別／預覽·列表三組控制擠在浮層頂部一列；改過哪些語系沒地方看；翻譯表與價格表共用一個「列表」開關。

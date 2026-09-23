@@ -1,0 +1,103 @@
+/* ============================================================
+   Calc list — 一行一項的算式列表（加總／扣抵，最後一列是結果）
+
+   2026-09-22 自 `bundle-editor.css` 的 `.bd-calc-list` promote（D311）：
+   單張門票彈窗的「價格與數量」也要把加法關係攤在畫面上（票價 ＋ 手續費
+   ＝ 粉絲付 − 平台費 ＝ 創作者實收），與組合包原價合計是同一個視覺角色，
+   站上不留兩份做法。
+
+   為什麼是列表不是欄位序列：金額之間有運算關係時，把每一項各自做成一個
+   欄位，關係就只存在讀者的腦子裡；列表把運算子畫出來，結果列與輸入列坐在
+   同一個框內，「這個數字是那兩個加出來的」用看的就成立。
+
+   Anatomy:
+     .calc-list                       外框（1px + 圓角）
+       .kv                            一列（kv-list.css，左鍵右值）
+         .kv__k                       項目名
+           .calc-list__op             運算子欄（＋／−／＝），列首固定寬
+           .calc-list__how            這一項怎麼算（12px 輔助句，自成一行）
+         .kv__v                       金額（等寬數字）
+       .kv.calc-list__sum             小計列（粉絲付）：鍵回到前景色
+       .kv.calc-list__total           結果列（原價合計／創作者實收）：鍵回前景色、值 16px
+       .calc-list__extra              掛在某一列底下的附屬控制（例外平台費）
+
+   Modifier:
+     .calc-list--form                 列裡有輸入控件時用：改置中對齊、右欄收成固定寬
+
+   情境規則:
+     .form-section--card .calc-list   坐在卡片式區塊裡時去掉外框與內距（卡的邊界已經
+                                      承擔分界）；列線與列內距保留
+
+   Consumers: create-event.html（單張門票彈窗的價格與數量）、
+     event-detail.html（票種彈窗）、js/bundle-editor.js（SPLIT 版定價段的原價合計）、
+     create-bundle.html（同一份算式的頁面級實作）
+   ============================================================ */
+
+.calc-list {
+  padding: var(--sp-4) var(--sp-14);
+  border: 1px solid var(--layer-line);
+  border-radius: var(--radius-lg);
+}
+/* 坐在卡片式區塊裡時去框（2026-09-23，Q125 修訂）：`.form-section--card` 之後，
+   「價格與數量」那一段整段就是一張卡，算式列表再自帶一圈外框就是卡中卡——同一個邊界
+   畫兩次，讀起來像列表被關在卡裡的小盒子。外層邊界交給卡，**列與列之間的分隔線與列內距
+   原樣保留**：那是算式單元自己的內部結構（哪幾項加起來等於哪一項），不是分區。
+   寫成情境規則而不是修飾類，是因為條件是「它坐在哪裡」——放進卡就該去框，沒有第二種選擇，
+   不該讓每個消費點各自記得掛上那個 class。其他消費者（create-bundle、bundle-detail、
+   js/bundle-editor.js 的定價段）不在卡片式區塊內，外觀完全不受影響。 */
+.form-section--card .calc-list {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+.calc-list .kv__v {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+}
+/* 「怎麼算」自成一行：它是這一項的註腳，不是鍵的一部分，不該跟項目名擠在同一行折行。 */
+.calc-list__how {
+  display: block;
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+/* 小計與結果：鍵回到前景色（它們不是輔助資訊，是這一段在回答的問題）；
+   只有結果列把值放大一階——一個框裡放大兩次就分不出誰是最後一個數字。 */
+.calc-list__sum .kv__k,
+.calc-list__total .kv__k { color: var(--foreground); }
+.calc-list__total .kv__v { font-size: var(--fs-16); }
+
+/* 運算子欄：列首固定寬，讓 ＋ − ＝ 站成一條線；它是符號不是文字，壓暗一階。 */
+.calc-list__op {
+  display: inline-block;
+  width: var(--sp-16);
+  color: var(--muted-foreground);
+  font-family: var(--font-numeric);
+}
+
+/* ── 可輸入的算式列表（--form）────────────────────────────────────────────
+   唯讀版的列是 baseline 對齊（兩段文字），放進輸入框之後基線落在框裡的文字上、
+   框本身會比鍵高出半行，所以改置中。右欄收成固定寬，讓輸入框與底下的唯讀金額
+   右緣對齊（金額是右對齊的，輸入框不收寬就會比金額寬一截、讀不成一疊）。 */
+.calc-list--form .kv { align-items: center; }
+.calc-list--form .kv__v { flex: none; width: 140px; }
+/* 讀數列（沒有控件的那幾列）維持右對齊的純文字，補回輸入框的內距讓數字與框內文字同一條線。 */
+.calc-list--form .calc-list__ro { padding-right: var(--sp-10); }
+
+/* 掛在某一列底下的附屬控制（例外平台費的開關與費率欄）：縮排對齊運算子欄之後，
+   讀起來屬於上面那一列、不是新的一項。 */
+.calc-list__extra {
+  padding: 0 0 var(--sp-10) calc(var(--sp-16) + var(--sp-8));
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+.calc-list__extra[hidden] { display: none; }
+/* 附屬控制的第一行（開關列）：文字靠左、開關靠右，與 control-row 同一種讀法。 */
+.calc-list__extra-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-12);
+}
+/* 開關那一行的標籤不帶欄位的下外距——它旁邊是開關，不是輸入框（作用域限本元件）。 */
+.calc-list__extra-row > .field__label { margin: 0; }

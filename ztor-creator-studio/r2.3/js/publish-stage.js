@@ -32,6 +32,9 @@
  *     views:   [{ key:'ticket' }, { key:'bundles' }],       // 給渲染器的視圖清單
  *     previewRender: function (host, api) {},               // 必填：主區怎麼畫
  *     mode: 'publish' | 'save',
+ *     translation: 'auto' | 'manual',                       // 選填，預設 'auto'＝現行行為（原文抄成譯文）。
+ *       'manual'（D312，活動側）＝非預設語系不自動帶原文，只存使用者填的譯文；沒填時預覽/表格
+ *       fallback 顯示原文，翻譯表格子沒填時以原文當 placeholder（不預填值）。
  *     editZones: [{ sel:'.pdp-buy__title', step:2 }],       // 選填：hover 出現「編輯」跳回哪一步
  *     onEdit: function (step) {},                           // editZones 的點擊行為
  *     checks: function () { return [{ key, label, ok, step }]; },   // mode:'publish'
@@ -89,7 +92,15 @@
   var currentView = null;
 
   /* ── 文案草稿 ─────────────────────────────────────────────────── */
+  function isManual() { return !!(opts && opts.translation === 'manual'); }
   function getFieldValue(key, lang) { return (DRAFTS[key] && DRAFTS[key][lang]) || ''; }
+  /* manual 模式：非預設語系沒填譯文時 fallback 顯示原文（僅供畫面用，草稿本身仍是空字串，
+     見 collectResult 與 syncData）。auto 模式行為不變（getFieldValue 本身就是「譯文」）。 */
+  function displayValue(key, lang) {
+    var v = getFieldValue(key, lang);
+    if (!v && lang !== defaultLang && isManual()) return getFieldValue(key, defaultLang);
+    return v;
+  }
   function setFieldValue(key, lang, val) {
     DRAFTS[key] = DRAFTS[key] || {};
     DRAFTS[key][lang] = val;
@@ -104,10 +115,21 @@
     (opts.fields || []).forEach(function (f) { if (EDITED[f.key] && EDITED[f.key][lang]) n++; });
     return n;
   }
+  /* manual 模式的「已翻譯 n／N 欄」：n＝實際填了譯文的欄位數（非空字串），N＝可翻譯欄位總數。
+     跟 editedCount 分開算，因為 editedCount 只答「動過沒」，manual 模式要答「有沒有內容」。 */
+  function filledCount(lang) {
+    if (lang === defaultLang) return 0;
+    var n = 0;
+    (opts.fields || []).forEach(function (f) { if (getFieldValue(f.key, lang)) n++; });
+    return n;
+  }
+  function totalFields() { return (opts.fields || []).length; }
   function resetLang(lang) {
     (opts.fields || []).forEach(function (f) {
       if (EDITED[f.key]) delete EDITED[f.key][lang];
-      if (DRAFTS[f.key]) DRAFTS[f.key][lang] = DRAFTS[f.key][defaultLang] || '';
+      /* auto：回填原文（維持現行「還原自動翻譯」）。manual：清空譯文，交回 displayValue fallback 顯示原文，
+         不是把原文寫回草稿——manual 的草稿本來就只存使用者自己填的內容。 */
+      if (DRAFTS[f.key]) DRAFTS[f.key][lang] = isManual() ? '' : (DRAFTS[f.key][defaultLang] || '');
     });
   }
 
@@ -159,9 +181,17 @@
       EDITED[f.key] = EDITED[f.key] || {};
       var defVal = f.el ? f.el.value : '';
       DRAFTS[f.key][defaultLang] = defVal;
-      LANGS.forEach(function (l) {
-        if (l.code !== defaultLang && !EDITED[f.key][l.code]) DRAFTS[f.key][l.code] = defVal;
-      });
+      if (isManual()) {
+        /* manual：非預設語系只存使用者自己填的譯文，預設語言改動不覆蓋、也不代填原文——
+           未填的欄位維持空字串，交給 displayValue() 在畫面上 fallback 顯示原文。 */
+        LANGS.forEach(function (l) {
+          if (l.code !== defaultLang && DRAFTS[f.key][l.code] == null) DRAFTS[f.key][l.code] = '';
+        });
+      } else {
+        LANGS.forEach(function (l) {
+          if (l.code !== defaultLang && !EDITED[f.key][l.code]) DRAFTS[f.key][l.code] = defVal;
+        });
+      }
     });
     /* 基準價變了 → 該列覆寫清空重算（§7.15 重算規則，比照 §7.4 翻譯） */
     (opts.prices || []).forEach(function (p) {
@@ -187,7 +217,7 @@
     if (!node) return;
     var isDefault = currentLang === defaultLang;
     node.removeAttribute('data-i18n');
-    node.textContent = getFieldValue(key, currentLang);
+    node.textContent = displayValue(key, currentLang);
     node.classList.toggle('is-empty', !node.textContent);
     if (isDefault) {
       node.removeAttribute('contenteditable');
@@ -203,7 +233,7 @@
     return {
       lang: currentLang,
       isDefault: currentLang === defaultLang,
-      getValue: function (key) { return getFieldValue(key, currentLang); },
+      getValue: function (key) { return displayValue(key, currentLang); },
       bindEditable: applyFieldToSlot,
       currency: currentCurrency,
       priceIn: priceIn,
@@ -242,18 +272,28 @@
     sec.appendChild(el('h3', 'pstage-sec__title', esc(T('pstage.sec.lang', 'Language'))));
     var list = el('ul', 'pstage-list');
     LANGS.forEach(function (l) {
-      var n = editedCount(l.code);
-      var state = l.code === defaultLang ? T('pstage.lang.default', 'Default')
-        : (n ? T('pstage.lang.edited', '{n} edited').replace('{n}', n) : T('pstage.lang.auto', 'Auto-translated'));
+      var state;
+      if (l.code === defaultLang) {
+        state = T('pstage.lang.default', 'Default');
+      } else if (isManual()) {
+        var filled = filledCount(l.code);
+        state = filled
+          ? T('pstage.lang.translated', '{n} of {total} translated').replace('{n}', filled).replace('{total}', totalFields())
+          : T('pstage.lang.untranslated', 'Not translated');
+      } else {
+        var n = editedCount(l.code);
+        state = n ? T('pstage.lang.edited', '{n} edited').replace('{n}', n) : T('pstage.lang.auto', 'Auto-translated');
+      }
       list.appendChild(rowBtn(l.code === currentLang, l.label, state, 'data-stage-lang', l.code));
     });
     sec.appendChild(list);
     var foot = el('div', 'pstage-sec__foot');
-    if (currentLang !== defaultLang && editedCount(currentLang)) {
+    var canClear = currentLang !== defaultLang && (isManual() ? filledCount(currentLang) > 0 : editedCount(currentLang) > 0);
+    if (canClear) {
       var reset = el('button', 'btn btn--ghost btn--sm');
       reset.type = 'button';
       reset.setAttribute('data-stage-lang-reset', '');
-      reset.textContent = T('pstage.lang.reset', 'Restore auto-translation');
+      reset.textContent = isManual() ? T('pstage.lang.clear', 'Clear translation') : T('pstage.lang.reset', 'Restore auto-translation');
       foot.appendChild(reset);
     }
     var tbl = el('button', 'btn btn--outline btn--sm');
@@ -448,6 +488,9 @@
           field.className = (f.kind === 'textarea' ? 'textarea' : 'input') + ' pp-cell-field';
           if (f.kind === 'textarea') { field.rows = 2; field.value = val; }
           else { field.type = 'text'; field.value = val; }
+          /* manual：沒填譯文時 val 本來就是空字串（見 syncData），這裡只補 placeholder 讓創作者
+             看得到原文可以參考翻什麼，不是把原文預填進去當值（D312：填了才算已翻譯）。 */
+          if (isManual()) field.setAttribute('placeholder', getFieldValue(f.key, defaultLang));
           field.setAttribute('data-pp-row-field', f.key);
           field.setAttribute('data-pp-row-lang', l.code);
           td.appendChild(field);

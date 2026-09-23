@@ -50,7 +50,10 @@
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 浮層已退場（D310 商品側），留著是因為全頁畫面的翻譯表／價格表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：全頁畫面的翻譯表／價格表是右側滑出的 .drawer--wide -->
+<link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- D310 商品側：發布前預覽的粉絲視角商品頁（前台 shop-item 鏡像，只給 js/fan-product-page.js 用） -->
+<link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- D310 商品側：按「開始販售」後的「預覽與發布」全頁版型（主區預覽＋右側側欄） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* create-product 專屬樣式。可重用的區段骨架／radio 卡／control row／form-grid／
@@ -78,53 +81,18 @@
   body.cp-embed .preview-col { display: none; }
   body.cp-embed .preview-split { grid-template-columns: 1fr; }
 
-  /* ── 發布前預覽確認層（D223）的買家前台 mock（.cp-shopmock）──────────────────
-     使用者 2026-08-24 追加裁示：這個預覽要「長得像真正的買家前台商品頁」（參照
-     ztor-eshop-fe 的 shop-item 頁結構——非本站 repo，CSS 不能拿、只能照它的版面
-     結構重刻）。刻意留在頁面層、不 promote 進 ds-components：這是對外部參照頁面的
-     一次性結構模仿，不是本站設計語言長出來的可重用 pattern（唯一消費者，見
-     partials/publish-preview.js 的 previewRender 呼叫）；用的仍是站上既有 token
-     與 kv-list／btn／badge 等既有元件，只有版面骨架是頁面專屬。尺寸／顏色／購物車
-     ／取貨列是裝飾性佔位（本頁的資料模型沒有這些欄位，見 ASSUMPTIONS.md）。 */
-  .cp-shopmock__crumb {
-    font-size: var(--fs-12); color: var(--muted-foreground); margin-bottom: var(--sp-16);
-  }
-  .cp-shopmock__top {
-    display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: var(--sp-24);
-    align-items: start;
-  }
-  .cp-shopmock__gallery { display: flex; gap: var(--sp-8); }
-  .cp-shopmock__thumbs { display: flex; flex-direction: column; gap: var(--sp-8); flex: 0 0 56px; }
-  .cp-shopmock__thumb, .cp-shopmock__hero {
-    background: var(--muted); border-radius: var(--radius-lg); overflow: hidden;
-    display: grid; place-items: center; color: var(--muted-foreground);
-  }
-  .cp-shopmock__thumb { width: 56px; aspect-ratio: 1 / 1; }
-  .cp-shopmock__thumb img, .cp-shopmock__hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .cp-shopmock__hero { flex: 1 1 auto; min-width: 0; aspect-ratio: var(--img-portrait); }
-  .cp-shopmock__name { font-family: var(--font-display); font-size: var(--fs-24); font-weight: var(--fw-regular); margin: 0 0 var(--sp-8); line-height: var(--lh-snug); }
-  .cp-shopmock__price { font-family: var(--font-ui); font-size: var(--fs-20); margin-bottom: var(--sp-14); }
-  .cp-shopmock__desc { font-size: var(--fs-13); color: var(--foreground-muted); line-height: var(--lh-relaxed); margin: 0 0 var(--sp-20); }
-  .cp-shopmock__row-label { font-size: var(--fs-12); color: var(--muted-foreground); margin: var(--sp-14) 0 var(--sp-8); }
-  [data-pp-options] .cp-shopmock__row-label:first-child { margin-top: 0; }
-  .cp-shopmock__sizes { display: flex; flex-wrap: wrap; gap: var(--sp-8); margin-bottom: var(--sp-4); }
-  .cp-shopmock__size-box {
-    width: 40px; height: 36px; border-radius: var(--radius); border: 1px solid var(--border);
-    display: grid; place-items: center; font-size: var(--fs-13); color: var(--foreground);
-  }
-  .cp-shopmock__size-box--selected { border-color: var(--selected-ink); color: var(--selected-ink); }
-  .cp-shopmock__size-guide { font-size: var(--fs-12); color: var(--muted-foreground); text-decoration: underline; text-underline-offset: 2px; display: inline-block; margin-bottom: var(--sp-20); }
-  .cp-shopmock__colors { display: flex; gap: var(--sp-12); margin-bottom: var(--sp-20); }
-  .cp-shopmock__color { display: flex; align-items: center; gap: var(--sp-6); font-size: var(--fs-12); color: var(--muted-foreground); }
-  .cp-shopmock__swatch { width: 18px; height: 18px; border-radius: 999px; border: 1px solid var(--border); background: var(--muted-foreground); }
-  .cp-shopmock__buy { display: flex; align-items: center; gap: var(--sp-12); margin-bottom: var(--sp-14); }
-  .cp-shopmock__qty { display: flex; align-items: center; gap: var(--sp-10); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--sp-6) var(--sp-12); font-size: var(--fs-13); }
-  .cp-shopmock__pickup { display: flex; gap: var(--sp-14); font-size: var(--fs-12); color: var(--muted-foreground); }
-  .cp-shopmock__pickup span { display: inline-flex; align-items: center; gap: var(--sp-4); }
-  .cp-shopmock__section { margin-top: var(--sp-28); padding-top: var(--sp-20); border-top: 1px solid var(--border); }
-  .cp-shopmock__section h3 { font-family: var(--font-display); font-size: var(--fs-16); font-weight: var(--fw-regular); margin: 0 0 var(--sp-12); }
-  .cp-shopmock__section p { font-size: var(--fs-13); color: var(--foreground-muted); line-height: var(--lh-relaxed); margin: 0; }
-  @media (max-width: 640px) { .cp-shopmock__top { grid-template-columns: 1fr; } }
+  /* ✝ 墓碑 2026-09-23：發布前預覽確認層（D223）的買家前台 mock `.cp-shopmock*`（整組 30 條規則）撤除——
+     D310 商品側：按下「開始販售」改進全頁畫面（js/publish-stage.js），主區由 js/fan-product-page.js
+     畫前台商品頁的 1:1 鏡像（樣式在 ds-components/fan-shop.css 第 4 段），頁內自刻的 mock 與浮層一併退場。 */
+
+  /* ── 預覽與發布全頁畫面（D310 商品側，2026-09-23）──────────────────────────
+     建立活動的第 8 步是同一個畫面；本頁是單頁表單，按「開始販售」後在同一個 .wizard__body 裡
+     切成全頁：body 加 .wizard__body--stage（寬度與黑底由 shared.css 負責），表單欄與右側即時預覽欄收起，
+     [data-cp-stage] 由 js/publish-stage.js 掛主區＋側欄。表單 DOM 只是藏起來、不清空，返回即原樣。
+     .preview-split 的兩欄 grid 在全頁時停用（全頁畫面自己是 .pstage 兩欄）。 */
+  .wizard__body--stage.preview-split { display: block; }
+  .wizard__body--stage > .preview-split__form,
+  .wizard__body--stage > .preview-col { display: none; }
 </style>
 </head>
 <body>
@@ -759,7 +727,7 @@
       <!-- 取貨與退貨說明（2026-09-18 使用者裁決 D291）：物流配送與現場 QR 領取共用同一格，
            所以放在兩套子欄位之外、區塊底部，切換取貨方式時不隨之顯隱。選填、短文字；
            內容進買家端商品頁的「取貨與退換」段（發布前預覽 mock 那一段就是它），
-           屬可翻譯文案欄位（同商品描述，進 publish-preview 的 fields）。
+           屬可翻譯文案欄位（同商品描述，進發布前預覽全頁畫面 publish-stage 的 fields）。
            與場次層的取貨說明（D244 退場那一欄）是不同東西——那份是現場指示，這份是商品規則。 -->
       <div class="field">
         <div class="field__label" data-i18n="cp.delivery.returns">Pickup &amp; returns</div>
@@ -1016,6 +984,11 @@
       </section>
 
     </aside>
+
+    <!-- 預覽與發布全頁畫面（D310 商品側 · 5.1.5.2 §4.6）：按「開始販售」→ 驗證通過 → 本容器由
+         js/publish-stage.js 掛主區（js/fan-product-page.js 畫粉絲視角商品頁）＋右側側欄三段（語言／幣別／發布前檢核）；
+         返回表單＝卸載、表單欄與預覽欄原樣回來（內容不清空）。本頁只負責備料（見 buildStageOpts）。 -->
+    <div data-cp-stage hidden></div>
   </div>
 
   </div><!-- /.wizard__sheet -->
@@ -1339,33 +1312,37 @@
   function shippingOk() {
     return has(fShipWeight);
   }
+  /* D310 商品側：每一項多帶 id／labelKey／step——全頁畫面的「發布前檢核」要可點跳回表單的對應區段
+     （step 是本頁區段代號，見 CP_STEP 與 cpSectionOf），項目與擋關條件本身不變（spec §4.6 就緒檢查）。
+     tooltip（renderReadiness）照舊只讀 k。 */
+  const CP_STEP = { info: 1, media: 2, variations: 3, price: 4, stock: 5, specs: 6, delivery: 7, limits: 8, file: 9, returns: 10 };
   function buildChecks() {
     if (state.type === 'physical') {
       const a = [
-        { k: 'Hero image',           done: () => !!assets['p-hero'] },
-        { k: 'Product name',         done: () => has(fName) },
-        { k: 'Description (30+)',     done: () => len(fDesc) >= 30 },
+        { id: 'hero',  labelKey: 'cp.qc.hero',  step: CP_STEP.media, k: 'Hero image',           done: () => !!assets['p-hero'] },
+        { id: 'name',  labelKey: 'cp.qc.name',  step: CP_STEP.info,  k: 'Product name',         done: () => has(fName) },
+        { id: 'desc',  labelKey: 'cp.qc.desc',  step: CP_STEP.info,  k: 'Description (30+)',     done: () => len(fDesc) >= 30 },
       ];
       if (state.varMode === 'multiple') {
-        a.push({ k: 'Every variation priced & stocked', done: () => variantState().allPriced });
+        a.push({ id: 'var-priced', labelKey: 'cp.qc.var-priced', step: CP_STEP.price, k: 'Every variation priced & stocked', done: () => variantState().allPriced });
       } else {
-        a.push({ k: 'Price', done: () => has(fPrice) });
-        if (state.edition === 'limited') a.push({ k: 'Total quantity ≥ stock', done: () => capOk() });
+        a.push({ id: 'price', labelKey: 'cp.qc.price', step: CP_STEP.price, k: 'Price', done: () => has(fPrice) });
+        if (state.edition === 'limited') a.push({ id: 'cap', labelKey: 'cp.qc.cap', step: CP_STEP.stock, k: 'Total quantity ≥ stock', done: () => capOk() });
       }
-      a.push({ k: 'Specifications', done: () => specCount() >= 1 });
-      if (state.delivery === 'shipping') a.push({ k: 'Shipping weight', done: () => shippingOk() });
-      if (state.limitOn) a.push({ k: 'Max quantity per person', done: () => has(fLimitQty) });
+      a.push({ id: 'specs', labelKey: 'cp.qc.specs', step: CP_STEP.specs, k: 'Specifications', done: () => specCount() >= 1 });
+      if (state.delivery === 'shipping') a.push({ id: 'weight', labelKey: 'cp.qc.weight', step: CP_STEP.delivery, k: 'Shipping weight', done: () => shippingOk() });
+      if (state.limitOn) a.push({ id: 'limit', labelKey: 'cp.qc.limit', step: CP_STEP.limits, k: 'Max quantity per person', done: () => has(fLimitQty) });
       return a;
     }
     const a = [
-      { k: 'Item file',            done: () => !!assets['d-file'] },
-      { k: 'Cover art',            done: () => !!assets['d-cover'] },
-      { k: 'Product name',         done: () => has(fName) },
-      { k: 'Description (30+)',     done: () => len(fDesc) >= 30 },
-      { k: 'Price',                done: () => has(fPrice) },
+      { id: 'file',  labelKey: 'cp.qc.file',  step: CP_STEP.file,  k: 'Item file',            done: () => !!assets['d-file'] },
+      { id: 'cover', labelKey: 'cp.qc.cover', step: CP_STEP.media, k: 'Cover art',            done: () => !!assets['d-cover'] },
+      { id: 'name',  labelKey: 'cp.qc.name',  step: CP_STEP.info,  k: 'Product name',         done: () => has(fName) },
+      { id: 'desc',  labelKey: 'cp.qc.desc',  step: CP_STEP.info,  k: 'Description (30+)',     done: () => len(fDesc) >= 30 },
+      { id: 'price', labelKey: 'cp.qc.price', step: CP_STEP.price, k: 'Price',                done: () => has(fPrice) },
     ];
-    if (state.edition === 'limited') a.push({ k: 'Total quantity & copies', done: () => digitalCapOk() });
-    if (state.limitOn) a.push({ k: 'Max quantity per person', done: () => has(fLimitQty) });
+    if (state.edition === 'limited') a.push({ id: 'digicap', labelKey: 'cp.qc.digicap', step: CP_STEP.stock, k: 'Total quantity & copies', done: () => digitalCapOk() });
+    if (state.limitOn) a.push({ id: 'limit', labelKey: 'cp.qc.limit', step: CP_STEP.limits, k: 'Max quantity per person', done: () => has(fLimitQty) });
     return a;
   }
 
@@ -1465,31 +1442,16 @@
     if (pr) q.set('price', pr);
     location.href = 'e-shop.html?' + q.toString();
   }
-  /* 發布前預覽確認層（D223）的買家前台 mock（使用者 2026-08-24 追加裁示，見頁首
-     .cp-shopmock CSS 註解）：結構參照 ztor-eshop-fe 的 shop-item 頁（觀察證據，非
-     產品權威，見 ASSUMPTIONS.md）——兩欄（圖庫｜名稱／價格／描述／尺寸／顏色／
-     購物車列／取貨資訊）＋下半部（商品詳情／規格／取貨與退換）。名稱與描述帶
-     api.getValue() 讀到的目前語系翻譯、透過 api.bindEditable() 在非預設語系開放
-     inline 編輯；價格／分類等非可翻譯欄位直接讀表單當下的值，不進翻譯草稿。
-     尺寸／顏色／購物車／取貨列是裝飾性佔位——本頁資料模型沒有這些欄位。 */
-  function collectGalleryImages() {
-    var imgs = [];
-    document.querySelectorAll('.upload-tile[data-cp-asset]').forEach(function (tile) {
-      if (tile.hidden) return;
-      var container = tile.closest('[data-cp-show]');
-      if (container && container.hidden) return;
-      var m = tileMedia(tile);
-      if (m) imgs.push(m.src);
-    });
-    return imgs;
-  }
+  /* ✝ 墓碑 2026-09-23（D310 商品側）：舊浮層的預覽渲染 `buildShopItemPreview()`（頁內自刻的 `.cp-shopmock`
+     買家前台 mock）與它的圖庫收集 `collectGalleryImages()` 撤除，對 `window.ztorPublishPreview.open()` 的呼叫一併拿掉——
+     按「開始販售」改進全頁畫面（js/publish-stage.js），主區由 js/fan-product-page.js 畫前台商品頁的 1:1 鏡像，
+     備料見下方「預覽與發布全頁畫面」段（buildStageOpts）。 */
   /* ---- 動態可翻譯欄位：詳細規格列＋多選項商品的選項組（使用者 2026-08-24 追加裁示）----
      兩者都是列數不定的清單，開預覽層當下即時掃一次表單／JS 狀態收集，空的不收。
      規格列一律有真的 <input>（addSpecRow 無條件建兩顆），可以直接綁定 DOM 元素；
      選項組只有 editingOpt 指到的那一組才有 <input>（收合時只是純文字），所以改讀
-     varOptions 這個 JS 狀態陣列本身、用 { value: ... } 包成 publish-preview.js
-     認得的 el 介面（它只讀 f.el.value，不要求真的 DOM 節點，見該檔 open() 的
-     mirroring 邏輯）。key 用陣列位置組——這批清單沒有穩定 id，兩次開預覽層之間
+     varOptions 這個 JS 狀態陣列本身、用 { value: ... } 包成 publish-stage.js
+     認得的 el 介面（它只讀 f.el.value，不要求真的 DOM 節點，見該檔 syncData()）。key 用陣列位置組——這批清單沒有穩定 id，兩次開預覽層之間
      若增刪列，舊草稿可能連到位置對不上的新列，這是本輪呈現假設，見 ASSUMPTIONS.md
      LANG-008。 */
   /* 取貨與退貨說明（F4，D291）：實體商品且有填才進可翻譯欄位清單——數位沒有 F4，
@@ -1546,135 +1508,245 @@
     return out;
   }
 
-  function buildShopItemPreview(host, api) {
-    const imgs = collectGalleryImages();
-    const heroSrc = imgs[0] || '';
-    const thumbSrcs = imgs.slice(1, 4);
-    let priceRaw = ((document.getElementById('cp-price') || {}).value || '').trim();
-    const price = priceRaw ? ('$' + priceRaw.replace(/^\$/, '')) : '$0.00';
+  /* ── 預覽與發布全頁畫面（D310 商品側 · 5.1.5.2 §1／§4.6，2026-09-23）────────────────
+     建立活動第 8 步的同一個組件（js/publish-stage.js）、同一組側欄（語言／幣別／發布前檢核）；本頁是單頁表單，
+     所以是「按下開始販售 → 驗證通過 → 同一個 .wizard__body 切成全頁」，返回＝卸載、表單原樣回來。
+     本頁只負責備料（buildStageOpts）、進出（enterStage／exitStage）與檢核同步；版型、兩軸、兩張表都在 publish-stage.js。
+     翻譯模式不傳：電子商店的多語規則是自動翻譯（主規格 §7.4 通則；D312 只把活動改成手動），用元件預設值。 */
+  /* 基準幣別：本頁沒有幣別欄（價格欄只標 $），比照建立活動用示範創作者的預設幣別（ASSUMPTIONS PG-035 的示範值）。 */
+  /* events-store.js 載在本段之後，所以用到時才問（不能在這裡先取值）。 */
+  function cpBaseCurrency() { return (window.ztorEvents && window.ztorEvents.DEFAULT_CURRENCY) || 'TWD'; }
+  let stage = null;            // publish-stage 的 handle（只有在全頁畫面時是非 null）
+  let stageScroll = null;      // 進全頁前表單捲到哪（返回時還原）
+  const stageBody = document.querySelector('.wizard__body');
+  const stageHost = document.querySelector('[data-cp-stage]');
+  const stageSheet = document.querySelector('[data-cp-sheet]');
+
+  function numVal(v) { const n = parseFloat(String(v == null ? '' : v).replace(/[^0-9.]/g, '')); return isNaN(n) ? 0 : n; }
+  function isMulti() { return state.type === 'physical' && state.varMode === 'multiple'; }
+  function activeCombos() { return currentCombos().filter(k => !(varData[k] && varData[k].excluded)); }
+  function switchOn(id) { const t = document.getElementById(id); return !!(t && t.getAttribute('aria-checked') === 'true'); }
+
+  /* 價格：單一選項＝F3.2／F5.1 定價一列；多選項＝F3.4 每個啟用中的選項組合一列（排除的組合不上架、不列） */
+  function stagePrices() {
+    const base = cpBaseCurrency();
+    if (isMulti()) {
+      return activeCombos().map(k => ({
+        key: 'var:' + k, label: k, groupKey: 'cp.stage.price.variants', groupFallback: 'Variations',
+        priceObj: { base, amount: numVal((varData[k] || {}).price), override: {} }
+      }));
+    }
+    return [{ key: 'price', labelKey: 'cp.price', label: 'Price',
+              priceObj: { base, amount: numVal(fPrice && fPrice.value), override: {} } }];
+  }
+  /* 折扣（F13）：開著才算。單一選項由特價價格／定價推出 %（兩欄雙向連動，以特價價格為準）；多選項只有折扣 %。 */
+  function stageDiscountPct() {
+    if (isMulti()) return switchOn('cp-vdiscount-toggle') ? numVal((document.getElementById('cp-vsale-percent') || {}).value) : 0;
+    if (!switchOn('cp-discount-toggle')) return 0;
+    const list = numVal(fPrice && fPrice.value);
+    const sale = numVal((document.getElementById('cp-sale-price') || {}).value);
+    if (list > 0 && sale > 0 && sale < list) return (1 - sale / list) * 100;
+    return numVal((document.getElementById('cp-sale-percent') || {}).value);
+  }
+  /* 庫存：限量才給「目前還剩幾件」（前台只在 ≤10 件時提示）；不限量或沒填＝null */
+  function stageStock() {
+    if (state.edition !== 'limited') return null;
+    if (state.type === 'digital') return has(fDCopies) ? numVal(fDCopies.value) : null;
+    if (isMulti()) {
+      const ks = activeCombos().filter(k => ((varData[k] || {}).stock || '').trim() !== '');
+      return ks.length ? ks.reduce((sum, k) => sum + numVal(varData[k].stock), 0) : null;
+    }
+    return has(fStock) ? numVal(fStock.value) : null;
+  }
+  function stageGallery() {
+    const sel = state.type === 'digital'
+      ? '[data-cp-asset="d-cover"], [data-cp-asset="d-gallery"]'
+      : '[data-cp-asset="p-hero"], [data-cp-asset="p-gallery"]';
+    return Array.from(document.querySelectorAll(sel)).map(tileMedia).filter(Boolean);
+  }
+  function stageHasSizeGuide() {
+    if (state.type !== 'physical') return false;
+    const own = document.querySelector('[data-cp-sg="own"]');
+    if (own && !own.hidden) return true;
+    const S = window.ZtorSizeGuides;
+    return !!(S && S.list && S.list().length);
+  }
+
+  /* 粉絲視角商品頁的 model（結構見 js/fan-product-page.js 檔頭）：文案欄給 { key }、資料值給字串 */
+  function buildFanProductModel(prices) {
     const catSel = state.type === 'digital' ? document.getElementById('cp-cat-digi') : document.getElementById('cp-cat-phys');
     const cat = (catSel && catSel.selectedIndex >= 0) ? (catSel.options[catSel.selectedIndex].text || '').trim() : '';
-    const hasVariants = state.type === 'physical' && state.varMode === 'multiple' && varOptions.length > 0;
-
-    const wrap = document.createElement('div');
-    wrap.className = 'cp-shopmock';
-    wrap.innerHTML =
-      '<div class="cp-shopmock__crumb"><span data-i18n="pp.mock.crumb">Store ›</span> <span data-pp-crumb-name></span></div>' +
-      '<div class="cp-shopmock__top">' +
-        '<div class="cp-shopmock__gallery">' +
-          '<div class="cp-shopmock__thumbs" data-pp-thumbs></div>' +
-          '<div class="cp-shopmock__hero" data-pp-hero></div>' +
-        '</div>' +
-        '<div class="cp-shopmock__info">' +
-          '<h1 class="cp-shopmock__name" data-pp-slot="name"></h1>' +
-          '<div class="cp-shopmock__price">' + price + '</div>' +
-          '<p class="cp-shopmock__desc" data-pp-slot="desc"></p>' +
-          '<div data-pp-options></div>' +
-          '<div class="cp-shopmock__buy">' +
-            '<span class="cp-shopmock__qty"><i data-lucide="minus" class="ztor-icon ztor-icon--sm"></i><span>1</span><i data-lucide="plus" class="ztor-icon ztor-icon--sm"></i></span>' +
-            '<button class="btn btn--primary" type="button" disabled data-i18n="pp.mock.add-to-cart">Add to cart</button>' +
-            '<button class="btn btn--icon" type="button" disabled aria-label="Favorite"><i data-lucide="heart" class="ztor-icon"></i></button>' +
-          '</div>' +
-          '<div class="cp-shopmock__pickup">' +
-            '<span><i data-lucide="qr-code" class="ztor-icon ztor-icon--sm"></i><span data-i18n="pp.mock.pickup">On-site QR pickup</span></span>' +
-            '<span><i data-lucide="truck" class="ztor-icon ztor-icon--sm"></i><span data-i18n="pp.mock.shipping">Free shipping</span></span>' +
-          '</div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="cp-shopmock__section"><h3 data-i18n="pp.mock.details">Product details</h3><p data-pp-detail></p></div>' +
-      '<div class="cp-shopmock__section"><h3 data-i18n="pp.mock.specs">Specifications</h3><div class="kv-list" data-pp-specs></div></div>' +
-      /* 取貨與退換段（D291）：吃 F4 的「取貨與退貨說明」欄（可翻譯，讀 api.getValue 拿目前語系譯文），
-         留空就整段不出現——與買家端「留空不顯示」同一行為；原本的固定假文退場。 */
-      '<div class="cp-shopmock__section" data-pp-returns-section hidden><h3 data-i18n="pp.mock.pickup-exchange">Pickup &amp; exchange</h3><p data-pp-slot="returns"></p></div>';
-
-    const heroEl = wrap.querySelector('[data-pp-hero]');
-    if (heroSrc) { const img = document.createElement('img'); img.src = heroSrc; heroEl.appendChild(img); }
-    else { heroEl.innerHTML = '<i data-lucide="image" class="ztor-icon"></i>'; }
-    const thumbsEl = wrap.querySelector('[data-pp-thumbs]');
-    thumbSrcs.forEach(src => {
-      const t = document.createElement('div'); t.className = 'cp-shopmock__thumb';
-      const img = document.createElement('img'); img.src = src; t.appendChild(img);
-      thumbsEl.appendChild(t);
-    });
-    if (!thumbSrcs.length) {
-      for (let i = 0; i < 3; i++) { const t = document.createElement('div'); t.className = 'cp-shopmock__thumb'; t.innerHTML = '<i data-lucide="image" class="ztor-icon ztor-icon--sm"></i>'; thumbsEl.appendChild(t); }
+    /* 規格表：分類（平台分類，跟介面語言走）＋ F2 詳細規格每一列（可翻譯，key 與 collectSpecFields 同一套） */
+    const specs = [];
+    if (cat) specs.push({ k: T('fpp.spec.category', 'Category'), v: cat });
+    if (state.type === 'physical') {
+      Array.from(document.querySelectorAll('#spec-rows .spec-row')).forEach((row, i) => {
+        const inputs = row.querySelectorAll('input');
+        const nm = ((inputs[0] && inputs[0].value) || '').trim();
+        const vl = ((inputs[1] && inputs[1].value) || '').trim();
+        if (!nm && !vl) return;   // 同 collectSpecFields() 的空列判斷
+        specs.push({ k: { key: 'spec-name-' + i }, v: { key: 'spec-value-' + i } });
+      });
     }
-
-    /* 規格段：分類（非可翻譯，直讀表單當下值）＋每一列使用者填的規格（可翻譯，
-       讀 api.getValue() 拿目前語系的譯文）。清單類欄位不在預覽內就地編輯——只顯示
-       翻譯值，改法是切去列表檢視（.pp-banner 已有「可在這裡或列表檢視修改」的
-       通用說法），理由見 ASSUMPTIONS.md LANG-008。 */
-    function addKvRow(container, k, v) {
-      const row = document.createElement('div'); row.className = 'kv';
-      row.innerHTML = '<span class="kv__k"></span><span class="kv__v"></span>';
-      row.firstElementChild.textContent = k; row.lastElementChild.textContent = v;
-      container.appendChild(row);
-    }
-    const specs = wrap.querySelector('[data-pp-specs]');
-    if (cat) addKvRow(specs, T('pp.mock.spec-category', 'Category'), cat);
-    Array.from(document.querySelectorAll('#spec-rows .spec-row')).forEach((row, i) => {
-      const inputs = row.querySelectorAll('input');
-      const nm = (inputs[0] && inputs[0].value || '').trim();
-      const vl = (inputs[1] && inputs[1].value || '').trim();
-      if (!nm && !vl) return;   // 同 collectSpecFields() 的空列判斷
-      const nmVal = api.getValue('spec-name-' + i) || nm;
-      const vlVal = api.getValue('spec-value-' + i) || vl;
-      addKvRow(specs, nmVal || T('pp.mock.spec-pending', 'To be confirmed'), vlVal || T('pp.mock.spec-pending', 'To be confirmed'));
-    });
-
-    /* 尺寸／顏色那一列：有真的多選項資料（實體＋多規格）就吃翻譯值；沒有就維持
-       裝飾性佔位（單一規格／數位商品沒有這組欄位，見檔頭與 ASSUMPTIONS.md）。
-       有資料時每個選項組畫成一列「組名（譯文）＋值（譯文）方塊」，統一用尺寸
-       方塊的視覺，不再區分「這組是不是顏色該畫圓點」——名稱本身無法可靠判斷
-       語意，見 ASSUMPTIONS.md LANG-008 的簡化說明。 */
-    const optionsHost = wrap.querySelector('[data-pp-options]');
-    if (hasVariants) {
+    /* 選項組：key 與 collectOptionFields 同一套（組名有填才有 key；值的序號以「有填字的值」計） */
+    let variants = null;
+    if (isMulti()) {
+      const groups = [];
       varOptions.forEach((opt, oi) => {
         const nm = (opt.name || '').trim();
         const vals = (opt.values || []).map(v => (v || '').trim()).filter(Boolean);
         if (!nm && !vals.length) return;
-        const nmVal = api.getValue('optgroup-name-' + oi) || nm || (T('pp.field.option-group', 'Option') + ' ' + (oi + 1));
-        const rowLabel = document.createElement('div');
-        rowLabel.className = 'cp-shopmock__row-label';
-        rowLabel.textContent = nmVal;
-        optionsHost.appendChild(rowLabel);
-        const rowVals = document.createElement('div');
-        rowVals.className = 'cp-shopmock__sizes';
-        vals.forEach((v, vi) => {
-          const vVal = api.getValue('optgroup-value-' + oi + '-' + vi) || v;
-          const box = document.createElement('span');
-          box.className = 'cp-shopmock__size-box' + (vi === 0 ? ' cp-shopmock__size-box--selected' : '');
-          box.textContent = vVal;
-          rowVals.appendChild(box);
+        groups.push({
+          name: nm ? { key: 'optgroup-name-' + oi } : (T('pp.field.option-group', 'Option') + ' ' + (oi + 1)),
+          kind: opt.kind === 'colour' ? 'colour' : '',
+          values: vals.map((v, vi) => ({ label: { key: 'optgroup-value-' + oi + '-' + vi }, hex: opt.kind === 'colour' ? hexOf(opt, v) : '' }))
         });
-        optionsHost.appendChild(rowVals);
       });
-    } else {
-      optionsHost.innerHTML =
-        '<div class="cp-shopmock__row-label" data-i18n="pp.mock.size">Size</div>' +
-        '<div class="cp-shopmock__sizes">' +
-          ['S', 'M', 'L', 'XL'].map((s, i) => '<span class="cp-shopmock__size-box' + (i === 1 ? ' cp-shopmock__size-box--selected' : '') + '">' + s + '</span>').join('') +
-        '</div>' +
-        '<a class="cp-shopmock__size-guide" href="#" onclick="return false" data-i18n="pp.mock.size-guide">Size guide</a>' +
-        '<div class="cp-shopmock__colors">' +
-          '<span class="cp-shopmock__color"><span class="cp-shopmock__swatch"></span><span data-i18n="pp.mock.color-black">Black</span></span>' +
-          '<span class="cp-shopmock__color"><span class="cp-shopmock__swatch" style="background:var(--foreground)"></span><span data-i18n="pp.mock.color-white">White</span></span>' +
-        '</div>';
+      variants = { groups, rows: prices.map(p => ({ priceObj: p.priceObj, priceKey: p.key })) };
     }
+    const persona = (function () {
+      const id = typeof window.ztorPersonaId === 'function' ? window.ztorPersonaId() : 'default';
+      return (window.ztorCreator && window.ztorCreator.list ? window.ztorCreator.list.find(x => x.handle === id) : null) || null;
+    })();
+    const retEl = document.getElementById('cp-delivery-returns');
+    return {
+      category: cat,
+      gallery: stageGallery(),
+      name: { key: 'name' },
+      /* 店家列：有名冊資料才畫（本頁沒載名冊時不畫、不編名字） */
+      shop: persona ? { name: persona.name, avatar: persona.avatar || '' } : null,
+      price: isMulti() ? null : { priceObj: prices[0].priceObj, priceKey: prices[0].key },
+      variants,
+      discountPct: stageDiscountPct(),
+      stock: stageStock(),
+      sizeGuide: stageHasSizeGuide(),
+      delivery: state.type === 'digital'
+        ? { icon: 'download', key: 'cp.type.digital-sub', fallback: 'Instant download after purchase' }
+        : (state.delivery === 'qr'
+            ? { icon: 'truck', key: 'cp.pv.qr', fallback: 'On-site QR pickup' }
+            : { icon: 'truck', key: 'cp.delivery.shipping', fallback: 'Shipping' }),
+      desc: { key: 'desc' },
+      specs,
+      /* 取貨與退換段（F4，D291）：實體且有填才畫——與 collectReturnsField() 同條件 */
+      returns: (state.type === 'physical' && retEl && retEl.value.trim()) ? { key: 'returns' } : null,
+      related: true
+    };
+  }
 
-    host.appendChild(wrap);
-    api.bindEditable(wrap.querySelector('[data-pp-slot="name"]'), 'name');
-    api.bindEditable(wrap.querySelector('[data-pp-slot="desc"]'), 'desc');
-    wrap.querySelector('[data-pp-crumb-name]').textContent = api.getValue('name');
-    wrap.querySelector('[data-pp-detail]').textContent = api.getValue('desc');
-    /* 取貨與退換段：欄位有值才出現（D291）；有值時同名稱／描述一樣可在非預設語系就地改譯文 */
-    const retSec = wrap.querySelector('[data-pp-returns-section]');
-    if (retSec) {
-      const retVal = api.getValue('returns');
-      retSec.hidden = !(retVal && String(retVal).trim());
-      if (!retSec.hidden) api.bindEditable(retSec.querySelector('[data-pp-slot="returns"]'), 'returns');
+  /* 發布前檢核＝就緒檢查（Ready to sell?）同一組項目與條件，只換位置（側欄第三段）。
+     Cheat Codes 的 Skip validation 開著時表單主鈕本來就放行，這裡同樣放行、並在沒過的項目後標「已略過驗證」。 */
+  function stageChecks() {
+    const skip = !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
+    return buildChecks().filter(c => !c.pending).map(c => {
+      const done = c.done();
+      return {
+        key: c.id,
+        label: T(c.labelKey, c.k) + (!done && skip ? ' · ' + T('cp.ready.chip.skip', 'Validation skipped') : ''),
+        ok: done || skip,
+        step: c.step
+      };
+    });
+  }
+
+  /* 預覽區塊的「編輯」入口：hover 到哪一塊，點了就回表單的對應區段（step＝CP_STEP 的區段代號） */
+  function stageEditZones() {
+    return [
+      { sel: '[data-fpp-gallery]', step: CP_STEP.media },
+      { sel: '.pdp-buy__title', step: CP_STEP.info },
+      { sel: '[data-fpp-price]', step: CP_STEP.price },
+      { sel: '[data-fpp-stock]', step: CP_STEP.stock },
+      { sel: '[data-fpp-variants]', step: CP_STEP.variations },
+      { sel: '[data-fpp-delivery]', step: state.type === 'digital' ? CP_STEP.file : CP_STEP.delivery },
+      { sel: '.pdp-details__lead', step: CP_STEP.info },
+      { sel: '[data-fpp-specs]', step: CP_STEP.specs },
+      { sel: '[data-fpp-returns]', step: CP_STEP.returns }
+    ];
+  }
+  /* 區段代號 → 表單上要捲到的節點（＋要聚焦的欄位） */
+  function cpSectionOf(step) {
+    const q = s => document.querySelector(s);
+    const sec = n => (n ? (n.closest('.form-section') || n) : null);
+    switch (step) {
+      case CP_STEP.info: return { target: sec(q('#cp-f-name')), focus: q('#cp-f-name') };
+      case CP_STEP.media: return { target: sec(q(state.type === 'digital' ? '[data-cp-asset="d-cover"]' : '[data-cp-asset="p-hero"]')) };
+      case CP_STEP.variations: return { target: sec(q('#cp-var-mode')) };
+      case CP_STEP.price: return isMulti() ? { target: sec(q('#cp-var-table-wrap')) } : { target: sec(q('#cp-price')), focus: q('#cp-price') };
+      case CP_STEP.stock: return { target: sec(q('#cp-edition')) };
+      case CP_STEP.specs: { const r = q('#spec-rows'); return { target: r ? (r.closest('.field') || r) : null }; }
+      case CP_STEP.delivery: return { target: sec(q('#cp-delivery')) };
+      case CP_STEP.returns: { const r = q('#cp-delivery-returns'); return { target: r ? (r.closest('.field') || r) : null, focus: r }; }
+      case CP_STEP.limits: return { target: sec(q('#cp-limit-toggle')) };
+      case CP_STEP.file: return { target: sec(q('#cp-cfile-single')) };
+    }
+    return { target: null };
+  }
+
+  function buildStageOpts() {
+    const fields = [
+      { key: 'name', el: fName, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
+      { key: 'desc', el: fDesc, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
+    ].concat(collectReturnsField()).concat(collectSpecFields()).concat(collectOptionFields());
+    const prices = stagePrices();
+    const S = window.ztorEvents;
+    return {
+      fields, prices,
+      currencies: S ? S.CURRENCIES.slice() : ['USD', 'TWD', 'HKD', 'SGD', 'JPY'],
+      baseCurrency: cpBaseCurrency(),
+      mode: 'publish',
+      editZones: stageEditZones(),
+      onEdit: step => exitStage(step),
+      checks: stageChecks,
+      previewRender: (host, api) => {
+        if (!window.ztorFanProductPage) return;
+        window.ztorFanProductPage.render(host, buildFanProductModel(prices), api);
+      },
+      primaryKey: 'cp.start.selling',
+      secondaryKey: 'cp.stage.back',
+      /* 翻譯與逐幣別覆寫的落地是後端的事（原型沒有後端）：先掛在 window 上給之後的頁讀，再走原本的上架路徑 */
+      onPrimary: result => { window.__cpLocalization = result; doPublishNew(); },
+      onSecondary: () => exitStage(0)
+    };
+  }
+
+  function enterStage() {
+    if (!stageHost || !stageBody || !window.ztorPublishStage) return false;
+    stageScroll = { sheet: stageSheet ? stageSheet.scrollTop : 0, win: window.scrollY };
+    stageBody.classList.remove('wizard__body--mid');
+    stageBody.classList.add('wizard__body--stage');
+    stageHost.hidden = false;
+    document.querySelector('[data-cp-footer]')?.classList.add('hidden');
+    /* 側欄 sticky 要避開 .wizard__top（本身 sticky）：量頂列高度填進 --pstage-top（同 create-event 的 mountStage） */
+    const top = document.querySelector('.wizard__top');
+    stageHost.style.setProperty('--pstage-top', 'calc(' + (top ? top.offsetHeight : 0) + 'px + var(--sp-24))');
+    stage = window.ztorPublishStage.mount(stageHost, buildStageOpts());
+    if (stageSheet) stageSheet.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    return true;
+  }
+  /* 返回表單：卸載、清空容器、表單欄／預覽欄／底部動作列原樣回來（表單 DOM 從沒被動過，內容保留）。
+     step 有給＝從預覽的「編輯」或檢核項過來：捲到對應區段；沒給＝「返回表單」：還原進來前的捲動位置。 */
+  function exitStage(step) {
+    if (!stage) return;
+    stage.unmount();
+    stage = null;
+    stageHost.innerHTML = '';
+    stageHost.hidden = true;
+    stageBody.classList.remove('wizard__body--stage');
+    stageBody.classList.add('wizard__body--mid');
+    document.querySelector('[data-cp-footer]')?.classList.remove('hidden');
+    const dest = step ? cpSectionOf(step) : null;
+    if (dest && dest.target) {
+      const top = document.querySelector('.wizard__top');
+      dest.target.style.scrollMarginTop = 'calc(' + (top ? top.offsetHeight : 0) + 'px + var(--sp-16))';
+      dest.target.scrollIntoView({ block: 'start', behavior: 'instant' });
+      if (dest.focus && typeof dest.focus.focus === 'function') dest.focus.focus({ preventScroll: true });
+    } else if (stageScroll) {
+      if (stageSheet) stageSheet.scrollTop = stageScroll.sheet;
+      window.scrollTo({ top: stageScroll.win, behavior: 'instant' });
     }
   }
+  /* Skip validation 切換時側欄檢核跟著重算（表單側的 refresh() 也會帶一次，見 refresh） */
+  document.addEventListener('ztor:devstate-changed', () => { if (stage) stage.syncChecks(); });
 
   primary.addEventListener('click', () => {
     if (primary.disabled) return;
@@ -1682,17 +1754,8 @@
     if (embed) { try { parent.postMessage({ type: 'cp:created', product: collectProduct() }, '*'); } catch (e) {} return; }
     /* 編輯態：儲存變更後回清單，不觸發新品貼文 popup（那是建立新品才有）*/
     if (editMode) { location.href = 'e-shop.html'; return; }
-    if (window.ztorPublishPreview) {
-      window.ztorPublishPreview.open({
-        fields: [
-          { key: 'name', el: document.getElementById('cp-f-name'), kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
-          { key: 'desc', el: document.getElementById('cp-f-desc'), kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
-        ].concat(collectReturnsField()).concat(collectSpecFields()).concat(collectOptionFields()),
-        previewRender: buildShopItemPreview,
-        onConfirm: doPublishNew
-      });
-      return;
-    }
+    /* 新品：先進「預覽與發布」全頁畫面（D310），在側欄按「開始販售」才真正上架；元件沒載到時退回直接上架 */
+    if (enterStage()) return;
     doPublishNew();
   });
 
@@ -1812,7 +1875,9 @@
     renderPvPriceExtras();
   }
 
-  function refresh() { renderReadiness(); renderPreview(); }
+  /* 全頁畫面開著時，側欄檢核跟著表單狀態重算（只重畫側欄、不重畫預覽；i18n:applied 也走這裡，
+     而 publish-stage 每次畫預覽都會 applyI18n——所以這裡只能 syncChecks，不能 refresh，否則會互相觸發） */
+  function refresh() { renderReadiness(); renderPreview(); if (stage) stage.syncChecks(); }
 
   /* ---- 條件顯示：依 type / varMode / edition / delivery 統一切換 ---- */
   function applyVisibility() {
@@ -2384,7 +2449,10 @@
 <script src="partials/album-tracks.js?v=r2.2"></script>
 <script src="partials/vip-card.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
-<script src="partials/publish-preview.js?v=r2.2"></script>
+<!-- ✝ 2026-09-23：partials/publish-preview.js（發布前預覽確認浮層）不再載入——D310 商品側改走全頁畫面（下面三支）。 -->
+<script src="js/events-store.js?v=r2.2"></script>   <!-- D310 商品側：全頁畫面的幣別換算與金額格式（ztorEvents.fx／priceIn／fmtMoney、CURRENCIES）由它提供 -->
+<script src="js/publish-stage.js?v=r2.2"></script>   <!-- D310 商品側：「開始販售」後的「預覽與發布」全頁畫面 -->
+<script src="js/fan-product-page.js?v=r2.2"></script>   <!-- D310 商品側：粉絲視角商品頁渲染（前台 shop-item 商品鏡像） -->
 <div data-pickup-modal-host></div>
 <script src="partials/pickup-session-modal.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>

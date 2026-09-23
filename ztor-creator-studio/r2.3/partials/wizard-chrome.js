@@ -20,6 +20,7 @@
     if (started) return; started = true;
     var wizard = document.querySelector('.wizard');
     if (!wizard) return;
+    watchFooterHeight();
     var autosave = wizard.dataset.autosave !== 'false';
     var leaveSimple = wizard.hasAttribute('data-leave-simple');
     var edited = false;
@@ -121,6 +122,21 @@
 
     document.querySelectorAll('[data-wizard-back]').forEach(function (b) {
       b.addEventListener('click', function (e) { e.preventDefault(); open(); });
+    });
+  }
+
+  // 底列高度 → .wizard 的 --wizard-foot-h（2026-09-23，UI-CHANGES 七十四）。
+  // 底列改成疊在內容卡底部的遮色片（shared.css .wizard__bottom 絕對定位），內容卡底部要留出
+  // 同樣的高度，最後一段內容才捲得出來。各頁底列高度不同（建立組合包左邊有兩行價格），
+  // 也會跟著狀態變（閘門上整條收起＝0），所以量實際高度，不寫死。DS 頁的縮小 demo 不量（底列 static）。
+  function watchFooterHeight() {
+    document.querySelectorAll('.wizard').forEach(function (wz) {
+      if (wz.closest('.ds-preview')) return;
+      var foot = wz.querySelector(':scope > .wizard__bottom');
+      if (!foot || typeof ResizeObserver !== 'function') return;
+      var sync = function () { wz.style.setProperty('--wizard-foot-h', foot.offsetHeight + 'px'); };
+      new ResizeObserver(sync).observe(foot);
+      sync();
     });
   }
 })();

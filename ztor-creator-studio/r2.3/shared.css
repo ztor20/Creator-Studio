@@ -1263,12 +1263,22 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 /* §5.2.4 建立流程框架 v3（2026-06-24，對齊 .main「灰 canvas 上白色圓角卡」語言）：
    .wizard＝灰 canvas（滿版固定高、不捲）；.wizard__sheet＝白色圓角 content 卡（內部捲動、圓角誠實歸自己）；
    .wizard__bottom＝其下的平面灰 footer。取代舊的 footer::before 白卡 hack（圓角不再做在 footer 上）。 */
+/* 2026-09-23 頂列／底列改版（UI-CHANGES 七十四，lab-wizard-chrome 比較後定案）：
+   畫布不再是比內容卡淺一階的另一種灰。整個視窗只剩一種背景＝內容卡的底色（--wizard-mask），
+   內容卡延伸到視窗底、不再有下緣圓角；底列改成疊在內容上的同色遮色片（見 .wizard__bottom）。
+   --wizard-mask 同時是底列遮色片與上緣淡出漸層的顏色，跟著內容卡走：
+   --sectioned 卡＝--surface-page（預設）；一般卡在淺色模式是 --card（見檔尾 :has 那條）。
+   --wizard-foot-h＝底列實際高度，由 partials/wizard-chrome.js 用 ResizeObserver 量出來寫在這裡；
+   內容卡底部留出這段高度，最後一段內容才捲得出遮色片。72px 是沒載那支 JS 的頁面的後備值。
+   舊值：background-color: var(--surface-shell)（灰 canvas，內容卡浮在上面）。 */
 .wizard {
+  --wizard-mask: var(--surface-page);
+  position: relative;
   height: 100vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background-color: var(--surface-shell);   /* 灰 canvas · ztorUI 換裝（2026-08-28 熔接）：改長寫，讓檔尾星空節的靜態點陣不被簡寫清掉 */
+  background-color: var(--wizard-mask);   /* ztorUI 換裝（2026-08-28 熔接）：長寫，讓檔尾星空節的靜態點陣不被簡寫清掉 */
 }
 /* class 自己寫了 display 就會蓋掉 [hidden] 的 display:none——要藏得起來得補這一條
    （2026-08-07：作品上架流程在查無項目 id 時整個收起來，改顯示錯誤狀態）。 */
@@ -1280,9 +1290,12 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   display: flex;
   flex-direction: column;
   background: var(--card);     /* 白色 content 卡 */
-  border-radius: 0 0 var(--radius-shell) var(--radius-shell);   /* 圓角歸 content 卡自己（下緣）*/
-  box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.12);             /* 浮在灰 footer 上的向下投影 */
+  /* 2026-09-23：內容卡延伸到視窗底，下緣圓角與向下投影收掉（舊值：border-radius 0 0 --radius-shell；
+     box-shadow 0 6px 18px -10px 12% 黑）。底部留出底列的高度，見 .wizard 的 --wizard-foot-h。 */
+  padding-bottom: var(--wizard-foot-h, 72px);
 }
+/* 沒有底列的頁（event-localization）不留那段高度。 */
+.wizard:not(:has(> .wizard__bottom)) > .wizard__sheet { padding-bottom: 0; }
 .wizard__sheet--sectioned { background-color: var(--surface-page); }   /* ztorUI 換裝（2026-08-28 熔接）：同上，改長寫 */
 /* Gate — 建立流程進入前的專案類型選擇畫面（D149，2026-07-24）：與 [data-sheet] 分步表單互斥（JS 切 .hidden）。復用 .wizard__sheet 白卡底＋圓角，僅加內容置中。 */
 .wizard__gate { justify-content: center; }
@@ -1307,18 +1320,26 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
    所以直接複用 Wave 2a 已經套在 .app-topbar 身上的同一組宣告（header.css），
    不另立第二種頂欄配方。分界改由 1px --border 承擔。
    舊值：background: var(--card)（＋下方 [data-theme="dark"] 的 --surface-page 覆寫，已刪）。 */
+/* 2026-09-23 改版（UI-CHANGES 七十四）：頂列改成跟活動清單工作列（.list-toolbar）同一種樣子——
+   一顆浮起的圓角磨砂膠囊，而不是頂到兩側、只靠一條底線分界的整條橫帶。
+   .wizard__top 本身變成完全透明的一圈外距（內容捲上去會從膠囊四周露出來），不攔點擊；
+   膠囊畫在 .wizard__top::before（見下），大小＝本元素的內容框，所以頂列裡有幾排（例：建立組合包的
+   分節分頁第二排）膠囊就包住幾排，畫面上仍是一塊固定區（Q115 精神）。
+   外距三個值寫成自訂屬性，膠囊的 inset 與 padding 讀同一組，DS 頁的縮小 demo 改這三個值即可。
+   舊值：background --ztu-glass-bg＋blur＋border-bottom 1px --border＋inset 頂緣內光（整條玻璃橫帶）。 */
 .wizard__top {
+  --wizard-top-pad-t: var(--sp-16);
+  --wizard-top-pad-x: var(--sp-28);
+  --wizard-top-pad-b: var(--sp-12);
   position: sticky;
   top: 0;
   z-index: 30;
   display: flex;
   flex-direction: column;
-  background: var(--ztu-glass-bg);
-  backdrop-filter: blur(var(--ztu-blur-glass));
-  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
-  border-bottom: 1px solid var(--border);
-  box-shadow: inset 0 1px 0 var(--ztu-glass-rim);
+  padding: var(--wizard-top-pad-t) var(--wizard-top-pad-x) var(--wizard-top-pad-b);
+  pointer-events: none;   /* 透明外距不擋住底下的內容 */
 }
+.wizard__top > * { pointer-events: auto; }
 /* ── Edge shadow（可覆用工具）─────────────────────────────────────────
    在元素「下緣」產生一道柔和、內縮、兩端圓角漸淡(taper)、不外漏的陰影。
    作法：一個與元素等高、左右內縮、下方大圓角的透明圖層投 --shadow-header，
@@ -1327,8 +1348,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
    可調：--edge-shadow-inset（左右內縮，預設 28px）、--edge-shadow-radius（圓角，預設 64px）。
    忠實照 Figma 720:1763 的分層結構（色塊藏在元素後、只露下緣）。 */
 .edge-shadow { position: relative; }
-.edge-shadow::before,
-.wizard__top::before {   /* 用 ::before（避開 .alert--page-top 等用 ::after 的元件）；.wizard__top 已 sticky */
+.edge-shadow::before {   /* 用 ::before（避開 .alert--page-top 等用 ::after 的元件）*/
   content: "";
   position: absolute;
   left: var(--edge-shadow-inset, 28px);
@@ -1340,14 +1360,29 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   clip-path: inset(100% 0 -40px 0);   /* 只露出元素下方那段陰影 */
   pointer-events: none;
 }
-/* r2.2 用一個 ::before 偽元素做「下緣柔和陰影」（上方 .edge-shadow 手法）取代 border-bottom。
-   頂列改玻璃之後這一層要收掉：玻璃的意思是「這一層薄到看得見底下」，底下卻壓著一團
-   --shadow-header（Wave 1 已改成 0 12px 40px rgba(0,0,0,.5) 的重投影），兩件事互相矛盾，
-   讀起來會是「半透明的板子下面有一塊黑霧」。分界改由上面那條 1px --border 承擔，
-   與 .app-topbar 一致——那支同樣是靜止態只有邊線、沒有落地陰影。 */
-.wizard__top::before { box-shadow: none; }
-/* ⚠ 位置：必須寫在上面那條 `.edge-shadow::before, .wizard__top::before` 之後——兩者同為
-   (0,1,1)，靠源碼順序決勝。 */
+/* 墓碑：.wizard__top::before 原本與 .edge-shadow 共用上面那條「下緣柔和陰影」，Wave 2b 頂列改玻璃時
+   已把陰影歸零（box-shadow:none）。2026-09-23 這個 ::before 改當膠囊本體，從共用選擇器移出。 */
+/* 膠囊：材質照抄 .list-toolbar（ds-components/list-toolbar.css）——玻璃底＋背景模糊＋1px --border＋
+   卡片投影＋頂緣高光、四角 --radius-xl。z-index:-1 落在 .wizard__top 自己的堆疊脈絡裡
+   （sticky＋z-index 已建立），所以畫在頂列文字底下、內容卡上面；模糊取樣的是底下捲過去的內容。 */
+.wizard__top::before {
+  content: "";
+  position: absolute;
+  inset: var(--wizard-top-pad-t) var(--wizard-top-pad-x) var(--wizard-top-pad-b);
+  z-index: -1;
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
+  pointer-events: none;
+}
+/* 淺色主題同 .list-toolbar：白底＋卡片陰影撐出層次。 */
+html[data-theme="light"] .wizard__top::before {
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
 /* §5.2.4 建立流程頂部框架（2026-06-23 改版 v2）：單列三欄。
    col1 左＝.wizard__top-lead（返回箭頭＋標題/副標，靠左）｜
    col2 中＝進度條 .wizard__progress（max 820 內容寬、置中對齊下方 .wizard__body 內容欄；無 stepper 頁此欄空）｜
@@ -1364,8 +1399,13 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   grid-template-columns: minmax(var(--wizard-lead-min), 1fr) minmax(0, 820px) minmax(min-content, 1fr);
   align-items: center;
   gap: var(--sp-16);
-  padding: var(--sp-20) var(--sp-28);   /* 上下 padding 加大（2026-06-23 使用者指定）*/
+  /* 膠囊內距（2026-09-23）：外面已經有 .wizard__top 的一圈外距，上下由 20 收成 12；
+     左邊多 4 是給返回鈕 hover 膠囊的負外距留位，同 .list-toolbar 左右不對稱的理由。
+     舊值：padding: var(--sp-20) var(--sp-28)（2026-06-23 使用者指定加大）。 */
+  padding: var(--sp-12) var(--sp-20) var(--sp-12) var(--sp-24);
 }
+/* 頂列下面還有一排（分節分頁）時，兩排之間一條淡分隔線，橫跨整顆膠囊。 */
+.wizard__top-bar:has(+ :not([hidden])) { border-bottom: 1px solid var(--border-soft); }
 /* col1：返回箭頭＋標題塊，靠左（含舊 .wizard__close 向後相容）。
    箭頭對齊「主標題那一行」（align-items:flex-start＋箭頭高度≈標題行高），副標在標題下方。 */
 /* 2026-07-16：整組（返回箭頭＋標題/副標）合併為單一返回按鈕（Figma 781:4142）。
@@ -1488,17 +1528,29 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
    ztorUI 換裝（2026-08-28 Wave 2b §12）：ztorUI 規格沒有「wizard footer」這個元件，但頂／底成對的
    殼層 chrome 本來就該是同一種材質語言，所以給與頂列同一組配方、方向相反（邊線與內光都翻到上緣）。
    舊值：background: var(--surface-shell)（＋下方 [data-theme="dark"] 的同名覆寫，已刪）。 */
+/* 2026-09-23 改版（UI-CHANGES 七十四）：底列不再是另一塊顏色。它是一片疊在內容卡底部的遮色片——
+   底色與點陣都繼承 .wizard（＝內容卡同色），background-attachment:fixed 讓點陣對齊視窗、
+   跟背後的內容卡接得起來；沒有邊線、沒有玻璃。上緣用 ::before 做一段漸層淡出，
+   內容捲到底列前先淡掉，而不是被一刀切齊（使用者指定）。
+   舊值：in-flow、玻璃底＋模糊＋border-top 1px --border＋inset 內光。 */
 .wizard__bottom {
-  flex: 0 0 auto;
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 20;
   padding: var(--sp-16) var(--sp-28);
-  background: var(--ztu-glass-bg);
-  backdrop-filter: blur(var(--ztu-blur-glass));
-  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
-  border-top: 1px solid var(--border);
-  box-shadow: inset 0 -1px 0 var(--ztu-glass-rim);
+  background: inherit;
+  background-attachment: fixed;
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.wizard__bottom::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 100%;
+  height: var(--sp-56);
+  background: linear-gradient(to bottom, transparent, var(--wizard-mask));
+  pointer-events: none;
 }
 /* 只有右側一組動作時（沒有左側的次要動作，如「儲存並離開」）靠右收齊。
    2026-08-09 收斂：站上九個 wizard footer 各自寫著同一段 inline
@@ -1533,18 +1585,27 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
    而它們的特異度（0,2,0）高於檔尾星空那節給精靈頁的靜態點陣（`.wizard`、
    `.wizard__sheet--sectioned`，0,1,0）——不改成長寫，深色模式下點陣會被整條清掉。
    顏色一個位元都沒動。 */
-[data-theme="dark"] .wizard { background-color: var(--surface-shell); }          /* canvas #2B2B2C（較淺，卡浮其上）*/
+[data-theme="dark"] .wizard { background-color: var(--wizard-mask); }            /* 2026-09-23：與內容卡同色（舊值 --surface-shell，較淺 canvas）*/
 [data-theme="dark"] .wizard__sheet { background-color: var(--surface-page); }     /* content 卡 #191A1A（最深）*/
 /* ztorUI 換裝（2026-08-28 Wave 2b §12）：精靈頂／底欄的深色實色覆寫已刪——它們的特異度
    (0,2,0) 高於本體那兩條 (0,1,0)，留著只會把剛換上的玻璃蓋回實色。
    刪掉的舊宣告：
      [data-theme="dark"] .wizard__top { background: var(--surface-page); }
      [data-theme="dark"] .wizard__bottom { background: var(--surface-shell); } */
+/* 一般（非 --sectioned）內容卡：淺色模式是 --card 白、沒有點陣，遮色片跟著換，
+   否則底列會是一條帶點陣的淺灰（create-campaign／funding-simulate）。深色模式的內容卡是 --surface-page。 */
+.wizard:has(> .wizard__sheet:not(.wizard__sheet--sectioned)) { --wizard-mask: var(--card); background-image: none; }
+[data-theme="dark"] .wizard:has(> .wizard__sheet:not(.wizard__sheet--sectioned)) { --wizard-mask: var(--surface-page); }
+/* 預覽與發布全頁畫面（.wizard__body--stage，D310）：整頁背景換成前台頁的底色（--surface-preview #0A0A0A）、
+   拿掉點陣——主區是前台頁的 1:1 鏡像，外框跟它同一種黑，預覽才不像一塊貼在畫布上的方板
+   （2026-09-23 使用者指定「預覽頁的整個背景要和前台預覽一樣的黑色」）。寫在深色覆寫之後，靠源碼順序勝出。 */
+.wizard:has(.wizard__body--stage) { --wizard-mask: var(--surface-preview); background-image: none; }
+.wizard__sheet:has(.wizard__body--stage) { background-color: var(--surface-preview); background-image: none; }
 
 /* 窄螢幕 fallback：回到一般文件捲動（content 卡不內捲、footer 黏底、不做圓角）。 */
 @media (max-width: 900px) {
   .wizard { height: auto; min-height: 100vh; overflow: visible; }
-  .wizard__sheet { overflow: visible; border-radius: 0; box-shadow: none; }
+  .wizard__sheet { overflow: visible; border-radius: 0; box-shadow: none; padding-bottom: 0; }
   .wizard__bottom { position: sticky; bottom: 0; }
 }
 

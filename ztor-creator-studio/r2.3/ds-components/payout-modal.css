@@ -144,6 +144,22 @@
 .payout-dialog__foot {
   border-top: 1px solid var(--border);
 }
+/* ── footer 的兩個槽（2026-09-22，D311）────────────────────────────────────
+   foot 本來就是 space-between，只放兩顆按鈕時它們會被推到兩端。有「擋下儲存的理由」
+   要說時（例：單張門票彈窗的「N 個欄位待修正」），把理由放左槽、按鈕群收進右槽：
+   理由與主鈕在同一條視線上，不必為了找原因回頭掃整張表單。
+   `__foot-note[hidden]` 要顯式歸零——沒有理由時整個字不占位。 */
+.payout-dialog__foot-note { font-size: var(--fs-12); color: var(--status-error); min-width: 0; }
+.payout-dialog__foot-note[hidden] { display: none; }
+.payout-dialog__foot-actions { display: flex; align-items: center; gap: var(--sp-8); margin-left: auto; flex: none; }
+/* 標題列的副標槽（2026-09-22，D311）：標題回答「開在哪一件東西上」，副標補它的脈絡
+   （首例＝單張門票彈窗：標題是票名、副標是場次日期・場地——多場次活動光看票名
+   分不出是哪一場的票）。兩行堆在左、關閉鈕仍靠右，所以標題群要包一層 __head-titles；
+   沒有副標的彈窗不用包，現況不動。 */
+.payout-dialog__head-titles { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-4); }
+.payout-dialog__sub { margin: 0; font-size: var(--fs-12); color: var(--muted-foreground); }
+.payout-dialog__sub[hidden] { display: none; }
+
 .payout-dialog__title {
   margin: 0;
   font-family: var(--font-display);
@@ -179,6 +195,22 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+}
+/* body 裝的是一疊 .form-section--dense 區塊時，內距對齊卡片內距（--card-pad ＝ --sp-24）
+   （2026-09-23，STYLE-DECISIONS Q125）：區塊堆疊自己已經是一把完整的節奏梯子
+   （欄位 16／標題 12／段間 32，見 form-section.css 的 --dense 段），body 內距是那把梯子最外
+   面的一階，20 會比段間距顯得薄。用 :has 判斷而不是再發明一個修飾類——條件本來就是
+   「裡面裝的是什麼」，不是「這個彈窗叫什麼」，寫成 :has 就不會有第二個彈窗忘記掛上。 */
+.payout-dialog__body:has(> .form-section--dense) { padding: var(--sp-24); }
+/* 區塊改成卡片之後（2026-09-23，Q125 修訂）：**卡與卡之間的距離由 body 這個容器發**，
+   不由卡自己帶 margin（Q103）。body 改 grid＋`gap: var(--sp-20)`，與卡自己的內距同值——
+   卡內留白＝卡間留白，整疊只有一把尺。`align-content: start` 是必要的：body 是
+   `flex:1` 撐滿高度的捲動區，grid 預設 stretch 會在內容短時把卡拉高填滿。
+   同樣用 :has 而不是新開修飾類——條件是「裡面裝的是什麼」，不是「這個彈窗叫什麼」。 */
+.payout-dialog__body:has(> .form-section--card) {
+  display: grid;
+  align-content: start;
+  gap: var(--sp-20);
 }
 
 /* 內容分左右欄（2026-08-09 使用者指示，首個消費者＝建立活動的門票編輯彈窗）：

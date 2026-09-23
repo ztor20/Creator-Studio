@@ -4601,6 +4601,9 @@
     'pstage.lang.auto':     { en: 'Auto-translated',                  zh: '自動翻譯' },
     'pstage.lang.edited':   { en: '{n} edited',                       zh: '已修改 {n} 欄' },
     'pstage.lang.reset':    { en: 'Restore auto-translation',         zh: '還原自動翻譯' },
+    'pstage.lang.untranslated': { en: 'Not translated',               zh: '未翻譯' },
+    'pstage.lang.translated':   { en: '{n} of {total} translated',    zh: '已翻譯 {n}／{total} 欄' },
+    'pstage.lang.clear':    { en: 'Clear translation',                zh: '清除譯文' },
     'pstage.lang.table':    { en: 'Field-by-field',                   zh: '逐欄位對照' },
     'pstage.cur.base':      { en: 'Base',                             zh: '基準' },
     'pstage.cur.converted': { en: 'Converted',                        zh: '換算' },
@@ -4688,6 +4691,28 @@
     /* 退換票：表單沒有此欄，前台那句當平台固定文案（ASSUMPTIONS UIA-167） */
     'fep.refund.fixed':     { en: 'Tickets sold are non-refundable; if the organizer cancels or postpones, the ticket price is refunded in full (excluding fees).',
                               zh: '售出之票券恕不退換；主辦單位取消或延期時全額退還票款（手續費除外）。' },
+    /* 粉絲視角商品頁 mock（js/fan-product-page.js，D310 商品側 2026-09-23）：前台 shop-item 商品分支的鏡像。
+       靜態標籤跟介面語言走、內容跟預覽語系走（同 fep.*）；與活動頁共用的字（返回／收藏／購物車／圖庫／放大／
+       前往創作者商店）直接用 fep.* 那幾個鍵，不另開一份。 */
+    'fpp.crumb.shop':       { en: 'Shop',                             zh: '商店' },
+    'fpp.gallery.prev':     { en: 'Previous view',                    zh: '上一個角度' },
+    'fpp.gallery.next':     { en: 'Next view',                        zh: '下一個角度' },
+    'fpp.price.from':       { en: 'From {price}',                     zh: '{price} 起' },
+    'fpp.price.was':        { en: 'Was {price}',                      zh: '原價 {price}' },
+    'fpp.price.save':       { en: 'Save {amt}',                       zh: '省 {amt}' },
+    'fpp.stock.left':       { en: 'Only {n} left',                    zh: '僅剩 {n} 件' },
+    'fpp.size-guide':       { en: 'Size guide',                       zh: '尺寸指南' },
+    'fpp.qty.dec':          { en: 'Decrease quantity',                zh: '減少數量' },
+    'fpp.qty.inc':          { en: 'Increase quantity',                zh: '增加數量' },
+    'fpp.cta.add':          { en: 'Add to cart',                      zh: '加入購物車' },
+    'fpp.cta.soldout':      { en: 'Sold out',                         zh: '已售完' },
+    'fpp.details.label':    { en: 'Product details',                  zh: '商品詳情' },
+    'fpp.sec.details':      { en: 'Product details',                  zh: '商品詳情' },
+    'fpp.sec.specs':        { en: 'Specifications',                   zh: '規格' },
+    'fpp.spec.category':    { en: 'Category',                         zh: '分類' },
+    'fpp.sec.returns':      { en: 'Pickup & returns',                 zh: '取貨與退換' },
+    'fpp.sec.related':      { en: 'You may also like',                zh: '你可能也喜歡' },
+    'fpp.related.badge':    { en: 'Not this item',                    zh: '非本商品' },
     /* 活動詳情頁「預覽與在地化」入口（5.1.6.3 §2.13） */
     'ed.loc.btn':           { en: 'Preview & localization',           zh: '預覽與在地化' },
     'ed.loc.title':         { en: 'Localization',                     zh: '在地化' },
@@ -5447,6 +5472,23 @@
     'cp.ready.chip.skip':   { en: 'Validation skipped',               zh: '已略過驗證' },
     'cp.ready.banner.ready':{ en: 'Ready to sell!',                   zh: '可以上架了！' },
     'cp.ready.banner.needed':{ en: '{n} items needed to start selling', zh: '還差 {n} 項才能開始販售' },
+    /* D310 商品側（2026-09-23）：「開始販售」後的「預覽與發布」全頁畫面（js/publish-stage.js）。
+       側欄第三段「發布前檢核」＝就緒檢查同一組項目（tooltip 仍讀頁內英文 k），這裡給側欄用的雙語標籤；
+       次鈕回表單；價格表多選項時的群組列。 */
+    'cp.stage.back':        { en: 'Back to form',                     zh: '返回表單' },
+    'cp.stage.price.variants': { en: 'Variations',                    zh: '選項組合' },
+    'cp.qc.hero':           { en: 'Hero image',                       zh: '主圖' },
+    'cp.qc.name':           { en: 'Product name',                     zh: '商品名稱' },
+    'cp.qc.desc':           { en: 'Description (30+)',                zh: '商品描述（30 字以上）' },
+    'cp.qc.var-priced':     { en: 'Every variation priced & stocked', zh: '每個選項組合都有價格與庫存' },
+    'cp.qc.price':          { en: 'Price',                            zh: '價格' },
+    'cp.qc.cap':            { en: 'Total quantity ≥ stock',           zh: '上限數量 ≥ 目前在庫' },
+    'cp.qc.specs':          { en: 'Specifications',                   zh: '詳細規格' },
+    'cp.qc.weight':         { en: 'Shipping weight',                  zh: '重量' },
+    'cp.qc.limit':          { en: 'Max quantity per person',          zh: '每人最大購買量' },
+    'cp.qc.file':           { en: 'Item file',                        zh: '內容檔案' },
+    'cp.qc.cover':          { en: 'Cover art',                        zh: '封面' },
+    'cp.qc.digicap':        { en: 'Total quantity & copies',          zh: '上限數量與剩餘份數' },
     'cp.show':              { en: 'Show in my shop',                  zh: '上架開關' },
     'cp.show.sub':          { en: 'Visible to fans in your storefront', zh: '粉絲在你的商店看得到' },
     /* 折扣設定 → 排程特價（spec 5.1.5.2 §4.4 F13 / 5.1.5.1 §2.15 · D144；商品有絕對特價可填）*/
@@ -7469,6 +7511,8 @@
     'ce.calc.note':      { en: 'Assumes every ticket sells at its discounted price.', zh: '以「每張票都用折後價賣出」估算，是保守值。' },
     'ce.tier.removeshort': { en: 'Remove',                         zh: '移除' },
     'ce.tier.save':     { en: 'Save',                              zh: '儲存' },
+    /* 彈窗頁尾左側的擋關理由（2026-09-22，D311）：按了儲存卻沒關起來時說出還差幾格。 */
+    'ce.tier.fixn':     { en: '{n} fields need fixing',             zh: '{n} 個欄位待修正' },
     'ce.tier.clear':    { en: 'Clear',                             zh: '清空' },
     'ce.tier.copysuffix': { en: ' Copy',                           zh: ' 複本' },
     'ce.tier.err.name':    { en: 'Ticket type name is required.',  zh: '票種名稱不可空白。' },
@@ -9466,6 +9510,27 @@
     'ed.tix.early.card':  { en: '{n} min early ({t})',    zh: '提早 {n} 分鐘（{t}）' },
     'ed.tm.delete':       { en: 'Delete tier',            zh: '刪除門票' },
     'ed.tm.pause.hint':   { en: 'Rejects new purchases; tickets already sold stay valid.', zh: '擋掉新的購買，已售出的票維持有效。' },
+    /* 票種彈窗的區塊與計算列表（2026-09-22，D311）：與建立流程第 5 步的單張門票彈窗同一套
+       資訊結構——基本／價格與數量／入場／販售。購買條件在詳情頁沒有（上游未定，2026-08-11）。 */
+    /* 墓碑 'ed.tm.sec.basic'（en Basics／zh 基本）：2026-09-23 Q125 拿掉票種彈窗「基本」的
+       區塊標題——彈窗標題與副標已經是脈絡，段內只有一格、標籤自己說完了。 */
+    'ed.tm.sec.price':    { en: 'Price & quantity',       zh: '價格與數量' },
+    'ed.tm.sec.entry':    { en: 'Entry',                  zh: '入場' },
+    'ed.tm.sec.sale':     { en: 'Selling',                zh: '販售' },
+    'ed.tm.gross':        { en: 'Fans pay',               zh: '粉絲付' },
+    'ed.tm.plat':         { en: 'Platform fee',           zh: '平台費' },
+    'ed.tm.net':          { en: 'You receive',            zh: '創作者實收' },
+    'ed.tm.net.how':      { en: 'On the ticket price — fee basis to be confirmed', zh: '以票價計算，計費基準待確認' },
+    /* 費率來自哪一層（D311 解析順序：本票例外 → creator 覆寫 → General） */
+    'ed.tm.fee.general':  { en: 'Platform default',       zh: '平台預設' },
+    'ed.tm.fee.creator':  { en: 'Set for this creator',   zh: '這位創作者的覆寫' },
+    'ed.tm.fee.exc':      { en: 'Exception for this ticket (set by Admin)', zh: '本票例外（Admin 設定）' },
+    'ed.tm.exc':          { en: 'Fee exception',          zh: '例外平台費' },
+    'ed.tm.exc.pct':      { en: 'Rate',                   zh: '費率' },
+    'ed.tm.exc.hint':     { en: "Replaces the system's {n}%.", zh: '取代系統的 {n}%。' },
+    'ed.tm.exc.err':      { en: 'Enter a rate between 0 and 100.', zh: '費率要填 0 到 100 之間。' },
+    /* 開賣後才出現的那一版（D311 決定六）：一句話說完，不再加第二句（Q123 ③）。 */
+    'ed.tm.exc.hint.sold': { en: "Replaces the system's {n}% — for purchases from now on.", zh: '取代系統的 {n}%，只影響之後的購買。' },
     'ed.sess.add':        { en: 'Add a date',             zh: '新增場次' },
     'ed.sess.n':          { en: 'Date {n}',               zh: '第 {n} 場' },
     /* 折疊態的一行摘要（2026-08-13，A 案）：{t}＝開放入場時間 */
