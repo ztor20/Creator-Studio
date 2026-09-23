@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/selection-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2"><!-- D319：從預覽與在地化存完回本頁的提示 -->
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
@@ -34,8 +35,6 @@
 <link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
 <!-- 2026-09-11 D268：多選項成員展開的逐組合列列首唯讀縮圖 .variant-thumb--ro（定義在 variant-builder.css） -->
 <link rel="stylesheet" href="ds-components/variant-builder.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/fan-store.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2"><!-- 電影關聯的 tag-input／chip 由 partials/film-picker.js 注入，靜態檢查看不到（2026-09-11 使用者：「沒改完或改壞了」） -->
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
@@ -91,11 +90,23 @@
         <!-- Dock 槽（2026-09-11，詳情頁只准一條固定列）：分頁工具列捲到頂列底下時，它的 tabs 進 [data-dock-tabs]、動作進 [data-dock-actions]；js/detail-topbar.js -->
         <div class="detail-topbar__tabs" data-dock-tabs></div>
         <div class="page-intro__actions">
-          <button class="btn btn--outline" type="button" data-bd-preview-open data-dock-icon><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.preview">See as fan</span></button>
+          <!-- 預覽與在地化（§2.2 主操作 · D319，2026-09-23）：取代原本的「粉絲視角預覽（See as fan）」分割預覽——
+               §2.8 那個畫面主區本身就是同一份粉絲視角完整組合包頁，還能改翻譯，頁首不再另設一顆唯讀預覽鈕。
+               href 由下方主 IIFE 依這一筆是電子商店組合包還是活動組合包補上（活動組合包指向 event-localization.html，
+               §2.8：含活動票券的組合包同時出現在該活動的票務商品頁視圖，兩處改的是同一份資料）。 -->
+          <a class="btn btn--outline" href="product-localization.html?type=bundle" data-bd-localize data-dock-icon><i data-lucide="globe" class="ztor-icon"></i><span data-i18n="product-detail.btn.localize">Preview &amp; localization</span></a>
           <!-- 頁首主要動作依狀態互斥、一次只出現一個（spec 5.1.5.9 §2.2，主規格 §7.14「封存與不可刪除」· D284，2026-09-18）：
                上架中→「下架」；已下架→「封存」（先確認；封存組合包不牽連成員）；已封存→「解除封存」（不確認、回到已下架、不動成員；D298 2026-09-22）。
-               刪除（D307 2026-09-22）：已下架或已封存且零成交時另有「刪除」（紅框次要樣式）；刪組合包不影響成員；有成交只能封存、無刪除入口；活動組合包跟著活動走、不提供。 -->
+               刪除（D307 2026-09-22）：已下架或已封存且零成交時另有「刪除」（紅框次要樣式）；刪組合包不影響成員；有成交只能封存、無刪除入口；活動組合包跟著活動走、不提供。
+               上架（2026-09-23 使用者裁決）：已下架態多一顆「上架」（主要樣式，排在「封存」之前），與上架設定卡的上架開關是同一個動作、同一支 tryRelist()——
+               兩邊狀態連動（切一邊另一邊跟著變）；成員閘門走共用的 partials/bundle-relist.js。已封存不提供上架，要先解除封存。
+               顯示／隱藏（2026-09-23 使用者裁決）：上架中多一顆「隱藏」／「顯示」（outline 樣式，排在下架／上架之後、封存之前），
+               與上架卡的顯示開關（`#bd-shown`）是同一個動作——點擊直接觸發該開關的 click，不複製一份判斷邏輯，沿用它現行「不確認」的
+               行為。只有上架中才出現（D265／§7.14：已下架、已封存、草稿時顯示軸本來就不可調）。 -->
           <button class="btn btn--outline" type="button" data-bd-unlist hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button>
+          <button class="btn btn--primary" type="button" data-bd-relist hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.list">List</span></button>
+          <button class="btn btn--outline" type="button" data-bd-hide hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.hide">Hide</span></button>
+          <button class="btn btn--outline" type="button" data-bd-show hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.show">Show</span></button>
           <button class="btn btn--outline" type="button" data-bd-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
           <button class="btn btn--destructive" type="button" data-bd-delete hidden><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="product-detail.btn.delete">Delete</span></button>
           <button class="btn btn--primary" type="button" data-bd-unarchive hidden><i data-lucide="archive-restore" class="ztor-icon"></i><span data-i18n="product-detail.btn.unarchive">Unarchive</span></button>
@@ -656,19 +667,11 @@
   </main>
 </div>
 
-<!-- §2.2 See as fan · 畫面分割預覽（§6.7 同源，與 E-Shop F5／商品細節共用 partials/fan-store.js）-->
-<div class="preview-panel preview-panel--inset" id="bd-preview">
-  <div class="preview-panel__backdrop" data-bd-preview-close></div>
-  <div class="preview-panel__sheet">
-    <div class="preview-panel__head">
-      <h3 class="preview-panel__title" data-i18n="product-detail.preview.title">How buyers see your shop</h3>
-      <button class="btn btn--icon btn--sm" data-bd-preview-close aria-label="Close preview"><i data-lucide="x" class="ztor-icon"></i></button>
-    </div>
-    <div class="preview-panel__body">
-      <div data-fan-store-host></div>
-    </div>
-  </div>
-</div>
+<!-- ✝ 墓碑 2026-09-23（D319）：§2.2「粉絲視角預覽（See as fan）」的 .preview-panel--inset 分割預覽整組退場——
+     面板 markup（#bd-preview／[data-bd-preview-open|close]／[data-fan-store-host]）、開關與 Esc 的區塊、
+     ds-components/preview-panel.css 與 fan-store.css 的 stylesheet 連結、partials/fan-store.js 的 script 連結都在本輪拿掉。
+     取代者＝頁首的「預覽與在地化」（product-localization.html?type=bundle）。
+     兩支 CSS 與 partials/fan-store.js 本身不刪：e-shop.html 的 F5 商店預覽與 store-settings.html 仍在消費。 -->
 
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
@@ -684,7 +687,7 @@
 <script src="js/detail-topbar.js?v=r2.2"></script>
 <script src="js/row-disclosure.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
-<script src="partials/fan-store.js?v=r2.2"></script>
+<script src="js/toast.js?v=r2.2"></script><!-- D319：從預覽與在地化存完回本頁的提示 -->
 <script src="partials/radio-list.js?v=r2.2"></script>
 <!-- 素材格（[data-upload]）：hover 替換／刪除由共用元件產生。
      ✝ 2026-07-31 修既有 bug：本頁的格子早就掛了 data-upload ＋ .is-filled，卻沒載入這支，
@@ -694,6 +697,7 @@
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
 <script src="partials/archived-gate.js?v=r2.2"></script><!-- 封存態唯讀的事件層閘門（D288） -->
+<script src="partials/bundle-relist.js?v=r2.2"></script><!-- 組合包上架的成員閘門（D289／D298），與電子商店清單共用 -->
 <script>
   /* bundle-detail 互動：定價模式切換 + See as fan 分割預覽（§6.7 同源）。display-only demo。 */
   (function () {
@@ -806,7 +810,6 @@
         if (window.applyI18n) window.applyI18n(page);
       }
       document.title = T0('bd.notfound.title', 'Bundle not found') + ' · Ztor';
-      const pv = document.getElementById('bd-preview'); if (pv) pv.hidden = true;
       return;
     }
     const heroSrc = bundle ? (bundle.imgSrc || (bundle.img ? 'images/products/' + bundle.img : '')) : '';
@@ -1355,7 +1358,10 @@
       bundleModel.shown = on;
       syncShown();
       refreshAlloc();
+      if (window.bdSyncPrimaryAction) window.bdSyncPrimaryAction();   /* 頁首隱藏／顯示鈕與這顆開關雙向連動（2026-09-23） */
     });
+    /* 頁首「隱藏／顯示」直接觸發上架卡的顯示開關，不複製一份切換邏輯；沿用該開關現行「不確認」的行為。 */
+    document.querySelectorAll('[data-bd-hide],[data-bd-show]').forEach(b => b.addEventListener('click', () => { if (shownSwitch) shownSwitch.click(); }));
     if (linkfEl) linkfEl.addEventListener('linkfield:reset', e => {
       if (window.linkField && LS) window.linkField.setValue(e.detail.root, LS.resetPrivateLink(bundleModel));
     });
@@ -1697,22 +1703,21 @@
       setEmpty(projSec, !projects.length);
     })();
 
-    const panel = document.getElementById('bd-preview');
-    if (panel) {
-      (function mountFanStore() {
-        const host = panel.querySelector('[data-fan-store-host]');
-        const html = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.fanStore;
-        if (!host || !html) { if (host) console.warn('[bundle-detail] fan-store template missing'); return; }
-        host.innerHTML = html;
-        if (window.ztorIcons) window.ztorIcons.applyIcons(host);
-        if (window.applyI18n) window.applyI18n(host);
-      })();
-      const open = () => { panel.classList.add('is-open'); document.body.classList.add('preview-open'); };
-      const close = () => { panel.classList.remove('is-open'); document.body.classList.remove('preview-open'); };
-      document.querySelectorAll('[data-bd-preview-open]').forEach(b => b.addEventListener('click', open));
-      panel.querySelectorAll('[data-bd-preview-close]').forEach(b => b.addEventListener('click', close));
-      document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-    }
+    /* 預覽與在地化的入口（§2.2 · D319）：頁首那顆是 <a>，href 依這一筆的來源分流——
+       電子商店的組合包走本站的 product-localization.html?type=bundle；活動的組合包（成員含票券）沒有自己的
+       在地化頁，指向該活動的 event-localization.html——§2.8：那一份資料在活動的票務商品頁視圖裡是同一份。
+       取代的舊分割預覽區塊見上方墓碑。 */
+    (function () {
+      const evId = bundle && bundle.event && bundle.event.id;
+      const href = evId
+        ? 'event-localization.html?id=' + encodeURIComponent(evId)
+        : 'product-localization.html?type=bundle' + (bundle && bundle.id ? '&id=' + encodeURIComponent(bundle.id) : '');
+      document.querySelectorAll('[data-bd-localize]').forEach(a => { a.href = href; });
+      /* 從那一頁存完回來（帶 ?saved=loc）：只提示，不動上架狀態（D319 決定一）。 */
+      if (new URLSearchParams(location.search).get('saved') === 'loc' && window.ztorToast) {
+        window.ztorToast.show(T0('product-detail.loc.saved', 'Saved — translations are live.'));
+      }
+    })();
 
     /* ── 鎖定歷史紀錄（2026-09-11，同商品詳情的 stock-history）：一次改動一筆，點開看逐成員前 → 後 ── */
     const HIST = [];
@@ -2077,6 +2082,8 @@
       if (!LS) return;
       const main = document.querySelector('.main') || document.body;
       const btnUnlist = document.querySelector('[data-bd-unlist]');
+      const btnRelist = document.querySelector('[data-bd-relist]');   /* 2026-09-23：已下架態的主要動作＝上架，與上架開關同一支 tryRelist() */
+      const btnHide = document.querySelector('[data-bd-hide]'), btnShow = document.querySelector('[data-bd-show]');   /* 2026-09-23：只在上架中才出現，與 #bd-shown 同一個動作 */
       const btnArchive = document.querySelector('[data-bd-archive]');
       const btnUnarchive = document.querySelector('[data-bd-unarchive]');   /* D298：已封存態的唯一主要動作＝解除封存 */
       const btnDelete = document.querySelector('[data-bd-delete]');   /* D307：已下架／已封存且零成交才露出；活動組合包不提供 */
@@ -2092,10 +2099,12 @@
       const mirror = () => { if (seed) { seed.archived = bundleModel.archived; seed.listed = bundleModel.listed; seed.listAt = bundleModel.listAt; seed.unlistAt = bundleModel.unlistAt; seed.unlistReason = bundleModel.unlistReason; seed.saleStart = bundleModel.saleStart; seed.saleEnd = bundleModel.saleEnd; seed.onSale = bundleModel.onSale; if (store && store.commit && !seed.isEventBundle) store.commit(seed); } };   /* 活動組合包不寫進 products-store 的工作階段（它的資料源在 events-store） */   /* D290：開賣三欄一併鏡射 */
       window.bdMirror = mirror;
       /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「解除封存」永遠放行 */
-      if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { block: PRUNE + ',[data-bd-lock-actions] button,[data-bd-alloc-row] button,[data-bd-alloc-group] button', allow: '[data-bd-unarchive],[data-bd-delete],[data-bd-preview-open],[data-bd-preview-close]' });   /* D307：已封存態「刪除」與「解除封存」都放行 */
+      if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { block: PRUNE + ',[data-bd-lock-actions] button,[data-bd-alloc-row] button,[data-bd-alloc-group] button', allow: '[data-bd-unarchive],[data-bd-delete]' });   /* D307：已封存態「刪除」與「解除封存」都放行 */
       function syncPrimaryAction() {
         const archived = LS.isArchived(bundleModel);
         if (btnUnlist) btnUnlist.hidden = archived || bundleModel.draft || LS.isUnlisted(bundleModel);
+        /* 已下架（未封存、非草稿）→ 「上架」與「封存」並列，上架在前（2026-09-23 使用者裁決）；已封存不提供上架 */
+        if (btnRelist) btnRelist.hidden = archived || bundleModel.draft || !LS.isUnlisted(bundleModel);
         if (btnArchive) btnArchive.hidden = !LS.canArchive(bundleModel);
         if (btnUnarchive) btnUnarchive.hidden = !archived;
         /* D307：零成交且已下架／已封存 → 「刪除」（銷售摘要在 seed 上，bundleModel 只有三開關）；有成交 → 上架卡多一句「已有銷售紀錄，只能封存」。
@@ -2105,7 +2114,12 @@
         const canDel = !evb && !sold && !!(LS.canDelete && LS.canDelete(bundleModel));
         if (btnDelete) btnDelete.hidden = !canDel;
         if (salesNote) salesNote.hidden = !(!evb && sold && !bundleModel.draft && (archived || LS.isUnlisted(bundleModel)));
+        /* 頁首「隱藏／顯示」（2026-09-23 使用者裁決）：與上架卡的顯示開關同一份資料，只在上架中才出現（D265／§7.14） */
+        const listedNow = !archived && !bundleModel.draft && !LS.isUnlisted(bundleModel);
+        if (btnHide) btnHide.hidden = !(listedNow && bundleModel.shown);
+        if (btnShow) btnShow.hidden = !(listedNow && !bundleModel.shown);
       }
+      window.bdSyncPrimaryAction = syncPrimaryAction;   /* 2026-09-23：讓上層 #bd-shown 的 bindSwitch 切換後也能重畫頁首隱藏／顯示鈕 */
       /* 因成員下架而一同下架（D288，原 D284「因成員封存」）：手動確認的連動與定時下架到期的自動連動（auto）各一句 */
       function syncReason() {
         const r = bundleModel.unlistReason;
@@ -2203,45 +2217,28 @@
           onConfirm: () => { LS.unlist(bundleModel); paint(); }
         });
       }
-      /* 重新上架（D288 不變式＋D289 做法）：成員有已封存的 → 擋下、列出、什麼都不改（不可由組合包順手解除封存，提示「先解除封存」· D298）；
+      /* 重新上架（D288 不變式＋D289 做法）：判斷與三種彈窗都在共用的 partials/bundle-relist.js——
+         成員有已封存的 → 擋下、列出、什麼都不改（不可由組合包順手解除封存，提示「先解除封存」· D298）；
          成員有已下架的 → 先確認「這些單售會一起重新上架」，確認後成員連帶重新上架、組合包上架（清 unlistReason）；
-         都上架中 → 直接上架。D298 起只有自已下架（上架開關切開）走這裡；已封存的組合包先按頁首「解除封存」回到已下架，
-         再從上架開關進來。反方向不連動。 */
+         都上架中 → 直接上架。電子商店清單已下架列的「上架」走同一支（2026-09-23 使用者裁決，邏輯只此一份）。
+         入口：上架開關切開、頁首「上架」鈕。已封存的組合包先按頁首「解除封存」回到已下架才進得來。反方向不連動。 */
       function tryRelist() {
-        if (LS.isArchived(bundleModel)) return;
-        const getP = id => (store && store.get) ? store.get(id) : null;
-        const memberName = b => (b.product && b.product.name) || b.productId;
-        const plan = LS.bundleRelistPlan(bundleModel, getP);
-        if (plan.blocked.length) {
-          askConfirm({
-            title: T('e-shop.relist.blocked-title', '“{n}” has archived items').replace('{n}', bname()),
-            body: T('e-shop.relist.blocked-body', 'Unarchive these items first, then list the bundle:'),
-            items: plan.blocked.map(memberName),
-            okKey: 'e-shop.relist.blocked-ok', okFallback: 'Got it', noCancel: true,
-            onConfirm: null
-          });
-          return;
-        }
-        const go = () => {
-          const r = LS.relistBundle(bundleModel, getP);
-          if (store && store.commit) r.relisted.forEach(p => store.commit(p));
-          paint();
-          /* 成員的狀態變了，成員列的徽章要重畫（可售套數已由 paint() 內的 refreshAlloc 重算） */
-          syncMemberBadges();
-        };
-        if (plan.unlisted.length) {
-          askConfirm({
-            title: T('e-shop.relist.title', 'Relist “{n}”?').replace('{n}', bname()),
-            body: T('e-shop.relist.members-body', 'These unlisted items go back on sale with it:'),
-            items: plan.unlisted.map(memberName),
-            okKey: 'e-shop.relist.members-confirm', okFallback: 'Relist all',
-            onConfirm: go
-          });
-          return;
-        }
-        go();
+        if (!window.ZtorBundleRelist) return;
+        window.ZtorBundleRelist.run({
+          bundle: bundleModel,
+          getProduct: id => (store && store.get) ? store.get(id) : null,
+          name: bname(), askConfirm, T,
+          commit: e => { if (store && store.commit && e !== bundleModel) store.commit(e); },   /* 組合包自己由 paint() 的 mirror() 寫回 */
+          onDone: () => {
+            paint();
+            /* 成員的狀態變了，成員列的徽章要重畫（可售套數已由 paint() 內的 refreshAlloc 重算） */
+            syncMemberBadges();
+          }
+        });
       }
       if (btnUnlist) btnUnlist.addEventListener('click', askUnlist);
+      /* 頁首「上架」＝上架開關切開，同一支函式；paint() 會把開關、排程欄與頁首動作一起畫回資料的樣子（反向連動） */
+      if (btnRelist) btnRelist.addEventListener('click', tryRelist);
       /* 封存只看「已下架」、單純確認（D288 修正 D284 裁決四）；組合包封存本來就不牽連成員 */
       if (btnArchive) btnArchive.addEventListener('click', () => {
         if (!LS.canArchive(bundleModel)) return;

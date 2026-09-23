@@ -409,6 +409,8 @@
     'pprom.th.modal.add': { en: 'Add a threshold discount', zh: '新增滿額折扣' },
     'pprom.th.modal.edit': { en: 'Edit threshold discount', zh: '編輯滿額折扣' },
     'pprom.th.f.name.ph': { en: 'e.g., Launch week', zh: '例：開站慶' },
+    /* D316（2026-09-23）：門檻金額以平台基準幣別記錄，判定訂單時依當時匯率換算。 */
+    'pprom.th.f.threshold.base': { en: 'Recorded in the platform base currency and converted at the prevailing rate when an order is checked against it.', zh: '以平台基準幣別記錄，判定訂單時依當時匯率換算。' },
     'pprom.th.f.threshold': { en: 'Threshold amount', zh: '門檻金額' },
     'pprom.th.f.discount': { en: 'Discount', zh: '折抵' },
 
@@ -551,6 +553,8 @@
     'fees.source.inherit':  { en: 'Inherited', zh: '繼承' },
     'fees.source.override': { en: 'Override', zh: '覆寫' },
     'fees.payment.title':   { en: 'Payment fee', zh: '支付手續費' },
+    /* D316（2026-09-23）：每筆固定額改以平台基準幣別記錄，套用到創作者時依當時匯率換算。 */
+    'fees.payment.fixed.base': { en: 'The fixed amount is recorded in the platform base currency and converted at the prevailing rate when it applies to a creator.', zh: '每筆固定額以平台基準幣別記錄，套用到創作者時依當時匯率換算。' },
     'fees.payment.sub':     { en: 'Each payment provider has its own rate — a percentage plus a fixed amount per transaction, applied to every transaction (OTT excluded; its rate is already all-in).', zh: '每個金流商各自的費率——百分比＋每筆固定金額，套用所有交易（OTT 線上影音除外，其費率已含金流）。' },
     'fees.version.title': { en: 'Rate version & effective scope', zh: '費率版本與生效範圍' },
     'fees.version.current': { en: 'Current version', zh: '目前版本' },
@@ -768,6 +772,19 @@
     /* 表單次要欄位收合（ds-components/field-more.css）*/
     'field.show-more':        { en: 'Show more',             zh: '顯示更多' },
     'field.show-less':        { en: 'Show less',             zh: '收合' },
+
+    /* ─── 幣別（2026-09-23 D316，主規格 §7.15；js/currency.js 讀這幾把）─────
+       創作者幣別的五種值域全站只有這一份；平台基準幣別（Admin 的營運記帳幣別）
+       共用同一組全名。四個宿主頁：settings／store-settings／admin-platform-fees／
+       admin-platform-promotions。 */
+    'currency.name.USD':      { en: 'US Dollar',             zh: '美元' },
+    'currency.name.TWD':      { en: 'New Taiwan Dollar',     zh: '新台幣' },
+    'currency.name.HKD':      { en: 'Hong Kong Dollar',      zh: '港幣' },
+    'currency.name.SGD':      { en: 'Singapore Dollar',      zh: '新加坡幣' },
+    'currency.name.JPY':      { en: 'Japanese Yen',          zh: '日圓' },
+    'currency.contact-support': { en: 'Contact support to change it.', zh: '欲更改幣別請聯繫客服。' },
+    'currency.platform-base': { en: 'Recorded in the platform base currency', zh: '以平台基準幣別記錄' },
+    'currency.fx.asof':       { en: 'Rate as of {t}',        zh: '匯率時點 {t}' },
 
     /* ─── Common buttons / chips ──────────────────────────── */
     'btn.export':             { en: 'Export',                zh: '匯出' },
@@ -2401,7 +2418,9 @@
     'store-settings.group.shipping': { en: 'Shipping',                             zh: '出貨' },
     'store-settings.group.currency': { en: 'Currency',                            zh: '幣別' },
     /* 幣別鎖成唯讀（2026-08-13 使用者裁示）：說明只寫「為什麼不能點」，不解釋改的管道——上游未定 */
-    'store-settings.currency.hint':  { en: 'Set when the shop opens. Not editable here.', zh: '開店時設定，此處不可更改。' },
+    /* 墓碑 2026-09-23（D316）：'store-settings.currency.hint'（開店時設定，此處不可更改）——
+       幣別在**建立創作者帳號**時設定、不是開店時，而且誰都不能改；改用共用的
+       'currency.contact-support'（與設定頁同一句）。 */
 
     /* F7 尺寸指南設定（spec 5.1.5.5 F7 / D171、D211）。2026-08-20 使用者指示由「商品規格」
        改名——D211 之後這一組就只有尺寸指南一件事，叫商品規格會讓人以為還管別的。
@@ -2468,6 +2487,7 @@
     /* 「全部商店」含活動票種（D299 決定 2）——Phase 1 radio-list 的副行。 */
     'store-settings.codes.f.scope.all.sub': { en: 'Every e-shop item and event ticket tier', zh: '含電子商店商品與活動票種' },
     'store-settings.codes.f.scope.types': { en: 'Item types',    zh: '特定品項' },
+    'store-settings.codes.f.scope.types.sub': { en: 'Whole categories, or just some sub-types', zh: '整個類型，或其中幾個子類型' },
     'store-settings.codes.f.scope.items': { en: 'Specific items', zh: '特定商品' },
     /* Phase 1 的第二個範圍選項：D279 是「一組碼只綁一件」（oneitem），D299 改成可多選——
        跟 Phase 4 的「特定商品」是同一顆多選，但 Phase 1 這一列要把「可多選」講出來（使用者裁決用語）。
@@ -2604,7 +2624,8 @@
     'store-settings.field.name.ph':  { en: 'Your shop name',                       zh: '輸入店名' },
     'store-settings.field.name.hint':{ en: 'Public name on your shop page.',        zh: '顯示於商店頁的公開名稱。' },
     'store-settings.field.currency': { en: 'Currency',                             zh: '幣別' },
-    'store-settings.field.currency.hint': { en: 'Applies to shop pricing. Payout currency follows Earnings.', zh: '套用於商店定價；出款幣別以收入管理為準。' },
+    /* 墓碑 2026-09-23（D316）：'store-settings.field.currency.hint'（套用於商店定價…）——
+       本來就沒有消費者，且「商店幣別」這個概念已併入創作者幣別。 */
     /* 墓碑：'store-settings.currency.choose'（選擇幣別）——幣別 2026-08-13 鎖成唯讀後無空選項可選，
        key 隨之退場；之後開放自選時把它加回來。 */
     'store-settings.field.bio':      { en: 'Shop bio',                             zh: '商店簡介' },
@@ -2691,8 +2712,12 @@
     /* 封存／解除封存／草稿刪除（2026-09-18 · D284，§7.14「封存與不可刪除」；2026-09-22 · D298 修訂）：列操作依狀態互斥——
        已下架列有「封存」、已封存列只有「解除封存」（回到已下架、不確認）、草稿列有「刪除」且必須確認。確認彈窗共用 leave-dialog 的殼。 */
     'e-shop.a.archive':         { en: 'Archive',                           zh: '封存' },
-    /* 墓碑（2026-09-22，D298）：`e-shop.a.relist` 移除——已封存列的列操作由「重新上架（直接回上架）」改成「解除封存（回到已下架）」，
-       上架這一步回到細節頁的上架開關。接手的鍵是 `e-shop.a.unarchive`。 */
+    /* 已下架列的「上架」（2026-09-23 使用者裁決）：清單重新提供上架入口，與細節頁頁首的 `product-detail.btn.list` 同一個動作、
+       各自跟隨所在的鍵名空間（列操作＝`e-shop.a.*`、頁首鈕＝`product-detail.btn.*`，同「封存」的既有做法）。
+       另起新鍵而不復用墓碑上的 `e-shop.a.relist`：那個鍵在 D298 是「已封存列直接回上架」，與這裡的「已下架列上架」不是同一件事。 */
+    'e-shop.a.list':            { en: 'List',                              zh: '上架' },
+    /* 墓碑（2026-09-22，D298）：`e-shop.a.relist` 移除——已封存列的列操作由「重新上架（直接回上架）」改成「解除封存（回到已下架）」。
+       接手的鍵是 `e-shop.a.unarchive`（解除封存）與 `e-shop.a.list`（已下架列的上架，2026-09-23）。 */
     'e-shop.a.unarchive':       { en: 'Unarchive',                         zh: '解除封存' },
     'e-shop.archive.title':     { en: 'Archive “{n}”?',                    zh: '要封存「{n}」嗎？' },
     'e-shop.archive.body':      { en: 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can unarchive it anytime.', zh: '它會離開主清單，只在「已封存」篩選出現；頁面轉為唯讀，訂單與收入不受影響，隨時可以解除封存。' },   /* D298：結尾改講解除封存 */
@@ -3147,13 +3172,23 @@
     'product-detail.badge.physical':{ en: 'Physical merch', zh: '實體周邊' },
     'product-detail.badge.zine':    { en: 'Books',        zh: '書籍' },
     'product-detail.sub':           { en: '32-page photo zine documenting the east-coast tour. Letterpress cover.', zh: '記錄東岸巡演的 32 頁攝影雜誌書。凸版印刷封面。' },
-    'product-detail.btn.preview':   { en: 'Preview',      zh: '預覽' },   /* 2026-09-11 使用者：所有「以粉絲身分預覽」都改成「預覽」 */
+    /* ✝ 墓碑 · 'product-detail.btn.preview'（2026-09-23 D319 退役）：商品／組合商品細節頁頁首的「粉絲視角預覽（See as fan）」
+       整顆退場，取代者是下面的 product-detail.btn.localize——那個畫面主區本身就是同一份粉絲視角完整頁，還能改翻譯。 */
+    'product-detail.btn.localize':  { en: 'Preview & localization', zh: '預覽與在地化' },   /* D319：兩個細節頁頁首共用；開 product-localization.html */
+    'product-detail.loc.saved':     { en: 'Saved — translations are live.', zh: '已儲存，翻譯立即生效。' },   /* D319：存完回細節頁的提示；上架狀態不變，故不提上架 */
     /* 頁首主要動作依狀態互斥（2026-09-18 · D284；2026-09-22 · D298 修訂）：上架中→下架、已下架→封存（另有上架開關）、
        已封存→解除封存（回到已下架，不自動上架）；單售、組合包、拍賣共用 */
     'product-detail.btn.unlist':    { en: 'Unlist',       zh: '下架' },
+    /* 三個細節頁頁首已下架態的「上架」（2026-09-23 使用者裁決）：與上架設定卡的上架開關是同一個動作。
+       英文用 Unlist 的直接反面 List（文案不重述上下文：頁面標題已經說了是哪一件東西）。 */
+    'product-detail.btn.list':      { en: 'List',         zh: '上架' },
+    /* 三個細節頁頁首「顯示／隱藏」（2026-09-23 使用者裁決）：與上架卡的顯示開關（「顯示於商店」）同一份資料，
+       只在上架中才出現；三頁共用同一組鍵。 */
+    'product-detail.btn.hide':      { en: 'Hide',         zh: '隱藏' },
+    'product-detail.btn.show':      { en: 'Show',         zh: '顯示' },
     'product-detail.btn.archive':   { en: 'Archive',      zh: '封存' },
     /* 墓碑（2026-09-22，D298）：`product-detail.btn.relist` 移除——三個細節頁頁首已封存態的「重新上架（直接回上架）」
-       改成「解除封存（回到已下架）」，上架由既有的上架開關承接。接手的鍵是 `product-detail.btn.unarchive`。 */
+       改成「解除封存（回到已下架）」。接手的鍵是 `product-detail.btn.unarchive`（解除封存）與 `product-detail.btn.list`（已下架態的上架，2026-09-23）。 */
     'product-detail.btn.unarchive': { en: 'Unarchive',    zh: '解除封存' },
     'product-detail.btn.delete':    { en: 'Delete',       zh: '刪除' },   /* D307：三個細節頁頁首，已下架／已封存且零成交才露出 */
     'product-detail.archived.banner': { en: 'Archived — read-only. Unarchiving returns it to Unlisted; settings are kept.', zh: '已封存：整頁唯讀，解除封存後回到已下架、設定照舊保留。' },   /* D298：出口改講解除封存 */
@@ -3284,7 +3319,7 @@
     'product-detail.sales.cta':     { en: 'View sales &amp; revenue log →', zh: '查看銷售與收入紀錄 →' },
     'product-detail.sales.hint':    { en: 'Net figures pulled from Earnings. Manual entries or pending settlements clearly flagged.', zh: '淨額來自收入管理。手動補登與未結算金額會明確標示。' },
     'product-detail.sales.empty':   { en: 'No sales yet. Revenue appears here once fans buy this product.', zh: '尚無銷售紀錄。粉絲購買後，收入會顯示在這裡。' },
-    'product-detail.preview.title': { en: 'How buyers see your shop', zh: '買家看到你的商店的樣子' },
+    /* ✝ 墓碑 · 'product-detail.preview.title'（2026-09-23 D319 退役）：分割預覽面板的標題；面板整組退場。 */
     'product-detail.price.title':   { en: 'Price &amp; stock', zh: '價格與庫存' },
     'product-detail.price.sub':     { en: 'How it\'s priced and how much is left', zh: '怎麼定價、還剩多少' },
     'product-detail.inv.title':     { en: 'Delivery &amp; buyer settings', zh: '取貨與購買設定' },
@@ -4094,7 +4129,8 @@
     'ed.early.warn':      { en: 'Allow entry',                    zh: '仍可入場' },
     'ed.early.block':     { en: 'Deny entry',                     zh: '不能入場' },
     'ed.early.policy.hint': { en: 'Ticket types can enter earlier — set that on the Tiers tab.', zh: '票種可以各自提前入場，在「票種」分頁設定。' },
-    'ed.tix.fee':         { en: 'Booking fee',                    zh: '手續費' },
+    /* 墓碑 2026-09-23（D316）：'ed.tix.fee'（手續費）——平台費與支付費改由創作者負擔，
+       票價之上沒有加給粉絲的手續費；票務卡事實列與票種彈窗那一列一起退場。 */
     'ed.tix.early':       { en: 'Early entry (min)',              zh: '提前入場（分鐘）' },
     'ed.tix.early.hint':  { en: '{n} min before doors — in at {t}.', zh: '比開放入場提早 {n} 分鐘，{t} 可以入場。' },
     'ed.tix.early.nodoors': { en: 'Set the doors-open time first — the actual entry time comes from it.', zh: '先在總覽設開放入場時間，實際入場時間由它算出來。' },
@@ -4515,9 +4551,13 @@
     'settings.pay.sched.weekly':    { en: 'Weekly · Friday',      zh: '每週 · 週五' },
     'settings.pay.sched.monthly':   { en: 'Monthly · 1st',        zh: '每月 · 1 號' },
     'settings.pay.min':             { en: 'Minimum payout threshold', zh: '最低提款金額' },
-    'settings.pay.min-hint':        { en: 'Available balance must exceed this, in USD.', zh: '可提領餘額需超過此值（單位 USD）。' },
-    'settings.pay.currency':        { en: 'Default currency',     zh: '預設幣別' },
-    'settings.pay.currency-hint':   { en: 'Conversions happen at transaction time.', zh: '換匯於交易當下進行。' },
+    /* 2026-09-23（D316b）：{cur} 佔位改由 js/currency.js 的 paint() 代入創作者幣別代碼
+       （CREATOR，單一來源），文案不再寫死 USD——沿革見 ASSUMPTIONS UIA-173。 */
+    'settings.pay.min-hint':        { en: 'Available balance must exceed this, in {cur}.', zh: '可提領餘額需超過此值（單位 {cur}）。' },
+    'settings.pay.currency':        { en: 'Currency',             zh: '幣別' },
+    /* 墓碑 2026-09-23（D316）：'settings.pay.currency-hint'（換匯於交易當下進行）——
+       幣別改成唯讀顯示後，這一格的 hint 要回答的是「想改怎麼辦」，改用共用的
+       'currency.contact-support'；換匯時點的敘述本來就屬 §7.15，不放在設定頁的欄位說明。 */
     'settings.pay.tax-title':       { en: 'Tax information',      zh: '稅務資訊' },
     'settings.pay.tax-id':          { en: 'Tax ID type',          zh: '稅號類型' },
     'settings.pay.tax-id-val':      { en: 'Individual · Taiwan UNI', zh: '個人 · 台灣統一編號' },
@@ -4615,6 +4655,10 @@
     'pstage.drawer.trans':  { en: 'Translations',                     zh: '翻譯表' },
     'pstage.drawer.price':  { en: 'Prices',                           zh: '價格表' },
     'pstage.drawer.trans-hint': { en: 'The default language is read-only — edit it in the form.', zh: '預設語言那一欄是來源，要改回原本的欄位改。' },
+    /* 2026-09-23 產品負責人裁示（修訂 D306）：電子商店的價格表非基準幣別改唯讀（只顯示
+       換算值），這句取代 pp.table.prices-hint 在「全部唯讀」時的提示；活動側維持可覆寫、
+       沿用舊句。決策編號 D318。 */
+    'pstage.drawer.price-hint-readonly': { en: 'Other currencies convert automatically at the exchange rate — the store can’t adjust them individually.', zh: '其他幣別依匯率自動換算，電子商店不可個別調整。' },
     'pstage.edit':          { en: 'Edit',                             zh: '編輯' },
     'pstage.publish':       { en: 'Publish event',                    zh: '發布活動' },
     'pstage.save':          { en: 'Save',                             zh: '儲存' },
@@ -4624,6 +4668,13 @@
     'evloc.title':          { en: 'Preview & localization',           zh: '預覽與在地化' },
     'evloc.back':           { en: 'Back to event',                    zh: '返回活動' },
     'evloc.notfound':       { en: 'Event not found.',                 zh: '找不到這場活動。' },
+    /* product-localization.html（商品／組合商品細節頁「預覽與在地化」的全頁版，5.1.5.1 §2.18／5.1.5.9 §2.8 · D319） */
+    'pdloc.title':          { en: 'Preview & localization',           zh: '預覽與在地化' },
+    'pdloc.back':           { en: 'Back',                             zh: '返回' },
+    'pdloc.notfound':       { en: 'Product not found.',               zh: '找不到這件商品。' },
+    'pdloc.notfound.bundle':{ en: 'Bundle not found.',                zh: '找不到這組組合。' },
+    'pdloc.readonly':       { en: 'View only · archived',             zh: '已封存 · 只可查看' },
+    'pdloc.spec.includes':  { en: 'Includes',                         zh: '內容物' },
     /* 粉絲視角活動頁 mock（js/fan-event-page.js）：靜態標籤跟介面語言走，內容跟預覽語系走 */
     'fep.view.ticket':      { en: 'Ticket page',                      zh: '票券頁' },
     'fep.view.bundles':     { en: 'Ticket bundles page',              zh: '票務商品頁' },
@@ -4713,6 +4764,83 @@
     'fpp.sec.returns':      { en: 'Pickup & returns',                 zh: '取貨與退換' },
     'fpp.sec.related':      { en: 'You may also like',                zh: '你可能也喜歡' },
     'fpp.related.badge':    { en: 'Not this item',                    zh: '非本商品' },
+    /* 粉絲視角組合包頁 mock（js/fan-bundle-page.js，D310 組合側 2026-09-23）：前台 shop-item 兩個組合分支
+       （純商品套組／含票券組合）的鏡像。與活動頁、商品頁共用的字（返回／收藏／購物車／圖庫／價格／數量／
+       組合包徽章／購買組合／日期／時間／場館／主辦）直接用 fep.*／fpp.* 那幾個鍵，不另開一份。 */
+    'fbp.stock.left':       { en: 'Only {n} sets left',               zh: '僅剩 {n} 組' },
+    'fbp.cta.choose':       { en: 'Choose your set',                  zh: '選擇你的組合' },
+    'fbp.cta.add':          { en: 'Add set to cart',                  zh: '加入套組' },
+    'fbp.cta.unavailable':  { en: 'Unavailable',                      zh: '無法購買' },
+    'fbp.meta.contents':    { en: 'Includes',                         zh: '內容' },
+    'fbp.meta.starts':      { en: 'Starts {t}',                       zh: '{t} 開演' },
+    'fbp.meta.online':      { en: 'Live online',                      zh: '線上直播' },
+    'fbp.meta.perks':       { en: 'Perks',                            zh: '專屬權益' },
+    'fbp.sec.tiers':        { en: 'Seat sections · pick one',         zh: '座位區域 · 任選一種' },
+    'fbp.tier.price':       { en: 'Ticket {price}',                   zh: '票價 {price}' },
+    'fbp.tier.left':        { en: '{n} left',                         zh: '剩 {n} 張' },
+    'fbp.tier.any':         { en: 'Pick one',                         zh: '任選一種' },
+    'fbp.sec.contents':     { en: 'What’s in the set · {n} items',    zh: '套組內容 · 共 {n} 件' },
+    'fbp.sec.contents.label': { en: 'What’s in the set',              zh: '套組內容' },
+    'fbp.spec.pick':        { en: '{opts} chosen at checkout',        zh: '{opts} 下單時選' },
+    'fbp.spec.single':      { en: '{price} on its own',               zh: '單買 {price}' },
+    'fbp.link.item':        { en: 'View item',                        zh: '查看單品' },
+    'fbp.link.event':       { en: 'View event',                       zh: '查看活動' },
+    'fbp.sec.perks':        { en: 'Bundle perks · {n}',               zh: '組合專屬權益 · 共 {n} 項' },
+    'fbp.sec.perks.label':  { en: 'Bundle perks',                     zh: '組合專屬權益' },
+    'fbp.sec.about':        { en: 'About this bundle',                zh: '組合介紹' },
+    /* 粉絲視角專案頁（js/fan-project-page.js，建立專案最後一步「預覽與發布」D322）：
+       中文照前台 cocreate-project.html／title.html 原字；英文是同一個意思的英文產品寫法 */
+    'fpj.cat.fund':         { en: 'Co-creation',                      zh: '共創計畫' },
+    'fpj.cat.preorder':     { en: 'Pre-order',                        zh: '預購計畫' },
+    'fpj.learn.fund':       { en: 'How co-creation works',            zh: '瞭解共創計畫' },
+    'fpj.learn.preorder':   { en: 'How pre-orders work',              zh: '瞭解預購計畫' },
+    'fpj.by':               { en: 'Started by',                       zh: '發起人' },
+    'fpj.status.active':    { en: 'Campaign live',                    zh: '計畫進行中' },
+    'fpj.cta.back':         { en: 'Back this project',                zh: '我要支持' },
+    'fpj.cta.trailer':      { en: 'Watch trailer',                    zh: '觀看預告片' },
+    'fpj.cta.free':         { en: 'Watch free',                       zh: '免費觀看' },
+    'fpj.save':             { en: 'Save',                             zh: '收藏' },
+    'fpj.share':            { en: 'Share',                            zh: '分享' },
+    'fpj.fund.backers':     { en: '{n} backers',                      zh: '{n} 人支持' },
+    'fpj.fund.goal':        { en: 'Goal {amt}',                       zh: '目標 {amt}' },
+    'fpj.fund.left':        { en: '{n} days left',                    zh: '距結束 {n} 天' },
+    'fpj.fund.period':      { en: 'This project only succeeds if it reaches its goal by {date}.', zh: '此計畫只有在 {date} 之前達成目標，才視為計畫成功。' },
+    'fpj.fund.note':        { en: 'Your card is only verified now. It is charged once the goal is met, and never if it falls short.', zh: '信用卡僅驗證，達標才扣款；未達標全額不扣。' },
+    'fpj.po.units':         { en: '{n} copies',                       zh: '{n} 份' },
+    'fpj.po.backers':       { en: '{n} pre-orders',                   zh: '{n} 人預購' },
+    'fpj.po.goal':          { en: 'Goal {n} copies',                  zh: '目標 {n} 份' },
+    'fpj.po.period':        { en: 'This pre-order only goes ahead if it reaches its minimum by {date}.', zh: '此預購只有在 {date} 之前達到最少預購數，才視為成立。' },
+    'fpj.price.from':       { en: 'From {price}',                     zh: '{price} 起' },
+    'fpj.price.ppv':        { en: 'Pay per view · one-time',          zh: '單次收費' },
+    'fpj.price.hybrid':     { en: 'Unlock paid content',              zh: '解鎖付費內容' },
+    'fpj.price.rent':       { en: 'Rent · one-time',                  zh: '租借觀看・單次收費' },
+    'fpj.sec.tiers':        { en: 'Choose a tier',                    zh: '選擇方案' },
+    'fpj.sec.about.work':   { en: 'About this work',                  zh: '關於這部作品' },
+    'fpj.sec.about.goods':  { en: 'About these items',                zh: '關於這組商品' },
+    'fpj.sec.plan.fund':    { en: 'About this co-creation',           zh: '共創計畫說明' },
+    'fpj.sec.plan.preorder':{ en: 'About this pre-order',             zh: '預購計畫說明' },
+    'fpj.sec.budget':       { en: 'Budget allocation',                zh: '預算分配' },
+    'fpj.budget.total':     { en: 'Total {amt}',                      zh: '共 {amt}' },
+    'fpj.sec.media.concept':{ en: 'Concept art',                      zh: '概念圖' },
+    'fpj.sec.media.goods':  { en: 'Product images',                   zh: '商品圖' },
+    'fpj.sec.media.stills': { en: 'Stills',                           zh: '劇照' },
+    'fpj.sec.media.photos': { en: 'Photos',                           zh: '照片' },
+    /* 作品模式（publish-work.html 最後一步，前台 title.html 的兩段；英文照前台 locales/en.json 同一句） */
+    'fpj.sec.team':         { en: 'Creative team',                    zh: '創作團隊' },
+    'fpj.sec.clips':        { en: 'Trailers & clips',                 zh: '預告與花絮' },
+    'fpj.clip.trailer':     { en: 'Play the trailer',                 zh: '播放預告片' },
+    'fpj.clip.bts':         { en: 'Play the behind-the-scenes reel',  zh: '播放幕後花絮' },
+    'fpj.tier.left':        { en: '{n} of {total} left',              zh: '尚餘 {n} / {total} 個名額' },
+    'fpj.tier.unlimited':   { en: 'Unlimited',                        zh: '名額不限' },
+    'fpj.tier.cta':         { en: 'Select →',                         zh: '選擇 →' },
+    'fpj.tier.work':        { en: '{name} × {n}',                     zh: '{name} × {n}' },
+    'fpj.tier.slot':        { en: 'Includes 1 revenue-share slot',    zh: '含 1 個分潤名額' },
+    'fpj.tier.slots':       { en: 'Includes {n} revenue-share slots', zh: '含 {n} 個分潤名額' },
+    'fpj.meta.delivery':    { en: 'Expected delivery',                zh: '預計交付' },
+    'fpj.delivery.empty':   { en: 'Required. Fans see this date before they back you.', zh: '必填。粉絲支持前會先看到這個日期。' },
+    'fpj.timeline.now':     { en: 'In progress',                      zh: '目前進度' },
+    'fpj.field.perk':       { en: 'Perk {n}',                         zh: '權益 {n}' },
+    'fpj.field.budget':     { en: 'Category {n}',                     zh: '分類 {n}' },
     /* 活動詳情頁「預覽與在地化」入口（5.1.6.3 §2.13） */
     'ed.loc.btn':           { en: 'Preview & localization',           zh: '預覽與在地化' },
     'ed.loc.title':         { en: 'Localization',                     zh: '在地化' },
@@ -5454,6 +5582,12 @@
     'cp.savelater':         { en: 'Save for later',                   zh: '稍後再存' },
     'cp.start.selling':     { en: 'Start selling',                    zh: '開始販售' },
     'cp.start.auction':     { en: 'Start auction',                    zh: '開始拍賣' },
+    /* D317（2026-09-23）：表單／預覽拆成兩步驟——頁首進度條的兩段步驟名，
+       與表單主鈕新文案「下一步：預覽」（原本按下去就直接進全頁預覽，字卻寫「開始販售」，
+       跟第 2 步側欄真正上架的同一顆字重名；拆開後這顆只負責「往下走」）。 */
+    'cp.step.details':      { en: 'Details',                          zh: '內容' },   // 頁面標題已是「新增商品」，步驟名不再重述「商品」（鐵律 12；規格文件稱「商品內容」）
+    'cp.step.preview':      { en: 'Preview & publish',                zh: '預覽與發布' },
+    'cp.next-preview':      { en: 'Next: Preview',                    zh: '下一步：預覽' },
     /* §4.5 編輯態（標題／主動作／刪除）*/
     'cp.h1.edit':           { en: 'Edit product',                     zh: '編輯商品' },
     'cp.h1.edit.pre':       { en: 'Edit',                             zh: '編輯' },
@@ -5686,6 +5820,18 @@
     'cb.limit.ph':          { en: 'Unlimited',                        zh: '不限量' },
     'cb.limit.hint':        { en: 'Leave empty for unlimited',        zh: '留空即不限量' },
     'cb.create':            { en: 'Create bundle',                    zh: '建立組合' },
+    /* 2026-09-23 兩步驟（D310 組合側，比照建立商品 D317）：頁首進度條＋表單主鈕＋第 2 步全頁畫面的返回鈕與發布前檢核 */
+    'cb.step.details':      { en: 'Details',                          zh: '內容' },   // 頁面標題已是「建立組合」，步驟名不再重述「組合」（鐵律 12）
+    'cb.step.preview':      { en: 'Preview & publish',                zh: '預覽與發布' },
+    'cb.next-preview':      { en: 'Next: Preview',                    zh: '下一步：預覽' },
+    'cb.stage.back':        { en: 'Back to form',                     zh: '返回表單' },
+    'cb.qc.members':        { en: 'At least 1 item or ticket',        zh: '至少 1 項內容物' },
+    'cb.qc.name':           { en: 'Name',                             zh: '名稱' },
+    'cb.qc.disc':           { en: 'Discount between 0–100%',          zh: '折扣介於 0–100%' },
+    'cb.qc.lock':           { en: 'Locked sets within the ceiling',   zh: '鎖定套數未超過上限' },
+    'cb.qc.cap':            { en: 'Cap filled in, within supply',     zh: '限量上限已填、未超過可供應套數' },
+    'cb.qc.sale':           { en: 'Limited-time discount complete',   zh: '限時折扣已填完整' },
+    'cb.qc.listing':        { en: 'Listing & sale times',             zh: '上架與開賣時間' },
     /* 組合資訊：素材＋描述（spec 5.1.5.4 §4 F1）*/
     'cb.media.show':        { en: 'Show it off',                      zh: '秀出組合' },
     'cb.media.sub':         { en: "Buyers can't touch it. Your photos and videos do that job.", zh: '粉絲摸不到實品，照片與影片替你說話。' },
@@ -5732,6 +5878,9 @@
     'cpp.step.showcasework': { en: 'Showcase',                        zh: '展示內容' },
     'cpp.step.details':     { en: 'Details & pricing',                zh: '詳情與定價' },
     'cpp.step.submit':      { en: 'Review & submit',                  zh: '送審確認' },
+    /* D322（2026-09-23）：最後一步改成全頁預覽，步驟名跟著改；上面兩個舊名（review／submit）本頁已不用，留給其他引用 */
+    'cpp.step.preview':     { en: 'Preview & publish',                zh: '預覽與發布' },
+    'cpp.step.preview-submit': { en: 'Preview & submit',              zh: '預覽與送審' },
     'cpp.gf.master.h1':     { en: 'Upload the finished work.',        zh: '把完成的作品傳上來。' },
     'cpp.gf.master.sub':    { en: 'The master file, the language it speaks, and the subtitles that ship with it.', zh: '母帶檔案、片中說的語言，以及要一起上架的字幕。' },
     'cpp.gf.details.h1':    { en: 'Listing details and what it costs to watch.', zh: '作品頁上的資訊，以及看一次要多少。' },
@@ -6673,6 +6822,8 @@
     'cpp.rv.pf.mid.golive': { en: 'Monetization set',                 zh: '營利設定已完成' },
     'cpp.rv.pf.mid.fund':   { en: 'Co-creation set · budget totals 100%', zh: '共創設定完成 · 預算合計 100%' },
     'cpp.rv.pf.tiers':      { en: '3+ tiers created',                 zh: '已建立 3+ 方案' },
+    /* 預覽與發布側欄的共創方案檢核（D322）：照回饋套組步驟既有的擋關（至少 1 個），3 個是教練提示 */
+    'cpp.pv.chk.tiers':     { en: 'At least 1 backer bundle created', zh: '已建立至少 1 個回饋套組' },
     'cpp.rv.pf.mid.pre':    { en: 'Pre-order set',                    zh: '預購設定已完成' },
     'cpp.rv.pf.pretiers':   { en: '1+ plan created',                  zh: '已建立 1+ 方案' },
     /* 2026-08-03 D167 §4.3 F12 第 5 條：所有方案都限量時，各方案「販售上限 × 含作品份數」
@@ -8549,6 +8700,8 @@
        只在第一次上架時出現。中文不叫「公告」——公告是平台對使用者說話，這裡是創作者
        對自己的支持者說話。英文用 Announcement 反而正確：那是這個情境的產品慣用語。 */
     'pw.step.announce':     { en: 'Announcement',                     zh: '給粉絲的話' },
+    /* 第一次上架的最後一步（2026-09-23，比照建立專案影片路徑 cpp.step.preview-submit）：全頁預覽＋送出審核 */
+    'pw.step.preview':      { en: 'Preview & submit',                 zh: '預覽與送審' },
     /* 送出＝送審（2026-08-07 D179）：按下去的結果是「交出去等審核」，不是「上線」。
        主動作與就緒檢查三處字樣一起改，不然按鈕說發布、旁邊說可以發布了，使用者會以為按完就上線。 */
     'pw.submit':            { en: 'Send for review',                  zh: '送出審核' },
@@ -9296,7 +9449,7 @@
     'ed.tix.col.reserved': { en: 'Reserved',        zh: '保留中' },
     'ed.tix.col.sold':    { en: 'Sold',             zh: '銷量' },
     'ed.tix.col.price':   { en: 'Price',            zh: '票價' },
-    'ed.tix.col.fee':     { en: 'Fee',              zh: '手續費' },
+    /* 墓碑 2026-09-23（D316）：'ed.tix.col.fee'（票務列表檢視的手續費欄）隨欄位退場。 */
     'ed.tix.col.status':  { en: 'Status',           zh: '狀態' },
     'ed.tix.status.on':   { en: 'On sale',          zh: '販售中' },
     'ed.tix.status.paused': { en: 'Paused',         zh: '已暫停' },
@@ -9520,17 +9673,14 @@
     'ed.tm.gross':        { en: 'Fans pay',               zh: '粉絲付' },
     'ed.tm.plat':         { en: 'Platform fee',           zh: '平台費' },
     'ed.tm.net':          { en: 'You receive',            zh: '創作者實收' },
-    'ed.tm.net.how':      { en: 'On the ticket price — fee basis to be confirmed', zh: '以票價計算，計費基準待確認' },
-    /* 費率來自哪一層（D311 解析順序：本票例外 → creator 覆寫 → General） */
+    /* D316（2026-09-23）：計費基準（TIX-001）裁決為折後品項實付＝票價，不再是待確認。 */
+    'ed.tm.net.how':      { en: 'On the ticket price',  zh: '以票價計算' },
+    /* 費率來自哪一層（D315 解析順序：creator 覆寫 → General） */
     'ed.tm.fee.general':  { en: 'Platform default',       zh: '平台預設' },
     'ed.tm.fee.creator':  { en: 'Set for this creator',   zh: '這位創作者的覆寫' },
-    'ed.tm.fee.exc':      { en: 'Exception for this ticket (set by Admin)', zh: '本票例外（Admin 設定）' },
-    'ed.tm.exc':          { en: 'Fee exception',          zh: '例外平台費' },
-    'ed.tm.exc.pct':      { en: 'Rate',                   zh: '費率' },
-    'ed.tm.exc.hint':     { en: "Replaces the system's {n}%.", zh: '取代系統的 {n}%。' },
-    'ed.tm.exc.err':      { en: 'Enter a rate between 0 and 100.', zh: '費率要填 0 到 100 之間。' },
-    /* 開賣後才出現的那一版（D311 決定六）：一句話說完，不再加第二句（Q123 ③）。 */
-    'ed.tm.exc.hint.sold': { en: "Replaces the system's {n}% — for purchases from now on.", zh: '取代系統的 {n}%，只影響之後的購買。' },
+    /* 墓碑 2026-09-23（D315）：例外平台費整組退場，六把 key 一併刪定義——
+       'ed.tm.fee.exc'（本票例外的來源字串）、'ed.tm.exc'、'ed.tm.exc.pct'、
+       'ed.tm.exc.hint'、'ed.tm.exc.err'、'ed.tm.exc.hint.sold'（開賣後那一版，D311 決定六）。 */
     'ed.sess.add':        { en: 'Add a date',             zh: '新增場次' },
     'ed.sess.n':          { en: 'Date {n}',               zh: '第 {n} 場' },
     /* 折疊態的一行摘要（2026-08-13，A 案）：{t}＝開放入場時間 */

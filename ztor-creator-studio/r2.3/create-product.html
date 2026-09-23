@@ -51,9 +51,10 @@
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 浮層已退場（D310 商品側），留著是因為全頁畫面的翻譯表／價格表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
-<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：全頁畫面的翻譯表／價格表是右側滑出的 .drawer--wide -->
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表／價格表（2026-09-23 起整頁 .drawer--full） -->
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- D310 商品側：發布前預覽的粉絲視角商品頁（前台 shop-item 鏡像，只給 js/fan-product-page.js 用） -->
 <link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- D310 商品側：按「開始販售」後的「預覽與發布」全頁版型（主區預覽＋右側側欄） -->
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2"><!-- D317：頁首兩段進度條（商品內容／預覽與發布），做法對齊 create-event 第 8 步 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* create-product 專屬樣式。可重用的區段骨架／radio 卡／control row／form-grid／
@@ -122,6 +123,18 @@
         <div class="wizard__top-titlewrap">
           <span class="wizard__top-title" id="cp-title" data-i18n="cp.h1">New item</span>
           <span class="wizard__top-sub" id="cp-subtitle" data-i18n="cp.subtitle">Physical item</span>
+        </div>
+      </div>
+      <!-- D317（2026-09-23）：兩步驟進度條——商品內容／預覽與發布，做法對齊 create-event 第 8 步
+           （.progress-stepper--anystep：兩段都能點，點擊處理器見下方 stepperLabels.forEach）。
+           編輯態／嵌入態沒有「預覽與發布」這一步（見下方 editMode／embed 分支），這欄留空。 -->
+      <div class="wizard__progress" id="cp-progress">
+        <div class="progress-stepper progress-stepper--segmented progress-stepper--anystep" id="cp-stepper" style="--steps:2;--at:1;--progress:0%">
+          <div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>
+          <div class="progress-stepper__labels">
+            <span class="progress-stepper__label progress-stepper__label--current" data-step="1"><span data-i18n="cp.step.details">Details</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="2"><span data-i18n="cp.step.preview">Preview &amp; publish</span><span class="progress-stepper__state" data-step-state></span></span>
+          </div>
         </div>
       </div>
       <div class="wizard__top-actions">
@@ -1391,6 +1404,42 @@
     if (window.ztorIcons) window.ztorIcons.applyIcons(listEl);
   }
 
+  /* D317（2026-09-23）：頁首兩段進度條——第 1 段「商品內容」、第 2 段「預覽與發布」，做法
+     對齊 create-event 第 8 步（.progress-stepper--segmented/--anystep，見 progress-stepper.css）。
+     編輯態／嵌入態沒有這一步（見檔尾 editMode／embed 分支，那裡把 #cp-progress 藏起來），
+     這裡仍會照跑，只是沒有元素可寫、renderStepper 提早 return。 */
+  function cpDetailsReady() {
+    /* 就緒狀態＝Ready to sell? 同一組計算（buildChecks／skipValidation），不另訂規則。 */
+    const checks = buildChecks();
+    const remaining = checks.filter(c => !c.pending).filter(c => !c.done()).length;
+    const skip = !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
+    return remaining === 0 || skip;
+  }
+  const cpProgressEl = document.getElementById('cp-progress');
+  const stepperEl = document.getElementById('cp-stepper');
+  const stepperLabels = stepperEl ? Array.from(stepperEl.querySelectorAll('.progress-stepper__label')) : [];
+  let cpStep = 1;
+  function renderStepper() {
+    if (!stepperEl) return;
+    stepperEl.style.setProperty('--at', String(cpStep));
+    stepperEl.style.setProperty('--progress', ((cpStep - 1) / 2 * 100) + '%');
+    const detailsDone = cpDetailsReady();
+    stepperLabels.forEach(l => {
+      const n = Number(l.dataset.step);
+      l.classList.toggle('progress-stepper__label--current', n === cpStep);
+      l.classList.toggle('progress-stepper__label--done', n < cpStep);
+      const box = l.querySelector('[data-step-state]');
+      if (!box) return;
+      /* 第 2 段目前沒有「已完成」——側欄按「開始販售」直接離站（doPublishNew），
+         走不到「第 2 段打勾」那個畫面，狀態小字只服務第 1 段。 */
+      const done = n === 1 ? detailsDone : false;
+      box.innerHTML = done
+        ? '<i data-lucide="check" class="ztor-icon"></i>' + esc(T('wiz.step.done', 'Done'))
+        : esc(T('wiz.step.todo', 'Not done'));
+    });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(stepperEl);
+  }
+
   /* 完成→回電子商店清單並彈出新品貼文 composer（spec §7 / 5.1.5.7 / D068）。
      就緒（或 dev Skip validation）時點主動作 → e-shop?posted=1，帶入剛填的商品名/價供 popup 預填。 */
   /* 嵌入態：把剛填的商品打包，postMessage 回 create-bundle 加入組合，不導頁。 */
@@ -1513,9 +1562,14 @@
      所以是「按下開始販售 → 驗證通過 → 同一個 .wizard__body 切成全頁」，返回＝卸載、表單原樣回來。
      本頁只負責備料（buildStageOpts）、進出（enterStage／exitStage）與檢核同步；版型、兩軸、兩張表都在 publish-stage.js。
      翻譯模式不傳：電子商店的多語規則是自動翻譯（主規格 §7.4 通則；D312 只把活動改成手動），用元件預設值。 */
-  /* 基準幣別：本頁沒有幣別欄（價格欄只標 $），比照建立活動用示範創作者的預設幣別（ASSUMPTIONS PG-035 的示範值）。 */
-  /* events-store.js 載在本段之後，所以用到時才問（不能在這裡先取值）。 */
-  function cpBaseCurrency() { return (window.ztorEvents && window.ztorEvents.DEFAULT_CURRENCY) || 'TWD'; }
+  /* 基準幣別：本頁沒有幣別欄（價格欄只標 $）。2026-09-23 產品負責人裁示（修訂 D306）：
+     電子商店的基準＝創作者幣別（D316 window.ztorCurrency.CREATOR），不再借用活動側的
+     示範預設幣別；currency.js 沒載到（或還沒跑）時退回舊的 DEFAULT_CURRENCY 示範值。 */
+  /* events-store.js／currency.js 都載在本段之後，所以用到時才問（不能在這裡先取值）。 */
+  function cpBaseCurrency() {
+    if (window.ztorCurrency) return window.ztorCurrency.CREATOR;
+    return (window.ztorEvents && window.ztorEvents.DEFAULT_CURRENCY) || 'TWD';
+  }
   let stage = null;            // publish-stage 的 handle（只有在全頁畫面時是非 null）
   let stageScroll = null;      // 進全頁前表單捲到哪（返回時還原）
   const stageBody = document.querySelector('.wizard__body');
@@ -1629,7 +1683,9 @@
       specs,
       /* 取貨與退換段（F4，D291）：實體且有填才畫——與 collectReturnsField() 同條件 */
       returns: (state.type === 'physical' && retEl && retEl.value.trim()) ? { key: 'returns' } : null,
-      related: true
+      /* 「你可能也喜歡」不畫（2026-09-23 使用者：「你可能也喜歡都移除」）——預覽只看這件商品本身，
+         四張「非本商品」佔位卡是雜訊。fan-product-page.js 的 related 預設就是不畫。 */
+      related: false
     };
   }
 
@@ -1692,6 +1748,9 @@
       fields, prices,
       currencies: S ? S.CURRENCIES.slice() : ['USD', 'TWD', 'HKD', 'SGD', 'JPY'],
       baseCurrency: cpBaseCurrency(),
+      /* 2026-09-23 產品負責人裁示（修訂 D306）：電子商店的非基準幣別是預算的、不可個別
+         調整——關掉 publish-stage.js 的價格覆寫（活動側維持可覆寫，不傳這個選項）。 */
+      priceOverrides: false,
       mode: 'publish',
       editZones: stageEditZones(),
       onEdit: step => exitStage(step),
@@ -1721,6 +1780,8 @@
     stage = window.ztorPublishStage.mount(stageHost, buildStageOpts());
     if (stageSheet) stageSheet.scrollTop = 0;
     window.scrollTo({ top: 0, behavior: 'instant' });
+    cpStep = 2;
+    renderStepper();
     return true;
   }
   /* 返回表單：卸載、清空容器、表單欄／預覽欄／底部動作列原樣回來（表單 DOM 從沒被動過，內容保留）。
@@ -1734,6 +1795,8 @@
     stageBody.classList.remove('wizard__body--stage');
     stageBody.classList.add('wizard__body--mid');
     document.querySelector('[data-cp-footer]')?.classList.remove('hidden');
+    cpStep = 1;
+    renderStepper();
     const dest = step ? cpSectionOf(step) : null;
     if (dest && dest.target) {
       const top = document.querySelector('.wizard__top');
@@ -1757,6 +1820,19 @@
     /* 新品：先進「預覽與發布」全頁畫面（D310），在側欄按「開始販售」才真正上架；元件沒載到時退回直接上架 */
     if (enterStage()) return;
     doPublishNew();
+  });
+
+  /* 進度條點擊（--anystep，2026-09-23 D317）：第 1 段＝回表單（與側欄「返回表單」exitStage()
+     同一條路）；第 2 段＝與主鈕同一條路（primary.click() 直接觸發上面那個 handler，驗證擋關、
+     embed／editMode 分支照舊）；點目前所在段不做事。表單頁沒有 stepper（editMode／embed）
+     時 stepperLabels 是空陣列，這段不會綁到任何東西。 */
+  stepperLabels.forEach(l => {
+    l.addEventListener('click', () => {
+      const n = Number(l.dataset.step);
+      if (n === cpStep) return;
+      if (n === 1 && cpStep === 2) { exitStage(); return; }
+      if (n === 2 && cpStep === 1) { primary.click(); return; }
+    });
   });
 
   /* ---- 即時預覽綁定 ---- */
@@ -1877,7 +1953,7 @@
 
   /* 全頁畫面開著時，側欄檢核跟著表單狀態重算（只重畫側欄、不重畫預覽；i18n:applied 也走這裡，
      而 publish-stage 每次畫預覽都會 applyI18n——所以這裡只能 syncChecks，不能 refresh，否則會互相觸發） */
-  function refresh() { renderReadiness(); renderPreview(); if (stage) stage.syncChecks(); }
+  function refresh() { renderReadiness(); renderStepper(); renderPreview(); if (stage) stage.syncChecks(); }
 
   /* ---- 條件顯示：依 type / varMode / edition / delivery 統一切換 ---- */
   function applyVisibility() {
@@ -1937,10 +2013,15 @@
     const sub = document.getElementById('cp-subtitle');
     if (sub) { sub.setAttribute('data-i18n', tKey); sub.textContent = T(tKey, tLabel); }
     applyVisibility();
-    /* 編輯態主動作固定為 Save changes，不隨類型改寫 */
+    /* 編輯態主動作固定為 Save changes，不隨類型改寫。
+       D317（2026-09-23）：一般建立流程按下這顆鈕只是進「預覽與發布」全頁畫面，真正上架在
+       第 2 步側欄的「開始販售」——兩個按鈕以前同名易誤會，這顆改叫「下一步：預覽」；
+       嵌入態（?embed，在 create-bundle 彈窗內）不經過這個兩步驟、按下直接把商品回傳母頁，
+       維持原文案 PRIMARY[t]（開始販售）不受影響。 */
     if (!editMode) {
-      primary.setAttribute('data-i18n', PRIMARY[t]);
-      primary.textContent = T(PRIMARY[t], 'Start selling');
+      const primaryKey = embed ? PRIMARY[t] : 'cp.next-preview';
+      primary.setAttribute('data-i18n', primaryKey);
+      primary.textContent = T(primaryKey, embed ? 'Start selling' : 'Next: Preview');
     }
     refresh();
   }
@@ -2435,6 +2516,10 @@
     primary.textContent = T('cp.save.changes', 'Save changes');
     /* ✝ 2026-09-18：編輯態的刪除鈕與 window.confirm 撤除（D284）。發布過的商品沒有刪除入口；封存在細節頁。 */
   }
+  /* D317：兩步驟進度條只服務一般建立流程——編輯態一鈕直接存檔、嵌入態一鈕直接回傳母頁，
+     都沒有「預覽與發布」這第 2 步，頁首那欄留空（.wizard__top-bar 是三欄 grid，中欄本來就
+     容許空，見 shared.css .wizard__progress）。 */
+  if ((editMode || embed) && cpProgressEl) cpProgressEl.hidden = true;
 
   updateEditionHint();
   setType(initType);
@@ -2451,6 +2536,7 @@
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <!-- ✝ 2026-09-23：partials/publish-preview.js（發布前預覽確認浮層）不再載入——D310 商品側改走全頁畫面（下面三支）。 -->
 <script src="js/events-store.js?v=r2.2"></script>   <!-- D310 商品側：全頁畫面的幣別換算與金額格式（ztorEvents.fx／priceIn／fmtMoney、CURRENCIES）由它提供 -->
+<script src="js/currency.js?v=r2.2"></script>   <!-- D316：基準幣別＝創作者幣別（window.ztorCurrency.CREATOR），供 cpBaseCurrency() 讀 -->
 <script src="js/publish-stage.js?v=r2.2"></script>   <!-- D310 商品側：「開始販售」後的「預覽與發布」全頁畫面 -->
 <script src="js/fan-product-page.js?v=r2.2"></script>   <!-- D310 商品側：粉絲視角商品頁渲染（前台 shop-item 商品鏡像） -->
 <div data-pickup-modal-host></div>

@@ -395,8 +395,9 @@
   }
 
   /* ── F8 名稱與說明：單卡（D220，2026-08-24 收編）。舊版「一語言一張卡、可自由
-        增刪 zh/en/ja/ko」已移除——語言維度交給發布前預覽確認層（D223，
-        partials/publish-preview.js，掛在 publish-work.html 的送出動作上），這裡永遠
+        增刪 zh/en/ja/ko」已移除——語言維度交給最後一步的全頁「預覽與送審」
+        （D223 起先掛發布前預覽確認層 partials/publish-preview.js，2026-09-23（D323）
+        改掛 js/publish-stage.js，見 publish-work.html 的 stageFields()），這裡永遠
         只有一組欄位。ja/ko 兩個語言卡選項隨舊版一起消失，這是規格 D220 收編後的
         正確結果（原型層屬呈現假設，見 ASSUMPTIONS.md）。opts.lsField 曾是 D220 的
         接線旗標（替 Title/Synopsis 掛 data-ls-field 給頁級 partials/lang-switch.js
@@ -812,9 +813,10 @@
       stills: qa('[data-pw-stills] .upload-tile.is-filled, [data-pw-stills] .upload-tile.is-optimized').length,
       bts: qa('[data-pw-bts] .upload-tile.is-filled').length,
       trailer: (q('[data-pw-asset="trailer"] .upload-tile__filename') || {}).textContent || '',
-      /* D220（2026-08-24）：F8 收編成單卡，語言維度交給發布前預覽確認層（D223，
-         partials/publish-preview.js），這裡只收「這組文案記在哪個語系」一個標記
-         （沿用 zh/en 字典 fallback 規則），不再有 per-card 語言下拉。 */
+      /* D220（2026-08-24）：F8 收編成單卡，語言維度交給最後一步的全頁「預覽與送審」
+         （2026-09-23 起為 js/publish-stage.js，見 publish-work.html 的 stageFields()；
+         D223–D322 期間曾是浮層 partials/publish-preview.js），這裡只收「這組文案記在
+         哪個語系」一個標記（沿用 zh/en 字典 fallback 規則），不再有 per-card 語言下拉。 */
       copy: qa('[data-pw-copy]').map(function (c) {
         var l = (window.ztorLang && window.ztorLang.get()) || 'en';
         return {

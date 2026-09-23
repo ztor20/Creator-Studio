@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 預覽與在地化（全頁版）· 5.1.5.1 §2.18／5.1.5.9 §2.8 · D319（2026-09-23）
+     活動端 2026-09-22 已有 event-localization.html；D319 裁決商品細節頁與組合商品細節頁的頁首也要有
+     同一套「預覽與在地化」，並取代原本的「粉絲視角預覽（See as fan）」分割預覽。本頁就是電子商店側的那一支：
+     同一支 js/publish-stage.js、同一份粉絲視角商品頁渲染（js/fan-product-page.js），差別只有三處：
+       · 資料來源是 products-store（已發布的單售商品或組合包），不是建立流程的表單
+       · 側欄第三段是「未儲存的變更」（沒有發布前檢核——東西已經在架上）
+       · 主鈕是「儲存」，存完回細節頁；不改上架狀態（D319 決定一）
+     一頁吃兩種：?id=<productId> ＝單售商品、?type=bundle&id=<bundleId> ＝組合包（理由見 ASSUMPTIONS UIA-175）。
+     入口在 product-detail.html 與 bundle-detail.html 的 [data-pd-localize]／[data-bd-localize]。
+     幣別軸：電子商店的非基準幣別唯讀、不可逐幣別覆寫（D318 決定 2），故一律 priceOverrides:false；
+     成員含活動票券的組合包比照活動可覆寫（D318 決定 3／4），本頁依成員組成分流，但 products-store 的
+     示範組合包目前全是純商品成員，實際只會走唯讀那一支（見 ASSUMPTIONS UIA-175）。 -->
+<title>Preview &amp; localization · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- 翻譯表／價格表（.drawer--full） -->
+<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 兩張表沿用 .pp-table／.pp-cell 家族 -->
+<link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- 粉絲視角商品頁（前台 shop-item 鏡像；只給 js/fan-product-page.js 用） -->
+<link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- 全頁版型（主區預覽＋右側側欄） -->
+<link rel="stylesheet" href="shared.css?v=r2.2">
+</head>
+<body>
+<div class="wizard">
+  <div class="wizard__sheet wizard__sheet--sectioned">
+    <!-- 頁首：返回細節頁的脈絡（§2.18／§2.8「保有返回本頁的脈絡」）＋這是哪一件 -->
+    <header class="wizard__top">
+      <div class="wizard__top-bar">
+        <div class="wizard__top-lead">
+          <a class="wizard__back" id="pdloc-back" href="product-detail.html" aria-label="Back" data-i18n-aria-label="pdloc.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
+          <div class="wizard__top-titlewrap">
+            <span class="wizard__top-title" data-i18n="pdloc.title">Preview &amp; localization</span>
+            <span class="wizard__top-sub" id="pdloc-subtitle">—</span>
+          </div>
+        </div>
+        <!-- 已封存＝整頁唯讀（5.1.5.1 §2.18／5.1.5.9 §2.8「已封存唯讀，本節只可查看」）：
+             徽章說明現在是查看模式，實際的擋改由 partials/archived-gate.js 在事件層攔。 -->
+        <div class="wizard__top-actions"><!-- .wizard__top-bar 是三欄 grid，這個既有類別就是 col3 靠右那一欄 -->
+          <span class="badge badge--neutral" id="pdloc-readonly" hidden data-i18n="pdloc.readonly">View only · archived</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="wizard__body wizard__body--stage">
+      <div data-pdloc-stage></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script><!-- 本頁沒有導航殼；載它是為了 window.ztorCreator（店家列＝目前 persona），mount() 找不到 #sidebar 會自己退出 -->
+<script src="js/listing-state.js?v=r2.2"></script><!-- products-store 在 IIFE 裡就要它做庫存推導，須先載 -->
+<script src="js/products-store.js?v=r2.2"></script>
+<script src="js/events-store.js?v=r2.2"></script><!-- 幣別清單／匯率換算（currency.js 委派它，見該檔檔頭） -->
+<script src="js/currency.js?v=r2.2"></script>
+<script src="js/fan-product-page.js?v=r2.2"></script>
+<script src="js/publish-stage.js?v=r2.2"></script>
+<script src="partials/archived-gate.js?v=r2.2"></script>
+<script>
+(function () {
+  const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb || k;
+  const qs = new URLSearchParams(location.search);
+  const isBundle = qs.get('type') === 'bundle';
+  const id = qs.get('id') || '';
+  const host = document.querySelector('[data-pdloc-stage]');
+  const backHref = (isBundle ? 'bundle-detail.html' : 'product-detail.html') + (id ? '?id=' + encodeURIComponent(id) : '');
+  document.getElementById('pdloc-back').href = backHref;
+
+  const item = isBundle
+    ? (window.ztorGetBundle ? window.ztorGetBundle(id) : null)
+    : (window.ProductsStore && window.ProductsStore.get ? window.ProductsStore.get(id) : null);
+
+  if (!item) {
+    host.innerHTML = '<div class="empty-card"><p class="empty-card__title" data-i18n="'
+      + (isBundle ? 'pdloc.notfound.bundle' : 'pdloc.notfound') + '">Not found.</p>'
+      + '<a class="btn btn--primary" href="e-shop.html" data-i18n="bd.notfound.back">Back to E-Shop</a></div>';
+    if (window.applyI18n) window.applyI18n(host);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+    return;
+  }
+  document.getElementById('pdloc-subtitle').textContent = item.name || '';
+  document.title = (item.name ? item.name + ' · ' : '') + 'Preview & localization · Ztor Creator Studio';
+
+  /* ── 幣別軸 ────────────────────────────────────────────────────────────
+     基準＝創作者幣別（D316，同 create-product 的 cpBaseCurrency）；五幣別清單沿用 events-store 那一份。
+     覆寫能力（D318）：電子商店唯讀；組合包成員含活動票券時比照活動可覆寫——判準看成員有沒有票券
+     （kind==='ticket' 或帶 tierId／eventId），不另訂規則。 */
+  const ES = window.ztorEvents;
+  const CURRENCIES = ES ? ES.CURRENCIES.slice() : ['USD', 'TWD', 'HKD', 'SGD', 'JPY'];
+  const BASE = window.ztorCurrency ? window.ztorCurrency.CREATOR : ((ES && ES.DEFAULT_CURRENCY) || 'TWD');
+  const seed = isBundle && window.ProductsStore && window.ProductsStore.getBundle ? window.ProductsStore.getBundle(id) : null;
+  const hasTicketMember = isBundle && ((seed && seed.members) || []).some(m => m && (m.kind === 'ticket' || m.tierId || m.eventId));
+
+  const num = v => { const n = parseFloat(String(v == null ? '' : v).replace(/[^0-9.]/g, '')); return isNaN(n) ? 0 : n; };
+  const isMulti = () => !isBundle && item.variant === 'multiple' && (item.variants || []).length > 0;
+  const comboOf = v => (v.combo || []).join(' / ');
+  const imgOf = v => (window.ProductsStore && window.ProductsStore.variantImgSrc) ? window.ProductsStore.variantImgSrc(item, v) : '';
+
+  /* ── 可翻譯欄位（5.1.5.1 §2.18／5.1.5.9 §2.8 的欄位清單中，示範資料真的有值的那些）────
+     單售：名稱、描述、選項組名與選項值、詳細規格（規格名稱＋規格值，2026-09-23 · D319 補——products-store
+     補了 specs／deliveryReturns 兩欄後跟進，形狀與 key 命名對齊 create-product.html 的 collectSpecFields()／
+     collectReturnsField()：規格名稱與規格值都可翻譯、取貨與退貨說明只有值可翻譯）、取貨與退貨說明
+     組合包：名稱、描述、額外權益（一項一欄；成員名稱屬各成員商品自己的翻譯，不在本頁改） */
+  function locFields() {
+    const f = [
+      { key: 'name', el: { value: item.name || '' }, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
+      { key: 'desc', el: { value: (isBundle ? item.description : item.sub) || '' }, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
+    ];
+    if (isBundle) {
+      const g = T('cpp.bd.perks', 'Perks');
+      ((seed && seed.perks) || []).forEach((p, i) => f.push({ key: 'perk-' + i, el: { value: p }, kind: 'input', labelKey: null, labelFallback: g, group: g }));
+      return f;
+    }
+    const g = T('pp.field.option-group', 'Option');
+    (item.options || []).forEach((opt, oi) => {
+      f.push({ key: 'optgroup-name-' + oi, el: { value: opt.name || '' }, kind: 'input', group: g,
+        labelFallback: g + ' ' + (oi + 1) + ' · ' + T('pp.field.option-name', 'Group name') });
+      (opt.values || []).forEach((v, vi) => f.push({ key: 'optgroup-value-' + oi + '-' + vi, el: { value: v }, kind: 'input', group: g,
+        labelFallback: g + '·' + (opt.name || (oi + 1)) + '·' + T('pp.field.option-value', 'Value') + (vi + 1) }));
+    });
+    const sg = T('pp.field.spec-group', 'Spec');
+    (item.specs || []).forEach((s, i) => {
+      f.push({ key: 'spec-name-' + i, el: { value: s.name || '' }, kind: 'input', group: sg,
+        labelFallback: sg + ' ' + (i + 1) + ' · ' + T('pp.field.spec-name', 'Name') });
+      f.push({ key: 'spec-value-' + i, el: { value: s.value || '' }, kind: 'input', group: sg,
+        labelFallback: s.name ? (sg + '·' + s.name) : (sg + ' ' + (i + 1) + ' · ' + T('pp.field.spec-value', 'Value')) });
+    });
+    if (item.deliveryReturns) {
+      f.push({ key: 'returns', el: { value: item.deliveryReturns }, kind: 'textarea', labelKey: 'cp.delivery.returns', labelFallback: 'Pickup & returns' });
+    }
+    return f;
+  }
+
+  /* ── 價格列（§2.18／§2.8 的價格表）────────────────────────────────────
+     單售：單一選項一列＝定價；多選項每個選項組合一列（沒自己填價的沿用商品定價）
+     組合包：一列＝組合售價（priceAmount，成員原價合計 ×(1−折扣%)，見 products-store 的 ztorGetBundle） */
+  function locPrices() {
+    if (isBundle) {
+      return [{ key: 'price', labelKey: 'cp.price', label: 'Price',
+        priceObj: { base: BASE, amount: Number(item.priceAmount) || 0, override: {} }, overridable: hasTicketMember }];
+    }
+    if (isMulti()) {
+      return (item.variants || []).map(v => ({ key: 'var:' + comboOf(v), label: comboOf(v),
+        groupKey: 'cp.stage.price.variants', groupFallback: 'Variations',
+        priceObj: { base: BASE, amount: num(v.price || item.price), override: {} } }));
+    }
+    return [{ key: 'price', labelKey: 'cp.price', label: 'Price',
+      priceObj: { base: BASE, amount: num(item.price), override: {} } }];
+  }
+
+  /* ── 粉絲視角頁的 model（結構見 js/fan-product-page.js 檔頭）─────────────
+     組合包沒有自己的前台渲染器——前台的組合也是一張 shop-item 頁，所以沿用同一支，
+     成員清單與額外權益進規格表（呈現假設見 ASSUMPTIONS UIA-175）。 */
+  function personaShop() {
+    const pid = typeof window.ztorPersonaId === 'function' ? window.ztorPersonaId() : 'default';
+    const c = (window.ztorCreator && window.ztorCreator.list) ? window.ztorCreator.list.find(x => x.handle === pid) : null;
+    return c ? { name: c.name, avatar: c.avatar || '' } : null;
+  }
+  function bundleModel(prices) {
+    const specs = [];
+    /* 內容物合成一列（成員名以頓號相接）：規格表每一列重複一次「內容物」只是噪音。
+       額外權益逐項一列——每一項各自是可翻譯欄位，合併就沒辦法逐項改譯文。 */
+    const names = (item.memberItems || []).map(m => m.name + (Number(m.qty) > 1 ? ' × ' + m.qty : ''));
+    if (names.length) specs.push({ k: T('pdloc.spec.includes', 'Includes'), v: names.join('、') });
+    ((seed && seed.perks) || []).forEach((p, i) => specs.push({ k: T('cpp.bd.perks', 'Perks'), v: { key: 'perk-' + i } }));
+    const hero = item.imgSrc || (item.img ? 'images/products/' + item.img : '');
+    return {
+      category: T('e-shop.tab.bundles', 'Bundles'),
+      gallery: hero ? [hero] : [],
+      name: { key: 'name' },
+      shop: personaShop(),
+      price: { priceObj: prices[0].priceObj, priceKey: prices[0].key },
+      variants: null,
+      discountPct: Number(seed && seed.discountPct) || 0,
+      stock: (item.stockAvail === Infinity || item.stockAvail == null) ? null : Number(item.stockAvail),
+      sizeGuide: false,
+      delivery: { icon: 'truck', key: 'cp.delivery.shipping', fallback: 'Shipping' },
+      desc: { key: 'desc' },
+      specs: specs,
+      returns: null,
+      related: false
+    };
+  }
+  function productModel(prices) {
+    const specs = [];
+    if (item.subLabel) specs.push({ k: T('fpp.spec.category', 'Category'), v: item.subLabel });
+    /* 詳細規格逐列（2026-09-23 · D319 補）：值走 locFields() 同一套 key，預覽跟著翻譯表即時換字。 */
+    (item.specs || []).forEach((s, i) => specs.push({ k: { key: 'spec-name-' + i }, v: { key: 'spec-value-' + i } }));
+    let variants = null;
+    if (isMulti()) {
+      variants = {
+        groups: (item.options || []).map((opt, oi) => ({
+          name: { key: 'optgroup-name-' + oi },
+          kind: /colour|color|顏色/i.test(opt.name || '') ? 'colour' : '',
+          values: (opt.values || []).map((v, vi) => ({ label: { key: 'optgroup-value-' + oi + '-' + vi }, hex: '' }))
+        })),
+        rows: prices.map(p => ({ priceObj: p.priceObj, priceKey: p.key }))
+      };
+    }
+    const gallery = [];
+    if (item.img) gallery.push('images/products/' + item.img);
+    (item.variants || []).forEach(v => { const s = imgOf(v); if (s && gallery.indexOf(s) < 0) gallery.push(s); });
+    const list = num(item.price);
+    const sale = num(item.discount && item.discount.price);
+    return {
+      category: item.subLabel || item.catLabel || '',
+      gallery: gallery,
+      name: { key: 'name' },
+      shop: personaShop(),
+      price: isMulti() ? null : { priceObj: prices[0].priceObj, priceKey: prices[0].key },
+      variants: variants,
+      discountPct: (list > 0 && sale > 0 && sale < list) ? (1 - sale / list) * 100 : 0,
+      stock: item.edition === 'limited' ? num(item.stock) : null,
+      sizeGuide: false,
+      delivery: item.cat === 'digital'
+        ? { icon: 'download', key: 'cp.type.digital-sub', fallback: 'Instant download after purchase' }
+        : (item.delivery === 'qr'
+            ? { icon: 'truck', key: 'cp.pv.qr', fallback: 'On-site QR pickup' }
+            : { icon: 'truck', key: 'cp.delivery.shipping', fallback: 'Shipping' }),
+      desc: { key: 'desc' },
+      specs: specs,
+      /* 取貨與退貨段（2026-09-23 · D319 補）：與 collectReturnsField() 同條件——沒填不畫，不出空列。 */
+      returns: item.deliveryReturns ? { key: 'returns' } : null,
+      /* 「你可能也喜歡」不畫（同 create-product／event-localization）——在地化畫面只看這一件本身。 */
+      related: false
+    };
+  }
+
+  const prices = locPrices();
+  window.ztorPublishStage.mount(host, {
+    fields: locFields(),
+    prices: prices,
+    currencies: CURRENCIES,
+    baseCurrency: BASE,
+    mode: 'save',
+    /* 電子商店照通則自動翻譯（D312 只把活動改成手動），不傳 translation。 */
+    /* D318 決定 2：電子商店的非基準幣別唯讀；成員含票券的組合包由 prices[].overridable 個別放行（決定 3／4）。 */
+    priceOverrides: false,
+    previewRender: (h, api) => {
+      if (!window.ztorFanProductPage) return;
+      window.ztorFanProductPage.render(h, isBundle ? bundleModel(prices) : productModel(prices), api);
+    },
+    /* 儲存：翻譯草稿留在 publish-stage 的模組變數（原型無後端，UIA-165），先掛在 window 上給之後的頁讀；
+       存完回細節頁——上架狀態一個欄位都不動（D319 決定一）。 */
+    onPrimary: result => {
+      window.__pdLocalization = result;
+      location.href = backHref + (backHref.indexOf('?') >= 0 ? '&' : '?') + 'saved=loc';
+    },
+    onSecondary: () => { location.href = backHref; }
+  });
+
+  /* 已封存＝只可查看（5.1.5.1 §2.18／5.1.5.9 §2.8）：沿用細節頁同一支事件層閘門——
+     凡會改資料的控件（就地編輯的 contenteditable、翻譯表與價格表的輸入框）一律攔下，
+     導覽與查看類（連結、抽屜開關）照舊；側欄主鈕「儲存」沒有對象可存，收起。 */
+  if (item.archived) {
+    host.setAttribute('data-archived', '');
+    document.getElementById('pdloc-readonly').hidden = false;
+    const primary = host.querySelector('[data-stage-primary]');
+    if (primary) primary.hidden = true;
+    if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(host, {});
+  }
+})();
+</script>
+</body>
+</html>

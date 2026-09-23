@@ -85,6 +85,29 @@
 .radio-list__title { font-size: var(--fs-14); font-weight: var(--fw-regular); }
 .radio-list__sub { font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-comfy); }
 
+/* ── 變體：可複選 --check（2026-09-23 · 優惠碼適用範圍 D272 可混選）──────
+   同一種列（標題＋副說明、同樣的 hover 與節奏），左側記號換成 checkbox atom
+   （checkbox.css 的 .zcheck__control，不另刻一顆方塊）：一次可勾多項。
+   形狀就是答案——圓點＝只能選一個，方框＝可以多選；兩者不可互換長相。
+   列本體是 <label>（點整列＝點那顆 checkbox），選中態由 :checked 自己畫，
+   不靠 --active class。停用列（例如已勾「全部」時的其餘層）整列轉灰、不吃 hover。
+   consumers：store-settings.html 優惠碼彈窗的「適用範圍」（Phase 4）。
+   anatomy
+     .radio-list.radio-list--check
+       label.radio-list__item
+         span.zcheck__control > input.zcheck__input + span.zcheck__box
+         .radio-list__text（.radio-list__title ＋ .radio-list__sub）
+   ------------------------------------------------------------------- */
+
+/* 與標籤第一行光學對齊：zcheck 的 16px 方塊比 13px 圓點大，起點跟著下移一點 */
+.radio-list--check .zcheck__control { margin-top: 2px; }
+
+/* 停用：整列（含副說明）轉灰、游標與 hover 都收掉——方塊本身的半透明由 checkbox.css 畫 */
+.radio-list--check .radio-list__item:has(.zcheck__input:disabled) { cursor: not-allowed; }
+.radio-list--check .radio-list__item:has(.zcheck__input:disabled):hover { background: transparent; }
+.radio-list--check .radio-list__item:has(.zcheck__input:disabled) .radio-list__title,
+.radio-list--check .radio-list__item:has(.zcheck__input:disabled) .radio-list__sub { color: var(--muted-foreground); }
+
 /* 🪦 tombstone：`--menu`／`--menu-compact`／`--menu-row` 變體已於 2026-07-24 移除（Q28）。
    曾用於建立專案的「專案類型」picker，經使用者裁示改用建立商品同款 `.segmented.radio-cards`
    （見 radio-card.css，灰卡＋右上小橘點），此 list-menu 樣式全數退場、勿再新增。 */

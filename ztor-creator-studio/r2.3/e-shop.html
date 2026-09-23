@@ -77,7 +77,9 @@
      完全沒扣掉左右 margin，右緣溢出視窗）。`.page` 本身用的 max-width+margin:auto+padding 是全站已
      驗證沒有這個問題的寫法，改採同一配方即可避開，不必再猜瀏覽器的 flex 百分比 margin 解析順序。） */
   #eshop-stock-bar .alert__title { font-weight: var(--fw-regular); }
-  .eshop-stock-bar__names { color: color-mix(in srgb, var(--muted-foreground) 62%, var(--card)); }
+  /* 2026-09-23 使用者反饋：低庫存提醒的品名（含括號）由淡灰改品牌橘——這串是這句話的重點，
+     用 --ztu-orange-hi（站上「橘字」統一用這支，同 chip／info-banner／filter-tabs）。 */
+  .eshop-stock-bar__names { color: var(--ztu-orange-hi); }
   .eshop-stock-bar__link { color: var(--foreground); text-decoration: underline; text-underline-offset: 2px; }
   .eshop-stock-bar__link:hover { color: var(--primary); }
   #eshop-stock-bar .alert__dismiss { width: 32px; height: 32px; font-size: var(--fs-24); }
@@ -1201,6 +1203,7 @@
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script><!-- 活動組合包（各場 bundles[]）併入 Bundles 分頁（2026-09-21 · D292／D294） -->
+<script src="js/currency.js?v=r2.2"></script><!-- 創作者幣別（D316b，2026-09-23）：側欄底部幣別列讀這支的 CREATOR，與 settings.html 同一支 -->
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/sticky-dock.js?v=r2.2"></script>
@@ -1209,6 +1212,7 @@
 <script src="partials/product-post-modal.js?v=r2.2"></script>
 <script src="js/store-profile-store.js?v=r2.2"></script><!-- 店面資料（商店設定在編輯的那一份），預覽讀同一份 -->
 <script src="partials/fan-store.js?v=r2.2"></script>
+<script src="partials/bundle-relist.js?v=r2.2"></script><!-- 組合包上架的成員閘門（D289／D298），與組合包詳情頁共用 -->
 <script>
   /* E-Shop · spec 5.1.5 F3/F4. Demo interactions only (no backend):
      tab switch · search + status filter (scoped to active tab) ·
@@ -2238,11 +2242,11 @@
     document.addEventListener('i18n:applied', renderAllTiers);
 
     /* ── 列操作依狀態互斥（spec 5.1.5 F4，主規格 §7.14「封存與不可刪除」· D284，2026-09-18；D298 修訂，2026-09-22）──────
-       已下架列（含排定上架未到、定時下架已過）→ 多一項「封存」；
+       已下架列（含排定上架未到、定時下架已過）→ 多「上架」與「封存」兩項，上架在前（2026-09-23 使用者裁決）；
        已封存列 → 只剩「解除封存」＋「編輯」（唯讀進詳情）：複製商店連結（連結已失效）、補貨（唯讀）都收起；
        其餘狀態 → 兩項都不出現。項目由這裡按需長出來、不寫進靜態列——列會被 persona／載入更多複製，
        寫死在 markup 裡會漏。拍賣列 2026-09-18 起（D285）同一套：已下架→封存、已封存→解除封存＋編輯（唯讀）；
-       複製連結在已下架與已封存都收起（連結已失效）。「下架」與「上架」都不在清單上：它們在細節頁的上架開關。
+       複製連結在已下架與已封存都收起（連結已失效）。「下架」不在清單上：它在細節頁的上架開關。
        D298：已封存列的「重新上架（直接回上架）」退場，改成「解除封存」回到已下架、不確認、不自動上架。
        D307（2026-09-22）：已下架／已封存且零成交的列（單售、組合包、拍賣）最後多一項「刪除」（紅字），見下方 askDelete。 */
     const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
@@ -2266,6 +2270,9 @@
       const L = LS();
       const archived = L.isArchived(m.entity);
       const canArch = L.canArchive(m.entity);
+      /* 上架（2026-09-23 使用者裁決，復活 D298 退場的清單入口）：已下架列（未封存、非草稿）多一項「上架」，排在「封存」之前；
+         已封存列沒有這一項——要先「解除封存」回到已下架。單售與拍賣直接上架、不確認；組合包走共用的成員閘門（見 doRelist）。 */
+      ensureMenuItem(menu, 'data-eshop-relist', 'eye', 'e-shop.a.list', 'List').hidden = archived || !L.isUnlisted(m.entity);
       ensureMenuItem(menu, 'data-eshop-archive', 'archive', 'e-shop.a.archive', 'Archive').hidden = !canArch;
       ensureMenuItem(menu, 'data-eshop-unarchive', 'archive-restore', 'e-shop.a.unarchive', 'Unarchive').hidden = !archived;
       /* 零成交可刪除（§7.14 · D307，2026-09-22）：已下架或已封存且零成交的列，kebab 最後多一項「刪除」（紅字，沿用草稿列 Delete 的樣式與 icon）；
@@ -2330,6 +2337,27 @@
 
     /* 封存（§7.14 · D288 修正 D284）：只看「已下架」、單純確認，不再檢查組合包——成員的連動在下架時已處理
        （下架入口在細節頁，見 product-detail.html 的 askUnlist）。確認後列離開目前篩選（只在「已封存」出現）。 */
+    /* 上架（2026-09-23 使用者裁決；D290 沿用、D289 沿用）：已下架列回到上架中。
+       排程已清、開賣退回未開賣（ListingState.relist），所以上架後的常態是「即將開賣」，要販售得再到細節頁設開賣；拍賣則是未開拍。
+       單售與拍賣直接上架、不確認（反方向不連動：單售上架不拉組合包）；組合包走共用的 partials/bundle-relist.js——
+       成員已封存 → 擋下並列出，提示先解除封存；成員已下架 → 先確認會一起被拉上來，確認後連帶上架。
+       與組合包詳情頁的上架開關是同一份判斷，不各寫一次（D298 退場的清單版 doRelist 於此復活、改為共用）。 */
+    function doRelist(row) {
+      const L = LS(), S = PS(), m = rowModel(row);
+      if (!L || !S || !m || !m.store || L.isArchived(m.entity) || !L.isUnlisted(m.entity)) return;
+      const finish = () => { window.ztorEshopStatus.refreshAll(); };
+      if (row.dataset.type === 'bundle' && window.ZtorBundleRelist) {
+        window.ZtorBundleRelist.run({
+          bundle: m.entity,
+          getProduct: id => S.get(id),
+          name: rowName(row), askConfirm, T,
+          commit: e => S.commit(e),
+          onDone: finish
+        });
+        return;
+      }
+      L.relist(m.entity); S.commit(m.entity); finish();
+    }
     function askArchive(row) {
       const L = LS(), S = PS(), m = rowModel(row);
       if (!L || !S || !m || !m.store || !L.canArchive(m.entity)) return;
@@ -2348,10 +2376,9 @@
     }
     /* 解除封存（§7.14 · D298，2026-09-22，修訂 D284／D289）：單售、組合包、拍賣一律直接回到「已下架」、不確認、不自動上架——
        設定照舊保留（排程與開賣在下架時已依 D290 清掉），列離開「已封存」篩選、出現在「已下架」，列操作換成「封存」。
-       上架（重新上架）這一步回到細節頁的上架開關：組合包在那裡才過成員閘門（D289；成員已封存 → 擋下提示「先解除封存」）。
-       不連動：單售解除封存不拉組合包、組合包解除封存不動成員。
-       墓碑：D289 版的 doRelist（已封存列直接重新上架，組合包在清單上盤點成員、擋下或確認一併上架）整段退場——
-       清單沒有上架入口了，相關文案 e-shop.relist.* 只剩 bundle-detail 在用。 */
+       上架這一步 D298 當時退回細節頁的上架開關；2026-09-23 使用者裁決清單要重新提供「上架」（見上方 doRelist），
+       組合包的成員閘門改由共用的 partials/bundle-relist.js 承擔，清單與詳情頁同一份。
+       不連動：單售解除封存不拉組合包、組合包解除封存不動成員。 */
     function doUnarchive(row) {
       const L = LS(), S = PS(), m = rowModel(row);
       if (!L || !S || !m || !m.store || !L.isArchived(m.entity)) return;
@@ -2389,6 +2416,8 @@
     document.addEventListener('click', e => {
       if (e.target.closest('[data-eshop-confirm-ok]')) { const p = confirmPending; closeConfirm(); if (p && p.onConfirm) p.onConfirm(); return; }
       if (e.target.closest('[data-eshop-confirm-cancel]')) { closeConfirm(); return; }
+      const rel = e.target.closest('[data-eshop-relist]');
+      if (rel) { const row = rel.closest('.product-list__row'); if (row) doRelist(row); return; }
       const arch = e.target.closest('[data-eshop-archive]');
       if (arch) { const row = arch.closest('.product-list__row'); if (row) askArchive(row); return; }
       const un = e.target.closest('[data-eshop-unarchive]');

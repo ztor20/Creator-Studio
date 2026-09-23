@@ -81,11 +81,10 @@
       tiers: [
         /* override（2026-09-22 D306）＝創作者在價格表手動改過的幣別：USD 換算值是 133（4200 ÷ 31.5），
            創作者覆寫成 135 讓數字好看；其餘幣別沒改＝顯示換算值。 */
-        /* feeException（2026-09-22 D311）＝Admin 逐門票覆寫的平台費率（第一層，解析順序
-           本票例外 → creator 覆寫 → General）。這一筆示範「Admin 為這張票談了 3%」；
-           creator 本人看到的是唯讀的「例外 3%（Admin 設定）」。 */
-        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 100, fee: 100, earlyMin: 30, override: { USD: 135 },
-          feeException: { pct: '3' } },
+        /* 墓碑 2026-09-23（D315）：`feeException`（D311 的逐門票例外平台費率，這一筆原本
+           示範「Admin 為這張票談了 3%」）隨例外整組退場——平台費只剩 Admin 在費率設定頁
+           設的兩層（General 預設 × 逐 creator 覆寫），門票資料不再帶自己的費率。 */
+        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 100, fee: 100, earlyMin: 30, override: { USD: 135 } },
         { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 200, fee: 100 },
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 300 }
       ],

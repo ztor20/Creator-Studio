@@ -2,9 +2,9 @@
    Calc list — 一行一項的算式列表（加總／扣抵，最後一列是結果）
 
    2026-09-22 自 `bundle-editor.css` 的 `.bd-calc-list` promote（D311）：
-   單張門票彈窗的「價格與數量」也要把加法關係攤在畫面上（票價 ＋ 手續費
-   ＝ 粉絲付 − 平台費 ＝ 創作者實收），與組合包原價合計是同一個視覺角色，
-   站上不留兩份做法。
+   單張門票彈窗的「價格與數量」也要把加減關係攤在畫面上（2026-09-23 D316 起
+   ＝票價 ＝ 粉絲付 − 平台費 ＝ 創作者實收；原本票價之上那一列粉絲負擔的手續費
+   隨該則退場），與組合包原價合計是同一個視覺角色，站上不留兩份做法。
 
    為什麼是列表不是欄位序列：金額之間有運算關係時，把每一項各自做成一個
    欄位，關係就只存在讀者的腦子裡；列表把運算子畫出來，結果列與輸入列坐在
@@ -19,7 +19,10 @@
          .kv__v                       金額（等寬數字）
        .kv.calc-list__sum             小計列（粉絲付）：鍵回到前景色
        .kv.calc-list__total           結果列（原價合計／創作者實收）：鍵回前景色、值 16px
-       .calc-list__extra              掛在某一列底下的附屬控制（例外平台費）
+
+   墓碑 2026-09-23（D315）：`.calc-list__extra`／`.calc-list__extra-row`（掛在某一列底下的
+   附屬控制）退場——唯一的消費者是單張門票彈窗的「例外平台費」開關與費率欄，例外整組
+   撤銷後這兩個子元素沒有任何使用者。要復活先看 decisions.md 的 D311。
 
    Modifier:
      .calc-list--form                 列裡有輸入控件時用：改置中對齊、右欄收成固定寬
@@ -83,21 +86,3 @@
 /* 讀數列（沒有控件的那幾列）維持右對齊的純文字，補回輸入框的內距讓數字與框內文字同一條線。 */
 .calc-list--form .calc-list__ro { padding-right: var(--sp-10); }
 
-/* 掛在某一列底下的附屬控制（例外平台費的開關與費率欄）：縮排對齊運算子欄之後，
-   讀起來屬於上面那一列、不是新的一項。 */
-.calc-list__extra {
-  padding: 0 0 var(--sp-10) calc(var(--sp-16) + var(--sp-8));
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-8);
-}
-.calc-list__extra[hidden] { display: none; }
-/* 附屬控制的第一行（開關列）：文字靠左、開關靠右，與 control-row 同一種讀法。 */
-.calc-list__extra-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-12);
-}
-/* 開關那一行的標籤不帶欄位的下外距——它旁邊是開關，不是輸入框（作用域限本元件）。 */
-.calc-list__extra-row > .field__label { margin: 0; }

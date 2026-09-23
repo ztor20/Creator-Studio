@@ -181,18 +181,13 @@
             <div class="settings-row" style="border-bottom:0; align-items:start">
               <div>
                 <div class="settings-row__label" data-i18n="store-settings.field.currency">Currency</div>
-                <div class="settings-row__hint" data-i18n="store-settings.currency.hint">Set when the shop opens. Not editable here.</div>
+                <div class="settings-row__hint" data-i18n="currency.contact-support">Contact support to change it.</div>
               </div>
-              <!-- 幣別鎖成唯讀、預設一種（2026-08-13 使用者裁示）：四個選項留在 markup 裡，
-                   之後要開放時把 disabled 拿掉就好；原本的「選擇幣別」空選項隨鎖定退場。 -->
-              <div style="width:340px">
-                <select class="select" aria-label="Currency" disabled data-i18n-aria-label="store-settings.field.currency">
-                  <option value="HKD" selected>HKD · Hong Kong Dollar</option>
-                  <option value="TWD">TWD · New Taiwan Dollar</option>
-                  <option value="SGD">SGD · Singapore Dollar</option>
-                  <option value="USD">USD · US Dollar</option>
-                </select>
-              </div>
+              <!-- 創作者幣別（2026-09-23 D316）：商店幣別與帳號的預設幣別收斂成同一個值，
+                   由 js/currency.js 填——設定頁那一格讀的是同一個常數，兩頁永遠同值。
+                   本頁自己那份四選一清單（HKD／TWD／SGD／USD，2026-08-13 鎖成 disabled）
+                   隨本則退場：站上只有一份幣別值域，不在頁面各留一份。 -->
+              <div class="field-readout" data-currency-readout>—</div>
             </div>
             </section>
             <!-- 出貨預設＝S06（🔵 Next），同樣是 D184 改版掉的閘；幣別那張卡不屬 S06，留著 -->
@@ -505,12 +500,19 @@
                   <div class="settings-row__label"><span data-i18n="store-settings.codes.f.discount">Discount</span> <span class="field__req">*</span></div>
                   <div class="settings-row__hint" data-i18n="store-settings.codes.f.discount.hint">Off the item price, before shipping.</div>
                 </div>
+                <!-- 折扣型態（D320）：Phase 1 只發百分比碼，沒有型態可切——不留一顆只有單一選項的
+                     segmented（看起來可點、其實不能切），改用 amount-field 的 % 後綴把單位標在欄位裡。
+                     固定金額整支（型態選項、金額下限、折法欄）Phase 4 才出現。兩組成對，值各自獨立。 -->
                 <div class="flex-row">
-                  <div class="segmented" id="ss-code-unit" role="group" aria-label="Discount unit" data-i18n-aria-label="store-settings.codes.f.discount">
+                  <div class="segmented" id="ss-code-unit" role="group" aria-label="Discount unit" data-i18n-aria-label="store-settings.codes.f.discount" data-feat="full">
                     <button class="segmented__btn segmented__btn--active" type="button" data-code-unit="pct">%</button>
                     <button class="segmented__btn" type="button" data-code-unit="amount">$</button>
                   </div>
-                  <input class="input ss-code-num" id="ss-code-discount" value="10" min="1" max="100" inputmode="decimal">
+                  <input class="input ss-code-num" id="ss-code-discount" value="10" min="1" max="100" inputmode="decimal" data-feat="full">
+                  <span class="amount-field amount-field--suffix ss-code-pct" data-feat-off="full">
+                    <span class="amount-field__unit"><span class="amount-field__sym">%</span></span>
+                    <input class="input amount-field__input" id="ss-code-discount-p1" value="10" min="1" max="100" inputmode="decimal">
+                  </span>
                 </div>
               </div>
 
@@ -539,15 +541,19 @@
                 <div class="settings-row__hint" data-feat="full" data-i18n="store-settings.codes.f.scope.hint">A code's range is whichever types and items you check, combined. Auctions never qualify.</div>
                 <div class="settings-row__hint" data-feat-off="full" data-i18n="store-settings.codes.f.scope.hint.p1">Auctions never qualify.</div>
 
+                <!-- Phase 4 的三級（D272 可混選）改用與 Phase 1 同一種選項列（radio-list，標題＋副說明），
+                     記號換成 checkbox：類型與商品可以同時勾，方框就是「這裡能複選」的答案，
+                     Phase 1 的二選一維持圓點。兩個版本因此長同一個樣子，切版本不換面貌。 -->
                 <div class="ss-scope-options" data-feat="full">
-                  <label class="zcheck">
+                  <div class="radio-list radio-list--check" aria-label="Applies to" data-i18n-aria-label="store-settings.codes.f.scope">
+                  <label class="radio-list__item">
                     <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="ss-scope-all" checked><span class="zcheck__box"></span></span>
-                    <span class="zcheck__label" data-i18n="store-settings.codes.f.scope.all">All items</span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="store-settings.codes.f.scope.all">All items</span><span class="radio-list__sub" data-i18n="store-settings.codes.f.scope.all.sub">Every e-shop item and event ticket tier</span></span>
                   </label>
 
-                  <label class="zcheck">
+                  <label class="radio-list__item">
                     <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="ss-scope-types" disabled><span class="zcheck__box"></span></span>
-                    <span class="zcheck__label" data-i18n="store-settings.codes.f.scope.types">Item types</span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="store-settings.codes.f.scope.types">Item types</span><span class="radio-list__sub" data-i18n="store-settings.codes.f.scope.types.sub">Whole categories, or just some sub-types</span></span>
                   </label>
                   <!-- 商品類型樹：對應 §7.1 主分類×次分類（實體／數位）；子類型清單借用建立商品 F2 既有的
                        cp.psub.*／cp.dsub.* key，不重造一份同義字。父層全選＝子類型全勾，部分勾選時父層半選。 -->
@@ -579,12 +585,13 @@
                     </div>
                   </div>
 
-                  <label class="zcheck">
+                  <label class="radio-list__item">
                     <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="ss-scope-items" disabled><span class="zcheck__box"></span></span>
-                    <span class="zcheck__label" data-i18n="store-settings.codes.f.scope.items">Specific items</span>
+                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="store-settings.codes.f.scope.items">Specific items</span><span class="radio-list__sub" data-i18n="store-settings.codes.f.scope.multi.sub">Products, bundles and ticket tiers</span></span>
                   </label>
                   <!-- 特定商品的多選 combobox 原本住在這一組底下；D299 起 Phase 1 也能多選，
-                       改成兩組共用同一顆（見下方 #ss-scope-combo），這裡只留勾選框。 -->
+                       改成兩組共用同一顆（見下方 #ss-scope-combo），這裡只留勾選列。 -->
+                  </div>
                 </div>
 
                 <!-- Phase 1 版本（D279→D299 改多選）：全部商店，或指定商品（可多選）——沿用既有的
@@ -736,6 +743,7 @@
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script><!-- 優惠碼「指定商品」的活動票種候選（D299）讀 ztorEvents.list() -->
+<script src="js/currency.js?v=r2.2"></script><!-- 創作者幣別（D316）：唯讀讀數的單一來源，與 settings.html 同一支 -->
 <script src="js/store-profile-store.js?v=r2.2"></script>
 <script src="partials/fan-store.js?v=r2.2"></script>
 <script src="partials/social-links.js?v=r2.2"></script>
@@ -906,8 +914,18 @@
          （含留空／0＝不限）才出現；單位切換與件數輸入都要重算。 ─────────── */
       const fixedModeRow = modal.querySelector('[data-code-fixed-mode]');
       function currentUnit() {
-        const active = modal.querySelector('[data-code-unit].segmented__btn--active');
+        /* Phase 1 的折扣欄沒有型態切換（D320）：segmented 被版本閘門藏起來時一律當百分比 */
+        const seg = modal.querySelector('#ss-code-unit');
+        if (!seg || !seg.offsetParent) return 'pct';
+        const active = seg.querySelector('[data-code-unit].segmented__btn--active');
         return active ? active.dataset.codeUnit : 'pct';
+      }
+      /* 折扣數值：Phase 4 讀 segmented 旁的欄、Phase 1 讀帶 % 後綴的欄（D320） */
+      function discountValue() {
+        const p1 = document.getElementById('ss-code-discount-p1');
+        const full = document.getElementById('ss-code-discount');
+        const el = (p1 && p1.offsetParent) ? p1 : full;
+        return el ? el.value.trim() : '';
       }
       function updateFixedModeVisibility() {
         if (!fixedModeRow) return;
@@ -1161,8 +1179,7 @@
         if (modal.dataset.mode === 'new') {
           const taken = [...rows.querySelectorAll('.ss-code-cell__code')].some(el => el.textContent.trim().toUpperCase() === raw.toUpperCase());
           if (taken) { if (inp) { inp.setAttribute('aria-invalid', 'true'); inp.focus(); } toast('store-settings.codes.err.taken'); return; }
-          const discountEl = document.getElementById('ss-code-discount');
-          const dv = discountEl ? discountEl.value.trim() : '';
+          const dv = discountValue();
           const discount = currentUnit() === 'pct' ? dv + '%' : '$' + dv;
           const start = fmtDate((document.getElementById('ss-code-start') || {}).value);
           const end = fmtDate((document.getElementById('ss-code-end') || {}).value);

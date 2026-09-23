@@ -82,7 +82,16 @@
       sub: '32-page photo zine documenting the east-coast tour. Letterpress cover.',
       cat: 'physical', subKey: 'zine', variant: 'single', edition: 'unlimited',
       status: 'low', price: '24.00', cost: '9.00', stock: '3', threshold: '4',
-      catLabel: 'Physical Merchandise', subLabel: 'Books · 書籍'
+      catLabel: 'Physical Merchandise', subLabel: 'Books · 書籍',
+      /* 詳細規格／取貨與退貨說明（2026-09-23 · D319 補；ASSUMPTIONS UIA-175「示範資料沒有這兩欄」的落地）：
+         形狀對齊 create-product.html collectSpecFields() 逐列 { name, value }，供 product-detail 設定分頁
+         與 product-localization 翻譯表共用同一個欄位。 */
+      specs: [
+        { name: '材質', value: '凸版印刷封面 · 232 磅美術紙內頁' },
+        { name: '尺寸', value: '21 × 15 cm' },
+        { name: '頁數', value: '32 頁' }
+      ],
+      deliveryReturns: '訂購後 3–5 個工作日內出貨。到貨 7 天內如有瑕疵可申請換貨，恕不接受已拆封退換。'
     },
     tee: {
       name: '九龍夜行 紀念 T 恤', img: 'coastline-tee.webp',
@@ -98,7 +107,14 @@
         { combo: ['M'],  sku: 'TEE-M',  stock: '18', img: 'tee-black.webp' },
         { combo: ['L'],  sku: 'TEE-L',  stock: '15' },
         { combo: ['XL'], sku: 'TEE-XL', stock: '7' }
-      ]
+      ],
+      /* 詳細規格／取貨與退貨說明（2026-09-23 · D319 補），同 zine 的形狀與理由。 */
+      specs: [
+        { name: '材質', value: '220 克精梳純棉' },
+        { name: '版型', value: 'Regular fit · 台灣尺碼對照 S–XL' },
+        { name: '印刷', value: '海岸線圖騰網版印刷，胸口燙印 LOGO' }
+      ],
+      deliveryReturns: '訂購後 3–5 個工作日內出貨；到貨 7 天內可換尺寸，商品需保持未拆吊牌、未洗滌。'
     },
     hoodie: {
       name: '九龍夜行 連帽外套', img: 'coastline-hoodie.webp',
@@ -121,7 +137,14 @@
         { combo: ['Sand', 'M'],  sku: 'HOOD-SD-M', stock: '5',  img: 'zip-hoodie.webp' },
         /* 2026-09-11：L 尺寸貴 $6，讓含 hoodie 的組合在清單上顯示價格區間（多選項多價格 → 區間） */
         { combo: ['Sand', 'L'],  sku: 'HOOD-SD-L', stock: '20', price: '64.00', img: 'zip-hoodie.webp' }
-      ]
+      ],
+      /* 詳細規格／取貨與退貨說明（2026-09-23 · D319 補），同 zine 的形狀與理由。 */
+      specs: [
+        { name: '材質', value: '380 克刷毛內裡棉混紡' },
+        { name: '版型', value: 'Oversized fit · 附抽繩連帽' },
+        { name: '工藝', value: '浪紋刺繡背面標誌' }
+      ],
+      deliveryReturns: '訂購後 5–7 個工作日內出貨；到貨 7 天內可換尺寸，商品需保持未拆吊牌、未洗滌、無使用痕跡。'
     },
     acetate: {
       name: '九龍夜行 原聲黑膠 · 編號 1/50', img: 'coastline-acetate.webp',
@@ -129,7 +152,15 @@
       cat: 'physical', subKey: 'collectible', variant: 'single', edition: 'limited',
       status: 'live', price: '120.00', cost: '38.00', stock: '29', cap: '50', sold: '21', threshold: '5',
       delivery: 'qr',   /* 現場 QR 領取示範：簽名場次現場領取的限量收藏品（唯一一筆 QR 領取商品）*/
-      catLabel: 'Physical Merchandise', subLabel: 'Collectibles · 收藏品'
+      catLabel: 'Physical Merchandise', subLabel: 'Collectibles · 收藏品',
+      /* 詳細規格／取貨與退貨說明（2026-09-23 · D319 補），同 zine 的形狀與理由；取貨與退貨說明改寫成
+         配合現場 QR 領取＋限量手燒版一次性不可退換的脈絡，不是照抄物流版的既定文案。 */
+      specs: [
+        { name: '材質', value: '180 克黑膠唱片' },
+        { name: '轉速', value: '33⅓ RPM · 12 吋' },
+        { name: '版次', value: '手工編號限量 50 張，附親簽卡' }
+      ],
+      deliveryReturns: '現場簽名會 QR 領取；每片獨立編號、限量手燒版，一經領取恕不接受退換。'
     },
     pin: {
       name: '霓虹招牌 琺瑯徽章', img: 'enamel-pin-wave.webp',

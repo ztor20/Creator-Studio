@@ -21,7 +21,6 @@
 <link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/review-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <!-- 直接發佈影片路徑的作品欄位（partials/work-fields.js）用到的三支：標籤輸入、
      演職名單、送審前的就緒檢查 chip。與 publish-work.html 同一份元件。 -->
@@ -40,13 +39,17 @@
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
 <!-- 發布後的成功提示排到下一頁顯示（js/toast.js 的跨頁佇列），樣式在這裡就要備好。 -->
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
-<!-- 發布前預覽確認層（D223）：彈窗殼＋語言分頁＋列表 -->
+<!-- payout-modal.css：回饋套組／預購方案的分段彈窗（bundle-editor layout:'sections'）也吃這支。
+     review-row.css 已移除（2026-09-23）：唯一消費者是最後一步的摘要審閱，已由全頁預覽取代。 -->
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 浮層已退場（D310 專案側），留著是因為全頁畫面的翻譯表／價格表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表／價格表（整頁 .drawer--full） -->
+<link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- D310 專案側：最後一步的粉絲視角專案頁（前台 cocreate-project／title 鏡像，第 6 段；只給 js/fan-project-page.js 用） -->
+<link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- D310 專案側：最後一步「預覽與發布」的全頁版型（主區預覽＋右側側欄） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* 型別欄位網格（原 .tf-grid）與 distribution 三欄改用 ds-components/form-grid.css；
@@ -720,12 +723,12 @@
       <div class="form-grid form-section form-section--outlined">
         <div class="field">
           <label class="field__label"><span data-i18n="cpp.po.deadline">Pre-order deadline</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
-          <input class="input" type="number" placeholder="30" value="30">
+          <input class="input" type="number" id="po-deadline" placeholder="30" value="30">
           <div class="field__hint" data-i18n="cpp.po.deadline.hint">Days open from launch.</div>
         </div>
         <div class="field">
           <label class="field__label"><span data-i18n="cpp.po.delivery">Expected delivery</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
-          <input class="input" type="date">
+          <input class="input" type="date" id="po-delivery">
           <div class="field__hint" data-i18n="cpp.po.delivery.hint">Should be after the deadline plus production time.</div>
         </div>
       </div>
@@ -763,233 +766,21 @@
       <div data-details-extra></div>
     </section>
 
-    <!-- ───────────────────────── STEP · Review (shared, per-type blocks) ───────────────────────── -->
+    <!-- ───────────────────────── STEP · 預覽與發布（Preview & publish／影片路徑：預覽與送審 Preview & submit）─────────────────────────
+         D322（2026-09-23，5.1.2.1 §4.3）：流程的最後一步**就是**發布前預覽確認的全頁畫面（比照建立活動第 8 步 D310）——
+         主區是粉絲視角前台專案頁（js/fan-project-page.js），右側固定側欄三段（語言／幣別／發布前檢核）＋底部主鈕
+         （發布項目；直接發佈 × 影片家族為送出審核），按下即執行、不再彈第二層。版型與互動全部由 js/publish-stage.js
+         掛進下面這個空殼，本頁只負責備料（見頁尾 buildStageOpts）。
+         墓碑（2026-09-23 · D322）：原本這一步是摘要審閱——F9 各步摘要（review-row 卡，各帶 Edit）、F10 交付時程區塊、
+         F11 接下來會發生什麼、F12 發布前檢查兩份清單（含影片路徑的 #gf-preflight），按下「發布項目」再開
+         partials/publish-preview.js 浮層（D223），同一件事問兩遍。整組 markup 移除：F9 退場（預覽本身就是摘要，Edit 去向改成
+         預覽區塊的 hover「編輯」）；F10 併入前台預覽的「交付時程」段（預期交付就地可改，寫回下面的隱藏欄／預購設定的同一欄）；
+         F11、F12 併入側欄第三段（F12＝檢核清單、F11＝清單下方的伴隨說明，見頁尾 stageNextSync）。 -->
     <section data-panel="review" class="hidden">
-      <div data-gl-hide>
-        <h1 class="wizard__step-title" data-i18n="cpp.s4.h1">Ready to publish.</h1>
-        <p class="wizard__step-sub" data-i18n="cpp.s4.sub">Verify what fans will see and what kicks off behind the scenes. You can step back into any section without losing progress.</p>
-      </div>
-      <!-- 影片路徑送出的是送審件、不是上線，標題就不能說「準備發布」（規劃書 §5 第 13 題）。 -->
-      <div data-gl-only class="hidden">
-        <h1 class="wizard__step-title" data-i18n="cpp.gf.review.h1">Ready to send for review.</h1>
-        <p class="wizard__step-sub" data-i18n="cpp.gf.review.sub">Check what you are handing over. You can step back into any section without losing progress.</p>
-      </div>
-
-      <div class="review-row">
-        <!-- About summary -->
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.step.about">About</h3>
-            <a class="review-row__action" data-goto-step="about" href="#" data-i18n="cpp.s4.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
-            <div><div class="meta-cell__label" data-i18n="cpp.s1.type">Project type</div><div class="meta-cell__value" id="rv-type" data-i18n="cpp.golive.title">Direct release</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s1.title">Title</div><div class="meta-cell__value" id="rv-title">—</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s1.content">Content type</div><div class="meta-cell__value" id="rv-cat">—</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s4.iprents">IP rentals</div><div class="meta-cell__value" data-i18n="cpp.s4.none">None</div></div>
-          </div>
-        </div>
-
-        <!-- Showcase summary（影片路徑改用下方合併後的那一塊） -->
-        <div class="review-row__item" data-gl-hide>
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.step.showcase">Showcase</h3>
-            <a class="review-row__action" data-goto-step="showcase" href="#" data-i18n="cpp.s4.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" style="display:flex;flex-direction:column;gap:6px">
-            <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s2.story">Story</span><span class="badge badge--success"><span data-i18n="cpp.s4.complete">✓ Completed</span></span></div>
-            <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.imgs">Key visual · gallery</span><span class="badge badge--success"><span data-i18n="cpp.s4.uploaded">Uploaded</span></span></div>
-            <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.trailer">Video</span><span class="badge badge--neutral"><span data-i18n="cpp.s4.no-trailer">Not uploaded</span></span></div>
-          </div>
-        </div>
-
-        <!-- Middle summary · Direct release -->
-        <div class="review-row__item hidden" data-review-mid="golive">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.step.money">Monetization</h3>
-            <a class="review-row__action" data-goto-step="monetization" href="#" data-i18n="cpp.s4.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
-            <div><div class="meta-cell__label" data-i18n="cpp.s4.access">Access</div><div class="meta-cell__value" data-i18n="cpp.ppv.title">Pay per view</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s4.price">Price</div><div class="meta-cell__value">$12.00</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s3.fee">Platform fee</div><div class="meta-cell__value">5% + 3%</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s3.ads">Ads</div><div class="meta-cell__value" data-i18n="cpp.s4.off">Off</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s4.brand">Brand deals</div><div class="meta-cell__value" data-i18n="cpp.s4.brand-val">1 attached</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s4.publish">Publish</div><div class="meta-cell__value" data-i18n="cpp.s3.now">Immediately</div></div>
-          </div>
-        </div>
-
-        <!-- Middle summary · Direct release × film（值全部由 render() 從欄位讀，不寫死） -->
-        <div class="review-row__item hidden" data-review-mid="golive-film">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.step.master">Master file</h3>
-            <a class="review-row__action" data-goto-step="master" href="#" data-i18n="cpp.s4.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
-            <div><div class="meta-cell__label" data-i18n="pw.media.file.title">Video file</div><div class="meta-cell__value" id="rv-gf-file">—</div></div>
-            <div><div class="meta-cell__label" data-i18n="pw.media.audio.lang">Original language</div><div class="meta-cell__value" id="rv-gf-audio">—</div></div>
-            <div><div class="meta-cell__label" data-i18n="pw.media.subs.title">Subtitles</div><div class="meta-cell__value" id="rv-gf-subs">—</div></div>
-          </div>
-        </div>
-        <div class="review-row__item hidden" data-review-mid="golive-film">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.step.showcasework">Showcase</h3>
-            <a class="review-row__action" data-goto-step="showcase" href="#" data-i18n="cpp.s4.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
-            <div><div class="meta-cell__label" data-i18n="pw.art.cover.title">Cover</div><div class="meta-cell__value" id="rv-gf-cover">—</div></div>
-            <div><div class="meta-cell__label" data-i18n="pw.art.stills.title">Stills</div><div class="meta-cell__value" id="rv-gf-stills">—</div></div>
-            <div><div class="meta-cell__label" data-i18n="pw.art.bts.title">Behind the scenes</div><div class="meta-cell__value" id="rv-gf-bts">—</div></div>
-            <div><div class="meta-cell__label" data-i18n="pw.art.trailer.title">Trailer</div><div class="meta-cell__value" id="rv-gf-trailer">—</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s2.story">Story</div><div class="meta-cell__value" id="rv-gf-story">—</div></div>
-          </div>
-        </div>
-        <div class="review-row__item hidden" data-review-mid="golive-film">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.step.details">Details &amp; pricing</h3>
-            <a class="review-row__action" data-goto-step="details" href="#" data-i18n="cpp.s4.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
-            <div><div class="meta-cell__label" data-i18n="pw.info.runtime">Runtime</div><div class="meta-cell__value" id="rv-gf-runtime">—</div></div>
-            <div><div class="meta-cell__label" data-i18n="pw.info.release">Release date</div><div class="meta-cell__value" id="rv-gf-release">—</div></div>
-            <div><div class="meta-cell__label" data-i18n="pw.info.age.title">Age rating</div><div class="meta-cell__value" id="rv-gf-age">—</div></div>
-            <div><div class="meta-cell__label" data-i18n="pw.info.genre.title">Genres</div><div class="meta-cell__value" id="rv-gf-genres">—</div></div>
-            <div><div class="meta-cell__label" data-i18n="pw.price.title">Pricing</div><div class="meta-cell__value" id="rv-gf-price">—</div></div>
-            <div><div class="meta-cell__label" data-i18n="pw.credits.cast.title">Cast</div><div class="meta-cell__value" id="rv-gf-credits">—</div></div>
-          </div>
-        </div>
-
-        <!-- Middle summary · Co-create -->
-        <div class="review-row__item hidden" data-review-mid="fund">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.rv.fund.title">Co-creation</h3>
-            <a class="review-row__action" data-goto-step="funding" href="#" data-i18n="cpp.s4.edit">Edit →</a>
-          </div>
-          <div class="review-row__value">
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:10px">
-              <div><div class="meta-cell__label" data-i18n="cpp.rv.fund.goal">Goal</div><div class="meta-cell__value">$20,000</div></div>
-              <div><div class="meta-cell__label" data-i18n="cpp.rv.fund.length">Length</div><div class="meta-cell__value">30 days</div></div>
-              <div><div class="meta-cell__label" data-i18n="cpp.rv.fund.dist">Distribution</div><div class="meta-cell__value">10% · 100 slots</div></div>
-            </div>
-            <div class="flex-row" style="justify-content:space-between;border-top:1px solid var(--border-soft);padding-top:10px">
-              <span class="meta-cell__label" data-i18n="cpp.rv.tiers.title">Tiers</span>
-              <span class="badge badge--success"><span data-i18n="cpp.rv.tiers.val">3 tiers</span></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Middle summary · Pre-order -->
-        <div class="review-row__item hidden" data-review-mid="preorder">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.rv.pre.title">Pre-order</h3>
-            <a class="review-row__action" data-goto-step="preorder" href="#" data-i18n="cpp.s4.edit">Edit →</a>
-          </div>
-          <div class="review-row__value">
-            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:10px">
-              <!-- 兩個值由 render() 從預購設定的欄位讀回來，不再寫死：可售份數檢查
-                   拿的就是同兩個數字，摘要跟檢查說的話必須是同一件事。 -->
-              <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.price">Unit price</div><div class="meta-cell__value" id="rv-pre-price">$29.99</div></div>
-              <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.min">Min units</div><div class="meta-cell__value" id="rv-pre-min">100</div></div>
-              <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.deadline">Deadline</div><div class="meta-cell__value">30 days</div></div>
-              <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.delivery">Expected delivery</div><div class="meta-cell__value">—</div></div>
-            </div>
-            <!-- 方案數（§4.3 F9 的 Presale 摘要條）。數字由 JS 依實際套組數填入，
-                 不寫死——共創那一條寫死「3 tiers」是既有原型負債，別再複製一份。 -->
-            <div class="flex-row" style="justify-content:space-between;border-top:1px solid var(--border-soft);padding-top:10px">
-              <span class="meta-cell__label" data-i18n="cpp.rv.pre.tiers">Plans</span>
-              <!-- 值由 render() 填（不掛 data-i18n：那會讓 i18n 把 {n} 佔位原封寫上去）。 -->
-              <span class="badge badge--success" id="rv-pre-tiers">—</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Delivery timeline · Co-create / Presale only -->
-        <div class="review-row__item hidden" data-review-delivery>
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.rv.delivery">Delivery timeline</h3>
-          </div>
-          <div class="review-row__value">
-            <div class="data-list__meta" style="margin-bottom:10px" data-i18n="cpp.rv.delivery.sub">When backers can expect the final product.</div>
-            <div class="field" style="max-width:280px">
-              <label class="field__label"><span data-i18n="cpp.rv.delivery.expected">Expected delivery</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
-              <input class="input" type="date">
-            </div>
-            <div class="field" style="margin-top:8px;margin-bottom:0">
-            <div class="field__label" data-i18n="cpp.rv.milestones">Milestones</div>
-            <div style="display:flex;flex-direction:column;gap:6px;font-family:var(--font-ui);font-size: var(--fs-13)">
-              <div class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.ms1">Campaign funded</span></div>
-              <div class="flex-row" style="gap:8px"><span class="text-sub">◔</span><span data-i18n="cpp.rv.ms2">Pre-production complete</span></div>
-              <div class="flex-row" style="gap:8px"><span class="text-sub">○</span><span data-i18n="cpp.rv.ms3">Delivery to backers</span></div>
-            </div>
-            <button class="btn btn--outline btn--add mt-8" data-i18n="cpp.rv.milestones.add">＋ Add milestone</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- What happens next · per type -->
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.rv.next.title">What happens next</h3>
-          </div>
-          <div class="review-row__value">
-            <ul class="hidden" data-review-next="golive" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl1">Your project goes live immediately (or at the scheduled time).</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl2">Fans watch, or pay per view / unlock paid content.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl3">You earn from views, pay-per-view, and ad placements.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl4">5% platform fee + 3% Stripe on revenue.</span></li>
-            </ul>
-            <ul class="hidden" data-review-next="golive-film" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gf1">Your project moves to Scheduled and the work goes into platform review.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gf2">Once it passes, the work is listed and goes live on the release date you set.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gf3">If it does not pass, it comes back with a reason and you can fix it and send again.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gf4">Nothing is charged until fans rent it: 5% platform fee + 3% Stripe on revenue.</span></li>
-            </ul>
-            <ul class="hidden" data-review-next="fund" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd1">Campaign goes live.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd2">Fans back your project.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd3">If the goal is met, funds are released.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd4">If not, everyone is refunded.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd5">5% platform fee + 3% Stripe (only if funded).</span></li>
-            </ul>
-            <ul class="hidden" data-review-next="preorder" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po1">Pre-orders open.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po2">Fans commit to buy.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po3">If the threshold is met, you deliver.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po4">If not, everyone is refunded.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po5">5% platform fee + 3% Stripe (only if threshold met).</span></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- 影片路徑的就緒檢查＝建立流程的發布前檢查 ＋ 上架流程 §8 的必填齊全，合併成一份清單。
-           項目本身由 work-fields 模組算（欄位在哪、算不算填好都是它的事），建立流程自己的三條
-           （必填欄位、素材與故事、IP 租借）在這裡補。 -->
-      <div class="field mt-16 form-section form-section--outlined hidden" data-gl-only>
-        <div class="field__label" data-i18n="cpp.s4.preflight">Pre-flight check</div>
-        <div id="gf-preflight" style="display:flex;flex-direction:column;gap:6px;font-family:var(--font-ui);font-size: var(--fs-13)"></div>
-      </div>
-
-      <!-- Pre-flight check -->
-      <div class="field mt-16 form-section form-section--outlined" data-gl-hide>
-        <div class="field__label" data-i18n="cpp.s4.preflight">Pre-flight check</div>
-        <div style="display:flex;flex-direction:column;gap:6px;font-family:var(--font-ui);font-size: var(--fs-13)">
-          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.chk1">Required fields complete (Title · Category · Description)</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.chk2">Required images uploaded · story meets minimum</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <div class="flex-row" style="justify-content:space-between" data-review-pf="golive"><span data-i18n="cpp.rv.pf.mid.golive">Monetization set</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="fund"><span data-i18n="cpp.rv.pf.mid.fund">Co-creation set · budget totals 100%</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="fund"><span data-i18n="cpp.rv.pf.tiers">3+ tiers created</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="preorder"><span data-i18n="cpp.rv.pf.mid.pre">Pre-order set</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <!-- D166：預購也有方案下限（§4.3 F12 第 4 條，至少 1 個）。 -->
-          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="preorder"><span data-i18n="cpp.rv.pf.pretiers">1+ plan created</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <!-- D167（§4.3 F12 第 5 條）：全數限量時，Σ(販售上限 × 含作品份數) 須 ≥ 最少預購數。
-               徽章與底下那行說明都由 render() 依當下的方案重算；不通過時發布按鈕停用。 -->
-          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="preorder"><span data-i18n="cpp.rv.pf.precap">Sellable copies cover the minimum</span><span class="badge badge--success" id="pf-precap"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <div class="field__hint hidden" id="pf-precap-note"></div>
-          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="delivery"><span data-i18n="cpp.rv.pf.delivery">Delivery timeline clear</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.rv.pf.ip">IP rental linked (if other IP is used)</span><span class="badge"><span data-i18n="cpp.s4.na">N/A</span></span></div>
-        </div>
-      </div>
+      <!-- F10 共創的預期交付（Co-create 沒有前置交付欄，於本步首次填入，§4.3 F10）：值的單一來源，
+           由前台預覽「交付時程」段的就地日期欄寫入。預購的單一來源是預購設定那一格 #po-delivery。 -->
+      <input type="hidden" id="cpp-delivery" value="">
+      <div data-cpp-stage></div>
     </section>
 
   </div>
@@ -1009,7 +800,7 @@
 
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
-<!-- 發布後要導向「同類型的示範專案」，需要這份專案目錄查 id（見下方 publish()）。 -->
+<!-- 發布後要導向「同類型的示範專案」，需要這份專案目錄查 id（見下方 doPublishConfirmed()）。 -->
 <script src="js/projects-store.js?v=r2.2"></script>
 <!-- 提供 window.ztorToast.queue()：發布提示排到詳情頁再顯示。 -->
 <script src="js/toast.js?v=r2.2"></script>
@@ -1018,7 +809,11 @@
 <script src="js/bundle-editor.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
-<script src="partials/publish-preview.js?v=r2.2"></script>
+<!-- partials/publish-preview.js 已移除（2026-09-23）：最後一步改成全頁「預覽與發布」，本頁不再開浮層。 -->
+<!-- 匯率與金額格式（window.ztorEvents 的 fx／priceIn／fmtMoney）：publish-stage 的幣別段與價格表靠它換算。 -->
+<script src="js/events-store.js?v=r2.2"></script>
+<script src="js/publish-stage.js?v=r2.2"></script>
+<script src="js/fan-project-page.js?v=r2.2"></script>
 <script src="partials/stepper.js?v=r2.2"></script>
 <!-- 素材格（[data-upload]）：work-fields 渲染的上傳格要靠它增強，所以必須排在其前面。 -->
 <script src="partials/upload-tile.js?v=r2.2"></script>
@@ -1083,7 +878,8 @@
     monetization: 'cpp.step.money', funding: 'cpp.step.funding',
     tiers: 'cpp.step.tiers', preorder: 'cpp.step.preorder',
     'tiers-pre': 'cpp.step.pretiers',
-    review: 'cpp.step.review',
+    /* 2026-09-23（D310 專案側）：最後一步由摘要審閱改成全頁「預覽與發布」，面板代號沿用 review。 */
+    review: 'cpp.step.preview',
   };
   /* 兩個方案步驟共用同一套擋關與教練提示的機制，只有文案與最小張數不同。 */
   const TIER_STEPS = ['tiers', 'tiers-pre'];
@@ -1092,7 +888,8 @@
   /* 影片路徑有三個步驟名跟其他路徑不同（同一個面板、不同的說法）：第一步收的是作品本身
      而不只是項目資料，第三步收的是成品素材而不是宣傳素材，最後一步送的是送審件而不是上線。
      名稱以規劃書 §2.1 為準。 */
-  const STEP_LABEL_FILM = { about: 'cpp.step.aboutwork', showcase: 'cpp.step.showcasework', review: 'cpp.step.submit' };
+  /* 影片路徑的最後一步送的是送審件，所以叫「預覽與送審」（2026-09-23 隨全頁預覽改名，原「送審確認」）。 */
+  const STEP_LABEL_FILM = { about: 'cpp.step.aboutwork', showcase: 'cpp.step.showcasework', review: 'cpp.step.preview-submit' };
   const TYPE_TITLE = { golive: 'cpp.golive.title', fund: 'cpp.fund.title', preorder: 'cpp.pre.title' };
 
   let type = 'golive';
@@ -1180,7 +977,12 @@
     /* 2026-07-28：Bundles 步驟也改成兩欄（表單＋名額分帳右軌），所以一起吃 --mid。
        兩個共創步驟用同一個形狀，不然它們會讀起來像兩個不同的產品。 */
     const body = document.querySelector('.wizard__body');
-    if (body) body.classList.toggle('wizard__body--mid', cur === 'funding' || cur === 'tiers');
+    const onStage = cur === 'review';
+    if (body) {
+      body.classList.toggle('wizard__body--mid', cur === 'funding' || cur === 'tiers');
+      /* D322：最後一步是全頁預覽（前台鏡像的內容寬 ＋ 320 側欄），比 mid 寬得多（同 create-event 第 8 步） */
+      body.classList.toggle('wizard__body--stage', onStage);
+    }
     if (cur === 'funding') renderFundingOverview();
     /* Continue 的 disabled 由「自己有擋關條件」的步驟管：兩個方案步驟（有效套組數）
        ＋共創資金步驟（預算總和 100%，規格 §5.2.1 F23）。離開它們一定要放開，
@@ -1194,92 +996,25 @@
     if (cur === 'tiers' && typeof ensureBundles === 'function') ensureBundles();
     if (cur === 'tiers-pre' && typeof ensurePreBundles === 'function') ensurePreBundles();
 
-    /* Review 的預購方案數即時反映實際張數（共創那條仍是既有的寫死示範值）。 */
-    const rvPre = document.getElementById('rv-pre-tiers');
-    if (rvPre && typeof preValidCount === 'function') {
-      const n = preValidCount();
-      rvPre.textContent = n === 1 ? T('cpp.rv.pre.tiers.one') : T('cpp.rv.pre.tiers.val').replace('{n}', String(n));
-      rvPre.classList.toggle('badge--success', n >= 1);
-    }
-    /* 預購摘要的單位價格與最少預購數照著欄位讀（D167）：可售份數檢查用的就是這兩個數，
-       摘要另外寫死一組會變成兩個互相矛盾的真相。 */
-    const rvPreCap = (type === 'preorder' && typeof preCapacity === 'function') ? preCapacity() : null;
-    const poPriceEl = document.getElementById('po-price');
-    const rvPreP = document.getElementById('rv-pre-price');
-    if (rvPreP && poPriceEl) {
-      const v = parseFloat(String(poPriceEl.value).replace(/[^0-9.]/g, ''));
-      rvPreP.textContent = Number.isFinite(v) ? '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : DASH;
-    }
-    const rvPreM = document.getElementById('rv-pre-min');
-    if (rvPreM && rvPreCap) rvPreM.textContent = Number.isFinite(rvPreCap.min) ? rvPreCap.min.toLocaleString('en-US') : DASH;
-    /* 發布前檢查第 5 條：可售份數（§4.3 F12）。跳過與通過都給綠燈，差額才擋。 */
-    const pfCap = document.getElementById('pf-precap');
-    const pfCapNote = document.getElementById('pf-precap-note');
-    if (pfCap && rvPreCap) {
-      pfCap.classList.toggle('badge--success', rvPreCap.ok);
-      pfCap.classList.toggle('badge--error', !rvPreCap.ok);
-      pfCap.textContent = T(rvPreCap.ok ? 'cpp.s4.yes' : 'cpp.s4.no');
-    }
-    if (pfCapNote) {
-      const show = !!rvPreCap && (!rvPreCap.ok || rvPreCap.skip);
-      pfCapNote.classList.toggle('hidden', !show);
-      if (show) {
-        pfCapNote.textContent = rvPreCap.ok
-          ? T('cpp.rv.pf.precap.skip')
-          : T('cpp.rv.pf.precap.note')
-              .replace('{sold}', rvPreCap.sold.toLocaleString('en-US'))
-              .replace('{min}', rvPreCap.min.toLocaleString('en-US'));
-      }
-    }
-
-    // Review per-type blocks
-    const fk = flowKey();
-    document.querySelectorAll('[data-review-mid]').forEach(b => b.classList.toggle('hidden', b.dataset.reviewMid !== fk));
-    document.querySelectorAll('[data-review-next]').forEach(b => b.classList.toggle('hidden', b.dataset.reviewNext !== fk));
-    document.querySelectorAll('[data-review-pf]').forEach(b => {
-      const show = b.dataset.reviewPf === fk || (b.dataset.reviewPf === 'delivery' && type !== 'golive');
-      b.classList.toggle('hidden', !show);
-    });
-    const delivery = document.querySelector('[data-review-delivery]');
-    if (delivery) delivery.classList.toggle('hidden', type === 'golive');
-    /* About 摘要的兩格照當下的欄位讀：影片路徑的標題來自逐語言文案的第一組，
-       其他路徑來自項目標題那一格；內容類型來自選中的那顆 chip。 */
-    const rvTitle = document.getElementById('rv-title');
-    if (rvTitle) {
-      const firstCopy = document.querySelector('[data-pw-copy] [data-pw-title]');
-      const plain = document.getElementById('proj-title');
-      const v = isFilmFlow() ? (firstCopy && firstCopy.value.trim()) : (plain && plain.value.trim());
-      rvTitle.textContent = v || DASH;
-    }
-    const rvCat = document.getElementById('rv-cat');
-    if (rvCat) { const k = catRow(cat)[3]; rvCat.dataset.i18n = k; rvCat.textContent = T(k); }
-    const rvType = document.getElementById('rv-type');
-    if (rvType) { rvType.dataset.i18n = TYPE_TITLE[type]; rvType.textContent = T(TYPE_TITLE[type]); }
+    /* 墓碑（2026-09-23 · D322）：這裡原本回填最後一步的摘要審閱——預購方案數（#rv-pre-tiers）、
+       預購單位價格與最少預購數（#rv-pre-price／#rv-pre-min）、可售份數徽章與說明（#pf-precap／#pf-precap-note）、
+       依路徑切換的摘要塊／接下來會發生什麼／發布前檢查列（[data-review-mid]／[data-review-next]／[data-review-pf]）、
+       交付時程區塊（[data-review-delivery]）、關於項目三格（#rv-title／#rv-cat／#rv-type）。那批 markup 隨摘要步退場，
+       檢查改由 stageChecks() 產生、交給側欄第三段；可售份數的算式仍是 preCapacity() 同一支。 */
 
     buildStepper();
 
     document.querySelector('[data-action=back]').style.display = idx === 0 ? 'none' : '';
     const next = document.querySelector('[data-action=next]');
-    if (idx === f.length - 1) {
-      const key = isFilmFlow() ? 'cpp.next.submit' : 'cpp.next.publish';
-      next.dataset.i18n = key;
-      next.textContent = T(key);
-      /* 影片路徑：就緒檢查沒過就停用送審鈕，理由寫在按鈕旁邊（合併後的檢查，規格 §8）。 */
-      if (isFilmFlow()) {
-        const st = renderFilmReview();
-        next.disabled = !st.ok;
-        setNextHint(st.ok ? null : 'cpp.gf.hint.blocked');
-      }
-      /* 發布前檢查沒過就停用發布鈕，並在旁邊說出理由（D167 的可售份數規則）。
-         按鈕的狀態就是答案——讓人按下去再彈訊息只是把同一句話說晚一點。 */
-      if (rvPreCap && !rvPreCap.ok) {
-        next.disabled = true;
-        setNextHint('cpp.rv.pf.precap.short');
-      }
-    } else {
+    if (idx < f.length - 1) {
       next.removeAttribute('data-i18n');
       next.textContent = T('cpp.next.continue') + ' ' + T(stepLabelKey(f[idx + 1]));
     }
+    /* D322：最後一步的主動作（發布項目／送出審核）與上一步都在側欄，底部動作列整條收起；
+       還沒進流程（閘門畫面）時不動它——閘門自己管 footer 的顯示（見 showGate／enterWizard）。 */
+    syncStageFooter();
+    /* 走到最後一步才備料掛畫面——欄位、方案與價格是動態清單，離開再回來都要重收一次。 */
+    if (onStage) mountStage(); else unmountStage();
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
@@ -1343,7 +1078,7 @@
   /* 分流點：內容類型一選定，步驟數就定稿（規格 5.1.2.1 §3）。 */
   function chooseCat(c) { cat = c; syncCatUI(); render(); }
 
-  function enterWizard() { enteredWizard = true; gate.classList.add('hidden'); gate2.classList.add('hidden'); sheet.classList.remove('hidden'); footer.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'instant' }); }
+  function enterWizard() { enteredWizard = true; gate.classList.add('hidden'); gate2.classList.add('hidden'); sheet.classList.remove('hidden'); footer.classList.remove('hidden'); syncStageFooter(); window.scrollTo({ top: 0, behavior: 'instant' }); }
   function showGate()    { gate.classList.remove('hidden'); gate2.classList.add('hidden'); sheet.classList.add('hidden'); footer.classList.add('hidden'); window.scrollTo({ top: 0, behavior: 'instant' }); }
   function showGate2()   { gate.classList.add('hidden'); gate2.classList.remove('hidden'); sheet.classList.add('hidden'); footer.classList.add('hidden'); window.scrollTo({ top: 0, behavior: 'instant' }); }
 
@@ -1400,57 +1135,25 @@
     if (pack && host && pack.parentElement !== host) host.appendChild(pack);
   }
 
-  /* Review 的摘要與就緒檢查。回傳 { ok } 給主動作決定擋不擋關。
-     檢查項來自 work-fields 模組（欄位在哪、算不算填好都是它的事），建立流程自己的
-     故事下限在這裡補；IP 租借那一條沿用原本的「不適用」呈現，不計入缺項。 */
-  function renderFilmReview() {
-    if (!window.ZtorWorkFields) return { ok: true };
-    const w = window.ZtorWorkFields.collect();
-    const DASHTXT = '—';
-    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || DASHTXT; };
-    const yes = T('cpp.s4.yes'), no = T('cpp.s4.no');
-    set('rv-gf-file', w.file.name || (w.file.state === 'empty' ? DASHTXT : T('pw.media.file.state.' + w.file.state)));
-    set('rv-gf-audio', w.audio ? T(w.audio) : DASHTXT);
-    set('rv-gf-subs', String(w.subs.filter(x => x.name).length));
-    /* 封面是一張圖，不是一個是非題：說「已上傳／未上傳」才對得上創作者剛做過的動作。 */
-    set('rv-gf-cover', T(w.cover ? 'cpp.s4.uploaded' : 'cpp.s4.no-trailer'));
-    set('rv-gf-stills', String(w.stills));
-    set('rv-gf-bts', String(w.bts));
-    set('rv-gf-trailer', w.trailer || DASHTXT);
-    set('rv-gf-runtime', w.runtime === '00:00:00' ? DASHTXT : w.runtime);
-    set('rv-gf-release', w.release);
-    set('rv-gf-age', w.age ? T(w.age) : DASHTXT);
-    set('rv-gf-genres', w.genres.length ? w.genres.map(g => T(g)).join('、') : DASHTXT);
-    set('rv-gf-price', w.paid
-      ? (w.currency + ' · ' + T('cpp.gf.rv.qualities').replace('{n}', String(w.qualities.length)))
-      : T('cpp.free.title'));
-    const storyEl = document.getElementById('proj-story');
-    const storyLen = storyEl ? storyEl.value.trim().length : 0;
-    set('rv-gf-story', storyLen ? T('cpp.gf.rv.story').replace('{n}', String(storyLen)) : DASHTXT);
-    set('rv-gf-credits', String(w.credits.reduce((n, r) => n + r.names.length, 0)));
-
+  /* 影片路徑的就緒檢查（§4.3 F12 第 8 項：與作品上架 §8 合併成一份）。回傳 [{ key, label, ok, stepKey }]，
+     交給 stageChecks() 轉成側欄第三段的清單。檢查項來自 work-fields 模組（欄位在哪、算不算填好都是它的事），
+     建立流程自己的故事下限在這裡補。
+     墓碑（2026-09-23 · D322）：原名 renderFilmReview()，另外回填摘要審閱的 #rv-gf-* 十三格與 #gf-preflight 清單，
+     那批 markup 隨摘要步退場；「不適用」的 IP 租借列改由 stageChecks() 統一附在清單末。 */
+  function filmChecks() {
+    if (!window.ZtorWorkFields) return [];
     const checks = window.ZtorWorkFields.checks({
       stepOf: { file: 'master', audio: 'master', cover: 'showcase', copy: 'about', spec: 'details', genres: 'details', age: 'details', pricing: 'details' },
       stepLabel: k => T(stepLabelKey(k))
-    }).map(c => ({ label: c.label, ok: c.done() }));
+    }).map(c => ({ key: 'gf-' + c.block, label: c.label, ok: !!c.done(), stepKey: c.step }));
     const story = document.getElementById('proj-story');
     checks.push({
+      key: 'gf-story',
       label: T(stepLabelKey('showcase')) + ' · ' + T('cpp.gf.chk.story'),
-      ok: !!story && story.value.trim().length >= 100
+      ok: !!story && story.value.trim().length >= 100,
+      stepKey: 'showcase'
     });
-
-    const host = document.getElementById('gf-preflight');
-    if (host) {
-      host.innerHTML = checks.map(c =>
-        '<div class="flex-row" style="justify-content:space-between"><span>' + c.label
-        + '</span><span class="badge ' + (c.ok ? 'badge--success' : 'badge--error') + '"><span>' + (c.ok ? yes : no) + '</span></span></div>'
-      ).join('')
-      + '<div class="flex-row" style="justify-content:space-between"><span>' + T('cpp.rv.pf.ip')
-        + '</span><span class="badge"><span>' + T('cpp.s4.na') + '</span></span></div>';
-    }
-    /* Cheat Codes 的 Skip validation：開著就放行，與站上其他建立流程一致。 */
-    const skip = !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
-    return { ok: checks.every(c => c.ok) || skip };
+    return checks;
   }
 
   /* 送出＝送審，不是上線（規劃書 §5 第 1 題）。項目進「準備中」，作品審核狀態進「待審核」；
@@ -1826,9 +1529,9 @@
 
      排程發布是另一件事：東西還沒上線，說「已發布」是對創作者做假陳述，
      所以照 Publish timing 那組選項分成兩句文案。 */
-  /* 真正發布：isFilmFlow() 的兩個分岔（送審 submitForReview／直接發布）都先過
-     發布前預覽確認層（D223），確認後才各自走原本的後續——這個 wizard 沒有編輯
-     已存在專案的分支（無後端、無寫入，見檔頭原型替身說明），永遠是新發布。 */
+  /* 真正發布（D322：由最後一步側欄主鈕 onPrimary 呼叫，按下即執行、不再彈第二層）：isFilmFlow() 分兩岔——
+     送審 submitForReview／直接發布。這個 wizard 沒有編輯已存在專案的分支（無後端、無寫入，見檔頭原型替身說明），
+     永遠是新發布。 */
   function doPublishConfirmed() {
     if (isFilmFlow()) return submitForReview();
     const scheduled = !!document.querySelector('[data-publish="schedule"].selection-card--active');
@@ -1844,42 +1547,374 @@
     const sample = list.filter(p => p.type === want)[0];
     location.href = 'project-detail.html' + (sample ? '?id=' + encodeURIComponent(sample.id) : '');
   }
-  function publish() {
-    if (window.ztorPublishPreview) {
-      window.ztorPublishPreview.open({
-        fields: [
-          { key: 'name', el: document.getElementById('proj-title'), kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
-          { key: 'desc', el: document.getElementById('proj-desc'), kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
-        ],
-        onConfirm: doPublishConfirmed
-      });
-      return;
-    }
-    doPublishConfirmed();
+  /* 墓碑（2026-09-23 · D322）：publish()——最後一步按「發布項目／送出審核」時先開 partials/publish-preview.js 浮層
+     （D223，只帶名稱與描述兩欄），確認後才呼叫 doPublishConfirmed()。最後一步本身就是全頁預覽之後，浮層退場，
+     doPublishConfirmed() 改由側欄主鈕直接呼叫（見 buildStageOpts 的 onPrimary）。 */
+
+  /* ══ 最後一步「預覽與發布／預覽與送審」全頁畫面（D322 · 5.1.2.1 §4.3；比照 create-event 第 8 步 D310）══════════
+     宿主只負責三件事：備料（buildStageOpts）、掛畫面（mountStage）、檢核同步（stage.syncChecks）。
+     版型、語言／幣別兩軸、兩張表與主鈕都在 js/publish-stage.js；主區畫面在 js/fan-project-page.js。
+     翻譯模式不傳：建立專案不受 D312 活動例外影響，仍自動翻譯（§4.3 側欄第一段）。
+     幣別不傳 priceOverrides：建立專案不在 D318 判準內，維持 D306 通則＝可逐幣別覆寫（§4.3 側欄第二段）。 */
+  let stage = null;            // publish-stage 的 handle（只有停在最後一步時是非 null）
+  /* publish-stage 的 step 是 1 起算的數字（0＝不跳），本頁的步驟是 flow() 裡的代號：兩邊在這裡換算。 */
+  const stepNum = key => { const i = flow().indexOf(key); return i >= 0 ? i + 1 : 0; };
+  function goStep(n) { if (!n) return; idx = Math.min(n, flow().length) - 1; render(); }
+  const numVal = v => { const n = parseFloat(String(v == null ? '' : v).replace(/[^0-9.]/g, '')); return Number.isFinite(n) ? n : 0; };
+  const fieldVal = id => { const el = document.getElementById(id); return el ? String(el.value || '').trim() : ''; };
+  const accessMode = () => { const c = document.querySelector('[data-access].selection-card--active'); return c ? c.dataset.access : 'ppv'; };
+  const skipOn = () => !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
+  /* 基準幣別：本頁的金額欄都標明 USD（價格 · USD、共創目標 · USD、單位價格 · USD），回饋套組的推導價也以同一套
+     $ 金額算（js/bundle-editor.js）——這是既有資料的計價幣別，不只是示範字樣，所以預覽的基準維持 USD，
+     不改讀 D316 的創作者幣別（window.ztorCurrency.CREATOR）。要改得連同三個欄位標籤與 bundle-editor 的金額格式
+     一起改，屬另案（見回報）。影片路徑的逐畫質定價另有自己的幣別欄（HKD／TWD），基準跟著那一欄。 */
+  function cppBaseCurrency() {
+    if (isFilmFlow() && window.ZtorWorkFields) return window.ZtorWorkFields.collect().currency || 'HKD';
+    return 'USD';
   }
+  /* 預期交付的單一來源（§4.3 F10）：共創＝最後一步的隱藏欄 #cpp-delivery（本步首次填入），
+     預購＝預購設定那一格 #po-delivery（本步顯示並可調整同一筆）。 */
+  function deliveryEl() { return document.getElementById(type === 'preorder' ? 'po-delivery' : 'cpp-delivery'); }
+
+  /* 方案：共創＝回饋套組（BD）、預購＝預購方案（BDP）；只收有效的（與兩個方案步驟的擋關同一支 isValid） */
+  function stageTiers() {
+    if (type === 'fund') return BD.getBundles().filter(bdValid).map(b => ({ b, ed: BD, pk: 'bundle:' + b.id }));
+    if (type === 'preorder') return BDP.getBundles().filter(b => BDP.isValid(b)).map(b => ({ b, ed: BDP, pk: 'plan:' + b.id }));
+    return [];
+  }
+  const tierName = t => String(t.b.name || '').trim() || t.ed.suggestName(t.b) || T('cpp.bd.untitled');
+  const tierGroup = () => T(type === 'preorder' ? 'cpp.step.pretiers' : 'cpp.step.tiers');
+
+  /* 可翻譯欄位（翻譯表的列）：名稱、描述、故事＋每個方案的名稱／說明／權益＋共創的預算分類名。
+     影片路徑的名稱與描述來自作品欄位的文案卡（F8，與上架流程同一份資料）。 */
+  function stageFields() {
+    const film = isFilmFlow();
+    const blank = { value: '' };
+    const fields = [
+      { key: 'name', el: (film ? document.querySelector('[data-pw-copy] [data-pw-title]') : document.getElementById('proj-title')) || blank, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
+      { key: 'desc', el: (film ? document.querySelector('[data-pw-copy] [data-pw-desc]') : document.getElementById('proj-desc')) || blank, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' },
+      { key: 'story', el: document.getElementById('proj-story') || blank, kind: 'textarea', labelKey: 'cpp.s2.story', labelFallback: 'Story' }
+    ];
+    stageTiers().forEach(t => {
+      const b = t.b, group = tierGroup() + ' · ' + tierName(t);
+      if (String(b.name || '').trim()) fields.push({ key: 'tier-name-' + b.id, el: { value: String(b.name).trim() }, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name', group });
+      if (String(b.desc || '').trim()) fields.push({ key: 'tier-desc-' + b.id, el: { value: String(b.desc).trim() }, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description', group });
+      (b.perks || []).forEach((p, i) => {
+        if (!String(p || '').trim()) return;
+        fields.push({ key: 'tier-perk-' + b.id + '-' + i, el: { value: String(p).trim() }, kind: 'input', labelKey: null,
+                      labelFallback: T('fpj.field.perk', 'Perk {n}').replace('{n}', i + 1), group });
+      });
+    });
+    if (type === 'fund') {
+      document.querySelectorAll('#budget-rows [data-budget-row]').forEach((r, i) => {
+        const v = String((r.querySelector('.input--inline') || blank).value || '').trim();
+        if (v) fields.push({ key: 'budget-' + i, el: { value: v }, kind: 'input', labelKey: null,
+                             labelFallback: T('fpj.field.budget', 'Category {n}').replace('{n}', i + 1), group: T('cpp.fd.budget') });
+      });
+    }
+    return fields;
+  }
+
+  /* 價格表的列：一方案一列（共創／預購）、直接發佈的單一價格、影片路徑的逐畫質租賃價。 */
+  function stagePrices() {
+    const base = cppBaseCurrency();
+    const out = [];
+    if (isFilmFlow()) {
+      const w = window.ZtorWorkFields ? window.ZtorWorkFields.collect() : null;
+      if (w && w.paid) w.qualities.forEach(q => out.push({
+        key: 'q:' + q.name, label: q.name, groupKey: 'pw.price.title', groupFallback: 'Pricing',
+        priceObj: { base, amount: numVal(q.price), override: {} }, locked: false }));
+    } else if (type === 'golive') {
+      if (accessMode() !== 'free') out.push({
+        key: 'price', label: T('cpp.s4.price'), groupKey: 'cpp.step.money', groupFallback: 'Monetization',
+        priceObj: { base, amount: numVal(fieldVal('price')), override: {} }, locked: false });
+    } else {
+      stageTiers().forEach(t => out.push({
+        key: t.pk, label: tierName(t), groupKey: type === 'fund' ? 'cpp.step.tiers' : 'cpp.step.pretiers', groupFallback: 'Tiers',
+        priceObj: { base, amount: Math.round(t.ed.finalPrice(t.b) * 100) / 100, override: {} }, locked: false }));
+    }
+    return out;
+  }
+
+  /* 發布前檢核（§4.3 F12，D322 起在側欄第三段）：每項 { key, label, ok, step }，step 是可點回去的步驟。
+     值全部照欄位當下算（原摘要步的清單有幾列是寫死「是」，本輪改成真的檢查——規則本身照 F12，沒有新增項目）。
+     Cheat Codes 的 Skip validation 開著就全部放行、標一句「已略過驗證」，與建立商品／組合同一個做法。 */
+  function stageChecks() {
+    const rows = [];
+    if (isFilmFlow()) {
+      filmChecks().forEach(c => rows.push({ key: c.key, label: c.label, ok: c.ok, step: stepNum(c.stepKey) }));
+    } else {
+      const tiles = Array.prototype.slice.call(document.querySelectorAll('[data-panel="showcase"] [data-upload]'));
+      const filled = el => !!el && (el.classList.contains('is-filled') || el.classList.contains('is-optimized'));
+      rows.push({ key: 'about', label: T('cpp.s4.chk1'), ok: !!fieldVal('proj-title') && !!fieldVal('proj-desc'), step: stepNum('about') });
+      rows.push({ key: 'images', label: T('cpp.s4.chk2'), ok: tiles.length > 0 && tiles.every(filled), step: stepNum('showcase') });
+      rows.push({ key: 'story', label: T('cpp.gf.chk.story'), ok: fieldVal('proj-story').length >= 100, step: stepNum('showcase') });
+      if (type === 'golive') {
+        rows.push({ key: 'money', label: T('cpp.rv.pf.mid.golive'), ok: accessMode() === 'free' || numVal(fieldVal('price')) > 0, step: stepNum('monetization') });
+      }
+      if (type === 'fund') {
+        rows.push({ key: 'fund', label: T('cpp.rv.pf.mid.fund'), ok: numVal(fieldVal('fd-goal')) > 0 && numVal(fieldVal('fd-length')) > 0 && budgetSum() === 100, step: stepNum('funding') });
+        /* 下限沿用方案步驟既有的擋關（至少 1 個有效套組；3 個是教練提示，見 #bd-coach 旁的註解），不在這裡加碼。 */
+        rows.push({ key: 'tiers', label: T('cpp.pv.chk.tiers'), ok: BD.getBundles().filter(bdValid).length >= 1, step: stepNum('tiers') });
+      }
+      if (type === 'preorder') {
+        rows.push({ key: 'pre', label: T('cpp.rv.pf.mid.pre'), ok: numVal(fieldVal('po-price')) > 0 && numVal(fieldVal('po-min')) > 0 && numVal(fieldVal('po-deadline')) > 0, step: stepNum('preorder') });
+        rows.push({ key: 'pretiers', label: T('cpp.rv.pf.pretiers'), ok: preValidCount() >= 1, step: stepNum('tiers-pre') });
+        const cap = preCapacity();
+        rows.push({ key: 'precap', step: stepNum('tiers-pre'), ok: cap.ok,
+          label: T('cpp.rv.pf.precap') + (cap.ok ? '' : ' · ' + T('cpp.rv.pf.precap.note')
+            .replace('{sold}', cap.sold.toLocaleString('en-US')).replace('{min}', cap.min.toLocaleString('en-US'))) });
+      }
+      if (type !== 'golive') {
+        const d = deliveryEl();
+        rows.push({ key: 'delivery', label: T('cpp.rv.pf.delivery'), ok: !!(d && d.value), step: stepNum(type === 'preorder' ? 'preorder' : 'review') });
+      }
+    }
+    /* IP 租借：沒有提及他人 IP 就是不適用（原摘要步的「N/A」），不擋。 */
+    rows.push({ key: 'ip', label: T('cpp.rv.pf.ip'), ok: true, step: stepNum('about') });
+    const skip = skipOn();
+    return rows.map(r => ({ key: r.key, step: r.step, ok: r.ok || skip,
+      label: r.label + (!r.ok && skip ? ' · ' + T('cp.ready.chip.skip') : '') }));
+  }
+
+  /* §4.3 F11「接下來會發生什麼」：D322 併入側欄第三段、當 F12 清單的伴隨說明。publish-stage 的第三段只收
+     檢核項，所以由宿主在它畫好之後補在同一段底部（文案沿用原摘要步的同一組 key）；側欄每次重畫都會清掉，
+     用 MutationObserver 補回來。 */
+  const NEXT_KEYS = {
+    golive: ['cpp.rv.gl1', 'cpp.rv.gl2', 'cpp.rv.gl3', 'cpp.rv.gl4'],
+    'golive-film': ['cpp.rv.gf1', 'cpp.rv.gf2', 'cpp.rv.gf3', 'cpp.rv.gf4'],
+    fund: ['cpp.rv.fd1', 'cpp.rv.fd2', 'cpp.rv.fd3', 'cpp.rv.fd4', 'cpp.rv.fd5'],
+    preorder: ['cpp.rv.po1', 'cpp.rv.po2', 'cpp.rv.po3', 'cpp.rv.po4', 'cpp.rv.po5']
+  };
+  function stageNextSync() {
+    if (!stage) return;
+    const sec = document.querySelector('[data-cpp-stage] [data-stage-sec="check"]');
+    if (!sec || sec.querySelector('[data-cpp-next]')) return;
+    const box = document.createElement('div');
+    box.className = 'pstage-sum';
+    box.setAttribute('data-cpp-next', '');
+    box.innerHTML = '<p class="pstage-sum__none">' + T('cpp.rv.next.title') + '</p><ul class="readiness__list">' +
+      (NEXT_KEYS[flowKey()] || []).map(k =>
+        '<li class="readiness__item readiness__item--done"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span>' + T(k) + '</span></li>'
+      ).join('') + '</ul>';
+    sec.appendChild(box);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(box);
+  }
+  const stageHostEl = document.querySelector('[data-cpp-stage]');
+  if (stageHostEl && window.MutationObserver) new MutationObserver(stageNextSync).observe(stageHostEl, { childList: true, subtree: true });
+
+  /* 預覽區塊的「編輯」入口（承接原 F9 摘要卡的 Edit，§4.3）：hover 到哪一塊就跳回哪一步。順序有意義——
+     publish-stage 取第一個命中的祖先，所以包在「關於」段裡的描述、故事要排在該段前面。 */
+  function stageEditZones() {
+    const film = isFilmFlow();
+    const z = [];
+    const add = (sel, key) => { const n = stepNum(key); if (n) z.push({ sel, step: n }); };
+    add('[data-fpj-poster]', 'showcase');
+    add('[data-fpj-title]', 'about');
+    add('[data-fpj-keywords]', film ? 'details' : 'about');
+    add('[data-fpj-desc]', 'about');
+    add('[data-fpj-fund]', type === 'preorder' ? 'preorder' : 'funding');
+    add('[data-fpj-price]', film ? 'details' : 'monetization');
+    add('[data-fpj-tiers]', type === 'preorder' ? 'tiers-pre' : 'tiers');
+    add('[data-fpj-story]', 'showcase');
+    add('[data-fpj-about]', 'about');
+    add('[data-fpj-budget]', 'funding');
+    add('[data-fpj-media]', 'showcase');
+    /* 交付時程：預購的預期交付住在預購設定；共創的就地填（沒有別的步驟可回），不給編輯入口 */
+    if (type === 'preorder') add('[data-fpj-delivery]', 'preorder');
+    return z;
+  }
+
+  /* 粉絲視角專案頁的 model（結構見 js/fan-project-page.js 檔頭）：文案欄給 { key }、資料值給字串 */
+  function buildFanModel() {
+    const film = isFilmFlow();
+    const w = film && window.ZtorWorkFields ? window.ZtorWorkFields.collect() : null;
+    const base = cppBaseCurrency();
+    const shown = el => !!el && !el.closest('.hidden');
+    const thumbOf = tile => {
+      if (!tile || !(tile.classList.contains('is-filled') || tile.classList.contains('is-optimized'))) return null;
+      const v = tile.querySelector('video');
+      if (v && v.getAttribute('src')) return { src: v.getAttribute('src'), kind: 'video' };
+      const im = tile.querySelector('img');
+      return im && im.getAttribute('src') ? { src: im.getAttribute('src'), kind: 'image' } : null;
+    };
+    const m = { kind: type, film, name: { key: 'name' }, desc: { key: 'desc' }, story: { key: 'story' }, access: accessMode() };
+    if (film) {
+      m.poster = thumbOf(document.querySelector('[data-pw-asset="cover"]'));
+      m.media = Array.prototype.slice.call(document.querySelectorAll('[data-pw-stills] .upload-tile')).map(thumbOf).filter(Boolean);
+      m.hasTrailer = !!(w && w.trailer);
+      const rt = String(w ? w.runtime : '').split(':').map(Number);
+      const runtime = rt.length === 3 && (rt[0] || rt[1]) ? ((rt[0] ? rt[0] + 'h ' : '') + (rt[1] ? rt[1] + 'm' : '')).trim() : '';
+      m.facts = [w && w.release, w && w.age ? T(w.age) : '', runtime];
+      if (w && w.audio) { m.langLabel = T('pw.media.audio.lang'); m.langValue = T(w.audio); }
+      m.keywords = w ? w.genres.map(g => T(g)) : [];
+      m.meta = [];
+    } else {
+      const tiles = Array.prototype.slice.call(document.querySelectorAll('[data-panel="showcase"] [data-upload]'));
+      m.poster = thumbOf(tiles[0]);
+      m.media = tiles.slice(1).map(thumbOf).filter(Boolean);
+      m.hasTrailer = !!document.querySelector('[data-panel="showcase"] .upload-tile--video.is-filled');
+      /* 類型相關欄位（F4）有填的才列：標籤取欄位本身的標籤、值取輸入值；「選項待補」的空下拉不列 */
+      m.meta = [];
+      const genres = [];
+      document.querySelectorAll('[data-fieldgroup] .field').forEach(f => {
+        if (!shown(f)) return;
+        const lab = f.querySelector('.field__label');
+        const inp = f.querySelector('input.input, select.select');
+        if (!lab || !inp) return;
+        let v = '';
+        if (inp.tagName === 'SELECT') {
+          const o = inp.options[inp.selectedIndex];
+          if (o && o.getAttribute('data-i18n') !== 'cpp.tf.tbd' && o.value !== '') v = o.textContent.trim();
+        } else v = String(inp.value || '').trim();
+        if (!v) return;
+        const k = lab.textContent.trim();
+        if (lab.getAttribute('data-i18n') === 'cpp.tf.genre') genres.push.apply(genres, v.split(/[,、，]/).map(x => x.trim()).filter(Boolean));
+        else m.meta.push({ k, v });
+      });
+      m.keywords = [T(catRow(cat)[3])].concat(genres);
+      m.facts = [];
+    }
+    m.creator = type !== 'golive' && window.ztorProjects ? window.ztorProjects.owner() : '';
+    if (type === 'golive') {
+      if (film) {
+        const qs = w && w.paid ? w.qualities.filter(q => numVal(q.price) > 0) : [];
+        if (qs.length) {
+          const min = qs.reduce((a, q) => (numVal(q.price) < numVal(a.price) ? q : a), qs[0]);
+          m.price = { priceObj: { base, amount: numVal(min.price) }, priceKey: 'q:' + min.name,
+                      from: qs.some(q => numVal(q.price) !== numVal(min.price)) };
+        } else m.price = null;
+      } else {
+        m.price = accessMode() === 'free' ? null : { priceObj: { base, amount: numVal(fieldVal('price')) }, priceKey: 'price' };
+      }
+    } else {
+      const days = type === 'fund' ? numVal(fieldVal('fd-length')) : numVal(fieldVal('po-deadline'));
+      let deadline = '';
+      if (days > 0) {
+        const d = new Date(Date.now() + days * 86400000);
+        deadline = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + ' 23:59';
+      }
+      m.fund = { days: days > 0 ? Math.round(days) : 0, deadline,
+                 goal: type === 'fund' ? { base, amount: numVal(fieldVal('fd-goal')) } : null,
+                 units: type === 'preorder' ? numVal(fieldVal('po-min')) : 0 };
+      const dEl = deliveryEl();
+      m.delivery = {
+        date: dEl ? dEl.value : '',
+        /* 里程碑沿用原摘要步的三個示範項與三態（✓／◔／○），本輪沒有新增里程碑的資料來源 */
+        milestones: [
+          { label: T('cpp.rv.ms1'), state: 'done' },
+          { label: T('cpp.rv.ms2'), state: 'doing' },
+          { label: T('cpp.rv.ms3'), state: 'todo' }
+        ]
+      };
+      const workName = fieldVal('proj-title');
+      m.tiers = stageTiers().map(t => {
+        const b = t.b, benefits = [];
+        if (type === 'preorder') benefits.push(T('fpj.tier.work', '{name} × {n}').replace('{name}', workName || T('cpp.s1.title')).replace('{n}', t.ed.unitCount(b)));
+        (b.items || []).forEach(it => { if (it && it.name) benefits.push(String(it.name)); });
+        const slots = Math.floor(numVal(b.slots));
+        if (type === 'fund' && slots > 0) benefits.push(T(slots === 1 ? 'fpj.tier.slot' : 'fpj.tier.slots', 'Includes {n} revenue-share slots').replace('{n}', slots));
+        (b.perks || []).forEach((p, i) => { if (String(p || '').trim()) benefits.push({ key: 'tier-perk-' + b.id + '-' + i }); });
+        const u = t.ed.maxUnits(b);
+        return {
+          key: b.id,
+          name: String(b.name || '').trim() ? { key: 'tier-name-' + b.id } : tierName(t),
+          priceObj: { base, amount: Math.round(t.ed.finalPrice(b) * 100) / 100 }, priceKey: t.pk,
+          benefits, cap: Number.isFinite(u) && u > 0 ? u : null
+        };
+      });
+      if (type === 'fund') {
+        m.budget = [];
+        document.querySelectorAll('#budget-rows [data-budget-row]').forEach((r, i) => {
+          const v = String((r.querySelector('.input--inline') || {}).value || '').trim();
+          m.budget.push({ label: v ? { key: 'budget-' + i } : '', pct: numVal((r.querySelector('.budget-pct') || {}).value) });
+        });
+      }
+    }
+    return m;
+  }
+
+  function buildStageOpts() {
+    const S = window.ztorEvents;
+    return {
+      fields: stageFields(),
+      prices: stagePrices(),
+      currencies: S ? S.CURRENCIES.slice() : ['USD', 'TWD', 'HKD', 'SGD', 'JPY'],
+      baseCurrency: cppBaseCurrency(),
+      mode: 'publish',
+      /* D322 主鈕：直接發佈 × 影片家族＝送出審核，其餘＝發布項目；按下即執行原本的跳轉／送審 */
+      primaryKey: isFilmFlow() ? 'cpp.next.submit' : 'cpp.next.publish',
+      editZones: stageEditZones(),
+      onEdit: goStep,
+      checks: stageChecks,
+      previewRender: (host, api) => {
+        if (!window.ztorFanProjectPage) return;
+        window.ztorFanProjectPage.render(host, buildFanModel(), api);
+      },
+      onPrimary: result => { window.__cppLocalization = result; doPublishConfirmed(); },
+      onSecondary: () => goStep(flow().length - 1)
+    };
+  }
+  function mountStage() {
+    const host = document.querySelector('[data-cpp-stage]');
+    if (!host || !window.ztorPublishStage) return;
+    /* 側欄 sticky 要避開 .wizard__top（本身 sticky）：量頂列高度填進 --pstage-top（同 create-event 的 mountStage） */
+    const top = document.querySelector('.wizard__top');
+    host.style.setProperty('--pstage-top', 'calc(' + (top ? top.offsetHeight : 0) + 'px + var(--sp-24))');
+    stageBusy = true;             // 掛載期間 applyI18n 丟出的 i18n:applied 不回頭 render（見下方監聽）
+    try { stage = window.ztorPublishStage.mount(host, buildStageOpts()); } finally { stageBusy = false; }
+    stageNextSync();
+  }
+  function unmountStage() {
+    if (!stage) return;
+    stage.unmount();
+    stage = null;
+    const host = document.querySelector('[data-cpp-stage]');
+    if (host) host.innerHTML = '';
+  }
+  /* 最後一步收起底部動作列（主鈕與上一步都在側欄）。閘門畫面自己管 footer（showGate／enterWizard），這裡只在流程頁裡動它。 */
+  function syncStageFooter() {
+    const foot = document.querySelector('[data-footer]');
+    const sh = document.querySelector('[data-sheet]');
+    if (!foot || !sh || sh.classList.contains('hidden')) return;
+    foot.classList.toggle('hidden', flow()[idx] === 'review');
+  }
+  /* 預覽裡「交付時程」的就地日期欄 → 寫回單一來源、重畫預覽與檢核（change＝選定日期才觸發，不會打字到一半重畫） */
+  document.addEventListener('change', e => {
+    const inp = e.target.closest && e.target.closest('[data-fpj-delivery-input]');
+    if (!inp || !stage) return;
+    const src = deliveryEl();
+    if (src) src.value = inp.value;
+    stage.refresh();
+  });
 
   // Nav
   document.querySelector('[data-action=next]').addEventListener('click', () => {
     const f = flow();
     if (idx < f.length - 1) { idx++; render(); }
-    else publish();
   });
   document.querySelector('[data-action=back]').addEventListener('click', () => { if (idx > 0) { idx--; render(); } });
   /* footer 的「Save draft」已移除（與 header 的 Save as draft 重複）；存草稿走 header data-wizard-savedraft（wizard-chrome.js）*/
   /* 返回離開確認改由共用 partials/wizard-chrome.js（[data-wizard-back] + 彈窗）處理；舊 confirm() 已移除（2026-06-23）。 */
-  document.querySelectorAll('[data-goto-step]').forEach(a => a.addEventListener('click', e => {
-    e.preventDefault();
-    const i = flow().indexOf(a.dataset.gotoStep);
-    if (i >= 0) { idx = i; render(); }
-  }));
+  /* 墓碑（D322）：[data-goto-step] 的點擊委派——那是摘要審閱各卡的「Edit →」，隨摘要步退場；改由預覽區塊的編輯入口（stageEditZones）承接。 */
 
-  document.addEventListener('i18n:applied', render);
-  /* 影片路徑：作品欄位一改，Review 的摘要與就緒清單就要跟著算。chip 與開關這類沒有原生
-     事件的，由 work-fields 統一補一顆 workfields:change。只在停在 Review 那一步時重算。 */
-  /* Cheat Codes 的 Skip validation 是即時切換的，切了就要重算擋關（否則按鈕還灰著）。 */
-  ['input', 'change', 'upload:change', 'workfields:change', 'ztor:devstate-changed'].forEach(evt => {
-    document.addEventListener(evt, () => { if (isFilmFlow() && flow()[idx] === 'review') render(); });
+  /* i18n.js 的 apply() 每跑一次（連只翻一個子樹也算）結尾都會 dispatch 'i18n:applied'。全頁預覽裡
+     publish-stage 每次重畫預覽都會 applyI18n(預覽區)——若照舊直接 render() 就是「掛畫面 → 翻譯 → render → 再掛」
+     無限迴圈（create-event 2026-08-04 踩過同一個坑）。所以：掛載中收到的一律忽略；停在最後一步時只有介面語言
+     真的換了才重畫（切預覽語系、換幣別、改交付日期都只是預覽區自己重畫，不該把整頁捲回頂端重掛）。 */
+  let stageBusy = false;
+  let lastUiLang = document.documentElement.lang;
+  document.addEventListener('i18n:applied', () => {
+    if (stageBusy) return;
+    const uiLang = document.documentElement.lang;
+    if (stage && flow()[idx] === 'review' && uiLang === lastUiLang) return;
+    lastUiLang = uiLang;
+    render();
   });
+  /* Cheat Codes 的 Skip validation 是即時切換的，切了就要重算側欄檢核（否則主鈕還灰著）。
+     墓碑（D322）：原本這裡監聽 input／change／upload:change／workfields:change，停在影片路徑的摘要步時重跑 render()
+     重算就緒清單；最後一步改成全頁預覽後，表單欄位不在畫面上、不會在這一步被改，只剩開關需要即時反映。 */
+  document.addEventListener('ztor:devstate-changed', () => { if (stage) stage.syncChecks(); });
   /* ══ 續填草稿（2026-08-17，D193）══════════════════════════════════════════
      規格 5.1.2.1 §2 第 2 項：草稿項目一律回到本流程續填、不進項目詳情。兩個路徑
      都導到這裡——項目清單的草稿列（projects.html 的 goHref），以及有人直接開詳情頁

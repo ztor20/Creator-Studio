@@ -194,15 +194,32 @@
    固定表格版面，五欄平分面板寬，輸入框跟著欄寬。 */
 [data-stage-drawer="trans"] .pp-table { table-layout: fixed; }
 [data-stage-drawer="trans"] .pp-cell-field { min-width: 0; }
+/* 翻譯表整頁後（2026-09-23 使用者：「裡面的每一個欄位都要變大」）：欄位名那一欄固定窄寬、
+   四個語系平分其餘；單行輸入框升一階到 --control-h-md，多行框至少約六行高、可再往下拉；
+   唯讀的預設語言格跟輸入框同樣的內距，文字才對得齊。 */
+[data-stage-drawer="trans"] .pp-table th:first-child { width: 160px; }
+[data-stage-drawer="trans"] input.pp-cell-field { height: var(--control-h-md); }
+[data-stage-drawer="trans"] textarea.pp-cell-field { min-height: calc(var(--control-h-md) * 4); }
+/* 每一列靠上對齊：多行框很高時，欄位名與唯讀原文要對齊框內第一行，不是整格垂直置中。
+   上內距＝格子原本的 --sp-16 ＋ 輸入框內文字離框頂的距離（約 --sp-12）。 */
+[data-stage-drawer="trans"] .pp-table td { vertical-align: top; }
+[data-stage-drawer="trans"] .pp-table td.ztor-table__feature,
+[data-stage-drawer="trans"] .pp-cell--readonly { padding-top: calc(var(--sp-16) + var(--sp-12)); }
 /* manual 翻譯模式（D312）：沒填譯文的格子用原文當 placeholder，顏色比照站上其他 placeholder
    （field-pill／picker／header search 都是 --muted-foreground），避免看起來像已經填好的值。 */
 [data-stage-drawer="trans"] .pp-cell-field::placeholder { color: var(--muted-foreground); }
 
-/* 價格表是「項目 × 五幣別」六欄：輸入框用站上預設寬度（120）時整張表要 898px，連 --wide 都裝不下，
-   而且覆寫過的那幾欄還被底下「已覆寫」徽章＋「重設為換算值」那顆鈕撐得更寬（浮層版只有三欄可見、
-   撐得開）。這裡把輸入框收到 96、徽章與鈕改成上下疊（不是並排），六欄就攤得進面板、不必橫捲。 */
-[data-stage-drawer="price"] .pp-cell--price { max-width: 112px; }
-[data-stage-drawer="price"] .pp-price-input { width: 96px; min-width: 0; }
+/* 價格表（整頁，2026-09-23 與翻譯表統一）：原本為了塞進 880 的 --wide 抽屜，把輸入框收到 96、
+   「已覆寫」徽章與「重設為換算值」鈕上下疊、儲存格限寬 112。整頁之後六欄攤得開，改回一般尺度：
+   項目欄固定窄寬、五個幣別平分其餘，輸入框跟欄寬、高度與翻譯表同一階（--control-h-md），
+   徽章與鈕維持上下疊（兩者都靠右，疊著比並排好掃）。 */
+[data-stage-drawer="price"] .pp-table { table-layout: fixed; }
+[data-stage-drawer="price"] .pp-table th:first-child { width: 200px; }
+[data-stage-drawer="price"] .pp-table td { vertical-align: top; }
+/* 項目名與基準幣別（唯讀）對齊輸入框裡的數字，同翻譯表的上內距算法。 */
+[data-stage-drawer="price"] .pp-table td.ztor-table__feature,
+[data-stage-drawer="price"] .pp-cell--base { padding-top: calc(var(--sp-16) + var(--sp-12)); }
+[data-stage-drawer="price"] .pp-price-input { width: 100%; min-width: 0; height: var(--control-h-md); }
 [data-stage-drawer="price"] .pp-price-meta {
   flex-direction: column;
   align-items: flex-end;

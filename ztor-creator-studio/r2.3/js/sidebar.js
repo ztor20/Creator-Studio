@@ -808,7 +808,10 @@
     </nav>
 
     <div class="app-sidebar__actions">${adminView() ? `
-      <!-- Admin Creator Studio 下方：只留幣別（預設港幣）＋顯示模式＋登出（不含搜尋/通知/帳戶選單）-->
+      <!-- Admin Creator Studio 下方：只留幣別（預設港幣）＋顯示模式＋登出（不含搜尋/通知/帳戶選單）
+           2026-09-23（D316b）使用者裁決：維持 HKD、保留這格——它就是 js/currency.js 的
+           BASE（平台基準幣別，D316 預設 HKD），兩邊剛好同值，本輪不改成從該 script 動態讀，
+           理由與殘留見 ASSUMPTIONS UIA-173。 -->
       <div class="app-sidebar__group" data-state="closed" data-currency>
         <button class="app-sidebar__action app-sidebar__group-toggle" type="button" aria-expanded="false" aria-label="Currency" data-i18n-aria-label="nav.currency">
           <i data-lucide="dollar-sign" class="ztor-icon"></i>
@@ -847,6 +850,17 @@
         <i data-lucide="sliders-horizontal" class="ztor-icon"></i>
         <span class="app-sidebar__action-label" data-i18n="nav.store-settings">Store settings</span>
       </a>
+
+      <!-- 2026-09-23（D316b 使用者裁決）：創作者幣別唯讀顯示，延伸上面 2026-09-11 那列固定
+           順序（搜尋 → 通知中心 → 商店設定 → 幣別 → 帳戶選單）。不做成 Admin 那顆的可展開選單
+           ——D316 幣別建帳號時定、創作者與 Admin 都不能改，這裡沒有「切換」這件事。值讀
+           js/currency.js 的 CREATOR（單一來源，見該檔），由下面 applySavedCurrency() 在 mount
+           後填字；本頁若未掛該 script，先留 em dash（殘留見 ASSUMPTIONS UIA-173）。 -->
+      <div class="app-sidebar__action" style="pointer-events:none">
+        <i data-lucide="dollar-sign" class="ztor-icon"></i>
+        <span class="app-sidebar__action-label" data-i18n="nav.currency">Currency</span>
+        <span class="app-sidebar__action-value" data-currency-creator style="margin-left:auto;color:var(--muted-foreground)">—</span>
+      </div>
 
       <div class="app-sidebar__group" data-state="closed" data-account>
         <button class="app-sidebar__action app-sidebar__group-toggle" type="button" aria-expanded="false" aria-label="Account" data-i18n-aria-label="nav.account-label">
@@ -1159,6 +1173,23 @@
     /* 幣別現只支援 HKD（2026-07-23 移除 TWD）：非 HKD 的舊存值一律回退 HKD，避免卡在無法切換的狀態 */
     if (cur !== "HKD") { cur = "HKD"; try { localStorage.setItem("ztor-currency", "HKD"); } catch (err) {} }
     document.querySelectorAll("[data-currency-current]").forEach(el => { el.textContent = cur; });
+    /* 創作者幣別列（D316b，2026-09-23）：唯讀、不走 localStorage——單一來源是
+       js/currency.js 的 CREATOR 常數，這裡只負責把它畫到側欄。本頁若沒掛該 script
+       （多數創作者頁目前還沒補，見 ASSUMPTIONS UIA-173 殘留），維持 em dash，
+       不在這裡另存一份幣別值頂替。 */
+    const creatorCur = window.ztorCurrency && window.ztorCurrency.CREATOR;
+    if (creatorCur) {
+      document.querySelectorAll("[data-currency-creator]").forEach(el => { el.textContent = creatorCur; });
+    } else if (!window.__ztorCurrencyLoading) {
+      /* 本頁沒掛 js/currency.js（多數創作者頁）：側欄自己補載一次，讀到同一支常數後再畫。
+         不在這裡放第二份幣別值——單一來源仍是 js/currency.js（D316b，2026-09-23）。 */
+      window.__ztorCurrencyLoading = true;
+      const sc = document.createElement("script");
+      sc.src = "js/currency.js?v=r2.2";
+      sc.onload = () => applySavedCurrency();
+      sc.onerror = () => { document.querySelectorAll("[data-currency-creator]").forEach(el => { el.textContent = "—"; }); };
+      document.head.appendChild(sc);
+    }
   }
 
   /* 語言列（帳戶選單內可展開的單選清單，D222）——topbar／sidebar 共用同一組
