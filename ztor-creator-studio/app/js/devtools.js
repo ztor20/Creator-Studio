@@ -114,11 +114,12 @@
      2026-09-23 起：已交付的 Phase 1 改由 monorepo 的 phase1 分支代表（版本鎖死、獨立網址），
      main 的面板只留「最終版」與「下一版預覽」（已交付 🟢 ＋ 標成下一版 🔵）；
      Phase 1／2／3 與 golive-4step 選項退場。要進下一期的功能在 feature-scope-map 標 🔵 即可。 */
+  /* ★ PHASE1 FROZEN（phase1 分支專用，2026-09-23）：這個分支是 Phase 1 交付依據，版本鎖死在 p1。
+     內建清單只留 p1 一列——fetch feature-scope-map 完成前每次載入都先用這份清單跑一次 applyVersion()，
+     缺 p1 會退成 all、凍結失效。修正搬進本分支時（phase1-port.sh），這一段與 load()／persist()／
+     paint()／onboarding 的鎖定改動都要保留，不要被 main 的版本清單覆蓋。 */
   var VERSIONS = [
-    ['full', '最終版', '開發', 'all', '全部功能（預設）'],
-    ['next', '下一版預覽', '開發', 'tier:p1,next', '已交付（🟢）＋標成下一版（🔵）；未排定與未標記者隱藏'],
-    ['funding-test', 'funding-test', '測試', 'route:create-project.html=funding-test/create-campaign.html', '建立項目改接募資建立流程'],
-    ['deck-for-sony', 'Deck for Sony', 'Demo', 'route:earnings.html=earnings-sony.html', '收入管理改為 Sony 簡報版，其餘同最終版'],
+    ['p1', 'Phase 1（凍結版）', '開發', 'tier:p1', 'Phase 1 交付範圍；本分支版本鎖死，不可切換'],
   ];
   /* 舊瀏覽器的 devstate 可能還存著已退場的版本鍵（p1／p1-next／p1-next-tbd／golive-4step／home-canvas）。
      未知鍵一律回到 full：否則 isFullBaseVersion() 判 false，會被當成限縮版、導覽少一半。 */
@@ -421,7 +422,7 @@
     if (q.has('skip')) s.skipValidation = q.get('skip') === '1' || q.get('skip') === 'true';
     if (q.has('version')) s.version = q.get('version');
     if (q.has('future')) s.showFuture = q.get('future') === '1' || q.get('future') === 'true';
-    if (!knownVersion(s.version)) s.version = 'full';   // 已退場或打錯的版本鍵 → 最終版
+    s.version = 'p1';   // ★ PHASE1 FROZEN：無視網址參數與瀏覽器記憶，一律 Phase 1
     return s;
   }
   var state = load();
@@ -440,7 +441,7 @@
     q.set('data', state.data);
     q.set('event', state.eventDay);
     if (state.skipValidation) q.set('skip', '1'); else q.delete('skip');
-    if (state.version && state.version !== 'full') q.set('version', state.version); else q.delete('version');
+    q.delete('version');   // ★ PHASE1 FROZEN：版本固定，網址不帶 version 參數
     if (state.showFuture) q.set('future', '1'); else q.delete('future');
     history.replaceState(null, '', location.pathname + '?' + q.toString() + location.hash);
   }
@@ -626,7 +627,8 @@
       /* ── 情境：版本（最高級 gate，保留強調框）＋顯示未來功能＋User＋Data State＋Event Day ── */
       +     '<div class="ztd__tabpanel" data-tab-panel="scenario"' + (activeTab !== 'scenario' ? ' hidden' : '') + '>'
       +       '<div class="ztd__group ztd__group--top"><p class="ztd__group-label">版本 · Build version</p>'
-      +         verRows(state.version, 'panel')
+      /* ★ PHASE1 FROZEN：本分支不提供版本切換，只顯示鎖定說明 */
+      +         '<div class="ztd__select-desc">Phase 1（凍結版）— 本站是 Phase 1 交付依據，版本鎖死；改版紀錄見 PHASE1-CHANGES.md</div>'
       +         '<button class="ztd__row' + (state.showFuture ? ' is-on' : '') + '" data-act="toggle-future" style="margin-top:9px"><span>顯示未來功能（淡色標記）</span><span class="ztd__sw"></span></button>'
       +       '</div>'
       +       '<div class="ztd__group"><p class="ztd__group-label">Persona · 資料人格</p>'
@@ -989,5 +991,6 @@
     });
     document.body.appendChild(ov);
   }
-  try { if (!localStorage.getItem(ONBOARD_LS)) showOnboarding(); } catch (e) {}
+  /* ★ PHASE1 FROZEN：只有一個版本，首次進站不再跳選版本的 popup（函式保留供「重新顯示」按鈕用）。 */
+  try { localStorage.setItem(ONBOARD_LS, '1'); } catch (e) {}
 })();

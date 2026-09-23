@@ -1,5 +1,7 @@
 # Ztor eShop · Feature Scope Map — Phase 1
 
+> ★ **這是 `phase1` 凍結分支的版本**（2026-09-23 自 `main` 切出）。功能的 tier 標記以切出當時為準；日常編修都在 `main`，本分支只收明確要進 Phase 1 的修正，每次升版記在 `../PHASE1-CHANGES.md`。
+
 > Creator Studio × eShop 完整功能盤點與版本切割。每個節點都歸入三個 tier 之一；非 Phase 1 的項目也全部列出，供商務團隊排優先序。
 
 - **日期**：2026-06-29
@@ -40,10 +42,7 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 | 鍵 | 顯示名 | 類型 | 規則 | 說明 |
 |---|---|---|---|---|
-| `full` | 最終版 | 開發 | `all` | 全部功能（預設）；日常編修都改這一版 |
-| `next` | 下一版預覽 | 開發 | `tier:p1,next` | 已交付（🟢）＋標成下一版（🔵）；⚪ 未排定、`full` 保留 gate 與未標記的新功能都隱藏 |
-| `funding-test` | funding-test | 測試 | `route:create-project.html=funding-test/create-campaign.html` | 建立專案改接募資建立流程（create-campaign 部署複本），其餘同最終版 |
-| `deck-for-sony` | Deck for Sony | Demo | `route:earnings.html=earnings-sony.html` | 收入管理改接 Sony 簡報版（earnings-sony.html），其餘同最終版 |
+| `p1` | Phase 1（凍結版） | 開發 | `tier:p1` | ★ PHASE1 FROZEN：本分支（`phase1`）版本鎖死在 Phase 1，`js/devtools.js` 不讀網址參數與瀏覽器記憶；本表只留這一列，`main` 的四列（最終版／下一版預覽／funding-test／Deck for Sony）不適用於本分支 |
 
 **交付輪替（2026-09-23 起）**：已交付的階段不再留在 `main` 的面板上，改由 monorepo 的凍結分支代表——Phase 1＝`phase1` 分支（版本鎖死、獨立網址、只收明確要進 Phase 1 的修正，升版記在該分支的 `PHASE1-CHANGES.md`）。下一期範圍確定時：把要做的功能標 🔵 → 用「下一版預覽」確認畫面 → 從 `main` 切 `phase2` 分支鎖定並開新網址 → 交付後把那批功能改標 🟢。**新功能做出來的當下就要掛 `data-feat` 標記並在本表登記（預設 ⚪ 未排定）**，否則沒有標記的元素每個版本都會顯示，「下一版預覽」就會多出不在範圍的東西。
 
