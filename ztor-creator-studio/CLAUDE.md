@@ -11,7 +11,7 @@ ztor Creator Studio 的原型 site。**2026-06-18 起站點搬進 monorepo [`zto
   - 純 `?v=` 版本字串的衝突沒有語意，腳本自動以本機版收掉，並提醒發版前重跑 `bump_ver`。
   - **開工前建議跑一次**，但不跑也不會出事——`collab.sh` 發版前會強制再跑一次。
 - **為什麼要這樣**：舊版 `collab.sh` 是「clone 最新 main → 清空子目錄 → 灌本機整包 → 從最新 main 開分支」。分支永遠是 main 的線性子代、沒有分歧點，**git 因此永遠不會報衝突**：本機任何一個落後的檔，在 PR 裡都長成「你刻意改成這樣」，merge 後同事已合併的工作就被靜默還原了。改成真 merge 之後，本機 = 遠端 ⊕ 你的改動，才不可能洗掉別人。舊版腳本已於 2026-08-19 刪除（保留只是誘人誤跑一個會靜默還原別人工作的流程；沿革看本段與 git 歷史就夠）。
-- **殘留分支與重複 PR 的清理已內建，不用手動掃**（2026-07-26 新增 `cleanup.sh`）：`pull.sh` 每次跑完會順手刪掉已合併／已關閉 PR 留下的殘留分支；`collab.sh` 發版前會先比對內容，發現這包跟你已經開著的某個 PR 一字不差就直接停下、不再開一個。想看完整清單就跑 `./cleanup.sh`，只想看不想動就加 `--dry-run`。
+- **殘留分支與重複 PR 的清理已內建，不用手動掃**（2026-07-26 新增 `cleanup.sh`）：`pull.sh` 每次跑完會順手刪掉已合併／已關閉 PR 留下的殘留分支；`collab.sh` 發版前會先比對內容，發現這包跟你已經開著的某個 PR 一字不差就直接停下、不再開一個。想看完整清單就跑 `./cleanup.sh`，只想看不想動就加 `--dry-run`。清理範圍含 `collab.sh` 開的 `edit/` 分支與搬修正進 `phase1` 用的 `port/` 分支；2026-09-24 起認證同樣走 `gh-auth.sh`（舊版只認中央倉那把 token，那把失去寫入權後刪分支全部靜默失敗，合併過的分支一直沒清掉）。
   - **會累積的原因**：`collab.sh` 每跑一次就開一個新的時間戳分支＋新 PR，本來不會回頭看有沒有等效的 PR 存在；repo 又沒開 `delete_branch_on_merge`，合併過的分支不會自己消失。兩件事疊起來，幾天就長出一堆看不出誰還有用的分支。
   - **兩人不同電腦共用同一個 repo 的安全界線**：分支沒有「誰的機器」這個欄位，能區分的只有 PR 作者帳號（各人用各自的 token）。所以自動刪的範圍只有兩種——已 MERGED 的 PR 分支（不分作者，內容已在 main，刪掉誰都不損失）、以及自己關掉的 PR 分支。別人的 open PR、別人關掉的分支、還有沒有對應 PR 的分支，一律只列出不處理；最後那種可能正是對方 `collab.sh` 跑到一半、PR 還沒開出來的瞬間。
   - **重複的判定不靠標題猜**：比的是 `ztor-creator-studio/` 的 tree SHA（git 對這包檔案內容的指紋），一致就是逐位元組相同。只比子目錄不比 repo root，所以 main 在兩次發版之間有沒有前進都不影響判斷。
@@ -26,7 +26,7 @@ ztor Creator Studio 的原型 site。**2026-06-18 起站點搬進 monorepo [`zto
 
 ## 認證（2026-08-19 改：不再只認中央倉一把 token）
 
-`collab.sh` 與 `pull.sh` 都改用 **`gh-auth.sh`** 解析憑證。它依序試這些候選，**實際試推一個丟棄分支**來確認寫入權，選第一個推得動的：
+`collab.sh`、`pull.sh`、`cleanup.sh`（2026-09-24 起）都改用 **`gh-auth.sh`** 解析憑證。它依序試這些候選，**實際試推一個丟棄分支**來確認寫入權，選第一個推得動的：
 
 1. 中央倉 `~/AI/cfg/personal.env` 的 `ZTOR20_GH_TOKEN`（協作者各自的 token）
 2. 本機 `gh` 已登入的每個帳號（`gh auth token --user <帳號>`）
@@ -42,9 +42,13 @@ merge 一律由具 merge 權限的協作者在 GitHub 上操作。各協作者�
 ## 版本分支（2026-09-23 起）
 
 - `main`＝`app/`，唯一開發版；資料夾名稱固定，版本號記在文件與分支名稱。
-- `phase1` 分支＝開發依據，受保護、只能 PR，不可直推。
-- 修正流程：在 `main` 改好 → cherry-pick 到 `phase1` 開 PR → 合併後另行部署。
-- 版本切換面板只剩四個選項：最終版、下一版預覽、funding-test、Deck for Sony。
+- `phase1` 分支＝開發依據（Phase 1 凍結版），只能 PR，不可直推（GitHub 分支保護待 org owner 設定，設好前靠流程自律）。網址 `https://ztor-cs-phase1.vercel.app`；改版紀錄在該分支的 `ztor-creator-studio/PHASE1-CHANGES.md`，每次升版打標籤 `phase1-vX.Y`（目前 v1.1）。
+- 本機 `site/` 永遠只放 `main`，不要在本機 checkout `phase1`。
+- 修正要進 Phase 1：先照一般流程進 `main` → 把那筆改動套到 `phase1`，開 `port/<時間戳>` 分支、PR 的 base 設 `phase1` → 同一個 PR 補 `PHASE1-CHANGES.md` 升版條目 → 合併、打標籤 → 另行部署凍結版網址（合併不會自動上線）。維護者的本機有腳本代勞（套用前會先 `--check` 試套）。
+- 凍結分支上的鎖版本改動要保留：`app/js/devtools.js` 標 `★ PHASE1 FROZEN` 的段落、`app/feature-scope-map.md` 版本表只留 `p1`。套修正時不要被 `main` 的內容蓋掉；試套失敗代表兩邊已分歧，手動改寫那筆修正，不要硬套。
+- `main` 的版本切換面板只剩四個選項：最終版、下一版預覽、funding-test、Deck for Sony。新功能做出來就掛 `data-feat` 標記並登記在 `feature-scope-map.md`（預設 ⚪ 未排定），否則「下一版預覽」會多顯示不在範圍的東西。
+- 下一期交付：把功能標 🔵 → 用「下一版預覽」確認 → 從 `main` 切 `phase2` 分支鎖版本 → 開新網址。
+- 完整流程圖見 [WORKFLOW.md](WORKFLOW.md) §5 與 [WORKFLOW-DIAGRAM.md](WORKFLOW-DIAGRAM.md) 線 4。
 
 ## 其他
 
