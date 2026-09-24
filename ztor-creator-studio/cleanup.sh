@@ -37,7 +37,8 @@ set -euo pipefail
 
 REPO_SLUG="ztor20/Creator-Studio"
 SUBDIR="ztor-creator-studio"
-BR_PREFIX="edit/"
+BR_PREFIX="edit/"    # collab.sh 開的 PR 分支
+PORT_PREFIX="port/"  # phase1-port.sh 開的 PR 分支（base＝phase1，2026-09-24 起一併清理）
 STALE_DAYS=3          # 孤兒分支超過幾天才提醒
 
 MODE="full"
@@ -50,14 +51,15 @@ for a in "$@"; do
   esac
 done
 
-CENTRAL="$HOME/AI/cfg/personal.env"
-[ -f "$CENTRAL" ] || CENTRAL="$HOME/SynologyDrive/.cfg/personal.env"
-# shellcheck disable=SC1090
-[ -f "$CENTRAL" ] && source "$CENTRAL" || true
-TOKEN="${ZTOR20_GH_TOKEN:-}"
+# 認證（2026-09-24 改）：與 collab.sh 同走 gh-auth.sh 的 gh_token_write（實際試推確認寫入權）。
+# 舊版只認中央倉 ZTOR20_GH_TOKEN；那把失去寫入權後，刪分支的 API 呼叫全部失敗，
+# 而 --prune-only 又被設計成安靜，結果合併過的分支一個都沒清掉、也沒有任何提示。
+# shellcheck source=gh-auth.sh
+source "$(dirname "$0")/gh-auth.sh"
+if [ "$MODE" = "dry" ]; then TOKEN="$(gh_token_read 2>/dev/null || true)"; else TOKEN="$(gh_token_write 2>/dev/null || true)"; fi
 if [ -z "$TOKEN" ]; then
-  [ "$MODE" = "prune" ] && exit 0   # 被 pull.sh 呼叫時安靜略過
-  echo "找不到 ZTOR20_GH_TOKEN（中央倉 $CENTRAL）。"
+  [ "$MODE" = "prune" ] && { echo "（略過殘留分支清理：找不到對 $REPO_SLUG 有寫入權的憑證）"; exit 0; }
+  echo "找不到對 $REPO_SLUG 有權限的憑證（中央倉 ZTOR20_GH_TOKEN 或 gh 登入）。"
   exit 1
 fi
 export GH_TOKEN="$TOKEN"
@@ -92,7 +94,7 @@ DELETED=0
 SKIPPED_OTHER=0
 while IFS=$'\t' read -r br state author num mergeable updated title; do
   [ -z "${br:-}" ] && continue
-  case "$br" in "$BR_PREFIX"*) ;; *) continue ;; esac
+  case "$br" in "$BR_PREFIX"*|"$PORT_PREFIX"*) ;; *) continue ;; esac
   printf '%s\n' "$BRANCHES" | grep -qxF "$br" || continue   # 分支已不存在
 
   case "$state" in
@@ -193,10 +195,10 @@ NOW="$(date +%s)"
 ORPHANS=""
 while IFS= read -r br; do
   [ -z "${br:-}" ] && continue
-  case "$br" in "$BR_PREFIX"*) ;; *) continue ;; esac
+  case "$br" in "$BR_PREFIX"*|"$PORT_PREFIX"*) ;; *) continue ;; esac
   printf '%s\n' "$PRS" | awk -F'\t' -v b="$br" '$1==b {found=1} END {exit !found}' && continue
-  # 從分支名的時間戳推算年紀：edit/YYYYmmdd-HHMMSS
-  ts="${br#"$BR_PREFIX"}"
+  # 從分支名的時間戳推算年紀：edit/YYYYmmdd-HHMMSS 或 port/YYYYmmdd-HHMMSS
+  ts="${br#*/}"
   d="${ts%%-*}"
   age_d="?"
   if [ ${#d} -eq 8 ]; then

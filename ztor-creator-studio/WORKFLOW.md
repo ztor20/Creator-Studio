@@ -3,13 +3,15 @@
 這份是 `site/`（原型站台）的總覽：檔案結構、檔案之間的關係、改東西會觸發什麼、以及發版流程。發版流程圖裡的**黃色關卡＝要先問使用者才做**（開 PR／Merge／上線）；本地 commit 不在此列，自動做。
 
 > 2026-07-26 起同步機制改成真正的 `git merge`（原本是自製的檔案比對＋整包覆蓋，兩人並行會靜默還原對方的工作）。詳見 §4。
+>
+> 2026-09-24 起：站台資料夾固定叫 `app/`（不再隨版本改名）；已交付的階段凍結成 monorepo 的分支（目前 `phase1`），修正怎麼搬過去見 §5。
 
 ---
 
 ## 1. 檔案結構
 
 ```
-site/                         ← 獨立 git repo，經 git subtree 與 monorepo ztor20/Creator-Studio 對齊
+site/                         ← 獨立 git repo，經 git subtree 與 monorepo ztor20/Creator-Studio 的 main 對齊
 │
 ├─ 〔共編規則 + 工具〕
 │  ├─ CLAUDE.md / AGENTS.md   開工→編輯→發版規則（同一份，分別給 Claude / Codex）
@@ -17,11 +19,11 @@ site/                         ← 獨立 git repo，經 git subtree 與 monorepo
 │  ├─ WORKFLOW.md             ← 本檔
 │  ├─ pull.sh                 同步：真 git merge（subtree split → merge），有衝突會擋
 │  ├─ collab.sh               發版：強制先 pull → 快照進子目錄 → 開 PR
-│  ├─ devserver.py            本機預覽 server（送 no-store，取代 python -m http.server）
-│  └─ *-legacy.sh             2026-07-26 前的舊版 pull/collab（清空再灌），備查用
+│  ├─ cleanup.sh              刪已合併的 PR 分支（edit/、port/）；pull.sh 每次順手跑
+│  ├─ gh-auth.sh              找一把真的推得動的 GitHub 憑證（上面幾支共用）
+│  └─ devserver.py            本機預覽 server（送 no-store，取代 python -m http.server）
 │
-├─ r2.2/                      ← 原型站台（開發中，唯一會動的版本）
-└─ r2.1/                      ← 已凍結唯讀，對照存檔用
+└─ app/                       ← 原型站台（唯一的開發版，對應 monorepo main；資料夾名稱固定）
    ├─ *.html ×40              產品頁面 ＋ design-system.html
    ├─ js/ ×15                 共用前端腳本：theme / i18n / icons(+icons-all) / sidebar / chart / hero /
    │                          reveal / components / scenario / devtools / projects-store / products-store …
@@ -67,8 +69,8 @@ site/                         ← 獨立 git repo，經 git subtree 與 monorepo
 | **i18n 字串** | 加 `data-en` / `data-zh` 成對 + `js/i18n.js` 字典 |
 | **新圖示** | 先在 `js/icons.js` registry 註冊，再用 `data-lucide` |
 | **新字型** | 放 `fonts/` + `fonts.css` 加 @font-face |
-| **任何收尾** | 跑 `check_ds_sync.py "site/r2.2"`（**11 項**：元件 CSS 都進 DS 頁／頁面用的 CSS DS 也有／資產版本一致／元件有 demo／元件無裸色／TOC 錨點／token 真實性／DS 級覆寫不留頁面／md↔html 同步／頁面 token 棘輪／零消費元件），FAIL 修掉；再 append `UI-CHANGES.md` 最上方、同步 `requirements-map.md` |
-| **要清瀏覽器快取** | **平常不用做**——資產版本已凍結成固定的 `?v=r2.2`。線上由 Vercel 的 `must-revalidate` ＋ ETag 負責，本機由 `devserver.py` 的 `no-store` 負責。真要強制清才手動跑一次 `bump_ver.py "site/r2.2" <新字串>` |
+| **任何收尾** | 跑 `check_ds_sync.py "site/app"`（**11 項**：元件 CSS 都進 DS 頁／頁面用的 CSS DS 也有／資產版本一致／元件有 demo／元件無裸色／TOC 錨點／token 真實性／DS 級覆寫不留頁面／md↔html 同步／頁面 token 棘輪／零消費元件），FAIL 修掉；再 append `UI-CHANGES.md` 最上方、同步 `requirements-map.md` |
+| **要清瀏覽器快取** | **平常不用做**——資產版本已凍結成固定的 `?v=r2.2`。線上由 Vercel 的 `must-revalidate` ＋ ETag 負責，本機由 `devserver.py` 的 `no-store` 負責。真要強制清才手動跑一次 `bump_ver.py "site/app" <新字串>` |
 
 > 規則出處：規則摘要在專案 `CLAUDE.md`「site/ 原型編修鐵律」；詳細 Edit Cycle 在 `project-ui-creator` skill；檢查由該 skill 的 `scripts/check_ds_sync.py`；**收尾守門員**是個 Stop hook，想結束一輪時自動跑 check，FAIL 就擋住。
 
@@ -80,7 +82,7 @@ site/                         ← 獨立 git repo，經 git subtree 與 monorepo
 
 ```mermaid
 flowchart TD
-    A(["開工"]) --> B["① 在 site/r2.2 編輯"]
+    A(["開工"]) --> B["① 在 site/app 編輯"]
     B --> B2["② 本地 commit<br/>自動做、不問<br/>（不影響發版內容，純還原點）"]
     B2 --> E{"要發版?"}
     E -- "還沒" --> B
@@ -138,5 +140,42 @@ flowchart TD
 改成真 merge 後：1、2 由 `pull.sh` 的三方合併擋下；3 由「`collab.sh` 內建同步 ＋ GitHub 對落後基準做真三方比對」擋下。
 
 舊版腳本已於 2026-08-19 刪除（保留只是誘人誤跑一個會靜默還原別人工作的流程；沿革看本段與 git 歷史就夠）。一次性的歷史接合（`git subtree split` ＋ `-s ours` graft）在 site/ 留了安全點 tag `pre-subtree-graft-20260726`。
+
+---
+
+## 5. Phase 凍結版（2026-09-23 起）
+
+已交給開發的階段不留在 `main` 的切換面板上，改成 monorepo 裡一條**凍結分支**：版本鎖死、有自己的網址、只收明確要進去的修正。目前只有 Phase 1。
+
+| 項目 | Phase 1 |
+|---|---|
+| 分支 | `ztor20/Creator-Studio` 的 `phase1` |
+| 網址 | `https://ztor-cs-phase1.vercel.app` |
+| 改版紀錄 | 分支裡的 `ztor-creator-studio/PHASE1-CHANGES.md`，每次升版打標籤 `phase1-vX.Y` |
+| 本機 | **沒有**凍結版的檔案；本機 `site/` 永遠只放 `main` |
+
+**把一筆修正搬進 Phase 1**（`phase1-port.sh`、`deploy-phase1.sh` 在維護者本機的專案根，`site/` 的上一層，不在 monorepo 裡）：
+
+```mermaid
+flowchart TD
+    A["先照 §4 把改動發進 main"] --> B{{"⭐ 使用者說：這筆要進 phase1"}}
+    B --> C["../phase1-port.sh &lt;commit&gt; --check<br/>先試套，確認不衝突"]
+    C --> D["../phase1-port.sh &lt;commit&gt; 說明<br/>patch 套到 phase1 → 開 port/ 分支 → PR（base＝phase1）"]
+    D --> E["在同一個 PR 補 PHASE1-CHANGES.md 升版條目"]
+    E --> F{{"⭐ 問使用者 → Merge"}}
+    F --> G["打標籤 phase1-vX.Y"]
+    G --> H{{"⭐ 問使用者 → ../deploy-phase1.sh"}}
+    H --> I(["約 1 分鐘後凍結版網址更新"])
+
+    classDef gate fill:#FFDB29,stroke:#171717,stroke-width:3px,color:#171717;
+    class B,F,H gate;
+```
+
+- 凍結分支上有幾處「鎖版本」的改動（`devtools.js` 標 `★ PHASE1 FROZEN` 的段落、`feature-scope-map.md` 版本表只留 `p1`）。搬修正時這些段落要保留，不要被 `main` 的內容蓋掉。
+- 試套失敗代表凍結版和 `main` 已經長得不一樣，要手動改寫那筆修正，不要硬套。
+
+**下一期交付**：在 `app/feature-scope-map.md` 把要做的功能標 🔵 → 切換面板選「下一版預覽」確認畫面 → 從 `main` 切出 `phase2` 分支並鎖版本 → 開新網址 → 交付後把那批功能改標 🟢。
+
+**新功能的規則**：做出來的當下就掛 `data-feat` 標記並登記在 `feature-scope-map.md`（預設 ⚪ 未排定）。沒掛標記的東西每個版本都會出現，「下一版預覽」就會多顯示不在範圍的功能。
 
 > 另一條線（不在此圖）：`documents/`、`requirement/` 等 `site/` 以外的內容，是一般 `git push`，**無 PR、無 merge 關卡**。
