@@ -4,6 +4,21 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-24（一百零一）· Admin 平台層與帳戶設定頁的版本閘門改 Phase 1（A spec-derived · D324）
+
+**範圍**：Creator 管理（`creators.html`、`creator-detail.html`）、創作者活動管理、影片上架審核、Admin IP Bank（兩頁）、IP Bank Reporting、平台費率設定、`settings.html`，共 9 頁。
+
+**依據**：使用者裁示 D324——Admin Creator Studio 與帳戶設定列入 Phase 1；平台優惠設定依 D279 仍 Phase 4。
+
+**改動**：
+
+- 9 頁拿掉頁級 `data-page-feat="full"`（這些頁沒有 scope 功能編號，不掛閘門＝各版本顯示）。
+- `js/sidebar.js`、`js/devtools.js` 的 `FULL_ROUTES` 移除上述頁面；`admin-platform-promotions.html` 留在 sidebar 清單並補進 devtools 清單，兩份對齊。
+- `js/sidebar.js` `applyVersionRoutes`：Admin 頁在低版本的 logo 連結回名冊，不再一律回 E-Shop。
+- `feature-scope-map.md` 補 D324 說明段。
+
+**驗證**：`check_ds_sync.py "site/app"` 全 PASS；瀏覽器以「下一版預覽」（`tier:p1,next`）＋Admin 身分實測 9 頁可進、Admin 導覽顯示 6 個目的地、平台優惠設定仍隱藏。
+
 ## 2026-09-23（一百）· 資料夾 `r2.3/` 改名 `app/`，退場版本鍵與孤兒頁，Phase 1 改由分支代表（D infra）
 
 **範圍**：`site/` 重整為 Phase 1 凍結執行做準備。資料夾 `r2.3/` 改名 `app/`（固定名稱，之後不再逐版改名，版本號改記在文件與分支名稱）；移除 `golive-4step/`（版本鍵已退場，留著是孤兒頁）；版本切換面板（cheat code）改四選項：最終版、下一版預覽、funding-test、Deck for Sony（移除 Phase 1／2／3）；舊版 `r2.1`、`r2.2`、`r2.1_funding-test` 從 `main` 移除，改用標籤 `archive/r2.1`、`archive/r2.2` 存檔。

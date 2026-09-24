@@ -436,13 +436,15 @@
      完整清單也供 notification/account/link 這類 NAV 以外的錨點使用。 */
   /* ✝ 2026-07-30：取貨管理三頁移出本清單，改由 feature-scope-map 的 O24–O30（🟢 Phase 1）管轄（D157）。
      這份清單與 devtools.js 的同名清單必須一致，改一邊就要改另一邊。 */
+  /* ✝ 2026-09-24 D324：Admin 平台層（Creator 管理、IP Bank 兩頁＋Reporting、平台費率、影片上架審核）
+     與 settings.html 移出本清單——列入 Phase 1。平台優惠設定依 D279 仍 Phase 4，留在清單。 */
   const FULL_ROUTES = new Set([
-    "index.html", "dashboard-classic.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-platform-promotions.html", "admin-video-review.html", "projects.html", "project-detail.html", "create-project.html",
+    "index.html", "dashboard-classic.html", "admin-platform-promotions.html", "projects.html", "project-detail.html", "create-project.html",
     "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "media-vault.html",
     "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "fan-analytics.html", "audience-report.html", "my-ip.html", "ip-detail.html",
     "manage-ip.html",
-    "ip-market.html", "register-ip.html", "settings.html"
+    "ip-market.html", "register-ip.html"
   ]);
   function fullVersion() {
     const v = (window.ztorDevState && window.ztorDevState.get && window.ztorDevState.get().version)
@@ -470,7 +472,8 @@
       if (limited && group.closest("nav") && links.length === 0) group.hidden = true;
     });
     root.querySelectorAll(".app-topbar__brand, .app-sidebar__brand").forEach(brand => {
-      brand.setAttribute("href", limited ? "e-shop.html" : (isRoster ? ROSTER_PAGE : "index.html"));
+      /* D324：Admin 平台層進了 Phase 1，低版本在 Admin 頁的 logo 仍回名冊（與 buildSidebar 的 adminView() 一致）。 */
+      brand.setAttribute("href", adminView() ? ROSTER_PAGE : (limited ? "e-shop.html" : (isRoster ? ROSTER_PAGE : "index.html")));
     });
   }
 
