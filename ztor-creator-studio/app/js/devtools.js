@@ -135,10 +135,12 @@
   /* ✝ 2026-07-30：pickup.html／pickup-detail.html／scanner.html 移出本清單——取貨管理已列進
      feature-scope-map（O24–O30，🟢 Phase 1），不再是「未列 scope 的整頁功能」，各版本皆可進入（D157）。 */
   var FULL_ROUTES = {
-    'index.html': 1, 'dashboard-classic.html': 1, 'creators.html': 1, 'projects.html': 1, 'project-detail.html': 1, 'create-project.html': 1,
+    /* ✝ 2026-09-24 D324：creators.html、settings.html 移出——Admin 平台層（除平台優惠設定）與帳戶設定列入 Phase 1。
+       平台優惠設定仍 Phase 4（D279），補進本清單與 sidebar.js 同名清單對齊。 */
+    'index.html': 1, 'dashboard-classic.html': 1, 'admin-platform-promotions.html': 1, 'projects.html': 1, 'project-detail.html': 1, 'create-project.html': 1,
     'create-campaign.html': 1, 'funding-simulate.html': 1, 'events.html': 1, 'event-detail.html': 1, 'create-event.html': 1, 'edit-event.html': 1,
     'fans-crm.html': 1, 'fan-detail.html': 1, 'tier-settings.html': 1, 'my-ip.html': 1, 'ip-detail.html': 1,
-    'ip-market.html': 1, 'register-ip.html': 1, 'settings.html': 1,
+    'ip-market.html': 1, 'register-ip.html': 1,
     /* 2026-07-30 補：外部 r2.2 改版新增的 6 頁只加進 sidebar.js 的同名清單、漏了這裡，
        導致低版本下導覽藏得掉、頁內連結卻還點得進去（版本 gate 漏水）。 */
     'tier-benefits.html': 1, 'media-vault.html': 1, 'brand-campaigns.html': 1,
