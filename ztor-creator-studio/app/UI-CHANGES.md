@@ -4,6 +4,38 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-24（一百零三）· 建立 creator 新增必填「幣別」，創作者幣別改成逐位 creator 讀值（A spec-derived · D326）
+
+**範圍**：`creators.html`、`creator-detail.html`、`js/currency.js`、`js/i18n.js`、`settings.html`、`store-settings.html`、`requirements-map.md`、`ASSUMPTIONS.md`（UIA-179）。
+
+**依據**：使用者 2026-09-24 裁決「Admin 幫創作者建立帳號時選擇幣種，之後創作者以這個幣種開啟平台、無法更改」→ 規格 D326（5.1.0 F2 建立欄位新增幣別；5.1.0.5 帳號來源補唯讀幣別；主規格 §7.15 補設定入口）。D316 早已定案「建立帳號時設定、不可改」，但建立彈窗一直沒有這一格，創作者端的唯讀讀數是寫死的 TWD。
+
+**改動**：
+
+- `creators.html`：建立彈窗在「店鋪網址」與「電話」之間新增「幣別」下拉（`<select class="select">`＋`zselect`，新連 `zselect.css`／`js/zselect.js`／`js/currency.js`）。選項從 `ztorCurrency.CODES` 長出來、標籤用 `ztorCurrency.label()`（「TWD · 新台幣」，與設定頁讀數同寫法），語言切換時重建並保留已選值；第一列是空值提示、不預選。hint 只寫後果「建立後無法更改。」。沒選就送出＝欄位下方 `.field__error`「請選擇幣別。」＋焦點回下拉（原生 select 被 zselect 視覺隱藏，瀏覽器必填泡泡無處可指，所以自己擋）。建立時把值存進該筆 creator 的 `currency` 欄。
+- `creator-detail.html`：帳號來源（唯讀）組新增第四格「幣別」，讀 `ztorCurrency.forCreator(c)`；示範三位沒有這個欄位，顯示預設 TWD。
+- `js/currency.js`：`CREATOR` 由寫死的 `'TWD'` 改成 getter——依目前 persona 找到名冊那一筆取 `currency`（先找 `window.ztorCreator.list`，sidebar.js 尚未載入時讀 `ztor.creatorAdds`），找不到退回 `DEFAULT 'TWD'`。新增 `CODES`（全站唯一的幣別值域）與 `forCreator(c)`。既有讀 `ztorCurrency.CREATOR` 的頁面（設定、商店設定、側欄幣別列、建立活動／商品／組合、商品在地化）不用改，自動跟著這位 creator 的幣別走。
+- `js/i18n.js`：新增 `creators.form-currency`／`-ph`／`-hint`／`-err`；`currency.contact-support`（欲更改幣別請聯繫客服）立墓碑，換成 `currency.fixed`（建立帳號時已設定，無法更改。），`settings.html`、`store-settings.html` 兩處改接新 key。
+
+**沒動的**：沒有新元件、沒有新 token（下拉、欄位、錯誤訊息都是既有元件），`design-system.html`／`design-system.md` 不需同步。示範資料的價格幣別不動（見 UIA-179 第 4 點）。未進 Phase 1 凍結版（使用者指示先只進開發版）。
+
+**驗證**：見本輪收尾 check_ds_sync 與瀏覽器實測。
+
+## 2026-09-24（一百零二）· 修正訂單詳情頁殘留的 cheat code 連結、收入管理合作者／推薦分潤補登 data-feat（D infra）
+
+**範圍**：`order-detail.html`「View in Earnings →」按鈕；`earnings.html` 合作者分潤（Collaborator share）／推薦分潤（Referral share）的分類 chip、交易列與展開詳情列；`feature-scope-map.md`（新增 E25／E26）；`js/devtools.js` `FEAT_TIER` 後備表。
+
+**依據**：`docs/收入管理關聯盤點-2026-09-24.md`「原型站的落差」段盤點出兩個問題，使用者同意修正。
+
+**改動**：
+
+- `order-detail.html:187`：href 原本被 cheat code「Deck for Sony」的執行期改接機制（`js/devtools.js` `applyRouteRedirects()`）寫死成 `earnings-sony.html`、並殘留只該在執行期動態寫入／移除的 `data-route-orig="earnings.html"`，誤存進靜態檔。改回 `href="earnings.html"`、移除 `data-route-orig`；全站 grep 確認無其他 `data-route-orig` 或 `href="earnings-sony.html"` 殘留。
+- `earnings.html`：合作者分潤／推薦分潤兩個分類（分類 chip、`data-cat="collab"`／`"referral"` 的交易列與展開詳情列）先前沒有 `data-feat`，「下一版預覽」管不到這兩類交易。補掛 `data-feat="E25"`／`"E26"`（chip、`tr.ztor-table__row`、`tr.ztor-table__detail` 各一組）；總覽分頁「來源分佈」沒有對應這兩類的項目，未加。
+- `feature-scope-map.md`：E 表在 E24 之後新增 `E25` 合作者分潤、`E26` 推薦分潤（Tier ⚪ TBD、Build ✅⬆ ahead）；E 段標題統計、檔頭功能總數／本期統計／Build 統計同步 +2。
+- `js/devtools.js`：`FEAT_TIER` 後備表補 `E25: 'tbd'`、`E26: 'tbd'`（md 載入失敗時的安全後備，須與 md 一致）。
+
+**驗證**：`python3 ../../Skills/project-ui-creator/scripts/check_ds_sync.py "site/app"` 全 PASS。
+
 ## 2026-09-24（一百零一）· Admin 平台層與帳戶設定頁的版本閘門改 Phase 1（A spec-derived · D324）
 
 **範圍**：Creator 管理（`creators.html`、`creator-detail.html`）、創作者活動管理、影片上架審核、Admin IP Bank（兩頁）、IP Bank Reporting、平台費率設定、`settings.html`，共 9 頁。

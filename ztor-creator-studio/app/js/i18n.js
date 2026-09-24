@@ -647,6 +647,12 @@
     'creators.form-phone': { en: 'Phone',              zh: '電話' },
     'creators.form-phone-ph':{ en: '+886 900 000 000', zh: '+886 900 000 000' },
     'creators.form-optional':{ en: '(optional)',       zh: '（選填）' },
+    /* 幣別（2026-09-24 D326，spec 5.1.0 F2）：建立 creator 必填、建立後不可改。
+       詳情頁的唯讀讀數沿用同一把 'creators.form-currency' 當欄名。 */
+    'creators.form-currency':     { en: 'Currency',                                   zh: '幣別' },
+    'creators.form-currency-ph':  { en: 'Select a currency',                          zh: '選擇幣別' },
+    'creators.form-currency-hint':{ en: "Can't be changed after the creator is created.", zh: '建立後無法更改。' },
+    'creators.form-currency-err': { en: 'Select a currency.',                         zh: '請選擇幣別。' },
     'creators.form-submit':{ en: 'Create',             zh: '建立' },
     /* F2 建立 creator — 2-step onboard wizard (search a pre-registered account → confirm). BR-02 */
     'creators.step-search':{ en: 'Search account',     zh: '搜尋帳號' },
@@ -782,7 +788,10 @@
     'currency.name.HKD':      { en: 'Hong Kong Dollar',      zh: '港幣' },
     'currency.name.SGD':      { en: 'Singapore Dollar',      zh: '新加坡幣' },
     'currency.name.JPY':      { en: 'Japanese Yen',          zh: '日圓' },
-    'currency.contact-support': { en: 'Contact support to change it.', zh: '欲更改幣別請聯繫客服。' },
+    /* 墓碑 2026-09-24（D326）：'currency.contact-support'（欲更改幣別請聯繫客服）——
+       暗示客服改得掉，但 D316 定案創作者與 Admin 都不能改（使用者 2026-09-24 重申「無法更改」）。
+       換成只陳述事實的 'currency.fixed'，消費頁同樣是 settings／store-settings 那一格。 */
+    'currency.fixed':         { en: "Set when your account was created. It can't be changed.", zh: '建立帳號時已設定，無法更改。' },
     'currency.platform-base': { en: 'Recorded in the platform base currency', zh: '以平台基準幣別記錄' },
     'currency.fx.asof':       { en: 'Rate as of {t}',        zh: '匯率時點 {t}' },
 
