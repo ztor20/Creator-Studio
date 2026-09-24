@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="ds-components/product-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/zselect.css?v=r2.2"><!-- D326：建立 creator 的幣別下拉 -->
 <link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
@@ -185,7 +186,7 @@
         </div>
 
         <!-- Onboard form — appears once an account is picked. Name/Email inherited
-             (readonly); Admin only sets Shop URL + phone. One field per row. -->
+             (readonly); Admin sets Shop URL + currency + phone. One field per row. -->
         <div class="creator-onboard" id="creator-fill" hidden>
           <label class="field creator-onboard__row">
             <span class="field__label" data-i18n="creators.form-avatar">Avatar</span>
@@ -203,6 +204,17 @@
             <span class="field__label" data-i18n="creators.form-handle">Shop URL</span>
             <input class="input" type="text" name="handle" required data-i18n-placeholder="creators.form-handle-ph" placeholder="denise">
             <span class="field__hint" data-handle-preview>ztor.com/shop/…</span>
+          </label>
+          <!-- 幣別（2026-09-24 D326，spec 5.1.0 F2）：這一格就是該 creator 的創作者幣別
+               （主規格 §7.15），必填、建立後創作者與 Admin 都不能改。選項由 js/currency.js
+               的 CODES 長出來（全站唯一一份值域），不在這裡寫死；不預選——預設值屬
+               〔產品待確認〕，要 Admin 明確挑一個（ASSUMPTIONS UIA-179）。hint 只講
+               「建立後不能改」這個後果，因為這是送出前唯一需要知道的事。 -->
+          <label class="field creator-onboard__row">
+            <span class="field__label" data-i18n="creators.form-currency">Currency</span>
+            <select class="select" name="currency" data-creator-currency></select>
+            <span class="field__hint" data-i18n="creators.form-currency-hint">Can't be changed after the creator is created.</span>
+            <span class="field__error" data-creator-currency-err data-i18n="creators.form-currency-err" hidden>Select a currency.</span>
           </label>
           <label class="field creator-onboard__row">
             <span class="field__label"><span data-i18n="creators.form-phone">Phone</span> <span class="text-sub" data-i18n="creators.form-optional">(optional)</span></span>
@@ -222,6 +234,7 @@
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/currency.js?v=r2.2"></script><!-- D326：幣別值域（CODES）與「TWD · 新台幣」標籤的單一來源 -->
 <!-- D225：登入落點之一（Admin 落地頁），載了才會在 pending 旗標存在時詢問登入語言 -->
 <script src="partials/login-lang-prompt.js?v=r2.2"></script>
 <script src="js/sticky-actions.js?v=r2.2"></script>
@@ -421,6 +434,8 @@
   var handleInput = form.querySelector('input[name="handle"]');
   var phoneInput  = form.querySelector('input[name="phone"]');
   var handlePrev  = form.querySelector('[data-handle-preview]');
+  var curSelect   = form.querySelector('[data-creator-currency]');
+  var curError    = form.querySelector('[data-creator-currency-err]');
   var formAva     = document.getElementById('creator-form-ava');
   var picked = null;      /* the selected registered account */
 
@@ -440,8 +455,35 @@
        creator must come from an already-registered account, BR-02). Picking an
        account reveals the onboard form below. ── */
   function hideResults() { results.hidden = true; results.innerHTML = ''; accSearch.setAttribute('aria-expanded', 'false'); }
+  /* 幣別選單（D326）：值域讀 js/currency.js 的 CODES，標籤讀它的 label()（「TWD · 新台幣」，
+     與設定頁／商店設定的唯讀讀數同一種寫法）。第一列是空值的提示列，不預選任何幣別。
+     語言一換就重建一次、保留已選的值；重建本身是 DOM 變動，zselect 會跟著同步觸發鈕的字。 */
+  function fillCurrency() {
+    var cur = window.ztorCurrency;
+    if (!curSelect || !cur) return;
+    var keep = curSelect.value;
+    curSelect.innerHTML = '<option value="">' + esc(tx('creators.form-currency-ph', 'Select a currency')) + '</option>'
+      + cur.CODES.map(function (code) {
+        return '<option value="' + code + '">' + esc(cur.label(code)) + '</option>';
+      }).join('');
+    curSelect.value = keep;
+  }
+  function showCurrencyError(on) {
+    if (curError) curError.hidden = !on;
+    if (curSelect) {
+      if (on) curSelect.setAttribute('aria-invalid', 'true'); else curSelect.removeAttribute('aria-invalid');
+      /* zselect 的觸發鈕才是讀屏器摸得到的那一顆，無效狀態也標在它身上；看得見的錯誤是下方的 .field__error。 */
+      var trig = curSelect.parentNode && curSelect.parentNode.querySelector('.zselect__trigger');
+      if (trig) { if (on) trig.setAttribute('aria-invalid', 'true'); else trig.removeAttribute('aria-invalid'); }
+    }
+  }
+  fillCurrency();
+  document.addEventListener('i18n:applied', fillCurrency);
+  if (curSelect) curSelect.addEventListener('change', function () { if (curSelect.value) showCurrencyError(false); });
+
   function clearPick() {
     picked = null;
+    showCurrencyError(false);
     fillBox.hidden = true; submitBtn.disabled = true;
     if (handlePrev) handlePrev.textContent = 'ztor.com/shop/…';
     formAva.textContent = '?';
@@ -510,6 +552,8 @@
   function closeModal() {
     modal.hidden = true; document.body.classList.remove('is-modal-open');
     form.reset(); clearPick();
+    /* reset() 只改原生 <select> 的值、不派 change，zselect 的觸發鈕會留著上一次的字。 */
+    if (curSelect) curSelect.dispatchEvent(new Event('change', { bubbles: true }));
     hideResults(); accSearch.value = '';
   }
   document.querySelector('[data-creator-create]').addEventListener('click', openModal);
@@ -541,10 +585,20 @@
       handleInput.reportValidity();
       return;
     }
+    /* D326：幣別必填。原生 <select> 被 zselect 視覺隱藏，瀏覽器的必填泡泡無處可指，
+       所以自己擋、在欄位下方顯示錯誤。 */
+    var currency = curSelect ? curSelect.value : '';
+    if (!currency) {
+      showCurrencyError(true);
+      var trig = curSelect && curSelect.parentNode.querySelector('.zselect__trigger');
+      (trig || curSelect).focus();
+      return;
+    }
     /* 走 add() 而不是 list.push()：新 creator 要落地，否則詳情頁（另一份文件）
        看不到它、會顯示「查無此 creator」（D224）。 */
     window.ztorCreator.add({ handle: handle, name: picked.name, shop: '/shop/' + handle, status: 'active',
                 email: picked.email, phone: (phoneInput.value || '').trim(), created: todayStr(),
+                currency: currency,     /* D326：創作者幣別，建立後不可改；js/currency.js 依 persona 讀它 */
                 bookyayEvents: [],      /* D219：匯入的 bookyay 活動在詳情頁做 */
                 seed: handle });        /* D224：詳情頁的查詢鍵，之後改店鋪網址也對得回來 */
     /* Onboarded → leave the pre-registered pool so it can't be created twice. */
@@ -559,5 +613,6 @@
   render();
 })();
 </script>
+<script src="js/zselect.js?v=r2.2"></script><!-- D326：幣別下拉升級成站上的下拉；排在頁面腳本之後，選項先填好才升級 -->
 </body>
 </html>

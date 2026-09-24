@@ -133,6 +133,8 @@
               <div class="cd-ro"><span class="cd-ro__k" data-i18n="creators.form-name">Creator name</span><span class="cd-ro__v" data-cd-ro-name></span></div>
               <div class="cd-ro"><span class="cd-ro__k" data-i18n="creators.form-email">Email</span><span class="cd-ro__v" data-cd-ro-email></span></div>
               <div class="cd-ro"><span class="cd-ro__k" data-i18n="creators.col-created">Created</span><span class="cd-ro__v" data-cd-ro-created></span></div>
+              <!-- D326：幣別＝建立 creator 時 Admin 選定的創作者幣別，建立後誰都不能改，所以歸在唯讀這一組。 -->
+              <div class="cd-ro"><span class="cd-ro__k" data-i18n="creators.form-currency">Currency</span><span class="cd-ro__v" data-cd-ro-currency></span></div>
             </div>
           </div>
 
@@ -173,6 +175,7 @@
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/currency.js?v=r2.2"></script><!-- D326：唯讀幣別讀數（label／forCreator） -->
 <script src="js/devtools.js?v=r2.2"></script>
 <script>
 /* Creator 詳情／編輯（Tier 0 Admin · spec 5.1.0.5 · D224、D233）。
@@ -230,6 +233,8 @@
     document.querySelector('[data-cd-ro-name]').textContent  = c.name;
     document.querySelector('[data-cd-ro-email]').textContent = c.email || '—';
     document.querySelector('[data-cd-ro-created]').textContent = c.created || '—';
+    var cur = window.ztorCurrency;
+    document.querySelector('[data-cd-ro-currency]').textContent = cur ? cur.label(cur.forCreator(c)) : (c.currency || '—');
     /* 已匯入 M 場活動（D233 · F1）。M 走 window.ztorCreator.bookyayStats()——名冊的
        待設定徽章與創作者活動管理頁讀的是同一支，三處數字才對得上。 */
     var imp = document.querySelector('[data-cd-imported]');

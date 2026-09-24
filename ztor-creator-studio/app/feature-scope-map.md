@@ -5,7 +5,7 @@
 - **日期**：2026-06-29
 - **來源**：Ztor功能點.md + Phase 1 handoff
 - **範圍**：internal use only
-- **功能總數**：107
+- **功能總數**：109
 
 ## Tier 圖例
 
@@ -16,7 +16,7 @@
 | ⚪ TBD（未排定） | 商務團隊待定；「下一版預覽」不顯示 |
 | ⚫ 退場 | retired（產品決策已全面撤除，不再規劃／不計入 Phase 1／Next／TBD 三態，2026-09-09 起新增） |
 
-本期統計：🟢 Phase 1 82 · 🔵 Next 11 · ⚪ TBD 12 · ⚫ 退場 2
+本期統計：🟢 Phase 1 82 · 🔵 Next 11 · ⚪ TBD 14 · ⚫ 退場 2
 
 ## Build 狀態圖例
 
@@ -30,7 +30,7 @@
 | ✅⬆ ahead | 超前建置（prototype 已有，規格尚未涵蓋） |
 | ⏳ deferred | 已延後 |
 
-Build 統計：✅ 80 built · 🟡 6 gap · ✅⬆ 19 ahead · ⏳ 2 deferred
+Build 統計：✅ 80 built · 🟡 6 gap · ✅⬆ 21 ahead · ⏳ 2 deferred
 
 **Feature ID** — `S` Shop · `O` Orders · `E` Earnings · `B` Buyer storefront（例：`E07`），跨團隊引用用，編號穩定不變。
 
@@ -182,7 +182,7 @@ ID 起始 `O01…` ｜ 🟢 25 · 🔵 2 · ⚪ 2 · ⚫ 退場 2
 
 ## E · 收入管理 — Earnings / Income
 
-ID 起始 `E01…` ｜ 🟢 12 · 🔵 6 · ⚪ 6
+ID 起始 `E01…` ｜ 🟢 12 · 🔵 6 · ⚪ 8
 
 | ID | 功能 | English | Tier | Build | 備註 |
 |---|---|---|---|---|---|
@@ -211,6 +211,8 @@ ID 起始 `E01…` ｜ 🟢 12 · 🔵 6 · ⚪ 6
 | `E22` | 　收益拆解（瀑布圖 / 依專案 · Ztor抽成·創作者·NFT） | Revenue breakdown waterfall | 🔵 Next | ✅⬆ ahead | 收益拆解納入 scope（使用者 2026-07-16 裁示補上，D139）；平台費率設定入口見規格 5.1.0.3、費率凍結機制 §7.6，結構依 §7.3／5.1.8 F11·F12，**實際抽成比例數值仍待產品確認**。（原文「EFT」為筆誤，依規格 §7.3 淨利池 NFT 40% 更正） |
 | `E23` | 　提款 | Payout | 🔵 Next | ✅⬆ ahead |  |
 | `E24` | 　稅務檔案 | Tax documents | ⚪ TBD | ✅⬆ ahead |  |
+| `E25` | 　　合作者分潤 | Collaborator share | ⚪ TBD | ✅⬆ ahead | 2026-09-24 補登：交易明細已有此分類、先前漏掛 data-feat；分類定義見規格 §7.3 |
+| `E26` | 　　推薦分潤 | Referral share | ⚪ TBD | ✅⬆ ahead | 2026-09-24 補登：交易明細已有此分類、先前漏掛 data-feat；分類定義見規格 §7.3 |
 
 ## B · 買家店面（Ztor eShop） — Buyer Storefront
 
