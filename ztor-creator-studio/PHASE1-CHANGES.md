@@ -10,6 +10,13 @@
 
 ## 版本
 
+### v1.1 · 2026-09-24
+
+- 來源：`main` 的 D324 改動（PR #281），以 `phase1-port.sh` 搬入。
+- 內容：Admin Creator Studio 列入 Phase 1——Creator 管理（名冊＋creator 詳情）、創作者活動管理、影片上架審核、Admin IP Bank（兩頁）、IP Bank Reporting、平台費率設定；帳戶設定頁（`settings.html`）同時列入。
+- 不變：平台優惠設定仍只在最終版（D279），Phase 1 看不到。頁內指向 Phase 1 以外內容的連結（活動詳情、IP 詳情等）照樣隱藏。
+- 要看 Admin 頁：開面板（Alt＋右鍵）把「Role · 身分」切到 Admin。
+
 ### v1.0 · 2026-09-23
 
 - 來源：自 `main` 切出（monorepo commit `351d96d`，PR #280 合併後）。
