@@ -7006,7 +7006,11 @@
     'od.limit.note':        { en: "Purchase-limited items are checked against each buyer's running total at checkout; this page shows the result only (§2.3 / 5.1.5.2 §4.4 F9).", zh: '限購商品於結帳時依買家累計購買量檢查；本頁僅呈現結果（§2.3 / 5.1.5.2 §4.4 F9）。' },
     'od.amt.goods':         { en: 'Goods',                   zh: '商品金額' },
     'od.amt.shipping':      { en: 'Shipping',                zh: '運費' },
-    'od.amt.platform':      { en: 'Platform fee · 15%',      zh: '平台費 · 15%' },
+    /* 2026-09-29（D333）：費率不再寫死在字串裡——平台費列改由程式接「 · 15%」或
+       「 · 多種費率」，展開後逐葉節點列出（葉節點名稱共用 fees.leaf.*）。 */
+    'od.amt.platform':      { en: 'Platform fee',            zh: '平台費' },
+    'od.amt.platform.mixed': { en: 'Mixed rates',            zh: '多種費率' },
+    'od.amt.fee.base':      { en: 'Fee base',                zh: '計費基準' },
     'od.amt.payment':       { en: 'Payment fee · 2.4%',      zh: '支付費 · 2.4%' },
     'od.amt.tier':          { en: 'Tier discount',              zh: '分級折抵' },
     'od.amt.code':          { en: 'Coupon discount',            zh: '優惠碼折抵' },
@@ -7427,6 +7431,9 @@
     'od.item10.name': { en: 'Pirate Queen — behind the scenes', zh: '海上霸姬 幕後紀錄' },
     'od.item11.name': { en: 'Lam Ka-wai official fan club', zh: '林家維 官方後援會' },
     'od.item12.name': { en: 'Launch night bundle', zh: '首賣夜 組合包' },
+    /* 2026-09-29（D333）：混合費率示範訂單 #ZT-10489 的票務組合包與它的票券成員 */
+    'od.item13.name': { en: 'Premiere night ticket bundle', zh: '首映夜 雙人套票' },
+    'od.item14.name': { en: 'Premiere night · general admission', zh: '首映夜 · 全票' },
     'project-detail.collab.owner-name': { en: 'Gary Lin', zh: '林家維' },
     /* 墓碑（2026-09-09，D253）：od.refund.* 一整組（title／select／amount／confirm／
        cancel／full.note／restock／pickup-impact／dispute／sub／body／partial／full／
@@ -10775,6 +10782,9 @@
       'od.item9.name':  { zh: '帥到分手 · 單曲', en: '“Too Handsome to Stay” single' },
       'od.item10.name': { zh: 'REALIVE (R2) 演唱會影像 數位版', en: 'REALIVE (R2) concert film — digital' },
       'od.item11.name': { zh: 'NICKTHEREAL 官方後援會', en: 'NICKTHEREAL official fan club' },
+      /* 2026-09-29（D333）：混合費率示範訂單的票務組合包，比照他實際的 REALIVE 巡演 */
+      'od.item13.name': { zh: 'REALIVE 巡演 雙人套票', en: 'REALIVE tour ticket bundle for two' },
+      'od.item14.name': { zh: 'REALIVE 巡演 · 全票', en: 'REALIVE tour · general admission' },
       /* 取貨 */
       'pk.item.zine':   { zh: 'REALIVE 巡演精裝寫真誌', en: 'REALIVE tour photobook' },
       'pk.item.tee':    { zh: 'REALIVE 白趴 官方 Tee · M / L', en: 'REALIVE White Party tee · M / L' },
