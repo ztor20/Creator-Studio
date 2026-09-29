@@ -130,6 +130,7 @@
     full: 'full', S05: 'next', S06: 'next', S11: 'tbd', S24: 'tbd', 'S31.1': 'next', S45: 'tbd',
     S52: 'tbd', S53: 'tbd', S54: 'tbd', S55: 'tbd', S56: 'tbd',   // 2026-09-29 D328 補登（活動：語言複選／跨日／門票簡介／顯示／bookyay 帶入）
     S57: 'tbd',   // 2026-09-29 D334（活動：說明區塊）
+    S58: 'tbd',   // 2026-09-29 D335（活動：描述與說明區塊內文的圖片與影片）
     O04: 'tbd', O09: 'tbd', O17: 'next', O18: 'tbd', O22: 'next', O23: 'next',
     E08: 'next', E09: 'next', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'next', E20: 'next', E22: 'tbd', E23: 'next', E24: 'tbd', E25: 'tbd', E26: 'tbd'
   };   // { S30:'p1', … } 由 md 功能表填

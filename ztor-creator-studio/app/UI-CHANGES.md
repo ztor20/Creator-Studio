@@ -4,6 +4,54 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-29（一百一十二）· 描述與說明區塊的內文可夾帶圖片與影片、bookyay 活動詳情的圖片影片照段落帶入、拿掉說明區塊的提示句（A spec-derived ＋ C 撤除 · D335）
+
+**範圍**：新元件 `ds-components/rich-body.css`＋`partials/rich-body.js`、`partials/info-sections.js`、`partials/upload-tile.js`、`create-event.html`、`event-detail.html`、`event-localization.html`、`js/fan-event-page.js`、`ds-components/fan-shop.css`、`js/events-store.js`、`js/i18n.js`、`js/devtools.js`、`feature-scope-map.md`（S58）、`design-system.md`／`design-system.html`（§4.222、§4.221、Upload tile 預填屬性、§4.215 model）、`design-components.html`（重生）、`ASSUMPTIONS.md`（UIA-187、UIA-186 兩項缺口關閉）、`BUILD-SPEC.md`、`requirements-map.md`
+
+**依據**：使用者 2026-09-29 裁決（D335，修訂 D334 補充第 5 項）：描述與說明區塊的內文可以有圖片與影片（bookyay 帶入保留、運營可自行插入），文字格式本輪不做；同日更正 bookyay 活動詳情一段都沒有時描述維持鎖定；說明區塊的提示句拿掉。規格 5.1.6.1 v2.31 §4.1 F21／§4.2 F2、5.1.6.2 v3.21 F2、5.1.6.3 v29 §2.13、0-設計規格書 v4.10 §7.4／§7.10「內文媒體」。
+
+### A · 新增（spec-derived）
+
+- **內文可插入圖片與影片**：建立活動步驟 2 的描述、每一塊說明區塊的內文，底下多一列「插入圖片／插入影片」；插在游標所在的位置（那段文字從游標切開、媒體夾中間），也可以用媒體格的刪除鈕拿掉，拿掉後前後文字併回一段。活動詳情「活動內容」編輯模式同一支，儲存後保留。
+- **新元件 Rich body**（§4.222）：文字塊＋媒體塊交錯的內文編輯器；媒體塊重用上傳格（hover 替換／刪除、影片可播放），預覽框照媒體本身比例。說明區塊的內文改吃它。
+- **bookyay 帶入保留圖片影片**：活動詳情每一段的圖片與影片照原位置帶入——第 1 段進描述、跟描述一起鎖定；第 2 段起進各自的說明區塊、不鎖；只有圖片的段落也照樣成一塊。示範 MIRROR FANMEETING 2026 第 2 段的圖現在會進說明區塊。
+- **翻譯表只列文字**：描述與說明區塊的內文那一列只有文字，圖片影片不列、不翻譯。
+- **粉絲視角預覽**：描述的圖片影片畫在描述文字下方（最小做法，UIA-187）；說明區塊照舊不畫。
+- **示範資料**：`realive-asia-taipei` 第一塊說明區塊（粉絲福利說明）兩段文字之間夾一張圖。
+
+### 呈現決策
+
+- 預覽框不套展示素材槽的 2:3（內文媒體不是展示素材槽，比例上游待確認）；寬 280px 封頂、圖片整張不裁。
+- 不擋任何格式、大小、數量（上游多數待確認），只依按鈕分流檔型。
+- 描述的必填仍看文字（只放媒體不算填，產品待確認）。
+- 描述改成編輯器後，原本的 `[data-ce="desc"]`／`[data-ed="desc"]` 留作隱藏欄位，編輯器把文字同步寫進去，必填、翻譯表、自動儲存照舊讀它。
+
+### C · 撤除
+
+- 說明區塊欄位下的提示句「粉絲依這個順序閱讀。拖曳把手可調整順序。」（create-event、event-detail）與 i18n `ce.info.hint`：粉絲頁目前不畫說明區塊，那句等於預先承諾，不換新句。
+- `bkyRichText()` 的「圖片影片略過、只剩圖片的段落不成塊」行為。
+
+### D · infra / 文件
+
+- `partials/upload-tile.js` 新增預填影片（`data-upload-kind="video"`，首個消費者 rich-body）。
+- feature-scope-map 新增 S58（⚪ TBD），devtools 後備表同步。
+- 上一條標題的編號寫法由「一百十一」統一為「一百一十一」。
+
+## 2026-09-29（一百一十一）· bookyay 帶入改寫：活動詳情第 1 段進描述、第 2 段起各成一個說明區塊（A spec-derived · D334 補充）
+
+**範圍**：`create-event.html`（假 bookyay 資料與 `bkyApply()`／`bkyMap()`）、`ASSUMPTIONS.md`（UIA-186）、`BUILD-SPEC.md`、`requirements-map.md`
+
+**依據**：使用者 2026-09-29 同日追加裁決（D334「補充（2026-09-29 同日）」第 5 項，修訂 D334 決定 4 後半句「說明區塊不帶入」）；規格 5.1.6.1 v2.30 §4.1 F21「活動詳情（intros）」、§4.2 F2。同批的另外四點（不限字數與塊數、只填一半不擋存、粉絲活動頁先不畫、不列高影響）上一輪原型已照做，本輪確認無需改。
+
+### A · 新增（spec-derived）
+
+- **示範資料改成 bookyay 形狀**：假 bookyay 活動的「描述」一欄改成多段的活動詳情（bookyay API 的 `intros`，每段一個富文本、沒有標題）。REALIVE World Tour — Taipei 三段、MIRROR FANMEETING 2026 兩段（第 2 段夾一張圖）、其餘三筆各一段。
+- **帶入規則**：第 1 段帶進描述並鎖定（照舊顯示 From bookyay）；第 2 段起每段變成一個說明區塊，標題留空、內文帶入、不鎖——運營可以補標題、改內文、刪除、拖曳排序或再新增。只有一段的活動帶入後說明區塊維持 0 塊。
+
+### 呈現決策
+
+- **富文本轉純文字**：換行與段落保留成換行，清單項前加「・」保留條列的樣子，粗體、連結等標記去掉只留文字；圖片與影片略過，只剩圖片的段落不產生說明區塊。要不要支援格式、圖片影片怎麼處理是產品待確認（UIA-186 產品缺口）。
+
 ## 2026-09-29（一百一十）· 建立活動刪除「進階詳細資料」，描述下方改成可重複的說明區塊（A spec-derived ＋ C 撤除 · D334）
 
 **範圍**：`create-event.html`、`event-detail.html`、`event-localization.html`、`js/fan-event-page.js`、`js/events-store.js`、`js/i18n.js`、`js/devtools.js`（S57 後備分級）、新元件 `ds-components/info-sections.css`＋`partials/info-sections.js`、`design-system.md`／`design-system.html`（§4.221 新卡、§4.215 model 註記）、`design-components.html`（重生）、`feature-scope-map.md`（新增 S57）、`ASSUMPTIONS.md`（UIA-186、TERM-001 追記）、`BUILD-SPEC.md`、`requirements-map.md`

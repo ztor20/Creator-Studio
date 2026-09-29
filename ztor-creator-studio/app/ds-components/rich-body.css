@@ -1,0 +1,51 @@
+/* ============================================================
+   rich-body.css · 內文編輯器（文字＋圖片／影片）
+   ------------------------------------------------------------
+   首見於建立活動步驟 2 的「描述」與每一塊「說明區塊」的內文（D335，2026-09-29；
+   5.1.6.1 §4.2 F2、5.1.6.2 F2）：內文除了文字之外可以夾帶圖片與影片，插在文字之間的
+   哪個位置由運營決定。互動由 partials/rich-body.js 負責（插入點＝游標、刪除後前後文字併回一段）。
+
+   ---- 重用，不另起爐灶 ----
+   文字塊＝.textarea（input.css）；媒體塊＝.upload-tile（upload-tile.css ＋ partials/upload-tile.js：
+   已填＝實線中性邊、hover 出現替換／刪除、影片多一顆播放，Q40 的單一產生路徑）；
+   插入鈕＝.btn.btn--ghost.btn--sm。本檔只管「一疊文字與媒體怎麼排」與兩個狀態。
+
+   ---- surface ----
+   坐在 .field 裡：form-section--outlined（L1 卡）或 .card--muted（L2，說明區塊的每一塊）上。
+   .textarea 與 .upload-tile 各自有邊框，兩層都成立。
+
+   anatomy
+     .rich-body                         容器（flex column，節奏由 gap 持有，Q103）
+       .rich-body__blocks               文字塊與媒體塊交錯（flex column）
+         .textarea.rich-body__text      文字塊（第一塊 3 列、其餘 2 列）；.is-blank＝空白
+         .upload-tile.rich-body__media  媒體塊；預覽框照媒體本身的長寬比（--rb-ratio，JS 讀到尺寸後填）
+       .rich-body__tools                插入圖片／插入影片（.btn--ghost.btn--sm，靠左）
+   狀態
+     .rich-body--has-media              至少一個媒體（檢視態收起空白文字塊的「—」讀數）
+     .is-locked                         鎖定（bookyay 帶入的描述）：插入鈕收起、媒體格不出現替換／刪除
+   ============================================================ */
+
+.rich-body { display: flex; flex-direction: column; gap: var(--sp-8); min-width: 0; }
+.rich-body__blocks { display: flex; flex-direction: column; gap: var(--sp-8); }
+
+/* 媒體預覽框：寬度封頂、照媒體本身的比例（還沒讀到尺寸前先用 16:9）。
+   內文媒體不是展示素材槽，不套 --portrait 的 2:3（比例〔產品待確認〕，主規格 §7.10「內文媒體」）。 */
+.upload-tile.rich-body__media {
+  align-self: flex-start;
+  width: min(280px, 100%);
+  min-height: 0;
+  aspect-ratio: var(--rb-ratio, 16 / 9);
+}
+/* 圖片整張看得到、不裁切（上傳格預設 object-fit: cover 是給固定比例的展示槽） */
+.upload-tile.rich-body__media .upload-tile__thumb { object-fit: contain; }
+
+.rich-body__tools { display: flex; flex-wrap: wrap; gap: var(--sp-8); }
+/* [hidden]／鎖定時收起整列插入鈕 */
+.rich-body.is-locked .rich-body__tools { display: none; }
+/* 鎖定時媒體格不可替換或刪除（權重要壓過 .upload-tile.is-filled .upload-tile__actions） */
+.rich-body.is-locked .upload-tile.is-filled .upload-tile__actions { display: none; }
+
+/* 兩段式面板的檢視態（js/view-mode.js 在每個文字塊後面放一顆讀數）：
+   有媒體時，空白文字塊的「—」讀數收起——媒體之間沒寫字的地方不該出現一排破折號。
+   整段內文完全空白（沒有媒體）時仍顯示「—」。 */
+[data-mode="view"] .rich-body--has-media .rich-body__text.is-blank + [data-vm-readout] { display: none; }

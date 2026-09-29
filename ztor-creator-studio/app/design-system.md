@@ -1060,6 +1060,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Fan bundle page | 🟠 organism | ✓ Project | 粉絲視角組合包頁＝**前台 shop-item 頁兩個組合分支的 1:1 鏡像**（2026-09-23，D321，比照 D317 建立商品改兩步驟；組合側的 Fan event page／Fan product page，同一套前台鏡像做法）：建立組合「下一步：預覽」後全頁「預覽與發布」的預覽檢視，依成員組成分兩種——純商品套組（`kind:'goods'`，前台 `renderBundle`）與含活動票券組合（`kind:'eventset'`，前台 `renderEventSet`，多一段座位區域與活動資訊框）。markup 與 class 名照前台 `shop-detail-render.js` 兩個組合分支，CSS 是 `ds-components/fan-shop.css` 第 5 段「組合包頁元件」，延續第 1–4 段已建好的 `.fep-shop` 前台 token。資料全部來自建立組合表單；購買類互動一律不動作；含票券組合不畫主辦活動自己的活動介紹／注意事項／購票條款（那是建立活動時已預覽過的內容），同一位置改畫組合自己的說明；相關推薦／你可能也喜歡不畫（2026-09-23 使用者「都移除」，與 Fan event page／Fan product page 同輪裁決）。demo 見 §4.219（就地渲染，`kind:'goods'`／`kind:'eventset'` 各一份） | [fan-shop.css](./ds-components/fan-shop.css) |
 | Fan project page | 🟠 organism | ✓ Project | 粉絲視角專案頁＝**前台共創／預購頁與標題頁的 1:1 鏡像**（2026-09-23，D322，比照 D310／D317／D321 全頁化；專案側的 Fan event page／Fan product page／Fan bundle page，同一套前台鏡像做法）：建立專案最後一步「預覽與發布」的預覽檢視，依 `model.kind` 分三種——直接發行（`golive`，鏡像前台 `title.html`）、共創（`fund`）與預購（`preorder`，兩者共用前台 `cocreate-project.html`）。markup 與 class 名照前台原始碼，CSS 是 `ds-components/fan-shop.css` 第 6 段「專案頁元件」，延續第 1–5 段已建好的 `.fep-shop` 前台 token。資料全部來自建立專案表單；購買／支持類互動一律不動作；剛發布的專案一律畫成計畫進行中、0 人支持、0%；不畫相關推薦、留言討論、浮動支持條、製作進度時間軸。**2026-09-23（D323）作品上架流程 `publish-work.html` 重用本元件**（`model.kind:'golive'` 路徑），新增選填欄位 `work`／`credits`／`clips`，有值才畫「創作團隊」與「預告與花絮」兩段；create-project.html 不傳、畫面不變。demo 見 §4.220（就地渲染，直接發行與共創各一份） | [fan-shop.css](./ds-components/fan-shop.css) |
 | Info sections | 🟡 molecule | ✓ Project | 說明區塊編輯器（2026-09-29 D334 promote，5.1.6.1 §4.2 F2／5.1.6.2 F2）：可重複的「單行標題＋多行內文」塊，可新增、刪除、拖曳把手（或把手聚焦按上下鍵）排序；0 塊時清單收起、只剩新增鈕。每一塊＝`.card.card--muted.info-section`（L2 分組面，邊框填色交給 card--muted），版面在 `info-sections.css`、互動在 `partials/info-sections.js`（`window.ztorInfoSections.mount(host,{items,onChange})` → `get()`／`set()`）。消費頁：create-event（步驟 2 描述下方）、event-detail（活動內容，兩段式編輯）。詳見 §4.221 | [info-sections.css](./ds-components/info-sections.css) |
+| Rich body | 🟡 molecule | ✓ Project | 內文編輯器：文字＋圖片／影片（2026-09-29 D335 promote，5.1.6.1 §4.2 F2／5.1.6.2 F2）：活動描述與每一塊說明區塊的內文，文字塊（`.textarea`）與媒體塊（重用 `.upload-tile`）交錯，底下一列「插入圖片／插入影片」（`.btn--ghost.btn--sm`）；插入點＝游標（切開文字塊、媒體夾中間），刪除媒體後前後文字併回一段；預覽框照媒體本身比例（`--rb-ratio`）、不套 2:3；`.is-locked`＝bookyay 帶入的描述。demo 見 §4.222 | [rich-body.css](./ds-components/rich-body.css) |
 | Section tabs | 🟡 molecule | ✓ App | 長表單頂端的分節分頁（2026-09-21，使用者反饋「popup 要有 fix 在最上面的 tab 可以快速滾動到指定區塊」）：點了平滑捲到那一段、捲動時亮目前那一段（scrollspy）、←／→／Home／End 鍵盤可移。殼 `.section-tabs`（44px、align-items:stretch）承接 Q38 配方 `.tabs.tabs--underline-short.tabs--underline-label`，併進既有頂列當第二排（彈窗 `--dialog`＝`__head` 與 `__body` 之間；建立流程 `--wizard`＝`.wizard__top` 第二排），畫面只有一條固定列（Q115 精神）。行為 `js/section-tabs.js`（`ZtorSectionTabs.init/sync`）。消費：create-event 第 6 步組合包彈窗（`js/bundle-editor.js` `layout:'split'`）、create-bundle。demo 見 §4.214 | [section-tabs.css](./ds-components/section-tabs.css) |
 | State check | 🟡 molecule | ✓ Project | 唯讀的開／關狀態排（2026-09-11）：每個狀態一顆 16px 圓標記（字符 12）＋標籤，開＝`--status-success` 實色底＋畫布色勾（2026-09-11 兩輪後定案）＋前景色標籤、關＝`--border` 空心圓＋輔助色標籤。**不是輸入控件**——點的是所在整列。首用商品／組合詳情「上架與開賣」卡：上架／顯示於商店／開賣**各自一列**（2026-09-11 使用者：有的有定時上下架或開賣，要個別顯示），一顆勾＋一句現況與排程（使用者：「將上架／顯示／開賣拆出來，做成 checkbox 的形式，但設計不一定要用 checkbox」），值由三組開關與排程推導：上架、顯示於商店（上架且顯示）、開賣（上架且此刻在販售窗口內）。demo 見 §4.209 | [state-check.css](./ds-components/state-check.css) |
 | Stock tip | 🟢 atom | ✓ App | E-Shop 商品清單「狀態」／「庫存」欄 hover/focus 浮出的資訊卡：多選項商品攤到單一選項組合、組合商品攤到「成員 · 選項組合」；單一選項商品顯示目前庫存一行（原本還有低庫存門檻，2026-07-23 使用者裁示移除）。列徽章為「急需補貨」時，選項清單只留真的需要補貨的項目（此規則不影響單一選項那一行）。定位由 JS 算（`position: fixed`），viewport 上半部往下開、下半部往上開，避免被 sticky 頂欄擋到或超出視窗。詳見 §4.56 | [stock-tip.css](./ds-components/stock-tip.css) |
@@ -1602,7 +1603,7 @@ Static callout — no interactive states.
 | `[data-upload-reveal]`（容器層） | 逐格顯示（2026-08-09，`partials/upload-tile.js` 的 `initReveal`）：容器內一次只露出一個空格，填滿目前這格才顯示下一格；把中間某格清空，後面的空格縮回去、該格自己變成那個開放的槽。用於「張數有上限、格子預先寫在 HTML」的素材列（建立商品：主圖 1＋附圖 4），格子各自的 `data-cp-asset`／`data-upload-ai` 原樣保留。與 publish-work 劇照那種「張數不設限、末格填滿就 append 一格」互補：那邊是長格子，這邊是既有格子的顯隱 |
 | `.upload-tile-aside`（`__side`） | **2026-08-09 promote 自 `create-event.html` 頁內 `.ce-timg`**：直式上傳格＋右側一句說明並排，用於彈窗裡「現在用的是哪張圖」這類小面板——左邊固定寬（104px）的 `.upload-tile`，右邊 `.upload-tile-aside__side` 縱向堆疊說明文字與動作鈕 |
 | `.upload-tile-aside--stacked` | 直排變體（2026-08-09，同日第二輪）：`.upload-tile-aside` 改上下堆疊（格子在上、說明在下，格子寬度改滿版），供窄欄用——並排版假設橫向有空間，放進窄欄（如 [Payout §4.61](#payout) 彈窗 `.payout-dialog__split` 那條 200px 側欄）會把說明擠成一行三、四個字的長條 |
-| `data-upload-src` / `data-upload-key` | 編輯態預填屬性：`data-upload-src="<url>"` 讓格子初始直接進 `.is-filled` 並掛上該圖，跳過假上傳計時；`data-upload-key` 供 `upload:change` 事件的 `detail.key` 識別（沒有則退回既有的 `data-cp-asset`） |
+| `data-upload-src` / `data-upload-key` | 編輯態預填屬性：`data-upload-src="<url>"` 讓格子初始直接進 `.is-filled` 並掛上該圖，跳過假上傳計時（加掛 `data-upload-kind="video"` 時預填的是影片：停在首影格、可播放，2026-09-29 D335，首個消費者 Rich body §4.222）；`data-upload-key` 供 `upload:change` 事件的 `detail.key` 識別（沒有則退回既有的 `data-cp-asset`） |
 | `[data-upload]`（互動上傳格） | opt-in 開啟互動上傳（`partials/upload-tile.js` 增強）。狀態：`.is-empty`（hover 現 `__sub`/`__hint` 更多資訊；**2026-08-09 起用 `display` 收放而非 `opacity`**——原本靠透明度藏、說明文字仍佔著位置，靜止態的圖示與標題被那塊空白往上推，看起來沒置中。改成不佔位之後靜止態與 hover 態各自依自己的內容高度置中，代價是 hover 時有一次版面變動，使用者裁示接受）→ `.is-uploading`（`__thumb`＋frosted `__overlay`＋`__progress`/`__bar`，假走 ~2.5s）→ `.is-filled`（`__thumb` 鋪滿；hover `__actions`：替換/刪除，站上標準 2 鈕）→ `.is-optimizing`/`.is-optimized`（`__badge`「已依規格優化」，只在掛 `data-upload-ai` 時才多出這顆鈕；**2026-08-09 起優化可反悔**——優化完成後第三顆鈕換成「還原成優化前」〔`__act--undo`，`rotate-ccw`〕，按下回到 `.is-filled`。兩顆互斥、同一個位置換一顆，因為優化與還原是同一個決定的正反面。原型的優化本來就沒真的改動圖檔，所以還原只是切狀態；真實實作要保留優化前的原檔）。就緒仍走 `upload:change` 事件（`detail: {key, filled}`，bubbles）。**AI 優化＝假動作＋產品變更提案（ASSUMPTIONS UIA-037，上游無此功能）**。**鍵盤可及性（2026-07-31）**：空狀態掛 `role="button"`＋`tabindex="0"`（填圖後拿掉，改由動作列兩顆真 `<button>` 進 tab 序）；Enter／Space 觸發同點擊（Space 不捲頁）；焦點環＝站上標準 `outline: 2px solid var(--ring)`；上傳／優化／刪除完成後把焦點交還（僅鍵盤觸發的互動才生效）。**沒有 `__title` 時的標籤退路依模式分兩種**（2026-08-07）：圖片格 `cp.media.add`（新增圖片）、內容檔格 `cp.cfile.add`（新增檔案）——影音／字幕格套「新增圖片」會誤導螢幕閱讀器使用者。要更精確的說法（「上傳預告片」）由消費頁自己寫 `aria-label` ＋ `data-i18n-aria-label`，元件會讓路 |
 | `.upload-tile__thumb` / `__overlay` / `__spinner` / `__progress` / `__bar` / `__actions` / `__act`(`--ai` / `--undo`) / `__badge` | 互動上傳格的注入子元素（縮圖／進行中罩／spinner／進度條／hover 動作／AI 優化與還原／AI 優化徽章）；全 token 驅動，罩用 `color-mix(--foreground/--card)` 主題自適應。`__actions` 必須帶 `border-radius: inherit`（2026-08-09 修）——它的 `backdrop-filter` 會自己開一個裁切脈絡，父層的 `overflow: hidden` ＋圓角管不到它，hover 一浮出來整格就變直角 |
 | `[data-upload="content"]`（內容檔模式） | 內容檔（音樂/影片/檔案，§4.2 F11）：上傳後可**播放**（音訊/影片，真實 `<audio>`/`<video>`）與刪除，操作比照顯示圖、**無 AI**。影片顯示影格（`.upload-tile__video`）、音訊/檔案顯示檔型圖示＋檔名（`.upload-tile__filemark`/`__filename`）；動作＝`__act--play`（播放/暫停切換）＋替換＋刪除；`accept` 由頁面以 `data-upload-accept` 指定（音樂→`audio/*`、影視→`video/*`）。`.upload-tile--playable` 才顯示播放鈕。呈現層 demo（不真上傳） |
@@ -6836,6 +6837,8 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **2026-09-29（D334）model 變更** — `notes`／`bring` 兩份清單隨建立活動的「進階詳細資料」整組刪除，本檔不再讀、「注意事項」一節（`ul.pdp-notices`、`fep.sec.notes`）不再畫；`.pdp-notices` 的 CSS 是前台鏡像，留在 `fan-shop.css` 不動。取代它的說明區塊（§4.221）在粉絲頁怎麼呈現，使用者同日裁決「之後再定」，本檔暫不畫、model 也不帶（ASSUMPTIONS UIA-186）；說明區塊只進發布前預覽確認的翻譯表。
 
+**2026-09-29（D335）model 新增 `descMedia`** — `[{ type:'image'|'video', src }]`：描述夾帶的圖片與影片（不翻譯、各語系共用）。前台沒有對應區塊，最小做法是照先後畫在描述 lead 下方，一個媒體一個 `figure.pdp-details__media`（`fan-shop.css`：寬度同 lead 那一欄、圖片整張不裁、影片帶原生控制列；ASSUMPTIONS UIA-187）。沒給＝不畫。宿主：create-event（`descEd.media()`）、event-localization（`ev.descBlocks` 濾出媒體）。
+
 **Consumers**（2026-09-22 D310 起兩個宿主都是全頁版 §4.216 Publish stage，不再是浮層）— `create-event.html` 第 8 步（`previewRender` 呼叫 `buildFanModel()`）；`event-localization.html`（`previewRender` 呼叫 `locModel()`）；`design-system.html` §4.215 就地渲染 demo（替身 api）、§4.216 全頁 demo 與 §4.130 彈窗 demo。墓碑：`ds-components/fan-event-page.css`（`.fep` 重刻版，2026-09-22 同日退場，同日建同日廢——使用者裁決鏡像前台後沒有任何消費者）。
 
 **CSS** — [`fan-shop.css`](./ds-components/fan-shop.css) ｜ **JS** — `js/fan-event-page.js`
@@ -6974,19 +6977,49 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 - `.info-sections__list` — 塊清單；`:empty` 時 `display:none`，0 塊時新增鈕直接接在欄位標籤下
 - `.info-section.card.card--muted[data-info-row]` × N — `--card-pad: --sp-12`，flex 橫排：
   - `.info-section__grip`（`.btn.btn--icon.btn--sm` ＋ `grip-vertical`）— 排序把手；是 button，所以兩段式面板檢視態會隨 `[data-mode="view"] button` 一起收起
-  - `.info-section__fields` — `.input`（標題）＋ `.textarea`（內文，rows 3），column、`gap: --sp-8`
+  - `.info-section__fields` — `.input`（標題）＋ `.info-section__body`（內文＝Rich body §4.222：文字塊＋圖片／影片，D335；原本是一格 `.textarea` rows 3），column、`gap: --sp-8`
   - `.btn.btn--icon.btn--sm`（`x`）— 刪除這一塊
 - `.info-sections__add` — `.btn.btn--outline.btn--add`，`align-self:flex-start` 靠左不拉滿
 - 狀態：`.info-section.is-dragging`（拖曳中，`opacity:.5`）
 
 **與 Entry list／Spec row 的分工** — `.entry-list` 是單欄同質短文字、`.spec-row` 是並列的「名稱＋值」短資料；本元件的每一筆是一段可讀的說明（單行標題＋多行內文），而且**塊與塊的順序有意義**（粉絲照這個順序讀），所以多一個排序把手。判斷句：這一筆需要多行內文、而且順序要由使用者決定嗎？是 → 本元件。
 
-**Behavior** — `partials/info-sections.js`：`window.ztorInfoSections.mount(host, { items:[{title,body}], onChange })` 回傳 `{ el, get(), set(items) }`。`get()` 照畫面順序回傳、完全空白的塊不回傳；`set()` 整批換掉（草稿續填、再辦一場、編輯模式捨棄時用）。新增後焦點進新塊的標題；刪除後焦點交給上一塊（沒有就下一塊）的標題，都沒有就交給新增鈕。拖曳：只有按住把手時那一塊才 `draggable`（避免在輸入框裡選字時誤拖），dragover 依游標在目標塊上半／下半決定插在前或後。鍵盤：把手聚焦時上／下鍵移動一格、焦點留在把手。每次變動呼叫 `onChange` 並在 host 發冒泡的 `infosections:change`。排序手勢沿用站上既有的把手拖曳（票種卡 `.tier-card__grip`、專輯曲目 `.album-track__grip`），不另立第三種排序做法。
+**Behavior** — `partials/info-sections.js`：`window.ztorInfoSections.mount(host, { items:[{title,body,blocks?}], onChange })` 回傳 `{ el, get(), set(items) }`。`get()` 照畫面順序回傳、標題文字媒體都沒有的塊不回傳；`body`＝內文的文字（翻譯表只列它），夾帶圖片或影片時多一個 `blocks`（文字與媒體照先後，2026-09-29 D335）；`set()` 整批換掉（草稿續填、再辦一場、編輯模式捨棄時用）。新增後焦點進新塊的標題；刪除後焦點交給上一塊（沒有就下一塊）的標題，都沒有就交給新增鈕。拖曳：只有按住把手時那一塊才 `draggable`（避免在輸入框裡選字時誤拖），dragover 依游標在目標塊上半／下半決定插在前或後。鍵盤：把手聚焦時上／下鍵移動一格、焦點留在把手。每次變動呼叫 `onChange` 並在 host 發冒泡的 `infosections:change`。排序手勢沿用站上既有的把手拖曳（票種卡 `.tier-card__grip`、專輯曲目 `.album-track__grip`），不另立第三種排序做法。
 
 **翻譯** — 每一塊的標題與內文各是一個可翻譯欄位（5.1.6.1 §1），宿主從 `get()` 組出翻譯表欄位：key `info-<i>-t`／`info-<i>-b`，群組「說明區塊」（`pp.field.info`），列名「第 n 塊・標題／內文」（`pp.field.info.title`／`.body`）；只填一半的塊只列有填的那一格。粉絲活動頁（§4.215）暫不畫說明區塊（ASSUMPTIONS UIA-186）。
 
 **Token usage** — `--sp-8`／`--sp-12`（間距）；邊框、填色、圓角全部來自 `.card--muted`（`--layer-2-surface`／`--layer-2-line`／`--radius-lg`），本檔不另寫。
 
+**提示句** — 欄位下原本有一行 hint「粉絲依這個順序閱讀。拖曳把手可調整順序。」（`ce.info.hint`），2026-09-29 拿掉：粉絲頁目前不畫說明區塊（D334 補充），那句等於預先承諾；排序靠把手本身看得出來（鐵律 12）。
+
 **Consumers** — `create-event.html`（步驟 2 描述下方 `#ce-info`，`data-feat="S57"`）；`event-detail.html`（活動內容 `#ed-info`，兩段式編輯：檢視態由 `js/view-mode.js` 把標題與內文畫成純文字讀數）；`design-system.html` §4.221 demo。
 
 **CSS** — [`info-sections.css`](./ds-components/info-sections.css) ｜ **JS** — `partials/info-sections.js`
+
+---
+
+### 4.222 Rich body（內文編輯器：文字＋圖片／影片）
+
+**Purpose** — 活動「描述」與每一塊「說明區塊」的內文（D335，2026-09-29；5.1.6.1 §4.2 F2、5.1.6.2 F2）：除了文字之外可以夾帶圖片與影片，插在文字之間的哪個位置由運營決定、也可以刪除。文字維持純文字（粗體、清單、連結本輪不做，D335）。媒體的格式、大小、數量上游多數未定（主規格 §7.10「內文媒體」），元件不擋數字，只依按鈕分流檔型（插入圖片只收圖片、插入影片只收影片）。bookyay 帶入時活動詳情每一段的圖片影片照位置進來（描述那一段鎖定＝`.is-locked`）。
+
+**`_layer`** · molecule ｜ **source tier** · Project ｜ **surface 層** · 坐在 `.field` 裡：`.form-section--outlined`（L1）或 `.card--muted`（L2，說明區塊的每一塊）上；`.textarea` 與 `.upload-tile` 各自有邊框，兩層都成立（亮色與暗色都已目視驗證）。
+
+**Anatomy**
+- `.rich-body` — 容器（flex column，節奏由 `gap: --sp-8` 持有，Q103）
+- `.rich-body__blocks` — 文字塊與媒體塊交錯（flex column、`gap: --sp-8`）；版面固定「文字塊開頭、每個媒體後面跟一個文字塊（可空）」，任何媒體前後都有地方寫字
+  - `.textarea.rich-body__text[data-rb-text]` — 文字塊（第一塊 rows 依宿主，其餘 2）；`.is-blank`＝空白
+  - `.upload-tile.rich-body__media[data-rb-media]` — 媒體塊＝**重用上傳格**（`partials/upload-tile.js` 增強：已填實線中性邊、hover 替換／刪除、影片多一顆播放，Q40 單一產生路徑）；寬 `min(280px, 100%)`、`aspect-ratio: var(--rb-ratio, 16 / 9)`（JS 讀到圖片或影片尺寸後填入，照媒體本身比例、不套展示素材槽的 `--portrait` 2:3）；圖片 `object-fit: contain` 整張看得到
+- `.rich-body__tools` — 「插入圖片」（`image`）／「插入影片」（`film`），`.btn.btn--ghost.btn--sm`，靠左
+- 狀態：`.rich-body--has-media`（至少一個媒體）、`.is-locked`（插入鈕收起、媒體格不出現替換刪除、文字 disabled）
+
+**Behavior** — `partials/rich-body.js`：`window.ztorRichBody.mount(host, { blocks|text, rows, placeholder, placeholderKey, label, labelKey, proxy, onChange })` 回傳 `{ el, get(), text(), media(), set(v), lock(on), insert(type, file) }`。資料 `blocks`＝`[{ type:'text', text }, { type:'image'|'video', src }, …]`，`get()` 併相鄰文字、略過空白；`text()` 只有文字（段與段空一行，翻譯表只列它，媒體不翻譯）；`set()` 接 blocks 或字串。插入：切開最後聚焦的文字塊（游標處），媒體夾中間、後段成新文字塊；沒聚焦過就接在最後。刪除媒體＝用上傳格自己的刪除鈕（上傳格清空）→ 整格拿掉、前後文字併回一段、焦點回前一個文字塊。`proxy`（選填）：宿主既有的表單元素，元件把 `text()` 同步寫進 `proxy.value` 並補發 `input`、焦點離開整個編輯器時補發 `blur`、`proxy.focus()` 改成聚焦第一個文字塊——宿主的必填檢查、翻譯表、自動儲存照舊讀 proxy（create-event 的 `[data-ce="desc"]`、event-detail 的 `[data-ed="desc"]`）。變動時呼叫 `onChange` 並發冒泡的 `richbody:change`。靜態工具 `toBlocks`／`textOf`／`mediaOf`／`hasMedia`／`normalize`。
+
+**兩段式面板（檢視態）** — `js/view-mode.js` 在每個文字塊後放一顆讀數；有媒體時空白文字塊的「—」讀數收起（`[data-mode="view"] .rich-body--has-media .rich-body__text.is-blank + [data-vm-readout]`），媒體格照常顯示、替換刪除隨 `[data-mode="view"] .upload-tile__actions` 收起、插入鈕隨 button 收起。
+
+**與 Upload tile 的分工** — Upload tile 是「一個固定用途的上傳槽」（展示素材、內容檔）；本元件是「一段內文」，媒體只是內文的一部分，所以上傳格在這裡只當媒體塊的外殼，不帶槽位比例、不佔展示素材額度（主規格 §7.10「內文媒體」）。
+
+**Token usage** — `--sp-8`（間距）；邊框、填色、圓角來自 `.textarea` 與 `.upload-tile`，本檔不另寫。
+
+**Consumers** — `create-event.html`（步驟 2 描述 `#ce-desc`，proxy `[data-ce="desc"]`）；`partials/info-sections.js`（每一塊的內文 `.info-section__body`，所以 create-event `#ce-info` 與 event-detail `#ed-info` 都吃它）；`event-detail.html`（活動內容描述 `#ed-desc`，proxy `[data-ed="desc"]`）；`design-system.html` §4.222 demo。
+
+**CSS** — [`rich-body.css`](./ds-components/rich-body.css) ｜ **JS** — `partials/rich-body.js`

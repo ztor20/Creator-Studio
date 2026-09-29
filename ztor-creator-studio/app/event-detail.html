@@ -30,6 +30,8 @@
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-sections.css?v=r2.2"><!-- D334：活動內容的說明區塊 -->
+<link rel="stylesheet" href="ds-components/field-source-tag.css?v=r2.2"><!-- D335／F21：bookyay 帶入者的描述掛「bookyay 帶入」來源標記 -->
+<link rel="stylesheet" href="ds-components/rich-body.css?v=r2.2"><!-- D335：描述與說明區塊的內文可夾帶圖片與影片 -->
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
 <!-- 2026-08-11：開放入場與建立流程同步（分鐘欄＋早到政策＋從屬縮排）跟著進來 -->
@@ -864,14 +866,18 @@
             <p class="field__hint" data-ed-count="highlight">0 / 30</p>
           </div>
           <div class="field">
-            <label class="field__label" for="ed-desc" data-i18n="ce.desc">Description</label>
-            <textarea class="textarea" id="ed-desc" data-ed="desc" rows="3"></textarea>
+            <!-- 描述（D335）：內文可夾帶圖片與影片，同建立活動那一支 partials/rich-body.js；
+                 data-ed="desc" 改成隱藏的 proxy（只有文字），變更快照與既有讀值照舊讀它。
+                 檢視態：view-mode.js 把每個文字塊畫成讀數，媒體格照常顯示、替換刪除鈕收起。 -->
+            <div class="field__label" id="ed-desc-label" data-i18n="ce.desc">Description</div>
+            <div class="rich-body" id="ed-desc" role="group" aria-labelledby="ed-desc-label" data-rich-body></div>
+            <input type="hidden" data-ed="desc">
           </div>
           <!-- 說明區塊（D334；5.1.6.2 F2，定義同 5.1.6.1 F2）：預填目前的區塊清單，編輯態可新增、刪除、拖曳排序與修改；
                檢視態由 view-mode.js 把標題與內文畫成純文字，把手與刪除鈕隨 button 收起。不列高影響變更。 -->
           <div class="field" data-feat="S57">
             <div class="field__label" id="ed-info-label" data-i18n="ce.info">Info sections</div>
-            <p class="field__hint" data-i18n="ce.info.hint">Fans read them in this order. Drag the handle to reorder.</p>
+            <!-- 提示句 ce.info.hint 2026-09-29 拿掉（粉絲頁目前不畫說明區塊，D334 補充；同建立活動） -->
             <div class="info-sections" id="ed-info" role="group" aria-labelledby="ed-info-label" data-info-sections></div>
           </div>
 
@@ -1831,6 +1837,7 @@
 <script src="js/chart.js?v=r2.2"></script>
 <script src="partials/upload-tile.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
+<script src="partials/rich-body.js?v=r2.2"></script><!-- D335：內文編輯器（文字＋圖片／影片） -->
 <script src="partials/info-sections.js?v=r2.2"></script><!-- D334：說明區塊編輯器（與建立活動同一支） -->
 <!-- 2026-09-29（D327）：partials/stepper.js 與 ds-components/stepper.css 的載入拆掉——只為發布設定那三個數字欄（已刪）而載，步進器元件本身保留。 -->
 <script src="js/view-mode.js?v=r2.2"></script><!-- 兩段式面板檢視態讀數（Q119）：欄位在檢視態畫成純文字、按「編輯」才變輸入框 -->
@@ -2864,11 +2871,36 @@
 
   /* 說明區塊編輯器（D334）：互動在 partials/info-sections.js；值由 fillEditForm 帶入、commitEdit 寫回。 */
   const edInfoHost = document.getElementById('ed-info');
-  const edInfo = (edInfoHost && window.ztorInfoSections) ? window.ztorInfoSections.mount(edInfoHost, { items: [] }) : null;
+  const edInfo = (edInfoHost && window.ztorInfoSections) ? window.ztorInfoSections.mount(edInfoHost, { items: [], mediaFeat: 'S58' }) : null;
+  /* 描述編輯器（D335）：文字＋圖片／影片；proxy＝隱藏的 [data-ed="desc"]（只有文字）。 */
+  const edDescHost = document.getElementById('ed-desc');
+  const edDesc = (edDescHost && window.ztorRichBody)
+    ? window.ztorRichBody.mount(edDescHost, { rows: 3, label: 'Description', labelKey: 'ce.desc', proxy: document.querySelector('[data-ed="desc"]'), feat: 'S58' })
+    : null;
+
+  function lockDescFromBky(on) {
+    if (!edDesc) return;
+    edDesc.lock(on);
+    const label = document.getElementById('ed-desc-label');
+    if (!label) return;
+    label.parentElement.classList.toggle('is-source-locked', on);
+    const chip = label.querySelector('.field-source');
+    if (on && !chip) {
+      label.insertAdjacentHTML('beforeend', '<span class="field-source"><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="ed.src.bky">' + T('ed.src.bky', 'From bookyay') + '</span></span>');
+      if (window.ztorIcons) window.ztorIcons.applyIcons(label);
+    } else if (!on && chip) chip.remove();
+  }
 
   function fillEditForm(ev) {
     const set = (k, v) => { const el = document.querySelector('[data-ed="' + k + '"]'); if (el) el.value = v == null ? '' : v; };
     set('name', ev.name); set('highlight', ev.highlight); set('desc', ev.desc); set('venue', ev.venue); set('address', ev.address);
+    /* 描述（D335）：有 descBlocks（夾帶圖片或影片）就整份帶入，沒有就帶純文字 */
+    if (edDesc) {
+      edDesc.set(ev.descBlocks || ev.desc || '');
+      /* bookyay 帶入者的描述鎖定（5.1.6.2 F2 → 5.1.6.1 F21）：文字唯讀、插入鈕與媒體替換／刪除收起，標籤旁掛來源標記。
+         說明區塊（edInfo）不鎖（D334）。要改回 bookyay 改。 */
+      lockDescFromBky(isBky());
+    }
     renderHighlightCount();
     /* 說明區塊（D334）：預填這一場目前的區塊清單（捨棄編輯時也走這裡還原） */
     if (edInfo) edInfo.set(ev.infoSections || []);
@@ -3238,7 +3270,8 @@
     const f = k => { const el = document.querySelector('[data-ed="' + k + '"]'); return el ? String(el.value || '').trim() : ''; };
     const arr = sel => JSON.stringify([].slice.call(document.querySelectorAll(sel)).map(el => el.value != null ? String(el.value).trim() : (el.getAttribute('src') || '')));
     return {
-      name: f('name'), highlight: f('highlight'), desc: f('desc'), venue: f('venue'), address: f('address'),
+      name: f('name'), highlight: f('highlight'), venue: f('venue'), address: f('address'),
+      desc: edDesc ? JSON.stringify(edDesc.get()) : f('desc'),   // D335：圖片影片的增刪也算描述有變
       info: JSON.stringify(edInfo ? edInfo.get() : []),
       sessions: JSON.stringify(edSessions || []),
       tiers: JSON.stringify(edTiers || []),
@@ -3282,7 +3315,7 @@
   document.addEventListener('input', () => { if (edBaseline) syncDirty(); });
   document.addEventListener('change', () => { if (edBaseline) syncDirty(); });
   (function watchEditContainers() {
-    const ids = ['ed-tier-list', 'ed-sess-list', 'ed-lineup', 'ed-gallery', 'ed-info'];
+    const ids = ['ed-tier-list', 'ed-sess-list', 'ed-lineup', 'ed-gallery', 'ed-info', 'ed-desc'];
     const mo = new MutationObserver(() => { if (edBaseline) syncDirty(); });
     ids.forEach(id => { const el = document.getElementById(id); if (el) mo.observe(el, { childList: true, subtree: true }); });
   })();
@@ -3316,6 +3349,11 @@
     if (hlEl) { ev.highlight = hlEl.value.trim(); renderHighlight(); }
     /* 說明區塊（D334）：同亮點，原型層級寫回這一場的紀錄；完全空白的塊不留（get() 已濾掉）。 */
     if (edInfo) ev.infoSections = edInfo.get();
+    /* 描述（D335）：原型層級寫回這一場的紀錄——文字進 desc，夾帶圖片或影片時整份進 descBlocks。 */
+    if (edDesc) {
+      ev.desc = edDesc.text();
+      if (edDesc.media().length) ev.descBlocks = edDesc.get(); else delete ev.descBlocks;
+    }
     alert(T('event-detail.edit.saved', 'Saved.'));
     setMode('view');
   }

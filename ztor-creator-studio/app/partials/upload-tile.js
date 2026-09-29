@@ -13,7 +13,7 @@
 // 每次狀態變動 dispatch 'upload:change'（bubbles，detail:{key,filled}）供頁面更新就緒。
 //
 // 起始已有圖的三種來源（編輯態常態）：
-//  1) data-upload-src="<url>"        — 屬性帶入
+//  1) data-upload-src="<url>"        — 屬性帶入（加掛 data-upload-kind="video" 時預填的是影片，2026-09-29）
 //  2) 格內已有 <img class="upload-tile__thumb" src="…">  — 沿用該節點，不再另建一張（否則兩張縮圖疊著）
 //  3) 頁面 JS 稍後才填 src（如 product-detail 依 ?id 帶圖）— HTML 先給 .is-filled，本檔沿用該狀態
 // detail.key 取用順序：data-upload-key → data-cp-asset（create-product 既有命名）。
@@ -255,7 +255,13 @@
        edit-auction 出現時需要的是同一件事）。故加一個屬性：有值就直接進 is-filled 並掛上縮圖，
        不跑假上傳計時。沒有這個屬性的 tile 行為與先前完全相同，既有五個消費頁不受影響。 */
     var preset = tile.getAttribute('data-upload-src') || (!ownThumb && thumb.getAttribute('src')) || '';
-    if (preset) { thumb.src = preset; setState('is-filled'); }
+    /* 預填影片（2026-09-29 D335，rich-body 的內文影片是第一個消費者）：data-upload-kind="video" 時
+       預填的是一支影片——停在第一影格當縮圖、可播放，跟剛選的影片檔同一套節點與狀態（見 startUpload）。
+       沒掛這個屬性的格子行為不變。只給展示格（非內容檔格）。 */
+    if (preset && !content && tile.getAttribute('data-upload-kind') === 'video') {
+      video.src = preset; video.classList.add('is-shown'); media = video;
+      tile.classList.add('upload-tile--playable', 'is-video'); setState('is-filled');
+    } else if (preset) { thumb.src = preset; setState('is-filled'); }
     syncA11y();   // preset 沒命中時 setState 不會被呼叫，起始狀態也要同步一次
     /* 頁面 JS 也會直接改狀態 class（product-detail 依 ?id 把圖填進格子、bundle-detail 重繪相簿），
        那條路徑不經過 setState，會留下「已填圖卻仍可 Tab 進去、按 Enter 又什麼都不做」的殘留焦點站。

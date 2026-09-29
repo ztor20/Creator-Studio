@@ -26,6 +26,7 @@
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-more.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-sections.css?v=r2.2"><!-- D334：描述下方的說明區塊 -->
+<link rel="stylesheet" href="ds-components/rich-body.css?v=r2.2"><!-- D335：描述與說明區塊的內文可夾帶圖片與影片 -->
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/check-card.css?v=r2.2"><!-- D328：活動語言複選（.check-cards--sm） -->
 <link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
@@ -401,17 +402,23 @@
           <p class="field__hint" data-ce-count="highlight">0 / 30</p>
         </div>
         <div class="field">
-          <label class="field__label"><span data-i18n="ce.desc">Description</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
-          <textarea class="textarea" data-ce="desc" data-bky="desc" data-required placeholder="What will fans experience? Make it vivid." data-i18n-placeholder="ce.desc.ph"></textarea>
+          <!-- 描述（D335，2026-09-29）：內文可夾帶圖片與影片——畫面是 partials/rich-body.js（文字塊＋媒體塊，插入點＝游標）。
+               data-ce="desc" 改成隱藏的 proxy：rich-body 把「只有文字」的內容同步寫進它並補發 input，
+               所以必填檢查、翻譯表（只列文字、媒體不翻譯）、自動儲存與 bookyay 鎖定照舊讀它。 -->
+          <div class="field__label" id="ce-desc-label"><span data-i18n="ce.desc">Description</span> <span class="field__req" data-i18n="ce.req.mark">*</span></div>
+          <div class="rich-body" id="ce-desc" role="group" aria-labelledby="ce-desc-label" data-rich-body></div>
+          <input type="hidden" data-ce="desc" data-bky="desc" data-required>
           <p class="ce-field-error" data-i18n="ce.err.desc">Description is required.</p>
         </div>
         <!-- 說明區塊（D334，2026-09-29；5.1.6.1 §4.2 F2）：描述下方、可重複的「標題＋內文」，選填、0 塊也可以。
              標題與內文都由運營自由填寫，不提供預設標題、不預先帶出空白區塊；不限字數與塊數，只填一半的塊不擋存
              （2026-09-29 使用者追加裁決）。可新增、刪除、拖曳把手排序。互動在 partials/info-sections.js，
-             版面在 ds-components/info-sections.css。不掛 data-bky：bookyay 沒有對應欄位、不帶入、不鎖。 -->
+             版面在 ds-components/info-sections.css。不掛 data-bky：bookyay 帶入時由 bkyApply() 把活動詳情第 2 段起
+             寫成說明區塊（標題留空、內文帶入、不鎖，D334 補充）；描述（data-bky="desc"）取第 1 段並鎖定。 -->
         <div class="field" data-feat="S57">
           <div class="field__label" id="ce-info-label" data-i18n="ce.info">Info sections</div>
-          <p class="field__hint" data-i18n="ce.info.hint">Fans read them in this order. Drag the handle to reorder.</p>
+          <!-- 提示句（ce.info.hint「粉絲依這個順序閱讀…」）2026-09-29 拿掉：粉絲頁目前不畫說明區塊（D334 補充），
+               那句等於預先承諾；排序靠把手本身就看得出來，不另寫操作說明（鐵律 12）。 -->
           <div class="info-sections" id="ce-info" role="group" aria-labelledby="ce-info-label" data-info-sections></div>
         </div>
         <!-- 活動國家與語言（2026-08-05 使用者指示）。國家在這裡問一次，場地那一步的
@@ -1296,6 +1303,7 @@
 <script src="js/platform-fees.js?v=r2.2"></script><!-- D311：平台費率三層解析（本票例外 → creator 覆寫 → General） -->
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/field-more.js?v=r2.2"></script>
+<script src="partials/rich-body.js?v=r2.2"></script>
 <script src="partials/info-sections.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <!-- D310（2026-09-22）：發布前預覽確認由浮層改為全頁畫面，本頁的宿主改走 js/publish-stage.js；
@@ -2069,6 +2077,8 @@
       language: langText(),
       priority, limit,
       desc: { key: "desc" },
+      /* D335：描述夾帶的圖片與影片——不翻譯、各語系共用，粉絲頁畫在描述文字下方（最小呈現，UIA-187） */
+      descMedia: descEd ? descEd.media() : [],
       lineup: lineup.map(p => ({ name: p.name, role: null })),
       /* 墓碑 2026-09-29（D334）：notes／bring 兩份清單已刪；說明區塊的粉絲頁呈現暫不做（UIA-186）。 */
       pickup: T(pickupKey, st.ship),
@@ -2117,7 +2127,19 @@
      起始 0 塊（不預先帶出空白區塊、不給預設標題）；不擋存、不擋發布（不限字數與塊數、只填一半也可以）。 */
   const infoHost = document.getElementById("ce-info");
   const infoEd = (infoHost && window.ztorInfoSections)
-    ? window.ztorInfoSections.mount(infoHost, { items: [], onChange: () => scheduleSave() })
+    ? window.ztorInfoSections.mount(infoHost, { items: [], mediaFeat: "S58", onChange: () => scheduleSave() })
+    : null;
+
+  /* 描述（D335，5.1.6.1 §4.2 F2）：內文可夾帶圖片與影片，互動在 partials/rich-body.js。
+     proxy＝隱藏的 [data-ce="desc"]：只有文字的內容同步寫進它（必填、翻譯表、自動儲存照舊讀它）；
+     圖片與影片從 descEd.media()／descEd.get() 取。 */
+  const descHost = document.getElementById("ce-desc");
+  const descProxy = document.querySelector('[data-ce="desc"]');
+  const descEd = (descHost && window.ztorRichBody)
+    ? window.ztorRichBody.mount(descHost, {
+        rows: 4, placeholder: "What will fans experience? Make it vivid.", placeholderKey: "ce.desc.ph",
+        label: "Description", labelKey: "ce.desc", proxy: descProxy, feat: "S58", onChange: () => scheduleSave()
+      })
     : null;
 
   /* 條款與細則的兩個開關：開著才讓創作者填實際的條款／行銷文字，關掉就整組收起
@@ -5461,7 +5483,10 @@
      2026-09-29（D328，5.1.6.1 F21「bookyay 欄位怎麼帶入」）改成 bookyay 的資料形狀：
        · 門票種類掛在活動層 `ticketTypes`（名稱、現價、每張門票人數 `persons`、活動門票簡介 `desc`、早鳥 `early`）；
        · 時段 `slots` 各自有起訖日期時間、人數上限 `cap` 與這個時段賣的門票種類 `types`（照 bookyay 的排序）；
-       · 語言是多值 `langs`；活動地點 `location`＝場地名稱、地區 `region`＝行政區名稱（D329：分別帶進場地名稱與完整地址）。
+       · 語言是多值 `langs`；活動地點 `location`＝場地名稱、地區 `region`＝行政區名稱（D329：分別帶進場地名稱與完整地址）；
+       · 活動詳情是多段的 `intros`（2026-09-29 D334 補充；bookyay API 的 intros 陣列，每段一個富文本、沒有標題）：
+         第 1 段→描述（鎖定），第 2 段起每段→一個說明區塊（標題留空、內文帶入、不鎖），轉換見 bkyIntros()。
+         bky-1 三段（含粗體與清單標記）、bky-2 兩段（第 2 段文字後夾一張圖，D335 起圖片照位置帶入該說明區塊）、其餘一段（不產生說明區塊）。
      五筆刻意各示範一條規則（驗收用）：
        bky-1 同一個時段三種票 → 只帶第一種（VIP）＋略過提示；VIP 有早鳥（1 人票：折扣覆寫、鎖定）與門票簡介。
        bky-2 二人套票（persons 2、現價是兩人合計）三個時段 → 每場一張隱藏的 1 人票＋一組組合包；
@@ -5478,7 +5503,11 @@
       label: "REALIVE World Tour — Taipei",
       note:  "2026/09/12 · 台北小巨蛋",
       name: "REALIVE World Tour — Taipei",
-      desc: "睽違三年的世界巡迴，台北站唯一一場。全新編制樂團、專輯完整曲序演出，安可加碼未發表新歌。",
+      intros: [
+        "<p>睽違三年的世界巡迴，台北站唯一一場。全新編制樂團、專輯完整曲序演出，安可加碼未發表新歌。</p>",
+        "<p><strong>VIP 彩排參觀</strong></p><p>VIP 持票者演出當天 16:00 於 2 號門集合，由工作人員帶領進場參觀彩排約 30 分鐘。<br>請攜帶身分證件，逾時不候。</p>",
+        "<p>輪椅席購票方式：</p><ul><li>先購買搖滾區或看台門票</li><li>開演前 7 天來信客服登記，每位輪椅使用者可有 1 位陪同者</li></ul>"
+      ],
       country: "TW", langs: ["cmn", "en"],
       images: ["images/projects/nick-realive.jpg"],
       location: "台北小巨蛋", region: "松山區",
@@ -5498,7 +5527,10 @@
       label: "MIRROR FANMEETING 2026",
       note:  "2026/10/02–10/04 · 高雄流行音樂中心（三場）",
       name: "MIRROR FANMEETING 2026 高雄",
-      desc: "三天三場的粉絲見面會，每一場都有各自的主題單元與抽選互動；購票即參加抽選，中選者上台合影。",
+      intros: [
+        "<p>三天三場的粉絲見面會，每一場都有各自的主題單元與抽選互動；購票即參加抽選，中選者上台合影。</p>",
+        "<p>抽選結果於每場開演前 1 小時公布在官方帳號，中選者請於開演前 30 分鐘到海音館 1 樓大廳報到。</p><p><img src=\"images/ip/a-lin.webp\" alt=\"\"></p>"
+      ],
       country: "TW", langs: ["yue", "cmn"],
       images: ["images/ip/a-lin.webp"],
       location: "高雄流行音樂中心", region: "鹽埕區",
@@ -5521,7 +5553,7 @@
       label: "城市草地音樂節 2026",
       note:  "2026/11/08–11/09 · 大佳河濱公園（跨夜）",
       name: "城市草地音樂節 2026",
-      desc: "從午後唱到深夜的戶外音樂節，兩座舞台輪番演出，草地自由入座，現場有市集與餐飲攤位。",
+      intros: ["<p>從午後唱到深夜的戶外音樂節，兩座舞台輪番演出，草地自由入座，現場有市集與餐飲攤位。</p>"],
       country: "TW", langs: ["cmn", "en", "ja"],
       images: ["images/hero-event.jpg"],
       location: "大佳河濱公園", region: "中山區",
@@ -5538,7 +5570,7 @@
       label: "限量黑膠簽名場 — 台中",
       note:  "2026/12/06 · 台中 Legacy（實體票寄送）",
       name: "限量黑膠簽名場 — 台中",
-      desc: "新專輯黑膠首賣場，購票附一張實體收藏票券，當天憑票入場並可參加簽名。",
+      intros: ["<p>新專輯黑膠首賣場，購票附一張實體收藏票券，當天憑票入場並可參加簽名。</p>"],
       country: "TW", langs: ["cmn"],
       images: ["images/hero-event.jpg"],
       location: "台中 Legacy", region: "西區",
@@ -5551,7 +5583,7 @@
       label: "冬季特別公演 — 台南",
       note:  "2027/01/17 · 台南文化中心（到店自取）",
       name: "冬季特別公演 — 台南",
-      desc: "年度最後一場公演，全場原聲編制，票券採到店自取，憑證件於指定門市領取。",
+      intros: ["<p>年度最後一場公演，全場原聲編制，票券採到店自取，憑證件於指定門市領取。</p>"],
       country: "TW", langs: ["cmn"],
       images: ["images/projects/nick-realive.jpg"],
       location: "台南文化中心", region: "東區",
@@ -5663,6 +5695,53 @@
           n ≥ 2 → 1 人票不設早鳥；改寫在自動建的組合包 `sale`：限時折扣 %＝1 − 早鳥價 ÷ 現價、檔期同上。
      回傳 { sessions, types, cells, bundles, skipped }，由 bkyApply 寫進頁面狀態。純資料轉換、不碰 DOM，
      cheat code／驗收可以直接呼叫（window.__ceBkyMap）。 */
+  /* 活動詳情 intros → 描述＋說明區塊（2026-09-29 D334 補充，5.1.6.1 F21「活動詳情（intros）」）：
+       第 1 段→描述（照 F21 鎖定）；第 2 段起每段→一個說明區塊，標題留空、內文帶入、不鎖，運營自己補標題。
+     每一段轉成 rich-body 的 blocks（D335，2026-09-29）：
+       · 圖片（<img>）與影片（<video>，src 在標籤上或 <source> 上）照原本的先後位置變成媒體塊，一起帶入——
+         第 1 段的媒體跟描述一起鎖定，第 2 段起的媒體進該段的說明區塊、不鎖；只有媒體的段落照樣產生說明區塊。
+       · 文字轉純文字（文字格式本輪不支援，D335；轉法屬呈現與實作）：換行（<br>）與段落、標題、清單項的結尾
+         換成換行；清單項前加「・」保留條列的樣子；其餘標記（粗體、連結）去掉只留文字；連續空行收成一行空行，
+         每行去頭尾空白。
+     做法：先把每個媒體標籤換成一個私用區字元包住的序號（不會被下面的去標記吃掉，DOMParser 也不會動它），
+     照舊轉純文字，最後再依序號切回「文字／媒體／文字…」。 */
+  const BKY_MEDIA_MARK = "\uE000";
+  function bkyRichText(html) {
+    const media = [];
+    let t = String(html || "")
+      .replace(/<img\b[^>]*>|<video\b[^>]*>[\s\S]*?<\/video>|<video\b[^>]*>/gi, m => {
+        const src = (m.match(/\ssrc\s*=\s*"([^"]*)"/i) || [])[1] || "";
+        if (!src) return "";
+        media.push({ type: /^<img/i.test(m) ? "image" : "video", src });
+        return "\n" + BKY_MEDIA_MARK + (media.length - 1) + BKY_MEDIA_MARK + "\n";
+      })
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<li(\s[^>]*)?>/gi, "・")
+      .replace(/<\/(p|div|li|h[1-6]|ul|ol|blockquote)>/gi, "\n")
+      .replace(/<[^>]*>/g, "");
+    t = new DOMParser().parseFromString(t, "text/html").documentElement.textContent || "";   // 解 &amp; 這類字元實體
+    const clean = x => x.split("\n").map(l => l.trim()).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+    const blocks = [];
+    t.split(new RegExp(BKY_MEDIA_MARK + "(\\d+)" + BKY_MEDIA_MARK)).forEach((part, i) => {
+      if (i % 2) { const m = media[Number(part)]; if (m) blocks.push(m); }
+      else { const txt = clean(part); if (txt) blocks.push({ type: "text", text: txt }); }
+    });
+    return blocks;
+  }
+  function bkyIntros(rec) {
+    const parts = (rec.intros || []).map(bkyRichText);
+    const RB = window.ztorRichBody;
+    return {
+      /* 一段都沒有時描述留空、照樣鎖定（D335：不因空白而解鎖，要補回 bookyay 補） */
+      desc: parts[0] || [],
+      info: parts.slice(1).filter(b => b.length).map(blocks => {
+        const x = { title: "", body: RB ? RB.textOf(blocks) : "" };
+        if (RB && RB.hasMedia(blocks)) x.blocks = blocks;
+        return x;
+      })
+    };
+  }
+
   function bkyMap(rec) {
     /* D330：bookyay 金額一律港幣；基準價換算成創作者幣別（§7.15 換算價：票價整數、四捨五入）。創作者幣別本身就是港幣時不換算、保留小數。 */
     const toBase = v => {
@@ -5765,7 +5844,8 @@
       ty.qty = c ? c.qty : "";
       ty._sp = ty.price; ty._sq = ty.qty;
     });
-    return { sessions, types, cells, bundles, skipped: skippedFinal };
+    const intro = bkyIntros(rec);
+    return { sessions, types, cells, bundles, skipped: skippedFinal, desc: intro.desc, info: intro.info };
   }
   window.__ceBkyMap = id => bkyMap(BKY.find(r => r.id === id));
 
@@ -5784,8 +5864,13 @@
 
   function bkyApply(rec) {
     bkyOn = rec;
+    const intro = bkyIntros(rec);        // 描述不在 rec 上：來自活動詳情 intros 的第 1 段（D334 補充）
+    /* 描述（D335）：第 1 段的文字與圖片影片整份進 rich-body 並鎖定；proxy 跟著拿到文字（下面迴圈再寫一次同值、鎖 proxy） */
+    if (descEd) { descEd.set(intro.desc); descEd.lock(true); }
     document.querySelectorAll("[data-bky]").forEach(el => {
-      const v = rec[el.dataset.bky];
+      const v = el.dataset.bky === "desc"
+        ? (window.ztorRichBody ? window.ztorRichBody.textOf(intro.desc) : "")
+        : rec[el.dataset.bky];
       el.value = v == null ? "" : v;
       /* 直接寫 .value 不會觸發任何事件，靠事件更新自己的元件就不知道值變了——
          日期欄（partials/date-input.js）因此仍顯示「選擇日期」佔位符，畫面看起來像沒帶入。
@@ -5806,6 +5891,9 @@
       saleModeSeg.classList.add("is-source-locked");
       applySaleMode();
     }
+    /* 說明區塊（D334 補充，2026-09-29）：活動詳情第 2 段起每段一塊，標題留空讓運營補、內文帶入、不鎖——
+       不掛 From bookyay、照常可改、可刪、可排序、可再新增（編輯器本身不分來源）。 */
+    if (infoEd) infoEd.set(intro.info);
     renderShare();                       // 活動名稱是帶入的，連結與 QR 要跟著換
     /* 表演陣容不在 bookyay 帶入範圍內（2026-08-09 使用者明確指示：bookyay 沒有這筆資料）。 */
     /* 圖片（D328）：直接帶 bookyay 原圖（1:1、1200×1200）、不裁切、不鎖；比例不合 2:3 不擋發布，
@@ -6080,7 +6168,8 @@
     };
     set("name", src.name);
     set("highlight", src.highlight);   // D300：草稿續填要把亮點帶回來；再辦一場也照名稱／描述一起帶、可改
-    set("desc", src.desc);
+    /* 描述（D335）：有 descBlocks（夾帶圖片或影片）就整份帶回，沒有就帶純文字 */
+    if (descEd) descEd.set(src.descBlocks || src.desc || ""); else set("desc", src.desc);
     /* 說明區塊（D334）：草稿續填與再辦一場都照描述一起帶回（可改） */
     if (infoEd) infoEd.set(src.infoSections || []);
     /* 墓碑 2026-09-29（D327）：再辦一場原本會帶回電子門票三組附屬設定的值，隨欄位刪除退場。 */
