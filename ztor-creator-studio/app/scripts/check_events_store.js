@@ -224,7 +224,12 @@ function record(key, violations, note) {
         v.push(e.id + '：doors=' + e.doors + ' 不早於 start=' + e.start);
       }
     }
-    if (e.start && e.end) {
+    /* 跨日活動（2026-09-29 D328）：有 endDate 的活動結束在另一天，比「日期＋時間」而不是只比時間 */
+    if (e.endDate) {
+      if (e.date && (e.endDate + ' ' + (e.end || '23:59')) <= (e.date + ' ' + (e.start || '00:00'))) {
+        v.push(e.id + '：跨日結束 ' + e.endDate + ' ' + (e.end || '') + ' 不晚於開始 ' + e.date + ' ' + (e.start || ''));
+      }
+    } else if (e.start && e.end) {
       var sm2 = toMin(e.start), em2 = toMin(e.end);
       if (sm2 != null && em2 != null && em2 <= sm2) {
         v.push(e.id + '：end=' + e.end + ' 不晚於 start=' + e.start);

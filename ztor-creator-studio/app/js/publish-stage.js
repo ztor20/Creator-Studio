@@ -28,7 +28,11 @@
  * 用法（宣告式，同站上其他共用渲染器）：
  *   var stage = window.ztorPublishStage.mount(hostEl, {
  *     fields: [{ key, el:{value}, kind:'input'|'textarea', labelKey, labelFallback, group }],
- *     prices: [{ key, label, labelKey, groupKey, groupFallback, priceObj:{base,amount,override}, locked }],
+ *     prices: [{ key, label, labelKey, groupKey, groupFallback, priceObj:{base,amount,override,pin,baseOpen}, locked }],
+ *       priceObj.pin（D330，2026-09-29）＝鎖定欄 `{ HKD: bookyay 原價 }`：該幣別格唯讀、掛鎖、可有小數、沒有重設，
+ *       也不計入「已覆寫」；pin 落在基準幣別上（創作者幣別＝港幣）＝基準欄鎖定。
+ *       priceObj.baseOpen（D330）＝基準幣別欄也可覆寫、可重設為換算值（bookyay 帶入者：基準價是換算來的、鎖定，
+ *       但粉絲以創作者幣別付的價可以改）；沒給＝基準欄唯讀（一般活動，要改回原欄位）。
  *     currencies: ['USD','TWD','HKD','SGD','JPY'], baseCurrency: 'TWD',
  *     views:   [{ key:'ticket' }, { key:'bundles' }],       // 給渲染器的視圖清單
  *     previewRender: function (host, api) {},               // 必填：主區怎麼畫
@@ -144,7 +148,7 @@
   function priceRec(key) { return PRICES[key]; }
   function priceIn(po, key) {
     var rec = key ? priceRec(key) : null;
-    var obj = rec ? { base: rec.base, amount: rec.amount, override: rec.override } : po;
+    var obj = rec ? { base: rec.base, amount: rec.amount, override: rec.override, pin: rec.pin, baseOpen: rec.baseOpen } : po;
     var s = store();
     if (!s || !obj) return 0;
     return s.priceIn(obj, currentCurrency);
@@ -154,8 +158,25 @@
     return s ? s.fmtMoney(cur || currentCurrency, n) : String(n);
   }
   function money(po, key) { return fmtAmount(priceIn(po, key), currentCurrency); }
-  function convertedOf(rec, cur) { var s = store(); return s ? s.fx(rec.base, cur, rec.amount) : rec.amount; }
+  /* 換算值：基準欄就是基準價本身（baseOpen 的「重設為換算值」回到它）。 */
+  function convertedOf(rec, cur) {
+    if (cur === rec.base) return rec.amount;
+    var s = store(); return s ? s.fx(rec.base, cur, rec.amount) : rec.amount;
+  }
+  /* 鎖定欄（D330）：bookyay 原價那一格，唯讀、不吃覆寫。 */
+  function pinnedOf(rec, cur) {
+    var v = rec && rec.pin && rec.pin[cur];
+    return (v != null && v !== '' && !isNaN(Number(v))) ? Number(v) : null;
+  }
+  /* 這一格能不能覆寫：鎖定欄不行；基準欄只有 baseOpen 才行；其餘看列級／全域 priceOverrides。 */
+  function cellOverridable(rec, p, cur) {
+    if (!rec || pinnedOf(rec, cur) != null) return false;
+    if (cur === rec.base) return !!rec.baseOpen && rowOverridable(p);
+    return rowOverridable(p);
+  }
   function isOverridden(rec, cur) {
+    if (pinnedOf(rec, cur) != null) return false;
+    if (cur === rec.base && !rec.baseOpen) return false;
     var v = rec.override && rec.override[cur];
     return v != null && v !== '' && !isNaN(Number(v));
   }
@@ -170,7 +191,7 @@
     var n = 0;
     (opts.prices || []).forEach(function (p) {
       var rec = priceRec(p.key);
-      if (rec && rec.base !== cur && rowOverridable(p) && isOverridden(rec, cur)) n++;
+      if (rec && cellOverridable(rec, p, cur) && isOverridden(rec, cur)) n++;
     });
     return n;
   }
@@ -178,8 +199,8 @@
     var n = 0;
     (opts.prices || []).forEach(function (p) {
       var rec = priceRec(p.key);
-      if (!rec || !rowOverridable(p)) return;
-      currencies().forEach(function (c) { if (c !== rec.base && isOverridden(rec, c)) n++; });
+      if (!rec) return;
+      currencies().forEach(function (c) { if (cellOverridable(rec, p, c) && isOverridden(rec, c)) n++; });
     });
     return n;
   }
@@ -209,11 +230,15 @@
     (opts.prices || []).forEach(function (p) {
       var po = p.priceObj || {};
       var rec = PRICES[p.key];
-      var amount = Math.round(Number(po.amount) || 0);
+      /* 保留到分：bookyay 帶入、創作者幣別＝港幣時基準價可有小數（1 人票 HK$199.5，D330）；其他基準價本來就是整數。 */
+      var amount = Math.round((Number(po.amount) || 0) * 100) / 100;
+      var pin = po.pin ? JSON.parse(JSON.stringify(po.pin)) : null;
       if (!rec || rec.base !== po.base) {
-        PRICES[p.key] = { base: po.base, amount: amount, override: JSON.parse(JSON.stringify(po.override || {})) };
+        PRICES[p.key] = { base: po.base, amount: amount, override: JSON.parse(JSON.stringify(po.override || {})), pin: pin, baseOpen: !!po.baseOpen };
       } else if (rec.amount !== amount) {
-        PRICES[p.key] = { base: po.base, amount: amount, override: {} };
+        PRICES[p.key] = { base: po.base, amount: amount, override: {}, pin: pin, baseOpen: !!po.baseOpen };
+      } else {
+        rec.pin = pin; rec.baseOpen = !!po.baseOpen;
       }
     });
     var list = currencies();
@@ -326,8 +351,13 @@
     var base = opts.baseCurrency;
     list.forEach(function (c) {
       var n = overrideCount(c);
-      var state = c === base ? T('pstage.cur.base', 'Base')
-        : (n ? T('pstage.cur.overridden', '{n} overridden').replace('{n}', n) : T('pstage.cur.converted', 'Converted'));
+      /* D330：每一列都把這個幣別鎖在 bookyay 原價時，狀態寫「bookyay 原價」；基準欄可覆寫（bookyay 帶入者）時，基準後面接覆寫筆數。 */
+      var rows = (opts.prices || []).map(function (p) { return priceRec(p.key); }).filter(Boolean);
+      var allPinned = rows.length > 0 && rows.every(function (r) { return pinnedOf(r, c) != null; });
+      var ovText = T('pstage.cur.overridden', '{n} overridden').replace('{n}', n);
+      var state = allPinned ? T('pstage.cur.pinned', 'bookyay price')
+        : c === base ? (n ? T('pstage.cur.base', 'Base') + ' · ' + ovText : T('pstage.cur.base', 'Base'))
+        : (n ? ovText : T('pstage.cur.converted', 'Converted'));
       ul.appendChild(rowBtn(c === currentCurrency, c, state, 'data-stage-currency', c, true));
     });
     sec.appendChild(ul);
@@ -536,9 +566,13 @@
     /* 全部列都唯讀（電子商店）才換提示句；有些列可覆寫、有些不行（混合）時沿用舊句，
        因為舊句「其餘幣別是換算值，輸入數字即覆寫」對可覆寫的列仍然成立。 */
     var allReadonly = rows.length > 0 && rows.every(function (p) { return !rowOverridable(p); });
+    /* 有 bookyay 鎖定欄的表（D330）換一句：港幣是 bookyay 原價、鎖定；其他幣別（含可覆寫的基準欄）輸入即覆寫。 */
+    var anyPinned = rows.some(function (p) { var r = priceRec(p.key); return r && r.pin; });
     var hint = el('p', 'field__hint pstage-drawer__hint');
     hint.textContent = allReadonly
       ? T('pstage.drawer.price-hint-readonly', 'Other currencies convert automatically at the exchange rate — the store can’t adjust them individually.')
+      : anyPinned
+      ? T('pp.table.prices-hint.bky', 'HKD is the bookyay price and stays locked. Other currencies start converted — type a number to override one.')
       : T('pp.table.prices-hint', 'Base currency is read-only — change the price in the form. Other currencies are converted; type a number to override it.');
     host.appendChild(hint);
     var scroll = el('div', 'ztor-table-scroll');
@@ -565,16 +599,21 @@
         tbody.appendChild(gr);
       }
       lastGroup = group || null;
-      var overridable = rowOverridable(p);
       var tr = el('tr');
       tr.appendChild(el('td', 'ztor-table__feature', esc(p.labelKey ? T(p.labelKey, p.label || p.key) : (p.label || p.key))));
       list.forEach(function (c) {
         var td = el('td');
-        if (c === rec.base) {
+        var pinned = pinnedOf(rec, c);
+        if (pinned != null) {
+          /* bookyay 原價（D330）：鎖定、可有小數、沒有重設；沿用基準格的唯讀樣式＋鎖頭（.pp-price-lock，bookyay 鎖定專用）。 */
+          td.className = 'pp-cell pp-cell--readonly pp-cell--base';
+          td.innerHTML = '<span class="pp-price-num">' + esc(fmtAmount(pinned, c)) + '</span>' +
+            '<span class="pp-price-lock" title="' + esc(T('pp.price.locked', 'Set by bookyay')) + '"><i data-lucide="lock" class="ztor-icon"></i></span>';
+        } else if (c === rec.base && !rec.baseOpen) {
           td.className = 'pp-cell pp-cell--readonly pp-cell--base';
           td.innerHTML = '<span class="pp-price-num">' + esc(fmtAmount(rec.amount, c)) + '</span>' +
             (p.locked ? '<span class="pp-price-lock" title="' + esc(T('pp.price.locked', 'Set by bookyay')) + '"><i data-lucide="lock" class="ztor-icon"></i></span>' : '');
-        } else if (!overridable) {
+        } else if (!cellOverridable(rec, p, c)) {
           /* priceOverrides:false（或該列 overridable:false）＝只顯示換算值，沿用基準格
              同一套唯讀樣式（.pp-cell--base 負責右對齊與列高對齊），不掛鎖圖示（不是
              bookyay 鎖定，是電子商店規則本身不給覆寫）。 */
@@ -671,9 +710,8 @@
       var out = {};
       /* 唯讀列（priceOverrides:false 或該列 overridable:false）不輸出覆寫——即使草稿裡
          殘留舊值（例如全域選項中途切換），落地結果也不帶出來。 */
-      if (rowOverridable(p)) {
-        currencies().forEach(function (c) { if (c !== rec.base && isOverridden(rec, c)) out[c] = Math.round(Number(rec.override[c])); });
-      }
+      /* 鎖定欄（pin）與唯讀的基準欄不輸出；bookyay 帶入者的基準欄覆寫（baseOpen，D330）要輸出。 */
+      currencies().forEach(function (c) { if (cellOverridable(rec, p, c) && isOverridden(rec, c)) out[c] = Math.round(Number(rec.override[c])); });
       prices[p.key] = out;
     });
     return { translations: translations, prices: prices, mode: opts.mode || 'publish' };

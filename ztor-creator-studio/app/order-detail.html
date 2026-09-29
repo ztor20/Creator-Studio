@@ -36,7 +36,16 @@
      這裡不用線挑，改用行距把「商品金額／運費／平台費／支付費」壓緊成一組、淨額前多留
      一點空隙——區隔改交給間距，不是線條。 */
   .od-amt { display:flex; justify-content:space-between; align-items:baseline; padding:var(--sp-4) 0; font-size: var(--fs-13); }
-  .od-amt:last-child { margin-top:var(--sp-8); font-weight: var(--fw-bold); }
+  /* 淨額＝容器的最後一列。限定直屬子層（2026-09-29）：平台費展開後，群組面板裡的最後
+     一列子列也是 :last-child，不限定的話它會被誤套成淨額的粗體與上外距。 */
+  [data-od-amounts] > .od-amt:last-child { margin-top:var(--sp-8); font-weight: var(--fw-bold); }
+  /* 平台費展開列（D333）：左格兩行——「葉節點 · 費率」＋ 計費基準小字；右格該列平台費。
+     子列字級與顏色由 row-disclosure 的 .rowdis__child 退一階，這裡只排兩行與行距。 */
+  .od-amt--line { padding-block:var(--sp-6); }
+  .od-amt__stack { display:flex; flex-direction:column; gap:var(--sp-2); }
+  .od-amt__hint { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .od-amt__amt { display:inline-flex; align-items:center; gap:var(--sp-4); }
+  .od-amt .rowdis__toggle { color: var(--muted-foreground); }
   .od-amt__neg { color: var(--foreground-muted); }
   /* 匯率與時點：收在金額數字底下，hover／focus 才浮出（2026-08-07 使用者裁示，
      12 筆帶 fx 的訂單一律套用）。金額本身永遠看得到，換算細節是想看才看的第二層。
@@ -672,6 +681,10 @@
             memberIsGroup = true;
             memberFulfil = '<div class="od-item-pickup__head">' + toggleHtml(mgid) + summaryHtml(labelFromAgg(S.unitSummary(m))) + '</div>';
             m.units.forEach(function (u) { memberExtra += unitChildRow(u, mgid); });
+          } else if (m.mode === 'ticket') {
+            /* 票券成員（2026-09-29，D292 票務商品＝組合包）：不寄送、不經取貨場次，履約欄
+               只說明這是電子門票；電子門票與領取單位的關係仍待確認（主規格 §8.1）。 */
+            memberFulfil = badge({ cls: 'badge--neutral badge--inline', key: 'ed.pub.pickup.eticket', text: 'E-ticket' });
           } else {
             memberFulfil = shipCell();
           }
@@ -793,8 +806,40 @@
         '<span class="od-amt__sub">' + esc(order.fx.rate) + '</span>' +
       '</span></div>';
   }
-  amtHtml += amtRow('od.amt.platform', 'Platform fee · 15%', A.platform, true) +
-             amtRow('od.amt.payment', 'Payment fee · 2.4%', A.payment, true);
+  /* 平台費可展開（2026-09-29 D333，§2.3.2）：同一張單的品項可能落在不同費率葉節點，
+     平台費是逐組算完再加總。母列只講合計——全部同一費率時附費率、不只一種時寫
+     「多種費率」；展開後每個「葉節點＋費率」一列，列出計費基準與該列平台費，加總
+     等於母列。資料來自 orders-store 的 platformLines()（訂單凍結的費率，不讀費率
+     設定頁的當前值）。展開沿用共用元件 row-disclosure（清單型 `--gutter`，同
+     project-detail 的收支小計）；把手貼在金額左邊（Q109 清單型「把手貼著金額」），
+     擺左邊而不是右邊，是因為這張表只有這一列有把手，放右邊會把它的金額推離其他
+     列的右基準線。整列可點（data-rowdis-row）。支付費一張單只算一次（D333 決定二），
+     維持單列、不展開。把手與展開列掛 data-feat="O32"（feature-scope-map，未排定期別）：
+     版本閘藏起時母列仍在、只是展不開。 */
+  var feeLines = S.platformLines(order);
+  var feePcts = feeLines.reduce(function (a, l) { if (a.indexOf(l.pct) < 0) a.push(l.pct); return a; }, []);
+  var feeRateHtml = feePcts.length === 1
+    ? ' · ' + feePcts[0] + '%'
+    : ' · <span data-i18n="od.amt.platform.mixed">Mixed rates</span>';
+  amtHtml += '<div class="rowdis__group rowdis__group--gutter">' +
+    '<div class="od-amt rowdis__head" data-rowdis-row="od-fee">' +
+      '<span class="od-amt__neg"><span data-i18n="od.amt.platform">Platform fee</span>' + feeRateHtml + '</span>' +
+      '<span class="od-amt__amt od-amt__neg">' +
+        '<button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="od-fee" data-feat="O32" aria-expanded="false"' +
+          ' aria-label="Expand" data-i18n-aria-label="od.units.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button>' +
+        esc(A.platform) +
+      '</span>' +
+    '</div>';
+  feeLines.forEach(function (l) {
+    amtHtml += '<div class="od-amt od-amt--line rowdis__child" data-rowdis-child="od-fee" data-feat="O32" hidden>' +
+      '<span class="od-amt__stack">' +
+        '<span><span data-i18n="' + esc(l.leafKey) + '">' + esc(l.leaf) + '</span> · ' + l.pct + '%</span>' +
+        '<span class="od-amt__hint"><span data-i18n="od.amt.fee.base">Fee base</span> ' + esc(l.base) + '</span>' +
+      '</span>' +
+      '<span>' + esc(l.fee) + '</span>' +
+    '</div>';
+  });
+  amtHtml += '</div>' + amtRow('od.amt.payment', 'Payment fee · 2.4%', A.payment, true);
   /* 優惠碼折抵／平台滿額折抵（D274）：創作者收入的獨立扣項，各列一行、放平台費／
      支付費之後、淨額之前——兩項扣抵都不影響上面兩列費用的計算基礎（平台費仍以標示
      售價、支付費仍以買家實付計）。訂單沒有折扣（order.discount 不存在，或個別欄位
@@ -819,7 +864,10 @@
     amtHtml += amtRow('od.amt.threshold', 'Platform threshold discount', disc.thresholdAmount, true);
   }
   amtHtml += amtRow('od.amt.net', 'Net to you', A.net, false);
-  $('[data-od-amounts]').innerHTML = amtHtml;
+  var amtHost = $('[data-od-amounts]');
+  amtHost.innerHTML = amtHtml;
+  /* 金額拆解只畫一次（不像品項表會因作廢重畫），init 一次即可；點擊走 document 級委派。 */
+  window.rowDisclosure.init(amtHost);
 
   /* ── §2.4 買家 ────────────────────────────────────────────── */
   $('[data-od-buyer-name]').textContent = order.buyer.name;
