@@ -13652,12 +13652,14 @@ Letterpress cover, uncoated stock.</textarea></div>
       status: { labelKey: 'fep.status.on-sale', fallback: 'On sale', tone: 'badge--success' },
       typeLabel: 'Concert', region: 'Taipei, Taiwan', keyvisual: 'images/projects/nick-lwh.jpg', gallery: ['images/projects/nick-lwh.jpg'], video: true,
       name: { key: 'name' }, highlight: { key: 'highlight' }, organizer: 'NICKTHEREAL 周湯豪', organizerAvatar: 'images/ip/nick-portrait.jpg',
-      date: '2026-12-05', time: '19:30 – 21:30', duration: '2 h', venue: 'Taipei Music Center', address: '台北市南港區市民大道八段 99 號', language: 'Traditional Chinese',
+      date: '2026-12-05', time: '19:30 – 21:30', duration: '2 h', venue: 'Taipei Music Center', address: '台北市南港區市民大道八段 99 號', language: ['Cantonese', 'Mandarin'],   /* D328：活動語言可複選，陣列由渲染器串成一行 */
       priority: null, limit: 'Up to 4 per order', desc: { key: 'desc' }, lineup: [{ name: 'NICKTHEREAL 周湯豪', role: null }],
-      notes: [], bring: [], includes: [], pickup: 'E-ticket (QR)', entryNote: null, terms: null,
+      notes: [], bring: [], pickup: 'E-ticket (QR)', terms: null,   /* D327：第一組清單與取票說明欄已刪 */
       tiers: [
-        { key: 'a', name: { key: 'tier-a' }, note: '', priceObj: ppDemoPrices[0].priceObj, priceKey: 'tier:a', soldOut: false },
-        { key: 'b', name: { key: 'tier-b' }, note: 'Programme included', priceObj: ppDemoPrices[1].priceObj, priceKey: 'tier:b', soldOut: true }
+        /* D328：desc＝門票簡介（可翻譯）；hidden:true 的票（這裡的 c）不在票價清單列出 */
+        { key: 'a', name: { key: 'tier-a' }, note: '', desc: { key: 'tdesc-a' }, priceObj: ppDemoPrices[0].priceObj, priceKey: 'tier:a', soldOut: false },
+        { key: 'b', name: { key: 'tier-b' }, note: 'Programme included', priceObj: ppDemoPrices[1].priceObj, priceKey: 'tier:b', soldOut: true },
+        { key: 'c', name: { key: 'tier-c' }, note: '', hidden: true, priceObj: ppDemoPrices[1].priceObj, priceKey: 'tier:b', soldOut: false }
       ],
       bundles: [{ name: '一樓票 ＋ 交響夜場刊', priceObj: ppDemoPrices[2].priceObj, priceKey: 'bundle:x',
         listPriceObj: { base: 'TWD', amount: 3400, override: {} },
@@ -13669,7 +13671,7 @@ Letterpress cover, uncoated stock.</textarea></div>
   /* §4.215 就地渲染：替身 api（固定語系／幣別、不開 inline 編輯），同一條渲染路徑 */
   var fepHost = document.querySelector('[data-ds-fep-demo]');
   if (fepHost && window.ztorFanEventPage) {
-    var fepVals = { name: ppDemoName.value, highlight: ppDemoHl.value, desc: ppDemoDesc.value, 'tier-a': ppDemoTierA.value, 'tier-b': ppDemoTierB.value };
+    var fepVals = { name: ppDemoName.value, highlight: ppDemoHl.value, desc: ppDemoDesc.value, 'tier-a': ppDemoTierA.value, 'tier-b': ppDemoTierB.value, 'tdesc-a': 'Seated, lower bowl — best sightline to the orchestra.', 'tier-c': 'Bundle-only seat' };
     var S = window.ztorEvents;
     var fepApi = {
       lang: 'en', isDefault: true,

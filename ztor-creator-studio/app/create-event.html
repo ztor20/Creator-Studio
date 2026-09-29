@@ -26,6 +26,7 @@
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-more.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/check-card.css?v=r2.2"><!-- D328：活動語言複選（.check-cards--sm） -->
 <link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
@@ -51,7 +52,6 @@
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stepper.css?v=r2.2">   <!-- 2026-09-18：票券清單表的張數步進器（.zstep） -->
-<link rel="stylesheet" href="ds-components/stack.css?v=r2.2">     <!-- 2026-09-22（D303）：第 7 步電子門票三組附屬設定的縱向堆疊（.stack--tight，Q103 容器持有節奏） -->
 <!-- 2026-09-21 第 6 步兩欄版型（bundle-editor `layout:'split'`）：語意句 insight-row、鎖定套數 lock-sets、
      右欄「粉絲看到的」預覽卡 bundle-preview-card；markup 由 js/bundle-editor.js 動態產生，check 15 掃不到、要手動連 -->
 <link rel="stylesheet" href="ds-components/insight-row.css?v=r2.2">
@@ -297,6 +297,15 @@
 
   <div class="wizard__body wizard__body--form">
 
+    <!-- bookyay 帶入的略過提示（D328，5.1.6.1 F21）：一個時段有多種門票時只帶第一種，其餘票名列在這一句。
+         放在各步之外：帶入後直接落在第 6 步（見 bkyGo），提示要在落點就看得到，之後每一步都在、可關掉。
+         文案含 {name} 佔位，由 renderBkySkipNote() 帶入、切語言時重寫。 -->
+    <div class="info-banner info-banner--dismissible mb-16" id="ce-bky-skip-note" data-feat="S56" hidden>
+      <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+      <span data-bky-skip-text></span>
+      <button class="btn btn--icon btn--xs info-banner__close" type="button" data-bky-skip-close aria-label="Dismiss" data-i18n-aria-label="ce.bky.skipped.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+
     <!-- STEP 2 · Details -->
     <section data-step-panel="2" class="hidden">
       <!-- 標題列帶右側動作（2026-08-04 使用者指示）：右邊那顆是「換活動類型」——
@@ -398,7 +407,7 @@
         <!-- 活動國家與語言（2026-08-05 使用者指示）。國家在這裡問一次，場地那一步的
              「城市／國家」欄同輪移除，同一件事不問兩遍。市場清單沿用 login 的既有那組
              （TW／HK／JP／KR／US），不另立第二份國家表。 -->
-        <div class="form-grid">
+        <div class="form-grid mb-16">
           <div class="field">
             <label class="field__label" for="ce-country" data-i18n="ce.country">Country</label>
             <select class="select" id="ce-country" data-ce="country" data-bky="country">
@@ -409,14 +418,22 @@
               <option value="US" data-i18n="ce.country.us">United States</option>
             </select>
           </div>
-          <div class="field">
-            <label class="field__label" for="ce-lang" data-i18n="ce.lang">Language</label>
-            <select class="select" id="ce-lang" data-ce="lang" data-bky="lang">
-              <option value="zh-Hant" data-i18n="ce.lang.zhhant">Traditional Chinese</option>
-              <option value="en" data-i18n="ce.lang.en">English</option>
-              <option value="ja" data-i18n="ce.lang.ja">Japanese</option>
-              <option value="ko" data-i18n="ce.lang.ko">Korean</option>
-            </select>
+        </div>
+        <!-- 活動語言（D328，2026-09-29 使用者裁決；5.1.6.1 §4.2 末段）：活動現場用什麼語言進行，可複選、七個選項；
+             與翻譯語系（第 8 步側欄）無關。原本的單選下拉（繁中／英／日／韓）退場，改用站上唯一的多選卡
+             `.check-cards--sm`（Q74：多選＝整格染橘）。必填與上限上游待確認（GEO-001），原型不擋、不設上限。
+             bookyay 帶入時多值帶入並鎖定（bkyApply → setLangs／lockLangs，按鈕 disabled＋欄位 .is-source-locked）。
+             獨立一列、不再與國家並排：七張卡在半欄寬會折成四行。 -->
+        <div class="field" data-ce-lang-field data-feat="S52">
+          <div class="field__label"><span id="ce-lang-label" data-i18n="ce.lang">Language</span></div>
+          <div class="check-cards check-cards--sm" id="ce-lang" role="group" aria-labelledby="ce-lang-label" data-ce-lang>
+            <button class="check-card" type="button" role="checkbox" aria-checked="false" data-lang-val="yue"><span data-i18n="ce.evlang.yue">Cantonese</span><span class="check-card__mark"><i data-lucide="plus" class="ztor-icon"></i></span></button>
+            <button class="check-card" type="button" role="checkbox" aria-checked="false" data-lang-val="cmn"><span data-i18n="ce.evlang.cmn">Mandarin</span><span class="check-card__mark"><i data-lucide="plus" class="ztor-icon"></i></span></button>
+            <button class="check-card" type="button" role="checkbox" aria-checked="false" data-lang-val="en"><span data-i18n="ce.evlang.en">English</span><span class="check-card__mark"><i data-lucide="plus" class="ztor-icon"></i></span></button>
+            <button class="check-card" type="button" role="checkbox" aria-checked="false" data-lang-val="ja"><span data-i18n="ce.evlang.ja">Japanese</span><span class="check-card__mark"><i data-lucide="plus" class="ztor-icon"></i></span></button>
+            <button class="check-card" type="button" role="checkbox" aria-checked="false" data-lang-val="ko"><span data-i18n="ce.evlang.ko">Korean</span><span class="check-card__mark"><i data-lucide="plus" class="ztor-icon"></i></span></button>
+            <button class="check-card" type="button" role="checkbox" aria-checked="false" data-lang-val="th"><span data-i18n="ce.evlang.th">Thai</span><span class="check-card__mark"><i data-lucide="plus" class="ztor-icon"></i></span></button>
+            <button class="check-card" type="button" role="checkbox" aria-checked="false" data-lang-val="vi"><span data-i18n="ce.evlang.vi">Vietnamese</span><span class="check-card__mark"><i data-lucide="plus" class="ztor-icon"></i></span></button>
           </div>
         </div>
         <!-- 墓碑：「活動總人數」（最少／最多，`data-ce="attend-min"`／`data-ce="capacity"`）
@@ -435,18 +452,8 @@
             <span data-field-more-label data-i18n="ce.adv">Advanced details</span>
           </button>
           <div class="field-more__body" hidden>
-            <!-- 2026-08-06 使用者指示：四個勾選改成與下面兩份清單同一種「新增一項」列，
-                 每一列是「先選類型、再寫內容」。勾選只能說「有飲食」，說不出是什麼飲食；
-                 一列一項之後，類型是分類、文字才是實際內容，兩者各歸各位。 -->
-            <div class="field">
-              <div class="field__label" data-i18n="ce.adv.includes">What's included</div>
-              <div id="ce-includes-list"></div>
-              <button class="btn btn--outline btn--add mt-8" type="button" data-list-add="ce-includes-list"
-                      data-list-kind="includes" data-list-ph="ce.adv.inc.ph">
-                <i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.adv.add">Add a line</span>
-              </button>
-            </div>
-
+            <!-- 墓碑 2026-09-29（D327）：原本排第一的那組清單（活動內含物，類型下拉＋文字）整組刪除；
+                 本收合外框只剩需攜帶物品、活動須知兩份清單（5.1.6.1 §4.2 末段）。 -->
             <div class="field">
               <div class="field__label" data-i18n="ce.adv.bring">What to bring</div>
               <div id="ce-bring-list"></div>
@@ -502,6 +509,8 @@
             <span class="upload-tile__title" data-i18n="ce.img.add">Add image</span>
           </div>
         </div>
+        <!-- D329（5.1.6.1 F21）：bookyay 原圖（1:1）不擋發布，只提示換成 2:3。相簿裡還留著帶入的原圖就顯示，換掉就收（syncImgRatioNote）。 -->
+        <p class="field__hint mt-8" id="ce-img-ratio-note" data-feat="S56" data-di="d.img.ratio" hidden>bookyay 原圖是 1:1，建議換成 2:3。</p>
         <div class="field" style="margin-top:var(--sp-24)">
           <div class="field__label"><span data-i18n="ce.video">Video teaser</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></div>
           <div class="upload-tile upload-tile--video" data-asset="video">
@@ -728,14 +737,16 @@
         <div>
         <div class="field">
           <label class="field__label"><span data-i18n="ce.venue.name">Venue name</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
-          <input class="input" data-ce="venue" data-bky="venue" data-required placeholder="e.g., Red Coliseum" data-i18n-placeholder="ce.venue.name.ph">
+          <!-- D329（修訂 D328，5.1.6.1 F21／F6）：bookyay 的「活動地點」帶進場地名稱、帶入後鎖定。 -->
+          <input class="input" data-ce="venue" data-bky="location" data-required placeholder="e.g., Red Coliseum" data-i18n-placeholder="ce.venue.name.ph">
           <p class="ce-field-error" data-i18n="ce.err.venue">Venue name is required.</p>
         </div>
         <!-- 城市／國家欄已移除（2026-08-05 使用者指示）：國家改在「細節」那一步問一次
              （活動國家），這裡不再重複問；場地只留名稱與完整地址。 -->
         <div class="field">
           <label class="field__label"><span data-i18n="ce.venue.addr">Full address</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
-          <input class="input" data-ce="addr" data-bky="addr" placeholder="Street address" data-i18n-placeholder="ce.venue.addr.ph">
+          <!-- D329：bookyay 的「地區」（行政區名稱，例如「中環」）原樣帶進完整地址、帶入後鎖定。 -->
+          <input class="input" data-ce="addr" data-bky="region" placeholder="Street address" data-i18n-placeholder="ce.venue.addr.ph">
         </div>
         <!-- 進階：集合地點與交通（2026-08-06 使用者指示）。走既有的 .field-more 收合
              （建立商品的物流欄位同一支），只把按鈕文案換成「進階」——這兩欄不是每場都要寫，
@@ -1074,135 +1085,9 @@
             <span class="radio-card__text"><span class="radio-card__title" data-di="d.ship.pick">到店自取</span><span class="radio-card__sub" data-di="d.ship.pick.sub">粉絲到指定門市或活動現場憑證件領票。</span></span>
           </button>
         </div>
-        <!-- 電子門票的附屬設定（2026-09-22 · D302／D303 · 5.1.6.1 F24）：只在「電子門票」下成立的第二層，
-             三組各自「開關列＋揭示區」的 .control-group（本頁條款那組同一結構、D245 兩段式同一種做法），
-             三組之間的距離由 .stack--tight 持有（Q103：容器持有節奏，不由子元素各自加 margin）。
-             1. 第三方門票（D302）：預設關；開了才長出「領取與入場方式」多行必填（≤250 字元，超過擋發布）；
-                開著時第 2 組整組收起——沒有 ztor 的票就沒有動態 QR（互斥為推導，ASSUMPTIONS UIA-162）。
-             2. 動態 QR（D303，2026-09-22 D308 修訂）：ztor 目前只發靜態 QR——自建活動的開關顯示為關且不可切換
-                （.switch--locked ＋ aria-disabled，與 bookyay 鎖定同一套樣式），hint 只講「目前只提供靜態 QR」，更新間隔不出現。
-                bookyay 帶入且 bookyay 端開著的：開關顯示為開但不可切換、標題後加括號註記 [data-ce-dq-bky]（帶入時轉為靜態）、
-                更新間隔照 bookyay 的值顯示且不可改（bkyApply）。
-             3. 可轉贈（D303）：預設關；開了長出兩個子開關（限制轉贈次數 → 次數上限；設定轉贈期限 → 統一截止日／開演前 N 天）。
-             整個堆疊在順豐寄送／到店自取時收起（data-ship-when 由 applyShipMode 統一管；必填由各開關決定，見 applyEticketSettings()）。
-             bookyay 帶入者（D308 決定一）：三組開關與全部子欄位一律鎖定、值照 bookyay 顯示；發布前檢核跳過這組（tryPublish）。 -->
-        <div class="stack stack--tight" data-ship-when="eticket" data-ship-eticket hidden>
-          <div class="control-group" data-ship-tp>
-            <div class="control-row">
-              <div>
-                <div class="control-row__main" data-i18n="ce.ship.tp">Third-party ticket</div>
-                <div class="control-row__sub" data-i18n="ce.ship.tp.hint">Issued by another platform — ztor sends no QR to buyers; fans collect and enter the way you describe.</div>
-              </div>
-              <button type="button" class="switch" data-ce-tp role="switch" aria-checked="false"
-                      aria-label="Third-party ticket" data-i18n-aria-label="ce.ship.tp"></button>
-            </div>
-            <div class="control-group__body" hidden>
-              <div class="field">
-                <label class="field__label" for="ce-ship-tp-note"><span data-i18n="ce.ship.tp.note">How to collect &amp; enter</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
-                <textarea class="textarea" id="ce-ship-tp-note" data-ce="ship-tp-note" rows="3" placeholder="e.g. Show your KKTIX e-ticket at Gate 3 to get in" data-i18n-placeholder="ce.ship.tp.note.ph"></textarea>
-                <p class="field__hint" data-ce-count="ship-tp-note">0 / 250</p>
-              </div>
-            </div>
-          </div>
-          <div class="control-group" data-ship-dq>
-            <div class="control-row">
-              <div>
-                <div class="control-row__main"><span data-i18n="ce.ship.dq">Dynamic QR</span> <span class="text-sub" data-ce-dq-bky data-i18n="ce.ship.dq.bky" hidden>(bookyay's dynamic QR not applied here)</span></div>
-                <div class="control-row__sub" data-i18n="ce.ship.dq.hint">Only static QR for now.</div>
-              </div>
-              <button type="button" class="switch switch--locked" data-ce-dq role="switch" aria-checked="false" aria-disabled="true"
-                      aria-label="Dynamic QR" data-i18n-aria-label="ce.ship.dq"></button>
-            </div>
-            <div class="control-group__body" hidden>
-              <div class="field">
-                <label class="field__label" for="ce-ship-dq-min"><span data-i18n="ce.ship.dq.min">Refresh every</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
-                <span class="amount-field amount-field--suffix amount-field--readonly zstep">
-                  <span class="amount-field__unit" data-i18n="ce.unit.min">min</span>
-                  <input class="amount-field__input input zstep__input" id="ce-ship-dq-min" data-ce="ship-dq-min" type="number" min="1" max="60" step="1" value="5">
-                  <span class="zstep__btns">
-                    <button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase" data-i18n-aria-label="cpp.step.up"><i data-lucide="chevron-up" class="ztor-icon"></i></button>
-                    <button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease" data-i18n-aria-label="cpp.step.down"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="control-group" data-ship-tf>
-            <div class="control-row">
-              <div>
-                <div class="control-row__main" data-i18n="ce.ship.tf">Transferable</div>
-                <div class="control-row__sub" data-i18n="ce.ship.tf.hint">Ticket holders can pass the ticket to another ztor member.</div>
-              </div>
-              <button type="button" class="switch" data-ce-tf role="switch" aria-checked="false"
-                      aria-label="Transferable" data-i18n-aria-label="ce.ship.tf"></button>
-            </div>
-            <div class="control-group__body" hidden>
-              <div class="stack stack--tight">
-                <div class="control-group" data-ship-tf-limit>
-                  <div class="control-row">
-                    <div>
-                      <div class="control-row__main" data-i18n="ce.ship.tf.limit">Limit transfers</div>
-                      <div class="control-row__sub" data-i18n="ce.ship.tf.limit.hint">Off means a ticket can change hands any number of times.</div>
-                    </div>
-                    <button type="button" class="switch switch--on" data-ce-tf-limit role="switch" aria-checked="true"
-                            aria-label="Limit transfers" data-i18n-aria-label="ce.ship.tf.limit"></button>
-                  </div>
-                  <div class="control-group__body">
-                    <div class="field">
-                      <label class="field__label" for="ce-ship-tf-max"><span data-i18n="ce.ship.tf.max">Max transfers</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
-                      <span class="amount-field amount-field--suffix amount-field--readonly zstep">
-                  <span class="amount-field__unit" data-i18n="ce.unit.times">times</span>
-                  <input class="amount-field__input input zstep__input" id="ce-ship-tf-max" data-ce="ship-tf-max" type="number" min="1" max="99" step="1" value="1">
-                  <span class="zstep__btns">
-                    <button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase" data-i18n-aria-label="cpp.step.up"><i data-lucide="chevron-up" class="ztor-icon"></i></button>
-                    <button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease" data-i18n-aria-label="cpp.step.down"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
-                  </span>
-                </span>
-                    </div>
-                  </div>
-                </div>
-                <div class="control-group" data-ship-tf-dl>
-                  <div class="control-row">
-                    <div>
-                      <div class="control-row__main" data-i18n="ce.ship.tf.dl">Transfer deadline</div>
-                      <div class="control-row__sub" data-i18n="ce.ship.tf.dl.hint">Off means transfers stay open right up to showtime.</div>
-                    </div>
-                    <button type="button" class="switch switch--on" data-ce-tf-dl role="switch" aria-checked="true"
-                            aria-label="Transfer deadline" data-i18n-aria-label="ce.ship.tf.dl"></button>
-                  </div>
-                  <div class="control-group__body">
-                    <div class="stack stack--tight">
-                      <div class="segmented radio-cards" data-seg="tf-dl" data-value="days" data-bky-seg="tf-dl">
-                        <button class="segmented__btn" type="button" data-val="date">
-                          <span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.ship.tf.dl.date">Same deadline for all dates</span><span class="radio-card__sub" data-i18n="ce.ship.tf.dl.date.sub">One cut-off, whichever date the ticket is for.</span></span>
-                        </button>
-                        <button class="segmented__btn segmented__btn--active" type="button" data-val="days">
-                          <span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.ship.tf.dl.days">Days before showtime</span><span class="radio-card__sub" data-i18n="ce.ship.tf.dl.days.sub">Counted back from each date's own start time.</span></span>
-                        </button>
-                      </div>
-                      <!-- 欄位自己的 16px 底距歸零、距離由外層 .stack--tight 持有（Q103），與 event-detail 發布設定同一寫法 -->
-                      <div class="field" data-when="tf-dl" data-when-val="date" style="margin-bottom:0" hidden>
-                        <label class="field__label" for="ce-ship-tf-date"><span data-i18n="ce.ship.tf.date">Deadline</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
-                        <input class="input" type="date" id="ce-ship-tf-date" data-ce="ship-tf-date">
-                      </div>
-                      <div class="field" data-when="tf-dl" data-when-val="days" style="margin-bottom:0">
-                        <label class="field__label" for="ce-ship-tf-days"><span data-i18n="ce.ship.tf.days">Days</span></label>
-                        <span class="amount-field amount-field--suffix amount-field--readonly zstep">
-                  <span class="amount-field__unit" data-i18n="ce.unit.days">days</span>
-                  <input class="amount-field__input input zstep__input" id="ce-ship-tf-days" data-ce="ship-tf-days" type="number" min="0" max="365" step="1" value="1">
-                  <span class="zstep__btns">
-                    <button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase" data-i18n-aria-label="cpp.step.up"><i data-lucide="chevron-up" class="ztor-icon"></i></button>
-                    <button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease" data-i18n-aria-label="cpp.step.down"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
-                  </span>
-                </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- 墓碑 2026-09-29（D327）：電子門票底下原有的三組附屬設定（外部平台發票＋取票說明、QR 更新間隔、
+             持票人移轉＋次數／期限）整組刪除——電子門票＝ztor 發票、一票一碼的靜態 QR，底下沒有第二層設定
+             （5.1.6.1 F24）。原本的附屬設定堆疊、三組開關的 apply 函式與 bookyay 預填段一併退場。 -->
         <!-- 選了才問的欄位（2026-08-10 使用者指示）：寄送要知道運費怎麼算，自取要知道去哪裡拿。
              兩者都是選了那個方式才成立的必填，沒選就不該佔版面、也不該擋發布。 -->
         <div class="field" data-ship-when="sf" hidden>
@@ -1585,32 +1470,76 @@
     /* 主視覺＝相簿的第一張（2026-08-06 起沒有具名的 keyvisual 槽了）。 */
     const posterFilled = !!document.querySelector('#ce-gallery [data-gallery-tile].is-filled');
     const sessions = seriesSummary();
-    /* 取票方式與第三方門票（D302）：Review 那一列要寫「電子門票 · 第三方門票」＋說明摘要 */
+    /* 取票方式（F24）。電子門票底下的三組附屬設定值隨 D327（2026-09-29）退場。 */
     const ship = document.querySelector('[data-seg="ship"]')?.dataset.value || "eticket";
-    const tpOn = ship === "eticket" && document.querySelector("[data-ce-tp]")?.getAttribute("aria-checked") === "true";
-    const tpNote = tpOn ? (document.querySelector("[data-ce=ship-tp-note]")?.value || "").trim() : "";
-    /* 動態 QR 與可轉贈（D303）：Review 列摘要用；第三方門票開著時動態 QR 不成立 */
-    const dqOn = ship === "eticket" && !tpOn && document.querySelector("[data-ce-dq]")?.getAttribute("aria-checked") === "true";
-    const dqMin = (document.querySelector("[data-ce=ship-dq-min]")?.value || "").trim();
-    /* D308：bookyay 端開著動態 QR 的帶入活動——註記是否亮著看 DOM（bkyOn 宣告在後面，初始化順序下不能直接讀） */
-    const dqBky = dqOn && document.querySelector("[data-ce-dq-bky]")?.hidden === false;
-    const tfOn = ship === "eticket" && document.querySelector("[data-ce-tf]")?.getAttribute("aria-checked") === "true";
-    const tfLimit = tfOn && document.querySelector("[data-ce-tf-limit]")?.getAttribute("aria-checked") === "true";
-    const tfMax = (document.querySelector("[data-ce=ship-tf-max]")?.value || "").trim();
-    const tfDl = tfOn && document.querySelector("[data-ce-tf-dl]")?.getAttribute("aria-checked") === "true";
-    const tfDlMode = document.querySelector('[data-seg="tf-dl"]')?.dataset.value || "days";
-    const tfDate = (document.querySelector("[data-ce=ship-tf-date]")?.value || "").trim();
-    const tfDays = (document.querySelector("[data-ce=ship-tf-days]")?.value || "").trim();
-    return { typeName, name, highlight, date, venue, city, start, tiers, posterFilled, sessions, ship, tpOn, tpNote,
-             dqOn, dqMin, dqBky, tfOn, tfLimit, tfMax, tfDl, tfDlMode, tfDate, tfDays };
+    /* 跨日活動（D328）：第 1 場開了跨日才有結束日期，預覽卡的日期寫成區間。 */
+    const s0 = series.list[0] || {};
+    const endDate = s0.multiDay ? (s0.endDate || "").trim() : "";
+    return { typeName, name, highlight, date, endDate, venue, city, start, tiers, posterFilled, sessions, ship };
   }
+
+  /* ── 活動語言（D328，5.1.6.1 §4.2 末段）──────────────────────────────────
+     複選卡（.check-cards--sm）：值＝被選中的卡的 data-lang-val 陣列，順序照選項順序（不是點選順序），
+     預覽與粉絲頁照這個順序串起來。選項碼沿用語言碼：yue 廣東話、cmn 普通話、en／ja／ko／th／vi。 */
+  const EVLANG_KEY = { yue: "ce.evlang.yue", cmn: "ce.evlang.cmn", en: "ce.evlang.en", ja: "ce.evlang.ja",
+                       ko: "ce.evlang.ko", th: "ce.evlang.th", vi: "ce.evlang.vi" };
+  const langBox = () => document.getElementById("ce-lang");
+  function getLangs() {
+    const box = langBox();
+    return box ? Array.from(box.querySelectorAll('[data-lang-val][aria-checked="true"]')).map(b => b.dataset.langVal) : [];
+  }
+  function langText() {
+    return getLangs().map(v => T(EVLANG_KEY[v], v)).join(T("ce.evlang.sep", ", "));
+  }
+  function paintLangCard(b, on) {
+    b.setAttribute("aria-checked", on ? "true" : "false");
+    b.classList.toggle("check-card--on", on);
+    const mark = b.querySelector(".check-card__mark");
+    if (mark) {
+      mark.innerHTML = '<i data-lucide="' + (on ? "check" : "plus") + '" class="ztor-icon"></i>';
+      if (window.ztorIcons) window.ztorIcons.applyIcons(mark);
+    }
+  }
+  function setLangs(vals) {
+    const box = langBox();
+    if (!box) return;
+    const want = vals || [];
+    box.querySelectorAll("[data-lang-val]").forEach(b => paintLangCard(b, want.indexOf(b.dataset.langVal) >= 0));
+  }
+  /* bookyay 帶入後鎖定（F21）：卡片 disabled（check-card.css 的鎖定態：未選的降成鎖定墨色、已選維持對比），
+     欄位標籤掛來源標記——與 lockField() 同一套，只是對象是一組按鈕不是單一 input。 */
+  function lockLangs(on) {
+    const box = langBox();
+    if (!box) return;
+    box.querySelectorAll("[data-lang-val]").forEach(b => { b.disabled = on; });
+    const f = box.closest(".field");
+    if (!f) return;
+    f.classList.toggle("is-source-locked", on);
+    const label = f.querySelector(".field__label");
+    const chip = label && label.querySelector(".field-source");
+    if (on && label && !chip) {
+      label.insertAdjacentHTML("beforeend", srcChip());
+      if (window.ztorIcons) window.ztorIcons.applyIcons(label);
+    } else if (!on && chip) chip.remove();
+  }
+  langBox()?.addEventListener("click", e => {
+    const b = e.target.closest("[data-lang-val]");
+    if (!b || b.disabled) return;
+    paintLangCard(b, b.getAttribute("aria-checked") !== "true");
+    syncReview(); scheduleSave();
+  });
 
   /* 墓碑（2026-09-22 · D310）：`setRev()` 與 Review 摘要回填整段刪除——第 8 步的各步摘要卡
      （F10）退場，改由粉絲視角前台預覽本身承擔摘要的工作，Edit 去向改成預覽區塊的「編輯」
      入口（CE_EDIT_ZONES）。原本這裡把 readState() 的值寫進 [data-rev=…]（活動類型、名稱、
-     亮點、場地與時間、場次、票種、組合包、取票方式含第三方門票／動態 QR／可轉贈摘要句），
+     亮點、場地與時間、場次、票種、組合包、取票方式與其附屬設定的摘要句），
      那批 markup 已隨本輪一併移除。 */
 
+  /* 發布檢核第五項（D329）：存過的門票裡至少一張顯示中，或第 6 步至少一組已送出的組合包。 */
+  function hasSellable() {
+    if (savedTiers().some(t => !t.hidden)) return true;
+    return !!(bundleEd && bundleEd.getBundles().some(b => !b.fresh));
+  }
   function syncReview() {
     if (isWP()) { syncReviewWP(); return; }     // D149：共看派對走專屬檢核
     const s = readState();
@@ -1623,8 +1552,9 @@
       /* 巡迴：每一站都要有自己的場地才算數——只填了第 1 站就放行，等於允許發布一個
          後面幾站沒有地點的巡迴。定點維持原本的「共用那一格填了就算」。 */
       venue:  isTour() ? series.list.length > 0 && series.list.every(x => (x.venue || "").trim()) : !!s.venue,
-      /* 免票入場撤除後這一項恆為硬閘：一定要有票才發布得了（2026-08-10）。 */
-      ticket: s.tiers > 0
+      /* 免票入場撤除後這一項恆為硬閘：一定要有票才發布得了（2026-08-10）。
+         D329（5.1.6.1 F11 第五項）：改為「至少 1 張顯示中的門票，或至少 1 組組合包」——全部門票隱藏、又沒有組合包時擋發布。 */
+      ticket: hasSellable()
     };
     /* D310：檢核清單搬進第 8 步側欄第三段（js/publish-stage.js 的 checks()），本頁只算狀態。 */
     qcState = checks;
@@ -1674,7 +1604,8 @@
       el.textContent = s.highlight; el.hidden = !s.highlight;
     });
     // 日期（＋開始時間）
-    const dateLine = s.date ? (s.start ? (s.date + " · " + s.start) : s.date) : "";
+    const dateSpan = s.date ? (s.endDate ? s.date + " – " + s.endDate : s.date) : "";
+    const dateLine = dateSpan ? (s.start ? (dateSpan + " · " + s.start) : dateSpan) : "";
     setPv("date", dateLine, "ce.pv.date", "Date to be set");
     // 場地（＋城市）
     const venueLine = s.venue ? (s.city ? (s.venue + " · " + s.city) : s.venue) : "";
@@ -1848,11 +1779,10 @@
   /* ---- Publish：QC 五項硬閘（已由 syncReview gate disabled）＋ 彙整未過 ＊ 阻擋並聚焦 ---- */
   function tryPublish() {
     const stepOf = isWP() ? { film: 2, room: 2, wpstart: 3 }
-                          : { name: 2, desc: 2, venue: 3, date: 3, "sale-from-d": 7, "ship-fee": 7, "ship-spot": 7, "ship-tp-note": 7,
-                            "ship-dq-min": 7, "ship-tf-max": 7, "ship-tf-date": 7 };
-    /* bookyay 帶入者（2026-09-22 D308 決定五）：取票方式／電子門票整組的值來自 bookyay、不可改，檢核沒有意義——
-       這組欄位（第三方門票說明、更新間隔、次數上限、截止日）從必填集拿掉，250 字元上限也不擋。 */
-    const reqEls = activeRequired().filter(el => !(bkyOn && el.closest("[data-ship-eticket]")));
+                          : { name: 2, desc: 2, venue: 3, date: 3, "sale-from-d": 7, "ship-fee": 7, "ship-spot": 7 };
+    /* 墓碑 2026-09-29（D327）：電子門票附屬設定的必填（取票說明、更新間隔、次數上限、截止日）
+       與 bookyay 帶入時的豁免過濾一併退場——那組欄位已不存在。 */
+    const reqEls = activeRequired();
     let firstBad = null;
     reqEls.forEach(el => { if (!validateField(el) && !firstBad) firstBad = el; });
     if (firstBad) {
@@ -1864,13 +1794,20 @@
       alert(T("ce.publish-blocked", "Some required (＊) fields are empty. Please complete the highlighted fields."));
       return;
     }
-    /* 第三方門票的說明超過 250 字元（D302）：不擋輸入（讓人看得到超了多少），發布前擋下並回步驟 7。 */
-    if (!isWP() && !bkyOn && tpOver()) {
-      step = 7; render();
-      tpNoteEl()?.focus();
-      alert(T("ce.publish-blocked-tp", "The collect & entry note is over 250 characters. Shorten it before publishing."));
-      return;
+    /* 跨日活動（D328，5.1.6.1 F7／F11）：開了跨日的場次，結束日期必填、結束要晚於開始；
+       D329 起開始與結束時間也必填——場次的值住在 series（不是 [data-ce] 欄位），所以不走 activeRequired，另外彙整一次；
+       不擋切步、發布前擋下並回步驟 3，逐場在欄位就地標示（sessEndErr／sessTimeErr）。 */
+    if (!isWP()) {
+      const bad = series.list.find(sessBad);
+      if (bad) {
+        sessShowErr = true;
+        sessOpen.add(bad.id);
+        step = 3; render(); renderSessions();
+        alert(T("ce.publish-blocked-enddate", "A multi-day date needs a start time, an end time, and an end later than its start. Check the dates."));
+        return;
+      }
     }
+    /* 墓碑 2026-09-29（D327）：取票說明 250 字元的發布守門隨欄位退場。 */
     /* 票種數量加總超過容量＝Review 的彙整阻擋項（spec §4.5 F11）：
        不擋切步（草稿可以先超標），但發布前一定要回步驟 4 調完。 */
     if (!isWP() && overCapacity()) {
@@ -1886,15 +1823,46 @@
 
   /* ── 發布前預覽確認的宿主端資料（D305／D306）────────────────────────────
      fields：5.1.6.1 §1 的可翻譯欄位清單（以表單實際有的欄位為準）——名稱、亮點、描述、
-       活動內含物／需攜帶物品／活動須知（三份動態清單，逐列一個 key）、條款與細則（開著才收）、
-       領取與入場方式（第三方門票開著才收）、票種名稱（步驟 4 的 types）。表演陣容的角色標籤：
+       需攜帶物品／活動須知（兩份動態清單，逐列一個 key；D327 刪去第一組清單與取票說明欄）、
+       條款與細則（開著才收）、票種名稱（步驟 4 的 types）、門票簡介（D328，每張有填的門票一格）。表演陣容的角色標籤：
        本表單的表演者只有人名、沒有角色欄，跳過（人名維持原文，§7.4 顯示規則）；退換票說明：
        表單沒有這個欄位（§8.26 第 15 項）。
      prices：步驟 4 每個票種的票價＋步驟 6 每個組合包的售價；基準幣別＝創作者幣別
-       （D316 window.ztorCurrency.CREATOR，示範值 TWD，ASSUMPTIONS PG-035／UIA-165）；
-       bookyay 帶入的票種基準＝HKD 且鎖（§7.15）。活動側維持可覆寫（D306），這裡只換
-       基準幣別的來源，不動 publish-stage.js 的 priceOverrides（不傳＝現行行為）。 */
+       （D316 window.ztorCurrency.CREATOR，示範值 TWD，ASSUMPTIONS PG-035／UIA-165）。
+       bookyay 帶入者（2026-09-29 D330，取代「票種基準＝HKD 且鎖」）：基準幣別照樣是創作者幣別，基準價＝港幣原價換算值、鎖定；
+       priceObj 另帶 pin＝{ HKD: 原價 }（價格表港幣欄鎖定、可有小數、無重設）與 baseOpen（基準欄也可覆寫、可重設，
+       創作者幣別＝港幣時 pin 落在基準欄上＝基準欄鎖定）。活動側維持可覆寫（D306），不動 priceOverrides。 */
   const CE_BASE_CURRENCY = window.ztorCurrency ? window.ztorCurrency.CREATOR : "TWD";
+  /* 價格物件（D330）：票種基準價＝ty.price（bookyay 帶入者是港幣原價換算後的值）；ty.hkd／b.hkd 有值＝bookyay 帶入，
+     港幣欄鎖在原價（pin）、基準欄也可覆寫（baseOpen）。第 8 步價格表、預覽模型兩處共用，不各寫一份。 */
+  const pinOf = v => (v != null && v !== "") ? { pin: { HKD: Math.round(Number(v) * 100) / 100 }, baseOpen: true } : { pin: null, baseOpen: false };
+  function tyPriceObj(ty) {
+    return Object.assign({ base: CE_BASE_CURRENCY, amount: Number(ty.price) || 0, override: ty.override || {} }, pinOf(ty.hkd));
+  }
+  function bdPriceObj(b) {
+    return Object.assign({ base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.finalPrice(b)), override: b.override || {} }, pinOf(bdBkyHkd(b)));
+  }
+  /* 含 bookyay 票券的組合包，港幣欄鎖定的值（2026-09-29 D331 決定六；算法同 events-store bkyBundleHkd）：
+     自動建立的（b.hkd）＝bookyay 現價；創作者在第 6 步自己建、允許票種裡有 bookyay 帶入的票（票種帶 hkd）＝
+     （bookyay 港幣原價 × 張數 ＋ 商品成員合計換算成港幣）×（1 − 組合折扣%）。允許多種票種時取最低那張的港幣原價（區間下界，UIA-183）。
+     商品成員合計＝原價 − 票券那一段（最低允許票價 × 張數）；（1 − 折扣%）＝售價 ÷ 原價——都讀編輯器既有的 listPrice／finalPrice，不另算一份。
+     沒有 bookyay 票＝null（照一般活動組合包）。 */
+  function bdBkyHkd(b) {
+    if (b.hkd != null && b.hkd !== "") return b.hkd;
+    if (!bundleEd) return null;
+    const ids = (b.tickets && b.tickets.tierIds) || [];
+    const tiers = ids.map(id => savedTiers().filter(t => t.id === id)[0]).filter(Boolean);
+    const hks = tiers.map(t => types.filter(x => x.id === t.type)[0])
+      .filter(ty => ty && ty.hkd != null && ty.hkd !== "").map(ty => Number(ty.hkd) || 0);
+    if (!hks.length) return null;
+    const q = bundleEd.ticketCount(b) || 1;
+    const list = bundleEd.listPrice(b), fin = bundleEd.finalPrice(b);
+    const tixBase = Math.min.apply(null, tiers.map(t => Number(t.price) || 0)) * q;
+    const goods = Math.max(0, list - tixBase);
+    const goodsHkd = window.ztorEvents ? window.ztorEvents.fx(CE_BASE_CURRENCY, "HKD", goods) : goods;
+    const ratio = list > 0 ? fin / list : 1;
+    return Math.round((Math.min.apply(null, hks) * q + goodsHkd) * ratio * 100) / 100;
+  }
 
   /* ── 第 8 步「預覽與發布」的全頁畫面（D310 · 5.1.6.1 §4.8）────────────────────
      宿主只負責三件事：備料（buildStageOpts）、掛畫面（mountStage）、檢核狀態同步
@@ -1916,7 +1884,8 @@
     { key: "name",   labelKey: "ce.qc.name",   fb: "Event name filled",    step: 2 },
     { key: "date",   labelKey: "ce.qc.date",   fb: "Date set",             step: 3 },
     { key: "venue",  labelKey: "ce.qc.venue",  fb: "Venue set",            step: 3 },
-    { key: "ticket", labelKey: "ce.qc.ticket", fb: "At least 1 ticket tier", step: 5 }
+    /* D329（F11 第五項）：「至少 1 種票種」改為「至少 1 張顯示中的門票或 1 組組合包」；新 key，舊 key 留給 create-event-legacy。 */
+    { key: "ticket", labelKey: "ce.qc.sellable", fb: "At least 1 visible ticket or 1 bundle", step: 5 }
   ];
   const QC_ROWS_WP = [
     { key: "wp-video",    labelKey: "ce.wp.qc.video",    fb: "Video selected",    step: 2 },
@@ -1955,11 +1924,9 @@
     document.querySelectorAll("#" + listId + " [data-list-row]").forEach((row, i) => {
       const input = row.querySelector("input");
       if (!input || !input.value.trim()) return;
-      const sel = row.querySelector("[data-list-kind-sel]");
-      const tag = sel ? (sel.options[sel.selectedIndex]?.textContent || "").trim() : "";
       out.push({ key: prefix + "-" + i, el: { value: input.value.trim() }, kind: "input",
                  labelKey: "pp.field.line", labelFallback: "Line " + (i + 1), labelN: i + 1,
-                 group: T(groupKey, groupFb), tag });
+                 group: T(groupKey, groupFb) });
     });
     return out;
   }
@@ -1970,10 +1937,10 @@
       { key: "highlight", el: q('[data-ce="highlight"]'), kind: "input", labelKey: "pp.field.highlight", labelFallback: "Highlight" },
       { key: "desc", el: q('[data-ce="desc"]'), kind: "textarea", labelKey: "pp.field.desc", labelFallback: "Description" }
     ];
-    const includes = listFields("ce-includes-list", "pp.field.includes", "What’s included", "inc");
+    /* D327：第一組清單（活動內含物）已刪，只剩兩份。 */
     const bring    = listFields("ce-bring-list",    "pp.field.bring",    "What to bring",   "bring");
     const notes    = listFields("ce-notes-list",    "pp.field.notes",    "Good to know",    "note");
-    [includes, bring, notes].forEach(list => list.forEach(f => {
+    [bring, notes].forEach(list => list.forEach(f => {
       f.labelFallback = T("pp.field.line", "Line {n}").replace("{n}", f.labelN);
       f.labelKey = null;
       fields.push(f);
@@ -1985,26 +1952,31 @@
     if (mkt && termOn("marketing") && mkt.value.trim()) termFields.push({ key: "marketing", el: mkt, kind: "textarea", labelKey: "pp.field.marketing", labelFallback: "Marketing consent" });
     termFields.forEach(f => fields.push(f));
     const st = readState();
-    if (st.tpOn && st.tpNote) fields.push({ key: "tp-note", el: q('[data-ce="ship-tp-note"]'), kind: "textarea", labelKey: "pp.field.entry-note", labelFallback: "How to collect & enter" });
+    /* 墓碑 2026-09-29（D327）：取票說明欄不再是可翻譯欄位——欄位已隨電子門票附屬設定刪除。 */
     const tierGroup = T("pp.price.tiers", "Ticket types");
     types.forEach(ty => fields.push({ key: "tier-" + ty.id, el: { value: (ty.name || "").trim() }, kind: "input",
       labelKey: null, labelFallback: T("pp.field.tier-name", "Ticket type name"), group: tierGroup }));
+    /* 門票簡介（D328，5.1.6.1 §1）：每張有填的門票一格（場次 × 票種的每一格、獨立票都算），
+       列名＝門票在清單上的可辨識名稱（多場時帶場次）。隱藏的票也列——它仍可能在組合包裡被賣出。 */
+    const descGroup = T("pp.field.tier-desc", "Ticket description");
+    savedTiers().filter(t => (t.desc || "").trim()).forEach(t => fields.push({
+      key: "tdesc-" + t.id, el: { value: t.desc.trim() }, kind: "textarea",
+      labelKey: null, labelFallback: tierLabelWithSession(t), group: descGroup }));
 
-    /* 價格：票種（基準＝TWD；bookyay 帶入者 priceBase＝HKD 且鎖）＋組合包（基準＝TWD，售價＝finalPrice） */
+    /* 價格：票種（基準＝創作者幣別；bookyay 帶入者另帶港幣鎖定欄，D330）＋組合包（基準＝創作者幣別，售價＝finalPrice；
+       自動建立的組合包港幣欄＝bookyay 現價） */
     const S = window.ztorEvents;
     const prices = [];
     types.forEach(ty => {
-      const base = ty.priceBase ? ty.priceBase.currency : CE_BASE_CURRENCY;
-      const amount = ty.priceBase ? Number(ty.priceBase.amount) : Number(ty.price) || 0;
       prices.push({ key: "tier:" + ty.id, label: (ty.name || "").trim() || T("ce.tier.untitled", "Untitled tier"),
                     groupKey: "pp.price.tiers", groupFallback: "Ticket types",
-                    priceObj: { base, amount, override: ty.override || {} }, locked: !!ty.fix });
+                    priceObj: tyPriceObj(ty), locked: !!ty.fix });
     });
     const bundles = bundleEd ? bundleEd.getBundles().filter(b => !b.fresh || bundleEd.isValid(b)) : [];
     bundles.forEach(b => {
       prices.push({ key: "bundle:" + b.id, label: (b.name || "").trim() || bundleEd.suggestName(b) || T("cpp.bd.untitled", "Untitled bundle"),
                     groupKey: "pp.price.bundles", groupFallback: "Ticket bundles",
-                    priceObj: { base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.finalPrice(b)), override: b.override || {} }, locked: false });
+                    priceObj: bdPriceObj(b), locked: bdBkyHkd(b) != null });   // D331：自建含 bookyay 票者港幣欄同樣鎖定
     });
 
     const views = bundles.length
@@ -2014,7 +1986,7 @@
     return {
       fields, prices, views,
       currencies: S ? S.CURRENCIES.slice() : ["USD", "TWD", "HKD", "SGD", "JPY"],
-      baseCurrency: types.some(t => t.priceBase) ? types.find(t => t.priceBase).priceBase.currency : CE_BASE_CURRENCY,
+      baseCurrency: CE_BASE_CURRENCY,   // D330：bookyay 帶入者的基準幣別也是創作者幣別（不再改成港幣）
       mode: "publish",
       /* D312：活動的多語內容不自動翻譯，改手動——見 js/publish-stage.js 檔頭 translation 選項。 */
       translation: "manual",
@@ -2025,7 +1997,7 @@
       checks: stageChecks,
       previewRender: (host, api) => {
         if (!window.ztorFanEventPage) return;
-        window.ztorFanEventPage.render(host, buildFanModel({ includes, bring, notes, termFields, bundles, st }), api);
+        window.ztorFanEventPage.render(host, buildFanModel({ bring, notes, termFields, bundles, st }), api);
       },
       onPrimary: result => { window.__ceLocalization = result; tryPublish(); },
       onSecondary: () => goStep(prevStep(total))
@@ -2035,17 +2007,18 @@
   function buildFanModel(ctx) {
     const st = ctx.st;
     const cSel = document.getElementById("ce-country");
-    const lSel = document.getElementById("ce-lang");
     const first = series.list[0] || {};
     const timeLine = first.start ? (first.end ? first.start + " – " + first.end : first.start) : "";
     let duration = "";
-    if (first.start && first.end) {
+    if (first.start && first.end && !first.multiDay) {   // 跨日場次不算時長（跨天的時差不是一天內的起訖）
       const toMin = s => { const m = /^(\d{1,2}):(\d{2})$/.exec(s); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
       const a = toMin(first.start), b = toMin(first.end);
       if (a != null && b != null && b > a) { const d = b - a; duration = (d >= 60 ? Math.floor(d / 60) + " h" : "") + (d % 60 ? " " + (d % 60) + " min" : ""); duration = duration.trim(); }
     }
     const sessionsN = series.list.length;
-    const dateLine = sessionsN > 1 ? series.list.map(x => x.date).filter(Boolean).join(" · ") : (first.date || st.date || "");
+    /* 跨日（D328）：開了跨日的場次寫成「開始日期 – 結束日期」。 */
+    const spanOf = x => x.date ? (x.multiDay && x.endDate ? x.date + " – " + x.endDate : x.date) : "";
+    const dateLine = sessionsN > 1 ? series.list.map(spanOf).filter(Boolean).join(" · ") : (spanOf(first) || st.date || "");
     const pickupKey = { eticket: "fep.pickup.eticket", sf: "fep.pickup.sf", pickup: "fep.pickup.pickup" }[st.ship] || "fep.pickup.eticket";
     const cap = eventRules.cap || {};
     const limit = cap.mode !== "none" && cap.order ? T("fep.limit.order", "Up to {n} per order").replace("{n}", cap.order) : null;
@@ -2054,15 +2027,24 @@
     const kvImgs = Array.from(document.querySelectorAll('#ce-gallery [data-gallery-tile].is-filled img')).map(i => i.getAttribute("src")).filter(Boolean);
     const kv = kvImgs[0] || "";
     const hasVideo = !!document.querySelector('[data-asset="video"].is-filled');
-    const includes = ctx.includes.map(f => ({ key: f.key, tag: f.tag }));
     const bring = ctx.bring.map(f => ({ key: f.key }));
     const notes = ctx.notes.map(f => ({ key: f.key }));
     const terms = ctx.termFields.find(f => f.key === "tnc") ? { key: "tnc" } : null;
-    const tiers = types.map(ty => ({
-      key: ty.id, name: { key: "tier-" + ty.id }, note: ty.tag ? String(ty.tag) : "",
-      priceObj: { base: ty.priceBase ? ty.priceBase.currency : CE_BASE_CURRENCY, amount: ty.priceBase ? Number(ty.priceBase.amount) : Number(ty.price) || 0, override: ty.override || {} },
-      priceKey: "tier:" + ty.id, soldOut: false
-    }));
+    /* 票價清單一列＝一個票種（前台鏡像的既有粒度）。D328 顯示／隱藏是逐張門票的開關：
+       這個票種在每一場都被隱藏（沒有任何一張可見）才整列不列；有一場可見就照列（呈現假設 UIA-172）。
+       門票簡介取第一張可見且有填的那張（多場各自不同時只取一句，同 UIA-172）。 */
+    const tiers = types.map(ty => {
+      const cells = savedTiers().filter(t => t.type === ty.id);
+      const shown = cells.filter(t => !t.hidden);
+      const withDesc = shown.find(t => (t.desc || "").trim());
+      return {
+        key: ty.id, name: { key: "tier-" + ty.id }, note: ty.tag ? String(ty.tag) : "",
+        desc: withDesc ? { key: "tdesc-" + withDesc.id } : null,
+        hidden: cells.length > 0 && !shown.length,
+        priceObj: tyPriceObj(ty),
+        priceKey: "tier:" + ty.id, soldOut: false
+      };
+    });
     /* 組合包（D296 形狀 tickets:{ tierIds, qty }）→ 前台組合卡要的成員列：票券＝允許票種名單 × 張數、
        商品＝名稱＋有無規格（規格「下單時選」）＋圖；封面＝第一件商品圖（原型的 cover 只記有沒有、沒有素材）。 */
     const tixOf = b => (window.ztorEvents && window.ztorEvents.bundleTickets) ? window.ztorEvents.bundleTickets(b) : { tierIds: [], qty: 1 };
@@ -2080,7 +2062,7 @@
       }));
       return {
         name: (b.name || "").trim() || bundleEd.suggestName(b),
-        priceObj: { base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.finalPrice(b)), override: b.override || {} },
+        priceObj: bdPriceObj(b),
         listPriceObj: bundleEd.listPrice(b) > bundleEd.finalPrice(b) ? { base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.listPrice(b)), override: {} } : null,
         priceKey: "bundle:" + b.id,
         tickets: names.length ? { names, qty: Number(tk.qty) || 1 } : null,
@@ -2102,12 +2084,13 @@
       organizer: persona ? persona.name : "Gary Lin", organizerAvatar: persona ? (persona.avatar || "") : "",
       date: dateLine, time: timeLine, duration, doors: first.doors || "",
       venue: st.venue, address: (document.querySelector('[data-ce="addr"]')?.value || "").trim(),
-      language: lSel ? (lSel.options[lSel.selectedIndex]?.textContent || "").trim() : "",
+      /* D328：活動語言可複選——多值依選項順序串成一行（中文「、」、英文「, 」）。 */
+      language: langText(),
       priority, limit,
       desc: { key: "desc" },
       lineup: lineup.map(p => ({ name: p.name, role: null })),
-      notes, bring, includes,
-      pickup: T(pickupKey, st.ship), entryNote: st.tpOn && st.tpNote ? { key: "tp-note" } : null,
+      notes, bring,
+      pickup: T(pickupKey, st.ship),
       /* 退換票：表單沒有此欄，交給渲染器用平台固定文案（UIA-167）；相關活動：從 events-store 撈三場別的活動、標「非本活動」 */
       terms, tiers, bundles,
       /* 「相關活動」不畫（2026-09-23 使用者：「一樣移除」，同建立商品拿掉「你可能也喜歡」）——發布前預覽只看這一場本身。 */
@@ -2150,22 +2133,14 @@
      兩份清單結構一樣，共用同一支：按鈕上的 data-list-add 指到要塞進哪個容器、
      data-list-ph 指定 placeholder 的字典 key。不為兩份幾乎相同的清單各寫一遍。 */
   (function () {
-    /* 有些清單的每一列要先選類型再寫內容（活動內含物），有些只有一行字（需攜帶物品、
-       活動須知）。差別只在前面多不多一個下拉，所以同一支列產生器用 kind 決定要不要出。 */
-    const KINDS = {
-      includes: [["food", "ce.adv.inc.food"], ["admission", "ce.adv.inc.admission"],
-                 ["gear", "ce.adv.inc.gear"], ["other", "ce.adv.inc.other"]]
-    };
-    function row(phKey, kind) {
+    /* 墓碑 2026-09-29（D327）：每列先選類型的那一組（活動內含物，`KINDS.includes` 與列首類型下拉
+       `data-list-kind-sel`）隨清單刪除退場；兩份剩下的清單每列都只有一行字。 */
+    function row(phKey) {
       const el = document.createElement("div");
       el.className = "flex-row mt-8";
       el.style.gap = "var(--sp-8)";
       el.dataset.listRow = "";
-      const opts = KINDS[kind];
       el.innerHTML =
-        (opts ? '<select class="select" style="flex:0 0 150px" data-list-kind-sel>' +
-            opts.map(o => '<option value="' + o[0] + '" data-i18n="' + o[1] + '">' + esc(T(o[1], o[0])) + '</option>').join("") +
-          '</select>' : "") +
         '<input class="input" style="flex:1" data-i18n-placeholder="' + phKey + '" placeholder="' +
         esc(T(phKey, "")) + '">' +
         '<button class="btn btn--ghost btn--sm" type="button" data-list-remove aria-label="' +
@@ -2177,10 +2152,9 @@
       if (add) {
         const list = document.getElementById(add.dataset.listAdd);
         if (list) {
-          const r = row(add.dataset.listPh, add.dataset.listKind);
+          const r = row(add.dataset.listPh);
           list.appendChild(r);
           if (window.ztorIcons) window.ztorIcons.applyIcons(r);
-          if (window.ztorSelect) window.ztorSelect.mount(r);   // 動態長出來的 select 要補掛自訂下拉
           r.querySelector("input").focus();
           scheduleSave();
         }
@@ -2287,6 +2261,7 @@
       const add = gal.querySelector("[data-gallery-add]");
       if (tiles().length >= MAX) { if (add) add.remove(); }
       else if (!add) addSlot();
+      syncImgRatioNote();
     }
     galAddSlot = addSlot; galSyncFlags = syncFlags;
 
@@ -2324,6 +2299,7 @@
   const tierList  = document.getElementById("ce-tier-list");
   const tierCount = document.getElementById("ce-tier-count");
   const TIER_NAME_MAX = 40;
+  const TIER_DESC_MAX = 100;     // 門票簡介上限（D328，5.1.6.1 F22）
 
   /* 票種（2026-08-08 使用者裁決：從票務拉出來獨立一步）。它只是「這場活動賣哪幾種票」
      的清單——名稱、販售標籤，加上生成每一格時要帶入的預設價格與張數（種子，不是活的連動）。
@@ -2379,13 +2355,18 @@
     const d = val(t);
     /* 名稱不再是這一格的欄位（2026-08-08：票種獨立成一步，名稱與撞名都歸票種那邊管），
        這裡只驗這一格自己的數字。e.name 保留成空字串，讓 tierValid 與提示邏輯不用改。 */
-    const e = { name: "", price: "", qty: "", ntype: "" };
+    const e = { name: "", price: "", qty: "", ntype: "", desc: "" };
     /* 墓碑 2026-09-23（D315）：`excpct`（例外平台費的費率欄，D311 決定三）連同它的
        0–100 驗證退場——平台費率只在 Admin 的費率設定頁設，門票彈窗沒有可填的費率。 */
     /* 手動新增又選了「新建票種」時，票種名稱是必填——沒有名字的票種在清單上讀不出是什麼 */
     if (t.manual && !t.type && !String(d.ntype || "").trim())
       e.ntype = dT(d.tmode === "solo" ? "d.tier.soloname.err" : "d.type.err.name");
-    if (!isInt(d.price)) e.price = T("ce.tier.err.price", "Price must be a whole number, 0 or more.");
+    /* 票價整數；唯一例外是 bookyay 套票轉換出的 1 人票（現價 ÷ 人數，可有小數，D328）——那張票的價格鎖定、
+       不在這裡填，所以 `decimalOk` 的票只要是 ≥ 0 的數字就過。 */
+    const priceOk = t.decimalOk ? (String(d.price).trim() !== "" && isFinite(Number(d.price)) && Number(d.price) >= 0) : isInt(d.price);
+    if (!priceOk) e.price = T("ce.tier.err.price", "Price must be a whole number, 0 or more.");
+    if (String(d.desc || "").trim().length > TIER_DESC_MAX)
+      e.desc = T("ce.tier.desc.err", "Keep it to {n} characters.").replace("{n}", TIER_DESC_MAX);
     if (!isInt(d.qty) || Number(d.qty) < 1) e.qty = T("ce.tier.err.qty", "Quantity must be a whole number, 1 or more.");
     else if (overCapacity())
       e.qty = T("ce.tier.err.overcap", "Tier quantities add up to {n}, over the {cap} capacity.")
@@ -2405,6 +2386,10 @@
     t.img = (d.img || "").trim();                       // 留空＝跟著活動主視覺走
     t.earlymin = String(d.earlymin || "").trim();        // 留空或 0＝跟著場次的開放入場時間
     t.early = (d.early || "").trim();                    // 留空＝跟著這一場的設定
+    /* D328（5.1.6.1 F22 基本區）：門票簡介（選填、≤100 字、可翻譯）與顯示開關（預設顯示；
+       關＝隱藏：活動頁票價清單不列、不能單張買，仍可當組合包的票券成員）。 */
+    t.desc = String(d.desc || "").trim();
+    t.hidden = !!d.hidden;
     /* 墓碑 2026-09-23（D315）：票不再帶 `feeException`（D311 的逐門票例外平台費率）。 */
     /* 手動新增的那張票在這裡收尾。票務有兩種，分岔就在這裡（2026-08-11 使用者裁示）：
        **打的名字對得上既有票種** → 這張票掛進那個票種的階層，跟著它的預設值走、
@@ -2647,6 +2632,38 @@
       '</div></div>';
   }
 
+  /* 門票簡介（D328，5.1.6.1 F22 基本區）：選填、上限 100 字、粉絲看得到、列入翻譯表。
+     不擋輸入（打超過看得到超了多少），儲存時擋（tierErrors 的 desc）；常駐說明是即時字數。
+     bookyay 帶入的票：預填該票種的「活動門票簡介」，可逐張改（不鎖）。 */
+  function tierDescFieldHTML(t, d) {
+    const v = d.desc == null ? "" : String(d.desc);
+    return '<div class="field" data-feat="S54">' +
+      '<label class="field__label"><span>' + esc(T("ce.tier.desc", "Ticket description")) + '</span> ' +
+        '<span class="text-sub">' + esc(T("ce.opt", "(optional)")) + '</span></label>' +
+      '<textarea class="textarea" rows="2" data-tier-f="desc" placeholder="' +
+        esc(T("ce.tier.desc.ph", "e.g. Includes a signed poster")) + '">' + esc(v) + '</textarea>' +
+      '<p class="field__hint" data-tier-hint="desc">' + v.trim().length + " / " + TIER_DESC_MAX + '</p>' +
+    '</div>';
+  }
+  /* 顯示開關（D328）：預設開。關＝隱藏——活動頁票價清單不列、粉絲不能單張買；仍可當組合包的票券成員，
+     與組合包共用同一個數量池（比照電子商店「成員隱藏不影響組合」D241）。用站上既有的外框開關列 .control-row。 */
+  /* bookyay 套票轉換出的 1 人票（hideFix，D329）：開關鎖定為隱藏（.switch--locked＋aria-disabled，同跨日開關的來源鎖定），
+     標籤旁掛來源標記、說明句換成「只透過組合包販售」。 */
+  function tierShowRowHTML(t, d) {
+    const on = !d.hidden;
+    const fix = !!t.hideFix;
+    return '<div class="control-row" data-feat="S55">' +
+      '<div>' +
+        '<div class="control-row__main">' + esc(T("ce.tier.show", "Show on event page")) + (fix ? " " + srcChip() : "") + '</div>' +
+        '<div class="control-row__sub">' + esc(fix ? T("ce.tier.show.fix", "Sold only through its bundle — stays hidden.")
+          : T("ce.tier.show.hint", "Off hides it from the price list — fans can't buy it on its own, but bundles can still include it.")) + '</div>' +
+      '</div>' +
+      '<button type="button" class="switch' + (on ? " switch--on" : "") + (fix ? " switch--locked" : "") +
+        '" role="switch" aria-checked="' + (on ? "true" : "false") + '"' + (fix ? ' aria-disabled="true"' : "") +
+        ' data-tier-show aria-label="' + esc(T("ce.tier.show", "Show on event page")) + '"></button>' +
+    '</div>';
+  }
+
   function tierFieldHTML(key, labelKey, labelFb, value, opts) {
     const o = opts || {};
     const dis = o.locked ? " disabled" : "";
@@ -2696,6 +2713,9 @@
            跟旁邊那些長得一樣的階層票是兩種東西，卡面上要分得出來。 */
         (!t.type && !newIds.has(t.id)
           ? '<span class="badge badge--neutral">' + esc(dT("d.tier.standalone")) + '</span>' : '') +
+        /* 隱藏標示（D328，5.1.6.1 F22 卡片收合顯示）：顯示開關關閉時才出現。 */
+        (dv.hidden
+          ? '<span class="badge badge--neutral" data-tier-hidden-badge data-feat="S55">' + esc(T("ce.tier.hidden", "Hidden")) + '</span>' : '') +
         /* 卡頭不再掛 bookyay 來源標記（2026-08-09 使用者指示）：下面多了「票務組合名稱」
            那一列，有那一列就代表這張票是 bookyay 帶進來的，標記變成重複的訊息。 */
         /* 動作收進 ⋮（2026-08-09 使用者指示）：整張卡本身就是「編輯」的點擊區，
@@ -2740,7 +2760,13 @@
         (buySummary(t) ? '<div class="tier-card__fact"><dt>' + esc(dT("d.tier.buycond")) + '</dt><dd>' + esc(buySummary(t)) + '</dd></div>' : '') +
         (capSummary(t) ? '<div class="tier-card__fact"><dt>' + esc(dT("d.rule.cap")) + '</dt><dd>' + esc(capSummary(t)) + '</dd></div>' : '') +
         (discSummary(t) ? '<div class="tier-card__fact"><dt>' + esc(T("ce.rule.disc", "Discount")) + '</dt><dd>' + esc(discSummary(t)) + '</dd></div>' : '') +
-        '<div class="tier-card__fact"><dt>' + esc(dT("d.tier.bundle")) + '</dt><dd>' + bundleLinesHTML(t) + '</dd></div>' +
+        /* 「商品組合」列＝這張票綁的加購商品；沒綁商品寫「單一票券」。票已是組合包成員時（例：bookyay 套票的隱藏 1 人票，
+           D329 驗收發現）「單一票券」會說反，改列「組合包」＝它被哪幾組收進去，沒綁商品時「商品組合」列不出現。 */
+        (((dv.addons || []).length || !bundlesOfTier(t).length)
+          ? '<div class="tier-card__fact"><dt>' + esc(dT("d.tier.bundle")) + '</dt><dd>' + bundleLinesHTML(t) + '</dd></div>' : '') +
+        (bundlesOfTier(t).length
+          ? '<div class="tier-card__fact"><dt>' + esc(dT("d.tier.inbd")) + '</dt><dd>' +
+              bundlesOfTier(t).map(n => '<span class="tier-card__line">' + esc(n) + '</span>').join("") + '</dd></div>' : '') +
       '</dl>' +
 
     '</div>';
@@ -2759,7 +2785,7 @@
       if (!card) return;
       const errs = tierErrors(t);
       const d = drafts[t.id];
-      ["price", "qty", "ntype"].forEach(k => {
+      ["price", "qty", "ntype", "desc"].forEach(k => {
         const hint  = card.querySelector('[data-tier-hint="' + k + '"]');
         const wrap  = card.querySelector('[data-tier-wrap="' + k + '"]');
         const input = card.querySelector('[data-tier-f="' + k + '"]');
@@ -2775,6 +2801,9 @@
         /* 名字那一欄的常駐說明要跟著「以票種建立／以獨立票建立」換一句，
            不能寫死票種那一版——切到獨立票之後說明會與欄位標籤互相矛盾。 */
         else if (k === "ntype") hint.textContent = newTypeHintText(t);
+        /* 門票簡介的常駐說明＝即時字數（D328）；超過上限時換成錯誤句（上面那一支）。 */
+        else if (k === "desc") hint.textContent = String(d.desc || "").trim().length + " / " + TIER_DESC_MAX;
+        else if (k === "price" && t.fix) hint.textContent = bkyBaseText(t);   // bookyay 票價列的港幣原值說明
         else hint.textContent = "";
         if (input) input.setAttribute("aria-invalid", show ? "true" : "false");
       });
@@ -2787,7 +2816,8 @@
     const d = val(t);
     const m = tierMoney(t, d);
     const set = (k, v) => { const el = card.querySelector('[data-tier-calc="' + k + '"]'); if (el) el.textContent = v; };
-    set("gross", money(m.gross)); set("plat", money(m.plat)); set("net", money(m.net));
+    /* 粉絲付與實收取到分（D328：套票轉出的 1 人票票價可有小數，取整會讓「粉絲付」與「票價」對不上） */
+    set("gross", moneyExact(m.gross)); set("plat", money(m.plat)); set("net", moneyExact(m.net));
     const how = card.querySelector("[data-tier-calc-how]");
     if (how) how.textContent = feeLeafText() + " " + m.pct + "% · " + feeSrcText(m.source);
   }
@@ -3046,20 +3076,30 @@
   /* 區塊 2：價格與數量。bookyay 帶入的票整段改成唯讀事實列（D311 決定二，與 D308 同一口徑）
      ——值照顯示、區塊標題掛一枚「bookyay 帶入」，不再逐欄掛鎖徽章與清空鈕。
      平台費那一列本來就是唯讀（D315：費率只在 Admin 的費率設定頁設），bookyay 與否都一樣。 */
+  const moneyExact = n => "$" + (Number(n) || 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
+  /* bookyay 原價（D330）：港幣、可有小數、鎖定；票價列的值是它換算成創作者幣別後的基準價，這一句說出換算的來源。 */
+  function bkyBaseText(t) {
+    const ty = typeOf(t);
+    if (!ty || ty.hkd == null || ty.hkd === "") return "";
+    const S = window.ztorEvents;
+    return (S ? S.fmtMoney("HKD", Number(ty.hkd)) : "HK$" + ty.hkd) + " · bookyay";
+  }
   function tierPriceSecHTML(t, d) {
     const m = tierMoney(t, d);
     const bky = !!t.fix;
     const feeHow = feeLeafText() + " " + m.pct + "% · " + feeSrcText(m.source);
     const rows =
-      calcRowHTML({ k: dT("d.tier.face"), req: !bky, how: "", hintFor: "price",
-                    v: bky ? calcRO(money(m.price)) : calcMoneyInput("price", d.price) }) +
+      /* bookyay 帶入的票：票價列的說明寫港幣原值（§7.15 基準幣別鎖定）；套票轉換出的 1 人票可有小數（D328），
+         唯讀值照原樣顯示到分、不取整。 */
+      calcRowHTML({ k: dT("d.tier.face"), req: !bky, how: bky ? bkyBaseText(t) : "", hintFor: "price",
+                    v: bky ? calcRO(moneyExact(m.price)) : calcMoneyInput("price", d.price) }) +
       /* 墓碑 2026-09-23（D316）：「＋ 手續費」那一列退場——票價之上沒有粉絲加價。
          「粉絲付」保留為自成一列的結果：它要回答的是「粉絲實際付多少」，答案就是票價。 */
-      calcRowHTML({ op: "＝", k: dT("d.tm.gross"), cls: "calc-list__sum", v: calcRO(money(m.gross), "gross") }) +
+      calcRowHTML({ op: "＝", k: dT("d.tm.gross"), cls: "calc-list__sum", v: calcRO(moneyExact(m.gross), "gross") }) +
       calcRowHTML({ op: "−", k: dT("d.tm.plat"), how: feeHow, howAttr: ' data-tier-calc-how',
                     v: calcRO(money(m.plat), "plat") }) +
       calcRowHTML({ op: "＝", k: dT("d.tm.net"), how: dT("d.tm.net.how"), cls: "calc-list__total",
-                    v: calcRO(money(m.net), "net") });
+                    v: calcRO(moneyExact(m.net), "net") });
     const qty = bky
       ? '<div class="field"><label class="field__label">' + esc(T("ce.tier.qty", "Quantity")) + '</label>' +
           '<div class="field-readout">' + esc(d.qty == null || d.qty === "" ? "—" : d.qty) + '</div></div>'
@@ -3073,7 +3113,7 @@
   /* 區塊 4：購買條件。開關開＝只列三組規則的繼承值摘要，關＝攤開可改。
      copy-on-write 語意不變：攤開只是看得到，動了任一個選項才複製一份給這張票
      （見 rulesForEdit）。把開關再打開＝丟掉這張票自己的那一份、回到跟隨。 */
-  function tierRuleSummaryHTML(t) {
+  function tierRuleSummaryHTML(t, discText) {
     /* 「沒有設」的說法跟著那一組規則自己的選項值走，不共用一句：購票條件與限購的關閉態是
        「不限」，折扣的關閉態是「無」——折扣沒開不是「不限制折扣」。 */
     const row = (k, v, noneKey, noneFb) => '<div class="kv"><span class="kv__k">' + esc(k) + '</span>' +
@@ -3081,10 +3121,21 @@
     return '<div>' +
       row(T("ce.rule.buy", "Who can buy"), buySummary(t), "ce.rule.any", "No limit") +
       row(dT("d.rule.cap"), capSummary(t), "ce.rule.any", "No limit") +
-      row(T("ce.rule.disc", "Discount"), discSummary(t), "ce.rule.disc.off", "None") +
+      row(T("ce.rule.disc", "Discount"), discText || discSummary(t), "ce.rule.disc.off", "None") +
     '</div>';
   }
+  /* 早鳥的讀數（D329）：「折 15.4% · 2026/07/01 12:00 – 2026/07/31 23:59」。 */
+  const whenText = v => String(v || "").replace(/-/g, "/").replace("T", " ") || "—";
+  function earlyValText(r) {
+    return dT("d.tm.early.val").replace("{pct}", String(r.disc.pct)).replace("{from}", whenText(r.disc.from)).replace("{to}", whenText(r.disc.to));
+  }
   function tierRulesSecHTML(t, d) {
+    /* bookyay 帶入的早鳥（earlyFix，D329：n ＝ 1 的票，折扣覆寫＋限時間窗鎖定）：整區改成唯讀摘要，
+       「跟隨活動預設」開關換成來源徽章（同價格與數量區的 bookyay 唯讀做法）。 */
+    if (t.earlyFix && t.rules) {
+      return tierSecHTML("d.tier.buycond", tierRuleSummaryHTML(t, earlyValText(t.rules)),
+        '<span class="badge badge--neutral">' + esc(dT("d.src")) + '</span>');
+    }
     const follow = !d.rulesOpen;
     const sw = '<span class="field__label">' + esc(dT("d.tm.follow")) + '</span>' +
       '<button type="button" class="switch' + (follow ? " switch--on" : "") + '" role="switch" aria-checked="' +
@@ -3104,7 +3155,9 @@
         comboFieldHTML(t) +
         tierFieldHTML("tname", "d.tier.tname", "Ticket name", d.tname == null ? "" : d.tname,
                       { phKey: "d.tier.tname.ph", phFb: "", opt: true, hint: tnameHint(t, d) }) +
-        tierImgFieldHTML(t, d)) +
+        tierImgFieldHTML(t, d) +
+        tierDescFieldHTML(t, d) +
+        tierShowRowHTML(t, d)) +
       tierPriceSecHTML(t, d) +
       tierSecHTML("d.tm.sec.entry",
         /* 提前入場（2026-08-11 使用者指示，見上方 sessDoors／earlyHintText 說明）：
@@ -3187,6 +3240,8 @@
                      early: t.early == null ? "" : t.early,
                      addons: (t.addons || []).slice(),
                      img: (t.img || "").trim(),
+                     desc: t.desc || "",           // D328 門票簡介
+                     hidden: !!t.hidden,           // D328 顯示開關（false＝顯示）
                      ntype: "",
                      /* 預設「以票種建立」＝站上主要的模型；要獨立票就在彈窗裡切一下。
                         這一格只服務新增的手動票（comboFieldHTML 對既有票回傳空字串）。 */
@@ -3339,6 +3394,17 @@
         renderTiers(); scheduleSave();
         return;
       }
+      /* 顯示開關（D328）：只改草稿，就地翻開關——彈窗裡沒有別的東西跟著它變。 */
+      const showSw = e.target.closest("[data-tier-show]");
+      if (showSw && showSw.classList.contains("switch--locked")) return;   // D329：1 人票鎖定為隱藏
+      if (showSw && drafts[t.id]) {
+        drafts[t.id].hidden = !drafts[t.id].hidden;
+        const on = !drafts[t.id].hidden;
+        showSw.classList.toggle("switch--on", on);
+        showSw.setAttribute("aria-checked", on ? "true" : "false");
+        scheduleSave();
+        return;
+      }
       if (e.target.closest("[data-tier-edit]")) { startTier(t); return; }
       if (e.target.closest("[data-tier-remove]")) {    // F9.2：移除整張卡（破壞性）
         delete drafts[t.id]; newIds.delete(t.id); errIds.delete(t.id);
@@ -3392,6 +3458,8 @@
       early: "warn",
       /* 開放入場的另一種寫法：開演前幾分鐘。與 doors 互為換算，見 syncDoorsPair。 */
       doorsMin: "",
+      /* 跨日活動（D328，5.1.6.1 F7）：每場一個開關、預設關；開了才有結束日期（必填、結束須晚於開始）。 */
+      multiDay: false, endDate: "",
       venue: "", addr: "", meet: "", transit: "" }, init || {});
 
   /* 下游（Review 摘要、票根預覽、發布前檢核）都讀 [data-ce=date]／[data-ce=start]。
@@ -3442,14 +3510,79 @@
      欄位建構器兩種盒子共用，差別只在巡迴多問一組場地。 */
   const sessField = (s, label, field, opt) => {
     const o = opt || {};
-    return '<label class="field">' +
+    /* mdReq（D329，5.1.6.1 F7）：開始／結束時間在該場開了跨日時才必填——星號跟著開關顯示，
+       錯誤句就地寫在欄位下（按了發布才標紅，同結束日期）。 */
+    const err = o.mdReq && sessShowErr ? sessTimeErr(s, field) : "";
+    return '<label class="field' + (err ? " is-invalid" : "") + '"' + (o.mdReq ? ' data-sess-time-field="' + field + '"' : "") + '>' +
       '<span class="field__label">' + esc(label) +
-        (o.req ? ' <span class="field__req">*</span>' : '') + '</span>' +
+        (o.req ? ' <span class="field__req">*</span>' : '') +
+        (o.mdReq ? ' <span class="field__req" data-sess-req' + (s.multiDay ? "" : " hidden") + '>*</span>' : '') + '</span>' +
       '<input class="input"' + (o.type ? ' type="' + o.type + '"' : '') +
         ' data-sess-f="' + field + '" value="' + esc(s[field] || "") + '"' +
-        (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + '>' +
+        (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (err ? ' aria-invalid="true"' : '') + '>' +
+      (o.mdReq ? '<span class="ce-field-error" data-sess-time-err>' + esc(err) + '</span>' : '') +
     '</label>';
   };
+  /* ── 跨日活動（D328，5.1.6.1 F7）────────────────────────────────────────────
+     每一場的「開始／結束時間」下面接一組開關列＋揭示區（.control-group，與開放入場同一層級的線框）：
+     開＝長出「結束日期」並列為必填；關＝收起、不擋。結束（結束日期＋結束時間）要晚於開始（活動日期＋開始時間）。
+     D329：開了跨日時開始與結束時間也必填（sessTimeErr），兩端一定比得出先後；時間還沒填時這裡先只比日期，
+     缺的時間由 sessTimeErr 另外標。關掉跨日時兩個時間維持選填。 */
+  function sessTimeErr(s, k) {
+    if (!s || !s.multiDay || (s[k] || "").trim()) return "";
+    return k === "start" ? T("ce.sess.start.err.req", "Add a start time.") : T("ce.sess.end.err.req", "Add an end time.");
+  }
+  const sessBad = s => !!(sessEndErr(s) || sessTimeErr(s, "start") || sessTimeErr(s, "end"));
+  function sessEndErr(s) {
+    if (!s || !s.multiDay) return "";
+    const ed = (s.endDate || "").trim(), d = (s.date || "").trim();
+    if (!ed) return T("ce.sess.enddate.err.req", "Add an end date.");
+    if (!d) return "";
+    const st = (s.start || "").trim(), en = (s.end || "").trim();
+    const later = (st && en) ? (ed + " " + en) > (d + " " + st) : ed > d;
+    return later ? "" : T("ce.sess.enddate.err.order", "End must be later than the start.");
+  }
+  let sessShowErr = false;               // 按過發布才開始標紅（同門票的 errIds 做法），邊打字邊標紅太吵
+  function sessMultiDayHTML(s) {
+    const on = !!s.multiDay;
+    const err = sessShowErr ? sessEndErr(s) : "";
+    return '<div class="control-group" data-sess-md-group data-feat="S53">' +
+      '<div class="control-row">' +
+        '<div class="control-row__main">' + esc(T("ce.sess.multiday", "Multi-day")) + '</div>' +
+        '<button type="button" class="switch' + (on ? " switch--on" : "") + (sessLocked ? " switch--locked" : "") +
+          '" role="switch" aria-checked="' + (on ? "true" : "false") + '"' + (sessLocked ? ' aria-disabled="true"' : "") +
+          ' data-sess-md aria-label="' + esc(T("ce.sess.multiday", "Multi-day")) + '"></button>' +
+      '</div>' +
+      '<div class="control-group__body"' + (on ? "" : " hidden") + '>' +
+        '<label class="field' + (err ? " is-invalid" : "") + '" data-sess-end-field>' +
+          '<span class="field__label">' + esc(T("ce.sess.enddate", "End date")) + ' <span class="field__req">*</span></span>' +
+          '<input class="input" type="date" data-sess-f="endDate" value="' + esc(s.endDate || "") + '"' +
+            (err ? ' aria-invalid="true"' : "") + '>' +
+          '<span class="ce-field-error" data-sess-end-err>' + esc(err) + '</span>' +
+        '</label>' +
+      '</div>' +
+    '</div>';
+  }
+  /* 就地更新結束日期的錯誤（不重繪整份清單——重繪會把游標彈掉）。 */
+  function syncSessErr(row, s) {
+    /* 開始／結束時間（D329）：星號跟著跨日開關；錯誤按了發布才顯示（sessShowErr）。 */
+    row.querySelectorAll("[data-sess-req]").forEach(x => { x.hidden = !s.multiDay; });
+    row.querySelectorAll("[data-sess-time-field]").forEach(tf => {
+      const e2 = sessShowErr ? sessTimeErr(s, tf.dataset.sessTimeField) : "";
+      tf.classList.toggle("is-invalid", !!e2);
+      tf.querySelector("input")?.setAttribute("aria-invalid", e2 ? "true" : "false");
+      const m2 = tf.querySelector("[data-sess-time-err]");
+      if (m2) m2.textContent = e2;
+    });
+    const f = row.querySelector("[data-sess-end-field]");
+    if (!f) return;
+    const err = sessShowErr ? sessEndErr(s) : "";
+    f.classList.toggle("is-invalid", !!err);
+    f.querySelector("input")?.setAttribute("aria-invalid", err ? "true" : "false");
+    const m = f.querySelector("[data-sess-end-err]");
+    if (m) m.textContent = err;
+  }
+
   /* 開放入場 ＋ 掛在它底下的「未到入場時間」。
      這一組每一場各有一份（2026-08-11 使用者指示：每一場都可以設定不同的），所以控制項
      用 radio-list **不帶副標**的緊湊版——同一段字重複十場等於把清單灌長，選項名稱本身
@@ -3549,7 +3682,15 @@
     const wd = isNaN(dt.getTime()) ? "" : (zh ? "（" + WD_ZH[dt.getDay()] + "）" : " (" + WD_EN[dt.getDay()] + ")");
     /* 摘要裡的日期補零（10/02 不是 10/2）：這一行是要被「一疊」掃過去的，
        補零＋tabular-nums 才會上下對齊。站上其他地方的日期不受影響。 */
-    const date = p[1] + "/" + p[2] + wd;
+    let date = p[1] + "/" + p[2] + wd;
+    /* 跨日（D328）：摘要的日期寫成區間「10/02（五）– 10/03（六）」。 */
+    const ed = s.multiDay ? (s.endDate || "").trim() : "";
+    if (ed) {
+      const q = ed.split("-");
+      const dt2 = new Date(Number(q[0]), Number(q[1]) - 1, Number(q[2]));
+      const wd2 = isNaN(dt2.getTime()) ? "" : (zh ? "（" + WD_ZH[dt2.getDay()] + "）" : " (" + WD_EN[dt2.getDay()] + ")");
+      date += " – " + q[1] + "/" + q[2] + wd2;
+    }
     const parts = ['<b>' + esc(date) + '</b>'];
     /* 起訖只有開始時間時就只寫開始——補一個「–」尾巴會讀成「還沒填完」。 */
     const t = [s.start, s.end].filter(x => (x || "").trim());
@@ -3599,9 +3740,10 @@
         f(T("ce.date", "Event date"), "date", { type: "date", req: true }) +
       '</div>' +
       '<div class="form-grid">' +
-        f(T("ce.start", "Start time"), "start", { type: "time" }) +
-        f(T("ce.end", "End time"), "end", { type: "time" }) +
+        f(T("ce.start", "Start time"), "start", { type: "time", mdReq: true }) +
+        f(T("ce.end", "End time"), "end", { type: "time", mdReq: true }) +
       '</div>' +
+      sessMultiDayHTML(s) +
       sessDoorsHTML(s) +
       '<div class="form-grid">' +
         f(T("ce.venue.name", "Venue name"), "venue", { req: true, ph: T("ce.venue.name.ph", "") }) +
@@ -3635,9 +3777,10 @@
         f(T("ce.date", "Event date"), "date", { type: "date", req: true }) +
       '</div>' +
       '<div class="form-grid">' +
-        f(T("ce.start", "Start time"), "start", { type: "time" }) +
-        f(T("ce.end", "End time"), "end", { type: "time" }) +
+        f(T("ce.start", "Start time"), "start", { type: "time", mdReq: true }) +
+        f(T("ce.end", "End time"), "end", { type: "time", mdReq: true }) +
       '</div>' +
+      sessMultiDayHTML(s) +
       sessDoorsHTML(s) +
       copyFirstBtnHTML(i);
     return sessWrapOpen(s) +
@@ -3700,9 +3843,12 @@
       const on = box.dataset.shapeWhen === (tour ? "tour" : "fixed");
       box.hidden = !on;
       /* 收起來的欄位不能繼續當必填，否則發布前檢核會卡在一個看不見的欄位上。
-         巡迴的場地必填改由每一站自己負責（見 checks.venue）。 */
+         巡迴的場地必填改由每一站自己負責（見 checks.venue）。
+         2026-09-29 修：放回來時只還原「原本就是必填」的欄位（第一次經過時記在 data-req-base）——原本一律加上必填，
+         把完整地址、集合地點、交通與第 1 場開始時間的鏡像欄都變成必填，違反 F6／F7 的選填（D329 驗收跨日時段時發現）。 */
       box.querySelectorAll("[data-ce]").forEach(el => {
-        if (on) el.setAttribute("data-required", "");
+        if (el.dataset.reqBase == null) el.dataset.reqBase = el.hasAttribute("data-required") ? "1" : "0";
+        if (on && el.dataset.reqBase === "1") el.setAttribute("data-required", "");
         else { el.removeAttribute("data-required"); clearFieldError(el); }
       });
     });
@@ -3748,6 +3894,7 @@
        就地更新，不重繪整份清單——重繪會把游標從剛打好的欄位彈掉。 */
     const k = f.dataset.sessF;
     if (k === "doors" || k === "doorsMin" || k === "start") syncDoorsPair(row, s, k);
+    if (k === "endDate" || k === "date" || k === "start" || k === "end") syncSessErr(row, s);
     /* 折疊態的摘要跟著改的值走：就地換那一行，一樣不重繪整份清單。 */
     const sum = row.querySelector(".collapse-head__sum");
     if (sum) sum.outerHTML = sessSummaryHTML(s);
@@ -3799,6 +3946,22 @@
       if (body) body.hidden = !open;
       row.querySelector("[data-sess-toggle]")?.setAttribute("aria-expanded", open ? "true" : "false");
       if (open) sessOpen.add(row.dataset.sess); else sessOpen.delete(row.dataset.sess);
+      return;
+    }
+    /* 跨日活動開關（D328）：就地翻開關與揭示區，不重繪整份清單。關掉不清結束日期（再開回填），
+       但關著時不驗證、不擋發布。bookyay 帶入時鎖住（.switch--locked）。 */
+    const md = e.target.closest("[data-sess-md]");
+    if (md && s) {
+      if (md.classList.contains("switch--locked")) return;
+      s.multiDay = !s.multiDay;
+      md.classList.toggle("switch--on", s.multiDay);
+      md.setAttribute("aria-checked", s.multiDay ? "true" : "false");
+      const body = md.closest("[data-sess-md-group]")?.querySelector(".control-group__body");
+      if (body) body.hidden = !s.multiDay;
+      syncSessErr(row, s);
+      const sum = row.querySelector(".collapse-head__sum");
+      if (sum) sum.outerHTML = sessSummaryHTML(s);
+      syncReview(); scheduleSave();
       return;
     }
     /* 未到入場時間：只改那一場的值，不重繪整份清單——重繪會把使用者剛填到一半的
@@ -4290,7 +4453,6 @@
           sub.hidden = sub.dataset.whenVal !== btn.dataset.val;
         });
         if (seg === "ship")  applyShipMode();   // 順豐要運費、自取要地點（2026-08-10）
-        if (seg === "tf-dl") applyTransfer();   // 轉贈期限二選一：統一截止日才要日期必填（2026-09-22 · D303）
         if (seg === "shape") applyShape();      // 定點／巡迴決定場地問一次還是一站一次（2026-08-10）
         syncReview(); scheduleSave();
       });
@@ -4447,7 +4609,8 @@
       /* 預帶（2026-09-21 D296，5.1.6.1 §4.6 F20）：新增組合包時本活動全部票種都允許、張數 1，創作者取消勾選來收窄。 */
       defaultAllTiers: true,
       collapsedByDefault: false,
-      onChange: () => { renderBundlePool(); syncBundleEmpty(); syncReview(); scheduleSave(); }
+      /* renderTiers：票卡的「組合包」列跟著組合包增刪改（D329 驗收發現的呈現修正）。 */
+      onChange: () => { renderBundlePool(); syncBundleEmpty(); renderTiers(); syncReview(); scheduleSave(); }
     });
   }
 
@@ -4673,6 +4836,10 @@
     "d.s5.h1":        { en: "Publishing",        zh: "發布設定" },
     "d.s5.sub":       { en: "When it goes on sale, how fans collect it, and who can find it.", zh: "什麼時候開賣、怎麼取票、誰看得到。" },
     "d.src":          { en: "From bookyay",      zh: "bookyay 帶入" },
+    /* D329（2026-09-29）：1:1 原圖提示、門票所屬組合包、1 人票鎖定為隱藏、早鳥鎖定的讀數。 */
+    "d.img.ratio":    { en: "The bookyay image is 1:1 — swap in a 2:3 one.", zh: "bookyay 原圖是 1:1，建議換成 2:3。" },
+    "d.tier.inbd":    { en: "Ticket bundles",    zh: "組合包" },
+    "d.tm.early.val": { en: "{pct}% off · {from} – {to}", zh: "折 {pct}% · {from} – {to}" },
     "d.bgate.h1":     { en: "Import from bookyay?", zh: "要從 bookyay 帶入嗎？" },
     "d.bgate.sub":    { en: "Already selling this event on bookyay? Search for it instead of typing it again.",
                         zh: "這場活動已經在 bookyay 上賣了？搜尋帶進來，就不用重打一次。" },
@@ -5134,6 +5301,13 @@
   }
   /* 商品組合逐項一行、最多三行（2026-08-09 使用者指示）：超過三個就在第三項後面接「…」，
      不換成「還有 N 件」——卡面要的是認得出綁了什麼，不是精確的件數。 */
+  /* 這張票被哪幾組組合包收為票券成員（名稱清單）。第 6 步的編輯器還沒掛上或沒有組合包時回空陣列。 */
+  function bundlesOfTier(t) {
+    if (typeof bundleEd === "undefined" || !bundleEd) return [];
+    const tixOf = b => (window.ztorEvents && window.ztorEvents.bundleTickets) ? window.ztorEvents.bundleTickets(b) : { tierIds: [] };
+    return bundleEd.getBundles().filter(b => !b.fresh && tixOf(b).tierIds.indexOf(t.id) >= 0)
+      .map(b => (b.name || "").trim() || bundleEd.suggestName(b) || T("cpp.bd.untitled", "Untitled bundle"));
+  }
   function bundleLinesHTML(t) {
     const names = (val(t).addons || []).map(a => a.name || a);
     if (!names.length) return esc(dT("d.tier.solo"));
@@ -5189,7 +5363,9 @@
   /* 總價＝這張票所有設定跑完之後的最終價（2026-08-09 使用者定義）：
      票價 ＋ 加購商品，再套上購買條件裡的折扣。與收入試算用的 netPrice() 同一個算法，
      所以卡面、彈窗、右軌三處永遠是同一個數字。唯讀——它是算出來的，要改就改上游那幾項。 */
-  const finalPrice = t => Math.round(netPrice(t));
+  /* bookyay 套票轉換出的 1 人票（decimalOk，D328）票價可有小數：取到分，否則「總價」與「票價」兩列對不上。
+     其餘票維持取整（折扣算出來的小數照舊四捨五入）。 */
+  const finalPrice = t => (t.decimalOk ? Math.round(netPrice(t) * 100) / 100 : Math.round(netPrice(t)));
   /* 墓碑 2026-09-22（D311）：`grossFieldHTML`（彈窗裡的「總價」唯讀欄）退場——
      它把一個算出來的數字做成看起來能填的欄位，而且排在票價之前、加法關係完全看不見。
      改由價格與數量區的計算列表承擔（票價 ＝ 粉絲付 − 平台費 ＝ 創作者實收，D316）。
@@ -5314,196 +5490,92 @@
     document.querySelectorAll("[data-ship-when]").forEach(box => {
       const on = box.dataset.shipWhen === cur;
       box.hidden = !on;
-      if (box.hasAttribute("data-ship-eticket")) return;   // 電子門票三組附屬設定的必填由各自的開關決定，見 applyEticketSettings()
       box.querySelectorAll("[data-ce]").forEach(el => {
         if (on) el.setAttribute("data-required", "");
         else { el.removeAttribute("data-required"); clearFieldError(el); }
       });
     });
-    applyEticketSettings();
   }
 
-  /* 第三方門票（2026-09-22 · D302）：電子門票底下的開關。開＝長出「領取與入場方式」並列為必填
-     （空白擋發布、超過 250 字元也擋）；關或取票方式不是電子門票＝欄位收起、必填拿掉、錯誤清掉。
-     關掉不清值（再打開回填）——關閉後保不保留上游未定，原型先保留、不顯示。 */
-  /* 上限用函式而不是 const：applyShipMode() 在本段之前就被叫過一次（初始態），const 會踩到暫時死區。 */
-  function tpMax() { return 250; }
-  function tpNoteEl() { return document.querySelector("[data-ce=ship-tp-note]"); }
-  function tpIsOn() {
-    const sw = document.querySelector("[data-ce-tp]");
-    const box = sw?.closest("[data-ship-eticket]");
-    return !!sw && !!box && !box.hidden && sw.getAttribute("aria-checked") === "true";
-  }
-  function tpOver() { const ta = tpNoteEl(); return !!ta && tpIsOn() && ta.value.trim().length > tpMax(); }
-  function renderTpCount() {
-    const ta = tpNoteEl();
-    const hint = document.querySelector("[data-ce-count=ship-tp-note]");
-    if (!ta || !hint) return;
-    const n = ta.value.trim().length;
-    hint.textContent = T("ce.ship.tp.count", "{n} / 250").replace("{n}", n);
-    hint.classList.toggle("field__hint--warn", n > tpMax());
-    const wrap = ta.closest(".field");
-    if (wrap && n > tpMax()) { wrap.classList.add("is-invalid"); ta.setAttribute("aria-invalid", "true"); }
-    else if (wrap && n > 0) { wrap.classList.remove("is-invalid"); ta.setAttribute("aria-invalid", "false"); }
-  }
-  function applyThirdParty() {
-    const sw = document.querySelector("[data-ce-tp]");
-    const ta = tpNoteEl();
-    const body = sw?.closest(".control-group")?.querySelector(".control-group__body");
-    if (!sw || !ta || !body) return;
-    const on = tpIsOn();
-    body.hidden = !on;
-    if (on) ta.setAttribute("data-required", "");
-    else { ta.removeAttribute("data-required"); clearFieldError(ta); }
-    renderTpCount();
-    /* 第三方門票 × 動態 QR 互斥（D303 決定二，推導、上游待確認）：票不是 ztor 發的就沒有 QR 可以輪換，
-       整組收起、必填一併拿掉（由 applyDynamicQr 依「組是否可見」判斷）。 */
-    const dq = document.querySelector("[data-ship-dq]");
-    if (dq) dq.hidden = on;
-  }
-  tpNoteEl()?.addEventListener("input", renderTpCount);
-  tpNoteEl()?.addEventListener("blur", function () { if (this.hasAttribute("data-required")) validateField(this); });
-  document.addEventListener("i18n:applied", renderTpCount);
-
-  /* ── 電子門票三組附屬設定的共用開關行為（2026-09-22 · D303）────────────────────────
-     每一顆 .switch[data-ce-*] 都是「開關列＋揭示區」：開＝揭示區出現、裡面的 ＊ 欄位掛 data-required；
-     關＝收起、必填拿掉、錯誤清掉。值不清（關再開回填），與第三方門票同一取捨（UIA-161）。 */
-  function swOn(sel) {
-    const sw = document.querySelector(sel);
-    return !!sw && sw.getAttribute("aria-checked") === "true";
-  }
-  function setRequired(el, on) {
-    if (!el) return;
-    if (on) el.setAttribute("data-required", "");
-    else { el.removeAttribute("data-required"); clearFieldError(el); }
-  }
-  function eticketVisible() {
-    const box = document.querySelector("[data-ship-eticket]");
-    return !!box && !box.hidden;
-  }
-  /* 動態 QR：開了才問更新間隔（分鐘、必填、原型 1–60）。第三方門票開著時整組不在，必填也不在。
-     2026-09-22 D308：ztor 只發靜態 QR——自建活動的開關在 markup 就是關＋.switch--locked（點擊被下面的共用 handler 擋掉），
-     所以這裡永遠算「關」；只有 bkyApply() 會把它設成開（照 bookyay 原設定顯示、仍鎖）。 */
-  function dqIsOn() { return eticketVisible() && !tpIsOn() && swOn("[data-ce-dq]"); }
-  function applyDynamicQr() {
-    const sw = document.querySelector("[data-ce-dq]");
-    const body = sw?.closest(".control-group")?.querySelector(".control-group__body");
-    if (!sw || !body) return;
-    const on = dqIsOn();
-    body.hidden = !swOn("[data-ce-dq]");
-    setRequired(document.querySelector("[data-ce=ship-dq-min]"), on);
-  }
-  /* 可轉贈：預設關；開了長出兩個子開關——限制轉贈次數（→ 次數上限必填）、設定轉贈期限（→ 統一截止日：日期必填／開演前 N 天）。 */
-  function tfIsOn() { return eticketVisible() && swOn("[data-ce-tf]"); }
-  function tfLimitOn() { return tfIsOn() && swOn("[data-ce-tf-limit]"); }
-  function tfDlOn() { return tfIsOn() && swOn("[data-ce-tf-dl]"); }
-  function tfDlMode() { return document.querySelector('[data-seg="tf-dl"]')?.dataset.value || "days"; }
-  function applyTransfer() {
-    const sw = document.querySelector("[data-ce-tf]");
-    const body = sw?.closest(".control-group")?.querySelector(".control-group__body");
-    if (!sw || !body) return;
-    body.hidden = !swOn("[data-ce-tf]");
-    const lim = document.querySelector("[data-ce-tf-limit]");
-    const limBody = lim?.closest(".control-group")?.querySelector(".control-group__body");
-    if (limBody) limBody.hidden = !swOn("[data-ce-tf-limit]");
-    setRequired(document.querySelector("[data-ce=ship-tf-max]"), tfLimitOn());
-    const dl = document.querySelector("[data-ce-tf-dl]");
-    const dlBody = dl?.closest(".control-group")?.querySelector(".control-group__body");
-    if (dlBody) dlBody.hidden = !swOn("[data-ce-tf-dl]");
-    setRequired(document.querySelector("[data-ce=ship-tf-date]"), tfDlOn() && tfDlMode() === "date");
-  }
-  function applyEticketSettings() { applyThirdParty(); applyDynamicQr(); applyTransfer(); }
-  /* 五顆開關同一套點擊行為：翻 aria-checked → 重算三組 → 摘要與自動儲存。bookyay 帶入時 .switch--locked 擋掉。 */
-  document.querySelectorAll("[data-ce-tp],[data-ce-dq],[data-ce-tf],[data-ce-tf-limit],[data-ce-tf-dl]").forEach(sw => {
-    sw.addEventListener("click", function () {
-      if (this.classList.contains("switch--locked")) return;
-      const on = this.getAttribute("aria-checked") !== "true";
-      this.setAttribute("aria-checked", on ? "true" : "false");
-      this.classList.toggle("switch--on", on);
-      applyEticketSettings(); syncReview(); scheduleSave();
-    });
-  });
-  /* 數字欄：blur 時夾回 min–max（步進鈕本來就會夾，手打的也要）；空白留給發布前檢核去擋。 */
-  ["ship-dq-min", "ship-tf-max", "ship-tf-days"].forEach(k => {
-    const el = document.querySelector("[data-ce=" + k + "]");
-    if (!el) return;
-    el.addEventListener("blur", function () {
-      if (this.value.trim() !== "") {
-        const v = Math.min(+this.max, Math.max(+this.min, Math.round(+this.value) || +this.min));
-        if (String(v) !== this.value) { this.value = v; if (window.ZStepper) window.ZStepper.sync(this.closest(".zstep")); }
-      }
-      if (this.hasAttribute("data-required")) validateField(this);
-      syncReview();
-    });
-    el.addEventListener("input", () => { if (el.value.trim()) clearFieldError(el); syncReview(); });
-  });
-  document.querySelector("[data-ce=ship-tf-date]")?.addEventListener("blur", function () { if (this.hasAttribute("data-required")) validateField(this); syncReview(); });
-  document.querySelector("[data-ce=ship-tf-date]")?.addEventListener("input", function () { if (this.value.trim()) clearFieldError(this); syncReview(); });
-  applyEticketSettings();
+  /* 墓碑 2026-09-29（D327）：電子門票三組附屬設定的行為整段退場——開關揭示、必填切換、字數計數、
+     互斥與數字欄夾值（原本那組開關的揭示函式、字數計數與共用 apply 函式）。 */
 
   /* 墓碑：`applySalesMode()` 於 2026-08-10 隨「入場方式」整組撤除。 */
 
   /* ---- 假的 bookyay 活動 ------------------------------------------------------
-     三筆刻意做出差異：單場／三日系列（同一個場地，照文件「無論哪個場次，地點都一樣」）／
-     沒有折扣的那種。 */
-  /* 每筆帶 type（2026-09-01）：正常流程是人先在類型閘門選完才進帶入閘門，但 admin 從
-     創作者活動管理頁的「繼續設定」深連結（?import=）直接進來，沒有那一步——bookyay 自己
-     知道活動是哪一種，跟著資料走。 */
-  /* 票價幣別（2026-09-22 D306／§7.15）：bookyay 的原幣是港幣，每筆票種只給 `priceHkd`；帶入時
-     `bkyApply()` 用示範匯率換成創作者預設幣別（TWD）填進票種欄（唯讀），並把港幣原值記在
-     `types[].priceBase`——發布前預覽的價格表以它為基準（鎖）、其他四幣別可覆寫。 */
+     2026-09-29（D328，5.1.6.1 F21「bookyay 欄位怎麼帶入」）改成 bookyay 的資料形狀：
+       · 門票種類掛在活動層 `ticketTypes`（名稱、現價、每張門票人數 `persons`、活動門票簡介 `desc`、早鳥 `early`）；
+       · 時段 `slots` 各自有起訖日期時間、人數上限 `cap` 與這個時段賣的門票種類 `types`（照 bookyay 的排序）；
+       · 語言是多值 `langs`；活動地點 `location`＝場地名稱、地區 `region`＝行政區名稱（D329：分別帶進場地名稱與完整地址）。
+     五筆刻意各示範一條規則（驗收用）：
+       bky-1 同一個時段三種票 → 只帶第一種（VIP）＋略過提示；VIP 有早鳥（1 人票：折扣覆寫、鎖定）與門票簡介。
+       bky-2 二人套票（persons 2、現價是兩人合計）三個時段 → 每場一張隱藏的 1 人票＋一組組合包；
+             第 1 場人數上限 151 是奇數，示範捨去零頭（D329：1 人票 150 張、鎖定 75 套）；
+             有早鳥（套票：落在組合包的限時折扣，D329）。
+       bky-3 跨日時段（11/08 14:00 → 11/09 02:00）→ 自動開跨日活動並帶結束日期。
+       bky-4／bky-5 取票方式不是電子門票（順豐寄送／到店自取），沿用 2026-08-10 的示範。
+     每筆帶 type（2026-09-01）：admin 從創作者活動管理頁的「繼續設定」深連結（?import=）直接進來時沒有類型閘門，
+     bookyay 自己知道活動是哪一種，跟著資料走。
+     票價幣別（D330，取代 D306 起的港幣基準）：bookyay 原幣港幣，`priceHkd` 帶入時換算成創作者幣別當基準價（`types[].price`、鎖），
+     港幣原值記在 `types[].hkd`（價格表港幣欄鎖定）；自動建立的組合包另記 `hkd`＝bookyay 現價。 */
   const BKY = [
     { id: "bky-1", type: "concert",
       label: "REALIVE World Tour — Taipei",
       note:  "2026/09/12 · 台北小巨蛋",
       name: "REALIVE World Tour — Taipei",
       desc: "睽違三年的世界巡迴，台北站唯一一場。全新編制樂團、專輯完整曲序演出，安可加碼未發表新歌。",
-      country: "TW", lang: "zh-Hant",
+      country: "TW", langs: ["cmn", "en"],
       images: ["images/projects/nick-realive.jpg"],
-      venue: "台北小巨蛋", addr: "台北市松山區南京東路四段 2 號",
+      location: "台北小巨蛋", region: "松山區",
       meet: "2 號門售票口", transit: "捷運小巨蛋站 2 號出口步行 3 分鐘",
-      date: "2026-09-12", start: "19:30", end: "22:00", doors: "18:30",
       saleFromD: "2026-07-01", saleFromT: "12:00", saleToD: "2026-09-12", saleToT: "18:00",
-      ship: "eticket", sessions: [],
-      /* 第三方門票（D302）：bookyay 表單的「自行提供的門票拎取方法/入場方式」對應到這兩個值 */
-      thirdParty: true, thirdPartyNote: "憑 bookyay 電子票 QR 至小巨蛋 2 號門驗票入場；開演前 30 分鐘停止入場。",
-      /* 可轉贈（D303）：bookyay 表單的「可以轉贈門票／限制轉贈次數／設定轉贈期限」——這一筆是第三方門票，動態 QR 整組不成立 */
-      transferable: true, transferLimit: true, transferMax: 1, transferDeadline: "days", transferDays: 1,
-      tiers: [{ name: "VIP", priceHkd: "1040", qty: "100" },
-              { name: "搖滾區", priceHkd: "820", qty: "200" },
-              { name: "看台", priceHkd: "600", qty: "300" }] },
+      ship: "eticket",
+      ticketTypes: [
+        { name: "VIP", priceHkd: "1040", persons: 1,
+          desc: "含彩排參觀與限定手環，入場時於 VIP 通道報到。",
+          early: { priceHkd: "880", endD: "2026-07-31", endT: "23:59" } },
+        { name: "搖滾區", priceHkd: "820", persons: 1 },
+        { name: "看台", priceHkd: "600", persons: 1 }
+      ],
+      slots: [{ startD: "2026-09-12", startT: "19:30", endD: "2026-09-12", endT: "22:00", doors: "18:30",
+                cap: 100, types: [0, 1, 2] }] },
     { id: "bky-2", type: "meet",
       label: "MIRROR FANMEETING 2026",
       note:  "2026/10/02–10/04 · 高雄流行音樂中心（三場）",
       name: "MIRROR FANMEETING 2026 高雄",
       desc: "三天三場的粉絲見面會，每一場都有各自的主題單元與抽選互動；購票即參加抽選，中選者上台合影。",
-      country: "TW", lang: "zh-Hant",
+      country: "TW", langs: ["yue", "cmn"],
       images: ["images/ip/a-lin.webp"],
-      venue: "高雄流行音樂中心 海音館", addr: "高雄市鹽埕區真愛路 1 號",
+      location: "高雄流行音樂中心", region: "鹽埕區",
       meet: "海音館 1 樓大廳", transit: "輕軌真愛碼頭站步行 5 分鐘",
-      date: "2026-10-02", start: "19:00", end: "21:30", doors: "18:00",
       saleFromD: "2026-08-15", saleFromT: "20:00", saleToD: "2026-10-02", saleToT: "12:00",
       ship: "eticket",
-      /* 動態 QR 與可轉贈（D303）：bookyay 這一場三天三場，期限用「統一截止日」示範 */
-      dynamicQr: true, qrRefreshMin: 5,
-      transferable: true, transferLimit: true, transferMax: 2, transferDeadline: "date", transferDate: "2026-09-30",
-      sessions: [{ date: "2026-10-03" }, { date: "2026-10-04" }],
+      /* 二人套票：現價 399 是兩人合計（bookyay 現價＝整張套票的總價）；早鳥 359 也是整張套票的價
+         （D329：套在自動建立組合包的限時折扣，1 − 359 ÷ 399 ＝ 10.0%）。 */
+      ticketTypes: [
+        { name: "二人套票", priceHkd: "399", persons: 2, desc: "兩人同行，入場時一起驗票。",
+          early: { priceHkd: "359", endD: "2026-08-31", endT: "23:59" } }
+      ],
       sessionNames: ["Day 1", "Day 2", "Day 3"],
-      tiers: [{ name: "搖滾區", priceHkd: "940", qty: "150" },
-              { name: "一般席", priceHkd: "545", qty: "400" }] },
+      slots: [
+        { startD: "2026-10-02", startT: "19:00", endD: "2026-10-02", endT: "21:30", doors: "18:00", cap: 151, types: [0] },
+        { startD: "2026-10-03", startT: "19:00", endD: "2026-10-03", endT: "21:30", doors: "18:00", cap: 200, types: [0] },
+        { startD: "2026-10-04", startT: "19:00", endD: "2026-10-04", endT: "21:30", doors: "18:00", cap: 200, types: [0] }
+      ] },
     { id: "bky-3", type: "festival",
       label: "城市草地音樂節 2026",
-      note:  "2026/11/08 · 大佳河濱公園",
+      note:  "2026/11/08–11/09 · 大佳河濱公園（跨夜）",
       name: "城市草地音樂節 2026",
-      desc: "一整天的戶外音樂節，兩座舞台輪番演出，草地自由入座，現場有市集與餐飲攤位。",
-      country: "TW", lang: "zh-Hant",
+      desc: "從午後唱到深夜的戶外音樂節，兩座舞台輪番演出，草地自由入座，現場有市集與餐飲攤位。",
+      country: "TW", langs: ["cmn", "en", "ja"],
       images: ["images/hero-event.jpg"],
-      venue: "大佳河濱公園", addr: "台北市中山區濱江街 5 號",
+      location: "大佳河濱公園", region: "中山區",
       meet: "8 號水門", transit: "捷運圓山站轉接駁車約 15 分鐘",
-      date: "2026-11-08", start: "14:00", end: "22:00", doors: "13:00",
       saleFromD: "2026-09-01", saleFromT: "12:00", saleToD: "", saleToT: "",
-      ship: "pickup", sessions: [],
-      tiers: [{ name: "一日票", priceHkd: "445", qty: "2000" }] },
+      ship: "pickup",
+      ticketTypes: [{ name: "一日票", priceHkd: "445", persons: 1 }],
+      slots: [{ startD: "2026-11-08", startT: "14:00", endD: "2026-11-09", endT: "02:00", doors: "13:00",
+                cap: 2000, types: [0] }] },
     /* 這兩筆是為了示範「取票方式不是電子門票時要多問什麼」（2026-08-10 使用者指示）：
        順豐寄送要運費、到店自取要取貨地點。兩個欄位不是 bookyay 帶來的，
        帶入後仍要創作者自己填，所以刻意留空。 */
@@ -5512,29 +5584,27 @@
       note:  "2026/12/06 · 台中 Legacy（實體票寄送）",
       name: "限量黑膠簽名場 — 台中",
       desc: "新專輯黑膠首賣場，購票附一張實體收藏票券，當天憑票入場並可參加簽名。",
-      country: "TW", lang: "zh-Hant",
+      country: "TW", langs: ["cmn"],
       images: ["images/hero-event.jpg"],
-      venue: "Legacy Taichung", addr: "台中市西區公益路 155 號",
+      location: "台中 Legacy", region: "西區",
       meet: "1 樓售票口", transit: "台中捷運文心森林公園站步行 8 分鐘",
-      date: "2026-12-06", start: "19:00", end: "21:00", doors: "18:00",
       saleFromD: "2026-10-20", saleFromT: "12:00", saleToD: "2026-12-01", saleToT: "23:59",
-      ship: "sf", sessions: [],
-      tiers: [{ name: "黑膠套票", priceHkd: "690", qty: "400" },
-              { name: "一般入場", priceHkd: "300", qty: "200" }] },
+      ship: "sf",
+      ticketTypes: [{ name: "簽名場入場", priceHkd: "690", persons: 1 }],
+      slots: [{ startD: "2026-12-06", startT: "19:00", endD: "2026-12-06", endT: "21:00", doors: "18:00", cap: 400, types: [0] }] },
     { id: "bky-5", type: "concert",
       label: "冬季特別公演 — 台南",
       note:  "2027/01/17 · 台南文化中心（到店自取）",
       name: "冬季特別公演 — 台南",
       desc: "年度最後一場公演，全場原聲編制，票券採到店自取，憑證件於指定門市領取。",
-      country: "TW", lang: "zh-Hant",
+      country: "TW", langs: ["cmn"],
       images: ["images/projects/nick-realive.jpg"],
-      venue: "台南文化中心 演藝廳", addr: "台南市東區中華東路三段 332 號",
+      location: "台南文化中心", region: "東區",
       meet: "演藝廳大廳", transit: "台鐵台南站轉公車約 20 分鐘",
-      date: "2027-01-17", start: "19:30", end: "21:40", doors: "18:45",
       saleFromD: "2026-11-15", saleFromT: "20:00", saleToD: "2027-01-10", saleToT: "23:59",
-      ship: "pickup", sessions: [],
-      tiers: [{ name: "全票", priceHkd: "400", qty: "900" },
-              { name: "學生票", priceHkd: "270", qty: "300" }] },
+      ship: "pickup",
+      ticketTypes: [{ name: "全票", priceHkd: "400", persons: 1 }],
+      slots: [{ startD: "2027-01-17", startT: "19:30", endD: "2027-01-17", endT: "21:40", doors: "18:45", cap: 900, types: [0] }] },
     /* 已經帶過的場次（2026-08-13 使用者指示）：同一場 bookyay 活動只會在 ztor 上存在一次，
        所以清單裡照樣找得到它——找到才回答得了「我上次是不是已經建過了」——但不能再選一次。
        這三筆刻意對上站上既有的活動（events-store.js 的 inner-circle-fanmeet／album-signing-taipei／
@@ -5625,6 +5695,138 @@
     } else if (!on && chip) chip.remove();
   }
 
+  /* ── bookyay 欄位怎麼帶入（D328，5.1.6.1 F21）────────────────────────────────
+     把 bookyay 的資料形狀（活動層門票種類 × 時段）換成 ztor 的場次 × 票種 × 門票：
+       1. 時段 → 場次：開始日期＝活動日期；開始與結束不同天＝自動開跨日並帶結束日期，同一天只帶結束時間。
+       2. 一個時段多種門票：只帶 bookyay 排第一的那一種，其餘記名字給略過提示。
+       3. 時段人數上限 → 該場那張門票的張數；套票的 1 人票取 n 的整數倍＝floor(上限 ÷ n) × n，捨去零頭（D329）。
+       4. 每張門票人數 n ≥ 2（套票）→ 票種改成「1 人票」：票價＝現價 ÷ n（可有小數，鎖）、每場隱藏且鎖定為隱藏（D329）；
+          另外每場自動建一組組合包（票券成員＝該場 1 人票 × n、折扣 0、鎖定套數＝floor(上限 ÷ n)），整組鎖定（`fix`，D329）。
+       5. 門票簡介 → 複製到該票種在每一場的門票（可逐張改）。
+       6. 早鳥（D329 依人數分流，兩種都鎖定）：
+          n ＝ 1 → 該門票的購買條件覆寫：折扣開、折後價格＝早鳥價、限時間窗（開賣時間 → 優惠完結）；`earlyFix` 鎖住整區。
+          n ≥ 2 → 1 人票不設早鳥；改寫在自動建的組合包 `sale`：限時折扣 %＝1 − 早鳥價 ÷ 現價、檔期同上。
+     回傳 { sessions, types, cells, bundles, skipped }，由 bkyApply 寫進頁面狀態。純資料轉換、不碰 DOM，
+     cheat code／驗收可以直接呼叫（window.__ceBkyMap）。 */
+  function bkyMap(rec) {
+    /* D330：bookyay 金額一律港幣；基準價換算成創作者幣別（§7.15 換算價：票價整數、四捨五入）。創作者幣別本身就是港幣時不換算、保留小數。 */
+    const toBase = v => {
+      const n = Number(v) || 0;
+      if (CE_BASE_CURRENCY === "HKD") return Math.round(n * 100) / 100;
+      return window.ztorEvents ? window.ztorEvents.fx("HKD", CE_BASE_CURRENCY, n) : Math.round(n);
+    };
+    const slots = rec.slots || [];
+    const skipped = [];
+    const sessions = slots.map((sl, i) => {
+      const md = !!(sl.endD && sl.endD !== sl.startD);
+      return newSession({ name: rec.sessionNames ? (rec.sessionNames[i] || "") : "",
+        date: sl.startD, start: sl.startT || "", end: sl.endT || "", doors: sl.doors || "",
+        multiDay: md, endDate: md ? sl.endD : "" });
+    });
+    /* 票種：只收「某個時段排第一」的門票種類（去重、照首次出現的順序） */
+    const firstIdx = [];
+    slots.forEach(sl => {
+      const ts = sl.types || [];
+      if (ts.length && firstIdx.indexOf(ts[0]) < 0) firstIdx.push(ts[0]);
+      ts.slice(1).forEach(k => {
+        const nm = (rec.ticketTypes[k] || {}).name;
+        if (nm && skipped.indexOf(nm) < 0) skipped.push(nm);
+      });
+    });
+    /* 同一種票在別的時段排第一就算帶了，不列進略過名單 */
+    const kept = firstIdx.map(k => (rec.ticketTypes[k] || {}).name);
+    const skippedFinal = skipped.filter(nm => kept.indexOf(nm) < 0);
+    const types = firstIdx.map(k => {
+      const bt = rec.ticketTypes[k];
+      const n = Math.max(1, Number(bt.persons) || 1);
+      /* 套票：港幣原值 ÷ n（可有小數，港幣欄保留，D328／D330）；基準價＝這個 1 人票港幣價換算成創作者幣別後取整（§7.15）。
+         2026-09-29 D330 前的做法是「整張現價換成 TWD 再 ÷ n」，基準價會帶小數——D330 明定只有港幣欄保留小數，
+         換算後的基準價依 §7.15 取整，所以 n 張 1 人票的基準價加總可能與套票現價的換算值差 1（ASSUMPTIONS UIA-182）。 */
+      const hkd = Math.round(Number(bt.priceHkd) / n * 100) / 100;
+      return {
+        id: "type-" + (++typeSeq),
+        /* 1 人票的票名：bookyay 票名＋「1 人」〔產品待確認〕（5.1.6.1 F21 待確認：自動建的 1 人票票名，ASSUMPTIONS BKY-004）。 */
+        name: n >= 2 ? T("ce.bky.single", "{name} · 1 person").replace("{name}", bt.name) : bt.name,
+        price: String(toBase(hkd)), qty: "", hkd: hkd,
+        fix: true, _bky: { k: k, n: n, set: n >= 2, name: bt.name, desc: bt.desc || "", early: bt.early || null }
+      };
+    });
+    const cells = [];
+    const bundles = [];
+    sessions.forEach((ss, i) => {
+      const sl = slots[i];
+      const k0 = (sl.types || [])[0];
+      const ty = types.find(x => x._bky.k === k0);
+      if (!ty) return;
+      const b = ty._bky;
+      const cell = newCell(ss, ty);
+      cell.qty = String(sl.cap || "");
+      cell.desc = b.desc;
+      const cap = Number(sl.cap) || 0;
+      /* 套票的 1 人票張數＝floor(上限 ÷ n) × n，捨去零頭（D329；例：上限 151、二人套票 → 150 張、鎖 75 套）。
+         顯示開關鎖定為隱藏（hideFix，D329）：彈窗的開關停用、不能改回顯示。 */
+      if (b.set) { cell.qty = String(Math.floor(cap / b.n) * b.n); cell.hidden = true; cell.hideFix = true; cell.decimalOk = true; }
+      /* 早鳥的檔期（D328／D329）：開始＝開賣時間；bookyay「活動發佈同時發售」時改用上架時間；結束＝優惠完結。
+         百分比由「折後價＝早鳥價」反推、取一位小數（折扣欄的精度）；精度造成的 ±1〔產品待確認〕。 */
+      const early = b.early ? (() => {
+        const base = Number(rec.ticketTypes[b.k].priceHkd) || 0;
+        const listAt = [document.querySelector("[data-ce=list-d]")?.value, document.querySelector("[data-ce=list-t]")?.value]
+          .filter(Boolean).join("T");
+        return {
+          pct: base > 0 ? Math.round((1 - Number(b.early.priceHkd) / base) * 1000) / 10 : 0,
+          from: rec.saleWithPublish ? listAt : (rec.saleFromD ? rec.saleFromD + "T" + (rec.saleFromT || "00:00") : ""),
+          to: b.early.endD + "T" + (b.early.endT || "23:59")
+        };
+      })() : null;
+      if (early && !b.set) {
+        /* n ＝ 1：寫成該門票的購買條件覆寫（折扣開、限時間窗），整區鎖定（earlyFix，D329）。 */
+        const r = JSON.parse(JSON.stringify(eventRules));
+        r.disc.mode = "time"; r.disc._cond = "time"; r.disc.pct = String(early.pct);
+        r.disc.from = early.from; r.disc.to = early.to;
+        cell.rules = r;
+        cell.earlyFix = true;
+      }
+      cells.push(cell);
+      if (b.set) {
+        /* 自動建的組合包（D328／D329）：整組鎖定（fix）——票券成員、每套張數、組合折扣、鎖定套數、限時折扣；
+           名稱、封面、權益照一般組合包可改。n ≥ 2 的早鳥落在這裡的限時折扣 sale（1 人票不設早鳥）。 */
+        bundles.push({
+          name: b.name + (sessions.length > 1 ? " · " + sessionLabel(ss, i) : ""),
+          nameTouched: true, desc: "",
+          tickets: { tierIds: [cell.id], qty: b.n },
+          discountOn: false, discount: "",
+          lockSets: String(Math.floor(cap / b.n)),
+          scope: "shared", fresh: false, collapsed: true, pickOpen: false,
+          fix: true,
+          /* D330：價格表港幣欄＝bookyay 現價（整張套票的價）、鎖定；基準欄＝1 人票基準價 × n，依組合包規則加總。 */
+          hkd: Math.round(Number(rec.ticketTypes[b.k].priceHkd) * 100) / 100,
+          sale: early ? { pct: early.pct, from: early.from, to: early.to } : null
+        });
+      }
+    });
+    /* 票種的預設張數＝第一場的上限（種子值，只在之後新增場次時用得到；bookyay 帶入時場次鎖定、不會新增） */
+    types.forEach(ty => {
+      const c = cells.find(x => x.type === ty.id);
+      ty.qty = c ? c.qty : "";
+      ty._sp = ty.price; ty._sq = ty.qty;
+    });
+    return { sessions, types, cells, bundles, skipped: skippedFinal };
+  }
+  window.__ceBkyMap = id => bkyMap(BKY.find(r => r.id === id));
+
+  let bkySkipped = [];
+  function renderBkySkipNote() {
+    const note = document.getElementById("ce-bky-skip-note");
+    if (!note) return;
+    note.hidden = !bkySkipped.length;
+    const txt = note.querySelector("[data-bky-skip-text]");
+    if (txt && bkySkipped.length) txt.textContent = T("ce.bky.skipped",
+      "Only the first ticket type per date is imported. Skipped: {name}")
+      .replace("{name}", bkySkipped.join(T("ce.evlang.sep", ", ")));
+  }
+  document.addEventListener("i18n:applied", renderBkySkipNote);
+  document.querySelector("[data-bky-skip-close]")?.addEventListener("click", () => { bkySkipped = []; renderBkySkipNote(); });
+
   function bkyApply(rec) {
     bkyOn = rec;
     document.querySelectorAll("[data-bky]").forEach(el => {
@@ -5634,14 +5836,13 @@
          日期欄（partials/date-input.js）因此仍顯示「選擇日期」佔位符，畫面看起來像沒帶入。
          補一個 input 事件讓那些元件重算（2026-08-09 修，帶入路徑實測發現）。 */
       el.dispatchEvent(new Event("input", { bubbles: true }));
-      /* 活動名稱只預填、不鎖（2026-09-22 D301）：bookyay 的原名只是起點，ztor 端的票面名稱
-         可以自己改；改了不回寫 bookyay。其餘 data-bky 欄位照舊鎖住（描述、國家／語言、
-         場地、時間、票種、開賣時間、取票方式）。亮點本來就不掛 data-bky。 */
+      /* 活動名稱只預填、不鎖（2026-09-22 D301）。其餘 data-bky 欄位照舊鎖住（描述、國家、
+         場地名稱＝活動地點、完整地址＝地區（D329）、集合地點、交通、開賣時間）。 */
       lockField(el, el.dataset.bky !== "name");
     });
-    /* 開賣日期與時間是 bookyay 決定的，不是「發布後直接開賣」：開關關掉、兩組時間欄現形
-       （上面已經填值＋鎖住），開關本身也鎖住不給切回去——鎖定樣式沿用既有的
-       .switch--locked（settings.html／tier-settings.html 的合規鎖定開關同一套）。 */
+    /* 活動語言（D328）：bookyay 多值帶入複選卡並鎖定。 */
+    setLangs(rec.langs || []);
+    lockLangs(true);
     if (saleModeSeg) {
       /* 帶入的活動開賣日期與時間是 bookyay 決定的：選到「限時販售」並整組鎖住。 */
       saleModeSeg.dataset.value = "window";
@@ -5651,102 +5852,33 @@
       applySaleMode();
     }
     renderShare();                       // 活動名稱是帶入的，連結與 QR 要跟著換
-    /* 表演陣容不在 bookyay 帶入範圍內（2026-08-09 使用者明確指示：bookyay 沒有這筆資料），
-       這裡刻意不動 lineup——維持使用者自己在「新增表演者」搜尋加入的狀態。 */
+    /* 表演陣容不在 bookyay 帶入範圍內（2026-08-09 使用者明確指示：bookyay 沒有這筆資料）。 */
+    /* 圖片（D328）：直接帶 bookyay 原圖（1:1、1200×1200）、不裁切、不鎖；比例不合 2:3 不擋發布，
+       只在相簿下方提示換圖（D329，syncImgRatioNote）。 */
+    bkyImgSrcs = (rec.images || []).slice();
     renderGallery(rec.images);
-    /* 取票方式整組鎖住（.is-source-locked 會擋掉點擊）：那是 bookyay 那邊設定好的，這一側只顯示。
-       入場方式那一組已於 2026-08-10 撤除，對應的 lockSeg 一併移除。 */
+    syncImgRatioNote();
+    /* 取票方式本身鎖住（D308 決定一經 D327 修訂：只剩取票方式本身，含順豐寄送的運費）。 */
     lockSeg("ship", rec.ship);
-    /* 第三方門票（D302；2026-09-22 D308 決定一拍板）：bookyay 表單本來就有這一欄，帶入時預填並鎖住——
-       開關與說明欄都不可改，要改回 bookyay 改。沒帶這一欄的來源就維持關。 */
-    (function () {
-      const sw = document.querySelector("[data-ce-tp]");
-      const ta = tpNoteEl();
-      if (!sw || !ta) return;
-      const on = rec.ship === "eticket" && !!rec.thirdParty;
-      sw.setAttribute("aria-checked", on ? "true" : "false");
-      sw.classList.toggle("switch--on", on);
-      sw.classList.add("switch--locked");
-      sw.setAttribute("aria-disabled", "true");
-      ta.value = on ? (rec.thirdPartyNote || "") : "";
-      lockField(ta, true);
-    })();
-    /* 動態 QR 與可轉贈（D303；2026-09-22 D308 決定一、三拍板）：bookyay 表單本來就有這兩組，帶入時預填並整組鎖住——
-       開關鎖 .switch--locked、數字欄與日期欄 lockField、期限二選一鎖 .is-source-locked，全部子欄位都不可改。
-       動態 QR：ztor 只發靜態 QR，bookyay 端開著的帶入後實際轉為靜態——開關照 bookyay 原設定顯示為開（鎖），
-       標題後亮出括號註記 [data-ce-dq-bky]，更新間隔照 bookyay 的值顯示（鎖）；bookyay 端關著的：關、無註記。 */
-    (function () {
-      const setSw = (sel, on) => {
-        const sw = document.querySelector(sel);
-        if (!sw) return;
-        sw.setAttribute("aria-checked", on ? "true" : "false");
-        sw.classList.toggle("switch--on", on);
-        sw.classList.add("switch--locked");
-        sw.setAttribute("aria-disabled", "true");
-      };
-      const setNum = (key, v) => {
-        const el = document.querySelector("[data-ce=" + key + "]");
-        if (!el) return;
-        if (v != null && v !== "") el.value = v;
-        lockField(el, true);
-        el.closest(".zstep")?.querySelectorAll(".zstep__btn").forEach(b => { b.disabled = true; });
-      };
-      const e = rec.ship === "eticket";
-      /* bookyay 沒明說的視為關（D308：ztor 端沒有動態 QR，不再預設開） */
-      const dqOn = e && rec.dynamicQr === true;
-      setSw("[data-ce-dq]", dqOn);
-      const dqNote = document.querySelector("[data-ce-dq-bky]");
-      if (dqNote) dqNote.hidden = !dqOn;
-      setNum("ship-dq-min", rec.qrRefreshMin);
-      setSw("[data-ce-tf]", e && !!rec.transferable);
-      setSw("[data-ce-tf-limit]", rec.transferLimit !== false);
-      setNum("ship-tf-max", rec.transferMax);
-      setSw("[data-ce-tf-dl]", !!rec.transferDeadline);
-      const seg = document.querySelector('[data-seg="tf-dl"]');
-      if (seg) {
-        const mode = rec.transferDeadline === "date" ? "date" : "days";
-        seg.querySelectorAll(".segmented__btn").forEach(b => b.classList.toggle("segmented__btn--active", b.dataset.val === mode));
-        seg.dataset.value = mode;
-        seg.classList.add("is-source-locked");
-        document.querySelectorAll('[data-when="tf-dl"]').forEach(sub => { sub.hidden = sub.dataset.whenVal !== mode; });
-      }
-      const dt = document.querySelector("[data-ce=ship-tf-date]");
-      if (dt) { if (rec.transferDate) { dt.value = rec.transferDate; dt.dispatchEvent(new Event("input", { bubbles: true })); } lockField(dt, true); }
-      setNum("ship-tf-days", rec.transferDays);
-    })();
     applyShipMode();
-    /* bookyay 上沒有巡迴這種活動（2026-08-10 使用者說明），帶入的一律是定點：鎖在定點，
-       巡迴那張卡連同整塊一起變成唯讀。lockSeg 只改 dataset，畫面要跟著換得自己叫一次。 */
+    /* bookyay 沒有巡迴這種活動（2026-08-10 使用者說明），帶入的一律是定點。 */
     lockSeg("shape", "fixed");
     applyShape();
-    /* 場次：第 1 場是活動本身的日期，rec.sessions 是加場。全部鎖住並收掉新增與移除。 */
-    /* bookyay 帶進來幾場，多場開關就跟著開——不然畫面會出現「3 列場次但標示單場」，
-       而且場次名稱欄不會長出來，門票分不出是哪一場的。 */
-    series.list = [newSession({ name: rec.sessionNames ? rec.sessionNames[0] : "", date: rec.date, start: rec.start, end: rec.end, doors: rec.doors })]
-      .concat(rec.sessions.map((x, i) => newSession({
-        name: rec.sessionNames ? rec.sessionNames[i + 1] : "", date: x.date,
-        start: x.start || rec.start, end: x.end || rec.end, doors: x.doors || rec.doors })));
+    const m = bkyMap(rec);
+    series.list = m.sessions.length ? m.sessions : [newSession()];
     renderSessions();
     lockSessions(true);
-    /* 票種：帶入的票種標 fix，價格、張數不可改；名稱、標籤、加購商品仍可改。
-       2026-09-23（D316）：鎖定範圍不再含手續費——那個欄位整條退場了。 */
-    /* 票種先建（名稱、預設價格與張數都來自 bookyay，鎖住），再讓矩陣照場次長出門票。
-       各場的值一樣是資料一致，不是共用同一份。 */
-    /* 票價：港幣原值鎖在 priceBase，欄位顯示換算成 TWD 的整數（§7.15「建立流程中創作者看到的是
-       港幣換算成預設幣別的票價（唯讀）」）；沒有 ztorEvents 時退回原值。 */
-    const toTwd = v => (window.ztorEvents ? String(window.ztorEvents.fx("HKD", "TWD", Number(v) || 0)) : String(v));
-    types = rec.tiers.map(t => ({
-      id: "type-" + (++typeSeq), name: t.name, price: toTwd(t.priceHkd), qty: t.qty,
-      priceBase: { currency: "HKD", amount: Number(t.priceHkd) || 0 },
-      fix: true
-    }));
-    tiers = [];
-    series.list.forEach(ss => types.forEach(ty => tiers.push(newCell(ss, ty))));
+    types = m.types;
+    tiers = m.cells;
     renderTypes();
     drafts = {}; newIds = new Set(); errIds = new Set();
     renderTiers();
+    /* 套票自動建的組合包（D328，5.1.6.1 F20）：每場一組、整組鎖定（D329：票券成員、張數、折扣、鎖定套數、限時折扣；
+       名稱、封面、權益照常可改），鎖的畫法在 js/bundle-editor.js 的 srcFix()。 */
+    if (bundleEd) { bundleEd.setBundles(m.bundles); renderBundlePool(); syncBundleEmpty(); renderTiers(); }
+    bkySkipped = m.skipped;
+    renderBkySkipNote();
     syncReview(); renderCalc(); scheduleSave();
-    /* 取票方式是最後才設進 segmented 的，附加欄位要在那之後才判斷得出來（2026-08-10）。 */
     applyShipMode();
   }
 
@@ -5899,6 +6031,17 @@
     if (window.ztorIcons) window.ztorIcons.applyIcons(gal);
   }
 
+  /* 1:1 原圖提示（D329）：帶入的 bookyay 原圖（1:1）還在相簿裡就顯示一句「請換成 2:3」，不擋發布、不進檢核。
+     判斷看「相簿裡的圖是不是帶入的那幾張」，不量圖片實際比例——示範圖檔不是真的 1200×1200。 */
+  var bkyImgSrcs = [];
+  function syncImgRatioNote() {
+    const note = document.getElementById("ce-img-ratio-note");
+    if (!note) return;
+    const still = bkyImgSrcs.length && Array.from(document.querySelectorAll("#ce-gallery [data-gallery-tile] img"))
+      .some(img => bkyImgSrcs.indexOf(img.getAttribute("src")) >= 0);
+    note.hidden = !still;
+  }
+
   /* 圖片那一段的來源標記掛在區段標題上（相簿本身是圖片格，掛在格子上會壓到圖）。 */
   function galChip(on) {
     const h = document.getElementById("ce-images-title");
@@ -5983,41 +6126,22 @@
     set("name", src.name);
     set("highlight", src.highlight);   // D300：草稿續填要把亮點帶回來；再辦一場也照名稱／描述一起帶、可改
     set("desc", src.desc);
-    /* 第三方門票（D302）：來源活動是電子門票且開著，就把開關與說明一起帶回來（可改） */
-    if (src.publish && src.publish.pickup === "eticket" && src.publish.thirdParty) {
-      const sw = document.querySelector("[data-ce-tp]");
-      if (sw) { sw.setAttribute("aria-checked", "true"); sw.classList.add("switch--on"); }
-      set("ship-tp-note", src.publish.thirdPartyNote || "");
-      applyThirdParty();
-    }
-    /* 可轉贈（D303）：同樣照來源活動帶回來（可改）；沒記的維持預設（可轉贈關）。
-       動態 QR 刻意不帶（2026-09-22 D308）：再辦的一場是 ztor 自建活動，ztor 只發靜態 QR，開關維持關且不可切換——
-       就算來源是 bookyay 帶入且動態 QR 開著，複製出來的這一場也不會有。 */
-    if (src.publish && src.publish.pickup === "eticket") {
-      const pub = src.publish;
-      const putSw = (sel, on) => { const sw = document.querySelector(sel); if (sw) { sw.setAttribute("aria-checked", on ? "true" : "false"); sw.classList.toggle("switch--on", on); } };
-      putSw("[data-ce-tf]", !!pub.transferable);
-      putSw("[data-ce-tf-limit]", pub.transferLimit !== false);
-      if (pub.transferMax != null) set("ship-tf-max", pub.transferMax);
-      putSw("[data-ce-tf-dl]", !!pub.transferDeadline);
-      const seg = document.querySelector('[data-seg="tf-dl"]');
-      if (seg) {
-        const mode = pub.transferDeadline === "date" ? "date" : "days";
-        seg.querySelectorAll(".segmented__btn").forEach(b => b.classList.toggle("segmented__btn--active", b.dataset.val === mode));
-        seg.dataset.value = mode;
-        document.querySelectorAll('[data-when="tf-dl"]').forEach(sub => { sub.hidden = sub.dataset.whenVal !== mode; });
-      }
-      if (pub.transferDate) set("ship-tf-date", pub.transferDate);
-      if (pub.transferDays != null) set("ship-tf-days", pub.transferDays);
-      applyEticketSettings();
-    }
+    /* 墓碑 2026-09-29（D327）：再辦一場原本會帶回電子門票三組附屬設定的值，隨欄位刪除退場。 */
     const imgs = [src.images && src.images.keyvisual]
       .concat((src.images && src.images.gallery) || []).filter(Boolean);
     renderGallery(imgs);
+    /* 活動語言（D328）：來源有記就帶回來（可改） */
+    setLangs(src.languages || []);
     if ((src.tiers || []).length) {
       types = src.tiers.map(t => ({ id: "type-" + (++typeSeq), name: t.name, price: t.price, qty: t.qty }));
       tiers = [];
-      series.list.forEach(ss => types.forEach(ty => tiers.push(newCell(ss, ty))));
+      /* 門票簡介與顯示開關（D328）跟著票種帶回每一場的門票（可改） */
+      series.list.forEach(ss => types.forEach((ty, k) => {
+        const c = newCell(ss, ty);
+        c.desc = src.tiers[k].desc || "";
+        c.hidden = !!src.tiers[k].hidden;
+        tiers.push(c);
+      }));
       renderTypes();
       renderTiers();
     }

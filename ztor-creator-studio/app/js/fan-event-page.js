@@ -40,16 +40,17 @@
  *     name: { key:'name' },  highlight: { key:'highlight' } | null,
  *     organizer: 'NICKTHEREAL', organizerAvatar: 'images/…' | '',   // 主辦（原型＝創作者顯示名／名冊頭像）
  *     date: '2026-12-05', time: '19:30 – 21:30', duration: '2 h', doors: '18:30',
- *     venue: 'Taipei Music Center', address: '…', language: '繁體中文',
+ *     venue: 'Taipei Music Center', address: '…', language: '廣東話、普通話' | ['廣東話','普通話'],   // D328 活動語言可複選：字串或陣列（陣列以「、」／「, 」串）
  *     priority: { window: '…', state: '…' } | null,   // 優先購（原型示意）
  *     limit: '每筆最多 4 張' | null,
  *     desc: { key:'desc' },
  *     lineup: [{ name: '周湯豪', role: { key:'role-0' } | null }],
- *     notes: [{ key:'note-0' }], bring: [{ key:'bring-0' }], includes: [{ tag:'餐飲', key:'inc-0' }],
- *     pickup: '電子門票', entryNote: { key:'tp-note' } | null,
+ *     notes: [{ key:'note-0' }], bring: [{ key:'bring-0' }],        // D327：原本的第一組清單（活動內含物）已刪
+ *     pickup: '電子門票',                                            // D327：取票說明欄已刪
  *     refund: undefined | string | false,       // 沒給＝平台固定文案；字串＝自訂；false＝不畫
  *     terms: { key:'tnc' } | null,
- *     tiers: [{ key:'tier-vip', name:{ key:'tier-vip' }, note:'', priceObj, soldOut:false, priceKey:'tier:tier-vip' }],
+ *     tiers: [{ key:'tier-vip', name:{ key:'tier-vip' }, note:'', desc:{ key:'tdesc-…' } | null, hidden:false, priceObj, soldOut:false, priceKey:'tier:tier-vip' }],
+ *                                                // D328：desc＝門票簡介（可翻譯）；hidden:true 的列不畫（顯示開關關閉＝不在票價清單列出）
  *     bundles: [{ name:'…', priceObj, listPriceObj|null, priceKey:'bundle:bd-1', img:'…',
  *                 tickets:{ names:['VIP','Floor'], qty:2 } | null,      // 允許票種 × 張數（D296）
  *                 goods:[{ name:'官方 Tee', spec:true, img:'…' }],       // 商品成員；spec＝有規格要下單時選
@@ -169,7 +170,8 @@
     var views = api.views || (hasBundles ? ['ticket', 'bundles'] : ['ticket']);
     if (views.indexOf(view) < 0) view = views[0];
     var isBundles = view === 'bundles' && hasBundles;
-    var tiers = m.tiers || [];
+    /* D328：隱藏的票不在票價清單列出（也不算進價格區間與「N 種票」）；它仍可在組合包裡被賣出。 */
+    var tiers = (m.tiers || []).filter(function (t) { return !t.hidden; });
     var bundles = m.bundles || [];
     var nameText = valueOf(api, m.name);
 
@@ -290,7 +292,9 @@
     row('fep.time', 'Time', esc(m.time));
     row('fep.duration', 'Length', esc(m.duration));
     row('fep.venue', 'Venue', m.venue ? esc(m.venue) + (m.address ? '<small>' + esc(m.address) + '</small>' : '') : '');
-    row('fep.language', 'Language', esc(m.language));
+    /* D328：活動語言可複選——陣列依序以語系分隔符串成一行 */
+    var langVal = Array.isArray(m.language) ? m.language.filter(Boolean).join(T('ce.evlang.sep', ', ')) : m.language;
+    row('fep.language', 'Language', esc(langVal));
     if (m.priority) row('fep.priority', 'Early access', '<span class="pdp-event-meta__nowrap">' + esc(m.priority.window) + '</span>' + (m.priority.state ? '<small>' + esc(m.priority.state) + '</small>' : ''), 'pdp-event-meta__row--names');
     row('fep.limit', 'Per order', esc(m.limit));
     buy.appendChild(em);
@@ -358,9 +362,8 @@
       blk.appendChild(list);
       left.appendChild(blk);
     }
-    /* 注意事項：活動內含物／需攜帶物品／活動須知，三份清單合成一節（前台只有一份 ul） */
+    /* 注意事項：需攜帶物品／活動須知，兩份清單合成一節（前台只有一份 ul）。D327 刪去原本排第一、帶類型前綴的那組清單。 */
     var notesAll = [];
-    (m.includes || []).forEach(function (x) { notesAll.push({ tag: x.tag, field: x }); });
     (m.bring || []).forEach(function (x) { notesAll.push({ tag: T('fep.tag.bring', 'Bring'), field: x }); });
     (m.notes || []).forEach(function (x) { notesAll.push({ tag: '', field: x }); });
     if (notesAll.length) {
@@ -383,7 +386,6 @@
       var sb = el('div', 'pdp-details__shipping-block');
       sb.innerHTML = '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('ticket') + '<span data-i18n="fep.sec.pickup">' + esc(T('fep.sec.pickup', 'Ticket delivery')) + '</span></h3>';
       sb.appendChild(el('p', 'pdp-details__shipping-text', esc(m.pickup)));
-      if (m.entryNote) sb.appendChild(slot(api, 'p', 'pdp-details__shipping-text', m.entryNote, ''));
       right.appendChild(sb);
     }
     /* 退換票：表單沒有此欄，前台那句當平台固定文案（UIA-167）；宿主給字串就用宿主的、給 false 不畫 */
@@ -392,7 +394,7 @@
       rb.innerHTML = '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('history') + '<span data-i18n="fep.sec.refund">' + esc(T('fep.sec.refund', 'Refunds & exchanges')) + '</span></h3>';
       var rp = el('p', 'pdp-details__shipping-text');
       if (typeof m.refund === 'string' && m.refund) rp.textContent = m.refund;
-      else { rp.setAttribute('data-i18n', 'fep.refund.fixed'); rp.textContent = T('fep.refund.fixed', 'Tickets sold are non-refundable; if the organizer cancels or postpones, the ticket price is refunded in full (excluding fees).'); }
+      else { rp.setAttribute('data-i18n', 'fep.refund.fixed'); rp.textContent = T('fep.refund.fixed', 'Tickets sold are non-refundable; if the organizer cancels or postpones, the ticket price is refunded in full.'); }
       rb.appendChild(rp);
       right.appendChild(rb);
     }
@@ -414,6 +416,8 @@
         var mainEl = el('span', 'pdp-tier__main');
         mainEl.appendChild(slot(api, 'span', 'pdp-tier__label', t.name, T('ce.tier.untitled', 'Untitled tier')));
         if (t.note) mainEl.appendChild(el('span', 'pdp-tier__meta', esc(t.note)));
+        /* 門票簡介（D328）：可翻譯欄位，放在票名下的 meta 行（前台票列沒有簡介位置，呈現推導 UIA-172） */
+        if (t.desc) mainEl.appendChild(slot(api, 'span', 'pdp-tier__meta', t.desc, ''));
         tr.appendChild(mainEl);
         var tprice = el('span', 'pdp-tier__price', esc(moneyOf(api, t.priceObj, t.priceKey)));
         tprice.setAttribute('data-fep-price-key', t.priceKey || '');   /* D310：點價格開價格表 */

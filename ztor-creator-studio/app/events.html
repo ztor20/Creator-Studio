@@ -1738,6 +1738,35 @@
               </details>
             </div>
           </div>
+          <!-- bookyay 帶入後存成草稿的活動（2026-09-29 D331 決定四示範，events-store khh-countdown-draft）：裡面有一組 bookyay 套票自動建立的組合包；
+               草稿列「刪除」的確認彈窗會列出它、確認後隨活動一起刪除（events-store removeDraft，本分頁工作階段）。 -->
+          <div class="product-list__row" role="row" data-go="create-event.html?draft=khh-countdown-draft" data-stage="draft" data-category="concert" data-feat="S56" data-search="kaohsiung countdown 高雄 跨年 bookyay 草稿 draft 套票 duo nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
+            <div class="product-list__image-cell" role="cell">
+              <div class="product-list__image"><img src="images/hero-event.jpg" alt="" loading="lazy"></div>
+            </div>
+            <div class="product-list__product" role="cell">
+              <div class="product-list__body">
+                <div class="product-list__title"><span data-i18n="events.r.khh-countdown-draft.title">Kaohsiung countdown (bookyay draft)</span></div>
+                <div class="product-list__meta" data-i18n="events.r.khh-countdown-draft.meta">Festival</div>
+              </div>
+            </div>
+            <div class="product-list__cell product-list__datetime text-sub" role="cell" data-i18n="events.r.khh-countdown-draft.datetime">2026/12/31 · 9:00 PM</div>
+            <div class="product-list__cell product-list__venue" role="cell">Kaohsiung Pier-2</div>
+            <div class="product-list__cell product-list__tickets" role="cell"><div class="event-tickets event-tickets--unlimited">—</div></div>
+            <div class="product-list__cell product-list__revenue" role="cell">—</div>
+            <div class="product-list__cell product-list__status" role="cell"><span class="badge"><span data-i18n="events.badge.draft">Draft</span></span></div>
+            <div class="product-list__actions" role="cell">
+              <details class="dropdown">
+                <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                <div class="dropdown__menu" role="menu">
+                  <a class="dropdown__item" role="menuitem" href="create-event.html?draft=khh-countdown-draft"><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                  <button class="dropdown__item" type="button" role="menuitem"><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+                  <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-ev-delete><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="events.delete">Delete</span></button>
+                </div>
+              </details>
+            </div>
+          </div>
       </section>
         </div>
 
@@ -1999,6 +2028,15 @@
      同一個 leave-dialog 殼與文案節奏），確認才把該列從清單移除、重算分頁計數與頁首數字。原型只到呈現：清單是靜態
      HTML，刪除只動這一頁的工作副本，重整回來仍在（同 e-shop 草稿刪除的做法）。草稿系列的母列刪除＝整個草稿系列
      連同底下的場次一起移除；子場列自己的 kebab 也有刪除、可單獨刪一場（D294 補述，2026-09-21）。 */
+  /* 這一趟已刪掉的草稿（D331：刪除記在 events-store 的工作階段）：清單是靜態 HTML，重新整理後把那幾列收掉，
+     與活動資料（get() 查不到、自動組合包跟著消失）說同一件事；關掉分頁即回示範原值。 */
+  if (window.ztorEvents && window.ztorEvents.isRemoved) {
+    rows.slice().forEach(r => {
+      const id = ((r.dataset.go || '').match(/[?&]draft=([^&]+)/) || [])[1];
+      if (id && window.ztorEvents.isRemoved(decodeURIComponent(id))) { r.remove(); rows.splice(rows.indexOf(r), 1); }
+    });
+    apply(); syncKpis();
+  }
   const getEvDialog = () => document.querySelector('[data-ev-confirm-dialog]');   /* 彈窗 markup 在 </body> 前、比本段晚解析，每次用時才查（同 e-shop） */
   let evPending = null;
   function evAskDelete(row) {
@@ -2014,13 +2052,30 @@
       });
       apply(); syncKpis();
     };
+    /* 草稿活動刪除的連動（2026-09-29 D331 決定四，主規格 §7.14「活動比照」、5.1.6 F1）：bookyay 帶入自動建立的組合包隨草稿活動一起刪除
+       ——它自己沒有刪除入口。確認彈窗多一句並列出這幾組（leave-dialog__list，同 e-shop 刪除擋下列名的做法），確認後
+       events-store removeDraft() 把活動記成已刪（本分頁工作階段），組合包住在活動資料裡、跟著查不到。
+       創作者自建、成員含本活動票券的草稿組合包怎麼處置是〔產品待確認〕（D331），彈窗不提（ASSUMPTIONS UIA-183）。 */
+    const EVS = window.ztorEvents;
+    const draftId = ((row.dataset.go || '').match(/[?&]draft=([^&]+)/) || [])[1] || '';
+    const autos = (EVS && EVS.autoBundlesOf && draftId) ? EVS.autoBundlesOf(decodeURIComponent(draftId)) : [];
+    const baseRemove = doRemove;
+    const removeAll = () => { if (EVS && EVS.removeDraft && draftId) EVS.removeDraft(decodeURIComponent(draftId)); baseRemove(); };
     const evDialog = getEvDialog();
-    if (!evDialog) return doRemove();
+    if (!evDialog) return removeAll();
     const t = evDialog.querySelector('[data-ev-confirm-title]');
     const b = evDialog.querySelector('[data-ev-confirm-body]');
+    const list = evDialog.querySelector('[data-ev-confirm-list]');
     if (t) t.textContent = T('events.delete.title', 'Delete draft “{n}”?').replace('{n}', name);
-    if (b) b.textContent = T('events.delete.body', 'This draft has not been created yet — no tickets, no switches, no fan page — so deleting it affects no one. A deleted draft cannot be recovered.');
-    evPending = doRemove;
+    if (b) b.textContent = T('events.delete.body', 'This draft has not been created yet — no tickets, no switches, no fan page — so deleting it affects no one. A deleted draft cannot be recovered.')
+      + (autos.length ? (/^zh/.test(document.documentElement.lang) ? '' : ' ') + T('events.delete.auto-bundles', 'These bundles created from the bookyay import are deleted with it:') : '');
+    if (list) {
+      list.hidden = !autos.length;
+      list.innerHTML = autos.map(x => '<li class="leave-dialog__list-item"><i data-lucide="package" class="ztor-icon"></i><span>' +
+        String(x.name || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])) + '</span></li>').join('');
+      if (autos.length && window.ztorIcons) window.ztorIcons.applyIcons(list);
+    }
+    evPending = removeAll;
     evDialog.setAttribute('data-open', '');
     const ok = evDialog.querySelector('[data-ev-confirm-ok]'); if (ok) ok.focus();
   }
@@ -2050,6 +2105,8 @@
     <button class="leave-dialog__close" type="button" aria-label="Close" data-i18n-aria-label="e-shop.shown.close" data-ev-confirm-cancel><i data-lucide="x" class="ztor-icon"></i></button>
     <h2 class="leave-dialog__title" id="ev-confirm-title" data-ev-confirm-title></h2>
     <p class="leave-dialog__body" data-ev-confirm-body></p>
+    <!-- D331 決定四：草稿活動裡 bookyay 自動建立的組合包，隨活動一起刪除的名單（沒有就收起） -->
+    <ul class="leave-dialog__list" data-ev-confirm-list hidden></ul>
     <div class="leave-dialog__actions">
       <button class="btn btn--destructive" type="button" data-ev-confirm-ok><span data-i18n="events.delete.confirm">Delete</span></button>
       <button class="btn btn--outline" type="button" data-ev-confirm-cancel data-i18n="e-shop.shown.cancel">Cancel</button>

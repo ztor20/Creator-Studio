@@ -97,7 +97,8 @@
           <a class="btn btn--outline" href="product-localization.html?type=bundle" data-bd-localize data-dock-icon><i data-lucide="globe" class="ztor-icon"></i><span data-i18n="product-detail.btn.localize">Preview &amp; localization</span></a>
           <!-- 頁首主要動作依狀態互斥、一次只出現一個（spec 5.1.5.9 §2.2，主規格 §7.14「封存與不可刪除」· D284，2026-09-18）：
                上架中→「下架」；已下架→「封存」（先確認；封存組合包不牽連成員）；已封存→「解除封存」（不確認、回到已下架、不動成員；D298 2026-09-22）。
-               刪除（D307 2026-09-22）：已下架或已封存且零成交時另有「刪除」（紅框次要樣式）；刪組合包不影響成員；有成交只能封存、無刪除入口；活動組合包跟著活動走、不提供。
+               刪除（D307 2026-09-22）：已下架或已封存且零成交時另有「刪除」（紅框次要樣式）；刪組合包不影響成員；有成交只能封存、無刪除入口；
+               活動組合包：創作者自建的照一般組合包可刪（2026-09-29 D331 決定六），bookyay 自動建立的任何狀態都沒有（D330）。
                上架（2026-09-23 使用者裁決）：已下架態多一顆「上架」（主要樣式，排在「封存」之前），與上架設定卡的上架開關是同一個動作、同一支 tryRelist()——
                兩邊狀態連動（切一邊另一邊跟著變）；成員閘門走共用的 partials/bundle-relist.js。已封存不提供上架，要先解除封存。
                顯示／隱藏（2026-09-23 使用者裁決）：上架中多一顆「隱藏」／「顯示」（outline 樣式，排在下架／上架之後、封存之前），
@@ -511,6 +512,9 @@
           </div>
           <!-- --stack：右側常駐欄只有 300px，兩個時間欄並排會溢出（元件說明要求窄欄明說、不靠猜視窗寬度）。 -->
           <div class="lctl lctl--stack" data-bd-listing>
+            <!-- 可賣性防呆（D331 決定三，5.1.6.1 F22）：上架開關切關＝下架活動最後一組販售中的組合包、活動又沒有顯示中的門票時，
+                 開關不翻、這一句紅字（比照「開賣」的 #bd-sale-stop-err；頁首「下架」鈕改走純告知彈窗，見 blockNotice） -->
+            <div class="field__error" id="bd-list-stop-err" hidden data-feat="S55" data-i18n="bd.list.stop.last">It's the event's last bundle on sale and the event has no visible ticket — it can't be unlisted. Keep at least 1 visible ticket or 1 bundle.</div>
             <!-- 顯示於商店自己一項（D247；2026-09-04 使用者再裁示：不要外框、與第 2 層對調位置）：
                  它回答的是「上架之後找不找得到」，緊接在上架那顆總開關後面；排程盒排在它下面。
                  隱藏時長出來的非公開連結用 .lctl__body（列自己的揭示區），不再用外框把兩者圈起來。 -->
@@ -535,6 +539,8 @@
                 </div>
                 <div class="switch switch--on lctl__control" role="switch" aria-checked="true" tabindex="0" id="bd-shown"></div>
               </div>
+              <!-- 可賣性防呆（D331）：顯示開關切成隱藏會讓活動沒有可賣的東西時，開關不翻、就地紅字 -->
+              <div class="field__error" id="bd-shown-stop-err" hidden data-feat="S55" data-i18n="bd.shown.stop.last">It's the event's last bundle on sale and the event has no visible ticket — it can't be hidden. Keep at least 1 visible ticket or 1 bundle.</div>
               <div class="lctl__body" id="bd-shown-body" hidden>
                   <div class="linkf linkf--stack" data-linkf id="bd-linkf">
                     <span class="linkf__label" data-i18n="link.private-h">Private link</span>
@@ -597,6 +603,9 @@
                     </button>
                   </div>
                 </div>
+                <!-- 可賣性防呆（D330，5.1.6.1 F22）：停售活動最後一組販售中的組合包、活動又沒有顯示中的門票時，選項不換、就地一句紅字
+                     （比照活動詳情「隱藏最後一張」的 #ed-tm-show-err） -->
+                <div class="field__error" id="bd-sale-stop-err" hidden data-feat="S55" data-i18n="bd.sale.stop.last">It's the event's last bundle on sale and the event has no visible ticket — sales can't be stopped. Keep at least 1 visible ticket or 1 bundle.</div>
               </div>
             </div>
             <div class="lctl__derived">
@@ -745,16 +754,21 @@
          名稱「活動名 · VIP／Floor 任選 × n」、單價＝最低允許票價（多種時是下界、顯示「從 … 起」）、池＝n × Σ floor(剩餘 ÷ n)。 */
       const tk = EV.bundleTickets(b);
       const tiersIn = tk.tierIds.map(id => (ev.tiers || []).find(tt => tt.id === id)).filter(Boolean);
+      /* 幣別（2026-09-29 D330 同批修正）：組合包的基準幣別＝創作者幣別（events-store bundlePriceOf），票價先由各票種的基準幣別
+         換算成它再加總（§7.15、5.1.5.4 F3）。原本把票價直接相加、前面掛「$」，bd-nye-duo 顯示 $550、活動詳情卡片卻是 NT$2,221。 */
+      const bdBase = EV.bundlePriceOf(ev, b).base;
+      const inBase = t => { const po = EV.priceOf(ev, t); return po.base === bdBase ? (Number(po.amount) || 0) : EV.fx(po.base, bdBase, po.amount); };
+      const fmtBase = v => EV.fmtMoney(bdBase, v);
       if (tiersIn.length) {
         const key = tixKey(ev.id, tiersIn.map(t => t.id));
         const names = tiersIn.map(t => t.name), lefts = tiersIn.map(tierLeft);
-        const minPrice = tiersIn.reduce((m, t) => Math.min(m, Number(t.price) || 0), Infinity);
+        const minPrice = tiersIn.reduce((m, t) => Math.min(m, inBase(t)), Infinity);
         extraProducts[key] = { id: key, kind: 'ticket', eventId: ev.id, tierIds: tiersIn.map(t => t.id), tierNames: names, tierLefts: lefts, eventName: evName,
           name: evName + ' · ' + tixNamesText(names, tk.qty), price: minPrice, priceFrom: names.length > 1, imgSrc: (ev.images && ev.images.keyvisual) || '',
           pool: { total: tixPoolTotal(lefts, tk.qty), locks: { single: null, bundles: {} } }, listed: listedByEv && ev.status !== 'ended', onSale: true };
         members.push({ productId: key, kind: 'ticket', eventId: ev.id, tierIds: tiersIn.map(t => t.id), qty: tk.qty });
         memberItems.push({ id: key, kind: 'ticket', name: names.join('／'), tierNames: names, tierLefts: lefts, priceFrom: names.length > 1, eventName: evName, eventId: ev.id,
-          meta: [ev.date || '', ev.venue || ''].filter(Boolean).join(' · '), priceAmount: minPrice, price: moneyFromText('$' + minPrice.toLocaleString('en-US'), names.length > 1),
+          meta: [ev.date || '', ev.venue || ''].filter(Boolean).join(' · '), priceAmount: minPrice, price: moneyFromText(fmtBase(minPrice), names.length > 1),
           imgSrc: (ev.images && ev.images.keyvisual) || '', qty: tk.qty });
       }
       const store0 = window.ProductsStore;
@@ -769,22 +783,26 @@
         const qty = Number(pr.qty) > 0 ? Number(pr.qty) : 1;
         const amt = real ? (Number(String(real.price || '').replace(/[^0-9.]/g, '')) || 0) : (Number(pr.price) || 0);
         members.push({ productId: key, kind: 'product', qty: qty });
-        memberItems.push({ id: key, kind: 'product', real: !!real, name: pr.name, meta: real && real.subLabel ? real.subLabel : '', priceAmount: amt, price: '$' + amt.toLocaleString('en-US'), imgSrc: real && real.img ? 'images/products/' + real.img : (pr.img || ''), qty: qty,
+        memberItems.push({ id: key, kind: 'product', real: !!real, name: pr.name, meta: real && real.subLabel ? real.subLabel : '', priceAmount: amt, price: fmtBase(amt), imgSrc: real && real.img ? 'images/products/' + real.img : (pr.img || ''), qty: qty,
           multi: !!(real && real.variant === 'multiple' && (real.variants || []).length) });   /* D295：多選項商品標「規格由粉絲購買時選」 */
       });
       const evSeed = {
         id: b.id, isEventBundle: true, name: b.name, description: '', persona: null,
-        members: members, cap: (b.cap === undefined || b.cap === null) ? null : b.cap, lockSets: null, alloc: {},
+        members: members, cap: (b.cap === undefined || b.cap === null) ? null : b.cap,
+        /* bookyay 套票自動建立的組合包（D329）：鎖定套數與限時折扣（早鳥）由帶入決定，`srcFix` 讓本頁整組鎖定（見 applySrcFix）。 */
+        lockSets: (b.lockSets != null && b.lockSets !== '') ? Number(b.lockSets) : null, alloc: {}, srcFix: !!b.fix,
         listed: listedByEv, listAt: null, unlistAt: null, shown: true, privateLink: null,
         saleStart: null, saleEnd: ev.status === 'ended' && ev.date ? ev.date + 'T23:59' : null, onSale: ev.status !== 'scheduled',
         lowThreshold: 0, draft: ev.status === 'draft', archived: false,
         unlistReason: ev.status === 'cancelled' ? { type: 'event-cancelled', eventName: evName } : null,
-        discountPct: null, discount: null, films: [], projects: [], history: [],
+        discountPct: (b.disc != null && b.disc !== '') ? Number(b.disc) : null,   /* D331 示範：創作者自建組合包的組合折扣 %（活動資料 disc） */
+        discount: b.sale ? { percent: b.sale.pct, limited: { start: String(b.sale.from || '').slice(0, 10), end: String(b.sale.to || '').slice(0, 10) }, stack: false } : null,
+        films: [], projects: [], history: [],
         /* 銷售摘要：活動側只有已售套數；毛收與淨額由 Earnings 承接（5.1.5.9 §2.4），示範資料沒有那兩個數字 */
         sales: (b.sold > 0) ? { units: b.sold, gross: null, net: null } : null
       };
       return { id: b.id, name: b.name, description: '', img: '', imgSrc: (ev.images && ev.images.keyvisual) || '', memberItems: memberItems, memberNames: memberItems.map(it => it.name),
-        currency: 'USD', intMoney: true, priceAmount: Number(b.price) || 0, evSeed: evSeed, event: ev, eventName: evName, sold: b.sold || 0 };
+        currency: bdBase, evBase: bdBase, intMoney: true, priceAmount: Number(b.price) || 0, evSeed: evSeed, event: ev, eventName: evName, sold: b.sold || 0 };
     }
     let bundle = window.ztorGetBundle && window.ztorGetBundle(idParam);
     if (bundle) {
@@ -1217,6 +1235,8 @@
       });
     }
     function syncLockEditing() {
+      /* D329：bookyay 自動建立的組合包，鎖定套數鎖定——「編輯」鈕收起、套數欄一律停用。 */
+      if (detail.srcFix) { lockEditing = false; if (lockEditBtn) lockEditBtn.hidden = true; if (setsInput) setsInput.disabled = true; if (lockActions) lockActions.hidden = true; return; }
       if (setsInput) setsInput.disabled = !lockEditing;
       if (allocEl) allocEl.querySelectorAll('[data-bd-alloc-input]').forEach(inp => { inp.disabled = !lockEditing || (LS && LS.bundleLockSets(bundleModel) === null); });
       if (lockEditBtn) lockEditBtn.hidden = lockEditing;
@@ -1355,13 +1375,21 @@
     });
     syncListedLock();
     bindSwitch(shownSwitch, () => bundleModel.shown, on => {
+      /* 可賣性防呆（D331 決定三）：切成隱藏會讓活動沒有可賣的東西 → 開關不翻、就地紅字 */
+      const shownErr = document.getElementById('bd-shown-stop-err');
+      if (!on && blocksLastSellable()) { if (shownErr) shownErr.hidden = false; return; }
+      if (shownErr) shownErr.hidden = true;
       bundleModel.shown = on;
       syncShown();
       refreshAlloc();
       if (window.bdSyncPrimaryAction) window.bdSyncPrimaryAction();   /* 頁首隱藏／顯示鈕與這顆開關雙向連動（2026-09-23） */
     });
     /* 頁首「隱藏／顯示」直接觸發上架卡的顯示開關，不複製一份切換邏輯；沿用該開關現行「不確認」的行為。 */
-    document.querySelectorAll('[data-bd-hide],[data-bd-show]').forEach(b => b.addEventListener('click', () => { if (shownSwitch) shownSwitch.click(); }));
+    /* 頁首「隱藏」被可賣性防呆擋下時（D331）改走純告知彈窗——紅字在「發布設定」分頁、頁首按的人不一定看得到（window.bdBlockNotice，見下方封存段） */
+    document.querySelectorAll('[data-bd-hide],[data-bd-show]').forEach(b => b.addEventListener('click', () => {
+      if (b.hasAttribute('data-bd-hide') && bundleModel.shown && blocksLastSellable() && window.bdBlockNotice) { window.bdBlockNotice('hide'); return; }
+      if (shownSwitch) shownSwitch.click();
+    }));
     if (linkfEl) linkfEl.addEventListener('linkfield:reset', e => {
       if (window.linkField && LS) window.linkField.setValue(e.detail.root, LS.resetPrivateLink(bundleModel));
     });
@@ -1415,7 +1443,16 @@
     if (bdSm) {
       paintBdSaleMode();
       bdSm.addEventListener('radio-list:change', e => {
-        bdSaleMode = e.detail.item.dataset.bdSaleMode || 'follow';
+        const next = e.detail.item.dataset.bdSaleMode || 'follow';
+        /* 停售＝把開賣停掉（切到「未開賣」）。會讓活動沒有可賣的東西時這次切換不成立：選項還原、就地提示（D330）。 */
+        const stopErr = document.getElementById('bd-sale-stop-err');
+        if (next === 'off' && bdSaleMode !== 'off' && blocksLastSellable()) {
+          paintBdSaleMode();
+          if (stopErr) stopErr.hidden = false;
+          return;
+        }
+        if (stopErr) stopErr.hidden = true;
+        bdSaleMode = next;
         syncBdSaleMode();
         /* 切回「立即開賣」或「未開賣」＝把排定的開賣時間收掉，畫面與資料才不會各說各話。 */
         if (bdSaleMode !== 'schedule' && saleOpenEl) { saleOpenEl.value = ''; }
@@ -1463,6 +1500,21 @@
          · 活動開賣中   → 三開關都可操作（可自行下架／隱藏／停售）
        切換只寫 bundleModel（本頁工作副本），永遠不碰 events-store——「這裡的設定不會影響活動本身」那句常駐在卡上。
        活動三開關本體（D283）仍待上游改寫；這裡用活動的生命週期階段代位（草稿／已排程／售票中／進行中／已結束／已取消）。 */
+    /* 可賣性防呆（5.1.6.1 F22「可賣性防呆」，D330 → 2026-09-29 D331 補範圍；5.1.5.9 §2.2）：只管含活動票券、且活動已發布的組合包。
+       本組合是活動最後一組仍在販售的組合包、活動又沒有任何顯示中的門票時，停售、下架、隱藏、封存、刪除都擋下。
+         · 活動仍是草稿：不擋，交給發布前檢核 F11 第五項（D331 決定二）
+         · 本組合自己「仍在販售」＝上架、顯示、開賣三者都成立、未封存（D331）；已經不在販售的組合再下架／封存／刪除不改變什麼，不擋
+           ——所以封存（要先下架）與刪除（要先下架或封存）實務上走不到擋下，照規格列著讓口徑完整。
+         · 活動還沒開賣（已排程，組合包的開賣跟著活動、還沒開）算不算「仍在販售」是〔產品待確認〕（D331），原型照 D330 算在販售中。
+         · 其他組合包與門票：events-store 的 hasOtherSellable()（與活動詳情、電子商店清單同一支）。 */
+    function blocksLastSellable() {
+      const bo = evBoundsOf();
+      if (!bo || bo.draft) return false;
+      const onSaleNow = bo.canSell ? bundleModel.onSale !== false : true;
+      const selling = bundleModel.listed !== false && bundleModel.shown !== false && !bundleModel.archived && onSaleNow;
+      if (!selling) return false;
+      return !window.ztorEvents.hasOtherSellable(bo.ev, { exceptBundleId: bundle && bundle.id });
+    }
     function evBoundsOf() {
       const m = bundleModel.members.find(x => x.kind === 'ticket');
       const ev = (m && m.eventId && window.ztorEvents) ? window.ztorEvents.get(m.eventId) : null;
@@ -1571,7 +1623,27 @@
     const bdAuto = document.getElementById('bd-autoprice');
     const bdHint = document.getElementById('bd-disc-hint');
     const bdHeroPrice = document.querySelector('[data-bd-hero-price]');
-    const bdMoney = value => bdCurrency + (bdTWD ? Math.round(value).toLocaleString('en-US') : value.toFixed(2));
+    /* 活動組合包（evBase，D330 同批）：金額一律以組合包的基準幣別格式化（events-store fmtMoney：NT$2,222），與活動詳情卡片同一支。 */
+    const bdMoney = value => (bundle && bundle.evBase && window.ztorEvents)
+      ? window.ztorEvents.fmtMoney(bundle.evBase, Math.round(value))
+      : bdCurrency + (bdTWD ? Math.round(value).toLocaleString('en-US') : value.toFixed(2));
+    /* 頁首摘要價（2026-09-29 D331 決定一）：活動組合包的基準欄被覆寫過（只有含 bookyay 票券者吃得到，baseOpen）時，
+       摘要顯示覆寫值＝粉絲實付價；覆寫存在 events-store（在地化頁儲存）。成員價或折扣 % 一改，覆寫全部作廢重算（§7.15），
+       所以只要原價合計或折扣 % 跟載入時不同，就回到算出來的售價。下方「定價」段的售價欄仍是算式結果（基準價），不換。 */
+    const bdOv = (() => {
+      const EVS = window.ztorEvents, ev0 = bundle && bundle.event;
+      if (!EVS || !ev0 || !bundle.evBase) return null;
+      const b0 = (ev0.bundles || []).find(x => x.id === bundle.id); if (!b0) return null;
+      const po = EVS.bundlePriceOf(ev0, b0);
+      const v = po.baseOpen && po.override ? po.override[po.base] : null;
+      return (v != null && v !== '' && !isNaN(Number(v))) ? { amount: Number(v), sig: null } : null;
+    })();
+    function bdHeroAmount(base, pct, final) {
+      if (!bdOv) return final;
+      const sig = base + '|' + pct;
+      if (bdOv.sig === null) bdOv.sig = sig;          // 第一次計算＝載入時的原價與折扣
+      return bdOv.sig === sig ? bdOv.amount : final;
+    }
     /* D261：合計（唯讀）＋折扣 %（可填）→ 售價；提示句講省下多少 */
     function bdRecalc() {
       const raw = (bdDisc && bdDisc.value.trim()) || '';
@@ -1590,7 +1662,7 @@
       const saveEl = document.querySelector('[data-bd-save]');
       if (saveEl) saveEl.textContent = !pct ? T('cpp.bd.sp.save.zero', '0% off — selling price = list price')
         : T(bdPriceFrom() ? 'cpp.bd.sp.save.from' : 'cpp.bd.sp.save', 'Fans save {amt} ({pct}%)').replace('{amt}', bdMoney(bdBase - final)).replace('{pct}', String(Math.round(pct * 10) / 10));
-      if (bdHeroPrice) bdHeroPrice.textContent = bdMoneyFrom(final);
+      if (bdHeroPrice) bdHeroPrice.textContent = bdMoneyFrom(bdHeroAmount(bdBase, pct, final));
       if (window.bdRenderSettingsOverview) window.bdRenderSettingsOverview();
       if (bdHint) {
         bdHint.removeAttribute('data-i18n');
@@ -1640,6 +1712,7 @@
     const saleFields = document.querySelector('[data-bd-sale-fields]');
     if (saleToggle) {
       const flip = () => {
+        if (saleToggle.classList.contains('switch--locked')) return;   /* D329：bookyay 早鳥的限時折扣鎖定 */
         const on = saleToggle.getAttribute('aria-checked') !== 'true';
         saleToggle.setAttribute('aria-checked', on ? 'true' : 'false');
         saleToggle.classList.toggle('switch--on', on);
@@ -1785,7 +1858,9 @@
       const perks = perkEl ? perkEl.value.split('\n').map(x => x.trim()).filter(Boolean) : [];
       rows.push({ g: 'pricing', go: 'members', key: 'cpp.bd.perks', fb: 'Perks', v: perks.length ? perks.join('、') : T('product-detail.setov.none', 'None') });
       const disc = v('bd-discount');
-      rows.push({ g: 'pricing', go: 'pricing', key: 'cb.pricing', fb: 'Bundle price', v: (bdAuto ? bdAuto.textContent : '') + (disc && Number(disc) > 0 ? ' · −' + disc + '%' : '') });
+      /* 摘要列跟頁首同一個數（D331 決定一：基準欄被覆寫時顯示覆寫值＝粉絲實付價）；定價段的售價欄仍是算式結果 */
+      const ovPrice = bdHeroPrice ? bdHeroPrice.textContent : (bdAuto ? bdAuto.textContent : '');
+      rows.push({ g: 'pricing', go: 'pricing', key: 'cb.pricing', fb: 'Bundle price', v: ovPrice + (disc && Number(disc) > 0 ? ' · −' + disc + '%' : '') });
       const salePct = v('bd-sale-percent');
       rows.push({ g: 'pricing', go: 'pricing', key: 'cp.discount.title', fb: 'Discount settings', v: [on('bd-sale-toggle') ? (T('cp.discount.limited', 'Limited-time discount') + (salePct ? ' −' + salePct + '%' : '')) : T('product-detail.setov.off', 'Off'), on('bd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : ''].filter(Boolean).join(' · ') });
       /* 庫存與交付：鎖定套數（值＝N 套／未鎖定，點過去到組合庫存分頁） */
@@ -1964,11 +2039,17 @@
          加入區收起、移除鈕藏起、數量欄停用，並在清單上方說明理由與仍可改的東西（售價／折扣／販售上限／停售）。 */
       function syncMembersLock(editing) {
         const sold = soldUnits();
-        const locked = sold > 0;
+        /* bookyay 套票自動建立的組合包（D329，5.1.5.9 §2.3）：不論是否已售出，成員與張數從建立起就鎖；說明句換成來源鎖那一句
+           （它鎖得更多——連組合折扣、鎖定套數、限時折扣），不疊兩句。 */
+        const fixed = !!detail.srcFix;
+        const locked = sold > 0 || fixed;
         const banner = document.querySelector('[data-bd-members-locked]');
         const txt = document.querySelector('[data-bd-members-locked-text]');
         if (banner) banner.hidden = !locked;
-        if (txt) txt.textContent = locked ? T('bd.members.locked', '{n} sold — members and quantities are locked. You can still change the price, discount, cap and sale; to change what is inside, create a new bundle.').replace('{n}', String(sold)) : '';
+        if (txt) txt.textContent = !locked ? '' : fixed
+          ? T('cpp.bd.sp.srclocked', 'Imported from bookyay — tickets, quantity, discount, locked sets and the limited-time discount are locked.')
+          : T('bd.members.locked', '{n} sold — members and quantities are locked. You can still change the price, discount, cap and sale; to change what is inside, create a new bundle.').replace('{n}', String(sold));
+        if (fixed) applySrcFix();
         if (locked) sp.querySelectorAll('[data-bd-edit-only]').forEach(el => { el.hidden = true; });
         document.querySelectorAll('#bd-members [data-bd-remove]').forEach(b => { if (locked) b.hidden = true; });
         document.querySelectorAll('#bd-members [data-bd-qty]').forEach(inp => { inp.disabled = locked; if (!locked) inp.readOnly = !editing; });
@@ -1976,6 +2057,13 @@
         if (window.ztorIcons && banner) window.ztorIcons.applyIcons(banner);
       }
       window.bdSyncMembersLock = syncMembersLock;
+      /* 來源鎖的其餘欄位（D329，5.1.5.9 §2.3）：組合折扣、限時折扣（開關＋%＋起訖）停用；鎖定套數在 syncLockEditing 處理。
+         名稱、描述、素材、權益、三開關不在鎖定範圍，照常可改。用 disabled 而不是 readOnly：編輯態的 applyReadonly 會把 readOnly 全部打開。 */
+      function applySrcFix() {
+        ['bd-discount', 'bd-sale-percent', 'bd-discount-start', 'bd-discount-end'].forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
+        const st = document.getElementById('bd-sale-toggle');
+        if (st) { st.classList.add('switch--locked'); st.setAttribute('aria-disabled', 'true'); st.removeAttribute('tabindex'); }
+      }
       /* 數量（每套用量）改動：寫回列屬性與成員記錄，鎖定量（N × 用量）、可售套數、原價合計跟著重算 */
       document.addEventListener('input', e => {
         const inp = e.target.closest('#bd-members [data-bd-qty]'); if (!inp) return;
@@ -2086,7 +2174,7 @@
       const btnHide = document.querySelector('[data-bd-hide]'), btnShow = document.querySelector('[data-bd-show]');   /* 2026-09-23：只在上架中才出現，與 #bd-shown 同一個動作 */
       const btnArchive = document.querySelector('[data-bd-archive]');
       const btnUnarchive = document.querySelector('[data-bd-unarchive]');   /* D298：已封存態的唯一主要動作＝解除封存 */
-      const btnDelete = document.querySelector('[data-bd-delete]');   /* D307：已下架／已封存且零成交才露出；活動組合包不提供 */
+      const btnDelete = document.querySelector('[data-bd-delete]');   /* D307：已下架／已封存且零成交才露出；活動組合包：自建的可刪（D331）、bookyay 自動建立的不提供（D330，srcFix） */
       const salesNote = document.querySelector('[data-bd-sales-note]');   /* D307：有成交 → 沒有刪除、只能封存 */
       const bannerArchived = document.querySelector('[data-bd-archived-banner]');
       const bannerReason = document.querySelector('[data-bd-unlist-reason-banner]');
@@ -2109,11 +2197,12 @@
         if (btnUnarchive) btnUnarchive.hidden = !archived;
         /* D307：零成交且已下架／已封存 → 「刪除」（銷售摘要在 seed 上，bundleModel 只有三開關）；有成交 → 上架卡多一句「已有銷售紀錄，只能封存」。
            活動組合包跟著活動走（D294），兩者都不做。 */
-        const evb = !!(seed && seed.isEventBundle);
+        /* 2026-09-29 D331 決定六：創作者自建的活動組合包「其他欄位照一般組合包（可編輯、可刪除）」——零成交且已下架／已封存時
+           也露出「刪除」；bookyay 自動建立的（srcFix）照 D330 任何狀態都沒有刪除入口。 */
         const sold = !!(seed && LS.hasSales && LS.hasSales(seed));
-        const canDel = !evb && !sold && !!(LS.canDelete && LS.canDelete(bundleModel));
+        const canDel = !(seed && seed.srcFix) && !sold && !!(LS.canDelete && LS.canDelete(bundleModel));
         if (btnDelete) btnDelete.hidden = !canDel;
-        if (salesNote) salesNote.hidden = !(!evb && sold && !bundleModel.draft && (archived || LS.isUnlisted(bundleModel)));
+        if (salesNote) salesNote.hidden = !(sold && !bundleModel.draft && (archived || LS.isUnlisted(bundleModel)));
         /* 頁首「隱藏／顯示」（2026-09-23 使用者裁決）：與上架卡的顯示開關同一份資料，只在上架中才出現（D265／§7.14） */
         const listedNow = !archived && !bundleModel.draft && !LS.isUnlisted(bundleModel);
         if (btnHide) btnHide.hidden = !(listedNow && bundleModel.shown);
@@ -2207,9 +2296,27 @@
       document.addEventListener('keydown', e => { if (e.key === 'Escape' && pending) closeConfirm(); });
 
       const bname = () => (bundle && bundle.name) || '';
-      /* 下架一律先確認（D288 裁決一）：頁首「下架」鈕與上架開關切關走同一個彈窗；組合包沒有連動清單 */
-      function askUnlist() {
+      /* 可賣性防呆的擋下（D331 決定三）：頁首按鈕（下架／隱藏／封存／刪除）被擋時用純告知彈窗（只有「知道了」，同重新上架被擋的
+         partials/bundle-relist.js）——那幾顆鈕在頁首，開關與紅字在「發布設定」分頁，按的人不一定看得到；句子與開關旁紅字同一句。 */
+      const BLOCK_KEY = { unlist: 'bd.list.stop.last', hide: 'bd.shown.stop.last', archive: 'bd.archive.stop.last', del: 'bd.delete.stop.last' };
+      function blockNotice(kind) {
+        askConfirm({
+          title: T('bd.stop.title.' + kind, 'Can’t do this to “{n}”').replace('{n}', bname()),
+          body: T(BLOCK_KEY[kind], "It's the event's last bundle on sale and the event has no visible ticket. Keep at least 1 visible ticket or 1 bundle."),
+          okKey: 'e-shop.relist.blocked-ok', okFallback: 'Got it', noCancel: true, onConfirm: null
+        });
+      }
+      window.bdBlockNotice = blockNotice;
+      /* 下架一律先確認（D288 裁決一）：頁首「下架」鈕與上架開關切關走同一個彈窗；組合包沒有連動清單。
+         src＝'switch'（上架開關）時擋下改就地紅字 #bd-list-stop-err；頁首鈕走 blockNotice（D331）。 */
+      function askUnlist(src) {
         if (LS.isArchived(bundleModel) || LS.isUnlisted(bundleModel)) return;
+        const listErr = document.getElementById('bd-list-stop-err');
+        if (blocksLastSellable()) {
+          if (src === 'switch' && listErr) listErr.hidden = false; else blockNotice('unlist');
+          return;
+        }
+        if (listErr) listErr.hidden = true;
         askConfirm({
           title: T('e-shop.unlist.title', 'Unlist “{n}”?').replace('{n}', bname()),
           body: T('e-shop.unlist.body', 'Public and private links stop working and fans no longer see its page. You can relist it anytime.'),
@@ -2236,12 +2343,13 @@
           }
         });
       }
-      if (btnUnlist) btnUnlist.addEventListener('click', askUnlist);
+      if (btnUnlist) btnUnlist.addEventListener('click', () => askUnlist('header'));
       /* 頁首「上架」＝上架開關切開，同一支函式；paint() 會把開關、排程欄與頁首動作一起畫回資料的樣子（反向連動） */
       if (btnRelist) btnRelist.addEventListener('click', tryRelist);
       /* 封存只看「已下架」、單純確認（D288 修正 D284 裁決四）；組合包封存本來就不牽連成員 */
       if (btnArchive) btnArchive.addEventListener('click', () => {
         if (!LS.canArchive(bundleModel)) return;
+        if (blocksLastSellable()) { blockNotice('archive'); return; }   /* D331：封存要先下架，實務上走不到；口徑完整才留著 */
         askConfirm({
           title: T('e-shop.archive.title', 'Archive “{n}”?').replace('{n}', bname()),
           body: T('e-shop.archive.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can unarchive it anytime.'),
@@ -2255,13 +2363,16 @@
          隨組合包消失而釋回——原型的成員鎖定由 applyBundleLock 依組合包記錄導出，記錄拿掉、下次載入就沒有這筆鎖定）。
          確認（標題帶品名、內文講不可復原、主鈕紅框）→ ProductsStore.remove(seed) 記進工作階段，導回電子商店的組合分頁。 */
       if (btnDelete) btnDelete.addEventListener('click', () => {
-        if (!seed || seed.isEventBundle || !LS.canDelete || !LS.canDelete(bundleModel) || (LS.hasSales && LS.hasSales(seed))) return;
+        if (!seed || seed.srcFix || !LS.canDelete || !LS.canDelete(bundleModel) || (LS.hasSales && LS.hasSales(seed))) return;
+        if (blocksLastSellable()) { blockNotice('del'); return; }   /* D330／D331：刪除要先下架或封存，實務上走不到 */
         askConfirm({
           title: T('e-shop.remove.title', 'Delete “{n}”?').replace('{n}', bname()),
           body: T('e-shop.remove.bundle-body', 'Members keep their status and stock. This cannot be undone.'),
           okKey: 'e-shop.delete.confirm', okFallback: 'Delete', destructive: true,
           onConfirm: () => {
-            if (store && store.remove) store.remove(seed);
+            /* 活動組合包（創作者自建，D331 決定六）：資料在 events-store，刪除記進它的工作階段（removeBundle），活動詳情與電子商店都讀得到 */
+            if (seed.isEventBundle) { const evId = bundle && bundle.event && bundle.event.id; if (evId && window.ztorEvents) window.ztorEvents.removeBundle(evId, seed.id); }
+            else if (store && store.remove) store.remove(seed);
             try { sessionStorage.setItem('ztor.eshop.list', JSON.stringify({ tab: 'bundles', status: null, q: '' })); } catch (_) {}
             window.location.href = 'e-shop.html';
           }
@@ -2274,7 +2385,7 @@
           if (e.type === 'keydown' && e.key !== ' ' && e.key !== 'Enter') return;
           if (listedSwitch.getAttribute('aria-disabled') === 'true') return;
           e.stopImmediatePropagation(); e.preventDefault();
-          if (bundleModel.listed !== false) askUnlist(); else tryRelist();
+          if (bundleModel.listed !== false) askUnlist('switch'); else tryRelist();
         };
         listedSwitch.addEventListener('click', intercept, true);
         listedSwitch.addEventListener('keydown', intercept, true);
