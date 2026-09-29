@@ -5,7 +5,7 @@
 - **日期**：2026-06-29
 - **來源**：Ztor功能點.md + Phase 1 handoff
 - **範圍**：internal use only
-- **功能總數**：109
+- **功能總數**：114（2026-09-29 補登 S52–S56）
 
 ## Tier 圖例
 
@@ -16,7 +16,7 @@
 | ⚪ TBD（未排定） | 商務團隊待定；「下一版預覽」不顯示 |
 | ⚫ 退場 | retired（產品決策已全面撤除，不再規劃／不計入 Phase 1／Next／TBD 三態，2026-09-09 起新增） |
 
-本期統計：🟢 Phase 1 82 · 🔵 Next 11 · ⚪ TBD 14 · ⚫ 退場 2
+本期統計：🟢 Phase 1 82 · 🔵 Next 11 · ⚪ TBD 19 · ⚫ 退場 2
 
 ## Build 狀態圖例
 
@@ -30,7 +30,7 @@
 | ✅⬆ ahead | 超前建置（prototype 已有，規格尚未涵蓋） |
 | ⏳ deferred | 已延後 |
 
-Build 統計：✅ 80 built · 🟡 6 gap · ✅⬆ 21 ahead · ⏳ 2 deferred
+Build 統計：✅ 80 built · 🟡 6 gap · ✅⬆ 26 ahead · ⏳ 2 deferred
 
 **Feature ID** — `S` Shop · `O` Orders · `E` Earnings · `B` Buyer storefront（例：`E07`），跨團隊引用用，編號穩定不變。
 
@@ -75,7 +75,7 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 ## S · 商店管理 — Shop Management
 
-ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 3
+ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 9
 
 | ID    | 功能                              | English                                          | Tier       | Build    | 備註                                                        |
 | ----- | ------------------------------- | ------------------------------------------------ | ---------- | -------- | --------------------------------------------------------- |
@@ -137,6 +137,13 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 3
 | `S49` | 　　庫存與成員影響（各成員可售量取最小，鎖定量優先）       | Stock = min(member sellable)                     | 🟢 Phase 1 | ✅ built  | 2026-09-03 D241：取代舊「= 最少成員」，成員有鎖定用鎖定量、沒鎖定用沒有被鎖定的庫存量，見主規格 §7.14 |
 | `S50` | 　　以粉絲身份預覽                       | See-as-fan preview                               | 🟢 Phase 1 | ✅ built  |                                                           |
 | `S51` | 　商店優惠碼（清單／新增／編輯／期間／停用）           | Store discount codes                             | 🟢 Phase 1 | ✅ built  | D183；2026-09-15 D272 補範圍三級、每單件數／每人總次數／總兌換、已用完；2026-09-17 D279 Phase 1 只留期間／折扣／範圍；2026-09-22 D299 Phase 1 指定商品改可多選含票種、碼不分大小寫。自用碼各版本皆有；代理碼（推廣者／分成／代理銷售紀錄）只在 Phase 4，走保留 gate `full`（D185） |
+|       | **活動（建立活動／活動詳情）**                 | Events (create / detail)                         |            |          | 2026-09-29 補登（D328）：活動模組頁面本身是頁級 `data-page-feat="full"`，這幾列只登記本輪新增的元素，掛 `data-feat` 以便日後排期 |
+| `S52` | 　活動語言複選（七選項）                     | Event languages (multi-select)                   | ⚪ TBD      | ✅⬆ ahead | D328；create-event 步驟 2 `[data-ce-lang-field]`；bookyay 帶入多值鎖定 |
+| `S53` | 　跨日活動（場次結束日期）                    | Multi-day date (end date)                        | ⚪ TBD      | ✅⬆ ahead | D328；create-event 步驟 3 與 event-detail 場次盒 `[data-sess-md-group]` |
+| `S54` | 　門票簡介                            | Ticket description                               | ⚪ TBD      | ✅⬆ ahead | D328；單張門票彈窗基本區（create-event／event-detail）；可翻譯 |
+| `S55` | 　門票顯示／隱藏                         | Ticket show / hide                               | ⚪ TBD      | ✅⬆ ahead | D328；單張門票彈窗顯示開關＋卡片「隱藏」標示；隱藏的票不在粉絲頁票價清單；2026-09-29 D329 補充／D330：發布後隱藏或刪除最後一張顯示中的門票、停售最後一組組合包，造成沒有可賣的東西時擋下（可賣性防呆）；2026-09-29 D331：下架、隱藏、封存最後一組仍在販售的組合包也擋（組合商品細節頁開關旁紅字 `#bd-list-stop-err`／`#bd-shown-stop-err`、頁首與電子商店清單列純告知彈窗），草稿不擋、售罄不擋 |
+| `S56` | 　bookyay 帶入欄位規則（套票轉 1 人票＋組合包、只帶第一種票提示、早鳥轉折扣、跨日） | bookyay field mapping                | ⚪ TBD      | ✅⬆ ahead | D328／5.1.6.1 F21；略過提示 `#ce-bky-skip-note`；2026-09-29 D329：地點→場地名稱、地區→完整地址、1:1 原圖提示 `#ce-img-ratio-note`、早鳥分流並鎖定、自動組合包整組鎖定（限時折扣讀數與鎖定說明同掛 S56）；2026-09-29 D330：帶入金額換算成創作者幣別當基準價、價格表港幣欄鎖 bookyay 原價、其他幣別可覆寫；自動組合包不能刪除、不能加商品；2026-09-29 D331：創作者自建、含 bookyay 票券的組合包港幣欄依公式鎖定（建立活動、建立組合、在地化三處價格表）、清單與 KPI 用覆寫值、草稿活動刪除時自動組合包連動刪除（活動清單草稿列 `khh-countdown-draft`） |
+| `S57` | 　說明區塊（標題＋內文，可增刪、可排序）           | Info sections                                    | ⚪ TBD      | ✅⬆ ahead | D334；create-event 步驟 2 描述下方 `[data-feat="S57"]`、event-detail 活動內容同一支（`partials/info-sections.js`）；取代已刪的「進階詳細資料」兩份清單；可翻譯（標題與內文各一格）；粉絲活動頁呈現暫不做（ASSUMPTIONS UIA-186） |
 
 ## O · 訂單管理 — Order Management
 
@@ -179,6 +186,7 @@ ID 起始 `O01…` ｜ 🟢 25 · 🔵 2 · ⚪ 2 · ⚫ 退場 2
 | `O29` | 　　手機 Scanner 掃碼核銷（二元核銷）        | Mobile scanner redemption        | 🟢 Phase 1 | ✅ built | 5.1.5.14；二元核銷、一碼一件（D122／D240） |
 | `O30` | 　　活動票券共用核銷（回寫 Events check-in）  | Event ticket redemption          | 🟢 Phase 1 | ✅ built | 5.1.5.14 F2；票券狀態仍以 Events 為來源 |
 | `O31` | 　　作廢品項（Admin 專屬、取貨型）           | Void item (admin only)           | 🟢 Phase 1 | ✅ built | 2026-09-07 上游拍板列入 eShop 2.2；creator 態可見但停用（§4.4）；出貨型／數位待產品確認（§8.27） |
+| `O32` | 　　平台費展開（依費率葉節點列出計費基準與平台費） | Platform fee breakdown | 🟢 Phase 1 | ✅ built | 2026-09-29（D333）；同日使用者裁示列入 Phase 1；`order-detail.html` 平台費列的展開把手與展開列掛 `data-feat="O32"`；支付費不展開 |
 
 ## E · 收入管理 — Earnings / Income
 

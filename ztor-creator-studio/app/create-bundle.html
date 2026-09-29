@@ -1509,7 +1509,10 @@
       let end = '';
       if (badgeStatus) {
         const meta = LS && LS.STATUS_META[badgeStatus];
-        if (meta) end += '<span class="' + LS.badgeClass(badgeStatus) + '" data-i18n="' + meta.i18n + '">' + esc(T(meta.i18n, badgeStatus)) + '</span>';
+        /* D332：「即將開賣」「販售結束」只表示該商品單售的狀態、不影響組合包——滑過徽章說明（5.1.5.4 F2） */
+        const singleOnly = (badgeStatus === 'coming' || badgeStatus === 'ended')
+          ? ' title="' + esc(T('cb.badge.single-only', 'Single-sale status only. It doesn’t affect the bundle.')) + '" data-i18n-title="cb.badge.single-only"' : '';
+        if (meta) end += '<span class="' + LS.badgeClass(badgeStatus) + '" data-i18n="' + meta.i18n + '"' + singleOnly + '>' + esc(T(meta.i18n, badgeStatus)) + '</span>';
         else if (badgeStatus === 'archived') end += '<span class="badge badge--neutral" data-i18n="shop.status.archived">' + esc(T('shop.status.archived', 'Archived')) + '</span>';
       }
       end += '<span class="cb-price">' + esc(priceText(p.price, n)) + '</span>'
@@ -1768,8 +1771,18 @@
   /* 價格：組合售價一列（＝表單「售價」：原價合計最低組合 × (1 − 組合折扣 %)）。
      D318：含活動票券成員＝其他幣別可覆寫（overridable:true）；只含商品＝唯讀換算（overridable:false）。 */
   function stagePrices() {
-    return [{ key: 'bundle', labelKey: 'cpp.bd.sp.sell', label: 'Selling price',
-              priceObj: { base: cbBaseCurrency(), amount: finalPrice(), override: {} },
+    const po = { base: cbBaseCurrency(), amount: finalPrice(), override: {} };
+    /* 成員含 bookyay 匯入票券（2026-09-29 D331 決定六，5.1.5.4 F3、主規格 §7.15）：港幣欄以 bookyay 原價計算並鎖定——
+       （bookyay 票券港幣原價 × 張數 ＋ 商品成員合計換算成港幣）×（1 − 組合折扣%），算法在 events-store bkyBundleHkd（與活動詳情、
+       建立活動同一套）；港幣以外（含基準欄）可覆寫（baseOpen，同 D330）。沒有 bookyay 票＝照舊。 */
+    const ev = tix.event && ticketMember() && EV ? (EV.get(tix.event.id) || tix.event) : null;
+    const hk = ev && EV.bkyBundleHkd ? EV.bkyBundleHkd(ev, {
+      tickets: { tierIds: tix.tierIds.slice(), qty: tix.qty },
+      products: productMembers().map(m => ({ price: itemMin(products[m.productId]), qty: m.qty > 0 ? m.qty : 1 })),
+      disc: discInfo().pct
+    }, po.base) : null;
+    if (hk != null) { po.pin = { HKD: hk }; po.baseOpen = true; po.locked = true; }
+    return [{ key: 'bundle', labelKey: 'cpp.bd.sp.sell', label: 'Selling price', priceObj: po,
               overridable: !!ticketMember() }];
   }
   /* 素材：封面＋附圖十格（同建立商品 tileMedia：影片格給 video、圖片格給 img） */

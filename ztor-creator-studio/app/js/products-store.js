@@ -58,6 +58,9 @@
 //              description、membersKey（e-shop 列的成員說明 i18n key，選填）；films／projects／sales／draft 同上、
 //              history 為鎖定歷史 [{ id, date, items:[{ productId | combo, delta }] }]（productId 由頁面換成成員名）
 //   草稿成員進組合的可售量規則：草稿商品視同可售 0（listing-state.js 的 bundleQty 實作），所以含草稿成員的組合＝售罄
+//   成員的開賣與停售不進組合的可售量（D332，2026-09-29）：成員 onSale／saleStart／saleEnd 只管它自己的單售；
+//              組合可售量只看成員上架（下架、封存→0）與成員在本組合的可售量。示範：nick-vinyl-set 的成員 wy-24ce-wyagl-tee
+//              單售已販售結束，組合照樣算出鎖定的 12 套、狀態為販售中（D332 前會被算成 0＝售罄）
 //
 // ── Persona（2026-07-24）──────────────────────────────────────────
 // cheat code「User」切換改 localStorage 'ztor.persona'：default＝原批（九龍夜行 巡迴
@@ -956,7 +959,9 @@
     'wy-24ce-rug': { listAt: '2026-11-15T10:00:00' },
     /* 販售軸的兩態（2026-09-09）：建立組合的候選清單要標「販售結束」與「即將開賣」，
        但預設角色帶這兩態的商品（song／movie）依 D251 不能進組合，等於那兩顆徽章沒有資料可看。
-       同樣挑非組合成員、非別名、也不在 e-shop F5 預覽名單裡的商品。 */
+       同樣挑非別名、也不在 e-shop F5 預覽名單裡的商品。
+       ⚠ wy-24ce-wyagl-tee 其實是 nick-vinyl-set 的成員（原註解寫「非組合成員」不準）。D332（2026-09-29）起
+       成員單售販售結束不影響組合包，這筆正好當示範：組合照樣可售（鎖定 12 套），候選清單的「販售結束」只表示單售。 */
     'wy-24ce-wyagl-tee': { saleEnd: '2026-08-20T23:59:00' },
     'wy-24ce-sock': { saleStart: '2026-11-01T12:00:00' },
     /* ── 2026-09-11 nick persona 對照預設 persona 的九種狀態（商品改值在 WISHYOU_PRODUCTS 之後的覆寫段）── */

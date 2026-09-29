@@ -391,7 +391,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 159 支；主 class 前 5 個）
+## 元件（ds-components/，共 160 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -453,6 +453,7 @@
 - `header.css` — .app-topbar, .app-topbar__brand, .app-topbar__brand-logo, .app-topbar__nav, .app-topbar__nav-group ｜ Ztor Creator Studio — Header (canonical app topb
 - `icon.css` — .ztor-icon, .ztor-icon--xs, .ztor-icon--sm, .ztor-icon--md, .ztor-icon--lg ｜ Ztor Creator Studio - Icon atom
 - `info-banner.css` — .info-banner, .info-banner__close, .info-banner--dismissible ｜ Neutral informational banner — for contextual ex
+- `info-sections.css` — .info-sections, .info-sections__list, .info-section, .info-section__fields, .info-section__grip ｜ info-sections.css · 說明區塊編輯器（可重複的「標題＋內文」，可增刪、可拖曳排
 - `input.css` — .input, .textarea, .input--with-prefix, .select--with-prefix, .control-prefix ｜ Ztor — Input (form field)
 - `insight-row.css` — .insight-row, .insight-row__icon, .insight-row__text ｜ Insight row — single-line auto-computed callout 
 - `issue-panel.css` — .issue-panel, .issue-panel__head, .issue-panel__toggle, .issue-panel__title, .issue-panel__n ｜ issue-panel.css · 待處理事項面板（依來源模組分組、逐項展開）

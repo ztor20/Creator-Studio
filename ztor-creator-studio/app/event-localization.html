@@ -85,32 +85,44 @@
     return isZh() ? `${p[0]}/${Number(p[1])}/${Number(p[2])}` : `${MON[Number(p[1]) - 1]} ${Number(p[2])}, ${p[0]}`;
   }
   const hhmmToMin = s => { const m = /^(\d{1,2}):(\d{2})$/.exec(String(s == null ? '' : s).trim()); return m ? +m[1] * 60 + +m[2] : null; };
-  const edSessions = (ev.sessions && ev.sessions.length) ? ev.sessions : [{ date: ev.date, start: ev.start, end: ev.end, doors: ev.doors }];
+  const edSessions = (ev.sessions && ev.sessions.length) ? ev.sessions : [{ date: ev.date, endDate: ev.endDate || '', start: ev.start, end: ev.end, doors: ev.doors }];
 
   /* ── 備料（與 event-detail 的 §2.13 子集同一份定義，D310 起住在本頁）────────────
-     fields＝5.1.6.1 §1 的可翻譯欄位中本頁有資料的（名稱、亮點、描述、領取與入場方式、
-       票種名稱；表演陣容只有人名沒有角色標籤、活動須知類與條款示範資料沒有欄位 → 跳過）
-     prices＝每個票種的票價＋含本活動票券的組合包售價 × 五幣別；基準＝ev.currency（沒寫＝預設幣別），
-       bookyay 帶入者基準 HKD 且鎖（§7.15） */
+     fields＝5.1.6.1 §1 的可翻譯欄位中本頁有資料的（名稱、亮點、描述、說明區塊〔D334，每一塊的標題與內文各一格〕、
+       票種名稱、門票簡介〔D328〕；表演陣容只有人名沒有角色標籤、條款示範資料沒有欄位 → 跳過；D327 刪去取票說明欄；
+       D334 刪去活動須知類兩份清單）
+     prices＝每個票種的票價＋含本活動票券的組合包售價 × 五幣別；基準＝ev.currency（沒寫＝預設幣別）。
+       bookyay 帶入者（2026-09-29 D330，取代「基準 HKD 且鎖」）：基準價＝港幣原價換算成創作者幣別、鎖定；
+       priceObj 帶 pin（港幣欄＝bookyay 原價、鎖定、無重設）與 baseOpen（基準欄也可覆寫、可重設），由 events-store 的
+       priceOf／bundlePriceOf 給；自動建立的組合包港幣欄＝bookyay 現價（§7.15）。2026-09-29 D331：創作者自建、成員含 bookyay 票券的組合包
+       港幣欄同樣鎖定，值由 bundlePriceOf 內的 bkyBundleHkd 依公式算出（本頁不另算）。 */
   function locFields() {
     const f = [
       { key: 'name', el: { value: ev.name || '' }, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
       { key: 'highlight', el: { value: ev.highlight || '' }, kind: 'input', labelKey: 'pp.field.highlight', labelFallback: 'Highlight' },
       { key: 'desc', el: { value: ev.desc || '' }, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
     ];
-    if (ev.publish && ev.publish.thirdParty && ev.publish.thirdPartyNote) {
-      f.push({ key: 'tp-note', el: { value: ev.publish.thirdPartyNote }, kind: 'textarea', labelKey: 'pp.field.entry-note', labelFallback: 'How to collect & enter' });
-    }
+    /* 說明區塊（D334）：每一塊的標題與內文各一列，群組「說明區塊」、列名「第 n 塊・標題／內文」；
+       只填一半的塊只列有填的那一格（同 create-event 的 infoFields）。 */
+    const gi = T('pp.field.info', 'Info sections');
+    (ev.infoSections || []).forEach((x, i) => {
+      const n = i + 1, title = (x.title || '').trim(), body = (x.body || '').trim();
+      if (title) f.push({ key: 'info-' + i + '-t', el: { value: title }, kind: 'input', labelKey: null, labelFallback: T('pp.field.info.title', '#{n} title').replace('{n}', n), group: gi });
+      if (body) f.push({ key: 'info-' + i + '-b', el: { value: body }, kind: 'textarea', labelKey: null, labelFallback: T('pp.field.info.body', '#{n} body').replace('{n}', n), group: gi });
+    });
     const g = T('pp.price.tiers', 'Ticket types');
     edTiers.forEach(t => f.push({ key: 'tier-' + t.id, el: { value: t.name || '' }, kind: 'input', labelKey: null, labelFallback: T('pp.field.tier-name', 'Ticket type name'), group: g }));
+    /* 門票簡介（D328）：有填的票各一格，列名＝票名 */
+    const gd = T('pp.field.tier-desc', 'Ticket description');
+    edTiers.filter(t => (t.desc || '').trim()).forEach(t => f.push({ key: 'tdesc-' + t.id, el: { value: t.desc.trim() }, kind: 'textarea', labelKey: null, labelFallback: t.name || '', group: gd }));
     return f;
   }
   function locPrices() {
     const out = [];
     edTiers.forEach(t => out.push({ key: 'tier:' + t.id, label: t.name || T('ce.tier.untitled', 'Untitled tier'),
       groupKey: 'pp.price.tiers', groupFallback: 'Ticket types', priceObj: S.priceOf(ev, t), locked: ev.source === 'bookyay' }));
-    (ev.bundles || []).forEach(b => out.push({ key: 'bundle:' + b.id, label: b.name,
-      groupKey: 'pp.price.bundles', groupFallback: 'Ticket bundles', priceObj: S.bundlePriceOf(ev, b), locked: false }));
+    (ev.bundles || []).forEach(b => { const po = S.bundlePriceOf(ev, b); out.push({ key: 'bundle:' + b.id, label: b.name,
+      groupKey: 'pp.price.bundles', groupFallback: 'Ticket bundles', priceObj: po, locked: !!po.locked }); });
     return out;
   }
   function locModel() {
@@ -118,21 +130,24 @@
     const start = first.start || ev.start || '', end = first.end || ev.end || '';
     let duration = '';
     const a = hhmmToMin(start), b = hhmmToMin(end);
-    if (a != null && b != null && b > a) { const d = b - a; duration = ((d >= 60 ? Math.floor(d / 60) + ' h' : '') + (d % 60 ? ' ' + (d % 60) + ' min' : '')).trim(); }
+    if (!first.endDate && a != null && b != null && b > a) { const d = b - a; duration = ((d >= 60 ? Math.floor(d / 60) + ' h' : '') + (d % 60 ? ' ' + (d % 60) + ' min' : '')).trim(); }
     const pickupKey = { eticket: 'fep.pickup.eticket', sf: 'fep.pickup.sf', pickup: 'fep.pickup.pickup', store: 'fep.pickup.pickup' }[(ev.publish || {}).pickup] || 'fep.pickup.eticket';
     const statusKey = { 'on-sale': ['fep.status.on-sale', 'On sale', 'badge--success'], live: ['fep.status.on-sale', 'On sale', 'badge--success'],
       scheduled: ['fep.status.soon', 'Coming soon', 'badge--info'], ended: ['fep.status.ended', 'Ended', 'badge--neutral'],
       cancelled: ['fep.status.cancelled', 'Cancelled', 'badge--error'] }[ev.status] || ['fep.status.soon', 'Coming soon', 'badge--info'];
-    const tiers = edTiers.map(t => ({ key: t.id, name: { key: 'tier-' + t.id }, note: '', priceObj: S.priceOf(ev, t), priceKey: 'tier:' + t.id,
+    /* D328：隱藏的票（hidden）交給渲染器略過；門票簡介走可翻譯欄位 tdesc-<id> */
+    const tiers = edTiers.map(t => ({ key: t.id, name: { key: 'tier-' + t.id }, note: '',
+      desc: (t.desc || '').trim() ? { key: 'tdesc-' + t.id } : null, hidden: !!t.hidden,
+      priceObj: S.priceOf(ev, t), priceKey: 'tier:' + t.id,
       soldOut: Number(t.qty) > 0 && Number(t.sold) >= Number(t.qty) }));
     /* 組合包（D296 形狀）→ 前台組合卡的成員列：票券＝允許票種名單 × 張數、商品＝名稱＋圖（示範資料沒有規格欄）；
-       封面＝第一件商品圖。原價＝票券小計＋商品小計（bundle-detail 同一算法：活動資料不跨檔查 products-store）。 */
+       封面＝第一件商品圖。原價＝票券小計＋商品小計（events-store 的 bundleListAmount，bundle-detail 同一支：
+       票券成員先換算成組合包的基準幣別再加總，D330 同批修正；活動資料不跨檔查 products-store）。 */
     const bundles = (ev.bundles || []).map(b => {
       const tk = S.bundleTickets(b);
       const names = tk.tierIds.map(x => { const t = edTiers.find(y => y.id === x); return t ? t.name : x; });
       const goods = (b.products || []).map(x => ({ name: (x && x.name) || String(x), img: (x && x.img) || '', spec: false }));
-      const tixUnit = tk.tierIds.length ? Math.min.apply(null, tk.tierIds.map(x => { const t = edTiers.find(y => y.id === x); return t ? Number(t.price) || 0 : 0; })) : 0;
-      const listAmt = tixUnit * tk.qty + (b.products || []).reduce((n, x) => n + (Number(x && x.price) || 0), 0);
+      const listAmt = S.bundleListAmount(ev, b);
       return { name: b.name, priceObj: S.bundlePriceOf(ev, b), priceKey: 'bundle:' + b.id,
         listPriceObj: listAmt > Number(b.price) ? { base: S.bundlePriceOf(ev, b).base, amount: listAmt, override: {} } : null,
         tickets: names.length ? { names, qty: Number(tk.qty) || 1 } : null,
@@ -146,13 +161,17 @@
       gallery: [(ev.images && ev.images.keyvisual) || ''].concat((ev.images && ev.images.gallery) || []).filter(Boolean), video: !!ev.video,
       name: { key: 'name' }, highlight: ev.highlight ? { key: 'highlight' } : null,
       organizer: persona ? persona.name : '', organizerAvatar: persona ? (persona.avatar || '') : '',
-      date: fmtDate(first.date || ev.date), time: start ? (end ? start + ' – ' + end : start) : '', duration, doors: first.doors || ev.doors || '',
-      venue: ev.venue || '', address: ev.address || '', language: '',
+      /* 跨日（D328）：場次有 endDate 就寫成日期區間 */
+      date: fmtDate(first.date || ev.date) + (first.endDate ? ' – ' + fmtDate(first.endDate) : ''),
+      time: start ? (end ? start + ' – ' + end : start) : '', duration, doors: first.doors || ev.doors || '',
+      /* 活動語言（D328，可複選）：store 有 languages 才顯示（多值交給渲染器以語系分隔符串起） */
+      venue: ev.venue || '', address: ev.address || '',
+      language: (ev.languages || []).map(k => T('ce.evlang.' + k, k)),
       priority: null, limit: null,
       desc: { key: 'desc' },
       lineup: (ev.lineup || []).map(n => ({ name: n, role: null })),
-      notes: [], bring: [], includes: [],
-      pickup: T(pickupKey, 'E-ticket'), entryNote: ev.publish && ev.publish.thirdParty && ev.publish.thirdPartyNote ? { key: 'tp-note' } : null,
+      /* 墓碑 2026-09-29（D334）：notes／bring 兩份清單已刪；說明區塊的粉絲頁呈現暫不做（ASSUMPTIONS UIA-186），只進翻譯表。 */
+      pickup: T(pickupKey, 'E-ticket'),
       /* 退換票：交給渲染器用平台固定文案（UIA-167）；相關活動：同創作者的其他活動、標「非本活動」 */
       terms: null, tiers, bundles,
       /* 「相關活動」不畫（2026-09-23 使用者：「一樣移除」）——在地化畫面只看這一場本身。 */
