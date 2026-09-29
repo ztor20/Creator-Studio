@@ -44,6 +44,7 @@
  *     priority: { window: '…', state: '…' } | null,   // 優先購（原型示意）
  *     limit: '每筆最多 4 張' | null,
  *     desc: { key:'desc' },
+ *     descMedia: [{ type:'image'|'video', src }] | undefined,   // D335：描述夾帶的圖片與影片（不翻譯、各語系共用）；畫在描述文字下方
  *     lineup: [{ name: '周湯豪', role: { key:'role-0' } | null }],
  *     // 墓碑 2026-09-29（D334）：notes／bring 兩份清單隨「進階詳細資料」刪除；說明區塊的粉絲頁呈現暫不做（ASSUMPTIONS UIA-186）
  *     pickup: '電子門票',                                            // D327：取票說明欄已刪
@@ -345,6 +346,18 @@
     inner.appendChild(h2);
     /* 描述是一個可翻譯欄位，整段放前台的 lead 段（前台把第一段當 lead、其餘 para；一個 contenteditable 拆不成兩個節點，UIA-167） */
     inner.appendChild(slot(api, 'p', 'pdp-details__lead', m.desc, T('cp.pv.desc-ph', 'Description')));
+    /* 描述夾帶的圖片與影片（D335）：粉絲頁怎麼呈現屬 UI 層、前台尚無對應區塊——最小做法是照先後
+       畫在描述文字下方（ASSUMPTIONS UIA-187）。文字是可翻譯的一整段、媒體不翻譯，所以不插回文字中間。 */
+    (m.descMedia || []).forEach(function (md) {
+      if (!md || !md.src) return;
+      var fig = el('figure', 'pdp-details__media');
+      var node = document.createElement(md.type === 'video' ? 'video' : 'img');
+      node.src = md.src;
+      if (md.type === 'video') { node.controls = true; node.setAttribute('playsinline', ''); node.preload = 'metadata'; }
+      else node.alt = '';
+      fig.appendChild(node);
+      inner.appendChild(fig);
+    });
 
     var cols = el('div', 'pdp-details__cols');
     var left = el('div', 'pdp-details__left');

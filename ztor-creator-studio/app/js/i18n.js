@@ -4986,12 +4986,14 @@
     /* 說明區塊（D334，5.1.6.1 §4.2 F2）：描述下方可重複的「標題＋內文」；標題與內文由運營自由填寫、沒有預設標題。
        ce.adv.*（進階詳細資料）只剩 create-event-legacy.html 在用，保留。 */
     'ce.info':              { en: 'Info sections',                    zh: '說明區塊' },
-    'ce.info.hint':         { en: 'Fans read them in this order. Drag the handle to reorder.', zh: '粉絲依這個順序閱讀。拖曳把手可調整順序。' },
     'ce.info.add':          { en: 'Add info section',                 zh: '新增說明區塊' },
     'ce.info.title.ph':     { en: 'Title',                            zh: '標題' },
     'ce.info.body.ph':      { en: 'Text',                             zh: '內文' },
     'ce.info.move':         { en: 'Drag or use the arrow keys to reorder', zh: '拖曳或用上下鍵調整順序' },
     'ce.info.remove':       { en: 'Remove section',                   zh: '刪除這一塊' },
+    /* 內文編輯器（D335，partials/rich-body.js）：描述與說明區塊的內文可夾帶圖片與影片 */
+    'rb.insert.image':      { en: 'Insert image',                     zh: '插入圖片' },
+    'rb.insert.video':      { en: 'Insert video',                     zh: '插入影片' },
     'ce.lineup':            { en: 'Lineup / performers',              zh: '表演陣容' },
     'ce.lineup.sub':        { en: 'Search Ztor users or type external names.', zh: '搜尋 Ztor 用戶或直接輸入外部表演者名稱。' },
     'ce.lineup.add':        { en: 'Add performer',                    zh: '新增表演者' },
@@ -9700,6 +9702,8 @@
     /* 墓碑 2026-09-29（D327）：詳情頁發布設定裡電子門票三組附屬設定的字串（ed.pub.tp／ed.pub.dq／ed.pub.tf 系列、
        ed.unit.min／times／days）隨設定刪除退場。 */
     /* D308 決定一經 D327 修訂：bookyay 帶入者只鎖取票方式本身，說明 banner 同步改寫 */
+    /* bookyay 帶入者的描述鎖定（5.1.6.2 F2 → 5.1.6.1 F21）：標籤旁的來源標記，字樣同建立活動的 d.src */
+    'ed.src.bky':           { en: 'From bookyay', zh: 'bookyay 帶入' },
     'ed.pub.bky-locked':    { en: 'Ticket delivery comes from bookyay. Change it there.', zh: '取票方式來自 bookyay，要改請回 bookyay 改。' },
     'ed.pub.vis.sub':     { en: 'Who gets to find this event.', zh: '決定誰找得到這場活動。' },
     'ed.pub.vis.public.sub': { en: 'Shows up in the ztor event list and in search.',

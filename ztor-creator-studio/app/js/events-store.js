@@ -34,6 +34,13 @@
    取代已刪的「進階詳細資料」兩份清單（需攜帶物品／活動須知）；示範只放兩筆（realive-asia-taipei 兩塊、
    album-signing-taipei 一塊），內容是原型自擬的中文示範。bookyay 帶入的活動沒有這欄（不帶入）。
 
+   內文的圖片與影片（2026-09-29 D335 / 5.1.6.1 F2）：描述與說明區塊的內文可以夾帶圖片與影片。
+   只有文字時照舊只有字串（desc／body）；夾帶媒體時另多一份照先後排列的 blocks——
+     描述：descBlocks: [{ type:'text', text }, { type:'image'|'video', src }, …]
+     說明區塊：{ title, body, blocks: [...] }
+   desc／body 永遠是「只有文字」的那一份（段與段空一行），翻譯表只列它、媒體不翻譯。
+   示範：realive-asia-taipei 第一塊（粉絲福利說明）在兩段文字之間夾一張圖（原型自擬）。
+
    sold／status 是編輯態的行為輸入、不只是顯示值：
      · sold > 0  → 場次已售出，容量不得低於 sold、已售票種不可刪。
      · status='on-sale' → 已公開販售，改日期／場地屬「會通知到購票者」的高影響欄位。
@@ -175,7 +182,12 @@
       highlight: 'Asia leg finale — Taipei only',   // D300 亮點示範
       desc: 'The Asia leg — three cities, one setlist.',
       infoSections: [   // D334 說明區塊示範（原型自擬）
-        { title: '粉絲福利說明', body: '購買 VIP 票的粉絲可參加演出前的彩排參觀，並獲得巡演限定手環一條。\n手環於入場時憑票領取，數量依售出的 VIP 票準備，不另行販售。' },
+        { title: '粉絲福利說明', body: '購買 VIP 票的粉絲可參加演出前的彩排參觀，並獲得巡演限定手環一條。\n\n手環於入場時憑票領取，數量依售出的 VIP 票準備，不另行販售。',
+          blocks: [   // D335 內文夾圖示範（原型自擬）
+            { type: 'text', text: '購買 VIP 票的粉絲可參加演出前的彩排參觀，並獲得巡演限定手環一條。' },
+            { type: 'image', src: 'images/projects/nick-realive.jpg' },
+            { type: 'text', text: '手環於入場時憑票領取，數量依售出的 VIP 票準備，不另行販售。' }
+          ] },
         { title: '輪椅座位購票說明', body: '場館設有輪椅座位，每位輪椅使用者可另購一張陪同者票。\n請於購票後 3 日內來信提供身心障礙證明影本，逾期將改為一般座位。' }
       ],
       lineup: ['NICKTHEREAL 周湯豪'],
