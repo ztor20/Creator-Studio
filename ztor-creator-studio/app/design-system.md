@@ -6012,7 +6012,7 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 
 **Dependencies** — 組成：`.btn`（`--icon`／`--xs`／`--sm`）、`.ztor-icon`（`chevron-down`）。疊在：`.product-list__row`（§4.27）、`.data-list__row`（§4.22）——子列的字級明寫覆蓋這兩支的標題 class（`.product-list__title` 自帶 14）。第二層是否用框（不再疊填色）依 `ds-components/nest.css` 的既有規則（見上方「為什麼第二層是框」）。分組清單再疊上篩選與搜尋之後的行為（子列跟著母列過篩選、搜尋中一律攤開）是 Pillar 5 的組合規則，見 §5.1.3。
 
-**Consumers** — `pickup-detail.html`（F4 取貨與入場名單的買家分組，表格型容器、不加 `--gutter`，**有列首欄**：十欄，母列 chevron／子列序號／一般列留空）· `events.html`（活動系列場次，表格型容器、不加 `--gutter`，母列整列可點，子列的顯隱再疊篩選與搜尋，**有列首欄**：九欄）· `project-detail.html`（我的收益 › 計畫項目收益的收支小計，清單型容器、加 `--gutter`）· `order-detail.html`（品項明細的領取單位與組合成員，清單型容器、加 `--gutter`；兩層，第二層用 `.rowdis__frame`）· `scanner.html`（F3 名單按買家分組，清單型容器、加 `--gutter --static`，唯讀恆亮、不展開）。兩份更早的舊做法（`product-list.css` 的 `__row--group`／`__row--child`、`data-list.css` 的 `__row--child`）已於 2026-09-03 隨遷移退場，CSS 原處留墓碑；縮排模型本身於 2026-09-04 隨 L3 改寫再退場一次，見上方「✝ 退場」。
+**Consumers** — `pickup-detail.html`（F4 取貨與入場名單的買家分組，表格型容器、不加 `--gutter`，**有列首欄**：十欄，母列 chevron／子列序號／一般列留空）· `events.html`（活動系列場次，表格型容器、不加 `--gutter`，母列整列可點，子列的顯隱再疊篩選與搜尋，**有列首欄**：九欄）· `project-detail.html`（我的收益 › 計畫項目收益的收支小計，清單型容器、加 `--gutter`）· `order-detail.html`（品項明細的領取單位與組合成員，清單型容器、加 `--gutter`；兩層，第二層用 `.rowdis__frame`。2026-09-29 D333 起金額拆解的平台費列也是一組 `--gutter`：母列是 `.od-amt` 疊 `.rowdis__head`、整列可點，把手貼在金額左邊——這張表只有這一列有把手，放右邊會把金額推離其他列的右基準線；展開列依費率葉節點列出計費基準與平台費）· `scanner.html`（F3 名單按買家分組，清單型容器、加 `--gutter --static`，唯讀恆亮、不展開）。兩份更早的舊做法（`product-list.css` 的 `__row--group`／`__row--child`、`data-list.css` 的 `__row--child`）已於 2026-09-03 隨遷移退場，CSS 原處留墓碑；縮排模型本身於 2026-09-04 隨 L3 改寫再退場一次，見上方「✝ 退場」。
 
 **CSS** — [`row-disclosure.css`](./ds-components/row-disclosure.css) ｜ **JS** — [`row-disclosure.js`](./js/row-disclosure.js)
 

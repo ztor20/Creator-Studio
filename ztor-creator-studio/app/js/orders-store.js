@@ -121,6 +121,25 @@
    源），原本 6 筆 `pay:'refunded'` 的 demo 訂單一併改寫——見下方 ORDERS 各筆的行內
    註記（上游規格改動的原文備份於 documents/backup_plan.md Plan305；本檔屬呈現層，
    改寫前後的差異只留在本檔行內註記與 git 歷史）。
+
+   ── 平台費組成（2026-09-29 D333）──────────────────────────────────
+   規格 5.1.5.3.1 §2.3.2「平台費可展開」：同一張訂單的品項可能落在不同費率葉節點，
+   平台費逐品項用各自葉節點的費率算、再加總（D309）。本檔只落地資料形狀：
+     · 品項可帶 feeLeaf（葉節點，對應 admin-platform-fees.html 的 fees.leaf.* key）
+       與 feePct（售出當下凍結的費率 %）。沒帶時依履約型態推：ship／pickup → 直售·
+       實體商品、digital → 直售·數位商品、bundle → 組合商品，費率一律 15%——也就是
+       其餘既有訂單一直在用的那條算式，所以它們的平台費合計不變。
+     · platformLines(order) 依「葉節點＋費率」分組，回傳每組的計費基準與平台費。
+       計費基準＝該組品項折後實付（D278）；整單型折抵（分級、優惠碼、平台滿額）按
+       各組實付比例分攤（D309），最後一組吃尾差，各組基準加總剛好等於折後品項實付。
+     · 費率是訂單自己凍結的值（§7.6 費率版本），不是讀 admin-platform-fees.html 的
+       當前值——所以這裡的 15% 與費率設定頁目前的 5% 不衝突（後者的示範值見
+       ASSUMPTIONS UIA-169）。
+   混合費率示範＝#ZT-10489（Aiko S.）：紀念 T 恤（直售·實體 15%）＋原聲帶數位下載
+   （直售·數位 15%）＋首映夜雙人套票組合包（含活動票券成員，整筆走活動 › 現場活動
+   票券 5%，D293）。平台費 32×15% ＋ 12×15% ＋ 120×5% ＝ 4.80 ＋ 1.80 ＋ 6.00 ＝ 12.60；
+   支付費看買家實付（含運費）一次算：(164 ＋ 8) × 2.4% ＝ 4.128 → 4.13（D333 決定二，
+   不逐品項拆）；淨額 164 ＋ 8 − 12.60 − 4.13 ＝ 155.27；fx.paid ＝ 172 × 31.5 ＝ 5,418。
    ------------------------------------------------------------------ */
 (function () {
   'use strict';
@@ -135,6 +154,63 @@
        ZT-10469 純數位、無寄送地址的海外買家（JPY），讓幣別不只一種
      fx.paid ＝（商品金額＋運費）× 匯率，與該筆 amounts 自洽。 */
   var ORDERS = [
+    {
+      /* 混合費率（2026-09-29 D333）：同一張單裡有三個費率葉節點——實體 T 恤、數位下載、
+         含活動票券的組合包。組合包整筆走活動票務費率、不拆成員（D293），所以平台費
+         展開後是三列、兩種費率。算式見檔頭「平台費組成」。放在陣列第一筆＝沒帶 ?id=
+         打開訂單詳情時預設看到的就是這一筆。 */
+      id: 'ZT-10489', date: '2026-06-10', kind: 'shipping',
+      pay: 'paid', fulfil: ['toship'],
+      text: 'zt-10489 aiko 九龍夜行 紀念 t 恤 原聲帶 首映夜 雙人套票 kowloon after dark tee ost premiere night ticket bundle',
+      buyer: {
+        name: 'Aiko S.',
+        shipTo: '5F, No. 88, Sec. 2, Zhongshan N. Rd, Taipei 104, TW',
+        contact: 'aiko.s@example.com'
+      },
+      items: [
+        {
+          nameKey: 'od.item2.name', name: 'Kowloon After Dark tee (M)',
+          catKey: 'e-shop.cat.apparel', qty: 1, unit: '$32.00', amt: 32, mode: 'ship',
+          feeLeaf: 'eshop.physical', feePct: 15,
+          snap: {
+            price: '$32.00', variant: 'M',
+            desc: 'Soft-washed cotton tee with a 九龍夜行 print. Unisex fit.',
+            manage: 'product-detail.html?id=tee'
+          }
+        },
+        {
+          nameKey: 'od.item3.name', name: 'Kowloon After Dark OST — digital download',
+          catKey: 'cp.dsub.album', qty: 1, unit: '$12.00', amt: 12, mode: 'digital',
+          feeLeaf: 'eshop.digital', feePct: 15,
+          snap: {
+            price: '$12.00', variant: '',
+            desc: 'Five-track EP — full download with lyrics.',
+            manage: 'product-detail.html?id=album'
+          }
+        },
+        {
+          /* 票務商品＝組合包（D292）：票券成員 2 張＋一個寄送的商品成員。票券成員的
+             mode:'ticket' 只給訂單詳情畫履約欄用（顯示「電子門票」），不產生領取單位——
+             電子門票與領取單位的關係仍待確認（主規格 §8.1），本檔不預先定義。 */
+          nameKey: 'od.item13.name', name: 'Premiere night ticket bundle',
+          catKey: 'bundle', qty: 1, unit: '$120.00', amt: 120, mode: 'bundle',
+          feeLeaf: 'events.onsite', feePct: 5,
+          snap: {
+            price: '$120.00', variant: '',
+            desc: 'Two general-admission tickets to the Kowloon After Dark premiere night, plus an enamel pin shipped with your order.',
+            manage: 'bundle-detail.html?id=bundle-premiere'
+          },
+          members: [
+            { nameKey: 'od.item14.name', name: 'Premiere night · general admission', qty: 2, mode: 'ticket' },
+            { nameKey: 'od.item7.name', name: 'Neon sign enamel pin', qty: 1, mode: 'ship' }
+          ]
+        }
+      ],
+      delivery: { methodKey: 'od.dig.method.instant', on: '2026-06-10', downloads: '1' },
+      amounts: { goods: '$164.00', shipping: '$8.00', platform: '−$12.60', payment: '−$4.13', net: '$155.27' },
+      total: '$164.00', totalAmt: 164,
+      fx: { currency: 'TWD', paid: 'NT$5,418.00', rate: '1 USD = 31.5 TWD' }
+    },
     {
       /* 待付款：尚未付款，所以還沒有任何履約動作（fulfil 空）。明細頁的「標記出貨」
          主操作對這種訂單停用——規格 5.1.5.3.1 §4 情境 1 是「確認付款後」才出貨。 */
@@ -1048,6 +1124,48 @@
     return true;
   }
 
+  /* ── 平台費組成（2026-09-29 D333，規則見檔頭「平台費組成」）────────────────
+     platformLines(order) → [{ leaf, leafKey, pct, base, fee, feeCents, count }]，依
+     「葉節點＋費率」分組、保留品項出現順序。金額一律以「分」整數計算，避免浮點尾差。 */
+  var FEE_LEAF_BY_MODE = { ship: 'eshop.physical', pickup: 'eshop.physical', digital: 'eshop.digital', bundle: 'eshop.bundle' };
+  var FEE_LEAF_KEY = {
+    'eshop.physical': 'fees.leaf.eshop.physical',
+    'eshop.digital': 'fees.leaf.eshop.digital',
+    'eshop.bundle': 'fees.leaf.eshop.bundle',
+    'events.onsite': 'fees.leaf.events.onsite'
+  };
+  var FEE_PCT_DEFAULT = 15;
+  function toCents(str) {
+    var n = parseFloat(String(str || '').replace(/[^0-9.]/g, ''));
+    return isNaN(n) ? 0 : Math.round(n * 100);
+  }
+  function fmtCents(c) {
+    return '$' + (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function platformLines(order) {
+    var groups = [], byKey = {}, goodsC = 0;
+    (order.items || []).forEach(function (it) {
+      var leaf = it.feeLeaf || FEE_LEAF_BY_MODE[it.mode] || 'eshop.physical';
+      var pct = it.feePct != null ? it.feePct : FEE_PCT_DEFAULT;
+      var key = leaf + '@' + pct;
+      var g = byKey[key];
+      if (!g) { g = byKey[key] = { leaf: leaf, leafKey: FEE_LEAF_KEY[leaf] || leaf, pct: pct, grossC: 0, count: 0 }; groups.push(g); }
+      var c = Math.round(it.amt * 100);
+      g.grossC += c; g.count++; goodsC += c;
+    });
+    var d = order.discount || {};
+    var discC = toCents(d.tierAmount) + toCents(d.codeAmount) + toCents(d.thresholdAmount);
+    var allocated = 0;
+    return groups.map(function (g, i) {
+      var share = i === groups.length - 1 ? discC - allocated : (goodsC ? Math.round(discC * g.grossC / goodsC) : 0);
+      allocated += share;
+      var baseC = g.grossC - share;
+      var feeC = Math.round(baseC * g.pct / 100);
+      return { leaf: g.leaf, leafKey: g.leafKey, pct: g.pct, count: g.count,
+               base: fmtCents(baseC), fee: '\u2212' + fmtCents(feeC), feeCents: feeC };
+    });
+  }
+
   var CANCELLED_BADGE = { key: 'orders.status.cancelled', text: 'Cancelled', cls: 'badge--error' };
 
   window.ztorOrders = {
@@ -1067,6 +1185,7 @@
     unitSummary: unitSummary,
     voidState: voidState,
     voidItem: voidItem,
-    isCancelled: isCancelled
+    isCancelled: isCancelled,
+    platformLines: platformLines
   };
 })();
