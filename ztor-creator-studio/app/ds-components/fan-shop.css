@@ -590,6 +590,32 @@
 @media (min-width: 768px) { .fep-shop .pdp-details__media { max-width: calc((100% - var(--space-12)) / 2); } }
 .fep-shop .pdp-details__media img,
 .fep-shop .pdp-details__media video { display: block; width: 100%; height: auto; border-radius: var(--radius-md); }
+/* 內文（D340）：描述與說明區塊的文字段含粗體與清單、圖片影片夾在原位（js/fan-event-page.js richBody）。
+   前台沒有對應樣式，全部吃本檔第 1 段的前台 token、不新增裸值：段距 --space-3、清單縮排 1.4em（跟字級走）、
+   粗體轉主要字色。譯文段是純文字（.pdp-rich__text--plain），換行靠 pre-line。 */
+/* 文字段與媒體交錯：節奏由容器 gap 持有（Q103），不靠相鄰選擇器 */
+.fep-shop .pdp-rich { display: flex; flex-direction: column; gap: var(--space-3); }
+.fep-shop .pdp-rich .pdp-details__media { margin: 0; max-width: 100%; }
+.fep-shop .pdp-rich__text p { margin: 0 0 var(--space-3); }
+.fep-shop .pdp-rich__text ul,
+.fep-shop .pdp-rich__text ol { margin: 0 0 var(--space-3); padding-left: 1.4em; }
+.fep-shop .pdp-rich__text ul { list-style: disc; }
+.fep-shop .pdp-rich__text ol { list-style: decimal; }
+.fep-shop .pdp-rich__text > :last-child { margin-bottom: 0; }
+.fep-shop .pdp-rich__text strong { font-weight: var(--fw-bold); color: var(--text-primary); }
+.fep-shop .pdp-rich__text--plain { white-space: pre-line; }
+/* 說明區塊（D340）：「關於活動」描述下方，一塊一段（標題＋內文）。欄寬跟 lead 同一欄；塊與塊之間一條前台的淡分隔線。
+   標題用前台正文字級的粗體主要字色（運營自己寫的名字，不是系統小標，所以不套 .pdp-details__sub-heading 的全大寫小字）。
+   收合（UIA-190）：內文超過 18rem（約 12 行）才收，底部漸隱＋「展開全文」文字鈕；收合高度多少〔產品待確認〕。 */
+.fep-shop .pdp-info { max-width: 62ch; margin: 0 0 var(--space-8); }
+@media (min-width: 768px) { .fep-shop .pdp-info { max-width: calc((100% - var(--space-12)) / 2); } }
+.fep-shop .pdp-info { display: flex; flex-direction: column; gap: var(--space-6); }
+.fep-shop .pdp-info__block:not(:first-child) { padding-top: var(--space-6); border-top: 1px solid var(--border-subtle); }
+.fep-shop .pdp-info__title { margin: 0 0 var(--space-2); font-family: var(--font-cjk-text); font-size: var(--fs-body); font-weight: var(--fw-bold); color: var(--text-primary); }
+.fep-shop .pdp-info__body { font-family: var(--font-cjk-display); font-size: var(--fs-body); line-height: 1.7; color: var(--text-secondary); }
+.fep-shop .pdp-info__body.is-clamped { max-height: 18rem; overflow: hidden; -webkit-mask-image: linear-gradient(to bottom, currentColor 70%, transparent); mask-image: linear-gradient(to bottom, currentColor 70%, transparent); }
+.fep-shop .pdp-info__more { margin-top: var(--space-2); padding: 0; border: 0; background: none; font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); color: var(--text-primary); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.fep-shop .pdp-info__more[hidden] { display: none; }
 .fep-shop .pdp-terms__text { white-space: pre-line; }
 /* 亮點（D300）：前台沒有對應位置，放名稱下方一行、用前台 .pdp-host__k 同級的次要字（ASSUMPTIONS UIA-167）。 */
 .fep-shop .pdp-buy__highlight { margin: calc(-1 * var(--space-2)) 0 var(--space-4); font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); line-height: 1.6; color: var(--text-secondary); text-wrap: pretty; }

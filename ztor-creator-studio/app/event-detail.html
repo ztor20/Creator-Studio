@@ -54,6 +54,7 @@
 <!-- 2026-08-13：場次盒（多場）與開放入場的線框層都吃 .control-group--plain。
      此前漏連這一支，多場的外框其實一直沒有生效（class 掛著、樣式沒到）。 -->
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/link-field.css?v=r2.2"><!-- D340：顯示設定隱藏時的活動連結（複製／重置） -->
 <link rel="stylesheet" href="ds-components/collapse-group.css?v=r2.2">   <!-- 2026-08-13：場次盒的折疊列＋一行摘要 -->
 <link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2"><!-- D311：算式列表的列（.calc-list 內的 .kv） -->
@@ -236,7 +237,7 @@
                改成總覽的一張附屬卡。 -->
           <button class="section-nav__item" role="tab" data-tab="sales" aria-selected="false" data-i18n="event-detail.tab.sales">Sales &amp; list</button>
           <!-- 墓碑 2026-08-17：「發布設定」不再是獨立分頁，內容併進「設定」——
-               販售方式／取票方式／公開性跟活動內容、場次、地點是同一件事（這場怎麼賣、
+               開賣設定／取票方式／顯示設定（D340 前為販售方式／公開性）跟活動內容、場次、地點是同一件事（這場怎麼賣、
                賣什麼、什麼時候在哪），拆成兩格等於把一次設定切成兩段路。 -->
           <!-- 墓碑（2026-08-13 使用者裁決）：「退款與招待票」分頁整個退場——退款搬進交易明細
                （退款是交易的反向）、招待票搬進票務（發招待票就是多發一張 $0 的票）。
@@ -773,7 +774,7 @@
             <div class="card__head">
               <div class="card__title-group">
                 <span class="card__title-icon card__title-icon--info"><i data-lucide="layers" class="ztor-icon"></i></span>
-                <h3 class="card__title" data-i18n="event-detail.series.title">Tour stops</h3>
+                <h3 class="card__title" data-i18n="event-detail.series.title">Series dates</h3>
               </div>
               <span class="badge badge--neutral" id="ed-series-count"><span>—</span></span>
             </div>
@@ -915,8 +916,8 @@
 
           <div data-nav-panel="dates">
 <!-- 2026-08-13 使用者指示「分為場次、地點兩個 section」：時間與地點是兩件事——
-             多場活動的時間一場一組，地點卻是整場共用一份（多站活動才會每站不同，那種拆成
-             系列母子頁）。混在同一張卡裡，「場地名稱」看起來像第 1 場的欄位。 -->
+             多場活動的時間一場一組，地點卻是整場共用一份（D340 只做定點；每站換場地的需求改成每站一場活動、
+             以系列串起）。混在同一張卡裡，「場地名稱」看起來像第 1 場的欄位。 -->
         <section class="card">
           <div class="card__head">
             <h3 class="card__title" data-i18n="ed.dates.title">Dates</h3>
@@ -925,7 +926,7 @@
 
           <!-- 場次清單（2026-08-11 使用者指示）：定點活動的多場次收進同一頁——一場一盒，
                每盒有日期／開始結束／開放入場（時間↔開演前分鐘互算）／早到政策，與建立流程
-               同一套。多站活動（每站不同場地）才拆成系列母子頁。盒子由 JS 渲染。 -->
+               同一套。每站不同場地的需求改用系列活動（每站一場獨立活動，D340）。盒子由 JS 渲染。 -->
           <div id="ed-sess-list"></div>
           <button class="btn btn--outline btn--add mt-16" type="button" id="ed-sess-add"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ed.sess.add">Add a date</span></button>
 
@@ -968,10 +969,10 @@
             <h3 class="card__title" data-i18n="ed.pub.title">Publish settings</h3>
           </div>
           <div class="data-list">
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.pub.onsale">Sale mode</span></div><span id="ed-pub-onsale">—</span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.pub.sale">Sale settings</span></div><span id="ed-pub-onsale">—</span></div>
             <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.pub.pickup">Ticket delivery</span></div><span id="ed-pub-pickup">—</span></div>
             <!-- 墓碑 2026-09-29（D327）：電子門票底下三組附屬設定的唯讀列（取票說明、QR 更新、持票人移轉）隨設定刪除退場。 -->
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.pub.vis">Visibility</span></div><span id="ed-pub-vis">—</span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.pub.vis">Display settings</span></div><span id="ed-pub-vis">—</span></div>
           </div>
         </section>
 
@@ -984,27 +985,21 @@
              互動契約不動（仍是 data-pub 群組 ＋ data-pub-val 選項，見 renderPublish），
              radio-cards 用的也是 .segmented__btn，選中態的樣式直接沿用。 -->
         <div id="ed-pub-edit" hidden>
+          <!-- 開賣設定（D340，5.1.6.2 F14 → 5.1.6.1 F23）：取消「發布後直接開賣／排程開賣」二選一，只留兩個選填時間——
+               不填開賣＝上架即開賣；不填停售＝賣到活動開始。兩組欄位一律攤開（同建立流程第 7 步）。 -->
           <div class="form-section form-section--outlined">
             <div class="form-section__head">
-              <h3 class="form-section__title" data-i18n="ed.pub.onsale">Sale mode</h3>
+              <h3 class="form-section__title" data-i18n="ed.pub.sale">Sale settings</h3>
               <p class="form-section__sub" data-i18n="ed.pub.sale.sub">When fans can start buying, and until when.</p>
             </div>
-            <div class="segmented radio-cards" role="radiogroup" data-pub="onsale">
-              <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-view-safe data-pub-val="now">
-                <span class="radio-card__text"><span class="radio-card__title" data-i18n="ed.pub.onsale.now">On sale at publish</span><span class="radio-card__sub" data-i18n="ed.pub.onsale.now.sub">Selling starts the moment it goes live, and runs until the event begins.</span></span>
-              </button>
-              <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-view-safe data-pub-val="scheduled">
-                <span class="radio-card__text"><span class="radio-card__title" data-i18n="ed.pub.onsale.sch">Scheduled</span><span class="radio-card__sub" data-i18n="ed.pub.onsale.sch.sub">You set when selling opens and closes; outside that window nobody can buy.</span></span>
-              </button>
-            </div>
-            <!-- 選了才問（同建立流程）：時間欄不再外加一層框，二選一卡已經交代這一區在講什麼。 -->
-            <div id="ed-pub-sale-times" hidden>
+            <div id="ed-pub-sale-times">
               <div class="field">
-                <label class="field__label" data-i18n="ed.pub.sale.from">Sale opens</label>
+                <label class="field__label"><span data-i18n="ed.pub.sale.from">Sale opens</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
                 <div class="form-grid">
                   <input class="input" type="date" data-pub-f="sale-from-d">
                   <input class="input" type="time" data-pub-f="sale-from-t">
                 </div>
+                <p class="field__hint" data-i18n="ed.pub.sale.from.hint">Leave empty to open sales as soon as it's listed.</p>
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="field__label"><span data-i18n="ed.pub.sale.to">Sale closes</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
@@ -1012,15 +1007,16 @@
                   <input class="input" type="date" data-pub-f="sale-to-d">
                   <input class="input" type="time" data-pub-f="sale-to-t">
                 </div>
+                <p class="field__hint" data-i18n="ed.pub.sale.to.hint">Leave empty to keep selling until the event starts.</p>
               </div>
             </div>
 
             <!-- ═══ 提前開賣（2026-08-17 使用者指示，並重新想過流程）═══
-                 推導：販售方式選「發布後直接開賣」時，發布本身就是開賣，不需要第二顆按鈕；
-                 只有選「排程開賣」、而且想比原定時間早開，才需要一個手動的動作。
-                 所以它不是頁首的常駐按鈕，而是販售方式這一節裡的一個例外出口——
+                 推導：沒有排開賣時間（上架即開賣）時，發布本身就是開賣，不需要第二顆按鈕；
+                 只有排了開賣時間、而且想比原定時間早開，才需要一個手動的動作。
+                 所以它不是頁首的常駐按鈕，而是開賣設定這一節裡的一個例外出口——
                  位置就在它推翻的那個設定（開賣日期與時間）正下方，因果讀得出來。
-                 出現條件：階段＝已排程（還沒開賣）× 販售方式＝排程開賣。 -->
+                 出現條件：階段＝已排程（還沒開賣）× 有開賣日期與時間（D340 起取代「販售方式＝排程開賣」）。 -->
             <div class="control-row control-row--plain mt-16" id="ed-golive-row" hidden>
               <div class="control-row__body">
                 <div class="control-row__main" data-i18n="event-detail.golive.early">Start selling ahead of schedule</div>
@@ -1072,18 +1068,34 @@
             </div>
           </div>
 
-          <div class="form-section form-section--outlined">
+          <!-- 顯示設定（D340，5.1.6.2 F14 → 5.1.6.1 F25；定義本體見主規格 §7.14「三個狀態開關」「非公開連結」）：
+               取消「公開／私人連結」二選一，改成與電子商店同一顆「顯示」開關。版面同建立流程第 7 步（.control-group 開關列＋揭示區）：
+               關掉＝隱藏，揭示區長出活動連結（link-field：複製＋重置，同商品細節頁的非公開連結）；切回顯示＝撤銷那條連結。 -->
+          <div class="form-section form-section--outlined" data-feat="S61">
             <div class="form-section__head">
-              <h3 class="form-section__title" data-i18n="ed.pub.vis">Visibility</h3>
-              <p class="form-section__sub" data-i18n="ed.pub.vis.sub">Who gets to find this event.</p>
+              <h3 class="form-section__title" data-i18n="ed.pub.vis">Display settings</h3>
+              <p class="form-section__sub" data-i18n="ed.pub.vis.sub">Whether fans can find this event in the list and in search.</p>
             </div>
-            <div class="segmented radio-cards" role="radiogroup" data-pub="visibility">
-              <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-view-safe data-pub-val="public">
-                <span class="radio-card__text"><span class="radio-card__title" data-i18n="ed.pub.vis.public">Public</span><span class="radio-card__sub" data-i18n="ed.pub.vis.public.sub">Shows up in the ztor event list and in search.</span></span>
-              </button>
-              <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-view-safe data-pub-val="private">
-                <span class="radio-card__text"><span class="radio-card__title" data-i18n="ed.pub.vis.private">Private link</span><span class="radio-card__sub" data-i18n="ed.pub.vis.private.sub">Only people holding the link or the QR can get in.</span></span>
-              </button>
+            <div class="control-group" style="margin-bottom:0">
+              <div class="control-row">
+                <div>
+                  <div class="control-row__main" data-i18n="ed.pub.vis.shown">Show in the event list and search</div>
+                  <div class="control-row__sub" data-i18n="ed.pub.vis.shown.sub">Off = hidden: only people with the event link or QR can get in.</div>
+                </div>
+                <button type="button" class="switch switch--on" id="ed-pub-shown" role="switch" aria-checked="true" data-view-safe
+                        aria-label="Show in the event list and search" data-i18n-aria-label="ed.pub.vis.shown"></button>
+              </div>
+              <div class="control-group__body" id="ed-pub-hidden-link" hidden>
+                <div class="linkf" data-linkf>
+                  <span class="linkf__label" data-i18n="ed.pub.link.hidden">Event link</span>
+                  <div class="linkf__row">
+                    <input class="input linkf__input" readonly value="" data-vm-skip>
+                    <button class="btn btn--outline btn--sm linkf__act linkf__act--copy" type="button" data-view-safe data-linkf-copy><span data-i18n="link.copy">Copy</span></button>
+                    <button class="btn btn--ghost btn--sm linkf__act" type="button" data-linkf-reset><span data-i18n="link.reset">Reset link</span></button>
+                  </div>
+                  <p class="linkf__hint" data-i18n="ed.pub.link.hidden.hint">Only people with this link can open the event. Resetting kills the old link; showing the event again revokes it.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1832,6 +1844,7 @@
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/platform-fees.js?v=r2.2"></script><!-- D311：平台費率三層解析 -->
 <script src="js/events-store.js?v=r2.2"></script>
+<script src="js/link-field.js?v=r2.2"></script><!-- D340：活動連結列的複製／重置行為 -->
 <script src="js/toast.js?v=r2.2"></script><!-- 2026-09-09：作廢動作的完成回饋（D253），沿用 order-detail.html 同一支 -->
 <script src="js/linechart.js?v=r2.2"></script>   <!-- 2026-08-31：走勢圖的共用產生器 -->
 <script src="js/chart.js?v=r2.2"></script>
@@ -1978,7 +1991,7 @@
     card.innerHTML = all.map(e => {
       const me = e.id === ev.id;
       const meta = [fmtDate(e.date), [e.venue, e.city].filter(Boolean).join(' · ')].filter(Boolean).join(' · ');
-      /* 售罄＝賣到票種張數加總。容量已撤除（ATT-002），不再是判定基準。 */
+      /* 售罄＝賣到門票張數合計（含隱藏）。容量已刪除（ATT-002 → D340），不再是判定基準。 */
       const qsum = (e.tiers || []).reduce((a, t) => a + (Number(t.qty) || 0), 0);
       const soldOut = qsum > 0 && e.sold >= qsum;
       const badgeKey = soldOut ? 'events.badge.soldout' : (STAGE_KEY[e.status] || 'events.badge.scheduled');
@@ -2117,8 +2130,8 @@
     /* KPI 改用 data-kpi 定位（2026-08-13）：原本靠 `.bento .kpi` 的索引，總覽多了結案卡
        （裡面也有 4 張 kpi）之後，索引綁的是「排第幾」，最容易被下一次改版洗掉。 */
     const kpiVal = n => document.querySelector('[data-kpi="' + n + '"] .kpi__value');
-    /* 分母＝票種張數加總（真正可賣的數字）。容量已隨「活動人數」撤除（ATT-002）。 */
-    const qtySum = (ev.tiers || []).reduce((a, t) => a + (Number(t.qty) || 0), 0);
+    /* 分母＝本活動所有門票的張數合計（含隱藏的門票；D340 上游刪除容量後的口徑，5.1.6.3 §2.3、events-store totalQty()）。 */
+    const qtySum = window.ztorEvents && window.ztorEvents.totalQty ? window.ztorEvents.totalQty(ev) : (ev.tiers || []).reduce((a, t) => a + (Number(t.qty) || 0), 0);
     if (kpiVal('sold')) kpiVal('sold').textContent = fmtNum(ev.sold) + ' / ' + fmtNum(qtySum || ev.sold);
     if (kpiVal('revenue')) kpiVal('revenue').textContent = '$' + fmtNum(ev.revenue);
     /* 「Across 3 tiers」是寫死的示例值——這場只有 2 個票種，數字要跟著資料走 */
@@ -2478,8 +2491,10 @@
     if (noDate) out.push(T('event-detail.golive.need.date', 'At least one date'));
     // 純線上的活動沒有場地要填，缺場地不該擋著它開賣
     if (!(ev.venue || '').trim() && ONLINE_TYPES.indexOf(ev.type) < 0) out.push(T('event-detail.golive.need.venue', 'Venue'));
-    /* D329（5.1.6.3 §2.1，同 5.1.6.1 F11 第五項）：隱藏的票不算可賣，組合包算——全部門票隱藏又沒有組合包才擋。 */
-    if (!(edTiers || []).some(t => !t.hidden) && !(ev.bundles || []).length)
+    /* D329／D340（5.1.6.3 §2.1，同 5.1.6.1 F11 第五項）：隱藏的票不算可賣；組合包要「仍在販售」（上架、顯示、開賣或預告期，
+       events-store bundleSelling）才算——全部門票隱藏、又沒有仍在販售的組合包才擋。 */
+    const EVS = window.ztorEvents;
+    if (!(edTiers || []).some(t => !t.hidden) && !(ev.bundles || []).some(b => EVS && EVS.bundleSelling ? EVS.bundleSelling(b) : true))
       out.push(T('event-detail.golive.need.sellable', 'At least 1 visible ticket or 1 bundle'));
     return out;
   }
@@ -2525,15 +2540,14 @@
     location.reload();                 // 階段換了，整頁的分頁、KPI、動作都要跟著重算
   }
 
-  /* 提前開賣的出現條件（2026-08-17 重新設計）：「已排程 × 排程開賣」才需要——
-     選了發布後直接開賣的活動，發布本身就是開賣，這一顆對它不成立。
-     兩個來源都會改變答案（換階段、換販售方式），所以獨立成一支、兩邊都呼叫；
-     只掛在 syncStage 上的話，當場把販售方式切成排程開賣不會有任何反應。 */
+  /* 提前開賣的出現條件（2026-08-17 重新設計；D340 改寫）：「已排程 × 有開賣日期與時間」才需要——
+     沒排開賣時間（上架即開賣）的活動，發布本身就是開賣，這一顆對它不成立。
+     兩個來源都會改變答案（換階段、改開賣時間），所以獨立成一支、兩邊都呼叫。 */
   function syncGoLive() {
     const row = document.getElementById('ed-golive-row');
     if (!row) return;
-    const mode = (ev.publish && ev.publish.onsale) || 'now';
-    row.hidden = !(ev.status === 'scheduled' && mode === 'scheduled');
+    /* D340：沒有「排程開賣」這個模式了——有開賣日期與時間＝排了開賣，才有「提前」可言 */
+    row.hidden = !(ev.status === 'scheduled' && !!((ev.sale || {}).from || '').trim());
   }
 
   function syncStage() {
@@ -2576,7 +2590,10 @@
       const qty = (edTiers || []).reduce((a, t) => a + (Number(t.qty) || 0), 0);
       openConfirm({
         title: T('event-detail.golive.title', 'Open ticket sales?'),
-        body: '<p>' + T('event-detail.golive.body', 'The event page goes public and {n} tickets become buyable. From here on, changing the date or venue notifies everyone who bought.')
+        /* D340（5.1.6.3 §2.1 推導）：顯示設定為隱藏時不寫「公開」——改說明只能經活動連結進入 */
+        body: '<p>' + (pubShown()
+                ? T('event-detail.golive.body', 'The event page goes public and {n} tickets become buyable. From here on, changing the date or venue notifies everyone who bought.')
+                : T('event-detail.golive.body.hidden', 'The event stays hidden — only people with the event link can get in — and {n} tickets become buyable there. From here on, changing the date or venue notifies everyone who bought.'))
                 .replace('{n}', fmtNum(qty)) + '</p>',
         okLabel: T('event-detail.golive.ok', 'Open sales'),
         onOk: () => setStage('on-sale')
@@ -2871,11 +2888,11 @@
 
   /* 說明區塊編輯器（D334）：互動在 partials/info-sections.js；值由 fillEditForm 帶入、commitEdit 寫回。 */
   const edInfoHost = document.getElementById('ed-info');
-  const edInfo = (edInfoHost && window.ztorInfoSections) ? window.ztorInfoSections.mount(edInfoHost, { items: [], mediaFeat: 'S58' }) : null;
+  const edInfo = (edInfoHost && window.ztorInfoSections) ? window.ztorInfoSections.mount(edInfoHost, { items: [], mediaFeat: 'S58', fmtFeat: 'S59' }) : null;
   /* 描述編輯器（D335）：文字＋圖片／影片；proxy＝隱藏的 [data-ed="desc"]（只有文字）。 */
   const edDescHost = document.getElementById('ed-desc');
   const edDesc = (edDescHost && window.ztorRichBody)
-    ? window.ztorRichBody.mount(edDescHost, { rows: 3, label: 'Description', labelKey: 'ce.desc', proxy: document.querySelector('[data-ed="desc"]'), feat: 'S58' })
+    ? window.ztorRichBody.mount(edDescHost, { rows: 3, label: 'Description', labelKey: 'ce.desc', proxy: document.querySelector('[data-ed="desc"]'), feat: 'S58', fmtFeat: 'S59' })
     : null;
 
   function lockDescFromBky(on) {
@@ -3349,10 +3366,11 @@
     if (hlEl) { ev.highlight = hlEl.value.trim(); renderHighlight(); }
     /* 說明區塊（D334）：同亮點，原型層級寫回這一場的紀錄；完全空白的塊不留（get() 已濾掉）。 */
     if (edInfo) ev.infoSections = edInfo.get();
-    /* 描述（D335）：原型層級寫回這一場的紀錄——文字進 desc，夾帶圖片或影片時整份進 descBlocks。 */
+    /* 描述（D335／D340）：原型層級寫回這一場的紀錄——純文字進 desc；夾帶圖片影片、或文字有粗體與清單時整份進 descBlocks。 */
     if (edDesc) {
       ev.desc = edDesc.text();
-      if (edDesc.media().length) ev.descBlocks = edDesc.get(); else delete ev.descBlocks;
+      const RB = window.ztorRichBody, blocks = edDesc.get();
+      if (edDesc.media().length || (RB && blocks.some(x => x.type === 'text' && RB.isFormatted(x.html)))) ev.descBlocks = blocks; else delete ev.descBlocks;
     }
     alert(T('event-detail.edit.saved', 'Saved.'));
     setMode('view');
@@ -3972,7 +3990,7 @@
     salesRoot.querySelectorAll('[data-nav-panel]').forEach(p => { p.hidden = !has[p.dataset.navPanel]; });
   }
 
-  /* ── 多站場次（2026-08-17 使用者裁決改名，原「系列場次」）──────────────────
+  /* ── 系列場次（2026-08-17 使用者裁決改名「多站場次」；2026-09-30 D340 刪除多站活動形式後改回「系列場次」）──────
      一場巡演的每一站。改名的理由是使用者的用詞——「系列」在站上還指別的東西
      （系列母頁、系列設定），而這張卡列的就是同一個巡演的各個站點。
 
@@ -4313,7 +4331,7 @@
     }
   });
 
-  /* 多站場次卡：只有屬於某個系列的活動才有東西可講。
+  /* 系列場次卡：只有屬於某個系列的活動才有東西可講。
      2026-08-17 起它住在總覽的「活動資訊」那一節（不再自成一個分節），所以這裡只管
      卡自己的顯隱；那一節的橫列標籤要不要出現，由 syncNavSections() 依「這一節還有沒有
      看得到的東西」統一決定——同一件事不留兩個決策點。 */
@@ -4387,7 +4405,7 @@
     /* 販售時間（2026-08-31）：三種狀態走同一條路徑，差別只在「起點是什麼」與「終點是什麼」。
          ev.sale.from ＋ ev.sale.to  → 完整區間
          ev.sale.from ＋ to 空       → 只設開賣，終點＝開演（設定頁「停售（選填）」的落地）
-         沒有 ev.sale               → 發布後直接開賣（publish.onsale 的預設），終點同樣＝開演
+         沒有 ev.sale               → 上架即開賣（D340 開賣設定不填開賣時間），終點同樣＝開演
        終點一律有值，所以「還剩幾天」永遠算得出來；賣完那天之後顯示已停售，不給負數。 */
     const sale = ev.sale || {};
     const saleFrom = (sale.from || '').trim();
@@ -4431,10 +4449,10 @@
     const winMetaEl = document.getElementById('ed-sales-window-meta');
     if (winMetaEl) {
       /* 兩端都有＝寫成區間，不再加「開賣」二字（破折號已經說了那是起點）。
-         只有起點＝「X 開賣 · 賣到開演」。兩端都沒有＝販售方式本身就是答案。 */
+         只有起點＝「X 開賣 · 賣到開演」。兩端都沒有＝上架即開賣、賣到開演（D340 開賣設定兩個時間都選填）。 */
       const opensTxt = saleFrom
         ? T('event-detail.sales.window.opens', 'Opens {t}').replace('{t}', fmtDT(saleFrom))
-        : T('ed.pub.onsale.now', 'On sale at publish');
+        : T('ed.pub.sale.atlist', 'On sale once listed');
       winMetaEl.textContent = saleFrom && saleTo
         ? fmtDT(saleFrom) + ' – ' + fmtDT(saleTo)
         : opensTxt + ' · ' + T('event-detail.sales.window.untilstart', 'until the event begins');
@@ -4647,7 +4665,11 @@
       g.setAttribute('aria-disabled', editing ? 'false' : 'true');
       g.querySelectorAll('[data-pub-val]').forEach(b => { b.disabled = !editing; });
     });
-    document.querySelectorAll('#ed-pub-edit input, #ed-pub-edit textarea').forEach(el => { el.readOnly = !editing; });
+    document.querySelectorAll('#ed-pub-edit input, #ed-pub-edit textarea').forEach(el => { if (!el.classList.contains('linkf__input')) el.readOnly = !editing; });
+    /* 顯示開關（D340）：非編輯模式停用（同上面的單選卡），連結的複製在任何模式都可用、重置只在編輯模式 */
+    const shownSw = document.getElementById('ed-pub-shown');
+    if (shownSw) { shownSw.setAttribute('aria-disabled', editing ? 'false' : 'true'); shownSw.classList.toggle('switch--disabled', !editing); }
+    document.querySelectorAll('#ed-pub-hidden-link [data-linkf-reset]').forEach(b => { b.disabled = !editing; });
     /* 墓碑 2026-09-29（D327）：電子門票三組附屬設定的開關／步進鈕鎖定段退場（那組設定已刪）。 */
     /* bookyay 帶入者（D308 決定一，經 D327 修訂）：取票方式本身在編輯模式也鎖——值是 bookyay 的，要改回 bookyay 改。
        鎖法沿用上面同一套（.segmented--locked／disabled）。 */
@@ -4663,7 +4685,34 @@
   function isBky() { return !!ev && ev.source === 'bookyay'; }
 
   /* 墓碑 2026-09-29（D327）：電子門票三組附屬設定的渲染與接線（原 `renderPubTp`／`pubDefaults`／`renderPubExtras`／
-     `pubExtrasText`）整段退場——設定已刪，發布設定只剩販售方式、取票方式（含運費／取票地點）與公開性。 */
+     `pubExtrasText`）整段退場——設定已刪，發布設定只剩開賣設定、取票方式（含運費／取票地點）與顯示設定（D340）。 */
+
+  /* 顯示設定（D340）：ev.publish.shown（缺值＝顯示）。隱藏時的活動連結＝公開網址＋一段隨機碼（原型示意，存在 ev.publish.linkKey）；
+     重置換一段新的、舊的作廢；切回顯示＝撤銷（清掉），再隱藏時產生新的一條（主規格 §7.14「非公開連結」）。 */
+  const pubShown = () => !ev.publish || ev.publish.shown !== false;
+  const pubLinkKey = () => Math.random().toString(36).slice(2, 8);
+  const pubHiddenUrl = () => 'https://ztor.live/e/' + ev.id + '?k=' + ((ev.publish && ev.publish.linkKey) || '');
+  document.getElementById('ed-pub-shown')?.addEventListener('click', e => {
+    const sw = e.currentTarget;
+    if (sw.getAttribute('aria-disabled') === 'true') return;
+    const on = !pubShown();
+    ev.publish = Object.assign({}, ev.publish, { shown: on, linkKey: on ? '' : ((ev.publish && ev.publish.linkKey) || pubLinkKey()) });
+    renderPublish();
+  });
+  document.addEventListener('linkfield:reset', e => {
+    const box = document.getElementById('ed-pub-hidden-link');
+    if (!box || !box.contains(e.target)) return;
+    ev.publish = Object.assign({}, ev.publish, { linkKey: pubLinkKey() });
+    renderPublish();
+  });
+  /* 開賣設定的一句話（唯讀列、總覽販售時間卡同一口徑）：開賣時間沒填＝上架即開賣；停售沒填＝賣到活動開始 */
+  function saleSummary() {
+    const sale = ev.sale || {}, from = (sale.from || '').trim(), to = (sale.to || '').trim();
+    const fmt = v => v.replace(/-/g, '/');
+    const a = from ? T('ed.pub.sale.opens', 'Opens {t}').replace('{t}', fmt(from)) : T('ed.pub.sale.atlist', 'On sale once listed');
+    const b = to ? T('ed.pub.sale.closes', 'closes {t}').replace('{t}', fmt(to)) : T('event-detail.sales.window.untilstart', 'until the event begins');
+    return a + ' · ' + b;
+  }
 
   function renderPublish() {
     const pub = ev.publish || {};
@@ -4681,7 +4730,7 @@
         : 'These were set in the create flow. Changing them after tickets are on sale affects buyers — the rules for that are upstream, so they read as view-only here for now.');
     }
     if (edit) {
-      const cur = { onsale: pub.onsale || 'now', pickup: pub.pickup || 'eticket', visibility: pub.visibility || 'public' };
+      const cur = { pickup: pub.pickup || 'eticket' };
       edit.querySelectorAll('[data-pub]').forEach(group => {
         group.querySelectorAll('[data-pub-val]').forEach(b => {
           const on = b.dataset.pubVal === cur[group.dataset.pub];
@@ -4698,10 +4747,8 @@
           });
         }
       });
-      /* 選了才問的欄位（2026-08-17，同建立流程第 7 步）：限時販售才要開賣／停售日期與時間、
-         寄送才要運費、自取才要地點。沒選到的方式不該佔版面——那些欄位對它不成立。 */
-      const times = document.getElementById('ed-pub-sale-times');
-      if (times) times.hidden = cur.onsale !== 'scheduled';
+      /* 選了才問的欄位（2026-08-17，同建立流程第 7 步）：寄送才要運費、自取才要地點。沒選到的方式不該佔版面。
+         開賣與停售日期與時間 D340 起一律攤開（兩個都選填，沒有二選一可以揭示）。 */
       /* 2026-08-31：這四個欄位此前只是空殼（沒有任何一行把值放進去），於是總覽新增的
          販售時間卡寫著「8/1 10:00 開賣」、點進設定卻是四個空格——同一件事兩個答案。
          現在由 ev.sale 帶入；停售留白就是留白，那正是「只設開賣」的表達方式。 */
@@ -4716,18 +4763,31 @@
       edit.querySelectorAll('[data-pub-when]').forEach(el => {
         el.hidden = el.dataset.pubWhen !== cur.pickup;
       });
+      /* 顯示設定（D340）：開關＋隱藏時的活動連結 */
+      const sw = document.getElementById('ed-pub-shown');
+      if (sw) { sw.setAttribute('aria-checked', pubShown() ? 'true' : 'false'); sw.classList.toggle('switch--on', pubShown()); }
+      const hl = document.getElementById('ed-pub-hidden-link');
+      if (hl) {
+        hl.hidden = pubShown();
+        if (!pubShown()) {
+          if (!ev.publish.linkKey) ev.publish = Object.assign({}, ev.publish, { linkKey: pubLinkKey() });
+          const lf = hl.querySelector('[data-linkf]');
+          if (lf && window.linkField) window.linkField.setValue(lf, pubHiddenUrl());
+        }
+      }
       syncPubLock();
       const bkyLock = document.getElementById('ed-pub-bky-locked');
       if (bkyLock) bkyLock.hidden = !isBky();   // D308：bookyay 帶入者說明這一區為什麼鎖
     }
     syncGoLive();
     const set = (id, key, fb) => { const el = document.getElementById(id); if (el) el.textContent = T(key, fb); };
-    set('ed-pub-onsale', pub.onsale === 'scheduled' ? 'ed.pub.onsale.sch' : 'ed.pub.onsale.now',
-        pub.onsale === 'scheduled' ? 'Scheduled' : 'On sale at publish');
+    const saleEl = document.getElementById('ed-pub-onsale');
+    if (saleEl) saleEl.textContent = saleSummary();
     set('ed-pub-pickup', 'ed.pub.pickup.' + (pub.pickup || 'eticket'), pub.pickup || 'E-ticket');
-    set('ed-pub-vis', pub.visibility === 'private' ? 'ed.pub.vis.private' : 'ed.pub.vis.public',
-        pub.visibility === 'private' ? 'Private link' : 'Public');
-    const url = 'ztor.live/e/' + ev.id;
+    set('ed-pub-vis', pubShown() ? 'ed.pub.vis.shown.val' : 'ed.pub.vis.hidden.val',
+        pubShown() ? 'Shown' : 'Hidden · link only');
+    /* 活動連結卡（設定 → 連結）：顯示＝公開網址；隱藏＝帶隨機碼的那一條（同上方顯示設定的連結） */
+    const url = pubShown() ? 'ztor.live/e/' + ev.id : pubHiddenUrl().replace(/^https:\/\//, '');
     const urlEl = document.getElementById('ed-pub-url');
     if (urlEl) urlEl.textContent = url;
     const qr = document.getElementById('ed-pub-qr');

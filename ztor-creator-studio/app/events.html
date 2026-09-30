@@ -1881,6 +1881,37 @@
   applyStageOverrides();
   document.addEventListener('i18n:applied', applyStageOverrides);
 
+  /* 票券欄（D340，5.1.6 F1）：已售／總數，總數＝本活動所有門票的張數合計（含隱藏的門票；容量已刪除，5.1.6.1 F8）。
+     清單是靜態 HTML，這裡照 events-store 重算一次（events-store totalQty()），列上寫死的舊分母（部分沿用已刪的容量）一律以資料為準：
+       · 單場列（data-go＝event-detail.html?id=…）：那一場的售出 ÷ 那一場的門票張數合計
+       · 系列母列（data-rowdis-row＝系列 id）：系列各場加總
+     沒有任何門票的列（還在規劃的草稿等）維持原本的寫法；原本寫死「— / 不限名額」、但資料裡其實有門票的列一併改寫（並拿掉 data-i18n，
+     切語言時 i18n 才不會把舊字蓋回來）。 */
+  function syncTicketCells() {
+    const store = window.ztorEvents;
+    if (!store || !store.totalQty) return;
+    const all = store.list();
+    const fmt = n => Number(n || 0).toLocaleString('en-US');
+    Array.from(list.querySelectorAll('.product-list__row')).forEach(r => {
+      const cell = r.querySelector('.product-list__tickets .event-tickets');
+      if (!cell) return;
+      const m = /[?&]id=([^&#]+)/.exec(r.dataset.go || '');
+      const evs = m ? all.filter(e => e.id === decodeURIComponent(m[1]))
+                    : (r.dataset.rowdisRow ? all.filter(e => e.series && e.series.id === r.dataset.rowdisRow) : []);
+      if (!evs.length) return;
+      const total = evs.reduce((n, e) => n + store.totalQty(e), 0);
+      const sold = evs.reduce((n, e) => n + (e.sold || 0), 0);
+      if (!total) return;
+      const pct = Math.min(100, Math.round(sold / total * 100));
+      cell.classList.remove('event-tickets--unlimited');
+      cell.removeAttribute('data-i18n');
+      cell.innerHTML = fmt(sold) + ' / ' + fmt(total) +
+        '<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:' + pct + '%"></div></div>';
+    });
+  }
+  syncTicketCells();
+  document.addEventListener('i18n:applied', syncTicketCells);
+
   /* 頁首四個數字（2026-08-17）。口徑刻意寫在這裡，因為每一個都有一個會被問的判斷：
        · 活動總數＝清單上的筆數，**系列算一筆**（跟下方分頁的「全部 N」同一個數，
          不是 store 裡的活動筆數——那會多出各站，畫面上又看不到那些列）。
@@ -2052,13 +2083,13 @@
       });
       apply(); syncKpis();
     };
-    /* 草稿活動刪除的連動（2026-09-29 D331 決定四，主規格 §7.14「活動比照」、5.1.6 F1）：bookyay 帶入自動建立的組合包隨草稿活動一起刪除
-       ——它自己沒有刪除入口。確認彈窗多一句並列出這幾組（leave-dialog__list，同 e-shop 刪除擋下列名的做法），確認後
-       events-store removeDraft() 把活動記成已刪（本分頁工作階段），組合包住在活動資料裡、跟著查不到。
-       創作者自建、成員含本活動票券的草稿組合包怎麼處置是〔產品待確認〕（D331），彈窗不提（ASSUMPTIONS UIA-183）。 */
+    /* 草稿活動刪除的連動（D331 決定四 → 2026-09-30 D340 決定四，主規格 §7.14「活動比照」、5.1.6 F1）：含本草稿活動票券的組合包
+       一律隨活動一起刪除——bookyay 帶入自動建立的（它自己沒有刪除入口），以及創作者自己建立的草稿組合包（D340）。
+       確認彈窗多一句並列出這幾組（leave-dialog__list，同 e-shop 刪除擋下列名的做法），確認後 events-store removeDraft()
+       把活動記成已刪（本分頁工作階段），組合包住在活動資料裡、跟著查不到。 */
     const EVS = window.ztorEvents;
     const draftId = ((row.dataset.go || '').match(/[?&]draft=([^&]+)/) || [])[1] || '';
-    const autos = (EVS && EVS.autoBundlesOf && draftId) ? EVS.autoBundlesOf(decodeURIComponent(draftId)) : [];
+    const autos = (EVS && EVS.draftBundlesOf && draftId) ? EVS.draftBundlesOf(decodeURIComponent(draftId)) : [];
     const baseRemove = doRemove;
     const removeAll = () => { if (EVS && EVS.removeDraft && draftId) EVS.removeDraft(decodeURIComponent(draftId)); baseRemove(); };
     const evDialog = getEvDialog();
@@ -2068,7 +2099,7 @@
     const list = evDialog.querySelector('[data-ev-confirm-list]');
     if (t) t.textContent = T('events.delete.title', 'Delete draft “{n}”?').replace('{n}', name);
     if (b) b.textContent = T('events.delete.body', 'This draft has not been created yet — no tickets, no switches, no fan page — so deleting it affects no one. A deleted draft cannot be recovered.')
-      + (autos.length ? (/^zh/.test(document.documentElement.lang) ? '' : ' ') + T('events.delete.auto-bundles', 'These bundles created from the bookyay import are deleted with it:') : '');
+      + (autos.length ? (/^zh/.test(document.documentElement.lang) ? '' : ' ') + T('events.delete.auto-bundles', 'These bundles include its tickets and are deleted with it:') : '');
     if (list) {
       list.hidden = !autos.length;
       list.innerHTML = autos.map(x => '<li class="leave-dialog__list-item"><i data-lucide="package" class="ztor-icon"></i><span>' +

@@ -1730,7 +1730,7 @@
     'dash.progress.row3.cat': { en: 'In-person event', zh: '實體活動' },
     /* 2026-08-19 修正：另一 agent 把這張卡的目標活動從查無此活動的假資料改指向 store
        真實存在的 realive-chongqing（見 js/components.js:412 附近的改動註解），
-       prog／due 兩鍵要跟著換成該筆活動的真實已售／容量與日期，否則卡片文字與 go 連結
+       prog／due 兩鍵要跟著換成該筆活動的真實已售／門票張數合計與日期（D340 起容量已刪），否則卡片文字與 go 連結
        指向的活動兜不起來。 */
     'dash.progress.row3.prog': { en: '84 / 120 tickets', zh: '84 / 120 張票' },
     'dash.progress.row3.due': { en: 'Oct 25', zh: '10/25' },
@@ -3674,7 +3674,6 @@
     'sd.f.tiers':        { en: 'Ticket tiers',                          zh: '票種' },
     'sd.f.tiers.sub':    { en: 'Quantities are per date — 600 here means 600 at every date.', zh: '數量是每一場各自的——這裡寫 600 是每場各 600 張。' },
     'sd.f.images.sub':   { en: 'The same artwork runs on every date.', zh: '每一場用的是同一套素材。' },
-    'sd.f.attend.sub':   { en: 'Per date, not for the whole run.',    zh: '算每一場的，不是整個系列的。' },
     'sd.f.tier.sold':    { en: '{n} sold across the series',          zh: '整個系列已售 {n} 張' },
     'sd.f.tier.qtyper':  { en: 'Quantity per date',                   zh: '每場張數' },
     'sd.f.qty':          { en: '100 per date',                          zh: '每場 100 張' },
@@ -3699,7 +3698,8 @@
     'sd.cancel.note':    { en: '<strong>Cancelling one date follows the same cancellation &amp; void rules as cancelling a standalone event (§5.1.6 F5).</strong> Being part of a series changes nothing about that date\u2019s tickets — the creator can void them individually or all at once after cancelling (not automatic, D253); the other dates are untouched.', zh: '<strong>取消一場的取消與撤銷規則與取消一場獨立活動完全相同（§5.1.6 F5）。</strong>屬於系列不改變這一場票券的處理方式——取消後由創作者逐票或整場撤銷仍有效的票券（不自動觸發，D253），其他場次不受影響。' },
     'sd.footer1':        { en: 'REALIVE World Tour — Asia leg · 3 dates', zh: 'REALIVE 世界巡迴 — 亞洲段 · 共 3 場' },
     'sd.footer2':        { en: 'Ticket revenue rolls up to Earnings → Event ticketing', zh: '票券收入歸入收入管理 → 活動票券' },
-    'event-detail.series.manage': { en: 'Manage all stops →',          zh: '管理整個多站活動 →' },
+    /* D340（2026-09-30）：「多站活動」這個活動形式已刪除，多站需求改用系列活動——系列相關字樣一律回到「系列」（5.1.6.3 §2.12 系列清單） */
+    'event-detail.series.manage': { en: 'Manage the series →',         zh: '管理整個系列 →' },
     'event-detail.doctitle':      { en: 'Event detail',              zh: '活動詳情' },
     'event-detail.crumb.leg':     { en: 'Date {i} · {venue}',        zh: '第 {i} 場 · {venue}' },
     /* 就地編輯（2026-08-06，編輯搬進詳情頁、edit-event.html 撤除） */
@@ -3720,7 +3720,7 @@
     'event-detail.edit.caphint':  { en: 'At least {n} — that many tickets are already sold.', zh: '不能低於 {n}——已經賣掉這麼多張了。' },
     /* 2026-08-18 使用者裁決：共用設定是母設定，子活動頁可以獨立變更。
        舊鍵 event-detail.edit.serieslock（「請到系列頁編輯」）保留未用。 */
-    'event-detail.edit.serieslock': { en: 'This stop is part of a multi-venue event — shared settings live on its parent page', zh: '這一站屬於多站活動，共用設定在母頁改' },
+    'event-detail.edit.serieslock': { en: 'This date is part of a series — shared settings live on the series page', zh: '這一場屬於系列活動，共用設定在系列頁改' },
     'event-detail.edit.seriesnote': { en: 'This date follows the series settings — changing it here changes only this date', zh: '這一場的設定跟著系列走；在這裡改只會改這一場，不影響其他場' },
     'events.rowSER.title':     { en: 'REALIVE World Tour — Asia leg',       zh: 'REALIVE 世界巡迴 — 亞洲段' },
     'events.rowSER.meta':      { en: 'Concert · 3 dates',                   zh: '演唱會 · 共 3 場' },
@@ -3762,7 +3762,8 @@
     'events.delete.title':     { en: 'Delete draft “{n}”?',                   zh: '要刪除草稿「{n}」嗎？' },
     'events.delete.body':      { en: 'This draft has not been created yet — no tickets, no switches, no fan page — so deleting it affects no one. A deleted draft cannot be recovered.', zh: '這份草稿還沒真正建立：沒有票券、沒有開關、沒有粉絲端頁面，刪除不影響任何人。刪除後無法復原。' },
     /* D331 決定四：草稿活動裡 bookyay 自動建立的組合包隨活動一起刪除，彈窗多一句並列名 */
-    'events.delete.auto-bundles': { en: 'These bundles created from the bookyay import are deleted with it:', zh: '以下由 bookyay 帶入自動建立的組合包會一起刪除：' },
+    /* D340：自動建立的與創作者自建的（成員含本草稿活動票券）都一起刪、都列出 */
+    'events.delete.auto-bundles': { en: 'These bundles include its tickets and are deleted with it:', zh: '以下組合包含有這場活動的票券，會一起刪除：' },
     'events.delete.confirm':   { en: 'Delete',                              zh: '刪除' },
     'events.a.more':           { en: 'More actions',                        zh: '更多操作' },
     /* row1＝即將舉辦（年末場）；row2–row6＝已舉辦（新→舊）；row7＝草稿。分桶依日期，見 events.html 註解 */
@@ -4048,11 +4049,9 @@
     'ee.ov.images':       { en: 'Images',                         zh: '圖片' },
     'ee.ov.venue':        { en: 'Venue',                          zh: '場地' },
     'ee.ov.time':         { en: 'Date & time',                    zh: '日期與時間' },
-    'ee.ov.capacity':     { en: 'Capacity',                       zh: '容納人數' },
     'ee.ov.tickets':      { en: 'Ticket tiers',                   zh: '票種' },
     'ee.ov.empty':        { en: 'Not set',                        zh: '未設定' },
     'ee.ov.imagesn':      { en: '{n} of 2 uploaded',              zh: '已上傳 {n} / 2' },   /* 2026-08-05：橫式橫幅槽撤除，三格→兩格（主視覺／圖庫） */
-    'ee.ov.capn':         { en: '{n} capacity · {s} sold',        zh: '可容納 {n} 人 · 已售 {s}' },
     'ee.ov.tiersn':       { en: '{n} tiers',                      zh: '{n} 種票' },
     'ee.changed':         { en: 'Changed',                        zh: '已變更' },
 
@@ -4167,7 +4166,6 @@
     'ee.err.desc':        { en: "Description can't be empty.",    zh: '活動介紹不可空白。' },
     'ee.err.venue':       { en: "Venue name can't be empty.",     zh: '場地名稱不可空白。' },
     'ee.err.date':        { en: "Event date can't be empty.",     zh: '活動日期不可空白。' },
-    'ee.err.capacity':    { en: "Can't go below {n} — that many tickets are already sold.", zh: '不可低於 {n}——已售出這麼多張票。' },
     'ee.cap.hint':        { en: 'At least {n} — tickets already sold.', zh: '最低 {n}——已售出的張數。' },
     'ee.cap.hint.free':   { en: 'Total seats or standing.',       zh: '座位或站位總數。' },
 
@@ -4175,7 +4173,6 @@
     'ee.save.n':          { en: 'Save {n} changes',               zh: '儲存 {n} 項變更' },
     'ee.save.n1':         { en: 'Save 1 change',                  zh: '儲存 1 項變更' },
     'ee.save.blocked':    { en: 'Some required fields are empty.', zh: '有必填欄位是空的。' },
-    'ee.save.capacity':   { en: "Capacity can't be below tickets already sold.", zh: '容納人數不可低於已售出張數。' },
     'ee.save.done':       { en: 'Changes would be saved here. (Prototype)', zh: '此處會儲存變更。（原型）' },
     'ee.discard':         { en: 'Discard changes',                zh: '捨棄變更' },
     'ee.discard.confirm': { en: 'Discard your changes? The event goes back to how it was.', zh: '要捨棄變更嗎？活動會回到原本的內容。' },
@@ -4646,6 +4643,8 @@
     'pp.field.info':        { en: 'Info sections',                    zh: '說明區塊' },
     'pp.field.info.title':  { en: '#{n} · Title',                     zh: '第 {n} 塊・標題' },
     'pp.field.info.body':   { en: '#{n} · Text',                      zh: '第 {n} 塊・內文' },
+    /* D340：內文被圖片影片切成幾段就列幾格，譯文照段落放回原位 */
+    'pp.field.body.part':   { en: 'part {n}',                         zh: '第 {n} 段' },
     'pp.field.tnc':         { en: 'Terms & conditions',               zh: '條款與細則' },
     'pp.field.marketing':   { en: 'Marketing consent',                zh: '行銷同意' },
     /* 墓碑 2026-09-29（D327）：pp.field.entry-note（取票說明欄）退場 */
@@ -4717,6 +4716,9 @@
     'fep.cta.buy':          { en: 'Buy tickets',                      zh: '購票' },
     'fep.cta.bundle':       { en: 'Choose a bundle',                  zh: '選擇組合' },
     'fep.sec.about':        { en: 'About',                            zh: '活動介紹' },
+    /* D340：說明區塊內文太長時的收合 */
+    'fep.info.more':        { en: 'Read more',                        zh: '展開全文' },
+    'fep.info.less':        { en: 'Show less',                        zh: '收合' },
     'fep.sec.lineup':       { en: 'Lineup',                           zh: '卡司陣容' },
     /* 墓碑 2026-09-29（D334）：fep.sec.notes／fep.tag.bring（粉絲頁「注意事項」一節）隨兩份清單退場；
        說明區塊的粉絲頁呈現暫不做（ASSUMPTIONS UIA-186），不預先建鍵。 */
@@ -4994,6 +4996,12 @@
     /* 內文編輯器（D335，partials/rich-body.js）：描述與說明區塊的內文可夾帶圖片與影片 */
     'rb.insert.image':      { en: 'Insert image',                     zh: '插入圖片' },
     'rb.insert.video':      { en: 'Insert video',                     zh: '插入影片' },
+    /* D340：內文文字支援粗體與清單；每段最多 10 個媒體 */
+    'rb.fmt':               { en: 'Text format',                      zh: '文字格式' },
+    'rb.fmt.bold':          { en: 'Bold',                             zh: '粗體' },
+    'rb.fmt.ul':            { en: 'Bulleted list',                    zh: '項目符號清單' },
+    'rb.fmt.ol':            { en: 'Numbered list',                    zh: '編號清單' },
+    'rb.limit':             { en: 'Up to {n} images or videos per section', zh: '每段最多 {n} 個圖片或影片' },
     'ce.lineup':            { en: 'Lineup / performers',              zh: '表演陣容' },
     'ce.lineup.sub':        { en: 'Search Ztor users or type external names.', zh: '搜尋 Ztor 用戶或直接輸入外部表演者名稱。' },
     'ce.lineup.add':        { en: 'Add performer',                    zh: '新增表演者' },
@@ -5046,13 +5054,9 @@
     'ce.start':             { en: 'Start time',                       zh: '開始時間' },
     'ce.end':               { en: 'End time',                         zh: '結束時間' },
     'ce.doors':             { en: 'Doors open',                       zh: '開放入場' },
-    /* ce.capacity（區段標題）與 ce.capacity.label（欄位標籤）仍供 edit-event.html 的單一「容量」欄使用；
-       ce.capacity.ph 已無消費者（編輯頁的 placeholder 走 ee.capacity.ph），保留待與編輯頁欄位集一併收斂。
-       建立活動已於 2026-08-06 改成最少／最多兩欄，用下面的 ce.attend.* 一組。 */
-    'ce.capacity':          { en: 'Capacity',                         zh: '容量' },
-    'ce.capacity.label':    { en: 'Capacity',                         zh: '容量' },
-    'ce.capacity.ph':       { en: 'Total seats or standing',          zh: '總座位或站位' },
-    'ce.attend':            { en: 'Attendance',                       zh: '活動人數' },
+    /* 墓碑 2026-09-30（D340，5.1.6.1 F8 退場）：容量與活動人數的字串（ce.capacity*／ce.attend*、ee.*capacity*、
+       ce.tier.qty.hint／ce.tier.err.overcap／ce.publish-blocked-cap／ce.err.capacity、sd.f.attend.sub）隨容量刪除。
+       共看派對的人數上限（ce.wp.cap*，F16）是另一個概念，保留。 */
     /* 售票方式（2026-08-06 使用者裁決）：自訂門票／不設門票兩種。免費不做成第三種——
        票價 0 就是免費，做成模式會讓同一件事有兩個真相來源。 */
     /* 2026-08-06 使用者裁決：全流程統一成三個講法——購票入場／免費門票（票價 0）／免票入場。
@@ -5096,10 +5100,6 @@
     'ce.series.countn':     { en: '{n} dates',                        zh: '共 {n} 場' },
     'ce.rev.series':        { en: 'Dates',                            zh: '場次' },
     'ce.calc.sessions':     { en: 'Dates',                            zh: '場次' },
-    'ce.attend.min':        { en: 'Minimum',                          zh: '最少' },
-    'ce.attend.min.ph':     { en: 'e.g., 50',                         zh: '例如：50' },
-    'ce.attend.max':        { en: 'Maximum',                          zh: '最多' },
-    'ce.attend.max.ph':     { en: 'e.g., 500',                        zh: '例如：500' },
     /* Step 4 · Tickets */
     'ce.s4.h1':             { en: 'Set your tickets',                 zh: '設定你的票種' },
     'ce.s4.sub':            { en: 'Create ticket tiers. Minimum 1.',  zh: '建立票種，至少 1 種。' },
@@ -5793,6 +5793,8 @@
     'bd.event.list-lock':   { en: 'The event “{name}” is not listed ({status}) — this bundle cannot be listed on its own.', zh: '活動「{name}」未上架（{status}），這個組合包無法自行上架。' },
     /* D330（5.1.6.1 F22「可賣性防呆」）：停售活動最後一組販售中的組合包、活動又沒有顯示中的門票時擋下。 */
     'bd.sale.stop.last':    { en: "It's the event's last bundle on sale and the event has no visible ticket — sales can't be stopped. Keep at least 1 visible ticket or 1 bundle.", zh: '這是活動最後一組販售中的組合包，活動又沒有顯示中的門票，不能停售。至少要有 1 張顯示中的門票或 1 組組合包。' },
+    /* D340：定時下架／定時停售的排程檢查——到期後會讓活動沒有可賣的東西，設定當下就擋 */
+    'bd.sched.last':        { en: 'When this time comes the event would have nothing on sale — no visible ticket and no other bundle on sale. Keep at least 1 visible ticket or 1 bundle.', zh: '到了這個時間，活動就沒有顯示中的門票、也沒有其他仍在販售的組合包，這個排程不能設。至少要有 1 張顯示中的門票或 1 組組合包。' },
     /* D331（5.1.6.1 F22、5.1.5.9 §2.2）：下架、隱藏、封存（與刪除）活動最後一組販售中的組合包、活動又沒有顯示中的門票時擋下。
        紅字就地（開關旁）；頁首按鈕與電子商店清單列改純告知彈窗，標題 bd.stop.title.*、內文同一句。 */
     'bd.list.stop.last':    { en: "It's the event's last bundle on sale and the event has no visible ticket — it can't be unlisted. Keep at least 1 visible ticket or 1 bundle.", zh: '這是活動最後一組販售中的組合包，活動又沒有顯示中的門票，不能下架。至少要有 1 張顯示中的門票或 1 組組合包。' },
@@ -6142,7 +6144,6 @@
     'ee.venue.ph':             { en: 'e.g. Legacy Taipei', zh: '例：Legacy Taipei' },
     'ee.city.ph':              { en: 'e.g. Taipei', zh: '例：台北' },
     'ee.address.ph':           { en: 'e.g. No. 1, Bade Rd Sec 1, Zhongzheng District', zh: '例：中正區八德路一段 1 號' },
-    'ee.capacity.ph':          { en: 'e.g. 300', zh: '例：300' },
     'bd.name.ph':              { en: 'e.g. Ultimate Fan Bundle', zh: '例：鐵粉終極套組' },
     'bd.desc.ph':              { en: 'e.g. What is inside and why it is worth more together than apart.', zh: '例：裡面有什麼，以及為什麼一起買比分開買值得。' },
     'ss.slug.ph':              { en: 'e.g. coastline-studio', zh: '例：coastline-studio' },
@@ -7276,7 +7277,6 @@
     'pk.board.buyers':  { en: 'Buyers',        zh: '買家' },
     'pk.board.buyers.val': { en: '52 people',  zh: '52 位' },
     'pk.board.export':  { en: 'Export no-shows', zh: '匯出未領名單' },
-    'pk.board.extend':  { en: 'Extend session', zh: '延長場次時間' },
     'pk.a.copyurl':     { en: 'Copy scanner URL', zh: '複製掃碼網址' },
     'pk.a.copypw':      { en: 'Copy scanner password', zh: '複製掃碼密碼' },
     'pk.pw.unset':      { en: 'Not set — URL is open', zh: '未設定，網址不上鎖' },
@@ -7329,6 +7329,7 @@
     'pks.current.meta':    { en: 'This product',      zh: '這件商品' },
     'pks.search.empty': { en: 'No items match your search.', zh: '沒有符合搜尋的項目。' },
     'pks.items':        { en: 'Pickup items',  zh: '取貨商品' },
+    'pks.bound':        { en: 'Assigned', zh: '已綁定' },   /* D339：商品已綁在另一個取貨場次，下拉中停用 */
     'pks.items.hint':   { en: '— physical items set to on-site QR pickup', zh: '— 取貨方式設為現場 QR 領取的實體商品' },
     'pks.tickets':      { en: 'Event tickets', zh: '活動票券' },
     'pks.tickets.hint': { en: '— redeem event tickets with the same scanner', zh: '— 用同一支 scanner 核銷活動票券' },
@@ -7599,7 +7600,6 @@
     'ce.tier.price.ph': { en: '0',                                 zh: '0' },
     'ce.tier.qty':      { en: 'Quantity',                          zh: '數量' },
     'ce.tier.qty.ph':   { en: 'e.g., 200',                         zh: '例如：200' },
-    'ce.tier.qty.hint': { en: '{n} of the {cap} capacity still unassigned', zh: '容量還有 {n} 張未分配（共 {cap} 張）' },
     'ce.tier.untitled': { en: 'Untitled tier',                     zh: '未命名票種' },
     'ce.tier.edit':     { en: 'Edit',                              zh: '編輯' },
     'ce.tier.more':     { en: 'More actions',                      zh: '更多操作' },
@@ -7636,6 +7636,8 @@
     'ce.evlang.th':      { en: 'Thai',                             zh: '泰語' },
     'ce.evlang.vi':      { en: 'Vietnamese',                       zh: '越南語' },
     'ce.evlang.sep':     { en: ', ',                               zh: '、' },
+    /* D340：活動語言改為下拉複選，一項都沒選時觸發鈕的占位字 */
+    'ce.lang.ph':        { en: 'Choose languages',                 zh: '選擇語言' },
     /* 跨日活動（D328，5.1.6.1 F7）：每場一個開關，開了才有結束日期 */
     /* 規格名「跨日活動」；標籤照鐵律 12 拿掉頁面已交代的「活動」（建立活動頁、場次區段），只留「跨日」 */
     'ce.sess.multiday':  { en: 'Multi-day',                        zh: '跨日' },
@@ -7745,8 +7747,6 @@
     'ce.tier.err.namedup': { en: 'This event already has a tier with that name.', zh: '這個活動已經有同名的票種。' },
     'ce.tier.err.price':   { en: 'Price must be a whole number, 0 or more.', zh: '價格要填 0 以上的整數。' },
     'ce.tier.err.qty':     { en: 'Quantity must be a whole number, 1 or more.', zh: '數量要填 1 以上的整數。' },
-    'ce.tier.err.overcap': { en: 'Tier quantities add up to {n}, over the {cap} capacity.', zh: '各票種數量加總 {n} 張，超過容量 {cap} 張。' },
-    'ce.publish-blocked-cap': { en: 'Tier quantities add up to more than the capacity. Adjust the tiers or the capacity.', zh: '各票種數量加總超過容量，請調整票種數量或容量後再發布。' },
 
     /* Fans CRM — group message composer (5.1.7.1 v2 / D058) */
     'msg.title':          { en: 'Message your fans', zh: '群發訊息' },
@@ -7810,10 +7810,11 @@
     'ce.saveexit':        { en: 'Save & exit', zh: '儲存並離開' },
     'ce.saveexit-alert':  { en: 'Draft saved. You can come back from Events → Draft.', zh: '草稿已儲存，可從 活動 → 草稿 回來繼續。' },
     'ce.err.name':        { en: 'Event name is required.', zh: '請填寫活動名稱。' },
-    'ce.err.desc':        { en: 'Description is required.', zh: '請填寫描述。' },
+    /* D340：描述至少要有一段文字，只有圖片或影片不算已填 */
+    'ce.err.desc':        { en: 'Add at least a paragraph of text to the description.', zh: '描述至少要有一段文字。' },
+    'ce.err.lang':        { en: 'Choose at least one language.', zh: '請至少選一種語言。' },
     'ce.err.venue':       { en: 'Venue name is required.', zh: '請填寫場地名稱。' },
     'ce.err.date':        { en: 'Event date is required.', zh: '請設定活動日期。' },
-    'ce.err.capacity':    { en: 'Maximum attendance is required.', zh: '請填寫最多人數。' },
     'ce.publish-blocked': { en: 'Some required (*) fields are empty. Please complete the highlighted fields.', zh: '尚有 ＊ 必填欄位未填，請補齊標示的欄位。' },
 
     /* Settings — F7 Compliance (read-only · 5.1.9 F7) */
@@ -9469,6 +9470,8 @@
     'event-detail.golive.missing': { en: 'Missing', zh: '未填' },
     'event-detail.golive.title': { en: 'Open ticket sales?', zh: '要開始賣票嗎？' },
     'event-detail.golive.body': { en: 'The event page goes public and {n} tickets become buyable. From here on, changing the date or venue notifies everyone who bought.', zh: '活動頁會公開，{n} 張票開放購買。之後改日期或場地，會通知到每一位購票者。' },
+    /* D340（5.1.6.3 §2.1）：顯示設定為隱藏時，確認說明不寫「公開」 */
+    'event-detail.golive.body.hidden': { en: 'The event stays hidden — only people with the event link can get in — and {n} tickets become buyable there. From here on, changing the date or venue notifies everyone who bought.', zh: '活動維持隱藏、只能經活動連結進入，{n} 張票開放購買。之後改日期或場地，會通知到每一位購票者。' },
     'event-detail.golive.ok': { en: 'Open sales', zh: '開始賣票' },
     'event-detail.cancel.title': { en: 'Cancel this event?', zh: '要取消這場活動嗎？' },
     'event-detail.cancel.body': { en: '{n} tickets sold are not refunded automatically — every holder is notified, and you can void tickets individually or all at once afterward from the Sales record. This cannot be undone.', zh: '已售出的 {n} 張票不會自動退款——會通知每一位持票人，之後你可以在「銷售紀錄」逐票或整場撤銷。這個動作無法復原。' },
@@ -9501,14 +9504,14 @@
     'event-detail.tab.refunds': { en: 'Refunds & comps', zh: '退款與招待票' },
     'event-detail.tab.notifications': { en: 'Notifications', zh: '通知' },
     'event-detail.tab.finance': { en: 'Cost & revenue', zh: '成本與營收' },
-    'event-detail.tab.series': { en: 'Stops', zh: '多站' },
+    'event-detail.tab.series': { en: 'Series', zh: '系列' },
     'event-detail.ov.details.title': { en: 'Event details', zh: '活動內容' },
     'event-detail.ov.type': { en: 'Type', zh: '類型' },
     'event-detail.ov.type-val': { en: 'Concert · in-person', zh: '演唱會 · 實體' },
     'event-detail.ov.datetime': { en: 'Date & time', zh: '日期與時間' },
     'event-detail.ov.venue': { en: 'Venue', zh: '場地' },
     'event-detail.ov.lineup': { en: 'Lineup', zh: '演出陣容' },
-    'event-detail.ov.series': { en: 'Stops', zh: '多站' },
+    'event-detail.ov.series': { en: 'Series', zh: '系列' },
     'event-detail.ov.series-val': { en: 'Kowloon Café 10th Anniv. · 1 of 3', zh: '九龍冰室 十週年 · 第 1 場（共 3 場）' },
     'event-detail.ov.stream': { en: 'Stream entitlement', zh: '串流權益' },
     'event-detail.ov.stream-val': { en: 'VIP tier includes live stream', zh: 'VIP 票種含直播' },
@@ -9564,16 +9567,23 @@
     'ed.dates.title':     { en: 'Dates',                  zh: '場次' },
     'ed.dates.sub':       { en: 'When this event runs. Series dates share settings on the series page.', zh: '這場活動什麼時候舉行。系列的共用設定在系列母頁改。' },
     'ed.pub.title':       { en: 'Publish settings',       zh: '發布設定' },
-    'ed.pub.onsale':      { en: 'Sale mode',              zh: '販售方式' },
-    'ed.pub.onsale.now':  { en: 'On sale at publish',     zh: '發布後直接開賣' },
-    'ed.pub.onsale.sch':  { en: 'Scheduled',              zh: '排程開賣' },
+    /* D340：販售方式二選一（ed.pub.onsale*）退場，改「開賣設定」兩個選填時間 */
+    'ed.pub.sale':        { en: 'Sale settings',          zh: '開賣設定' },
+    'ed.pub.sale.atlist': { en: 'On sale once listed',    zh: '上架即開賣' },
+    'ed.pub.sale.opens':  { en: 'Opens {t}',              zh: '{t} 開賣' },
+    'ed.pub.sale.closes': { en: 'closes {t}',             zh: '{t} 停售' },
     'ed.pub.pickup':      { en: 'Ticket delivery',        zh: '取票方式' },
     'ed.pub.pickup.eticket': { en: 'E-ticket',            zh: '電子門票' },
     'ed.pub.pickup.sf':   { en: 'SF Express',             zh: '順豐寄送' },
     'ed.pub.pickup.store': { en: 'Store pickup',          zh: '到店自取' },
-    'ed.pub.vis':         { en: 'Visibility',             zh: '公開性' },
-    'ed.pub.vis.public':  { en: 'Public',                 zh: '公開活動' },
-    'ed.pub.vis.private': { en: 'Private link',           zh: '私人連結' },
+    /* D340：公開／私人（ed.pub.vis.public／private）退場，改「顯示設定」一顆顯示開關 */
+    'ed.pub.vis':         { en: 'Display settings',       zh: '顯示設定' },
+    'ed.pub.vis.shown':   { en: 'Show in the event list and search', zh: '在活動列表與搜尋顯示' },
+    'ed.pub.vis.shown.sub': { en: 'Off = hidden: only people with the event link or QR can get in.', zh: '關掉＝隱藏，只有拿到活動連結或 QR 的人進得來。' },
+    'ed.pub.vis.shown.val': { en: 'Shown',                zh: '顯示' },
+    'ed.pub.vis.hidden.val': { en: 'Hidden · link only',  zh: '隱藏・只能經活動連結進入' },
+    'ed.pub.link.hidden': { en: 'Event link',             zh: '活動連結' },
+    'ed.pub.link.hidden.hint': { en: 'Only people with this link can open the event. Resetting kills the old link; showing the event again revokes it.', zh: '只有拿到這條連結的人打得開活動。重置＝舊連結作廢；切回顯示＝撤銷這條連結。' },
     /* ── 發布設定改用建立流程第 7 步的版面（2026-08-17 使用者裁決）─────────────
        每個選項多一行說明：選項名字回答「這是哪一個」，說明回答「選了會怎樣」。
        中文沿用建立流程既有的講法，同一個決定不在兩個地方用兩套詞。 */
@@ -9596,11 +9606,11 @@
                                        zh: '取消不會自動退款，且無法復原（§7.2 F5）。之後可在「銷售紀錄」逐票或整場撤銷。' },
     'event-detail.ov.nav.status': { en: 'Status',        zh: '狀態' },
     'event-detail.series.count':  { en: '{n} of {all}',  zh: '{all} 場中的第 {n} 場' },
-    /* 2026-08-17 使用者裁決改名「多站場次」：一場巡演的每一站。「系列」在站上還指
-       別的東西（系列母頁、系列設定），而這張卡列的就是同一個巡演的各個站點。 */
-    'event-detail.series.title': { en: 'Tour stops',      zh: '多站場次' },
-    'event-detail.series.note':  { en: 'Other stops are managed on their own page — this list is read-only.',
-                                   zh: '其他站點在各自的頁面管理，這份清單唯讀。' },
+    /* 2026-08-17 使用者裁決改名「多站場次」；2026-09-30 D340 刪除「多站活動」這個活動形式、多站需求改用系列活動
+       （每一站各自一場活動、以系列串起，5.1.6.3 §2.12「系列清單」），卡名改回規格用語「系列場次」（ASSUMPTIONS UIA-190）。 */
+    'event-detail.series.title': { en: 'Series dates',    zh: '系列場次' },
+    'event-detail.series.note':  { en: 'Other dates in the series are managed on their own page — this list is read-only.',
+                                   zh: '系列的其他場次在各自的頁面管理，這份清單唯讀。' },
     /* 續填草稿（2026-08-17）：草稿從活動清單點進來時走建立流程，不是活動詳情 */
     'ce.resume.note': { en: 'Picking up the draft “{name}” where you left off. Finishing here publishes this event — it does not create a second one.',
                         zh: '接著把草稿「{name}」填完。在這裡完成就是發布這一場，不會另外多開一場。' },
@@ -9682,12 +9692,10 @@
     'event-detail.live.rev-meta':{ en: 'Already settled by now', zh: '已定局' },
     'event-detail.wrap.checkin': { en: 'Check-in result',  zh: '報到結果' },
     'ed.pub.sale.sub':    { en: 'When fans can start buying, and until when.', zh: '粉絲從什麼時候開始買得到、買到什麼時候為止。' },
-    'ed.pub.onsale.now.sub': { en: 'Selling starts the moment it goes live, and runs until the event begins.',
-                              zh: '發布後立刻開賣，賣到活動開始為止。' },
-    'ed.pub.onsale.sch.sub': { en: 'You set when selling opens and closes; outside that window nobody can buy.',
-                              zh: '自己指定開賣與停售日期與時間，時間外買不到。' },
     'ed.pub.sale.from':   { en: 'Sale opens',              zh: '開賣日期與時間' },
     'ed.pub.sale.to':     { en: 'Sale closes',             zh: '停售日期與時間' },
+    'ed.pub.sale.from.hint': { en: "Leave empty to open sales as soon as it's listed.", zh: '留空＝上架即開賣。' },
+    'ed.pub.sale.to.hint': { en: 'Leave empty to keep selling until the event starts.', zh: '留空＝賣到活動開始。' },
     'ed.pub.ship.sub':    { en: 'How fans get hold of the ticket.', zh: '粉絲怎麼拿到票。' },
     'ed.pub.pickup.eticket.sub': { en: 'The ticket lives in the app; scan it at the door.',
                               zh: '票收在 App 裡，入場掃碼。' },
@@ -9705,11 +9713,7 @@
     /* bookyay 帶入者的描述鎖定（5.1.6.2 F2 → 5.1.6.1 F21）：標籤旁的來源標記，字樣同建立活動的 d.src */
     'ed.src.bky':           { en: 'From bookyay', zh: 'bookyay 帶入' },
     'ed.pub.bky-locked':    { en: 'Ticket delivery comes from bookyay. Change it there.', zh: '取票方式來自 bookyay，要改請回 bookyay 改。' },
-    'ed.pub.vis.sub':     { en: 'Who gets to find this event.', zh: '決定誰找得到這場活動。' },
-    'ed.pub.vis.public.sub': { en: 'Shows up in the ztor event list and in search.',
-                              zh: '出現在 ztor 活動列表與搜尋結果。' },
-    'ed.pub.vis.private.sub': { en: 'Only people holding the link or the QR can get in.',
-                              zh: '只有拿到連結或 QR 的人進得來。' },
+    'ed.pub.vis.sub':     { en: 'Whether fans can find this event in the list and in search.', zh: '決定粉絲能不能在列表與搜尋裡找到這場活動。' },
     'ed.pub.link':        { en: 'Event link & QR',        zh: '活動連結與 QR' },
     'ed.pub.link.hint':   { en: 'Where fans buy tickets. The QR points at the same page.', zh: '粉絲買票的入口，QR 指向同一頁。' },
     'ed.pub.edit-tbd':    { en: 'These were set in the create flow. Changing them after tickets are on sale affects buyers — the rules for that are upstream, so they read as view-only here for now.', zh: '這些是建立時設定的。開賣後改動會影響已購票的粉絲，那套規則在上游還沒定，所以先唯讀。' },

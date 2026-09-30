@@ -25,8 +25,18 @@
    由頁面接手開彈窗。首個消費情境：建立商品的取貨場次——原本是選單旁邊一顆獨立按鈕，
    使用者指示併進下拉裡。鍵盤 ↑↓ 走得到、Enter 觸發；打字跳選不會跳到它。
 
-   ── 不接手的情況 ───────────────────────────────────────
-   · [multiple] 與 [size>1]：那是多選清單，不是下拉，語意不同
+   ── 下拉複選（opt-in，2026-09-30 · D340）─────────────────────
+   <select class="select" multiple data-zselect-multi data-zselect-max="24"
+           data-zselect-placeholder-i18n="…" data-zselect-placeholder="Choose…" data-zselect-sep-i18n="…">
+   打開是一張勾選清單：每一列前面一顆 house checkbox（checkbox.css 的 .zcheck__control，Q126「複選的記號＝方框」），
+   點一列＝切換這一項、面板不關（要連選好幾項）；Esc／點外面／Tab 才收起。觸發鈕一行寫出所有已選項
+   （照選項順序、以 sep 串起），超過 data-zselect-max 個字就截斷補「…」，同一串完整文字放在 title（hover 看得到全部）；
+   一項都沒選時顯示 placeholder（弱化色）。disabled（例如 bookyay 帶入鎖定）時觸發鈕停用、打不開。
+   首個消費情境：建立活動的活動語言（D340：使用者指定「下拉複選、鎖定時停用、一行顯示所有已選、限字數以…表示」）。
+   原生 <select multiple> 仍是資料來源：selectedOptions、change／input 事件照舊。
+
+  ── 不接手的情況 ───────────────────────────────────────
+   · 沒掛 data-zselect-multi 的 [multiple] 與 [size>1]：那是多選清單，不是下拉，語意不同
    · [data-no-zselect]：逐一 opt out 的逃生口
    · 沒有 .select class 的 select：不在設計系統的管轄內
 
@@ -53,7 +63,8 @@
   }
 
   function enhance(sel) {
-    if (sel.multiple || sel.size > 1) return;
+    var multi = sel.multiple && sel.hasAttribute('data-zselect-multi');
+    if ((sel.multiple && !multi) || sel.size > 1) return;
     if (sel.hasAttribute('data-no-zselect')) return;
     if (sel.dataset.zselectReady === '1') return;
     sel.dataset.zselectReady = '1';
@@ -64,7 +75,7 @@
     btn.type = 'button';
     /* class 與 inline style 原封搬過來：.select--bare 的無邊框樣式、projects 那顆的
        width:auto/min-width/margin-left 都靠這一步繼續生效，不必在這裡重寫任何尺寸。 */
-    btn.className = 'zselect__trigger ' + sel.className;
+    btn.className = 'zselect__trigger ' + (multi ? 'zselect__trigger--multi ' : '') + sel.className;
     if (sel.getAttribute('style')) btn.setAttribute('style', sel.getAttribute('style'));
     btn.setAttribute('role', 'combobox');
     btn.setAttribute('aria-haspopup', 'listbox');
@@ -88,8 +99,10 @@
     sel.setAttribute('aria-hidden', 'true');
     sel.parentNode.insertBefore(btn, sel);
 
-    var state = { sel: sel, btn: btn, id: id, panel: null, opts: [], active: -1, typed: '', typedAt: 0 };
+    var state = { sel: sel, btn: btn, id: id, panel: null, opts: [], active: -1, typed: '', typedAt: 0, multi: multi };
     sel.zselect = state;
+    /* 複選的原生 select 是隱形的：宿主叫它 focus()（必填未過、跳到該欄）時，焦點交給觸發鈕 */
+    if (multi) sel.focus = function () { btn.focus(); };
 
     syncLabel(state);
 
@@ -103,9 +116,37 @@
     btn.addEventListener('keydown', function (e) { onTriggerKey(state, e); });
   }
 
+  function tr(key, fb) { return (key && window.i18nT && window.i18nT(key)) || fb || ''; }
+  /* 複選的觸發鈕文字：已選項照選項順序串成一行；超過上限字數截斷補「…」（D340 使用者指定），完整一串進 title */
+  function syncMultiLabel(state, label) {
+    var sel = state.sel;
+    var names = Array.prototype.filter.call(sel.options, function (o) { return o.selected; }).map(function (o) { return o.textContent.trim(); });
+    var sep = tr(sel.getAttribute('data-zselect-sep-i18n'), sel.getAttribute('data-zselect-sep') || ', ');
+    var full = names.join(sep);
+    var max = Number(sel.getAttribute('data-zselect-max')) || 0;
+    var chars = Array.from(full);
+    var shown = (max && chars.length > max) ? chars.slice(0, max).join('').replace(/[\s、,，]+$/, '') + '…' : full;
+    var empty = !names.length;
+    label.textContent = empty ? tr(sel.getAttribute('data-zselect-placeholder-i18n'), sel.getAttribute('data-zselect-placeholder') || '') : shown;
+    label.classList.toggle('zselect__label--placeholder', empty);
+    if (full) state.btn.setAttribute('title', full); else state.btn.removeAttribute('title');
+  }
   function syncLabel(state) {
     var o = state.sel.options[state.sel.selectedIndex];
     var label = state.btn.querySelector('.zselect__label');
+    if (state.multi) {
+      if (label) syncMultiLabel(state, label);
+      state.btn.disabled = state.sel.disabled;
+      state.btn.hidden = state.sel.hidden;
+      if (state.panel) Array.prototype.forEach.call(state.panel.querySelectorAll('.zselect__option'), function (el) {
+        var opt = state.opts[Number(el.dataset.i)];
+        if (!opt) return;
+        el.setAttribute('aria-selected', opt.selected ? 'true' : 'false');
+        var cb = el.querySelector('.zcheck__input');
+        if (cb) cb.checked = opt.selected;
+      });
+      return;
+    }
     if (label) label.textContent = o ? o.textContent.trim() : '';
     /* 選項帶 data-icon 時，觸發鈕上的字前面也放同一顆圖示（2026-08-18）——收合的樣子
        要能對得上展開後那一列，否則選完之後圖示就消失了。沒有 data-icon 的 select
@@ -135,9 +176,10 @@
     if (state.sel.disabled) return;
 
     var panel = document.createElement('div');
-    panel.className = 'zselect__panel';
+    panel.className = 'zselect__panel' + (state.multi ? ' zselect__panel--multi' : '');
     panel.id = state.id + '-panel';
     panel.setAttribute('role', 'listbox');
+    if (state.multi) panel.setAttribute('aria-multiselectable', 'true');
 
     var html = '', idx = 0;
     state.opts = [];
@@ -197,12 +239,17 @@
   function optionHTML(state, o, i, groupDisabled) {
     var selected = o.selected;
     var disabled = o.disabled || groupDisabled;
+    /* 複選：列首一顆 house checkbox（Q126：複選的記號＝方框），不畫尾端的勾——一列只有一種「選了」的記號 */
+    var mark = state.multi
+      ? '<span class="zcheck zselect__mark" aria-hidden="true"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" tabindex="-1"' +
+        (selected ? ' checked' : '') + (disabled ? ' disabled' : '') + '><span class="zcheck__box"></span></span></span>'
+      : '';
     return '<div class="zselect__option" role="option" data-i="' + i + '"' +
       ' aria-selected="' + (selected ? 'true' : 'false') + '"' +
       (disabled ? ' aria-disabled="true"' : '') +
-      ' id="' + state.id + '-o' + i + '">' +
+      ' id="' + state.id + '-o' + i + '">' + mark +
       (o.dataset && o.dataset.icon ? '<i data-lucide="' + esc(o.dataset.icon) + '" class="ztor-icon zselect__icon"></i>' : '') +
-      '<span>' + esc(o.textContent.trim()) + '</span>' + CHECK + '</div>';
+      '<span>' + esc(o.textContent.trim()) + '</span>' + (state.multi ? '' : CHECK) + '</div>';
   }
 
   function close(state) {
@@ -289,6 +336,14 @@
         state.sel.dispatchEvent(new CustomEvent('zselect:action', { bubbles: true, detail: { action: id } }));
         return;
       }
+    }
+    if (o && state.multi) {
+      /* 複選：切換這一項、面板不關（連選好幾項）；焦點留在面板的鍵盤游標上 */
+      o.selected = !o.selected;
+      syncLabel(state);
+      state.sel.dispatchEvent(new Event('input', { bubbles: true }));
+      state.sel.dispatchEvent(new Event('change', { bubbles: true }));
+      return;
     }
     if (o) {
       state.sel.selectedIndex = Array.prototype.indexOf.call(state.sel.options, o);

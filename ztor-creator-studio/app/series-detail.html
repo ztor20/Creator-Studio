@@ -193,10 +193,12 @@
             </div>
           </div>
 
-          <!-- 2026-08-06 使用者回報：共用設定原本只有名稱與描述，其餘（陣容、圖片、人數、票種）
+          <!-- 2026-08-06 使用者回報：共用設定原本只有名稱與描述，其餘（陣容、圖片、票種）
                只在子場看得到，等於「一次改全部」做不到。補齊的判準是**這個欄位每一場一不一樣**：
-               一樣的（名稱、描述、陣容、圖片、人數、票種與票價）住這裡改一次同步全部；
-               每場不同的（日期、場地）留在那一場自己的頁面。 -->
+               一樣的（名稱、描述、陣容、圖片、票種與票價）住這裡改一次同步全部；
+               每場不同的（日期、場地）留在那一場自己的頁面。
+               D340（2026-09-30）：活動只做定點、多站需求改用系列——系列裡每一站就是一場獨立活動、各有自己的場地，
+               正是這一頁「日期與場地留在那一場自己的頁面」的分工；人數（容量）已刪除。 -->
           <div class="form-section form-section--outlined">
             <div class="form-section__head">
               <h3 class="form-section__title" data-i18n="ce.lineup">Lineup / performers</h3>
@@ -214,22 +216,8 @@
             <p class="field__hint" data-i18n="ce.img.note">Portrait 750 × 1125, up to 8. The first one is the key visual; hover an image to replace or delete it.</p>
           </div>
 
-          <div class="form-section form-section--outlined">
-            <div class="form-section__head">
-              <h3 class="form-section__title" data-i18n="ce.attend">Attendance</h3>
-              <p class="form-section__sub" data-i18n="sd.f.attend.sub">Per date, not for the whole run.</p>
-            </div>
-            <div class="form-grid">
-              <div class="field">
-                <label class="field__label" for="sd-attend-min"><span data-i18n="ce.attend.min">Minimum</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
-                <input class="input" id="sd-attend-min" type="number" min="0" step="1" value="">
-              </div>
-              <div class="field">
-                <label class="field__label" for="sd-capacity"><span data-i18n="ce.attend.max">Maximum</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
-                <input class="input" id="sd-capacity" type="number" min="1" step="1" value="600">
-              </div>
-            </div>
-          </div>
+          <!-- 墓碑 2026-09-30（D340，5.1.6.1 F8 退場）：「活動人數」（最少／最多，`#sd-attend-min`／`#sd-capacity`）整組刪除——
+               容量已刪除，每一場的總量＝該場各門票張數合計（下方票種的張數就是硬庫存）。 -->
 
           <div class="form-section form-section--outlined">
             <div class="form-section__head">
@@ -341,7 +329,6 @@
       desc: first.desc || '',
       lineup: (first.lineup || []).slice(),
       images: imgs.length ? imgs : ['images/projects/nick-realive.jpg'],
-      capacity: first.capacity || 0,
       tiers: (first.tiers || []).map(t => Object.assign({}, t, { sold: tierSold[t.id] || 0 })),
       sold: sum('sold'), qty: qty, revenue: sum('revenue'),
       statuses: legs.map(e => e.status)
@@ -461,12 +448,13 @@
     }
 
     /* ── 母設定 vs 已自行調整（2026-08-18 使用者裁決）──────────────────
-       規則：**系列＝多站活動；共用設定是母設定，子活動頁可以獨立變更。**
+       規則：**系列＝多站活動；共用設定是母設定，子活動頁可以獨立變更。**（D340 起「多站活動」不再是活動形式，
+       多站需求＝每一站各自一場活動、以系列串起——也就是這一頁。）
        所以這一頁顯示的是母設定（取排序後第一場當基準），而某幾場可能已經改過自己的值。
        畫面必須說出來——否則創作者在這裡按儲存，會以為每一場都跟著變了。
        比對的欄位只取「共用設定真的有在管」的那幾個；日期與場地本來就每場不同，不算分歧。 */
     const sig = e => JSON.stringify({
-      name: e.name, desc: e.desc, cap: e.capacity,
+      name: e.name, desc: e.desc,
       lineup: (e.lineup || []).join('|'),
       tiers: (e.tiers || []).map(t => t.name + ':' + t.price + ':' + t.qty).sort().join('|')
     });
@@ -504,7 +492,6 @@
     /* 共用設定的兩個文字欄位 */
     const nm = document.getElementById('sd-name'); if (nm) nm.value = S.name;
     const ds = document.getElementById('sd-desc'); if (ds) ds.value = S.desc;
-    const cp = document.getElementById('sd-capacity'); if (cp && S.capacity) cp.value = S.capacity;
 
     /* 場次表 */
     const body = document.getElementById('sd-dates-body');

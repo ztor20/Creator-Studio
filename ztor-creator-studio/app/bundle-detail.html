@@ -567,7 +567,9 @@
                   <div class="switch lctl__control" id="bd-unlist-toggle" role="switch" aria-checked="false" tabindex="0"></div>
                 </div>
                 <div class="lctl__sched" data-bd-unlist-fields hidden>
-                  <div class="field"><div class="field__label"><span data-i18n="cp.listing.unlist">Unlist time</span> <span class="field__req">*</span></div><input class="input" type="datetime-local" id="bd-unlist-at"></div>
+                  <div class="field"><div class="field__label"><span data-i18n="cp.listing.unlist">Unlist time</span> <span class="field__req">*</span></div><input class="input" type="datetime-local" id="bd-unlist-at">
+                    <!-- 可賣性防呆的排程檢查（D340，5.1.6.1 F22）：到期後會讓活動沒有可賣的東西，就在設定當下擋下這個排程——值不收、就地一句紅字 -->
+                    <p class="field__error" id="bd-unlist-sched-err" hidden data-feat="S55" data-i18n="bd.sched.last">When this time comes the event would have nothing on sale — no visible ticket and no other bundle on sale. Keep at least 1 visible ticket or 1 bundle.</p></div>
                 </div>
               </div>
             </div>
@@ -621,7 +623,8 @@
                   <div class="switch lctl__control" id="bd-saleend-toggle" role="switch" aria-checked="false" tabindex="0"></div>
                 </div>
                 <div class="lctl__sched" data-bd-saleend-fields hidden>
-                  <div class="field"><div class="field__label"><span data-i18n="cp.listing.sale-end">Sale end</span> <span class="field__req">*</span></div><input class="input" type="datetime-local" id="bd-sale-close"><p class="field__error" id="bd-sale-window-err" data-i18n="cp.listing.sale-err" hidden>Sale end must be after sale start</p></div>
+                  <div class="field"><div class="field__label"><span data-i18n="cp.listing.sale-end">Sale end</span> <span class="field__req">*</span></div><input class="input" type="datetime-local" id="bd-sale-close"><p class="field__error" id="bd-sale-window-err" data-i18n="cp.listing.sale-err" hidden>Sale end must be after sale start</p>
+                    <p class="field__error" id="bd-saleend-sched-err" hidden data-feat="S55" data-i18n="bd.sched.last">When this time comes the event would have nothing on sale — no visible ticket and no other bundle on sale. Keep at least 1 visible ticket or 1 bundle.</p></div>
                 </div>
               </div>
             </div>
@@ -1407,6 +1410,33 @@
     if (unlistAtEl) unlistAtEl.value = local(bundleModel.unlistAt);
     if (saleOpenEl) saleOpenEl.value = local(bundleModel.saleStart);
     if (saleCloseEl) saleCloseEl.value = local(bundleModel.saleEnd);
+    /* 排程檢查（D340，5.1.6.1 F22「排程設定的檢查」、5.1.5.9 §2.2）：替本組合設定下架日期與時間或停售日期與時間時，
+       若到期後活動沒有顯示中的門票、也沒有其他仍在販售的組合包（其他組合包自己排了更早到期的也不算），就擋下這個排程——
+       輸入的值不收（退回原值）、欄位下一句紅字。到期當下系統照排程執行、不再擋。只作用在含已發布活動票券的組合包。 */
+    function schedBlocked(at) {
+      if (!at) return false;
+      const bo = evBoundsOf();
+      if (!bo || bo.draft) return false;
+      const onSaleNow = bo.canSell ? bundleModel.onSale !== false : true;
+      const selling = bundleModel.listed !== false && bundleModel.shown !== false && !bundleModel.archived && onSaleNow;
+      if (!selling) return false;
+      return !window.ztorEvents.hasOtherSellable(bo.ev, { exceptBundleId: bundle && bundle.id, at: at });
+    }
+    const schedOk = { unlistAt: bundleModel.unlistAt, saleEnd: bundleModel.saleEnd };   // 最後一個通過檢查的值（input 事件會先改寫 bundleModel）
+    [[unlistAtEl, 'unlistAt', 'bd-unlist-sched-err'], [saleCloseEl, 'saleEnd', 'bd-saleend-sched-err']].forEach(([el, key, errId]) => {
+      if (!el) return;
+      el.addEventListener('change', () => {
+        const err = document.getElementById(errId);
+        if (el.value && schedBlocked(el.value)) {
+          el.value = local(schedOk[key]);              // 排程不成立：退回上一個成立的值
+          if (err) err.hidden = false;
+          syncTimes();
+          return;
+        }
+        schedOk[key] = el.value || null;
+        if (err) err.hidden = true;
+      });
+    });
     function syncTimes() {
       bundleModel.listAt = (listAtEl && listAtEl.value) || null;
       bundleModel.unlistAt = (unlistAtEl && unlistAtEl.value) || null;
@@ -1507,7 +1537,9 @@
          · 活動仍是草稿：不擋，交給發布前檢核 F11 第五項（D331 決定二）
          · 本組合自己「仍在販售」＝上架、顯示、開賣三者都成立、未封存（D331）；已經不在販售的組合再下架／封存／刪除不改變什麼，不擋
            ——所以封存（要先下架）與刪除（要先下架或封存）實務上走不到擋下，照規格列著讓口徑完整。
-         · 活動還沒開賣（已排程，組合包的開賣跟著活動、還沒開）算不算「仍在販售」是〔產品待確認〕（D331），原型照 D330 算在販售中。
+         · 活動還沒開賣（已排程，組合包的開賣跟著活動、還沒開）＝預告期，D340 裁決算「仍在販售」（原為 D331 待確認）。
+         · 活動取消（或下架）連動下架本組合不擋（D340）：syncEventBounds() 直接把上架關掉，不經過本防呆。
+         · 定時下架／定時停售的排程在設定當下檢查（D340，見 schedBlocked()）。
          · 其他組合包與門票：events-store 的 hasOtherSellable()（與活動詳情、電子商店清單同一支）。 */
     function blocksLastSellable() {
       const bo = evBoundsOf();
