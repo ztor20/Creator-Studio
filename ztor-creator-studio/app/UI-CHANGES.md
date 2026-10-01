@@ -4,6 +4,74 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-09-30（一百一十六）· 活動 18 題裁決落地：刪除容量與多站、開賣設定、顯示設定、活動語言下拉複選、內文粗體與清單、粉絲頁說明區塊、可賣性排程檢查（A spec-derived ＋ C 撤除 · D340）
+
+**範圍**：`create-event.html`、`event-detail.html`、`event-localization.html`、`events.html`、`bundle-detail.html`、`series-detail.html`、`partials/rich-body.js`、`partials/info-sections.js`、`js/zselect.js`、`js/fan-event-page.js`、`js/events-store.js`、`js/components.js`、`js/icons.js`、`js/i18n.js`、`js/devtools.js`、`ds-components/rich-body.css`／`zselect.css`／`fan-shop.css`／`field-source-tag.css`／`ticket-tier-card.css`、`scripts/check_events_store.js`、`design-system.md`／`design-system.html`（§4.110、§4.121、§4.132、Link field、§4.215、§4.221、§4.222）＋重生 `design-components.html`、`BUILD-SPEC.md`、`requirements-map.md`、`feature-scope-map.md`、`ASSUMPTIONS.md`（新增 UIA-190；關閉 ATT-002、TOUR-001；部分關閉 BKY-002、GEO-001、TERM-001）。
+
+**依據**：使用者 2026-09-30 裁決 D340；規格 5.1.6.1 v2.33、5.1.6.2 v3.22、5.1.6.3 v30、5.1.6（2026-09-30）、5.1.5.4 v2.35、5.1.5.9 v1.49、0-設計規格書 v4.12 §7.10／§7.14。
+
+### A · 新增（spec-derived）
+
+- **開賣設定**（建立活動第 7 步、活動詳情設定）：兩個選填時間，一律攤開，hint「留空＝上架即開賣」「留空＝賣到活動開始」。bookyay 兩個時間帶入並鎖定；「活動發佈同時發售門票」＝開賣留空（示範 bky-2）。活動詳情「提前開賣」改為「已排程 × 有開賣時間」才出現。
+- **顯示設定**：一顆「在活動列表與搜尋顯示」開關（預設開）；關掉長出活動連結（Link field：複製、重置）＋ QR，切回顯示＝撤銷。活動詳情唯讀列、「活動連結與 QR」卡跟著換；「提前開賣」確認說明在隱藏時不寫「公開」。
+- **活動語言**：必填至少 1 種；元件改使用者指定的下拉複選——Zselect 新增 `--multi` 變體（列首方框、點一列不關面板、一行顯示已選、超過 24 字以「…」截斷、完整一串進 hover）；bookyay 鎖定時停用。語言欄收回與國家並排。
+- **條款與細則**：兩個開關預設關、文字欄預設收起。
+- **內文**（Rich body）：文字塊改可排版的編輯框，新增粗體／項目符號清單／編號清單三顆格式鈕（按下態淡橘）；每段最多 10 個媒體，滿了插入鈕停用＋工具列說明；貼上轉純文字；描述錯誤句改「描述至少要有一段文字」。bookyay 帶入保留粗體與清單（取代「・」轉換）。
+- **粉絲活動頁**：描述照原文版面（文字段與圖片影片交錯）；**說明區塊**畫在「關於活動」描述下方，一塊一段、塊間淡分隔線、內文超過 18rem 收合＋「展開全文」。翻譯欄位照文字段落切格，譯文換位置不動圖片影片。
+- **總量口徑**：活動清單票券欄、活動詳情 KPI、儀表板活動卡的分母＝所有門票張數合計（含隱藏；events-store `totalQty()`）。
+- **可賣性防呆**：組合商品細節頁的定時下架／定時停售在設定當下檢查，不成立就退回原值＋紅字；預告期算仍在販售；活動詳情「提前開賣」前置條件改用「仍在販售的組合包」。
+- **草稿活動刪除**：確認彈窗列出所有含本活動票券的組合包（自建的也列），示範草稿補一組自建組合包。
+- **版本標記**：S59（內文粗體與清單）、S60（粉絲頁說明區塊）、S61（顯示設定），皆 ⚪ TBD。
+
+### C · 撤除
+
+- 建立活動：活動形式（定點／多站）二選一與逐站場地、販售方式二選一、發布狀態（公開／私人）二選一、容量殘留（加總檢核、未分配提示、超量紅字、發布阻擋）、語言多選卡。
+- 活動詳情：販售方式二選一、公開／私人連結二選一；系列卡「多站」字樣改回「系列」。
+- 系列母頁：「活動人數」最少／最多。
+- 元件：`.tier-count--over`；Check card 失去唯一消費者（未刪檔，design-system 標退場候選、待使用者裁決）。
+- 示範資料：events-store 的 `capacity`、`publish.onsale`／`publish.visibility`（改 `publish.shown`、補 `sale.from`）。
+- i18n：容量、活動人數、販售方式、公開／私人、多站相關字串（清單見 ASSUMPTIONS UIA-190）。
+
+### D · infra
+
+- `field-source-tag.css`：鎖定標籤開 flex 後補 `gap: --sp-4`（欄名與「（選填）」不再黏在一起）。
+- `scripts/check_events_store.js`：容量相關不變量改比門票張數合計；慣例類提醒 19 → 18 筆（少了容量那一筆）。
+
+## 2026-09-30（一百一十五）· 取貨場次的商品下拉：已綁定其他場次的商品停用並標「已綁定」（A spec-derived · D339）
+
+**範圍**：`partials/pickup-session-modal.js`、`ds-components/combobox.css`、`js/i18n.js`、`design-system.md`／`design-system.html`（Combobox 條目與 demo）、`requirements-map.md`、`ASSUMPTIONS.md`（UIA-189）。
+
+**依據**：使用者 2026-09-30 裁決（D339）：一個商品同時只屬於一個取貨場次；已綁定的商品仍列出、不可選，標籤用「已綁定」。規格 5.1.5.12 v1.10 F2、0-設計規格書 v4.11 §7.2。
+
+### A · 新增（spec-derived）
+
+- **下拉的停用列**：建立或編輯取貨場次時，已綁在另一場的商品仍列在「取貨商品」組裡，但停用、字退成弱化色，右側掛一顆中性 `.badge`「已綁定／Assigned」；可選的排在前面、已綁定的沉到組尾。編輯本場次時，本場次自己的商品照常是可移除的 chip，不會被標成已綁定。
+- **Combobox 元件新增停用選項**：`.combobox__opt:disabled`（`not-allowed` 游標、弱化字與 icon、無 hover 底）＋尾端標記 `.combobox__opt-tag`。停用語彙沿用 Q58／Q116「停用＝退到背景」，不新增第三種灰。
+- **樣本資料**：商品多一個 `session` 欄位（tpe／khh，同 `bindPickupSessionInfo` 的 KNOWN）；新增一件屬高雄場的海報，讓建立與編輯兩種情境都看得到停用列。
+
+## 2026-09-30（一百一十四）· 移除「延長場次時間」按鈕（C 撤除 · D338，修訂 D337）
+
+**範圍**：`pickup-detail.html`、`partials/pickup-session-modal.js`、`js/i18n.js`、`design-system.md`／`design-system.html`、`requirements-map.md`、`ASSUMPTIONS.md`（UIA-188 關閉）。
+
+**依據**：使用者 2026-09-30 裁示「其實可以直接打開右上角編輯來改領取時間，把延長場次時間按鈕移除」（D338），規格 5.1.5.15 v1.11、5.1.5.12 v1.9。
+
+### C · 撤除
+
+- 取貨場次詳情「這場結果」區（已結束）的「延長場次時間」按鈕與它的 click handler 移除，原處留墓碑註解；該區只剩「匯出未領名單」。延長結束時間一律用頁首「編輯場次」。
+- 上一條（一百一十三）為這顆按鈕加的共用彈窗參數 `openExisting({ focus: 'end' })` 已無使用者，一併撤回，`openExisting()` 回到原樣；design-system 兩份文件的對應說明同步拿掉。
+- `pk.board.extend` 字串零消費，刪除。
+
+## 2026-09-30（一百一十三）· 延長場次時間改為開啟編輯場次彈窗（A spec-derived · D337）
+
+**範圍**：`pickup-detail.html`、`partials/pickup-session-modal.js`、`design-system.md`／`design-system.html`（Pickup management 條目補 API 一句）、`requirements-map.md`、`ASSUMPTIONS.md`（UIA-188）。
+
+**依據**：使用者 2026-09-30 裁決（D337），規格 5.1.5.15 v1.10 F1「延長結束時間」、5.1.5.12 v1.8、5.1.5.11 v2.3。
+
+### A · 新增（spec-derived）
+
+- **「延長場次時間」接上行為**：取貨場次詳情在場次已結束時「這場結果」區的按鈕，原本按了沒有反應；現在開啟與「編輯場次」同一個彈窗，游標直接落在結束時間欄。不另做延長彈窗。
+- **共用彈窗多一個開啟參數**：`openExisting({ focus: 'end' })` 開啟時定位到結束時間欄；不帶參數時照舊定位到場次名稱，其他三個使用處（取貨管理、建立商品、商品細節）不受影響。
+
 ## 2026-09-29（一百一十二）· 描述與說明區塊的內文可夾帶圖片與影片、bookyay 活動詳情的圖片影片照段落帶入、拿掉說明區塊的提示句（A spec-derived ＋ C 撤除 · D335）
 
 **範圍**：新元件 `ds-components/rich-body.css`＋`partials/rich-body.js`、`partials/info-sections.js`、`partials/upload-tile.js`、`create-event.html`、`event-detail.html`、`event-localization.html`、`js/fan-event-page.js`、`ds-components/fan-shop.css`、`js/events-store.js`、`js/i18n.js`、`js/devtools.js`、`feature-scope-map.md`（S58）、`design-system.md`／`design-system.html`（§4.222、§4.221、Upload tile 預填屬性、§4.215 model）、`design-components.html`（重生）、`ASSUMPTIONS.md`（UIA-187、UIA-186 兩項缺口關閉）、`BUILD-SPEC.md`、`requirements-map.md`

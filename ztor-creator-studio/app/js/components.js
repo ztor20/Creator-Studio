@@ -1823,8 +1823,8 @@
       /* 2026-08-19 修正：這張卡原本寫 title「REALIVE (R2) concert」、文案「Apr 12・84/200・Taipei」，
          store（js/events-store.js）裡查無這場活動，go 也沒帶 ?id=——點下去只會落在 event-detail.html
          的預設示例活動，跟卡片講的完全是兩回事。改指向 store 真實存在的一筆 on-sale 活動
-         realive-chongqing（date 2026-10-25、sold 84、capacity 120、city Chongqing），
-         文案數字（日期/售出/容量/城市）與 pct 同步改成該筆真實數字（84/120≈70%）；
+         realive-chongqing（date 2026-10-25、sold 84、門票張數合計 120、city Chongqing），
+         文案數字（日期/售出/總數/城市）與 pct 同步改成該筆真實數字（84/120≈70%；D340 起分母＝門票張數合計、容量已刪）；
          標題原本掛的是「REALIVE (R2)」品牌（臺北小巨蛋特仕版），與重慶站是不同場次，
          一併改成這一筆自己的名稱，避免「R2 品牌＋重慶內容」的新錯配。 */
       { icon: 'circle', titleKey: 'dash.progress.row3.title', title: '<em>REALIVE World Tour</em> — Chongqing', img: 'images/projects/nick-realive.jpg', metaKey: 'dash.progress.row3.meta', meta: 'Event · Events · Oct 25 · 84 / 120 tickets · Chongqing', catKey: 'dash.progress.row3.cat', cat: 'In-person event', pct: 70, progKey: 'dash.progress.row3.prog', prog: '84 / 120 tickets', dueKey: 'dash.progress.row3.due', due: 'Oct 25',    status: { key: 'status.on-sale',   fallback: 'On sale',   variant: 'success' }, go: 'event-detail.html?id=realive-chongqing' },
@@ -2164,7 +2164,8 @@
       }).map(function (e) {
         var sold = typeof e.sold === 'number' ? e.sold
           : (e.tiers || []).reduce(function (a, t) { return a + (t.sold || 0); }, 0);
-        var cap = e.capacity || (e.tiers || []).reduce(function (a, t) { return a + (t.qty || 0); }, 0);
+        /* 分母＝所有門票張數合計（含隱藏；D340 刪除容量後的口徑，events-store totalQty()） */
+        var cap = ev.totalQty ? ev.totalQty(e) : (e.tiers || []).reduce(function (a, t) { return a + (t.qty || 0); }, 0);
         return {
           img: e.images.keyvisual, title: e.name,
           kind: zh ? '活動' : 'Event',
@@ -2175,7 +2176,7 @@
           status: e.status,
           stage: CANVAS_EVENT_STAGE[e.status] ? CANVAS_EVENT_STAGE[e.status][zh ? 'zh' : 'en'] : '',
           meta: [e.date, e.city].filter(Boolean).join(' \u00b7 '),
-          /* 分子是賣了幾張、分母是容量（2026-08-31 使用者裁示補上分母）：
+          /* 分子是賣了幾張、分母是門票張數合計（2026-08-31 使用者裁示補上分母；D340 起不再有容量）：
              單位詞跟著分母走，「18,400 / 20,000 張票」才是一句話，
              跟在分子後面會變成「18,400 張票 / 20,000」。 */
           value: sold.toLocaleString(),

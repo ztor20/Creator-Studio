@@ -14,6 +14,8 @@
          .combobox__opt             — one suggestion (icon + text)
            .combobox__opt-icon
            .combobox__opt-text > .combobox__opt-name + __opt-meta
+           .combobox__opt-tag       — trailing .badge on a disabled option (why it can't be picked)
+         .combobox__opt:disabled    — listed but not pickable (e.g. already assigned)
          .combobox__empty           — no-match message
    ============================================================ */
 
@@ -83,6 +85,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Disabled option (D339, 2026-09-30) — e.g. a product already assigned to
+   another pickup session: stays listed so the creator can find it, but can't
+   be picked. Recedes to muted ink (停用＝退到背景, Q58/Q116) and carries a
+   trailing .badge (.combobox__opt-tag) that says why. */
+.combobox__opt:disabled { cursor: not-allowed; color: var(--muted-foreground); }
+.combobox__opt:disabled:hover { background: transparent; }
+.combobox__opt:disabled .combobox__opt-icon { color: var(--muted-foreground); }
+.combobox__opt-tag { flex: none; margin-left: auto; }
 
 .combobox__empty {
   padding: var(--sp-10) var(--sp-8);

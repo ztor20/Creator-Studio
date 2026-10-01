@@ -5,7 +5,7 @@
 - **日期**：2026-06-29
 - **來源**：Ztor功能點.md + Phase 1 handoff
 - **範圍**：internal use only
-- **功能總數**：115（2026-09-29 補登 S52–S56；同日補登 S58）
+- **功能總數**：118（2026-09-29 補登 S52–S56；同日補登 S58；2026-09-30 補登 S59–S61，D340）
 
 ## Tier 圖例
 
@@ -16,7 +16,7 @@
 | ⚪ TBD（未排定） | 商務團隊待定；「下一版預覽」不顯示 |
 | ⚫ 退場 | retired（產品決策已全面撤除，不再規劃／不計入 Phase 1／Next／TBD 三態，2026-09-09 起新增） |
 
-本期統計：🟢 Phase 1 82 · 🔵 Next 11 · ⚪ TBD 20 · ⚫ 退場 2
+本期統計：🟢 Phase 1 82 · 🔵 Next 11 · ⚪ TBD 23 · ⚫ 退場 2
 
 ## Build 狀態圖例
 
@@ -138,13 +138,16 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 10
 | `S50` | 　　以粉絲身份預覽                       | See-as-fan preview                               | 🟢 Phase 1 | ✅ built  |                                                           |
 | `S51` | 　商店優惠碼（清單／新增／編輯／期間／停用）           | Store discount codes                             | 🟢 Phase 1 | ✅ built  | D183；2026-09-15 D272 補範圍三級、每單件數／每人總次數／總兌換、已用完；2026-09-17 D279 Phase 1 只留期間／折扣／範圍；2026-09-22 D299 Phase 1 指定商品改可多選含票種、碼不分大小寫。自用碼各版本皆有；代理碼（推廣者／分成／代理銷售紀錄）只在 Phase 4，走保留 gate `full`（D185） |
 |       | **活動（建立活動／活動詳情）**                 | Events (create / detail)                         |            |          | 2026-09-29 補登（D328）：活動模組頁面本身是頁級 `data-page-feat="full"`，這幾列只登記本輪新增的元素，掛 `data-feat` 以便日後排期 |
-| `S52` | 　活動語言複選（七選項）                     | Event languages (multi-select)                   | ⚪ TBD      | ✅⬆ ahead | D328；create-event 步驟 2 `[data-ce-lang-field]`；bookyay 帶入多值鎖定 |
+| `S52` | 　活動語言複選（七選項）                     | Event languages (multi-select)                   | ⚪ TBD      | ✅⬆ ahead | D328；create-event 步驟 2 `[data-ce-lang-field]`；bookyay 帶入多值鎖定；2026-09-30 D340 改下拉複選（Zselect `--multi`）、必填至少 1 種 |
 | `S53` | 　跨日活動（場次結束日期）                    | Multi-day date (end date)                        | ⚪ TBD      | ✅⬆ ahead | D328；create-event 步驟 3 與 event-detail 場次盒 `[data-sess-md-group]` |
 | `S54` | 　門票簡介                            | Ticket description                               | ⚪ TBD      | ✅⬆ ahead | D328；單張門票彈窗基本區（create-event／event-detail）；可翻譯 |
 | `S55` | 　門票顯示／隱藏                         | Ticket show / hide                               | ⚪ TBD      | ✅⬆ ahead | D328；單張門票彈窗顯示開關＋卡片「隱藏」標示；隱藏的票不在粉絲頁票價清單；2026-09-29 D329 補充／D330：發布後隱藏或刪除最後一張顯示中的門票、停售最後一組組合包，造成沒有可賣的東西時擋下（可賣性防呆）；2026-09-29 D331：下架、隱藏、封存最後一組仍在販售的組合包也擋（組合商品細節頁開關旁紅字 `#bd-list-stop-err`／`#bd-shown-stop-err`、頁首與電子商店清單列純告知彈窗），草稿不擋、售罄不擋 |
 | `S56` | 　bookyay 帶入欄位規則（套票轉 1 人票＋組合包、只帶第一種票提示、早鳥轉折扣、跨日） | bookyay field mapping                | ⚪ TBD      | ✅⬆ ahead | D328／5.1.6.1 F21；略過提示 `#ce-bky-skip-note`；2026-09-29 D329：地點→場地名稱、地區→完整地址、1:1 原圖提示 `#ce-img-ratio-note`、早鳥分流並鎖定、自動組合包整組鎖定（限時折扣讀數與鎖定說明同掛 S56）；2026-09-29 D330：帶入金額換算成創作者幣別當基準價、價格表港幣欄鎖 bookyay 原價、其他幣別可覆寫；自動組合包不能刪除、不能加商品；2026-09-29 D331：創作者自建、含 bookyay 票券的組合包港幣欄依公式鎖定（建立活動、建立組合、在地化三處價格表）、清單與 KPI 用覆寫值、草稿活動刪除時自動組合包連動刪除（活動清單草稿列 `khh-countdown-draft`） |
 | `S57` | 　說明區塊（標題＋內文，可增刪、可排序）           | Info sections                                    | ⚪ TBD      | ✅⬆ ahead | D334；create-event 步驟 2 描述下方 `[data-feat="S57"]`、event-detail 活動內容同一支（`partials/info-sections.js`）；取代已刪的「進階詳細資料」兩份清單；可翻譯（標題與內文各一格）；粉絲活動頁呈現暫不做（ASSUMPTIONS UIA-186） |
 | `S58` | 　描述與說明區塊內文的圖片與影片（插入、刪除；bookyay 帶入保留） | Body media (description / info sections) | ⚪ TBD      | ✅⬆ ahead | D335；`partials/rich-body.js` 的「插入圖片／插入影片」列掛 `[data-feat="S58"]`（create-event 描述、說明區塊內文，event-detail 同一支）；bookyay 活動詳情的圖片影片照段落帶入；翻譯表只列文字；粉絲活動頁描述下方最小呈現（ASSUMPTIONS UIA-187） |
+| `S59` | 　內文粗體與清單（描述、說明區塊；bookyay 帶入保留格式）   | Body text bold & lists                           | ⚪ TBD      | ✅⬆ ahead | D340；`partials/rich-body.js` 格式鈕群組 `.rich-body__fmt[data-feat="S59"]`（create-event 描述＋說明區塊、event-detail 描述＋說明區塊） |
+| `S60` | 　粉絲活動頁呈現說明區塊（關於活動下方、太長收合）        | Info sections on the fan event page              | ⚪ TBD      | ✅⬆ ahead | D340；`js/fan-event-page.js` `.pdp-info[data-feat="S60"]`（create-event 第 8 步、event-localization 預覽） |
+| `S61` | 　活動顯示設定（顯示／隱藏＋隱藏時活動連結）            | Event display setting (shown / hidden + link)    | ⚪ TBD      | ✅⬆ ahead | D340；create-event 步驟 7、event-detail 設定 → 發布設定的「顯示設定」區塊 `[data-feat="S61"]` |
 
 ## O · 訂單管理 — Order Management
 

@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表／價格表（2026-09-23 起整頁 .drawer--full） -->
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 兩張表沿用 .pp-table／.pp-cell 家族 -->
+<link rel="stylesheet" href="ds-components/rich-body.css?v=r2.2"><!-- D340：partials/rich-body.js 帶進來的 class（本頁只用它的靜態工具；check_ds_sync 檢查 15 要求連入） -->
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- D305：粉絲視角活動頁（前台 shop-item 鏡像；只給 js/fan-event-page.js 用） -->
 <link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- D310：全頁版型（主區預覽＋右側側欄） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -54,6 +55,7 @@
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script><!-- 本頁沒有導航殼；載它是為了 window.ztorCreator（預覽的主辦＝目前 persona），mount() 找不到 #sidebar 會自己退出 -->
 <script src="js/events-store.js?v=r2.2"></script>
+<script src="partials/rich-body.js?v=r2.2"></script><!-- D340：內文的格式化與翻譯欄位切段（只用靜態工具，不掛編輯器） -->
 <script src="js/fan-event-page.js?v=r2.2"></script>
 <script src="js/publish-stage.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>
@@ -100,15 +102,26 @@
     const f = [
       { key: 'name', el: { value: ev.name || '' }, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
       { key: 'highlight', el: { value: ev.highlight || '' }, kind: 'input', labelKey: 'pp.field.highlight', labelFallback: 'Highlight' },
-      { key: 'desc', el: { value: ev.desc || '' }, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
     ];
+    /* 內文的可翻譯欄位（D340）：文字被圖片影片切成幾段就列幾格（key 由 ztorRichBody.fieldKeys 算，只有一段時沿用原 key），
+       譯文照段落放回原位、媒體不翻譯——同 create-event 的 bodyFields()，粉絲頁預覽用同一套 key 對回去。 */
+    const RB = window.ztorRichBody;
+    const bodyFields = (base, blocks, fallbackText, label, group, labelKey) => {
+      const list = RB ? RB.normalize(blocks || fallbackText || '') : [];
+      const texts = list.filter(b => b.type === 'text').map(b => b.text);
+      const keys = RB ? RB.fieldKeys(base, list) : [base];
+      if (keys.length <= 1) return (texts.length || labelKey) ? [{ key: keys[0], el: { value: texts.join('\n\n') || fallbackText || '' }, kind: 'textarea', labelKey: labelKey || null, labelFallback: label, group }] : [];
+      return keys.map((k, j) => ({ key: k, el: { value: texts[j] || '' }, kind: 'textarea', labelKey: null,
+        labelFallback: label + ' · ' + T('pp.field.body.part', 'part {n}').replace('{n}', j + 1), group }));
+    };
+    bodyFields('desc', ev.descBlocks, ev.desc || '', T('pp.field.desc', 'Description'), undefined, 'pp.field.desc').forEach(x => f.push(x));
     /* 說明區塊（D334）：每一塊的標題與內文各一列，群組「說明區塊」、列名「第 n 塊・標題／內文」；
        只填一半的塊只列有填的那一格（同 create-event 的 infoFields）。 */
     const gi = T('pp.field.info', 'Info sections');
     (ev.infoSections || []).forEach((x, i) => {
       const n = i + 1, title = (x.title || '').trim(), body = (x.body || '').trim();
       if (title) f.push({ key: 'info-' + i + '-t', el: { value: title }, kind: 'input', labelKey: null, labelFallback: T('pp.field.info.title', '#{n} title').replace('{n}', n), group: gi });
-      if (body) f.push({ key: 'info-' + i + '-b', el: { value: body }, kind: 'textarea', labelKey: null, labelFallback: T('pp.field.info.body', '#{n} body').replace('{n}', n), group: gi });
+      if (body) bodyFields('info-' + i + '-b', x.blocks, body, T('pp.field.info.body', '#{n} body').replace('{n}', n), gi).forEach(y => f.push(y));
     });
     const g = T('pp.price.tiers', 'Ticket types');
     edTiers.forEach(t => f.push({ key: 'tier-' + t.id, el: { value: t.name || '' }, kind: 'input', labelKey: null, labelFallback: T('pp.field.tier-name', 'Ticket type name'), group: g }));
@@ -169,10 +182,14 @@
       language: (ev.languages || []).map(k => T('ce.evlang.' + k, k)),
       priority: null, limit: null,
       desc: { key: 'desc' },
-      /* D335：描述夾帶的圖片與影片（不翻譯、各語系共用），畫在描述文字下方（UIA-187） */
-      descMedia: (ev.descBlocks || []).filter(b => b && b.type !== 'text' && b.src),
+      /* D340：描述整份內文（文字含粗體與清單、圖片影片照原文位置）；沒有 descBlocks 的活動就是一整段純文字 */
+      descBlocks: ev.descBlocks || (ev.desc ? [{ type: 'text', text: ev.desc }] : []),
+      /* D340：說明區塊畫在「關於活動」的描述下方（標題＋內文，太長才收合），key 與 locFields 同一套 */
+      infoSections: (ev.infoSections || []).filter(x => (x.title || '').trim() || (x.body || '').trim() || (x.blocks || []).length)
+        .map(x => ({ title: (x.title || '').trim() ? { key: 'info-' + ev.infoSections.indexOf(x) + '-t' } : null,
+                     blocks: x.blocks || [{ type: 'text', text: x.body || '' }], bodyKey: 'info-' + ev.infoSections.indexOf(x) + '-b' })),
       lineup: (ev.lineup || []).map(n => ({ name: n, role: null })),
-      /* 墓碑 2026-09-29（D334）：notes／bring 兩份清單已刪；說明區塊的粉絲頁呈現暫不做（ASSUMPTIONS UIA-186），只進翻譯表。 */
+      /* 墓碑 2026-09-29（D334）：notes／bring 兩份清單已刪；說明區塊 D340 起由 infoSections 呈現。 */
       pickup: T(pickupKey, 'E-ticket'),
       /* 退換票：交給渲染器用平台固定文案（UIA-167）；相關活動：同創作者的其他活動、標「非本活動」 */
       terms: null, tiers, bundles,

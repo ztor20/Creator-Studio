@@ -8,12 +8,13 @@
    本元件只管編輯；翻譯表的欄位（每一塊的標題與內文各一格）由宿主頁從 get() 的結果組出來。
    內文可以夾帶圖片與影片（D335，2026-09-29）：內文那一格是 partials/rich-body.js（文字塊＋媒體塊，
    插入點＝游標）；標題維持純文字。翻譯表只列文字（body），媒體不翻譯。
+   D340（2026-09-30）：內文文字支援粗體與清單、每一塊內文最多 10 個媒體（各塊各自計算，主規格 §7.10）。
 
    用法：
-     var h = window.ztorInfoSections.mount(host, { items: [{ title, body, blocks? }], onChange: fn, mediaFeat: 'S58' });
-                      （mediaFeat 選填：傳給內文插入鈕列的 data-feat）
-     h.get()        → [{ title, body, blocks? }]（照畫面順序；標題、文字、媒體都沒有的塊不回傳）
-                      body＝內文的文字（段與段空一行）；有圖片或影片時多一個 blocks（文字與媒體照先後）
+     var h = window.ztorInfoSections.mount(host, { items: [{ title, body, blocks? }], onChange: fn, mediaFeat: 'S58', fmtFeat: 'S63' });
+                      （mediaFeat／fmtFeat 選填：傳給內文工具列／格式鈕群組的 data-feat）
+     h.get()        → [{ title, body, blocks }]（照畫面順序；標題、文字、媒體都沒有的塊不回傳）
+                      body＝內文的純文字（段與段空一行、清單一項一行）；blocks＝文字（含粗體與清單的 html）與媒體照先後
      h.set(items)   → 整批換掉（草稿續填、編輯模式捨棄時用）；item 有 blocks 用 blocks，沒有就用 body
    host 是一個空容器（建議 <div class="info-sections" data-info-sections>）；本檔在裡面畫
    .info-sections__list 與新增鈕。樣式見 ds-components/info-sections.css。
@@ -69,7 +70,7 @@
       var bodyHost = row.querySelector('[data-info-body]');
       var start = item && item.blocks ? item.blocks : ((item && item.body) || '');
       row.__rb = window.ztorRichBody
-        ? window.ztorRichBody.mount(bodyHost, { blocks: start, rows: 3, placeholder: 'Body', placeholderKey: 'ce.info.body.ph', label: 'Body', labelKey: 'ce.info.body.ph', feat: opts.mediaFeat, onChange: changed })
+        ? window.ztorRichBody.mount(bodyHost, { blocks: start, rows: 3, placeholder: 'Body', placeholderKey: 'ce.info.body.ph', label: 'Body', labelKey: 'ce.info.body.ph', feat: opts.mediaFeat, fmtFeat: opts.fmtFeat, onChange: changed })
         : null;
       list.appendChild(row);
       icons(row);
@@ -79,10 +80,9 @@
     function get() {
       return [].slice.call(list.querySelectorAll('[data-info-row]')).map(function (r) {
         var rb = r.__rb;
-        var x = { title: r.querySelector('[data-info-title]').value.trim(), body: rb ? rb.text() : '' };
-        if (rb && rb.media().length) x.blocks = rb.get();
+        var x = { title: r.querySelector('[data-info-title]').value.trim(), body: rb ? rb.text() : '', blocks: rb ? rb.get() : [] };
         return x;
-      }).filter(function (x) { return x.title || x.body || x.blocks; });
+      }).filter(function (x) { return x.title || x.body || x.blocks.length; });
     }
     function set(items) {
       list.innerHTML = '';

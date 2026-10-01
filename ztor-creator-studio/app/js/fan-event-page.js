@@ -44,9 +44,14 @@
  *     priority: { window: '…', state: '…' } | null,   // 優先購（原型示意）
  *     limit: '每筆最多 4 張' | null,
  *     desc: { key:'desc' },
- *     descMedia: [{ type:'image'|'video', src }] | undefined,   // D335：描述夾帶的圖片與影片（不翻譯、各語系共用）；畫在描述文字下方
+ *     descBlocks: [{ type:'text', text, html } | { type:'image'|'video', src }] | undefined,
+ *                                                // D340：描述整份內文（文字含粗體與清單、媒體照原文位置）；有給就照先後畫，
+ *                                                // 文字段落的可翻譯 key＝ztorRichBody.fieldKeys('desc', descBlocks)（宿主的翻譯表用同一套）
+ *     descMedia: [{ type:'image'|'video', src }] | undefined,   // D335 舊形狀（沒給 descBlocks 時才用）：媒體畫在描述文字下方
+ *     infoSections: [{ title: { key:'info-0-t' } | null, blocks: [...], bodyKey: 'info-0-b' }] | undefined,
+ *                                                // D340：說明區塊，畫在「關於活動」的描述下方，每塊＝標題＋內文，內文太長才收合
  *     lineup: [{ name: '周湯豪', role: { key:'role-0' } | null }],
- *     // 墓碑 2026-09-29（D334）：notes／bring 兩份清單隨「進階詳細資料」刪除；說明區塊的粉絲頁呈現暫不做（ASSUMPTIONS UIA-186）
+ *     // 墓碑 2026-09-29（D334）：notes／bring 兩份清單隨「進階詳細資料」刪除（說明區塊 D340 起由 infoSections 呈現）
  *     pickup: '電子門票',                                            // D327：取票說明欄已刪
  *     refund: undefined | string | false,       // 沒給＝平台固定文案；字串＝自訂；false＝不畫
  *     terms: { key:'tnc' } | null,
@@ -108,6 +113,81 @@
     }
     return n;
   }
+  /* ── 內文（D340）：描述與說明區塊的內文照原文先後畫——文字段（粗體、清單）與圖片影片交錯 ──
+     · 預設語言：文字段畫格式版（html 已由 partials/rich-body.js 的 sanitize 收成只剩 p／br／strong／ul／ol／li）
+     · 其他語系：每一段文字各自一個可翻譯欄位（inline 編輯），譯文是純文字（譯文能否套粗體與清單〔產品待確認〕）；
+       圖片與影片不翻譯、位置跟原文相同（D340）——所以 key 是「第幾段文字」，由 ztorRichBody.fieldKeys() 算，
+       宿主組翻譯表時用同一支，兩邊對得上。沒有 rich-body 可用時退回一整段純文字。 */
+  function mediaFig(md) {
+    var fig = el('figure', 'pdp-details__media');
+    var node = document.createElement(md.type === 'video' ? 'video' : 'img');
+    node.src = md.src;
+    if (md.type === 'video') { node.controls = true; node.setAttribute('playsinline', ''); node.preload = 'metadata'; }
+    else node.alt = '';
+    fig.appendChild(node);
+    return fig;
+  }
+  function richBody(api, blocks, baseKey, cls, placeholder) {
+    var R = window.ztorRichBody;
+    var wrap = el('div', 'pdp-rich' + (cls ? ' ' + cls : ''));
+    var list = R ? R.normalize(blocks || []) : [];
+    var keys = R ? R.fieldKeys(baseKey, list) : [baseKey];
+    var ti = 0;
+    list.forEach(function (b) {
+      if (b.type !== 'text') { wrap.appendChild(mediaFig(b)); return; }
+      var key = keys[ti++];
+      var node = el('div', 'pdp-rich__text');
+      if (api.isDefault !== false) node.innerHTML = b.html || '';
+      else { node.classList.add('pdp-rich__text--plain'); api.bindEditable(node, key); }
+      wrap.appendChild(node);
+    });
+    /* 一段文字都沒有：留一個可翻譯的空欄位（畫斜體佔位），版面不塌 */
+    if (!ti) wrap.insertBefore(slot(api, 'div', 'pdp-rich__text pdp-rich__text--plain', { key: keys[0] || baseKey }, placeholder || ''), wrap.firstChild);
+    return wrap;
+  }
+  /* 說明區塊（D340，取代 D334 補充「粉絲頁暫不呈現」）：放在「關於活動」的描述下方，每一塊一段（標題＋內文）。
+     內文太長才收合：先套收合高度（fan-shop.css .pdp-info__body.is-clamped），量到內容確實超出才留著並長出「展開全文」；
+     圖片影片載入後高度會變，載入完再量一次。多長算太長〔產品待確認〕——原型取收合高度 18rem（約 12 行，ASSUMPTIONS UIA-190）。 */
+  function clampBody(body, more) {
+    function measure() {
+      if (more.getAttribute('aria-expanded') === 'true') return;
+      body.classList.add('is-clamped');
+      var over = body.scrollHeight > body.clientHeight + 2;
+      body.classList.toggle('is-clamped', over);
+      more.hidden = !over;
+    }
+    requestAnimationFrame(measure);
+    body.querySelectorAll('img, video').forEach(function (m) { m.addEventListener(m.tagName === 'IMG' ? 'load' : 'loadedmetadata', measure); });
+    more.addEventListener('click', function () {
+      var open = more.getAttribute('aria-expanded') !== 'true';
+      more.setAttribute('aria-expanded', open ? 'true' : 'false');
+      body.classList.toggle('is-clamped', !open);
+      var k = open ? 'fep.info.less' : 'fep.info.more';
+      more.setAttribute('data-i18n', k);
+      more.textContent = T(k, open ? 'Show less' : 'Read more');
+    });
+  }
+  function infoSections(api, list) {
+    var sec = el('div', 'pdp-info');
+    sec.setAttribute('data-fep-info', '');
+    sec.setAttribute('data-feat', 'S60');   // feature-scope-map（D340 新功能）
+    list.forEach(function (x) {
+      var blk = el('div', 'pdp-info__block');
+      if (x.title) blk.appendChild(slot(api, 'h3', 'pdp-info__title', x.title, ''));
+      var body = richBody(api, x.blocks, x.bodyKey, 'pdp-info__body', '');
+      blk.appendChild(body);
+      var more = el('button', 'pdp-info__more');
+      more.type = 'button'; more.hidden = true;
+      more.setAttribute('aria-expanded', 'false');
+      more.setAttribute('data-i18n', 'fep.info.more');
+      more.textContent = T('fep.info.more', 'Read more');
+      blk.appendChild(more);
+      sec.appendChild(blk);
+      clampBody(body, more);
+    });
+    return sec;
+  }
+
   function valueOf(api, field) { return (field && field.key) ? (api.getValue(field.key) || '') : (field == null ? '' : String(field)); }
 
   /* 前台 inline 的 svg（heart／cart／back／zoom／play）：照抄 path，不走 icons.js registry（形狀要一模一樣） */
@@ -344,20 +424,17 @@
     var inner = el('div', 'pdp-details__inner container');
     var h2 = el('h2', 'pdp-details__heading'); h2.setAttribute('data-i18n', 'fep.sec.about'); h2.textContent = T('fep.sec.about', 'About');
     inner.appendChild(h2);
-    /* 描述是一個可翻譯欄位，整段放前台的 lead 段（前台把第一段當 lead、其餘 para；一個 contenteditable 拆不成兩個節點，UIA-167） */
-    inner.appendChild(slot(api, 'p', 'pdp-details__lead', m.desc, T('cp.pv.desc-ph', 'Description')));
-    /* 描述夾帶的圖片與影片（D335）：粉絲頁怎麼呈現屬 UI 層、前台尚無對應區塊——最小做法是照先後
-       畫在描述文字下方（ASSUMPTIONS UIA-187）。文字是可翻譯的一整段、媒體不翻譯，所以不插回文字中間。 */
-    (m.descMedia || []).forEach(function (md) {
-      if (!md || !md.src) return;
-      var fig = el('figure', 'pdp-details__media');
-      var node = document.createElement(md.type === 'video' ? 'video' : 'img');
-      node.src = md.src;
-      if (md.type === 'video') { node.controls = true; node.setAttribute('playsinline', ''); node.preload = 'metadata'; }
-      else node.alt = '';
-      fig.appendChild(node);
-      inner.appendChild(fig);
-    });
+    /* 描述（D340）：宿主給了 descBlocks 就照原文先後畫（文字段含粗體與清單、圖片影片夾在原位，見 richBody），
+       整塊仍掛前台的 lead 段 class（版寬、字級、預覽的「編輯」入口都認它）。
+       沒給的舊宿主退回 D335 的最小做法：一整段可翻譯文字＋媒體畫在下方（ASSUMPTIONS UIA-187）。 */
+    if (m.descBlocks) {
+      inner.appendChild(richBody(api, m.descBlocks, (m.desc && m.desc.key) || 'desc', 'pdp-details__lead', T('cp.pv.desc-ph', 'Description')));
+    } else {
+      inner.appendChild(slot(api, 'p', 'pdp-details__lead', m.desc, T('cp.pv.desc-ph', 'Description')));
+      (m.descMedia || []).forEach(function (md) { if (md && md.src) inner.appendChild(mediaFig(md)); });
+    }
+    /* 說明區塊（D340）：緊接在描述下方、仍在「關於活動」這一節裡 */
+    if (m.infoSections && m.infoSections.length) inner.appendChild(infoSections(api, m.infoSections));
 
     var cols = el('div', 'pdp-details__cols');
     var left = el('div', 'pdp-details__left');
@@ -376,8 +453,7 @@
       left.appendChild(blk);
     }
     /* 墓碑 2026-09-29（D334）：「注意事項」一節（需攜帶物品／活動須知兩份清單合併成一份 ul，`fep.sec.notes`）
-       隨兩份清單刪除。取代它的說明區塊在粉絲頁怎麼呈現，2026-09-29 使用者追加裁決「之後再定」——本檔先不畫，
-       見 ASSUMPTIONS UIA-186。 */
+       隨兩份清單刪除。取代它的說明區塊 D340 起畫在「關於活動」的描述下方（infoSections）。 */
     cols.appendChild(left);
 
     var right = el('div', 'pdp-details__right');

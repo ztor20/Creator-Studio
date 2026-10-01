@@ -503,7 +503,7 @@
 - `restock-modal.css` — .restock-table, .restock-table__head, .restock-table__row, .restock-table__col, .restock-table__group
 - `review-row.css` — .review-row, .review-row__item, .review-row__head, .review-row__name, .review-row__action ｜ Ztor — Review row (flat, no-card wizard summary 
 - `review-status.css` — .review-status, .review-status--flat, .review-status__head, .review-status__thumb, .review-status__title ｜ Review status · 送審件的狀態面板（2026-08-07）
-- `rich-body.css` — .rich-body, .rich-body__blocks, .upload-tile, .rich-body__tools ｜ rich-body.css · 內文編輯器（文字＋圖片／影片）
+- `rich-body.css` — .rich-body, .rich-body__blocks, .upload-tile, .rich-body__text, .rich-body__tools ｜ rich-body.css · 內文編輯器（文字＋圖片／影片）
 - `roster-picker.css` — .roster-picker, .roster-picker__pick, .roster-picker__bar, .roster-picker__search, .roster-picker__grid ｜ Roster picker · 上面選人、下面看那一位（2026-09-02 建、同日改版；
 - `row-disclosure.css` — .rowdis__group, .product-list-scroll, .rowdis__group--gutter, .rowdis__head, .rowdis__label ｜ Row disclosure（可展開子列）— 2026-09-03 建，2026-09-04 改
 - `scanner.css` — .scanner-page, .scanner-frame, .scanner-top, .scanner-top__name, .scanner-brand ｜ Mobile scanner · spec 5.1.5.14 (standalone phone

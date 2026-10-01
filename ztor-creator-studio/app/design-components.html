@@ -2126,7 +2126,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: var(--
   <p class="sub__desc" data-zh><strong>命名刻意用 <code>.is-source-locked</code>、不用 <code>.is-locked</code></strong>——那個名字已被 <a href="#media-vault">Media vault</a> 用在完全不同的語意（檢視器模式下某分級整列打不開：變暗＋灰階＋鎖頭）。兩者都不在自己的命名空間裡，若同頁兩支元件同時服役，載入順序會決定誰的 <code>.is-locked</code> 生效。「來源鎖定」與「權限鎖定」是兩回事，各自要留一個不會被對方覆寫的名字。</p>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
-    <p class="field-text"><code>.field-source</code>（掛在 <code>.field__label</code> 內、靠右對齊；<code>.field__label:has(.field-source)</code> 才開 flex，避免壓掉一般欄名裡刻意留的空白）· <code>.is-source-locked</code>（掛在欄位容器；<strong>本身不再定義表單控件的鎖定樣式，2026-08-09 第二輪</strong>——內部的 <code>.input</code>／<code>.textarea</code>／<code>.select</code> 完全吃 <a href="#input">Input</a> 的 <code>.input:disabled</code>（透明底＋<code>--locked-field-ink</code>）；<code>.segmented__btn</code>（<a href="#radio-card">Radio card</a> 建在它上面）不是表單控件、吃不到 <code>:disabled</code>，鎖定樣式仍由本檔定義——<code>cursor:not-allowed</code> ＋ <code>pointer-events:none</code>）。</p>
+    <p class="field-text"><code>.field-source</code>（掛在 <code>.field__label</code> 內、靠右對齊；<code>.field__label:has(.field-source)</code> 才開 flex，避免壓掉一般欄名裡刻意留的空白；2026-09-30 補 <code>gap: --sp-4</code>，開了 flex 的標籤裡欄名與「（選填）」不再黏在一起）· <code>.is-source-locked</code>（掛在欄位容器；<strong>本身不再定義表單控件的鎖定樣式，2026-08-09 第二輪</strong>——內部的 <code>.input</code>／<code>.textarea</code>／<code>.select</code> 完全吃 <a href="#input">Input</a> 的 <code>.input:disabled</code>（透明底＋<code>--locked-field-ink</code>）；<code>.segmented__btn</code>（<a href="#radio-card">Radio card</a> 建在它上面）不是表單控件、吃不到 <code>:disabled</code>，鎖定樣式仍由本檔定義——<code>cursor:not-allowed</code> ＋ <code>pointer-events:none</code>）。</p>
     <p class="field-text"><strong>第三輪（2026-08-09，同日）</strong>：<code>.segmented__btn</code> 這條原本還留著舊制的 <code>opacity:.78</code>，等於同一頁同時存在「表單控件用顏色降對比」與「segmented 用透明度降對比」兩種鎖定語彙。改成同一套做法：<code>opacity</code> 拿掉，改讓 <code>.radio-card__title</code> / <code>.radio-card__sub</code> 直接吃 <code>--locked-field-ink</code>（不疊 opacity），卡面其餘部分（邊框、底色）不降對比——鎖定的是「內容不可改」，不是「整張卡消失」，與 <a href="#upload-tile">Upload tile</a> 已填態撤除綠框同一個方向：站上「不可改／已完成」一律靠顏色或邊框樣式表達，不疊 opacity 弱化整塊。<code>pointer-events:none</code> 維持，滑鼠仍點不動。</p>
     <p class="field-text"><strong>權重注意（第一輪的舊寫法，現已不適用）</strong>：本檔第一輪曾把鎖定態寫成 <code>.is-source-locked .input:disabled</code>（0-3-0）去蓋過元件層同權重的 <code>.input:disabled</code>（0-2-0）。第二輪把值上收進元件層之後，兩者變成同一份規則，本檔不再需要用權重蓋過誰。</p>
     <p class="field-text"><code>ds-components/field-source-tag.css</code>。消費頁：<code>create-event.html</code>（bookyay 帶入後鎖定的場地欄位與入場方式／取票方式）。</p>
@@ -3113,6 +3113,7 @@ Letterpress cover, uncoated stock.</textarea></div>
         <div class="combobox__group">Pickup items</div>
         <button type="button" class="combobox__opt is-active"><span class="combobox__opt-icon"><i data-lucide="package" class="ztor-icon" style="width:16px;height:16px"></i></span><span class="combobox__opt-text"><span class="combobox__opt-name">Coastline tee · M / L</span><span class="combobox__opt-meta">Apparel · 22 sold</span></span></button>
         <button type="button" class="combobox__opt"><span class="combobox__opt-icon"><i data-lucide="package" class="ztor-icon" style="width:16px;height:16px"></i></span><span class="combobox__opt-text"><span class="combobox__opt-name">Coastline acetate LP</span><span class="combobox__opt-meta">Music · numbered</span></span></button>
+        <button type="button" class="combobox__opt" disabled aria-disabled="true"><span class="combobox__opt-icon"><i data-lucide="package" class="ztor-icon" style="width:16px;height:16px"></i></span><span class="combobox__opt-text"><span class="combobox__opt-name">Coastline tour poster</span><span class="combobox__opt-meta">Prints · 60 sold</span></span><span class="badge badge--neutral combobox__opt-tag"><span data-en>Assigned</span><span data-zh>已綁定</span></span></button>
         <div class="combobox__group">Event tickets</div>
         <button type="button" class="combobox__opt"><span class="combobox__opt-icon"><i data-lucide="ticket" class="ztor-icon" style="width:16px;height:16px"></i></span><span class="combobox__opt-text"><span class="combobox__opt-name">Signing session · GA entry</span><span class="combobox__opt-meta">Taipei signing · on-site entry</span></span></button>
       </div>
@@ -3125,12 +3126,12 @@ Letterpress cover, uncoated stock.</textarea></div>
     <h3 class="sub__title">4.16b Combobox</h3>
     <span class="layer layer--molecule">🟡 molecule</span>
   </div>
-  <p class="sub__desc" data-en>Multi-select search-to-add typeahead. Reuses the <a href="#tag-input">Tag input</a> field (selected <code>.chip--removable</code> + borderless entry); focusing / typing opens a floating <code>.combobox__menu</code> of suggestions (grouped <code>.combobox__opt</code> = icon + name + meta), picking one adds it as a chip and drops it from the list. Differs from Tag input only in that suggestions live in a focus-triggered dropdown, not an always-visible chip row. First used by the pickup session modal's "add pickup items" (spec 5.1.5.12 §4 F2). <strong>New consumers (2026-08-09)</strong>: Create-event's "Ticket type" field and "Add product" field both moved to this component — replacing a page-local dropdown-and-list pattern — with added products now shown as <a href="#chip"><code>.chip-group</code> + <code>.chip--removable</code></a>. The menu is a floating layer and shares the popover recipe with <a href="#dropdown-menu">Dropdown menu</a>: opaque <code>--popover</code>, 1px <code>--ztu-glass-rim</code>, <code>--shadow-float</code> (Q78; since 2026-09-16, was <code>--card</code>/<code>--border</code>).</p>
-  <p class="sub__desc" data-zh>多選 search-to-add typeahead。重用 <a href="#tag-input">Tag input</a> 欄位（已選 <code>.chip--removable</code> ＋無框 entry）；focus／輸入時彈出浮層 <code>.combobox__menu</code> 建議（<code>.combobox__opt</code>＝icon＋名稱＋meta、可分組 <code>.combobox__group</code>），點選加入為 chip、已選項自建議移除。與 Tag input 差別只在建議改「focus 觸發下拉」而非常駐 chip-group。首用於建立取貨場次 modal 的「加入取貨項目」（spec 5.1.5.12 §4 F2）。<strong>新消費情境（2026-08-09）</strong>：建立活動的「票種」欄與「加入商品」欄都改用本元件——取代原本頁內自造的一套下拉候選樣式，已加入的商品改用 <a href="#chip"><code>.chip-group</code> ＋ <code>.chip--removable</code></a> 呈現。 下拉是浮層，配方同 <a href="#dropdown-menu">Dropdown menu</a>：實色 <code>--popover</code>、1px <code>--ztu-glass-rim</code>、<code>--shadow-float</code>（Q78；2026-09-16 起，舊值 <code>--card</code>／<code>--border</code>）。</p>
+  <p class="sub__desc" data-en>Multi-select search-to-add typeahead. Reuses the <a href="#tag-input">Tag input</a> field (selected <code>.chip--removable</code> + borderless entry); focusing / typing opens a floating <code>.combobox__menu</code> of suggestions (grouped <code>.combobox__opt</code> = icon + name + meta), picking one adds it as a chip and drops it from the list. Differs from Tag input only in that suggestions live in a focus-triggered dropdown, not an always-visible chip row. First used by the pickup session modal's "add pickup items" (spec 5.1.5.12 §4 F2). <strong>New consumers (2026-08-09)</strong>: Create-event's "Ticket type" field and "Add product" field both moved to this component — replacing a page-local dropdown-and-list pattern — with added products now shown as <a href="#chip"><code>.chip-group</code> + <code>.chip--removable</code></a>. The menu is a floating layer and shares the popover recipe with <a href="#dropdown-menu">Dropdown menu</a>: opaque <code>--popover</code>, 1px <code>--ztu-glass-rim</code>, <code>--shadow-float</code> (Q78; since 2026-09-16, was <code>--card</code>/<code>--border</code>). <strong>Disabled option (2026-09-30, D339)</strong>: <code>.combobox__opt:disabled</code> stays listed but can't be picked — muted ink, no hover fill — with a trailing <code>.combobox__opt-tag</code> badge saying why (last row above: a product already assigned to another pickup session).</p>
+  <p class="sub__desc" data-zh>多選 search-to-add typeahead。重用 <a href="#tag-input">Tag input</a> 欄位（已選 <code>.chip--removable</code> ＋無框 entry）；focus／輸入時彈出浮層 <code>.combobox__menu</code> 建議（<code>.combobox__opt</code>＝icon＋名稱＋meta、可分組 <code>.combobox__group</code>），點選加入為 chip、已選項自建議移除。與 Tag input 差別只在建議改「focus 觸發下拉」而非常駐 chip-group。首用於建立取貨場次 modal 的「加入取貨項目」（spec 5.1.5.12 §4 F2）。<strong>新消費情境（2026-08-09）</strong>：建立活動的「票種」欄與「加入商品」欄都改用本元件——取代原本頁內自造的一套下拉候選樣式，已加入的商品改用 <a href="#chip"><code>.chip-group</code> ＋ <code>.chip--removable</code></a> 呈現。 下拉是浮層，配方同 <a href="#dropdown-menu">Dropdown menu</a>：實色 <code>--popover</code>、1px <code>--ztu-glass-rim</code>、<code>--shadow-float</code>（Q78；2026-09-16 起，舊值 <code>--card</code>／<code>--border</code>）。<strong>停用選項（2026-09-30，D339）</strong>：<code>.combobox__opt:disabled</code> 列出但不可選——字退成弱化色、無 hover 底——尾端 <code>.combobox__opt-tag</code> 掛一顆標記說明原因（上方最後一列：已綁定其他取貨場次的商品）。</p>
   
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
-    <p class="field-text"><code>.combobox</code> &gt; <code>.tag-input__field</code> (chips + entry) + <code>.combobox__menu</code> (<code>.combobox__group</code> + <code>.combobox__opt</code> &gt; <code>.combobox__opt-icon</code> + <code>.combobox__opt-text</code> &gt; <code>.combobox__opt-name</code> + <code>.combobox__opt-meta</code>; <code>.combobox__empty</code> when no match). Menu shown on focus/input; pickup session modal 前端 demo（UIA-059）。</p>
+    <p class="field-text"><code>.combobox</code> &gt; <code>.tag-input__field</code> (chips + entry) + <code>.combobox__menu</code> (<code>.combobox__group</code> + <code>.combobox__opt</code> &gt; <code>.combobox__opt-icon</code> + <code>.combobox__opt-text</code> &gt; <code>.combobox__opt-name</code> + <code>.combobox__opt-meta</code>; <code>.combobox__opt:disabled</code> + trailing <code>.combobox__opt-tag</code> badge for listed-but-unpickable; <code>.combobox__empty</code> when no match). Menu shown on focus/input; pickup session modal 前端 demo（UIA-059）。</p>
     <p class="field-text">消費頁：<code>partials/pickup-session-modal.js</code>（取貨場次「加入取貨項目」）· <code>create-event.html</code>（步驟 4 票種「票種」欄與「加入商品」欄，2026-08-09）。</p>
     <p class="field-text"><code>ds-components/combobox.css</code> · reuses <code>tag-input.css</code> + <code>chip.css</code></p>
   </div>
@@ -3365,6 +3366,7 @@ Letterpress cover, uncoated stock.</textarea></div>
   <details class="dg-rules dsd-fold"><summary>規則與說明</summary>
 
   <div class="sub__head"><h3 class="sub__title">4.132 Check card</h3><span class="layer layer--molecule">🟡 molecule</span></div>
+  <div class="info-banner mb-16"><i data-lucide="info" class="ztor-icon info-banner__icon"></i><span data-en><strong>2026-09-30 — no product page uses this any more (retirement candidate).</strong> Its only consumer, the event-language field in Create event, became a dropdown multi-select at the user’s request (D340 — see <a href="#zselect">Custom select</a> <code>--multi</code>). Kept as-is until the user rules on retiring it.</span><span data-zh><strong>2026-09-30 起零消費（退場候選）。</strong>唯一的消費者——建立活動的活動語言——依使用者指定改成下拉複選（D340，見 <a href="#zselect">Custom select</a> 的 <code>--multi</code>）。退場與否待使用者裁決，裁決前原樣保留。</span></div>
   <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
   <p class="sub__desc" data-en>Multi-select pill card (Cosmos layout, Q71 定案 2026-08-25 — demo-eshop-styles.html :646-701). Two-column equal-width grid; each pill has a label on the left and a round marker on the right (+ unselected, tick selected). Sibling of <a href="#radio-card">Radio card</a> but for the "pick several" case — they deliberately use two different selected-state answers (Q74): Radio card leaves the fill unchanged and only lights a small orange dot (one card lit at a time, a dot is enough); Check card tints the whole pill because several can be lit at once and needs a stronger "these are the picked ones" signal.</p>
   <p class="sub__desc" data-zh>多選卡（Cosmos 版型，Q71 定案 2026-08-25——demo-eshop-styles.html :646-701）。兩欄等寬 grid，每張卡左邊文字、右邊一個圓形標記格（未選＋、已選勾）。與 <a href="#radio-card">Radio card</a> 是姊妹元件，差在「可以選好幾個」——兩者刻意分開兩種已選畫法（Q74）：Radio card 底不變、只亮一個小橘點（一次只會亮一格，點就夠）；Check card 整格染橘，因為一次會亮好幾格，需要比橘點更強的「這些是選進來的」訊號。</p>
@@ -6597,6 +6599,28 @@ Letterpress cover, uncoated stock.</textarea></div>
         <div class="zselect__option zselect__option--action"><i data-lucide="plus" class="ztor-icon zselect__icon"></i><span>建立取貨場次</span></div>
       </div>
     </div>
+    <div style="position:relative;">
+      <p class="field-text" style="margin:0 0 6px;">下拉複選 <code>--multi</code>（2026-09-30 · D340）——原生 <code>&lt;select multiple data-zselect-multi data-zselect-max="24"&gt;</code>：打開是勾選清單、點一列切換不關面板；觸發鈕一行寫出所有已選、超過字數以「…」截斷（這一顆是真的，可以點）</p>
+      <select class="select" multiple data-zselect-multi data-zselect-max="24" data-zselect-placeholder="Choose languages" aria-label="Language" style="width:320px;">
+        <option value="yue" selected>Cantonese</option><option value="cmn" selected>Mandarin</option><option value="en" selected>English</option>
+        <option value="ja" selected>Japanese</option><option value="ko">Korean</option><option value="th">Thai</option><option value="vi">Vietnamese</option>
+      </select>
+    </div>
+    <div style="position:relative;">
+      <p class="field-text" style="margin:0 0 6px;">複選的展開面板（靜態示意）：列首一顆 house checkbox（Q126 複選記號＝方框），尾端不畫勾</p>
+      <div class="zselect__panel zselect__panel--multi" style="position:static;margin-top:4px;width:260px;box-shadow:var(--shadow-card);" aria-multiselectable="true">
+        <div class="zselect__option" aria-selected="true"><span class="zcheck zselect__mark"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" tabindex="-1" checked><span class="zcheck__box"></span></span></span><span>Cantonese</span></div>
+        <div class="zselect__option zselect__option--active" aria-selected="true"><span class="zcheck zselect__mark"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" tabindex="-1" checked><span class="zcheck__box"></span></span></span><span>Mandarin</span></div>
+        <div class="zselect__option" aria-selected="false"><span class="zcheck zselect__mark"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" tabindex="-1"><span class="zcheck__box"></span></span></span><span>Korean</span></div>
+      </div>
+    </div>
+    <div style="position:relative;">
+      <p class="field-text" style="margin:0 0 6px;">複選 · 鎖定（bookyay 帶入）與未選（placeholder）</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <select class="select" multiple data-zselect-multi data-zselect-max="24" aria-label="Language (locked)" disabled style="width:240px;"><option selected>Mandarin</option><option selected>English</option><option>Japanese</option></select>
+        <select class="select" multiple data-zselect-multi data-zselect-max="24" data-zselect-placeholder="Choose languages" aria-label="Language (empty)" style="width:240px;"><option>Mandarin</option><option>English</option></select>
+      </div>
+    </div>
   </div>
 </div>
   <details class="dg-rules dsd-fold"><summary>規則與說明</summary>
@@ -6607,6 +6631,7 @@ Letterpress cover, uncoated stock.</textarea></div>
   <p class="sub__desc"><strong>坐在可切檢視／編輯的面板裡時要標 <code>data-view-safe</code></strong>（2026-08-10）。觸發鈕本體是 <code>&lt;button&gt;</code>，而 <code>shared.css</code> 有一條「<code>[data-mode="view"]</code> 底下藏掉所有按鈕」的規則——那條針對的是動作鈕，不是表單控件；沒標的下拉會在唯讀狀態整顆消失，只剩一個標籤底下空一塊。標了就一起搬到觸發鈕，唯讀時仍看得見選到的值（停用態的淡色）。首個消費者：<code>project-detail.html</code> 公開資訊的年齡分級。<br><strong>2026-09-11 起不必逐顆標</strong>：<code>shared.css</code> 那條白名單直接放行 <code>.zselect__trigger</code>——商品詳情的商品設定分頁一次有六七顆下拉，逐顆補標漏一顆就少一個欄位；唯讀時觸發鈕跟著原生 select 一起 <code>disabled</code>，只顯示目前值。既有的 <code>data-view-safe</code> 留著無害。</p>
   <p class="field-label">視覺展示 <span class="field-note">(升級前／升級後併陳)</span></p>
   
+  <p class="sub__desc"><strong>下拉複選 <code>--multi</code>（2026-09-30 · D340）。</strong>只有掛 <code>data-zselect-multi</code> 的 <code>&lt;select multiple&gt;</code> 才接手（其他 <code>[multiple]</code> 照舊不動）。觸發鈕（<code>.zselect__trigger--multi</code>）一行寫出所有已選項——照選項順序、以 <code>data-zselect-sep-i18n</code> 的分隔字串起，超過 <code>data-zselect-max</code> 個字截斷補「…」、完整一串放進 <code>title</code>；一項都沒選時寫 <code>data-zselect-placeholder-i18n</code> 的占位字（<code>.zselect__label--placeholder</code>，弱化色）。面板（<code>.zselect__panel--multi</code>）每一列前面一顆 <a href="#checkbox">Checkbox</a> 的 <code>.zcheck__control</code>（<code>.zselect__mark</code>）——Q126「複選的記號＝方框、單選的記號＝勾」，所以尾端不畫 <code>.zselect__check</code>；點一列＝切換那一項並派 <code>input</code>／<code>change</code>，面板不關，Esc／點外面／Tab 才收起。原生 select <code>disabled</code> 時觸發鈕停用、打不開（bookyay 帶入鎖定）。首個消費情境：建立活動的活動語言（使用者指定：下拉複選、鎖定時停用、一行顯示所有已選、限字數以「…」表示）。</p>
   <p class="sub__desc"><strong>動作列（2026-09-11）。</strong>原生 <code>&lt;select&gt;</code> 標 <code>data-zselect-action="&lt;id&gt;"</code>（文案走 <code>data-zselect-action-i18n</code>，退路 <code>data-zselect-action-label</code>，圖示 <code>data-zselect-action-icon</code> 預設 plus），面板最底下就多一列「這裡沒有你要的，去建一個」：與選項之間一條 hairline、沒有勾號、字色略退，鍵盤 ↑↓ 走得到、Enter 觸發。它<strong>不是選項</strong>——點了不改 value、不派 change，只在 <code>&lt;select&gt;</code> 上派 <code>zselect:action</code>（bubbles，<code>detail.action</code>＝屬性值）並關閉面板，由頁面接手開彈窗。首個消費情境：建立商品／商品細節的取貨場次，原本是選單旁一顆獨立的「建立取貨場次」按鈕（使用者指示併進下拉）。</p>
   <p class="sub__desc"><strong>選項圖示與列尾勾號（2026-08-18）。</strong>原生 <code>&lt;option&gt;</code> 標 <code>data-icon="&lt;icon registry 的鍵&gt;"</code>，腳本就在觸發鈕（<code>.zselect__lead</code>）與面板每一列的文字前畫同一顆 20px 中性灰圖示——收合與展開必須是同一顆，選完之後圖示消失會讀成「選到的不是剛剛那一個」。沒標 <code>data-icon</code> 的下拉整欄 <code>hidden</code>、版面一格不動。同日勾號由列首移到列尾（全站行為）：擺前面時每一列都得先跨過一個多數時候是空的欄位才讀得到文字。</p>
   <p class="field-text">面板語彙抄自 <a href="#dropdown-menu">Dropdown menu</a> 的 <code>.dropdown__menu</code>（<code>--card</code> 底、<code>--radius-lg</code>、<code>--shadow-float</code>）。2026-07-28 修過「double scroll bar」：<code>.zselect__native</code> 用 <code>position:absolute</code> 卻沒配 <code>top/left</code> 時會撐開文件、多出一條看不見的捲軸，補上 <code>top:0;left:0</code> 解決。消費頁（19 頁，全站消費範圍最廣元件）：<code>ip-bank-reporting.html</code>、<code>media-vault.html</code>、<code>create-project.html</code>、<code>create-auction.html</code>、<code>order-detail.html</code>、<code>projects.html</code>、<code>design-system.html</code>、<code>ip-market.html</code>、<code>project-detail.html</code>、<code>earnings.html</code>、<code>create-event.html</code>、<code>settings.html</code>、<code>admin-ip-bank-entry.html</code>、<code>brand-campaigns.html</code>、<code>create-product.html</code>、<code>product-detail.html</code>、<code>admin-platform-fees.html</code>、<code>store-settings.html</code>、<code>fans-crm.html</code>。</p>
@@ -6690,7 +6715,7 @@ Letterpress cover, uncoated stock.</textarea></div>
                 <input class="input" id="ds-tier-qty" type="number" value="600">
                 <button class="tier-card__clear" type="button" aria-label="Clear"><i data-lucide="x" class="ztor-icon"></i></button>
               </span>
-              <p class="field__hint tier-card__err">Tier quantities add up to 720, over the 500 capacity.</p>
+              <p class="field__hint tier-card__err">Quantity must be a whole number, 1 or more.</p>
             </div>
         </div>
         <div class="tier-card__foot">
@@ -6707,7 +6732,7 @@ Letterpress cover, uncoated stock.</textarea></div>
       <span class="upload-tile__hint">Name, price, quantity</span>
     </button>
     </div>
-    <div class="tier-count tier-count--over">Tier quantities add up to 720, over the 500 capacity.</div>
+    <div class="tier-count">3 tiers created · minimum 1 required</div>
   </div></div>
 </div>
 <details class="dg-more dsd-fold"><summary>更多示範（2）</summary><div class="dg-card__render">
@@ -6782,7 +6807,7 @@ Letterpress cover, uncoated stock.</textarea></div>
     <p class="field-text">🪦 <strong>tombstone（2026-08-09 當天新增、當天第二輪即退場）</strong>：<code>__ownbtn--always</code>／<code>__ownicon</code>／整寬展開鈕覆寫，服務的是票種編輯彈窗裡那顆「新增購票規則」收合鈕——<code>--always</code> 是它在彈窗裡無條件顯示的變體（取代原本「用彈窗容器 id 提權蓋過元件」的做法，<code>create-event.html</code> 把票種編輯整段搬進彈窗〔<code>.payout-dialog__body</code>〕後，這顆按鈕不再有 <code>--editing</code> 這個祖先），<code>__ownicon</code> 是它的箭頭圖示（<code>aria-expanded="true"</code> 時旋轉 180°）。同日使用者第二輪裁示「攤開不需要折疊了」——規則一律列出、不再收合，這顆鈕連同箭頭一併撤除，CSS 原地留 tombstone 註解。基礎 <code>__ownbtn</code> 不受影響，仍由 <code>create-event-legacy.html</code> 消費。</p>
     <p class="field-text">兩個面貌由卡片自己的 <code>--editing</code> 修飾字切換：<code>__body</code> 與 <code>__foot</code> 平常 <code>display:none</code>，加上 <code>--editing</code> 後換成 <code>__facts</code> 與 <code>__edit</code> 收起來。再加 <code>--group</code>（批次編輯中的卡）則連 <code>__foot</code> 也收起、<code>__actions</code> 留著——動作在工具列，移除單張只剩 ⋮ 這條路。<code>.tier-list[hidden]</code> 要顯式還原 <code>display:none</code>——容器宣告了 <code>display:contents</code>，不還原的話「該藏的不會藏」。</p>
     <p class="field-text">版型來源＝Beamco Artist Portal v3 的 Ticket Type Settings（Figma <code>0gWC6dR1yzdEu0g1LqvRvJ</code> node 1904-82978）。該設計有 List／Grid 兩種檢視，2026-08-04 使用者裁決<strong>只採用 Grid</strong>——List 是橫向捲動，會把卡片推出畫面，而這一步最需要一眼看到的正是「有幾種票、加起來幾張」；切換鈕因此整個不做。</p>
-    <p class="field-text"><code>ds-components/ticket-tier-card.css</code>。消費頁：<code>create-event.html</code>（步驟 4 票種）。2026-08-06（使用者指示）兩處調整：網格固定三欄（原本欄數隨容器寬浮動，同一頁在不同視窗寬度下會排成 2 或 4 欄，看起來像兩種版型）；自訂規則開關由卡內的 switch 列改成標題列靠右的 <code>.tier-card__ownbtn</code> 按鈕（<code>aria-pressed</code>，開啟態橘框橘字——卡底已有一顆實色橘的 Save，再來一顆實色橘會分不出主要動作），<code>.tier-card__own</code> 已無消費者、CSS 留墓碑。2026-08-04 新建：該步驟原本只有一顆虛線卡把計數 +1、沒有任何欄位可填，規格 F9.1／F9.2 的票種卡此輪才落地；驗證（名稱 1–40 字不重複／價格整數 ≥ 0／數量整數 ≥ 1／Σ 數量 ≤ 容量）與草稿 Save／Cancel 由該頁行內控制器負責。</p>
+    <p class="field-text"><code>ds-components/ticket-tier-card.css</code>。消費頁：<code>create-event.html</code>（步驟 4 票種）。2026-08-06（使用者指示）兩處調整：網格固定三欄（原本欄數隨容器寬浮動，同一頁在不同視窗寬度下會排成 2 或 4 欄，看起來像兩種版型）；自訂規則開關由卡內的 switch 列改成標題列靠右的 <code>.tier-card__ownbtn</code> 按鈕（<code>aria-pressed</code>，開啟態橘框橘字——卡底已有一顆實色橘的 Save，再來一顆實色橘會分不出主要動作），<code>.tier-card__own</code> 已無消費者、CSS 留墓碑。2026-08-04 新建：該步驟原本只有一顆虛線卡把計數 +1、沒有任何欄位可填，規格 F9.1／F9.2 的票種卡此輪才落地；驗證（名稱 1–40 字不重複／價格整數 ≥ 0／數量整數 ≥ 1；Σ 數量 ≤ 容量於 2026-09-30 隨容量刪除退場，D340）與草稿 Save／Cancel 由該頁行內控制器負責。</p>
   </div>
   </details>
   </details>
@@ -7483,6 +7508,8 @@ Letterpress cover, uncoated stock.</textarea></div>
   <p class="sub__desc" data-zh>一條系統產生、人不能編輯、但要能整條帶走的連結。首個角色是隱藏商品或組合的非公開連結（規格 §7.14）——創作者複製給人，或重置作廢舊的那條。</p>
   <p class="sub__desc" data-en><strong>The feedback lives on the button.</strong> "Copied" replaces the button's own label instead of raising a toast: the place your hand just left is the place your eyes are looking, so feedback that flies to a corner of the screen is no feedback. <a href="#vault-share">Vault share</a>'s <code>.vshare__link</code> is where the site first did this and it stays as it is for now — the vault's link also carries a "just generated" orange frame, which is a different thing from this component's neutral default. Do not copy that markup; when the two are confirmed to be one look, they converge then.</p>
   <p class="sub__desc" data-zh><strong>回饋長在按鈕上。</strong>「已複製」直接換掉按鈕自己的字，不跳 toast：手剛離開的地方就是眼睛在看的地方，回饋跑到畫面角落等於沒有回饋。<a href="#vault-share">Vault share</a> 的 <code>.vshare__link</code> 是站上第一個做這件事的地方，這一輪維持原狀——媒體庫那條連結還多帶「剛產生」的橘框強調，與本支的中性預設不是同一件事。別照抄它的 markup；日後確認兩者要同一個外觀時再收斂。</p>
+  <p class="sub__desc" data-en><strong>2026-09-30 (D340):</strong> also the event link that appears when an event’s <em>Display settings</em> switch is off (Create event step 7, Event detail → Setup) — copy and reset, and switching the event back to shown revokes it.</p>
+  <p class="sub__desc" data-zh><strong>2026-09-30（D340）：</strong>活動的「顯示設定」關掉（隱藏）時長出來的活動連結也用這一支（建立活動第 7 步、活動詳情 → 設定）——可複製、可重置，切回顯示＝撤銷。</p>
   <p class="field-label" data-en>Rendered preview <span class="field-note">(live — Copy really writes to the clipboard, driven by <code>js/link-field.js</code>)</span></p>
   <p class="field-label" data-zh>視覺展示 <span class="field-note">（複製鈕是真的會寫進剪貼簿，由 <code>js/link-field.js</code> 驅動）</span></p>
   
@@ -7835,11 +7862,17 @@ Letterpress cover, uncoated stock.</textarea></div>
             <input class="input" placeholder="Title" value="粉絲福利說明">
             <div class="info-section__body rich-body rich-body--has-media">
               <div class="rich-body__blocks">
-                <textarea class="textarea rich-body__text" rows="3" placeholder="Text">購買 VIP 票的粉絲可參加演出前的彩排參觀，並獲得巡演限定手環一條。</textarea>
+                <div class="textarea rich-body__text" role="textbox" aria-multiline="true" contenteditable="true" style="--rb-rows:3"><p><strong>VIP</strong> 票的粉絲可參加演出前的彩排參觀，並獲得巡演限定手環一條。</p></div>
                 <div class="upload-tile rich-body__media is-filled" data-upload data-upload-src="images/projects/nick-realive.jpg"></div>
-                <textarea class="textarea rich-body__text" rows="2">手環於入場時憑票領取。</textarea>
+                <div class="textarea rich-body__text" role="textbox" aria-multiline="true" contenteditable="true" style="--rb-rows:2"><p>手環於入場時憑票領取。</p></div>
               </div>
               <div class="rich-body__tools">
+                <div class="rich-body__fmt" role="group" aria-label="Text format">
+                  <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Bold"><i data-lucide="bold" class="ztor-icon"></i></button>
+                  <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Bulleted list"><i data-lucide="list" class="ztor-icon"></i></button>
+                  <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Numbered list"><i data-lucide="list-numbers" class="ztor-icon"></i></button>
+                </div>
+                <span class="rich-body__sep" aria-hidden="true"></span>
                 <button class="btn btn--ghost btn--sm" type="button"><i data-lucide="image" class="ztor-icon"></i> <span data-en>Insert image</span><span data-zh>插入圖片</span></button>
                 <button class="btn btn--ghost btn--sm" type="button"><i data-lucide="film" class="ztor-icon"></i> <span data-en>Insert video</span><span data-zh>插入影片</span></button>
               </div>
@@ -7853,9 +7886,15 @@ Letterpress cover, uncoated stock.</textarea></div>
             <input class="input" placeholder="Title" value="輪椅座位購票說明">
             <div class="info-section__body rich-body">
               <div class="rich-body__blocks">
-                <textarea class="textarea rich-body__text" rows="3" placeholder="Text">場館設有輪椅座位，每位輪椅使用者可另購一張陪同者票。</textarea>
+                <div class="textarea rich-body__text" role="textbox" aria-multiline="true" contenteditable="true" style="--rb-rows:3"><p>場館設有輪椅座位：</p><ul><li>每位輪椅使用者可另購一張陪同者票</li><li>購票後 3 日內來信提供證明</li></ul></div>
               </div>
               <div class="rich-body__tools">
+                <div class="rich-body__fmt" role="group" aria-label="Text format">
+                  <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Bold"><i data-lucide="bold" class="ztor-icon"></i></button>
+                  <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Bulleted list"><i data-lucide="list" class="ztor-icon"></i></button>
+                  <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Numbered list"><i data-lucide="list-numbers" class="ztor-icon"></i></button>
+                </div>
+                <span class="rich-body__sep" aria-hidden="true"></span>
                 <button class="btn btn--ghost btn--sm" type="button"><i data-lucide="image" class="ztor-icon"></i> <span data-en>Insert image</span><span data-zh>插入圖片</span></button>
                 <button class="btn btn--ghost btn--sm" type="button"><i data-lucide="film" class="ztor-icon"></i> <span data-en>Insert video</span><span data-zh>插入影片</span></button>
               </div>
@@ -7888,55 +7927,105 @@ Letterpress cover, uncoated stock.</textarea></div>
   
   <p class="field-label" data-en>Two blocks — the second is being dragged</p><p class="field-label" data-zh>兩塊 — 第二塊拖曳中</p>
   
-  <p class="sub__desc" data-en>In a two-step edit panel (event detail) the view state hides the handle and the remove button (both are buttons) and <code>js/view-mode.js</code> turns title and text into plain readouts.</p>
-  <p class="sub__desc" data-zh>在兩段式編輯面板（活動詳情）裡，檢視態會收起把手與刪除鈕（兩者都是 button），<code>js/view-mode.js</code> 把標題與內文畫成純文字讀數。</p>
+  <p class="sub__desc" data-en>In a two-step edit panel (event detail) the view state hides the handle and the remove button (both are buttons) and <code>js/view-mode.js</code> turns the title into a plain readout; the body’s text blocks are their own readout (see <a href="#rich-body">Rich body</a>).</p>
+  <p class="sub__desc" data-zh>在兩段式編輯面板（活動詳情）裡，檢視態會收起把手與刪除鈕（兩者都是 button），<code>js/view-mode.js</code> 把標題畫成純文字讀數；內文的文字塊本身就是讀數（見 <a href="#rich-body">Rich body</a>）。</p>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
     <p class="field-text"><code>.info-sections</code>（flex column、<code>gap: --sp-12</code>）&gt; <code>.info-sections__list</code>（<code>:empty</code> 時收起）&gt; <code>.info-section.card.card--muted[data-info-row]</code> × N（<code>--card-pad: --sp-12</code>，flex 橫排：<code>.info-section__grip</code> 把手＋<code>.info-section__fields</code>〔<code>.input</code> 標題＋<code>.info-section__body</code> 內文＝<a href="#rich-body">Rich body</a>（文字＋圖片／影片，D335）〕＋<code>.btn--icon</code> 刪除）＋ <code>.info-sections__add</code>（<code>align-self:flex-start</code>）。狀態 <code>.is-dragging</code>。邊框、填色、圓角全部交給 <code>.card--muted</code>。</p>
     <p class="field-text">互動 <code>partials/info-sections.js</code>：<code>window.ztorInfoSections.mount(host, { items, onChange })</code> → <code>{ el, get(), set(items) }</code>；item＝<code>{ title, body, blocks? }</code>，<code>body</code> 只有文字（翻譯表只列它），夾帶圖片或影片時多 <code>blocks</code>（D335）。欄位下的提示句 <code>ce.info.hint</code> 2026-09-29 拿掉（粉絲頁目前不畫說明區塊）。只有按住把手時那一塊才 <code>draggable</code>（輸入框裡選字不會誤拖）；把手聚焦時上／下鍵移動一格；新增後焦點進新塊標題、刪除後交給鄰塊。每次變動呼叫 <code>onChange</code> 並發冒泡的 <code>infosections:change</code>。翻譯表欄位由宿主從 <code>get()</code> 組：key <code>info-&lt;i&gt;-t</code>／<code>info-&lt;i&gt;-b</code>、群組 <code>pp.field.info</code>。</p>
-    <p class="field-text"><code>ds-components/info-sections.css</code> ＋ <code>partials/info-sections.js</code>。消費頁：<code>create-event.html</code>（步驟 2 描述下方）、<code>event-detail.html</code>（活動內容）。粉絲活動頁暫不畫說明區塊（ASSUMPTIONS UIA-186）。</p>
+    <p class="field-text"><code>ds-components/info-sections.css</code> ＋ <code>partials/info-sections.js</code>。消費頁：<code>create-event.html</code>（步驟 2 描述下方）、<code>event-detail.html</code>（活動內容）。D340 起每一塊的內文支援粗體與清單、各自最多 10 個媒體；<code>get()</code> 一律回 <code>blocks</code>。粉絲活動頁呈現說明區塊（D340，取代「暫不畫」）：畫在「關於活動」的描述下方，見 <a href="#fan-event-page">Fan event page</a>。</p>
   </div>
   </details>
   </details>
 </article>
-<article class="dg-card" id="rich-body" data-search="4.222 rich body 活動「描述」與每一塊「說明區塊」的內文（d335，2026-09-29；規格 5.1.6.1 §4.2 f2、5.1.6.2 f2）。">
+<article class="dg-card" id="rich-body" data-search="4.222 rich body 活動「描述」與每一塊「說明區塊」的內文（d335，2026-09-29；d340，2026-09-30；規格 5.1.6.1 §4.2 f2、5.1.6.2 f2、主規格 §7.10「內文媒體」）。">
   <div class="dg-card__head"><span class="dg-card__num">4.222</span><h2 class="dg-card__title">Rich body</h2><span class="layer layer--molecule">🟡 molecule</span><a class="dg-card__link" href="design-system.html#rich-body">Spec →</a></div>
-  <p class="dg-card__one">活動「描述」與每一塊「說明區塊」的內文（D335，2026-09-29；規格 5.1.6.1 §4.2 F2、5.1.6.2 F2）。</p>
+  <p class="dg-card__one">活動「描述」與每一塊「說明區塊」的內文（D335，2026-09-29；D340，2026-09-30；規格 5.1.6.1 §4.2 F2、5.1.6.2 F2、主規格 §7.10「內文媒體」）。</p>
 <div class="dg-card__render">
 <div class="demo" style="max-width:560px">
     <div class="rich-body" style="flex:1 1 auto">
       <div class="rich-body__blocks">
-        <textarea class="textarea rich-body__text" rows="4" placeholder="What will fans experience? Make it vivid."></textarea>
+        <div class="textarea rich-body__text is-blank" role="textbox" aria-multiline="true" contenteditable="true" data-placeholder="What will fans experience? Make it vivid." style="--rb-rows:4"></div>
       </div>
       <div class="rich-body__tools">
+        <div class="rich-body__fmt" role="group" aria-label="Text format">
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Bold" title="Bold"><i data-lucide="bold" class="ztor-icon"></i></button>
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Bulleted list" title="Bulleted list"><i data-lucide="list" class="ztor-icon"></i></button>
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Numbered list" title="Numbered list"><i data-lucide="list-numbers" class="ztor-icon"></i></button>
+        </div>
+        <span class="rich-body__sep" aria-hidden="true"></span>
         <button class="btn btn--ghost btn--sm" type="button"><i data-lucide="image" class="ztor-icon"></i> <span data-en>Insert image</span><span data-zh>插入圖片</span></button>
         <button class="btn btn--ghost btn--sm" type="button"><i data-lucide="film" class="ztor-icon"></i> <span data-en>Insert video</span><span data-zh>插入影片</span></button>
       </div>
     </div>
   </div>
 </div>
-<details class="dg-more dsd-fold"><summary>更多示範（2）</summary><div class="dg-card__render">
+<details class="dg-more dsd-fold"><summary>更多示範（4）</summary><div class="dg-card__render">
 <div class="demo" style="max-width:560px">
-    <div class="rich-body rich-body--has-media" style="flex:1 1 auto">
+    <div class="rich-body" style="flex:1 1 auto">
       <div class="rich-body__blocks">
-        <textarea class="textarea rich-body__text" rows="3">三天三場的粉絲見面會，每一場都有各自的主題單元與抽選互動。</textarea>
-        <div class="upload-tile rich-body__media is-filled" data-upload data-upload-src="images/ip/a-lin.webp"></div>
-        <textarea class="textarea rich-body__text" rows="2">中選者請於開演前 30 分鐘到海音館 1 樓大廳報到。</textarea>
+        <div class="textarea rich-body__text" role="textbox" aria-multiline="true" contenteditable="true" style="--rb-rows:3"><p><strong>VIP 彩排參觀</strong></p><p>輪椅席購票方式：</p><ul><li>先購買搖滾區或看台門票</li><li>開演前 7 天來信客服登記</li></ul></div>
       </div>
       <div class="rich-body__tools">
+        <div class="rich-body__fmt" role="group" aria-label="Text format">
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Bold" title="Bold"><i data-lucide="bold" class="ztor-icon"></i></button>
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="true" aria-label="Bulleted list" title="Bulleted list"><i data-lucide="list" class="ztor-icon"></i></button>
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Numbered list" title="Numbered list"><i data-lucide="list-numbers" class="ztor-icon"></i></button>
+        </div>
+        <span class="rich-body__sep" aria-hidden="true"></span>
         <button class="btn btn--ghost btn--sm" type="button"><i data-lucide="image" class="ztor-icon"></i> <span data-en>Insert image</span><span data-zh>插入圖片</span></button>
         <button class="btn btn--ghost btn--sm" type="button"><i data-lucide="film" class="ztor-icon"></i> <span data-en>Insert video</span><span data-zh>插入影片</span></button>
       </div>
     </div>
   </div>
 <div class="demo" style="max-width:560px">
-    <div class="rich-body rich-body--has-media is-locked" style="flex:1 1 auto">
+    <div class="rich-body rich-body--has-media" style="flex:1 1 auto">
       <div class="rich-body__blocks">
-        <textarea class="textarea rich-body__text" rows="3" disabled>睽違三年的世界巡迴，台北站唯一一場。</textarea>
-        <div class="upload-tile rich-body__media is-filled" data-upload data-upload-src="images/projects/nick-realive.jpg"></div>
-        <textarea class="textarea rich-body__text is-blank" rows="2" disabled></textarea>
+        <div class="textarea rich-body__text" role="textbox" aria-multiline="true" contenteditable="true" style="--rb-rows:3"><p>三天三場的粉絲見面會，每一場都有各自的主題單元與抽選互動。</p></div>
+        <div class="upload-tile rich-body__media is-filled" data-upload data-upload-src="images/ip/a-lin.webp"></div>
+        <div class="textarea rich-body__text" role="textbox" aria-multiline="true" contenteditable="true" style="--rb-rows:2"><p>中選者請於開演前 30 分鐘到海音館 1 樓大廳報到。</p></div>
       </div>
       <div class="rich-body__tools">
+        <div class="rich-body__fmt" role="group" aria-label="Text format">
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Bold" title="Bold"><i data-lucide="bold" class="ztor-icon"></i></button>
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Bulleted list" title="Bulleted list"><i data-lucide="list" class="ztor-icon"></i></button>
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Numbered list" title="Numbered list"><i data-lucide="list-numbers" class="ztor-icon"></i></button>
+        </div>
+        <span class="rich-body__sep" aria-hidden="true"></span>
+        <button class="btn btn--ghost btn--sm" type="button"><i data-lucide="image" class="ztor-icon"></i> <span data-en>Insert image</span><span data-zh>插入圖片</span></button>
+        <button class="btn btn--ghost btn--sm" type="button"><i data-lucide="film" class="ztor-icon"></i> <span data-en>Insert video</span><span data-zh>插入影片</span></button>
+      </div>
+    </div>
+  </div>
+<div class="demo" style="max-width:560px">
+    <div class="rich-body rich-body--has-media" style="flex:1 1 auto">
+      <div class="rich-body__tools">
+        <div class="rich-body__fmt" role="group" aria-label="Text format">
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Bold" title="Bold"><i data-lucide="bold" class="ztor-icon"></i></button>
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Bulleted list" title="Bulleted list"><i data-lucide="list" class="ztor-icon"></i></button>
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Numbered list" title="Numbered list"><i data-lucide="list-numbers" class="ztor-icon"></i></button>
+        </div>
+        <span class="rich-body__sep" aria-hidden="true"></span>
+        <button class="btn btn--ghost btn--sm" type="button" disabled><i data-lucide="image" class="ztor-icon"></i> <span data-en>Insert image</span><span data-zh>插入圖片</span></button>
+        <button class="btn btn--ghost btn--sm" type="button" disabled><i data-lucide="film" class="ztor-icon"></i> <span data-en>Insert video</span><span data-zh>插入影片</span></button>
+        <span class="field__hint rich-body__limit"><span data-en>Up to 10 images or videos per section</span><span data-zh>每段最多 10 個圖片或影片</span></span>
+      </div>
+    </div>
+  </div>
+<div class="demo" style="max-width:560px">
+    <div class="rich-body rich-body--has-media is-locked" style="flex:1 1 auto">
+      <div class="rich-body__blocks">
+        <div class="textarea rich-body__text" role="textbox" aria-multiline="true" contenteditable="false" aria-disabled="true" style="--rb-rows:3"><p>睽違三年的世界巡迴，台北站唯一一場。</p></div>
+        <div class="upload-tile rich-body__media is-filled" data-upload data-upload-src="images/projects/nick-realive.jpg"></div>
+        <div class="textarea rich-body__text is-blank" role="textbox" aria-multiline="true" contenteditable="false" aria-disabled="true" style="--rb-rows:2"></div>
+      </div>
+      <div class="rich-body__tools">
+        <div class="rich-body__fmt" role="group" aria-label="Text format">
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Bold" title="Bold"><i data-lucide="bold" class="ztor-icon"></i></button>
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Bulleted list" title="Bulleted list"><i data-lucide="list" class="ztor-icon"></i></button>
+          <button class="btn btn--ghost btn--sm btn--icon" type="button" aria-pressed="false" aria-label="Numbered list" title="Numbered list"><i data-lucide="list-numbers" class="ztor-icon"></i></button>
+        </div>
+        <span class="rich-body__sep" aria-hidden="true"></span>
         <button class="btn btn--ghost btn--sm" type="button"><i data-lucide="image" class="ztor-icon"></i> <span data-en>Insert image</span><span data-zh>插入圖片</span></button>
         <button class="btn btn--ghost btn--sm" type="button"><i data-lucide="film" class="ztor-icon"></i> <span data-en>Insert video</span><span data-zh>插入影片</span></button>
       </div>
@@ -7950,29 +8039,33 @@ Letterpress cover, uncoated stock.</textarea></div>
     <span class="layer layer--molecule">🟡 molecule</span>
   </div>
   <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
-  <p class="sub__desc" data-en>The body of an event’s description and of each info section (D335, 2026-09-29; spec 5.1.6.1 §4.2 F2, 5.1.6.2 F2). Besides text, organisers can insert images and videos between paragraphs — the insert lands where the cursor is — and remove them again. Text stays plain: bold, lists and links are out of scope for now. Format, size and count limits for these media are mostly still open upstream (main spec §7.10 “Body media”), so the editor enforces none; each button only filters the file type. Content imported from bookyay keeps its images and videos in place, and the imported description is locked.</p>
-  <p class="sub__desc" data-zh>活動「描述」與每一塊「說明區塊」的內文（D335，2026-09-29；規格 5.1.6.1 §4.2 F2、5.1.6.2 F2）。除了文字，運營可以在段落之間插入圖片與影片——插在游標所在的位置——也可以再刪掉。文字維持純文字：粗體、清單、連結本輪不做。這些媒體的格式、大小、數量上游多數還沒定（主規格 §7.10「內文媒體」），所以編輯器不擋任何數字，兩顆鈕只分流檔型。從 bookyay 帶入的內容，圖片與影片照原位置進來；帶入的描述是鎖定的。</p>
+  <p class="sub__desc" data-en>The body of an event’s description and of each info section (D335, 2026-09-29; D340, 2026-09-30; spec 5.1.6.1 §4.2 F2, 5.1.6.2 F2, main spec §7.10 “Body media”). Besides text, organisers can insert images and videos between paragraphs — the insert lands where the cursor is — and remove them again. <strong>D340: the text supports bold and lists</strong> (bulleted and numbered); links, heading sizes and other formats are out of scope, and pasted text comes in plain. Images and videos keep their own size and ratio (no limit), and each body takes up to 10 of them (images and videos together) — at 10 the insert buttons disable and the toolbar says why. A description with only images or videos does not count as filled: the host’s required check reads the text only. Content imported from bookyay keeps its bold, lists, images and videos in place; the imported description is locked.</p>
+  <p class="sub__desc" data-zh>活動「描述」與每一塊「說明區塊」的內文（D335，2026-09-29；D340，2026-09-30；規格 5.1.6.1 §4.2 F2、5.1.6.2 F2、主規格 §7.10「內文媒體」）。除了文字，運營可以在段落之間插入圖片與影片——插在游標所在的位置——也可以再刪掉。<strong>D340：文字支援粗體與清單</strong>（項目符號、編號）；連結、標題字級等其他格式本輪不做，貼上一律轉純文字。圖片與影片的尺寸比例不限（預覽框照媒體本身），每段內文最多 10 個（圖片＋影片合計）——滿了插入鈕停用、工具列尾端說明原因。描述只有圖片或影片不算已填：宿主的必填檢查只讀文字。從 bookyay 帶入的內容，粗體、清單、圖片與影片都照原位置進來；帶入的描述是鎖定的。</p>
   <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
   <div class="compose">
     <div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div>
-    <div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="#input">Input (.textarea)</a> <a class="compose-chip compose-chip--atom" href="#upload-tile">Upload tile</a> <a class="compose-chip compose-chip--atom" href="#button">Button</a> <a class="compose-chip compose-chip--atom" href="#icon">Icon</a></div>
+    <div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="#input">Input (.textarea look)</a> <a class="compose-chip compose-chip--atom" href="#upload-tile">Upload tile</a> <a class="compose-chip compose-chip--atom" href="#button">Button</a> <a class="compose-chip compose-chip--atom" href="#icon">Icon</a></div>
     <div class="compose__dir"><span data-en>Used by</span><span data-zh>被誰使用</span> ↑</div>
     <div class="compose__tier compose__tier--molecule"><span class="compose__tier-label">molecule</span><a class="compose-chip compose-chip--molecule" href="#info-sections">Info sections</a></div>
-    <div class="compose__note"><span data-en>The media block <em>is</em> an <a href="#upload-tile">Upload tile</a> (filled border, hover replace and remove, play for video — the single path from Q40), but it carries no slot ratio: the frame follows the media’s own shape instead of the 2:3 display-asset slot, and it does not count toward any display-asset quota.</span><span data-zh>媒體塊就是一格 <a href="#upload-tile">Upload tile</a>（已填實線邊、hover 替換與刪除、影片可播放——Q40 的單一產生路徑），但不帶槽位比例：預覽框照媒體本身的形狀，不套展示素材槽的 2:3，也不佔任何展示素材額度。</span></div>
+    <div class="compose__note"><span data-en>A text block is a <code>contenteditable</code> box wearing the <a href="#input">.textarea</a> look (a real textarea can’t hold bold or a list). The media block <em>is</em> an <a href="#upload-tile">Upload tile</a> (filled border, hover replace and remove, play for video — the single path from Q40), but it carries no slot ratio: the frame follows the media’s own shape instead of the 2:3 display-asset slot, and it does not count toward any display-asset quota. The format buttons’ pressed state borrows the nav “selected” tint (<code>--selected-surface</code>／<code>--selected-ink</code>).</span><span data-zh>文字塊是一個穿著 <a href="#input">.textarea</a> 外觀的 <code>contenteditable</code> 框（原生 textarea 裝不了粗體與清單）。媒體塊就是一格 <a href="#upload-tile">Upload tile</a>（已填實線邊、hover 替換與刪除、影片可播放——Q40 的單一產生路徑），但不帶槽位比例：預覽框照媒體本身的形狀，不套展示素材槽的 2:3，也不佔任何展示素材額度。格式鈕的按下態借導覽類已選的淡橘（<code>--selected-surface</code>／<code>--selected-ink</code>）。</span></div>
   </div>
   <p class="field-label" data-en>Rendered preview — text only (the starting state)</p><p class="field-label" data-zh>視覺展示 — 只有文字（起始狀態）</p>
   
+  <p class="field-label" data-en>Bold and a list (D340) — the caret sits in the list, so the list button reads as pressed</p><p class="field-label" data-zh>粗體與清單（D340）— 游標在清單裡，清單鈕呈按下態</p>
+  
   <p class="field-label" data-en>An image inserted between two paragraphs (hover it for replace and remove)</p><p class="field-label" data-zh>兩段文字之間插了一張圖（hover 出現替換與刪除）</p>
   
-  <p class="field-label" data-en>Locked (description imported from bookyay) — no insert buttons, media cannot be replaced or removed</p><p class="field-label" data-zh>鎖定（bookyay 帶入的描述）— 沒有插入鈕、媒體不能替換或刪除</p>
+  <p class="field-label" data-en>Media limit reached (D340: 10 per body) — insert buttons disabled, the toolbar says why</p><p class="field-label" data-zh>媒體滿額（D340：每段 10 個）— 插入鈕停用、工具列尾端說明原因</p>
   
-  <p class="sub__desc" data-en>In a two-step edit panel (event detail) the view state turns each text block into a plain readout, keeps the media visible, hides the insert buttons and the tile’s replace and remove, and drops the “—” readout of an empty text block when the body has media.</p>
-  <p class="sub__desc" data-zh>在兩段式編輯面板（活動詳情）裡，檢視態把每個文字塊畫成純文字讀數、媒體照常顯示，插入鈕與上傳格的替換刪除都收起；內文有媒體時，空白文字塊不顯示「—」。</p>
+  <p class="field-label" data-en>Locked (description imported from bookyay) — no toolbar, text not editable, media cannot be replaced or removed</p><p class="field-label" data-zh>鎖定（bookyay 帶入的描述）— 沒有工具列、文字不可改、媒體不能替換或刪除</p>
+  
+  <p class="sub__desc" data-en>In a two-step edit panel (event detail) the view state shows each text block as its own readout — no box, not clickable, formatting kept — keeps the media visible, hides the toolbar and the tile’s replace and remove, and hides an empty text block between media (a body with nothing at all shows “—”).</p>
+  <p class="sub__desc" data-zh>在兩段式編輯面板（活動詳情）裡，檢視態的文字塊本身就是讀數——沒有框、點不動、格式照原樣——媒體照常顯示，工具列與上傳格的替換刪除都收起；夾在媒體之間的空白文字塊整塊收起（整段都空才顯示「—」）。</p>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
-    <p class="field-text"><code>.rich-body</code>（flex column、<code>gap: --sp-8</code>）&gt; <code>.rich-body__blocks</code>〔<code>.textarea.rich-body__text[data-rb-text]</code>（<code>.is-blank</code>）與 <code>.upload-tile.rich-body__media[data-rb-media]</code>（寬 <code>min(280px, 100%)</code>、<code>aspect-ratio: var(--rb-ratio, 16 / 9)</code>、圖片 <code>object-fit: contain</code>）交錯，文字塊開頭、每個媒體後面跟一個文字塊〕＋ <code>.rich-body__tools</code>（兩顆 <code>.btn--ghost.btn--sm</code>）。狀態 <code>.rich-body--has-media</code>、<code>.is-locked</code>。</p>
-    <p class="field-text">互動 <code>partials/rich-body.js</code>：<code>window.ztorRichBody.mount(host, { blocks|text, rows, placeholder, placeholderKey, label, labelKey, proxy, onChange })</code> → <code>{ el, get(), text(), media(), set(v), lock(on), insert(type, file) }</code>。blocks＝<code>[{ type:'text', text }, { type:'image'|'video', src }]</code>；<code>text()</code> 只有文字（翻譯表只列它）。插入＝切開最後聚焦的文字塊（游標處）；刪除媒體＝上傳格清空 → 整格拿掉、前後文字併回一段。<code>proxy</code>：宿主既有欄位（<code>[data-ce="desc"]</code>／<code>[data-ed="desc"]</code>），同步寫 <code>text()</code> 並補發 input／blur，必填與翻譯表照舊讀它。發冒泡的 <code>richbody:change</code>。</p>
-    <p class="field-text"><code>ds-components/rich-body.css</code> ＋ <code>partials/rich-body.js</code>（媒體塊靠 <code>partials/upload-tile.js</code> 增強，預填影片用 <code>data-upload-kind="video"</code>）。消費頁：<code>create-event.html</code>（描述、說明區塊內文）、<code>event-detail.html</code>（活動內容的描述、說明區塊內文）、<code>partials/info-sections.js</code>。</p>
+    <p class="field-text"><code>.rich-body</code>（flex column、<code>gap: --sp-8</code>）&gt; <code>.rich-body__blocks</code>〔<code>.textarea.rich-body__text[data-rb-text][contenteditable]</code>（最小高度＝<code>--rb-rows</code> 列；<code>.is-blank</code> 畫 <code>data-placeholder</code>；內容只含 <code>p／br／strong／ul／ol／li</code>）與 <code>.upload-tile.rich-body__media[data-rb-media]</code>（寬 <code>min(280px, 100%)</code>、<code>aspect-ratio: var(--rb-ratio, 16 / 9)</code>、圖片 <code>object-fit: contain</code>）交錯，文字塊開頭、每個媒體後面跟一個文字塊〕＋ <code>.rich-body__tools</code>〔<code>.rich-body__fmt</code>（三顆 <code>.btn--ghost.btn--sm.btn--icon</code>，<code>aria-pressed</code>）、<code>.rich-body__sep</code>、兩顆插入鈕（滿額 disabled）、<code>.field__hint.rich-body__limit</code>〕。狀態 <code>.rich-body--has-media</code>、<code>.is-locked</code>。</p>
+    <p class="field-text">互動 <code>partials/rich-body.js</code>：<code>window.ztorRichBody.mount(host, { blocks|text, rows, placeholder, placeholderKey, label, labelKey, proxy, maxMedia:10, feat, fmtFeat, onChange })</code> → <code>{ el, get(), text(), media(), set(v), lock(on), insert(type, file), format('bold'|'ul'|'ol') }</code>。blocks＝<code>[{ type:'text', text, html }, { type:'image'|'video', src }]</code>（<code>text</code> 純文字、<code>html</code> 格式版；舊資料只有 <code>text</code> 也照收）；<code>text()</code> 只有文字（翻譯表只列它）。格式＝<code>document.execCommand</code>（bold／insertUnorderedList／insertOrderedList），讀回時一律經 <code>sanitize()</code>。插入＝切開最後聚焦的文字塊（游標處，Range 切段）；刪除媒體＝上傳格清空 → 整格拿掉、前後文字併回一段。<code>proxy</code>：宿主既有欄位（<code>[data-ce="desc"]</code>／<code>[data-ed="desc"]</code>），同步寫 <code>text()</code> 並補發 input／blur，必填與翻譯表照舊讀它。發冒泡的 <code>richbody:change</code>。靜態工具：<code>toBlocks／normalize／textOf／mediaOf／hasMedia／hasText／sanitize／plainOf／textToHtml／isFormatted／fromHtml</code>（外部富文本 → blocks，bookyay 帶入用）／<code>fieldKeys(base, blocks)</code>（翻譯欄位 key：文字被媒體切成 n 段就 n 個 key，譯文照段落放回原位；<a href="#fan-event-page">Fan event page</a> 用同一支對回去）。</p>
+    <p class="field-text"><code>ds-components/rich-body.css</code> ＋ <code>partials/rich-body.js</code>（媒體塊靠 <code>partials/upload-tile.js</code> 增強，預填影片用 <code>data-upload-kind="video"</code>；圖示 <code>bold</code>／<code>list</code>／<code>list-numbers</code> 在 <code>js/icons.js</code>）。消費頁：<code>create-event.html</code>（描述、說明區塊內文）、<code>event-detail.html</code>（活動內容的描述、說明區塊內文）、<code>partials/info-sections.js</code>；只用靜態工具的：<code>event-localization.html</code>、<code>js/fan-event-page.js</code>。</p>
   </div>
   </details>
   </details>
@@ -13139,6 +13232,8 @@ Letterpress cover, uncoated stock.</textarea></div>
   <p class="sub__desc" data-zh><strong>例外（token 紀律）：</strong><code>fan-shop.css</code> 是前台鏡像、不是本 design system 的元件——它刻意保留前台的裸 <code>rgb()</code> 與 px 字級，且不得被 Creator Studio 其他頁引用。它的裸色數量已手動登記在 <code>ds-baseline.json</code>；前台改了就重抓覆蓋，不在這裡手改。</p>
   <p class="sub__desc" data-en><strong>2026-09-29 (D334):</strong> <code>notes</code> / <code>bring</code> and the whole “Good to know” section are gone — the lists were deleted with “Advanced details”; how fans see the new <a href="#info-sections">info sections</a> is still open, so the page does not draw them yet (ASSUMPTIONS UIA-186). <strong>2026-09-29 model changes (D327 / D328):</strong> “Good to know” merges only What to bring + Good to know (the first list and the ticket-collection note were deleted, <code>includes</code> / <code>entryNote</code> are no longer read); <code>language</code> may be an array (event languages are multi-select — joined on one line); <code>tiers[].desc</code> is the ticket description (translatable, shown under the ticket name); <code>tiers[].hidden: true</code> leaves the ticket out of the price list, the price range and the “N ticket types” count — the demo below carries a hidden third tier that does not render.</p>
   <p class="sub__desc" data-zh><strong>2026-09-29（D334）：</strong><code>notes</code>／<code>bring</code> 與整個「注意事項」一節退場——兩份清單隨「進階詳細資料」刪除；新的<a href="#info-sections">說明區塊</a>在粉絲頁怎麼呈現尚未決定，本頁暫不畫（ASSUMPTIONS UIA-186）。<strong>2026-09-29 model 變更（D327／D328）：</strong>注意事項只收需攜帶物品＋活動須知（第一組清單與取票說明欄已刪，不再讀 <code>includes</code>／<code>entryNote</code>）；<code>language</code> 可給陣列（活動語言複選，串成一行）；<code>tiers[].desc</code>＝門票簡介（可翻譯，畫在票名下）；<code>tiers[].hidden: true</code> 的票不在票價清單、價格區間與「N 種票」裡出現——下方示範帶了一張隱藏的第三種票，畫面上不會出現。</p>
+  <p class="sub__desc" data-en><strong>2026-09-30 (D340).</strong> The description follows its own layout — bold and lists kept, images and videos in the positions the organiser put them (<code>descBlocks</code>) — and the <strong>info sections now show on the fan page</strong>, right under the description inside “About”: one block per section (title + body), a hairline between blocks, and a body that is too long starts collapsed behind “Read more” (collapsed height 18rem is a placeholder until upstream picks a threshold, ASSUMPTIONS UIA-190). In other languages every text paragraph is its own translatable slot, so images and videos stay put while the words change.</p>
+  <p class="sub__desc" data-zh><strong>2026-09-30（D340）。</strong>描述照原文的版面畫——粗體與清單保留、圖片影片在運營放的位置（<code>descBlocks</code>）；<strong>說明區塊開始出現在粉絲頁</strong>，就在「關於活動」的描述下方：一塊一段（標題＋內文）、塊與塊之間一條淡分隔線，內文太長才收合、露出「展開全文」（收合高度 18rem 是上游定門檻前的暫定值，ASSUMPTIONS UIA-190）。其他語系每一段文字各是一個可翻譯欄位，所以換語言時圖片影片的位置不變、只有字換掉。</p>
   <p class="field-label" data-en>Rendered preview <span class="field-note">(rendered live by <code>js/fan-event-page.js</code> with a demo model and a stub <code>api</code> — same code path as the two hosts; ticket page view)</span></p>
   <p class="field-label" data-zh>視覺展示 <span class="field-note">（由 <code>js/fan-event-page.js</code> 用示範 model 與替身 <code>api</code> 當場渲染——與兩個宿主同一條路徑；票券頁視圖）</span></p>
   
@@ -13901,6 +13996,7 @@ Letterpress cover, uncoated stock.</textarea></div>
 <script src="partials/source-upload-modal.js?v=r2.2"></script>
 <script src="partials/fee-exception-modal.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script>
+<script src="partials/rich-body.js?v=r2.2"></script>
 <script src="js/fan-event-page.js?v=r2.2"></script>
 <script src="js/fan-product-page.js?v=r2.2"></script>
 <script src="js/fan-bundle-page.js?v=r2.2"></script>
@@ -13972,6 +14068,14 @@ Letterpress cover, uncoated stock.</textarea></div>
       date: '2026-12-05', time: '19:30 – 21:30', duration: '2 h', venue: 'Taipei Music Center', address: '台北市南港區市民大道八段 99 號', language: ['Cantonese', 'Mandarin'],   /* D328：活動語言可複選，陣列由渲染器串成一行 */
       priority: null, limit: 'Up to 4 per order', desc: { key: 'desc' }, lineup: [{ name: 'NICKTHEREAL 周湯豪', role: null }],
       pickup: 'E-ticket (QR)', terms: null,   /* D327：第一組清單與取票說明欄已刪；D334：notes／bring 兩份清單已刪 */
+      /* D340：說明區塊畫在「關於活動」的描述下方（標題＋內文；第二塊內文長，示範收合＋「展開全文」） */
+      infoSections: [
+        { title: 'VIP 彩排參觀', bodyKey: 'info-0-b', blocks: [{ type: 'text', html: '<p><strong>VIP</strong> 持票者演出當天 16:00 於 2 號門集合，由工作人員帶領進場參觀彩排約 30 分鐘。</p>' }] },
+        { title: '輪椅席購票方式', bodyKey: 'info-1-b', blocks: [
+          { type: 'text', html: '<p>場館設有輪椅座位：</p><ul><li>先購買一樓或看台門票</li><li>開演前 7 天來信客服登記，每位輪椅使用者可有 1 位陪同者</li></ul>' },
+          { type: 'image', src: 'images/projects/nick-lwh.jpg' },
+          { type: 'text', html: '<p>陪同者票與輪椅席相鄰，入場時請一起驗票。</p>' }] }
+      ],
       tiers: [
         /* D328：desc＝門票簡介（可翻譯）；hidden:true 的票（這裡的 c）不在票價清單列出 */
         { key: 'a', name: { key: 'tier-a' }, note: '', desc: { key: 'tdesc-a' }, priceObj: ppDemoPrices[0].priceObj, priceKey: 'tier:a', soldOut: false },

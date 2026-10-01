@@ -117,30 +117,22 @@ function record(key, violations, note) {
   findings[key] = { violations: violations, note: note || '' };
 }
 
-// ── 不變量 1：Σ(tiers[].qty) 與 capacity 的關係 ──────────────
-(function () {
-  var v = [];
-  EVENTS.forEach(function (e) {
-    var qtySum = (e.tiers || []).reduce(function (s, t) { return s + (t.qty || 0); }, 0);
-    if (!(e.tiers && e.tiers.length)) return; // 空票種另外在不變量涵蓋（草稿/已排程矛盾）
-    if (qtySum > e.capacity) {
-      v.push(e.id + '：Σqty=' + qtySum + ' > capacity=' + e.capacity);
-    } else if (qtySum < e.capacity) {
-      v.push(e.id + '：Σqty=' + qtySum + ' < capacity=' + e.capacity + '（低於，非相等——見附註判斷慣例）');
-    }
-  });
-  record('1_qty_vs_capacity', v);
-})();
+// ── 不變量 1：已退場（2026-09-30 D340）──────────────────────────
+// 原本比對 Σ(tiers[].qty) 與 capacity。容量已刪除（5.1.6.1 F8 退場），活動總量＝Σ(tiers[].qty)（含隱藏）本身，
+// 沒有第二個數字可比；key 留著、恆為 0 筆，讓 check_events_store.out.json 的欄位對得上舊紀錄。
+record('1_qty_vs_capacity', [], 'D340 容量刪除，本條退場');
 
-// ── 不變量 2a：sold ≤ capacity ────────────────────────────────
+// ── 不變量 2a：sold ≤ 門票張數合計（D340 起取代 sold ≤ capacity）──────────
 (function () {
   var v = [];
   EVENTS.forEach(function (e) {
-    if ((e.sold || 0) > (e.capacity || 0)) {
-      v.push(e.id + '：sold=' + e.sold + ' > capacity=' + e.capacity);
+    var total = (e.tiers || []).reduce(function (s, t) { return s + (t.qty || 0); }, 0);
+    if (!(e.tiers && e.tiers.length)) return;
+    if ((e.sold || 0) > total) {
+      v.push(e.id + '：sold=' + e.sold + ' > Σqty=' + total);
     }
   });
-  record('2a_sold_vs_capacity', v);
+  record('2a_sold_vs_capacity', v, 'D340 起分母＝門票張數合計（含隱藏）');
 })();
 
 // ── 不變量 2b：Σ(tier.sold) vs event.sold（用 store 自帶的 soldOf() 邏輯對照）──
@@ -435,8 +427,9 @@ function record(key, violations, note) {
   var v = [];
   EVENTS.forEach(function (e) {
     if (e.status === 'live') {
-      if (e.arrivedAtOpen != null && e.arrivedAtOpen > e.capacity) {
-        v.push(e.id + '：arrivedAtOpen=' + e.arrivedAtOpen + ' > capacity=' + e.capacity);
+      var total = (e.tiers || []).reduce(function (s, t) { return s + (t.qty || 0); }, 0);   // D340：容量已刪，改比門票張數合計
+      if (e.arrivedAtOpen != null && e.arrivedAtOpen > total) {
+        v.push(e.id + '：arrivedAtOpen=' + e.arrivedAtOpen + ' > Σqty=' + total);
       }
       if (e.arrivedAtOpen != null && e.sold != null && e.arrivedAtOpen > e.sold) {
         v.push(e.id + '：arrivedAtOpen=' + e.arrivedAtOpen + ' > sold=' + e.sold + '（到場數不該超過售出數）');

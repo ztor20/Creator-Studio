@@ -42,7 +42,13 @@
    示範：realive-asia-taipei 第一塊（粉絲福利說明）在兩段文字之間夾一張圖（原型自擬）。
 
    sold／status 是編輯態的行為輸入、不只是顯示值：
-     · sold > 0  → 場次已售出，容量不得低於 sold、已售票種不可刪。
+     · sold > 0  → 場次已售出，該票種張數不得低於它的 sold、已售票種不可刪。
+   容量（capacity）2026-09-30 隨 D340 刪除（5.1.6.1 F8 退場）：活動的總量＝本活動所有門票的張數合計（Σ tiers[].qty，
+   含隱藏的門票），為計算值、不另存——清單票券欄、詳情 KPI 的分母都用它（totalQty()）。共看派對的人數上限在 room.capacity，
+   是另一個概念（房間同時能進幾人），保留。
+   publish（D340）：{ pickup, shown }——開賣設定＝上面的 sale（from 開賣、to 停售，皆選填；from 缺＝上架即開賣、
+   to 缺＝賣到活動開始），取代「直接販售／限時販售」二選一的 onsale；顯示設定＝shown（true 顯示／false 隱藏，
+   隱藏＝只能經活動連結進入），取代「公開／私人」的 visibility。
      · status='on-sale' → 已公開販售，改日期／場地屬「會通知到購票者」的高影響欄位。
    資料為原型 mock，非真實票務數字（見 ASSUMPTIONS.md）。
 
@@ -88,7 +94,6 @@
       /* 早到政策（2026-08-11 與建立流程同步）：比自己那張票的入場時間早到的人怎麼辦。
          沒寫的活動預設 'warn'（仍可入場）；這一場示範 'block'。 */
       early: 'block',
-      capacity: 600,
       /* earlyMin＝比開放入場提早幾分鐘（2026-08-11 新欄，沒寫＝無）。2026-09-29：手續費種子 `fee` 清掉（D316 已退場，D327 決定八）。
          desc＝門票簡介、hidden＝顯示開關關閉（皆 2026-09-29 D328 新欄，沒寫＝無簡介／顯示）。
          hideFix＝bookyay 套票轉出的 1 人票、鎖定為隱藏；組合包的 fix＝bookyay 自動建立、整組鎖定，
@@ -129,7 +134,7 @@
       ],
       /* 發布設定（2026-08-11 新欄）：建立流程第 7 步的三個選擇，沒寫＝直接開賣／電子門票／公開。
          2026-09-29（D327）：電子門票底下的附屬設定值整組清掉——那組設定已刪除。 */
-      publish: { onsale: 'now', pickup: 'eticket', visibility: 'public' },
+      publish: { pickup: 'eticket', shown: true },
       sold: 600,
       revenue: 1800000,
       status: 'on-sale',
@@ -156,7 +161,6 @@
       start: '19:30',
       end: '22:00',
       doors: '18:30',
-      capacity: 600,
       tiers: [
         { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 80 },
         { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 140 },
@@ -198,7 +202,6 @@
       start: '19:30',
       end: '22:00',
       doors: '18:30',
-      capacity: 600,
       tiers: [
         /* reserved＝下單未付款佔走的、paused＝暫停販售（2026-08-11 新欄，示範營運列表用）。 */
         { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 40, earlyMin: 30, reserved: 6,
@@ -215,7 +218,7 @@
           products: [{ name: 'REALIVE 巡演精裝寫真誌', img: 'images/products/tour-zine-vol-02.webp', price: 1000 }],
           price: 4300, sold: 7, cap: 40 }
       ],
-      publish: { onsale: 'scheduled', pickup: 'sf', visibility: 'public' },
+      publish: { pickup: 'sf', shown: true },
       /* 只設開賣、不設停售的示範（`to: ''`）——賣到開演為止。 */
       sale: { from: '2026-08-15 12:00', to: '' },
       sold: 200,
@@ -245,7 +248,6 @@
       start: '20:00',
       end: '22:30',
       doors: '19:00',
-      capacity: 120,
       tiers: [
         { id: 'tier-ga',  name: 'General admission', price: 25, qty: 100, sold: 72 },
         { id: 'tier-vip', name: 'VIP · soundcheck',  price: 60, qty: 20,  sold: 12 }
@@ -273,11 +275,10 @@
       end: '',
       doors: '',
       /* 2026-08-18 修正（使用者：「是發布活動前至少要有一張票喔」）：這一筆原本是
-         `tiers: []` ＋ `capacity: 0`，用來示範「已排程但還不能開賣」。但票種是**建立流程的
+         `tiers: []` ＋ 容量 0（容量欄 2026-09-30 D340 已刪），用來示範「已排程但還不能開賣」。但票種是**建立流程的
          必填**（規格 5.1.6.1「至少 1 種」），走完流程才會有已排程這個狀態——沒有票種的
          已排程活動在產品上生不出來，那是一份自相矛盾的示範資料。要示範「還缺東西」
          該用草稿，不是已排程。 */
-      capacity: 1200,
       tiers: [
         { id: 'tier-ga', name: 'General admission', price: 600, qty: 1200, sold: 0 }
       ],
@@ -286,7 +287,9 @@
       status: 'scheduled',
       images: { keyvisual: 'images/projects/nick-wln.jpg', banner: '', gallery: [] },
       video: false,
-      publish: { onsale: 'scheduled', pickup: 'eticket', visibility: 'public' }   // D327：電子門票附屬設定值已清
+      publish: { pickup: 'eticket', shown: false },   // D327：電子門票附屬設定值已清
+      /* D340 示範：開賣時間在未來（預告期）＋顯示設定為隱藏——詳情頁的「提前開賣」確認說明不寫「公開」、改說只能經活動連結進入。 */
+      sale: { from: '2026-10-01 12:00', to: '' },
     },
     {
       id: 'lrh-taichung-watchback',
@@ -308,7 +311,6 @@
       start: '21:00',
       end: '',
       doors: '',
-      capacity: 300,
       /* 線上房間（2026-08-13，D149 落地）：共看派對不套票種頁與取票方式，但入場方式與
          付費門檻總得有個地方看。room.url＝觀眾進的房間、entry＝單一入場券的價格（同 tiers[0]，
          此處不另存一份金額）、chat＝是否開聊天室。實際房控功能仍待上游（見 ASSUMPTIONS WP-001）。 */
@@ -341,7 +343,6 @@
       start: '14:00',
       end: '16:00',
       doors: '13:30',
-      capacity: 200,
       tiers: [
         { id: 'tier-inner', name: 'Inner Circle seat', price: 250, qty: 180, sold: 180 },
         { id: 'tier-plus',  name: 'Inner Circle + polaroid', price: 250, qty: 20, sold: 20 }
@@ -376,13 +377,12 @@
       doors: '13:30',
       /* 場次陣列（2026-08-11 使用者指示）：**定點活動的多場次收進同一筆活動**——場地共用一份，
          每場自己的日期時間與早到政策。單值的 date/start/end/doors 維持＝第 1 場的鏡像
-         （頁首、清單列等舊消費端照讀）。多站活動（每站不同場地）才拆成系列母子頁。 */
+         （頁首、清單列等舊消費端照讀）。每站不同場地的需求改用系列活動（每站一場獨立活動，D340）。 */
       sessions: [
         { id: 's1', date: '2026-09-12', start: '14:00', end: '16:00', doors: '13:30', early: 'warn' },
         { id: 's2', date: '2026-09-13', start: '14:00', end: '16:00', doors: '13:30', early: 'warn' },
         { id: 's3', date: '2026-09-14', start: '19:00', end: '21:00', doors: '18:00', early: 'block' }
       ],
-      capacity: 150,
       tiers: [{ id: 'tier-slot', name: 'Signing slot', price: 5, qty: 150, sold: 118 }],
       /* 2026-08-13：多一筆組合包示範，讓「票券綁商品」不是只有巡演那兩場看得到
          （組合包與單賣的票共用同一個數量池，賣掉一組就從它含的那張票扣一張，BDL-001）。 */
@@ -392,10 +392,10 @@
           price: 45, sold: 26, cap: 60 }
       ],
       /* 販售時間（2026-08-31 新欄 `sale`）：`from` 開賣、`to` 停售，皆為 'YYYY-MM-DD HH:MM'。
-         `to` 留空＝只設開賣、賣到開演（見 ASSUMPTIONS SALE-001）；整個 `sale` 缺席＝
-         `publish.onsale: 'now'`（發布後直接開賣），兩者不是同一件事，不要互相補值。
+         `to` 留空＝只設開賣、賣到開演（見 ASSUMPTIONS SALE-001）；整個 `sale` 缺席＝不設開賣時間＝上架即開賣
+         （D340 起沒有「直接販售／限時販售」二選一，開賣設定只剩這兩個選填時間）。
          這一筆示範「開賣＋停售」都設的完整區間。 */
-      publish: { onsale: 'scheduled', pickup: 'eticket', visibility: 'public' },   // D327：電子門票附屬設定值已清
+      publish: { pickup: 'eticket', shown: true },   // D327：電子門票附屬設定值已清
       sale: { from: '2026-08-01 10:00', to: '2026-09-11 23:59' },
       sold: 118,
       revenue: 590,
@@ -420,7 +420,6 @@
       end: '',
       doors: '',
       /* 2026-08-18 修正：同 taiwan-fest-kenting——已排程代表建立流程已走完，而票種是流程的必填。 */
-      capacity: 2000,
       tiers: [
         { id: 'tier-ga', name: 'General admission', price: 500, qty: 2000, sold: 0 }
       ],
@@ -457,10 +456,6 @@
       /* 活動語言（D328）：活動現場用的語言，可複選；值＝語言碼（yue／cmn／en／ja／ko／th／vi），顯示字串走 ce.evlang.*。
          bookyay 帶入的多值、鎖定。其他示範活動沒寫＝未填。 */
       languages: ['cmn', 'en'],
-      /* 2026-08-19 修正：capacity 原本是 0，但下面的 tiers 加總（400+1,600）＝2,000——
-         2026-08-18 補票種時漏改 capacity，變成「有票可賣、場地卻是 0 人」的自相矛盾。
-         改成 2,000，與 Σtiers.qty 對齊。 */
-      capacity: 2000,
       /* 2026-08-13：這一場備好票種，當「準備中 → 開賣」那條動線的完整示範。
          （2026-08-18 更正：原本這裡還寫著「其餘準備中的活動票種仍為空」——那批已於同日
          補上票種。票種是建立流程的必填，已排程卻沒有票種的活動在產品上生不出來。） */
@@ -496,7 +491,8 @@
       video: false,
       /* 發布設定：bookyay 帶入者的取票方式本身在詳情頁也鎖（值來自 bookyay、要改回 bookyay 改；
          D308 決定一經 D327 修訂為只剩取票方式本身）。 */
-      publish: { onsale: 'scheduled', pickup: 'eticket', visibility: 'public' }
+      publish: { pickup: 'eticket', shown: true },
+      sale: { from: '2026-11-01 12:00', to: '' },   // D340：原 onsale:'scheduled' 沒有時間，補上開賣時間（與自動組合包的早鳥檔期同起點）
     },
     {
       id: 'realive-r2-watchparty',
@@ -514,7 +510,6 @@
       start: '21:00',
       end: '',
       doors: '',
-      capacity: 200,
       /* 線上房間（2026-08-13，D149 落地）：共看派對不套票種頁與取票方式，但入場方式與
          付費門檻總得有個地方看。room.url＝觀眾進的房間、entry＝單一入場券的價格（同 tiers[0]，
          此處不另存一份金額）、chat＝是否開聊天室。實際房控功能仍待上游（見 ASSUMPTIONS WP-001）。 */
@@ -551,7 +546,6 @@
       start: '20:00',
       end: '22:30',
       doors: '19:00',
-      capacity: 600,
       tiers: [{ id: 'tier-ga', name: 'General admission', price: 30, qty: 600, sold: 600 }],
       sold: 600,
       revenue: 18000,
@@ -575,7 +569,6 @@
       start: '20:00',
       end: '22:45',
       doors: '18:30',
-      capacity: 10000,
       tiers: [{ id: 'tier-ga', name: 'General admission', price: 32, qty: 10000, sold: 10000 }],
       sold: 10000,
       revenue: 320000,
@@ -599,7 +592,6 @@
       start: '',
       end: '',
       doors: '',
-      capacity: 0,
       tiers: [],
       sold: 0,
       revenue: 0,
@@ -639,7 +631,6 @@
       start: '19:30',
       end: '21:30',
       doors: '18:30',
-      capacity: 600,
       tiers: [
         /* hidden（D328 示範）：一樓票只透過下面的「一樓票 ＋ 交響夜場刊」組合包賣——活動頁票價清單不列、不能單張買，
            仍是組合包的票券成員、與組合包共用同一個數量池（5.1.6.1 F22「顯示」開關）。 */
@@ -653,7 +644,8 @@
           products: [{ name: 'NICK Symphonic Night 場刊', img: 'images/products/tour-zine-vol-02.webp', price: 400 }],
           price: 3200, sold: 0, cap: 100 }
       ],
-      publish: { onsale: 'scheduled', pickup: 'eticket', visibility: 'public' },   // D327：電子門票附屬設定值已清
+      publish: { pickup: 'eticket', shown: true },   // D327：電子門票附屬設定值已清
+      sale: { from: '2026-10-15 12:00', to: '' },   // D340：原 onsale:'scheduled' 沒有時間，補上開賣時間
       sold: 0,
       revenue: 0,
       status: 'scheduled',
@@ -676,7 +668,6 @@
       start: '20:00',
       end: '22:00',
       doors: '19:00',
-      capacity: 800,
       tiers: [
         { id: 'tier-early', name: 'Early bird', price: 1800, qty: 300, sold: 0 },
         { id: 'tier-ga', name: 'General admission', price: 2400, qty: 500, sold: 0 }
@@ -703,7 +694,6 @@
       start: '20:00',
       end: '22:00',
       doors: '19:00',
-      capacity: 800,
       tiers: [
         { id: 'tier-early', name: 'Early bird', price: 1800, qty: 300, sold: 0 },
         { id: 'tier-ga', name: 'General admission', price: 2400, qty: 500, sold: 0 }
@@ -730,7 +720,6 @@
       start: '14:00',
       end: '16:00',
       doors: '13:30',
-      capacity: 120,
       tiers: [
         { id: 'tier-slot', name: 'Signing slot', price: 600, qty: 120, sold: 0 }
       ],
@@ -756,7 +745,6 @@
       start: '21:00',
       end: '23:00',
       doors: '',
-      capacity: 500,
       room: { url: 'ztor.live/v/lrh-writing-class', chat: true, capacity: 500 },
       tiers: [
         { id: 'tier-stream', name: 'Live stream', price: 300, qty: 400, sold: 0 },
@@ -784,7 +772,6 @@
       start: '21:00',
       end: '',
       doors: '',
-      capacity: 500,
       room: { url: 'ztor.live/w/flames-mv-premiere', chat: true, capacity: 500 },
       tiers: [
         { id: 'tier-entry', name: 'Admission', price: 150, qty: 500, sold: 0 }
@@ -811,7 +798,6 @@
       start: '19:00',
       end: '20:30',
       doors: '18:00',
-      capacity: 3000,
       tiers: [
         { id: 'tier-front', name: 'Front block', price: 1200, qty: 1000, sold: 642 },
         { id: 'tier-rear', name: 'Rear block', price: 800, qty: 2000, sold: 1198 }
@@ -821,7 +807,7 @@
           products: [{ name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'images/products/coastline-acetate.webp', price: 700 }],
           price: 1900, sold: 63, cap: 200 }
       ],
-      publish: { onsale: 'now', pickup: 'eticket', visibility: 'public' },
+      publish: { pickup: 'eticket', shown: true },
       sold: 1840,
       revenue: 1728800,
       status: 'on-sale',
@@ -844,7 +830,6 @@
       start: '21:00',
       end: '22:30',
       doors: '',
-      capacity: 800,
       room: { url: 'ztor.live/v/lrh-studio-live', chat: true, capacity: 800 },
       tiers: [
         { id: 'tier-stream', name: 'Live stream', price: 350, qty: 700, sold: 402 },
@@ -855,7 +840,7 @@
           products: [{ name: 'LOVE RAGE HOPE — 數位專輯', img: 'images/products/nick-album.jpg', price: 170 }],
           price: 520, sold: 88, cap: 150 }
       ],
-      publish: { onsale: 'now', pickup: 'eticket', visibility: 'public' },
+      publish: { pickup: 'eticket', shown: true },
       sold: 473,
       revenue: 186850,
       status: 'on-sale',
@@ -878,7 +863,6 @@
       start: '19:30',
       end: '21:00',
       doors: '18:30',
-      capacity: 1200,
       tiers: [
         { id: 'tier-infield', name: 'Infield', price: 1200, qty: 800, sold: 800 },
         { id: 'tier-outfield', name: 'Outfield', price: 900, qty: 400, sold: 372 }
@@ -915,7 +899,6 @@
       start: '12:20',
       end: '13:30',
       doors: '12:00',
-      capacity: 400,
       tiers: [
         { id: 'tier-entry', name: 'Entry', price: 100, qty: 400, sold: 400 }
       ],
@@ -943,7 +926,6 @@
       start: '18:30',
       end: '19:40',
       doors: '18:00',
-      capacity: 400,
       tiers: [
         { id: 'tier-entry', name: 'Entry', price: 100, qty: 400, sold: 356 }
       ],
@@ -971,7 +953,6 @@
       start: '13:00',
       end: '15:00',
       doors: '',
-      capacity: 1000,
       room: { url: 'ztor.live/v/lrh-listening-party', chat: true, capacity: 1000 },
       tiers: [
         { id: 'tier-stream', name: 'Live stream', price: 200, qty: 1000, sold: 731 }
@@ -998,7 +979,6 @@
       start: '13:30',
       end: '',
       doors: '',
-      capacity: 600,
       room: { url: 'ztor.live/w/lrh-doc', chat: true, capacity: 600 },
       tiers: [
         { id: 'tier-entry', name: 'Admission', price: 120, qty: 600, sold: 418 }
@@ -1025,7 +1005,6 @@
       start: '20:00',
       end: '22:00',
       doors: '19:00',
-      capacity: 500,
       tiers: [
         { id: 'tier-ga', name: 'General admission', price: 900, qty: 500, sold: 500 }
       ],
@@ -1051,7 +1030,6 @@
       start: '20:00',
       end: '22:00',
       doors: '19:00',
-      capacity: 500,
       tiers: [
         { id: 'tier-ga', name: 'General admission', price: 900, qty: 500, sold: 468 }
       ],
@@ -1077,7 +1055,6 @@
       start: '14:00',
       end: '16:00',
       doors: '13:30',
-      capacity: 150,
       tiers: [
         { id: 'tier-slot', name: 'Signing slot', price: 350, qty: 150, sold: 150 }
       ],
@@ -1103,7 +1080,6 @@
       start: '21:00',
       end: '23:00',
       doors: '',
-      capacity: 2000,
       room: { url: 'ztor.live/v/reallife-full-album', chat: true, capacity: 2000 },
       tiers: [
         { id: 'tier-stream', name: 'Live stream', price: 400, qty: 1800, sold: 1642 },
@@ -1131,7 +1107,6 @@
       start: '21:00',
       end: '',
       doors: '',
-      capacity: 400,
       room: { url: 'ztor.live/w/sdfs-mv-watchback', chat: true, capacity: 400 },
       tiers: [
         { id: 'tier-entry', name: 'Admission', price: 100, qty: 400, sold: 313 }
@@ -1158,7 +1133,6 @@
       start: '18:00',
       end: '21:00',
       doors: '17:00',
-      capacity: 1500,
       tiers: [
         { id: 'tier-ga', name: 'General admission', price: 1000, qty: 1500, sold: 892 }
       ],
@@ -1184,7 +1158,6 @@
       start: '19:30',
       end: '21:30',
       doors: '18:30',
-      capacity: 700,
       tiers: [
         { id: 'tier-ga', name: 'General admission', price: 1100, qty: 700, sold: 421 }
       ],
@@ -1210,7 +1183,6 @@
       start: '19:30',
       end: '21:30',
       doors: '18:30',
-      capacity: 700,
       tiers: [
         { id: 'tier-ga', name: 'General admission', price: 1100, qty: 700, sold: 318 }
       ],
@@ -1236,7 +1208,6 @@
       start: '18:00',
       end: '20:00',
       doors: '17:30',
-      capacity: 100,
       tiers: [
         { id: 'tier-slot', name: 'Meet slot', price: 900, qty: 100, sold: 74 }
       ],
@@ -1262,7 +1233,6 @@
       start: '21:00',
       end: '22:00',
       doors: '',
-      capacity: 600,
       room: { url: 'ztor.live/v/lrh-backers-briefing', chat: true, capacity: 600 },
       tiers: [
         { id: 'tier-stream', name: 'Live stream', price: 200, qty: 600, sold: 233 }
@@ -1289,7 +1259,6 @@
       start: '21:00',
       end: '',
       doors: '',
-      capacity: 300,
       room: { url: 'ztor.live/w/r2-rehearsal', chat: true, capacity: 300 },
       tiers: [
         { id: 'tier-entry', name: 'Admission', price: 120, qty: 300, sold: 96 }
@@ -1316,7 +1285,6 @@
       start: '',
       end: '',
       doors: '',
-      capacity: 0,
       tiers: [],
       sold: 0,
       revenue: 0,
@@ -1340,7 +1308,6 @@
       start: '',
       end: '',
       doors: '',
-      capacity: 0,
       tiers: [],
       sold: 0,
       revenue: 0,
@@ -1364,7 +1331,6 @@
       start: '',
       end: '',
       doors: '',
-      capacity: 0,
       /* 2026-09-21（D294 決定二示範）：草稿活動也可以先設票種並把票種加進組合包——這一組同為草稿、
          跟著活動；活動發布前不出現在電子商店 Bundles 清單（含 Draft 篩選），細節頁整張上架卡顯示草稿態「隨活動發布」。
          票種是草稿存到一半的值（qty 已填、尚未賣出），續填草稿時會預填進建立流程。 */
@@ -1403,13 +1369,16 @@
       start: '21:00',
       end: '23:59',
       doors: '',
-      capacity: 200,
       tiers: [
         { id: 'tier-khh-duo', name: 'Duo pass · 1 person', price: 1111, hkd: 275, qty: 200, sold: 0, hidden: true, hideFix: true }
       ],
       bundles: [
         { id: 'bd-khh-duo', name: 'Duo pass', tickets: { tierIds: ['tier-khh-duo'], qty: 2 },
-          price: 2222, hkd: 550, sold: 0, lockSets: 100, fix: true }
+          price: 2222, hkd: 550, sold: 0, lockSets: 100, fix: true },
+        /* D340 示範：創作者自己建立、成員含本草稿活動票券的草稿組合包——草稿活動刪除時同樣一起刪除，確認彈窗列出（5.1.6 F1）。 */
+        { id: 'bd-khh-duo-tee', name: 'Duo pass ＋ 紀念 T 恤', tickets: { tierIds: ['tier-khh-duo'], qty: 2 },
+          products: [{ name: '九龍夜行 紀念 T 恤', img: 'images/products/coastline-tee.webp', price: 600 }],
+          price: 2822, sold: 0 }
       ],
       sold: 0,
       revenue: 0,
@@ -1433,7 +1402,6 @@
       start: '',
       end: '',
       doors: '',
-      capacity: 0,
       tiers: [],
       sold: 0,
       revenue: 0,
@@ -1457,7 +1425,6 @@
       start: '',
       end: '',
       doors: '',
-      capacity: 0,
       tiers: [],
       sold: 0,
       revenue: 0,
@@ -1481,7 +1448,6 @@
       start: '',
       end: '',
       doors: '',
-      capacity: 0,
       tiers: [],
       sold: 0,
       revenue: 0,
@@ -1791,23 +1757,37 @@
     var d = Number(b.disc) || 0;
     return round2((tix + goods) * (1 - d / 100));
   }
-  /* ── 可賣性防呆（5.1.6.1 F22，D330 → 2026-09-29 D331 補範圍）────────────────────
+  /* ── 可賣性防呆（5.1.6.1 F22，D330 → D331 補範圍 → 2026-09-30 D340 補排程、預告期、發布前後同口徑）────────
      活動發布之後，至少要有 1 張顯示中的門票，或 1 組仍在販售的組合包。
-     「仍在販售」（D331 決定三）＝上架、顯示、開賣三者都成立、未刪除、未封存。活動資料的組合包沒有三開關欄位
-     （三開關的工作副本只在組合商品細節頁、電子商店清單列），以旗標代位：listed:false／shown:false／onSale:false／
-     archived／stopped／deleted 任一成立＝不在販售；示範資料都沒寫＝一律仍在販售。
-     活動預告期（已排程、組合包跟著活動還沒開賣）算不算仍在販售是〔產品待確認〕（D331），原型照 D330 的做法算在販售中
-     （ASSUMPTIONS UIA-183 產品缺口）。門票售罄不影響「顯示中」——售罄是正常結束，不擋（D331）。 */
-  function bundleSelling(b) {
-    return !!b && b.listed !== false && b.shown !== false && b.onSale !== false && !b.archived && !b.stopped && !b.deleted;
+     「仍在販售」＝含本活動票券、未刪除、未封存，且上架、顯示，並處於開賣中或預告期。活動資料的組合包沒有三開關欄位
+     （三開關的工作副本只在組合商品細節頁、電子商店清單列），以旗標代位：listed:false／shown:false／archived／stopped／
+     deleted 任一成立＝不在販售；onSale:false 時只有「預告期」還算（D340：已上架、已顯示、尚未開賣，且開賣時間在未來——
+     saleStart 在 now 之後）。沒有開賣排程的 onSale:false（例如重新上架後退回未開賣）算不算預告期〔產品待確認〕，
+     原型不算（ASSUMPTIONS UIA-190）。示範資料都沒寫＝一律仍在販售。門票售罄不影響「顯示中」——售罄是正常結束，不擋。 */
+  function bundleSelling(b, now) {
+    if (!b || b.listed === false || b.shown === false || b.archived || b.stopped || b.deleted) return false;
+    if (b.onSale !== false) return true;
+    var t = now || Date.now();
+    return !!(b.saleStart && new Date(String(b.saleStart).replace(' ', 'T')).getTime() > t);   // 預告期（D340）
   }
-  /* 除了 exceptBundleId 那一組、exceptTier 那一張以外，活動還有沒有可賣的東西。 */
+  /* 除了 exceptBundleId 那一組、exceptTier 那一張以外，活動還有沒有可賣的東西。
+     opts.at（D340 排程檢查）：到那個時間點還有沒有——其他組合包自己排了下架或停售、且在 at 之前到期的，不算。 */
   function hasOtherSellable(ev, opts) {
     opts = opts || {};
     var tiers = opts.tiers || (ev && ev.tiers) || [];
     var visible = tiers.some(function (t) { return t !== opts.exceptTier && !t.hidden; });
-    var selling = ((ev && ev.bundles) || []).some(function (b) { return b.id !== opts.exceptBundleId && bundleSelling(b); });
+    var at = opts.at ? new Date(String(opts.at).replace(' ', 'T')).getTime() : 0;
+    var ends = function (v) { return v && new Date(String(v).replace(' ', 'T')).getTime() <= at; };
+    var selling = ((ev && ev.bundles) || []).some(function (b) {
+      if (b.id === opts.exceptBundleId || !bundleSelling(b)) return false;
+      return !(at && (ends(b.unlistAt) || ends(b.saleEnd)));
+    });
     return visible || selling;
+  }
+  /* 活動的總量（D340，5.1.6.1 F8 退場後的口徑）：本活動所有門票的張數合計——含隱藏的門票（隱藏的票照常作為組合包成員
+     售出並計入售出進度，5.1.6.3 §2.6）、含獨立票；計算值、不另存。清單票券欄與詳情 KPI 的分母都用它。 */
+  function totalQty(ev) {
+    return ((ev && ev.tiers) || []).reduce(function (n, t) { return n + (Number(t.qty) || 0); }, 0);
   }
   /* 組合包的原價合計（基準幣別）：票券成員取最低允許票價、先由各票種的基準幣別換算成組合包的基準幣別，再 × 張數加總
      （§7.15「含 bookyay 票券的組合包」、5.1.5.4 F3）；商品成員照原數字加（活動資料沒有商品幣別，同 bundle-detail 既有做法）。
@@ -1882,12 +1862,14 @@
     bundleListAmount: bundleListAmount,   /* D330 同批：組合包原價合計（票券成員先換算成組合包基準幣別） */
     effAmount: effAmount,                 /* D331：清單／KPI 用的單價（基準幣別，覆寫優先） */
     bkyBundleHkd: bkyBundleHkd,           /* D331：含 bookyay 票券的組合包港幣欄（自動建立＝現價；自建＝公式） */
-    bundleSelling: bundleSelling,         /* D331：組合包「仍在販售」（上架＋顯示＋開賣，未刪除／封存） */
-    hasOtherSellable: hasOtherSellable,   /* D331：可賣性防呆——扣掉這一張／這一組後活動還有沒有可賣的 */
-    /* 草稿活動刪除（D294 → D331 決定四）：只收草稿；回傳隨活動一起刪除的 bookyay 自動建立組合包（給確認彈窗列名）。 */
-    autoBundlesOf: function (id) {
+    bundleSelling: bundleSelling,         /* D331／D340：組合包「仍在販售」（上架＋顯示＋開賣或預告期，未刪除／封存） */
+    hasOtherSellable: hasOtherSellable,   /* D331／D340：可賣性防呆——扣掉這一張／這一組後（或到 opts.at 那個時間點）活動還有沒有可賣的 */
+    totalQty: totalQty,                   /* D340：活動總量＝所有門票張數合計（含隱藏），取代已刪的容量 */
+    /* 草稿活動刪除（D294 → D331 決定四 → D340 決定四）：只收草稿；回傳隨活動一起刪除的組合包（給確認彈窗列名）——
+       bookyay 自動建立的（fix）與創作者自建、成員含本活動票券的都算（D340）。組合包住在活動資料裡，活動刪了一起消失。 */
+    draftBundlesOf: function (id) {
       var ev = window.ztorEvents.get(id);
-      return ev ? (ev.bundles || []).filter(function (b) { return !!b.fix; }) : [];
+      return ev ? (ev.bundles || []).slice() : [];
     },
     removeDraft: function (id) {
       var ev = window.ztorEvents.get(id);
