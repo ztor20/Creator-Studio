@@ -24,11 +24,17 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
      領取單位（成員數量 × 組合數量），組合本身不產生領取碼——所以加進場次的是它的成員，
      選品邏輯不變（仍然選「一個組合」），只是要在畫面上先講清楚會拆成幾件。
      `members` 只餵下方的展開提示，不進 selected（選的還是組合本身）。 */
+  /* 2026-09-30（D339 一商品一場次）：`session`＝這件商品目前綁在哪一場（key 同下方 KNOWN：
+     tpe＝台北簽書會、khh＝高雄見面會），沒寫＝還沒綁。建立或編輯「別的」場次時，已綁定的商品
+     仍列在下拉裡，但停用並標「已綁定」；編輯本場次時，本場次自己的商品照常可選可移除。
+     樣本分配與編輯示範對齊：編輯的是 tpe，所以 zine／tee／組合屬 tpe；poster 屬 khh，
+     讓建立與編輯兩種情境都看得到停用列；lp 留白，建立新場次時仍有一件可選。 */
   var PRODUCTS = [
-    { id: 'zine', kind: 'product', name: 'Pirate Queen zine vol. 02', meta: 'Books · 40 sold' },
-    { id: 'tee',  kind: 'product', name: 'Kowloon After Dark tee · M / L', meta: 'Apparel · 22 sold' },
+    { id: 'zine', kind: 'product', name: 'Pirate Queen zine vol. 02', meta: 'Books · 40 sold', session: 'tpe' },
+    { id: 'tee',  kind: 'product', name: 'Kowloon After Dark tee · M / L', meta: 'Apparel · 22 sold', session: 'tpe' },
     { id: 'lp',   kind: 'product', name: 'Kowloon After Dark vinyl LP', meta: 'Music · numbered' },
-    { id: 'bundle-launch', kind: 'product', name: 'Launch night bundle',
+    { id: 'poster', kind: 'product', name: 'Kowloon After Dark tour poster', meta: 'Prints · 60 sold', session: 'khh' },
+    { id: 'bundle-launch', kind: 'product', name: 'Launch night bundle', session: 'tpe',
       meta: 'Bundle · cap ×3 + vinyl ×1 picked up on-site',
       members: [
         { name: 'Kowloon After Dark six-panel cap', qty: 3 },
@@ -136,7 +142,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
 
   window.ZTOR_PARTIALS.createPickupSession = function (host, hooks) {
     hooks = hooks || {};
-    var modal = null, lastFocused = null, selected = [], step = 1;
+    var modal = null, lastFocused = null, selected = [], step = 1, editingSession = null;
 
     function chrome(el) {
       if (window.ztorIcons) window.ztorIcons.applyIcons(el);
@@ -195,20 +201,28 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
           return it.kind === g[0] && selected.indexOf(it.id) < 0 &&
             (!q || (it.name + ' ' + it.meta).toLowerCase().indexOf(q) >= 0);
         });
+        /* 可選的排前面、已綁定的沉到組尾（D339） */
+        avail.sort(function (a, b) { return isBound(a) - isBound(b); });
         if (!avail.length) return;
         total += avail.length;
         html += '<div class="combobox__group" data-i18n="' + g[1] + '"></div>';
         avail.forEach(function (it) {
-          html += '<button type="button" class="combobox__opt" data-pks-add="' + esc(it.id) + '">' +
+          var bound = isBound(it);
+          html += '<button type="button" class="combobox__opt"' +
+            (bound ? ' disabled aria-disabled="true"' : ' data-pks-add="' + esc(it.id) + '"') + '>' +
             '<span class="combobox__opt-icon"><i data-lucide="' + iconFor(it.kind) + '" class="ztor-icon" style="width:16px;height:16px"></i></span>' +
             '<span class="combobox__opt-text"><span class="combobox__opt-name">' + esc(it.name) + '</span>' +
-            '<span class="combobox__opt-meta">' + esc(it.meta) + '</span></span></button>';
+            '<span class="combobox__opt-meta">' + esc(it.meta) + '</span></span>' +
+            (bound ? '<span class="badge badge--neutral combobox__opt-tag"><span data-i18n="pks.bound">Assigned</span></span>' : '') +
+            '</button>';
         });
       });
       if (!total) html = '<div class="combobox__empty" data-i18n="pks.search.empty">No items match your search.</div>';
       menu.innerHTML = html;
       chrome(menu);
     }
+    /* D339：商品已綁在「另一場」就不能再加；編輯中的這一場（editingSession）自己的商品不算 */
+    function isBound(it) { return !!(it.session && it.session !== editingSession); }
     function openMenu() { renderMenu(); var m = modal.querySelector('[data-pks-menu]'); if (m) m.hidden = false; setExpanded(true); }
     function closeMenu() { var m = modal.querySelector('[data-pks-menu]'); if (m) m.hidden = true; setExpanded(false); }
     function setExpanded(on) { var s = modal.querySelector('[data-pks-search]'); if (s) s.setAttribute('aria-expanded', on ? 'true' : 'false'); }
@@ -334,6 +348,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     function open(preselectId, titleKey) {
       lastFocused = document.activeElement;
       var isEdit = titleKey === 'pks.title.edit';
+      editingSession = isEdit ? 'tpe' : null;
       updateTimeErr();
       /* 編輯既有場次＝台北簽書會那一場，項目已經選好（含一顆組合商品，用來示範
          「組合會拆成成員各自核銷」的提示）；建立新場次則從空的開始。 */

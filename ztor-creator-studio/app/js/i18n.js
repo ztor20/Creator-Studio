@@ -7296,6 +7296,7 @@
     'pks.current.meta':    { en: 'This product',      zh: '這件商品' },
     'pks.search.empty': { en: 'No items match your search.', zh: '沒有符合搜尋的項目。' },
     'pks.items':        { en: 'Pickup items',  zh: '取貨商品' },
+    'pks.bound':        { en: 'Assigned', zh: '已綁定' },   /* D339：商品已綁在另一個取貨場次，下拉中停用 */
     'pks.items.hint':   { en: '— physical items set to on-site QR pickup', zh: '— 取貨方式設為現場 QR 領取的實體商品' },
     'pks.tickets':      { en: 'Event tickets', zh: '活動票券' },
     'pks.tickets.hint': { en: '— redeem event tickets with the same scanner', zh: '— 用同一支 scanner 核銷活動票券' },
