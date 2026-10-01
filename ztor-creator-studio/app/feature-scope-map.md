@@ -5,7 +5,7 @@
 - **日期**：2026-06-29
 - **來源**：Ztor功能點.md + Phase 1 handoff
 - **範圍**：internal use only
-- **功能總數**：118（2026-09-29 補登 S52–S56；同日補登 S58；2026-09-30 補登 S59–S61，D340）
+- **功能總數**：121（2026-09-29 補登 S52–S56；同日補登 S58；2026-09-30 補登 S59–S61，D340；2026-10-01 補登 S62–S64，D342）
 
 ## Tier 圖例
 
@@ -16,7 +16,7 @@
 | ⚪ TBD（未排定） | 商務團隊待定；「下一版預覽」不顯示 |
 | ⚫ 退場 | retired（產品決策已全面撤除，不再規劃／不計入 Phase 1／Next／TBD 三態，2026-09-09 起新增） |
 
-本期統計：🟢 Phase 1 82 · 🔵 Next 11 · ⚪ TBD 23 · ⚫ 退場 2
+本期統計：🟢 Phase 1 82 · 🔵 Next 11 · ⚪ TBD 26 · ⚫ 退場 2
 
 ## Build 狀態圖例
 
@@ -30,7 +30,7 @@
 | ✅⬆ ahead | 超前建置（prototype 已有，規格尚未涵蓋） |
 | ⏳ deferred | 已延後 |
 
-Build 統計：✅ 80 built · 🟡 6 gap · ✅⬆ 26 ahead · ⏳ 2 deferred
+Build 統計：✅ 80 built · 🟡 6 gap · ✅⬆ 29 ahead · ⏳ 2 deferred
 
 **Feature ID** — `S` Shop · `O` Orders · `E` Earnings · `B` Buyer storefront（例：`E07`），跨團隊引用用，編號穩定不變。
 
@@ -148,6 +148,9 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 10
 | `S59` | 　內文粗體與清單（描述、說明區塊；bookyay 帶入保留格式）   | Body text bold & lists                           | ⚪ TBD      | ✅⬆ ahead | D340；`partials/rich-body.js` 格式鈕群組 `.rich-body__fmt[data-feat="S59"]`（create-event 描述＋說明區塊、event-detail 描述＋說明區塊） |
 | `S60` | 　粉絲活動頁呈現說明區塊（關於活動下方、太長收合）        | Info sections on the fan event page              | ⚪ TBD      | ✅⬆ ahead | D340；`js/fan-event-page.js` `.pdp-info[data-feat="S60"]`（create-event 第 8 步、event-localization 預覽） |
 | `S61` | 　活動顯示設定（顯示／隱藏＋隱藏時活動連結）            | Event display setting (shown / hidden + link)    | ⚪ TBD      | ✅⬆ ahead | D340；create-event 步驟 7、event-detail 設定 → 發布設定的「顯示設定」區塊 `[data-feat="S61"]` |
+| `S62` | 　活動販售的時間層級＋票務商品上架與開賣跟隨／另設 | Event sales time layers + ticket-bundle follow / custom times | ⚪ TBD      | ✅⬆ ahead | D342；create-event 第 7 步售票期間紅字 `[data-ce-tl-err]`、第 5 步限時間紅字、第 6 步「上架與開賣」段；bundle-detail／create-bundle 含票券成員時的 `[data-tb-host]`；event-detail 開賣設定紅字 `[data-ed-tl-err]`；共用 `js/ticket-bundle.js`＋Follow field |
+| `S63` | 　票務商品的購買條件與限購（預設取最嚴、只能收窄） | Ticket-bundle purchase rules & limits | ⚪ TBD      | ✅⬆ ahead | D342；create-event 第 6 步「購買條件與限購」段、bundle-detail `[data-tb-rules-sec]`、create-bundle 預設讀數 `[data-tb-host="cb-rules"]` |
+| `S64` | 　建立活動第 6 步補齊的組合包欄位（素材、電影關聯、限時折扣、優惠碼疊加、逐票種分配） | Ticket-bundle fields in create-event step 6 | ⚪ TBD      | ✅⬆ ahead | D342／5.1.6.1 F20；`js/bundle-editor.js` SPLIT 的 `[data-feat="S64"]` 區塊 |
 
 ## O · 訂單管理 — Order Management
 

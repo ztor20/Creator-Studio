@@ -1061,6 +1061,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Fan project page | 🟠 organism | ✓ Project | 粉絲視角專案頁＝**前台共創／預購頁與標題頁的 1:1 鏡像**（2026-09-23，D322，比照 D310／D317／D321 全頁化；專案側的 Fan event page／Fan product page／Fan bundle page，同一套前台鏡像做法）：建立專案最後一步「預覽與發布」的預覽檢視，依 `model.kind` 分三種——直接發行（`golive`，鏡像前台 `title.html`）、共創（`fund`）與預購（`preorder`，兩者共用前台 `cocreate-project.html`）。markup 與 class 名照前台原始碼，CSS 是 `ds-components/fan-shop.css` 第 6 段「專案頁元件」，延續第 1–5 段已建好的 `.fep-shop` 前台 token。資料全部來自建立專案表單；購買／支持類互動一律不動作；剛發布的專案一律畫成計畫進行中、0 人支持、0%；不畫相關推薦、留言討論、浮動支持條、製作進度時間軸。**2026-09-23（D323）作品上架流程 `publish-work.html` 重用本元件**（`model.kind:'golive'` 路徑），新增選填欄位 `work`／`credits`／`clips`，有值才畫「創作團隊」與「預告與花絮」兩段；create-project.html 不傳、畫面不變。demo 見 §4.220（就地渲染，直接發行與共創各一份） | [fan-shop.css](./ds-components/fan-shop.css) |
 | Info sections | 🟡 molecule | ✓ Project | 說明區塊編輯器（2026-09-29 D334 promote，5.1.6.1 §4.2 F2／5.1.6.2 F2）：可重複的「單行標題＋多行內文」塊，可新增、刪除、拖曳把手（或把手聚焦按上下鍵）排序；0 塊時清單收起、只剩新增鈕。每一塊＝`.card.card--muted.info-section`（L2 分組面，邊框填色交給 card--muted），版面在 `info-sections.css`、互動在 `partials/info-sections.js`（`window.ztorInfoSections.mount(host,{items,onChange})` → `get()`／`set()`）。消費頁：create-event（步驟 2 描述下方）、event-detail（活動內容，兩段式編輯）。2026-09-30（D340）：內文支援粗體與清單、每塊最多 10 個媒體；`get()` 一律回 `blocks`；粉絲活動頁開始呈現（Fan event page `infoSections`）。詳見 §4.221 | [info-sections.css](./ds-components/info-sections.css) |
 | Rich body | 🟡 molecule | ✓ Project | 內文編輯器：文字（2026-09-30 D340 起支援粗體與清單，文字塊改 contenteditable）＋圖片／影片（每段最多 10 個，滿了插入鈕停用；2026-09-29 D335 promote，5.1.6.1 §4.2 F2／5.1.6.2 F2）：活動描述與每一塊說明區塊的內文，文字塊（`.textarea`）與媒體塊（重用 `.upload-tile`）交錯，底下一列「插入圖片／插入影片」（`.btn--ghost.btn--sm`）；插入點＝游標（切開文字塊、媒體夾中間），刪除媒體後前後文字併回一段；預覽框照媒體本身比例（`--rb-ratio`）、不套 2:3；`.is-locked`＝bookyay 帶入的描述。demo 見 §4.222 | [rich-body.css](./ds-components/rich-body.css) |
+| Follow field | 🟡 molecule | ✓ Project | 跟隨／另設的時間列（2026-10-01 D342 promote，主規格 §7.14「活動販售的時間層級」第 5–7 條）：票務商品的上架、下架、開賣、停售四格，每格標題列右側一組「跟隨活動｜另設」（緊湊 `.segmented`），跟隨＝唯讀讀數（活動的值或它的意思，例「賣到活動開始」）、另設＝`datetime-local`；錯誤句在格下。markup 一律由 `js/ticket-bundle.js` 的 `schedHTML()` 產生。demo 見 §4.223 | [follow-field.css](./ds-components/follow-field.css) |
 | Section tabs | 🟡 molecule | ✓ App | 長表單頂端的分節分頁（2026-09-21，使用者反饋「popup 要有 fix 在最上面的 tab 可以快速滾動到指定區塊」）：點了平滑捲到那一段、捲動時亮目前那一段（scrollspy）、←／→／Home／End 鍵盤可移。殼 `.section-tabs`（44px、align-items:stretch）承接 Q38 配方 `.tabs.tabs--underline-short.tabs--underline-label`，併進既有頂列當第二排（彈窗 `--dialog`＝`__head` 與 `__body` 之間；建立流程 `--wizard`＝`.wizard__top` 第二排），畫面只有一條固定列（Q115 精神）。行為 `js/section-tabs.js`（`ZtorSectionTabs.init/sync`）。消費：create-event 第 6 步組合包彈窗（`js/bundle-editor.js` `layout:'split'`）、create-bundle。demo 見 §4.214 | [section-tabs.css](./ds-components/section-tabs.css) |
 | State check | 🟡 molecule | ✓ Project | 唯讀的開／關狀態排（2026-09-11）：每個狀態一顆 16px 圓標記（字符 12）＋標籤，開＝`--status-success` 實色底＋畫布色勾（2026-09-11 兩輪後定案）＋前景色標籤、關＝`--border` 空心圓＋輔助色標籤。**不是輸入控件**——點的是所在整列。首用商品／組合詳情「上架與開賣」卡：上架／顯示於商店／開賣**各自一列**（2026-09-11 使用者：有的有定時上下架或開賣，要個別顯示），一顆勾＋一句現況與排程（使用者：「將上架／顯示／開賣拆出來，做成 checkbox 的形式，但設計不一定要用 checkbox」），值由三組開關與排程推導：上架、顯示於商店（上架且顯示）、開賣（上架且此刻在販售窗口內）。demo 見 §4.209 | [state-check.css](./ds-components/state-check.css) |
 | Stock tip | 🟢 atom | ✓ App | E-Shop 商品清單「狀態」／「庫存」欄 hover/focus 浮出的資訊卡：多選項商品攤到單一選項組合、組合商品攤到「成員 · 選項組合」；單一選項商品顯示目前庫存一行（原本還有低庫存門檻，2026-07-23 使用者裁示移除）。列徽章為「急需補貨」時，選項清單只留真的需要補貨的項目（此規則不影響單一選項那一行）。定位由 JS 算（`position: fixed`），viewport 上半部往下開、下半部往上開，避免被 sticky 頂欄擋到或超出視窗。詳見 §4.56 | [stock-tip.css](./ds-components/stock-tip.css) |
@@ -7030,3 +7031,32 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 **Consumers** — `create-event.html`（步驟 2 描述 `#ce-desc`，proxy `[data-ce="desc"]`）；`partials/info-sections.js`（每一塊的內文 `.info-section__body`，所以 create-event `#ce-info` 與 event-detail `#ed-info` 都吃它）；`event-detail.html`（活動內容描述 `#ed-desc`，proxy `[data-ed="desc"]`）；只用靜態工具：`event-localization.html`、`js/fan-event-page.js`（§4.215）；`design-system.html` §4.222 demo。
 
 **CSS** — [`rich-body.css`](./ds-components/rich-body.css) ｜ **JS** — `partials/rich-body.js`
+
+---
+
+### 4.223 Follow field（跟隨／另設的時間列）
+
+**Purpose** — 票務商品（含票券的組合包）的四個排程時間（上架、下架、開賣、停售日期與時間）預設跟隨所屬活動、可逐格另設（D342，2026-10-01；主規格 §7.14「活動販售的時間層級」第 5–7 條、5.1.6.1 F20、5.1.5.9 §2.3、5.1.5.4 F6）。規格要求畫面「看得出每個時間是跟隨活動還是另設」，所以每一格自己帶一組二選一，值的形態跟著換：跟隨＝唯讀讀數，另設＝時間欄。跟隨是即時連動——活動的時間改了，讀數跟著變；另設的時間須落在活動上架區間內、可以早於活動開賣。
+
+**`_layer`** · molecule ｜ **source tier** · Project ｜ **surface 層** · 白卡與灰底皆可：`.segmented` 軌道自帶 1px `--border`，`.field-readout` 不畫框、`.input` 吃自己的面；建立活動彈窗（L2 卡）與細節頁 `.form-section--outlined`（L1）都已目視驗證。
+
+**Anatomy**
+- `.follow-fields` — 容器，格與格的節奏由 `gap: --sp-16` 持有（Q103）；末尾可接一行 `.field__hint`（`tb.sched.note`：跟隨的意思＋上架區間）
+- `.follow-field[data-tb-sched][data-state="follow"|"custom"]` — 一格，`gap: --sp-6`（＝標籤到控制項）
+  - `.follow-field__head` — 標題列（flex、space-between、可換行）：`.field__label` ＋ `.segmented.follow-field__seg`（「跟隨活動」`tb.follow`｜「另設」`tb.custom`，`role=radiogroup`、按鈕 `role=radio`）
+  - 值：跟隨＝`.field-readout`（`followText()`：有時間寫時間；沒有就寫意思——「活動上架時」「不自動下架」「上架即開賣」「賣到活動開始（{開演}）」）；另設＝`.input[type=datetime-local][data-tb-at]`
+  - `.field__error[data-tb-err]` — 就地錯誤（超出上架區間、另設卻沒填、停售早於開賣、下架早於上架）
+- 鎖定變體：`.segmented--locked` ＋ 按鈕 `disabled`（`schedHTML(…, { disabled:true })`）
+
+**Variants** — `.follow-field__seg` 是 `.segmented` 的緊湊版（只縮按鈕內距到 `--sp-4 --sp-12`、字級 `--fs-12`）：它跟在欄位標籤旁，份量要比頁面級的 segmented 輕一階。不另立新的二選一元件——判斷句：這是同一個值的兩種來源切換，正是 segmented「同一資料的視角切換」的角色。
+
+**Behavior** — `js/ticket-bundle.js`（`window.ZtorTicketBundle`）：`schedHTML(st, et, T, { keys, note, disabled })` 產 markup；`onClick(e, st, ctx)` 處理二選一（切到另設時從活動目前的值起手）、`onInput(e, st)` 寫值、`syncErrors(root, st, ctx, T)` 填錯誤句；`effective(st, et)` 回四格生效值（跟隨＝活動的值），消費頁拿它餵徽章、設定總覽與可賣性判斷。狀態 `st.sched[key]`：`null`／缺＝跟隨、字串＝另設。
+
+**與 Listing controls 的分工** — `.lctl`（§ Listing controls）是商品與純商品組合包的「上架／顯示／開賣」三開關與排程；本元件只在含票券成員時取代 `.lctl` 裡的排程欄位（上架開關、顯示開關照舊），因為票務商品的時間多了一個「跟隨活動」的來源。
+
+**Token usage** — `--sp-4`／`--sp-6`／`--sp-12`／`--sp-16`、`--fs-12`；其餘外觀來自 `.segmented`、`.field-readout`、`.input`、`.field__error`。
+
+**Consumers** — `js/bundle-editor.js`（建立活動第 6 步「上架與開賣」段，`data-feat="S62"`）、`bundle-detail.html`（含票券成員時上架卡與開賣卡的 `[data-tb-host]`）、`create-bundle.html`（含票券成員時 `[data-tb-host="cb-sched"]`）；`design-system.html` §4.223 demo。同一支 JS 另產購買條件與限購的讀數與編輯區（重用 `.rule`／`.rule-sub`／`.rule-row`〔ticket-tier-card.css〕、`.radio-list`、`.kv-list`、`.control-row`，不另立 CSS）。
+
+**CSS** — [`follow-field.css`](./ds-components/follow-field.css) ｜ **JS** — `js/ticket-bundle.js`
+

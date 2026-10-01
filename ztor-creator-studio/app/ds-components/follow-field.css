@@ -1,0 +1,45 @@
+/* ============================================================
+   follow-field.css · 跟隨／另設的時間列（D342，2026-10-01）
+   ------------------------------------------------------------
+   票務商品（含票券的組合包）的四個排程時間——上架、下架、開賣、停售日期與時間——
+   預設跟隨所屬活動、可逐格另設（主規格 §7.14「活動販售的時間層級」第 5–7 條）。
+   規格要求畫面看得出每一格是跟隨還是另設：每一格的標題列右側放一組
+   「跟隨活動｜另設」二選一（DS 的 .segmented），值的形態跟著換——
+     跟隨＝唯讀讀數（.field-readout），寫出活動那一格的值或它的意思（例「賣到活動開始」）
+     另設＝時間欄（.input type=datetime-local）
+   錯誤句一律在該格底下（.field__error），由 js/ticket-bundle.js 就地填寫。
+   消費者：js/bundle-editor.js（建立活動第 6 步）、bundle-detail.html、create-bundle.html，
+   markup 一律由 js/ticket-bundle.js 的 schedHTML() 產生，不各頁手刻。
+
+   anatomy
+     .follow-fields                 容器：格與格的節奏（gap，Q103 由容器持有）
+       .follow-field[data-state]    一格（data-state＝follow｜custom）
+         .follow-field__head        標題列：.field__label ＋ .follow-field__seg
+           .follow-field__seg       DS .segmented 的緊湊版（只縮內距與字級）
+         .field-readout | .input    值
+         .field__error              就地錯誤
+   surface：白卡與灰底皆可（.segmented 軌道自帶 1px border；讀數與輸入框吃各自元件的面）。
+   ============================================================ */
+.follow-fields {
+  display: grid;
+  gap: var(--sp-16);
+  min-width: 0;
+}
+.follow-field {
+  display: grid;
+  gap: var(--sp-6);
+  min-width: 0;
+}
+.follow-field__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  flex-wrap: wrap;
+}
+/* 緊湊版：跟在欄位標籤旁的切換，份量要比頁面級的 segmented 輕一階，否則標題列會比值還搶眼 */
+.follow-field__seg .segmented__btn {
+  padding: var(--sp-4) var(--sp-12);
+  font-size: var(--fs-12);
+}
+.follow-field .field__error[hidden] { display: none; }

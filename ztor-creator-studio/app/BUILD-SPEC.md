@@ -451,6 +451,14 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - **播放只有一顆鈕**（2026-09-10 使用者裁決）：hover 動作列的播放／暫停，就地播放、全站一次只播一個，不做進度條／音量／全螢幕。播放時解除靜音——靜音只是為了讓它安靜地停在首幀。粉絲端怎麼播不在本產品範圍。
 - **縮圖＝停在首影格的靜音影片**：純前端抽不出圖檔（瀏覽器不會替 `<img>` 解碼影片）。凡是縮圖版位，影片用 `muted playsinline preload="metadata"` 的 `<video>` 頂替；真實產品由後端轉檔產出首幀圖（ASSUMPTIONS UIA-147）。
 
+## 4f. 票務商品的時間層級與購買條件（2026-10-01 · D342）
+
+- **一支模組三個消費頁**：`js/ticket-bundle.js`（`window.ZtorTicketBundle`）收比對規則與 markup——活動時間 `times(ev)`、上架區間比對 `outside()`、四格跟隨／另設 `schedHTML()`／`effective()`、購買條件預設 `defaults()`（取最嚴）與錯誤 `rulesErrors()`、讀數與編輯區 `rulesHTML()`；互動走 `onClick()`／`onInput()`／`syncErrors()`。消費頁只組 ctx（活動時間＋允許票種的門票規則＋每組張數）：`js/bundle-editor.js`（SPLIT，`opts.times` getter＋tickets 帶 `rules`／`rulesFix`）、`bundle-detail.html`（`tbCtx()` 讀 events-store）、`create-bundle.html`（只畫預設讀數）。
+- **狀態形狀**：組合包上 `sched`（四格，`null`／缺＝跟隨、字串＝另設）與 `rules`（`null`＝跟隨所含門票）；生效值另寫回 `listAt／unlistAt／saleStart／saleEnd`，徽章、設定總覽、可賣性判斷照讀，不必各自學一次「跟隨」。
+- **元件**：新元件 Follow field（`ds-components/follow-field.css`，§4.223）＝欄位標籤＋緊湊 `.segmented`「跟隨活動｜另設」＋讀數或時間欄；購買條件重用 `.rule`／`.rule-sub`／`.rule-row`（ticket-tier-card.css）、`.radio-list`、`.kv-list`、`.control-row`，不另立 CSS。
+- **擋存的落點**：建立活動＝門票彈窗不關、票務設定不關、組合包「完成」停用並寫原因、發布前彙整；細節頁＝「儲存變更」在 capture 階段擋下（toast＋帶到發布設定）；建立組合＝「下一步：預覽」停用；活動詳情＝儲存擋下（alert）。
+- **第 6 步彈窗五段**：內容物 → 定價與庫存（＋限時折扣、優惠碼疊加、逐票種分配）→ 命名與素材（名稱、說明、十格素材、電影關聯）→ 上架與開賣 → 購買條件與限購；分節分頁同五段。素材上傳結果記在 `b.media`（`upload:change`），重畫用 `data-upload-src` 帶回。
+
 ## 4e. 商店預覽＝粉絲端創作者頁的手機鏡像，放在頁內右欄（2026-09-11）
 
 - **容器**：e-shop 的 F5 不再是切開外殼的固定面板，而是 `.preview-split--phone.preview-split--toggle` 的右欄——與建立商品同一套（sticky `.preview-col` ＋ 卡內標題的 `form-section--outlined`）。`--toggle` 是 preview-column 的新變體：沒 `is-open` 就單欄、右欄不佔位。這一頁沒有 wizard header，sticky 頂距改 `--preview-col-top: var(--sp-24)`。

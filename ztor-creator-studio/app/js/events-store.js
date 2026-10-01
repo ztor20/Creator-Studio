@@ -634,18 +634,32 @@
       tiers: [
         /* hidden（D328 示範）：一樓票只透過下面的「一樓票 ＋ 交響夜場刊」組合包賣——活動頁票價清單不列、不能單張買，
            仍是組合包的票券成員、與組合包共用同一個數量池（5.1.6.1 F22「顯示」開關）。 */
-        { id: 'tier-lower', name: 'Lower level', price: 2800, qty: 400, sold: 0, override: { JPY: 13900 }, hidden: true },   // JPY 換算 13,956 → 覆寫 13,900（D306）
-        { id: 'tier-upper', name: 'Upper level', price: 1800, qty: 200, sold: 0 }
+        /* rules（2026-10-01 D342 示範）：單張門票的購買條件與限購，形狀同 create-event 的門票規則（buy／cap）。
+           兩張條件刻意不同，好示範票務商品「預設取最嚴」：一樓限超級粉絲以上、每人 4 張每次 2 張；
+           二樓限時間 10/10 12:00–11/30 23:59（早於活動 10/15 開賣的預售，仍在上架區間內）、每人 6 張、限 3 次。 */
+        { id: 'tier-lower', name: 'Lower level', price: 2800, qty: 400, sold: 0, override: { JPY: 13900 }, hidden: true,   // JPY 換算 13,956 → 覆寫 13,900（D306）
+          rules: { buy: { mode: 'tier', tier: 'superfan' }, cap: { mode: 'cap', person: '4', order: '2', times: '' } } },
+        { id: 'tier-upper', name: 'Upper level', price: 1800, qty: 200, sold: 0,
+          rules: { buy: { mode: 'time', from: '2026-10-10T12:00', to: '2026-11-30T23:59' }, cap: { mode: 'cap', person: '6', order: '', times: '3' } } }
       ],
       /* 2026-09-21（D294 決定三示範）：已排程（發布、尚未開賣）的活動也掛一組組合包——
          電子商店 Bundles 清單要列它（活動已發布），細節頁的開賣設定則因活動未開賣而停用（只收窄不回寫）。 */
       bundles: [
         { id: 'bd-lower-program', name: '一樓票 ＋ 交響夜場刊', tickets: { tierIds: ['tier-lower'], qty: 1 },
           products: [{ name: 'NICK Symphonic Night 場刊', img: 'images/products/tour-zine-vol-02.webp', price: 400 }],
-          price: 3200, sold: 0, cap: 100 }
+          price: 3200, sold: 0, cap: 100 },
+        /* D342 示範（2026-10-01）：任選樓層的雙人組——允許票種兩種、每組 2 張；購買條件與限購預設取兩張門票最嚴
+           （超級粉絲以上 · 10/15 12:00–11/30 23:59 · 每人 2 組 · 每次 1 組 · 限 3 次）；開賣另設 10/8 12:00＝組合包預售
+           （早於活動 10/15 開賣、仍在上架區間 9/20 起之內）；上架、下架、停售跟隨活動。sched 的格子 null／缺＝跟隨。 */
+        { id: 'bd-symph-pair', name: '雙人任選樓層 ＋ 場刊', tickets: { tierIds: ['tier-lower', 'tier-upper'], qty: 2 },
+          products: [{ name: 'NICK Symphonic Night 場刊', img: 'images/products/tour-zine-vol-02.webp', price: 400 }],
+          price: 4000, sold: 0, sched: { saleStart: '2026-10-08T12:00' } }
       ],
       publish: { pickup: 'eticket', shown: true },   // D327：電子門票附屬設定值已清
       sale: { from: '2026-10-15 12:00', to: '' },   // D340：原 onsale:'scheduled' 沒有時間，補上開賣時間
+      /* 活動上架區間（D342 第一層，2026-10-01 示範欄位）：from＝上架日期與時間、to＝下架日期與時間（缺＝不自動下架）；
+         整個 listing 缺席＝立刻上架（起點＝發布當下）。售票期間、門票限時間、票務商品的時間都要落在這裡面。 */
+      listing: { from: '2026-09-20 12:00', to: '' },
       sold: 0,
       revenue: 0,
       status: 'scheduled',

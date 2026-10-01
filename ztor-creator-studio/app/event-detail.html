@@ -295,7 +295,7 @@
                     </div>
                   </div>
                 </section>
-                <!-- 販售時間（2026-08-31 使用者指示「這一排新增一個販售時間」）。
+                <!-- 售票期間（2026-08-31 使用者指示「這一排新增一個販售時間」；2026-10-01 D342 正名「售票期間」＝活動的開賣到停售）。
                      大字放「還剩幾天可賣」而不是日期區間：這一排的另外兩格都是可掃的數字，
                      一段「8/1 10:00 – 9/11 23:59」在 span-4 的寬度裡只會換行，而且它回答的
                      是「設定是什麼」；售票中真正要盯的是「還來得及賣幾天」。區間本身退到
@@ -305,7 +305,7 @@
                 <section class="card bento--span-4">
                   <div class="stat-row">
                     <div class="stat">
-                      <div class="stat__label" data-i18n="event-detail.sales.window">Sales window</div>
+                      <div class="stat__label" data-i18n="event-detail.sales.window">Sales period</div>
                       <div class="stat__value" id="ed-sales-window">—</div>
                       <div class="stat__meta" id="ed-sales-window-meta">—</div>
                     </div>
@@ -1000,6 +1000,8 @@
                   <input class="input" type="time" data-pub-f="sale-from-t">
                 </div>
                 <p class="field__hint" data-i18n="ed.pub.sale.from.hint">Leave empty to open sales as soon as it's listed.</p>
+                <!-- D342：售票期間必須落在活動上架區間內，超出就地紅字、存不了 -->
+                <p class="field__error" data-ed-tl-err="from" hidden data-feat="S62"></p>
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="field__label"><span data-i18n="ed.pub.sale.to">Sale closes</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
@@ -1008,6 +1010,7 @@
                   <input class="input" type="time" data-pub-f="sale-to-t">
                 </div>
                 <p class="field__hint" data-i18n="ed.pub.sale.to.hint">Leave empty to keep selling until the event starts.</p>
+                <p class="field__error" data-ed-tl-err="to" hidden data-feat="S62"></p>
               </div>
             </div>
 
@@ -1844,6 +1847,7 @@
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/platform-fees.js?v=r2.2"></script><!-- D311：平台費率三層解析 -->
 <script src="js/events-store.js?v=r2.2"></script>
+<script src="js/ticket-bundle.js?v=r2.2"></script><!-- D342：售票期間須落在活動上架區間內（共用比對規則） -->
 <script src="js/link-field.js?v=r2.2"></script><!-- D340：活動連結列的複製／重置行為 -->
 <script src="js/toast.js?v=r2.2"></script><!-- 2026-09-09：作廢動作的完成回饋（D253），沿用 order-detail.html 同一支 -->
 <script src="js/linechart.js?v=r2.2"></script>   <!-- 2026-08-31：走勢圖的共用產生器 -->
@@ -3426,10 +3430,40 @@
     });
   }, true);
 
+  /* ── 時間層級（D342，5.1.6.2 F14 → 5.1.6.1 F12b／F23）：發布設定的開賣與停售日期與時間（售票期間）必須落在活動上架區間內；
+     超出就地紅字、按儲存擋下並帶到那一節。上架區間讀活動紀錄的 listing（本頁沒有上架設定的編輯欄位），比對規則同 js/ticket-bundle.js。 */
+  function edSaleTlErrs() {
+    const TB = window.ZtorTicketBundle;
+    const out = {};
+    if (!TB) return out;
+    const edit = document.getElementById('ed-pub-edit');
+    if (!edit || edit.hidden) return out;
+    const g = f => { const el = edit.querySelector('[data-pub-f="' + f + '"]'); return el ? el.value.trim() : ''; };
+    const et = TB.times(ev);
+    [['from', g('sale-from-d'), g('sale-from-t')], ['to', g('sale-to-d'), g('sale-to-t')]].forEach(([k, d, t]) => {
+      const v = d ? d + 'T' + (t || '00:00') : '';
+      if (v && TB.outside(v, et)) out[k] = T('tb.err.outside', 'Outside the event’s listing period ({period}).').replace('{period}', TB.periodText(et, T));
+    });
+    return out;
+  }
+  function syncEdSaleTl() {
+    const errs = edSaleTlErrs();
+    document.querySelectorAll('[data-ed-tl-err]').forEach(p => { const m = errs[p.dataset.edTlErr] || ''; p.hidden = !m; p.textContent = m; });
+    return Object.keys(errs).length;
+  }
+  ['input', 'change'].forEach(type => document.addEventListener(type, e => {
+    if (e.target && e.target.closest && e.target.closest('#ed-pub-sale-times')) syncEdSaleTl();
+  }));
+  document.addEventListener('i18n:applied', () => { if (document.querySelector('[data-ed-tl-err]:not([hidden])')) syncEdSaleTl(); });
   document.addEventListener('click', e => {
     if (e.target.closest('[data-ed-editmode]')) {
       const panel = document.querySelector('.tab-panel[data-editable]');
       const editing = panel && panel.getAttribute('data-mode') === 'edit';
+      if (editing && syncEdSaleTl()) {                 // D342：售票期間超出上架區間——擋下儲存、帶到發布設定
+        const tab = document.querySelector('[data-nav-item="publish"]'); if (tab) tab.click();
+        alert(T('tb.save.blocked', 'Sale times fall outside the event’s listing period — fix them before saving.'));
+        return;
+      }
       if (editing) {                                   // 編輯態按下＝儲存
         /* 開賣後改日期／場地是「會通知到購票者」的高影響動作（events-store.js 檔頭已如此定義），
            此前按下儲存就直接存、沒有任何一步讓人看見影響範圍（2026-08-13 補）。 */
@@ -4402,7 +4436,7 @@
     const bar = document.getElementById('ed-sales-bar');
     if (bar) bar.style.width = p + '%';
 
-    /* 販售時間（2026-08-31）：三種狀態走同一條路徑，差別只在「起點是什麼」與「終點是什麼」。
+    /* 售票期間（2026-08-31；D342 正名）：三種狀態走同一條路徑，差別只在「起點是什麼」與「終點是什麼」。
          ev.sale.from ＋ ev.sale.to  → 完整區間
          ev.sale.from ＋ to 空       → 只設開賣，終點＝開演（設定頁「停售（選填）」的落地）
          沒有 ev.sale               → 上架即開賣（D340 開賣設定不填開賣時間），終點同樣＝開演
