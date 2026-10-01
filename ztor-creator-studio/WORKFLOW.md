@@ -69,6 +69,7 @@ site/                         ← 獨立 git repo，經 git subtree 與 monorepo
 | **i18n 字串** | 加 `data-en` / `data-zh` 成對 + `js/i18n.js` 字典 |
 | **新圖示** | 先在 `js/icons.js` registry 註冊，再用 `data-lucide` |
 | **新字型** | 放 `fonts/` + `fonts.css` 加 @font-face |
+| **規則手冊**（`app/rulebook/`） | 只轉述 `documents/` 已定案規則；不跑 Edit Cycle、不記 UI-CHANGES；改 `shell.js`／`shell.css` 要升全部頁面的 `?v=` |
 | **任何收尾** | 跑 `check_ds_sync.py "site/app"`（**11 項**：元件 CSS 都進 DS 頁／頁面用的 CSS DS 也有／資產版本一致／元件有 demo／元件無裸色／TOC 錨點／token 真實性／DS 級覆寫不留頁面／md↔html 同步／頁面 token 棘輪／零消費元件），FAIL 修掉；再 append `UI-CHANGES.md` 最上方、同步 `requirements-map.md` |
 | **要清瀏覽器快取** | **平常不用做**——資產版本已凍結成固定的 `?v=r2.2`。線上由 Vercel 的 `must-revalidate` ＋ ETag 負責，本機由 `devserver.py` 的 `no-store` 負責。真要強制清才手動跑一次 `bump_ver.py "site/app" <新字串>` |
 
