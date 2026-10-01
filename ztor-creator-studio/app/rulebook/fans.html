@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>分級與分工 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261001o">
+<script src="shell.js?v=20261001o" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+ul.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>分級與分工</h1>
+<p class="lede">粉絲管理把站上的粉絲依價值排序成四個分級，分級由忠誠點數與相對排名兩道閘決定，每夜重算一次。創作者在這裡看名冊、設定分級門檻與權益、群發訊息、用媒體庫把內容只開給特定粉絲，並推廣 Ztor 談好的品牌合作；粉絲分析只用拿得到的資料，算次數與算人數分開，不出現金額。</p>
+<p class="src">權威定義：<code>5.1.7-粉絲關係管理.md</code>、<code>5.1.7.1-群發訊息.md</code>（v3.1）、<code>5.1.7.2-分級權益.md</code>、<code>5.1.7.3-媒體庫.md</code>、<code>5.1.7.4-粉絲活動.md</code>、<code>5.1.7.4.1-品牌活動成效.md</code>、<code>5.1.7.5-粉絲系統說明.md</code>、<code>5.1.7.6-分級設定.md</code>、<code>5.1.7.7-粉絲詳情.md</code>、<code>5.1.7.9-粉絲分析.md</code>、<code>0-設計規格書.md §3.2.1／§7.5／§7.8／§7.9</code>　裁決：<code>decisions.md D038／D058</code>（群發訊息）、<code>D150</code>（Loyalty points 更名、雙閘、撤除消費門檻、新增媒體庫與粉絲活動）、<code>D169</code>（分級設定與權益併回總覽分頁）、<code>D175</code>（忠誠點數是排名分數）、<code>D181</code>（粉絲分析拆兩頁、次數與人數兩軸）、<code>D275／D276／D278</code>（分級折扣怎麼算）</p>
+
+<div class="toc">
+  <a href="#s1">1 粉絲管理總覽與分工</a><a href="#s2">2 粉絲分級與忠誠點數</a>
+</div>
+
+<h2 id="s1"><span class="n">1</span>粉絲管理總覽與分工</h2>
+<p>粉絲管理在主導覽是一個下拉群組（Fans），本期建置的子選單目的地有四個；其餘頁面從這幾頁裡面進入，不佔子選單。另一個子選單目的地「粉絲分析：含外部」是保留規格、不在本期建置（見<a href="fan-analytics.html">粉絲分析</a>頁末）。</p>
+
+<h3>本期建置的子選單目的地</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">頁面</th><th>用途</th></tr></thead>
+  <tbody>
+    <tr><td>總覽（Fans Overview）</td><td>落地頁。粉絲名冊、分級組成與價值排序；分級設定也是這一頁裡的一個分頁</td></tr>
+    <tr><td>媒體庫（Media Vault）</td><td>建立只開給特定粉絲的內容庫房</td></tr>
+    <tr><td>粉絲活動（Fan Campaigns）</td><td>推廣 Ztor 已與品牌談定的合作活動</td></tr>
+    <tr><td>粉絲分析（Fan Analytics）</td><td>整體看作品被消費多少次、消費的人有哪些共同特徵</td></tr>
+  </tbody>
+</table></div>
+
+<h3>從頁內進入的頁面</h3>
+<ul class="plain">
+  <li>群發訊息：從總覽進入，在粉絲管理的脈絡裡開關，不離開粉絲管理（見<a href="fans-broadcast.html">群發訊息</a>）</li>
+  <li>粉絲詳情：從總覽的粉絲清單進入（見<a href="fans-roster.html#s4">粉絲總覽與詳情</a>）</li>
+  <li>粉絲分級設定（Tier settings）：總覽頁裡的一個分頁，同時放分級門檻與分級權益兩塊內容（見<a href="fans-tiers.html">分級設定與權益</a>）</li>
+  <li>品牌活動成效：從粉絲活動清單進入（見<a href="fans-campaigns.html">粉絲活動</a>）</li>
+  <li>粉絲系統說明（Fans Guide）：各頁的「系統說明」連結都指向這一頁</li>
+</ul>
+
+<h3>名冊與分析的分工</h3>
+<div class="grid">
+  <div class="card ok"><div class="band"></div><h3>總覽＝名冊</h3><p>一位一位看：誰是誰、買過什麼、要不要跟進。資料來自站內行為。</p><p class="k">不呈現跨平台受眾彙總，也不呈現外部平台同步狀態。</p></div>
+  <div class="card wait"><div class="band"></div><h3>粉絲分析＝整體</h3><p>整體看：作品被消費了多少次、消費的人有哪些共同特徵。</p><p class="k">只用 ztor 現階段拿得到的資料（見<a href="fan-analytics.html">粉絲分析</a>）。</p></div>
+</div>
+
+<h3>粉絲系統說明與第一次自動導向</h3>
+<ul class="plain">
+  <li>粉絲系統說明是教學頁，用白話解釋四件事：粉絲排序與忠誠點數、分級與權益設定、分級階梯、品牌活動分潤。這一頁只解釋、不定義規則，頁上的示意數字不構成產品承諾。</li>
+  <li>常駐入口：總覽（含粉絲分級設定分頁）、媒體庫、粉絲活動與成效報告、粉絲詳情，都有「系統說明」連結，可以隨時重看、次數不限。</li>
+  <li>創作者第一次開啟粉絲管理任一頁時，系統自動導向說明頁一次，並記住原本要去的頁；看過之後不再自動導向。</li>
+  <li>說明頁結尾兩個動作：
+    <ul class="plain">
+      <li>「設定分級權益」：前往分級權益設定</li>
+      <li>主要動作：有記住原本要去的頁就回到那一頁；從常駐入口進來的回粉絲總覽</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>誰做什麼</h3>
+<div class="grid">
+  <div class="card ok"><div class="band"></div><h3>創作者</h3><ul class="plain"><li>看名冊與分析</li><li>設定分級門檻、行為倍率與分級權益</li><li>群發訊息</li><li>建立媒體庫庫房、發鑰匙</li><li>選品牌、發起品牌活動</li></ul></div>
+  <div class="card"><div class="band"></div><h3>系統</h3><ul class="plain"><li>每夜重算忠誠點數與分級</li><li>判定流失風險與已挽回</li><li>品牌活動掃碼的歸屬</li><li>計算媒體庫的觸及人數</li></ul></div>
+  <div class="card pink"><div class="band"></div><h3>粉絲</h3><ul class="plain"><li>在粉絲端授權外部平台（Creator Studio 不提供代粉絲授權或撤銷的入口）</li><li>掃碼時選擇歸屬給哪位創作者</li><li>可退訂創作者群發</li></ul></div>
+  <div class="card wait"><div class="band"></div><h3>Ztor</h3><ul class="plain"><li>與品牌談定合作條件：分潤、發放規則、開放期間</li><li>這些條件創作者只能看、不能改</li></ul></div>
+</div>
+<p class="note">依據：主規格 §3.2.1、5.1.7 頁面定位、5.1.7.5 F1～F4、5.1.7.9 頁面定位、5.1.7.8 F1（粉絲端授權）、5.1.7.4 F4；D150、D162、D169、D175、D181。</p>
+
+<h2 id="s2"><span class="n">2</span>粉絲分級與忠誠點數</h2>
+
+<h3>四個分級</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">分級（高 → 低）</th><th>說明</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag pink">Inner Circle</span></td><td>貢獻最高、關係最緊密的粉絲</td></tr>
+    <tr><td><span class="tag wait">Superfan</span></td><td>高貢獻、高互動</td></tr>
+    <tr><td><span class="tag ok">Devoted</span></td><td>穩定支持</td></tr>
+    <tr><td><span class="tag">Fan</span></td><td>一般粉絲。所有粉絲預設進入，不設門檻</td></tr>
+  </tbody>
+</table></div>
+<p class="note">各頁顯示分級一律用同一組名稱與排序，不在單一頁面自創分級名稱或指標叫法。</p>
+
+<h3>忠誠點數是什麼</h3>
+<ul class="plain">
+  <li>忠誠點數（Loyalty points）是衡量粉絲價值的排名分數，用來決定分級排序。</li>
+  <li>忠誠點數不能累積花用、不能兌換，也沒有點數商城或紅利兌換。</li>
+  <li>舊名「Reputation／聲望」已停用，新規格與 UI 都不再用。</li>
+  <li>累積消費金額對外顯示為 Spent。</li>
+</ul>
+
+<h3>升級要同時通過兩道閘</h3>
+<div class="grid">
+  <div class="card wait"><div class="band"></div><h3>前 % 名（Top %）</h3><p>粉絲在這位創作者的粉絲群中的相對排名。Inner Circle 最嚴，往下逐級放寬。</p><p class="k">會隨粉絲總數浮動。</p></div>
+  <div class="card ok"><div class="band"></div><h3>最低忠誠點數（Min. loyalty points）</h3><p>絕對下限。Inner Circle 最高，往下逐級遞減。</p><p class="k">避免粉絲很少時，相對排名把還沒真正達標的人送進高分級。</p></div>
+</div>
+<div class="stepsum">例：創作者只有 40 位粉絲，前 1% 只有 1 人。如果這位粉絲只有 120 點，而 Inner Circle 的最低忠誠點數設 800，他仍然進不了 Inner Circle。</div>
+<p class="note">升級不看消費金額：原本的消費門檻（Spend gate）已撤除。</p>
+
+<h3>每夜批次重算</h3>
+<ul class="plain">
+  <li>忠誠點數與分級由每夜定時批次重算產生，不是即時；畫面上看到的是上一次重算的結果。</li>
+  <li>計算是確定的：輸入相同，結果就相同。</li>
+  <li>近期行為權重較高，隨時間衰減。</li>
+  <li>創作者改了門檻或行為倍率，下一次重算才生效。</li>
+</ul>
+
+<h3>點數從哪些行為來</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">來源</th><th>內容</th><th style="width:24%">創作者可調倍率</th></tr></thead>
+  <tbody>
+    <tr><td>購買</td><td>電子商店訂單、活動票券、項目支持</td><td><span class="tag ok">可調</span></td></tr>
+    <tr><td>活動報到</td><td>經驗證的出席</td><td><span class="tag ok">可調</span></td></tr>
+    <tr><td>互動</td><td>留言、回應、私訊</td><td><span class="tag ok">可調</span></td></tr>
+    <tr><td>推薦</td><td>帶進新粉絲</td><td><span class="tag ok">可調</span></td></tr>
+    <tr><td>外部平台行為</td><td>粉絲已授權、能對應到具體粉絲帳號的行為，例如已授權粉絲在 Spotify 的串流分鐘</td><td><span class="tag off">不開放</span></td></tr>
+    <tr><td>品牌活動掃碼</td><td>粉絲每次掃碼取得的點數（見<a href="fans-campaigns.html">粉絲活動</a>）</td><td><span class="tag off">由品牌條件決定</span></td></tr>
+  </tbody>
+</table></div>
+<p>外部平台行為的規則：</p>
+<ul class="plain">
+  <li>一律以粉絲同意為前提。ztor 已串接的平台（例如 Spotify）由 ztor 代取；還沒串接的平台（例如 YouTube）由粉絲自己連結帳號。</li>
+  <li>只回傳彙總數字、無法對應到個人的資料，一律不進計分。</li>
+  <li>沒有授權的粉絲不產生這類點數，他的忠誠點數只由站內行為構成。</li>
+  <li>外部行為會計分，但不開放創作者調倍率；可調的行為維持四項。</li>
+</ul>
+<p class="note">依據：主規格 §7.5；5.1.7.6 F2／F3；5.1.7.4 F4、F6；5.1.7.4.1 §2.5（品牌掃碼點數）；D150、D175。</p>
+
+<div class="foot">
+  <p>本頁只放定案規則，不記討論過程；規格裡尚未定案的項目（例如完整計分公式、預置福利清單與數值、品牌分潤是否扣平台費）不寫進本頁。規則變更時同步更新 <code>5.1.7</code> 系列分頁、<code>0-設計規格書.md §7.5／§7.9</code> 與本頁；歷史裁決見 <code>decisions.md</code>。最近同步：2026-10-01。</p>
+</div>
+</div>
+<script>
+/* 舊錨點轉址：本頁拆成多頁後，舊網址的 #錨點 轉到新頁 */
+(function(){var m={'s3':'fans-roster.html#s3','s4':'fans-roster.html#s4','s5':'fans-tiers.html#s5','s6':'fans-broadcast.html#s6','s7':'fans-vault.html#s7','s8':'fans-campaigns.html#s8','s9':'fan-analytics.html#s9'};var h=location.hash.slice(1);if(!m[h])return;var p=m[h].split("#");if(p[0]!==(location.pathname.split("/").pop()||"index.html")){location.replace(m[h]);}else{history.replaceState(null,"","#"+p[1]);var el=document.getElementById(p[1]);if(el)el.scrollIntoView();}})();
+</script>
+</body>
+</html>

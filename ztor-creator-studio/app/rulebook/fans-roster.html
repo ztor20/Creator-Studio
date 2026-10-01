@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>粉絲總覽與詳情 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261001o">
+<script src="shell.js?v=20261001o" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+ul.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>粉絲總覽與詳情</h1>
+<div class="toc">
+  <a href="#s3">1 粉絲總覽</a><a href="#s4">2 粉絲詳情</a>
+</div>
+
+<h2 id="s3"><span class="n">1</span>粉絲總覽</h2>
+<p>頁首標題「Your fans, ranked」，高價值粉絲排前面，可以依消費、忠誠點數、近期、分級排序。</p>
+
+<h3>排行榜與名人堂</h3>
+<ul class="plain">
+  <li>兩個分頁：排行榜（Leaderboard）與名人堂（Hall of fame）。</li>
+  <li>名人堂列出長期高貢獻粉絲，顯示每位粉絲歷史上曾達到的最高分級（peak tier）與達成年份；唯讀，不跟著目前分級變動。</li>
+  <li>頁首兩個主要動作：
+    <ul class="plain">
+      <li>匯出 CSV（Export CSV）</li>
+      <li>群發訊息（Message segment）：把目前的分級或篩選帶入為收件對象</li>
+    </ul>
+  </li>
+  <li>說明開關（View explanations）：打開後，指標、分級定義與流失風險的理由旁都會顯示說明。</li>
+</ul>
+
+<h3>摘要指標</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">指標</th><th>內容</th><th style="width:30%">輔助資訊</th></tr></thead>
+  <tbody>
+    <tr><td>活躍粉絲（Active fans）</td><td>活躍粉絲數</td><td>總粉絲數</td></tr>
+    <tr><td>流失風險（At risk）</td><td>可能流失的粉絲數</td><td>分級與沉默天數</td></tr>
+    <tr><td>活躍粉絲收入（Revenue active）</td><td>活躍粉絲帶來的收入</td><td>期間（例如近 90 天）</td></tr>
+    <tr><td>平均忠誠點數（Avg loyalty points）</td><td>活躍粉絲的平均忠誠點數</td><td>與上月比較</td></tr>
+  </tbody>
+</table></div>
+
+<h3>分級分布</h3>
+<ul class="plain">
+  <li>用比例長條呈現四個分級各自的人數與占比。</li>
+  <li>系統自動產生一行洞察：挑出「人數占比最小、而且收入占比大於人數占比」的分級，寫成「最小的 X% 粉絲貢獻 Y% 收入」。沒有符合的分級時整行隱藏，不顯示假的 0%。</li>
+  <li>這一區提供分級設定的單一入口，進入粉絲分級設定分頁。</li>
+</ul>
+
+<h3>粉絲狀態：活躍、流失風險、已挽回</h3>
+<div class="flow">
+  <span class="tag ok">Active 活躍</span><span class="arr">→</span><span class="tag warn">At risk 流失風險</span><span class="arr">→</span><span class="tag wait">Recovered 已挽回</span><span class="arr">→</span><span class="tag ok">Active 活躍</span>
+  <span class="flow__alt">已挽回是暫時狀態，約維持 7 天。</span>
+</div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">判定</th><th>條件</th></tr></thead>
+  <tbody>
+    <tr><td>流失風險<br>（三條件同時符合）</td><td>近 30 天互動低於前 90 天日均的 40%<br>30～120 天前曾經活躍<br>有價值：有消費，或屬於前三個分級</td></tr>
+    <tr><td>不算流失風險<br>（防誤報）</td><td>加入未滿 30 天的新粉絲<br>計畫性休眠<br>終身互動少於 5 次</td></tr>
+    <tr><td>已挽回</td><td>流失風險粉絲在 14 天滾動期間的互動，回到前 90 天基準的 60% 以上</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>流失風險是「是／否」標記，沒有機率分數。</li>
+  <li>有粉絲出現流失風險時，頁面最上方（頁首之上）出現可關閉的提醒橫幅，例如「5 位粉絲有流失風險」，副標寫分級與沉默天數。</li>
+  <li>橫幅的「Message them」把流失風險粉絲帶入為群發收件對象。</li>
+</ul>
+
+<h3>粉絲清單</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>Fan</td><td>姓名，下方附 Email 與所在地</td></tr>
+    <tr><td>Tier</td><td>目前分級</td></tr>
+    <tr><td>忠誠點數</td><td>Loyalty points</td></tr>
+    <tr><td>Spent</td><td>累積消費</td></tr>
+    <tr><td>Progress</td><td>離下一個分級門檻還差多少</td></tr>
+    <tr><td>Status</td><td>Active／At risk／Recovered</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>每一列兩個操作：發訊息給這位粉絲、進入粉絲詳情。</li>
+  <li>搜尋：依姓名或 Email。</li>
+  <li>分級篩選：All fans／Inner Circle／Superfan／Devoted／Fan。</li>
+  <li>快速篩選：VIP／High spender（高消費）／Event attendee（活動出席）／International（國際）。</li>
+  <li>清單用「載入更多」分批載入，每次 25 列，並顯示「已載入／總數」。</li>
+</ul>
+
+<h3>兩種空狀態</h3>
+<div class="grid">
+  <div class="card"><div class="band"></div><h3>完全沒有粉絲</h3><p>新創作者還沒有粉絲時，整頁改成「取得第一批粉絲」的引導（例如分享項目、開店）；摘要指標、分級分布、清單、搜尋篩選與流失提醒都不出現，不用數字或空表格佔版面。</p></div>
+  <div class="card"><div class="band"></div><h3>有粉絲但查不到</h3><p>搜尋或篩選沒有結果時，清單裡顯示「查無符合的粉絲」，並提供清除條件。</p></div>
+</div>
+<p class="note">兩種情況分開處理，不共用同一個畫面。依據：5.1.7 F1～F6、F12、頁面狀態；主規格 §6.10；D069、D150。</p>
+
+<h2 id="s4"><span class="n">2</span>粉絲詳情</h2>
+<p>從總覽粉絲清單進入；返回總覽時保留原本的篩選、分級與搜尋條件。這一頁只彙整、不重算：金額與收入管理同源，活動與項目的正式紀錄仍在各自模組。</p>
+
+<h3>頁首</h3>
+<ul class="plain">
+  <li>顯示頭像、姓名、Email、所在地、加入時間、分級徽章、狀態徽章（Active／At risk／Recovered）、標籤摘要。</li>
+  <li>狀態照用總覽的流失風險規則，這一頁只顯示結果。</li>
+  <li>三個主要動作：
+    <ul class="plain">
+      <li>發訊息給這位粉絲：與清單列操作、流失提醒橫幅是同一套發訊息機制</li>
+      <li>分級設定：前往門檻與行為倍率設定</li>
+      <li>系統說明</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>忠誠點數與升級進度</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">指標</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>忠誠點數</td><td>目前點數，附與上一次重算相比的變化量</td></tr>
+    <tr><td>累積消費（Spent）</td><td>累積消費金額，附統計範圍與訂單數</td></tr>
+    <tr><td>下一分級進度</td><td>離下一分級兩道閘還差多少；已是 Inner Circle 時改顯示「已達最高分級」，提示創作者聚焦留住這位粉絲</td></tr>
+    <tr><td>最近活躍</td><td>距離最近一次互動多久，附最近一次互動的內容</td></tr>
+  </tbody>
+</table></div>
+<p class="note">這一區要提示：點數與分級每夜重算一次，顯示的是上一次重算的結果，不是即時。</p>
+
+<h3>行為時間線</h3>
+<ul class="plain">
+  <li>彙整電子商店、活動、項目與粉絲互動（例如留言、推薦好友）的行為，依時間分組。</li>
+  <li>每一筆寫行為描述、來源模組、時間與金額；純互動的行為沒有金額。</li>
+  <li>附一張「點數從哪來」說明卡，概覽購買、活動報到、互動、推薦等來源的權重。卡上的百分比是示意，精確公式由後端計分引擎持有，這一頁不重算、不能編輯。</li>
+</ul>
+
+<h3>消費紀錄</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">指標</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>累積消費</td><td>與上方 Spent 同一個數字，涵蓋商店、票券、項目</td></tr>
+    <tr><td>平均訂單金額</td><td>累積消費 ÷ 訂單數</td></tr>
+    <tr><td>近 90 天消費</td><td>附與前 90 天的比較</td></tr>
+  </tbody>
+</table></div>
+<p>消費明細逐筆列出商品、票券與項目支持：品項名稱、來源模組、日期、金額。</p>
+
+<h3>活動與項目紀錄</h3>
+<ul class="plain">
+  <li>活動參與：活動名稱、狀態（例如已出席 Attended、已報名待參加 RSVP'd）與日期；狀態值與活動的報到機制一致。</li>
+  <li>項目支持：項目名稱、所選的支持方案與日期（只追蹤沒支持的顯示 Following）、金額（有支持才有）。</li>
+</ul>
+
+<h3>標籤與長期貢獻</h3>
+<ul class="plain">
+  <li>粉絲標籤（例如 VIP、High spender、Event attendee、Early backer）用於清單篩選，可以新增。</li>
+  <li>長期貢獻摘要：在籍時間（含起始年月）、累積消費、名人堂的歷史最高分級與達成年份。</li>
+  <li>名人堂是唯讀紀錄，目前分級變動時不改寫，這一區要向創作者說明。</li>
+</ul>
+<p class="note">時間線、消費紀錄、活動與項目紀錄沒有資料時各自顯示空狀態，不放假資料。依據：5.1.7.7 §2.1～§2.7、§5；5.1.7 F7、F9～F12；D169。</p>
+
+<div class="foot">
+  <p>本頁只放定案規則，不記討論過程；規格裡尚未定案的項目不寫進正文。</p>
+</div>
+</div>
+</body>
+</html>
