@@ -26,6 +26,7 @@
 <link rel="stylesheet" href="ds-components/stepper.css?v=r2.2"><!-- .zstep 步進器：每組張數、每組用量、折扣 %、鎖定套數、限量上限、限時折扣 % -->
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2"><!-- 2026-09-21 D296：票券表的允許票種勾選（.zcheck） -->
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2"><!-- 原價算式列（.calc-list 內的 .kv）與「跟著活動」一列 -->
+<link rel="stylesheet" href="ds-components/follow-field.css?v=r2.2"><!-- D342：上架與開賣「跟隨活動／另設」 -->
 <link rel="stylesheet" href="ds-components/calc-list.css?v=r2.2">
 <!-- D241（spec §7.14）：三開關與庫存池的兩支新元件 -->
 <link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
@@ -412,12 +413,26 @@
           <div data-cb-film-picker></div>
         </div>
 
-        <!-- 上架（含票券成員，D293／D294）：跟著活動一句＋徽章，三開關收起 -->
-        <div class="field" data-cb-listing-follow hidden>
-          <div class="kv-list bd-listing">
-            <div class="kv kv--lead"><span class="kv__k" data-i18n="cpp.bd.sp.follow">Follows the event</span><span class="kv__v" data-cb-follow-ev></span></div>
+        <!-- 上架（含票券成員，D293；2026-10-01 D342 改寫）：純商品那組三開關收起，換成——
+             跟著哪一場（＋徽章）→ 顯示設定 → 上架、下架、開賣、停售四格「跟隨活動／另設」（js/ticket-bundle.js）→
+             購買條件與限購的預設讀數（建立時照預設帶入、調整在組合包細節頁，5.1.5.4 F2「購買條件與限購」） -->
+        <div class="stack" data-cb-listing-follow hidden data-feat="S62">
+          <div class="field">
+            <div class="kv-list bd-listing">
+              <div class="kv kv--lead"><span class="kv__k" data-i18n="cpp.bd.sp.follow">Follows the event</span><span class="kv__v" data-cb-follow-ev></span></div>
+            </div>
+            <div class="field__hint" data-i18n="cpp.bd.sp.follow.hint">Listing and sale times follow the event unless you set your own below.</div>
           </div>
-          <div class="field__hint" data-i18n="cpp.bd.sp.follow.hint">Lists when the event lists and goes on sale when it does — no separate schedule here. To pause or hide it on its own, use the bundle’s detail page after creating.</div>
+          <div class="control-row">
+            <div>
+              <div class="control-row__main" data-i18n="cp.listing.shown-h">Show in shop</div>
+              <div class="control-row__sub" data-i18n="cb.listing.hidden-note">The private link is created once you save, on the bundle page</div>
+            </div>
+            <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" id="cb-tshown" data-i18n-aria-label="cp.listing.shown-h" aria-label="Show in shop"></div>
+          </div>
+          <div data-tb-host="cb-sched"></div>
+          <div class="bd-sub"><span class="bd-sub__title" data-i18n="cpp.bd.sp.sec.rules">Purchase rules</span></div>
+          <div data-tb-host="cb-rules" data-feat="S63"></div>
         </div>
 
         <!-- 上架設定／顯示／開賣（D241／D245／D246／D247；spec 5.1.5.4 §4 F6）：純商品組合的完整三開關。
@@ -589,6 +604,7 @@
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script><!-- 2026-09-18 D292：活動票券成員的候選（活動與票種） -->
+<script src="js/ticket-bundle.js?v=r2.2"></script><!-- D342：票務商品的上架與開賣（跟隨活動／另設）與購買條件預設 -->
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
 <script src="js/row-disclosure.js?v=r2.2"></script>
@@ -1247,7 +1263,7 @@
     if (!ticketMember()) {
       if (!saleWindowOk()) return T('cp.listing.sale-err', 'Sale end must be after sale start');
       if (listingMode === 'schedule' && listingTime && !listingTime.value) return T('cb.why.listing-time', 'Scheduled listing needs a time');
-    }
+    } else if (tbErrCount()) return T('cpp.bd.sp.why.tb', 'Fix the times or purchase rules marked in red.');   /* D342：另設超出活動上架區間、或所含門票的可購買時間沒有交集 */
     return '';
   }
   function footSubText() {
@@ -1409,7 +1425,45 @@
     if (controls) controls.hidden = !!ev;
     const slot = document.querySelector('[data-cb-follow-ev]');
     if (slot && ev) slot.innerHTML = '<a class="card__link" href="event-detail.html?id=' + esc(ev.id) + '" target="_blank" rel="noopener">' + esc(evName(ev)) + '</a>' + evTinyBadgeHTML(ev);
+    renderTbFollow(ev);
   }
+  /* ── D342：票務商品的上架與開賣（跟隨活動／另設）與購買條件預設（js/ticket-bundle.js 共用）──────────────
+     tbState.sched 每格 null＝跟隨；購買條件建立時一律照預設（跟隨所含門票，取最嚴），這裡只畫讀數，調整在組合包細節頁。
+     時間欄重畫會丟游標，所以只在結構變了（換活動、換允許票種或張數、某格切換跟隨／另設）才重畫時間那一塊。 */
+  var TB = window.ZtorTicketBundle;   // var：recompute() 可能在本段之前就跑到，const 會撞暫時性死區
+  var tbState = { sched: {}, rules: null };
+  var tbSig = '';
+  function tbCtx() {
+    const ev = tix.event && ticketMember() ? (EV ? (EV.get(tix.event.id) || tix.event) : tix.event) : null;
+    if (!TB || !ev) return null;
+    const et = TB.times(ev);
+    const tiers = (ev.tiers || []).filter(t => tix.tierIds.indexOf(t.id) >= 0);
+    return { ev: ev, et: et, def: TB.defaults(tiers.map(t => t.rules), tix.qty, et, tiers.map(t => t.name || '')), n: tix.qty };
+  }
+  function renderTbFollow(ev) {
+    const hs = document.querySelector('[data-tb-host="cb-sched"]'), hr = document.querySelector('[data-tb-host="cb-rules"]');
+    const c = ev ? tbCtx() : null;
+    if (!c) { tbSig = ''; return; }
+    const sig = [c.ev.id, tix.tierIds.join('+'), tix.qty, TB.KEYS.map(k => TB.isCustom(tbState, k) ? 'c' : 'f').join(''), document.documentElement.lang].join('|');
+    if (hs && sig !== tbSig) { hs.innerHTML = TB.schedHTML(tbState, c.et, T); if (window.ztorIcons) window.ztorIcons.applyIcons(hs); }
+    tbSig = sig;
+    if (hr) hr.innerHTML = TB.rulesHTML(tbState, c.def, c.et, T, { n: c.n, readonly: true });
+    TB.syncErrors(document.querySelector('[data-cb-listing-follow]'), tbState, c, T);
+  }
+  function tbErrCount() { const c = tbCtx(); return c ? TB.errorCount(tbState, c, T) : 0; }
+  (function () {
+    const host = document.querySelector('[data-cb-listing-follow]');
+    if (!host) return;
+    host.addEventListener('click', e => { const c = tbCtx(); if (c && TB.onClick(e, tbState, c)) { tbSig = ''; recompute(); } });
+    host.addEventListener('input', e => { if (TB && TB.onInput(e, tbState)) recompute(); });
+    const sw = document.getElementById('cb-tshown');
+    if (sw) {
+      const flip = () => { const on = sw.getAttribute('aria-checked') !== 'true'; sw.setAttribute('aria-checked', on ? 'true' : 'false'); sw.classList.toggle('switch--on', on); };
+      sw.addEventListener('click', flip);
+      sw.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
+    }
+  })();
+  function tShownOn() { const sw = document.getElementById('cb-tshown'); return !sw || sw.getAttribute('aria-checked') !== 'false'; }
 
   /* 臨時新增商品：以 popup 嵌入完整 create-product 流程 */
   const addModal = document.getElementById('cb-add-modal');
@@ -1493,7 +1547,9 @@
       const blocked = !!p.archived || (status === 'unlisted' || status === 'draft');
       const nowMs = Date.now();
       const notYet = v => { const t = v ? new Date(v).getTime() : NaN; return !isNaN(t) && t > nowMs; };
-      const badgeStatus = p.archived ? 'archived' : blocked ? status : (status === 'ended' ? 'ended' : (notYet(p.saleStart) ? 'coming' : null));
+      /* 「即將開賣」兩個來源（2026-10-01 D342 同批小修）：開賣時間在未來，或 D290 重新上架後停在「未開賣」（onSale=false，
+         ListingState 判成 coming、不帶日期）——原本只看開賣時間，第二種會漏標 */
+      const badgeStatus = p.archived ? 'archived' : blocked ? status : (status === 'ended' ? 'ended' : ((status === 'coming' || notYet(p.saleStart)) ? 'coming' : null));
       const parts = String(p.subLabel || p.catLabel || '').split(' · ');
       const row = document.createElement('div');
       row.className = 'data-list__row';
@@ -1509,16 +1565,17 @@
       let end = '';
       if (badgeStatus) {
         const meta = LS && LS.STATUS_META[badgeStatus];
-        /* D332：「即將開賣」「販售結束」只表示該商品單售的狀態、不影響組合包——滑過徽章說明（5.1.5.4 F2） */
-        const singleOnly = (badgeStatus === 'coming' || badgeStatus === 'ended')
-          ? ' title="' + esc(T('cb.badge.single-only', 'Single-sale status only. It doesn’t affect the bundle.')) + '" data-i18n-title="cb.badge.single-only"' : '';
-        if (meta) end += '<span class="' + LS.badgeClass(badgeStatus) + '" data-i18n="' + meta.i18n + '"' + singleOnly + '>' + esc(T(meta.i18n, badgeStatus)) + '</span>';
+        if (meta) end += '<span class="' + LS.badgeClass(badgeStatus) + '" data-i18n="' + meta.i18n + '">' + esc(T(meta.i18n, badgeStatus)) + '</span>';
         else if (badgeStatus === 'archived') end += '<span class="badge badge--neutral" data-i18n="shop.status.archived">' + esc(T('shop.status.archived', 'Archived')) + '</span>';
       }
       end += '<span class="cb-price">' + esc(priceText(p.price, n)) + '</span>'
         + '<a class="btn btn--icon btn--xs" href="product-detail.html?id=' + encodeURIComponent(key) + '" target="_blank" rel="noopener" data-i18n-aria-label="cb.detail" aria-label="' + esc(T('cb.detail', 'Open product details in a new tab')) + '"><i data-lucide="external-link" class="ztor-icon"></i></a>';
       row.innerHTML = '<div class="data-list__row-main">' + (p.img ? '<img class="data-list__thumb data-list__thumb--lg" src="images/products/' + esc(p.img) + '" alt="">' : '<div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>')
-        + '<div class="data-list__body"><div class="data-list__title">' + esc(row.dataset.name) + ' <span class="text-sub"></span></div></div></div>'
+        + '<div class="data-list__body"><div class="data-list__title">' + esc(row.dataset.name) + ' <span class="text-sub"></span></div>'
+        /* D332：「即將開賣」「販售結束」只表示該商品單售的狀態、不影響組合包（5.1.5.4 F2）。2026-10-01 由徽章的 title 滑過提示
+           改成名稱下一行的常駐說明——觸控裝置沒有滑過，title 永遠看不到。 */
+        + ((badgeStatus === 'coming' || badgeStatus === 'ended') ? '<div class="data-list__meta" data-i18n="cb.badge.single-only">' + esc(T('cb.badge.single-only', 'Single-sale status only. It doesn’t affect the bundle.')) + '</div>' : '')
+        + '</div></div>'
         + '<div class="data-list__end cb-row-end">' + end + '</div>';
       row.onclick = e => { if (e.target.closest('a')) return; if (isAdded(row) || row.dataset.blocked) return; addProduct(productOf(row)); };
       recent.appendChild(row);
@@ -1676,6 +1733,8 @@
     const pr = moneyFrom(finalPrice(), priceRange());
     const bundleId = 'cb-' + Date.now().toString(36);
     const following = !!ticketMember();
+    const tbC = following ? tbCtx() : null;
+    const tbEff = tbC ? TB.effective(tbState, tbC.et) : {};
     const rec = {
       id: bundleId, name: nm, description: descEl ? descEl.value.trim() : '',
       /* 成員逐筆記型別（商品｜活動票券）、識別與每套用量（spec 5.1.5.4 §5 第 2 項，D292／D296）：票券成員記活動識別＋允許票種清單＋每組張數 */
@@ -1687,14 +1746,18 @@
       cap: bundleDraft.cap,
       lockSets: bundleDraft.lockSets,
       alloc: bundleDraft.alloc || {},
-      /* 含票券成員（D293／D294）：三開關跟著活動，本頁不收上架／開賣時間；純商品：「不上架」＝草稿語意，時間一律歸零 */
+      /* 含票券成員（D293；D342 改寫）：四個時間逐格跟隨活動或另設——sched 記另設的格子（null＝跟隨），
+         listAt／unlistAt／saleStart／saleEnd 存生效值（跟隨＝活動的值）；購買條件建立時照預設（rules:null＝跟隨所含門票）。
+         純商品：「不上架」＝草稿語意，時間一律歸零 */
       listed: following ? true : listingMode !== 'none',
-      listAt: (!following && listingMode === 'schedule' && listingTime) ? (listingTime.value || null) : null,
-      unlistAt: (!following && listingMode !== 'none' && unlistTime && unlistTime.value) || null,
-      shown: following ? true : (listingMode !== 'none' && shownOn()),
-      privateLink: (following || listingMode === 'none' || shownOn()) ? null : (LS ? LS.privateLinkFor(bundleId) : null),
-      saleStart: (!following && listingMode !== 'none' && saleMode === 'schedule' && saleOpen && saleOpen.value) || null,
-      saleEnd: (!following && listingMode !== 'none' && saleClose && saleClose.value) || null,
+      listAt: following ? (tbEff.listAt || null) : ((listingMode === 'schedule' && listingTime) ? (listingTime.value || null) : null),
+      unlistAt: following ? (tbEff.unlistAt || null) : ((listingMode !== 'none' && unlistTime && unlistTime.value) || null),
+      shown: following ? tShownOn() : (listingMode !== 'none' && shownOn()),
+      privateLink: (following ? tShownOn() : (listingMode === 'none' || shownOn())) ? null : (LS ? LS.privateLinkFor(bundleId) : null),
+      saleStart: following ? (tbEff.saleStart || null) : ((listingMode !== 'none' && saleMode === 'schedule' && saleOpen && saleOpen.value) || null),
+      saleEnd: following ? (tbEff.saleEnd || null) : ((listingMode !== 'none' && saleClose && saleClose.value) || null),
+      sched: following ? Object.assign({}, tbState.sched) : undefined,
+      rules: following ? null : undefined,
       films: linkedFilms.slice(),
       discountPct: discInfo().pct || null,
       discount: saleOn() ? {
@@ -1862,6 +1925,7 @@
       push('sale', 'cb.qc.sale', 'Limited-time discount complete', sp.ok && s && e && e > s, CB_STEP.price);
     }
     if (!ticketMember()) push('listing', 'cb.qc.listing', 'Listing & sale times', saleWindowOk() && !(listingMode === 'schedule' && listingTime && !listingTime.value), CB_STEP.name);
+    else push('listing', 'cb.qc.listing', 'Listing & sale times', !tbErrCount(), CB_STEP.name);   /* D342：跟隨／另設的時間與購買條件 */
     return out;
   }
   /* 預覽區塊的「編輯」入口：hover 到哪一塊，點了就回表單對應的分卡（先比對的先贏，內層放前面） */

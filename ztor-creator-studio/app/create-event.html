@@ -58,6 +58,8 @@
      右欄「粉絲看到的」預覽卡 bundle-preview-card；markup 由 js/bundle-editor.js 動態產生，check 15 掃不到、要手動連 -->
 <link rel="stylesheet" href="ds-components/insight-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/follow-field.css?v=r2.2"><!-- D342：票務商品上架與開賣「跟隨活動／另設」 -->
+<link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2"><!-- D342：第 6 步電影關聯的選片器（partials/film-picker 注入 .tag-input） -->
 <link rel="stylesheet" href="ds-components/bundle-preview-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/section-tabs.css?v=r2.2"><!-- 2026-09-21：組合包彈窗頂列第二排的分節分頁（點了捲到段、scrollspy） -->
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
@@ -1011,6 +1013,8 @@
             <input class="input" type="time" data-ce="sale-from-t" data-bky="saleFromT">
           </div>
           <p class="field__hint" data-di="d.sale.from.hint">留空＝上架即開賣。</p>
+          <!-- D342：售票期間（第二層）必須落在上架區間（第一層）內，超出就地紅字、發布前彙整阻擋 -->
+          <p class="field__error" data-ce-tl-err="sale-from" hidden data-feat="S62"></p>
         </div>
         <div class="field" style="margin-bottom:0">
           <label class="field__label"><span data-di="d.sale.to">停售日期與時間</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
@@ -1019,6 +1023,7 @@
             <input class="input" type="time" data-ce="sale-to-t" data-bky="saleToT">
           </div>
           <p class="field__hint" data-di="d.sale.to.hint">留空＝賣到活動開始。</p>
+          <p class="field__error" data-ce-tl-err="sale-to" hidden data-feat="S62"></p>
         </div>
       </div>
 
@@ -1297,6 +1302,8 @@
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="partials/stepper.js?v=r2.2"></script>   <!-- 2026-09-18：.zstep 步進行為（票券清單表的張數） -->
 <script src="js/section-tabs.js?v=r2.2"></script>   <!-- 2026-09-21：組合包彈窗的分節分頁行為，bundle-editor 每次 render 後呼叫 init -->
+<script src="js/ticket-bundle.js?v=r2.2"></script>   <!-- D342：時間層級（上架區間包住售票期間與限時間）＋票務商品的跟隨／另設與購買條件，與 bundle-detail、create-bundle 共用 -->
+<script src="partials/film-picker.js?v=r2.2"></script>   <!-- D342：第 6 步收電影關聯（5.1.5.4 F10），共用選片器 -->
 <script src="js/bundle-editor.js?v=r2.2"></script>
 <script>
 (function () {
@@ -1768,6 +1775,15 @@
         return;
       }
     }
+    /* D342 時間層級（5.1.6.1 F11 推導）：不另增檢核項，Publish 前把仍超出活動上架區間的時間設定一併列出並阻擋。 */
+    if (!isWP()) {
+      const tl = timeLayerIssues();
+      if (tl.length) {
+        step = tl[0].step; render(); syncSaleLayer(); syncRuleTl();
+        alert(T("tb.publish.blocked") + "\n" + tl.map(x => "・" + x.label).join("\n"));
+        return;
+      }
+    }
     /* 墓碑 2026-09-29（D327）：取票說明 250 字元的發布守門隨欄位退場。 */
     /* 墓碑 2026-09-30（D340，5.1.6.1 F8／F9.1）：「票種數量加總超過容量」的發布阻擋隨容量刪除——每張門票的張數本身就是硬庫存。 */
     /* D310：五項硬閘與彙整阻擋都過了就直接發布——第 8 步本身已經是發布前預覽確認畫面，
@@ -2149,6 +2165,90 @@
   /* 墓碑 2026-09-30（D340，5.1.6.1 F23）：販售方式二選一（`#ce-sale-mode`／`applySaleMode()`）刪除——開賣設定只剩兩個選填時間，
      開賣日期與時間不再是必填，兩組欄位一律攤開。 */
 
+  /* ── 活動販售的時間層級（D342，2026-10-01；主規格 §7.14「活動販售的時間層級」、5.1.6.1 F12b／F22／F23／F11）──────
+     第一層＝本步的上架區間（上架到下架）最大；售票期間（開賣設定）、單張門票與活動層預設的限時間（第 5 步購票規則）、
+     票務商品另設的時間（第 6 步）都要落在其內——超出就地紅字、存不了（門票彈窗、票務設定、組合包「完成」），發布前彙整阻擋。
+     限時間可以早於活動開賣（預售），只要還在上架區間內。立刻上架＝起點是發布當下，原型不擋起點〔產品待確認 #1〕。
+     比對規則在 js/ticket-bundle.js（與 bundle-detail、create-bundle 共用），這裡只負責把本頁的欄位組成活動時間。 */
+  const TBX = window.ZtorTicketBundle;
+  function ceDT(d, t) {
+    const dv = (document.querySelector('[data-ce="' + d + '"]')?.value || "").trim();
+    const tv = (document.querySelector('[data-ce="' + t + '"]')?.value || "").trim();
+    return dv ? dv + "T" + (tv || "00:00") : "";
+  }
+  function eventTimes() {
+    const mode = (listModeSeg && listModeSeg.dataset.value) || "now";
+    /* 停售跟隨＝賣到活動開始：多場次時取最早那一場（哪一場算「活動開始」〔產品待確認 #4〕） */
+    const starts = series.list.map(x => x.date ? x.date + "T" + (x.start || "00:00") : "").filter(Boolean).sort();
+    return {
+      listFrom: mode === "schedule" ? ceDT("list-d", "list-t") : "",
+      listTo: mode === "none" ? "" : ceDT("unlist-d", "unlist-t"),
+      listNow: mode === "now", draft: mode === "none",
+      saleFrom: ceDT("sale-from-d", "sale-from-t"), saleTo: ceDT("sale-to-d", "sale-to-t"),
+      start: starts[0] || ceDT("date", "start")
+    };
+  }
+  const tlMsg = (v, et) => (TBX && v && TBX.outside(v, et)) ? T("tb.err.outside").replace("{period}", TBX.periodText(et, T)) : "";
+  /* 售票期間兩端的就地紅字；回傳錯誤數 */
+  function syncSaleLayer() {
+    const et = eventTimes();
+    let n = 0;
+    [["sale-from", et.saleFrom], ["sale-to", et.saleTo]].forEach(([k, v]) => {
+      const p = document.querySelector('[data-ce-tl-err="' + k + '"]');
+      const m = tlMsg(v, et);
+      if (m) n++;
+      if (p) { p.hidden = !m; p.textContent = m; }
+    });
+    return n;
+  }
+  /* 購票規則（購買條件與折扣）的限時間：mode 含時間（time／both）才檢查 */
+  function ruleTlErrs(r, et) {
+    const out = {};
+    if (!r) return out;
+    et = et || eventTimes();
+    ["buy", "disc"].forEach(g => {
+      const x = r[g] || {};
+      if (x.mode !== "time" && x.mode !== "both") return;
+      const m = tlMsg(x.from, et) || tlMsg(x.to, et);
+      if (m) out[g] = m;
+    });
+    return out;
+  }
+  const ruleTlBad = (r, et) => Object.keys(ruleTlErrs(r, et)).length > 0;
+  /* 畫面上每一份規則（活動層 data-rules-for="event"、門票彈窗 data-rules-for=門票 id）的限時間紅字 */
+  function syncRuleTl(root) {
+    (root || document).querySelectorAll("[data-rules-for]").forEach(host => {
+      const id = host.dataset.rulesFor;
+      const t = id === "event" ? null : tiers.find(x => x.id === id);
+      const errs = ruleTlErrs(id === "event" ? eventRules : (t && rulesOf(t)));
+      host.querySelectorAll("[data-rule-tl-err]").forEach(p => {
+        const m = errs[p.dataset.ruleTlErr] || "";
+        p.hidden = !m; p.textContent = m;
+      });
+    });
+  }
+  const TL_FIELDS = ["list-d", "list-t", "unlist-d", "unlist-t", "sale-from-d", "sale-from-t", "sale-to-d", "sale-to-t"];
+  ["input", "change"].forEach(type => document.addEventListener(type, e => {
+    const k = e.target && e.target.getAttribute && e.target.getAttribute("data-ce");
+    if (k && TL_FIELDS.indexOf(k) >= 0) { syncSaleLayer(); syncRuleTl(); }
+  }));
+  listModeSeg?.addEventListener("click", () => { syncSaleLayer(); syncRuleTl(); });
+  document.addEventListener("i18n:applied", () => { syncSaleLayer(); syncRuleTl(); });   // 換語言時紅字跟著換
+  /* 發布前彙整（F11）：仍超出上架區間的時間設定逐項列出，帶回第一個出問題的步驟 */
+  function timeLayerIssues() {
+    if (!TBX) return [];
+    const et = eventTimes(), out = [];
+    if (tlMsg(et.saleFrom, et)) out.push({ step: 7, label: dT("d.sale.from") });
+    if (tlMsg(et.saleTo, et)) out.push({ step: 7, label: dT("d.sale.to") });
+    if (ruleTlBad(eventRules, et)) out.push({ step: 5, label: T("tb.issue.eventrules") });
+    savedTiers().filter(t => t.rules && !t.earlyFix && ruleTlBad(t.rules, et)).forEach(t =>
+      out.push({ step: 5, label: ((val(t).tname || "").trim() || autoTicketName(t)) + " · " + dT("d.tier.buycond") }));
+    if (bundleEd && bundleEd.timeIssues) bundleEd.getBundles().filter(b => !b.fresh).forEach(b => {
+      if (bundleEd.timeIssues(b)) out.push({ step: 6, label: (b.name || T("cpp.bd.untitled")) + " · " + T("tb.issue.bundle") });
+    });
+    return out;
+  }
+
   /* 顯示設定（D340，5.1.6.1 F25；主規格 §7.14「非公開連結」）：顯示開關預設開。關掉＝隱藏，揭示區長出活動連結＋QR；
      連結帶一段隨機碼（原型示意）——重置換一段新的、舊的作廢；切回顯示＝撤銷（隨機碼清掉），再隱藏時產生新的一條。 */
   const visSwitch = document.getElementById("ce-vis-shown");
@@ -2248,7 +2348,7 @@
      一張卡＝一個票種，三個必填欄位（名稱／價格／數量），收合與編輯兩態。
      只有按過 Save 的卡才算「已建立」——編輯中的草稿不進計數、Review 摘要與
      Quality check，否則按一下新增就先送出一張空票種，跟改壞之前那版一樣。
-     深度票務規則（entitlement／售票時窗／優先購票）屬活動詳情 5.1.6 F5，此步不收。 */
+     深度票務規則（entitlement／優先購票）屬活動詳情 5.1.6 F5，此步不收；票種沒有自己的售票時間（D342：活動的開賣到停售叫「售票期間」，單張門票用購買條件的限時間）。 */
   const tierList  = document.getElementById("ce-tier-list");
   const tierCount = document.getElementById("ce-tier-count");
   const TIER_NAME_MAX = 40;
@@ -3129,6 +3229,7 @@
     if (imgTile && window.ztorUploadTile) window.ztorUploadTile.enhance(imgTile);
     demoI18n(body);
     renderTierErrors();
+    syncRuleTl(body);
   }
   function openTierModal(t) {
     modalId = t.id;
@@ -3142,6 +3243,8 @@
       if (save) {
         errIds.add(t.id);
         if (!tierValid(t)) { renderTierErrors(); return; }   // 沒過驗證就不關，錯誤留在畫面上
+        /* D342：限時間超出活動上架區間就不關（就地紅字）；bookyay 鎖定的早鳥不在這裡檢查（不能改） */
+        if (t.rules && !t.earlyFix && ruleTlBad(t.rules)) { syncRuleTl(document.getElementById("ce-tier-modal-body")); return; }
         commitTier(t);
       } else dropDraft(t);
     }
@@ -3884,7 +3987,9 @@
             '<input class="input" type="datetime-local" data-ph-key="ce.rule.from" data-rule-f="' + g + '.from" value="' + esc(r.from) + '">') +
           ruleField(dT("d.rule.end"),
             '<input class="input" type="datetime-local" data-ph-key="ce.rule.to" data-rule-f="' + g + '.to" value="' + esc(r.to) + '">') +
-        '</div>') +
+        '</div>' +
+        /* D342：限時間必須落在活動上架區間內（可以早於開賣），超出就地紅字（syncRuleTl） */
+        '<p class="field__error" data-rule-tl-err="' + g + '" hidden></p>') +
       condWhen(path, "tier",  cur,
         ruleField(dT("d.rule.tierpick"),
           '<select class="select" data-rule-f="' + g + '.tier">' +
@@ -4008,6 +4113,7 @@
   const rulesRoot = document.getElementById("ce-rules");
   function renderRules() {
     if (rulesRoot) rulesRoot.innerHTML = rulesHTML(eventRules, "event");
+    if (rulesRoot && typeof syncRuleTl === "function") syncRuleTl(rulesRoot.parentNode || rulesRoot);
     syncRulesSummary();
     renderCalc();
   }
@@ -4069,6 +4175,7 @@
     if (!r) return;
     host.innerHTML = rulesHTML(r, host.dataset.rulesFor);
     if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+    syncRuleTl(host.parentNode || host);
   }
   /* 2026-08-09：購票條件與折扣改成兩層選單（見 buyHTML／discHTML）。「開／關」與
      「限制的內容」是兩個獨立決定，切換任一個都整段重繪那個規則區——兩層互相牽動
@@ -4156,6 +4263,7 @@
     if (!r) return;
     ruleSet(r, f.dataset.ruleF, f.value);
     if (host && f.dataset.ruleF === "disc.pct") syncDiscPair(host, "pct");
+    if (/\.(from|to)$/.test(f.dataset.ruleF)) syncRuleTl();   // D342：限時間一改就重比上架區間
     renderCalc(); scheduleSave();
   });
 
@@ -4408,6 +4516,8 @@
         const nameEl = document.querySelector('[data-ce="name"]');
         return { name: (nameEl && nameEl.value.trim()) || "", status: "draft", label: T("events.badge.draft", "Draft") };
       },
+      /* D342：活動時間（上架區間、售票期間、開演）——票務商品「跟隨活動／另設」與購買條件預設的依據，即時讀第 3／7 步 */
+      times: () => eventTimes(),
       /* group／kind 是挑選器的分組與跨場捷徑用的（見 bundle-editor.js 的說明）：
          group＝這張票屬於哪一場、kind＝它是哪一個票種。單場活動 group.name 留空，
          挑選器就不畫組頭——單場沒有「哪一場」要區分。 */
@@ -4421,7 +4531,10 @@
           price: t.price,
           qty: val(t).qty || 0,
           group: { id: t.sess || "", name: (multi() && ss) ? sessionLabel(ss, i) : "" },
-          kind: ty ? { id: ty.id, name: ty.name || ticketNames(t)[0] } : null
+          kind: ty ? { id: ty.id, name: ty.name || ticketNames(t)[0] } : null,
+          /* D342：門票的購買條件與限購（跟隨活動預設時就是活動層那一份）——票務商品預設取最嚴；bookyay 鎖定的早鳥不能被組合包改 */
+          rules: rulesOf(t),
+          rulesFix: !!t.earlyFix
         };
       }),
       pool: 0,
@@ -5010,6 +5123,12 @@
   }
   function closeQuick() {
     if (!quickModal) return;
+    /* D342：活動層預設的限時間超出上架區間——展開規則、就地紅字、不關 */
+    if (ruleTlBad(eventRules)) {
+      if (rulesRoot && rulesRoot.hidden) document.querySelector("[data-rules-toggle]")?.click();
+      syncRuleTl(quickModal);
+      return;
+    }
     quickModal.hidden = true;
     document.body.style.overflow = "";
     renderTiers(); scheduleSave();
