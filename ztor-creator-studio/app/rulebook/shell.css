@@ -1,0 +1,104 @@
+/* 規則手冊共用外殼：側邊欄（章節切換）＋皮膚切換。各分頁共用，token 沿用各頁自己的 :root。 */
+html{scroll-padding-top:16px}
+body>.wrap{margin-left:calc(var(--side-w,232px) + 32px);margin-right:auto}
+.rb-side{
+  position:fixed;left:0;top:0;bottom:0;width:var(--side-w,232px);
+  display:flex;flex-direction:column;gap:0;
+  background:var(--surface);border-right:1px solid var(--border);
+  padding:20px 14px 16px;overflow-y:auto;z-index:20;
+}
+.rb-side .head{display:flex;align-items:flex-start;gap:6px;margin:0 0 18px}
+.rb-side .head .brand{flex:1;margin:0 0 0 6px}
+.rb-side .fold{display:none}
+.rb-side .brand{display:block;text-decoration:none;color:var(--text);font-size:13px;line-height:1.4;margin:0 6px 18px}
+.rb-side .brand b{display:block;font-weight:500;font-size:16px}
+.rb-side .brand span{color:var(--text-3);font-size:12px}
+.rb-side .lbl{font-size:11px;color:var(--text-3);letter-spacing:.06em;margin:14px 6px 6px}
+.rb-nav{list-style:none;margin:0;padding:0}
+.rb-nav>li{margin-bottom:2px}
+.rb-nav a{display:flex;gap:8px;align-items:baseline;padding:7px 10px;border-radius:var(--radius);color:var(--text-2);text-decoration:none;font-size:13px;line-height:1.4}
+.rb-nav a .n{color:var(--text-3);font-variant-numeric:tabular-nums;min-width:12px;font-size:12px}
+.rb-nav a:hover{background:var(--surface-sunken);color:var(--text)}
+.rb-nav a[aria-current="page"]{background:var(--sel-bg);color:var(--sel-text)}
+.rb-nav a[aria-current="page"] .n{color:var(--sel-text);opacity:.7}
+.rb-sub{list-style:none;margin:2px 0 6px;padding:0 0 0 12px;border-left:1px solid var(--border);margin-left:14px}
+.rb-sub a{padding:4px 10px;font-size:12.5px;color:var(--text-3)}
+.rb-sub a.is-active{color:var(--text);background:var(--surface-sunken)}
+.rb-sub li.lv3 a{padding-left:22px;font-size:12px}
+/* 章節樹：章節（可展開）› 子功能頁（群組標籤）› 子頁（連結）；沒內容的子頁是灰字、不可點。
+   所有選項滿版：整棵樹用負邊距抵銷側欄左右 14px 內距，各列改用內距對齊文字、不留圓角。
+   文字縮排：章節 24px、群組與子頁 44px、頁內段落 68px（皆從側欄左緣量起） */
+.rb-tree{margin:0 -14px;--rb-cur:color-mix(in srgb,var(--border) 45%,var(--surface-sunken));--rb-cur-hi:var(--border)}
+.rb-tree .rb-ch{margin-bottom:1px}
+.rb-tree .rb-chb{display:flex;width:100%;gap:8px;align-items:baseline;padding:7px 24px;border:0;border-radius:0;background:transparent;color:var(--text-2);font-family:inherit;font-size:15px;line-height:1.4;text-align:left;cursor:pointer}
+.rb-tree .rb-chb:hover{background:var(--surface-sunken);color:var(--text)}
+.rb-tree .rb-chb .n{color:var(--text-3);font-variant-numeric:tabular-nums;min-width:12px;font-size:13px}
+.rb-tree .rb-chb .rb-t{flex:1}
+.rb-tree .rb-chb .rb-todo{font-size:10.5px;color:var(--text-3);border:1px solid var(--border);border-radius:999px;padding:0 6px;line-height:1.6}
+.rb-tree .rb-chb .rb-car{color:var(--text-3);font-size:12px;transition:transform .15s ease;display:inline-block}
+.rb-tree .rb-ch.is-open>.rb-chb{color:var(--text)}
+.rb-tree .rb-ch.is-open>.rb-chb .rb-car{transform:rotate(90deg)}
+/* 展開的子選單：滿版淺底，底色取 surface 與 surface-sunken 的中間值 */
+.rb-tree .rb-chbody{display:none;padding:6px 0 10px;margin:2px 0 12px;background:color-mix(in srgb,var(--surface-sunken) 55%,var(--surface))}
+.rb-tree .rb-ch.is-open>.rb-chbody{display:block}
+.rb-tree .rb-grp{font-size:11px;color:var(--text-3);opacity:.55;letter-spacing:.08em;margin:16px 24px 3px 44px}
+.rb-tree .rb-grp:first-child{margin-top:4px}
+.rb-tree .rb-pg{list-style:none;margin:0;padding:0}
+.rb-tree .rb-pg a{padding:5px 24px 5px 44px;font-size:13px;border-radius:0}
+.rb-tree .rb-pg .rb-empty{display:block;padding:5px 24px 5px 44px;font-size:13px;line-height:1.4;color:var(--text-3);opacity:.6}
+.rb-tree .rb-pg .rb-empty::after{content:"待補";margin-left:6px;font-size:10.5px}
+/* 頁內段落（目前頁的 h2 清單）：引導線在 56px，用絕對定位的偽元素疊在連結反白之上（畫在底色上會被 hover／高亮蓋掉），連結滿版 */
+.rb-tree .rb-sub{position:relative;margin:2px 0 6px;padding:4px 0;border-left:0;background:var(--rb-cur)}
+.rb-tree .rb-sub::before{content:"";position:absolute;left:56px;top:4px;bottom:4px;width:1px;background:var(--border-strong);pointer-events:none}
+.rb-tree .rb-sub a{padding:4px 24px 4px 68px;border-radius:0}
+/* 三階底色：側欄 surface → 子選單（surface 與 sunken 中間值）→ 頁內段落區塊 surface-sunken。
+   子頁 hover 用 surface-sunken；頁內段落區塊本身已是 sunken，所以它的 hover／高亮再深一階（混入 border）。目前所在頁維持深色底，不吃 hover */
+.rb-tree .rb-chbody a:not([aria-current]):hover{background:var(--surface-sunken)}
+/* 目前所在頁：不用深色實底，改與下方頁內段落區塊同色（--rb-cur，sunken 混 45% border）連成一塊，字加粗標示 */
+.rb-tree .rb-pg a[aria-current="page"]{background:var(--rb-cur);color:var(--text);font-weight:500}
+.rb-tree .rb-pg a[aria-current="page"]+.rb-sub{margin-top:0}
+.rb-tree .rb-chbody .rb-sub a:hover,.rb-tree .rb-chbody .rb-sub a.is-active{background:var(--rb-cur-hi)}
+.rb-crumb{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:12.5px;color:var(--text-3);margin:0 0 10px}
+.rb-crumb [aria-current]{color:var(--text-2)}
+.rb-crumb .sep{opacity:.6}
+.rb-side .spacer{flex:1}
+.rb-theme{margin:12px 6px 0}
+.rb-theme .lbl{margin:0 0 6px}
+.rb-theme .seg{display:flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--surface)}
+.rb-theme .seg button{flex:1;border:0;background:transparent;color:var(--text-2);font-family:inherit;font-size:12px;padding:6px 0;cursor:pointer}
+.rb-theme .seg button+button{border-left:1px solid var(--border)}
+.rb-theme .seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.rb-top{display:none}
+.rb-backdrop{display:none}
+@media (min-width:901px){
+  .rb-side .fold{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text-3);cursor:pointer;font-size:13px;flex:none;font-family:inherit;padding:0}
+  .rb-side .fold:hover{color:var(--text);border-color:var(--text-3)}
+  body.rb-collapsed{--side-w:56px}
+  body.rb-collapsed .rb-side{padding-left:10px;padding-right:10px;align-items:center}
+  body.rb-collapsed .rb-side .head{flex-direction:column;align-items:center;margin-bottom:14px}
+  body.rb-collapsed .rb-side .brand,body.rb-collapsed .rb-side .lbl,body.rb-collapsed .rb-sub,body.rb-collapsed .rb-theme,body.rb-collapsed .rb-nav a>span:not(.n),body.rb-collapsed .rb-tree .rb-chbody,body.rb-collapsed .rb-tree .rb-chb>span:not(.n){display:none}
+  /* 收合狀態：只留章節編號方塊；目前章節實心標示、待補章節淡化；子頁清單、待補標籤、箭頭一律藏起來（選擇器要壓過展開的 is-open 規則） */
+  body.rb-collapsed .rb-tree{margin:0}
+  body.rb-collapsed .rb-tree .rb-ch>.rb-chbody,body.rb-collapsed .rb-tree .rb-ch.is-open>.rb-chbody{display:none}
+  body.rb-collapsed .rb-tree .rb-ch{display:flex;justify-content:center;margin-bottom:4px}
+  body.rb-collapsed .rb-tree .rb-chb{width:32px;height:32px;padding:0;justify-content:center;align-items:center;border-radius:var(--radius)}
+  body.rb-collapsed .rb-tree .rb-chb .n{min-width:0;font-size:13px;color:var(--text-2)}
+  body.rb-collapsed .rb-tree .rb-ch.is-empty .rb-chb .n{color:var(--text-3);opacity:.6}
+  body.rb-collapsed .rb-tree .rb-ch.is-cur>.rb-chb{background:var(--sel-bg)}
+  body.rb-collapsed .rb-tree .rb-ch.is-cur>.rb-chb .n{color:var(--sel-text);opacity:1}
+  body.rb-collapsed .rb-nav{width:100%}
+  body.rb-collapsed .rb-nav a{justify-content:center;padding:8px 0}
+  body.rb-collapsed .rb-nav a .n{min-width:0;font-size:13px}
+  body.rb-collapsed .rb-nav a[aria-current="page"] .n{opacity:1}
+}
+@media (max-width:900px){
+  body>.wrap{margin-left:auto}
+  body>.wrap{padding-top:36px}
+  .rb-top{display:flex;position:fixed;top:0;left:0;right:0;height:48px;align-items:center;gap:10px;padding:0 14px;background:var(--surface);border-bottom:1px solid var(--border);z-index:22}
+  .rb-top .brand{font-size:13px;color:var(--text);text-decoration:none;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rb-top button{border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-family:inherit;font-size:12.5px;padding:5px 10px;border-radius:var(--radius);cursor:pointer}
+  .rb-side{transform:translateX(-100%);transition:transform .2s ease;box-shadow:none;top:48px;padding-top:14px}
+  body.rb-open .rb-side{transform:none;box-shadow:0 0 0 1px var(--border),0 12px 32px rgba(0,0,0,.25)}
+  .rb-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:19}
+  body.rb-open .rb-backdrop{display:block}
+}

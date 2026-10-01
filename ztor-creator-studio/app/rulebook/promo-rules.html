@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>優惠規則 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261001o">
+<script src="shell.js?v=20261001o" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:15px;font-weight:500;margin:26px 0 8px;color:var(--text)}
+h4{font-size:14px;font-weight:500;margin:22px 0 6px;color:var(--text);padding-left:10px;border-left:2px solid var(--border-strong)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 底層規則 */
+.rules{counter-reset:r;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:10px 0 6px}
+.rule{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:12px}
+.rule::before{counter-increment:r;content:counter(r);display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;flex:none}
+.rule b{display:block;font-weight:500;font-size:14px;margin-bottom:3px}
+.rule span{font-size:13px;color:var(--text-2)}
+/* 金額階梯（收據式） */
+.ledger{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin:12px 0 6px;overflow:hidden}
+.ledger .lrow{display:grid;grid-template-columns:28px 1fr 110px 200px;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);font-size:13.5px}
+.ledger .lrow:last-child{border-bottom:0}
+.ledger .lrow.op{background:var(--surface-sunken);color:var(--text-2);font-size:13px;padding:7px 16px}
+.ledger .lrow.op .amt{color:var(--text-2)}
+.ledger .lrow.sum{font-weight:500}
+.ledger .lrow.final{background:var(--sel-bg);color:var(--sel-text)}
+.ledger .lrow.final .amt,.ledger .lrow.final .why{color:var(--sel-text)}
+.ledger .sign{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text-3);text-align:center}
+.ledger .amt{text-align:right;font-variant-numeric:tabular-nums}
+.ledger .why{font-size:12px;color:var(--text-3)}
+.ledger .why .tag{font-size:11px;padding:1px 8px}
+.ledger .sub{display:block;font-size:12px;color:var(--text-3);font-weight:400}
+@media (max-width:700px){.ledger .lrow{grid-template-columns:22px 1fr 90px;gap:8px;padding:9px 12px}.ledger .why{grid-column:2/4;margin-top:-4px}}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:12px 0 6px}
+.fee{border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--surface)}
+.fee .t{font-size:14px;font-weight:500;margin-bottom:6px}
+.fee .f{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;background:var(--surface-sunken);border-radius:var(--radius);padding:8px 10px;margin:6px 0}
+.fee p{font-size:13px;color:var(--text-2);margin:4px 0 0}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin:10px 0 6px}
+.role{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 12px;overflow:hidden}
+.role .band{height:4px;margin:0 -16px 12px}
+.role h3{margin:0 0 2px;color:var(--text);font-size:15px}
+.role .where{font-size:12px;color:var(--text-3);margin:0 0 8px}
+.role ol{margin:0;padding-left:20px;counter-reset:s}
+.role li{font-size:13px;margin-bottom:7px;padding-left:2px}
+.role li b{font-weight:500}
+.role li .k{display:block;font-size:12px;color:var(--text-3)}
+.role.ok .band{background:var(--ok-key)} .role.pink .band{background:var(--pink-key)} .role.wait .band{background:var(--wait-key)}
+.role.dim{opacity:.85;border-style:dashed}
+/* 試算 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 14px;margin-bottom:10px}
+.sim label{font-size:12px;color:var(--text-3);display:block}
+.sim input[type=number]{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px;margin-top:3px}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-top:3px}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.sim .out table{margin:0}
+.sim .out td:first-child{white-space:nowrap}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.phase{margin:14px 0 6px;padding:12px 16px;border:1px solid var(--border);border-left:3px solid var(--ok-key);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.phase b{font-weight:500}
+.phase ul{margin:6px 0 0;padding-left:20px}
+.phase li{margin-bottom:3px}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>優惠規則</h1>
+<p class="lede">ztor 的折扣分三層：創作者自己定的價（<b>特價</b>、<b>組合折扣</b>、<b>方案優惠</b>）、給特定買家的（<b>分級折扣</b>、<b>優惠碼</b>）、平台對全體買家的<b>滿額折扣</b>與<b>平台優惠碼</b>。平台抽成看買家折完之後實際付的品項金額，所以折扣由創作者與平台照費率比例一起吸收。</p>
+<p class="src">權威定義：<code>0-設計規格書.md §7.3 / §7.6 / §8.22</code>　裁決：<code>decisions.md D183</code>（優惠碼兩型，2026-08-10）、<code>D272／D273／D274／D275／D276／D277</code>（2026-09-15）、<code>D278／D279／D280</code>（2026-09-17）、<code>D299</code>（2026-09-22）、<code>D316</code>（幣別收斂與費用負擔方，2026-09-23）、<code>D342</code>（票務商品的購買條件與折扣分開，2026-10-01）　頁面：<code>5.1.5.5-商店設定.md F8</code>、<code>5.1.0.7-平台優惠設定.md</code>、<code>5.1.5.2-建立商品流程.md F13</code>、<code>5.1.5.4-建立組合流程.md F3／F7</code>、<code>5.1.7.2-分級權益.md</code>、<code>5.1.2.1-建立專案流程.md</code> 方案</p>
+
+<div class="toc">
+  <a href="#s1">1 七種折扣</a><a href="#s2">2 折扣底層規則</a><a href="#s3">3 基本算法</a><a href="#s4">4 七種折扣細則</a><a href="#s5">5 UI 流程</a><a href="#s6">6 試算</a>
+</div>
+
+<h2 id="s1"><span class="n">1</span>七種折扣</h2>
+<p>先看全貌：誰設、對誰、在哪裡設。前三種是「定價的一部分」，買家看到的就是那個價；後四種是「結帳時的折抵」。細則在第 4 節。</p>
+<div class="grid">
+  <div class="card ok">
+    <div class="band"></div>
+    <h3>排程特價</h3>
+    <p>商品層。限時檔期內用特價取代定價，買家什麼都不用做。</p>
+    <p class="k">誰設：創作者，在建立商品 F13　誰出錢：創作者</p>
+  </div>
+  <div class="card ok">
+    <div class="band"></div>
+    <h3>組合折扣</h3>
+    <p>組合包層。常態折扣 %：組合售價＝成員原價合計 ×（1 − %）。另可再排限時折扣 %，疊在組合售價上。</p>
+    <p class="k">誰設：創作者，在建立組合 F3／F7　誰出錢：創作者</p>
+  </div>
+  <div class="card ok">
+    <div class="band"></div>
+    <h3>方案優惠</h3>
+    <p>項目層。方案售價＝（名額 × 單價 ＋ 商品加總）×（1 − %），用於早鳥或成組；是方案定價的一部分。</p>
+    <p class="k">誰設：創作者，在建立項目的方案　誰出錢：創作者</p>
+  </div>
+  <div class="card wait">
+    <div class="band"></div>
+    <h3>粉絲分級折扣</h3>
+    <p>粉絲層。依粉絲等級給週邊折扣 %（例：Inner Circle 20%）；另有搶先購買天數，那是權益不是折扣。</p>
+    <p class="k">誰設：創作者，在分級權益　誰出錢：創作者（比照優惠碼）</p>
+  </div>
+  <div class="card wait">
+    <div class="band"></div>
+    <h3>優惠碼</h3>
+    <p>商店層。買家結帳時輸碼才折。分自用碼（自己發給粉絲）與代理碼（發給另一位創作者代賣、成交後分成）。</p>
+    <p class="k">誰設：創作者，在商店設定 F8　誰出錢：創作者</p>
+  </div>
+  <div class="card pink">
+    <div class="band"></div>
+    <h3>平台滿額折扣</h3>
+    <p>平台層。訂單達門檻系統自動折，買家不輸碼。一檔一筆設定（名稱、期間、啟用、例外）；創作者不能退出，Admin 可設例外藝人。</p>
+    <p class="k">誰設：Admin，在平台優惠設定　誰出錢：創作者</p>
+  </div>
+  <div class="card pink">
+    <div class="band"></div>
+    <h3>平台優惠碼</h3>
+    <p>平台層。平台自己發、買家輸碼，欄位與買家端行為跟創作者優惠碼一樣；一組一筆設定、各自有例外。</p>
+    <p class="k">誰設：Admin，在平台優惠設定　誰出錢：創作者（待確認）</p>
+  </div>
+</div>
+
+
+<div class="phase"><b>上線階段（D279）</b>：Phase 1 只有藝人商店的<b>自用優惠碼</b>，欄位只有三組——開始／結束時間、百分比折扣（固定金額 Phase 4，D320）、適用範圍（全部商店，含活動票種；或指定商品，可多選：單售商品、組合包、活動票種）。活動票種可使用優惠碼；Phase 1 不限每人使用次數，每人總次數欄留 Phase 4。其餘全部 Phase 4（最終完整版）：
+  <ul>
+    <li>優惠碼的固定金額折扣（含固定金額的折法）、類型樹、每張訂單可折件數／每人總次數／總兌換次數、多碼疊加、代理碼</li>
+    <li>平台滿額折扣與平台優惠碼（Admin 平台優惠設定整頁）</li>
+    <li>排程特價、組合折扣、方案優惠、分級折扣依各自模組的上線階段</li>
+  </ul>
+</div>
+
+<h2 id="s2"><span class="n">2</span>折扣底層規則</h2>
+<p>不管哪一種折扣，下面四條都成立。</p>
+<div class="rules">
+    <div class="rule"><div><b>折扣由創作者與平台一起吸收</b><span>分級折扣、優惠碼（創作者的或平台的）、平台滿額折扣的折抵在收入拆解各列一行，都發生在平台費之前；平台抽成跟著折後金額縮水，折 10 元、費率 15% 就是平台少抽 1.5、創作者少拿 8.5。特價、組合折扣、方案優惠是定價的一部分，不另列。</span></div></div>
+  <div class="rule"><div><b>平台費看折完的品項實付，支付費看買家實付</b><span>平台抽成以所有折扣算完後的品項金額計，不含運費；金流商手續費對買家實際付的錢（含運費）計。<b>平台費與金流商手續費兩筆都向創作者收</b>，從創作者的收入裡扣——買家只付折後售價＋運費，買家端不會看到任何費用線項（D316）。平台費<b>逐件算</b>：每件用自己的折後實付 × 自己那個維度的費率——同一單混有活動票券與商品時，票券用活動費率、商品用電子商店費率；整單只折一筆的折抵（固定金額碼、滿額折扣）先按各件實付比例分到每件再各自乘費率。兩個維度預設費率現在同值，分開後算法不用改。折扣只落在符合範圍的品項金額，範圍外的品項與運費照原價，滿額門檻也只看品項小計。</span></div></div>
+  <div class="rule"><div><b>多種折扣的優先順序：定價層 → 買家層 → 滿額</b><span>先套特價／組合折扣／方案優惠得到標示售價，再套買家層的分級折扣與優惠碼（創作者碼、平台碼），最後判門檻折滿額。買家層能不能疊在定價層之上，由商品的疊加開關決定（4.5.5）；滿額永遠疊在最後、不受那個開關影響。</span></div></div>
+  <div class="rule"><div><b>拍賣不折</b><span>競標沒有固定售價：排程特價與優惠碼（含平台碼）明文不套用拍賣；滿額折扣暫比照排除、待確認；組合折扣與方案優惠結構上碰不到拍賣；分級折扣對拍賣規格沒寫。組合包可以折，整組算一件。</span></div></div>
+</div>
+
+
+<h2 id="s3"><span class="n">3</span>基本算法</h2>
+<p>用一件 T-shirt 走一遍：定價 1,000、特價 900、優惠碼折 50、滿額折 50、運費 100；平台費 15%、支付費 2.4%。平台費在第四站「品項實付」才算。前提是這件商品的疊加開關開著（預設關閉時，特價與優惠碼只取對買家最有利的一項，見 4.5.5）。</p>
+<div class="ledger">
+  <div class="lrow"><span class="sign"></span><span>定價<span class="sub">創作者設的價格</span></span><span class="amt">1,000</span><span class="why"></span></div>
+  <div class="lrow op"><span class="sign">−</span><span>特價（或組合折扣、方案優惠）</span><span class="amt">100</span><span class="why">定價層：創作者自己定的價，不是扣項</span></div>
+  <div class="lrow sum"><span class="sign">＝</span><span>標示售價<span class="sub">買家在商品頁看到的價</span></span><span class="amt">900</span><span class="why">定價層的價，不是扣項</span></div>
+  <div class="lrow op"><span class="sign">−</span><span>優惠碼（分級折扣也在這一站，同一套算法）</span><span class="amt">50</span><span class="why">買家層：看這個買家是誰、有沒有輸碼</span></div>
+  <div class="lrow sum"><span class="sign">＝</span><span>買家層折後小計</span><span class="amt">850</span><span class="why"><span class="tag pink">滿額門檻看這裡</span> 達門檻才有下一行</span></div>
+  <div class="lrow op"><span class="sign">−</span><span>平台滿額折抵</span><span class="amt">50</span><span class="why">平台層：系統自動</span></div>
+  <div class="lrow sum"><span class="sign">＝</span><span>品項實付</span><span class="amt">800</span><span class="why"><span class="tag ok">平台費看這裡</span> 800 × 15% ＝ 120</span></div>
+  <div class="lrow op"><span class="sign">＋</span><span>運費</span><span class="amt">100</span><span class="why">不折</span></div>
+  <div class="lrow final"><span class="sign">＝</span><span>買家實付</span><span class="amt">900</span><span class="why"><span class="tag">支付費看這裡</span> 900 × 2.4% ＝ 21.6</span></div>
+</div>
+<p class="note">創作者拿到：800（品項實付）− 120（平台費）− 21.6（支付費）＝ 658.4，兩項折抵 100 已經在實付裡扣掉、平台也因此少抽 15；運費本身與運費那份支付費的歸屬不在本頁。分級折扣沒放進這個例子，因為特價檔期內特價優先、分級折扣不套用；檔期外它跟優惠碼同一站扣、同樣算進品項實付。三個公式見下。</p>
+<div class="split">
+  <div class="fee">
+    <div class="t">平台費</div>
+    <div class="f">品項實付 × 費率</div>
+    <p>費率依商品類型（費率樹），逐件各用各的：票券用活動費率、商品用電子商店費率。品項實付＝所有折扣算完、不含運費的金額；商品、組合包、票券、方案都一樣。整單折一筆的折抵先按各件實付比例分到每件。</p>
+  </div>
+  <div class="fee">
+    <div class="t">支付費</div>
+    <div class="f">買家實付 × 金流商費率（＋每筆固定額）</div>
+    <p>金流商只對真正刷的金額收費，折扣越多這筆越少。</p>
+  </div>
+  <div class="fee">
+    <div class="t">創作者收入</div>
+    <div class="f">品項實付 − 平台費 − 支付費（− 代理分成）</div>
+    <p>三項折抵在收入拆解各自一行、發生在平台費之前；運費另計。代理分成以優惠碼折後金額計、只在代理碼成交時出現。</p>
+  </div>
+</div>
+
+
+<h2 id="s4"><span class="n">4</span>七種折扣細則</h2>
+
+<h3 id="s4-1">4.1 排程特價</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">項目</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>在哪設</td><td>建立商品 › 折扣設定 F13；商品細節頁可改。實體與數位商品適用，拍賣不適用。</td></tr>
+    <tr><td>怎麼設</td><td>開關預設關閉；開啟後填特價價格（必填、需低於定價，大小校驗規則待確認）與起訖日（必填、結束晚於開始）。</td></tr>
+    <tr><td>買家看到</td><td>檔期內以特價取代定價；這個特價就是標示售價，平台費以它再扣各項折抵後的實付計。</td></tr>
+    <tr><td>疊加開關</td><td>「可與優惠碼疊加」預設關閉：特價、分級折扣、優惠碼三者擇一取最有利；開啟則優惠碼再疊上去。</td></tr>
+    <tr><td>與分級折扣</td><td>特價優先：檔期內以特價為準，分級折扣不疊上也不比較；檔期外分級折扣照常。</td></tr>
+    <tr><td>待確認</td><td>時區與時間粒度<br>檔期結束是否自動回定價<br>是否與組合包共用同一套能力</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="s4-2">4.2 組合折扣</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">項目</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>在哪設</td><td>建立組合 › F3 組合價格（常態）與 F7 限時折扣；組合商品細節頁可改。</td></tr>
+    <tr><td>常態折扣</td><td>組合折扣 %（選填 0–100）；售價＝成員原價合計 ×（1 − %），系統算、唯讀；成員有多選項時顯示「從 $X 起」。空或 0 ＝ 沒有組合優惠。</td></tr>
+    <tr><td>限時折扣</td><td>限時折扣 %（啟用時必填 0–100）＋檔期起訖，疊在常態售價之上：檔期內買家付＝售價 ×（1 − 限時 %）。</td></tr>
+    <tr><td>平台費</td><td>以買家最終的品項實付計（組合售價再扣限時折扣與各項折抵後）。</td></tr>
+    <tr><td>疊加開關</td><td>與商品相同的「可與優惠碼疊加」開關，預設關閉：關閉＝優惠碼與組合折扣（常態 %＋限時 %）擇一、取對買家最有利的一項；開啟＝優惠碼疊在組合售價之上。</td></tr>
+    <tr><td>票務商品</td><td>含門票的組合包另有購買條件與限購，管誰能買、什麼時候能買、最多買幾套；價格只由組合折扣與限時折扣決定。<br>票務商品要做早鳥，用這裡的限時折扣；單張門票自己的折扣不沿用到組合包。<br>規則見<a href="bundles.html#rules">「組合包與票務商品」的「票務商品的購買條件」</a>。</td></tr>
+    <tr><td>待確認</td><td>買家結帳時依所選成員選項算出的實際組合價<br>是否另有平台層組合優惠</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="s4-3">4.3 方案優惠</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">項目</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>在哪設</td><td>建立項目 › 方案（每個方案各自設）。</td></tr>
+    <tr><td>怎麼設</td><td>方案優惠 %（選填 0–100，預設 0），系統算價、唯讀。<br>共創方案：（支持者位數 × 每名額單價 ＋ 商店商品定價加總）×（1 − %）。<br>預購方案：（單位價格 × 含作品份數 ＋ 附屬商品定價加總）×（1 − %）。</td></tr>
+    <tr><td>用途</td><td>早鳥或成組優惠，讓方案售價低於各項加總。</td></tr>
+    <tr><td>地板</td><td>優惠只折商品那一段：折後價格不得低於該方案的分潤名額總價，名額賣的是股份、不打折。</td></tr>
+    <tr><td>性質</td><td>是方案定價的一部分，不是結帳折抵；買家看到的方案價已經含它。平台費以最終實付計。</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="s4-4">4.4 粉絲分級折扣</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">項目</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>在哪設</td><td>粉絲 › 分級權益，逐等級設。</td></tr>
+    <tr><td>怎麼設</td><td>週邊折扣 %（例：Inner Circle 20%、Superfan 10%、Devoted 5%、Fan 無，數字為示意）。同一頁的「搶先購買天數」是權益、不是折扣。</td></tr>
+    <tr><td>對誰</td><td>該等級的粉絲結帳時自動套用，買家不用做任何事。</td></tr>
+    <tr><td>錢怎麼算</td><td>比照優惠碼：折抵在收入拆解單列一行、發生在平台費之前（平台費看折後實付）；計入滿額門檻的折後小計。</td></tr>
+    <tr><td>與其他折扣</td><td>特價優先：商品在特價檔期內以特價為準、分級折扣不套用。檔期外，分級折扣與優惠碼由商品的疊加開關管：預設擇一取最有利。</td></tr>
+    <tr><td>待確認</td><td>正式的等級清單與數值</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="s4-5">4.5 優惠碼</h3>
+<p class="note">Phase 1 只有：碼、期間、百分比折扣、範圍（全部商店含活動票種，或指定商品可多選）。固定金額折扣是 Phase 4（D320）。活動票種含 bookyay 帶入的活動，優惠碼不在 bookyay 的鎖定範圍。4.5.1 表格裡的其他欄位、4.5.3 的次數規則、4.5.5 的疊加開關都是 Phase 4；Phase 1 不限每人使用次數，每人總次數欄留 Phase 4。</p>
+<h4 id="s4-5-1">4.5.1 一組碼有哪些設定</h4>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">設定</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>類型</td><td>自用碼 ／ 代理碼。代理碼多兩格：推廣者（一組碼綁一位）與分成比例；買家端兩者行為相同。代理碼整支（類型選擇、推廣者、分成、代理銷售紀錄）只在完整版 Phase 4，前面階段只有自用碼。</td></tr>
+    <tr><td>優惠碼</td><td>買家輸入的字串，商店內唯一；8–20 個英數字、不含符號，比對不分大小寫。欄旁有「自動產生」，按了填入一組可再改。</td></tr>
+    <tr><td>折扣</td><td>百分比（1–100%）或固定金額（≥ 1，該創作者的創作者幣別）。固定金額不超過該件售價，超過就折到 0。Phase 1 只有百分比、沒有型態切換（D320）。</td></tr>
+    <tr><td>固定金額的折法</td><td>可折多件時由創作者選：整單只折一次（預設，已裁決 D297）或每件各折一次。只在固定金額且每張訂單可折件數不是 1 時出現。折法本身：整單只折一次＝符合範圍的品項小計加總後扣一次、折到 0 為止，範圍只圈到一件商品時，只對那件的小計折一次、買多件也只折一次（D297）。Phase 1 沒有固定金額，這一整欄與固定金額都是 Phase 4（D320）。</td></tr>
+    <tr><td>適用範圍</td><td>三級可混選，見下表。</td></tr>
+    <tr><td>期間</td><td>開始時間必填；結束留空＝不設結束。</td></tr>
+    <tr><td>每張訂單可折件數</td><td>預設 1；留空或 0＝不限。一單裡符合範圍的商品多於這個數時，自動折售價最高的那幾件。</td></tr>
+    <tr><td>每人總次數</td><td>留空或 0＝不限。同一個 ztor 帳號跨訂單累計，以件計。</td></tr>
+    <tr><td>總兌換次數</td><td>留空或 0＝不限。全部買家合計，以件計；用完狀態轉「已用完」。</td></tr>
+    <tr><td>可與其他優惠碼疊加</td><td>開關，預設關。兩組碼都開才能同一單並用；任一關閉就擇一、取對買家最有利。跟商品的疊加開關（管優惠碼對特價／分級折扣）是兩個開關。</td></tr>
+  </tbody>
+</table></div>
+<p class="note">折抵怎麼落：百分比折扣套用到訂單內所有符合範圍的數量；Phase 1 沒有「每張訂單可折件數」欄，折最貴幾件的規則只在 Phase 4 設了件數上限時生效；固定金額一律整單只折一次（D297，Phase 4 起才有）。</p>
+
+<h4 id="s4-5-2">4.5.2 適用範圍：三級可混選</h4>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">層級</th><th>選什麼</th><th style="width:32%">例</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag">全部商店</span></td><td>預設，商店裡所有可折的品項。</td><td>—</td></tr>
+    <tr><td><span class="tag">特定品項</span></td><td>商品類型樹，可勾整個層級或只勾子類型，可勾多個（Phase 4）。</td><td>實體商品 › 服飾配件＋數位商品</td></tr>
+    <tr><td><span class="tag">特定商品</span></td><td>單售商品、組合包或活動票種，可多選。票務商品（成員含票券的組合包）就是組合包，整組算一件。</td><td>「26MS Hoodie」＋「A＋B 套組」＋「VIP ＋ 巡演 Tee」</td></tr>
+  </tbody>
+</table></div>
+<p class="note">一組碼的範圍＝勾的類型 ∪ 勾的商品。拍賣永遠不在範圍內。</p>
+
+<h4 id="s4-5-3">4.5.3 次數怎麼數</h4>
+<p>「一次」＝折一件符合範圍的商品；同品項買 3 個算 3 件。同一組碼在一張訂單只能輸一次；不同的碼能不能同單並用，看各自的「可與其他優惠碼疊加」開關。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>每張訂單可折件數</th><th>每人總次數</th><th>效果</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td>留空／0</td><td>每張訂單折 1 件，想買幾單都行。</td></tr>
+    <tr><td class="num">2</td><td class="num">2</td><td>這個人一共能折 2 件，可以一單折兩件、也可以分兩單。</td></tr>
+    <tr><td class="num">1</td><td class="num">3</td><td>每單最多折 1 件，一共 3 單就用完。</td></tr>
+    <tr><td class="num">5</td><td>留空／0</td><td>一單最多折 5 件，人數與單數不限（搭配總兌換次數才擋得住）。</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>計數時點：下單成功就計入每人總次數與總兌換次數。</li>
+  <li>歸還：訂單被撤銷，那幾件的次數還回去。活動票券撤銷也一樣——票是訂單裡的一種品項，次數歸還、跌破門檻的滿額折抵追回。</li>
+</ul>
+
+<h4 id="s4-5-4">4.5.4 狀態</h4>
+<p>由期間、啟用旗標、總兌換次數推導，創作者不直接指定。</p>
+<p><span class="tag wait">未開始</span> <span class="tag ok">進行中</span> <span class="tag warn">已用完</span> <span class="tag off">已結束</span> <span class="tag off">已停用</span></p>
+<p class="note">停用＝即刻停收這組碼，既有訂單與分成紀錄保留。</p>
+
+<h4 id="s4-5-5">4.5.5 與特價、分級折扣的疊加</h4>
+<p>能不能在已有折扣上再用優惠碼，由<b>商品或組合包</b>決定：建立商品 F13／建立組合 F7 的「可與優惠碼疊加」開關，預設關閉。優惠碼本身不逐碼設疊加。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">開關</th><th>結果</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag off">關閉</span>（預設）</td><td>商品：優惠碼與已生效的折扣（特價檔期內＝特價；檔期外＝分級折扣）<b>擇一</b>，取對買家最有利的一項。<br>組合包：優惠碼與組合折扣（常態 %＋限時 %）<b>擇一</b>，取對買家最有利的一項。</td></tr>
+    <tr><td><span class="tag ok">開啟</span></td><td>優惠碼疊在已生效的折扣之上（商品：特價或分級折扣；組合包：組合折扣）。</td></tr>
+  </tbody>
+</table></div>
+<p class="note">特價與分級折扣不比較：特價檔期內一律特價優先。擇一是逐件比還是整單比，規格仍未定。</p>
+
+
+<h3 id="s4-6">4.6 平台滿額折扣<span class="tag off" style="margin-left:8px;vertical-align:middle">Phase 4</span></h3>
+<p>在 Admin 的平台優惠設定裡，一檔活動一筆：名稱、門檻、折抵、生效期間、啟用、備註、本筆例外藝人、修改歷史。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">項目</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>怎麼觸發</td><td>訂單的品項小計（分級折扣與優惠碼折後、不含運費）達門檻，系統自動折，買家不輸碼。</td></tr>
+    <tr><td>門檻用哪個幣別</td><td>門檻金額以<b>平台基準幣別</b>記錄（平台自己的記帳幣別，預設港幣）。判斷某張訂單有沒有達標時，依當時匯率把門檻換算成該創作者的幣別再比對，畫面同時顯示換算後金額與匯率時點。站上沒有「全站幣別」這回事——每位創作者各有各的幣別（D316）。</td></tr>
+    <tr><td>多筆同時生效</td><td>可以。一張訂單只套用它達到門檻的各筆裡<b>折抵最高的一筆</b>，不累加。</td></tr>
+    <tr><td>折多少</td><td>固定金額或百分比；固定金額不超過品項小計。</td></tr>
+    <tr><td>範圍</td><td>全平台：電子商店、活動票券、項目。拍賣暫比照優惠碼排除。</td></tr>
+    <tr><td>誰出錢</td><td>創作者與平台依費率比例一起吸收：折抵在收入拆解單列一行「平台滿額折扣」，平台費以折後實付計。</td></tr>
+    <tr><td>例外藝人</td><td>三層：全局例外（所有平台優惠都不套用）、這一筆自己的例外、某組平台碼自己的例外；實際排除＝三層聯集。例外藝人的品項不計門檻、也不被折；同一單混有例外與一般藝人時，只以一般藝人的品項小計判門檻與分攤。</td></tr>
+    <tr><td>多位藝人一單</td><td>門檻以一般藝人（非例外）的品項小計合計判定，折抵依各藝人品項小計比例分攤、各自吸收（暫定，若結帳一店一單則不適用）。</td></tr>
+    <tr><td>改設定</td><td>儲存即生效，只對之後成立的訂單；既有訂單不回溯。每一筆自帶修改歷史（時間、操作者、改了什麼）。</td></tr>
+    <tr><td>撤銷</td><td>撤掉任一品項就重算門檻；不再達標時，已給的滿額折抵從那次撤銷的退款裡扣回。</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="s4-7">4.7 平台優惠碼<span class="tag off" style="margin-left:8px;vertical-align:middle">Phase 4</span></h3>
+<p>平台自己發的碼，一組一筆設定；欄位與買家端行為跟創作者優惠碼（4.5）一樣，差別只在誰發、以及有自己的例外藝人。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">項目</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>設定欄位</td><td>名稱、碼（全平台唯一，8–20 英數字、可自動產生）、折扣（%／固定，固定金額的折法同 4.5.1）、生效期間、啟用、每張訂單可折件數／每人總次數／總兌換次數（留空或 0＝不限）、可與其他優惠碼疊加（預設關）、備註、本組例外藝人、修改歷史。</td></tr>
+    <tr><td>範圍</td><td>全平台；能不能限定模組或商品類型待確認。拍賣不折。</td></tr>
+    <tr><td>買家端</td><td>結帳輸碼，系統驗範圍、期間、次數；折售價最高的那幾件；運費不折。</td></tr>
+    <tr><td>與創作者的碼</td><td>同一單能不能一起用，看雙方各自的「可與其他優惠碼疊加」開關。</td></tr>
+    <tr><td>誰出錢</td><td>同滿額折扣：折抵發生在平台費之前，創作者與平台依費率比例一起吸收（待確認）。</td></tr>
+    <tr><td>狀態</td><td>未開始／進行中／已用完／已結束／已停用。</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="s5"><span class="n">5</span>UI 流程</h2>
+<p>同一套規則，散在 Creator Studio 的四個地方設定、兩個地方看結果；買家端不在本專案。</p>
+
+<h3 id="s5-1">5.1 創作者在商店設定中的設定</h3>
+<div class="roles"><div class="role wait"><div class="band"></div><h3>優惠碼</h3><p class="where">商店設定 › 優惠碼 F8</p><ol>
+  <li><b>新增</b>：選類型（自用／代理），填碼、折扣、適用範圍（類型樹＋商品多選）、期間、每單可折件數、每人總次數、總兌換次數；代理碼再填推廣者與分成比例。</li>
+  <li><b>發出去</b>：自用碼貼給粉絲；代理碼交給另一位創作者去推。</li>
+  <li><b>看清單</b>：狀態（未開始／進行中／已用完／已結束／已停用）與「已用／上限」；可編輯、複製、停用、刪除。</li>
+  <li><b>代理銷售紀錄</b>：透過代理碼成交的訂單與分成金額（完整版才有）。</li>
+</ol></div></div>
+
+<h3 id="s5-2">5.2 創作者在建立與詳情中的設定</h3>
+<div class="roles">
+  <div class="role ok"><div class="band"></div><h3>商品</h3><p class="where">建立商品 F13 › 商品細節頁</p><ol>
+    <li>開「排程特價」，填特價與檔期。</li>
+    <li>決定「可與優惠碼疊加」開關（預設關）。</li>
+    <li>商品細節頁可改同一組設定。</li>
+  </ol></div>
+  <div class="role ok"><div class="band"></div><h3>組合包</h3><p class="where">建立組合 F3／F7 › 組合詳情頁</p><ol>
+    <li>F3 填組合折扣 %，看系統算出的售價。</li>
+    <li>F7 要限時再開限時折扣 %＋檔期。</li>
+    <li>疊加開關同商品。</li>
+  </ol></div>
+  <div class="role ok"><div class="band"></div><h3>項目方案</h3><p class="where">建立項目 › 方案 › 項目詳情</p><ol>
+    <li>每個方案填方案優惠 %。</li>
+    <li>價格由系統依名額、商品加總算出，唯讀。</li>
+  </ol></div>
+</div>
+
+<h3 id="s5-3">5.3 創作者在粉絲分級中的設定</h3>
+<div class="roles"><div class="role wait"><div class="band"></div><h3>分級權益</h3><p class="where">粉絲 › 分級權益</p><ol>
+  <li>逐等級填週邊折扣 %。</li>
+  <li>搶先購買天數在同一頁，但那是權益、不進折扣計算。</li>
+</ol></div></div>
+
+<h3 id="s5-4">5.4 Admin 在 Admin 端的優惠設定<span class="tag off" style="margin-left:8px;vertical-align:middle">Phase 4</span></h3>
+<div class="roles"><div class="role pink"><div class="band"></div><h3>平台優惠設定</h3><p class="where">Admin Creator Studio › 平台優惠設定（與平台費率設定同層）· 四個分頁：滿額折扣／平台優惠碼／例外藝人／紀錄</p><ol>
+  <li><b>開一檔滿額折扣</b>：新增一筆，填名稱、門檻、折抵、生效期間、啟用、備註；要排除誰就在這一筆裡加例外。儲存只對之後的訂單生效。</li>
+  <li><b>發一組平台碼</b>：新增一組，填名稱、碼、折扣、期間、次數限制、疊加開關、備註；例外同樣在這一組裡加。</li>
+  <li><b>全局例外</b>：某藝人完全不參與任何平台優惠，加到「例外藝人」分頁。</li>
+  <li><b>暫停或改</b>：關那一筆的啟用即刻停套；改動寫進那一筆的修改歷史，舊訂單不變。</li>
+  <li><b>對帳</b>：紀錄分頁逐筆看訂單套了哪一筆、折多少、分攤到誰；可依藝人彙總。</li>
+</ol></div></div>
+
+<h3 id="s5-5">5.5 折扣在哪裡看得到結果</h3>
+<div class="roles">
+  <div class="role ok"><div class="band"></div><h3>創作者</h3><p class="where">訂單詳情、收入管理、代理銷售紀錄</p><ol>
+    <li>每筆訂單逐項列出分級折抵、優惠碼折抵（創作者碼、平台碼）、平台滿額折抵、代理分成；平台費以折完的品項實付算。這幾頁的規格下一輪才補，原型先行。</li>
+    <li>收入管理彙總同一組扣項。</li>
+  </ol></div>
+  <div class="role wait dim"><div class="band"></div><h3>買家</h3><p class="where">粉絲端結帳 · 本專案不做</p><ol>
+    <li>商品頁看到特價、組合售價、方案售價；有等級的粉絲看到自己的折扣。</li>
+    <li>結帳輸優惠碼，系統驗範圍、期間、次數，折售價最高的那幾件。</li>
+    <li>達門檻自動再折滿額；下單成功那一刻次數算用掉；撤銷則沖銷、次數歸還，跌破門檻的滿額折抵扣回。</li>
+  </ol></div>
+</div>
+
+<h2 id="s6"><span class="n">6</span>試算</h2>
+<p>調數字看各站金額與收入拆解（不含分級折扣；固定金額碼在這裡照「每件各折一次」算，實際由創作者逐碼選）。預設：兩件 T-shirt 各 1,000、一張海報 500、優惠碼 10% 且每單只折 1 件、滿 2,000 折 100、平台費 15%、支付費 2.4%。</p>
+<div class="sim" id="calc">
+  <div class="row">
+    <label>T-shirt 單價（優惠碼範圍內）<input type="number" id="cTee" value="1000" min="0"></label>
+    <label>T-shirt 件數<input type="number" id="cTeeQ" value="2" min="0"></label>
+    <label>海報單價（範圍外）<input type="number" id="cPoster" value="500" min="0"></label>
+    <label>運費<input type="number" id="cShip" value="100" min="0"></label>
+  </div>
+  <div class="row">
+    <label>優惠碼折扣<div class="seg" id="cMode"><button type="button" data-v="pct" aria-pressed="true">百分比</button><button type="button" data-v="fix" aria-pressed="false">固定金額</button></div></label>
+    <label>折扣值<input type="number" id="cDisc" value="10" min="1"></label>
+    <label>每張訂單可折件數<input type="number" id="cPer" value="1" min="0"></label>
+  </div>
+  <div class="row">
+    <label>滿額門檻<input type="number" id="cTh" value="2000" min="0"></label>
+    <label>滿額折抵<input type="number" id="cThOff" value="100" min="0"></label>
+    <label>平台費率 %<input type="number" id="cFee" value="15" min="0" step="0.1"></label>
+    <label>支付費率 %<input type="number" id="cPay" value="2.4" min="0" step="0.1"></label>
+  </div>
+  <div class="out"><div class="tablewrap"><table>
+    <thead><tr><th>站</th><th style="width:28%">金額</th><th>說明</th></tr></thead>
+    <tbody>
+      <tr><td>定價合計</td><td class="num" id="oList"></td><td>例子裡沒有特價</td></tr>
+      <tr><td>− 優惠碼折抵</td><td class="num" id="oCode"></td><td id="oCodeD"></td></tr>
+      <tr><td>− 平台滿額折抵</td><td class="num" id="oTh"></td><td id="oThD"></td></tr>
+      <tr><td>品項實付</td><td class="num" id="oItem"></td><td>所有折扣算完；平台費以此計</td></tr>
+      <tr><td><b>買家實付</b></td><td class="num" id="oPay"></td><td>品項實付＋運費；支付費以此計</td></tr>
+      <tr><td>平台費</td><td class="num" id="oFee"></td><td>品項實付 × 費率</td></tr>
+      <tr><td>支付費</td><td class="num" id="oPayFee"></td><td>買家實付 × 費率</td></tr>
+      <tr><td><b>創作者收入</b></td><td class="num" id="oNet"></td><td>品項實付 − 平台費 − 支付費；運費另計</td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+<p class="note">示意數字。費率確切值、運費歸屬、支付費固定額不在本頁。</p>
+
+<div class="foot">
+  <p>本頁只放定案規則，不記討論過程。規則變更時同步更新 <code>0-設計規格書.md §7.3／§7.6</code>、<code>5.1.5.5 F8</code>、<code>5.1.0.7</code> 與本頁；歷史裁決見 <code>decisions.md</code>（D183、D272–D280、D297、D299、D316、D320；D342 票務商品的購買條件與限購跟折扣分開，早鳥用組合包限時折扣）。最近同步：2026-10-01（至 D342）。</p>
+  <ul>
+    <li>產品待確認（見 <code>0-設計規格書.md §8.22</code>）：
+      <ul>
+        <li>分級折扣正式的等級清單與數值</li>
+        <li>最高折抵上限</li>
+        <li>撤銷追回滿額折抵的沖銷分錄口徑與買家看到的說明</li>
+        <li>項目方案優惠的平台費基準</li>
+        <li>同價並列時折哪一件</li>
+        <li>滿額折扣是否計入拍賣；例外藝人可否另設門檻；門檻 0 的語意；結帳是否一店一單</li>
+        <li>商店碼與平台碼是否需互相唯一；平台優惠碼的成本歸屬與可否限定模組；多筆滿額折扣同額時取哪一筆；促銷折抵在金流瀑布的階位</li>
+        <li>組合結帳時依所選選項的實際組合價</li>
+      </ul>
+    </li>
+    <li>代理碼的分成結算與撥款、粉絲端結帳畫面，不在本頁。</li>
+  </ul>
+</div>
+</div>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var mode='pct';
+  var seg=$('cMode');
+  seg.querySelectorAll('button').forEach(function(b){
+    b.addEventListener('click',function(){
+      mode=b.getAttribute('data-v');
+      seg.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});
+      calc();
+    });
+  });
+  function n(id){return Math.max(0,Number($(id).value)||0)}
+  function fmt(v){return v.toLocaleString('zh-Hant-TW',{maximumFractionDigits:1})}
+  function calc(){
+    var tee=n('cTee'),q=n('cTeeQ'),poster=n('cPoster'),ship=n('cShip'),disc=n('cDisc'),per=n('cPer'),th=n('cTh'),thOff=n('cThOff'),fee=n('cFee')/100,pay=n('cPay')/100;
+    var list=tee*q+poster;
+    var items=Math.min(per,q);
+    var perItem= mode==='pct' ? tee*Math.min(100,Math.max(0,disc))/100 : Math.min(disc,tee);
+    var code=items*perItem;
+    var afterCode=list-code;
+    var thHit= th>0 && afterCode>=th;
+    var thAmt= thHit ? Math.min(thOff,afterCode) : 0;
+    var itemPay=afterCode-thAmt;
+    var buyerPay=itemPay+ship;
+    var platform=itemPay*fee;
+    var payFee=buyerPay*pay;
+    var net=itemPay-platform-payFee;
+    $('oList').textContent=fmt(list);
+    $('oCode').textContent=code?'−'+fmt(code):'0';
+    $('oCodeD').textContent= q? '折 '+items+' 件 T-shirt（每單可折 '+per+' 件），海報在範圍外' : '沒有範圍內的商品';
+    $('oTh').textContent=thAmt?'−'+fmt(thAmt):'0';
+    $('oThD').textContent= th<=0 ? '未設門檻（門檻 0 的語意待確認）' : thHit ? '優惠碼折後小計 '+fmt(afterCode)+' ≥ 門檻 '+fmt(th) : '優惠碼折後小計 '+fmt(afterCode)+' 未達門檻 '+fmt(th);
+    $('oItem').textContent=fmt(itemPay);
+    $('oPay').textContent=fmt(buyerPay);
+    $('oFee').textContent='−'+fmt(platform);
+    $('oPayFee').textContent='−'+fmt(payFee);
+    $('oNet').textContent=fmt(net);
+  }
+  ['cTee','cTeeQ','cPoster','cShip','cDisc','cPer','cTh','cThOff','cFee','cPay'].forEach(function(id){$(id).addEventListener('input',calc)});
+  calc();
+})();
+</script>
+</body>
+</html>
