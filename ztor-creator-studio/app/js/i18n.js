@@ -9469,8 +9469,9 @@
     'event-detail.golive.blocked.ok': { en: 'Publish & open sales', zh: '發布並開賣' },
     'event-detail.golive.missing': { en: 'Missing', zh: '未填' },
     'event-detail.golive.title': { en: 'Open ticket sales?', zh: '要開始賣票嗎？' },
-    'event-detail.golive.body': { en: 'The event page goes public and {n} tickets become buyable. From here on, changing the date or venue notifies everyone who bought.', zh: '活動頁會公開，{n} 張票開放購買。之後改日期或場地，會通知到每一位購票者。' },
-    /* D340（5.1.6.3 §2.1）：顯示設定為隱藏時，確認說明不寫「公開」 */
+    /* D341（5.1.6.3 §2.1）：活動可見性用詞統一為顯示／隱藏，顯示時不再寫「活動頁會公開」 */
+    'event-detail.golive.body': { en: 'The event shows in the event list and search, and {n} tickets become buyable. From here on, changing the date or venue notifies everyone who bought.', zh: '活動會顯示在活動列表與搜尋，{n} 張票開放購買。之後改日期或場地，會通知到每一位購票者。' },
+    /* D340（5.1.6.3 §2.1）：顯示設定為隱藏時，確認說明改說只能經活動連結進入 */
     'event-detail.golive.body.hidden': { en: 'The event stays hidden — only people with the event link can get in — and {n} tickets become buyable there. From here on, changing the date or venue notifies everyone who bought.', zh: '活動維持隱藏、只能經活動連結進入，{n} 張票開放購買。之後改日期或場地，會通知到每一位購票者。' },
     'event-detail.golive.ok': { en: 'Open sales', zh: '開始賣票' },
     'event-detail.cancel.title': { en: 'Cancel this event?', zh: '要取消這場活動嗎？' },
