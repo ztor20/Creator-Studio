@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>組合包與票務商品 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261001b">
+<script src="shell.js?v=20261001b" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+ul.plain ul.plain{margin:4px 0 4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.k{font-size:12px;color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+/* 互動：試算分配 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label{font-size:13px;color:var(--text-2)}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>組合包與票務商品</h1>
+<p class="lede">組合包把幾樣東西打包成一套來賣：從庫存池挑商品、從活動挑門票當成員，自己不另外進貨。至少含一張門票的組合包，在活動裡叫「票務商品」；它就是組合包，規則同一套，只多兩件事——上架與開賣跟著活動走，以及自己的一組購買條件。</p>
+<p class="src">權威定義：<code>0-設計規格書.md §7.12／§7.14</code>（庫存池與商品、三個狀態開關、活動販售的時間層級、組合包：鎖定套數、組合包成交條件、票務商品的購買條件、下架確認與組合包連動、封存與刪除）　裁決：<code>decisions.md D241</code>（三開關）、<code>D266</code>（以套數鎖定）、<code>D288／D289／D290</code>（下架連動）、<code>D292／D293／D294／D296</code>（票務商品＝組合包）、<code>D295</code>（規格由粉絲任選）、<code>D329／D330／D331</code>（bookyay 自動建立的組合包）、<code>D332</code>（成員開賣只管單售）、<code>D340</code>（可賣性）、<code>D342</code>（2026-10-01，票務商品的上架、開賣與購買條件）　流程：<code>5.1.5.4-建立組合流程.md</code>（v2.37）、<code>5.1.5.9-組合商品細節頁.md</code>（v1.50）、<code>5.1.6.1-建立活動流程.md F20</code>（v2.36）</p>
+
+<div class="toc">
+  <a href="#what">1 組合包是什麼</a><a href="#price">2 價格</a><a href="#stock">3 庫存與鎖定套數</a><a href="#switches">4 三個開關</a><a href="#deal">5 成交條件</a><a href="#timing">6 票務商品的上架與開賣</a><a href="#rules">7 票務商品的購買條件</a><a href="#from-event">8 從活動建立</a><a href="#unlist">9 下架、連動與刪除</a>
+</div>
+<p class="stepsum">閱讀順序：<a href="eshop-sales.html">「電子商店販售流程」</a>講商品與單售 → 本頁講組合包與票務商品 → <a href="events.html">「活動」</a>講活動。上架、顯示、開賣三個開關與狀態組合的定義在「電子商店販售流程」，活動的販售時間層級在「活動」；本頁只寫組合包多出來、或跟單售不一樣的地方。</p>
+
+<h2 id="what"><span class="n">1</span>組合包是什麼</h2>
+<p>電子商店每一條能賣東西的路叫一條販售管道（Channel）：單售是一條，每個組合包各是一條。組合包是賣法、不是貨，它不在庫存池裡，賣出一套時從每個成員自己的量扣。</p>
+<div class="grid">
+  <div class="card ok"><div class="band"></div><h3>商品成員</h3>
+    <ul class="plain">
+      <li>庫存池裡的商品。</li>
+      <li>每套用量＝每套放幾件，預設 1。</li>
+      <li>規格由商品本身決定：單一規格沒得挑；多規格由粉絲下單時任選，沒貨的規格不能選。</li>
+      <li>賣出一套，從池扣「每套用量」件。</li>
+    </ul></div>
+  <div class="card wait"><div class="band"></div><h3>門票成員</h3>
+    <ul class="plain">
+      <li>某一場活動的門票，記三件事：所屬活動、允許票種（至少勾 1 種、可多勾）、張數 n（預設 1）。</li>
+      <li>粉絲購買時從允許票種挑一種，拿到該票種 n 張；只勾一種＝固定票種。</li>
+      <li>門票不進庫存池，量住在票種上，跟單張門票共用同一個數量。</li>
+      <li>賣出一套，從粉絲選到的票種扣 n 張。</li>
+    </ul></div>
+</div>
+<p class="note">票種在結構上就是「活動」這件商品的規格，所以門票成員跟多規格商品走同一套「由粉絲任選」。</p>
+
+<h3>怎樣算一個合法的組合包</h3>
+<ul class="plain">
+  <li>至少 1 個成員就能成立：同一件商品 × N 件、只含一種票 × n 張的純套票都合法。</li>
+  <li>成員彼此平等，沒有主體；商品與門票可以混在同一個組合包。</li>
+  <li>組合包不能當另一個組合包的成員，成員只能是商品或門票。</li>
+  <li>一個組合包只放一場活動的門票，不做跨場混搭；同一場活動在同一個組合包只有一筆門票成員。</li>
+  <li>門票的組法只有四種：
+    <ul class="plain">
+      <li>多種票中任選 1 張。</li>
+      <li>多種票中任選 n 張。</li>
+      <li>任選 1 張再加商品。</li>
+      <li>任選 n 張再加商品。</li>
+    </ul>
+    同一組裡的 n 張票一律同一票種；同時內含兩種票、各自張數的組法（例如家庭套票）已退場。</li>
+</ul>
+
+<h3>什麼可以加進來</h3>
+<ul class="plain">
+  <li>商品：已下架或已封存的商品不能加入。數位影視類與數位音樂類只由項目發售，不能當成員；實體音樂照常可以。不能當成員的 7 個數位次分類：
+    <ul class="plain">
+      <li>電影</li>
+      <li>短片</li>
+      <li>影集</li>
+      <li>MV</li>
+      <li>紀錄片</li>
+      <li>數位單曲</li>
+      <li>數位專輯</li>
+    </ul>
+  </li>
+  <li>門票：活動已取消或已結束的門票不能加入。</li>
+  <li>草稿活動不列在建立組合包的候選清單；草稿活動的票務商品只能在該活動建立流程的第 6 步一起建（<a href="#from-event">第 8 節</a>）。</li>
+</ul>
+
+<h3>票務商品</h3>
+<ul class="plain">
+  <li>至少含一筆門票成員的組合包，在活動脈絡叫「票務商品（Ticket bundle）」。這是入口的叫法，物件就是組合包。</li>
+  <li>同一份資料出現在兩個地方：電子商店的組合包清單，以及活動詳情的「票務商品」分頁。</li>
+  <li>跟一般組合包共用定價、庫存、三開關、封存與下架連動；多出來的兩件事見<a href="#timing">第 6 節</a>（上架與開賣跟著活動）與<a href="#rules">第 7 節</a>（購買條件）。</li>
+</ul>
+<p class="note">電子商店清單把組合與拍賣也叫「商品」（組合商品、拍賣商品），那是清單層的傘狀說法；本頁的「商品成員」專指庫存池裡那件有庫存的東西。</p>
+
+<h2 id="price"><span class="n">2</span>價格</h2>
+<ul class="plain">
+  <li><b>原價合計</b>：系統自動加總、唯讀＝門票成員價＋每件商品價 × 件數。</li>
+  <li><b>門票成員價</b>：允許票種只有一種＝該票價 × n；有多種＝「從 $最低允許票價 × n 起」，粉絲選定票種後用該票價 × n 計。</li>
+  <li><b>組合折扣 %</b>：選填 0–100；售價＝原價合計 ×（1 − %），系統算。成員有多規格時顯示「從 $X 起」。</li>
+  <li><b>限時折扣</b>與<b>可與優惠碼疊加</b>：規則見<a href="promo-rules.html#s4-2">「優惠規則」 4.2「組合折扣」</a>。</li>
+  <li><b>票價連動</b>：活動改了票種票價，含該票的組合包原價跟著變，售價依原本的組合折扣 % 重算；已完成的交易不回溯。</li>
+  <li><b>各幣別售價</b>：含門票的組合包可以逐幣別覆寫；只含商品的組合包一律是系統換算值、唯讀。</li>
+  <li><b>平台費</b>：含門票的組合包整筆照活動票券的費率算、不拆成員；只含商品的組合包照電子商店組合商品的費率。</li>
+</ul>
+
+<h2 id="stock"><span class="n">3</span>庫存與鎖定套數</h2>
+<p>組合包沒有自己的庫存：商品成員從庫存池扣，門票成員從票種的張數扣。共用池、鎖定量、沒有被鎖定的庫存量這些通用規則見<a href="eshop-sales.html#stock">「電子商店販售流程」的「庫存規則」</a>。</p>
+
+<h3>組合包可售量</h3>
+<ul class="plain">
+  <li>有鎖定套數：＝鎖定套數 N。</li>
+  <li>不鎖定：＝每個成員能湊出的套數取最小。商品成員＝沒有被鎖定的庫存量 ÷ 每套用量；門票成員見下方「N 的上限」。</li>
+  <li>另設限量（Total Quantity）時，再與剩餘上限取最小。</li>
+</ul>
+
+<h3>鎖定套數（2026-09-11 起）</h3>
+<ul class="plain">
+  <li>組合包的鎖定單位是<b>套</b>：只填一個<b>鎖定套數 N</b>。空白或 0＝不鎖定，各成員與其他販售管道共用沒有被鎖定的庫存量；填正數＝鎖定 N 套、只有本組合包能賣這 N 套。</li>
+  <li><b>各成員的鎖定量由 N 算出、不逐個填</b>：
+    <ul class="plain">
+      <li>單一規格商品＝N × 每套用量，唯讀。</li>
+      <li>門票成員＝N × n 張，從允許票種扣；被鎖的張數單張門票與其他組合包都拿不到。</li>
+    </ul>
+  </li>
+  <li><b>N 的上限</b>＝每個成員能湊出的套數取最小，表單擋並寫出是哪個成員壓住上限：
+    <ul class="plain">
+      <li>商品成員：沒有被鎖定的庫存量 ÷ 每套用量，無條件捨去。</li>
+      <li>門票成員：每個允許票種的剩餘張數 ÷ n、各自無條件捨去，再加總。</li>
+    </ul>
+    補貨後上限放寬，已鎖的 N 不會自動變。</li>
+  <li><b>多規格商品可選填逐規格分配</b>：指定哪些選項組合各鎖幾件，每格不得大於該組合當下沒有被鎖定的量、合計不得大於 N × 每套用量。</li>
+  <li><b>門票成員允許多種票種時，同樣可選填逐票種分配</b>：每格不得大於該票種當下剩餘、合計不得大於 N × n。</li>
+  <li><b>允許少分配</b>：沒指定的餘量只限定總數、不落在任何一個規格或票種上，從該成員未鎖定的整體量裡扣，單售與其他組合包都拿不到。</li>
+  <li>商品端一律唯讀：商品細節頁看到的「鎖給組合」是各組合包套數算出來的量。</li>
+  <li>操作紀錄一次改動一筆：「鎖定套數 前 → 後」，明細列各成員算出來的量前 → 後；只改分配也記一筆。</li>
+</ul>
+
+<h3>共用池的後果</h3>
+<p>商品的單售還沒開賣時，組合包照樣成交並從共用池扣量。要替單售保留數量，用組合包的鎖定套數或限量把組合包能用的量框住；單售自己的鎖定量是另一個做法（<a href="eshop-sales.html#stock">「電子商店販售流程」</a>）。</p>
+
+<h3>試算分配（單一規格商品、兩條販售管道）</h3>
+<div class="sim" id="calc">
+  <div class="row">
+    <label>目前在庫 <input type="number" id="cPool" value="100" min="0" step="1"></label>
+    <label>單售鎖定 <input type="number" id="cLockS" value="0" min="0" step="1"></label>
+    <label>組合包鎖定套數（每套 1 件） <input type="number" id="cLockB" value="60" min="0" step="1"></label>
+  </div>
+  <div class="out">
+    <div><div class="k">沒有被鎖定的庫存量</div><div class="v" id="cFree">—</div></div>
+    <div><div class="k">單售可賣</div><div class="v" id="cSell">—</div></div>
+    <div><div class="k">組合包可賣（只看這件商品）</div><div class="v" id="cBundle">—</div></div>
+    <div><div class="k">防呆</div><div class="v" id="cGuard">—</div></div>
+  </div>
+</div>
+<p class="note">鎖定填 0 或留空＝不鎖定，那條販售管道用沒有被鎖定的庫存量；多選項商品把同一套算法逐選項組合各算一次，門票成員把同一套算法逐票種各算一次（每套扣 n 張）。</p>
+
+<h2 id="switches"><span class="n">4</span>三個開關在組合包上怎麼運作</h2>
+<p>組合包發布後有自己的一組上架、顯示、開賣開關，定義與狀態組合同<a href="eshop-sales.html#switches">「電子商店販售流程」的「三個開關」</a>。這一節講兩件事：成員自己的開關管不管得到組合包，以及票務商品的開關跟活動的關係。</p>
+
+<h3>商品成員的開關各管到哪</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">商品的開關</th><th style="width:22%">管到哪</th><th>對含它的組合包</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag ok">上架</span> ／ <span class="tag off">下架</span></td><td>商品本身</td><td>單售下架時，含它的上架中組合包一同下架（<a href="#unlist">第 9 節</a>）</td></tr>
+    <tr><td><span class="tag ok">顯示</span> ／ <span class="tag off">隱藏</span></td><td>只管單售</td><td>隱藏的商品照樣能被組合包帶著成交</td></tr>
+    <tr><td><span class="tag ok">開賣</span> ／ <span class="tag off">未開賣</span><div class="k">含即將開賣、販售結束</div></td><td>只管單售</td><td>單售即將開賣、未開賣或已販售結束時，組合包照樣能帶著它成交</td></tr>
+  </tbody>
+</table></div>
+<p class="note">要連組合包一起停賣一件商品，要用<b>下架</b>；只停售的話，停的是單售，組合包照樣賣。</p>
+
+<h3>門票成員看所屬活動</h3>
+<ul class="plain">
+  <li>門票成員能不能賣，看所屬活動是否已上架、未取消、未結束（<a href="#deal">第 5 節</a>）。</li>
+  <li>單張門票的顯示開關與購買條件只管單張購買：隱藏的門票照樣能當門票成員，票務商品用自己的購買條件（<a href="#rules">第 7 節</a>）。</li>
+</ul>
+
+<h3>票務商品的開關與活動</h3>
+<ul class="plain">
+  <li><b>不回寫活動</b>：活動開賣中，票務商品可以自己先停售、隱藏或下架；關掉組合包的開關不影響活動本身與單張門票的販售。</li>
+  <li>能調整的範圍是活動的上架區間（<a href="#timing">第 6 節</a>）。</li>
+  <li>活動取消或下架時，含其門票的上架中組合包一同下架（<a href="#unlist">第 9 節</a>）。</li>
+</ul>
+
+<h2 id="deal"><span class="n">5</span>成交條件</h2>
+<div class="grid">
+  <div class="card ok"><div class="band"></div><h3>組合包自己</h3><p>上架 ＋ 開賣。</p>
+    <ul class="plain">
+      <li>粉絲要在網站上找得到，另需顯示；隱藏的組合包可經非公開連結購買。</li>
+      <li>限量的組合包另需剩餘上限。</li>
+      <li>票務商品另外要：上架與開賣時間落在活動上架區間內（第 6 節），買家符合它自己的購買條件（第 7 節）。</li>
+    </ul></div>
+  <div class="card ok"><div class="band"></div><h3>每一個商品成員</h3><p>上架 ＋ 在這個組合包裡有可售量。</p>
+    <ul class="plain">
+      <li>成員顯示或隱藏無關。</li>
+      <li>成員開賣或未開賣也無關，成員的開賣只管它自己的單售。</li>
+    </ul></div>
+  <div class="card wait"><div class="band"></div><h3>每一個門票成員</h3><p>所屬活動已上架、未取消、未結束 ＋ 允許票種中有票種剩餘 ≥ n。</p>
+    <ul class="plain">
+      <li>不看活動是否在售票期間內。</li>
+      <li>票務商品什麼時候能賣，看它自己的開賣設定；跟隨活動時就是活動的售票期間（第 6 節）。</li>
+    </ul></div>
+</div>
+
+<h3>多規格與門票成員「有可售量」怎麼判定</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">情形</th><th>多規格商品成員</th><th>門票成員（允許票種讀作規格）</th></tr></thead>
+  <tbody>
+    <tr><td>沒鎖定<div class="k">鎖定套數空白或 0</div></td><td>任一規格還有沒有被鎖定的量就算有，整組不算售罄；沒貨的規格粉絲不能選。全部規格都沒貨才算歸零。</td><td>任一允許票種剩餘 ≥ n 就算有；剩餘 &lt; n 的票種粉絲不能選。全部都 &lt; n 才算歸零。</td></tr>
+    <tr><td>鎖定且分配到特定規格或票種</td><td>被鎖定的規格售完，整組不能賣；其他規格有貨也不算。</td><td>被鎖定的票種售完，整組不能賣；其他允許票種有剩也不算。</td></tr>
+    <tr><td>鎖定但少分配</td><td>餘量部分規格不拘，判定同「沒鎖定」。</td><td>餘量部分票種不拘，判定同「沒鎖定」。</td></tr>
+  </tbody>
+</table></div>
+<p class="note">只勾一種允許票種時，三種情形都等於「該票種剩餘 ≥ n」。組合包可售量的公式（第 3 節）不變，這張表只定「這個成員還有沒有量」。</p>
+
+<h3>什麼會讓組合包不能賣</h3>
+<ul class="plain">
+  <li>任一成員下架，或在這個組合包的可售量歸零：組合包顯示售罄或不可購買；成員恢復後依共用池或鎖定規則恢復。</li>
+  <li>門票成員所屬活動已取消、已結束或下架：門票成員不可售，並觸發<a href="#unlist">第 9 節</a>的連動下架。</li>
+  <li>商品成員未開賣或販售結束不在此列。</li>
+  <li>不變式：上架中的組合包，成員一律在上架中（第 9 節）。所以「成員下架」實務上只在自動連動失敗時出現，保留作防線；常態是可售量歸零，以售罄呈現。</li>
+</ul>
+<p class="note">組合包售出一套，各成員各扣一份——扣的是各成員自己的量，組合包沒有另一份庫存。</p>
+
+<h2 id="timing"><span class="n">6</span>票務商品的上架與開賣</h2>
+<p>活動的販售時間分三層：活動的<b>上架區間</b>最大，包住活動的<b>售票期間</b>；單張門票的<b>限時間</b>只須落在上架區間內。三層的定義與示意圖見<a href="events.html#timing">「活動」的「販售層級與時間」</a>。票務商品的上架與開賣掛在這套層級上。</p>
+
+<h3>活動還是草稿時</h3>
+<ul class="plain">
+  <li>活動還沒發布，票務商品也是草稿、不對外，也不出現在電子商店的組合包清單。</li>
+  <li>活動發布後，票務商品照下面的規則上架與開賣。</li>
+</ul>
+
+<h3>四個時間預設跟隨活動</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">票務商品的時間</th><th>沒另設時跟隨活動的</th></tr></thead>
+  <tbody>
+    <tr><td>上架日期與時間</td><td>活動的上架設定（立刻上架時＝活動發布當下）</td></tr>
+    <tr><td>下架日期與時間</td><td>活動的下架日期與時間（活動沒填＝不自動下架）</td></tr>
+    <tr><td>開賣日期與時間</td><td>活動的開賣日期與時間（活動沒填＝上架即開賣）</td></tr>
+    <tr><td>停售日期與時間</td><td>活動的停售日期與時間（活動沒填＝賣到活動開始）</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li><b>跟隨是即時連動</b>：活動的時間改了，跟隨中的票務商品跟著改。</li>
+  <li><b>四個時間各自判斷</b>：有另設的用另設值，沒設的跟隨活動對應的那一個。</li>
+  <li>建立與編輯時，每個時間是跟隨活動還是另設，都要看得出來。</li>
+</ul>
+
+<h3>另設自己的時間</h3>
+<ul class="plain">
+  <li>另設的每個時間都必須落在活動上架區間內：不能早於活動上架、不能晚於活動下架。超出就擋下這次儲存並就地提示。</li>
+  <li>可以早於活動開賣，例如組合包預售。</li>
+  <li>預售要成立，活動得明填一個晚於上架的開賣時間；活動開賣留空＝上架即開賣，就沒有「早於開賣」的空間（<a href="events.html#timing">「活動」</a>）。</li>
+</ul>
+
+<h3>票務商品什麼時候買得到</h3>
+<ul class="plain">
+  <li>有設購買條件的限時間：看限時間。</li>
+  <li>沒設：看自己的開賣設定；跟隨活動時就是活動的售票期間。</li>
+</ul>
+
+<h3>電子商店清單的徽章</h3>
+<p>票務商品在電子商店清單上的狀態徽章跟所屬活動一致：</p>
+<ul class="plain">
+  <li>活動售票中：標「售票中」。</li>
+  <li>活動已排程：標「已排程」。</li>
+  <li>活動已結束：標「已結束」。</li>
+  <li>活動已取消：標「已取消」。</li>
+</ul>
+<p>售罄仍照組合包自己的狀態。組合包預售時徽章怎麼標，見頁尾待確認。</p>
+
+<h2 id="rules"><span class="n">7</span>票務商品的購買條件</h2>
+<p>單張門票有自己的購買條件與限購（<a href="event-create.html#create">「建立活動」第 5 步</a>）。票務商品另有一組，預設照所含門票來、創作者可以調。兩組各管各的：單張門票那一組只管單張購買，票務商品用自己這一組。</p>
+
+<h3>有哪些欄位</h3>
+<ul class="plain">
+  <li><b>購買條件</b>：不限，或限制——限時間、限粉絲分級（最低分級），或兩者都限。</li>
+  <li><b>限購</b>：不限，或設上限：
+    <ul class="plain">
+      <li>每人總限購數量。</li>
+      <li>每次交易限購數量。</li>
+      <li>限購次數。</li>
+    </ul>
+  </li>
+  <li>購買條件與限購決定誰能買、什麼時候能買、最多買幾套；價格由組合折扣與限時折扣決定（<a href="#price">第 2 節</a>）。單張門票的第三組「折扣」因此不沿用。</li>
+</ul>
+
+<h3>預設：照所含門票，多種時取最嚴</h3>
+<p>所含門票＝門票成員允許的票種在這一場的門票。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">條件</th><th>預設怎麼取</th><th style="width:34%">創作者可以怎麼調</th></tr></thead>
+  <tbody>
+    <tr><td>粉絲分級與其他身分類條件<div class="k">購買資格、Top Fan 優先購票</div></td><td>取最高門檻</td><td>只能收窄（門檻只能更高）</td></tr>
+    <tr><td>限時間</td><td>所有門票可購買時間的交集：有設限時間的看限時間，沒設的看活動售票期間。<br>門票都沒設時，交集就是售票期間。<br>交集為空時擋下儲存並就地提示。</td><td>可在活動上架區間內調整，含早於活動開賣；不受門票限時間約束</td></tr>
+    <tr><td>每人總限購、每次交易限購</td><td>取最小值，以「張」計，換算成套＝張數 ÷ n 取整數部分<br>最低 1 組（＝n 張）；門票的限購張數小於 n、換算不足 1 組時，擋下這個組合包的儲存與發布</td><td>只能收窄，但不能低於 1 組；粉絲單買的與經組合包買的合計受同一個上限</td></tr>
+    <tr><td>限購次數</td><td>取最小值；計的是下單次數，不換算成套</td><td>只能收窄；與單張門票共用同一個計數</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li><b>預設值跟隨所含門票</b>：門票的條件之後改了，還沒調整過的票務商品跟著改。</li>
+  <li>頁面要看得出目前是跟隨所含門票，還是已經調整過。</li>
+  <li><b>為什麼只能收窄</b>：票務商品與單張門票共用同一個票種數量，放寬會讓不具資格或超過限購的人經由組合包買到門票，繞過門票自己的限制。</li>
+  <li>購買資格與 Top Fan 優先購票目前只有名稱、還沒有欄位規則，落地時照「只能收窄」。</li>
+</ul>
+
+<h3>不能改的</h3>
+<ul class="plain">
+  <li>bookyay 帶入且鎖定的條件。</li>
+  <li>暫停售票：跟隨票種。票種暫停時，該票種在票務商品裡同樣不能選；允許票種全部暫停時整組不能賣。</li>
+  <li>票種張數的硬上限。</li>
+</ul>
+
+<h3>不沿用的</h3>
+<ul class="plain">
+  <li>單張門票自己的折扣，包含 bookyay 1 人票的早鳥；票務商品要做早鳥，用組合包的限時折扣。</li>
+  <li>單張門票的顯示開關：隱藏的門票照樣能當門票成員。</li>
+</ul>
+
+<h2 id="from-event"><span class="n">8</span>從活動建立票務商品</h2>
+<p>建立活動第 6 步「票務商品」是從活動直接建立組合包的捷徑。選用，跳過不影響發布；跟發布有關的只有可賣性（<a href="event-create.html#sellable">「活動」的「可賣性與發布檢核」</a>）。</p>
+
+<h3>這一步收齊組合包的全部欄位</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">欄位</th><th>說明</th></tr></thead>
+  <tbody>
+    <tr><td>組合名稱（必填）、描述</td><td>名稱在儲存這個組合包時檢查，不列入活動的發布前檢核</td></tr>
+    <tr><td>素材</td><td>主圖＋附圖，每格可放圖片或影片</td></tr>
+    <tr><td>成員</td><td>預帶一筆本場門票成員（見下方）；可再加電子商店的商品</td></tr>
+    <tr><td>額外權益</td><td>選填，一行一項</td></tr>
+    <tr><td>組合價格</td><td>原價合計、組合折扣 %、售價（第 2 節）</td></tr>
+    <tr><td>庫存</td><td>不限量或限量、鎖定套數與逐票種分配（第 3 節）</td></tr>
+    <tr><td>限時折扣、可與優惠碼疊加</td><td>同電子商店的組合包</td></tr>
+    <tr><td>電影關聯</td><td>同電子商店的組合包</td></tr>
+    <tr><td>上架、顯示、開賣設定</td><td>上架與開賣預設跟隨活動、可另設（第 6 節）</td></tr>
+    <tr><td>購買條件與限購</td><td>預設照所含門票（第 7 節）</td></tr>
+  </tbody>
+</table></div>
+<p class="note">翻譯與各幣別售價不在這一步，和活動一起在第 8 步「預覽與發布」處理。取貨與核銷沒有輸入欄：門票每張各自一個 QR、各自報到。</p>
+
+<h3>從活動進來時的差異</h3>
+<ul class="plain">
+  <li><b>預帶門票成員</b>：本活動全部票種都允許、張數 1；可取消勾選不想讓粉絲挑的票種（至少留 1 種）、改張數 n。</li>
+  <li>只能挑<b>這一場</b>的門票；要做別場的組合包，到那場活動或電子商店建立。</li>
+  <li>多場次的活動沿用「每場各一組」與「一組通用所有場次」兩種模式；選每場各一組時，每一組沿用同一份允許票種與張數 n，各自綁到自己的場次。</li>
+  <li><b>販售上限</b>：以各成員剩餘換算的套數為硬上限，創作者填的上限只能更小。</li>
+  <li>共看派對沒有票種，沒有這一步。</li>
+</ul>
+
+<h3>建立之後</h3>
+<ul class="plain">
+  <li>後續編輯、上下架、封存一律在組合商品細節頁做，活動這一側不另開編輯器；活動詳情的「票務商品」分頁點組合包卡就進細節頁。</li>
+  <li>bookyay 套票自動建立的組合包：整組內容鎖定、不能加商品、不能刪除，規則見<a href="event-bookyay.html#bookyay">「活動」的「從 bookyay 匯入」</a>。</li>
+</ul>
+
+<h2 id="unlist"><span class="n">9</span>下架、連動與刪除</h2>
+<p>下架一律先確認；下架會清除四個排程時間、開賣退回未開賣；封存與刪除的前提。這些通用規則見<a href="eshop-sales.html#archive">「電子商店販售流程」的「封存與刪除」</a>。這一節講組合包跟成員、跟活動之間的連動。</p>
+
+<h3>誰下架會帶著組合包一起下架</h3>
+<ul class="plain">
+  <li><b>單售商品下架</b>：商品還在任何上架中組合包裡時，確認內容列出這些組合包名稱；確認＝這些組合包一同下架、單售下架成立；取消＝都不下架。定時下架到期的自動下架同樣連動，並通知創作者。</li>
+  <li><b>活動取消或下架</b>：含這場活動門票的上架中組合包一同下架。創作者主動取消或下架活動時，確認內容列出這些組合包；活動因排程或結束而自動轉為不可售時，組合包一併自動下架並通知創作者。</li>
+  <li>已下架或已封存的組合包不受影響；成員資格不因此移除。</li>
+  <li>組合包因成員下架而一同下架時，組合商品細節頁要看得出原因與是哪一個成員。</li>
+</ul>
+
+<h3>上架中的組合包，成員一律在上架中</h3>
+<ul class="plain">
+  <li>組合包從已下架重新上架，會連帶重新上架它所有已下架的成員：先確認並列出這些成員，確認才執行。</li>
+  <li>成員中有已封存的：擋下並列出，提示創作者先把它們個別解除封存（回到已下架）。</li>
+  <li>成員解除封存、單售自己重新上架或解除封存，都不連動組合包。</li>
+  <li>組合包解除封存只影響自己：回到已下架，不連動任何成員；曾因成員下架而被連動下架的，解除封存後仍是已下架。</li>
+  <li>重新上架後是「上架＋顯示沿用＋未開賣」：組合包與被連帶的成員都要各自再設開賣。組合包開賣後就能帶著成員成交，不必等成員開賣。</li>
+</ul>
+
+<h3>已售出後成員內容鎖定</h3>
+<ul class="plain">
+  <li>組合包賣出任何一套之後，成員清單、門票成員的允許票種與張數 n、各成員數量都鎖定。</li>
+  <li>還能改的只有：
+    <ul class="plain">
+      <li>售價（組合折扣）。</li>
+      <li>販售上限。</li>
+      <li>停售。</li>
+    </ul>
+  </li>
+  <li>要換內容就建新組、停售舊組；頁面要說明鎖定的理由。</li>
+  <li>撤銷是整組：撤銷一套，組內門票全部失效、商品一起取消；含門票的組合包由 Admin 執行撤銷。</li>
+</ul>
+
+<h3>刪除</h3>
+<ul class="plain">
+  <li>零成交、且已下架或已封存的組合包可以刪除（<a href="eshop-sales.html#archive">「電子商店販售流程」</a>）。刪除組合包不影響成員；鎖給它的套數釋回成沒有被鎖定的庫存量。</li>
+  <li>單售商品仍是任何組合包的成員時（不論組合包上架中、已下架或已封存），刪除商品會被擋下並列出這些組合包，要先自己把它從組合包移除；系統不代為移除。</li>
+  <li>bookyay 套票自動建立的組合包在任何狀態都沒有刪除入口；唯一會消失的情況是整個草稿活動被刪除。</li>
+  <li>草稿活動被刪除時，含該活動門票的組合包一起刪除：bookyay 自動建立的，以及創作者自己建的草稿組合包；刪除確認時列出名稱。</li>
+  <li>活動發布後不能被刪空或停空：停售、下架、隱藏、封存或刪除最後一組仍在販售的組合包，若會讓活動沒有可賣的東西就擋下（<a href="event-create.html#sellable">「活動」的「可賣性與發布檢核」</a>）。</li>
+</ul>
+
+<div class="foot">
+  <p>本頁只放定案規則，不記討論過程。規則變更時同步更新 <code>0-設計規格書.md §7.12／§7.14</code>、<code>5.1.5.4</code>、<code>5.1.5.9</code>、<code>5.1.6.1 F20</code> 與本頁；歷史裁決見 <code>decisions.md</code>（D087、D241 組合可售只看成員下架與可售量；D266 組合包改以套數鎖定；D288／D289／D290 下架確認、組合包重新上架連帶成員、下架清除排程；D292 組合包成員擴及活動門票、票務商品＝組合包、活動取消或下架連動、已售出後成員鎖定；D293 至少 1 個成員、含門票的組合包跟著活動發布；D294 不回寫活動、草稿活動的組合包不進清單、票價連動；D295 規格由粉絲任選；D296 門票成員＝允許票種 × 張數 n；D298 解除封存回到已下架；D307 零成交可刪除；D318 含門票者可逐幣別覆寫；D329／D330／D331 bookyay 自動建立的組合包鎖定、不可刪、隨草稿活動刪除；D332 成員開賣只管單售；D340 可賣性口徑；D342 票務商品的上架與開賣預設跟隨活動、可另設在活動上架區間內、可早於活動開賣，票務商品有自己的購買條件與限購、預設取所含門票最嚴、身分類條件與限購只能收窄，票務商品步驟收齊組合包欄位，門票成員改看活動已上架、未取消、未結束）。最近同步：2026-10-01（至 D342）。</p>
+  <ul>
+    <li>含門票的組合包在粉絲端怎麼呈現：產品待確認。範圍：
+      <ul>
+        <li>內含清單的順序。</li>
+        <li>售罄與販售結束的文案。</li>
+        <li>門票與商品怎麼分流給買家。</li>
+        <li>允許票種有多種時，粉絲怎麼選。</li>
+      </ul>
+    </li>
+    <li>額外權益怎麼兌現：產品待確認。</li>
+    <li>「每場各一組」與「一組通用所有場次」兩種模式的定義：產品待確認。</li>
+    <li>每場各一組時，各場的允許票種能否不同：產品待確認。</li>
+    <li>多場次時，跟隨停售的「活動開始」指哪一場：產品待確認。</li>
+    <li>另設時間逐場設還是整組設：產品待確認。</li>
+    <li>活動選「立刻上架」時，早於發布當下的另設時間或限時間，發布時算不算超出上架區間：產品待確認。</li>
+    <li>活動之後改了上架、下架、開賣或停售時間，已另設時間的票務商品因此落到上架區間外時怎麼處理：產品待確認。</li>
+    <li>票務商品下架後重新上架，回到跟隨活動還是停在未開賣：產品待確認。</li>
+    <li>票務商品的購買條件調整過之後，門票再收緊、使票務商品比門票寬時，以哪一邊為準：產品待確認。</li>
+    <li>已售出後，票務商品的購買條件、限購與另設的上架開賣時間能不能改：產品待確認。</li>
+    <li>bookyay 自動建立的組合包，購買條件與限購是否在鎖定範圍：產品待確認。</li>
+    <li>純商品組合包要不要也有購買條件與限購：產品待確認。</li>
+    <li>含門票的組合包的翻譯模式（活動手動翻譯，或組合商品細節頁的改了就重新生成）：產品待確認。</li>
+    <li>活動頁票務商品視圖內組合包的排序：產品待確認。</li>
+    <li>組合包預售時，電子商店清單的徽章依組合包自己的開賣狀態標，還是維持與活動一致：產品待確認。</li>
+    <li>活動隱藏時，含其門票的組合包能否在電子商店顯示：產品待確認。</li>
+  </ul>
+</div>
+</div>
+<script>
+(function(){
+  var cPool=document.getElementById('cPool'),cS=document.getElementById('cLockS'),cB=document.getElementById('cLockB');
+  function calc(){
+    var pool=Math.max(0,Number(cPool.value)||0), ls=Math.max(0,Number(cS.value)||0), lb=Math.max(0,Number(cB.value)||0);
+    var free=pool-ls-lb;
+    var over=free<0;
+    var freeShown=over?0:free;
+    var sell= ls>0 ? ls : freeShown;
+    var bundle= lb>0 ? lb : freeShown;
+    document.getElementById('cFree').innerHTML= over ? '<span class="tag warn">鎖定超過目前在庫</span>' : freeShown+(ls>0&&lb>0&&freeShown>0?' <small>（'+freeShown+' 件未鎖定，沒人能賣）</small>':'');
+    document.getElementById('cSell').innerHTML= over?'—': sell+' <small>'+(ls>0?'（用鎖定量）':'（用沒有被鎖定的庫存量）')+'</small>';
+    document.getElementById('cBundle').innerHTML= over?'—': bundle+' <small>'+(lb>0?'（用鎖定量）':'（用沒有被鎖定的庫存量）')+'</small>';
+    document.getElementById('cGuard').innerHTML= over ? '<span class="tag warn">表單擋：鎖定量 ≤ 沒有被鎖定的庫存量</span>' : '<span class="tag ok">通過</span>';
+  }
+  [cPool,cS,cB].forEach(function(i){i.addEventListener('input',calc)}); calc();
+})();
+</script>
+</body>
+</html>

@@ -50,6 +50,13 @@ merge 一律由具 merge 權限的協作者在 GitHub 上操作。各協作者�
 - 下一期交付：把功能標 🔵 → 用「下一版預覽」確認 → 從 `main` 切 `phase2` 分支鎖版本 → 開新網址。
 - 完整流程圖見 [WORKFLOW.md](WORKFLOW.md) §5 與 [WORKFLOW-DIAGRAM.md](WORKFLOW-DIAGRAM.md) 線 4。
 
+## 規則手冊（`app/rulebook/`，2026-10-01 搬入）
+
+- 產品規則定案的對外發布頁，線上網址 `/rulebook/`。內容只收 `documents/` 已定案的規則，正典仍是規格，不是原型。
+- 章節照原型左側欄分「章節 › 子功能頁 › 子頁」三層；章節樹集中在 `app/rulebook/shell.js` 的 `TREE`，加頁時在對應章節把待補子頁補上檔名。
+- 自帶樣式（`shell.css` 與各頁 `<style>`），不套原型的 design system、不用 `sidebar.js`，也不掛 `data-feat`；不要把原型的元件或 token 套進來，也不要依原型的設計系統規則「修正」它。
+- 改 `shell.js`／`shell.css` 時，同步升所有頁面的 `?v=` 版本參數。
+
 ## 其他
 
 - 版本與治理見 [README.md](README.md)：`site/` 不得把畫面、截圖、互動或既有程式靜默反向同步成產品規則。

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>活動總覽 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261001b">
+<script src="shell.js?v=20261001b" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+ul.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+/* 販售層級示意圖 */
+.layers{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px 10px;margin:10px 0 6px}
+.layer{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;margin-bottom:8px}
+.layer__k{font-size:12.5px;color:var(--text-2);line-height:1.4}
+.layer__k span{display:block;font-size:11.5px;color:var(--text-3)}
+.layer__track{position:relative;height:18px;border-radius:999px;background:var(--surface-sunken)}
+.layer__bar{position:absolute;top:0;bottom:0;border-radius:999px;border:1px solid var(--border-strong)}
+.layer__bar.l1{background:var(--ok-fill);border-color:var(--ok-line)}
+.layer__bar.l2{background:var(--wait-fill);border-color:var(--wait-line)}
+.layer__bar.l3{background:var(--pink-fill);border-color:var(--pink-line)}
+.layer__bar.l4{background:var(--warn-fill);border-color:var(--warn-key);border-style:dashed}
+.layer__axis{position:relative;height:18px;font-size:11.5px;color:var(--text-3)}
+.layer__axis span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.layer__axis span:first-child{transform:none}
+.layer__axis span:last-child{transform:translateX(-100%)}
+@media (max-width:600px){.layer{grid-template-columns:1fr;gap:4px}.layer--axis .layer__k{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>活動總覽</h1>
+<p class="lede">一場活動從草稿走到結束是一條單向的生命週期：發布前可以刪除，發布後只能取消。販售時間分三層：活動的上架區間最大，包住售票期間；單張門票的限時間與票務商品自己的時間，只須落在上架區間內。門票與含門票的組合包共用同一個數量，活動發布之後至少要留一樣粉絲買得到的東西。從 bookyay 帶入的活動沿用 bookyay 的原始資料，影響票價、數量與取票的欄位鎖定，要改回 bookyay 改。</p>
+<p class="src">權威定義：<code>5.1.6-活動.md</code>、<code>5.1.6.1-建立活動流程.md</code>（v2.36）、<code>5.1.6.2-編輯活動.md</code>（v3.24）、<code>5.1.6.3-活動詳情.md</code>（v32）、<code>5.1.5.9-組合商品細節頁.md</code>、<code>5.1.0.6-創作者活動管理.md</code>、<code>0-設計規格書.md §7.10／§7.14／§7.15</code>　裁決：<code>decisions.md D188</code>（高影響變更）、<code>D253／D282</code>（撤銷取代退款、由 Admin 執行）、<code>D281</code>（詳情頁就地編輯）、<code>D292／D293／D296</code>（票務商品＝組合包）、<code>D294</code>（草稿可刪）、<code>D310／D312</code>（預覽與發布、手動翻譯）、<code>D316</code>（票務無手續費）、<code>D327～D335</code>（2026-09-29，bookyay 帶入與本輪欄位）、<code>D336</code>（bookyay 不帶入清單）、<code>D340</code>（2026-09-30，活動 18 題裁決：可賣性、內文、顯示與開賣設定、只做定點、活動語言必填、條款與細則）、<code>D341</code>（活動性質帶入顯示設定）、<code>D342</code>（2026-10-01，販售三層時間層級、售票期間正名、票務商品的上架開賣與購買條件）　對照底稿：<code>note/bookyay ztor mapping.md</code></p>
+
+<div class="toc">
+  <a href="#overview">1 活動流程總覽</a><a href="#timing">2 販售層級與時間</a><a href="#list">3 活動列表管理</a>
+</div>
+<p class="stepsum">閱讀順序：本頁講流程總覽、販售層級與活動列表；怎麼建與怎麼防呆見<a href="event-create.html">建立活動</a>，怎麼管見<a href="event-detail.html">活動詳情與編輯</a>，bookyay 相關見<a href="event-bookyay.html">bookyay 匯入與對照</a>，Admin 的匯入管理見 Admin 章的<a href="admin-events.html">活動匯入管理</a>。票務商品（含門票的組合包）本身的規則在<a href="bundles.html">「組合包與票務商品」</a>，三個開關的定義在<a href="eshop-sales.html#switches">「電子商店販售流程」</a>。</p>
+
+<h2 id="overview"><span class="n">1</span>活動流程總覽</h2>
+<p>活動沿著一條時間軸往下走，一場活動同時只落在一個階段，取「已經走到最遠的那一階」判定——例如活動當天現場仍在售票，仍算進行中、不算售票中。</p>
+<div class="flow">
+  <span class="tag wait">草稿</span><span class="arr">→</span><span class="tag">已排程</span><span class="arr">→</span><span class="tag ok">售票中</span><span class="arr">→</span><span class="tag pink">進行中</span><span class="arr">→</span><span class="tag off">已結束</span>
+  <span class="flow__alt">發布後被取消 → <span class="tag warn">已取消</span></span>
+</div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">階段</th><th>意思</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag wait">草稿</span><div class="k">Draft</div></td><td>還沒發布、先存起來的活動；還沒設日期的也在這裡。草稿沒有詳情頁，編輯回到建立活動流程。</td></tr>
+    <tr><td><span class="tag">已排程</span><div class="k">Scheduled</div></td><td>已上架、售票期間還沒開始。</td></tr>
+    <tr><td><span class="tag ok">售票中</span><div class="k">On Sale</div></td><td>在售票期間內、活動還沒開始；顯示或隱藏的活動都可能在售票中。</td></tr>
+    <tr><td><span class="tag pink">進行中</span><div class="k">Live</div></td><td>活動正在發生，例如開演當天。</td></tr>
+    <tr><td><span class="tag off">已結束</span><div class="k">Past</div></td><td>活動已落幕。</td></tr>
+    <tr><td><span class="tag warn">已取消</span><div class="k">Cancelled</div></td><td>活動被取消，不會再發生。跟已結束分開，因為取消要撤銷票券並對外說明，帳務與後續處理跟正常收工不同。</td></tr>
+  </tbody>
+</table></div>
+<p class="note">已排程與售票中只看活動的售票期間（<a href="#timing">「販售層級與時間」</a>）。單張門票的限時間或票務商品另設的開賣早於活動開賣（預售）時，活動仍是已排程。</p>
+
+<h3>刪除與取消</h3>
+<ul class="plain">
+  <li><b>草稿可以刪除</b>，刪除前一定要確認。草稿還沒真正建立：沒有票券、沒有粉絲端頁面，刪掉不影響任何人。</li>
+  <li>草稿系列：刪母列＝整個系列連同底下的場次一起刪；子場也可以單獨刪，同樣要確認。</li>
+  <li>草稿活動被刪除時，含該活動門票的組合包跟著一起刪除：bookyay 套票自動建立的（那類組合包本身沒有刪除入口，見<a href="event-bookyay.html#bookyay">「從 bookyay 匯入」</a>），以及創作者自己建立、成員含該活動門票的草稿組合包。刪除確認時會列出哪些組合包將一起刪除。</li>
+  <li><b>發布過的活動不能刪除，只能取消</b>；任何頁面都不提供刪除入口。活動沒有封存，發布後的終點是已結束或已取消。</li>
+  <li>取消活動時，平台不提供退款動作：仍有效的票券由 <b>Admin</b> 逐張或整場撤銷，撤銷後該張票的 QR 立刻失效；需要退款時，由創作者在平台外（Stripe 後台）先退款、再撤銷。系統會通知受影響的持票人。</li>
+</ul>
+
+<h3>活動與票務商品</h3>
+<ul class="plain">
+  <li>票務商品＝成員含本活動門票的組合包，規則在<a href="bundles.html">「組合包與票務商品」</a>。</li>
+  <li>活動還沒發布時，票務商品也是草稿。活動發布後，票務商品的上架與開賣預設跟隨活動，也可以另設；可設定的範圍是活動的上架區間，可以早於活動開賣（<a href="#timing">「販售層級與時間」</a>、<a href="bundles.html#timing">「組合包與票務商品」第 6 節</a>）。</li>
+  <li>票務商品自己的三個開關不回寫活動：關掉組合包不影響活動本身與單張門票的販售。</li>
+  <li>活動被取消或下架時，含這場活動門票的「上架中」組合包一起下架。這是連動，不算<a href="event-create.html#sellable">「可賣性與發布檢核」</a>可賣性防呆要擋下的動作。</li>
+</ul>
+
+<h3>誰做什麼</h3>
+<div class="grid">
+  <div class="card ok"><div class="band"></div><h3>創作者</h3><ul class="plain"><li>建立、編輯、發布與取消活動</li><li>管理票種、門票與組合包</li><li>看交易、名單與報到</li><li>在預覽與在地化填譯文、調整各幣別價格</li></ul></div>
+  <div class="card wait"><div class="band"></div><h3>Admin（平台營運）</h3><ul class="plain"><li>監看 bookyay 自動匯入的活動</li><li>替「待設定套組」的活動繼續設定</li><li>執行活動票券的撤銷</li></ul></div>
+  <div class="card"><div class="band"></div><h3>系統</h3><p>creator 綁定 bookyay 帳號後自動匯入活動、持續檢查更新；bookyay 端刪除或隱藏活動時，ztor 端轉為下架、資料保留。</p></div>
+</div>
+<p class="note">依據：5.1.6 F1／F3、5.1.6.3 §2.1、主規格 §7.14「封存與刪除」活動比照；D189、D253、D281、D282、D283、D292、D293、D294、D331、D342。</p>
+
+<h2 id="timing"><span class="n">2</span>販售層級與時間</h2>
+<p>活動相關的販售時間分三層，大的包住小的：活動的上架區間最大，售票期間在它裡面；單張門票的限時間與票務商品自己的時間，只須落在上架區間內。</p>
+<div class="layers" role="img" aria-label="販售層級示意：上架區間最長；售票期間在其中；門票限時間與票務商品另設的時間可以早於開賣，但都在上架區間內">
+  <div class="layer"><div class="layer__k">第一層　上架區間</div><div class="layer__track"><span class="layer__bar l1" style="left:0;width:100%"></span></div></div>
+  <div class="layer"><div class="layer__k">第二層　售票期間</div><div class="layer__track"><span class="layer__bar l2" style="left:34%;width:50%"></span></div></div>
+  <div class="layer"><div class="layer__k">第三層　門票限時間<span>例：早於開賣的預售</span></div><div class="layer__track"><span class="layer__bar l3" style="left:14%;width:20%"></span></div></div>
+  <div class="layer"><div class="layer__k">票務商品另設<span>例：組合包預售</span></div><div class="layer__track"><span class="layer__bar l4" style="left:20%;width:64%"></span></div></div>
+  <div class="layer layer--axis"><div class="layer__k"></div><div class="layer__axis"><span style="left:0">上架</span><span style="left:34%">開賣</span><span style="left:84%">停售</span><span style="left:100%">下架</span></div></div>
+</div>
+<p class="note">示意圖：時間由左到右。每一條色條都要落在第一列「上架區間」裡；第三、四列可以比第二列早開始。</p>
+
+<h3>三層，由大到小</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:20%">層</th><th>是什麼</th><th style="width:24%">在哪設</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag ok">第一層</span><br>上架區間<div class="k">Listing period</div></td><td>活動的上架日期與時間到下架日期與時間，範圍最大。下面所有時間都必須落在裡面，超出就擋下這次儲存並就地提示。<br>選「立刻上架」時，起點是發布當下。<br>下架日期與時間不填＝不自動下架，區間沒有終點。</td><td>建立活動第 7 步「上架設定」</td></tr>
+    <tr><td><span class="tag wait">第二層</span><br>售票期間<div class="k">Sales period</div></td><td>活動的開賣日期與時間到停售日期與時間，必須在上架區間內。<br>不填開賣＝上架即開賣；不填停售＝賣到活動開始。<br>是單張門票與票務商品的預設販售時間。<br>活動的「已排程／售票中」只看這一層。</td><td>第 7 步「開賣設定」</td></tr>
+    <tr><td><span class="tag pink">第三層</span><br>限時間<div class="k">Time window</div></td><td>單張門票購買條件裡的限時間。必須在上架區間內，可以不在售票期間內，例如早於開賣的預售。</td><td>第 5 步門票的購買條件（活動層預設，可逐張改寫）</td></tr>
+    <tr><td><span class="tag warn">票務商品</span><br>上架與開賣</td><td>四個排程時間（上架、下架、開賣、停售）預設跟隨活動，也可另設。另設的時間必須在上架區間內，可以早於活動開賣。</td><td>組合包的上架與開賣設定（<a href="bundles.html#timing">「組合包與票務商品」第 6 節</a>）</td></tr>
+  </tbody>
+</table></div>
+
+<h3>什麼時候買得到</h3>
+<ul class="plain">
+  <li><b>單張門票</b>：有設限時間，看限時間；沒設，看活動的售票期間。</li>
+  <li><b>票務商品</b>：有設購買條件的限時間，看限時間；沒設，看它自己的開賣設定，跟隨活動時就是活動的售票期間（<a href="bundles.html#timing">「組合包與票務商品」</a>）。</li>
+  <li>每個時間欄位在儲存時就地檢查；按發布時，仍超出上架區間的時間設定會一併列出擋下（<a href="event-create.html#sellable">「可賣性與發布檢核」</a>）。</li>
+</ul>
+
+<h3>預售的前提</h3>
+<p>活動的開賣日期與時間留空＝上架即開賣，售票期間從上架那一刻就開始，沒有「早於開賣」的空間。要做預售——讓單張門票的限時間或票務商品的開賣早於活動開賣——活動必須明填一個晚於上架的開賣日期與時間。</p>
+
+<h3>用詞</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">詞</th><th>指什麼</th></tr></thead>
+  <tbody>
+    <tr><td>上架區間</td><td>第一層：活動的上架到下架。</td></tr>
+    <tr><td>售票期間</td><td>第二層，只指活動層的開賣到停售。票種沒有另一組自己的售票時間，單張門票的時間一律叫限時間。</td></tr>
+    <tr><td>限時間</td><td>第三層：單張門票購買條件裡的時間（建立活動畫面寫作「限時間窗」，是同一個欄位）。票務商品的購買條件也有一個限時間。</td></tr>
+    <tr><td>開賣日期與時間<br>停售日期與時間</td><td>售票期間的兩端。票務商品也有自己的一組，預設跟隨活動。</td></tr>
+    <tr><td>可購買時間</td><td>一張門票或一組票務商品實際買得到的時間，由上方「什麼時候買得到」推出來，不另設欄位；活動詳情的票種列顯示這個時間。</td></tr>
+    <tr><td>預告期</td><td>組合包已上架、已顯示、尚未開賣，且開賣日期與時間在未來；在可賣性判定裡算仍在販售（<a href="event-create.html#sellable">「可賣性與發布檢核」</a>）。</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：主規格 §7.14「活動販售的時間層級」、5.1.6.1 F12b／F22／F23；D239、D293、D294、D340、D342。</p>
+
+<h2 id="list"><span class="n">3</span>活動列表管理</h2>
+<p>活動列表是創作者管理所有活動的工作區：一眼掃過時間、場地、票券與狀態，再點進單一活動。</p>
+
+<h3>清單每一列</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>縮圖</td><td>取自活動主視覺；沒上傳時顯示預設圖。</td></tr>
+    <tr><td>活動</td><td>活動名稱，下一行是活動類型；系列活動附系列序（如 系列 1/3）。亮點不在清單顯示。</td></tr>
+    <tr><td>日期與時間</td><td>活動日期與開始時間。</td></tr>
+    <tr><td>場地</td><td>場地名稱與城市；線上活動改標平台。</td></tr>
+    <tr><td>票券</td><td>已售／總數，附銷售進度條。總數＝本活動所有門票的張數合計，含隱藏的門票。</td></tr>
+    <tr><td>收入</td><td>這場活動的收入，口徑跟收入管理（Earnings）一致，清單不另算。</td></tr>
+    <tr><td>狀態</td><td>售票與活動狀態徽章。</td></tr>
+  </tbody>
+</table></div>
+
+<h3>列操作</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">列的狀態</th><th>可用的操作</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag wait">草稿</span></td><td>編輯（回到建立活動流程）<br>複製<br>刪除（須確認）</td></tr>
+    <tr><td>發布過的活動</td><td>編輯（開啟活動詳情頁並直接進入編輯模式）<br>複製<br>取消活動（進行中的活動不提供）</td></tr>
+  </tbody>
+</table></div>
+
+<h3>頂部統計</h3>
+<ul class="plain">
+  <li>活動總數：附與去年比較。</li>
+  <li>已售票數：附年增率。</li>
+  <li>總收入：附年增率，口徑同 Earnings。</li>
+  <li>平均出席：來自報到資料。</li>
+</ul>
+
+<h3>篩選與搜尋</h3>
+<ul class="plain">
+  <li><b>生命週期</b>：全部、已排程、售票中、進行中、已結束、已取消、草稿，單選且互斥；每一格的筆數只看階段本身，不受類型篩選影響。</li>
+  <li><b>活動類型</b>：依活動的核心形式分三類，筆數隨目前所選的生命週期重算（對照見下表）。</li>
+  <li><b>搜尋</b>：比對活動名稱、場地名稱、表演陣容裡的表演者名稱，任一命中就列入；不分大小寫、部分字串即可命中；清空搜尋框即還原。</li>
+  <li>三者同時生效（交集）；切換分頁或類型時保留搜尋字串重新比對。</li>
+</ul>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">篩選分類</th><th style="width:34%">判準</th><th>建立活動時的類型</th></tr></thead>
+  <tbody>
+    <tr><td>演唱會</td><td>核心是一場實體聚集；實體演出同時線上直播仍歸這類</td><td>Concert<br>Festival</td></tr>
+    <tr><td>粉絲見面會</td><td>實體的近距離接觸，如簽名會、內圈晚宴</td><td>Meet &amp; Greet<br>Launch Party（個案判斷）</td></tr>
+    <tr><td>線上活動</td><td>媒介是純線上</td><td>Virtual Event<br>Watch Party</td></tr>
+  </tbody>
+</table></div>
+
+<h3>兩種空狀態</h3>
+<ul class="plain">
+  <li>帳號還沒建立任何活動：統計、篩選、清單整組退位，改顯示「建立第一個活動」引導，不用空表格或 0 佔首屏。</li>
+  <li>有活動、但目前的篩選與搜尋沒有命中：顯示搜尋無結果，並提供清除入口。</li>
+</ul>
+<p class="note">依據：5.1.6 F1／F2／F3；D169、D189、D281、D294、D300。</p>
+
+<div class="foot">
+  <p>本頁只放定案規則，不記討論過程；規格裡尚未定案的項目不寫進正文，只列在下方待確認。規則變更時同步更新 <code>5.1.6.1</code>、<code>5.1.6.2</code>、<code>5.1.6.3</code>、<code>5.1.0.6</code>、<code>0-設計規格書.md §7.14／§7.15</code> 與本頁；歷史裁決見 <code>decisions.md</code>（D342 起：活動販售分三層——上架區間包住售票期間，單張門票的限時間只須在上架區間內；活動的開賣到停售正名為「售票期間」；票務商品的上架與開賣預設跟隨活動、可另設、可早於活動開賣，並有自己的購買條件）。最近同步：2026-10-01（至 D342）。</p>
+  <ul>
+    <li>活動選「立刻上架」時，早於發布當下的門票限時間或票務商品另設時間，發布時算不算超出上架區間：產品待確認。</li>
+    <li>活動之後改了上架、下架、開賣或停售時間，已設限時間的門票或已另設時間的票務商品因此落到上架區間外時怎麼處理：產品待確認。</li>
+    <li>上架＋顯示＋未開賣、又沒有開賣排程的組合包（例如重新上架後開賣退回未開賣）算不算預告期：產品待確認。</li>
+    <li>票務商品相關的其他待確認（場次模式、已售出後能不能改、徽章等）列在<a href="bundles.html">「組合包與票務商品」</a>頁尾。</li>
+  </ul>
+</div>
+</div>
+<script>
+/* 舊錨點轉址：本頁拆成多頁後，舊網址的 #錨點 轉到新頁 */
+(function(){var m={'s1':'events.html#overview','s2':'events.html#list','s3':'event-create.html#create','s4':'event-bookyay.html#bookyay','s5':'event-detail.html#detail','s6':'event-create.html#sellable','s7':'admin-events.html#admin','s8':'event-bookyay.html#mapping','create':'event-create.html#create','sellable':'event-create.html#sellable','detail':'event-detail.html#detail','bookyay':'event-bookyay.html#bookyay','mapping':'event-bookyay.html#mapping','admin':'admin-events.html#admin'};var h=location.hash.slice(1);if(!m[h])return;var p=m[h].split("#");if(p[0]!==(location.pathname.split("/").pop()||"index.html")){location.replace(m[h]);}else{history.replaceState(null,"","#"+p[1]);var el=document.getElementById(p[1]);if(el)el.scrollIntoView();}})();
+</script>
+</body>
+</html>

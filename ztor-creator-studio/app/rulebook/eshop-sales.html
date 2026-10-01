@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>電子商店販售流程 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261001b">
+<script src="shell.js?v=20261001b" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>電子商店販售流程</h1>
+<p class="lede">一件商品「有沒有上架」「在網站上找不找得到」「能不能購買和結帳」是三件獨立的事；庫存放在一個看不見的池裡，單售與每個組合包各是一條從池裡取貨的販售管道。</p>
+<p class="src">權威定義：<code>0-設計規格書.md §7.14</code>　裁決：<code>decisions.md D241</code>（2026-09-03）、<code>D255／D258</code>（多選項鎖定，2026-09-09～10）、<code>D263／D264／D265／D266</code>（2026-09-11）、<code>D284／D285／D286／D287</code>（封存收尾、拍賣三開關，2026-09-18）、<code>D288／D289／D290</code>（下架確認、重新上架、下架清除排程，2026-09-18）、<code>D298</code>（解除封存，2026-09-22）、<code>D307</code>（封存與刪除修訂，2026-09-22）、<code>D314</code>（已下架「上架」呈現缺口訂正，2026-09-23）、<code>D332</code>（成員開賣只管單售，2026-09-29）、<code>D342</code>（組合包與票務商品移到「組合包與票務商品」，2026-10-01）　流程：<code>5.1.5.2-建立商品流程.md §4.6</code>、<code>5.1.5.4-建立組合流程.md</code>、<code>5.1.5.1-商品細節頁.md</code></p>
+
+<div class="toc">
+  <a href="#pool">1 庫存池與販售管道</a><a href="#switches">2 三個開關</a><a href="#states">3 狀態組合</a><a href="#soldout">4 售罄與販售結束</a><a href="#stock">5 庫存規則</a><a href="#private">6 非公開連結</a><a href="#example">7 範例</a><a href="#archive">8 封存與刪除</a><a href="#auction">9 拍賣三開關</a>
+</div>
+<p class="stepsum">本頁講商品與單售這條販售管道（Channel），以及單售、組合包、拍賣共用的開關、狀態與封存規則。組合包的成員、價格、鎖定套數、成交條件與連動，以及含門票的「票務商品」，在<a href="bundles.html">「組合包與票務商品」</a>；活動的販售時間層級在<a href="events.html#timing">「活動」</a>。</p>
+
+<h2 id="pool"><span class="n">1</span>庫存池與販售管道</h2>
+<p>庫存池是後端概念，畫面不顯示池本身。它也不是憑空存在的——<b>要先建立一件商品，池裡才會有東西</b>。組合包是之後才長出來的第二、第三條販售管道，從池裡挑商品當成員、不另外進貨。</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step__n">1</div>
+    <div>
+      <div class="step__t">建立商品 A</div>
+      <p class="step__d">一個動作，同時生出兩樣東西。這一步沒做，就沒有池、也沒有任何能賣的東西。</p>
+      <div class="step__out">
+        <div class="unit unit--back">
+          <div class="unit__tag">後端 · 畫面看不到</div>
+          <div class="unit__t"><span class="dot n"></span>庫存池：商品 A</div>
+          <div class="unit__d">目前在庫 100 · 這一步新建</div>
+        </div>
+        <div class="step__arrow">→</div>
+        <div class="chs">
+          <div class="ch"><span class="dot"></span>單售 · 商品 A<span class="sub">販售管道 1</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step step--later">
+    <div class="step__n">2</div>
+    <div>
+      <div class="step__t">建立組合包「A＋B 套組」</div>
+      <p class="step__d">想賣組合才做，可以晚幾天、也可以永遠不做。不會產生新的池。</p>
+      <div class="step__out">
+        <div class="unit unit--back unit--same">
+          <div class="unit__tag">後端 · 畫面看不到</div>
+          <div class="unit__t"><span class="dot n"></span>庫存池：商品 A</div>
+          <div class="unit__d">目前在庫 100 · 同一個池，數量沒變</div>
+        </div>
+        <div class="step__arrow">→</div>
+        <div class="chs">
+          <div class="ch ch--old"><span class="dot"></span>單售 · 商品 A<span class="sub">販售管道 1</span></div>
+          <div class="ch"><span class="dot b"></span>組合包「A＋B 套組」<span class="sub">販售管道 2</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step step--later">
+    <div class="step__n">3</div>
+    <div>
+      <div class="step__t">再建一個組合包「A＋C＋D 禮盒」</div>
+      <p class="step__d">同一件商品可以同時進多個組合包，不必為了組合再建一件商品。</p>
+      <div class="step__out">
+        <div class="unit unit--back unit--same">
+          <div class="unit__tag">後端 · 畫面看不到</div>
+          <div class="unit__t"><span class="dot n"></span>庫存池：商品 A</div>
+          <div class="unit__d">目前在庫 100 · 同一個池，現在三條販售管道共用</div>
+        </div>
+        <div class="step__arrow">→</div>
+        <div class="chs">
+          <div class="ch ch--old"><span class="dot"></span>單售 · 商品 A<span class="sub">販售管道 1</span></div>
+          <div class="ch ch--old"><span class="dot b"></span>組合包「A＋B 套組」<span class="sub">販售管道 2</span></div>
+          <div class="ch"><span class="dot b"></span>組合包「A＋C＋D 禮盒」<span class="sub">販售管道 3</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="stepsum">三條販售管道共用商品 A 的同一個池：不論哪條售出，每售一件都從池扣一件；組合包售出一套，各成員各扣一件。販售管道各自有一組開關（下一節）與各自的可售量（<a href="#stock">第 5 節</a>）。</p>
+<p class="note"><b>池裡只有商品，組合包不在池裡</b>——組合包是賣法、不是貨，所以組合包不能當另一個組合包的成員。組合包的成員有商品與活動門票兩種：商品從這個池扣，門票的量住在票種上（<a href="bundles.html#what">「組合包與票務商品」</a>）。電子商店的清單把組合與拍賣也一併叫「商品」，那是清單層的傘狀說法，跟這裡講的池是兩件事。</p>
+
+<h2 id="switches"><span class="n">2</span>三個開關</h2>
+<p>單售、組合包與拍賣從草稿發布後，各自都有下面三個開關，互相獨立。「上架」是總閘門；「顯示」管在網站找不找得到；「開賣」管此刻能不能結帳。三者不互相蘊含：隱藏的東西可以開賣，未開賣的東西可以顯示。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">開關</th><th>意思</th><th style="width:28%">排程</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag ok">上架</span> ／ <span class="tag off">下架</span><div class="k" style="font-size:12px;color:var(--text-3)">Listed ／ Unlisted</div></td><td>上架＝這條販售管道可以販售這件商品。下架＝這條販售管道不能賣；公開與非公開連結都失效。</td><td>可設立刻上架，或排定自動上架、自動下架日期與時間</td></tr>
+    <tr><td><span class="tag ok">顯示</span> ／ <span class="tag off">隱藏</span><div style="font-size:12px;color:var(--text-3)">Shown ／ Hidden</div></td><td>顯示＝以這條販售管道的身分出現在電子商店。隱藏＝商店裡找不到，只能經非公開連結進入。</td><td>—</td></tr>
+    <tr><td><span class="tag ok">開賣</span> ／ <span class="tag off">未開賣</span><div style="font-size:12px;color:var(--text-3)">On sale ／ Off sale</div></td><td>開賣＝粉絲可以結帳。未開賣＝停售（販售結束），兩者是同一個值。</td><td>可設現在開賣，或排定自動開賣、自動停售日期與時間</td></tr>
+  </tbody>
+</table></div>
+
+<h3>商品的開關管不管得到組合包</h3>
+<ul class="plain">
+  <li>商品的<b>上架／下架</b>管到商品本身：單售下架時，含它的上架中組合包會一起下架。</li>
+  <li>商品的<b>顯示／隱藏</b>與<b>開賣／未開賣</b>只管單售：單售隱藏、還沒開賣或已販售結束時，組合包照樣能帶著它成交。</li>
+  <li>所以停售只停單售；要把一件商品連同組合包一起停賣，要用<b>下架</b>。</li>
+  <li>逐項規則、門票成員看什麼，見<a href="bundles.html#switches">「組合包與票務商品」的「三個開關在組合包上怎麼運作」</a>。</li>
+</ul>
+<p class="note">活動也有自己的上架、顯示、開賣三個開關；活動與票務商品的時間層級見<a href="events.html#timing">「活動」的「販售層級與時間」</a>。</p>
+
+<h3>下架時，顯示與開賣不可調</h3>
+<ul class="plain">
+  <li>上架是總閘門。販售管道處於下架時（包括排定上架日期與時間還沒到、定時下架已過），顯示開關與開賣設定（立即／定時開賣、定時停售）<b>留在畫面上但停用</b>，旁邊說明「要重新上架後才能調整」；上架排程本身仍然可以改。</li>
+  <li>電子商店清單列上的顯示開關同樣停用，提示「要先上架才能調整顯示」。</li>
+  <li>建立流程選「不上架」＝還是草稿，這兩層直接不出現。</li>
+  <li>原因：下架時這兩層對粉絲端沒有任何效果，允許改只會讓人以為改了有用。</li>
+  <li>下架（手動、定時到期、被組合包連動、被成員連動）同時<b>清除四個排程時間</b>（上架、下架、開賣、停售），開賣退回<b>未開賣</b>；顯示與其他內容設定保留（D290）。</li>
+</ul>
+
+<h3>清單列的顯示開關先確認再切</h3>
+<p>電子商店清單每一列有一個顯示開關，點了先出確認彈窗（標題帶品名，內文講後果：隱藏＝粉絲在商店找不到、持非公開連結仍可買、含它的組合包照賣、不等於下架；顯示＝回到陳列、非公開連結撤銷），確認才切換，取消則維持原狀。</p>
+
+<h2 id="states"><span class="n">3</span>狀態組合表</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th>上架</th><th>顯示</th><th>開賣</th><th>語意</th><th>粉絲端</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag off">下架</span></td><td>—<div style="font-size:12px;color:var(--text-3)">停用，不可調</div></td><td>—<div style="font-size:12px;color:var(--text-3)">停用，不可調</div></td><td>已下架</td><td>不出現；公開與非公開連結都失效；無任何頁面。顯示與開賣要重新上架後才能調整</td></tr>
+    <tr><td><span class="tag ok">上架</span></td><td><span class="tag ok">顯示</span></td><td><span class="tag off">未開賣</span></td><td>預告，或販售結束</td><td>商店看得到、不可買。開賣日期與時間在未來標「即將開賣」並顯示開賣日期與時間；停售日期與時間已過標「販售結束」</td></tr>
+    <tr><td><span class="tag ok">上架</span></td><td><span class="tag ok">顯示</span></td><td><span class="tag ok">開賣</span></td><td>販售中</td><td>正常購買</td></tr>
+    <tr><td><span class="tag ok">上架</span></td><td><span class="tag off">隱藏</span></td><td><span class="tag off">未開賣</span></td><td>待命</td><td>商店不出現、不可買；持非公開連結可進頁面預覽</td></tr>
+    <tr><td><span class="tag ok">上架</span></td><td><span class="tag off">隱藏</span></td><td><span class="tag ok">開賣</span></td><td>私下販售</td><td>商店不出現；持非公開連結可進頁面並完成購買。用途是內部實際下單測試，單售與組合包皆可</td></tr>
+    <tr><td>—<div style="font-size:12px;color:var(--text-3)">封存，不可調</div></td><td>—<div style="font-size:12px;color:var(--text-3)">封存，不可調</div></td><td>—<div style="font-size:12px;color:var(--text-3)">封存，不可調</div></td><td>已封存</td><td>無任何頁面</td></tr>
+  </tbody>
+</table></div>
+<p class="note">草稿（尚未發布）不在表內：這時商品還沒真正建立，沒有開關、沒有連結，池裡也還沒有這件商品。已封存的完整規則見<a href="#archive">第 8 節「封存與刪除」</a>。</p>
+
+<h3>試撥開關</h3>
+<div class="sim" id="sim">
+  <div class="row"><label class="lbl">上架</label>
+    <div class="seg" data-key="listed"><button aria-pressed="true" data-v="1">上架</button><button aria-pressed="false" data-v="0">下架</button></div>
+    <span class="note" id="simLock" hidden>已下架：顯示與開賣停用，要重新上架後才能調整</span></div>
+  <div class="row"><label class="lbl">顯示</label>
+    <div class="seg" data-key="shown"><button aria-pressed="true" data-v="1">顯示</button><button aria-pressed="false" data-v="0">隱藏</button></div></div>
+  <div class="row"><label class="lbl">開賣（依時間推導）</label>
+    <div class="seg" data-key="sale"><button aria-pressed="false" data-v="before">還沒到開賣日期與時間</button><button aria-pressed="true" data-v="on">開賣中</button><button aria-pressed="false" data-v="after">停售日期與時間已過</button></div></div>
+  <div class="row"><label class="lbl">這條販售管道的可售量</label>
+    <input type="number" id="simStock" value="12" min="0" step="1"> <span class="note">0 ＝ 售罄</span></div>
+  <div class="out">
+    <div><div class="k">清單徽章</div><div class="v" id="simBadge">—</div></div>
+    <div><div class="k">在網站上找得到</div><div class="v" id="simBrowse">—</div></div>
+    <div><div class="k">能購買結帳</div><div class="v" id="simBuy">—</div></div>
+    <div><div class="k">連結</div><div class="v" id="simLink">—</div></div>
+  </div>
+</div>
+<p class="note">徽章只是示意。規格定死的只有「售罄狀態下停售日期與時間到，改標販售結束」；售罄與即將開賣同時成立時誰先、隱藏要不要另掛一顆徽章，屬呈現層、由介面決定（D241），這裡示意以售罄優先、隱藏另掛一顆。</p>
+
+<h2 id="soldout"><span class="n">4</span>售罄與販售結束</h2>
+<p>「售罄」與「販售結束」都不是開關，是推導出來的粉絲端狀態。</p>
+<div class="grid">
+  <div class="card warn"><div class="band"></div><h3>售罄（Sold Out）</h3><p>這條販售管道的可售量歸零。</p><p class="k">補貨後、仍在販售窗口內 → 自動回到販售中（鎖定模式要重新鎖定，見<a href="#stock">第 5 節</a>）。</p></div>
+  <div class="card"><div class="band"></div><h3>販售結束（Ended）</h3><p>停售日期與時間已到。</p><p class="k">要改停售日期與時間才恢復。</p></div>
+  <div class="card wait"><div class="band"></div><h3>順序固定</h3><p>售罄狀態下停售日期與時間到，文案由「售罄」改為「販售結束」。</p><p class="k">例：售賣期 9/1–9/3。9/3 或之前賣光 → 售罄；9/4 還沒賣光 → 販售結束。</p></div>
+</div>
+
+<h2 id="stock"><span class="n">5</span>庫存規則：共用池與鎖定</h2>
+<h3>預設：共用池</h3>
+<ul class="plain">
+  <li>所有販售管道共用池裡的量，每售一件扣一件。</li>
+  <li>池空 → 所有販售管道一起售罄，不論組合包的其他成員還有沒有貨。</li>
+  <li>補貨進池 → 所有販售管道自動恢復可售。</li>
+</ul>
+<h3>鎖定庫存（Inventory Allocation）</h3>
+<p class="note"><b>在哪裡設（單一規格商品）</b>：建立商品時只填目前在庫，這一步不收鎖定量（草稿還沒進池，沒有東西可鎖）。要鎖給單售，到商品細節頁的庫存分頁填；要鎖給某個組合包，在建立或編輯該組合包時填「鎖定套數」，各成員要鎖走幾件由系統從套數算出，見<a href="bundles.html#stock">「組合包與票務商品」的「庫存與鎖定套數」</a>。多選項商品逐選項組合設，見下方「多選項商品」。</p>
+<ul class="plain">
+  <li>任何販售管道（單售或某個組合包）都可以從池裡<b>鎖定 N 件</b>給自己；鎖定的數量<b>只有該販售管道能賣</b>。</li>
+  <li><b>鎖定量填 0 或不填＝不鎖定</b>。鎖定量是配額、不是剩餘量：某個販售管道賣完，是它剩餘數量歸零的事，跟鎖定欄位無關。所以 0 跟空白同義，都代表這個販售管道沒鎖定、共用沒有被鎖定的庫存量；沒有「鎖定 0 件」這種狀態。</li>
+  <li><b>沒有被鎖定的庫存量＝目前在庫 − 所有販售管道的鎖定量</b>，由沒設鎖定的販售管道共用。</li>
+  <li><b>鎖定的販售管道賣完鎖定量就售罄，不會再去吃沒有被鎖定的庫存量</b>。</li>
+  <li>防呆：鎖定量不得大於當前沒有被鎖定的庫存量，表單層擋。</li>
+  <li>補貨後：補進池的是沒有被鎖定的庫存量；有鎖定的販售管道要再鎖定一次才能繼續賣，沒鎖定的販售管道自動恢復。</li>
+  <li>所有販售管道都設了鎖定時，剩下沒有被鎖定的庫存量留在池裡、沒有人能賣；畫面會提醒創作者重新分配——電子商店清單在庫存欄旁加註「（N 件未鎖定）」，商品細節頁的提醒方式由介面決定。</li>
+  <li>調整鎖定量不需要先下架任何販售管道。</li>
+</ul>
+<p class="note">組合包的可售量、鎖定套數（以套為單位，各成員的鎖定量由套數算出）與試算分配，見<a href="bundles.html#stock">「組合包與票務商品」的「庫存與鎖定套數」</a>。</p>
+
+<h3>多選項商品：鎖定逐選項組合</h3>
+<ul class="plain">
+  <li>多選項商品的庫存住在<b>每一個選項組合</b>上（M 有幾件、L 有幾件是兩回事），鎖定也逐組合記：<b>一個「選項組合 × 販售管道」一個鎖定量</b>。單一規格商品等於只有一個組合，行為不變。</li>
+  <li>該組合沒有被鎖定的庫存量＝該組合的目前在庫 − 該組合各販售管道的鎖定量之和；防呆同樣是不得大於該組合當前沒有被鎖定的量。</li>
+  <li>某個販售管道在這件商品上的可售量＝各選項組合在該販售管道可售量之和。組合包可售量的公式不變，只是多選項成員那一項改成這個加總。</li>
+  <li>「所有販售管道都鎖定、剩下沒人能賣」逐組合判定：M 鎖了、L 沒鎖時，單售仍拿得到 L 的剩餘量。</li>
+  <li><b>在哪裡設</b>：單售的鎖定量在商品細節頁逐選項組合設（一列一個組合、一格單售鎖定量）；組合包在該組合包端填鎖定套數，成員是多選項商品時在那裡展開成逐組合、<b>選填</b>分配（規則見<a href="bundles.html#stock">「組合包與票務商品」</a>）。商品細節頁不呈現組合包的分配——要鎖的是「這個組合要留幾套」，那是組合的事。</li>
+  <li>補貨規則不變（補進來的算未鎖定），只是落在該選項組合上。</li>
+</ul>
+
+<h2 id="private"><span class="n">6</span>非公開連結</h2>
+<ul class="plain">
+  <li>顯示時，販售管道的連結就是前台公開連結。</li>
+  <li>切成隱藏時，系統產生一條<b>獨立的非公開連結</b>；創作者可隨時重置（舊連結撤銷、產新連結）。</li>
+  <li>切回顯示時，非公開連結撤銷，回到公開連結。</li>
+  <li>下架時，公開與非公開連結都失效。</li>
+</ul>
+
+<h2 id="example"><span class="n">7</span>範例：商品 A 的一週</h2>
+<p>組合包有鎖定、單售沒鎖定。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>時點</th><th>動作</th><th>目前在庫</th><th>組合包鎖定</th><th>單售可賣</th><th>粉絲端</th></tr></thead>
+  <tbody>
+    <tr><td>第 1 天</td><td>進貨 100，組合包鎖 60 套（每套 1 件）</td><td class="num">100</td><td class="num">60</td><td class="num">40</td><td><span class="tag ok">單售 販售中</span> <span class="tag ok">組合包 販售中</span></td></tr>
+    <tr><td>第 7 天</td><td>組合包賣光 60</td><td class="num">40</td><td class="num">0</td><td class="num">40</td><td><span class="tag ok">單售 販售中</span> <span class="tag warn">組合包 售罄</span>（不吃單售的 40）</td></tr>
+    <tr><td>第 8 天</td><td>補貨 30，組合包再鎖 20 套</td><td class="num">70</td><td class="num">20</td><td class="num">50</td><td><span class="tag ok">單售 販售中</span> <span class="tag ok">組合包 販售中</span></td></tr>
+    <tr><td>停售日過後</td><td>沒動作，停售日期與時間到</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="tag off">販售結束</span>（不論還剩多少）</td></tr>
+  </tbody>
+</table></div>
+<p>另一個常見情境：想先把頁面做好給內部下單測試——把單售或組合包設成「上架 ＋ 隱藏 ＋ 開賣」，把非公開連結發給測試的人，測完切回顯示，連結自動撤銷。</p>
+
+<h2 id="archive"><span class="n">8</span>封存與刪除</h2>
+<p class="lede">2026-09-18 定案（D284／D285／D286），2026-09-22 D307 修訂：單售、組合包、拍賣統一走同一套生命週期收尾——下架先讓功能失效，之後才視情況封存收進歸檔區；有成交的販售管道封存後不能真正刪除，因為背後掛著訂單、收入與領取紀錄；零成交且已下架或已封存的販售管道可以刪除。</p>
+
+<h3>生命週期</h3>
+<p>草稿 → 發布（＝第一次上架）→ 顯示 → 開賣 → 下架（所有功能失效、可再開「上架」回到上架中）→ 封存 → 解除封存（回到已下架，設定保留、不自動上架）。</p>
+<p class="note">「發布」與「第一次上架」是同一個動作；下架不是終點，還能重新上架、回到顯示原本保留的設定，開賣則退回未開賣（D290）；封存才是收尾動作。</p>
+<p class="note">零成交的販售管道在已下架或已封存這兩站可以直接刪除、跳出這個生命週期，見下方「有成交只能封存；零成交可刪除」。</p>
+
+<h3>封存前提與效果</h3>
+<ul class="plain">
+  <li>封存的前提是<b>已下架</b>：上架中的販售管道，封存動作停用並提示「要先下架」。</li>
+  <li>封存的同時，系統會取消這條販售管道所有尚未生效的上架排程。</li>
+  <li>封存後：離開清單的主要陳列，只有切到「已封存」篩選才看得到；細節頁面轉為唯讀，三個開關與排程都不能再調；訂單、收入紀錄與領取單位完全不受影響，仍可查看。</li>
+  <li>已封存的販售管道不提供釘選；封存時若已釘選則解除。</li>
+</ul>
+
+<h3>主要動作互斥、解除封存回到已下架</h3>
+<p>下架、封存、解除封存三個動作依狀態只會出現一個，不會同時出現：上架中只有「下架」；已下架有「封存」與「上架」兩個動作（D290 規則不變）；已封存只有「解除封存」。<b>已封存的販售管道只有「解除封存」可用，解除封存回到已下架狀態，設定保留、不自動上架</b>；要恢復販售，須在已下架狀態再按「上架」，回到上架＋顯示沿用＋未開賣。<b>「上架」是同一個動作（D314）</b>：不論從細節頁頁首按「上架」、或把<a href="#switches">第 2 節</a>的上架開關撥到「上架」、或從電子商店清單三個點點的下拉選「上架」，三處都是同一個動作、同一個狀態，不是三套各自獨立的機制。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>狀態</th><th>可用的主要動作</th><th>粉絲端</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag ok">上架中</span></td><td>下架（須確認）</td><td>依顯示與開賣設定正常呈現</td></tr>
+    <tr><td><span class="tag off">已下架</span></td><td>封存<br>上架<br>零成交可刪除</td><td>無任何頁面</td></tr>
+    <tr><td><span class="tag warn">已封存</span></td><td>解除封存<br>零成交可刪除</td><td>無任何頁面</td></tr>
+    <tr><td><span class="tag wait">草稿</span></td><td>刪除（須確認）</td><td>不存在，尚未建立</td></tr>
+  </tbody>
+</table></div>
+
+<h3>下架確認與下架後</h3>
+<ul class="plain">
+  <li><b>下架一律先確認</b>：三種販售管道的下架動作按下後都要跳確認彈窗，確認才下架；取消＝不下架。定時下架到期的自動下架不經確認。</li>
+  <li>單售商品還在任何<b>上架中</b>的組合包裡時，下架會連同那些組合包一起下架，確認內容列出這些組合包名稱。組合包與成員之間的連動（含組合包重新上架時連帶成員、活動取消或下架時連帶組合包）見<a href="bundles.html#unlist">「組合包與票務商品」的「下架、連動與刪除」</a>。</li>
+  <li>下架後（D290）：清除四個排程時間（上架、下架、開賣、停售），開賣退回<b>未開賣</b>；顯示與其他內容設定（含鎖定量）保留。已下架期間，販售管道的內容仍可編輯，只鎖住顯示與開賣這兩個開關，只有封存才是全頁唯讀。</li>
+  <li>重新上架後（D290）：回到<b>上架＋顯示沿用＋未開賣</b>；要販售須再設開賣，避免沒檢查就突然開賣。</li>
+  <li>封存只看<b>已下架</b>這一件事，不再檢查組合包——已下架的單售不會留在任何上架中的組合包裡。封存後細節頁全頁唯讀，涵蓋所有分頁與逐列操作。</li>
+</ul>
+
+<h3>有成交只能封存；零成交可刪除</h3>
+<ul class="plain">
+  <li><b>零成交定義</b>：這個販售管道自建立起沒有任何訂單品項；已取消、已撤銷的訂單品項也算曾有銷售，不算零成交。</li>
+  <li>零成交<b>且</b>已下架或已封存的販售管道，可以刪除（須先確認、刪除後不可復原）；上架中的販售管道不可刪除。</li>
+  <li>有成交的販售管道維持只能封存，不能刪除；草稿可刪除不變——草稿還沒真正建立、池裡沒有這件東西，刪除前一律要跳確認彈窗。</li>
+  <li>單售商品仍是任何組合包的成員時（不論組合包上架中、已下架或已封存），刪除擋下並列出這些組合包，須先自行把它從組合包移除；刪除組合包不影響成員。</li>
+  <li>兩個例外：bookyay 套票自動建立的組合包在任何狀態都沒有刪除入口（<a href="bundles.html#unlist">「組合包與票務商品」</a>）；含活動門票的組合包，刪除或停賣若會讓活動沒有可賣的東西就擋下（<a href="event-create.html#sellable">「活動」的「可賣性與發布檢核」</a>）。</li>
+</ul>
+
+<h3>下架與封存都沒有粉絲端頁面</h3>
+<p>下架與封存這兩個狀態，粉絲端一律看不到任何頁面：公開連結與非公開連結都會失效，不保留任何「已下架」或「已封存」的過渡頁面。</p>
+
+<h2 id="auction"><span class="n">9</span>拍賣：同樣採三開關</h2>
+<p class="lede">2026-09-18 定案（D285／D286）：拍賣不再是另一套模型，改成與單售、組合包同一套上架／顯示／開賣三開關，<a href="#archive">第 8 節</a>的封存規則一併適用；競標中不可下架，結標後才進入可下架、可封存的流程。</p>
+<ul class="plain">
+  <li>拍賣的「開賣」＝「開拍」：開賣日期與時間就是開拍時間；「停售」＝開拍時間＋競標時長，也就是結標的時間，由系統算出、不能單獨手填。</li>
+  <li>拍賣的生命週期狀態（Upcoming／Live／Sold／Unsold）由三開關推導：Upcoming＝上架＋顯示＋還沒到開拍時間；Live＝競標中；Sold＝完售；Unsold＝流標，兩者都是結標後才會進入的狀態。</li>
+  <li><b>Sealed（密封終局）是一種競標模式，不是狀態</b>——跟 Upcoming／Live／Sold／Unsold 不是同一個維度，不會出現在三開關推導的狀態裡。</li>
+  <li>拍賣不套用<a href="#stock">第 5 節</a>的庫存池與鎖定庫存規則，只套三開關、狀態組合、非公開連結與封存。</li>
+  <li>封存規則（<a href="#archive">第 8 節</a>）同樣適用於拍賣：已下架才能封存、封存後只剩「解除封存」；有成交只能封存，零出價且未成交才可刪除，見下方。</li>
+  <li>拍賣解除封存同理（D298）：回到已下架，設定保留、不自動開拍；要重新開拍須在已下架狀態再按「上架」並重設開拍時間。</li>
+  <li><b>競標中（已開拍、未結標）不可下架</b>：下架動作停用並提示「競標結束後才能下架」，不論有無出價；顯示／隱藏仍可調整。</li>
+  <li>結標時（開拍時間＋競標時長到）沒有任何出價 → 進入 Unsold（流標）；有出價 → 進入 Sold（完售）。</li>
+  <li>流標與完售同路：可下架，下架後可封存。</li>
+  <li>刪除比照<a href="#archive">第 8 節</a>零成交規則，拍賣以<b>零出價</b>認定：零出價且未成交（不是 Sold）、且已下架或已封存，才能刪除；有出價或已完售的維持只能封存。</li>
+  <li>下架同樣依 D290：清除上架排程與開拍時間，開賣（開拍）退回未開賣；重新上架後為<b>未開拍</b>，須再設開拍時間才能開始競標。</li>
+  <li>出價者處理（暫定，可再改）：拍賣一律跑到結標時間，由最高出價者得標，平台不提供中途中止拍賣。</li>
+  <li>仍待確認：有出價但未達保留價的處理、流標的拍賣能否重新開拍，見本頁頁尾「產品待確認」。</li>
+</ul>
+<p class="note">互動示意（<a href="#states">第 3 節</a>「試撥開關」）未包含封存態與拍賣，只示範單售／組合包的三開關與售罄／販售結束。</p>
+
+<div class="foot">
+  <p>本頁只放定案規則，不記討論過程。規則變更時同步更新 <code>0-設計規格書.md §7.14</code> 與本頁；歷史裁決見 <code>decisions.md</code>（D087、D239、D241；D255／D258 多選項鎖定；D263 清單顯示開關先確認、D264「撤銷」用語、D265 下架時顯示與開賣不可調與鎖定 0＝不鎖定；D266 組合包改以套數鎖定；D284 下架後可封存、發布過原則不可刪除只能封存；D285 拍賣改採三開關、開賣＝開拍；D286 拍賣競標中不可下架、結標後標完售 Sold；D287 結標無出價進 Unsold 流標、有出價進 Sold 完售，流標與完售同路可下架可封存；D288 下架先確認並連動組合包、組合包重新上架擋下、封存不再檢查組合包、封存唯讀涵蓋全頁；D289 修訂 D288 第 3 條：組合包重新上架連帶重新上架已下架成員並須先確認、成員含已封存則擋下並列出、單售重新上架不連動組合包、下架後設定保留內容可編輯僅鎖顯示與開賣；D290 修訂 D265／D289：下架同時清除四個排程時間並讓開賣退回未開賣、顯示與其他內容設定保留，重新上架回到上架＋顯示沿用＋未開賣、要販售須再設開賣，拍賣同理；D298 修訂 D284／D289：已封存的販售管道只能「解除封存」回到已下架、設定保留、不自動上架，不再直接重新上架回上架中，已下架須另按「上架」；組合包重新上架遇已封存成員一律擋下並提示先解除封存，成員解除封存不連動組合包，拍賣同理；D307 修訂 D284：零成交（自建立起無任何訂單品項，已取消／已撤銷也算曾有銷售）且已下架或已封存的販售管道可以刪除，須先確認、刪除後不可復原，上架中不可刪；有成交的維持只能封存，草稿可刪不變；單售仍是任何組合包的成員，刪除擋下並列出組合包，須先自行移除，刪組合包不影響成員；拍賣以零出價認定，零出價且未成交才可刪；D314 訂正呈現缺口：已下架的狀態表動作欄補「上架」、明文頁首按鈕與三個開關段的上架開關為同一動作、狀態連動，不改變 D298／D290 規則本身；D332 修訂 D087／D241：商品成員的開賣與停售只管它自己的單售，不影響含它的組合包能否成交，要連組合包一起停賣須用下架，票券成員不在範圍；D342 票務商品的上架、開賣與購買條件，組合包的成員、鎖定套數、成交條件與連動規則移到「組合包與票務商品」）。最近同步：2026-10-01（至 D342）。</p>
+  <ul>
+    <li>時區與時間粒度：產品待確認，見 §7.14 末段。</li>
+    <li>活動層的三開關已對齊（<a href="event-create.html#create">「建立活動」第 7 步</a>）；項目的三開關與非公開連結、活動與項目的鎖定庫存：產品待確認，見 §7.14 末段。</li>
+    <li>經非公開連結完成的購買是否計入正式營收與統計：產品待確認，見 §7.14 末段。</li>
+    <li>拍賣：有出價但未達保留價的處理，產品待確認，見 <code>decisions.md</code> D287。</li>
+    <li>拍賣：流標的拍賣能否重新開拍或只能封存，產品待確認，見 <code>decisions.md</code> D287。</li>
+  </ul>
+</div>
+</div>
+<script>
+(function(){
+  var st={listed:1,shown:1,sale:'on'};
+  document.querySelectorAll('#sim .seg').forEach(function(seg){
+    seg.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click',function(){
+        seg.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed','false')});
+        b.setAttribute('aria-pressed','true');
+        var v=b.dataset.v; st[seg.dataset.key]= (seg.dataset.key==='sale')? v : Number(v);
+        render();
+      });
+    });
+  });
+  var stock=document.getElementById('simStock'); stock.addEventListener('input',render);
+  function tag(t,c){return '<span class="tag '+c+'">'+t+'</span>'}
+  var lockNote=document.getElementById('simLock');
+  function render(){
+    var q=Math.max(0,Number(stock.value)||0);
+    var badge,browse,buy,link;
+    // D265／D290：下架時顯示與開賣留在畫面但停用，顯示的值保留、開賣退回未開賣，重新上架後才能改
+    document.querySelectorAll('#sim .seg[data-key="shown"], #sim .seg[data-key="sale"]').forEach(function(seg){
+      seg.setAttribute('aria-disabled', st.listed?'false':'true');
+      seg.querySelectorAll('button').forEach(function(x){x.disabled=!st.listed});
+    });
+    lockNote.hidden=!!st.listed;
+    if(!st.listed){
+      badge=tag('已下架','off'); browse='否'; buy='否'; link='公開與非公開連結都失效';
+    } else {
+      var soldout=q===0;
+      if(st.sale==='after'){ badge=tag('販售結束','off'); }
+      else if(soldout){ badge=tag('售罄','warn'); }
+      else if(st.sale==='before'){ badge=tag('即將開賣','wait'); }
+      else { badge=tag('販售中','ok'); }
+      if(!st.shown){ badge+=' '+tag('已隱藏','off'); }
+      browse= st.shown ? '是' : '否，商店不陳列';
+      buy= (st.sale==='on' && !soldout) ? (st.shown?'是':'是，持非公開連結者') : '否';
+      link= st.shown ? '公開連結' : '非公開連結（可重置；切回顯示即撤銷）';
+    }
+    document.getElementById('simBadge').innerHTML=badge;
+    document.getElementById('simBrowse').textContent=browse;
+    document.getElementById('simBuy').textContent=buy;
+    document.getElementById('simLink').textContent=link;
+  }
+  render();
+
+  // 舊錨點（#s1～#s10）轉到新錨點；組合包相關段落已移到「組合包與票務商品」
+  var legacy={s1:'#pool',s2:'#switches',s3:'#states',s4:'#soldout',s5:'#stock',s6:'#private',s7:'bundles.html#deal',s8:'#example',s9:'#archive',s10:'#auction'};
+  var h=location.hash.slice(1); if(legacy[h]){ var to=legacy[h]; if(to.charAt(0)==='#'){ history.replaceState(null,'',to); var el=document.getElementById(to.slice(1)); if(el) el.scrollIntoView(); } else { location.replace(to); } }
+})();
+</script>
+</body>
+</html>

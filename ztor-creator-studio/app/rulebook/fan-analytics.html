@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>粉絲分析 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261001b">
+<script src="shell.js?v=20261001b" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+ul.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>粉絲分析</h1>
+
+<h2 id="s9"><span class="n">1</span>粉絲分析</h2>
+<p>粉絲分析回答兩個問題：作品被消費了多少次、這些消費者是誰。只用 ztor 現階段拿得到的資料：發行商版稅報表回傳的串流與觀看次數、站內貼文的成效、站上會員資料中的屬性。</p>
+
+<h3>這一頁不出現金額</h3>
+<ul class="plain">
+  <li>版稅金額、貼文帶貨收益都不呈現，也不拿來排序；錢的事一律看收入管理（Earnings）。</li>
+  <li>頁首說明要點明：這一頁的數字和收入管理的收益是分開算的兩件事，不能拿次數推估收入。</li>
+</ul>
+
+<h3>次數與人數是兩條軸</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:16%">軸</th><th>算什麼</th><th>資料來源</th><th style="width:28%">認得出人嗎</th></tr></thead>
+  <tbody>
+    <tr><td>次數（Counts）</td><td>串流、觀看、瀏覽、互動等行為的件數</td><td>發行商報表、平台回報的彙總數字、站內貼文統計</td><td>認不出。一個人看三次和三個人各看一次分不出來</td></tr>
+    <tr><td>人數（People）</td><td>去重後的人數</td><td>站內認得出身分的行為紀錄</td><td>認得出，但只涵蓋 ztor 站上認得出身分的人</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>每個數字都標明單位。兩條軸不能互相加總或比較，百分比也不能放在同一組比例裡。</li>
+  <li>作品排行、地區表現、串流平台表現以次數為主，可以切到人數；切換後名次可能不同，要標明目前依哪一軸。</li>
+  <li>受眾屬性只能用人數。</li>
+  <li>作品相關區塊（次數）與受眾屬性區塊（人數）之間要有明顯分界，不並列比較。</li>
+</ul>
+
+<h3>分析範圍與期間</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:20%">範圍</th><th>區塊</th></tr></thead>
+  <tbody>
+    <tr><td>影視（Film &amp; TV）</td><td>消費總覽、作品排行、地區表現、串流平台表現、受眾屬性</td></tr>
+    <tr><td>音樂（Music）</td><td>同影視</td></tr>
+    <tr><td>貼文（Posts）</td><td>消費總覽、作品排行、地區表現、貼文類型表現、受眾屬性、貼文明細；沒有串流平台表現</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>同一時間只看一個範圍，切換時整頁資料一起換；三個範圍的數字不能加總。</li>
+  <li>某個範圍完全沒有資料時仍可進入並說明原因，不隱藏入口。</li>
+  <li>每個範圍有自己的「資料截至日」，切換時一起更新。資料來源與延遲要寫清楚：影視與音樂的版稅報表由發行商定期提供、不是即時，部分來源延遲明顯；貼文是平台內部統計。</li>
+  <li>沒有資料時仍顯示截至日與來源說明，讓「沒有資料」和「資料還沒到」分得出來。</li>
+  <li>期間至少支援月、季、年、自訂，套用到所有區塊，不允許單一區塊另設期間；所選期間超過資料截至日的部分說明尚無資料，不顯示成 0。</li>
+  <li>匯出報表：匯出目前範圍、期間與篩選下的資料。</li>
+</ul>
+
+<h3>消費總覽與作品排行</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:16%">範圍</th><th>指標</th><th style="width:12%">單位</th></tr></thead>
+  <tbody>
+    <tr><td>影視</td><td>總串流次數</td><td>次</td></tr>
+    <tr><td>影視</td><td>觀看人數（附涵蓋率）</td><td>人</td></tr>
+    <tr><td>音樂</td><td>總串流／下載次數</td><td>次</td></tr>
+    <tr><td>音樂</td><td>聆聽人數（附涵蓋率）</td><td>人</td></tr>
+    <tr><td>貼文</td><td>總瀏覽量</td><td>次</td></tr>
+    <tr><td>貼文</td><td>總互動次數</td><td>次</td></tr>
+    <tr><td>貼文</td><td>內容租借次數（只算次數、不顯示金額）</td><td>次</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>作品排行：影視排單一影片、音樂排單一歌曲、貼文排單一貼文；依次數排序、不依金額，預設前 10 名。</li>
+  <li>每一列：作品名稱、次數、人數（切到人數軸時）、辨識資訊；貼文範圍的每一列可連到貼文明細。</li>
+  <li>期間內沒有資料時說明原因，不列出空名次或 0 次的排行，避免被誤讀成「表現很差」。</li>
+</ul>
+
+<h3>地區與串流平台</h3>
+<ul class="plain">
+  <li>地區表現每一列：地區、次數或人數、占比；占比要標明分母是哪一軸。</li>
+  <li>地區粒度以資料來源實際提供的為準，不推估；歸不了類的收進「其他地區」，不能省略。</li>
+  <li>串流平台表現只在影視與音樂。平台清單以發行商報表實際回傳的為準，畫面不預設任何平台一定存在；期間內某平台沒資料時標「無資料」，不寫 0。</li>
+  <li>這裡的平台問的是「作品在哪裡被播」，和粉絲資料來源的外部平台是兩回事，同名也不能對應或加總。</li>
+  <li>地區與平台都不顯示金額。</li>
+</ul>
+
+<h3>貼文類型表現與貼文明細（只在貼文範圍）</h3>
+<ul class="plain">
+  <li>貼文類型表現：圖文、影片、文字三型並列，某型沒有貼文時顯示 0 則，不移除那一列。每型欄位：貼文數、有帶貨（附內容租借專屬連結的則數）、提及影片、影片類型、瀏覽量、內容租借次數；不顯示帶貨收益。</li>
+  <li>貼文明細每一則：標題、提及內容、建立日期、貼文形式、曝光次數、有效瀏覽、互動次數、互動率、內容租借次數。</li>
+  <li>不顯示單則獲利金額，提供前往收入管理的連結。</li>
+  <li>提供期間篩選、欄位說明（定義就地看得到）與匯出；資料量大時分批載入。</li>
+  <li>沒有貼文時，「從沒發過文」與「期間內沒有成效資料」要分得出來。</li>
+</ul>
+
+<h3>受眾屬性與涵蓋率</h3>
+<ul class="plain">
+  <li>受眾屬性只能用人數，不提供次數軸。</li>
+  <li>涵蓋率必須揭露：每個屬性區塊都標明分母只涵蓋「本期間有消費、在站上認得出身分、而且這個屬性有填值」的人，並顯示這個分母占本期間可辨識人數的比例。</li>
+  <li>這段說明不能收在要展開才看得到的地方；畫面不能讓人誤以為是全體觀眾的比例。</li>
+  <li>每個屬性的分母可能不同，逐區各自標示。</li>
+  <li>本期間沒有可辨識的人、或屬性全部沒填值時，這一區不顯示並說明原因；人數軸的切換同時停用並說明。</li>
+  <li>這一區的人數、儀表板的站上粉絲分級組成，分母都不同，不能互相比較或加總；站上粉絲分級組成卡放在儀表板，粉絲分析頁不呈現。</li>
+</ul>
+<p class="note">另有一份「粉絲分析：含外部」（<code>5.1.7.8</code>）描述跨 Spotify、StreetVoice、YouTube、Instagram、TikTok 的受眾彙整；外部平台資料多數拿不到，這一頁原樣保留為規格、不在本期建置，本頁不收它的規則。依據：5.1.7.9 頁面定位、F1～F10、頁面狀態；主規格 §7.9「計量軸：次數與人數」；D162、D163、D177、D181。</p>
+
+<div class="foot">
+  <p>本頁只放定案規則，不記討論過程；規格裡尚未定案的項目不寫進正文。</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>活動詳情與編輯 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261001b">
+<script src="shell.js?v=20261001b" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+ul.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+/* 販售層級示意圖 */
+.layers{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px 10px;margin:10px 0 6px}
+.layer{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;margin-bottom:8px}
+.layer__k{font-size:12.5px;color:var(--text-2);line-height:1.4}
+.layer__k span{display:block;font-size:11.5px;color:var(--text-3)}
+.layer__track{position:relative;height:18px;border-radius:999px;background:var(--surface-sunken)}
+.layer__bar{position:absolute;top:0;bottom:0;border-radius:999px;border:1px solid var(--border-strong)}
+.layer__bar.l1{background:var(--ok-fill);border-color:var(--ok-line)}
+.layer__bar.l2{background:var(--wait-fill);border-color:var(--wait-line)}
+.layer__bar.l3{background:var(--pink-fill);border-color:var(--pink-line)}
+.layer__bar.l4{background:var(--warn-fill);border-color:var(--warn-key);border-style:dashed}
+.layer__axis{position:relative;height:18px;font-size:11.5px;color:var(--text-3)}
+.layer__axis span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.layer__axis span:first-child{transform:none}
+.layer__axis span:last-child{transform:translateX(-100%)}
+@media (max-width:600px){.layer{grid-template-columns:1fr;gap:4px}.layer--axis .layer__k{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>活動詳情與編輯</h1>
+
+<h2 id="detail"><span class="n">1</span>活動詳情與編輯</h2>
+<p>活動發布後才有詳情頁，管理單一活動從售票、名單、報到、通知到結算的完整過程。編輯不是另一個頁面，是詳情頁的編輯模式。</p>
+
+<h3>頁首</h3>
+<ul class="plain">
+  <li>顯示主視覺（沒上傳就整塊不顯示）、活動名稱、亮點、日期時間與場地、狀態徽章、活動類型；屬於系列的活動另顯示系列序。</li>
+  <li><b>編輯活動</b>：切換進編輯模式，同一顆按鈕在編輯模式下變成「儲存」。</li>
+  <li><b>發布並開賣</b>：還沒開賣時出現；先檢查開賣的前置條件，缺項逐條列出並擋住；齊備後以確認對話說明「活動會顯示在活動列表與搜尋結果、共 N 張票開放購買、之後改日期或場地會通知購票者」，確認後轉為售票中；活動的顯示設定是隱藏時，改說明活動維持隱藏、只能經活動連結進入。</li>
+  <li><b>取消活動</b>：確認對話先說明影響——已售張數、要撤銷的票券數、會通知的對象、不可復原；一張未售時明說沒有票要撤銷。</li>
+  <li><b>再辦一場</b>：已結束與已取消出現；開建立活動流程並帶入原活動的名稱、說明、圖片與票種，日期、場地與銷售數字重新開始。</li>
+  <li>沒有刪除入口。</li>
+</ul>
+
+<h3>詳情頁的區塊</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">區塊</th><th>回答什麼</th></tr></thead>
+  <tbody>
+    <tr><td>KPI 快照</td><td>已售票數（售出／各門票張數合計）<br>活動收入<br>已報到數<br>已撤銷票券<br>後兩格只在有持票人的階段出現。</td></tr>
+    <tr><td>總覽</td><td>活動類型、日期與時間（跨日時顯示開始至結束日期）、場地、演出陣容、系列、直播觀看權。<br>起飛前檢核清單：開演前還有哪些營運準備沒做，不是開賣的阻擋條件。</td></tr>
+    <tr><td>結案</td><td>已結束與已取消時出現。<br>摘要：<br>實際到場<br>未到場<br>淨收入<br>結算狀態<br>動作：<br>再辦一場<br>匯出名單<br>匯出交易<br>前往收入管理</td></tr>
+    <tr><td>現場報到台</td><td>只在進行中出現：即時到場數與到場率、掃描器連結；掃描器只做核銷，不顯示金額與粉絲資料。</td></tr>
+    <tr><td>票種</td><td>每張門票列出：<br>票名與可購買時間（有設限時間顯示限時間，沒設顯示活動的售票期間）<br>價格<br>入場形式<br>已售／上限（80% 與 95% 警示）<br>隱藏標示<br>點一列開單張門票編輯框。</td></tr>
+    <tr><td>票務商品</td><td>「含本活動門票的組合包」的篩選視圖，每組列出：<br>組合價<br>內含票券（允許票種任選 × n）<br>內含商品<br>已售／上限<br>佔用了多少張票<br>上架與開賣是跟隨活動還是另設<br>沒有組合包時顯示空狀態、不隱藏分頁。</td></tr>
+    <tr><td>交易明細</td><td>一列一筆訂單，列出：<br>毛額<br>平台費<br>淨額<br>支付方式<br>狀態<br>可匯出；撤銷紀錄也在這裡。</td></tr>
+    <tr><td>參加者名單</td><td>誰買了票、拿到哪一張票券；報到欄在進行中與已結束才出現。</td></tr>
+    <tr><td>撤銷紀錄與贈票</td><td>撤銷紀錄列出：<br>票券編號<br>原持票人<br>撤銷時間<br>執行的 Admin<br>贈票是 $0 並標 comp 的票，不進淨利分配。</td></tr>
+    <tr><td>通知</td><td>可各自開關的通知：<br>購票成功<br>活動前提醒<br>活動變更通知<br>活動取消通知是系統項、不能關。<br>寄送紀錄回答「到底寄出去了沒」。</td></tr>
+    <tr><td>成本與收入摘要</td><td>逐筆收入事件與結算狀態；最終數字以收入管理（Earnings）為準，本頁不重算。</td></tr>
+    <tr><td>預覽與在地化</td><td>發布後再開第 8 步那個全頁畫面，修譯文與各幣別價格；主動作是「儲存」，不改變上架狀態；已取消的活動唯讀。</td></tr>
+  </tbody>
+</table></div>
+
+<h3>編輯模式</h3>
+<ul class="plain">
+  <li><b>不自動儲存</b>：改動只停在畫面上，按「儲存」才生效；「儲存」永遠可按（沒改動時按下等於回檢視模式）。</li>
+  <li>「捨棄變更」在有改動時才能按，按下要再確認一次。</li>
+  <li>有未儲存的改動卻要離開時，先問「儲存並離開／不儲存就離開／取消」。</li>
+  <li><b>活動類型建立後就不能改</b>，不論有沒有開賣；要換類型只能用「再辦一場」另建。</li>
+  <li>名稱、亮點、描述、說明區塊隨時可改，儲存後粉絲端立即反映，不算高影響變更。bookyay 帶入的活動名稱同樣可改。</li>
+  <li>必填欄位（活動名稱、描述、場地名稱、活動日期）有空的，擋下儲存並標示；描述至少要有一段文字，只有圖片或影片不算。</li>
+  <li>發布設定（上架、開賣、取票方式、顯示設定）：草稿與已排程可改，開賣後唯讀；bookyay 帶入的取票方式任何階段都不能改。</li>
+  <li>在編輯模式改上架或開賣時間時，照<a href="events.html#timing">「販售層級與時間」</a>同一套校驗。</li>
+  <li>改基準內容不會覆蓋已填的譯文；改基準票價時，其他幣別的覆寫全部依新換算值重算、不保留。改價只影響之後的購買，已售出的票不追溯。</li>
+</ul>
+
+<h3>高影響變更要先確認再通知</h3>
+<p>活動已開賣（售票中或進行中）後，改了<b>場地名稱或地址</b>，或<b>任一場次的日期與開始時間</b>，儲存前先出現確認：逐條列出改前改後、寫明會通知幾位持票人；確認後才儲存並寄出活動變更通知，取消則留在編輯模式。未開賣或沒動到這些欄位時不出現。</p>
+
+<h3>票種與票務商品的編輯</h3>
+<ul class="plain">
+  <li>票種逐筆編輯、各自儲存，不受頁面編輯模式管。</li>
+  <li><b>已經有人買的票種不能刪除</b>，並說明「已有 n 位買家持有此票種」；數量不能低於已售張數。沒人買過的票種可以刪。</li>
+  <li>單張門票的限時間跟著票種逐筆編輯，同樣要在活動上架區間內（<a href="events.html#timing">「販售層級與時間」</a>）。</li>
+  <li>刪票種或把門票改成隱藏時，受<a href="event-create.html#sellable">「可賣性與發布檢核」</a>「可賣性防呆」約束。</li>
+  <li>票務商品不在活動詳情頁編輯：點組合包卡進組合商品細節頁改。已售出後的鎖定與票價連動見「組合包與票務商品」的<a href="bundles.html#unlist">下架、連動與刪除</a>與<a href="bundles.html#price">價格</a>。</li>
+</ul>
+<p class="note">依據：5.1.6.2 §1～§4.6、5.1.6.3 §2.1～§2.13、主規格 §7.14／§7.15；D188、D191、D253、D281、D282、D292、D294、D296、D301、D305、D306、D308、D310、D312、D334、D340、D342。</p>
+
+<div class="foot">
+  <p>本頁只放定案規則，不記討論過程；規格裡尚未定案的項目不寫進正文。</p>
+</div>
+</div>
+</body>
+</html>

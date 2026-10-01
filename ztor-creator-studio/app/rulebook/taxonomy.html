@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>商品分類與模組應用 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261001b">
+<script src="shell.js?v=20261001b" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --radius:8px;
+}
+[data-cat="physical"]{--c-fill:#e1f5ee;--c-line:#9fe1cb;--c-ink:#0f6e56;--c-key:#1d9e75}
+[data-cat="digital"]{--c-fill:#eeedfe;--c-line:#cecbf6;--c-ink:#3c3489;--c-key:#7f77dd}
+[data-cat="ee"]{--c-fill:#faece7;--c-line:#f5c4b3;--c-ink:#712b13;--c-key:#d85a30}
+.ip{--c-fill:#fbeaf0;--c-line:#f4c0d1;--c-ink:#72243e;--c-key:#d4537e}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  }
+  :root:not([data-theme="light"]) [data-cat="physical"]{--c-fill:#085041;--c-line:#0f6e56;--c-ink:#9fe1cb;--c-key:#5dcaa5}
+  :root:not([data-theme="light"]) [data-cat="digital"]{--c-fill:#3c3489;--c-line:#534ab7;--c-ink:#cecbf6;--c-key:#afa9ec}
+  :root:not([data-theme="light"]) [data-cat="ee"]{--c-fill:#712b13;--c-line:#993c1d;--c-ink:#f5c4b3;--c-key:#f0997b}
+  :root:not([data-theme="light"]) .ip{--c-fill:#72243e;--c-line:#993556;--c-ink:#f4c0d1;--c-key:#ed93b1}
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  }
+  :root[data-theme="dark"] [data-cat="physical"]{--c-fill:#085041;--c-line:#0f6e56;--c-ink:#9fe1cb;--c-key:#5dcaa5}
+  :root[data-theme="dark"] [data-cat="digital"]{--c-fill:#3c3489;--c-line:#534ab7;--c-ink:#cecbf6;--c-key:#afa9ec}
+  :root[data-theme="dark"] [data-cat="ee"]{--c-fill:#712b13;--c-line:#993c1d;--c-ink:#f5c4b3;--c-key:#f0997b}
+  :root[data-theme="dark"] .ip{--c-fill:#72243e;--c-line:#993556;--c-ink:#f4c0d1;--c-key:#ed93b1}
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.cols--4{grid-template-columns:1fr 2.6fr 1fr 1fr}
+.ptypes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;align-items:stretch}
+.ptype{display:flex;flex-direction:column}
+.ptype .branch{flex:1}
+.branch{display:flex;gap:5px}
+.pnode{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.pnode .leafhint{margin-top:auto}
+.leafhint{font-size:11px;color:var(--text-3);line-height:16px;text-align:center;white-space:nowrap}
+.leafhint--to{position:relative}
+.leafhint--to::after{content:'';position:absolute;left:50%;top:100%;width:1px;height:20px;background:var(--border-strong)}
+.part{font-size:12px;padding:5px 4px;width:100%;white-space:nowrap}
+.stem--s{height:10px;margin-top:6px}
+.fork--2{height:10px;margin:6px calc((100% - 5px) / 4) 0}
+.sub.lit{border-color:var(--text-3);color:var(--text)}
+.ctwrap{margin-top:20px;padding:12px 10px;border:1px dashed var(--border-strong);border-radius:12px}
+.ctlabel{font-size:11px;color:var(--text-3);text-align:center;margin-bottom:7px}
+.ctrow{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.ct{padding:4px 9px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text-2);font-size:12px;font-family:inherit;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.ct:hover{border-color:var(--text-3);color:var(--text)}
+.en{display:block;font-size:10px;opacity:.55;line-height:1.35;margin-top:1px;font-weight:400}
+.ct[aria-pressed="true"]{background:var(--sel-bg);border-color:var(--sel-bg);color:var(--sel-text)}
+@media (max-width:900px){.cols--4{grid-template-columns:1fr}}
+.root{max-width:260px;margin:0 auto}
+.fork{height:14px;border-left:1px solid var(--border-strong);border-right:1px solid var(--border-strong);border-top:1px solid var(--border-strong);border-radius:6px 6px 0 0;margin:0 calc((100% - 42px) / 11.2)}
+.fork--3{height:10px;margin:0 calc((100% - 12px) / 6)}
+@media (max-width:900px){.fork{display:none}}
+/* 手機寬度：讓項目欄可收窄，避免整頁左右捲動 */
+@media (max-width:600px){.cols--4>*{min-width:0}.ptypes .sub{padding:6px 4px;font-size:12px}.part,.leafhint{white-space:normal}}
+.mod{
+  width:100%;padding:12px;border:1px solid var(--border-strong);border-radius:12px;
+  background:var(--surface);color:var(--text);font-size:16px;font-weight:500;
+  font-family:inherit;cursor:pointer;text-align:center;transition:background .15s,border-color .15s,color .15s;
+}
+.mod:hover{border-color:var(--text-3)}
+.mod[aria-pressed="true"]{background:var(--sel-bg);border-color:var(--sel-bg);color:var(--sel-text)}
+.sub{
+  padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--surface);color:var(--text-2);font-size:13px;
+  font-family:inherit;cursor:pointer;transition:background .15s,border-color .15s,color .15s;
+}
+.sub:hover{border-color:var(--text-3);color:var(--text)}
+.sub[aria-pressed="true"]{background:var(--sel-bg);border-color:var(--sel-bg);color:var(--sel-text)}
+.stem{width:1px;height:16px;background:var(--border-strong);margin:0 auto}
+.subrow{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:0 16px 16px;overflow:hidden;
+}
+.band{height:4px;background:var(--c-key);margin:0 -16px 14px}
+.cardhead{font-size:16px;font-weight:500;color:var(--c-ink);display:flex;align-items:center;gap:9px}
+.count{
+  font-size:12px;font-weight:400;margin-left:auto;padding:2px 8px;border-radius:999px;
+  background:var(--c-fill);color:var(--c-ink);
+}
+.grp{font-size:12px;color:var(--c-key);margin:14px 0 6px;font-weight:500}
+.chip{
+  display:inline-block;padding:4px 9px;margin:0 5px 6px 0;
+  border:1px solid var(--c-line);border-radius:var(--radius);
+  background:var(--c-fill);color:var(--c-ink);
+  font-size:13px;transition:opacity .18s;
+}
+.chip[data-work]::after{
+  content:'';display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--c-key);margin-left:7px;vertical-align:middle;
+}
+.chip.dim{opacity:.18}
+.foot{margin-top:32px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.foot a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.foot a:hover{color:var(--text);text-decoration-color:var(--text-3)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>商品分類與模組應用 · 互動圖</h1>
+<p class="lede">item 是平台的原子單位，電子商店、項目、活動共用同一套分類；差異不在主分類，在葉節點。</p>
+<p class="src">權威定義：<code>0-設計規格書.md §7.1</code>（含 D227 的內容類型對應表）　票務商品：<code>D292／D342</code>（「組合包與票務商品」）　彙整：<code>商品分類與模組應用.md</code>　流程：<code>5.1.2.1-建立專案流程.md</code>、<code>5.1.6.1-建立活動流程.md</code></p>
+
+<h2 class="sr-only">模組與接入方式</h2>
+<div class="root">
+  <button class="mod" data-mode="all" aria-pressed="true">全部 · 34 個次分類</button>
+</div>
+<div class="stem"></div>
+<div class="fork"></div>
+<div class="cols cols--4">
+  <div>
+    <button class="mod" data-mode="shop" aria-pressed="false">電子商店 E-Shop</button>
+    <div class="stem"></div>
+    <div class="subrow">
+      <button class="sub" data-mode="sell" aria-pressed="false">單售<span class="en">Products</span></button>
+      <button class="sub" data-mode="bundle" aria-pressed="false">組合<span class="en">Bundles</span></button>
+      <button class="sub" data-mode="auction" aria-pressed="false">拍賣<span class="en">Auctions</span></button>
+    </div>
+  </div>
+  <div>
+    <button class="mod" data-mode="project" aria-pressed="false">項目 Projects</button>
+    <div class="stem"></div>
+    <div class="fork fork--3"></div>
+    <div class="ptypes">
+      <div class="ptype">
+        <button class="sub" data-mode="direct" aria-pressed="false">直接發佈<span class="en">Direct release</span></button>
+        <div class="stem stem--s"></div>
+        <div class="branch">
+          <div class="pnode">
+            <button class="sub part" data-mode="work" data-owner="direct" aria-pressed="false">作品<span class="en">Work</span></button>
+            <span class="leafhint leafhint--to">內容類型</span>
+          </div>
+        </div>
+      </div>
+      <div class="ptype">
+        <button class="sub" data-mode="cocreate" aria-pressed="false">共創<span class="en">Co-create</span></button>
+        <div class="fork fork--2"></div>
+        <div class="branch">
+          <div class="pnode">
+            <button class="sub part" data-mode="work" data-owner="cocreate" aria-pressed="false">作品<span class="en">Work</span></button>
+            <span class="leafhint leafhint--to">內容類型</span>
+          </div>
+          <div class="pnode">
+            <button class="sub part" data-mode="tier" data-owner="cocreate" aria-pressed="false">項目組合物<span class="en">Tier</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="ptype">
+        <button class="sub" data-mode="presale" aria-pressed="false">預購<span class="en">Presale</span></button>
+        <div class="fork fork--2"></div>
+        <div class="branch">
+          <div class="pnode">
+            <button class="sub part" data-mode="work" data-owner="presale" aria-pressed="false">作品<span class="en">Work</span></button>
+            <span class="leafhint leafhint--to">內容類型</span>
+          </div>
+          <div class="pnode">
+            <button class="sub part" data-mode="tier" data-owner="presale" aria-pressed="false">項目組合物<span class="en">Tier</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ctwrap">
+      <div class="ctlabel">作品的內容類型 · 三型共用同一份清單</div>
+      <div class="ctrow">
+        <button class="ct" data-mode="ct-movie" aria-pressed="false">電影</button>
+        <button class="ct" data-mode="ct-short" aria-pressed="false">短片</button>
+        <button class="ct" data-mode="ct-series" aria-pressed="false">影集</button>
+        <button class="ct" data-mode="ct-mv" aria-pressed="false">MV</button>
+        <button class="ct" data-mode="ct-doc" aria-pressed="false">紀錄片</button>
+        <button class="ct" data-mode="ct-song" aria-pressed="false">單曲</button>
+        <button class="ct" data-mode="ct-album" aria-pressed="false">專輯</button>
+        <button class="ct" data-mode="ct-event" aria-pressed="false">活動</button>
+        <button class="ct" data-mode="ct-merch" aria-pressed="false">周邊</button>
+        <button class="ct" data-mode="ct-custom" aria-pressed="false">自訂</button>
+      </div>
+    </div>
+      </div>
+  <div>
+    <button class="mod" data-mode="event" aria-pressed="false">活動 Events</button>
+    <div class="stem"></div>
+    <div class="subrow">
+      <button class="sub" data-mode="ticket" aria-pressed="false">票種 Tickets</button>
+    </div>
+  </div>
+  <div>
+    <button class="mod" data-mode="ipbank" aria-pressed="false">IP Bank</button>
+    <div class="stem"></div>
+    <div class="subrow">
+      <button class="sub" data-mode="ipreg" aria-pressed="false">登錄 IP</button>
+      <button class="sub" data-mode="ipmkt" aria-pressed="false">IP 市場<span class="en">IP Market</span></button>
+    </div>
+  </div>
+</div>
+
+
+<h2 class="sr-only">次分類葉節點</h2>
+<div class="cols" style="margin-top:26px">
+  <div class="card" data-cat="physical">
+    <div class="band"></div>
+    <div class="cardhead">實體商品 Physical<span class="count">14</span></div>
+    <div class="grp">服飾配件</div>
+    <span class="chip" data-m="sell bundle auction tier">服飾 Apparel</span><span class="chip" data-m="sell bundle auction tier">配件 Accessories</span>
+    <div class="grp">印刷書籍</div>
+    <span class="chip" data-m="sell bundle auction tier">海報與印刷 Posters &amp; prints</span><span class="chip" data-m="sell bundle auction tier">書籍 Books</span>
+    <div class="grp">居家生活</div>
+    <span class="chip" data-m="sell bundle auction tier">居家生活 Home &amp; Living</span>
+    <div class="grp">實體音樂</div>
+    <span class="chip" data-work data-m="sell bundle auction work tier" data-ct="ct-song">音樂單曲 Song</span><span class="chip" data-work data-m="sell bundle auction work tier" data-ct="ct-album">音樂專輯 Album</span>
+    <div class="grp">收藏與逸品</div>
+    <span class="chip" data-m="sell bundle auction tier">收藏品 Collectibles</span><span class="chip" data-m="sell bundle auction tier">藝術品 Art</span><span class="chip" data-m="sell bundle auction tier">紀念物 Memorabilia</span><span class="chip" data-m="sell bundle auction tier">限量・簽名品 Limited &amp; signed</span>
+    <div class="grp">器材樂器</div>
+    <span class="chip" data-m="sell bundle auction tier">樂器 Instruments</span><span class="chip" data-m="sell bundle auction tier">設備器材 Equipment</span>
+    <div class="grp">其他商品</div>
+    <span class="chip" data-work data-m="sell bundle auction work tier" data-ct="ct-merch">其他商品 Merch</span>
+  </div>
+
+  <div class="card" data-cat="digital">
+    <div class="band"></div>
+    <div class="cardhead">數位商品 Digital<span class="count">14</span></div>
+    <div class="grp">影視類 — 只由項目發售</div>
+    <span class="chip" data-work data-m="work" data-ct="ct-movie">電影 Movie</span><span class="chip" data-work data-m="work" data-ct="ct-short">短片 Short film</span><span class="chip" data-work data-m="work" data-ct="ct-series">影集 Series</span><span class="chip" data-work data-m="work" data-ct="ct-mv">MV</span><span class="chip" data-work data-m="work" data-ct="ct-doc">紀錄片 Documentary</span>
+    <div class="grp">音樂類 — 只由項目發售</div>
+    <span class="chip" data-work data-m="work" data-ct="ct-song">音樂單曲 Song</span><span class="chip" data-work data-m="work" data-ct="ct-album">音樂專輯 Album</span>
+    <div class="grp">文檔（不進項目）</div>
+    <span class="chip" data-m="sell bundle auction tier">文檔 Document</span>
+    <div class="grp">會員卡</div>
+    <span class="chip" data-m="sell bundle auction tier">會員卡 VIP membership card</span>
+    <div class="grp ip">IP 資產</div>
+    <span class="chip ip" data-m="sell bundle auction ipreg ipmkt">Story World</span><span class="chip ip" data-m="sell bundle auction ipreg ipmkt">Person-Based</span><span class="chip ip" data-m="sell bundle auction ipreg ipmkt">Brand</span><span class="chip ip" data-m="sell bundle auction ipreg ipmkt">Event Format</span><span class="chip ip" data-m="sell bundle auction ipreg ipmkt">Other</span>
+  </div>
+
+  <div class="card" data-cat="ee">
+    <div class="band"></div>
+    <div class="cardhead">體驗與活動 E&amp;E<span class="count">6</span></div>
+    <div class="grp">演出</div>
+    <span class="chip" data-work data-m="bundle auction work ticket tier" data-ct="ct-event">演唱會 Concert</span><span class="chip" data-work data-m="bundle auction work ticket tier" data-ct="ct-event">音樂節 Festival</span>
+    <div class="grp">見面活動</div>
+    <span class="chip" data-work data-m="bundle auction work ticket tier" data-ct="ct-event">見面會 Meet &amp; Greet</span><span class="chip" data-work data-m="bundle auction work ticket tier" data-ct="ct-event">發表派對 Launch Party</span>
+    <div class="grp">線上</div>
+    <span class="chip" data-work data-m="bundle auction work ticket tier" data-ct="ct-event">線上活動 Virtual Event</span><span class="chip" data-m="bundle auction ticket tier">共看派對 Watch Party</span>
+  </div>
+</div>
+
+<div class="foot">
+  <strong style="font-weight:500;color:var(--text-2)">D227（2026-09-01）解掉的四件事</strong>
+  <ul>
+    <li>紀錄片 Documentary 立為數位影視類的獨立葉節點，與檔案 catch-all 文檔 Document 分家。文檔不進項目。</li>
+    <li>實體音樂群組改為音樂單曲與音樂專輯，與數位對稱；載體（黑膠／CD／卡帶）退為 Format 屬性、不再是分類。</li>
+    <li>Format 決定音樂落實體還是數位；同時勾兩邊產生兩個 item，各自定價，實體那個有庫存與物流。</li>
+    <li>選「活動」這個內容類型時要再選一次活動類型，值域是五型——<strong style="font-weight:500">項目沒有共看派對</strong>：它是既有影片的放映場次、沒有待製作的作品。活動模組六型、項目五型。</li>
+  </ul>
+  <strong style="font-weight:500;color:var(--text-2);display:block;margin-top:14px">活動的門票怎麼進電子商店</strong>
+  <ul>
+    <li>活動模組底下只有票種；門票要在電子商店跟商品一起賣，是透過組合包——含門票的組合包在活動裡叫「票務商品」，物件就是組合包（D292）。</li>
+    <li>票務商品的上架與開賣預設跟隨活動、可另設，並有自己的購買條件（D342），見<a href="bundles.html">「組合包與票務商品」</a>與<a href="events.html#timing">「活動」的「販售層級與時間」</a>。</li>
+  </ul>
+  <strong style="font-weight:500;color:var(--text-2);display:block;margin-top:14px">還沒解的一件事</strong>
+  <ul>
+    <li>自訂 Custom 不對應任何次分類，欄位組也不足以建出可販售的 item。使用者裁決先保留，落點待後續。</li>
+  </ul>
+</div>
+</div>
+
+<script>
+(function(){
+var union={shop:['sell','bundle','auction'],project:['work','tier'],
+  direct:['work'],cocreate:['work','tier'],presale:['work','tier'],
+  event:['ticket'],ipbank:['ipreg','ipmkt']};
+
+var btns=document.querySelectorAll('.mod,.sub,.ct'),chips=document.querySelectorAll('.chip');
+var cards=document.querySelectorAll('.card');
+function apply(m){
+  var keys=union[m]||[m], isCT=m.indexOf('ct-')===0;
+  chips.forEach(function(c){
+    var ok;
+    if(isCT){ ok=(c.dataset.ct||'')===m; }
+    else { var have=c.dataset.m.split(' '); ok=m==='all'||keys.some(function(k){return have.indexOf(k)>-1}); }
+    c.classList.toggle('dim',!ok);
+  });
+  cards.forEach(function(card){
+    var live=card.querySelectorAll('.chip:not(.dim)').length;
+    var total=card.querySelectorAll('.chip').length;
+    card.querySelector('.count').textContent = live===total ? total : live+' / '+total;
+  });
+}
+btns.forEach(function(b){b.addEventListener('click',function(){
+  btns.forEach(function(x){x.setAttribute('aria-pressed','false'); x.classList.remove('lit')});
+  b.setAttribute('aria-pressed','true');
+  var owner=b.dataset.owner;
+  if(b.dataset.mode.indexOf('ct-')===0){
+    document.querySelectorAll('[data-mode="work"]').forEach(function(x){x.classList.add('lit')});
+  } else if(owner){
+    var up=document.querySelector('.ptype > [data-mode="'+owner+'"]');
+    if(up) up.classList.add('lit');
+  } else {
+    var box=b.parentElement;
+    if(box && box.classList.contains('ptype')){
+      box.querySelectorAll('.part').forEach(function(x){x.classList.add('lit')});
+    }
+  }
+  apply(b.dataset.mode);
+})});
+})();
+</script>
+</body>
+</html>
