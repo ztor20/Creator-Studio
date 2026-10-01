@@ -592,7 +592,9 @@
 
       <!-- 共看派對分支（D149 §4.7）：F15 時間／F16 人數上限／F17 可觀看地區／F18 隱私。
            照 create-event.html 原樣搬過來——共看派對沒有場地、也沒有多場次，這一步問的是
-           什麼時候開房、放多少人進來、哪些地區看得到、公開還是私人。 -->
+           什麼時候開房、放多少人進來、哪些地區看得到、公開還是私密。
+           F18 的公開／私密是房間權限（拿到分享連結的人能不能進房），不是演出型的顯示設定（顯示／隱藏），
+           所以保留原用詞（D341，5.1.6.1 F18）。 -->
       <div class="form-section form-section--outlined" data-show-type="watchparty" hidden>
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="ce.wp.schedule">Schedule</h3>
@@ -5314,6 +5316,9 @@
              有早鳥（套票：落在組合包的限時折扣，D329）。
        bky-3 跨日時段（11/08 14:00 → 11/09 02:00）→ 自動開跨日活動並帶結束日期。
        bky-4／bky-5 取票方式不是電子門票（順豐寄送／到店自取），沿用 2026-08-10 的示範。
+       活動性質 `isPrivate`（2026-10-01 D341，5.1.6.1 F21「活動性質」）：公開活動（false）→ 顯示設定＝顯示、
+       私人活動（true）→ 隱藏（揭示區長出活動連結＋QR）；不鎖、不掛 From bookyay，帶入後照常可切。
+       bky-4 是私人活動（驗收用），其餘四筆公開。
      每筆帶 type（2026-09-01）：admin 從創作者活動管理頁的「繼續設定」深連結（?import=）直接進來時沒有類型閘門，
      bookyay 自己知道活動是哪一種，跟著資料走。
      票價幣別（D330，取代 D306 起的港幣基準）：bookyay 原幣港幣，`priceHkd` 帶入時換算成創作者幣別當基準價（`types[].price`、鎖），
@@ -5334,6 +5339,7 @@
       meet: "2 號門售票口", transit: "捷運小巨蛋站 2 號出口步行 3 分鐘",
       saleFromD: "2026-07-01", saleFromT: "12:00", saleToD: "2026-09-12", saleToT: "18:00",
       ship: "eticket",
+      isPrivate: false,
       ticketTypes: [
         { name: "VIP", priceHkd: "1040", persons: 1,
           desc: "含彩排參觀與限定手環，入場時於 VIP 通道報到。",
@@ -5360,6 +5366,7 @@
       saleWithPublish: true,
       saleFromD: "", saleFromT: "", saleToD: "2026-10-02", saleToT: "12:00",
       ship: "eticket",
+      isPrivate: false,
       /* 二人套票：現價 399 是兩人合計（bookyay 現價＝整張套票的總價）；早鳥 359 也是整張套票的價
          （D329：套在自動建立組合包的限時折扣，1 − 359 ÷ 399 ＝ 10.0%）。 */
       ticketTypes: [
@@ -5383,6 +5390,7 @@
       meet: "8 號水門", transit: "捷運圓山站轉接駁車約 15 分鐘",
       saleFromD: "2026-09-01", saleFromT: "12:00", saleToD: "", saleToT: "",
       ship: "pickup",
+      isPrivate: false,
       ticketTypes: [{ name: "一日票", priceHkd: "445", persons: 1 }],
       slots: [{ startD: "2026-11-08", startT: "14:00", endD: "2026-11-09", endT: "02:00", doors: "13:00",
                 cap: 2000, types: [0] }] },
@@ -5391,7 +5399,7 @@
        帶入後仍要創作者自己填，所以刻意留空。 */
     { id: "bky-4", type: "launch",
       label: "限量黑膠簽名場 — 台中",
-      note:  "2026/12/06 · 台中 Legacy（實體票寄送）",
+      note:  "2026/12/06 · 台中 Legacy（實體票寄送 · 私人活動）",
       name: "限量黑膠簽名場 — 台中",
       intros: ["<p>新專輯黑膠首賣場，購票附一張實體收藏票券，當天憑票入場並可參加簽名。</p>"],
       country: "TW", langs: ["cmn"],
@@ -5400,6 +5408,7 @@
       meet: "1 樓售票口", transit: "台中捷運文心森林公園站步行 8 分鐘",
       saleFromD: "2026-10-20", saleFromT: "12:00", saleToD: "2026-12-01", saleToT: "23:59",
       ship: "sf",
+      isPrivate: true,
       ticketTypes: [{ name: "簽名場入場", priceHkd: "690", persons: 1 }],
       slots: [{ startD: "2026-12-06", startT: "19:00", endD: "2026-12-06", endT: "21:00", doors: "18:00", cap: 400, types: [0] }] },
     { id: "bky-5", type: "concert",
@@ -5413,6 +5422,7 @@
       meet: "演藝廳大廳", transit: "台鐵台南站轉公車約 20 分鐘",
       saleFromD: "2026-11-15", saleFromT: "20:00", saleToD: "2027-01-10", saleToT: "23:59",
       ship: "pickup",
+      isPrivate: false,
       ticketTypes: [{ name: "全票", priceHkd: "400", persons: 1 }],
       slots: [{ startD: "2027-01-17", startT: "19:30", endD: "2027-01-17", endT: "21:40", doors: "18:45", cap: 900, types: [0] }] },
     /* 已經帶過的場次（2026-08-13 使用者指示）：同一場 bookyay 活動只會在 ztor 上存在一次，
@@ -5641,7 +5651,9 @@
       ty._sp = ty.price; ty._sq = ty.qty;
     });
     const intro = bkyIntros(rec);
-    return { sessions, types, cells, bundles, skipped: skippedFinal, desc: intro.desc, info: intro.info };
+    /* 活動性質（D341）：公開活動→顯示、私人活動→隱藏；只是預設值，顯示設定不鎖。 */
+    const shown = !rec.isPrivate;
+    return { sessions, types, cells, bundles, skipped: skippedFinal, desc: intro.desc, info: intro.info, shown };
   }
   window.__ceBkyMap = id => bkyMap(BKY.find(r => r.id === id));
 
@@ -5696,6 +5708,9 @@
     applyShipMode();
     /* 墓碑 2026-09-30（D340）：「活動形式鎖在定點」隨活動形式刪除——一律只做定點，沒有這個欄位可鎖。 */
     const m = bkyMap(rec);
+    /* 顯示設定（D341，5.1.6.1 F21／F25）：照 bookyay 活動性質帶入——私人活動＝隱藏，揭示區長出活動連結＋QR；
+       不鎖、不掛 From bookyay（不在 F21 鎖定清單），創作者帶入後照常可切。 */
+    setShown(m.shown);
     series.list = m.sessions.length ? m.sessions : [newSession()];
     renderSessions();
     lockSessions(true);

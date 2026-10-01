@@ -49,7 +49,7 @@
    publish（D340）：{ pickup, shown }——開賣設定＝上面的 sale（from 開賣、to 停售，皆選填；from 缺＝上架即開賣、
    to 缺＝賣到活動開始），取代「直接販售／限時販售」二選一的 onsale；顯示設定＝shown（true 顯示／false 隱藏，
    隱藏＝只能經活動連結進入），取代「公開／私人」的 visibility。
-     · status='on-sale' → 已公開販售，改日期／場地屬「會通知到購票者」的高影響欄位。
+     · status='on-sale' → 已開賣（顯示或隱藏都可能；D341 用詞統一），改日期／場地屬「會通知到購票者」的高影響欄位。
    資料為原型 mock，非真實票務數字（見 ASSUMPTIONS.md）。
 
    2026-08-19 修正：status:'live' 的 date 一律動態＝今天（見下方 todayStr()），不得寫死日期。
@@ -132,7 +132,7 @@
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600 }],
           price: 4800, sold: 12, cap: 50, override: { HKD: 1188 } }   // HKD 換算 1,189 → 覆寫 1,188（D306 示範）
       ],
-      /* 發布設定（2026-08-11 新欄）：建立流程第 7 步的三個選擇，沒寫＝直接開賣／電子門票／公開。
+      /* 發布設定（2026-08-11 新欄）：建立流程第 7 步的三個選擇，沒寫＝直接開賣／電子門票／顯示（D341：可見性用詞統一為顯示／隱藏）。
          2026-09-29（D327）：電子門票底下的附屬設定值整組清掉——那組設定已刪除。 */
       publish: { pickup: 'eticket', shown: true },
       sold: 600,

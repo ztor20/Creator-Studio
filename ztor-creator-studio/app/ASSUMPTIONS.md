@@ -1,3 +1,16 @@
+## UIA-191 · bookyay 活動性質帶入顯示設定（D341，2026-10-01 使用者裁決；spec 5.1.6.1 v2.34 F21「活動性質」、F25）
+
+**狀態**：Open。`create-event.html`。
+
+### 呈現假設（不改產品語意，待使用者檢視）
+
+1. **帶入值沒有來源標示**：顯示設定不鎖，所以不掛 From bookyay 標籤、開關照常可按——比照同樣「只預填、不鎖」的活動名稱。創作者看到的只是開關被預先關掉（私人活動）或開著（公開活動）。
+2. **示範資料**：bky-4「限量黑膠簽名場 — 台中」設為私人活動，搜尋清單那行的說明補「私人活動」方便驗收找到；帶入後跳到第 6 步，往下一步到第 7 步就看到顯示開關關著、活動連結與 QR 已展開。
+
+### 產品缺口
+
+- bookyay 端事後改活動性質要不要同步到 ztor，規格列〔產品待確認〕（併 D301 活動名稱同一題）；原型不處理同步。
+
 ## UIA-190 · 活動 18 題裁決落地（D340）：容量與多站刪除、開賣設定、顯示設定、活動語言下拉複選、內文粗體與清單、粉絲頁說明區塊、可賣性排程檢查（2026-09-30 使用者裁決；spec 5.1.6.1 v2.33、5.1.6.2 v3.22、5.1.6.3 v30、5.1.6 2026-09-30、5.1.5.4 v2.35、5.1.5.9 v1.49、0-設計規格書 v4.12 §7.10／§7.14）— 呈現假設 ＋ 產品缺口
 
 **狀態**：Open。`create-event.html`、`event-detail.html`、`event-localization.html`、`events.html`、`bundle-detail.html`、`series-detail.html`、`partials/rich-body.js`、`partials/info-sections.js`、`js/zselect.js`、`js/fan-event-page.js`、`js/events-store.js`、`js/components.js`、`js/icons.js`、`js/i18n.js`、`ds-components/rich-body.css`／`zselect.css`／`fan-shop.css`／`field-source-tag.css`／`ticket-tier-card.css`、`scripts/check_events_store.js`、`design-system.md`／`.html`（§4.110、§4.132、§4.121、§4.133 Link field、§4.215、§4.221、§4.222）、`feature-scope-map.md`＋`js/devtools.js`（S59–S61）。規則來源：`documents/decisions.md` D340。本條同時關閉或部分關閉：ATT-002、TOUR-001（關閉）；BKY-002、GEO-001、TERM-001（部分關閉）；UIA-180 缺口 9、UIA-183 缺口 1／2／4／5、UIA-186 缺口「粉絲頁怎麼呈現」、UIA-187 缺口「文字格式／媒體規則／譯文媒體位置／只有媒體算不算已填」、PG-SALE-001。

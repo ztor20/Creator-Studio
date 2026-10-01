@@ -4,6 +4,18 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-10-01（一百一十七）· bookyay 活動性質帶入顯示設定；活動可見性用詞統一為顯示／隱藏（A spec-derived · D341）
+
+**範圍**：`create-event.html`、`event-detail.html`、`js/i18n.js`、`js/events-store.js`（只改註解）。
+
+**依據**：使用者 2026-10-01 裁決 D341；規格 5.1.6.1 v2.34（F21「活動性質」、F25、F18）、5.1.6.3 v31 §2.1。
+
+### A · 新增（spec-derived）
+
+- **bookyay 帶入顯示設定**：假 bookyay 資料補 `isPrivate`（bookyay 的活動性質）；`bkyMap()` 回傳 `shown`（公開活動→顯示、私人活動→隱藏），`bkyApply()` 呼叫 `setShown()` 寫進第 7 步的顯示開關。私人活動帶入後開關關著、揭示區長出活動連結＋QR。不鎖、不掛 From bookyay（不在 F21 鎖定清單），帶入後照常可切。示範：bky-4「限量黑膠簽名場 — 台中」（搜尋清單那行補「私人活動」），其餘四筆公開。
+- **用詞統一**：活動詳情「發布並開賣」確認說明的顯示版本由「活動頁會公開」改為「活動會顯示在活動列表與搜尋」（`event-detail.golive.body` 中英兩版與頁面 fallback 同步）。
+- **保留**：共看派對的派對隱私「公開／私密」（`ce.wp.privacy.*`）是房間權限、不是顯示設定，照 5.1.6.1 F18 保留原用詞，只在 HTML 註解寫明分界。
+
 ## 2026-09-30（一百一十六）· 活動 18 題裁決落地：刪除容量與多站、開賣設定、顯示設定、活動語言下拉複選、內文粗體與清單、粉絲頁說明區塊、可賣性排程檢查（A spec-derived ＋ C 撤除 · D340）
 
 **範圍**：`create-event.html`、`event-detail.html`、`event-localization.html`、`events.html`、`bundle-detail.html`、`series-detail.html`、`partials/rich-body.js`、`partials/info-sections.js`、`js/zselect.js`、`js/fan-event-page.js`、`js/events-store.js`、`js/components.js`、`js/icons.js`、`js/i18n.js`、`js/devtools.js`、`ds-components/rich-body.css`／`zselect.css`／`fan-shop.css`／`field-source-tag.css`／`ticket-tier-card.css`、`scripts/check_events_store.js`、`design-system.md`／`design-system.html`（§4.110、§4.121、§4.132、Link field、§4.215、§4.221、§4.222）＋重生 `design-components.html`、`BUILD-SPEC.md`、`requirements-map.md`、`feature-scope-map.md`、`ASSUMPTIONS.md`（新增 UIA-190；關閉 ATT-002、TOUR-001；部分關閉 BKY-002、GEO-001、TERM-001）。
