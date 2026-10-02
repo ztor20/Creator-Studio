@@ -35,11 +35,9 @@
       {t:'活動', pages:[{h:'events.html', t:'活動總覽'},{h:'event-create.html', t:'建立活動'},{h:'event-detail.html', t:'活動詳情與編輯'},{h:'event-bookyay.html', t:'bookyay 匯入與對照'}]}
     ]},
     {n:'7', t:'粉絲', groups:[
-      {t:'粉絲分析', pages:[{h:'fan-analytics.html', t:'粉絲分析'}]},
-      {t:'粉絲管理', pages:[{h:'fans.html', t:'分級與分工'},{h:'fans-roster.html', t:'粉絲總覽與詳情'},{h:'fans-tiers.html', t:'分級設定與權益'},{h:'fans-broadcast.html', t:'群發訊息'}]},
+      {t:'粉絲管理', pages:[{h:'fans-roster.html', t:'粉絲總覽與詳情'},{h:'fans-tiers.html', t:'粉絲分級'},{h:'fans-broadcast.html', t:'群發訊息'}]},
       {t:'媒體庫', pages:[{h:'fans-vault.html', t:'媒體庫'}]},
-      {t:'粉絲活動', pages:[{h:'fans-campaigns.html', t:'粉絲活動'}]},
-      {t:'粉絲分析：含外部', pages:[{t:'保留規格，本期不建置'}]}
+      {t:'粉絲活動', pages:[{h:'fans-campaigns.html', t:'粉絲活動'}]}
     ]},
     {n:'8', t:'收入管理', groups:[
       {t:'收入管理', pages:[{t:'收入總覽'},{t:'申請提款'},{t:'手動補登收入'}]}
@@ -60,13 +58,27 @@
   }
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 
+  /* 內容區標題加序號：h1＝頁號，h2＝頁號.節，h3＝頁號.節.小節；更小的標題（h4）不編號。目錄連結的序號跟著更新 */
+  function numberHeadings(base){
+    var wrap=document.querySelector('body>.wrap'); if(!wrap) return;
+    function put(h,num){ var n=h.querySelector(':scope>.n'); if(!n){ n=document.createElement('span'); n.className='n'; h.insertBefore(n,h.firstChild); } n.textContent=num; }
+    var h1=wrap.querySelector(':scope>h1'); if(h1) put(h1,base);
+    var i=0,j=0,map={};
+    [].forEach.call(wrap.children,function(el){
+      if(el.tagName==='H2' && !el.classList.contains('sr-only')){ i++; j=0; put(el,base+'.'+i); if(el.id) map[el.id]=base+'.'+i; }
+      else if(el.tagName==='H3' && i>0){ j++; put(el,base+'.'+i+'.'+j); }
+    });
+    wrap.querySelectorAll('.toc a[href^="#"]').forEach(function(a){ var id=a.getAttribute('href').slice(1); if(map[id]) a.textContent=map[id]+' '+a.textContent.replace(/^\s*[\d.]+\s*/,''); });
+  }
   function build(){
     var cur=current();
     var old=document.querySelector('.topnav'); if(old) old.remove();
     var side=document.createElement('aside'); side.className='rb-side'; side.setAttribute('aria-label','章節');
     var html='<div class="head"><a class="brand" href="index.html"><b>ztor Creator Studio 規則手冊</b><span>產品規則定案與發布</span></a><button type="button" class="fold" data-act="fold" aria-label="收合側邊欄" title="收合／展開側邊欄">‹</button></div>';
     var here=null;
-    TREE.forEach(function(c){ c.groups.forEach(function(g){ g.pages.forEach(function(p){ if(p.h===cur) here={c:c,g:g,p:p}; }); }); });
+    /* 序號＝章.頁.節.小節（例 7.1.2.3）。頁號依章節樹在該章內的順序，待補的頁也佔號，日後補上內容不會讓其他頁跳號；子功能頁只是分組、不編號 */
+    TREE.forEach(function(c){ var k=0; c.groups.forEach(function(g){ g.pages.forEach(function(p){ k++; p.num=c.n+'.'+k; if(p.h===cur) here={c:c,g:g,p:p}; }); }); });
+    if(here) numberHeadings(here.p.num);
     html+='<div class="lbl">章節</div><ul class="rb-nav rb-tree">';
     TREE.forEach(function(c){
       var open=here&&here.c===c, filled=0, total=0;
@@ -75,9 +87,9 @@
       c.groups.forEach(function(g){
         html+='<div class="rb-grp">'+esc(g.t)+'</div><ul class="rb-pg">';
         g.pages.forEach(function(p){
-          if(!p.h){ html+='<li><span class="rb-empty">'+esc(p.t)+'</span></li>'; return; }
+          if(!p.h){ html+='<li><span class="rb-empty"><span class="pn">'+p.num+'</span>'+esc(p.t)+'</span></li>'; return; }
           var on=p.h===cur;
-          html+='<li><a href="'+p.h+'"'+(on?' aria-current="page"':'')+'>'+esc(p.t)+'</a>';
+          html+='<li><a href="'+p.h+'"'+(on?' aria-current="page"':'')+'><span class="pn">'+p.num+'</span>'+esc(p.t)+'</a>';
           if(on){
             var subs=[]; document.querySelectorAll('.wrap h2[id]').forEach(function(h){ var t=h.textContent.replace(/^\s*[\d.]+\s*/,'').trim(); if(t) subs.push({id:h.id,t:t}); });
             if(subs.length>1){ html+='<ul class="rb-sub">'; subs.forEach(function(s){ html+='<li><a href="#'+s.id+'" data-sec="'+s.id+'">'+esc(s.t)+'</a></li>'; }); html+='</ul>'; }

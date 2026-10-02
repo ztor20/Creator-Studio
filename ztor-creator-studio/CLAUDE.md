@@ -56,6 +56,7 @@ merge 一律由具 merge 權限的協作者在 GitHub 上操作。各協作者�
 - 章節照原型左側欄分「章節 › 子功能頁 › 子頁」三層；章節樹集中在 `app/rulebook/shell.js` 的 `TREE`，加頁時在對應章節把待補子頁補上檔名。
 - 自帶樣式（`shell.css` 與各頁 `<style>`），不套原型的 design system、不用 `sidebar.js`，也不掛 `data-feat`；不要把原型的元件或 token 套進來，也不要依原型的設計系統規則「修正」它。
 - 改 `shell.js`／`shell.css` 時，同步升所有頁面的 `?v=` 版本參數。
+- 寫或改手冊頁面前，先讀同資料夾的 `app/rulebook/WRITING-GUIDE.md`。
 - 內容來源與更新時機由專案根 `CLAUDE.md`「規格定案後同步規則手冊」定義：只轉述 `documents/` 已定案的規則，與規格不一致時以規格為準。
 
 ## 其他
