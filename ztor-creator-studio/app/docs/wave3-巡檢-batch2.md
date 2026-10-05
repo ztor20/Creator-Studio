@@ -42,7 +42,7 @@ Spotify 串接提示 banner、KPI 卡、Top towards／streams 卡皆中性玻璃
 Hero 資訊卡、三張 loyalty/spend/next-tier KPI、Behavior timeline 時間軸卡皆中性玻璃；標籤徽章（Inner Circle/Active/VIP/High spender）為中性底＋色字。無 console error。
 
 ### fans-crm.html — OK
-四張 KPI 卡中性玻璃（首次截圖時因 `reveal is-in` 進場動畫只截到 2 張，屬正常漸入效果非錯誤，重新截圖後 4 張都在）。分眾 chip（All fans/Inner Circle/Superfan/…）玻璃選中。表格列清楚可讀。無 console error。
+四張 KPI 卡中性玻璃（首次截圖時因 `reveal is-in` 進場動畫只截到 2 張，屬正常漸入效果非錯誤，重新截圖後 4 張都在）。分眾 chip（All fans/Inner Circle/Super Fans/…）玻璃選中。表格列清楚可讀。無 console error。
 
 ### fans-guide.html — C
 獨立編輯風說明頁（橘色左側時間軸線＋大字級敘事），非標準卡片頁，golden 樣板未覆蓋此版型。頁中一張示範用「權益矩陣表」（DOM class `fg-matrix__row fg-matrix__head`）"Inner Circle" 那一列視覺上有暖色底鋪色，這是一次性示範元件的自訂樣式，是否要收攏進表面玻璃律屬**品味/範圍裁決**（要不要把說明頁也拉進主語彙，或維持它本來就不同的編輯敘事風格），歸 C。無 console error。

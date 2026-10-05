@@ -5,7 +5,7 @@
 - **日期**：2026-06-29
 - **來源**：Ztor功能點.md + Phase 1 handoff
 - **範圍**：internal use only
-- **功能總數**：121（2026-09-29 補登 S52–S56；同日補登 S58；2026-09-30 補登 S59–S61，D340；2026-10-01 補登 S62–S64，D342）
+- **功能總數**：123（2026-09-29 補登 S52–S56；同日補登 S58；2026-09-30 補登 S59–S61，D340；2026-10-01 補登 S62–S64，D342；2026-10-02 補登 S65–S66，D347）
 
 ## Tier 圖例
 
@@ -16,7 +16,7 @@
 | ⚪ TBD（未排定） | 商務團隊待定；「下一版預覽」不顯示 |
 | ⚫ 退場 | retired（產品決策已全面撤除，不再規劃／不計入 Phase 1／Next／TBD 三態，2026-09-09 起新增） |
 
-本期統計：🟢 Phase 1 82 · 🔵 Next 11 · ⚪ TBD 26 · ⚫ 退場 2
+本期統計：🟢 Phase 1 82 · 🔵 Next 11 · ⚪ TBD 28 · ⚫ 退場 2
 
 ## Build 狀態圖例
 
@@ -30,7 +30,7 @@
 | ✅⬆ ahead | 超前建置（prototype 已有，規格尚未涵蓋） |
 | ⏳ deferred | 已延後 |
 
-Build 統計：✅ 80 built · 🟡 6 gap · ✅⬆ 29 ahead · ⏳ 2 deferred
+Build 統計：✅ 82 built · 🟡 6 gap · ✅⬆ 29 ahead · ⏳ 2 deferred
 
 **Feature ID** — `S` Shop · `O` Orders · `E` Earnings · `B` Buyer storefront（例：`E07`），跨團隊引用用，編號穩定不變。
 
@@ -61,6 +61,8 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 **Admin 平台層與帳戶設定列入 Phase 1（2026-09-24 使用者裁示／D324）**：Creator 管理（`creators.html`、`creator-detail.html`）、創作者活動管理（`admin-creator-events.html`）、影片上架審核（`admin-video-review.html`）、Admin IP Bank（`admin-ip-bank.html`、`admin-ip-bank-entry.html`）、IP Bank Reporting（`ip-bank-reporting.html`）、平台費率設定（`admin-platform-fees.html`）與帳戶設定（`settings.html`）拿掉頁級 `data-page-feat="full"`，並移出 `js/devtools.js`／`js/sidebar.js` 兩份 `FULL_ROUTES`——這些頁沒有 scope 功能編號，不掛閘門＝各版本都顯示。**平台優惠設定仍 Phase 4**（D279），頁級閘門與兩份清單照舊（devtools 那份補登，兩份才一致）。頁內指向 Phase 4 模組的連結（活動詳情、IP 詳情、平台優惠等）由 route gate 照常在低版本藏起來。Admin 頁的 logo 在低版本也回名冊（`sidebar.js` 的 `applyVersionRoutes`）。
 
+**平台忠誠點數設定的上線階段未定（2026-10-02 D347）**：Admin 第 8 個同層目的地 `admin-platform-loyalty.html`（規格 5.1.0.8）屬哪一期交付〔產品待確認〕（主規格 §8.29 第 16 項），所以登記為 S65 ⚪ 未排定：頁級 `data-page-feat="S65"`，並比照平台優惠設定放進 `js/sidebar.js`／`js/devtools.js` 兩份 `FULL_ROUTES`——「下一版預覽」看不到側欄入口、直連會導回 E-Shop，最終版照常顯示。分級設定新增的各購買品項的份量與互動推薦每 90 天最多得分掛 S66（⚪ 未排定）；所在的 `fans-crm.html` 本身是頁級 `full`，兩層閘門一致。上線階段定案後只改本表 Tier 欄，必要時移出兩份 `FULL_ROUTES`。
+
 **平台滿額折扣與平台優惠碼是全平台協定（2026-09-15 D273／D277）**：Admin 平台優惠設定頁（`admin-platform-promotions.html`，原 `admin-platform-discounts.html`）與其他 Admin 目的地一樣不受開發版本 gate；創作者端沒有對應開關，只在訂單詳情看到「平台滿額折抵」扣項列（D274）。整頁 Phase 4（D279）。
 
 **優惠碼 Phase 1 只有期間、%／固定、全部或指定商品（2026-09-17 D279；2026-09-22 D299 把「指定商品」放寬成可多選、含活動票種）**：Phase 1 的藝人商店優惠碼只留三組欄位——生效期間、折扣型態（百分比或固定金額）、適用範圍（全部商店，或指定商品**可多選**：單售、組合包、活動票種；不選類型層）；碼字串本身當然也有（8–20 英數字、比對不分大小寫）。`store-settings.html` 優惠碼彈窗裡，**類型樹**、每張訂單可折件數／每人總次數／總兌換次數三格、固定金額折法、可與其他優惠碼疊加，一律掛 `data-feat="full"`（使用次數三格連同標籤包一個容器一起掛，固定金額折法與疊加開關各自的既有 `hidden`／JS 顯隱照常，閘門與 hidden 兩道各管各的）。Phase 1 的適用範圍是一組 `data-feat-off="full"` 的 `radio-list`（全部商店／指定商品（可多選））；**指定商品的多選 combobox（`#ss-scope-combo`）自 D299 起不掛任何閘門**——它坐在 Phase 4 那組（`data-feat="full"`）與 Phase 1 那組之外、兩個版本共用，何時露出由頁面 JS 依「哪一組看得見」算，候選同一份（`ProductsStore.all()`＋`bundles()`＋`ztorEvents.list()` 的票種）。清單同步：「已用」欄的「/ 上限」只在有次數上限時才有意義，包一個 `data-feat="full"` 的 span；LAUNCH50（已用完狀態）整列 `data-feat="full"`（Phase 1 沒有次數上限，不會有「已用完」）；「範圍」欄的混選示意（AIKO10「服飾＋2 件商品」）與 Phase 1 的單商品示意（「26MS Hoodie」）用 `data-feat`／`data-feat-off` 成對切換；TOURVIP15（指定多件含票種）無 gate、各版本都有。**平台優惠設定（5.1.0.7）整頁 Phase 4**，見上一段。
@@ -75,7 +77,7 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 ## S · 商店管理 — Shop Management
 
-ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 10
+ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 12
 
 | ID    | 功能                              | English                                          | Tier       | Build    | 備註                                                        |
 | ----- | ------------------------------- | ------------------------------------------------ | ---------- | -------- | --------------------------------------------------------- |
@@ -151,6 +153,9 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 10
 | `S62` | 　活動販售的時間層級＋票務商品上架與開賣跟隨／另設 | Event sales time layers + ticket-bundle follow / custom times | ⚪ TBD      | ✅⬆ ahead | D342；create-event 第 7 步售票期間紅字 `[data-ce-tl-err]`、第 5 步限時間紅字、第 6 步「上架與開賣」段；bundle-detail／create-bundle 含票券成員時的 `[data-tb-host]`；event-detail 開賣設定紅字 `[data-ed-tl-err]`；共用 `js/ticket-bundle.js`＋Follow field |
 | `S63` | 　票務商品的購買條件與限購（預設取最嚴、只能收窄） | Ticket-bundle purchase rules & limits | ⚪ TBD      | ✅⬆ ahead | D342；create-event 第 6 步「購買條件與限購」段、bundle-detail `[data-tb-rules-sec]`、create-bundle 預設讀數 `[data-tb-host="cb-rules"]` |
 | `S64` | 　建立活動第 6 步補齊的組合包欄位（素材、電影關聯、限時折扣、優惠碼疊加、逐票種分配） | Ticket-bundle fields in create-event step 6 | ⚪ TBD      | ✅⬆ ahead | D342／5.1.6.1 F20；`js/bundle-editor.js` SPLIT 的 `[data-feat="S64"]` 區塊 |
+|       | **粉絲忠誠點數（D347，2026-10-02）**                 | Loyalty points scoring model                    |            |          | 規格 5.1.0.8（新頁）、5.1.7.6 F3；計分規則本體在主規格 §7.5。編號沿用 S 段（devtools 只解析 `S`／`O`／`E`／`B` 開頭的 ID），與活動段 S52–S64 同一做法 |
+| `S65` | 　平台忠誠點數設定（Admin 第 8 個同層目的地：全站活動給分與上限、賽季加倍週、衰減與等級保留、平台常數唯讀、修改紀錄） | Platform Loyalty Settings (Admin) | ⚪ TBD      | ✅ built  | D347／5.1.0.8 F1–F6；上線階段〔產品待確認〕（主規格 §8.29 第 16 項）。`admin-platform-loyalty.html` 頁級 `data-page-feat="S65"`，並比照平台優惠設定登記進 `js/sidebar.js`／`js/devtools.js` 兩份 `FULL_ROUTES`（低版本藏側欄入口、直連導回） |
+| `S66` | 　分級設定的計分設定：各購買品項的份量（5 項）與互動推薦每 90 天最多得分（4 項） | Tier settings: purchase type value & max points per 90 days | ⚪ TBD      | ✅ built  | D347／5.1.7.6 F3.2–F3.3；`fans-crm.html` 分級設定彈窗「計分設定」分頁與 `tier-settings.html` 備份頁的兩組 `[data-feat="S66"]`。四類各類行為的份量（預設改 1.0）與「外部平台訊號本版暫不計入」屬既有分級設定，不掛本編號 |
 
 ## O · 訂單管理 — Order Management
 
