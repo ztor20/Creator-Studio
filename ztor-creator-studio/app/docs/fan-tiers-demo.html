@@ -123,7 +123,7 @@ body {
 
   <h1 class="lab-h1">粉絲分層要用哪種圖</h1>
   <p class="lab-lede">
-    前提是使用者給的模型：<b>Fan ⊇ Ranked fans ⊇ Superfan ⊇ Inner Circle</b>——四層是層層包含，不是四群並列的人。
+    前提是使用者給的模型：<b>Fan ⊇ Ranked Fans ⊇ Super Fans ⊇ Inner Circle</b>——四層是層層包含，不是四群並列的人。
     站上目前那組數字（12% / 28% / 37% / 23%，加起來剛好 100）是<b>「只到這一層」的佔比</b>；
     要畫成包含關係就得改讀成累積值，那是純推導、不必新增假資料，但四個數字的意思會變。
     三個方案都用同一組推導值、同一個 300px 寬度、同一片深底——那一格將來是坐在照片上的。
@@ -168,7 +168,7 @@ body {
       </div>
       <p class="lab-note">
         <b>現況的圓環。</b>圓環的前提是「切開一個整體、彼此不重疊」，
-        而這四層是層層包含——畫成四塊會讓人以為 Inner Circle 與 Superfan 是並列的兩群。
+        而這四層是層層包含——畫成四塊會讓人以為 Inner Circle 與 Super Fans 是並列的兩群。
         <b>這是圖型用錯，不是尺寸或顏色的問題。</b>
       </p>
     </div>
@@ -196,8 +196,8 @@ body {
     <table class="lab-table">
       <tr><th>層</th><th>只到這一層</th><th>累積佔比</th><th>人數</th><th>上一層走到這一層</th></tr>
       <tr><td>Fan</td><td>23%</td><td>100%</td><td>1,283</td><td>—</td></tr>
-      <tr><td>Ranked fans</td><td>37%</td><td>77%</td><td>988</td><td>77%</td></tr>
-      <tr><td>Superfan</td><td>28%</td><td>40%</td><td>513</td><td>52%</td></tr>
+      <tr><td>Ranked Fans</td><td>37%</td><td>77%</td><td>988</td><td>77%</td></tr>
+      <tr><td>Super Fans</td><td>28%</td><td>40%</td><td>513</td><td>52%</td></tr>
       <tr><td>Inner Circle</td><td>12%</td><td>12%</td><td>154</td><td>30%</td></tr>
     </table>
     <p>
@@ -223,11 +223,11 @@ body {
 var TOTAL = 1283;
 var TIERS = [
   { label: 'Fan',          only: 23, color: 'var(--chart-5)' },
-  { label: 'Ranked fans',  only: 37, color: 'var(--chart-3)' },
-  { label: 'Superfan',     only: 28, color: 'var(--chart-2)' },
+  { label: 'Ranked Fans',  only: 37, color: 'var(--chart-3)' },
+  { label: 'Super Fans',     only: 28, color: 'var(--chart-2)' },
   { label: 'Inner Circle', only: 12, color: 'var(--chart-1)' }
 ];
-/* 由最內層往外累加：Inner 12 → Super 40 → Ranked 77 → Fan 100。 */
+/* 由最內層往外累加：Inner 12 → Super Fans 40 → Ranked Fans 77 → Fan 100。 */
 (function () {
   var run = 0;
   for (var i = TIERS.length - 1; i >= 0; i--) { run += TIERS[i].only; TIERS[i].cum = run; }
@@ -284,7 +284,7 @@ function nf(n) { return n.toLocaleString(); }
      Fan 走滿一整圈，細的起點與粗的終點還會在十二點鐘撞成一個明顯的錯階。
      線寬要留成每層一個定值。 */
   var WIDTHS = [26, 20, 15, 11];
-  /* 由外往內畫：TIERS 的順序是 Fan → Ranked → Superfan → Inner，剛好就是由外往內。 */
+  /* 由外往內畫：TIERS 的順序是 Fan → Ranked Fans → Super Fans → Inner，剛好就是由外往內。 */
   var segs = TIERS.map(function (t, i) {
     var len = C * t.cum / 100;
     return '<circle class="lab-arc__seg" style="--seg:' + t.color + '" stroke-width="' + WIDTHS[i] + '"'

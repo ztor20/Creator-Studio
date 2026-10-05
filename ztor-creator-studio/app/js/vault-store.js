@@ -4,7 +4,7 @@
      Media Vault 的每一座庫房都掛著解鎖條件（列出幾種進得來的方法，達成任一種即可），
      而創作者在畫面上唯一真正在乎的數字是「現在有幾個粉絲打得開」。那個
      數字不能用猜的——條件之間會重疊（買過黑膠的人多半也是核心圈），把
-     「212 人買過」加上「154 人是核心圈」得到 366 是錯的，而隨手抓一個
+     「212 人買過」加上「13 人是核心圈」得到 225 是錯的，而隨手抓一個
      去重係數，等於把兩個猜測相乘後當成事實呈現（同 brand-campaigns.js
      拒絕虛構平均客單價的理由）。
 
@@ -14,7 +14,8 @@
      在兩次重整之間漂移。
 
    數字的出處（刻意對齊既有頁面，不另立一份）：
-     · tier 人數 154 / 359 / 475 / 295 ＝ i18n `fans.tier.*-cnt`（fans-crm）。
+     · tier 人數 13 / 115 / 257 / 898 ＝ i18n `fans.tier.*-cnt`（fans-crm），由 js/tier-population.js 供給
+       （2026-10-02 D348 依前 % 名預設 1／10／30 重算）。
      · 限量商品的擁有者數＝ products-store 的 sold（acetate 限量 50、已售 21，
        所以「買過手編號黑膠」這條規則的天花板就是 21 人，不是兩百人）。
      · 活動出席者數＝ events-store 各票種 sold 的總和。
@@ -79,7 +80,7 @@
       icon: "ticket",
       label: { en: "Attended", zh: "出席過" },
       opts: [
-        { id: "inner-circle-taipei",  cap: 200, w: [1.0, 0.35, 0.05, 0.01], label: { en: "Inner Circle Fan Meet — Taipei", zh: "Inner Circle 見面會 · 台北" } },
+        { id: "inner-circle-taipei",  cap: 200, w: [1.0, 0.35, 0.05, 0.01], label: { en: "Inner Circle Fan Meet — Taipei", zh: "核心圈見面會 · 台北" } },
         { id: "album-signing-taipei", cap: 118, w: [0.9, 0.55, 0.14, 0.03], label: { en: "Album signing — Taipei",         zh: "專輯簽名會 · 台北" } },
         { id: "realive-chongqing",    cap: 84,  w: [0.6, 0.44, 0.20, 0.06], label: { en: "REALIVE World Tour — Chongqing", zh: "REALIVE 世界巡迴 · 重慶" } }
       ]

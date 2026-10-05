@@ -29,9 +29,9 @@
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/info-sections.css?v=r2.2"><!-- D334：活動內容的說明區塊 -->
+<!-- 墓碑 2026-10-05（D354）：ds-components/info-sections.css（說明區塊）退場，版面併入 rich-body.css -->
 <link rel="stylesheet" href="ds-components/field-source-tag.css?v=r2.2"><!-- D335／F21：bookyay 帶入者的描述掛「bookyay 帶入」來源標記 -->
-<link rel="stylesheet" href="ds-components/rich-body.css?v=r2.2"><!-- D335：描述與說明區塊的內文可夾帶圖片與影片 -->
+<link rel="stylesheet" href="ds-components/rich-body.css?v=r2.2"><!-- D354：描述區塊編輯器（文字／圖片／影片區塊，可排序） -->
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
 <!-- 2026-08-11：開放入場與建立流程同步（分鐘欄＋早到政策＋從屬縮排）跟著進來 -->
@@ -867,20 +867,15 @@
             <p class="field__hint" data-ed-count="highlight">0 / 30</p>
           </div>
           <div class="field">
-            <!-- 描述（D335）：內文可夾帶圖片與影片，同建立活動那一支 partials/rich-body.js；
-                 data-ed="desc" 改成隱藏的 proxy（只有文字），變更快照與既有讀值照舊讀它。
-                 檢視態：view-mode.js 把每個文字塊畫成讀數，媒體格照常顯示、替換刪除鈕收起。 -->
+            <!-- 描述（D354，2026-10-05；5.1.6.2 F2，定義同 5.1.6.1 F2）：一串可排序的文字／圖片／影片區塊，同建立活動那一支
+                 partials/rich-body.js——每個區塊沒有標題、可拖動排序、可刪除，「新增描述」加一個文字區塊，整份描述媒體合計最多 10 個。
+                 data-ed="desc" 是隱藏的 proxy（所有文字區塊的純文字），變更快照與既有讀值照舊讀它。
+                 檢視態：區塊拿掉卡面、文字區塊畫成讀數、媒體照常顯示；把手、刪除、工具列與新增鈕收起（rich-body.css）。 -->
             <div class="field__label" id="ed-desc-label" data-i18n="ce.desc">Description</div>
             <div class="rich-body" id="ed-desc" role="group" aria-labelledby="ed-desc-label" data-rich-body></div>
             <input type="hidden" data-ed="desc">
           </div>
-          <!-- 說明區塊（D334；5.1.6.2 F2，定義同 5.1.6.1 F2）：預填目前的區塊清單，編輯態可新增、刪除、拖曳排序與修改；
-               檢視態由 view-mode.js 把標題與內文畫成純文字，把手與刪除鈕隨 button 收起。不列高影響變更。 -->
-          <div class="field" data-feat="S57">
-            <div class="field__label" id="ed-info-label" data-i18n="ce.info">Info sections</div>
-            <!-- 提示句 ce.info.hint 2026-09-29 拿掉（粉絲頁目前不畫說明區塊，D334 補充；同建立活動） -->
-            <div class="info-sections" id="ed-info" role="group" aria-labelledby="ed-info-label" data-info-sections></div>
-          </div>
+          <!-- 墓碑 2026-10-05（D354）：說明區塊（#ed-info、data-feat="S57"，D334）整組退場，由描述的無標題文字區塊取代。 -->
 
           <div class="field">
             <div class="field__label" data-i18n="ce.lineup">Lineup / performers</div>
@@ -909,7 +904,7 @@
 
           <div class="info-banner mt-16">
             <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-            <span data-i18n="event-detail.ov.statemachine"><strong>Status follows a one-way state machine.</strong> Draft → Scheduled / On Sale → (event runs) → Completed. Only Draft → Cancelled is allowed as a reversal; cancelling does not automatically refund valid tickets — void them individually or all at once afterward (§7.2 F5).</span>
+            <span data-i18n="event-detail.ov.statemachine"><strong>Stages only move forward</strong>, from draft to the event ending. Scheduled and on-sale events can be cancelled; cancelling does not refund tickets automatically — Admin voids any tickets still valid afterward, one by one or all at once (§5.1.6 F3, F5).</span>
           </div>
         </section>
           </div>
@@ -1156,7 +1151,7 @@
           <div data-nav-panel="danger" id="ed-danger" hidden>
             <div class="section-head">
               <h2 class="section-head__title" data-i18n="event-detail.danger.title">Cancel this event</h2>
-              <div class="section-head__sub" data-i18n="event-detail.danger.sub">Cancelling does not refund tickets automatically, and cannot be undone (§7.2 F5). Void tickets afterward from the Sales record.</div>
+              <div class="section-head__sub" data-i18n="event-detail.danger.sub">Cancelling does not refund tickets automatically, and cannot be undone (§5.1.6 F5). Admin voids any tickets still valid afterward from the Sales record.</div>
             </div>
             <section class="card">
               <button class="btn btn--destructive" type="button" data-view-safe data-ed-cancelevent data-i18n="event-detail.btn.cancelevent">Cancel event</button>
@@ -1508,7 +1503,7 @@
           <div class="settings-row" style="border-bottom:0">
             <div>
               <div class="settings-row__label" data-i18n="event-detail.notif.cancel.label">Cancellation notice</div>
-              <div class="settings-row__hint" data-i18n="event-detail.notif.cancel.hint">If the event is Cancelled, ticket holders are notified. The creator can then void tickets individually or all at once — this does not happen automatically. Always on.</div>
+              <div class="settings-row__hint" data-i18n="event-detail.notif.cancel.hint">If the event is Cancelled, ticket holders are notified. Admin then voids any tickets still valid, one by one or all at once — this does not happen automatically. Always on.</div>
             </div>
             <span class="badge badge--neutral"><span data-i18n="event-detail.notif.cancel.badge">System</span></span>
           </div>
@@ -1566,9 +1561,10 @@
              這裡列出已作廢的票券（票券編號／原持票人／作廢時間／作廢者），逐票的作廢動作
              則在下面「銷售紀錄」分頁的表格裡（每一列一張／筆票券，動作欄可作廢）。
              共看派對不套用作廢紀錄（沿用 D149 對「退款佇列」的既有排除），整塊收起。
-             執行者〔產品待確認〕：decisions.md D253／5.1.6 F5／5.1.6.3 §2.9.2 三處皆明文
-             「上游未定義，裁決前比照 eShop 以 Admin 專屬處理」——本頁比照現有頁面既有做法
-             （不加角色鎖定 UI），示例資料的「作廢者」欄暫填 Admin，不代表已裁決創作者不可執行。 -->
+             執行者＝Admin（D282，2026-09-18 已裁決；主規格 §4.1 第 5 項列為 Admin 專屬操作）：
+             2026-10-05（D352 稽核 B15）起逐票與整場撤銷鈕都加角色鎖定——創作者本人視角停用並以 title 說明
+             「需要 Admin 角色」（同 order-detail 撤銷品項），Admin 代管態才能按（edAdminScope()）；
+             創作者看得到撤銷紀錄但不能操作（§4.4）。 -->
         <div class="section-head mt-24" data-hide-type="watchparty">
           <h2 class="section-head__title" data-i18n="event-detail.void.title">Void record</h2>
           <div class="section-head__sub">
@@ -1729,13 +1725,9 @@
           <label class="field__label" for="ed-tm-name"><span data-i18n="ee.tix.name">Tier name</span> <span class="field__req">*</span></label>
           <input class="input" id="ed-tm-name">
         </div>
-        <!-- 門票簡介與顯示開關（D328，5.1.6.3 §2.6 → 5.1.6.1 F22 基本區）：與建立流程的單張門票彈窗同一組欄位。
-             簡介選填、≤100 字（即時字數，超過擋儲存）；顯示預設開，關＝隱藏（活動頁票價清單不列、不能單張買，仍可當組合包成員）。 -->
-        <div class="field" data-feat="S54">
-          <label class="field__label" for="ed-tm-desc"><span data-i18n="ce.tier.desc">Ticket description</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
-          <textarea class="textarea" id="ed-tm-desc" rows="2" placeholder="e.g. Includes a signed poster" data-i18n-placeholder="ce.tier.desc.ph"></textarea>
-          <p class="field__hint" id="ed-tm-desc-count">0 / 100</p>
-        </div>
+        <!-- 顯示開關（D328，5.1.6.3 §2.6 → 5.1.6.1 F22 基本區）：與建立流程的單張門票彈窗同一組欄位。
+             顯示預設開，關＝隱藏（活動頁票價清單不列、不能單張買，仍可當組合包成員）。
+             墓碑 2026-10-05（D353，撤銷 D328 決定二）：門票簡介欄位（#ed-tm-desc、data-feat="S54"）整欄移除。 -->
         <div class="control-row" data-feat="S55">
           <div>
             <div class="control-row__main" data-i18n="ce.tier.show">Show on event page</div>
@@ -1854,8 +1846,8 @@
 <script src="js/chart.js?v=r2.2"></script>
 <script src="partials/upload-tile.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
-<script src="partials/rich-body.js?v=r2.2"></script><!-- D335：內文編輯器（文字＋圖片／影片） -->
-<script src="partials/info-sections.js?v=r2.2"></script><!-- D334：說明區塊編輯器（與建立活動同一支） -->
+<script src="partials/rich-body.js?v=r2.2"></script><!-- D354：描述區塊編輯器（文字／圖片／影片區塊，可排序） -->
+<!-- 墓碑 2026-10-05（D354）：partials/info-sections.js（說明區塊）退場，排序搬進 rich-body.js -->
 <!-- 2026-09-29（D327）：partials/stepper.js 與 ds-components/stepper.css 的載入拆掉——只為發布設定那三個數字欄（已刪）而載，步進器元件本身保留。 -->
 <script src="js/view-mode.js?v=r2.2"></script><!-- 兩段式面板檢視態讀數（Q119）：欄位在檢視態畫成純文字、按「編輯」才變輸入框 -->
 <script>
@@ -2609,12 +2601,21 @@
          那個金額（refund）此前只是餵給下面這句文案，D253 後這句文案本身也改了語意。 */
       const sold = ev.sold || 0;
       const impact = sold
-        ? T('event-detail.cancel.body', '{n} tickets sold are not refunded automatically — every holder is notified, and you can void tickets individually or all at once afterward from the Sales record. This cannot be undone.')
+        ? T('event-detail.cancel.body', '{n} tickets sold are not refunded automatically — every holder is notified, and Admin voids any tickets still valid afterward, one by one or all at once. This cannot be undone.')
             .replace('{n}', fmtNum(sold))
         : T('event-detail.cancel.body0', 'Nothing has sold yet. The event stops being publishable.');
+      /* 2026-10-05（D352 稽核 B16，主規格 §7.14「活動取消或下架時連動組合包」，D292）：確認內容列出會一同下架的
+         「上架中」組合包；沒有就不出現。名單由 events-store cancelBundlesOf() 給，活動清單列操作的取消活動用同一支。 */
+      const escC = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      const goingDown = window.ztorEvents.cancelBundlesOf ? window.ztorEvents.cancelBundlesOf(ev.id) : [];
+      const bundlesHtml = goingDown.length
+        ? '<p class="text-sub mt-16">' + T('event-detail.cancel.bundles', 'These listed bundles include its tickets and are unlisted with it:') + '</p>' +
+          '<div class="data-list mt-8">' + goingDown.map(b =>
+            '<div class="data-list__row"><div class="data-list__row-main"><span>' + escC(b.name) + '</span></div></div>').join('') + '</div>'
+        : '';
       openConfirm({
         title: T('event-detail.cancel.title', 'Cancel this event?'),
-        body: '<p>' + impact + '</p>',
+        body: '<p>' + impact + '</p>' + bundlesHtml,
         okLabel: T('event-detail.cancel.ok', 'Cancel event'),
         danger: true,
         onOk: () => setStage('cancelled')
@@ -2677,6 +2678,10 @@
       const tr = document.createElement('tr');
       tr.className = 'ztor-table__row';
       const canVoid = window.ztorEvents.ticketVoidState(t) === 'ok';
+      /* 2026-10-05（D352 稽核 B15，D282、主規格 §4.1 第 5 項／§4.4）：撤銷票券是 Admin 專屬操作——創作者本人視角
+         按鈕留著但停用，title 說明需要 Admin（同 order-detail 撤銷品項的做法與同一句文案）。 */
+      const voidAttrs = edAdminScope() ? '' :
+        ' disabled aria-disabled="true" title="' + T('od.void.why.admin', 'Requires the Admin role') + '"';
       tr.innerHTML =
         '<td><code>' + t.id + '</code></td><td>' + t.buyer + '</td><td>' + t.tier + '</td>' +
         '<td>' + t.qty + '</td><td>' + money(t.gross) + '</td><td class="text-sub">−' + money(t.fee) + '</td>' +
@@ -2685,7 +2690,7 @@
           ? '<span class="badge badge--success"><span>' + T('event-detail.tx.paid', 'Paid') + '</span></span>'
           : '<span class="badge badge--error"><span>' + T('event-detail.tx.cancelledbadge', 'Cancelled') + '</span></span>') + '</td>' +
         '<td>' + (canVoid
-          ? '<button class="btn btn--ghost btn--destructive btn--sm" type="button" data-view-safe data-ed-void-tx="' + t.id + '">' + T('event-detail.tx.void', 'Void') + '</button>'
+          ? '<button class="btn btn--ghost btn--destructive btn--sm" type="button" data-view-safe data-ed-void-tx="' + t.id + '"' + voidAttrs + '>' + T('event-detail.tx.void', 'Void') + '</button>'
           : '—') + '</td>';
       body.appendChild(tr);
     });
@@ -2709,6 +2714,8 @@
       renderTx();
     }));
     renderTx();
+    /* 切換 Role · 身分（Admin 代管 ↔ 創作者本人）時重畫，撤銷鈕的停用狀態跟著變（D282，2026-10-05） */
+    document.addEventListener('ztor:creator-changed', () => renderTx());
   }
 
   /* ── 收支（2026-08-19 修復；2026-09-09 隨 D253 同步狀態值）─────────────
@@ -2788,8 +2795,16 @@
     const btn = document.querySelector('[data-ed-void-all]');
     if (!btn) return;
     const remaining = txAll.filter(t => window.ztorEvents.ticketVoidState(t) === 'ok').length;
-    btn.disabled = remaining === 0;
-    btn.title = remaining === 0 ? T('event-detail.void.all-disabled', 'No remaining tickets to void') : '';
+    const admin = edAdminScope();   /* D282：整場撤銷同樣只有 Admin 代管態能按（2026-10-05，D352 稽核 B15） */
+    btn.disabled = remaining === 0 || !admin;
+    btn.title = remaining === 0 ? T('event-detail.void.all-disabled', 'No remaining tickets to void')
+      : (!admin ? T('od.void.why.admin', 'Requires the Admin role') : '');
+  }
+  /* Admin 代管態（主規格 §4.1 第 1、2、5 項；D086）：正式訊號是 sidebar.js 的 window.ztorCreator.adminScope()，
+     沒有它時讀同一把 `ztor.role`（同 order-detail.html adminScope()）。 */
+  function edAdminScope() {
+    if (window.ztorCreator && typeof window.ztorCreator.adminScope === 'function') return !!window.ztorCreator.adminScope();
+    try { return localStorage.getItem('ztor.role') === 'admin'; } catch (e) { return false; }
   }
 
   /* ── 已作廢票券 KPI（§2.3，2026-09-09 新增，D253）─────────────────────
@@ -2856,6 +2871,8 @@
   }
   document.addEventListener('click', e => {
     const voidBtn = e.target.closest('[data-ed-void-tx]');
+    if (voidBtn && voidBtn.disabled) return;   /* 創作者本人視角停用（D282） */
+    if (e.target.closest('[data-ed-void-all]') && e.target.closest('[data-ed-void-all]').disabled) return;
     if (voidBtn) {
       const tx = txAll.find(t => t.id === voidBtn.dataset.edVoidTx);
       if (tx) openVoidConfirm(tx);
@@ -2890,13 +2907,11 @@
     return row;
   }
 
-  /* 說明區塊編輯器（D334）：互動在 partials/info-sections.js；值由 fillEditForm 帶入、commitEdit 寫回。 */
-  const edInfoHost = document.getElementById('ed-info');
-  const edInfo = (edInfoHost && window.ztorInfoSections) ? window.ztorInfoSections.mount(edInfoHost, { items: [], mediaFeat: 'S58', fmtFeat: 'S59' }) : null;
-  /* 描述編輯器（D335）：文字＋圖片／影片；proxy＝隱藏的 [data-ed="desc"]（只有文字）。 */
+  /* 墓碑 2026-10-05（D354）：說明區塊編輯器（edInfo＝ztorInfoSections.mount(#ed-info)，D334）隨說明區塊退場。 */
+  /* 描述編輯器（D354）：一串可排序的文字／圖片／影片區塊；proxy＝隱藏的 [data-ed="desc"]（所有文字區塊的純文字）。 */
   const edDescHost = document.getElementById('ed-desc');
   const edDesc = (edDescHost && window.ztorRichBody)
-    ? window.ztorRichBody.mount(edDescHost, { rows: 3, label: 'Description', labelKey: 'ce.desc', proxy: document.querySelector('[data-ed="desc"]'), feat: 'S58', fmtFeat: 'S59' })
+    ? window.ztorRichBody.mount(edDescHost, { rows: 3, label: 'Description', labelKey: 'ce.desc', proxy: document.querySelector('[data-ed="desc"]'), feat: 'S58', fmtFeat: 'S59', addFeat: 'S67' })
     : null;
 
   function lockDescFromBky(on) {
@@ -2915,16 +2930,16 @@
   function fillEditForm(ev) {
     const set = (k, v) => { const el = document.querySelector('[data-ed="' + k + '"]'); if (el) el.value = v == null ? '' : v; };
     set('name', ev.name); set('highlight', ev.highlight); set('desc', ev.desc); set('venue', ev.venue); set('address', ev.address);
-    /* 描述（D335）：有 descBlocks（夾帶圖片或影片）就整份帶入，沒有就帶純文字 */
+    /* 描述（D354）：有 descBlocks 就整份帶入，沒有就帶純文字；舊資料的說明區塊（infoSections）由 migrate() 轉成
+       接在後面的無標題文字區塊（原標題併成第一行粗體，D354 決定八） */
     if (edDesc) {
-      edDesc.set(ev.descBlocks || ev.desc || '');
+      edDesc.set(window.ztorRichBody.migrate(ev.descBlocks || ev.desc || '', ev.infoSections));
       /* bookyay 帶入者的描述鎖定（5.1.6.2 F2 → 5.1.6.1 F21）：文字唯讀、插入鈕與媒體替換／刪除收起，標籤旁掛來源標記。
-         說明區塊（edInfo）不鎖（D334）。要改回 bookyay 改。 */
+         D354：只鎖第一個文字區塊與緊接其後的媒體（bookyay 第 1 段），其餘區塊照常可改。要改回 bookyay 改。 */
       lockDescFromBky(isBky());
     }
     renderHighlightCount();
-    /* 說明區塊（D334）：預填這一場目前的區塊清單（捨棄編輯時也走這裡還原） */
-    if (edInfo) edInfo.set(ev.infoSections || []);
+    /* 墓碑 2026-10-05（D354）：說明區塊預填（edInfo.set）隨說明區塊退場，內容已由 migrate() 併進描述 */
     /* 墓碑（2026-08-11）：容量欄與它的「下限＝已售出」規則隨「活動人數」撤除（ATT-002）。
        日期時間欄同日改成場次清單（renderSessions），單值的 date/start/end/doors 欄位退場。 */
     renderSessions();
@@ -3279,7 +3294,7 @@
      一半：捨棄照規格停用，儲存維持可按（它同時是唯一的離開編輯態出口，停用會把人
      鎖在編輯模式）。差異記於 ASSUMPTIONS EDIT-002。 */
   const ED_ASPECTS = [
-    ['basics', s => s.name + '' + s.highlight + '' + s.desc + '' + s.info],   // D334：說明區塊與名稱、描述同屬 F2 一列
+    ['basics', s => s.name + '' + s.highlight + '' + s.desc],   // D354：描述的區塊（含原說明區塊的內容）與名稱同屬 F2 一列
     ['venue',  s => s.venue + '' + s.address],
     ['dates',  s => s.sessions],
     ['lineup', s => s.lineup],
@@ -3292,8 +3307,7 @@
     const arr = sel => JSON.stringify([].slice.call(document.querySelectorAll(sel)).map(el => el.value != null ? String(el.value).trim() : (el.getAttribute('src') || '')));
     return {
       name: f('name'), highlight: f('highlight'), venue: f('venue'), address: f('address'),
-      desc: edDesc ? JSON.stringify(edDesc.get()) : f('desc'),   // D335：圖片影片的增刪也算描述有變
-      info: JSON.stringify(edInfo ? edInfo.get() : []),
+      desc: edDesc ? JSON.stringify(edDesc.get()) : f('desc'),   // D354：區塊的增刪、排序與圖片影片都算描述有變
       sessions: JSON.stringify(edSessions || []),
       tiers: JSON.stringify(edTiers || []),
       lineup: arr('#ed-lineup [data-ed-lineup-row] input'),
@@ -3368,13 +3382,12 @@
     /* 亮點（D300）：儲存後粉絲端即時反映——原型層級先把值寫回這一場的紀錄、頁首同步重畫。 */
     const hlEl = document.querySelector('[data-ed="highlight"]');
     if (hlEl) { ev.highlight = hlEl.value.trim(); renderHighlight(); }
-    /* 說明區塊（D334）：同亮點，原型層級寫回這一場的紀錄；完全空白的塊不留（get() 已濾掉）。 */
-    if (edInfo) ev.infoSections = edInfo.get();
-    /* 描述（D335／D340）：原型層級寫回這一場的紀錄——純文字進 desc；夾帶圖片影片、或文字有粗體與清單時整份進 descBlocks。 */
+    /* 描述（D354）：原型層級寫回這一場的紀錄——純文字進 desc、區塊整份進 descBlocks；
+       說明區塊已併進描述，舊欄位 infoSections 一併拿掉（墓碑 2026-10-05）。 */
     if (edDesc) {
       ev.desc = edDesc.text();
-      const RB = window.ztorRichBody, blocks = edDesc.get();
-      if (edDesc.media().length || (RB && blocks.some(x => x.type === 'text' && RB.isFormatted(x.html)))) ev.descBlocks = blocks; else delete ev.descBlocks;
+      ev.descBlocks = edDesc.get();
+      delete ev.infoSections;
     }
     alert(T('event-detail.edit.saved', 'Saved.'));
     setMode('view');
@@ -3698,7 +3711,7 @@
     /* bookyay 套票轉出的 1 人票票價可有小數且鎖定（D328／D329），不走整數檢核。 */
     if (!(tmTier && tmTier.hideFix) && !/^\d+$/.test(String(tmEl('ed-tm-price').value).trim())) e.push('price');
     if (tmTier && !tmEl('ed-tm-show').classList.contains('switch--on') && hidesLastSellable(tmTier)) e.push('show');
-    if (tmEl('ed-tm-desc').value.trim().length > 100) e.push('desc');   // D328：門票簡介 ≤100 字
+    /* 墓碑 2026-10-05（D353）：門票簡介 ≤100 字的檢核（'desc'）隨欄位退場。 */
     /* 墓碑 2026-09-23（D315）：例外費率的 0–100 檢核（`excpct`）隨欄位退場。 */
     return e;
   }
@@ -3710,15 +3723,7 @@
     el.hidden = !n;
   }
 
-  /* 門票簡介的即時字數（D328）：超過 100 字時提示轉警示色、儲存擋下（tmErrors 的 desc）。 */
-  function syncTmDesc() {
-    const n = tmEl('ed-tm-desc').value.trim().length;
-    const c = tmEl('ed-tm-desc-count');
-    c.textContent = n > 100 ? T('ce.tier.desc.err', 'Keep it to {n} characters.').replace('{n}', 100) + ' (' + n + ' / 100)' : n + ' / 100';
-    c.classList.toggle('field__hint--warn', n > 100);
-    const f = tmEl('ed-tm-desc').closest('.field');
-    if (f) f.classList.toggle('is-invalid', n > 100);
-  }
+  /* 墓碑 2026-10-05（D353）：syncTmDesc()（門票簡介的即時字數）隨欄位退場。 */
   function openTierModal(t) {
     tmTier = t;
     tmTried = false;
@@ -3728,8 +3733,6 @@
     tmEl('ed-tm-qty').value = t.qty == null ? '' : t.qty;
     tmEl('ed-tm-early').value = t.earlyMin == null ? '' : t.earlyMin;
     tmEl('ed-tm-early-hint').textContent = earlyHintFor(t.earlyMin);
-    tmEl('ed-tm-desc').value = t.desc || '';
-    syncTmDesc();
     const sw = tmEl('ed-tm-show');
     sw.classList.toggle('switch--on', !t.hidden);
     sw.setAttribute('aria-checked', t.hidden ? 'false' : 'true');
@@ -3752,7 +3755,7 @@
     del.disabled = sold > 0;
     del.title = sold > 0 ? T('ee.tix.nodelete', "Can't delete — {n} buyers hold this tier").replace('{n}', fmtNum(sold)) : '';
     /* 2026-08-18：票種在子場也可以改（在這裡改＝只改這一場）。 */
-    ['ed-tm-name', 'ed-tm-price', 'ed-tm-qty', 'ed-tm-early', 'ed-tm-desc'].forEach(id => { tmEl(id).readOnly = false; });
+    ['ed-tm-name', 'ed-tm-price', 'ed-tm-qty', 'ed-tm-early'].forEach(id => { tmEl(id).readOnly = false; });
     if (fix) { tmEl('ed-tm-price').readOnly = true; tmEl('ed-tm-qty').readOnly = true; }   // D329：1 人票票價與張數鎖定
     if (isBkyTier(t)) tmEl('ed-tm-price').readOnly = true;   // D330：bookyay 帶入的基準價由港幣原價換算而來、鎖定（改價走在地化的逐幣別覆寫）
     tmEl('ed-tm-save').hidden = false;
@@ -3792,7 +3795,6 @@
   /* 票價一改，計算列表立刻跟上（只換那幾格的字、不重畫，游標留在欄位裡）。 */
   tmEl('ed-tm-price')?.addEventListener('input', () => { syncTmCalc(); syncTmFoot(); });
   /* 墓碑 2026-09-23（D315）：例外費率欄與例外開關的兩個 listener 隨欄位退場。 */
-  tmEl('ed-tm-desc')?.addEventListener('input', () => { syncTmDesc(); syncTmFoot(); });
   tmEl('ed-tm-show')?.addEventListener('click', () => {
     const sw = tmEl('ed-tm-show');
     if (sw.classList.contains('switch--locked')) return;   // D329：1 人票鎖定為隱藏
@@ -3820,7 +3822,6 @@
     tmTier.qty = Math.max(sold, Number(tmEl('ed-tm-qty').value) || 0);
     /* 墓碑 2026-09-23（D316）：儲存時不再寫回 `fee`（粉絲加價的手續費）。 */
     tmTier.earlyMin = tmEl('ed-tm-early').value;
-    tmTier.desc = tmEl('ed-tm-desc').value.trim();                       // D328
     tmTier.hidden = !tmEl('ed-tm-show').classList.contains('switch--on'); // D328：關＝隱藏
     tmTier.paused = tmEl('ed-tm-paused').classList.contains('switch--on');
     closeTierModal();

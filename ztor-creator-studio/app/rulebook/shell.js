@@ -29,7 +29,8 @@
     {n:'5', t:'電子商店', groups:[
       {t:'電子商店', pages:[{h:'eshop-sales.html', t:'電子商店販售流程'},{h:'bundles.html', t:'組合包與票務商品'},{h:'promo-rules.html', t:'優惠規則'},{t:'建立商品與商品細節'},{t:'拍賣'},{t:'補貨與新品貼文'},{t:'商店設定'}]},
       {t:'訂單管理', pages:[{t:'訂單列表'},{t:'訂單詳情'}]},
-      {t:'取貨管理', pages:[{t:'取貨場次'},{t:'手機 Scanner'}]}
+      {t:'取貨管理', pages:[{t:'取貨場次'},{t:'手機 Scanner'}]},
+      {t:'需求看板', pages:[{h:'demand-board.html', t:'需求看板'}]}
     ]},
     {n:'6', t:'活動', groups:[
       {t:'活動', pages:[{h:'events.html', t:'活動總覽'},{h:'event-create.html', t:'建立活動'},{h:'event-detail.html', t:'活動詳情與編輯'},{h:'event-bookyay.html', t:'bookyay 匯入與對照'}]}
@@ -49,7 +50,8 @@
       {t:'Admin IP Bank', pages:[{t:'IP Bank'},{t:'建立 IP Entry'}]},
       {t:'IP Bank Reporting', pages:[{t:'IP Bank Reporting'}]},
       {t:'平台費率設定', pages:[{t:'平台費率設定'}]},
-      {t:'平台優惠設定', pages:[{t:'平台優惠設定'}]}
+      {t:'平台優惠設定', pages:[{t:'平台優惠設定'}]},
+      {t:'平台忠誠點數設定', pages:[{h:'admin-loyalty.html', t:'平台忠誠點數設定'}]}
     ]}
   ];
   function current(){

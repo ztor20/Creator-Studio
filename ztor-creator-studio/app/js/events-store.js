@@ -29,17 +29,14 @@
    一場只有一句；沒寫＝沒有。示範只放三筆，其餘留空——這是行銷語、不是每場都有。bookyay 帶入的
    活動沒有這欄（bookyay 沒有對應資料，create-event 的帶入草稿亮點留空、不鎖）。
 
-   infoSections（2026-09-29 D334 / 5.1.6.1 F2）：描述下方的說明區塊，[{ title, body }]，照運營排定的順序；
-   選填、沒寫＝0 塊。標題與內文都由運營自由填寫（沒有預設標題），每一塊的標題與內文各是一個可翻譯欄位。
-   取代已刪的「進階詳細資料」兩份清單（需攜帶物品／活動須知）；示範只放兩筆（realive-asia-taipei 兩塊、
-   album-signing-taipei 一塊），內容是原型自擬的中文示範。bookyay 帶入的活動沒有這欄（不帶入）。
-
-   內文的圖片與影片（2026-09-29 D335 / 5.1.6.1 F2）：描述與說明區塊的內文可以夾帶圖片與影片。
-   只有文字時照舊只有字串（desc／body）；夾帶媒體時另多一份照先後排列的 blocks——
-     描述：descBlocks: [{ type:'text', text }, { type:'image'|'video', src }, …]
-     說明區塊：{ title, body, blocks: [...] }
-   desc／body 永遠是「只有文字」的那一份（段與段空一行），翻譯表只列它、媒體不翻譯。
-   示範：realive-asia-taipei 第一塊（粉絲福利說明）在兩段文字之間夾一張圖（原型自擬）。
+   描述的區塊（2026-10-05 D354 / 5.1.6.1 F2；前身 D335 內文夾圖、D340 粗體與清單）：描述＝一串照運營排定順序的區塊，
+     descBlocks: [{ type:'text', html | text }, { type:'image'|'video', src }, …]
+   每個文字區塊各自一筆（沒有標題、各是一個可翻譯欄位），圖片與影片各自一個區塊；整份媒體合計最多 10 個。
+   只有一段純文字的活動照舊只有字串 desc（讀者用 ztorRichBody.migrate(descBlocks || desc, infoSections) 收成區塊）。
+   desc 是給舊讀者的純文字（示範資料放第一段）；有 descBlocks 時以 descBlocks 為準。
+   墓碑 2026-10-05（D354 決定八）：infoSections（D334 說明區塊，[{ title, body, blocks? }]）退場——兩筆示範
+   （realive-asia-taipei 兩塊、album-signing-taipei 一塊）已轉成 descBlocks 的文字區塊：原標題併進該區塊第一行並設粗體，
+   第一塊原本夾在兩段文字之間的圖片成為獨立的圖片區塊、位置不變。內容是原型自擬的中文示範。
 
    sold／status 是編輯態的行為輸入、不只是顯示值：
      · sold > 0  → 場次已售出，該票種張數不得低於它的 sold、已售票種不可刪。
@@ -95,7 +92,7 @@
          沒寫的活動預設 'warn'（仍可入場）；這一場示範 'block'。 */
       early: 'block',
       /* earlyMin＝比開放入場提早幾分鐘（2026-08-11 新欄，沒寫＝無）。2026-09-29：手續費種子 `fee` 清掉（D316 已退場，D327 決定八）。
-         desc＝門票簡介、hidden＝顯示開關關閉（皆 2026-09-29 D328 新欄，沒寫＝無簡介／顯示）。
+         hidden＝顯示開關關閉（2026-09-29 D328 新欄，沒寫＝顯示）。墓碑 2026-10-05（D353）：desc（門票簡介）整欄移除。
          hideFix＝bookyay 套票轉出的 1 人票、鎖定為隱藏；組合包的 fix＝bookyay 自動建立、整組鎖定，
          sale＝限時折扣 { pct, from, to }（早鳥，鎖定）（皆 2026-09-29 D329 新欄，示範在 taipei-nye）。 */
       tiers: [
@@ -104,8 +101,7 @@
         /* 墓碑 2026-09-23（D315）：`feeException`（D311 的逐門票例外平台費率，這一筆原本
            示範「Admin 為這張票談了 3%」）隨例外整組退場——平台費只剩 Admin 在費率設定頁
            設的兩層（General 預設 × 逐 creator 覆寫），門票資料不再帶自己的費率。 */
-        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 100, earlyMin: 30, override: { USD: 135 },
-          desc: '含彩排參觀與限定手環，入場走 VIP 通道。' },
+        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 100, earlyMin: 30, override: { USD: 135 } },
         { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 200 },
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 300 }
       ],
@@ -185,14 +181,13 @@
       name: 'REALIVE World Tour — Asia leg',
       highlight: 'Asia leg finale — Taipei only',   // D300 亮點示範
       desc: 'The Asia leg — three cities, one setlist.',
-      infoSections: [   // D334 說明區塊示範（原型自擬）
-        { title: '粉絲福利說明', body: '購買 VIP 票的粉絲可參加演出前的彩排參觀，並獲得巡演限定手環一條。\n\n手環於入場時憑票領取，數量依售出的 VIP 票準備，不另行販售。',
-          blocks: [   // D335 內文夾圖示範（原型自擬）
-            { type: 'text', text: '購買 VIP 票的粉絲可參加演出前的彩排參觀，並獲得巡演限定手環一條。' },
-            { type: 'image', src: 'images/projects/nick-realive.jpg' },
-            { type: 'text', text: '手環於入場時憑票領取，數量依售出的 VIP 票準備，不另行販售。' }
-          ] },
-        { title: '輪椅座位購票說明', body: '場館設有輪椅座位，每位輪椅使用者可另購一張陪同者票。\n請於購票後 3 日內來信提供身心障礙證明影本，逾期將改為一般座位。' }
+      /* D354 描述區塊示範（原型自擬）：原 D334 兩塊說明區塊轉成文字區塊（原標題＝第一行粗體），圖片自成一個區塊 */
+      descBlocks: [
+        { type: 'text', html: '<p>The Asia leg — three cities, one setlist.</p>' },
+        { type: 'text', html: '<p><strong>粉絲福利說明</strong></p><p>購買 VIP 票的粉絲可參加演出前的彩排參觀，並獲得巡演限定手環一條。</p>' },
+        { type: 'image', src: 'images/projects/nick-realive.jpg' },
+        { type: 'text', html: '<p>手環於入場時憑票領取，數量依售出的 VIP 票準備，<em>不另行販售</em>。</p>' },
+        { type: 'text', html: '<p><strong>輪椅座位購票說明</strong></p><p>場館設有輪椅座位，每位輪椅使用者可另購一張陪同者票。<br>請於購票後 3 日內來信提供身心障礙證明影本，逾期將改為一般座位。</p>' }
       ],
       lineup: ['NICKTHEREAL 周湯豪'],
       venue: 'Taipei Arena',
@@ -204,8 +199,7 @@
       doors: '18:30',
       tiers: [
         /* reserved＝下單未付款佔走的、paused＝暫停販售（2026-08-11 新欄，示範營運列表用）。 */
-        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 40, earlyMin: 30, reserved: 6,
-          desc: '含彩排參觀與限定手環，入場走 VIP 通道。' },
+        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 40, earlyMin: 30, reserved: 6 },
         { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 60, reserved: 11 },
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 100, paused: true }
       ],
@@ -364,8 +358,10 @@
       name: 'Album signing — Taipei',
       highlight: '150 numbered slots only',   // D300 亮點示範
       desc: 'In-store signing for the new record. 150 numbered slots, one item signed per slot.',
-      infoSections: [   // D334 說明區塊示範（原型自擬）
-        { title: '簽名流程', body: '依號碼牌順序入場，每個號碼可簽一件物品。\n請提前準備好要簽名的物品，現場不提供代購。' }
+      /* D354 描述區塊示範（原型自擬）：原 D334 一塊說明區塊轉成第二個文字區塊（原標題＝第一行粗體） */
+      descBlocks: [
+        { type: 'text', html: '<p>In-store signing for the new record. 150 numbered slots, one item signed per slot.</p>' },
+        { type: 'text', html: '<p><strong>簽名流程</strong></p><p>依號碼牌順序入場，每個號碼可簽一件物品。<br>請提前準備好要簽名的物品，現場不提供代購。</p>' }
       ],
       lineup: ['NICKTHEREAL 周湯豪'],
       venue: 'Eslite Xinyi',
@@ -1884,6 +1880,13 @@
     draftBundlesOf: function (id) {
       var ev = window.ztorEvents.get(id);
       return ev ? (ev.bundles || []).slice() : [];
+    },
+    /* 取消活動的連動下架（2026-10-05 · D352 稽核 B3／B16，主規格 §7.14「活動取消或下架時連動組合包」，D292）：
+       回傳會跟著一起下架的「上架中」組合包（給確認彈窗列名）；已下架、已封存、已刪除的不受影響、不列。
+       活動詳情頁頁首與活動清單列操作的「取消活動」共用這一支，確認內容才會說同一件事。 */
+    cancelBundlesOf: function (id) {
+      var ev = window.ztorEvents.get(id);
+      return ev ? (ev.bundles || []).filter(function (b) { return b.listed !== false && !b.archived && !b.deleted; }) : [];
     },
     removeDraft: function (id) {
       var ev = window.ztorEvents.get(id);

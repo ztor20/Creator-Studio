@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>需求看板 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261005a">
+<script src="shell.js?v=20261005a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.formula{margin:8px 0 10px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-sunken);font-size:14px}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+/* 互動試算 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .ins{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.sim label{display:block;font-size:12px;color:var(--text-3)}
+.sim input[type=number]{display:block;width:100%;margin-top:3px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>需求看板</h1>
+<p class="lede">創作者在下生產單之前，依市場看各尺寸的需求占比與建議生產量，決定各尺寸要做多少。看板上的數字只供參考，不連動庫存、出貨規則或生產單。</p>
+
+<div class="toc">
+  <a href="#intro">1 需求看板的入口與用途</a><a href="#source">2 需求從哪些來源算進來</a><a href="#market">3 市場：國家與城市兩層</a><a href="#filter">4 篩選與分組</a><a href="#algo">5 需求估算的算法</a><a href="#metrics">6 看板上的數字</a>
+</div>
+
+<h2 id="intro"><span class="n">1</span>需求看板的入口與用途</h2>
+<p>需求看板是電子商店底下的一個獨立頁，創作者在下生產單之前用它看各市場各尺寸的需求，再決定各尺寸的生產量與各市場的出貨量。</p>
+<ul class="plain">
+  <li>入口在電子商店的下拉選單</li>
+  <li>單一商品另有入口，點開後顯示該商品自己的數據</li>
+  <li>看板與單一商品的數據用同一套算法，同一商品、同一市場的數字一致</li>
+  <li>建議生產量、差距與預測售罄天數只供創作者參考，不連動庫存、出貨規則或生產單</li>
+  <li>看板只讀取商品的分類、屬性與尺寸，不在看板上編輯商品</li>
+</ul>
+<p class="note">依據：5.1.5.16 頁面定位；主規格 §3.2.1、§7.17；D360。</p>
+
+<h2 id="source"><span class="n">2</span>需求從哪些來源算進來</h2>
+<p>需求取自 Creator Studio 上所有能蒐集到需求的來源，購買紀錄只是其中一個；第一期只納入訂單與組合包。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">需求來源</th><th style="width:16%">第一期</th><th>怎麼記到尺寸</th></tr></thead>
+  <tbody>
+    <tr><td>訂單</td><td><span class="tag ok">納入</span></td><td>訂單品項記到商品選項，例如「Coastline tee / M」</td></tr>
+    <tr><td>組合包</td><td><span class="tag ok">納入</span></td><td>組合包的每個成員各自記到選項</td></tr>
+    <tr><td>其他來源</td><td><span class="tag off">不納入</span></td><td>記到尺寸之前不進統計</td></tr>
+  </tbody>
+</table></div>
+<p>看板上有一行文字，寫出目前納入的需求來源與統計期間，讓創作者判斷數字有多可靠。</p>
+<p class="note">依據：5.1.5.16 F5；主規格 §7.17「資料來源」；D360。</p>
+
+<h2 id="market"><span class="n">3</span>市場：國家與城市兩層</h2>
+<p>看板把需求依市場分組，市場分國家與城市兩層，資料取自訂單的收件國家與城市。</p>
+
+<h3>訂單的收件國家與城市</h3>
+<p>訂單的收件資料在完整地址之外，新增「國家」與「城市」兩個欄位，作為需求看板的市場依據。</p>
+<ul class="plain">
+  <li>完整收件地址欄位保留，粉絲結帳時照舊必填，與國家、城市兩個欄位並存</li>
+  <li>國家與城市由粉絲結帳時填寫；粉絲端結帳頁同步新增這兩個欄位之前，兩欄為空</li>
+  <li>兩欄為空時不從完整地址推估國家或城市</li>
+  <li>粉絲個人檔案的所在地是自由文字，不作為市場依據</li>
+</ul>
+
+<h3>市場怎麼分組</h3>
+<ul class="plain">
+  <li>國家一定有；城市只在資料有記錄時才顯示，沒有就只分到國家</li>
+  <li>看板的市場列以國家為主體，可展開到城市</li>
+  <li>沒有國家的需求歸在「未提供地區」，照常計入總量與尺寸占比</li>
+  <li>預設依需求指數由高到低排列，「未提供地區」排在最後</li>
+  <li>粉絲端結帳頁新增兩個欄位之前，所有需求都在「未提供地區」；看板只有總需求量與各尺寸占比，沒有市場之間的比較</li>
+</ul>
+<p class="note">依據：主規格 §7.17「市場：國家與城市兩層」；5.1.5.3.1 §2.4；5.1.5.16 F4.1；D360。</p>
+
+<h2 id="filter"><span class="n">4</span>篩選與分組</h2>
+<p>創作者用商品分類、適用對象與單一商品縮小統計範圍。</p>
+<ul class="plain">
+  <li>商品分類：可只選大類，也可再選到次分類，分類見<a href="taxonomy.html#apparel">服飾配件的大類與次分類</a></li>
+  <li>適用對象：男、女、中性、童分開統計，尺寸占比不跨適用對象混算，因為同一個尺寸在不同適用對象代表的大小不同</li>
+  <li>單一商品：選定後顯示該商品自己的數字</li>
+  <li>尺寸值用標準尺寸；賣家自行輸入的尺寸，跨商品合併時歸在「其他尺寸」，見<a href="taxonomy.html#presets">尺寸與顏色的快捷預設與自行輸入</a></li>
+  <li>商品細節頁的單品數據照實顯示該商品所有尺寸值，包含賣家自行輸入的值</li>
+</ul>
+<p class="note">依據：5.1.5.16 F2；主規格 §7.16、§7.17「分階段與統計切面」；D360。</p>
+
+<h2 id="algo"><span class="n">5</span>需求估算的算法</h2>
+<p>看板上的需求量、需求指數、建議生產量、差距與預測售罄天數，都照下列公式算；看板與單品數據不各自改公式。</p>
+<div class="flow"><span class="tag">需求量</span><span class="arr">→</span><span class="tag">尺寸占比與需求指數</span><span class="arr">→</span><span class="tag">成長係數</span><span class="arr">→</span><span class="tag">建議生產量</span><span class="arr">→</span><span class="tag">差距與預測售罄天數</span></div>
+
+<h3>算法用到的名詞</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">名詞</th><th>意思</th></tr></thead>
+  <tbody>
+    <tr><td>統計期間</td><td>往回看多久的資料</td></tr>
+    <tr><td>需求量</td><td>統計期間內，各需求來源的件數依權重加總</td></tr>
+    <tr><td>尺寸占比</td><td>某尺寸的需求量 ÷ 該市場全部尺寸的需求量</td></tr>
+    <tr><td>比較期間</td><td>算成長係數時，拿近期與前期的需求量相比，近期與前期各是一段時間</td></tr>
+    <tr><td>上下限</td><td>成長係數允許的最高值與最低值</td></tr>
+    <tr><td>最少樣本</td><td>一個市場至少要有幾件需求量，數字才算數</td></tr>
+  </tbody>
+</table></div>
+
+<h3>需求量</h3>
+<div class="formula">需求量 ＝ 各來源件數 × 該來源權重，全部加總</div>
+<ul class="plain">
+  <li>以件計，不以筆訂單計：一筆訂單買 2 件 M，算 2 件</li>
+  <li>已撤銷的訂單品項不算</li>
+  <li>訂單與組合包的權重是 1</li>
+</ul>
+
+<h3>需求指數</h3>
+<div class="formula">需求指數 ＝ 該市場的需求量 ÷ 最高需求市場的需求量 × 100，四捨五入到整數</div>
+<ul class="plain">
+  <li>需求最高的市場是 100，其他市場依比例往下</li>
+  <li>只在同一層級內比較：國家與國家比，城市與同一個國家內的其他城市比</li>
+</ul>
+<div class="stepsum">例：假設曼谷 500 件、馬尼拉 420 件，最高為曼谷。<br>曼谷的需求指數是 100，馬尼拉是 420 ÷ 500 × 100 ＝ 84。</div>
+
+<h3>成長係數</h3>
+<div class="formula">成長係數 ＝ 近期比較期間的需求量 ÷ 前期比較期間的需求量，再限制在上下限之內</div>
+<ul class="plain">
+  <li>前期需求量為 0 時，成長係數取 1</li>
+  <li>算出的值高於上限就取上限，低於下限就取下限，避免一次爆量或短暫冷清把建議量帶偏</li>
+</ul>
+<div class="stepsum">例：假設近期需求量 120 件、前期 100 件，成長係數是 120 ÷ 100 ＝ 1.2。</div>
+
+<h3>建議生產量</h3>
+<div class="formula">某市場某尺寸的建議生產量 ＝ 該市場統計期間的需求量 × 該市場該尺寸的占比 × 該市場的成長係數，四捨五入到整數</div>
+<ul class="plain">
+  <li>意思是預估下一個與統計期間等長的時段，這個市場這個尺寸會要多少件</li>
+  <li>一個市場的建議生產量，是各尺寸建議生產量的加總</li>
+</ul>
+<div class="stepsum">例：假設曼谷需求量 300 件、S 占 40%、成長係數 1.2。<br>S 的建議生產量 ＝ 300 × 0.4 × 1.2 ＝ 144 件。</div>
+
+<h3>計畫生產量與差距</h3>
+<p>創作者在看板上填入自己打算生產的數量，看板立即算出建議值與計畫值的落差。</p>
+<div class="formula">差距 ＝（建議生產量 － 計畫生產量）÷ 計畫生產量，以百分比顯示</div>
+<ul class="plain">
+  <li>計畫生產量選填，可以填到市場層，或市場與尺寸層；數量為整數，不得為負</li>
+  <li>只填到市場層，只顯示市場層的差距；填到尺寸層，才顯示尺寸層的差距</li>
+  <li>差距為正，代表建議生產量比計畫生產量多；為負，代表比計畫少</li>
+  <li>沒填計畫生產量，或填 0，差距與預測售罄天數都不顯示</li>
+  <li>計畫生產量只供看板對照，不寫入庫存、補貨流程或任何生產單</li>
+</ul>
+<div class="stepsum">例：假設某市場某尺寸的建議生產量是 144 件，計畫生產量填 120 件。<br>差距 ＝ （144 － 120）÷ 120 ＝ 20%，建議比計畫多 20%。</div>
+
+<h3>預測售罄天數</h3>
+<div class="formula">預測售罄天數 ＝ 計畫生產量 ÷ 日均需求量<br>日均需求量 ＝ 統計期間的需求量 ÷ 統計期間天數 × 成長係數</div>
+<ul class="plain">
+  <li>日均需求量與建議生產量用同一個基準</li>
+  <li>計算層級跟著計畫生產量：填到市場層就算市場層，填到尺寸層就算各尺寸</li>
+  <li>沒填計畫生產量，或填 0，不顯示</li>
+</ul>
+<div class="stepsum">例：假設統計期間 120 天、需求量 300 件、成長係數 1.2，計畫生產量 150 件。<br>日均需求量 ＝ 300 ÷ 120 × 1.2 ＝ 3 件；預測售罄天數 ＝ 150 ÷ 3 ＝ 50 天。</div>
+
+<h3>新商品與資料不足</h3>
+<p>某市場的需求量低於最少樣本時，往上找同類商品當參考，最多找兩層。</p>
+<ol class="plain">
+  <li>先找同一個次分類在該市場的所有商品</li>
+  <li>仍不足，再找同一個大類在該市場的所有商品</li>
+  <li>還是不足，該市場顯示「資料不足」，不給建議生產量</li>
+</ol>
+<ul class="plain">
+  <li>尺寸占比與成長係數直接用參考資料算</li>
+  <li>建議生產量的基數，改用參考資料中每件商品的平均需求量</li>
+  <li>用到參考資料的市場，標明「參考同類商品」與參考的是哪一層（次分類或大類）</li>
+</ul>
+
+<h3>試算</h3>
+<p>下列數字為假設；上下限留空時不套用。</p>
+<div class="sim" id="sim">
+  <div class="ins">
+    <label>統計期間需求量（件）<input type="number" id="inDemand" value="300" min="0"></label>
+    <label>該尺寸占比（%）<input type="number" id="inShare" value="40" min="0" max="100"></label>
+    <label>近期需求量（件）<input type="number" id="inRecent" value="120" min="0"></label>
+    <label>前期需求量（件）<input type="number" id="inPrev" value="100" min="0"></label>
+    <label>成長係數下限（可留空）<input type="number" id="inLow" step="0.1" min="0"></label>
+    <label>成長係數上限（可留空）<input type="number" id="inHigh" step="0.1" min="0"></label>
+    <label>統計期間天數<input type="number" id="inDays" value="120" min="1"></label>
+    <label>計畫生產量（件）<input type="number" id="inPlan" value="150" min="0"></label>
+  </div>
+  <div class="out">
+    <div><div class="k">成長係數</div><div class="v" id="outGrowth">—</div></div>
+    <div><div class="k">建議生產量</div><div class="v" id="outSuggest">—</div></div>
+    <div><div class="k">日均需求量</div><div class="v" id="outDaily">—</div></div>
+    <div><div class="k">預測售罄天數</div><div class="v" id="outDays">—</div></div>
+    <div><div class="k">差距</div><div class="v" id="outGap">—</div></div>
+  </div>
+</div>
+<p class="note">依據：主規格 §7.17「需求量」至「新商品與資料不足」；5.1.5.16 F4.2、F4.3；D360。</p>
+
+<h2 id="metrics"><span class="n">6</span>看板上的數字</h2>
+<p>看板頂部先給目前篩選範圍的量體與資料缺口，下方的市場需求表再逐市場列出尺寸占比與建議生產量。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">指標</th><th>意思</th></tr></thead>
+  <tbody>
+    <tr><td>統計期間總需求量</td><td>目前篩選範圍在統計期間內，所有市場的需求量合計</td></tr>
+    <tr><td>涵蓋市場數</td><td>有需求的國家數，城市不另計</td></tr>
+    <tr><td>未提供地區占比</td><td>沒有國家資料的需求量占總需求量的比例</td></tr>
+    <tr><td>預測售罄天數</td><td>創作者選定的市場，照上方公式算出</td></tr>
+    <tr><td>尺寸差距</td><td>創作者選定的市場與尺寸，建議生產量相對計畫生產量的差距</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>創作者可在市場列中選定一個市場，再選定該市場內的一個尺寸，作為預測售罄天數與尺寸差距的指標對象</li>
+  <li>同一時間只有一個選定對象，可取消，預設不選定</li>
+  <li>前台尚未提供國家資料時，未提供地區占比是 100%，涵蓋市場數是 0，預測售罄天數與尺寸差距因沒有可選定的國家市場而不顯示</li>
+  <li>統計期間內沒有任何可統計的需求時，只顯示資料來源與統計期間，不顯示數字</li>
+</ul>
+<p class="note">依據：5.1.5.16 F3、F4.1、「頁面狀態」；D360。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.16-需求看板.md</code>、<code>5.1.5.3.1-訂單詳情.md §2.4</code>、<code>5.1.5.1-商品細節頁.md §2.19</code>、<code>0-設計規格書.md §7.1／§7.16／§7.17</code></li>
+    <li>決策：D360</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>統計期間與兩段比較期間各多長、成長係數的上下限數值、最少樣本的件數，以及賣家能不能自己調整這些參數</li>
+    <li>預購、共創方案、拍賣要不要加記尺寸</li>
+    <li>預購、共創方案、拍賣先補哪一個</li>
+    <li>預購、共創方案、拍賣各自的權重</li>
+    <li>尺寸預留、抽籤登記、願望清單、到貨通知這些尚不存在的需求來源，是否另立需求</li>
+    <li>城市欄位是自由文字，或由平台提供清單</li>
+    <li>「未提供地區」是否參與需求指數的計算，是否計入最高需求市場的分母</li>
+    <li>選定單一商品時，看板的尺寸值照實顯示，或維持把自行輸入的尺寸歸入「其他尺寸」</li>
+    <li>沒有適用對象值的商品怎麼歸組</li>
+    <li>沒有尺寸選項的商品是否不在看板範圍</li>
+    <li>計畫生產量能否在跨多個商品的範圍填寫，填了怎麼儲存</li>
+    <li>商品改分類或適用對象之後，歷史需求按下單當時或改後的分類歸組</li>
+  </ul>
+  <p class="k">最近同步：2026-10-05</p>
+</details>
+</div>
+
+<script>
+(function(){
+  function num(id){ var v=document.getElementById(id).value; return v===''?null:Number(v); }
+  function set(id,t){ document.getElementById(id).textContent=t; }
+  function fmt(x,d){ return String(Math.round(x*Math.pow(10,d))/Math.pow(10,d)); }
+  function render(){
+    var demand=num('inDemand')||0, share=(num('inShare')||0)/100, recent=num('inRecent')||0, prev=num('inPrev')||0;
+    var low=num('inLow'), high=num('inHigh'), days=num('inDays')||0, plan=num('inPlan')||0;
+    var g=prev===0?1:recent/prev;
+    if(low!==null && g<low) g=low;
+    if(high!==null && g>high) g=high;
+    var sug=Math.round(demand*share*g);
+    var daily=days>0?demand/days*g:0;
+    set('outGrowth',fmt(g,2));
+    set('outSuggest',sug+' 件');
+    set('outDaily',fmt(daily,2)+' 件');
+    if(plan>0){
+      set('outDays',daily>0?fmt(plan/daily,1)+' 天':'—');
+      var gap=(sug-plan)/plan*100;
+      set('outGap',(gap>0?'建議比計畫多 ':(gap<0?'建議比計畫少 ':'相同 '))+(gap===0?'':fmt(Math.abs(gap),1)+'%'));
+    } else {
+      set('outDays','不顯示（沒填計畫生產量）');
+      set('outGap','不顯示（沒填計畫生產量）');
+    }
+  }
+  document.querySelectorAll('#sim input').forEach(function(i){ i.addEventListener('input',render); });
+  render();
+})();
+</script>
+</body>
+</html>

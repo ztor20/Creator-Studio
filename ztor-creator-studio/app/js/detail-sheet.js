@@ -250,6 +250,12 @@
     if (!el) return;
     if (el.closest('[data-sheet-ignore]') || el.hasAttribute('data-sheet-ignore')) return;
     if (el.closest('.detail-sheet')) return;                       /* 覆蓋層自己的按鈕 */
+    /* 列裡的「⋮」更多選單（<details><summary> 與裡面的選單項）、表單控制項，是列內自己的操作，
+       不是「打開這一列」——不攔。2026-10-05：活動清單的「取消活動」選單項（D352 稽核 B11）
+       就是被這裡搶走，真人點 ⋮ 會直接開詳情覆蓋層、選單開不出來。只排除 details 與表單控制項，
+       不排除一般 <button>：有些列的 chevron「開啟」鈕本來就要落入整列導航。 */
+    var ctl = e.target.closest('details, input, select, textarea, label, [role="menu"], [role="menuitem"]');
+    if (ctl && ctl !== el && el.contains(ctl)) return;
     if (el.target === '_blank') return;
 
     var url = urlOf(el);

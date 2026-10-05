@@ -1,38 +1,66 @@
 /* ============================================================
-   rich-body.css · 內文編輯器（文字＋圖片／影片）
+   rich-body.css · 描述區塊編輯器（一串可排序的文字／圖片／影片區塊）
    ------------------------------------------------------------
-   首見於建立活動步驟 2 的「描述」與每一塊「說明區塊」的內文（D335，2026-09-29；
-   5.1.6.1 §4.2 F2、5.1.6.2 F2）：內文除了文字之外可以夾帶圖片與影片，插在文字之間的
-   哪個位置由運營決定。互動由 partials/rich-body.js 負責（插入點＝游標、刪除後前後文字併回一段）。
+   首見於建立活動步驟 2 的「描述」（D335，2026-09-29：文字之間夾圖片影片；D340：粗體與清單）。
+   2026-10-05 D354 改成區塊模型（5.1.6.1 §4.2 F2、5.1.6.2 F2、主規格 §7.10）：
+     描述＝一串區塊，三種型別（文字／圖片／影片）；每個區塊沒有標題、都可以拖動排序、都可以刪除；
+     「新增描述」加一個文字區塊；在文字區塊插入的圖片影片各自成一個區塊、排在它之後；
+     文字區塊的工具＝粗體／斜體／連結／編號清單／項目符號清單／分隔線。
+   說明區塊（info-sections.css，D334）同輪退場：「可增刪、可拖動排序的一串卡」的版面與把手搬進本檔。
+   互動由 partials/rich-body.js 負責（排序＝按住把手拖動或把手聚焦按上下鍵；插入點＝區塊之後）。
 
    ---- 重用，不另起爐灶 ----
+   每個區塊＝.card.card--muted（卡中卡的 L2 分組面，Q66；原 .info-section 的做法）；
    文字塊＝.textarea（input.css）；媒體塊＝.upload-tile（upload-tile.css ＋ partials/upload-tile.js：
-   已填＝實線中性邊、hover 出現替換／刪除、影片多一顆播放，Q40 的單一產生路徑）；
-   插入鈕＝.btn.btn--ghost.btn--sm。本檔只管「一疊文字與媒體怎麼排」與兩個狀態。
+   已填＝實線中性邊、hover 出現替換，影片多一顆播放；刪除改走區塊的 ✕，上傳格自己的刪除鈕在這裡收起）；
+   把手與刪除＝.btn.btn--icon.btn--sm；格式鈕＝.btn--ghost.btn--icon.btn--sm；插入鈕＝.btn.btn--ghost.btn--sm；
+   新增描述＝.btn.btn--outline.btn--add；連結列的輸入框＝.input、錯誤句＝.field__error。
+   本檔只管「區塊怎麼排、區塊裡怎麼排」與幾個狀態。
 
    ---- surface ----
-   坐在 .field 裡：form-section--outlined（L1 卡）或 .card--muted（L2，說明區塊的每一塊）上。
-   .textarea 與 .upload-tile 各自有邊框，兩層都成立。
+   編輯器坐在 .field 裡（form-section--outlined，L1 卡）；每個區塊是 L2 薄膜面。
+   .textarea／.upload-tile／.input 各自有邊框，兩層都成立。
 
    anatomy
      .rich-body                         容器（flex column，節奏由 gap 持有，Q103）
-       .rich-body__blocks               文字塊與媒體塊交錯（flex column）
-         .textarea.rich-body__text      文字塊：contenteditable（D340 起可排粗體與清單），外觀照 .textarea；
-                                        最小高度＝--rb-rows 列（第一塊 3–4 列、其餘 2 列）；.is-blank＝空白（畫 data-placeholder）
-         .upload-tile.rich-body__media  媒體塊；預覽框照媒體本身的長寬比（--rb-ratio，JS 讀到尺寸後填；D340 尺寸比例不限）
-       .rich-body__tools                工具列（靠左、可換行）
-         .rich-body__fmt                格式鈕群組：粗體／項目符號清單／編號清單（.btn--ghost.btn--icon.btn--sm，按下態 aria-pressed）
-         .rich-body__sep                與插入鈕之間的 1px 直線
-         插入圖片／插入影片               .btn--ghost.btn--sm；滿 10 個媒體時 disabled（D340）
-         .field__hint.rich-body__limit  滿額時的說明（「每段最多 10 個圖片或影片」）
+       .rich-body__blocks               區塊清單（flex column）
+         .rich-body__block.card.card--muted[data-rb-block="text|image|video"]   一個區塊（flex 橫排）
+           .rich-body__grip             排序把手（.btn--icon；按住才可拖，聚焦時上下鍵移動）
+           .rich-body__main             內容欄（flex column）
+             文字區塊：
+               .rich-body__tools        工具列（靠左、可換行）
+                 .rich-body__fmt        格式鈕群組：粗體／斜體／連結／編號清單／項目符號清單／分隔線（按下態 aria-pressed）
+                 .rich-body__ins        插入群組：.rich-body__sep（1px 直線）＋插入圖片／插入影片（整份描述滿 10 個時 disabled）
+               .rich-body__linkbar      連結輸入列（按連結鈕才展開）：.input＋套用／移除連結／取消＋.field__error
+               .textarea.rich-body__text   contenteditable；最小高度＝--rb-rows 列（第一個 3–4 列、其餘 2 列）；
+                                        .is-blank＝空白（畫 data-placeholder）
+             媒體區塊：
+               .upload-tile.rich-body__media   預覽框照媒體本身的長寬比（--rb-ratio，JS 讀到尺寸後填；D340 尺寸比例不限）
+           .rich-body__remove           刪除（.btn--icon ✕；只剩一個文字區塊時 disabled）
+       .rich-body__foot                 新增描述（.rich-body__add）＋滿額說明（.field__hint.rich-body__limit）
    狀態
      .rich-body--has-media              至少一個媒體（檢視態收起空白文字塊的「—」）
-     .is-locked                         鎖定（bookyay 帶入的描述）：工具列收起、文字不可編輯、媒體格不出現替換／刪除
-     [data-mode="view"] 內              兩段式面板的檢視態：文字塊畫成讀數（無框、不可點），工具列隨 shared.css 收起
+     .rich-body__block.is-dragging      拖動中的那一塊
+     .rich-body__block.is-locked        bookyay 帶入的第 1 段（文字＋其後的媒體）：工具列與刪除收起、文字不可編輯、媒體不可替換；
+                                        仍可拖動
+     [data-mode="view"] 內              兩段式面板的檢視態：區塊拿掉卡面、文字塊畫成讀數（無框、不可點），工具列與新增鈕收起
    ============================================================ */
 
-.rich-body { display: flex; flex-direction: column; gap: var(--sp-8); min-width: 0; }
-.rich-body__blocks { display: flex; flex-direction: column; gap: var(--sp-8); }
+.rich-body { display: flex; flex-direction: column; gap: var(--sp-12); min-width: 0; }
+.rich-body__blocks { display: flex; flex-direction: column; gap: var(--sp-12); }
+
+/* ---- 區塊殼：把手｜內容｜刪除（原 .info-section 的版面） ---- */
+.rich-body__block {
+  --card-pad: var(--sp-12);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-8);
+}
+.rich-body__main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--sp-8); }
+.rich-body__grip { flex: none; cursor: grab; }
+.rich-body__grip:active { cursor: grabbing; }
+.rich-body__remove { flex: none; }
+.rich-body__block.is-dragging { opacity: .5; }
 
 /* 媒體預覽框：寬度封頂、照媒體本身的比例（還沒讀到尺寸前先用 16:9）。
    內文媒體不是展示素材槽，不套 --portrait 的 2:3（比例〔產品待確認〕，主規格 §7.10「內文媒體」）。 */
@@ -44,27 +72,36 @@
 }
 /* 圖片整張看得到、不裁切（上傳格預設 object-fit: cover 是給固定比例的展示槽） */
 .upload-tile.rich-body__media .upload-tile__thumb { object-fit: contain; }
+/* 刪除走區塊的 ✕（一個區塊一個刪除入口），上傳格自己 hover 出現的刪除鈕在這裡收起；替換／播放照常 */
+.rich-body__media .upload-tile__act[data-upload-remove] { display: none; }
 
-/* 文字塊（D340）：contenteditable 的 div 吃 .textarea 的外觀；多行高度靠最小高度撐，內容多就自己長高。
+/* 文字塊（D340／D354）：contenteditable 的 div 吃 .textarea 的外觀；多行高度靠最小高度撐，內容多就自己長高。
    1.5em ≒ 本欄行高（--fs-14 × 正文行高），加上 .textarea 上下各 --sp-12 內距。 */
 .rich-body__text {
+  position: relative;
   min-height: calc(var(--rb-rows, 2) * 1.5em + 2 * var(--sp-12));
   line-height: 1.5;
   overflow-wrap: anywhere;
   cursor: text;
 }
+/* 占位字疊在第一行（絕對定位、不佔行）：聚焦時文字塊裡已放好一個空段落，占位字不能把它往下推 */
 .rich-body__text.is-blank::before {
+  position: absolute;
   content: attr(data-placeholder);
   color: var(--muted-foreground);
   pointer-events: none;
 }
-/* 內文裡的格式：段距、清單縮排、粗體字重（粗體與清單以外的格式本輪不做，sanitize 會拿掉） */
+/* 內文裡的格式：段距、清單縮排、粗體字重、斜體、連結底線、分隔線（其餘格式 sanitize 會拿掉） */
 .rich-body__text p { margin: 0 0 var(--sp-8); }
 .rich-body__text ul,
 .rich-body__text ol { margin: 0 0 var(--sp-8); padding-left: var(--sp-20); }
 .rich-body__text li + li { margin-top: var(--sp-2); }
 .rich-body__text > :last-child { margin-bottom: 0; }
 .rich-body__text strong { font-weight: var(--fw-semibold); }
+.rich-body__text em { font-style: italic; }
+/* 連結：沿用字色、靠底線辨識（品牌橘不用在內文連結，STYLE-DECISIONS 維度 5） */
+.rich-body__text a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.rich-body__text hr { border: 0; border-top: 1px solid var(--border); margin: var(--sp-12) 0; }
 /* 鎖定：比照 .textarea:disabled（input.css，全庫唯一的 disabled 樣子）——透明底、鎖定墨色、不可點 */
 .rich-body__text[aria-disabled="true"] {
   background: transparent;
@@ -72,19 +109,38 @@
   cursor: not-allowed;
 }
 
+/* ---- 工具列 ---- */
 .rich-body__tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-8); }
-.rich-body__fmt { display: inline-flex; gap: var(--sp-2); }
-/* 按下態：游標所在是粗體、或在清單裡。沿用導覽類已選的淡橘底（--selected-surface／--selected-ink），不另造一種 */
+.rich-body__fmt { display: inline-flex; flex-wrap: wrap; gap: var(--sp-2); }
+.rich-body__ins { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--sp-8); }
+/* 按下態：游標所在是粗體／斜體、或在連結／清單裡。沿用導覽類已選的淡橘底（--selected-surface／--selected-ink），不另造一種 */
 .rich-body__fmt .btn--icon[aria-pressed="true"] { background: var(--selected-surface); color: var(--selected-ink); }
 .rich-body__sep { align-self: stretch; width: 1px; margin: var(--sp-4) var(--sp-2); background: var(--border); }
-.rich-body__limit { margin: 0; }
-/* [hidden]／鎖定時收起整列工具 */
-.rich-body.is-locked .rich-body__tools { display: none; }
-/* 鎖定時媒體格不可替換或刪除（權重要壓過 .upload-tile.is-filled .upload-tile__actions） */
-.rich-body.is-locked .upload-tile.is-filled .upload-tile__actions { display: none; }
 
-/* 兩段式面板的檢視態（Q119：檢視就是看、不該長得像能填）：文字塊本身就是讀數——拿掉框與底、不可點，
-   格式照原樣顯示。空白文字塊：整段只有它時顯示「—」；夾在媒體之間時整塊收起，不留一排破折號。 */
+/* ---- 連結輸入列（D354 決定四） ---- */
+.rich-body__linkbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-8); }
+.rich-body__linkbar[hidden] { display: none; }
+.rich-body__linkbar .input { flex: 1 1 200px; min-width: 0; }
+.rich-body__link-err { flex-basis: 100%; }
+
+/* ---- 底部：新增描述＋滿額說明 ---- */
+.rich-body__foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-12); }
+.rich-body__limit { margin: 0; }
+
+/* ---- 鎖定（bookyay 帶入的第 1 段）：工具列、連結列、刪除收起；媒體格不可替換 ---- */
+.rich-body__block.is-locked .rich-body__tools,
+.rich-body__block.is-locked .rich-body__linkbar,
+.rich-body__block.is-locked .rich-body__remove { display: none; }
+/* 權重要壓過 .upload-tile.is-filled .upload-tile__actions */
+.rich-body__block.is-locked .upload-tile.is-filled .upload-tile__actions { display: none; }
+
+/* 兩段式面板的檢視態（Q119：檢視就是看、不該長得像能填）：區塊拿掉卡面、文字塊本身就是讀數——
+   拿掉框與底、不可點，格式照原樣顯示；把手、刪除、格式與插入鈕是 button，隨 shared.css 收起，工具列與底部整列也收起。
+   空白文字塊：整份只有它時顯示「—」；有媒體時整塊收起，不留一排破折號。 */
+[data-mode="view"] .rich-body__block { background: transparent; border-color: transparent; padding: 0; }
+[data-mode="view"] .rich-body__tools,
+[data-mode="view"] .rich-body__linkbar,
+[data-mode="view"] .rich-body__foot { display: none; }
 [data-mode="view"] .rich-body__text {
   box-shadow: none;
   background: transparent;
@@ -93,4 +149,4 @@
   pointer-events: none;
 }
 [data-mode="view"] .rich-body__text.is-blank::before { content: "—"; color: var(--foreground-muted); }
-[data-mode="view"] .rich-body--has-media .rich-body__text.is-blank { display: none; }
+[data-mode="view"] .rich-body--has-media .rich-body__block:has(.rich-body__text.is-blank) { display: none; }

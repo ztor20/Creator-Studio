@@ -768,7 +768,9 @@
     function fromEventBundle(hit) {
       const ev = hit.ev, b = hit.b;
       const evName = (ev.name || '').trim() || T0('event-detail.untitled', 'Untitled event');
-      const listedByEv = ev.status === 'on-sale' || ev.status === 'live' || ev.status === 'scheduled' || ev.status === 'ended';
+      /* 2026-10-05（D352 稽核 B17，主規格 §7.14「活動取消或下架時連動組合包」，D292 裁決十二）：活動結束、轉為不可售時，
+         含其門票的上架中組合包自動下架並通知創作者——已結束不再算上架（原本把 ended 列為上架中）。徽章仍標「已結束」（D294 決定五）。 */
+      const listedByEv = ev.status === 'on-sale' || ev.status === 'live' || ev.status === 'scheduled';
       const members = [], memberItems = [];
       /* 票券成員（2026-09-21 D296）：一筆＝允許票種清單 × 每組張數，粉絲任選一種。包成一顆假商品：
          名稱「活動名 · VIP／Floor 任選 × n」、單價＝最低允許票價（多種時是下界、顯示「從 … 起」）、池＝n × Σ floor(剩餘 ÷ n)。 */
@@ -820,7 +822,9 @@
         saleStart: tbEff.saleStart || null, saleEnd: tbEff.saleEnd || null, onSale: !b.stopped,
         sched: Object.assign({}, b.sched || {}), rules: b.rules ? JSON.parse(JSON.stringify(b.rules)) : null,
         lowThreshold: 0, draft: ev.status === 'draft', archived: false,
-        unlistReason: ev.status === 'cancelled' ? { type: 'event-cancelled', eventName: evName } : null,
+        unlistReason: ev.status === 'cancelled' ? { type: 'event-cancelled', eventName: evName }
+          : (ev.status === 'ended' ? { type: 'event-ended', eventName: evName } : null),
+        eventEnded: ev.status === 'ended',
         discountPct: (b.disc != null && b.disc !== '') ? Number(b.disc) : null,   /* D331 示範：創作者自建組合包的組合折扣 %（活動資料 disc） */
         discount: b.sale ? { percent: b.sale.pct, limited: { start: String(b.sale.from || '').slice(0, 10), end: String(b.sale.to || '').slice(0, 10) }, stack: false } : null,
         films: [], projects: [], history: [],
@@ -977,6 +981,7 @@
       draft: !!(seed && seed.draft),   /* 草稿：ListingState 讀 entity.draft，頁首徽章顯示「草稿」 */
       archived: !!(seed && seed.archived),   /* 已封存（D284）：優先於其他所有徽章；整頁唯讀 */
       unlistReason: (seed && seed.unlistReason) || null,   /* 因成員下架而一同下架的原因（D284 → D288） */
+      eventEnded: !!(seed && seed.eventEnded),   /* 含門票的組合包、所屬活動已結束（D352 稽核 B17）：已下架，徽章標「已結束」（D294 決定五） */
       /* 鎖定套數與逐規格分配（2026-09-11）：從組合記錄帶入；成員商品身上的組合鎖定是它導出的（applyBundleLock） */
       lockSets: (seed && seed.lockSets !== undefined) ? seed.lockSets : null,
       alloc: (seed && seed.alloc) ? JSON.parse(JSON.stringify(seed.alloc)) : {},
@@ -1230,10 +1235,12 @@
       const f = LS.deriveFlags(bundleModel, { qty: qty, lowThreshold: bundleModel.lowThreshold });
       const badge = document.getElementById('bd-status-badge');
       if (badge) {
-        badge.className = LS.badgeClass(f.status);
+        /* 所屬活動已結束（D352 稽核 B17）：組合包已自動下架，但徽章跟活動一致標「已結束」、不套「已下架」（D294 決定五）；封存仍優先 */
+        const evEnded = bundleModel.eventEnded && f.status !== 'archived';
+        badge.className = evEnded ? 'badge badge--neutral' : LS.badgeClass(f.status);
         const sp = badge.querySelector('span');
-        const key = LS.STATUS_META[f.status].i18n;
-        if (sp) { sp.setAttribute('data-i18n', key); sp.textContent = T(key, f.status); }
+        const key = evEnded ? 'events.badge.ended' : LS.STATUS_META[f.status].i18n;
+        if (sp) { sp.setAttribute('data-i18n', key); sp.textContent = T(key, evEnded ? 'Ended' : f.status); }
       }
       const hidden = document.getElementById('bd-hidden-badge');
       if (hidden) hidden.hidden = !f.hidden;
@@ -2382,10 +2389,13 @@
       function syncReason() {
         const r = bundleModel.unlistReason;
         const evCancelled = !!(r && r.type === 'event-cancelled' && LS.isUnlisted(bundleModel));
-        const show = evCancelled || !!(r && r.type === 'member-unlisted' && LS.isUnlisted(bundleModel) && !LS.isArchived(bundleModel));
-        const key = evCancelled ? 'bd.unlist.reason-event' : ((r && r.auto) ? 'bd.unlist.reason-auto' : 'bd.unlist.reason');
+        /* 活動結束 → 含其門票的上架中組合包自動下架（D292 裁決十二；2026-10-05 D352 稽核 B17） */
+        const evEnded = !!(r && r.type === 'event-ended' && LS.isUnlisted(bundleModel) && !LS.isArchived(bundleModel));
+        const byEvent = evCancelled || evEnded;
+        const show = byEvent || !!(r && r.type === 'member-unlisted' && LS.isUnlisted(bundleModel) && !LS.isArchived(bundleModel));
+        const key = evCancelled ? 'bd.unlist.reason-event' : (evEnded ? 'bd.unlist.reason-event-ended' : ((r && r.auto) ? 'bd.unlist.reason-auto' : 'bd.unlist.reason'));
         /* 活動取消 → 含其票券的組合包一同下架（D292 裁決十二） */
-        const txt = show ? T(key, 'Unlisted together with “{n}”. Relist that item or remove it before relisting the bundle.').replace('{n}', evCancelled ? (r.eventName || '') : (r.productName || r.productId || '')) : '';
+        const txt = show ? T(key, 'Unlisted together with “{n}”. Relist that item or remove it before relisting the bundle.').replace('{n}', byEvent ? (r.eventName || '') : (r.productName || r.productId || '')) : '';
         if (bannerReason) bannerReason.hidden = !show;
         if (reasonText) reasonText.textContent = txt;
         if (reasonNote) { reasonNote.hidden = !show; reasonNote.textContent = txt; }

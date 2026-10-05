@@ -25,8 +25,8 @@
 <link rel="stylesheet" href="ds-components/quick-result-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-more.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/info-sections.css?v=r2.2"><!-- D334：描述下方的說明區塊 -->
-<link rel="stylesheet" href="ds-components/rich-body.css?v=r2.2"><!-- D335：描述與說明區塊的內文可夾帶圖片與影片 -->
+<!-- 墓碑 2026-10-05（D354）：ds-components/info-sections.css（說明區塊）退場，版面併入 rich-body.css -->
+<link rel="stylesheet" href="ds-components/rich-body.css?v=r2.2"><!-- D354：描述區塊編輯器（文字／圖片／影片區塊，可排序） -->
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2"><!-- D340：顯示設定隱藏時的活動連結（複製／重置） -->
 <link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
@@ -388,7 +388,9 @@
         <span data-dup-text></span>
       </div>
 
-      <div class="form-section form-section--outlined" data-hide-type="watchparty">
+      <!-- 步驟 2 基本資料分兩組（D354 決定一，2026-10-05；5.1.6.1 §4.2 F2）：第一組＝活動名稱 → 亮點 → 活動國家＋活動語言（同一列）；
+           第二組＝描述（區塊）→「新增描述」。兩組各一張外框卡、不掛標題（Q125：欄位標籤已經是脈絡，卡只負責分組）。 -->
+      <div class="form-section form-section--outlined" data-hide-type="watchparty" data-ce-group="basic">
         <div class="field">
           <label class="field__label"><span data-i18n="ce.name">Event name</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
           <!-- data-bky="name" 只用來預填：bookyay 帶入時名稱可改、不鎖、不掛 From bookyay（2026-09-22 D301，bkyApply 排除） -->
@@ -403,27 +405,7 @@
           <input class="input" id="ce-highlight" data-ce="highlight" placeholder="e.g. The only Taipei date" data-i18n-placeholder="ce.highlight.ph">
           <p class="field__hint" data-ce-count="highlight">0 / 30</p>
         </div>
-        <div class="field">
-          <!-- 描述（D335，2026-09-29）：內文可夾帶圖片與影片——畫面是 partials/rich-body.js（文字塊＋媒體塊，插入點＝游標）。
-               data-ce="desc" 改成隱藏的 proxy：rich-body 把「只有文字」的內容同步寫進它並補發 input，
-               所以必填檢查、翻譯表（只列文字、媒體不翻譯）、自動儲存與 bookyay 鎖定照舊讀它。 -->
-          <div class="field__label" id="ce-desc-label"><span data-i18n="ce.desc">Description</span> <span class="field__req" data-i18n="ce.req.mark">*</span></div>
-          <div class="rich-body" id="ce-desc" role="group" aria-labelledby="ce-desc-label" data-rich-body></div>
-          <input type="hidden" data-ce="desc" data-bky="desc" data-required>
-          <p class="ce-field-error" data-i18n="ce.err.desc">Description is required.</p>
-        </div>
-        <!-- 說明區塊（D334，2026-09-29；5.1.6.1 §4.2 F2）：描述下方、可重複的「標題＋內文」，選填、0 塊也可以。
-             標題與內文都由運營自由填寫，不提供預設標題、不預先帶出空白區塊；不限字數與塊數，只填一半的塊不擋存
-             （2026-09-29 使用者追加裁決）。可新增、刪除、拖曳把手排序。互動在 partials/info-sections.js，
-             版面在 ds-components/info-sections.css。不掛 data-bky：bookyay 帶入時由 bkyApply() 把活動詳情第 2 段起
-             寫成說明區塊（標題留空、內文帶入、不鎖，D334 補充）；描述（data-bky="desc"）取第 1 段並鎖定。 -->
-        <div class="field" data-feat="S57">
-          <div class="field__label" id="ce-info-label" data-i18n="ce.info">Info sections</div>
-          <!-- 提示句（ce.info.hint「粉絲依這個順序閱讀…」）2026-09-29 拿掉：粉絲頁目前不畫說明區塊（D334 補充），
-               那句等於預先承諾；排序靠把手本身就看得出來，不另寫操作說明（鐵律 12）。 -->
-          <div class="info-sections" id="ce-info" role="group" aria-labelledby="ce-info-label" data-info-sections></div>
-        </div>
-        <!-- 活動國家與語言（2026-08-05 使用者指示）。國家在這裡問一次，場地那一步的
+        <!-- 活動國家與語言（2026-08-05 使用者指示）。2026-10-05 D354：排在亮點之後、同一列（第一組最後一列）。國家在這裡問一次，場地那一步的
              「城市／國家」欄同輪移除，同一件事不問兩遍。市場清單沿用 login 的既有那組
              （TW／HK／JP／KR／US），不另立第二份國家表。 -->
         <div class="form-grid mb-16">
@@ -464,6 +446,23 @@
 
         <!-- 墓碑 2026-09-29（D334）：「進階詳細資料」收合外框與其中的需攜帶物品、活動須知兩份清單整組刪除
              （D327 原意即整組刪；5.1.6.1 §4.2），改由描述下方的說明區塊承接。 -->
+      </div>
+
+      <div class="form-section form-section--outlined" data-hide-type="watchparty" data-ce-group="desc">
+        <div class="field">
+          <!-- 描述（D354，2026-10-05；前身 D335／D340）：一串可排序的區塊——文字／圖片／影片，每個區塊沒有標題、
+               可拖動排序、可刪除；「新增描述」加一個文字區塊；文字區塊插入的圖片影片各自成一個區塊、排在它之後；
+               整份描述圖片＋影片合計最多 10 個。畫面與互動是 partials/rich-body.js（樣式 ds-components/rich-body.css）。
+               data-ce="desc" 是隱藏的 proxy：所有文字區塊的純文字同步寫進它並補發 input，
+               所以必填（至少一個文字區塊有字）、自動儲存與 bookyay 鎖定照舊讀它。
+               說明區塊（D334，partials/info-sections.js）同輪退場：它的功能由無標題的文字區塊取代。 -->
+          <div class="field__label" id="ce-desc-label"><span data-i18n="ce.desc">Description</span> <span class="field__req" data-i18n="ce.req.mark">*</span></div>
+          <div class="rich-body" id="ce-desc" role="group" aria-labelledby="ce-desc-label" data-rich-body></div>
+          <input type="hidden" data-ce="desc" data-bky="desc" data-required>
+          <p class="ce-field-error" data-i18n="ce.err.desc">Description is required.</p>
+        </div>
+        <!-- 墓碑 2026-10-05（D354）：說明區塊（`#ce-info`、`[data-info-sections]`、`data-feat="S57"`，D334）整組退場，
+             由上面描述的「新增描述」與無標題文字區塊取代；檔案 partials/info-sections.js、ds-components/info-sections.css 留墓碑。 -->
       </div>
 
       <div class="form-section form-section--outlined" data-hide-type="watchparty">
@@ -1286,7 +1285,7 @@
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/field-more.js?v=r2.2"></script>
 <script src="partials/rich-body.js?v=r2.2"></script>
-<script src="partials/info-sections.js?v=r2.2"></script>
+<!-- 墓碑 2026-10-05（D354）：partials/info-sections.js（說明區塊）退場，排序搬進 rich-body.js -->
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <!-- D310（2026-09-22）：發布前預覽確認由浮層改為全頁畫面，本頁的宿主改走 js/publish-stage.js；
      partials/publish-preview.js（浮層）已於 2026-09-23（D317／D321／D322／D323）在 create-product／
@@ -1793,9 +1792,9 @@
   }
 
   /* ── 發布前預覽確認的宿主端資料（D305／D306）────────────────────────────
-     fields：5.1.6.1 §1 的可翻譯欄位清單（以表單實際有的欄位為準）——名稱、亮點、描述、
-       說明區塊（D334，每一塊的標題、內文各一個 key：info-<i>-t／info-<i>-b；取代 D327 留下的需攜帶物品／活動須知兩份清單）、
-       條款與細則（開著才收）、票種名稱（步驟 4 的 types）、門票簡介（D328，每張有填的門票一格）。表演陣容的角色標籤：
+     fields：5.1.6.1 §1 的可翻譯欄位清單（以表單實際有的欄位為準）——名稱、亮點、描述（D354：每個有字的文字區塊一格，
+       見 bodyFields；說明區塊的標題與內文 info-<i>-t／-b 隨說明區塊退場）、
+       條款與細則（開著才收）、票種名稱（步驟 4 的 types）。墓碑 2026-10-05（D353）：門票簡介（tdesc-<id>）不再是可翻譯欄位。表演陣容的角色標籤：
        本表單的表演者只有人名、沒有角色欄，跳過（人名維持原文，§7.4 顯示規則）；退換票說明：
        表單沒有這個欄位（§8.26 第 15 項）。
      prices：步驟 4 每個票種的票價＋步驟 6 每個組合包的售價；基準幣別＝創作者幣別
@@ -1842,7 +1841,7 @@
     { sel: ".pdp-buy__title", step: 2 },                              // 活動名稱
     { sel: ".pdp-buy__highlight", step: 2 },                          // 亮點（D300）
     { sel: ".pdp-details__lead", step: 2 },                           // 描述
-    { sel: ".pdp-info", step: 2 },                                    // 說明區塊（D340）
+    /* 墓碑 2026-10-05（D354）：.pdp-info（粉絲頁說明區塊）隨說明區塊退場——描述的所有區塊都在 .pdp-details__lead 裡 */
     { sel: ".pdp-event-meta", step: 3 },                              // 場地與時間
     { sel: ".pdp-terms--tiers", step: 5 },                            // 票種與票價
     { sel: "[data-fep-bundles]", step: 6 },                           // 組合包
@@ -1891,31 +1890,16 @@
     stage.unmount();
     stage = null;
   }
-  /* 說明區塊（D334）→ 翻譯表欄位：每一塊的標題與內文各一格，群組列「說明區塊」、列名「第 n 塊・標題／內文」。
-     只填一半的塊照列有填的那一格（不擋存，2026-09-29 使用者追加裁決）。 */
-  /* 內文的可翻譯欄位（D340：譯文中的圖片與影片位置跟原文相同）：文字被媒體切成幾段就列幾格，key 由
-     ztorRichBody.fieldKeys() 算（只有一段時沿用原本的一個 key）；粉絲頁預覽（js/fan-event-page.js）用同一支對回原位。
-     翻譯表只列文字、媒體不翻譯；譯文是純文字（能否套粗體與清單〔產品待確認〕）。 */
-  function bodyFields(baseKey, blocks, label, group, el) {
+  /* 描述的可翻譯欄位（D354，2026-10-05；前身 D340）：每個有字的文字區塊一格，譯文放回同一個區塊；圖片與影片不翻譯、
+     位置跟原文相同。key 由 ztorRichBody.fieldKeys() 算——只有一格時沿用原本的 "desc"，多格時 desc~0…；
+     粉絲頁預覽（js/fan-event-page.js）用同一支對回原位。譯文是純文字（能否套格式〔產品待確認〕，D340）。
+     墓碑 2026-10-05（D354）：infoFields()（說明區塊的標題與內文各一格，info-<i>-t／-b）隨說明區塊退場。 */
+  function bodyFields(baseKey, blocks, label, el) {
     const RB = window.ztorRichBody;
-    const list = RB ? RB.normalize(blocks || []) : [];
-    const texts = list.filter(b => b.type === "text").map(b => b.text);
-    const keys = RB ? RB.fieldKeys(baseKey, list) : [baseKey];
-    if (keys.length <= 1) return texts.length || el ? [{ key: keys[0], el: el || { value: texts.join("\n\n") }, kind: "textarea", labelKey: null, labelFallback: label, group }] : [];
-    return keys.map((k, j) => ({ key: k, el: { value: texts[j] || "" }, kind: "textarea", labelKey: null,
-      labelFallback: label + " · " + T("pp.field.body.part", "part {n}").replace("{n}", j + 1), group }));
-  }
-  function infoFields() {
-    const out = [];
-    const group = T("pp.field.info", "Info sections");
-    (infoEd ? infoEd.get() : []).forEach((x, i) => {
-      const n = i + 1;
-      if (x.title) out.push({ key: "info-" + i + "-t", el: { value: x.title }, kind: "input", labelKey: null,
-        labelFallback: T("pp.field.info.title", "#{n} title").replace("{n}", n), group });
-      if (x.body) bodyFields("info-" + i + "-b", x.blocks, T("pp.field.info.body", "#{n} body").replace("{n}", n), group)
-        .forEach(f => out.push(f));
-    });
-    return out;
+    const list = RB ? RB.textFields(baseKey, blocks || []) : [];
+    if (list.length <= 1) return [{ key: baseKey, el: el || { value: list.length ? list[0].text : "" }, kind: "textarea", labelKey: "pp.field.desc", labelFallback: label }];
+    return list.map((f, j) => ({ key: f.key, el: { value: f.text }, kind: "textarea", labelKey: null,
+      labelFallback: label + " · " + T("pp.field.body.part", "part {n}").replace("{n}", j + 1) }));
   }
   function buildStageOpts() {
     const q = sel => document.querySelector(sel);
@@ -1923,12 +1907,10 @@
       { key: "name", el: q('[data-ce="name"]'), kind: "input", labelKey: "pp.field.name", labelFallback: "Name" },
       { key: "highlight", el: q('[data-ce="highlight"]'), kind: "input", labelKey: "pp.field.highlight", labelFallback: "Highlight" },
     ];
-    /* 描述：沒有被媒體切段時照舊一格（el＝proxy）；被切成幾段就列幾格（D340，見 bodyFields） */
-    bodyFields("desc", descEd ? descEd.get() : [], T("pp.field.desc", "Description"), undefined, q('[data-ce="desc"]'))
-      .forEach((f, j, all) => { if (all.length === 1) { f.labelKey = "pp.field.desc"; delete f.group; } fields.push(f); });
-    /* 墓碑 2026-09-29（D334）：需攜帶物品／活動須知兩份清單隨「進階詳細資料」整組刪除；改列說明區塊。
-       D340 起粉絲視角預覽畫說明區塊（「關於活動」描述下方），翻譯欄位同一套 key。 */
-    infoFields().forEach(f => fields.push(f));
+    /* 描述（D354）：只有一個有字的文字區塊時照舊一格（el＝proxy）；多個文字區塊各列一格（見 bodyFields） */
+    bodyFields("desc", descEd ? descEd.get() : [], T("pp.field.desc", "Description"), q('[data-ce="desc"]')).forEach(f => fields.push(f));
+    /* 墓碑 2026-09-29（D334）：需攜帶物品／活動須知兩份清單隨「進階詳細資料」整組刪除。
+       墓碑 2026-10-05（D354）：說明區塊的翻譯欄位（infoFields）隨說明區塊退場，改由描述的文字區塊各列一格。 */
     const termOn = key => q('[data-ce-term="' + key + '"]')?.getAttribute("aria-checked") === "true";
     const tnc = q('[data-ce="terms-tnc-text"]'), mkt = q('[data-ce="terms-marketing-text"]');
     const termFields = [];
@@ -1940,12 +1922,7 @@
     const tierGroup = T("pp.price.tiers", "Ticket types");
     types.forEach(ty => fields.push({ key: "tier-" + ty.id, el: { value: (ty.name || "").trim() }, kind: "input",
       labelKey: null, labelFallback: T("pp.field.tier-name", "Ticket type name"), group: tierGroup }));
-    /* 門票簡介（D328，5.1.6.1 §1）：每張有填的門票一格（場次 × 票種的每一格、獨立票都算），
-       列名＝門票在清單上的可辨識名稱（多場時帶場次）。隱藏的票也列——它仍可能在組合包裡被賣出。 */
-    const descGroup = T("pp.field.tier-desc", "Ticket description");
-    savedTiers().filter(t => (t.desc || "").trim()).forEach(t => fields.push({
-      key: "tdesc-" + t.id, el: { value: t.desc.trim() }, kind: "textarea",
-      labelKey: null, labelFallback: tierLabelWithSession(t), group: descGroup }));
+    /* 墓碑 2026-10-05（D353）：門票簡介（tdesc-<id>，D328）隨欄位整欄移除，不再列入翻譯表。 */
 
     /* 價格：票種（基準＝創作者幣別；bookyay 帶入者另帶港幣鎖定欄，D330）＋組合包（基準＝創作者幣別，售價＝finalPrice；
        自動建立的組合包港幣欄＝bookyay 現價） */
@@ -2014,14 +1991,12 @@
     const terms = ctx.termFields.find(f => f.key === "tnc") ? { key: "tnc" } : null;
     /* 票價清單一列＝一個票種（前台鏡像的既有粒度）。D328 顯示／隱藏是逐張門票的開關：
        這個票種在每一場都被隱藏（沒有任何一張可見）才整列不列；有一場可見就照列（呈現假設 UIA-172）。
-       門票簡介取第一張可見且有填的那張（多場各自不同時只取一句，同 UIA-172）。 */
+       墓碑 2026-10-05（D353）：門票簡介整欄移除，票列不再帶 desc。 */
     const tiers = types.map(ty => {
       const cells = savedTiers().filter(t => t.type === ty.id);
       const shown = cells.filter(t => !t.hidden);
-      const withDesc = shown.find(t => (t.desc || "").trim());
       return {
         key: ty.id, name: { key: "tier-" + ty.id }, note: ty.tag ? String(ty.tag) : "",
-        desc: withDesc ? { key: "tdesc-" + withDesc.id } : null,
         hidden: cells.length > 0 && !shown.length,
         priceObj: tyPriceObj(ty),
         priceKey: "tier:" + ty.id, soldOut: false
@@ -2070,11 +2045,9 @@
       language: langText(),
       priority, limit,
       desc: { key: "desc" },
-      /* D340：描述整份內文（文字含粗體與清單、圖片影片照原文位置）；譯文段落的 key 與 bodyFields() 同一套 */
+      /* D354：描述的所有區塊照排定順序（文字含格式、圖片、影片）；文字區塊譯文的 key 與 bodyFields() 同一套。
+         墓碑 2026-10-05（D354）：infoSections（說明區塊，D340 畫在描述下方）隨說明區塊退場。 */
       descBlocks: descEd ? descEd.get() : [],
-      /* D340：說明區塊畫在「關於活動」的描述下方（標題＋內文，太長才收合） */
-      infoSections: (infoEd ? infoEd.get() : []).map((x, i) => ({
-        title: x.title ? { key: "info-" + i + "-t" } : null, blocks: x.blocks, bodyKey: "info-" + i + "-b" })),
       lineup: lineup.map(p => ({ name: p.name, role: null })),
       /* 墓碑 2026-09-29（D334）：notes／bring 兩份清單已刪；說明區塊的粉絲頁呈現暫不做（UIA-186）。 */
       pickup: T(pickupKey, st.ship),
@@ -2119,22 +2092,17 @@
   /* 墓碑 2026-09-29（D334）：「進階詳細資料」兩份可增刪清單（需攜帶物品／活動須知，`[data-list-add]`／
      `[data-list-row]`／`[data-list-remove]`）隨欄位整組刪除。改由說明區塊承接，見下方 infoEd。 */
 
-  /* 說明區塊（D334，5.1.6.1 §4.2 F2）：描述下方可重複的「標題＋內文」，互動在 partials/info-sections.js。
-     起始 0 塊（不預先帶出空白區塊、不給預設標題）；不擋存、不擋發布（不限字數與塊數、只填一半也可以）。 */
-  const infoHost = document.getElementById("ce-info");
-  const infoEd = (infoHost && window.ztorInfoSections)
-    ? window.ztorInfoSections.mount(infoHost, { items: [], mediaFeat: "S58", fmtFeat: "S59", onChange: () => scheduleSave() })
-    : null;
+  /* 墓碑 2026-10-05（D354）：說明區塊編輯器（infoEd＝ztorInfoSections.mount(#ce-info)，D334）隨說明區塊退場。 */
 
-  /* 描述（D335，5.1.6.1 §4.2 F2）：內文可夾帶圖片與影片，互動在 partials/rich-body.js。
-     proxy＝隱藏的 [data-ce="desc"]：只有文字的內容同步寫進它（必填、翻譯表、自動儲存照舊讀它）；
-     圖片與影片從 descEd.media()／descEd.get() 取。 */
+  /* 描述（D354，5.1.6.1 §4.2 F2；前身 D335／D340）：一串可排序的文字／圖片／影片區塊，互動在 partials/rich-body.js。
+     proxy＝隱藏的 [data-ce="desc"]：所有文字區塊的純文字同步寫進它（必填、自動儲存照舊讀它）；
+     區塊整份從 descEd.get() 取。feat／fmtFeat／addFeat＝插入鈕／格式鈕／新增描述的 feature-scope-map 標記。 */
   const descHost = document.getElementById("ce-desc");
   const descProxy = document.querySelector('[data-ce="desc"]');
   const descEd = (descHost && window.ztorRichBody)
     ? window.ztorRichBody.mount(descHost, {
         rows: 4, placeholder: "What will fans experience? Make it vivid.", placeholderKey: "ce.desc.ph",
-        label: "Description", labelKey: "ce.desc", proxy: descProxy, feat: "S58", fmtFeat: "S59", onChange: () => scheduleSave()
+        label: "Description", labelKey: "ce.desc", proxy: descProxy, feat: "S58", fmtFeat: "S59", addFeat: "S67", onChange: () => scheduleSave()
       })
     : null;
 
@@ -2352,7 +2320,7 @@
   const tierList  = document.getElementById("ce-tier-list");
   const tierCount = document.getElementById("ce-tier-count");
   const TIER_NAME_MAX = 40;
-  const TIER_DESC_MAX = 100;     // 門票簡介上限（D328，5.1.6.1 F22）
+  /* 墓碑 2026-10-05（D353）：TIER_DESC_MAX（門票簡介上限 100 字，D328）隨門票簡介整欄移除。 */
 
   /* 票種（2026-08-08 使用者裁決：從票務拉出來獨立一步）。它只是「這場活動賣哪幾種票」
      的清單——名稱、販售標籤，加上生成每一格時要帶入的預設價格與張數（種子，不是活的連動）。
@@ -2400,7 +2368,7 @@
     const d = val(t);
     /* 名稱不再是這一格的欄位（2026-08-08：票種獨立成一步，名稱與撞名都歸票種那邊管），
        這裡只驗這一格自己的數字。e.name 保留成空字串，讓 tierValid 與提示邏輯不用改。 */
-    const e = { name: "", price: "", qty: "", ntype: "", desc: "" };
+    const e = { name: "", price: "", qty: "", ntype: "" };   // 墓碑 2026-10-05（D353）：desc（門票簡介字數）退場
     /* 墓碑 2026-09-23（D315）：`excpct`（例外平台費的費率欄，D311 決定三）連同它的
        0–100 驗證退場——平台費率只在 Admin 的費率設定頁設，門票彈窗沒有可填的費率。 */
     /* 手動新增又選了「新建票種」時，票種名稱是必填——沒有名字的票種在清單上讀不出是什麼 */
@@ -2410,8 +2378,6 @@
        不在這裡填，所以 `decimalOk` 的票只要是 ≥ 0 的數字就過。 */
     const priceOk = t.decimalOk ? (String(d.price).trim() !== "" && isFinite(Number(d.price)) && Number(d.price) >= 0) : isInt(d.price);
     if (!priceOk) e.price = T("ce.tier.err.price", "Price must be a whole number, 0 or more.");
-    if (String(d.desc || "").trim().length > TIER_DESC_MAX)
-      e.desc = T("ce.tier.desc.err", "Keep it to {n} characters.").replace("{n}", TIER_DESC_MAX);
     if (!isInt(d.qty) || Number(d.qty) < 1) e.qty = T("ce.tier.err.qty", "Quantity must be a whole number, 1 or more.");
     return e;
   }
@@ -2428,9 +2394,8 @@
     t.img = (d.img || "").trim();                       // 留空＝跟著活動主視覺走
     t.earlymin = String(d.earlymin || "").trim();        // 留空或 0＝跟著場次的開放入場時間
     t.early = (d.early || "").trim();                    // 留空＝跟著這一場的設定
-    /* D328（5.1.6.1 F22 基本區）：門票簡介（選填、≤100 字、可翻譯）與顯示開關（預設顯示；
-       關＝隱藏：活動頁票價清單不列、不能單張買，仍可當組合包的票券成員）。 */
-    t.desc = String(d.desc || "").trim();
+    /* D328（5.1.6.1 F22 基本區）：顯示開關（預設顯示；關＝隱藏：活動頁票價清單不列、不能單張買，仍可當組合包的票券成員）。
+       墓碑 2026-10-05（D353）：門票簡介（t.desc）整欄移除，基本區剩門票名稱、門票圖片與顯示開關。 */
     t.hidden = !!d.hidden;
     /* 墓碑 2026-09-23（D315）：票不再帶 `feeException`（D311 的逐門票例外平台費率）。 */
     /* 手動新增的那張票在這裡收尾。票務有兩種，分岔就在這裡（2026-08-11 使用者裁示）：
@@ -2674,19 +2639,8 @@
       '</div></div>';
   }
 
-  /* 門票簡介（D328，5.1.6.1 F22 基本區）：選填、上限 100 字、粉絲看得到、列入翻譯表。
-     不擋輸入（打超過看得到超了多少），儲存時擋（tierErrors 的 desc）；常駐說明是即時字數。
-     bookyay 帶入的票：預填該票種的「活動門票簡介」，可逐張改（不鎖）。 */
-  function tierDescFieldHTML(t, d) {
-    const v = d.desc == null ? "" : String(d.desc);
-    return '<div class="field" data-feat="S54">' +
-      '<label class="field__label"><span>' + esc(T("ce.tier.desc", "Ticket description")) + '</span> ' +
-        '<span class="text-sub">' + esc(T("ce.opt", "(optional)")) + '</span></label>' +
-      '<textarea class="textarea" rows="2" data-tier-f="desc" placeholder="' +
-        esc(T("ce.tier.desc.ph", "e.g. Includes a signed poster")) + '">' + esc(v) + '</textarea>' +
-      '<p class="field__hint" data-tier-hint="desc">' + v.trim().length + " / " + TIER_DESC_MAX + '</p>' +
-    '</div>';
-  }
+  /* 墓碑 2026-10-05（D353，撤銷 D328 決定二）：門票簡介欄位（tierDescFieldHTML，選填、≤100 字、可翻譯、data-feat="S54"）
+     整欄移除——bookyay 的「活動門票簡介」不帶入，ztor 端也不再有這一欄。 */
   /* 顯示開關（D328）：預設開。關＝隱藏——活動頁票價清單不列、粉絲不能單張買；仍可當組合包的票券成員，
      與組合包共用同一個數量池（比照電子商店「成員隱藏不影響組合」D241）。用站上既有的外框開關列 .control-row。 */
   /* bookyay 套票轉換出的 1 人票（hideFix，D329）：開關鎖定為隱藏（.switch--locked＋aria-disabled，同跨日開關的來源鎖定），
@@ -2826,7 +2780,7 @@
       if (!card) return;
       const errs = tierErrors(t);
       const d = drafts[t.id];
-      ["price", "qty", "ntype", "desc"].forEach(k => {
+      ["price", "qty", "ntype"].forEach(k => {
         const hint  = card.querySelector('[data-tier-hint="' + k + '"]');
         const wrap  = card.querySelector('[data-tier-wrap="' + k + '"]');
         const input = card.querySelector('[data-tier-f="' + k + '"]');
@@ -2839,8 +2793,6 @@
         /* 名字那一欄的常駐說明要跟著「以票種建立／以獨立票建立」換一句，
            不能寫死票種那一版——切到獨立票之後說明會與欄位標籤互相矛盾。 */
         else if (k === "ntype") hint.textContent = newTypeHintText(t);
-        /* 門票簡介的常駐說明＝即時字數（D328）；超過上限時換成錯誤句（上面那一支）。 */
-        else if (k === "desc") hint.textContent = String(d.desc || "").trim().length + " / " + TIER_DESC_MAX;
         else if (k === "price" && t.fix) hint.textContent = bkyBaseText(t);   // bookyay 票價列的港幣原值說明
         else hint.textContent = "";
         if (input) input.setAttribute("aria-invalid", show ? "true" : "false");
@@ -3190,7 +3142,6 @@
         tierFieldHTML("tname", "d.tier.tname", "Ticket name", d.tname == null ? "" : d.tname,
                       { phKey: "d.tier.tname.ph", phFb: "", opt: true, hint: tnameHint(t, d) }) +
         tierImgFieldHTML(t, d) +
-        tierDescFieldHTML(t, d) +
         tierShowRowHTML(t, d)) +
       tierPriceSecHTML(t, d) +
       tierSecHTML("d.tm.sec.entry",
@@ -3275,7 +3226,6 @@
                      early: t.early == null ? "" : t.early,
                      addons: (t.addons || []).slice(),
                      img: (t.img || "").trim(),
-                     desc: t.desc || "",           // D328 門票簡介
                      hidden: !!t.hidden,           // D328 顯示開關（false＝顯示）
                      ntype: "",
                      /* 預設「以票種建立」＝站上主要的模型；要獨立票就在彈窗裡切一下。
@@ -5422,14 +5372,14 @@
 
   /* ---- 假的 bookyay 活動 ------------------------------------------------------
      2026-09-29（D328，5.1.6.1 F21「bookyay 欄位怎麼帶入」）改成 bookyay 的資料形狀：
-       · 門票種類掛在活動層 `ticketTypes`（名稱、現價、每張門票人數 `persons`、活動門票簡介 `desc`、早鳥 `early`）；
+       · 門票種類掛在活動層 `ticketTypes`（名稱、現價、每張門票人數 `persons`、活動門票簡介 `desc`〔D353 起不帶入，留在假資料示範來源有這欄〕、早鳥 `early`）；
        · 時段 `slots` 各自有起訖日期時間、人數上限 `cap` 與這個時段賣的門票種類 `types`（照 bookyay 的排序）；
        · 語言是多值 `langs`；活動地點 `location`＝場地名稱、地區 `region`＝行政區名稱（D329：分別帶進場地名稱與完整地址）；
        · 活動詳情是多段的 `intros`（2026-09-29 D334 補充；bookyay API 的 intros 陣列，每段一個富文本、沒有標題）：
-         第 1 段→描述（鎖定），第 2 段起每段→一個說明區塊（標題留空、內文帶入、不鎖），轉換見 bkyIntros()。
-         bky-1 三段（含粗體與清單標記）、bky-2 兩段（第 2 段文字後夾一張圖，D335 起圖片照位置帶入該說明區塊）、其餘一段（不產生說明區塊）。
+         D354 起：第 1 段→第一個文字區塊（鎖定），第 2 段起每段→一個不鎖的文字區塊，段內圖片影片各成一個媒體區塊、排在該段文字之後，轉換見 bkyIntros()。
+         bky-1 三段（第 1 段帶一張圖＝鎖定的媒體區塊；第 2 段含粗體、斜體、連結；第 3 段含清單）、bky-2 兩段（第 2 段文字後一張圖＝不鎖的媒體區塊）、其餘一段。
      五筆刻意各示範一條規則（驗收用）：
-       bky-1 同一個時段三種票 → 只帶第一種（VIP）＋略過提示；VIP 有早鳥（1 人票：折扣覆寫、鎖定）與門票簡介。
+       bky-1 同一個時段三種票 → 只帶第一種（VIP）＋略過提示；VIP 有早鳥（1 人票：折扣覆寫、鎖定）與門票簡介（D353 起不帶入）。
        bky-2 二人套票（persons 2、現價是兩人合計）三個時段 → 每場一張隱藏的 1 人票＋一組組合包；
              第 1 場人數上限 151 是奇數，示範捨去零頭（D329：1 人票 150 張、鎖定 75 套）；
              有早鳥（套票：落在組合包的限時折扣，D329）。
@@ -5448,8 +5398,8 @@
       note:  "2026/09/12 · 台北小巨蛋",
       name: "REALIVE World Tour — Taipei",
       intros: [
-        "<p>睽違三年的世界巡迴，台北站唯一一場。全新編制樂團、專輯完整曲序演出，安可加碼未發表新歌。</p>",
-        "<p><strong>VIP 彩排參觀</strong></p><p>VIP 持票者演出當天 16:00 於 2 號門集合，由工作人員帶領進場參觀彩排約 30 分鐘。<br>請攜帶身分證件，逾時不候。</p>",
+        "<p>睽違三年的世界巡迴，台北站唯一一場。全新編制樂團、專輯完整曲序演出，安可加碼未發表新歌。</p><p><img src=\"images/projects/nick-realive.jpg\" alt=\"\"></p>",
+        "<p><strong>VIP 彩排參觀</strong></p><p>VIP 持票者演出當天 16:00 於 2 號門集合，由工作人員帶領進場參觀彩排約 30 分鐘。<br>請攜帶身分證件，<em>逾時不候</em>。集合路線見 <a href=\"https://example.com/realive-taipei/vip\">VIP 集合說明</a>。</p>",
         "<p>輪椅席購票方式：</p><ul><li>先購買搖滾區或看台門票</li><li>開演前 7 天來信客服登記，每位輪椅使用者可有 1 位陪同者</li></ul>"
       ],
       country: "TW", langs: ["cmn", "en"],
@@ -5641,30 +5591,25 @@
        3. 時段人數上限 → 該場那張門票的張數；套票的 1 人票取 n 的整數倍＝floor(上限 ÷ n) × n，捨去零頭（D329）。
        4. 每張門票人數 n ≥ 2（套票）→ 票種改成「1 人票」：票價＝現價 ÷ n（可有小數，鎖）、每場隱藏且鎖定為隱藏（D329）；
           另外每場自動建一組組合包（票券成員＝該場 1 人票 × n、折扣 0、鎖定套數＝floor(上限 ÷ n)），整組鎖定（`fix`，D329）。
-       5. 門票簡介 → 複製到該票種在每一場的門票（可逐張改）。
+       5. 墓碑 2026-10-05（D353）：「活動門票簡介」不帶入（原本複製到該票種每一場的門票簡介）。
        6. 早鳥（D329 依人數分流，兩種都鎖定）：
           n ＝ 1 → 該門票的購買條件覆寫：折扣開、折後價格＝早鳥價、限時間窗（開賣時間 → 優惠完結）；`earlyFix` 鎖住整區。
           n ≥ 2 → 1 人票不設早鳥；改寫在自動建的組合包 `sale`：限時折扣 %＝1 − 早鳥價 ÷ 現價、檔期同上。
      回傳 { sessions, types, cells, bundles, skipped }，由 bkyApply 寫進頁面狀態。純資料轉換、不碰 DOM，
      cheat code／驗收可以直接呼叫（window.__ceBkyMap）。 */
-  /* 活動詳情 intros → 描述＋說明區塊（2026-09-29 D334 補充，5.1.6.1 F21「活動詳情（intros）」）：
-       第 1 段→描述（照 F21 鎖定）；第 2 段起每段→一個說明區塊，標題留空、內文帶入、不鎖，運營自己補標題。
-     每一段轉成 rich-body 的 blocks（D335，2026-09-29；D340，2026-09-30）——轉法集中在 partials/rich-body.js 的 fromHtml()：
-       · 圖片（<img>）與影片（<video>）照原本的先後位置變成媒體塊，一起帶入——第 1 段的媒體跟描述一起鎖定，
-         第 2 段起的媒體進該段的說明區塊、不鎖；只有媒體的段落照樣產生說明區塊。
-       · 文字（D340，取代 D335「轉純文字、清單項前加・」）：**粗體與清單照原格式保留**，換行與段落照舊；
-         連結、標題字級等其他格式去掉標記、保留文字（去除方式屬實作，rich-body 的 sanitize()）。 */
-  function bkyRichText(html) {
-    return window.ztorRichBody ? window.ztorRichBody.fromHtml(html) : [];
-  }
+  /* 活動詳情 intros → 描述的區塊（D354 決定六，2026-10-05；5.1.6.1 F21「活動詳情（intros）」；前身 D334 補充／D335／D340）：
+       · 第 1 段的文字 → 第一個文字區塊，**鎖定**（F21，原行為不變）；該段的圖片影片一起鎖定。
+       · 第 2 段起每段的文字 → 各成一個文字區塊，**不鎖**（原本是「各成一個說明區塊、標題留空」）。
+       · 每段裡的圖片與影片拆成各自的媒體區塊，排在所屬文字區塊之後、照原先後順序。
+       · 粗體、清單照原格式保留；bookyay 原文若有斜體或連結也照保留（其餘標記去掉、保留文字）。
+     一段的轉法集中在 partials/rich-body.js 的 fromHtml()。第 1 段沒有文字（空白或只有媒體）時，最前面補一個空的文字區塊
+     照樣鎖定（D335：不因空白而解鎖，要補回 bookyay 補）——lock() 鎖的就是第一個文字區塊與緊接其後的媒體。 */
   function bkyIntros(rec) {
-    const parts = (rec.intros || []).map(bkyRichText);
     const RB = window.ztorRichBody;
-    return {
-      /* 一段都沒有時描述留空、照樣鎖定（D335：不因空白而解鎖，要補回 bookyay 補） */
-      desc: parts[0] || [],
-      info: parts.slice(1).filter(b => b.length).map(blocks => ({ title: "", body: RB ? RB.textOf(blocks) : "", blocks }))
-    };
+    const parts = (rec.intros || []).map(h => RB ? RB.fromHtml(h) : []);
+    const first = parts[0] || [];
+    if (!first.length || first[0].type !== "text") first.unshift({ type: "text", html: "", text: "" });
+    return { blocks: [].concat(first, ...parts.slice(1)) };
   }
 
   function bkyMap(rec) {
@@ -5707,7 +5652,7 @@
         /* 1 人票的票名：bookyay 票名＋「1 人」〔產品待確認〕（5.1.6.1 F21 待確認：自動建的 1 人票票名，ASSUMPTIONS BKY-004）。 */
         name: n >= 2 ? T("ce.bky.single", "{name} · 1 person").replace("{name}", bt.name) : bt.name,
         price: String(toBase(hkd)), qty: "", hkd: hkd,
-        fix: true, _bky: { k: k, n: n, set: n >= 2, name: bt.name, desc: bt.desc || "", early: bt.early || null }
+        fix: true, _bky: { k: k, n: n, set: n >= 2, name: bt.name, early: bt.early || null }
       };
     });
     const cells = [];
@@ -5720,7 +5665,7 @@
       const b = ty._bky;
       const cell = newCell(ss, ty);
       cell.qty = String(sl.cap || "");
-      cell.desc = b.desc;
+      /* 墓碑 2026-10-05（D353）：bookyay「活動門票簡介」不帶入（原本複製到該票種每一場的門票簡介）。 */
       const cap = Number(sl.cap) || 0;
       /* 套票的 1 人票張數＝floor(上限 ÷ n) × n，捨去零頭（D329；例：上限 151、二人套票 → 150 張、鎖 75 套）。
          顯示開關鎖定為隱藏（hideFix，D329）：彈窗的開關停用、不能改回顯示。 */
@@ -5772,7 +5717,7 @@
     const intro = bkyIntros(rec);
     /* 活動性質（D341）：公開活動→顯示、私人活動→隱藏；只是預設值，顯示設定不鎖。 */
     const shown = !rec.isPrivate;
-    return { sessions, types, cells, bundles, skipped: skippedFinal, desc: intro.desc, info: intro.info, shown };
+    return { sessions, types, cells, bundles, skipped: skippedFinal, desc: intro.blocks, shown };
   }
   window.__ceBkyMap = id => bkyMap(BKY.find(r => r.id === id));
 
@@ -5791,12 +5736,13 @@
 
   function bkyApply(rec) {
     bkyOn = rec;
-    const intro = bkyIntros(rec);        // 描述不在 rec 上：來自活動詳情 intros 的第 1 段（D334 補充）
-    /* 描述（D335）：第 1 段的文字與圖片影片整份進 rich-body 並鎖定；proxy 跟著拿到文字（下面迴圈再寫一次同值、鎖 proxy） */
-    if (descEd) { descEd.set(intro.desc); descEd.lock(true); }
+    const intro = bkyIntros(rec);        // 描述不在 rec 上：來自活動詳情 intros（D354 決定六，見 bkyIntros）
+    /* 描述（D354）：所有段落的區塊整份進編輯器；lock(true) 只鎖第 1 段（第一個文字區塊＋緊接其後的媒體），
+       第 2 段起的文字區塊與媒體照常可改、可刪、可拖動。proxy 拿到所有文字（下面迴圈再寫一次同值） */
+    if (descEd) { descEd.set(intro.blocks); descEd.lock(true); }
     document.querySelectorAll("[data-bky]").forEach(el => {
       const v = el.dataset.bky === "desc"
-        ? (window.ztorRichBody ? window.ztorRichBody.textOf(intro.desc) : "")
+        ? (descEd ? descEd.text() : (window.ztorRichBody ? window.ztorRichBody.textOf(intro.blocks) : ""))
         : rec[el.dataset.bky];
       el.value = v == null ? "" : v;
       /* 直接寫 .value 不會觸發任何事件，靠事件更新自己的元件就不知道值變了——
@@ -5812,9 +5758,7 @@
     lockLangs(true);
     /* 開賣設定（D340）：開賣與停售時間已由上面的 data-bky 迴圈帶入並鎖定（saleFromD／saleFromT／saleToD／saleToT）。
        bookyay「活動發佈同時發售門票」（rec.saleWithPublish）時開賣兩格留空＝上架即開賣，照樣鎖定。 */
-    /* 說明區塊（D334 補充，2026-09-29）：活動詳情第 2 段起每段一塊，標題留空讓運營補、內文帶入、不鎖——
-       不掛 From bookyay、照常可改、可刪、可排序、可再新增（編輯器本身不分來源）。 */
-    if (infoEd) infoEd.set(intro.info);
+    /* 墓碑 2026-10-05（D354）：活動詳情第 2 段起不再寫成說明區塊（infoEd.set），改為描述裡不鎖的文字區塊（見上）。 */
     renderShare();                       // 活動名稱是帶入的，連結與 QR 要跟著換
     /* 表演陣容不在 bookyay 帶入範圍內（2026-08-09 使用者明確指示：bookyay 沒有這筆資料）。 */
     /* 圖片（D328）：直接帶 bookyay 原圖（1:1、1200×1200）、不裁切、不鎖；比例不合 2:3 不擋發布，
@@ -6090,10 +6034,9 @@
     };
     set("name", src.name);
     set("highlight", src.highlight);   // D300：草稿續填要把亮點帶回來；再辦一場也照名稱／描述一起帶、可改
-    /* 描述（D335）：有 descBlocks（夾帶圖片或影片）就整份帶回，沒有就帶純文字 */
-    if (descEd) descEd.set(src.descBlocks || src.desc || ""); else set("desc", src.desc);
-    /* 說明區塊（D334）：草稿續填與再辦一場都照描述一起帶回（可改） */
-    if (infoEd) infoEd.set(src.infoSections || []);
+    /* 描述（D354）：有 descBlocks 就整份帶回，沒有就帶純文字；舊資料的說明區塊（infoSections）由 migrate() 轉成
+       接在後面的文字區塊（標題有字→併成該區塊第一行並設粗體，D354 決定八）。草稿續填與再辦一場都可改。 */
+    if (descEd) descEd.set(window.ztorRichBody.migrate(src.descBlocks || src.desc || "", src.infoSections)); else set("desc", src.desc);
     /* 墓碑 2026-09-29（D327）：再辦一場原本會帶回電子門票三組附屬設定的值，隨欄位刪除退場。 */
     const imgs = [src.images && src.images.keyvisual]
       .concat((src.images && src.images.gallery) || []).filter(Boolean);
@@ -6103,10 +6046,9 @@
     if ((src.tiers || []).length) {
       types = src.tiers.map(t => ({ id: "type-" + (++typeSeq), name: t.name, price: t.price, qty: t.qty }));
       tiers = [];
-      /* 門票簡介與顯示開關（D328）跟著票種帶回每一場的門票（可改） */
+      /* 顯示開關（D328）跟著票種帶回每一場的門票（可改）；墓碑 2026-10-05（D353）：門票簡介不再帶回 */
       series.list.forEach(ss => types.forEach((ty, k) => {
         const c = newCell(ss, ty);
-        c.desc = src.tiers[k].desc || "";
         c.hidden = !!src.tiers[k].hidden;
         tiers.push(c);
       }));

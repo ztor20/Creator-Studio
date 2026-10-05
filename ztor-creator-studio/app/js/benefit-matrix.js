@@ -80,7 +80,9 @@
       return '<span class="bmx__cell">' +
         '<span class="amount-field amount-field--suffix">' +
           '<input class="input amount-field__input" inputmode="numeric" value="' + (v == null ? "" : v) + '" ' +
-            'data-cell="' + item.id + '" data-tier="' + tier.key + '" aria-label="' + tier.key + '">' +
+            'data-cell="' + item.id + '" data-tier="' + tier.key + '" aria-label="' + tier.key + '" ' +
+            /* 2026-10-02（D348）：讀屏標籤原本是識別字（inner／devoted…），改走分級名稱的 i18n key，跟著語系。 */
+            'data-i18n-aria-label="' + tier.i18n + '">' +
           '<span class="amount-field__unit">' + (item.unit || "") + '</span>' +
         '</span></span>';
     }
