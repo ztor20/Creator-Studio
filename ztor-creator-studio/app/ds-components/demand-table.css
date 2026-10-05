@@ -1,0 +1,136 @@
+/* ============================================================
+   demand-table — 市場需求表（2026-10-05 建，D360 需求看板 S68，規格 5.1.5.16 F4）
+
+   每個市場一列：市場（可展開城市）｜需求指數｜各尺寸｜建議生產量｜計畫生產量｜差距。
+   **不是新的表格元件**：列與表頭沿用清單頁的 `.product-list`（與姊妹頁訂單、取貨同一套列、
+   hover、分隔線），展開城市沿用 `.row-disclosure`（Q107／Q109：把手在列首、L3 整組換層）；
+   本檔只提供 `--demand` 的欄軌與這張表特有的幾格。
+
+   anatomy
+     .demand-table__bar                表上方一列：表名（左）＋尺寸欄數值切換 `.segmented`（右）
+       .demand-table__title
+     .product-list.product-list--demand
+       .product-list__head / .product-list__row（＋ .rowdis__head／.rowdis__child）
+         .rowdis__lead                 列首：母列放展開把手、城市列放序號
+         .demand-market                市場名（＋第二行狀態徽章）
+           .demand-market__name
+           .demand-market__note        狀態行：`.badge--info`「參考同類商品 · T-Shirt」／`.badge--neutral`「資料不足」
+         .demand-index                 需求指數：數字＋細量條（借 `.stock-bar`）；未提供地區寫「—」
+         .size-mix                     各尺寸（見 size-mix.css）
+         .demand-num                   建議生產量（等寬數字，靠右）；資料不足寫「—」
+         .demand-planned               計畫生產量輸入格（`.input`，整數、選填）
+         .demand-gap                   差距：建議多於計畫時加強提示（`.badge--warning`），否則弱色文字
+
+   列狀態
+     .demand-row--focus                選定對象（F4.1）：品牌色淡底（Q8 tint＝安靜的持續選取）
+     .demand-row--unspec               未提供地區：不可選定、排在最後（規格 F4.1）
+     列本身可點（選定對象）；列內的輸入格與展開把手各自處理、不觸發選定。
+
+   欄軌：各尺寸那一欄寬度＝尺寸數 × 格寬，由 `.size-mix` 自己撐（max-content），
+   所以這張表的欄數隨範圍內的尺寸增減，不必為每種尺寸數各寫一套欄軌。
+   窄容器下由外層 `.product-list-scroll` 橫向捲動；頁面把這一排掛 `.bento--stack-lg`
+   （裝表格的排 1440px 以下改單欄，表格吃滿整頁寬），並排時表格欄約 800px、五個尺寸剛好放得下。
+
+   surface 層：坐在頁面 L0（與訂單／取貨清單同層）；選定列的淡底在深、淺兩種主題目視驗證。
+
+   Consumers: demand-board.html（F4）、product-detail.html（需求數據彈窗，S69）
+   ============================================================ */
+
+.demand-table__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-12);
+  margin-bottom: var(--sp-8);
+}
+.demand-table__title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-16);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+}
+
+.product-list--demand .product-list__head,
+.product-list--demand .product-list__row {
+  grid-template-columns: var(--sp-28) minmax(112px, 1fr) 88px max-content 72px 88px 64px;
+  gap: var(--sp-12);
+}
+.product-list--demand .product-list__row {
+  min-height: 72px;
+  cursor: pointer;
+}
+.product-list--demand .product-list__row:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+/* 數字欄靠右：建議生產量、差距；表頭跟著靠右，欄名才落在數字的正上方 */
+.product-list--demand .demand-col--num { text-align: right; justify-self: end; }
+
+/* ── 市場 ─────────────────────────────────────────────── */
+.demand-market {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  min-width: 0;
+}
+.demand-market__name {
+  font-size: var(--fs-14);
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.demand-market__note { display: flex; flex-wrap: wrap; gap: var(--sp-4); }
+
+/* ── 需求指數：數字＋細量條 ───────────────────────────────
+   量條借 stock-bar（同一種「長度＝比例」的細條），這裡只取消它的上下外距、讓它吃剩下的寬。 */
+.demand-index {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  font-size: var(--fs-13);
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+.demand-index__num { flex: none; min-width: var(--sp-24); text-align: right; }
+.demand-index .stock-bar { flex: 1 1 auto; margin: 0; }
+.demand-index--none { color: var(--faint-ink); }
+
+/* ── 數字欄 ───────────────────────────────────────────── */
+.demand-num {
+  font-size: var(--fs-14);
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+  text-align: right;
+}
+.demand-num--none { color: var(--faint-ink); }
+
+/* ── 計畫生產量輸入格 ─────────────────────────────────────
+   表格密度的控件高（Q113 --control-h-xs），數字靠右與兩側數字欄對齊。 */
+.demand-planned {
+  width: 100%;
+  min-width: 0;
+  height: var(--control-h-xs);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.demand-planned[aria-invalid="true"] { box-shadow: 0 0 0 1px var(--destructive); }
+
+/* ── 差距 ─────────────────────────────────────────────── */
+.demand-gap {
+  font-size: var(--fs-13);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+/* ── 列狀態 ───────────────────────────────────────────── */
+.product-list--demand .demand-row--focus,
+.product-list--demand .demand-row--focus:hover {
+  background: var(--selected-surface);
+}
+.product-list--demand .demand-row--unspec { cursor: default; }
+.product-list--demand .demand-row--unspec .demand-market__name { color: var(--foreground-muted); }

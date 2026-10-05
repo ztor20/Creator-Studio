@@ -1062,6 +1062,9 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Info sections | 🟡 molecule | ✝ 退場 | 說明區塊編輯器（2026-09-29 D334 建，**2026-10-05 D354 退場**：描述改成「區塊」模型——每個描述是一個沒有標題、可拖動排序的區塊，「新增描述」取代「新增說明區塊」，標題欄位不再存在；版面與拖動排序搬進 Rich body §4.222）。`info-sections.css`、`partials/info-sections.js` 留墓碑。 | [info-sections.css](./ds-components/info-sections.css) |
 | Rich body | 🟡 molecule | ✓ Project | 描述區塊編輯器（2026-09-29 D335 promote；2026-10-05 D354 改成區塊模型，5.1.6.1 §4.2 F2／5.1.6.2 F2）：描述＝一串可排序的區塊，三種型別——文字／圖片／影片；每個區塊是一張 `.card--muted`（把手｜內容｜刪除），**沒有標題**、可拖動（按住把手）或把手聚焦按上下鍵排序、可刪除（文字區塊至少留一個）；底部「新增描述」加一個文字區塊。文字區塊上方一列工具：粗體／斜體／連結／編號清單／項目符號清單／分隔線｜插入圖片／插入影片；插入的媒體各自成一個區塊、排在該文字區塊之後；整份描述圖片＋影片合計最多 10 個，滿了插入鈕停用、底部說明。連結按鈕展開一列網址輸入（只收 http／https）。`.is-locked`＝bookyay 帶入的第 1 段。取代退場的 Info sections。demo 見 §4.222 | [rich-body.css](./ds-components/rich-body.css) |
 | Follow field | 🟡 molecule | ✓ Project | 跟隨／另設的時間列（2026-10-01 D342 promote，主規格 §7.14「活動販售的時間層級」第 5–7 條）：票務商品的上架、下架、開賣、停售四格，每格標題列右側一組「跟隨活動｜另設」（緊湊 `.segmented`），跟隨＝唯讀讀數（活動的值或它的意思，例「賣到活動開始」）、另設＝`datetime-local`；錯誤句在格下。markup 一律由 `js/ticket-bundle.js` 的 `schedHTML()` 產生。demo 見 §4.223 | [follow-field.css](./ds-components/follow-field.css) |
+| Size mix | 🟡 molecule | ✓ Project | 各尺寸占比（2026-10-05 D360 建，需求看板 5.1.5.16 F4.1）：每個尺寸一格固定寬的小直條，依尺寸順序排，整張表同一尺寸落在同一欄、上下列可直接比；條高以該列最大尺寸為滿格、精確值寫在條下，最大那格上品牌色。數值可為占比或建議生產量（條形永遠是占比）。**不用 split-bar**：分段寬度隨資料變，同一尺寸每列位置不同、無法對比。詳見 §4.224。 | [size-mix.css](./ds-components/size-mix.css) |
+| Demand table | 🟠 organism | ✓ Project | 市場需求表（2026-10-05 D360 建，5.1.5.16 F4）：`.product-list--demand` 欄軌＋這張表特有的格（市場與狀態徽章、需求指數＋細量條、建議生產量、計畫生產量輸入、差距）；列沿用 Product list、展開城市沿用 Row disclosure（Q107／Q109），不是第三種表格。詳見 §4.225。 | [demand-table.css](./ds-components/demand-table.css) |
+| Demand focus | 🟠 organism | ✓ Project | 選定對象面板（2026-10-05 D360 建，5.1.5.16 F3／F4.1／F4.2）：選定一個市場後顯示預測售罄天數、尺寸差距與可填「市場＋尺寸層」計畫生產量的各尺寸表；放在表格旁常駐欄，點列不會把表格往下推。詳見 §4.226。 | [demand-focus.css](./ds-components/demand-focus.css) |
 | Section tabs | 🟡 molecule | ✓ App | 長表單頂端的分節分頁（2026-09-21，使用者反饋「popup 要有 fix 在最上面的 tab 可以快速滾動到指定區塊」）：點了平滑捲到那一段、捲動時亮目前那一段（scrollspy）、←／→／Home／End 鍵盤可移。殼 `.section-tabs`（44px、align-items:stretch）承接 Q38 配方 `.tabs.tabs--underline-short.tabs--underline-label`，併進既有頂列當第二排（彈窗 `--dialog`＝`__head` 與 `__body` 之間；建立流程 `--wizard`＝`.wizard__top` 第二排），畫面只有一條固定列（Q115 精神）。行為 `js/section-tabs.js`（`ZtorSectionTabs.init/sync`）。消費：create-event 第 6 步組合包彈窗（`js/bundle-editor.js` `layout:'split'`）、create-bundle。demo 見 §4.214 | [section-tabs.css](./ds-components/section-tabs.css) |
 | State check | 🟡 molecule | ✓ Project | 唯讀的開／關狀態排（2026-09-11）：每個狀態一顆 16px 圓標記（字符 12）＋標籤，開＝`--status-success` 實色底＋畫布色勾（2026-09-11 兩輪後定案）＋前景色標籤、關＝`--border` 空心圓＋輔助色標籤。**不是輸入控件**——點的是所在整列。首用商品／組合詳情「上架與開賣」卡：上架／顯示於商店／開賣**各自一列**（2026-09-11 使用者：有的有定時上下架或開賣，要個別顯示），一顆勾＋一句現況與排程（使用者：「將上架／顯示／開賣拆出來，做成 checkbox 的形式，但設計不一定要用 checkbox」），值由三組開關與排程推導：上架、顯示於商店（上架且顯示）、開賣（上架且此刻在販售窗口內）。demo 見 §4.209 | [state-check.css](./ds-components/state-check.css) |
 | Stock tip | 🟢 atom | ✓ App | E-Shop 商品清單「狀態」／「庫存」欄 hover/focus 浮出的資訊卡：多選項商品攤到單一選項組合、組合商品攤到「成員 · 選項組合」；單一選項商品顯示目前庫存一行（原本還有低庫存門檻，2026-07-23 使用者裁示移除）。列徽章為「急需補貨」時，選項清單只留真的需要補貨的項目（此規則不影響單一選項那一行）。定位由 JS 算（`position: fixed`），viewport 上半部往下開、下半部往上開，避免被 sticky 頂欄擋到或超出視窗。詳見 §4.56 | [stock-tip.css](./ds-components/stock-tip.css) |
@@ -7037,3 +7040,80 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **CSS** — [`follow-field.css`](./ds-components/follow-field.css) ｜ **JS** — `js/ticket-bundle.js`
 
+---
+
+### 4.224 Size mix（各尺寸占比）
+
+**Purpose** — 一個市場（或一件商品）的需求在各尺寸之間怎麼分（D360，2026-10-05；5.1.5.16 F4.1「各尺寸占比」，算法見主規格 §7.17）。尺寸有順序（XS → XL），畫成依序排列的一排小直條，一眼看出偏小碼或偏大碼（規格情境 2）。
+
+**`_layer`** · molecule ｜ **source tier** · Project ｜ **surface 層** · 沒有自己的面；條用 `--faint-ink`／`--primary`、基線 1px `--border`，L0 畫布、L1 卡、L2 薄膜皆可（L0 最深層目視驗證）。
+
+**Anatomy**
+- `.size-mix` — grid，欄數＝ inline `--size-mix-n`，格寬 `--size-mix-slot`（＝`--sp-40`），`gap --sp-4`
+  - `.size-mix__slot` — 一個尺寸（flex column，`gap --sp-4`）
+    - `.size-mix__bar` — 條的區域（高 `--size-mix-h`＝`--sp-24`、底部 1px `--border` 基線）> `.size-mix__fill`（高＝ inline `--share`，0–1，相對該列最大值；最小 2px）
+    - `.size-mix__val` — 數值（`--fs-12`）
+    - `.size-mix__label` — 只在 `--labeled`／`--head` 出現的尺寸名
+- `.size-mix--head` — 表頭，只放 `.size-mix__label`，與資料列同格寬
+
+**Variants／States** — `__slot--peak`（該列占比最大：條 `--primary`、數值 `--foreground`）；`__slot--none`（這一列沒有這個尺寸的需求：不畫條、數值「—」）；`--labeled`（單獨使用、不在有表頭的表格裡）。
+
+**Behavior** — 無互動。Markup 由 `window.ztorDemandView.sizeMixHTML(sizes, sizeRows, { mode:'share'|'qty', labeled })` 與 `sizeMixHeadHTML(sizes)` 產生（`js/demand-board.js`）；`sizes`／`sizeRows` 直接取 `window.ztorDemand` 結果，頁面不自己算占比。「其他尺寸」顯示名走 i18n `demand.size.other`。
+
+**Token usage** — `--sp-2`／`--sp-4`／`--sp-24`／`--sp-40`、`--fs-11`／`--fs-12`、`--lh-none`、`--border`、`--faint-ink`、`--primary`、`--muted-foreground`、`--foreground`、`--column-head-ink`、`--font-ui`。
+
+**Consumers** — `demand-board.html`（市場需求表的尺寸欄，經 Demand table）、`product-detail.html`（需求數據彈窗，S69）。
+
+**CSS** — [`size-mix.css`](./ds-components/size-mix.css) ｜ **JS** — `js/demand-board.js`
+
+---
+
+### 4.225 Demand table（市場需求表）
+
+**Purpose** — 需求看板的市場需求表（D360，5.1.5.16 F4／F4.1／F4.2／F4.3）：每個國家一列、可展開城市，欄位為市場｜需求指數｜各尺寸｜建議生產量｜計畫生產量｜差距。
+
+**`_layer`** · organism ｜ **source tier** · Project ｜ **surface 層** · 坐在頁面 L0（與訂單、取貨清單同層）；選定列淡底在深、淺主題目視驗證。
+
+**Anatomy**
+- `.demand-table__bar` — 表名 `.demand-table__title`（`--fs-16`）＋尺寸欄數值切換 `.segmented`（占比｜建議生產量）
+- `.product-list-scroll` > `.product-list.product-list--demand`（欄軌 `--sp-28 minmax(112px,1fr) 88px max-content 72px 88px 64px`，`gap --sp-12`，列高下限 72px）
+  - `.rowdis__group` > `.product-list__row.rowdis__head`／`.rowdis__child`（城市列，列首 `.rowdis__num` 序號）
+  - 格：`.demand-market`（`__name`＋`__note` 狀態徽章：`.badge--info`「參考同類商品：T-Shirt」／`.badge--neutral`「資料不足」）、`.demand-index`（`__num`＋`.stock-bar`；`--none`＝「—」）、`.size-mix`、`.demand-num`（`--none`）、`.input.demand-planned`（`--control-h-xs`，Q113）、`.demand-gap` 或 `.badge--warning`（建議多於計畫時加強提示）；數字欄 `.demand-col--num` 靠右
+
+**States** — `.demand-row--focus`（選定對象：`--selected-surface`，Q8 tint）；`.demand-row--unspec`（未提供地區：排最後、不可選定、指數「—」）；`.demand-planned[aria-invalid="true"]`（非整數或負數：紅框、不儲存）；列 `:focus-visible` 環。
+
+**Behavior** — `window.ztorDemandView.create(root, cfg)`：點列或 Enter／Space＝選定／取消選定；輸入格 change → `ztorDemand.setPlanned(filter, key, size, n)`；展開把手交 `js/row-disclosure.js`（重畫時保留展開中的組）。排序照 `ztorDemand.markets()` 結果（需求指數高到低、未提供地區最後）。
+
+**與既有元件的分工** — 不是新的表格元件：列、hover、分隔線沿用 Product list；展開沿用 Row disclosure（Q107 L3 整組換層、Q109 把手在列首）；比例條借 Stock bar。Q29（資料表框型收斂到 variant-table）管的是「框型表格」，本表與姊妹頁訂單／取貨同為清單頁的無框列表。
+
+**Token usage** — `--sp-6`／`--sp-8`／`--sp-12`／`--sp-24`／`--sp-28`、`--fs-13`／`--fs-14`／`--fs-16`、`--fw-medium`、`--control-h-xs`、`--selected-surface`、`--destructive`、`--ring`、`--foreground`／`--foreground-muted`／`--muted-foreground`／`--faint-ink`、`--font-ui`。
+
+**Consumers** — `demand-board.html`（F4）、`product-detail.html`（需求數據彈窗，S69；彈窗裡版面同看板）。
+
+**CSS** — [`demand-table.css`](./ds-components/demand-table.css) ｜ **JS** — `js/demand-board.js`
+
+---
+
+### 4.226 Demand focus（選定對象面板）
+
+**Purpose** — 選定對象（5.1.5.16 F4.1）的面板：顯示 F3 後兩項指標（預測售罄天數、尺寸差距，只對選定對象有意義），以及該市場各尺寸的占比、建議生產量與「市場＋尺寸層」計畫生產量輸入（F4.2）；點一個尺寸＝把選定對象收窄到該尺寸。
+
+**`_layer`** · organism ｜ **source tier** · Project ｜ **surface 層** · 卡本身 `.card`（L1）；尺寸表照 Q24 在卡上用 1px 線框、表頭薄膜。
+
+**Anatomy**
+- `.card.demand-focus` — flex column，`gap --sp-16`（Q103）
+  - `.demand-focus__head` — `__titles`（`__kicker`「選定對象」＋ `__title` 市場名［· 尺寸］）＋右側 `.btn.btn--ghost.btn--sm`「取消選定」
+  - 未選定：`.demand-focus__empty`（一句怎麼選；前台國家資料未上線時改說明為何不能選）
+  - 已選定：`.stat-row.demand-focus__stats`（兩個 `.stat`；條件不足時值「—」、`stat__meta` 寫缺什麼）＋ `.demand-focus__note`（狀態徽章）＋ `.variant-table-wrap > .variant-table.variant-table--demand-sizes`（尺寸｜占比｜建議生產量｜計畫生產量｜差距，五欄可壓縮、`min-width:0`）
+
+**States** — `.demand-size--focus`（選定尺寸，`--selected-surface`）；列 `:focus-visible`。
+
+**版面** — 放在表格右側常駐欄（`.bento__aside`），不放頁首摘要列：點列時不會在上方長出卡片把表格往下推。這一排掛 `.bento--stack-lg`，視窗 < 1440px 改單欄、面板落到表格下方。
+
+**Behavior** — 同 Demand table 的 `window.ztorDemandView`（`[data-dv="focus"]` 插槽）；`view.state` ＝ `{ focus, focusSize, mode }`。預測售罄天數的層級跟著計畫生產量（選定尺寸且該尺寸有填→尺寸層，否則市場層）；尺寸差距要選定尺寸且該尺寸有填計畫生產量（主規格 §7.17）。
+
+**Token usage** — `--sp-4`／`--sp-8`／`--sp-12`／`--sp-16`、`--fs-12`／`--fs-13`／`--fs-16`、`--fw-medium`、`--lh-relaxed`、`--selected-surface`、`--ring`、`--foreground`／`--muted-foreground`、`--font-ui`。
+
+**Consumers** — `demand-board.html`（F4 右側常駐欄）、`product-detail.html`（需求數據彈窗，S69）。
+
+**CSS** — [`demand-focus.css`](./ds-components/demand-focus.css) ｜ **JS** — `js/demand-board.js`

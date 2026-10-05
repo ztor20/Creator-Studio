@@ -5,7 +5,7 @@
 - **日期**：2026-06-29
 - **來源**：Ztor功能點.md + Phase 1 handoff
 - **範圍**：internal use only
-- **功能總數**：124（2026-09-29 補登 S52–S56；同日補登 S58；2026-09-30 補登 S59–S61，D340；2026-10-01 補登 S62–S64，D342；2026-10-02 補登 S65–S66，D347；2026-10-05 補登 S67，D354；同日 S54（D353）、S57、S60（D354）改 ⚫ 退場）
+- **功能總數**：129（2026-10-05 補登 S68–S71、O33，D360；2026-09-29 補登 S52–S56；同日補登 S58；2026-09-30 補登 S59–S61，D340；2026-10-01 補登 S62–S64，D342；2026-10-02 補登 S65–S66，D347；2026-10-05 補登 S67，D354；同日 S54（D353）、S57、S60（D354）改 ⚫ 退場）
 
 ## Tier 圖例
 
@@ -16,7 +16,7 @@
 | ⚪ TBD（未排定） | 商務團隊待定；「下一版預覽」不顯示 |
 | ⚫ 退場 | retired（產品決策已全面撤除，不再規劃／不計入 Phase 1／Next／TBD 三態，2026-09-09 起新增） |
 
-本期統計：🟢 Phase 1 82 · 🔵 Next 11 · ⚪ TBD 26 · ⚫ 退場 5
+本期統計：🟢 Phase 1 82 · 🔵 Next 11 · ⚪ TBD 31 · ⚫ 退場 5
 
 ## Build 狀態圖例
 
@@ -30,7 +30,7 @@
 | ✅⬆ ahead | 超前建置（prototype 已有，規格尚未涵蓋） |
 | ⏳ deferred | 已延後 |
 
-Build 統計：✅ 82 built · 🟡 6 gap · ✅⬆ 29 ahead · ⏳ 2 deferred
+Build 統計：✅ 87 built · 🟡 6 gap · ✅⬆ 29 ahead · ⏳ 2 deferred
 
 **Feature ID** — `S` Shop · `O` Orders · `E` Earnings · `B` Buyer storefront（例：`E07`），跨團隊引用用，編號穩定不變。
 
@@ -77,7 +77,7 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 ## S · 商店管理 — Shop Management
 
-ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 10 · ⚫ 退場 3
+ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 14 · ⚫ 退場 3
 
 | ID    | 功能                              | English                                          | Tier       | Build    | 備註                                                        |
 | ----- | ------------------------------- | ------------------------------------------------ | ---------- | -------- | --------------------------------------------------------- |
@@ -157,10 +157,15 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 10 · ⚫ 退場 3
 | `S65` | 　平台忠誠點數設定（Admin 第 8 個同層目的地：全站活動給分與上限、賽季加倍週、衰減與等級保留、平台常數唯讀、修改紀錄） | Platform Loyalty Settings (Admin) | ⚪ TBD      | ✅ built  | D347／5.1.0.8 F1–F6；上線階段〔產品待確認〕（主規格 §8.29 第 16 項）。`admin-platform-loyalty.html` 頁級 `data-page-feat="S65"`，並比照平台優惠設定登記進 `js/sidebar.js`／`js/devtools.js` 兩份 `FULL_ROUTES`（低版本藏側欄入口、直連導回） |
 | `S66` | 　分級設定的計分設定：各購買品項的份量（5 項）與互動推薦每 90 天最多得分（4 項） | Tier settings: purchase type value & max points per 90 days | ⚪ TBD      | ✅ built  | D347／5.1.7.6 F3.2–F3.3；`fans-crm.html` 分級設定彈窗「計分設定」分頁與 `tier-settings.html` 備份頁的兩組 `[data-feat="S66"]`。四類各類行為的份量（預設改 1.0）與「外部平台訊號本版暫不計入」屬既有分級設定，不掛本編號 |
 | `S67` | 　描述區塊（無標題文字區塊：新增描述、拖動排序、刪除） | Description blocks (add, reorder, remove) | ⚪ TBD      | ✅⬆ ahead | D354（2026-10-05）；`partials/rich-body.js` 的「新增描述」鈕 `[data-feat="S67"]`（create-event 步驟 2、event-detail 活動內容）；把手拖動／上下鍵排序、區塊刪除隨區塊本身；取代退場的 S57 說明區塊 |
+|       | **潛在買家需求看板與服飾配件分類（D360，2026-10-05）** | Demand board & apparel taxonomy | | | 規格 5.1.5.16（新頁）、主規格 §7.1／§7.16／§7.17、§8.30（25 項待確認）；算法唯一定義處 §7.17。編號沿用 S／O 段（devtools 只解析 `S`／`O`／`E`／`B` 開頭的 ID），與活動段 S52–S67 同一做法 |
+| `S68` | 　需求看板頁（E-Shop 第四個導覽目的地：篩選、摘要指標、市場需求表、計畫生產量與差距、資料不足與參考同類商品、資料來源說明） | Demand board page | ⚪ TBD      | ✅ built  | D360／5.1.5.16 F1–F5；整頁 `data-page-feat="S68"`，並登記進 `js/sidebar.js`／`js/devtools.js` 兩份 `FULL_ROUTES`（低版本藏側欄入口、直連導回）；資料與算法在 `js/demand-store.js`（示範資料）。上線階段〔產品待確認〕 |
+| `S69` | 　商品層需求數據入口（商品細節頁開彈窗，看該商品自己的需求數據） | Product-level demand data entry | ⚪ TBD      | ✅ built  | D360／5.1.5.1 §2.19；與看板同一口徑（`ztorDemand.productSlice`）；入口適用範圍（草稿、數位商品）〔產品待確認〕（§8.30 第 17 項） |
+| `S70` | 　服飾配件大類→次分類、適用對象、系統屬性＋自訂規格（建立商品、商品細節） | Apparel category, department & system attributes | ⚪ TBD      | ✅ built  | D360／5.1.5.2 F2、5.1.5.1 §2.6；13 大類、次分類、屬性清單在 `js/apparel-taxonomy.js`，商品記錄欄位見 `js/products-store.js`（group／category／subCategory／audience／attrs／customSpecs）；屬性值域與適用大類、既有商品遷移〔產品待確認〕（§8.30 第 8–10 項） |
+| `S71` | 　尺寸顏色快捷預設擴充與自行輸入（建立商品選項建構器、商品細節選項） | Size & colour preset chips + custom values | ⚪ TBD      | ✅ built  | D360（修訂 D249）／5.1.5.2 F3.1、5.1.5.1 §2.8；標準清單在 `js/apparel-taxonomy.js` 的 sizes／colours；清單內容與色號〔產品待確認〕（§8.30 第 6 項）；自行輸入的尺寸跨商品歸「其他尺寸」 |
 
 ## O · 訂單管理 — Order Management
 
-ID 起始 `O01…` ｜ 🟢 25 · 🔵 2 · ⚪ 2 · ⚫ 退場 2
+ID 起始 `O01…` ｜ 🟢 25 · 🔵 2 · ⚪ 3 · ⚫ 退場 2
 
 | ID | 功能 | English | Tier | Build | 備註 |
 |---|---|---|---|---|---|
@@ -200,6 +205,7 @@ ID 起始 `O01…` ｜ 🟢 25 · 🔵 2 · ⚪ 2 · ⚫ 退場 2
 | `O30` | 　　活動票券共用核銷（回寫 Events check-in）  | Event ticket redemption          | 🟢 Phase 1 | ✅ built | 5.1.5.14 F2；票券狀態仍以 Events 為來源 |
 | `O31` | 　　作廢品項（Admin 專屬、取貨型）           | Void item (admin only)           | 🟢 Phase 1 | ✅ built | 2026-09-07 上游拍板列入 eShop 2.2；creator 態可見但停用（§4.4）；出貨型／數位待產品確認（§8.27） |
 | `O32` | 　　平台費展開（依費率葉節點列出計費基準與平台費） | Platform fee breakdown | 🟢 Phase 1 | ✅ built | 2026-09-29（D333）；同日使用者裁示列入 Phase 1；`order-detail.html` 平台費列的展開把手與展開列掛 `data-feat="O32"`；支付費不展開 |
+| `O33` | 　　收件國家與城市（買家卡的兩個欄位，完整地址保留；沒值顯示未提供地區） | Shipping country & city | ⚪ TBD      | ✅ built  | D360／5.1.5.3.1 §2.4；資料層 `js/orders-store.js` 的 buyer.country（ISO 兩碼）／buyer.city；前台（粉絲結帳頁）同步新增前欄位先空著（需求看板「未提供地區」的來源） |
 
 ## E · 收入管理 — Earnings / Income
 

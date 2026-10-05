@@ -46,6 +46,7 @@
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card-group.css?v=r2.2"><!-- D360：詳細規格上下兩段的小標（.group-title／.group-desc） -->
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/size-chart-editor.css?v=r2.2"><!-- 尺寸指南編輯器（partials/size-guide-modal.js 注入的彈窗，2026-09-22） -->
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
@@ -57,6 +58,11 @@
 <link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/album-tracks.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/vip-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/product-list.css?v=r2.2"><!-- D360 · S69：需求數據彈窗（js/demand-board.js 的 ztorDemandView）要用的四支：product-list、empty-card、size-mix、demand-table、demand-focus -->
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/size-mix.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/demand-table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/demand-focus.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* product-detail 專屬：條件揭露子欄位的顯隱膠水。
@@ -64,6 +70,8 @@
      字級／色階／頁寬屬 Q21 全站裁決，改在 ds-components 與 shared.css，不留頁面覆寫。 */
   .pd-subfields { margin-top: 14px; }
   .pd-subfields[hidden] { display: none; }
+  /* 需求數據彈窗（S69）：主排左欄（市場需求表）要能縮到比內容窄，橫向捲動交給 .product-list-scroll；與 demand-board.html 同一做法 */
+  .pd-demand__table { min-width: 0; }
 </style>
 </head>
 <body>
@@ -97,6 +105,11 @@
                §2.18 那個畫面主區本身就是同一份粉絲視角完整商品頁，還能改翻譯，頁首不再另設一顆唯讀預覽鈕。
                href 由下方 inline script 依 ?id 補上；已封存也走得進去（那頁自己唯讀，見 product-localization.html）。 -->
           <a class="btn btn--outline" href="product-localization.html" data-pd-localize data-dock-icon><i data-lucide="globe" class="ztor-icon"></i><span data-i18n="product-detail.btn.localize">Preview &amp; localization</span></a>
+          <!-- 需求數據入口（§2.19 · D360 · S69，僅實體）：開本商品的需求數據彈窗（需求看板的單品切片，口徑一致）。
+               入口形式取頁首動作區的一顆 outline 鈕（規格 §2.19 的呈現參考，與旁邊「預覽與在地化」同一做法）：
+               跨分頁常駐、不佔總覽那排 KPI 磚的位置；捲過頁首後跟著收進頂列只留 icon（data-dock-icon，Q115）。
+               顯隱沿用 data-pd-cat：數位商品整顆收起（applyCat）。封存態仍可開（查看性質，§2.19 其他狀態）。 -->
+          <button class="btn btn--outline" type="button" data-pd-demand-open data-pd-cat="physical" data-feat="S69" data-dock-icon><i data-lucide="chart-column" class="ztor-icon"></i><span data-i18n="product-detail.btn.demand">Demand data</span></button>
           <!-- 頁首主要動作依狀態互斥、一次只出現一個（spec 5.1.5.1 §2.2，主規格 §7.14「封存與不可刪除」· D284，2026-09-18）：
                上架中→「下架」（＝把上架開關切關，同一份資料）；已下架→「封存」（先確認；仍在上架中組合包裡則列出並一同下架）；
                已封存→「解除封存」（不確認、回到已下架、設定照舊、不自動上架；D298 2026-09-22 修訂 D284 的「直接回到上架」）。
@@ -483,13 +496,25 @@
             <div class="field">
               <div class="field__label" data-i18n="product-detail.field.sub-cat">Sub category</div>
               <!-- 次分類依主分類分流：實體與數位各一個 select（applyCat 切顯隱），選值由 applyProduct 依 data-sub 設定 -->
+              <!-- D360（S70）：清單對齊建立商品的「分類」下拉（5.1.5.2 F2）——原本只有 6 項、與建立頁 14 項不一致；
+                   「服飾」「配件」由「服飾配件」群組取代（選了它才有大類／次分類／適用對象，見下方 [data-pd-apparel]）。
+                   data-sub 值沿用既有商品記錄的 subKey（zine＝書籍、collectible＝收藏品…），選項字取 cp.psub.*（同建立頁）。
+                   整顆仍鎖定（UIA-064）：實體次分類能否改規格 §2.6 寫「可自由編輯」，與使用者先前指定的鎖定衝突，待確認；
+                   服飾配件跨群組搬移規格未寫，保守不開放。 -->
               <select class="select" id="pd-sub-phys" data-pd-cat="physical" disabled aria-disabled="true">
-                <option data-sub="zine" data-i18n="product-detail.sub.zine">Books</option>
-                <option data-sub="merch" data-i18n="product-detail.sub.merch">Merch</option>
-                <option data-sub="album" data-i18n="product-detail.sub.album">Album</option>
-                <option data-sub="apparel" data-i18n="product-detail.sub.apparel">Apparel</option>
-                <option data-sub="poster" data-i18n="product-detail.sub.poster">Posters &amp; prints</option>
-                <option data-sub="collectible" data-i18n="product-detail.sub.collectible">Collectibles</option>
+                <option data-sub="apparel" data-group="apparel" data-i18n="cp.psub.apparel-group">Apparel &amp; accessories</option>
+                <option data-sub="poster" data-i18n="cp.psub.poster">Posters &amp; prints</option>
+                <option data-sub="home" data-i18n="cp.psub.home">Home &amp; Living</option>
+                <option data-sub="zine" data-i18n="cp.psub.books">Books</option>
+                <option data-sub="collectible" data-i18n="cp.psub.collectibles">Collectibles</option>
+                <option data-sub="song" data-i18n="cp.psub.music">Song</option>
+                <option data-sub="album" data-i18n="cp.psub.album">Album</option>
+                <option data-sub="instruments" data-i18n="cp.psub.instruments">Instruments</option>
+                <option data-sub="art" data-i18n="cp.psub.art">Art</option>
+                <option data-sub="equipment" data-i18n="cp.psub.equipment">Equipment</option>
+                <option data-sub="memorabilia" data-i18n="cp.psub.memorabilia">Memorabilia</option>
+                <option data-sub="limited" data-i18n="cp.psub.limited">Limited &amp; signed</option>
+                <option data-sub="merch" data-i18n="cp.psub.merch">Merch</option>
               </select>
               <select class="select" id="pd-sub-digi" data-pd-cat="digital" hidden disabled aria-disabled="true">
                 <option data-sub="song" data-i18n="cp.dsub.music">Music</option>
@@ -504,10 +529,42 @@
               </select>
             </div>
           </div>
-          <!-- §2.6 詳細規格 Specifications（僅實體；逐筆規格名稱＋規格值，重用建立商品 5.1.5.2 §4.1② 的 .spec-row 與 cp.spec.* i18n）· D095 -->
+          <!-- 服飾配件的大類→次分類、適用對象（D360 · S70，5.1.5.1 §2.6；欄位同建立商品 5.1.5.2 F2）。
+               建立後可編輯（規格 §2.6：大類沿用實體次分類現行規則、適用對象為商品特徵）；改大類須重選次分類。
+               已填系統屬性中不再適用的項目保留或清空、是否提示〔產品待確認〕——原型先清空不提示。
+               只在實體服飾配件商品出現；清單全取 window.ztorApparel，由頁尾 [data-pd-apparel-script] 渲染。 -->
+          <div data-pd-cat="physical" data-feat="S70">
+            <div data-pd-apparel hidden>
+              <div class="form-grid mb-16">
+                <div class="field">
+                  <div class="field__label" data-i18n="cp.apparel.group">Category group</div>
+                  <select class="select" id="pd-cat-group" data-pd-ap></select>
+                </div>
+                <div class="field">
+                  <div class="field__label" data-i18n="cp.apparel.sub">Sub category</div>
+                  <select class="select" id="pd-cat-sub" data-pd-ap></select>
+                </div>
+              </div>
+              <div class="field">
+                <div class="field__label" data-i18n="cp.apparel.dept">Department</div>
+                <select class="select" id="pd-audience" data-pd-ap></select>
+              </div>
+            </div>
+          </div>
+          <!-- §2.6 詳細規格 Specifications（僅實體；逐筆規格名稱＋規格值，重用建立商品 5.1.5.2 §4.1② 的 .spec-row 與 cp.spec.* i18n）· D095
+               D360 · S70：服飾配件分上下兩段——上段系統屬性（選的、整件商品設一次）、下段自訂規格（#pd-spec-rows，維持自由填寫）；非服飾配件只有下段、外觀同改版前 -->
           <div class="field" data-pd-cat="physical" style="margin-bottom:0">
             <div class="field__label" data-i18n="cp.spec.title">Specifications</div>
             <div class="field__hint" data-i18n="cp.spec.sub">Help buyers know exactly what they're getting.</div>
+            <div data-pd-attrs data-feat="S70" hidden style="margin-top:var(--sp-12)">
+              <div class="group-title" data-i18n="cp.spec.system">System attributes</div>
+              <div class="group-desc" data-i18n="cp.spec.system.hint">Pick from fixed lists. Shared by every option.</div>
+              <div class="form-grid" id="pd-attrs"></div>
+            </div>
+            <div data-pd-custom-head data-feat="S70" hidden style="margin-top:var(--sp-24)">
+              <div class="group-title" data-i18n="cp.spec.custom">Custom specifications</div>
+              <div class="group-desc" data-i18n="cp.spec.custom.hint">Free text for buyers. Not used in statistics.</div>
+            </div>
             <div id="pd-spec-rows"></div>
             <button class="btn btn--outline" id="pd-add-spec" type="button" style="width:100%;justify-content:center;margin-top:var(--sp-8)" data-i18n="cp.spec.add">＋ Add spec</button>
           </div>
@@ -1173,6 +1230,43 @@
 </div>
 
 
+<!-- 需求數據彈窗（§2.19 · D360 · S69）：本商品的需求數據＝需求看板（demand-board.html）的單品切片，數字一律取 ztorDemand.productSlice，
+     畫面由 js/demand-board.js 的 ztorDemandView 產生，與看板同一份 renderer、同一口徑。
+     殼層用 .payout-modal／.payout-dialog（站上彈出層的唯一殼層，Q27；全不透明，Q78）；它是「檢視資料」性質的彈窗，
+     Q27 把 .drawer 留給唯讀用途，但本頁同類的「庫存歷史紀錄」「補貨紀錄」已是 .payout-modal，這裡跟本頁既有做法並記待裁決（STYLE-DECISIONS Q127）。
+     內容槽 data-dv 同看板：summary／banner／main（table＋focus）／empty／note；主排沿用看板的 bento--stack-lg（視窗 < 1440px 時選定對象落到表格下方）。 -->
+<div class="payout-modal" data-pd-demand-modal data-feat="S69" hidden>
+  <section class="payout-dialog payout-dialog--xwide" role="dialog" aria-modal="true" aria-labelledby="pd-demand-title">
+    <div class="payout-dialog__head">
+      <div class="payout-dialog__head-titles">
+        <h2 class="payout-dialog__title" id="pd-demand-title" data-i18n="product-detail.demand.title">Demand data</h2>
+        <p class="payout-dialog__sub" data-pd-demand-sub></p>
+      </div>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="npp.close" data-pd-demand-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body" data-pd-demand-root>
+      <div class="bento mb-16" data-dv="summary"></div>
+      <div class="info-banner mb-16" data-dv="banner" hidden></div>
+      <div class="bento bento--top bento--stack-lg" data-dv="main">
+        <div class="bento--span-8 pd-demand__table" data-dv="table"></div>
+        <aside class="card bento--span-4 bento__aside demand-focus" data-dv="focus" aria-live="polite"></aside>
+      </div>
+      <section class="card" data-dv="empty" hidden>
+        <div class="empty-card">
+          <span class="empty-card__icon"><i data-lucide="chart-column" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="demand.empty.title">No demand to count yet</h3>
+          <p class="empty-card__text" data-i18n="demand.empty.text">Numbers appear here once sized products sell through orders or bundles.</p>
+        </div>
+      </section>
+      <p class="field__hint mt-16" data-dv="note"></p>
+    </div>
+    <div class="payout-dialog__foot">
+      <a class="btn btn--ghost" href="demand-board.html" data-pd-demand-board><span data-i18n="product-detail.demand.board">Open in Demand board</span><i data-lucide="arrow-up-right" class="ztor-icon"></i></a>
+      <button class="btn btn--outline" type="button" data-pd-demand-close data-i18n="npp.close">Close</button>
+    </div>
+  </section>
+</div>
+
 <!-- 鎖定庫存彈窗（2026-09-11 使用者裁示：表格唯讀，鎖定走一次性編輯）：
      卡頭「鎖定庫存」開全部選項組合、列尾 ⋯ 只開那一列；兩者同一個彈窗，差別只在列數。
      一列一個選項組合：庫存（唯讀）／鎖給單售（可填）／未鎖定（即時重算）。
@@ -1217,6 +1311,9 @@
 <!-- listing-state 必須早於 products-store：store 在 IIFE 裡就抓 window.ListingState 做庫存推導。 -->
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/link-field.js?v=r2.2"></script>
+<script src="js/apparel-taxonomy.js?v=r2.2"></script><!-- D360：服飾配件分類／系統屬性／尺寸顏色標準清單（window.ztorApparel） -->
+<script src="js/demand-store.js?v=r2.2"></script><!-- D360 · S69：需求資料與算法（window.ztorDemand；須在 apparel-taxonomy 之後） -->
+<script src="js/demand-board.js?v=r2.2"></script><!-- D360 · S69：ztorDemandView（需求看板與本頁彈窗共用的 renderer）；本頁沒有 [data-demand-board]，頁面接線段不會跑 -->
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
@@ -2486,13 +2583,143 @@
       host.appendChild(row);
       if (window.ztorIcons) window.ztorIcons.applyIcons(row);
     }
-    (window.pdProduct && window.pdProduct.specs || []).forEach(s => addRow(s.name, s.value));
+    /* D360：服飾配件的下段是「自訂規格」——系統屬性放不下的那幾項（customSpecs）；材質、版型等已搬到上段，原 specs 不再重複列出。其餘商品維持 specs。 */
+    const pdp = window.pdProduct || {};
+    (pdp.group === 'apparel' && Array.isArray(pdp.customSpecs) ? pdp.customSpecs : (pdp.specs || [])).forEach(s => addRow(s.name, s.value));
     /* ✝ 墓碑 2026-09-23（D319 補）：原本不分商品一律預填的 [['Material', 'Letterpress cover · uncoated stock'],
        ['Size', '21 × 15 cm'], ['Pages', '32 pages']] 三列已移除，改由上一行的資料驅動 forEach 取代。 */
     const add = document.getElementById('pd-add-spec');
     if (add) add.addEventListener('click', () => addRow('', ''));
     host.addEventListener('click', e => { const rm = e.target.closest('[data-spec-remove]'); if (rm) rm.closest('.spec-row').remove(); });
   })();
+</script>
+<script data-pd-apparel-script>
+/* 服飾配件：大類→次分類、適用對象、系統屬性（D360 · S70；5.1.5.1 §2.6，欄位定義同建立商品 5.1.5.2 F2）。
+   資料讀寫走 products-store 的新欄位 group／category／subCategory／audience／attrs／customSpecs（值一律是
+   window.ztorApparel 的 key）；清單與值全部取自 ztorApparel，這裡不寫死。
+   建立後可編輯（§2.6）：大類沿用實體次分類的現行規則，適用對象、系統屬性、自訂規格都是商品特徵。
+   〔產品待確認〕改分類後已填系統屬性中不再適用的項目保留或清空、是否提示——原型先清空不提示；
+   已有訂單後改分類對需求看板歷史統計的影響——原型不處理（本頁資料不持久化，需求看板另有自己的商品歸類，改了不會連動）。
+   服飾配件群組本身（#pd-sub-phys）鎖定：跨群組搬移規格未寫，保守不開放。 */
+(function () {
+  const AP = window.ztorApparel, P = window.pdProduct;
+  const panel = document.querySelector('.tab-panel[data-panel="settings"]');
+  if (!AP || !P || !panel) return;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const T = (k, f) => (window.i18nT ? window.i18nT(k) : null) || f;
+  const L2 = () => ((document.documentElement.lang || 'en').indexOf('zh') === 0 ? 'zh' : 'en');
+  const nameOf = o => (L2() === 'zh' ? o.zh : o.en);
+  const byId = id => document.getElementById(id);
+  const editing = () => panel.getAttribute('data-mode') === 'edit';
+  const clone = o => JSON.parse(JSON.stringify(o || {}));
+  /* 服飾配件商品：有 group 欄位，或舊記錄的次分類 key 還是 apparel（尚未歸到大類，下拉留空等補） */
+  const apparelProduct = P.cat !== 'digital' && (P.group === AP.GROUP.key || P.subKey === 'apparel');
+  let st = { category: P.category || '', sub: P.subCategory || '', audience: P.audience || '', attrs: clone(P.attrs) };
+
+  /* 群組層（#pd-sub-phys）要亮著「服飾配件」：記錄有 group 但 subKey 不是 apparel 時也一致。
+     這一格在服飾配件商品上是第一層「分類」（下面才是大類、次分類），標籤改成與建立商品同一個字，避免兩個「次分類」並列 */
+  if (apparelProduct) {
+    const g = byId('pd-sub-phys');
+    if (g) Array.prototype.forEach.call(g.options, o => { o.selected = o.dataset.group === AP.GROUP.key; });
+    const lb = g && g.closest('.field') && g.closest('.field').querySelector('.field__label');
+    if (lb) { lb.setAttribute('data-i18n', 'cp.category'); lb.textContent = T('cp.category', 'Category'); }
+  }
+
+  const opt = (v, text, on) => '<option value="' + esc(v) + '"' + (on ? ' selected' : '') + '>' + esc(text) + '</option>';
+  /* 空值畫成「—」：檢視態讀數就是這個字，不寫「請選擇」 */
+  const emptyOpt = () => opt('', '—', false);
+  function attrDefs() {
+    if (!st.category) return [];
+    const sub = AP.sub(st.sub);
+    return AP.attrsFor(st.category).filter(a => a.key !== 'department' && (a.key !== 'style' || (sub && sub.styles.length)));
+  }
+  function attrValues(a) {
+    if (a.key === 'style') { const sub = AP.sub(st.sub); return (sub ? sub.styles : []).map(x => ({ key: x, label: x })); }
+    return a.values.map(x => ({ key: x.key, label: nameOf(x) }));
+  }
+  function prune() {
+    const keep = {};
+    attrDefs().forEach(a => {
+      const v = st.attrs[a.key]; if (v == null) return;
+      const ok = attrValues(a).map(x => x.key);
+      const next = Array.isArray(v) ? v.filter(x => ok.indexOf(x) >= 0) : (ok.indexOf(v) >= 0 ? v : '');
+      if (Array.isArray(next) ? next.length : next) keep[a.key] = next;
+    });
+    st.attrs = keep;
+  }
+  function renderAttrs() {
+    const wrap = document.querySelector('[data-pd-attrs]'), head = document.querySelector('[data-pd-custom-head]'), host = byId('pd-attrs');
+    if (!wrap || !host) return;
+    const defs = apparelProduct ? attrDefs() : [];
+    wrap.hidden = head.hidden = defs.length === 0;
+    host.innerHTML = '';
+    defs.forEach(a => {
+      const cur = st.attrs[a.key], sel = Array.isArray(cur) ? cur : (cur ? [cur] : []);
+      const f = document.createElement('div');
+      f.className = 'field';
+      f.innerHTML = '<div class="field__label">' + esc(nameOf(a)) + '</div>'
+        + '<select class="select" data-pd-ap data-pd-attr="' + esc(a.key) + '"' + (editing() ? '' : ' disabled')
+        + (a.multi ? ' multiple data-zselect-multi data-zselect-max="40" data-zselect-placeholder="—" data-zselect-sep-i18n="cp.apparel.sep" data-zselect-sep=", "' : '') + '>'
+        + (a.multi ? '' : emptyOpt()) + attrValues(a).map(v => opt(v.key, v.label, sel.indexOf(v.key) >= 0)).join('') + '</select>';
+      host.appendChild(f);
+    });
+    if (window.ztorSelect) window.ztorSelect.mount(host);
+  }
+  function render() {
+    document.querySelectorAll('[data-pd-apparel]').forEach(el => { el.hidden = !apparelProduct; });
+    if (apparelProduct) {
+      const gSel = byId('pd-cat-group'), sSel = byId('pd-cat-sub'), dSel = byId('pd-audience');
+      const cat = AP.category(st.category);
+      gSel.innerHTML = (cat ? '' : emptyOpt()) + AP.categories().map(c => opt(c.key, nameOf(c), c.key === st.category)).join('');
+      sSel.innerHTML = emptyOpt() + (cat ? cat.subs.map(x => opt(x.key, nameOf(x), x.key === st.sub)).join('') : '');
+      dSel.innerHTML = emptyOpt() + AP.audiences.map(x => opt(x.key, nameOf(x), x.key === st.audience)).join('');
+      [gSel, sSel, dSel].forEach(el => { el.disabled = !editing(); });
+    }
+    renderAttrs();
+  }
+
+  const gSel = byId('pd-cat-group'), sSel = byId('pd-cat-sub'), dSel = byId('pd-audience'), host = byId('pd-attrs');
+  if (gSel) {
+    /* 改大類：次分類須重選（§2.6），不再適用的屬性清掉 */
+    gSel.addEventListener('change', () => { st.category = gSel.value; st.sub = ''; prune(); render(); });
+    sSel.addEventListener('change', () => { st.sub = sSel.value; prune(); renderAttrs(); });
+    dSel.addEventListener('change', () => { st.audience = dSel.value; });
+    host.addEventListener('change', e => {
+      const el = e.target.closest('[data-pd-attr]'); if (!el) return;
+      const def = AP.attrs.filter(a => a.key === el.getAttribute('data-pd-attr'))[0];
+      if (def && def.multi) { const arr = Array.from(el.selectedOptions).map(o => o.value); if (arr.length) st.attrs[def.key] = arr; else delete st.attrs[def.key]; }
+      else if (el.value) st.attrs[el.getAttribute('data-pd-attr')] = el.value; else delete st.attrs[el.getAttribute('data-pd-attr')];
+    });
+  }
+  /* 語言換了：選項文字重畫（資料是 key，字跟語言走） */
+  document.addEventListener('i18n:applied', render);
+
+  window.pdApparel = {
+    get: () => clone(st),
+    set: v => { st = clone(v); render(); },
+    /* 進出編輯態時 applyReadonly 會把頁面上所有 select 統一開關；這裡補一次，確保重畫後的新 select 狀態一致 */
+    refresh: render,
+    valid: () => {
+      if (!apparelProduct || !st.category || st.sub) return true;
+      if (window.ztorToast) window.ztorToast.show(T('product-detail.apparel.pick-sub', 'Pick a sub category for the new category group.'));
+      if (sSel && sSel.focus) sSel.focus();
+      return false;
+    },
+    commit: () => {
+      if (!apparelProduct) return;
+      prune();
+      const custom = Array.from(document.querySelectorAll('#pd-spec-rows .spec-row')).map(r => {
+        const i = r.querySelectorAll('input');
+        return { name: ((i[0] && i[0].value) || '').trim(), value: ((i[1] && i[1].value) || '').trim() };
+      }).filter(x => x.name || x.value);
+      P.group = AP.GROUP.key; P.category = st.category; P.subCategory = st.sub; P.audience = st.audience;
+      P.attrs = clone(st.attrs); P.customSpecs = custom;
+    }
+  };
+  /* 檢視／編輯切換：dataset 變化時只需把 disabled 同步回來（applyReadonly 已處理，這裡處理 attr 區的 select 重畫） */
+  new MutationObserver(() => render()).observe(panel, { attributes: true, attributeFilter: ['data-mode'] });
+  render();
+})();
 </script>
 <div data-pickup-modal-host></div>
 <script src="partials/pickup-session-modal.js?v=r2.2"></script>
@@ -3068,13 +3295,33 @@
       }
     });
 
-    /* 商品選項卡的唯讀摘要（DS kv 列）：一個選項一列，值用頓號串。 */
+    /* 選項值是否為標準值（D360 · S71，5.1.5.1 §2.8；清單取 window.ztorApparel）：尺寸比對標準尺寸、顏色比對標準顏色名，
+       其餘維度回 null（不分標準與否）。自行輸入的值（std:false）照常販售，只是不列入跨商品統計。
+       細節頁沒有選項建構器（BUILD-SPEC 4b.1）——這裡只讓「標準值／自行輸入」的差別看得見，不新增建構器。
+       ⚠ 鞋碼（US 8…）、Free Size 這類不在尺寸標準清單的值也會標「自行輸入」：鞋類是否另有標準清單〔產品待確認，第一期可不納入〕。 */
+    function optKindOf(o) {
+      var n = String(o && o.name || '').toLowerCase();
+      if (/size|尺寸|尺碼|尺码/.test(n)) return 'size';
+      if (/colou?r|顏色|颜色/.test(n)) return 'colour';
+      return '';
+    }
+    function isStdVal(o, val) {
+      var AP = window.ztorApparel, k = optKindOf(o), v = String(val == null ? '' : val).trim();
+      if (!AP || !v || !k) return null;
+      if (k === 'size') return AP.isStandardSize(v);
+      return AP.colours.standard.some(function (c) { return c.name.toLowerCase() === v.toLowerCase(); });
+    }
+    function customBadge(attrs) {
+      return '<span class="ztor-badge" data-feat="S71" ' + (attrs || '') + ' style="flex:none;white-space:nowrap" data-i18n-title="cp.var.std.hint" title="' + esc(T('cp.var.std.hint', 'Custom values are not counted across products.')) + '" data-i18n="cp.var.std.custom">' + esc(T('cp.var.std.custom', 'Custom')) + '</span>';
+    }
+    /* 商品選項卡的唯讀摘要（DS kv 列）：一個選項一列，值用頓號串；自行輸入的值後面帶一顆「自行輸入」標記。 */
     function renderOptionsSummary() {
       var host = document.querySelector('[data-pd-options-summary]');
       if (!host) return;
       host.innerHTML = MODEL.options.map(function (o, i) {
+        var vals = (o.values || []).map(function (v) { return esc(v) + (isStdVal(o, v) === false ? ' ' + customBadge() : ''); }).join('、');
         return '<div class="kv' + (i === 0 ? ' kv--lead' : '') + '"><span class="kv__k">' + esc(o.name || '—') + '</span>'
-          + '<span class="kv__v">' + esc((o.values || []).join('、')) + '</span></div>';
+          + '<span class="kv__v">' + vals + '</span></div>';
       }).join('');
     }
 
@@ -3088,9 +3335,16 @@
       if (!optEditor) return;
       var canRemoveOpt = m.options.length > 1;
       var blocks = m.options.map(function (o, oi) {
+        /* 尺寸／顏色選項的值多一顆「自行輸入」標記（D360 · S71）：不在標準清單的值才顯示，打字時就地更新（syncStdMarks） */
+        var stdOn = !!optKindOf(o);
         var vals = o.values.map(function (val, vi) {
-          return '<div class="variant-option__value"><input class="input" data-opt="' + oi + '" data-vi="' + vi + '" value="' + esc(val) + '"><button class="variant-option__value-remove" type="button" data-opt-remove="' + oi + '" data-vi="' + vi + '" aria-label="Remove value"><i data-lucide="x" class="ztor-icon"></i></button></div>';
+          return '<div class="variant-option__value"><input class="input" data-opt="' + oi + '" data-vi="' + vi + '" value="' + esc(val) + '">'
+            + (stdOn ? customBadge('data-pd-std="' + oi + ':' + vi + '"' + (isStdVal(o, val) === false ? '' : ' hidden')) : '')
+            + '<button class="variant-option__value-remove" type="button" data-opt-remove="' + oi + '" data-vi="' + vi + '" aria-label="Remove value"><i data-lucide="x" class="ztor-icon"></i></button></div>';
         }).join('');
+        var stdHint = stdOn
+          ? '<div class="field__hint" data-feat="S71" data-pd-std-hint="' + oi + '" data-i18n="cp.var.std.hint" style="margin-top:var(--sp-8)"' + (o.values.some(function (v) { return isStdVal(o, v) === false; }) ? '' : ' hidden') + '>' + esc(T('cp.var.std.hint', 'Custom values are not counted across products.')) + '</div>'
+          : '';
         /* 選項名一列（可改名＋可移除整個選項，多於一個選項時才給移除）＋值清單＋新增值 */
         var optHead = '<div class="variant-option__value" style="margin-bottom:var(--sp-6)"><input class="input" data-opt-name="' + oi + '" value="' + esc(o.name) + '" placeholder="Option name" data-i18n-placeholder="product-detail.edit.optname.ph">' +
           (canRemoveOpt ? '<button class="variant-option__value-remove" type="button" data-opt-remove-option="' + oi + '" aria-label="Remove option"><i data-lucide="trash-2" class="ztor-icon"></i></button>' : '') + '</div>';
@@ -3098,6 +3352,7 @@
           optHead +
           '<div class="variant-option__values">' + vals + '</div>' +
           '<button class="variant-option__add-value" type="button" data-opt-add="' + oi + '"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="product-detail.edit.addvalue">Add value</span></button>' +
+          stdHint +
           '</div>';
       }).join('');
       /* 新增一個「選項」（維度，如再加一個 材質）——加完組合表笛卡兒積重算 */
@@ -3280,7 +3535,7 @@
     function snapshot() {
       if (!settingsPanel) return null;
       var snap = [];
-      settingsPanel.querySelectorAll('input:not([data-ec-field]):not([data-opt]):not([data-opt-name]), textarea, select').forEach(function (el) {
+      settingsPanel.querySelectorAll('input:not([data-ec-field]):not([data-opt]):not([data-opt-name]), textarea, select:not([data-pd-ap])').forEach(function (el) {
         snap.push({ el: el, value: el.value });
       });
       settingsPanel.querySelectorAll('.switch').forEach(function (el) { snap.push({ el: el, on: el.classList.contains('switch--on') }); });
@@ -3294,6 +3549,8 @@
       });
       /* 尺寸指南（2026-09-22）：沿用商店／專屬一份，狀態住在頁尾的 sizeGuideField 腳本 */
       if (window.pdSizeGuide) snap.push({ el: null, sg: window.pdSizeGuide.get() });
+      /* 服飾配件的大類／次分類／適用對象／系統屬性（D360 · S70）：選項會隨大類重畫，不能靠逐個 select 記值，整組記在頁尾腳本的 state */
+      if (window.pdApparel) snap.push({ el: null, apparel: window.pdApparel.get() });
       return snap;
     }
     function restore(snap) {
@@ -3310,6 +3567,8 @@
           if (r.seg && curSeg !== r.seg) r.seg.click();
         } else if ('sg' in r) {
           if (window.pdSizeGuide) window.pdSizeGuide.set(r.sg);
+        } else if ('apparel' in r) {
+          if (window.pdApparel) window.pdApparel.set(r.apparel);
         }
       });
     }
@@ -3329,6 +3588,7 @@
       renderSettingsOverview();
     }
     function saveEdit() {
+      if (window.pdApparel && !window.pdApparel.valid()) return;   /* 改了大類卻沒重選次分類：停在編輯態（D360，§2.6） */
       if (!DRAFT) DRAFT = copyModel(MODEL);
       /* 上限低於已售（§2.10）就不收：錯誤句已在欄位／表格底下，停在編輯態讓使用者改 */
       if (!checkCaps(DRAFT)) return;
@@ -3350,6 +3610,7 @@
       DRAFT.options = DRAFT.options.map(function (o) { return { name: o.name || '', values: o.values.filter(function (v) { return String(v).trim() !== ''; }) }; }).filter(function (o) { return o.values.length; });
       regen(DRAFT);
       MODEL = DRAFT; DRAFT = null;
+      if (window.pdApparel) window.pdApparel.commit();   /* 服飾配件欄位寫回商品記錄（group／category／subCategory／audience／attrs／customSpecs） */
       syncLocksToStore();   /* 鎖定量寫回 store，商品層那張唯讀彙總表跟著重畫 */
       // 單規格：價格/成本回填頁面唯讀讀數（多規格的價格在表內，由 renderPageTable 帶）
       renderPageTable();
@@ -3363,6 +3624,19 @@
       renderSettingsOverview();
     }
 
+    /* 「自行輸入」標記與提示隨打字就地更新，不重繪編輯器（保焦點；D360 · S71） */
+    function syncStdMarks(oi) {
+      var o = DRAFT && DRAFT.options[oi];
+      if (!o || !optEditor) return;
+      var any = false;
+      optEditor.querySelectorAll('[data-pd-std^="' + oi + ':"]').forEach(function (b) {
+        var std = isStdVal(o, o.values[+b.getAttribute('data-pd-std').split(':')[1]]);
+        b.hidden = std !== false;
+        if (std === false) any = true;
+      });
+      var h = optEditor.querySelector('[data-pd-std-hint="' + oi + '"]');
+      if (h) h.hidden = !any;
+    }
     /* 選項管理（草稿）：改值/改選項名 / 移除值·移除選項 / 新增值·新增選項 → 重算組合並重繪 */
     if (optEditor) {
       optEditor.addEventListener('input', function (e) {
@@ -3371,7 +3645,7 @@
         if (nameInp) { var ni = +nameInp.getAttribute('data-opt-name'); if (DRAFT.options[ni]) DRAFT.options[ni].name = nameInp.value; return; }
         var inp = e.target.closest('input[data-opt]'); if (!inp) return;
         var oi = +inp.getAttribute('data-opt'), vi = +inp.getAttribute('data-vi');
-        if (DRAFT.options[oi]) { DRAFT.options[oi].values[vi] = inp.value; regen(DRAFT); renderEditCombos(DRAFT, true); }   /* 編輯中改值重畫，必須維持編輯態（漏傳 editable 會把整張表畫回純文字） */
+        if (DRAFT.options[oi]) { DRAFT.options[oi].values[vi] = inp.value; regen(DRAFT); renderEditCombos(DRAFT, true); syncStdMarks(oi); }   /* 編輯中改值重畫，必須維持編輯態（漏傳 editable 會把整張表畫回純文字） */
       });
       optEditor.addEventListener('click', function (e) {
         if (!DRAFT) return;
@@ -3703,6 +3977,51 @@
     }
   });
 })();
+</script>
+<script>
+  /* 需求數據入口（§2.19 · D360 · S69）：開彈窗、畫本商品的需求數據。
+     與看板同一口徑：ztorDemand.productSlice(id)；計畫生產量與看板選同一商品時共用（同一個 scopeKey）。
+     沒有這件商品的需求資料（剛上架、示範資料沒有）→ 彈窗畫空狀態；沒有 ?id 時用不存在的佔位 id，
+     避免 productSlice('') 變成「全部商品」。示範開關：?state=empty|no-region 與 Cheat Codes 的 Empty 也生效。 */
+  (function () {
+    var modal = document.querySelector('[data-pd-demand-modal]');
+    var opener = document.querySelector('[data-pd-demand-open]');
+    if (!modal || !opener || !window.ztorDemandView) return;
+    var qs = new URLSearchParams(location.search);
+    var pid = qs.get('id') || (window.pdProduct && window.pdProduct.id) || '';
+    var root = modal.querySelector('[data-pd-demand-root]');
+    function demo() {
+      if (document.documentElement.getAttribute('data-data-state') === 'empty') return 'empty';
+      var st = qs.get('state');
+      return (st === 'empty' || st === 'no-region') ? st : null;
+    }
+    var view = null;
+    function name() {
+      var el = document.getElementById('pd-title');
+      return el ? el.textContent.trim() : '';
+    }
+    function fillSub() {
+      var T = function (k, f) { return (window.i18nT && window.i18nT(k)) || f; };
+      var sub = modal.querySelector('[data-pd-demand-sub]');
+      if (sub) sub.textContent = name() + ' · ' + T('product-detail.demand.sub', 'For reference only — it doesn’t change stock or restocking.');
+      var link = modal.querySelector('[data-pd-demand-board]');
+      if (link) link.href = 'demand-board.html' + (pid ? '?product=' + encodeURIComponent(pid) : '');
+    }
+    function render() { if (view) view.render(); fillSub(); }
+    function open() {
+      if (!view) view = window.ztorDemandView.create(root, { productId: pid || '_none', idPrefix: 'pd', demo: demo });
+      modal.hidden = false;
+      if (window.ztorIcons) window.ztorIcons.applyIcons(modal);
+      if (window.applyI18n) window.applyI18n(modal);
+      render();
+    }
+    function close() { modal.hidden = true; }
+    opener.addEventListener('click', open);
+    modal.addEventListener('click', function (e) {
+      if (e.target.closest('[data-pd-demand-close]')) close();
+    });
+    document.addEventListener('i18n:applied', function () { if (!modal.hidden) render(); });
+  })();
 </script>
 <script src="js/devtools.js?v=r2.2"></script>
 

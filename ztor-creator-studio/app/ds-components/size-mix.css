@@ -1,0 +1,105 @@
+/* ============================================================
+   size-mix — 各尺寸占比（2026-10-05 建，D360 需求看板 S68）
+
+   一個市場（或一件商品）的需求，在各尺寸之間怎麼分。尺寸是有順序的（XS → XL），
+   所以畫成一排依序排列的小直條：一眼看得出「偏小碼還是偏大碼」——這正是
+   需求看板情境 2「亞洲多做 Small、美國多做 Large」要讀的東西。
+
+   為什麼不用 split-bar（一條分段長條）：分段長條讀的是「哪一塊最大」，但各段寬度
+   一變，同一個尺寸在每一列的位置都不一樣，上下兩列沒辦法對著比。這裡每個尺寸
+   固定一格（`--size-mix-slot` 寬），整張表的同一尺寸落在同一條直線上，上下列直接比。
+
+   為什麼條高以「這一列最大的尺寸」為滿格：占比通常落在 5%–45%，以 100% 為滿格
+   時多數條都很矮、形狀看不出來。數值本身寫在條底下（`__val`），條只負責形狀；
+   最大的那一格（`__slot--peak`）上品牌色，其餘中性色。
+
+   兩種數值（同一排格子、只換底下那個數字）：
+     占比（預設）       `__val` 寫百分比
+     建議生產量         `__val` 寫件數（條高仍是占比，形狀不變）
+   切換由消費端決定（需求看板用 `.segmented`），本元件只管排版。
+
+   anatomy
+     .size-mix                       一排格子（grid，欄數＝ --size-mix-n）
+       .size-mix__slot               一個尺寸
+         .size-mix__bar              條的區域（固定高、底部對齊）
+           .size-mix__fill           條本身；高度＝ inline style `--share`（0–1，相對這一列最大值）
+         .size-mix__val              數值（占比或件數）
+       .size-mix__slot--peak         這一列占比最大的尺寸（條上品牌色、數值前景色）
+       .size-mix__slot--none         這一列沒有這個尺寸的需求（不畫條，數值寫「—」）
+     .size-mix--head                 表頭：只有尺寸名稱、沒有條（與資料列同一套格寬，欄位才對得齊）
+       .size-mix__label              尺寸名稱
+     .size-mix--labeled              單獨使用（不在有表頭的表格裡）時，每格在數值下方多一行尺寸名稱
+
+   資料：一律來自 `window.ztorDemand` 結果的 `sizes` 與 `sizeRows`（共用 renderer：
+   `window.ztorDemandView.sizeMixHTML(sizes, sizeRows, { mode, labeled })`），頁面不自己算占比。
+
+   surface 層：沒有自己的面，條與字吃前景色系；白卡、灰底、玻璃卡皆可（條的中性色用
+   `--faint-ink`，在最深的 L0 畫布上目視驗證過仍看得出條形）。
+
+   Consumers: demand-board.html（市場需求表的尺寸欄）、product-detail.html（需求數據彈窗，經 Demand table）
+   ============================================================ */
+
+.size-mix {
+  --size-mix-slot: var(--sp-40);
+  --size-mix-h: var(--sp-24);
+  display: grid;
+  grid-template-columns: repeat(var(--size-mix-n, 5), var(--size-mix-slot));
+  gap: var(--sp-4);
+  align-items: end;
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
+}
+
+.size-mix__slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+/* 條的區域：固定高、底部對齊，加一條 1px 基線——沒有基線時，矮的條像浮在半空。 */
+.size-mix__bar {
+  position: relative;
+  width: 100%;
+  height: var(--size-mix-h);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-bottom: 1px solid var(--border);
+}
+.size-mix__fill {
+  width: 60%;
+  height: calc(var(--share, 0) * 100%);
+  min-height: 2px;          /* 占比極小也要看得見一點，否則和「沒有需求」分不出來 */
+  border-radius: var(--sp-2) var(--sp-2) 0 0;
+  background: var(--faint-ink);
+}
+
+.size-mix__val {
+  font-size: var(--fs-12);
+  line-height: var(--lh-none);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+.size-mix__slot--peak .size-mix__fill { background: var(--primary); }
+.size-mix__slot--peak .size-mix__val { color: var(--foreground); }
+
+.size-mix__slot--none .size-mix__fill { display: none; }
+.size-mix__slot--none .size-mix__val { color: var(--faint-ink); }
+
+/* 表頭：只有名稱，格寬與資料列相同 */
+.size-mix--head { align-items: center; }
+.size-mix__label {
+  font-size: var(--fs-11);
+  line-height: var(--lh-none);
+  color: var(--column-head-ink);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 單獨使用：每格在數值下方多一行尺寸名稱 */
+.size-mix--labeled .size-mix__label { color: var(--muted-foreground); }
