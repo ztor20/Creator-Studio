@@ -50,12 +50,12 @@
 
 ### tier-benefits.html — B
 - 判定：沒跟上（info-banner 元件缺口，7 處 grep 命中，頁面上目視到至少 3 處：頂部「Example benefit values for prototype UI direction」＋底部兩則）
-- 权益矩陣表格（Inner Circle／Superfan／Revived fans／Fan 四欄，toggle 開關＋輸入框）本身排版正常，各 tier 標籤色（橘／藍／綠／灰）是刻意的分色識別，非違規色塊。
+- 权益矩陣表格（Inner Circle／Super Fans／Revived fans／Fan 四欄，toggle 開關＋輸入框）本身排版正常，各 tier 標籤色（橘／藍／綠／灰）是刻意的分色識別，非違規色塊。
 - Console：無 error。
 
 ### tier-settings.html — B
 - 判定：沒跟上（info-banner 元件缺口，5 處 grep 命中，目視到頂部 1 處＋底部 2 處）
-- Tier thresholds 卡片（Inner Circle／Superfan／Ranked fans／Fan）本身為正確玻璃語彙，星空清晰可見。
+- Tier thresholds 卡片（Inner Circle／Super Fans／Devoted／Fan）本身為正確玻璃語彙，星空清晰可見。
 - Console：無 error。
 
 ### product-detail.html（黃金樣板，快速過一輪基準）

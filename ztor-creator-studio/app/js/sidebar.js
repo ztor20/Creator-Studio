@@ -39,17 +39,24 @@
   /* 2026-09-02（D233）：Admin 同層目的地由五個增為六個——新增創作者活動管理
      （spec 5.1.0.6，登記於 0-設計規格書 §3.2 產品地圖 Tier 0），排在 Creator 管理
      正下方：它是 creator 名冊衍生出來的工作，不是與 Admin IP Bank 平行的另一個領域。 */
-  const ADMIN_ROUTES = new Set(["creators.html", "creator-detail.html", "admin-creator-events.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-platform-promotions.html", "admin-video-review.html"]);
+  const ADMIN_ROUTES = new Set(["creators.html", "creator-detail.html", "admin-creator-events.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-platform-promotions.html", "admin-platform-loyalty.html", "admin-video-review.html"]);
+  /* 2026-10-02（D347）：Admin 同層目的地由七個增為八個——新增平台忠誠點數設定
+     （spec 5.1.0.8），排在平台優惠設定之後、影片上架審核之前。順序同輪對齊主規格
+     §3.2.1 Tier 0 的編號（0 Creator 管理 → 1 創作者活動管理 → 2 Admin IP Bank →
+     3 IP Bank Reporting → 4 平台費率設定 → 5 平台優惠設定 → 6 平台忠誠點數設定 →
+     7 影片上架審核）：影片上架審核原本排在第三位，與規格的「順延為第 7 項」不符，
+     新頁又必須同時在「平台優惠之後」與「影片上架審核之前」，所以一起移到最後。 */
   const ADMIN_NAV = [
     { href: "creators.html",          key: "admin.creator-mgmt", icon: "users" },
     { href: "admin-creator-events.html", key: "admin.creator-events", icon: "download" },
-    { href: "admin-video-review.html", key: "admin.video-review", icon: "file-check" },
     { href: "admin-ip-bank.html",     key: "admin.ip-bank",      icon: "landmark", match: ["admin-ip-bank-entry.html"] },
     { href: "ip-bank-reporting.html", key: "admin.ip-reporting", icon: "bar-chart-3" },
     { href: "admin-platform-fees.html", key: "admin.platform-fees", icon: "percent" },
     /* 平台優惠設定（D273 新增第七個同層目的地；D277 改名並改頁內模型——
        由單一組滿額規則改為滿額折扣與平台優惠碼兩種逐筆設定）。 */
-    { href: "admin-platform-promotions.html", key: "admin.platform-promotions", icon: "ticket-percent" }
+    { href: "admin-platform-promotions.html", key: "admin.platform-promotions", icon: "ticket-percent" },
+    { href: "admin-platform-loyalty.html", key: "admin.platform-loyalty", icon: "award" },
+    { href: "admin-video-review.html", key: "admin.video-review", icon: "file-check" }
   ];
   const isRoster = path === ROSTER_PAGE;
   const isAdminPlatform = ADMIN_ROUTES.has(path);
@@ -437,9 +444,11 @@
   /* ✝ 2026-07-30：取貨管理三頁移出本清單，改由 feature-scope-map 的 O24–O30（🟢 Phase 1）管轄（D157）。
      這份清單與 devtools.js 的同名清單必須一致，改一邊就要改另一邊。 */
   /* ✝ 2026-09-24 D324：Admin 平台層（Creator 管理、IP Bank 兩頁＋Reporting、平台費率、影片上架審核）
-     與 settings.html 移出本清單——列入 Phase 1。平台優惠設定依 D279 仍 Phase 4，留在清單。 */
+     與 settings.html 移出本清單——列入 Phase 1。平台優惠設定依 D279 仍 Phase 4，留在清單。
+     2026-10-02 D347：平台忠誠點數設定上線階段〔產品待確認〕（§8.29 第 16 項），登記為 S65 ⚪ 未排定，
+     比照平台優惠設定進本清單（devtools.js 同名清單同步）。 */
   const FULL_ROUTES = new Set([
-    "index.html", "dashboard-classic.html", "admin-platform-promotions.html", "projects.html", "project-detail.html", "create-project.html",
+    "index.html", "dashboard-classic.html", "admin-platform-promotions.html", "admin-platform-loyalty.html", "projects.html", "project-detail.html", "create-project.html",
     "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "media-vault.html",
     "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "fan-analytics.html", "audience-report.html", "my-ip.html", "ip-detail.html",

@@ -132,6 +132,7 @@
     S57: 'tbd',   // 2026-09-29 D334（活動：說明區塊）
     S58: 'tbd',   // 2026-09-29 D335（活動：描述與說明區塊內文的圖片與影片）
     S59: 'tbd', S60: 'tbd', S61: 'tbd',   // 2026-09-30 D340（活動：內文粗體與清單／粉絲頁說明區塊／顯示設定）
+    S65: 'tbd', S66: 'tbd',               // 2026-10-02 D347（平台忠誠點數設定頁／分級設定的各購買品項的份量與互動推薦每 90 天最多得分）
     O04: 'tbd', O09: 'tbd', O17: 'next', O18: 'tbd', O22: 'next', O23: 'next',
     E08: 'next', E09: 'next', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'next', E20: 'next', E22: 'tbd', E23: 'next', E24: 'tbd', E25: 'tbd', E26: 'tbd'
   };   // { S30:'p1', … } 由 md 功能表填
@@ -141,6 +142,8 @@
     /* ✝ 2026-09-24 D324：creators.html、settings.html 移出——Admin 平台層（除平台優惠設定）與帳戶設定列入 Phase 1。
        平台優惠設定仍 Phase 4（D279），補進本清單與 sidebar.js 同名清單對齊。 */
     'index.html': 1, 'dashboard-classic.html': 1, 'admin-platform-promotions.html': 1, 'projects.html': 1, 'project-detail.html': 1, 'create-project.html': 1,
+    /* 2026-10-02 D347：平台忠誠點數設定（S65 ⚪ 未排定），與 sidebar.js 同名清單同步。 */
+    'admin-platform-loyalty.html': 1,
     'create-campaign.html': 1, 'funding-simulate.html': 1, 'events.html': 1, 'event-detail.html': 1, 'create-event.html': 1, 'edit-event.html': 1,
     'fans-crm.html': 1, 'fan-detail.html': 1, 'tier-settings.html': 1, 'my-ip.html': 1, 'ip-detail.html': 1,
     'ip-market.html': 1, 'register-ip.html': 1,

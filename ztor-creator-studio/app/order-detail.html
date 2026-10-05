@@ -845,14 +845,20 @@
      售價、支付費仍以買家實付計）。訂單沒有折扣（order.discount 不存在，或個別欄位
      為 0／undefined／空字串）時，對應那一列不產生。優惠碼那列要顯示碼本身，碼是
      每筆訂單的資料、不是可翻譯字串，所以標籤只放可翻譯的「優惠碼折抵」，碼另外接在
-     後面（同站既有作法，見 fan-detail.html 徽章列 `<b>Inner Circle</b> · 2025`）。 */
+     後面（同站既有作法，見 fan-detail.html 徽章列「核心圈 · 2025」）。 */
   var disc = order.discount;
   /* 粉絲分級折抵（D275 決定 1）：比照優惠碼，是創作者收入的獨立扣項，列在優惠碼折抵
      之前——分級折扣先套用、優惠碼再疊上去，跟平台滿額門檻「看買家層折後的品項小計」
-     的判斷順序一致。等級名是資料、不翻譯（同優惠碼那行的做法）。資料缺席不產生。 */
+     的判斷順序一致。資料缺席不產生。
+     等級名 2026-10-02（D348）起跟著語系切換：分級是平台固定的四級、有正式中英名，
+     不是每筆訂單各自的資料（優惠碼才是），所以掛 data-i18n 引用 tier-settings.tier.*，
+     切語言時由 applyI18n 換字；store 的 tier 只當沒有 key 時的後備。 */
   if (disc && disc.tierAmount) {
+    const tierName = disc.tierKey
+      ? '<span data-i18n="' + esc(disc.tierKey) + '">' + esc((window.i18nT && window.i18nT(disc.tierKey)) || disc.tier || '') + '</span>'
+      : esc(disc.tier);
     amtHtml += '<div class="od-amt"><span class="od-amt__neg">' +
-      '<span data-i18n="od.amt.tier">Tier discount</span> · ' + esc(disc.tier) +
+      '<span data-i18n="od.amt.tier">Tier discount</span> · ' + tierName +
       '</span><span class="od-amt__neg">' + esc(disc.tierAmount) + '</span></div>';
   }
   if (disc && disc.codeAmount) {

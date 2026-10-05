@@ -49,7 +49,8 @@
       {t:'Admin IP Bank', pages:[{t:'IP Bank'},{t:'建立 IP Entry'}]},
       {t:'IP Bank Reporting', pages:[{t:'IP Bank Reporting'}]},
       {t:'平台費率設定', pages:[{t:'平台費率設定'}]},
-      {t:'平台優惠設定', pages:[{t:'平台優惠設定'}]}
+      {t:'平台優惠設定', pages:[{t:'平台優惠設定'}]},
+      {t:'平台忠誠點數設定', pages:[{h:'admin-loyalty.html', t:'平台忠誠點數設定'}]}
     ]}
   ];
   function current(){
