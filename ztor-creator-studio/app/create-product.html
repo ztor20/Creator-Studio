@@ -40,6 +40,7 @@
 <link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">   <!-- 2026-09-04：折扣區的 .stack--tight 一直沒有這支 CSS，gap 是 0（使用者回報「要有間距」）-->
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card-group.css?v=r2.2"><!-- D360：詳細規格上下兩段的小標（.group-title／.group-desc） -->
 <link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/spec-row.css?v=r2.2">
@@ -201,8 +202,8 @@
       <div class="field" data-cp-show="physical">
         <div class="field__label" data-i18n="cp.category">Category</div>
         <span class="select-wrap"><select class="select" id="cp-cat-phys">
-          <option data-i18n="cp.psub.apparel">Apparel</option>
-          <option data-i18n="cp.psub.accessories">Accessories</option>
+          <!-- D360（S70）：「服飾」「配件」兩個葉節點由一個群組取代（5.1.5.2 F2；§7.1）——選了它才依序出現大類與次分類 -->
+          <option data-group="apparel" data-i18n="cp.psub.apparel-group">Apparel &amp; accessories</option>
           <option data-i18n="cp.psub.poster">Posters &amp; prints</option>
           <option data-i18n="cp.psub.home">Home &amp; Living</option>
           <option data-i18n="cp.psub.books">Books</option>
@@ -216,6 +217,28 @@
           <option data-i18n="cp.psub.limited">Limited &amp; signed</option>
           <option data-i18n="cp.psub.merch">Merch</option>
         </select></span>
+      </div>
+      <!-- 服飾配件的第二、三層（D360 · S70，5.1.5.2 F2）：大類→次分類、適用對象。
+           清單全取 window.ztorApparel（js/apparel-taxonomy.js），選項由本頁腳本依語言渲染。
+           外層 data-cp-show 交給 applyVisibility 管實體顯隱；內層 [data-cp-apparel] 另依「分類選了服飾配件」顯隱。
+           適用對象必填與否〔產品待確認〕——原型做成選填。 -->
+      <div data-cp-show="physical" data-feat="S70">
+        <div data-cp-apparel hidden>
+          <div class="form-grid mb-16">
+            <div class="field">
+              <div class="field__label" data-i18n="cp.apparel.group">Category group</div>
+              <span class="select-wrap"><select class="select" id="cp-cat-group"></select></span>
+            </div>
+            <div class="field">
+              <div class="field__label" data-i18n="cp.apparel.sub">Sub category</div>
+              <span class="select-wrap"><select class="select" id="cp-cat-sub"></select></span>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field__label" data-i18n="cp.apparel.dept">Department</div>
+            <span class="select-wrap"><select class="select" id="cp-audience"></select></span>
+          </div>
+        </div>
       </div>
       <div class="field" data-cp-show="digital">
         <div class="field__label" data-i18n="cp.category">Category</div>
@@ -238,6 +261,17 @@
       <div class="field" data-cp-show="physical" style="margin-top:var(--sp-24);margin-bottom:0">
         <div class="field__label" data-i18n="cp.spec.title">Specifications</div>
         <div class="field__hint" data-i18n="cp.spec.sub">Help buyers know exactly what they're getting.</div>
+        <!-- 上段 · 系統屬性（D360 · S70）：選了服飾配件大類才出現，項目與值取 ztorApparel；整件商品設一次、選項組合共用。
+             下段 · 自訂規格：維持自由填寫（#spec-rows）；沒有上段時下段不加小標，外觀同改版前。 -->
+        <div data-cp-attrs data-feat="S70" hidden style="margin-top:var(--sp-12)">
+          <div class="group-title" data-i18n="cp.spec.system">System attributes</div>
+          <div class="group-desc" data-i18n="cp.spec.system.hint">Pick from fixed lists. Shared by every option.</div>
+          <div class="form-grid" id="cp-attrs"></div>
+        </div>
+        <div data-cp-custom-head data-feat="S70" hidden style="margin-top:var(--sp-24)">
+          <div class="group-title" data-i18n="cp.spec.custom">Custom specifications</div>
+          <div class="group-desc" data-i18n="cp.spec.custom.hint">Free text for buyers. Not used in statistics.</div>
+        </div>
         <div id="spec-rows"></div>
         <button class="btn btn--outline" id="cp-add-spec" style="align-self:flex-start;margin-top:var(--sp-4)"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="cp.spec.add">Add spec</span></button>
       </div>
@@ -1034,6 +1068,7 @@
 
 <!-- §5.2.5 即時預覽已移到表單旁 sticky 欄（.preview-col，見 .wizard__body 內）。 -->
 
+<script src="js/apparel-taxonomy.js?v=r2.2"></script><!-- D360：服飾配件分類／系統屬性／尺寸顏色標準清單（window.ztorApparel） -->
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
@@ -1046,6 +1081,9 @@
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const assets = {};                              // 模擬已上傳的素材
   const state = { type: 'physical', varMode: 'single', edition: 'unlimited', delivery: 'shipping', limitOn: false };
+  /* 服飾配件的分類與系統屬性（D360 · S70）：與 products-store 的 category／subCategory／audience／attrs 同形，
+     值一律是 window.ztorApparel 的 key（不存顯示字）。customSpecs 沿用 #spec-rows 的逐列 DOM。 */
+  const apparel = { category: '', sub: '', audience: '', attrs: {} };
   let editMode = false;   // 編輯態（?edit）：主動作改 Save changes、顯示 Delete、不擋上架（spec §4.5）
   let embed = false;      // 嵌入態（?embed）：在 create-bundle popup 內，送出改成 postMessage 回母頁加入組合
 
@@ -1060,19 +1098,52 @@
   const fLimitQty = document.getElementById('cp-limit-qty');
   const has = el => el && el.value.trim() !== '';
   const len = el => (el ? el.value.trim().length : 0);
-  const specCount = () => document.getElementById('spec-rows').children.length;
+  /* 「詳細規格」就緒＝自訂規格列數 ＋ 已選的系統屬性數（D360 · S70：上段系統屬性也算填了規格；各屬性必填與否〔產品待確認〕） */
+  const specCount = () => document.getElementById('spec-rows').children.length + apparelAttrCount();
 
   /* ---- 多規格（Variations）模型 ---- */
   /* 2026-09-04（D249）：顏色選項的值多帶一個色號。值本身仍是字串（組合鍵、逐選項組合表、
      預覽全都吃字串，改成物件會一路擴散），色號另存在同一個 option 的 hex 對照表裡，
      以「值的字面」當鍵。opt.kind === 'colour' 才有這張表。 */
-  let varOptions = [];      // [{ name, values: [], kind?: 'colour', hex?: { [value]: '#RRGGBB' } }]
+  let varOptions = [];      // [{ name, values: [], kind?: 'size'|'colour', hex?: { [value]: '#RRGGBB' } }]
+  /* 快捷帶入值取標準清單的預設子集（D360 · S71，修訂 D249）：尺寸 XS–XL、顏色 Black／White；
+     清單內容與預設帶入值〔產品待確認〕（§8.30 第 6 項），一律從 window.ztorApparel 取、頁面不寫死。
+     taxonomy 沒載入時退回 D249 原值，頁面照常運作。 */
+  const AP = window.ztorApparel || null;
+  const stdColour = name => AP ? (AP.colours.standard.filter(c => c.name.toLowerCase() === String(name == null ? '' : name).trim().toLowerCase())[0] || null) : null;
   const OPT_PRESETS = [
-    { id: 'size', nameKey: 'cp.var.preset.size', nameFallback: 'Size',
-      values: [{ label: 'S' }, { label: 'M' }, { label: 'L' }] },
+    { id: 'size', kind: 'size', nameKey: 'cp.var.preset.size', nameFallback: 'Size',
+      values: (AP ? AP.sizes.preset : ['S', 'M', 'L']).map(l => ({ label: l })) },
     { id: 'colour', kind: 'colour', nameKey: 'cp.var.preset.colour', nameFallback: 'Color',
-      values: [{ label: 'Black', hex: '#000000' }, { label: 'White', hex: '#FFFFFF' }] }
+      values: (AP ? AP.colours.preset.map(n => ({ label: n, hex: stdColour(n).hex })) : [{ label: 'Black', hex: '#000000' }, { label: 'White', hex: '#FFFFFF' }]) }
   ];
+  /* 選項值是否為標準值（D360 · S71，5.1.5.2 F3.1／§7 第 17 項）：尺寸比對標準尺寸、顏色比對標準顏色名，
+     其餘維度不分標準與否（回 null）。自行輸入的值照常販售，只是不列入跨商品統計（歸「其他尺寸」）。 */
+  function optKind(o) {
+    if (o.kind === 'size' || o.kind === 'colour') return o.kind;
+    const n = String(o.name || '').toLowerCase();
+    if (/size|尺寸|尺碼|尺码/.test(n)) return 'size';
+    if (/colou?r|顏色|颜色/.test(n)) return 'colour';
+    return '';
+  }
+  function isStdValue(o, val) {
+    const k = optKind(o), v = String(val == null ? '' : val).trim();
+    if (!AP || !v || !k) return null;
+    return k === 'size' ? AP.isStandardSize(v) : !!stdColour(v);
+  }
+  /* 資料形狀：與 products-store 的 options 同形，每個值多記 std（自行輸入＝false） */
+  function optionRecords() {
+    return varOptions.map(o => ({
+      name: o.name, kind: optKind(o) || undefined,
+      values: o.values.filter(v => v.trim()).map(v => {
+        const r = { value: v.trim() };
+        const std = isStdValue(o, v);
+        if (std !== null) r.std = std;
+        if (optKind(o) === 'colour') r.hex = hexOf(o, v);
+        return r;
+      })
+    }));
+  }
   /* 色號讀不到就給 transparent——球還在（版面不跳），但看得出來還沒設。 */
   function hexOf(opt, val) {
     const h = opt && opt.hex && opt.hex[val];
@@ -1126,14 +1197,28 @@
         /* 顏色選項的值多一個色號欄與一顆實際渲染那個顏色的球（D249）：文字寫「墨黑」跟
            真的看到那塊黑不是一回事，色號也不是給人腦內轉換的。其他選項維持單一欄。 */
         const isColour = opt.kind === 'colour';
+        /* 尺寸／顏色選項的值多一顆「自行輸入」標記（D360 · S71）：不在標準清單裡的值才出現，打字時就地更新（見 syncStdMarks） */
+        const stdKind = optKind(opt);
         const valRows = vals.map((val, vi) =>
           `<div class="variant-option__value${isColour ? ' variant-option__value--colour' : ''}">`
           + (isColour ? `<span class="opt-dot" data-val-dot="${oi}:${vi}" style="--opt-dot:${esc(hexOf(opt, val))}"></span>` : '')
           + `<input class="input" data-val-edit="${oi}:${vi}" value="${esc(val)}" placeholder="${esc(T('cp.var.opt.value.ph', 'Add value, press Enter'))}">`
           + (isColour ? `<input class="input variant-option__hex" data-val-hex="${oi}:${vi}" value="${esc(hexOf(opt, val))}" placeholder="#000000" spellcheck="false">` : '')
+          + (stdKind ? `<span class="ztor-badge" data-feat="S71" data-val-std="${oi}:${vi}" data-i18n="cp.var.std.custom" style="flex:none;white-space:nowrap"${isStdValue(opt, val) === false ? '' : ' hidden'}>${esc(T('cp.var.std.custom', 'Custom'))}</span>` : '')
           + `<button class="variant-option__value-remove" type="button" data-val-remove="${oi}:${vi}" aria-label="Remove value"><i data-lucide="x" class="ztor-icon"></i></button>`
           + `</div>`
         ).join('');
+        /* 標準清單裡還沒帶入的值，一顆一顆補回去（D360 · S71）。賣家可刪除預設值、從標準清單補值〔產品待確認〕（§8.30 第 6 項），原型先做出來。 */
+        const stdList = !AP ? [] : (stdKind === 'size' ? AP.sizes.standard.map(n => ({ name: n })) : stdKind === 'colour' ? AP.colours.standard : []);
+        const have = opt.values.map(v => String(v).trim().toLowerCase());
+        const missing = stdList.filter(c => have.indexOf(c.name.toLowerCase()) < 0);
+        const fillHTML = stdKind
+          ? `<div class="field__hint" data-feat="S71" data-val-std-hint="${oi}" data-i18n="cp.var.std.hint" style="margin-top:var(--sp-8)"${opt.values.some(v => isStdValue(opt, v) === false) ? '' : ' hidden'}>${esc(T('cp.var.std.hint', 'Custom values are not counted across products.'))}</div>`
+            + (missing.length
+              ? `<div data-feat="S71" style="margin-top:var(--sp-12)"><div class="field__hint" data-i18n="cp.var.std.add" style="margin-bottom:var(--sp-6)">${esc(T('cp.var.std.add', 'Add from standard list'))}</div>`
+                + `<div class="chip-group">${missing.map(c => `<button class="chip" type="button" data-val-fill="${oi}:${esc(c.name)}">${c.hex ? `<span class="opt-dot opt-dot--sm" style="--opt-dot:${esc(c.hex)}"></span>` : ''}${esc(c.name)}</button>`).join('')}</div></div>`
+              : '')
+          : '';
         row.innerHTML =
           `<div class="field">`
           + `<div class="field__label"><span>${esc(T('cp.var.opt.name.label', 'Option name'))}</span> <span class="field__req">*</span></div>`
@@ -1143,6 +1228,7 @@
           + `<div class="field__label"><span>${esc(T('cp.var.opt.value.label', 'Option values'))}</span> <span class="field__req">*</span></div>`
           + `<div class="variant-option__values">${valRows}</div>`
           + `<button class="variant-option__add-value" type="button" data-val-add="${oi}"><i data-lucide="plus" class="ztor-icon"></i> <span>${esc(T('cp.var.opt.add-value', 'Add value'))}</span></button>`
+          + fillHTML
           + `</div>`
           + `<div class="variant-option__actions">`
           + `<button class="btn btn--destructive btn--sm" type="button" data-opt-remove="${oi}">${esc(T('cp.var.opt.delete', 'Delete'))}</button>`
@@ -1303,9 +1389,8 @@
     if (pre) {
       const def = OPT_PRESETS.find(x => x.id === pre.dataset.optPreset);
       if (!def) return;
-      const opt = { name: T(def.nameKey, def.nameFallback), values: def.values.map(v => v.label) };
+      const opt = { name: T(def.nameKey, def.nameFallback), values: def.values.map(v => v.label), kind: def.kind };
       if (def.kind === 'colour') {
-        opt.kind = 'colour';
         opt.hex = {};
         def.values.forEach(v => { opt.hex[v.label] = v.hex; });
       }
@@ -1450,7 +1535,7 @@
     let pr = (fPrice && fPrice.value.trim()) || '';
     if (pr && !/\$/.test(pr)) pr = '$' + pr;
     const catSel = state.type === 'digital' ? document.getElementById('cp-cat-digi') : document.getElementById('cp-cat-phys');
-    const cat = (catSel && catSel.selectedIndex >= 0) ? (catSel.options[catSel.selectedIndex].text || '').trim() : '';
+    const cat = apparelCatLabel() || ((catSel && catSel.selectedIndex >= 0) ? (catSel.options[catSel.selectedIndex].text || '').trim() : '');
     let stock = 'unlimited';
     if (state.edition === 'limited') {
       stock = ((fStock && fStock.value.trim()) || (fTotal && fTotal.value.trim()) || (fDCopies && fDCopies.value.trim()) || '0');
@@ -1469,8 +1554,13 @@
     const poolTotal = state.edition === 'limited'
       ? (Number(stock) || 0)
       : (fStock && fStock.value.trim() !== '' ? Number(fStock.value.trim()) : 'unlimited');
+    /* D360：服飾配件另帶 group／category／subCategory／audience／attrs／customSpecs（products-store 的新欄位），
+       選項帶 options[{ name, values:[{ value, std, hex? }] }]——自行輸入的尺寸顏色 std:false（不列入跨商品統計） */
+    const ap = apparelRecord();
     return {
       type: state.type, name: nm, price: pr, cat, edition: state.edition, stock, variants,
+      ...(ap || {}),
+      options: state.type === 'physical' && state.varMode === 'multiple' ? optionRecords() : [],
       listed: listed,
       listAt: listed && listingMode === 'schedule' ? val('cp-listing-time') : null,
       unlistAt: listed ? val('cp-unlist-time') : null,
@@ -1631,10 +1721,11 @@
   /* 粉絲視角商品頁的 model（結構見 js/fan-product-page.js 檔頭）：文案欄給 { key }、資料值給字串 */
   function buildFanProductModel(prices) {
     const catSel = state.type === 'digital' ? document.getElementById('cp-cat-digi') : document.getElementById('cp-cat-phys');
-    const cat = (catSel && catSel.selectedIndex >= 0) ? (catSel.options[catSel.selectedIndex].text || '').trim() : '';
-    /* 規格表：分類（平台分類，跟介面語言走）＋ F2 詳細規格每一列（可翻譯，key 與 collectSpecFields 同一套） */
+    const cat = apparelCatLabel() || ((catSel && catSel.selectedIndex >= 0) ? (catSel.options[catSel.selectedIndex].text || '').trim() : '');
+    /* 規格表：分類（平台分類，跟介面語言走）＋ 系統屬性（D360，平台定義的值）＋ F2 自訂規格每一列（可翻譯，key 與 collectSpecFields 同一套）——兩段合併成一張表 */
     const specs = [];
     if (cat) specs.push({ k: T('fpp.spec.category', 'Category'), v: cat });
+    apparelSpecRows().forEach(r => specs.push(r));
     if (state.type === 'physical') {
       Array.from(document.querySelectorAll('#spec-rows .spec-row')).forEach((row, i) => {
         const inputs = row.querySelectorAll('input');
@@ -1860,7 +1951,7 @@
   function renderPvCat() {
     if (!pvCat) return;
     const sel = state.type === 'digital' ? document.getElementById('cp-cat-digi') : document.getElementById('cp-cat-phys');
-    const label = sel && sel.value ? (sel.options[sel.selectedIndex] || {}).text : '';
+    const label = apparelCatLabel() || (sel && sel.value ? (sel.options[sel.selectedIndex] || {}).text : '');
     if (label && label.trim()) { pvCat.textContent = label.trim(); pvCat.classList.remove('is-empty'); pvCat.removeAttribute('data-i18n'); }
     else { pvCat.textContent = T('cp.pv.cat', 'Category'); pvCat.classList.add('is-empty'); pvCat.setAttribute('data-i18n', 'cp.pv.cat'); }
   }
@@ -2315,6 +2406,18 @@
       if (o.kind === 'colour' && o.hex && before !== ve.value) {
         if (before in o.hex) { o.hex[ve.value] = o.hex[before]; delete o.hex[before]; }
       }
+      /* 打成標準顏色名且還沒有色號 → 帶該顏色的預設色號（可再改；D249 色號規則維持、D360 補標準色號） */
+      if (o.kind === 'colour') {
+        const sc = stdColour(ve.value);
+        o.hex = o.hex || {};
+        if (sc && !o.hex[ve.value]) {
+          o.hex[ve.value] = sc.hex;
+          const hx = optHost.querySelector(`[data-val-hex="${oi}:${vi}"]`), dt = optHost.querySelector(`[data-val-dot="${oi}:${vi}"]`);
+          if (hx) hx.value = sc.hex;
+          if (dt) dt.style.setProperty('--opt-dot', sc.hex);
+        }
+      }
+      syncStdMarks(oi);
       syncVariantsOnly();
       return;
     }
@@ -2340,6 +2443,19 @@
       addValueRow(oi);
     }
   });
+  /* 「自行輸入」標記與提示隨打字就地更新，不重繪整層（保焦點；D360 · S71） */
+  function syncStdMarks(oi) {
+    const o = varOptions[oi];
+    if (!o) return;
+    let anyCustom = false;
+    optHost.querySelectorAll(`[data-val-std^="${oi}:"]`).forEach(b => {
+      const std = isStdValue(o, o.values[+b.dataset.valStd.split(':')[1]]);
+      b.hidden = std !== false;
+      if (std === false) anyCustom = true;
+    });
+    const h = optHost.querySelector(`[data-val-std-hint="${oi}"]`);
+    if (h) h.hidden = !anyCustom;
+  }
   /* 新增一列空值 input 並聚焦——新增/刪除值屬離散事件，可以安全整層重繪 */
   function addValueRow(oi) {
     if (!varOptions[oi].values.length) varOptions[oi].values = [''];
@@ -2354,6 +2470,18 @@
     if (av) { addValueRow(+av.dataset.valAdd); return; }
     const ro = e.target.closest('[data-opt-remove]');
     if (ro) { varOptions.splice(+ro.dataset.optRemove, 1); editingOpt = null; regenVariants(); return; }
+    /* 從標準清單補值（D360 · S71）：補在最後；尚有空白佔位列時直接填進去 */
+    const vf = e.target.closest('[data-val-fill]');
+    if (vf) {
+      const i = vf.dataset.valFill.indexOf(':');
+      const oi = +vf.dataset.valFill.slice(0, i), name = vf.dataset.valFill.slice(i + 1);
+      const o = varOptions[oi];
+      const blank = o.values.findIndex(v => !String(v).trim());
+      if (blank >= 0) o.values[blank] = name; else o.values.push(name);
+      if (optKind(o) === 'colour') { o.hex = o.hex || {}; const sc = stdColour(name); if (sc) o.hex[name] = sc.hex; }
+      regenVariants();
+      return;
+    }
     const rv = e.target.closest('[data-val-remove]');
     if (rv) {
       const [oi, vi] = rv.dataset.valRemove.split(':').map(Number);
@@ -2452,6 +2580,128 @@
     assets[key] = !!document.querySelector('[data-cp-asset="' + key + '"].is-filled, [data-cp-asset="' + key + '"].is-optimized');
     refresh();
   });
+
+  /* ---- 服飾配件：大類→次分類、適用對象、系統屬性（D360 · S70；5.1.5.2 F2，定義在主規格 §7.1／§7.16）----
+     清單與值全部取 window.ztorApparel，這裡只負責渲染與記錄選擇，不寫死任何分類或屬性。
+     ⚠ 呈現假設（〔產品待確認〕）：適用對象與各屬性必填與否（原型一律選填）、哪些屬性出現在哪些大類
+       （taxonomy 的 appliesTo）、系統屬性的值是否隨語系顯示（原型跟介面語言走）。 */
+  /* 函式宣告（會提升）：refresh() 可能在這段之前就被叫到，用 const 會踩暫時性死區 */
+  function L2() { return (document.documentElement.lang || 'en').indexOf('zh') === 0 ? 'zh' : 'en'; }
+  function byId(id) { return document.getElementById(id); }
+  function optionHTML(v, text, on) { return '<option value="' + esc(v) + '"' + (on ? ' selected' : '') + '>' + esc(text) + '</option>'; }
+  function placeholderOpt() { return optionHTML('', T('cp.apparel.choose', 'Select'), false); }
+  function nameOf(o) { return L2() === 'zh' ? o.zh : o.en; }
+  function isApparel() {
+    if (!AP || state.type !== 'physical') return false;
+    const sel = byId('cp-cat-phys');
+    const o = sel && sel.options[sel.selectedIndex];
+    return !!(o && o.dataset.group === AP.GROUP.key);
+  }
+  /* 目前大類＋次分類下要出現的系統屬性項目：適用對象在分類之後單獨成欄，不重複；款式依次分類的款式值，沒有款式就不出現 */
+  function attrDefs() {
+    if (!AP || !apparel.category) return [];
+    const sub = AP.sub(apparel.sub);
+    return AP.attrsFor(apparel.category).filter(a => a.key !== 'department' && (a.key !== 'style' || (sub && sub.styles.length)));
+  }
+  function attrValues(a) {
+    if (a.key === 'style') { const sub = AP.sub(apparel.sub); return (sub ? sub.styles : []).map(x => ({ key: x, label: x })); }
+    return a.values.map(x => ({ key: x.key, label: nameOf(x) }));
+  }
+  /* 已選系統屬性數（給就緒檢查的「詳細規格」用） */
+  function apparelAttrCount() {
+    return isApparel() ? attrDefs().filter(a => { const v = apparel.attrs[a.key]; return Array.isArray(v) ? v.length : !!v; }).length : 0;
+  }
+  function renderAttrs() {
+    const wrap = document.querySelector('[data-cp-attrs]'), head = document.querySelector('[data-cp-custom-head]'), host = byId('cp-attrs');
+    if (!wrap || !host) return;
+    const defs = isApparel() ? attrDefs() : [];
+    wrap.hidden = head.hidden = defs.length === 0;
+    host.innerHTML = '';
+    defs.forEach(a => {
+      const cur = apparel.attrs[a.key];
+      const sel = Array.isArray(cur) ? cur : (cur ? [cur] : []);
+      const opts = attrValues(a).map(v => optionHTML(v.key, v.label, sel.indexOf(v.key) >= 0)).join('');
+      const f = document.createElement('div');
+      f.className = 'field';
+      f.innerHTML = '<div class="field__label">' + esc(nameOf(a)) + '</div><span class="select-wrap">'
+        + '<select class="select" data-cp-attr="' + esc(a.key) + '"'
+        + (a.multi ? ' multiple data-zselect-multi data-zselect-max="22" data-zselect-placeholder-i18n="cp.apparel.choose" data-zselect-placeholder="Select" data-zselect-sep-i18n="cp.apparel.sep" data-zselect-sep=", "' : '')
+        + '>' + (a.multi ? '' : placeholderOpt()) + opts + '</select></span>';
+      host.appendChild(f);
+    });
+    if (window.ztorSelect) window.ztorSelect.mount(host);
+  }
+  function renderApparel() {
+    const on = isApparel();
+    document.querySelectorAll('[data-cp-apparel]').forEach(el => { el.hidden = !on; });
+    if (on) {
+      const gSel = byId('cp-cat-group'), sSel = byId('cp-cat-sub'), dSel = byId('cp-audience');
+      gSel.innerHTML = placeholderOpt() + AP.categories().map(c => optionHTML(c.key, nameOf(c), c.key === apparel.category)).join('');
+      const cat = AP.category(apparel.category);
+      sSel.innerHTML = placeholderOpt() + (cat ? cat.subs.map(x => optionHTML(x.key, nameOf(x), x.key === apparel.sub)).join('') : '');
+      sSel.disabled = !cat;   // 次分類的候選由大類決定：還沒選大類就不能選
+      dSel.innerHTML = placeholderOpt() + AP.audiences.map(x => optionHTML(x.key, nameOf(x), x.key === apparel.audience)).join('');
+    }
+    renderAttrs();
+  }
+  /* 換大類／次分類時，已填的系統屬性中不再適用的項目清掉（上游「保留或清空、是否提示」〔產品待確認〕，原型先清空不提示，記 ASSUMPTIONS） */
+  function pruneAttrs() {
+    const keep = {};
+    attrDefs().forEach(a => {
+      const v = apparel.attrs[a.key]; if (v == null) return;
+      const ok = attrValues(a).map(x => x.key);
+      const next = Array.isArray(v) ? v.filter(x => ok.indexOf(x) >= 0) : (ok.indexOf(v) >= 0 ? v : '');
+      if (Array.isArray(next) ? next.length : next) keep[a.key] = next;
+    });
+    apparel.attrs = keep;
+  }
+  /* 與 products-store 同形的資料記錄；非服飾配件回 null */
+  function apparelRecord() {
+    if (!isApparel()) return null;
+    const custom = Array.from(document.querySelectorAll('#spec-rows .spec-row')).map(r => {
+      const i = r.querySelectorAll('input');
+      return { name: ((i[0] && i[0].value) || '').trim(), value: ((i[1] && i[1].value) || '').trim() };
+    }).filter(x => x.name || x.value);
+    pruneAttrs();
+    return { group: AP.GROUP.key, category: apparel.category, subCategory: apparel.sub, audience: apparel.audience, attrs: apparel.attrs, customSpecs: custom };
+  }
+  /* 粉絲預覽規格表的系統屬性列：與自訂規格合併成一張表（呈現參考、非約束；5.1.5.2 F2） */
+  function apparelSpecRows() {
+    if (!isApparel()) return [];
+    const rows = [];
+    const aud = AP.audiences.filter(x => x.key === apparel.audience)[0];
+    if (aud) rows.push({ k: T('cp.apparel.dept', 'Department'), v: nameOf(aud) });
+    attrDefs().forEach(a => {
+      const v = apparel.attrs[a.key]; if (!v || (Array.isArray(v) && !v.length)) return;
+      const labels = attrValues(a).filter(x => (Array.isArray(v) ? v : [v]).indexOf(x.key) >= 0).map(x => x.label);
+      if (labels.length) rows.push({ k: nameOf(a), v: labels.join(L2() === 'zh' ? '、' : ', ') });
+    });
+    return rows;
+  }
+  /* 預覽與嵌入用的分類顯示字：服飾配件顯示次分類（有選才有），其餘照下拉選到的字 */
+  function apparelCatLabel() {
+    if (!isApparel()) return '';
+    const sub = AP.sub(apparel.sub);
+    return sub ? nameOf(sub) : (AP.category(apparel.category) ? nameOf(AP.category(apparel.category)) : '');
+  }
+  (function () {
+    const catSel = byId('cp-cat-phys'), gSel = byId('cp-cat-group'), sSel = byId('cp-cat-sub'), dSel = byId('cp-audience'), host = byId('cp-attrs');
+    if (!AP || !catSel || !gSel) return;
+    catSel.addEventListener('change', () => { renderApparel(); refresh(); });
+    gSel.addEventListener('change', () => { apparel.category = gSel.value; apparel.sub = ''; pruneAttrs(); renderApparel(); refresh(); });
+    sSel.addEventListener('change', () => { apparel.sub = sSel.value; pruneAttrs(); renderAttrs(); refresh(); });
+    dSel.addEventListener('change', () => { apparel.audience = dSel.value; refresh(); });
+    host.addEventListener('change', e => {
+      const el = e.target.closest('[data-cp-attr]'); if (!el) return;
+      const def = AP.attrs.filter(a => a.key === el.dataset.cpAttr)[0];
+      if (def && def.multi) { const arr = Array.from(el.selectedOptions).map(o => o.value); if (arr.length) apparel.attrs[def.key] = arr; else delete apparel.attrs[def.key]; }
+      else if (el.value) apparel.attrs[el.dataset.cpAttr] = el.value; else delete apparel.attrs[el.dataset.cpAttr];
+      refresh();
+    });
+    /* 換語言：選項文字要重畫（資料是 key，畫面字跟語言走） */
+    document.addEventListener('i18n:applied', renderApparel);
+    renderApparel();
+  })();
 
   /* ---- 詳細規格 Specifications：每筆＝規格名稱＋規格值兩欄＋刪除（spec §4.1②）---- */
   const specHost = document.getElementById('spec-rows');

@@ -4,6 +4,31 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-10-05（一百二十八）· 需求看板與商品層需求數據、服飾配件分類屬性、訂單收件國家城市（A spec-derived · D360）
+
+**範圍**：`demand-board.html`（新頁）＋`js/demand-board.js`（新）、`js/demand-store.js`（新）、`js/apparel-taxonomy.js`（新）、`ds-components/size-mix.css`／`demand-table.css`／`demand-focus.css`（新）、`create-product.html`、`product-detail.html`、`order-detail.html`、`js/orders-store.js`、`js/products-store.js`、`js/sidebar.js`、`js/devtools.js`、`js/i18n.js`、`feature-scope-map.md`（S68–S71、O33）、`design-system.md`／`design-system.html`、`STYLE-DECISIONS.md`（Q127 待裁決）
+
+**依據**：D360（需求看板與市場需求估算，使用者 2026-10-05 確認「成長係數」「需求指數」兩個正式名稱）；規格頁 `5.1.5.16-需求看板.md`、`5.1.5.2-建立商品流程.md`（F2、F3.1）、`5.1.5.1-商品細節頁.md`（§2.6、§2.8、§2.19）、`5.1.5.3.1-訂單詳情.md`（§2.4）；定義本體在主規格 §7.1、§7.16、§7.17（算法唯一定義處）、§8.30（25 項待確認，畫面上不宣稱定案）。
+
+### A · 新增（spec-derived，D360）
+
+- **需求看板頁（S68，E-Shop 第四個導覽目的地）**：頁首、篩選（適用對象一組 filter-tabs 一律選定一個；分類、次分類、單一商品三個下拉）、三個摘要指標、市場需求表（國家一層、城市一層可展開）、右側選定市場面板、資料來源說明一行。選定市場後面板給預測售罄天數、尺寸差距與各尺寸建議生產量；計畫生產量在市場層與尺寸層都可填，綁篩選範圍存在瀏覽器。資料不足時標「參考同類商品」或「資料不足」。
+- **新元件三支**（元件三件套齊全）：`size-mix`（各尺寸占比一排，固定寬直條）、`demand-table`（市場需求表）、`demand-focus`（選定對象面板）；可重用 renderer `ztorDemandView`（需求看板與商品彈窗共用，數字一律取 `ztorDemand`，不寫算法）。
+- **商品層需求數據入口（S69，僅實體商品）**：商品細節頁頁首動作區多一顆「需求數據」outline 鈕，開彈窗顯示本商品的需求數據（看板的單品切片，口徑一致；計畫生產量與看板共用）；彈窗底左「在需求看板開啟」帶 `?product=` 開看板。殼層用 `.payout-modal` 特寬版（Q127 待裁決）。
+- **服飾配件分類與屬性（S70）**：建立商品與商品細節頁——「服飾配件」群組下 13 大類→次分類、適用對象、11 項系統屬性（依大類出現）、自訂規格；細節頁設定分頁檢視態為純文字（Q119）。
+- **尺寸顏色快捷擴充與自行輸入（S71）**：尺寸標準清單 XXS–XXL、快捷帶入 XS–XL；顏色 11 色、預設帶入 Black、White；不在標準清單的值掛「自行輸入」標記。
+- **訂單詳情收件國家與城市（O33）**：買家卡在寄送地址之後多「國家」「城市」兩欄（完整地址保留）；沒有值顯示中性徽章「未提供」；純數位與純現場取貨訂單與寄送地址一起收起。
+- **頁面狀態示範開關**：`?state=empty`、`?state=no-region`（以及 Cheat Codes 的 Empty）；開關在資料層（`ztorDemand` 的 `opts.demo`），商品彈窗同樣吃。
+- 新 i18n：`demand.*`、`nav.demand`／`nav.demand-sub`、`product-detail.btn.demand`、`product-detail.demand.*`、`od.buyer.country／city／unprovided`、建立商品與細節頁的分類屬性文案。
+
+### D · infra／文件
+
+- `js/apparel-taxonomy.js`（分類、屬性、標準清單的唯一來源）、`js/demand-store.js`（示範資料與 §7.17 算法，檔頭有完整 API）；`orders-store` 加 `buyer.country／city` 與實體品項的 `productId／opts`；`products-store` 服飾商品加 `group／category／subCategory／audience／attrs／customSpecs`。
+- feature-scope-map 登記 S68–S71、O33（⚪ TBD）；`demand-board.js` 補讀 `?product=` 相容；三支新元件 CSS 的 Consumers 補 `product-detail.html`。
+- 紀錄：ASSUMPTIONS UIA-198～UIA-204、BUILD-SPEC（§2 Sitemap、§4、§4b.1）、requirements-map（5.1.5.16、5.1.5.2、5.1.5.1、5.1.5.3.1）。
+
+**待使用者決定**：Q127（檢視性浮層用中央彈窗還是側滑抽屜）；UIA-201（規格 §2.6 實體次分類可編輯 vs UIA-064 鎖定，原型維持鎖定）。
+
 ## 2026-10-05（一百二十七）· 描述改成區塊模型、說明區塊退場；門票簡介移除（A spec-derived ＋ C 撤除 · D354／D353）
 
 **範圍**：`create-event.html`、`event-detail.html`、`event-localization.html`、`partials/rich-body.js`（改寫）、`ds-components/rich-body.css`（改寫）、`partials/info-sections.js`／`ds-components/info-sections.css`（墓碑）、`js/fan-event-page.js`、`ds-components/fan-shop.css`、`js/events-store.js`、`js/i18n.js`、`js/icons.js`、`js/devtools.js`、`feature-scope-map.md`、`design-system.md`／`design-system.html`（§4.221、§4.222、§4.215）、`design-components.html`（重生）、`ASSUMPTIONS.md`（UIA-196、UIA-197）、`BUILD-SPEC.md`、`requirements-map.md`。不動 `documents/`、`requirement/`、`rulebook/`。

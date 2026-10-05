@@ -391,7 +391,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 161 支；主 class 前 5 個）
+## 元件（ds-components/，共 164 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -424,6 +424,8 @@
 - `control-row.css` — .control-row, .control-row__main, .control-row__sub, .control-group, .control-group--plain ｜ control-row.css · 有外框的「左文字右控件」獨立列
 - `data-list.css` — .data-list, .data-list__row, .data-list__group-label, .data-list__row-main, .data-list__row--disabled ｜ Data list — row-divider list (no card per row).
 - `date-input.css` — .date-input, .date-input__icon, .date-input__ph ｜ date-input.css · 日期／時間欄位的 placeholder 外觀（2026-07
+- `demand-focus.css` — .demand-focus, .demand-focus__head, .demand-focus__titles, .demand-focus__kicker, .demand-focus__title ｜ demand-focus — 選定對象面板（2026-10-05 建，D360 需求看板 S68
+- `demand-table.css` — .demand-table__bar, .demand-table__title, .product-list--demand, .demand-market, .demand-market__name ｜ demand-table — 市場需求表（2026-10-05 建，D360 需求看板 S68，
 - `detail-overview.css` — .detail-overview, .detail-overview--2col, .detail-overview__col, .detail-overview__kpis, .detail-overview__kpi-row ｜ detail-overview.css · 詳情頁總覽的三欄骨架（2026-08-31 使用者裁
 - `detail-rail.css` — .detail-grid, .detail-main, .detail-grid--full, .detail-cards, .form-section--outlined ｜ Detail Rail — 詳情頁「主欄 + 右側常駐 meta 欄」版型殼
 - `detail-sheet.css` — .detail-sheet, .detail-sheet__panel, .detail-sheet__head, .detail-sheet__back, .detail-sheet__title ｜ detail-sheet — 清單點進細節時的覆蓋層（2026-07-28 使用者裁示）
@@ -515,6 +517,7 @@
 - `session-list.css` — .session-list, .session-list__row, .session-list__no, .session-list__fields, .session-list__row--main ｜ Session list — 系列場次清單（2026-08-06）
 - `settings.css` — .settings-layout, .settings-layout--stacked, .settings-nav, .settings-section, .settings-section__title ｜ Ztor Creator Studio - Settings layout, nav, and 
 - `size-chart-editor.css` — .sce, .sce__wrap, .sce__table, .sce__head, .sce__row ｜ size-chart-editor — 尺寸表編輯矩陣（列＝尺碼、欄＝量測項，兩個維度都可增刪）
+- `size-mix.css` — .size-mix, .size-mix__slot, .size-mix__bar, .size-mix__fill, .size-mix__val ｜ size-mix — 各尺寸占比（2026-10-05 建，D360 需求看板 S68）
 - `social-links.css` — .social-links, .social-links__row, .social-links__head, .social-links__label, .social-links__mark ｜ social-links.css · 社群連結清單（平台一列一格＋新增＋平台清單）
 - `sortable.css` — .sort-th, .sort-th--end, .sort-th__ind, .ztor-table, .table-head ｜ Ztor — Sortable columns
 - `source-import.css` — .source-import, .source-gate, .source-gate__head, .source-gate__titles, .source-gate__acts ｜ Source import · 從外部平台搜尋一筆既有紀錄帶入表單

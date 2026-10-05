@@ -165,6 +165,7 @@
       buyer: {
         name: 'Aiko S.',
         shipTo: '5F, No. 88, Sec. 2, Zhongshan N. Rd, Taipei 104, TW',
+        country: 'TW', city: 'Taipei',
         contact: 'aiko.s@example.com'
       },
       items: [
@@ -172,6 +173,7 @@
           nameKey: 'od.item2.name', name: 'Kowloon After Dark tee (M)',
           catKey: 'e-shop.cat.apparel', qty: 1, unit: '$32.00', amt: 32, mode: 'ship',
           feeLeaf: 'eshop.physical', feePct: 15,
+          productId: 'tee', opts: { size: 'M' },
           snap: {
             price: '$32.00', variant: 'M',
             desc: 'Soft-washed cotton tee with a 九龍夜行 print. Unisex fit.',
@@ -220,12 +222,14 @@
       buyer: {
         name: 'Nina P.',
         shipTo: 'No. 45, Ln 8, Sec. 1, Xinsheng S. Rd, Taipei 106, TW',
+        country: 'TW', city: 'Taipei',
         contact: 'nina.p@example.com'
       },
       items: [
         {
           nameKey: 'od.item5.name', name: 'Kowloon After Dark hoodie (L)',
           catKey: 'e-shop.cat.apparel', qty: 1, unit: '$58.00', amt: 58, mode: 'ship',
+          productId: 'hoodie', opts: { size: 'L' },
           snap: {
             price: '$58.00', variant: 'L',
             desc: 'Brushed-fleece hoodie with an embroidered neon-sign mark. Unisex fit.',
@@ -256,12 +260,14 @@
       buyer: {
         name: 'Theo K.',
         shipTo: '3F, No. 210, Sec. 3, Roosevelt Rd, Taipei 100, TW',
+        country: 'TW', city: 'Taipei',
         contact: 'theo.k@example.com'
       },
       items: [
         {
           nameKey: 'od.item1.name', name: 'Pirate Queen zine vol. 02',
           catKey: 'e-shop.cat.books', qty: 1, unit: '$24.00', amt: 24, mode: 'ship',
+          productId: 'zine', opts: {},
           snap: {
             price: '$24.00', variant: '',
             desc: '32-page photo zine documenting the east-coast tour. Letterpress cover.',
@@ -271,6 +277,7 @@
         {
           nameKey: 'od.item2.name', name: 'Kowloon After Dark tee (M)',
           catKey: 'e-shop.cat.apparel', qty: 1, unit: '$32.00', amt: 32, mode: 'ship',
+          productId: 'tee', opts: { size: 'M' },
           snap: {
             price: '$32.00', variant: 'M',
             desc: 'Soft-washed cotton tee with a 九龍夜行 print. Unisex fit.',
@@ -280,6 +287,7 @@
         {
           nameKey: 'od.item6.name', name: 'Kowloon After Dark six-panel cap',
           catKey: 'e-shop.cat.apparel', qty: 1, unit: '$26.00', amt: 26, mode: 'ship',
+          productId: 'cap', opts: { colour: 'Black' },
           snap: {
             price: '$26.00', variant: 'Black',
             desc: 'Embroidered six-panel cap with an adjustable strap.',
@@ -289,6 +297,7 @@
         {
           nameKey: 'od.item7.name', name: 'Neon sign enamel pin',
           catKey: 'e-shop.cat.accessories', qty: 2, unit: '$12.00', amt: 24, mode: 'ship',
+          productId: 'pin', opts: {},
           snap: {
             price: '$12.00', variant: '',
             desc: 'Hard-enamel pin, gold plating. Neon-sign mark.',
@@ -309,12 +318,14 @@
       buyer: {
         name: 'Sora M.',
         shipTo: '',                        /* 現場領取無寄送地址：明細頁整列收起 */
+        country: '', city: '',
         contact: 'sora.m@example.com'
       },
       items: [
         {
           nameKey: 'od.item4.name', name: 'Kowloon After Dark vinyl · numbered 1/50',
           catKey: 'e-shop.cat.collectibles', qty: 1, unit: '$180.00', amt: 180, mode: 'pickup',
+          productId: 'acetate', opts: {},
           snap: {
             price: '$180.00', variant: '',
             desc: 'Hand-numbered acetate LP — limited run of 50, signed.',
@@ -339,12 +350,14 @@
       buyer: {
         name: 'Mika L.',
         shipTo: 'No. 12, Ln 3, Dadaocheng, Taipei 103, TW',
+        country: 'TW', city: 'Taipei',
         contact: 'mika.l@example.com'
       },
       items: [
         {
           nameKey: 'od.item1.name', name: 'Pirate Queen zine vol. 02',
           catKey: 'e-shop.cat.books', qty: 1, unit: '$24.00', amt: 24, mode: 'ship',
+          productId: 'zine', opts: {},
           snap: {
             price: '$24.00', variant: '',
             desc: '32-page photo zine documenting the east-coast tour. Letterpress cover.',
@@ -354,6 +367,7 @@
         {
           nameKey: 'od.item2.name', name: 'Kowloon After Dark tee (M)',
           catKey: 'e-shop.cat.apparel', qty: 1, unit: '$32.00', amt: 32, mode: 'pickup',
+          productId: 'tee', opts: { size: 'M' },
           snap: {
             price: '$32.00', variant: 'M',
             desc: 'Soft-washed cotton tee with a 九龍夜行 print. Unisex fit.',
@@ -414,12 +428,14 @@
       buyer: {
         name: 'Yuki H.',
         shipTo: '',
+        country: '', city: '',
         contact: 'yuki.h@example.com'
       },
       items: [
         {
           nameKey: 'od.item4.name', name: 'Kowloon After Dark vinyl · numbered 1/50',
           catKey: 'e-shop.cat.collectibles', qty: 1, unit: '$180.00', amt: 180, mode: 'pickup',
+          productId: 'acetate', opts: {},
           snap: {
             price: '$180.00', variant: '',
             desc: 'Hand-numbered acetate LP — limited run of 50, signed.',
@@ -434,6 +450,7 @@
         {
           nameKey: 'od.item6.name', name: 'Kowloon After Dark six-panel cap',
           catKey: 'e-shop.cat.apparel', qty: 1, unit: '$26.00', amt: 26, mode: 'pickup',
+          productId: 'cap', opts: {},
           snap: {
             price: '$26.00', variant: '',
             desc: 'Embroidered six-panel cap with an adjustable strap.',
@@ -459,6 +476,7 @@
       buyer: {
         name: 'Jonas P.',
         shipTo: '',
+        country: '', city: '',
         contact: 'jonas.p@example.com'
       },
       items: [
@@ -507,12 +525,14 @@
       buyer: {
         name: 'Elena R.',
         shipTo: '',
+        country: '', city: '',
         contact: 'elena.r@example.com'
       },
       items: [
         {
           nameKey: 'od.item4.name', name: 'Kowloon After Dark vinyl · numbered 1/50',
           catKey: 'e-shop.cat.collectibles', qty: 1, unit: '$180.00', amt: 180, mode: 'pickup',
+          productId: 'acetate', opts: {},
           snap: {
             price: '$180.00', variant: '',
             desc: 'Hand-numbered acetate LP — limited run of 50, signed.',
@@ -528,6 +548,7 @@
         {
           nameKey: 'od.item6.name', name: 'Kowloon After Dark six-panel cap',
           catKey: 'e-shop.cat.apparel', qty: 2, unit: '$26.00', amt: 52, mode: 'pickup',
+          productId: 'cap', opts: {},
           snap: {
             price: '$26.00', variant: '',
             desc: 'Embroidered six-panel cap with an adjustable strap.',
@@ -555,12 +576,14 @@
       buyer: {
         name: 'Kai T.',
         shipTo: '',
+        country: '', city: '',
         contact: 'kai.t@example.com'
       },
       items: [
         {
           nameKey: 'od.item2.name', name: 'Kowloon After Dark tee (M)',
           catKey: 'e-shop.cat.apparel', qty: 1, unit: '$32.00', amt: 32, mode: 'pickup',
+          productId: 'tee', opts: { size: 'M' },
           snap: {
             price: '$32.00', variant: 'M',
             desc: 'Soft-washed cotton tee with a 九龍夜行 print. Unisex fit.',
@@ -611,6 +634,7 @@
       buyer: {
         name: 'Devon W.',
         shipTo: '',                        /* 純數位無寄送地址：明細頁整列收起 */
+        country: '', city: '',
         contact: 'devon.w@example.com'
       },
       items: [
@@ -643,6 +667,7 @@
       buyer: {
         name: 'Harper T.',
         shipTo: '',
+        country: '', city: '',
         contact: 'harper.t@example.com'
       },
       items: [
@@ -670,12 +695,14 @@
       buyer: {
         name: 'Elena R.',
         shipTo: '7F-2, No. 66, Sec. 4, Ren’ai Rd, Taipei 106, TW',
+        country: 'TW', city: 'Taipei',
         contact: 'elena.r@example.com'
       },
       items: [
         {
           nameKey: 'od.item5.name', name: 'Kowloon After Dark hoodie (L)',
           catKey: 'e-shop.cat.apparel', qty: 1, unit: '$58.00', amt: 58, mode: 'ship',
+          productId: 'hoodie', opts: { size: 'L' },
           snap: {
             price: '$58.00', variant: 'L',
             desc: 'Brushed-fleece hoodie with an embroidered neon-sign mark. Unisex fit.',
@@ -704,12 +731,14 @@
       buyer: {
         name: 'Aria S.',
         shipTo: '5F, No. 88, Sec. 2, Zhongshan N. Rd, Taipei 104, TW',
+        country: '', city: '',
         contact: 'aria.s@example.com'
       },
       items: [
         {
           nameKey: 'od.item4.name', name: 'Kowloon After Dark vinyl · numbered 1/50',
           catKey: 'e-shop.cat.collectibles', qty: 1, unit: '$180.00', amt: 180, mode: 'ship',
+          productId: 'acetate', opts: {},
           snap: {
             price: '$180.00', variant: '',
             desc: 'Hand-numbered acetate LP — limited run of 50, signed.',
@@ -736,12 +765,14 @@
       buyer: {
         name: 'Hugo B.',
         shipTo: 'No. 5, Ln 24, Sec. 2, Fuxing S. Rd, Taipei 106, TW',
+        country: 'TW', city: 'Taipei',
         contact: 'hugo.b@example.com'
       },
       items: [
         {
           nameKey: 'od.item2.name', name: 'Kowloon After Dark tee (M)',
           catKey: 'e-shop.cat.apparel', qty: 1, unit: '$32.00', amt: 32, mode: 'ship',
+          productId: 'tee', opts: { size: 'M' },
           snap: {
             price: '$32.00', variant: 'M',
             desc: 'Soft-washed cotton tee with a 九龍夜行 print. Unisex fit.',
@@ -751,6 +782,7 @@
         {
           nameKey: 'od.item1.name', name: 'Pirate Queen zine vol. 02',
           catKey: 'e-shop.cat.books', qty: 1, unit: '$24.00', amt: 24, mode: 'ship',
+          productId: 'zine', opts: {},
           snap: {
             price: '$24.00', variant: '',
             desc: '32-page photo zine documenting the east-coast tour. Letterpress cover.',
@@ -773,12 +805,14 @@
       buyer: {
         name: 'Priya N.',
         shipTo: 'No. 133, Sec. 1, Nanjing E. Rd, Taipei 104, TW',
+        country: 'TW', city: 'Taipei',
         contact: 'priya.n@example.com'
       },
       items: [
         {
           nameKey: 'od.item1.name', name: 'Pirate Queen zine vol. 02',
           catKey: 'e-shop.cat.books', qty: 1, unit: '$24.00', amt: 24, mode: 'ship',
+          productId: 'zine', opts: {},
           snap: {
             price: '$24.00', variant: '',
             desc: '32-page photo zine documenting the east-coast tour. Letterpress cover.',
@@ -788,6 +822,7 @@
         {
           nameKey: 'od.item4.name', name: 'Kowloon After Dark vinyl · numbered 1/50',
           catKey: 'e-shop.cat.collectibles', qty: 1, unit: '$180.00', amt: 180, mode: 'pickup',
+          productId: 'acetate', opts: {},
           snap: {
             price: '$180.00', variant: '',
             desc: 'Hand-numbered acetate LP — limited run of 50, signed.',
@@ -812,12 +847,14 @@
       buyer: {
         name: 'Kai T.',
         shipTo: '1042 Valencia St, San Francisco, CA 94110, US',
+        country: 'US', city: 'San Francisco',
         contact: 'kai.t@example.com'
       },
       items: [
         {
           nameKey: 'od.item1.name', name: 'Pirate Queen zine vol. 02',
           catKey: 'e-shop.cat.books', qty: 2, unit: '$24.00', amt: 48, mode: 'ship',
+          productId: 'zine', opts: {},
           snap: {
             price: '$24.00', variant: '',
             desc: '32-page photo zine documenting the east-coast tour. Letterpress cover.',
@@ -838,6 +875,7 @@
       buyer: {
         name: 'Otis L.',
         shipTo: '',                        /* 純數位無寄送地址：明細頁整列收起 */
+        country: '', city: '',
         contact: 'otis.l@example.com'
       },
       items: [
@@ -887,12 +925,14 @@
       buyer: {
         name: 'Wen C.',
         shipTo: 'No. 9, Ln 55, Sec. 3, Bade Rd, Taipei 105, TW',
+        country: '', city: '',
         contact: 'wen.c@example.com'
       },
       items: [
         {
           nameKey: 'od.item8.name', name: 'Kowloon After Dark canvas low-tops (US 10)',
           catKey: 'e-shop.cat.footwear', qty: 1, unit: '$64.00', amt: 64, mode: 'ship',
+          productId: 'shoes', opts: { size: 'US 10' },
           snap: {
             price: '$64.00', variant: 'US 10',
             desc: 'Canvas low-top sneaker on a rubber cup sole.',

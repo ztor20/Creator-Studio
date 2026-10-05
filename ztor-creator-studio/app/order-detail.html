@@ -228,6 +228,16 @@
               <div class="field__label" data-i18n="od.buyer.ship-to">Ship to</div>
               <div class="text-sub" style="font-size: var(--fs-13)" data-od-shipto>No. 12, Ln 3, Dadaocheng, Taipei 103, TW</div>
             </div>
+            <!-- 國家與城市（D360 · O33，5.1.5.3.1 §2.4）：完整地址保留、兩者並存各自獨立；前台結帳還沒收這兩欄時為空，
+                 以「未提供」中性徽章讓創作者看得出是沒填、不是漏畫。系統不從地址反推（不推估）。同樣只出現在有寄送地址的訂單。 -->
+            <div class="field" data-od-shipto-field data-feat="O33">
+              <div class="field__label" data-i18n="od.buyer.country">Country</div>
+              <div class="text-sub" style="font-size: var(--fs-13)" data-od-country></div>
+            </div>
+            <div class="field" data-od-shipto-field data-feat="O33">
+              <div class="field__label" data-i18n="od.buyer.city">City</div>
+              <div class="text-sub" style="font-size: var(--fs-13)" data-od-city></div>
+            </div>
             <div class="field">
               <div class="field__label" data-i18n="od.buyer.contact">Contact</div>
               <div class="text-sub" style="font-size: var(--fs-13)" data-od-contact>mika.l@example.com</div>
@@ -423,6 +433,7 @@
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/orders-store.js?v=r2.2"></script>
+<script src="js/demand-store.js?v=r2.2"></script><!-- D360 · O33：只用 countryName（國家名跟語言） -->
 <script>
 /* ══ 依 ?id= 帶入該筆訂單（2026-08-07）══════════════════════════════════════
    在此之前這頁完全不看網址參數，是一份寫死的 #ZT-10482；清單那邊「點任何一列」
@@ -878,8 +889,20 @@
   /* ── §2.4 買家 ────────────────────────────────────────────── */
   $('[data-od-buyer-name]').textContent = order.buyer.name;
   $('[data-od-contact]').textContent = order.buyer.contact;
-  $('[data-od-shipto-field]').hidden = !order.buyer.shipTo;
+  document.querySelectorAll('[data-od-shipto-field]').forEach(function (f) { f.hidden = !order.buyer.shipTo; });
   if (order.buyer.shipTo) $('[data-od-shipto]').textContent = order.buyer.shipTo;
+  /* 國家／城市（O33）：讀 buyer.country（ISO 兩碼）／buyer.city；國家名跟著語言（ztorDemand.countryName），
+     沒有值就畫「未提供」中性徽章。換語言要重畫（國家名與徽章文字都跟語言走）。 */
+  function renderBuyerPlace() {
+    var lang = String(document.documentElement.lang || 'en').indexOf('zh') === 0 ? 'zh' : 'en';
+    var none = '<span class="badge badge--neutral">' + esc(T('od.buyer.unprovided', 'Not provided')) + '</span>';
+    var cc = order.buyer.country, city = order.buyer.city;
+    var cname = cc ? (window.ztorDemand ? window.ztorDemand.countryName(cc, lang) : cc) : '';
+    $('[data-od-country]').innerHTML = cname ? esc(cname) : none;
+    $('[data-od-city]').innerHTML = city ? esc(city) : none;
+  }
+  renderBuyerPlace();
+  document.addEventListener('i18n:applied', renderBuyerPlace);
 
   /* ── §2.5 出貨與履約 popup：依訂單型態決定顯示哪一塊 ───────── */
   var digital = order.kind === 'digital';

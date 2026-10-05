@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="S68">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demand board · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/product-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/row-disclosure.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-bar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/size-mix.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/demand-table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/demand-focus.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* 本頁一次性版面：F4 左欄（表格）要能縮到比內容窄，橫向捲動交給 .product-list-scroll；
+     grid item 預設 min-width:auto 會被表格撐開、把右側常駐欄擠出去。 */
+  .demand-board__table { min-width: 0; }
+  .demand-board__note { margin-top: var(--sp-16); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <!-- 5.1.5.16 需求看板（D360 · S68）：F1 頁首／F2 篩選與分組／F3 摘要指標／F4 市場需求表（F4.1 市場列與選定對象、
+         F4.2 計畫生產量與差距、F4.3 資料不足與參考同類商品）／F5 資料來源說明。
+         數字一律取 window.ztorDemand（js/demand-store.js，算法唯一定義處＝主規格 §7.17）；畫面由 js/demand-board.js 產生。
+         頁面狀態示範：?state=empty（無資料，也吃 Cheat Codes 的 Empty）、?state=no-region（前台國家資料未上線）。 -->
+    <div class="page" data-demand-board>
+
+      <div class="page-crumb">
+        <a href="e-shop.html" class="card__link" data-i18n="demand.crumb.eshop">E-Shop</a> <span style="margin:0 6px">/</span>
+        <span data-i18n="demand.crumb.self">Demand board</span>
+      </div>
+
+      <!-- F1 · 頁首 -->
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="demand.h1">Demand board</h1>
+          <p class="page-intro__sub" data-i18n="demand.sub">Size demand by market and a suggested quantity for each size, to check before you place a production run. For reference only — it doesn’t change stock, shipping or production orders.</p>
+        </div>
+      </div>
+
+      <!-- F2 · 篩選與分組：適用對象一組 filter-tabs（一律選定一個——尺寸占比不跨適用對象混算），
+           分類／次分類／單一商品三個下拉（.list-status-row__field ＋ .select--bare，同 IP 市場的次層篩選列）。
+           選項只列統計期間內有需求的值（F2 其他狀態）。 -->
+      <div class="list-status-row">
+        <nav class="filter-tabs filter-tabs--brand" role="tablist" aria-label="Department" data-i18n-aria-label="demand.f.audience" data-dv-audience></nav>
+        <span class="list-status-row__sep" aria-hidden="true"></span>
+        <span class="list-status-row__field">
+          <span data-i18n="demand.f.category">Category</span>
+          <select class="select select--bare" aria-label="Category" data-i18n-aria-label="demand.f.category" data-dv-category style="width:auto"></select>
+        </span>
+        <span class="list-status-row__field">
+          <span data-i18n="demand.f.sub">Subcategory</span>
+          <select class="select select--bare" aria-label="Subcategory" data-i18n-aria-label="demand.f.sub" data-dv-sub style="width:auto"></select>
+        </span>
+        <span class="list-status-row__field">
+          <span data-i18n="demand.f.product">Product</span>
+          <select class="select select--bare" aria-label="Product" data-i18n-aria-label="demand.f.product" data-dv-product style="width:auto"></select>
+        </span>
+      </div>
+
+      <!-- F3 · 摘要指標（前三項）。預測售罄天數與尺寸差距只對選定對象有意義，放在 F4 右側的選定對象面板。 -->
+      <div class="bento mb-16" data-dv="summary"></div>
+
+      <!-- 頁面狀態「前台國家資料未上線」的說明 -->
+      <div class="info-banner mb-16" data-dv="banner" hidden></div>
+
+      <!-- F4 · 市場需求表（左）＋選定對象（右側常駐欄）。裝表格的排掛 --stack-lg：視窗 < 1440px 時選定對象落到表格下方，表格吃滿整頁寬 -->
+      <div class="bento bento--top bento--stack-lg" data-dv="main">
+        <div class="bento--span-8 demand-board__table" data-dv="table"></div>
+        <aside class="card bento--span-4 bento__aside demand-focus" data-dv="focus" aria-live="polite"></aside>
+      </div>
+
+      <!-- 頁面狀態「無資料」：F3、F4 不顯示數字，篩選維持可操作，F5 照常說明來源與期間 -->
+      <section class="card" data-dv="empty" hidden>
+        <div class="empty-card">
+          <span class="empty-card__icon"><i data-lucide="chart-column" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="demand.empty.title">No demand to count yet</h3>
+          <p class="empty-card__text" data-i18n="demand.empty.text">Numbers appear here once sized products sell through orders or bundles.</p>
+        </div>
+      </section>
+
+      <!-- F5 · 資料來源說明（一行；管道與統計期間取自 ztorDemand.PARAMS） -->
+      <p class="field__hint demand-board__note" data-dv="note"></p>
+
+    </div>
+  </main>
+</div>
+<script src="js/apparel-taxonomy.js?v=r2.2"></script>
+<script src="js/demand-store.js?v=r2.2"></script>
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script src="js/zselect.js?v=r2.2"></script>
+<script src="js/row-disclosure.js?v=r2.2"></script>
+<script src="js/demand-board.js?v=r2.2"></script>
+</body>
+</html>

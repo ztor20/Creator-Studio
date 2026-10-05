@@ -1,0 +1,81 @@
+/* ============================================================
+   demand-focus — 選定對象面板（2026-10-05 建，D360 需求看板 S68，規格 5.1.5.16 F3／F4.1／F4.2）
+
+   創作者在市場需求表點選一個市場（國家或城市）＝選定對象；這張卡講那一個市場：
+     · 兩個只對選定對象有意義的指標——預測售罄天數、尺寸差距（F3 後兩項）
+     · 該市場各尺寸的占比與建議生產量，並在這裡填「市場＋尺寸層」的計畫生產量（F4.2）
+     · 點選一個尺寸＝把選定對象收窄到那個尺寸（F4.1「可再選定該市場內的一個尺寸」）
+   沒選定時，卡內只有一句說明怎麼選（預設不選定）。
+
+   為什麼放在表格右側的常駐欄、而不是頁首的摘要列：這兩個指標要等點了表格某一列才有，
+   放在頁首的話，一點選，上方就多長出兩張卡、把正在看的那一列往下推；放在旁邊，
+   點了哪一列、右邊就換成哪一列，視線不必離開表格。窄螢幕（< 900px）時落到表格下方。
+
+   anatomy
+     .card.demand-focus
+       .demand-focus__head            卡頭：小標「選定對象」＋市場名（＋尺寸）＋取消選定鈕
+         .demand-focus__kicker
+         .demand-focus__title
+       .demand-focus__empty           沒選定時的一句說明
+       .stat-row.demand-focus__stats  兩個指標（借 stat-row）；條件不足時數值寫「—」、說明寫缺什麼
+       .demand-focus__note            狀態徽章行（參考同類商品／資料不足），沿用 `.badge`
+       .variant-table-wrap > .variant-table.variant-table--demand-sizes
+         .variant-table__head／__row   尺寸｜占比｜建議生產量｜計畫生產量｜差距
+         .variant-table__row.demand-size--focus   被選定的尺寸（品牌色淡底，同表格的選定列）
+         計畫生產量輸入格沿用 `.input.demand-planned`（demand-table.css）
+
+   surface 層：卡本身是 `.card`（L1）；尺寸表照 Q24 坐在卡上用 1px 線框、表頭薄膜。
+
+   Consumers: demand-board.html（F4 右側常駐欄）、product-detail.html（需求數據彈窗，S69）
+   ============================================================ */
+
+.demand-focus {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+}
+
+.demand-focus__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-12);
+}
+.demand-focus__titles { display: flex; flex-direction: column; gap: var(--sp-4); min-width: 0; }
+.demand-focus__kicker {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.demand-focus__title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-16);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+
+.demand-focus__empty {
+  margin: 0;
+  font-size: var(--fs-13);
+  line-height: var(--lh-relaxed);
+  color: var(--muted-foreground);
+}
+
+/* stat-row 在卡底自帶 margin-bottom，這裡節奏由 .demand-focus 的 gap 持有（Q103） */
+.demand-focus__stats { margin-bottom: 0; }
+
+.demand-focus__note { display: flex; flex-wrap: wrap; gap: var(--sp-4); }
+
+/* 尺寸表：右側欄窄，取消 variant-table 的最小寬，欄軌改成可壓縮 */
+.variant-table--demand-sizes { min-width: 0; }
+.variant-table--demand-sizes .variant-table__head,
+.variant-table--demand-sizes .variant-table__row {
+  grid-template-columns: minmax(40px, 0.8fr) minmax(44px, 0.8fr) minmax(48px, 0.9fr) minmax(64px, 1.2fr) minmax(48px, 0.9fr);
+  gap: var(--sp-8);
+}
+.variant-table--demand-sizes .variant-table__row { cursor: pointer; font-size: var(--fs-13); }
+.variant-table--demand-sizes .variant-table__row:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+.variant-table--demand-sizes .demand-col--num { text-align: right; font-variant-numeric: tabular-nums; }
+.variant-table--demand-sizes .demand-size--focus { background: var(--selected-surface); }

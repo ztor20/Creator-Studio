@@ -601,6 +601,76 @@
     (p && p.variants || []).forEach(function (v) { var c = caps[v.combo[0]]; if (c) { v.cap = c[0]; v.sold = c[1]; } });
   }());
   /* 既有入口保留，但內容與來源商品同步。 */
+  /* ── 服飾配件的分類與系統屬性（2026-10-05 · D360；S70）────────────────────────
+     規格：0-設計規格書 §7.1「服飾配件的大類與次分類」＋§7.16「商品屬性與選項標準值」。
+     服飾配件商品多記下列欄位（既有的 cat／subKey／specs 一律保留不動，舊頁照讀）：
+       group       群組 key，固定 'apparel'（服飾配件）
+       category    13 大類之一的 key（tops／outerwear／bottoms／…），清單與次分類 key 見 js/apparel-taxonomy.js
+       subCategory 次分類 key（tshirt／hoodie／jacket…），葉節點；⚠ 欄位不叫 sub——商品記錄的 sub 已是副標字串；
+                   與既有 subKey:'apparel' 並存，subKey 是舊的粗分類
+       audience    適用對象 men｜women｜unisex｜kids（系統屬性「適用對象」，單選）
+       attrs       系統屬性 { fit, material[], sleeve, neckline, closure, pattern, season[], style… }，
+                   key／值 key 見 apparel-taxonomy.js 的 attrs；整件商品設一次
+       customSpecs 自訂規格 [{ name, value }]：只給買家看、不進統計；原 specs 裡已有系統屬性對應的項目
+                   （材質、版型…）留在 specs 不刪，customSpecs 只收「系統屬性放不下」的那幾項
+     ⚠ 呈現假設（〔產品待確認〕，§8.30 第 8、9 項）：下列每件商品的歸類與屬性值是原型示範資料的猜測，
+       既有商品如何遷移到新分類上游尚未定義；屬性值域也未定案。
+     只掛在有尺寸或適用對象意義的服飾配件；兩個 persona 共用同一組物件參考（P_NICK 的別名指向同一份），
+     所以這裡改 P_DEFAULT／WISHYOU_PRODUCTS 就涵蓋 default 與 nick。 */
+  function tagApparel(map, id, seed) {
+    var p = map[id];
+    if (!p) return;
+    p.group = 'apparel';
+    p.category = seed.category;
+    p.subCategory = seed.sub;   /* 不叫 sub：商品記錄的 sub 已是副標／簡介字串 */
+    p.audience = seed.audience;
+    p.attrs = seed.attrs || {};
+    p.customSpecs = seed.customSpecs || [];
+  }
+  (function () {
+    var D = P_DEFAULT, W = WISHYOU_PRODUCTS;
+    tagApparel(D, 'tee', { category: 'tops', sub: 'tshirt', audience: 'unisex',
+      attrs: { fit: 'regular', material: ['cotton'], sleeve: 'short', neckline: 'round', pattern: 'logo', season: ['all-season'] },
+      customSpecs: [{ name: '印刷', value: '海岸線圖騰網版印刷，胸口燙印 LOGO' }] });
+    tagApparel(D, 'hoodie', { category: 'tops', sub: 'hoodie', audience: 'unisex',
+      attrs: { fit: 'oversized', material: ['cotton'], sleeve: 'long', closure: 'pullover', pattern: 'logo', season: ['autumn', 'winter'] },
+      customSpecs: [{ name: '工藝', value: '浪紋刺繡背面標誌' }] });
+    tagApparel(D, 'jacket', { category: 'outerwear', sub: 'jacket', audience: 'men',
+      attrs: { style: 'Bomber', fit: 'regular', material: ['leather'], sleeve: 'long', closure: 'zip', pattern: 'logo', season: ['autumn', 'winter'] },
+      customSpecs: [{ name: '細節', value: '背面刺繡面板' }] });
+    tagApparel(D, 'cap', { category: 'accessories', sub: 'cap', audience: 'unisex',
+      attrs: { material: ['cotton'], pattern: 'logo', season: ['all-season'] } });
+    tagApparel(D, 'beanie', { category: 'accessories', sub: 'beanie', audience: 'unisex',
+      attrs: { pattern: 'plain', season: ['autumn', 'winter'] } });
+    tagApparel(D, 'shoes', { category: 'shoes', sub: 'sneakers', audience: 'unisex',
+      attrs: { style: 'Low Top', pattern: 'plain', season: ['all-season'] } });
+    /* nick persona（wy-*）：商品名沿用示範資料，歸類為示意 */
+    tagApparel(W, 'wy-26ms-hoodie', { category: 'tops', sub: 'hoodie', audience: 'unisex',
+      attrs: { fit: 'regular', material: ['cotton'], sleeve: 'long', closure: 'pullover', season: ['autumn', 'winter'] } });
+    tagApparel(W, 'wy-26ms-tshirt-white', { category: 'tops', sub: 'tshirt', audience: 'unisex',
+      attrs: { fit: 'regular', material: ['cotton'], sleeve: 'short', neckline: 'round', pattern: 'plain', season: ['all-season'] } });
+    tagApparel(W, 'wy-26ms-tshirt-red', { category: 'tops', sub: 'tshirt', audience: 'unisex',
+      attrs: { fit: 'regular', material: ['cotton'], sleeve: 'short', neckline: 'round', pattern: 'plain', season: ['all-season'] } });
+    tagApparel(W, 'wy-24ce-tee', { category: 'tops', sub: 'tshirt', audience: 'unisex',
+      attrs: { fit: 'regular', material: ['cotton'], sleeve: 'short', neckline: 'round', pattern: 'logo', season: ['all-season'] } });
+    tagApparel(W, 'wy-24ce-wyagl-tee', { category: 'tops', sub: 'tshirt', audience: 'unisex',
+      attrs: { fit: 'regular', material: ['cotton'], sleeve: 'short', neckline: 'round', pattern: 'logo', season: ['all-season'] } });
+    tagApparel(W, 'wy-24ce-mesh', { category: 'tops', sub: 'tshirt', audience: 'unisex',
+      attrs: { fit: 'oversized', sleeve: 'short', neckline: 'round', pattern: 'plain', season: ['summer'] } });
+    tagApparel(W, 'wy-24ce-jersey', { category: 'activewear', sub: 'sports-tshirt', audience: 'men',
+      attrs: { sleeve: 'short', neckline: 'v', pattern: 'stripe', season: ['summer'] } });
+    tagApparel(W, 'wy-bundle-cargo-pants', { category: 'bottoms', sub: 'trousers', audience: 'men',
+      attrs: { style: 'Cargo', fit: 'relaxed', waist: 'mid', material: ['cotton'], pattern: 'plain', season: ['all-season'] } });
+    tagApparel(W, 'wy-bundle-lowtop-sneakers', { category: 'shoes', sub: 'sneakers', audience: 'unisex',
+      attrs: { style: 'Low Top', pattern: 'plain', season: ['all-season'] } });
+    tagApparel(W, 'wy-bundle-cap', { category: 'accessories', sub: 'cap', audience: 'unisex',
+      attrs: { material: ['cotton'], pattern: 'logo', season: ['all-season'] } });
+    tagApparel(W, 'wy-26ms-socks', { category: 'accessories', sub: 'socks', audience: 'unisex',
+      attrs: { pattern: 'plain', season: ['all-season'] } });
+    tagApparel(W, 'wy-24ce-sock', { category: 'accessories', sub: 'socks', audience: 'unisex',
+      attrs: { pattern: 'stripe', season: ['all-season'] } });
+  })();
+
   /* 2026-07-27 使用者指定的列表排序：這四筆置頂（白 Tee → 老帽 → 束口褲 → 球鞋），
      2026-09-11 接著排找回的五筆數位／限量記錄與三筆新商品（含草稿 wy-draft-tote——它不另外產列，
      由 e-shop 既有的草稿列連過去，見 patchEshopList），其餘沿用 WISHYOU_PRODUCTS 的定義順序。

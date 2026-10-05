@@ -395,6 +395,8 @@
       { href: "e-shop.html", icon: "package",  titleKey: "nav.manage-eshop", descKey: "nav.manage-eshop-sub" },
       { href: "orders.html", icon: "receipt",  titleKey: "nav.orders",       descKey: "nav.orders-sub" },
       { href: "pickup.html", icon: "qr-code",  titleKey: "nav.pickup",       descKey: "nav.pickup-sub" },
+      /* 2026-10-05 D360（S68 ⚪）：需求看板，第四項；整頁登記在 FULL_ROUTES，低版本藏入口。 */
+      { href: "demand-board.html", icon: "chart-column", titleKey: "nav.demand", descKey: "nav.demand-sub" },
     ], match: ["product-detail.html", "create-product.html", "create-auction.html", "create-bundle.html", "auction-detail.html", "bundle-detail.html", "order-detail.html", "store-settings.html"] },
     /* Events = flat top-level link; sub-pages reached in-page. */
     { href: "events.html",   key: "nav.events",   icon: "ticket", match: ["create-event.html", "edit-event.html"] },
@@ -453,7 +455,9 @@
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "media-vault.html",
     "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "fan-analytics.html", "audience-report.html", "my-ip.html", "ip-detail.html",
     "manage-ip.html",
-    "ip-market.html", "register-ip.html"
+    "ip-market.html", "register-ip.html",
+    /* 2026-10-05 D360：需求看板（S68 ⚪ 未排定），與 devtools.js 同名清單同步。 */
+    "demand-board.html"
   ]);
   function fullVersion() {
     const v = (window.ztorDevState && window.ztorDevState.get && window.ztorDevState.get().version)
