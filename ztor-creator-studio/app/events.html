@@ -2055,7 +2055,7 @@
   });
 
   /* 草稿列「刪除」（2026-09-21 · D294，5.1.6 F1）：只有草稿列的 kebab 有這一項（靜態 markup 只在草稿列放 data-ev-delete，
-     發布過的列一律沒有刪除入口、只有取消活動——取消的入口在詳情頁頁首，5.1.6.3 §2.1）。按下先確認（借 e-shop 草稿刪除
+     發布過的列一律沒有刪除入口；已排程與售票中的列有「取消活動」，見下方 evAskCancel，2026-10-05 D352 稽核 B11）。按下先確認（借 e-shop 草稿刪除
      同一個 leave-dialog 殼與文案節奏），確認才把該列從清單移除、重算分頁計數與頁首數字。原型只到呈現：清單是靜態
      HTML，刪除只動這一頁的工作副本，重整回來仍在（同 e-shop 草稿刪除的做法）。草稿系列的母列刪除＝整個草稿系列
      連同底下的場次一起移除；子場列自己的 kebab 也有刪除、可單獨刪一場（D294 補述，2026-09-21）。 */
@@ -2107,13 +2107,82 @@
       if (autos.length && window.ztorIcons) window.ztorIcons.applyIcons(list);
     }
     evPending = removeAll;
+    evSetOkLabel(evDialog, 'events.delete.confirm', 'Delete');   /* 同一個彈窗也給取消活動用，主鈕字每次開啟時重設 */
     evDialog.setAttribute('data-open', '');
     const ok = evDialog.querySelector('[data-ev-confirm-ok]'); if (ok) ok.focus();
   }
+  function evSetOkLabel(dlg, key, fb) {
+    const sp = dlg.querySelector('[data-ev-confirm-ok] span');
+    if (sp) { sp.setAttribute('data-i18n', key); sp.textContent = T(key, fb); }
+  }
+
+  /* 已排程與售票中列的「取消活動」（2026-10-05 · D352 稽核 B11；5.1.6 F1，D188 決定一、D281 決定三、D294）：
+     清單是靜態 HTML，選單項依 events-store 的階段注入——只有已排程與售票中的單場列（含系列子場）有；草稿只刪不取消，
+     進行中、已結束、已取消不提供。確認內容與活動詳情頁頁首的取消活動同一套（同一組文案 key、同一支 cancelBundlesOf()
+     列出會一起下架的上架中組合包，5.1.6.3 §2.1）。確認後寫進 events-store 的階段覆寫（同詳情頁），再同步列的分頁與徽章。
+     列本身有 data-go（詳情頁網址），detail-sheet.js 在 document 捕獲階段會把列內的點擊攔去開覆蓋層；它遇到 defaultPrevented
+     就放行，所以這裡在更早的 window 捕獲階段對「取消活動」項先 preventDefault，點擊才會照常冒泡到下方的 document 監聽器。 */
+  window.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-ev-cancel]')) e.preventDefault(); }, true);
+  const evIdOf = r => { const m = /[?&]id=([^&#]+)/.exec(r.dataset.go || ''); return m ? decodeURIComponent(m[1]) : ''; };
+  function syncCancelItems() {
+    const EVS = window.ztorEvents;
+    if (!EVS || !EVS.get) return;
+    Array.from(list.querySelectorAll('.product-list__row[data-go]')).forEach(r => {
+      const menu = r.querySelector('.dropdown__menu');
+      if (!menu) return;
+      const id = evIdOf(r);
+      const ev = id ? EVS.get(id) : null;
+      const want = !!(ev && ['scheduled', 'on-sale'].indexOf(ev.status) >= 0);
+      const has = menu.querySelector('[data-ev-cancel]');
+      if (want && !has) {
+        menu.insertAdjacentHTML('beforeend', '<button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-ev-cancel>' +
+          '<i data-lucide="ban" class="ztor-icon"></i><span data-i18n="event-detail.cancel.ok">' + T('event-detail.cancel.ok', 'Cancel event') + '</span></button>');
+        if (window.ztorIcons) window.ztorIcons.applyIcons(menu);
+      } else if (!want && has) has.remove();
+    });
+  }
+  function evAskCancel(row) {
+    const EVS = window.ztorEvents;
+    const id = evIdOf(row);
+    const ev = EVS && id ? EVS.get(id) : null;
+    if (!ev) return;
+    const evDialog = getEvDialog();
+    if (!evDialog) return;
+    const sold = ev.sold || 0;
+    const impact = sold
+      ? T('event-detail.cancel.body', '{n} tickets sold are not refunded automatically — every holder is notified, and Admin voids any tickets still valid afterward, one by one or all at once. This cannot be undone.')
+          .replace('{n}', Number(sold).toLocaleString('en-US'))
+      : T('event-detail.cancel.body0', 'Nothing has sold yet. The event stops being publishable.');
+    const goingDown = EVS.cancelBundlesOf ? EVS.cancelBundlesOf(id) : [];
+    const t = evDialog.querySelector('[data-ev-confirm-title]');
+    const b = evDialog.querySelector('[data-ev-confirm-body]');
+    const ul = evDialog.querySelector('[data-ev-confirm-list]');
+    if (t) t.textContent = T('event-detail.cancel.title', 'Cancel this event?');
+    if (b) b.textContent = impact + (goingDown.length ? (/^zh/.test(document.documentElement.lang) ? '' : ' ') +
+      T('event-detail.cancel.bundles', 'These listed bundles include its tickets and are unlisted with it:') : '');
+    if (ul) {
+      ul.hidden = !goingDown.length;
+      ul.innerHTML = goingDown.map(x => '<li class="leave-dialog__list-item"><i data-lucide="package" class="ztor-icon"></i><span>' +
+        String(x.name || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])) + '</span></li>').join('');
+      if (goingDown.length && window.ztorIcons) window.ztorIcons.applyIcons(ul);
+    }
+    evPending = () => {
+      EVS.setStage(id, 'cancelled');
+      applyStageOverrides(); syncCancelItems(); apply(); syncKpis();
+    };
+    evSetOkLabel(evDialog, 'event-detail.cancel.ok', 'Cancel event');
+    evDialog.setAttribute('data-open', '');
+    const ok = evDialog.querySelector('[data-ev-confirm-ok]'); if (ok) ok.focus();
+  }
+  syncCancelItems();
+  document.addEventListener('i18n:applied', syncCancelItems);
+
   function evCloseDelete() { evPending = null; const d = getEvDialog(); if (d) d.removeAttribute('data-open'); }
   document.addEventListener('click', e => {
     const del = e.target.closest('[data-ev-delete]');
     if (del) { const row = del.closest('.product-list__row'); if (row) evAskDelete(row); return; }
+    const cx = e.target.closest('[data-ev-cancel]');
+    if (cx) { const row = cx.closest('.product-list__row'); if (row) evAskCancel(row); return; }
     if (e.target.closest('[data-ev-confirm-ok]')) { const p = evPending; evCloseDelete(); if (p) p(); return; }
     if (e.target.closest('[data-ev-confirm-cancel]')) { evCloseDelete(); }
   });

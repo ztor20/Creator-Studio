@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>媒體庫 — ztor Creator Studio 規則手冊</title>
+<title>平台忠誠點數設定 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 <link rel="stylesheet" href="shell.css?v=20261005a">
 <script src="shell.js?v=20261005a" defer></script>
@@ -136,147 +136,154 @@ table.map td:nth-child(1){width:20%}
 table.map td:nth-child(2){width:22%}
 .sim label{font-size:13px;color:var(--text-2)}
 .card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+/* 販售層級示意圖 */
+.layers{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px 10px;margin:10px 0 6px}
+.layer{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;margin-bottom:8px}
+.layer__k{font-size:12.5px;color:var(--text-2);line-height:1.4}
+.layer__k span{display:block;font-size:11.5px;color:var(--text-3)}
+.layer__track{position:relative;height:18px;border-radius:999px;background:var(--surface-sunken)}
+.layer__bar{position:absolute;top:0;bottom:0;border-radius:999px;border:1px solid var(--border-strong)}
+.layer__bar.l1{background:var(--ok-fill);border-color:var(--ok-line)}
+.layer__bar.l2{background:var(--wait-fill);border-color:var(--wait-line)}
+.layer__bar.l3{background:var(--pink-fill);border-color:var(--pink-line)}
+.layer__bar.l4{background:var(--warn-fill);border-color:var(--warn-key);border-style:dashed}
+.layer__axis{position:relative;height:18px;font-size:11.5px;color:var(--text-3)}
+.layer__axis span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.layer__axis span:first-child{transform:none}
+.layer__axis span:last-child{transform:translateX(-100%)}
+@media (max-width:600px){.layer{grid-template-columns:1fr;gap:4px}.layer--axis .layer__k{display:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<h1>媒體庫</h1>
-<p class="lede">創作者把圖片、影片、音檔放進庫房，只開放給符合條件或拿到鑰匙的粉絲。</p>
+<h1>平台忠誠點數設定</h1>
+<p class="lede">Admin（平台營運）在這頁設定全平台通用的忠誠點數參數：全站活動的給分與上限、賽季加倍週、衰減與等級保留。創作者可調的參數在<a href="fans-tiers.html#s5">粉絲分級</a>。</p>
 <div class="toc">
-  <a href="#s7">1 庫房清單</a><a href="#unlock">2 解鎖條件</a><a href="#keys">3 鑰匙</a><a href="#reach">4 打得開的人數</a><a href="#content">5 庫房內容</a><a href="#viewas">6 以分級身分檢視</a>
+  <a href="#scope">1 設定範圍與權限</a><a href="#activities">2 全站活動給分與上限</a><a href="#season">3 賽季加倍週</a><a href="#decay">4 衰減與等級保留</a><a href="#effective">5 生效時點與修改紀錄</a>
 </div>
 
-<h2 id="s7"><span class="n">1</span>庫房清單</h2>
-<p>庫房清單讓創作者一眼看出有哪些庫房、各收了多少內容、現在有幾位粉絲打得開。</p>
+<h2 id="scope"><span class="n">1</span>設定範圍與權限</h2>
+<p>這頁只管全平台通用的忠誠點數參數，作用於所有創作者的計分。</p>
+
+<h3>範圍與邊界</h3>
+<p>範圍與邊界讓 Admin 分清楚哪些參數在這頁調，哪些在別處。</p>
 <ul class="plain">
-  <li>庫房清單每一列顯示：
+  <li>這頁設定五項參數：
     <ul class="plain">
-      <li>代表圖</li>
-      <li>名稱</li>
-      <li>內容數量</li>
-      <li>目前打得開的人數</li>
+      <li>全站活動的給分與上限</li>
+      <li>賽季加倍週</li>
+      <li>衰減半衰期</li>
+      <li>多久沒有行為就往下掉一階（天數）</li>
+      <li>降級緩衝天數</li>
     </ul>
   </li>
-  <li>代表圖用庫房裡第一件有圖的內容</li>
-  <li>沒有圖的庫房用圖示當代表圖</li>
-  <li>一座庫房都沒有時，整頁改成建立第一座庫房的引導</li>
-  <li><a href="fans-tiers.html#benefits">粉絲分級</a>福利裡的「創作者庫房 VIP 權限」只是對粉絲的承諾，實際誰打得開以媒體庫的設定為準</li>
+  <li>創作者可調的參數在<a href="fans-tiers.html#s5">粉絲分級</a>，這頁不提供編輯，也不覆寫創作者的設定</li>
+  <li>誠信規則由平台強制，任何人都不能關，這頁不提供開關，規則內容見<a href="fans-tiers.html#integrity">粉絲分級的誠信規則</a></li>
+  <li>這頁只設定「參數是多少、何時生效」，每位粉絲的忠誠點數與分級由每週重算產生，這頁不重算個別粉絲</li>
+  <li>全站活動的點數 100% 計入粉絲當下的主要應援對象，這頁不設定分配規則；選擇與切換主要應援對象的操作在粉絲端</li>
+  <li>購買類先把金額換成平台基準幣別（預設港幣）再乘基準費率，幣別與匯率規則不在這頁設定</li>
+  <li>基準費率（Base rate）每 HK$1 = 40 分，是平台常數，這頁只顯示、不能改</li>
 </ul>
 
-<h3>新增庫房</h3>
+<h3>權限</h3>
+<p>權限決定誰能進入這頁。</p>
 <ul class="plain">
-  <li>創作者可以建立多座庫房，每座各自決定誰打得開</li>
-  <li>新增庫房只要命名，名稱之後可以改</li>
-  <li>新庫房沒有條件也沒有鑰匙，所以沒有人打得開</li>
+  <li>只有 Admin 可以進入與編輯</li>
+  <li>創作者工作區不含這頁</li>
+  <li>沒有權限時，畫面顯示無權限狀態並說明原因</li>
 </ul>
-<p class="note">依據：5.1.7.3 F1、F7、頁面狀態；5.1.7.2 F2；D150。</p>
+<p class="note">依據：5.1.0.8 頁面定位、F1、F5、頁面狀態；主規格 §4.1、§7.5、§7.15；D316、D347、D348。</p>
 
-<h2 id="unlock"><span class="n">2</span>解鎖條件</h2>
-<p>解鎖條件讓創作者決定哪些粉絲進得來。</p>
-<p>一座庫房可以設多條條件，粉絲符合任一條就打得開。</p>
+<h2 id="activities"><span class="n">2</span>全站活動給分與上限</h2>
+<p>全站活動是 ztor 平台層級的行為，點數由平台發；Admin 在這裡設定每一種全站活動給多少點數、上限多少。</p>
+
+<h3>四項全站活動</h3>
+<p>下表是各項的預設值，資格條件照<a href="fans-tiers.html#primary">粉絲分級的全站活動與主要應援對象</a>，這頁只設定給分與上限。</p>
 <div class="tablewrap"><table>
-  <thead><tr><th style="width:24%">條件</th><th>粉絲要符合</th></tr></thead>
+  <thead><tr><th style="width:26%">全站活動</th><th>預設給分</th><th style="width:24%">預設上限</th></tr></thead>
   <tbody>
-    <tr><td>分級（Tier）</td><td>在指定分級以上<br>分級每週重算，名單會跟著變</td></tr>
-    <tr><td>買過（Bought）</td><td>買過電子商店的指定商品，含限量品</td></tr>
-    <tr><td>支持過（Backed）</td><td>支持過指定項目</td></tr>
-    <tr><td>出席過（Attended）</td><td>出席過指定場次</td></tr>
-    <tr><td>達成過（Earned）</td><td>達成指定成就，例如名人堂</td></tr>
+    <tr><td>每日簽到</td><td>每天 50 分</td><td>每天一次</td></tr>
+    <tr><td>連續簽到</td><td>每連續第 7 天加 200 分</td><td>90 天 12 次</td></tr>
+    <tr><td>全站發文互動</td><td>每則 30 分<br>該則發文須有至少一則非本人的互動才給分</td><td>每天 3 則</td></tr>
+    <tr><td>邀請朋友加入 Ztor</td><td>每位合格啟用 1,000 分</td><td>90 天 10 位</td></tr>
+  </tbody>
+</table></div>
+
+<h3>上限與分配</h3>
+<ul class="plain">
+  <li>標 90 天的上限以滾動 90 天計，在給分當下判定，不追溯</li>
+  <li>連續簽到中斷只是重新數，不扣分，也不顯示愧疚計數</li>
+  <li>新朋友在 7 天內同時追蹤某位創作者時，兩份分數都給：追蹤的 400 分計入被追蹤的那位創作者</li>
+  <li>創作者設定的各類行為份量不影響全站活動</li>
+</ul>
+<p class="note">依據：5.1.0.8 F2；主規格 §7.5；D347。</p>
+
+<h2 id="season"><span class="n">3</span>賽季加倍週</h2>
+<p>賽季加倍週讓 Admin 指定哪些期間的計分加倍。</p>
+<ul class="plain">
+  <li>Admin 指定加倍的起訖時間，可以設定多段</li>
+  <li>行為發生在任何一段期間內，就適用加倍</li>
+  <li>期間內所有行為的分數一律 ×2，包含全站活動</li>
+  <li>適用範圍是全平台所有創作者的計分</li>
+</ul>
+<p class="note">依據：5.1.0.8 F3；主規格 §7.5；D347。</p>
+
+<h2 id="decay"><span class="n">4</span>衰減與等級保留</h2>
+<p>這一區讓 Admin 設定點數隨時間淡出的速度、粉絲多久沒有行為就往下掉一階，以及掉級前的緩衝天數。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">參數</th><th style="width:16%">預設值</th><th>說明</th></tr></thead>
+  <tbody>
+    <tr><td>衰減半衰期</td><td class="num">45 天</td><td>點數每過這段天數剩一半：第 45 天剩 50%、第 90 天剩 25%、第 180 天約剩 6%</td></tr>
+    <tr><td>降級緩衝</td><td class="num">14 天</td><td>粉絲掉出原等級之前的緩衝期，緩衝期內仍保留原等級</td></tr>
+    <tr><td>多久沒有行為就往下掉一階（Inactive days before dropping a tier）</td><td class="num">90 天</td><td>粉絲每連續這麼多天沒有任何行為，等級上限往下掉一階：第 90 天最多留在原等級的下一階，第 180 天再往下一階，第 270 天掉到一般粉絲<br>點數保留並照曲線繼續衰減，仍佔該級名額</td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
-  <li>新增條件時，每個選項旁顯示這條會觸及幾人</li>
-  <li>限量商品與場次的觸及人數，不會超過實際售出數或報到數</li>
-  <li>條件只能一條一條移除</li>
-  <li>「沒有條件也沒有鑰匙」和「有條件但沒人符合」人數都是 0，畫面要分得出是哪一種</li>
+  <li>沉睡與衰減的完整規則見<a href="fans-tiers.html#decay">粉絲分級的衰減與沉睡</a></li>
 </ul>
-<p class="note">依據：5.1.7.3 F2、F3；主規格 §7.5；D347。</p>
+<p class="note">依據：5.1.0.8 F4；主規格 §7.5；D347、D348、D351。</p>
 
-<h2 id="keys"><span class="n">3</span>鑰匙</h2>
-<p>鑰匙（存取憑證）是條件之外的第二條路，讓創作者親手放原本不符合條件的粉絲進來；拿到鑰匙的人用掉一次，就能進這座庫房。</p>
-<div class="tablewrap"><table>
-  <thead><tr><th style="width:30%">鑰匙種類</th><th style="width:26%">可用次數</th><th>做完之後</th></tr></thead>
-  <tbody>
-    <tr><td>送給一位粉絲</td><td>1 次</td><td>拿到可複製的連結</td></tr>
-    <tr><td>做成 NFC 商品（內建感應晶片的實體商品，例如鑰匙圈）</td><td>創作者指定數量</td><td>前往電子商店建立對應商品</td></tr>
-  </tbody>
-</table></div>
-<ul class="plain">
-  <li>還沒被領取的次數不算人，領取後才算進打得開的人數</li>
-  <li>鑰匙代碼是唸得出來、能雷雕在實體商品上的短代碼</li>
-  <li>鑰匙目前只會因兩件事失效：次數用完、被撤銷</li>
-  <li>撤銷後，靠這把鑰匙進來的粉絲立刻失去存取權</li>
-  <li>撤銷前要顯示「將有幾位粉絲失去存取權」</li>
-  <li>撤銷會保留發放與領取紀錄</li>
-</ul>
-<p class="note">依據：5.1.7.3 F4。</p>
+<h2 id="effective"><span class="n">5</span>生效時點與修改紀錄</h2>
+<p>這一區讓 Admin 知道改了參數何時生效，並能追查歷次修改。</p>
 
-<h2 id="reach"><span class="n">4</span>打得開的人數</h2>
-<p>打得開的人數讓創作者知道現在有幾位粉絲進得了這座庫房。</p>
-<p>打得開的人數＝符合任一條件的粉絲，加上持有未撤銷鑰匙的粉絲，重複的人只算一次。</p>
-<div class="stepsum">例：假設符合條件的有 30 人、持有鑰匙的有 5 人，其中 2 人兩者都有，打得開的人數是 33 人。</div>
+<h3>生效時點</h3>
 <ul class="plain">
-  <li>系統逐一比對每位粉絲的紀錄，不用估算</li>
-  <li>分級人數和粉絲總覽一致</li>
-  <li>同時顯示每個分級各有幾人打得開</li>
-  <li>有鑰匙時，另外拆成三個數字：
-    <ul class="plain">
-      <li>靠條件打得開的人數</li>
-      <li>靠鑰匙打得開的人數</li>
-      <li>兩者都有的人數</li>
-    </ul>
-  </li>
+  <li>儲存後，參數在下一次每週重算生效，不即時</li>
+  <li>已儲存、尚未重算的變更，畫面要看得出「已儲存，將於下一次每週重算生效」</li>
+  <li>待生效期間，各創作者的忠誠點數與分級仍是上一次重算的結果</li>
 </ul>
-<p class="note">依據：5.1.7.3 F3。</p>
 
-<h2 id="content"><span class="n">5</span>庫房內容</h2>
-<p>庫房內容讓創作者把素材放進庫房，並依媒體類型分組，方便辨認。</p>
+<h3>修改紀錄</h3>
 <ul class="plain">
-  <li>新增內容時，圖片、影片、音檔一起上傳，系統依檔案類型自動分組</li>
-  <li>三個分組固定依序是圖片（Photos）、影片（Clips）、音檔（Audio），沒有內容也照樣顯示</li>
-  <li>每件內容顯示：
-    <ul class="plain">
-      <li>名稱</li>
-      <li>檔案大小</li>
-      <li>加入日期</li>
-    </ul>
-  </li>
-  <li>影片與音檔另顯示長度</li>
-  <li>內容可以直接改名</li>
-  <li>刪除前要確認，確認文字要寫明「粉絲會立刻失去這件內容」</li>
-  <li>刪除後無法復原</li>
+  <li>每次儲存留一筆修改紀錄</li>
+  <li>每筆記錄時間、執行者、改了哪些參數，以及改前與改後的值</li>
 </ul>
-<p class="note">依據：5.1.7.3 F5。</p>
-
-<h2 id="viewas"><span class="n">6</span>以分級身分檢視</h2>
-<p>以分級身分檢視讓創作者站在某個分級粉絲的角度，看整份庫房清單在那一級粉絲眼中是什麼樣子。</p>
-<ul class="plain">
-  <li>創作者可以切換成用某個分級的角度看整份庫房清單</li>
-  <li>切換後，每座庫房的人數改成「這個分級有幾人打得開」</li>
-  <li>完全打不開的庫房，要和人數很少的庫房明顯區分</li>
-</ul>
-<p class="note">依據：5.1.7.3 F6。</p>
+<p class="note">依據：5.1.0.8 F6、頁面狀態；主規格 §7.5；D347。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.7.3-媒體庫.md</code>、<code>5.1.7.2-分級權益.md</code></li>
-    <li>決策：D150、D347</li>
+    <li>規格：<code>5.1.0.8-平台忠誠點數設定.md</code>、<code>5.1.7.6-分級設定.md</code>、<code>0-設計規格書.md §4.1／§7.5／§7.15／§8.29</code></li>
+    <li>決策：D316、D347、D348、D351</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
-    <li>「達成過」裡的 Ztor Score 與連續支持月數，是不是忠誠點數、怎麼量</li>
-    <li>比對所需的粉絲逐筆紀錄何時完整建好</li>
-    <li>畫面上的粉絲數、分級人數與限量上限是示範資料，正式數字還沒接上</li>
-    <li>NFC 商品和鑰匙代碼在電子商店怎麼綁定</li>
-    <li>鑰匙代碼的格式、有效期限，要不要加到期機制</li>
-    <li>連結與內容的加密方式（屬工程範疇）</li>
-    <li>可上傳的檔案格式、單檔與庫房容量上限、保存與備份方式</li>
-    <li>能不能用某一位具名粉絲的角度檢視</li>
-    <li>分級福利的庫房開關，要不要和媒體庫的分級條件連動</li>
+    <li>這頁屬哪一期交付</li>
+    <li>每週重算在每週哪一天、幾點，以哪個時區計</li>
+    <li>全站發文互動發生在哪裡</li>
+    <li>邀請朋友加入 Ztor 的「合格啟用」怎麼定義</li>
+    <li>候選項目「完成個人資料或綁定付款」（一次性 200 分）是否存在、是否正式啟用</li>
+    <li>判定沉睡的「任何行為」只算對這位創作者的行為，或包含平台上任何計分行為</li>
+    <li>賽季加倍週能不能只套用部分創作者</li>
+    <li>參數變更只作用於之後的新事件，或下一次每週重算時全部依新參數重算</li>
+    <li>這頁的參數要不要逐創作者覆寫，比照平台費率設定</li>
   </ul>
-  <p class="k">最近同步：2026-10-02（至 D347）</p>
+  <p class="k">最近同步：2026-10-05（至 D351）</p>
 </details>
 </div>
 </body>

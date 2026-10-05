@@ -1,53 +1,11 @@
 /* ============================================================
-   info-sections.css · 說明區塊編輯器（可重複的「標題＋內文」，可增刪、可拖曳排序）
-   ------------------------------------------------------------
-   首見於建立活動步驟 2「描述」下方（D334，2026-09-29；5.1.6.1 §4.2 F2）：
-   運營依每場活動的需要自己加幾段說明，標題與內文都自由填寫、系統不給預設標題、
-   0 塊也可以。活動詳情「活動內容」的編輯模式同一支（5.1.6.2 F2）。
-   互動由 partials/info-sections.js 負責（新增、刪除、把手拖曳排序、把手按上下鍵排序）。
-
-   ---- 與 entry-list／spec-row 的分工（同為可增刪的輸入，不可混用）----
-   .entry-list     ＝ 單欄同質短文字，一列一格 .input。
-   .spec-row       ＝ 兩欄並列的「名稱＋值」短資料。
-   .info-sections（本元件）＝ 每一塊是一段可讀的說明（單行標題＋多行內文），
-                    塊與塊之間的**順序有意義**（粉絲照這個順序讀），所以多一個排序把手。
-   判斷句：這一筆需要多行內文、而且順序要由使用者決定嗎？是 → 本元件。
-
-   ---- surface ----
-   每一塊是 .card.card--muted（卡中卡的 L2 分組面，Q66），坐在 .form-section--outlined
-   或 .card（L1）裡；.input／.textarea 各自有邊框，白底與灰底都成立。
-   本檔只管版面：邊框、填色、圓角全部交給 .card--muted，不另寫一份。
-
-   anatomy
-     .info-sections                    容器（flex column，節奏由 gap 持有，Q103）
-       .info-sections__list            塊清單；0 塊時整個收起（:empty）
-         .info-section.card.card--muted × N   [data-info-row]
-           .info-section__grip         排序把手（.btn.btn--icon，檢視態隨 button 一起收起）
-           .info-section__fields       > .input（標題）＋ .info-section__body（內文＝rich-body.css：
-                                         文字＋圖片／影片，D335；原本是一格 .textarea）
-           .btn.btn--icon              刪除
-       .info-sections__add             ＋ 新增（.btn.btn--outline.btn--add，靠左不拉滿）
-   狀態：.is-dragging（拖曳中的那一塊）
+   RETIRED (2026-10-05) — tombstone, safe to delete.
+   Info sections（.info-sections／.info-section）：2026-09-29 D334 建的「說明區塊」編輯器——
+   描述下方可重複的「標題＋內文」卡，可增刪、可拖曳排序（建立活動步驟 2、活動詳情活動內容）。
+   2026-10-05 D354（使用者裁決）把描述改成「區塊」模型：每個描述是一個沒有標題、可拖動排序的區塊，
+   圖片與影片各自成一個區塊，「新增描述」取代「新增說明區塊」——說明區塊整組退場，
+   標題欄位不再存在。版面（L2 卡中卡、把手｜內容｜刪除、拖動中半透明）搬進
+   ds-components/rich-body.css（.rich-body__block／__grip／__remove），由它取代。
+   兩個消費者 create-event.html、event-detail.html 同輪改接 rich-body；原始內容見 git 歷史
+   （2026-09-30 commit 9e7ca8c2）。
    ============================================================ */
-
-.info-sections { display: flex; flex-direction: column; gap: var(--sp-12); align-items: stretch; }
-
-.info-sections__list { display: flex; flex-direction: column; gap: var(--sp-12); }
-/* 0 塊時清單不佔位，新增鈕直接接在欄位標籤下面 */
-.info-sections__list:empty { display: none; }
-
-.info-section {
-  --card-pad: var(--sp-12);
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sp-8);
-}
-.info-section__fields { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--sp-8); }
-
-/* 把手：拖曳時的游標提示；鍵盤操作（上下鍵）由 JS 處理 */
-.info-section__grip { flex: none; cursor: grab; }
-.info-section__grip:active { cursor: grabbing; }
-.info-section.is-dragging { opacity: .5; }
-
-/* 新增鈕自己一行、靠左，不跟著塊拉滿寬 */
-.info-sections__add { align-self: flex-start; }

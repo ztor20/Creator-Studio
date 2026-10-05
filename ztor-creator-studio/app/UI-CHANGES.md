@@ -4,6 +4,159 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-10-05（一百二十七）· 描述改成區塊模型、說明區塊退場；門票簡介移除（A spec-derived ＋ C 撤除 · D354／D353）
+
+**範圍**：`create-event.html`、`event-detail.html`、`event-localization.html`、`partials/rich-body.js`（改寫）、`ds-components/rich-body.css`（改寫）、`partials/info-sections.js`／`ds-components/info-sections.css`（墓碑）、`js/fan-event-page.js`、`ds-components/fan-shop.css`、`js/events-store.js`、`js/i18n.js`、`js/icons.js`、`js/devtools.js`、`feature-scope-map.md`、`design-system.md`／`design-system.html`（§4.221、§4.222、§4.215）、`design-components.html`（重生）、`ASSUMPTIONS.md`（UIA-196、UIA-197）、`BUILD-SPEC.md`、`requirements-map.md`。不動 `documents/`、`requirement/`、`rulebook/`。
+
+**依據**：D354（使用者原話：基本資料分兩組；每個描述是一個無標題、可拖動的區塊；插入的圖片與影片各佔一個區塊；工具＝粗體、斜體、連結、數字與子彈列表、分隔線）；D353（「活動門票簡介」不帶入，「門票簡介」移除，撤銷 D328 決定二）。
+
+### A · 修改（spec-derived，D354）
+
+- **步驟 2 分兩組**：第一張外框卡＝活動名稱 → 亮點 → 活動國家＋活動語言（同一列）；第二張＝描述（區塊）→「新增描述」。國家與語言從原本描述之後移到亮點之後。
+- **描述＝區塊編輯器**（Rich body 改寫，取代 D335「媒體夾在文字之間」）：文字／圖片／影片三型區塊，每個區塊一張卡中卡（把手｜內容｜✕），沒有標題；按住把手拖動或把手聚焦按上下鍵排序；✕ 刪除，只剩一個文字區塊時停用（必填＝至少一個文字區塊有字，只有媒體不算）；「新增描述」加一個文字區塊。
+- **工具列六顆**：粗體、斜體（新）、連結（新：展開一列網址輸入，只收 http／https，游標在連結裡可改網址或移除；粉絲端新分頁開啟）、編號清單、項目符號清單、分隔線（新）；之後是插入圖片／插入影片。清單與分隔線改由元件自己轉 DOM（Chrome 的內建指令會把清單包進段落、游標跳到開頭）。
+- **媒體成獨立區塊**：從文字區塊插入的圖片影片排在該文字區塊之後（連續插入照順序）；上限改成整份描述合計 10 個，滿了所有插入鈕停用、區塊下方說明「圖片與影片合計最多 10 個」。
+- **bookyay 帶入**：intros 第 1 段文字進第一個文字區塊並鎖定（連同該段的圖片影片，仍可拖動），第 2 段起各成不鎖的文字區塊，段內圖片影片拆成獨立區塊、排在所屬文字之後；粗體、斜體、連結、清單照原格式保留。假資料 bky-1 補第 1 段一張圖、第 2 段斜體與連結示範。
+- **粉絲視角預覽**（建立活動第 8 步、預覽與在地化）：「關於活動」照區塊順序畫文字（含斜體、連結、分隔線）、圖片、影片；翻譯表＝每個有字的文字區塊一格（只有一格時沿用 `desc`）。
+- **活動詳情**：活動內容的描述改成同一支區塊編輯器；檢視態區塊去卡面、文字照格式顯示。
+- **示範資料**：events-store 的兩筆說明區塊轉成 `descBlocks` 的文字區塊（原標題＝第一行粗體，圖片自成區塊）；其他來源由 `ztorRichBody.migrate()` 讀入時轉換。
+- 新 i18n key：`rb.fmt.italic`、`rb.fmt.link`、`rb.fmt.hr`、`rb.add`、`rb.move`、`rb.remove`、`rb.link.url`／`apply`／`remove`／`cancel`／`err`；`rb.limit` 改成整份描述口徑。新圖示 `italic`、`separator`。feature-scope-map 新增 S67（新增描述與排序）。
+
+### C · 撤除
+
+- **說明區塊（D354）**：`#ce-info`／`#ed-info` 整組移除；`partials/info-sections.js`、`ds-components/info-sections.css` 改墓碑，兩頁拿掉引用；DS §4.221 標 ✝ 退場、demo 移除、TOC 標 ✝；粉絲頁 `.pdp-info*`（標題＋內文、18rem 收合、「展開全文」）墓碑；i18n `ce.info*`、`pp.field.info*`、`fep.info.*` 墓碑；feature-scope-map S57、S60 改 ⚫ 退場。理由：使用者裁決以無標題文字區塊取代，需要標題時用粗體一行自己寫。
+- **門票簡介（D353）**：單張門票彈窗（建立活動、活動詳情）基本區的門票簡介欄、`TIER_DESC_MAX` 與字數驗證、翻譯欄位 `tdesc-*`、粉絲頁票列的簡介那一行、bookyay「活動門票簡介」的帶入、events-store 示範的 `tiers[].desc` 全部移除；i18n `ce.tier.desc*`、`pp.field.tier-desc` 墓碑；S54 改 ⚫ 退場。歸 C 類：上游撤銷既有欄位，畫面只減不增。
+
+### D · infra／文件
+
+- `design-components.html` 由 `scripts/gen_design_gallery.py` 重生；DS md／html §4.222 改寫、§4.215 補 2026-10-05 model 變更與 demo model（`descBlocks` 取代 `infoSections`、拿掉門票簡介）。
+
+**實測**（Python Playwright，1440 寬，devserver 4326）：步驟 2 欄位上下順序名稱 → 亮點 → 國家｜語言（同一列）→ 描述 → 新增描述；工具列六顆逐一操作產生 `<strong>`、`<em>`、`<a href target=_blank>`、`<ol>`、`<ul>`、`<hr>`，`ftp://` 網址被擋；新增描述出第二個無標題文字區塊；真的走選檔插入圖片 → 獨立圖片區塊排在第一個文字區塊後；滑鼠拖動與上下鍵都能改順序；滿 10 個媒體插入鈕全停用；bky-1 帶入＝鎖定文字＋鎖定圖片＋兩個不鎖文字區塊、bky-2＝鎖定文字＋不鎖文字＋圖片；門票彈窗基本區只剩三格；第 8 步預覽與在地化頁照區塊順序畫、無 `.pdp-info`、票列無簡介；活動詳情（高雄、台北）檢視與編輯態正確；console 0 錯誤。截圖 `screenshots/2026-10-05-desc-blocks-*.png`。
+
+## 2026-10-05（一百二十六）· 清單列的「⋮」更多選單不再被詳情覆蓋層搶走點擊 · B 反饋
+
+**動機**：D352 稽核驗收時發現（B11 的延伸）——活動清單列上的「⋮」用滑鼠點會直接開詳情覆蓋層，選單開不出來，新加的「取消活動」入口因此實際點不到。舊版就有這個行為，不是本輪引入。
+
+**範圍**：
+- `js/detail-sheet.js`：整列點擊攔截在開覆蓋層前，先排除「點在列內的 `<details>`（⋮ 選單與其選單項）、表單控制項、`[role=menu]`／`[role=menuitem]`」的情形——那些是列內自己的操作，不是「打開這一列」。**刻意不排除一般 `<button>`**：有些列的 chevron「開啟」鈕本來就要落入整列導航。
+- `event-detail.html`：取消確認的備用英文（查不到 i18n key 時才顯示）改成與 i18n 新文案一致——舊句仍寫「you can void tickets…」，與 D282（撤銷由 Admin）不符。
+
+**實測**（Python Playwright 1440 寬）：真人點擊 ⋮ → 選單打開、網址不變、無覆蓋層；點「取消活動」→ 確認框「Cancel this event?」開出；點列本身 → 照舊開詳情覆蓋層（`?sheet=event-detail.html…`）；console 0 錯誤。
+
+## 2026-10-05（一百二十五）· 活動取消、撤銷與組合包連動對齊規格（A spec-derived · D352）
+
+**範圍**：`events.html`、`event-detail.html`、`bundle-detail.html`、`series-detail.html`（fallback 文字）、`js/events-store.js`、`js/i18n.js`、`ASSUMPTIONS.md`（STAGE-001）、`requirements-map.md`；規則手冊 `rulebook/` 的 `WRITING-GUIDE.md`、`events.html`、`event-detail.html`、`event-bookyay.html`、`admin-events.html`、`bundles.html`、`event-create.html`。不動 `rulebook/shell.js`、`?v=`、階段英文名稱、預售成交時的顯示、已結束能否編輯、退款由誰做。
+
+**依據**：D352；2026-10-05 稽核照既有決策可修的 20 條（B1、B2、B3、B10、B11、B15、B16、B17、B23、B24、B25、B27 落在原型或手冊）。上游：D188 決定一（已排程與售票中可取消）、D282（撤銷由 Admin 執行）、D292 裁決十二（活動取消或結束時上架中的組合包連動下架）、D294 決定五（含票券組合包的徽章跟活動一致）。
+
+### A · 修改（spec-derived）
+
+- **活動清單列操作**：已排程與售票中的列（含系列子場）多一項「取消活動」，依 events-store 的階段注入；確認彈窗沿用草稿刪除同一個殼，文案與活動詳情頁頁首的取消活動同一組 key。確認後寫進階段覆寫，列移到「已取消」分頁。
+- **取消確認列出組合包**：詳情頁與清單的取消確認，都列出會一起下架的上架中組合包（新 key `event-detail.cancel.bundles`；名單由 `ztorEvents.cancelBundlesOf()` 給，兩處共用）。
+- **撤銷只有 Admin 能按**：詳情頁銷售紀錄的逐票撤銷與「撤銷所有剩餘票券」在創作者本人視角停用，title 寫「需要 Admin 角色」（沿用 `od.void.why.admin`，同訂單詳情撤銷品項）；切換 Role 時重畫。
+- **撤銷文案改主詞**：取消確認、危險區說明、狀態機說明、取消通知說明、系列子場取消說明，從「你／創作者可以撤銷」改成「之後由 Admin 撤銷」；狀態機說明拿掉「只有 Draft → Cancelled 可逆」，英文不列階段名（英文名稱待上游確認）。
+- **活動結束時組合包下架**：組合商品細節頁在所屬活動已結束時，組合包轉已下架、顯示自動下架原因（新 key `bd.unlist.reason-event-ended`），頁首徽章仍標「已結束」。
+
+### D · infra／文件
+
+- `ASSUMPTIONS.md` STAGE-001 第 1 點標已關閉。
+- 規則手冊同輪對齊：WRITING-GUIDE 補「角色只有創作者與 Admin」「狀態型主題用階段 × 角色表」兩條；活動總覽「誰做什麼」改兩張卡，其餘頁的「系統」主詞改寫（手冊依專案規則不屬原型 UI，這裡只留一行供對照）。
+
+## 2026-10-05（一百二十四）· 沉睡粉絲改成逐階下降，天數欄位改名（A spec-derived · D351）
+
+**範圍**：`js/i18n.js`（兩組字典，key `ploy.decay.active`／`ploy.decay.active-hint`）、`admin-platform-loyalty.html`（fallback 文字）、`rulebook/fans-tiers.html`、`rulebook/admin-loyalty.html`、`requirements-map.md`。不動 `documents/`、`requirement/`、`rulebook/shell.js`、Phase 1 凍結版，不新增功能。
+
+**依據**：D351。連續 90 天沒有任何行為的粉絲，每滿 90 天等級上限往下掉一階（核心圈 → 超級粉絲 → 上榜粉絲 → 一般粉絲）；實際等級取排名算出的等級與沉睡上限兩者較低者，仍佔該級名額，點數保留並衰減，回來做任何一件事就在下一次每週重算照正常規則排名，14 天降級緩衝照樣適用。
+
+### A · 修改（spec-derived）
+
+- **欄位改名**：Admin 平台忠誠點數設定的「保住等級的活動期」改「多久沒有行為就往下掉一階」（en Inactive days before dropping a tier），說明句改成逐階下降的講法；預設值 90 天不變。
+- **規則手冊**：粉絲分級的步驟 4、「排名的邊界規則」沉睡列、「衰減與沉睡」小節、「誰能調整什麼」Admin 列改寫，並加一個假設情境範例框；平台忠誠點數設定的參數說明、清單與表格同步；兩頁頁尾依據補 D351、同步日更新為 2026-10-05。
+
+### D · infra／文件
+
+- 歷史紀錄（本檔下方各筆）保留當時名稱，不改舊文。
+- `requirements-map.md` 5.1.0.8 列的欄位名同步。
+
+## 2026-10-05（一百二十三）· 分級設定的三個項目與分頁改用「管什麼」的名稱（B 反饋導入 · D350）
+
+**範圍**：`js/i18n.js`、`fans-crm.html`、`tier-settings.html`、`admin-platform-loyalty.html`、`fans-guide.html`、`js/devtools.js`（註解）、`feature-scope-map.md`。不動 `rulebook/`、`documents/`、`requirement/`。
+
+**動機**：使用者指出「倍率是計算方式、不該是稱呼」，並同意原型畫面照同一原則改名（D350，「照建議」）。名稱寫這一項管什麼，怎麼算只留在說明句裡。
+
+### B · 反饋導入
+
+- **分頁**：分級設定彈窗與備份頁的「計分參數」改「計分設定」（en 維持 Scoring）。
+- **三個項目**：行為倍率改「各類行為的份量」（en Activity value）、品項權重改「各購買品項的份量」（en Purchase type value）、投入類上限改「互動與推薦每 90 天最多得分」（en Max points per 90 days）。
+- **連帶文案**：「門檻與計分參數於下次每週重算時生效」改「計分設定」；Admin 平台忠誠點數設定頁的引言、說明與基準費率提示、變更歷史範例、粉絲系統說明的收入摘要與備註、粉絲詳情分布示意說明、側欄分級設定副標（「門檻、計分與規則」）一併改用新名。說明句裡的「乘上」「×」保留。
+- **不變**：數值、讀數（「1.0 ×」「60 點／HK$1」）、輸入互動與 i18n key 名稱。
+
+### D · infra／文件
+
+- 歷史紀錄（本檔下方各筆、ASSUMPTIONS 與 BUILD-SPEC 的 D347 條目）保留當時名稱，不改舊文。
+
+## 2026-10-02（一百二十二）· 第三級等級名改回 Ranked Fans／上榜粉絲（A spec-derived · D349）
+
+**範圍**：`js/i18n.js`（兩組字典）、`js/components.js`、`js/tier-population.js`（註解）、`partials/product-post-modal.js`、`fans-crm.html`、`tier-settings.html`、`media-vault.html`、`media-vault-popup.html`、`fans-guide.html`、`dashboard-classic.html`、`e-shop.html`（註解與預設字）、`design-system.html`／`design-system.md`／`design-components.html`（重生）、`ds-components/` 四支 CSS（只改註解）、`docs/` 示範頁（儀表板五支、`fan-tiers-demo.html`、`chart-palette-tuner.html`）；紀錄檔 `requirements-map.md`、`BUILD-SPEC.md`、`STYLE-DECISIONS.md`、`ASSUMPTIONS.md`（UIA-195 新增）。
+
+**依據**：使用者 2026-10-02 裁決 D349——「那改回 Ranked fans」；英文寫 Ranked Fans（大寫與 Super Fans 一致）、中文用「上榜粉絲」，中英分用規則（D348）不變。不動 `rulebook/`、`documents/`、`requirement/`、Phase 1 凍結版。
+
+### A · 修改（spec-derived）
+
+- **等級全名**：中文介面核心圈／超級粉絲／上榜粉絲／一般粉絲；英文介面 Inner Circle／Super Fans／Ranked Fans／Fan。第三級原本 en 的 Devoted 全改 Ranked Fans、zh 的「忠實粉絲」全改「上榜粉絲」（含群發對象、商店門檻「上榜粉絲以上」、拍賣資格、媒體庫檢視身分、分級設定、儀表板、權益矩陣、粉絲系統說明與變更歷史示範列）。
+- **識別字不改**：`devoted` 當 key 的（如 `fans.tier.devoted`、`msg.to.devoted`、`data-tier="devoted"`、`data-tiers="inner superfan devoted fan"`）保留，只換畫面文字，避免牽動所有引用（ASSUMPTIONS UIA-195 #2）。
+- **驗證**：i18n.js 兩組字典逐條解析，zh 值 0 個英文等級名、en 值 0 個中文等級名；全站 html／js／css（不含 `rulebook/`）0 個 Devoted／忠實粉絲。
+
+### D · infra／文件
+
+- `design-system.html`／`design-system.md` 的分級對照、群發、徽章、權益矩陣、分層弧、split-bar 等 demo 與說明同步；`design-components.html` 以 `scripts/gen_design_gallery.py` 重生。沒有新增元件或 token、未改樣式。
+- 歷史紀錄（本檔下方各筆、`UI-CHANGES-archive.md`、ASSUMPTIONS 與 BUILD-SPEC 的 D347／D348 條目、`docs/wave3-巡檢-batch3.md`）保留當時名稱，不改舊文。
+
+## 2026-10-02（一百二十一）· 等級名稱中英分開、前 % 名預設 1／10／30 與示範人數重算（A spec-derived · D348）
+
+**範圍**：`js/i18n.js`、`js/tier-population.js`、`js/components.js`、`js/vault-store.js`、`js/orders-store.js`、`js/benefit-matrix.js`、`fans-crm.html`、`tier-settings.html`、`dashboard-classic.html`、`fans-guide.html`、`order-detail.html`、`e-shop.html`（只改註解）、`partials/product-post-modal.js`、`design-system.html`／`design-system.md`／`design-components.html`（重生）、`ds-components/product-list.css`（只改註解）、`docs/` 五支儀表板示範頁（只改預設字與示意數字）；紀錄檔 `requirements-map.md`、`BUILD-SPEC.md`、`STYLE-DECISIONS.md`（第三級名稱）、`ASSUMPTIONS.md`（UIA-194 新增；UIA-193 #1／#3 結案、#10 暫留；PG-022、CANVAS-004 補註）。
+
+**依據**：使用者 2026-10-02 裁決 D348——「中文要用中文，英文用英文」、前 % 名示意值改 1／10／30 並重算示範人數「好」、粉絲詳情「全站活動」長條「先留著」；主規格 §7.5（前 % 名累積算法，預設核心圈前 1%、超級粉絲前 10%、忠實粉絲前 30%）、5.1.7.6 F2。不動 `rulebook/`、`documents/`、Phase 1 凍結版。
+
+### A · 修改（spec-derived）
+
+- **等級名稱**：中文介面一律「核心圈／超級粉絲／忠實粉絲／一般粉絲」，英文介面一律「Inner Circle／Super Fans／Devoted／Fan」；「上榜粉絲」不再使用。i18n 兩組字典（`DICT` 與 persona 覆蓋層 `PERSONA_DICT`）逐 key 掃過：zh 值 0 個英文等級名、en 值 0 個中文等級名（共改 41 條 zh 值，含群發對象、商店門檻、拍賣資格、票券購買條件、媒體庫檢視身分、分級設定、儀表板、名人堂、通知、粉絲系統說明）。單寫「粉絲」當等級名的三把 key（`fans.tier.fan`、`tier-settings.tier.fan`、`msg.to.fan`）改「一般粉絲」。
+- **寫死的名稱改成跟著語系**：`fans-crm.html` 群發紀錄的對象對照表 `AUDIENCE` 中文值改中文；`order-detail.html` 的分級折抵原本直接印 store 的英文「Super Fans」，改掛 `data-i18n` 引用 `tier-settings.tier.superfan`（`orders-store.js` 新增 `tierKey`）；`dashboard-classic.html` 第二個大數字的標籤原本寫死中文「活躍 · Inner Circle」，改用新 key `dash.fans.kpi.inner`、人數沿用 `fans.tier.inner-cnt`；`fans-guide.html` 的 HTML 預設字同步；權益矩陣（`js/benefit-matrix.js`）數值格的讀屏標籤原本是識別字（inner／devoted），改掛 `data-i18n-aria-label` 引用分級名稱；粉絲組成圖例的人數單位原本只在改門檻時才寫，中文介面初始會留「13 fans」，改成載入時與每次切語言後重算一次（`fans-crm.html` 的 `updateComposition()`）。
+- **前 % 名預設 1／10／30（累積）**：`fans-crm.html` 分級設定（檢視與編輯兩態）、`tier-settings.html` 備份頁、`design-system.html` 分級對照表 demo。
+- **示範人數重算**（母數維持 1,283 活躍粉絲，見 UIA-194 #1）：各級 154／359／475／295 → **13／115／257／898**（≈1／9／20／70%，累積 13／128／385／1,283）。單一來源 `js/tier-population.js` 改值，媒體庫房「有幾位粉絲打得開」與電子商店門檻選單的累計人數自動跟著變；另同步粉絲組成圓餅與圖例、群發對象選單（fans-crm 與商品貼文彈窗）、群發紀錄收件數（核心圈 154→13、超級粉絲 359→115）、分級設定卡「今日 N 位粉絲」（原本另一組 359／512／640／329，一併統一，PG-022 原型面結案）、儀表板（`components.js` 分級列與分層弧、`dashboard-classic.html` 圓餅與核心圈人數 184→13）、「前 % 名」說明框例子（1,840／184 → 1,283／128）、粉絲卡副標「184 are Inner Circle」→「13」、里程碑「達 50 人」→「達 10 人」。
+- **各級收入與洞察句**：收入示意改 $4,140／$6,830／$5,180／$4,550（合計仍 $20,700，每人貢獻由上而下遞減），洞察句自動算出「最頂端的 1% 粉絲貢獻了 20% 收入」（原「最小的 12% 粉絲貢獻了 41% 收入」）；中文句型「最小的」改「最頂端的」。
+- **不動**：粉絲詳情「全站活動」點數來源長條（使用者裁示暫留，UIA-193 #10）；創作者自己取的活動名、票種名、會員卡名（內容，不是等級名，UIA-194 #4）。
+
+### D · infra／文件
+
+- 設計系統：粉絲組成、群發、商店門檻選單、分級對照表、圓環（donut-mix）、分層弧（tier-arc）六個 demo 的數字改成新的一組，弧長依新比例重算；雙語說明的中文段落改用中文等級名；`design-system.md` 的 Tier ramp、Tier arc 條目同步（累積 1 → 10 → 30 → 100）；`design-components.html` 重生。沒有新增元件或 token、未改樣式。
+- 程式註解裡的舊名（上榜粉絲、舊人數）順手改掉；`docs/` 的歷史分析文件（`fan-tiers-demo.html`、`chart-palette-tuner.html`）保留當時的數字，不改。
+
+## 2026-10-02（一百二十）· 忠誠點數計分模型對齊：等級改名 Super Fans／Devoted、重算改每週、分級設定加品項權重與投入類上限、新頁「平台忠誠點數設定」（A spec-derived · D347）
+
+**範圍**：`fans-crm.html`、`tier-settings.html`、`fan-detail.html`、`fans-guide.html`、`admin-platform-loyalty.html`（新）、`js/sidebar.js`、`js/devtools.js`、`js/i18n.js`；等級名稱與重算文案另涉 `media-vault.html`、`media-vault-popup.html`、`tier-benefits.html`、`brand-campaign-detail.html`、`e-shop.html`、`create-auction.html`、`project-detail.html`、`publish-work.html`、`dashboard-classic.html`、`js/components.js`、`js/orders-store.js`、`partials/product-post-modal.js`、`design-system.html`／`design-system.md`／`design-components.html`（重生）、`ds-components/kv-list.css`／`_tokens.css`／`benefit-matrix.css`／`product-list.css`／`tier-arc.css`（只改註解）、`docs/` 四支示範頁與兩份巡檢紀錄（只改名稱）；紀錄檔 `feature-scope-map.md`、`requirements-map.md`、`BUILD-SPEC.md`、`ASSUMPTIONS.md`（UIA-193）。
+
+**依據**：使用者 2026-10-01～10-02 逐題裁決 D347；主規格 v4.16 §7.5（計分模型）、§3.2／§3.2.1（Admin 同層目的地七→八）、§8.29；5.1.7.6 F2–F3；5.1.0.8 v1 F1–F6。不動 `rulebook/` 與 Phase 1 凍結版。
+
+### A · 新增／修改（spec-derived）
+
+- **等級改名**：第二級 Superfan → **Super Fans**（D347 決定 1）；第三級原型一直寫成 Ranked fans，同輪改回規格的 **Devoted**（新文件的 Ranked Fans 不採用）。中英兩語系、HTML 預設字、JS 元件（`components.js` 儀表板分級列、`orders-store.js` 分級折扣標籤、`fans-crm.html` 群發對象表、`partials/product-post-modal.js`）、設計系統 demo 與文件、`docs/` 示範頁全面同步。中文介面規格沒給名稱，兩級沿用英文（UIA-193 #1）。程式識別字不改。
+- **重算改每週**：粉絲總覽 KPI 說明、分級設定（生效說明、規則、頁尾）、粉絲詳情（批次提示、頁尾）、分級權益、媒體庫（兩頁）、品牌活動成效、設計系統 demo 的「每夜／nightly」全部改「每週／weekly」，不寫星期幾與幾點（§8.29 第 1 項）。
+- **分級設定 ▸ 計分參數**（`fans-crm.html` 彈窗第二分頁；`tier-settings.html` 備份頁同內容）：分頁名「行為加權」改「計分參數（Scoring）」。一張卡三組（card-group 第 1 級分組）——**行為倍率**四項預設一律 **1.0**（原 3×／5×／1×／8× 與備份頁 1.5／1.2／0.8／1.0 都是示意值），提示改寫成各類涵蓋哪些行為；最後一列「外部平台訊號」掛「本版暫不計入」徽章、沒有倍率。**品項權重**五項（1.5／1.25／1.1／1.0／0.8，提示即時換算「N 點／HK$1」）＋付費首映等歧義一句待確認。**投入類上限**四項（共創投票 10 票、按讚與收藏 1,500 點、帶貨推薦 6,000 點、邀請朋友追蹤 10 位）＋留言等既有行為一句待確認。卡底 info-banner 說明全站活動、賽季加倍週與衰減由 Ztor 統一設定。後兩組掛 `data-feat="S66"`。
+- **門檻**：Devoted 最低忠誠點數 200 → **500**（D347）；Super Fans 500 → 650（示意，避免與 Devoted 同值違反單調，UIA-193 #2）。前 % 名維持原型示意值（UIA-193 #3）。
+- **變更歷史示範列**：原本硬編中文、停在舊名舊值，改成對齊新值的示範並接 i18n（`fans.tiers.hist.*`）。
+- **粉絲詳情**：「忠誠點數的來源」補第五條「全站活動」（示意比例），說明與註腳對齊 §7.5（來源、衰減、誰設定）。主要應援對象欄**不新增**（§8.29 第 5 項）。
+- **粉絲系統說明**：第一幕補計分摘要（重用 `kv-list`）：購買、活動報到、投入類、全站活動、衰減、每週重算，加一句「哪些你調、哪些 Ztor 設定」。
+- **新頁 `admin-platform-loyalty.html`**（5.1.0.8 F1–F6）：Admin 第 8 個同層目的地，頁型沿用平台費率設定。設定分頁＝全站活動給分與上限表（候選一列唯讀＋「候選」徽章）、賽季加倍週清單（新增期間彈窗、移除）、衰減半衰期／保住等級的活動期／降級緩衝、平台常數（唯讀）、誠信規則（平台強制）；修改紀錄分頁＝儲存時比對上次儲存值、有差才記一筆（改前→改後、「下一次每週重算」徽章），資料驅動、切語言整表重畫。分頁列下常駐待生效提示。數值全為 D347 預設值。
+- **Admin 導覽**：`sidebar.js` 的 `ADMIN_ROUTES`／`ADMIN_NAV` 加新頁（icon `award`），排在平台優惠設定之後、影片上架審核之前；影片上架審核原本排第三，同輪移到最後，對齊 §3.2.1 Tier 0 編號 0–7。所有 Admin 頁共用這一份導覽（側欄與頂列兩種模式）。
+- **版本標記**：S65（平台忠誠點數設定頁）、S66（品項權重與投入類上限），皆 ⚪ TBD；新頁頁級 `data-page-feat="S65"`，並比照平台優惠設定登記進 `sidebar.js`／`devtools.js` 兩份 `FULL_ROUTES` 與 devtools 的 `FEAT_TIER` 後備。
+- **文案**：新增 `admin.platform-loyalty`、`ploy.*`（新頁）、`tier-settings.weight.*`／`cap.*`／`unit.*`／`ext*`／`platform.note`、`fan-detail.repmix.platform`、`fg.earn.*`、`fans.tiers.hist.*`（中英）；改寫重算、倍率、點數來源等既有 key；「忠誠積分」改「忠誠點數」。0 個 raw key（兩語系逐頁驗過）。
+
+### D · infra／文件
+
+- 元件層未新增、未改樣式：分組用既有 `card-group`、計分摘要用既有 `kv-list`，兩支的 `design-system.md` 條目與 `kv-list.css` 檔頭補上新消費頁；`design-system.html` 的 settings-nav 單欄 demo 分頁名同步「Scoring」，`design-components.html` 重生。
+- `fans-crm.html` 編輯面板的 `commit()`：儲存後讀數的單位前補空格、千分位（「1,500 點」），與初始畫面一致。
+
 ## 2026-10-01（一百一十九）· 票務商品限購最低 1 組：門票限購不足每套張數時擋存並就地提示（A spec-derived · D342 同日補充）
 
 **範圍**：`js/ticket-bundle.js`、`js/bundle-editor.js`、`bundle-detail.html`、`create-bundle.html`、`js/i18n.js`、`ASSUMPTIONS.md`（UIA-192 產品缺口 #8 關閉）。

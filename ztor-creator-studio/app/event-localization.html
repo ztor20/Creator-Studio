@@ -90,44 +90,35 @@
   const edSessions = (ev.sessions && ev.sessions.length) ? ev.sessions : [{ date: ev.date, endDate: ev.endDate || '', start: ev.start, end: ev.end, doors: ev.doors }];
 
   /* ── 備料（與 event-detail 的 §2.13 子集同一份定義，D310 起住在本頁）────────────
-     fields＝5.1.6.1 §1 的可翻譯欄位中本頁有資料的（名稱、亮點、描述、說明區塊〔D334，每一塊的標題與內文各一格〕、
-       票種名稱、門票簡介〔D328〕；表演陣容只有人名沒有角色標籤、條款示範資料沒有欄位 → 跳過；D327 刪去取票說明欄；
-       D334 刪去活動須知類兩份清單）
+     fields＝5.1.6.1 §1 的可翻譯欄位中本頁有資料的（名稱、亮點、描述〔D354：每個有字的文字區塊一格〕、
+       票種名稱；表演陣容只有人名沒有角色標籤、條款示範資料沒有欄位 → 跳過；D327 刪去取票說明欄；
+       D334 刪去活動須知類兩份清單；2026-10-05 D354 說明區塊的標題與內文、D353 門票簡介一併退場）
      prices＝每個票種的票價＋含本活動票券的組合包售價 × 五幣別；基準＝ev.currency（沒寫＝預設幣別）。
        bookyay 帶入者（2026-09-29 D330，取代「基準 HKD 且鎖」）：基準價＝港幣原價換算成創作者幣別、鎖定；
        priceObj 帶 pin（港幣欄＝bookyay 原價、鎖定、無重設）與 baseOpen（基準欄也可覆寫、可重設），由 events-store 的
        priceOf／bundlePriceOf 給；自動建立的組合包港幣欄＝bookyay 現價（§7.15）。2026-09-29 D331：創作者自建、成員含 bookyay 票券的組合包
        港幣欄同樣鎖定，值由 bundlePriceOf 內的 bkyBundleHkd 依公式算出（本頁不另算）。 */
+  /* 描述的區塊（D354）：store 的 descBlocks（或純文字 desc）＋舊資料的說明區塊，由 migrate() 收成一串區塊 */
+  function descBlocksOf() {
+    return window.ztorRichBody ? window.ztorRichBody.migrate(ev.descBlocks || ev.desc || '', ev.infoSections) : (ev.desc ? [{ type: 'text', text: ev.desc }] : []);
+  }
   function locFields() {
     const f = [
       { key: 'name', el: { value: ev.name || '' }, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
       { key: 'highlight', el: { value: ev.highlight || '' }, kind: 'input', labelKey: 'pp.field.highlight', labelFallback: 'Highlight' },
     ];
-    /* 內文的可翻譯欄位（D340）：文字被圖片影片切成幾段就列幾格（key 由 ztorRichBody.fieldKeys 算，只有一段時沿用原 key），
-       譯文照段落放回原位、媒體不翻譯——同 create-event 的 bodyFields()，粉絲頁預覽用同一套 key 對回去。 */
+    /* 描述的可翻譯欄位（D354）：每個有字的文字區塊一格（key 由 ztorRichBody.fieldKeys 算，只有一格時沿用 "desc"），
+       譯文放回同一個區塊、媒體不翻譯——同 create-event 的 bodyFields()，粉絲頁預覽用同一套 key 對回去。
+       舊資料的說明區塊（infoSections）先由 migrate() 併進描述的區塊（descBlocksOf）。
+       墓碑 2026-10-05（D354）：說明區塊的標題與內文各一列（info-<i>-t／-b）隨說明區塊退場。 */
     const RB = window.ztorRichBody;
-    const bodyFields = (base, blocks, fallbackText, label, group, labelKey) => {
-      const list = RB ? RB.normalize(blocks || fallbackText || '') : [];
-      const texts = list.filter(b => b.type === 'text').map(b => b.text);
-      const keys = RB ? RB.fieldKeys(base, list) : [base];
-      if (keys.length <= 1) return (texts.length || labelKey) ? [{ key: keys[0], el: { value: texts.join('\n\n') || fallbackText || '' }, kind: 'textarea', labelKey: labelKey || null, labelFallback: label, group }] : [];
-      return keys.map((k, j) => ({ key: k, el: { value: texts[j] || '' }, kind: 'textarea', labelKey: null,
-        labelFallback: label + ' · ' + T('pp.field.body.part', 'part {n}').replace('{n}', j + 1), group }));
-    };
-    bodyFields('desc', ev.descBlocks, ev.desc || '', T('pp.field.desc', 'Description'), undefined, 'pp.field.desc').forEach(x => f.push(x));
-    /* 說明區塊（D334）：每一塊的標題與內文各一列，群組「說明區塊」、列名「第 n 塊・標題／內文」；
-       只填一半的塊只列有填的那一格（同 create-event 的 infoFields）。 */
-    const gi = T('pp.field.info', 'Info sections');
-    (ev.infoSections || []).forEach((x, i) => {
-      const n = i + 1, title = (x.title || '').trim(), body = (x.body || '').trim();
-      if (title) f.push({ key: 'info-' + i + '-t', el: { value: title }, kind: 'input', labelKey: null, labelFallback: T('pp.field.info.title', '#{n} title').replace('{n}', n), group: gi });
-      if (body) bodyFields('info-' + i + '-b', x.blocks, body, T('pp.field.info.body', '#{n} body').replace('{n}', n), gi).forEach(y => f.push(y));
-    });
+    const list = RB ? RB.textFields('desc', descBlocksOf()) : [];
+    if (list.length <= 1) f.push({ key: 'desc', el: { value: list.length ? list[0].text : (ev.desc || '') }, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' });
+    else list.forEach((x, j) => f.push({ key: x.key, el: { value: x.text }, kind: 'textarea', labelKey: null,
+      labelFallback: T('pp.field.desc', 'Description') + ' · ' + T('pp.field.body.part', 'part {n}').replace('{n}', j + 1) }));
     const g = T('pp.price.tiers', 'Ticket types');
     edTiers.forEach(t => f.push({ key: 'tier-' + t.id, el: { value: t.name || '' }, kind: 'input', labelKey: null, labelFallback: T('pp.field.tier-name', 'Ticket type name'), group: g }));
-    /* 門票簡介（D328）：有填的票各一格，列名＝票名 */
-    const gd = T('pp.field.tier-desc', 'Ticket description');
-    edTiers.filter(t => (t.desc || '').trim()).forEach(t => f.push({ key: 'tdesc-' + t.id, el: { value: t.desc.trim() }, kind: 'textarea', labelKey: null, labelFallback: t.name || '', group: gd }));
+    /* 墓碑 2026-10-05（D353）：門票簡介（tdesc-<id>，D328）隨欄位整欄移除，不再列入翻譯表。 */
     return f;
   }
   function locPrices() {
@@ -148,9 +139,9 @@
     const statusKey = { 'on-sale': ['fep.status.on-sale', 'On sale', 'badge--success'], live: ['fep.status.on-sale', 'On sale', 'badge--success'],
       scheduled: ['fep.status.soon', 'Coming soon', 'badge--info'], ended: ['fep.status.ended', 'Ended', 'badge--neutral'],
       cancelled: ['fep.status.cancelled', 'Cancelled', 'badge--error'] }[ev.status] || ['fep.status.soon', 'Coming soon', 'badge--info'];
-    /* D328：隱藏的票（hidden）交給渲染器略過；門票簡介走可翻譯欄位 tdesc-<id> */
+    /* D328：隱藏的票（hidden）交給渲染器略過。墓碑 2026-10-05（D353）：門票簡介（desc／tdesc-<id>）整欄移除 */
     const tiers = edTiers.map(t => ({ key: t.id, name: { key: 'tier-' + t.id }, note: '',
-      desc: (t.desc || '').trim() ? { key: 'tdesc-' + t.id } : null, hidden: !!t.hidden,
+      hidden: !!t.hidden,
       priceObj: S.priceOf(ev, t), priceKey: 'tier:' + t.id,
       soldOut: Number(t.qty) > 0 && Number(t.sold) >= Number(t.qty) }));
     /* 組合包（D296 形狀）→ 前台組合卡的成員列：票券＝允許票種名單 × 張數、商品＝名稱＋圖（示範資料沒有規格欄）；
@@ -182,14 +173,11 @@
       language: (ev.languages || []).map(k => T('ce.evlang.' + k, k)),
       priority: null, limit: null,
       desc: { key: 'desc' },
-      /* D340：描述整份內文（文字含粗體與清單、圖片影片照原文位置）；沒有 descBlocks 的活動就是一整段純文字 */
-      descBlocks: ev.descBlocks || (ev.desc ? [{ type: 'text', text: ev.desc }] : []),
-      /* D340：說明區塊畫在「關於活動」的描述下方（標題＋內文，太長才收合），key 與 locFields 同一套 */
-      infoSections: (ev.infoSections || []).filter(x => (x.title || '').trim() || (x.body || '').trim() || (x.blocks || []).length)
-        .map(x => ({ title: (x.title || '').trim() ? { key: 'info-' + ev.infoSections.indexOf(x) + '-t' } : null,
-                     blocks: x.blocks || [{ type: 'text', text: x.body || '' }], bodyKey: 'info-' + ev.infoSections.indexOf(x) + '-b' })),
+      /* D354：描述的所有區塊照排定順序（文字含格式、圖片、影片）；文字區塊譯文的 key 與 locFields 同一套。
+         墓碑 2026-10-05（D354）：infoSections（說明區塊）隨說明區塊退場，舊資料已由 descBlocksOf() 併進描述。 */
+      descBlocks: descBlocksOf(),
       lineup: (ev.lineup || []).map(n => ({ name: n, role: null })),
-      /* 墓碑 2026-09-29（D334）：notes／bring 兩份清單已刪；說明區塊 D340 起由 infoSections 呈現。 */
+      /* 墓碑 2026-09-29（D334）：notes／bring 兩份清單已刪。 */
       pickup: T(pickupKey, 'E-ticket'),
       /* 退換票：交給渲染器用平台固定文案（UIA-167）；相關活動：同創作者的其他活動、標「非本活動」 */
       terms: null, tiers, bundles,

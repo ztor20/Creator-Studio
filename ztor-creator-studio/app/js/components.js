@@ -1789,7 +1789,7 @@
     // F5 — recent activity (completed / record-only events).
     'dash-activity': { table: true, rows: [
       { icon: 'check-circle', iconVariant: 'success', titleKey: 'dash.recent.row1.title', title: '<em>帥到分手</em> MV published',               img: 'images/projects/nick-sdfs.jpg', metaKey: 'dash.recent.row1.meta', meta: 'Content · Projects · Nov 23', modKey: 'dash.recent.row1.mod', mod: 'Projects', dateKey: 'dash.recent.row1.date', date: 'Nov 23', status: { key: 'status.published', fallback: 'Published', variant: 'success' } },
-      { icon: 'award',        iconVariant: 'info',    titleKey: 'dash.recent.row2.title', title: 'Fan milestone — Inner Circle reached 50',      img: 'images/products/inner-circle-membership.webp', metaKey: 'dash.recent.row2.meta', meta: 'Fans · Fans CRM · Nov 21', modKey: 'dash.recent.row2.mod', mod: 'Fans CRM', dateKey: 'dash.recent.row2.date', date: 'Nov 21',   status: { key: 'status.reached',   fallback: 'Reached',   variant: 'success' } },
+      { icon: 'award',        iconVariant: 'info',    titleKey: 'dash.recent.row2.title', title: 'Fan milestone — Inner Circle reached 10',      img: 'images/products/inner-circle-membership.webp', metaKey: 'dash.recent.row2.meta', meta: 'Fans · Fans CRM · Nov 21', modKey: 'dash.recent.row2.mod', mod: 'Fans CRM', dateKey: 'dash.recent.row2.date', date: 'Nov 21',   status: { key: 'status.reached',   fallback: 'Reached',   variant: 'success' } },
       { icon: 'refresh-ccw',                          titleKey: 'dash.recent.row3.title', title: 'Expiring IP renewed — NICKTHEREAL likeness',   img: 'images/ip/nick-portrait.jpg', metaKey: 'dash.recent.row3.meta', meta: 'IP · My IP · Nov 19', modKey: 'dash.recent.row3.mod', mod: 'My IP', dateKey: 'dash.recent.row3.date', date: 'Nov 19',        status: { key: 'status.updated',   fallback: 'Updated',   variant: 'neutral' } },
       { icon: 'file-text',                            titleKey: 'dash.recent.row4.title', title: 'Brand partnership signed — Cypress Audio',     img: 'images/products/vintage-synth.webp', metaKey: 'dash.recent.row4.meta', meta: 'Income · Earnings · Nov 17', modKey: 'dash.recent.row4.mod', mod: 'Earnings', dateKey: 'dash.recent.row4.date', date: 'Nov 17', status: { key: 'status.signed',    fallback: 'Signed',    variant: 'neutral' } },
       { icon: 'ticket',       iconVariant: 'success', titleKey: 'dash.recent.row5.title', title: 'Ticket sales opened — <em>REALIVE (R2)</em>',  img: 'images/projects/nick-r2.jpg', metaKey: 'dash.recent.row5.meta', meta: 'Event · Events · Nov 16', modKey: 'dash.recent.row5.mod', mod: 'Events', dateKey: 'dash.recent.row5.date', date: 'Nov 16', status: { key: 'status.on-sale', fallback: 'On sale', variant: 'success' } },
@@ -1853,18 +1853,18 @@
       fans: {
         eyebrowKey: 'dash.fans.eyebrow', eyebrow: 'Fan relations · Fans CRM',
         syncKey: 'dash.fans.synced', sync: 'Updated 2h ago',
-        value: '1,283', subKey: 'dash.fans.sub', sub: 'Active · 184 are Inner Circle',
+        value: '1,283', subKey: 'dash.fans.sub', sub: 'Active · 13 are Inner Circle',
         tiers: [
-          { key: 'dash.fans.tier.inner',   label: 'Inner Circle', pct: '12%', rev: '$8,420' },
-          { key: 'dash.fans.tier.super',   label: 'Superfan',     pct: '28%', rev: '$6,180' },
-          { key: 'dash.fans.tier.devoted', label: 'Ranked fans', pct: '37%', rev: '$4,890' },
-          { key: 'dash.fans.tier.fan',     label: 'Fan',          pct: '23%', rev: '$1,210' }
+          { key: 'dash.fans.tier.inner',   label: 'Inner Circle', pct: '1%',  rev: '$4,140' },
+          { key: 'dash.fans.tier.super',   label: 'Super Fans',     pct: '9%',  rev: '$6,830' },
+          { key: 'dash.fans.tier.devoted', label: 'Ranked Fans', pct: '20%', rev: '$5,180' },
+          { key: 'dash.fans.tier.fan',     label: 'Fan',          pct: '70%', rev: '$4,550' }
         ],
         /* risk → 卡底 actionable toast（2026-07-28）：整條可點，落地 fans-crm 直接開
            composer、收件對象預選 At risk (5)。文案與 fans-crm #fans-risk-alert 同源。 */
         risk: {
           href: 'fans-crm.html?msg=risk',
-          titleKey: 'dash.fans.risk.title', title: '5 Superfans at risk of dropping',
+          titleKey: 'dash.fans.risk.title', title: '5 Super Fans at risk of dropping',
           metaKey: 'dash.fans.risk.meta',   meta: '14+ days without a touchpoint',
           ctaKey: 'dash.fans.risk.cta',     cta: 'Send a private update'
         },
@@ -2027,14 +2027,15 @@
               })()
             } },
           /* 粉絲那一張 2026-09-01 由圓環改成**分層弧**（使用者說明四層是層層包含
-             Fan ⊇ Ranked fans ⊇ Superfan ⊇ Inner Circle，並在 `docs/fan-tiers-demo.html`
+             Fan ⊇ Ranked Fans ⊇ Super Fans ⊇ Inner Circle，並在 `docs/fan-tiers-demo.html`
              選定方案 D）：圓環的前提是「切開一個整體、彼此不重疊」，把包含關係畫成互斥
-             四塊會讓人以為 Inner Circle 與 Superfan 是並列的兩群。
+             四塊會讓人以為 Inner Circle 與 Super Fans 是並列的兩群。
              總數仍收在環心，所以這一張沒有上方那個大數字——同一個數字在同一張卡上
              出現兩次不多講任何事。
-             **佔比要換一種讀法**：store 那四個數字（12/28/37/23，加起來剛好 100）是
-             「只到這一層」的佔比；包含關係要的是累積值。由最內層往外累加即可得到
-             12 → 40 → 77 → 100，**不新增任何假資料，只換一種讀法**（記在
+             **佔比要換一種讀法**：store 那四個數字（1/9/20/70，加起來剛好 100；2026-10-02
+             D348 依前 % 名預設 1／10／30 重算，舊值 12/28/37/23）是「只到這一層」的佔比；
+             包含關係要的是累積值。由最內層往外累加即可得到 1 → 10 → 30 → 100——
+             恰好就是三道「前 % 名」門檻，**不新增任何假資料，只換一種讀法**（記在
              ASSUMPTIONS CANVAS-004）。
              `tiers` 本來就是由內往外排（Inner Circle 在第一個），所以照順序累加出來的
              就是累積佔比，再整個倒過來變成「由外往內」餵給弧。 */
@@ -2354,7 +2355,7 @@
                    target: { v: 1250 },
                    bands: [{ from: 49, to: 62, trend: 'up',
                              labelKey: 'spark.fans-wow', label: '+2.3%' }] },
-          /* 2026-08-28 使用者裁示移除註腳（原為「Inner Circle 12% · 超級粉絲 28%」）：
+          /* 2026-08-28 使用者裁示移除註腳（原為「Inner Circle 12% · 超級粉絲 28%」，舊比例）：
              與總收入卡一致，帶走勢圖的卡不再放註腳。分級組成點開卡片就看得到。 */
           open: 'fans-tiers' },
         /* 2026-08-28（版面改兩欄）：待處理事項的計數卡整顆撤除——右欄的分組面板

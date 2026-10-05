@@ -234,14 +234,16 @@
         }
       ],
       /* 折抵示範（2026-09-15 D274／D275 建，2026-09-17 D278 改基準）：粉絲分級折扣
-         Superfan 折 58 × 5% ＝2.90、優惠碼 SUMMER25 折 $10、平台滿額折扣再折 $5——
+         Super Fans 折 58 × 5% ＝2.90、優惠碼 SUMMER25 折 $10、平台滿額折扣再折 $5——
          三項在畫面各列一行，但平台費看「所有折扣算完後的品項實付」：40.10 × 15%
          ＝6.015 → 6.02（D278 推翻 D275「看定價」；平台跟著少抽 2.68）。買家實付
          （含運費）＝40.10 ＋ 5 ＝45.10，payment ＝45.10 × 2.4% ＝1.0824 → 1.08（D274
          第 2 項，支付費基準是買家實付）；net＝40.10 ＋ 5（運費）− 6.02 − 1.08 ＝38.00。
          fx.paid ＝45.10 × 31.5 ＝1420.65。其餘 11 筆訂單無折扣，order.discount 不存在，
-         畫面不變。 */
-      discount: { tier: 'Superfan', tierAmount: '−$2.90', code: 'SUMMER25', codeAmount: '−$10.00', thresholdAmount: '−$5.00' },
+         畫面不變。
+         tierKey（2026-10-02 D348）：等級名跟著介面語系切換（中文介面寫「超級粉絲」），
+         tier 只是沒有 i18n 時的後備字。 */
+      discount: { tier: 'Super Fans', tierKey: 'tier-settings.tier.superfan', tierAmount: '−$2.90', code: 'SUMMER25', codeAmount: '−$10.00', thresholdAmount: '−$5.00' },
       amounts: { goods: '$58.00', shipping: '$5.00', platform: '−$6.02', payment: '−$1.08', net: '$38.00' },
       total: '$58.00', totalAmt: 58,
       fx: { currency: 'TWD', paid: 'NT$1,420.65', rate: '1 USD = 31.5 TWD' }
