@@ -38,7 +38,7 @@ set -euo pipefail
 REPO_SLUG="ztor20/Creator-Studio"
 SUBDIR="ztor-creator-studio"
 BR_PREFIX="edit/"    # collab.sh 開的 PR 分支
-PORT_PREFIX="port/"  # phase1-port.sh 開的 PR 分支（base＝phase1，2026-09-24 起一併清理）
+PORT_PREFIX="port/"  # release-port.sh（原 phase1-port.sh）開的 PR 分支（base＝凍結交付版，如 release2.3；2026-09-24 起一併清理）
 STALE_DAYS=3          # 孤兒分支超過幾天才提醒
 
 MODE="full"

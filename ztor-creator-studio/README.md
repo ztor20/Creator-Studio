@@ -8,7 +8,11 @@
 
 舊版 `r2.1`、`r2.2` 已從 `main` 移除，改用標籤 `archive/r2.1`、`archive/r2.2` 存檔（保留最後狀態，不再修改；要看舊版行為才切這兩個標籤）。`r2.1` 到 `r2.2` 的差異報告見 `../docs/r2.1-外部改版差異-20260729.md`。
 
-交付給開發依據 `phase1` 分支：從 `main` 切出、凍結、只收明確要進 Phase 1 的修正，每次升版記一筆到 `PHASE1-CHANGES.md`。之後每期交付同樣輪替——範圍確定 → 在「下一版預覽」確認 → 從 `main` 切 `phaseN` 分支 → 開新網址。
+交付版凍結：E-Shop 交付範圍凍結在 monorepo 的 `release2.3` 分支（原名 `phase1`，2026-10-07 改名；GitHub 會把舊名稱自動轉到新名稱）。分支從 `main` 切出、只收明確要進 release2.3 的修正，每次升版記一筆到分支上的 `RELEASE2.3-CHANGES.md`。
+
+- 網址：`https://ztor-cs-release2-3.vercel.app`（舊網址 `https://ztor-cs-phase1.vercel.app` 保留繼續有效）。
+- 下一版是 release2.4：在 `main` 版本切換面板的「release2.4」確認範圍 → 從 `main` 切 `release2.4` 分支 → 開新網址。
+- 每期輪替步驟與 `UI-CHANGES.md` 的交付版標籤規則見 [WORKFLOW.md](WORKFLOW.md) §5。
 
 `site/` 只保存 UI 呈現、設計系統與工程實作。所有版本都遵守同一條權威鏈：
 
