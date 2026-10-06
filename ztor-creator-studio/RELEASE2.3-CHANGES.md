@@ -1,14 +1,26 @@
-# PHASE1-CHANGES — Phase 1 凍結版改版紀錄
+# RELEASE2.3-CHANGES — release2.3 凍結版改版紀錄
 
-這個分支（`phase1`）是 Creator Studio 原型 **Phase 1 交付依據**。日常編修都在 `main`；只有明確要進 Phase 1 的修正才會搬進本分支，每搬一次就在這裡加一筆並升版號。開發看這一份就知道凍結版改了什麼、什麼時候改的。
+這個分支（`release2.3`，原名 `phase1`）是 Creator Studio 原型 **release2.3（E-Shop）交付依據**。日常編修都在 `main`；只有明確要進 release2.3 的修正才會搬進本分支，每搬一次就在這裡加一筆並升版號。開發看這一份就知道凍結版改了什麼、什麼時候改的。
 
 ## 怎麼看
 
-- 站台檔在 `app/`，開啟後版本鎖死在 Phase 1（不可切換、網址參數無效）。
-- 功能範圍以 `app/feature-scope-map.md` 各模組功能表的 🟢 欄為準（切出當時的狀態）。
-- 固定網址：https://ztor-cs-phase1.vercel.app
+- 站台檔在 `app/`，開啟後版本鎖死在 release2.3（不可切換、網址參數無效）。
+- 功能範圍以 `app/feature-scope-map.md` 各模組功能表標 🟢 release2.3 的項目為準（切出當時的狀態）。
+- 固定網址：https://ztor-cs-release2-3.vercel.app（舊網址 https://ztor-cs-phase1.vercel.app 繼續有效，內容相同）
+- 版本標籤：v1.4 起為 `release2.3-vX.Y`；v1.0～v1.3 的舊標籤 `phase1-vX.Y` 保留不動。
 
 ## 版本
+
+### v1.4 · 2026-10-07
+
+- 內容：改名，畫面與功能範圍不變。
+  - 分支 `phase1` 改名 `release2.3`（GitHub 會把舊名稱自動轉到新名稱）
+  - 本紀錄檔 `PHASE1-CHANGES.md` 改名 `RELEASE2.3-CHANGES.md`
+  - `app/js/devtools.js` 的鎖定版本代號 `p1` 改 `release2.3`，面板說明同步改；鎖定段落標記改 `★ RELEASE2.3 FROZEN`
+  - `app/feature-scope-map.md` 的 Tier 欄 `🟢 Phase 1` 改 `🟢 release2.3`、`🔵 Next` 改 `🔵 release2.4`，開發版本配置表那一列改 `release2.3`
+  - 新網址 https://ztor-cs-release2-3.vercel.app，舊網址保留
+- 原因：交付版改用 release 編號稱呼，release2.3 是 E-Shop，下一期 release2.4 是 Events。
+- 工具：搬修正改用 `release-port.sh release2.3`、部署改用 `deploy-release.sh release2.3`（維護者本機的專案根）。
 
 ### v1.3 · 2026-10-01
 

@@ -42,8 +42,8 @@ merge 一律由具 merge 權限的協作者在 GitHub 上操作。各協作者�
 ## 版本分支（2026-09-23 起）
 
 - `main`＝`app/`，唯一開發版；資料夾名稱固定，版本號記在文件與分支名稱。
-- `phase1` 分支＝開發依據，受保護、只能 PR，不可直推。
-- 修正流程：在 `main` 改好 → cherry-pick 到 `phase1` 開 PR → 合併後另行部署。
+- `release2.3` 分支（原名 `phase1`，2026-10-07 改名）＝開發依據（E-Shop 交付版），只能 PR，不可直推。改版紀錄在 `RELEASE2.3-CHANGES.md`，網址 https://ztor-cs-release2-3.vercel.app。
+- 修正流程：在 `main` 改好 → 搬到 `release2.3` 開 PR → 合併後另行部署。
 - 版本切換面板只剩四個選項：最終版、下一版預覽、funding-test、Deck for Sony。
 
 ## 其他

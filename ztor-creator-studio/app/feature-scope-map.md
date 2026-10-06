@@ -1,6 +1,6 @@
-# Ztor eShop · Feature Scope Map — Phase 1
+# Ztor eShop · Feature Scope Map — release2.3（凍結版）
 
-> ★ **這是 `phase1` 凍結分支的版本**（2026-09-23 自 `main` 切出）。功能的 tier 標記以切出當時為準；日常編修都在 `main`，本分支只收明確要進 Phase 1 的修正，每次升版記在 `../PHASE1-CHANGES.md`。
+> ★ **這是 `release2.3` 凍結分支的版本**（2026-09-23 自 `main` 切出，原名 `phase1`，2026-10-07 改名）。功能的 tier 標記以切出當時為準；日常編修都在 `main`，本分支只收明確要進 release2.3 的修正，每次升版記在 `../RELEASE2.3-CHANGES.md`。
 
 > Creator Studio × eShop 完整功能盤點與版本切割。每個節點都歸入三個 tier 之一；非 Phase 1 的項目也全部列出，供商務團隊排優先序。
 
@@ -13,9 +13,9 @@
 
 | Tier | 意義 |
 |---|---|
-| 🟢 Phase 1（已交付） | 已交付開發的範圍，凍結在 monorepo 的 `phase1` 分支（2026-09-23 起） |
-| 🔵 Next（下一版） | 下一期要交付的功能；標上去就會出現在面板的「下一版預覽」 |
-| ⚪ TBD（未排定） | 商務團隊待定；「下一版預覽」不顯示 |
+| 🟢 release2.3（已交付） | 已交付開發的範圍（E-Shop），凍結在 monorepo 的 `release2.3` 分支（2026-09-23 切出，原名 `phase1`） |
+| 🔵 release2.4（下一版） | 下一期要交付的功能，在 `main` 的「release2.4」預覽看得到 |
+| ⚪ TBD（未排定） | 商務團隊待定；release2.4 預覽不顯示 |
 | ⚫ 退場 | retired（產品決策已全面撤除，不再規劃／不計入 Phase 1／Next／TBD 三態，2026-09-09 起新增） |
 
 本期統計：🟢 Phase 1 82 · 🔵 Next 11 · ⚪ TBD 12 · ⚫ 退場 2
@@ -42,13 +42,13 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 | 鍵 | 顯示名 | 類型 | 規則 | 說明 |
 |---|---|---|---|---|
-| `p1` | Phase 1（凍結版） | 開發 | `tier:p1` | ★ PHASE1 FROZEN：本分支（`phase1`）版本鎖死在 Phase 1，`js/devtools.js` 不讀網址參數與瀏覽器記憶；本表只留這一列，`main` 的四列（最終版／下一版預覽／funding-test／Deck for Sony）不適用於本分支 |
+| `release2.3` | release2.3（凍結版） | 開發 | `tier:release2.3` | ★ RELEASE2.3 FROZEN：本分支（`release2.3`，原名 `phase1`）版本鎖死在 release2.3，`js/devtools.js` 不讀網址參數與瀏覽器記憶；本表只留這一列，`main` 的四列（最終版／下一版預覽／funding-test／Deck for Sony）不適用於本分支 |
 
-**交付輪替（2026-09-23 起）**：已交付的階段不再留在 `main` 的面板上，改由 monorepo 的凍結分支代表——Phase 1＝`phase1` 分支（版本鎖死、獨立網址、只收明確要進 Phase 1 的修正，升版記在該分支的 `PHASE1-CHANGES.md`）。下一期範圍確定時：把要做的功能標 🔵 → 用「下一版預覽」確認畫面 → 從 `main` 切 `phase2` 分支鎖定並開新網址 → 交付後把那批功能改標 🟢。**新功能做出來的當下就要掛 `data-feat` 標記並在本表登記（預設 ⚪ 未排定）**，否則沒有標記的元素每個版本都會顯示，「下一版預覽」就會多出不在範圍的東西。
+**交付輪替（2026-09-23 起；2026-10-07 改用 release 編號）**：已交付的版本不留在 `main` 的面板上，改由 monorepo 的凍結分支代表——release2.3＝`release2.3` 分支（原名 `phase1`；版本鎖死、獨立網址、只收明確要進 release2.3 的修正，升版記在該分支的 `RELEASE2.3-CHANGES.md`）。下一期的輪替步驟以 `main` 的 `feature-scope-map.md` 為準。**新功能做出來的當下就要掛 `data-feat` 標記並在本表登記（預設 ⚪ 未排定）**，否則沒有標記的元素每個版本都會顯示，「下一版預覽」就會多出不在範圍的東西。
 
 > 2026-09-23 退場：`p1`／`p1-next`／`p1-next-tbd`（Phase 1／2／3）與 `golive-4step`（其目標頁 `golive-4step/` 已一併刪除）。舊瀏覽器 devstate 若存著這些鍵或 2026-08-31 退場的 `home-canvas`，`devtools.js` 的 `load()` 會把未知鍵改寫成 `full`，`isFullBaseVersion()`／`fullVersion()` 兩份白名單因此不再需要兜底。
 
-規則語法：`all` 全部可見｜`tier:p1,next` 只顯示這些 tier 的功能｜`feat:S30`／`-feat:S30` 額外加入／排除特定功能｜`route:來源頁=目標` 把指向「來源頁」的連結改接到「目標」，並在你「已停在來源頁」（含直接輸入 URL、或切版本時正停在該頁）時把整頁換到目標；切回非此版本時，停在目標頁會自動導回來源頁（雙向、保留 query／hash）。特殊版用；標 `data-route-keep` 的連結不改接｜`page:原頁=變體` 換整頁。tier 對照取自下方各模組功能表的 🟢 已交付／🔵 下一版／⚪ 未排定欄；頁面元素需標 `data-feat="S30"` 才會被版本切換控制，外殼元素包多個功能時可寫逗號多值 `data-feat="S05,S06"`（任一在版本內即顯示）。`data-feat="full"` 是保留 gate，表示 scope 未列功能，只在 `all`／funding-test 顯示；整頁用 `data-page-feat`，低版本直連會回到 E-Shop。作用中分頁被版本藏掉時，cheat code 會自動切到第一個可見分頁。
+規則語法：`all` 全部可見｜`tier:release2.3,release2.4` 只顯示這些 tier 的功能｜`feat:S30`／`-feat:S30` 額外加入／排除特定功能｜`route:來源頁=目標` 把指向「來源頁」的連結改接到「目標」，並在你「已停在來源頁」（含直接輸入 URL、或切版本時正停在該頁）時把整頁換到目標；切回非此版本時，停在目標頁會自動導回來源頁（雙向、保留 query／hash）。特殊版用；標 `data-route-keep` 的連結不改接｜`page:原頁=變體` 換整頁。tier 對照取自下方各模組功能表的 🟢 已交付／🔵 下一版／⚪ 未排定欄；頁面元素需標 `data-feat="S30"` 才會被版本切換控制，外殼元素包多個功能時可寫逗號多值 `data-feat="S05,S06"`（任一在版本內即顯示）。`data-feat="full"` 是保留 gate，表示 scope 未列功能，只在 `all`／funding-test 顯示；整頁用 `data-page-feat`，低版本直連會回到 E-Shop。作用中分頁被版本藏掉時，cheat code 會自動切到第一個可見分頁。
 
 **登入頁的自助註冊入口：已整段移除，待註冊規格補齊後再議（2026-08-04 使用者裁示）**。原本的登記是：規格 5.1.10 要求自助註冊入口 phase 1–3 完全不出現，上表三個 tier（🟢 Phase 1／🔵 Next／⚪ TBD）沒有一個能表達（⚪ TBD 在 Phase 3 就看得到），所以沿用保留 gate `data-feat="full"` 掛在 `login.html` F1 方式選擇底下的「還沒有帳號？註冊」那一列。**現況**：使用者裁示直接整段拿掉那一列，原型任何版本都不出現註冊入口，因此**本表不再登記任何 `full` gate 給註冊**——沒有對應元素的閘門只會誤導後續 session。等自助註冊真的要做時，連同上游規格一起補，再決定要用哪個閘門。`login.html` 整頁**不掛** `data-page-feat`、也不進 `js/devtools.js` 與 `js/sidebar.js` 的 `FULL_ROUTES` 清單——登入本身是 phase 1 能力（D170），各版本都要進得去。
 
@@ -79,63 +79,63 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 3
 | ID    | 功能                              | English                                          | Tier       | Build    | 備註                                                        |
 | ----- | ------------------------------- | ------------------------------------------------ | ---------- | -------- | --------------------------------------------------------- |
 |       | **通用功能**                        | Common                                           |            |          |                                                           |
-| `S01` | 　頂部庫存預警提示條                      | Low-stock alert bar                              | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S02` | 　篩選                             | Filter                                           | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S03` | 　商店設定                           | Store settings                                   | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S04` | 　　編輯封面 / 頭像 / 名稱 / 連結 / 描述 / 幣種 | Edit cover/avatar/name/URL/desc/currency         | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S05` | 　　付款設定                          | Payment settings                                 | 🔵 Next    | ✅ built  | Stripe status read-only; details TBD                      |
-| `S06` | 　　出貨設定（出貨地址、免運門檻）               | Shipping defaults (address, free-ship threshold) | 🔵 Next    | ✅ built  | config fields only — no carrier integration               |
-| `S07` | 　　粉絲預覽視角                        | See-as-fan preview                               | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S08` | 　商店預覽頁面                         | Store preview                                    | 🟢 Phase 1 | ✅ built  |                                                           |
+| `S01` | 　頂部庫存預警提示條                      | Low-stock alert bar                              | 🟢 release2.3 | ✅ built  |                                                           |
+| `S02` | 　篩選                             | Filter                                           | 🟢 release2.3 | ✅ built  |                                                           |
+| `S03` | 　商店設定                           | Store settings                                   | 🟢 release2.3 | ✅ built  |                                                           |
+| `S04` | 　　編輯封面 / 頭像 / 名稱 / 連結 / 描述 / 幣種 | Edit cover/avatar/name/URL/desc/currency         | 🟢 release2.3 | ✅ built  |                                                           |
+| `S05` | 　　付款設定                          | Payment settings                                 | 🔵 release2.4    | ✅ built  | Stripe status read-only; details TBD                      |
+| `S06` | 　　出貨設定（出貨地址、免運門檻）               | Shipping defaults (address, free-ship threshold) | 🔵 release2.4    | ✅ built  | config fields only — no carrier integration               |
+| `S07` | 　　粉絲預覽視角                        | See-as-fan preview                               | 🟢 release2.3 | ✅ built  |                                                           |
+| `S08` | 　商店預覽頁面                         | Store preview                                    | 🟢 release2.3 | ✅ built  |                                                           |
 |       | **　建立 商品 / 組合 / 拍賣**            | Create product / bundle / auction                |            |          |                                                           |
-| `S09` | 　　建立商品（入口）                      | Create product entry                             | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S10` | 　　建立組合（入口）                      | Create bundle entry                              | 🟢 Phase 1 | ✅ built  |                                                           |
+| `S09` | 　　建立商品（入口）                      | Create product entry                             | 🟢 release2.3 | ✅ built  |                                                           |
+| `S10` | 　　建立組合（入口）                      | Create bundle entry                              | 🟢 release2.3 | ✅ built  |                                                           |
 | `S11` | 　　建立拍賣（入口）                      | Create auction entry                             | ⚪ TBD      | ✅⬆ ahead | auctions deferred                                         |
 |       | **商品**                          | Products                                         |            |          |                                                           |
-| `S12` | 　商品列表                           | Product list                                     | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S13` | 　　排序                            | Sort                                             | 🟢 Phase 1 | 🟡 gap   |                                                           |
-| `S14` | 　　欄位（圖片/名稱/分類/價格/狀態/庫存）         | Columns                                          | 🟢 Phase 1 | ✅ built  |                                                           |
+| `S12` | 　商品列表                           | Product list                                     | 🟢 release2.3 | ✅ built  |                                                           |
+| `S13` | 　　排序                            | Sort                                             | 🟢 release2.3 | 🟡 gap   |                                                           |
+| `S14` | 　　欄位（圖片/名稱/分類/價格/狀態/庫存）         | Columns                                          | 🟢 release2.3 | ✅ built  |                                                           |
 |       | **　　狀態**                        | Statuses                                         |            |          |                                                           |
-| `S15` | 　　　已上架（上架／顯示／開賣三開關、編輯）           | Listed (three switches, edit)                    | 🟢 Phase 1 | ✅ built  | 2026-09-03 D241：單一「上架」開關拆成上架／顯示／開賣三開關，見主規格 §7.14 |
-| `S16` | 　　　已隱藏                          | Hidden                                           | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S17` | 　　　庫存過低                         | Low stock                                        | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S18` | 　　　補貨流程（數量/供應商/到貨日/備註/確認）       | Restock flow                                     | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S19` | 　　　已售完                          | Sold out                                         | 🟢 Phase 1 | ✅ built  | status shown; exact UI TBD                                |
-| `S20` | 　　　草稿                           | Draft                                            | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S21` | 　　商品詳情 / 編輯                     | Product detail / edit                            | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S22` | 　　　顯示狀態 / 分類                    | Show status/category                             | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S23` | 　　　銷售摘要（件數/毛收/淨利 → 收入管理）        | Sales summary                                    | 🟢 Phase 1 | ✅ built  | reads from Earnings minimum                               |
+| `S15` | 　　　已上架（上架／顯示／開賣三開關、編輯）           | Listed (three switches, edit)                    | 🟢 release2.3 | ✅ built  | 2026-09-03 D241：單一「上架」開關拆成上架／顯示／開賣三開關，見主規格 §7.14 |
+| `S16` | 　　　已隱藏                          | Hidden                                           | 🟢 release2.3 | ✅ built  |                                                           |
+| `S17` | 　　　庫存過低                         | Low stock                                        | 🟢 release2.3 | ✅ built  |                                                           |
+| `S18` | 　　　補貨流程（數量/供應商/到貨日/備註/確認）       | Restock flow                                     | 🟢 release2.3 | ✅ built  |                                                           |
+| `S19` | 　　　已售完                          | Sold out                                         | 🟢 release2.3 | ✅ built  | status shown; exact UI TBD                                |
+| `S20` | 　　　草稿                           | Draft                                            | 🟢 release2.3 | ✅ built  |                                                           |
+| `S21` | 　　商品詳情 / 編輯                     | Product detail / edit                            | 🟢 release2.3 | ✅ built  |                                                           |
+| `S22` | 　　　顯示狀態 / 分類                    | Show status/category                             | 🟢 release2.3 | ✅ built  |                                                           |
+| `S23` | 　　　銷售摘要（件數/毛收/淨利 → 收入管理）        | Sales summary                                    | 🟢 release2.3 | ✅ built  | reads from Earnings minimum                               |
 | `S24` | 　　　被專案引用（引用列表 / 前往專案）           | Referenced by project                            | ⚪ TBD      | ✅⬆ ahead | needs project/crowdfund module                            |
-| `S25` | 　　　以粉絲身份預覽                      | See-as-fan preview                               | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S26` | 　建立商品                           | Create product                                   | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S27` | 　　展示圖（主圖 / 副圖）                  | Media (main/sub)                                 | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S28` | 　　商品資訊（名稱/描述/分類/規格）             | Info                                             | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S29` | 　　商品規格（單一 / 多規格）                | Variants (single/multi)                          | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S30` | 　　定價（價格 / 原價 + 爆米花價）            | Pricing + POPCORN price                          | 🟢 Phase 1 | 🟡 gap   | POPCORN price is net-new                                  |
-| `S31` | 　　庫存（不限量 / 限量 + 低庫存提醒）          | Inventory                                        | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S31.1` | 　　　低庫存門檻自訂（逐商品／逐規格，覆寫預設 10%） | Custom low-stock threshold                | 🔵 Next   | ✅ built  | 已建 create-product／product-detail 自訂門檻輸入，cheat code「版本」以 `data-feat="S31.1"`／`data-feat-off` 控制（Phase 1 隱藏＝固定 10%、Next+ 顯示可編輯）；逐規格粒度未做（spec §8）。spec §7.2／D105 |
-| `S32` | 　　多規格價格與庫存（SKU / 成本）            | Variant matrix (SKU/cost)                        | 🟢 Phase 1 | ✅ built  |                                                           |
+| `S25` | 　　　以粉絲身份預覽                      | See-as-fan preview                               | 🟢 release2.3 | ✅ built  |                                                           |
+| `S26` | 　建立商品                           | Create product                                   | 🟢 release2.3 | ✅ built  |                                                           |
+| `S27` | 　　展示圖（主圖 / 副圖）                  | Media (main/sub)                                 | 🟢 release2.3 | ✅ built  |                                                           |
+| `S28` | 　　商品資訊（名稱/描述/分類/規格）             | Info                                             | 🟢 release2.3 | ✅ built  |                                                           |
+| `S29` | 　　商品規格（單一 / 多規格）                | Variants (single/multi)                          | 🟢 release2.3 | ✅ built  |                                                           |
+| `S30` | 　　定價（價格 / 原價 + 爆米花價）            | Pricing + POPCORN price                          | 🟢 release2.3 | 🟡 gap   | POPCORN price is net-new                                  |
+| `S31` | 　　庫存（不限量 / 限量 + 低庫存提醒）          | Inventory                                        | 🟢 release2.3 | ✅ built  |                                                           |
+| `S31.1` | 　　　低庫存門檻自訂（逐商品／逐規格，覆寫預設 10%） | Custom low-stock threshold                | 🔵 release2.4   | ✅ built  | 已建 create-product／product-detail 自訂門檻輸入，cheat code「版本」以 `data-feat="S31.1"`／`data-feat-off` 控制（Phase 1 隱藏＝固定 10%、Next+ 顯示可編輯）；逐規格粒度未做（spec §8）。spec §7.2／D105 |
+| `S32` | 　　多規格價格與庫存（SKU / 成本）            | Variant matrix (SKU/cost)                        | 🟢 release2.3 | ✅ built  |                                                           |
 |       | **　　取貨方式**                      | Fulfillment method                               |            |          |                                                           |
-| `S33` | 　　　物流配送（重量/分類/尺寸/寄件地）           | Logistics fields                                 | 🟢 Phase 1 | ✅ built  | data entry only — no carrier API                          |
-| `S34` | 　　　現場 QR 領取（領取說明）               | On-site QR pickup                                | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S35` | 　　購買限制與標籤（每人限購 / 標籤）            | Purchase limit & tags                            | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S36` | 　　預覽 / 上架開賣                     | Preview & publish                                | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S37` | 　　稍後再存（草稿）                      | Save draft                                       | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S38` | 　　開始售賣                          | Start selling                                    | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S39` | 　　　發布貼文（標題/內容/收件對象/排程）          | Product-drop social post                         | 🟢 Phase 1 | ✅ built  | reuses Ztor's existing social-post feature — no new build |
+| `S33` | 　　　物流配送（重量/分類/尺寸/寄件地）           | Logistics fields                                 | 🟢 release2.3 | ✅ built  | data entry only — no carrier API                          |
+| `S34` | 　　　現場 QR 領取（領取說明）               | On-site QR pickup                                | 🟢 release2.3 | ✅ built  |                                                           |
+| `S35` | 　　購買限制與標籤（每人限購 / 標籤）            | Purchase limit & tags                            | 🟢 release2.3 | ✅ built  |                                                           |
+| `S36` | 　　預覽 / 上架開賣                     | Preview & publish                                | 🟢 release2.3 | ✅ built  |                                                           |
+| `S37` | 　　稍後再存（草稿）                      | Save draft                                       | 🟢 release2.3 | ✅ built  |                                                           |
+| `S38` | 　　開始售賣                          | Start selling                                    | 🟢 release2.3 | ✅ built  |                                                           |
+| `S39` | 　　　發布貼文（標題/內容/收件對象/排程）          | Product-drop social post                         | 🟢 release2.3 | ✅ built  | reuses Ztor's existing social-post feature — no new build |
 |       | **組合**                          | Bundles                                          |            |          |                                                           |
-| `S40` | 　組合包列表（欄位 / 狀態）                 | Bundle list                                      | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S41` | 　建立組合包                          | Create bundle                                    | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S42` | 　　組合包名稱                         | Name                                             | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S43` | 　　商品（新增 / 近期預覽）                 | Items                                            | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S44` | 　　定價（固定價 / 折扣價）                 | Pricing (fixed/% off)                            | 🟢 Phase 1 | ✅ built  |                                                           |
+| `S40` | 　組合包列表（欄位 / 狀態）                 | Bundle list                                      | 🟢 release2.3 | ✅ built  |                                                           |
+| `S41` | 　建立組合包                          | Create bundle                                    | 🟢 release2.3 | ✅ built  |                                                           |
+| `S42` | 　　組合包名稱                         | Name                                             | 🟢 release2.3 | ✅ built  |                                                           |
+| `S43` | 　　商品（新增 / 近期預覽）                 | Items                                            | 🟢 release2.3 | ✅ built  |                                                           |
+| `S44` | 　　定價（固定價 / 折扣價）                 | Pricing (fixed/% off)                            | 🟢 release2.3 | ✅ built  |                                                           |
 | `S45` | 　　限量                            | Quantity limit                                   | ⚪ TBD      | ✅⬆ ahead |                                                           |
-| `S46` | 　　發布貼文                          | Publish post                                     | 🟢 Phase 1 | ✅ built  | reuses Ztor's existing social-post feature                |
-| `S47` | 　組合包詳情 / 編輯                     | Bundle detail / edit                             | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S48` | 　　銷售摘要                          | Sales summary                                    | 🟢 Phase 1 | ✅ built  | reads from Earnings                                       |
-| `S49` | 　　庫存與成員影響（各成員可售量取最小，鎖定量優先）       | Stock = min(member sellable)                     | 🟢 Phase 1 | ✅ built  | 2026-09-03 D241：取代舊「= 最少成員」，成員有鎖定用鎖定量、沒鎖定用沒有被鎖定的庫存量，見主規格 §7.14 |
-| `S50` | 　　以粉絲身份預覽                       | See-as-fan preview                               | 🟢 Phase 1 | ✅ built  |                                                           |
-| `S51` | 　商店優惠碼（清單／新增／編輯／期間／停用）           | Store discount codes                             | 🟢 Phase 1 | ✅ built  | D183；2026-09-15 D272 補範圍三級、每單件數／每人總次數／總兌換、已用完；2026-09-17 D279 Phase 1 只留期間／折扣／範圍；2026-09-22 D299 Phase 1 指定商品改可多選含票種、碼不分大小寫。自用碼各版本皆有；代理碼（推廣者／分成／代理銷售紀錄）只在 Phase 4，走保留 gate `full`（D185） |
+| `S46` | 　　發布貼文                          | Publish post                                     | 🟢 release2.3 | ✅ built  | reuses Ztor's existing social-post feature                |
+| `S47` | 　組合包詳情 / 編輯                     | Bundle detail / edit                             | 🟢 release2.3 | ✅ built  |                                                           |
+| `S48` | 　　銷售摘要                          | Sales summary                                    | 🟢 release2.3 | ✅ built  | reads from Earnings                                       |
+| `S49` | 　　庫存與成員影響（各成員可售量取最小，鎖定量優先）       | Stock = min(member sellable)                     | 🟢 release2.3 | ✅ built  | 2026-09-03 D241：取代舊「= 最少成員」，成員有鎖定用鎖定量、沒鎖定用沒有被鎖定的庫存量，見主規格 §7.14 |
+| `S50` | 　　以粉絲身份預覽                       | See-as-fan preview                               | 🟢 release2.3 | ✅ built  |                                                           |
+| `S51` | 　商店優惠碼（清單／新增／編輯／期間／停用）           | Store discount codes                             | 🟢 release2.3 | ✅ built  | D183；2026-09-15 D272 補範圍三級、每單件數／每人總次數／總兌換、已用完；2026-09-17 D279 Phase 1 只留期間／折扣／範圍；2026-09-22 D299 Phase 1 指定商品改可多選含票種、碼不分大小寫。自用碼各版本皆有；代理碼（推廣者／分成／代理銷售紀錄）只在 Phase 4，走保留 gate `full`（D185） |
 
 ## O · 訂單管理 — Order Management
 
@@ -143,42 +143,42 @@ ID 起始 `O01…` ｜ 🟢 25 · 🔵 2 · ⚪ 2 · ⚫ 退場 2
 
 | ID | 功能 | English | Tier | Build | 備註 |
 |---|---|---|---|---|---|
-| `O01` | 資料統計 | KPI stats | 🟢 Phase 1 | ✅ built |  |
-| `O02` | 　待出貨 | To ship | 🟢 Phase 1 | ✅ built |  |
-| `O03` | 　待處理 | Pending | 🟢 Phase 1 | ✅ built |  |
+| `O01` | 資料統計 | KPI stats | 🟢 release2.3 | ✅ built |  |
+| `O02` | 　待出貨 | To ship | 🟢 release2.3 | ✅ built |  |
+| `O03` | 　待處理 | Pending | 🟢 release2.3 | ✅ built |  |
 | `O04` | 　已取消 / 爭議 | Cancelled / dispute | ⚪ TBD | ✅⬆ ahead | 2026-09-09（D253）：由「退款 / 爭議」更名——平台不提供退款動作，KPI 改計已取消／爭議 |
-| `O05` | 　已完成 · 30天 | Completed · 30d | 🟢 Phase 1 | ✅ built |  |
-| `O06` | 匯出 | Export | 🟢 Phase 1 | ✅ built |  |
-| `O07` | 搜尋訂單 | Search orders | 🟢 Phase 1 | ✅ built |  |
+| `O05` | 　已完成 · 30天 | Completed · 30d | 🟢 release2.3 | ✅ built |  |
+| `O06` | 匯出 | Export | 🟢 release2.3 | ✅ built |  |
+| `O07` | 搜尋訂單 | Search orders | 🟢 release2.3 | ✅ built |  |
 | | **狀態列** | Status filter | | | |
-| `O08` | 　全部 / 待付款 / 已付款 / 待出貨 / 已出貨 / 已完成 | All → Completed | 🟢 Phase 1 | ✅ built | 原文「代付款」為筆誤，依規格 Unpaid＝待付款更正 |
+| `O08` | 　全部 / 待付款 / 已付款 / 待出貨 / 已出貨 / 已完成 | All → Completed | 🟢 release2.3 | ✅ built | 原文「代付款」為筆誤，依規格 Unpaid＝待付款更正 |
 | `O09` | 　已取消 / 爭議 | Cancelled / dispute | ⚪ TBD | ✅⬆ ahead | 2026-09-09（D253）：由「退款 / 爭議」更名，篩選新增獨立 Disputed tab |
-| `O10` | 訂單列表欄位 | Order list fields | 🟢 Phase 1 | ✅ built |  |
-| `O11` | 訂單詳情 | Order detail | 🟢 Phase 1 | ✅ built |  |
+| `O10` | 訂單列表欄位 | Order list fields | 🟢 release2.3 | ✅ built |  |
+| `O11` | 訂單詳情 | Order detail | 🟢 release2.3 | ✅ built |  |
 | | **　內容** | Content | | | |
-| `O12` | 　　狀態 / 收入結算 | Status / settlement | 🟢 Phase 1 | ✅ built |  |
-| `O13` | 　　訂單商品列表 | Line items | 🟢 Phase 1 | ✅ built |  |
-| `O14` | 　　金額（商品 / 運費 / 平台費 / 支付費 / 淨額） | Amounts incl. platform fee | 🟢 Phase 1 | ✅ built |  |
-| `O15` | 　　在收入管理檢視 | View in Earnings | 🟢 Phase 1 | ✅ built | link to Earnings minimum |
-| `O16` | 　　買家資訊（名稱 / 地址 / 聯絡方式） | Buyer info | 🟢 Phase 1 | ✅ built |  |
-| `O17` | 　　檢視粉絲記錄 | View fan record | 🔵 Next | ✅⬆ ahead | Fans CRM module out of scope |
+| `O12` | 　　狀態 / 收入結算 | Status / settlement | 🟢 release2.3 | ✅ built |  |
+| `O13` | 　　訂單商品列表 | Line items | 🟢 release2.3 | ✅ built |  |
+| `O14` | 　　金額（商品 / 運費 / 平台費 / 支付費 / 淨額） | Amounts incl. platform fee | 🟢 release2.3 | ✅ built |  |
+| `O15` | 　　在收入管理檢視 | View in Earnings | 🟢 release2.3 | ✅ built | link to Earnings minimum |
+| `O16` | 　　買家資訊（名稱 / 地址 / 聯絡方式） | Buyer info | 🟢 release2.3 | ✅ built |  |
+| `O17` | 　　檢視粉絲記錄 | View fan record | 🔵 release2.4 | ✅⬆ ahead | Fans CRM module out of scope |
 | | **　功能** | Actions | | | |
 | `O18` | 　　退款 | Refund | ⚫ 退場 | 🟡 gap | 2026-09-09（D253）已退場——平台不提供任何退款動作，取消訂單品項的唯一路徑改為 O31 作廢 |
-| `O19` | 　　標記出貨 / 履約 | Mark shipped / fulfillment | 🟢 Phase 1 | ✅ built |  |
-| `O20` | 　　　物流配送（物流商 / 追蹤碼 / 標記出貨） | Logistics (manual) | 🟢 Phase 1 | ✅ built | manual entry — no carrier API |
-| `O21` | 　　　QR 領取（二維碼 / 標記已領取） | QR pickup | 🟢 Phase 1 | ✅ built |  |
-| `O22` | 　　　數位（下載） | Digital download | 🔵 Next | ✅⬆ ahead | digital goods deferred |
+| `O19` | 　　標記出貨 / 履約 | Mark shipped / fulfillment | 🟢 release2.3 | ✅ built |  |
+| `O20` | 　　　物流配送（物流商 / 追蹤碼 / 標記出貨） | Logistics (manual) | 🟢 release2.3 | ✅ built | manual entry — no carrier API |
+| `O21` | 　　　QR 領取（二維碼 / 標記已領取） | QR pickup | 🟢 release2.3 | ✅ built |  |
+| `O22` | 　　　數位（下載） | Digital download | 🔵 release2.4 | ✅⬆ ahead | digital goods deferred |
 | `O23` | 　　退款與爭議（部分 / 整單退款） | Refund & dispute | ⚫ 退場 | 🟡 gap | 2026-09-09（D253）已退場——平台不提供任何退款動作 |
 |       | **　取貨管理（Pickup Management）** — 2026-07-03 新增模組（D111），2026-07-30 併入 Phase 1（D157） | Pickup management |            |          |                                          |
-| `O24` | 　取貨管理入口（E-Shop 下拉第三個目的地）     | Pickup management entry          | 🟢 Phase 1 | ✅ built | 規格 5.1.5.11 |
-| `O25` | 　　取貨場次清單（篩選 / 搜尋 / 分批載入）     | Pickup session list              | 🟢 Phase 1 | ✅ built | 5.1.5.11 F4 |
-| `O26` | 　　建立取貨場次                          | Create pickup session            | 🟢 Phase 1 | ✅ built | 5.1.5.12 |
-| `O27` | 　　取貨場次詳情（名單 / 核銷紀錄 / 匯出）     | Pickup session detail            | 🟢 Phase 1 | ✅ built | 5.1.5.15；名單一列一領取單位（D240） |
-| `O28` | 　　Scanner URL 與密碼（交付 / 生命週期）    | Scanner URL & password           | 🟢 Phase 1 | ✅ built | 5.1.5.15 F2 |
-| `O29` | 　　手機 Scanner 掃碼核銷（二元核銷）        | Mobile scanner redemption        | 🟢 Phase 1 | ✅ built | 5.1.5.14；二元核銷、一碼一件（D122／D240） |
-| `O30` | 　　活動票券共用核銷（回寫 Events check-in）  | Event ticket redemption          | 🟢 Phase 1 | ✅ built | 5.1.5.14 F2；票券狀態仍以 Events 為來源 |
-| `O31` | 　　作廢品項（Admin 專屬、取貨型）           | Void item (admin only)           | 🟢 Phase 1 | ✅ built | 2026-09-07 上游拍板列入 eShop 2.2；creator 態可見但停用（§4.4）；出貨型／數位待產品確認（§8.27） |
-| `O32` | 　　平台費展開（依費率葉節點列出計費基準與平台費） | Platform fee breakdown | 🟢 Phase 1 | ✅ built | 2026-09-29（D333）；同日使用者裁示列入 Phase 1；`order-detail.html` 平台費列的展開把手與展開列掛 `data-feat="O32"`；支付費不展開 |
+| `O24` | 　取貨管理入口（E-Shop 下拉第三個目的地）     | Pickup management entry          | 🟢 release2.3 | ✅ built | 規格 5.1.5.11 |
+| `O25` | 　　取貨場次清單（篩選 / 搜尋 / 分批載入）     | Pickup session list              | 🟢 release2.3 | ✅ built | 5.1.5.11 F4 |
+| `O26` | 　　建立取貨場次                          | Create pickup session            | 🟢 release2.3 | ✅ built | 5.1.5.12 |
+| `O27` | 　　取貨場次詳情（名單 / 核銷紀錄 / 匯出）     | Pickup session detail            | 🟢 release2.3 | ✅ built | 5.1.5.15；名單一列一領取單位（D240） |
+| `O28` | 　　Scanner URL 與密碼（交付 / 生命週期）    | Scanner URL & password           | 🟢 release2.3 | ✅ built | 5.1.5.15 F2 |
+| `O29` | 　　手機 Scanner 掃碼核銷（二元核銷）        | Mobile scanner redemption        | 🟢 release2.3 | ✅ built | 5.1.5.14；二元核銷、一碼一件（D122／D240） |
+| `O30` | 　　活動票券共用核銷（回寫 Events check-in）  | Event ticket redemption          | 🟢 release2.3 | ✅ built | 5.1.5.14 F2；票券狀態仍以 Events 為來源 |
+| `O31` | 　　作廢品項（Admin 專屬、取貨型）           | Void item (admin only)           | 🟢 release2.3 | ✅ built | 2026-09-07 上游拍板列入 eShop 2.2；creator 態可見但停用（§4.4）；出貨型／數位待產品確認（§8.27） |
+| `O32` | 　　平台費展開（依費率葉節點列出計費基準與平台費） | Platform fee breakdown | 🟢 release2.3 | ✅ built | 2026-09-29（D333）；同日使用者裁示列入 Phase 1；`order-detail.html` 平台費列的展開把手與展開列掛 `data-feat="O32"`；支付費不展開 |
 
 ## E · 收入管理 — Earnings / Income
 
@@ -186,30 +186,30 @@ ID 起始 `E01…` ｜ 🟢 12 · 🔵 6 · ⚪ 6
 
 | ID | 功能 | English | Tier | Build | 備註 |
 |---|---|---|---|---|---|
-| `E01` | 資料統計 | KPI stats | 🟢 Phase 1 | ✅ built | minimal slice only |
-| `E02` | 　總輸入 | Gross | 🟢 Phase 1 | ✅ built |  |
-| `E03` | 　淨利（→ 收益拆分） | Net (→ breakdown) | 🟢 Phase 1 | ✅ built | net p1; waterfall later |
-| `E04` | 　待結算 | Pending settlement | 🟢 Phase 1 | ✅ built |  |
-| `E05` | 　可提領 | Available | 🟢 Phase 1 | ✅ built | display p1; payout later |
-| `E06` | 篩選（本月 / 季 / 年） | Filter (month/qtr/year) | 🟢 Phase 1 | ✅ built |  |
-| `E07` | 匯出 | Export | 🟢 Phase 1 | ✅ built |  |
-| `E08` | 申請提款 | Request payout | 🔵 Next | ✅⬆ ahead | payout mechanics deferred |
+| `E01` | 資料統計 | KPI stats | 🟢 release2.3 | ✅ built | minimal slice only |
+| `E02` | 　總輸入 | Gross | 🟢 release2.3 | ✅ built |  |
+| `E03` | 　淨利（→ 收益拆分） | Net (→ breakdown) | 🟢 release2.3 | ✅ built | net p1; waterfall later |
+| `E04` | 　待結算 | Pending settlement | 🟢 release2.3 | ✅ built |  |
+| `E05` | 　可提領 | Available | 🟢 release2.3 | ✅ built | display p1; payout later |
+| `E06` | 篩選（本月 / 季 / 年） | Filter (month/qtr/year) | 🟢 release2.3 | ✅ built |  |
+| `E07` | 匯出 | Export | 🟢 release2.3 | ✅ built |  |
+| `E08` | 申請提款 | Request payout | 🔵 release2.4 | ✅⬆ ahead | payout mechanics deferred |
 | | **欄目** | Tabs | | | |
-| `E09` | 　總覽（趨勢圖 / 近期交易 / 來源分佈） | Overview | 🔵 Next | ✅⬆ ahead | charts deferred |
-| `E10` | 　交易明細 | Transactions | 🟢 Phase 1 | ✅ built |  |
-| `E11` | 　　全部（欄位 + 展開詳情） | All (fields + expand) | 🟢 Phase 1 | ✅ built |  |
-| `E12` | 　　電子商店 | E-Shop tab | 🟢 Phase 1 | ✅ built |  |
+| `E09` | 　總覽（趨勢圖 / 近期交易 / 來源分佈） | Overview | 🔵 release2.4 | ✅⬆ ahead | charts deferred |
+| `E10` | 　交易明細 | Transactions | 🟢 release2.3 | ✅ built |  |
+| `E11` | 　　全部（欄位 + 展開詳情） | All (fields + expand) | 🟢 release2.3 | ✅ built |  |
+| `E12` | 　　電子商店 | E-Shop tab | 🟢 release2.3 | ✅ built |  |
 | `E13` | 　　電子票券 | E-Tickets | ⚪ TBD | ✅⬆ ahead |  |
 | `E14` | 　　IP 版稅 | IP royalty | ⚪ TBD | ✅⬆ ahead |  |
 | `E15` | 　　授權 | Licensing | ⚪ TBD | ✅⬆ ahead |  |
 | `E16` | 　　平台 / 串流版稅 | Streaming royalty | ⚪ TBD | ✅⬆ ahead |  |
 | `E17` | 　　專案支持 | Project support | ⚪ TBD | ✅⬆ ahead |  |
-| `E18` | 　　提款與作廢沖銷 | Payout & void | 🔵 Next | ✅⬆ ahead | 2026-09-09（D253）：由「提款與退款」更名——平台不提供退款動作；feature ID／`data-feat` 掛點不變 |
-| `E19` | 　　載入更多 | Load more | 🟢 Phase 1 | ✅ built |  |
-| `E20` | 　　手動補登 | Manual entry | 🔵 Next | ✅⬆ ahead |  |
-| `E21` | 　　匯出 CSV | Export CSV | 🟢 Phase 1 | ✅ built |  |
-| `E22` | 　收益拆解（瀑布圖 / 依專案 · Ztor抽成·創作者·NFT） | Revenue breakdown waterfall | 🔵 Next | ✅⬆ ahead | 收益拆解納入 scope（使用者 2026-07-16 裁示補上，D139）；平台費率設定入口見規格 5.1.0.3、費率凍結機制 §7.6，結構依 §7.3／5.1.8 F11·F12，**實際抽成比例數值仍待產品確認**。（原文「EFT」為筆誤，依規格 §7.3 淨利池 NFT 40% 更正） |
-| `E23` | 　提款 | Payout | 🔵 Next | ✅⬆ ahead |  |
+| `E18` | 　　提款與作廢沖銷 | Payout & void | 🔵 release2.4 | ✅⬆ ahead | 2026-09-09（D253）：由「提款與退款」更名——平台不提供退款動作；feature ID／`data-feat` 掛點不變 |
+| `E19` | 　　載入更多 | Load more | 🟢 release2.3 | ✅ built |  |
+| `E20` | 　　手動補登 | Manual entry | 🔵 release2.4 | ✅⬆ ahead |  |
+| `E21` | 　　匯出 CSV | Export CSV | 🟢 release2.3 | ✅ built |  |
+| `E22` | 　收益拆解（瀑布圖 / 依專案 · Ztor抽成·創作者·NFT） | Revenue breakdown waterfall | 🔵 release2.4 | ✅⬆ ahead | 收益拆解納入 scope（使用者 2026-07-16 裁示補上，D139）；平台費率設定入口見規格 5.1.0.3、費率凍結機制 §7.6，結構依 §7.3／5.1.8 F11·F12，**實際抽成比例數值仍待產品確認**。（原文「EFT」為筆誤，依規格 §7.3 淨利池 NFT 40% 更正） |
+| `E23` | 　提款 | Payout | 🔵 release2.4 | ✅⬆ ahead |  |
 | `E24` | 　稅務檔案 | Tax documents | ⚪ TBD | ✅⬆ ahead |  |
 
 ## B · 買家店面（Ztor eShop） — Buyer Storefront
@@ -220,16 +220,16 @@ ID 起始 `B01…` ｜ 🟢 8 · 🔵 1 · ⚪ 1
 
 | ID | 功能 | English | Tier | Build | 備註 |
 |---|---|---|---|---|---|
-| `B01` | 創作者商店頁 | Creator shop page | 🟢 Phase 1 | ✅ built |  |
-| `B02` | 商品詳情頁 (PDP) | Product detail page | 🟢 Phase 1 | ✅ built | net-new — designer proto has none |
-| `B03` | 購物車 | Cart | 🟢 Phase 1 | ✅ built |  |
-| `B04` | 結帳 | Checkout | 🟢 Phase 1 | ✅ built |  |
-| `B05` | 　Apple Pay / 信用卡 (Stripe) | Apple Pay / card | 🟢 Phase 1 | ✅ built |  |
-| `B06` | 　爆米花付款 (Pay by POPCORN) | Pay by POPCORN | 🟢 Phase 1 | 🟡 gap | net-new payment option |
+| `B01` | 創作者商店頁 | Creator shop page | 🟢 release2.3 | ✅ built |  |
+| `B02` | 商品詳情頁 (PDP) | Product detail page | 🟢 release2.3 | ✅ built | net-new — designer proto has none |
+| `B03` | 購物車 | Cart | 🟢 release2.3 | ✅ built |  |
+| `B04` | 結帳 | Checkout | 🟢 release2.3 | ✅ built |  |
+| `B05` | 　Apple Pay / 信用卡 (Stripe) | Apple Pay / card | 🟢 release2.3 | ✅ built |  |
+| `B06` | 　爆米花付款 (Pay by POPCORN) | Pay by POPCORN | 🟢 release2.3 | 🟡 gap | net-new payment option |
 | `B07` | 　貨到付款 (COD) | Cash on delivery | ⚪ TBD | ⏳ deferred | removed from Phase 1 |
-| `B08` | 訂單確認 | Order confirmation | 🟢 Phase 1 | ✅ built |  |
-| `B09` | 取貨 QR（email + 訂單詳情，靜態） | Pickup QR (static, email + order) | 🟢 Phase 1 | 🟡 gap |  |
-| `B10` | 公開探索欄（/shops、首頁商品欄） | Public discovery rails | 🔵 Next | ⏳ deferred | internal-only Phase 1 — no public discovery |
+| `B08` | 訂單確認 | Order confirmation | 🟢 release2.3 | ✅ built |  |
+| `B09` | 取貨 QR（email + 訂單詳情，靜態） | Pickup QR (static, email + order) | 🟢 release2.3 | 🟡 gap |  |
+| `B10` | 公開探索欄（/shops、首頁商品欄） | Public discovery rails | 🔵 release2.4 | ⏳ deferred | internal-only Phase 1 — no public discovery |
 
 ---
 

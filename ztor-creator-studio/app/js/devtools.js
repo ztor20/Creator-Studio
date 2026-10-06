@@ -105,21 +105,22 @@
   /* ---- 版本（最高級別 gate）：讀 feature-scope-map.md 重新配置 ----
      一份 md 當單一真相：版本清單＋規則取自其「## 開發版本配置」表，
      功能→tier 取自各 pillar 功能表的 🟢/🔵/⚪ 欄。fetch 失敗（file://）用內建後備。
-     規則語法：all｜tier:p1,next｜feat:ID／-feat:ID｜page:原頁=變體（特殊版換頁，行為製作時定）。
+     規則語法：all｜tier:release2.3,release2.4｜feat:ID／-feat:ID｜page:原頁=變體（特殊版換頁，行為製作時定）。
      減功能型靠元素的 data-feat → tier 比對；特殊版（page:）不減功能、換頁行為待接。
      data-feat＝功能在版本內才顯示；data-feat-off＝功能「不」在版本內才顯示（base／預設呈現），
-     兩者同位置成對即可做「Phase 1 用預設、Next+ 換升級版」的呈現切換（如 S31.1 低庫存門檻）。*/
-  var TIER_EMOJI = { '🟢': 'p1', '🔵': 'next', '⚪': 'tbd' };
+     兩者同位置成對即可做「release2.3 用預設、release2.4 起換升級版」的呈現切換（如 S31.1 低庫存門檻）。
+     2026-10-07 改名：tier 代號 p1→release2.3、next→release2.4（交付版本以 release 編號稱呼）。*/
+  var TIER_EMOJI = { '🟢': 'release2.3', '🔵': 'release2.4', '⚪': 'tbd' };
   /* 每筆：[鍵, 顯示名, 類型(開發/測試), 規則, 說明]。類型用於分組（測試版自成一組）。
      2026-09-23 起：已交付的 Phase 1 改由 monorepo 的 phase1 分支代表（版本鎖死、獨立網址），
      main 的面板只留「最終版」與「下一版預覽」（已交付 🟢 ＋ 標成下一版 🔵）；
      Phase 1／2／3 與 golive-4step 選項退場。要進下一期的功能在 feature-scope-map 標 🔵 即可。 */
-  /* ★ PHASE1 FROZEN（phase1 分支專用，2026-09-23）：這個分支是 Phase 1 交付依據，版本鎖死在 p1。
-     內建清單只留 p1 一列——fetch feature-scope-map 完成前每次載入都先用這份清單跑一次 applyVersion()，
-     缺 p1 會退成 all、凍結失效。修正搬進本分支時（phase1-port.sh），這一段與 load()／persist()／
+  /* ★ RELEASE2.3 FROZEN（release2.3 分支專用，2026-09-23 切出；2026-10-07 由 phase1 改名）：這個分支是 release2.3（E-Shop）交付依據，版本鎖死在 release2.3。
+     內建清單只留 release2.3 一列——fetch feature-scope-map 完成前每次載入都先用這份清單跑一次 applyVersion()，
+     缺 release2.3 會退成 all、凍結失效。修正搬進本分支時（release-port.sh），這一段與 load()／persist()／
      paint()／onboarding 的鎖定改動都要保留，不要被 main 的版本清單覆蓋。 */
   var VERSIONS = [
-    ['p1', 'Phase 1（凍結版）', '開發', 'tier:p1', 'Phase 1 交付範圍；本分支版本鎖死，不可切換'],
+    ['release2.3', 'release2.3（凍結版）', '開發', 'tier:release2.3', 'release2.3 交付範圍（E-Shop）；本分支版本鎖死，不可切換'],
   ];
   /* 舊瀏覽器的 devstate 可能還存著已退場的版本鍵（p1／p1-next／p1-next-tbd／golive-4step／home-canvas）。
      未知鍵一律回到 full：否則 isFullBaseVersion() 判 false，會被當成限縮版、導覽少一半。 */
@@ -128,10 +129,10 @@
      必須在 md 尚未載入或 fetch 失敗時也成立，否則 Phase 1 會短暫漏顯 full-only 功能。 */
   /* 載入前／失敗後的安全後備：非 P1 gate 不能因 fetch 問題降格成 P1。 */
   var FEAT_TIER = {
-    full: 'full', S05: 'next', S06: 'next', S11: 'tbd', S24: 'tbd', 'S31.1': 'next', S45: 'tbd',
-    O04: 'tbd', O09: 'tbd', O17: 'next', O18: 'tbd', O22: 'next', O23: 'next',
-    E08: 'next', E09: 'next', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'next', E20: 'next', E22: 'tbd', E23: 'next', E24: 'tbd'
-  };   // { S30:'p1', … } 由 md 功能表填
+    full: 'full', S05: 'release2.4', S06: 'release2.4', S11: 'tbd', S24: 'tbd', 'S31.1': 'release2.4', S45: 'tbd',
+    O04: 'tbd', O09: 'tbd', O17: 'release2.4', O18: 'tbd', O22: 'release2.4', O23: 'release2.4',
+    E08: 'release2.4', E09: 'release2.4', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'release2.4', E20: 'release2.4', E22: 'tbd', E23: 'release2.4', E24: 'tbd'
+  };   // { S30:'release2.3', … } 由 md 功能表填
   /* ✝ 2026-07-30：pickup.html／pickup-detail.html／scanner.html 移出本清單——取貨管理已列進
      feature-scope-map（O24–O30，🟢 Phase 1），不再是「未列 scope 的整頁功能」，各版本皆可進入（D157）。 */
   var FULL_ROUTES = {
@@ -150,7 +151,7 @@
     /* 2026-08-09 D181：粉絲分析拆兩頁，新頁只用 ztor 拿得到的資料。 */
     'audience-report.html': 1
   };
-  function featTier(id) { return FEAT_TIER[id.trim()] || (id.trim() === 'full' ? 'full' : 'p1'); }
+  function featTier(id) { return FEAT_TIER[id.trim()] || (id.trim() === 'full' ? 'full' : 'release2.3'); }
   function parseScopeMd(txt) {
     var lines = txt.split('\n'), vs = [], inVer = false;
     lines.forEach(function (ln) {
@@ -173,7 +174,7 @@
     return 'all';
   }
   function tiersForRule(rule) {
-    var m = /tier:([\w,]+)/.exec(rule || '');
+    var m = /tier:([\w.,]+)/.exec(rule || '');   // release 編號含小數點
     return m ? m[1].split(',') : null;   // null ＝ 全部 tier（all／route／page 規則皆不減功能）
   }
   function routesForRule(rule) {
@@ -424,7 +425,7 @@
     if (q.has('skip')) s.skipValidation = q.get('skip') === '1' || q.get('skip') === 'true';
     if (q.has('version')) s.version = q.get('version');
     if (q.has('future')) s.showFuture = q.get('future') === '1' || q.get('future') === 'true';
-    s.version = 'p1';   // ★ PHASE1 FROZEN：無視網址參數與瀏覽器記憶，一律 Phase 1
+    s.version = 'release2.3';   // ★ RELEASE2.3 FROZEN：無視網址參數與瀏覽器記憶，一律 release2.3
     return s;
   }
   var state = load();
@@ -443,7 +444,7 @@
     q.set('data', state.data);
     q.set('event', state.eventDay);
     if (state.skipValidation) q.set('skip', '1'); else q.delete('skip');
-    q.delete('version');   // ★ PHASE1 FROZEN：版本固定，網址不帶 version 參數
+    q.delete('version');   // ★ RELEASE2.3 FROZEN：版本固定，網址不帶 version 參數
     if (state.showFuture) q.set('future', '1'); else q.delete('future');
     history.replaceState(null, '', location.pathname + '?' + q.toString() + location.hash);
   }
@@ -629,8 +630,8 @@
       /* ── 情境：版本（最高級 gate，保留強調框）＋顯示未來功能＋User＋Data State＋Event Day ── */
       +     '<div class="ztd__tabpanel" data-tab-panel="scenario"' + (activeTab !== 'scenario' ? ' hidden' : '') + '>'
       +       '<div class="ztd__group ztd__group--top"><p class="ztd__group-label">版本 · Build version</p>'
-      /* ★ PHASE1 FROZEN：本分支不提供版本切換，只顯示鎖定說明 */
-      +         '<div class="ztd__select-desc">Phase 1（凍結版）— 本站是 Phase 1 交付依據，版本鎖死；改版紀錄見 PHASE1-CHANGES.md</div>'
+      /* ★ RELEASE2.3 FROZEN：本分支不提供版本切換，只顯示鎖定說明 */
+      +         '<div class="ztd__select-desc">release2.3（凍結版）— 本站是 release2.3（E-Shop）交付依據，版本鎖死；改版紀錄見 RELEASE2.3-CHANGES.md</div>'
       +         '<button class="ztd__row' + (state.showFuture ? ' is-on' : '') + '" data-act="toggle-future" style="margin-top:9px"><span>顯示未來功能（淡色標記）</span><span class="ztd__sw"></span></button>'
       +       '</div>'
       +       '<div class="ztd__group"><p class="ztd__group-label">Persona · 資料人格</p>'
@@ -993,6 +994,6 @@
     });
     document.body.appendChild(ov);
   }
-  /* ★ PHASE1 FROZEN：只有一個版本，首次進站不再跳選版本的 popup（函式保留供「重新顯示」按鈕用）。 */
+  /* ★ RELEASE2.3 FROZEN：只有一個版本，首次進站不再跳選版本的 popup（函式保留供「重新顯示」按鈕用）。 */
   try { localStorage.setItem(ONBOARD_LS, '1'); } catch (e) {}
 })();
