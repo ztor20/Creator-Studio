@@ -167,8 +167,34 @@ if ! git push "$AUTH" "$BR" 2>/tmp/collab_push_err; then
   sed "s#${TOKEN}#***#g" /tmp/collab_push_err | tail -6
   exit 1
 fi
+# 4.5) 交付版標籤（2026-10-07 新增）：讀這次新增的 UI-CHANGES 條目，把「**標籤**：release2.3／release2.4」
+#   貼成 PR 標籤，並把新條目的標題列進 PR 內文——協作 repo 的人不用點進檔案也知道這包改了什麼、會進哪個交付版。
+#   只改最終版的條目不寫標籤，PR 也就不掛標籤。標籤不存在就先建（--force 對已存在的只更新說明）。
+UIC="$SUBDIR/app/UI-CHANGES.md"
+ADDED="$(git diff --cached --unified=0 main -- "$UIC" 2>/dev/null | grep '^+' | grep -v '^+++' | sed 's/^+//' || true)"
+HEADS="$(printf '%s\n' "$ADDED" | grep '^## ' | sed 's/^## /- /' || true)"
+LABELS="$(printf '%s\n' "$ADDED" | grep '^\*\*標籤\*\*' | grep -oE 'release[0-9]+\.[0-9]+' | sort -u || true)"
+LABEL_ARGS=()
+for L in $LABELS; do
+  GH_TOKEN="$TOKEN" gh label create "$L" --repo "$REPO_SLUG" --color FFDB29 \
+    --description "會進 ${L} 交付版的改動" --force >/dev/null 2>&1 || true
+  LABEL_ARGS+=(--label "$L")
+done
+BODY="由 collab.sh 自動建立（從 vault site/ 同步進 ${SUBDIR}/）。發版前已跑 pull.sh 做真 git merge。"
+if [ -n "$HEADS" ]; then
+  BODY="${BODY}
+
+**本次新增的 UI-CHANGES 條目**
+
+${HEADS}"
+fi
+if [ -n "$LABELS" ]; then
+  BODY="${BODY}
+
+**交付版標籤**：$(echo $LABELS | sed 's/ /、/g')"
+fi
 PR_URL="$(GH_TOKEN="$TOKEN" gh pr create --repo "$REPO_SLUG" --base main --head "$BR" \
-          --title "$MSG" --body "由 collab.sh 自動建立（從 vault site/ 同步進 ${SUBDIR}/）。發版前已跑 pull.sh 做真 git merge。" 2>&1 | tail -1)" \
+          --title "$MSG" --body "$BODY" ${LABEL_ARGS[@]+"${LABEL_ARGS[@]}"} 2>&1 | tail -1)" \
   || PR_URL="(PR 自動建立失敗，手動開: https://github.com/${REPO_SLUG}/pull/new/${BR})"
 
 echo ""
@@ -176,6 +202,14 @@ echo "✓ 分支 ${BR} 已推上 ${REPO_SLUG}"
 echo "  PR: ${PR_URL}"
 echo "  → 在 GitHub 審查後合併進 main（上線最後關卡在使用者手上）。"
 echo "  → 若 GitHub 顯示有衝突，代表你發版期間有人又合併了：重跑 collab.sh 即可。"
+if [ -n "$LABELS" ]; then
+  echo "  交付版標籤：$(echo $LABELS | sed 's/ /、/g')"
+  for L in $LABELS; do
+    if git ls-remote --exit-code --heads origin "$L" >/dev/null 2>&1; then
+      echo "  ⚠ ${L} 已凍結：merge 進 main 後，用 ../release-port.sh ${L} <commit> 把這筆搬進 ${L}。"
+    fi
+  done
+fi
 echo ""
 echo "  ⚠ merge 之後請立刻再跑一次 ./pull.sh。"
 echo "    原因：PR 的提交與你本機的提交是「同樹不同血統」（發版是把快照灌進 monorepo，"

@@ -3,6 +3,30 @@
 > 嚴格分區：**A** spec-derived 新增 · **B** 反饋導入 · **C** 撤除（intentional removal）· **D** infra / 文件。Bug 修正不寫。
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
+>
+> **交付版標籤（2026-10-07 起）**：每筆紀錄的標題下方（隔一個空行）寫 `**標籤**：release2.3`、`**標籤**：release2.4` 或兩者並列（用「、」分隔），標示這筆改動會進哪個交付版；只進最終版的不寫這一行。判斷依 `feature-scope-map.md` 的 Tier 欄：
+>
+> - 改到 🟢 release2.3（E-Shop，已凍結）的功能：先問使用者要不要同步改進 release2.3。要就標 `release2.3、release2.4`，並在發進 `main` 後用 `release-port.sh release2.3` 搬進凍結分支；不要就只標 `release2.4`。
+> - 改到 🔵 release2.4 的功能：標 `release2.4`。release2.4 切出凍結分支之後，改到它也照上一條先問。
+> - 只改到 ⚪ 未排定的功能、或沒掛功能標記的最終版內容：不寫標籤。
+>
+> `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
+
+## 2026-10-07（一百二十九）· 交付版改用 release 編號：phase1→release2.3、下一版預覽→release2.4；紀錄加交付版標籤（D infra）
+
+**標籤**：release2.3、release2.4
+
+**範圍**：`js/devtools.js`、`feature-scope-map.md`、`UI-CHANGES.md`（檔頭格式說明）；`site/` 的 `collab.sh`、`cleanup.sh`、`CLAUDE.md`、`AGENTS.md`、`WORKFLOW.md`、`WORKFLOW-DIAGRAM.md`、`README.md`；專案根的 `release-port.sh`（原 `phase1-port.sh`）、`deploy-release.sh`（原 `deploy-phase1.sh`）
+
+**依據**：使用者 2026-10-07 指示——Phase 1 統一改名 release2.3、`main` 的「下一版預覽」改名 release2.4、程式內部代號一起改；每筆變更紀錄加 release2.3／release2.4 標籤，只進最終版的不加；改到 E-Shop（release2.3）要先問是否同步進凍結版。
+
+### D · infra／文件
+
+- **版本切換面板**：版本鍵 `next`（下一版預覽）改成 `release2.4`、顯示名「release2.4」，規則 `tier:release2.3,release2.4`。tier 代號 `p1`→`release2.3`、`next`→`release2.4`（`TIER_EMOJI`、`FEAT_TIER` 後備、`featTier()` 預設值）。`tiersForRule()` 的規則解析補收小數點，否則 `release2.3` 會被截斷。舊瀏覽器存著的 `next` 由新增的 `VERSION_ALIAS` 直接對到 `release2.4`，不退回最終版。
+- **功能表 Tier 欄**：`🟢 Phase 1` 改 `🟢 release2.3`（92 列）、`🔵 Next` 改 `🔵 release2.4`（12 列）；`devtools.js` 讀 Tier 欄時，欄內寫了 release 編號就用它，之後交付 release2.4 時那批功能改標 `🟢 release2.4` 即可保留「哪一版交付」，不必再改程式對照。只看 Tier 欄，備註欄提到 release 編號不會被誤讀。圖例、本期統計、開發版本配置表、交付輪替步驟同步改寫；2026-10-07 以前的沿革段落保留當時寫法。
+- **紀錄標籤**：本檔檔頭新增交付版標籤規則；`collab.sh` 開 PR 時讀新增條目的 `**標籤**` 行貼成 PR 標籤（標籤不存在就先建），PR 內文列出新增條目標題；標到已凍結的交付版時，結尾提醒用 `release-port.sh` 搬過去。
+- **腳本**：`release-port.sh <release> <commit>` 與 `deploy-release.sh <release>` 改成指定交付版，之後切出 release2.4 共用；port 預設排除三份已分歧的紀錄檔（ASSUMPTIONS／UI-CHANGES／requirements-map），PR 自動掛交付版標籤。release2.3 網址新增 `https://ztor-cs-release2-3.vercel.app`，舊網址 `https://ztor-cs-phase1.vercel.app` 保留。
+- 凍結分支本身（monorepo 的 `release2.3`）的改名另走 port PR，改版紀錄記在該分支的 `RELEASE2.3-CHANGES.md`。
 
 ## 2026-10-05（一百二十八）· 需求看板與商品層需求數據、服飾配件分類屬性、訂單收件國家城市（A spec-derived · D360）
 
