@@ -12,6 +12,23 @@
 >
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
+## 2026-10-07（一百四十二）· 活動詳情補活動國家、活動語言、集合地點、交通四欄；bookyay 帶入者鎖定（A spec-derived · D370）
+
+**標籤**：release2.4
+
+**範圍**：`event-detail.html`、`js/events-store.js`、`requirements-map.md`
+
+**依據**：D370（編輯活動 F2 補活動國家／活動語言、F6 補集合地點／交通，定義同 5.1.6.1 F2／F6；bookyay 帶入者四欄照 F21 鎖定；已發布後修改不列高影響變更；活動語言必填至少 1 種）。使用者 2026-10-07 裁決。
+
+### A · spec-derived
+
+- 「活動內容」分頁：亮點之後加一列「活動國家｜活動語言」，跟建立活動第 2 步同一組——國家是 `.select` 單選（TW／HK／JP／KR／US 同一份清單），語言是 Zselect 下拉複選（`js/zselect.js` `--multi`、七個選項、`[data-ed-lang-field]` 掛 `data-feat="S52"` 同建立活動）。i18n 全部沿用 `ce.country*`／`ce.lang*`／`ce.evlang.*`／`ce.err.lang`。觀影派對不顯示這一列（同建立活動）。頁面新連入 `zselect.css`／`zselect.js`（本頁原本沒有其他 `.select`）。
+- 「地點」分頁：完整地址之後加「集合地點」「交通」兩欄（選填，沿用 `ce.venue.meet*`／`ce.venue.transit*`）。建立活動收在「進階」收合裡；這一頁是兩段式面板，檢視態要直接讀得到值，所以平鋪不收合（呈現決策）。
+- 兩段式面板：檢視態四欄畫成讀數（下拉觸發鈕本身就是讀數、輸入框走 `view-mode.js`）；變更追蹤新增「locale」一項（國家＋語言算一項），集合地點、交通併入既有「venue」一項；儲存寫回 `country`／`languages`／`meetPoint`／`transit`；不進 `highImpactDiffs()`（D370 決定三）。
+- 活動語言必填：編輯態清空就地紅字（`.field__error`），按儲存擋下並帶回「活動內容」分頁。草稿不擋（同建立活動：發布前才彙整阻擋）；版本切換收起 S52 時不擋。
+- bookyay 帶入者（`isBky()`）：國家與語言 select disabled（觸發鈕停用）、集合地點與交通唯讀，不分模式一律鎖；標籤掛同一枚 From bookyay（`markBkySource()`，新增 `lockLocaleFromBky()`，`lockVenueFromBky()` 擴到四格）。
+- 示範資料（`js/events-store.js`）：實體與線上活動補 `languages`；台灣、日本的活動補 `country`（中國、新加坡、馬來西亞不在國家清單內，留白讀成「—」）；九場補 `meetPoint`／`transit`，含兩場 bookyay 活動 `taipei-nye`、`khh-countdown-draft`。
+
 ## 2026-10-07（一百四十一）· 活動地點依地址顯示地圖、bookyay 門票模式（免費／不設門票）與重覆活動、時段名稱先不帶入（A spec-derived · D369）
 
 **標籤**：release2.4

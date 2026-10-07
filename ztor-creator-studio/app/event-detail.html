@@ -45,6 +45,7 @@
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/meter-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/zselect.css?v=r2.2"><!-- D370：活動語言的下拉複選（同建立活動） -->
 <link rel="stylesheet" href="ds-components/chart.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/todo-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stock-bar.css?v=r2.2">
@@ -869,6 +870,37 @@
             <input class="input" id="ed-highlight-input" data-ed="highlight" placeholder="e.g. The only Taipei date" data-i18n-placeholder="ce.highlight.ph">
             <p class="field__hint" data-ed-count="highlight">0 / 30</p>
           </div>
+          <!-- 活動國家＋活動語言（D370，2026-10-07；5.1.6.2 F2，定義同 5.1.6.1 F2）：跟建立活動第 2 步同一組——亮點之後同一列，
+               國家＝單選下拉（TW／HK／JP／KR／US，同 create-event 那份清單），語言＝js/zselect.js 的下拉複選（七個選項、必填至少 1 種，D340）。
+               bookyay 帶入者兩欄不分模式一律鎖定、標籤掛 From bookyay（lockLocaleFromBky）；觀影派對沒有這一組（同建立活動 data-hide-type）。
+               國家不在清單內的示範活動（中國、新加坡、馬來西亞）select 留白、讀數為「—」。已發布後修改不列高影響變更（D370 決定三）。 -->
+          <div class="form-grid mb-16" data-hide-type="watchparty">
+            <div class="field">
+              <label class="field__label" for="ed-country" data-i18n="ce.country">Country</label>
+              <select class="select" id="ed-country" data-ed="country">
+                <option value="TW" data-i18n="ce.country.tw">Taiwan</option>
+                <option value="HK" data-i18n="ce.country.hk">Hong Kong</option>
+                <option value="JP" data-i18n="ce.country.jp">Japan</option>
+                <option value="KR" data-i18n="ce.country.kr">South Korea</option>
+                <option value="US" data-i18n="ce.country.us">United States</option>
+              </select>
+            </div>
+            <div class="field" data-ed-lang-field data-feat="S52">
+              <label class="field__label" id="ed-lang-label" for="ed-lang"><span data-i18n="ce.lang">Language</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+              <select class="select" id="ed-lang" multiple data-zselect-multi data-zselect-max="24" data-ed="lang" data-required
+                      data-zselect-placeholder-i18n="ce.lang.ph" data-zselect-placeholder="Choose languages" data-zselect-sep-i18n="ce.evlang.sep"
+                      aria-labelledby="ed-lang-label">
+                <option value="yue" data-i18n="ce.evlang.yue">Cantonese</option>
+                <option value="cmn" data-i18n="ce.evlang.cmn">Mandarin</option>
+                <option value="en" data-i18n="ce.evlang.en">English</option>
+                <option value="ja" data-i18n="ce.evlang.ja">Japanese</option>
+                <option value="ko" data-i18n="ce.evlang.ko">Korean</option>
+                <option value="th" data-i18n="ce.evlang.th">Thai</option>
+                <option value="vi" data-i18n="ce.evlang.vi">Vietnamese</option>
+              </select>
+              <span class="field__error" data-ed-lang-err data-i18n="ce.err.lang" hidden>Choose at least one language.</span>
+            </div>
+          </div>
           <div class="field">
             <!-- 描述（D354，2026-10-05；5.1.6.2 F2，定義同 5.1.6.1 F2）：一串可排序的文字／圖片／影片區塊，同建立活動那一支
                  partials/rich-body.js——每個區塊沒有標題、可拖動排序、可刪除，「新增描述」加一個文字區塊，整份描述媒體合計最多 10 個。
@@ -994,9 +1026,20 @@
             <label class="field__label" for="ed-venue"><span data-i18n="ce.venue.name">Venue name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
             <input class="input" id="ed-venue" data-ed="venue" data-required>
           </div>
-          <div class="field" style="margin-bottom:0">
+          <div class="field">
             <label class="field__label" for="ed-address"><span data-i18n="ce.venue.addr">Full address</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
             <input class="input" id="ed-address" data-ed="address">
+          </div>
+          <!-- 集合地點與交通（D370，2026-10-07；5.1.6.2 F6，定義同 5.1.6.1 F6）：選填、同建立活動第 3 步那兩欄（同一組 i18n 與 placeholder）。
+               建立活動收在「進階」收合裡；這一頁是兩段式面板，檢視態要直接讀得到值，所以平鋪不收合（呈現決策）。
+               bookyay 帶入者不分模式一律唯讀、標籤掛 From bookyay（lockVenueFromBky）。已發布後修改不列高影響變更（D370 決定三）。 -->
+          <div class="field">
+            <label class="field__label" for="ed-meet"><span data-i18n="ce.venue.meet">Meeting point</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+            <input class="input" id="ed-meet" data-ed="meet" placeholder="e.g., Exit 6, west plaza" data-i18n-placeholder="ce.venue.meet.ph">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="field__label" for="ed-transit"><span data-i18n="ce.venue.transit">Getting there</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+            <input class="input" id="ed-transit" data-ed="transit" placeholder="e.g., 5 min walk from Arena Station Exit 2" data-i18n-placeholder="ce.venue.transit.ph">
           </div>
         </section>
           </div>
@@ -1919,6 +1962,7 @@
 <script src="partials/rich-body.js?v=r2.2"></script><!-- D354：描述區塊編輯器（文字／圖片／影片區塊，可排序） -->
 <!-- 墓碑 2026-10-05（D354）：partials/info-sections.js（說明區塊）退場，排序搬進 rich-body.js -->
 <!-- 2026-09-29（D327）：partials/stepper.js 與 ds-components/stepper.css 的載入拆掉——只為發布設定那三個數字欄（已刪）而載，步進器元件本身保留。 -->
+<script src="js/zselect.js?v=r2.2"></script><!-- D370：活動國家下拉與活動語言下拉複選（同建立活動） -->
 <script src="js/view-mode.js?v=r2.2"></script><!-- 兩段式面板檢視態讀數（Q119）：欄位在檢視態畫成純文字、按「編輯」才變輸入框 -->
 <script>
   /* 假 QR（與 pickup-detail／create-product 同一支；此處守衛以免重複定義） */
@@ -3124,13 +3168,62 @@
   }
   /* 場地名稱與完整地址（5.1.6.1 F21；5.1.6.2 F6，D329：分別由 bookyay 的活動地點與地區帶入）：bookyay 帶入者不分模式一律唯讀 */
   function lockVenueFromBky(on) {
-    ['ed-venue', 'ed-address'].forEach(id => {
+    ['ed-venue', 'ed-address', 'ed-meet', 'ed-transit'].forEach(id => {   // D370：集合地點、交通同樣由 bookyay 帶入並鎖定
       const el = document.getElementById(id);
       const f = el && el.closest('.field');
       if (f) markBkySource(f.querySelector('.field__label'), on, f);
       if (el && on) el.readOnly = true;
     });
   }
+  /* 活動國家＋活動語言（D370；5.1.6.2 F2 → 5.1.6.1 F21）：bookyay 帶入者不分模式一律鎖定——select disabled
+     （zselect 的 MutationObserver 把觸發鈕一起停用），標籤掛同一枚 From bookyay。唯讀本身在 applyReadonly 重算。 */
+  function lockLocaleFromBky(on) {
+    ['ed-country', 'ed-lang'].forEach(id => {
+      const el = document.getElementById(id);
+      const f = el && el.closest('.field');
+      if (f) markBkySource(f.querySelector('.field__label'), on, f);
+      if (el && on) el.disabled = true;
+    });
+  }
+  /* 活動語言的讀寫（同建立活動 getLangs／setLangs）：原生 <select multiple> 是資料來源，值＝語言碼陣列、照選項順序 */
+  const edLangBox = () => document.getElementById('ed-lang');
+  function getEdLangs() {
+    const box = edLangBox();
+    return box ? Array.from(box.options).filter(o => o.selected).map(o => o.value) : [];
+  }
+  function setEdLangs(vals) {
+    const box = edLangBox();
+    if (!box) return;
+    const want = vals || [];
+    Array.from(box.options).forEach(o => { o.selected = want.indexOf(o.value) >= 0; });
+    box.dispatchEvent(new Event('change'));
+  }
+  /* 活動國家：示範資料的國家不在清單內（中國、新加坡、馬來西亞）或沒寫時留白（selectedIndex -1，讀數「—」） */
+  function setEdCountry(v) {
+    const sel = document.getElementById('ed-country');
+    if (!sel) return;
+    sel.value = v || '';
+    if (sel.value !== (v || '')) sel.selectedIndex = -1;
+    if (!v) sel.selectedIndex = -1;
+    sel.dispatchEvent(new Event('change'));
+  }
+  /* 活動語言必填（D370 決定三 → D340：至少 1 種）：就地紅字，儲存時擋下。草稿照建立活動的口徑——發布前才彙整阻擋，這裡不擋。 */
+  function edLangErr() {
+    if (!ev || ev.status === 'draft' || ev.type === 'watchparty') return false;
+    const f = document.querySelector('[data-ed-lang-field]');
+    if (!f || f.closest('.ztd-ver-hidden')) return false;   // 版本切換把 S52 收起時不擋（devtools.js 的 data-feat 閘）
+    return getEdLangs().length === 0;
+  }
+  function syncEdLangErr() {
+    const bad = edLangErr();
+    const f = document.querySelector('[data-ed-lang-field]');
+    if (!f) return bad;
+    f.classList.toggle('is-invalid', bad);
+    const m = f.querySelector('[data-ed-lang-err]');
+    if (m) m.hidden = !bad;
+    return bad;
+  }
+  edLangBox()?.addEventListener('change', () => { if (edBaseline) syncEdLangErr(); });
   document.getElementById('ed-terms')?.addEventListener('click', e => {
     const sw = e.target.closest('[data-ed-term]');
     if (!sw || sw.disabled || sw.classList.contains('switch--locked')) return;
@@ -3141,6 +3234,10 @@
   function fillEditForm(ev) {
     const set = (k, v) => { const el = document.querySelector('[data-ed="' + k + '"]'); if (el) el.value = v == null ? '' : v; };
     set('name', ev.name); set('highlight', ev.highlight); set('desc', ev.desc); set('venue', ev.venue); set('address', ev.address);
+    /* D370：活動國家、活動語言（總覽）與集合地點、交通（地點）預填既有值 */
+    setEdCountry(ev.country); setEdLangs(ev.languages || []);
+    set('meet', ev.meetPoint); set('transit', ev.transit);
+    syncEdLangErr();
     /* 描述（D354）：有 descBlocks 就整份帶入，沒有就帶純文字；舊資料的說明區塊（infoSections）由 migrate() 轉成
        接在後面的無標題文字區塊（原標題併成第一行粗體，D354 決定八） */
     if (edDesc) {
@@ -3151,6 +3248,7 @@
     }
     fillTerms(ev);
     lockVenueFromBky(isBky());
+    lockLocaleFromBky(isBky());
     renderHighlightCount();
     /* 墓碑 2026-10-05（D354）：說明區塊預填（edInfo.set）隨說明區塊退場，內容已由 migrate() 併進描述 */
     /* 墓碑（2026-08-11）：容量欄與它的「下限＝已售出」規則隨「活動人數」撤除（ATT-002）。
@@ -3212,7 +3310,9 @@
         if ('readOnly' in el && el.tagName === 'INPUT') el.readOnly = true; else el.disabled = true;
       });
       /* 場地名稱與完整地址（5.1.6.1 F21，D329；2026-10-07 補，原本編輯模式可改）：標記見 lockVenueFromBky */
-      root.querySelectorAll('#ed-venue, #ed-address').forEach(el => { el.readOnly = true; });
+      root.querySelectorAll('#ed-venue, #ed-address, #ed-meet, #ed-transit').forEach(el => { el.readOnly = true; });
+      /* 活動國家、活動語言、集合地點、交通（D370）：同樣不分模式一律鎖；標記見 lockLocaleFromBky／lockVenueFromBky */
+      root.querySelectorAll('#ed-country, #ed-lang').forEach(el => { el.disabled = true; });
     }
     if (window.ZtorViewMode) window.ZtorViewMode.sync(root);   /* 檢視態讀數（Q119，js/view-mode.js） */
   }
@@ -3536,8 +3636,9 @@
      鎖在編輯模式）。差異記於 ASSUMPTIONS EDIT-002。 */
   const ED_ASPECTS = [
     ['basics', s => s.name + '' + s.highlight + '' + s.desc],   // D354：描述的區塊（含原說明區塊的內容）與名稱同屬 F2 一列
+    ['locale', s => s.country + '' + s.langs],                    // D370：活動國家＋活動語言算一項
     ['terms',  s => s.terms],                                     // D362：條款與細則（兩個開關＋文字）算一項
-    ['venue',  s => s.venue + '' + s.address],
+    ['venue',  s => s.venue + '' + s.address + '' + s.meet + '' + s.transit],   // D370：集合地點、交通併入場地這一項
     ['dates',  s => s.sessions],
     ['lineup', s => s.lineup],
     ['images', s => s.gallery],
@@ -3549,6 +3650,9 @@
     const arr = sel => JSON.stringify([].slice.call(document.querySelectorAll(sel)).map(el => el.value != null ? String(el.value).trim() : (el.getAttribute('src') || '')));
     return {
       name: f('name'), highlight: f('highlight'), venue: f('venue'), address: f('address'),
+      meet: f('meet'), transit: f('transit'),
+      country: (document.getElementById('ed-country') || {}).value || '',
+      langs: JSON.stringify(getEdLangs()),
       desc: edDesc ? JSON.stringify(edDesc.get()) : f('desc'),   // D354：區塊的增刪、排序與圖片影片都算描述有變
       terms: JSON.stringify(readTerms()),
       sessions: JSON.stringify(edSessions || []),
@@ -3634,6 +3738,15 @@
     }
     /* 條款與細則（D362）：原型層級寫回這一場的紀錄。已發布後修改不列高影響變更（D188 清單不變）。 */
     ev.terms = readTerms();
+    /* 活動國家、活動語言、集合地點、交通（D370）：原型層級寫回這一場的紀錄；bookyay 帶入者四欄鎖定、值不會變。
+       已發布後修改不列高影響變更（D370 決定三，D188 清單不變）——所以不進 highImpactDiffs。 */
+    if (!isBky()) {
+      const cSel = document.getElementById('ed-country');
+      if (cSel) { if (cSel.value) ev.country = cSel.value; }
+      ev.languages = getEdLangs();
+      const mv = k => { const el = document.querySelector('[data-ed="' + k + '"]'); return el ? el.value.trim() : ''; };
+      ev.meetPoint = mv('meet'); ev.transit = mv('transit');
+    }
     alert(T('event-detail.edit.saved', 'Saved.'));
     setMode('view');
   }
@@ -3723,6 +3836,11 @@
       if (editing && syncEdSaleTl()) {                 // D342：售票期間超出上架區間——擋下儲存、帶到發布設定
         const tab = document.querySelector('[data-nav-item="publish"]'); if (tab) tab.click();
         alert(T('tb.save.blocked', 'Sale times fall outside the event’s listing period — fix them before saving.'));
+        return;
+      }
+      if (editing && syncEdLangErr()) {                // D370：活動語言必填（至少 1 種，D340）——擋下儲存、帶到總覽那一欄
+        const tab = document.querySelector('[data-nav-item="content"]'); if (tab) tab.click();
+        document.querySelector('[data-ed-lang-field]')?.scrollIntoView({ block: 'center' });
         return;
       }
       if (editing) {                                   // 編輯態按下＝儲存
