@@ -134,13 +134,16 @@
   /* 載入前／失敗後的安全後備：非 P1 gate 不能因 fetch 問題降格成 P1。 */
   var FEAT_TIER = {
     full: 'full', S05: 'release2.4', S06: 'release2.4', S11: 'tbd', S24: 'tbd', 'S31.1': 'release2.4', S45: 'tbd',
-    S52: 'tbd', S53: 'tbd', S54: 'tbd', S55: 'tbd', S56: 'tbd',   // 2026-09-29 D328 補登（活動：語言複選／跨日／門票簡介／顯示／bookyay 帶入）
+    S52: 'release2.4', S53: 'release2.4', S54: 'tbd', S55: 'tbd', S56: 'release2.4',   // 2026-09-29 D328 補登（活動：語言複選／跨日／門票簡介／顯示／bookyay 帶入）
     S57: 'tbd',   // 2026-09-29 D334（活動：說明區塊）
-    S58: 'tbd',   // 2026-09-29 D335（活動：描述與說明區塊內文的圖片與影片）
-    S59: 'tbd', S60: 'tbd', S61: 'tbd',   // 2026-09-30 D340（活動：內文粗體與清單／粉絲頁說明區塊／顯示設定）
+    S58: 'release2.4',   // 2026-09-29 D335（活動：描述與說明區塊內文的圖片與影片）
+    S59: 'release2.4', S60: 'tbd', S61: 'release2.4',   // 2026-09-30 D340（活動：內文粗體與清單／粉絲頁說明區塊／顯示設定）
     S65: 'tbd', S66: 'tbd',               // 2026-10-02 D347（平台忠誠點數設定頁／分級設定的各購買品項的份量與互動推薦每 90 天最多得分）
     S68: 'tbd', S69: 'tbd', S70: 'tbd', S71: 'tbd', O33: 'tbd',   // 2026-10-05 D360（需求看板頁／商品層需求入口／服飾配件分類與屬性／尺寸顏色快捷預設／訂單收件國家城市）
-    S67: 'tbd',                           // 2026-10-05 D354（活動：描述區塊的新增描述與排序；S54 門票簡介〔D353〕、S57 說明區塊、S60 粉絲頁說明區塊同日退場，已無元素掛標記）
+    S62: 'release2.4',   // 2026-10-07 使用者裁示：時間層級與定時上架上限隨 release2.4
+    S72: 'release2.4', S73: 'release2.4', S74: 'tbd', S75: 'release2.4', S76: 'tbd', S77: 'tbd', S78: 'tbd', S79: 'tbd', S80: 'tbd',   // 2026-10-07 release2.4 切割（活動模組／bookyay 帶入建立／手動建立／Watch Party／複製與再辦一次／舊流程／在地化／其他線下類型入口／直接促銷同意）
+    S81: 'tbd',                                  // 2026-10-07 D361（活動：Admin 手動下架＋已下架徽章）
+    S67: 'release2.4',                           // 2026-10-05 D354（活動：描述區塊的新增描述與排序；S54 門票簡介〔D353〕、S57 說明區塊、S60 粉絲頁說明區塊同日退場，已無元素掛標記）
     O04: 'tbd', O09: 'tbd', O17: 'release2.4', O18: 'tbd', O22: 'release2.4', O23: 'release2.4',
     E08: 'release2.4', E09: 'release2.4', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'release2.4', E20: 'release2.4', E22: 'tbd', E23: 'release2.4', E24: 'tbd', E25: 'tbd', E26: 'tbd'
   };   // { S30:'release2.3', … } 由 md 功能表填
@@ -152,7 +155,9 @@
     'index.html': 1, 'dashboard-classic.html': 1, 'admin-platform-promotions.html': 1, 'projects.html': 1, 'project-detail.html': 1, 'create-project.html': 1,
     /* 2026-10-02 D347：平台忠誠點數設定（S65 ⚪ 未排定），與 sidebar.js 同名清單同步。 */
     'admin-platform-loyalty.html': 1,
-    'create-campaign.html': 1, 'funding-simulate.html': 1, 'events.html': 1, 'event-detail.html': 1, 'create-event.html': 1, 'edit-event.html': 1,
+    /* 2026-10-07 release2.4 切割：events.html／event-detail.html／create-event.html 移出——活動模組列入 release2.4
+       （S72 🔵），三頁改頁級 data-page-feat="S72"；sidebar.js 同名清單同步。 */
+    'create-campaign.html': 1, 'funding-simulate.html': 1, 'edit-event.html': 1,
     'fans-crm.html': 1, 'fan-detail.html': 1, 'tier-settings.html': 1, 'my-ip.html': 1, 'ip-detail.html': 1,
     'ip-market.html': 1, 'register-ip.html': 1,
     /* 2026-07-30 補：外部 r2.2 改版新增的 6 頁只加進 sidebar.js 的同名清單、漏了這裡，

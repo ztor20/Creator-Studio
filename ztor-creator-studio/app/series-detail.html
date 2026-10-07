@@ -97,7 +97,7 @@
           <span class="page-intro__media" id="sd-hero-img" hidden><img src="" alt=""></span>
           <div>
             <div class="flex-row" style="gap:8px;margin-bottom:8px">
-              <span class="badge badge--success"><span data-i18n="events.badge.on-sale">On Sale</span></span>
+              <span class="badge badge--success"><span data-i18n="events.badge.on-sale">On sale</span></span>
               <span class="badge badge--neutral"><span data-i18n="sd.badge.series">Series · 3 dates</span></span>
               <span class="badge badge--info"><span data-i18n="sd.badge.type">Concert</span></span>
             </div>
@@ -499,8 +499,9 @@
       const q = (e.tiers || []).reduce((n, t) => n + (Number(t.qty) || 0), 0);
       const pct = q ? Math.round((e.sold || 0) / q * 100) : 0;
       const soldout = q > 0 && e.sold >= q;
-      const key = soldout ? 'events.badge.soldout' : (badgeKey[e.status] || '');
-      const cls = soldout ? 'badge--success' : (badgeCls[e.status] || 'badge--neutral');
+      /* D361：售完不是活動階段——階段徽章照常顯示，售完另加一顆 */
+      const key = badgeKey[e.status] || '';
+      const cls = badgeCls[e.status] || 'badge--neutral';
       const href = 'event-detail.html?id=' + encodeURIComponent(e.id);
       return '<div class="product-list__row" role="row" data-go="' + esc(href) + '">' +
         '<div class="product-list__product" role="cell"><div class="product-list__body">' +
@@ -522,7 +523,9 @@
              : '—') + '</div>' +
         '<div class="product-list__cell" role="cell">' + (e.revenue ? '$' + num(e.revenue) : '—') + '</div>' +
         '<div class="product-list__cell" role="cell"><span class="badge ' + cls + '"><span>' +
-          esc(T(key, e.status)) + '</span></span></div>' +
+          esc(T(key, e.status)) + '</span></span>' +
+          (soldout ? ' <span class="badge badge--neutral"><span data-i18n="events.badge.soldout">' +
+            esc(T('events.badge.soldout', 'Sold out')) + '</span></span>' : '') + '</div>' +
         '<div class="product-list__actions" role="cell">' +
           '<details class="dropdown">' +
             '<summary class="btn btn--icon btn--xs" aria-label="' + esc(T('events.a.more', 'More actions')) + '">' +

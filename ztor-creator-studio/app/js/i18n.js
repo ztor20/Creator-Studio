@@ -248,8 +248,8 @@
        「挑幾場搬過來」的說法，只有「搬進來了什麼」與「哪幾場還沒設完」。
        文案規則（鐵律 12）：頁面標題已經說了這是在管活動，欄位標籤只寫「名稱／日期／
        場地／狀態」，不再把「活動」兩個字重講一次。 */
-    'ace.lede':           { en: 'Every creator on the platform and their bookyay events. Once a bookyay account is linked, that creator\'s events come across on their own and keep syncing — this is where you see what arrived and which of it still needs bundle set-up.',
-                            zh: '平台上每一位 creator 的 bookyay 活動。綁定 bookyay 帳號之後，活動會自動搬進來並持續檢查更新；這裡看得到搬進來了什麼、哪幾場還沒設定套組。' },
+    'ace.lede':           { en: 'Every creator on the platform and their bookyay events. Once a bookyay account is linked, that creator\'s events come across on their own and keep syncing — this is where you see what arrived and which of it still needs tickets and ticket bundles set up.',
+                            zh: '平台上每一位 creator 的 bookyay 活動。綁定 bookyay 帳號之後，活動會自動搬進來並持續檢查更新；這裡看得到搬進來了什麼、哪幾場還沒設定門票與票務商品。' },
     /* 墓碑 2026-09-02（同日改版）：版面從「左名單／右內容」改成「上面卡片選人、
        下面看那一位」，窄畫面把左欄收成一顆按鈕的折疊列隨之整組退場（卡片列本來就
        在最上面、不擋路），以下 3 把隨之零引用、就地移除——
@@ -300,11 +300,12 @@
     'ace.notfound.text':  { en: 'The link points at a creator that no longer exists. Nobody was opened in its place — pick one above.',
                             zh: '連結指向的 creator 已經不存在。這裡不會改開另一位，請從上面自行選一位。' },
     'ace.unlinked.title': { en: 'No bookyay account linked', zh: '尚未綁定 bookyay 帳號' },
-    'ace.unlinked.text':  { en: 'This creator has no bookyay account linked yet. Once it is, their bookyay events come across on their own and keep syncing — nothing has to be moved by hand.',
-                            zh: '這位 creator 還沒有綁定 bookyay 帳號。綁定之後，他在 bookyay 上的活動會自動搬進來，並持續檢查更新，不需要手動搬。' },
+    /* D361 決定八（2026-10-07）：bookyay 帳號由 Admin 綁定，綁定後自動匯入。綁定畫面本身規格還沒畫，按鈕維持停用。 */
+    'ace.unlinked.text':  { en: 'This creator has no bookyay account linked yet. Once Admin links it, their bookyay events are imported automatically and keep syncing.',
+                            zh: '這位 creator 還沒有綁定 bookyay 帳號。Admin 綁定之後，他在 bookyay 上的活動會自動匯入，並持續檢查更新。' },
     'ace.unlinked.cta':   { en: 'Link bookyay account', zh: '前往綁定 bookyay 帳號' },
-    'ace.unlinked.todo':  { en: 'Where the linking happens and who does it is still being decided, so this button does nothing yet.',
-                            zh: '在哪裡綁、由誰綁，產品尚未定案，所以這顆按鈕目前不會做任何事。' },
+    'ace.unlinked.todo':  { en: 'The linking screen isn’t built yet, so this button does nothing for now.',
+                            zh: '綁定畫面還沒做，這顆按鈕目前不會做任何事。' },
     'ace.noevents.title': { en: 'Nothing on bookyay', zh: 'bookyay 上沒有這位的活動' },
     'ace.noevents.text':  { en: 'This creator is linked, but bookyay has nothing selling under their account right now.',
                             zh: '這位 creator 已經綁定，但目前 bookyay 上沒有掛在他帳號下的活動。' },
@@ -312,9 +313,13 @@
     'ace.col.date':       { en: 'Date',               zh: '日期' },
     'ace.col.venue':      { en: 'Venue',              zh: '場地' },
     'ace.col.status':     { en: 'Status',             zh: '狀態' },
-    /* 狀態只剩兩值（D238 自動匯入）：搬進來的每一場不是「待設定套組」就是「已完成」。
+    /* 狀態只剩兩值（D238 自動匯入）：搬進來的每一場不是「待設定」就是「已完成」（D361 改名，說明改寫「還沒設定門票與票務商品」）。
        「已匯入·」那個前綴同輪拿掉——整張表都是已匯入的，每一列再講一次是廢話。 */
-    'ace.status.pending': { en: 'Setup pending',      zh: '待設定套組' },
+    /* D361 決定六：「套組」改成「門票與票務商品」，狀態名改「待設定」、說明另起一句（滑過徽章看得到） */
+    'ace.status.pending': { en: 'To set up',          zh: '待設定' },
+    'ace.status.pending.why': { en: 'Tickets and ticket bundles aren’t set up yet', zh: '還沒設定門票與票務商品' },
+    'ace.firstsave':      { en: 'Creators can’t see an imported event until its first save — it then shows up in their Drafts.',
+                            zh: '匯入的活動第一次儲存前，創作者看不到；儲存後才以草稿出現在創作者的活動清單。' },
     'ace.status.done':    { en: 'Completed',          zh: '已完成' },
     'ace.continue':       { en: 'Continue set-up',    zh: '繼續設定' },
     /* 最後檢查 ＋ 重新檢查（D238）。時間是絕對值，格式與資料裡的其他時間戳一致。 */
@@ -328,7 +333,7 @@
        自動匯入之後不存在「可匯入」這個狀態。以下 9 把隨之零引用、就地移除——
          · 勾選：'ace.select-all'（全選可匯入的列）、'ace.select-one'（選取 {name}）
          · 主鈕三態：'ace.do'（匯入已選）、'ace.do-1'、'ace.do-n'
-         · 匯入回饋：'ace.toast'（已匯入 {n} 場，{k} 場待設定套組）
+         · 匯入回饋：'ace.toast'（已匯入 {n} 場，{k} 場待設定）
          · 「可匯入」這個值的三個說法：'ace.status.importable'（表格狀態徽章）、
            'ace.filter.importable'（上方「有待匯入」篩選）、'ace.n.importable'
            （下段標題列摘要）
@@ -3720,9 +3725,11 @@
     'events.kpi.avg':          { en: 'Attendance rate',                     zh: '出席率' },
     'events.kpi.avg-meta':     { en: 'Checked in ÷ sold',                   zh: '已報到 ÷ 售出' },
     'events.tab.upcoming':     { en: 'Upcoming',                            zh: '即將舉辦' },
-    'events.tab.past':         { en: 'Past',                                zh: '已舉辦' },
+    'events.tab.past':         { en: 'Ended',                               zh: '已舉辦' },   /* D361：階段英文統一，Past 不再使用 */
     'events.tab.drafts':       { en: 'Drafts',                              zh: '草稿' },
-    'events.badge.on-sale':    { en: 'On Sale',                             zh: '售票中' },
+    'events.badge.on-sale':    { en: 'On sale',                             zh: '售票中' },
+    /* D361 決定五：上架是階段以外的另一維度——已下架的活動留在原階段，另掛這一顆（清單列與詳情頁首共用） */
+    'events.badge.unlisted':   { en: 'Unlisted',                            zh: '已下架' },
     'events.badge.scheduled':  { en: 'Scheduled',                           zh: '已排程' },
     'events.badge.ended':      { en: 'Ended',                               zh: '已結束' },
     'events.badge.draft':      { en: 'Draft',                               zh: '草稿' },
@@ -3852,7 +3859,7 @@
     'events.rowSER3.datetime': { en: '2026/10/03 · 7:30 PM',                zh: '2026/10/03 · 晚上 7:30' },
     'events.rowSER3.venue':    { en: 'Taipei Arena',                        zh: '臺北小巨蛋' },
     'events.status.all':       { en: 'All',                                 zh: '全部' },
-    'events.status.on-sale':   { en: 'On Sale',                             zh: '售票中' },
+    'events.status.on-sale':   { en: 'On sale',                             zh: '售票中' },
     'events.status.draft':     { en: 'Draft',                               zh: '草稿' },
     'events.filter.placeholder': { en: 'Search by name, venue, performer',  zh: '搜尋名稱、場地、表演者' },
     'events.search.clear':     { en: 'Clear search',                        zh: '清除搜尋' },
@@ -3966,13 +3973,13 @@
     'events.stage.scheduled': { en: 'Scheduled',     zh: '已排程' },
     'events.stage.cancelled': { en: 'Cancelled',     zh: '已取消' },
     'events.stage.draft':     { en: 'Draft',         zh: '草稿' },
-    'events.stage.past':      { en: 'Past',          zh: '已結束' },
+    'events.stage.past':      { en: 'Ended',         zh: '已結束' },   /* D361：清單分頁與詳情徽章同一組英文（Draft／Scheduled／On sale／Live／Ended／Cancelled） */
     'events.cat.aria':        { en: 'Filter by event type', zh: '依活動類型篩選' },
     'events.badge.live':      { en: 'Live',          zh: '進行中' },
     'events.act.livedesk':    { en: 'Live check-in desk', zh: '現場報到台' },
     /* 進行中的示範場次（今天開演；唯一帶到場名單的一筆） */
     'events.rowLIVE.title':   { en: 'Inner Circle Fan Meet — Taipei', zh: '核心圈粉絲見面會 — 臺北' },
-    'events.rowLIVE.meta':    { en: 'Fans meet · happening now',      zh: '粉絲見面會 · 進行中' },
+    'events.rowLIVE.meta':    { en: 'Fans meet · Live',               zh: '粉絲見面會 · 進行中' },
     'events.rowLIVE.datetime':{ en: 'Today · 2:00 PM',                zh: '今天 · 下午 2:00' },
     'events.rowLIVE.venue':   { en: 'Neo Studio · Taipei',            zh: 'Neo Studio · 臺北' },
     'events.cat.all':         { en: 'All',           zh: '全部' },
@@ -5208,6 +5215,11 @@
     'ce.terms.marketing.hint': { en: 'Attendee data may be used by the organiser to market to them directly.', zh: '參加者資料可由主辦者用於直接促銷。' },
     'ce.terms.tnc':         { en: 'Terms and conditions',             zh: '條款及細則' },
     'ce.terms.tnc.hint':    { en: 'Shown at checkout for the fan to accept.', zh: '在結帳時出示，由粉絲勾選同意。' },
+    /* 條款與細則的文字欄（2026-10-07 D362：活動詳情補這一節）——建立活動用頁內字典 d.terms.*，同字 */
+    'ce.terms.marketing.label': { en: 'Marketing message', zh: '行銷同意文字' },
+    'ce.terms.marketing.ph':    { en: 'What fans will see, e.g. how their info may be used to send updates and offers', zh: '例如：我們可能會用你的資料寄送最新消息與優惠' },
+    'ce.terms.tnc.label':       { en: 'Terms text', zh: '條款內容' },
+    'ce.terms.tnc.ph':          { en: 'Paste or write the terms fans must accept before checkout', zh: '貼上或撰寫粉絲結帳前需同意的條款文字' },
     /* 系列場次（2026-08-06）：同一個活動辦好幾場，每一場都是清單上獨立的一場 */
     'ce.series':            { en: 'Series dates',                     zh: '系列場次' },
     'ce.series.sub':        { en: 'Turn on when the same event runs on several dates — each one becomes its own event.', zh: '同一個活動要辦好幾場時打開，每一場都會是獨立的一場。' },
@@ -9656,7 +9668,7 @@
 
     /* Event detail & operations (5.1.6 F5) */
     'event-detail.crumb.events': { en: 'Events', zh: '活動' },
-    'event-detail.badge.on-sale': { en: 'On Sale', zh: '售票中' },
+    'event-detail.badge.on-sale': { en: 'On sale', zh: '售票中' },
     'event-detail.badge.series': { en: 'Series 1/3', zh: '系列 1/3' },
     'event-detail.badge.type': { en: 'Concert', zh: '演唱會' },
     'event-detail.h1': { en: 'Kowloon Café 10th Anniv. — Kowloon After Dark OST listening party', zh: '九龍冰室 十週年 — 九龍夜行 原聲帶 試聽派對' },
@@ -9694,7 +9706,19 @@
     /* 多站場次清單用的狀態徽章（2026-08-17）：這幾個階段原本沒有自己的 key，
        因為清單是寫死的假資料、只出現「售票中」與「已排程」兩種。 */
     'event-detail.badge.draft':  { en: 'Draft',         zh: '草稿' },
-    'event-detail.badge.live':   { en: 'Happening now', zh: '進行中' },
+    'event-detail.badge.live':   { en: 'Live',          zh: '進行中' },   /* D361：清單分頁與詳情徽章同一組英文 */
+    /* 下架活動（D361 決定五，2026-10-07）：只有 Admin 代管態能按，創作者視角停用並沿用 od.void.why.admin 的說明；
+       下架不改階段、不退款、不動已售出的票。 */
+    'event-detail.unlist.title':   { en: 'Unlist this event', zh: '下架活動' },
+    'event-detail.unlist.sub':     { en: 'Fans stop seeing it and can’t buy. It stays in its current stage, and tickets already sold stay valid.', zh: '粉絲看不到、也不能購買。活動留在目前的階段，已售出的票照樣有效。' },
+    'event-detail.unlist.btn':     { en: 'Unlist event', zh: '下架活動' },
+    'event-detail.unlist.done':    { en: 'This event is unlisted.', zh: '這場活動已下架。' },
+    'event-detail.unlist.confirm.title': { en: 'Unlist this event?', zh: '確定下架這場活動？' },
+    'event-detail.unlist.confirm.body':  { en: 'The event page comes down and nothing can be bought. The event stays in its stage and the tickets already sold stay valid. To stop the event for good, cancel it instead.', zh: '活動頁會下架，粉絲不能再購買。活動留在原本的階段，已售出的票照樣有效。要讓活動不再舉辦，請改用取消活動。' },
+    'event-detail.unlist.confirm.ok':    { en: 'Unlist', zh: '下架' },
+    'event-detail.unlist.toast':   { en: 'Event unlisted', zh: '活動已下架' },
+    /* 已報到的票不能撤銷（D361 決定四） */
+    'event-detail.void.why.redeemed': { en: "Already checked in — can't be voided", zh: '已報到，不能撤銷' },
     'event-detail.badge.ended':  { en: 'Ended',         zh: '已結束' },
     'event-detail.untitled': { en: 'Untitled event', zh: '未命名活動' },
     'event-detail.venue.tbd': { en: 'Venue TBD', zh: '場地未定' },
@@ -10116,7 +10140,7 @@
     /* 2026-09-09（D253 殘留補正）：本鍵 en/zh 的吸收順序原仍寫「Refund Reserve」／「退款準備金」，
        與 earnings.html／earnings-ztor.html 已改名的 Void reserve／沖銷準備金（見上方 1669 行）不同步，
        一併改齊。 */
-    'event-detail.void.absorb': { en: '<strong>Void write-off absorption order (§7.3, financial treatment proposed — pending approval):</strong> Void reserve → current distributable profit → carry-forward deficit (no clawback). Voiding a ticket writes off its revenue and immediately invalidates the ticket QR. Any refund actually owed to the buyer happens off-platform (e.g. Stripe) and is not tracked here. v1 void scope is in §8.6.', zh: '<strong>撤銷沖銷吸收順序（§7.3，財務口徑為〔產品變更提案〕、待上游核准）：</strong>沖銷準備金 → 當期可分配淨利 → 結轉赤字（不追討）。撤銷一張票會沖銷其收入並立即讓票券 QR 失效。買家實際是否收到退款（如透過 Stripe）由創作者於平台外處理，本頁不追蹤。v1 撤銷範圍見 §8.6。' },
+    'event-detail.void.absorb': { en: '<strong>Void write-off absorption order (§7.3, financial treatment proposed — pending approval):</strong> Void reserve → current distributable profit → carry-forward deficit (no clawback). Voiding a ticket writes off its revenue and immediately invalidates the ticket QR. Any refund owed to the buyer is made by Admin in Stripe and is not tracked here. v1 void scope is in §8.6.', zh: '<strong>撤銷沖銷吸收順序（§7.3，財務口徑為〔產品變更提案〕、待上游核准）：</strong>沖銷準備金 → 當期可分配淨利 → 結轉赤字（不追討）。撤銷一張票會沖銷其收入並立即讓票券 QR 失效。買家的退款由 Admin 在 Stripe 處理（D361），本頁不追蹤。v1 撤銷範圍見 §8.6。' },
     'event-detail.comp.title': { en: 'Comp tickets', zh: '招待票' },
     'event-detail.comp.row1': { en: 'VIP + Live stream · $0 · comp', zh: 'VIP + 直播 · $0 · 招待' },
     'event-detail.comp.row2': { en: 'General Admission · $0 · comp', zh: '一般入場 · $0 · 招待' },
@@ -10153,7 +10177,7 @@
     'event-detail.fin.where.body': { en: 'Only settled revenue counts toward Available and the project distributable profit. Accrued does not. Costs and revenue flow to Earnings and Project Net Income; this page does not recompute.', zh: '只有已結算營收會計入可用餘額與項目可分配淨利。待結算不計入。成本與營收流向收益與企劃淨收入；此頁不重新計算。' },
     'event-detail.fin.link.earnings': { en: 'Open Earnings', zh: '開啟收益' },
     'event-detail.fin.link.netincome': { en: 'Project net income', zh: '企劃淨收入' },
-    'event-detail.fin.note': { en: '<strong>Settlement state machine:</strong> accrued → settled → (cancelled / disputed) per §7.2. A cancelled settlement means every ticket in it was voided; any refund to the buyer happens off-platform (§7.3 absorption order); v1 void scope is in §8.6.', zh: '<strong>結算狀態機：</strong>accrued → settled →（cancelled / disputed），依 §7.2。已取消代表其中的票券已全數撤銷；買家實際退款由創作者於平台外處理（§7.3 吸收順序）；v1 撤銷範圍見 §8.6。' },
+    'event-detail.fin.note': { en: '<strong>Settlement state machine:</strong> accrued → settled → (cancelled / disputed) per §7.2. A cancelled settlement means every ticket in it was voided; Admin refunds the buyer in Stripe (§7.3 absorption order); v1 void scope is in §8.6.', zh: '<strong>結算狀態機：</strong>accrued → settled →（cancelled / disputed），依 §7.2。已取消代表其中的票券已全數撤銷；買家的退款由 Admin 在 Stripe 處理（§7.3 吸收順序）；v1 撤銷範圍見 §8.6。' },
     /* 墓碑 2026-08-17：本檔曾有第二個同名 key（'Stops' / 「多站管理」），
        定義在後面所以永遠蓋掉前面那個。原「系列」分頁退場、清單改成總覽的一節之後，
        節名統一為「系列場次」——它列的就是這個系列的每一場。 */

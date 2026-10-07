@@ -452,6 +452,13 @@
       /* 活動語言（D328）：活動現場用的語言，可複選；值＝語言碼（yue／cmn／en／ja／ko／th／vi），顯示字串走 ce.evlang.*。
          bookyay 帶入的多值、鎖定。其他示範活動沒寫＝未填。 */
       languages: ['cmn', 'en'],
+      /* 條款與細則（2026-10-07 D362；5.1.6.1／5.1.6.2 F2）：{ marketing: { on, text }, tnc: { on, text } }，沒寫＝兩個都關（D340）。
+         bookyay 帶入的活動：tnc 照 bookyay「顯示條款及細則」帶入（只留文字與換行）、鎖定；marketing 不帶入（D362 決定三）。
+         khh-countdown-draft 沒寫＝bookyay 沒勾，條款及細則帶入為關、同樣鎖定。 */
+      terms: {
+        marketing: { on: false, text: '' },
+        tnc: { on: true, text: '本票券一經售出，除活動取消或延期外，恕不退換。\n每筆訂單限購 4 張；轉售票券不予入場。\n入場時須出示電子票券 QR Code 與身分證件。\n\n跨年活動為戶外場地，如遇天候因素將依主辦單位公告調整演出內容。' }
+      },
       /* 2026-08-13：這一場備好票種，當「準備中 → 開賣」那條動線的完整示範。
          （2026-08-18 更正：原本這裡還寫著「其餘準備中的活動票種仍為空」——那批已於同日
          補上票種。票種是建立流程的必填，已排程卻沒有票種的活動在產品上生不出來。） */
@@ -854,6 +861,7 @@
       sold: 473,
       revenue: 186850,
       status: 'on-sale',
+      unlisted: true,   // D361 決定五示範：Admin 已手動下架，仍留在售票中分頁、另掛「已下架」徽章
       images: { keyvisual: 'images/projects/nick-lrh.jpg', banner: '', gallery: [] },
       video: false
     },
@@ -1634,6 +1642,21 @@
     try { localStorage.setItem(STAGE_KEY, JSON.stringify(m)); } catch (e) {}
   }
 
+  /* ── 已下架（2026-10-07 · D361 決定五）──────────────────────────────
+     上架／下架是階段以外的另一個維度：已下架的活動留在原本的階段（status 不動），另掛 `unlisted: true`，
+     清單列與詳情頁首各多一顆「已下架」徽章。手動下架只有 Admin 能做（詳情頁代管態），寫進 localStorage
+     `ztor.event-unlisted`（同階段覆寫的做法），`get()`／`list()` 讀出來時套用；mock 也可直接帶 `unlisted: true`。
+     重新上架的入口規格沒有寫（D361 未提），原型不做，見 ASSUMPTIONS UIA-211。 */
+  var UNLIST_KEY = 'ztor.event-unlisted';
+  function unlistMap() {
+    try { return JSON.parse(localStorage.getItem(UNLIST_KEY) || '{}') || {}; }
+    catch (e) { return {}; }
+  }
+  function applyUnlist(ev) {
+    if (ev && unlistMap()[ev.id]) ev.unlisted = true;
+    return ev;
+  }
+
   /* 組合包票券成員的相容讀取（2026-09-21 D296）：一律回 `{ tierIds:[…], qty:n }`。
      舊 `[{ id, qty }]`／`['id']` 視為 tierIds＝各 id、qty＝第一筆的張數；沒有票券成員回空清單。 */
   function bundleTickets(b) {
@@ -1910,9 +1933,12 @@
       var m = stageMap();
       return clone(EVENTS).filter(function (e) { return !isRemoved(e.id); }).map(function (e) {
         if (m[e.id]) e.status = m[e.id];
-        return applyRm(applyFx(e));
+        return applyUnlist(applyRm(applyFx(e)));
       });
     },
+    /* bookyay 匯入、尚未首次儲存的活動（D361 決定六）不在這份清單裡：它們只住在 js/sidebar.js 的
+       window.ztorCreator.bookyayEvents（Admin 創作者活動管理的「待設定」），創作者端清單與計數都讀這裡，
+       所以看不到也不計數；第一次儲存後才以草稿出現（示範：khh-countdown-draft）。 */
     /* id 有帶但查不到 → 回 null，由呼叫端顯示「找不到活動」。
        2026-07-30 修正：原本一律退回首筆，等於把「別人的活動」當成使用者點的那一場
        靜默顯示出來——在編輯頁與 scanner 上尤其危險（會改到／掃到錯的場次）。
@@ -1928,7 +1954,14 @@
       if (!ev) return null;                  // 有 id 但查不到＝查詢失敗
       if (isRemoved(ev.id)) return null;     // 這一趟刪掉的草稿活動（D331）＝查不到
       if (m[ev.id]) ev.status = m[ev.id];    // 本機改過階段的活動以覆寫值為準
-      return applyRm(applyFx(ev));           // 本機存過的逐幣別覆寫（D306）一併合併；刪掉的組合包濾掉（D331）
+      return applyUnlist(applyRm(applyFx(ev)));   // 本機存過的逐幣別覆寫（D306）一併合併；刪掉的組合包濾掉（D331）；已下架（D361）
+    },
+    /* Admin 手動下架（D361 決定五）：只寫下架記號，不改階段 */
+    setUnlisted: function (id, on) {
+      if (!id) return;
+      var u = unlistMap();
+      if (on) u[id] = true; else delete u[id];
+      try { localStorage.setItem(UNLIST_KEY, JSON.stringify(u)); } catch (e) {}
     },
     /* 階段轉換（原型層級）：寫進 localStorage，下一次 get() 就是新階段。
        允許哪些轉換由呼叫端（event-detail.html）依 §7.2 狀態機判斷，本檔只負責存。 */
@@ -1936,10 +1969,21 @@
     resetStage: function (id) { if (id) writeStage(id, null); },
     /* 交易明細：有金流的階段才有（售票中／進行中／已結束／已取消）。
        已取消也要有——取消的活動照樣要對帳「賣過多少、退了多少」。 */
+    /* D361（2026-10-07）：售票中從「任一張門票或票務商品開始能買」起算，已排程＝已發布、還沒有任何東西能買，
+       所以已排程沒有成交、這裡不給交易，與上面的階段清單一致。預售示範 nick-symphonic-taipei 的早鳥時間
+       （組合包 10/08、二樓票 10/10）晚於示範當天，仍是已排程；示範日期過了之後要改成售票中，見 ASSUMPTIONS UIA-210。
+       已報到（checkedIn）：進行中與已結束的已付款交易依到場比例決定性標記，供「已報到不能撤銷」（D361 決定四）。
+       比例與名單同一套口徑（進行中＝arrivedAtOpen ÷ sold、已結束＝0.91），非真實核銷資料。 */
     transactions: function (id) {
       var ev = window.ztorEvents.get(id);
       if (!ev || ['on-sale', 'live', 'ended', 'cancelled'].indexOf(ev.status) < 0) return [];
-      return buildTx(ev);
+      var out = buildTx(ev);
+      var rate = ev.status === 'ended' ? 0.91
+        : (ev.status === 'live' && ev.sold ? Math.min(1, (ev.arrivedAtOpen || 0) / ev.sold) : 0);
+      if (rate > 0) out.forEach(function (t, i) {
+        if (t.status === 'paid' && ((i * 37) % 100) < rate * 100) t.checkedIn = true;
+      });
+      return out;
     },
     /* 最終報到統計（2026-08-13）：現場報到台只在進行中出現，活動結束後那張報到快照卡
        仍要回答「這場最後到了多少人」——結束後還顯示「開演當天才開放」是錯的。
@@ -1983,15 +2027,16 @@
        txAll（event-detail.html 的交易明細）是頁面自己 fetch 一次後留在記憶體的陣列，
        這裡直接改傳入的 tx 物件（同 orders 模組 voidItem 對 order 物件的做法），
        不寫回 localStorage——原型沒有後端，重新整理即回到 demo 初始值。
-       只有兩種狀態：'ok'（可作廢）／'voided'（已作廢，終態、不可逆）；
-       不像 orders 另有 'redeemed' 終態——demo 的交易明細與到場名單是兩份獨立
-       mock 資料，沒有「這張票是否已核銷」的欄位可查，此為呈現層簡化，見 ASSUMPTIONS。 */
+       三種狀態：'ok'（可作廢）／'voided'（已作廢，終態、不可逆）／'redeemed'（已報到，終態、不可作廢）。
+       2026-10-07（D361 決定四）：已報到（已使用）的票比照電子商店「已完成為終態」（D253 決定四）不能撤銷；
+       已結束活動中未報到的票仍可撤銷。已報到的來源是 transactions() 依到場比例標的 checkedIn（見上方說明）。 */
     ticketVoidState: function (tx) {
       if (!tx) return 'ok';
-      return tx.status === 'voided' ? 'voided' : 'ok';
+      if (tx.status === 'voided') return 'voided';
+      return tx.checkedIn ? 'redeemed' : 'ok';
     },
     voidTicket: function (tx, actor) {
-      if (!tx || tx.status === 'voided') return false;
+      if (!tx || tx.status === 'voided' || tx.checkedIn) return false;
       tx.status = 'voided';
       var d = new Date();
       tx.voidedAt = d.toISOString().slice(0, 16).replace('T', ' ');

@@ -139,7 +139,7 @@
   ];
   /* 2026-09-02（D233 建、D238 收成兩值）：這四欄就是創作者活動管理頁表格要的全部——
      規格 5.1.0.6 F3 只要求「每一筆至少呈現活動名稱、日期與場地」，狀態不是資料欄位
-     而是**算出來的**：在完成清單裡＝已完成，不在＝待設定套組。自動匯入之後只剩這兩值
+     而是**算出來的**：在完成清單裡＝已完成，不在＝待設定（D361 改名）。自動匯入之後只剩這兩值
      （「可匯入」隨 D238 退場）。所以本池不需要 status 欄，也就不會有「資料裡的 status
      與算出來的狀態各說各話」這種第二真相。
      兩份假資料**仍未合併**（見 ASSUMPTIONS UIA-EI-04）：create-event.html 的 BKY 是正本
@@ -451,7 +451,7 @@
      比照平台優惠設定進本清單（devtools.js 同名清單同步）。 */
   const FULL_ROUTES = new Set([
     "index.html", "dashboard-classic.html", "admin-platform-promotions.html", "admin-platform-loyalty.html", "projects.html", "project-detail.html", "create-project.html",
-    "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
+    "create-campaign.html", "funding-simulate.html", "edit-event.html",   /* 2026-10-07 release2.4：活動三頁移出（S72），與 devtools.js 同步 */
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "media-vault.html",
     "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "fan-analytics.html", "audience-report.html", "my-ip.html", "ip-detail.html",
     "manage-ip.html",

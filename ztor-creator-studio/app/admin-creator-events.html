@@ -33,8 +33,8 @@
      `ds-components/selection-card.css` ＋ `ds-components/stat-row.css`（卡上的小標籤
      數字＝`--inline` 變體）提供；這裡只放這一頁獨有的一件小事：活動表格的欄寬與換行鎖定。 */
 
-  /* 狀態與動作兩欄不鎖寬、只禁止換行：它們的字會隨語言變長（「待設定套組」vs
-     「Setup pending」），寫死一個值就得遷就最長的那個語言，中文版整欄空一半。 */
+  /* 狀態與動作兩欄不鎖寬、只禁止換行：它們的字會隨語言變長（「待設定」vs
+     「To set up」、「繼續設定」vs「Continue set-up」），寫死一個值就得遷就最長的那個語言，中文版整欄空一半。 */
   .ace-status, .ace-act { white-space: nowrap; }
   /* 日期是唯一會被拿來上下比對的欄，等寬數字才對得齊 */
   .ace-date { font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -58,7 +58,7 @@
       <div class="page-intro">
         <div>
           <h1 class="page-intro__title" data-i18n="admin.creator-events">Creator event management</h1>
-          <p class="page-intro__sub" data-i18n="ace.lede">Every creator on the platform and their bookyay events. Once a bookyay account is linked, that creator's events come across on their own and keep syncing — this is where you see what arrived and which of it still needs bundle set-up.</p>
+          <p class="page-intro__sub" data-i18n="ace.lede">Every creator on the platform and their bookyay events. Once a bookyay account is linked, that creator's events come across on their own and keep syncing — this is where you see what arrived and which of it still needs tickets and ticket bundles set up.</p>
         </div>
       </div>
 
@@ -159,11 +159,11 @@
               <div class="empty-card">
                 <div class="empty-card__icon"><i data-lucide="link" class="ztor-icon"></i></div>
                 <h2 class="empty-card__title" data-i18n="ace.unlinked.title">No bookyay account linked</h2>
-                <p class="empty-card__text" data-i18n="ace.unlinked.text">This creator has no bookyay account linked yet. Once it is, their bookyay events come across on their own and keep syncing — nothing has to be moved by hand.</p>
-                <!-- 綁定流程本身〔產品待確認〕（D233 未定第 4 項）：這裡只給入口與一句
-                     說明，按鈕停用、不接任何假流程。 -->
+                <p class="empty-card__text" data-i18n="ace.unlinked.text">This creator has no bookyay account linked yet. Once Admin links it, their bookyay events are imported automatically and keep syncing.</p>
+                <!-- D361 決定八（2026-10-07）：綁定由 Admin 執行、綁定後自動匯入（D217 原規劃）。綁定畫面本身
+                     規格還沒畫，這裡只給入口與一句說明，按鈕停用、不接任何假流程。 -->
                 <button class="btn btn--outline" type="button" disabled data-i18n="ace.unlinked.cta">Link bookyay account</button>
-                <p class="empty-card__text" data-i18n="ace.unlinked.todo">Where the linking happens and who does it is still being decided, so this button does nothing yet.</p>
+                <p class="empty-card__text" data-i18n="ace.unlinked.todo">The linking screen isn’t built yet, so this button does nothing for now.</p>
               </div>
             </div>
 
@@ -178,7 +178,7 @@
 
             <!-- F3／F4 · 這位 creator 從 bookyay 自動搬進來的活動，唯讀清單。
                  D238 起沒有勾選欄、沒有匯入鈕：自動匯入之後這張表回答的是「搬進來了什麼、
-                 哪幾場還沒設完」，唯一動作是待設定套組那幾列的「繼續設定」。 -->
+                 哪幾場還沒設完」，唯一動作是「待設定」那幾列的「繼續設定」。 -->
             <div class="admin-table-wrap admin-table-wrap--fluid" id="ace-table-wrap" hidden>
               <table class="ztor-table">
                 <thead>
@@ -193,6 +193,9 @@
                 <tbody id="ace-rows"></tbody>
               </table>
             </div>
+            <!-- D361 決定六（2026-10-07）：繼續設定之後，第一次儲存前創作者端看不到這場（不顯示、不計數），
+                 儲存後才以草稿出現。跟著表格一起顯示（renderDetail 同步 hidden）。 -->
+            <div class="text-sub" id="ace-firstsave" hidden data-i18n="ace.firstsave">Creators can’t see an imported event until its first save — it then shows up in their Drafts.</div>
           </div>
 
         </div>
@@ -222,7 +225,7 @@
    **D238（2026-09-02 使用者裁示「綁定以後，會自動匯入，實時檢查更新」）**：綁定 bookyay
    帳號之後活動自動搬進來，系統持續檢查更新。連帶三件事——
      · 「可匯入」整個概念退場（自動搬完就不存在「還沒搬進來」的活動），篩選收成三個、
-       活動狀態收成兩值（待設定套組／已完成）
+       活動狀態收成兩值（待設定／已完成；D361 改名）
      · 表格變唯讀：沒有勾選欄、沒有「匯入已選」主鈕，唯一動作是「繼續設定」
      · 標題列改放「最後檢查時間 ＋ 重新檢查」——自動的東西要看得見它上一次動過
 
@@ -415,6 +418,8 @@
     unlinkedEl.hidden = linked;
     noEventsEl.hidden = !linked || hasPool;
     tableWrap.hidden  = !linked || !hasPool;
+    var firstSave = document.getElementById('ace-firstsave');
+    if (firstSave) firstSave.hidden = tableWrap.hidden || s.pending === 0;   /* 只有還有待設定的場次時才需要這句 */
     /* 「最後檢查 ＋ 重新檢查」跟著**綁定狀態**走，不跟著表格走：已綁定但目前一場都沒有，
        正是最想按一下重新檢查的時候。未綁定則整組收起來——沒綁帳號就沒有「檢查」這回事。 */
     syncEl.hidden = !linked;
@@ -423,7 +428,7 @@
     renderSync();
   }
 
-  /* 狀態只剩兩值（D238）：在完成清單裡＝已完成，不在＝待設定套組。
+  /* 狀態只剩兩值（D238）：在完成清單裡＝已完成，不在＝待設定（D361：說明「還沒設定門票與票務商品」掛在徽章 title）。
      自動匯入之後池裡每一場都已經搬進來了，「可匯入」那一值沒有對象。 */
   function statusOf(id, s) { return s.doneIds.indexOf(id) === -1 ? 'pending' : 'done'; }
 
@@ -432,14 +437,15 @@
       var e = ev(id); if (!e) return '';
       var st    = statusOf(id, s);
       var badge = st === 'pending' ? 'badge--warning' : 'badge--success';
-      var label = st === 'pending' ? tx('ace.status.pending', 'Setup pending')
+      var label = st === 'pending' ? tx('ace.status.pending', 'To set up')
                                    : tx('ace.status.done', 'Completed');
+      var why   = st === 'pending' ? ' title="' + esc(tx('ace.status.pending.why', 'Tickets and ticket bundles aren’t set up yet')) + '"' : '';
       return '<tr>'
         + '<td class="ace-name">' + esc(e.name) + '</td>'
         + '<td class="ace-date">' + esc(e.date) + '</td>'
         + '<td>' + esc(e.venue) + '</td>'
-        + '<td class="ace-status"><span class="badge ' + badge + '">' + esc(label) + '</span></td>'
-        /* F4 繼續設定：只有「已匯入·待設定套組」才有這條出口；已完成的不再提供
+        + '<td class="ace-status"><span class="badge ' + badge + '"' + why + '>' + esc(label) + '</span></td>'
+        /* F4 繼續設定：只有「已匯入·待設定」才有這條出口；已完成的不再提供
            （帶入閘門那一側同樣擋住重複帶入）。走 create-event 既有的 ?import= 深連結，
            那一頁會依資料決定類型、直接落在票務商品那一步。 */
         + '<td class="ace-act">' + (st === 'pending'

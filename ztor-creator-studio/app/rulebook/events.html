@@ -132,6 +132,10 @@ td.num{font-variant-numeric:tabular-nums}
 ul.plain ul.plain{margin:4px 0 4px}
 table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
 table.map{min-width:720px}
+table.stage{min-width:820px}
+table.stage td:nth-child(1){width:11%;white-space:nowrap}
+table.stage td:nth-child(2){width:19%}
+table.stage td:nth-child(4){width:16%}
 table.map td:nth-child(1){width:20%}
 table.map td:nth-child(2){width:22%}
 .sim label{font-size:13px;color:var(--text-2)}
@@ -169,73 +173,75 @@ table.map td:nth-child(2){width:22%}
 </div>
 
 <h2 id="overview"><span class="n">1</span>活動的階段</h2>
-<p>一場活動從草稿走到結束是單向的；發布前可以刪除，發布後只能取消。</p>
-
-<h3>六個階段</h3>
-<p>活動階段讓創作者知道每場活動走到哪一步，一場活動同時只落在一個階段。</p>
+<p>一場活動從草稿單向走到結束，同時只落在一個階段；每個階段下創作者與 Admin 能做的事不同。</p>
 <div class="flow">
   <span class="tag wait">草稿</span><span class="arr">→</span><span class="tag">已排程</span><span class="arr">→</span><span class="tag ok">售票中</span><span class="arr">→</span><span class="tag pink">進行中</span><span class="arr">→</span><span class="tag off">已結束</span>
-  <span class="flow__alt">發布後被取消 → <span class="tag warn">已取消</span></span>
+  <span class="flow__alt">已排程或售票中被取消 → <span class="tag warn">已取消</span></span>
 </div>
-<div class="tablewrap"><table>
-  <thead><tr><th style="width:22%">階段</th><th>意思</th></tr></thead>
+
+<h3>各階段誰能做什麼</h3>
+<p>Admin 能做創作者能做的一切（代管），表中「Admin 額外能做」只寫創作者做不到的事。</p>
+<div class="tablewrap"><table class="stage">
+  <thead><tr><th>階段</th><th>什麼時候進入</th><th>創作者能做</th><th>Admin 額外能做</th><th>連動</th></tr></thead>
   <tbody>
-    <tr><td><span class="tag wait">草稿</span><div class="k">Draft</div></td><td>還沒發布、先存起來的活動，還沒設日期的也在這裡<br>草稿沒有詳情頁，編輯時回到建立活動流程</td></tr>
-    <tr><td><span class="tag">已排程</span><div class="k">Scheduled</div></td><td>已上架，售票期間還沒開始</td></tr>
-    <tr><td><span class="tag ok">售票中</span><div class="k">On Sale</div></td><td>在售票期間內，活動還沒開始<br>顯示或隱藏的活動都可能在售票中</td></tr>
-    <tr><td><span class="tag pink">進行中</span><div class="k">Live</div></td><td>活動正在發生，例如開演當天</td></tr>
-    <tr><td><span class="tag off">已結束</span><div class="k">Past</div></td><td>活動已落幕</td></tr>
-    <tr><td><span class="tag warn">已取消</span><div class="k">Cancelled</div></td><td>活動被取消，不會再發生<br>跟已結束分開，因為取消要撤銷票券並對外說明</td></tr>
+    <tr><td><span class="tag wait">草稿</span><div class="k">Draft</div></td><td>建立活動時存起來、還沒發布<br>還沒設日期的活動也在這裡</td><td>在建立活動流程裡編輯<br>發布<br>刪除（要確認）<br>草稿沒有詳情頁</td><td>—</td><td>票務商品也是草稿<br>刪除草稿時，含這場活動門票的組合包一起刪除</td></tr>
+    <tr><td><span class="tag">已排程</span><div class="k">Scheduled</div></td><td>發布後，還沒有任何門票或票務商品能買</td><td>在活動詳情編輯活動，發布設定也能改<br>發布並開賣（提前開賣）<br>取消活動</td><td>—</td><td>票務商品的上架與開賣預設跟隨活動，也可以另設</td></tr>
+    <tr><td><span class="tag ok">售票中</span><div class="k">On sale</div></td><td>任一張門票或任一組票務商品開始能買<br>包括早於正式開賣的早鳥</td><td>編輯活動，發布設定轉唯讀<br>改場地或時間，儲存前要確認，並通知持票人<br>看交易明細與名單<br>取消活動</td><td>撤銷票券</td><td>—</td></tr>
+    <tr><td><span class="tag pink">進行中</span><div class="k">Live</div></td><td>活動開始</td><td>編輯活動，改場地或時間同樣要確認並通知<br>開現場報到台<br>不能取消</td><td>撤銷未報到的票券</td><td>—</td></tr>
+    <tr><td><span class="tag off">已結束</span><div class="k">Ended</div></td><td>活動落幕</td><td>整頁唯讀<br>看結案與最終報到統計<br>再辦一場</td><td>撤銷未報到的票券</td><td>活動結束時，含這場活動門票的上架中組合包自動下架，並通知創作者</td></tr>
+    <tr><td><span class="tag warn">已取消</span><div class="k">Cancelled</div></td><td>已排程或售票中的活動被取消</td><td>整頁唯讀<br>看交易明細、撤銷紀錄與收支<br>再辦一場</td><td>逐張或整場撤銷仍有效的票券</td><td>取消當下，持票人收到取消通知<br>含這場活動門票的上架中組合包一起下架</td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
   <li>一場活動取已經走到最遠的那一個階段，例如活動當天現場仍在售票，算進行中</li>
-  <li>已排程與售票中只看活動的售票期間，見<a href="#timing">販售時間的三層</a></li>
-  <li>單張門票的限時間或票務商品另設的開賣早於活動開賣（預售）時，活動仍是已排程</li>
+  <li>上架是階段以外的另一回事：
+    <ul class="plain">
+      <li>已發布、等待定時上架的活動算已排程</li>
+      <li>已下架的活動留在原本的階段，另加「已下架」徽章</li>
+      <li>只有 Admin 能下架活動；下架時，含這場活動門票的上架中組合包一起下架</li>
+      <li>創作者要停止販售，用取消活動</li>
+      <li>bookyay 端刪除或隱藏活動時，ztor 端的活動轉為下架、資料保留</li>
+    </ul>
+  </li>
+  <li>售完（Sold Out）不是活動階段：售完是門票或票務商品的狀態，活動仍照時間落在售票中</li>
+  <li>從 bookyay 匯入的活動，在 Admin 第一次儲存前，創作者看不到也不計數；第一次儲存後成為草稿，之後照一般草稿走，見<a href="admin-events.html">活動匯入管理</a></li>
 </ul>
 
-<h3>刪除草稿與取消活動</h3>
+<h3>撤銷票券</h3>
+<p>平台不提供退款動作，票券的取消一律用撤銷。</p>
+<ul class="plain">
+  <li>撤銷由 Admin（平台營運）在 Creator Studio 逐張或整場執行，比照電子商店的撤銷品項</li>
+  <li>需要退款時，Admin 先在平台外（Stripe 後台）退款，再撤銷票券</li>
+  <li>創作者看得到撤銷入口與撤銷紀錄，但不能操作</li>
+  <li>已報到的票不能撤銷；其餘的票都能撤銷，包括已結束活動裡沒報到的票</li>
+  <li>撤銷後，那張票的 QR 立刻失效</li>
+  <li>取消活動不會自動撤銷票券</li>
+</ul>
+
+<h3>刪除草稿</h3>
 <p>草稿可以刪除；發布過的活動不能刪除，只能取消。</p>
 <ul class="plain">
-  <li>刪除草稿前一定要確認</li>
   <li>刪除草稿系列的母列，整個系列連同底下的場次一起刪除</li>
   <li>草稿系列的子場也可以單獨刪除，同樣要確認</li>
-  <li>草稿活動被刪除時，含這場活動門票的組合包一起刪除：
+  <li>草稿活動被刪除時，一起刪除的組合包有兩種：
     <ul class="plain">
       <li>bookyay 套票自動建立的組合包（這類組合包本身沒有刪除入口，見<a href="event-bookyay.html#bookyay">從 bookyay 帶入活動</a>）</li>
       <li>創作者自己建立、成員含這場活動門票的草稿組合包</li>
     </ul>
   </li>
   <li>刪除確認時列出哪些組合包會一起刪除</li>
-  <li>任何頁面都不提供已發布活動的刪除入口</li>
   <li>活動沒有封存，發布後的終點是已結束或已取消</li>
-  <li>取消活動時，平台不提供退款動作</li>
-  <li>仍有效的票券由 Admin（平台營運）逐張或整場撤銷，撤銷後那張票的 QR 立刻失效</li>
-  <li>需要退款時，創作者先在平台外（Stripe 後台）退款，再撤銷票券</li>
-  <li>取消後，持票人會收到取消通知</li>
 </ul>
 
 <h3>票務商品跟著活動</h3>
-<p>建立活動會產生活動與它的門票；門票相當於一種商品，可以被包進組合包，含門票的組合包就是票務商品，規則在<a href="bundles.html">組合包與票務商品</a>。</p>
+<p>門票相當於一種商品，可以被包進組合包，含門票的組合包就是票務商品，規則在<a href="bundles.html">組合包與票務商品</a>。</p>
 <ul class="plain">
-  <li>活動還沒發布時，票務商品也是草稿</li>
-  <li>活動發布後，票務商品的上架與開賣預設跟隨活動，也可以另設</li>
   <li>票務商品另設的時間要在活動的上架區間內，可以早於活動開賣，見<a href="bundles.html#timing">組合包與票務商品的上架與開賣</a></li>
   <li>票務商品自己的三個開關不回寫活動：關掉組合包，不影響活動本身與單張門票的販售</li>
-  <li>活動被取消或下架時，含這場活動門票的「上架中」組合包一起下架</li>
   <li>取消活動的確認內容，列出會一起下架的組合包名稱</li>
-  <li>活動結束時，含這場活動門票的「上架中」組合包自動下架，並通知創作者</li>
-  <li>這種連動下架不算<a href="event-create.html#sellable">可賣條件與發布檢核</a>要擋下的動作</li>
+  <li>活動取消、下架或結束造成的連動下架，不算<a href="event-create.html#sellable">可賣條件與發布檢核</a>要擋下的動作</li>
 </ul>
-
-<h3>誰做什麼</h3>
-<p>角色只有創作者與 Admin；Admin 能做創作者能做的一切，另外還有只有 Admin 能做的事。</p>
-<div class="grid">
-  <div class="card ok"><div class="band"></div><h3>創作者</h3><ul class="plain"><li>建立、編輯、發布與取消活動</li><li>管理票種、門票與組合包</li><li>看交易、名單與報到</li><li>填譯文、調整各幣別價格</li></ul></div>
-  <div class="card wait"><div class="band"></div><h3>Admin（平台營運）</h3><ul class="plain"><li>創作者能做的一切（代管）</li><li>在<a href="event-detail.html">活動詳情</a>逐張或整場撤銷活動票券，創作者看得到撤銷紀錄但不能操作</li><li>在<a href="admin-events.html">活動匯入管理</a>監看 bookyay 自動匯入的活動</li><li>替「待設定套組」的活動繼續設定</li><li>bookyay 帳號綁定後，活動自動匯入，並持續檢查更新</li></ul></div>
-</div>
-<p class="k">bookyay 端刪除或隱藏活動時，ztor 端的活動轉為下架、資料保留；這是外部平台觸發的變動，不是創作者或 Admin 的操作。</p>
-<p class="note">依據：5.1.6 F1、F3、F5；5.1.6.3 §2.1；5.1.0.6 F6；主規格 §4.1、§7.14「封存與刪除」「下架確認與組合包連動」；D189、D253、D281、D282、D283、D292、D293、D294、D331、D340、D342、D352。</p>
+<p class="note">依據：5.1.6 F1、F3、F5；5.1.6.1 F12b；5.1.6.2 §2、F12、F14；5.1.6.3 §2.1、§2.9.2、頁面狀態；5.1.0.6 F3、F4；主規格 §4.1 第 5 項、§7.2、§7.14「活動販售的時間層級」「封存與刪除」「活動取消或下架時連動組合包」；D188、D253、D282、D283、D292、D293、D294、D331、D340、D352、D361。</p>
 
 <h2 id="timing"><span class="n">2</span>販售時間的三層</h2>
 <p>活動的販售時間分三層，大的包住小的：活動的上架區間最大，售票期間在上架區間裡面；單張門票的限時間與票務商品自己的時間，只要落在上架區間內。</p>
@@ -254,7 +260,7 @@ table.map td:nth-child(2){width:22%}
   <thead><tr><th style="width:20%">層</th><th>是什麼</th><th style="width:24%">在哪設</th></tr></thead>
   <tbody>
     <tr><td><span class="tag ok">第一層</span><br>上架區間<div class="k">Listing period</div></td><td>活動的上架日期與時間到下架日期與時間，範圍最大<br>下面所有時間都要落在裡面，超出就擋下這次儲存並就地提示<br>選「立刻上架」時，起點是發布當下<br>不填下架日期與時間＝不自動下架</td><td>建立活動第 7 步「上架設定」</td></tr>
-    <tr><td><span class="tag wait">第二層</span><br>售票期間<div class="k">Sales period</div></td><td>活動的開賣日期與時間到停售日期與時間，要在上架區間內<br>不填開賣＝上架即開賣<br>不填停售＝賣到活動開始<br>單張門票與票務商品預設用這段時間販售<br>活動的「已排程／售票中」只看這一層</td><td>第 7 步「開賣設定」</td></tr>
+    <tr><td><span class="tag wait">第二層</span><br>售票期間<div class="k">Sales period</div></td><td>活動的開賣日期與時間到停售日期與時間，要在上架區間內<br>不填開賣＝上架即開賣<br>不填停售＝賣到活動開始<br>單張門票與票務商品預設用這段時間販售<br>又稱正式售票</td><td>第 7 步「開賣設定」</td></tr>
     <tr><td><span class="tag pink">第三層</span><br>限時間<div class="k">Time window</div></td><td>單張門票購買條件裡的限時間<br>要在上架區間內，可以不在售票期間內，例如早於開賣的預售</td><td>第 5 步門票的購買條件（活動層預設，可逐張改寫）</td></tr>
     <tr><td><span class="tag warn">票務商品</span><br>上架與開賣</td><td>上架、下架、開賣、停售四個時間預設跟隨活動，也可以另設<br>另設的時間要在上架區間內，可以早於活動開賣</td><td>組合包的上架與開賣設定，見<a href="bundles.html#timing">組合包與票務商品</a></td></tr>
   </tbody>
@@ -270,10 +276,18 @@ table.map td:nth-child(2){width:22%}
   <li>按發布時，仍超出上架區間的時間設定一併列出並擋下，見<a href="event-create.html#sellable">可賣條件與發布檢核</a></li>
 </ul>
 
-<h3>預售</h3>
-<p>要做預售，活動必須明填一個晚於上架的開賣日期與時間。</p>
+<h3>早鳥與預售</h3>
+<p>早於正式開賣就能買的時間叫其他售票時間，也就是預售；預售一開始，活動就進入售票中。</p>
 <ul class="plain">
-  <li>預售＝單張門票的限時間或票務商品的開賣早於活動開賣</li>
+  <li>其他售票時間有兩種：
+    <ul class="plain">
+      <li>單張門票的限時間早於正式開賣，就是早鳥的一種</li>
+      <li>票務商品另設的開賣早於正式開賣</li>
+    </ul>
+  </li>
+  <li>每張門票可以各自設不同的早鳥時間</li>
+  <li>預售屬於售票中，所以已排程的活動不會有成交</li>
+  <li>要做早鳥或預售，活動必須明填一個晚於上架的開賣日期與時間</li>
   <li>活動的開賣日期與時間留空＝上架即開賣，售票期間從上架那一刻開始，沒有早於開賣的空間</li>
 </ul>
 
@@ -283,14 +297,15 @@ table.map td:nth-child(2){width:22%}
   <thead><tr><th style="width:24%">詞</th><th>指什麼</th></tr></thead>
   <tbody>
     <tr><td>上架區間</td><td>第一層：活動的上架到下架</td></tr>
-    <tr><td>售票期間</td><td>第二層，只指活動層的開賣到停售<br>票種沒有自己的售票時間，單張門票的時間一律叫限時間</td></tr>
+    <tr><td>售票期間<br>正式售票</td><td>第二層，只指活動層的開賣到停售<br>票種沒有自己的售票時間，單張門票的時間一律叫限時間</td></tr>
     <tr><td>限時間</td><td>第三層：單張門票購買條件裡的時間（建立活動畫面寫作「限時間窗」，是同一個欄位）<br>票務商品的購買條件也有一個限時間</td></tr>
+    <tr><td>其他售票時間</td><td>早於正式開賣就能買的時間，包括早於開賣的門票限時間（早鳥）與早於開賣的票務商品另設開賣<br>建立活動第 7 步「開賣設定」下方唯讀列出</td></tr>
     <tr><td>開賣日期與時間<br>停售日期與時間</td><td>售票期間的兩端<br>票務商品也有自己的一組，預設跟隨活動</td></tr>
     <tr><td>可購買時間</td><td>一張門票或一組票務商品實際買得到的時間，由「什麼時候買得到」推出來，不另設欄位<br>活動詳情的票種列顯示這個時間</td></tr>
     <tr><td>預告期</td><td>組合包已上架、已顯示、尚未開賣，且開賣日期與時間在未來<br>在可賣條件裡算仍在販售，見<a href="event-create.html#sellable">可賣條件與發布檢核</a></td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：主規格 §7.14「活動販售的時間層級」「使用限制」；5.1.6.1 F12b、F22、F23；D239、D293、D294、D340、D342。</p>
+<p class="note">依據：主規格 §7.14「活動販售的時間層級」「使用限制」；5.1.6.1 F12b、F22、F23；D239、D293、D294、D340、D342、D361。</p>
 
 <h2 id="list"><span class="n">3</span>活動清單</h2>
 <p>活動清單讓創作者掃視所有活動的時間、場地、票券與狀態，並點進單一活動管理。</p>
@@ -306,7 +321,7 @@ table.map td:nth-child(2){width:22%}
     <tr><td>場地</td><td>場地名稱與城市<br>線上活動改標平台</td></tr>
     <tr><td>票券</td><td>已售／總數，附銷售進度條<br>總數＝本活動所有門票的張數合計，含隱藏的門票</td></tr>
     <tr><td>收入</td><td>這場活動的收入，口徑跟收入管理（Earnings）一致，清單不另算</td></tr>
-    <tr><td>狀態</td><td>售票與活動狀態徽章</td></tr>
+    <tr><td>狀態</td><td>活動階段徽章，英文名同上方階段表<br>已下架的活動另加「已下架」徽章</td></tr>
   </tbody>
 </table></div>
 
@@ -315,7 +330,7 @@ table.map td:nth-child(2){width:22%}
   <thead><tr><th style="width:22%">列的狀態</th><th>可用的操作</th></tr></thead>
   <tbody>
     <tr><td><span class="tag wait">草稿</span></td><td>編輯（回到建立活動流程）<br>複製<br>刪除（要確認）</td></tr>
-    <tr><td>發布過的活動</td><td>編輯（開啟活動詳情頁並直接進入編輯模式）<br>複製<br>取消活動（進行中的活動不提供）</td></tr>
+    <tr><td>發布過的活動</td><td>編輯（開啟活動詳情頁並直接進入編輯模式；已結束與已取消不提供）<br>複製<br>取消活動（只有已排程與售票中提供）</td></tr>
   </tbody>
 </table></div>
 
@@ -357,25 +372,27 @@ table.map td:nth-child(2){width:22%}
     <tr><td>有活動但篩選與搜尋沒有命中</td><td>顯示搜尋無結果，並提供清除入口</td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.6 F1、F2、F3、頁面狀態（資料）；D169、D189、D281、D294、D300、D340。</p>
+<p class="note">依據：5.1.6 F1、F2、F3、頁面狀態（資料）；D169、D189、D281、D294、D300、D340、D352、D361。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.6-活動.md</code>、<code>5.1.6.1-建立活動流程.md</code>（v2.37）、<code>5.1.6.2-編輯活動.md</code>（v3.24）、<code>5.1.6.3-活動詳情.md</code>（v33）、<code>5.1.5.9-組合商品細節頁.md</code>、<code>5.1.0.6-創作者活動管理.md</code>、<code>0-設計規格書.md §4.1／§7.10／§7.14／§7.15</code></li>
-    <li>決策：D169、D188、D189、D239、D253、D281、D282、D283、D292、D293、D294、D300、D331、D340、D342、D352</li>
+    <li>規格：<code>5.1.6-活動.md</code>、<code>5.1.6.1-建立活動流程.md</code>（v2.39）、<code>5.1.6.2-編輯活動.md</code>（v3.26）、<code>5.1.6.3-活動詳情.md</code>（v35）、<code>5.1.5.9-組合商品細節頁.md</code>、<code>5.1.0.6-創作者活動管理.md</code>、<code>0-設計規格書.md §4.1／§7.10／§7.14／§7.15</code></li>
+    <li>決策：D169、D188、D189、D239、D253、D281、D282、D283、D292、D293、D294、D300、D331、D340、D342、D352、D361</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>活動選「立刻上架」時，早於發布當下的門票限時間或票務商品另設時間，發布時算不算超出上架區間</li>
     <li>活動之後改了上架、下架、開賣或停售時間，已設限時間的門票或已另設時間的票務商品落到上架區間外時怎麼處理</li>
     <li>已上架、已顯示、未開賣又沒有開賣排程的組合包（例如重新上架後開賣退回未開賣），算不算預告期</li>
-    <li>各階段之間的精確切換時點</li>
+    <li>已結束或已取消的活動能不能下架</li>
+    <li>活動下架後能不能重新上架</li>
+    <li>創作者要請 Admin 撤銷票券或下架活動時，透過什麼管道申請（目前規格沒有畫面）</li>
     <li>搜尋要不要統一繁簡與全形半形、支不支援多個關鍵字</li>
     <li>票務商品相關的其他待確認（場次模式、已售出後能不能改、徽章等）列在<a href="bundles.html">組合包與票務商品</a>頁尾</li>
   </ul>
-  <p class="k">最近同步：2026-10-05（至 D352）</p>
+  <p class="k">最近同步：2026-10-07（至 D361）</p>
 </details>
 </div>
 <script>

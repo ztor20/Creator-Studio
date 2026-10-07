@@ -41,8 +41,10 @@
    狀態
      .rich-body--has-media              至少一個媒體（檢視態收起空白文字塊的「—」）
      .rich-body__block.is-dragging      拖動中的那一塊
-     .rich-body__block.is-locked        bookyay 帶入的第 1 段（文字＋其後的媒體）：工具列與刪除收起、文字不可編輯、媒體不可替換；
-                                        仍可拖動
+     .rich-body__block.is-locked        鎖定的區塊（bookyay 帶入）：工具列與刪除收起、文字不可編輯、媒體不可替換；
+                                        只鎖第 1 段時（lock(true)）仍可拖動
+     .rich-body--locked                 整份鎖定（D362，2026-10-07：bookyay 帶入的活動）：每個區塊都 .is-locked，
+                                        另把排序把手與底部（新增描述＋滿額說明）收起——不能拖動、不能新增、不能插入
      [data-mode="view"] 內              兩段式面板的檢視態：區塊拿掉卡面、文字塊畫成讀數（無框、不可點），工具列與新增鈕收起
    ============================================================ */
 
@@ -133,6 +135,10 @@
 .rich-body__block.is-locked .rich-body__remove { display: none; }
 /* 權重要壓過 .upload-tile.is-filled .upload-tile__actions */
 .rich-body__block.is-locked .upload-tile.is-filled .upload-tile__actions { display: none; }
+/* 整份鎖定（D362）：順序與區塊數量也是 bookyay 的內容——把手與底部整列收起。
+   把手收起後內容欄靠左貼齊卡內距，鎖住的卡因此一眼跟可編輯的卡不同（ASSUMPTIONS UIA-212）。 */
+.rich-body--locked .rich-body__grip,
+.rich-body--locked .rich-body__foot { display: none; }
 
 /* 兩段式面板的檢視態（Q119：檢視就是看、不該長得像能填）：區塊拿掉卡面、文字塊本身就是讀數——
    拿掉框與底、不可點，格式照原樣顯示；把手、刪除、格式與插入鈕是 button，隨 shared.css 收起，工具列與底部整列也收起。
