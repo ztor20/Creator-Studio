@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<html lang="zh-Hant" data-theme="dark" data-page-feat="S72">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kowloon Café 10th Anniv. · Event detail · Ztor Creator Studio</title>
@@ -165,7 +165,7 @@
           <!-- 墓碑 2026-08-17：「取消活動」搬到「設定」分頁最下面（使用者指示）。
                頁首那一排是「常用動作」，取消活動是不可逆、而且很少按的一次性決定，
                放在最順手的位置只會增加誤觸——它該待在設定的末端，跟其他破壞性動作一起。 -->
-          <button class="btn btn--outline" type="button" data-ed-duplicate hidden>
+          <button class="btn btn--outline" type="button" data-ed-duplicate data-feat="S76" hidden>
             <i data-lucide="copy" class="ztor-icon"></i>
             <span data-i18n="event-detail.btn.duplicate">Run it again</span>
           </button>
@@ -180,7 +180,7 @@
           <!-- 預覽與在地化（2026-09-22 · D305／D306，5.1.6.3 §2.13）：與「檢視售票頁」相鄰（規格的呈現參考）——
                再開發布前預覽確認層（mode:'save'），改翻譯與逐幣別價格；主動作「儲存」即生效、不改上架狀態。
                data-view-safe：檢視態也能開（它不是編輯活動欄位的入口，翻譯與幣別價有自己的儲存）。 -->
-          <button class="btn btn--outline" type="button" data-ed-localize data-view-safe data-dock-icon><i data-lucide="globe" class="ztor-icon"></i><span data-i18n="ed.loc.btn">Preview &amp; localization</span></button>
+          <button class="btn btn--outline" type="button" data-ed-localize data-feat="S78" data-view-safe data-dock-icon><i data-lucide="globe" class="ztor-icon"></i><span data-i18n="ed.loc.btn">Preview &amp; localization</span></button>
           <div data-dock-actions></div>
         </div>
       </div>
@@ -194,9 +194,12 @@
           <span class="page-intro__media" id="ed-hero-img" hidden><img src="" alt=""></span>
           <div>
           <div class="flex-row" style="gap:8px;margin-bottom:8px">
-            <span class="badge badge--success"><span data-i18n="event-detail.badge.on-sale">On Sale</span></span>
+            <span class="badge badge--success"><span data-i18n="event-detail.badge.on-sale">On sale</span></span>
             <span class="badge" data-hide-type="watchparty"><span data-i18n="event-detail.badge.series">Series 1/3</span></span>
             <span class="badge badge--info"><span data-i18n="event-detail.badge.type">Concert</span></span>
+            <!-- 已下架（D361 決定五）：上架是階段以外的另一維度，階段徽章不動、另掛這一顆；syncUnlist() 依 ev.unlisted 顯示。
+                 排在最後：前三顆由 hydrate 以位置索引（[0] 階段、[1] 系列、[2] 類型）改寫，插在前面會錯位。 -->
+            <span class="badge badge--neutral" id="ed-unlisted-badge" data-feat="S81" hidden><span data-i18n="events.badge.unlisted">Unlisted</span></span>
           </div>
           <h1 class="page-intro__title" data-i18n="event-detail.h1">Kowloon Café 10th Anniv. — Kowloon After Dark OST listening party</h1>
           <!-- 亮點（2026-09-22 D300 / 5.1.6.3 §2.1）：標題下方一句，有才顯示，由 hydrate() 填 -->
@@ -746,7 +749,7 @@
             </div>
 
             <div class="flex-row mt-16" style="flex-wrap:wrap">
-              <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-duplicate><i data-lucide="copy" class="ztor-icon"></i> <span data-i18n="event-detail.btn.duplicate">Run it again</span></button>
+              <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-duplicate data-feat="S76"><i data-lucide="copy" class="ztor-icon"></i> <span data-i18n="event-detail.btn.duplicate">Run it again</span></button>
               <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-export="attendees"><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="event-detail.att.export">Export attendee list</span></button>
               <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-export="transactions"><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="event-detail.tx.export">Export transactions</span></button>
               <a class="btn btn--ghost btn--sm" href="earnings.html" data-i18n="event-detail.fin.link.earnings">Open Earnings</a>
@@ -807,7 +810,7 @@
             <button type="button" class="tabs__item" data-view-safe data-hide-type="watchparty virtual" data-nav-item="venue" data-i18n="ed.venue.title">Venue</button>
             <button type="button" class="tabs__item" data-view-safe data-nav-item="publish" data-i18n="ed.pub.title">Publish</button>
             <button type="button" class="tabs__item" data-view-safe data-nav-item="link" data-i18n="ed.pub.link">Link & QR</button>
-            <button type="button" class="tabs__item" data-view-safe data-nav-item="localization" data-i18n="ed.loc.title">Localization</button>
+            <button type="button" class="tabs__item" data-view-safe data-nav-item="localization" data-feat="S78" data-i18n="ed.loc.title">Localization</button>
               </nav>
             <!-- 動作群（2026-08-18 使用者指示「這裡要像電子商店的 topbar 一樣的元件」）：
                  `.list-toolbar` 本來就是「左邊切分頁、右邊放這一頁的動作」那組骨架（e-shop
@@ -876,6 +879,49 @@
             <input type="hidden" data-ed="desc">
           </div>
           <!-- 墓碑 2026-10-05（D354）：說明區塊（#ed-info、data-feat="S57"，D334）整組退場，由描述的無標題文字區塊取代。 -->
+
+          <!-- 條款與細則（2026-10-07 D362 決定五；5.1.6.2 F2，定義同 5.1.6.1 F2）：描述之後，跟建立活動同一組——
+               直接促銷同意、條款及細則兩個開關（.control-group＋.switch），開著才露出各自的文字欄。
+               直接促銷同意掛 data-feat="S80"（同建立活動，release2.4 不出現）。
+               bookyay 帶入的活動：條款及細則的開關與文字不分模式一律鎖定（.switch--locked＋文字欄 disabled），
+               開關列標題旁掛 From bookyay（lockTermsFromBky()）；直接促銷同意不帶入、照常可改（D362 決定三）。
+               兩段式面板：開關是 data-view-safe（檢視態留著顯示狀態、shared.css 擋點擊，同跨日開關），
+               檢視態由 applyReadonly() 一起鎖上；觀影派對沒有這一節（同建立活動 data-hide-type）。 -->
+          <div class="field" id="ed-terms" data-hide-type="watchparty">
+            <div class="field__label" data-i18n="ce.terms">Terms and conditions</div>
+            <div class="control-group" data-feat="S80">
+              <div class="control-row">
+                <div>
+                  <div class="control-row__main"><span data-i18n="ce.terms.marketing">Consent to direct marketing</span></div>
+                  <div class="control-row__sub" data-i18n="ce.terms.marketing.hint">Attendee data may be used by the organiser to market to them directly.</div>
+                </div>
+                <button type="button" class="switch" data-ed-term="marketing" role="switch" aria-checked="false" data-view-safe
+                        aria-label="Consent to direct marketing" data-i18n-aria-label="ce.terms.marketing"></button>
+              </div>
+              <div class="control-group__body" hidden>
+                <div class="field">
+                  <label class="field__label" for="ed-terms-marketing" data-i18n="ce.terms.marketing.label">Marketing message</label>
+                  <textarea class="textarea" id="ed-terms-marketing" data-ed="terms-marketing-text" data-i18n-placeholder="ce.terms.marketing.ph" placeholder="What fans will see, e.g. how their info may be used to send updates and offers"></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="control-group">
+              <div class="control-row">
+                <div>
+                  <div class="control-row__main"><span data-i18n="ce.terms.tnc">Terms and conditions</span></div>
+                  <div class="control-row__sub" data-i18n="ce.terms.tnc.hint">Shown at checkout for the fan to accept.</div>
+                </div>
+                <button type="button" class="switch" data-ed-term="tnc" role="switch" aria-checked="false" data-view-safe
+                        aria-label="Terms and conditions" data-i18n-aria-label="ce.terms.tnc"></button>
+              </div>
+              <div class="control-group__body" hidden>
+                <div class="field">
+                  <label class="field__label" for="ed-terms-tnc" data-i18n="ce.terms.tnc.label">Terms text</label>
+                  <textarea class="textarea" id="ed-terms-tnc" data-ed="terms-tnc-text" data-i18n-placeholder="ce.terms.tnc.ph" placeholder="Paste or write the terms fans must accept before checkout"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div class="field">
             <div class="field__label" data-i18n="ce.lineup">Lineup / performers</div>
@@ -1123,7 +1169,7 @@
                設定分頁的一個子集：摘要（翻譯語系、基準幣別、覆寫格數）＋開啟同一個畫面的入口。
                翻譯與幣別價的資料住在 partials/publish-preview.js 的草稿與 events-store 的覆寫（localStorage），
                不走本頁的檢視／編輯模式；儲存即生效、不改上架狀態。 -->
-          <div data-nav-panel="localization">
+          <div data-nav-panel="localization" data-feat="S78">
 <section class="card mt-16" id="ed-loc-card">
           <div class="card__head">
             <h3 class="card__title" data-i18n="ed.loc.title">Localization</h3>
@@ -1148,6 +1194,23 @@
                頁首那一排是「常用動作」，取消活動是不可逆、而且很少按的一次性決定——
                放在最順手的位置只會增加誤觸。改放設定的最末端，並用破壞性樣式與一句
                後果說明把它跟上面的設定隔開。實際的確認彈窗（會退掉幾張票）不變。 -->
+          <!-- ═══ 下架活動（2026-10-07 · D361 決定五）═══
+               上架／下架是階段以外的另一維度：下架後活動留在原本的階段，頁首與清單列另掛「已下架」徽章。
+               手動下架只開放 Admin（代管態才能按）；創作者視角按鈕留著但停用，title 說明需要 Admin，
+               與撤銷票券同一種做法（od.void.why.admin）。創作者要停止販售請用下面的取消活動。
+               出現在已排程／售票中／進行中（已發布、還在架上的階段）；已結束與已取消整頁唯讀（D361 決定三），不給。
+               已下架後整塊換成一句「已下架」，沒有重新上架的入口（規格未定，ASSUMPTIONS UIA-211）。 -->
+          <div data-nav-panel="unlist" id="ed-unlist" data-feat="S81" hidden>
+            <div class="section-head">
+              <h2 class="section-head__title" data-i18n="event-detail.unlist.title">Unlist this event</h2>
+              <div class="section-head__sub" data-i18n="event-detail.unlist.sub">Fans stop seeing it and can’t buy. It stays in its current stage, and tickets already sold stay valid.</div>
+            </div>
+            <section class="card">
+              <button class="btn btn--outline" type="button" data-view-safe data-ed-unlist data-i18n="event-detail.unlist.btn">Unlist event</button>
+              <p class="text-sub" id="ed-unlist-done" hidden data-i18n="event-detail.unlist.done">This event is unlisted.</p>
+            </section>
+          </div>
+
           <div data-nav-panel="danger" id="ed-danger" hidden>
             <div class="section-head">
               <h2 class="section-head__title" data-i18n="event-detail.danger.title">Cancel this event</h2>
@@ -1600,7 +1663,7 @@
           </div>
           <div class="info-banner mt-16">
             <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-            <span data-i18n="event-detail.void.absorb"><strong>Void write-off absorption order (§7.3, financial treatment proposed — pending approval):</strong> Void reserve → current distributable profit → carry-forward deficit (no clawback). Voiding a ticket writes off its revenue and immediately invalidates the ticket QR. Any refund actually owed to the buyer happens off-platform (e.g. Stripe) and is not tracked here. v1 void scope is in §8.6.</span>
+            <span data-i18n="event-detail.void.absorb"><strong>Void write-off absorption order (§7.3, financial treatment proposed — pending approval):</strong> Void reserve → current distributable profit → carry-forward deficit (no clawback). Voiding a ticket writes off its revenue and immediately invalidates the ticket QR. Any refund owed to the buyer is made by Admin in Stripe and is not tracked here. v1 void scope is in §8.6.</span>
           </div>
         </div>
           </div>
@@ -1665,7 +1728,7 @@
 
         <div class="info-banner mt-16">
           <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-          <span data-i18n="event-detail.fin.note"><strong>Settlement state machine:</strong> accrued → settled → (cancelled / disputed) per §7.2. A cancelled settlement means every ticket in it was voided; any refund to the buyer happens off-platform (§7.3 absorption order); v1 void scope is in §8.6.</span>
+          <span data-i18n="event-detail.fin.note"><strong>Settlement state machine:</strong> accrued → settled → (cancelled / disputed) per §7.2. A cancelled settlement means every ticket in it was voided; Admin refunds the buyer in Stripe (§7.3 absorption order); v1 void scope is in §8.6.</span>
         </div>
           </div>
 
@@ -1990,8 +2053,9 @@
       /* 售罄＝賣到門票張數合計（含隱藏）。容量已刪除（ATT-002 → D340），不再是判定基準。 */
       const qsum = (e.tiers || []).reduce((a, t) => a + (Number(t.qty) || 0), 0);
       const soldOut = qsum > 0 && e.sold >= qsum;
-      const badgeKey = soldOut ? 'events.badge.soldout' : (STAGE_KEY[e.status] || 'events.badge.scheduled');
-      const badgeCls = soldOut ? ' badge--success' : stageBadgeCls(e.status);
+      /* D361：售完不是活動階段——階段徽章照常顯示，售完另加一顆 */
+      const badgeKey = STAGE_KEY[e.status] || 'events.badge.scheduled';
+      const badgeCls = stageBadgeCls(e.status);
       const title = me
         ? esc(e.name)
         : '<a class="card__link" href="event-detail.html?id=' + encodeURIComponent(e.id) + '">' + esc(e.name) + '</a>';
@@ -2009,6 +2073,8 @@
         '</div>' +
         '<span class="badge' + badgeCls + '"><span data-i18n="' + badgeKey + '">' +
           esc(T(badgeKey, e.status)) + '</span></span>' +
+        (soldOut ? ' <span class="badge badge--neutral"><span data-i18n="events.badge.soldout">' +
+          esc(T('events.badge.soldout', 'Sold out')) + '</span></span>' : '') +
       '</div>';
     }).join('');
     if (window.ztorIcons) window.ztorIcons.applyIcons(card);
@@ -2562,10 +2628,36 @@
     });
     /* 墓碑 2026-08-17：這裡原本要在「發布並開賣」（草稿）與「現在開賣」（已排程）之間
        切按鈕文案。草稿已不在這一頁的範圍、提前開賣只在已排程出現，文案因此固定。 */
-    /* 結束或取消之後不再提供編輯入口——那些欄位改了也不會發生任何事 */
+    /* 結束或取消之後不再提供編輯入口——那些欄位改了也不會發生任何事。
+       2026-10-07（D361 決定三）：已結束與已取消整頁唯讀，含在地化——頁首與在地化分節的「預覽與在地化」
+       入口一併收起（它有自己的儲存，不受檢視模式管，不收就還能改翻譯與幣別價）。Admin 的撤銷照常可做。 */
+    const readOnly = ['ended', 'cancelled'].indexOf(s) >= 0;
     const edit = $('[data-ed-editmode]');
-    if (edit && ['ended', 'cancelled'].indexOf(s) >= 0) edit.hidden = true;
+    if (edit && readOnly) edit.hidden = true;
+    if (readOnly) document.querySelectorAll('[data-ed-localize]').forEach(b => { b.hidden = true; });
+    syncUnlist();
   }
+
+  /* 下架活動（D361 決定五）：區塊在已排程／售票中／進行中出現；按鈕只有 Admin 代管態能按。
+     已下架時按鈕換成一句說明、頁首掛「已下架」徽章（階段徽章不動）。 */
+  function syncUnlist() {
+    const box = document.getElementById('ed-unlist');
+    const badge = document.getElementById('ed-unlisted-badge');
+    if (badge) badge.hidden = !ev.unlisted;
+    if (!box) return;
+    box.hidden = ['scheduled', 'on-sale', 'live'].indexOf(ev.status) < 0;
+    const btn = box.querySelector('[data-ed-unlist]');
+    const done = document.getElementById('ed-unlist-done');
+    if (btn) {
+      btn.hidden = !!ev.unlisted;
+      const admin = edAdminScope();
+      btn.disabled = !admin;
+      if (admin) { btn.removeAttribute('aria-disabled'); btn.removeAttribute('title'); }
+      else { btn.setAttribute('aria-disabled', 'true'); btn.title = T('od.void.why.admin', 'Requires the Admin role'); }
+    }
+    if (done) done.hidden = !ev.unlisted;
+  }
+  document.addEventListener('ztor:creator-changed', () => syncUnlist());
 
   document.addEventListener('click', e => {
     if (e.target.closest('[data-ed-golive]')) {
@@ -2619,6 +2711,23 @@
         okLabel: T('event-detail.cancel.ok', 'Cancel event'),
         danger: true,
         onOk: () => setStage('cancelled')
+      });
+      return;
+    }
+    const unlistBtn = e.target.closest('[data-ed-unlist]');
+    if (unlistBtn) {
+      if (unlistBtn.disabled || !edAdminScope()) return;   /* 創作者本人視角停用（D361 決定五） */
+      openConfirm({
+        title: T('event-detail.unlist.confirm.title', 'Unlist this event?'),
+        body: '<p>' + T('event-detail.unlist.confirm.body', 'The event page comes down and nothing can be bought. The event stays in its stage and the tickets already sold stay valid. To stop the event for good, cancel it instead.') + '</p>',
+        okLabel: T('event-detail.unlist.confirm.ok', 'Unlist'),
+        danger: true,
+        onOk: () => {
+          window.ztorEvents.setUnlisted(ev.id, true);
+          ev.unlisted = true;
+          syncUnlist();
+          if (window.ztorToast) window.ztorToast.show(T('event-detail.unlist.toast', 'Event unlisted'));
+        }
       });
       return;
     }
@@ -2677,10 +2786,15 @@
     list.slice(0, CAP).forEach(t => {
       const tr = document.createElement('tr');
       tr.className = 'ztor-table__row';
-      const canVoid = window.ztorEvents.ticketVoidState(t) === 'ok';
+      const vstate = window.ztorEvents.ticketVoidState(t);
+      /* 2026-10-07（D361 決定四）：已報到（已使用）的票是終態——撤銷鈕留著但停用，title 說明原因
+         （同 order-detail「已取貨，不可撤銷」的做法）；這個原因優先於角色，Admin 代管態一樣不能按。 */
+      const canVoid = vstate === 'ok' || vstate === 'redeemed';
       /* 2026-10-05（D352 稽核 B15，D282、主規格 §4.1 第 5 項／§4.4）：撤銷票券是 Admin 專屬操作——創作者本人視角
          按鈕留著但停用，title 說明需要 Admin（同 order-detail 撤銷品項的做法與同一句文案）。 */
-      const voidAttrs = edAdminScope() ? '' :
+      const voidAttrs = vstate === 'redeemed'
+        ? ' disabled aria-disabled="true" title="' + T('event-detail.void.why.redeemed', "Already checked in — can't be voided") + '"'
+        : edAdminScope() ? '' :
         ' disabled aria-disabled="true" title="' + T('od.void.why.admin', 'Requires the Admin role') + '"';
       tr.innerHTML =
         '<td><code>' + t.id + '</code></td><td>' + t.buyer + '</td><td>' + t.tier + '</td>' +
@@ -2914,9 +3028,11 @@
     ? window.ztorRichBody.mount(edDescHost, { rows: 3, label: 'Description', labelKey: 'ce.desc', proxy: document.querySelector('[data-ed="desc"]'), feat: 'S58', fmtFeat: 'S59', addFeat: 'S67' })
     : null;
 
+  /* bookyay 帶入者的描述（D362，修訂 D354 決定六）：整份鎖定——每個區塊都不能改、刪、拖動，
+     「新增描述」與插入圖片影片收起（lock(true, { all: true })）。要改回 bookyay 改。 */
   function lockDescFromBky(on) {
     if (!edDesc) return;
-    edDesc.lock(on);
+    edDesc.lock(on, { all: on });
     const label = document.getElementById('ed-desc-label');
     if (!label) return;
     label.parentElement.classList.toggle('is-source-locked', on);
@@ -2927,6 +3043,58 @@
     } else if (!on && chip) chip.remove();
   }
 
+  /* ── 條款與細則（D362 決定五；5.1.6.2 F2，定義同 5.1.6.1 F2）──────────────────
+     紀錄形狀：ev.terms＝{ marketing: { on, text }, tnc: { on, text } }；沒寫＝兩個都關（D340 預設關）。
+     bookyay 帶入的活動：tnc 照 bookyay 帶入（D362 決定二），不分模式一律鎖定（lockTermsFromBky），marketing 照常可改。 */
+  const TERM_KEYS = ['marketing', 'tnc'];
+  const termSw = k => document.querySelector('[data-ed-term="' + k + '"]');
+  const termTa = k => document.querySelector('[data-ed="terms-' + k + '-text"]');
+  function setEdTerm(k, on) {
+    const sw = termSw(k);
+    if (!sw) return;
+    sw.setAttribute('aria-checked', on ? 'true' : 'false');
+    sw.classList.toggle('switch--on', on);
+    const body = sw.closest('.control-group')?.querySelector('.control-group__body');
+    if (body) body.hidden = !on;
+  }
+  function fillTerms(ev) {
+    const t = ev.terms || {};
+    TERM_KEYS.forEach(k => {
+      const v = t[k] || {};
+      setEdTerm(k, !!v.on);
+      const ta = termTa(k);
+      if (ta) ta.value = v.text || '';
+    });
+    lockTermsFromBky(isBky());
+  }
+  function readTerms() {
+    const out = {};
+    TERM_KEYS.forEach(k => {
+      const sw = termSw(k), ta = termTa(k);
+      out[k] = { on: !!sw && sw.getAttribute('aria-checked') === 'true', text: ta ? ta.value.trim() : '' };
+    });
+    return out;
+  }
+  /* 鎖定的畫法同建立活動 bkyTerms()：開關 .switch--locked＋aria-disabled（applyReadonly 也照這個判斷）、
+     文字欄 disabled＋.is-source-locked，來源標記一枚、掛在開關列標題旁（ASSUMPTIONS UIA-212） */
+  function lockTermsFromBky(on) {
+    const sw = termSw('tnc'), ta = termTa('tnc');
+    if (ta) { ta.disabled = on; ta.closest('.field')?.classList.toggle('is-source-locked', on); }
+    const main = sw && sw.closest('.control-row')?.querySelector('.control-row__main');
+    if (!main) return;
+    const chip = main.querySelector('.field-source');
+    if (on && !chip) {
+      main.insertAdjacentHTML('beforeend', ' <span class="field-source"><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="ed.src.bky">' + T('ed.src.bky', 'From bookyay') + '</span></span>');
+      if (window.ztorIcons) window.ztorIcons.applyIcons(main);
+    } else if (!on && chip) chip.remove();
+  }
+  document.getElementById('ed-terms')?.addEventListener('click', e => {
+    const sw = e.target.closest('[data-ed-term]');
+    if (!sw || sw.disabled || sw.classList.contains('switch--locked')) return;
+    setEdTerm(sw.dataset.edTerm, sw.getAttribute('aria-checked') !== 'true');
+    if (edBaseline) syncDirty();
+  });
+
   function fillEditForm(ev) {
     const set = (k, v) => { const el = document.querySelector('[data-ed="' + k + '"]'); if (el) el.value = v == null ? '' : v; };
     set('name', ev.name); set('highlight', ev.highlight); set('desc', ev.desc); set('venue', ev.venue); set('address', ev.address);
@@ -2935,9 +3103,10 @@
     if (edDesc) {
       edDesc.set(window.ztorRichBody.migrate(ev.descBlocks || ev.desc || '', ev.infoSections));
       /* bookyay 帶入者的描述鎖定（5.1.6.2 F2 → 5.1.6.1 F21）：文字唯讀、插入鈕與媒體替換／刪除收起，標籤旁掛來源標記。
-         D354：只鎖第一個文字區塊與緊接其後的媒體（bookyay 第 1 段），其餘區塊照常可改。要改回 bookyay 改。 */
+         D362（2026-10-07）起整份描述都鎖（D354 時只鎖第 1 段）。要改回 bookyay 改。 */
       lockDescFromBky(isBky());
     }
+    fillTerms(ev);
     renderHighlightCount();
     /* 墓碑 2026-10-05（D354）：說明區塊預填（edInfo.set）隨說明區塊退場，內容已由 migrate() 併進描述 */
     /* 墓碑（2026-08-11）：容量欄與它的「下限＝已售出」規則隨「活動人數」撤除（ATT-002）。
@@ -2982,6 +3151,11 @@
     root.querySelectorAll('select').forEach(el => { if (!editExempt(el)) el.disabled = ro; });
     // 早到政策的選項卡與場次的增刪是按鈕不是 input，得自己鎖
     root.querySelectorAll('[data-sess-early], [data-sess-remove], #ed-sess-add').forEach(el => { el.disabled = ro; });
+    /* 條款與細則的開關（D362）：檢視模式鎖住；條款及細則在 bookyay 帶入者不分模式一律鎖 */
+    root.querySelectorAll('[data-ed-term]').forEach(sw => {
+      const lock = ro || (sw.dataset.edTerm === 'tnc' && typeof isBky === 'function' && isBky());
+      sw.disabled = lock; sw.classList.toggle('switch--locked', lock); sw.setAttribute('aria-disabled', lock ? 'true' : 'false');
+    });
     /* 跨日活動開關（D328）：檢視模式鎖住（.switch--locked）；bookyay 帶入者不分模式一律鎖（5.1.6.2 F7 → 5.1.6.1 F21） */
     root.querySelectorAll('[data-sess-md]').forEach(sw => {
       const lock = ro || (typeof isBky === 'function' && isBky());
@@ -3295,6 +3469,7 @@
      鎖在編輯模式）。差異記於 ASSUMPTIONS EDIT-002。 */
   const ED_ASPECTS = [
     ['basics', s => s.name + '' + s.highlight + '' + s.desc],   // D354：描述的區塊（含原說明區塊的內容）與名稱同屬 F2 一列
+    ['terms',  s => s.terms],                                     // D362：條款與細則（兩個開關＋文字）算一項
     ['venue',  s => s.venue + '' + s.address],
     ['dates',  s => s.sessions],
     ['lineup', s => s.lineup],
@@ -3308,6 +3483,7 @@
     return {
       name: f('name'), highlight: f('highlight'), venue: f('venue'), address: f('address'),
       desc: edDesc ? JSON.stringify(edDesc.get()) : f('desc'),   // D354：區塊的增刪、排序與圖片影片都算描述有變
+      terms: JSON.stringify(readTerms()),
       sessions: JSON.stringify(edSessions || []),
       tiers: JSON.stringify(edTiers || []),
       lineup: arr('#ed-lineup [data-ed-lineup-row] input'),
@@ -3389,6 +3565,8 @@
       ev.descBlocks = edDesc.get();
       delete ev.infoSections;
     }
+    /* 條款與細則（D362）：原型層級寫回這一場的紀錄。已發布後修改不列高影響變更（D188 清單不變）。 */
+    ev.terms = readTerms();
     alert(T('event-detail.edit.saved', 'Saved.'));
     setMode('view');
   }
@@ -4040,7 +4218,7 @@
       draft: ['badge--neutral', 'event-detail.badge.draft', 'Draft'],
       scheduled: ['badge', 'event-detail.badge.scheduled', 'Scheduled'],
       'on-sale': ['badge--success', 'event-detail.badge.on-sale', 'On sale'],
-      live: ['badge--warning', 'event-detail.badge.live', 'Happening now'],
+      live: ['badge--warning', 'event-detail.badge.live', 'Live'],
       ended: ['badge--neutral', 'event-detail.badge.ended', 'Ended'],
       // badge--error（不是 badge--destructive——那個 class 全站沒有定義，寫上去等於沒有顏色）
       cancelled: ['badge--error', 'event-detail.badge.cancelled', 'Cancelled']

@@ -12,6 +12,100 @@
 >
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
+## 2026-10-07（一百三十五）· release2.4 補顯示設定與時間層級；定時上架不可晚於最早販售時間（B 反饋）
+
+**標籤**：release2.4
+
+**範圍**：`create-event.html`、`js/devtools.js`、`feature-scope-map.md`
+
+**依據**：使用者 2026-10-07——「若票務中有設定提前販售時間，那定時上架時間不可晚於該時間」；「發布設定中沒看到活動的顯示與隱藏」。規格 5.1.6.1 F12b 補明文（D342 同一條規則，v2.41）。
+
+### B · 反饋導入
+
+- S61 活動顯示設定、S62 時間層級由 ⚪ 改 🔵 release2.4：release2.4 的發布設定出現「顯示設定」，各處超出上架區間的紅字與「其他售票時間」摘要也一起出現。
+- 定時上架的上限：上架日期與時間下方新增紅字 `[data-ce-tl-err="list-from"]`——定時上架晚於最早一筆販售時間（正式開賣、單張門票購買條件或折扣限時間、活動層預設限時間、票務商品另設開賣）時，指出是哪一筆與時間；發布前檢核（`timeLayerIssues`）多列「上架日期與時間」並擋下。進第 7 步時重算一次（第 5、6 步改過時間後回來也會更新）。上架方式預設仍是「立刻上架」，未改。
+
+## 2026-10-07（一百三十四）· bookyay 帶入：描述整份鎖定、條款及細則帶入並鎖定；活動詳情補「條款與細則」（A spec-derived · D362）
+
+**標籤**：release2.4
+
+**範圍**：`partials/rich-body.js`、`ds-components/rich-body.css`、`create-event.html`、`event-detail.html`、`js/events-store.js`、`js/i18n.js`、`design-system.md`／`design-system.html`（Rich body）、`feature-scope-map.md`（S80 備註）、`requirements-map.md`、`ASSUMPTIONS.md`（UIA-212）
+
+**依據**：D362（2026-10-07 使用者裁決，修訂 D354 決定六、D335、D340）。規格與規則手冊由另一個 session 同輪改，本筆只做原型。
+
+### A · spec-derived
+
+- Rich body 新增整份鎖定 `lock(true, { all: true })`（D362 決定一）：每個區塊（文字＋媒體）都 `.is-locked`，host 掛 `.rich-body--locked` 收起排序把手與底部（新增描述＋滿額說明），`add()`／`insert()`／`move()` 不動作、拖動不啟動，`set()` 重畫後維持鎖定；原本的 `lock(true)`（只鎖第 1 段）保留不動。DS 頁 bookyay 示範改成整份鎖定。
+- 建立活動 bookyay 帶入：描述改用整份鎖定；沒有段落時仍留一個空的鎖定文字區塊（D335 不變）。
+- 建立活動 bookyay 帶入「條款及細則」（D362 決定二）：假資料補 `showTncs`／`tncs`（bky-1、bky-2、bky-4 有多行條款；bky-3、bky-5 沒勾）。開關照 bookyay 是否勾選、文字經 `plainOf()` 轉純文字（只留文字與換行），開關 `.switch--locked`＋文字欄 disabled，開關列標題旁掛 From bookyay。直接促銷同意不帶入、不鎖（D362 決定三）。第 8 步粉絲頁預覽照常讀到帶入的條款。
+- 活動詳情（設定 › 活動內容）描述之後新增「條款與細則」（D362 決定五）：與建立活動同一組元件（`.control-group`＋`.control-row`＋`.switch`＋`.textarea`），直接促銷同意掛 `data-feat="S80"`；觀影派對不出現。預填 `ev.terms`，接進兩段式編輯（檢視態開關鎖住）、變更計數（「條款與細則」算一項）與儲存。bookyay 活動（`taipei-nye` 示範條款文字、`khh-countdown-draft` 沒勾）條款及細則不分模式一律鎖定並掛來源標記；描述改整份鎖定。已結束、已取消沿用整頁唯讀。
+- i18n 新增 `ce.terms.marketing.label`／`.ph`、`ce.terms.tnc.label`／`.ph`（zh＋en；建立活動的頁內字典 `d.terms.*` 同字）。
+
+## 2026-10-07（一百三十三）· 活動階段與角色八題落地：其他售票時間摘要、階段英文統一、已報到不能撤銷、Admin 下架與已下架徽章、整頁唯讀、bookyay 待設定改名（A spec-derived · D361）
+
+**標籤**：release2.4
+
+**範圍**：`create-event.html`、`events.html`、`event-detail.html`、`admin-creator-events.html`、`series-detail.html`、`js/events-store.js`、`js/i18n.js`、`js/sidebar.js`（註解）、`js/devtools.js`、`ds-components/product-list.css`、`design-system.md`／`design-system.html`／`design-components.html`、`feature-scope-map.md`、`ASSUMPTIONS.md`、`requirements-map.md`
+
+**依據**：D361（2026-10-07 使用者裁決 D352 待確認的 8 題）。規格本體由另一個 session 同輪改 `documents/`，本筆只做原型。
+
+### A · spec-derived
+
+- 建立活動第 7 步「開賣設定」下方新增唯讀「其他售票時間」（D361 決定一，5.1.6.1 F23）：列出開始時間早於正式開賣的門票購買條件或折扣限時間（第 5 步）與票務商品另設的開賣時間（第 6 步），每列寫名稱與起訖、右側「修改」回到該步；附一句「從最早能買的時間起，活動就算售票中」。沒有任何一筆時整塊收起。列的畫法沿用 Review row（`review-row.css` 重新連回本頁），掛 `data-feat="S62"`。
+- 活動階段英文統一為 Draft／Scheduled／On sale／Live／Ended／Cancelled（D361 決定七）：清單分頁 Past→Ended、詳情徽章 Happening now→Live、On Sale→On sale（i18n 與各頁後備字一起改）；中文不變。
+- 已報到（已使用）的票不能撤銷（D361 決定四）：events-store 的交易依到場比例標 `checkedIn`，`ticketVoidState` 多一個 `redeemed` 終態、`voidTicket` 擋下；銷售紀錄的撤銷鈕停用並以 title 說明「已報到，不能撤銷」（同 order-detail「已取貨，不可撤銷」的做法），整場撤銷只算未報到的票。已結束活動中未報到的票照樣可撤銷。
+- Admin 手動下架（D361 決定五）：活動詳情「設定」分頁末段、取消活動上方新增「下架活動」區塊（已排程／售票中／進行中出現）；Admin 代管態才能按，創作者視角停用並以 title 說明「需要 Admin 角色」（同撤銷鈕）。下架後頁首在階段徽章之後多一顆「已下架」，清單列狀態欄在階段徽章下面多一顆，活動留在原階段分頁。示範：`lrh-studio-live` 預設已下架。新登記 S81（⚪ 未排定）。
+- 活動清單 `--events` 狀態欄加入 `--eshop`／`--bundles`／`--auctions` 那條直排規則，兩顆徽章才排得下（product-list.css，DS 文件同步）。
+- 已結束與已取消整頁唯讀含在地化（D361 決定三）：既有的「收起編輯」之外，頁首與在地化分節的「預覽與在地化」入口一併收起；Admin 撤銷照常。
+- 退款說明改成 Admin 在 Stripe 處理（D361 決定二）：撤銷沖銷說明與結算狀態機說明原寫「由創作者於平台外處理」。
+- Admin 創作者活動管理（D361 決定六、八）：狀態「待設定套組」改「待設定」，徽章 title 說明「還沒設定門票與票務商品」；頁首說明的「套組」改「門票與票務商品」；表格下方加一句「匯入的活動第一次儲存前創作者看不到，儲存後才以草稿出現」；未綁定空狀態改寫成「Admin 綁定之後自動匯入」，綁定畫面仍未畫、按鈕維持停用。
+- events-store 註明：bookyay 匯入未儲存的活動只住在 `ztorCreator.bookyayEvents`，創作者清單與計數不含；已排程沒有成交（`transactions()` 階段清單不變）。
+- 售完不是活動階段（D361 決定七）：活動清單、活動詳情「系列」卡、系列詳情場次表原本售完時用 Sold out 取代階段徽章，改成階段徽章照常顯示、售完另加一顆中性徽章。
+
+## 2026-10-07（一百三十二）· release2.4 切割調整：條款與細則只留「條款及細則」（B 反饋）
+
+**標籤**：release2.4
+
+**範圍**：`create-event.html`、`js/devtools.js`、`feature-scope-map.md`
+
+**依據**：使用者 2026-10-07 裁示——條款與細則的「接受主辦者用於直接促銷」拿掉，只留「條款及細則」。
+
+### B · 反饋導入
+
+- 新登記 S80（⚪ 未排定）：建立活動步驟 2「條款與細則」的直接促銷同意開關與行銷同意文字掛 `data-feat="S80"`，release2.4 只剩「條款及細則」一組。最終版不變；規格（5.1.6.1、D340）未改。
+
+## 2026-10-07（一百三十一）· release2.4 切割調整：保留 Watch Party，線下類型只留演唱會入口（B 反饋）
+
+**標籤**：release2.4
+
+**範圍**：`create-event.html`、`js/devtools.js`、`feature-scope-map.md`
+
+**依據**：使用者 2026-10-07 看過第一版切割後裁示——Watch Party 要留；其他線下類型的建立表單都一樣，release2.4 只需要演唱會一個入口。
+
+### B · 反饋導入
+
+- S75 Watch Party 類型卡由 ⚪ 改 🔵 release2.4，release2.4 顯示（Watch Party 照原設計不經 bookyay、直接手動建立）。
+- 新登記 S79（⚪ 未排定）：見面會、音樂節、發表會、線上活動四張類型卡掛 `data-feat="S79"`，release2.4 只剩演唱會與 Watch Party。最終版不變。
+
+## 2026-10-07（一百三十）· release2.4 切割第一版：活動模組上 release2.4，建立活動只留 bookyay 帶入（B 反饋）
+
+**標籤**：release2.4
+
+**範圍**：`events.html`、`event-detail.html`、`create-event.html`、`js/devtools.js`、`js/sidebar.js`、`feature-scope-map.md`
+
+**依據**：使用者 2026-10-07 指示——下一版 release2.4 主要只交付「由 bookyay 帶入活動來建立」，其他先隱藏，看過切割畫面再調整。本筆只動版本切換的標記，最終版畫面完全不變。
+
+### B · 反饋導入
+
+- **活動三頁進 release2.4**：活動清單、活動詳情、建立活動由頁級 `full` 改 `data-page-feat="S72"`（🔵 release2.4），並從 `devtools.js`／`sidebar.js` 兩份 `FULL_ROUTES` 移出，側欄「活動」在 release2.4 出現。`edit-event.html`（墓碑）、`create-event-legacy.html`、`event-localization.html`、`series-detail.html` 維持只在最終版。
+- **建立活動只剩 bookyay 帶入（S73）**，其他建立方式掛 ⚪ 未排定、release2.4 隱藏：
+  - S74 手動建立：bookyay 關卡的「略過」、步驟頁頭的切換類型鈕
+  - S75 Watch Party 類型卡（不經 bookyay）
+  - S76 複製／再辦一次：活動清單列選單 Duplicate ×50、活動詳情頁首與結束總覽卡
+  - S77 建立鈕下拉的舊版流程
+  - S78 活動預覽與在地化：活動詳情頁首按鈕、設定子分頁與面板
+- **bookyay 帶入會填寫的欄位隨版顯示**：S52 語言、S53 跨日、S56 帶入欄位規則、S58 描述圖片影片、S59 描述格式、S67 描述區塊由 ⚪ 改 🔵 release2.4（`devtools.js` 後備同步）。S55 門票顯示隱藏、S61 活動顯示設定、S62–S64 票務商品進階設定維持 ⚪，release2.4 隱藏。
+
 ## 2026-10-07（一百二十九）· 交付版改用 release 編號：phase1→release2.3、下一版預覽→release2.4；紀錄加交付版標籤（D infra）
 
 **標籤**：release2.3、release2.4

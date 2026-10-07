@@ -42,6 +42,10 @@
      ed.lock(on) → 鎖定 bookyay 帶入的第 1 段（F21）：當下第一個文字區塊＋緊接在它後面的媒體區塊——
                    文字不可改、工具列與刪除鈕收起、媒體不可替換；仍可拖動調整位置（順序不是內容，ASSUMPTIONS UIA-196）。
                    lock(false) 全部解鎖。
+     ed.lock(true, { all: true }) → 整份鎖定（D362，2026-10-07，修訂 D354 決定六）：bookyay 帶入的活動，
+                   **所有區塊**（文字＋媒體）都鎖——不能改、不能刪、不能拖動排序（把手收起），也不能「新增描述」或插入圖片影片
+                   （底部收起，add()／insert()／move() 不動作）；host 掛 .rich-body--locked。之後 set() 重畫也維持整份鎖定，
+                   直到 lock(false)。沒有任何段落時留一個空的文字區塊、照樣鎖定（D335）。
      ed.add()    → 新增一個文字區塊（回傳該區塊）
      ed.insert(type, fileOrSrc, row?) → 在 row（文字區塊；省略＝游標所在或最後一個）之後插入媒體區塊
      ed.format(cmd, row?) → cmd＝bold／italic／link／ol／ul／hr
@@ -259,6 +263,7 @@
     var pickRow = null;                      // 按下插入鈕的那個文字區塊（選檔回來後插在它後面）
     var lastText = null, lastRange = null;   // 最後一次聚焦的文字塊與游標（插入點、格式鈕的作用對象）
     var linkCtx = null;                      // 開著的連結輸入列 { row, ed, range, anchor }
+    var allLocked = false;                   // 整份鎖定（D362）：lock(true, { all: true })
 
     function icons(node) { if (window.ztorIcons) window.ztorIcons.applyIcons(node); }
     function placeholderText() { return opts.placeholderKey ? T(opts.placeholderKey, opts.placeholder || '') : (opts.placeholder || ''); }
@@ -397,6 +402,8 @@
         else list.appendChild(mediaBlock(b.type, b.src));
       });
       lastText = null; lastRange = null; linkCtx = null;
+      /* 整份鎖定中被 set() 重畫（D362）：新畫出來的區塊照樣全部鎖住 */
+      if (allLocked) rows().forEach(function (r) { setLocked(r, true); });
       icons(list);
       syncState();
     }
@@ -668,6 +675,7 @@
 
     /* ---- 插入媒體：在文字區塊之後（已經跟在它後面的媒體之後），成為獨立區塊 ---- */
     function insert(type, fileOrSrc, row) {
+      if (allLocked) return null;            // 整份鎖定（D362）：不能插入
       if (mediaCount() >= maxMedia) { syncLimit(); return null; }
       row = targetRow(row);
       var src = typeof fileOrSrc === 'string' ? fileOrSrc : '';
@@ -682,6 +690,7 @@
       return tileRow;
     }
     function add() {
+      if (allLocked) return null;            // 整份鎖定（D362）：不能新增描述
       var row = textBlock('', false);
       list.appendChild(row);
       icons(row);
@@ -700,6 +709,7 @@
       changed();
     }
     function move(from, to) {
+      if (allLocked) return;                 // 整份鎖定（D362）：不能調整順序
       var rs = rows();
       var r = rs[from];
       if (!r || to < 0 || to >= rs.length || from === to) return;
@@ -714,7 +724,7 @@
     host.addEventListener('mousedown', function (e) { if (e.target.closest('[data-rb-fmt]')) e.preventDefault(); });
     host.addEventListener('click', function (e) {
       var t = e.target;
-      if (t.closest('[data-rb-add]')) { var nr = add(); nr.querySelector('[data-rb-text]').focus(); return; }
+      if (t.closest('[data-rb-add]')) { var nr = add(); if (nr) nr.querySelector('[data-rb-text]').focus(); return; }
       var f = t.closest('[data-rb-fmt]');
       if (f) { format(f.getAttribute('data-rb-fmt'), rowOf(f)); return; }
       if (t.closest('[data-rb-link-apply]')) { applyLink(); return; }
@@ -755,7 +765,7 @@
     var dragging = null;
     host.addEventListener('pointerdown', function (e) {
       var g = e.target.closest('[data-rb-grip]');
-      if (g) rowOf(g).draggable = true;
+      if (g && !allLocked) rowOf(g).draggable = true;
     });
     host.addEventListener('pointerup', function () {
       rows().forEach(function (r) { if (r !== dragging) r.draggable = false; });
@@ -853,8 +863,17 @@
         if (on) ed.setAttribute('aria-disabled', 'true'); else ed.removeAttribute('aria-disabled');
       }
     }
-    function lock(on) {
+    function lock(on, o) {
+      allLocked = !!(on && o && o.all);
+      host.classList.toggle('rich-body--locked', allLocked);
       if (!on) { rows().forEach(function (r) { setLocked(r, false); }); syncState(); return; }
+      /* 整份鎖定（D362）：每個區塊都鎖；把手、新增描述、插入鈕由 .rich-body--locked 收起（rich-body.css） */
+      if (allLocked) {
+        if (linkCtx) closeLink(false);
+        rows().forEach(function (r) { setLocked(r, true); });
+        syncState();
+        return;
+      }
       var rs = rows(), i = 0;
       while (i < rs.length && !isText(rs[i])) i++;
       if (i >= rs.length) return;
