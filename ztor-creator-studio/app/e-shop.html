@@ -2093,7 +2093,10 @@
       const unlisted = (m && m.store && L) ? L.isUnlisted(m.entity) : (row.dataset.status === 'unlisted' || row.dataset.status === 'archived');
       const archived = (m && m.store && L) ? L.isArchived(m.entity) : (row.dataset.status === 'archived');   /* 已封存比照已下架停用（D284） */
       const t = row.querySelector('[data-eshop-shop]');
-      if (t) { t.setAttribute('aria-disabled', unlisted ? 'true' : 'false'); t.classList.toggle('switch--disabled', unlisted); t.title = archived ? T('e-shop.shown.archived', 'Archived — unarchive it first') : (unlisted ? (T('e-shop.shown.unlisted', 'Unlisted — listing must be on before this can be shown') ) : ''); }
+      /* D363 決定二：活動組合包所屬活動隱藏中 → 開關停用（畫成關，見 eventBundleModel），提示寫原因 */
+      const evHid = !!(m && m.eventBundle && m.entity.evHidden);
+      const off = unlisted || evHid;
+      if (t) { t.setAttribute('aria-disabled', off ? 'true' : 'false'); t.classList.toggle('switch--disabled', off); t.title = archived ? T('e-shop.shown.archived', 'Archived — unarchive it first') : (unlisted ? (T('e-shop.shown.unlisted', 'Unlisted — listing must be on before this can be shown') ) : (evHid ? T('tb.shown.evhidden', 'The event is hidden, so this bundle is hidden too.') : '')); }
     }
     /* 事件委派：清單會分批插入新列（載入更多／persona 換列），逐顆綁定會漏掉後來的列。 */
     /* 2026-09-11（D263）：開關獨立成欄，點了先問——顯示／隱藏會直接改粉絲看得到什麼，
@@ -2521,10 +2524,13 @@
       const ev = EV.get(row.dataset.eventBundle); if (!ev) return null;
       const b = (ev.bundles || []).find(x => x.id === row.dataset.bundleId); if (!b) return null;
       const st = ev.status;
-      const listed = st === 'on-sale' || st === 'live' || st === 'scheduled' || st === 'ended';
+      /* D363（活動設定是最高優先層級）：活動已下架 → 組合包不算上架；活動隱藏 → 組合包在本清單一律算隱藏。
+         列上的 data-shown 仍是組合包自己的值、照存，活動切回顯示後照它（evHidden 讓顯示開關知道要停用、寫原因）。 */
+      const evHidden = !!(ev.publish && ev.publish.shown === false);
+      const listed = (st === 'on-sale' || st === 'live' || st === 'scheduled' || st === 'ended') && !ev.unlisted;
       const entity = {
         id: b.id, isEventBundle: true, draft: st === 'draft', listed: listed, listAt: null, unlistAt: null,
-        shown: row.dataset.shown !== 'false', privateLink: null,
+        shown: row.dataset.shown !== 'false' && !evHidden, evHidden: evHidden, privateLink: null,
         onSale: st !== 'scheduled', saleStart: null, saleEnd: (st === 'ended' && ev.date) ? ev.date + 'T23:59' : null,
         archived: false, unlistReason: st === 'cancelled' ? { type: 'event-cancelled', eventName: ev.name } : null
       };

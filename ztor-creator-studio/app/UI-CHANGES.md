@@ -12,6 +12,22 @@
 >
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
+## 2026-10-07（一百三十六）· 活動設定是最高優先層級：開賣後仍可切換顯示、活動隱藏時組合包跟著隱藏、販售結束不晚於活動停售（A spec-derived · D363）
+
+**標籤**：release2.4
+
+**範圍**：`event-detail.html`、`js/ticket-bundle.js`、`bundle-detail.html`、`create-bundle.html`、`js/bundle-editor.js`、`create-event.html`、`e-shop.html`、`js/events-store.js`、`js/i18n.js`、`design-system.md`／`design-system.html`／`design-components.html`（Follow field 行為說明）、`feature-scope-map.md`（S61／S62 備註）、`requirements-map.md`、`ASSUMPTIONS.md`（UIA-213、PUB-001、D342 #13、待確認第 6 項）
+
+**依據**：D363（2026-10-07 使用者裁決；5.1.6.1 F25、主規格 §7.14）。規格與規則手冊由另一個 session 同輪改，本筆只做原型。
+
+### A · spec-derived
+
+- 活動詳情發布設定（D363 決定一）：顯示設定在售票中、進行中也能切換（`PUB_VIS_EDITABLE`）；開賣設定與取票方式兩段標 `data-pub-pre`，售票中起收起、改由上方唯讀卡呈現，唯讀卡的「顯示設定」列在可切換時收起（同一個值不講兩次）。已結束、已取消維持整份唯讀。說明列分三句：開賣前（`ed.pub.edit-pre`）、售票中起（`ed.pub.edit-tbd`）、已結束／已取消（新 `ed.pub.edit-closed`）。隱藏時連結下方多一句「含本活動門票的組合包也會從電子商店隱藏」（`ed.pub.vis.bundles`）。
+- 組合包跟著活動顯示（D363 決定二）：`js/ticket-bundle.js` 的 `times(ev)` 另帶 `shown`／`unlisted`，新增 `evHidden(et)`。組合商品細節頁、建立組合、建立活動第 6 步在活動隱藏時把組合包的顯示開關停用並畫成關（`.switch--disabled`），旁邊寫原因；組合包自己的顯示值照存，活動切回顯示後照它。組合商品細節頁另收起頁首的隱藏／顯示鈕、設定總覽寫「跟著活動隱藏」。電子商店清單的活動組合包列在活動隱藏時算隱藏、開關停用並帶原因提示。
+- 活動下架時組合包不能上架（D363 決定三）：組合商品細節頁 `canList` 與電子商店清單併入 `ev.unlisted`，細節頁鎖定說明改用「活動已下架」那一句（`bd.event.unlisted-lock`）。
+- 販售結束的上限（D363 決定三）：`lateEnd()`——票務商品另設的停售、組合包購買條件的限時間結束、建立活動第 5 步單張門票購買條件的限時間結束，晚於活動停售（停售不填＝活動開始）時紅字擋存（`tb.err.saleend.late`）。開始端照舊可以早於活動開賣（提前販售例外），只受上架區間限制。
+- 示範：隱藏中的 `taiwan-fest-kenting` 補一組組合包 `bd-kenting-cap`（自己的顯示值為顯示），細節頁與電子商店都看得到鎖定狀態。
+
 ## 2026-10-07（一百三十五）· release2.4 補顯示設定與時間層級；定時上架不可晚於最早販售時間（B 反饋）
 
 **標籤**：release2.4

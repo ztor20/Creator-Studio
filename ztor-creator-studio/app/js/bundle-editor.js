@@ -2087,11 +2087,18 @@
           '</div>' +
           '<div class="field__hint">' + esc(T(ev.status === 'draft' ? 'cpp.bd.sp.follow.draft' : 'cpp.bd.sp.follow.hint')) + '</div>' +
         '</div>' +
-        '<div class="control-row"><div>' +
-            '<div class="control-row__main">' + esc(T('cp.listing.shown-h')) + '</div>' +
-            '<div class="control-row__sub">' + esc(T('cpp.bd.sp.shown.off')) + '</div></div>' +
-          '<div class="switch' + (b.shown !== false ? ' switch--on' : '') + '" role="switch" aria-checked="' + (b.shown !== false) + '" tabindex="0" data-bd-shown-toggle></div>' +
-        '</div>' +
+        /* D363 決定二：活動隱藏中（第 7 步顯示開關關掉，et.shown === false）→ 這顆開關停用、畫成關，下面多一句原因；
+           組合包自己的值（b.shown）保留，活動切回顯示後照它自己的開關。彈窗每次開都重畫，所以第 7 步改了再回來就是新的狀態。 */
+        (function () {
+          var lock = !!(c && c.TB.evHidden(c.et)), on = !lock && b.shown !== false;
+          return '<div class="control-row"><div>' +
+              '<div class="control-row__main">' + esc(T('cp.listing.shown-h')) + '</div>' +
+              '<div class="control-row__sub">' + esc(T('cpp.bd.sp.shown.off')) + '</div>' +
+              (lock ? '<div class="control-row__sub" data-bd-shown-evlock>' + esc(T('tb.shown.evhidden')) + '</div>' : '') + '</div>' +
+            '<div class="switch' + (on ? ' switch--on' : '') + (lock ? ' switch--disabled' : '') + '" role="switch" aria-checked="' + on + '"' +
+              (lock ? ' aria-disabled="true"' : ' tabindex="0"') + ' data-bd-shown-toggle></div>' +
+          '</div>';
+        })() +
         (c ? c.TB.schedHTML(b, c.et, T) : '') +
       '</section>';
     }
@@ -3416,7 +3423,10 @@
         return;
       }
       if (SPLIT && e.target.closest('[data-bd-stack-toggle]')) { b.stack = !b.stack; render({ blur: true }); return; }
-      if (SPLIT && e.target.closest('[data-bd-shown-toggle]')) { b.shown = b.shown === false; render({ blur: true }); return; }
+      if (SPLIT && e.target.closest('[data-bd-shown-toggle]')) {
+        if (e.target.closest('[data-bd-shown-toggle]').getAttribute('aria-disabled') === 'true') return;   /* D363：活動隱藏中不能切 */
+        b.shown = b.shown === false; render({ blur: true }); return;
+      }
       if (SPLIT) {
         var tbc = tbCtx(b);
         if (tbc && tbc.TB.onClick(e, b, tbc)) { render({ blur: true }); return; }

@@ -7030,7 +7030,7 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **Variants** — `.follow-field__seg` 是 `.segmented` 的緊湊版（只縮按鈕內距到 `--sp-4 --sp-12`、字級 `--fs-12`）：它跟在欄位標籤旁，份量要比頁面級的 segmented 輕一階。不另立新的二選一元件——判斷句：這是同一個值的兩種來源切換，正是 segmented「同一資料的視角切換」的角色。
 
-**Behavior** — `js/ticket-bundle.js`（`window.ZtorTicketBundle`）：`schedHTML(st, et, T, { keys, note, disabled })` 產 markup；`onClick(e, st, ctx)` 處理二選一（切到另設時從活動目前的值起手）、`onInput(e, st)` 寫值、`syncErrors(root, st, ctx, T)` 填錯誤句；`effective(st, et)` 回四格生效值（跟隨＝活動的值），消費頁拿它餵徽章、設定總覽與可賣性判斷。狀態 `st.sched[key]`：`null`／缺＝跟隨、字串＝另設。
+**Behavior** — `js/ticket-bundle.js`（`window.ZtorTicketBundle`）：`schedHTML(st, et, T, { keys, note, disabled })` 產 markup；`onClick(e, st, ctx)` 處理二選一（切到另設時從活動目前的值起手）、`onInput(e, st)` 寫值、`syncErrors(root, st, ctx, T)` 填錯誤句；`effective(st, et)` 回四格生效值（跟隨＝活動的值），消費頁拿它餵徽章、設定總覽與可賣性判斷。狀態 `st.sched[key]`：`null`／缺＝跟隨、字串＝另設。D363（2026-10-07）：`times(ev)` 另帶活動的 `shown`／`unlisted`，`evHidden(et)` 判斷活動隱藏中（組合包的顯示開關停用、畫成關，沿用 `.switch--disabled`）；停售另設與購買條件限時間的結束端多一道上限 `lateEnd(v, et)`（不能晚於活動停售，開始端仍可早於開賣），錯誤句 `lateText(et, T)`。
 
 **與 Listing controls 的分工** — `.lctl`（§ Listing controls）是商品與純商品組合包的「上架／顯示／開賣」三開關與排程；本元件只在含票券成員時取代 `.lctl` 裡的排程欄位（上架開關、顯示開關照舊），因為票務商品的時間多了一個「跟隨活動」的來源。
 

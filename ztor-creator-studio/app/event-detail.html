@@ -1013,7 +1013,8 @@
             <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.pub.sale">Sale settings</span></div><span id="ed-pub-onsale">—</span></div>
             <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.pub.pickup">Ticket delivery</span></div><span id="ed-pub-pickup">—</span></div>
             <!-- 墓碑 2026-09-29（D327）：電子門票底下三組附屬設定的唯讀列（取票說明、QR 更新、持票人移轉）隨設定刪除退場。 -->
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.pub.vis">Display settings</span></div><span id="ed-pub-vis">—</span></div>
+            <!-- D363：售票中／進行中時顯示設定改由下方可切換的那一節承載，這一列收起（同一個值不講兩次）；已結束／已取消才留著 -->
+            <div class="data-list__row" id="ed-pub-vis-row"><div class="data-list__row-main"><span data-i18n="ed.pub.vis">Display settings</span></div><span id="ed-pub-vis">—</span></div>
           </div>
         </section>
 
@@ -1028,7 +1029,8 @@
         <div id="ed-pub-edit" hidden>
           <!-- 開賣設定（D340，5.1.6.2 F14 → 5.1.6.1 F23）：取消「發布後直接開賣／排程開賣」二選一，只留兩個選填時間——
                不填開賣＝上架即開賣；不填停售＝賣到活動開始。兩組欄位一律攤開（同建立流程第 7 步）。 -->
-          <div class="form-section form-section--outlined">
+          <!-- data-pub-pre：只在開賣前（草稿／已排程）可改的段；售票中起收起、改由上方唯讀卡呈現（D361／D363，renderPublish） -->
+          <div class="form-section form-section--outlined" data-pub-pre>
             <div class="form-section__head">
               <h3 class="form-section__title" data-i18n="ed.pub.sale">Sale settings</h3>
               <p class="form-section__sub" data-i18n="ed.pub.sale.sub">When fans can start buying, and until when.</p>
@@ -1073,7 +1075,7 @@
             </div>
           </div>
 
-          <div class="form-section form-section--outlined">
+          <div class="form-section form-section--outlined" data-pub-pre>
             <div class="form-section__head">
               <h3 class="form-section__title" data-i18n="ed.pub.pickup">Ticket delivery</h3>
               <p class="form-section__sub" data-i18n="ed.pub.ship.sub">How fans get hold of the ticket.</p>
@@ -1139,6 +1141,8 @@
                   </div>
                   <p class="linkf__hint" data-i18n="ed.pub.link.hidden.hint">Only people with this link can open the event. Resetting kills the old link; showing the event again revokes it.</p>
                 </div>
+                <!-- D363 決定二：活動隱藏時，含本活動門票的組合包也從電子商店隱藏；組合包自己的顯示值保留 -->
+                <p class="field__hint mt-16" data-i18n="ed.pub.vis.bundles">Bundles with this event's tickets are hidden from the E-Shop too. Each bundle keeps its own setting for when the event is shown again.</p>
               </div>
             </div>
           </div>
@@ -3629,6 +3633,9 @@
     if (!TB) return out;
     const edit = document.getElementById('ed-pub-edit');
     if (!edit || edit.hidden) return out;
+    /* D363：售票中起只剩顯示設定可改，開賣設定那一段收起——不再檢查 */
+    const saleSec = edit.querySelector('#ed-pub-sale-times');
+    if (saleSec && saleSec.closest('[data-pub-pre]') && saleSec.closest('[data-pub-pre]').hidden) return out;
     const g = f => { const el = edit.querySelector('[data-pub-f="' + f + '"]'); return el ? el.value.trim() : ''; };
     const et = TB.times(ev);
     [['from', g('sale-from-d'), g('sale-from-t')], ['to', g('sale-to-d'), g('sale-to-t')]].forEach(([k, d, t]) => {
@@ -4859,6 +4866,9 @@
   }
 
   const PUB_EDITABLE = ['draft', 'scheduled'];
+  /* D363 決定一（2026-10-07）：顯示設定開賣後仍可隨時切換——售票中、進行中也能改；其他發布設定照 D361 售票中起唯讀
+     （其餘可改範圍 PUB-001 待確認）。已結束、已取消整頁唯讀（D361 決定三）不變。 */
+  const PUB_VIS_EDITABLE = ['draft', 'scheduled', 'on-sale', 'live'];
 
   /* ── 檢視模式下發布設定不能點（2026-08-17 使用者指示「此時不是編輯狀態，
         所以不能點的選項都應該是 disable」）─────────────────────────────
@@ -4930,17 +4940,27 @@
   function renderPublish() {
     const pub = ev.publish || {};
     const editable = PUB_EDITABLE.indexOf(ev.status) >= 0;
+    const visEditable = PUB_VIS_EDITABLE.indexOf(ev.status) >= 0;   /* D363：顯示設定的可改範圍比其他項目寬 */
     const read = document.getElementById('ed-pub-read');
     const edit = document.getElementById('ed-pub-edit');
+    /* 開賣前：整份可改（可編輯版）。售票中／進行中：唯讀卡（開賣設定、取票方式）＋下方只剩顯示設定那一節可切換。
+       已結束／已取消：只有唯讀卡（含顯示設定那一列）。 */
     if (read) read.hidden = editable;
-    if (edit) edit.hidden = !editable;
+    if (edit) {
+      edit.hidden = !visEditable;
+      edit.querySelectorAll('[data-pub-pre]').forEach(sec => { sec.hidden = !editable; });
+    }
+    const visRow = document.getElementById('ed-pub-vis-row');
+    if (visRow) visRow.hidden = visEditable;   /* 可切換那一節已經寫了現值，唯讀卡不再講一次 */
     const note = document.getElementById('ed-pub-note');
     if (note) {
-      const key = editable ? 'ed.pub.edit-pre' : 'ed.pub.edit-tbd';
+      const key = editable ? 'ed.pub.edit-pre' : (visEditable ? 'ed.pub.edit-tbd' : 'ed.pub.edit-closed');
       note.setAttribute('data-i18n', key);
       note.innerHTML = T(key, editable
-        ? 'Nothing has sold yet, so these are still yours to change. Once tickets are on sale they lock — changing them then affects buyers, and those rules are upstream.'
-        : 'These were set in the create flow. Changing them after tickets are on sale affects buyers — the rules for that are upstream, so they read as view-only here for now.');
+        ? 'Nothing has sold yet, so these are still yours to change. Once tickets are on sale, only the display setting can still be switched — the rest lock, because changing them would affect buyers.'
+        : (visEditable
+          ? 'You can still switch the display setting at any time. The other settings lock once tickets are on sale — changing them would affect buyers, and which ones can change is still being decided upstream.'
+          : 'This event has ended or been cancelled, so its publish settings are view-only.'));
     }
     if (edit) {
       const cur = { pickup: pub.pickup || 'eticket' };

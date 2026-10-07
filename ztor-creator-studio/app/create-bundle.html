@@ -427,6 +427,8 @@
             <div>
               <div class="control-row__main" data-i18n="cp.listing.shown-h">Show in shop</div>
               <div class="control-row__sub" data-i18n="cb.listing.hidden-note">The private link is created once you save, on the bundle page</div>
+              <!-- D363 決定二：所選活動隱藏中 → 開關停用、畫成關，這一句寫原因（自己的值保留，活動切回顯示後照自己的開關） -->
+              <div class="control-row__sub" data-cb-tshown-lock hidden data-feat="S61" data-i18n="tb.shown.evhidden">The event is hidden, so this bundle is hidden too. Your setting is kept and applies once the event is shown.</div>
             </div>
             <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" id="cb-tshown" data-i18n-aria-label="cp.listing.shown-h" aria-label="Show in shop"></div>
           </div>
@@ -1443,6 +1445,7 @@
   function renderTbFollow(ev) {
     const hs = document.querySelector('[data-tb-host="cb-sched"]'), hr = document.querySelector('[data-tb-host="cb-rules"]');
     const c = ev ? tbCtx() : null;
+    syncTShown(c);
     if (!c) { tbSig = ''; return; }
     const sig = [c.ev.id, tix.tierIds.join('+'), tix.qty, TB.KEYS.map(k => TB.isCustom(tbState, k) ? 'c' : 'f').join(''), document.documentElement.lang].join('|');
     if (hs && sig !== tbSig) { hs.innerHTML = TB.schedHTML(tbState, c.et, T); if (window.ztorIcons) window.ztorIcons.applyIcons(hs); }
@@ -1458,12 +1461,24 @@
     host.addEventListener('input', e => { if (TB && TB.onInput(e, tbState)) recompute(); });
     const sw = document.getElementById('cb-tshown');
     if (sw) {
-      const flip = () => { const on = sw.getAttribute('aria-checked') !== 'true'; sw.setAttribute('aria-checked', on ? 'true' : 'false'); sw.classList.toggle('switch--on', on); };
+      const flip = () => { if (sw.getAttribute('aria-disabled') === 'true') return; tShownOwn = !tShownOwn; syncTShown(tbCtx()); };
       sw.addEventListener('click', flip);
       sw.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
     }
   })();
-  function tShownOn() { const sw = document.getElementById('cb-tshown'); return !sw || sw.getAttribute('aria-checked') !== 'false'; }
+  /* 組合包自己的顯示值（D363：活動隱藏時畫面停用、畫成關，但這個值照存——活動切回顯示後照它） */
+  var tShownOwn = true;   // var：renderTbFollow 可能在本段之前就跑到
+  function syncTShown(c) {
+    const sw = document.getElementById('cb-tshown'), note = document.querySelector('[data-cb-tshown-lock]');
+    const lock = !!(c && TB && TB.evHidden(c.et)), on = tShownOwn !== false && !lock;
+    if (sw) {
+      sw.setAttribute('aria-checked', on ? 'true' : 'false'); sw.classList.toggle('switch--on', on);
+      sw.classList.toggle('switch--disabled', lock);
+      if (lock) { sw.setAttribute('aria-disabled', 'true'); sw.removeAttribute('tabindex'); } else { sw.removeAttribute('aria-disabled'); sw.setAttribute('tabindex', '0'); }
+    }
+    if (note) note.hidden = !lock;
+  }
+  function tShownOn() { return tShownOwn !== false; }
 
   /* 臨時新增商品：以 popup 嵌入完整 create-product 流程 */
   const addModal = document.getElementById('cb-add-modal');

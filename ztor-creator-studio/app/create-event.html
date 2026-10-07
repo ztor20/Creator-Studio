@@ -2174,7 +2174,10 @@
       listTo: mode === "none" ? "" : ceDT("unlist-d", "unlist-t"),
       listNow: mode === "now", draft: mode === "none",
       saleFrom: ceDT("sale-from-d", "sale-from-t"), saleTo: ceDT("sale-to-d", "sale-to-t"),
-      start: starts[0] || ceDT("date", "start")
+      start: starts[0] || ceDT("date", "start"),
+      /* D363：本頁第 7 步的顯示開關（關＝隱藏）——第 6 步票務商品的顯示開關以它為上限（js/bundle-editor.js 讀 et.shown）。
+         直接讀 DOM，不經下方的 isShown（宣告在後面，避開暫時性死區） */
+      shown: (() => { const sw = document.getElementById("ce-vis-shown"); return !sw || sw.getAttribute("aria-checked") !== "false"; })()
     };
   }
   const tlMsg = (v, et) => (TBX && v && TBX.outside(v, et)) ? T("tb.err.outside").replace("{period}", TBX.periodText(et, T)) : "";
@@ -2226,7 +2229,8 @@
     ["buy", "disc"].forEach(g => {
       const x = r[g] || {};
       if (x.mode !== "time" && x.mode !== "both") return;
-      const m = tlMsg(x.from, et) || tlMsg(x.to, et);
+      /* D363 決定三：購買條件的限時間結束不能晚於活動停售（開始可以早於開賣＝提前販售）；折扣的限時間不是販售時間，不套 */
+      const m = tlMsg(x.from, et) || tlMsg(x.to, et) || (g === "buy" && TBX && x.to && TBX.lateEnd(x.to, et) ? TBX.lateText(et, T) : "");
       if (m) out[g] = m;
     });
     return out;
