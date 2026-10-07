@@ -448,14 +448,20 @@
       lineup: ['NICKTHEREAL 周湯豪'],
       venue: "Taipei New Year's Eve",
       city: 'Taipei, Taiwan',
-      address: '',
+      /* 完整地址（D329：bookyay「地區」原樣帶入、鎖定）。2026-10-07 補值——原本留空，活動詳情的鎖定標記看不出鎖的是什麼 */
+      address: '信義區',
+      country: 'TW',                        // 活動國家（bookyay 帶入、鎖定；活動詳情目前沒有這一欄，見 UI-CHANGES 一百三十八 補）
       date: '2026-12-31',
       /* 跨日活動（2026-09-29 D328 示範）：跨年場從 12/31 22:00 唱到 1/1 00:30——bookyay 時段的開始與結束不同天，
          帶入時自動開跨日並帶結束日期（5.1.6.1 F21／F7）。endDate 有值＝跨日；沒寫＝單日。 */
       endDate: '2027-01-01',
       start: '22:00',
       end: '00:30',
-      doors: '',
+      /* 過早入場（2026-10-07 D365；5.1.6.1 F21）：bookyay「過早入場提示」60 分鐘 → 開放入場＝開演前 60 分鐘（21:00）；
+         「過早入場的處理」＝限制操作 → 早於開放時間入場＝不能入場（block）。兩者帶入後鎖定（活動詳情也鎖）。
+         khh-countdown-draft 的 doors 留空＝bookyay 沒設定過早入場，開放入場留空並鎖定（推導〔產品待確認〕）。 */
+      doors: '21:00',
+      early: 'block',
       /* 活動語言（D328）：活動現場用的語言，可複選；值＝語言碼（yue／cmn／en／ja／ko／th／vi），顯示字串走 ce.evlang.*。
          bookyay 帶入的多值、鎖定。其他示範活動沒寫＝未填。 */
       languages: ['cmn', 'en'],
@@ -644,13 +650,13 @@
       tiers: [
         /* hidden（D328 示範）：一樓票只透過下面的「一樓票 ＋ 交響夜場刊」組合包賣——活動頁票價清單不列、不能單張買，
            仍是組合包的票券成員、與組合包共用同一個數量池（5.1.6.1 F22「顯示」開關）。 */
-        /* rules（2026-10-01 D342 示範）：單張門票的購買條件與限購，形狀同 create-event 的門票規則（buy／cap）。
+        /* rules（2026-10-01 D342 示範；2026-10-07 D366 改成「新增條件」形狀 { conds }，舊形狀由 ticket-bundle.js 的 ruleConds 轉換）：單張門票的購買條件與限購，形狀同 create-event 的門票規則。
            兩張條件刻意不同，好示範票務商品「預設取最嚴」：一樓限超級粉絲以上、每人 4 張每次 2 張；
            二樓限時間 10/10 12:00–11/30 23:59（早於活動 10/15 開賣的預售，仍在上架區間內）、每人 6 張、限 3 次。 */
         { id: 'tier-lower', name: 'Lower level', price: 2800, qty: 400, sold: 0, override: { JPY: 13900 }, hidden: true,   // JPY 換算 13,956 → 覆寫 13,900（D306）
-          rules: { buy: { mode: 'tier', tier: 'superfan' }, cap: { mode: 'cap', person: '4', order: '2', times: '' } } },
+          rules: { conds: { buyTier: { tier: 'superfan' }, cap: { person: '4', order: '2', times: '' } } } },
         { id: 'tier-upper', name: 'Upper level', price: 1800, qty: 200, sold: 0,
-          rules: { buy: { mode: 'time', from: '2026-10-10T12:00', to: '2026-11-30T23:59' }, cap: { mode: 'cap', person: '6', order: '', times: '3' } } }
+          rules: { conds: { buyTime: { from: '2026-10-10T12:00', to: '2026-11-30T23:59' }, cap: { person: '6', order: '', times: '3' } } } }
       ],
       /* 2026-09-21（D294 決定三示範）：已排程（發布、尚未開賣）的活動也掛一組組合包——
          電子商店 Bundles 清單要列它（活動已發布），細節頁的開賣設定則因活動未開賣而停用（只收窄不回寫）。 */

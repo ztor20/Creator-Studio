@@ -41,6 +41,7 @@
  *     organizer: 'NICKTHEREAL', organizerAvatar: 'images/…' | '',   // 主辦（原型＝創作者顯示名／名冊頭像）
  *     date: '2026-12-05', time: '19:30 – 21:30', duration: '2 h', doors: '18:30',
  *     venue: 'Taipei Music Center', address: '…', language: '廣東話、普通話' | ['廣東話','普通話'],   // D328 活動語言可複選：字串或陣列（陣列以「、」／「, 」串）
+ *                                                // D369：address 有值時，詳情左欄多畫「活動地點」一節＝依地址產生的地圖（partials/venue-map.js，頁面要載它與 venue-map.css）
  *     priority: { window: '…', state: '…' } | null,   // 優先購（原型示意）
  *     limit: '每筆最多 4 張' | null,
  *     desc: { key:'desc' },
@@ -54,7 +55,7 @@
  *     pickup: '電子門票',                                            // D327：取票說明欄已刪
  *     refund: undefined | string | false,       // 沒給＝平台固定文案；字串＝自訂；false＝不畫
  *     terms: { key:'tnc' } | null,
- *     tiers: [{ key:'tier-vip', name:{ key:'tier-vip' }, note:'', hidden:false, priceObj, soldOut:false, priceKey:'tier:tier-vip' }],
+ *     tiers: [{ key:'tier-vip', name:{ key:'tier-vip' }, note:'', deal:null, hidden:false, priceObj, soldOut:false, priceKey:'tier:tier-vip' }],   // deal＝{ win, to, gen } 折扣固定價（D367，選填）
  *                                                // D328：hidden:true 的列不畫（顯示開關關閉＝不在票價清單列出）
  *                                                // 墓碑 2026-10-05（D353）：desc（門票簡介，tdesc-…）整欄移除，票列不再畫簡介附註
  *     bundles: [{ name:'…', priceObj, listPriceObj|null, priceKey:'bundle:bd-1', img:'…',
@@ -418,6 +419,16 @@
     }
     /* 墓碑 2026-09-29（D334）：「注意事項」一節（需攜帶物品／活動須知兩份清單合併成一份 ul，`fep.sec.notes`）
        隨兩份清單刪除。 */
+    /* 活動地點（D369 決定二，2026-10-07）：依完整地址自動產生的地圖，前台現有版型沒有這一節，
+       放在詳情左欄卡司之後（ASSUMPTIONS UIA-216）。沒有地址＝不畫；地圖是靜態示意（partials/venue-map.js）。 */
+    var mapHtml = (m.address && window.ztorVenueMap) ? window.ztorVenueMap.html({ address: m.address }) : '';
+    if (mapHtml) {
+      var vb = el('div', 'pdp-details__specs-block');
+      vb.setAttribute('data-fep-venue', '');
+      vb.innerHTML = '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('map-pin') + '<span data-i18n="fep.sec.venue">' + esc(T('fep.sec.venue', 'Location')) + '</span></h3>' +
+        (m.venue ? '<p class="pdp-details__shipping-text">' + esc(m.venue) + '</p>' : '') + mapHtml;
+      left.appendChild(vb);
+    }
     cols.appendChild(left);
 
     var right = el('div', 'pdp-details__right');
@@ -455,6 +466,16 @@
         var mainEl = el('span', 'pdp-tier__main');
         mainEl.appendChild(slot(api, 'span', 'pdp-tier__label', t.name, T('ce.tier.untitled', 'Untitled tier')));
         if (t.note) mainEl.appendChild(el('span', 'pdp-tier__meta', esc(t.note)));
+        /* D367（2026-10-07）：折扣是固定價——票價照列，期間內與期間後的價格寫成票名下一行（t.deal，宿主已組好字串） */
+        if (t.deal) {
+          /* deal＝{ win, to, gen }：win＝期間內價、to＝期間結束（顯示字串）、gen＝期間後／一般折扣價；數字是基準幣別，
+             用票價的價格物件換掉 amount 再交給 api.money，跟著目前的顯示幣別換算（不吃覆寫價） */
+          var dpo = function (n) { return Object.assign({}, t.priceObj, { amount: n, override: {}, pin: null }); };
+          var dparts = [];
+          if (t.deal.win != null) dparts.push(T('fep.deal.win', '{p} until {to}').replace('{p}', moneyOf(api, dpo(t.deal.win), null)).replace('{to}', t.deal.to || ''));
+          if (t.deal.gen != null) dparts.push(T(t.deal.win != null ? 'fep.deal.after' : 'fep.deal.gen', t.deal.win != null ? 'then {p}' : 'Discounted to {p}').replace('{p}', moneyOf(api, dpo(t.deal.gen), null)));
+          if (dparts.length) mainEl.appendChild(el('span', 'pdp-tier__meta', esc(dparts.join(' · '))));
+        }
         /* 墓碑 2026-10-05（D353）：門票簡介（D328，票名下的 meta 行、可翻譯 tdesc-…）整欄移除 */
         tr.appendChild(mainEl);
         var tprice = el('span', 'pdp-tier__price', esc(moneyOf(api, t.priceObj, t.priceKey)));

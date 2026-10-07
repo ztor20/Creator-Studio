@@ -60,6 +60,8 @@
 <link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/cond-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/venue-map.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/collapse-group.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
@@ -791,6 +793,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#size-mix">Size mix</a>
     <a class="toc__link toc__link--sub" href="#demand-table">Demand table</a>
     <a class="toc__link toc__link--sub" href="#demand-focus">Demand focus</a>
+    <a class="toc__link toc__link--sub" href="#cond-list">Condition list</a>
+    <a class="toc__link toc__link--sub" href="#venue-map">Venue map</a>
     <div class="toc__subgroup"><span data-en>JS components without their own CSS (9)</span><span data-zh>無自帶 CSS 的 JS 元件（9）</span></div>
     <a class="toc__link toc__link--sub" href="#work-fields">Work fields</a>
     <a class="toc__link toc__link--sub" href="#work-taxonomy">Work taxonomy</a>
@@ -1680,6 +1684,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#size-mix">Size mix</a></td><td>🟡</td><td><span data-en>How demand splits across sizes — one small bar per size in fixed slots, so rows line up and compare (demand board, D360)</span><span data-zh>需求在各尺寸之間怎麼分——每個尺寸一格小直條、格寬固定，上下列對得齊、可直接比（需求看板，D360）</span></td><td><code>size-mix.css</code></td></tr>
           <tr><td><a href="#demand-table">Demand table</a></td><td>🟠</td><td><span data-en>Market demand table: one row per market (expandable to cities) — index, size mix, suggested, planned input, gap (D360)</span><span data-zh>市場需求表：每市場一列（可展開城市）——需求指數、各尺寸、建議生產量、計畫生產量輸入、差距（D360）</span></td><td><code>demand-table.css</code></td></tr>
           <tr><td><a href="#demand-focus">Demand focus</a></td><td>🟠</td><td><span data-en>Focus panel for one selected market: days to sell out, size gap, and a per-size table with planned inputs (D360)</span><span data-zh>選定對象面板：預測售罄天數、尺寸差距，以及可填計畫生產量的各尺寸表（D360）</span></td><td><code>demand-focus.css</code></td></tr>
+          <tr><td><a href="#cond-list">Condition list</a></td><td>🟡</td><td><span data-en>Add-one-of-each condition list: empty to start, “Add condition” menu, each card removable or locked (event purchase rules, D366)</span><span data-zh>各加一次的條件清單：一開始是空的、「新增條件」選單、每張卡可移除或鎖定（活動購票規則，D366）</span></td><td><code>cond-list.css</code></td></tr>
+          <tr><td><a href="#venue-map">Venue map</a></td><td>🟡</td><td><span data-en>Event location map made from the full address — static stand-in map, centre pin, address line and “Open in Maps” link; no manual pin (fan event page, create-event step 3 preview, D369)</span><span data-zh>依完整地址產生的活動地點地圖——靜態示意底圖、中央定位針、地址一行與「在地圖中開啟」連結；不能手動定位（粉絲活動頁、建立活動第 3 步預覽，D369）</span></td><td><code>venue-map.css</code></td></tr>
           <tr><td><a href="#button">Split button</a></td><td>🟡</td><td><span data-en>Primary action + caret menu of related actions (E-Shop F3 context-aware Create, D066)</span><span data-zh>主操作＋箭頭下拉相關動作（電子商店 F3 context-aware 建立，D066）</span></td><td><code>split-button.css</code></td></tr>
           <tr><td><a href="#product-post">New product post</a></td><td>🟠</td><td><span data-en>Post-create composer popup — reuses Broadcast fields + adds the attached-product card (E-Shop 5.1.5.7, D068)</span><span data-zh>建立商品後的撰寫彈窗——重用群發欄位＋商品附件卡（電子商店 5.1.5.7，D068）</span></td><td><code>product-post-modal.css</code></td></tr>
           <tr><td><a href="#filter-row">Filter row</a></td><td>🟡</td><td><span data-en>Chip filters and inline actions above lists</span><span data-zh>清單上方的 chip 篩選與行內動作</span></td><td><code>shared.css</code></td></tr>
@@ -12951,6 +12957,91 @@ Letterpress cover, uncoated stock.</textarea></div>
   </details>
 </section>
 
+<section class="sub" id="cond-list">
+  <div class="sub__head">
+    <h3 class="sub__title">4.227 Condition list</h3>
+    <span class="layer layer--molecule">🟡 molecule</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>A list of different conditions, each added at most once. It starts empty; “Add condition” opens a menu of the kinds not added yet, and every card can be removed. Built for event purchase rules (D366/D367): the event-level defaults and a single ticket’s purchase conditions share it. A card imported from bookyay is locked — fields disabled, no remove button, source tag in its top row.</p>
+  <p class="sub__desc" data-zh>「好幾種不同的條件，各加一次」的清單。一開始是空的，「新增條件」選單只列還沒加的種類，每張卡都能移除。為活動購票規則而建（D366／D367）：活動層預設與單張門票的購買條件共用。從 bookyay 帶入的卡是鎖定的——欄位停用、沒有移除鈕、頂列掛來源標記。</p>
+  <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
+  <div class="compose">
+    <div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div>
+    <div class="compose__tier compose__tier--molecule"><span class="compose__tier-label">molecule</span><a class="compose-chip compose-chip--molecule" href="#control-row">Control group</a> <a class="compose-chip compose-chip--molecule" href="#dropdown-menu">Dropdown menu</a></div>
+    <div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="#input">Input</a> <a class="compose-chip compose-chip--atom" href="#button">Button</a> <a class="compose-chip compose-chip--atom" href="#icon">Icon</a></div>
+    <div class="compose__note"><span data-en>Not the same as <a href="#social-links">Social links</a>: that one adds many of the same thing (every row has the same fields); this one adds one of each kind, every card has its own fields and can be locked.</span><span data-zh>與 <a href="#social-links">Social links</a> 分工：那支是「同一種東西加很多個」（每列欄位一樣）；這支是「不同種類各加一次」，每張卡的欄位不同、可以鎖定。</span></div>
+  </div>
+  <p class="field-label" data-en>Rendered preview — one editable card, one locked card from bookyay, add menu offered</p><p class="field-label" data-zh>視覺展示 — 一張可改、一張 bookyay 帶入鎖定，給新增選單</p>
+  <div class="demo" style="max-width:480px">
+    <div class="cond-list">
+      <div class="cond-list__item control-group control-group--plain">
+        <div class="cond-list__head">
+          <span class="cond-list__title"><i data-lucide="tag" class="ztor-icon"></i><span data-en>Discount</span><span data-zh>折扣</span></span>
+          <button type="button" class="btn btn--icon btn--sm cond-list__remove" aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button>
+        </div>
+        <div class="cond-list__body">
+          <div class="rule-row">
+            <div class="field"><label class="field__label"><span data-en>Discounted price</span><span data-zh>折扣價</span></label><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" type="number" value="980"></span></div>
+            <div class="field"><label class="field__label"><span data-en>Works out to</span><span data-zh>等於</span></label><div class="field-readout"><span data-en>5.8% off</span><span data-zh>折 5.8%</span></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="cond-list__item control-group control-group--plain is-source-locked">
+        <div class="cond-list__head">
+          <span class="cond-list__title"><i data-lucide="shopping-cart" class="ztor-icon"></i><span data-en>Purchase limits</span><span data-zh>限購</span></span>
+          <span class="field-source"><i data-lucide="lock" class="ztor-icon"></i><span data-en>From bookyay</span><span data-zh>bookyay 帶入</span></span>
+        </div>
+        <div class="cond-list__body">
+          <div class="field is-source-locked"><label class="field__label"><span data-en>tickets per person total</span><span data-zh>每人總限購數量</span></label><input class="input" type="number" value="2" disabled></div>
+        </div>
+      </div>
+      <details class="dropdown dropdown--left cond-list__add">
+        <summary class="btn btn--outline btn--sm"><i data-lucide="plus" class="ztor-icon"></i><span data-en>Add condition</span><span data-zh>新增條件</span></summary>
+        <div class="dropdown__menu" role="menu">
+          <button type="button" class="dropdown__item" role="menuitem"><i data-lucide="clock" class="ztor-icon"></i><span data-en>Sales window</span><span data-zh>限時購買</span></button>
+          <button type="button" class="dropdown__item" role="menuitem"><i data-lucide="calendar-clock" class="ztor-icon"></i><span data-en>Limited-time discount</span><span data-zh>限時折扣</span></button>
+        </div>
+      </details>
+    </div>
+  </div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><code>.cond-list</code>（flex column，<code>gap --sp-12</code>）&gt; <code>.cond-list__item.control-group.control-group--plain[data-cond]</code>（<code>gap --sp-16</code>；<code>.is-source-locked</code>＝鎖定）&gt; <code>.cond-list__head</code>（<code>__title</code> ＋ 可選 <code>.field-source</code> ＋ <code>.cond-list__remove</code>）＋ <code>.cond-list__body</code>；清單尾 <code>p.cond-list__empty</code>（空）、<code>details.dropdown.cond-list__add</code>（新增選單）。選單項目與卡可掛 <code>data-feat</code>，畫完呼叫 <code>ztorDevState.regate()</code>。</p>
+    <p class="field-text"><code>ds-components/cond-list.css</code> · <code>create-event.html</code>（<code>condsHTML</code>）</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="venue-map">
+  <div class="sub__head">
+    <h3 class="sub__title">4.228 Venue map</h3>
+    <span class="layer layer--molecule">🟡 molecule</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>The event’s location map, made from its full address (D369 decision 2, 2026-10-07). There is no map field and the pin can’t be dragged — the same address always gives the same place, whether the event was imported from bookyay or created here. This prototype is self-contained and doesn’t call a map service, so the map is a static stand-in: a drawn street tile (one of four layouts picked from the address text), a centre pin, the address, and an “Open in Maps” link that searches the address text (a plain link — nothing is embedded). When the real map lands, only the canvas content changes.</p>
+  <p class="sub__desc" data-zh>活動的地點地圖，依完整地址產生（D369 決定二，2026-10-07）。地圖不另設欄位、定位針不能拖——同一個地址就是同一個位置，bookyay 帶入或自建都一樣。原型自給自足、不接地圖服務，所以畫面是靜態示意：自繪街道底圖（依地址文字挑四種擺法之一）、中央定位針、地址一行，以及用地址文字搜尋的「在地圖中開啟」連結（只是一般連結，不嵌入任何外部內容）。正式接上真地圖時只換畫布內容。</p>
+  <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
+  <div class="compose">
+    <div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div>
+    <div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="#icon">Icon</a></div>
+    <div class="compose__note"><span data-en>Colours go through the component’s own <code>--vm-*</code> role variables: site tokens by default, the front-end tokens when it sits inside the fan event page mirror (<code>.fep-shop</code>) — the mirror file itself gets no new rules.</span><span data-zh>顏色走元件自己的 <code>--vm-*</code> 角色變數：預設接站上 token，放進粉絲活動頁鏡像（<code>.fep-shop</code>）時改接前台 token——鏡像檔本身不加規則。</span></div>
+  </div>
+  <p class="field-label" data-en>Rendered preview — fan event page block (16:9) and the form preview strip (3:1, link only)</p><p class="field-label" data-zh>視覺展示 — 粉絲活動頁區塊（16:9）與表單裡的扁長預覽（3:1，只留連結）</p>
+  <div class="demo" style="max-width:480px">
+    <div class="stack">
+<figure class="venue-map" data-venue-map><div class="venue-map__canvas" role="img" aria-label="Map: 台北市中山區民生東路一段 1 號"><svg class="venue-map__streets" viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><g transform="translate(0 180) scale(1 -1)"><path class="venue-map__water" d="M-10 140 C 60 120, 110 170, 190 150 S 290 120, 330 138 L 330 190 L -10 190 Z"/><rect class="venue-map__park" x="196" y="22" width="78" height="46" rx="8"/><path class="venue-map__minor" stroke-width="3" d="M0 30 H320 M0 64 H320 M0 104 H190 M60 0 V150 M128 0 V140 M250 70 V130 M290 0 V120"/><path class="venue-map__road" stroke-width="9" d="M-10 86 C 80 80, 200 92, 330 84"/><path class="venue-map__road" stroke-width="7" d="M176 -10 C 168 50, 186 110, 160 190"/></g></svg><span class="venue-map__pin"><svg viewBox="0 0 32 40" aria-hidden="true" focusable="false"><path class="venue-map__pin-body" d="M16 0C7.2 0 0 7 0 15.7 0 27.5 16 40 16 40s16-12.5 16-24.3C32 7 24.8 0 16 0z"/><circle class="venue-map__pin-dot" cx="16" cy="15.5" r="5.5"/></svg></span></div><figcaption class="venue-map__caption"><span class="venue-map__address">台北市中山區民生東路一段 1 號</span><a class="venue-map__open" href="https://www.google.com/maps/search/?api=1&amp;query=%E5%8F%B0%E5%8C%97%E5%B8%82%E4%B8%AD%E5%B1%B1%E5%8D%80%E6%B0%91%E7%94%9F%E6%9D%B1%E8%B7%AF%E4%B8%80%E6%AE%B5%201%20%E8%99%9F" target="_blank" rel="noopener noreferrer"><span data-en>Open in Maps</span><span data-zh>在地圖中開啟</span><i data-lucide="external-link" class="ztor-icon"></i></a></figcaption></figure>
+<figure class="venue-map venue-map--strip" data-venue-map><div class="venue-map__canvas" role="img" aria-label="Map: 台北市松山區南京東路四段 2 號"><svg class="venue-map__streets" viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><g><path class="venue-map__water" d="M-10 140 C 60 120, 110 170, 190 150 S 290 120, 330 138 L 330 190 L -10 190 Z"/><rect class="venue-map__park" x="196" y="22" width="78" height="46" rx="8"/><path class="venue-map__minor" stroke-width="3" d="M0 30 H320 M0 64 H320 M0 104 H190 M60 0 V150 M128 0 V140 M250 70 V130 M290 0 V120"/><path class="venue-map__road" stroke-width="9" d="M-10 86 C 80 80, 200 92, 330 84"/><path class="venue-map__road" stroke-width="7" d="M176 -10 C 168 50, 186 110, 160 190"/></g></svg><span class="venue-map__pin"><svg viewBox="0 0 32 40" aria-hidden="true" focusable="false"><path class="venue-map__pin-body" d="M16 0C7.2 0 0 7 0 15.7 0 27.5 16 40 16 40s16-12.5 16-24.3C32 7 24.8 0 16 0z"/><circle class="venue-map__pin-dot" cx="16" cy="15.5" r="5.5"/></svg></span></div><figcaption class="venue-map__caption"><a class="venue-map__open" href="https://www.google.com/maps/search/?api=1&amp;query=%E5%8F%B0%E5%8C%97%E5%B8%82%E6%9D%BE%E5%B1%B1%E5%8D%80%E5%8D%97%E4%BA%AC%E6%9D%B1%E8%B7%AF%E5%9B%9B%E6%AE%B5%202%20%E8%99%9F" target="_blank" rel="noopener noreferrer"><span data-en>Open in Maps</span><span data-zh>在地圖中開啟</span><i data-lucide="external-link" class="ztor-icon"></i></a></figcaption></figure>
+    </div>
+  </div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><code>figure.venue-map[data-venue-map]</code>（flex column，<code>gap --sp-8</code>；<code>.venue-map--strip</code>＝3:1 表單預覽）&gt; <code>.venue-map__canvas</code>（<code>role="img"</code>，16:9，<code>--radius-md</code>）&gt; <code>svg.venue-map__streets</code>（<code>__water</code>／<code>__park</code>／<code>__minor</code>／<code>__road</code>）＋ <code>.venue-map__pin</code>（尖端在正中央）；<code>figcaption.venue-map__caption</code> &gt; <code>.venue-map__address</code>（strip 時不畫）＋ <code>a.venue-map__open</code>（<code>target=_blank</code>）。markup 一律由 <code>window.ztorVenueMap.html({ address, strip })</code> 產生，地址空白回空字串。</p>
+    <p class="field-text"><code>ds-components/venue-map.css</code> · <code>partials/venue-map.js</code> · 消費：<code>js/fan-event-page.js</code>（「活動地點」一節）、<code>create-event.html</code>（第 3 步 <code>renderVenueMap</code>）</p>
+  </div>
+  </details>
+</section>
+
 <section class="sub" id="publish-preview">
   <div class="sub__head">
     <h3 class="sub__title">4.130 Publish preview <span class="field-note">(D223, replaces §4.130 Lang switch)</span></h3>
@@ -14274,6 +14365,7 @@ Letterpress cover, uncoated stock.</textarea></div>
 <script src="partials/fee-exception-modal.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script>   <!-- 2026-09-22：§4.130 demo 的幣別換算（D306）讀它的 fx／priceIn -->
 <script src="partials/rich-body.js?v=r2.2"></script>  <!-- §4.215 demo 的描述區塊（D354，只用靜態工具） -->
+<script src="partials/venue-map.js?v=r2.2"></script><!-- D369：Fan event page 示範的「活動地點」地圖＋Venue map 元件 -->
 <script src="js/fan-event-page.js?v=r2.2"></script>  <!-- 2026-09-22：§4.130 demo 的預覽檢視＝§4.215 Fan event page（D305） -->
 <script src="js/fan-product-page.js?v=r2.2"></script>  <!-- 2026-09-23：§4.218 Fan product page 的 demo，也是 §4.216 Publish stage 商品側 previewRender 的同一支 -->
 <script src="js/fan-bundle-page.js?v=r2.2"></script>  <!-- 2026-09-23：§4.219 Fan bundle page 的 demo，也是 §4.216 Publish stage 組合側 previewRender 的同一支 -->

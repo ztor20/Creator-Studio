@@ -12,6 +12,87 @@
 >
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
+## 2026-10-07（一百四十一）· 活動地點依地址顯示地圖、bookyay 門票模式（免費／不設門票）與重覆活動、時段名稱先不帶入（A spec-derived · D369）
+
+**標籤**：release2.4
+
+**範圍**：`ds-components/venue-map.css`（新）、`partials/venue-map.js`（新）、`js/fan-event-page.js`、`create-event.html`、`event-localization.html`、`js/i18n.js`、`design-system.html`、`design-system.md`、`requirements-map.md`、`ASSUMPTIONS.md`（UIA-216）
+
+**依據**：D369（bookyay 對照表待確認欄位第一批：地圖不帶入、ztor 依完整地址顯示地圖；免費門票帶入為票價 0、不設門票的活動不能匯入；重覆活動展開成多個場次帶入並鎖定、產生設定不帶入；時段名稱先不帶入）。使用者 2026-10-07 裁決。
+
+### A · spec-derived
+
+- 新元件 Venue map（`venue-map.css`＋`partials/venue-map.js`，`window.ztorVenueMap.html({ address, strip })`）：依完整地址產生的活動地點地圖。原型不接外部地圖服務，畫成靜態示意——自繪街道底圖（依地址挑四種擺法之一）、中央定位針、地址一行、「在地圖中開啟」連結（地址組成搜尋網址，只是連結）。顏色走 `--vm-*` 角色變數，放進前台鏡像 `.fep-shop` 時改接前台 token，鏡像檔 `fan-shop.css` 不動。DS 頁 4.228 補 demo 卡、TOC、總表列；md 補條目。
+- 粉絲視角活動頁（`js/fan-event-page.js`）：有完整地址時，詳情左欄卡司之後多一節「活動地點」＝場館名稱＋地圖。建立活動第 8 步預覽、活動「預覽與在地化」（`event-localization.html`）同步出現。
+- 建立活動第 3 步場次詳情：「完整地址」下方加唯讀的「地圖」預覽（扁長 3:1、只留連結，地址不重述），地址改動或 bookyay 帶入時重畫；沒填地址時寫「填完整地址後才會產生」。
+- bookyay 示範補三筆：`bky-9` 免費門票（`ticketMode:'free'`，帶入後票價 0）、`bky-10` 不設門票（`ticketMode:'none'`，搜尋清單那一列停用、多一行「這場活動沒有設定門票，不能帶入」、右側「不可帶入」，選不了、「帶入」維持停用；`?import=` 深連結同樣擋）、`bky-11` 重覆活動（每週六共 3 場，已展開的 3 個時段各帶成一場並鎖定；`repeat` 產生設定留在假資料、不帶入）。`bkyMap()` 認 `ticketMode` 並回傳。
+- 時段名稱（D369 決定六）：`bkyMap()` 不再把 bookyay 時段名稱帶進場次名稱（`bky-2` 的 Day 1–3 改為留空）。
+- i18n：`fep.sec.venue`、`vmap.open`、`vmap.alt`、`ce.venue.map(.hint|.empty)`（`js/i18n.js`）、`d.bgate.blocked`、`d.bgate.noticket`（頁內字典），中英兩語。
+
+## 2026-10-07（一百四十）· 活動層折扣改百分比、bookyay 活動的門票跟隨開關鎖定、bookyay 運費換算幣別（A spec-derived · D368）
+
+**標籤**：release2.4
+
+**範圍**：`create-event.html`、`event-detail.html`、`js/ticket-bundle.js`（註解）、`js/i18n.js`、`requirements-map.md`、`ASSUMPTIONS.md`（UIA-215）
+
+**依據**：D368（活動層折扣類條件用百分比、門票層固定價；bookyay 活動的門票不能改用自己的一組；bookyay 運費換算成創作者幣別）。使用者 2026-10-07 裁決。
+
+### A · spec-derived
+
+- 活動層預設購票規則的折扣、限時折扣、粉絲分級折扣、限時＋粉絲分級折扣改填百分比（`COND_FIELDS_EV` 的 `pct`，% 尾標輸入框沿用 `amount-field--suffix`），旁邊唯讀讀數寫跟隨門票算出來的折後價（同價一個數、不同寫區間）。跟隨的門票價格＝票價 ×（1 − %）（`condPrice`），卡面總價、折扣列、收入試算、第 8 步預覽都照這個價；跟隨摘要寫「$2,380（折 15%）」。門票改用自己的一組時，活動層的 % 換成該門票的固定價（D367 不變）。限時折扣 % 小於一般折扣 % 時同樣提示。D342 時間檢查不受影響。
+- bookyay 帶入的活動：沒有 bookyay 門票層條件的門票，「跟隨活動預設」開關鎖在跟隨（停用＋「bookyay 帶入」徽章＋一句原因），寫入路徑也拒收；修掉原本關掉跟隨就能把活動層的 bookyay 限購複製成可改一份的繞道。有 bookyay 條件的門票照舊整組鎖定；活動層的 bookyay 限購鎖定、其他條件照常可加（D366 決定四，未改）。
+- bookyay 順豐運費（港幣）照 D330 換算成創作者幣別後帶入並鎖定（與票價共用 `bkyToBase`），運費欄下一句寫港幣原值；活動詳情發布設定的運費欄同步接線（值與港幣來源句）。
+- i18n：`d.cond.pctin.*`、`d.cond.evprice(.range)`、`d.cond.pct.minus`、`d.tm.follow.bky`、`d.ship.fee.bky`（頁內字典）、`ed.pub.ship.fee.bky`（`js/i18n.js`），中英兩語。
+
+## 2026-10-07（一百三十九）· 購票規則改為「新增條件」、折扣以固定價設定、bookyay 限購／折扣優惠／早鳥帶入並鎖定（A spec-derived · D366／D367）
+
+**標籤**：release2.4
+
+**範圍**：`create-event.html`、`ds-components/cond-list.css`（新）、`design-system.html`、`design-system.md`、`js/ticket-bundle.js`、`js/events-store.js`、`js/fan-event-page.js`、`js/i18n.js`、`js/devtools.js`、`feature-scope-map.md`（S82）、`requirements-map.md`、`ASSUMPTIONS.md`（UIA-215）
+
+**依據**：D366（購票規則改新增條件、bookyay 限購與折扣帶入、粉絲分級條件不進 release2.4）、D367（同日修訂：折扣以固定價設定、百分比回推；「限時＋限粉絲分級」組合折扣保留在最終版；帶入 bookyay 條件的門票整組鎖定、不能另加）。使用者 2026-10-07 裁決。
+
+### A · spec-derived
+
+- 活動層預設購票規則（票務設定彈窗）與單張門票彈窗的「購買條件」改成同一份「新增條件」：一開始沒有條件，「＋ 新增條件」選單列出還沒加的種類，每張條件卡可移除；每種最多一次。七種：限時購買、限粉絲分級購買、限購、折扣、限時折扣、粉絲分級折扣、限時＋限粉絲分級折扣。
+- 折扣類（D367）填固定價，旁邊唯讀讀數回推「折 N%」；限時折扣價高於一般折扣價時卡內提示（推導〔產品待確認〕，不擋）。卡面總價＝一般折扣價（期間外），「折扣」列寫「限時 $X（至 時間）· 之後 $Y」；收入試算取最低價。第 8 步預覽票價列下一行列出期間內與期間後的價格（依目前顯示幣別換算）。
+- 單張門票保留「跟隨活動預設」開關與 copy-on-write；跟隨時列出跟隨來的條件與值。
+- 時間層級檢查（D342／D363）改讀有時間窗的條件：限時購買、限時折扣、限時＋限粉絲分級折扣；限時購買的結束不能晚於停售照舊只套購買類。
+- bookyay 帶入：示範資料補活動限購、本門票限購、折扣優惠；活動限購 → 活動預設的限購（鎖定，其餘條件照常可加）；本門票限購、折扣優惠（折後價）、早鳥（期間價＝早鳥價）→ 該門票自己的一份、整組鎖定、不能另加（`rulesFix` 取代 `earlyFix`）。修掉舊做法把當下活動層規則複製進早鳥票後一起凍結的副作用：門票的一份只放 bookyay 帶入的條件（沒有本門票限購時補上活動限購）。套票（人數 ≥ 2）的早鳥照 D329 落在組合包，不變。
+- 粉絲分級三種條件登記 S82（⚪ 未排定）：選單項目與條件卡掛 `data-feat="S82"`，release2.4 預覽時收起；`js/devtools.js` 補 `FEAT_TIER.S82` 與 `ztorDevState.featOn()`／`regate()`（JS 事後畫出的選單畫完重跑版本閘、換版本時重畫）。
+- 資料形狀改 `{ conds: {…} }`；`js/ticket-bundle.js` 新增 `ruleConds()` 轉換舊形狀，票務商品「預設取最嚴」（`tierRules`）兩種形狀都吃；`js/events-store.js` 示範改新形狀。
+- 新元件 `ds-components/cond-list.css`（Condition list）：條件卡沿用 `.control-group--plain` 線框、頂列名稱＋來源標記＋移除鈕、清單尾的新增選單沿用 `dropdown-menu`；`design-system.html` 4.227 demo＋TOC、`design-system.md` 條目同步。
+
+### C · 撤除
+
+- 舊的三組二選一／多選一（購票條件、限購、折扣的 radio-list 兩層選單）、折扣 %↔折後價互算（`[data-disc-net]`）、bookyay 早鳥唯讀讀數（`earlyValText`、`d.tm.early.val`）、收合摘要的三組詞（`d.rules.sum.*`）退場，墓碑留在 `create-event.html`。
+
+## 2026-10-07（一百三十八）· bookyay 過早入場帶入場次的開放入場與早到處理並鎖定；bookyay 票名鎖定（A spec-derived · D365）
+
+**標籤**：release2.4
+
+**範圍**：`create-event.html`、`event-detail.html`、`js/events-store.js`、`requirements-map.md`、`ASSUMPTIONS.md`（UIA-214）
+
+**依據**：D365（使用者 2026-10-07）；5.1.6.1 F21／F7 v2.44、5.1.6.2 F7 v3.29。票名鎖定依 5.1.6.1 F22「票名：bookyay 帶入時鎖定」既有規則（原型原本可改，本輪對齊）。
+
+### A · spec-derived
+
+- 建立活動 bookyay 示範資料（`BKY`）每個時段改帶 `earlyEntryInMin`（過早入場提示，開演前幾分鐘）與 `earlyMode`（過早入場的處理：`warn` 提示職員→仍可入場、`block` 限制操作→不能入場），取代原本的 `doors` 絕對時間；bky-5 刻意不設，示範沒設定時開放入場留空並鎖定（推導〔產品待確認〕）。
+- `bkyMap()` 帶入成每一場的 `doorsMin`（開演前幾分鐘）與換算出的 `doors`、`early`；場次原本就整份鎖定（`lockSessions(true)`），本輪補齊：所有鎖定的場次欄位標籤（日期、開始、結束、場次名稱、跨日、開放入場、早於開放時間入場）掛「bookyay 帶入」來源標記（`srcChip()`，同 `lockField()`），早到處理選項卡在資料層也擋（`sessLocked` 時不寫值），「套用第一場的設定」在鎖定時不出現。
+- 建立活動單張門票彈窗：bookyay 帶入的票（`t.fix`）票名唯讀，顯示實際生效名稱並掛來源標記；`tierFieldHTML` 的鎖定欄位不再畫清空鈕。
+- 活動詳情：bookyay 活動（`isBky()`）每一場的開放入場兩格唯讀、早到處理選項卡停用，不分檢視或編輯模式（`applyReadonly`）；開放入場組掛 `.is-source-locked`，開放入場、早於開放時間入場、跨日三處標籤掛來源標記（`bkySrcChip()`，同描述、條款及細則那一枚）。改開始時間時 bookyay 場次保留「開演前幾分鐘」、重算絕對時間。票種彈窗：bookyay 票（`isBkyTier` 或 1 人票 `hideFix`）票名唯讀、必填星號收起、掛來源標記。
+- `js/events-store.js` `taipei-nye` 補 `doors: '21:00'`（開演前 60 分鐘）、`early: 'block'`；`khh-countdown-draft` 維持 `doors` 留空示範沒設定。
+
+- 補（同日）：活動詳情的 bookyay 活動，場次的日期、開始與結束時間、結束日期也一起鎖定、場次不能增刪，標籤旁掛「bookyay 帶入」——原本只鎖了開放入場與跨日，與 5.1.6.1 F21「各場日期與時間鎖定」不一致（5.1.6.2 F7 v3.30 同步補寫）。
+- 補（同日）：F21 鎖定清單逐欄稽核，補齊活動詳情與建立活動的鎖定缺口（不分檢視或編輯模式，標記一律用同一枚「bookyay 帶入」`.field-source`＋`.is-source-locked`）：
+  - 活動詳情場地名稱與完整地址：原本編輯模式可改 → 唯讀＋掛標記（`lockVenueFromBky`、`applyReadonly`）。
+  - 活動詳情開賣設定的開賣、停售日期與時間，以及順豐運費：原本編輯模式可改 → 唯讀＋逐欄掛標記；取票方式分節標題、售票中起唯讀卡的兩列也掛標記（`syncPubLock`／`syncPubBkyMarks`）。取貨地點不在鎖定清單，照常可改。
+  - 活動詳情「提前開賣」：會推翻鎖定的開賣時間、與 F21「要改回 bookyay 改」矛盾 → bookyay 活動按鈕停用，說明句換成原因（`event-detail.golive.bky`，`js/i18n.js`）。
+  - 活動詳情單張門票彈窗：一般 bookyay 票的張數原本可改 → 唯讀；票價與張數掛標記（原本只有票名有）。
+  - 建立活動順豐運費：取票方式鎖了、運費卻沒帶入也可改 → `data-bky="shipFee"` 帶入並鎖定；示範 bky-4 補 `shipFee`。
+  - 示範資料 `taipei-nye` 補完整地址 `信義區`（原本留空、鎖定看不出來）與 `country: 'TW'`。
+  - 活動詳情沒有活動國家、活動語言、集合地點、交通四欄（5.1.6.2 也沒列），本輪不新增，只記缺口。
+
 ## 2026-10-07（一百三十七）· 建立活動的下架時間改為「定時下架」開關（與電子商店同一個）；顯示設定改名「顯示於商店」（A spec-derived · D364）
 
 **標籤**：release2.4

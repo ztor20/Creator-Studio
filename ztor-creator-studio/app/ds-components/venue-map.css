@@ -1,0 +1,99 @@
+/* venue-map — 依完整地址產生的活動地點地圖（D369 決定二，2026-10-07 建）
+   ------------------------------------------------------------
+   產品規則：地圖不另設欄位、不可手動拖動定位，依活動的「完整地址」自動產生；bookyay 帶入的活動
+   與自建活動同一套（同一個地址＝同一個位置）。
+   原型呈現：站上不接外部地圖服務（不嵌 iframe、不載外部 script、自給自足），所以畫面是一張
+   靜態的示意地圖——街道底圖是自繪 SVG（依地址算出四種擺法之一，看起來「換地址就換一張」）、
+   中央一枚定位針、下方地址一行＋「在地圖中開啟」連結（以地址文字組成地圖搜尋網址，只是 <a>，
+   不嵌入任何外部內容）。正式版改接真地圖時換掉 __canvas 內容即可，外框與說明列不動
+   （ASSUMPTIONS UIA-216）。
+   markup 由 partials/venue-map.js 的 window.ztorVenueMap.html(opts) 產生。
+   消費：js/fan-event-page.js（粉絲視角活動頁「活動地點」一節，在 .fep-shop 前台鏡像裡）、
+        create-event.html 第 3 步場次詳情（完整地址下方的唯讀預覽）。
+   顏色走元件自己的 --vm-* 角色變數：預設接站上 token；放進前台鏡像 .fep-shop 時改接前台 token，
+   不在鏡像檔 fan-shop.css 裡加規則（那支是前台規則的原樣抽取）。 */
+.venue-map {
+  --vm-surface: var(--muted);
+  --vm-road: var(--card);
+  --vm-minor: var(--border);
+  --vm-park: var(--status-success-fill);
+  --vm-water: color-mix(in srgb, var(--status-info) 16%, transparent);
+  --vm-pin: var(--primary);
+  --vm-pin-ink: var(--primary-foreground);
+  --vm-ink: var(--muted-foreground);
+  --vm-link: var(--foreground);
+  --vm-line: var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  margin: 0;
+}
+/* 前台鏡像（粉絲視角活動頁）裡改接前台的暗色 token */
+.fep-shop .venue-map {
+  --vm-surface: var(--bg-secondary);
+  --vm-road: var(--bg-tertiary);
+  --vm-minor: var(--border-default);
+  --vm-pin: var(--brand-500);
+  --vm-pin-ink: var(--brand-ink);
+  --vm-ink: var(--text-secondary);
+  --vm-link: var(--text-primary);
+  --vm-line: var(--border-default);
+}
+.venue-map__canvas {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--vm-surface);
+  box-shadow: inset 0 0 0 1px var(--vm-line);
+}
+.venue-map__streets { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.venue-map__road { fill: none; stroke: var(--vm-road); stroke-linecap: round; }
+.venue-map__minor { fill: none; stroke: var(--vm-minor); stroke-linecap: round; }
+.venue-map__park { fill: var(--vm-park); }
+.venue-map__water { fill: var(--vm-water); }
+/* 定位針：尖端落在畫面正中央 */
+.venue-map__pin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--sp-32);
+  height: var(--sp-40);
+  transform: translate(-50%, -100%);
+  color: var(--vm-pin);
+}
+.venue-map__pin svg { display: block; width: 100%; height: 100%; }
+.venue-map__pin-body { fill: currentColor; }
+.venue-map__pin-dot { fill: var(--vm-pin-ink); }
+.venue-map__pin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--sp-4) * -1);
+  width: var(--sp-12);
+  height: var(--sp-4);
+  border-radius: var(--radius-pill);
+  background: var(--vm-line);
+  transform: translateX(-50%);
+}
+.venue-map__caption {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-12);
+  font-size: var(--fs-13);
+  line-height: var(--lh-relaxed);
+}
+.venue-map__address { flex: 1 1 auto; min-width: 0; color: var(--vm-ink); overflow-wrap: anywhere; }
+.venue-map__open {
+  flex: none;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  color: var(--vm-link);
+  text-decoration: underline;
+  text-underline-offset: var(--sp-2);
+}
+.venue-map__open .ztor-icon { width: var(--fs-13); height: var(--fs-13); }
+/* 表單裡的唯讀預覽（建立活動第 3 步）：扁長一條，不把表單撐高 */
+.venue-map--strip .venue-map__canvas { aspect-ratio: 3 / 1; }
