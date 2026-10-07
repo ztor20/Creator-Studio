@@ -9895,7 +9895,7 @@
     'ed.pub.pickup.store': { en: 'Store pickup',          zh: '到店自取' },
     /* D340：公開／私人（ed.pub.vis.public／private）退場，改「顯示設定」一顆顯示開關 */
     'ed.pub.vis':         { en: 'Display settings',       zh: '顯示設定' },
-    'ed.pub.vis.shown':   { en: 'Show in the event list and search', zh: '在活動列表與搜尋顯示' },
+    'ed.pub.vis.shown':   { en: 'Show in shop', zh: '顯示於商店' },
     'ed.pub.vis.shown.sub': { en: 'Off = hidden: only people with the event link or QR can get in.', zh: '關掉＝隱藏，只有拿到活動連結或 QR 的人進得來。' },
     'ed.pub.vis.shown.val': { en: 'Shown',                zh: '顯示' },
     'ed.pub.vis.hidden.val': { en: 'Hidden · link only',  zh: '隱藏・只能經活動連結進入' },
