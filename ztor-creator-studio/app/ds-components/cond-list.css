@@ -1,0 +1,48 @@
+/* ============================================================
+   cond-list.css · 條件清單（一開始是空的，從選單逐一加入；每種最多一次）
+   ------------------------------------------------------------
+   2026-10-07 建（D366／D367）：建立活動的購票規則改成「新增條件」——活動層預設（票務設定彈窗）
+   與單張門票彈窗的「購買條件」共用同一份畫法（create-event.html 的 condsHTML）。
+   每一張條件卡＝一個框（沿用 .control-group.control-group--plain 的線框與內距，不另造第二種框）：
+   頂列是條件名稱（icon＋名稱）、可選的來源標記（bookyay 帶入＝鎖定）、行尾移除鈕；
+   底下是那個條件自己的欄位（一律是 DS 的 .field）。清單最後是「＋ 新增條件」，
+   用既有的 dropdown-menu 開出還沒加過的種類。
+   與 social-links 的分工：那支是「同一種東西加很多個」（平台各一列、欄位一樣），
+   這支是「好幾種不同的東西各加一次」，每張卡的欄位不一樣、還有鎖定態。
+   anatomy
+     .cond-list
+       .cond-list__item.control-group.control-group--plain[data-cond]  ×n（.is-source-locked＝鎖定）
+         .cond-list__head
+           .cond-list__title（.ztor-icon ＋ 名稱）
+           .field-source（選填，bookyay 帶入）
+           button.btn.btn--icon.btn--sm.cond-list__remove（鎖定時不出現）
+         .cond-list__body（.field ／ .rule-row ／ .field__error ／ .field__hint--warn）
+       p.field__hint.cond-list__empty    （沒有任何條件時）
+       details.dropdown.dropdown--left.cond-list__add（整組鎖定或全部加完時不出現）
+   垂直節奏由容器持有（Q103）：清單 gap 12、卡內 gap 16、卡內欄位不帶自己的 margin。
+   ============================================================ */
+.cond-list { display: flex; flex-direction: column; gap: var(--sp-12); }
+.cond-list__item { display: flex; flex-direction: column; gap: var(--sp-16); }
+.cond-list__item[hidden] { display: none; }
+
+.cond-list__head { display: flex; align-items: center; gap: var(--sp-8); min-height: var(--control-h-xs); }
+.cond-list__title {
+  display: inline-flex; align-items: center; gap: var(--sp-8);
+  margin-right: auto;
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+}
+.cond-list__title .ztor-icon { width: 16px; height: 16px; color: var(--muted-foreground); }
+/* 來源標記在頂列裡已經靠右（標題 margin-right:auto），不需要它自己的左距 */
+.cond-list__head .field-source { margin-left: 0; }
+.cond-list__remove { color: var(--muted-foreground); }
+.cond-list__remove:hover { color: var(--destructive); }
+
+.cond-list__body { display: flex; flex-direction: column; gap: var(--sp-16); }
+.cond-list__body > .field,
+.cond-list__body > p { margin: 0; }
+.cond-list__body .rule-row > .field { margin-bottom: 0; }
+
+.cond-list__empty { margin: 0; }
+.cond-list__add { align-self: flex-start; }

@@ -391,7 +391,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 164 支；主 class 前 5 個）
+## 元件（ds-components/，共 166 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -421,6 +421,7 @@
 - `collapse-group.css` — .collapse-head, .collapse-head__toggle, .collapse-head__chev, .collapse-head__sum, .collapse-head__sum--todo ｜ collapse-group.css · 可折疊的分組盒（標題列＋一行摘要）
 - `combobox.css` — .combobox, .combobox__menu, .combobox__group, .combobox__opt, .combobox__opt-icon ｜ combobox.css · multi-select typeahead (search-to
 - `completeness.css` — .completeness, .completeness__head, .completeness__label, .completeness__count, .completeness__track ｜ Completeness meter · 素材包完整度（spec 0-設計規格書 §7.7「目前
+- `cond-list.css` — .cond-list, .cond-list__item, .cond-list__head, .cond-list__title, .cond-list__remove ｜ cond-list.css · 條件清單（一開始是空的，從選單逐一加入；每種最多一次）
 - `control-row.css` — .control-row, .control-row__main, .control-row__sub, .control-group, .control-group--plain ｜ control-row.css · 有外框的「左文字右控件」獨立列
 - `data-list.css` — .data-list, .data-list__row, .data-list__group-label, .data-list__row-main, .data-list__row--disabled ｜ Data list — row-divider list (no card per row).
 - `date-input.css` — .date-input, .date-input__icon, .date-input__ph ｜ date-input.css · 日期／時間欄位的 placeholder 外觀（2026-07
@@ -552,6 +553,7 @@
 - `upload-tile.css` — .upload-tile, .upload-tile__act, .upload-tile--file, .upload-tile--slim, .upload-tile--video ｜ Upload tile · dashed upload affordance for creat
 - `variant-builder.css` — .variant-builder, .option-set, .option-set__row, .option-set__add, .option-set__name ｜ Variant builder · Shopify-style options + per-va
 - `vault-share.css` — .vshare, .vshare__section, .vshare__label, .vshare__hint, .vshare__intent ｜ Vault share · 加密連結／NFC 鑰匙的發放面板
+- `venue-map.css` — .venue-map, .fep-shop, .venue-map__canvas, .venue-map__streets, .venue-map__road ｜ venue-map — 依完整地址產生的活動地點地圖（D369 決定二，2026-10-07 建
 - `vip-card.css` — .vip-card, .vip-card__settings, .vip-card__head, .vip-card__title, .vip-card__sub-desc ｜ VIP card · 會員卡卡面自訂器（數位商品分類＝會員卡）
 - `waterfall.css` — .waterfall, .waterfall__row, .waterfall__head, .waterfall__name, .waterfall__meta
 - `wizard-split.css` — .wizard-split, .wizard-split__main, .wizard-split__rail, .wizard-split--narrow, .fd-ov ｜ Wizard split — content column + sticky summary r

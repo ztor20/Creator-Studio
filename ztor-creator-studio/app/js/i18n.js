@@ -4843,6 +4843,10 @@
     /* D340：說明區塊內文太長時的收合 */
     /* 墓碑 2026-10-05（D354）：fep.info.more／fep.info.less（粉絲頁說明區塊的展開全文／收合）隨說明區塊退場 */
     'fep.sec.lineup':       { en: 'Lineup',                           zh: '卡司陣容' },
+    /* D369（2026-10-07）：活動地點＝依完整地址產生的地圖（partials/venue-map.js；建立活動第 3 步也用） */
+    'fep.sec.venue':        { en: 'Location',                         zh: '活動地點' },
+    'vmap.open':            { en: 'Open in Maps',                     zh: '在地圖中開啟' },
+    'vmap.alt':             { en: 'Map: {a}',                         zh: '地圖：{a}' },
     /* 墓碑 2026-09-29（D334）：fep.sec.notes／fep.tag.bring（粉絲頁「注意事項」一節）隨兩份清單退場；
        說明區塊的粉絲頁呈現暫不做（ASSUMPTIONS UIA-186），不預先建鍵。 */
     'fep.sec.pickup':       { en: 'Ticket delivery',                  zh: '取票方式' },
@@ -4850,6 +4854,10 @@
     'fep.sec.tiers':        { en: 'Tickets & prices',                 zh: '票種與價格' },
     'fep.sec.bundles':      { en: 'Bundles',                          zh: '組合方案' },
     'fep.tier.buy':         { en: 'Buy',                              zh: '購買' },
+    /* D367（2026-10-07）：票價列下的折扣固定價讀數 */
+    'fep.deal.win':         { en: '{p} until {to}',                   zh: '限時 {p}（至 {to}）' },
+    'fep.deal.after':       { en: 'then {p}',                         zh: '之後 {p}' },
+    'fep.deal.gen':         { en: 'Discounted to {p}',                zh: '折扣價 {p}' },
     'fep.tier.soldout':     { en: 'Sold out',                         zh: '完售' },
     'fep.sec.terms':        { en: 'Terms',                            zh: '購票條款' },
     'fep.sec.related':      { en: 'Related events',                   zh: '相關活動' },
@@ -5172,6 +5180,9 @@
     'ce.venue.city.ph':     { en: 'e.g., Taipei, Taiwan',            zh: '例如：台北，台灣' },
     'ce.venue.addr':        { en: 'Full address',                     zh: '完整地址' },
     'ce.venue.addr.ph':     { en: 'Street address',                   zh: '街道地址' },
+    'ce.venue.map':         { en: 'Map',                              zh: '地圖' },
+    'ce.venue.map.hint':    { en: 'Made from the full address and shown on the event page. The pin can\'t be moved.', zh: '依完整地址自動產生、顯示在活動頁；位置不能手動調整。' },
+    'ce.venue.map.empty':   { en: 'Appears once a full address is entered.', zh: '填完整地址後才會產生。' },
     /* 場地的進階兩欄（2026-08-06）：收在 .field-more 後面，按鈕文案自帶一組（非預設的「顯示更多」） */
     'ce.venue.adv':         { en: 'Advanced',                         zh: '進階' },
     'ce.venue.adv.less':    { en: 'Collapse',                         zh: '收合' },
@@ -9918,6 +9929,9 @@
     'event-detail.golive.early':     { en: 'Start selling ahead of schedule', zh: '提前開賣' },
     'event-detail.golive.early-sub': { en: 'Tickets go on sale straight away instead of waiting for the time above.',
                                        zh: '不等上面設定的時間，立刻開賣。' },
+    /* bookyay 帶入者的開賣時間鎖定（5.1.6.1 F21／F23）：提前開賣鈕停用時的原因句 */
+    'event-detail.golive.bky':       { en: 'The sale time comes from bookyay. To open sales earlier, change it there.',
+                                       zh: '開賣時間來自 bookyay，要提前開賣請回 bookyay 改。' },
     'event-detail.danger.title':     { en: 'Cancel this event',  zh: '取消活動' },
     'event-detail.danger.sub':       { en: 'Cancelling does not refund tickets automatically, and cannot be undone (§5.1.6 F5). Admin voids any tickets still valid afterward from the Sales record.',
                                        zh: '取消不會自動退款，且無法復原（§5.1.6 F5）。之後由 Admin 在「銷售紀錄」逐票或整場撤銷仍有效的票券。' },
@@ -10022,6 +10036,7 @@
                               zh: '粉絲到指定門市或活動現場憑證件領票。' },
     'ed.pub.ship.fee':    { en: 'Postage',                 zh: '運費' },
     'ed.pub.ship.fee.hint': { en: 'Fans pay this on top at checkout.', zh: '粉絲結帳時另外付這筆。' },
+    'ed.pub.ship.fee.bky': { en: 'Converted from bookyay {v}', zh: '由 bookyay {v} 換算' },   // D368 決定四
     'ed.pub.ship.spot':   { en: 'Pickup location',         zh: '取貨地點' },
     'ed.pub.ship.spot.hint': { en: 'Fans bring ID here to collect the ticket.', zh: '粉絲帶證件到這裡領票。' },
     /* 墓碑 2026-09-29（D327）：詳情頁發布設定裡電子門票三組附屬設定的字串（ed.pub.tp／ed.pub.dq／ed.pub.tf 系列、

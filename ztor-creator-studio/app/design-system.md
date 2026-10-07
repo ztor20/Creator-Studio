@@ -7117,3 +7117,51 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 **Consumers** — `demand-board.html`（F4 右側常駐欄）、`product-detail.html`（需求數據彈窗，S69）。
 
 **CSS** — [`demand-focus.css`](./ds-components/demand-focus.css) ｜ **JS** — `js/demand-board.js`
+
+### 4.227 Condition list（條件清單）
+
+**Purpose** — 「好幾種不同的條件，各加一次」的清單：一開始是空的，從「＋ 新增條件」選單挑一種加入，每張條件卡可移除，加過的種類不再出現在選單裡。首見於建立活動的購票規則（D366／D367，2026-10-07）：活動層預設（票務設定彈窗）與單張門票彈窗的「購買條件」共用同一份畫法。
+
+**`_layer`** · molecule ｜ **source tier** · Project ｜ **surface 層** · 卡框是 `.control-group` 的 1px 內描邊（`--layer-line`）、不填色，坐在 L1／L2 卡上都成立（建立活動的兩個消費位置分別是 `form-section--outlined` 與 `form-section--card`）。
+
+**Anatomy**
+- `.cond-list` — flex column，`gap --sp-12`（Q103：節奏歸容器）
+  - `.cond-list__item.control-group.control-group--plain[data-cond]` ×n — 沿用 Control group 的線框與內距，不另造第二種框；本檔只加 flex column、`gap --sp-16`
+    - `.cond-list__head` — `__title`（`.ztor-icon`＋條件名稱，`margin-right:auto`）＋ 可選 `.field-source`（bookyay 帶入）＋ `.btn.btn--icon.btn--sm.cond-list__remove`（鎖定時不出現）
+    - `.cond-list__body` — 條件自己的欄位（`.field`／`.rule-row`／`.field__error`／`.field__hint--warn`），`gap --sp-16`、欄位不帶自己的 margin
+  - `p.field__hint.cond-list__empty` — 沒有任何條件時的一句說明
+  - `details.dropdown.dropdown--left.cond-list__add` — 新增選單（Dropdown menu），全部加完或整組鎖定時不出現
+
+**States** — 鎖定（`.is-source-locked`：欄位停用、無移除鈕；整組鎖定時連新增選單也不出現）；版本閘（選單項目與卡可掛 `data-feat`，由 devtools 收起）。
+
+**與 Social links 的分工** — Social links 是「同一種東西加很多個」（每列欄位相同）；Condition list 是「好幾種不同的東西各加一次」，每張卡的欄位不同、有鎖定態。
+
+**Token usage** — `--sp-8`／`--sp-12`／`--sp-16`、`--fs-14`、`--fw-medium`、`--control-h-xs`、`--foreground`／`--muted-foreground`／`--destructive`（＋ Control group 的 `--radius-xl`、`--layer-line`）。
+
+**Consumers** — `create-event.html`（`#ce-rules` 活動層預設、單張門票彈窗 `[data-rules-for]`）。
+
+**CSS** — [`cond-list.css`](./ds-components/cond-list.css) ｜ **JS** — 頁面行內（`create-event.html` 的 `condsHTML`／`condCardHTML`／`addMenuHTML`），無獨立 JS 檔
+
+### 4.228 Venue map（活動地點地圖）
+
+**Purpose** — 活動的地點地圖，依完整地址自動產生（D369 決定二，2026-10-07）：不另設欄位、定位針不能手動拖動，bookyay 帶入與自建活動同一套。原型自給自足、不接外部地圖服務（不嵌 iframe、不載外部 script），所以是**靜態示意**：自繪街道底圖（依地址文字算出四種擺法之一）＋中央定位針＋地址一行＋「在地圖中開啟」連結（以地址文字組成地圖搜尋網址，只是 `<a>`）。正式接真地圖時只換 `__canvas` 內容（ASSUMPTIONS UIA-216）。
+
+**`_layer`** · molecule ｜ **source tier** · Project ｜ **surface 層** · 畫布是填色面（`--vm-surface`）＋ 1px 內描邊，坐在 L1／L2 或前台鏡像的暗底上都成立。
+
+**Anatomy**
+- `figure.venue-map[data-venue-map]` — flex column，`gap --sp-8`；`.venue-map--strip`＝表單裡的扁長預覽（3:1）
+  - `.venue-map__canvas[role=img][aria-label]` — 16:9、`--radius-md`、`overflow:hidden`
+    - `svg.venue-map__streets`（`preserveAspectRatio=slice`）— `__water`／`__park`／`__minor`／`__road` 四種形狀，顏色全由 CSS 決定
+    - `.venue-map__pin` — 32×40 定位針，尖端落在畫面正中央；`__pin-body`＋`__pin-dot`
+  - `figcaption.venue-map__caption` — `__address`（地址，strip 時不畫：上方欄位已有）＋ `a.venue-map__open`（`target=_blank`，＋`external-link` icon，靠右）
+
+**Color roles** — 元件自己的 `--vm-*` 角色變數：預設 `--vm-surface:--muted`、`--vm-road:--card`、`--vm-minor:--border`、`--vm-park:--status-success-fill`、`--vm-water:`（`--status-info` 16% 混透明）、`--vm-pin:--primary`、`--vm-pin-ink:--primary-foreground`、`--vm-ink:--muted-foreground`、`--vm-link:--foreground`、`--vm-line:--border`。放進前台鏡像 `.fep-shop` 時改接前台 token（`--bg-secondary`／`--bg-tertiary`／`--border-default`／`--brand-500`／`--brand-ink`／`--text-secondary`／`--text-primary`），規則寫在本檔、不加進鏡像檔 `fan-shop.css`。
+
+**States** — 地址空白＝不畫（`html()` 回空字串；建立活動第 3 步改顯示一句「填完整地址後才會產生」）。沒有互動態（不能拖、不能縮放）。
+
+**Token usage** — `--sp-2`／`--sp-4`／`--sp-8`／`--sp-12`／`--sp-32`／`--sp-40`、`--fs-13`、`--lh-relaxed`、`--radius-md`／`--radius-pill`（＋上列色彩角色）。
+
+**Consumers** — `js/fan-event-page.js`（粉絲視角活動頁詳情左欄「活動地點」一節：`create-event.html` 第 8 步預覽、`event-localization.html`）、`create-event.html`（第 3 步場次詳情「完整地址」下方的唯讀預覽，`renderVenueMap`，strip）。
+
+**CSS** — [`venue-map.css`](./ds-components/venue-map.css) ｜ **JS** — [`partials/venue-map.js`](./partials/venue-map.js)（`window.ztorVenueMap.html({ address, strip, label, alt })`、`.url(address)`）
+

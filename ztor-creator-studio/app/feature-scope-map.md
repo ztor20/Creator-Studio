@@ -19,7 +19,7 @@
 
 Tier 欄的 release 編號就是程式用的 tier 代號：`devtools.js` 讀到 `🟢 release2.3` 就把該功能歸到 `release2.3`。之後交付 release2.4 時，那批功能改標 `🟢 release2.4`（保留它是哪一版交付的），新的下一版標 `🔵 release2.5`。
 
-本期統計：🟢 release2.3 92 · 🔵 release2.4 23 · ⚪ TBD 31 · ⚫ 退場 5（2026-10-07 依功能表逐列重數；各模組小計與功能總數另待校正）
+本期統計：🟢 release2.3 92 · 🔵 release2.4 23 · ⚪ TBD 32 · ⚫ 退場 5（2026-10-07 依功能表逐列重數，同日補登 S82〔D366〕；各模組小計與功能總數另待校正）
 
 ## Build 狀態圖例
 
@@ -176,6 +176,7 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 14 · ⚫ 退場 3
 | `S77` | 　舊版建立流程（對照用備份頁）                   | Create event (old flow)                          | ⚪ TBD      | ✅⬆ ahead | events.html 建立鈕下拉第二項 → create-event-legacy.html（該頁本身仍是頁級 `full`） |
 | `S78` | 　活動預覽與在地化                          | Event preview & localization                     | ⚪ TBD      | ✅⬆ ahead | event-detail 頁首 `[data-ed-localize]`、設定子分頁「在地化」與其面板；event-localization.html 本身仍是頁級 `full` |
 | `S81` | 　Admin 手動下架活動＋「已下架」徽章 | Admin unlists an event + Unlisted badge | ⚪ TBD      | ✅⬆ ahead | D361 決定五（2026-10-07）：event-detail 設定分頁 `#ed-unlist`（Admin 代管態才能按，創作者視角停用）、頁首 `#ed-unlisted-badge`；events.html 清單列狀態欄注入的 `[data-ev-unlisted]` 徽章。上架是階段以外的維度，下架不改階段 |
+| `S82` | 　購票規則的粉絲分級條件（限粉絲分級購買、粉絲分級折扣、限時＋限粉絲分級折扣） | Fan-tier purchase conditions (fan tier only, fan tier discount, limited-time fan tier discount) | ⚪ TBD      | ✅⬆ ahead | D366 決定五／D367 決定三（2026-10-07）：create-event 購票規則「新增條件」選單的三個選項 `[data-cond-add][data-feat="S82"]` 與已加的條件卡 `.cond-list__item[data-feat="S82"]`（活動層票務設定彈窗、單張門票彈窗）；選單是 JS 畫的，畫完呼叫 `ztorDevState.regate()` 重跑 data-feat、換版本時重畫。其餘四種條件（限時購買、限購、折扣、限時折扣）隨 S72 進 release2.4 |
 |       | **粉絲忠誠點數（D347，2026-10-02）**                 | Loyalty points scoring model                    |            |          | 規格 5.1.0.8（新頁）、5.1.7.6 F3；計分規則本體在主規格 §7.5。編號沿用 S 段（devtools 只解析 `S`／`O`／`E`／`B` 開頭的 ID），與活動段 S52–S64 同一做法 |
 | `S65` | 　平台忠誠點數設定（Admin 第 8 個同層目的地：全站活動給分與上限、賽季加倍週、衰減與等級保留、平台常數唯讀、修改紀錄） | Platform Loyalty Settings (Admin) | ⚪ TBD      | ✅ built  | D347／5.1.0.8 F1–F6；上線階段〔產品待確認〕（主規格 §8.29 第 16 項）。`admin-platform-loyalty.html` 頁級 `data-page-feat="S65"`，並比照平台優惠設定登記進 `js/sidebar.js`／`js/devtools.js` 兩份 `FULL_ROUTES`（低版本藏側欄入口、直連導回） |
 | `S66` | 　分級設定的計分設定：各購買品項的份量（5 項）與互動推薦每 90 天最多得分（4 項） | Tier settings: purchase type value & max points per 90 days | ⚪ TBD      | ✅ built  | D347／5.1.7.6 F3.2–F3.3；`fans-crm.html` 分級設定彈窗「計分設定」分頁與 `tier-settings.html` 備份頁的兩組 `[data-feat="S66"]`。四類各類行為的份量（預設改 1.0）與「外部平台訊號本版暫不計入」屬既有分級設定，不掛本編號 |

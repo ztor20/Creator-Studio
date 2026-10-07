@@ -143,6 +143,7 @@
     S62: 'release2.4',   // 2026-10-07 使用者裁示：時間層級與定時上架上限隨 release2.4
     S72: 'release2.4', S73: 'release2.4', S74: 'tbd', S75: 'release2.4', S76: 'tbd', S77: 'tbd', S78: 'tbd', S79: 'tbd', S80: 'tbd',   // 2026-10-07 release2.4 切割（活動模組／bookyay 帶入建立／手動建立／Watch Party／複製與再辦一次／舊流程／在地化／其他線下類型入口／直接促銷同意）
     S81: 'tbd',                                  // 2026-10-07 D361（活動：Admin 手動下架＋已下架徽章）
+    S82: 'tbd',                                  // 2026-10-07 D366／D367（活動：購票規則的粉絲分級條件——限粉絲分級購買、粉絲分級折扣、限時＋限粉絲分級折扣）
     S67: 'release2.4',                           // 2026-10-05 D354（活動：描述區塊的新增描述與排序；S54 門票簡介〔D353〕、S57 說明區塊、S60 粉絲頁說明區塊同日退場，已無元素掛標記）
     O04: 'tbd', O09: 'tbd', O17: 'release2.4', O18: 'tbd', O22: 'release2.4', O23: 'release2.4',
     E08: 'release2.4', E09: 'release2.4', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'release2.4', E20: 'release2.4', E22: 'tbd', E23: 'release2.4', E24: 'tbd', E25: 'tbd', E26: 'tbd'
@@ -991,6 +992,10 @@
     get: function () { return Object.assign({}, state); },
     set: function (patch) { Object.assign(state, patch || {}); update(); },
     on: function (cb) { if (typeof cb === 'function') listeners.push(cb); },
+    /* 2026-10-07（D366）：給 JS 事後畫出來的選單用——頁面先問「這個功能在目前版本裡嗎」決定要不要畫，
+       畫完再呼叫 regate() 讓新節點上的 data-feat 照版本收起（MutationObserver 只重跑路由閘，不重跑 data-feat）。 */
+    featOn: function (id) { var a = tiersForRule(curVersionRule()); return !a || !!state.showFuture || a.indexOf(featTier(String(id))) >= 0; },
+    regate: function () { applyVersion(); },
   };
   emit();
   loadVersions();

@@ -167,19 +167,43 @@
 
   /* ── 購買條件與限購 ───────────────────────────────────────────────── */
   var posInt = function (v) { var n = Math.floor(Number(v)); return isFinite(n) && n > 0 ? n : null; };
-  /* 單張門票的規則（create-event 的 rules 形狀：buy{mode,from,to,tier}／cap{mode,person,order,times}）→ 正規化 */
+  /* 單張門票的規則形狀（D366／D367，2026-10-07 起＝「新增條件」）：
+       { conds: { buyTime{from,to}, buyTier{tier}, cap{person,order,times}, disc{price}, discTime{price,from,to},
+                  discTier{price,tier}, discBoth{price,from,to,tier} } }——每種條件最多一個、沒加就沒有那個鍵；
+       bookyay 帶入的條件另帶 bky:true（鎖定）。折扣一律存固定價 price（D367），百分比只是顯示。
+     ruleConds()＝舊形狀轉換器：2026-10-07 以前的 { buy{mode,…}, cap{mode,…}, disc{mode,pct,…} }（events-store 舊示範、
+     舊草稿）照原意轉成新形狀；舊的折扣只有 % 沒有價格，轉成 pct 欄位，由消費端用票價換算（condPrice）。
+     D368（2026-10-07）：活動層的折扣類條件本來就是百分比 pct，所以活動層舊資料的 % 直接沿用、不必換算；
+     門票層舊資料的 pct 由 create-event 的 condPrice 照該門票票價換成價格顯示。 */
+  function ruleConds(r) {
+    if (r && r.conds) return r;
+    var out = { conds: {} };
+    if (!r) return out;
+    var buy = r.buy || {}, cap = r.cap || {}, disc = r.disc || {};
+    var bm = buy.mode || 'none', dm = disc.mode || 'off';
+    if (bm === 'time' || bm === 'both') out.conds.buyTime = { from: buy.from || '', to: buy.to || '' };
+    if (bm === 'tier' || bm === 'both') out.conds.buyTier = { tier: buy.tier || 'fan' };
+    if (cap.mode === 'cap') out.conds.cap = { person: cap.person || '', order: cap.order || '', times: cap.times || '' };
+    var dk = { on: 'disc', time: 'discTime', tier: 'discTier', both: 'discBoth' }[dm];
+    if (dk) {
+      var c = { price: '', pct: disc.pct == null ? '' : String(disc.pct) };
+      if (dk === 'discTime' || dk === 'discBoth') { c.from = disc.from || ''; c.to = disc.to || ''; }
+      if (dk === 'discTier' || dk === 'discBoth') c.tier = disc.tier || 'fan';
+      out.conds[dk] = c;
+    }
+    return out;
+  }
+  /* 單張門票的規則（任一形狀，先過 ruleConds）→ 正規化成票務商品預設要用的幾個量 */
   function tierRules(r) {
-    r = r || {};
-    var buy = r.buy || {}, cap = r.cap || {};
-    var mode = buy.mode || 'none';
-    var capOn = cap.mode === 'cap';
+    var c = ruleConds(r).conds;
+    var bt = c.buyTime, cp = c.cap;
     return {
-      tier: (mode === 'tier' || mode === 'both') ? (buy.tier || 'fan') : null,
-      timed: mode === 'time' || mode === 'both',
-      from: local(buy.from), to: local(buy.to),
-      person: capOn ? posInt(cap.person) : null,
-      order: capOn ? posInt(cap.order) : null,
-      times: capOn ? posInt(cap.times) : null
+      tier: c.buyTier ? (c.buyTier.tier || 'fan') : null,
+      timed: !!bt,
+      from: bt ? local(bt.from) : '', to: bt ? local(bt.to) : '',
+      person: cp ? posInt(cp.person) : null,
+      order: cp ? posInt(cp.order) : null,
+      times: cp ? posInt(cp.times) : null
     };
   }
   /* 預設＝所含門票最嚴（〔推導〕）。rulesList＝每個允許票種的門票規則（原始形狀）；n＝每組張數；
@@ -434,7 +458,7 @@
     evHidden: evHidden, saleCeil: saleCeil, lateEnd: lateEnd, lateText: lateText,
     eventValue: eventValue, followText: followText, isCustom: isCustom, effective: effective,
     schedErrors: schedErrors, schedHTML: schedHTML,
-    tierRules: tierRules, defaults: defaults, seedFrom: seedFrom, rulesErrors: rulesErrors, rulesHTML: rulesHTML, rulesSummary: rulesSummary,
+    ruleConds: ruleConds, tierRules: tierRules, defaults: defaults, seedFrom: seedFrom, rulesErrors: rulesErrors, rulesHTML: rulesHTML, rulesSummary: rulesSummary,
     onClick: onClick, onInput: onInput, syncErrors: syncErrors, errorCount: errorCount
   };
 })();

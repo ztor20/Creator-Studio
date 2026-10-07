@@ -1077,7 +1077,8 @@
 
           <div class="form-section form-section--outlined" data-pub-pre>
             <div class="form-section__head">
-              <h3 class="form-section__title" data-i18n="ed.pub.pickup">Ticket delivery</h3>
+              <!-- 文字包一層 span：標題尾端要掛 bookyay 來源標記，data-i18n 直接掛在 h3 上會在換語言時把標記洗掉 -->
+              <h3 class="form-section__title" id="ed-pub-pickup-title"><span data-i18n="ed.pub.pickup">Ticket delivery</span></h3>
               <p class="form-section__sub" data-i18n="ed.pub.ship.sub">How fans get hold of the ticket.</p>
             </div>
             <div class="segmented radio-cards radio-cards--3" role="radiogroup" data-pub="pickup">
@@ -1106,6 +1107,8 @@
                 <input class="input amount-field__input" data-pub-f="ship-fee" type="number" min="0" step="1">
               </span>
               <p class="field__hint" data-i18n="ed.pub.ship.fee.hint">Fans pay this on top at checkout.</p>
+              <!-- D368 決定四：bookyay 帶入的運費是港幣換算成創作者幣別的值，這一句寫港幣原值（同建立活動 syncShipFeeSrc） -->
+              <p class="field__hint" data-pub-ship-fee-src hidden></p>
             </div>
             <div class="field" data-pub-when="store" style="margin-bottom:0" hidden>
               <label class="field__label" data-i18n="ed.pub.ship.spot">Pickup location</label>
@@ -2614,6 +2617,18 @@
     if (!row) return;
     /* D340：沒有「排程開賣」這個模式了——有開賣日期與時間＝排了開賣，才有「提前」可言 */
     row.hidden = !(ev.status === 'scheduled' && !!((ev.sale || {}).from || '').trim());
+    /* bookyay 帶入者（5.1.6.1 F21／F23：開賣時間照 bookyay 帶入並鎖定，2026-10-07 補）：「提前開賣」等於在 ztor 端推翻
+       鎖定的開賣時間，與 F21「要改回 bookyay 改」矛盾——按鈕停用、說明句換成原因，不另開例外。 */
+    const bky = typeof isBky === 'function' && isBky();
+    const btn = row.querySelector('[data-ed-golive]');
+    if (btn) btn.disabled = bky;
+    const sub = document.getElementById('ed-golive-sub');
+    if (sub) {
+      const key = bky ? 'event-detail.golive.bky' : 'event-detail.golive.early-sub';
+      sub.setAttribute('data-i18n', key);
+      sub.textContent = T(key, bky ? 'The sale time comes from bookyay. To open sales earlier, change it there.'
+                                   : 'Tickets go on sale straight away instead of waiting for the time above.');
+    }
   }
 
   function syncStage() {
@@ -3092,6 +3107,30 @@
       if (window.ztorIcons) window.ztorIcons.applyIcons(main);
     } else if (!on && chip) chip.remove();
   }
+  /* 欄位層的「bookyay 帶入」鎖定標記（2026-10-07 補，對齊 5.1.6.1 F21 鎖定清單）：欄位外框 .is-source-locked、
+     標籤尾端一枚來源標記（同描述、條款及細則、場次那一枚）。唯讀本身由 applyReadonly／syncPubLock 負責——
+     兩者在切換檢視／編輯模式時都會重算，這裡只管標記，不分模式一律掛。 */
+  function bkyChipHTML() {
+    return '<span class="field-source"><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="ed.src.bky">' + T('ed.src.bky', 'From bookyay') + '</span></span>';
+  }
+  function markBkySource(label, on, box) {
+    if (box) box.classList.toggle('is-source-locked', on);
+    if (!label) return;
+    const chip = label.querySelector('.field-source');
+    if (on && !chip) {
+      label.insertAdjacentHTML('beforeend', ' ' + bkyChipHTML());
+      if (window.ztorIcons) window.ztorIcons.applyIcons(label);
+    } else if (!on && chip) chip.remove();
+  }
+  /* 場地名稱與完整地址（5.1.6.1 F21；5.1.6.2 F6，D329：分別由 bookyay 的活動地點與地區帶入）：bookyay 帶入者不分模式一律唯讀 */
+  function lockVenueFromBky(on) {
+    ['ed-venue', 'ed-address'].forEach(id => {
+      const el = document.getElementById(id);
+      const f = el && el.closest('.field');
+      if (f) markBkySource(f.querySelector('.field__label'), on, f);
+      if (el && on) el.readOnly = true;
+    });
+  }
   document.getElementById('ed-terms')?.addEventListener('click', e => {
     const sw = e.target.closest('[data-ed-term]');
     if (!sw || sw.disabled || sw.classList.contains('switch--locked')) return;
@@ -3111,6 +3150,7 @@
       lockDescFromBky(isBky());
     }
     fillTerms(ev);
+    lockVenueFromBky(isBky());
     renderHighlightCount();
     /* 墓碑 2026-10-05（D354）：說明區塊預填（edInfo.set）隨說明區塊退場，內容已由 migrate() 併進描述 */
     /* 墓碑（2026-08-11）：容量欄與它的「下限＝已售出」規則隨「活動人數」撤除（ATT-002）。
@@ -3165,6 +3205,15 @@
       const lock = ro || (typeof isBky === 'function' && isBky());
       sw.disabled = lock; sw.classList.toggle('switch--locked', lock); sw.setAttribute('aria-disabled', lock ? 'true' : 'false');
     });
+    /* 場次（D365；5.1.6.1 F21「各場日期與時間」鎖定）：bookyay 帶入者不分模式一律鎖——日期、開始／結束時間、結束日期、
+       開放入場與早到處理都唯讀，場次不能增刪（2026-10-07 補：原本只鎖了開放入場一組，日期與時間與 F21 不一致） */
+    if (typeof isBky === 'function' && isBky()) {
+      root.querySelectorAll('[data-sess-f], [data-sess-early], [data-sess-remove], #ed-sess-add').forEach(el => {
+        if ('readOnly' in el && el.tagName === 'INPUT') el.readOnly = true; else el.disabled = true;
+      });
+      /* 場地名稱與完整地址（5.1.6.1 F21，D329；2026-10-07 補，原本編輯模式可改）：標記見 lockVenueFromBky */
+      root.querySelectorAll('#ed-venue, #ed-address').forEach(el => { el.readOnly = true; });
+    }
     if (window.ZtorViewMode) window.ZtorViewMode.sync(root);   /* 檢視態讀數（Q119，js/view-mode.js） */
   }
 
@@ -3178,6 +3227,11 @@
     id: 's1', name: '', date: ev.date, start: ev.start, end: ev.end, doors: ev.doors, early: ev.early || 'warn',
     endDate: ev.endDate || ''
   }]).map(s => Object.assign({ early: 'warn' }, s, { multiDay: !!(s.multiDay || s.endDate) }));   // 跨日（D328）：有 endDate＝跨日
+  /* 開演前幾分鐘（doorsMin）由開始與開放入場推算補齊——bookyay 帶入者改開始時間時以它為準（D365，見 input handler） */
+  edSessions.forEach(s => {
+    if ((s.doorsMin == null || s.doorsMin === '') && hhmmToMin(s.start) != null && hhmmToMin(s.doors) != null)
+      s.doorsMin = String(Math.max(0, hhmmToMin(s.start) - hhmmToMin(s.doors)));
+  });
 
   /* ── 場次盒的折疊（2026-08-13 使用者裁決「A 案」，與建立流程同一套）──────
      折疊態只留一行摘要：日期 · 起訖時間 · 開放入場。
@@ -3243,18 +3297,23 @@
     const m = f.querySelector('[data-sess-end-err]');
     if (m) { m.textContent = err; m.hidden = !err; }
   }
+  /* bookyay 帶入的活動：場次的跨日、開放入場與早到處理鎖定（D328；D365），標籤旁掛來源標記——與描述、條款及細則同一枚。 */
+  const sessBky = () => typeof isBky === 'function' && isBky();
+  const bkySrcChip = () => '<span class="field-source"><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="ed.src.bky">' +
+    tixEsc(T('ed.src.bky', 'From bookyay')) + '</span></span>';
   function sessBoxHTML(s, i) {
     const multi = edSessions.length > 1;
+    const bky = sessBky();
     const startM = hhmmToMin(s.start), doorsM = hhmmToMin(s.doors);
     const mins = doorsM != null && startM != null ? String(Math.max(0, startM - doorsM)) : (s.doorsMin || '');
     const f = (label, field, type, val) =>
-      '<label class="field"><span class="field__label">' + tixEsc(label) + '</span>' +
+      '<label class="field"><span class="field__label">' + tixEsc(label) + (bky ? ' ' + bkySrcChip() : '') + '</span>' +
       '<input class="input" type="' + type + '" data-sess-f="' + field + '" value="' + tixEsc(val == null ? '' : val) + '"></label>';
     /* 開始／結束時間（D329）：跨日開著時必填——星號跟著開關、錯誤句就地（edSessTimeErr）。 */
     const ft = (label, field) => {
       const err = edSessTimeErr(s, field);
       return '<label class="field' + (err ? ' is-invalid' : '') + '" data-sess-time-field="' + field + '">' +
-        '<span class="field__label">' + tixEsc(label) + ' <span class="field__req" data-sess-req' + (s.multiDay ? '' : ' hidden') + '>*</span></span>' +
+        '<span class="field__label">' + tixEsc(label) + ' <span class="field__req" data-sess-req' + (s.multiDay ? '' : ' hidden') + '>*</span>' + (bky ? ' ' + bkySrcChip() : '') + '</span>' +
         '<input class="input" type="time" data-sess-f="' + field + '" value="' + tixEsc(s[field] == null ? '' : s[field]) + '">' +
         '<span class="field__error" data-sess-time-err' + (err ? '' : ' hidden') + '>' + tixEsc(err) + '</span></label>';
     };
@@ -3288,7 +3347,7 @@
          開關掛 data-view-safe：檢視態也要看得到現在是開還是關（Q119 例外：開關是狀態展示）。 */
       '<div class="control-group" data-sess-md-group data-feat="S53">' +
         '<div class="control-row">' +
-          '<div class="control-row__main">' + tixEsc(T('ce.sess.multiday', 'Multi-day')) + '</div>' +
+          '<div class="control-row__main">' + tixEsc(T('ce.sess.multiday', 'Multi-day')) + (bky ? ' ' + bkySrcChip() : '') + '</div>' +
           '<button type="button" class="switch' + (s.multiDay ? ' switch--on' : '') + '" role="switch" aria-checked="' +
             (s.multiDay ? 'true' : 'false') + '" data-view-safe data-sess-md aria-label="' + tixEsc(T('ce.sess.multiday', 'Multi-day')) + '"></button>' +
         '</div>' +
@@ -3305,8 +3364,10 @@
          它跟上面的日期、開始結束時間不是同一層——那些是「這一場什麼時候」，
          這一組是「門什麼時候開、早到怎麼辦」的附屬設定。填色層只到 L2（見 nest.css），
          第三層以後一律用線框表達層級，所以這裡用線框不用底色。 */
-      '<div class="field control-group control-group--plain">' +
-        '<div class="field__label"><span>' + tixEsc(T('ce.doors', 'Doors open')) + '</span> <span class="text-sub">' + tixEsc(T('ce.opt', '(optional)')) + '</span></div>' +
+      /* D365：bookyay 帶入者的開放入場（過早入場提示）與早到處理（過早入場的處理）不分模式一律鎖定——
+         整組掛 .is-source-locked（segmented 點不動）、兩層標籤各掛來源標記；輸入欄與選項卡的鎖在 applyReadonly。 */
+      '<div class="field control-group control-group--plain' + (bky ? ' is-source-locked' : '') + '" data-sess-doors-group>' +
+        '<div class="field__label"><span>' + tixEsc(T('ce.doors', 'Doors open')) + '</span> <span class="text-sub">' + tixEsc(T('ce.opt', '(optional)')) + '</span>' + (bky ? bkySrcChip() : '') + '</div>' +
         '<div class="form-grid">' +
           f(T('ed.doors.at', 'Time'), 'doors', 'time', s.doors) +
           '<label class="field"><span class="field__label">' + tixEsc(T('ed.doors.before', 'Before start')) + '</span>' +
@@ -3321,8 +3382,8 @@
         /* 單選卡是狀態展示（Q119 例外）：標 data-view-safe 讓檢視態看得到選了哪個（此前被 shared.css 白名單整組藏掉、只剩標籤），
            不可點由 applyReadonly 的 disabled ＋ shared.css 的 .segmented.radio-cards pointer-events 擋。 */
         '<div class="rule-sub" data-early-block' + ((s.doors || '').trim() || String(mins).trim() ? '' : ' hidden') + '>' +
-          '<div class="field__label">' + tixEsc(T('ed.early.policy', 'Arriving before that')) + '</div>' +
-          '<div class="segmented radio-cards" role="radiogroup">' +
+          '<div class="field__label">' + tixEsc(T('ed.early.policy', 'Arriving before that')) + (bky ? bkySrcChip() : '') + '</div>' +
+          '<div class="segmented radio-cards" role="radiogroup"' + (bky ? ' aria-disabled="true"' : '') + '>' +
             ['warn', 'block'].map(v => '<button type="button" class="segmented__btn' +
               ((s.early || 'warn') === v ? ' segmented__btn--active' : '') + '" role="radio" aria-checked="' +
               ((s.early || 'warn') === v ? 'true' : 'false') + '" data-view-safe data-sess-early="' + v + '">' +
@@ -3360,6 +3421,8 @@
       if (startM != null) {
         if (k === 'doors') { s.doorsMin = doorsM == null ? '' : String(Math.max(0, startM - doorsM)); mEl.value = s.doorsMin; }
         else if (k === 'doorsMin') { s.doors = mins === '' ? '' : minToHhmm(startM - Number(mins)); dEl.value = s.doors; dEl.dispatchEvent(new Event('change')); }
+        /* bookyay 帶入者（D365）：開放入場以「開演前幾分鐘」帶入並鎖定——改開始時間時分鐘不動、絕對時間跟著重算 */
+        else if (sessBky() && mins !== '') { s.doors = minToHhmm(startM - Number(mins)); dEl.value = s.doors; dEl.dispatchEvent(new Event('change')); }
         else if (doorsM != null) { s.doorsMin = String(Math.max(0, startM - doorsM)); mEl.value = s.doorsMin; }
         else if (mins !== '') { s.doors = minToHhmm(startM - Number(mins)); dEl.value = s.doors; dEl.dispatchEvent(new Event('change')); }
       }
@@ -3943,6 +4006,27 @@
     ['ed-tm-name', 'ed-tm-price', 'ed-tm-qty', 'ed-tm-early'].forEach(id => { tmEl(id).readOnly = false; });
     if (fix) { tmEl('ed-tm-price').readOnly = true; tmEl('ed-tm-qty').readOnly = true; }   // D329：1 人票票價與張數鎖定
     if (isBkyTier(t)) tmEl('ed-tm-price').readOnly = true;   // D330：bookyay 帶入的基準價由港幣原價換算而來、鎖定（改價走在地化的逐幣別覆寫）
+    /* 張數（5.1.6.1 F21「票種名稱與預設價格與張數」鎖定；2026-10-07 補，原本只有 1 人票鎖、一般 bookyay 票可改）＋
+       票價與張數的來源標記（同票名那一枚） */
+    const pqLock = isBkyTier(t) || fix;
+    if (pqLock) tmEl('ed-tm-qty').readOnly = true;
+    const qtyField = tmEl('ed-tm-qty').closest('.field');
+    markBkySource(qtyField && qtyField.querySelector('.field__label'), pqLock, qtyField);
+    markBkySource(tmEl('ed-tm-price').closest('.kv')?.querySelector('.kv__k'), pqLock);
+    /* 票名（5.1.6.1 F22「bookyay 帶入時鎖定」→ 5.1.6.2；2026-10-07 補，原本可改、與規格不一致）：
+       bookyay 帶入的票（含套票轉出的 1 人票）票名唯讀、標籤旁掛來源標記（同描述、條款及細則那一枚）。 */
+    const nameLock = isBkyTier(t) || fix;
+    tmEl('ed-tm-name').readOnly = nameLock;
+    const nameField = tmEl('ed-tm-name').closest('.field');
+    if (nameField) {
+      nameField.classList.toggle('is-source-locked', nameLock);
+      const nl = nameField.querySelector('.field__label');
+      const nreq = nl && nl.querySelector('.field__req');
+      if (nreq) nreq.hidden = nameLock;
+      const nchip = nl && nl.querySelector('.field-source');
+      if (nameLock && nl && !nchip) nl.insertAdjacentHTML('beforeend', bkySrcChip());
+      else if (!nameLock && nchip) nchip.remove();
+    }
     tmEl('ed-tm-save').hidden = false;
     del.hidden = fix;
     p.style.pointerEvents = '';
@@ -4902,7 +4986,22 @@
         pk.classList.add('segmented--locked'); pk.setAttribute('aria-disabled', 'true');
         pk.querySelectorAll('[data-pub-val]').forEach(b => { b.disabled = true; });
       }
+      /* 開賣與停售日期與時間（5.1.6.1 F21／F23）與順豐運費（F24「取票方式本身，含順豐寄送的運費」）：
+         2026-10-07 補——原本編輯模式可改、與 F21 不一致。不分模式唯讀；取貨地點不在鎖定清單，照常可改。 */
+      document.querySelectorAll('#ed-pub-sale-times input, #ed-pub-edit [data-pub-f="ship-fee"]').forEach(el => { el.readOnly = true; });
     }
+    syncPubBkyMarks();
+  }
+  /* 發布設定的「bookyay 帶入」標記（2026-10-07 補）：開賣、停售兩個欄位與運費各掛一枚（同建立活動 lockField 逐欄掛），
+     取票方式掛在分節標題（同建立活動 lockSeg）；售票中起的唯讀卡兩列也掛，同一個值不因階段換卡就失去來源。 */
+  function syncPubBkyMarks() {
+    const on = isBky();
+    document.querySelectorAll('#ed-pub-sale-times .field, #ed-pub-edit [data-pub-when="sf"]').forEach(f => markBkySource(f.querySelector('.field__label'), on, f));
+    markBkySource(document.getElementById('ed-pub-pickup-title'), on);
+    ['ed-pub-onsale', 'ed-pub-pickup'].forEach(id => {
+      const row = document.getElementById(id)?.closest('.data-list__row');
+      markBkySource(row && row.querySelector('.data-list__row-main'), on);
+    });
   }
   /* bookyay 帶入的活動（站上目前只有 taipei-nye）：取票方式唯讀的判準（D308 決定一，經 D327 修訂） */
   function isBky() { return !!ev && ev.source === 'bookyay'; }
@@ -4993,6 +5092,16 @@
       const putPub = (f, v) => { const el = edit.querySelector('[data-pub-f="' + f + '"]'); if (el) el.value = v; };
       putPub('sale-from-d', from.d); putPub('sale-from-t', from.t);
       putPub('sale-to-d', to.d);     putPub('sale-to-t', to.t);
+      /* 順豐運費（F24；D368 決定四）：ev.publish.shipFee＝創作者幣別的值；bookyay 帶入者另記港幣原值 shipFeeHkd，
+         底下一句寫換算來源。值本身在 bookyay 活動不分模式唯讀（syncPubLock）。 */
+      putPub('ship-fee', ev.publish && ev.publish.shipFee != null ? ev.publish.shipFee : '');
+      const feeSrc = edit.querySelector('[data-pub-ship-fee-src]');
+      if (feeSrc) {
+        const hk = isBky() && ev.publish && ev.publish.shipFeeHkd != null && ev.publish.shipFeeHkd !== '' ? Number(ev.publish.shipFeeHkd) : null;
+        feeSrc.hidden = hk == null;
+        if (hk != null) feeSrc.textContent = T('ed.pub.ship.fee.bky', 'Converted from bookyay {v}')
+          .replace('{v}', window.ztorEvents ? window.ztorEvents.fmtMoney('HKD', hk) : 'HK$' + hk);
+      }
       edit.querySelectorAll('[data-pub-when]').forEach(el => {
         el.hidden = el.dataset.pubWhen !== cur.pickup;
       });
