@@ -22,7 +22,14 @@
    狀態形狀（掛在消費頁自己的物件上，例如 bundle-editor 的 b、bundle-detail 的 bundleModel）：
      st.sched = { listAt, unlistAt, saleStart, saleEnd }  每格 null＝跟隨活動、字串＝另設（'YYYY-MM-DDTHH:MM'；'' ＝另設但還沒填）
      st.rules = null（跟隨所含門票）｜{ on, cond, tier, from, to, cap, person, order, times }（已調整；person／order 以「組」計）
-   活動時間（et，由 times(ev) 或頁面自己組）：{ listFrom, listTo, listNow, saleFrom, saleTo, start, draft }
+   活動時間（et，由 times(ev) 或頁面自己組）：{ listFrom, listTo, listNow, saleFrom, saleTo, start, draft, shown, unlisted }
+
+   活動設定是最高優先層級（D363，2026-10-07；主規格 §7.14「三個狀態開關」）——三個消費頁與電子商店清單共用同一口徑：
+     · 顯示：活動隱藏（et.shown === false）時，含其票券的組合包在電子商店一律不顯示、自己的顯示開關不能切成顯示；
+       組合包自己的顯示值保留，活動切回顯示後照它自己的開關（evHidden(et)）。
+     · 上架：活動已下架（et.unlisted）時組合包不能上架（canList 由消費頁併入）。
+     · 開賣：組合包與單張門票的販售結束時間不能晚於活動停售（停售不填＝活動開始）——lateEnd(v, et)；
+       唯一例外是提前販售：開始時間可以早於活動開賣，只要還在上架區間內（outside() 照舊只看上架區間）。
    ============================================================================ */
 (function () {
   'use strict';
@@ -57,9 +64,22 @@
       listFrom: local(lst.from), listTo: local(lst.to), listNow: !lst.from,
       saleFrom: local(sale.from), saleTo: local(sale.to),
       start: ev.date ? local(ev.date + ' ' + (ev.start || '00:00')) : '',
-      draft: ev.status === 'draft'
+      draft: ev.status === 'draft',
+      /* D363：活動的顯示設定（ev.publish.shown，缺值＝顯示）與是否已下架（ev.unlisted，D361 決定五） */
+      shown: !(ev.publish && ev.publish.shown === false),
+      unlisted: !!ev.unlisted
     };
   }
+  /* D363 決定二：活動隱藏中 → 組合包跟著隱藏（et 缺 shown 欄＝顯示） */
+  function evHidden(et) { return !!et && et.shown === false; }
+  /* D363 決定三：販售結束的上限＝活動停售；停售不填＝賣到活動開始。回傳上限（local 字串）或 ''（沒有上限）。 */
+  function saleCeil(et) { return (et && (et.saleTo || et.start)) || ''; }
+  /* 結束時間晚於活動停售 → true。只管「結束端」：開始端可以早於活動開賣（提前販售），由 outside() 管上架區間。 */
+  function lateEnd(v, et) {
+    var t = ms(v), c = ms(saleCeil(et));
+    return fin(t) && fin(c) && t > c;
+  }
+  function lateText(et, T) { return T('tb.err.saleend.late').replace('{t}', fmt(saleCeil(et))); }
   /* 'before'｜'after'｜null。起點未知（立刻上架）不擋（〔產品待確認 #1〕）；活動未發布（draft 且沒有上架區間）不擋。 */
   function outside(v, et) {
     var t = ms(v);
@@ -106,6 +126,7 @@
       var v = sched(st)[k];
       if (!String(v || '').trim()) { e[k] = T('tb.err.empty'); return; }
       if (outside(v, et)) e[k] = T('tb.err.outside').replace('{period}', periodText(et, T));
+      else if (k === 'saleEnd' && lateEnd(v, et)) e[k] = lateText(et, T);   /* D363：停售不能晚於活動停售 */
     });
     if (!e.unlistAt && isCustom(st, 'unlistAt') && fin(ms(eff.listAt)) && ms(eff.unlistAt) <= ms(eff.listAt)) e.unlistAt = T('tb.err.unlist.order');
     if (!e.saleEnd && (isCustom(st, 'saleEnd') || isCustom(st, 'saleStart')) && fin(ms(eff.saleStart)) && fin(ms(eff.saleEnd)) && ms(eff.saleEnd) <= ms(eff.saleStart)) {
@@ -242,6 +263,7 @@
       if (!r.from || !r.to) e.time = T('tb.err.time.empty');
       else if (ms(r.to) <= ms(r.from)) e.time = T('tb.err.time.order');
       else if (outside(r.from, et) || outside(r.to, et)) e.time = T('tb.err.outside').replace('{period}', periodText(et, T));
+      else if (lateEnd(r.to, et)) e.time = lateText(et, T);   /* D363：限時間的結束不能晚於活動停售（開始可以早於開賣） */
     }
     ['person', 'order', 'times'].forEach(function (k) {
       if (short[k]) { e[k] = short[k]; return; }
@@ -409,6 +431,7 @@
 
   window.ZtorTicketBundle = {
     KEYS: KEYS, ms: ms, local: local, fmt: fmt, times: times, outside: outside, periodText: periodText,
+    evHidden: evHidden, saleCeil: saleCeil, lateEnd: lateEnd, lateText: lateText,
     eventValue: eventValue, followText: followText, isCustom: isCustom, effective: effective,
     schedErrors: schedErrors, schedHTML: schedHTML,
     tierRules: tierRules, defaults: defaults, seedFrom: seedFrom, rulesErrors: rulesErrors, rulesHTML: rulesHTML, rulesSummary: rulesSummary,

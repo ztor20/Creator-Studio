@@ -532,6 +532,8 @@
                  切換只改本頁工作副本、不回寫活動（syncEventBounds）。 -->
             <p class="lctl__lock-note" data-bd-event-draft hidden></p>
             <p class="lctl__lock-note" data-bd-event-list-lock hidden></p>
+            <!-- D363 決定二：活動隱藏中 → 本組合包跟著隱藏、顯示開關停用（自己的值保留，活動切回顯示後照自己的開關）；syncEventBounds 填字 -->
+            <p class="lctl__lock-note" data-bd-event-hidden-lock hidden data-feat="S61"></p>
             <p class="lctl__lock-note" data-bd-event-scope hidden data-i18n="bd.event.scope">Settings here narrow this bundle only — they never change the event or its single tickets.</p>
             <!-- 下架原因（D284 → D288）：因成員下架而一同下架時多一句，寫出成員名；由 JS 依 unlistReason 填 -->
             <p class="lctl__lock-note" data-bd-unlist-reason hidden></p>
@@ -770,7 +772,7 @@
       const evName = (ev.name || '').trim() || T0('event-detail.untitled', 'Untitled event');
       /* 2026-10-05（D352 稽核 B17，主規格 §7.14「活動取消或下架時連動組合包」，D292 裁決十二）：活動結束、轉為不可售時，
          含其門票的上架中組合包自動下架並通知創作者——已結束不再算上架（原本把 ended 列為上架中）。徽章仍標「已結束」（D294 決定五）。 */
-      const listedByEv = ev.status === 'on-sale' || ev.status === 'live' || ev.status === 'scheduled';
+      const listedByEv = (ev.status === 'on-sale' || ev.status === 'live' || ev.status === 'scheduled') && !ev.unlisted;   /* D363：活動已下架＝組合包不能上架 */
       const members = [], memberItems = [];
       /* 票券成員（2026-09-21 D296）：一筆＝允許票種清單 × 每組張數，粉絲任選一種。包成一顆假商品：
          名稱「活動名 · VIP／Floor 任選 × n」、單價＝最低允許票價（多種時是下界、顯示「從 … 起」）、池＝n × Σ floor(剩餘 ÷ n)。 */
@@ -1352,13 +1354,17 @@
     const shownSwitch = document.getElementById('bd-shown');
     const shownBody = document.getElementById('bd-shown-body');
     const linkfEl = document.getElementById('bd-linkf');
+    /* D363 決定二：所屬活動隱藏中（syncEventBounds 設）。bundleModel.shown 仍是組合包自己的值、照存；
+       畫面上的顯示開關＝自己的值 AND 活動顯示，活動隱藏時停用。頁首隱藏／顯示鈕與設定總覽經 window.bdEventHidden 讀同一個值。 */
+    let bdEvHidden = false;
+    window.bdEventHidden = () => bdEvHidden;
     function paintSwitch(el, on) {
       if (!el) return;
       el.setAttribute('aria-checked', on ? 'true' : 'false');
       el.classList.toggle('switch--on', on);
     }
     function syncShown() {
-      paintSwitch(shownSwitch, bundleModel.shown);
+      paintSwitch(shownSwitch, bundleModel.shown && !bdEvHidden);
       if (shownBody) shownBody.hidden = bundleModel.shown;
       if (!bundleModel.shown) {
         /* 切成隱藏才有非公開連結；切回顯示時作廢（§7.14）。 */
@@ -1397,7 +1403,10 @@
       if (shownRow) shownRow.classList.toggle('lctl__row--locked', !on);
       if (saleLctl) saleLctl.classList.toggle('lctl--locked', !on);
       document.querySelectorAll('[data-bd-lock-note]').forEach(n => { n.hidden = on; });
-      if (shownSwitch) shownSwitch.setAttribute('aria-disabled', on ? 'false' : 'true');
+      if (shownSwitch) {
+        shownSwitch.setAttribute('aria-disabled', (on && !bdEvHidden) ? 'false' : 'true');
+        shownSwitch.classList.toggle('switch--disabled', on && bdEvHidden);   /* D363：上架中但活動隱藏——停用態（下架時沿用整列鎖定的樣式） */
+      }
       /* D290：上架中但未開賣（重新上架後的常態）→ 提醒 banner 露出；設了開賣就收起 */
       const saleBanner = document.querySelector('[data-bd-relist-sale-banner]');
       if (saleBanner) saleBanner.hidden = !(on && !bundleModel.archived && bundleModel.onSale === false);
@@ -1583,8 +1592,11 @@
       const ev = (m && m.eventId && window.ztorEvents) ? window.ztorEvents.get(m.eventId) : null;
       if (!ev) return null;
       const st = ev.status;
+      /* D363：活動的顯示與下架讀 js/ticket-bundle.js 的 times(ev)（與 create-bundle、bundle-editor 同一口徑） */
+      const TBx = window.ZtorTicketBundle, et = TBx ? TBx.times(ev) : { shown: !(ev.publish && ev.publish.shown === false), unlisted: !!ev.unlisted };
       return { ev: ev, st: st, draft: st === 'draft',
-               canList: st === 'on-sale' || st === 'live' || st === 'scheduled' || st === 'ended',
+               canList: (st === 'on-sale' || st === 'live' || st === 'scheduled' || st === 'ended') && !et.unlisted,
+               unlisted: !!et.unlisted, hidden: et.shown === false,
                canSell: st === 'on-sale' || st === 'live' };
     }
     function syncEventBounds() {
@@ -1600,12 +1612,16 @@
       const scopeNote = document.querySelector('[data-bd-event-scope]');
       const draftNote = document.querySelector('[data-bd-event-draft]');
       const listNote = document.querySelector('[data-bd-event-list-lock]');
+      const hiddenNote = document.querySelector('[data-bd-event-hidden-lock]');
       const saleBanner = document.querySelector('[data-bd-relist-sale-banner]');
       const tbList = document.querySelector('[data-tb-host="list"]'), tbSale = document.querySelector('[data-tb-host="sale"]');
       const tbRules = document.querySelector('[data-tb-rules-sec]');
       const setDisabled = (el, off) => { if (!el) return; el.setAttribute('aria-disabled', off ? 'true' : 'false'); el.classList.toggle('switch--disabled', off); };
       const show = (el, on) => { if (el) el.hidden = !on; };
-      if (!bo) { show(scopeNote, false); show(draftNote, false); show(listNote, false); show(tbList, false); show(tbSale, false); show(tbRules, false); return; }
+      /* D363 決定二：活動隱藏 → 顯示開關停用、畫成關；草稿活動不適用（顯示列本來就收起） */
+      const evHid = !!bo && !bo.draft && bo.hidden;
+      if (evHid !== bdEvHidden) { bdEvHidden = evHid; syncShown(); syncListedLock(); if (window.bdSyncPrimaryAction) window.bdSyncPrimaryAction(); }
+      if (!bo) { show(scopeNote, false); show(draftNote, false); show(listNote, false); show(hiddenNote, false); show(tbList, false); show(tbSale, false); show(tbRules, false); return; }
       const evName = (bo.ev.name || '').trim() || T('event-detail.untitled', 'Untitled event');
       const evStatus = T((EV_BADGE[bo.st] || EV_BADGE.scheduled)[0], bo.st);
       show(scopeNote, true);
@@ -1613,7 +1629,7 @@
         bundleModel.listed = false; paintSwitch(listedSwitch, false); setDisabled(listedSwitch, true);
         show(shownRow, false); show(derived, false); show(rule, false); show(saleSec, false); show(tbList, false); show(tbRules, false);
         document.querySelectorAll('[data-bd-lock-note]').forEach(n => { n.hidden = true; });   /* 草稿不是「已下架」，那句不適用 */
-        show(listNote, false); show(saleBanner, false);
+        show(listNote, false); show(hiddenNote, false); show(saleBanner, false);
         if (draftNote) { draftNote.hidden = false; draftNote.textContent = T('bd.event.draft', 'Draft — follows the event “{name}”. It gets its listing, show and sale switches when the event is published.').replace('{name}', evName); }
         return;
       }
@@ -1625,11 +1641,15 @@
       if (!bo.canList) {
         if (bundleModel.listed) { bundleModel.listed = false; paintSwitch(listedSwitch, false); syncListedLock(); }
         setDisabled(listedSwitch, true);
-        if (listNote) { listNote.hidden = false; listNote.textContent = T('bd.event.list-lock', 'The event “{name}” is not listed ({status}) — this bundle cannot be listed on its own.').replace('{name}', evName).replace('{status}', evStatus); }
+        /* D363：活動已下架（階段不變、另掛 unlisted）用自己那一句，不寫「未上架（售票中）」這種自相矛盾的括號 */
+        if (listNote) { listNote.hidden = false; listNote.textContent = (bo.unlisted
+          ? T('bd.event.unlisted-lock', 'The event “{name}” has been unlisted — this bundle can’t be listed until the event is listed again.')
+          : T('bd.event.list-lock', 'The event “{name}” is not listed ({status}) — this bundle cannot be listed on its own.').replace('{status}', evStatus)).replace('{name}', evName); }
       } else {
         setDisabled(listedSwitch, !!bundleModel.archived);
         show(listNote, false);
       }
+      if (hiddenNote) { hiddenNote.hidden = !evHid; hiddenNote.textContent = evHid ? T('bd.event.hidden-lock', 'The event “{name}” is hidden, so this bundle is hidden too. Its own show setting is kept and applies again once the event is shown.').replace('{name}', evName) : ''; }
       /* 墓碑 2026-10-01（D342）：「活動未開賣 → 退回未開賣並鎖住開賣設定（bd.event.sale-lock）」整段退場——
          組合包的開賣可以另設、可以早於活動開賣，邊界是活動上架區間（主規格 §7.14「活動販售的時間層級」第 5–8 條）。 */
       renderTB();
@@ -2058,6 +2078,7 @@
       const shownOn = listedNow && on('bd-shown');
       rows.push({ g: 'listing', go: 'publish', key: 'product-detail.setov.st-shown', fb: 'Shown in store', html: stateChecksHTML([
         !listedNow ? { kind: 'off', text: T('product-detail.setov.ls.unlisted', 'Not listed') }
+        : (window.bdEventHidden && window.bdEventHidden()) ? { kind: 'off', text: T('bd.setov.evhidden', 'Hidden with the event') }   /* D363 */
         : shownOn ? { kind: 'on', text: T('product-detail.setov.ls.shown', 'Shown') }
         : { kind: 'off', text: T('product-detail.setov.ls.hidden', 'Hidden · private link') }]) });
       const saleFuture = bdSaleMode === 'schedule' && sStart && new Date(sStart).getTime() > nowT;
@@ -2381,8 +2402,10 @@
         if (salesNote) salesNote.hidden = !(sold && !bundleModel.draft && (archived || LS.isUnlisted(bundleModel)));
         /* 頁首「隱藏／顯示」（2026-09-23 使用者裁決）：與上架卡的顯示開關同一份資料，只在上架中才出現（D265／§7.14） */
         const listedNow = !archived && !bundleModel.draft && !LS.isUnlisted(bundleModel);
-        if (btnHide) btnHide.hidden = !(listedNow && bundleModel.shown);
-        if (btnShow) btnShow.hidden = !(listedNow && !bundleModel.shown);
+        /* D363：活動隱藏中兩顆都收起——顯示由活動決定，這裡切了也不會生效 */
+        const evHid = !!(window.bdEventHidden && window.bdEventHidden());
+        if (btnHide) btnHide.hidden = !(listedNow && bundleModel.shown && !evHid);
+        if (btnShow) btnShow.hidden = !(listedNow && !bundleModel.shown && !evHid);
       }
       window.bdSyncPrimaryAction = syncPrimaryAction;   /* 2026-09-23：讓上層 #bd-shown 的 bindSwitch 切換後也能重畫頁首隱藏／顯示鈕 */
       /* 因成員下架而一同下架（D288，原 D284「因成員封存」）：手動確認的連動與定時下架到期的自動連動（auto）各一句 */

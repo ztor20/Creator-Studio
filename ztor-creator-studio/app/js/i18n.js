@@ -5942,6 +5942,10 @@
     'bd.event.scope':       { en: 'Settings here only affect this bundle — they never change the event or its single tickets.', zh: '這裡的設定只影響這個組合包，不會回寫活動本身與單張票的販售。' },
     'bd.event.draft':       { en: 'Draft — follows the event “{name}”. It gets its listing, show and sale switches when the event is published.', zh: '草稿：隨活動「{name}」發布。活動發布後才有上架、顯示與開賣三個開關。' },
     'bd.event.list-lock':   { en: 'The event “{name}” is not listed ({status}) — this bundle cannot be listed on its own.', zh: '活動「{name}」未上架（{status}），這個組合包無法自行上架。' },
+    /* D363（2026-10-07）：活動設定是最高優先層級——活動下架、隱藏時組合包跟著 */
+    'bd.event.unlisted-lock': { en: 'The event “{name}” has been unlisted — this bundle can’t be listed until the event is listed again.', zh: '活動「{name}」已下架，活動重新上架前這個組合包無法上架。' },
+    'bd.event.hidden-lock':   { en: 'The event “{name}” is hidden, so this bundle is hidden too. Its own show setting is kept and applies again once the event is shown.', zh: '活動「{name}」隱藏中，組合包跟著隱藏。組合包自己的顯示設定會保留，活動改回顯示後照它。' },
+    'bd.setov.evhidden':      { en: 'Hidden with the event', zh: '跟著活動隱藏' },
     /* D330（5.1.6.1 F22「可賣性防呆」）：停售活動最後一組販售中的組合包、活動又沒有顯示中的門票時擋下。 */
     'bd.sale.stop.last':    { en: "It's the event's last bundle on sale and the event has no visible ticket — sales can't be stopped. Keep at least 1 visible ticket or 1 bundle.", zh: '這是活動最後一組販售中的組合包，活動又沒有顯示中的門票，不能停售。至少要有 1 張顯示中的門票或 1 組組合包。' },
     /* D340：定時下架／定時停售的排程檢查——到期後會讓活動沒有可賣的東西，設定當下就擋 */
@@ -6668,6 +6672,10 @@
     'tb.err.outside':          { en: 'Outside the event’s listing period ({period}).', zh: '超出活動上架區間（{period}）。' },
     'tb.err.unlist.order':     { en: 'Must be after the listing time.', zh: '須晚於上架時間。' },
     'tb.err.sale.order':       { en: 'Sale end must be after sale start.', zh: '停售須晚於開賣。' },
+    /* D363 決定三：販售結束不能晚於活動停售（停售不填＝活動開始）；開始可以早於活動開賣（提前販售） */
+    'tb.err.saleend.late':     { en: 'Can’t end after the event stops selling ({t}).', zh: '不能晚於活動的停售時間（{t}）。' },
+    /* D363 決定二：活動隱藏中，組合包的顯示開關停用 */
+    'tb.shown.evhidden':       { en: 'The event is hidden, so this bundle is hidden too. Your setting is kept and applies once the event is shown.', zh: '活動隱藏中，組合包跟著隱藏。這裡的設定會保留，活動改回顯示後照它。' },
     'tb.rules.follow':         { en: 'Follow the tickets inside',      zh: '跟隨所含門票' },
     'tb.rules.from.many':      { en: 'Uses the strictest rules of the {n} tickets inside.', zh: '取所含 {n} 張門票中最嚴的條件。' },
     'tb.rules.from.one':       { en: 'Same rules as the ticket inside.', zh: '與所含門票的條件相同。' },
@@ -9801,7 +9809,9 @@
     'event-detail.notif.log.reminder.nodate': { en: 'Needs a date before it can be scheduled', zh: '要先有日期才能排定' },
     'event-detail.notif.log.change.cancel': { en: 'Cancellation notice sent to all holders', zh: '取消通知已寄給所有持票人' },
     'event-detail.notif.log.change.none': { en: 'No date, venue or lineup change since sales opened', zh: '開賣以來沒有日期、場地或陣容的變更' },
-    'ed.pub.edit-pre': { en: 'Nothing has sold yet, so these are still yours to change. Once tickets are on sale they lock — changing them then affects buyers, and those rules are upstream.', zh: '還沒賣出任何一張票，這些設定仍然可以改。開賣後會鎖住——那時候改會影響買家，規則在上游還沒定。' },
+    'ed.pub.edit-pre': { en: 'Nothing has sold yet, so these are still yours to change. Once tickets are on sale, only the display setting can still be switched — the rest lock, because changing them would affect buyers.', zh: '還沒賣出任何一張票，這些設定都還能改。開賣後只剩顯示設定可以切換，其他會鎖住——那時候改會影響買家。' },
+    'ed.pub.edit-closed': { en: 'This event has ended or been cancelled, so its publish settings are view-only.', zh: '活動已結束或已取消，發布設定只能檢視。' },
+    'ed.pub.vis.bundles': { en: "Bundles with this event's tickets are hidden from the E-Shop too. Each bundle keeps its own setting for when the event is shown again.", zh: '含本活動門票的組合包也會從電子商店隱藏；各組合包自己的顯示設定會保留，活動改回顯示後照它。' },
     'event-detail.tab.overview': { en: 'Overview', zh: '總覽' },
     'event-detail.tab.tiers': { en: 'Tickets', zh: '票務' },
     'event-detail.tab.bundles': { en: 'Ticket bundles', zh: '票務商品' },   /* 2026-09-18：活動脈絡的入口名（D292 裁決一），票務分頁的子分頁鈕 */
@@ -10023,7 +10033,7 @@
     'ed.pub.vis.sub':     { en: 'Whether fans can find this event in the list and in search.', zh: '決定粉絲能不能在列表與搜尋裡找到這場活動。' },
     'ed.pub.link':        { en: 'Event link & QR',        zh: '活動連結與 QR' },
     'ed.pub.link.hint':   { en: 'Where fans buy tickets. The QR points at the same page.', zh: '粉絲買票的入口，QR 指向同一頁。' },
-    'ed.pub.edit-tbd':    { en: 'These were set in the create flow. Changing them after tickets are on sale affects buyers — the rules for that are upstream, so they read as view-only here for now.', zh: '這些是建立時設定的。開賣後改動會影響已購票的粉絲，那套規則在上游還沒定，所以先唯讀。' },
+    'ed.pub.edit-tbd':    { en: 'You can still switch the display setting at any time. The other settings lock once tickets are on sale — changing them would affect buyers, and which ones can change is still being decided upstream.', zh: '顯示設定隨時都能切換。其他設定開賣後鎖住——改動會影響已購票的粉絲，哪些還能改上游還沒定。' },
     'ed.tix.early.card':  { en: '{n} min early ({t})',    zh: '提早 {n} 分鐘（{t}）' },
     'ed.tm.delete':       { en: 'Delete tier',            zh: '刪除門票' },
     'ed.tm.pause.hint':   { en: 'Rejects new purchases; tickets already sold stay valid.', zh: '擋掉新的購買，已售出的票維持有效。' },

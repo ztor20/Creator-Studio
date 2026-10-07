@@ -33,6 +33,8 @@
 > - 5.1.5.3.1 §2.4：`order-detail.html` 買家卡「國家」「城市」兩欄與「未提供」顯示（O33），資料 `js/orders-store.js` 的 `buyer.country`／`buyer.city`；需求看板的市場歸屬依這兩個欄位。
 > - 假設與缺口：UIA-198～UIA-204；紀錄見 [`UI-CHANGES.md`](UI-CHANGES.md)「一百二十八」。
 
+> **2026-10-07 活動設定是最高優先層級（D363；5.1.6.1 F12b／F20／F22／F25、5.1.6.2 F14、5.1.5.4 F2／F6、5.1.5.9 §2.3）**：`event-detail.html` 顯示設定售票中／進行中仍可切換（其他發布設定唯讀）；`js/ticket-bundle.js` `times()` 帶活動顯示與下架、`evHidden()`、`lateEnd()`；`bundle-detail.html`／`create-bundle.html`／`js/bundle-editor.js` 活動隱藏時組合包顯示開關停用並寫原因、活動下架時組合包不能上架；`e-shop.html` 活動組合包列跟著活動隱藏與下架；販售結束不晚於活動停售（`create-event.html` 第 5 步限時間一併）；`js/events-store.js` `taiwan-fest-kenting` 補組合包示範。假設：UIA-213；紀錄見 [`UI-CHANGES.md`](UI-CHANGES.md)「一百三十六」。
+
 > **2026-10-07 bookyay 描述整份鎖定與條款及細則帶入（D362；5.1.6.1 §4.1 F21／§4.2 F2、5.1.6.2 F2）**：`partials/rich-body.js` 新增整份鎖定 `lock(true, { all: true })`（`ds-components/rich-body.css` 的 `.rich-body--locked` 收起把手與底部）；`create-event.html` bookyay 帶入描述整份鎖定、條款及細則照 bookyay `showTncs`／`tncs` 帶入並鎖定（`bkyTerms()`，假資料 bky-1／2／4 有條款）；`event-detail.html` 活動內容描述之後新增「條款與細則」（`#ed-terms`，直接促銷同意 `data-feat="S80"`），接兩段式編輯、變更計數與儲存，bookyay 活動條款及細則鎖定、描述整份鎖定；`js/events-store.js` `taipei-nye` 補 `terms`。假設：UIA-212；紀錄見 [`UI-CHANGES.md`](UI-CHANGES.md)「一百三十四」。
 
 > **2026-10-07 活動階段與角色八題（D361；5.1.6.1 F23、5.1.6 F3／撤銷、5.1.6.3 階段動作／撤銷／唯讀／徽章、5.1.0.6 F3–F5）**：`create-event.html` 第 7 步「其他售票時間」唯讀摘要（`#ce-sale-other`）；`events.html`／`event-detail.html` 階段英文統一（Ended、Live、On sale）；`js/events-store.js` 已報到交易 `checkedIn` 不可撤銷、`unlisted` 與 `setUnlisted()`；`event-detail.html` 已報到撤銷鈕停用、Admin 下架區塊 `#ed-unlist`（S81）與頁首「已下架」徽章、已結束／已取消收起在地化入口、退款說明改 Admin 在 Stripe；`events.html` 清單列「已下架」徽章；`admin-creator-events.html` 狀態「待設定」與首次儲存提示。假設與缺口：UIA-210、UIA-211；紀錄見 [`UI-CHANGES.md`](UI-CHANGES.md)「一百三十三」。

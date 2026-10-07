@@ -264,7 +264,7 @@
       venue: 'Kenting Dawan',
       city: 'Pingtung, Taiwan',
       address: '',
-      date: '2026-10-04',
+      date: '2026-11-21',   // 2026-10-07 改：原 10-04 已過，已排程活動的日期不該在過去（組合包會顯示成已結束）
       start: '17:00',
       end: '',
       doors: '',
@@ -276,6 +276,13 @@
       tiers: [
         { id: 'tier-ga', name: 'General admission', price: 600, qty: 1200, sold: 0 }
       ],
+      /* D363 示範（2026-10-07）：活動顯示設定為隱藏（下方 publish.shown:false）→ 含本活動票券的組合包在電子商店跟著隱藏、
+         組合商品細節頁的顯示開關停用並寫原因；組合包自己的顯示值保留（這一組自己是顯示）。 */
+      bundles: [
+        { id: 'bd-kenting-cap', name: 'GA ＋ 墾丁限定棒球帽', tickets: { tierIds: ['tier-ga'], qty: 1 },
+          products: [{ name: 'Taiwan Fest 墾丁限定棒球帽', img: 'images/products/cap.webp', price: 450 }],
+          price: 1000, sold: 0, cap: 60 }
+      ],
       sold: 0,
       revenue: 0,
       status: 'scheduled',
@@ -283,7 +290,7 @@
       video: false,
       publish: { pickup: 'eticket', shown: false },   // D327：電子門票附屬設定值已清
       /* D340 示範：開賣時間在未來（預告期）＋顯示設定為隱藏——詳情頁的「提前開賣」確認說明不寫「公開」、改說只能經活動連結進入。 */
-      sale: { from: '2026-10-01 12:00', to: '' },
+      sale: { from: '2026-11-01 12:00', to: '' },   // 2026-10-07 改：原 10-01 已過，維持「開賣在未來（預告期）」的示範
     },
     {
       id: 'lrh-taichung-watchback',
