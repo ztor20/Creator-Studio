@@ -479,6 +479,18 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - **擋存的落點**：建立活動＝門票彈窗不關、票務設定不關、組合包「完成」停用並寫原因、發布前彙整；細節頁＝「儲存變更」在 capture 階段擋下（toast＋帶到發布設定）；建立組合＝「下一步：預覽」停用；活動詳情＝儲存擋下（alert）。
 - **第 6 步彈窗五段**：內容物 → 定價與庫存（＋限時折扣、優惠碼疊加、逐票種分配）→ 命名與素材（名稱、說明、十格素材、電影關聯）→ 上架與開賣 → 購買條件與限購；分節分頁同五段。素材上傳結果記在 `b.media`（`upload:change`），重畫用 `data-upload-src` 帶回。
 
+## 4g. 媒體庫兩層模型（2026-10-08 · D376／D377；spec 5.1.7.3 F2、F3、F5、F6、F8）
+
+- **頁面**：`media-vault.html`（清單與詳情並排的正式頁，整頁 `data-page-feat="full"`）。渲染與接線 `js/media-vault.js`，資料與計算 `js/vault-store.js`（固定種子 1,283 位粉絲＋集合運算，重整即還原）。
+- **第一層＝進庫**（D376 採納原型先行的 PG-025，結構不變）：門條的「進庫方法」＝`rules:[{items:[{t,v}]}]`，外層任一、內層全部、空方法不算；鑰匙是另一條路，整座庫觸及＝進庫方法 ∪ 有效鑰匙。畫面用語「進庫方法」「這些要一起達成」「或是」「多一種進庫方法」。
+- **第二層＝每件內容的任務**（D377）：資料在 item 上——`task`（缺＝不設；`{type:"action",kind,n?,target?,scope?}`；`{type:"tier",tier}`）與 `grand`（大彩蛋標記）。九種行動任務的目錄、參數與規格寫的缺口在 `vault-store.js` 的 `ACTION_TASKS`；判定狀態 `taskStatus()`（只有商城消費・指定商品是 ready）；等級下限 `tierFloor()`；每件可看人數 `itemViewers()`（沒有逐人資料回 `null`，畫面寫「待確認」）；以分級檢視每件結果 `itemStatusForTier()`。
+- **設定落點**：單件內容抽屜（點格子或音檔列開 `.drawer`），名稱與檔案資訊之下是「任務」區（`radio-list` 三選一 → 行動任務的種類 `.select`＋該種參數；等級任務的等級 `.select`，低於下限停用）、判定狀態框、幾人看得到，再下面是大彩蛋開關（`control-row`＋`switch`）。即時生效、不設儲存鈕。抽屜殼與 Q27 的分岔見 STYLE-DECISIONS Q127。
+- **內容清單上的呈現**：格子頂端 `.vault-tile__badges`（左任務、右大彩蛋＋幾人看得到），音檔列曲名下 `.vault-track__badges`；檢視身分開著時右邊換成看得到／等級不足／需完成行動任務，等級不足的整格 `.is-locked`。小標元件 `ds-components/vault-task.css`（§4.229），位置在 `media-vault.css`（§4.102）。
+- **重畫時機**：任務、大彩蛋、第一層條件、鑰匙建立／撤銷、檢視身分切換都會重畫內容格（每件人數與下限跟著變）；改任務只重畫抽屜的任務區，名稱欄不動。格子與抽屜是 JS 畫的，畫完補 `ztorIcons.render`、`ztorSelect.mount`、`ztorDevState.regate()`（S86 功能標記）。
+- **文案**：靜態骨架走 i18n `vault.*`（本輪新增 `vault.grid.fine`，改 `vault.sub`、`vault.note.tiers`）；JS 畫的字照檔案慣例走 `media-vault.js` 的 `tx(en, zh)` 內嵌雙語。「鑰匙」只指第一層，第二層一律「任務」。
+- **保存檔**：`media-vault-popup.html`（總覽卡片牆＋單一庫房彈窗）**已過時**——2026-08-01 起沒有頁面連過去，本輪沒有改它也沒連 `vault-task.css`；它共用同一支 JS，所以會畫出第二層小標但沒有樣式。要拿來看兩層模型請用正式頁；若要復用彈窗版型，先補連結再談。
+- **呈現假設與缺口**：ASSUMPTIONS UIA-230（含示意的指定貼文／影片清單、N 預設值、沒有逐人解開紀錄等）。
+
 ## 4e. 商店預覽＝粉絲端創作者頁的手機鏡像，放在頁內右欄（2026-09-11）
 
 - **容器**：e-shop 的 F5 不再是切開外殼的固定面板，而是 `.preview-split--phone.preview-split--toggle` 的右欄——與建立商品同一套（sticky `.preview-col` ＋ 卡內標題的 `form-section--outlined`）。`--toggle` 是 preview-column 的新變體：沒 `is-open` 就單欄、右欄不佔位。這一頁沒有 wizard header，sticky 頂距改 `--preview-col-top: var(--sp-24)`。

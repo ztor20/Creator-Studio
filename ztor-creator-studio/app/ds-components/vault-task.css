@@ -1,0 +1,168 @@
+/* ============================================================
+   vault-task.css · 媒體庫第二層：每件內容的任務（D377，2026-10-08）
+   ------------------------------------------------------------
+   兩層模型：第一層＝進庫（進庫方法＋鑰匙，門條那一套）；第二層＝庫房裡每一件
+   內容可以各自設一個任務，粉絲進庫之後還要完成它才看得到那一件。命名規則：
+   「鑰匙」只指第一層的進庫憑證，第二層一律叫「任務」。
+
+   本檔管兩件東西：
+   1. .vault-tag —— 掛在每一件內容上的小標（任務是什麼、幾人看得到、大彩蛋、
+      以分級檢視時的三種結果）。同一顆標要坐在兩種底上：影像縮圖上（--media，
+      深色半透明底，同 .vault-tile__chip 的理由——壓在照片上要自己的底）與音檔列、
+      標籤紙這種淺薄膜底上（--plain，薄膜＋1px 髮線，跨層用邊框）。
+   2. .vault-task —— 單件內容設定抽屜裡的「任務」區：三選一（radio-list）、
+      依種類長出的參數欄、判定狀態（可判定／判定方式待確認＋缺什麼）、幾人看得到。
+
+   anatomy
+     .vault-tag (.vault-tag--media | .vault-tag--plain)
+                (.vault-tag--grand | --ok | --low | --action | --pending)
+       .ztor-icon ＋ .vault-tag__text
+     .vault-task
+       .vault-task__head > .vault-task__title ＋ .vault-task__lead
+       .radio-list（三種設法，元件見 radio-list.css）
+       .vault-task__params（.field／.segmented／.select，元件各自的 CSS）
+       .vault-task__status (--pending | --ready)
+         .badge ＋ .vault-task__status-text ＋ ul.vault-task__missing
+       .vault-task__reach
+         .vault-task__reach-label ＋ .vault-task__reach-num (--pending) ＋ .vault-task__reach-sub
+     .vault-task__flag（大彩蛋：.control-row ＋ .switch，元件各自的 CSS）
+
+   surface：--media 只放在影像上（底色自帶，任何影像都讀得出來）；--plain 坐在
+   卡面玻璃（音檔列）與標籤紙淺底上，靠 1px 髮線成立，最深的那層是音檔列 hover
+   的 --ztu-glass-strong，已目視確認邊界仍在。全值引用 _tokens.css。
+   ============================================================ */
+
+/* ── 小標 ─────────────────────────────────────────────── */
+.vault-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-width: 0;
+  max-width: 100%;
+  height: 22px;
+  padding: 0 var(--sp-8);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  line-height: var(--lh-none);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.vault-tag[hidden] { display: none; }
+.vault-tag .ztor-icon { width: 12px; height: 12px; flex: none; }
+.vault-tag__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* 壓在影像上：深色半透明＋模糊，深淺主題都不翻（影像本身不跟主題走）。 */
+.vault-tag--media {
+  background: color-mix(in srgb, var(--scrim-media) 76%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: var(--on-media);
+}
+/* 坐在薄膜／玻璃上：薄膜底＋1px 髮線（跨層安全的做法）。 */
+.vault-tag--plain {
+  background: var(--ztu-film);
+  box-shadow: inset 0 0 0 1px var(--border);
+  color: var(--foreground-muted);
+}
+
+/* 大彩蛋：只是一個標記，所以只換字色與圖示，不另開一塊色面——它不是狀態。 */
+.vault-tag--media.vault-tag--grand { color: var(--primary); }
+.vault-tag--plain.vault-tag--grand { color: var(--selected-ink); }
+
+/* 「待確認」：人數或判定還沒有逐人資料。降一階墨色，讓它讀起來是「還沒有答案」而不是數字。 */
+.vault-tag--media.vault-tag--pending { color: var(--on-media-muted); }
+.vault-tag--plain.vault-tag--pending { color: var(--muted-foreground); }
+
+/* 以分級檢視的三種結果（F6）：看得到＝成功綠；等級不足＝鎖頭＋降墨；需完成行動任務＝品牌橘
+   （它是「還有一步」，不是錯誤）。色相只出現在字上，表面維持中性（Q77）。 */
+.vault-tag--media.vault-tag--ok     { color: var(--status-success); }
+.vault-tag--plain.vault-tag--ok     { color: var(--status-success-ink); }
+.vault-tag--media.vault-tag--low    { color: var(--on-media-muted); }
+.vault-tag--plain.vault-tag--low    { color: var(--muted-foreground); }
+.vault-tag--media.vault-tag--action { color: var(--primary); }
+.vault-tag--plain.vault-tag--action { color: var(--selected-ink); }
+
+/* ── 抽屜裡的任務區 ───────────────────────────────────── */
+/* 節奏由容器 gap 持有（Q103）；區內的 .field 自帶的下緣距離在這裡收掉，否則與 gap 疊成兩倍。 */
+.vault-task {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+  margin-top: var(--sp-20);
+  padding-top: var(--sp-16);
+  border-top: 1px solid var(--border);
+}
+.vault-task .field { margin-bottom: 0; }
+.vault-task[hidden] { display: none; }
+
+.vault-task__head { display: flex; flex-direction: column; gap: var(--sp-4); }
+.vault-task__title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+}
+.vault-task__lead {
+  margin: 0;
+  font-size: var(--fs-12);
+  line-height: var(--lh-comfy);
+  color: var(--muted-foreground);
+}
+
+.vault-task__params { display: flex; flex-direction: column; gap: var(--sp-12); }
+.vault-task__params[hidden] { display: none; }
+.vault-task__params .select,
+.vault-task__params .input { width: 100%; }
+
+/* 判定狀態：一顆徽章說結論，下面逐條列缺什麼（抄規格 F8 目錄表，不自行補判定規則）。 */
+.vault-task__status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-6);
+  padding: var(--sp-12);
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.vault-task__status--pending { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--status-warning) 45%, var(--border)); }
+.vault-task__status-text {
+  margin: 0;
+  font-size: var(--fs-12);
+  line-height: var(--lh-comfy);
+  color: var(--foreground-muted);
+}
+.vault-task__missing {
+  margin: 0;
+  padding-left: var(--sp-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  font-size: var(--fs-12);
+  line-height: var(--lh-comfy);
+  color: var(--muted-foreground);
+}
+
+/* 幾人看得到（F3 每件可看人數）：讀數排大，算不出來時明說「待確認」，不編一個數字。 */
+.vault-task__reach {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--sp-2) var(--sp-12);
+}
+.vault-task__reach-label { font-size: var(--fs-12); color: var(--foreground); }
+.vault-task__reach-num {
+  grid-row: span 2;
+  align-self: center;
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+  line-height: var(--lh-none);
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+.vault-task__reach-num--pending { font-size: var(--fs-14); color: var(--muted-foreground); }
+.vault-task__reach-sub { font-size: var(--fs-12); line-height: var(--lh-comfy); color: var(--muted-foreground); }
+
+/* 大彩蛋開關列：與任務區同一條分隔節奏，坐在任務區之後。 */
+.vault-task__flag { margin-top: var(--sp-16); }

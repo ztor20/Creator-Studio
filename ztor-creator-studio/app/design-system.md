@@ -1089,6 +1089,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Sortable | 🟡 molecule | ✓ App | 全站表格排序互動：欄位標題包成按鈕，靜止態與純文字標題一致。`tier-benefits.html` 有 `<link>` 卻零實際用例（死引用）。詳見 §4.104 | [sortable.css](./ds-components/sortable.css) |
 | Numeric stepper | 🟢 atom | ✓ App | 數字輸入框的上下增減鈕，取代原生 spin button；與既有「Stepper」（本表上方，wizard 進度圓圈）為不同元件，勿混淆。詳見 §4.105 | [stepper.css](./ds-components/stepper.css) |
 | Sticky actions | 🟡 molecule | ✓ App | 頂部 CTA 捲出畫面後在底部浮現複製版動作列；全站消費最廣的元件之一（15 頁）。詳見 §4.106 | [sticky-actions.css](./ds-components/sticky-actions.css) |
+| Vault item task | 🟡 molecule | ✓ App | 媒體庫第二層：每件內容的小標（任務／大彩蛋／幾人看得到／以分級檢視的結果）＋單件抽屜的任務區（不設／行動／等級、參數、可判定或待確認、可看人數）（D377）。詳見 §4.229 | [vault-task.css](./ds-components/vault-task.css) |
 | Vault share | 🟠 organism | ✓ App | 媒體庫的加密連結／NFC 鑰匙發放面板，住在 drawer 裡；送禮與 NFC 商品共用同一個物件。詳見 §4.108 | [vault-share.css](./ds-components/vault-share.css) |
 | Wizard split | 🟠 organism | ✓ App | 精靈流程的「內容欄＋貼頂摘要側欄」兩欄版面，供 create-project 兩步共用。詳見 §4.109 | [wizard-split.css](./ds-components/wizard-split.css) |
 | Zselect | 🟡 molecule | ✓ App | 自製下拉選單，取代無法被樣式化的原生 `<select>` 展開清單；全站消費最廣的元件（19 頁）。**2026-09-11 新增動作列 `.zselect__option--action`**：`<select data-zselect-action="<id>">` 讓面板最底下多一列不是選項的動作（hairline 分隔、無勾號、字色略退），點了不改 value、只派 `zselect:action`（detail.action）並關閉面板；首個消費情境＝取貨場次的「建立取貨場次」（原本是選單旁的獨立按鈕）。**2026-09-30 新增下拉複選 `--multi`（D340）**：`<select multiple data-zselect-multi data-zselect-max="24">` 升級成「打開是勾選清單」——每列前一顆 house checkbox（`.zcheck__control`，Q126 複選記號＝方框）、點一列切換不關面板；觸發鈕一行寫出所有已選項、超過字數截斷補「…」、完整一串進 `title`，一項都沒選＝placeholder（`.zselect__label--placeholder`）；disabled 時打不開。首個消費情境＝建立活動的活動語言（取代 Check card）。詳見 §4.110 | [zselect.css](./ds-components/zselect.css) |
@@ -5102,7 +5103,7 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 **Anatomy**
 - `.vault-overview` / `.vault-ovcard(__cover|__body|__name|__meta|__reach|__num)` / `--new` / `.is-locked` — 庫房總覽卡片牆。**2026-08-01 起只用於保存檔 `media-vault-popup.html`**（`<html data-vault-view="popup">`）：使用者試用後裁示正式頁改回清單與詳情並排的版本，理由是可以直接切換庫房、也直接編輯 media，不必先開再關一層彈窗。兩種版型共用同一支 `js/media-vault.js`。原本的用意——2026-07-31 使用者裁決取代常駐的左側清單欄——全站導覽已經是左欄，庫房清單再一欄就變兩條並排；清單天生垂直（縮圖／名稱／內容數／鑰匙數）轉橫排塞不下，所以改成不要同時出現。封面在卡片牆上放得比 276px 側欄大得多
 - `.vault-modal` / `.vault-modal__sheet` / `.vault-modal__body` — 單一庫房＝彈窗（外殼沿用 `.embed-modal`，只換尺寸與內部捲動）。同樣只用於保存檔。彈窗裡沒有全站導覽，所以清單可以留在左邊：只有一條左欄，並排的問題就不存在，換庫房也不必關掉彈窗。庫房名字只寫在彈窗標題列（捲不走），內文不重複第二次；`.vault-rail` / `.vault-reach` 在彈窗內的貼頂高度歸零（捲動容器換成 `.vault-modal__body`）
-- `.vault-item__preview` / `__facts` / `__glyph` / `__actions` — 單一內容的設定（2026-08-01）：點格子／音檔列打開右側 `.drawer`。用抽屜不用第二層彈窗——庫房本身已是一層彈窗，再疊一層會變成對話框中的對話框，也會蓋掉剛才點的那一格。內容只放這座原型真的有的欄位（名稱可改；類型／長度／大小／加入日期唯讀）與既有的刪除動作；權限、有效期、浮水印等沒有上游規格的東西不擅自生出來
+- `.vault-item__preview` / `__facts` / `__glyph` / `__actions` — 單一內容的設定（2026-08-01）：點格子／音檔列打開右側 `.drawer`。用抽屜不用第二層彈窗——庫房本身已是一層彈窗，再疊一層會變成對話框中的對話框，也會蓋掉剛才點的那一格。內容只放規格有的東西（名稱可改；類型／長度／大小／加入日期唯讀；刪除）；2026-10-08 起加上第二層的任務區與大彩蛋開關（D377，見 §4.229）；有效期、浮水印等沒有上游規格的東西不擅自生出來
 - `.vault-viewer` — 檢視器只是「眼睛圖示＋一個標準 DS `.select`」的一列，**不外包自己的框**（2026-08-01：先前外層有邊框＋底色，內層 zselect 又有自己的邊框與聚焦環，疊成框中框）；檢視中的狀態由圖示轉品牌橘表示
 - `.vault-lens` / `.vault-viewer` / `.vault-viewer.is-on` — 檢視器列：橫跨在庫房與內容正上方、靠右，選一個分級就把整座庫房換成那一級粉絲看到的樣子。並排版靠左、與內容切齊同一條左邊界，「回到我的視角」排在下拉右邊。2026-08-01 使用者裁示搬進彈窗標題列——它問的是「這座庫房從粉絲那一側長怎樣」，那是進到庫房裡才要問的問題；標題列捲不走，切了分級之後往下看內容時身分要一直在
 - `.vault-layout` — 根層（2026-08-01 起清單靠右：`grid-template-columns: 1fr 276px` ＋ 用 `order` 換位置、不動 DOM 順序，讀屏與 Tab 仍先碰到清單；窄版收單欄時清單回到內容上方）；`.vault-rail` / `.vault-row` / `.vault-row--active` / `.is-locked` — 側欄庫房清單（打不開的庫房變暗）；`.vault-rail__new` 在清單之上，`.vault-rail__draft` — 新庫房名字欄，清單第一列
@@ -5117,6 +5118,8 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 - `.vault-tracks` / `.vault-track` — 音檔改清單列而非格子
 - `.vault-tile__rename` / `.vault-tile__confirm` — 就地改名／就地刪除確認（不用 `window.prompt`）
 - `.vault-gate` / `.vault-gate[hidden]` — 上鎖遮罩；`[hidden]` 那條必須留著，否則沒上鎖的庫房也會被罩住
+- `.vault-tile__badges` / `__badges-end` / `.vault-track__badges` — 每件內容的小標列（2026-10-08，D377 第二層）：格子頂端一條，左邊任務、右邊大彩蛋與「幾人看得到」，以分級檢視時右邊換成該分級的結果；音檔列排成曲名下的第三行。小標本身是 §4.229 的 `.vault-tag`。標籤紙格的 `.vault-tile__labelmark` 收進這一列當第一個成員（`position: static`），不再自己絕對定位——同一個角落放兩樣東西會疊在一起。`.vault-tile.is-locked`／`.vault-track.is-locked`＝以分級檢視、等級不足的那一件（降透明、影像轉灰，同側欄 `.vault-row.is-locked` 的語彙）
+- `.vault-gridwrap > .vault-door__fine` — 內容區頂端那句第二層說明（`vault.grid.fine`），借門條細則的字樣、收掉貼底用的 margin／padding
 
 **2026-07-31 使用者裁決（版面重整，四條）**
 1. 檢視器的作用範圍是整頁，所以自成一列放在庫房與內容之上、靠右對齊（與主欄的「分享權限」共用右邊界）；先前放側欄會被讀成清單篩選器、放頁首動作列會被讀成一顆按鈕。檢視中的狀態不另外寫成一句話——側欄逐列標「打不開」、主欄蓋遮罩、下拉自己轉品牌橘已經把狀態說完，這一列本身只是版面、不上底色（內容靠右之後整條上色會變成一大片空色塊）；「回到我的視角」排在下拉左邊，讓下拉守住最右邊界。
@@ -5126,7 +5129,7 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 4. 說明各歸各位：條件細則（何時重算）貼著條件放成 `.vault-door__fine`，整頁的原型聲明降級為頁尾 `.page-note`。兩者都不再是壓在媒體清單下面的 `.info-banner`。
 5. 上傳入口不縮成標題列上的小按鈕（2026-07-31 第三輪）：空的與有內容都是同一塊 `.vault-empty` 方框，只換標題（「這座庫房還是空的」／「新增內容」），有內容時矮一階（`--filled`）。方框同時是拖放目標，畫小等於把最省事的那條路藏起來。可放哪三種用 `.vault-empty__kind` 三顆圖示晶片講。
 
-**「進得來的方法」（2026-07-31，原型先行、待上游裁決 — ASSUMPTIONS PG-025）**
+**「進得來的方法」（2026-07-31 原型先行，2026-10-08 由 D376 採納為「進庫方法」— ASSUMPTIONS PG-025）**
 
 `rules` 從單層條件陣列改成「方法」清單 `[{items:[{t,v},…]},…]`：**一個 `{}` ＝ 一種進得來的方法；任何一種達成就進得來，同一種方法裡的條件要全部達成。**
 
@@ -7170,3 +7173,34 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **CSS** — [`venue-map.css`](./ds-components/venue-map.css) ｜ **JS** — [`partials/venue-map.js`](./partials/venue-map.js)（`window.ztorVenueMap.html({ address, strip, label, alt })`、`.url(address)`）
 
+---
+
+### 4.229 Vault item task（媒體庫第二層：每件內容的任務）
+
+**Purpose** — 媒體庫的第二層（D377，2026-10-08）。進得了庫是第一層（進庫方法＋鑰匙，§4.102 的門條）；進庫之後，每一件內容可以各自設一個任務：不設、行動任務（九種）或等級任務，另可標「大彩蛋」。命名規則：「鑰匙」只指第一層的進庫憑證，第二層一律叫「任務」。本元件管兩件事：掛在每一件內容上的小標，以及單件抽屜裡的任務區。
+
+**`_layer`** · molecule ｜ **source tier** · App ｜ **surface 層** · `--media` 只放在影像上（自帶深色半透明底＋模糊，影像不跟主題走）；`--plain` 坐在卡面玻璃（音檔列）與標籤紙淺底上，靠 1px 髮線成立，最深那層（音檔列 hover 的 `--ztu-glass-strong`）邊界仍在。
+
+**Anatomy**
+- `.vault-tag` — 22px 膠囊小標（`--radius-pill`、`--fs-11`、等寬數字）＞ `.ztor-icon`（12px）＋ `.vault-tag__text`（超長省略號，完整句放 `title`）
+  - 色調：`--media`（`--scrim-media` 76% 混透明＋`blur(6px)`，字 `--on-media`）｜`--plain`（`--ztu-film`＋1px `--border` 內描邊，字 `--foreground-muted`）
+  - 語意：`--grand`（大彩蛋，字轉 `--primary`／`--selected-ink`，不另開色面——它是標記不是狀態）、`--pending`（人數待確認，降一階墨色）、`--ok`（以分級檢視：看得到，成功綠）、`--low`（等級不足，降墨＋鎖頭）、`--action`（需完成行動任務，品牌橘字）。色相只出現在字上，表面維持中性（Q77）
+- `section.vault-task[data-item-task]` — 抽屜裡的任務區，flex column `gap --sp-12`（區內 `.field` 的 margin-bottom 收掉，避免與 gap 疊成兩倍）
+  - `.vault-task__head` ＞ `__title`（14 medium）＋ `__lead`（12 muted）
+  - `.radio-list`（三種設法；§ Radio list，Q17 窄欄直列的資料選擇）
+  - `.vault-task__params` — 選了才長出：行動任務＝「種類」`.select`（九種）＋該種類自己的參數（指定貼文／影片／商品 `.select`、N `input[type=number]` ＋ `.field__hint`／`.field__error`、商城消費範圍 `.segmented`）；等級任務＝「等級」`.select`（低於下限的選項 `disabled`）＋說明下限由來的 `.field__hint`
+  - `.vault-task__status`（`--pending`｜`--ready`）— `.badge--warning`「判定方式待確認」或 `.badge--success`「可判定」＋ `__status-text` ＋ `ul.__missing`（逐條抄規格 F8 目錄表寫的缺口，不自行補判定規則）
+  - `.vault-task__reach` — `__reach-label`／`__reach-num`（24 display；`--pending` 時改 14 muted 寫「待確認」，不編數字）／`__reach-sub`
+- `.control-row.vault-task__flag` ＋ `.switch` — 大彩蛋開關（只是標記，不影響解開）
+
+**States** — 三種設法互斥（一件一個任務）；改了即時生效、不設儲存鈕（同名稱欄）。N 不是 1 以上整數時 `.field__error` 出現、`aria-invalid="true"`，任務維持上一個合法值。等級任務若已低於第一層新下限（創作者事後改了第一層）：選項保留可見並加 `.field__hint--warn`，處理方式〔產品待確認〕。
+
+**Token usage** — `--sp-2`／`--sp-4`／`--sp-6`／`--sp-8`／`--sp-12`／`--sp-16`／`--sp-20`、`--fs-11`／`--fs-12`／`--fs-14`／`--fs-24`、`--lh-none`／`--lh-comfy`、`--fw-medium`、`--radius-pill`／`--radius-lg`、`--scrim-media`、`--on-media`／`--on-media-muted`、`--ztu-film`、`--border`、`--foreground`／`--foreground-muted`／`--muted-foreground`、`--primary`、`--selected-ink`、`--status-success`／`--status-success-ink`、`--status-warning`、`--font-ui`／`--font-display`。
+
+**Dependencies** — Icon、Badge、Switch、Custom select（zselect）、Radio list、Segmented、Control row；格子上的位置由 §4.102 的 `.vault-tile__badges`／`.vault-track__badges` 負責。
+
+**Consumers** — `media-vault.html`（唯一；`media-vault-popup.html` 是過時保存檔，共用 JS 但沒連本支 CSS，小標在那裡沒有樣式）。
+
+**資料與規則來源** — `js/vault-store.js`：`actionTasks`（九種、參數、規格寫的缺口）、`taskTargets`（指定貼文／影片的示意選項）、`taskStatus`、`taskMissing`、`tierFloor`（D377 決定五的下限）、`itemViewers`（F3 每件可看人數；沒有逐人資料回 `null`）、`itemStatusForTier`（F6 三種結果）。渲染與接線在 `js/media-vault.js`（`itemTags`、`taskSectionHtml`、`refreshTask`）。功能標記 `data-feat="S86"`。
+
+**CSS** — [`vault-task.css`](./ds-components/vault-task.css)

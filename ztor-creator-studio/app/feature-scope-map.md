@@ -6,7 +6,7 @@
 - **來源**：Ztor功能點.md + Phase 1 handoff
 - **範圍**：internal use only
 - **2026-10-07 改名**：Phase 1 改稱 release2.3（E-Shop，已凍結交付）、下一版改稱 release2.4；Tier 欄與版本鍵同步改名，下方 2026-10-07 以前的段落保留當時寫法
-- **功能總數**：129（2026-10-05 補登 S68–S71、O33，D360；2026-09-29 補登 S52–S56；同日補登 S58；2026-09-30 補登 S59–S61，D340；2026-10-01 補登 S62–S64，D342；2026-10-02 補登 S65–S66，D347；2026-10-05 補登 S67，D354；同日 S54（D353）、S57、S60（D354）改 ⚫ 退場）
+- **功能總數**：129（2026-10-08 補登 S86〔D377 媒體庫第二層〕，總數另待校正；2026-10-05 補登 S68–S71、O33，D360；2026-09-29 補登 S52–S56；同日補登 S58；2026-09-30 補登 S59–S61，D340；2026-10-01 補登 S62–S64，D342；2026-10-02 補登 S65–S66，D347；2026-10-05 補登 S67，D354；同日 S54（D353）、S57、S60（D354）改 ⚫ 退場）
 
 ## Tier 圖例
 
@@ -19,7 +19,7 @@
 
 Tier 欄的 release 編號就是程式用的 tier 代號：`devtools.js` 讀到 `🟢 release2.3` 就把該功能歸到 `release2.3`。之後交付 release2.4 時，那批功能改標 `🟢 release2.4`（保留它是哪一版交付的），新的下一版標 `🔵 release2.5`。
 
-本期統計：🟢 release2.3 92 · 🔵 release2.4 25 · ⚪ TBD 31 · ⚫ 退場 5（2026-10-07 依功能表逐列重數，同日補登 S82〔D366〕；2026-10-08 D371：S81 改 🔵、補登 S83 🔵；同日 D375 補登 S85 🔵；各模組小計與功能總數另待校正）
+本期統計：🟢 release2.3 92 · 🔵 release2.4 25 · ⚪ TBD 32 · ⚫ 退場 5（2026-10-08 D377 補登 S86 ⚪；2026-10-07 依功能表逐列重數，同日補登 S82〔D366〕；2026-10-08 D371：S81 改 🔵、補登 S83 🔵；同日 D375 補登 S85 🔵；各模組小計與功能總數另待校正）
 
 ## Build 狀態圖例
 
@@ -180,6 +180,8 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 14 · ⚫ 退場 3
 | `S83` | 　建立活動第 7 步「其他售票時間」摘要（早於正式開賣就能買的門票與票務商品，唯讀＋回到該步修改） | Other sale times summary (create event step 7) | 🔵 release2.4| ✅⬆ ahead | D361 決定一建（2026-10-07，原掛 S62）；2026-10-08 D371 決定四另登記、標 🔵 release2.4。create-event `#ce-sale-other`（`renderOtherSale()`，沒有任何一筆時整塊收起） |
 | `S84` | 　創作者活動管理（Admin：bookyay 匯入活動清單、逐場對應創作者、解除對應） | Creator event management (admin: imported bookyay events, map / unmap creators) | 🔵 release2.4| ✅⬆ ahead | D373 決定三（2026-10-08）：整頁 `admin-creator-events.html` 頁級 `data-page-feat="S84"`（release2.3 預覽導回 E-Shop）；入口同掛——側欄／頂列 Admin 列「創作者活動管理」（`js/sidebar.js` ADMIN_NAV `feat`）、Creator 詳情「已匯入 M 場活動」（`creator-detail.html` `.cd-imported`）。修訂 D324 把本頁列入 Phase 1 那一項。D374 撤除就地建立待啟用帳號。 |
 | `S85` | 　活動暫停售票／恢復販售（創作者與 Admin 都能操作）＋「暫停售票」「完售」徽章 | Pause / resume event sales + Sales paused and Sold out badges | 🔵 release2.4| ✅⬆ ahead | D375 決定七（2026-10-08）：event-detail 設定分頁上下架區塊內 `#ed-pause`（`[data-ed-pause]`／`[data-ed-resume]`，售票中與進行中才出現）、頁首 `#ed-paused-badge`／`#ed-soldout-badge`；events.html 清單列狀態欄注入的 `[data-ev-paused]`／`[data-ev-soldout]` 徽章。暫停與完售都不是階段，資料在 events-store `paused`／`ztor.event-paused`、`isPaused()`／`isSoldOut()` |
+|       | **媒體庫第二層：每件內容的任務（D377，2026-10-08）** | Media Vault item tasks | | | 規格 5.1.7.3 F8（新節）、F3 每件可看人數、F5 大彩蛋、F6 每件三種結果。媒體庫整頁仍是 `data-page-feat="full"`（只在最終版與 funding-test 顯示），本編號讓第二層在功能表上有一列；編號沿用 S 段（devtools 只解析 `S`／`O`／`E`／`B` 開頭的 ID） |
+| `S86` | 　媒體庫每件內容的任務（不設／九種行動任務／等級任務，等級依第一層下限過濾）、大彩蛋標記、每件幾人看得到、以分級檢視每件結果 | Media Vault item tasks, grand surprise, per-item viewers | ⚪ TBD      | ✅ built  | D377（2026-10-08）：`media-vault.html` 單件內容抽屜的 `section.vault-task[data-feat="S86"]` 與大彩蛋列、內容區頂端說明 `vault.grid.fine`、格子與音檔列上的 `.vault-tag[data-feat="S86"]`（JS 畫完呼叫 `ztorDevState.regate()`）；資料與計算在 `js/vault-store.js`。九種行動任務裡只有「商城消費・指定商品」可判定，其餘判定方式〔產品待確認〕（ASSUMPTIONS UIA-230） |
 |       | **粉絲忠誠點數（D347，2026-10-02）**                 | Loyalty points scoring model                    |            |          | 規格 5.1.0.8（新頁）、5.1.7.6 F3；計分規則本體在主規格 §7.5。編號沿用 S 段（devtools 只解析 `S`／`O`／`E`／`B` 開頭的 ID），與活動段 S52–S64 同一做法 |
 | `S65` | 　平台忠誠點數設定（Admin 第 8 個同層目的地：全站活動給分與上限、賽季加倍週、衰減與等級保留、平台常數唯讀、修改紀錄） | Platform Loyalty Settings (Admin) | ⚪ TBD      | ✅ built  | D347／5.1.0.8 F1–F6；上線階段〔產品待確認〕（主規格 §8.29 第 16 項）。`admin-platform-loyalty.html` 頁級 `data-page-feat="S65"`，並比照平台優惠設定登記進 `js/sidebar.js`／`js/devtools.js` 兩份 `FULL_ROUTES`（低版本藏側欄入口、直連導回） |
 | `S66` | 　分級設定的計分設定：各購買品項的份量（5 項）與互動推薦每 90 天最多得分（4 項） | Tier settings: purchase type value & max points per 90 days | ⚪ TBD      | ✅ built  | D347／5.1.7.6 F3.2–F3.3；`fans-crm.html` 分級設定彈窗「計分設定」分頁與 `tier-settings.html` 備份頁的兩組 `[data-feat="S66"]`。四類各類行為的份量（預設改 1.0）與「外部平台訊號本版暫不計入」屬既有分級設定，不掛本編號 |

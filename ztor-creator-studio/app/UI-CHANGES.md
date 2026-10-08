@@ -12,6 +12,32 @@
 >
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
+## 2026-10-08（一百四十八）· 媒體庫兩層模型：每件內容的任務、大彩蛋、每件幾人看得到、以分級檢視每件結果；第一層用語改「進庫方法」（A spec-derived · D376／D377）
+
+**範圍**：`media-vault.html`、`js/media-vault.js`、`js/vault-store.js`、`js/i18n.js`（`vault.sub`、`vault.note.tiers`、新增 `vault.grid.fine`）、`js/devtools.js`（`FEAT_TIER` 後備）、`ds-components/vault-task.css`（新）、`ds-components/media-vault.css`、`design-system.html`、`design-system.md`、`feature-scope-map.md`、`ASSUMPTIONS.md`、`BUILD-SPEC.md`、`requirements-map.md`、`STYLE-DECISIONS.md`（Q127 補證據）。
+
+**依據**：D376（第一層改「進庫方法」，採納 PG-025）、D377（兩層模型：第一層進庫＝條件＋鑰匙；第二層每件內容各自一個任務，不設／行動任務九種／等級任務；鑰匙只管進庫；等級任務下限在第一層分級條件之內；大彩蛋只是標記）。規格 `documents/5.1.7.3-媒體庫.md` F2、F3、F5、F6、F8。
+
+### A · spec-derived
+
+- 第二層任務（F8）：單件內容抽屜加「任務」區——三選一（不設任務／行動任務／等級任務，`radio-list`）；行動任務的種類下拉列齊九種，各自只長出自己的參數（指定貼文、指定影片、指定商品、N、商城消費的任一／指定商品）；N 只收 1 以上整數，不合法就在欄位下方說。一件只設一個任務，換設法就換掉整個任務。
+- 判定狀態：規格標〔產品待確認〕的八種與「任一商品」照樣可選，狀態框用「判定方式待確認」黃色徽章並逐條列出規格寫的缺口；「商城消費・指定商品」標「可判定」，另列完成時點待確認。
+- 等級任務下限（D377 決定五）：可選等級依第一層過濾——有任何一種進庫方法不看分級（或只靠鑰匙）時四級都能選，否則取各方法分級條件裡最低的一級，低於下限的選項停用並說明下限從哪來；等級名稱與順序沿用 `tier-settings.tier.*`／`tier-population.js`。
+- 每件可看人數（F3）：抽屜裡排大字、格子上掛眼睛小標；不設任務＝整座庫觸及，等級任務與指定商品現算，其餘顯示「待確認」不給數字。整座庫的觸及算法不變。
+- 以分級檢視每件結果（F6）：檢視身分開著時，每件右上換成「看得到／等級不足／需完成行動任務」，等級不足的那一件整格降透明。
+- 大彩蛋（F5）：抽屜裡一個開關，格子上一顆星號小標，只是標記。
+- 鑰匙只管進庫（F4，D377 決定六）：鑰匙抽屜底部的說明補一句「鑰匙只管進庫，進庫之後每件內容的任務照常要完成」，任務區開頭也講一次。
+- 內容清單看得出每件設了什麼任務：格子頂端新增小標列 `.vault-tile__badges`（音檔列是曲名下的 `.vault-track__badges`），標籤紙格原本左上的類型圖示收進這一列。內容區標題下補一句入口說明 `vault.grid.fine`。
+- 種子資料：東岸巡迴示範下限 Ranked Fans 與各種狀態，其餘庫房補齊九種行動任務。
+- 第一層用語（D376）：「多一種進得來的方法」→「多一種進庫方法」，總結句與遮罩改「達成上面任一種進庫方法」；`vault.note.tiers` 補上「掉到分級條件以下，整種進庫方法就不再算達成」（D376 決定五 d），並寫明套用降級緩衝。第二層一律叫「任務」，不叫鑰匙。
+- 新元件 `ds-components/vault-task.css`（`.vault-tag` 小標＋抽屜的 `.vault-task` 任務區），DS 三件套同步（`design-system.md` §4.229、`design-system.html` demo 卡＋TOC＋元件清單列；§4.102 Media vault 補小標列與兩層模型說明，demo 快照同步）。
+- 功能標記：新登記 S86（⚪ TBD），任務區、大彩蛋列、入口說明與格子小標都掛 `data-feat="S86"`；格子是 JS 畫的，畫完呼叫 `ztorDevState.regate()`。
+- 文件：`ASSUMPTIONS.md` PG-025 改標已由 D376 採納；`js/vault-store.js` 註解裡指向舊路徑 `site/r2.2/ASSUMPTIONS.md` 改成現行路徑。
+
+**未動**：`media-vault-popup.html`（保存檔，沒有頁面連過去；共用同一支 JS，所以小標也會畫出來，但它沒連 `vault-task.css`，在那裡沒有樣式——已過時，見 BUILD-SPEC）。
+
+**呈現假設與缺口**：ASSUMPTIONS UIA-230。
+
 ## 2026-10-08（一百四十七）· bookyay 匯入活動的撤銷與取消停用、唯讀入場名單、暫停售票與完售徽章、創作者活動管理四值、非公開連結失效（A spec-derived · D375）
 
 **標籤**：release2.4
