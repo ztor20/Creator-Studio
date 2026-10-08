@@ -60,7 +60,7 @@
   }
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 
-  /* 內容區標題加序號：h1＝頁號，h2＝頁號.節，h3＝頁號.節.小節；更小的標題（h4）不編號。目錄連結的序號跟著更新 */
+  /* 內容區標題加序號：h1＝頁號，h2＝頁號.節，h3＝頁號.節.小節；h4 的字母由 letterH4 另外加。目錄連結的序號跟著更新 */
   function numberHeadings(base){
     var wrap=document.querySelector('body>.wrap'); if(!wrap) return;
     function put(h,num){ var n=h.querySelector(':scope>.n'); if(!n){ n=document.createElement('span'); n.className='n'; h.insertBefore(n,h.firstChild); } n.textContent=num; }
@@ -72,8 +72,50 @@
     });
     wrap.querySelectorAll('.toc a[href^="#"]').forEach(function(a){ var id=a.getAttribute('href').slice(1); if(map[id]) a.textContent=map[id]+' '+a.textContent.replace(/^\s*[\d.]+\s*/,''); });
   }
+  /* h4 字母標記：只看內容區直接子元素，每個 h2／h3 重新從 a 算，超過 26 個接 aa、ab；字母放進 span.n，樣式同序號。卡片裡的 h4 不處理 */
+  function letterOf(i){ var c=String.fromCharCode(97+i%26); return i<26?c:letterOf(Math.floor(i/26)-1)+c; }
+  function letterH4(){
+    var wrap=document.querySelector('body>.wrap'); if(!wrap) return;
+    var k=0;
+    [].forEach.call(wrap.children,function(el){
+      if(el.tagName==='H2'||el.tagName==='H3'){ k=0; return; }
+      if(el.tagName!=='H4') return;
+      var n=el.querySelector(':scope>.n'); if(!n){ n=document.createElement('span'); n.className='n'; el.insertBefore(n,el.firstChild); }
+      n.textContent=letterOf(k++);
+    });
+  }
+  /* 子節目錄：h3 底下（到下一個 h2／h3 前）有 3 個以上 h4 時，在該 h3 下方插一排 h4 的跳轉連結。
+     只看內容區的直接子元素（卡片裡的 h3 不算）；h4 沒有 id 時由標題文字產生穩定 id，不覆蓋既有 id；不動序號與頁首目錄 */
+  function subToc(){
+    var wrap=document.querySelector('body>.wrap'); if(!wrap) return;
+    var kids=[].slice.call(wrap.children), made=false;
+    kids.forEach(function(el,i){
+      if(el.tagName!=='H3') return;
+      var h4s=[];
+      for(var k=i+1;k<kids.length;k++){ var t=kids[k].tagName; if(t==='H2'||t==='H3') break; if(t==='H4') h4s.push(kids[k]); }
+      if(h4s.length<3) return;
+      var links=h4s.map(function(h){
+        var nEl=h.querySelector(':scope>.n'), mark=nEl?nEl.textContent:'', label='';
+        [].forEach.call(h.childNodes,function(c){ if(c!==nEl) label+=c.textContent; });
+        label=label.replace(/\s+/g,' ').trim();
+        if(!h.id){
+          var base=label.replace(/[\s"'#<>&?%\/\\]+/g,'-').replace(/^-+|-+$/g,'')||'sub', id=base, n=2;
+          while(document.getElementById(id)) id=base+'-'+(n++);
+          h.id=id; made=true;
+        }
+        return '<a href="#'+esc(h.id)+'">'+(mark?'<span class="n">'+esc(mark)+'</span>':'')+esc(label)+'</a>';
+      });
+      var nav=document.createElement('nav'); nav.className='rb-subtoc'; nav.setAttribute('aria-label','本節子節');
+      nav.innerHTML=links.join('');
+      el.parentNode.insertBefore(nav, el.nextSibling);
+    });
+    /* 網址帶的錨點是剛補上的 id 時，瀏覽器載入時找不到，補捲一次 */
+    if(made && location.hash){ try{ var tg=document.getElementById(decodeURIComponent(location.hash.slice(1))); if(tg) tg.scrollIntoView(); }catch(e){} }
+  }
   function build(){
     var cur=current();
+    letterH4();
+    subToc();
     var old=document.querySelector('.topnav'); if(old) old.remove();
     var side=document.createElement('aside'); side.className='rb-side'; side.setAttribute('aria-label','章節');
     var html='<div class="head"><a class="brand" href="index.html"><b>ztor Creator Studio 規則手冊</b><span>產品規則定案與發布</span></a><button type="button" class="fold" data-act="fold" aria-label="收合側邊欄" title="收合／展開側邊欄">‹</button></div>';
