@@ -136,6 +136,30 @@ tr:last-child td{border-bottom:0}
 .wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
 .wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
 .k{font-size:12px;color:var(--text-3)}
+.fvf{overflow-x:auto;margin:14px 0 22px;padding-bottom:6px}
+.fvf__in{min-width:880px;display:flex;flex-direction:column;gap:12px}
+.fvf__lane{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px 14px;border-left:3px solid var(--text-3)}
+.fvf__lane--by{border-left-color:var(--pink-key)}
+.fvf__lane--fan{border-left-color:var(--ok-key)}
+.fvf__h{font-size:12px;color:var(--text-3);margin:0 0 9px;font-weight:500}
+.fvf__row{display:flex;align-items:center;gap:8px}
+.fvf__n{background:var(--surface-sunken);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;font-size:12.5px;line-height:1.5;color:var(--text-2);flex:1 1 0;min-width:0}
+.fvf__n b{display:block;color:var(--text);font-weight:500;font-size:13px}
+.fvf__n--q{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.fvf__n--q b{color:var(--wait-ink)}
+.fvf__n--ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.fvf__n--ok b{color:var(--ok-ink)}
+.fvf__n--no{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.fvf__n--no b{color:var(--warn-ink)}
+.fvf__a{color:var(--text-3);flex:none;font-size:16px}
+.fvf__br{display:flex;flex-direction:column;gap:8px;flex:3 1 0;min-width:0}
+.fvf__yn{font-size:11.5px;color:var(--text-3);flex:none;white-space:nowrap}
+.fvf__sub{display:flex;align-items:center;gap:8px}
+.fvf__tag{font-size:11.5px;color:var(--text-2);flex:none;width:76px;text-align:right}
+.fvf__fan{display:flex;align-items:flex-start;gap:8px}
+.fvf__stem{display:flex;flex-direction:column;gap:8px;flex:1 1 0;min-width:0}
+.fvf__rec{margin-top:10px;padding:8px 12px;border:1px solid var(--border);border-left:3px solid var(--warn-key);border-radius:var(--radius);background:var(--surface);font-size:12.5px;color:var(--text-2)}
+.fvf__rec b{color:var(--text);font-weight:500}
 </style>
 </head>
 <body>
@@ -143,6 +167,37 @@ tr:last-child td{border-bottom:0}
 
 <h1>優惠規則</h1>
 <p class="lede">創作者用排程特價、組合折扣、方案優惠、粉絲分級折扣與優惠碼讓利給買家，Admin 另可設平台滿額折扣與平台優惠碼。分級折扣、創作者優惠碼與平台滿額折扣都在算平台費之前扣，由創作者與平台照費率比例一起吸收。</p>
+<div class="fvf" role="img" aria-label="優惠規則計算順序：定價層、買家層、平台滿額、平台費、支付費、創作者收入">
+<div class="fvf__in">
+  <div class="fvf__lane fvf__lane--by">
+    <p class="fvf__h">折扣（創作者設定，平台滿額由 Admin 設定）</p>
+    <div class="fvf__row">
+      <div class="fvf__n"><b>1 定價層</b>排程特價、組合折扣、方案優惠折完，得到商品頁的標示售價</div><span class="fvf__a">→</span>
+      <div class="fvf__n fvf__n--q"><b>2 買家有輸優惠碼嗎？</b>拍賣不折，不進這條流程。分級折扣是買家層，不用輸碼；特價檔期內特價優先，分級折扣不套用，檔期外分級折扣照常</div><span class="fvf__a">有 →</span>
+      <div class="fvf__n fvf__n--q"><b>可與優惠碼疊加的開關開著嗎？</b>已生效的折扣＝特價檔期內是特價、檔期外是分級折扣</div><span class="fvf__a">→</span>
+      <div class="fvf__br">
+        <div class="fvf__sub"><span class="fvf__tag">關（預設）</span><div class="fvf__n"><b>擇一</b>優惠碼與已生效的折扣取對買家最有利的一項</div></div>
+        <div class="fvf__sub"><span class="fvf__tag">開</span><div class="fvf__n"><b>疊在折扣上</b>優惠碼疊在已生效的折扣之後</div></div>
+      </div>
+    </div>
+    <div class="fvf__row" style="margin-top:8px">
+      <span class="fvf__yn">沒有 →</span><div class="fvf__n"><b>不套優惠碼</b>只算已生效的折扣</div><span class="fvf__a">→</span>
+      <div class="fvf__n"><b>3 買家層</b>折完，得到買家層折後小計</div><span class="fvf__a">→</span>
+      <div class="fvf__n fvf__n--q"><b>小計達平台滿額門檻嗎？</b>門檻只看品項小計，Phase 4</div><span class="fvf__a">達到 →</span>
+      <div class="fvf__n"><b>4 平台滿額折扣</b>永遠疊在最後，不受疊加開關影響</div>
+    </div>
+  </div>
+  <div class="fvf__lane fvf__lane--fan">
+    <p class="fvf__h">結帳後的費用與收入（自動算出）</p>
+    <div class="fvf__row">
+      <div class="fvf__n"><b>5 品項實付</b>未達門檻的，買家層折後小計就是品項實付</div><span class="fvf__a">→</span>
+      <div class="fvf__n"><b>6 平台費</b>品項實付 × 費率，逐件算：票券用活動費率，商品用電子商店費率</div><span class="fvf__a">→</span>
+      <div class="fvf__n"><b>7 支付費</b>運費加上去（運費不折）得買家實付，再乘金流商費率</div><span class="fvf__a">→</span>
+      <div class="fvf__n fvf__n--ok"><b>8 創作者收入</b>品項實付 − 平台費 − 支付費；代理碼成交時再減代理分成</div>
+    </div>
+  </div>
+</div>
+</div>
 
 <div class="toc">
   <a href="#s1">1 七種折扣一覽</a><a href="#s2">2 所有折扣共同的規則</a><a href="#s3">3 一筆訂單的折扣怎麼算</a><a href="#s4">4 各種折扣的規則</a><a href="#s5">5 在哪裡設定與查看折扣</a><a href="#s6">6 折扣試算</a>
@@ -184,7 +239,7 @@ tr:last-child td{border-bottom:0}
   <div class="card pink">
     <div class="band"></div>
     <h3>平台滿額折扣</h3>
-    <p>訂單達門檻時系統自動折，買家不輸碼。Admin 一檔設一筆，可設例外藝人；創作者不能退出。</p>
+    <p>訂單達門檻時自動折，買家不輸碼。Admin 一檔設一筆，可設例外藝人；創作者不能退出。</p>
     <p class="k">誰設：Admin，在平台優惠設定<br>誰出錢：創作者</p>
   </div>
   <div class="card pink">
@@ -285,7 +340,7 @@ tr:last-child td{border-bottom:0}
   <div class="lrow sum"><span class="sign">＝</span><span>標示售價<span class="sub">買家在商品頁看到的價</span></span><span class="amt">900</span><span class="why">定價層的價，不是扣項</span></div>
   <div class="lrow op"><span class="sign">−</span><span>優惠碼（分級折扣也在這一站，同一套算法）</span><span class="amt">50</span><span class="why">買家層：看這個買家是誰、有沒有輸碼</span></div>
   <div class="lrow sum"><span class="sign">＝</span><span>買家層折後小計</span><span class="amt">850</span><span class="why"><span class="tag pink">滿額門檻看這裡</span> 達門檻才有下一行</span></div>
-  <div class="lrow op"><span class="sign">−</span><span>平台滿額折抵</span><span class="amt">50</span><span class="why">平台層：系統自動</span></div>
+  <div class="lrow op"><span class="sign">−</span><span>平台滿額折抵</span><span class="amt">50</span><span class="why">平台層：自動折抵</span></div>
   <div class="lrow sum"><span class="sign">＝</span><span>品項實付</span><span class="amt">800</span><span class="why"><span class="tag ok">平台費看這裡</span> 800 × 15% ＝ 120</span></div>
   <div class="lrow op"><span class="sign">＋</span><span>運費</span><span class="amt">100</span><span class="why">不折</span></div>
   <div class="lrow final"><span class="sign">＝</span><span>買家實付</span><span class="amt">900</span><span class="why"><span class="tag">支付費看這裡</span> 900 × 2.4% ＝ 21.6</span></div>
@@ -333,7 +388,7 @@ tr:last-child td{border-bottom:0}
     <tr><td>適用商品</td><td>實體與數位商品適用<br>拍賣不適用</td></tr>
     <tr><td>怎麼設</td><td>開關預設關閉<br>特價價格與折扣 % 二擇一，填一個、另一個自動換算<br>多選項商品只收折扣 %<br>開啟後必填特價價格或折扣 %，以及起訖日<br>特價需低於定價<br>結束日需晚於開始日</td></tr>
     <tr><td>買家看到</td><td>檔期內以特價取代定價<br>這個特價就是標示售價，平台費以這個特價再扣各項折抵後的實付計</td></tr>
-    <tr><td>疊加開關</td><td>「可與優惠碼疊加」預設關閉<br>關閉：特價、分級折扣、優惠碼三者擇一，取對買家最有利的一項<br>開啟：優惠碼再疊上去</td></tr>
+    <tr><td>疊加開關</td><td>「可與優惠碼疊加」預設關閉<br>關閉：優惠碼與已生效的折扣（特價檔期內是特價、檔期外是分級折扣）擇一，取對買家最有利的一項<br>開啟：優惠碼再疊在已生效的折扣之上</td></tr>
     <tr><td>與分級折扣</td><td>檔期內以特價為準，分級折扣不疊上也不比較<br>檔期外分級折扣照常</td></tr>
   </tbody>
 </table></div>
@@ -344,7 +399,7 @@ tr:last-child td{border-bottom:0}
   <thead><tr><th style="width:22%">項目</th><th>規則</th></tr></thead>
   <tbody>
     <tr><td>在哪設</td><td>建立組合包的組合價格（常態）與限時折扣<br>組合商品細節頁可改</td></tr>
-    <tr><td>常態折扣</td><td>組合折扣 %，選填 0–100<br>售價＝成員原價合計 ×（1 − %），系統算、唯讀<br>成員有多選項時顯示「從 $X 起」<br>空或 0＝沒有組合優惠</td></tr>
+    <tr><td>常態折扣</td><td>組合折扣 %，選填 0–100<br>售價＝成員原價合計 ×（1 − %），自動算出、唯讀<br>成員有多選項時顯示「從 $X 起」<br>空或 0＝沒有組合優惠</td></tr>
     <tr><td>限時折扣</td><td>啟用時必填限時折扣 %（0–100）與檔期起訖<br>疊在常態售價之上：檔期內買家付＝售價 ×（1 − 限時 %）</td></tr>
     <tr><td>平台費</td><td>以買家最終的品項實付計，也就是組合售價再扣限時折扣與各項折抵後的金額</td></tr>
     <tr><td>疊加開關</td><td>與商品相同的「可與優惠碼疊加」開關，預設關閉<br>關閉：優惠碼與組合折扣（常態 %＋限時 %）擇一，取對買家最有利的一項<br>開啟：優惠碼疊在組合售價之上</td></tr>
@@ -358,7 +413,7 @@ tr:last-child td{border-bottom:0}
   <thead><tr><th style="width:22%">項目</th><th>規則</th></tr></thead>
   <tbody>
     <tr><td>在哪設</td><td>建立項目的方案，每個方案各自設</td></tr>
-    <tr><td>怎麼設</td><td>方案優惠 %（選填 0–100，預設 0），系統算價、唯讀<br>共創方案：（支持者位數 × 每名額單價 ＋ 商店商品定價加總）×（1 − %）<br>預購方案：（單位價格 × 含作品份數 ＋ 附屬商品定價加總）×（1 − %）</td></tr>
+    <tr><td>怎麼設</td><td>方案優惠 %（選填 0–100，預設 0），自動算價、唯讀<br>共創方案：（支持者位數 × 每名額單價 ＋ 商店商品定價加總）×（1 − %）<br>預購方案：（單位價格 × 含作品份數 ＋ 附屬商品定價加總）×（1 − %）</td></tr>
     <tr><td>地板</td><td>優惠只折商品那一段<br>折後價格不得低於該方案的分潤名額總價，因為名額賣的是股份、不打折</td></tr>
     <tr><td>性質</td><td>是方案定價的一部分，不是結帳折抵<br>買家看到的方案價已經含方案優惠<br>平台費以最終實付計</td></tr>
   </tbody>
@@ -490,7 +545,7 @@ tr:last-child td{border-bottom:0}
 <div class="tablewrap"><table>
   <thead><tr><th style="width:22%">項目</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>怎麼觸發</td><td>訂單的品項小計（分級折扣與優惠碼折後、不含運費）達門檻時，系統自動折<br>買家不用輸碼</td></tr>
+    <tr><td>怎麼觸發</td><td>訂單的品項小計（分級折扣與優惠碼折後、不含運費）達門檻時，自動折<br>買家不用輸碼</td></tr>
     <tr><td>門檻用哪個幣別</td><td>門檻金額以平台基準幣別記錄（平台自己的記帳幣別，預設港幣）<br>判斷是否達標時，依當時匯率把門檻換算成該創作者的幣別再比對<br>畫面同時顯示換算後金額與匯率時點<br>每位創作者各有各的幣別，站上沒有全站幣別</td></tr>
     <tr><td>多筆同時生效</td><td>可以<br>一張訂單達到門檻的各筆裡，只套用折抵最高的一筆，不累加</td></tr>
     <tr><td>折多少</td><td>固定金額或百分比<br>固定金額不超過品項小計</td></tr>
@@ -510,7 +565,7 @@ tr:last-child td{border-bottom:0}
   <tbody>
     <tr><td>設定欄位</td><td>名稱<br>碼：全平台唯一，8–20 個英數字，可自動產生<br>折扣：百分比或固定金額，固定金額的折法同創作者的優惠碼<br>生效期間<br>啟用<br>每張訂單可折件數、每人總次數、總兌換次數：留空或 0＝不限<br>可與其他優惠碼疊加：預設關閉<br>備註<br>本組例外藝人<br>修改歷史</td></tr>
     <tr><td>範圍</td><td>全平台<br>拍賣不折</td></tr>
-    <tr><td>買家端</td><td>結帳輸碼，系統驗範圍、期間、次數<br>折售價最高的那幾件<br>運費不折</td></tr>
+    <tr><td>買家端</td><td>結帳輸碼，自動驗證範圍、期間、次數<br>折售價最高的那幾件<br>運費不折</td></tr>
     <tr><td>與創作者的碼</td><td>同一單能不能一起用，看雙方各自的「可與其他優惠碼疊加」開關</td></tr>
     <tr><td>狀態</td><td>未開始／進行中／已用完／已結束／已停用</td></tr>
   </tbody>
@@ -541,13 +596,13 @@ tr:last-child td{border-bottom:0}
     <li>商品細節頁可改同一組設定。</li>
   </ol></div>
   <div class="role ok"><div class="band"></div><h3>組合包</h3><p class="where">建立組合包 › 組合商品細節頁</p><ol>
-    <li>在組合價格填組合折扣 %，看系統算出的售價。</li>
+    <li>在組合價格填組合折扣 %，看自動算出的售價。</li>
     <li>要限時折扣時，開啟限時折扣並填 % 與檔期。</li>
     <li>疊加開關同商品。</li>
   </ol></div>
   <div class="role ok"><div class="band"></div><h3>項目方案</h3><p class="where">建立項目 › 方案 › 項目詳情</p><ol>
     <li>每個方案填方案優惠 %。</li>
-    <li>價格由系統依名額、商品加總算出，唯讀。</li>
+    <li>價格依名額、商品加總自動算出，唯讀。</li>
   </ol></div>
 </div>
 
@@ -584,7 +639,7 @@ tr:last-child td{border-bottom:0}
   <div class="role wait dim"><div class="band"></div><h3>買家</h3><p class="where">粉絲端結帳 · 本專案不做</p><ol>
     <li>商品頁看到特價、組合售價、方案售價。</li>
     <li>有分級的粉絲看到自己的折扣。</li>
-    <li>結帳輸優惠碼，系統驗範圍、期間、次數，折售價最高的那幾件。</li>
+    <li>結帳輸優惠碼，自動驗證範圍、期間、次數，折售價最高的那幾件。</li>
     <li>達門檻自動再折滿額。</li>
     <li>下單成功那一刻次數算用掉。</li>
     <li>撤銷則沖銷、次數歸還，跌破門檻的滿額折抵扣回。</li>

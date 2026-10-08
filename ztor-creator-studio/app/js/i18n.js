@@ -10446,7 +10446,7 @@
        「整座庫房一起開給某個分級」的說法已經不成立，留著會直接誤導。 */
     'ben.vault.title': { en: 'What is the Media Vault?', zh: '什麼是媒體庫？' },
     'ben.vault.lead':  { en: 'A gated media library that belongs to you, kept in vaults. Upload anything — stems, raw footage, photo dumps, unreleased mixes — and each vault decides for itself who can open it.', zh: '一座屬於你的加密媒體庫，內容分成一座座庫房存放。什麼都能上傳——分軌、未剪素材、整批照片、未發行的混音——每座庫房自己決定誰打得開。' },
-    'ben.vault.body':  { en: 'A vault opens for a fan who meets any one of its conditions: a tier, something they bought, a project they backed, an event they attended, or something they achieved. Switching a tier on here is the promise fans read on the ladder; the vaults and their conditions are set in Media Vault.', zh: '粉絲只要符合庫房的任一條件就進得去：分級、買過什麼、支持過哪個項目、出席過哪一場、或達成了什麼。在這裡為某個分級開啟，是粉絲在階梯上讀到的承諾；庫房與條件本身在「媒體庫」裡設定。' },
+    'ben.vault.body':  { en: 'Each vault lists one or more ways in. A fan gets in by meeting every condition in any one of them — a tier, something they bought, a project they backed, an event they attended, or something they achieved. Switching a tier on here is the promise fans read on the ladder; the vaults and their ways in are set in Media Vault.', zh: '每座庫房列出一種或幾種進庫方法，粉絲達成其中任一種就進得去；同一種方法裡的條件要全部達成，條件可以是分級、買過什麼、支持過哪個項目、出席過哪一場、或達成了什麼。在這裡為某個分級開啟，是粉絲在階梯上讀到的承諾；庫房與進庫方法本身在「媒體庫」裡設定。' },
     'ben.vault.where': { en: 'Open Media Vault', zh: '前往媒體庫' },
 
     /* ── Media Vault（2026-07-29）─────────────────────────────
@@ -10455,7 +10455,7 @@
     'vault.crumb.fans': { en: 'Fans', zh: '粉絲' },
     'vault.crumb.self': { en: 'Media Vault', zh: '媒體庫' },
     'vault.h1':         { en: 'Media Vault', zh: '媒體庫' },
-    'vault.sub':        { en: 'Gated vaults that live behind your fan tiers. Make a vault, decide who gets in, then fill it. Every vault shows how many fans can open it right now.', zh: '一組擋在粉絲分級後面的媒體庫房。開一座庫房、決定誰進得來，再把東西放進去。每座庫房都會顯示現在有幾位粉絲打得開。' },
+    'vault.sub':        { en: 'Gated vaults that live behind your fan tiers. Make a vault, decide who gets in, then fill it — and give any item its own task. Every vault shows how many fans can open it right now.', zh: '一組擋在粉絲分級後面的媒體庫房。開一座庫房、決定誰進得來，再把東西放進去，每件內容還能各自設一個任務。每座庫房都會顯示現在有幾位粉絲打得開。' },
     'vault.btn.new':    { en: 'New vault', zh: '新增庫房' },
     'vault.rail.label': { en: 'Vaults', zh: '庫房' },
     'vault.viewer.me':      { en: 'View as: you (all vaults)', zh: '檢視身分：你（全部庫房）' },
@@ -10478,7 +10478,10 @@
     'vault.btn.share-page': { en: 'Share page', zh: '分享頁面' },
     'vault.toast.page-copied': { en: 'Share link copied', zh: '分享連結已複製' },
     'vault.lens.reset': { en: 'Back to my view', zh: '回到我的視角' },
-    'vault.note.tiers': { en: 'Tier conditions re-evaluate on the weekly tier recompute — a fan who drops a tier keeps access until then. Purchase, backing, event and achievement conditions are permanent: they record something that already happened, so access never expires.', zh: '分級條件在每週的分級重算時重新判定——掉出分級的粉絲在那之前仍然打得開。購買、支持、出席、成就這四類條件是永久的：它們記錄的是已經發生的事，權限不會過期。' },
+    /* 2026-10-08（D376 決定五 d）：分級條件放在進庫方法裡時，掉級會讓整種方法不再達成。 */
+    'vault.note.tiers': { en: 'Tier conditions re-check on the weekly tier recompute, after the demotion grace. If a fan drops below a tier condition, that whole way in stops counting for them — even if they still meet its other conditions. Purchase, backing, event and achievement conditions are permanent: they record something that already happened.', zh: '分級條件在每週分級重算時重新判定（套用降級緩衝）。粉絲掉到某個分級條件以下，那一整種進庫方法就不再算他達成，即使同一種方法裡的其他條件仍符合。購買、支持、出席、成就這四類條件是永久的：它們記錄的是已經發生的事。' },
+    /* 2026-10-08（D377）：第二層的入口說明，坐在「這座庫房裡」標題下。第二層一律叫「任務」，不叫鑰匙。 */
+    'vault.grid.fine':  { en: 'Each item can carry its own task: fans who get into the vault finish it to see that item. Click an item to set its task or mark it as a grand surprise.', zh: '每件內容可以各自設一個任務：粉絲進庫之後完成它，才看得到那一件。點一件內容就能設定任務，或標為大彩蛋。' },
     'cp.vaultkey.title': { en: 'This product carries a vault key', zh: '這件商品會附帶一把庫房鑰匙' },
     'cp.vaultkey.body':  { en: 'Write this code onto the product’s NFC tag. A fan who taps it unlocks the vault it came from — one tap, one use.', zh: '把這組代號寫進商品的 NFC 標籤。粉絲碰一下就解鎖它來自的那座庫房——碰一次、用掉一次。' },
     'vault.note.demo':  { en: 'Vault contents and fan counts are prototype sample data. Fan totals match the Fans overview (1,283) and every limited-run figure is capped at what actually sold.', zh: '庫房內容與粉絲人數為原型示範資料。粉絲總數與粉絲總覽一致（1,283 位），所有限量數字都以實際售出量為上限。' },

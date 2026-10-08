@@ -23,6 +23,9 @@
 
      資料與計算：js/vault-store.js（固定種子生成的粉絲母體＋集合運算）。
      渲染與互動：js/media-vault.js。樣式：ds-components/media-vault.css。
+     第二層（2026-10-08，D377）：庫房裡每件內容可各自設一個任務（不設／行動／等級）、
+     標大彩蛋；設定在單件內容抽屜，格子上掛小標。樣式：ds-components/vault-task.css。
+     命名：「鑰匙」只指第一層的進庫憑證，第二層一律叫「任務」。
      ============================================================ -->
 <script src="js/theme.js?v=r2.2"></script>
 <script src="js/fans-guide-firstrun.js?v=r2.2"></script>
@@ -43,6 +46,11 @@
 <link rel="stylesheet" href="ds-components/drawer.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/media-vault.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/vault-share.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/vault-task.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 </head>
 <body>
@@ -63,7 +71,7 @@
         <div>
           <h1 class="page-intro__title" data-i18n="vault.h1">Media Vault</h1>
           <div class="page-intro__lede">
-            <p class="page-intro__sub" data-i18n="vault.sub">Gated vaults that live behind your fan tiers. Make a vault, decide who gets in, then fill it. Every vault shows how many fans can open it right now.</p>
+            <p class="page-intro__sub" data-i18n="vault.sub">Gated vaults that live behind your fan tiers. Make a vault, decide who gets in, then fill it — and give any item its own task. Every vault shows how many fans can open it right now.</p>
             <a class="page-intro__help" href="fans-guide.html" data-i18n="fans.btn.explain">系統說明</a>
           </div>
         </div>
@@ -145,7 +153,7 @@
                      與右邊「發一把鑰匙」是兩件事：這個給的是看得到的展示頁，
                      那個給的是進得去的權限。 -->
                 <button class="btn btn--ghost" type="button" data-vault-share-page>
-                  <i data-lucide="share-2" class="ztor-icon"></i><span data-i18n="vault.btn.share-page">Share page</span>
+                  <i data-lucide="share" class="ztor-icon"></i><span data-i18n="vault.btn.share-page">Share page</span>
                 </button>
                 <button class="btn btn--outline" type="button" data-vault-share="new">
                   <i data-lucide="key" class="ztor-icon"></i><span data-i18n="vault.btn.issue-key">Issue a key</span>
@@ -191,7 +199,7 @@
                 <!-- 「條件什麼時候會重新判定」是條件本身的細則，2026-07-31 從內容區
                      底部的橫幅移上來貼著條件放：它回答的是上面那幾張 chip 的問題，
                      壓在媒體清單下面等於問完之後隔了半頁才回答。 -->
-                <p class="vault-door__fine" data-i18n="vault.note.tiers">Tier conditions re-evaluate on the weekly tier recompute — a fan who drops a tier keeps access until then. Purchase, backing, event and achievement conditions are permanent: they record something that already happened, so access never expires.</p>
+                <p class="vault-door__fine" data-i18n="vault.note.tiers">Tier conditions re-check on the weekly tier recompute, after the demotion grace. If a fan drops below a tier condition, that whole way in stops counting for them — even if they still meet its other conditions. Purchase, backing, event and achievement conditions are permanent: they record something that already happened.</p>
               </div>
             </section>
 
@@ -225,6 +233,9 @@
                 <span class="vault-gridbar__meta" data-vault-gridmeta></span>
                 <input type="file" multiple accept="image/*,video/*,audio/*" hidden data-vault-file>
               </div>
+              <!-- 第二層的入口說明（D377）：任務設在每一件內容上，點格子才看得到設定，
+                   所以在內容區頂端講一次「這裡可以設」，不然這個功能藏在點擊之後。 -->
+              <p class="vault-door__fine" data-feat="S86" data-i18n="vault.grid.fine">Each item can carry its own task: fans who get into the vault finish it to see that item. Click an item to set its task or mark it as a grand surprise.</p>
               <div data-vault-grid></div>
             </div>
 

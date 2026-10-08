@@ -22,6 +22,7 @@
          .vault-door        — 門條：條件 chips ＋ 觸及讀數 ＋ 分級覆蓋條
          .vault-grid        — 內容格（含第一格上傳投放區）
            .vault-tile      — 一件內容（image / clip / audio 混放）
+             .vault-tile__badges — 頂端小標列：任務／大彩蛋／幾人看得到（D377，標本身見 vault-task.css）
 
    為什麼主欄不是一張 .card：門條與內容格各自是一層，包進同一張卡就會
    變成卡中卡（DS 禁止），而且門條需要自己的邊界才讀得出「這是門」。
@@ -924,6 +925,39 @@
   border-radius: var(--radius-lg);
 }
 .vault-tile:hover .vault-tile__name { opacity: 0; transition: opacity var(--duration) var(--easing); }
+
+/* 內容區頂端那句第二層說明（D377）：借門條細則的字樣，但它坐在 .vault-gridwrap 的 gap 節奏裡，
+   門條那邊為了貼底而設的 margin-top:auto／padding-top 在這裡收掉。 */
+.vault-gridwrap > .vault-door__fine { margin: 0; padding-top: 0; }
+
+/* ── 每件內容的小標列（2026-10-08，D377 第二層）────────────────
+   格子頂端一條：左邊是這一件的任務（沒設就空著），右邊是大彩蛋與「幾人看得到」；
+   以分級檢視時，右邊那顆換成該分級的結果（看得到／等級不足／需完成行動任務）。
+   小標本身是 vault-task.css 的 .vault-tag，這裡只管它們在格子上站哪裡。
+   標籤紙格原本左上角的類型圖示（.vault-tile__labelmark）收進這一列當第一個成員，
+   不再自己絕對定位——同一個角落放兩樣東西會疊在一起。
+   DOM 順序排在動作層之前，hover 的動作層自然蓋在它上面，不必另給 z-index。 */
+.vault-tile__badges {
+  position: absolute;
+  top: var(--sp-8);
+  left: var(--sp-8);
+  right: var(--sp-8);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-width: 0;
+  pointer-events: none;
+}
+.vault-tile__badges-end { margin-left: auto; display: flex; align-items: center; gap: var(--sp-4); flex: none; }
+.vault-tile__badges .vault-tile__labelmark { position: static; display: inline-flex; flex: none; }
+.vault-tile.is-renaming .vault-tile__badges,
+.vault-tile.is-confirming .vault-tile__badges { opacity: 0; }
+/* 音檔列：小標排成曲名下的第三行，不另開一欄——列寬在窄版要留給曲名。 */
+.vault-track__badges { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-4); margin-top: var(--sp-2); }
+/* 以分級檢視、這一級等級不足的那一件：整格降一階，跟側欄打不開的庫房同一種語彙（.is-locked）。 */
+.vault-tile.is-locked,
+.vault-track.is-locked { opacity: 0.55; }
+.vault-tile.is-locked .vault-tile__img { filter: grayscale(1); }
 
 /* ── 窄版 ──────────────────────────────────────────────── */
 @media (max-width: 1080px) {
