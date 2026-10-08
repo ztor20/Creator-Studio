@@ -27,7 +27,8 @@
       {t:'IP 市場', pages:[{t:'IP 市場'},{t:'IP 詳情'}]}
     ]},
     {n:'5', t:'電子商店', groups:[
-      {t:'電子商店', pages:[{h:'eshop-sales.html', t:'電子商店販售流程'},{h:'bundles.html', t:'組合包與票務商品'},{h:'promo-rules.html', t:'優惠規則'},{t:'建立商品與商品細節'},{t:'拍賣'},{t:'補貨與新品貼文'},{t:'商店設定'}]},
+      {t:'電子商店規則', pages:[{h:'eshop-sales.html', t:'電子商店販售流程'},{h:'bundles.html', t:'組合包與票務商品'},{h:'promo-rules.html', t:'優惠規則'}]},
+      {t:'電子商店', pages:[{t:'建立商品與商品細節'},{t:'拍賣'},{t:'補貨與新品貼文'},{t:'商店設定'}]},
       {t:'訂單管理', pages:[{t:'訂單列表'},{t:'訂單詳情'}]},
       {t:'取貨管理', pages:[{t:'取貨場次'},{t:'手機 Scanner'}]},
       {t:'需求看板', pages:[{h:'demand-board.html', t:'需求看板'}]}
@@ -38,7 +39,8 @@
       {t:'活動', pages:[{h:'events.html', t:'活動總覽'},{h:'event-detail.html', t:'活動詳情與編輯'}]}
     ]},
     {n:'7', t:'粉絲', groups:[
-      {t:'粉絲管理', pages:[{h:'fans-roster.html', t:'粉絲總覽與詳情'},{h:'fans-tiers.html', t:'粉絲分級'},{h:'fans-broadcast.html', t:'群發訊息'}]},
+      {t:'粉絲規則', pages:[{h:'fans-tiers.html', t:'粉絲分級'}]},
+      {t:'粉絲管理', pages:[{h:'fans-roster.html', t:'粉絲總覽與詳情'},{h:'fans-broadcast.html', t:'群發訊息'}]},
       {t:'媒體庫', pages:[{h:'fans-vault.html', t:'媒體庫'}]},
       {t:'粉絲活動', pages:[{h:'fans-campaigns.html', t:'粉絲活動'}]}
     ]},

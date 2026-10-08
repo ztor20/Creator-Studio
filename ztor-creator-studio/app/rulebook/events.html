@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>活動總覽 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261008l">
-<script src="shell.js?v=20261008l" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261009b">
+<script src="shell.js?v=20261009b" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -147,8 +147,8 @@ table.map td:nth-child(2){width:22%}
 
 <div class="toc"></div>
 
-<h2 id="list"><span class="n">1</span>活動清單</h2>
-<p>活動清單讓創作者掃視所有活動的時間、場地、票券與狀態，並點進單一活動管理。每一列有哪些欄位與操作，見<a href="#清單">清單</a>；頁首的數字怎麼算，見<a href="#統計">統計</a>；還沒有活動時顯示什麼，見<a href="#沒有資料時">沒有資料時</a>。</p>
+<h2 id="list"><span class="n"></span>活動清單</h2>
+<p>活動清單讓創作者掃視所有活動的時間、場地、票券與狀態，並點進單一活動管理。每一列有哪些欄位與操作，見<a href="#清單">清單</a>；頁首的數字怎麼算，見<a href="#統計">統計</a>；從哪裡開始建一場新活動，見<a href="#list-create">建立活動</a>；還沒有活動時顯示什麼，見<a href="#沒有資料時">沒有資料時</a>。</p>
 
 <h3 id="清單">清單</h3>
 <p>清單一列是一場活動。每一列能做的事，見<a href="#list-actions">列操作</a>；怎麼找到特定活動，見<a href="#list-filter">篩選與搜尋</a>。</p>
@@ -166,26 +166,29 @@ table.map td:nth-child(2){width:22%}
 </table></div>
 
 <h4 id="list-actions">列操作</h4>
-<div class="tablewrap"><table>
-  <thead><tr><th style="width:22%">列的狀態</th><th>可用的操作</th></tr></thead>
+<p>每一列依活動的階段提供不同的操作；發布過的活動不能刪除，只能取消，見<a href="event-rules.html#delete-draft">刪除草稿</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td><span class="tag wait">草稿</span></td><td>編輯（回到建立活動流程）<br>複製<br>刪除（要確認）</td></tr>
-    <tr><td>發布過的活動</td><td>編輯（開啟活動詳情頁並直接進入編輯模式；已結束與已取消不提供）<br>複製<br>取消活動（只有已排程與售票中提供；bookyay 匯入的活動停用，改在 bookyay 取消）</td></tr>
+    <tr><td>編輯</td><td>草稿<br>已排程<br>售票中<br>進行中<br>已結束與已取消不提供</td><td>草稿：回到建立活動流程<br>發布過的活動：開啟活動詳情頁並直接進入編輯模式，見<a href="event-detail.html#edit">編輯活動</a></td></tr>
+    <tr><td>複製</td><td>每一列都有</td><td>複製這場活動；複製出來的內容見頁尾尚待確認</td></tr>
+    <tr><td>刪除</td><td>只有草稿<br>要確認</td><td>草稿系列：刪除母列，整個系列連同底下的場次一起刪除；子場也可以單獨刪除<br>含這場草稿門票的組合包一起刪除，確認時列出名稱，見<a href="event-rules.html#cascade-draft">刪除草稿時</a><br>bookyay 匯入、已對應但還沒發布的活動，刪除後回到 Admin 的待對應創作者，由 Admin 重新對應，見<a href="admin-events.html#admin">bookyay 活動的對應與補完</a></td></tr>
+    <tr><td>取消活動</td><td>只有已排程與售票中</td><td>確認時說明的影響與取消後的結果，見活動詳情的<a href="event-detail.html#detail-header">活動資訊與階段操作</a><br>bookyay 匯入的活動，取消活動保留但停用，改在 bookyay 取消</td></tr>
+    <tr><td>現場報到台</td><td>只有進行中</td><td>直接開啟這場活動詳情頁的現場報到台，見<a href="event-detail.html#detail-blocks">管理區塊</a><br>bookyay 匯入的活動，門票入場由 bookyay 掃票，捷徑保留但停用</td></tr>
   </tbody>
 </table></div>
 
 <h4 id="list-filter">篩選與搜尋</h4>
-<ul class="plain">
-  <li>生命週期：全部、已排程、售票中、進行中、已結束、已取消、草稿，單選</li>
-  <li>生命週期每一格的筆數只看階段本身，不受類型篩選影響</li>
-  <li>活動類型：依活動的核心形式分三類，對照見下表</li>
-  <li>活動類型的筆數隨目前選的生命週期重算</li>
-  <li>搜尋比對活動名稱、場地名稱、表演陣容裡的表演者名稱，任一命中就列入</li>
-  <li>搜尋不分大小寫，打部分字串就能命中</li>
-  <li>清空搜尋框就還原清單</li>
-  <li>生命週期、活動類型、搜尋三者同時生效，取交集</li>
-  <li>切換生命週期或類型時，保留搜尋字串重新比對</li>
-</ul>
+<p>生命週期、活動類型、搜尋三者同時生效，取交集。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>生命週期</td><td>單選<br>預設全部</td><td>選項：<br>全部<br>已排程<br>售票中<br>進行中<br>已結束<br>已取消<br>草稿<br>各階段的定義見<a href="event-rules.html#stage">活動的階段</a><br>每一格的筆數只看階段本身，不受類型篩選影響</td></tr>
+    <tr><td>活動類型</td><td>預設全部</td><td>選項：<br>全部<br>演唱會<br>粉絲見面會<br>線上活動<br>依活動的核心形式分類，對照見下表<br>每一格的筆數隨目前選的生命週期重算</td></tr>
+    <tr><td>搜尋</td><td>—</td><td>比對三種欄位，任一命中就列入：<br>活動名稱<br>場地名稱<br>表演陣容裡的表演者名稱<br>不分大小寫，打部分字串就能命中<br>輸入時即時過濾清單，不改變排序<br>切換生命週期或類型時，保留搜尋字串重新比對<br>沒有命中時，見<a href="#沒有資料時">沒有資料時</a></td></tr>
+    <tr><td>清除搜尋</td><td>—</td><td>可一鍵清空搜尋框，還原清單<br>控制項型式待補，見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:22%">篩選分類</th><th style="width:34%">判準</th><th>建立活動時的類型</th></tr></thead>
   <tbody>
@@ -204,29 +207,43 @@ table.map td:nth-child(2){width:22%}
   <li>平均出席：來自報到資料</li>
 </ul>
 
+<h3 id="list-create">建立活動</h3>
+<p>創作者從這裡開始建一場新活動。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>建立活動（＋ Create Event）</td><td>—</td><td>頁首右側主要入口，進入建立活動流程，見<a href="event-create.html">建立活動</a><br>沒有活動時，由「建立第一個活動」引導承接</td></tr>
+  </tbody>
+</table></div>
+
 <h3 id="沒有資料時">沒有資料時</h3>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:26%">情況</th><th>畫面</th></tr></thead>
   <tbody>
-    <tr><td>帳號還沒建立任何活動</td><td>統計、篩選、清單整組不出現，改顯示「建立第一個活動」引導<br>不用空表格或 0 佔據首屏</td></tr>
+    <tr><td>帳號還沒建立任何活動</td><td>下列整組不出現：<br>統計<br>篩選<br>清單<br>改顯示「建立第一個活動」引導<br>不用空表格或 0 佔據首屏</td></tr>
     <tr><td>有活動但篩選與搜尋沒有命中</td><td>顯示搜尋無結果，並提供清除入口</td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.6 F1、F2、F3、頁面狀態（資料）；D169、D189、D281、D294、D300、D340、D352、D361、D375。</p>
+<p class="note">依據：5.1.6 F1、F2、F3、F6、頁面狀態（資料）；5.1.6.3 §2.5；D169、D189、D281、D294、D300、D331、D340、D352、D361、D374、D375。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.6-活動.md</code></li>
-    <li>決策：D169、D189、D281、D294、D300、D340、D352、D361、D375</li>
+    <li>規格：<code>5.1.6-活動.md</code>（最後更新 2026-10-08）F1、F2、F3、F6、頁面狀態（資料）；<code>5.1.6.3-活動詳情.md</code>（v39）§2.5</li>
+    <li>決策：D169、D189、D281、D294、D300、D331、D340、D352、D361、D374、D375</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>搜尋要不要統一繁簡與全形半形、支不支援多個關鍵字</li>
+    <li>複製一場活動時複製哪些內容，複製出來的活動是不是草稿</li>
+    <li>進行中的列不提供刪除、改提供現場報到台，是不是刻意的規則</li>
+    <li>搜尋沒有結果時的文案，以及清除搜尋的控制項長什麼樣</li>
+    <li>清單載入中、載入失敗時畫面怎麼顯示</li>
+    <li>頁面最上方的活動提醒橫幅（例如活動即將開始的提醒）什麼時候出現、各階段的文案</li>
     <li>活動規則相關的待確認列在<a href="event-rules.html">活動規則</a>頁尾</li>
   </ul>
-  <p class="k">最近同步：2026-10-08（至 D375）</p>
+  <p class="k">最近同步：2026-10-09（至 D379）</p>
 </details>
 </div>
 <script>
