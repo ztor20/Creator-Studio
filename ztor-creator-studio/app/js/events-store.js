@@ -264,6 +264,7 @@
       sold: 84,
       revenue: 2520,
       status: 'on-sale',
+      paused: true,     // D375 決定七示範：暫停售票——仍在售票中分頁、活動頁照常可見，另掛「暫停售票」徽章；詳情頁可恢復販售
       images: { keyvisual: 'images/projects/nick-realive.jpg', banner: 'images/projects/nick-asn.jpg', gallery: ['images/projects/nick-i.jpg', 'images/projects/nick-lwh.jpg'] },
       video: false
     },
@@ -924,7 +925,7 @@
       sold: 473,
       revenue: 186850,
       status: 'on-sale',
-      unlisted: true,   // D361 決定五示範：Admin 已手動下架，仍留在售票中分頁、另掛「已下架」徽章
+      unlisted: true,   // D361／D371 示範：已下架，仍留在售票中分頁、另掛「已下架」徽章；詳情頁可重新上架
       images: { keyvisual: 'images/projects/nick-lrh.jpg', banner: '', gallery: [] },
       video: false
     },
@@ -1458,6 +1459,7 @@
          （組合商品細節頁 `bundle-detail.html?id=bd-khh-duo&ev=khh-countdown-draft` 變成查無資料）。
          金額口徑同 taipei-nye（D330）：hkd＝bookyay 港幣原價、price＝換算成創作者幣別 TWD 的基準價。 */
       id: 'khh-countdown-draft',
+      bkyId: 'bky-12',   /* D374：對應到 js/sidebar.js BOOKYAY_EVENTS 的 bky-12（創作者活動管理那一列）；刪這份草稿＝解除對應 */
       type: 'festival',
       typeLabelKey: 'ce.type.festival',
       category: 'concert',
@@ -1734,17 +1736,43 @@
 
   /* ── 已下架（2026-10-07 · D361 決定五）──────────────────────────────
      上架／下架是階段以外的另一個維度：已下架的活動留在原本的階段（status 不動），另掛 `unlisted: true`，
-     清單列與詳情頁首各多一顆「已下架」徽章。手動下架只有 Admin 能做（詳情頁代管態），寫進 localStorage
-     `ztor.event-unlisted`（同階段覆寫的做法），`get()`／`list()` 讀出來時套用；mock 也可直接帶 `unlisted: true`。
-     重新上架的入口規格沒有寫（D361 未提），原型不做，見 ASSUMPTIONS UIA-211。 */
+     清單列與詳情頁首各多一顆「已下架」徽章。2026-10-08（D371 決定一）起創作者本人與 Admin 都能下架與重新上架
+     （詳情頁設定分頁），寫進 localStorage `ztor.event-unlisted`（同階段覆寫的做法），`get()`／`list()` 讀出來時套用；
+     mock 也可直接帶 `unlisted: true`。覆寫表存 true／false 兩值：重新上架要能蓋過 mock 寫死的 `unlisted: true`。 */
   var UNLIST_KEY = 'ztor.event-unlisted';
   function unlistMap() {
     try { return JSON.parse(localStorage.getItem(UNLIST_KEY) || '{}') || {}; }
     catch (e) { return {}; }
   }
   function applyUnlist(ev) {
-    if (ev && unlistMap()[ev.id]) ev.unlisted = true;
+    var u = unlistMap();
+    if (ev && Object.prototype.hasOwnProperty.call(u, ev.id)) ev.unlisted = !!u[ev.id];
+    return applyPause(ev);
+  }
+
+  /* ── 暫停售票（2026-10-08 · D375 決定七）──────────────────────────────
+     活動層級的暫停售票：售票期間（售票中、進行中）創作者與 Admin 都能暫停整場活動的販售、也能恢復。
+     暫停不是階段（status 不動），另掛 `paused: true`；活動頁照常看得到、所有門票與含其門票的票務商品都不能買，已售票照常有效。
+     寫法同已下架：覆寫表存 localStorage `ztor.event-paused`（true／false 兩值，恢復要能蓋過 mock 寫死的 `paused: true`）。
+     單一票種的暫停（既有 Paused）不受影響。 */
+  var PAUSE_KEY = 'ztor.event-paused';
+  function pauseMap() {
+    try { return JSON.parse(localStorage.getItem(PAUSE_KEY) || '{}') || {}; }
+    catch (e) { return {}; }
+  }
+  function applyPause(ev) {
+    var p = pauseMap();
+    if (ev && Object.prototype.hasOwnProperty.call(p, ev.id)) ev.paused = !!p[ev.id];
     return ev;
+  }
+  /* 「暫停售票」徽章只在售票期間成立：活動照時間走到已結束後，暫停記號留著也不再顯示（D375 決定七：暫停不是階段）。 */
+  function isPaused(ev) { return !!(ev && ev.paused && ['on-sale', 'live'].indexOf(ev.status) >= 0); }
+  /* 完售（D375 決定七）：所有門票與票務商品都賣完。票務商品吃門票的庫存（賣一組扣它含的票），門票張數合計（含隱藏）賣光
+     ＝票務商品也買不到，所以以門票合計判定（同 event-detail 系列卡既有口徑）。完售不是階段（D361 決定七），草稿與已取消不掛。 */
+  function isSoldOut(ev) {
+    if (!ev || ['draft', 'cancelled'].indexOf(ev.status) >= 0) return false;
+    var q = (ev.tiers || []).reduce(function (a, t) { return a + (Number(t.qty) || 0); }, 0);
+    return q > 0 && (Number(ev.sold) || 0) >= q;
   }
 
   /* 組合包票券成員的相容讀取（2026-09-21 D296）：一律回 `{ tierIds:[…], qty:n }`。
@@ -2005,6 +2033,11 @@
       var ev = window.ztorEvents.get(id);
       if (!ev || ev.status !== 'draft') return false;
       var m = rmMap(); m.events = (m.events || []).concat([id]); writeRm(m);
+      /* D374 決定三：bookyay 匯入、已對應未發布的活動，刪草稿＝解除對應——與創作者活動管理的「解除對應」同一支，
+         活動回到待對應創作者。原型這裡只有 status 為 draft 的才走得到（已發布的沒有刪除入口）。 */
+      if (ev.source === 'bookyay' && ev.bkyId && window.ztorCreator && window.ztorCreator.bookyayUnmap) {
+        window.ztorCreator.bookyayUnmap(ev.bkyId);
+      }
       return true;
     },
     removeBundle: function (evId, bId) {
@@ -2046,13 +2079,22 @@
       if (m[ev.id]) ev.status = m[ev.id];    // 本機改過階段的活動以覆寫值為準
       return applyUnlist(applyRm(applyFx(ev)));   // 本機存過的逐幣別覆寫（D306）一併合併；刪掉的組合包濾掉（D331）；已下架（D361）
     },
-    /* Admin 手動下架（D361 決定五）：只寫下架記號，不改階段 */
+    /* 下架／重新上架（D361 決定五 → D371 決定一：創作者與 Admin 都能做）：只寫上架記號，不改階段 */
     setUnlisted: function (id, on) {
       if (!id) return;
       var u = unlistMap();
-      if (on) u[id] = true; else delete u[id];
+      u[id] = !!on;
       try { localStorage.setItem(UNLIST_KEY, JSON.stringify(u)); } catch (e) {}
     },
+    /* 暫停售票／恢復販售（D375 決定七：創作者與 Admin 都能做）：只寫暫停記號，不改階段 */
+    setPaused: function (id, on) {
+      if (!id) return;
+      var p = pauseMap();
+      p[id] = !!on;
+      try { localStorage.setItem(PAUSE_KEY, JSON.stringify(p)); } catch (e) {}
+    },
+    isPaused: isPaused,
+    isSoldOut: isSoldOut,
     /* 階段轉換（原型層級）：寫進 localStorage，下一次 get() 就是新階段。
        允許哪些轉換由呼叫端（event-detail.html）依 §7.2 狀態機判斷，本檔只負責存。 */
     setStage: function (id, status) { if (id) writeStage(id, status); },

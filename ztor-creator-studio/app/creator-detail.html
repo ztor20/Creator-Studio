@@ -104,7 +104,7 @@
               <!-- F1 已匯入活動（D233）：唯讀事實一行，0 場也照樣顯示（藏起來會讓
                    「還沒搬過」讀成「這一位沒有這件事」）。點進創作者活動管理頁並帶本 creator
                    識別，落地就選好人，不必在那一頁重新搜尋。 -->
-              <p class="cd-imported"><a class="card__link" data-cd-imported href="admin-creator-events.html"></a></p>
+              <p class="cd-imported" data-feat="S84"><a class="card__link" data-cd-imported href="admin-creator-events.html"></a></p><!-- D373：入口隨創作者活動管理屬 release2.4 -->
             </div>
           </div>
           <div class="page-intro__actions">
@@ -240,7 +240,8 @@
     var imp = document.querySelector('[data-cd-imported]');
     imp.textContent = tx('cd.imported-n', 'Imported events: {n}')
       .replace('{n}', window.ztorCreator.bookyayStats(c).imported);
-    imp.setAttribute('href', 'admin-creator-events.html?creator=' + encodeURIComponent(c.seed || c.handle));
+    /* D372：參數改 ?owner=（?creator= 會被 js/theme.js 當人格切換參數吃掉）；落點只列已對應給這位的活動 */
+    imp.setAttribute('href', 'admin-creator-events.html?owner=' + encodeURIComponent(c.seed || c.handle));
     document.title = c.name + ' · Ztor Creator Studio';
   }
   /* 「前往工作區」＝進這一位的後台。頁面在覆蓋層裡時，detail-sheet.js 會攔下這個

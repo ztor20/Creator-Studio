@@ -310,7 +310,7 @@
               <div class="event-tickets">600 / 600<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:100%"></div></div></div>
             </div>
             <div class="product-list__cell product-list__revenue" role="cell">$1,800,000</div>
-            <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="events.badge.on-sale">On sale</span></span><span class="badge badge--neutral"><span data-i18n="events.badge.soldout">Sold out</span></span></div>
+            <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="events.badge.on-sale">On sale</span></span><span class="badge badge--neutral" data-ev-soldout data-feat="S85"><span data-i18n="events.badge.soldout">Sold out</span></span></div>
             <div class="product-list__actions" role="cell">
               <details class="dropdown">
                 <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
@@ -1883,7 +1883,7 @@
 
   /* 已下架徽章（2026-10-07 · D361 決定五）：上架是階段以外的另一維度——已下架的活動照舊留在原本的
      階段分頁（data-stage 不動），狀態欄在階段徽章後面多掛一顆「已下架」。來源是 events-store
-     （mock 的 unlisted ＋ 詳情頁 Admin 下架寫進的 ztor.event-unlisted）。系列母列不掛：下架是逐場的事。 */
+     （mock 的 unlisted ＋ 詳情頁下架／重新上架寫進的 ztor.event-unlisted，D371 起創作者也能操作）。系列母列不掛：下架是逐場的事。 */
   function applyUnlisted() {
     const store = window.ztorEvents;
     if (!store || !store.list) return;
@@ -1909,6 +1909,43 @@
   }
   applyUnlisted();
   document.addEventListener('i18n:applied', applyUnlisted);
+
+  /* 暫停售票／完售徽章（2026-10-08 · D375 決定七）：都不是階段，與已下架同一格直排（階段徽章後面依序掛）。
+     來源是 events-store 的 isPaused()（mock 的 paused ＋ 詳情頁暫停／恢復寫進的 ztor.event-paused，只在售票中與進行中成立）
+     與 isSoldOut()（所有門票與票務商品都賣完；有票回補、不再全部賣完時徽章移除，D375 補裁）。系列母列不掛：逐場的事。
+     靜態列上原本寫死的完售徽章也掛 data-ev-soldout，一律由這裡依資料顯示或收起。 */
+  function applySaleBadges() {
+    const store = window.ztorEvents;
+    if (!store || !store.list || !store.isPaused) return;
+    const byId = new Map(store.list().map(e => [e.id, e]));
+    const KINDS = [
+      { attr: 'data-ev-paused',  key: 'events.badge.paused',  fb: 'Sales paused', on: e => store.isPaused(e) },
+      { attr: 'data-ev-soldout', key: 'events.badge.soldout', fb: 'Sold out',     on: e => store.isSoldOut(e) }
+    ];
+    Array.from(list.querySelectorAll('[data-go]')).forEach(r => {
+      const m = /[?&]id=([^&#]+)/.exec(r.dataset.go || '');
+      const cell = r.querySelector('.product-list__status');
+      if (!m || !cell) return;
+      const ev = byId.get(decodeURIComponent(m[1]));
+      KINDS.forEach(k => {
+        const on = !!(ev && k.on(ev));
+        let b = cell.querySelector('[' + k.attr + ']');
+        if (on && !b) {
+          b = document.createElement('span');
+          b.className = 'badge badge--neutral';
+          b.setAttribute(k.attr, '');
+          b.setAttribute('data-feat', 'S85');
+          cell.appendChild(b);
+        }
+        if (b) {
+          b.hidden = !on;
+          b.innerHTML = '<span data-i18n="' + k.key + '">' + T(k.key, k.fb) + '</span>';
+        }
+      });
+    });
+  }
+  applySaleBadges();
+  document.addEventListener('i18n:applied', applySaleBadges);
 
   /* 票券欄（D340，5.1.6 F1）：已售／總數，總數＝本活動所有門票的張數合計（含隱藏的門票；容量已刪除，5.1.6.1 F8）。
      清單是靜態 HTML，這裡照 events-store 重算一次（events-store totalQty()），列上寫死的舊分母（部分沿用已刪的容量）一律以資料為準：
@@ -2162,12 +2199,20 @@
       const id = evIdOf(r);
       const ev = id ? EVS.get(id) : null;
       const want = !!(ev && ['scheduled', 'on-sale'].indexOf(ev.status) >= 0);
+      /* D375 決定二（2026-10-08）：bookyay 匯入活動只能在 bookyay 取消——選單項保留但停用，下方一行原因（.dropdown__note）；
+         ztor 自建活動照舊可按。 */
+      const bky = !!(ev && ev.source === 'bookyay');
       const has = menu.querySelector('[data-ev-cancel]');
-      if (want && !has) {
-        menu.insertAdjacentHTML('beforeend', '<button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-ev-cancel>' +
-          '<i data-lucide="ban" class="ztor-icon"></i><span data-i18n="event-detail.cancel.ok">' + T('event-detail.cancel.ok', 'Cancel event') + '</span></button>');
+      const note = menu.querySelector('[data-ev-cancel-note]');
+      if (has && (!want || has.disabled !== bky)) { has.remove(); if (note) note.remove(); }
+      if (want && !menu.querySelector('[data-ev-cancel]')) {
+        const why = T('event-detail.cancel.bky', 'Imported events are cancelled in bookyay.');
+        menu.insertAdjacentHTML('beforeend', '<button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-ev-cancel' +
+          (bky ? ' disabled aria-disabled="true" title="' + why + '"' : '') + '>' +
+          '<i data-lucide="ban" class="ztor-icon"></i><span data-i18n="event-detail.cancel.ok">' + T('event-detail.cancel.ok', 'Cancel event') + '</span></button>' +
+          (bky ? '<div class="dropdown__note" data-ev-cancel-note data-i18n="event-detail.cancel.bky">' + why + '</div>' : ''));
         if (window.ztorIcons) window.ztorIcons.applyIcons(menu);
-      } else if (!want && has) has.remove();
+      }
     });
   }
   function evAskCancel(row) {
@@ -2211,6 +2256,7 @@
     const del = e.target.closest('[data-ev-delete]');
     if (del) { const row = del.closest('.product-list__row'); if (row) evAskDelete(row); return; }
     const cx = e.target.closest('[data-ev-cancel]');
+    if (cx && cx.disabled) return;   /* D375 決定二：匯入活動的取消停用 */
     if (cx) { const row = cx.closest('.product-list__row'); if (row) evAskCancel(row); return; }
     if (e.target.closest('[data-ev-confirm-ok]')) { const p = evPending; evCloseDelete(); if (p) p(); return; }
     if (e.target.closest('[data-ev-confirm-cancel]')) { evCloseDelete(); }

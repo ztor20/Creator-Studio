@@ -33,7 +33,7 @@
       {t:'需求看板', pages:[{h:'demand-board.html', t:'需求看板'}]}
     ]},
     {n:'6', t:'活動', groups:[
-      {t:'活動', pages:[{h:'events.html', t:'活動總覽'},{h:'event-create.html', t:'建立活動'},{h:'event-detail.html', t:'活動詳情與編輯'},{h:'event-bookyay.html', t:'bookyay 匯入與對照'}]}
+      {t:'活動', pages:[{h:'events.html', t:'活動總覽'},{h:'event-journey.html', t:'活動用戶旅程圖'},{h:'event-create.html', t:'建立活動'},{h:'event-detail.html', t:'活動詳情與編輯'},{h:'event-bookyay.html', t:'bookyay 匯入與對照'}]}
     ]},
     {n:'7', t:'粉絲', groups:[
       {t:'粉絲管理', pages:[{h:'fans-roster.html', t:'粉絲總覽與詳情'},{h:'fans-tiers.html', t:'粉絲分級'},{h:'fans-broadcast.html', t:'群發訊息'}]},

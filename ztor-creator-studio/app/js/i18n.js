@@ -248,8 +248,9 @@
        「挑幾場搬過來」的說法，只有「搬進來了什麼」與「哪幾場還沒設完」。
        文案規則（鐵律 12）：頁面標題已經說了這是在管活動，欄位標籤只寫「名稱／日期／
        場地／狀態」，不再把「活動」兩個字重講一次。 */
-    'ace.lede':           { en: 'Every creator on the platform and their bookyay events. Once a bookyay account is linked, that creator\'s events come across on their own and keep syncing — this is where you see what arrived and which of it still needs tickets and ticket bundles set up.',
-                            zh: '平台上每一位 creator 的 bookyay 活動。綁定 bookyay 帳號之後，活動會自動搬進來並持續檢查更新；這裡看得到搬進來了什麼、哪幾場還沒設定門票與票務商品。' },
+    /* D372（2026-10-08）：匯入不分創作者、Admin 逐場對應創作者；頁面改成以匯入活動為主的清單。 */
+    'ace.lede':           { en: 'Events bookyay picks for ztor to sell are imported here automatically and don’t belong to any creator yet. Map each one to a creator, then set up its tickets and ticket bundles.',
+                            zh: 'bookyay 選給 ztor 販售的活動會自動匯入到這裡，匯入時不屬於任何創作者。每一場先對應一位創作者，再設定門票與票務商品。' },
     /* 墓碑 2026-09-02（同日改版）：版面從「左名單／右內容」改成「上面卡片選人、
        下面看那一位」，窄畫面把左欄收成一顆按鈕的折疊列隨之整組退場（卡片列本來就
        在最上面、不擋路），以下 3 把隨之零引用、就地移除——
@@ -257,18 +258,19 @@
          · 'ace.list.title'（Creators／Creator）：左欄面板的標題，上午建頁時就沒有掛上
            任何元素，本輪一併清掉
        數字＝3 把，與本輪 i18n.js 的實際 diff 一致。 */
-    'ace.search.ph':      { en: 'Search name or shop handle', zh: '搜尋名稱或店鋪識別' },
+    'ace.search.ph':      { en: 'Event, organizer or creator', zh: '活動、主辦方或創作者' },
     'ace.filter.all':         { en: 'All',            zh: '全部' },
-    'ace.filter.pending':     { en: 'To set up',      zh: '有待設定' },
-    'ace.filter.unlinked':    { en: 'Not linked',     zh: '未綁定' },
-    'ace.unlinked':       { en: 'Not linked',         zh: '未綁定' },
-    /* 兩套：帶數字的整句（`ace.n.*`）給下段標題列的摘要那一行用；只有欄名的
-       （`ace.lbl.*`）給 creator 卡上的小標籤數字用——那裡欄名與值同一行、字級小到
-       只是一組標籤，整句話塞不進去也不該塞。 */
-    'ace.n.imported':     { en: '{n} imported',       zh: '已匯入 {n}' },
-    'ace.n.pending':      { en: '{n} to set up',      zh: '待設定 {n}' },
-    'ace.lbl.imported':   { en: 'Imported',           zh: '已匯入' },
-    'ace.lbl.pending':    { en: 'To set up',          zh: '待設定' },
+    /* 墓碑 2026-10-08（D372 逐場對應創作者）：依創作者分組的 creator 卡、未綁定篩選與綁定 bookyay 帳號整組退場，
+       以下 27 把零引用、就地移除——
+         · 篩選與卡上數字：'ace.filter.pending'、'ace.filter.unlinked'、'ace.unlinked'、'ace.n.imported'、
+           'ace.n.pending'、'ace.lbl.imported'、'ace.lbl.pending'
+         · 選人引導與查無此人：'ace.empty.cta'、'ace.none.title'、'ace.none.text'、'ace.notfound.title'、'ace.notfound.text'
+         · 未綁定空狀態與綁定彈窗：'ace.unlinked.title'、'ace.unlinked.text'、'ace.unlinked.cta'、'ace.link.label'、
+           'ace.link.ph'、'ace.link.hint'、'ace.link.none'、'ace.link.taken'、'ace.link.picked'、'ace.link.cancel'、
+           'ace.link.ok'、'ace.link.toast'、'ace.account'
+         · 這位在 bookyay 上沒有活動：'ace.noevents.title'、'ace.noevents.text'
+       篩選分頁改用狀態名本身（'ace.status.*'）；新增 17 把（'ace.col.organizer'／'.creator'／'.action'、
+       'ace.status.unmapped'／'.unmapped.why'、'ace.map.*' 12 把）。 */
     /* 墓碑 2026-09-02（第三輪，使用者裁示「未綁定：不會有匯入與設定資料」「已綁定：
        有已匯入與待設定，可匯入不一定需要」）：creator 卡的狀態列改成二選一——有數字
        就放數字、沒數字才放「未綁定」徽章，以下 2 把隨之零引用、就地移除——
@@ -288,31 +290,46 @@
          · 'ace.last-never'（尚未匯入／Never imported）
        上游同輪已把這一欄從規格 5.1.0.6 F2 移除（D235）。
        數字＝2 把，與本輪 i18n.js 的實際 diff 一致（另新增 3 把 `ace.lbl.*`）。 */
-    'ace.nomatch':        { en: 'No creator matches this filter.', zh: '沒有符合這個篩選的 creator。' },
-    'ace.empty.title':    { en: 'No creators yet',    zh: '還沒有任何 creator' },
-    'ace.empty.text':     { en: 'Creators are built in Creator Management. Once one exists, their bookyay events show up here.',
-                            zh: 'creator 在 Creator 管理裡建立。建好之後，他在 bookyay 上的活動就會出現在這裡。' },
-    'ace.empty.cta':      { en: 'Go to Creator Management', zh: '前往 Creator 管理' },
-    'ace.none.title':     { en: 'Pick a creator',     zh: '先選一位 creator' },
-    'ace.none.text':      { en: 'Choose someone above to see the events that came across from bookyay.',
-                            zh: '從上面選一位，看他從 bookyay 搬進來的活動。' },
-    'ace.notfound.title': { en: 'Creator not found',  zh: '找不到這個 creator' },
-    'ace.notfound.text':  { en: 'The link points at a creator that no longer exists. Nobody was opened in its place — pick one above.',
-                            zh: '連結指向的 creator 已經不存在。這裡不會改開另一位，請從上面自行選一位。' },
-    'ace.unlinked.title': { en: 'No bookyay account linked', zh: '尚未綁定 bookyay 帳號' },
-    /* D361 決定八（2026-10-07）：bookyay 帳號由 Admin 綁定，綁定後自動匯入。綁定畫面本身規格還沒畫，按鈕維持停用。 */
-    'ace.unlinked.text':  { en: 'This creator has no bookyay account linked yet. Once Admin links it, their bookyay events are imported automatically and keep syncing.',
-                            zh: '這位 creator 還沒有綁定 bookyay 帳號。Admin 綁定之後，他在 bookyay 上的活動會自動匯入，並持續檢查更新。' },
-    'ace.unlinked.cta':   { en: 'Link bookyay account', zh: '前往綁定 bookyay 帳號' },
-    'ace.unlinked.todo':  { en: 'The linking screen isn’t built yet, so this button does nothing for now.',
-                            zh: '綁定畫面還沒做，這顆按鈕目前不會做任何事。' },
-    'ace.noevents.title': { en: 'Nothing on bookyay', zh: 'bookyay 上沒有這位的活動' },
-    'ace.noevents.text':  { en: 'This creator is linked, but bookyay has nothing selling under their account right now.',
-                            zh: '這位 creator 已經綁定，但目前 bookyay 上沒有掛在他帳號下的活動。' },
+    'ace.nomatch':        { en: 'No event matches this filter.', zh: '沒有符合這個篩選的活動。' },
+    'ace.empty.title':    { en: 'No events from bookyay yet', zh: 'bookyay 還沒有送來活動' },
+    'ace.empty.text':     { en: 'Events bookyay picks for ztor to sell land here on their own.',
+                            zh: 'bookyay 選給 ztor 販售的活動會自動匯入到這裡。' },
     'ace.col.name':       { en: 'Name',               zh: '名稱' },
     'ace.col.date':       { en: 'Date',               zh: '日期' },
     'ace.col.venue':      { en: 'Venue',              zh: '場地' },
     'ace.col.status':     { en: 'Status',             zh: '狀態' },
+    /* D372：主辦方＝bookyay feed 帶來的名稱，唯讀參考；創作者＝Admin 對應的結果 */
+    'ace.col.organizer':  { en: 'Organizer (bookyay)', zh: '主辦方（bookyay）' },
+    'ace.col.creator':    { en: 'Creator',            zh: '創作者' },
+    'ace.col.action':     { en: 'Action',             zh: '動作' },
+    'ace.status.unmapped':     { en: 'Needs a creator', zh: '待對應創作者' },
+    'ace.status.unmapped.why': { en: 'Map a creator before setting it up or publishing it', zh: '對應創作者之後才能設定與發布' },
+    /* 對應創作者對話框（D372 決定二、五） */
+    /* F2 深連結 ?owner=（Creator 詳情「已匯入 M 場活動」與建立活動回程）：只列已對應給這位的活動；查無此人借 'cd.unknown.*' */
+    'ace.owner.only':     { en: 'Only events mapped to {name}', zh: '只列已對應給 {name} 的活動' },
+    'ace.owner.all':      { en: 'Show all events',    zh: '顯示全部活動' },
+    'ace.map.title':      { en: 'Map creator',        zh: '對應創作者' },
+    /* 墓碑 2026-10-08（D374 決定一、二）：D373 就地建立待啟用帳號＋寄邀請撤回，以下 12 把零引用、就地移除——
+       'ace.invite.open'／'.or'／'.email-hint'／'.ok'／'.back'／'.err-name'／'.err-email'／'.err-handle'／'.toast'（9）、
+       Creator 管理待啟用的 'creators.filter-pending'、'creators.status-pending'（2），'ace.map.none' 改由 'ace.map.none-create' 取代（1）。 */
+    'ace.map.none-create': { en: 'No creator matches — create them in Creator Management, then come back to map', zh: '找不到符合的創作者，請先到 Creator 管理建立，再回來對應' },
+    /* D373 決定二：未發布前解除對應；已存草稿的一併刪除草稿 */
+    'ace.unmap':          { en: 'Unmap',              zh: '解除對應' },
+    'ace.unmap.title':    { en: 'Unmap creator and delete draft?', zh: '解除對應並刪除草稿？' },
+    'ace.unmap.body':     { en: '“{event}” is saved as a draft for {name}. Unmapping deletes that draft and everything entered in it. The event goes back to Needs a creator.',
+                            zh: '「{event}」已存成 {name} 的草稿。解除對應會一併刪除這份草稿，裡面填的內容都會清掉；活動回到待對應創作者。' },
+    'ace.unmap.ok':       { en: 'Unmap and delete draft', zh: '解除對應並刪除草稿' },
+    'ace.unmap.toast':    { en: 'Unmapped — the event needs a creator again', zh: '已解除對應，活動回到待對應創作者' },
+    'ace.status.pending.draft': { en: 'Saved as a draft, not published yet', zh: '已存成草稿，尚未發布' },
+    'ace.map.event':      { en: 'Event',              zh: '活動' },
+    'ace.map.org-hint':   { en: 'For reference only — it isn’t copied into the event.', zh: '只當參考，不會帶入活動資料。' },
+    'ace.map.ph':         { en: 'Search name, shop handle or email', zh: '搜尋名稱、店鋪識別或 Email' },
+    'ace.map.picked':     { en: 'Selected: {name}',   zh: '已選：{name}' },
+    'ace.map.missing':    { en: 'Not on the list?',   zh: '找不到這位創作者？' },
+    'ace.map.create':     { en: 'Create them in Creator Management', zh: '到 Creator 管理建立' },
+    'ace.map.cancel':     { en: 'Cancel',             zh: '取消' },
+    'ace.map.ok':         { en: 'Map this creator',   zh: '對應此創作者' },
+    'ace.map.toast':      { en: 'Mapped to {name} — continue set-up when ready', zh: '已對應 {name}，可以繼續設定' },
     /* 狀態只剩兩值（D238 自動匯入）：搬進來的每一場不是「待設定」就是「已完成」（D361 改名，說明改寫「還沒設定門票與票務商品」）。
        「已匯入·」那個前綴同輪拿掉——整張表都是已匯入的，每一列再講一次是廢話。 */
     /* D361 決定六：「套組」改成「門票與票務商品」，狀態名改「待設定」、說明另起一句（滑過徽章看得到） */
@@ -320,7 +337,9 @@
     'ace.status.pending.why': { en: 'Tickets and ticket bundles aren’t set up yet', zh: '還沒設定門票與票務商品' },
     'ace.firstsave':      { en: 'Creators can’t see an imported event until its first save — it then shows up in their Drafts.',
                             zh: '匯入的活動第一次儲存前，創作者看不到；儲存後才以草稿出現在創作者的活動清單。' },
-    'ace.status.done':    { en: 'Completed',          zh: '已完成' },
+    /* D375 決定六（2026-10-08）：狀態四值——「已完成」改「已發布」、新增「草稿」，與創作者端一致 */
+    'ace.status.done':    { en: 'Published',          zh: '已發布' },
+    'ace.status.draft':   { en: 'Draft',              zh: '草稿' },
     'ace.continue':       { en: 'Continue set-up',    zh: '繼續設定' },
     /* 最後檢查 ＋ 重新檢查（D238）。時間是絕對值，格式與資料裡的其他時間戳一致。 */
     'ace.checked':        { en: 'Last checked {t}',   zh: '最後檢查 {t}' },
@@ -3733,7 +3752,9 @@
     'events.badge.scheduled':  { en: 'Scheduled',                           zh: '已排程' },
     'events.badge.ended':      { en: 'Ended',                               zh: '已結束' },
     'events.badge.draft':      { en: 'Draft',                               zh: '草稿' },
-    'events.badge.soldout':    { en: 'Sold out',                            zh: '已售完' },
+    /* D375 決定七：完售與暫停售票都不是階段，另掛徽章（清單列與詳情頁首共用）；中文統一叫「完售」 */
+    'events.badge.soldout':    { en: 'Sold out',                            zh: '完售' },
+    'events.badge.paused':     { en: 'Sales paused',                        zh: '暫停售票' },
     /* 系列場次（2026-08-06）：清單上收成一列母列，點開才看到每一場 */
     'events.series.expand':    { en: 'Show dates',                          zh: '展開場次' },
     'events.series.manage':    { en: 'Manage the series',                    zh: '管理整個系列' },
@@ -4224,6 +4245,13 @@
     'event-detail.live.scanner.title':    { en: 'Scanner access',           zh: '掃碼器存取' },
     'event-detail.live.scanner.url': { en: 'Link',                          zh: '連結' },
     'event-detail.live.scanner.on':       { en: 'Enabled',                  zh: '已啟用' },
+    /* D375 決定五：bookyay 匯入活動的報到台保留但停用，門票入場由 bookyay 掃票、唯讀名單 */
+    'event-detail.live.scanner.off':      { en: 'Disabled',                 zh: '已停用' },
+    'event-detail.scanner.bky':           { en: 'Tickets are scanned at the door with the bookyay Organizer App. Products in ticket bundles are picked up the same way as E-Shop pickups.',
+                                            zh: '門票入場由 bookyay Organizer App 掃票。票務商品裡的商品照電子商店的取貨流程領取。' },
+    'event-detail.scanner.bky.pickup':    { en: 'Go to Pickup',             zh: '前往取貨管理' },
+    'event-detail.scanner.bky.short':     { en: 'Tickets are scanned with the bookyay Organizer App', zh: '門票由 bookyay Organizer App 掃票' },
+    'event-detail.att.bky':               { en: 'Who’s in and who isn’t comes from bookyay’s door scans. This list is read-only.', zh: '已入場與未入場名單來自 bookyay 的入場掃票，這裡只能檢視。' },
     'event-detail.summary.title':  { en: 'Event summary',                 zh: '活動摘要' },
     'event-detail.summary.go':    { en: 'Event settings',                 zh: '前往設定' },
     'event-detail.scanner.title':  { en: 'Scanner',                       zh: '掃碼器' },
@@ -9726,16 +9754,51 @@
        因為清單是寫死的假資料、只出現「售票中」與「已排程」兩種。 */
     'event-detail.badge.draft':  { en: 'Draft',         zh: '草稿' },
     'event-detail.badge.live':   { en: 'Live',          zh: '進行中' },   /* D361：清單分頁與詳情徽章同一組英文 */
-    /* 下架活動（D361 決定五，2026-10-07）：只有 Admin 代管態能按，創作者視角停用並沿用 od.void.why.admin 的說明；
-       下架不改階段、不退款、不動已售出的票。 */
+    /* 上架／下架（D361 決定五 → D371 決定一，2026-10-08）：創作者本人與 Admin 代管態都能按，草稿以外六個階段都有；
+       已下架時同一處換成重新上架。下架不改階段、不退款、不動已售出的票。 */
     'event-detail.unlist.title':   { en: 'Unlist this event', zh: '下架活動' },
     'event-detail.unlist.sub':     { en: 'Fans stop seeing it and can’t buy. It stays in its current stage, and tickets already sold stay valid.', zh: '粉絲看不到、也不能購買。活動留在目前的階段，已售出的票照樣有效。' },
     'event-detail.unlist.btn':     { en: 'Unlist event', zh: '下架活動' },
-    'event-detail.unlist.done':    { en: 'This event is unlisted.', zh: '這場活動已下架。' },
+    'event-detail.unlist.done':    { en: 'This event is unlisted.', zh: '這場活動已下架。' },   /* D371 起未使用：已下架改顯示重新上架 */
     'event-detail.unlist.confirm.title': { en: 'Unlist this event?', zh: '確定下架這場活動？' },
-    'event-detail.unlist.confirm.body':  { en: 'The event page comes down and nothing can be bought. The event stays in its stage and the tickets already sold stay valid. To stop the event for good, cancel it instead.', zh: '活動頁會下架，粉絲不能再購買。活動留在原本的階段，已售出的票照樣有效。要讓活動不再舉辦，請改用取消活動。' },
+    'event-detail.unlist.confirm.body':  { en: 'The event page comes down and nothing can be bought. The event stays in its current stage.', zh: '活動頁會下架，粉絲不能再購買。活動留在目前的階段。' },
+    'event-detail.unlist.confirm.sold':  { en: 'The {n} tickets already sold stay valid.', zh: '已售出的 {n} 張票照常有效。' },
+    'event-detail.unlist.confirm.cancel': { en: 'To call off the event, cancel it instead.', zh: '要讓活動不再舉辦，請改用取消活動。' },
     'event-detail.unlist.confirm.ok':    { en: 'Unlist', zh: '下架' },
     'event-detail.unlist.toast':   { en: 'Event unlisted', zh: '活動已下架' },
+    'event-detail.relist.title':   { en: 'Relist this event', zh: '重新上架活動' },
+    'event-detail.relist.sub':     { en: 'This event is unlisted, so fans can’t see it or buy. Bundles that came down with it stay unlisted after you relist.', zh: '這場活動已下架，粉絲看不到、也不能購買。重新上架後，跟著下架的組合包不會自動上架。' },
+    'event-detail.relist.btn':     { en: 'Relist event', zh: '重新上架' },
+    'event-detail.relist.confirm.title':     { en: 'Relist this event?', zh: '確定重新上架？' },
+    'event-detail.relist.confirm.ended':     { en: 'This event has ended. Once relisted, fans can find the event page but can’t buy anything.', zh: '這場活動已結束。上架後粉絲找得到活動頁，但不能購買。' },
+    'event-detail.relist.confirm.cancelled': { en: 'This event was cancelled. Once relisted, fans can find the event page but can’t buy anything.', zh: '這場活動已取消。上架後粉絲找得到活動頁，但不能購買。' },
+    'event-detail.relist.confirm.ok': { en: 'Relist', zh: '上架' },
+    'event-detail.relist.toast':   { en: 'Event relisted', zh: '活動已重新上架' },
+    /* D375 決定三：bookyay 狀態同步上下架 */
+    'event-detail.unlist.bky':     { en: 'When bookyay moves this event back to draft, it’s unlisted here too. When bookyay publishes it again, it’s relisted here, but ticket bundles that came down with it stay unlisted.', zh: 'bookyay 改回草稿時會同步下架，再次發布時同步上架；隨活動下架的票務商品不會自動重新上架。' },
+    /* D375 決定七：活動層級暫停售票／恢復販售 */
+    'event-detail.pause.title':    { en: 'Pause ticket sales', zh: '暫停售票' },
+    'event-detail.pause.sub':      { en: 'Fans can still see the event, but no tickets or ticket bundles can be bought. Tickets already sold stay valid.', zh: '粉絲照常看得到活動，但所有門票與票務商品都不能購買；已售出的票照常有效。' },
+    'event-detail.pause.btn':      { en: 'Pause sales', zh: '暫停售票' },
+    'event-detail.pause.confirm.title': { en: 'Pause ticket sales?', zh: '確定暫停售票？' },
+    'event-detail.pause.confirm.body':  { en: 'The event page stays up, but no tickets or ticket bundles with its tickets can be bought. Tickets already sold stay valid. You can resume any time.', zh: '活動頁照常顯示，但門票與含其門票的票務商品都不能購買；已售出的票照常有效。隨時可以恢復販售。' },
+    'event-detail.pause.confirm.ok':    { en: 'Pause sales', zh: '暫停售票' },
+    'event-detail.pause.toast':    { en: 'Ticket sales paused', zh: '已暫停售票' },
+    'event-detail.resume.title':   { en: 'Resume ticket sales', zh: '恢復販售' },
+    'event-detail.resume.sub':     { en: 'Sales are paused. Fans can see the event but can’t buy anything until you resume.', zh: '目前暫停售票。粉絲看得到活動，但恢復販售前都不能購買。' },
+    'event-detail.resume.btn':     { en: 'Resume sales', zh: '恢復販售' },
+    'event-detail.resume.confirm.title': { en: 'Resume ticket sales?', zh: '確定恢復販售？' },
+    'event-detail.resume.confirm.body':  { en: 'Tickets and ticket bundles go back to their own sale settings, and fans can buy them again.', zh: '門票與票務商品回到各自原本的販售設定，粉絲可以再次購買。' },
+    'event-detail.resume.confirm.ok':    { en: 'Resume sales', zh: '恢復販售' },
+    'event-detail.resume.toast':   { en: 'Ticket sales resumed', zh: '已恢復販售' },
+    /* 撤銷只有 Admin 代管態能按（D361 決定二）；創作者視角的停用說明指向平台外聯繫 Admin（D371 決定二）。
+       活動票券專用，不動 order-detail 共用的 od.void.why.admin（E-Shop 已交付 release2.3）。 */
+    'event-detail.void.why.admin': { en: 'Only an Admin can void. Contact an Admin.', zh: '只有 Admin 能撤銷，請聯繫 Admin' },
+    /* D375 決定一：bookyay 匯入活動的撤銷在 bookyay 後台執行，結果同步回來（唯讀） */
+    'event-detail.void.why.bky':   { en: 'Voiding is handled in the bookyay back office', zh: '撤銷在 bookyay 後台處理' },
+    'event-detail.void.bky':       { en: 'Voiding is handled in the bookyay back office. Voided tickets sync back here as read-only.', zh: '撤銷在 bookyay 後台處理，已撤銷的票會同步到這裡，只能檢視。' },
+    'event-detail.void.by.bky':    { en: 'bookyay (synced)', zh: 'bookyay（同步）' },
+    'event-detail.void.empty.sub.bky': { en: 'Tickets voided in bookyay show up here.', zh: '在 bookyay 撤銷的票會顯示在這裡。' },
     /* 已報到的票不能撤銷（D361 決定四） */
     'event-detail.void.why.redeemed': { en: "Already checked in — can't be voided", zh: '已報到，不能撤銷' },
     'event-detail.badge.ended':  { en: 'Ended',         zh: '已結束' },
@@ -9795,6 +9858,8 @@
     'event-detail.golive.body.hidden': { en: 'The event stays hidden — only people with the event link can get in — and {n} tickets become buyable there. From here on, changing the date or venue notifies everyone who bought.', zh: '活動維持隱藏、只能經活動連結進入，{n} 張票開放購買。之後改日期或場地，會通知到每一位購票者。' },
     'event-detail.golive.ok': { en: 'Open sales', zh: '開始賣票' },
     'event-detail.cancel.title': { en: 'Cancel this event?', zh: '要取消這場活動嗎？' },
+    /* D375 決定二：匯入活動只能在 bookyay 取消，ztor 的取消活動保留但停用 */
+    'event-detail.cancel.bky':   { en: 'Imported events are cancelled in bookyay.', zh: '匯入活動在 bookyay 取消。' },
     /* 2026-10-05（D352 稽核 B15）：撤銷由 Admin 執行（D282），文案不再寫「你可以撤銷」 */
     'event-detail.cancel.body': { en: '{n} tickets sold are not refunded automatically — every holder is notified, and Admin voids any tickets still valid afterward, one by one or all at once. This cannot be undone.', zh: '已售出的 {n} 張票不會自動退款——會通知每一位持票人，之後由 Admin 逐票或整場撤銷仍有效的票券。這個動作無法復原。' },
     'event-detail.cancel.body0': { en: 'Nothing has sold yet. The event stops being publishable.', zh: '目前一張都還沒賣出。取消後這場活動不能再發布。' },
@@ -9911,7 +9976,9 @@
     'ed.pub.vis.shown.val': { en: 'Shown',                zh: '顯示' },
     'ed.pub.vis.hidden.val': { en: 'Hidden · link only',  zh: '隱藏・只能經活動連結進入' },
     'ed.pub.link.hidden': { en: 'Event link',             zh: '活動連結' },
-    'ed.pub.link.hidden.hint': { en: 'Only people with this link can open the event. Resetting kills the old link; showing the event again revokes it.', zh: '只有拿到這條連結的人打得開活動。重置＝舊連結作廢；切回顯示＝撤銷這條連結。' },
+    /* D375 決定八：改為顯示後非公開連結失效 */
+    'ed.pub.link.hidden.hint': { en: 'Only people with this link can open the event. Resetting kills the old link. Showing the event kills this link.', zh: '只有拿到這條連結的人打得開活動。重置＝舊連結作廢；改為顯示後此連結失效。' },
+    'ed.pub.link.expired':     { en: 'The old event link no longer works', zh: '原本的非公開連結已失效' },
     /* ── 發布設定改用建立流程第 7 步的版面（2026-08-17 使用者裁決）─────────────
        每個選項多一行說明：選項名字回答「這是哪一個」，說明回答「選了會怎樣」。
        中文沿用建立流程既有的講法，同一個決定不在兩個地方用兩套詞。 */
