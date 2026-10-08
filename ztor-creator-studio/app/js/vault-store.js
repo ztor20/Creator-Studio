@@ -165,8 +165,8 @@
 
      舊資料（單層、語意為任一）的搬遷＝每個條件各自成為一種方法，語意不變。
 
-     ⚠️ 這是權限規則的變更，屬產品決策。原型先行實作供裁決，尚未寫回 documents/，
-        提案記在 site/r2.2/ASSUMPTIONS.md（PG-025）。 */
+     2026-10-08 已由 D376 採納（documents/5.1.7.3-媒體庫.md F2「進庫方法」）；原型先行
+     時的提案與四個待確認記在 site/app/ASSUMPTIONS.md（PG-025，已標採納）。 */
   function matches(rule, fan) {
     if (rule.t === "tier") return TIER_RANK[fan.tier] >= TIER_RANK[rule.v];
     var bag = fan[rule.t];
@@ -321,10 +321,163 @@
     return t(l.verb) + " · " + t(l.text);
   }
 
+  /* ── 第二層：每件內容的任務（D377，2026-10-08）──────────────────
+     兩層模型：第一層＝進庫（上面的進庫方法＋鑰匙，聯集算法不變）；第二層＝庫房裡
+     每一件內容可以各自設一個任務，粉絲進庫之後還要完成它才看得到那一件。
+       item.task 沒有／null        ＝ 不設任務（進得了庫就看得到）
+       { type:"action", kind, n?, target?, scope? } ＝ 行動任務（九種，見 ACTION_TASKS）
+       { type:"tier", tier:<key> } ＝ 等級任務（分級達到就自動解開，掉級即收回）
+       item.grand === true         ＝ 大彩蛋標記（只是標記，不影響解開）
+     命名（D377）：「鑰匙」只指第一層的進庫憑證，第二層一律叫「任務」。
+
+     status：規格 5.1.7.3 F8 目錄表的「狀態」欄。九種裡只有「商城消費・指定商品」有逐人
+     資料可判定，其餘判定方式〔產品待確認〕——照樣可選（D377 決定四），但畫面要看得出來，
+     missing 逐條抄規格寫的「缺什麼」，不自行補判定規則。 */
+  var ACTION_TASKS = [
+    { id: "follow", icon: "user-plus", params: [],
+      label: { en: "Follow the creator", zh: "追蹤創作者" },
+      missing: [{ en: "Where each fan's follow status and follow date are defined", zh: "追蹤創作者的逐人追蹤狀態與開始時間的定義處" }] },
+    { id: "join", icon: "users", params: [],
+      label: { en: "Join the community", zh: "加入社群" },
+      missing: [{ en: "What the community is (on Ztor or off-site)", zh: "社群是什麼（站內或站外）" },
+                { en: "A per-fan record of joining", zh: "加入社群的逐人紀錄" }] },
+    { id: "shareVault", icon: "share", params: ["n"],
+      label: { en: "Share the vault page with N friends", zh: "分享庫房頁面給 N 位朋友" },
+      labelN: { en: "Share the vault page with {n} friends", zh: "分享庫房頁面給 {n} 位朋友" },
+      missing: [{ en: "A per-fan record of shares", zh: "分享的逐人紀錄" },
+                { en: "What counts as one friend", zh: "「一位朋友」怎麼算" },
+                { en: "What the fan-side vault page is", zh: "庫房在粉絲端的頁面定義" }] },
+    { id: "sharePost", icon: "send", params: ["post", "n"],
+      label: { en: "Share a specific post with N people", zh: "分享指定貼文給 N 人" },
+      labelN: { en: "Share a post with {n} people", zh: "分享指定貼文給 {n} 人" },
+      missing: [{ en: "A per-fan record of shares", zh: "逐人分享紀錄" },
+                { en: "What counts as one person", zh: "「一人」怎麼算" },
+                { en: "Which posts can be picked", zh: "可指定的貼文範圍" }] },
+    { id: "invite", icon: "mail", params: ["n"],
+      label: { en: "Invite N friends to join the community", zh: "邀請 N 位朋友加入社群" },
+      labelN: { en: "Invite {n} friends to the community", zh: "邀請 {n} 位朋友加入社群" },
+      missing: [{ en: "What the community is (same as Join the community)", zh: "社群定義（同「加入社群」）" },
+                { en: "When an invited friend counts as having joined", zh: "被邀請人「加入社群」的合格定義" }] },
+    { id: "watch", icon: "film", params: ["video"],
+      label: { en: "Finish watching a specific video", zh: "看完指定影片" },
+      missing: [{ en: "A per-fan record of finishing free videos", zh: "免費影片的逐人看完紀錄" },
+                { en: "What counts as finished", zh: "「看完」的門檻" },
+                { en: "Which videos can be picked", zh: "可指定的影片範圍" }] },
+    { id: "watchParty", icon: "party-popper", params: [],
+      label: { en: "Attend a Watch Party", zh: "參加過一場 Watch Party" },
+      missing: [{ en: "How Watch Party attendance is judged and where it is recorded", zh: "共看派對的出席判定與紀錄來源" },
+                { en: "Whether it is limited to your own Watch Parties, and whether a date can be picked", zh: "是否限本創作者的共看派對、可否指定場次" }] },
+    { id: "shop", icon: "shopping-bag", params: ["shop"],
+      label: { en: "Shop purchase", zh: "商城消費" },
+      /* 指定商品＝有逐人資料（與第一層「買過」同一份）；任一商品缺範圍口徑。
+         兩者共同的待確認：完成的認定時點。 */
+      missingAny: [{ en: "What “any product” covers (digital goods, bundles, auction wins; or merch only)", zh: "「任一商品」的範圍口徑（是否含數位商品、組合包、拍賣成交；或只限周邊）" }],
+      missing: [{ en: "When a purchase counts as done (order placed, paid, or past the refund window)", zh: "完成的認定時點（下單、付款完成或過了退款期）" }] },
+    { id: "tip", icon: "heart", params: ["n"],
+      label: { en: "Tip N popcorn in total", zh: "爆米花打賞累積 N" },
+      labelN: { en: "Tip {n} popcorn in total", zh: "爆米花打賞累積 {n}" },
+      missing: [{ en: "Tipping itself", zh: "打賞功能本身" },
+                { en: "A per-fan running total", zh: "逐人累積紀錄" },
+                { en: "When the total starts counting", zh: "累積的起算時點" }] }
+  ];
+  /* 指定貼文／指定影片的可選範圍〔產品待確認〕。原型放幾筆示意選項讓參數欄位可以操作，
+     不代表正式的可選範圍（ASSUMPTIONS UIA-230）。指定商品直接用第一層「買過」的商品清單
+     ——規格寫明兩者是同一份資料。 */
+  var TASK_TARGETS = {
+    post: [
+      { id: "p-ep",     label: { en: "EP announcement post",           zh: "EP 公布貼文" } },
+      { id: "p-poster", label: { en: "Tour poster reveal",             zh: "巡迴海報公開貼文" } },
+      { id: "p-set",    label: { en: "Set photos, day 3",              zh: "片場第三天照片貼文" } }
+    ],
+    video: [
+      { id: "vd-trailer", label: { en: "Moonlight Over Sham Shui Po — trailer", zh: "《深水埗的月光》正式預告" } },
+      { id: "vd-mv",      label: { en: "Kowloon After Dark — music video",      zh: "《九龍夜行》MV" } },
+      { id: "vd-doc",     label: { en: "Tour documentary — episode 1",          zh: "巡迴紀錄片 第一集" } }
+    ]
+  };
+  function actionDef(kind) { return ACTION_TASKS.filter(function (a) { return a.id === kind; })[0]; }
+  function targetLabel(task) {
+    if (!task || !task.target) return null;
+    if (task.kind === "shop") {
+      var o = CATALOGUE.bought.opts.filter(function (x) { return x.id === task.target; })[0];
+      return o ? o.label : null;
+    }
+    var list = task.kind === "sharePost" ? TASK_TARGETS.post : task.kind === "watch" ? TASK_TARGETS.video : [];
+    var hit = list.filter(function (x) { return x.id === task.target; })[0];
+    return hit ? hit.label : null;
+  }
+  /* 判定狀態：ready＝規格有逐人資料可判定；pending＝判定方式〔產品待確認〕。 */
+  function taskStatus(task) {
+    if (!task || task.type !== "action") return "ready";
+    return task.kind === "shop" && task.scope === "item" ? "ready" : "pending";
+  }
+  /* 這個任務缺什麼（逐條，供畫面列出）。 */
+  function taskMissing(task) {
+    var d = task && task.type === "action" && actionDef(task.kind);
+    if (!d) return [];
+    if (d.id === "shop") return (task.scope === "item" ? [] : (d.missingAny || [])).concat(d.missing || []);
+    return d.missing || [];
+  }
+
+  /* 等級任務的下限（D377 決定五）：
+       · 有任何一種進庫方法不含分級條件（含沒有任何進庫方法、只靠鑰匙）→ 四級都能選
+       · 否則以各方法的分級條件裡最低的那一級為下限
+     一種方法裡若放了兩條分級條件，實際由較高那條決定（同一種方法要全部達成）。
+     空的方法不算進庫方法（它誰都不放行），不參與判斷。回傳分級 key。 */
+  function tierFloor(vault) {
+    var lowest = TIERS.length ? TIERS[TIERS.length - 1].key : "fan";
+    var gs = (vault.rules || []).filter(function (g) { return g.items && g.items.length; });
+    if (!gs.length) return lowest;
+    var floor = Infinity;
+    for (var i = 0; i < gs.length; i++) {
+      var best = 0;
+      gs[i].items.forEach(function (r) { if (r.t === "tier") best = Math.max(best, TIER_RANK[r.v] || 0); });
+      if (!best) return lowest;
+      floor = Math.min(floor, best);
+    }
+    var hit = TIERS.filter(function (x) { return TIER_RANK[x.key] === floor; })[0];
+    return hit ? hit.key : lowest;
+  }
+
+  /* 每件可看人數（F3，D377）：進得了庫（進庫方法 ∪ 有效鑰匙）且該件對他已解開的人數。
+       不設任務 → 等於整座庫的觸及
+       等級任務 → 觸及之中分級達到任務等級的人
+       行動任務 → 只有「商城消費・指定商品」有逐人資料（fan.bought，與第一層「買過」同一份）；
+                  其餘回 null＝人數如何計算〔產品待確認〕，畫面顯示「待確認」，不編一個數字。
+     原型沒有逐人逐件的解開紀錄（〔產品待確認〕），所以「修改任務時已解開的人保留」無法模擬，
+     人數一律照目前的任務設法現算。 */
+  function itemViewers(vault, item) {
+    var task = item && item.task;
+    if (!task) return reachAll(vault);
+    if (task.type === "action" && !(task.kind === "shop" && task.scope === "item" && task.target)) return null;
+    var held = keyHolders(vault), n = 0;
+    for (var i = 0; i < FANS.length; i++) {
+      var f = FANS[i];
+      if (!(held[i] || ruleMatches(vault, f))) continue;
+      if (task.type === "tier" ? TIER_RANK[f.tier] >= TIER_RANK[task.tier] : !!f.bought[task.target]) n++;
+    }
+    return n;
+  }
+
+  /* 以某分級檢視時，這一件對那一級的結果（F6，D377）：
+       visible  ＝ 不設任務，或等級任務且那一級達到任務等級
+       tierLow  ＝ 等級任務，那一級低於任務等級
+       action   ＝ 行動任務，那一級的粉絲要各自完成才看得到 */
+  function itemStatusForTier(item, tierKey) {
+    var task = item && item.task;
+    if (!task) return "visible";
+    if (task.type === "tier") return TIER_RANK[tierKey] >= TIER_RANK[task.tier] ? "visible" : "tierLow";
+    return "action";
+  }
+
   /* ── 庫房與內容 ──────────────────────────────────────────
      kind: image | clip | audio（一座庫房可混放，2026-07-29 使用者裁示）。
      img  ＝ 真實檔案路徑；clip 用同一張圖當影格，audio 不吃圖。
      dur  ＝ 時長（clip/audio）；size ＝ 檔案大小字串。 */
+  /* 2026-10-08（D377）：種子資料逐件掛了第二層任務與大彩蛋，讓使用者一打開就看得到各種狀態——
+     東岸巡迴（第一層只有 ≥ Ranked Fans，所以等級任務的下限是 Ranked Fans、Fan 選不到）示範
+     不設任務／行動任務（可判定與待確認各有）／等級任務／大彩蛋；未發行 Demo（第一層另有「買過」
+     那種方法，所以四級都能選）示範同一件事在無下限時的樣子；其餘庫房補齊九種行動任務各一。 */
   var VAULTS = [
     {
       id: "demos", icon: "disc-3",
@@ -337,11 +490,15 @@
           label: { en: "Gift · for the fan who mailed the tape", zh: "禮物 · 給那位寄卡帶來的粉絲" } }
       ],
       items: [
-        { id: "d1", kind: "audio", name: { en: "Neon Crossing — rough mix v4", zh: "Neon Crossing 粗混 v4" }, dur: "4:12", size: "9.8 MB", added: "2026/07/22" },
-        { id: "d2", kind: "audio", name: { en: "Undertow — drum stem", zh: "Undertow 鼓組分軌" }, dur: "5:03", size: "12.1 MB", added: "2026/07/22" },
+        { id: "d1", kind: "audio", name: { en: "Neon Crossing — rough mix v4", zh: "Neon Crossing 粗混 v4" }, dur: "4:12", size: "9.8 MB", added: "2026/07/22",
+          task: { type: "action", kind: "tip", n: 500 } },
+        { id: "d2", kind: "audio", name: { en: "Undertow — drum stem", zh: "Undertow 鼓組分軌" }, dur: "5:03", size: "12.1 MB", added: "2026/07/22",
+          task: { type: "action", kind: "shop", scope: "item", target: "acetate" } },
         { id: "d3", kind: "audio", name: { en: "Rooftop Wind — demo (voice memo)", zh: "Rooftop Wind Demo（語音備忘）" }, dur: "1:47", size: "3.4 MB", added: "2026/07/18" },
-        { id: "d4", kind: "image", name: { en: "Mastering room whiteboard", zh: "母帶室白板" }, img: "images/products/coastline-acetate.webp", size: "2.6 MB", added: "2026/07/16" },
-        { id: "d5", kind: "image", name: { en: "EP cover — rejected direction", zh: "EP 封面 未採用版" }, img: "images/products/coastline-ep.webp", size: "3.1 MB", added: "2026/07/11" }
+        { id: "d4", kind: "image", name: { en: "Mastering room whiteboard", zh: "母帶室白板" }, img: "images/products/coastline-acetate.webp", size: "2.6 MB", added: "2026/07/16",
+          task: { type: "tier", tier: "inner" } },
+        { id: "d5", kind: "image", name: { en: "EP cover — rejected direction", zh: "EP 封面 未採用版" }, img: "images/products/coastline-ep.webp", size: "3.1 MB", added: "2026/07/11",
+          grand: true, task: { type: "action", kind: "follow" } }
       ]
     },
     {
@@ -362,12 +519,17 @@
           label: { en: "Press preview · leaked, revoked", zh: "媒體預覽 · 外流後已撤銷" } }
       ],
       items: [
-        { id: "b1", kind: "clip",  name: { en: "Soundcheck — full take", zh: "彩排 全片段" }, img: "images/projects/nick-lrh-tour.jpg", dur: "12:40", size: "840 MB", added: "2026/07/25" },
-        { id: "b2", kind: "image", name: { en: "Stage-worn jacket, night 6", zh: "第六場 演出服" }, img: "images/products/stage-worn-jacket.webp", size: "4.2 MB", added: "2026/07/24" },
+        { id: "b1", kind: "clip",  name: { en: "Soundcheck — full take", zh: "彩排 全片段" }, img: "images/projects/nick-lrh-tour.jpg", dur: "12:40", size: "840 MB", added: "2026/07/25",
+          task: { type: "action", kind: "follow" } },
+        { id: "b2", kind: "image", name: { en: "Stage-worn jacket, night 6", zh: "第六場 演出服" }, img: "images/products/stage-worn-jacket.webp", size: "4.2 MB", added: "2026/07/24",
+          task: { type: "tier", tier: "super" } },
         { id: "b3", kind: "image", name: { en: "Poster wall, Hualien", zh: "花蓮 海報牆" }, img: "images/products/signed-tour-poster.webp", size: "3.8 MB", added: "2026/07/24" },
-        { id: "b4", kind: "clip",  name: { en: "Bus, 3am, somewhere near Su-ao", zh: "凌晨三點的車上（蘇澳附近）" }, img: "images/projects/nick-realive.jpg", dur: "2:18", size: "196 MB", added: "2026/07/20" },
-        { id: "b5", kind: "image", name: { en: "Zine layout, first proof", zh: "Zine 首校" }, img: "images/products/tour-zine-vol-02.webp", size: "5.5 MB", added: "2026/07/19" },
-        { id: "b6", kind: "audio", name: { en: "Crowd, Taitung, before the encore", zh: "台東 安可前的人聲" }, dur: "0:52", size: "1.9 MB", added: "2026/07/18" }
+        { id: "b4", kind: "clip",  name: { en: "Bus, 3am, somewhere near Su-ao", zh: "凌晨三點的車上（蘇澳附近）" }, img: "images/projects/nick-realive.jpg", dur: "2:18", size: "196 MB", added: "2026/07/20",
+          grand: true, task: { type: "tier", tier: "inner" } },
+        { id: "b5", kind: "image", name: { en: "Zine layout, first proof", zh: "Zine 首校" }, img: "images/products/tour-zine-vol-02.webp", size: "5.5 MB", added: "2026/07/19",
+          task: { type: "action", kind: "shop", scope: "item", target: "hoodie" } },
+        { id: "b6", kind: "audio", name: { en: "Crowd, Taitung, before the encore", zh: "台東 安可前的人聲" }, dur: "0:52", size: "1.9 MB", added: "2026/07/18",
+          task: { type: "action", kind: "sharePost", target: "p-poster", n: 3 } }
       ]
     },
     {
@@ -378,9 +540,11 @@
       note: { en: "Set photography and dailies for the backers of this film.", zh: "本片支持者專屬的片場照與毛片。" },
       rules: [{ items: [{ t: "backed", v: "shamshuipo-moonlight" }] }, { items: [{ t: "tier", v: "inner" }] }],
       items: [
-        { id: "s1", kind: "image", name: { en: "Night market build, day 3", zh: "夜市搭景 第三天" }, img: "images/projects/shamshuipo-moonlight.jpg", size: "6.1 MB", added: "2026/07/26" },
+        { id: "s1", kind: "image", name: { en: "Night market build, day 3", zh: "夜市搭景 第三天" }, img: "images/projects/shamshuipo-moonlight.jpg", size: "6.1 MB", added: "2026/07/26",
+          grand: true },
         { id: "s2", kind: "image", name: { en: "Bingsutt interior, lighting test", zh: "冰室內景 燈光測試" }, img: "images/projects/kowloon-bingsutt.jpg", size: "5.4 MB", added: "2026/07/26" },
-        { id: "s3", kind: "clip",  name: { en: "Dailies — scene 14, take 2", zh: "毛片 第 14 場 第 2 次" }, img: "images/projects/miujie-fungwan.jpg", dur: "3:36", size: "412 MB", added: "2026/07/23" },
+        { id: "s3", kind: "clip",  name: { en: "Dailies — scene 14, take 2", zh: "毛片 第 14 場 第 2 次" }, img: "images/projects/miujie-fungwan.jpg", dur: "3:36", size: "412 MB", added: "2026/07/23",
+          task: { type: "action", kind: "watch", target: "vd-trailer" } },
         { id: "s4", kind: "image", name: { en: "Street dressing, Tai Nan St.", zh: "大南街 街景陳設" }, img: "images/projects/mong-kok-shootout-card.webp", size: "4.9 MB", added: "2026/07/21" }
       ]
     },
@@ -390,10 +554,13 @@
       note: { en: "The photographer's full set — including the frames we never posted.", zh: "攝影師完整檔——包含沒有貼出來的那些。" },
       rules: [{ items: [{ t: "attended", v: "album-signing-taipei" }] }],
       items: [
-        { id: "g1", kind: "image", name: { en: "Queue, 10:40am", zh: "排隊 10:40" }, img: "images/products/nick-single.jpg", size: "3.3 MB", added: "2026/07/14" },
-        { id: "g2", kind: "image", name: { en: "Table 2, first hour", zh: "第二桌 第一小時" }, img: "images/products/nick-album.jpg", size: "3.7 MB", added: "2026/07/14" },
+        { id: "g1", kind: "image", name: { en: "Queue, 10:40am", zh: "排隊 10:40" }, img: "images/products/nick-single.jpg", size: "3.3 MB", added: "2026/07/14",
+          task: { type: "action", kind: "shareVault", n: 5 } },
+        { id: "g2", kind: "image", name: { en: "Table 2, first hour", zh: "第二桌 第一小時" }, img: "images/products/nick-album.jpg", size: "3.7 MB", added: "2026/07/14",
+          task: { type: "action", kind: "invite", n: 3 } },
         { id: "g3", kind: "image", name: { en: "The one with the dog", zh: "帶狗來的那位" }, img: "images/products/nick-realive-cd.jpg", size: "4.0 MB", added: "2026/07/14" },
-        { id: "g4", kind: "clip",  name: { en: "Last five minutes", zh: "最後五分鐘" }, img: "images/products/nick-r2.jpg", dur: "5:00", size: "268 MB", added: "2026/07/15" }
+        { id: "g4", kind: "clip",  name: { en: "Last five minutes", zh: "最後五分鐘" }, img: "images/products/nick-r2.jpg", dur: "5:00", size: "268 MB", added: "2026/07/15",
+          task: { type: "action", kind: "watchParty" } }
       ]
     },
     {
@@ -402,7 +569,8 @@
       note: { en: "One a month, recorded for this room only. No transcript.", zh: "每月一封，只錄給這個房間。沒有逐字稿。" },
       rules: [{ items: [{ t: "tier", v: "inner" }] }, { items: [{ t: "earned", v: "hof" }] }],
       items: [
-        { id: "v1", kind: "audio", name: { en: "July — on finishing the EP", zh: "七月 · 關於把 EP 做完" }, dur: "8:24", size: "16.2 MB", added: "2026/07/28" },
+        { id: "v1", kind: "audio", name: { en: "July — on finishing the EP", zh: "七月 · 關於把 EP 做完" }, dur: "8:24", size: "16.2 MB", added: "2026/07/28",
+          grand: true },
         { id: "v2", kind: "audio", name: { en: "June — the argument about track 4", zh: "六月 · 為了第四首吵的那次" }, dur: "6:11", size: "11.8 MB", added: "2026/06/30" },
         { id: "v3", kind: "audio", name: { en: "May — reading your letters", zh: "五月 · 讀你們的信" }, dur: "11:02", size: "21.4 MB", added: "2026/05/31" }
       ]
@@ -413,8 +581,10 @@
       note: { en: "No gate on this one — every fan can open it.", zh: "這一個沒有門檻——所有粉絲都打得開。" },
       rules: [{ items: [{ t: "tier", v: "fan" }] }],
       items: [
-        { id: "o1", kind: "clip",  name: { en: "EP announcement, uncut", zh: "EP 公布 未剪版" }, img: "images/products/coastline-starter-pack.webp", dur: "1:12", size: "88 MB", added: "2026/07/27" },
-        { id: "o2", kind: "image", name: { en: "Tour poster, final", zh: "巡迴海報 定稿" }, img: "images/products/vinyl-poster-set.webp", size: "2.2 MB", added: "2026/07/12" }
+        { id: "o1", kind: "clip",  name: { en: "EP announcement, uncut", zh: "EP 公布 未剪版" }, img: "images/products/coastline-starter-pack.webp", dur: "1:12", size: "88 MB", added: "2026/07/27",
+          task: { type: "action", kind: "join" } },
+        { id: "o2", kind: "image", name: { en: "Tour poster, final", zh: "巡迴海報 定稿" }, img: "images/products/vinyl-poster-set.webp", size: "2.2 MB", added: "2026/07/12",
+          task: { type: "action", kind: "shop", scope: "any" } }
       ]
     }
   ];
@@ -470,6 +640,16 @@
     ruleText: ruleText,
     cover: cover,
     counts: counts,
+    actionTasks: ACTION_TASKS,
+    taskTargets: TASK_TARGETS,
+    actionDef: actionDef,
+    targetLabel: targetLabel,
+    taskStatus: taskStatus,
+    taskMissing: taskMissing,
+    tierFloor: tierFloor,
+    tierRank: TIER_RANK,
+    itemViewers: itemViewers,
+    itemStatusForTier: itemStatusForTier,
     t: t
   };
 })();

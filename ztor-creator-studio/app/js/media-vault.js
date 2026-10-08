@@ -74,6 +74,59 @@
   }
   function vaultName(v) { return v.custom ? v.custom : V.t(v.name); }
 
+  /* ── 第二層：每件內容的任務（D377，2026-10-08）──────────────────
+     命名規則：「鑰匙」只指第一層的進庫憑證；第二層一律叫「任務」。本檔所有第二層文案
+     都照這條寫——任務、行動任務、等級任務、解開。 */
+  function tierAtLeast(key) { return tx(tierName(key) + " and up", tierName(key) + "以上"); }
+  /* 一個任務的白話：圖示＋短句（格子上的小標用）＋完整句（title／抽屜用）。 */
+  function taskInfo(task) {
+    if (!task) return null;
+    if (task.type === "tier") {
+      return { icon: "chart-column", text: tierAtLeast(task.tier),
+               full: tx("Tier task · ", "等級任務・") + tierAtLeast(task.tier) };
+    }
+    var d = V.actionDef(task.kind);
+    if (!d) return null;
+    var text = (d.labelN && task.n) ? V.t(d.labelN).replace("{n}", num(task.n)) : V.t(d.label);
+    if (d.id === "shop") {
+      var tl = task.scope === "item" ? V.targetLabel(task) : null;
+      text += " · " + (task.scope === "item" ? (tl ? V.t(tl) : tx("pick a product", "未選商品")) : tx("any product", "任一商品"));
+    } else {
+      var tg = V.targetLabel(task);
+      if (tg) text += " · " + V.t(tg);
+    }
+    return { icon: d.icon, text: text, full: tx("Action task · ", "行動任務・") + text };
+  }
+  /* 一顆小標。tone：media＝壓在影像上；plain＝坐在薄膜／列上。 */
+  function tagHtml(tone, mod, iconName, text, title, feat) {
+    return '<span class="vault-tag vault-tag--' + tone + (mod ? " vault-tag--" + mod : "") + '"' +
+      (title ? ' title="' + esc(title) + '"' : "") + (feat ? ' data-feat="' + feat + '"' : "") + ">" +
+      (iconName ? icon(iconName) : "") + '<span class="vault-tag__text">' + esc(text) + "</span></span>";
+  }
+  /* 一件內容的小標組：任務（左）／大彩蛋＋幾人看得到（右）。檢視身分開著、且這座庫房
+     那一級進得來時，右邊那顆換成該分級的結果（F6 三種）。 */
+  function itemTags(it, tone) {
+    var f = vault();
+    var info = taskInfo(it.task);
+    var start = info ? tagHtml(tone, null, info.icon, info.text, info.full, "S86") : "";
+    var end = it.grand ? tagHtml(tone, "grand", "sparkles", tx("Grand surprise", "大彩蛋"), tx("Marked as a grand surprise — it does not change how this item unlocks", "標為大彩蛋——只是標記，不影響解開"), "S86") : "";
+    if (state.viewer) {
+      var st = V.itemStatusForTier(it, state.viewer);
+      var who = tierName(state.viewer);
+      end += st === "visible"
+        ? tagHtml(tone, "ok", "eye", tx("Visible", "看得到"), tx(who + " can see this", "「" + who + "」看得到這一件"), "S86")
+        : st === "tierLow"
+          ? tagHtml(tone, "low", "lock", tx("Tier too low", "等級不足"), tx(who + " is below this item's tier task", "「" + who + "」低於這一件的等級任務"), "S86")
+          : tagHtml(tone, "action", "flag", tx("Task required", "需完成行動任務"), tx("Each " + who + " fan must finish the action task to see this", "「" + who + "」的粉絲要各自完成行動任務才看得到"), "S86");
+    } else {
+      var n = V.itemViewers(f, it);
+      end += n == null
+        ? tagHtml(tone, "pending", "eye", tx("TBC", "待確認"), tx("How many fans can see this is still to be confirmed — this task has no per-fan data yet", "幾人看得到尚待確認——這種任務還沒有逐人資料"), "S86")
+        : tagHtml(tone, null, "eye", num(n), tx(num(n) + " fans can see this", num(n) + " 位粉絲看得到這一件"), "S86");
+    }
+    return { start: start, end: end };
+  }
+
   /* ── 側欄 ───────────────────────────────────────────────── */
   /* ── demo A：庫房總覽卡片牆 ────────────────────────────────
      側欄 276px 擠著的封面在這裡放得大，「哪座門開得最大」比清單更一眼看得出來。 */
@@ -134,9 +187,9 @@
      用抽屜不用第二層彈窗：庫房本身已經是一層彈窗，再疊一層會變成對話框中的對話框，
      而且會蓋掉剛才點的那一格；抽屜從右邊推進來，被編輯的東西還看得見。
 
-     這裡只放這座原型真的有的欄位（檔名、類型、大小、加入日期、長度）與已經存在的
-     兩個動作（改名、刪除）。權限、有效期、浮水印這類還沒有上游規格的東西不擅自
-     生出來——那會把「呈現探索」偷渡成產品功能。 */
+     這裡只放規格有的東西：檔名、類型、大小、加入日期、長度、改名、刪除；2026-10-08 起
+     加上第二層的任務與大彩蛋標記（5.1.7.3 F8、F5，D377）。有效期、浮水印這類還沒有
+     上游規格的東西不擅自生出來——那會把「呈現探索」偷渡成產品功能。 */
   function itemById(id) {
     return vault().items.filter(function (i) { return i.id === id; })[0];
   }
@@ -165,11 +218,216 @@
           return "<dt>" + esc(r[0]) + "</dt><dd>" + esc(r[1]) + "</dd>";
         }).join("") +
       "</dl>" +
+      taskSectionHtml(it) +
+      grandRowHtml(it) +
       '<div class="vault-item__actions">' +
         '<button type="button" class="btn btn--outline btn--sm" data-item-sheet-delete>' +
           icon("trash-2") + tx("Delete", "刪除") + "</button>" +
       "</div>";
-    if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.itemBody);
+    afterSheetRender(els.itemBody);
+  }
+
+  /* 抽屜內容是 JS 畫的：圖示、下拉（zselect 升級）、功能標記（data-feat）都要在畫完之後補一次。 */
+  function afterSheetRender(root) {
+    if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(root);
+    if (window.ztorSelect && window.ztorSelect.mount) window.ztorSelect.mount(root);
+    if (window.ztorDevState && window.ztorDevState.regate) window.ztorDevState.regate();
+  }
+
+  /* ── 抽屜裡的「任務」區（F8）───────────────────────────────
+     三選一用 radio-list（互斥的資料選擇，Q17 的分工：窄欄直列）；選了行動任務才長出
+     「種類」下拉與該種類的參數，選了等級任務才長出「等級」下拉。改了就生效，不設儲存鈕
+     ——同名稱欄的做法，關掉抽屜就是收工。 */
+  /* 數字參數 N 的欄位名稱與預設值（規格只要求正整數；範圍與上限〔產品待確認〕）。 */
+  var N_FIELD = {
+    shareVault: { label: { en: "Friends", zh: "朋友人數" },   dflt: 3 },
+    sharePost:  { label: { en: "People", zh: "人數" },         dflt: 3 },
+    invite:     { label: { en: "Friends", zh: "朋友人數" },   dflt: 3 },
+    tip:        { label: { en: "Popcorn", zh: "爆米花數量" }, dflt: 100 }
+  };
+  function newActionTask(kind) {
+    var d = V.actionDef(kind) || V.actionTasks[0];
+    var t = { type: "action", kind: d.id };
+    if (d.params.indexOf("n") >= 0) t.n = (N_FIELD[d.id] || {}).dflt || 1;
+    if (d.params.indexOf("post") >= 0) t.target = V.taskTargets.post[0].id;
+    if (d.params.indexOf("video") >= 0) t.target = V.taskTargets.video[0].id;
+    if (d.params.indexOf("shop") >= 0) t.scope = "any";
+    return t;
+  }
+
+  function taskSectionHtml(it) {
+    var f = vault();
+    var task = it.task || null;
+    var type = task ? task.type : "none";
+    var types = [
+      ["none",   tx("No task", "不設任務"),       tx("Anyone who gets into the vault sees it.", "進得了庫就看得到。")],
+      ["action", tx("Action task", "行動任務"),   tx("Fans do one thing to unlock it. Once done, it stays unlocked.", "粉絲去做一件事就解開，完成一次就永久解開。")],
+      ["tier",   tx("Tier task", "等級任務"),     tx("Unlocks for fans at the tier or above, and locks again if they drop below.", "分級達到指定等級自動解開，掉級就收回。")]
+    ];
+    var out = '<section class="vault-task" data-item-task data-feat="S86">' +
+      '<div class="vault-task__head">' +
+        '<h4 class="vault-task__title" id="vault-task-title">' + tx("Task", "任務") + "</h4>" +
+        '<p class="vault-task__lead">' + tx(
+          "What a fan must do, after getting into the vault, to see this item. One task per item. Keys only get fans into the vault — key holders still finish the task.",
+          "粉絲進庫之後，還要做到什麼才看得到這一件；一件只設一個。鑰匙只管進庫，持鑰匙的人一樣要完成任務。") + "</p>" +
+      "</div>" +
+      '<div class="radio-list" role="radiogroup" aria-labelledby="vault-task-title">' +
+        types.map(function (o) {
+          var on = o[0] === type;
+          return '<button type="button" class="radio-list__item' + (on ? " radio-list__item--active" : "") + '" role="radio" aria-checked="' + on + '" data-task-type="' + o[0] + '">' +
+            '<span class="radio-list__dot"></span>' +
+            '<span class="radio-list__text"><span class="radio-list__title">' + o[1] + "</span>" +
+            '<span class="radio-list__sub">' + o[2] + "</span></span></button>";
+        }).join("") +
+      "</div>";
+
+    if (type === "action") out += actionParamsHtml(task);
+    if (type === "tier") out += tierParamsHtml(f, task);
+    out += reachHtml(f, it);
+    return out + "</section>";
+  }
+
+  function actionParamsHtml(task) {
+    var d = V.actionDef(task.kind);
+    var out = '<div class="vault-task__params">' +
+      '<div class="field"><label class="field__label" for="vt-kind">' + tx("Type", "種類") + "</label>" +
+        '<select class="select" id="vt-kind" data-task-kind>' +
+          V.actionTasks.map(function (a) {
+            return '<option value="' + a.id + '"' + (a.id === task.kind ? " selected" : "") + ">" + esc(V.t(a.label)) + "</option>";
+          }).join("") +
+        "</select></div>";
+
+    if (d.params.indexOf("shop") >= 0) {
+      var item = task.scope === "item";
+      out += '<div class="field"><span class="field__label">' + tx("Products", "商品範圍") + "</span>" +
+        '<div class="segmented" role="radiogroup" aria-label="' + esc(tx("Products", "商品範圍")) + '">' +
+          '<button type="button" class="segmented__btn' + (!item ? " segmented__btn--active" : "") + '" role="radio" aria-checked="' + !item + '" data-task-scope="any">' + tx("Any product", "任一商品") + "</button>" +
+          '<button type="button" class="segmented__btn' + (item ? " segmented__btn--active" : "") + '" role="radio" aria-checked="' + item + '" data-task-scope="item">' + tx("A specific product", "指定商品") + "</button>" +
+        "</div></div>";
+      if (item) out += targetFieldHtml("vt-product", tx("Product", "商品"), V.catalogue.bought.opts, task.target, null);
+    }
+    if (d.params.indexOf("post") >= 0) {
+      out += targetFieldHtml("vt-post", tx("Post", "貼文"), V.taskTargets.post, task.target, tx("Sample posts", "示意選項"));
+    }
+    if (d.params.indexOf("video") >= 0) {
+      out += targetFieldHtml("vt-video", tx("Video", "影片"), V.taskTargets.video, task.target, tx("Sample videos", "示意選項"));
+    }
+    if (d.params.indexOf("n") >= 0) {
+      var nf = N_FIELD[d.id] || { label: { en: "N", zh: "N" } };
+      out += '<div class="field"><label class="field__label" for="vt-n">' + esc(V.t(nf.label)) + "</label>" +
+        '<input class="input" id="vt-n" type="number" min="1" step="1" inputmode="numeric" value="' + esc(task.n || "") + '" data-task-n>' +
+        '<p class="field__hint">' + tx("A whole number from 1. The allowed range is still to be confirmed.", "1 以上的整數；可填範圍與上限尚待確認。") + "</p>" +
+        '<p class="field__error" data-task-n-error hidden>' + tx("Enter a whole number of 1 or more.", "請填 1 以上的整數。") + "</p></div>";
+    }
+    out += "</div>";
+    out += statusHtml(task);
+    return out;
+  }
+
+  function targetFieldHtml(id, label, list, cur, hint) {
+    return '<div class="field"><label class="field__label" for="' + id + '">' + esc(label) + "</label>" +
+      '<select class="select" id="' + id + '" data-task-target>' +
+        list.map(function (o) {
+          return '<option value="' + o.id + '"' + (o.id === cur ? " selected" : "") + ">" + esc(V.t(o.label)) + "</option>";
+        }).join("") +
+      "</select>" + (hint ? '<p class="field__hint">' + esc(hint) + "</p>" : "") + "</div>";
+  }
+
+  /* 判定狀態（F8 目錄表的「狀態」欄）。判定方式〔產品待確認〕的任務照樣可選（D377 決定四），
+     但這裡要讓人一眼看出來：黃色徽章＋逐條列出規格寫的「缺什麼」。 */
+  function statusHtml(task) {
+    var ready = V.taskStatus(task) === "ready";
+    var miss = V.taskMissing(task);
+    return '<div class="vault-task__status vault-task__status--' + (ready ? "ready" : "pending") + '">' +
+      (ready
+        ? '<span class="badge badge--success">' + tx("Can be judged", "可判定") + "</span>" +
+          '<p class="vault-task__status-text">' + tx("Per-fan purchase data exists — the same data as the “Bought” condition.", "有逐人購買資料，與進庫條件「購買過」同一份。") + "</p>"
+        : '<span class="badge badge--warning">' + tx("How it is judged is TBC", "判定方式待確認") + "</span>" +
+          '<p class="vault-task__status-text">' + tx("You can set it now. Before it goes live the spec still needs:", "現在可以先設定；正式啟用前，規格還缺：") + "</p>") +
+      (miss.length
+        ? (ready ? '<p class="vault-task__status-text">' + tx("Also still to be confirmed:", "另待確認：") + "</p>" : "") +
+          '<ul class="vault-task__missing">' + miss.map(function (m) { return "<li>" + esc(V.t(m)) + "</li>"; }).join("") + "</ul>"
+        : "") +
+    "</div>";
+  }
+
+  /* 等級任務：可選等級依第一層的下限過濾（D377 決定五）。低於下限的選項停用；若這一件
+     既有的任務等級已經低於下限（創作者事後改了第一層），選項保留可見並提示——那種情況
+     怎麼處理〔產品待確認〕，原型不自動改它。 */
+  function tierParamsHtml(f, task) {
+    var floor = V.tierFloor(f);
+    var floorRank = V.tierRank[floor];
+    var lowest = V.tiers[V.tiers.length - 1].key;
+    var under = V.tierRank[task.tier] < floorRank;
+    var hint = floor === lowest
+      ? tx("Some way into this vault does not ask for a tier (or fans only get in with a key), so all four tiers are available.",
+           "第一層有不看分級的進庫方法（或只靠鑰匙進庫），四級都能選。")
+      : tx("Every way into this vault asks for " + tierAtLeast(floor) + ", so only that tier or higher is available.",
+           "第一層每一種進庫方法都要求" + tierAtLeast(floor) + "，所以只能選這一級或更高。");
+    return '<div class="vault-task__params">' +
+      '<div class="field"><label class="field__label" for="vt-tier">' + tx("Tier", "等級") + "</label>" +
+        '<select class="select" id="vt-tier" data-task-tier>' +
+          V.tiers.map(function (t) {
+            var below = V.tierRank[t.key] < floorRank;
+            return '<option value="' + t.key + '"' + (t.key === task.tier ? " selected" : "") +
+              (below && t.key !== task.tier ? " disabled" : "") + ">" + esc(tierAtLeast(t.key)) + "</option>";
+          }).join("") +
+        "</select>" +
+        '<p class="field__hint">' + esc(hint) + "</p>" +
+        (under ? '<p class="field__hint field__hint--warn">' + tx(
+          "This tier is now below the vault's lowest tier. How existing tier tasks are handled after the vault changes is still to be confirmed.",
+          "這一級已低於第一層目前的下限；第一層改動後既有的等級任務怎麼處理，尚待確認。") + "</p>" : "") +
+        '<p class="field__hint">' + tx("Fans who got in with a key or another way but sit below this tier keep it locked.",
+          "靠鑰匙或其他方法進庫、但分級不到這一級的粉絲，這一件維持上鎖。") + "</p>" +
+      "</div></div>";
+  }
+
+  /* 幾人看得到（F3 每件可看人數）：算不出來就明說待確認，不編數字。 */
+  function reachHtml(f, it) {
+    var n = V.itemViewers(f, it);
+    var total = V.reachAll(f);
+    var sub = !it.task
+      ? tx("Same as everyone who can get into the vault.", "等於進得了庫的全部人數。")
+      : n == null
+        ? tx("This task has no per-fan data yet, so the count is still to be confirmed.", "這種任務還沒有逐人資料，人數尚待確認。")
+        : tx("Of the " + num(total) + " fans who can get into the vault.", "進得了庫的 " + num(total) + " 位之中。");
+    return '<div class="vault-task__reach">' +
+      '<span class="vault-task__reach-label">' + tx("Fans who can see it", "看得到的人") + "</span>" +
+      '<span class="vault-task__reach-num' + (n == null ? " vault-task__reach-num--pending" : "") + '">' +
+        (n == null ? tx("TBC", "待確認") : num(n)) + "</span>" +
+      '<span class="vault-task__reach-sub">' + esc(sub) + "</span>" +
+    "</div>";
+  }
+
+  /* 大彩蛋（F5，D377）：只是標記，不影響解開。 */
+  function grandRowHtml(it) {
+    var on = !!it.grand;
+    return '<div class="control-row vault-task__flag" data-feat="S86">' +
+      "<div>" +
+        '<div class="control-row__main" id="vault-grand-label">' + tx("Grand surprise", "大彩蛋") + "</div>" +
+        '<div class="control-row__sub">' + tx("Just a marker. It does not change how this item unlocks.", "只是標記，不影響這一件怎麼解開。") + "</div>" +
+      "</div>" +
+      '<button type="button" class="switch' + (on ? " switch--on" : "") + '" role="switch" aria-checked="' + on + '" aria-labelledby="vault-grand-label" data-item-grand></button>' +
+    "</div>";
+  }
+
+  /* 任務改了：只重畫任務區（名稱欄不動，打到一半的字不會不見），再重畫格子上的小標。
+     focusSel ＝ 重畫後要把焦點還給哪一個控制項。 */
+  function refreshTask(it, focusSel) {
+    var sec = els.itemBody.querySelector("[data-item-task]");
+    if (sec) {
+      var wrap = document.createElement("div");
+      wrap.innerHTML = taskSectionHtml(it);
+      sec.replaceWith(wrap.firstChild);
+      afterSheetRender(els.itemBody);
+    }
+    renderMain();
+    if (focusSel) {
+      var el = els.itemBody.querySelector(focusSel);
+      /* zselect 把原生 select 視覺隱藏，焦點要給插在它前面的那顆觸發鈕。 */
+      if (el && el.tagName === "SELECT" && el.previousElementSibling && el.previousElementSibling.classList.contains("zselect__trigger")) el = el.previousElementSibling;
+      if (el && el.focus) el.focus();
+    }
   }
 
   function openItem(id) {
@@ -272,7 +530,7 @@
     return '<div class="vault-door__group' + (items.length >= 2 ? " vault-door__group--boxed" : "") + '">' + lead +
       '<div class="vault-door__chips">' + chips +
         '<button type="button" class="vault-door__add" data-rule-add="' + gi + '" ' +
-          'aria-label="' + esc(tx("Add a condition to this way in", "在這一種方法裡再加一個條件")) + '">' +
+          'aria-label="' + esc(tx("Add a condition to this way in", "在這一種進庫方法裡再加一個條件")) + '">' +
           icon("plus") + tx("Add", "再加一個") + "</button>" +
       "</div>" +
     "</div>";
@@ -289,7 +547,7 @@
         : tx("No condition — only fans holding a key get in.", "沒有條件——只有持鑰匙的人進得來。");
     }
     if (gs.length > 1) {
-      return tx("Any one of these ways gets a fan in.", "上面任何一種達成，粉絲就進得來。");
+      return tx("Meet any one of these ways in and a fan gets in.", "達成上面任一種進庫方法，粉絲就進得來。");
     }
     if (n === 1) return tx("A fan who meets this gets in.", "達成這個條件，粉絲就進得來。");
     return tx("A fan must meet all of these to get in.", "上面的條件全部達成，粉絲才進得來。");
@@ -316,7 +574,7 @@
       gs.map(function (g, gi) { return doorGroupHtml(g, gi); })
         .join('<div class="vault-door__sep"><span>' + tx("or", "或是") + "</span></div>") +
       '<button type="button" class="vault-door__addgroup" data-group-add>' + icon("plus") +
-        tx("Another way in", "多一種進得來的方法") + "</button>";
+        tx("Another way in", "多一種進庫方法") + "</button>";
     els.doorRules.classList.toggle("is-grouped", multi);
 
     els.doorAny.textContent = doorSummary(f, stats.live === 0);
@@ -408,20 +666,26 @@
   function tileHtml(it) {
     var k = KIND[it.kind];
     var body;
+    /* 頂端小標列（D377）：影像上用 media 色調，標籤紙格是淺底所以用 plain；標籤紙格原本
+       左上角的類型圖示收進這一列當第一個成員（同一個角落不能放兩樣東西）。 */
+    var tags = itemTags(it, it.img ? "media" : "plain");
+    var lead = it.img ? "" : '<span class="vault-tile__labelmark">' + icon(k.icon) + "</span>";
+    var badges = '<span class="vault-tile__badges">' + lead + tags.start +
+      '<span class="vault-tile__badges-end">' + tags.end + "</span></span>";
     if (it.img) {
       body = '<img class="vault-tile__img" src="' + esc(it.img) + '" alt="" loading="lazy">' +
         '<span class="vault-tile__name">' + esc(V.t(it.name)) + "</span>";
     } else {
-      body = '<span class="vault-tile__labelmark">' + icon(k.icon) + "</span>" +
-        '<span class="vault-tile__label"><span class="vault-tile__labeltitle">' + esc(V.t(it.name)) + "</span></span>";
+      body = '<span class="vault-tile__label"><span class="vault-tile__labeltitle">' + esc(V.t(it.name)) + "</span></span>";
     }
     var dur = it.dur ? '<span class="vault-tile__chip vault-tile__chip--dur">' + it.dur + "</span>" : "";
     var play = it.kind === "clip"
       ? '<button type="button" class="vault-tile__act" aria-label="' + esc(tx("Play", "播放")) + '">' + icon("play") + "</button>"
       : "";
-    return '<div class="vault-tile vault-tile--' + it.kind + (it.img ? "" : " vault-tile--label") +
+    var low = !!state.viewer && V.itemStatusForTier(it, state.viewer) === "tierLow";
+    return '<div class="vault-tile vault-tile--' + it.kind + (it.img ? "" : " vault-tile--label") + (low ? " is-locked" : "") +
       '" data-item="' + it.id + '">' + body +
-      '<span class="vault-tile__chip vault-tile__chip--kind">' + icon(k.icon) + V.t(k.label) + "</span>" + dur +
+      '<span class="vault-tile__chip vault-tile__chip--kind">' + icon(k.icon) + V.t(k.label) + "</span>" + dur + badges +
       '<span class="vault-tile__actions">' + play +
         '<button type="button" class="vault-tile__act" aria-label="' + esc(tx("Rename", "重新命名")) + '" data-item-rename="' + it.id + '">' + icon("pencil") + "</button>" +
         '<button type="button" class="vault-tile__act vault-tile__act--danger" aria-label="' + esc(tx("Delete", "刪除")) + '" data-item-delete="' + it.id + '">' + icon("trash-2") + "</button>" +
@@ -433,11 +697,14 @@
      才是這個媒介本來的樣子。size／added 當第二行小字，dur 走等寬數字欄。 */
   function trackHtml(it) {
     var meta = [it.size, it.added].filter(Boolean).join(" · ");
-    return '<div class="vault-track" data-item="' + it.id + '">' +
+    var tags = itemTags(it, "plain");
+    var low = !!state.viewer && V.itemStatusForTier(it, state.viewer) === "tierLow";
+    return '<div class="vault-track' + (low ? " is-locked" : "") + '" data-item="' + it.id + '">' +
       '<button type="button" class="vault-track__play" aria-label="' + esc(tx("Play", "播放")) + '">' + icon("play") + "</button>" +
       '<span class="vault-track__text">' +
         '<span class="vault-track__name">' + esc(V.t(it.name)) + "</span>" +
         (meta ? '<span class="vault-track__meta">' + esc(meta) + "</span>" : "") +
+        '<span class="vault-track__badges">' + tags.start + tags.end + "</span>" +
       "</span>" +
       (it.dur ? '<span class="vault-track__dur">' + esc(it.dur) + "</span>" : "<span></span>") +
       '<span class="vault-track__actions">' +
@@ -519,6 +786,8 @@
     els.grid.innerHTML = uploadHtml(empty) + (empty ? "" : groupHtml(f.items));
 
     if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.main);
+    /* 格子上的任務小標掛著 data-feat="S86"，是畫完才出現的節點，要再跑一次版本閘。 */
+    if (window.ztorDevState && window.ztorDevState.regate) window.ztorDevState.regate();
   }
 
   /* ── 上鎖遮罩 ───────────────────────────────────────────────
@@ -563,7 +832,7 @@
           : tx("No condition and no key yet — nobody can open this vault.",
                "還沒有條件、也沒有鑰匙——目前沒有人打得開這座庫房。"))
       : gs.length > 1
-        ? tx("Any one of these gets you in." + keyLine, "上面任何一種達成就打得開。" + keyLine)
+        ? tx("Any one of these ways in opens it." + keyLine, "達成上面任一種進庫方法就打得開。" + keyLine)
         : n === 1
           ? tx("Meet this to open it." + keyLine, "達成這個條件就打得開。" + keyLine)
           : tx("Meet all of these to open it." + keyLine, "上面的條件全部達成才打得開。" + keyLine);
@@ -708,8 +977,8 @@
 
     /* — 這個機制的規則，寫在畫面上 — */
     out += '<div class="info-banner">' + icon("info", "info-banner__icon") + "<span>" +
-      tx("A key is a bearer link: whoever holds it can use one of its uses, and access binds to that fan's account once used. Revoking a key removes access from everyone who claimed it — the fan count drops immediately.",
-         "鑰匙是持有者憑證：拿到連結的人就能用掉其中一次，用掉之後權限綁定在那位粉絲的帳號上。撤銷一把鑰匙，所有靠它進來的人會立刻失去權限——粉絲人數會當場往下掉。") +
+      tx("A key is a bearer link: whoever holds it can use one of its uses, and access binds to that fan's account once used. A key only gets a fan into the vault — each item's task still applies. Revoking a key removes access from everyone who claimed it — the fan count drops immediately.",
+         "鑰匙是持有者憑證：拿到連結的人就能用掉其中一次，用掉之後權限綁定在那位粉絲的帳號上。鑰匙只管進庫，進庫之後每件內容的任務照常要完成。撤銷一把鑰匙，所有靠它進來的人會立刻失去權限——粉絲人數會當場往下掉。") +
       "</span></div>";
 
     out += "</div>";
@@ -883,7 +1152,9 @@
          插在清單最前面，跟剛才打字的位置同一格——輸入框在最上面、建好的庫房卻
          跑到第七列，會讓人以為自己按錯了。 */
       V.vaults.unshift({ id: id, icon: "package", custom: name, name: { en: name, zh: name }, note: { en: "", zh: "" }, rules: [{ items: [] }], items: [] });
-      if (els.modal.hidden) openVault(id); else { state.vaultId = id; lastReach = null; render(); }
+      /* 正式頁沒有彈窗節點（els.modal＝null），只有保存檔 media-vault-popup.html 有；
+         先判斷存在再讀 hidden，否則新增庫房在正式頁會拋 TypeError、畫面沒反應。 */
+      if (els.modal && els.modal.hidden) openVault(id); else { state.vaultId = id; lastReach = null; render(); }
       if (window.ztorToast) window.ztorToast.show(tx("Vault created — now set who gets in", "庫房已建立——接著決定誰進得來"), { tone: "success" });
       var add = els.doorRules.querySelector("[data-rule-add]");
       if (add) add.focus();
@@ -1084,7 +1355,7 @@
         /* 刪到空的方法自動消失，不必再給一顆「移除」——除非它是最後一種，
            那一種要留著當加條件的落點，否則畫面上會沒有任何入口。 */
         if (!g.items.length && f.rules.length > 1) f.rules.splice(gi, 1);
-        renderDoor(); renderRail(); renderGate();
+        renderDoor(); renderRail(); renderGate(); renderMain();
         return;
       }
 
@@ -1108,7 +1379,7 @@
       if (!g) { g = { items: [] }; f.rules.push(g); }
       g.items.push({ t: parts[0], v: parts[1] });
       closeRuleMenu();
-      renderDoor(); renderRail(); renderGate();
+      renderDoor(); renderRail(); renderGate(); renderMain();
     });
     document.addEventListener("click", function (e) {
       if (els.menu.hidden) return;
@@ -1155,6 +1426,39 @@
 
     els.itemSheet.addEventListener("click", function (e) {
       if (e.target.closest("[data-item-close]")) { closeItem(); return; }
+
+      /* ── 任務（F8）：三選一、商品範圍、大彩蛋 ── */
+      var cur = itemById(state.itemId);
+      var typeBtn = e.target.closest("[data-task-type]");
+      if (typeBtn && cur) {
+        var type = typeBtn.getAttribute("data-task-type");
+        var was = cur.task ? cur.task.type : "none";
+        if (type !== was) {
+          /* 一件只設一個任務：換設法就換掉整個任務物件，不保留另一種的參數。 */
+          cur.task = type === "none" ? null
+            : type === "action" ? newActionTask(V.actionTasks[0].id)
+            : { type: "tier", tier: V.tierFloor(vault()) };
+          refreshTask(cur, '[data-task-type="' + type + '"]');
+        }
+        return;
+      }
+      var scopeBtn = e.target.closest("[data-task-scope]");
+      if (scopeBtn && cur && cur.task) {
+        cur.task.scope = scopeBtn.getAttribute("data-task-scope");
+        if (cur.task.scope === "item" && !cur.task.target) cur.task.target = V.catalogue.bought.opts[0].id;
+        if (cur.task.scope === "any") delete cur.task.target;
+        refreshTask(cur, '[data-task-scope="' + cur.task.scope + '"]');
+        return;
+      }
+      var grand = e.target.closest("[data-item-grand]");
+      if (grand && cur) {
+        cur.grand = !cur.grand;
+        grand.classList.toggle("switch--on", cur.grand);
+        grand.setAttribute("aria-checked", String(cur.grand));
+        renderMain();
+        return;
+      }
+
       if (e.target.closest("[data-item-sheet-delete]")) {
         var it = itemById(state.itemId);
         var f = vault();
@@ -1165,6 +1469,34 @@
         renderMain(); renderRail(); renderOverview();
         if (it && window.ztorToast) window.ztorToast.show(tx("Deleted", "已刪除"), { tone: "neutral" });
       }
+    });
+
+    els.itemSheet.addEventListener("change", function (e) {
+      var cur = itemById(state.itemId);
+      if (!cur || !cur.task) return;
+      if (e.target.matches("[data-task-kind]")) {
+        cur.task = newActionTask(e.target.value);
+        refreshTask(cur, "[data-task-kind]");
+      } else if (e.target.matches("[data-task-target]")) {
+        cur.task.target = e.target.value;
+        refreshTask(cur, "#" + e.target.id);
+      } else if (e.target.matches("[data-task-tier]")) {
+        cur.task.tier = e.target.value;
+        refreshTask(cur, "[data-task-tier]");
+      }
+    });
+    /* N：規格只要求正整數（範圍與上限〔產品待確認〕）。打字當下就判斷——合法就寫回、
+       不合法就在欄位下方說，任務維持上一個合法值。不重畫任務區，打到一半的字才不會被吃掉。 */
+    els.itemSheet.addEventListener("input", function (e) {
+      if (!e.target.matches("[data-task-n]")) return;
+      var cur = itemById(state.itemId);
+      if (!cur || !cur.task) return;
+      var raw = e.target.value.trim();
+      var ok = /^\d+$/.test(raw) && parseInt(raw, 10) >= 1;
+      var err = els.itemBody.querySelector("[data-task-n-error]");
+      if (err) err.hidden = ok;
+      e.target.setAttribute("aria-invalid", ok ? "false" : "true");
+      if (ok) { cur.task.n = parseInt(raw, 10); renderMain(); }
     });
 
     /* 鍵盤也要能開檔案選擇器——空狀態那張是 role=button，那就得像按鈕。 */
@@ -1242,7 +1574,7 @@
           "Revoke " + k.code + "? " + num(lost) + " fans lose access to this vault immediately, and its remaining uses stop working.",
           "撤銷 " + k.code + "？已靠它進來的 " + num(lost) + " 位粉絲會立刻失去這座庫房的權限，剩下的次數也會失效。"))) return;
         k.revoked = todayStr();
-        renderShare(); renderDoor(); renderRail();
+        renderShare(); renderDoor(); renderRail(); renderMain();
         if (window.ztorToast) window.ztorToast.show(tx("Key revoked", "鑰匙已撤銷"), { tone: "neutral" });
         return;
       }
@@ -1265,7 +1597,7 @@
         if (!vlt.keys) vlt.keys = [];
         vlt.keys.push(key);
         share.created = key;
-        renderShare(); renderDoor(); renderRail();
+        renderShare(); renderDoor(); renderRail(); renderMain();
         var urlField = els.drawerBody.querySelector("[data-vshare-url]");
         if (urlField) { urlField.focus(); urlField.select(); }
       }
@@ -1273,7 +1605,8 @@
 
     els.viewer.addEventListener("change", function () {
       state.viewer = els.viewer.value;
-      renderLens(); renderRail(); renderGate();
+      /* 每件內容的小標也要換成該分級的結果（F6：看得到／等級不足／需完成行動任務）。 */
+      renderLens(); renderRail(); renderGate(); renderMain();
     });
 
     els.lensReset.addEventListener("click", function () {
