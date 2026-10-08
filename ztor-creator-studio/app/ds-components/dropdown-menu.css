@@ -196,3 +196,21 @@ button.dropdown__item {
 /* --danger：破壞性動作（刪除等），紅字 ghost。用於草稿列的「刪除」。 */
 .dropdown__item--danger { color: var(--destructive); }
 .dropdown__item--danger:hover { background: color-mix(in srgb, var(--destructive) 10%, transparent); color: var(--destructive); }
+
+/* 停用態（2026-10-08 · D375 決定二）：功能保留在選單裡、但現在不能用（例：bookyay 匯入活動的「取消活動」）。
+   退到 45% 不透明（同 button.css 的 .btn:disabled），hover 不給底色；**不設 pointer-events: none**，
+   滑過時 title 才出得來。原因用緊接在下面的 .dropdown__note 寫成看得到的一行小字，不只靠 title。 */
+.dropdown__item:disabled,
+.dropdown__item[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+.dropdown__item:disabled:hover,
+.dropdown__item[aria-disabled="true"]:hover { background: transparent; }
+/* 停用原因：緊接在停用項目之下的一行小字，不是選項、不可點（同 .dropdown__cap 的身分）。
+   左側對齊項目文字（16 內距＋16 icon 寬＋10 gap），可換行。 */
+.dropdown__note {
+  padding: 0 var(--sp-16) var(--sp-6) calc(var(--sp-16) + var(--sp-16) + var(--sp-10));   /* 中間那個 16＝.ztor-icon 寬度 */
+  max-width: 260px;
+  font-size: var(--fs-11);
+  line-height: var(--lh-snug);
+  color: var(--muted-foreground);
+  white-space: normal;
+}

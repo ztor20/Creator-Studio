@@ -1,3 +1,81 @@
+## UIA-219 · bookyay 匯入活動的撤銷、取消、報到、暫停售票、完售與創作者活動管理四值的呈現（D375，2026-10-08）— 呈現假設 ＋ 產品缺口
+
+**狀態**：Open（待使用者檢視）。`event-detail.html`（`#ed-void-bky`、`#ed-cancel-bky`、`#ed-unlist-bky`、`#ed-pause`、`#ed-paused-badge`、`#ed-soldout-badge`、`#ed-scanner-bky`、`#ed-roster-bky`）、`events.html`（`applySaleBadges()`）、`admin-creator-events.html`、`js/events-store.js`（`paused`、`setPaused`／`isPaused`／`isSoldOut`）。
+
+### 呈現假設（不改產品語意，待使用者檢視）
+
+1. **停用的功能保留在原位、加一句常駐說明**：撤銷、取消活動、報到台都用停用鈕＋title＋一句 `field__hint--fact`（檢視模式也看得到），不另做提示卡。停用鈕 `pointer-events: none`，title 滑不出來，所以說明句一定要在畫面上。
+2. **報到台停用的樣子**：掃碼器卡徽章改「已停用」（`badge--neutral`），連結仍顯示但複製、分享、開啟都停用；「前往取貨管理」連到 `pickup.html`（取貨管理首頁），不深連到特定取貨場次——匯入活動的商品要對應哪個取貨場次，規格沒寫。
+3. **唯讀入場名單沿用既有已到場／未到場名單**：匯入活動進行中不跑 ztor 掃碼的即時示意，數字以 bookyay 同步值為準（原型示範活動 taipei-nye 售出 0 張，名單是空的）；有效／已使用／無效三色 KPI 照留。
+4. **撤銷紀錄的作廢者欄**：匯入活動一律顯示「bookyay（同步）」，不顯示 bookyay 端是哪位營運操作。
+5. **暫停售票區塊放在上下架區塊下方**（同一個設定分頁的面板），只在售票中與進行中出現；暫停與恢復都先確認（規格要求同上下架做確認）。
+6. **徽章色**：「暫停售票」「完售」都用 `badge--neutral`，與已下架、單一票種 Paused 同一種中性徽章，不另開色相。
+7. **完售判定**：門票張數合計（含隱藏）全部賣完＝完售；票務商品吃門票庫存，門票賣光它也買不到，所以不另算票務商品的上限。草稿與已取消不掛，已結束照掛（賣完的事實）。
+8. **創作者活動管理「草稿」徽章** `badge--neutral`、滑過說明「已存成草稿，尚未發布」。示範資料把 Gary Lin 的 bky-3 改成已對應、還沒存過，讓四值各至少一筆。
+
+### 產品缺口〔產品待確認〕（不自行補成正式行為）
+
+- **暫停期間粉絲活動頁的文案**、**完售後是否顯示候補等引導**（D375 待確認）：粉絲頁（`js/fan-event-page.js`）本輪沒有動，暫停中的活動在粉絲預覽仍顯示可購買。
+- ~~**活動清單列選單的「取消活動」**~~（2026-10-08 同日結案：`dropdown-menu.css` 新增停用態與 `.dropdown__note`，`events.html` 匯入活動列的「取消活動」停用＋一行原因，自建活動照常，見 UI-CHANGES 一百四十七）。
+- **bookyay 同步上下架**只寫說明句，原型不模擬 bookyay 改回草稿的事件。
+
+**驗證方式**：Admin 身分開 `event-detail.html?id=taipei-nye` → 設定分頁的取消鈕停用並有說明、上下架區塊有 bookyay 同步一句；售票與名單分頁的撤銷全部停用並有說明；把階段切到進行中（devtools 或 `ztorEvents.setStage`）→ 總覽掃碼器卡「已停用」＋取貨連結、名單分頁唯讀橫幅、設定分頁出現暫停售票 → 暫停（確認）→ 頁首「暫停售票」→ 恢復（確認）→ 徽章收起。`event-detail.html?id=realive-asia-kaohsiung` 頁首「完售」、撤銷照常可按。`events.html` 清單 realive-chongqing（展開系列）「暫停售票」、賣完的列「完售」。`admin-creator-events.html` 分頁全部 6／待對應創作者 2／待設定 1／草稿 2／已發布 1。
+
+## UIA-218 · 創作者活動管理逐場對應創作者的呈現（D372，2026-10-08）— 呈現假設 ＋ 產品缺口
+
+**狀態**：Open（待使用者檢視）。`admin-creator-events.html`（`#ace-tabs`、`#ace-rows`、`#ace-map` 對話框、`#ace-unmap` 確認窗、頁首 `#ace-sync`）、`js/sidebar.js`（`BOOKYAY_EVENTS[].organizer`／`draftId`、`bookyayLastChecked`、`bookyayDrafts`、對應覆寫 `bookyayMap()`／`bookyayUnmap()`）、`js/events-store.js`（`khh-countdown-draft.bkyId`、`removeDraft()`）。2026-10-08 D373 補第 8、11 點；D374 撤回就地邀請與待啟用（第 8、12 點改寫）、第 6、11 點改成共用對應覆寫，相關缺口結案。
+
+### 呈現假設（不改產品語意，待使用者檢視）
+
+1. **改動最小的版面**：不保留左側／上方創作者清單，改成單一活動清單；「只看某位創作者」由深連結篩選（第 9 點）或搜尋框打名字達成，不另做創作者下拉篩選器。
+2. **篩選＝狀態分頁**：全部／待對應創作者／待設定／已完成，沿用影片上架審核的 `list-toolbar` ＋ `tabs`。
+3. **狀態徽章色**：待對應創作者 `badge--info`、待設定 `badge--warning`、已完成 `badge--success`；兩個「待」用不同色相才分得出先後步驟。
+4. **未對應的列不顯示「繼續設定」**（不是停用鈕）：同一格放「對應創作者」主按鈕，徽章 title 說明「對應創作者之後才能設定與發布」。
+5. **對應創作者對話框**：活動與主辦方放在對話框上方（kv 列），主辦方附「只當參考，不會帶入活動資料」；搜尋範圍＝名稱、店鋪識別、店鋪網址、Email；選定後才能按「對應此創作者」。
+6. **對應存本分頁工作階段**（D374 改寫）：對應與解除對應寫進 `js/sidebar.js` 的對應覆寫（sessionStorage `ztor.bkyMapping`，`{ bky id: creator seed | null }`），載入時套用到各創作者的 `bookyayPool`／`bookyayEvents`／`bookyayDrafts`，沿用既有 `bookyayStats()` 口徑。用 sessionStorage 是為了與 events-store 記「這一趟刪掉的草稿」同一個口徑：關掉分頁兩邊一起回到示範值，不會出現草稿回來了、對應卻還是解除的錯位。原先「只改記憶體」做不到跨頁（活動清單刪草稿要能改到這一頁）。
+7. **最後檢查＋重新檢查**放頁首右側（`page-intro__actions`），整頁一組；空清單狀態也顯示。
+8. **找不到創作者**（D374 決定一：撤回 D373 就地邀請）：搜不到時結果清單只回一句「找不到符合的創作者，請先到 Creator 管理建立，再回來對應」，對話框提示列保留「到 Creator 管理建立」連結（同分頁離開）。邀請表單、結果清單的邀請列、建立 pending 帳號整組移除。
+9. **深連結改用 `?owner=<handle>`**（規格 F2）：`?creator=` 會被 `js/theme.js` 當人格切換參數吃掉並從網址移除（既有行為，不動），所以 Creator 詳情「已匯入 M 場活動」與建立活動回程改帶 `?owner=`。進來時只列已對應給這位的活動、分頁數量也只算這位，頁頂一條可關閉的篩選提示（`info-banner--dismissible`，關掉＝顯示全部、網址拿掉 `owner`）；查無此人時比照 5.1.0.5 F1 顯示「找不到這個 creator」空狀態＋「顯示全部活動」，不靜默換人也不偷偷列全部。
+10. **搜尋範圍＝活動名稱、主辦方名稱、創作者名稱**（規格 F2），不含場地；搜尋提示同步。
+11. **解除對應**（D373 決定二）：只有待設定（未發布）的列有「解除對應」（ghost 按鈕，排在「繼續設定」之後）；已完成＝已發布（`bookyaySetup`／`ztor.bkySetupDone` 由 create-event 發布時寫入），不提供。示範資料 bky-2 已存草稿（`CREATORS[].bookyayDrafts`）：解除前出確認窗「解除對應並刪除草稿？」說明草稿內容會清掉；還沒存過的（如剛對應的）直接解除＋toast。待設定的徽章 title 依有無草稿改寫「已存成草稿，尚未發布」。解除只改記憶體。 **D374 決定三：兩個入口同一支**——活動清單刪除 bookyay 匯入活動的草稿（`events-store removeDraft()`，活動帶 `bkyId`）會呼叫 `ztorCreator.bookyayUnmap()`，那一場在這一頁回到待對應創作者；反過來這一頁解除對應有對應草稿的（`BOOKYAY_EVENTS[].draftId`），也呼叫 `removeDraft()` 把那份草稿從活動清單刪掉。示範：bky-12 ↔ `khh-countdown-draft`（周湯豪）。有草稿的列「繼續設定」打開那份草稿（`create-event.html?draft=`）。
+12. ~~**Creator 管理的「待啟用」**~~（D374 決定二撤回）：creators.html 狀態回到全部／啟用中／已停用，待啟用徽章、分頁與計數移除。
+
+### 產品缺口〔產品待確認〕（不自行補成正式行為）
+
+- ~~**就地建立創作者**~~（D373 決定一做過、D374 決定一撤回：維持到 Creator 管理建立，見第 8 點）。
+- ~~**對應後能否改對應**~~（D373 決定二結案：未發布前可解除對應、已存草稿者一併刪除，見第 11 點）。
+- ~~**創作者端自己刪除匯入活動的草稿時，活動是否回到待對應創作者**~~（D374 決定三結案：是，等同解除對應，見第 11 點）。
+- ~~**待啟用帳號的邀請細節**~~（D374：邀請信與帳號啟用不在本期範圍，隨就地邀請撤回）。
+- **對應之後 Admin 要不要接著自動進入設定**：D372 只說對應是第一步；原型對應後留在清單、由「繼續設定」進入。
+- PG-EVIMP-001（哪些活動算某位 creator 的）與 PG-EVIMP-003（綁定流程）隨 D372 失去前提：活動歸屬改由 Admin 逐場對應，不再由帳號推導。
+
+**驗證方式**：Admin 身分開 `admin-creator-events.html` → 表格 6 場（2 待對應創作者、2 待設定、2 已完成），主辦方欄有值、未對應的創作者欄為「—」→ 待對應創作者的列按「對應創作者」→ 搜尋「周」選周湯豪 →「對應此創作者」→ 該列變待設定、出現「繼續設定」→ 按下進 `create-event.html?import=bky-4&handle=nick`。`?state=empty` 看空狀態。
+
+---
+
+## UIA-217 · 創作者上下架、重新上架提示與 bookyay 帳號綁定的呈現（D371，2026-10-08；S81／S83）— 呈現假設 ＋ 產品缺口
+
+**狀態**：Open（待使用者檢視）。`event-detail.html`（`#ed-unlist`、`syncUnlist()`、`[data-ed-unlist]`／`[data-ed-relist]`）、`js/events-store.js`（`setUnlisted()` 存 true／false）、`admin-creator-events.html`（`#ace-link` 彈窗、`#ace-account`；2026-10-08 D372 已撤除）、`create-event.html`（`#ce-sale-other` 改掛 S83）。第 6 點與「主辦帳號與創作者是否一對一」「解除或更換綁定」兩個缺口已依 D372 結案（取消帳號綁定），其餘各點仍 Open。
+
+### 呈現假設（不改產品語意，待使用者檢視）
+
+1. **同一處切換**：上架中顯示「下架活動」區塊與按鈕；已下架時同一區塊的標題、說明、按鈕換成「重新上架」，不並排兩顆。
+2. **出現的階段**：草稿以外六個階段都出現；已結束與已取消整頁唯讀，這兩顆用 `data-view-safe` 例外可按。
+3. **下架確認**：一句基本後果＋有成交時「已售出的 N 張票照常有效」＋列出會一同下架的上架中組合包（與取消活動共用 `cancelBundlesOf()`）；「要讓活動不再舉辦，請改用取消活動」只在還能取消的已排程、售票中出現。
+4. **重新上架**：已結束／已取消先出確認（照 D371 文案）；其他階段直接上架、toast 回饋，不再多問一次（可逆動作，與下架對稱）。「組合包不自動重新上架」寫在已下架時的區塊說明句。
+5. **撤銷停用說明**：活動票券的撤銷鈕（單筆、整場）創作者視角 title 改「只有 Admin 能撤銷，請聯繫 Admin」，用活動專用 key `event-detail.void.why.admin`；E-Shop 訂單共用的 `od.void.why.admin` 不動（release2.3 已凍結）。
+6. ~~**綁定 bookyay 帳號**~~（2026-10-08 D372 結案：取消創作者與 bookyay 帳號的綁定，改逐場對應創作者，見 UIA-218；以下為原文）：未綁定空狀態的按鈕開對話框（`payout-modal` 殼＋`owner-lookup` 搜尋選取，同 creators.html 建立 creator），選一個主辦帳號 → 綁定 → 標題列下方顯示「bookyay 帳號：X · 該帳號下的活動會自動匯入」＋ toast。帳號清單是頁內假資料，綁定只改記憶體（重新整理回到示範值，理由同 PG-EVIMP-006 的重新檢查）；新綁的帳號在原型裡沒有活動，落到「bookyay 上沒有這位的活動」。
+
+### 產品缺口〔產品待確認〕（不自行補成正式行為）
+
+- ~~**主辦帳號與創作者是否一對一**~~（D372 結案：不再綁帳號，一場活動由 Admin 對應一位創作者）（D371 決定三待確認）：原型不擋已綁給別人的帳號，只在結果列標「已綁定 X」。
+- ~~**解除或更換綁定**~~（D372 結案：沒有綁定）：D371 未寫，原型不做入口。
+- **下架是否連動優惠碼與粉絲端其他入口**：D371 只寫組合包；其餘沿用 UIA-211 原缺口。
+
+**驗證方式**：創作者視角（非代管）開 `event-detail.html?id=realive-asia-taipei` → 設定分頁末段「下架活動」可按 → 確認窗列 200 張照常有效與兩個組合包 → 下架後頁首「已下架」、區塊換成「重新上架」→ 按下直接上架。`?id=lrh-taichung`（已結束）同樣可下架；按重新上架先出「這場活動已結束…」確認。Admin 開 `admin-creator-events.html` 選 User B → 「綁定 bookyay 帳號」→ 搜尋選取 → 綁定。面板切 release2.4，兩塊都不被版本閘收起。
+
+---
+
 ## UIA-216 · 活動地點地圖、bookyay 門票模式與重覆活動的呈現（D369，2026-10-07）— 呈現假設 ＋ 產品缺口
 
 **狀態**：Open（待使用者檢視）。`ds-components/venue-map.css`、`partials/venue-map.js`、`js/fan-event-page.js`（「活動地點」一節）、`create-event.html`（第 3 步 `renderVenueMap`、BKY 示範 `bky-9`／`bky-10`／`bky-11`、`bkyBlocked`、`bkyMap()`）。
@@ -98,7 +176,7 @@
 
 ## UIA-211 · Admin 手動下架活動的呈現與缺口（D361 決定五，2026-10-07；S81）— 呈現假設 ＋ 產品缺口
 
-**狀態**：Open（待使用者檢視）。`event-detail.html`（`#ed-unlist`、`#ed-unlisted-badge`）、`events.html`（`applyUnlisted()`）、`js/events-store.js`（`unlisted`、`setUnlisted()`、localStorage `ztor.event-unlisted`）。
+**狀態**：Closed（2026-10-08，D371 修訂）。三個缺口的去向：重新上架——D371 決定一定案（任何階段可重新上架，已結束／已取消先提示），已實作；下架連動——D371 決定一確認組合包一同下架、重新上架不自動上架，已實作，優惠碼等其他連動仍未寫，移入 UIA-217；創作者申請管道——D371 改成創作者自己下架、撤銷在平台外聯繫 Admin，關閉。下方第 2 點（出現階段）與「只有 Admin」的驗證方式已被 D371 取代，現況見 UIA-217。原狀態：Open（待使用者檢視）。`event-detail.html`（`#ed-unlist`、`#ed-unlisted-badge`）、`events.html`（`applyUnlisted()`）、`js/events-store.js`（`unlisted`、`setUnlisted()`、localStorage `ztor.event-unlisted`）。
 
 ### 呈現假設（不改產品語意，待使用者檢視）
 

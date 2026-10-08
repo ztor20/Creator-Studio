@@ -261,6 +261,7 @@
   var footerCount = document.getElementById('creator-count');
   if (!roster || !window.ztorCreator) return;
   var list = window.ztorCreator.list;
+  /* 墓碑 2026-10-08（D374 決定二）：D373 的「待啟用」（pending）分支、徽章與篩選分頁撤除，狀態回到啟用中／已停用兩值 */
   var st = function (c) { return c.status === 'disabled' ? 'disabled' : 'active'; };
 
   function statusBadge(s) {
@@ -277,7 +278,8 @@
   }
   function counts() {
     var a = list.filter(function (c) { return st(c) === 'active'; }).length;
-    return { all: list.length, active: a, disabled: list.length - a };
+    var d = list.filter(function (c) { return st(c) === 'disabled'; }).length;
+    return { all: list.length, active: a, disabled: d };
   }
   function visible() {
     var q = (search.value || '').trim().toLowerCase();

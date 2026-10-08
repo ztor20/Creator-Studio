@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant" data-theme="dark">
+<html lang="zh-Hant" data-theme="dark" data-page-feat="S84"><!-- D373：創作者活動管理屬 release2.4（S84 🔵） -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,15 +10,18 @@
 <link rel="stylesheet" href="ds-components/button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/avatar.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/roster-picker.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/admin-ip-bank-table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2"><!-- D372：對應創作者對話框 -->
+<link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2"><!-- D372 F2：深連結的創作者篩選提示 -->
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/owner-lookup.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
@@ -26,23 +29,22 @@
 <link rel="stylesheet" href="ds-components/footer.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
-  /* 創作者活動管理（Tier 0 Admin · spec 5.1.0.6 · D233；頁名 D234 由「活動匯入」更名；
-     D238 改自動匯入、表格變唯讀清單）。
-     版面骨架（上段選人、下段內容）、creator 卡片與選定者的標題列（含「最後檢查 ＋
-     重新檢查」那一組）都由 `ds-components/roster-picker.css` ＋
-     `ds-components/selection-card.css` ＋ `ds-components/stat-row.css`（卡上的小標籤
-     數字＝`--inline` 變體）提供；這裡只放這一頁獨有的一件小事：活動表格的欄寬與換行鎖定。 */
+  /* 創作者活動管理（Tier 0 Admin · spec 5.1.0.6 · D233 建；D238 自動匯入；D372 改成以匯入活動為主的清單）。
+     版面全部來自既有元件：清單頁頭 `list-toolbar` ＋ `tabs`（與影片上架審核同一套）、
+     表格 `admin-table-wrap` ＋ `ztor-table`、對應創作者對話框 `payout-modal` ＋ `owner-lookup`。
+     這裡只放這一頁獨有的一件小事：活動表格的換行鎖定。 */
 
-  /* 狀態與動作兩欄不鎖寬、只禁止換行：它們的字會隨語言變長（「待設定」vs
-     「To set up」、「繼續設定」vs「Continue set-up」），寫死一個值就得遷就最長的那個語言，中文版整欄空一半。 */
+  /* 狀態與動作兩欄不鎖寬、只禁止換行：字會隨語言變長（「待對應創作者」vs「Needs a creator」），
+     寫死一個值就得遷就最長的那個語言。 */
   .ace-status, .ace-act { white-space: nowrap; }
   /* 日期是唯一會被拿來上下比對的欄，等寬數字才對得齊 */
   .ace-date { font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-  /* 墓碑 2026-09-02（D238 自動匯入）：以下兩條隨「勾選匯入」整組退場，全庫零殘留——
-       · `.ace-col-pick`      勾選欄的鎖寬（44px）。表格沒有勾選欄了。
-       · `.ace-row--locked`   已匯入列的字色退一階。當時它表達的是「這一列不必再決定」，
-                              現在每一列都是已匯入的事實，沒有第二種列可以對比。 */
+  /* 墓碑 2026-09-02（D238 自動匯入）：`.ace-col-pick`（勾選欄鎖寬）與 `.ace-row--locked`（已匯入列退一階）
+     隨「勾選匯入」整組退場。
+     墓碑 2026-10-08（D372 逐場對應創作者）：上段選人、下段看那一位（`roster-picker`）、creator 卡
+     （`selection-card` ＋ `stat-row--inline`）、未綁定空狀態與綁定 bookyay 帳號彈窗整組退場——
+     匯入時不分創作者，沒有「先選一位再看他的活動」這件事。 */
 </style>
 </head>
 <body>
@@ -53,12 +55,19 @@
   <main class="main">
     <div class="page">
 
-      <!-- F1 頁首。導航脈絡由側欄／頂列的 Admin 列承擔（js/sidebar.js 的 ADMIN_NAV），
-           本頁是側欄的頂層目的地、不是誰的子頁，所以不畫 page-crumb。 -->
+      <!-- F1 頁首。導航脈絡由側欄／頂列的 Admin 列承擔（js/sidebar.js 的 ADMIN_NAV），不畫 page-crumb。
+           右側是整份匯入清單的「最後檢查 ＋ 重新檢查」（D372 決定一：對象改為整份清單，不再是某位創作者）。
+           兩個字串都帶值或帶狀態，所以不掛 data-i18n，由 renderSync() 在載入與 i18n:applied 時重寫。 -->
       <div class="page-intro">
         <div>
           <h1 class="page-intro__title" data-i18n="admin.creator-events">Creator event management</h1>
-          <p class="page-intro__sub" data-i18n="ace.lede">Every creator on the platform and their bookyay events. Once a bookyay account is linked, that creator's events come across on their own and keep syncing — this is where you see what arrived and which of it still needs tickets and ticket bundles set up.</p>
+          <p class="page-intro__sub" data-i18n="ace.lede">Events bookyay picks for ztor to sell are imported here automatically and don’t belong to any creator yet. Map each one to a creator, then set up its tickets and ticket bundles.</p>
+        </div>
+        <div class="page-intro__actions" id="ace-sync" hidden>
+          <span class="text-sub" id="ace-checked"></span>
+          <button class="btn btn--outline btn--sm" type="button" id="ace-recheck">
+            <i data-lucide="refresh-ccw" class="ztor-icon ztor-icon--sm"></i><span id="ace-recheck-label">Check again</span>
+          </button>
         </div>
       </div>
 
@@ -80,190 +89,177 @@
         </div>
       </div>
 
-      <!-- 狀態一 · 無 creator：平台上還沒有人，左邊沒有可選的、右邊也不呈現內容。
-           示範名冊永遠有三位，所以這個狀態用 ?state=empty 演示。 -->
-      <div id="ace-nocreators" hidden>
+      <!-- bookyay 還沒送來任何活動。示範資料永遠有活動，用 ?state=empty 演示。 -->
+      <div id="ace-empty" hidden>
         <div class="empty-card">
-          <div class="empty-card__icon"><i data-lucide="users" class="ztor-icon"></i></div>
-          <h2 class="empty-card__title" data-i18n="ace.empty.title">No creators yet</h2>
-          <p class="empty-card__text" data-i18n="ace.empty.text">Creators are built in Creator Management. Once one exists, their bookyay events show up here.</p>
-          <a class="btn btn--outline" href="creators.html" data-i18n="ace.empty.cta">Go to Creator Management</a>
+          <div class="empty-card__icon"><i data-lucide="inbox" class="ztor-icon"></i></div>
+          <h2 class="empty-card__title" data-i18n="ace.empty.title">No events from bookyay yet</h2>
+          <p class="empty-card__text" data-i18n="ace.empty.text">Events bookyay picks for ztor to sell land here on their own.</p>
         </div>
       </div>
 
-      <!-- 上段選人、下段看那一位（2026-09-02 使用者裁示）。 -->
-      <div class="roster-picker" id="ace-shell" hidden>
-
-        <!-- F2 · Creator 選擇（上段）：工作列在最上，底下是一張卡一位 creator 的網格 -->
-        <section class="roster-picker__pick">
-          <div class="roster-picker__bar">
-            <label class="field-pill roster-picker__search" aria-label="Search creators" data-i18n-aria-label="ace.search.ph">
+      <!-- F2–F4 · 匯入清單（D372）：所有 bookyay 匯入活動，不分創作者。 -->
+      <div id="ace-shell" hidden>
+        <!-- F2 深連結（?owner=<handle>，Creator 詳情「已匯入 M 場活動」與建立活動回程帶來）：只列已對應給這位的活動，
+             可清除。參數不用 ?creator=——那個名字被 js/theme.js 當成人格切換參數先吃掉。 -->
+        <div class="info-banner info-banner--dismissible mb-16" id="ace-owner" hidden>
+          <i data-lucide="filter" class="ztor-icon info-banner__icon"></i>
+          <span id="ace-owner-text"></span>
+          <button class="btn btn--icon btn--xs info-banner__close" type="button" id="ace-owner-clear" data-i18n-aria-label="ace.owner.all" aria-label="Show all events"><i data-lucide="x" class="ztor-icon"></i></button>
+        </div>
+        <!-- 深連結查無此創作者：比照 5.1.0.5 F1「查無此 creator」——不靜默換成另一位、也不偷偷列全部 -->
+        <div class="empty-card" id="ace-owner-unknown" hidden>
+          <div class="empty-card__icon"><i data-lucide="alert-circle" class="ztor-icon"></i></div>
+          <h2 class="empty-card__title" data-i18n="cd.unknown.title">Creator not found</h2>
+          <p class="empty-card__text" data-i18n="cd.unknown.desc">This creator no longer exists, or the link is wrong.</p>
+          <a class="btn btn--outline" href="admin-creator-events.html" data-i18n="ace.owner.all">Show all events</a>
+        </div>
+        <div class="list-toolbar" id="ace-toolbar">
+          <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" id="ace-tabs" role="tablist">
+            <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="all"><span data-i18n="ace.filter.all">All</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="unmapped"><span data-i18n="ace.status.unmapped">Needs a creator</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="pending"><span data-i18n="ace.status.pending">To set up</span> <span class="tabs__item-count"></span></div>
+            <!-- D375 決定六：狀態四值（待對應創作者 → 待設定 → 草稿 → 已發布），草稿與已發布和創作者端一致 -->
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="draft"><span data-i18n="ace.status.draft">Draft</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="done"><span data-i18n="ace.status.done">Published</span> <span class="tabs__item-count"></span></div>
+          </nav>
+          <div class="list-toolbar__actions">
+            <label class="field-pill" aria-label="Search events, organizers or creators" data-i18n-aria-label="ace.search.ph">
               <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
               <input class="field-pill__input" type="search" id="ace-search" autocomplete="off"
-                     placeholder="Search name or shop handle" data-i18n-placeholder="ace.search.ph">
+                     placeholder="Event, organizer or creator" data-i18n-placeholder="ace.search.ph">
             </label>
-
-            <nav class="filter-tabs" role="tablist" aria-label="Filter creators" id="ace-filters">
-              <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-filter="all"><span data-i18n="ace.filter.all">All</span><span class="filter-tabs__count" data-count="all">0</span></button>
-              <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-filter="pending"><span data-i18n="ace.filter.pending">To set up</span><span class="filter-tabs__count" data-count="pending">0</span></button>
-              <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-filter="unlinked"><span data-i18n="ace.filter.unlinked">Not linked</span><span class="filter-tabs__count" data-count="unlinked">0</span></button>
-            </nav>
           </div>
-
-          <div class="roster-picker__grid" id="ace-roster"></div>
-          <p class="roster-picker__nomatch" id="ace-nomatch" hidden data-i18n="ace.nomatch">No creator matches this filter.</p>
-        </section>
-
-        <!-- 下段：選定者的內容（F3／F4／F5），或未選定時的引導 -->
-        <div class="roster-picker__body" id="ace-body">
-
-          <!-- 狀態二 · 有 creator、未選定 -->
-          <div id="ace-none">
-            <div class="empty-card">
-              <div class="empty-card__icon"><i data-lucide="users" class="ztor-icon"></i></div>
-              <h2 class="empty-card__title" data-i18n="ace.none.title">Pick a creator</h2>
-              <p class="empty-card__text" data-i18n="ace.none.text">Choose someone above to see the events that came across from bookyay.</p>
-            </div>
-          </div>
-
-          <!-- 深連結查無此 creator：不靜默改開另一位（與 5.1.0.5 F1 同一條規則） -->
-          <div id="ace-notfound" hidden>
-            <div class="empty-card">
-              <div class="empty-card__icon empty-card__icon--warning"><i data-lucide="alert-circle" class="ztor-icon"></i></div>
-              <h2 class="empty-card__title" data-i18n="ace.notfound.title">Creator not found</h2>
-              <p class="empty-card__text" data-i18n="ace.notfound.text">The link points at a creator that no longer exists. Nobody was opened in its place — pick one above.</p>
-            </div>
-          </div>
-
-          <div class="roster-picker__detail" id="ace-detail" hidden>
-            <div class="roster-picker__head">
-              <div class="roster-picker__head-text">
-                <h2 class="roster-picker__head-title" id="ace-head-name"></h2>
-                <div class="roster-picker__head-meta" id="ace-head-meta"></div>
-              </div>
-              <!-- F6 · 最後檢查 ＋ 重新檢查（D238）。放在標題列這一區、不進卡片：
-                   卡剛壓成兩列，再塞一行時間戳等於把上一輪拿掉的東西放回去；而且這是
-                   「選定這一位之後才需要知道」的量，與摘要數字同一級。
-                   兩個字串都帶值或帶狀態，所以不掛 data-i18n（掛了切語言會還原成含
-                   佔位符的原字），改由 renderSync() 在載入與 i18n:applied 時重寫。 -->
-              <div class="roster-picker__head-actions" id="ace-sync" hidden>
-                <span class="roster-picker__head-sync" id="ace-checked"></span>
-                <button class="btn btn--outline btn--sm" type="button" id="ace-recheck">
-                  <i data-lucide="refresh-ccw" class="ztor-icon ztor-icon--sm"></i><span id="ace-recheck-label">Check again</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- F5 · 未綁定 bookyay 帳號 -->
-            <div id="ace-unlinked" hidden>
-              <div class="empty-card">
-                <div class="empty-card__icon"><i data-lucide="link" class="ztor-icon"></i></div>
-                <h2 class="empty-card__title" data-i18n="ace.unlinked.title">No bookyay account linked</h2>
-                <p class="empty-card__text" data-i18n="ace.unlinked.text">This creator has no bookyay account linked yet. Once Admin links it, their bookyay events are imported automatically and keep syncing.</p>
-                <!-- D361 決定八（2026-10-07）：綁定由 Admin 執行、綁定後自動匯入（D217 原規劃）。綁定畫面本身
-                     規格還沒畫，這裡只給入口與一句說明，按鈕停用、不接任何假流程。 -->
-                <button class="btn btn--outline" type="button" disabled data-i18n="ace.unlinked.cta">Link bookyay account</button>
-                <p class="empty-card__text" data-i18n="ace.unlinked.todo">The linking screen isn’t built yet, so this button does nothing for now.</p>
-              </div>
-            </div>
-
-            <!-- 選定 creator、bookyay 上沒有這位的活動 -->
-            <div id="ace-noevents" hidden>
-              <div class="empty-card">
-                <div class="empty-card__icon"><i data-lucide="ticket" class="ztor-icon"></i></div>
-                <h2 class="empty-card__title" data-i18n="ace.noevents.title">Nothing on bookyay</h2>
-                <p class="empty-card__text" data-i18n="ace.noevents.text">This creator is linked, but bookyay has nothing selling under their account right now.</p>
-              </div>
-            </div>
-
-            <!-- F3／F4 · 這位 creator 從 bookyay 自動搬進來的活動，唯讀清單。
-                 D238 起沒有勾選欄、沒有匯入鈕：自動匯入之後這張表回答的是「搬進來了什麼、
-                 哪幾場還沒設完」，唯一動作是「待設定」那幾列的「繼續設定」。 -->
-            <div class="admin-table-wrap admin-table-wrap--fluid" id="ace-table-wrap" hidden>
-              <table class="ztor-table">
-                <thead>
-                  <tr>
-                    <th scope="col" data-i18n="ace.col.name">Name</th>
-                    <th scope="col" data-i18n="ace.col.date">Date</th>
-                    <th scope="col" data-i18n="ace.col.venue">Venue</th>
-                    <th class="ace-status" scope="col" data-i18n="ace.col.status">Status</th>
-                    <th class="ace-act" scope="col"><span class="u-visually-hidden" data-i18n="ace.continue">Continue set-up</span></th>
-                  </tr>
-                </thead>
-                <tbody id="ace-rows"></tbody>
-              </table>
-            </div>
-            <!-- D361 決定六（2026-10-07）：繼續設定之後，第一次儲存前創作者端看不到這場（不顯示、不計數），
-                 儲存後才以草稿出現。跟著表格一起顯示（renderDetail 同步 hidden）。 -->
-            <div class="text-sub" id="ace-firstsave" hidden data-i18n="ace.firstsave">Creators can’t see an imported event until its first save — it then shows up in their Drafts.</div>
-          </div>
-
         </div>
+
+        <div class="admin-table-wrap admin-table-wrap--fluid" id="ace-table-wrap">
+          <table class="ztor-table">
+            <thead>
+              <tr>
+                <th scope="col" data-i18n="ace.col.name">Name</th>
+                <th scope="col" data-i18n="ace.col.date">Date</th>
+                <th scope="col" data-i18n="ace.col.venue">Venue</th>
+                <!-- 主辦方：bookyay feed 帶來的文字線索，唯讀參考，不帶入活動資料（D372 決定二） -->
+                <th scope="col" data-i18n="ace.col.organizer">Organizer (bookyay)</th>
+                <th scope="col" data-i18n="ace.col.creator">Creator</th>
+                <th class="ace-status" scope="col" data-i18n="ace.col.status">Status</th>
+                <th class="ace-act" scope="col"><span class="u-visually-hidden" data-i18n="ace.col.action">Action</span></th>
+              </tr>
+            </thead>
+            <tbody id="ace-rows"></tbody>
+          </table>
+        </div>
+        <p class="text-sub mt-16" id="ace-nomatch" hidden data-i18n="ace.nomatch">No event matches this filter.</p>
+        <!-- D361 決定六（D372 決定三沿用）：繼續設定之後，第一次儲存前創作者端看不到這場（不顯示、不計數），
+             儲存後才以草稿出現。清單裡有待設定的場次時才顯示。 -->
+        <p class="text-sub mt-16" id="ace-firstsave" hidden data-i18n="ace.firstsave">Creators can’t see an imported event until its first save — it then shows up in their Drafts.</p>
       </div>
 
     </div>
 
-    <!-- 頁尾照姊妹 admin 頁的既有寫法（admin-video-review.html）：版本字串 ＋ 掛 i18n 的
-         模組名。此前這裡是寫死的英文「Admin · Creator event management (Tier 0)」，切成
-         中文時整條不翻，而且 Tier 0 是內部的 IA 用語、不是給使用者看的。 -->
     <footer class="app-footer"><span>Ztor Creator Studio · R 2.3 prototype</span><span>·</span><span data-i18n="admin.studio">Admin Creator Studio</span></footer>
   </main>
+</div>
+
+<!-- 對應創作者（D372 決定二）：沿用站上的對話框殼（payout-modal，creators.html 建立 creator 同款）＋
+     owner-lookup 搜尋選取 ztor 創作者。一場活動對應一位創作者；主辦方名稱只當參考。
+     找不到創作者 → 去 Creator 管理建立後回來對應（決定五）。 -->
+<div class="payout-modal" id="ace-map" hidden>
+  <section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="ace-map-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="ace-map-title" data-i18n="ace.map.title">Map creator</h2>
+      <button class="btn btn--icon btn--ghost" type="button" data-ace-map-close data-i18n-aria-label="creators.create-close" aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div class="kv"><span class="kv__k" data-i18n="ace.map.event">Event</span><span class="kv__v" id="ace-map-event"></span></div>
+      <div class="kv"><span class="kv__k" data-i18n="ace.col.organizer">Organizer (bookyay)</span><span class="kv__v" id="ace-map-org"></span></div>
+      <p class="field__hint" data-i18n="ace.map.org-hint">For reference only — it isn’t copied into the event.</p>
+      <div class="field mt-16">
+        <label class="field__label" for="ace-map-search" data-i18n="ace.col.creator">Creator</label>
+        <div class="owner-lookup">
+          <input class="input" type="search" id="ace-map-search" autocomplete="off"
+                 role="combobox" aria-expanded="false" aria-controls="ace-map-results" aria-autocomplete="list"
+                 data-i18n-placeholder="ace.map.ph" placeholder="Search name, shop handle or email">
+          <div class="owner-lookup__results" id="ace-map-results" role="listbox" hidden></div>
+        </div>
+        <p class="owner-lookup__status" id="ace-map-picked" data-state="linked" hidden></p>
+        <!-- D374 決定一：找不到就到 Creator 管理建立、建好回來對應（唯一路徑；D373 的就地邀請已撤回） -->
+        <p class="field__hint"><span data-i18n="ace.map.missing">Not on the list?</span> <a class="card__link" href="creators.html" data-i18n="ace.map.create">Create them in Creator Management</a></p>
+      </div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--ghost" type="button" data-ace-map-close data-i18n="ace.map.cancel">Cancel</button>
+      <button class="btn btn--primary" type="button" id="ace-map-ok" disabled data-i18n="ace.map.ok">Map this creator</button>
+    </div>
+  </section>
+</div>
+
+<!-- 解除對應確認（D373 決定二）：只在已存成草稿時出現——解除會一併刪除那份草稿。還沒存過的直接解除、不問。 -->
+<div class="payout-modal" id="ace-unmap" hidden>
+  <section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="ace-unmap-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="ace-unmap-title" data-i18n="ace.unmap.title">Unmap creator and delete draft?</h2>
+      <button class="btn btn--icon btn--ghost" type="button" data-ace-unmap-close data-i18n-aria-label="creators.create-close" aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <p class="text-sub" id="ace-unmap-body"></p>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--ghost" type="button" data-ace-unmap-close data-i18n="ace.map.cancel">Cancel</button>
+      <button class="btn btn--destructive" type="button" id="ace-unmap-ok" data-i18n="ace.unmap.ok">Unmap and delete draft</button>
+    </div>
+  </section>
 </div>
 
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>
+<script src="js/events-store.js?v=r2.2"></script><!-- D374：解除對應時刪掉對應的草稿活動（與活動清單刪草稿同一支 removeDraft） -->
 <script src="js/devtools.js?v=r2.2"></script>
 <script>
-/* 創作者活動管理（Tier 0 Admin · spec 5.1.0.6 · D233 建、D238 改自動匯入）。
+/* 創作者活動管理（Tier 0 Admin · spec 5.1.0.6 · D233 建、D238 自動匯入、D372 逐場對應創作者）。
 
-   跨 creator 的工作台：上面一排卡列出平台上每一位 creator 的進度，選定一位之後
-   下面才出現他從 bookyay 搬進來的活動表格。與 D224 時期「進了某位 creator 的詳情頁
-   才看得到這件事」的差別就在這裡——Admin 的工作是批次的，一天處理好幾位。
-
-   **D238（2026-09-02 使用者裁示「綁定以後，會自動匯入，實時檢查更新」）**：綁定 bookyay
-   帳號之後活動自動搬進來，系統持續檢查更新。連帶三件事——
-     · 「可匯入」整個概念退場（自動搬完就不存在「還沒搬進來」的活動），篩選收成三個、
-       活動狀態收成兩值（待設定／已完成；D361 改名）
-     · 表格變唯讀：沒有勾選欄、沒有「匯入已選」主鈕，唯一動作是「繼續設定」
-     · 標題列改放「最後檢查時間 ＋ 重新檢查」——自動的東西要看得見它上一次動過
+   **D372（2026-10-08）**：bookyay 選給 ztor 販售的活動自動匯入，匯入當下不屬於任何創作者；
+   Admin 在這一頁逐場「對應創作者」，對應是設定的第一步。所以這一頁從「先選創作者、再看他的活動」
+   改成一張以活動為主的清單：
+     · 狀態三值（D372 當時；D375 起改四值：待對應創作者 → 待設定 → 草稿 → 已發布，見 statusOf）：待對應創作者 → 待設定 → 已完成（篩選分頁＋徽章）
+     · 主辦方欄：bookyay 帶來的主辦方名稱，唯讀參考
+     · 動作：待對應創作者＝「對應創作者」（開對話框）；待設定＝「繼續設定」；已完成＝無
+     · 最後檢查 ＋ 重新檢查：整份清單一組，放頁首
+   上一輪（D371）的「綁定 bookyay 帳號」與依創作者分組整組撤除。
 
    資料都來自 window.ztorCreator（js/sidebar.js）：
-     · list / refresh          creator 名冊與 localStorage 覆寫（ztor.creatorEdits；本頁
-                               D238 起只讀不寫——手動匯入退場後這一頁沒有會改資料的動作）
-     · bookyayEvents            bookyay 活動池（id 與 create-event.html 的 BKY 對齊）
-     · bookyayStats(c)          一位的已匯入／待設定與完成 id 清單（三處共用） */
+     · list                     創作者名冊
+     · bookyayEvents            bookyay 匯入活動（id 與 create-event.html 的 BKY 對齊；含 organizer）
+     · bookyayStats(c)          一位的已對應／待設定與完成 id 清單（名冊、詳情頁、本頁共用）
+   「這場對應到誰」＝哪一位創作者的 bookyayPool 含這個 id；沒有人含它＝待對應創作者。
+   對應與解除對應寫進 js/sidebar.js 的對應覆寫（sessionStorage，D374：與活動清單刪草稿共用），關掉分頁回到示範值。 */
 (function () {
   'use strict';
   if (!window.ztorCreator) return;
 
-  var qs      = new URLSearchParams(location.search);
-  var C       = window.ztorCreator;
-  var pool    = C.bookyayEvents || [];
+  var qs   = new URLSearchParams(location.search);
+  var C    = window.ztorCreator;
+  var pool = C.bookyayEvents || [];
+  var list = C.list || [];
 
-  var shell     = document.getElementById('ace-shell');
-  var noCreators= document.getElementById('ace-nocreators');
-  var loadingEl = document.getElementById('ace-loading');
-  var errorEl   = document.getElementById('ace-error');
-  var rosterEl  = document.getElementById('ace-roster');
-  var noMatchEl = document.getElementById('ace-nomatch');
-  var searchEl  = document.getElementById('ace-search');
-  var filtersEl = document.getElementById('ace-filters');
-  var bodyEl    = document.getElementById('ace-body');
-  var noneEl    = document.getElementById('ace-none');
-  var notFound  = document.getElementById('ace-notfound');
-  var detailEl  = document.getElementById('ace-detail');
-  var unlinkedEl= document.getElementById('ace-unlinked');
-  var noEventsEl= document.getElementById('ace-noevents');
-  var tableWrap = document.getElementById('ace-table-wrap');
-  var rowsEl    = document.getElementById('ace-rows');
-  var headName  = document.getElementById('ace-head-name');
-  var headMeta  = document.getElementById('ace-head-meta');
-  var syncEl    = document.getElementById('ace-sync');
-  var checkedEl = document.getElementById('ace-checked');
-  var recheckBtn= document.getElementById('ace-recheck');
-  var recheckLbl= document.getElementById('ace-recheck-label');
+  var shell      = document.getElementById('ace-shell');
+  var emptyEl    = document.getElementById('ace-empty');
+  var loadingEl  = document.getElementById('ace-loading');
+  var errorEl    = document.getElementById('ace-error');
+  var tabsEl     = document.getElementById('ace-tabs');
+  var searchEl   = document.getElementById('ace-search');
+  var tableWrap  = document.getElementById('ace-table-wrap');
+  var rowsEl     = document.getElementById('ace-rows');
+  var noMatchEl  = document.getElementById('ace-nomatch');
+  var firstSave  = document.getElementById('ace-firstsave');
+  var syncEl     = document.getElementById('ace-sync');
+  var checkedEl  = document.getElementById('ace-checked');
+  var recheckBtn = document.getElementById('ace-recheck');
+  var recheckLbl = document.getElementById('ace-recheck-label');
+  var checking    = false;                              /* 「重新檢查」進行中（原型的假檢查） */
+  var lastChecked = C.bookyayLastChecked || null;       /* 整份匯入清單的最後檢查時間（D372 決定一） */
 
   function tx(key, fb) { return (window.i18nT && window.i18nT(key)) || fb; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>'"]/g, function (ch) {
@@ -271,305 +267,315 @@
   function icons(el) { if (window.ztorIcons) window.ztorIcons.applyIcons(el); }
   function i18n(el) { if (window.applyI18n) window.applyI18n(el); }
   function initial(n) { return (n || '?').trim().charAt(0).toUpperCase(); }
+  function keyOf(c) { return c.seed || c.handle; }
   function ev(id) { for (var i = 0; i < pool.length; i++) if (pool[i].id === id) return pool[i]; return null; }
 
-  /* ── 載入／錯誤／無 creator 的演示開關 ────────────────────────
-     這三個狀態在原型裡沒有自然的觸發路徑（沒有真的請求、示範名冊也永遠不是空的），
-     用 ?state=loading｜error｜empty 演示。真實實作換成請求的生命週期與真名冊即可，
-     畫面本身不必改。 */
+  /* ── 載入／錯誤／空清單的演示開關（?state=loading｜error｜empty）────────── */
   var demoState = qs.get('state');
   if (demoState === 'loading' || demoState === 'error') {
     (demoState === 'loading' ? loadingEl : errorEl).hidden = false;
     i18n(document.body); icons(document.body);
     return;
   }
-
-  /* ── 狀態一 · 平台尚無 creator ───────────────────────────── */
-  var list = demoState === 'empty' ? [] : (C.list || []);
-  if (!list.length) {
-    noCreators.hidden = false;
+  if (demoState === 'empty' || !pool.length) {
+    emptyEl.hidden = false;
+    syncEl.hidden = false;
+    renderSync();
     i18n(document.body); icons(document.body);
+    wireRecheck();
     return;
   }
   shell.hidden = false;
+  syncEl.hidden = false;
 
-  /* ── 選定的人 ────────────────────────────────────────────────
-     鍵用 seed（示範資料的原始 handle）優先——店鋪網址改得掉，拿現值當唯一鍵的話，
-     改過一次之後連結就對不回同一筆（與 creator-detail 同一條）。 */
-  var wanted   = qs.get('creator') || '';
-  var current  = null;
-  var notFoundKey = '';
-  if (wanted) {
-    current = list.filter(function (x) { return x.seed === wanted; })[0]
-           || list.filter(function (x) { return x.handle === wanted; })[0]
-           || null;
-    if (!current) notFoundKey = wanted;
+  /* F2 深連結：?owner=<handle|seed> 只列已對應給這位的活動（篩選提示可清除）；查無此人走 #ace-owner-unknown。
+     不用 ?creator=：js/theme.js 會把它當人格切換參數吃掉並從網址移除（既有行為，不動）。 */
+  var ownerKey = qs.get('owner') || '';
+  var owner = ownerKey ? (list.filter(function (x) { return keyOf(x) === ownerKey || x.handle === ownerKey; })[0] || null) : null;
+  var ownerBar = document.getElementById('ace-owner');
+  if (ownerKey && !owner) {
+    document.getElementById('ace-owner-unknown').hidden = false;
+    document.getElementById('ace-toolbar').hidden = true;
+    tableWrap.hidden = true;
   }
-
-  var filter   = 'all';
-  var checking = false;   /* 「重新檢查」進行中（原型的假檢查） */
-
-  function stats(c) { return C.bookyayStats(c); }
-
-  function matchesFilter(c) {
-    var s = stats(c);
-    if (filter === 'pending')  return s.pending > 0;
-    if (filter === 'unlinked') return !c.bookyayLinked;
-    return true;
+  function renderOwner() {
+    ownerBar.hidden = !owner;
+    if (owner) document.getElementById('ace-owner-text').textContent =
+      tx('ace.owner.only', 'Only events mapped to {name}').replace('{name}', owner.name);
   }
-  function matchesSearch(c) {
+  document.getElementById('ace-owner-clear').addEventListener('click', function () {
+    owner = null; ownerKey = '';
+    try { var u = new URL(location.href); u.searchParams.delete('owner'); history.replaceState(null, '', u.pathname + u.search); } catch (e) {}
+    renderOwner(); renderRows();
+  });
+
+  var tab = 'all';
+
+  /* 一場活動對應到誰：哪位的 bookyayPool 含這個 id */
+  function ownerOf(id) {
+    return list.filter(function (c) { return (c.bookyayPool || []).indexOf(id) !== -1; })[0] || null;
+  }
+  /* D375 決定六（2026-10-08）：狀態四值——待對應創作者（unmapped）→ 待設定（pending：已對應、還沒存過）
+     → 草稿（draft：已存、未發布，CREATORS[].bookyayDrafts）→ 已發布（done：bookyaySetup／ztor.bkySetupDone）。
+     草稿與已發布和創作者端活動清單看到的一致；取代 D373 決定四的「已完成」。 */
+  function statusOf(e) {
+    var c = ownerOf(e.id);
+    if (!c) return 'unmapped';
+    if (C.bookyayStats(c).doneIds.indexOf(e.id) !== -1) return 'done';
+    return (c.bookyayDrafts || []).indexOf(e.id) !== -1 ? 'draft' : 'pending';
+  }
+  function matchesSearch(e) {
     var q = (searchEl.value || '').trim().toLowerCase();
     if (!q) return true;
-    return (c.name || '').toLowerCase().indexOf(q) !== -1
-        || (c.handle || '').toLowerCase().indexOf(q) !== -1;
+    var c = ownerOf(e.id);
+    /* 規格 F2：活動名稱、創作者名稱或主辦方名稱（不含場地） */
+    return [e.name, e.organizer, c && c.name].join(' ').toLowerCase().indexOf(q) !== -1;
   }
 
-  /* ── F2 · 左欄 ─────────────────────────────────────────────── */
+  var STATUS = {
+    unmapped: { badge: 'badge--info',    key: 'ace.status.unmapped', fb: 'Needs a creator',
+                why: 'ace.status.unmapped.why', whyFb: 'Map a creator before setting it up or publishing it' },
+    pending:  { badge: 'badge--warning', key: 'ace.status.pending',  fb: 'To set up',
+                why: 'ace.status.pending.why',  whyFb: 'Tickets and ticket bundles aren’t set up yet' },
+    draft:    { badge: 'badge--neutral', key: 'ace.status.draft',    fb: 'Draft',
+                why: 'ace.status.pending.draft', whyFb: 'Saved as a draft, not published yet' },
+    done:     { badge: 'badge--success', key: 'ace.status.done',     fb: 'Published' }
+  };
+
   function renderCounts() {
-    var n = { all: list.length, pending: 0, unlinked: 0 };
-    list.forEach(function (c) {
-      if (stats(c).pending > 0) n.pending++;
-      if (!c.bookyayLinked)     n.unlinked++;
-    });
-    Object.keys(n).forEach(function (k) {
-      var el = filtersEl.querySelector('[data-count="' + k + '"]');
-      if (el) el.textContent = n[k];
+    var scoped = pool.filter(inScope);
+    var n = { all: scoped.length, unmapped: 0, pending: 0, draft: 0, done: 0 };
+    scoped.forEach(function (e) { n[statusOf(e)]++; });
+    Array.prototype.forEach.call(tabsEl.querySelectorAll('.tabs__item'), function (t) {
+      t.querySelector('.tabs__item-count').textContent = String(n[t.getAttribute('data-tab')] || 0);
     });
   }
 
-  /* 卡上一格數字：欄名與值同一行的小標籤（`.stat-row--inline` 的排法）。0 值整格退成
-     --faint-ink，整排掃過去，真的有東西要處理的那幾張自己浮出來。 */
-  function statCell(n, key, fb) {
-    return '<span class="stat">'
-      +   '<span class="stat__label">' + esc(tx(key, fb)) + '</span>'
-      +   '<span class="stat__value' + (n ? '' : ' stat__value--zero') + '">' + esc(String(n)) + '</span>'
-      + '</span>';
-  }
-
-  /* 一張卡＝一位 creator，壓成兩列：左邊 32px 識別圓，右邊上列名稱、下列狀態列
-     （綁定徽章 ＋ 小標籤數字）。2026-09-02 第三輪，使用者「那些數字太佔空間 改小
-     標籤就好」＋「需要整張卡片 UI 一起調整」。
-
-     卡上有哪些數字由綁定狀態決定（同日使用者裁示「未綁定：不會有匯入與設定資料」
-     「已綁定：有已匯入與待設定，可匯入不一定需要」）：
-
-       · 未綁定 → 狀態列放「未綁定」徽章，一個場次數字都不印。沒綁帳號就沒有已匯入／
-         待設定這回事，印兩個 0 會被讀成「查過了、結果是零」；徽章佔的正是數字的位置，
-         就地說明這裡為什麼是空的。
-       · 已綁定 → 狀態列放「已匯入」「待設定」兩個小標籤，**不另外掛一顆「已綁定」
-         徽章**：有數字就代表帳號通了，一排卡每張都掛一顆是噪音；而且量過塞不下——
-         260px 的卡扣掉「Linked」徽章只剩 119px 給兩欄，英文欄名會被截成「Import…」。
-
-     2026-09-02（D238）：卡上的兩個數字沒有變動（自動匯入之後「已匯入」仍然是「搬進來
-     了幾場」）；退場的是第三個數字「可匯入」，它在上一輪就已經不上卡，本輪連同下段
-     摘要與「有待匯入」篩選整組退場。
-
-     卡面／hover／已選 outline 全部來自 `.selection-card`（站上「可選取的卡被選中」
-     只有這一種畫法）；數字那一段的呈現來自 `.stat-row--inline`；
-     `.roster-picker__card*` 只排「兩列怎麼疊」與「狀態列裡誰吃剩餘寬度」。 */
-  function renderRoster() {
+  function inScope(e) { return !owner || ownerOf(e.id) === owner; }
+  function renderRows() {
+    if (ownerKey && !owner) return;   /* 查無此人：不畫清單 */
     renderCounts();
-    var rows = list.filter(function (c) { return matchesFilter(c) && matchesSearch(c); });
+    var rows = pool.filter(function (e) { return inScope(e) && (tab === 'all' || statusOf(e) === tab) && matchesSearch(e); });
     noMatchEl.hidden = rows.length > 0;
-    rosterEl.innerHTML = rows.map(function (c) {
-      var s = stats(c);
-      var on = current && (current.seed || current.handle) === (c.seed || c.handle);
-      return '<button type="button" class="selection-card roster-picker__card' + (on ? ' selection-card--active' : '') + '"'
-        + ' aria-pressed="' + (on ? 'true' : 'false') + '" data-pick-creator="' + esc(c.seed || c.handle) + '">'
-        +   '<span class="roster-picker__card-media"><span class="ztor-avatar ztor-avatar--sm" aria-hidden="true">' + esc(initial(c.name)) + '</span></span>'
-        +   '<span class="roster-picker__card-text">'
-        +     '<span class="roster-picker__card-name">' + esc(c.name) + '</span>'
-        +     '<span class="roster-picker__card-status">'
-        +       (c.bookyayLinked
-                  ? '<span class="stat-row stat-row--inline roster-picker__card-stats">'
-                    + statCell(s.imported, 'ace.lbl.imported', 'Imported')
-                    + statCell(s.pending,  'ace.lbl.pending',  'To set up')
-                    + '</span>'
-                  : '<span class="badge badge--warning">'
-                    + esc(tx('ace.unlinked', 'Not linked'))
-                    + '</span>')
-        +     '</span>'
-        +   '</span>'
-        + '</button>';
-    }).join('');
-    icons(rosterEl);
-  }
-
-  /* ── F3／F4 · 右欄 ─────────────────────────────────────────── */
-  function renderDetail() {
-    noneEl.hidden     = !!current || !!notFoundKey;
-    notFound.hidden   = !notFoundKey;
-    detailEl.hidden   = !current;
-    if (!current) return;
-
-    var s = stats(current);
-    headName.textContent = current.name;
-    var linked  = !!current.bookyayLinked;
-    /* 摘要只剩兩個數字（D238：「可匯入 N」隨自動匯入退場）。
-       未綁定不印數字（D236 的同一條理由，這裡是卡片以外的第二個落點）：沒綁 bookyay
-       帳號就沒有已匯入或待設定這回事，印兩個 0 會被讀成「查過了、結果是零」。
-       未綁定時這一列改成空的，底下的 F5 空狀態已經把「為什麼沒有東西」講完。 */
-    headMeta.innerHTML = !linked ? '' :
-        '<span>' + esc(tx('ace.n.imported', '{n} imported').replace('{n}', s.imported)) + '</span>'
-      + '<span aria-hidden="true">·</span>'
-      + '<span>' + esc(tx('ace.n.pending', '{n} to set up').replace('{n}', s.pending)) + '</span>';
-
-    var hasPool = (current.bookyayPool || []).length > 0;
-    unlinkedEl.hidden = linked;
-    noEventsEl.hidden = !linked || hasPool;
-    tableWrap.hidden  = !linked || !hasPool;
-    var firstSave = document.getElementById('ace-firstsave');
-    if (firstSave) firstSave.hidden = tableWrap.hidden || s.pending === 0;   /* 只有還有待設定的場次時才需要這句 */
-    /* 「最後檢查 ＋ 重新檢查」跟著**綁定狀態**走，不跟著表格走：已綁定但目前一場都沒有，
-       正是最想按一下重新檢查的時候。未綁定則整組收起來——沒綁帳號就沒有「檢查」這回事。 */
-    syncEl.hidden = !linked;
-
-    if (!tableWrap.hidden) renderRows(s);
-    renderSync();
-  }
-
-  /* 狀態只剩兩值（D238）：在完成清單裡＝已完成，不在＝待設定（D361：說明「還沒設定門票與票務商品」掛在徽章 title）。
-     自動匯入之後池裡每一場都已經搬進來了，「可匯入」那一值沒有對象。 */
-  function statusOf(id, s) { return s.doneIds.indexOf(id) === -1 ? 'pending' : 'done'; }
-
-  function renderRows(s) {
-    rowsEl.innerHTML = (current.bookyayPool || []).map(function (id) {
-      var e = ev(id); if (!e) return '';
-      var st    = statusOf(id, s);
-      var badge = st === 'pending' ? 'badge--warning' : 'badge--success';
-      var label = st === 'pending' ? tx('ace.status.pending', 'To set up')
-                                   : tx('ace.status.done', 'Completed');
-      var why   = st === 'pending' ? ' title="' + esc(tx('ace.status.pending.why', 'Tickets and ticket bundles aren’t set up yet')) + '"' : '';
+    tableWrap.hidden = !rows.length;
+    firstSave.hidden = !rows.some(function (e) { return statusOf(e) === 'pending'; });
+    rowsEl.innerHTML = rows.map(function (e) {
+      var st = statusOf(e), s = STATUS[st], c = ownerOf(e.id);
+      var why = s.why ? ' title="' + esc(tx(s.why, s.whyFb)) + '"' : '';
+      var act = '';
+      /* 對應是設定的第一步（D372 決定二）：未對應的列只有「對應創作者」，沒有「繼續設定」。 */
+      if (st === 'unmapped') {
+        act = '<button type="button" class="btn btn--primary btn--sm" data-map="' + esc(e.id) + '">'
+          + esc(tx('ace.map.title', 'Map creator')) + '</button>';
+      } else if (st === 'pending' || st === 'draft') {
+        /* F4 繼續設定：走 create-event 既有的 ?import= 深連結，以這位創作者的身分接著設 */
+        act = '<button type="button" class="btn btn--outline btn--sm" data-continue="' + esc(e.id) + '">'
+          + esc(tx('ace.continue', 'Continue set-up'))
+          + '<i data-lucide="chevron-right" class="ztor-icon"></i></button> '
+          /* D373 決定二 → D375 決定六：待設定與草稿都能解除對應（草稿先確認並一併刪除，見 askUnmap）；已發布不提供 */
+          + '<button type="button" class="btn btn--ghost btn--sm" data-unmap="' + esc(e.id) + '">'
+          + esc(tx('ace.unmap', 'Unmap')) + '</button>';
+      }
       return '<tr>'
         + '<td class="ace-name">' + esc(e.name) + '</td>'
         + '<td class="ace-date">' + esc(e.date) + '</td>'
         + '<td>' + esc(e.venue) + '</td>'
-        + '<td class="ace-status"><span class="badge ' + badge + '"' + why + '>' + esc(label) + '</span></td>'
-        /* F4 繼續設定：只有「已匯入·待設定」才有這條出口；已完成的不再提供
-           （帶入閘門那一側同樣擋住重複帶入）。走 create-event 既有的 ?import= 深連結，
-           那一頁會依資料決定類型、直接落在票務商品那一步。 */
-        + '<td class="ace-act">' + (st === 'pending'
-            ? '<button type="button" class="btn btn--outline btn--sm" data-continue="' + esc(id) + '">'
-              + esc(tx('ace.continue', 'Continue set-up'))
-              + '<i data-lucide="chevron-right" class="ztor-icon"></i></button>'
-            : '') + '</td>'
+        + '<td class="text-sub">' + esc(e.organizer || '—') + '</td>'
+        + '<td>' + (c ? esc(c.name) : '<span class="text-sub">—</span>') + '</td>'
+        + '<td class="ace-status"><span class="badge ' + s.badge + '"' + why + '>' + esc(tx(s.key, s.fb)) + '</span></td>'
+        + '<td class="ace-act">' + act + '</td>'
         + '</tr>';
     }).join('');
     icons(rowsEl);
   }
 
-  /* ── F6 · 最後檢查 ＋ 重新檢查（D238）───────────────────────────
-     時間一律寫成絕對值（`YYYY-MM-DD HH:MM`，與資料裡的其他時間戳同格式）。相對說法
-     （「3 分鐘前」）讀起來親切，但 Admin 打開這一頁多半是在跟 bookyay 那邊對帳，
-     要的是一個能直接比對的時刻；而且相對說法要自己跑計時器與兩種語言的複數規則。 */
+  /* ── F6 · 最後檢查 ＋ 重新檢查（D238；D372 起整頁一組）──────────────
+     時間寫絕對值（YYYY-MM-DD HH:MM）：Admin 多半是在跟 bookyay 對帳，要能直接比對的時刻。 */
   function renderSync() {
-    if (!current) return;
-    checkedEl.textContent = current.lastCheckedAt
-      ? tx('ace.checked', 'Last checked {t}').replace('{t}', current.lastCheckedAt)
+    checkedEl.textContent = lastChecked
+      ? tx('ace.checked', 'Last checked {t}').replace('{t}', lastChecked)
       : tx('ace.checked-never', 'Not checked yet');
     recheckLbl.textContent = checking ? tx('ace.rechecking', 'Checking…') : tx('ace.recheck', 'Check again');
     recheckBtn.setAttribute('aria-busy', checking ? 'true' : 'false');
   }
-
-  /* ── 選定一位 ───────────────────────────────────────────────
-     網址跟著換（replaceState，不塞歷史）：深連結進來與在頁面上點選看到的是同一個
-     位址，Admin 可以把當下這一位的網址直接貼給人。 */
-  function select(key, reveal) {
-    current = list.filter(function (x) { return (x.seed || x.handle) === key; })[0] || null;
-    notFoundKey = '';
-    try {
-      var u = new URL(location.href);
-      current ? u.searchParams.set('creator', current.seed || current.handle) : u.searchParams.delete('creator');
-      history.replaceState(null, '', u.pathname + u.search);
-    } catch (e) {}
-    renderRoster();
-    renderDetail();
-    if (reveal) revealBody();
-  }
-
-  /* 卡片列在上面，選完之後下段可能整段落在摺線下（窄畫面尤其明顯，一排卡就佔掉
-     大半個視窗）。只在下段的頂端真的不在視窗內時捲一次，已經看得到就不要無故移動畫面。
-     `prefers-reduced-motion` 的人拿到瞬移，不拿到滑動。 */
-  function revealBody() {
-    if (!bodyEl) return;
-    var top = bodyEl.getBoundingClientRect().top;
-    if (top >= 0 && top < window.innerHeight * 0.6) return;
-    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    try {
-      bodyEl.scrollIntoView({ block: 'start', behavior: still ? 'auto' : 'smooth' });
-    } catch (e) { bodyEl.scrollIntoView(true); }
-  }
-
-  /* ── 重新檢查（D238）─────────────────────────────────────────
-     原型做的是一次**假的**檢查：短暫忙碌態 → 更新最後檢查時間 → toast 一句。刻意
-     不假裝抓到新活動——那會憑空生出上游沒有的資料，而且「檢查完有沒有東西」正是
-     〔產品待確認〕的一部分（多久檢查一次、失敗怎麼辦、新活動怎麼通知；ASSUMPTIONS
-     PG-EVIMP-006）。
-
-     **不落 localStorage，只改記憶體裡的這一筆**：`ztor.creatorEdits` 存的是「Admin 在
-     這台瀏覽器改過的東西」，而最後檢查時間在真實系統裡是平台側同步作業的時刻、不是
-     一筆人為編輯。寫進去等於讓前端宣稱自己擁有那個時鐘，而且會讓示範資料被每一次
-     點擊永久推移（下一個開這一頁的人看到的是別人按出來的時間）。代價是重新整理後
-     回到示範值，記在 ASSUMPTIONS。 */
+  /* 假的檢查：忙碌態 → 更新時間 → toast。刻意不假裝抓到新活動（ASSUMPTIONS PG-EVIMP-006）；
+     不落 localStorage（最後檢查時間屬平台側同步作業，不是人為編輯）。 */
   function doRecheck() {
-    if (!current || !current.bookyayLinked || checking) return;
+    if (checking) return;
     checking = true;
     renderSync();
     window.setTimeout(function () {
       checking = false;
-      current.lastCheckedAt = stamp();
+      lastChecked = stamp();
       renderSync();
-      if (window.ztorToast) {
-        window.ztorToast.show(tx('ace.recheck.toast', 'Checked — nothing new on bookyay'), { tone: 'success' });
-      }
+      if (window.ztorToast) window.ztorToast.show(tx('ace.recheck.toast', 'Checked — nothing new on bookyay'), { tone: 'success' });
     }, 900);
   }
+  function wireRecheck() { recheckBtn.addEventListener('click', doRecheck); }
   function stamp() {
     var d = new Date(), p = function (x) { return (x < 10 ? '0' : '') + x; };
     return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
   }
 
-  /* ── 事件 ───────────────────────────────────────────────── */
-  rosterEl.addEventListener('click', function (e) {
-    var row = e.target.closest('[data-pick-creator]');
-    if (row) select(row.getAttribute('data-pick-creator'), true);
+  /* ── 對應創作者（D372 決定二）──────────────────────────────── */
+  var mapModal  = document.getElementById('ace-map');
+  var mapSearch = document.getElementById('ace-map-search');
+  var mapRes    = document.getElementById('ace-map-results');
+  var mapPicked = document.getElementById('ace-map-picked');
+  var mapOk     = document.getElementById('ace-map-ok');
+  var mapEvent  = null;
+  var picked    = null;
+
+  function renderMapResults() {
+    var q = (mapSearch.value || '').trim().toLowerCase();
+    var rows = list.filter(function (c) {
+      return !q || [c.name, c.handle, c.shop, c.email].join(' ').toLowerCase().indexOf(q) !== -1;
+    });
+    mapRes.hidden = false;
+    mapSearch.setAttribute('aria-expanded', 'true');
+    if (!rows.length) {
+      /* D374：搜不到只回一句提示；建立創作者走下方「到 Creator 管理建立」 */
+      mapRes.innerHTML = '<div class="owner-lookup__result owner-lookup__result--empty" role="status">'
+        + esc(tx('ace.map.none-create', 'No creator matches — create them in Creator Management, then come back to map')) + '</div>';
+      return;
+    }
+    mapRes.innerHTML = rows.map(function (c) {
+      return '<button class="owner-lookup__result" type="button" role="option" data-creator="' + esc(keyOf(c)) + '"'
+        + ' aria-selected="' + (picked && keyOf(picked) === keyOf(c) ? 'true' : 'false') + '">'
+        + '<span class="owner-lookup__avatar">' + esc(initial(c.name)) + '</span>'
+        + '<span class="owner-lookup__copy">'
+        +   '<span class="owner-lookup__name">' + esc(c.name) + '</span>'
+        +   '<span class="owner-lookup__meta">' + esc((c.shop || '') + (c.email ? ' · ' + c.email : '')) + '</span>'
+        + '</span></button>';
+    }).join('');
+  }
+  function closeResults() { mapRes.hidden = true; mapSearch.setAttribute('aria-expanded', 'false'); }
+  function openMap(id) {
+    mapEvent = ev(id);
+    if (!mapEvent) return;
+    picked = null;
+    document.getElementById('ace-map-event').textContent = mapEvent.name + ' · ' + mapEvent.date;
+    document.getElementById('ace-map-org').textContent = mapEvent.organizer || '—';
+    mapSearch.value = '';
+    mapPicked.hidden = true;
+    mapOk.disabled = true;
+    closeResults();
+    mapModal.hidden = false;
+    i18n(mapModal); icons(mapModal);
+    mapSearch.focus();
+  }
+  function closeMap() { mapModal.hidden = true; closeResults(); }
+
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-ace-map-close]') || e.target === mapModal) { closeMap(); return; }
+    /* 點在搜尋框與結果以外的地方就收起結果清單（不然下拉會一直蓋著下面的欄位與提示） */
+    if (!mapModal.hidden && !e.target.closest('.owner-lookup')) closeResults();
   });
-  searchEl.addEventListener('input', renderRoster);
-  filtersEl.addEventListener('click', function (e) {
-    var item = e.target.closest('.filter-tabs__item');
+  mapSearch.addEventListener('focus', renderMapResults);
+  mapSearch.addEventListener('input', renderMapResults);
+  mapRes.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-creator]');
+    if (!b) return;
+    picked = list.filter(function (c) { return keyOf(c) === b.getAttribute('data-creator'); })[0] || null;
+    if (!picked) return;
+    mapSearch.value = picked.name;
+    mapPicked.textContent = tx('ace.map.picked', 'Selected: {name}').replace('{name}', picked.name);
+    mapPicked.hidden = false;
+    mapOk.disabled = false;
+    closeResults();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !mapModal.hidden) closeMap();
+    if (e.key === 'Escape' && !unmapModal.hidden) unmapModal.hidden = true;
+  });
+  mapOk.addEventListener('click', function () {
+    if (!mapEvent || !picked) return;
+    /* 對應＝這場進這位的 pool 與已匯入清單（bookyayStats 的口徑），狀態隨即變待設定 */
+    C.bookyayMap(mapEvent.id, keyOf(picked));   /* D374：與活動清單刪草稿共用 sidebar.js 的對應覆寫（本分頁工作階段） */
+    var name = picked.name;
+    closeMap();
+    renderRows();
+    if (window.ztorToast) window.ztorToast.show(tx('ace.map.toast', 'Mapped to {name} — continue set-up when ready').replace('{name}', name), { tone: 'success' });
+  });
+
+  /* 墓碑 2026-10-08（D374 決定一）：就地建立待啟用帳號＋寄邀請（D373 決定一）整段撤除——邀請表單 #ace-invite、
+     結果清單的邀請列、提示列同名按鈕、ztorCreator.add({status:'pending'}) 建檔與幣別下拉。 */
+
+  /* ── 解除對應（D373 決定二）─────────────────────────────────────
+     待設定與草稿（還沒發布）的列有（D375 決定六）；草稿先確認（草稿一併刪除），待設定（沒存過）直接解除。
+     解除後回到待對應創作者，可再對應給另一位。活動清單刪除匯入活動的草稿走同一支 C.bookyayUnmap()（D374 決定三）。 */
+  var unmapModal = document.getElementById('ace-unmap');
+  var unmapId = null;
+  function doUnmap(id) {
+    if (!ownerOf(id)) return;
+    /* D374：兩個入口結果一致——有對應到活動清單草稿的（示範 bky-12 → khh-countdown-draft），解除對應時那份草稿
+       真的刪掉（events-store removeDraft，它自己再呼叫 C.bookyayUnmap）；其餘直接解除。 */
+    var e1 = ev(id);
+    if (!(e1 && e1.draftId && window.ztorEvents && window.ztorEvents.removeDraft && window.ztorEvents.removeDraft(e1.draftId))) C.bookyayUnmap(id);
+    unmapModal.hidden = true;
+    renderRows();
+    if (window.ztorToast) window.ztorToast.show(tx('ace.unmap.toast', 'Unmapped — the event needs a creator again'), { tone: 'success' });
+  }
+  function askUnmap(id) {
+    var c = ownerOf(id), e = ev(id);
+    if (!c || !e) return;
+    if ((c.bookyayDrafts || []).indexOf(id) === -1) { doUnmap(id); return; }
+    unmapId = id;
+    document.getElementById('ace-unmap-body').textContent = tx('ace.unmap.body',
+      '“{event}” is saved as a draft for {name}. Unmapping deletes that draft and everything entered in it. The event goes back to Needs a creator.')
+      .replace('{event}', e.name).replace('{name}', c.name);
+    unmapModal.hidden = false;
+    i18n(unmapModal); icons(unmapModal);
+  }
+  document.getElementById('ace-unmap-ok').addEventListener('click', function () { if (unmapId) doUnmap(unmapId); });
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-ace-unmap-close]') || e.target === unmapModal) unmapModal.hidden = true;
+  });
+
+  /* ── 事件 ───────────────────────────────────────────────── */
+  tabsEl.addEventListener('click', function (e) {
+    var item = e.target.closest('.tabs__item');
     if (!item) return;
-    Array.prototype.forEach.call(filtersEl.querySelectorAll('.filter-tabs__item'), function (t) {
+    Array.prototype.forEach.call(tabsEl.querySelectorAll('.tabs__item'), function (t) {
       var on = t === item;
-      t.classList.toggle('filter-tabs__item--active', on);
+      t.classList.toggle('tabs__item--active', on);
       t.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    filter = item.getAttribute('data-filter');
-    renderRoster();
+    tab = item.getAttribute('data-tab');
+    renderRows();
   });
-
-  recheckBtn.addEventListener('click', doRecheck);
+  searchEl.addEventListener('input', renderRows);
+  wireRecheck();
   rowsEl.addEventListener('click', function (e) {
+    var m = e.target.closest('[data-map]');
+    if (m) { openMap(m.getAttribute('data-map')); return; }
+    var um = e.target.closest('[data-unmap]');
+    if (um) { askUnmap(um.getAttribute('data-unmap')); return; }
     var go = e.target.closest('[data-continue]');
     if (!go) return;
-    /* 以這位 creator 的身分開 create-event 的帶入後流程（`set()` 與名冊的「前往」
-       同一套代管機制，頂列會有既有的「代管中＋返回」列）。帶 handle 是為了設完
-       之後回得來。 */
-    C.set(current.handle);
-    location.href = 'create-event.html?import=' + encodeURIComponent(go.getAttribute('data-continue'))
-      + '&handle=' + encodeURIComponent(current.seed || current.handle);
+    var id = go.getAttribute('data-continue');
+    var c = ownerOf(id);
+    if (!c) return;   /* 沒對應就不能進入設定（D372 決定二） */
+    /* 以這位創作者的身分開 create-event 的帶入後流程（與名冊「前往」同一套代管機制）；帶 handle 是為了設完回得來 */
+    C.set(c.handle);
+    /* 已存成草稿的（D361 決定六：第一次儲存後成為該創作者的草稿）打開那份草稿接著設；還沒存過的走帶入 */
+    var e0 = ev(id);
+    location.href = (e0 && e0.draftId && (c.bookyayDrafts || []).indexOf(id) !== -1)
+      ? 'create-event.html?draft=' + encodeURIComponent(e0.draftId)
+      : 'create-event.html?import=' + encodeURIComponent(id) + '&handle=' + encodeURIComponent(keyOf(c));
   });
 
-  /* 另一個分頁改了 creator（名冊改狀態、詳情頁改店鋪網址）時跟著重畫 */
+  /* 另一個分頁改了 creator 時跟著重畫 */
   window.addEventListener('storage', function (e) {
     if (e.key !== 'ztor.creatorEdits') return;
     if (C.refresh) C.refresh();
-    renderRoster(); renderDetail();
+    renderRows();
   });
+  document.addEventListener('i18n:applied', function () { renderOwner(); renderRows(); renderSync(); });
 
-  document.addEventListener('i18n:applied', function () { renderRoster(); renderDetail(); });
-
-  renderRoster();
-  renderDetail();
+  renderOwner();
+  renderRows();
+  renderSync();
   i18n(document.body);
   icons(document.body);
 })();

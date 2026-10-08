@@ -942,13 +942,13 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Step list | 🟡 molecule | ✓ App | 階段清單（2026-08-18，參考設計 Project status）：一串回答「走到第幾步」的列，**不是時間軸**——沒有日期欄、沒有今天、不能往回捲。`.step-list__row`［`--done`／`--current`／`--alert`／`--todo`］＞ 記號用 [Progress mark](#progress-mark)（與時間軸共用**同一顆**記號，不只是同一套規則）＋ `__body`（`__title` ＋ `__meta`，**同一行不換行**）＋ `__end`（靠右的標籤，逾期用）＋ `__act`（hover 才出現的動作，與 `__end` 共用右端那一格、互換）。列高 50px（14/12 內距，2026-08-18 使用者裁決加高一階：列太薄時滑鼠掃過去底色一閃即逝、hover 出現的按鈕來不及被看見）。掛 `--interactive` 的列 hover／focus-within 給一層 `--accent` 底（負 margin 讓底色比文字往兩側各長 12px，不然 hover 起來像文字被框住）。`--alert` 把整列一起上色（記號太小、只染記號會被略過）；`--todo` 整列 55% 不透明度。2026-08-18 撤除（墓碑）：`--current`——里程碑的「進行中」狀態由使用者裁決取消，這個修飾子沒有產生者了。消費頁：project-detail 總覽的進度摘要 | [step-list.css](./ds-components/step-list.css) |
 | Progress timeline | 🟠 organism | ✓ App | 交付時間軸（2026-08-17，spec 5.1.2.2 §2.2.10 v3.0／D193、D194）：一條由真實日期驅動的垂直時間流，**未來在上、今天在中、過去在下**。版面三欄（日期欄／軸線與軸點／內容欄），排序只有一個依據就是日期。軸上有四種不是里程碑的列：釘頂的 `--system`（完成作品，不帶日期）、`--today`（今天，實心品牌色軸點＋情境句＋內嵌發文框 `.post-composer`（2026-08-18 promote 至 [post-composer.css](./ds-components/post-composer.css)））、軸底的 `--start`（項目建立，軸線在此停）、`--day`（按天收合的更新列）。狀態色只上在軸點與軸線，內容區不染色。內容由 `js/project-progress-store.js`（里程碑與更新，日期是真實 `Date`）＋ `js/work-review-store.js`（送審件）產生，完成作品那一顆不另存狀態。詳見 §4.51b | [progress-timeline.css](./ds-components/progress-timeline.css) |
 | Section nav | 🟡 molecule | ✓ App | 分頁內的側欄分節導覽（原 `.settings-nav`，2026-08-17 提升為中性元件）。**Q75 全站統一分隔線式（2026-08-25）**：取代原本比照 filter-tabs 的藥丸／橘 tint 底畫法——每列 1px `--border-soft` 下緣線、末列去線、無底色、無藥丸、無 icon，已選只換 `--selected-ink`＋medium 字重。**2026-08-26 擴大為所有詳情頁的頁級導覽**：product／project／auction／bundle／creator／fan／ip 七個詳情頁由橫排 `.tabs` 改為本元件，加上 series-detail 與 settings（舊別名 `.settings-nav__item` 選擇器隨元件本體生效，見下方 Settings nav 行）共九頁同款；橫排 `.tabs` 留給清單頁工具列與節內篩選。同日新增 `.section-nav__count`（素面 11px 數字、`margin-left:auto` 靠右貼列尾、tabular-nums、已選列跟著換 `--selected-ink`，與 `.tabs--count-plain` 同一種素面數字語言），承接 creator-detail／ip-detail 分頁原本的計數 | [section-nav.css](./ds-components/section-nav.css) |
-| Roster picker | 🟠 organism | ✓ App | 上面選人、下面看那一位：上段是一張卡一個對象的網格（可換行、窄畫面掉成一欄），下段是選定那一位的內容、佔整個內容寬度。卡面與已選態整個交給 `.selection-card`（1px 橘 outline ＋中性陰影），本支只排卡內與網格。與 `section-nav-layout`（140px、選的是「同一個東西的哪一段」）分工：本支選的是「哪一個對象」。詳見 §4.203 | [roster-picker.css](./ds-components/roster-picker.css) |
+| Roster picker | 🟠 organism | ⚠ 退場候選（2026-10-08 D372 起零消費，待使用者裁決）| 上面選人、下面看那一位：上段是一張卡一個對象的網格（可換行、窄畫面掉成一欄），下段是選定那一位的內容、佔整個內容寬度。卡面與已選態整個交給 `.selection-card`（1px 橘 outline ＋中性陰影），本支只排卡內與網格。與 `section-nav-layout`（140px、選的是「同一個東西的哪一段」）分工：本支選的是「哪一個對象」。詳見 §4.203 | [roster-picker.css](./ds-components/roster-picker.css) |
 | Row disclosure | 🟡 molecule | ✓ App | 母列收成一列、點開才看到底下每一筆。站上「可展開子列」的單一答案（Q107 裁決，取代 `product-list` 的 `__row--group`／`__row--child` 與 `data-list` 的 `__row--child`；2026-09-04 改寫成 L3「整組換層」）。階層不靠縮排說，靠「母列與子項一起坐進哪一層面」說：展開時整組包進 `.rowdis__group` 那塊 L2 薄膜面板，第二層改用 `.rowdis__frame` 的 1px 框。欄位版面仍歸所在容器，因此表格型與清單型兩種骨架都能疊。2026-09-04（Q109，參考 Braintrust）再加**列首欄** `.rowdis__lead`：展開 chevron 移到列的最前緣獨立一欄、`⋯` 維持在列尾，子列在同一格放組內序號，一般列留空；表格型兩頁已導入，清單型三頁維持現況（理由見 §4.204）。互動走 `js/row-disclosure.js` 的 `data-rowdis` 契約。詳見 §4.204 | [row-disclosure.css](./ds-components/row-disclosure.css) |
 | Listing controls | 🟠 organism | ✓ App | §7.14（D241）的三個獨立開關——上架 `listed`／顯示於商店 `shown`／開賣 `saleStart`–`saleEnd`——三列並列的骨架。 **`--locked`／`.lctl__row--locked`＋`.lctl__lock-note`（2026-09-11 D265）**：下架時顯示列與開賣區留在畫面但停用（整塊變淡、控件不吃事件）、上方一句說明「要重新上架後才能調整」；商品／組合詳情共用。只擁有列的版型（標題＋一行說明、控制擺哪、排程欄何時展開、三列的距離由容器 `gap` 持有），控制本身重用 Switch／Radio list `--collapsible`／Field＋Input／Link field。上架列用哪一種由頁面決定：建立頁三選一、細節頁開關。數字與狀態一律問 `js/listing-state.js`。詳見 §4.205 | [listing-controls.css](./ds-components/listing-controls.css) |
 | Link field | 🟡 molecule | ✓ App | 系統產生、不可編輯、要能整條帶走的連結：唯讀等寬輸入框吃滿寬、行尾複製與重置、底下一行說明。首個角色＝隱藏品項的非公開連結（§7.14）。回饋長在按鈕自己的字上（`--copied` 同時讓整列亮 1.6 秒），不跳 toast。行為走 `js/link-field.js` 的 `data-linkf` 契約；重置只發 `linkfield:reset`，新連結由頁面算。`vault-share` 的 `.vshare__link` 是先行 pattern，這一輪不動。詳見 §4.206。**2026-09-30（D340）新增兩個消費情境**：建立活動第 7 步與活動詳情的「顯示設定」——活動切成隱藏時的活動連結（複製＋重置；切回顯示＝撤銷），同主規格 §7.14 非公開連結 | [link-field.css](./ds-components/link-field.css) |
 | Stock allocation | 🟠 organism | ✓ App | 一個庫存池怎麼分給各販售管道（§7.14 · D241）：目前在庫一列、每個販售管道一列（名稱＋鎖定量＋該販售管道可售量）、末列沒有被鎖定的庫存量。逐列各有自己的可售量，因為鎖定的販售管道不吃沒有被鎖定的庫存量；所有販售管道都鎖定時末列掛一顆 chip 說明剩幾件沒人能賣。變體 `--bundle` 換成組合視角（一列一個成員，多一欄成員沒有被鎖定的庫存量）。**`.salloc__row--cap`（2026-09-09 新增）**＝組合自己的硬上限也在表裡佔一列，讀法與成員列相同（輸入框在「鎖定量」欄、「可售」欄寫出這道上限給得起幾件），末列 `--free` 再用 `.salloc__sub` 說出這個最小值是被誰壓出來的（`stock.capped-by`）。改動理由：上限原本是表格外的獨立欄位，設 5、表下顯示 1，兩件事讀起來像沒有關係（使用者 2026-09-09 反饋）。詳見 §4.207。**成員展開到選項組合（2026-09-10 · D258）**：成員是多選項商品時，「鎖給本組合」不能只有一個數字——組合包收的是「M 號 5 件」而不是「這件商品 5 件」。成員列因此變成母列（`.salloc__name--parent`＋`.salloc__toggle`，鎖定欄顯示逐組合加總、唯讀）＋一塊 `.rowdis__group.rowdis__group--gutter`（**2026-09-11 起直接用 row-disclosure**，自家的 `.salloc__group`／`.salloc__toggle` 退場：使用者裁示成員分配的展開要「和鎖定歷史紀錄一樣的 UI」）裝逐選項組合的 `.salloc__row.rowdis__child.salloc__row--child`，母列 `.salloc__row.rowdis__head` 的把手是 `.btn.btn--icon.btn--xs.rowdis__toggle`；每列各自可填、各自擋錯，展開由 js/row-disclosure.js 管，預設展開——這一段的存在意義就是逐組合設定。單一規格成員維持一列不受影響。消費頁：組合商品細節頁的銷售設定。**`.salloc__name--thumb`（2026-09-11 D268，規格 5.1.5.1 §2.10；2026-09-12 Q117 改併入名稱格）**：商品細節頁「鎖定庫存」彈窗一列一個選項組合時，名稱格掛 `--thumb`——唯讀縮圖 `.variant-thumb--ro`（variant-builder；實線＝該組合自己的圖、虛線＝沿用主圖）與組合名橫排在同一格、垂直置中、間距 `--sp-12`，欄軌不變、不另開欄（09-11 先做的列首獨立 34px 欄同日退場：使用者裁決縮圖併進名稱格）；單一規格那一列不是組合、沒有縮圖 | [stock-allocation.css](./ds-components/stock-allocation.css) |
 | Avatar | 🟢 atom | ✓ App | 姓名首字的識別圓，40px（`.ztor-avatar`）、32px（`--sm`）與 64px（`--lg`）三尺寸。2026-09-02 自三份頁面級複本（`creators.html` 的 `.creator-ava`／`--lg`、`creator-detail.html` 的 `.cd-ava`，底色配方一字不差）promote，同輪換掉兩個既有消費頁。與 admin 表格列內的 `.admin-table__avatar`（28px、中性底）不是同一個視覺角色，不合併。詳見 §4.202 | [avatar.css](./ds-components/avatar.css) |
-| Stat row | 🟡 molecule | ✓ App | 卡內大數字排（取代把 `.kpi` 塞進卡片）；`--inline` 是把同一排收成「欄名與值同一行、字級小」的標籤化變體（2026-09-02；同日短暫存在過的 `--compact` 已退場，墓碑在 CSS 檔內）。**2026-09-09 第二個消費者**：商品明細「當前庫存」卡頭——目前在庫（限量時 `__of` 帶「/ 上限」）／已鎖定／未鎖定（`__meta` 放「N 件沒人拿得到」提醒）／單售可售；原本的超大 `stock-readout`、販售管道分配表的池列與限量「上限數量」欄位都收進來，同一個數字只講一次 | [stat-row.css](./ds-components/stat-row.css) |
+| Stat row | 🟡 molecule | ✓ App | 卡內大數字排（取代把 `.kpi` 塞進卡片）；`--inline` 是把同一排收成「欄名與值同一行、字級小」的標籤化變體（2026-09-02；同日短暫存在過的 `--compact` 已退場，墓碑在 CSS 檔內）。**2026-09-09 第二個消費者**：商品明細「當前庫存」卡頭——目前在庫（限量時 `__of` 帶「/ 上限」）／已鎖定／未鎖定（`__meta` 放「N 件沒人拿得到」提醒）／單售可售；原本的超大 `stock-readout`、販售管道分配表的池列與限量「上限數量」欄位都收進來，同一個數字只講一次。⚠ `--inline` 唯一的產品頁消費（創作者活動管理的 creator 卡）已於 2026-10-08 D372 隨 roster-picker 退出，變體目前只剩 DS demo，退場候選 | [stat-row.css](./ds-components/stat-row.css) |
 | Todo list | 🟡 molecule | ✓ App | 可編輯的待辦清單（勾選＋自行增刪） | [todo-list.css](./ds-components/todo-list.css) |
 | Meter list | 🟡 molecule | ✓ App | 逐項水位清單（名稱 → 量條 → 數字，三欄一線） | [meter-list.css](./ds-components/meter-list.css) |
 | Next step | 🟡 molecule | ✓ App | 一句話＋一顆主要動作，放在卡的最後一段；與 `.info-banner`（純說明）、`.insight-row`（算出來的結論）的分工是「只有這一支帶動作」。**只長在它要操作的那一塊底下**（項目詳情的作品卡、狀態卡），不自成一張卡——2026-09-01 使用者裁示撤除總覽那張兜底卡，`.next-step--lead`（自成一卡的修飾子）因此沒有頁面在用，只剩本文件的示範 | [next-step.css](./ds-components/next-step.css) |
@@ -3740,6 +3740,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 | open | `details[open]` | Panel floats below-right of trigger (`z-index: 30`) |
 | hover | `.dropdown__item:hover` | Item bg `--muted` |
 | focus-visible | `.dropdown__item:focus-visible` | Inset 2px `--ring` outline |
+| disabled | `.dropdown__item:disabled`／`[aria-disabled="true"]` | 2026-10-08（D375 決定二）：45% 不透明、`cursor: not-allowed`、hover 不給底色；不設 `pointer-events: none`（title 要滑得出來）。原因寫在緊接其下的 `.dropdown__note` |
 
 **Class API** (CSS classes — Props/API = N/A, this is a static CSS prototype)
 
@@ -3750,6 +3751,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 | `.dropdown__item` | Flex action row, 9×16 padding（水平由 `--sp-10` 改 `--sp-16`，2026-07-22，見上）, `--radius-md`; leads with a `.ztor-icon` (2026-07-21, 使用者裁示) — icon color inherits `currentColor`, no override needed even on `--danger`. Only exception: `.dropdown__item--toggle` (a switch row, not an action, e.g. E-Shop's List-in-shop toggle) |
 | `.dropdown--left` | Panel anchors to the trigger's left edge instead |
 | `.dropdown__item.is-hinted` | 指路態（2026-08-04）：頁面別處的入口替使用者打開這個選單、並指出該按哪一項時加上——`--accent` 底＋1px `--primary` 內環。意思是「被指到」不是「被選到」，所以不借用 hover／active 的底色（那兩個當下可能正被游標佔用）。由頁面 JS 加上，於選單收起、按下該項或逾時後移除。首個消費者：E-Shop 釘選區的「立刻前往」 |
+| `.dropdown__note` | 2026-10-08（D375 決定二）：停用原因小字，緊接在停用的 `.dropdown__item` 下方；不是選項、不可點（同 `.dropdown__cap` 的身分）。`--fs-11`、`--muted-foreground`、`--lh-snug`，左內距對齊項目文字（16＋16 icon＋10 gap）、`max-width: 260px` 可換行。首個消費者：活動清單匯入活動列的「取消活動」（「匯入活動在 bookyay 取消」） |
 | `.dropdown__item--toggle` | Switch row (menuitemcheckbox), no icon; 2026-07-21 使用者裁示加 `border-bottom` + `margin-bottom` — 跟後面的一般動作項分隔（切換狀態 vs. 會跑導頁／JS 的動作，語意不同）。分隔線色改 `--border`（2026-07-22，見下方 Token usage）；同輪再裁示 `border-radius: 0`（覆蓋掉繼承自 `.dropdown__item` 的 `--radius-md`）——這一列 hover 不用圓角，跟下面一般動作項的圓角 hover 高亮不同 |
 
 **Token usage** (→ Pillar 2 Role)
@@ -3764,6 +3766,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 - ✅ Do keep items short, action-first, max ~6 entries.
 - ✅ Do lead every item with a matching `.ztor-icon` (2026-07-21 使用者裁示) — the only exception is `.dropdown__item--toggle`.
 - ❌ Don't rebuild it per page with inline styles — link `dropdown-menu.css`.
+- ✅ Do keep a temporarily unavailable action in the menu as a disabled item with a `.dropdown__note` reason underneath — don't silently drop it (D375: feature kept, disabled).
 - ❌ Don't use it for navigation menus or form selects.
 
 **Dependencies** — composes Button (§4.2, the summary trigger); used by E-Shop list toolbar.
@@ -4660,7 +4663,7 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 ### 4.?? Owner lookup
 
 - Source: ds-components/owner-lookup.css and partials/owner-lookup.js
-- Layer and scope: SiteSpecific organism。站上唯一的「打字找一筆、下拉挑一個」語彙，消費頁：admin-ip-bank-entry.html（權利人）、creators.html（搜尋 ztor 帳號）、create-event.html（bookyay 帶入閘門，2026-08-10 起，見 §4.120 Source import）；artist-picker 亦沿用其搜尋殼。
+- Layer and scope: SiteSpecific organism。站上唯一的「打字找一筆、下拉挑一個」語彙，消費頁：admin-ip-bank-entry.html（權利人）、creators.html（搜尋 ztor 帳號）、admin-creator-events.html（對應創作者對話框：搜尋 ztor 創作者、選一位對應到一場 bookyay 匯入活動，2026-10-08 D372；取代同日 D371 的綁定 bookyay 帳號對話框）、create-event.html（bookyay 帶入閘門，2026-08-10 起，見 §4.120 Source import）；artist-picker 亦沿用其搜尋殼。
 - Purpose: searches registered Ztor users by display name, username, or email; it outputs a linked user or a pending invite email. No result, incomplete email, and duplicate pending email remain within the same control.
 - Anatomy and states: input, result list, identity metadata (name / @username / email), Linked, Pending invite, no result, and duplicate pending.
 - Tokens: --popover, --border, --accent, --shadow-float, --sp-*, --fs-*, --foreground, --muted-foreground, --destructive.
@@ -5869,13 +5872,15 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 
 **Token usage** — `--primary`／`--muted`（底）、`--foreground`（字）、`--font-ui`／`--fs-13`／`--fs-14`／`--fs-22`／`--fw-regular`。無裸值。
 
-**Consumers** — `creators.html`（名冊列 40px、建立 creator 表單 64px）、`creator-detail.html`（頁首 64px）、`admin-creator-events.html`（creator 選擇卡 32px）。
+**Consumers** — `creators.html`（名冊列 40px、建立 creator 表單 64px）、`creator-detail.html`（頁首 64px）。（`admin-creator-events.html` 的 creator 選擇卡 32px 已於 2026-10-08 D372 隨 roster-picker 退出該頁；`--sm` 目前無產品頁消費。）
 
 **CSS** — [`avatar.css`](./ds-components/avatar.css)
 
 ---
 
 ### 4.203 Roster picker
+
+> **狀態：退場候選（2026-10-08 D372）。** 唯一消費頁創作者活動管理改成「匯入不分創作者、Admin 逐場對應創作者」的活動清單，本元件零消費；CSS 未刪，待使用者裁決後走墓碑。下方凡提到「綁定／未綁定 bookyay 帳號」的段落都是 D238–D371 時期的歷史紀錄——D372 已取消帳號綁定，不是現行規則。
 
 **Purpose** — 上面一排卡選人、下面看選定那一位的內容。跨對象工作台的版型：先看得到全部，才談得上選一個來處理；選完之後內容拿得回整個頁寬。2026-09-02 為創作者活動管理頁（spec 5.1.0.6 · D233）建，同日依使用者裁示（「creator 選擇在上、活動列表在下」「creator 改成一張一張卡片橫著排列」）從上午那一版的兩欄殼整支改寫並改名，舊名零殘留。
 
@@ -5911,7 +5916,7 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 
 **卡壓成兩列（2026-09-02 第三輪）** — 使用者看過上一版成品後說「那些數字太佔空間 改小標籤就好」「需要整張卡片 UI 一起調整」。上一版是「身分兩層 ＋ 一條分隔線 ＋ 三個 20px 大數字」共四層、卡高 **136px**；本版是「左邊 32px 識別圓 ＋ 右邊兩列（名稱／狀態列）」，卡高 **70px**，同一排放得下的人數翻倍。關鍵不是把 20px 調小——「欄名在上、數字在下」的兩層結構本身就是它佔兩行高度的原因，所以整段換成 `.stat-row--inline`（欄名與值同一行），整排數字只佔一行，才能與綁定徽章併成同一條狀態列、讓卡少掉兩層。
 
-**狀態列是二選一，數字上不上卡由綁定狀態決定** — 2026-09-02 使用者裁示「未綁定：不會有匯入與設定資料」「已綁定：有已匯入與待設定，可匯入不一定需要」：
+**〔歷史，D372 已作廢〕狀態列是二選一，數字上不上卡由綁定狀態決定** — 2026-09-02 使用者裁示「未綁定：不會有匯入與設定資料」「已綁定：有已匯入與待設定，可匯入不一定需要」：
 
 - **未綁定** → 狀態列放「未綁定」徽章，**一個場次數字都不印**。沒綁 bookyay 帳號就沒有可匯入／已匯入／待設定這回事，印三個 0 會被讀成「查過了、結果是零」。徽章佔的正是數字的位置，就地說明這裡為什麼是空的（使用者給的兩個選項「卡比較短」或「一句極短的說明佔位」，取後者，而且佔位的是本來就在的那顆徽章、一個字都沒新增）。
 - **已綁定** → 狀態列放「已匯入」「待設定」兩個小標籤，**不另掛「已綁定」徽章**。理由有二：(1) 有數字就代表帳號通了，一排卡每張都掛一顆「已綁定」是噪音，需要被看見的是那顆例外的「未綁定」；(2) 量到的事實是塞不下——260px 的卡扣掉「Linked」徽章（58px）之後只剩 119px 給兩欄，而英文欄名「Imported」單獨就要 50px，欄名會被截成「Import…」，等於只對中文成立。**這是呈現決策**：綁定狀態沒有從卡上消失，只是改由「有沒有數字」與那顆例外徽章共同表達；記在 `ASSUMPTIONS.md`。
@@ -5928,7 +5933,7 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 
 **網格為什麼是 auto-fill 不是 auto-fit** — auto-fit 會把空軌道收掉：名冊只有三位時，三張卡各自撐成三分之一頁寬的橫幅。auto-fill 保留空軌道，卡維持在一張卡該有的寬度、整組靠左排。`minmax(260px, 1fr)`：260 是「32px 頭像 ＋ 名稱 ＋ 兩欄小標籤」放得下的寬度（英文最長的一組實測需要 119px 以上；1440 下實得卡寬 262、兩欄各 90 出頭，中英都不截斷）；窄畫面自然掉成一欄。
 
-**標題列的動作組（2026-09-02 D238 新增 `__head-sync`）** — `__head-actions` 自帶 `[hidden] { display: none }`，因為擺在那裡的東西常常是「這個對象才有」的：創作者活動管理頁上，未綁定的 creator 沒有可檢查的來源，整組收起來（留一組永遠停用的控制項會讀成「這裡壞了」）。`__head-sync` 是**放在這一組裡面、按鈕前面**的一行狀態字——「最後檢查 2026-09-02 09:40」接著「重新檢查」。放在同一組是重點：這兩個是同一件事的兩半（上次什麼時候發生／把它再做一次），分置寬標題列的左右兩端就讀不成一組。文字語彙沿用 `__head-meta`（`--fs-13`／`--muted-foreground`／`tabular-nums`），時間一律絕對值——Admin 打開這一頁多半是在跟外部平台對帳，要的是能直接比對的時刻，相對說法（「3 分鐘前」）還得自己跑計時器與兩種語言的複數規則。忙碌態走 Button 的 `[aria-busy="true"]`（§4.2），本支不自畫 spinner。
+**標題列的動作組（2026-09-02 D238 新增 `__head-sync`；文中「未綁定」情境為 D372 前歷史）** — `__head-actions` 自帶 `[hidden] { display: none }`，因為擺在那裡的東西常常是「這個對象才有」的：創作者活動管理頁上，未綁定的 creator 沒有可檢查的來源，整組收起來（留一組永遠停用的控制項會讀成「這裡壞了」）。`__head-sync` 是**放在這一組裡面、按鈕前面**的一行狀態字——「最後檢查 2026-09-02 09:40」接著「重新檢查」。放在同一組是重點：這兩個是同一件事的兩半（上次什麼時候發生／把它再做一次），分置寬標題列的左右兩端就讀不成一組。文字語彙沿用 `__head-meta`（`--fs-13`／`--muted-foreground`／`tabular-nums`），時間一律絕對值——Admin 打開這一頁多半是在跟外部平台對帳，要的是能直接比對的時刻，相對說法（「3 分鐘前」）還得自己跑計時器與兩種語言的複數規則。忙碌態走 Button 的 `[aria-busy="true"]`（§4.2），本支不自畫 spinner。
 
 **垂直節奏** — 三層容器各自持有自己的 `gap`（`.roster-picker` 24／`__pick` 12／`__body`、`__detail` 16），成員一律不自帶 margin（DS §2.3、STYLE-DECISIONS Q103）。`__detail` 常由 JS 用 `[hidden]` 切顯隱，所以另補 `[hidden] { display: none }`——class 寫了 display 會蓋掉 `[hidden]`。
 
@@ -5938,7 +5943,7 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 
 **Dependencies** — 組成：`.selection-card`（§4.18）、`.ztor-avatar--sm`（§4.202）、`.badge`、`.stat-row--inline`（§4.22h1）、`.field-pill`、`.filter-tabs`、`.btn`（§4.2，標題列動作組裡的按鈕與其 `aria-busy` 忙碌態）。
 
-**Consumers** — `admin-creator-events.html`（Admin 創作者活動管理：上面 creator 卡片列、下面那一位的 bookyay 活動表格）。
+**Consumers** — 無（2026-10-08 D372 起）。創作者活動管理改成「匯入不分創作者、Admin 逐場對應創作者」，頁面換成以匯入活動為主的清單（`list-toolbar` ＋ `tabs` ＋ `ztor-table`），不再有「先選一位再看他的活動」——本元件零消費，**退場候選**，待使用者裁決後走墓碑（check_ds_sync 檢查 11 會以 WARN 標出）。原消費：`admin-creator-events.html`（上面 creator 卡片列、下面那一位的 bookyay 活動表格）。
 
 **CSS** — [`roster-picker.css`](./ds-components/roster-picker.css)
 

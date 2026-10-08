@@ -48,7 +48,8 @@
      新頁又必須同時在「平台優惠之後」與「影片上架審核之前」，所以一起移到最後。 */
   const ADMIN_NAV = [
     { href: "creators.html",          key: "admin.creator-mgmt", icon: "users" },
-    { href: "admin-creator-events.html", key: "admin.creator-events", icon: "download" },
+    /* D373（2026-10-08）：創作者活動管理屬 release2.4（S84 🔵），入口掛 data-feat，release2.3 預覽藏起來 */
+    { href: "admin-creator-events.html", key: "admin.creator-events", icon: "download", feat: "S84" },
     { href: "admin-ip-bank.html",     key: "admin.ip-bank",      icon: "landmark", match: ["admin-ip-bank-entry.html"] },
     { href: "ip-bank-reporting.html", key: "admin.ip-reporting", icon: "bar-chart-3" },
     { href: "admin-platform-fees.html", key: "admin.platform-fees", icon: "percent" },
@@ -75,10 +76,11 @@
      就把每位 creator 的進度講清楚，所以這裡補了 bookyay 相關欄位。
      D238（2026-09-02）: 匯入由「Admin 逐場勾選」改成**綁定後自動匯入、系統持續檢查更新**，
      所以「可匯入」這個概念整組退場（自動搬完之後不存在「還沒搬進來」的活動），欄位改成：
-       · bookyayLinked  — 有沒有綁定 bookyay 帳號。未綁定＝沒有任何活動、右欄走 F5 空狀態。
-                          綁定流程本身〔產品待確認〕（D233 未定第 4 項），這裡只有結果值。
-       · bookyayPool    — 「哪些 bookyay 活動算這位 creator 的」的原型答案（id 陣列，指向
-                          BOOKYAY_EVENTS）。真實界定方式〔產品待確認〕（D233 未定第 1 項）。
+       · 墓碑 2026-10-08（D372）：`bookyayLinked`（有沒有綁定 bookyay 帳號）退場——創作者與 bookyay
+                          帳號不再綁定，bookyay 活動匯入時不分創作者，由 Admin 逐場對應創作者。
+       · bookyayPool    — 對應到這位 creator 的 bookyay 活動（id 陣列，指向 BOOKYAY_EVENTS）。
+                          D372 起＝Admin 在創作者活動管理逐場「對應創作者」的結果；不在任何人
+                          pool 裡的活動＝待對應創作者。
        · bookyayEvents  — 已在 ztor 這一側落地的活動 id。**自動匯入之後它涵蓋整個 pool**
                           （示範資料照這個前提寫；兩者不一致就演成「有東西還沒搬過來」，
                           那正是 D238 取消掉的狀態）。
@@ -88,8 +90,11 @@
        · lastImportAt   — 最後一次真的搬進新活動的時間；沒搬過為 null。自動匯入之後沒有頁面
                           顯示它（D235 已把「最後匯入時間」從規格 5.1.0.6 F2 移除），保留是因為
                           它屬上游的資料口徑，不是呈現決策。
-       · lastCheckedAt  — 最後一次向 bookyay 檢查更新的時間（D238 新增，顯示在下段標題列）。
-                          未綁定為 null——沒綁帳號就沒有「檢查」這回事。 */
+       · bookyayDrafts  — D373（2026-10-08）：已對應、Admin 已第一次儲存（成為這位的草稿）但還沒發布的場次。
+                          創作者活動管理「解除對應」時，在這份清單裡的要先確認（草稿一併刪除），不在的直接解除。
+                          示範：bky-2 已存草稿。已完成（bookyaySetup／ztor.bkySetupDone）＝已發布，不能解除。
+       · 墓碑 2026-10-08（D372）：逐人的 `lastCheckedAt` 退場——自動匯入與更新檢查改為整份匯入清單
+                          一組，時間見下方 BOOKYAY_LAST_CHECKED。 */
   /* 2026-09-08 使用者裁決：名冊＝三個 persona 本人，handle 就是 persona id（單一來源）。
      改版前這裡是三筆與 persona 無關的假資料（Denise／Aya／KMT），所以「從名冊進某位
      creator」不會換掉專案與商品資料——名冊看到的人跟工作區裡的資料是兩組互不相干的
@@ -102,11 +107,11 @@
        放在名冊而不是 projects-store：頭像每一頁都要，projects-store 不是每一頁都載（e-shop 就沒有）。
        Gary Lin 是 AI 生成的示範肖像（非真人）；周湯豪沿用 IP 頁那張。 */
     { handle: "default", name: "Gary Lin",           shop: "/shop/gary",  status: "active", email: "gary@example.com",  phone: "",                 created: "2026-01-08", avatar: "images/ip/gary-portrait.jpg",
-      bookyayLinked: true,  bookyayPool: ["bky-1", "bky-2", "bky-3", "bky-4", "bky-5"], bookyayEvents: ["bky-1", "bky-2", "bky-3", "bky-4", "bky-5"], bookyaySetup: ["bky-1", "bky-3"], lastImportAt: "2026-08-28 14:20", lastCheckedAt: "2026-09-02 09:40" },
+      bookyayPool: ["bky-1", "bky-2", "bky-3"], bookyayEvents: ["bky-1", "bky-2", "bky-3"], bookyaySetup: ["bky-1"], bookyayDrafts: ["bky-2"], lastImportAt: "2026-08-28 14:20" },
     { handle: "nick",    name: "周湯豪 NICKTHEREAL", shop: "/shop/nick",  status: "active", email: "nick@example.com",  phone: "+886 912 000 111", created: "2026-02-19", avatar: "images/ip/nick-portrait.jpg",
-      bookyayLinked: true,  bookyayPool: [], bookyayEvents: [], bookyaySetup: [], lastImportAt: null, lastCheckedAt: "2026-09-02 09:40" },
+      bookyayPool: ["bky-12"], bookyayEvents: ["bky-12"], bookyaySetup: [], bookyayDrafts: ["bky-12"], lastImportAt: null },
     { handle: "userB",   name: "User B",             shop: "/shop/userb", status: "active", email: "userb@example.com", phone: "",                 created: "2026-05-30",
-      bookyayLinked: false, bookyayPool: [], bookyayEvents: [], bookyaySetup: [], lastImportAt: null, lastCheckedAt: null },
+      bookyayPool: [], bookyayEvents: [], bookyaySetup: [], lastImportAt: null },
   ];
   /* BR-02 開店前置：一個 creator 的來源是本人先在 ztor 前台（買家端）自助註冊 ztor／Store
      帳號。Admin 在 Creator 管理「建立 creator」時，是搜尋這批已註冊、但尚未建檔的帳號，
@@ -120,23 +125,32 @@
     { id: "u-1301", name: "Diego Alvarez", username: "diego.a",    email: "diego@example.com",        phone: "",                 registered: "2026-07-18" },
   ];
   /* D219 bookyay 活動：bookyay 是外部售票平台，creator 的活動可能已經在那邊賣了。
-     **D238（2026-09-02）改自動匯入**：creator 綁定 bookyay 帳號之後，屬於他的活動由系統
-     自動搬進 ztor 並持續檢查更新，Admin 不再逐場勾選——所以「可匯入／已匯入」這組對立
-     不存在了，本池對已綁定的人來說就是「他在 ztor 上的活動」。
-     prototype 假資料；真實名錄由 bookyay 端提供，而「哪些活動算這位 creator 的」
-     怎麼界定、多久檢查一次〔產品待確認〕（ASSUMPTIONS PG-EVIMP-001／PG-EVIMP-006）。 */
+     **D372（2026-10-08）逐場對應創作者**：bookyay 選給 ztor 販售的活動由系統自動匯入並持續檢查更新
+     （D238 的自動匯入保留），匯入當下**不屬於任何創作者**；Admin 在創作者活動管理逐場「對應創作者」，
+     對應的結果寫在該創作者的 bookyayPool。沒有人的 pool 含它＝待對應創作者。創作者不再綁定 bookyay 帳號
+     （D238 裁決一、D371 決定三作廢）。prototype 假資料；真實名錄由 bookyay 端提供，多久檢查一次
+     〔產品待確認〕（ASSUMPTIONS PG-EVIMP-006）。 */
   /* 2026-09-01 對齊 create-event.html 的 BKY 池（使用者裁示 admin 匯入後要能接著把活動
      設完）：原本兩邊各一份假資料（這裡六場簡表、create-event 五場完整資料），id 對不上，
      「繼續設定」就找不到完整欄位可帶。改成同 id 同名——**create-event 的 BKY 是正本**
      （它有場次、票種、開賣日期與時間），這裡只是給 admin 看的摘要投影。
      那邊標 imported 的三場（站上已存在的活動）刻意不列，本池維持這五場。 */
   const BOOKYAY_EVENTS = [
-    { id: "bky-1", name: "REALIVE World Tour — Taipei", date: "2026-09-12", venue: "台北小巨蛋" },
-    { id: "bky-2", name: "MIRROR FANMEETING 2026 高雄", date: "2026-10-02", venue: "高雄流行音樂中心 海音館" },
-    { id: "bky-3", name: "城市草地音樂節 2026",          date: "2026-11-08", venue: "大佳河濱公園" },
-    { id: "bky-4", name: "限量黑膠簽名場 — 台中",        date: "2026-12-06", venue: "Legacy Taichung" },
-    { id: "bky-5", name: "冬季特別公演 — 台南",          date: "2027-01-17", venue: "台南文化中心 演藝廳" },
+    { id: "bky-1", name: "REALIVE World Tour — Taipei", date: "2026-09-12", venue: "台北小巨蛋",               organizer: "嘉立音樂工作室" },
+    { id: "bky-2", name: "MIRROR FANMEETING 2026 高雄", date: "2026-10-02", venue: "高雄流行音樂中心 海音館", organizer: "鏡光娛樂製作" },
+    { id: "bky-3", name: "城市草地音樂節 2026",          date: "2026-11-08", venue: "大佳河濱公園",             organizer: "草地派對有限公司" },
+    { id: "bky-4", name: "限量黑膠簽名場 — 台中",        date: "2026-12-06", venue: "Legacy Taichung",          organizer: "綺音工作室" },
+    { id: "bky-5", name: "冬季特別公演 — 台南",          date: "2027-01-17", venue: "台南文化中心 演藝廳",      organizer: "南風演藝經紀" },
+    /* D374（2026-10-08）：bky-12＝活動清單裡那筆 bookyay 草稿（events-store `khh-countdown-draft`，`bkyId: 'bky-12'`）。
+       已對應周湯豪、已存草稿：在活動清單刪掉這份草稿＝解除對應，這一場回到待對應創作者。
+       id 從 12 起跳：create-event 的 BKY 已用到 bky-11（bky-6～8 是「已帶過」的示範）。 */
+    { id: "bky-12", name: "Kaohsiung countdown",          date: "2026-12-31", venue: "Kaohsiung Pier-2",          organizer: "港都跨年製作", draftId: "khh-countdown-draft" },
   ];
+  /* D372（2026-10-08）：organizer＝bookyay feed 帶來的主辦方名稱，只當 Admin 對應創作者時的參考
+     （唯讀、不帶入活動資料）。示範資料：bky-1～3 已對應 Gary Lin，bky-4、bky-5 待對應創作者，bky-12 已對應周湯豪且已存草稿（D374）。
+     D375 決定六（2026-10-08）四值各至少一筆：已發布 bky-1、草稿 bky-2／bky-12、待設定（已對應、還沒存過）bky-3、待對應創作者 bky-4／bky-5。
+     自動匯入與更新檢查是整份清單一組，最後檢查時間也只有一個。 */
+  const BOOKYAY_LAST_CHECKED = "2026-10-08 09:40";
   /* 2026-09-02（D233 建、D238 收成兩值）：這四欄就是創作者活動管理頁表格要的全部——
      規格 5.1.0.6 F3 只要求「每一筆至少呈現活動名稱、日期與場地」，狀態不是資料欄位
      而是**算出來的**：在完成清單裡＝已完成，不在＝待設定（D361 改名）。自動匯入之後只剩這兩值
@@ -184,6 +198,32 @@
       if (c && c.seed && !CREATORS.some(x => x.seed === c.seed)) CREATORS.push(c);
     });
   } catch (e) {}
+  /* D374（2026-10-08）：bookyay 匯入活動「對應給誰」的覆寫——創作者活動管理的對應／解除對應，與活動清單刪除匯入活動的草稿
+     （＝解除對應）共用這一份，兩個入口的結果才一致。存 sessionStorage：與 events-store 記「這一趟刪掉的草稿」同一個口徑
+     （本分頁工作階段），關掉分頁就回到示範值，不會出現「草稿回來了、對應卻還是解除」的錯位。
+     值：{ "<bky id>": "<creator seed>" | null }。null＝待對應創作者。套用時先把這個 id 從每一位的 pool／已匯入／草稿記號拿掉，
+     有對象才加回那一位的 pool 與已匯入（草稿記號不加回——重新對應就是重新開始）。 */
+  const BKY_MAP_SS = "ztor.bkyMapping";
+  function readBkyMap() {
+    try { return JSON.parse(sessionStorage.getItem(BKY_MAP_SS) || "{}") || {}; } catch (e) { return {}; }
+  }
+  function applyBkyMap() {
+    const m = readBkyMap();
+    Object.keys(m).forEach(id => {
+      CREATORS.forEach(c => {
+        ["bookyayPool", "bookyayEvents", "bookyayDrafts"].forEach(k => { if (Array.isArray(c[k])) c[k] = c[k].filter(x => x !== id); });
+      });
+      const to = m[id] && CREATORS.find(x => (x.seed || x.handle) === m[id]);
+      if (to) { to.bookyayPool = (to.bookyayPool || []).concat([id]); to.bookyayEvents = (to.bookyayEvents || []).concat([id]); }
+    });
+  }
+  function setBkyMap(id, seed) {
+    if (!id) return;
+    const m = readBkyMap(); m[id] = seed || null;
+    try { sessionStorage.setItem(BKY_MAP_SS, JSON.stringify(m)); } catch (e) {}
+    applyBkyMap();
+  }
+  applyBkyMap();
   /* 2026-09-08（persona × role）：名冊的三位固定 creator 就是三個 persona，但執行期由
      「建立 creator」精靈新增的人**沒有專屬資料集**——`js/projects-store.js`／
      `js/products-store.js` 只認得 default 與 nick，查不到就退回 default。所以進入新建
@@ -250,6 +290,10 @@
   /* Shared with creators.html (roster render + onboard flow) and devtools.js (cheat-code switch).
      registered = BR-02 pre-registered accounts pool (searched by the「建立 creator」onboard wizard). */
   window.ztorCreator = { list: CREATORS, registered: REGISTERED, bookyayEvents: BOOKYAY_EVENTS,
+                        bookyayLastChecked: BOOKYAY_LAST_CHECKED,
+                        /* D373／D374：對應與解除對應的單一入口（創作者活動管理、活動清單刪草稿都走這兩支） */
+                        bookyayMap: function (id, seed) { setBkyMap(id, seed); },
+                        bookyayUnmap: function (id) { setBkyMap(id, null); },
                         get: getCreator, set: setCreator, rosterPage: ROSTER_PAGE,
                         save: saveCreator, add: addCreator, refresh: refreshCreators,
                         adminScope: isManagingCreator,
@@ -623,7 +667,7 @@
     if (adminView()) {
       return ADMIN_NAV.map(function (it) {
         var active = [it.href].concat(it.match || []).includes(path);
-        return `<li><a class="app-topbar__link" href="${it.href}"${active ? ' aria-current="page"' : ''} data-i18n="${it.key}">${it.key}</a></li>`;
+        return `<li${it.feat ? ` data-feat="${it.feat}"` : ''}><a class="app-topbar__link" href="${it.href}"${active ? ' aria-current="page"' : ''} data-i18n="${it.key}">${it.key}</a></li>`;
       }).join("");
     }
     /* D107: 未選定 creator（Tier 0 名冊）時，Tier 1 模組不在導航呈現——
@@ -746,7 +790,7 @@
     if (adminView()) {
       return ADMIN_NAV.map(function (it) {
         var active = [it.href].concat(it.match || []).includes(path);
-        return `<li><a class="app-sidebar__link" href="${it.href}"${active ? ' aria-current="page"' : ''}>
+        return `<li${it.feat ? ` data-feat="${it.feat}"` : ''}><a class="app-sidebar__link" href="${it.href}"${active ? ' aria-current="page"' : ''}>
           <i data-lucide="${it.icon}" class="ztor-icon"></i>
           <span class="app-sidebar__link-label" data-i18n="${it.key}">${it.key}</span>
         </a></li>`;
