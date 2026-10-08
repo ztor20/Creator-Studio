@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>組合包與票務商品 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261008c">
-<script src="shell.js?v=20261008c" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261008k">
+<script src="shell.js?v=20261008k" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -110,12 +110,10 @@ td.num{font-variant-numeric:tabular-nums}
 <h1>組合包與票務商品</h1>
 <p class="lede">創作者把商品與活動門票打包成組合包來賣，賣出一套就從每個成員自己的量扣，組合包不另外進貨。至少含一張門票的組合包在活動裡叫「票務商品」，上架與開賣預設跟著活動走，並有自己的購買條件。</p>
 
-<div class="toc">
-  <a href="#what">1 組合包的成員</a><a href="#price">2 組合包的價格</a><a href="#stock">3 組合包的庫存與鎖定套數</a><a href="#switches">4 組合包的上架、顯示、開賣開關</a><a href="#deal">5 組合包什麼時候能成交</a><a href="#timing">6 票務商品的上架與開賣時間</a><a href="#rules">7 票務商品的購買條件</a><a href="#from-event">8 從活動建立票務商品</a><a href="#unlist">9 組合包的下架連動與刪除</a>
-</div>
+<div class="toc"></div>
 
 <h2 id="what"><span class="n">1</span>組合包的成員</h2>
-<p>組合包是一條販售管道（Channel，一條能賣東西的路），由商品成員與門票成員組成；組合包本身不在庫存池裡，賣出一套就從每個成員自己的量扣。</p>
+<p>組合包是一條販售管道（Channel，一條能賣東西的路），由商品成員與門票成員組成；組合包本身不在庫存池裡，賣出一套就從每個成員自己的量扣。成員怎麼組，見<a href="#what-compose">組合包的組成規則</a>；哪些商品與門票不能加入，見<a href="#what-eligible">可以加入的成員</a>；含門票的組合包，見<a href="#what-ticket">票務商品</a>。</p>
 <div class="grid">
   <div class="card ok"><div class="band"></div><h3>商品成員</h3>
     <ul class="plain">
@@ -142,7 +140,7 @@ td.num{font-variant-numeric:tabular-nums}
 </div>
 <p class="note">門票在建立活動時隨活動產生，相當於一種商品；門票成員可以列多種門票讓粉絲任選一種，跟多規格商品讓粉絲選規格是同一套邏輯。</p>
 
-<h3>組合包的組成規則</h3>
+<h3 id="what-compose">組合包的組成規則</h3>
 <p>組合包至少要有 1 個成員，成員只能是商品或門票。</p>
 <ul class="plain">
   <li>同一件商品 × N 件，或只含一種票 × n 張的純套票，都是合法的組合包</li>
@@ -163,7 +161,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>同時內含兩種票、各自張數的組法（例如家庭套票）不提供</li>
 </ul>
 
-<h3>可以加入的成員</h3>
+<h3 id="what-eligible">可以加入的成員</h3>
 <p>創作者從自己的商品與活動挑成員；下列商品與門票不能加入。</p>
 <ul class="plain">
   <li>已下架或已封存的商品不能加入</li>
@@ -184,7 +182,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>草稿活動的票務商品，只能在該活動建立流程的「票務商品」步驟一起建，見<a href="#from-event">從活動建立票務商品</a></li>
 </ul>
 
-<h3>票務商品</h3>
+<h3 id="what-ticket">票務商品</h3>
 <p>至少含一筆門票成員的組合包，在活動裡叫「票務商品（Ticket bundle）」；這是入口的叫法，物件就是組合包。</p>
 <ul class="plain">
   <li>同一份資料出現在兩個地方：電子商店的組合包清單，以及活動詳情的「票務商品」分頁</li>
@@ -215,23 +213,23 @@ td.num{font-variant-numeric:tabular-nums}
 <p class="note">依據：5.1.5.4 §4 F3；主規格 §7.12、§7.6「平台費率」、§7.15「逐幣別覆寫」；D261、D292、D293、D294、D296、D318。</p>
 
 <h2 id="stock"><span class="n">3</span>組合包的庫存與鎖定套數</h2>
-<p>組合包沒有自己的庫存：商品成員從庫存池扣，門票成員從票種的張數扣；創作者可以用鎖定套數替組合包保留量。</p>
+<p>組合包沒有自己的庫存：商品成員從庫存池扣，門票成員從票種的張數扣；創作者可以用鎖定套數替組合包保留量。此刻能賣幾套，見<a href="#stock-sellable">組合包可售量</a>；替組合包保留量，見<a href="#stock-lock">鎖定套數</a>；單售還沒開賣時組合包怎麼扣量，見<a href="#stock-shared">共用庫存的影響</a>；用數字試，見<a href="#stock-calc">試算分配</a>。</p>
 <ul class="plain">
   <li>共用庫存、鎖定量、沒有被鎖定的庫存量等通用規則，見<a href="eshop-sales.html#stock">電子商店販售流程的庫存規則</a></li>
 </ul>
 
-<h3>組合包可售量</h3>
+<h3 id="stock-sellable">組合包可售量</h3>
 <p>組合包可售量是這個組合包此刻最多還能賣幾套。</p>
 <ul class="plain">
   <li>有鎖定套數時，可售量＝鎖定套數 N</li>
   <li>不鎖定時，可售量＝每個成員能湊出的套數取最小</li>
   <li>商品成員能湊出的套數＝沒有被鎖定的庫存量 ÷ 每套用量</li>
-  <li>門票成員能湊出的套數，算法見下方「鎖定套數的上限」</li>
+  <li>門票成員能湊出的套數，算法見<a href="#stock-lock-max">最多能鎖幾套</a></li>
   <li>另設限量（Total Quantity）時，再與剩餘上限取最小</li>
 </ul>
 
-<h3>鎖定套數</h3>
-<p>鎖定套數讓創作者替組合包保留 N 套，只有這個組合包能賣這 N 套。</p>
+<h3 id="stock-lock">鎖定套數</h3>
+<p>鎖定套數讓創作者替組合包保留 N 套，只有這個組合包能賣這 N 套。N 最多能填多少，見<a href="#stock-lock-max">最多能鎖幾套</a>；多規格商品與多票種怎麼分，見<a href="#stock-lock-split">逐規格或逐票種分配</a>。</p>
 <ul class="plain">
   <li>組合包的鎖定單位是「套」，只填一個鎖定套數 N</li>
   <li>空白或 0＝不鎖定，各成員與其他販售管道共用沒有被鎖定的庫存量</li>
@@ -247,7 +245,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>只改分配也記一筆</li>
 </ul>
 
-<h4>鎖定套數的上限</h4>
+<h4 id="stock-lock-max">最多能鎖幾套</h4>
 <ul class="plain">
   <li>N 的上限＝每個成員能湊出的套數取最小</li>
   <li>商品成員：沒有被鎖定的庫存量 ÷ 每套用量，無條件捨去</li>
@@ -256,7 +254,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>補貨後上限放寬，已鎖的 N 不會自動變</li>
 </ul>
 
-<h4>逐規格或逐票種分配</h4>
+<h4 id="stock-lock-split">逐規格或逐票種分配</h4>
 <ul class="plain">
   <li>多規格商品可以選填逐規格分配：指定哪些選項組合各鎖幾件</li>
   <li>每格不得大於該選項組合當下沒有被鎖定的量，合計不得大於 N × 每套用量</li>
@@ -266,14 +264,14 @@ td.num{font-variant-numeric:tabular-nums}
   <li>少分配的餘量從該成員未鎖定的整體量裡扣，單售與其他組合包都拿不到</li>
 </ul>
 
-<h3>共用庫存的影響</h3>
+<h3 id="stock-shared">共用庫存的影響</h3>
 <p>商品的單售還沒開賣時，組合包照樣成交，並從共用庫存扣量。</p>
 <ul class="plain">
   <li>要替單售保留數量，用組合包的鎖定套數或限量，框住組合包能用的量</li>
   <li>單售自己的鎖定量是另一個做法，見<a href="eshop-sales.html#stock">電子商店販售流程</a></li>
 </ul>
 
-<h3>試算分配</h3>
+<h3 id="stock-calc">試算分配</h3>
 <p>以單一規格商品、單售與一個組合包兩條販售管道為例，調整數字看各自能賣多少。</p>
 <div class="sim" id="calc">
   <div class="row">
@@ -292,9 +290,9 @@ td.num{font-variant-numeric:tabular-nums}
 <p class="note">依據：主規格 §7.14「庫存規則：共用池與鎖定」「組合包：鎖定套數」「三個狀態開關」；5.1.5.4 §4 F4；5.1.5.9 §2.3；D241、D266、D292、D296。</p>
 
 <h2 id="switches"><span class="n">4</span>組合包的上架、顯示、開賣開關</h2>
-<p>組合包發布後有自己的一組上架、顯示、開賣開關，定義與狀態組合同<a href="eshop-sales.html#switches">電子商店販售流程的三個開關</a>；商品成員自己的開關只有下架會影響組合包。</p>
+<p>組合包發布後有自己的一組上架、顯示、開賣開關，定義與狀態組合同<a href="eshop-sales.html#switches">電子商店販售流程的三個開關</a>；商品成員自己的開關只有下架會影響組合包。商品成員的開關管到哪，見<a href="#switches-member">商品成員開關的影響範圍</a>；門票成員看什麼，見<a href="#switches-ticket">門票成員看所屬活動</a>；活動怎麼限制票務商品，見<a href="#switches-ceiling">活動是票務商品開關的上限</a>；關掉票務商品的開關有什麼效果，見<a href="#switches-noback">票務商品的開關不回寫活動</a>。</p>
 
-<h3>商品成員開關的影響範圍</h3>
+<h3 id="switches-member">商品成員開關的影響範圍</h3>
 <p>商品的顯示與開賣只管單售，只有下架會帶著組合包一起下架。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:26%">商品的開關</th><th style="width:22%">管到哪</th><th>對含這件商品的組合包</th></tr></thead>
@@ -309,7 +307,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>只停售的話，停的是單售，組合包照樣賣</li>
 </ul>
 
-<h3>門票成員看所屬活動</h3>
+<h3 id="switches-ticket">門票成員看所屬活動</h3>
 <p>門票成員能不能賣，看所屬活動是否已上架、未取消、未結束，見<a href="#deal">組合包什麼時候能成交</a>。</p>
 <ul class="plain">
   <li>單張門票的顯示開關與購買條件只管單張購買</li>
@@ -317,7 +315,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>票務商品用自己的購買條件，見<a href="#rules">票務商品的購買條件</a></li>
 </ul>
 
-<h3>活動是票務商品開關的上限</h3>
+<h3 id="switches-ceiling">活動是票務商品開關的上限</h3>
 <p>票務商品的上架、顯示、開賣只能在活動允許的範圍內收窄，不能比活動寬；自動建立與創作者自建的票務商品都一樣。</p>
 <ul class="plain">
   <li>活動未上架、已下架、已取消或已結束時，票務商品不能上架</li>
@@ -325,10 +323,10 @@ td.num{font-variant-numeric:tabular-nums}
   <li>組合包原本的顯示值保留，活動切回顯示後，照組合包自己的開關</li>
   <li>票務商品的開賣與停售都不能晚於活動停售，活動停售後就不能再買</li>
   <li>唯一的例外是提前販售：票務商品另設的開賣可以早於活動的正式開賣，但仍要在活動上架區間內</li>
-  <li>完整的上限規則見<a href="events.html#ceiling">活動設定是門票與票務商品的上限</a></li>
+  <li>完整的上限規則見<a href="event-rules.html#ceiling">活動設定是門票與票務商品的上限</a></li>
 </ul>
 
-<h3>票務商品的開關不回寫活動</h3>
+<h3 id="switches-noback">票務商品的開關不回寫活動</h3>
 <p>票務商品自己的開關可以在活動允許的範圍內調整，關掉不影響活動。</p>
 <ul class="plain">
   <li>活動開賣中，票務商品可以自己先停售、隱藏或下架</li>
@@ -339,7 +337,7 @@ td.num{font-variant-numeric:tabular-nums}
 <p class="note">依據：主規格 §7.14「三個狀態開關」「組合包成交條件」「活動販售的時間層級」；D241、D288、D292、D294、D328、D332、D342、D363。</p>
 
 <h2 id="deal"><span class="n">5</span>組合包什麼時候能成交</h2>
-<p>組合包要成交，組合包自己、每個商品成員、每個門票成員都要同時符合條件。</p>
+<p>組合包要成交，組合包自己、每個商品成員、每個門票成員都要同時符合條件。多規格與門票成員怎麼判斷還有沒有量，見<a href="#deal-stock">多規格與門票成員的可售量判定</a>；哪些情況會不能賣，見<a href="#deal-blocked">什麼會讓組合包不能賣</a>。</p>
 <div class="grid">
   <div class="card ok"><div class="band"></div><h3>組合包自己</h3><p>上架 ＋ 開賣。</p>
     <ul class="plain">
@@ -362,7 +360,7 @@ td.num{font-variant-numeric:tabular-nums}
     </ul></div>
 </div>
 
-<h3>多規格與門票成員的可售量判定</h3>
+<h3 id="deal-stock">多規格與門票成員的可售量判定</h3>
 <p>多規格商品成員與門票成員「還有沒有可售量」，依有沒有鎖定分三種情形。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:22%">情形</th><th>多規格商品成員</th><th>門票成員（允許票種讀作規格）</th></tr></thead>
@@ -377,7 +375,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>這張表只定「這個成員還有沒有量」，組合包可售量的公式不變</li>
 </ul>
 
-<h3>什麼會讓組合包不能賣</h3>
+<h3 id="deal-blocked">什麼會讓組合包不能賣</h3>
 <p>任一成員下架，或在這個組合包的可售量歸零，組合包就不能賣。</p>
 <ul class="plain">
   <li>組合包不能賣時，顯示售罄或不可購買</li>
@@ -391,20 +389,20 @@ td.num{font-variant-numeric:tabular-nums}
 <p class="note">依據：主規格 §7.14「組合包成交條件」「非公開連結」；D288、D292、D295、D296、D332、D342、D363、D375。</p>
 
 <h2 id="timing"><span class="n">6</span>票務商品的上架與開賣時間</h2>
-<p>票務商品的上架與開賣時間預設跟隨所屬活動，創作者也可以在活動的上架區間內另設。</p>
+<p>票務商品的上架與開賣時間預設跟隨所屬活動，創作者也可以在活動的上架區間內另設。活動還沒發布時，見<a href="#timing-draft">活動還是草稿時</a>；預設跟隨哪些時間，見<a href="#timing-follow">四個時間預設跟隨活動</a>；另設有哪些限制，見<a href="#timing-own">另設自己的時間</a>；實際什麼時候能買，見<a href="#timing-buy">票務商品什麼時候買得到</a>；清單上標什麼，見<a href="#timing-badge">電子商店清單的徽章</a>。</p>
 <ul class="plain">
   <li>活動的上架區間是最大的範圍，包住活動的售票期間</li>
   <li>單張門票的限時間只須落在上架區間內</li>
-  <li>三層的定義見<a href="events.html#timing">活動的販售時間的三層</a></li>
+  <li>時間線的定義見<a href="event-rules.html#timing">活動的販售時間</a></li>
 </ul>
 
-<h3>活動還是草稿時</h3>
+<h3 id="timing-draft">活動還是草稿時</h3>
 <p>活動還沒發布時，票務商品也是草稿，不對外，也不出現在電子商店的組合包清單。</p>
 <ul class="plain">
   <li>活動發布後，票務商品照下面的規則上架與開賣</li>
 </ul>
 
-<h3>四個時間預設跟隨活動</h3>
+<h3 id="timing-follow">四個時間預設跟隨活動</h3>
 <p>票務商品的上架、下架、開賣、停售四個時間，沒另設時跟隨活動對應的時間。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:30%">票務商品的時間</th><th>沒另設時跟隨活動的</th></tr></thead>
@@ -421,7 +419,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>建立與編輯時，每個時間是跟隨活動還是另設，都要看得出來</li>
 </ul>
 
-<h3>另設自己的時間</h3>
+<h3 id="timing-own">另設自己的時間</h3>
 <p>創作者可以另設票務商品自己的時間，每個時間都必須落在活動上架區間內。</p>
 <ul class="plain">
   <li>另設的時間不能早於活動上架，也不能晚於活動下架</li>
@@ -429,10 +427,10 @@ td.num{font-variant-numeric:tabular-nums}
   <li>另設的開賣與停售不能晚於活動停售</li>
   <li>另設的時間可以早於活動開賣，例如組合包預售</li>
   <li>預售要成立，活動得明填一個晚於上架的開賣時間</li>
-  <li>活動開賣留空＝上架即開賣，就沒有「早於開賣」的空間，見<a href="events.html#timing">活動</a></li>
+  <li>活動開賣留空＝上架即開賣，就沒有「早於開賣」的空間，見<a href="event-rules.html#timing">活動的販售時間</a></li>
 </ul>
 
-<h3>票務商品什麼時候買得到</h3>
+<h3 id="timing-buy">票務商品什麼時候買得到</h3>
 <p>票務商品可購買的時間，先看購買條件的限時間，沒設再看自己的開賣設定。</p>
 <ul class="plain">
   <li>有設購買條件的限時間：看限時間</li>
@@ -440,7 +438,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>沒設限時間、而且跟隨活動時，就是活動的售票期間</li>
 </ul>
 
-<h3>電子商店清單的徽章</h3>
+<h3 id="timing-badge">電子商店清單的徽章</h3>
 <p>票務商品在電子商店清單上的狀態徽章，跟所屬活動一致。</p>
 <ul class="plain">
   <li>活動售票中：標「售票中」</li>
@@ -452,13 +450,13 @@ td.num{font-variant-numeric:tabular-nums}
 <p class="note">依據：主規格 §7.14「活動販售的時間層級」第 5～9 條、「三個狀態開關」；5.1.5 F4；D293、D294、D342、D363。</p>
 
 <h2 id="rules"><span class="n">7</span>票務商品的購買條件</h2>
-<p>票務商品有自己的一組購買條件與限購，預設照所含門票來，創作者可以調整。</p>
+<p>票務商品有自己的一組購買條件與限購，預設照所含門票來，創作者可以調整。有哪些欄位，見<a href="#rules-fields">購買條件與限購的欄位</a>；預設怎麼取，見<a href="#rules-default">預設值：照所含門票，多種時取最嚴</a>；哪些不能改，見<a href="#rules-locked">不能改的條件</a>；哪些門票設定不帶進來，見<a href="#rules-skip">不沿用的設定</a>。</p>
 <ul class="plain">
-  <li>單張門票的購買條件與限購只管單張購買，見<a href="event-create.html#create">建立活動</a></li>
+  <li>單張門票的購買條件與限購只管單張購買，見<a href="event-create-step5.html#purchase-rules">步驟 5 門票與購票規則</a></li>
   <li>票務商品用自己這一組，兩組各管各的</li>
 </ul>
 
-<h3>購買條件與限購的欄位</h3>
+<h3 id="rules-fields">購買條件與限購的欄位</h3>
 <p>購買條件與限購決定誰能買、什麼時候能買、最多買幾套；價格由組合折扣與限時折扣決定，見<a href="#price">組合包的價格</a>。</p>
 <ul class="plain">
   <li>購買條件：不限，或限制
@@ -478,7 +476,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>單張門票的各種折扣條件不沿用到票務商品</li>
 </ul>
 
-<h3>預設值：照所含門票，多種時取最嚴</h3>
+<h3 id="rules-default">預設值：照所含門票，多種時取最嚴</h3>
 <p>所含門票＝門票成員允許的票種在這一場的門票；各門票條件不同時，預設取最嚴的那一個。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:22%">條件</th><th>預設怎麼取</th><th style="width:34%">創作者可以怎麼調</th></tr></thead>
@@ -496,7 +494,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>購買資格與 Top Fan 優先購票目前只有名稱、還沒有欄位規則，落地時照「只能收窄」</li>
 </ul>
 
-<h3>不能改的條件</h3>
+<h3 id="rules-locked">不能改的條件</h3>
 <p>下列條件創作者在票務商品上不能改。</p>
 <ul class="plain">
   <li>bookyay 帶入且鎖定的條件</li>
@@ -506,7 +504,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>票種張數的硬上限</li>
 </ul>
 
-<h3>不沿用的設定</h3>
+<h3 id="rules-skip">不沿用的設定</h3>
 <p>單張門票的下列設定不帶進票務商品。</p>
 <ul class="plain">
   <li>單張門票自己的折扣，包含 bookyay 1 人票的早鳥</li>
@@ -516,19 +514,19 @@ td.num{font-variant-numeric:tabular-nums}
 <p class="note">依據：主規格 §7.14「票務商品的購買條件」；5.1.6.1 F22；D328、D329、D342、D366、D367、D375。</p>
 
 <h2 id="from-event"><span class="n">8</span>從活動建立票務商品</h2>
-<p>建立活動流程的「票務商品」步驟，是從活動直接建立組合包的捷徑；這一步可以跳過，不影響發布。</p>
+<p>建立活動流程的「票務商品」步驟，是從活動直接建立組合包的捷徑；這一步可以跳過，不影響發布。這一步要填什麼，見<a href="#from-event-fields">這一步收的欄位</a>；跟從電子商店建立有什麼不同，見<a href="#from-event-diff">從活動進來時的差異</a>；建好後在哪管理，見<a href="#from-event-after">建立之後</a>。</p>
 <ul class="plain">
   <li>跟發布有關的只有可賣性，見<a href="event-create.html#sellable">活動的可賣條件與發布檢核</a></li>
 </ul>
 
-<h3>這一步收的欄位</h3>
+<h3 id="from-event-fields">這一步收的欄位</h3>
 <p>這一步收齊組合包的全部欄位，欄位定義同電子商店的建立組合包。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:30%">欄位</th><th>說明</th></tr></thead>
   <tbody>
     <tr><td>組合名稱（必填）<br>描述</td><td>名稱在儲存這個組合包時檢查，不列入活動的發布前檢核</td></tr>
     <tr><td>素材</td><td>主圖＋附圖，每格可放圖片或影片</td></tr>
-    <tr><td>成員</td><td>預帶一筆本場門票成員，見下方「從活動進來時的差異」<br>可再加電子商店的商品</td></tr>
+    <tr><td>成員</td><td>預帶一筆本場門票成員，見<a href="#from-event-diff">從活動進來時的差異</a><br>可再加電子商店的商品</td></tr>
     <tr><td>額外權益</td><td>選填，一行一項</td></tr>
     <tr><td>組合價格</td><td>原價合計<br>組合折扣 %<br>售價<br>規則見<a href="#price">組合包的價格</a></td></tr>
     <tr><td>庫存</td><td>不限量或限量<br>鎖定套數與逐票種分配，見<a href="#stock">組合包的庫存與鎖定套數</a></td></tr>
@@ -543,7 +541,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>取貨與核銷沒有輸入欄：門票每張各自一個 QR、各自報到</li>
 </ul>
 
-<h3>從活動進來時的差異</h3>
+<h3 id="from-event-diff">從活動進來時的差異</h3>
 <p>從活動進來時，成員已預先帶入這一場的門票，而且只能挑這一場。</p>
 <ul class="plain">
   <li>預帶門票成員：本活動全部票種都允許、張數 1</li>
@@ -557,7 +555,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>共看派對沒有票種，沒有這一步</li>
 </ul>
 
-<h3>建立之後</h3>
+<h3 id="from-event-after">建立之後</h3>
 <p>建好的組合包之後一律在組合商品細節頁管理。</p>
 <ul class="plain">
   <li>後續編輯、上下架、封存一律在組合商品細節頁做，活動這一側不另開編輯器</li>
@@ -567,12 +565,12 @@ td.num{font-variant-numeric:tabular-nums}
 <p class="note">依據：5.1.6.1 F20；5.1.5.4 §4；D292、D293、D296、D329、D330、D342。</p>
 
 <h2 id="unlist"><span class="n">9</span>組合包的下架連動與刪除</h2>
-<p>成員下架或活動取消時，含該成員的上架中組合包會一起下架。組合包重新上架時，也會帶著已下架的成員一起上架。</p>
+<p>成員下架或活動取消時，含該成員的上架中組合包會一起下架。組合包重新上架時，也會帶著已下架的成員一起上架。哪些下架會連動，見<a href="#unlist-cascade">誰下架會帶著組合包一起下架</a>；重新上架怎麼帶成員，見<a href="#unlist-relist">組合包重新上架時帶著成員上架</a>；賣出後哪些內容不能改，見<a href="#unlist-lock">售出後鎖定成員內容</a>；怎麼刪除，見<a href="#unlist-delete">刪除組合包</a>。</p>
 <ul class="plain">
   <li>通用的下架、封存與刪除規則，見<a href="eshop-sales.html#archive">電子商店販售流程的下架、封存與刪除</a></li>
 </ul>
 
-<h3>誰下架會帶著組合包一起下架</h3>
+<h3 id="unlist-cascade">誰下架會帶著組合包一起下架</h3>
 <p>單售商品下架、活動取消或下架時，含該商品或該活動門票的上架中組合包一同下架。</p>
 <ul class="plain">
   <li>單售商品下架時，若還在任何上架中組合包裡，確認內容列出這些組合包名稱</li>
@@ -587,7 +585,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>組合包因成員下架而一同下架時，組合商品細節頁要看得出原因與是哪一個成員</li>
 </ul>
 
-<h3>組合包重新上架時帶著成員上架</h3>
+<h3 id="unlist-relist">組合包重新上架時帶著成員上架</h3>
 <p>上架中的組合包，成員一律在上架中。</p>
 <ul class="plain">
   <li>組合包從已下架重新上架，會連帶重新上架這個組合包所有已下架的成員</li>
@@ -600,7 +598,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>組合包開賣後就能帶著成員成交，不必等成員開賣</li>
 </ul>
 
-<h3>售出後鎖定成員內容</h3>
+<h3 id="unlist-lock">售出後鎖定成員內容</h3>
 <p>組合包賣出任何一套之後，成員內容就鎖定。</p>
 <ul class="plain">
   <li>鎖定的內容：成員清單、門票成員的允許票種與張數 n、各成員數量</li>
@@ -618,7 +616,7 @@ td.num{font-variant-numeric:tabular-nums}
   <li>含 bookyay 匯入活動門票的組合包，撤銷由 Admin 在 bookyay 後台執行，ztor 唯讀；ztor 的撤銷功能保留但停用</li>
 </ul>
 
-<h3>刪除組合包</h3>
+<h3 id="unlist-delete">刪除組合包</h3>
 <p>零成交、且已下架或已封存的組合包可以刪除，見<a href="eshop-sales.html#archive">電子商店販售流程</a>。</p>
 <ul class="plain">
   <li>刪除組合包不影響成員</li>
