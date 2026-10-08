@@ -155,3 +155,139 @@ body>.wrap{margin-left:calc(var(--side-w,232px) + 32px);margin-right:auto}
   .rb-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:19}
   body.rb-open .rb-backdrop{display:block}
 }
+/* ===== 圖表（WRITING-GUIDE「呈現形式」：流程圖、時間軸圖、矩陣圖、繼承圖）=====
+   一律用頁面 HTML＋本段樣式畫；外框可橫向捲動，窄螢幕不撐破版面。顏色只用各頁 :root 的 token。 */
+.wrap .dg{margin:12px 0 6px;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--surface);overflow-x:auto;font-size:12.5px;line-height:1.45;color:var(--text-2);-webkit-overflow-scrolling:touch}
+.wrap .dg-cap{font-size:12.5px;line-height:1.65;color:var(--text-3);margin:6px 0 16px}
+.wrap .dg-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:0 0 12px;font-size:11.5px;color:var(--text-3)}
+.wrap .dg-legend span{display:inline-flex;align-items:center;gap:6px}
+.wrap .dg-legend i{display:inline-block;width:14px;height:10px;border-radius:3px;border:1px solid var(--border-strong);background:var(--surface)}
+/* 節點：一般步驟；.q 判斷（問句）、.end 結果、.opt 選用、.skip 跳過、.lock 鎖定或帶入、.stop 擋下 */
+.wrap .dg-node{flex:none;display:block;min-width:84px;max-width:168px;padding:7px 10px;border:1px solid var(--border-strong);border-radius:8px;background:var(--surface);color:var(--text);font-size:12.5px;line-height:1.4;text-align:left}
+.wrap .dg-node small{display:block;margin-top:2px;font-size:11px;line-height:1.4;color:var(--text-3)}
+.wrap .dg-node .s{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-right:5px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:10.5px;font-variant-numeric:tabular-nums;vertical-align:1px}
+.wrap .dg-node.q{border-style:dashed;border-color:var(--wait-key);background:var(--wait-fill);color:var(--wait-ink)}
+.wrap .dg-node.q small{color:var(--wait-ink);opacity:.8}
+.wrap .dg-node.end{border-color:var(--ok-line);background:var(--ok-fill);color:var(--ok-ink)}
+.wrap .dg-node.end small{color:var(--ok-ink);opacity:.8}
+.wrap .dg-node.opt{border-style:dashed}
+.wrap .dg-node.skip{border-style:dashed;border-color:var(--border-strong);background:transparent;color:var(--text-3)}
+.wrap .dg-node.skip .s{background:var(--border-strong);color:var(--surface)}
+.wrap .dg-node.lock{border-color:var(--pink-line);background:var(--pink-fill);color:var(--pink-ink)}
+.wrap .dg-node.lock small{color:var(--pink-ink);opacity:.8}
+.wrap .dg-node.stop{border-color:var(--warn-line);background:var(--warn-fill);color:var(--warn-ink)}
+.wrap .dg-node.stop small{color:var(--warn-ink);opacity:.8}
+.wrap .dg-node.wide{max-width:240px}
+/* 流程：節點與箭頭排成一列；箭頭上可寫出口文字（data-t） */
+.wrap .dg-flow{display:flex;align-items:center;min-width:max-content}
+.wrap .dg-arr{flex:none;position:relative;width:24px;height:1px;margin:0 6px 0 2px;background:var(--text-3)}
+.wrap .dg-arr::after{content:"";position:absolute;right:-1px;top:-4px;border:4.5px solid transparent;border-left:6px solid var(--text-3);border-right:0}
+.wrap .dg-arr[data-t]{width:auto;min-width:40px}
+.wrap .dg-arr[data-t]::before{content:attr(data-t);display:block;position:relative;top:-17px;padding:0 6px 0 2px;font-size:11px;line-height:1;color:var(--text-2);white-space:nowrap;text-align:center}
+/* 分岔：.dg-fork 內每條 .dg-lane 從左側的直線分出；有 .dg-join 的路線在右側收回同一條線 */
+.wrap .dg-fork{--dg-gap:12px;flex:none;display:flex;flex-direction:column;gap:var(--dg-gap)}
+.wrap .dg-lane{position:relative;display:flex;align-items:center;padding-left:16px}
+.wrap .dg-lane::before{content:"";position:absolute;left:0;top:50%;width:16px;height:1px;background:var(--text-3)}
+.wrap .dg-lane::after{content:"";position:absolute;left:0;top:0;bottom:calc(-1 * var(--dg-gap));width:1px;background:var(--text-3)}
+.wrap .dg-lane:first-child::after{top:50%}
+.wrap .dg-lane:last-child::after{bottom:50%}
+.wrap .dg-lane:only-child::after{display:none}
+.wrap .dg-exit{flex:none;margin:0 2px 0 0;padding:1px 8px;border:1px solid var(--border);border-radius:999px;background:var(--surface-sunken);font-size:11px;line-height:1.6;color:var(--text-2);white-space:nowrap}
+.wrap .dg-join{flex:1;align-self:stretch;position:relative;min-width:18px}
+.wrap .dg-join::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--text-3)}
+.wrap .dg-join::after{content:"";position:absolute;right:0;top:0;bottom:calc(-1 * var(--dg-gap));width:1px;background:var(--text-3)}
+.wrap .dg-lane:first-child>.dg-join::after{top:50%}
+.wrap .dg-lane:last-child>.dg-join::after{bottom:50%}
+.wrap .dg-lane:only-child>.dg-join::after{display:none}
+/* 直排堆疊（例如區塊清單、對照列） */
+.wrap .dg-col{flex:none;display:flex;flex-direction:column;gap:6px}
+.wrap .dg-col>.dg-node{max-width:none}
+.wrap .dg-col__h{font-size:11.5px;color:var(--text-3);margin:0 0 2px}
+.wrap .dg-stack{display:flex;flex-direction:column;gap:8px;min-width:max-content}
+.wrap .dg-stack .dg-flow>.dg-node:first-child{width:var(--dg-w1,240px);max-width:none}
+/* 矩陣：列 × 欄生成的格子（例如場次 × 票種 → 門票）；.off 已移除、.hid 隱藏、.sum 合計、.fb 沿用原文 */
+.wrap .dg-mx{display:grid;grid-template-columns:auto repeat(var(--dg-c,2),minmax(112px,1fr));gap:6px;min-width:max-content;align-items:stretch}
+.wrap .dg-mx>*{padding:7px 10px;border-radius:8px;font-size:12.5px;line-height:1.4}
+.wrap .dg-mx .h{padding:4px 10px;color:var(--text-2);font-weight:500;font-size:12px;align-self:end}
+.wrap .dg-mx .h small,.wrap .dg-mx .r small,.wrap .dg-mx .c small{display:block;font-weight:400;font-size:11px;color:var(--text-3)}
+.wrap .dg-mx .r{color:var(--text-2);font-weight:500;font-size:12px;background:var(--surface-sunken);display:flex;flex-direction:column;justify-content:center}
+.wrap .dg-mx .c{border:1px solid var(--border-strong);background:var(--surface);color:var(--text)}
+.wrap .dg-mx .c.hid{border-style:dashed;color:var(--text-2)}
+.wrap .dg-mx .c.off{border-style:dashed;border-color:var(--border);background:transparent;color:var(--text-3)}
+.wrap .dg-mx .c.off b{text-decoration:line-through;font-weight:400}
+.wrap .dg-mx .c.fb{border-style:dashed;background:var(--surface-sunken);color:var(--text-2)}
+.wrap .dg-mx .c.sum{border-color:var(--ok-line);background:var(--ok-fill);color:var(--ok-ink)}
+.wrap .dg-mx .c.sum small{color:var(--ok-ink);opacity:.8}
+.wrap .dg-mx .c b{font-weight:500}
+.wrap .dg-mx .span{grid-column:2 / -1}
+/* 繼承：上層設定往下分給好幾個對象；實線＝跟隨上層，虛線＝自己的一組 */
+.wrap .dg-inh{display:flex;flex-direction:column;align-items:center;min-width:max-content}
+.wrap .dg-inh>.dg-node{max-width:300px;text-align:center}
+.wrap .dg-inh__kids{display:flex;position:relative;padding-top:24px}
+.wrap .dg-inh__kids::before{content:"";position:absolute;top:0;left:50%;height:12px;width:1px;background:var(--text-3)}
+.wrap .dg-inh__kid{position:relative;display:flex;flex-direction:column;align-items:center;padding:0 8px}
+.wrap .dg-inh__kid::before{content:"";position:absolute;top:-12px;left:0;right:0;height:1px;background:var(--text-3)}
+.wrap .dg-inh__kid:first-child::before{left:50%}
+.wrap .dg-inh__kid:last-child::before{right:50%}
+.wrap .dg-inh__kid:only-child::before{display:none}
+.wrap .dg-inh__kid::after{content:"";position:absolute;top:-12px;left:50%;height:12px;border-left:1px solid var(--text-3)}
+.wrap .dg-inh__kid.own::after{border-left-style:dashed}
+.wrap .dg-inh__rel{margin:0 0 6px;padding:0 8px;border:1px solid var(--border);border-radius:999px;background:var(--surface-sunken);font-size:11px;line-height:1.7;color:var(--text-2);white-space:nowrap}
+.wrap .dg-inh__kid.own .dg-inh__rel{border-style:dashed;background:transparent}
+.wrap .dg-inh__kid>.dg-node{width:200px;max-width:none}
+/* 時間軸：一列一條時間線，時間由左到右；.dg-tl__marks 是貫穿各列的關鍵時間點虛線（left 用百分比） */
+.wrap .dg-tl{--dg-k:150px;position:relative;min-width:600px}
+.wrap .dg-tl__row{display:grid;grid-template-columns:var(--dg-k) 1fr;gap:12px;align-items:center;margin-bottom:8px}
+.wrap .dg-tl__k{font-size:12.5px;line-height:1.4;color:var(--text)}
+.wrap .dg-tl__k span{display:block;font-size:11px;color:var(--text-3)}
+.wrap .dg-tl__track{position:relative;height:22px;border-radius:999px;background:var(--surface-sunken)}
+.wrap .dg-tl__bar{position:absolute;top:0;bottom:0;z-index:2;display:flex;overflow:hidden;border:1px solid var(--border-strong);border-radius:999px;background:var(--surface);box-sizing:border-box}
+.wrap .dg-tl__bar>i{flex:1 1 0;display:flex;align-items:center;justify-content:center;padding:0 6px;font-style:normal;font-size:11px;line-height:1;color:var(--text);white-space:nowrap;overflow:hidden}
+.wrap .dg-tl__bar>i+i{border-left:1px dashed var(--text-3)}
+.wrap .dg-tl__bar.ok{background:var(--ok-fill);border-color:var(--ok-line)}
+.wrap .dg-tl__bar.wait{background:var(--wait-fill);border-color:var(--wait-line)}
+.wrap .dg-tl__bar.pink{background:var(--pink-fill);border-color:var(--pink-line)}
+.wrap .dg-tl__bar.warn{background:var(--warn-fill);border-color:var(--warn-line)}
+.wrap .dg-tl__bar.off{background:var(--surface-sunken);border-color:var(--border)}
+.wrap .dg-tl__bar.off>i{color:var(--text-3)}
+.wrap .dg-tl__bar.st{border-radius:4px}
+.wrap .dg-tl__bar.pre{border-style:dashed;background:transparent;opacity:.8}
+.wrap .dg-tl__marks{position:absolute;z-index:1;top:0;bottom:22px;left:calc(var(--dg-k) + 12px);right:0;pointer-events:none}
+.wrap .dg-tl__marks>i{position:absolute;top:0;bottom:0;border-left:1px dashed var(--text-3);opacity:.75}
+.wrap .dg-tl__axis{position:relative;height:22px;padding-top:4px;font-size:11px;color:var(--text-3)}
+.wrap .dg-tl__row.axis{margin-bottom:0}
+.wrap .dg-tl:has(.low) .dg-tl__axis{height:38px}
+.wrap .dg-tl:has(.low) .dg-tl__marks{bottom:38px}
+.wrap .dg-tl__axis>span{position:absolute;top:4px;transform:translateX(-50%);white-space:nowrap}
+.wrap .dg-tl__axis>span.l{transform:none}
+.wrap .dg-tl__axis>span.r{transform:translateX(-100%)}
+.wrap .dg-tl__axis>span.key{color:var(--text-2);font-weight:600}
+.wrap .dg-tl__axis>span.low{top:20px}
+@media (max-width:600px){
+  .wrap .dg-tl{min-width:0}
+  .wrap .dg-tl__row{grid-template-columns:1fr;gap:4px}
+  .wrap .dg-tl__row.axis>.dg-tl__k{display:none}
+  .wrap .dg-tl__marks{display:none}
+  .wrap .dg-tl__k span{display:inline;margin-left:6px}
+  .wrap .dg-inh__kid{padding:0 4px}
+  .wrap .dg-inh__kid>.dg-node{width:136px}
+  .wrap .dg-inh__rel{white-space:normal;text-align:center}
+  .wrap .dg-tl.wide{min-width:520px}
+}
+/* 直向流程：由上往下走，欄是並行的路線（例如演出型與共看派對），列對齊同一個步驟；
+   每個項目用 grid-row／grid-column 放位置；.in 從正上方畫一支箭頭進來，.in2 從兩條路線各畫一支（位置用 --a1、--a2 調），data-t 是箭頭旁的出口文字 */
+.wrap .dg-v{--dg-ar:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='22' viewBox='0 0 10 22'%3E%3Cpath d='M5 0V16' stroke='%23000' stroke-width='1.2'/%3E%3Cpath d='M0.5 15.5L5 22L9.5 15.5Z'/%3E%3C/svg%3E");--dg-m:24px;display:grid;grid-template-columns:repeat(var(--dg-c,2),minmax(132px,1fr));row-gap:22px;min-width:max-content;justify-items:center}
+.wrap .dg-v>*{position:relative;width:calc(100% - var(--dg-m));max-width:none}
+.wrap .dg-v>.dg-exit{width:auto;justify-self:center;align-self:center}
+.wrap .dg-v>.dg-node{text-align:center}
+.wrap .dg-v>.dg-node.tall{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.wrap .dg-v>.in::before,.wrap .dg-v>.in2::before,.wrap .dg-v>.in2::after{content:"";position:absolute;top:-22px;left:calc(50% - 5px);width:10px;height:22px;background:var(--text-3);-webkit-mask:var(--dg-ar) no-repeat center/10px 22px;mask:var(--dg-ar) no-repeat center/10px 22px}
+.wrap .dg-v>.in2::before{left:calc(var(--a1,25% - var(--dg-m) / 4) - 5px)}
+.wrap .dg-v>.in2::after{left:calc(var(--a2,75% + var(--dg-m) / 4) - 5px)}
+.wrap .dg-v>.dg-vline{width:1px;margin-top:-22px;background:var(--text-3);justify-self:center}
+.wrap .dg-v>.dg-vline[data-t]::after{content:attr(data-t);position:absolute;top:3px;left:9px;font-size:11px;line-height:1.4;color:var(--text-2);white-space:nowrap}
+.wrap .dg-v>.in[data-t]::after{content:attr(data-t);position:absolute;top:-19px;left:calc(50% + 9px);font-size:11px;line-height:1.4;color:var(--text-2);white-space:nowrap}
+@media (max-width:600px){
+  .wrap .dg-v{--dg-m:10px;min-width:0;grid-template-columns:repeat(var(--dg-c,2),minmax(92px,1fr))}
+  .wrap .dg-v>.dg-node{padding:6px;font-size:12px}
+}
