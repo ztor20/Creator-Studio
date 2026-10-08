@@ -5,15 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>步驟 3：場次 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261008k">
-<script src="shell.js?v=20261008k" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261008l">
+<script src="shell.js?v=20261008l" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
   --border:#e2ded8; --border-strong:#c9c4bc;
   --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
-  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56;
-  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
   --radius:8px;
 }
 @media (prefers-color-scheme: dark){
@@ -21,16 +24,22 @@
     --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
     --border:#33313a; --border-strong:#4a4854;
     --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
-    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb;
-    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
   }
 }
 :root[data-theme="dark"]{
   --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
   --border:#33313a; --border-strong:#4a4854;
   --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
-  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb;
-  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
 }
 *{box-sizing:border-box}
 body{
@@ -86,6 +95,16 @@ table.fields td:nth-child(2){width:24%}
 
 <h3 id="single-venue">只做定點</h3>
 <p>一場活動的所有場次都在同一個場地，場地只填一次。</p>
+<div class="dg" role="img" aria-label="場地與場次示意：場地填一次，所有場次共用；每一場各有自己的日期、時間、跨日活動與開放入場">
+<div class="dg-inh">
+  <div class="dg-node">場地：填一次，所有場次共用<small>場地名稱<br>完整地址<br>集合地點<br>交通</small></div>
+  <div class="dg-inh__kids">
+    <div class="dg-inh__kid"><span class="dg-inh__rel">共用場地</span><div class="dg-node">第 1 場<small>活動日期<br>開始與結束時間<br>跨日活動<br>開放入場</small></div></div>
+    <div class="dg-inh__kid"><span class="dg-inh__rel">共用場地</span><div class="dg-node">第 2 場<small>活動日期<br>開始與結束時間<br>跨日活動<br>開放入場</small></div></div>
+  </div>
+</div>
+</div>
+<p class="dg-cap">示意圖：上面的場地欄位整場活動只填一次，下面每一場各填一組時間。每一站換一個場地的巡迴，改成每一站各建一場活動。</p>
 <ul class="plain">
   <li>沒有「定點／多站」的選項，也沒有多站專屬欄位</li>
   <li>每一站換一個場地的巡迴，改成每一站各建一場活動、各自設定場地，再用系列活動串起來</li>
@@ -96,6 +115,15 @@ table.fields td:nth-child(2){width:24%}
 
 <h3 id="multi-day">跨日活動</h3>
 <p>一場跨過一天以上時，打開這一場的跨日活動開關，多填一個結束日期。</p>
+<div class="dg" role="img" aria-label="跨日活動示意：開關關閉時，一場落在活動日期當天；開關打開時，從活動日期加開始時間，跨到結束日期加結束時間，結束要晚於開始">
+<div class="dg-tl">
+  <div class="dg-tl__marks"><i style="left:0"></i><i style="left:33.33%"></i><i style="left:66.67%"></i><i style="left:100%"></i></div>
+  <div class="dg-tl__row"><div class="dg-tl__k">跨日活動關閉<span>預設</span></div><div class="dg-tl__track"><span class="dg-tl__bar" style="left:12%;width:16%"><i>當天</i></span></div></div>
+  <div class="dg-tl__row"><div class="dg-tl__k">跨日活動開啟<span>多填結束日期</span></div><div class="dg-tl__track"><span class="dg-tl__bar ok" style="left:12%;width:77%"><i>開始 → 結束</i></span></div></div>
+  <div class="dg-tl__row axis"><div class="dg-tl__k"></div><div class="dg-tl__axis"><span class="key" style="left:16.67%">活動日期</span><span style="left:50%">中間的日子</span><span class="key" style="left:83.33%">結束日期</span></div></div>
+</div>
+</div>
+<p class="dg-cap">示意圖：時間由左到右，虛線是日期的分界。關閉時一場只有一個活動日期，開始與結束時間選填；開啟時多一個結束日期，這一場的開始與結束時間變必填，結束要晚於開始。</p>
 <ul class="plain">
   <li>每一場各一個跨日活動開關，預設關</li>
   <li>關閉時：一個活動日期，加上選填的開始與結束時間</li>

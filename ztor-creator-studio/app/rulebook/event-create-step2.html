@@ -5,15 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>步驟 2：基本資料 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261008k">
-<script src="shell.js?v=20261008k" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261008l">
+<script src="shell.js?v=20261008l" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
   --border:#e2ded8; --border-strong:#c9c4bc;
   --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
-  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56;
-  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
   --radius:8px;
 }
 @media (prefers-color-scheme: dark){
@@ -21,16 +24,22 @@
     --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
     --border:#33313a; --border-strong:#4a4854;
     --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
-    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb;
-    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
   }
 }
 :root[data-theme="dark"]{
   --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
   --border:#33313a; --border-strong:#4a4854;
   --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
-  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb;
-  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
 }
 *{box-sizing:border-box}
 body{
@@ -71,6 +80,21 @@ table.fields td:nth-child(2){width:24%}
 .foot li{margin-bottom:5px}
 .wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
 .wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+/* 本頁圖表：描述區塊、素材比例 */
+.dg-flow.blocks{align-items:flex-start}
+.dg-flow.blocks>.dg-col:first-child{width:250px}
+.dg-flow.blocks>.dg-col:last-child{width:150px}
+.dg-flow.blocks>.dg-arr{margin-top:96px}
+.dg .blk-media{background:var(--surface-sunken)}
+.dg-flow.shapes{align-items:flex-end;gap:28px}
+.shapes figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.shapes .frame{position:relative;border:1px solid var(--border-strong);border-radius:6px;background:var(--surface-sunken)}
+.shapes .r23{width:80px;height:120px}
+.shapes .r23.sm{width:60px;height:90px}
+.shapes .r169{width:192px;height:108px}
+.shapes .crop i{position:absolute;left:-1px;right:-1px;top:19px;height:80px;border:2px solid var(--ok-key);border-radius:4px;background:color-mix(in srgb,var(--ok-fill) 70%,transparent)}
+.shapes figcaption{font-size:12.5px;line-height:1.4;color:var(--text);text-align:center}
+.shapes figcaption small{display:block;font-size:11px;color:var(--text-3)}
 </style>
 </head>
 <body>
@@ -86,6 +110,23 @@ table.fields td:nth-child(2){width:24%}
 
 <h3 id="description">描述</h3>
 <p>描述是一串可以排序的區塊，讓運營用同一套操作，把文字、圖片、影片組成整段活動介紹。</p>
+<div class="dg" role="img" aria-label="描述區塊示意：創作者把文字、圖片、影片區塊排成一串，粉絲活動頁的關於活動照同一個順序呈現">
+<div class="dg-flow blocks">
+  <div class="dg-col"><p class="dg-col__h">創作者排的區塊（可拖動排序、可刪除）</p>
+    <div class="dg-node">文字區塊<small>建立活動時就有，至少留一個</small></div>
+    <div class="dg-node blk-media">圖片區塊<small>從文字區塊插入，排在插入點之後</small></div>
+    <div class="dg-node">文字區塊<small>按「新增描述」多加一個</small></div>
+    <div class="dg-node blk-media">影片區塊<small>從文字區塊插入</small></div>
+  </div><span class="dg-arr" data-t="照同一個順序"></span>
+  <div class="dg-col"><p class="dg-col__h">粉絲活動頁「關於活動」</p>
+    <div class="dg-node">文字</div>
+    <div class="dg-node blk-media">圖片</div>
+    <div class="dg-node">文字</div>
+    <div class="dg-node blk-media">影片</div>
+  </div>
+</div>
+</div>
+<p class="dg-cap">示意圖：左邊是創作者在描述欄排的區塊，灰底是圖片與影片區塊；右邊是粉絲看到的順序。區塊沒有標題；描述必填，至少一個文字區塊要有字。</p>
 <ul class="plain">
   <li>區塊有三種：文字、圖片、影片</li>
   <li>每個區塊都沒有標題；需要小標時，用粗體自己寫一行</li>
@@ -129,6 +170,15 @@ table.fields td:nth-child(2){width:24%}
 
 <h3 id="media">圖片與影片</h3>
 <p>活動有三個必填的素材格與一個選填的影片預告，各自出現在粉絲端不同的地方。</p>
+<div class="dg" role="img" aria-label="素材比例示意：主視覺與圖庫是直式 2:3，橫式橫幅是 16:9，方形版位從主視覺正中央裁切">
+<div class="dg-flow shapes">
+  <figure><div class="frame r23"></div><figcaption>主視覺<small>直式 2:3</small></figcaption></figure>
+  <figure><div class="frame r169"></div><figcaption>橫式橫幅<small>橫式 16:9</small></figcaption></figure>
+  <figure><div class="frame r23 sm"></div><figcaption>圖庫的每一格<small>直式 2:3</small></figcaption></figure>
+  <figure><div class="frame r23 crop"><i></i></div><figcaption>方形版位<small>從主視覺置中裁切</small></figcaption></figure>
+</div>
+</div>
+<p class="dg-cap">示意圖：比例照實際畫，大小不照實際。綠框是方形版位從主視覺正中央取的範圍，人臉、標題文字等重要資訊要放在畫面中央。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:22%">素材格</th><th style="width:30%">規格</th><th>用在哪</th></tr></thead>
   <tbody>
