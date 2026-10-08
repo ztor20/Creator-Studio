@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>步驟 8：預覽與發布 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261008k">
+<script src="shell.js?v=20261008k" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+ol.plain{margin:4px 0 10px;padding-left:22px}
+ol.plain li{margin-bottom:6px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.fields{min-width:640px}
+table.fields td:nth-child(1){width:22%}
+table.fields td:nth-child(2){width:22%}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1 id="step-preview">步驟 8：預覽與發布</h1>
+<p class="lede">創作者在這一步用粉絲視角看完整的活動頁，手動補上各語系譯文、調整各幣別價格，通過發布前檢核後發布活動。這一步就是建立活動的最後一個畫面，沒有另外的確認步驟。</p>
+
+<div class="toc"></div>
+
+<h2 id="preview-rules"><span class="n"></span>這一步的規則</h2>
+<p>翻譯與價格在這一步補齊，發布前檢核全部通過才能發布。哪些欄位要手動填譯文，見<a href="#preview-translation">翻譯</a>；票價與組合包售價怎麼逐幣別調整，見<a href="#preview-prices">各幣別價格</a>；發布前要通過哪幾項，見<a href="#preview-check">發布前檢核</a>；按下發布後活動與組合包怎麼變，見<a href="#preview-publish">發布</a>。</p>
+
+<h3 id="preview-translation">翻譯</h3>
+<p>活動不自動翻譯，譯文由創作者手動填；某語系沒填譯文的欄位，顯示預設語言的原文。</p>
+<ul class="plain">
+  <li>建立活動的前 7 步只用預設語言填寫，譯文只在這一步填</li>
+  <li>語系有四種：
+    <ul class="plain">
+      <li>英文</li>
+      <li>繁體中文</li>
+      <li>簡體中文</li>
+      <li>印尼語</li>
+    </ul>
+  </li>
+  <li>可翻譯的欄位：
+    <ul class="plain">
+      <li>活動名稱</li>
+      <li>亮點</li>
+      <li>描述的每個文字區塊，各是一個欄位</li>
+      <li>表演陣容的角色標籤</li>
+      <li>條款與細則</li>
+      <li>票種名稱</li>
+    </ul>
+  </li>
+  <li>不翻譯、各語系共用的內容：
+    <ul class="plain">
+      <li>描述的圖片與影片區塊，譯文顯示時位置跟原文相同</li>
+      <li>票券頁的「退換票」：平台統一文案，唯讀，也不進翻譯表</li>
+    </ul>
+  </li>
+  <li>修改預設語言的原文時，已填的譯文保留，不被覆蓋</li>
+  <li>「清除譯文」清掉該欄在該語系的譯文，回到顯示原文</li>
+  <li>從 bookyay 帶入的活動，鎖定的條款及細則仍可以填譯文</li>
+</ul>
+<p class="note">依據：5.1.6.1 §1、§4.8；主規格 §7.4「發布前預覽確認」「活動例外：手動翻譯」「可翻譯欄位的判準」「顯示規則」；D305、D312、D313、D335、D340、D354、D362、D375。</p>
+
+<h3 id="preview-prices">各幣別價格</h3>
+<p>創作者只用創作者幣別填一個價格，其他幣別自動換算；活動的價格可以逐幣別覆寫。</p>
+<ul class="plain">
+  <li>幣別有五種：
+    <ul class="plain">
+      <li>美元（USD）</li>
+      <li>新台幣（TWD）</li>
+      <li>港幣（HKD）</li>
+      <li>新加坡幣（SGD）</li>
+      <li>日圓（JPY）</li>
+    </ul>
+  </li>
+  <li>價格表列出票價，以及含本活動門票的組合包售價，各有五種幣別</li>
+  <li>創作者幣別那一欄唯讀，要改價格，回到原本的欄位改，例如票種或門票的票價</li>
+  <li>其他四種幣別照匯率自動換算，每一格都可以改寫成創作者要的數字</li>
+  <li>覆寫值就是粉絲用該幣別購買時實際付的價，不再套匯率</li>
+  <li>每一格都可以重設回換算值</li>
+  <li>原本欄位的價格改了，各幣別的覆寫值全部重新換算，原本的覆寫不保留</li>
+  <li>組合包售價由成員原價與組合折扣算出；成員價或折扣改了，組合包售價的覆寫值同樣重新換算</li>
+  <li>從 bookyay 帶入的活動：港幣欄是 bookyay 原價，鎖定、不能覆寫；港幣以外的幣別可以覆寫，見<a href="event-bookyay.html#import-currency">從 bookyay 帶入活動</a></li>
+</ul>
+<p class="note">依據：5.1.6.1 §4.8、§5 第 17 項；主規格 §7.4「發布前預覽確認」、§7.15「逐幣別覆寫」「重算規則」「bookyay 帶入的活動」；D305、D306、D318、D330、D331。</p>
+
+<h3 id="preview-check">發布前檢核</h3>
+<p>發布前檢核有五項，全部通過才能發布。每一項都可以點，回到對應的步驟修改。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:8%">#</th><th>檢核項</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td>已選活動類型</td></tr>
+    <tr><td class="num">2</td><td>已填活動名稱</td></tr>
+    <tr><td class="num">3</td><td>已設日期</td></tr>
+    <tr><td class="num">4</td><td>已設場地</td></tr>
+    <tr><td class="num">5</td><td>至少 1 張顯示中的門票，或至少 1 組仍在販售的組合包</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>第 5 項怎麼算，見<a href="event-create.html#sellable-what">什麼算可賣</a></li>
+  <li>五項以外的必填欄位在各步驟即時檢查；按發布時哪些沒填會一起列出並擋下，見<a href="event-create.html#sellable-check">發布前檢核</a></li>
+  <li>共看派對用自己的檢核項，見<a href="event-create-watchparty.html">共看派對的建立</a></li>
+</ul>
+<p class="note">依據：5.1.6.1 F11、§6 第 1、2 項；D060、D310、D329、D340、D342。</p>
+
+<h3 id="preview-publish">發布</h3>
+<p>按下「發布活動（Publish event）」就發布，不再跳第二層確認，因為這一步看到的就是粉絲會看到的頁面。</p>
+<ul class="plain">
+  <li>發布前檢核五項都通過才能按</li>
+  <li>發布後活動進入活動清單，落在已排程或售票中，見<a href="event-create-step7.html#publish-stage">發布後活動在哪個階段</a></li>
+  <li>含本活動門票的組合包同時從草稿轉為發布</li>
+  <li>組合包的上架與開賣照各自的設定：跟隨活動的跟著活動，另設的照另設時間，見<a href="bundles.html#timing">組合包與票務商品的上架與開賣</a></li>
+  <li>組合包各自的設定仍不能比活動寬，見<a href="event-rules.html#ceiling">活動設定是門票與票務商品的上限</a></li>
+  <li>發布後活動不能刪除，只能取消，見<a href="event-rules.html#delete-draft">刪除草稿</a></li>
+  <li>發布後可以在<a href="event-detail.html">活動詳情</a>的「預覽與在地化」再開同一個畫面，改譯文與各幣別價格</li>
+</ul>
+<p class="note">依據：5.1.6.1 F12、§7 第 6、8 項；主規格 §7.4「發布前預覽確認」「發布後再開」、§7.14「活動販售的時間層級」；D293、D294、D305、D310、D342、D352、D363。</p>
+
+<h2 id="preview-flow"><span class="n"></span>操作流程</h2>
+<p>創作者從步驟 7 按「下一步」進入這一步，看過預覽、補齊譯文與價格後發布。</p>
+<ol class="plain">
+  <li>進入這一步，預覽以預設語言與創作者幣別顯示票券頁</li>
+  <li>有組合包時，切到票務商品頁看組合方案</li>
+  <li>補譯文：切到某個語系，在預覽裡就地填該語系的譯文；要一次填完四個語系，開翻譯表逐欄填</li>
+  <li>調價格：切到某個幣別看價格，點預覽裡的價格開價格表，改寫或重設各幣別的價格</li>
+  <li>看發布前檢核：沒通過的項目點一下回到對應步驟補齊，再回到這一步</li>
+  <li>預覽裡要改其他內容時，點那一塊的「編輯」回到對應步驟</li>
+  <li>五項都通過後，按「發布活動」</li>
+</ol>
+<p class="note">依據：5.1.6.1 §4.8、§4.9；主規格 §7.4；D305、D310、D312。</p>
+
+<h2 id="preview-screen"><span class="n"></span>畫面上有什麼</h2>
+<p>畫面分成粉絲視角的預覽，與語言、幣別、發布前檢核三段設定。預覽的內容見<a href="#preview-main">預覽</a>；切換語系與填譯文，見<a href="#preview-lang">語言</a>；切換幣別與調價格，見<a href="#preview-currency">幣別</a>。</p>
+
+<h3 id="preview-main">預覽</h3>
+<p>預覽就是粉絲會看到的完整活動頁，讓創作者發布前確認粉絲看到的樣子。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>項目</th><th>什麼時候有</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>票券頁</td><td>一律有</td><td>活動頁的完整內容與門票的購買區<br>照目前選的語系與幣別顯示</td></tr>
+    <tr><td>票務商品頁</td><td>活動有組合包時才有</td><td>同一個活動頁，購買區換成本活動所有組合包的組合方案清單</td></tr>
+    <tr><td>區塊的編輯入口</td><td>預覽的各區塊</td><td>點了回到對應步驟修改<br>「退換票」是平台文案，沒有編輯入口</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="preview-lang">語言</h3>
+<p>語言段切換預覽的語系，並開翻譯表。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>項目</th><th>內容</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>語系列表</td><td>四個語系各一列</td><td>點一列，預覽切到該語系<br>每列的狀態：<br>預設：預設語言那一列<br>未翻譯：該語系一欄都沒填<br>已翻譯 n／N 欄：n 是已填的欄數，N 是可翻譯欄位總數</td></tr>
+    <tr><td>清除譯文</td><td>動作</td><td>清掉該欄在該語系的譯文，回到顯示原文</td></tr>
+    <tr><td>翻譯表（逐欄位對照）</td><td>可翻譯欄位 × 四個語系</td><td>在同一個表把四個語系的譯文一次填完</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="preview-currency">幣別</h3>
+<p>幣別段切換預覽的幣別；價格表從預覽裡的價格打開。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>項目</th><th>內容</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>幣別列表</td><td>五種幣別各一列</td><td>點一列，預覽的價格切到該幣別<br>每列的狀態：換算（沿用換算值），或已覆寫 N 項</td></tr>
+    <tr><td>價格表</td><td>票價與含本活動門票的組合包售價 × 五種幣別</td><td>創作者幣別欄唯讀<br>其他欄可覆寫、可重設回換算值<br>規則見<a href="#preview-prices">各幣別價格</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>語言與幣別互不影響：切語言不改幣別，切幣別不改語言</li>
+  <li>翻譯表與價格表各有自己的入口</li>
+</ul>
+<p class="note">依據：5.1.6.1 §1、§4.8「預覽與側欄」；主規格 §7.4「發布前預覽確認」「活動例外：手動翻譯」、§7.15；D305、D306、D310、D312、D313、D318。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.6.1-建立活動流程.md</code>（v2.49）§1、§4.8、§4.9、§5、§6、§7；<code>0-設計規格書.md §7.4／§7.14／§7.15</code></li>
+    <li>決策：D060、D293、D294、D305、D306、D310、D312、D313、D318、D329、D330、D331、D335、D340、D342、D352、D354、D362、D363、D375</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>原文改了之後，已填的譯文可能過期，要不要提醒創作者</li>
+    <li>表演陣容的人名是否確定不翻譯、各語系都顯示原文</li>
+    <li>譯文能不能也套文字格式</li>
+    <li>換算價的匯率來源與時點（建立當下鎖定、每日更新或結帳當下），以及進位方式</li>
+    <li>原本欄位的價格改了、覆寫值要重新換算前，要不要先提示創作者</li>
+    <li>含活動門票的組合包，售價是否一律比照活動可逐幣別覆寫</li>
+    <li>發布後在活動詳情改譯文，要不要審核或留版本紀錄</li>
+    <li>可賣條件與發布檢核的其他待確認列在<a href="event-create.html">建立活動</a>頁尾</li>
+  </ul>
+  <p class="k">最近同步：2026-10-08（至 D375）</p>
+</details>
+</div>
+</body>
+</html>

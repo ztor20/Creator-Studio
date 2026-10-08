@@ -33,7 +33,9 @@
       {t:'需求看板', pages:[{h:'demand-board.html', t:'需求看板'}]}
     ]},
     {n:'6', t:'活動', groups:[
-      {t:'活動', pages:[{h:'events.html', t:'活動總覽'},{h:'event-journey.html', t:'活動用戶旅程圖'},{h:'event-create.html', t:'建立活動'},{h:'event-detail.html', t:'活動詳情與編輯'},{h:'event-bookyay.html', t:'bookyay 匯入與對照'}]}
+      {t:'活動規則', pages:[{h:'event-rules.html', t:'活動規則'},{h:'event-journey.html', t:'活動用戶旅程圖'},{h:'event-bookyay.html', t:'bookyay 匯入與對照'}]},
+      {t:'建立活動', pages:[{h:'event-create.html', t:'建立活動'},{h:'event-create-step1.html', t:'步驟 1 活動類型與 bookyay 帶入'},{h:'event-create-step2.html', t:'步驟 2 基本資料'},{h:'event-create-step3.html', t:'步驟 3 場次'},{h:'event-create-step4.html', t:'步驟 4 票種'},{h:'event-create-step5.html', t:'步驟 5 門票與購票規則'},{h:'event-create-step6.html', t:'步驟 6 票務商品'},{h:'event-create-step7.html', t:'步驟 7 發布設定'},{h:'event-create-step8.html', t:'步驟 8 預覽與發布'},{h:'event-create-watchparty.html', t:'共看派對的建立'}]},
+      {t:'活動', pages:[{h:'events.html', t:'活動總覽'},{h:'event-detail.html', t:'活動詳情與編輯'}]}
     ]},
     {n:'7', t:'粉絲', groups:[
       {t:'粉絲管理', pages:[{h:'fans-roster.html', t:'粉絲總覽與詳情'},{h:'fans-tiers.html', t:'粉絲分級'},{h:'fans-broadcast.html', t:'群發訊息'}]},
@@ -60,7 +62,7 @@
   }
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 
-  /* 內容區標題加序號：h1＝頁號，h2＝頁號.節，h3＝頁號.節.小節；h4 的字母由 letterH4 另外加。目錄連結的序號跟著更新 */
+  /* 內容區標題加序號：h1＝頁號，h2＝頁號.節，h3＝頁號.節.小節；h4 的字母由 letterH4 另外加；頁首目錄由 buildToc 依序號重建 */
   function numberHeadings(base){
     var wrap=document.querySelector('body>.wrap'); if(!wrap) return;
     function put(h,num){ var n=h.querySelector(':scope>.n'); if(!n){ n=document.createElement('span'); n.className='n'; h.insertBefore(n,h.firstChild); } n.textContent=num; }
@@ -70,10 +72,19 @@
       if(el.tagName==='H2' && !el.classList.contains('sr-only')){ i++; j=0; put(el,base+'.'+i); if(el.id) map[el.id]=base+'.'+i; }
       else if(el.tagName==='H3' && i>0){ j++; put(el,base+'.'+i+'.'+j); }
     });
-    wrap.querySelectorAll('.toc a[href^="#"]').forEach(function(a){ var id=a.getAttribute('href').slice(1); if(map[id]) a.textContent=map[id]+' '+a.textContent.replace(/^\s*[\d.]+\s*/,''); });
   }
   /* h4 字母標記：只看內容區直接子元素，每個 h2／h3 重新從 a 算，超過 26 個接 aa、ab；字母放進 span.n，樣式同序號。卡片裡的 h4 不處理 */
   function letterOf(i){ var c=String.fromCharCode(97+i%26); return i<26?c:letterOf(Math.floor(i/26)-1)+c; }
+  /* 內文的頁內連結指到有序號或字母的標題（h2、h3、h4）時，連結前自動帶上同一個序號或字母；作者只寫標題文字 */
+  function numberLinks(){
+    var wrap=document.querySelector('body>.wrap'); if(!wrap) return;
+    wrap.querySelectorAll('a[href^="#"]').forEach(function(a){
+      if(a.closest('.toc,.rb-subtoc')||a.querySelector('.n')) return;
+      var t=document.getElementById(decodeURIComponent(a.getAttribute('href').slice(1)));
+      var n=t&&/^H[234]$/.test(t.tagName)&&t.querySelector(':scope>.n'); if(!n||!n.textContent) return;
+      var s=document.createElement('span'); s.className='n'; s.textContent=n.textContent; a.insertBefore(s,a.firstChild); a.classList.add('xref');
+    });
+  }
   function letterH4(){
     var wrap=document.querySelector('body>.wrap'); if(!wrap) return;
     var k=0;
@@ -84,33 +95,54 @@
       n.textContent=letterOf(k++);
     });
   }
+  /* 標題文字（扣掉序號與徽章）與穩定 id：沒有 id 的標題由文字產生，重名加 -2，不覆蓋既有 id */
+  var madeId=false;
+  function headText(h){ var t=''; [].forEach.call(h.childNodes,function(c){ if(c.nodeType===1&&(c.classList.contains('n')||c.classList.contains('tag'))) return; t+=c.textContent; }); return t.replace(/\s+/g,' ').trim(); }
+  function autoId(h,label){
+    if(h.id) return h.id;
+    var base=label.replace(/[\s"'#<>&?%\/\\]+/g,'-').replace(/^-+|-+$/g,'')||'sec', id=base, n=2;
+    while(document.getElementById(id)) id=base+'-'+(n++);
+    h.id=id; madeId=true; return id;
+  }
+  /* 頁首目錄：清空 .toc 後重建成兩層清單——h2 一層、h3 縮排在所屬 h2 底下（h4 不列）；序號取自標題上自動產生的 span.n。
+     只看內容區直接子元素；sr-only 的 h2 與其後的 h3 不列。項目多於 16 個時桌機分兩欄 */
+  function buildToc(){
+    var wrap=document.querySelector('body>.wrap'); if(!wrap) return;
+    var tocs=wrap.querySelectorAll('.toc'); if(!tocs.length) return;
+    var groups=[], g=null, count=0;
+    [].forEach.call(wrap.children,function(el){
+      if(el.tagName==='H2'){ if(el.classList.contains('sr-only')){ g=null; return; } g={h:el,subs:[]}; groups.push(g); count++; }
+      else if(el.tagName==='H3' && g){ g.subs.push(el); count++; }
+    });
+    function item(h){ var label=headText(h), id=autoId(h,label), n=h.querySelector(':scope>.n'); return '<a href="#'+esc(id)+'">'+(n&&n.textContent?'<span class="n">'+esc(n.textContent)+'</span>':'')+'<span class="t">'+esc(label)+'</span></a>'; }
+    var html='<div class="rb-toc-lbl">目錄</div><ol class="rb-toc">'+groups.map(function(x){
+      return '<li class="lv2">'+item(x.h)+(x.subs.length?'<ol>'+x.subs.map(function(h){ return '<li class="lv3">'+item(h)+'</li>'; }).join('')+'</ol>':'')+'</li>';
+    }).join('')+'</ol>';
+    [].forEach.call(tocs,function(t){ t.innerHTML=html; t.setAttribute('role','navigation'); t.setAttribute('aria-label','本頁目錄'); t.classList.toggle('is-long',count>16); });
+  }
+  /* 網址帶的錨點是剛補上的 id 時，瀏覽器載入時找不到，補捲一次 */
+  function fixHash(){ if(madeId && location.hash){ try{ var tg=document.getElementById(decodeURIComponent(location.hash.slice(1))); if(tg) tg.scrollIntoView(); }catch(e){} } }
   /* 子節目錄：h3 底下（到下一個 h2／h3 前）有 3 個以上 h4 時，在該 h3 下方插一排 h4 的跳轉連結。
      只看內容區的直接子元素（卡片裡的 h3 不算）；h4 沒有 id 時由標題文字產生穩定 id，不覆蓋既有 id；不動序號與頁首目錄 */
   function subToc(){
     var wrap=document.querySelector('body>.wrap'); if(!wrap) return;
-    var kids=[].slice.call(wrap.children), made=false;
+    var kids=[].slice.call(wrap.children);
     kids.forEach(function(el,i){
       if(el.tagName!=='H3') return;
       var h4s=[];
       for(var k=i+1;k<kids.length;k++){ var t=kids[k].tagName; if(t==='H2'||t==='H3') break; if(t==='H4') h4s.push(kids[k]); }
       if(h4s.length<3) return;
+      /* 開頭段落已經用連結帶到底下的 h4 時，不再另外產生子節目錄 */
+      for(var k2=i+1;k2<kids.length&&kids[k2].tagName!=='H4';k2++){ var hit=[].some.call(kids[k2].querySelectorAll('a[href^="#"]'),function(a){ return h4s.some(function(h){ return h.id&&a.getAttribute('href')==='#'+h.id; }); }); if(hit) return; }
       var links=h4s.map(function(h){
-        var nEl=h.querySelector(':scope>.n'), mark=nEl?nEl.textContent:'', label='';
-        [].forEach.call(h.childNodes,function(c){ if(c!==nEl) label+=c.textContent; });
-        label=label.replace(/\s+/g,' ').trim();
-        if(!h.id){
-          var base=label.replace(/[\s"'#<>&?%\/\\]+/g,'-').replace(/^-+|-+$/g,'')||'sub', id=base, n=2;
-          while(document.getElementById(id)) id=base+'-'+(n++);
-          h.id=id; made=true;
-        }
+        var nEl=h.querySelector(':scope>.n'), mark=nEl?nEl.textContent:'', label=headText(h);
+        autoId(h,label);
         return '<a href="#'+esc(h.id)+'">'+(mark?'<span class="n">'+esc(mark)+'</span>':'')+esc(label)+'</a>';
       });
       var nav=document.createElement('nav'); nav.className='rb-subtoc'; nav.setAttribute('aria-label','本節子節');
       nav.innerHTML=links.join('');
       el.parentNode.insertBefore(nav, el.nextSibling);
     });
-    /* 網址帶的錨點是剛補上的 id 時，瀏覽器載入時找不到，補捲一次 */
-    if(made && location.hash){ try{ var tg=document.getElementById(decodeURIComponent(location.hash.slice(1))); if(tg) tg.scrollIntoView(); }catch(e){} }
   }
   function build(){
     var cur=current();
@@ -123,6 +155,9 @@
     /* 序號＝章.頁.節.小節（例 7.1.2.3）。頁號依章節樹在該章內的順序，待補的頁也佔號，日後補上內容不會讓其他頁跳號；子功能頁只是分組、不編號 */
     TREE.forEach(function(c){ var k=0; c.groups.forEach(function(g){ g.pages.forEach(function(p){ k++; p.num=c.n+'.'+k; if(p.h===cur) here={c:c,g:g,p:p}; }); }); });
     if(here) numberHeadings(here.p.num);
+    buildToc();
+    numberLinks();
+    fixHash();
     html+='<div class="lbl">章節</div><ul class="rb-nav rb-tree">';
     TREE.forEach(function(c){
       var open=here&&here.c===c, filled=0, total=0;

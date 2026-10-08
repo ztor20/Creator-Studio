@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>專案概覽 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261008c">
-<script src="shell.js?v=20261008c" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261008k">
+<script src="shell.js?v=20261008k" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -136,6 +136,9 @@ table.map td:nth-child(1){width:20%}
 table.map td:nth-child(2){width:22%}
 .sim label{font-size:13px;color:var(--text-2)}
 .card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
 </style>
 </head>
 <body>
@@ -143,14 +146,12 @@ table.map td:nth-child(2){width:22%}
 <h1>專案概覽</h1>
 <p class="lede">團隊成員在這頁了解 ztor Creator Studio 的整體架構與共同規格。ztor Creator Studio 是創作者的商業營運後台，讓創作者在同一個地方看清楚作品、粉絲、活動、商品、IP、合作分潤與收入。</p>
 
-<div class="toc">
-  <a href="#position">1 產品定位與使用者</a><a href="#roles">2 權限層與角色</a><a href="#map">3 產品地圖與手冊章節</a><a href="#flows">4 主要流程與跨模組連動</a><a href="#global">5 全域能力</a><a href="#cross">6 跨切面規則</a><a href="#common">7 共同規格</a><a href="#docs">8 文件與手冊怎麼對應</a><a href="#terms">9 名詞速查</a>
-</div>
+<div class="toc"></div>
 
 <h2 id="position"><span class="n">1</span>產品定位與使用者</h2>
-<p>每個頁面都要同時服務五個設計目標，並照顧四類主要使用者。</p>
+<p>每個頁面都要同時服務五個設計目標，並照顧四類主要使用者。各目標的意思，見<a href="#goals">五個設計目標</a>；四類使用者各做什麼、從哪裡進入，見<a href="#users">主要使用者</a>。</p>
 
-<h3>五個設計目標</h3>
+<h3 id="goals">五個設計目標</h3>
 <p>設計目標是每個頁面都要達到的共同標準。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:18%">目標</th><th>意思</th></tr></thead>
@@ -163,7 +164,7 @@ table.map td:nth-child(2){width:22%}
   </tbody>
 </table></div>
 
-<h3>主要使用者</h3>
+<h3 id="users">主要使用者</h3>
 <p>主要使用者有四類，各自從不同頁面進入後台。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:20%">使用者</th><th>在後台做什麼</th><th style="width:30%">主要進入頁面</th></tr></thead>
@@ -178,7 +179,7 @@ table.map td:nth-child(2){width:22%}
 <p class="note">依據：主規格 §1、§2。</p>
 
 <h2 id="roles"><span class="n">2</span>權限層與角色</h2>
-<p>產品分三層：登入頁、平台營運（Admin）、創作者工作區。</p>
+<p>產品分三層：登入頁、平台營運（Admin）、創作者工作區。Admin 怎麼進入創作者工作區代為操作，見<a href="#proxy">Admin 代管</a>；只有 Admin 能按的操作，見<a href="#admin-only">Admin 專屬操作</a>；工作區裡有哪些角色，見<a href="#workspace-roles">創作者工作區裡的角色</a>；怎麼進入產品，見<a href="#login">登入</a>；權限不夠時畫面怎麼說明，見<a href="#no-permission">權限不足時的顯示</a>。</p>
 <ul class="plain">
   <li>Admin 與創作者工作區是兩個不同的權限範圍，不是同一個工作區裡的角色高低</li>
 </ul>
@@ -187,7 +188,7 @@ table.map td:nth-child(2){width:22%}
   <div class="card ok"><div class="band"></div><h3>創作者工作區</h3><ul class="plain"><li>單一創作者範圍內的完整後台</li><li>創作者本人登入後落地總覽</li><li>Admin 在 Creator 管理選定一位創作者後，也能進入這位創作者的工作區代管</li></ul></div>
 </div>
 
-<h3>Admin 代管</h3>
+<h3 id="proxy">Admin 代管</h3>
 <p>代管是 Admin 在 Creator 管理選定一位創作者後，進入這位創作者的工作區代為操作。</p>
 <ul class="plain">
   <li>Admin 代管時看到的畫面與創作者本人相同</li>
@@ -197,7 +198,7 @@ table.map td:nth-child(2){width:22%}
   <li>Admin 還沒選創作者就想進創作者工作區時，畫面說明「請先從 Creator 管理選取一位創作者」並提供入口</li>
 </ul>
 
-<h3>Admin 專屬操作</h3>
+<h3 id="admin-only">Admin 專屬操作</h3>
 <p>Admin 專屬操作是創作者工作區裡只有 Admin 代管時能執行的操作。</p>
 <ul class="plain">
   <li>目前有兩個例子：
@@ -209,7 +210,7 @@ table.map td:nth-child(2){width:22%}
   <li>創作者本人看得到這類操作，但不能按，畫面說明「需要 Admin 角色」</li>
 </ul>
 
-<h3>創作者工作區裡的角色</h3>
+<h3 id="workspace-roles">創作者工作區裡的角色</h3>
 <p>創作者工作區的操作目前以創作者本人為主。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:20%">角色</th><th>能做什麼</th></tr></thead>
@@ -220,14 +221,14 @@ table.map td:nth-child(2){width:22%}
   </tbody>
 </table></div>
 
-<h3>登入</h3>
+<h3 id="login">登入</h3>
 <p>所有人從同一個登入頁進入產品，登入後依身分決定起始頁。</p>
 <ul class="plain">
   <li>登入方式有三種：電子郵件、手機號碼、第三方帳號（Apple、Google、Facebook、LINE）</li>
   <li>登入後的分流只決定起始頁，不改變兩層的架構</li>
 </ul>
 
-<h3>權限不足時的顯示</h3>
+<h3 id="no-permission">權限不足時的顯示</h3>
 <p>權限不足時，畫面要說明原因，不能只把入口藏起來。</p>
 <ul class="plain">
   <li>看得到但不能操作時，說明缺少哪種權限、需要什麼角色或找誰</li>
@@ -236,10 +237,10 @@ table.map td:nth-child(2){width:22%}
 <p class="note">依據：主規格 §3.2.1、§4.1～§4.4、§6.4；D086、D170、D174、D252、D282、D361、D371、D375。</p>
 
 <h2 id="map"><span class="n">3</span>產品地圖與手冊章節</h2>
-<p>手冊章節照原型左側欄排列。下表列出每個子功能頁的用途、規格檔與手冊子頁，「尚無」表示手冊還沒有這頁的內容。</p>
+<p>手冊章節照原型左側欄排列。下表列出每個子功能頁的用途、規格檔與手冊子頁，「尚無」表示手冊還沒有這頁的內容。創作者的子功能頁，見<a href="#map-creator">創作者工作區</a>；Admin 的子功能頁，見<a href="#map-admin">平台營運（Admin）</a>；哪些頁放進主導覽，見<a href="#nav-rules">導覽原則</a>。</p>
 
-<h3>創作者工作區</h3>
-<p>創作者工作區的子功能頁如下，IP、電子商店、粉絲三章各有多個子功能頁。</p>
+<h3 id="map-creator">創作者工作區</h3>
+<p>創作者工作區的子功能頁如下，IP、電子商店、活動、粉絲四章各有多個子功能頁。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:12%">章節</th><th style="width:15%">子功能頁</th><th>用途</th><th style="width:17%">規格檔</th><th style="width:20%">手冊子頁</th></tr></thead>
   <tbody>
@@ -251,7 +252,9 @@ table.map td:nth-child(2){width:22%}
     <tr><td>訂單管理</td><td>訂單清單與訂單詳情（含 Admin 撤銷品項）</td><td>5.1.5.3、5.1.5.3.1</td><td>尚無</td></tr>
     <tr><td>取貨管理</td><td>取貨場次、可核銷的商品與票券、手機 Scanner、名單與核銷紀錄</td><td>5.1.5.11、5.1.5.12、5.1.5.14、5.1.5.15</td><td>尚無</td></tr>
     <tr><td>需求看板</td><td>依市場統計各尺寸需求、建議生產量與預測售罄天數，只供參考</td><td>5.1.5.16</td><td><a href="demand-board.html">需求看板</a></td></tr>
-    <tr><td>活動</td><td>活動</td><td>活動企劃、票務、報到、bookyay 匯入</td><td>5.1.6、5.1.6.1～5.1.6.3</td><td><a href="events.html">活動總覽</a><br><a href="event-journey.html">活動用戶旅程圖</a><br><a href="event-create.html">建立活動</a><br><a href="event-detail.html">活動詳情與編輯</a><br><a href="event-bookyay.html">bookyay 匯入與對照</a></td></tr>
+    <tr><td rowspan="3">活動</td><td>活動規則</td><td>跨頁通用的活動規則：階段、販售時間、動作、票務商品連動<br>活動的整條旅程<br>bookyay 匯入與欄位對照</td><td>5.1.6、5.1.6.1～5.1.6.3</td><td><a href="event-rules.html">活動規則</a><br><a href="event-journey.html">活動用戶旅程圖</a><br><a href="event-bookyay.html">bookyay 匯入與對照</a></td></tr>
+    <tr><td>建立活動</td><td>分 8 個步驟建立一場活動，發布前的可賣條件與檢核<br>共看派對的建立</td><td>5.1.6.1</td><td><a href="event-create.html">建立活動</a><br><a href="event-create-step1.html">步驟 1 活動類型與 bookyay 帶入</a><br><a href="event-create-step2.html">步驟 2 基本資料</a><br><a href="event-create-step3.html">步驟 3 場次</a><br><a href="event-create-step4.html">步驟 4 票種</a><br><a href="event-create-step5.html">步驟 5 門票與購票規則</a><br><a href="event-create-step6.html">步驟 6 票務商品</a><br><a href="event-create-step7.html">步驟 7 發布設定</a><br><a href="event-create-step8.html">步驟 8 預覽與發布</a><br><a href="event-create-watchparty.html">共看派對的建立</a></td></tr>
+    <tr><td>活動</td><td>活動清單、活動詳情與營運（票務、報到）</td><td>5.1.6、5.1.6.2、5.1.6.3</td><td><a href="events.html">活動總覽</a><br><a href="event-detail.html">活動詳情與編輯</a></td></tr>
     <tr><td rowspan="3">粉絲</td><td>粉絲管理</td><td>粉絲名冊、分級組成與價值排序<br>頁內含分級設定與權益、群發訊息、粉絲詳情（規格稱 Fans 總覽）</td><td>5.1.7、5.1.7.1、5.1.7.2、5.1.7.5～5.1.7.7</td><td><a href="fans-roster.html">粉絲總覽與詳情</a><br><a href="fans-tiers.html">粉絲分級</a><br><a href="fans-broadcast.html">群發訊息</a></td></tr>
     <tr><td>媒體庫</td><td>各自設定進庫方法、每件內容再設任務的內容庫房</td><td>5.1.7.3</td><td><a href="fans-vault.html">媒體庫</a></td></tr>
     <tr><td>粉絲活動</td><td>由粉絲掃碼觸發的品牌合作</td><td>5.1.7.4、5.1.7.4.1</td><td><a href="fans-campaigns.html">粉絲活動</a></td></tr>
@@ -264,7 +267,7 @@ table.map td:nth-child(2){width:22%}
   <li>手冊暫不為登入與設定設章節</li>
 </ul>
 
-<h3>平台營運（Admin）</h3>
+<h3 id="map-admin">平台營運（Admin）</h3>
 <p>平台營運有八個子功能頁，範圍都跨所有創作者。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:20%">子功能頁</th><th>用途</th><th style="width:15%">規格檔</th><th style="width:20%">手冊子頁</th></tr></thead>
@@ -280,7 +283,7 @@ table.map td:nth-child(2){width:22%}
   </tbody>
 </table></div>
 
-<h3>導覽原則</h3>
+<h3 id="nav-rules">導覽原則</h3>
 <p>導覽原則決定哪些頁面放在主導覽，哪些從頁內進入。</p>
 <ul class="plain">
   <li>主導覽只放頂層模組</li>
@@ -296,9 +299,9 @@ table.map td:nth-child(2){width:22%}
 <p class="note">依據：主規格 §3.1、§3.2（頁面與上下層關係以 §3.2.1 產品地圖為準）、§5.1；D110、D169、D181、D184、D193、D281、D347、D372。</p>
 
 <h2 id="flows"><span class="n">4</span>主要流程與跨模組連動</h2>
-<p>創作者的工作常跨好幾個模組，同一份資料在各模組之間以引用相連。</p>
+<p>創作者的工作常跨好幾個模組，同一份資料在各模組之間以引用相連。創作者怎麼從一個模組走到下一個，見<a href="#main-flows">四條主要流程</a>；哪些東西能被其他模組引用、修改時怎麼處理，見<a href="#references">可被引用的單元</a>。</p>
 
-<h3>四條主要流程</h3>
+<h3 id="main-flows">四條主要流程</h3>
 <p>四條主要流程說明創作者怎麼從一個模組走到下一個模組。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:18%">流程</th><th style="width:28%">路徑</th><th>內容</th></tr></thead>
@@ -310,7 +313,7 @@ table.map td:nth-child(2){width:22%}
   </tbody>
 </table></div>
 
-<h3>可被引用的單元</h3>
+<h3 id="references">可被引用的單元</h3>
 <p>商品、IP、活動可以被其他模組引用或組合，不只存在於單一頁面。</p>
 <ul class="plain">
   <li>商品可被項目的方案引用，也可組成組合包</li>
@@ -325,15 +328,15 @@ table.map td:nth-child(2){width:22%}
 <p class="note">依據：主規格 §3.1.4、§3.3、§7.6、§7.13；D232。</p>
 
 <h2 id="global"><span class="n">5</span>全域能力</h2>
-<p>全域能力不是獨立頁面，是各頁面共同調用的能力。</p>
+<p>全域能力不是獨立頁面，是各頁面共同調用的能力。每一頁都有的導覽與入口，見<a href="#global-nav">全域導覽框架</a>；待辦與狀態提醒，見<a href="#notifications">通知中心</a>；一個項目賺多少，見<a href="#project-profit">項目淨利</a>；建立與編輯流程共用的做法，見<a href="#create-flow">建立流程的共同行為</a>。</p>
 
-<h3>全域導覽框架</h3>
-<p>全域導覽框架是每一頁都有的導覽與全域操作入口，讓創作者跨頁時維持一致的操作方式。</p>
+<h3 id="global-nav">全域導覽框架</h3>
+<p>全域導覽框架是每一頁都有的導覽與全域操作入口，讓創作者跨頁時維持一致的操作方式。內容區頂端的位置路徑，見<a href="#breadcrumb">麵包屑</a>。</p>
 <ul class="plain">
   <li>框架提供主導覽、搜尋、通知中心、顯示模式切換與帳戶選單</li>
   <li>帳戶選單含個人檔案、設定、登出與四語系語言切換</li>
 </ul>
-<h4>麵包屑</h4>
+<h4 id="breadcrumb">麵包屑</h4>
 <ul class="plain">
   <li>除了總覽，所有頁面在內容區頂端顯示麵包屑</li>
   <li>麵包屑路徑是產品地圖中從頂層模組到目前頁面的上層頁</li>
@@ -342,7 +345,7 @@ table.map td:nth-child(2){width:22%}
   <li>建立流程自己提供位置與進度，不另加麵包屑</li>
 </ul>
 
-<h3>通知中心</h3>
+<h3 id="notifications">通知中心</h3>
 <p>通知中心集中呈現需要創作者注意的狀態與待辦。</p>
 <ul class="plain">
   <li>待辦（需要你處理）在上，通知（狀態更新）在下</li>
@@ -353,7 +356,7 @@ table.map td:nth-child(2){width:22%}
   <li>通知裡的金額一律引用收入管理的口徑，不自行重算</li>
 </ul>
 
-<h3>項目淨利</h3>
+<h3 id="project-profit">項目淨利</h3>
 <p>項目淨利回答「這個項目到底賺多少」。</p>
 <ul class="plain">
   <li>項目淨利出現在建立項目（預期收益結構）、項目詳情（收益摘要）與收入管理（實際拆解）</li>
@@ -364,7 +367,7 @@ table.map td:nth-child(2){width:22%}
   <li>手動輸入的外部成本不能顯示成平台已驗證</li>
 </ul>
 
-<h3>建立流程的共同行為</h3>
+<h3 id="create-flow">建立流程的共同行為</h3>
 <p>所有建立與編輯流程共用離開、流程識別、進度、草稿儲存與主要送出的行為。</p>
 <ul class="plain">
   <li>下表五個建立流程是多步驟，最後一步是全頁的預覽畫面</li>
@@ -408,13 +411,13 @@ table.map td:nth-child(2){width:22%}
 <p class="note">依據：主規格 §6.1～§6.10；D108、D110。</p>
 
 <h2 id="common"><span class="n">7</span>共同規格</h2>
-<p>共同規格是全站共用的定義。</p>
+<p>共同規格是全站共用的定義，依序是：<a href="#category">商品主分類與次分類</a>、<a href="#status">狀態語言</a>、<a href="#finance">財務術語與資料來源</a>、<a href="#language">語言與在地化</a>、<a href="#fan-tiers">粉絲分級與指標術語</a>、<a href="#revenue-events">收入事件與費率版本</a>、<a href="#ip-license">IP 授權與版本</a>、<a href="#wording">用詞規則</a>、<a href="#audience">受眾指標術語</a>、<a href="#media">展示素材</a>、<a href="#age-rating">年齡分級</a>、<a href="#bundle-unit">打包單位：組合與方案</a>、<a href="#project-parts">項目的組成：作品與方案</a>、<a href="#inventory">庫存池、三開關與鎖定庫存</a>、<a href="#currency">定價幣別</a>。</p>
 <ul class="plain">
   <li>各頁只引用共同規格，不重新定義</li>
   <li>完整規則以主規格 §7 為準</li>
 </ul>
 
-<h3>商品主分類與次分類</h3>
+<h3 id="category">商品主分類與次分類</h3>
 <p>商品是平台的基礎單位，電子商店、活動、項目共用同一套分類語言。</p>
 <ul class="plain">
   <li>主分類有三個：實體商品、數位商品、體驗與活動</li>
@@ -425,7 +428,7 @@ table.map td:nth-child(2){width:22%}
 </ul>
 <p>詳見<a href="taxonomy.html">商品分類與模組應用</a>。</p>
 
-<h3>狀態語言</h3>
+<h3 id="status">狀態語言</h3>
 <p>狀態語言讓同一類資料在不同頁面用同一組狀態詞。</p>
 <ul class="plain">
   <li>狀態第一次出現要讓人看懂實際含義，例如「待結算」不等於可提領</li>
@@ -442,14 +445,14 @@ table.map td:nth-child(2){width:22%}
     <tr><td>商品販售管道</td><td>上架、顯示、開賣三個開關，加已封存（見<a href="eshop-sales.html">電子商店販售流程</a>）</td></tr>
     <tr><td>訂單</td><td>待付款、已付款、待出貨、已出貨、已完成、爭議、已取消</td></tr>
     <tr><td>取貨場次</td><td>尚未開始、進行中、已結束、已封存</td></tr>
-    <tr><td>活動</td><td>見<a href="events.html">活動總覽</a></td></tr>
+    <tr><td>活動</td><td>見活動規則的<a href="event-rules.html#stage">活動的階段</a></td></tr>
     <tr><td>IP 授權</td><td>草稿 → 生效 → 到期／撤銷／爭議</td></tr>
     <tr><td>外部整合</td><td>未連結、已連結、同步中、同步失敗、部分支援、已撤銷</td></tr>
   </tbody>
 </table></div>
 
-<h3>財務術語與資料來源</h3>
-<p>財務術語統一各頁怎麼稱呼與計算收入、扣項和淨利。</p>
+<h3 id="finance">財務術語與資料來源</h3>
+<p>財務術語統一各頁怎麼稱呼與計算收入、扣項和淨利。共創項目的募得款撥付與淨利池分配，見<a href="#cocreate-funds">共創項目的兩筆錢</a>。</p>
 <ul class="plain">
   <li>財務階梯：總收入 − 直接成本 ＝ 毛利，毛利 − 平台費、支付費、稅費 − 分潤 ＝ 淨利</li>
   <li>平台費與支付手續費一律由創作者負擔、從收入內扣，買家只付折後售價加運費</li>
@@ -457,7 +460,7 @@ table.map td:nth-child(2){width:22%}
   <li>總覽、項目等頁面不自行重算收入，一律引用收入管理的口徑</li>
 </ul>
 <p>折抵與費用負擔詳見<a href="promo-rules.html">優惠規則</a>。</p>
-<h4>共創項目的兩筆錢</h4>
+<h4 id="cocreate-funds">共創項目的兩筆錢</h4>
 <p>共創項目的募得款撥付與淨利池分配是兩筆錢，規則分開。</p>
 <ul class="plain">
   <li>募得款由平台分期撥給創作者，期數由平台依項目預算決定，創作者不能選</li>
@@ -474,7 +477,7 @@ table.map td:nth-child(2){width:22%}
   </tbody>
 </table></div>
 
-<h3>語言與在地化</h3>
+<h3 id="language">語言與在地化</h3>
 <p>語言規則決定介面與內容用哪種語言呈現。</p>
 <ul class="plain">
   <li>產品支援英文、繁中、簡中、印尼語，只有一個「預設語言」，同時決定介面語言與內容的輸入語言</li>
@@ -488,9 +491,9 @@ table.map td:nth-child(2){width:22%}
   <li>側欄主鈕按下即發布，不再彈第二層確認</li>
   <li>發布後，可在活動詳情、商品細節頁、組合商品細節頁重開同一個畫面（預覽與在地化）修改</li>
 </ul>
-<p>詳見<a href="event-create.html">建立活動</a>的預覽與發布、手動翻譯。</p>
+<p>詳見<a href="event-create-step8.html">步驟 8 預覽與發布</a>。</p>
 
-<h3>粉絲分級與指標術語</h3>
+<h3 id="fan-tiers">粉絲分級與指標術語</h3>
 <p>粉絲分級把粉絲依貢獻與關係深淺分成四級。</p>
 <ul class="plain">
   <li>分級由高到低是核心圈（Inner Circle）> 超級粉絲（Super Fans）> 上榜粉絲（Ranked Fans）> 一般粉絲（Fan）</li>
@@ -500,7 +503,7 @@ table.map td:nth-child(2){width:22%}
 </ul>
 <p>詳見<a href="fans-tiers.html#s2">粉絲分級</a>。</p>
 
-<h3>收入事件與費率版本</h3>
+<h3 id="revenue-events">收入事件與費率版本</h3>
 <p>收入事件是每一筆進帳的單一、可追溯紀錄，費率版本記下售出當時用的費率。</p>
 <ul class="plain">
   <li>每一筆收入由來源模組記成收入事件，交收入管理統一彙整</li>
@@ -511,7 +514,7 @@ table.map td:nth-child(2){width:22%}
 </ul>
 <p>計費基準詳見<a href="promo-rules.html">優惠規則</a>。</p>
 
-<h3>IP 授權與版本</h3>
+<h3 id="ip-license">IP 授權與版本</h3>
 <p>IP 授權與版本規定授權怎麼生效，以及 IP 的權利狀態怎麼留紀錄。</p>
 <ul class="plain">
   <li>授權從草稿轉生效，要雙方明確核准且九項條款齊全</li>
@@ -520,7 +523,7 @@ table.map td:nth-child(2){width:22%}
   <li>收入事件綁定當時的 IP 版本</li>
 </ul>
 
-<h3>用詞規則</h3>
+<h3 id="wording">用詞規則</h3>
 <p>用詞規則防止可編輯的文字暗示保證報酬。</p>
 <ul class="plain">
   <li>粉絲權益、群發訊息、公告、共創說明等可編輯文字，不能用 investment、yield、guaranteed payout、ROI、passive income、dividend</li>
@@ -528,7 +531,7 @@ table.map td:nth-child(2){width:22%}
 </ul>
 <p>詳見<a href="fans-tiers.html#benefits">粉絲分級的各級福利</a>。</p>
 
-<h3>受眾指標術語</h3>
+<h3 id="audience">受眾指標術語</h3>
 <p>受眾指標術語規定受眾數字用什麼單位、怎麼呈現。</p>
 <ul class="plain">
   <li>受眾數字分「次數」與「人數」兩種單位，不能互相加總或比較，每個數字都標單位</li>
@@ -536,7 +539,7 @@ table.map td:nth-child(2){width:22%}
   <li>不把多個維度合成單一影響力分數</li>
 </ul>
 
-<h3>展示素材</h3>
+<h3 id="media">展示素材</h3>
 <p>展示素材是各模組用來展示的圖片與影片。</p>
 <ul class="plain">
   <li>展示素材槽同時收圖片與影片，共用張數額度</li>
@@ -546,16 +549,16 @@ table.map td:nth-child(2){width:22%}
   <li>展示素材影片的縮圖自動取第一幀</li>
   <li>活動另有必填的橫式橫幅（16:9），其他模組不比照</li>
 </ul>
-<p>活動素材與專用影片槽詳見<a href="event-create.html">建立活動</a>。</p>
+<p>活動素材與專用影片槽詳見<a href="event-create-step2.html#media">步驟 2 基本資料</a>。</p>
 
-<h3>年齡分級</h3>
+<h3 id="age-rating">年齡分級</h3>
 <p>年齡分級標示內容適合的觀看年齡。</p>
 <ul class="plain">
   <li>年齡分級六級單選，預設「全部」：全部、7+、10+、13+、16+、18+</li>
   <li>作品上架、建立項目、項目公開資訊三處共用同一份資料</li>
 </ul>
 
-<h3>打包單位：組合與方案</h3>
+<h3 id="bundle-unit">打包單位：組合與方案</h3>
 <p>組合包與方案都是把多樣東西打包販售的單位。</p>
 <ul class="plain">
   <li>電子商店的組合包與項目的方案是同一種模式：成員引用既有商品、價格自動推導、折扣用百分比</li>
@@ -564,7 +567,7 @@ table.map td:nth-child(2){width:22%}
 </ul>
 <p>詳見<a href="bundles.html">組合包與票務商品</a>。</p>
 
-<h3>項目的組成：作品與方案</h3>
+<h3 id="project-parts">項目的組成：作品與方案</h3>
 <p>項目由「作品」與「方案」構成。</p>
 <ul class="plain">
   <li>直接發佈、共創、預購三型都有作品</li>
@@ -572,16 +575,16 @@ table.map td:nth-child(2){width:22%}
 </ul>
 <p>詳見<a href="taxonomy.html">商品分類與模組應用</a>。</p>
 
-<h3>庫存池、三開關與鎖定庫存</h3>
+<h3 id="inventory">庫存池、三開關與鎖定庫存</h3>
 <p>庫存池與三開關決定一件商品在每個販售管道能不能賣、能賣多少。</p>
 <ul class="plain">
   <li>單售與每個組合包各是一個販售管道，各自有上架、顯示、開賣三個獨立開關</li>
   <li>庫存預設共用，任一販售管道可鎖定一部分只給自己賣</li>
   <li>有成交只能封存，零成交且已下架或已封存才可刪除</li>
 </ul>
-<p>詳見<a href="eshop-sales.html">電子商店販售流程</a>、<a href="bundles.html">組合包與票務商品</a>、<a href="events.html">活動總覽</a>。</p>
+<p>詳見<a href="eshop-sales.html">電子商店販售流程</a>、<a href="bundles.html">組合包與票務商品</a>、<a href="event-rules.html">活動規則</a>。</p>
 
-<h3>定價幣別</h3>
+<h3 id="currency">定價幣別</h3>
 <p>定價幣別決定商品與票券以哪種幣別定價，以及其他幣別怎麼換算。</p>
 <ul class="plain">
   <li>一位創作者只有一個創作者幣別，由 Admin 建立帳號時從 USD、TWD、HKD、SGD、JPY 選定，之後創作者與 Admin 目前都不能改</li>
@@ -591,7 +594,7 @@ table.map td:nth-child(2){width:22%}
   <li>改價只影響之後的購買，已售出不追溯</li>
   <li>平台基準幣別是平台自己的記帳幣別，預設港幣；忠誠點數的購買類計分，先把金額換成平台基準幣別再算分，見<a href="fans-tiers.html#buy">粉絲分級</a></li>
 </ul>
-<p>詳見<a href="event-create.html">建立活動</a>、<a href="bundles.html">組合包與票務商品</a>。</p>
+<p>詳見<a href="event-create-step8.html#preview-prices">步驟 8 預覽與發布</a>、<a href="bundles.html">組合包與票務商品</a>。</p>
 <p class="note">依據：主規格 §5.2.2、§7.1～§7.15；D041、D222、D241、D253、D259、D306、D307、D312、D316、D318、D345、D346、D347、D348、D349。</p>
 
 <h2 id="docs"><span class="n">8</span>文件與手冊怎麼對應</h2>
