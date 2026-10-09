@@ -324,6 +324,16 @@
     if (C.bookyayStats(c).doneIds.indexOf(e.id) !== -1) return 'done';
     return (c.bookyayDrafts || []).indexOf(e.id) !== -1 ? 'draft' : 'pending';
   }
+  /* D384 決定三（2026-10-09，只動版本範圍）：release2.4 不能帶入的活動——多時段、重覆（多場次 S87 不在版本內）、
+     到店自取（S89 不在版本內）——在清單先標「release2.4 不支援」並寫原因，不用點進繼續設定才知道。
+     判斷與 create-event 匯入清單的 bkyVerBlock() 同一套（同兩個功能標記）；最終版兩個標記都開，標示不出現。 */
+  function featOn(id) { var d = window.ztorDevState; return !d || !d.featOn || d.featOn(id); }
+  function verBlock(e) {
+    if (!featOn('S87') && e.repeat) return 'repeat';
+    if (!featOn('S87') && (e.slots || 1) > 1) return 'multi';
+    if (!featOn('S89') && e.ship === 'pickup') return 'pickup';
+    return '';
+  }
   function matchesSearch(e) {
     var q = (searchEl.value || '').trim().toLowerCase();
     if (!q) return true;
@@ -376,8 +386,12 @@
           + '<button type="button" class="btn btn--ghost btn--sm" data-unmap="' + esc(e.id) + '">'
           + esc(tx('ace.unmap', 'Unmap')) + '</button>';
       }
-      return '<tr>'
-        + '<td class="ace-name">' + esc(e.name) + '</td>'
+      var vb = verBlock(e);
+      return '<tr' + (vb ? ' data-ace-r24="' + vb + '"' : '') + '>'
+        + '<td class="ace-name">' + esc(e.name)
+        + (vb ? ' <span class="badge badge--neutral">' + esc(tx('ace.r24.tag', 'Not in release2.4')) + '</span>'
+              + '<div class="text-sub">' + esc(tx('ace.r24.' + vb, '')) + '</div>' : '')
+        + '</td>'
         + '<td class="ace-date">' + esc(e.date) + '</td>'
         + '<td>' + esc(e.venue) + '</td>'
         + '<td class="text-sub">' + esc(e.organizer || '—') + '</td>'
@@ -572,6 +586,8 @@
     renderRows();
   });
   document.addEventListener('i18n:applied', function () { renderOwner(); renderRows(); renderSync(); });
+  /* D384：切換版本時「release2.4 不支援」標示跟著重算（verBlock 讀目前版本的功能標記） */
+  document.addEventListener('ztor:devstate-changed', function () { renderRows(); });
 
   renderOwner();
   renderRows();

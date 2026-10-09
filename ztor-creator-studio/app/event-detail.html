@@ -196,7 +196,7 @@
           <div>
           <div class="flex-row" style="gap:8px;margin-bottom:8px">
             <span class="badge badge--success"><span data-i18n="event-detail.badge.on-sale">On sale</span></span>
-            <span class="badge" data-hide-type="watchparty"><span data-i18n="event-detail.badge.series">Series 1/3</span></span>
+            <span class="badge" data-hide-type="watchparty" data-feat="S88"><span data-i18n="event-detail.badge.series">Series 1/3</span></span>
             <span class="badge badge--info"><span data-i18n="event-detail.badge.type">Concert</span></span>
             <!-- 已下架（D361 決定五）：上架是階段以外的另一維度，階段徽章不動、另掛這一顆；syncUnlist() 依 ev.unlisted 顯示。
                  排在最後：前三顆由 hydrate 以位置索引（[0] 階段、[1] 系列、[2] 類型）改寫，插在前面會錯位。 -->
@@ -780,7 +780,7 @@
                提供」的零功能說明。前者是「這場活動是什麼」的一部分（它是系列的第幾場），
                正是總覽在回答的；後者已移到票務。一格分頁裝一份唯讀清單，成本高於收益。
                只有系列子場看得到——由 syncSeriesCard() 依 ev.series 開關。 -->
-          <section class="card" id="ed-series-card">
+          <section class="card" id="ed-series-card" data-feat="S88">
             <div class="card__head">
               <div class="card__title-group">
                 <span class="card__title-icon card__title-icon--info"><i data-lucide="layers" class="ztor-icon"></i></span>
@@ -848,7 +848,7 @@
                shared.css 收起）——檢視態看到的是一列唯讀事實，不需要解釋為什麼不能改。 -->
           <div class="data-list">
             <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.type">Type</span><div class="field__hint" data-i18n="ee.ov.type.locked">Locked after creation — the rest of the form depends on it. To change it, create a new event.</div></div><span data-i18n="event-detail.ov.type-val">Concert · in-person</span></div>
-            <div class="data-list__row" data-hide-type="watchparty"><div class="data-list__row-main"><span data-i18n="event-detail.ov.series">Series</span></div><span data-i18n="event-detail.ov.series-val">Kowloon Café 10th Anniv. · 1 of 3</span></div>
+            <div class="data-list__row" data-hide-type="watchparty" data-feat="S88"><div class="data-list__row-main"><span data-i18n="event-detail.ov.series">Series</span></div><span data-i18n="event-detail.ov.series-val">Kowloon Café 10th Anniv. · 1 of 3</span></div>
             <!-- 票務摘要（2026-08-13）：票種與組合包本來只活在「票務」分頁，總覽看不出這場
                  賣的是什麼、有沒有綁商品。這兩列是唯讀摘要，點右邊的連結切到票務分頁去管理。 -->
             <div class="data-list__row" data-hide-type="watchparty">
@@ -978,7 +978,7 @@
                對齊建立流程「基本資料」那一步的範圍。 -->
 
           <!-- 系列子場：共用設定在母頁改，這一頁只能看（2026-08-06 使用者裁決：暫時不可單獨修改）。 -->
-          <div class="alert alert--row alert--info mt-16" id="ed-series-lock" data-series-lock hidden>
+          <div class="alert alert--row alert--info mt-16" id="ed-series-lock" data-series-lock data-feat="S88" hidden>
             <span class="alert__icon"><i data-lucide="info" class="ztor-icon"></i></span>
             <div class="alert__body">
               <div class="alert__title" data-i18n="event-detail.edit.seriesnote">This date follows the series settings — changing it here changes only this date</div>
@@ -1007,9 +1007,10 @@
                每盒有日期／開始結束／開放入場（時間↔開演前分鐘互算）／早到政策，與建立流程
                同一套。每站不同場地的需求改用系列活動（每站一場獨立活動，D340）。盒子由 JS 渲染。 -->
           <div id="ed-sess-list"></div>
-          <button class="btn btn--outline btn--add mt-16" type="button" id="ed-sess-add"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ed.sess.add">Add a date</span></button>
+          <!-- 2026-10-09 D383：新增場次＝多場次（S87 ⚪），release2.4 收起 -->
+          <button class="btn btn--outline btn--add mt-16" type="button" id="ed-sess-add" data-feat="S87"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ed.sess.add">Add a date</span></button>
 
-          <div class="alert alert--row alert--info mt-16" data-series-lock hidden>
+          <div class="alert alert--row alert--info mt-16" data-series-lock data-feat="S88" hidden>
             <span class="alert__icon"><i data-lucide="info" class="ztor-icon"></i></span>
             <div class="alert__body">
               <div class="alert__title" data-i18n="event-detail.edit.seriesnote">This date follows the series settings — changing it here changes only this date</div>
@@ -1137,7 +1138,8 @@
               <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-view-safe data-pub-val="sf">
                 <span class="radio-card__text"><span class="radio-card__title" data-i18n="ed.pub.pickup.sf">SF Express</span><span class="radio-card__sub" data-i18n="ed.pub.pickup.sf.sub">A physical ticket ships to the fan's address; the fan pays postage.</span></span>
               </button>
-              <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-view-safe data-pub-val="store">
+              <!-- 2026-10-09 D383：到店自取（S89 ⚪）release2.4 收起 -->
+              <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-view-safe data-pub-val="store" data-feat="S89">
                 <span class="radio-card__text"><span class="radio-card__title" data-i18n="ed.pub.pickup.store">Store pickup</span><span class="radio-card__sub" data-i18n="ed.pub.pickup.store.sub">The fan collects it with ID at a named store or at the venue.</span></span>
               </button>
             </div>
@@ -1311,8 +1313,8 @@
             <!-- 2026-09-18（D292 裁決一）：分頁名保留「票務商品」當活動脈絡的入口名（event-detail.tab.bundles），
                  物件層一律叫組合包——底下區段標題改用 ed.bd.title「組合包」，兩者不再共用同一個 key。 -->
             <button type="button" class="tabs__item" data-view-safe data-nav-item="bundle" data-i18n="event-detail.tab.bundles">Ticket bundles</button>
-            <button type="button" class="tabs__item" data-view-safe data-nav-item="comp" data-i18n="event-detail.comp.title">Comp tickets</button>
-            <button type="button" class="tabs__item" data-view-safe data-nav-item="resale" data-i18n="event-detail.resale.title">Resale</button>
+            <button type="button" class="tabs__item" data-view-safe data-nav-item="comp" data-feat="S91" data-i18n="event-detail.comp.title">Comp tickets</button>
+            <button type="button" class="tabs__item" data-view-safe data-nav-item="resale" data-feat="S90" data-i18n="event-detail.resale.title">Resale</button>
               </nav>
           </div>
         <div class="nav-sections">
@@ -1397,7 +1399,7 @@
         </div>
           </div>
 
-          <div data-nav-panel="comp">
+          <div data-nav-panel="comp" data-feat="S91">
 <!-- 招待票（2026-08-13 使用者裁決，自「退款與招待票」分頁搬來）：核發招待票就是
              「多發一張 $0 的票」，發的時候要選票種——跟票種是同一個心智模型，故住在票務。 -->
         <div class="section-head mt-24">
@@ -1427,7 +1429,7 @@
              i18n 的 event-detail.tiers.rule.* 與 .tiers.tbd 保留未用。 -->
           </div>
 
-          <div data-nav-panel="resale">
+          <div data-nav-panel="resale" data-feat="S90">
 <!-- 轉售（2026-08-17 自「系列」分頁搬來）：它談的是「這場的票能不能轉手」，跟系列
              一點關係也沒有。掛在系列分頁裡等於只有系列子場的創作者看得到這則說明，一般活動的
              創作者永遠看不到——那顯然不是本意。票的事歸票務。 -->
@@ -1884,10 +1886,14 @@
           <label class="field__label" for="ed-tm-name"><span id="ed-tm-name-label" data-i18n="ee.tix.name">Tier name</span> <span class="field__req">*</span></label>
           <input class="input" id="ed-tm-name">
         </div>
+        <!-- 門票圖片（D384 決定二，5.1.6.2 §4.5 F9、5.1.6.3 §2.6 → 5.1.6.1 F22 基本區）：與建立流程單張門票彈窗同一套——
+             直式上傳格（ds-components/upload-tile.css 的 .upload-tile-aside 側排）＋說明＋「改回活動圖片」。
+             預設沿用活動主視覺、可換、可改回；bookyay 帶入的活動同樣可改（不鎖、不掛來源標記）。內容由 renderTmImg() 畫。 -->
+        <div class="field" id="ed-tm-img-field"></div>
         <!-- 顯示開關（D328，5.1.6.3 §2.6 → 5.1.6.1 F22 基本區）：與建立流程的單張門票彈窗同一組欄位。
              顯示預設開，關＝隱藏（活動頁票價清單不列、不能單張買，仍可當組合包成員）。
              墓碑 2026-10-05（D353，撤銷 D328 決定二）：門票簡介欄位（#ed-tm-desc、data-feat="S54"）整欄移除。 -->
-        <div class="control-row" data-feat="S55">
+        <div class="control-row" id="ed-tm-show-row" data-feat="S55">
           <div>
             <div class="control-row__main" data-i18n="ce.tier.show">Show on event page</div>
             <div class="control-row__sub" id="ed-tm-show-sub" data-i18n="ce.tier.show.hint">Off hides it from the price list — fans can't buy it on its own, but bundles can still include it.</div>
@@ -4215,7 +4221,7 @@
         (Number(t.price) === 0 ? '<span class="badge badge--neutral">' + tixEsc(T('ce.tier.free', 'Free')) + '</span>' : '') +
         (t.paused ? '<span class="badge badge--neutral">' + tixEsc(T('ed.tix.status.paused', 'Paused')) + '</span>' : '') +
         /* 隱藏標示（D328，5.1.6.3 §2.6）：顯示開關關閉的票——活動頁不列、不能單張買，仍在組合包裡照常賣 */
-        (t.hidden ? '<span class="badge badge--neutral" data-feat="S55">' + tixEsc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '');
+        (t.hidden ? '<span class="badge badge--neutral" data-feat="S92">' + tixEsc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '');
       const doorsM = hhmmToMin((edSessions[0] || {}).doors || '');
       const n = Number(t.earlyMin) || 0;
       return '<div class="card tier-card tier-card--clickable" data-ed-tier="' + tixEsc(t.id) + '">' +
@@ -4223,7 +4229,8 @@
           '<h4 class="tier-card__name">' + tixEsc(t.name || T('ce.tier.untitled', 'Untitled tier')) + '</h4>' + badges +
         '</div>' +
         '<div class="tier-card__thumb">' +
-          (kv ? '<img src="' + tixEsc(kv) + '" alt="">' : '<i data-lucide="image" class="ztor-icon"></i>') +
+          /* D384：門票有自己的圖就用它，沒有就沿用活動主視覺 */
+          (tierImgOf(t) ? '<img src="' + tixEsc(tierImgOf(t)) + '" alt="">' : '<i data-lucide="image" class="ztor-icon"></i>') +
         '</div>' +
         '<dl class="tier-card__facts">' +
           /* D380：多場活動的獨立票寫出所屬場次（單場不寫——只有一場，沒有「哪一場」要分） */
@@ -4377,12 +4384,64 @@
   }
 
   /* 墓碑 2026-10-05（D353）：syncTmDesc()（門票簡介的即時字數）隨欄位退場。 */
+
+  /* 門票圖片（D384 決定二，2026-10-09）：與 create-event 的 tierImgFieldHTML() 同一套行為——
+     門票自己的 `img` 留空＝跟著活動主視覺走（活動換主視覺，沒自訂過的票一起換）；換一張＝寫進這張票；
+     「改回活動圖片」＝清空。彈窗裡先記在 tmImg，按儲存才寫回 tmTier（取消就丟掉，同其他欄位）。
+     主視覺的來源＝圖片相簿第一格（編輯中換過也算），沒有相簿時用 ev.images.keyvisual。 */
+  let tmImg = '';
+  function edKeyVisual() {
+    const first = document.querySelector('#ed-gallery [data-gallery-tile] .upload-tile__thumb');
+    return (first && first.getAttribute('src')) || (ev.images && ev.images.keyvisual) || '';
+  }
+  const tierImgOf = t => ((t && t.img) || '').trim() || edKeyVisual();
+  function renderTmImg() {
+    const box = tmEl('ed-tm-img-field');
+    if (!box) return;
+    const own = (tmImg || '').trim();
+    const src = own || edKeyVisual();
+    box.innerHTML =
+      '<label class="field__label"><span data-i18n="ed.tm.img">' + esc(T('ed.tm.img', 'Ticket image')) + '</span> ' +
+        '<span class="text-sub" data-i18n="ce.opt">' + esc(T('ce.opt', '(optional)')) + '</span></label>' +
+      '<div class="upload-tile-aside">' +
+        '<div class="upload-tile upload-tile--portrait ' + (src ? 'is-filled' : 'is-empty') + '" data-upload data-tm-img>' +
+          (src ? '<img class="upload-tile__thumb" src="' + esc(src) + '" alt="">' : '<span class="upload-tile__icon">＋</span>') +
+        '</div>' +
+        '<div class="upload-tile-aside__side">' +
+          (src ? '<p class="field__hint" data-i18n="' + (own ? 'ed.tm.img.own' : 'ed.tm.img.event') + '">' +
+                   esc(T(own ? 'ed.tm.img.own' : 'ed.tm.img.event', '')) + '</p>' : '') +
+          (own ? '<button type="button" class="btn btn--outline btn--sm" data-tm-img-reset data-i18n="ed.tm.img.reset">' +
+                   esc(T('ed.tm.img.reset', 'Back to the event image')) + '</button>' : '') +
+        '</div>' +
+      '</div>';
+    /* 上傳格每次重畫都是新節點，共用元件要重新掛一次才點得動（同 create-event renderTierModal） */
+    const tile = box.querySelector('[data-tm-img]');
+    if (tile && window.ztorUploadTile) window.ztorUploadTile.enhance(tile);
+  }
+  tmEl('ed-tm-img-field')?.addEventListener('upload:change', e => {
+    /* 換圖過程中也會發 upload:change（uploading／processing／optimizing），只認結果狀態（同 create-event 2026-10-09 修正） */
+    const st = e.detail && e.detail.state;
+    if (st === 'uploading' || st === 'processing' || st === 'optimizing') return;
+    const tile = e.target.closest('[data-tm-img]');
+    if (!tile) return;
+    const thumb = tile.querySelector('.upload-tile__thumb');
+    tmImg = (e.detail && e.detail.filled && thumb) ? (thumb.getAttribute('src') || '') : '';
+    renderTmImg();
+  });
+  tmEl('ed-tm-img-field')?.addEventListener('click', e => {
+    if (!e.target.closest('[data-tm-img-reset]')) return;
+    tmImg = '';
+    renderTmImg();
+  });
+
   function openTierModal(t) {
     tmTier = t;
     tmTried = false;
     tmEl('ed-tm-title').textContent = tmNew ? T('ed.tm.new', 'New ticket') : (t.name || T('ce.tier.untitled', 'Untitled tier'));
     if (tmNew) { tmHow = 'type'; fillTmSess(); }
     tmEl('ed-tm-name').value = t.name || '';
+    tmImg = (t.img || '').trim();   // D384：沒有自己的圖＝沿用活動主視覺
+    renderTmImg();
     tmEl('ed-tm-price').value = t.price == null ? '' : t.price;
     tmEl('ed-tm-qty').value = t.qty == null ? '' : t.qty;
     tmEl('ed-tm-early').value = t.earlyMin == null ? '' : t.earlyMin;
@@ -4393,6 +4452,9 @@
     /* bookyay 套票轉換出的 1 人票（hideFix，D329，5.1.6.2 F9）：顯示開關鎖定為隱藏、票價與張數鎖定、不能刪
        （刪掉它，自動建立的組合包就沒有票可賣）。說明句換成「只透過組合包販售」。 */
     const fix = !!t.hideFix;
+    /* 2026-10-09 D383：1 人票的鎖定開關屬 S92（🔵 release2.4）、創作者自己切換仍是 S55（⚪）；換掉標記後重跑版本閘 */
+    const showRow = tmEl('ed-tm-show-row');
+    if (showRow) { showRow.setAttribute('data-feat', fix ? 'S92' : 'S55'); if (window.ztorDevState && window.ztorDevState.regate) window.ztorDevState.regate(); }
     sw.classList.toggle('switch--locked', fix);
     if (fix) sw.setAttribute('aria-disabled', 'true'); else sw.removeAttribute('aria-disabled');
     const swSub = tmEl('ed-tm-show-sub');
@@ -4500,6 +4562,7 @@
     /* 墓碑 2026-09-23（D316）：儲存時不再寫回 `fee`（粉絲加價的手續費）。 */
     tmTier.earlyMin = tmEl('ed-tm-early').value;
     tmTier.hidden = !tmEl('ed-tm-show').classList.contains('switch--on'); // D328：關＝隱藏
+    tmTier.img = (tmImg || '').trim();   // D384：空字串＝沿用活動主視覺
     tmTier.paused = tmEl('ed-tm-paused').classList.contains('switch--on');
     /* 新票（D381）：這時才進清單。獨立票帶 standalone＋所屬場次（多場活動），與 events-store 的獨立票同一個形狀；
        票種門票＝新增一個票種（本頁一個票種一張卡，各場同名票併在這一張，同既有「新增票種」）。 */
@@ -4545,10 +4608,10 @@
       const stock = Math.max(0, (Number(t.qty) || 0) - sold - resv);
       return '<tr>' +
         '<td><span class="ed-tixrow__name">' +
-          (kv ? '<img class="ed-tixrow__thumb" src="' + esc(kv) + '" alt="">' : '') +
+          (tierImgOf(t) ? '<img class="ed-tixrow__thumb" src="' + esc(tierImgOf(t)) + '" alt="">' : '') +   // D384
           esc(t.name || '—') +
           (soloSessText(t) ? ' · ' + esc(soloSessText(t)) : '') + soloBadge(t) +
-          (t.hidden ? ' <span class="badge badge--neutral" data-feat="S55">' + esc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '') +
+          (t.hidden ? ' <span class="badge badge--neutral" data-feat="S92">' + esc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '') +
           '</span></td>' +
         '<td>' + fmtNum(stock) + '</td>' +
         '<td>' + (resv ? fmtNum(resv) : '0') + '</td>' +

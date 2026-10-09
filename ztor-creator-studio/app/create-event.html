@@ -697,7 +697,8 @@
         <!-- 容器留 .session-list（直排＋列距＋「新增場次」那顆的樣式），但不再掛
              --detailed：那組欄寬只服務已撤除的表格版面。盒子由 JS 塞進來。 -->
         <div class="session-list" id="ce-dates-list"></div>
-        <button type="button" class="btn btn--outline session-list__add" id="ce-dates-add">
+        <!-- 2026-10-09 D383：新增場次＝多場次（S87 ⚪），release2.4 收起；bookyay 帶入的單一時段活動本來就只有一場 -->
+        <button type="button" class="btn btn--outline session-list__add" id="ce-dates-add" data-feat="S87">
           <i data-lucide="plus" class="ztor-icon"></i> <span data-di="d.sess.add">新增場次</span>
         </button>
       </div>
@@ -1086,7 +1087,8 @@
           <button class="segmented__btn" type="button" data-val="sf">
             <span class="radio-card__text"><span class="radio-card__title" data-di="d.ship.sf">順豐寄送</span><span class="radio-card__sub" data-di="d.ship.sf.sub">實體票寄到粉絲填的地址，運費粉絲付。</span></span>
           </button>
-          <button class="segmented__btn" type="button" data-val="pickup">
+          <!-- 2026-10-09 D383：到店自取（S89 ⚪）release2.4 收起，最終版照舊 -->
+          <button class="segmented__btn" type="button" data-val="pickup" data-feat="S89">
             <span class="radio-card__text"><span class="radio-card__title" data-di="d.ship.pick">到店自取</span><span class="radio-card__sub" data-di="d.ship.pick.sub">粉絲到指定門市或活動現場憑證件領票。</span></span>
           </button>
         </div>
@@ -2844,7 +2846,9 @@
   function tierShowRowHTML(t, d) {
     const on = !d.hidden;
     const fix = !!t.hideFix;
-    return '<div class="control-row" data-feat="S55">' +
+    /* 2026-10-09 D383：1 人票（hideFix）的鎖定開關屬「門票隱藏狀態與標示」S92（🔵 release2.4，bookyay 套票轉換要看得到）；
+       創作者自己切換顯示開關仍是 S55（⚪）。 */
+    return '<div class="control-row" data-feat="' + (fix ? "S92" : "S55") + '">' +
       '<div>' +
         '<div class="control-row__main">' + esc(T("ce.tier.show", "Show on event page")) + (fix ? " " + srcChip() : "") + '</div>' +
         '<div class="control-row__sub">' + esc(fix ? T("ce.tier.show.fix", "Sold only through its bundle — stays hidden.")
@@ -2908,7 +2912,7 @@
           ? '<span class="badge badge--neutral">' + esc(dT("d.tier.standalone")) + '</span>' : '') +
         /* 隱藏標示（D328，5.1.6.1 F22 卡片收合顯示）：顯示開關關閉時才出現。 */
         (dv.hidden
-          ? '<span class="badge badge--neutral" data-tier-hidden-badge data-feat="S55">' + esc(T("ce.tier.hidden", "Hidden")) + '</span>' : '') +
+          ? '<span class="badge badge--neutral" data-tier-hidden-badge data-feat="S92">' + esc(T("ce.tier.hidden", "Hidden")) + '</span>' : '') +
         /* 卡頭不再掛 bookyay 來源標記（2026-08-09 使用者指示）：下面多了「票務組合名稱」
            那一列，有那一列就代表這張票是 bookyay 帶進來的，標記變成重複的訊息。 */
         /* 動作收進 ⋮（2026-08-09 使用者指示）：整張卡本身就是「編輯」的點擊區，
@@ -4981,6 +4985,10 @@
     /* D369 決定三：不設門票的 bookyay 活動不能帶入 */
     "d.bgate.blocked":  { en: "Can't import",    zh: "不可帶入" },
     "d.bgate.noticket": { en: "This event has no tickets set up, so it can't be imported.", zh: "這場活動沒有設定門票，不能帶入" },
+    /* D383（release2.4 範圍）：多時段的單次活動與重覆活動不能帶入；到店自取的活動同樣標不能帶入（推導，ASSUMPTIONS UIA-231） */
+    "d.bgate.multi":    { en: "This event has more than one time slot. Only single-slot events can be imported for now.", zh: "這場活動有多個時段，目前只能帶入單一時段的活動" },
+    "d.bgate.repeat":   { en: "This is a recurring event. Only one-off events with a single time slot can be imported for now.", zh: "這是重覆活動，目前只能帶入單一時段、不重覆的活動" },
+    "d.bgate.pickup":   { en: "Tickets for this event are picked up in store. Store pickup isn't available yet, so it can't be imported.", zh: "這場活動的取票方式是到店自取，目前還沒有到店自取，不能帶入" },
     "d.limits":       { en: "Other event settings", zh: "其他活動設定" },
     "d.limits.sub":   { en: "Leave blank for no limit.", zh: "留空就是不限制。" },
     "d.limit.person": { en: "Tickets per person",  zh: "每人總限購數量" },
@@ -5546,6 +5554,10 @@
   document.addEventListener("upload:change", e => {
     const tile = e.target.closest("[data-tier-img]");
     if (!tile) return;
+    /* 2026-10-09（D383 驗收時發現）：上傳格在換圖的過程中也會發 upload:change（state＝uploading／processing），
+       當時 filled 還是 false——原本照樣寫成「清空」並重繪彈窗，把上傳中的格子換掉，門票圖片因此永遠換不掉。只認結果狀態。 */
+    const st = e.detail && e.detail.state;
+    if (st === "uploading" || st === "processing" || st === "optimizing") return;
     const h = draftOf(tile);
     if (!h || !h.d) return;
     const thumb = tile.querySelector(".upload-tile__thumb");
@@ -5766,7 +5778,9 @@
       location: "大佳河濱公園", region: "中山區",
       meet: "8 號水門", transit: "捷運圓山站轉接駁車約 15 分鐘",
       saleFromD: "2026-09-01", saleFromT: "12:00", saleToD: "", saleToT: "",
-      ship: "pickup",
+      /* 2026-10-09 D383：原為到店自取（只是順手寫的值，取票方式的示範是 bky-4／bky-5）；release2.4 沒有到店自取，
+         改電子門票，讓跨日示範在 release2.4 也帶得進來 */
+      ship: "eticket",
       isPrivate: false,
       maxPurchaseCnt: 4,   // D366 示範：活動限購＋門票的折扣優惠
       ticketTypes: [{ name: "一日票", priceHkd: "445", persons: 1, discount: { priceHkd: "399" } }],
@@ -5857,6 +5871,27 @@
         { startD: "2026-11-14", startT: "14:00", endD: "2026-11-14", endT: "15:30", earlyEntryInMin: 15, earlyMode: "warn", cap: 40, types: [0] },
         { startD: "2026-11-21", startT: "14:00", endD: "2026-11-21", endT: "15:30", earlyEntryInMin: 15, earlyMode: "warn", cap: 40, types: [0] }
       ] },
+    /* D383（2026-10-09）bookyay 套票轉換的單一時段示範：release2.4 只收單一時段、不重覆的活動，bky-2（三個時段）在 release2.4 標不能帶入，
+       所以另備這一場一個時段的二人套票，release2.4 與最終版都能走——帶入後：
+         · 1 人票：港幣 HK$560 ÷ 2＝HK$280 換算成創作者幣別、張數＝floor(上限 121 ÷ 2) × 2＝120、隱藏且鎖定為隱藏（看得到「隱藏」標示與鎖定開關）；
+         · 組合包：自動建一組（單場不加場次後綴）、票券成員＝1 人票 × 2、折扣 0、鎖定 60 套，整組鎖定；
+         · 門票圖片：預設沿用活動主視覺（bookyay 帶入的圖），在單張門票彈窗可換成自己的圖、可改回（D383 決定五）。 */
+    { id: "bky-13", type: "concert",
+      label: "Duo Night — 雙人限定場",
+      note:  "2026/11/28 · Legacy Taipei（二人套票 · 單一時段）",
+      name: "Duo Night — 雙人限定場",
+      intros: ["<p>只賣二人套票的雙人限定場：兩人同行、一起入場，全場站席，安可後有合照時間。</p>"],
+      country: "TW", langs: ["cmn", "en"],
+      images: ["images/ip/a-lin.webp"],
+      location: "Legacy Taipei", region: "中正區",
+      meet: "華山 1914 中 5 館入口", transit: "捷運忠孝新生站 1 號出口步行 5 分鐘",
+      saleFromD: "2026-10-20", saleFromT: "12:00", saleToD: "2026-11-27", saleToT: "23:59",
+      ship: "eticket",
+      isPrivate: false,
+      showTncs: true,
+      tncs: "<p>二人套票限兩人同行，須一起驗票入場；單人持票恕不入場。</p>",
+      ticketTypes: [{ name: "二人套票", priceHkd: "560", persons: 2 }],
+      slots: [{ startD: "2026-11-28", startT: "20:00", endD: "2026-11-28", endT: "22:00", earlyEntryInMin: 60, earlyMode: "warn", cap: 121, types: [0] }] },
     /* 已經帶過的場次（2026-08-13 使用者指示）：同一場 bookyay 活動只會在 ztor 上存在一次，
        所以清單裡照樣找得到它——找到才回答得了「我上次是不是已經建過了」——但不能再選一次。
        這三筆刻意對上站上既有的活動（events-store.js 的 inner-circle-fanmeet／album-signing-taipei／
@@ -5864,7 +5899,7 @@
     { id: "bky-6", imported: true,
       label: "Inner Circle Fan Meet — Taipei",
       note:  "2026/07/27 · Neo Studio" },
-    { id: "bky-7", imported: true,
+    { id: "bky-7", imported: true, multi: true,   // 對到三場的 album-signing-taipei；release2.4 沒有多場次活動，清單不列（D383）
       label: "Album signing — Taipei",
       note:  "2026/09/12–09/14 · 誠品信義（三場）" },
     { id: "bky-8", imported: true,
@@ -5875,7 +5910,21 @@
   /* 門票模式（D369 決定三）：「不設門票」的 bookyay 活動不能匯入——ztor 一場活動至少要一張門票。
      已帶過的（imported）同樣選不了；兩者在清單裡都是停用的一列，原因各自不同。 */
   const bkyNoTicket = r => (r.ticketMode || "custom") === "none";
-  const bkyBlocked  = r => !!(r && (r.imported || bkyNoTicket(r)));
+  /* D383（2026-10-09，release2.4 範圍）：多時段的單次活動與重覆活動不能帶入——照樣列出、標不能帶入並說明原因（同不設門票）；
+     最終版仍照 D369 決定五帶入。判斷依版本：多場次（S87）不在目前版本內才擋。
+     到店自取（S89）不在版本內時，取票方式是到店自取的活動同樣擋下（D384 決定一，2026-10-09 裁決；原為推導，ASSUMPTIONS UIA-231 已裁決）。
+     已帶過、但對到多場活動的那一列（bky-7）在 release2.4 不列——它在活動清單裡也不存在。 */
+  const bkyRepeat   = r => !!(r && r.repeat);
+  const bkyMultiSlot = r => !!(r && !r.repeat && (r.slots || []).length > 1);
+  const bkyVerBlock = r => {
+    if (!r || r.imported) return "";
+    if (!featOn("S87") && bkyRepeat(r)) return "repeat";
+    if (!featOn("S87") && bkyMultiSlot(r)) return "multi";
+    if (!featOn("S89") && r.ship === "pickup") return "pickup";
+    return "";
+  };
+  const bkyListed   = r => !(r.imported && r.multi && !featOn("S87"));
+  const bkyBlocked  = r => !!(r && (r.imported || bkyNoTicket(r) || bkyVerBlock(r)));
 
   const bkyGo    = document.getElementById("ce-bky-go");
   let bkyOn = null;
@@ -5904,7 +5953,7 @@
     if (bkyGo) bkyGo.disabled = !bkyPick;
     if (!bkyOpen) return;
     const k = showAll ? "" : (q?.value || "").trim().toLowerCase();
-    const hit = BKY.filter(r => !k || (r.label + " " + r.note).toLowerCase().indexOf(k) >= 0);
+    const hit = BKY.filter(r => bkyListed(r) && (!k || (r.label + " " + r.note).toLowerCase().indexOf(k) >= 0));
     box.innerHTML = hit.length
       ? hit.map(r => {
           const on = bkyPick === r.id;
@@ -5913,18 +5962,20 @@
              灰掉的樣式由 owner-lookup.css 的 `[disabled]` 直接接手，不必再加 class。 */
           /* D369 決定三：不設門票的那一列同樣停用，多一行原因、右邊掛「不可帶入」 */
           const noTk = !r.imported && bkyNoTicket(r);
+          const vb = noTk ? "" : bkyVerBlock(r);   // D383：多時段／重覆／到店自取（依版本）
+          const why = noTk ? "d.bgate.noticket" : vb ? "d.bgate." + vb : "";
           return '<button type="button" class="owner-lookup__result" role="option"' +
             (bkyBlocked(r) ? ' disabled aria-disabled="true"' : "") +
             ' aria-selected="' + (on ? "true" : "false") + '" data-bky-opt="' + esc(r.id) + '"' +
-            (noTk ? ' data-bky-blocked="no-ticket"' : "") + '>' +
+            (noTk ? ' data-bky-blocked="no-ticket"' : vb ? ' data-bky-blocked="' + vb + '"' : "") + '>' +
             '<span class="owner-lookup__copy">' +
               '<span class="owner-lookup__name">' + esc(r.label) + '</span>' +
               '<span class="owner-lookup__meta">' + esc(r.note) + '</span>' +
-              (noTk ? '<span class="owner-lookup__meta">' + esc(dT("d.bgate.noticket")) + '</span>' : "") +
+              (why ? '<span class="owner-lookup__meta">' + esc(dT(why)) + '</span>' : "") +
             '</span>' +
             (r.imported
               ? '<span class="badge badge--neutral owner-lookup__flag">' + esc(dT("d.bgate.done")) + '</span>'
-              : noTk
+              : why
                 ? '<span class="badge badge--neutral owner-lookup__flag">' + esc(dT("d.bgate.blocked")) + '</span>'
                 : "") +
             '</button>';
@@ -6589,15 +6640,21 @@
        與帶入閘門那顆「帶入」按鈕同一個落點）。找不到或已帶過就退回正常閘門，
        不硬闖：網址是可以被亂打的。 */
     const imp = qs.get("import");
-    if (imp) {
+    /* 2026-10-09 D383：多時段／重覆／到店自取要不要擋看版本（featOn），而版本開關 devtools.js 排在本段之後才載入——
+       等整頁的 script 都跑完（DOMContentLoaded）再判斷，release2.4 從 Admin「繼續設定」直連多時段活動才擋得下。 */
+    const runImport = () => {
       const rec = BKY.find(r => r.id === imp);
-      if (rec && !bkyBlocked(rec)) {       // 不設門票（D369）同樣不能從深連結硬帶
+      if (rec && !bkyBlocked(rec)) {       // 不設門票（D369）、release2.4 的多時段／重覆（D383）同樣不能從深連結硬帶
         chooseType(rec.type || "concert");
         bkyApply(rec);
         enterWizard();
         step = 6;
         render();
       }
+    };
+    if (imp) {
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", runImport, { once: true });
+      else runImport();
     }
     syncBundleEmpty();     // 一開始一組都沒有＝空狀態說明卡，加號先收起來
     if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
