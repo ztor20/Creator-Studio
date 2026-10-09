@@ -16,7 +16,8 @@
      pctText(c, bases) / evPriceText(c, bases, money)   兩種唯讀讀數（門票層回推 %、活動層算出的門票價）
      copyForTicket(rules, base)               活動層一組複製成門票自己的一組（拿掉 bookyay 標記、% 換成這張票的固定價）
      html(rules, scope, locked, ctx)          畫一整份條件清單（ctx 見下）
-     syncWarn(host, conds, isEvent)           限時折扣價高於一般折扣價的提示（只提示、不擋，D367 推導）
+     discTimeBad(conds, isEvent)              限時折扣價高於一般折扣價？（D390 決定二十五追認：擋存）
+     syncWarn(host, conds, isEvent)           把上一條寫成條件卡內的紅字；回傳 1／0（呼叫端據以擋存）
      periodWins(rules) / periodErrs(rules, et, T) / syncPeriod(host, rules, et, T)
                                               期間檢查（D342／D363；D389 起活動詳情同用）：有時間窗的條件須落在活動上架區間內、
                                               限時購買的結束不晚於活動停售；回傳 / 寫入 [data-rule-tl-err] 紅字。建立流程與活動詳情共用
@@ -85,7 +86,7 @@
     "d.cond.evprice":        { en: "Ticket price becomes", zh: "門票折後價" },
     "d.cond.evprice.range":  { en: "{a}–{b}, varies by ticket", zh: "{a}–{b}（各張票不同）" },
     "d.cond.pct.minus":      { en: "{n}% off",            zh: "−{n}%" },
-    "d.cond.warn.time":{ en: "Higher than the regular discounted price, so buying early would cost more.", zh: "比一般折扣價還高：期間內買反而比較貴。" },
+    "d.cond.warn.time":{ en: "Can't be higher than the regular discounted price.", zh: "不得高於一般折扣價。" },
     "d.cond.cap.person": { en: "{n} per person",        zh: "每人 {n} 張" },
     "d.cond.cap.order":  { en: "{n} per order",         zh: "每次 {n} 張" },
     "d.cond.cap.times":  { en: "{n} orders max",        zh: "限 {n} 次" },
@@ -214,8 +215,9 @@
       let h = priceFieldHTML(k, c, l);
       if (k === "discTime" || k === "discBoth") h += winFieldsHTML(k, c, l);
       if (k === "discTier" || k === "discBoth") h += tierPickHTML(k, c, l);
-      /* D367 決定二（推導〔產品待確認〕）：限時折扣價不該高於一般折扣價——只提示、不擋 */
-      if (k === "discTime") h += '<p class="field__hint field__hint--warn" data-cond-warn="discTime" hidden>' + esc(t("d.cond.warn.time")) + '</p>';
+      /* D367 決定二推導，2026-10-09 D390 決定二十五追認：限時折扣價不得高於一般折扣價——擋存（原本只提示）。
+         元素名稱沿用 data-cond-warn（兩頁的同步點都認它），外觀改成欄位錯誤。 */
+      if (k === "discTime") h += '<p class="field__error" data-cond-warn="discTime" hidden>' + esc(t("d.cond.warn.time")) + '</p>';
       return h;
     }
     /* chip＝要不要在卡頂列掛來源標記：整組鎖定時區塊標題旁已經有一枚，卡上不重複（UIA-212） */
@@ -252,14 +254,20 @@
       '</div>';
   }
 
-  /* 限時折扣價高於一般折扣價的提示：活動層比百分比（限時 % 比一般 % 小＝期間內反而貴），門票層比價格 */
-  function syncWarn(host, conds, isEvent) {
-    const w = host && host.querySelector('[data-cond-warn="discTime"]');
-    if (!w) return;
+  /* 限時折扣價高於一般折扣價（D390 決定二十五：擋存）：活動層比百分比（限時 % 比一般 % 小＝期間內反而貴），門票層比價格。
+     bookyay 帶入且鎖定的兩條不算（創作者改不了，擋了也解不開）。 */
+  function discTimeBad(conds, isEvent) {
     const c = conds || {};
+    if (c.discTime && c.discTime.bky && c.disc && c.disc.bky) return false;
     const num = (x, f) => x && x[f] !== "" && x[f] != null && isFinite(Number(x[f])) ? Number(x[f]) : null;
     const a = num(c.discTime, isEvent ? "pct" : "price"), b = num(c.disc, isEvent ? "pct" : "price");
-    w.hidden = !(a != null && b != null && (isEvent ? a < b : a > b));
+    return a != null && b != null && (isEvent ? a < b : a > b);
+  }
+  function syncWarn(host, conds, isEvent) {
+    const bad = discTimeBad(conds, isEvent);
+    const w = host && host.querySelector('[data-cond-warn="discTime"]');
+    if (w) w.hidden = !bad;
+    return bad ? 1 : 0;
   }
 
   /* ── 期間檢查（D342／D363；D389 起活動詳情同用）──────────────────────────────
@@ -304,7 +312,8 @@
     const st = { rules: norm(opts.rules), scope: opts.scope, ctx: opts.ctx || {} };
     const isEv = st.scope === "event";
     /* 期間紅字：shown＝已經按過儲存被擋（之後每改一次就重比）；還沒按儲存前只在改期間欄位時比 */
-    const check = () => opts.times ? syncPeriod(host, st.rules, opts.times()) : 0;
+    /* D390 決定二十五：限時折扣價高於一般折扣價同樣算一個錯（擋存） */
+    const check = () => (opts.times ? syncPeriod(host, st.rules, opts.times()) : 0) + syncWarn(host, st.rules.conds, isEv);
     function render() {
       host.innerHTML = html(st.rules, st.scope, false, st.ctx);
       if (window.ztorIcons) window.ztorIcons.applyIcons(host);
@@ -367,7 +376,7 @@
     TYPES: TYPES, FIELDS: FIELDS, FIELDS_EV: FIELDS_EV, FAN_TIERS: FAN_TIERS, STRINGS: STRINGS,
     t: t, isDiscK: isDiscK, fields: fields, norm: norm,
     condPrice: condPrice, pctOf: pctOf, pctText: pctText, evPriceText: evPriceText, copyForTicket: copyForTicket,
-    html: html, syncWarn: syncWarn, mount: mount,
+    html: html, syncWarn: syncWarn, discTimeBad: discTimeBad, mount: mount,
     periodWins: periodWins, periodErrs: periodErrs, syncPeriod: syncPeriod
   };
 })();

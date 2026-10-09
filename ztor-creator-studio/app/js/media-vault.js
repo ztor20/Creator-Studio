@@ -22,6 +22,15 @@
 
   function isZh() { return document.documentElement.lang === "zh-Hant"; }
   function tx(en, zh) { return isZh() ? zh : en; }
+  /* 2026-10-09 三分頁起新寫的字一律進 i18n.js 的 vault.*，這裡只負責查表與代入佔位
+     （{n}、{tier}…）。代入的值由呼叫端先 esc／num 過；字串本身可以帶 <b>，因為兩種
+     語言的數字位置不同。舊的 tx(en, zh) 內嵌雙語是本檔既有慣例，沒動到的字維持原樣。 */
+  function L(key, vars) {
+    var s = window.i18nT ? window.i18nT(key) : null;
+    if (s == null) s = key;
+    if (vars) Object.keys(vars).forEach(function (k) { s = s.split("{" + k + "}").join(vars[k]); });
+    return s;
+  }
   function num(n) { return Number(n).toLocaleString("en-US"); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]; }); }
   function icon(name, cls) { return '<i data-lucide="' + name + '" class="ztor-icon' + (cls ? " " + cls : "") + '"></i>'; }
@@ -128,9 +137,11 @@
   }
 
   /* ── 側欄 ───────────────────────────────────────────────── */
-  /* ── demo A：庫房總覽卡片牆 ────────────────────────────────
-     側欄 276px 擠著的封面在這裡放得大，「哪座門開得最大」比清單更一眼看得出來。 */
-  function renderOverview() {
+  /* ── 保存檔 media-vault-popup.html：庫房總覽卡片牆 ────────────────
+     側欄 276px 擠著的封面在這裡放得大，「哪座門開得最大」比清單更一眼看得出來。
+     （正式頁沒有 [data-vault-overview]，這支直接返回。與正式頁「總覽」分頁無關，
+     那一支是 renderOverviewTab。） */
+  function renderWall() {
     if (!els.overview) return;
     var html = V.vaults.map(function (v) {
       var cover = V.cover(v);
@@ -447,7 +458,7 @@
     if (it && input && input.value.trim()) {
       var v = input.value.trim();
       it.name = { en: v, zh: v };
-      renderMain(); renderRail(); renderOverview();
+      renderMain(); renderRail(); renderWall();
     }
     state.itemId = null;
     els.itemSheet.classList.remove("is-open");
@@ -521,17 +532,32 @@
 
   /* 一種進得來的方法。裡面的條件要一起達成，所以兩條以上時在上面寫一句
      「這些要一起達成」——不用「且」「AND」這種符號式講法，直接說會發生什麼事。 */
+  /* 2026-10-09 三分頁：每一種方法一張「方法 N」小卡（.vault-method，vault-access.css），
+     頭上寫這種方法單獨有幾人符合——同一支 reachAll，只餵「只有這一組、沒有鑰匙」的庫房。
+     空的方法（還沒放條件）誰都不放行，不寫人數。原本兩條以上才畫的外框由小卡取代。 */
+  function methodReach(g) {
+    if (!g || !(g.items || []).length) return null;
+    return V.reachAll({ rules: [g], keys: [] });
+  }
   function doorGroupHtml(g, gi) {
     var items = g.items || [];
     var lead = items.length >= 2
-      ? '<div class="vault-door__all">' + tx("Meet all of these", "這些要一起達成") + "</div>"
+      ? '<div class="vault-door__all">' + L("vault.ac.all") + "</div>"
       : "";
     var chips = items.map(function (r, ri) { return ruleChip(r, gi, ri, true); }).join("");
-    return '<div class="vault-door__group' + (items.length >= 2 ? " vault-door__group--boxed" : "") + '">' + lead +
-      '<div class="vault-door__chips">' + chips +
-        '<button type="button" class="vault-door__add" data-rule-add="' + gi + '" ' +
-          'aria-label="' + esc(tx("Add a condition to this way in", "在這一種進庫方法裡再加一個條件")) + '">' +
-          icon("plus") + tx("Add", "再加一個") + "</button>" +
+    var n = methodReach(g);
+    return '<div class="vault-method">' +
+      '<div class="vault-method__head">' +
+        '<span class="vault-method__name">' + L("vault.ac.method", { n: gi + 1 }) + "</span>" +
+        (n == null ? "" : '<span class="vault-method__count' + (n ? "" : " vault-method__count--zero") + '">' +
+          L(n === 1 ? "vault.ac.method.count.one" : "vault.ac.method.count", { n: num(n) }) + "</span>") +
+      "</div>" +
+      '<div class="vault-door__group">' + lead +
+        '<div class="vault-door__chips">' + chips +
+          '<button type="button" class="vault-door__add" data-rule-add="' + gi + '" ' +
+            'aria-label="' + esc(L("vault.ac.add.aria")) + '">' +
+            icon("plus") + L("vault.ac.add") + "</button>" +
+        "</div>" +
       "</div>" +
     "</div>";
   }
@@ -572,12 +598,13 @@
     var multi = gs.length > 1;
     els.doorRules.innerHTML =
       gs.map(function (g, gi) { return doorGroupHtml(g, gi); })
-        .join('<div class="vault-door__sep"><span>' + tx("or", "或是") + "</span></div>") +
+        .join('<div class="vault-door__sep"><span>' + L("vault.ac.or") + "</span></div>") +
       '<button type="button" class="vault-door__addgroup" data-group-add>' + icon("plus") +
-        tx("Another way in", "多一種進庫方法") + "</button>";
+        L("vault.ac.addway") + "</button>";
     els.doorRules.classList.toggle("is-grouped", multi);
 
-    els.doorAny.textContent = doorSummary(f, stats.live === 0);
+    /* 正式頁的總結句與「沒有條件」警示在 renderAccessTab；[data-vault-any] 只剩保存檔有。 */
+    if (els.doorAny) els.doorAny.textContent = doorSummary(f, stats.live === 0);
 
     /* 讀數：數字用滾動的，因為它是「我剛剛改了條件」的回饋，不是一個
        靜態指標；跳一下和滾上去，讀起來是兩件事。 */
@@ -614,6 +641,7 @@
     }
 
     renderDoorKeys(f, stats);
+    renderAccessTab(f);
     /* 下一幀才寫比例，否則 0 → n 沒有起點、transition 不會跑。 */
     requestAnimationFrame(function () {
       els.doorBar.querySelectorAll(".vault-door__seg-fill").forEach(function (el) {
@@ -627,6 +655,8 @@
   /* 門條裡的鑰匙那一列：一把鑰匙一顆晶片，寫「已領/總數」。
      未領取的次數不進任何人數——它是產能，不是人。 */
   function renderDoorKeys(f, stats) {
+    /* 正式頁 2026-10-09 起改用「存取權限」分頁的鑰匙清單（renderAccessTab），這一列晶片只剩保存檔有。 */
+    if (!els.doorKeys) return;
     var live = (f.keys || []).filter(function (k) { return !k.revoked; });
     if (!live.length) {
       els.doorKeys.innerHTML = '<span class="vault-door__keychip vault-door__keychip--none">' +
@@ -646,6 +676,188 @@
     if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.doorKeys);
   }
 
+  /* ── 存取權限分頁（2026-10-09）──────────────────────────────
+     旅程的第一步是「現在多少人進得來」，所以頂端是一條即時人數條；條件開放的
+     「沒有條件」與「有條件但 0 人符合」分開講（規格 F2 其他狀態要求分得出來）；
+     直接開放下面是已發鑰匙清單。renderDoor 每次重畫都會叫這一支，所以條件、
+     鑰匙一改，這裡的數字跟著變。保存檔沒有這些節點，整支直接返回。 */
+  function renderAccessTab(f) {
+    if (!els.reachline) return;
+    var sp = V.reachSplit(f);
+    els.reachline.innerHTML = L(sp.total === 1 ? "vault.ac.reachline.one" : "vault.ac.reachline", {
+      total: num(sp.total), rule: num(sp.byRule), key: num(sp.byKey),
+      overlap: sp.both ? L("vault.ac.reachline.both", { n: num(sp.both) }) : L("vault.ac.reachline.none")
+    });
+
+    var nRules = V.ruleCount(f);
+    var live = V.keyStats(f).live;
+    if (!nRules) {
+      els.noRules.hidden = false;
+      els.noRulesTitle.textContent = L(live ? "vault.ac.norules.keys" : "vault.ac.norules");
+      els.rulesSum.hidden = true;
+      els.rulesSum.textContent = "";
+    } else {
+      els.noRules.hidden = true;
+      els.rulesSum.hidden = false;
+      els.rulesSum.textContent = L(sp.byRule ? "vault.ac.sum.any" : "vault.ac.sum.zero");
+    }
+
+    var keys = (f.keys || []).slice().reverse();
+    if (!keys.length) {
+      els.keylist.innerHTML = '<p class="vault-access__empty">' + L("vault.ac.keys.empty") + "</p>";
+      return;
+    }
+    els.keylist.innerHTML =
+      '<div class="vault-keyrow vault-keyrow--head"><span>' + L("vault.ac.keys.col.key") + "</span><span>" +
+        L("vault.ac.keys.col.uses") + "</span><span>" + L("vault.ac.keys.col.status") + "</span><span></span></div>" +
+      keys.map(function (k) {
+        var claimed = (k.claimed || []).length;
+        return '<div class="vault-keyrow' + (k.revoked ? " vault-keyrow--revoked" : "") + '">' +
+          '<span class="vault-keyrow__main"><span class="vault-keyrow__code">' + esc(k.code) + "</span>" +
+            '<span class="vault-keyrow__label">' + esc(V.t(k.label)) + "</span></span>" +
+          '<span class="vault-keyrow__uses">' + num(claimed) + " / " + num(k.uses) + "</span>" +
+          (k.revoked
+            ? '<span class="ztor-badge">' + L("vault.ac.keys.revoked") + "</span><span></span>"
+            : '<span class="ztor-badge ztor-badge--success">' + L("vault.ac.keys.active") + "</span>" +
+              '<button type="button" class="btn btn--ghost btn--sm" data-vkey-revoke="' + esc(k.id) + '">' + L("vault.ac.keys.revoke") + "</button>") +
+        "</div>";
+      }).join("");
+  }
+
+  /* ── 總覽分頁（2026-10-09）──────────────────────────────────
+     只讀：每件幾人看得到、鑰匙用了多少、內容摘要，以及檢視身分開著時的那一行。
+     renderMain 每次重畫都會叫這一支（上傳、改名、刪除、改任務、大彩蛋、條件與鑰匙
+     改動、檢視身分切換都會走到 renderMain）。數字全部向 vault-store 現算。 */
+  var KIND_ICON = { image: "image", clip: "film", audio: "music" };
+  function ovTag(mod, iconName, text) {
+    return tagHtml("plain", mod, iconName, text, null, null);
+  }
+  function renderOverviewTab(f) {
+    if (!els.ovItems) return;
+    var who = state.viewer;
+
+    /* 檢視身分那一行：這一級裡有幾人打得開。 */
+    if (who) {
+      var tier = V.tiers.filter(function (x) { return x.key === who; })[0];
+      els.ovViewer.innerHTML = L("vault.ov.viewer", {
+        tier: esc(tierName(who)), n: num(V.reachInTierAll(f, who)), total: num(tier ? tier.count : 0)
+      });
+      els.ovViewer.hidden = false;
+    } else {
+      els.ovViewer.hidden = true;
+      els.ovViewer.textContent = "";
+    }
+
+    /* 每件內容幾人看得到（F3）。沒有逐人資料的行動任務寫「待確認」、空條，不編數字。 */
+    if (!f.items.length) {
+      els.ovItems.innerHTML = '<p class="vault-ov__empty">' + L("vault.ov.items.empty") + "</p>";
+    } else {
+      var total = V.reachAll(f);
+      els.ovItems.innerHTML = f.items.map(function (it) {
+        var thumb = (it.img && it.kind !== "audio")
+          ? '<img class="meter-list__thumb" src="' + esc(it.img) + '" alt="" loading="lazy">'
+          : '<span class="meter-list__thumb vault-ov__kindicon">' + icon(KIND_ICON[it.kind] || "file") + "</span>";
+        var tags = [];
+        var info = taskInfo(it.task);
+        tags.push(info ? ovTag(null, info.icon, info.full) : ovTag(null, "circle", L("vault.ov.task.none")));
+        if (it.grand) tags.push(ovTag("grand", "sparkles", L("vault.ov.task.grand")));
+        if (who) {
+          var st = V.itemStatusForTier(it, who);
+          tags.push(st === "visible" ? ovTag("ok", "eye", L("vault.ov.status.visible"))
+            : st === "tierLow" ? ovTag("low", "lock", L("vault.ov.status.low"))
+            : ovTag("action", "flag", L("vault.ov.status.action")));
+        }
+        var n = V.itemViewers(f, it);
+        var meter = n == null
+          ? '<span class="meter-list__num vault-ov__pending">' + L("vault.ov.tbc") + '</span><div class="stock-bar"></div>'
+          : '<span class="meter-list__num"><b>' + num(n) + "</b> / " + num(total) + "</span>" +
+            '<div class="stock-bar"><span class="stock-bar__fill" style="width:' + (total ? Math.round(n / total * 100) : 0) + '%"></span></div>';
+        return '<div class="meter-list__row">' +
+          '<span class="meter-list__thumbs">' + thumb + "</span>" +
+          '<div class="meter-list__name meter-list__name--stack vault-ov__itemname">' +
+            "<span>" + esc(V.t(it.name)) + "</span>" +
+            '<span class="vault-ov__tags">' + tags.join("") + "</span>" +
+          "</div>" +
+          '<div class="meter-list__meter">' + meter + "</div>" +
+        "</div>";
+      }).join("");
+    }
+
+    /* 鑰匙使用情況（F4 鑰匙統計）：發出（有效的把數）／被領走（已領／總次數）／已撤銷。 */
+    var ks = V.keyStats(f);
+    var revoked = (f.keys || []).filter(function (k) { return k.revoked; }).length;
+    function stat(label, value, of, zero) {
+      return '<div><div class="stat__label">' + label + "</div>" +
+        '<div class="stat__value' + (zero ? " stat__value--zero" : "") + '">' + value +
+        (of ? ' <span class="stat__of">' + of + "</span>" : "") + "</div></div>";
+    }
+    function unit(n) { return L(n === 1 ? "vault.ov.keys.unit.one" : "vault.ov.keys.unit"); }
+    els.ovKeys.innerHTML =
+      stat(L("vault.ov.keys.issued"), num(ks.live), unit(ks.live), !ks.live) +
+      stat(L("vault.ov.keys.claimed"), num(ks.claimed), ks.issued === 1 ? L("vault.ov.keys.of.one") : L("vault.ov.keys.of", { n: num(ks.issued) }), !ks.claimed) +
+      stat(L("vault.ov.keys.revoked"), num(revoked), unit(revoked), !revoked);
+
+    /* 內容摘要：類型與任務兩組，0 的那一列退墨。 */
+    function kv(label, n) {
+      return '<div class="vault-ov__kvrow' + (n ? "" : " vault-ov__kvrow--zero") + '"><span>' + label + "</span><b>" + num(n) + "</b></div>";
+    }
+    var c = V.counts(f);
+    els.ovKinds.innerHTML =
+      kv(L("vault.ov.kind.image"), c.image || 0) +
+      kv(L("vault.ov.kind.clip"), c.clip || 0) +
+      kv(L("vault.ov.kind.audio"), c.audio || 0);
+    var none = 0, act = 0, tierN = 0, grand = 0;
+    f.items.forEach(function (it) {
+      if (!it.task) none++; else if (it.task.type === "tier") tierN++; else act++;
+      if (it.grand) grand++;
+    });
+    els.ovTasks.innerHTML =
+      kv(L("vault.ov.task.none"), none) +
+      kv(L("vault.ov.task.action"), act) +
+      kv(L("vault.ov.task.tier"), tierN) +
+      kv(L("vault.ov.task.grand"), grand);
+  }
+
+  /* ── 分頁（2026-10-09）──────────────────────────────────────
+     底線式分頁（tabs.css，Q38 連 .list-toolbar 殼）。網址 hash 可直達、上一頁／
+     手改 hash 也跟著切（hashchange）；點分頁用 replaceState，不在歷史裡疊一堆紀錄。 */
+  var TABS = ["overview", "content", "access"];
+  function activateTab(name, focus) {
+    if (!els.tablist || TABS.indexOf(name) < 0) return;
+    els.tabs.forEach(function (t) {
+      var on = t.getAttribute("data-vault-tab") === name;
+      t.classList.toggle("tabs__item--active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      t.setAttribute("tabindex", on ? "0" : "-1");
+      if (on && focus) t.focus();
+    });
+    els.panels.forEach(function (p) {
+      p.classList.toggle("tab-panel--active", p.getAttribute("data-vault-panel") === name);
+    });
+    if ((location.hash || "").slice(1) !== name) {
+      try { history.replaceState(null, "", "#" + name); } catch (_) {}
+    }
+  }
+  function wireTabs() {
+    if (!els.tablist) return;
+    els.tablist.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-vault-tab]");
+      if (b) activateTab(b.getAttribute("data-vault-tab"));
+    });
+    /* role="tablist" 承諾左右鍵切換。 */
+    els.tablist.addEventListener("keydown", function (e) {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      var sel = els.tablist.querySelector('[aria-selected="true"]');
+      var cur = TABS.indexOf(sel ? sel.getAttribute("data-vault-tab") : "overview");
+      var next = (cur + (e.key === "ArrowRight" ? 1 : -1) + TABS.length) % TABS.length;
+      e.preventDefault();
+      activateTab(TABS[next], true);
+    });
+    window.addEventListener("hashchange", function () { activateTab((location.hash || "").slice(1)); });
+    var start = (location.hash || "").slice(1);
+    if (TABS.indexOf(start) >= 0) activateTab(start);
+  }
+
   function rollTo(el, target) {
     var from = lastReach == null ? target : lastReach;
     lastReach = target;
@@ -659,54 +871,37 @@
     })(t0);
   }
 
-  /* 圖片／影片格：有影格就鋪影格，沒有就走「標籤紙」版面（檔名排大、
-     圖示在角）。剛上傳的影片沒有縮圖——瀏覽器不會替圖片標籤抽影格，要等
-     轉檔服務；這時候塞一個空 src 會得到一個破圖框，比誠實的檔名版難看
-     也更沒用。播放鈕只給 clip：圖片不是可播放的媒體。 */
-  function tileHtml(it) {
-    var k = KIND[it.kind];
-    var body;
-    /* 頂端小標列（D377）：影像上用 media 色調，標籤紙格是淺底所以用 plain；標籤紙格原本
-       左上角的類型圖示收進這一列當第一個成員（同一個角落不能放兩樣東西）。 */
-    var tags = itemTags(it, it.img ? "media" : "plain");
-    var lead = it.img ? "" : '<span class="vault-tile__labelmark">' + icon(k.icon) + "</span>";
-    var badges = '<span class="vault-tile__badges">' + lead + tags.start +
-      '<span class="vault-tile__badges-end">' + tags.end + "</span></span>";
-    if (it.img) {
-      body = '<img class="vault-tile__img" src="' + esc(it.img) + '" alt="" loading="lazy">' +
-        '<span class="vault-tile__name">' + esc(V.t(it.name)) + "</span>";
-    } else {
-      body = '<span class="vault-tile__label"><span class="vault-tile__labeltitle">' + esc(V.t(it.name)) + "</span></span>";
-    }
-    var dur = it.dur ? '<span class="vault-tile__chip vault-tile__chip--dur">' + it.dur + "</span>" : "";
-    var play = it.kind === "clip"
-      ? '<button type="button" class="vault-tile__act" aria-label="' + esc(tx("Play", "播放")) + '">' + icon("play") + "</button>"
-      : "";
-    var low = !!state.viewer && V.itemStatusForTier(it, state.viewer) === "tierLow";
-    return '<div class="vault-tile vault-tile--' + it.kind + (it.img ? "" : " vault-tile--label") + (low ? " is-locked" : "") +
-      '" data-item="' + it.id + '">' + body +
-      '<span class="vault-tile__chip vault-tile__chip--kind">' + icon(k.icon) + V.t(k.label) + "</span>" + dur + badges +
-      '<span class="vault-tile__actions">' + play +
-        '<button type="button" class="vault-tile__act" aria-label="' + esc(tx("Rename", "重新命名")) + '" data-item-rename="' + it.id + '">' + icon("pencil") + "</button>" +
-        '<button type="button" class="vault-tile__act vault-tile__act--danger" aria-label="' + esc(tx("Delete", "刪除")) + '" data-item-delete="' + it.id + '">' + icon("trash-2") + "</button>" +
-      "</span>" +
-    "</div>";
-  }
+  /* 2026-10-09 撤除（墓碑）：`tileHtml()`——照片／影片的格子（.vault-tile）。三分頁版面
+     （使用者確認的示範頁）把三組內容都改成同一種列表，它沒有呼叫端了。.vault-tile 的
+     CSS 仍在 media-vault.css（就地改名／刪除確認的 .vault-tile__rename／__confirm 列表
+     也在用；整支格子樣式是否退場待元件巡檢）。
 
-  /* 音檔列：格子裝著文字方塊是聲音最差的容器——一列「播放 · 曲名 · 長度」
-     才是這個媒介本來的樣子。size／added 當第二行小字，dur 走等寬數字欄。 */
+     一件內容一列（照片、影片、音檔三組都是這一種）：左欄 32px，照片與影片放縮圖
+     （影片在影像上疊播放圖示；剛上傳、還沒有影格的影片放類型圖示，不塞空的圖片標籤），
+     音檔放播放鈕；中間名稱、大小 · 日期、小標（任務與幾人看得到）；右欄時長。 */
+  function trackLeadHtml(it) {
+    var k = KIND[it.kind];
+    if (it.kind === "audio") {
+      return '<button type="button" class="vault-track__play" aria-label="' + esc(tx("Play", "播放")) + '">' + icon("play") + "</button>";
+    }
+    if (it.img) {
+      return '<span class="vault-track__thumb"><img src="' + esc(it.img) + '" alt="" loading="lazy">' +
+        (it.kind === "clip" ? '<span class="vault-track__thumb-play">' + icon("play") + "</span>" : "") + "</span>";
+    }
+    return '<span class="vault-track__thumb">' + icon(k.icon) + "</span>";
+  }
   function trackHtml(it) {
     var meta = [it.size, it.added].filter(Boolean).join(" · ");
     var tags = itemTags(it, "plain");
     var low = !!state.viewer && V.itemStatusForTier(it, state.viewer) === "tierLow";
     return '<div class="vault-track' + (low ? " is-locked" : "") + '" data-item="' + it.id + '">' +
-      '<button type="button" class="vault-track__play" aria-label="' + esc(tx("Play", "播放")) + '">' + icon("play") + "</button>" +
+      trackLeadHtml(it) +
       '<span class="vault-track__text">' +
         '<span class="vault-track__name">' + esc(V.t(it.name)) + "</span>" +
         (meta ? '<span class="vault-track__meta">' + esc(meta) + "</span>" : "") +
         '<span class="vault-track__badges">' + tags.start + tags.end + "</span>" +
       "</span>" +
-      (it.dur ? '<span class="vault-track__dur">' + esc(it.dur) + "</span>" : "<span></span>") +
+      (it.dur && it.kind !== "image" ? '<span class="vault-track__dur">' + esc(it.dur) + "</span>" : "<span></span>") +
       '<span class="vault-track__actions">' +
         '<button type="button" class="vault-track__act" aria-label="' + esc(tx("Rename", "重新命名")) + '" data-item-rename="' + it.id + '">' + icon("pencil") + "</button>" +
         '<button type="button" class="vault-track__act vault-track__act--danger" aria-label="' + esc(tx("Delete", "刪除")) + '" data-item-delete="' + it.id + '">' + icon("trash-2") + "</button>" +
@@ -714,20 +909,19 @@
     "</div>";
   }
 
-  /* 只長出有東西的分區，順序固定（照片 → 影片 → 音檔）。空的那一種整個不出現。 */
+  /* 只長出有東西的分組，順序固定（照片 → 影片 → 音檔）。空的那一種整個不出現。
+     三組都是同一種列表（2026-10-09）。 */
   function groupHtml(items) {
     return GROUPS.map(function (g) {
       var list = items.filter(function (i) { return i.kind === g.kind; });
       if (!list.length) return "";
-      var inner = g.kind === "audio"
-        ? '<div class="vault-tracks">' + list.map(trackHtml).join("") + "</div>"
-        : '<div class="vault-grid vault-grid--' + g.kind + '">' + list.map(tileHtml).join("") + "</div>";
       return '<div class="vault-group">' +
         '<div class="vault-group__head">' +
           '<span class="vault-group__icon">' + icon(g.icon) + "</span>" +
           '<span class="vault-group__title">' + tx(g.title.en, g.title.zh) + "</span>" +
           '<span class="vault-group__count">' + list.length + "</span>" +
-        "</div>" + inner +
+        "</div>" +
+        '<div class="vault-tracks">' + list.map(trackHtml).join("") + "</div>" +
       "</div>";
     }).join("");
   }
@@ -784,6 +978,8 @@
     els.gridMeta.hidden = empty;
 
     els.grid.innerHTML = uploadHtml(empty) + (empty ? "" : groupHtml(f.items));
+    if (els.tabCount) els.tabCount.textContent = empty ? "" : num(f.items.length);
+    renderOverviewTab(f);
 
     if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.main);
     /* 格子上的任務小標掛著 data-feat="S86"，是畫完才出現的節點，要再跑一次版本閘。 */
@@ -868,7 +1064,7 @@
      的標題），CSS 的 sticky 與補縫虛擬元素同一輪退場，這支觀察器因此沒有對象。 */
 
   function render() {
-    renderLens(); renderRail(); renderOverview();
+    renderLens(); renderRail(); renderWall();
     renderDoor(); renderMain(); renderGate();
   }
 
@@ -1000,8 +1196,11 @@
   /* 抽屜有兩段：上面「發一把新鑰匙」（建立），下面「已發出的鑰匙」（每一把都能
      複製連結、撤銷）。兩個入口進來的意圖不同，所以停的位置也不同——從「分享連結」
      進來的人要的是既有的那幾條，不該還要自己往下捲過整個建立表單。 */
-  function openShare(intent) {
+  /* preset：「存取權限」分頁的兩個入口（送給一位粉絲／做成 NFC 商品）直接預選意圖，
+     抽屜打開就停在那一個，不必再在抽屜裡選一次。 */
+  function openShare(intent, preset) {
     share.created = null;
+    if (preset === "gift" || preset === "nfc") share.intent = preset;
     renderShare();
     els.drawer.classList.add("is-open");
     els.drawer.setAttribute("aria-hidden", "false");
@@ -1022,6 +1221,23 @@
     els.drawer.classList.remove("is-open");
     els.drawer.setAttribute("aria-hidden", "true");
     if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  /* 撤銷一把鑰匙：抽屜裡的撤銷鈕與「存取權限」分頁鑰匙清單的撤銷鈕共用這一支
+     （同一段確認文字、同一份資料改動與重畫）。撤銷會讓人失去權限，所以要說出來
+     會失去幾個人，不能只說「確定嗎」（規格 F4）。 */
+  function revokeKey(id) {
+    var f = vault();
+    var k = (f.keys || []).filter(function (x) { return x.id === id; })[0];
+    if (!k || k.revoked) return;
+    var lost = (k.claimed || []).length;
+    if (!window.confirm(tx(
+      "Revoke " + k.code + "? " + num(lost) + " fans lose access to this vault immediately, and its remaining uses stop working.",
+      "撤銷 " + k.code + "？已靠它進來的 " + num(lost) + " 位粉絲會立刻失去這座庫房的權限，剩下的次數也會失效。"))) return;
+    k.revoked = todayStr();
+    if (els.drawer.classList.contains("is-open")) renderShare();
+    renderDoor(); renderRail(); renderMain();
+    if (window.ztorToast) window.ztorToast.show(tx("Key revoked", "鑰匙已撤銷"), { tone: "neutral" });
   }
 
   function copyLink(text, btn) {
@@ -1156,6 +1372,8 @@
          先判斷存在再讀 hidden，否則新增庫房在正式頁會拋 TypeError、畫面沒反應。 */
       if (els.modal && els.modal.hidden) openVault(id); else { state.vaultId = id; lastReach = null; render(); }
       if (window.ztorToast) window.ztorToast.show(tx("Vault created — now set who gets in", "庫房已建立——接著決定誰進得來"), { tone: "success" });
+      /* 接下來要做的是決定誰進得來——那在「存取權限」分頁，先切過去再把焦點送到「再加一個」。 */
+      activateTab("access");
       var add = els.doorRules.querySelector("[data-rule-add]");
       if (add) add.focus();
     }
@@ -1466,7 +1684,7 @@
         state.itemId = null;
         els.itemSheet.classList.remove("is-open");
         els.itemSheet.setAttribute("aria-hidden", "true");
-        renderMain(); renderRail(); renderOverview();
+        renderMain(); renderRail(); renderWall();
         if (it && window.ztorToast) window.ztorToast.show(tx("Deleted", "已刪除"), { tone: "neutral" });
       }
     });
@@ -1535,7 +1753,7 @@
     /* ── 分享抽屜 ─────────────────────────────────────────── */
     document.addEventListener("click", function (e) {
       var sh = e.target.closest("[data-vault-share]");
-      if (sh) { openShare(sh.getAttribute("data-vault-share")); return; }
+      if (sh) { openShare(sh.getAttribute("data-vault-share"), sh.getAttribute("data-share-intent")); return; }
       if (els.drawer.classList.contains("is-open") && e.target.closest("[data-drawer-close]")) closeShare();
     });
     document.addEventListener("keydown", function (e) {
@@ -1564,20 +1782,7 @@
       }
 
       var revoke = e.target.closest("[data-vkey-revoke]");
-      if (revoke) {
-        var f = vault();
-        var k = (f.keys || []).filter(function (x) { return x.id === revoke.getAttribute("data-vkey-revoke"); })[0];
-        if (!k) return;
-        var lost = (k.claimed || []).length;
-        /* 撤銷會讓人失去權限，所以要說出來會失去幾個人，不能只說「確定嗎」。 */
-        if (!window.confirm(tx(
-          "Revoke " + k.code + "? " + num(lost) + " fans lose access to this vault immediately, and its remaining uses stop working.",
-          "撤銷 " + k.code + "？已靠它進來的 " + num(lost) + " 位粉絲會立刻失去這座庫房的權限，剩下的次數也會失效。"))) return;
-        k.revoked = todayStr();
-        renderShare(); renderDoor(); renderRail(); renderMain();
-        if (window.ztorToast) window.ztorToast.show(tx("Key revoked", "鑰匙已撤銷"), { tone: "neutral" });
-        return;
-      }
+      if (revoke) { revokeKey(revoke.getAttribute("data-vkey-revoke")); return; }
 
       if (e.target.closest("[data-vshare-create]")) {
         var vlt = vault();
@@ -1602,6 +1807,14 @@
         if (urlField) { urlField.focus(); urlField.select(); }
       }
     });
+
+    /* 「存取權限」分頁鑰匙清單上的撤銷：直接走同一支 revokeKey。 */
+    if (els.keylist) els.keylist.addEventListener("click", function (e) {
+      var r = e.target.closest("[data-vkey-revoke]");
+      if (r) revokeKey(r.getAttribute("data-vkey-revoke"));
+    });
+
+    wireTabs();
 
     els.viewer.addEventListener("change", function () {
       state.viewer = els.viewer.value;
@@ -1664,6 +1877,22 @@
     els.gridMeta  = els.main.querySelector("[data-vault-gridmeta]");
     els.file      = els.main.querySelector("[data-vault-file]");
     els.menu      = document.querySelector("[data-vault-rulemenu]");
+    /* 三分頁（2026-10-09）。保存檔 media-vault-popup.html 沒有這些節點，全部可以是 null，
+       用到的地方各自判斷。 */
+    els.tablist   = els.main.querySelector("[data-vault-tabs]");
+    els.tabs      = els.tablist ? Array.prototype.slice.call(els.tablist.querySelectorAll("[data-vault-tab]")) : [];
+    els.panels    = Array.prototype.slice.call(els.main.querySelectorAll("[data-vault-panel]"));
+    els.tabCount  = els.main.querySelector("[data-vault-tabcount]");
+    els.ovViewer  = els.main.querySelector("[data-vault-ov-viewer]");
+    els.ovItems   = els.main.querySelector("[data-vault-ov-items]");
+    els.ovKeys    = els.main.querySelector("[data-vault-ov-keys]");
+    els.ovKinds   = els.main.querySelector("[data-vault-ov-kinds]");
+    els.ovTasks   = els.main.querySelector("[data-vault-ov-tasks]");
+    els.reachline = els.main.querySelector("[data-vault-reachline]");
+    els.noRules   = els.main.querySelector("[data-vault-norules]");
+    els.noRulesTitle = els.main.querySelector("[data-vault-norules-title]");
+    els.rulesSum  = els.main.querySelector("[data-vault-rules-sum]");
+    els.keylist   = els.main.querySelector("[data-vault-keylist]");
 
     render();
     wire();

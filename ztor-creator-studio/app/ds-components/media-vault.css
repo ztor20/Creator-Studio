@@ -23,6 +23,13 @@
          .vault-grid        — 內容格（含第一格上傳投放區）
            .vault-tile      — 一件內容（image / clip / audio 混放）
              .vault-tile__badges — 頂端小標列：任務／大彩蛋／幾人看得到（D377，標本身見 vault-task.css）
+         .vault-tracks / .vault-track — 一列一件（2026-10-09 起照片、影片、音檔三組都是列）
+           .vault-track__thumb (+ __thumb-play) — 照片／影片的 32px 縮圖；音檔是 .vault-track__play
+
+   2026-10-09 三分頁版面：.vault-main 在 .vault-head 之下多一條 .list-toolbar＋tabs，
+   三個 .tab-panel 都在 .vault-body 裡；總覽與存取權限分頁的卡內版面分別在
+   vault-overview.css、vault-access.css。正式頁不再用 .vault-tile 格子、.vault-keys
+   晶片區與 .vault-head__actions（樣式暫留給保存檔 media-vault-popup.html）。
 
    為什麼主欄不是一張 .card：門條與內容格各自是一層，包進同一張卡就會
    變成卡中卡（DS 禁止），而且門條需要自己的邊界才讀得出「這是門」。
@@ -696,6 +703,32 @@
 }
 .vault-track__play:hover { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }
 .vault-track__play .ztor-icon { width: 13px; height: 13px; }
+
+/* 列的左欄縮圖（2026-10-09，三分頁版面）：照片與影片也改成一列一件，第一欄放 32px
+   縮圖（與音檔的播放鈕同寬，三組對得齊）。有影像就鋪影像，影片在影像上疊一個播放圖示；
+   沒有影像（剛上傳、還沒抽影格的影片）就放類型圖示，不塞空的圖片標籤。 */
+.vault-track__thumb {
+  position: relative;
+  width: 32px; height: 32px;
+  display: inline-grid; place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--ztu-film);
+  color: var(--muted-foreground);
+}
+.vault-track__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vault-track__thumb .ztor-icon { width: 14px; height: 14px; }
+.vault-track__thumb-play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--overlay-tint);
+  color: var(--on-media);
+}
+.vault-track__thumb-play .ztor-icon { width: 12px; height: 12px; }
+.vault-track.is-locked .vault-track__thumb img { filter: grayscale(1); }
 
 .vault-track__text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .vault-track__name {

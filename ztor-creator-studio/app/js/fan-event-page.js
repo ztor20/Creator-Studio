@@ -35,6 +35,7 @@
  *     typeLabel: '演唱會',                     // 類型標記（純字串，來自類型卡）
  *     region: 'Taiwan',                         // 地區標記
  *     keyvisual: 'images/…' | '',               // 主圖；gallery 沒給時只用它
+ *     keyvisualPos: 'left' | 'center' | 'right', // 選填：主視覺裁切位置（D391 第 9 題），主圖框與第一張縮圖套 object-position
  *     gallery: ['images/…', …],                 // 圖庫（第一張＝主視覺）；video: true 時多一顆影片縮圖
  *     video: false,
  *     name: { key:'name' },  highlight: { key:'highlight' } | null,
@@ -55,7 +56,7 @@
  *     pickup: '電子門票',                                            // D327：取票說明欄已刪
  *     refund: undefined | string | false,       // 沒給＝平台固定文案；字串＝自訂；false＝不畫
  *     terms: { key:'tnc' } | null,
- *     tiers: [{ key:'tier-vip', name:{ key:'tier-vip' }, note:'', deal:null, hidden:false, priceObj, soldOut:false, priceKey:'tier:tier-vip' }],   // deal＝{ win, to, gen } 折扣固定價（D367，選填）
+ *     tiers: [{ key:'tier-vip', name:{ key:'tier-vip' }, note:'', deal:null, hidden:false, priceObj, soldOut:false, paused:false, priceKey:'tier:tier-vip' }],   // paused＝單張門票暫停售票（D391 補充二）   // deal＝{ win, to, gen } 折扣固定價（D367，選填）
  *                                                // D328：hidden:true 的列不畫（顯示開關關閉＝不在票價清單列出）
  *                                                // 墓碑 2026-10-05（D353）：desc（門票簡介，tdesc-…）整欄移除，票列不再畫簡介附註
  *     bundles: [{ name:'…', priceObj, listPriceObj|null, priceKey:'bundle:bd-1', img:'…',
@@ -290,6 +291,15 @@
     frame.setAttribute('aria-label', T('fep.zoom', 'Zoom'));
     frame.innerHTML = (imgs[0] ? '<img class="pdp-gallery__img" data-hero src="' + esc(imgs[0]) + '" alt="' + esc(nameText) + '">' : '<i data-lucide="image" class="ztor-icon"></i>') +
       '<span class="pdp-gallery__zoom-hint" aria-hidden="true">' + SVG.zoom + '</span>';
+    /* 主視覺裁切（2026-10-09 · D391 第 9 題，5.1.6.1 F4／5.1.6.2 F4）：model.keyvisualPos＝'left'｜'center'｜'right'，
+       主圖框與第一張縮圖照這個位置裁（object-position）；只在第一張就是主視覺時套用。 */
+    var KV_POS = { left: '0% 50%', center: '50% 50%', right: '100% 50%' };
+    if (imgs[0] && m.keyvisualPos && KV_POS[m.keyvisualPos] && (!m.keyvisual || imgs[0] === m.keyvisual)) {
+      [frame.querySelector('[data-hero]'), strip.querySelector('[data-thumb="0"] img'), mobile.querySelector('[data-thumb="0"] img')]
+        .forEach(function (im) { if (im) im.style.objectPosition = KV_POS[m.keyvisualPos]; });
+      /* 主圖框平常是 contain（整張放進框、不裁）；有裁切位置＝要照 2:3 裁，改 cover 才看得出保留哪一側 */
+      var hero = frame.querySelector('[data-hero]'); if (hero) hero.style.objectFit = 'cover';
+    }
     stage.appendChild(frame);
     var vw = el('div', 'pdp-gallery__video-wrap'); vw.setAttribute('data-pdp-video-wrap', ''); vw.hidden = true;
     stage.appendChild(vw);
@@ -462,7 +472,7 @@
         tl.appendChild(e0);
       }
       tiers.forEach(function (t, i) {
-        var tr = el('div', 'pdp-tier pdp-tier--info' + (t.soldOut ? ' is-oos' : '')); tr.setAttribute('data-tier', String(i));
+        var tr = el('div', 'pdp-tier pdp-tier--info' + ((t.soldOut || t.paused) ? ' is-oos' : '')); tr.setAttribute('data-tier', String(i));
         var mainEl = el('span', 'pdp-tier__main');
         mainEl.appendChild(slot(api, 'span', 'pdp-tier__label', t.name, T('ce.tier.untitled', 'Untitled tier')));
         if (t.note) mainEl.appendChild(el('span', 'pdp-tier__meta', esc(t.note)));
@@ -483,7 +493,10 @@
         tr.appendChild(tprice);
         var b = el('button', 'btn btn--yellow-ghost btn--sm pdp-tier__buy'); b.type = 'button'; b.setAttribute('data-pp-inert', ''); b.tabIndex = -1;
         var tn = valueOf(api, t.name);
-        if (t.soldOut) { b.disabled = true; b.setAttribute('data-i18n', 'fep.tier.soldout'); b.textContent = T('fep.tier.soldout', 'Sold out'); b.setAttribute('aria-label', tn + ' ' + T('fep.tier.soldout', 'Sold out')); }
+        /* 單張門票暫停售票（2026-10-09 · D391 補充二，使用者裁決照建議；5.1.6.1 F22「顯示」）：門票照常列出、不能購買，
+           購買鈕停用並寫「暫停售票中」（同活動層級暫停的文案 fep.status.paused）；完售優先 */
+        if (!t.soldOut && t.paused) { b.disabled = true; b.setAttribute('data-i18n', 'fep.status.paused'); b.textContent = T('fep.status.paused', 'Sales paused'); b.setAttribute('aria-label', tn + ' ' + T('fep.status.paused', 'Sales paused')); }
+        else if (t.soldOut) { b.disabled = true; b.setAttribute('data-i18n', 'fep.tier.soldout'); b.textContent = T('fep.tier.soldout', 'Sold out'); b.setAttribute('aria-label', tn + ' ' + T('fep.tier.soldout', 'Sold out')); }
         else { b.setAttribute('data-pdp-tier-buy', t.key || ''); b.setAttribute('data-i18n', 'fep.tier.buy'); b.textContent = T('fep.tier.buy', 'Buy'); b.setAttribute('aria-label', T('fep.tier.buy', 'Buy') + ' ' + tn); }
         tr.appendChild(b);
         tl.appendChild(tr);

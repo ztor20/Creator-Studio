@@ -267,7 +267,8 @@
       sold: 84,
       revenue: 2520,
       status: 'on-sale',
-      paused: true,     // D375 決定七示範：暫停售票——仍在售票中分頁、活動頁照常可見，另掛「暫停售票」徽章；詳情頁可恢復販售
+      /* 墓碑 2026-10-09（D390 稽核第一節原型第 16 條）：暫停售票示範（paused: true）原本掛在這一場（系列子場），release2.4 收起系列就看不到；
+         改掛單場、非系列的 nantou-lantern-opening。 */
       images: { keyvisual: 'images/projects/nick-realive.jpg', banner: 'images/projects/nick-asn.jpg', gallery: ['images/projects/nick-i.jpg', 'images/projects/nick-lwh.jpg'] },
       video: false
     },
@@ -466,9 +467,23 @@
       start: '18:30',
       end: '',
       doors: '',
+      /* D391 第 5、13 題示範（2026-10-09）：已排程（還沒開賣）的兩場活動——活動詳情編輯模式可移除場次。移除 Day 2 會一併刪除
+         「General admission · Day 2」與指定 Day 2 的獨立票「Sunset pit」，確認對話列出這兩張；Sunset pit 列在組合包
+         bd-pt-sunset-tee 的允許清單，儲存後組合包保留、組合商品細節頁把它顯示為停用，允許清單只剩它＝整組不能賣。
+         兩場＝多場次（S87 ⚪）：release2.4 由 list() 的多場過濾收起、活動清單那一列掛 data-feat="S87"。 */
+      sessions: [
+        { id: 's1', name: 'Day 1', date: '2026-11-02', start: '18:30', end: '', doors: '', early: 'warn' },
+        { id: 's2', name: 'Day 2', date: '2026-11-03', start: '18:30', end: '', doors: '', early: 'warn' }
+      ],
       /* 2026-08-18 修正：同 taiwan-fest-kenting——已排程代表建立流程已走完，而票種是流程的必填。 */
       tiers: [
-        { id: 'tier-ga', name: 'General admission', price: 500, qty: 2000, sold: 0 }
+        { id: 'tier-ga', name: 'General admission', price: 500, qty: 2000, sold: 0 },
+        { id: 'tier-pt-sunset', name: 'Sunset pit', price: 900, qty: 200, sold: 0, standalone: true, sess: 's2' }
+      ],
+      bundles: [
+        { id: 'bd-pt-sunset-tee', name: 'Sunset pit ＋ 黑鮪魚祭 T 恤', tickets: { tierIds: ['tier-pt-sunset'], qty: 1 },
+          products: [{ name: '黑鮪魚祭限定 T 恤', img: 'images/products/coastline-tee.webp', price: 600 }],
+          price: 1400, sold: 0, cap: 80 }
       ],
       sold: 0,
       revenue: 0,
@@ -801,7 +816,9 @@
       listing: { from: '2026-09-20 12:00', to: '' },
       sold: 0,
       revenue: 0,
-      status: 'scheduled',
+      /* 2026-10-09（D390 稽核第一節原型第 16 條）：組合包 bd-symph-pair 的預售 10/08 12:00 已開始＝任一票務商品開始能買，
+         活動已進入售票中（D361 決定一），由已排程改成售票中（預售剛開始、還沒有成交，sold 維持 0）。ASSUMPTIONS UIA-210 關閉。 */
+      status: 'on-sale',
       images: { keyvisual: 'images/projects/nick-lwh.jpg', banner: '', gallery: [] },
       video: false
     },
@@ -972,6 +989,7 @@
       sold: 1840,
       revenue: 1728800,
       status: 'on-sale',
+      paused: true,     // D375 決定七示範：暫停售票（2026-10-09 D390 稽核原型第 16 條：自系列子場 realive-chongqing 移到這一場單場、非系列活動，release2.4 看得到）
       images: { keyvisual: 'images/projects/nick-flames.jpg', banner: '', gallery: [] },
       video: false
     },
@@ -995,7 +1013,7 @@
       room: { url: 'ztor.live/v/lrh-studio-live', chat: true, capacity: 800 },
       tiers: [
         { id: 'tier-stream', name: 'Live stream', price: 350, qty: 700, sold: 402 },
-        { id: 'tier-bts', name: 'Stream + behind the scenes', price: 650, qty: 100, sold: 71 }
+        { id: 'tier-bts', name: 'Stream + behind the scenes', price: 650, qty: 100, sold: 71, paused: true }   // D391 補充二：release2.4 看得到的單張門票暫停示範（售票中、單場、非系列）
       ],
       bundles: [
         { id: 'bd-stream-album', name: '直播票 ＋ 數位專輯', tickets: { tierIds: ['tier-stream'], qty: 1 },
@@ -1561,8 +1579,12 @@
       end: '23:59',
       doors: '',
       tiers: [
-        { id: 'tier-khh-duo', name: 'Duo pass · 1 person', price: 1111, hkd: 275, qty: 200, sold: 0, hidden: true, hideFix: true }
+        /* D390（稽核第一節原型第 13 條）示範：草稿裡存過的門票圖片（不在鎖定範圍）——續填重跑帶入後照樣留著 */
+        { id: 'tier-khh-duo', name: 'Duo pass · 1 person', price: 1111, hkd: 275, qty: 200, sold: 0, hidden: true, hideFix: true, img: 'images/projects/nick-i.jpg' }
       ],
+      /* D390（稽核第一節原型第 13 條）示範：草稿裡存過、不在 bookyay 鎖定範圍的發布設定與直接促銷同意——續填時保留（create-event keepDraft） */
+      terms: { marketing: { on: true, text: '同意主辦單位寄送跨年活動與周邊商品的最新消息。' } },
+      listing: { mode: 'schedule', from: '2026-11-10 12:00', to: '2027-01-01 12:00' },
       bundles: [
         { id: 'bd-khh-duo', name: 'Duo pass', tickets: { tierIds: ['tier-khh-duo'], qty: 2 },
           price: 2222, hkd: 550, sold: 0, lockSets: 100, fix: true },
@@ -1576,6 +1598,50 @@
       status: 'draft',
       /* D386 決定二示範：草稿裡創作者自己加的第二張圖（不在鎖定範圍）——續填重跑帶入後照樣留著，不被 bookyay 的圖覆蓋。 */
       images: { keyvisual: 'images/hero-event.jpg', banner: '', gallery: ['images/projects/nick-i.jpg'] },
+      video: false
+    },
+    {
+      /* bky-2 的創作者端草稿（2026-10-09 D390 稽核第一節原型第 16 條）：Admin 創作者活動管理裡 bky-2 是「草稿」（已對應 Gary Lin、已存），
+         創作者端活動清單原本卻沒有這份草稿——同一筆兩個答案。補上：bookyay 帶入、三場（多時段）、套票轉出的隱藏 1 人票＋自動組合包。
+         三場＝多場次（S87 ⚪）：release2.4 由 list() 的多場過濾收起（bky-2 在 release2.4 本來就不能帶入，Admin 那列標 release2.4 不支援）。
+         金額口徑同 khh-countdown-draft：hkd＝bookyay 港幣原價（二人套票 399 → 1 人 199.5）、price＝換算成 TWD 的基準價。 */
+      id: 'mirror-khh-draft',
+      bkyId: 'bky-2',
+      type: 'meet',
+      typeLabelKey: 'ce.type.meet',
+      category: 'fans-meet',
+      source: 'bookyay',
+      series: null,
+      name: 'MIRROR FANMEETING 2026 高雄',
+      desc: '三天三場的粉絲見面會，每一場都有各自的主題單元與抽選互動；購票即參加抽選，中選者上台合影。',
+      lineup: [],
+      venue: '高雄流行音樂中心',
+      city: '',
+      country: 'TW',
+      languages: ['yue', 'cmn'],
+      meetPoint: '海音館 1 樓大廳',
+      transit: '輕軌真愛碼頭站步行 5 分鐘',
+      address: '鹽埕區',
+      date: '2026-10-02',
+      start: '19:00',
+      end: '21:30',
+      doors: '18:00',
+      sessions: [
+        { id: 's1', name: 'Day 1', date: '2026-10-02', start: '19:00', end: '21:30', doors: '18:00', doorsMin: '60', early: 'block' },
+        { id: 's2', name: 'Day 2', date: '2026-10-03', start: '19:00', end: '21:30', doors: '18:00', doorsMin: '60', early: 'block' },
+        { id: 's3', name: 'Day 3', date: '2026-10-04', start: '19:00', end: '21:30', doors: '18:00', doorsMin: '60', early: 'block' }
+      ],
+      tiers: [
+        { id: 'tier-mirror-duo', name: '二人套票 · 1 人', price: 806, hkd: 199.5, qty: 551, sold: 0, hidden: true, hideFix: true }
+      ],
+      bundles: [
+        { id: 'bd-mirror-duo', name: '二人套票', tickets: { tierIds: ['tier-mirror-duo'], qty: 2 },
+          price: 1612, hkd: 399, sold: 0, fix: true }
+      ],
+      sold: 0,
+      revenue: 0,
+      status: 'draft',
+      images: { keyvisual: 'images/ip/a-lin.webp', banner: '', gallery: [] },
       video: false
     },
     {
@@ -1705,16 +1771,16 @@
 
   function tierPicker(ev) {
     var pool = (ev.tiers || []).map(function (t) {
-      return { name: t.name, left: t.sold || 0, tot: (t.sold || 0) || 1 };
+      return { name: t.name, solo: !!t.standalone, left: t.sold || 0, tot: (t.sold || 0) || 1 };
     });
     return function () {
       var best = null;
       for (var k = 0; k < pool.length; k++) {
         if (pool[k].left > 0 && (!best || pool[k].left / pool[k].tot > best.left / best.tot)) best = pool[k];
       }
-      if (!best) return '';
+      if (!best) return { name: '', solo: false };
       best.left--;
-      return best.name;
+      return { name: best.name, solo: best.solo };   // D390 決定二十七：名單上獨立票顯示票名＋「獨立票」標籤
     };
   }
 
@@ -1725,10 +1791,12 @@
     for (var i = 0; i < n; i++) {
       var g = GIVEN[i % GIVEN.length];
       var f = FAMILY[(i * 7 + 3) % FAMILY.length];
+      var pk = pickTier();
       out.push({
         seq: i + 1,
         name: g + ' ' + f,
-        tier: pickTier(),
+        tier: pk.name,
+        solo: pk.solo,
         code: 'ZT-' + String(4200 + i * 13).slice(-4),
         arrived: i < arrived,
         // 到場時間：見 arrivalTimes()。at＝分（既有消費端用），atSec＝秒（進場頻率圖用）
@@ -2013,9 +2081,24 @@
     var ends = function (v) { return v && new Date(String(v).replace(' ', 'T')).getTime() <= at; };
     var selling = ((ev && ev.bundles) || []).some(function (b) {
       if (b.id === opts.exceptBundleId || !bundleSelling(b)) return false;
+      if (goneAllOf(ev, b, tiers)) return false;   // D391 第 13 題：允許的門票都隨場次刪了＝整組不能賣
       return !(at && (ends(b.unlistAt) || ends(b.saleEnd)));
     });
     return visible || selling;
+  }
+  /* 隨場次刪除的門票（2026-10-09 · D391 第 13 題，5.1.5.9 §2.3「場次被刪除時的票券成員」）：開賣前移除場次、一併刪除的門票若列在
+     組合包允許清單，活動詳情儲存時記進 ev.goneTiers（[{ id, name }]）。組合包保留；這些門票在組合商品細節頁顯示為停用、粉絲端看不到。
+     goneTiersOf＝這一組允許清單裡已刪除的門票；goneAllOf＝允許清單的門票全部被刪（整組不能賣、標無法販售，D391 補充二定案）。 */
+  function goneTiersOf(ev, b) {
+    var ids = bundleTickets(b).tierIds, tiers = (ev && ev.tiers) || [];
+    return ((ev && ev.goneTiers) || []).filter(function (g) {
+      return ids.indexOf(g.id) >= 0 && !tiers.some(function (t) { return t.id === g.id; });
+    });
+  }
+  function goneAllOf(ev, b, tiersOpt) {
+    var ids = bundleTickets(b).tierIds, tiers = tiersOpt || (ev && ev.tiers) || [];
+    if (!ids.length || !goneTiersOf(ev, b).length) return false;
+    return !ids.some(function (id) { return tiers.some(function (t) { return t.id === id; }); });
   }
   /* 活動的總量（D340，5.1.6.1 F8 退場後的口徑）：本活動所有門票的張數合計——含隱藏的門票（隱藏的票照常作為組合包成員
      售出並計入售出進度，5.1.6.3 §2.6）、含獨立票；計算值、不另存。清單票券欄與詳情 KPI 的分母都用它。 */
@@ -2078,6 +2161,83 @@
     return ev;
   }
 
+  /* ── 活動詳情的編輯結果（2026-10-09 · D390 稽核第一節原型第 3、4 條）──────────────────────
+     活動詳情（event-detail）原本按「儲存」只改頁面記憶體裡那一份，門票逐筆編輯更是完全沒寫回——重新整理或換頁就回到 mock 原值，
+     「直接生效」只是看起來生效。改成寫進 localStorage `ztor.event-edits`＝{ 活動 id: { 欄位: 值 } }（同階段覆寫、下架、暫停的做法），
+     get()／list() 讀出來時整欄覆蓋（淺合併：tiers、sessions、publish、sale、listing、rules 等都以整份為單位）。
+     寫入端：頁面編輯的儲存（commitEdit）、門票逐筆編輯的儲存／刪除／暫停、活動預設購票規則的儲存、立即開賣改開賣時間。
+     原型限制：清單頁（events.html）的列是靜態 HTML，名稱與場地欄不吃這份覆寫（同 STAGE-001 的既有限制）。 */
+  var EDIT_KEY = 'ztor.event-edits';
+  function editMap() {
+    try { return JSON.parse(localStorage.getItem(EDIT_KEY) || '{}') || {}; }
+    catch (e) { return {}; }
+  }
+  function applyEdits(ev) {
+    if (!ev) return ev;
+    var p = editMap()[ev.id];
+    if (p) Object.keys(p).forEach(function (k) { ev[k] = clone(p[k]); });
+    return ev;
+  }
+
+  /* ── Admin 第一次儲存 bookyay 活動（2026-10-09 · D390 稽核第一節原型第 15 條，5.1.0.6 F3／F4）────────────
+     Admin 在創作者活動管理按「繼續設定」進建立流程（create-event.html?import=<bky id>&handle=<創作者>），按「儲存為草稿」＝第一次儲存：
+     這一場在 Admin 清單由「待設定」轉「草稿」，同時成為那位創作者的草稿（創作者活動清單出現、可續填）。
+     記在 localStorage `ztor.bky-drafts`＝{ bky id: { id: 草稿活動 id, owner: 創作者 seed, name } }；
+     js/sidebar.js 讀它把這一場加進該創作者的 bookyayDrafts（狀態＝草稿），list()／get() 把它補成一筆草稿活動。
+     建立流程頁不載 sidebar.js，所以「按下儲存為草稿」的接線放在本檔（本檔建立流程頁有載）——只在帶 ?import= 與 &handle= 的那一趟生效，
+     一般創作者自己建立、續填草稿都不受影響。解除對應（sidebar setBkyMap 為 null）時一併清掉。 */
+  var BKY_DRAFT_KEY = 'ztor.bky-drafts';
+  function bkyDraftMap() {
+    try { return JSON.parse(localStorage.getItem(BKY_DRAFT_KEY) || '{}') || {}; }
+    catch (e) { return {}; }
+  }
+  function writeBkyDrafts(m) { try { localStorage.setItem(BKY_DRAFT_KEY, JSON.stringify(m)); } catch (e) {} }
+  /* 一筆動態草稿的活動紀錄：最小欄位，日期與場地取 Admin 匯入清單（sidebar.js 有載時）；續填時由建立流程重跑帶入補齊 */
+  function bkyDraftEvent(bkyId, rec) {
+    var src = null;
+    try { src = ((window.ztorCreator && window.ztorCreator.bookyayEvents) || []).filter(function (x) { return x.id === bkyId; })[0] || null; } catch (e) {}
+    return {
+      id: rec.id, bkyId: bkyId, source: 'bookyay', dynDraft: true,
+      type: rec.type || 'concert', typeLabelKey: 'ce.type.' + (rec.type || 'concert'), category: 'concert', series: null,
+      name: rec.name || (src && src.name) || '', desc: '', lineup: [],
+      venue: (src && src.venue) || '', city: '', address: '', date: (src && src.date) || '', start: '', end: '', doors: '',
+      tiers: [], bundles: [], sold: 0, revenue: 0, status: 'draft',
+      images: { keyvisual: 'images/hero-event.jpg', banner: '', gallery: [] }, video: false
+    };
+  }
+  function dynDrafts() {
+    var m = bkyDraftMap(), out = [];
+    Object.keys(m).forEach(function (bid) {
+      var rec = m[bid];
+      if (!rec || !rec.id) return;
+      if (EVENTS.some(function (e) { return e.id === rec.id || e.bkyId === bid; })) return;   // 示範資料已有這一場的草稿就不重複
+      out.push(bkyDraftEvent(bid, rec));
+    });
+    return out;
+  }
+  if (/create-event\.html$/.test(location.pathname || '')) {
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest || !e.target.closest('[data-wizard-savedraft]')) return;
+      var q = new URLSearchParams(location.search);
+      var bid = q.get('import'), owner = q.get('handle');
+      if (!bid || !owner) return;
+      var m = bkyDraftMap();
+      if (m[bid]) return;   // 只有第一次儲存才轉草稿；之後再存是同一份草稿
+      var nm = document.querySelector('[data-ce="name"]');
+      m[bid] = { id: 'bkydraft-' + bid, owner: owner, name: nm ? String(nm.value || '').trim() : '' };
+      writeBkyDrafts(m);
+    }, true);
+  }
+
+  /* ── 活動變更通知的寄送紀錄（2026-10-09 · D390 稽核第一節原型第 9 條，5.1.6.3 §2.10.1）──────────────
+     售票中或進行中儲存了高影響變更（5.1.6.2 F12）＝真的寄出一次活動變更通知；記在 localStorage `ztor.event-change-notices`
+     ＝{ 活動 id: [{ at, holders, fields:[…] }] }，通知分頁的寄送紀錄照實際寫（有寄過寫最近一次與次數，沒寄過才寫未寄出）。 */
+  var NOTICE_KEY = 'ztor.event-change-notices';
+  function noticeMap() {
+    try { return JSON.parse(localStorage.getItem(NOTICE_KEY) || '{}') || {}; }
+    catch (e) { return {}; }
+  }
+
   window.ztorEvents = {
     bundleTickets: bundleTickets,
     /* 定價幣別（D306）：常數與 helper，見上方說明區塊 */
@@ -2096,6 +2256,8 @@
     effAmount: effAmount,                 /* D331：清單／KPI 用的單價（基準幣別，覆寫優先） */
     bkyBundleHkd: bkyBundleHkd,           /* D331：含 bookyay 票券的組合包港幣欄（自動建立＝現價；自建＝公式） */
     bundleSelling: bundleSelling,         /* D331／D340：組合包「仍在販售」（上架＋顯示＋開賣或預告期，未刪除／封存） */
+    goneTiersOf: goneTiersOf,             /* D391 第 13 題：組合包允許清單裡已隨場次刪除的門票 */
+    goneAllOf: goneAllOf,                 /* D391 第 13 題：允許清單的門票全部被刪＝整組不能賣 */
     hasOtherSellable: hasOtherSellable,   /* D331／D340：可賣性防呆——扣掉這一張／這一組後（或到 opts.at 那個時間點）活動還有沒有可賣的 */
     totalQty: totalQty,                   /* D340：活動總量＝所有門票張數合計（含隱藏），取代已刪的容量 */
     /* 草稿活動刪除（D294 → D331 決定四 → D340 決定四）：只收草稿；回傳隨活動一起刪除的組合包（給確認彈窗列名）——
@@ -2120,7 +2282,35 @@
       if (ev.source === 'bookyay' && ev.bkyId && window.ztorCreator && window.ztorCreator.bookyayUnmap) {
         window.ztorCreator.bookyayUnmap(ev.bkyId);
       }
+      if (ev.bkyId) window.ztorEvents.clearBkyDraft(ev.bkyId);   // D390：Admin 第一次儲存產生的草稿記號一併清掉
       return true;
+    },
+    /* D390（稽核第一節原型第 3、4 條）：活動詳情的編輯結果寫回（淺合併，見上方 EDIT_KEY 說明）。patch 的每個欄位整份取代。 */
+    saveEdits: function (id, patch) {
+      if (!id || !patch) return;
+      var m = editMap();
+      m[id] = Object.assign({}, m[id], clone(patch));
+      try { localStorage.setItem(EDIT_KEY, JSON.stringify(m)); } catch (e) {}
+    },
+    /* D390（稽核第一節原型第 15 條）：Admin 第一次儲存 bookyay 活動產生的草稿記號（見上方 BKY_DRAFT_KEY） */
+    bkyDrafts: function () { return bkyDraftMap(); },
+    clearBkyDraft: function (bkyId) {
+      var m = bkyDraftMap();
+      if (!m[bkyId]) return;
+      delete m[bkyId]; writeBkyDrafts(m);
+    },
+    /* D390（稽核第一節原型第 9 條）：持票人數＝持有本活動有效票的粉絲人數，不是張數（一筆訂單可能兩張）。
+       高影響確認的「會通知 N 位持票人」用它。原型的買家名是從小名單池決定性生成的、會重名，不能拿來去重——
+       以有效（已付款、未撤銷）訂單筆數當持票人數，一筆訂單＝一位買家（呈現假設，ASSUMPTIONS UIA-238）。 */
+    holdersOf: function (id) {
+      return window.ztorEvents.transactions(id).filter(function (t) { return t.status === 'paid'; }).length;
+    },
+    changeNotices: function (id) { return (noticeMap()[id] || []).slice(); },
+    logChangeNotice: function (id, rec) {
+      if (!id) return;
+      var m = noticeMap();
+      m[id] = (m[id] || []).concat([rec]);
+      try { localStorage.setItem(NOTICE_KEY, JSON.stringify(m)); } catch (e) {}
     },
     removeBundle: function (evId, bId) {
       if (!evId || !bId) return;
@@ -2139,7 +2329,8 @@
       /* 2026-10-09 D383：release2.4 沒有多場次活動（S87 ⚪）——版本切換不含 S87 時，多場的示範活動（album-signing-taipei）
          不進清單，活動清單、計數與組合包示範都看不到它；最終版照舊。get() 不濾（直連照樣查得到，畫面上的多場元素由 data-feat 收起）。 */
       var multiOff = window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S87');
-      return clone(EVENTS).filter(function (e) { return !isRemoved(e.id) && !(multiOff && e.sessions && e.sessions.length > 1); }).map(function (e) {
+      return clone(EVENTS).concat(dynDrafts()).filter(function (e) { return !isRemoved(e.id) && !(multiOff && e.sessions && e.sessions.length > 1); }).map(function (e) {
+        applyEdits(e);                       // D390：活動詳情的編輯結果
         if (m[e.id]) e.status = m[e.id];
         return applyUnlist(applyRm(applyFx(e)));
       });
@@ -2158,8 +2349,10 @@
         for (var i = 0; i < EVENTS.length; i++) {
           if (EVENTS[i].id === id) { ev = clone(EVENTS[i]); break; }
         }
+        if (!ev) ev = dynDrafts().filter(function (e) { return e.id === id; })[0] || null;   // D390：Admin 第一次儲存產生的草稿
       }
       if (!ev) return null;                  // 有 id 但查不到＝查詢失敗
+      applyEdits(ev);                        // D390：活動詳情的編輯結果（門票逐筆編輯、頁面儲存、發布設定）
       if (isRemoved(ev.id)) return null;     // 這一趟刪掉的草稿活動（D331）＝查不到
       if (m[ev.id]) ev.status = m[ev.id];    // 本機改過階段的活動以覆寫值為準
       return applyUnlist(applyRm(applyFx(ev)));   // 本機存過的逐幣別覆寫（D306）一併合併；刪掉的組合包濾掉（D331）；已下架（D361）
@@ -2187,8 +2380,8 @@
     /* 交易明細：有金流的階段才有（售票中／進行中／已結束／已取消）。
        已取消也要有——取消的活動照樣要對帳「賣過多少、退了多少」。 */
     /* D361（2026-10-07）：售票中從「任一張門票或票務商品開始能買」起算，已排程＝已發布、還沒有任何東西能買，
-       所以已排程沒有成交、這裡不給交易，與上面的階段清單一致。預售示範 nick-symphonic-taipei 的早鳥時間
-       （組合包 10/08、二樓票 10/10）晚於示範當天，仍是已排程；示範日期過了之後要改成售票中，見 ASSUMPTIONS UIA-210。
+       所以已排程沒有成交、這裡不給交易，與上面的階段清單一致。預售示範 nick-symphonic-taipei 的組合包預售
+       10/08 已開始，2026-10-09 起改為售票中（D390 稽核原型第 16 條，UIA-210 關閉）。
        已報到（checkedIn）：進行中與已結束的已付款交易依到場比例決定性標記，供「已報到不能撤銷」（D361 決定四）。
        比例與名單同一套口徑（進行中＝arrivedAtOpen ÷ sold、已結束＝0.91），非真實核銷資料。 */
     transactions: function (id) {

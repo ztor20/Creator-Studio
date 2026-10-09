@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>步驟 4：票種與票務 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261009c">
-<script src="shell.js?v=20261009c" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261009d">
+<script src="shell.js?v=20261009d" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -108,19 +108,22 @@ tr:last-child td{border-bottom:0}
   <li>票種門票的票價與張數預設帶票種的值，生成之後每張門票各改各的，見<a href="#ticket-types">建立與調整票種</a></li>
   <li>手動以票種建立時，可以掛進既有的票種，或同時建一個新票種；其他場次跟著長出同名的門票</li>
   <li>某一場不賣某種票時，用「這一場不賣這種票」把那一張門票從那一場移除</li>
+  <li>活動進入售票中之後，門票都不能移除或刪除，只能暫停售票或隱藏，見<a href="event-rules.html#remove-date">移除場次與門票</a></li>
 </ul>
 
 <h3 id="ticket-standalone">獨立票：只屬於某一場、不掛票種</h3>
 <p>獨立票不掛任何票種，只屬於建立它的那一場。</p>
 <ul class="plain">
   <li>手動新增門票時選「獨立票」建立</li>
+  <li>獨立票的設定項目與票種門票相同，見<a href="#ticket-settings">一張門票的設定</a>；差別只有下面三條</li>
+  <li>票名必填，因為沒有票種名稱可以跟隨</li>
+  <li>入場形式預設實體入場</li>
+  <li>可以逐張暫停售票；票種門票的暫停是整個票種一起暫停</li>
   <li>獨立票沒有票種的預設值可以跟隨</li>
-  <li>每張獨立票也有自己的顯示開關，見<a href="#ticket-visible">門票的顯示與隱藏</a></li>
-  <li>獨立票的其他設定項目是否與票種門票完全相同，見頁尾尚待確認</li>
-  <li>在門票清單裡列在所屬場次底下，加「獨立票」標籤</li>
+  <li>在門票清單與活動詳情的名單裡列在所屬場次底下，顯示票名並加「獨立票」標籤</li>
   <li>獨立票與票種門票建立後不能互相轉換，要換就刪除重建</li>
 </ul>
-<p class="note">依據：5.1.6.1 §4.4 F22「門票清單」「這張票怎麼建」、§4.9；D311、D378、D380。</p>
+<p class="note">依據：5.1.6.1 §4.4 F22「門票清單」「這張票怎麼建」、§4.9；5.1.6 F5；D311、D378、D380、D390、D391。</p>
 
 <h2 id="ticket-setup"><span class="n"></span>票務設定</h2>
 <p>票務設定是這一步的入口動作，在同一處建立票種、設活動預設購票規則，並即時列出生成的票種門票。票種怎麼建、預設值怎麼帶給門票，見<a href="#ticket-types">建立與調整票種</a>；門票預設跟隨的那一組購買條件，見<a href="#purchase-rules">活動預設購票規則</a>。</p>
@@ -142,7 +145,7 @@ tr:last-child td{border-bottom:0}
   <li>預設價格與預設張數只在生成門票那一刻帶入，之後每張門票各改各的</li>
   <li>改票種的預設值，只影響還沒單獨改過的門票；也可以一次把全部門票改回跟著預設</li>
   <li>新建的票種，入場形式預設是實體入場</li>
-  <li>直播觀看權、優先購票等較深的設定，在活動建立後調整，見<a href="event-detail.html#edit-tickets">編輯票種與票務商品</a></li>
+  <li>直播觀看權等較深的設定，在活動建立後調整，見<a href="event-detail.html#edit-tickets">編輯票種與票務商品</a></li>
   <li>票種沒有自己的售票時間：單張門票什麼時候能買，由購買條件裡的限時購買決定，見<a href="#purchase-time">購買條件的時間</a></li>
 </ul>
 
@@ -157,7 +160,7 @@ tr:last-child td{border-bottom:0}
     <tr><td>限粉絲分級購買</td><td>只有指定分級以上的粉絲能買</td></tr>
     <tr><td>限購</td><td>購買數量的上限：<br>每人總限購數量<br>每次交易限購數量<br>限購次數</td></tr>
     <tr><td>折扣</td><td>一般折扣，不附條件</td></tr>
-    <tr><td>限時折扣</td><td>一段時間內的折扣，也就是早鳥</td></tr>
+    <tr><td>限時折扣</td><td>一段時間內的折扣，例如早鳥價</td></tr>
     <tr><td>粉絲分級折扣</td><td>指定分級以上的粉絲才有的折扣</td></tr>
     <tr><td>限時＋粉絲分級折扣</td><td>在指定時間內、而且是指定分級以上的粉絲才有的折扣</td></tr>
   </tbody>
@@ -165,11 +168,12 @@ tr:last-child td{border-bottom:0}
 <ul class="plain">
   <li>每一種條件最多加一次</li>
   <li>同時加了限時購買與限粉絲分級購買，兩個都要符合才能買</li>
+  <li>Top Fan 優先購票不另設條件，用「限粉絲分級購買＋限時購買」組合達成</li>
   <li>活動票種也可以套用電子商店的優惠碼，見<a href="promo-rules.html#s4-5">優惠碼</a></li>
 </ul>
 
 <h4 id="purchase-layers">門票跟隨活動預設或改成自己一組</h4>
-<p>每張門票預設跟隨活動預設購票規則，也可以改成自己的一組；獨立票是否同樣如此，見頁尾尚待確認。</p>
+<p>每張門票預設跟隨活動預設購票規則，也可以改成自己的一組；票種門票與獨立票都一樣。</p>
 <div class="dg" role="img" aria-label="購票規則兩層示意：活動層設一組預設購票規則，門票預設跟隨；關掉跟隨活動預設的門票，先帶入活動層當下的條件，之後各自修改">
 <div class="dg-inh">
   <div class="dg-node">活動預設購票規則<small>可以加全部條件</small></div>
@@ -206,6 +210,8 @@ tr:last-child td{border-bottom:0}
   <li>限時折扣期間內，粉絲付限時折扣價</li>
   <li>限時折扣期間過後，粉絲付一般折扣價</li>
   <li>兩者都沒有時，粉絲付票價</li>
+  <li>限時折扣價不能高於一般折扣價，高於時存不了；活動層就是限時折扣的百分比不能低於一般折扣的百分比</li>
+  <li>粉絲同時符合好幾個折扣（含粉絲分級折扣、限時＋粉絲分級折扣）時，付最低的那個價</li>
 </ul>
 <div class="ex">
   <p>範例（數字皆為假設）：活動層加了折扣 10% 與限時折扣 20%，某張門票票價 1,000。</p>
@@ -225,7 +231,7 @@ tr:last-child td{border-bottom:0}
 <p class="dg-cap">示意圖（數字皆為假設，同上方範例）：時間由左到右。限時折扣期間內付限時折扣價，期間一過改付一般折扣價。</p>
 
 <h4 id="purchase-time">購買條件的時間</h4>
-<p>有期間的條件都要落在活動上架區間內，結束不能晚於活動停售。</p>
+<p>有期間的條件都要落在活動上架區間內；只有限時購買的結束不能晚於活動停售。</p>
 <ul class="plain">
   <li>適用的條件：
     <ul class="plain">
@@ -235,21 +241,23 @@ tr:last-child td{border-bottom:0}
     </ul>
   </li>
   <li>期間可以早於活動開賣，不必落在活動的售票期間內</li>
-  <li>超出上架區間或晚於活動停售，就存不了，並就地提示</li>
-  <li>限時購買早於正式開賣，就是早鳥的一種；每張門票可以各自設不同的時間</li>
-  <li>早鳥一開始，活動就進入售票中，見<a href="event-rules.html#timing-early">早鳥與預售</a></li>
+  <li>限時購買的結束不能晚於活動停售</li>
+  <li>限時折扣與限時＋粉絲分級折扣的期間可以晚於活動停售，折扣只在這張門票能買的時間內生效</li>
+  <li>超出上架區間，或限時購買晚於活動停售，就存不了，並就地提示</li>
+  <li>限時購買早於正式開賣，就是早鳥預售；每張門票可以各自設不同的時間</li>
+  <li>早鳥預售一開始，活動就進入售票中，見<a href="event-rules.html#timing-early">早鳥與預售</a></li>
   <li>時間線的定義見<a href="event-rules.html#timing">活動的販售時間</a></li>
 </ul>
-<p class="note">依據：5.1.6.1 §4.4 F9、F9.1、F22「票務設定」「單張門票彈窗」購買條件、§6 第 15 項；主規格 §7.14；D061、D342、D361、D363、D366、D367、D368、D378、D380。</p>
+<p class="note">依據：5.1.6.1 §4.4 F9、F9.1、F22「票務設定」「單張門票彈窗」購買條件、§6 第 15 項；主規格 §7.14；D061、D342、D361、D363、D366、D367、D368、D378、D380、D390。</p>
 
 <h2 id="ticket-settings"><span class="n"></span>一張門票的設定</h2>
-<p>每張門票的設定依序分四組（獨立票是否完全相同，見頁尾尚待確認）：票名、圖片與顯示，見<a href="#ticket-basic">基本</a>；票價、平台費與張數，見<a href="#ticket-price-qty">價格與數量</a>；提前入場，見<a href="#ticket-entry">入場</a>；誰能買、什麼價格買，見<a href="#ticket-purchase">購買條件</a>。</p>
+<p>每張門票的設定依序分四組，票種門票與獨立票相同：票名、圖片與顯示，見<a href="#ticket-basic">基本</a>；票價、平台費與張數，見<a href="#ticket-price-qty">價格與數量</a>；提前入場，見<a href="#ticket-entry">入場</a>；誰能買、什麼價格買，見<a href="#ticket-purchase">購買條件</a>。</p>
 
 <h3 id="ticket-basic">基本：票名、圖片與顯示</h3>
 <ul class="plain">
-  <li>票名：票種門票留空就跟著票種名稱</li>
+  <li>票名：票種門票留空就跟著票種名稱；獨立票必填</li>
   <li>門票圖片：預設沿用活動主視覺，可以換成這張票自己的圖，也可以改回</li>
-  <li>顯示：每張門票各有一個顯示開關，見<a href="#ticket-visible">門票的顯示與隱藏</a></li>
+  <li>顯示：每張門票各有一個顯示開關，見<a href="#ticket-visible">門票的顯示與隱藏</a>；隱藏跟暫停售票不同，見<a href="#ticket-hide-pause">隱藏與暫停售票的差別</a></li>
 </ul>
 
 <h4 id="ticket-visible">門票的顯示與隱藏</h4>
@@ -259,6 +267,23 @@ tr:last-child td{border-bottom:0}
   <li>隱藏的門票仍可以當組合包的門票成員賣出，並與組合包共用同一個數量</li>
   <li>門票的顯示只管單張門票，跟步驟 6 活動整場的顯示設定互不影響，見<a href="event-create-step7.html#publish-visibility">顯示設定</a></li>
   <li>活動要有可賣的東西：全部門票都隱藏時，至少要有 1 組仍在販售的組合包才能發布；發布後把最後一張顯示中的門票改成隱藏或刪除會被擋下，見<a href="event-create.html#sellable">可賣條件與發布檢核</a></li>
+  <li>從 bookyay 帶入的門票也可以切換顯示或隱藏，只影響 ztor 的粉絲端，不改 bookyay 的資料；套票拆出的 1 人票例外，鎖定為隱藏，見<a href="#ticket-bookyay">從 bookyay 帶入時</a></li>
+</ul>
+
+<h4 id="ticket-hide-pause">隱藏與暫停售票的差別</h4>
+<p>隱藏與暫停售票都讓粉絲不能單張購買，差在活動頁看不看得到，以及組合包裡能不能選。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">項目</th><th style="width:39%">隱藏</th><th>暫停售票</th></tr></thead>
+  <tbody>
+    <tr><td>粉絲活動頁</td><td>不列出這張門票</td><td>照常列出這張門票，標「暫停售票中」</td></tr>
+    <tr><td>單張購買</td><td>不能</td><td>不能</td></tr>
+    <tr><td>組合包裡</td><td>仍可當組合包的門票成員賣出</td><td>同樣不能選</td></tr>
+    <tr><td>怎麼設</td><td>門票的顯示開關</td><td>票種門票整個票種一起暫停，獨立票逐張暫停</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>暫停前已售出的票照常有效</li>
+  <li>單張門票的暫停售票跟整場活動的暫停售票並存，見<a href="event-rules.html#pause">暫停售票與完售</a></li>
 </ul>
 
 <h3 id="ticket-price-qty">價格與數量</h3>
@@ -266,10 +291,10 @@ tr:last-child td{border-bottom:0}
 
 <h4 id="ticket-type-price">票價與幣別</h4>
 <ul class="plain">
-  <li>基準幣別＝建立活動當下創作者的預設幣別，建立後固定</li>
+  <li>基準幣別＝建立活動當下的創作者幣別，建立後固定</li>
   <li>票種的預設價格是整數，0 以上，0＝免費票；上限 9,999,999，只為了防止誤輸入</li>
   <li>門票的票價是整數，以基準幣別輸入，票種門票預設帶票種的價格</li>
-  <li>票價唯一能有小數的例外在從 bookyay 帶入的活動，見<a href="#ticket-bookyay">從 bookyay 帶入時</a></li>
+  <li>票價唯一能有小數的例外：從 bookyay 套票拆出的 1 人票，而且創作者幣別是港幣，見<a href="#ticket-bookyay">從 bookyay 帶入時</a></li>
   <li>其他四種幣別的票價自動換算，這一步不填</li>
   <li>活動的票價可以逐幣別覆寫，入口在步驟 7 的各幣別價格，以及活動詳情的價格表，見<a href="event-create-step8.html#preview-prices">各幣別價格</a></li>
   <li>基準價改了，各幣別的覆寫全部重新計算</li>
@@ -298,6 +323,7 @@ tr:last-child td{border-bottom:0}
 <p class="dg-cap">示意圖（數字皆為假設）：每一格是一張門票的張數，虛線是隱藏的門票。整場活動沒有另外的總名額欄位，總量就是全部門票加總，活動清單的票券欄與活動詳情 KPI 的分母都用這個數字。</p>
 <ul class="plain">
   <li>門票的張數是 1 以上的整數，票種門票預設帶票種的張數</li>
+  <li>每一場的門票張數各自獨立</li>
   <li>多人同時下單也不會超賣</li>
   <li>活動沒有另外的「總名額」欄位</li>
   <li>活動的總量＝本活動所有門票的張數合計，含隱藏的門票與獨立票</li>
@@ -317,7 +343,7 @@ tr:last-child td{border-bottom:0}
   <li>每張門票的購買條件預設跟隨活動預設購票規則，也可以關掉改用自己的一組，見<a href="#purchase-layers">門票跟隨活動預設或改成自己一組</a></li>
   <li>門票自己的一組，折扣類條件填固定價，見<a href="#purchase-discount">折扣怎麼設、怎麼生效</a></li>
 </ul>
-<p class="note">依據：5.1.6.1 §4.4 F9.1、F22「單張門票彈窗」「可賣性防呆」、§4.3 F8；主規格 §7.6、§7.15；D306、D311、D315、D316、D318、D328、D329、D330、D331、D340、D353、D366、D367。</p>
+<p class="note">依據：5.1.6.1 §4.4 F9.1、F22「單張門票彈窗」「可賣性防呆」、§4.3 F8；主規格 §7.6、§7.14「活動層級暫停售票與完售」、§7.15；5.1.6 F5；D306、D311、D315、D316、D318、D328、D329、D330、D331、D340、D353、D366、D367、D390、D391。</p>
 
 <h2 id="ticket-compare"><span class="n"></span>票種門票與獨立票的差別</h2>
 <p>兩種門票差在有沒有掛票種：票種門票跟著票種的預設值，獨立票只屬於一場。</p>
@@ -326,18 +352,19 @@ tr:last-child td{border-bottom:0}
   <tbody>
     <tr><td>怎麼建立</td><td>每個票種在每一場自動各生成一張<br>手動新增時以票種建立，其他場次跟著長出同名的門票</td><td>手動新增門票時選「獨立票」，只建在這一場</td></tr>
     <tr><td>屬於哪裡</td><td>一個票種 × 一個場次</td><td>只屬於一場，不掛票種</td></tr>
-    <tr><td>票名</td><td>選填，留空就跟著票種名稱</td><td>沒有票種名稱可跟隨，是否必填見頁尾尚待確認</td></tr>
+    <tr><td>票名</td><td>選填，留空就跟著票種名稱</td><td>必填，因為沒有票種名稱可跟隨</td></tr>
     <tr><td>價格與張數</td><td>預設帶票種的預設值，可逐張改</td><td>沒有票種的預設值可以跟隨</td></tr>
     <tr><td>改票種預設值時</td><td>還沒單獨改過的門票跟著變</td><td>沒有票種預設值可跟隨，不適用</td></tr>
-    <tr><td>購買規則</td><td>預設跟隨活動預設購票規則，可改成自己的一組</td><td>見頁尾尚待確認</td></tr>
+    <tr><td>購買規則</td><td colspan="2">相同：預設跟隨活動預設購票規則，可改成自己的一組</td></tr>
     <tr><td>顯示與隱藏</td><td colspan="2">相同：每張門票各有一個顯示開關</td></tr>
     <tr><td>算進活動的總量</td><td colspan="2">相同：都算</td></tr>
-    <tr><td>門票清單裡</td><td>列在所屬場次底下</td><td>列在所屬場次底下，加「獨立票」標籤，不另分區</td></tr>
+    <tr><td>門票清單與名單裡</td><td>列在所屬場次底下</td><td>列在所屬場次底下，顯示票名並加「獨立票」標籤，不另分區</td></tr>
     <tr><td>報到</td><td colspan="2">相同：一票一碼靜態 QR，照常進報到名單</td></tr>
     <tr><td>撤銷</td><td colspan="2">相同：可以逐張撤銷，整場撤銷時一併撤銷，見<a href="event-rules.html#revoke">撤銷票券</a></td></tr>
-    <tr><td>入場形式與暫停售票</td><td>設在票種上，活動建立後調整，見<a href="event-detail.html#edit-tickets">編輯票種與票務商品</a></td><td>見頁尾尚待確認</td></tr>
+    <tr><td>入場形式</td><td>設在票種上，新建時預設實體入場，活動建立後調整，見<a href="event-detail.html#edit-tickets">編輯票種與票務商品</a></td><td>預設實體入場</td></tr>
+    <tr><td>暫停售票</td><td>票種暫停：整個票種的門票一起暫停</td><td>逐張暫停這張獨立票</td></tr>
     <tr><td>從這一場移除</td><td>用「這一場不賣這種票」</td><td>見頁尾尚待確認</td></tr>
-    <tr><td>放進組合包</td><td>可以，以票種列進組合包票券成員的允許清單</td><td>可以，列進同一份允許清單<br>「每場各一組」的組合包只列該場的獨立票<br>賣進組合包從這張獨立票自己的張數扣</td></tr>
+    <tr><td>放進組合包</td><td>可以，以票種列進組合包票券成員的允許清單</td><td>可以，列進同一份允許清單<br>從活動建立組合包時預先勾上<br>「每場各一組」的組合包只列該場的獨立票<br>賣進組合包從這張獨立票自己的張數扣</td></tr>
     <tr><td>互相轉換</td><td colspan="2">不能，要換就刪除重建</td></tr>
   </tbody>
 </table></div>
@@ -345,7 +372,7 @@ tr:last-child td{border-bottom:0}
   <li>可賣條件：發布後把最後一張顯示中的門票改成隱藏，或用「這一場不賣這種票」移除，又沒有仍在販售的組合包時會被擋下，見<a href="event-create.html#sellable-block">發布後擋下的動作</a>；移除獨立票時是否同樣適用，見頁尾尚待確認</li>
   <li>組合包的票券成員怎麼挑、怎麼算價格與上限，見<a href="event-create-step6.html">步驟 5：票務商品</a></li>
 </ul>
-<p class="note">依據：5.1.6.1 §4.4 F9.1、F22「門票清單」「單張門票彈窗」「這張票怎麼建」、§4.5 F20「票券成員預帶」「每場各一組」、§6 第 17 項；5.1.6.3 §2.6、§2.9.2；主規格 §7.14；D061、D328、D330、D340、D380。</p>
+<p class="note">依據：5.1.6.1 §4.4 F9.1、F22「門票清單」「單張門票彈窗」「這張票怎麼建」、§4.5 F20「票券成員預帶」「每場各一組」、§6 第 17 項；5.1.6 F5；5.1.6.3 §2.6、§2.8、§2.9.2；主規格 §7.14；D061、D328、D330、D340、D380、D382、D390。</p>
 
 <h2 id="ticket-bookyay"><span class="n"></span>從 bookyay 帶入時<span id="ticket-type-bookyay"></span></h2>
 <p>從 bookyay 帶入的活動，票種與門票的名稱、價格、張數、購買條件與入場已經填好並鎖定，要改就回 bookyay 改。</p>
@@ -354,27 +381,29 @@ tr:last-child td{border-bottom:0}
   <tbody>
     <tr class="grp"><td colspan="2">帶入並鎖定（要改回 bookyay 改）</td></tr>
     <tr><td>票種名稱</td><td>已填好並鎖定</td></tr>
-    <tr><td>票種的預設價格</td><td>已填好並鎖定，以基準幣別顯示<br>免費票為 0<br>可能有小數，這是票價只能是整數的唯一例外，見<a href="event-bookyay.html#package-convert">套票轉換</a><br>金額怎麼換算，見<a href="event-bookyay.html#import-currency">bookyay 匯入與對照</a></td></tr>
+    <tr><td>票種的預設價格</td><td>已填好並鎖定，以基準幣別顯示<br>免費票為 0<br>金額怎麼換算，見<a href="event-bookyay.html#import-currency">bookyay 匯入與對照</a></td></tr>
     <tr><td>票種的預設張數</td><td>已填好並鎖定</td></tr>
     <tr><td>票名</td><td>已填好並鎖定</td></tr>
-    <tr><td>門票的票價</td><td>已填好並鎖定，以基準幣別顯示<br>金額怎麼換算，見<a href="event-bookyay.html#import-currency">bookyay 匯入與對照</a></td></tr>
+    <tr><td>門票的票價</td><td>已填好並鎖定，以基準幣別顯示<br>套票拆出的 1 人票，創作者幣別是港幣時票價可能有小數，這是票價只能是整數的唯一例外；創作者幣別不是港幣時照常取整，小數只留在鎖定的港幣欄，見<a href="event-bookyay.html#package-convert">套票轉換</a><br>金額怎麼換算，見<a href="event-bookyay.html#import-currency">bookyay 匯入與對照</a></td></tr>
     <tr><td>門票的張數</td><td>已填好並鎖定<br>張數怎麼算出來，見<a href="event-bookyay.html#import-venue">bookyay 匯入與對照</a></td></tr>
-    <tr><td>單張販售的顯示</td><td>帶入時設為隱藏的門票，鎖定為隱藏、不能改回顯示<br>這類門票只透過自動建立的組合包販售，見<a href="event-create-step6.html#product-bookyay">步驟 5 的從 bookyay 帶入時</a></td></tr>
+    <tr><td>單張販售的顯示（套票拆出的 1 人票）</td><td>鎖定為隱藏、不能改回顯示<br>這類門票只透過自動建立的組合包販售，見<a href="event-create-step6.html#product-bookyay">步驟 5 的從 bookyay 帶入時</a></td></tr>
     <tr><td>跟隨活動預設</td><td>已設定並鎖定，不能切換：<br>有帶入條件的門票為關，用自己的一組<br>沒有帶入條件的門票為開，跟隨活動層</td></tr>
-    <tr><td>門票自己的一組購買條件</td><td>帶入的限購、折扣、限時折扣已填好並鎖定<br>不能修改或移除，也不能另加條件</td></tr>
-    <tr><td>活動預設購票規則</td><td>只帶入限購，已填好並鎖定</td></tr>
+    <tr><td>門票自己的一組購買條件</td><td>帶入的限購、折扣、限時折扣（早鳥價）已填好並鎖定<br>不能修改或移除，也不能另加條件<br>套票拆出的 1 人票不帶入 bookyay 門票層的限購與折扣，這些條件搬到自動建立的組合包自己的限購與折扣，並鎖定</td></tr>
+    <tr><td>活動預設購票規則</td><td>只帶入限購，已填好並鎖定<br>不能另加其他條件</td></tr>
     <tr><td>提前入場</td><td>帶入並鎖定，跟隨場次<br>場次的開放入場由 bookyay 帶入，見<a href="event-bookyay.html#import-venue">bookyay 匯入與對照</a><br>活動建立後在活動詳情另外新增的門票同樣鎖定，見<a href="event-detail.html#edit-tickets">編輯票種與票務商品</a></td></tr>
     <tr><td>早於開放時間的處理</td><td>帶入並鎖定，跟隨場次，不能改成自訂<br>場次的早於開放時間入場由 bookyay 帶入</td></tr>
     <tr class="grp"><td colspan="2">帶入、可以改</td></tr>
     <tr><td>門票圖片</td><td>預設沿用帶入後的活動主視覺，可以換成這張票自己的圖</td></tr>
+    <tr><td>單張販售的顯示（套票拆出的 1 人票以外）</td><td>可以自己切換顯示或隱藏<br>只影響 ztor 的粉絲端，不改 bookyay 的資料</td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
+  <li>建立流程裡可以另外新增門票，兩種建法都可以；新增的門票不是 bookyay 帶入的、不鎖，但提前入場與早於開放時間的處理同樣鎖定為跟隨場次</li>
   <li>粉絲付、平台費、創作者實收照帶入的票價自動算出</li>
   <li>鎖定的欄位不能在 ztor 端解鎖</li>
   <li>逐欄對照見<a href="event-bookyay.html#map-ticket-types">bookyay 匯入與對照</a></li>
 </ul>
-<p class="note">依據：5.1.6.1 §4.1 F21、§4.4 F9.1、F22；主規格 §7.15；D328、D329、D330、D340、D365、D366、D367、D368、D369、D385、D386。</p>
+<p class="note">依據：5.1.6.1 §4.1 F21、§4.4 F9.1、F22「這張票怎麼建」；主規格 §7.15；D328、D329、D330、D340、D365、D366、D367、D368、D369、D375、D385、D386、D390、D391。</p>
 
 <h2 id="step4-flow"><span class="n"></span>操作流程<span id="step5-flow"></span></h2>
 <p>創作者先在票務設定建票種與活動預設購票規則，再逐張調整門票。</p>
@@ -413,13 +442,14 @@ tr:last-child td{border-bottom:0}
   </li>
   <li>儲存門票；有欄位沒通過檢查時，列出「N 個欄位待修正」並在各欄就地標示，改好再儲存</li>
   <li>某一場不賣某種票時，對那張票種門票選「這一場不賣這種票」</li>
-  <li>完成後往下到<a href="event-create-step6.html">步驟 5 票務商品</a>，不建票務商品就直接跳到步驟 6</li>
+  <li>完成後按下一步，到<a href="event-create-step6.html">步驟 5 票務商品</a>；步驟 5 可以不建票務商品，直接往下一步</li>
 </ol>
 <ul class="plain">
-  <li>從 bookyay 帶入的活動：票種已填好並鎖定，門票的價格與數量整區唯讀，其他欄位見<a href="#ticket-bookyay">從 bookyay 帶入時</a></li>
+  <li>從 bookyay 帶入的活動：票種已填好並鎖定，門票的價格與數量整區唯讀，其他欄位見<a href="#ticket-bookyay">從 bookyay 帶入時</a>；仍可以另外新增門票</li>
+  <li>還沒有任何票種時，往下一步不擋，按發布時才擋</li>
   <li>活動還是草稿時，移除票種不在當下擋，改由發布前檢核把關；活動發布後刪除票種，若會讓活動沒有可賣的東西就會被擋下，見<a href="event-create.html#sellable-block">發布後擋下的動作</a></li>
 </ul>
-<p class="note">依據：5.1.6.1 §4.4 F9、F9.2、F22；D061、D311、D330、D331、D366、D368、D380。</p>
+<p class="note">依據：5.1.6.1 §4.4 F9、F9.2、F22、§4.7 F11；D061、D311、D330、D331、D366、D368、D380、D390。</p>
 
 <h2 id="step4-fields"><span class="n"></span>功能與欄位<span id="step5-fields"></span></h2>
 <p>這一步的功能分七處：</p>
@@ -442,8 +472,8 @@ tr:last-child td{border-bottom:0}
     <tr><td>場次分組<div class="k">Tickets by date</div></td><td>只有一場時不顯示分組標題</td><td>每一場底下列出那一場會賣的門票，見<a href="#tickets-topic">門票怎麼來：兩種建法</a></td></tr>
     <tr><td>門票卡</td><td>每張門票一張</td><td>收合時顯示：<br>票名<br>票價<br>張數<br>提前入場（有填才顯示）<br>購買條件（有限制才顯示）<br>限購（有設才顯示）<br>這張票被哪些組合包用到（商品組合）<br>隱藏標示（隱藏時才顯示）<br>「獨立票」標籤（獨立票才顯示）</td></tr>
     <tr><td>編輯</td><td>每張門票卡</td><td>打開這張門票的設定，見<a href="#fields-ticket">單張門票</a></td></tr>
-    <tr><td>這一場不賣這種票</td><td>票種門票卡</td><td>把這張門票從這一場移除<br>活動發布後，移除的若是最後一張顯示中的門票、而且沒有仍在販售的組合包，就擋下並提示「至少要有 1 張顯示中的門票或 1 組組合包」，見<a href="event-create.html#sellable-block">發布後擋下的動作</a></td></tr>
-    <tr><td>新增門票</td><td>—</td><td>手動新增一張門票，二選一：<br>以票種建立：掛進既有的票種，或同時建一個新票種，其他場次跟著長出同名的門票<br>獨立票：不掛票種，只建在這一場<br>建立後兩者不能互相轉換，見<a href="#ticket-compare">票種門票與獨立票的差別</a></td></tr>
+    <tr><td>這一場不賣這種票</td><td>票種門票卡</td><td>把這張門票從這一場移除<br>活動進入售票中之後不能移除，只能暫停售票或隱藏，見<a href="event-rules.html#remove-date">移除場次與門票</a><br>活動發布後，移除的若是最後一張顯示中的門票、而且沒有仍在販售的組合包，就擋下並提示「至少要有 1 張顯示中的門票或 1 組組合包」，見<a href="event-create.html#sellable-block">發布後擋下的動作</a></td></tr>
+    <tr><td>新增門票</td><td>—</td><td>手動新增一張門票，二選一：<br>以票種建立：掛進既有的票種，或同時建一個新票種，其他場次跟著長出同名的門票<br>獨立票：不掛票種，只建在這一場<br>建立後兩者不能互相轉換，見<a href="#ticket-compare">票種門票與獨立票的差別</a><br>從 bookyay 帶入的活動也可以新增</td></tr>
     <tr><td>票務設定<div class="k">Ticket setup</div></td><td>—</td><td>這一步的入口動作，見<a href="#fields-setup">票務設定</a></td></tr>
   </tbody>
 </table></div>
@@ -500,9 +530,9 @@ tr:last-child td{border-bottom:0}
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
     <tr class="grp"><td colspan="3">基本</td></tr>
-    <tr><td>票名<div class="k">Ticket name</div></td><td>選填<br>留空就跟著票種名稱<br>獨立票見頁尾尚待確認</td><td>單行文字</td></tr>
+    <tr><td>票名<div class="k">Ticket name</div></td><td>票種門票選填，留空就跟著票種名稱<br>獨立票必填</td><td>單行文字</td></tr>
     <tr><td>門票圖片<div class="k">Ticket image</div></td><td>選填<br>預設沿用活動主視覺</td><td>可以換成這張票自己的圖，也可以改回<br>尺寸與格式見頁尾尚待確認</td></tr>
-    <tr><td>單張販售的顯示<div class="k">Show on event page</div></td><td>開關，預設顯示<br>每張門票各一個</td><td>隱藏時不列在活動頁、不能單張購買，仍可當組合包的門票成員賣出，見<a href="#ticket-visible">門票的顯示與隱藏</a><br>活動發布後，把最後一張顯示中的門票改成隱藏、而且沒有仍在販售的組合包，就擋下這次儲存</td></tr>
+    <tr><td>單張販售的顯示<div class="k">Show on event page</div></td><td>開關，預設顯示<br>每張門票各一個</td><td>隱藏時不列在活動頁、不能單張購買，仍可當組合包的門票成員賣出，見<a href="#ticket-visible">門票的顯示與隱藏</a><br>跟暫停售票不同，見<a href="#ticket-hide-pause">隱藏與暫停售票的差別</a><br>活動發布後，把最後一張顯示中的門票改成隱藏、而且沒有仍在販售的組合包，就擋下這次儲存</td></tr>
     <tr class="grp"><td colspan="3">價格與數量</td></tr>
     <tr><td>票價<div class="k">Ticket price</div></td><td>必填<br>票種門票預設帶票種的價格</td><td>整數，以基準幣別輸入<br>其他四種幣別自動換算，見<a href="#ticket-type-price">票價與幣別</a></td></tr>
     <tr><td>粉絲付<div class="k">Fan pays</div></td><td>自動算出，唯讀</td><td>＝票價</td></tr>
@@ -515,11 +545,10 @@ tr:last-child td{border-bottom:0}
     <tr class="grp"><td colspan="3">購買條件</td></tr>
     <tr><td>跟隨活動預設<div class="k">Follow event defaults</div></td><td>開關，預設開</td><td>開：用活動層的條件，只顯示摘要、不能編輯<br>關：改用自己的一組，先帶入活動層當下的條件<br>再打開就改回跟隨<br>見<a href="#purchase-layers">門票跟隨活動預設或改成自己一組</a></td></tr>
     <tr><td>新增條件<div class="k">Add condition</div></td><td>只在用自己的一組時可加</td><td>條件種類同活動層，每種最多一次<br>折扣類條件填固定價，百分比自動算出、只做顯示<br>要填的值見<a href="#fields-conditions">購票條件要填的值</a></td></tr>
-    <tr><td>修改或移除條件</td><td>只在用自己的一組時</td><td>已加入的條件可以改值或移除</td></tr>
-    <tr><td>加入商品<div class="k">Bundled product</div></td><td>每張門票</td><td>從電子商店搜尋商品，掛在這張票上一起賣、一次結帳<br>跟步驟 5 的票務商品是兩條路；要不要保留見頁尾尚待確認</td></tr>
+    <tr><td>修改或移除條件</td><td>只在用自己的一組時</td><td>已加入的條件可以改值或移除<br>門票與商品要一起賣，走<a href="event-create-step6.html">步驟 5 的票務商品</a>，單張門票上沒有掛商品的欄位</td></tr>
     <tr class="grp"><td colspan="3">結束</td></tr>
     <tr><td>取消</td><td>—</td><td>放棄這次修改，不儲存</td></tr>
-    <tr><td>儲存</td><td>—</td><td>有欄位沒通過檢查時存不了，列出「N 個欄位待修正」並在各欄就地標示<br>有期間的條件超出活動上架區間或晚於活動停售時，就地提示，見<a href="#purchase-time">購買條件的時間</a></td></tr>
+    <tr><td>儲存</td><td>—</td><td>有欄位沒通過檢查時存不了，列出「N 個欄位待修正」並在各欄就地標示<br>有期間的條件超出活動上架區間，或限時購買晚於活動停售時，就地提示，見<a href="#purchase-time">購買條件的時間</a><br>限時折扣價高於一般折扣價時存不了</td></tr>
   </tbody>
 </table></div>
 
@@ -550,38 +579,25 @@ tr:last-child td{border-bottom:0}
     <tr><td>你的收入</td><td>—</td><td>怎麼算見頁尾尚待確認</td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.6.1 §4.4 F9、F9.1、F9.2、F22「門票清單」「單張門票彈窗」「這張票怎麼建」「票務設定」「收入試算」、§4.8、§6 第 9、15、17 項；D061、D306、D311、D315、D316、D328、D329、D330、D331、D340、D353、D366、D367、D368、D378、D380。</p>
+<p class="note">依據：5.1.6.1 §4.4 F9、F9.1、F9.2、F22「門票清單」「單張門票彈窗」「這張票怎麼建」「票務設定」「收入試算」、§4.8、§6 第 9、15、17 項；D061、D306、D311、D315、D316、D328、D329、D330、D331、D340、D353、D366、D367、D368、D378、D380、D390、D391。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.6.1-建立活動流程.md</code>（v2.57）§4.4 F9、F22、§4.1 F21、§4.3 F8、§4.5 F20、§4.8、§4.9、§6；<code>5.1.6.3-活動詳情.md</code> §2.6、§2.8、§2.9.2；<code>0-設計規格書.md §7.6／§7.14／§7.15</code></li>
-    <li>決策：D061、D306、D311、D315、D316、D318、D328、D329、D330、D331、D340、D342、D353、D361、D363、D365、D366、D367、D368、D369、D378、D379、D380、D383、D385、D386</li>
+    <li>規格：<code>5.1.6.1-建立活動流程.md</code>（v2.61）§4.4 F9、F22、§4.1 F21、§4.3 F8、§4.5 F20、§4.7 F11、§4.8、§4.9、§6；<code>5.1.6-活動.md</code>（2026-10-09）F5；<code>5.1.6.3-活動詳情.md</code>（v49）§2.6、§2.8、§2.9.2；<code>0-設計規格書.md</code>（v4.40）§7.6／§7.14／§7.15</li>
+    <li>決策：D061、D306、D311、D315、D316、D318、D328、D329、D330、D331、D340、D342、D353、D361、D363、D365、D366、D367、D368、D369、D375、D378、D379、D380、D382、D383、D385、D386、D390、D391</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
-    <li>獨立票沒有票種名稱可跟隨，票名是否因此改為必填</li>
-    <li>從活動建立組合包時，預帶的票券成員要不要一併勾上本場的獨立票</li>
-    <li>獨立票的入場形式（實體或直播）與暫停售票怎麼設，票種門票的這兩項設在票種上</li>
-    <li>活動詳情的名單裡，獨立票的票種欄怎麼顯示（推導為顯示獨立票的票名並標「獨立票」）</li>
-    <li>獨立票的設定項目是否與票種門票完全相同（推導為相同，含購買條件預設跟隨活動預設）</li>
     <li>獨立票怎麼移除：是否就是刪除這張獨立票，以及可賣條件是否同樣適用（皆為推導）</li>
-    <li>一場活動有多個場次時的資料模型：每場是不是獨立活動、門票張數是否逐場獨立</li>
-    <li>還沒有任何票種時往下一步，是當下擋下，還是等發布前檢核才擋</li>
-    <li>票種名稱重複、超過字數、數字格式不符時，提示怎麼顯示、寫什麼</li>
+        <li>票種名稱重複、超過字數、數字格式不符時，提示怎麼顯示、寫什麼</li>
     <li>移除票種前要不要再確認一次</li>
     <li>門票圖片的尺寸與格式</li>
     <li>ztor 自建的活動，單張門票能不能自訂早於開放時間的處理（bookyay 帶入的活動已定為跟隨場次並鎖定）</li>
-    <li>從 bookyay 帶入的活動，單張販售的顯示（帶入時設為隱藏的門票除外）能不能自己改</li>
-    <li>從 bookyay 帶入的活動，活動預設購票規則除了帶入的限購，能不能再加其他條件</li>
     <li>門票關掉「跟隨活動預設」再打開後，原本的自訂值要不要保留</li>
-    <li>限時折扣價高於一般折扣價時，是否擋下儲存</li>
-    <li>粉絲同時符合多個折扣時，是否付最低的那個價</li>
-    <li>購票規則與活動詳情的 Top Fan 優先購票怎麼併存</li>
-    <li>門票上的「加入商品」要不要取消，改成只走步驟 5 的票務商品</li>
     <li>門票關掉「跟隨活動預設」時，先帶入的活動層折扣怎麼換成固定價（推導為這張門票的票價 ×（1 − 百分比））</li>
-    <li>這張門票可以買的時間是否為：有加限時購買看它的期間、沒加看活動的售票期間；限時折扣是否只在這段時間內生效（皆為推導）</li>
+    <li>這張門票可以買的時間是否為：有加限時購買看它的期間、沒加看活動的售票期間（推導）</li>
     <li>門票票價的下限與上限，是否跟票種一樣是 0～9,999,999</li>
     <li>收入試算的平台費算式是否接平台費率設定、活動支出是否進收入管理（Earnings）</li>
     <li>收入試算的預估總收入與「你的收入」怎麼算、是否自動算出，以及活動支出的格式與上限</li>
@@ -589,7 +605,7 @@ tr:last-child td{border-bottom:0}
     <li>門票清單、票務設定、票種卡與單張門票的載入中、沒有門票、儲存失敗時畫面怎麼顯示</li>
     <li>除了「N 個欄位待修正」與期間的就地提示，其他欄位的錯誤提示寫什麼</li>
   </ul>
-  <p class="k">最近同步：2026-10-09（至 D386）</p>
+  <p class="k">最近同步：2026-10-09（至 D391）</p>
 </details>
 </div>
 </body>

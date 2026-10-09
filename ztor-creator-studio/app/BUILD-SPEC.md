@@ -1,5 +1,7 @@
 # Ztor Creator Studio · R 2.1 BUILD-SPEC
 
+> **2026-10-09 · D390 建立流程修正的呈現（UI-CHANGES 一百五十九、ASSUMPTIONS UIA-236／UIA-237）**：沒有新元件，全部沿用既有件。票務設定票種列的錯誤是列下方一行 `.field__error`（`.ce-types` 本來就是直向 flex，不擠進四欄格線），輸入框掛 `aria-invalid`；動過的列或按過「完成」／發布被擋才顯示。定時下架早於活動結束的紅字是 `#ce-unlist-early`（`.field__error`，排在必填錯誤之後）。國家下拉加空白選項（「選擇國家」）＋標籤 `*`＋`.ce-field-error`，同其他必填欄。圖片區標題拆成文字＋`.field__req`。限時折扣價高於一般折扣價的提示由 `field__hint--warn` 改 `.field__error`（`js/purchase-conds.js`，建立流程與活動詳情共用）。bookyay 自動建立的組合包購買條件段只畫一句 `.field__hint`／`.lctl__lock-note`＋一格 `.field-readout` 讀數（`js/bundle-editor.js`、`bundle-detail.html`），不畫跟隨開關。bookyay 活動的「新增門票」格與一般活動同一顆 `.upload-tile.tier-add`；新票入場區沿用 `tierEntryLockedHTML()` 唯讀兩列。門票卡「商品組合」列退場，只留「組合包」列。
+
 > **2026-10-09 · D389 的呈現（UI-CHANGES 一百五十七、ASSUMPTIONS UIA-234）**：限時條件的期間檢查搬進共用元件 `js/purchase-conds.js`（`periodWins()`／`periodErrs(rules, et, T)`／`syncPeriod()`），create-event 的 `ruleTlErrs()` 與 event-detail 同用；紅字落在條件卡期間欄位下既有的 `field__error[data-rule-tl-err]`。`mount(host, { …, times })` 給了活動時間就在改期間時就地重比，回傳的 `check()` 供呼叫端按儲存時擋下。event-detail 的活動時間由 `ZtorTicketBundle.times(ev)` 從活動紀錄組（上架區間 `listing`）。兩處儲存不經 `highImpactDiffs()`。沒有新 token、沒有新 CSS、沒有新字串。
 
 > **2026-10-09 · D388 的呈現（UI-CHANGES 一百五十六、ASSUMPTIONS UIA-234）**：條件清單（Condition list，`cond-list.css`）的畫法從 `create-event.html` 頁內抽成共用 vanilla JS 元件 `js/purchase-conds.js`（`html()`／`mount()`／`copyForTicket()`／價格讀數／`STRINGS`），create-event 與 event-detail 同用。活動詳情「預設購票規則」卡抬頭改 `form-section__head--actions`：檢視態一顆 `btn--outline btn--sm`「編輯」、編輯態換成取消／儲存，卡內 `mount()` 條件清單＋`field__hint` 說明句。單張門票彈窗購買條件區抬頭同樣改 `--actions`，放「跟隨活動預設」`switch`（同建立流程 `tierRulesSecHTML`），開＝`kv` 唯讀列、關＝`mount()` 條件清單；區塊順序基本／價格與數量／入場／購買條件／販售。event-detail 新連 `cond-list.css`、`dropdown-menu.css`。條件清單有日期欄位，重畫會經 `partials/date-input.js` 觸發 `i18n:applied`，所以 event-detail 那支重畫 handler 加 `setTimeout(0)` 旗標防迴圈。沒有新 token、沒有新 CSS 元件。
@@ -501,11 +503,16 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - **第一層＝進庫**（D376 採納原型先行的 PG-025，結構不變）：門條的「進庫方法」＝`rules:[{items:[{t,v}]}]`，外層任一、內層全部、空方法不算；鑰匙是另一條路，整座庫觸及＝進庫方法 ∪ 有效鑰匙。畫面用語「進庫方法」「這些要一起達成」「或是」「多一種進庫方法」。
 - **第二層＝每件內容的任務**（D377）：資料在 item 上——`task`（缺＝不設；`{type:"action",kind,n?,target?,scope?}`；`{type:"tier",tier}`）與 `grand`（大彩蛋標記）。九種行動任務的目錄、參數與規格寫的缺口在 `vault-store.js` 的 `ACTION_TASKS`；判定狀態 `taskStatus()`（只有商城消費・指定商品是 ready）；等級下限 `tierFloor()`；每件可看人數 `itemViewers()`（沒有逐人資料回 `null`，畫面寫「待確認」）；以分級檢視每件結果 `itemStatusForTier()`。
 - **設定落點**：單件內容抽屜（點格子或音檔列開 `.drawer`），名稱與檔案資訊之下是「任務」區（`radio-list` 三選一 → 行動任務的種類 `.select`＋該種參數；等級任務的等級 `.select`，低於下限停用）、判定狀態框、幾人看得到，再下面是大彩蛋開關（`control-row`＋`switch`）。即時生效、不設儲存鈕。抽屜殼與 Q27 的分岔見 STYLE-DECISIONS Q127。
-- **內容清單上的呈現**：格子頂端 `.vault-tile__badges`（左任務、右大彩蛋＋幾人看得到），音檔列曲名下 `.vault-track__badges`；檢視身分開著時右邊換成看得到／等級不足／需完成行動任務，等級不足的整格 `.is-locked`。小標元件 `ds-components/vault-task.css`（§4.229），位置在 `media-vault.css`（§4.102）。
+- **三分頁版面**（2026-10-09，使用者確認的示範頁；規格 5.1.7.3「頁面佈局」同日改寫為呈現參考）：頁首右側是檢視身分（`.page-intro__actions` 裡的 `.vault-lens`，對三個分頁都有效）；庫房清單在右側欄；選中庫房後是庫房名稱與說明，下面 `.list-toolbar`＋`tabs--underline-short`（Q38 連殼）切三個 `.tab-panel`，都包在 `.vault-body` 裡讓上鎖遮罩蓋住當下分頁。網址 `#overview`／`#content`／`#access` 可直達（`activateTab`＋hashchange，點分頁用 replaceState）；新建庫房自動切到存取權限。
+  - **總覽**（§4.230 `vault-overview.css`，`renderOverviewTab`）：`.vault-reach` 讀數＋檢視身分那一行 → 每件內容幾人看得到（`.meter-list--media`＋`.stock-bar`，小標用 `.vault-tag--plain`）→ 鑰匙使用情況與內容摘要兩卡並排 → 待補規格的數字（`.card--muted`＋`.stat-row` 灰色破折號）。
+  - **內容與任務**：上傳方框＋三組同一種列表 `.vault-track`；照片與影片左欄 `.vault-track__thumb`（影片疊 `__thumb-play`；沒有影格放類型圖示），音檔是 `.vault-track__play`。`tileHtml` 已墓碑，`.vault-tile` CSS 暫留。
+  - **存取權限**（§4.231 `vault-access.css`，`renderAccessTab`＋`doorGroupHtml`）：`.vault-reachline` → 條件開放（`.vault-door`，每種方法一張 `.vault-method`「方法 N」＋只看這一種方法的符合人數＝`reachAll({rules:[g],keys:[]})`；判定方式與重算時機收進 `explain-vault-rules`；沒有條件時 `.alert--row.alert--warning`，有鑰匙時改寫）→ 直接開放（`.card`：兩個入口 `[data-share-intent]` 預選抽屜意圖；`.vault-keylist` 清單撤銷呼叫 `revokeKey`，與抽屜同一支）→ 淡色 `.vault-sharerow`。
+  - **重畫**：總覽掛在 `renderMain`、存取權限掛在 `renderDoor`，所以條件、鑰匙、上傳、改名、刪除、任務、大彩蛋、檢視身分任何一項變動，兩個分頁的數字都在同一次重畫裡更新；不靠 MutationObserver 事後改寫 DOM。
+- **內容清單上的呈現**：每一列曲名下 `.vault-track__badges`（任務、大彩蛋＋幾人看得到）；檢視身分開著時右邊換成看得到／等級不足／需完成行動任務，等級不足的整列 `.is-locked`（縮圖轉灰）。小標元件 `ds-components/vault-task.css`（§4.229），位置在 `media-vault.css`（§4.102）。
 - **重畫時機**：任務、大彩蛋、第一層條件、鑰匙建立／撤銷、檢視身分切換都會重畫內容格（每件人數與下限跟著變）；改任務只重畫抽屜的任務區，名稱欄不動。格子與抽屜是 JS 畫的，畫完補 `ztorIcons.render`、`ztorSelect.mount`、`ztorDevState.regate()`（S86 功能標記）。
-- **文案**：靜態骨架走 i18n `vault.*`（本輪新增 `vault.grid.fine`，改 `vault.sub`、`vault.note.tiers`）；JS 畫的字照檔案慣例走 `media-vault.js` 的 `tx(en, zh)` 內嵌雙語。「鑰匙」只指第一層，第二層一律「任務」。
-- **保存檔**：`media-vault-popup.html`（總覽卡片牆＋單一庫房彈窗）**已過時**——2026-08-01 起沒有頁面連過去，本輪沒有改它也沒連 `vault-task.css`；它共用同一支 JS，所以會畫出第二層小標但沒有樣式。要拿來看兩層模型請用正式頁；若要復用彈窗版型，先補連結再談。
-- **呈現假設與缺口**：ASSUMPTIONS UIA-230（含示意的指定貼文／影片清單、N 預設值、沒有逐人解開紀錄等）。
+- **文案**：靜態骨架走 i18n `vault.*`（本輪新增 `vault.grid.fine`，改 `vault.sub`、`vault.note.tiers`）；JS 畫的字照檔案慣例走 `media-vault.js` 的 `tx(en, zh)` 內嵌雙語。2026-10-09 三分頁起新寫的字（`vault.tab.*`、`vault.ov.*`、`vault.ac.*`）一律進 i18n，JS 用 `L(key, vars)` 查表並代入 `{n}` 這類佔位，英文單複數另開 `.one` 鍵；既有 `tx()` 字串未搬。「鑰匙」只指第一層，第二層一律「任務」。
+- **保存檔**：`media-vault-popup.html`（總覽卡片牆＋單一庫房彈窗）**已過時**——2026-08-01 起沒有頁面連過去，本輪沒有改它也沒連 `vault-task.css`；它共用同一支 JS，所以會畫出第二層小標但沒有樣式。2026-10-09 起同理會畫出方法小卡與縮圖列（沒連 `vault-access.css`），三分頁的節點它沒有，對應函式各自判斷節點存在才畫（卡片牆函式改名 `renderWall`）。要拿來看請用正式頁；若要復用彈窗版型，先補連結再談。
+- **呈現假設與缺口**：ASSUMPTIONS UIA-230（含示意的指定貼文／影片清單、N 預設值、沒有逐人解開紀錄等）；三分頁版面的呈現假設（頂端人數條、每種方法符合人數、「方法 N」編號、鑰匙清單欄位與「有效」狀態名、無條件但有鑰匙時的提示句、待補數字的佔位）見 UIA-235。功能標記 S86（第二層）、S93（三分頁新增讀數）。
 
 ## 4e. 商店預覽＝粉絲端創作者頁的手機鏡像，放在頁內右欄（2026-09-11）
 
@@ -810,6 +817,15 @@ cheat code 的 `route:` 規則在目標頁住在子目錄時（`funding-test/cre
 - fixed 會離開文件流，所以模組在頂列後面插一個 spacer，黏住時撐成原本那一列的高度，內容不會往上跳。
 - fixed 的左右緣與內距由 JS 實測後寫進 CSS 變數：整頁模式的捲動容器是 `main.main`（側欄不在裡面），內嵌模式是視窗本身，寫死會在其中一種模式錯位。給寬度不給 `right`——`right` 得用 `innerWidth` 反推，而它含捲軸寬，內嵌模式下右邊會漏一條縫。
 - 判定與幾何抽在 `js/detail-topbar.js`，兩頁共用；各頁只提供「縮圖與名稱從哪來」。
+
+### 活動詳情的編輯與發布設定（2026-10-09，D390）
+
+- **一個儲存流程**：「儲存」鈕與離開防護的「儲存並離開」共用 `trySave()`：發布設定檢查（`pubErrs`）→ 必填（`saveErrors`，彈窗列出＋就地 `.is-invalid`）→ 時間衝突（`timeConflicts`，只擋這次造成的）→ 高影響確認（`highImpactDiffs`＋`holdersOf`）→ `commitEdit()` 寫回 `ztorEvents.saveEdits()`。
+- **發布設定草稿**：`pubDraft` 在 `setMode('edit')` 建立、離開時丟掉；`pubLocks()` 依階段與 bookyay 逐欄鎖（`.segmented--locked`、`readOnly`、`.switch--locked`）；`applyReadonly()` 解鎖後會再套一次 `syncPubLock()`。上架設定用既有 `.segmented.radio-cards` 與 `.control-group`，沒有新元件。
+- **門票不屬頁面編輯**：門票彈窗的存／刪、列表暫停直接 `saveTiers()`，不進變更計數、不被捨棄還原；已結束／已取消彈窗唯讀。
+- **影片預告**：`.upload-tile--video`＋`data-upload-kind="video"`（同建立流程與 rich-body 的預填影片），檢視模式空的格收起、改一句提示。
+- **列操作與動態列**：`events.html` 的 `syncRowActions()` 依 store 階段重算編輯連結與現場報到台；`injectBkyDrafts()` 以 khh 草稿列為範本補 Admin 首存草稿列。
+- **在地化唯讀**：`event-localization.html` 以 MutationObserver 在 publish-stage 重畫後鎖輸入、收主鈕；加連 `info-banner.css`。系列母頁確認用既有 `.leave-dialog`＋`__list`（加連 `leave-dialog.css`）。
 
 ## 5a. 已知缺口（R 2.1.x 候選）
 

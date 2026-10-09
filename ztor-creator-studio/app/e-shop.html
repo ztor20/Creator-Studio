@@ -1980,6 +1980,13 @@
       const EVB = { 'on-sale': ['success', 'events.badge.on-sale'], 'live': ['warning', 'events.badge.live'], 'scheduled': ['neutral', 'events.badge.scheduled'],
                     'ended': ['neutral', 'events.badge.ended'], 'cancelled': ['error', 'event-detail.badge.cancelled'] };
       const evb = evRow ? EVB[evRow.status] : null;
+      /* D391 補充二：活動組合包的可選門票全部隨場次刪除＝「無法販售」，蓋過活動徽章與販售軸的字（已下架、草稿、封存照舊）。篩選桶不變。 */
+      const evBd = evRow ? (evRow.bundles || []).find(b => b.id === row.dataset.bundleId) : null;
+      if (main && evBd && window.ztorEvents.goneAllOf && window.ztorEvents.goneAllOf(evRow, evBd) && META.unavailable && ['archived', 'draft', 'unlisted'].indexOf(status) < 0) {
+        main.className = cls('unavailable');
+        setBadgeText(main, META.unavailable.i18n);
+        return;
+      }
       if (main && evb && status !== 'soldout') {
         main.className = 'badge badge--' + evb[0];
         setBadgeText(main, evb[1]);

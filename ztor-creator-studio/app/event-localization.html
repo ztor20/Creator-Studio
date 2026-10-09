@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2"><!-- 票券頁／票務商品頁的視圖切換（畫在預覽外） -->
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2"><!-- D390：已結束／已取消的唯讀說明 -->
 <link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表／價格表（2026-09-23 起整頁 .drawer--full） -->
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 兩張表沿用 .pp-table／.pp-cell 家族 -->
 <link rel="stylesheet" href="ds-components/rich-body.css?v=r2.2"><!-- D340：partials/rich-body.js 帶進來的 class（本頁只用它的靜態工具；check_ds_sync 檢查 15 要求連入） -->
@@ -118,6 +119,11 @@
     if (list.length <= 1) f.push({ key: 'desc', el: { value: list.length ? list[0].text : (ev.desc || '') }, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' });
     else list.forEach((x, j) => f.push({ key: x.key, el: { value: x.text }, kind: 'textarea', labelKey: null,
       labelFallback: T('pp.field.desc', 'Description') + ' · ' + T('pp.field.body.part', 'part {n}').replace('{n}', j + 1) }));
+    /* 條款與細則（D390 稽核第一節原型第 7 條，5.1.6.3 §2.13 → 5.1.6.1 §1 可翻譯欄位）：開關開著、有文字才列，鍵名與建立流程第 8 步同一套
+       （tnc＝條款及細則、marketing＝直接促銷同意的文字）；原本漏列。 */
+    const tm = ev.terms || {};
+    if (tm.tnc && tm.tnc.on && (tm.tnc.text || '').trim()) f.push({ key: 'tnc', el: { value: tm.tnc.text }, kind: 'textarea', labelKey: 'pp.field.tnc', labelFallback: 'Terms & conditions' });
+    if (tm.marketing && tm.marketing.on && (tm.marketing.text || '').trim()) f.push({ key: 'marketing', el: { value: tm.marketing.text }, kind: 'textarea', labelKey: 'pp.field.marketing', labelFallback: 'Marketing consent' });
     const g = T('pp.price.tiers', 'Ticket types');
     edTiers.forEach(t => f.push({ key: 'tier-' + t.id, el: { value: t.name || '' }, kind: 'input', labelKey: null, labelFallback: T('pp.field.tier-name', 'Ticket type name'), group: g }));
     /* 墓碑 2026-10-05（D353）：門票簡介（tdesc-<id>，D328）隨欄位整欄移除，不再列入翻譯表。 */
@@ -138,14 +144,19 @@
     const a = hhmmToMin(start), b = hhmmToMin(end);
     if (!first.endDate && a != null && b != null && b > a) { const d = b - a; duration = ((d >= 60 ? Math.floor(d / 60) + ' h' : '') + (d % 60 ? ' ' + (d % 60) + ' min' : '')).trim(); }
     const pickupKey = { eticket: 'fep.pickup.eticket', sf: 'fep.pickup.sf', pickup: 'fep.pickup.pickup', store: 'fep.pickup.pickup' }[(ev.publish || {}).pickup] || 'fep.pickup.eticket';
-    const statusKey = { 'on-sale': ['fep.status.on-sale', 'On sale', 'badge--success'], live: ['fep.status.on-sale', 'On sale', 'badge--success'],
+    /* 暫停售票期間（D390 決定二十九，主規格 §7.14「活動層級暫停售票與完售」）：粉絲頁寫「暫停售票中」並停用購買鈕——
+       狀態標記換成暫停、購買鈕在 previewRender 畫完後停用（renderer 沒有暫停狀態，宿主補） */
+    const paused = !!(S.isPaused && S.isPaused(ev));
+    const statusKey = paused ? ['fep.status.paused', 'Sales paused', 'badge--neutral'] : { 'on-sale': ['fep.status.on-sale', 'On sale', 'badge--success'], live: ['fep.status.on-sale', 'On sale', 'badge--success'],
       scheduled: ['fep.status.soon', 'Coming soon', 'badge--info'], ended: ['fep.status.ended', 'Ended', 'badge--neutral'],
       cancelled: ['fep.status.cancelled', 'Cancelled', 'badge--error'] }[ev.status] || ['fep.status.soon', 'Coming soon', 'badge--info'];
+    const tmM = ev.terms || {};
     /* D328：隱藏的票（hidden）交給渲染器略過。墓碑 2026-10-05（D353）：門票簡介（desc／tdesc-<id>）整欄移除 */
     const tiers = edTiers.map(t => ({ key: t.id, name: { key: 'tier-' + t.id }, note: '',
       hidden: !!t.hidden,
       priceObj: S.priceOf(ev, t), priceKey: 'tier:' + t.id,
-      soldOut: Number(t.qty) > 0 && Number(t.sold) >= Number(t.qty) }));
+      soldOut: Number(t.qty) > 0 && Number(t.sold) >= Number(t.qty),
+      paused: !!t.paused }));   /* D391 補充二：單張門票暫停售票 → 粉絲頁標「暫停售票中」 */
     /* 組合包（D296 形狀）→ 前台組合卡的成員列：票券＝允許票種名單 × 張數、商品＝名稱＋圖（示範資料沒有規格欄）；
        封面＝第一件商品圖。原價＝票券小計＋商品小計（events-store 的 bundleListAmount，bundle-detail 同一支：
        票券成員先換算成組合包的基準幣別再加總，D330 同批修正；活動資料不跨檔查 products-store）。 */
@@ -163,8 +174,9 @@
     const persona = (window.ztorCreator && window.ztorCreator.list && window.ztorCreator.list.find(c => c.handle === (typeof window.ztorPersonaId === 'function' ? window.ztorPersonaId() : 'default'))) || null;
     return {
       status: { labelKey: statusKey[0], fallback: statusKey[1], tone: statusKey[2] },
-      typeLabel: T(ev.typeLabelKey, ev.type), region: ev.city || '', keyvisual: (ev.images && ev.images.keyvisual) || '',
+      typeLabel: T(ev.typeLabelKey, ev.type), region: '',   /* D390 決定六：場地的城市／國家欄已刪除，不再掛地區標記 */ keyvisual: (ev.images && ev.images.keyvisual) || '',
       gallery: [(ev.images && ev.images.keyvisual) || ''].concat((ev.images && ev.images.gallery) || []).filter(Boolean), video: !!ev.video,
+      keyvisualPos: (ev.images && ev.images.kvCrop) || '',   /* D391 第 9 題：活動詳情存的主視覺裁切位置 */
       name: { key: 'name' }, highlight: ev.highlight ? { key: 'highlight' } : null,
       organizer: persona ? persona.name : '', organizerAvatar: persona ? (persona.avatar || '') : '',
       /* 跨日（D328）：場次有 endDate 就寫成日期區間 */
@@ -182,13 +194,22 @@
       /* 墓碑 2026-09-29（D334）：notes／bring 兩份清單已刪。 */
       pickup: T(pickupKey, 'E-ticket'),
       /* 退換票：交給渲染器用平台固定文案（UIA-167）；相關活動：同創作者的其他活動、標「非本活動」 */
-      terms: null, tiers, bundles,
+      terms: (tmM.tnc && tmM.tnc.on && (tmM.tnc.text || '').trim()) ? { key: 'tnc' } : null, tiers, bundles,   // D390：條款及細則照建立流程進粉絲頁預覽
       /* 「相關活動」不畫（2026-09-23 使用者：「一樣移除」）——在地化畫面只看這一場本身。 */
       related: false
     };
   }
 
   const hasBundles = !!(ev.bundles && ev.bundles.length);
+  /* 已結束、已取消整頁唯讀（D361 決定三，5.1.6.3 §2.13；D390 稽核第一節原型第 6 條）：活動詳情收起了入口，但直接開網址仍進得來——
+     這一頁自己也照階段鎖：翻譯格與價格格一律唯讀、主鈕（儲存）收起、預覽不能就地改字，次鈕改「返回」。
+     共用的 js/publish-stage.js 沒有唯讀模式，由本頁在它每次重畫後把輸入鎖起來（MutationObserver），不另做第二套畫面。 */
+  const readOnly = ['ended', 'cancelled'].indexOf(ev.status) >= 0;
+  function lockAll() {
+    host.querySelectorAll('input, textarea').forEach(el => { if (!el.readOnly) el.readOnly = true; });
+    host.querySelectorAll('[contenteditable="true"]').forEach(el => el.setAttribute('contenteditable', 'false'));
+    host.querySelectorAll('[data-stage-primary], .pstage-edit').forEach(b => { if (!b.hidden) b.hidden = true; });
+  }
   window.ztorPublishStage.mount(host, {
     fields: locFields(),
     prices: locPrices(),
@@ -198,7 +219,17 @@
     mode: 'save',
     /* D312：活動的多語內容不自動翻譯，改手動——見 js/publish-stage.js 檔頭 translation 選項。 */
     translation: 'manual',
-    previewRender: (h, api) => { if (window.ztorFanEventPage) window.ztorFanEventPage.render(h, locModel(), api); },
+    previewRender: (h, api) => {
+      if (window.ztorFanEventPage) window.ztorFanEventPage.render(h, locModel(), api);
+      /* D390 決定二十九：暫停售票期間購買鈕停用（主鈕換成「暫停售票中」，各票的購買鈕停用） */
+      if (S.isPaused && S.isPaused(ev)) {
+        h.querySelectorAll('[data-pdp-ticket], .pdp-tier__buy').forEach(b => {
+          b.disabled = true; b.setAttribute('aria-disabled', 'true');
+          const lab = b.querySelector('[data-add-label]') || b;
+          lab.setAttribute('data-i18n', 'fep.status.paused'); lab.textContent = T('fep.status.paused', 'Sales paused');
+        });
+      }
+    },
     /* 儲存：逐幣別覆寫寫回 events-store（localStorage），翻譯草稿留在 publish-stage 的模組
        變數（原型無後端，UIA-165）。存完回詳情頁——那裡的票種卡與在地化摘要重新讀 store 就會反映。 */
     onPrimary: result => {
@@ -212,8 +243,22 @@
       window.__evLocalization = result;
       location.href = backHref + (backHref.indexOf('?') >= 0 ? '&' : '?') + 'saved=loc';
     },
-    onSecondary: () => { location.href = backHref; }
+    onSecondary: () => { location.href = backHref; },
+    ...(readOnly ? { secondaryKey: 'evloc.back.ro' } : {})
   });
+  if (readOnly) {
+    const bar = document.createElement('div');
+    bar.className = 'info-banner';
+    bar.innerHTML = '<i data-lucide="lock" class="ztor-icon info-banner__icon"></i><span data-i18n="evloc.ro">' +
+      T('evloc.ro', 'This event has ended or been cancelled — translations and prices are view-only.') + '</span>';
+    host.parentNode.insertBefore(bar, host);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(bar);
+    lockAll();
+    new MutationObserver(lockAll).observe(host, { childList: true, subtree: true, attributes: true, attributeFilter: ['contenteditable', 'hidden'] });
+    /* 抽屜（翻譯表／價格表）掛在 body 底下，一樣要鎖 */
+    new MutationObserver(() => document.querySelectorAll('.drawer input, .drawer textarea').forEach(el => { el.readOnly = true; }))
+      .observe(document.body, { childList: true, subtree: true });
+  }
 })();
 </script>
 </body>

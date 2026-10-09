@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2"><!-- D372：對應創作者對話框 -->
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2"><!-- D372 F2：深連結的創作者篩選提示 -->
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2"><!-- D390 第 22 題：F6 檢查失敗 -->
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/owner-lookup.css?v=r2.2">
@@ -68,6 +69,18 @@
           <button class="btn btn--outline btn--sm" type="button" id="ace-recheck">
             <i data-lucide="refresh-ccw" class="ztor-icon ztor-icon--sm"></i><span id="ace-recheck-label">Check again</span>
           </button>
+        </div>
+      </div>
+
+      <!-- F6 檢查失敗（D390 第 22 題，5.1.0.6 F6「檢查失敗」與頁面狀態「檢查失敗」）：連不上 bookyay 或回應錯誤時
+           就地顯示錯誤；最後檢查時間保留上一次成功的時間，下方清單維持上次的結果（清單照常顯示、不換成錯誤頁）。
+           與 #ace-error 不同：那個是整頁讀不到（§6 載入失敗慣例），這個只是最近一次檢查失敗。
+           原型用 ?state=checkfail 演示（載入時呈現失敗，之後按重新檢查也會失敗，ASSUMPTIONS UIA-239）。 -->
+      <div class="alert alert--row alert--error mb-16" id="ace-checkfail" role="alert" hidden>
+        <span class="alert__icon"><i data-lucide="alert-circle" class="ztor-icon"></i></span>
+        <div class="alert__body">
+          <div class="alert__title" data-i18n="ace.checkfail.title">Couldn’t check bookyay</div>
+          <div class="alert__meta" id="ace-checkfail-meta"></div>
         </div>
       </div>
 
@@ -258,8 +271,15 @@
   var checkedEl  = document.getElementById('ace-checked');
   var recheckBtn = document.getElementById('ace-recheck');
   var recheckLbl = document.getElementById('ace-recheck-label');
+  var checkFailEl = document.getElementById('ace-checkfail');
+  var checkFailMeta = document.getElementById('ace-checkfail-meta');
   var checking    = false;                              /* 「重新檢查」進行中（原型的假檢查） */
-  var lastChecked = C.bookyayLastChecked || null;       /* 整份匯入清單的最後檢查時間（D372 決定一） */
+  var lastChecked = C.bookyayLastChecked || null;       /* 整份匯入清單的最後「成功」檢查時間（D372 決定一；D390 第 22 題：失敗不更新） */
+  /* D390 第 22 題（5.1.0.6 F6）：檢查失敗＝最近一次檢查沒成功；重新檢查完成後冷卻 1 分鐘、期間不能再按。 */
+  var COOLDOWN_MS = 60 * 1000;
+  var checkFailed = false;                              /* 最近一次檢查失敗 */
+  var cooldownUntil = 0;                                /* 冷卻結束時刻（ms）；0＝不在冷卻 */
+  var cooldownTimer = null;
 
   function tx(key, fb) { return (window.i18nT && window.i18nT(key)) || fb; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>'"]/g, function (ch) {
@@ -272,6 +292,9 @@
 
   /* ── 載入／錯誤／空清單的演示開關（?state=loading｜error｜empty）────────── */
   var demoState = qs.get('state');
+  /* ?state=checkfail：演示 F6 檢查失敗（UIA-239）——載入時最近一次檢查已失敗、之後按重新檢查也一律失敗；清單照常顯示。 */
+  var failDemo = demoState === 'checkfail';
+  checkFailed = failDemo;
   if (demoState === 'loading' || demoState === 'error') {
     (demoState === 'loading' ? loadingEl : errorEl).hidden = false;
     i18n(document.body); icons(document.body);
@@ -334,12 +357,22 @@
     if (!featOn('S89') && e.ship === 'pickup') return 'pickup';
     return '';
   }
+  /* ztor 端的名稱：events-store 裡帶著這個 bky id 的活動（草稿或已發布，含 Admin 第一次儲存產生的草稿）的名稱 */
+  function ztorRec(e) {
+    var EVS = window.ztorEvents;
+    var hit = null;
+    try { hit = EVS && EVS.list ? EVS.list().filter(function (x) { return x.bkyId === e.id; })[0] : null; } catch (err) { hit = null; }
+    if (!hit && EVS && e.draftId) hit = EVS.get(e.draftId);
+    return hit || null;
+  }
+  /* 還沒在 ztor 存過（待對應、待設定）的列沒有 ztor 端的紀錄，名稱就是帶入的 bookyay 名稱，不再重複附一行原名 */
+  function ztorName(e) { var r = ztorRec(e); return (r && r.name) || e.name; }
   function matchesSearch(e) {
     var q = (searchEl.value || '').trim().toLowerCase();
     if (!q) return true;
     var c = ownerOf(e.id);
     /* 規格 F2：活動名稱、創作者名稱或主辦方名稱（不含場地） */
-    return [e.name, e.organizer, c && c.name].join(' ').toLowerCase().indexOf(q) !== -1;
+    return [e.name, ztorName(e), e.organizer, c && c.name].join(' ').toLowerCase().indexOf(q) !== -1;   // D390：ztor 名稱與 bookyay 原名都搜得到
   }
 
   var STATUS = {
@@ -378,8 +411,11 @@
         act = '<button type="button" class="btn btn--primary btn--sm" data-map="' + esc(e.id) + '">'
           + esc(tx('ace.map.title', 'Map creator')) + '</button>';
       } else if (st === 'pending' || st === 'draft') {
-        /* F4 繼續設定：走 create-event 既有的 ?import= 深連結，以這位創作者的身分接著設 */
-        act = '<button type="button" class="btn btn--outline btn--sm" data-continue="' + esc(e.id) + '">'
+        /* F4 繼續設定：走 create-event 既有的 ?import= 深連結，以這位創作者的身分接著設。
+           D390 決定二十四（5.1.0.6 F4「交付版不支援的列」）：標「release2.4 不支援」的列停用繼續設定，原因寫在鈕的提示與名稱欄下方。 */
+        var vb0 = verBlock(e);
+        act = '<button type="button" class="btn btn--outline btn--sm" data-continue="' + esc(e.id) + '"'
+          + (vb0 ? ' disabled aria-disabled="true" title="' + esc(tx('ace.r24.' + vb0, '')) + '"' : '') + '>'
           + esc(tx('ace.continue', 'Continue set-up'))
           + '<i data-lucide="chevron-right" class="ztor-icon"></i></button> '
           /* D373 決定二 → D375 決定六：待設定與草稿都能解除對應（草稿先確認並一併刪除，見 askUnmap）；已發布不提供 */
@@ -388,7 +424,10 @@
       }
       var vb = verBlock(e);
       return '<tr' + (vb ? ' data-ace-r24="' + vb + '"' : '') + '>'
-        + '<td class="ace-name">' + esc(e.name)
+        /* D390 決定二十三（5.1.0.6 F3）：活動名稱顯示 ztor 端的名稱，附 bookyay 原名（ztor 端可改名、bookyay 端事後改名不覆蓋）；
+           還沒在 ztor 落地（待對應、待設定）＝ztor 名稱就是帶入時的 bookyay 名稱 */
+        + '<td class="ace-name">' + esc(ztorName(e))
+        + (ztorRec(e) ? '<div class="text-sub">' + esc(tx('ace.bky.orig', 'bookyay: {name}').replace('{name}', e.name)) + '</div>' : '')
         + (vb ? ' <span class="badge badge--neutral">' + esc(tx('ace.r24.tag', 'Not in release2.4')) + '</span>'
               + '<div class="text-sub">' + esc(tx('ace.r24.' + vb, '')) + '</div>' : '')
         + '</td>'
@@ -405,24 +444,48 @@
 
   /* ── F6 · 最後檢查 ＋ 重新檢查（D238；D372 起整頁一組）──────────────
      時間寫絕對值（YYYY-MM-DD HH:MM）：Admin 多半是在跟 bookyay 對帳，要能直接比對的時刻。 */
+  function cooldownLeft() { return Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000)); }
   function renderSync() {
     checkedEl.textContent = lastChecked
       ? tx('ace.checked', 'Last checked {t}').replace('{t}', lastChecked)
       : tx('ace.checked-never', 'Not checked yet');
-    recheckLbl.textContent = checking ? tx('ace.rechecking', 'Checking…') : tx('ace.recheck', 'Check again');
+    var left = cooldownLeft();
+    recheckLbl.textContent = checking ? tx('ace.rechecking', 'Checking…')
+      : left ? tx('ace.recheck.cooldown', 'Check again in {s}s').replace('{s}', left)
+      : tx('ace.recheck', 'Check again');
     recheckBtn.setAttribute('aria-busy', checking ? 'true' : 'false');
+    recheckBtn.disabled = checking || left > 0;   /* D390 第 22 題：冷卻期間不能再按 */
+    /* 檢查失敗：時間保留上一次成功的（上面那行不動），錯誤就地顯示；清單不受影響（5.1.0.6 頁面狀態「檢查失敗」） */
+    checkFailEl.hidden = !checkFailed;
+    checkFailMeta.textContent = lastChecked
+      ? tx('ace.checkfail.meta', 'bookyay didn’t answer or returned an error. Last successful check {t} — the list below is from that check.').replace('{t}', lastChecked)
+      : tx('ace.checkfail.meta-never', 'bookyay didn’t answer or returned an error. No check has succeeded yet.');
   }
-  /* 假的檢查：忙碌態 → 更新時間 → toast。刻意不假裝抓到新活動（ASSUMPTIONS PG-EVIMP-006）；
-     不落 localStorage（最後檢查時間屬平台側同步作業，不是人為編輯）。 */
+  function startCooldown() {
+    cooldownUntil = Date.now() + COOLDOWN_MS;
+    if (cooldownTimer) window.clearInterval(cooldownTimer);
+    cooldownTimer = window.setInterval(function () {
+      if (!cooldownLeft()) { window.clearInterval(cooldownTimer); cooldownTimer = null; cooldownUntil = 0; }
+      renderSync();
+    }, 1000);
+  }
+  /* 假的檢查：忙碌態 → 成功（更新時間＋toast）或失敗（時間不動＋錯誤）→ 冷卻 1 分鐘。
+     刻意不假裝抓到新活動（ASSUMPTIONS PG-EVIMP-006）；不落 localStorage（最後檢查時間屬平台側同步作業，不是人為編輯）。 */
   function doRecheck() {
-    if (checking) return;
+    if (checking || cooldownLeft()) return;
     checking = true;
     renderSync();
     window.setTimeout(function () {
       checking = false;
-      lastChecked = stamp();
+      if (failDemo) {
+        checkFailed = true;                 /* lastChecked 保留上一次成功的時間（D390 第 22 題） */
+      } else {
+        checkFailed = false;
+        lastChecked = stamp();
+      }
+      startCooldown();
       renderSync();
-      if (window.ztorToast) window.ztorToast.show(tx('ace.recheck.toast', 'Checked — nothing new on bookyay'), { tone: 'success' });
+      if (!failDemo && window.ztorToast) window.ztorToast.show(tx('ace.recheck.toast', 'Checked — nothing new on bookyay'), { tone: 'success' });
     }, 900);
   }
   function wireRecheck() { recheckBtn.addEventListener('click', doRecheck); }
@@ -566,7 +629,7 @@
     var um = e.target.closest('[data-unmap]');
     if (um) { askUnmap(um.getAttribute('data-unmap')); return; }
     var go = e.target.closest('[data-continue]');
-    if (!go) return;
+    if (!go || go.disabled) return;   /* D390 決定二十四：release2.4 不支援的列停用 */
     var id = go.getAttribute('data-continue');
     var c = ownerOf(id);
     if (!c) return;   /* 沒對應就不能進入設定（D372 決定二） */
