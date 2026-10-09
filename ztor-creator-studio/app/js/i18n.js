@@ -5959,7 +5959,9 @@
     /* 2026-09-21 第 2 批：建立組合改成與建立活動第 6 步同一套建構體驗（三段分卡＋粉絲預覽卡＋底部粉絲實付）；
        段標、表頭、算式、鎖定、可售、限量、預覽卡一律沿用 cpp.bd.sp.*，這裡只補電子商店脈絡多出來的字 */
     'cb.tix.entry':         { en: 'Add event tickets',                zh: '加入活動票券' },
-    'cb.tix.entry.sub':     { en: 'Pick an event, check the tiers fans can choose from, set tickets per set', zh: '挑一場活動、勾允許票種、定每組張數' },
+    /* D381 決定二（2026-10-09）：電子商店建立組合包的票券表——多場活動的獨立票名字前面寫它屬於第幾場（同 bundle-editor 的獨立票列） */
+    'cb.tix.sess':          { en: 'Date {n} · {name}', zh: '第 {n} 場 · {name}' },
+    'cb.tix.entry.sub':     { en: 'Pick an event, check the tickets fans can choose from, set tickets per set', zh: '挑一場活動、勾允許的門票、定每組張數' },
     'cb.tix.entry.hint':    { en: 'Optional · one event per bundle',  zh: '選填；一組只含一場活動的票' },
     'cb.tix.remove':        { en: 'Remove tickets',                   zh: '移除票券' },
     'cb.items.hint':        { en: 'Optional · quantity per set on each row', zh: '選填；每組用量在列上填' },
@@ -6537,11 +6539,11 @@
                               zh: '例：VIP 票＋限定 T 恤＋演出前見面會' },
     'cpp.bd.cover':         { en: 'Cover',                           zh: '封面' },
     'cpp.bd.cover.cta':     { en: 'Upload cover',                    zh: '上傳封面' },
-    'cpp.bd.tickets':       { en: 'Which tickets this applies to',   zh: '適用票種' },
+    'cpp.bd.tickets':       { en: 'Which tickets this applies to',   zh: '適用門票' },
     /* 2026-09-18（D292）：票券清單多筆＝同時內含，不再是粉絲擇一；組合包也可以不含票（D293）。 */
     /* 2026-09-21（D296）：改回「粉絲從勾選的票種挑一種」——但張數是創作者定的整組一個 n，不是舊的擇一模型。 */
-    'cpp.bd.tickets.hint':  { en: 'Fans pick one of the tiers checked here.', zh: '粉絲購買時從勾選的票種挑一種。' },
-    'cpp.bd.tickets.none':  { en: 'Create a ticket tier in the previous step to bundle tickets.', zh: '要把票放進組合包，先在上一步建立票種。' },
+    'cpp.bd.tickets.hint':  { en: 'Fans pick one of the tickets checked here.', zh: '粉絲購買時從勾選的門票挑一種。' },
+    'cpp.bd.tickets.none':  { en: 'Create a ticket in the previous step to bundle tickets.', zh: '要把票放進組合包，先在上一步建立門票。' },
     'cpp.bd.tickets.ph':  { en: 'A ticket — not created yet',      zh: '一張票券（還沒建立）' },
     /* 徽章：說明這一列為什麼沒有移除鈕。 */
     'cpp.bd.work.req':      { en: 'Always included',                 zh: '必含' },
@@ -6574,18 +6576,22 @@
     /* 三張表的欄名（2026-08-13 使用者指示「兩個都要表格化」；2026-09-18 票券清單表加入）。
        `tbl.qty` 是適用場次表的「該票種剩幾張」（庫存）、`tbl.qtyper` 是票券清單表的
        「每套含幾張」——兩個都叫「張數」會把庫存讀成用量，所以前者改寫成剩餘。 */
-    'cpp.bd.tbl.tier':      { en: 'Tier',                             zh: '票種' },
+    /* D380 決定六（2026-10-09）：組合包的允許清單由「允許的票種」擴為「允許的門票」——一列可以是票種（跨場次）或獨立票，
+       表頭與相關提示一律改稱「門票」。 */
+    'cpp.bd.tbl.tier':      { en: 'Ticket',                           zh: '門票' },
     'cpp.bd.tbl.price':     { en: 'Price',                            zh: '售價' },
     'cpp.bd.tbl.qty':       { en: 'Left',                             zh: '剩餘' },
+    /* D380 決定五：允許清單裡獨立票那一列名稱後的標籤（同建立活動票卡、活動詳情票卡的「獨立票」）。 */
+    'cpp.bd.tbl.solo':      { en: 'Standalone',                       zh: '獨立票' },
     'cpp.bd.tbl.qtyper':    { en: 'Qty',                              zh: '張數' },
     'cpp.bd.tbl.sub':       { en: 'Subtotal',                         zh: '小計' },
     /* 2026-09-21（D296）：表尾改「允許 K 種 · 每組 n 張 · 原價從 $X 起」；一種時不寫「起」 */
     'cpp.bd.tix.foot':      { en: '{k} tiers allowed · {n} per set · list price from {sum}', zh: '允許 {k} 種 · 每組 {n} 張 · 原價從 {sum} 起' },
     'cpp.bd.tix.foot.one':  { en: '1 tier · {n} per set · list price {sum}', zh: '允許 1 種 · 每組 {n} 張 · 原價 {sum}' },
-    'cpp.bd.tix.foot.none': { en: 'No tiers checked yet.',            zh: '尚未勾選票種。' },
+    'cpp.bd.tix.foot.none': { en: 'No tickets checked yet.',          zh: '尚未勾選門票。' },
     /* 整組張數欄（一組一個 n）＋說明；「從 … 起」用在多種允許票種時的原價／實付 */
     'cpp.bd.tix.per':       { en: 'Tickets per set',                  zh: '每組張數' },
-    'cpp.bd.tix.per.hint':  { en: 'Fans pick one of the checked tiers and get this many tickets of it. Check only one tier to lock it.', zh: '粉絲購買時從勾選的票種挑一種，拿到該票種這個張數；只勾一種＝鎖定票種。' },
+    'cpp.bd.tix.per.hint':  { en: 'Fans pick one of the checked tickets and get this many of it. Check only one to lock it.', zh: '粉絲購買時從勾選的門票挑一種，拿到這個張數；只勾一種＝鎖定那一種。' },
     'cpp.bd.price.from':    { en: 'from {sum}',                       zh: '從 {sum} 起' },
     'cpp.bd.item.spec':     { en: 'Options chosen by the fan at purchase', zh: '規格由粉絲購買時選' },
     /* ── 分段兩欄版型（`layout:'split'`，2026-09-21 第二輪；建立活動第 6 步）──────────────
@@ -6622,10 +6628,10 @@
        `cpp.bd.sec.scope`（radiogroup 的 aria-label）、`cpp.bd.sec.sess`（sections 版型）照舊。 */
     'cpp.bd.sp.dates':         { en: 'Dates',                          zh: '場次' },
     'cpp.bd.sp.tix.short':     { en: 'under {n}',                      zh: '不足 {n} 張' },
-    'cpp.bd.sp.sem.none':      { en: 'No tier checked yet — check at least one so fans have a ticket to buy.', zh: '還沒勾選票種——至少勾 1 種，粉絲才有票可買。' },
+    'cpp.bd.sp.sem.none':      { en: 'No ticket checked yet — check at least one so fans have a ticket to buy.', zh: '還沒勾選門票——至少勾 1 種，粉絲才有票可買。' },
     'cpp.bd.sp.sem.one':       { en: 'Locked to {name}: {n} per set, nothing for fans to choose.', zh: '鎖定 {name}，每組 {n} 張，粉絲不用挑。' },
     'cpp.bd.sp.sem.any':       { en: 'Fans pick one of {names} and get {n} tickets of it.', zh: '粉絲從 {names} 任選一種，拿到 {n} 張。' },
-    'cpp.bd.sp.locked':        { en: '{n} sold — tiers, quantity and items are locked. Discount, locked sets and the cap can still change.', zh: '已售出 {n} 組，允許票種、張數與商品鎖定；還能改的是折扣、鎖定套數與上限。' },
+    'cpp.bd.sp.locked':        { en: '{n} sold — allowed tickets, quantity and items are locked. Discount, locked sets and the cap can still change.', zh: '已售出 {n} 組，允許的門票、張數與商品鎖定；還能改的是折扣、鎖定套數與上限。' },
     /* D329：bookyay 套票自動建立的組合包整組鎖定（建立活動第 6 步的編輯器、組合商品細節頁同一句）。 */
     /* D330：補「不能加商品、不能刪除」。 */
     'cpp.bd.sp.srclocked':     { en: 'Imported from bookyay — tickets, quantity, discount, locked sets and the limited-time discount are locked. Products can’t be added and the bundle can’t be deleted.', zh: '由 bookyay 帶入：票券、張數、折扣、鎖定套數與限時折扣都已鎖定，也不能加入商品或刪除。' },
@@ -6737,7 +6743,7 @@
     'tb.cap.person.v':         { en: '{n} per person',                 zh: '每人 {n} 組' },
     'tb.cap.order.v':          { en: '{n} per order',                  zh: '每次 {n} 組' },
     'tb.cap.times.v':          { en: '{n} orders',                     zh: '限 {n} 次' },
-    'tb.err.empty.window':     { en: 'The tickets’ purchase periods don’t overlap, so this bundle can’t be bought. Change a ticket’s time window or the allowed tiers.', zh: '所含門票的可購買時間沒有交集，這組賣不出去。請調整門票的限時間或允許票種。' },
+    'tb.err.empty.window':     { en: 'The tickets’ purchase periods don’t overlap, so this bundle can’t be bought. Change a ticket’s time window or the allowed tickets.', zh: '所含門票的可購買時間沒有交集，這組賣不出去。請調整門票的限時間或允許的門票。' },
     'tb.err.tier.loose':       { en: 'Can’t be looser than the tickets inside — at least {tier}.', zh: '不能比所含門票寬：最低要「{tier}」。' },
     'tb.err.time.empty':       { en: 'Fill in both start and end.',     zh: '請填開始與結束時間。' },
     'tb.err.time.order':       { en: 'End must be after start.',        zh: '結束須晚於開始。' },
@@ -6757,10 +6763,10 @@
     'tb.issue.bundle':         { en: 'times or purchase rules',        zh: '時間或購買條件' },
     'cpp.bd.sp.fan.title':     { en: 'What fans see',                  zh: '粉絲看到的' },
     'cpp.bd.sp.fan.session':   { en: 'Date',                           zh: '場次' },
-    'cpp.bd.sp.fan.tier':      { en: 'Tier (pick one)',                zh: '票種（選一種）' },
+    'cpp.bd.sp.fan.tier':      { en: 'Ticket (pick one)',              zh: '門票（選一種）' },
     'cpp.bd.sp.fan.short':     { en: '{left} left, under {n}',         zh: '剩 {left} 張，不足 {n} 張' },
-    'cpp.bd.sp.fan.shortnote': { en: 'Struck-out tiers don’t have a full set left.', zh: '劃掉的票種剩餘不足一組。' },
-    'cpp.bd.sp.fan.notix':     { en: 'No tier checked yet',            zh: '還沒勾選票種' },
+    'cpp.bd.sp.fan.shortnote': { en: 'Struck-out tickets don’t have a full set left.', zh: '劃掉的門票剩餘不足一組。' },
+    'cpp.bd.sp.fan.notix':     { en: 'No ticket checked yet',          zh: '還沒勾選門票' },
     'cpp.bd.sp.fan.what.n':    { en: '{n} tickets',                    zh: '{n} 張' },
     'cpp.bd.sp.fan.item':      { en: '{name} × 1',                     zh: '{name} × 1' },
     'cpp.bd.sp.fan.off':       { en: '{pct}% off',                     zh: '省 {pct}%' },
@@ -6776,7 +6782,7 @@
     'cpp.bd.sp.foot.none':     { en: 'No members yet',                 zh: '還沒有成員' },
     'cpp.bd.sp.cancel':        { en: 'Cancel',                         zh: '取消' },
     'cpp.bd.sp.savechanges':   { en: 'Save changes',                   zh: '儲存變更' },
-    'cpp.bd.sp.why.tix':       { en: 'Check at least 1 tier',          zh: '至少勾選 1 種票種' },
+    'cpp.bd.sp.why.tix':       { en: 'Check at least 1 ticket',        zh: '至少勾選 1 種門票' },
     'cpp.bd.sp.why.members':   { en: 'Add at least 1 member',          zh: '至少加入 1 個成員' },
     'cpp.bd.sp.why.lock':      { en: 'Locked sets exceed the ceiling', zh: '鎖定套數超過可售上限' },
     'cpp.bd.sp.why.cap':       { en: 'Cap exceeds what members can supply', zh: '限量上限超過成員能供應的套數' },
@@ -6794,7 +6800,7 @@
     'cpp.bd.calc.parts':    { en: '{parts} = {total}',                zh: '{parts} ＝ {total}' },
     'cpp.bd.calc.parts.empty': { en: 'Nothing added yet.',            zh: '尚未加入任何成員。' },
     'cpp.bd.tbl.bundle':    { en: 'Bundle',                           zh: '組合包名稱' },
-    'cpp.bd.tbl.incl':      { en: 'Ticket inside',                    zh: '內含票種' },
+    'cpp.bd.tbl.incl':      { en: 'Ticket inside',                    zh: '內含門票' },
     'cpp.bd.tbl.value':     { en: 'Ticket value',                     zh: '票券原價' },
     /* 票券清單卡（2026-09-18 D292：票種 × 張數，同時內含；標題不重述「組合包」，鐵律 12） */
     'cpp.bd.sec.kind':      { en: 'Tickets',                          zh: '票券' },
@@ -6803,7 +6809,7 @@
                               zh: '粉絲可以挑哪些票種、每組幾張。' },
     'cpp.bd.sec.kind.sub.multi': { en: 'Which tiers fans can pick from, how many tickets per set, and how it maps to the dates.',
                               zh: '粉絲可以挑哪些票種、每組幾張，以及怎麼對應場次。' },
-    'cpp.bd.kind.which':    { en: 'Tiers & quantity',                 zh: '票種與張數' },
+    'cpp.bd.kind.which':    { en: 'Tickets & quantity',               zh: '門票與張數' },
     'cpp.bd.kind.on':       { en: 'Included',                          zh: '已納入' },
     'cpp.bd.kind.on.n':     { en: '{n} of {all} dates',                zh: '{all} 場中的 {n} 場' },
     'cpp.bd.sec.sess':      { en: 'Dates it applies to',               zh: '適用場次' },
@@ -9744,7 +9750,8 @@
     'ed.bd.count0': { en: 'None', zh: '無' },
     'ed.bd.empty.title': { en: 'No bundles on this event', zh: '這場沒有組合包' },
     /* 2026-09-18（5.1.6.3 §2.6.1 空狀態）：改成只講「從哪裡建」——兩個入口（建立活動第 6 步、電子商店）。 */
-    'ed.bd.empty.sub': { en: 'Create one in step 6 of the create flow, or from the e-shop.', zh: '在建立活動第 6 步或電子商店建立' },
+    /* D380（2026-10-09）：建立活動 8 步改 7 步，票務商品由第 6 步改號為第 5 步。 */
+    'ed.bd.empty.sub': { en: 'Create one in step 5 of the create flow, or from the e-shop.', zh: '在建立活動第 5 步或電子商店建立' },
     'event-detail.btn.golive': { en: 'Publish & open sales', zh: '發布並開賣' },
     'event-detail.btn.opensales': { en: 'Open sales now', zh: '現在開賣' },
     'event-detail.btn.cancelevent': { en: 'Cancel event', zh: '取消活動' },
@@ -9930,7 +9937,23 @@
     'ed.tix.col.status':  { en: 'Status',           zh: '狀態' },
     'ed.tix.status.on':   { en: 'On sale',          zh: '販售中' },
     'ed.tix.status.paused': { en: 'Paused',         zh: '已暫停' },
-    'ed.tix.pause':       { en: 'Pause sales',      zh: '暫停販售' },
+    /* D380 決定五（2026-10-09）：活動詳情票務清單裡獨立票的標籤，以及多場活動時它所屬場次那一列。 */
+    'ed.tix.standalone':    { en: 'Standalone',     zh: '獨立票' },
+    'ed.tix.sess':          { en: 'Date',           zh: '場次' },
+    /* D381 決定一（2026-10-09）：活動詳情的新增入口改「新增門票」二選一（票種門票／獨立票），
+       用詞與建立流程第 4 步手動新增門票同一組（create-event 的 d.tier.how.*）。
+       系列母頁（series-detail）仍用 ee.tix.add「新增票種」——D381 只管活動詳情。 */
+    'ed.tix.add':           { en: 'Add a ticket',   zh: '新增門票' },
+    'ed.tix.add.hint':      { en: 'From a ticket type, or standalone', zh: '票種門票或獨立票' },
+    'ed.tm.new':            { en: 'New ticket',     zh: '新增門票' },
+    'ed.tm.how':            { en: 'How to build this ticket', zh: '這張票怎麼建' },
+    'ed.tm.how.type':       { en: 'From a ticket type', zh: '票種門票' },
+    'ed.tm.how.solo':       { en: 'Standalone',     zh: '獨立票' },
+    'ed.tm.soloname':       { en: 'Ticket name',    zh: '門票名稱' },
+    'ed.tm.sess.ph':        { en: 'Choose a date',  zh: '選擇場次' },
+    'ed.tm.sess.n':         { en: 'Date {n}',       zh: '第 {n} 場' },
+    'ed.tm.sess.err':       { en: 'Pick the date this ticket belongs to.', zh: '請選這張票屬於哪一場。' },
+    'ed.tix.pause':      { en: 'Pause sales',      zh: '暫停販售' },
     'ed.tix.resume':      { en: 'Resume sales',     zh: '重新販售' },
     'ed.venue.title': { en: 'Venue', zh: '地點' },
     'ed.venue.sub': { en: 'Shared by every date of this event.', zh: '這場活動所有場次共用。' },

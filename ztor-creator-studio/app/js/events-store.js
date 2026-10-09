@@ -170,10 +170,13 @@
       tiers: [
         { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 80 },
         { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 140 },
-        { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 220 }
+        { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 220 },
+        /* D380（2026-10-09）獨立票示範：不掛任何票種、只屬於這一場（standalone: true）——活動詳情與票種門票排在同一張清單、
+           名稱後掛「獨立票」標籤；報到、撤銷與票種門票相同（D380 決定四）。sold／revenue 已一併加進活動合計。 */
+        { id: 'tier-signed', name: 'Signed VIP', price: 5200, qty: 20, sold: 5, standalone: true }
       ],
-      sold: 440,
-      revenue: 1326000,
+      sold: 445,
+      revenue: 1352000,
       status: 'on-sale',
       images: { keyvisual: 'images/projects/nick-realive.jpg', banner: '', gallery: [] },
       video: false
@@ -415,7 +418,10 @@
         { id: 's2', date: '2026-09-13', start: '14:00', end: '16:00', doors: '13:30', early: 'warn' },
         { id: 's3', date: '2026-09-14', start: '19:00', end: '21:00', doors: '18:00', early: 'block' }
       ],
-      tiers: [{ id: 'tier-slot', name: 'Signing slot', price: 5, qty: 150, sold: 118 }],
+      /* D380（2026-10-09）多場活動的獨立票示範：`sess`＝所屬場次（s3 晚場），只屬於那一場；
+         活動詳情排在票種門票之後並寫出場次。 */
+      tiers: [{ id: 'tier-slot', name: 'Signing slot', price: 5, qty: 150, sold: 118 },
+              { id: 'tier-night', name: 'Night photo slot', price: 8, qty: 30, sold: 0, standalone: true, sess: 's3' }],
       /* 2026-08-13：多一筆組合包示範，讓「票券綁商品」不是只有巡演那兩場看得到
          （組合包與單賣的票共用同一個數量池，賣掉一組就從它含的那張票扣一張，BDL-001）。 */
       bundles: [
