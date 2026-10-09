@@ -1,0 +1,100 @@
+/* ============================================================
+   vault-access.css · 媒體庫「存取權限」分頁（2026-10-09）
+   ------------------------------------------------------------
+   媒體庫三分頁的第三頁（使用者 2026-10-09 確認的示範頁）。讀法照創作者的旅程：
+   先看「現在多少人進得來」，再看兩條路——條件開放（規格 F2 的進庫方法）與
+   直接開放（規格 F4 的鑰匙）——最後才是淡色的分享頁面入口。
+
+   條件與鑰匙的資料、選單與抽屜都沿用 media-vault.css／vault-share.css 那一套；
+   本檔只管這一頁新長出來的四樣東西：
+
+   anatomy
+     .vault-access                直排（gap 由容器持有）
+     .vault-reachline             頂端即時人數條：一句話＋一個大數字
+       .vault-reachline__big      總人數
+     .vault-access__head          卡片標題列：區塊標題（.vault-door__label）＋ⓘ（.explain-btn）
+     .vault-method                一種進庫方法＝一張小卡（「方法 N」＋這種方法幾人符合）
+       .vault-method__head        名稱與人數同一列
+       .vault-method__name
+       .vault-method__count (--zero)  0 人符合時數字轉警示紅
+     .vault-access__sum           條件總結一句（任一種就進得來／設了但 0 人符合）
+     .vault-access__direct        直接開放的兩個入口（送給一位粉絲／做成 NFC 商品）
+     .vault-keylist               已發鑰匙清單
+       .vault-keyrow (--head | --revoked)
+         .vault-keyrow__main ＞ __code ＋ __label
+         .vault-keyrow__uses      已領取／總次數
+         （狀態用 .ztor-badge、撤銷用 .btn--ghost，元件各自的 CSS）
+     .vault-access__empty         還沒有鑰匙
+     .vault-sharerow              最下方淡色的分享頁面列（hover／focus 才回到全不透明）
+       .vault-sharerow__note
+
+   surface：小卡與人數條是 1px --border 髮線框、不上底色，坐在 .vault-door 或 .card
+   的玻璃面上都成立（跨層用邊框）。全值引用 _tokens.css。
+   ============================================================ */
+
+.vault-access { display: flex; flex-direction: column; gap: var(--sp-16); }
+
+.vault-reachline {
+  margin: 0;
+  padding: var(--sp-12) var(--sp-16);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-14);
+  color: var(--foreground-muted);
+}
+.vault-reachline b { color: var(--foreground); font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; }
+.vault-reachline .vault-reachline__big { font-size: var(--fs-18); }
+
+.vault-access__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8); }
+
+/* 一種進庫方法一張小卡。原本兩條以上才畫的外框（.vault-door__group--boxed）由小卡取代，
+   一條也畫——「方法 N」的編號與人數要有地方坐。 */
+.vault-method {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  padding: var(--sp-12) var(--sp-14);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.vault-method__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-12); flex-wrap: wrap; }
+.vault-method__name { font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--foreground); }
+.vault-method__count { font-size: var(--fs-12); color: var(--foreground-muted); }
+.vault-method__count b { color: var(--foreground); font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; }
+.vault-method__count--zero b { color: var(--destructive); }
+
+.vault-access__sum { margin: 0; font-size: var(--fs-13); color: var(--foreground-muted); }
+.vault-access__sum[hidden] { display: none; }
+
+.vault-access__direct { display: flex; flex-wrap: wrap; gap: var(--sp-8); margin-bottom: var(--sp-16); }
+
+.vault-keylist { display: flex; flex-direction: column; }
+.vault-keyrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: var(--sp-16);
+  padding: var(--sp-10) 0;
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-13);
+}
+.vault-keyrow--head { padding-top: 0; border-top: 0; font-size: var(--fs-12); color: var(--muted-foreground); }
+.vault-keyrow__main { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+.vault-keyrow__code { color: var(--foreground); font-variant-numeric: tabular-nums; }
+.vault-keyrow__label { font-size: var(--fs-12); color: var(--muted-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vault-keyrow__uses { color: var(--foreground-muted); font-variant-numeric: tabular-nums; text-align: right; }
+.vault-keyrow--revoked .vault-keyrow__main,
+.vault-keyrow--revoked .vault-keyrow__uses { opacity: 0.55; }
+
+.vault-access__empty { margin: 0; font-size: var(--fs-13); color: var(--muted-foreground); }
+
+/* 分享頁面：粉絲端庫房頁還沒有規格，入口留著但退到最下面、淡一階。 */
+.vault-sharerow { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-12); opacity: 0.7; }
+.vault-sharerow:hover,
+.vault-sharerow:focus-within { opacity: 1; }
+.vault-sharerow__note { font-size: var(--fs-12); color: var(--muted-foreground); }
+
+@media (max-width: 640px) {
+  .vault-keyrow { grid-template-columns: minmax(0, 1fr) auto; }
+  .vault-keyrow--head > :nth-child(n+3) { display: none; }
+}

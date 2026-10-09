@@ -1,0 +1,81 @@
+/* ============================================================
+   vault-overview.css · 媒體庫「總覽」分頁的卡片內版面（2026-10-09）
+   ------------------------------------------------------------
+   媒體庫選中一座庫房後分三個分頁（總覽／內容與任務／存取權限，使用者 2026-10-09
+   確認的示範頁）。總覽只讀不改：把「誰打得開、每件幾人看得到、鑰匙用了多少、
+   內容有哪些」收在同一頁，數字全部向 js/vault-store.js 現算。
+
+   卡片本身沿用 .card（card.css）、每件人數清單沿用 .meter-list--media＋.stock-bar、
+   待補數字沿用 .stat-row；本檔只管這幾張卡裡面的排法：
+
+   anatomy
+     .vault-ov                    分頁內直排（gap 由容器持有）
+       .vault-ov__pair            兩張卡並排（窄版收單欄）
+       .vault-ov__viewer          「誰打得開」卡最下面那一行：檢視身分開著時的這一級人數
+       .vault-ov__itemname        每件清單的名稱欄：名稱＋小標換行、不越界
+         .vault-ov__tags          小標列（.vault-tag，見 vault-task.css）
+       .vault-ov__kindicon        沒有影像的那一件（音檔、剛上傳的影片）放類型圖示
+       .vault-ov__pending         人數待確認：降一階墨色、不畫數字
+       .vault-ov__stats           鑰匙三格：等寬同一列（發出／被領走／已撤銷）
+       .vault-ov__kvgroups        內容摘要：兩組小表（類型、任務）
+         .vault-ov__kvhead        組名
+         .vault-ov__kvrow (--zero) 一列一項，數字靠右；0 的那一列退墨
+       .vault-ov__empty           還沒有內容時的一句話
+
+   surface：全部坐在 .card 玻璃面上；分隔一律 1px --border 髮線，跨層安全。
+   全值引用 _tokens.css。
+   ============================================================ */
+
+.vault-ov { display: flex; flex-direction: column; gap: var(--sp-16); }
+
+.vault-ov__pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-16);
+}
+@media (max-width: 960px) {
+  .vault-ov__pair { grid-template-columns: minmax(0, 1fr); }
+}
+
+.vault-ov__viewer { margin: 0; font-size: var(--fs-13); color: var(--foreground-muted); }
+.vault-ov__viewer b { color: var(--foreground); font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; }
+.vault-ov__viewer[hidden] { display: none; }
+
+/* 名稱欄：名稱一行、小標換行；單顆小標過長由 .vault-tag__text 自己截斷，不壓到右邊的人數條。 */
+.vault-ov__itemname { min-width: 0; overflow: hidden; }
+.vault-ov__tags { display: flex; flex-wrap: wrap; gap: var(--sp-6); min-width: 0; max-width: 100%; }
+.vault-ov__tags > * { min-width: 0; max-width: 100%; }
+
+.vault-ov__kindicon { display: inline-flex; align-items: center; justify-content: center; color: var(--muted-foreground); }
+.vault-ov__kindicon .ztor-icon { width: 16px; height: 16px; }
+
+.vault-ov__pending { color: var(--muted-foreground); }
+
+/* 三格等寬：卡片只有半欄寬，.stat-row 的自然寬會把第三格擠到下一行。 */
+.vault-ov__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-16);
+}
+.vault-ov__stats > * { min-width: 0; }
+
+.vault-ov__kvgroups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-24);
+}
+.vault-ov__kvhead { margin: 0 0 var(--sp-6); font-size: var(--fs-12); color: var(--muted-foreground); }
+.vault-ov__kvrow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-12);
+  padding: var(--sp-8) 0;
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-13);
+}
+.vault-ov__kvrow b { font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; }
+.vault-ov__kvrow--zero { color: var(--muted-foreground); }
+.vault-ov__kvrow--zero b { color: var(--faint-ink); font-weight: var(--fw-regular); }
+
+.vault-ov__empty { margin: 0; font-size: var(--fs-13); color: var(--muted-foreground); }

@@ -821,7 +821,8 @@
            （跟隨＝活動的值、另設＝自己的值），徽章與可賣性判斷照讀。onSale 只剩「未開賣」（stopped／D290）這一個來源——
            活動還沒開賣不再鎖住組合包的開賣（D342 修訂 D293），什麼時候能賣看生效的開賣時間。 */
         listed: listedByEv, listAt: tbEff.listAt || null, unlistAt: tbEff.unlistAt || null, shown: true, privateLink: null,
-        saleStart: tbEff.saleStart || null, saleEnd: tbEff.saleEnd || null, onSale: !b.stopped,
+        /* D391 第 13 題〔推導〕：允許的門票都隨場次刪除＝整組不能賣，開賣狀態當作未開賣（不顯示販售中） */
+        saleStart: tbEff.saleStart || null, saleEnd: tbEff.saleEnd || null, onSale: !b.stopped && !(EV.goneAllOf && EV.goneAllOf(ev, b)),
         sched: Object.assign({}, b.sched || {}), rules: b.rules ? JSON.parse(JSON.stringify(b.rules)) : null,
         lowThreshold: 0, draft: ev.status === 'draft', archived: false,
         unlistReason: ev.status === 'cancelled' ? { type: 'event-cancelled', eventName: evName }
@@ -834,7 +835,9 @@
         sales: (b.sold > 0) ? { units: b.sold, gross: null, net: null } : null
       };
       return { id: b.id, name: b.name, description: '', img: '', imgSrc: (ev.images && ev.images.keyvisual) || '', memberItems: memberItems, memberNames: memberItems.map(it => it.name),
-        currency: bdBase, evBase: bdBase, intMoney: true, priceAmount: Number(b.price) || 0, evSeed: evSeed, event: ev, eventName: evName, sold: b.sold || 0 };
+        currency: bdBase, evBase: bdBase, intMoney: true, priceAmount: Number(b.price) || 0, evSeed: evSeed, event: ev, eventName: evName, sold: b.sold || 0,
+        /* D391 第 13 題（5.1.5.9 §2.3「場次被刪除時的票券成員」）：允許清單裡已隨場次刪除的門票——成員列下方顯示為停用；全部被刪＝整組不能賣 */
+        goneTiers: EV.goneTiersOf ? EV.goneTiersOf(ev, b) : [], goneAll: EV.goneAllOf ? EV.goneAllOf(ev, b) : false };
     }
     let bundle = window.ztorGetBundle && window.ztorGetBundle(idParam);
     if (bundle) {
@@ -928,7 +931,14 @@
       });
       const members = document.getElementById('bd-members');
       if (members && bundle.memberItems) {
-        members.innerHTML = bundle.memberItems.map(memberRowHTML).join('');
+        members.innerHTML = bundle.memberItems.map(memberRowHTML).join('') +
+          /* D391 第 13 題：已隨場次刪除的允許門票——停用列（.data-list__row--disabled，不掛 data-bd-pid＝不算成員、不進存檔），
+             名稱後標「已隨場次刪除」；允許清單全部被刪時，下一行寫整組不能賣。粉絲端看不到這些門票。 */
+          (bundle.goneTiers || []).map(g => '<div class="data-list__row data-list__row--disabled" aria-disabled="true" data-bd-gone="' + esc(g.id) + '"><div class="data-list__row-main">' +
+            '<div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title">' +
+            esc(bundle.eventName || '') + ' · ' + esc(g.name) + ' <span class="badge badge--neutral" data-i18n="cpp.bd.tbl.gone">' + esc(T0('cpp.bd.tbl.gone', 'Date removed')) + '</span></div>' +
+            (bundle.goneAll ? '<div class="data-list__meta" data-i18n="cpp.bd.tbl.gone.all">' + esc(T0('cpp.bd.tbl.gone.all', "All the tickets this bundle allowed were removed with their dates, so it can't be sold.")) + '</div>' : '') +
+            '</div></div></div>').join('');
         if (window.ztorIcons) window.ztorIcons.applyIcons(members);
         if (window.applyI18n) window.applyI18n(members);
       }
@@ -1239,9 +1249,11 @@
       if (badge) {
         /* 所屬活動已結束（D352 稽核 B17）：組合包已自動下架，但徽章跟活動一致標「已結束」、不套「已下架」（D294 決定五）；封存仍優先 */
         const evEnded = bundleModel.eventEnded && f.status !== 'archived';
-        badge.className = evEnded ? 'badge badge--neutral' : LS.badgeClass(f.status);
+        /* D391 補充二：可選門票全部隨場次刪除＝「無法販售」，取代即將開賣／販售中等販售軸的字；封存、草稿、已下架照舊優先 */
+        const st = (bundle && bundle.goneAll && !evEnded && ['archived', 'draft', 'unlisted'].indexOf(f.status) < 0 && LS.STATUS_META.unavailable) ? 'unavailable' : f.status;
+        badge.className = evEnded ? 'badge badge--neutral' : LS.badgeClass(st);
         const sp = badge.querySelector('span');
-        const key = evEnded ? 'events.badge.ended' : LS.STATUS_META[f.status].i18n;
+        const key = evEnded ? 'events.badge.ended' : LS.STATUS_META[st].i18n;
         if (sp) { sp.setAttribute('data-i18n', key); sp.textContent = T(key, evEnded ? 'Ended' : f.status); }
       }
       const hidden = document.getElementById('bd-hidden-badge');
@@ -1667,7 +1679,8 @@
       const tiers = (bo.ev.tiers || []).filter(t => ((m && m.tierIds) || []).indexOf(t.id) >= 0);
       const et = TB.times(bo.ev);
       const n = Math.max(1, Number(m && m.qty) || 1);
-      return { et: et, n: n, def: TB.defaults(tiers.map(t => t.rules), n, et, tiers.map(t => t.name || '')), locked: tiers.some(t => t.rulesFix) };
+      /* D390 決定二十（2026-10-09）：bookyay 自動建立的組合包（seed.srcFix）購買條件整組鎖定 */
+      return { et: et, n: n, def: TB.defaults(tiers.map(t => t.rules), n, et, tiers.map(t => t.name || '')), locked: !!(seed && seed.srcFix) || tiers.some(t => t.rulesFix) };
     }
     const tbAt = v => v ? String(v).slice(0, 16) : '';
     function tbApply(c) {
@@ -1694,8 +1707,12 @@
       const hl = document.querySelector('[data-tb-host="list"]'), hs = document.querySelector('[data-tb-host="sale"]'), hr = document.querySelector('[data-tb-host="rules"]');
       if (hl) hl.innerHTML = TB.schedHTML(bundleModel, c.et, T, { keys: ['listAt', 'unlistAt'], note: false });
       if (hs) hs.innerHTML = '<div class="stack">' + tbOnSaleHTML() + TB.schedHTML(bundleModel, c.et, T, { keys: ['saleStart', 'saleEnd'] }) + '</div>';   /* 開關列與時間列之間的節奏由 .stack 持有（Q103） */
-      if (hr) hr.innerHTML = (c.locked ? '<p class="lctl__lock-note">' + esc(T('tb.rules.locked', '')) + '</p>' : '') +
-        TB.rulesHTML(bundleModel, c.def, c.et, T, { n: c.n, locked: c.locked });
+      /* D390 決定十九／二十：自動建立的組合包只畫唯讀讀數＋原因（同 create-event 第 5 步 bundle-editor 的 srcFix 畫法），不給跟隨開關與調整欄位 */
+      if (hr) hr.innerHTML = (seed && seed.srcFix)
+        ? '<p class="lctl__lock-note">' + esc(T('tb.rules.fix', '')) + '</p>' +
+          '<div class="field-readout" data-bd-rules-fix>' + esc(TB.rulesSummary(bundleModel, c.def, T) || T('ce.rule.any', 'No limit')) + '</div>'
+        : (c.locked ? '<p class="lctl__lock-note">' + esc(T('tb.rules.locked', '')) + '</p>' : '') +
+          TB.rulesHTML(bundleModel, c.def, c.et, T, { n: c.n, locked: c.locked });
       const editing = settingsPanel && settingsPanel.getAttribute('data-mode') === 'edit';
       [hl, hs, hr].forEach(h => { if (!h) return; h.querySelectorAll('input, textarea').forEach(el => { el.readOnly = !editing; }); h.querySelectorAll('select').forEach(el => { el.disabled = !editing; }); });
       if (window.ZtorViewMode && settingsPanel) window.ZtorViewMode.sync(settingsPanel);

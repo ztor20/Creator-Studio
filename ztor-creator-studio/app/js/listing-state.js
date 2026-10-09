@@ -395,7 +395,11 @@
     soldout:  { i18n: 'shop.status.soldout',  tone: 'error'   },
     coming:   { i18n: 'shop.status.coming',   tone: 'info'    },
     low:      { i18n: 'shop.status.low',      tone: 'warning' },
-    live:     { i18n: 'shop.status.live',     tone: 'success' }
+    live:     { i18n: 'shop.status.live',     tone: 'success' },
+    /* 無法販售（2026-10-09 · D391 補充二，使用者裁決照建議）：活動組合包的可選門票全部隨場次刪除＝整組不能賣。
+       不進 deriveStatus 的推導與篩選桶（篩選分頁維持原本九個、加總＝All），只在頁面確認 goneAllOf 時拿來換頁首／清單的徽章字與色態；
+       色態 warning＝要創作者處理的異常（同「庫存偏低」），與正常生命週期的 neutral（已下架、販售結束）分開。 */
+    unavailable: { i18n: 'shop.status.unavailable', tone: 'warning' }
   };
 
   /** 徽章的 class 字串，省得每個消費頁自己拼。 */

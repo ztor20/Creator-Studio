@@ -110,7 +110,9 @@
       bookyayPool: ["bky-1", "bky-2", "bky-3"], bookyayEvents: ["bky-1", "bky-2", "bky-3"], bookyaySetup: ["bky-1"], bookyayDrafts: ["bky-2"], lastImportAt: "2026-08-28 14:20" },
     { handle: "nick",    name: "周湯豪 NICKTHEREAL", shop: "/shop/nick",  status: "active", email: "nick@example.com",  phone: "+886 912 000 111", created: "2026-02-19", avatar: "images/ip/nick-portrait.jpg",
       /* D386 決定三（2026-10-09）：bky-14（順豐示範，已發布成 events-store `hsinchu-vinyl-sf`）對應周湯豪、已設定完成＝已發布 */
-      bookyayPool: ["bky-12", "bky-14"], bookyayEvents: ["bky-12", "bky-14"], bookyaySetup: ["bky-14"], bookyayDrafts: ["bky-12"], lastImportAt: null },
+      /* D390（2026-10-09，稽核第一節原型第 16 條；ASSUMPTIONS UIA-237）：建立流程帶入閘門的 bky-9／10／13 補進匯入清單、對應給周湯豪
+         （預設 persona）＝待設定——建立流程把這三場當成目前創作者的候選，兩邊才一致。 */
+      bookyayPool: ["bky-12", "bky-14", "bky-9", "bky-10", "bky-13"], bookyayEvents: ["bky-12", "bky-14", "bky-9", "bky-10", "bky-13"], bookyaySetup: ["bky-14"], bookyayDrafts: ["bky-12"], lastImportAt: null },
     { handle: "userB",   name: "User B",             shop: "/shop/userb", status: "active", email: "userb@example.com", phone: "",                 created: "2026-05-30",
       bookyayPool: [], bookyayEvents: [], bookyaySetup: [], lastImportAt: null },
   ];
@@ -138,7 +140,8 @@
      那邊標 imported 的三場（站上已存在的活動）刻意不列，本池維持這五場。 */
   const BOOKYAY_EVENTS = [
     { id: "bky-1", name: "REALIVE World Tour — Taipei", date: "2026-09-12", venue: "台北小巨蛋",               organizer: "嘉立音樂工作室" },
-    { id: "bky-2", name: "MIRROR FANMEETING 2026 高雄", date: "2026-10-02", venue: "高雄流行音樂中心 海音館", organizer: "鏡光娛樂製作", slots: 3 },
+    /* D390（稽核第一節原型第 16 條）：bky-2 的創作者端草稿＝events-store `mirror-khh-draft`（Gary Lin 的活動清單草稿列；三場＝多場次，release2.4 不列） */
+    { id: "bky-2", name: "MIRROR FANMEETING 2026 高雄", date: "2026-10-02", venue: "高雄流行音樂中心 海音館", organizer: "鏡光娛樂製作", slots: 3, draftId: "mirror-khh-draft" },
     { id: "bky-3", name: "城市草地音樂節 2026",          date: "2026-11-08", venue: "大佳河濱公園",             organizer: "草地派對有限公司" },
     { id: "bky-4", name: "限量黑膠簽名場 — 台中",        date: "2026-12-06", venue: "Legacy Taichung",          organizer: "綺音工作室" },
     { id: "bky-5", name: "冬季特別公演 — 台南",          date: "2027-01-17", venue: "台南文化中心 演藝廳",      organizer: "南風演藝經紀", ship: "pickup" },
@@ -152,6 +155,11 @@
     /* D386 決定三（2026-10-09）：bky-14＝順豐運費示範（events-store `hsinchu-vinyl-sf`，已排程；create-event BKY 的已帶過列 bky-14）。
        單一時段、不重覆、取票方式順豐寄送（ship: "sf"）＝release2.4 能帶入，不標「release2.4 不支援」。已對應周湯豪、已發布。 */
     { id: "bky-14", name: "Vinyl signing night — Hsinchu", date: "2026-12-12", venue: "The Wall Hsinchu",          organizer: "風城唱片", ship: "sf" },
+    /* D390（2026-10-09，稽核第一節原型第 16 條；ASSUMPTIONS UIA-237）：建立流程 BKY 正本裡有、這份投影原本沒有的三場，補齊並對應給周湯豪（待設定）。
+       值同 create-event 的 BKY：bky-9 免費入場、bky-10 不設門票（線上）、bky-13 二人套票單一時段。三場都是單一時段、非到店自取＝release2.4 能帶入。 */
+    { id: "bky-9",  name: "社區快閃見面會 — 台北",       date: "2026-11-21", venue: "華山 1914 中 4B",           organizer: "社區音樂推廣協會" },
+    { id: "bky-10", name: "創作者線上分享夜",            date: "2026-12-12", venue: "線上",                     organizer: "ztor 創作者社群" },
+    { id: "bky-13", name: "Duo Night — 雙人限定場",       date: "2026-11-28", venue: "Legacy Taipei",            organizer: "傳音娛樂" },
   ];
   /* D372（2026-10-08）：organizer＝bookyay feed 帶來的主辦方名稱，只當 Admin 對應創作者時的參考
      （唯讀、不帶入活動資料）。示範資料：bky-1～3 已對應 Gary Lin，bky-4、bky-5 待對應創作者，bky-12 已對應周湯豪且已存草稿（D374）。
@@ -225,11 +233,29 @@
       const to = m[id] && CREATORS.find(x => (x.seed || x.handle) === m[id]);
       if (to) { to.bookyayPool = (to.bookyayPool || []).concat([id]); to.bookyayEvents = (to.bookyayEvents || []).concat([id]); }
     });
+    /* D390（稽核第一節原型第 15 條）：Admin 在建立流程第一次「儲存為草稿」＝這一場成為對應創作者的草稿（狀態轉「草稿」），
+       記號由 js/events-store.js 寫在 localStorage `ztor.bky-drafts`（{ bky id: { id: 草稿活動 id, owner } }）；
+       繼續設定改開那份草稿（draftId）。只套在目前仍對應給同一位的那一場——解除或改對應之後記號作廢（setBkyMap 會清掉）。 */
+    let dd = {};
+    try { dd = JSON.parse(localStorage.getItem("ztor.bky-drafts") || "{}") || {}; } catch (e) { dd = {}; }
+    Object.keys(dd).forEach(id => {
+      const rec = dd[id];
+      const owner = rec && CREATORS.find(x => (x.bookyayPool || []).indexOf(id) !== -1);
+      if (!owner) return;
+      if ((owner.bookyayDrafts || []).indexOf(id) === -1) owner.bookyayDrafts = (owner.bookyayDrafts || []).concat([id]);
+      const row = BOOKYAY_EVENTS.find(x => x.id === id);
+      if (row && !row.draftId) row.draftId = rec.id;
+    });
   }
   function setBkyMap(id, seed) {
     if (!id) return;
     const m = readBkyMap(); m[id] = seed || null;
     try { sessionStorage.setItem(BKY_MAP_SS, JSON.stringify(m)); } catch (e) {}
+    /* D390：重新對應＝重新開始——Admin 第一次儲存留下的草稿記號一併作廢 */
+    try {
+      const dd = JSON.parse(localStorage.getItem("ztor.bky-drafts") || "{}") || {};
+      if (dd[id]) { delete dd[id]; localStorage.setItem("ztor.bky-drafts", JSON.stringify(dd)); }
+    } catch (e) {}
     applyBkyMap();
   }
   applyBkyMap();

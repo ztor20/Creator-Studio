@@ -49,7 +49,7 @@
     ]},
     {n:'9', t:'Admin', groups:[
       {t:'Creator 管理', pages:[{t:'Creator 列表'},{t:'Creator 詳情'}]},
-      {t:'創作者活動管理', pages:[{h:'admin-events.html', t:'活動匯入管理'}]},
+      {t:'創作者活動管理', pages:[{h:'admin-events.html', t:'創作者活動管理'}]},
       {t:'影片上架審核', pages:[{t:'影片上架審核'}]},
       {t:'Admin IP Bank', pages:[{t:'IP Bank'},{t:'建立 IP Entry'}]},
       {t:'IP Bank Reporting', pages:[{t:'IP Bank Reporting'}]},

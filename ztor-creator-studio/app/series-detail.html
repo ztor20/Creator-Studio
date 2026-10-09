@@ -28,6 +28,7 @@
      與項目詳情、活動詳情同日的裁決一致——同一組按鈕不該有兩個家、兩套顯隱規則。 -->
 <link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2"><!-- D390：儲存並同步前的影響確認（同活動清單的確認殼） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* series-detail 專屬：場次表的欄寬（比照 events.html 的做法，欄數為本頁專屬故留頁內）。
@@ -755,17 +756,59 @@
 
   /* 儲存並同步：原型只回報結果，不接後端。刻意說出「同步到幾場」——
      這一頁最容易誤會的就是「我只是改了一個欄位」。 */
+  /* 儲存前的影響確認（2026-10-09 · D390 稽核第一節原型第 8 條；5.1.6.2 F16「已進入售票中者比照 F12 高影響確認」）：
+     有場次已開賣（售票中／進行中）時，先說清楚會同步到幾場、其中幾場已開賣、已售幾張與持票人數，確認才存。
+     這一頁能改的共用設定（名稱、描述、陣容、圖片、票種）都不在高影響清單（5.1.6.2 F12：場地、地址、國家、日期與開始時間），
+     所以確認裡寫明不發活動變更通知；票價改了只影響之後的購買（主規格 §7.15）。沒有任何一場開賣時直接存。
+     原型限制：「仍跟著系列走」的場次沒有資料（SER-001），一律算全部場次。 */
   (function () {
     const btn = document.getElementById('sd-save');
     if (!btn) return;
+    const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
+    const fmtNum = n => String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const dlg = document.querySelector('[data-sd-confirm]');
+    const done = n => alert(T('sd.save.done.n', 'Saved. The change is now on all {n} dates.').replace('{n}', n));
+    const close = () => { if (dlg) dlg.removeAttribute('data-open'); };
     btn.addEventListener('click', () => {
-      const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
-      alert(T('sd.save.done', 'Saved. The change is now on all 3 dates.'));
+      const S = window.sdSeries;
+      const legs = (S && S.legs) || [];
+      const onSale = legs.filter(e => ['on-sale', 'live'].indexOf(e.status) >= 0);
+      if (!onSale.length || !dlg) { done(legs.length || 3); return; }
+      const EVS = window.ztorEvents;
+      const sold = onSale.reduce((n, e) => n + (Number(e.sold) || 0), 0);
+      const holders = onSale.reduce((n, e) => n + (EVS && EVS.holdersOf ? EVS.holdersOf(e.id) : (Number(e.sold) || 0)), 0);
+      dlg.querySelector('[data-sd-confirm-title]').textContent = T('sd.confirm.title', 'Sync to {n} dates?').replace('{n}', legs.length);
+      dlg.querySelector('[data-sd-confirm-body]').textContent = T('sd.confirm.body',
+        '{m} of them are on sale — {s} tickets sold to {h} holders. These shared settings aren’t high-impact changes, so no event-change notice goes out; tickets already sold stay as they are, and a new price applies to later purchases only.')
+        .replace('{m}', onSale.length).replace('{s}', fmtNum(sold)).replace('{h}', fmtNum(holders));
+      dlg.querySelector('[data-sd-confirm-list]').innerHTML = onSale.map(e =>
+        '<li class="leave-dialog__list-item"><i data-lucide="calendar" class="ztor-icon"></i><span>' +
+        esc((e.date || '').replace(/-/g, '/') + ' · ' + (e.venue || '')) + ' · ' + esc(T('sd.confirm.sold', '{n} sold').replace('{n}', fmtNum(e.sold))) + '</span></li>').join('');
+      if (window.ztorIcons) window.ztorIcons.applyIcons(dlg);
+      dlg.setAttribute('data-open', '');
+      dlg.querySelector('[data-sd-confirm-ok]').onclick = () => { close(); done(legs.length); };
     });
+    if (dlg) dlg.addEventListener('click', e => { if (e.target.closest('[data-sd-confirm-cancel]')) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
   })();
 </script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="partials/list-scroll.js?v=r2.2"></script>
+<!-- 儲存並同步前的影響確認（D390；同 events.html 的 leave-dialog 殼＋清單）：內容由上方 sd-save 的處理填 -->
+<div class="leave-dialog" data-sd-confirm role="dialog" aria-modal="true" aria-labelledby="sd-confirm-title">
+  <div class="leave-dialog__scrim" data-sd-confirm-cancel></div>
+  <div class="leave-dialog__card">
+    <button class="leave-dialog__close" type="button" aria-label="Close" data-i18n-aria-label="e-shop.shown.close" data-sd-confirm-cancel><i data-lucide="x" class="ztor-icon"></i></button>
+    <h2 class="leave-dialog__title" id="sd-confirm-title" data-sd-confirm-title></h2>
+    <p class="leave-dialog__body" data-sd-confirm-body></p>
+    <ul class="leave-dialog__list" data-sd-confirm-list></ul>
+    <div class="leave-dialog__actions">
+      <button class="btn btn--primary" type="button" data-sd-confirm-ok><span data-i18n="sd.save">Save and sync</span></button>
+      <button class="btn btn--outline" type="button" data-sd-confirm-cancel data-i18n="e-shop.shown.cancel">Cancel</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

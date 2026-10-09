@@ -231,6 +231,10 @@
     var COVER = !!opts.cover;
     var getTickets = typeof opts.tickets === 'function' ? opts.tickets
                    : (opts.tickets ? function () { return opts.tickets; } : null);
+    /* 隨場次刪除的門票（2026-10-09 · D391 第 13 題，5.1.5.4 §4 F2「場次被刪除時的票券成員」）：開賣前移除場次會一併刪掉
+       該場門票，列在允許清單裡的那幾張不從組合包拿掉——在這裡顯示為停用（不能勾、標「已隨場次刪除」），粉絲端則看不到。
+       頁面注入 getter，回 [{ id, name }]（已刪門票的 id 與刪除當下的名稱）；不傳＝沒有這種情況。 */
+    var getGone = typeof opts.goneTickets === 'function' ? opts.goneTickets : null;
 
     /* 分段版型（2026-08-13，`layout: 'sections'`）：原為活動變體專用——使用者先要
        UI 規劃、看過 `docs/bundle-step-demo.html` 之後裁示「照這樣改正式」。
@@ -983,7 +987,8 @@
       var ts = ids.map(ticketById).filter(function (t) { return t; });
       var rl = ts.map(function (t) { return t.rules || {}; });
       return { TB: TB, et: et, n: n, def: TB.defaults(rl, n, et, ts.map(function (t) { return t.name || ''; })),
-               locked: ids.some(function (id) { var t = ticketById(id); return !!(t && t.rulesFix); }) };
+               /* D390 決定二十：bookyay 自動建立的組合包（srcFix）購買條件整組鎖定 */
+               locked: srcFix(b) || ids.some(function (id) { var t = ticketById(id); return !!(t && t.rulesFix); }) };
     }
     function tbErrCount(b) {
       var c = tbCtx(b);
@@ -1130,9 +1135,28 @@
     /* 票券清單表（2026-09-21，D296）：勾選框｜票種｜單價｜剩餘。每列張數欄與小計欄退場——
        張數是整組一個（tixQtyFieldHTML），小計沒有了逐列張數就沒有意義；剩餘張數移進來，
        因為「剩餘 < n 的票種粉絲端不可選」（D296 決定四）要在勾選當下看得到。 */
+    /* D391 第 13 題：這一組允許清單裡、已隨場次刪除的門票（還在 getTickets 清單裡的不算）。 */
+    function goneIn(b) {
+      if (!getGone || !getTickets) return [];
+      var ids = tixIds(b);
+      return (getGone() || []).filter(function (g) { return ids.indexOf(g.id) >= 0 && !ticketById(g.id); });
+    }
+    /* 允許清單的門票全部被刪＝票券成員沒有可選項，整組不能賣（D391 第 13 題〔推導〕，比照 §7.14「允許項目全部暫停時整組不能賣」）。 */
+    function goneAll(b) { return goneIn(b).length > 0 && setLines(b).length === 0; }
+    function goneRowsHTML(b) {
+      return goneIn(b).map(function (g) {
+        return '<div class="bd-tbl__row bd-tbl__row--pick bd-tbl__row--off bd-tbl__row--short" aria-disabled="true" data-bd-gone="' + esc(g.id) + '">' +
+          '<span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked disabled><span class="zcheck__box"></span></span>' +
+          '<span class="bd-tbl__name">' + esc(g.name) + ' <span class="badge badge--neutral">' + esc(T('cpp.bd.tbl.gone')) + '</span></span>' +
+          '<span class="bd-tbl__num">—</span><span class="bd-tbl__num">—</span>' +
+        '</div>';
+      }).join('');
+    }
+    /* 整組不能賣的說明寫在表的外面（表本身是格線，塞一段文字會被當成一列） */
+    function goneAllHTML(b) { return goneAll(b) ? '<p class="field__error" data-bd-gone-all>' + esc(T('cpp.bd.tbl.gone.all')) + '</p>' : ''; }
     function tixTableHTML(b) {
       var rows = kindRows();
-      if (!rows.length) return tixPlaceholderHTML();
+      if (!rows.length) return goneIn(b).length ? '<div class="bd-tbl bd-tbl--tix">' + goneRowsHTML(b) + '</div>' + goneAllHTML(b) : tixPlaceholderHTML();
       var locked = tixLocked(b), q = tixQty(b);
       return '<div class="bd-tbl bd-tbl--tix' + (locked ? ' bd-tbl--locked' : '') + '">' +
         '<div class="bd-tbl__head">' +
@@ -1174,8 +1198,9 @@
               (short ? '<span class="ztor-badge bd-tbl__short">' + esc(T('cpp.bd.sp.tix.short').replace('{n}', String(q))) + '</span>' : '') + '</span>' +
           '</label>';
         }).join('') +
+        goneRowsHTML(b) +
         (SPLIT ? '' : '<div class="bd-tbl__foot" data-bd-tix-foot>' + esc(tixFootText(b)) + '</div>') +
-      '</div>';
+      '</div>' + goneAllHTML(b);
     }
 
     function secKindHTML(b) {
@@ -2114,8 +2139,13 @@
         '<div class="bd-sec__head">' +
           '<h3 class="bd-sec__title">' + esc(T('cpp.bd.sp.sec.rules')) + '</h3>' +
         '</div>' +
-        (c.locked ? '<p class="field__hint">' + esc(T('tb.rules.locked')) + '</p>' : '') +
-        c.TB.rulesHTML(b, c.def, c.et, T, { n: c.n, locked: c.locked }) +
+        /* D390 決定十九／二十（2026-10-09）：bookyay 自動建立的組合包——套票的門票層條件（限購、折扣）不放 1 人票、放在這一組
+           （b.rules／組合折扣，create-event bkyMap），而且整組鎖定：只畫唯讀讀數＋一句原因，不給跟隨開關與調整欄位。 */
+        (srcFix(b)
+          ? '<p class="field__hint">' + esc(T('tb.rules.fix')) + '</p>' +
+            '<div class="field-readout" data-bd-rules-fix>' + esc(c.TB.rulesSummary(b, c.def, T) || T('ce.rule.any')) + '</div>'
+          : (c.locked ? '<p class="field__hint">' + esc(T('tb.rules.locked')) + '</p>' : '') +
+            c.TB.rulesHTML(b, c.def, c.et, T, { n: c.n, locked: c.locked })) +
       '</section>';
     }
 
@@ -3678,6 +3708,7 @@
          與卡片上的摘要行讀同一支，兩邊的算法不會分岔。 */
       summaryMeta: summaryMeta,
       isValid: isValid,
+      goneAll: goneAll,           /* D391 第 13 題：允許清單的門票全部隨場次刪除＝整組不能賣（頁面的可賣性判斷用） */
       ticketCount: ticketCount,   /* 活動變體：這一組每套含幾張票（＝整組張數 n；沒勾票種＝0） */
       tierCount: tierCount,       /* 活動變體：允許票種有幾種 */
       ticketLine: tixLineText,    /* 活動變體：「VIP／搖滾區 任選 × n」一句（Review／右軌共用） */
