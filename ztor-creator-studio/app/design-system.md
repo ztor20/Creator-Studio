@@ -7128,7 +7128,7 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 ### 4.227 Condition list（條件清單）
 
-**Purpose** — 「好幾種不同的條件，各加一次」的清單：一開始是空的，從「＋ 新增條件」選單挑一種加入，每張條件卡可移除，加過的種類不再出現在選單裡。首見於建立活動的購票規則（D366／D367，2026-10-07）：活動層預設（票務設定彈窗）與單張門票彈窗的「購買條件」共用同一份畫法。
+**Purpose** — 「好幾種不同的條件，各加一次」的清單：一開始是空的，從「＋ 新增條件」選單挑一種加入，每張條件卡可移除，加過的種類不再出現在選單裡。首見於建立活動的購票規則（D366／D367，2026-10-07）：活動層預設（票務設定彈窗）與單張門票彈窗的「購買條件」共用同一份畫法。2026-10-09（D388）起活動詳情也用它：自建活動發布後改活動預設購票規則與單張門票購買條件，畫法從 create-event 頁內抽成共用 JS 元件 `js/purchase-conds.js`，兩頁同一套。
 
 **`_layer`** · molecule ｜ **source tier** · Project ｜ **surface 層** · 卡框是 `.control-group` 的 1px 內描邊（`--layer-line`）、不填色，坐在 L1／L2 卡上都成立（建立活動的兩個消費位置分別是 `form-section--outlined` 與 `form-section--card`）。
 
@@ -7146,9 +7146,9 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **Token usage** — `--sp-8`／`--sp-12`／`--sp-16`、`--fs-14`、`--fw-medium`、`--control-h-xs`、`--foreground`／`--muted-foreground`／`--destructive`（＋ Control group 的 `--radius-xl`、`--layer-line`）。
 
-**Consumers** — `create-event.html`（`#ce-rules` 活動層預設、單張門票彈窗 `[data-rules-for]`）。
+**Consumers** — `create-event.html`（`#ce-rules` 活動層預設、單張門票彈窗 `[data-rules-for]`）、`event-detail.html`（D388：票務分頁「預設購票規則」卡的編輯態 `#ed-evrules-editor`、單張門票彈窗購買條件區 `#ed-tm-rules-editor`，僅自建活動）。
 
-**CSS** — [`cond-list.css`](./ds-components/cond-list.css) ｜ **JS** — 頁面行內（`create-event.html` 的 `condsHTML`／`condCardHTML`／`addMenuHTML`），無獨立 JS 檔
+**CSS** — [`cond-list.css`](./ds-components/cond-list.css) ｜ **JS** — `js/purchase-conds.js`（2026-10-09 自 create-event 頁內抽出；`window.ztorPurchaseConds`：`html(rules, scope, locked, ctx)` 畫整份清單、`mount(host, opts)` 畫進容器並自己接新增／移除／輸入（活動詳情用）、`copyForTicket()` 活動層一組複製成門票自己的一組、`condPrice`／`pctText`／`evPriceText` 價格讀數、`STRINGS` 條件字樣（create-event 併回自己的字典）、`periodErrs(rules, et, T)`／`syncPeriod()` 限時條件的期間檢查（D389：超出活動上架區間、限時購買結束晚於活動停售時寫進卡上 `[data-rule-tl-err]`；create-event 與 event-detail 共用），`mount()` 傳 `times` 時回傳 `check()` 供儲存擋下。create-event 的 `condsHTML()` 改為呼叫 `html()`，事件與 copy-on-write 仍在頁內）
 
 ### 4.228 Venue map（活動地點地圖）
 
