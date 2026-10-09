@@ -4148,6 +4148,10 @@
     'events.r.onstage-encore-draft.meta':              { en: 'Concert', zh: '演唱會' },
     'events.r.onstage-encore-draft.datetime':          { en: 'Date TBD', zh: '日期未定' },
     /* D331 決定四示範：bookyay 帶入後存成草稿的活動（events-store khh-countdown-draft） */
+    /* D385（2026-10-09）：bookyay 帶入、順豐寄送的示範活動（events-store hsinchu-vinyl-sf） */
+    'events.r.hsinchu-vinyl-sf.title':                 { en: 'Vinyl signing night — Hsinchu', zh: '黑膠簽名之夜 — 新竹' },
+    'events.r.hsinchu-vinyl-sf.meta':                  { en: 'Launch · SF Express tickets', zh: '發片 · 順豐寄送實體票' },
+    'events.r.hsinchu-vinyl-sf.datetime':              { en: 'Dec 12, 2026 · 7:00 PM', zh: '2026/12/12 · 晚上 7:00' },
     'events.r.khh-countdown-draft.title':              { en: 'Kaohsiung countdown (bookyay draft)', zh: '高雄跨年（bookyay 草稿）' },
     'events.r.khh-countdown-draft.meta':               { en: 'Festival', zh: '音樂節' },
     'events.r.khh-countdown-draft.datetime':           { en: '2026/12/31 · 9:00 PM', zh: '2026/12/31 · 晚上 9:00' },
@@ -10159,6 +10163,39 @@
        區塊標題——彈窗標題與副標已經是脈絡，段內只有一格、標籤自己說完了。 */
     'ed.tm.sec.price':    { en: 'Price & quantity',       zh: '價格與數量' },
     'ed.tm.sec.entry':    { en: 'Entry',                  zh: '入場' },
+    /* D385（2026-10-09，5.1.6.2 §4.5 F9）：bookyay 帶入活動的唯讀補齊——購買條件、活動預設購票規則、入場鎖定、刪除停用 */
+    'ed.tm.sec.rules':    { en: 'Purchase rules',         zh: '購買條件' },
+    'ed.tm.rules.follow': { en: 'Follow event defaults',  zh: '跟隨活動預設' },
+    'ed.tm.rules.on':     { en: 'On',                     zh: '開' },
+    'ed.tm.rules.follow.bky': { en: 'Tickets on a bookyay event follow the event defaults.', zh: 'bookyay 活動的門票一律跟隨活動預設。' },
+    'ed.rule.cap':        { en: 'Purchase limits',        zh: '限購' },
+    'ed.rule.cap.person': { en: '{n} per person',         zh: '每人 {n} 張' },
+    'ed.rule.cap.order':  { en: '{n} per order',          zh: '每次 {n} 張' },
+    'ed.rule.cap.times':  { en: 'Max orders: {n}',         zh: '限 {n} 次' },
+    'ed.rule.disc':       { en: 'Discount',               zh: '折扣' },
+    'ed.rule.discTime':   { en: 'Limited-time discount',  zh: '限時折扣' },
+    'ed.rule.pct':        { en: ' ({n}% off)',            zh: '（折 {n}%）' },   // 英文含前導空格、中文全形括號不加空格（直接接在金額後）
+    /* D387（2026-10-09）：自建活動的活動預設購票規則唯讀卡列出全部條件——條件名稱字樣同建立流程（create-event d.cond.*）；
+       活動層折扣存百分比（D368 決定一），讀成「折 n%」 */
+    'ed.rule.buyTime':    { en: 'Sales window',           zh: '限時購買' },
+    'ed.rule.buyTier':    { en: 'Fan tier only',          zh: '限粉絲分級購買' },
+    'ed.rule.discTier':   { en: 'Fan tier discount',      zh: '粉絲分級折扣' },
+    'ed.rule.discBoth':   { en: 'Limited-time fan tier discount', zh: '限時＋限粉絲分級折扣' },
+    'ed.rule.pctOnly':    { en: '{n}% off',               zh: '折 {n}%' },
+    'ed.evrules.title':   { en: 'Default purchase rules', zh: '預設購票規則' },
+    'ed.evrules.hint':    { en: 'Tickets without their own rules follow these.', zh: '沒有自己一組條件的門票照這組生效。' },
+    'ed.evrules.none':    { en: 'bookyay sets no event-wide limits for this event.', zh: 'bookyay 沒有設定這場活動的活動限購。' },
+    'ed.evrules.none.own': { en: 'No conditions set.', zh: '目前無設定條件' },
+    /* D388（2026-10-09）：自建活動發布後可改活動預設購票規則與單張門票購買條件——只影響之後的購買 */
+    'ed.evrules.edit':    { en: 'Edit',                   zh: '編輯' },
+    'ed.evrules.saved':   { en: 'Default purchase rules saved', zh: '已儲存預設購票規則' },
+    'ed.rules.after':     { en: 'Changes apply to purchases from now on. Tickets already sold stay as they are, and lowering a limit doesn\u2019t take back tickets fans already bought.',
+                            zh: '修改只影響之後的購買，已售出的票不變；限購改小也不會收回粉絲已買的票。' },
+    'ed.tm.early.pol':    { en: 'Before doors open',      zh: '早於開放時間的處理' },
+    'ed.tm.early.pol.follow': { en: 'Follow the date',    zh: '跟隨場次' },
+    'ed.tm.early.bky':    { en: 'Follows the date — doors open at {t}, set in bookyay.', zh: '跟隨場次——開放入場 {t}，由 bookyay 帶入。' },
+    'ed.tm.early.bky.none': { en: 'Follows the date — bookyay has no doors-open time for it.', zh: '跟隨場次——bookyay 沒有設定開放入場。' },
+    'ed.tm.del.bky':      { en: "Imported from bookyay — it can't be deleted. Change it in bookyay.", zh: '由 bookyay 帶入，不能刪除；要改請回 bookyay 改。' },
     'ed.tm.sec.sale':     { en: 'Selling',                zh: '販售' },
     'ed.tm.gross':        { en: 'Fans pay',               zh: '粉絲付' },
     'ed.tm.plat':         { en: 'Platform fee',           zh: '平台費' },

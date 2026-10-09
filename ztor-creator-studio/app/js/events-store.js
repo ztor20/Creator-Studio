@@ -299,6 +299,10 @@
       tiers: [
         { id: 'tier-ga', name: 'General admission', price: 600, qty: 1200, sold: 0 }
       ],
+      /* 活動層預設購票規則（D387 示範，2026-10-09）：ztor 自建活動在建立流程票務設定裡設的條件——限購＋限時購買
+         （形狀同 create-event eventRules `{ conds }`）。活動詳情票務分頁頂端唯讀列出全部條件、不掛來源標記；
+         GA 沒有自己一組條件，照這組生效。其他自建活動沒有 rules＝空狀態示範。限時購買落在開賣 11/1 之後、活動 11/21 之前。 */
+      rules: { conds: { buyTime: { from: '2026-11-01T12:00', to: '2026-11-20T23:59' }, cap: { person: '4', order: '2', times: '' } } },
       /* D363 示範（2026-10-07）：活動顯示設定為隱藏（下方 publish.shown:false）→ 含本活動票券的組合包在電子商店跟著隱藏、
          組合商品細節頁的顯示開關停用並寫原因；組合包自己的顯示值保留（這一組自己是顯示）。 */
       bundles: [
@@ -314,6 +318,9 @@
       publish: { pickup: 'eticket', shown: false },   // D327：電子門票附屬設定值已清
       /* D340 示範：開賣時間在未來（預告期）＋顯示設定為隱藏——詳情頁的「提前開賣」確認說明不寫「公開」、改說只能經活動連結進入。 */
       sale: { from: '2026-11-01 12:00', to: '' },   // 2026-10-07 改：原 10-01 已過，維持「開賣在未來（預告期）」的示範
+      /* D389 示範（2026-10-09）：定時上架＋定時下架的上架區間——活動詳情改活動預設購票規則或單張門票的購買條件時，
+         限時購買／限時折扣的期間超出這個區間就擋存並就地紅字（同建立流程）。開賣 11/1、既有限時購買 11/1–11/20 都落在區間內。 */
+      listing: { from: '2026-10-20 12:00', to: '2026-11-21 23:59' },
     },
     {
       id: 'lrh-taichung-watchback',
@@ -482,6 +489,14 @@
       source: 'bookyay',
       name: "Taipei New Year's Eve countdown",
       desc: "Countdown stage set for Taipei's New Year's Eve city party.",
+      /* 描述（2026-10-09 D385 決定五示範）：bookyay 活動詳情（intros）多段帶入——第 1 段文字＋段內圖片、第 2 段起各成文字區塊
+         （D354 決定六），整份鎖定（D362）。活動詳情的描述照這份區塊顯示並鎖住；內容是原型自擬的中文示範。 */
+      descBlocks: [
+        { type: 'text', html: "<p>Countdown stage set for Taipei's New Year's Eve city party.</p><p>跨年夜市府廣場主舞台，22:00 開唱一路唱到倒數，<strong>零點煙火</strong>後加碼安可。</p>" },
+        { type: 'image', src: 'images/projects/nick-baipa.jpg' },
+        { type: 'text', html: '<p><strong>入場須知</strong></p><ul><li>21:00 開放入場，限制提早入場（早到者請於廣場外排隊）</li><li>場內禁止攜帶自拍棒、雷射筆與玻璃瓶</li></ul>' },
+        { type: 'text', html: '<p><strong>交通管制</strong></p><p>12/31 18:00 起信義區周邊道路管制，建議搭乘捷運；散場後市政府站單向進站。<br>詳見 <a href="https://example.com/taipei-nye/traffic">交通管制說明</a>。</p>' }
+      ],
       lineup: ['NICKTHEREAL 周湯豪'],
       venue: "Taipei New Year's Eve",
       city: 'Taipei, Taiwan',
@@ -521,8 +536,19 @@
            港幣＝現價 HK$550 ÷ 2＝HK$275 → NT$1,111、張數＝floor(上限 400 ÷ 2) × 2＝400、隱藏且鎖定為隱藏（hideFix）；
            只透過下面自動建立的組合包 bd-nye-duo 賣（D328 早鳥改用限時折扣表達，票種名不再叫 Early bird）。 */
         { id: 'tier-duo', name: 'Duo pass · 1 person', price: 1111, hkd: 275, qty: 400, sold: 0, hidden: true, hideFix: true },
-        { id: 'tier-ga',    name: 'General admission', price: 1212, hkd: 300, qty: 1600, sold: 0, override: { TWD: 1200 } }
+        /* 購買條件（2026-10-09 D385 決定一示範；形狀同 create-event 的門票規則 { conds }，bky:true＝由 bookyay 帶入、鎖定）：
+           本門票限購（每人 4 張、每次 2 張）、折扣優惠 HK$280 → NT$1,131（折後價，D367）、早鳥 HK$260 → NT$1,050（限時折扣，
+           期間＝開賣 11/01 12:00 → bookyay 優惠完結 11/30 23:59）。有 bookyay 門票層條件＝這張票用自己那一組、整組鎖定（rulesFix，D367 決定五）。
+           1 人票沒有門票層條件、早鳥在組合包（D329）→ 跟隨活動層。活動詳情單張門票彈窗唯讀呈現、掛 From bookyay。 */
+        { id: 'tier-ga',    name: 'General admission', price: 1212, hkd: 300, qty: 1600, sold: 0, override: { TWD: 1200 },
+          rules: { conds: { cap: { person: '4', order: '2', times: '', bky: true },
+                            disc: { price: '1131', bky: true },
+                            discTime: { price: '1050', from: '2026-11-01T12:00', to: '2026-11-30T23:59', bky: true } } },
+          rulesFix: true }
       ],
+      /* 活動層預設購票規則（D385 決定一示範）：bookyay 在活動層只有活動限購（maxPurchaseCnt 6／EachTime 4／Time 2）→「限購」條件、鎖定
+         （D366 決定四、D368 決定二）。活動詳情票務分頁頂端唯讀呈現，跟隨活動的門票（1 人票）照它生效。 */
+      rules: { conds: { cap: { person: '6', order: '4', times: '2', bky: true } } },
       /* bookyay 二人套票自動建立的組合包（D328／D329）：票券成員＝1 人票 × 2、折扣 0、鎖定套數 200、整組鎖定（fix）；
          早鳥 HK$500（現價 HK$550）落在限時折扣：1 − 500 ÷ 550 ＝ 9.1%，檔期＝開賣時間 → 優惠完結。
          售價基準幣別＝創作者幣別 TWD（§7.15：組合包在 ztor 端建立）；D330：票券成員的原價先換算成基準幣別再加總
@@ -542,12 +568,61 @@
       sold: 0,
       revenue: 0,
       status: 'scheduled',
-      images: { keyvisual: 'images/hero-event.jpg', banner: '', gallery: [] },
+      /* 圖片（D385 決定五）：bookyay 原圖 1:1（D328 不裁切、不鎖；不合 2:3 不擋發布，D329）。原本是 hero-event.jpg（橫幅），看不出 1:1 帶入 */
+      images: { keyvisual: 'images/projects/nick-baipa.jpg', banner: '', gallery: [] },
       video: false,
       /* 發布設定：bookyay 帶入者的取票方式本身在詳情頁也鎖（值來自 bookyay、要改回 bookyay 改；
          D308 決定一經 D327 修訂為只剩取票方式本身）。 */
       publish: { pickup: 'eticket', shown: true },
       sale: { from: '2026-11-01 12:00', to: '' },   // D340：原 onsale:'scheduled' 沒有時間，補上開賣時間（與自動組合包的早鳥檔期同起點）
+    },
+    {
+      /* bookyay 帶入、取票方式＝順豐寄送的示範（2026-10-09 D385 決定五）：單一時段，release2.4 也看得到（順豐不在 S89 到店自取的範圍）。
+         取票方式本身與運費鎖定（D308 決定一經 D327 修訂）；運費 bookyay HK$30 → 換算成創作者幣別 NT$121 當基準值（D368 決定四，
+         匯率同 taipei-nye 的示範 HK$300 → NT$1,212）。票價同口徑：HK$690 → NT$2,788；本門票限購每人 1 張、限 1 次（bookyay 帶入、鎖定）。
+         沒有活動限購（活動預設購票規則顯示「bookyay 沒有設定」）。對應 create-event 匯入清單的已帶過列 bky-14。 */
+      id: 'hsinchu-vinyl-sf',
+      bkyId: 'bky-14',
+      type: 'launch',
+      typeLabelKey: 'ce.type.launch',
+      category: 'fans-meet',
+      source: 'bookyay',
+      series: null,
+      name: 'Vinyl signing night — Hsinchu',
+      desc: '新專輯黑膠首賣簽名場，購票附一張實體收藏票券，以順豐寄送到府。',
+      descBlocks: [
+        { type: 'text', html: '<p>新專輯黑膠首賣簽名場，購票附一張實體收藏票券，以順豐寄送到府。</p>' },
+        { type: 'text', html: '<p><strong>寄送說明</strong></p><ul><li>開演前 10 天統一寄出，收件地址僅限台灣本島</li><li>票券遺失或毀損不補發</li></ul>' }
+      ],
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'The Wall Hsinchu',
+      city: 'Hsinchu, Taiwan',
+      country: 'TW',
+      languages: ['cmn'],
+      meetPoint: '1 樓售票口',
+      transit: '新竹火車站步行 10 分鐘',
+      address: '東區',
+      date: '2026-12-12',
+      start: '19:00',
+      end: '21:00',
+      doors: '18:30',
+      early: 'warn',
+      terms: {
+        marketing: { on: false, text: '' },
+        tnc: { on: true, text: '實體收藏票券以順豐寄送，寄出後恕不退換。\n簽名場每人限簽一件，限本場販售之黑膠商品。' }
+      },
+      tiers: [
+        { id: 'tier-hc-sign', name: 'Signing entry', price: 2788, hkd: 690, qty: 300, sold: 0,
+          rules: { conds: { cap: { person: '1', order: '', times: '1', bky: true } } }, rulesFix: true }
+      ],
+      bundles: [],
+      sold: 0,
+      revenue: 0,
+      status: 'scheduled',
+      images: { keyvisual: 'images/projects/nick-real-life.jpg', banner: '', gallery: [] },
+      video: false,
+      publish: { pickup: 'sf', shipFee: 121, shipFeeHkd: 30, shown: true },
+      sale: { from: '2026-11-01 12:00', to: '2026-12-05 23:59' }
     },
     {
       id: 'realive-r2-watchparty',
@@ -1480,7 +1555,7 @@
       languages: ['cmn'],
       meetPoint: '駁二大義倉庫入口',
       transit: '輕軌駁二大義站步行 2 分鐘',
-      address: '',
+      address: '鹽埕區',   // 2026-10-09 D385：對齊 create-event BKY bky-12 的地區（帶入後鎖定）
       date: '2026-12-31',
       start: '21:00',
       end: '23:59',
@@ -1499,7 +1574,8 @@
       sold: 0,
       revenue: 0,
       status: 'draft',
-      images: { keyvisual: 'images/hero-event.jpg', banner: '', gallery: [] },
+      /* D386 決定二示範：草稿裡創作者自己加的第二張圖（不在鎖定範圍）——續填重跑帶入後照樣留著，不被 bookyay 的圖覆蓋。 */
+      images: { keyvisual: 'images/hero-event.jpg', banner: '', gallery: ['images/projects/nick-i.jpg'] },
       video: false
     },
     {

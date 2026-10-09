@@ -109,7 +109,8 @@
     { handle: "default", name: "Gary Lin",           shop: "/shop/gary",  status: "active", email: "gary@example.com",  phone: "",                 created: "2026-01-08", avatar: "images/ip/gary-portrait.jpg",
       bookyayPool: ["bky-1", "bky-2", "bky-3"], bookyayEvents: ["bky-1", "bky-2", "bky-3"], bookyaySetup: ["bky-1"], bookyayDrafts: ["bky-2"], lastImportAt: "2026-08-28 14:20" },
     { handle: "nick",    name: "周湯豪 NICKTHEREAL", shop: "/shop/nick",  status: "active", email: "nick@example.com",  phone: "+886 912 000 111", created: "2026-02-19", avatar: "images/ip/nick-portrait.jpg",
-      bookyayPool: ["bky-12"], bookyayEvents: ["bky-12"], bookyaySetup: [], bookyayDrafts: ["bky-12"], lastImportAt: null },
+      /* D386 決定三（2026-10-09）：bky-14（順豐示範，已發布成 events-store `hsinchu-vinyl-sf`）對應周湯豪、已設定完成＝已發布 */
+      bookyayPool: ["bky-12", "bky-14"], bookyayEvents: ["bky-12", "bky-14"], bookyaySetup: ["bky-14"], bookyayDrafts: ["bky-12"], lastImportAt: null },
     { handle: "userB",   name: "User B",             shop: "/shop/userb", status: "active", email: "userb@example.com", phone: "",                 created: "2026-05-30",
       bookyayPool: [], bookyayEvents: [], bookyaySetup: [], lastImportAt: null },
   ];
@@ -148,10 +149,13 @@
        已對應周湯豪、已存草稿：在活動清單刪掉這份草稿＝解除對應，這一場回到待對應創作者。
        id 從 12 起跳：create-event 的 BKY 已用到 bky-11（bky-6～8 是「已帶過」的示範）。 */
     { id: "bky-12", name: "Kaohsiung countdown",          date: "2026-12-31", venue: "Kaohsiung Pier-2",          organizer: "港都跨年製作", draftId: "khh-countdown-draft" },
+    /* D386 決定三（2026-10-09）：bky-14＝順豐運費示範（events-store `hsinchu-vinyl-sf`，已排程；create-event BKY 的已帶過列 bky-14）。
+       單一時段、不重覆、取票方式順豐寄送（ship: "sf"）＝release2.4 能帶入，不標「release2.4 不支援」。已對應周湯豪、已發布。 */
+    { id: "bky-14", name: "Vinyl signing night — Hsinchu", date: "2026-12-12", venue: "The Wall Hsinchu",          organizer: "風城唱片", ship: "sf" },
   ];
   /* D372（2026-10-08）：organizer＝bookyay feed 帶來的主辦方名稱，只當 Admin 對應創作者時的參考
      （唯讀、不帶入活動資料）。示範資料：bky-1～3 已對應 Gary Lin，bky-4、bky-5 待對應創作者，bky-12 已對應周湯豪且已存草稿（D374）。
-     D375 決定六（2026-10-08）四值各至少一筆：已發布 bky-1、草稿 bky-2／bky-12、待設定（已對應、還沒存過）bky-3、待對應創作者 bky-4／bky-5。
+     D375 決定六（2026-10-08）四值各至少一筆：已發布 bky-1／bky-14（D386）、草稿 bky-2／bky-12、待設定（已對應、還沒存過）bky-3、待對應創作者 bky-4／bky-5。
      自動匯入與更新檢查是整份清單一組，最後檢查時間也只有一個。
      D384 決定三（2026-10-09）：摘要投影多帶三個判斷「release2.4 能不能帶入」用的欄位，值與 create-event 的 BKY 正本一致——
      `slots`（時段數，>1＝多時段）、`repeat`（重覆活動）、`ship`（取票方式，'pickup'＝到店自取）；沒寫＝單一時段、不重覆、非到店自取。 */

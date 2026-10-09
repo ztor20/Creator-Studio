@@ -25,6 +25,16 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-09 D389 活動詳情改限時條件檢查期間、改購買條件不通知（5.1.6.2 v3.42 §4.5 F9）**：`event-detail.html` 預設購票規則卡與單張門票彈窗的條件清單，限時購買／限時折扣期間超出活動上架區間（限時購買結束晚於活動停售）就地紅字、儲存擋下；判斷與文案與建立流程共用 `js/purchase-conds.js`（`periodErrs()`、`mount()` 的 `check()`），create-event 改呼叫同一支。兩處儲存不進高影響確認、不通知。示範：taiwan-fest-kenting 補上架區間 10/20 12:00–11/21 23:59。UI-CHANGES 一百五十七、ASSUMPTIONS UIA-234（推導條已裁決）。
+
+> **2026-10-09 D388 自建活動發布後可在活動詳情修改購買條件（5.1.6.2 v3.41 §4.5 F9、5.1.6.3 v45 §2.6）**：`event-detail.html` 票務分頁「預設購票規則」卡自建活動加「編輯」（條件清單＋取消／儲存）、單張門票彈窗購買條件區自建活動可改（跟隨活動預設開關＋條件清單），兩處都寫「修改只影響之後的購買，已售出的票不變；限購改小也不會收回」；bookyay 照舊唯讀；已結束與已取消不能改。條件清單與建立流程共用 `js/purchase-conds.js`。示範：taiwan-fest-kenting（自建）、taipei-nye（bookyay）。release2.4 與最終版都顯示（粉絲分級條件掛 S82）。UI-CHANGES 一百五十六、ASSUMPTIONS UIA-234。
+
+> **2026-10-09 D387 自建活動也唯讀顯示活動預設購票規則（5.1.6.2 v3.40 §4.5 F9、5.1.6.3 v44 §2.6）**：`event-detail.html` 票務分頁「預設購票規則」卡 `#ed-evrules` 改為所有活動都顯示——自建活動列出建立時設的全部條件（七種，名稱同建立流程）、不掛來源標記、沒有條件時空狀態；bookyay 照舊只有限購並掛 From bookyay。示範：taiwan-fest-kenting 有條件、pingtung-bluefin 空狀態。release2.4 與最終版都顯示（粉絲分級條件列掛 S82）。UI-CHANGES 一百五十五、ASSUMPTIONS UIA-233。
+
+> **2026-10-09 D386 關閉 D385 兩題（5.1.6.1 v2.57 §2 第 5 項、5.1.6.2 v3.39 §4.5 F9）**：`event-detail.html` bookyay 活動另外新增的門票（含獨立票）入場同樣鎖定為跟隨場次、掛 From bookyay；`create-event.html` bookyay 草稿續填重跑帶入後保留草稿已儲存的非鎖定欄位（名稱、亮點、表演陣容、圖片、顯示設定、自建組合包）；`js/sidebar.js` 創作者活動管理補 bky-14（順豐示範、已發布、release2.4 可帶入）。release2.4 與最終版都顯示。UI-CHANGES 一百五十四、ASSUMPTIONS UIA-232 第 1、2 項。
+
+> **2026-10-09 D385 bookyay 帶入活動在活動詳情的補齊（5.1.6.1 v2.56 §2 第 5 項／F21／F22、5.1.6.2 v3.38 §4.5 F9、5.1.6.3 v43 §2.6）**：`event-detail.html` 單張門票彈窗加唯讀購買條件區（bookyay 活動才有）、bookyay 門票刪除停用＋原因、提前入場與早到處理鎖定為跟隨場次；票務分頁加唯讀「預設購票規則」卡（bookyay 活動才有）；`create-event.html` bookyay 票的入場區改唯讀讀數、bookyay 草稿續填重跑帶入（補 bky-12 原始資料）；`js/events-store.js` taipei-nye 補描述區塊、1:1 原圖、門票與活動層購買條件，新增順豐寄送示範 `hsinchu-vinyl-sf`（`events.html` 同步一列）。release2.4 與最終版都顯示。UI-CHANGES 一百五十三、ASSUMPTIONS UIA-232。
+
 > **2026-10-09 D384 補 D383 三題（5.1.6.2 v3.37 §4.5 F9、5.1.6.3 v42 §2.6）**：`event-detail.html` 單張門票彈窗加「門票圖片」（預設沿用活動主視覺、可換、可改回，bookyay 匯入的活動同樣可改；release2.4 與最終版都有）；`create-event.html` 匯入清單的到店自取（bky-5）在 release2.4 標不可帶入並寫原因（決定一，只動版本範圍）；`admin-creator-events.html` 在 release2.4 把多時段、重覆、到店自取的活動標「release2.4 不支援」＋原因（決定三，最終版不出現）。
 
 > **2026-10-09 D383 release2.4 範圍收斂（只改版本開關與示範資料，規格不動；D383 決定八）**：功能表補登 S87 多場次、S88 系列活動、S89 到店自取、S90 轉售、S91 招待票（皆 ⚪），S92 門票隱藏狀態與標示（🔵，自 S55 拆出），S78 預覽與在地化改 🔵（`event-localization.html` 頁級改 S78）；`create-event.html` 新增場次、到店自取掛閘門，bookyay 匯入清單在 release2.4 把多時段與重覆活動（以及到店自取的活動，推導）標不可帶入並寫原因，新增單一時段二人套票示範 bky-13，bky-3 改電子門票；`event-detail.html` 新增場次、系列徽章／卡／列／鎖定提示、到店自取、轉售與招待票分頁掛閘門，1 人票的鎖定顯示開關與「隱藏」徽章改 S92；`events.html` 系列母子列與多場活動列掛閘門、計數與頁首數字排除被收起的列；`js/events-store.js` `list()` 在 release2.4 濾掉多場的示範活動；`series-detail.html` 進兩份 `FULL_ROUTES`；`bundle-detail.html` 可賣性防呆改 S92。順手修：建立活動單張門票彈窗換門票圖片時上傳中的事件被當成清空、圖片換不掉。UI-CHANGES 一百五十一、ASSUMPTIONS UIA-231。

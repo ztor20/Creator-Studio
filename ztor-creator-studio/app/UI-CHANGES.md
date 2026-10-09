@@ -12,6 +12,92 @@
 >
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
+## 2026-10-09（一百五十七）· D389 活動詳情改限時條件比照建立流程檢查期間：超出活動上架區間擋存並就地提示；改購買條件不通知（A spec-derived · D389）
+
+**標籤**：release2.4
+
+**範圍**：`js/purchase-conds.js`（新增 `periodWins()`／`periodErrs()`／`syncPeriod()`；`mount()` 收 `opts.times`、改期間欄位時就地重比、回傳 `check()`）、`create-event.html`（`ruleWins()`／`ruleTlErrs()` 改呼叫共用元件，行為不變）、`event-detail.html`（`pcTimes()` 讀活動紀錄的上架區間；預設購票規則卡與單張門票彈窗的 `mount()` 傳 `times`；卡的「儲存」與彈窗的「儲存」在 `check()` 有錯時擋下；`tmErrors()` 加 `period`、擋下時捲到出錯那張條件卡）、`js/events-store.js`（taiwan-fest-kenting 補示範上架區間 `listing` 10/20 12:00–11/21 23:59）、`ASSUMPTIONS.md`（UIA-234 推導那條標已裁決）、`requirements-map.md`、`BUILD-SPEC.md`。
+
+**依據**：D389（2026-10-09，使用者裁決「照建議」）；規格 5.1.6.2 v3.42 §4.5 F9（見 backup_plan Plan447）。
+
+### A · spec-derived
+
+- **期間檢查（D389 決定一）**：自建活動在活動詳情改活動預設購票規則或單張門票自己一組條件時，限時購買、限時折扣（與最終版的限時＋限粉絲分級折扣）的期間超出活動上架區間，就在那張條件卡的期間欄位下方出現紅字「超出活動上架區間（…）」；限時購買的結束晚於活動停售另寫「不能晚於活動的停售時間」。卡的「儲存」與門票彈窗的「儲存」都擋下不存（彈窗頁尾同時顯示待修正欄位數、捲到那張卡）。判斷與文案和建立流程是同一份（共用元件），不是另寫一套；上架區間讀活動紀錄（本頁沒有上架設定欄位，同發布設定售票期間的檢查）。
+- **不通知（D389 決定二）**：兩處儲存照舊各自生效，不進高影響變更的比對、不出現「儲存並通知」確認（D188 清單不變）。只在程式註記寫明，畫面不新增字樣。
+- **字樣**：沿用既有 `tb.err.outside`、`tb.err.saleend.late`（中英都有），沒有新字串。沒有新 token、沒有新 CSS。
+
+**驗證**：dev server `ztor-app`（4326）——taiwan-fest-kenting 預設購票規則卡按編輯、加限時折扣 10%、期間 10/10–10/30：期間欄下立刻出現「超出活動上架區間（2026/10/20 12:00 – 2026/11/21 23:59）」，按儲存仍停在編輯態；開始改成 10/21 紅字消失、儲存成功，沒有任何確認框。GA 門票彈窗關掉跟隨、加限時折扣 500、期間 10/21–11/25：紅字出現、按儲存不關彈窗、頁尾「1 個欄位待修正」；結束改 11/15 紅字消失、儲存關閉彈窗，沒有確認框。create-event：定時上架 12/01、活動層限時折扣開始 11/01 → 紅字「超出活動上架區間（2026/12/01 12:00 – 不自動下架）」照舊；console 無錯誤。
+
+## 2026-10-09（一百五十六）· D388 自建活動發布後可在活動詳情修改購買條件：預設購票規則卡可編輯、單張門票彈窗加購買條件區（A spec-derived · D388）
+
+**標籤**：release2.4
+
+**範圍**：`js/purchase-conds.js`（新：購買條件編輯器的共用 JS 元件，自 `create-event.html` 頁內 `condsHTML` 一族抽出）、`create-event.html`（`COND_TYPES`／`condFields`／`condsHTML`／`condPrice`／`pctOf`／`pctReadout`／`evPriceReadout`／`rulesForEdit` 改呼叫共用元件；字典 `D` 的 `d.cond.*`／`d.rule.*` 條件字樣搬進元件後併回；載入 `js/purchase-conds.js`）、`event-detail.html`（`#ed-evrules` 抬頭加動作槽 `#ed-evrules-actions`、`renderEvRules()` 加編輯態；單張門票彈窗 `#ed-tm-rules-sec` 抬頭加「跟隨活動預設」開關槽、新 `syncTmRules()`；儲存寫回 `ev.rules`／`tier.rules`；連入 `cond-list.css`、`dropdown-menu.css`、`js/purchase-conds.js`；`i18n:applied` 重畫加防迴圈旗標）、`js/i18n.js`（`ed.evrules.edit`、`ed.evrules.saved`、`ed.rules.after`）、`design-system.md`／`design-system.html`（Condition list 條目補共用 JS 與 event-detail consumer）、`ASSUMPTIONS.md`（UIA-234；D311 那條「詳情彈窗最後一區是販售」改寫；UIA-233 標修訂）、`requirements-map.md`、`BUILD-SPEC.md`、`feature-scope-map.md`。
+
+**依據**：D388（2026-10-09，使用者裁決「照建議」）；規格 5.1.6.2 v3.41 §4.5 F9、5.1.6.3 v45 §2.6（見 backup_plan Plan446）。
+
+### A · spec-derived
+
+- **預設購票規則卡可編輯（自建活動）**：票務分頁頂端「預設購票規則」卡抬頭右邊多一顆「編輯」；按下後卡內換成建立流程同一套條件清單（新增條件、改欄位、移除），活動層折扣類照建立流程填百分比、旁邊讀出跟隨門票的折後價（D368）；底下一句「修改只影響之後的購買，已售出的票不變；限購改小也不會收回粉絲已買的票」；抬頭換成「取消／儲存」。儲存後回到唯讀列表、跳一則「已儲存預設購票規則」。已結束與已取消的活動不出現編輯（D361 決定三整頁唯讀）。
+- **單張門票彈窗加購買條件區（自建活動）**：區塊位置在「入場」與「販售」之間（建立流程的單張門票彈窗是基本／價格與數量／入場／購買條件，詳情頁多一個營運用的「販售」排最後）。抬頭右邊「跟隨活動預設」開關：開＝唯讀列出活動預設；關＝從活動預設複製一份成這張票自己的一組（活動層 % 換成這張票的固定價，同建立流程 copy-on-write），用同一套條件清單改，折扣填固定價、旁邊讀回推的 %。區塊底下同一句「只影響之後的購買」。按彈窗的「儲存」才寫回；開關打開＝拿掉這張票自己的一組。新增門票時也有這一區。
+- **票價改了，折扣讀數即時跟上**：單張門票彈窗自己一組條件時，改票價欄，折扣卡旁回推的百分比立刻重算（共用元件 `mount()` 回傳的 `refresh()`，只換讀數不重畫，游標留在票價欄）。
+- **bookyay 照舊唯讀**（D388 決定四）：bookyay 帶入的活動，預設購票規則卡沒有編輯鈕、單張門票彈窗購買條件區照舊是唯讀 kv＋From bookyay。
+- **同一套元件**：條件清單的畫法（種類、欄位、字樣、鎖定態、新增選單）從 create-event 頁內抽成 `js/purchase-conds.js`，建立流程與活動詳情都呼叫它；create-event 的行為不變（事件與 copy-on-write 留在頁內）。
+- **版本**：屬 S72 活動詳情（🔵 release2.4），不新增功能編號；粉絲分級三種條件（新增選單與條件卡）照舊掛 `data-feat="S82"`，畫完 `regate()`，換版本時重畫——release2.4 收起、最終版顯示。沒有新 token；元件沿用 Condition list（cond-list.css），只是多一個 consumer。
+
+**驗證**：dev server `ztor-app`（4326）——release2.4：taiwan-fest-kenting 預設購票規則卡按編輯、加「折扣」10%（讀數 NT$540）、限購每人改 2、儲存後唯讀列表三列；新增選單只見限時折扣（粉絲分級三種收起）；切最終版選單多出三種粉絲分級條件。GA 門票彈窗：區塊順序價格與數量／入場／購買條件／販售；關掉跟隨開關後出現限時購買、限購、折扣三張卡（折扣價 540），改 500 讀出「折 16.7%」、移除限時購買、儲存，重開彈窗為自己一組（限購、折扣）、開關為關。taipei-nye（bookyay）release2.4 與最終版：卡上無編輯鈕、tier-duo 與 tier-ga 彈窗購買條件區唯讀、無任何輸入或開關。英文介面字樣正確。create-event 第 4 步活動層新增條件、% 輸入、限時折扣提示照舊。
+
+## 2026-10-09（一百五十五）· D387 自建活動的活動詳情也唯讀顯示活動預設購票規則（A spec-derived · D387）
+
+**標籤**：release2.4
+
+**範圍**：`event-detail.html`（票務分頁頂端唯讀「預設購票規則」卡 `#ed-evrules`：`renderEvRules()` 改為所有活動都顯示，bookyay 才掛 From bookyay；`ruleCondRows()` 擴成建立流程的七種條件）、`js/i18n.js`（`ed.rule.buyTime`／`.buyTier`／`.discTier`／`.discBoth`／`.pctOnly`、`ed.evrules.none.own`）、`js/events-store.js`（taiwan-fest-kenting 補活動層 `rules`：限時購買＋限購）。
+
+**依據**：D387（2026-10-09，使用者裁決「要」）；規格 5.1.6.2 v3.40 §4.5 F9、5.1.6.3 v44 §2.6（見 backup_plan Plan445）。
+
+### A · spec-derived
+
+- **自建活動也顯示預設購票規則卡**：ztor 自建的活動在票務分頁頂端同一位置出現「預設購票規則」唯讀卡，用 kv 列出建立流程票務設定裡設的全部條件，順序與名稱同 create-event 的條件清單（限時購買、限粉絲分級購買、限購、折扣、限時折扣、粉絲分級折扣、限時＋限粉絲分級折扣）；不掛來源標記、沒有任何編輯入口；有條件時下方一行「沒有自己一組條件的門票照這組生效」。bookyay 帶入的活動照舊只列限購並掛 From bookyay。
+- **讀值寫法**：活動層折扣類存百分比（D368 決定一），讀成「折 n%」；門票層（bookyay 單張門票彈窗）照舊讀「折後價（折 n%）」。限時類寫「起 – 迄」，粉絲分級類寫分級名稱（同建立流程的分級選項字樣）。
+- **空狀態**：自建活動沒有設任何條件時寫「目前無設定條件（使用者 2026-10-09 定稿）」；bookyay 沒有活動限購時照舊寫「bookyay 沒有設定這場活動的活動限購。」
+- **示範資料**：taiwan-fest-kenting（單場、已排程）補活動層限時購買 11/01 12:00 – 11/20 23:59＋限購每人 4 張、每次 2 張；其他自建活動（例 pingtung-bluefin）沒有活動層規則＝空狀態示範。
+- **版本**：卡片屬 S72 活動詳情（🔵 release2.4）；粉絲分級三種條件列掛 `data-feat="S82"`（⚪ 未排定，同 create-event 條件卡），畫完呼叫 `ztorDevState.regate()`，release2.4 收起、最終版顯示。沒有新元件、沒有新 token。
+
+**驗證**：dev server `ztor-app`（4326）——release2.4 與最終版各開 taiwan-fest-kenting（兩列條件、無來源標記）、pingtung-bluefin（空狀態）、taipei-nye（限購＋From bookyay）、hsinchu-vinyl-sf（bookyay 空狀態）；中英切換字樣正確；臨時加一組 disc＋discTier 測試資料確認 S82 列在 release2.4 收起（`ztd-ver-hidden`）、最終版顯示，測完已移除；taipei-nye 一般票彈窗的門票層唯讀條件（限購、折扣、限時折扣）照舊。
+
+## 2026-10-09（一百五十四）· D386 關閉 D385 兩題：活動詳情另外新增的門票入場也鎖、bookyay 草稿續填保留已儲存的非鎖定欄位、順豐示範進創作者活動管理（A spec-derived · D386）
+
+**標籤**：release2.4
+
+**範圍**：`event-detail.html`（`syncTmBky()` 入場區改用 `entryLock`＝bookyay 活動；儲存不寫回提前入場改看 `evIsBky()`；新增門票時切換建法或所屬場次重算入場鎖定）、`create-event.html`（`demoInit()` 新增 `keepDraft()`）、`js/events-store.js`（`khh-countdown-draft` 相簿補一張草稿自加的圖）、`js/sidebar.js`（BOOKYAY_EVENTS 補 bky-14、周湯豪的 bookyayPool／bookyayEvents／bookyaySetup 補 bky-14）。
+
+**依據**：D386（2026-10-09，使用者裁決「鎖」「儲存就保留」「補」）；規格 5.1.6.1 v2.57 §2 第 5 項、5.1.6.2 v3.39 §4.5 F9（見 backup_plan Plan444）。
+
+### A · spec-derived
+
+- **另外新增的門票入場也鎖**（決定一）：bookyay 帶入的活動，在活動詳情另外新增的門票（含獨立票，也含按「新增門票」開出、還沒存的那一張）提前入場欄同樣唯讀、說明寫「跟隨場次——開放入場由 bookyay 帶入」、早於開放時間的處理唯讀讀數，入場區標題掛同一枚 From bookyay；儲存不寫回提前入場。購買條件區與刪除停用維持只對 bookyay 帶入的票（另外新增的照舊可刪）。
+- **續填保留已儲存的非鎖定欄位**（決定二）：`create-event.html?draft=khh-countdown-draft` 重跑 bookyay 帶入後，再把草稿裡已儲存、不在鎖定範圍的欄位疊回去——活動名稱、亮點、表演陣容、圖片（相簿）、顯示設定、草稿自建的組合包（「Duo pass ＋ 紀念 T 恤」，票券成員對到重跑後的 1 人票）、自動組合包可改的名稱；描述、場次、門票、取票方式、自動組合包的成員與張數等鎖定欄位照 bookyay。示範草稿相簿多一張創作者自加的圖，續填後看得到兩張。
+- **順豐示範進創作者活動管理**（決定三）：BOOKYAY_EVENTS 加 bky-14（Vinyl signing night — Hsinchu，單一時段、順豐寄送），對應周湯豪、狀態已發布；release2.4 不標「release2.4 不支援」。
+- **版本**：不掛新 `data-feat`，release2.4 與最終版都看得到。沒有新元件、沒有新 token。
+
+## 2026-10-09（一百五十三）· bookyay 帶入活動在活動詳情的補齊：購買條件與活動預設購票規則唯讀、bookyay 門票不能刪、單張門票提前入場鎖定、草稿續填重跑帶入、示範資料補齊（A spec-derived · D385）
+
+**標籤**：release2.4
+
+**範圍**：`event-detail.html`（單張門票彈窗新增唯讀「購買條件」區 `#ed-tm-rules-sec`、入場區 `#ed-tm-entry-sec` 的鎖定讀數 `#ed-tm-early-pol`、刪除原因 `#ed-tm-del-why`；票務分頁頂端唯讀「預設購票規則」卡 `#ed-evrules`；`syncTmBky()`／`renderEvRules()`／`ruleCondRows()`）、`create-event.html`（單張門票彈窗入場區 `tierEntryLockedHTML()`；草稿續填的 bookyay 分支；BKY 補 bky-12 原始資料與已匯入列 bky-14）、`js/events-store.js`（taipei-nye 描述區塊、1:1 主視覺、門票與活動層購買條件；新活動 `hsinchu-vinyl-sf`；khh-countdown-draft 地址）、`events.html`（新活動列、taipei-nye 列縮圖）、`js/i18n.js`（`ed.tm.sec.rules`、`ed.rule.*`、`ed.evrules.*`、`ed.tm.early.*`、`ed.tm.del.bky`、`events.r.hsinchu-vinyl-sf.*`）、`ASSUMPTIONS.md`（UIA-232）、`requirements-map.md`、`BUILD-SPEC.md`。
+
+**依據**：D385（2026-10-09，使用者裁決「提前入場要帶入，並且不能改」「其他照建議」）；規格 5.1.6.1 v2.56（§2 第 5 項、F21、F22 入場區）、5.1.6.2 v3.38 §4.5 F9、5.1.6.3 v43 §2.6（見 backup_plan Plan443）。
+
+### A · spec-derived
+
+- **購買條件唯讀**（決定一）：bookyay 帶入的活動，單張門票彈窗在「入場」與「販售」之間多一個「購買條件」區，用 kv 列唯讀列出這張票由 bookyay 帶入的限購、折扣（折後價＋回推折數）、限時折扣（早鳥價＋期間），標題旁掛 From bookyay；沒有門票層條件的票（例 1 人票）寫「跟隨活動預設：開」＋活動層的限購＋一句「bookyay 活動的門票一律跟隨活動預設」。一般活動照舊沒有這一區（發布後先不開放改，2026-08-11 裁決維持）。
+- **活動預設購票規則**（決定一）：票務分頁的票種清單上方多一張唯讀卡「預設購票規則」，bookyay 帶入的活動才出現，列出活動層限購並掛 From bookyay；bookyay 沒設活動限購時寫一句「bookyay 沒有設定這場活動的活動限購」。
+- **bookyay 門票不能刪**（決定二）：bookyay 帶入的票（價格帶 bookyay 原價，或套票轉出的 1 人票）刪除鈕停用，鈕旁一行原因「由 bookyay 帶入，不能刪除；要改請回 bookyay 改」。1 人票原本整顆刪除鈕藏起來，改為顯示並停用，原因看得到。另外新增的門票照舊可刪。
+- **提前入場鎖定**（決定三）：活動詳情的 bookyay 帶入票，提前入場欄唯讀、說明改「跟隨場次——開放入場 21:00，由 bookyay 帶入」，下面加一列唯讀「早於開放時間的處理：跟隨場次 · 不能入場」，入場區標題掛 From bookyay；儲存不寫回提前入場。建立流程（bkyApply 之後）的單張門票彈窗入場區同樣改成兩列唯讀讀數＋來源徽章（同價格與數量區的 bookyay 唯讀做法），沒有開放入場時只寫「跟隨場次」。
+- **草稿續填重跑帶入**（決定四）：`create-event.html?draft=<id>` 遇到 `source: 'bookyay'` 且有 `bkyId` 的草稿，改用 BKY 原始資料跑 `bkyApply()`——全部鎖定與 From bookyay 標記照帶入時套用；草稿自己的活動名稱與亮點（不在鎖定範圍）保留草稿值。找不到原始資料才退回一般續填。
+- **示範資料**（決定五）：taipei-nye 補四個描述區塊（文字＋圖片＋兩段帶粗體與清單的文字）、主視覺換成 1:1 原圖、一般票補 bookyay 本門票限購／折扣優惠／早鳥（整組鎖定）、活動層補活動限購；新增 `hsinchu-vinyl-sf`（bookyay 帶入、順豐寄送、運費 HK$30 換算 NT$121 鎖定、本門票限購、單一時段、已排程），活動清單同步一列；create-event BKY 補 bky-12（對齊高雄跨年草稿，二人套票、沒設過早入場）與已匯入列 bky-14。
+- **版本**：全部不掛新 `data-feat`，release2.4 與最終版都看得到（bookyay 帶入是 release2.4 主角；實測兩版都顯示）。沒有新元件、沒有新 token——唯讀區塊沿用 `form-section--card`＋`kv`＋`field-readout`＋`field-source`。
+
 ## 2026-10-09（一百五十二）· D383 補三題：到店自取的 bookyay 活動在 release2.4 不能帶入；活動詳情的單張門票可改門票圖片；創作者活動管理先標 release2.4 不支援的活動（A spec-derived · B 反饋導入 · D384）
 
 **標籤**：release2.4
