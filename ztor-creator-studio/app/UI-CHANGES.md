@@ -12,6 +12,49 @@
 >
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
+## 2026-10-09（一百五十）· 活動詳情新增門票二選一（票種門票／獨立票）、電子商店建立組合包的允許清單標出獨立票（A spec-derived · D381）
+
+**標籤**：release2.4
+
+**範圍**：`event-detail.html`、`create-bundle.html`、`js/i18n.js`、`BUILD-SPEC.md`、`ASSUMPTIONS.md`（SOLO-001 追記 6–8）、`requirements-map.md`。
+
+**依據**：D381（2026-10-09）——決定一：活動詳情的票種區塊新增門票時二選一（以票種建立／獨立票，獨立票選定所屬場次），時機與限制照既有「新增票種」；決定二：電子商店建立組合包挑活動票券成員時可勾獨立票（規格 5.1.5.4 v2.39 已定，原型補實作）。規格 5.1.6.2 v3.36 §4.5 F9、5.1.6.3 v41 §2.6。
+
+### A · spec-derived
+
+- 活動詳情新增卡（決定一）：卡片字樣「新增票種／票種、價格、數量」改「新增門票／票種門票或獨立票」（新 key `ed.tix.add`、`ed.tix.add.hint`；系列母頁 `series-detail.html` 仍用 `ee.tix.add`「新增票種」，D381 只管活動詳情）。
+- 單張門票彈窗（決定一）：新票打開時標題「新增門票」（`ed.tm.new`），頂端一排二選一「票種門票／獨立票」（`ed.tm.how*`，`filter-tabs` 當 radiogroup，與建立流程第 4 步同一種控制項與用詞）。選獨立票：多場活動多一格必選的「場次」（選項「第 N 場 · 09/14（一）」，`ed.tm.sess.*`），沒選擋儲存、欄位下方說明並計入頁尾待修正數；票名標籤換「門票名稱」（`ed.tm.soloname`）；副標日期跟著所選場次。存檔後獨立票帶 `standalone: true`（多場另帶 `sess`），與 D380 示範資料同一個形狀，清單照 D380 的呈現排在票種門票之後、掛「獨立票」標籤與場次列。既有票打開彈窗不出現二選一（不互轉，D380 決定七）；獨立票重新打開時票名標籤仍是「門票名稱」、副標寫所屬場次。
+- 新票的生命週期：按儲存才進清單，取消／✕／Esc 直接丟掉——此前新增卡會先塞一張空白票種進清單再開彈窗，取消後留下一張「未命名票種」。新票不出現刪除鈕（取消即丟）。
+- 電子商店建立組合包（決定二）：`create-bundle.html` 票券表本來就列出活動資料的所有門票（含 D380 示範的獨立票），這輪補上獨立票列名稱後的 `badge--neutral`「獨立票」（沿用 `cpp.bd.tbl.solo`），多場活動名字前寫「第 N 場 ·」（新 key `cb.tix.sess`，同 bundle-editor 的獨立票列寫法）；已加入列、粉絲預覽卡的門票 chip、語意句與建議名稱都用同一個名字。原價（一項＝票價 × n、多項＝從最低票價 × n 起）與上限（各項 floor(剩餘 ÷ n) 加總）本來就逐項算，獨立票的剩餘＝它自己的張數 − 已售，不用改。`js/bundle-editor.js`（建立活動第 5 步）在 D380 已支援，本輪不動；兩頁的票券表是各自的產生器（create-bundle 為頁面級表單，見 STYLE-DECISIONS Q121），沒有合併。
+
+**實測**（dev server `ztor-app`）：`album-signing-taipei`（三場）新增一張獨立票選第 2 場 → 卡片「Encore pass · 獨立票 · 場次 09/13（日）」排在第 3 場的 Night photo slot 之前；未選場次按儲存被擋（1 個欄位待修正）；新增後取消不留空白卡。`realive-asia-taichung`（單場）新增獨立票不問場次。`create-bundle.html` 挑 Album signing — Taipei：表列「第 3 場 · Night photo slot（獨立票）」，只勾它 × 2 → $16.00、剩 15 組；兩項都勾 → 從 $10.00 起、剩 31 組（16＋15）。
+
+**未動**：`app/rulebook/bundles.html`（已涵蓋允許的門票含獨立票）、`js/bundle-editor.js`、`series-detail.html`。
+
+**呈現假設與缺口**：ASSUMPTIONS SOLO-001 追記 6–8。
+
+## 2026-10-09（一百四十九）· 建立活動 8 步改 7 步（票種併入票務）、票種門票與獨立票、組合包允許清單改「允許的門票」、活動詳情獨立票標籤（A spec-derived · D380）
+
+**標籤**：release2.4
+
+**範圍**：`create-event.html`、`event-detail.html`、`js/bundle-editor.js`、`js/events-store.js`（示範資料）、`js/i18n.js`、`design-system.html`、`design-system.md`、`ASSUMPTIONS.md`（SOLO-001、BDL-001、EDIT-001）、`BUILD-SPEC.md`、`requirements-map.md`。
+
+**依據**：D380（2026-10-09）——建立活動由 8 步改 7 步（1 活動類型與 bookyay 帶入／2 基本資料／3 場次／4 票種與票務／5 票務商品／6 發布設定／7 預覽與發布），原「票種」與「票務」併成第 4 步、票種在票務設定裡建；共看派對的入場券在第 4 步、跳過第 5、6 步；用詞「票種門票」對「獨立票」；獨立票清單呈現（所屬場次底下＋標籤、不另分區）；獨立票可進組合包，允許清單由「允許的票種」擴為「允許的門票」（修訂 D296）。
+
+### A · spec-derived
+
+- 進度條（決定一）：原「票種」「票務」兩格併成一格「票種與票務」（`d.step.tix`），一般活動對到內部 `data-step` 5、共看派對對到 `data-step-wp` 4 並改名「入場券」；`render()` 與點格跳步改用 `labelStep()` 換算。進度條照舊從第 2 步「基本資料」畫起（第 1 步是類型與 bookyay 帶入閘門，不在進度條上），一般活動 6 格、共看派對 4 格（基本資料／時間與觀看／入場券／預覽與發布）。內部步驟號不重編，`create-event.html` script 檔頭補一張顯示編號 ↔ 內部 `data-step` 對照表。`d.step.types` 隨兩格合併退場（墓碑註解）。
+- 第 4 步標題與副標（決定一）：`d.s4.h1`「票種與票務」，副標改交代兩種建法「在票務設定建票種，每一場各生一張門票；也可以單獨建只屬於某一場的獨立票」；早到政策提示改指向「票種與票務」那一步。
+- 用詞（決定二、三）：手動新增門票的二選一由「以票種建立／獨立票」改「票種門票／獨立票」（`d.tier.how.type`），行為照舊。
+- 組合包允許清單（決定六）：`js/bundle-editor.js` 票券表的獨立票列名稱後掛 `badge--neutral`「獨立票」（新 key `cpp.bd.tbl.solo`）；表頭與相關提示改稱「門票」（`cpp.bd.tbl.tier`、`tix.foot.none`、`tix.per.hint`、`sp.sem.none`、`sp.locked`、`sp.fan.tier`、`sp.fan.shortnote`、`sp.fan.notix`、`sp.why.tix`、`tbl.incl`、`kind.which`、`tickets`、`tickets.hint`、`tickets.none`、`tb.err.empty.window`、`cb.tix.entry.sub`）。「每場各一組」：`perRows()`、`commit()` 把勾到的獨立票只放進它所屬那一場的那一組，只勾獨立票也照場次展開；「一組通用」時粉絲預覽卡不列別場的獨立票。原價與上限算法本來就逐允許項目計（最低票價 × n；各項 floor(剩餘 ÷ n) 加總），不用改。
+- 活動詳情（決定五）：`event-detail.html` 票務分頁卡片與列表檢視的獨立票掛「獨立票」標籤（`ed.tix.standalone`），排在票種門票之後、依場次先後；多場活動卡片多一列「場次」（`ed.tix.sess`），列表在名稱後寫場次。組合包空狀態「在建立活動第 6 步」改「第 5 步」（`ed.bd.empty.sub`）。
+- 示範資料：`js/events-store.js` `realive-asia-taichung` 加獨立票 `tier-signed`（sold 5，活動 sold／revenue 一併加進合計）、多場 `album-signing-taipei` 加 `tier-night`（`sess: 's3'`）。`node scripts/check_events_store.js` 違反筆數與改動前相同（21 筆，皆既有）。
+- DS 文件：`design-system.html` Bundle editor 票券表 demo 加一列獨立票（含標籤）、表頭改「門票」、說明段補 D380；`design-system.md` 同條目同步；兩份文件裡指向建立活動第 5–8 步的消費頁說明改號為第 4–7 步。沒有新元件、沒有新 token。
+
+**未動**：`app/rulebook/`（另有人處理）、`documents/`。`create-bundle.html` 只隨共用字串改用詞，沒有加獨立票標籤與逐場判斷（見 SOLO-001 追記第 5 點）。活動詳情的「新增票種」入口未加二選一（規格未寫，SOLO-001 追記第 4 點）。
+
+**呈現假設與缺口**：ASSUMPTIONS SOLO-001 追記（1–5）、BDL-001 2026-10-09 追記。
+
 ## 2026-10-08（一百四十八）· 媒體庫兩層模型：每件內容的任務、大彩蛋、每件幾人看得到、以分級檢視每件結果；第一層用語改「進庫方法」（A spec-derived · D376／D377）
 
 **範圍**：`media-vault.html`、`js/media-vault.js`、`js/vault-store.js`、`js/i18n.js`（`vault.sub`、`vault.note.tiers`、新增 `vault.grid.fine`）、`js/devtools.js`（`FEAT_TIER` 後備）、`ds-components/vault-task.css`（新）、`ds-components/media-vault.css`、`design-system.html`、`design-system.md`、`feature-scope-map.md`、`ASSUMPTIONS.md`、`BUILD-SPEC.md`、`requirements-map.md`、`STYLE-DECISIONS.md`（Q127 補證據）。

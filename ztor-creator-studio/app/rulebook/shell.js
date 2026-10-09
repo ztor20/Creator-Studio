@@ -35,7 +35,7 @@
     ]},
     {n:'6', t:'活動', groups:[
       {t:'活動規則', pages:[{h:'event-rules.html', t:'活動規則'},{h:'event-journey.html', t:'活動用戶旅程圖'},{h:'event-bookyay.html', t:'bookyay 匯入與對照'}]},
-      {t:'建立活動', pages:[{h:'event-create.html', t:'建立活動'},{h:'event-create-step1.html', t:'步驟 1 活動類型與 bookyay 帶入'},{h:'event-create-step2.html', t:'步驟 2 基本資料'},{h:'event-create-step3.html', t:'步驟 3 場次'},{h:'event-create-step4.html', t:'步驟 4 票種'},{h:'event-create-step5.html', t:'步驟 5 門票與購票規則'},{h:'event-create-step6.html', t:'步驟 6 票務商品'},{h:'event-create-step7.html', t:'步驟 7 發布設定'},{h:'event-create-step8.html', t:'步驟 8 預覽與發布'},{h:'event-create-watchparty.html', t:'共看派對的建立'}]},
+      {t:'建立活動', pages:[{h:'event-create.html', t:'建立活動'},{h:'event-create-step1.html', t:'步驟 1 活動類型與 bookyay 帶入'},{h:'event-create-step2.html', t:'步驟 2 基本資料'},{h:'event-create-step3.html', t:'步驟 3 場次'},{h:'event-create-step4.html', t:'步驟 4 票種與票務'},{h:'event-create-step6.html', t:'步驟 5 票務商品'},{h:'event-create-step7.html', t:'步驟 6 發布設定'},{h:'event-create-step8.html', t:'步驟 7 預覽與發布'},{h:'event-create-watchparty.html', t:'共看派對的建立'}]},
       {t:'活動', pages:[{h:'events.html', t:'活動總覽'},{h:'event-detail.html', t:'活動詳情與編輯'}]}
     ]},
     {n:'7', t:'粉絲', groups:[

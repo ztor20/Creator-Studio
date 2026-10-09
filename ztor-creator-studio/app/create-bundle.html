@@ -720,8 +720,22 @@
   const tixNamesText = (names, n) => names.length > 1
     ? T('cpp.bd.sum.any', '{names} (pick one) × {n}').replace('{names}', names.join('／')).replace('{n}', String(n))
     : T('cpp.bd.sum.line', '{name} × {n}').replace('{name}', names[0] || '').replace('{n}', String(n));
-  /* 允許票種逐筆 {id, name, price, left} */
-  const tixLines = () => !tix.event ? [] : (tix.event.tiers || []).filter(t => tix.tierIds.indexOf(t.id) >= 0).map(t => ({ id: t.id, name: t.name || '', price: Number(t.price) || 0, left: tierLeft(t) }));
+  /* ── 獨立票（D380 決定六、D381 決定二，2026-10-09；5.1.5.4 §4 F2「允許的門票」）──────────────
+     允許的門票清單可同時含票種與獨立票：活動資料裡 `standalone: true` 的那幾張（多場活動另帶 `sess`＝所屬場次）
+     照常列進票券表、可勾選，名稱後掛「獨立票」標籤（同建立活動第 5 步 bundle-editor 的 cpp.bd.tbl.solo）；
+     多場活動時名字前面寫「第 N 場 ·」，跟 bundle-editor 的獨立票列同一種寫法——它只屬於那一場。
+     原價（一項＝票價 × n、多項＝從最低票價 × n 起）與上限（各項 floor(剩餘 ÷ n) 加總）本來就逐項算，
+     獨立票的剩餘就是它自己的張數 − 已售（共用庫存照舊），不用另寫。 */
+  const isSoloTix = t => !!(t && t.standalone);
+  function tixName(ev, t) {
+    const nm = (t && t.name) || '';
+    const ss = (ev && ev.sessions) || [];
+    if (!isSoloTix(t) || !t.sess || ss.length < 2) return nm;
+    const i = ss.findIndex(s => s.id === t.sess);
+    return i < 0 ? nm : T('cb.tix.sess', 'Date {n} · {name}').replace('{n}', String(i + 1)).replace('{name}', nm);
+  }
+  /* 允許的門票逐筆 {id, name, price, left}（票種或獨立票） */
+  const tixLines = () => !tix.event ? [] : (tix.event.tiers || []).filter(t => tix.tierIds.indexOf(t.id) >= 0).map(t => ({ id: t.id, name: tixName(tix.event, t), price: Number(t.price) || 0, left: tierLeft(t) }));
   const tixMinPrice = () => tixLines().reduce((m, l) => Math.min(m, l.price), Infinity);
   const ticketValue = () => { const l = tixLines(); return l.length ? tixMinPrice() * tix.qty : 0; };
   const tixLineText = () => { const names = tixLines().map(l => l.name); return names.length ? tixNamesText(names, tix.qty) : ''; };
@@ -1703,7 +1717,8 @@
         /* 2026-09-22 方案 A：不足一組改用畫面表達——整列灰化（`--short`）＋「不足 n 張」徽章。 */
         return '<label class="bd-tbl__row bd-tbl__row--pick' + (on ? '' : ' bd-tbl__row--off') + (short ? ' bd-tbl__row--short' : '') + '">' +
           '<span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-cb-tier-check="' + esc(t.id) + '"' + (on ? ' checked' : '') + '><span class="zcheck__box"></span></span>' +
-          '<span class="bd-tbl__name">' + esc(t.name || '') + '</span>' +
+          '<span class="bd-tbl__name">' + esc(tixName(ev, t)) +
+            (isSoloTix(t) ? ' <span class="badge badge--neutral">' + esc(T('cpp.bd.tbl.solo', 'Standalone')) + '</span>' : '') + '</span>' +
           '<span class="bd-tbl__num">' + esc(Number(t.price) === 0 ? T('ce.tier.free', 'Free') : money(Number(t.price) || 0)) + '</span>' +
           '<span class="bd-tbl__num">' + (left === 0 ? '<span class="text-error">0</span>' : esc(fmtInt(left))) + (short ? '<span class="ztor-badge bd-tbl__short">' + esc(T('cpp.bd.sp.tix.short', 'under {n}').replace('{n}', String(q))) + '</span>' : '') + '</span>' +
         '</label>';

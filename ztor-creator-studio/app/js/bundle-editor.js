@@ -1166,7 +1166,9 @@
               '<input class="zcheck__input" type="checkbox" data-bd-kind-check="' + esc(k.id) + '"' + (on ? ' checked' : '') + (locked ? ' disabled' : '') + '>' +
               '<span class="zcheck__box"></span>' +
             '</span>' +
-            '<span class="bd-tbl__name">' + esc(k.name) + '</span>' +
+            /* D380 決定五／六：獨立票（不掛票種、只屬於一場）跟票種列排在同一張表，名稱後掛「獨立票」標籤（同建立活動票卡的 badge--neutral）。 */
+            '<span class="bd-tbl__name">' + esc(k.name) +
+              (k.solo ? ' <span class="badge badge--neutral">' + esc(T('cpp.bd.tbl.solo')) + '</span>' : '') + '</span>' +
             '<span class="bd-tbl__num">' + esc(p === 0 ? T('ce.tier.free') : money(p)) + '</span>' +
             '<span class="bd-tbl__num">' + esc(leftText) +
               (short ? '<span class="ztor-badge bd-tbl__short">' + esc(T('cpp.bd.sp.tix.short').replace('{n}', String(q))) + '</span>' : '') + '</span>' +
@@ -1206,9 +1208,11 @@
       ticketKinds().forEach(function (k) {
         if (kindOn(b, k)) picked[k.id] = true;
       });
-      if (!Object.keys(picked).length) return [];
+      /* D380 決定六：每場各一組時，允許清單裡的獨立票只進它所屬那一場的那一組（tixHas 判斷有沒有勾）。 */
+      var soloOn = function (t) { return !t.kind && tixHas(b, t.id); };
+      if (!Object.keys(picked).length && !ticketGroups().some(function (g) { return g.rows.some(soloOn); })) return [];
       return ticketGroups().map(function (g) {
-        var incl = g.rows.filter(function (t) { return t.kind && picked[t.kind.id]; });
+        var incl = g.rows.filter(function (t) { return (t.kind && picked[t.kind.id]) || soloOn(t); });
         return incl.length ? { g: g, incl: incl } : null;
       }).filter(Boolean);
     }
@@ -1224,8 +1228,8 @@
     }
     function secPerHTML(b) {
       if (b.scope !== 'per') return '';
-      // 沒有票種可挑時不出這張卡——kindCardsHTML 的佔位列已經講過那件事
-      if (!ticketGroups().length || !ticketKinds().length) return '';
+      // 沒有門票可挑時不出這張卡——kindCardsHTML 的佔位列已經講過那件事（D380：獨立票也算）
+      if (!ticketGroups().length || !kindRows().length) return '';
       var rows = perRows(b);
       return '<section class="bd-sec">' +
         '<div class="bd-sec__head">' +
@@ -1251,7 +1255,7 @@
             rows.map(function (r) {
               /* 票券原價＝該場允許票種的最低票價 × n，與 ticketValue() 同一條規則（2026-09-21 D296）；
                  多種時標「從 … 起」。 */
-              var val = perVal(r), names = r.incl.map(function (t) { return t.kind.name; });
+              var val = perVal(r), names = r.incl.map(function (t) { return t.kind ? t.kind.name : t.name; });
               return '<div class="bd-tbl__row">' +
                 '<span class="bd-tbl__name">' + esc(stem + ' · ' + r.g.name) + '</span>' +
                 '<span class="bd-tbl__sub" data-bd-per-sub="' + esc(r.g.id) + '">' + esc(tixLineText(b, names)) + '</span>' +
@@ -2182,7 +2186,13 @@
           : '';
         var anyShort = false, tierPick = '';
         if (lines.length > 1) {
-          var chips = lines.map(function (l) {
+          /* D380：獨立票只屬於一場——多場「一組通用」時，粉絲選了別場就不列那張獨立票。 */
+          var soloElsewhere = function (l) {
+            if (!(multi && b.scope !== 'per' && l.k.solo)) return false;
+            var t0 = ticketById(l.k.ids[0]);
+            return !!t0 && ((t0.group && t0.group.id) || '') !== f.session;
+          };
+          var chips = lines.filter(function (l) { return !soloElsewhere(l); }).map(function (l) {
             var left = fanLeft(b, l.k), short = left < n;
             if (short) anyShort = true;
             return '<button type="button" class="chip' + (f.tier === l.k.id ? ' chip--active' : '') + '"' +
@@ -3535,9 +3545,12 @@
         if (t && t.kind) kinds[t.kind.id] = true;
       });
       var picked = Object.keys(kinds);
-      /* 每場各一組但一個票種都沒挑（D293 起純商品組合也成立）：沒有場次可以展開，
+      /* D380 決定六：允許清單裡的獨立票（不掛票種）——展開時只進它所屬那一場的那一組。 */
+      var soloIds = tixIds(b).filter(function (id) { var t = ticketById(id); return t && !t.kind; });
+      var inSet = function (t) { return (t.kind && picked.indexOf(t.kind.id) >= 0) || (!t.kind && soloIds.indexOf(t.id) >= 0); };
+      /* 每場各一組但一張門票都沒挑（D293 起純商品組合也成立）：沒有場次可以展開，
          就當成一組收起來，不靜默生出 N 張空卡。 */
-      if (b.scope !== 'per' || !picked.length || !groups.length) {
+      if (b.scope !== 'per' || (!picked.length && !soloIds.length) || !groups.length) {
         if (!b.name) b.name = suggestName(b);
         b.pickOpen = false;
         b.fresh = false;
@@ -3549,7 +3562,7 @@
       /* 只展開真的有票可放的場次——那一場沒有賣這個票種的話，展開出來會是一顆空組合包。
          這一行也讓「會建立的組合包」那張分卡與這裡展開的結果逐列相同（perRows 同條件）。 */
       var made = groups.filter(function (g) {
-        return g.rows.some(function (t) { return t.kind && picked.indexOf(t.kind.id) >= 0; });
+        return g.rows.some(inSet);
       }).map(function (g) {
         var copy = newBundle();
         copy.name = stem + ' · ' + g.name;
@@ -3569,7 +3582,7 @@
         /* 每一組沿用同一份 `{ tierIds, qty }`（D296）：tierIds 對應到那一場的允許票種、張數同一個 n。 */
         copy.tickets = {
           tierIds: g.rows
-            .filter(function (t) { return t.kind && picked.indexOf(t.kind.id) >= 0; })
+            .filter(inSet)
             .map(function (t) { return t.id; }),
           qty: tixQty(b)
         };

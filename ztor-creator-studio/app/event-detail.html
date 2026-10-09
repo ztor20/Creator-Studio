@@ -1341,8 +1341,10 @@
              真正的位置由 renderEdTiers() 塞進 .tier-grid 的最後——它得跟著票種一起排。 -->
         <button type="button" class="upload-tile tier-add" id="ed-tier-add" hidden>
           <span class="upload-tile__icon"><i data-lucide="ticket" class="ztor-icon"></i></span>
-          <span class="upload-tile__title" data-i18n="ee.tix.add">＋ Add a ticket</span>
-          <span class="upload-tile__hint" data-i18n="ee.tix.add.hint">Type, price, quantity</span>
+          <!-- D381（2026-10-09）：新增卡改叫「新增門票」——點開的彈窗先二選一（票種門票／獨立票），
+               不再只能新增票種；字串改用活動詳情自己的 ed.tix.add*（系列母頁仍用 ee.tix.add「新增票種」）。 -->
+          <span class="upload-tile__title" data-i18n="ed.tix.add">＋ Add a ticket</span>
+          <span class="upload-tile__hint" data-i18n="ed.tix.add.hint">From a ticket type, or standalone</span>
         </button>
           </div>
 
@@ -1863,8 +1865,23 @@
       <!-- 「基本」沒有區塊標題（2026-09-23 Q125）：彈窗標題（票種名）與副標已經是脈絡，
            這一段只有一格、標籤自己說完了。區塊容器留著撐段間節奏。 -->
       <section class="form-section form-section--dense form-section--card">
+        <!-- 新增門票二選一（D381 決定一，5.1.6.2 §4.5 F9、5.1.6.3 §2.6）：只有新增卡打開、還沒存過的票才出現；
+             控制項與建立流程第 4 步手動新增門票同一種（filter-tabs 當 radiogroup，create-event comboFieldHTML）。
+             建好之後不互轉（D380 決定七），既有票打開彈窗不出現這兩格。 -->
+        <div class="field" id="ed-tm-how-field" hidden>
+          <div class="filter-tabs" role="radiogroup" id="ed-tm-how" aria-label="How to build this ticket" data-i18n-aria-label="ed.tm.how">
+            <button type="button" class="filter-tabs__item filter-tabs__item--active" role="radio" aria-checked="true" data-tm-how="type" data-i18n="ed.tm.how.type">From a ticket type</button>
+            <button type="button" class="filter-tabs__item" role="radio" aria-checked="false" data-tm-how="solo" data-i18n="ed.tm.how.solo">Standalone</button>
+          </div>
+        </div>
+        <!-- 獨立票只屬於一場：多場活動要先選所屬場次（單場活動只有一場，不問）。選項由 JS 依 edSessions 填。 -->
+        <div class="field" id="ed-tm-sess-field" hidden>
+          <label class="field__label" for="ed-tm-sess"><span data-i18n="ed.tix.sess">Date</span> <span class="field__req">*</span></label>
+          <select class="select" id="ed-tm-sess"></select>
+          <p class="field__error" id="ed-tm-sess-err" hidden data-i18n="ed.tm.sess.err">Pick the date this ticket belongs to.</p>
+        </div>
         <div class="field">
-          <label class="field__label" for="ed-tm-name"><span data-i18n="ee.tix.name">Tier name</span> <span class="field__req">*</span></label>
+          <label class="field__label" for="ed-tm-name"><span id="ed-tm-name-label" data-i18n="ee.tix.name">Tier name</span> <span class="field__req">*</span></label>
           <input class="input" id="ed-tm-name">
         </div>
         <!-- 顯示開關（D328，5.1.6.3 §2.6 → 5.1.6.1 F22 基本區）：與建立流程的單張門票彈窗同一組欄位。
@@ -4141,6 +4158,31 @@
     return Object.keys(po.override || {}).filter(c => po.override[c] != null && po.override[c] !== '' && S.CURRENCIES.indexOf(c) >= 0)
       .map(c => S.fmtMoney(c, po.override[c])).join(' · ');
   }
+  /* ── 獨立票（D380 決定五，2026-10-09）──────────────────────────────
+     獨立票＝不掛任何票種、只屬於一場的門票（資料 `standalone: true`，多場活動另帶 `sess`＝所屬場次 id）。
+     與票種門票排在同一張清單、不另分區，名稱後掛「獨立票」標籤；多場活動補一列「場次」寫出它屬於哪一場，
+     並排在票種門票之後、依場次先後——本頁的票種卡是一個票種一張（每一場的那一張併在一起），
+     所以「列在所屬場次底下」在單場活動是自然成立，多場活動以場次列＋排序呈現（ASSUMPTIONS SOLO-001 追記）。 */
+  const isSoloTier = t => !!(t && t.standalone);
+  function soloSessText(t) {
+    if (!t || !t.sess || edSessions.length < 2) return '';
+    return sessDateText(edSessions.find(x => x.id === t.sess));
+  }
+  /* 一場的日期寫法「09/14（一）」——獨立票的場次列、新增門票彈窗的場次選項共用（D381） */
+  function sessDateText(s) {
+    if (!s || !s.date) return '';
+    const p = s.date.split('-');
+    const dt = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    const wd = isNaN(dt.getTime()) ? '' : (isZh() ? '（' + WD_ZH[dt.getDay()] + '）' : ' (' + WD_EN[dt.getDay()] + ')');
+    return p[1] + '/' + p[2] + wd;
+  }
+  function tixOrdered() {
+    const rank = t => !isSoloTier(t) ? -1 : Math.max(0, edSessions.findIndex(x => x.id === t.sess));
+    return edTiers.map((t, i) => ({ t, i })).sort((a, b) => (rank(a.t) - rank(b.t)) || (a.i - b.i)).map(x => x.t);
+  }
+  const soloBadge = t => isSoloTier(t)
+    ? ' <span class="badge badge--neutral">' + tixEsc(T('ed.tix.standalone', 'Standalone')) + '</span>' : '';
+
   function renderEdTiers() {
     const list = document.getElementById('ed-tier-list');
     if (!list) return;
@@ -4166,9 +4208,10 @@
     /* 新增卡跟著票種一起排（2026-08-17）：它是那一排的最後一格，不是區塊底下的一顆按鈕。
        用搬移而不是重畫，是為了讓它身上既有的 click handler 與 data-view-safe 一起帶過去。 */
     const addTile = document.getElementById('ed-tier-add');
-    list.innerHTML = '<div class="tier-grid">' + edTiers.map(t => {
+    list.innerHTML = '<div class="tier-grid">' + tixOrdered().map(t => {
       const sold = Number(t.sold) || 0;
       const badges =
+        soloBadge(t) +
         (Number(t.price) === 0 ? '<span class="badge badge--neutral">' + tixEsc(T('ce.tier.free', 'Free')) + '</span>' : '') +
         (t.paused ? '<span class="badge badge--neutral">' + tixEsc(T('ed.tix.status.paused', 'Paused')) + '</span>' : '') +
         /* 隱藏標示（D328，5.1.6.3 §2.6）：顯示開關關閉的票——活動頁不列、不能單張買，仍在組合包裡照常賣 */
@@ -4183,6 +4226,8 @@
           (kv ? '<img src="' + tixEsc(kv) + '" alt="">' : '<i data-lucide="image" class="ztor-icon"></i>') +
         '</div>' +
         '<dl class="tier-card__facts">' +
+          /* D380：多場活動的獨立票寫出所屬場次（單場不寫——只有一場，沒有「哪一場」要分） */
+          (soloSessText(t) ? fact(T('ed.tix.sess', 'Date'), tixEsc(soloSessText(t))) : '') +
           /* 票價以基準幣別顯示（D306／5.1.6.3 §2.6：基準幣別＝建立當下的預設幣別，bookyay 帶入者為港幣）；
              其他幣別不逐一列出、只在有覆寫時補一行「其他幣別」列出被改過的那幾格（呈現假設，UIA-165），
              完整五幣別表在「設定 → 在地化」再開的價格表。 */
@@ -4266,6 +4311,7 @@
     /* bookyay 套票轉出的 1 人票票價可有小數且鎖定（D328／D329），不走整數檢核。 */
     if (!(tmTier && tmTier.hideFix) && !/^\d+$/.test(String(tmEl('ed-tm-price').value).trim())) e.push('price');
     if (tmTier && !tmEl('ed-tm-show').classList.contains('switch--on') && hidesLastSellable(tmTier)) e.push('show');
+    if (tmNeedsSess() && !tmEl('ed-tm-sess').value) e.push('sess');   // D381：獨立票要選所屬場次
     /* 墓碑 2026-10-05（D353）：門票簡介 ≤100 字的檢核（'desc'）隨欄位退場。 */
     /* 墓碑 2026-09-23（D315）：例外費率的 0–100 檢核（`excpct`）隨欄位退場。 */
     return e;
@@ -4276,13 +4322,66 @@
     const n = tmTried ? tmErrors().length : 0;
     el.textContent = n ? T('ce.tier.fixn', '{n} fields need fixing').replace('{n}', n) : '';
     el.hidden = !n;
+    const se = tmEl('ed-tm-sess-err');
+    if (se) se.hidden = !(tmTried && tmNeedsSess() && !tmEl('ed-tm-sess').value);
+  }
+
+  /* ── 新增門票二選一（D381 決定一，2026-10-09；5.1.6.2 §4.5 F9、5.1.6.3 §2.6）──────────────
+     新增卡打開的彈窗頂端先問「這張票怎麼建」：票種門票（以票種建立＝新增一個票種，其他場次跟著
+     長出同名票）／獨立票（不掛票種、只屬於一場）。與建立流程第 4 步手動新增門票同一個二選一。
+     選獨立票時多一格「場次」——多場活動才出現、必選（單場活動只有一場可屬，不問）。
+     只有還沒存過的新票會問：建好之後不互轉（D380 決定七），既有票打開彈窗不出現這兩格。
+     新票按「儲存」才進清單；取消／✕／Esc 直接丟掉（此前新增卡會先塞一張空白票種進清單，
+     取消後留下一張「未命名票種」）。 */
+  let tmNew = false;          // 這張票是新增卡打開、還沒存過的
+  let tmHow = 'type';         // 'type'＝票種門票（以票種建立）；'solo'＝獨立票
+  const tmIsSolo = () => tmNew ? tmHow === 'solo' : isSoloTier(tmTier);
+  const tmNeedsSess = () => tmNew && tmHow === 'solo' && edSessions.length > 1;
+  function fillTmSess() {
+    const sel = tmEl('ed-tm-sess');
+    if (!sel) return;
+    sel.innerHTML = '<option value="" disabled selected data-i18n="ed.tm.sess.ph">' + tixEsc(T('ed.tm.sess.ph', 'Choose a date')) + '</option>' +
+      edSessions.map((s, i) => '<option value="' + tixEsc(s.id) + '">' +
+        tixEsc(T('ed.tm.sess.n', 'Date {n}').replace('{n}', i + 1) + (sessDateText(s) ? ' · ' + sessDateText(s) : '')) + '</option>').join('');
+  }
+  /* 副標＝這張票屬於哪一場（D311）：日期・場地。獨立票寫它所屬那一場的日期（多場活動）。 */
+  function syncTmSub() {
+    const subEl = tmEl('ed-tm-sub');
+    if (!subEl || !tmTier) return;
+    const sid = tmNew ? (tmIsSolo() ? tmEl('ed-tm-sess').value : '') : (isSoloTier(tmTier) ? tmTier.sess : '');
+    const s = sid ? edSessions.find(x => x.id === sid) : null;
+    const d = (s && s.date) || (ev && ev.date) || '';
+    subEl.textContent = [String(d).replace(/-/g, '/'), (ev && ev.venue) || ''].filter(Boolean).join(' · ');
+    subEl.hidden = !subEl.textContent;
+  }
+  function syncTmHow() {
+    const field = tmEl('ed-tm-how-field');
+    if (field) {
+      field.hidden = !tmNew;
+      field.querySelectorAll('[data-tm-how]').forEach(b => {
+        const on = b.getAttribute('data-tm-how') === tmHow;
+        b.classList.toggle('filter-tabs__item--active', on);
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+    }
+    const sf = tmEl('ed-tm-sess-field');
+    if (sf) sf.hidden = !tmNeedsSess();
+    /* 票名欄的標籤跟著換：票種門票問的是票種名稱，獨立票問的是這張票自己的名稱（同建立流程 d.tier.soloname） */
+    const nl = tmEl('ed-tm-name-label');
+    if (nl) {
+      const k = tmIsSolo() ? 'ed.tm.soloname' : 'ee.tix.name';
+      nl.setAttribute('data-i18n', k);
+      nl.textContent = T(k, tmIsSolo() ? 'Ticket name' : 'Tier name');
+    }
+    syncTmSub();
   }
 
   /* 墓碑 2026-10-05（D353）：syncTmDesc()（門票簡介的即時字數）隨欄位退場。 */
   function openTierModal(t) {
     tmTier = t;
     tmTried = false;
-    tmEl('ed-tm-title').textContent = (t.name || T('ce.tier.untitled', 'Untitled tier'));
+    tmEl('ed-tm-title').textContent = tmNew ? T('ed.tm.new', 'New ticket') : (t.name || T('ce.tier.untitled', 'Untitled tier'));
+    if (tmNew) { tmHow = 'type'; fillTmSess(); }
     tmEl('ed-tm-name').value = t.name || '';
     tmEl('ed-tm-price').value = t.price == null ? '' : t.price;
     tmEl('ed-tm-qty').value = t.qty == null ? '' : t.qty;
@@ -4335,15 +4434,9 @@
       else if (!nameLock && nchip) nchip.remove();
     }
     tmEl('ed-tm-save').hidden = false;
-    del.hidden = fix;
+    del.hidden = fix || tmNew;   // 新票還沒存過，取消就是丟掉，不需要刪除鈕
     p.style.pointerEvents = '';
-    /* 副標＝這張票屬於哪一場（D311）：日期・場地。 */
-    const subEl = tmEl('ed-tm-sub');
-    if (subEl) {
-      const dt = (ev && ev.date ? String(ev.date).replace(/-/g, '/') : '');
-      subEl.textContent = [dt, (ev && ev.venue) || ''].filter(Boolean).join(' · ');
-      subEl.hidden = !subEl.textContent;
-    }
+    syncTmHow();   // 二選一與場次只在新票出現；票名標籤與副標（含獨立票所屬場次）在這裡一起算
     syncTmCalc(); syncTmFoot();
     tmEl('ed-tier-modal').hidden = false;
     document.body.style.overflow = 'hidden';
@@ -4354,6 +4447,7 @@
     tmEl('ed-tier-modal').hidden = true;
     document.body.style.overflow = '';
     tmTier = null;
+    tmNew = false;   // 新票沒按儲存就關掉＝丟掉（它還沒進 edTiers）
   }
   document.getElementById('ed-tier-list')?.addEventListener('click', e => {
     const card = e.target.closest('[data-ed-tier]');
@@ -4365,6 +4459,13 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !tmEl('ed-tier-modal').hidden) closeTierModal();
   });
+  tmEl('ed-tm-how')?.addEventListener('click', e => {
+    const b = e.target.closest('[data-tm-how]');
+    if (!b || !tmNew) return;
+    tmHow = b.getAttribute('data-tm-how');
+    syncTmHow(); syncTmFoot();
+  });
+  tmEl('ed-tm-sess')?.addEventListener('change', () => { syncTmSub(); syncTmFoot(); });
   tmEl('ed-tm-early')?.addEventListener('input', () => {
     tmEl('ed-tm-early-hint').textContent = earlyHintFor(tmEl('ed-tm-early').value);
   });
@@ -4400,6 +4501,15 @@
     tmTier.earlyMin = tmEl('ed-tm-early').value;
     tmTier.hidden = !tmEl('ed-tm-show').classList.contains('switch--on'); // D328：關＝隱藏
     tmTier.paused = tmEl('ed-tm-paused').classList.contains('switch--on');
+    /* 新票（D381）：這時才進清單。獨立票帶 standalone＋所屬場次（多場活動），與 events-store 的獨立票同一個形狀；
+       票種門票＝新增一個票種（本頁一個票種一張卡，各場同名票併在這一張，同既有「新增票種」）。 */
+    if (tmNew) {
+      if (tmHow === 'solo') {
+        tmTier.standalone = true;
+        if (edSessions.length > 1) tmTier.sess = tmEl('ed-tm-sess').value;
+      }
+      edTiers.push(tmTier);
+    }
     closeTierModal();
     refreshTix();
   });
@@ -4413,9 +4523,9 @@
   });
 
   document.getElementById('ed-tier-add')?.addEventListener('click', () => {
+    /* D381：新票先不進 edTiers——按儲存才加入（見 ed-tm-save），取消就丟掉 */
     const t = { id: 'tier-new-' + Date.now(), name: '', price: 0, qty: 0, sold: 0, earlyMin: '' };
-    edTiers.push(t);
-    renderEdTiers();
+    tmNew = true;
     openTierModal(t);
   });
 
@@ -4430,13 +4540,14 @@
     if (!box) return;
     const kv = (ev.images && ev.images.keyvisual) || '';
     const th = k => '<th>' + esc(T('ed.tix.col.' + k, k)) + '</th>';
-    const rows = edTiers.map(t => {
+    const rows = tixOrdered().map(t => {
       const sold = Number(t.sold) || 0, resv = Number(t.reserved) || 0;
       const stock = Math.max(0, (Number(t.qty) || 0) - sold - resv);
       return '<tr>' +
         '<td><span class="ed-tixrow__name">' +
           (kv ? '<img class="ed-tixrow__thumb" src="' + esc(kv) + '" alt="">' : '') +
           esc(t.name || '—') +
+          (soloSessText(t) ? ' · ' + esc(soloSessText(t)) : '') + soloBadge(t) +
           (t.hidden ? ' <span class="badge badge--neutral" data-feat="S55">' + esc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '') +
           '</span></td>' +
         '<td>' + fmtNum(stock) + '</td>' +

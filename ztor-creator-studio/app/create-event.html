@@ -285,8 +285,10 @@
           <div class="progress-stepper__labels">
             <span class="progress-stepper__label progress-stepper__label--current" data-step="2"><span data-di="d.step.basic">基本資料</span><span class="progress-stepper__state" data-step-state></span></span>
             <span class="progress-stepper__label" data-step="3"><span data-di="d.step.session">場次</span><span class="progress-stepper__state" data-step-state></span></span>
-            <span class="progress-stepper__label" data-step="4"><span data-di="d.step.types">票種</span><span class="progress-stepper__state" data-step-state></span></span>
-            <span class="progress-stepper__label" data-step="5"><span data-di="d.step.tix">票務</span><span class="progress-stepper__state" data-step-state></span></span>
+            <!-- D380（2026-10-09）：8 步改 7 步——原「票種」「票務」兩格併成一格「票種與票務」（使用者看到的第 4 步）。
+                 這一格一般活動對到內部的 data-step 5（票務矩陣＋票務設定裡建票種）、共看派對對到 data-step-wp 4（入場券），
+                 由 render() 的 labelStep() 換算；內部步驟號不重編，理由見下方 script 檔頭。 -->
+            <span class="progress-stepper__label" data-step="5" data-step-wp="4"><span data-di="d.step.tix">票種與票務</span><span class="progress-stepper__state" data-step-state></span></span>
             <span class="progress-stepper__label" data-step="6"><span data-di="d.step.bundle">票務商品</span><span class="progress-stepper__state" data-step-state></span></span>
             <span class="progress-stepper__label" data-step="7"><span data-di="d.step.publish">發布設定</span><span class="progress-stepper__state" data-step-state></span></span>
             <span class="progress-stepper__label" data-step="8"><span data-i18n="ce.step.preview">Preview &amp; publish</span><span class="progress-stepper__state" data-step-state></span></span>
@@ -819,15 +821,15 @@
       </div><!-- /.wizard-split -->
     </section>
 
-    <!-- STEP 5 · 票務（矩陣）：門票＝場次 × 票種，價格、張數、加購與規則都掛在
+    <!-- STEP 5（D380 起使用者看到的是第 4 步「票種與票務」）· 票務（矩陣）：門票＝場次 × 票種，價格、張數、加購與規則都掛在
          交叉出來的那一格。按場次列出每一場實際會賣的幾張門票；免票入場時整步跳過。 -->
     <section data-step-panel="5" class="hidden">
       <!-- 快速設定＝一次定義票種並看到會生成哪些門票。手動補一張的入口坐在每一場的門票後面
            （2026-08-09 使用者指示：沿用舊流程那個虛線新增格），不放在這一列。 -->
       <div class="wizard__step-head">
         <div class="wizard__step-head-titles">
-          <h1 class="wizard__step-title" data-di="d.s4.h1">票務</h1>
-          <p class="wizard__step-sub" data-di="d.s4.sub">每一場賣哪幾種票、各賣什麼價錢，一場一場設定。</p>
+          <h1 class="wizard__step-title" data-di="d.s4.h1">票種與票務</h1>
+          <p class="wizard__step-sub" data-di="d.s4.sub">在票務設定建票種，每一場各生一張門票；也可以單獨建只屬於某一場的獨立票。</p>
         </div>
         <div class="ce-tixacts">
           <button type="button" class="btn btn--primary" id="ce-quick-open">
@@ -1357,6 +1359,15 @@
 (function () {
   /* 類型改由閘門選（2026-08-04），流程從「細節」開始——步驟編號刻意維持 2–6 不重編：
      Review 的 [data-goto]、各處 stepOf 與 data-step 都掛在這組編號上，重編只會製造一輪對不上的風險。 */
+  /* D380（2026-10-09）：建立活動 8 步改 7 步，使用者看到的編號與內部 data-step 的對照——
+       顯示 1 活動類型與 bookyay 帶入 ＝ 閘門（[data-gate]／[data-bgate]，不在進度條上）
+       顯示 2 基本資料   ＝ data-step 2
+       顯示 3 場次       ＝ data-step 3
+       顯示 4 票種與票務 ＝ data-step 5（一般活動：票務矩陣，票種在「票務設定」裡建）／data-step 4（共看派對：入場券）
+       顯示 5 票務商品   ＝ data-step 6
+       顯示 6 發布設定   ＝ data-step 7
+       顯示 7 預覽與發布 ＝ data-step 8
+     內部編號照舊不重編（同上段理由）；本檔註解裡的「第 N 步」多數是內部編號，對照這張表讀。 */
   const first = 2;
   let step = first;
   const total = 8;
@@ -1381,6 +1392,9 @@
                         (!isWP() && st === 4);
   let eventType = "";                          // 選定的活動類型（D149：watchparty 走共看派對分支）
   const isWP = () => eventType === "watchparty";
+  /* 進度條上一格對到哪個內部步驟（D380）：「票種與票務」那一格一般活動是 data-step 5、
+     共看派對是 data-step-wp 4（入場券）；其餘各格只有 data-step。 */
+  const labelStep = l => (isWP() && l.dataset.stepWp) ? Number(l.dataset.stepWp) : Number(l.dataset.step);
 
   /* 下一個看得到的步驟（不是 step+1——免票入場時票務整步跳過）；只用來判斷是不是已經走到
      最後一步（該顯示「發布」而不是「下一步」），按鈕文字本身不再报目的地（2026-08-09
@@ -1400,14 +1414,14 @@
     });
     const labels = document.querySelectorAll(".progress-stepper__label");
     labels.forEach(s => {
-      const n = Number(s.dataset.step);
+      const n = labelStep(s);
       s.classList.toggle("progress-stepper__label--current", n === step);
       s.classList.toggle("progress-stepper__label--done", n < step);
     });
     const ps = document.getElementById("stepper");
     /* 進度用「還看得到幾格」算：跳掉的格子不佔位，否則走到最後一步進度條也填不滿。 */
-    const shown = Array.from(labels).filter(l => !skipped(Number(l.dataset.step)));
-    const at = shown.findIndex(l => Number(l.dataset.step) === step) + 1;
+    const shown = Array.from(labels).filter(l => !skipped(labelStep(l)));
+    const at = shown.findIndex(l => labelStep(l) === step) + 1;
     if (ps) {
       /* 分段軌道（2026-08-10）：一步一段，縫的位置＝步驟分界。實色填的是**已完成**的段
          （不含現在這一步——它還沒做完，下面的狀態小字也寫「未完成」，兩邊不能互相打架）；
@@ -1420,7 +1434,7 @@
     labels.forEach(l => {
       const box = l.querySelector("[data-step-state]");
       if (!box) return;
-      const done = Number(l.dataset.step) < step;
+      const done = labelStep(l) < step;
       box.innerHTML = done
         ? '<i data-lucide="check" class="ztor-icon"></i>' + esc(dT("d.step.done"))
         : esc(dT("d.step.todo"));
@@ -1444,7 +1458,7 @@
     /* 被跳過的步驟在進度列上也不該還看得到（共看派對跳票券銷售；不設門票跳票種＋票券銷售）。
        改成一律問 skipped()，不再逐一列舉——2026-08-06 新增「免票入場」時，原本寫死只藏第 5 格
        的版本會讓進度列還留著一格點不進去的「票種」。 */
-    labels.forEach(l => { l.hidden = skipped(Number(l.dataset.step)); });
+    labels.forEach(l => { l.hidden = skipped(labelStep(l)); });
     document.querySelector("[data-action=back]").hidden = step === first;
     const next = document.querySelector("[data-action=next]");
     next.dataset.i18n = nextKeyOf(step);
@@ -1647,7 +1661,7 @@
      被跳過的步驟（共看派對的票務、免票入場的票種）仍然不能點——它們在這個活動裡不存在。 */
   document.querySelectorAll(".progress-stepper__label").forEach(s => {
     s.addEventListener("click", () => {
-      const n = Number(s.dataset.step);
+      const n = labelStep(s);
       if (n >= first && !skipped(n)) { step = n; render(); }
     });
   });
@@ -4488,9 +4502,10 @@
     /* 進度列的字也要跟著換（2026-08-09）：共看派對沒有「場次」也沒有「票種」，
        第 3、4 步問的是開房時間與入場券。面板標題已經靠 data-show-type 換掉了，
        進度列留著舊字會讓同一步在兩處有兩個名字。 */
-    [[3, isWP() ? "d.step.wp.when" : "d.step.session"],
-     [4, isWP() ? "d.step.wp.ticket" : "d.step.types"]].forEach(([n, key]) => {
-      const el = document.querySelector('.progress-stepper__label[data-step="' + n + '"]');
+    /* D380：「票種與票務」那一格（data-step 5／data-step-wp 4）共看派對叫「入場券」，一般活動叫「票種與票務」。 */
+    [['[data-step="3"]', isWP() ? "d.step.wp.when" : "d.step.session"],
+     ['[data-step-wp="4"]', isWP() ? "d.step.wp.ticket" : "d.step.tix"]].forEach(([sel, key]) => {
+      const el = document.querySelector('.progress-stepper__label' + sel);
       if (!el) return;
       /* 只換步驟名那一層（2026-08-10 修）：標籤現在還裝著下方的狀態小字，
          直接寫 el.textContent 會把它一起洗掉，那兩步就永遠沒有已完成／未完成。 */
@@ -4795,8 +4810,9 @@
     "d.bd.empty.h":   { en: "No bundles yet",    zh: "尚未建立組合包" },
     "d.bd.empty.new": { en: "Add a bundle",      zh: "新增組合包" },
     "d.step.publish": { en: "Publishing",        zh: "發布設定" },
-    "d.step.tix":     { en: "Tickets",           zh: "票務" },
-    "d.step.types":   { en: "Ticket types",      zh: "票種" },
+    /* D380（2026-10-09）：原「票種」「票務」兩步併成第 4 步「票種與票務」。
+       墓碑：`d.step.types`（原第 4 步「票種」的進度條字）隨兩格合併退場。 */
+    "d.step.tix":     { en: "Ticket types & tickets", zh: "票種與票務" },
     "d.step.wp.when":   { en: "Time & access",   zh: "時間與觀看" },
     "d.step.wp.ticket": { en: "Admission",       zh: "入場券" },
     "d.next":         { en: "Next",              zh: "下一步" },
@@ -4878,7 +4894,8 @@
     "d.type.pick.ph": { en: "Type a name, or pick one below", zh: "打一個名字，或從下面挑既有的" },
     "d.tier.standalone": { en: "Standalone",     zh: "獨立票" },
     "d.tier.how":     { en: "How to build this ticket", zh: "這張票怎麼建" },
-    "d.tier.how.type": { en: "Ticket type",     zh: "以票種建立" },
+    /* D380 決定二：二選一的兩個名字對齊——「票種門票」（場次 × 票種生成）對「獨立票」；不用「組合票」。 */
+    "d.tier.how.type": { en: "From a ticket type", zh: "票種門票" },
     "d.tier.how.solo": { en: "Standalone",      zh: "獨立票" },
     "d.tier.soloname": { en: "Ticket name",            zh: "門票名稱" },
     "d.tier.soloname.ph": { en: "e.g., Limited signed ticket", zh: "例如：限量簽名票" },
@@ -4943,8 +4960,10 @@
     /* 步驟副標 2026-08-11 修：原句是「先決定要不要賣票，再排…」，但「售票方式」
        已於 2026-08-10 整組撤除（見 ASSUMPTIONS SALES-001），這一步不再問賣不賣票。 */
     "d.s3.sub":       { en: "Lay out how many times it runs, where, and when.", zh: "排這個活動有幾場、在哪裡、什麼時候。" },
-    "d.s4.h1":        { en: "Tickets",           zh: "票務" },
-    "d.s4.sub":       { en: "Each date gets its own tickets — price, quantity and rules are set per ticket.", zh: "每一場賣哪幾種票、各賣什麼價錢，一場一場設定。" },
+    /* D380：步驟名改「票種與票務」；副標交代兩種建法——票種在票務設定裡建、每一場各生一張（票種門票），
+       或單獨建一張只屬於那一場的獨立票。 */
+    "d.s4.h1":        { en: "Ticket types & tickets", zh: "票種與票務" },
+    "d.s4.sub":       { en: "Set up ticket types in Ticket setup and every date gets one of each, or add a standalone ticket that belongs to one date only.", zh: "在票務設定建票種，每一場各生一張門票；也可以單獨建只屬於某一場的獨立票。" },
     "d.s5.h1":        { en: "Publishing",        zh: "發布設定" },
     "d.s5.sub":       { en: "When it goes on sale, how fans collect it, and who can find it.", zh: "什麼時候開賣、怎麼取票、誰看得到。" },
     "d.src":          { en: "From bookyay",      zh: "bookyay 帶入" },
@@ -5084,8 +5103,8 @@
        那張卡說，場次現在設的值寫在「跟隨場次」卡的副標上。 */
     /* 說明改成指路（2026-08-11）：整併之後這裡真正需要交代的是「每張票的入場時間
        不一定等於這個時間」，以及那件事在哪裡設定。 */
-    "d.early.policy.hint": { en: "Ticket types can enter earlier — set that per ticket in the Tickets step.",
-                              zh: "票種可以各自提前入場，在「票務」那一步設定。" },
+    "d.early.policy.hint": { en: "Ticket types can enter earlier — set that per ticket in the Ticket types & tickets step.",
+                              zh: "票種可以各自提前入場，在「票種與票務」那一步設定。" },
     "d.tier.addons":  { en: "Bundled product",   zh: "加入商品" },
     "d.tier.addons.ph": { en: "Search your e-shop…", zh: "搜尋你的電子商店…" },
     "d.tier.addons.none": { en: "No match in your e-shop", zh: "電子商店裡找不到相符的商品" },
