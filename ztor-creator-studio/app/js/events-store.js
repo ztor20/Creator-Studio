@@ -2060,7 +2060,10 @@
     resetOverrides: function (id) { if (id) writeFx(id, null); },
     list: function () {
       var m = stageMap();
-      return clone(EVENTS).filter(function (e) { return !isRemoved(e.id); }).map(function (e) {
+      /* 2026-10-09 D383：release2.4 沒有多場次活動（S87 ⚪）——版本切換不含 S87 時，多場的示範活動（album-signing-taipei）
+         不進清單，活動清單、計數與組合包示範都看不到它；最終版照舊。get() 不濾（直連照樣查得到，畫面上的多場元素由 data-feat 收起）。 */
+      var multiOff = window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S87');
+      return clone(EVENTS).filter(function (e) { return !isRemoved(e.id) && !(multiOff && e.sessions && e.sessions.length > 1); }).map(function (e) {
         if (m[e.id]) e.status = m[e.id];
         return applyUnlist(applyRm(applyFx(e)));
       });

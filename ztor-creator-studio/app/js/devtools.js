@@ -142,12 +142,13 @@
     S65: 'tbd', S66: 'tbd',               // 2026-10-02 D347（平台忠誠點數設定頁／分級設定的各購買品項的份量與互動推薦每 90 天最多得分）
     S68: 'tbd', S69: 'tbd', S70: 'tbd', S71: 'tbd', O33: 'tbd',   // 2026-10-05 D360（需求看板頁／商品層需求入口／服飾配件分類與屬性／尺寸顏色快捷預設／訂單收件國家城市）
     S62: 'release2.4',   // 2026-10-07 使用者裁示：時間層級與定時上架上限隨 release2.4
-    S72: 'release2.4', S73: 'release2.4', S74: 'tbd', S75: 'release2.4', S76: 'tbd', S77: 'tbd', S78: 'tbd', S79: 'tbd', S80: 'tbd',   // 2026-10-07 release2.4 切割（活動模組／bookyay 帶入建立／手動建立／Watch Party／複製與再辦一次／舊流程／在地化／其他線下類型入口／直接促銷同意）
+    S72: 'release2.4', S73: 'release2.4', S74: 'tbd', S75: 'release2.4', S76: 'tbd', S77: 'tbd', S78: 'release2.4', S79: 'tbd', S80: 'tbd',   // 2026-10-07 release2.4 切割（活動模組／bookyay 帶入建立／手動建立／Watch Party／複製與再辦一次／舊流程／在地化／其他線下類型入口／直接促銷同意）
     S81: 'release2.4',                           // 2026-10-07 D361 建；2026-10-08 D371 改 release2.4（活動：創作者與 Admin 上架／下架＋已下架徽章）
     S82: 'tbd',                                  // 2026-10-07 D366／D367（活動：購票規則的粉絲分級條件——限粉絲分級購買、粉絲分級折扣、限時＋限粉絲分級折扣）
     S83: 'release2.4',                           // 2026-10-08 D371 決定四（活動：建立活動第 7 步「其他售票時間」摘要，原掛 S62）
     S84: 'release2.4',                           // 2026-10-08 D373 決定三（Admin 創作者活動管理整頁＋側欄入口＋Creator 詳情「已匯入 M 場」）
     S85: 'release2.4',                           // 2026-10-08 D375 決定七（活動：暫停售票／恢復販售＋暫停售票與完售徽章）
+    S87: 'tbd', S88: 'tbd', S89: 'tbd', S90: 'tbd', S91: 'tbd', S92: 'release2.4',   // 2026-10-09 D383 範圍收斂（多場次／系列活動／到店自取／轉售／招待票 ⚪；門票隱藏狀態與標示 🔵，自 S55 拆出）；同日 S78 改 release2.4
     S67: 'release2.4',                           // 2026-10-05 D354（活動：描述區塊的新增描述與排序；S54 門票簡介〔D353〕、S57 說明區塊、S60 粉絲頁說明區塊同日退場，已無元素掛標記）
     O04: 'tbd', O09: 'tbd', O17: 'release2.4', O18: 'tbd', O22: 'release2.4', O23: 'release2.4',
     E08: 'release2.4', E09: 'release2.4', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'release2.4', E20: 'release2.4', E22: 'tbd', E23: 'release2.4', E24: 'tbd', E25: 'tbd', E26: 'tbd'
@@ -174,7 +175,9 @@
     /* 2026-08-09 D181：粉絲分析拆兩頁，新頁只用 ztor 拿得到的資料。 */
     'audience-report.html': 1,
     /* 2026-10-05 D360：需求看板（S68 ⚪ 未排定），與 sidebar.js 同名清單同步。 */
-    'demand-board.html': 1
+    'demand-board.html': 1,
+    /* 2026-10-09 D383：系列活動母頁（S88 ⚪；頁級本來就是 full），補進清單讓 release2.4 的連結一併收起；sidebar.js 同名清單同步。 */
+    'series-detail.html': 1
   };
   function featTier(id) { return FEAT_TIER[id.trim()] || (id.trim() === 'full' ? 'full' : 'release2.3'); }
   function parseScopeMd(txt) {

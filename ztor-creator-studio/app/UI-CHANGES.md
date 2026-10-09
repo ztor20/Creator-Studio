@@ -12,6 +12,60 @@
 >
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
+## 2026-10-09（一百五十二）· D383 補三題：到店自取的 bookyay 活動在 release2.4 不能帶入；活動詳情的單張門票可改門票圖片；創作者活動管理先標 release2.4 不支援的活動（A spec-derived · B 反饋導入 · D384）
+
+**標籤**：release2.4
+
+**範圍**：`create-event.html`（`d.bgate.pickup` 原因句、`bkyVerBlock()` 註解）、`event-detail.html`（單張門票彈窗 `#ed-tm-img-field`、`renderTmImg()`、票卡與列表檢視的縮圖）、`admin-creator-events.html`（`verBlock()`、`[data-ace-r24]`）、`js/sidebar.js`（BOOKYAY_EVENTS 補 `slots`／`repeat`／`ship` 與 bky-11）、`js/i18n.js`（`ed.tm.img*`、`ace.r24.*`）、`rulebook/event-detail.html`、`feature-scope-map.md`、`ASSUMPTIONS.md`（UIA-231 第 4–6 項）、`requirements-map.md`。
+
+**依據**：D384（2026-10-09，使用者裁決「三題都照建議」）；規格 5.1.6.2 v3.37 §4.5 F9、5.1.6.3 v42 §2.6（見 backup_plan Plan442）。
+
+### A · spec-derived（決定二，產品規則）
+
+- **活動詳情改門票圖片**：單張門票彈窗基本區在票名之後加「門票圖片」，與建立流程第 4 步同一套——直式上傳格（`.upload-tile-aside` 側排）、說明一行（用的是活動主視覺／自己的圖）、自訂過才出現「改回活動圖片」。門票自己的 `img` 留空＝沿用活動主視覺（相簿第一格），按儲存才寫回、取消就丟掉；bookyay 匯入的活動不鎖、不掛來源標記。票卡與列表檢視的縮圖改成「有自己的圖用自己的，沒有用主視覺」。release2.4 與最終版都顯示（不掛 `data-feat`）。
+
+### B · 反饋導入（決定一、三，版本範圍）
+
+- **匯入清單的到店自取**（決定一）：bky-5 在 release2.4 標「不可帶入」，原因句改為「這場活動的取票方式是到店自取，目前還沒有到店自取，不能帶入」；判斷不變（S89 不在版本內才擋），由推導改為已裁決。
+- **創作者活動管理先標示**（決定三）：release2.4 下，多時段（bky-2）、重覆（bky-11）、到店自取（bky-5）的活動在名稱旁掛 `badge--neutral`「release2.4 不支援」，下一行 `text-sub` 寫原因；判斷與匯入清單同一套（S87、S89 兩個標記），最終版不出現。狀態徽章與動作鈕不動。示範資料補一場重覆活動 bky-11（待對應創作者），三種原因各有一列可看。
+
+## 2026-10-09（一百五十一）· release2.4 範圍收斂到 bookyay 能帶入的資料：多場次、系列、到店自取、轉售、招待票在 release2.4 隱藏；門票隱藏狀態與預覽與在地化進 release2.4；單一時段套票示範（B 反饋導入 · D383）
+
+**標籤**：release2.4
+
+**範圍**：`create-event.html`、`event-detail.html`、`events.html`、`bundle-detail.html`、`event-localization.html`（頁級閘門）、`js/devtools.js`（`FEAT_TIER` 後備、`FULL_ROUTES`）、`js/sidebar.js`（`FULL_ROUTES`）、`js/events-store.js`（`list()`）、`ds-components/radio-card.css`、`design-system.md`、`design-system.html`、`BUILD-SPEC.md`、`feature-scope-map.md`、`ASSUMPTIONS.md`（UIA-231）、`requirements-map.md`。
+
+**依據**：D383（2026-10-09）與同日使用者補充（招待票也隱藏）。只改版本範圍，最終版行為不變（唯一例外見「示範資料」bky-3）；規格不動（決定八）。
+
+### B · 反饋導入（版本範圍）
+
+- **新功能編號**（`feature-scope-map.md` 活動段「2026-10-09 D383 範圍收斂」）：S87 多場次、S88 系列活動、S89 到店自取、S90 轉售、S91 招待票（⚪ 未排定，release2.4 隱藏）；S92 門票隱藏狀態與標示（🔵 release2.4，自 S55 拆出——S55 只剩創作者自己切換門票顯示開關，維持 ⚪）；S78 預覽與在地化改 🔵 release2.4。
+- **匯入清單**（決定一）：S87 不在版本內時，多時段的單次活動（`slots` 多於一個）與重覆活動（`repeat`）照樣列出、灰掉、多一行原因、右邊「不可帶入」，比照不設門票的活動；最終版照 D369 決定五可帶入。S89 不在版本內時，取票方式是到店自取的活動同樣標不可帶入（推導〔產品待確認〕，UIA-231）。對到三場活動的已帶過那一列（bky-7）在 release2.4 不列。Admin「繼續設定」的深連結（`?import=`）改在整頁 script 跑完後才判斷，release2.4 直連多時段活動同樣退回閘門。
+- **多場次**（決定二）：建立活動 `#ce-dates-add`、活動詳情 `#ed-sess-add` 掛 S87；套用第一場、門票依場次分組、組合包每場各一組、Review「共 N 場」都只在多場時出現，隨之不出現、不另掛。`js/events-store.js` 的 `list()` 在 release2.4 濾掉多場的示範活動 album-signing-taipei（活動清單那一列同掛 S87），清單、計數與電子商店的組合包示範都看不到它。
+- **系列活動**（決定二）：活動清單七組系列母子列整組掛 S88；活動詳情頁首系列徽章、系列場次卡、總覽「系列」列、兩則系列鎖定提示掛 S88；`series-detail.html` 補進 `js/devtools.js`／`js/sidebar.js` 兩份 `FULL_ROUTES`。活動清單的分頁計數、頁尾「顯示 N 場」與頁首四個數字改成只算看得到的列（系列各場在 release2.4 不計），切版本即重算。
+- **到店自取、轉售、招待票**（決定六＋同日補充）：建立活動取票方式的到店自取卡、活動詳情發布設定的到店自取卡掛 S89；活動詳情票務的「轉售」分頁與面板掛 S90、「招待票」分頁與面板掛 S91。
+- **進 release2.4**（決定七）：預覽與在地化（S78）——活動詳情頁首按鈕、設定子分頁與面板，`event-localization.html` 頁級由 `full` 改 S78 才進得去；門票隱藏狀態（S92）——建立活動與活動詳情的「隱藏」徽章、單張門票彈窗在 1 人票（hideFix）時的鎖定顯示開關（建立活動 `tierShowRowHTML()` 依票改掛 S92／S55、活動詳情 `#ed-tm-show-row` 開彈窗時改標記並重跑版本閘）、組合商品細節頁五則可賣性防呆紅字。
+- **保留**（決定三～五，原本就在 release2.4，未動）：獨立票、表演陣容、影片預告、單張門票入場設定、限時購買、門票圖片。
+
+### A · 示範資料
+
+- **新增 bky-13「Duo Night — 雙人限定場」**：單一時段的二人套票（港幣 560、人數上限 121），release2.4 與最終版都能帶入——1 人票港幣 280 換算成創作者幣別、120 張、隱藏且鎖定為隱藏；自動建立一組組合包「二人套票」（1 人票 × 2、鎖定 60 套、整組鎖定）；門票圖片預設沿用主視覺。bky-2（三個時段的二人套票）留作最終版「每場各一組」的示範，release2.4 標不可帶入。
+- **bky-3 取票方式改電子門票**（原為到店自取、只是順手寫的值；取票方式的示範是 bky-4／bky-5）：讓跨日示範在 release2.4 也帶得進來。這是本輪唯一影響最終版畫面的資料變動。
+
+### 元件（Radio card `--3`）
+
+- 建立活動取票方式在 release2.4 收掉到店自取後，原本三欄留下一格空位。`ds-components/radio-card.css` 補一條：`--3` 其中一張被版本閘門（`.ztd-ver-hidden`）或 `[hidden]` 收起時，剩下的卡平均分整列（`:has()` 改 `grid-auto-flow: column; grid-auto-columns: 1fr`）；三張都在時不變。`design-system.md` Radio card 條目、`design-system.html` 新 demo 與 Classes 說明同步；`BUILD-SPEC.md` 補 D383 一筆。
+
+### 順手修正
+
+- 建立活動單張門票彈窗換門票圖片：上傳格換圖過程中發的 `upload:change`（state＝uploading）被當成「清空」並重繪彈窗，把上傳中的格子換掉，圖片永遠換不掉。改成只認結果狀態（filled／empty），換圖、改回活動圖片兩條都實測通過。
+
+**實測**（dev server `ztor-app`，cheat code 版本切換）：
+- release2.4：匯入清單 bky-2「多個時段」、bky-11「重覆活動」、bky-5「到店自取」、bky-10「沒有門票」都標不可帶入，bky-7 不列；帶入 bky-13 → 票務商品一組「二人套票」、票種卡「二人套票 · 1 人」掛「隱藏」、彈窗鎖定開關可見、門票圖片＝主視覺且可換可改回；新增場次與到店自取不見；活動詳情（realive-asia-kaohsiung）無新增場次、無系列卡／徽章／列／鎖定提示、無轉售與招待票分頁、有預覽與在地化；taipei-nye 1 人票開關可見且鎖定、一般票無顯示開關；`event-localization.html` 不被導回；活動清單 28 場、無系列母子列與多場活動。
+- 最終版：匯入清單除不設門票與已帶過外都可選（bky-2、bky-11、bky-5 可帶入），新增場次、到店自取、系列、轉售、招待票照舊，活動清單 36 場。
+
+**未做（已由一百五十二補上）**：活動詳情的單張門票彈窗原本沒有門票圖片欄位，D383 決定五在活動詳情端未補（UIA-231 第 5 點）；D384 決定二已補。
+
 ## 2026-10-09（一百五十）· 活動詳情新增門票二選一（票種門票／獨立票）、電子商店建立組合包的允許清單標出獨立票（A spec-derived · D381）
 
 **標籤**：release2.4
