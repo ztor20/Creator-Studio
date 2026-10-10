@@ -567,7 +567,10 @@
     });
     root.querySelectorAll(".app-topbar__brand, .app-sidebar__brand").forEach(brand => {
       /* D324：Admin 平台層進了 Phase 1，低版本在 Admin 頁的 logo 仍回名冊（與 buildSidebar 的 adminView() 一致）。 */
-      brand.setAttribute("href", adminView() ? ROSTER_PAGE : (limited ? "e-shop.html" : (isRoster ? ROSTER_PAGE : "index.html")));
+      const to = adminView() ? ROSTER_PAGE : (limited ? "e-shop.html" : (isRoster ? ROSTER_PAGE : "index.html"));
+      brand.setAttribute("href", to);
+      /* logo 先前依舊的 href（index.html）被上面的路由過濾藏起來；改指新目的地後要照新目的地重新判斷，低版本才不會整個 logo 消失。 */
+      brand.hidden = !routeAllowed(to);
     });
   }
 

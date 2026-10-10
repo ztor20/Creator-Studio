@@ -719,7 +719,7 @@
           (k.revoked
             ? '<span class="ztor-badge">' + L("vault.ac.keys.revoked") + "</span><span></span>"
             : '<span class="ztor-badge ztor-badge--success">' + L("vault.ac.keys.active") + "</span>" +
-              '<button type="button" class="btn btn--ghost btn--sm" data-vkey-revoke="' + esc(k.id) + '">' + L("vault.ac.keys.revoke") + "</button>") +
+              '<button type="button" class="btn btn--soft btn--destructive btn--sm" data-vkey-revoke="' + esc(k.id) + '">' + L("vault.ac.keys.revoke") + "</button>") +
         "</div>";
       }).join("");
   }
