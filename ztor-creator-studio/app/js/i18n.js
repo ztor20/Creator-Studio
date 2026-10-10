@@ -7695,7 +7695,6 @@
     'pks.tab.items':    { en: 'Items',     zh: '取貨項目' },
     'pks.tab.scanner':  { en: 'Password',  zh: '設置密碼' },
     'pks.sec.items.sub':{ en: 'Add at least one product or event ticket.', zh: '至少加入一項商品或活動票券' },
-    'pks.bundle.note':  { en: 'Splits into {n} member units — each has its own pickup code and is redeemed on its own.', zh: '會拆成 {n} 個成員的領取單位，各有自己的領取碼、各自核銷。' },
     'pks.close':        { en: 'Close',         zh: '關閉' },
     'pks.f.name':       { en: 'Session name',  zh: '場次名稱' },
     'pks.f.name.ph':    { en: 'e.g., Taipei signing — pickup', zh: '例：台北簽書會取貨' },
