@@ -1367,12 +1367,18 @@
 
      登出後導向 login.html。是否需要二次確認、是否真的該一併放掉代操中的 creator、
      正式 session 該清哪些東西——上游沒有規格（ASSUMPTIONS 產品缺口 PG-032）。 */
+  /* 2026-10-10（D392 補充二）：登出也要經過頁面的離開防護——有未儲存變更的頁面（活動詳情）在 capture 階段攔下登出連結，
+     改走自己的三選一對話，確認後呼叫這支。 */
+  function doLogout() {
+    setRole("general");
+    location.href = "login.html";
+  }
+  window.ztorLogout = doLogout;
   document.addEventListener("click", e => {
     const out = e.target.closest("[data-logout]");
     if (!out) return;
     e.preventDefault();
-    setRole("general");
-    location.href = "login.html";
+    doLogout();
   });
 
   /* ESC closes any open topbar dropdown. */

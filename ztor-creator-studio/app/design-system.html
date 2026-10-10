@@ -36,6 +36,7 @@
 <link rel="stylesheet" href="ds-components/readiness.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/staged-change.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/notification-matrix.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/completeness.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/insight-row.css?v=r2.2">
@@ -665,6 +666,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#meter-list">Meter list</a>
     <a class="toc__link toc__link--sub" href="#next-step">Next step</a>
     <a class="toc__link toc__link--sub" href="#empty-card">Empty card</a>
+    <a class="toc__link toc__link--sub" href="#staged-change">Staged change</a>
     <div class="toc__subgroup"><span data-en>Cards &amp; tiles</span><span data-zh>卡片與磚</span></div>
     <a class="toc__link toc__link--sub" href="#card">Card</a>
     <a class="toc__link toc__link--sub" href="#card-section">Section card</a>
@@ -1609,6 +1611,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#meter-list">Meter list</a></td><td>🟡</td><td><span data-en>Per-item level list (name → bar → figures)</span><span data-zh>逐項水位清單</span></td><td><code>meter-list.css</code></td></tr>
           <tr><td><a href="#next-step">Next step</a></td><td>🟡</td><td><span data-en>One sentence + one action, at the foot of a card</span><span data-zh>一句話＋一顆主要動作，放在卡的最後一段</span></td><td><code>next-step.css</code></td></tr>
           <tr><td><a href="#empty-card">Empty card</a></td><td>🟡</td><td><span data-en>In-card no-data state</span><span data-zh>卡片內無資料狀態</span></td><td><code>empty-card.css</code></td></tr>
+          <tr><td><a href="#staged-change">Staged change</a></td><td>🟢</td><td><span data-en>Applied-but-unsaved markers in in-place editing: Edited / New badges, and a removed item kept in place, faded, struck through, with “To be removed” + Undo (2026-10-10)</span><span data-zh>就地編輯裡「已套用、還沒儲存」的標記：已修改／新增徽章，刪除的項目留在原處淡一階＋劃線＋「將刪除」＋復原（2026-10-10）</span></td><td><code>staged-change.css</code></td></tr>
           <tr><td><a href="#notification-matrix">Notification matrix</a></td><td>🟠</td><td><span data-en>Event × channel toggle grid</span><span data-zh>事件×管道開關矩陣</span></td><td><code>notification-matrix.css</code></td></tr>
           <tr><td><a href="#completeness">Completeness meter</a></td><td>🟡</td><td><span data-en>label + x/y + progress</span><span data-zh>標籤＋x/y＋進度</span></td><td><code>completeness.css</code></td></tr>
           <tr><td><a href="#insight-row">Insight row</a></td><td>🟡</td><td><span data-en>auto-computed callout under a chart</span><span data-zh>圖表下自動洞察行</span></td><td><code>insight-row.css</code></td></tr>
@@ -5129,6 +5132,33 @@ Letterpress cover, uncoated stock.</textarea></div>
     <p class="field-text"><code>.empty-card</code> · <code>__icon / __title / __text / __cta</code>。icon 用 <code>--muted</code> 底；CTA 用 <code>.btn</code>。頁面切換用 <code>.dash-empty-only</code> / <code>.dash-data-only</code> + <code>html[data-data-state="empty"]</code>（shared.css）。</p>
     <p class="field-text">去底色的選擇器：<code>.card:has(&gt; .empty-card):not(:has(&gt; :not(.empty-card):not(.info-banner)))</code>。不用 <code>:only-child</code> 是因為有些頁面在同一張卡放兩種空狀態變體、用 <code>hidden</code> 互換（<code>projects.html</code>）。2026-08-17 全站實測 41 個空狀態，40 個已無底色，唯一例外是 <code>store-settings.html</code> 的代碼設定卡（空狀態下方還有說明、表格與按鈕）。</p>
     <p class="field-text"><code>ds-components/empty-card.css</code></p>
+  </div>
+  </details>
+</section>
+<section class="sub" id="staged-change">
+  <div class="sub__head">
+    <h3 class="sub__title">4.232 Staged change</h3>
+    <span class="layer layer--atom">🟢 atom</span>
+  </div>
+  <p class="sub__desc" data-en>In-place editing (event detail) stages changes: a modal's <strong>Apply</strong> only changes the page draft, and nothing is written until the page is saved. So every staged item has to say so. Edited and newly added items get a Badge (<code>.badge--info</code> “Edited” / “New”). A removed item stays where it was — faded, its name struck through — with a full-strength strip at the bottom holding <code>.badge--error</code> “To be removed” and an Undo button. Section-level drafts (default purchase rules, notification toggles) carry the same “Edited” badge next to their title or label. Markers disappear on save or discard.</p>
+  <p class="sub__desc" data-zh>就地編輯（活動詳情）的修改是暫存的：彈窗按「套用」只改頁面草稿，按整頁「儲存」才寫入，所以每個暫存的項目都要看得出來。已修改、新增的項目掛 Badge（<code>.badge--info</code>「已修改」／「新增」）；刪除但還沒儲存的項目留在原處，內容淡一階、名稱劃線，底部一格維持全不透明，放 <code>.badge--error</code>「將刪除」與「復原」。區塊層的草稿（預設購票規則、通知開關）在標題或標籤旁掛同一枚「已修改」。儲存或捨棄後標記消失。</p>
+  <div class="demo" style="max-width:640px">
+    <div class="tier-grid">
+      <div class="card tier-card">
+        <div class="tier-card__head"><h4 class="tier-card__name">Inner Circle seat</h4><span class="badge badge--info"><span data-en>Edited</span><span data-zh>已修改</span></span></div>
+        <dl class="tier-card__facts"><div class="tier-card__fact"><dt>Quantity</dt><dd>190</dd></div></dl>
+      </div>
+      <div class="card tier-card staged-remove">
+        <div class="tier-card__head"><h4 class="tier-card__name staged-remove__strike">Early bird</h4></div>
+        <dl class="tier-card__facts"><div class="tier-card__fact"><dt>Quantity</dt><dd>20</dd></div></dl>
+        <div class="staged-remove__keep staged-remove__bar"><span class="badge badge--error"><span data-en>To be removed</span><span data-zh>將刪除</span></span><button type="button" class="btn btn--ghost btn--sm"><span data-en>Undo</span><span data-zh>復原</span></button></div>
+      </div>
+    </div>
+  </div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><code>.staged-remove</code>（卡片或 <code>&lt;tr&gt;</code>）· <code>__strike</code> · <code>__keep</code>（不淡化的那一格）· <code>__bar</code>（徽章＋復原一列）。淡化 .5 同 <code>.data-list__row--disabled</code>。已修改／新增只用 Badge，不在本檔。消費：<code>event-detail.html</code> 票務卡片與列表（<code>stagedBadge()</code>／<code>stagedRemoveKeep()</code>／<code>setStagedMark()</code>）。</p>
+    <p class="field-text"><code>ds-components/staged-change.css</code></p>
   </div>
   </details>
 </section>

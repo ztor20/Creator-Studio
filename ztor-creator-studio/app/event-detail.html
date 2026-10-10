@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/staged-change.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2">
 <!-- 現場報到台的掃碼連結沿用取貨場次同一組元件：scanner.css＝.scanner-access、pickup.css＝.qr-box -->
 <link rel="stylesheet" href="ds-components/scanner.css?v=r2.2">
@@ -3143,7 +3144,7 @@
         title: T('event-detail.dup.title', 'Run this event again?'),
         body: '<p>' + T('event-detail.dup.body', 'Opens the create flow with this event copied in — name, description, lineup, images and ticket types. Dates, venue and every sales figure start empty.') + '</p>',
         okLabel: T('event-detail.dup.ok', 'Copy into a new event'),
-        onOk: () => { location.href = 'create-event.html?from=' + encodeURIComponent(ev.id); }
+        onOk: () => { leaveTo('create-event.html?from=' + encodeURIComponent(ev.id)); }   // D392 補充二：有未儲存的變更先問
       });
       return;
     }
@@ -4488,15 +4489,26 @@
     const href = link.getAttribute('href') || '';
     if (!href || href.charAt(0) === '#' || link.target === '_blank') return;
     e.preventDefault();
+    /* 登出（D392 補充二）：側欄的登出 handler 會直接換頁，這裡先擋下它，確認後再呼叫 sidebar.js 的 ztorLogout */
+    const logout = link.hasAttribute('data-logout') && typeof window.ztorLogout === 'function';
+    if (logout) e.stopPropagation();
+    leaveTo(href, logout ? window.ztorLogout : null);
+  }, true);
+  /* 站內導頁的唯一出口（D392 補充二，2026-10-10 使用者「在離開整個編輯頁面時，尚未儲存，要有 popup 提醒用戶」）：
+     <a> 連結之外，用 JS 導頁的入口（組合包卡、預覽與在地化、再辦一場）也走這一支——有未儲存的變更（含門票、預設購票規則、
+     通知開關的暫存）就跳三選一對話，沒有就直接走。關分頁／重新整理由上方 beforeunload 接（瀏覽器原生提示）。 */
+  function leaveTo(href, go) {
+    const leave = typeof go === 'function' ? go : () => { location.href = href; };
+    if (!isDirty()) { leave(); return; }
     openConfirm({
       title: T('event-detail.leave.title', 'Leave without saving?'),
       body: '<p class="text-sub">' + T('event-detail.leave.body', 'You have changes that have not been saved.') + '</p>',
       okLabel: T('event-detail.leave.save', 'Save & leave'),
       altLabel: T('event-detail.leave.discard', 'Leave without saving'),
-      onOk: () => { trySave(() => { location.href = href; }); },   // D390 稽核第一節原型第 5 條：走同一套檢查與高影響確認，沒過就留在原頁
-      onAlt: () => { edBaseline = null; location.href = href; }
+      onOk: () => { trySave(leave); },   // D390 稽核第一節原型第 5 條：走同一套檢查與高影響確認，沒過就留在原頁
+      onAlt: () => { edBaseline = null; leave(); }
     });
-  }, true);
+  }
 
   /* 墓碑 2026-10-09（D390）：edSaleTlErrs()／syncEdSaleTl()（只檢查開賣與停售是否落在上架區間）併進發布設定段的 pubErrs()／syncPubErrs()——
      上架設定補上之後，上架區間本身也可能在這一頁改，比對改讀草稿裡的上架區間。 */
@@ -4606,6 +4618,51 @@
       ? T('event-detail.ov.tiers.val', '{n} types · {m} tickets').replace('{n}', ev.tiers.length).replace('{m}', fmtNum(qsum))
       : T('event-detail.ov.none', 'None yet');
   }
+  /* ── 暫存標記（D392 補充二，2026-10-10 使用者「暫存以後 UI 要讓那張卡片看得出來是更改過的」）──────────────
+     只在整頁編輯中（有基準 edBaseline）才標；儲存或捨棄後 setMode 重畫，標記自然消失。
+     比對對象是「已儲存的活動」（ev.tiers），不是進入編輯當下的快照——列表暫停是立即生效的營運動作，兩邊一起翻，不會被標成修改。
+     已修改／新增＝.badge--info；刪除但還沒儲存的那一張留在原處、淡一階＋劃線＋「將刪除」（.badge--error）＋「復原」（ds-components/staged-change.css）。 */
+  const savedTierOf = id => (ev.tiers || []).find(x => x.id === id);
+  function tierStage(t) {
+    if (!edBaseline || !t) return '';
+    const s = savedTierOf(t.id);
+    if (!s) return 'new';
+    return tiersCanon([t]) !== tiersCanon([s]) ? 'changed' : '';
+  }
+  function stagedRemoved() {
+    if (!edBaseline) return [];
+    return (ev.tiers || []).filter(s => !edTiers.some(t => t.id === s.id));
+  }
+  function stagedBadge(t) {
+    const k = tierStage(t);
+    if (!k) return '';
+    const key = k === 'new' ? 'ed.staged.new' : 'ed.staged.changed';
+    return '<span class="badge badge--info" data-i18n="' + key + '">' + tixEsc(T(key, k === 'new' ? 'New' : 'Edited')) + '</span>';
+  }
+  const stagedRemoveKeep = t =>
+    '<span class="badge badge--error" data-i18n="ed.staged.remove">' + tixEsc(T('ed.staged.remove', 'To be removed')) + '</span>' +
+    '<button type="button" class="btn btn--ghost btn--sm" data-ed-tier-undo="' + tixEsc(t.id) + '" data-i18n="ed.staged.undo">' + tixEsc(T('ed.staged.undo', 'Undo')) + '</button>';
+  /* 復原：把已儲存的那一張放回草稿，位置照已儲存的順序 */
+  function undoStagedRemove(e) {
+    const b = e.target.closest('[data-ed-tier-undo]');
+    if (!b) return false;
+    const s = savedTierOf(b.dataset.edTierUndo);
+    if (s && !edTiers.some(t => t.id === s.id)) {
+      const idx = (ev.tiers || []).indexOf(s);
+      const at = edTiers.filter(t => { const i = (ev.tiers || []).indexOf(savedTierOf(t.id)); return i >= 0 && i < idx; }).length;
+      edTiers.splice(at, 0, cloneTiers([s])[0]);
+      refreshTix();
+      if (edBaseline) syncDirty();
+    }
+    return true;
+  }
+  /* 區塊層的「已修改」徽章（預設購票規則的標題、通知開關的標籤）：放在 host 尾端，on＝有暫存的修改 */
+  function setStagedMark(host, on) {
+    if (!host) return;
+    const cur = host.querySelector(':scope > [data-staged-mark]');
+    if (on && !cur) host.insertAdjacentHTML('beforeend', ' <span class="badge badge--info" data-staged-mark data-i18n="ed.staged.changed">' + tixEsc(T('ed.staged.changed', 'Edited')) + '</span>');
+    else if (!on && cur) cur.remove();
+  }
   const tixEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -4661,7 +4718,7 @@
     /* 一張票都還沒建的活動（2026-08-17 使用者指示「沒有票時要有空畫面」）：原本這裡渲染
        一個空的 .tier-grid，畫面上就是一塊空白——看起來像載入失敗，而不是「還沒建票種」。
        空狀態不套卡片底色（同輪的全站規則，見 empty-card.css）。 */
-    if (!edTiers.length) {
+    if (!edTiers.length && !stagedRemoved().length) {
       list.innerHTML =
         '<div class="empty-card">' +
           '<span class="empty-card__icon"><i data-lucide="ticket" class="ztor-icon"></i></span>' +
@@ -4680,9 +4737,11 @@
     /* 新增卡跟著票種一起排（2026-08-17）：它是那一排的最後一格，不是區塊底下的一顆按鈕。
        用搬移而不是重畫，是為了讓它身上既有的 click handler 與 data-view-safe 一起帶過去。 */
     const addTile = document.getElementById('ed-tier-add');
-    list.innerHTML = '<div class="tier-grid">' + tixOrdered().map(t => {
+    /* D392 補充二：removed＝已刪除但還沒儲存的那一張（淡一階、名稱劃線、底部「將刪除」＋復原，不能點開） */
+    const cardHTML = (t, removed) => {
       const sold = Number(t.sold) || 0;
       const badges =
+        (removed ? '' : stagedBadge(t)) +   // D392 補充二：套用後還沒儲存——「已修改」／「新增」
         soloBadge(t) +
         (Number(t.price) === 0 ? '<span class="badge badge--neutral">' + tixEsc(T('ce.tier.free', 'Free')) + '</span>' : '') +
         (t.paused ? '<span class="badge badge--neutral">' + tixEsc(T('ed.tix.status.paused', 'Paused')) + '</span>' : '') +
@@ -4692,9 +4751,11 @@
         (t.hidden ? '<span class="badge badge--neutral" data-feat="' + ((t.hideFix || (ev && ev.source === 'bookyay')) ? 'S92' : 'S55') + '">' + tixEsc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '');
       const doorsM = hhmmToMin((edSessions[0] || {}).doors || '');
       const n = Number(t.earlyMin) || 0;
-      return '<div class="card tier-card tier-card--clickable" data-ed-tier="' + tixEsc(t.id) + '">' +
+      return (removed
+          ? '<div class="card tier-card staged-remove" data-ed-tier-removed="' + tixEsc(t.id) + '">'
+          : '<div class="card tier-card tier-card--clickable" data-ed-tier="' + tixEsc(t.id) + '">') +
         '<div class="tier-card__head">' +
-          '<h4 class="tier-card__name">' + tixEsc(t.name || T('ce.tier.untitled', 'Untitled tier')) + '</h4>' + badges +
+          '<h4 class="tier-card__name' + (removed ? ' staged-remove__strike' : '') + '">' + tixEsc(t.name || T('ce.tier.untitled', 'Untitled tier')) + '</h4>' + badges +
         '</div>' +
         '<div class="tier-card__thumb">' +
           /* D384：門票有自己的圖就用它，沒有就沿用活動主視覺 */
@@ -4719,8 +4780,11 @@
                 .replace('{n}', n).replace('{t}', minToHhmm(doorsM - n))))
             : '') +
         '</dl>' +
+        (removed ? '<div class="staged-remove__keep staged-remove__bar">' + stagedRemoveKeep(t) + '</div>' : '') +
       '</div>';
-    }).join('') + '</div>';
+    };
+    list.innerHTML = '<div class="tier-grid">' + tixOrdered().map(t => cardHTML(t, false)).join('') +
+      stagedRemoved().map(t => cardHTML(t, true)).join('') + '</div>';
     if (addTile) {
       list.querySelector('.tier-grid').appendChild(addTile);
       addTile.hidden = stageRO() || !edEditing();   // 2026-10-10：檢視態不出現；D361 決定三：已結束、已取消整頁唯讀，不能再新增門票（D390 稽核第一節原型第 1 條）
@@ -5034,6 +5098,8 @@
     }
     acts.hidden = !acts.innerHTML;
     markBkySource(document.getElementById('ed-evrules-title'), bky);
+    /* D392 補充二：套用過、還沒儲存的預設購票規則標「已修改」 */
+    setStagedMark(document.getElementById('ed-evrules-title'), !!edBaseline && !bky && rulesCanon(curRules()) !== rulesCanon(ev.rules));
     regateFeat();   // 粉絲分級條件（S82）照版本收起
   }
   document.getElementById('ed-evrules')?.addEventListener('click', e => {
@@ -5258,6 +5324,7 @@
     tmNew = false;   // 新票沒按儲存就關掉＝丟掉（它還沒進 edTiers）
   }
   document.getElementById('ed-tier-list')?.addEventListener('click', e => {
+    if (undoStagedRemove(e)) return;
     const card = e.target.closest('[data-ed-tier]');
     if (!card) return;
     const t = edTiers.find(x => x.id === card.dataset.edTier);
@@ -5368,14 +5435,14 @@
     if (!box) return;
     const kv = (ev.images && ev.images.keyvisual) || '';
     const th = k => '<th>' + esc(T('ed.tix.col.' + k, k)) + '</th>';
-    const rows = tixOrdered().map(t => {
+    const rowHTML = (t, removed) => {
       const sold = Number(t.sold) || 0, resv = Number(t.reserved) || 0;
       const stock = Math.max(0, (Number(t.qty) || 0) - sold - resv);
-      return '<tr>' +
+      return '<tr' + (removed ? ' class="staged-remove" data-ed-tier-removed="' + esc(t.id) + '"' : '') + '>' +
         '<td><span class="ed-tixrow__name">' +
           (tierImgOf(t) ? '<img class="ed-tixrow__thumb" src="' + esc(tierImgOf(t)) + '" alt="">' : '') +   // D384
-          esc(t.name || '—') +
-          (soloSessText(t) ? ' · ' + esc(soloSessText(t)) : '') + soloBadge(t) +
+          (removed ? '<span class="staged-remove__strike">' + esc(t.name || '—') + '</span>' : esc(t.name || '—')) +
+          (soloSessText(t) ? ' · ' + esc(soloSessText(t)) : '') + (removed ? '' : ' ' + stagedBadge(t)) + soloBadge(t) +
           (t.hidden ? ' <span class="badge badge--neutral" data-feat="' + ((t.hideFix || (ev && ev.source === 'bookyay')) ? 'S92' : 'S55') + '">' + esc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '') +   // D390 稽核原型第 17 條
           '</span></td>' +
         '<td>' + fmtNum(stock) + '</td>' +
@@ -5387,16 +5454,19 @@
         '<td><span class="badge ' + (t.paused ? 'badge--neutral' : 'badge--success') + '">' +
           esc(T(t.paused ? 'ed.tix.status.paused' : 'ed.tix.status.on', t.paused ? 'Paused' : 'On sale')) + '</span></td>' +
         /* D361 決定三：已結束、已取消整頁唯讀——不再有暫停／重新販售（D390 稽核第一節原型第 1 條） */
+        (removed ? '<td class="staged-remove__keep"><span class="staged-remove__bar">' + stagedRemoveKeep(t) + '</span></td>' :
         '<td>' + (stageRO() ? '' : '<button type="button" class="btn btn--ghost btn--sm" data-view-safe data-tix-pause="' + esc(t.id) + '">' +
-          esc(T(t.paused ? 'ed.tix.resume' : 'ed.tix.pause', t.paused ? 'Resume sales' : 'Pause sales')) + '</button>') + '</td>' +
+          esc(T(t.paused ? 'ed.tix.resume' : 'ed.tix.pause', t.paused ? 'Resume sales' : 'Pause sales')) + '</button>') + '</td>') +
       '</tr>';
-    }).join('');
+    };
+    const rows = tixOrdered().map(t => rowHTML(t, false)).join('') + stagedRemoved().map(t => rowHTML(t, true)).join('');
     box.innerHTML = '<table class="ztor-table"><thead><tr>' +
       th('name') + th('stock') + th('reserved') + th('sold') + th('price') + th('status') +
       '<th></th></tr></thead><tbody>' + rows + '</tbody></table>';
     regateFeat();
   }
   document.getElementById('ed-tier-table')?.addEventListener('click', e => {
+    if (undoStagedRemove(e)) return;
     const btn = e.target.closest('[data-tix-pause]');
     if (!btn) return;
     const t = edTiers.find(x => x.id === btn.dataset.tixPause);
@@ -6617,7 +6687,7 @@
   (function () {
     const list = document.getElementById('ed-bundle-list');
     if (!list) return;
-    const go = el => { const card = el && el.closest('[data-ed-bundle]'); if (card && card.dataset.href) location.href = card.dataset.href; };
+    const go = el => { const card = el && el.closest('[data-ed-bundle]'); if (card && card.dataset.href) leaveTo(card.dataset.href); };   // D392 補充二
     /* 卡頭的「在電子商店管理 →」是真 <a>（同一個目的地）：點它交給瀏覽器原生導頁，不重複導。 */
     list.addEventListener('click', e => { if (e.target.closest('a')) return; go(e.target); });
     list.addEventListener('keydown', e => {
@@ -6852,6 +6922,9 @@
     const st = notifDraft || notifState();
     document.querySelectorAll('.switch[data-notif]').forEach(sw => {   // 只抓通知開關：側欄的通知下拉也掛 data-notif
       const on = st[sw.dataset.notif] !== false;          // 預設全開（同 F5）
+      /* D392 補充二：切過、還沒儲存的開關，標籤旁標「已修改」 */
+      const row = sw.closest('.settings-row');
+      setStagedMark(row && row.querySelector('.settings-row__label'), !!notifDraft && on !== (notifState()[sw.dataset.notif] !== false));
       sw.classList.toggle('switch--on', on);
       sw.setAttribute('aria-checked', on ? 'true' : 'false');
       /* D361 決定三：已結束、已取消整頁唯讀——通知開關一併鎖住（照樣看得到開或關） */
@@ -7020,7 +7093,7 @@
     if (lock) lock.hidden = ev.source !== 'bookyay';
   }
   function openLocalization() {
-    location.href = 'event-localization.html?id=' + encodeURIComponent(ev.id || '');
+    leaveTo('event-localization.html?id=' + encodeURIComponent(ev.id || ''));   // D392 補充二：有未儲存的變更先問
   }
   document.querySelectorAll('[data-ed-localize]').forEach(b => b.addEventListener('click', openLocalization));
   renderLocSummary();

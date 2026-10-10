@@ -27,6 +27,23 @@
 - **編輯示範預選改為 zine、tee**：從場次詳情編輯時，已選 chip 原本是 zine、tee、Launch night bundle，現在是 zine、tee。
 - **展開提示區塊退場**：「會拆成 N 個成員的領取單位」的提示（`data-pks-bundles`、`renderBundles`）因為沒有組合項目而成為死碼，連同 `members` 欄位與 `i18n.js` 的 `pks.bundle.note` 鍵一併移除（`pks.*` 命名空間 46 → 45）。
 - **不變的**：訂單範例資料（`js/orders-store.js`）與取貨場次詳情頁（`pickup-detail.html`）裡的「來自組合 Launch night bundle」是成員領取單位的來源標記，不是把組合包當場次項目，保留。
+- **登出也經過離開提醒**：側欄的「登出」原本直接換頁，有未儲存變更時只會跳瀏覽器原生提示。改成活動詳情在 capture 階段攔下登出連結、走同一個三選一對話，確認後呼叫 `js/sidebar.js` 新露出的 `window.ztorLogout()`；`leaveTo(href, go)` 多一個「實際離開要做什麼」的參數。
+
+## 2026-10-10（一百六十六）· 暫存的修改看得出來、離開前提醒（B feedback · A spec-derived · D392 補充二）
+
+**標籤**：release2.4
+
+**範圍**：`event-detail.html`、新元件 `ds-components/staged-change.css`、`design-system.html`／`design-system.md`（§4.232 Staged change）、`js/i18n.js`、`ASSUMPTIONS.md`（EDIT-003 追記）、`requirements-map.md`
+
+**依據**：使用者 2026-10-10「暫存以後 UI 要讓那張卡片看得出來是更改過的。在離開整個編輯頁面時，尚未儲存，要有 popup 提醒用戶。」（D392 補充二；規格由另一個 session 同步）
+
+### B · feedback ／ A · spec-derived
+
+- **門票卡與列表列的暫存標記**：整頁編輯中，門票套用過修改的掛「已修改」、新增還沒儲存的掛「新增」（`.badge--info`，卡片標頭與列表名稱欄同一枚）。刪除但還沒儲存的門票不消失，留在原處淡一階、名稱劃線，底部（列表是最後一欄）放「將刪除」（`.badge--error`）＋「復原」；淡掉的卡不能點開。比對對象是已儲存的活動，所以列表或彈窗的單張暫停（立即生效的營運動作）不會被標成修改。儲存或捨棄後標記消失。
+- **預設購票規則與通知開關的暫存標記**：套用過、還沒儲存的預設購票規則，標題旁掛「已修改」；切過的通知開關，那一列標籤旁掛「已修改」（切回原值就消失）。
+- **新元件 Staged change**（`ds-components/staged-change.css`，§4.232）：只管「將刪除」那一種——`.staged-remove`（卡或表格列，除了 `__keep` 以外淡一階 .5，同 `.data-list__row--disabled`）、`__strike`、`__keep`、`__bar`；已修改／新增直接用 Badge。DS 頁加示範卡與 TOC。
+- **離開前提醒**：站內導頁收成一支 `leaveTo()`——除了原本的 `<a>` 連結（側欄、麵包屑），組合包卡、「預覽與在地化」、「再辦一場」這三個用程式導頁的入口也改走它；有未儲存的變更就跳既有的三選一（儲存並離開／不儲存就離開／取消）。關分頁、重新整理照舊走瀏覽器原生提示。實測只改門票、只改預設購票規則、只切通知開關、只刪一張門票，四種都會跳。
+- 新字串（`js/i18n.js`，中英）：`ed.staged.changed`（已修改）、`ed.staged.new`（新增）、`ed.staged.remove`（將刪除）、`ed.staged.undo`（復原）。
 
 ## 2026-10-10（一百六十五）· 門票、預設購票規則、通知開關跟頁面一起儲存（B feedback · D392）
 

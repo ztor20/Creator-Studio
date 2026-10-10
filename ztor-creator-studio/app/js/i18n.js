@@ -10106,6 +10106,11 @@
     'ed.tm.apply': { en: 'Apply', zh: '套用' },
     'ed.tm.applied': { en: 'Applied — save the event to keep it', zh: '已套用，儲存活動後才會生效' },
     'ed.tm.removed': { en: 'Ticket removed — save the event to keep it', zh: '已移除門票，儲存活動後才會生效' },
+    /* D392 補充二（2026-10-10）：套用後還沒儲存的標記 */
+    'ed.staged.changed': { en: 'Edited', zh: '已修改' },
+    'ed.staged.new': { en: 'New', zh: '新增' },
+    'ed.staged.remove': { en: 'To be removed', zh: '將刪除' },
+    'ed.staged.undo': { en: 'Undo', zh: '復原' },
     'ed.tm.ro': { en: 'This event has ended or been cancelled — tickets are view-only.', zh: '活動已結束或已取消，門票只能檢視。' },
     'ed.tm.ro.view': { en: 'Select Edit to change this ticket.', zh: '按「編輯」後才能修改這張門票。' },
     'event-detail.att.undo': { en: 'Mark not arrived', zh: '改回未報到' },
