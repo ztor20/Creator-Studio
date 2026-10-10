@@ -1,0 +1,25 @@
+/* ============================================================
+   Staged change — 「已套用、還沒儲存」的刪除標記（D392 補充二，2026-10-10）
+
+   整頁編輯（就地編輯）裡，彈窗「套用」只改頁面草稿、按「儲存」才寫入。
+   使用者指示「暫存以後 UI 要讓那張卡片看得出來是更改過的」：
+     · 已修改／新增 → 直接用 Badge（.badge--info「已修改」／「新增」），本檔不管
+     · 刪除但還沒儲存 → 項目留在原處，本檔負責：內容淡一階、名稱劃線，
+       底部一格維持全不透明，放 .badge--error「將刪除」＋「復原」鈕
+   儲存或捨棄後標記消失（頁面重畫）。
+
+   Anatomy（卡片或表格列都適用）：
+     .staged-remove            容器（.card.tier-card 或 <tr>）：除了 __keep 以外的直接子元素淡一階
+       .staged-remove__strike  名稱劃線
+       .staged-remove__keep    不淡化的那一格（卡片底部的列／表格最後一欄）
+       .staged-remove__bar     徽章＋復原鈕排成一列
+   淡化比例同 .data-list__row--disabled（.5），同一個「暫時不算數」的視覺角色只有一個答案。
+   ============================================================ */
+.staged-remove > :not(.staged-remove__keep) { opacity: .5; }
+.staged-remove__strike { text-decoration: line-through; }
+.staged-remove__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-8);
+}

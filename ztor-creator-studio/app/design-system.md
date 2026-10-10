@@ -953,6 +953,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Meter list | 🟡 molecule | ✓ App | 逐項水位清單（名稱 → 量條 → 數字，三欄一線） | [meter-list.css](./ds-components/meter-list.css) |
 | Next step | 🟡 molecule | ✓ App | 一句話＋一顆主要動作，放在卡的最後一段；與 `.info-banner`（純說明）、`.insight-row`（算出來的結論）的分工是「只有這一支帶動作」。**只長在它要操作的那一塊底下**（項目詳情的作品卡、狀態卡），不自成一張卡——2026-09-01 使用者裁示撤除總覽那張兜底卡，`.next-step--lead`（自成一卡的修飾子）因此沒有頁面在用，只剩本文件的示範 | [next-step.css](./ds-components/next-step.css) |
 | Empty card | 🟡 molecule | ✓ App | 卡片內「已載入但無資料」空狀態 | [empty-card.css](./ds-components/empty-card.css) |
+| Staged change | 🟢 atom | ✓ App | 就地編輯「已套用、還沒儲存」的標記：已修改／新增用 Badge（`.badge--info`），刪除但還沒儲存的項目留在原處淡一階＋劃線＋「將刪除」（`.badge--error`）＋復原（2026-10-10 D392 補充二）。詳見 §4.232 | [staged-change.css](./ds-components/staged-change.css) |
 | Notification matrix | 🟠 organism | ✓ App | 事件×管道逐格開關矩陣（含鎖定通道） | [notification-matrix.css](./ds-components/notification-matrix.css) |
 | Completeness meter | 🟡 molecule | ✓ App | label＋x/y＋進度條（素材包完整度） | [completeness.css](./ds-components/completeness.css) |
 | Insight row | 🟡 molecule | ✓ App | 圖表下單行自動洞察（無洞察隱藏） | [insight-row.css](./ds-components/insight-row.css) |
@@ -7267,3 +7268,25 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 **Consumers** — `media-vault.html`（存取權限分頁，唯一；保存檔 `media-vault-popup.html` 共用 JS、會畫出方法小卡但沒連本支 CSS）。渲染 `js/media-vault.js` 的 `doorGroupHtml`（方法小卡）與 `renderAccessTab`（人數條、總結、鑰匙清單）；功能標記 `data-feat="S93"`（人數條、鑰匙清單）。
 
 **CSS** — [`vault-access.css`](./ds-components/vault-access.css)
+
+### 4.232 Staged change（就地編輯的暫存標記）
+
+**Purpose** — 活動詳情的整頁編輯是就地編輯：彈窗按「套用」只改頁面草稿，按整頁「儲存」才寫入（D392）。使用者 2026-10-10 指示「暫存以後 UI 要讓那張卡片看得出來是更改過的」——每個暫存的項目都要看得出來，儲存或捨棄後標記消失。
+
+**`_layer`** · atom ｜ **source tier** · App
+
+**Anatomy**
+- 已修改／新增：直接用 Badge `.badge--info`「已修改」／「新增」，掛在項目名稱後（票卡標頭、列表名稱欄）；區塊層草稿（預設購票規則標題、通知開關標籤）掛同一枚「已修改」
+- `.staged-remove` — 刪除但還沒儲存的項目（`.card.tier-card` 或 `<tr>`），除了 `__keep` 以外的直接子元素淡一階（.5，同 `.data-list__row--disabled`）
+- `.staged-remove__strike` — 名稱劃線
+- `.staged-remove__keep` ＋ `.staged-remove__bar` — 卡片底部一列／表格最後一欄，維持全不透明：`.badge--error`「將刪除」＋ `.btn--ghost.btn--sm`「復原」
+
+**States** — 只在整頁編輯中出現；比對對象是已儲存的活動，所以立即生效的營運動作（單張暫停售票）不會被標成修改。
+
+**Token usage** — `--sp-8`。
+
+**Dependencies** — Badge、Button、Ticket tier card、Table。
+
+**Consumers** — `event-detail.html`（票務卡片與列表、預設購票規則卡、通知開關；`stagedBadge()`／`stagedRemoveKeep()`／`setStagedMark()`）。
+
+**CSS** — [`staged-change.css`](./ds-components/staged-change.css)
