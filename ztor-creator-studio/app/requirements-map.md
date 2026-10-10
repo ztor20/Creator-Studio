@@ -25,6 +25,8 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-10 D392 活動詳情的門票、預設購票規則、通知開關跟頁面一起儲存（5.1.6.2 §2 第 5 項、F9、F12；5.1.6.3 §2.10，規格由另一個 session 同步）**：`event-detail.html` 門票彈窗主按鈕改「套用」，門票修改／新增／刪除、預設購票規則、通知開關都改成頁面草稿，算進「儲存 N 項變更」、捨棄還原、走同一套儲存檢查；發放招待票與列表的暫停販售仍是營運動作。D392 補充：檢視態門票彈窗全唯讀（含暫停售票開關）；「售票與名單」已排程起就出現，開賣前各節空狀態（`#ed-tx-empty`）。紀錄見 [`UI-CHANGES.md`](UI-CHANGES.md)「一百六十五」，ASSUMPTIONS EDIT-003 改為已確認。
+
 > **2026-10-09 D391（含補充 11–15 題）活動開賣二選一、移除場次、開賣後不能刪、組合包內被刪門票（5.1.6.1 v2.60 F4／F7／F21／F22／F23；5.1.6.2 v3.45 §1／F7／F9／F14；5.1.6.3 v48 §2.1／§2.6；5.1.5.4 v2.42 §4 F2；5.1.5.9 v1.56 §2.3）**：`create-event.html` 第 7 步開賣改「立即開賣／定時開賣」（`#ce-sale-mode`，bookyay 帶入對應並鎖定、示範 bky-3 立即開賣／bky-13 定時開賣）、第 3 步移除場次確認（`#ce-sessrm-modal`）、bookyay 主視覺裁切（`#ce-kv-crop`）、套票早鳥 % 以折後價為底；`event-detail.html` 發布設定開賣二選一（`[data-pub="saleMode"]`）、bookyay 活動不出現立即開賣、已排程可移除場次（確認＋按儲存生效）、售票中之後場次不能移除與門票不能刪；`js/bundle-editor.js`／`bundle-detail.html` 隨場次刪除的門票停用、全被刪整組不能賣；`js/events-store.js` `goneTiersOf()`／`goneAllOf()`、示範 `pingtung-bluefin` 兩場；平台管理者角色的「營運」改稱 Admin（`js/i18n.js` 兩把、`create-campaign.html` 兩份）。紀錄見 [`UI-CHANGES.md`](UI-CHANGES.md)「一百六十二」，推導與呈現假設見 ASSUMPTIONS UIA-240。
 
 > **2026-10-09 D390 第 22 題 創作者活動管理檢查失敗與重新檢查冷卻（5.1.0.6 v16 F6、頁面狀態「檢查失敗」）**：`admin-creator-events.html` 檢查失敗時頁首下方錯誤列（`#ace-checkfail`，`alert--row alert--error`），最後檢查時間保留上次成功、清單照常；重新檢查完成後冷卻 1 分鐘（按鈕停用＋剩餘秒數）；演示 `?state=checkfail`。`js/i18n.js` 新增 4 把 `ace.*`。紀錄見 [`UI-CHANGES.md`](UI-CHANGES.md)「一百六十一」，假設見 ASSUMPTIONS UIA-239。
