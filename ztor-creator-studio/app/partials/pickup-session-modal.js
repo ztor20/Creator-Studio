@@ -20,26 +20,19 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
    openForProduct(id | { name, meta }), close }. hooks: { onCreate(session) }.
    UI chrome = data-i18n; sample item/ticket lists are literals. */
 (function () {
-  /* 2026-09-03（D240 一物一碼）：清單多一顆組合商品。組合下單時展開成成員原子商品的
-     領取單位（成員數量 × 組合數量），組合本身不產生領取碼——所以加進場次的是它的成員，
-     選品邏輯不變（仍然選「一個組合」），只是要在畫面上先講清楚會拆成幾件。
-     `members` 只餵下方的展開提示，不進 selected（選的還是組合本身）。 */
+  /* 2026-10-10（D393）：組合包不可直接加入取貨場次，清單不放組合商品。組合下單時展開成
+     成員原子商品的領取單位（D240），成員各自沿用自己商品的場次（一商品一場次，D339）；
+     成員可能分屬不同場次，組合包無法同時屬於兩場，所以場次沒有組合包的入口。 */
   /* 2026-09-30（D339 一商品一場次）：`session`＝這件商品目前綁在哪一場（key 同下方 KNOWN：
      tpe＝台北簽書會、khh＝高雄見面會），沒寫＝還沒綁。建立或編輯「別的」場次時，已綁定的商品
      仍列在下拉裡，但停用並標「已綁定」；編輯本場次時，本場次自己的商品照常可選可移除。
-     樣本分配與編輯示範對齊：編輯的是 tpe，所以 zine／tee／組合屬 tpe；poster 屬 khh，
+     樣本分配與編輯示範對齊：編輯的是 tpe，所以 zine／tee 屬 tpe；poster 屬 khh，
      讓建立與編輯兩種情境都看得到停用列；lp 留白，建立新場次時仍有一件可選。 */
   var PRODUCTS = [
     { id: 'zine', kind: 'product', name: 'Pirate Queen zine vol. 02', meta: 'Books · 40 sold', session: 'tpe' },
     { id: 'tee',  kind: 'product', name: 'Kowloon After Dark tee · M / L', meta: 'Apparel · 22 sold', session: 'tpe' },
     { id: 'lp',   kind: 'product', name: 'Kowloon After Dark vinyl LP', meta: 'Music · numbered' },
-    { id: 'poster', kind: 'product', name: 'Kowloon After Dark tour poster', meta: 'Prints · 60 sold', session: 'khh' },
-    { id: 'bundle-launch', kind: 'product', name: 'Launch night bundle', session: 'tpe',
-      meta: 'Bundle · cap ×3 + vinyl ×1 picked up on-site',
-      members: [
-        { name: 'Kowloon After Dark six-panel cap', qty: 3 },
-        { name: 'Kowloon After Dark vinyl · numbered 1/50', qty: 1 }
-      ] }
+    { id: 'poster', kind: 'product', name: 'Kowloon After Dark tour poster', meta: 'Prints · 60 sold', session: 'khh' }
   ];
   var TICKETS = [
     { id: 'sign', kind: 'ticket', name: 'Signing session · GA entry', meta: 'Taipei signing · on-site entry' },
@@ -120,9 +113,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
           </div>
           <div class="combobox__menu" data-pks-menu hidden></div>
         </div>
-        <!-- 組合商品的展開提示（D240 裁決二）：加進來的是組合，現場核銷的是它的成員，
-             一個成員一個領取碼。只講會拆成什麼，不改選品——成員不是各自的可選項目。 -->
-        <div data-pks-bundles hidden></div>
       </section>
     </div>
 
@@ -170,27 +160,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       });
       if (window.ztorIcons) window.ztorIcons.applyIcons(field);
     }
-    /* 已選項目裡的組合商品：列出它會拆成哪幾個成員的領取單位。 */
-    function renderBundles() {
-      var box = modal && modal.querySelector('[data-pks-bundles]');
-      if (!box) return;
-      var bundles = selected.map(itemById).filter(function (it) { return it && it.members && it.members.length; });
-      if (!bundles.length) { box.hidden = true; box.innerHTML = ''; return; }
-      var tpl = (window.i18nT && window.i18nT('pks.bundle.note')) ||
-                'Splits into {n} member units — each has its own pickup code and is redeemed on its own.';
-      box.hidden = false;
-      box.innerHTML = bundles.map(function (it) {
-        /* 件數＝成員數量加總（成員 qty × 組合數量），不是成員種類數 */
-        var units = it.members.reduce(function (n, m) { return n + (m.qty || 1); }, 0);
-        var lines = it.members.map(function (m) {
-          return esc(m.name) + ' ×' + (m.qty || 1);
-        }).join('<br>');
-        return '<p class="field__hint" style="margin-top:var(--sp-12)"><b>' + esc(it.name) + '</b> · ' +
-               esc(tpl.replace('{n}', units)) + '<br>' + lines + '</p>';
-      }).join('');
-    }
-    document.addEventListener('i18n:applied', function () { if (modal) renderBundles(); });
-
     function renderMenu() {
       var menu = modal.querySelector('[data-pks-menu]');
       var q = (modal.querySelector('[data-pks-search]').value || '').trim().toLowerCase();
@@ -226,8 +195,8 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     function openMenu() { renderMenu(); var m = modal.querySelector('[data-pks-menu]'); if (m) m.hidden = false; setExpanded(true); }
     function closeMenu() { var m = modal.querySelector('[data-pks-menu]'); if (m) m.hidden = true; setExpanded(false); }
     function setExpanded(on) { var s = modal.querySelector('[data-pks-search]'); if (s) s.setAttribute('aria-expanded', on ? 'true' : 'false'); }
-    function addItem(id) { if (id && selected.indexOf(id) < 0) selected.push(id); var s = modal.querySelector('[data-pks-search]'); if (s) s.value = ''; renderChips(); renderMenu(); renderBundles(); syncCreateEnabled(); }
-    function removeItem(id) { var i = selected.indexOf(id); if (i >= 0) selected.splice(i, 1); renderChips(); renderMenu(); renderBundles(); syncCreateEnabled(); }
+    function addItem(id) { if (id && selected.indexOf(id) < 0) selected.push(id); var s = modal.querySelector('[data-pks-search]'); if (s) s.value = ''; renderChips(); renderMenu(); syncCreateEnabled(); }
+    function removeItem(id) { var i = selected.indexOf(id); if (i >= 0) selected.splice(i, 1); renderChips(); renderMenu(); syncCreateEnabled(); }
     /* 兩步各自檢查自己的必填：step 1 名稱＋地點＋時間先後，step 2 至少 1 個項目
        （D112 無草稿態）。掃碼密碼自 2026-08-01 起是選填，不進這份檢查。 */
     function syncCreateEnabled() {
@@ -350,9 +319,9 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       var isEdit = titleKey === 'pks.title.edit';
       editingSession = isEdit ? 'tpe' : null;
       updateTimeErr();
-      /* 編輯既有場次＝台北簽書會那一場，項目已經選好（含一顆組合商品，用來示範
-         「組合會拆成成員各自核銷」的提示）；建立新場次則從空的開始。 */
-      selected = preselectId ? [preselectId] : (isEdit ? ['zine', 'tee', 'bundle-launch'] : []);
+      /* 編輯既有場次＝台北簽書會那一場，項目已經選好（單售商品；組合包不可直接加入，D393）；
+         建立新場次則從空的開始。 */
+      selected = preselectId ? [preselectId] : (isEdit ? ['zine', 'tee'] : []);
       var search = modal.querySelector('[data-pks-search]');
       if (search) search.value = '';
       /* 掃碼密碼預先產生：創作者不想管就直接下一步；要自訂再改 */
@@ -362,7 +331,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (isEdit) modal.querySelector('[data-pks-url]').value = 'ztor.app/scan/tpe-signing-7f3a2';
       modal.querySelector('[data-pks-create]').setAttribute('data-i18n', isEdit ? 'pks.save' : 'pks.create');
       renderChips();
-      renderBundles();
       closeMenu();
       setStep(1);
       var title = modal.querySelector('#pickup-dialog-title');

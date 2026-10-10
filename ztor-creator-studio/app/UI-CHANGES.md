@@ -13,6 +13,21 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-10（一百六十六）· 建立取貨場次彈窗移除組合包選項（A spec-derived · D393）
+
+**標籤**：release2.3、release2.4
+
+**範圍**：`partials/pickup-session-modal.js`、`js/i18n.js`
+
+**依據**：使用者 2026-10-10 裁決方案 A（D393）：取貨場次只能加單售實體商品與活動票券，組合包不可直接加入；組合包的成員各自沿用自己商品的場次（一商品一場次，D339）。規格見 5.1.5.12 F2 與主規格 §7.2。
+
+### A · spec-derived
+
+- **可選項目清單移除組合包**：「建立取貨場次」第二步的下拉原本多一列「Launch night bundle」（`bundle-launch`），現在只剩單售商品（zine、tee、lp、poster）與兩個活動票券。
+- **編輯示範預選改為 zine、tee**：從場次詳情編輯時，已選 chip 原本是 zine、tee、Launch night bundle，現在是 zine、tee。
+- **展開提示區塊退場**：「會拆成 N 個成員的領取單位」的提示（`data-pks-bundles`、`renderBundles`）因為沒有組合項目而成為死碼，連同 `members` 欄位與 `i18n.js` 的 `pks.bundle.note` 鍵一併移除（`pks.*` 命名空間 46 → 45）。
+- **不變的**：訂單範例資料（`js/orders-store.js`）與取貨場次詳情頁（`pickup-detail.html`）裡的「來自組合 Launch night bundle」是成員領取單位的來源標記，不是把組合包當場次項目，保留。
+
 ## 2026-10-09（一百六十三）· D391 補充二：bookyay 門票顯示開關進 release2.4、組合包「無法販售」、單張門票暫停的粉絲頁標示（A spec-derived · D391 補充二）
 
 **標籤**：release2.4
