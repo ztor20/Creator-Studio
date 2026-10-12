@@ -112,7 +112,7 @@
         var btn = el('button', 'section-outline__item');
         btn.type = 'button';
         btn.dataset.idx = String(i);
-        var mk = el('span', 'section-outline__mk');
+        var mk = el('span', 'section-outline__mk pmark');   /* 2026-10-12：記號改用 progress-mark（.pmark），放列尾 */
         var ic = document.createElement('i');
         ic.setAttribute('data-lucide', 'check');
         ic.className = 'ztor-icon';
@@ -155,6 +155,7 @@
         if (it.st !== st || rebuilt) {
           it.st = st;
           it.mk.setAttribute('data-st', st);
+          it.mk.classList.toggle('pmark--done', st === 'done');
           it.sr.textContent = ' · ' + l[st];
         }
         it.btn.title = it.title + ' · ' + l[st];

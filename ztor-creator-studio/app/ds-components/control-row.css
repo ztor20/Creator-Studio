@@ -50,6 +50,25 @@
    場次之間才看得出界線。內距自己帶（沒有 __body 可以借）。 */
 .control-group--plain { padding: var(--sp-16); }
 
+/* --readout（2026-10-12 使用者：「不限應該放右邊，和標題同一行」）：盒子是 .field、抬頭是 .field__label、值是 .field-readout 時，
+   抬頭靠左、值靠右同一行；說明 .field__hint 與錯誤句另起一行通欄。值由 js/ticket-bundle.js 畫在 [data-tb-host] 裡，
+   host 用 display: contents 讓值直接進這張格線。首個消費情境：建立組合包「購買條件」。 */
+.field.control-group--readout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--sp-16);
+  row-gap: var(--sp-6);
+  align-items: baseline;
+}
+.control-group--readout > .field__label { grid-column: 1; grid-row: 1; margin: 0; }
+.control-group--readout > [data-tb-host] { display: contents; }
+.control-group--readout .field-readout { grid-column: 2; grid-row: 1; text-align: right; }
+.control-group--readout .field__hint,
+.control-group--readout .field__error,
+.control-group--readout > [data-cb-conds-wrap] { grid-column: 1 / -1; margin: 0; }
+/* 條件清單還是空的時，只留「新增條件」按鈕，不放「還沒有條件：任何人都買得到」那句（使用者 2026-10-12） */
+.control-group--readout .cond-list__empty { display: none; }
+
 /* 盒子本身也是一個 .field 時（＝它裝的是一組欄位、不是單一控制項），.field 的 6px 列距
    太密：盒內第一行是這一組的抬頭，抬頭與欄位之間要照群組間距。2026-08-13 使用者指示
    「標題和下面的欄位要有規則上的間距」，首個消費情境是場次的「開放入場」。

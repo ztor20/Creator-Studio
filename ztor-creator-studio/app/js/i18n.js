@@ -5941,6 +5941,8 @@
     'cp.listing.schedule':  { en: 'Schedule',                         zh: '定時上架' },
     'cp.listing.none-sub':  { en: 'Save as draft, stays hidden',      zh: '存成草稿，先不對外' },
     'cp.listing.now-sub':   { en: 'Goes live right after saving',     zh: '儲存後立刻出現在商店' },
+    'cb.listing.none-sub':  { en: 'Published, but not listed yet',    zh: '發布後暫不上架' },   /* 2026-10-12 建立組合包（使用者指示） */
+    'cb.listing.now-sub':   { en: 'Goes live when you publish',       zh: '發布後同時上架' },   /* 2026-10-12 建立組合包：上架發生在「發布」而不是儲存草稿（使用者指示） */
     'cp.listing.schedule-sub': { en: 'Auto-lists at the time you set', zh: '到指定時間自動上架' },
     'cp.listing.time':      { en: 'Listing time',                     zh: '上架日期與時間' },
     'cp.listing.pending':   { en: 'Time zone & exact timing pending spec.', zh: '時區與時間粒度待規格確認。' },
@@ -6689,15 +6691,19 @@
     'cb.sec.intro':            { en: 'About the bundle',               zh: '組合包介紹' },
     'cb.sec.content':          { en: 'Choose contents',                zh: '選擇組合物' },
     'cb.sec.sale':             { en: 'Sales settings',                 zh: '販售設定' },
+    'cb.sec.more':             { en: 'More',                           zh: '其他' },   /* 2026-10-12 電影關聯移到最後，大綱分類另立 */
     /* 2026-10-12 建立組合包改版（UI-CHANGES 一百八十八；D402）：8 張分卡標題、組合物表、加入組合物彈窗、價格階梯、數量卡 */
     'cb.sec.info':              { en: 'Bundle info', zh: '組合資訊' },
-    'cb.sec.media':             { en: 'Show it off', zh: '展示' },
+    /* 2026-10-12 使用者選「圖片與影片」（原「展示」） */
+    'cb.sec.media':             { en: 'Photos & videos', zh: '圖片與影片' },
+    'ce.bd.sec.media':          { en: 'Bundle images', zh: '組合包圖片' },   // 2026-10-12 活動的組合包編輯器（分段版型）；e-shop 建立組合包仍用上面的「展示」
     'cb.sec.members':           { en: 'What’s in it', zh: '組合物' },
-    'cb.sec.price':             { en: 'Price', zh: '價格' },
+    'cb.sec.price':             { en: 'Pricing & discounts', zh: '定價與優惠' },   /* 2026-10-12 使用者：價格卡標題改「定價與優惠」 */
     'cb.sec.qty':               { en: 'Quantity', zh: '數量' },
     'cb.sec.listing':           { en: 'Listing & sale', zh: '上架與開賣' },
     'cb.mt.name':               { en: 'Name', zh: '名稱' },
-    'cb.mt.price':              { en: 'Price · left', zh: '原價・剩餘' },
+    'cb.mt.price':              { en: 'Price', zh: '原價' },
+    'cb.mt.col.left':           { en: 'Left', zh: '剩餘' },
     'cb.mt.open':               { en: 'Show ticket options', zh: '展開門票設定' },
     'cb.mt.left':               { en: '{n} left', zh: '剩 {n}' },
     'cb.mt.tix.none':           { en: 'No tickets picked · change', zh: '尚未選門票 · 調整' },
@@ -6814,6 +6820,12 @@
     'tb.f.unlistAt':           { en: 'Unlist time',                    zh: '下架日期與時間' },
     'tb.f.saleStart':          { en: 'Sale start',                     zh: '開賣日期與時間' },
     'tb.f.saleEnd':            { en: 'Sale end',                       zh: '停售日期與時間' },
+    'tb.g.list':               { en: 'Listing & unlisting',            zh: '上架與下架' },
+    'tb.g.sale':               { en: 'Sale start & end',               zh: '開賣與停售' },
+    'tb.f.s.listAt':           { en: 'Listing',                        zh: '上架' },
+    'tb.f.s.unlistAt':         { en: 'Unlisting',                      zh: '下架' },
+    'tb.f.s.saleStart':        { en: 'Sale start',                     zh: '開賣' },
+    'tb.f.s.saleEnd':          { en: 'Sale end',                       zh: '停售' },
     'tb.follow':               { en: 'Follow event',                   zh: '跟隨活動' },
     'tb.custom':               { en: 'Custom',                         zh: '另設' },
     'tb.follow.list.now':      { en: 'When the event goes live',       zh: '活動上架時' },
@@ -10409,12 +10421,16 @@
     /* 墓碑 'ed.tm.sec.basic'（en Basics／zh 基本）：2026-09-23 Q125 拿掉票種彈窗「基本」的
        區塊標題——彈窗標題與副標已經是脈絡，段內只有一格、標籤自己說完了。 */
     'ed.tm.sec.price':    { en: 'Price & quantity',       zh: '價格與數量' },
-    'ed.tm.sec.entry':    { en: 'Entry',                  zh: '入場' },
+    'ed.tm.sec.entry':    { en: 'Early entry time',       zh: '提前入場時間' },   // 2026-10-12 照場次步驟用詞（原「入場」）
+    'ed.tm.doors.at':     { en: 'Time',                   zh: '時間' },
+    'ed.tm.doors.before': { en: 'Before start',           zh: '開演前' },
+    'ed.tm.doors.min':    { en: 'min',                    zh: '分鐘' },
+    'ce.img.setkv':       { en: 'Set as key visual',      zh: '設為主視覺' },
+    'ed.tm.sec.show':     { en: 'Listing & display',      zh: '上架與顯示' },
     /* D385（2026-10-09，5.1.6.2 §4.5 F9）：bookyay 帶入活動的唯讀補齊——購買條件、活動預設購票規則、入場鎖定、刪除停用 */
     'ed.tm.sec.rules':    { en: 'Purchase rules',         zh: '購買條件' },
     'ed.tm.rules.follow': { en: 'Follow event defaults',  zh: '跟隨活動預設' },
     'ed.tm.rules.on':     { en: 'On',                     zh: '開' },
-    'ed.tm.rules.follow.bky': { en: 'Tickets on a bookyay event follow the event defaults.', zh: 'bookyay 活動的門票一律跟隨活動預設。' },
     'ed.rule.cap':        { en: 'Purchase limits',        zh: '限購' },
     'ed.rule.cap.person': { en: '{n} per person',         zh: '每人 {n} 張' },
     'ed.rule.cap.order':  { en: '{n} per order',          zh: '每次 {n} 張' },
@@ -10440,11 +10456,13 @@
                             zh: '修改只影響之後的購買，已售出的票不變；限購改小也不會收回粉絲已買的票。' },
     'ed.tm.early.pol':    { en: 'Arriving before early entry time', zh: '早於提前入場時間的處理' },   // D396 改稱呼
     'ed.tm.early.pol.follow': { en: 'Follow the date',    zh: '跟隨場次' },
+    'ed.tm.early.pol.custom': { en: 'Custom',             zh: '自訂' },
+    'ed.evrules.none.cond': { en: 'No conditions set', zh: '未設定條件' },
     'ed.tm.early.bky':    { en: 'Follows the date — early entry at {t}, set in bookyay.', zh: '跟隨場次——提前入場時間 {t}，由 bookyay 帶入。' },
     'ed.tm.early.bky.none': { en: 'Follows the date — bookyay has no early entry time for it.', zh: '跟隨場次——bookyay 沒有設定提前入場時間。' },
     'ed.tm.del.bky':      { en: "Imported from bookyay — it can't be deleted. Change it in bookyay.", zh: '由 bookyay 帶入，不能刪除；要改請回 bookyay 改。' },
     'ed.tm.sec.sale':     { en: 'Selling',                zh: '販售' },
-    'ed.tm.gross':        { en: 'Fans pay',               zh: '粉絲付' },
+    'ed.tm.gross':        { en: 'What fans pay',          zh: '粉絲實付' },
     'ed.tm.plat':         { en: 'Platform fee',           zh: '平台費' },
     'ed.tm.net':          { en: 'You receive',            zh: '創作者實收' },
     /* D316（2026-09-23）：計費基準（TIX-001）裁決為折後品項實付＝票價，不再是待確認。 */
@@ -10462,12 +10480,6 @@
     'ed.sess.sum.nodate': { en: 'Date not set',     zh: '日期尚未設定' },
     'ed.sess.remove':     { en: 'Remove this date',       zh: '移除這一場' },
     /* D391 第 5、12、13 題（2026-10-09）：開賣前移除場次的確認（列出一併刪除的門票）；售票中之後場次與門票不能刪 */
-    /* D391 第 9 題（2026-10-09）：活動詳情的主視覺裁切，用詞同建立流程 #ce-kv-crop */
-    'ed.img.crop':        { en: 'Key visual crop',        zh: '主視覺裁切' },
-    'ed.img.crop.left':   { en: 'Left',                   zh: '靠左' },
-    'ed.img.crop.center': { en: 'Center',                 zh: '置中' },
-    'ed.img.crop.right':  { en: 'Right',                  zh: '靠右' },
-    'ed.img.crop.hint':   { en: 'A 1:1 image in the 2:3 portrait frame loses some of each side. Pick which part to keep.', zh: '1:1 的原圖放進 2:3 的直式框，左右會裁掉一部分；選要保留哪一側。' },
     'ed.sess.locked':     { en: "Tickets are on sale, so dates can't be removed. To stop selling a date, pause or hide its tickets.", zh: '已開賣，場次不能移除；要停止販售某一場，請暫停售票或隱藏它的門票。' },
     'ed.sess.rm.title':   { en: 'Remove {name}?',          zh: '移除「{name}」？' },
     'ed.sess.rm.lead':    { en: 'Removing this date also deletes these tickets:', zh: '移除這一場會一併刪除以下門票：' },

@@ -11,7 +11,7 @@
      .limit-set.limit-set--bundle   組合包：標題列（「限購」標題＋「跟隨成員預設」開關）＋一句說明＋三列外框，
                                     每列多一行 .limit-set__src 寫「取自誰」（哪一個成員卡住上限、怎麼換算成組）。
                                     2026-10-12（建立組合包改版，使用者裁示）：徽章＋覆寫按鈕改成開關（開＝跟隨、關＝覆寫）；
-                                    三欄改成一個細框裡的三列（左＝名稱與輔助說明、右＝輸入框與「取自誰」），
+                                    整個區塊（標題列、說明、三列）同一個細框，三欄是框裡的三列（左＝名稱與輔助說明、右＝輸入框與「取自誰」），
                                     與價格階梯（price-ladder）同一種列。跟隨時輸入框 disabled 照 Q128。
 
    anatomy
@@ -53,7 +53,12 @@
 .limit-set__input { max-width: var(--w-220); }
 
 /* ── 組合包變體（2026-10-12）：標題列＋說明＋三列外框 ── */
-.limit-set--bundle { gap: var(--sp-10); }
+.limit-set--bundle {
+  gap: 0;
+  border: 1px solid var(--border-soft);   /* 2026-10-12 使用者：「包含限購開關那一列，整個都用這種線框」——標題列、說明、三列同一個外框，列與列之間細線（同 price-ladder） */
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
 .limit-set__title { font-size: var(--fs-14); color: var(--foreground); }
 .limit-set__follow {
   display: inline-flex;
@@ -63,15 +68,10 @@
   font-size: var(--fs-13);
   color: var(--foreground-muted);
 }
-.limit-set--bundle .limit-set__head { flex-wrap: nowrap; }
+.limit-set--bundle .limit-set__head { flex-wrap: nowrap; padding: var(--sp-14) var(--sp-16) 0; }
 .limit-set--bundle .limit-set__state { margin-left: auto; }
-.limit-set--bundle > .limit-set__sub { margin: 0; line-height: var(--lh-relaxed); }
-.limit-set--bundle .limit-set__fields {
-  gap: 0;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
+.limit-set--bundle > .limit-set__sub { margin: 0; padding: var(--sp-4) var(--sp-16) var(--sp-14); line-height: var(--lh-relaxed); }
+.limit-set--bundle .limit-set__fields { gap: 0; }
 .limit-set--bundle .limit-set__field {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 160px;
@@ -82,7 +82,6 @@
   padding: var(--sp-14) var(--sp-16);
   border-top: 1px solid var(--border-soft);
 }
-.limit-set--bundle .limit-set__field:first-child { border-top: 0; }
 .limit-set--bundle .limit-set__field > .field__label { grid-column: 1; grid-row: 1; font-size: var(--fs-14); }
 .limit-set--bundle .limit-set__field > .field__hint:not(.limit-set__src) { grid-column: 1; grid-row: 2; margin: 0; }
 .limit-set--bundle .limit-set__input { grid-column: 2; grid-row: 1; max-width: none; width: 100%; }

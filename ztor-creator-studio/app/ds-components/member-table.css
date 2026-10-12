@@ -21,23 +21,36 @@
    消費：create-bundle.html（組合物卡）、bundle-detail.html（組合設定分頁的成員清單）、js/bundle-editor.js（建立活動第 5 步組合包彈窗 layout:'split'）
    surface：坐在 form-section--outlined 卡面上；縮圖底用 --muted 媒體井（同 card.css 的 Q66 例外）。
    ============================================================ */
-.member-table { border-top: 1px solid var(--border-soft); }
+.member-table {
+  /* 2026-10-12 使用者：「這一整個表格，要參考價格階梯的線框設計」——整張表一個細框＋圓角，表頭與各列左右留 --sp-16、列與列之間細線，
+     最後一列不畫底線；展開區同價格階梯的展開區，淡壓深一階。 */
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.member-table:has(> .member-table__head[hidden]) { border: 0; }   /* 沒有任何成員（表頭收起）時不畫框，只剩「加入組合物」 */
+.member-table > :last-child,
+.member-table__row:last-child,
+.member-table__exp:has(+ :empty:last-child) { border-bottom: 0; }   /* 成員列可能包在 [data-cb-items-table] 容器裡、容器還可能是空的：三種情況最後一條底線都不畫（外框自己有線） */
 .member-table__head,
 .member-table__row {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) 132px 112px 28px;
-  gap: var(--sp-8);
+  grid-template-columns: 20px minmax(0, 1fr) 92px 84px 112px 28px;   /* 2026-10-12：原價與剩餘分成兩欄（使用者：分開欄位） */
+  gap: var(--sp-16);   /* 欄距 8→16（使用者 2026-10-12：「間距留出來」——原價靠右、每組靠左，8px 時兩欄的字貼在一起） */
   align-items: center;
 }
 .member-table__head {
-  padding: var(--sp-8) 0;
+  padding: var(--sp-8) var(--sp-16);
   border-bottom: 1px solid var(--border-soft);
   font-size: var(--fs-11);
   color: var(--muted-foreground);
 }
-.member-table__head > :nth-child(3) { text-align: right; }
+.member-table__head > :nth-child(3),
+.member-table__head > :nth-child(4) { text-align: right; }
+/* 表頭「名稱」對齊列裡的名稱文字（2026-10-12 使用者：「名稱對齊」）：多縮一個縮圖寬＋縮圖與文字的間距，與展開門票表的「門票」同一條線 */
+.member-table__head > :nth-child(2) { padding-left: calc(36px + var(--sp-10)); }
 .member-table__row {
-  padding: var(--sp-10) 0;
+  padding: var(--sp-12) var(--sp-16);
   border-bottom: 1px solid var(--border-soft);
   font-size: var(--fs-13);
 }
@@ -62,6 +75,7 @@
 .member-table__s { font-size: var(--fs-11); color: var(--muted-foreground); }
 .member-table__price { text-align: right; font-variant-numeric: tabular-nums; color: var(--foreground); }
 .member-table__sub { display: block; font-size: var(--fs-11); color: var(--muted-foreground); }
+.member-table__left { text-align: right; font-size: var(--fs-13); font-variant-numeric: tabular-nums; color: var(--muted-foreground); }
 .member-table__qty .amount-field { width: 112px; }
 .member-table__x { justify-self: end; }
 
@@ -100,13 +114,51 @@
 .member-table__exp {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-10);
-  padding: var(--sp-4) 0 var(--sp-14) calc(20px + var(--sp-8) + 36px + var(--sp-10));
+  padding: 0 0 var(--sp-12);
   border-bottom: 1px solid var(--border-soft);
+  background: color-mix(in srgb, var(--layer-0-surface) 25%, transparent);   /* 同 price-ladder 展開區 */
 }
+/* 2026-10-12 使用者：「裡面的表格可以擴展出來，不要自己再畫一個在裡面」——展開區裡的允許門票表不再自帶外框與圓角，
+   直接攤滿展開區整個寬度（列間細線、左右 --sp-16，與上面成員列的欄位對齊）；下面的說明句同樣左右 --sp-16。 */
+.member-table__exp > .field { margin: 0; }
+.member-table__exp .bd-tbl { border: 0; border-radius: 0; }
+.member-table__exp .bd-tbl__head,
+.member-table__exp .bd-tbl__row { padding-inline: var(--sp-16); }
+/* 允許門票表的欄位與上面成員列同一組欄軌（2026-10-12 使用者：「每組」「張數輸入」「門票剩餘」垂直對齊）：
+   勾選｜門票名｜售價（對齊原價欄、靠右）｜（剩餘欄空著）｜剩餘（對齊每組欄、靠左）｜（✕ 欄空著） */
+.member-table__exp .bd-tbl--tix .bd-tbl__head,
+.member-table__exp .bd-tbl--tix .bd-tbl__row {
+  grid-template-columns: 20px minmax(0, 1fr) 92px 84px 112px 28px;
+  gap: var(--sp-16);
+}
+/* 門票名稱對齊上面活動名稱（2026-10-12 使用者：「名稱對齊」）：名稱欄多縮一個縮圖寬＋縮圖與文字的間距（36px＋--sp-10），門票名左緣與活動名同一條線 */
+.member-table__exp .bd-tbl--tix .bd-tbl__head > :nth-child(2),
+.member-table__exp .bd-tbl--tix .bd-tbl__row > :nth-child(2) { padding-left: calc(36px + var(--sp-10)); }
+/* 勾選框貼在門票名稱前面（2026-10-12 使用者：「勾選放在票券名稱前面一點的位置」）：勾選框與名稱同放名稱欄（同一格疊放），
+   框的右緣離名稱文字 --sp-10；原本勾選框獨占最左 20px 欄、離名稱很遠。 */
+.member-table__exp .bd-tbl--tix .bd-tbl__row > :nth-child(1) { grid-column: 2; grid-row: 1; justify-self: start; margin-left: calc(36px + var(--sp-10) - 16px - var(--sp-10)); }
+.member-table__exp .bd-tbl--tix .bd-tbl__row > :nth-child(2) { grid-column: 2; grid-row: 1; }
+.member-table__exp .bd-tbl--tix .bd-tbl__head > :nth-child(3),
+.member-table__exp .bd-tbl--tix .bd-tbl__row > :nth-child(3) { grid-column: 3; text-align: right; }
+.member-table__exp .bd-tbl--tix .bd-tbl__head > :nth-child(4),
+.member-table__exp .bd-tbl--tix .bd-tbl__row > :nth-child(4) { grid-column: 5; text-align: left; }
+.member-table__exp > .field__hint,
+.member-table__exp > p { margin: var(--sp-10) 0 0; padding-inline: var(--sp-16); }
 .member-table__exp[hidden] { display: none; }
 .member-table__exp > .field { margin: 0; }
 
 .member-table__empty { padding: var(--sp-14) 0; font-size: var(--fs-13); color: var(--muted-foreground); text-align: center; }
 .member-table__empty[hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) { .member-table__open .ztor-icon { transition: none; } }
+
+/* --no-left（2026-10-12 使用者：表頭「剩餘」也不用）：沒有剩餘欄的版本——欄位只剩 名稱｜原價｜每組｜✕，
+   剩餘數量整欄不畫（成員列、表頭、展開門票表的欄軌一起縮成四欄）。首個消費：建立組合包頁。 */
+.member-table--no-left .member-table__head,
+.member-table--no-left .member-table__row,
+.member-table--no-left .bd-tbl--tix .bd-tbl__head,
+.member-table--no-left .bd-tbl--tix .bd-tbl__row { grid-template-columns: 20px minmax(0, 1fr) 92px 112px 28px; }
+.member-table--no-left .member-table__left,
+.member-table--no-left .member-table__head > :nth-child(4) { display: none; }
+.member-table--no-left .member-table__head > :nth-child(5) { text-align: left; }
+.member-table--no-left .bd-tbl--tix .bd-tbl__head > :nth-child(4),
+.member-table--no-left .bd-tbl--tix .bd-tbl__row > :nth-child(4) { grid-column: 4; }
