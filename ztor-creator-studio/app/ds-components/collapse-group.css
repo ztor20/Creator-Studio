@@ -13,7 +13,7 @@
            .collapse-head__sum         一行摘要，靠右、單行不換行
          （切換鈕之外的動作，如移除，是 .collapse-head 的第二個子元素——
            按鈕不能包按鈕，所以不放進 __toggle 裡）
-       .collapse-body[hidden]          折疊時整段收起
+       .collapse-body[hidden]          折疊時整段收起；展開時是 flex 直排、列距 gap --sp-20 由它持有
 
    為什麼摘要放同一行、不換行到標題下方（A 案，2026-08-13 使用者裁決）：
    這一步的任務是排時間，折疊態要回答的只有「這場是哪天、幾點」——一行就夠，
@@ -75,6 +75,11 @@
 /* 展開時摘要收起：同一組數字在畫面上出現兩次，讀起來像有兩份資料 */
 [data-open="true"] > .collapse-head .collapse-head__sum { display: none; }
 
+/* 展開後盒內各列（日期列、時間列、開關列……）的距離由 body 這個容器的 gap 持有（Q103，2026-10-12 使用者指出
+   多場展開時各列黏在一起）：body 原本是一般區塊，外層盒的 flex gap 只發得到 body 自己，碰不到裡面的列。
+   數值 --sp-20＝只有一場、欄位直接攤在盒裡時的列距，單場與多場同一把尺。成員一律不自帶下外距。 */
+.collapse-body { display: flex; flex-direction: column; gap: var(--sp-20); }
+.collapse-body > .form-grid, .collapse-body > .field { margin-bottom: 0; }
 .collapse-body[hidden] { display: none; }
 
 @media (prefers-reduced-motion: reduce) {

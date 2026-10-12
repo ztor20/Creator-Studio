@@ -200,7 +200,8 @@
   /* 盒標與底下第一列的距離由 gap 接手，不再自己帶 margin（否則 20＋16 疊成 36）。 */
   .ce-sess__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12); }
   /* 「套用第一場的設定」是動作、不是欄位：不跟著欄位撐滿整行。 */
-  .ce-sess > [data-sess-copy1] { align-self: flex-start; }
+  .ce-sess > [data-sess-copy1],
+  .ce-sess__body > [data-sess-copy1] { align-self: flex-start; }
   /* 「未到入場時間」與它上面的「開放入場」包成同一個 flex 子項（見 sessDoorsHTML），
      所以 .rule-sub 自己那 12px 的上距就是這一組內部的距離，比列距（20px）小一階，
      從屬關係才讀得出來。 */
@@ -4352,11 +4353,23 @@
       scheduleSave();
       return;
     }
-    /* 套用第一場的設定：只複製時間與入場規則，日期與名稱留著——那兩個本來就該各場不同。 */
+    /* 套用第一場的設定：複製時間、跨日與入場規則，日期與名稱留著——那兩個本來就該各場不同。 */
     if (e.target.closest("[data-sess-copy1]") && s) {
       const s0 = series.list[0];
       if (s0 && s0 !== s) {
         ["start", "end", "doors", "doorsMin", "doorsOn", "early"].forEach(k => { s[k] = s0[k]; });
+        /* 跨日一起套用（2026-10-12 使用者指示）：開關狀態跟著第一場走；第一場是跨日時，
+           結束日期＝這一場自己的開始日期＋第一場「結束日期 − 開始日期」的天數（時間已一起複製，兩端對得上）。
+           這一場還沒填開始日期、或第一場的天數算不出來時，結束日期留空交給必填驗證——不拿第一場的絕對日期硬蓋。
+           第一場不是跨日時只關開關、結束日期留著（同跨日開關「關掉不清、再開回填」的規則）。 */
+        s.multiDay = !!s0.multiDay;
+        if (s0.multiDay) {
+          const toD = v => { const p = (v || "").trim().split("-"); return p.length === 3 ? new Date(Date.UTC(+p[0], p[1] - 1, +p[2])) : null; };
+          const a = toD(s0.date), b = toD(s0.endDate), mine = toD(s.date);
+          const days = (a && b && !isNaN(a) && !isNaN(b)) ? Math.round((b - a) / 864e5) : null;
+          s.endDate = (mine && !isNaN(mine) && days != null)
+            ? new Date(mine.getTime() + days * 864e5).toISOString().slice(0, 10) : "";
+        }
         renderSessions(); syncReview(); scheduleSave();
       }
       return;

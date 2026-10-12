@@ -2899,6 +2899,9 @@ Letterpress cover, uncoated stock.</textarea></div>
       </div>
       <div class="collapse-body" hidden>
         <div class="form-grid" style="margin-top:var(--sp-16)">
+          <label class="field"><span class="field__label">Event date</span><input class="input" value="2026-10-02"></label>
+        </div>
+        <div class="form-grid">
           <label class="field" style="margin-bottom:0"><span class="field__label">Start time</span><input class="input" value="19:00"></label>
           <label class="field" style="margin-bottom:0"><span class="field__label">End time</span><input class="input" value="21:30"></label>
         </div>
@@ -2924,10 +2927,10 @@ Letterpress cover, uncoated stock.</textarea></div>
   <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
   <table class="spec" data-product-spec="collapse-group"><tbody>
     <tr><td>Source</td><td><code>collapse-group.css</code></td></tr>
-    <tr><td>Anatomy</td><td><code>[data-open]</code> box (surface layer is the consumer's call — sessions use <code>.card--muted</code>) &gt; <code>.collapse-head</code> &gt; <code>.collapse-head__toggle</code> (<code>__chev</code> + title + <code>__sum</code>) + optional trailing action · <code>.collapse-body[hidden]</code>.</td></tr>
+    <tr><td>Anatomy</td><td><code>[data-open]</code> box (surface layer is the consumer's call — sessions use <code>.card--muted</code>) &gt; <code>.collapse-head</code> &gt; <code>.collapse-head__toggle</code> (<code>__chev</code> + title + <code>__sum</code>) + optional trailing action · <code>.collapse-body[hidden]</code> (when open: a flex column whose <code>gap: --sp-20</code> owns the spacing between rows — date row, time row, switch rows; members carry no bottom margin, Q103. 2026-10-12: rows inside an expanded date used to touch).</td></tr>
     <tr><td>Behavior / usage</td><td>The toggle takes the whole row so clicking the title, the summary or the empty space all open the group — aiming at a 16px chevron is not an entry point. Trailing actions (remove) sit next to the toggle, never inside it (a button cannot contain a button). The summary is single-line and truncates; on expand it hides, so the same numbers never appear twice. Consumers keep open-state outside the DOM when the list re-renders.</td></tr>
     <tr><td>Variants</td><td><code>.collapse-head__sum--todo</code> — the group is not filled in yet (warning ink).</td></tr>
-    <tr><td>Token usage</td><td><code>--sp-12</code>, <code>--fs-13</code>, <code>--muted-foreground</code>, <code>--foreground</code>, <code>--status-warning-ink</code>, <code>--ring</code>, <code>--easing</code>.</td></tr>
+    <tr><td>Token usage</td><td><code>--sp-12</code>, <code>--sp-20</code> (body row gap), <code>--fs-13</code>, <code>--muted-foreground</code>, <code>--foreground</code>, <code>--status-warning-ink</code>, <code>--ring</code>, <code>--easing</code>.</td></tr>
     <tr><td>Classes</td><td><code>.collapse-head</code> · <code>.collapse-head__toggle</code> · <code>.collapse-head__chev</code> · <code>.collapse-head__sum</code> · <code>.collapse-head__sum--todo</code> · <code>.collapse-body</code></td></tr>
     <tr><td>Evidence / usage</td><td>create-event (Dates step, fixed-venue and tour boxes) · event-detail (Dates tab). Behaviour agreed the same round: a single date never folds (no box either), multiple dates start collapsed, the date you just added auto-expands, and several can be open at once.</td></tr>
   </tbody></table>
@@ -5363,17 +5366,16 @@ Letterpress cover, uncoated stock.</textarea></div>
     <span class="layer layer--molecule">🟡 molecule</span>
   </div>
 <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
-  <p class="sub__desc" data-en>Three small parts for “helping people split up and read a long form” (create-bundle, 2026-10-12; confirmed item by item on the mock page). <code>.form-ask</code> is one question that needs a decision (“Lock stock for this bundle?”): question (14) → one plain sentence saying what happens if you choose (12) → a two-way choice (segmented radio cards) → a body that only appears once chosen. Rows inside the body use <code>__row</code>: name on the left, input pushed to the right. Consecutive questions in one card are separated by a thin line. <code>.form-cat</code> is a category label — one small line (number + name) above a card that groups consecutive cards into a category; the same categories are the group titles of the <a href="#section-outline">Section outline</a>. <code>.form-tally</code> is a result readout on the right of a card’s title row (small name + big number + unit).</p>
-  <p class="sub__desc" data-zh>三個小零件，都是「長表單裡幫人分段、看結果」（建立組合包，2026-10-12，使用者在示意頁逐項定案）。<code>.form-ask</code> 是一個要使用者做決定的問題（例「要鎖定庫存給這個組合嗎？」）：問句（14）→ 一句白話說明，寫清楚選了會怎樣（12）→ 二選一（segmented radio-cards）→ 選了才出現的內容。內容裡要填值的那一列用 <code>__row</code>：名稱在左、輸入框靠右。同一張卡裡連續幾題，題與題之間一條細線。<code>.form-cat</code> 是表單分類標：一張分卡上方的一行小字（序號＋分類名），把連續幾張分卡歸成一類；同樣的分類也是 <a href="#section-outline">Section outline</a> 的群組標題。<code>.form-tally</code> 是分卡標題列右側的結果讀數（小字名稱＋大數字＋單位）。</p>
+  <p class="sub__desc" data-en>Two small parts for “helping people split up and read a long form” (create-bundle, 2026-10-12; confirmed item by item on the mock page). <code>.form-ask</code> is one question that needs a decision (“Lock stock for this bundle?”): question (14) → one plain sentence saying what happens if you choose (12) → a two-way choice (segmented radio cards) → a body that only appears once chosen. Rows inside the body use <code>__row</code>: name on the left, input pushed to the right. Consecutive questions in one card are separated by a thin line. The former third part, the <code>.form-cat</code> category label above cards, was retired on 2026-10-12; categories now appear only as group titles in the <a href="#section-outline">Section outline</a>. <code>.form-tally</code> is a result readout on the right of a card’s title row (small name + big number + unit).</p>
+  <p class="sub__desc" data-zh>兩個小零件，都是「長表單裡幫人分段、看結果」（建立組合包，2026-10-12，使用者在示意頁逐項定案）。<code>.form-ask</code> 是一個要使用者做決定的問題（例「要鎖定庫存給這個組合嗎？」）：問句（14）→ 一句白話說明，寫清楚選了會怎樣（12）→ 二選一（segmented radio-cards）→ 選了才出現的內容。內容裡要填值的那一列用 <code>__row</code>：名稱在左、輸入框靠右。同一張卡裡連續幾題，題與題之間一條細線。原本的第三個零件 <code>.form-cat</code>（分卡上方的分類小標）已於 2026-10-12 撤除，分類只留在 <a href="#section-outline">Section outline</a> 的群組標題。<code>.form-tally</code> 是分卡標題列右側的結果讀數（小字名稱＋大數字＋單位）。</p>
   <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
   <div class="compose">
     <div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div>
     <div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="#segmented">Segmented</a> <a class="compose-chip compose-chip--atom" href="#amount-field">Amount field</a></div>
-    <div class="compose__note"><span data-en>.form-ask and .form-tally sit on a Form section outlined card; .form-cat sits on the page background between cards. The locked-stock table under a question is Lock sets.</span><span data-zh>.form-ask、.form-tally 坐在 Form section 的 outlined 卡面上；.form-cat 坐在頁面底（卡與卡之間）。問句下方接的鎖定量表是 Lock sets。</span></div>
+    <div class="compose__note"><span data-en>.form-ask and .form-tally sit on a Form section outlined card. The locked-stock table under a question is Lock sets.</span><span data-zh>.form-ask、.form-tally 坐在 Form section 的 outlined 卡面上。問句下方接的鎖定量表是 Lock sets。</span></div>
   </div>
-<p class="field-label" data-en>Rendered preview — category label, card with tally, two questions (one chosen, body open)</p><p class="field-label" data-zh>視覺展示 — 分類標、帶讀數的分卡、兩題問句（一題已選、內容展開）</p>
+<p class="field-label" data-en>Rendered preview — card with tally, two questions (one chosen, body open)</p><p class="field-label" data-zh>視覺展示 — 帶讀數的分卡、兩題問句（一題已選、內容展開）</p>
   <div class="demo" style="max-width:640px;display:block">
-    <div class="form-cat"><span class="form-cat__n">3</span><span><span data-en>Sales settings</span><span data-zh>販售設定</span></span></div>
     <section class="form-section form-section--outlined">
       <div class="form-section__head form-section__head--actions"><h3 class="form-section__title"><span data-en>Quantity</span><span data-zh>數量</span></h3><div class="form-section__head-actions"><span class="form-tally"><span class="form-tally__k"><span data-en>Can sell</span><span data-zh>最多可賣</span></span><span class="form-tally__v">60<small><span data-en>sets</span><span data-zh>組</span></small></span></span></div></div>
       <div class="stack">
@@ -5384,7 +5386,7 @@ Letterpress cover, uncoated stock.</textarea></div>
   </div>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
-    <p class="field-text"><code>.form-ask</code> ＞ <code>__t</code>（問句）· <code>__s</code>（說明）· <code>.segmented.radio-cards</code>（二選一）· <code>__body[hidden]</code>（選了才出現）＞ <code>__row</code>（<code>__row-k</code> 名稱＋控制項推到最右，<code>.amount-field</code> 固定 132px；下面接 <code>.lockset</code> 時加 <code>__row--lockset</code> 讓輸入框右緣對齊表格「已鎖定」欄）。<code>.form-ask + .form-ask</code> 之間一條細線。<code>.form-cat</code> ＞ <code>__n</code>（序號，品牌色、等寬數字；<code>:first-child</code> 不留上邊距）。<code>.form-tally</code> ＞ <code>__k</code>（名稱）· <code>__v</code>（大數字，內含 <code>small</code> 單位），放在 <code>.form-section__head-actions</code> 槽。狀態：<code>__body</code> 顯示／<code>[hidden]</code>。</p>
+    <p class="field-text"><code>.form-ask</code> ＞ <code>__t</code>（問句）· <code>__s</code>（說明）· <code>.segmented.radio-cards</code>（二選一）· <code>__body[hidden]</code>（選了才出現）＞ <code>__row</code>（<code>__row-k</code> 名稱＋控制項推到最右，<code>.amount-field</code> 固定 132px；下面接 <code>.lockset</code> 時加 <code>__row--lockset</code> 讓輸入框右緣對齊表格「已鎖定」欄）。<code>.form-ask + .form-ask</code> 之間一條細線。<code>.form-tally</code> ＞ <code>__k</code>（名稱）· <code>__v</code>（大數字，內含 <code>small</code> 單位），放在 <code>.form-section__head-actions</code> 槽。狀態：<code>__body</code> 顯示／<code>[hidden]</code>。</p>
     <p class="field-text">消費：<code>create-bundle.html</code>（第一個）。<br><code>ds-components/form-ask.css</code></p>
   </div>
   </details>
