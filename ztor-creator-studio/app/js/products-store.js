@@ -28,7 +28,9 @@
 //   sales      { units, gross, net } | null   銷售摘要 KPI；null＝尚無銷售（切到 .when-empty）。gross／net 為顯示字串（'$2,944'）
 //   discount   { price, limited: { start, end } | null, stack: bool } | null   單售折扣；null＝關。
 //              price 填折扣價、limited 有值＝限時折扣開＋起訖（YYYY-MM-DD）、stack＝可與優惠碼疊加
-//   limit      number | null   每人限購數；有值＝開關開＋數量填入
+//   limit      { person, order, times } | null   限購三種上限（D398：每人總限購數量／每次交易限購數量／限購次數，件與次；
+//              各自選填、空字串＝不限）；有任一種＝開關開＋填值。舊資料的單一數字＝每人總限購（js/purchase-limits.js norm()）。
+//              組合包的限購預設取成員交集（換算成組），所以這裡的值也是組合包「跟隨成員」的來源
 //   films      string[]        電影關聯（js/films-store.js 的 id）；空＝picker 沒有已選 chip
 //   projects   [{ title | titleKey, href }]   被哪些項目引用；titleKey 走 i18n（persona 覆寫字典可換名）；空＝「尚未被任何項目引用」
 //   tags       string[]        商品標籤的初始 chip
@@ -1063,6 +1065,7 @@
     /* hoodie＝主要示範頁：原 seedHistory() 那組（含計時補貨還在路上）整組搬到這裡，combo 依 hoodie 的 6 個組合展開 */
     hoodie: {
       sales: { units: 41, gross: '$2,378', net: '$1,915' },
+      limit: { person: '', order: '4', times: '2' },   /* D398 示範：每次 4 件、限 2 次（冬季預購組跟隨成員時的每次交易與限購次數來源） */
       films: ['film-neon-harbor'],
       tags: ['Tour 2025'],
       history: [
@@ -1076,7 +1079,7 @@
        歷史只留 1 筆已完成補貨＋對應 LISTING_SEED.zine 單售鎖 1 的鎖定紀錄，沒有補貨中（與 hoodie 成對比） */
     zine: {
       sales: { units: 92, gross: '$2,944', net: '$2,372' },
-      limit: 2,
+      limit: { person: '2', order: '', times: '1' },   /* D398 示範：每人 2 件、限 1 次 */
       films: ['film-zheng-yi-sao', 'film-neon-harbor'],
       projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }],
       tags: ['Tour 2025', 'Signed'],
@@ -1097,7 +1100,7 @@
     /* pin＝售罄：有銷售、沒有歷史、沒有補貨中 */
     pin: { sales: { units: 120, gross: '$1,440', net: '$1,160' } },
     /* ── 2026-09-11 既有商品補值（只補缺的示範）── */
-    cap:   { limit: 3, lowAlert: false },   /* 2026-09-22：低庫存提醒關著的示範（門檻欄停用） */
+    cap:   { limit: { person: '3', order: '', times: '' }, lowAlert: false },   /* 2026-09-22：低庫存提醒關著的示範（門檻欄停用）；D398：每人總限購 3 件——冬季預購組每組含 2 件 → 跟隨成員＝每人 1 組 */
     shoes: { films: ['film-fist-of-fury', 'film-last-typhoon'] },
     song:  { sales: null },
     album: { tags: ['OST', 'Digital'] },
@@ -1114,7 +1117,7 @@
     poster: {
       sales: { units: 97, gross: '$3,880', net: '$3,120' },
       discount: { price: '32.00', limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
-      limit: 2
+      limit: { person: '2', order: '1', times: '' }
     },
     jacket: {
       sales: { units: 11, gross: '$1,650', net: '$1,320' },   /* 2026-09-21：與各組合 sold 加總（11）一致 */
@@ -1152,7 +1155,7 @@
     'wy-24ce-dupont-bag': {
       sales: { units: 88, gross: 'NT$95,040', net: 'NT$80,784' },
       discount: { price: '880', limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
-      limit: 2
+      limit: { person: '2', order: '', times: '' }
     },
     'wy-26ms-tshirt-white': {
       sales: { units: 142, gross: 'NT$266,960', net: 'NT$226,916' },
@@ -1250,7 +1253,8 @@
     'winter-preorder-set': {
       id: 'winter-preorder-set', persona: 'default', name: '冬季預購組', img: 'coastline-hoodie.webp',
       description: '連帽外套＋六片帽，11 月開放預購。',
-      members: [{ productId: 'hoodie' }, { productId: 'cap' }],
+      /* D398 示範：每組含 2 頂帽（qty 2）。帽子每人總限購 3 件 ÷ 2 ＝ 每人 1 組；外套每次 4 件、限 2 次 → 跟隨成員的三種上限＝1 組／4 組／2 次 */
+      members: [{ productId: 'hoodie' }, { productId: 'cap', qty: 2 }],
       cap: 100, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: '2026-11-01T12:00:00', saleEnd: null, lowThreshold: 0,
       discountPct: 15, discount: null,

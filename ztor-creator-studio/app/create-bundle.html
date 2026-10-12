@@ -39,8 +39,10 @@
 <!-- 2026-09-21 第 2 批：與建立活動第 6 步同一套建構體驗——票券表／已加入表／算式列／footer 由 bundle-editor.css 提供，
      右欄「粉絲看到的」預覽卡由 bundle-preview-card.css 提供（第二個消費者） -->
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2"><!-- 2026-09-21：頂列分節分頁的本體（Q38 配方 underline-short＋underline-label） -->
-<link rel="stylesheet" href="ds-components/section-tabs.css?v=r2.2"><!-- 2026-09-21：頂列第二排的分節分頁殼（點了捲到段、scrollspy） -->
+<link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398：組合包限購（跟隨成員／覆寫；js/purchase-limits.js） -->
+<link rel="stylesheet" href="ds-components/cond-list.css?v=r2.2"><!-- D400：純商品組合包的購買條件（js/purchase-conds.js 條件清單） -->
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2"><!-- 條件卡的期間兩欄 .rule-row -->
 <link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bundle-preview-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
@@ -61,7 +63,7 @@
 <style>
   /* page-specific：Create bundle 表單 · spec 5.1.5.4
      2026-09-21 第 2 批：版面改成與建立活動第 6 步（bundle-editor layout:'split'）同一個心智模型——
-     左欄三段分卡「內容物 → 定價與庫存 → 命名與上架」（2026-09-21 同日改名）、右欄「粉絲看到的」預覽卡、底部固定列粉絲實付；頂列第二排分節分頁可跳段。
+     左欄三段分卡「內容物 → 定價與庫存 → 命名與上架」（2026-09-21 同日改名）、右欄「粉絲看到的」預覽卡、底部固定列粉絲實付；跳段靠左側空白欄的「本頁大綱」（2026-10-12 起；頂列第二排的分節分頁同日移除，兩者重複）。
      分卡殼沿用頁面級的 form-section--outlined（建立商品同款），卡內節奏吃 .stack；表格／算式／footer
      一律用 bundle-editor.css 的元件 class；此處只留本頁獨有的一次性版面。 */
   /* 合併的新增方塊（商品：嵌入建立商品流程；票券：打開活動挑選器）：虛線邊＝「可以放東西進來」的訊號 */
@@ -85,10 +87,7 @@
   .cb-tix-head__actions { display: flex; align-items: center; gap: var(--sp-8); }
   /* 挑選器（活動清單）與它的取消鈕同一列收尾 */
   .cb-pick-foot { display: flex; justify-content: flex-end; margin-top: var(--sp-8); }
-  /* 右欄預覽卡的 sticky 頂距＝元件預設 96px（頂列 80＋body 上留白 16）再加頂列第二排的分節分頁高度
-     （--section-tabs-h 由 js/section-tabs.js 寫在捲動容器 .wizard__sheet 上）；--preview-col-top 是
-     preview-column 開給消費頁的變數，不是 DS token。 */
-  .preview-split { --preview-col-top: calc(96px + var(--section-tabs-h, 0px)); }
+  /* 右欄預覽卡的 sticky 頂距＝元件預設 96px（頂列 80＋body 上留白 16）；頂列只有一排，不必再加高度。 */
   /* 分卡內直排：段落之間由容器持有（Q103），.field 自己的下外距歸零；小節之間留一階 */
   .cb-sec > .field { margin-bottom: 0; }
   .cb-sec [hidden] { display: none; }
@@ -125,16 +124,6 @@
         <button class="btn btn--outline" type="button" data-wizard-savedraft data-i18n="wiz.savedraft">Save as draft</button>
       </div>
     </div>
-    <!-- 2026-09-21 頂列第二排：分節分頁（與建立活動第 6 步的組合包彈窗同一支 section-tabs）。
-         併進 .wizard__top（它本身 sticky）而不是另外再黏一條——畫面上只有一條固定列（Q115 精神）；
-         右欄預覽卡的 sticky 頂距由 js/section-tabs.js 寫出的 --section-tabs-h 補上。 -->
-    <nav class="section-tabs section-tabs--wizard" data-section-tabs data-st-offset=".wizard__top" aria-label="Jump to a section" data-i18n-aria-label="st.aria">
-      <div class="tabs tabs--underline-short tabs--underline-label">
-        <button type="button" class="tabs__item tabs__item--active" data-st-tab="content" aria-current="location"><span data-i18n="cpp.bd.sp.sec.content">Contents</span></button>
-        <button type="button" class="tabs__item" data-st-tab="price"><span data-i18n="cpp.bd.sp.sec.price">Pricing &amp; stock</span></button>
-        <button type="button" class="tabs__item" data-st-tab="name"><span data-i18n="cpp.bd.sp.sec.name">Name &amp; listing</span></button>
-      </div>
-    </nav>
   </header>
 
   <div class="wizard__body wizard__body--form wizard__body--narrow preview-split">
@@ -232,6 +221,25 @@
         <div class="stack" data-cb-perks-group>
           <div class="bd-sub"><span class="bd-sub__title" data-i18n="cpp.bd.perks">Perks</span></div>
           <textarea class="input textarea" rows="2" data-cb-perks placeholder="One per line, e.g. Priority entry to the signing" data-i18n-placeholder="cpp.bd.sp.perks.ph" aria-label="Perks" data-i18n-aria-label="cpp.bd.perks"></textarea>
+        </div>
+
+        <!-- 購買條件與限購（5.1.5.4 §4 F2；D342、D398、D400）：所有組合包都有兩組，放在成員之後（預設都是從成員來的）。
+             · 購買條件：含門票＝預設套用所含門票（取最嚴）的唯讀讀數，調整在組合包細節頁（D342，js/ticket-bundle.js buyOnly）；
+               純商品＝預設不限、可加「限時購買／限粉絲分級購買」（js/purchase-conds.js 條件清單，只開這兩種；期間須在組合包的上架區間內）。
+             · 限購：預設跟隨成員（取交集）、可覆寫、可改回（js/purchase-limits.js）；跟隨＝與成員共用額度、已覆寫＝獨立計算。 -->
+        <div class="stack" data-cb-rules data-feat="S94">
+          <div class="bd-sub"><span class="bd-sub__title" data-i18n="cpp.bd.sp.sec.rules">Purchase rules</span></div>
+          <div class="field" data-cb-buy>
+            <div class="field__label" data-i18n="tb.rules.buy">Who can buy</div>
+            <div data-tb-host="cb-rules" data-feat="S63" hidden></div>
+            <div data-cb-conds-wrap hidden>
+              <div data-cb-conds-host></div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field__label" data-i18n="tb.rules.cap">Purchase limits</div>
+            <div data-pl-host="cb"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -436,8 +444,7 @@
             <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" id="cb-tshown" data-i18n-aria-label="cp.listing.shown-h" aria-label="Show in shop"></div>
           </div>
           <div data-tb-host="cb-sched"></div>
-          <div class="bd-sub"><span class="bd-sub__title" data-i18n="cpp.bd.sp.sec.rules">Purchase rules</span></div>
-          <div data-tb-host="cb-rules" data-feat="S63"></div>
+          <!-- 墓碑 2026-10-12（D398）：「購買條件與限購」預設讀數從這裡搬到第一張分卡成員之後的 [data-cb-rules]，與限購整合成一組 -->
         </div>
 
         <!-- 上架設定／顯示／開賣（D241／D245／D246／D247；spec 5.1.5.4 §4 F6）：純商品組合的完整三開關。
@@ -610,6 +617,8 @@
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script><!-- 2026-09-18 D292：活動票券成員的候選（活動與票種） -->
 <script src="js/ticket-bundle.js?v=r2.2"></script><!-- D342：票務商品的上架與開賣（跟隨活動／另設）與購買條件預設 -->
+<script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：組合包限購（預設取成員交集、覆寫、擋存） -->
+<script src="js/purchase-conds.js?v=r2.2"></script><!-- D400：純商品組合包的購買條件（限時購買／限粉絲分級購買） -->
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
 <script src="js/row-disclosure.js?v=r2.2"></script>
@@ -1291,6 +1300,7 @@
       if (!saleWindowOk()) return T('cp.listing.sale-err', 'Sale end must be after sale start');
       if (listingMode === 'schedule' && listingTime && !listingTime.value) return T('cb.why.listing-time', 'Scheduled listing needs a time');
     } else if (tbErrCount()) return T('cpp.bd.sp.why.tb', 'Fix the times or purchase rules marked in red.');   /* D342：另設超出活動上架區間、或所含門票的可購買時間沒有交集 */
+    if (window.cbRulesErr && window.cbRulesErr()) return T('pl.err.save', 'Fix the purchase limits marked in red.');   /* D398 */
     return '';
   }
   function footSubText() {
@@ -1343,6 +1353,7 @@
     syncName();
     syncFollowEvent();
     renderFan();
+    if (window.cbRenderRules) window.cbRenderRules();   /* D398：購買條件與限購（成員或上架時間變了就重算） */
     /* footer */
     if (footFinal) footFinal.textContent = hasContent() ? moneyFrom(finalPrice(), priceRange()) : '—';
     if (footSub) footSub.textContent = footSubText();
@@ -1466,7 +1477,8 @@
     if (!TB || !ev) return null;
     const et = TB.times(ev);
     const tiers = (ev.tiers || []).filter(t => tix.tierIds.indexOf(t.id) >= 0);
-    return { ev: ev, et: et, def: TB.defaults(tiers.map(t => t.rules), tix.qty, et, tiers.map(t => t.name || '')), n: tix.qty };
+    /* buyOnly（D398）：限購改由 [data-cb-rules] 的組合包限購區塊（js/purchase-limits.js）管，這裡只剩購買條件 */
+    return { ev: ev, et: et, def: TB.defaults(tiers.map(t => t.rules), tix.qty, et, tiers.map(t => t.name || '')), n: tix.qty, buyOnly: true };
   }
   function renderTbFollow(ev) {
     const hs = document.querySelector('[data-tb-host="cb-sched"]'), hr = document.querySelector('[data-tb-host="cb-rules"]');
@@ -1476,10 +1488,94 @@
     const sig = [c.ev.id, tix.tierIds.join('+'), tix.qty, TB.KEYS.map(k => TB.isCustom(tbState, k) ? 'c' : 'f').join(''), document.documentElement.lang].join('|');
     if (hs && sig !== tbSig) { hs.innerHTML = TB.schedHTML(tbState, c.et, T); if (window.ztorIcons) window.ztorIcons.applyIcons(hs); }
     tbSig = sig;
-    if (hr) hr.innerHTML = TB.rulesHTML(tbState, c.def, c.et, T, { n: c.n, readonly: true });
-    TB.syncErrors(document.querySelector('[data-cb-listing-follow]'), tbState, c, T);
+    if (hr) hr.innerHTML = TB.rulesHTML(tbState, c.def, c.et, T, { n: c.n, readonly: true, buyOnly: true });
+    TB.syncErrors(document.querySelector('.wizard__sheet') || document.body, tbState, c, T);   /* 購買條件的錯誤句在第一張分卡（D398 搬過去），時間的在上架段：整張表單一起同步 */
   }
   function tbErrCount() { const c = tbCtx(); return c ? TB.errorCount(tbState, c, T) : 0; }
+
+  /* ── 購買條件與限購（D398、D400；5.1.5.4 §4 F2）──────────────────────────────────────────
+     所有組合包都有兩組，畫在第一張分卡成員之後的 [data-cb-rules]：
+       · 購買條件：含門票＝上面 renderTbFollow 畫的唯讀預設（跟隨所含門票，buyOnly）；純商品＝預設不限、
+         用 js/purchase-conds.js 的條件清單加「限時購買／限粉絲分級購買」，期間須在組合包自己的上架區間內〔推導〕。
+       · 限購：js/purchase-limits.js——預設跟隨成員（各成員上限 ÷ 每組用量取整後的最小值），可覆寫、可改回；
+         跟隨＝與成員共用額度、已覆寫＝獨立計算（含門票時門票部分永遠與單張門票共用、只能收窄）。
+     限購區塊只在結構變了（成員、每組用量、跟隨／覆寫、語言）才重畫，打字不重畫、游標不跑。 */
+  var PLc = window.ztorPurchaseLimits, PCc = window.ztorPurchaseConds;
+  var cbRulesState = { limits: null, conds: { conds: {} } };
+  window.cbRulesState = cbRulesState;
+  var cbCondsApi = null, cbLimSig = '';
+  function cbLimitMembers() {
+    const out = [];
+    bundleDraft.members.forEach(m => {
+      const per = Math.max(1, Math.floor(Number(m.qty)) || 1);
+      if (m.kind === 'ticket') {
+        const ev = tix.event ? (EV ? (EV.get(tix.event.id) || tix.event) : tix.event) : null;
+        (ev && ev.tiers || []).filter(t => tix.tierIds.indexOf(t.id) >= 0).forEach(t => {
+          const r = TB ? TB.tierRules(t.rules) : {};
+          out.push({ kind: 'ticket', name: t.name || '', per: per, lim: { person: r.person || '', order: r.order || '', times: r.times || '' } });
+        });
+        return;
+      }
+      const p = products[m.productId] || {};
+      out.push({ kind: 'product', name: p.name || '', per: per, lim: p.limit || null });
+    });
+    return out;
+  }
+  /* 純商品組合包的上架區間：定時上架＝起點、下架時間＝終點；立刻上架＝起點是發布當下（不擋起點，同 D342-02） */
+  function cbEt() {
+    return { listFrom: (listingMode === 'schedule' && listingTime) ? (listingTime.value || '') : '',
+             listTo: (listingMode !== 'none' && unlistTime) ? (unlistTime.value || '') : '' };
+  }
+  const cbTr = k => k === 'tb.err.outside' ? T('pl.err.outside', 'Outside this bundle’s listing period ({period}).') : T(k, k);
+  const featOnC = id => { const d = window.ztorDevState; return !id || !d || !d.featOn || d.featOn(id); };
+  function cbRulesErr() {
+    let n = 0;
+    if (PLc) n += Object.keys(PLc.errors(cbRulesState.limits, PLc.derive(cbLimitMembers()), T)).length;
+    if (PCc && !ticketMember()) n += Object.keys(PCc.periodErrs(cbRulesState.conds, cbEt(), cbTr)).length;
+    return n;
+  }
+  window.cbRulesErr = cbRulesErr;
+  function renderCbRules(force) {
+    const tixOn = !!ticketMember();
+    const hr = document.querySelector('[data-tb-host="cb-rules"]');
+    const wrap = document.querySelector('[data-cb-conds-wrap]');
+    const buy = document.querySelector('[data-cb-buy]');
+    if (hr) hr.hidden = !tixOn;
+    if (wrap) wrap.hidden = tixOn;
+    if (buy) buy.hidden = tixOn && !featOnC('S63');   /* 含門票的購買條件（S63）不在版本內時，連標籤一起收 */
+    if (!tixOn && PCc && wrap) {
+      if (!cbCondsApi) cbCondsApi = PCc.mount(wrap.querySelector('[data-cb-conds-host]'), {
+        rules: cbRulesState.conds, scope: 'bundle',
+        ctx: { types: ['buyTime', 'buyTier'], emptyKey: 'pl.cond.empty', featOn: featOnC },
+        times: cbEt, tr: cbTr,
+        onChange: () => { recompute(); }
+      });
+      else cbCondsApi.check();
+    }
+    const host = document.querySelector('[data-pl-host="cb"]');
+    if (!PLc || !host) return;
+    const der = PLc.derive(cbLimitMembers());
+    const sig = JSON.stringify(der) + '|' + (cbRulesState.limits ? 'o' : 'f') + '|' + document.documentElement.lang;
+    if (force || sig !== cbLimSig) {
+      cbLimSig = sig;
+      host.innerHTML = bundleDraft.members.length ? PLc.blockHTML(cbRulesState.limits, der, T, {})
+        : '<p class="field__hint" data-i18n="cb.min-items">' + esc(T('cb.min-items', 'Add at least 1 item')) + '</p>';
+      if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+    }
+    PLc.syncErrors(host, cbRulesState, der, T);
+  }
+  window.cbRenderRules = renderCbRules;
+  (function () {
+    const host = document.querySelector('[data-pl-host="cb"]');
+    if (!host || !PLc) return;
+    host.addEventListener('click', e => { if (PLc.onClick(e, cbRulesState, PLc.derive(cbLimitMembers()))) { renderCbRules(true); recompute(); } });
+    host.addEventListener('input', e => {
+      if (!PLc.onInput(e, cbRulesState)) return;
+      e.stopPropagation();   /* 不觸發整頁 recompute（只要就地重算錯誤與檢核） */
+      PLc.syncErrors(host, cbRulesState, PLc.derive(cbLimitMembers()), T);
+      recompute();
+    });
+  })();
   (function () {
     const host = document.querySelector('[data-cb-listing-follow]');
     if (!host) return;
@@ -1800,6 +1896,10 @@
       saleEnd: following ? (tbEff.saleEnd || null) : ((listingMode !== 'none' && saleClose && saleClose.value) || null),
       sched: following ? Object.assign({}, tbState.sched) : undefined,
       rules: following ? null : undefined,
+      /* D398：限購 null＝跟隨成員（與成員共用額度）、{ person, order, times }＝已覆寫（獨立計算，以組計）；
+         純商品組合包的購買條件（限時購買／限粉絲分級購買，預設不限）——含門票的照 rules（跟隨所含門票） */
+      limits: window.cbRulesState ? window.cbRulesState.limits : null,
+      conds: (!following && window.cbRulesState) ? JSON.parse(JSON.stringify(window.cbRulesState.conds)) : undefined,
       films: linkedFilms.slice(),
       discountPct: discInfo().pct || null,
       discount: saleOn() ? {
@@ -1837,7 +1937,6 @@
   const stageForm = stageBody ? stageBody.querySelector('.preview-split__form') : null;
   const stageCol = stageBody ? stageBody.querySelector('.preview-col') : null;
   const stageFoot = document.querySelector('.wizard__bottom');
-  const stNav = document.querySelector('.wizard__top [data-section-tabs]');
 
   /* 進度條：第 1 段狀態＝頁面既有擋關（gateWhy() 為空＝已完成），不另訂規則；第 2 段沒有「已完成」——
      側欄按「建立組合」直接離站，走不到第 2 段打勾的畫面（同建立商品）。 */
@@ -1970,6 +2069,8 @@
     }
     if (!ticketMember()) push('listing', 'cb.qc.listing', 'Listing & sale times', saleWindowOk() && !(listingMode === 'schedule' && listingTime && !listingTime.value), CB_STEP.name);
     else push('listing', 'cb.qc.listing', 'Listing & sale times', !tbErrCount(), CB_STEP.name);   /* D342：跟隨／另設的時間與購買條件 */
+    /* D398：限購（跟隨時不足 1 組、覆寫超過門票上限）與純商品的購買條件期間（超出組合包的上架區間）——有錯才列、擋下一步 */
+    if (window.cbRulesErr && window.cbRulesErr()) push('rules', 'pl.qc.rules', 'Purchase rules & limits', false, CB_STEP.content);
     return out;
   }
   /* 預覽區塊的「編輯」入口：hover 到哪一塊，點了就回表單對應的分卡（先比對的先贏，內層放前面） */
@@ -1987,7 +2088,7 @@
       { sel: '[data-fbp-desc]', step: CB_STEP.desc }
     ];
   }
-  /* 區段代號 → 表單上要捲到的節點（＋要聚焦的欄位）；三張分卡就是頂列分節分頁的三段 */
+  /* 區段代號 → 表單上要捲到的節點（＋要聚焦的欄位）；三張分卡就是左側「本頁大綱」的三段 */
   function cbSectionOf(step) {
     const q = s => document.querySelector(s);
     switch (step) {
@@ -2023,7 +2124,7 @@
     };
   }
 
-  /* 進第 2 步：表單欄、右欄預覽、底部操作列、頂列分節分頁收起（都只是藏起來、不清空），容器掛全頁畫面。
+  /* 進第 2 步：表單欄、右欄預覽、底部操作列收起（都只是藏起來、不清空），容器掛全頁畫面。
      .preview-split 的兩欄 grid 與 --narrow 的 1000 寬在全頁時拿掉（全頁畫面自己是 .pstage 兩欄、寬度走 --stage），
      用 class 進出切換，不在頁內 <style> 覆寫共用 class。 */
   function enterStage() {
@@ -2034,9 +2135,8 @@
     if (stageForm) stageForm.hidden = true;
     if (stageCol) stageCol.hidden = true;
     if (stageFoot) stageFoot.hidden = true;
-    if (stNav) stNav.hidden = true;
     stageHost.hidden = false;
-    /* 側欄 sticky 要避開 .wizard__top（本身 sticky）：分節分頁收起後再量頂列高度（同建立商品 enterStage） */
+    /* 側欄 sticky 要避開 .wizard__top（本身 sticky）：再量頂列高度（同建立商品 enterStage） */
     const top = document.querySelector('.wizard__top');
     stageHost.style.setProperty('--pstage-top', 'calc(' + (top ? top.offsetHeight : 0) + 'px + var(--sp-24))');
     stage = window.ztorPublishStage.mount(stageHost, buildStageOpts());
@@ -2046,8 +2146,8 @@
     renderStepper();
     return true;
   }
-  /* 回第 1 步：卸載、清空容器，表單欄／預覽欄／底部列／分節分頁原樣回來（表單 DOM 從沒被動過，內容保留）。
-     step 有給＝從預覽的「編輯」或檢核項過來：捲到對應分卡並讓分節分頁亮那一段；沒給＝「返回表單」：還原進來前的捲動位置。 */
+  /* 回第 1 步：卸載、清空容器，表單欄／預覽欄／底部列原樣回來（表單 DOM 從沒被動過，內容保留）。
+     step 有給＝從預覽的「編輯」或檢核項過來：捲到對應分卡；沒給＝「返回表單」：還原進來前的捲動位置。 */
   function exitStage(step) {
     if (!stage) return;
     stage.unmount();
@@ -2059,7 +2159,6 @@
     if (stageForm) stageForm.hidden = false;
     if (stageCol) stageCol.hidden = false;
     if (stageFoot) stageFoot.hidden = false;
-    if (stNav) stNav.hidden = false;
     cbStep = 1;
     renderStepper();
     const dest = step ? cbSectionOf(step) : null;
@@ -2072,8 +2171,6 @@
       if (stageSheet) stageSheet.scrollTop = stageScroll.sheet;
       window.scrollTo({ top: stageScroll.win, behavior: 'instant' });
     }
-    /* 分節分頁在全頁時是 display:none，scrollspy 量不到位置；回來後立刻重新定位一次 */
-    if (window.ZtorSectionTabs) window.ZtorSectionTabs.sync();
   }
 
   /* 表單主鈕「下一步：預覽」：擋關照舊，通過進第 2 步；元件沒載到時退回原本的直接建立 */
@@ -2098,7 +2195,7 @@
   /* ── 本頁大綱（左側空白欄的區段導覽，2026-10-12，UI-CHANGES 一百七十七；元件 partials/section-outline.js，比照 create-product）──
      「必填」「已完成」不另訂規則：直接讀「預覽與發布」的發布前檢核 stageChecks()（＝表單擋關 gateWhy() 同一組條件），
      每個檢核項用 cbSectionOf(step) 對到所在分卡（同檢核項點了跳回表單的對照）；分卡裡有檢核項＝必填、全過＝已完成、
-     沒有檢核項＝選填（例：定價段只在開折扣／鎖定套數／限量／限時折扣時才有檢核項）。三張分卡＝頂列分節分頁的三段；
+     沒有檢核項＝選填（例：定價段只在開折扣／鎖定套數／限量／限時折扣時才有檢核項）。三張分卡＝左側「本頁大綱」的三段；
      預覽欄（aside）不在 .preview-split__form 內、天然不列；全頁「預覽與發布」時表單欄收起、導覽隨之消失。 */
   var cbOutline = null;
   function cbOutlineStatus(vis) {
@@ -2127,7 +2224,7 @@
         done: T('cp.outline.done', 'Done'),
         opt: T('cp.outline.opt', 'Optional')
       }),
-      /* 頁首（含分節分頁那一排）是 sticky 的：跳節與 scroll-spy 都扣掉它的高度＋16（同 exitStage 的 scrollMarginTop） */
+      /* 頁首是 sticky 的：跳節與 scroll-spy 都扣掉它的高度＋16（同 exitStage 的 scrollMarginTop） */
       offset: () => { const top = document.querySelector('.wizard__top'); return (top ? top.getBoundingClientRect().bottom : 0) + 16; }
     });
   }
@@ -2169,7 +2266,6 @@
 <script src="partials/stepper.js?v=r2.2"></script><!-- .zstep 步進行為 -->
 <!-- 素材格（[data-upload]）：點擊選檔、hover 替換／刪除，由共用元件產生。 -->
 <script src="partials/upload-tile.js?v=r2.2"></script>
-<script src="js/section-tabs.js?v=r2.2"></script><!-- 2026-09-21：頂列分節分頁的行為（捲動容器＝.wizard__sheet，扣掉 .wizard__top 的高度） -->
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 </body>

@@ -25,6 +25,8 @@
                                               回傳 { render, refresh, rules, check }，refresh() 只重算價格讀數（例如票價改了）；
                                               opts.times() 給了活動時間時，check() 做期間檢查並回傳錯誤數（D389：按儲存 >0 就擋）
 
+   限購三欄的輔助說明（D398）借 js/purchase-limits.js 的 hintHTML()——要先於本檔載入（create-event、event-detail）。
+
    ctx（呼叫端提供）：{ esc, featOn(id), srcChip(), pctReadout(c, scope), evPriceReadout(c) }
    粉絲分級三種（feat S82，⚪ 未排定）掛 data-feat，release2.4 由 devtools 的 regate() 收起（D366 決定五／D367 決定三）。
    ============================================================ */
@@ -170,6 +172,8 @@
     const srcChip = ctx.srcChip || (() => "");
     const pctReadout = ctx.pctReadout || (() => "—");
     const evPriceReadout = ctx.evPriceReadout || (() => "—");
+    /* ctx.types（D400，2026-10-12）：只開放哪幾種條件——組合包的購買條件只用 buyTime／buyTier；缺＝全部（活動） */
+    const ALLOW = ctx.types ? TYPES.filter(c => ctx.types.indexOf(c.k) >= 0) : TYPES;
     const dis = l => l ? " disabled" : "";
     const ruleField = (label, control, l) =>
       '<div class="field' + (l ? " is-source-locked" : "") + '"><label class="field__label">' + esc(label) + '</label>' + control + '</div>';
@@ -208,10 +212,13 @@
     function bodyHTML(k, c, l) {
       if (k === "buyTime") return winFieldsHTML(k, c, l);
       if (k === "buyTier") return tierPickHTML(k, c, l);
+      /* D398（2026-10-12）：三種上限各附一句輔助說明，句子與商品（件）、組合包（組）同一套，
+         住在 js/purchase-limits.js＋i18n.js 的 pl.tix.*（這裡只借 hintHTML，條件卡外框不變） */
       if (k === "cap") return ["person", "order", "times"].map(f =>
         ruleField(t("d.rule.cap." + f),
           '<input class="input" type="number" min="1" step="1" data-rule-f="cap.' + f + '" value="' + esc(c[f]) +
-            '" placeholder="' + (l ? "" : esc(t("d.rule.cap." + f + ".ph"))) + '"' + dis(l) + '>', l)).join("");
+            '" placeholder="' + (l ? "" : esc(t("d.rule.cap." + f + ".ph"))) + '"' + dis(l) + '>' +
+          (window.ztorPurchaseLimits ? window.ztorPurchaseLimits.hintHTML(f, "tix") : ""), l)).join("");
       let h = priceFieldHTML(k, c, l);
       if (k === "discTime" || k === "discBoth") h += winFieldsHTML(k, c, l);
       if (k === "discTier" || k === "discBoth") h += tierPickHTML(k, c, l);
@@ -235,7 +242,7 @@
     }
     /* 「新增條件」選單：只列還沒加、而且在目前版本內的種類；全部加完就整顆不出現 */
     function addMenuHTML(r) {
-      const avail = TYPES.filter(c => !r.conds[c.k]);
+      const avail = ALLOW.filter(c => !r.conds[c.k]);
       if (!avail.filter(c => featOn(c.feat)).length) return "";
       return '<details class="dropdown dropdown--left cond-list__add">' +
           '<summary class="btn btn--outline btn--sm"><i data-lucide="plus" class="ztor-icon"></i><span>' + esc(t("d.cond.add")) + '</span></summary>' +
@@ -246,10 +253,11 @@
         '</details>';
     }
     const r = norm(rules);
-    const keys = TYPES.map(c => c.k).filter(k => r.conds[k]);   // 照種類固定順序排，不照加入先後
+    const keys = ALLOW.map(c => c.k).filter(k => r.conds[k]);   // 照種類固定順序排，不照加入先後
     return '<div class="cond-list">' +
         (keys.length ? keys.map(k => cardHTML(k, r.conds[k], locked || !!r.conds[k].bky, !locked && !!r.conds[k].bky)).join("")
-                     : '<p class="field__hint cond-list__empty">' + esc(t("d.cond.empty")) + '</p>') +
+                     : '<p class="field__hint cond-list__empty' + (ctx.emptyKey ? ' field__hint--fact' : '') + '"' + (ctx.emptyKey ? ' data-i18n="' + esc(ctx.emptyKey) + '"' : '') + '>' +
+                         esc(ctx.emptyKey ? T(ctx.emptyKey, t("d.cond.empty")) : t("d.cond.empty")) + '</p>') +
         (locked ? "" : addMenuHTML(r)) +
       '</div>';
   }
@@ -306,14 +314,16 @@
 
   /* 活動詳情用：把一份規則畫進 host、接好新增／移除／輸入。
      opts：{ rules（{conds}，直接改這份）, scope（"event" 或門票 id）, ctx, onChange(),
-             times()（選填：回傳活動時間 et——給了就在改期間時就地比上架區間，D389） } */
+             times()（選填：回傳活動時間 et——給了就在改期間時就地比上架區間，D389）,
+             tr(k)（選填：期間紅字的取字函式；組合包用它把「活動上架區間」換成「組合包的上架區間」） }
+     ctx 另可帶 types（只開放哪幾種條件）、emptyKey（沒有條件時那一句的 i18n key）——D400：純商品組合包的購買條件 */
   function mount(host, opts) {
     if (!host) return null;
     const st = { rules: norm(opts.rules), scope: opts.scope, ctx: opts.ctx || {} };
     const isEv = st.scope === "event";
     /* 期間紅字：shown＝已經按過儲存被擋（之後每改一次就重比）；還沒按儲存前只在改期間欄位時比 */
     /* D390 決定二十五：限時折扣價高於一般折扣價同樣算一個錯（擋存） */
-    const check = () => (opts.times ? syncPeriod(host, st.rules, opts.times()) : 0) + syncWarn(host, st.rules.conds, isEv);
+    const check = () => (opts.times ? syncPeriod(host, st.rules, opts.times(), opts.tr) : 0) + syncWarn(host, st.rules.conds, isEv);
     function render() {
       host.innerHTML = html(st.rules, st.scope, false, st.ctx);
       if (window.ztorIcons) window.ztorIcons.applyIcons(host);

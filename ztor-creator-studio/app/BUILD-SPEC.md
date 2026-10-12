@@ -529,6 +529,15 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - **兩頁差異**：內容欄是 `.wizard__body--narrow` 的 1000px（建立商品 1140），兩頁各設 `.preview-split__form { --section-outline-body: 1000px }`；其餘版面、降級（<1400px 隱藏）與建立商品相同。1440 寬導覽 184px。這兩頁在 1366 寬左側仍有約 135px，放得下 120px 最小寬，但元件斷點統一 1400，未為窄內容欄另開門檻（UIA-246 第 6 條）。
 - **可延伸**：`product-detail.html` 編輯態同為長表單，尚未接；接法＝連 CSS、載 partial（先於頁面腳本）、給 `sections`／`status`／`labels`。
 
+## 4i. 限購三種上限與組合包的購買條件（2026-10-12 · D398、D400；UI-CHANGES 一百八十、ASSUMPTIONS UIA-247）
+
+- **一支模組三種單位**：`js/purchase-limits.js`（`window.ztorPurchaseLimits`）收三欄 markup（`fieldsHTML`）、組合包的交集算法（`derive`：成員上限 ÷ 每組用量取整後取最小、限購次數不換算、門票另算天花板 `ceil`）、組合包區塊（`blockHTML`：跟隨成員／已覆寫／bookyay 帶入）、擋存（`errors`／`syncErrors`）與互動（`onClick`／`onInput`）。字樣在 i18n `pl.*`，單位 tix／item／set。
+- **元件**：Limit set（`ds-components/limit-set.css`，§4.234）。`.limit-set__fields` 三欄 grid（gap 16）、`.limit-set__input` 寬度上限 `--w-220`；組合包變體 `.limit-set--bundle` 標題列＝`.badge` 狀態＋說明句＋`btn--sm` 動作，每欄下方 `.field__hint--fact.limit-set__src`（檢視態也顯示）。
+- **商品**：create-product、product-detail 的限購開關底下畫三欄（`data-cp-limit-f`／`data-pd-limit-f`，id `cp-limit-*`／`pd-limit-*`）；就緒檢查 `limit` 項改讀「至少一種」；product-detail 儲存前 `window.pdLimits.valid()`、儲存後 `commit()` 寫回 `product.limit`、設定總覽讀 `text()`。資料形狀 `limit: { person, order, times } | null`，舊的單一數字視為每人總限購（`norm`）。
+- **組合包**：建立組合第一張分卡 `[data-cb-rules]`、組合詳情「組合內容」分頁 `[data-bd-rules-sec]`（`data-feat="S94"`）。含門票：購買條件照 `js/ticket-bundle.js`，呼叫時帶 `buyOnly`（只剩購買條件，限購交給本模組；bookyay 自動建立的組合包用 `buySummary()`）；純商品：`js/purchase-conds.js` 的條件清單，`ctx.types=['buyTime','buyTier']`、`ctx.emptyKey='pl.cond.empty'`，期間比對傳組合包自己的上架區間與 `tr()`（把「活動上架區間」換成「組合包的上架區間」）。建立組合的限購區塊只在結構變了才重畫（成員、每組用量、跟隨／覆寫、語言），打字不重畫。
+- **活動門票**：`purchase-conds.js` 的「限購」條件卡每欄加 `hintHTML(f,'tix')`；create-event、event-detail 先載 `purchase-limits.js` 再載 `purchase-conds.js`。
+- **未改接**：建立活動第 6 步的 `js/bundle-editor.js` 仍走 D342 合併區塊（ASSUMPTIONS UIA-247 第 9 項）。
+
 ## 4e. 商店預覽＝粉絲端創作者頁的手機鏡像，放在頁內右欄（2026-09-11）
 
 - **容器**：e-shop 的 F5 不再是切開外殼的固定面板，而是 `.preview-split--phone.preview-split--toggle` 的右欄——與建立商品同一套（sticky `.preview-col` ＋ 卡內標題的 `form-section--outlined`）。`--toggle` 是 preview-column 的新變體：沒 `is-open` 就單欄、右欄不佔位。這一頁沒有 wizard header，sticky 頂距改 `--preview-col-top: var(--sp-24)`。

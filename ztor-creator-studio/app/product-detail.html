@@ -43,6 +43,7 @@
 <link rel="stylesheet" href="ds-components/variant-builder.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398：限購三種上限（js/purchase-limits.js） -->
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
@@ -877,25 +878,27 @@
         </div><!-- /.control-group -->
       </section>
 
-      <!-- §3-9 每人限購（獨立一區；D136；F9）-->
+      <!-- §3-9 限購（獨立一區；D136；F9 → §2.12；D398 起三種上限，取代單一「每人最大購買量」）：
+           三欄 markup 由 js/purchase-limits.js fieldsHTML(unit='item') 畫進 [data-pd-limit-host]（與建立商品同一套）；
+           值由 applyDetailSeed() 依 product.limit（{ person, order, times }）填；null＝開關關、欄位空。
+           檢視態照全站兩段式面板（Q128）：同一批框顯示成 disabled，沒設的那欄寫「不限」（placeholder）。 -->
       <section class="form-section form-section--outlined">
         <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="product-detail.limit2.title">Purchase limit</h3>
+          <h3 class="form-section__title" data-i18n="product-detail.limit2.title">Purchase limits</h3>
           <p class="form-section__sub" data-i18n="product-detail.limit2.sub">Cap how many each buyer can purchase.</p>
         </div>
         <div class="control-group">
           <div class="control-row">
           <div>
-            <div class="control-row__main" data-i18n="cp.limit">Purchase-restricted item</div>
-            <div class="control-row__sub" data-i18n="cp.limit.sub">Cap how many each buyer can purchase</div>
+            <div class="control-row__main" data-i18n="cp.limit">Purchase limits</div>
+            <div class="control-row__sub" data-i18n="cp.limit.sub">When on, set at least one of the three</div>
           </div>
-          <div class="switch" role="switch" aria-checked="false" id="pd-limit-toggle"></div>
+          <div class="switch" role="switch" aria-checked="false" id="pd-limit-toggle" data-i18n-aria-label="cp.limit" aria-label="Purchase limits"></div>
         </div>
-          <div class="field pd-subfields control-group__body" data-pd-limit-fields hidden style="margin-bottom:0">
-          <div class="field__label"><span data-i18n="cp.limit.max">Maximum quantity per person</span> <span class="field__req">*</span></div>
-          <!-- 數量由 applyDetailSeed() 依 product.limit 填；null＝開關關、欄位空 -->
-          <input class="input" id="pd-limit-qty" inputmode="numeric" style="max-width:220px">
-        </div>
+          <div class="pd-subfields control-group__body" data-pd-limit-fields hidden>
+            <div data-pd-limit-host></div>
+            <p class="field__error" data-pd-limit-err hidden data-i18n="pl.err.atleast">Set at least one limit.</p>
+          </div>
         </div>
       </section>
             </div>
@@ -1314,6 +1317,7 @@
 <script src="js/demand-store.js?v=r2.2"></script><!-- D360 · S69：需求資料與算法（window.ztorDemand；須在 apparel-taxonomy 之後） -->
 <script src="js/demand-board.js?v=r2.2"></script><!-- D360 · S69：ztorDemandView（需求看板與本頁彈窗共用的 renderer）；本頁沒有 [data-demand-board]，頁面接線段不會跑 -->
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購三種上限（三欄與輔助說明；與建立商品、組合包、活動門票共用） -->
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
 <script src="partials/archived-gate.js?v=r2.2"></script><!-- 封存態唯讀的事件層閘門（D288） -->
@@ -1637,6 +1641,10 @@
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
     const state = { cat: 'physical', edition: 'unlimited', delivery: 'shipping', limitOn: false, var: 'single' };
+    /* 限購三欄（D398）：先畫好框（與建立商品同一支 fieldsHTML），seed 與編輯快照才抓得到這三個輸入框 */
+    const PLm = window.ztorPurchaseLimits;
+    const limitHost = document.querySelector('[data-pd-limit-host]');
+    if (PLm && limitHost) limitHost.innerHTML = PLm.fieldsHTML({ unit: 'item', idPrefix: 'pd-limit', attr: 'data-pd-limit-f' });
     /* 目前這一筆商品記錄（ProductsStore 的物件）。三開關、非公開連結與庫存分配表都改在它身上，
        狀態徽章與可售量一律問 ListingState——本頁不自己推導、也不自己算 min（spec §7.14 · D241）。 */
     let product = null;
@@ -1964,7 +1972,24 @@
       lt.classList.toggle('switch--on', state.limitOn);
       lt.setAttribute('aria-checked', state.limitOn ? 'true' : 'false');
       if (lf) lf.hidden = !state.limitOn;
+      syncLimitErr(false);
     });
+    /* 限購（D398）：開啟時三種至少填一種〔推導，5.1.5.2 §4.6／5.1.5.1 §2.12〕——按儲存時沒填就停在編輯態、就地紅字；
+       儲存成功把三個值寫回商品記錄（product.limit），含本商品、還在跟隨成員的組合包讀到的就是新值 */
+    const limitRead = () => PLm ? PLm.read(limitHost, 'data-pd-limit-f') : {};
+    const limitOk = () => !state.limitOn || (!!PLm && PLm.KEYS.some(k => PLm.posInt(limitRead()[k]) != null));
+    function syncLimitErr(show) {
+      const err = document.querySelector('[data-pd-limit-err]');
+      if (!err) return;
+      if (show) err.hidden = limitOk();
+      else if (!err.hidden) err.hidden = limitOk();
+    }
+    if (lf) lf.addEventListener('input', () => syncLimitErr(false));
+    window.pdLimits = {
+      valid: () => { const ok = limitOk(); syncLimitErr(true); if (!ok && lf) { const f = lf.querySelector('input'); if (f) f.focus(); } return ok; },
+      commit: () => { if (product) product.limit = state.limitOn ? limitRead() : null; },
+      text: () => state.limitOn && PLm ? PLm.text(limitRead(), 'item', T) : T('product-detail.setov.off', 'Off')
+    };
 
     /* §2.15 折扣設定：開啟折扣→折扣價＋限時折扣；限時折扣→起訖日（spec 5.1.5.1 §2.15 · D144）*/
     const revealToggle = (tid, fsel) => {
@@ -2265,11 +2290,13 @@
       setInput('pd-sale-start', d && d.limited ? d.limited.start : '');
       setInput('pd-sale-end', d && d.limited ? d.limited.end : '');
       paintSwitch('pd-stack-codes', !!(d && d.stack), null);
-      /* 每人限購：limit 有數字＝開＋填量。state.limitOn 是限購開關 click handler 的真相，要一起對齊 */
-      const limitOn = p.limit != null && p.limit !== '';
+      /* 限購（D398 三種上限）：limit＝{ person, order, times }（舊資料的單一數字＝每人總限購），有任一種＝開＋填值。
+         state.limitOn 是限購開關 click handler 的真相，要一起對齊 */
+      const lim = PLm ? PLm.norm(p.limit) : null;
+      const limitOn = !!PLm && PLm.has(lim);
       state.limitOn = limitOn;
       paintSwitch('pd-limit-toggle', limitOn, '[data-pd-limit-fields]');
-      setInput('pd-limit-qty', limitOn ? p.limit : '');
+      if (PLm) PLm.KEYS.forEach(k => setInput('pd-limit-' + k, limitOn ? lim[k] : ''));
       /* 項目引用：一列一個項目；titleKey 走 i18n（persona 覆寫字典可換名），title 為字面值 */
       const projSec = document.querySelector('[data-pd-projects]');
       const projList = document.querySelector('[data-pd-projects-list]');
@@ -3581,6 +3608,7 @@
     }
     function saveEdit() {
       if (window.pdApparel && !window.pdApparel.valid()) return;   /* 改了大類卻沒重選次分類：停在編輯態（D360，§2.6） */
+      if (window.pdLimits && !window.pdLimits.valid()) return;   /* 限購開著卻三種都沒填：停在編輯態（D398，§2.12） */
       if (!DRAFT) DRAFT = copyModel(MODEL);
       /* 上限低於已售（§2.10）就不收：錯誤句已在欄位／表格底下，停在編輯態讓使用者改 */
       if (!checkCaps(DRAFT)) return;
@@ -3602,6 +3630,7 @@
       DRAFT.options = DRAFT.options.map(function (o) { return { name: o.name || '', values: o.values.filter(function (v) { return String(v).trim() !== ''; }) }; }).filter(function (o) { return o.values.length; });
       regen(DRAFT);
       MODEL = DRAFT; DRAFT = null;
+      if (window.pdLimits) window.pdLimits.commit();   /* 限購三種上限寫回商品記錄（D398） */
       if (window.pdApparel) window.pdApparel.commit();   /* 服飾配件欄位寫回商品記錄（group／category／subCategory／audience／attrs／customSpecs） */
       syncLocksToStore();   /* 鎖定量寫回 store，商品層那張唯讀彙總表跟著重畫 */
       // 單規格：價格/成本回填頁面唯讀讀數（多規格的價格在表內，由 renderPageTable 帶）
@@ -3755,9 +3784,9 @@
         var pct = $v('pd-threshold-pct') || '10';
         rows.push({ g: 'ops', go: 'rules', key: 'product-detail.threshold.title', fb: 'Low-stock alert', v: on('pd-lowstock-toggle') ? pct + '%' : T('product-detail.setov.off', 'Off') });
       }
-      var limitQty = settingsPanel ? settingsPanel.querySelector('[data-pd-limit-fields] input') : null;
-      rows.push({ g: 'pricing', go: 'rules', key: 'product-detail.limit2.title', fb: 'Purchase limit',
-        v: on('pd-limit-toggle') ? T('product-detail.setov.limit', '{n} per person').replace('{n}', limitQty ? limitQty.value : '') : T('product-detail.setov.off', 'Off') });
+      /* 限購（D398）：三種上限一行摘要（「每人 3 件 · 每次 2 件」），關＝Off */
+      rows.push({ g: 'pricing', go: 'rules', key: 'product-detail.limit2.title', fb: 'Purchase limits',
+        v: window.pdLimits ? window.pdLimits.text() : T('product-detail.setov.off', 'Off') });
       /* 概覽列的值顯示目前方式（標題已改泛稱，2026-09-22） */
       var dmode = (product && product.cat === 'digital') ? T('pd.digital-delivery.title', 'Delivery & access')
         : ((product && product.delivery === 'qr') ? T('cp.delivery.qr', 'QR code pickup') : T('cp.delivery.shipping', 'Shipping'));
