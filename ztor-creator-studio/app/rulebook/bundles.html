@@ -70,6 +70,9 @@ td.num{font-variant-numeric:tabular-nums}
 .ex p{margin:0 0 4px}
 .ex ul{margin:0;padding-left:18px}
 .tablewrap{overflow-x:auto}
+/* 設定對照表：欄位多，窄螢幕在外框內橫向捲動 */
+.wrap table.cmp{min-width:1100px}
+.wrap table.cmp-modes{min-width:600px}
 .tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
 .tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
 .tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
@@ -201,6 +204,236 @@ td.num{font-variant-numeric:tabular-nums}
   <li>本頁的「商品成員」只指庫存池裡那件有庫存的東西</li>
 </ul>
 <p class="note">依據：主規格 §7.14「庫存池與商品」、§7.12；5.1.5.4 §4 F2；5.1.5.9 §2.3；5.1.6.1 F7「移除場次」、F20、F22「這張票怎麼建」；D251、D254、D284、D292、D293、D294、D295、D296、D352、D380、D382、D391。</p>
+
+<h2 id="compare"><span class="n"></span>單一商品與組合包的設定對照</h2>
+<p>組合包的每一項設定，跟成員或活動的關係屬於五種模式其中一種。前三種是從成員或活動繼承來的，後兩種是組合包自己設或被鎖定。五種模式各是什麼，見<a href="#compare-source">組合包的設定從哪裡來</a>。每一項設定的模式與對照，見<a href="#compare-table">逐項對照</a>。</p>
+
+<h3 id="compare-source">組合包的設定從哪裡來</h3>
+<p>下表定義五種模式，逐項對照的「模式」欄沿用同樣的名稱。</p>
+<div class="tablewrap"><table class="cmp-modes">
+  <thead><tr><th style="width:30%">模式</th><th style="width:34%">意思</th><th>哪些設定</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag ok">繼承＋可覆寫</span></td><td>預設從成員或活動帶入，創作者可以改成組合包自己的一份</td><td>限購<br>含門票時的購買條件（只能收窄）<br>含門票時的上架與下架（照活動）<br>含門票時的開賣與停售（照活動）<br>含門票時的各幣別價格</td></tr>
+    <tr><td><span class="tag wait">自動算出</span></td><td>由成員推得，成員一變就跟著變<br>組合包不能直接填</td><td>價格<br>庫存可售量<br>只含商品時的各幣別價格</td></tr>
+    <tr><td><span class="tag off">跟隨成員／活動（不能改）</span></td><td>直接照成員或活動，組合包沒有自己的一份</td><td>規格<br>暫停售票<br>取貨方式<br>平台費率</td></tr>
+    <tr><td><span class="tag">組合包自己設</span></td><td>不從成員帶入，組合包從頭設</td><td>折扣<br>可選的門票與張數<br>鎖定套數與限量上限<br>顯示與隱藏<br>只含商品時的購買條件<br>只含商品時的上架與下架<br>只含商品時的開賣與停售<br>封存與刪除<br>名稱與素材<br>電影關聯</td></tr>
+    <tr><td><span class="tag warn">鎖定</span></td><td>組合包原本能改的設定，在特定情況下不能改</td><td>售出後的成員內容<br>bookyay 套票自動建立的組合包</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>成員商品下架，或活動取消或下架時，上架中的組合包一起下架，見<a href="#unlist">組合包的下架連動與刪除</a></li>
+  <li>這種下架連動不改變上架設定屬於哪一種模式</li>
+</ul>
+
+<h3 id="compare-table">逐項對照</h3>
+<p>每一列是一項設定：先看模式，再看一般商品與活動門票各自怎麼設，最後看組合包的預設從哪裡來，以及能不能改。</p>
+<div class="tablewrap"><table class="cmp">
+  <thead><tr>
+    <th style="width:9%">設定</th>
+    <th style="width:16%">模式</th>
+    <th style="width:13%">一般商品（單售）</th>
+    <th style="width:13%">活動門票（單張購買）</th>
+    <th style="width:12%">組合包自己的設定</th>
+    <th style="width:17%">組合包的預設怎麼來</th>
+    <th>組合包能不能改</th>
+  </tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="7">價格與折扣</td></tr>
+    <tr>
+      <td>價格</td>
+      <td><span class="tag wait">自動算出</span></td>
+      <td>定價<br>多規格商品逐規格各自定價</td>
+      <td>票價，每張門票各自一個<br>票種門票預設帶票種的預設價格</td>
+      <td>組合折扣 %，選填 0–100<br>沒有可直接填的售價</td>
+      <td>由成員原價合計與組合折扣 % 算出</td>
+      <td>售價不能直接改，只能改組合折扣 %<br>見<a href="#price">組合包的價格</a></td>
+    </tr>
+    <tr>
+      <td>折扣</td>
+      <td><span class="tag">組合包自己設</span></td>
+      <td>排程特價：特價價格或折扣 %，加起訖日<br>可與優惠碼疊加的開關</td>
+      <td>四種折扣條件：<br>折扣<br>限時折扣<br>粉絲分級折扣<br>限時＋限粉絲分級折扣</td>
+      <td>組合折扣 %：常態優惠<br>排程特價：限時折扣 %，加起訖日<br>可與優惠碼疊加的開關</td>
+      <td>不從成員帶入<br>門票的折扣不沿用<br>排程特價與疊加開關預設關</td>
+      <td>可以自己設<br>限時折扣疊在組合售價之上</td>
+    </tr>
+    <tr>
+      <td>各幣別價格</td>
+      <td>含門票：<span class="tag ok">繼承＋可覆寫</span><br>只含商品：<span class="tag wait">自動算出</span></td>
+      <td>自動換算，唯讀</td>
+      <td>自動換算，可逐幣別改</td>
+      <td>售價的各幣別價格</td>
+      <td>由基準幣別的售價自動換算</td>
+      <td>含門票：可逐幣別改<br>只含商品：唯讀<br>成員價或組合折扣一改，改過的幣別全部重算</td>
+    </tr>
+
+    <tr class="grp"><td colspan="7">庫存與規格</td></tr>
+    <tr>
+      <td>庫存可售量</td>
+      <td><span class="tag wait">自動算出</span></td>
+      <td>目前在庫<br>多規格商品逐規格各自在庫</td>
+      <td>張數，是硬上限<br>票種門票的張數在票種上，獨立票在自己身上</td>
+      <td>沒有自己的庫存</td>
+      <td>每個成員能湊出的套數取最小<br>賣一套，從每個成員各扣自己的量</td>
+      <td>不能直接改<br>見<a href="#stock-sellable">組合包可售量</a></td>
+    </tr>
+    <tr>
+      <td>鎖定套數與限量上限</td>
+      <td><span class="tag">組合包自己設</span></td>
+      <td>庫存版本：不限量或限量（設上限）<br>單售可鎖定數量</td>
+      <td>張數就是上限</td>
+      <td>庫存版本：不限量或限量（設上限）<br>鎖定套數</td>
+      <td>預設不限量，也不鎖定</td>
+      <td>限量上限只能比成員算出的套數小<br>鎖定套數最多到成員能湊出的套數<br>見<a href="#stock-lock">鎖定套數</a></td>
+    </tr>
+    <tr>
+      <td>規格</td>
+      <td><span class="tag off">跟隨成員／活動（不能改）</span></td>
+      <td>多選項商品：每個選項組合是一個規格</td>
+      <td>—</td>
+      <td>商品成員沒有規格欄</td>
+      <td>照商品本身：多規格由粉絲下單時任選</td>
+      <td>不能指定規格<br>要綁到特定規格，用鎖定套數的逐規格分配，見<a href="#stock-lock-split">逐規格或逐項門票分配</a></td>
+    </tr>
+    <tr>
+      <td>可選的門票與張數</td>
+      <td><span class="tag">組合包自己設</span></td>
+      <td>—</td>
+      <td>一場活動有多張門票：<br>票種門票<br>獨立票</td>
+      <td>門票成員：勾允許的門票，加張數 n</td>
+      <td>從活動建立時，預先帶入這場的門票，見<a href="#from-event-diff">從活動進來時的差異</a></td>
+      <td>可以改，見<a href="#what">組合包的成員</a><br>粉絲從允許的門票任選一項</td>
+    </tr>
+
+    <tr class="grp"><td colspan="7">誰能買與能買多少</td></tr>
+    <tr>
+      <td>購買條件</td>
+      <td>含門票：<span class="tag ok">繼承＋可覆寫</span><br>只含商品：<span class="tag">組合包自己設</span></td>
+      <td>沒有</td>
+      <td>限時購買<br>限粉絲分級購買<br>預設跟隨活動預設，可改成自己一組</td>
+      <td>限時間<br>限粉絲分級（最低分級）</td>
+      <td>含門票：照所含門票取最嚴<br>只含商品：不限，因為商品沒有購買條件可帶入</td>
+      <td>含門票：只能收窄<br>只含商品：可以設<br>見<a href="#conditions">組合包的購買條件</a></td>
+    </tr>
+    <tr>
+      <td>限購</td>
+      <td><span class="tag ok">繼承＋可覆寫</span></td>
+      <td>三種上限：<br>每人總限購數量<br>每次交易限購數量<br>限購次數<br>限購開關預設關</td>
+      <td>同三種上限，以張計<br>預設跟隨活動預設，可改成自己一組</td>
+      <td>同三種上限，以組計</td>
+      <td>取所有成員的交集，每種上限取最嚴</td>
+      <td>可以覆寫：商品的部分可放寬或收窄，門票的部分只能收窄<br>見<a href="#limits">組合包的限購</a></td>
+    </tr>
+
+    <tr class="grp"><td colspan="7">什麼時候看得到與買得到</td></tr>
+    <tr>
+      <td>上架與下架</td>
+      <td>含門票：<span class="tag ok">繼承＋可覆寫</span><br>只含商品：<span class="tag">組合包自己設</span></td>
+      <td>三選一：<br>不上架<br>立刻上架<br>定時上架<br>可另設定時下架</td>
+      <td>跟著活動的上架</td>
+      <td>自己一組上架設定</td>
+      <td>含門票：跟隨活動的上架與下架時間<br>只含商品：預設立刻上架，不看成員</td>
+      <td>含門票：可另設，要落在活動上架區間內<br>只含商品：自己設<br>見<a href="#timing">票務商品的上架與開賣時間</a></td>
+    </tr>
+    <tr>
+      <td>開賣與停售</td>
+      <td>含門票：<span class="tag ok">繼承＋可覆寫</span><br>只含商品：<span class="tag">組合包自己設</span></td>
+      <td>立即開賣或定時開賣<br>可另設定時停售<br>只管單售</td>
+      <td>照活動售票期間<br>可加限時購買，例如早鳥</td>
+      <td>自己一組開賣與停售</td>
+      <td>含門票：跟隨活動的開賣與停售<br>只含商品：上架即開賣，不自動停售，不看成員的開賣</td>
+      <td>含門票：可另設，可早於活動開賣，停售不晚於活動停售<br>只含商品：自己設<br>見<a href="#switches-member">商品成員開關的影響範圍</a></td>
+    </tr>
+    <tr>
+      <td>顯示與隱藏</td>
+      <td><span class="tag">組合包自己設</span></td>
+      <td>顯示開關，預設顯示<br>隱藏時只能經非公開連結購買</td>
+      <td>每張門票一個顯示開關，預設顯示<br>隱藏時不在活動頁列出，不能單張購買</td>
+      <td>自己的顯示開關</td>
+      <td>預設顯示，不看成員<br>隱藏的商品或門票照樣能當成員賣出</td>
+      <td>可以改<br>含門票：活動隱藏期間不能切成顯示，見<a href="#switches-ceiling">活動是票務商品開關的上限</a></td>
+    </tr>
+    <tr>
+      <td>暫停售票</td>
+      <td><span class="tag off">跟隨成員／活動（不能改）</span></td>
+      <td>—</td>
+      <td>票種門票跟著票種暫停<br>獨立票逐張暫停<br>另有整場活動暫停</td>
+      <td>沒有自己的暫停</td>
+      <td>暫停中的門票在組合包裡不能選<br>整場活動暫停時，含其門票的組合包都不能買</td>
+      <td>不能在組合包改，見<a href="#rules-locked">不能改的條件</a></td>
+    </tr>
+    <tr>
+      <td>封存與刪除</td>
+      <td><span class="tag">組合包自己設</span></td>
+      <td>已下架才能封存<br>零成交才能刪除</td>
+      <td>活動沒有封存<br>草稿活動可以刪除<br>活動發布後不能刪除，只能取消<br>活動進入售票中後，門票不能移除或刪除，只能暫停售票或隱藏</td>
+      <td>自己一套，規則同商品</td>
+      <td>不從成員帶入</td>
+      <td>組合包封存或刪除不影響成員<br>見<a href="#unlist-delete">刪除組合包</a></td>
+    </tr>
+
+    <tr class="grp"><td colspan="7">其他設定</td></tr>
+    <tr>
+      <td>取貨方式</td>
+      <td><span class="tag off">跟隨成員／活動（不能改）</span></td>
+      <td>實體商品二選一：<br>物流配送<br>現場 QR 領取，取貨場次綁在商品上</td>
+      <td>跟著活動的取票方式</td>
+      <td>沒有自己的設定<br>不能直接加入取貨場次</td>
+      <td>商品成員照自己的取貨方式與取貨場次<br>門票成員每張一個 QR，各自報到</td>
+      <td>不能在組合包改</td>
+    </tr>
+    <tr>
+      <td>名稱與素材</td>
+      <td><span class="tag">組合包自己設</span></td>
+      <td>自己填名稱<br>描述<br>素材</td>
+      <td>票名預設跟著票種名稱<br>門票圖片預設用活動主視覺<br>兩者都可改</td>
+      <td>自己的名稱<br>描述<br>素材</td>
+      <td>不從成員帶入</td>
+      <td>自己填</td>
+    </tr>
+    <tr>
+      <td>電影關聯</td>
+      <td><span class="tag">組合包自己設</span></td>
+      <td>可關聯多部已上架電影</td>
+      <td>—</td>
+      <td>自己一份</td>
+      <td>不從成員帶入：成員關聯了某部電影，組合包不會自動關聯</td>
+      <td>自己設</td>
+    </tr>
+    <tr>
+      <td>平台費率</td>
+      <td><span class="tag off">跟隨成員／活動（不能改）</span></td>
+      <td>照電子商店的費率</td>
+      <td>照活動票券的費率</td>
+      <td>沒有自己的設定</td>
+      <td>只含商品：照電子商店組合商品的費率<br>含門票：整筆照活動票券的費率，不拆成員</td>
+      <td>創作者不能改，由 Admin 的平台費率設定決定</td>
+    </tr>
+
+    <tr class="grp"><td colspan="7">會被鎖定的情況</td></tr>
+    <tr>
+      <td>售出後的成員內容</td>
+      <td><span class="tag warn">鎖定</span></td>
+      <td colspan="2">不適用</td>
+      <td>成員內容</td>
+      <td>賣出任一套後鎖定</td>
+      <td>只剩少數設定能改，見<a href="#unlist-lock">售出後鎖定成員內容</a></td>
+    </tr>
+    <tr>
+      <td>bookyay 套票自動建立的組合包</td>
+      <td><span class="tag warn">鎖定</span></td>
+      <td>不適用</td>
+      <td>bookyay 帶入的門票：票價與張數鎖定<br>購買條件整組鎖定</td>
+      <td>不能加商品成員<br>不能刪除</td>
+      <td>由 bookyay 套票帶入，內容與購買規則鎖定</td>
+      <td>帶入的內容不能改<br>名稱與素材仍可改<br>上架、顯示與開賣三個開關仍可改<br>見<a href="#from-event-after">建立之後</a></td>
+    </tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>門票的購買條件、限購與折扣怎麼跟隨活動預設，見<a href="event-create-step4.html#purchase-layers">門票跟隨活動預設或改成自己一組</a></li>
+</ul>
+<p class="note">依據：主規格 §7.2「商品」「限購」「取貨方式」、§7.6、§7.14「庫存池與商品」「三個狀態開關」「活動販售的時間層級」「活動層級暫停售票與完售」「組合包成交條件」「組合包的限購」「組合包的購買條件」「票務商品的購買條件」「下架確認與組合包連動」「封存與刪除」、§7.15「逐幣別覆寫」；5.1.5.1 §2.10；5.1.5.2 §4.1 F3、F4、§4.4 F9、F13、§4.5 F12、§4.6；5.1.5.12 F2；5.1.5.4 §4 F2、F3、F4、F6、F7、F8、F9、F10；5.1.5.9 §2.3；5.1.6.1 F9.1、F21、F22、F24；D241、D261、D266、D288、D292、D295、D296、D318、D328、D329、D330、D332、D342、D363、D375、D380、D390、D391、D393、D398、D400、D402。</p>
 
 <h2 id="price"><span class="n"></span>組合包的價格</h2>
 <p>組合包的售價由成員原價合計與組合折扣 % 自動算出，創作者不直接填售價。</p>
@@ -709,8 +942,8 @@ td.num{font-variant-numeric:tabular-nums}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>0-設計規格書.md</code>（v4.53）§7.12／§7.14／§7.15、<code>5.1.5.4-建立組合流程.md</code>（v2.48）、<code>5.1.5.9-組合商品細節頁.md</code>（v1.60）、<code>5.1.6.1-建立活動流程.md</code>（v2.67）F7／F20／F22、<code>5.1.6.2-編輯活動.md</code>（v3.53）F14、F15、<code>5.1.6.3-活動詳情.md</code>（v59）§2.1、§2.6.1、<code>5.1.5-電子商店.md</code> F4</li>
-    <li>決策：D087、D241、D251、D254、D261、D266、D282、D284、D288、D289、D290、D292、D293、D294、D295、D296、D298、D307、D318、D328、D329、D330、D331、D332、D340、D342、D352、D361、D363、D366、D367、D371、D375、D380、D382、D390、D391、D397、D398、D400、D401、D402</li>
+    <li>規格：<code>0-設計規格書.md</code>（v4.55）§7.12／§7.14／§7.15、<code>5.1.5.4-建立組合流程.md</code>（v2.49）、<code>5.1.5.9-組合商品細節頁.md</code>（v1.61）、<code>5.1.6.1-建立活動流程.md</code>（v2.70）F7／F20／F22、<code>5.1.6.2-編輯活動.md</code>（v3.54）F14、F15、<code>5.1.6.3-活動詳情.md</code>（v61）§2.1、§2.6.1、<code>5.1.5-電子商店.md</code> F4、<code>5.1.5.2-建立商品流程.md</code>（v6.38）§4.1 F3、F4、§4.4 F9、F13、§4.5 F12、§4.6、<code>5.1.6.1-建立活動流程.md</code> F9.1、F21、F24、<code>5.1.5.1-商品細節頁.md</code> §2.10、<code>5.1.5.12-建立取貨場次.md</code> F2</li>
+    <li>決策：D087、D241、D251、D254、D261、D266、D282、D284、D288、D289、D290、D292、D293、D294、D295、D296、D298、D307、D318、D328、D329、D330、D331、D332、D340、D342、D352、D361、D363、D366、D367、D371、D375、D380、D382、D390、D391、D393、D397、D398、D400、D401、D402、D403</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -755,8 +988,12 @@ td.num{font-variant-numeric:tabular-nums}
     <li>組合包逐幣別覆寫依「成員含不含門票」分流的判準，是否就是產品負責人的本意</li>
     <li>從活動詳情建立時，預帶的門票是否全部允許、張數 1，以及建立完成或取消後是否回到這場活動詳情的票務分頁（皆為推導）</li>
     <li>已結束與已取消的活動，活動詳情是否不提供建立組合包入口（推導）</li>
+    <li>成員商品自己的排程特價，是否影響組合包的原價合計（規格只寫用成員原價計）</li>
+    <li>組合包的素材能不能共用成員商品的素材</li>
+    <li>組合包是否設低庫存門檻，低庫存狀態是否適用組合包</li>
+    <li>活動門票能不能像商品一樣鎖定數量（活動的鎖定庫存尚未裁決）</li>
   </ul>
-  <p class="k">最近同步：2026-10-12（至 D402）</p>
+  <p class="k">最近同步：2026-10-12（至 D403）</p>
 </details>
 </div>
 <script>
