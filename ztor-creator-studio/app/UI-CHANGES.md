@@ -13,6 +13,29 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-12（一百七十三）· 建立商品「內容」頁左側空白欄新增「本頁大綱」區段導覽（B feedback ＋ D infra／新元件）
+
+**標籤**：release2.4
+
+**範圍**：`create-product.html`、`ds-components/section-outline.css`（新）、`partials/section-outline.js`（新）、`js/i18n.js`（`cp.outline.*` 五鍵）、`design-system.md`／`design-system.html`（§4.233）、`ds-index.md`（機器生成）、`ASSUMPTIONS.md`（UIA-243）、`BUILD-SPEC.md`（§4h）、`requirements-map.md`。不改產品規則、不改 `documents/`。`create-product.html` 屬 🟢 release2.3（S26 建立商品）範圍：是否同步進凍結的 release2.3 待使用者決定，決定前只標 release2.4。
+
+**依據**：使用者 2026-10-12「創建商品第一步『內容』頁，頁面左側（左側欄與表單卡片之間的空白欄）需要新增一個這一頁中每一個 section 的導覽」，看完 `lab-section-nav.html` 六種擺法後選「C」（狀態清單）。
+
+### B · feedback
+
+- **本頁大綱（C 款）掛進左側空白欄**：直排細字清單，目前所在節文字亮起、左側一條細線，捲動時追蹤，點擊平滑捲到該節；每列前有狀態圓（必填未填＝橘色空心圈、已完成＝實心打勾、選填＝灰點）；頂部「本頁大綱」標題、「必填 N／M」與進度條；sticky 吸附（與預覽欄同一條 96px 線）。節名最多兩行（lab 是單行截斷，長節名如「各選項組合價格與庫存」會看不全，這裡改兩行）。
+- **只列這一頁實際顯示的節**：清單隨實體／數位、單一／多選項、庫存限量與否、上架與開賣設定的顯隱同步增減；預覽卡（cp-preview）不列入；節名讀各節標題現況文字，跟著語言切換。
+- **「必填」「已完成」沿用既有就緒檢查（Ready to sell?）**：節內有就緒項＝必填節，項目全過＝已完成，沒有就緒項＝選填；不另訂規則。所以庫存只在「限量」時、取貨方式只在「物流配送」時、購買限制只在「每人限購」開著時才變必填，實體的「商品資訊」還要有至少一筆詳細規格才打勾（缺口與推導見 ASSUMPTIONS UIA-243）。
+- **版面不擠壓表單**：絕對定位在表單欄左側的空白欄，不佔 grid。1440 寬實測空白欄 178px、導覽寬 138px；視窗 <1400px 整個隱藏（內容欄 1140 置中，1366 寬左欄只剩 141px 放不下）。這頁是全頁 wizard、沒有側欄，所以沒有側欄展開／收合兩種狀態。彈窗內嵌（`?embed`）與「預覽與發布」全頁畫面不顯示。
+- 鍵盤與讀屏：項目是 `<button>`、可 Tab 與 Enter，`:focus-visible` 內縮 2px 框線；目前節 `aria-current="location"`；導覽容器 `aria-label`；每列帶讀屏用的狀態文字；`prefers-reduced-motion` 時跳節不平滑、進度條不做寬度動畫。
+- i18n：`cp.outline.title`（本頁大綱／On this page）、`cp.outline.required`（必填 {n}／{m}／Required {n}/{m}）、`cp.outline.todo`／`done`／`opt`（狀態文字）。
+
+### D · infra／新元件（第一次出現就 promote）
+
+- `ds-components/section-outline.css`（`.section-outline__*`，只用既有 token）＋ `partials/section-outline.js`（`window.ztorSectionOutline.mount({ host, sections, status, labels, … })`，輸入節容器清單與必填判斷函式、輸出導覽，之後其他長表單頁可重用）＋ `design-system.md`／`design-system.html` §4.233。
+- 可延伸的消費頁（尚未接）：`create-bundle.html`、`create-auction.html`、`product-detail.html` 編輯態。
+- 未掛 `data-feat`、未登記功能表：大綱是 S26 建立商品頁面的呈現輔助，沿用該頁的 tier。
+
 ## 2026-10-12（一百七十二）· 新增探索頁：建立商品「內容」頁的區段導覽六種樣式（D infra／探索頁）
 
 **範圍**：`lab-section-nav.html`（新增）；不改 `create-product.html` 與任何正式頁、不新增元件、不新增 token、不進站台導覽。僅最終版。

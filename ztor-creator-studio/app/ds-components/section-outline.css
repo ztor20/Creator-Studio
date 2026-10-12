@@ -1,0 +1,167 @@
+/* ============================================================
+   section-outline.css · 本頁大綱（長表單的區段導覽）
+   ------------------------------------------------------------
+   長表單一路排下來有十幾張卡，這支回答「我現在在哪、還有哪些必填沒填」：
+   直排細字清單，目前所在節亮起並在左側標一條細線（scroll-spy 由 partials/section-outline.js 算），
+   每一列前面有狀態圓，頂部一行「必填 N／M」加進度條。
+
+   來源：2026-10-12 使用者在 lab-section-nav.html 六種擺法裡選定 C（狀態清單）。
+
+   結構：
+     .section-outline            <nav> 根；aria-label 由 JS 填
+       .section-outline__inner   sticky 的內層（top 用 --section-outline-top，預設 96px＝與預覽欄同一條線）
+         .section-outline__head  標題「本頁大綱」
+         .section-outline__sum   摘要列
+           .section-outline__count  「必填 N／M」（N 用 <b>）
+           .section-outline__bar    進度條；寬度讀 --section-outline-progress（JS 寫）
+         .section-outline__list  清單（左側一條細線）
+           .section-outline__item(.is-active)  一節；<button>，aria-current="location" 標目前節
+             .section-outline__mk[data-st]     狀態圓：todo＝橘色空心圈／done＝實心打勾／opt＝灰點
+             .section-outline__text            節名（最多兩行）
+
+   修飾與掛載：
+     .section-outline--gutter    放進頁面左側空白欄（相對 .section-outline-host 絕對定位）。
+                                 寬度＝(視窗 − 內容欄寬) / 2 − 12px，夾在 120–184px；
+                                 內容欄寬預設 1140（.wizard__body--mid），其他頁用 --section-outline-body 覆寫；
+                                 視窗 < 1400px 時整個隱藏（左欄放不下就不擠表單）。
+     .section-outline-host       掛 --gutter 的那一欄（建立商品＝.preview-split__form），只負責 position: relative。
+
+   只用既有 token；動效尊重 prefers-reduced-motion。
+   ============================================================ */
+
+.section-outline-host { position: relative; }
+
+.section-outline {
+  --_w: clamp(120px, calc((100vw - var(--section-outline-body, 1140px)) / 2 - var(--sp-12)), 184px);
+  min-width: 0;
+  font-size: var(--fs-12);
+  line-height: var(--lh-snug);
+  color: var(--muted-foreground);
+}
+.section-outline[hidden] { display: none; }
+
+/* ── 掛進頁面左側空白欄：絕對定位，不佔 grid、不推擠表單 ── */
+.section-outline--gutter {
+  position: absolute;
+  top: 0;
+  bottom: 0;                                   /* 拉滿整欄高度，內層 sticky 才有路可走 */
+  right: calc(100% + var(--sp-16));            /* 右緣貼表單卡左緣再退 16 */
+  width: var(--_w);
+  z-index: 1;
+}
+@media (max-width: 1399px) {
+  .section-outline--gutter { display: none; }
+}
+
+.section-outline__inner {
+  position: sticky;
+  top: var(--section-outline-top, 96px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  max-height: calc(100vh - var(--section-outline-top, 96px) - var(--sp-24));
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.section-outline__inner::-webkit-scrollbar { display: none; }
+
+/* ── 頂部：標題＋必填摘要＋進度條 ── */
+.section-outline__head {
+  padding-left: var(--sp-8);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+}
+.section-outline__sum {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: 0 0 var(--sp-4) var(--sp-8);
+  font-size: var(--fs-11);
+  color: var(--foreground-muted);
+}
+.section-outline__sum[hidden] { display: none; }
+.section-outline__count b { font-weight: var(--fw-medium); color: var(--foreground); }
+.section-outline__bar {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--foreground) 9%, transparent);
+}
+.section-outline__bar::before {
+  content: '';
+  display: block;
+  width: var(--section-outline-progress, 0%);
+  height: 100%;
+  background: var(--primary);
+  transition: width var(--duration);
+}
+
+/* ── 清單：左側一條細線，目前節在線上疊一段品牌色 ── */
+.section-outline__list {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-soft);
+}
+.section-outline__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-6);
+  width: 100%;
+  box-sizing: border-box;
+  appearance: none;
+  margin-left: -1px;                           /* 讓 2px 的亮線蓋住 1px 的底線 */
+  padding: 5px var(--sp-8);
+  border: 0;
+  border-left: 2px solid transparent;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.section-outline__item:hover { color: var(--foreground); }
+.section-outline__item.is-active {
+  color: var(--foreground);
+  font-weight: var(--fw-medium);
+  border-left-color: var(--primary);
+}
+.section-outline__item:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;                        /* 內縮：內層是 overflow 容器，外擴的框線會被裁掉 */
+}
+.section-outline__text {
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;                       /* 節名最多兩行，再長就截斷（title 屬性補全名） */
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+/* ── 狀態圓：必填未填＝橘色空心圈、已完成＝實心打勾、選填＝灰點（由 data-st 切換） ── */
+.section-outline__mk {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  box-sizing: border-box;
+  width: 12px;
+  height: 12px;
+  margin-top: 3px;                             /* 與第一行字的中線對齊 */
+  border-radius: 50%;
+}
+.section-outline__mk .ztor-icon { display: none; width: 8px; height: 8px; stroke-width: 3; }
+.section-outline__mk[data-st="todo"] { border: 1.5px solid var(--primary); }
+.section-outline__mk[data-st="done"] { background: var(--status-success); color: var(--background); }
+.section-outline__mk[data-st="done"] .ztor-icon { display: block; }
+.section-outline__mk[data-st="opt"]::after {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--faint-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-outline__bar::before { transition: none; }
+}
