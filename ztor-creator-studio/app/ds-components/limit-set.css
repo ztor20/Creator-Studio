@@ -1,0 +1,49 @@
+/* ============================================================
+   limit-set.css · 限購三種上限（D398，2026-10-12）
+   ------------------------------------------------------------
+   商品、組合包與活動門票共用同一套三種上限——每人總限購數量、每次交易限購數量、限購次數，
+   每欄一句輔助說明（主規格 §7.2、§7.14「組合包的限購」、5.1.6.1 F22）。
+   markup 一律由 js/purchase-limits.js 產生（fieldsHTML／blockHTML），不各頁手刻；
+   活動的「限購」條件卡只借輔助說明那一句（hintHTML），外框仍是 cond-list。
+
+   兩種用法
+     .limit-set__fields             只有三欄（商品：限購開關底下的 control-group__body）
+     .limit-set.limit-set--bundle   組合包：標題列（跟隨成員／已覆寫徽章＋一句說明＋覆寫／改回跟隨成員）＋三欄，
+                                    每欄多一行 .limit-set__src 寫「取自誰」（哪一個成員卡住上限、怎麼換算成組）
+
+   anatomy
+     .limit-set[data-state]         data-state＝follow｜override｜locked（bookyay 套票自動建立的組合包）
+       .limit-set__head             徽章 .limit-set__state ＋ 說明 .limit-set__sub ＋ 動作 .limit-set__act（推到最右）
+       .limit-set__fields           三欄的容器：欄與欄的節奏由 gap 持有（Q103）
+         .limit-set__field          一欄＝.field（label＋input＋hint＋src＋error）
+           .limit-set__input        數字欄，寬度上限 --w-220（同商品其他數量欄）
+           .limit-set__src          取自誰（事實句，與 hint 同色，靠位置區分）
+   surface：白卡與灰底皆可；跟隨時三欄是 disabled 輸入框（Q128 唯讀事實＝disabled 輸入框）。
+   ============================================================ */
+.limit-set {
+  display: grid;
+  gap: var(--sp-16);
+  min-width: 0;
+}
+.limit-set__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8) var(--sp-12);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.limit-set__state { flex: none; }
+.limit-set__sub {
+  flex: 1 1 200px;
+  min-width: 0;
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+}
+.limit-set__act { flex: none; margin-left: auto; }
+.limit-set__fields {
+  display: grid;
+  gap: var(--sp-16);
+  min-width: 0;
+}
+.limit-set__field { min-width: 0; }
+.limit-set__input { max-width: var(--w-220); }

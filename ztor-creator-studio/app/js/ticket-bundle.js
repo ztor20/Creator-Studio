@@ -24,6 +24,10 @@
      st.rules = null（跟隨所含門票）｜{ on, cond, tier, from, to, cap, person, order, times }（已調整；person／order 以「組」計）
    活動時間（et，由 times(ev) 或頁面自己組）：{ listFrom, listTo, listNow, saleFrom, saleTo, start, draft, shown, unlisted }
 
+   D398（2026-10-12）：限購擴及所有組合包、預設取所有成員（含商品成員）的交集，改由 js/purchase-limits.js 的組合包限購區塊負責；
+   bundle-detail 與 create-bundle 呼叫 rulesHTML／syncErrors／errorCount 時帶 buyOnly（ctx.buyOnly），這裡只剩購買條件。
+   建立活動第 6 步（js/bundle-editor.js）尚未改接，照舊用本檔的「購買條件與限購」合併區塊（ASSUMPTIONS UIA-247）。
+
    活動設定是最高優先層級（D363，2026-10-07；主規格 §7.14「三個狀態開關」）——三個消費頁與電子商店清單共用同一口徑：
      · 顯示：活動隱藏（et.shown === false）時，含其票券的組合包在電子商店一律不顯示、自己的顯示開關不能切成顯示；
        組合包自己的顯示值保留，活動切回顯示後照它自己的開關（evHidden(et)）。
@@ -274,10 +278,12 @@
   }
   /* 清單分隔：中文用頓號、英文用逗號＋空格 */
   function sepList(T) { return String(document.documentElement.lang || '').indexOf('zh') === 0 ? '、' : ', '; }
-  function rulesErrors(st, def, et, T) {
-    var e = {}, r = st && st.rules;
+  /* opts.buyOnly（D398，2026-10-12）：限購改由 js/purchase-limits.js 的組合包限購區塊管（所有組合包、含商品成員的交集），
+     這裡只檢查購買條件；bundle-detail／create-bundle 傳 buyOnly，建立活動第 6 步（bundle-editor）照舊含限購 */
+  function rulesErrors(st, def, et, T, opts) {
+    var e = {}, r = st && st.rules, buyOnly = !!(opts && opts.buyOnly);
     if (!def || !def.count) return e;
-    var short = shortErrors(def, T);
+    var short = buyOnly ? {} : shortErrors(def, T);
     if (!r) { if (def.empty) e.empty = T('tb.err.empty.window'); return Object.assign(e, short); }
     if (def.empty && !condHas(r, 'time')) e.empty = T('tb.err.empty.window');
     if (def.tier && (!condHas(r, 'tier') || TIER_RANK[r.tier] < TIER_RANK[def.tier])) {
@@ -289,7 +295,7 @@
       else if (outside(r.from, et) || outside(r.to, et)) e.time = T('tb.err.outside').replace('{period}', periodText(et, T));
       else if (lateEnd(r.to, et)) e.time = lateText(et, T);   /* D363：限時間的結束不能晚於活動停售（開始可以早於開賣） */
     }
-    ['person', 'order', 'times'].forEach(function (k) {
+    if (!buyOnly) ['person', 'order', 'times'].forEach(function (k) {
       if (short[k]) { e[k] = short[k]; return; }
       var lim = def[k], max = lim ? (k === 'times' ? lim.n : lim.sets) : null;
       var v = r.cap === 'cap' ? String(r[k] || '').trim() : '';
@@ -341,21 +347,26 @@
      opts.n＝每組張數（限購換算成套）。 */
   function rulesHTML(st, def, et, T, opts) {
     opts = opts || {};
-    var r = st && st.rules, n = Math.max(1, Math.floor(Number(opts.n) || 1));
+    var r = st && st.rules, n = Math.max(1, Math.floor(Number(opts.n) || 1)), buyOnly = !!opts.buyOnly;
     if (!def || !def.count) return '<p class="field__hint">' + esc(T('tb.rules.none')) + '</p>';
     var follow = !r || opts.readonly;
+    /* buyOnly：不提「限購以組計」那句（限購在組合包的限購區塊） */
+    var note = buyOnly ? (def.count > 1 ? T('tb.rules.from.many').replace('{n}', def.count) : T('tb.rules.from.one')) : defNote(def, n, T);
     var head = opts.readonly ? '' :
       '<div class="control-row"><div><div class="control-row__main">' + esc(T('tb.rules.follow')) + '</div>' +
-        '<div class="control-row__sub">' + esc(defNote(def, n, T)) + '</div></div>' +
+        '<div class="control-row__sub">' + esc(note) + '</div></div>' +
         '<div class="switch' + (follow ? ' switch--on' : '') + (opts.locked ? ' switch--locked' : '') + '" role="switch" aria-checked="' + follow + '"' +
           (opts.locked ? ' aria-disabled="true"' : ' tabindex="0"') + ' data-tb-rules-follow aria-label="' + esc(T('tb.rules.follow')) + '"></div></div>';
     if (follow) {
-      return head + '<div class="kv-list' + (head ? ' mt-16' : '') + '">' +
+      /* buyOnly：外層已有「購買條件」小標，讀數不再掛同名 kv 標籤（UI 文案不重述上下文） */
+      return head + (buyOnly
+        ? '<div class="field-readout' + (head ? ' mt-16' : '') + '">' + esc(buyText(defBuy(def), T)) + '</div>'
+        : '<div class="kv-list' + (head ? ' mt-16' : '') + '">' +
           kv(T('tb.rules.buy'), buyText(defBuy(def), T)) +
           kv(T('tb.rules.cap'), capText(defCap(def), T)) +
-        '</div>' +
-        (opts.readonly ? '<p class="field__hint">' + esc(defNote(def, n, T) + sep() + T('tb.rules.later')) + '</p>' : '') +
-        err('empty') + err('person') + err('order');
+        '</div>') +
+        (opts.readonly ? '<p class="field__hint">' + esc(note + sep() + T('tb.rules.later')) + '</p>' : '') +
+        err('empty') + (buyOnly ? '' : err('person') + err('order'));
     }
     var tierOpts = TIERS_HI.map(function (v) {
       return '<option value="' + v + '"' + (r.tier === v ? ' selected' : '') + '>' + esc(T('ce.rule.tier.' + v)) + '</option>';
@@ -384,7 +395,7 @@
         '</div>' : '') +
         err('tier') + err('empty') +
       '</div>' +
-      '<div class="rule">' +
+      (buyOnly ? '' : '<div class="rule">' +
         '<div class="field__label">' + esc(T('tb.rules.cap')) + '</div>' +
         radio('cap', r.cap, [{ v: 'none', k: 'ce.rule.any' }, { v: 'cap', k: 'ce.rule.cap.on' }], T) +
         (r.cap === 'cap' ? '<div class="rule-sub">' +
@@ -392,7 +403,13 @@
           capField('order', def.order ? def.order.sets : null) +
           capField('times', def.times ? def.times.n : null) +
         '</div>' : (['person', 'order', 'times'].map(err).join(''))) +
-      '</div>';
+      '</div>');
+  }
+  /* 只有購買條件那一半的摘要（D398：bookyay 自動建立的組合包，限購另在組合包的限購區塊顯示） */
+  function buySummary(st, def, T) {
+    if (!def || !def.count) return '';
+    var r = st && st.rules;
+    return buyText(r ? curBuy(r) : defBuy(def), T);
   }
   /* 摘要（收合列、清單、細節頁讀數共用）：「超級粉絲以上 · 每人 2 組」 */
   function rulesSummary(st, def, T) {
@@ -441,7 +458,7 @@
   /* 把錯誤寫進就地的 [data-tb-err]，回傳錯誤數（schedule＋rules） */
   function syncErrors(root, st, ctx, T) {
     if (!root) return 0;
-    var e = Object.assign({}, schedErrors(st, ctx.et, T), ctx.def ? rulesErrors(st, ctx.def, ctx.et, T) : {});
+    var e = Object.assign({}, schedErrors(st, ctx.et, T), ctx.def ? rulesErrors(st, ctx.def, ctx.et, T, ctx) : {});
     root.querySelectorAll('[data-tb-err]').forEach(function (p) {
       var m = e[p.dataset.tbErr];
       p.hidden = !m; p.textContent = m || '';
@@ -450,7 +467,7 @@
     return Object.keys(e).length;
   }
   function errorCount(st, ctx, T) {
-    return Object.keys(Object.assign({}, schedErrors(st, ctx.et, T), ctx.def ? rulesErrors(st, ctx.def, ctx.et, T) : {})).length;
+    return Object.keys(Object.assign({}, schedErrors(st, ctx.et, T), ctx.def ? rulesErrors(st, ctx.def, ctx.et, T, ctx) : {})).length;
   }
 
   window.ZtorTicketBundle = {
@@ -458,7 +475,7 @@
     evHidden: evHidden, saleCeil: saleCeil, lateEnd: lateEnd, lateText: lateText,
     eventValue: eventValue, followText: followText, isCustom: isCustom, effective: effective,
     schedErrors: schedErrors, schedHTML: schedHTML,
-    ruleConds: ruleConds, tierRules: tierRules, defaults: defaults, seedFrom: seedFrom, rulesErrors: rulesErrors, rulesHTML: rulesHTML, rulesSummary: rulesSummary,
+    ruleConds: ruleConds, tierRules: tierRules, defaults: defaults, seedFrom: seedFrom, rulesErrors: rulesErrors, rulesHTML: rulesHTML, rulesSummary: rulesSummary, buySummary: buySummary,
     onClick: onClick, onInput: onInput, syncErrors: syncErrors, errorCount: errorCount
   };
 })();
