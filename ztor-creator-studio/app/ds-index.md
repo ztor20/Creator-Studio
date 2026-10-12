@@ -454,7 +454,7 @@
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs__dot ｜ Filter Tabs — secondary, lighter pill row for na
 - `finding-card.css` — .finding, .finding__kicker, .finding__title, .finding__sub, .finding__basis ｜ Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160）
 - `follow-field.css` — .follow-fields, .follow-field, .follow-field__head, .follow-field__seg ｜ follow-field.css · 跟隨／另設的時間列（D342，2026-10-01）
-- `form-ask.css` — .form-ask, .form-ask__t, .form-ask__s, .form-ask__body, .form-ask__row ｜ form-ask.css · 問句式設定塊、表單分類標與標題列讀數（2026-10-12，建立組
+- `form-ask.css` — .form-ask, .form-ask__t, .form-ask__s, .form-ask__body, .form-ask__row ｜ form-ask.css · 問句式設定塊與標題列讀數（2026-10-12，建立組合包改版；使
 - `form-grid.css` — .form-grid, .form-grid--3 ｜ form-grid.css · 表單欄位並排網格 helper
 - `form-section.css` — .form-section, .form-section--dense, .form-section__actions, .form-section--outlined, .form-section__head ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
 - `funding-panel.css` — .funding-panel, .funding-panel__amount-row, .funding-panel__amount, .funding-panel__backers, .funding-panel__goal ｜ Funding panel · 募資概況面板（2026-07-24 promote）

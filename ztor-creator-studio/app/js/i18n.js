@@ -10032,7 +10032,7 @@
     'event-detail.wrap.when': { en: 'Ended {d}', zh: '{d} 結束' },
     'event-detail.wrap.cancelled': { en: 'Cancelled — the figures below are what had already been paid', zh: '已取消——以下是取消前已付款的部分' },
     'event-detail.wrap.attended': { en: 'Scanned', zh: '已掃描' },
-    'event-detail.wrap.rate': { en: '{n}% of tickets sold', zh: '佔實售張數 {n}%' },
+    'event-detail.wrap.rate': { en: '{n}% of tickets sold', zh: '佔實際售出張數 {n}%' },
     'event-detail.wrap.dup': { en: 'Repeat scans', zh: '重複掃描' },
     'event-detail.wrap.invalid': { en: 'Invalid QR', zh: '無效 QR' },
     'event-detail.wrap.times': { en: '{n} times', zh: '{n} 次' },

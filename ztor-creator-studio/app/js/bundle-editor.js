@@ -2443,10 +2443,11 @@
        每次 render() 換掉 innerHTML 之後都要再 init 一次。 */
     /* D342：命名段改「命名與素材」，上架另成一段「上架與開賣」，再加「購買條件與限購」（5.1.6.1 F20 收齊組合包欄位）。 */
     /* 2026-10-12 改版（D402，UI-CHANGES 一百八十八）：分頁改成與三大分類一致（組合包介紹／選擇組合物／販售設定），
-       錨點是每一類開頭的分類標（.form-cat[data-st-section]）；原五節分頁（內容物／定價與庫存／命名與素材／上架與開賣／購買條件與限購）退場。 */
+       錨點是每一類開頭的空錨點（[data-st-section]；原分類小標 .form-cat 已撤除）；原五節分頁（內容物／定價與庫存／命名與素材／上架與開賣／購買條件與限購）退場。 */
     var ST_SECTIONS = [['intro', 'cb.sec.intro'], ['content', 'cb.sec.content'], ['sale', 'cb.sec.sale']];
     function catHTML(key, n) {
-      return '<div class="form-cat" data-st-section="' + key + '"><span class="form-cat__n">' + n + '</span><span>' + esc(T('cb.sec.' + key)) + '</span></div>';
+      /* 2026-10-12 使用者「不要有這種小標籤」：分類小標撤除，只留看不見的錨點給頂部三個分頁捲動（分類名已在分頁上） */
+      return '<div data-st-section="' + key + '" aria-hidden="true"></div>';
     }
     function sectionTabsHTML() {
       return '<nav class="section-tabs section-tabs--dialog" data-section-tabs data-st-scroller=".payout-dialog__body" aria-label="' + esc(T('st.aria')) + '">' +
