@@ -4274,11 +4274,17 @@
     'event-detail.live.scanner.title':    { en: 'Scanner access',           zh: '掃碼器存取' },
     'event-detail.live.scanner.url': { en: 'Link',                          zh: '連結' },
     'event-detail.live.scanner.on':       { en: 'Enabled',                  zh: '已啟用' },
-    /* D375 決定五：bookyay 匯入活動的報到台保留但停用，門票入場由 bookyay 掃票、唯讀名單 */
-    'event-detail.live.scanner.off':      { en: 'Disabled',                 zh: '已停用' },
+    /* D375 決定五 → D394：bookyay 匯入活動的門票入場由 bookyay 掃票、唯讀名單（'event-detail.live.scanner.off'「已停用」2026-10-12 退場，徽章改 scanner.bky.badge） */
     'event-detail.scanner.bky':           { en: 'Tickets are scanned at the door with the bookyay Organizer App. Products in ticket bundles are picked up the same way as E-Shop pickups.',
                                             zh: '門票入場由 bookyay Organizer App 掃票。票務商品裡的商品照電子商店的取貨流程領取。' },
     'event-detail.scanner.bky.pickup':    { en: 'Go to Pickup',             zh: '前往取貨管理' },
+    /* D394（2026-10-12）：bookyay 活動的報到台改成「bookyay 掃描器連結＋複製」與「前往取貨管理」兩格 */
+    'event-detail.scanner.bky.badge':     { en: 'Via bookyay',              zh: '由 bookyay 掃票' },
+    'event-detail.scanner.bky.url':       { en: 'bookyay scanner link',     zh: 'bookyay 掃描器連結' },
+    'event-detail.scanner.bky.hint':      { en: 'Tickets are scanned at the door with bookyay’s scanner. Send this link to door staff.', zh: '門票入場用 bookyay 的掃描器掃票，把這條連結傳給門口的工作人員。' },
+    'event-detail.scanner.bky.nourl':     { en: 'bookyay hasn’t sent a scanner link for this event yet. Door staff can still scan tickets with the bookyay Organizer App.', zh: 'bookyay 還沒提供這場的掃描器連結。門口仍可用 bookyay Organizer App 掃票。' },
+    'event-detail.scanner.bky.pickup.label': { en: 'Bundle pickup',         zh: '組合包取貨' },
+    'event-detail.scanner.bky.pickup.hint':  { en: 'Products in ticket bundles are picked up through ztor pickup sessions, not bookyay’s scanner.', zh: '組合包裡的商品用 ztor 的取貨場次領取，不經過 bookyay 掃描器。' },
     'event-detail.scanner.bky.short':     { en: 'Tickets are scanned with the bookyay Organizer App', zh: '門票由 bookyay Organizer App 掃票' },
     'event-detail.att.bky':               { en: 'Who’s in and who isn’t comes from bookyay’s door scans. This list is read-only.', zh: '已入場與未入場名單來自 bookyay 的入場掃票，這裡只能檢視。' },
     'event-detail.summary.title':  { en: 'Event summary',                 zh: '活動摘要' },
@@ -4316,16 +4322,17 @@
     'ed.doors.before':    { en: 'Before start',                   zh: '開演前' },
     'ed.min':             { en: 'min',                            zh: '分鐘' },
     'ed.doors.hint':      { en: 'Fill either one and the other works itself out. Both empty means fans can come in any time.', zh: '兩格填一個就好，另一格會自動算；都留空就是不限制。' },
-    'ed.early.policy':    { en: 'Arriving before that',           zh: '比這個時間早到的人' },
+    'ed.early.policy':    { en: 'Arriving before early entry time', zh: '早於提前入場時間入場' },   // D396 改稱呼，同建立流程
     'ed.early.warn':      { en: 'Allow entry',                    zh: '仍可入場' },
     'ed.early.block':     { en: 'Deny entry',                     zh: '不能入場' },
     'ed.early.policy.hint': { en: 'Ticket types can enter earlier — set that on the Tiers tab.', zh: '票種可以各自提前入場，在「票種」分頁設定。' },
     /* 墓碑 2026-09-23（D316）：'ed.tix.fee'（手續費）——平台費與支付費改由創作者負擔，
        票價之上沒有加給粉絲的手續費；票務卡事實列與票種彈窗那一列一起退場。 */
     'ed.tix.early':       { en: 'Early entry (min)',              zh: '提前入場（分鐘）' },
-    'ed.tix.early.hint':  { en: '{n} min before doors — in at {t}.', zh: '比開放入場提早 {n} 分鐘，{t} 可以入場。' },
-    'ed.tix.early.nodoors': { en: 'Set the doors-open time first — the actual entry time comes from it.', zh: '先在總覽設開放入場時間，實際入場時間由它算出來。' },
-    'ed.tix.early.follow': { en: 'Empty or 0 — follows the doors-open time.', zh: '留空或 0＝跟著開放入場時間。' },
+    /* D396（2026-10-12）：場次的「開放入場」改名「提前入場時間」，票的說明句跟著改稱呼 */
+    'ed.tix.early.hint':  { en: "{n} min before the date's early entry time — in at {t}.", zh: '比場次的提前入場時間再早 {n} 分鐘，{t} 可以入場。' },
+    'ed.tix.early.nodoors': { en: "This date has no early entry time, so early entry doesn't apply.", zh: '場次沒有開啟提前入場時間，票的提前入場不適用。' },
+    'ed.tix.early.follow': { en: "Empty or 0 — follows the date's early entry time.", zh: '留空或 0＝跟著場次的提前入場時間。' },
     'ee.tix.sold':        { en: '{n} of {q} sold',                zh: '已售 {n} / {q}' },
     'ee.tix.nodelete':    { en: "Can't delete — {n} buyers hold this tier", zh: '不可刪除——已有 {n} 位買家持有此票種' },
     /* 票價 0 即免費（2026-08-06 使用者裁決：不做「免費票」這個獨立模式，價格就是狀態） */
@@ -4827,7 +4834,6 @@
     /* D340：內文被圖片影片切成幾段就列幾格；D354 起＝描述有幾個有字的文字區塊就列幾格，譯文放回同一個區塊 */
     'pp.field.body.part':   { en: 'part {n}',                         zh: '第 {n} 段' },
     'pp.field.tnc':         { en: 'Terms & conditions',               zh: '條款與細則' },
-    'pp.field.marketing':   { en: 'Marketing consent',                zh: '行銷同意' },
     /* 墓碑 2026-09-29（D327）：pp.field.entry-note（取票說明欄）退場 */
     'pp.field.tier-name':   { en: 'Ticket type name',                 zh: '票種名稱' },
     /* 墓碑 2026-10-05（D353）：pp.field.tier-desc（門票簡介在翻譯表的分組名，D328）隨欄位整欄移除 */
@@ -5256,7 +5262,11 @@
     'ce.date':              { en: 'Event date',                       zh: '活動日期' },
     'ce.start':             { en: 'Start time',                       zh: '開始時間' },
     'ce.end':               { en: 'End time',                         zh: '結束時間' },
-    'ce.doors':             { en: 'Doors open',                       zh: '開放入場' },
+    /* D396（2026-10-12）：「開放入場（選填）」改成開關列「提前入場時間」＋小字說明；活動詳情的同一個鍵一起換名 */
+    'ce.doors':             { en: 'Early entry time',                 zh: '提前入場時間' },
+    'ce.doors.hint':        { en: 'When staff can start scanning and letting attendees in', zh: '設定工作人員可提前掃描並放行觀眾入場的時間' },
+    'ce.doors.err.req':     { en: 'Add an early entry time.',         zh: '請填提前入場時間。' },
+    'ce.publish-blocked-doors': { en: 'Early entry time is turned on for a date but left empty. Add the time or turn it off.', zh: '有場次開了提前入場時間但沒有填時間，請補上時間或把開關關掉。' },
     /* 墓碑 2026-09-30（D340，5.1.6.1 F8 退場）：容量與活動人數的字串（ce.capacity*／ce.attend*、ee.*capacity*、
        ce.tier.qty.hint／ce.tier.err.overcap／ce.publish-blocked-cap／ce.err.capacity、sd.f.attend.sub）隨容量刪除。
        共看派對的人數上限（ce.wp.cap*，F16）是另一個概念，保留。 */
@@ -5284,13 +5294,9 @@
     'ce.adv.add':           { en: 'Add a line',                       zh: '新增一項' },
     'ce.terms':             { en: 'Terms and conditions',             zh: '條款與細則' },
     'ce.terms.sub':         { en: 'What fans have to see before they buy.', zh: '粉絲購票前一定會看到的東西。' },
-    'ce.terms.marketing':   { en: 'Consent to direct marketing',      zh: '接受主辦者用於直接促銷' },
-    'ce.terms.marketing.hint': { en: 'Attendee data may be used by the organiser to market to them directly.', zh: '參加者資料可由主辦者用於直接促銷。' },
     'ce.terms.tnc':         { en: 'Terms and conditions',             zh: '條款及細則' },
     'ce.terms.tnc.hint':    { en: 'Shown at checkout for the fan to accept.', zh: '在結帳時出示，由粉絲勾選同意。' },
     /* 條款與細則的文字欄（2026-10-07 D362：活動詳情補這一節）——建立活動用頁內字典 d.terms.*，同字 */
-    'ce.terms.marketing.label': { en: 'Marketing message', zh: '行銷同意文字' },
-    'ce.terms.marketing.ph':    { en: 'What fans will see, e.g. how their info may be used to send updates and offers', zh: '例如：我們可能會用你的資料寄送最新消息與優惠' },
     'ce.terms.tnc.label':       { en: 'Terms text', zh: '條款內容' },
     'ce.terms.tnc.ph':          { en: 'Paste or write the terms fans must accept before checkout', zh: '貼上或撰寫粉絲結帳前需同意的條款文字' },
     /* 系列場次（2026-08-06）：同一個活動辦好幾場，每一場都是清單上獨立的一場 */
@@ -5336,6 +5342,7 @@
     'ce.qc.poster':         { en: 'Key visual added',                 zh: '已放主視覺' },   // D390 決定三：只用直式圖片，相簿第一張＝主視覺、至少一張
     'ce.qc.date':           { en: 'Date set',                         zh: '已設日期' },
     'ce.qc.venue':          { en: 'Venue set',                        zh: '已設場地' },
+    'ce.qc.doors':          { en: 'Early entry time set',             zh: '已填提前入場時間' },   // D396：有場次開了提前入場時間才列
     'ce.qc.ticket':         { en: 'At least 1 ticket tier',           zh: '至少 1 種票種' },
     /* D329（5.1.6.1 F11 第五項）：隱藏的票不算，組合包算。舊 key 留給 create-event-legacy。 */
     'ce.qc.sellable':       { en: 'At least 1 visible ticket or 1 bundle', zh: '至少 1 張顯示中的門票或 1 組組合包' },
@@ -5830,6 +5837,12 @@
        同日第二波：`cp.delete`（刪除）也立墓碑——最後一個消費者 create-auction.html #ca-delete 隨 D285 落地撤除。 */
     'cp.preview':           { en: 'Preview',                          zh: '預覽' },
     'cp.preview.heading':   { en: 'Product preview',                  zh: '商品預覽' },
+    /* 2026-10-12 本頁大綱（左側空白欄的區段導覽，ds-components/section-outline.css）：標題、必填摘要（{n}＝已完成節數、{m}＝必填節數）、狀態圓的無障礙文字 */
+    'cp.outline.title':     { en: 'On this page',                     zh: '本頁大綱' },
+    'cp.outline.required':  { en: 'Required {n}/{m}',                 zh: '必填 {n}／{m}' },
+    'cp.outline.todo':      { en: 'Required, not filled',             zh: '必填未填' },
+    'cp.outline.done':      { en: 'Done',                             zh: '已完成' },
+    'cp.outline.opt':       { en: 'Optional',                         zh: '選填' },
     'cp.preview.title':     { en: 'How buyers see it on Ztor',        zh: '買家在 Ztor 看到的樣子' },
     'cp.preview.title-auction': { en: 'Now fans see it',              zh: '粉絲現在看到的樣子' },
     'cp.ready.title':       { en: 'Ready to sell?',                   zh: '可以上架了嗎？' },
@@ -9792,6 +9805,7 @@
     /* 2026-09-18（5.1.6.3 §2.6.1 空狀態）：改成只講「從哪裡建」——兩個入口（建立活動第 6 步、電子商店）。 */
     /* D380（2026-10-09）：建立活動 8 步改 7 步，票務商品由第 6 步改號為第 5 步。 */
     'ed.bd.empty.sub': { en: 'Create one in step 5 of the create flow, or from the e-shop.', zh: '在建立活動第 5 步或電子商店建立' },
+    'ed.bd.empty.cta': { en: 'Create a bundle in the E-Shop', zh: '到電子商店建立組合包' },   /* 2026-10-12 UI-CHANGES 一百六十九：編輯態空狀態的建立入口 */
     'event-detail.btn.golive': { en: 'Open sales now', zh: '立即開賣' },
     'event-detail.btn.opensales': { en: 'Open sales now', zh: '立即開賣' },
     'event-detail.btn.cancelevent': { en: 'Cancel event', zh: '取消活動' },
@@ -10142,11 +10156,7 @@
     'event-detail.sales.sold': { en: 'Sold',               zh: '已售出' },
     'event-detail.sales.bytier':{ en: 'By tier',           zh: '各票種' },
     /* 販售時間卡（2026-08-31）：大字＝還剩幾天可賣，meta＝實際的開賣／停售日期與時間。 */
-    'event-detail.sales.window': { en: 'Sales period',      zh: '售票期間' },   // D342：正名「售票期間」＝活動的開賣到停售（key 名沿用）
-    'event-detail.sales.window.left': { en: 'days left',    zh: '天可賣' },
-    'event-detail.sales.window.today': { en: 'Last day',    zh: '今天最後一天' },
-    'event-detail.sales.window.closed': { en: 'Closed',     zh: '已停售' },
-    'event-detail.sales.window.opens': { en: 'Opens {t}',   zh: '{t} 開賣' },
+    /* 墓碑 2026-10-12（UI-CHANGES 一百六十九）：總覽「售票期間」那一格退場，event-detail.sales.window／.left／.today／.closed／.opens 五個鍵隨之移除；untilstart 發布設定摘要還在用 */
     'event-detail.sales.window.untilstart': { en: 'until the event begins', zh: '賣到開演' },
     'event-detail.sales.week': { en: 'Last 7 days',        zh: '最近 7 天' },
     'event-detail.sales.left': { en: 'left {n}',           zh: '剩 {n}' },
@@ -10199,7 +10209,7 @@
     'event-detail.live.unit.min':    { en: 'Min',               zh: '分' },
     'event-detail.live.unit.hr':     { en: 'Hr',                zh: '時' },
     'event-detail.live.where.start': { en: 'Starts',            zh: '開演' },
-    'event-detail.live.where.doors': { en: 'Doors',             zh: '開放入場' },
+    'event-detail.live.where.doors': { en: 'Early entry',       zh: '提前入場時間' },   // D396 改稱呼
     'event-detail.lineup.title': { en: 'Dates & tickets at a glance', zh: '場次與票務概況' },
     'event-detail.lineup.badge': { en: 'Becomes sales progress once selling opens', zh: '開賣後這張換成售票進度' },
     'event-detail.lineup.dates': { en: 'Dates',            zh: '場次' },
@@ -10275,10 +10285,10 @@
     'ed.evrules.applied': { en: 'Default purchase rules applied — save the event to keep them', zh: '已套用預設購票規則，儲存活動後才會生效' },
     'ed.rules.after':     { en: 'Changes apply to purchases from now on. Tickets already sold stay as they are, and lowering a limit doesn\u2019t take back tickets fans already bought.',
                             zh: '修改只影響之後的購買，已售出的票不變；限購改小也不會收回粉絲已買的票。' },
-    'ed.tm.early.pol':    { en: 'Before doors open',      zh: '早於開放時間的處理' },
+    'ed.tm.early.pol':    { en: 'Arriving before early entry time', zh: '早於提前入場時間的處理' },   // D396 改稱呼
     'ed.tm.early.pol.follow': { en: 'Follow the date',    zh: '跟隨場次' },
-    'ed.tm.early.bky':    { en: 'Follows the date — doors open at {t}, set in bookyay.', zh: '跟隨場次——開放入場 {t}，由 bookyay 帶入。' },
-    'ed.tm.early.bky.none': { en: 'Follows the date — bookyay has no doors-open time for it.', zh: '跟隨場次——bookyay 沒有設定開放入場。' },
+    'ed.tm.early.bky':    { en: 'Follows the date — early entry at {t}, set in bookyay.', zh: '跟隨場次——提前入場時間 {t}，由 bookyay 帶入。' },
+    'ed.tm.early.bky.none': { en: 'Follows the date — bookyay has no early entry time for it.', zh: '跟隨場次——bookyay 沒有設定提前入場時間。' },
     'ed.tm.del.bky':      { en: "Imported from bookyay — it can't be deleted. Change it in bookyay.", zh: '由 bookyay 帶入，不能刪除；要改請回 bookyay 改。' },
     'ed.tm.sec.sale':     { en: 'Selling',                zh: '販售' },
     'ed.tm.gross':        { en: 'Fans pay',               zh: '粉絲付' },
@@ -10295,7 +10305,7 @@
     'ed.sess.add':        { en: 'Add a date',             zh: '新增場次' },
     'ed.sess.n':          { en: 'Date {n}',               zh: '第 {n} 場' },
     /* 折疊態的一行摘要（2026-08-13，A 案）：{t}＝開放入場時間 */
-    'ed.sess.sum.doors':  { en: 'doors {t}',        zh: '{t} 開場' },
+    'ed.sess.sum.doors':  { en: 'early entry {t}',  zh: '{t} 提前入場' },   // D396 改稱呼
     'ed.sess.sum.nodate': { en: 'Date not set',     zh: '日期尚未設定' },
     'ed.sess.remove':     { en: 'Remove this date',       zh: '移除這一場' },
     /* D391 第 5、12、13 題（2026-10-09）：開賣前移除場次的確認（列出一併刪除的門票）；售票中之後場次與門票不能刪 */

@@ -502,6 +502,9 @@
          鎖定，港幣以外——含創作者幣別欄 TWD——都可覆寫。所以本筆不再寫 `currency`（＝DEFAULT_CURRENCY 'TWD'），
          票種 `price` 是換算後的 TWD 基準價、`hkd` 是 bookyay 原價。這一筆是站上唯一的 source:'bookyay'。 */
       source: 'bookyay',
+      /* bookyay 掃描器連結（2026-10-12 D394）：活動詳情總覽「現場報到台」顯示這條連結＋複製。網址格式是原型示意
+         （ASSUMPTIONS BKY-SCAN-001）；這一筆沒有 bkyId，路徑用活動代號。hsinchu-vinyl-sf 刻意不給，示範「bookyay 還沒給連結」。 */
+      bkyScanUrl: 'https://organizer.bookyay.com/scan/taipei-nye',
       name: "Taipei New Year's Eve countdown",
       desc: "Countdown stage set for Taipei's New Year's Eve city party.",
       /* 描述（2026-10-09 D385 決定五示範）：bookyay 活動詳情（intros）多段帶入——第 1 段文字＋段內圖片、第 2 段起各成文字區塊
@@ -534,11 +537,11 @@
       /* 活動語言（D328）：活動現場用的語言，可複選；值＝語言碼（yue／cmn／en／ja／ko／th／vi），顯示字串走 ce.evlang.*。
          bookyay 帶入的多值、鎖定。其他示範活動沒寫＝未填。 */
       languages: ['cmn', 'en'],
-      /* 條款與細則（2026-10-07 D362；5.1.6.1／5.1.6.2 F2）：{ marketing: { on, text }, tnc: { on, text } }，沒寫＝兩個都關（D340）。
-         bookyay 帶入的活動：tnc 照 bookyay「顯示條款及細則」帶入（只留文字與換行）、鎖定；marketing 不帶入（D362 決定三）。
+      /* 條款與細則（2026-10-07 D362；5.1.6.1／5.1.6.2 F2）：{ tnc: { on, text } }，沒寫＝關（D340）。
+         bookyay 帶入的活動：tnc 照 bookyay「顯示條款及細則」帶入（只留文字與換行）、鎖定。
+         墓碑 2026-10-12（D395）：直接促銷同意（marketing）整組移除，假資料不再帶這個鍵。
          khh-countdown-draft 沒寫＝bookyay 沒勾，條款及細則帶入為關、同樣鎖定。 */
       terms: {
-        marketing: { on: false, text: '' },
         tnc: { on: true, text: '本票券一經售出，除活動取消或延期外，恕不退換。\n每筆訂單限購 4 張；轉售票券不予入場。\n入場時須出示電子票券 QR Code 與身分證件。\n\n跨年活動為戶外場地，如遇天候因素將依主辦單位公告調整演出內容。' }
       },
       /* 2026-08-13：這一場備好票種，當「準備中 → 開賣」那條動線的完整示範。
@@ -623,7 +626,6 @@
       doors: '18:30',
       early: 'warn',
       terms: {
-        marketing: { on: false, text: '' },
         tnc: { on: true, text: '實體收藏票券以順豐寄送，寄出後恕不退換。\n簽名場每人限簽一件，限本場販售之黑膠商品。' }
       },
       tiers: [
@@ -1582,8 +1584,8 @@
         /* D390（稽核第一節原型第 13 條）示範：草稿裡存過的門票圖片（不在鎖定範圍）——續填重跑帶入後照樣留著 */
         { id: 'tier-khh-duo', name: 'Duo pass · 1 person', price: 1111, hkd: 275, qty: 200, sold: 0, hidden: true, hideFix: true, img: 'images/projects/nick-i.jpg' }
       ],
-      /* D390（稽核第一節原型第 13 條）示範：草稿裡存過、不在 bookyay 鎖定範圍的發布設定與直接促銷同意——續填時保留（create-event keepDraft） */
-      terms: { marketing: { on: true, text: '同意主辦單位寄送跨年活動與周邊商品的最新消息。' } },
+      /* D390（稽核第一節原型第 13 條）示範：草稿裡存過、不在 bookyay 鎖定範圍的發布設定——續填時保留（create-event keepDraft）。
+         墓碑 2026-10-12（D395）：原本一併示範的直接促銷同意（terms.marketing）隨欄位移除。 */
       listing: { mode: 'schedule', from: '2026-11-10 12:00', to: '2027-01-01 12:00' },
       bundles: [
         { id: 'bd-khh-duo', name: 'Duo pass', tickets: { tierIds: ['tier-khh-duo'], qty: 2 },

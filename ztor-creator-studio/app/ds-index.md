@@ -5,7 +5,7 @@
 > 用途：**動手改 UI 前先掃這頁**——色彩／字體／間距／陰影一律用下列 token，版面一律先找既有元件；
 > 用法細節與規範看 `design-system.md`（AI 契約）／`design-system.html`（人看）。只列亮色值，暗色屬 Pillar 3。
 
-## Tokens（_tokens.css，亮色，共 296 條）
+## Tokens（_tokens.css，亮色，共 297 條）
 
 ### --accent-*
 - `--accent`: #F3F3F3
@@ -354,6 +354,9 @@
 - `--type-button-label-line-height`: var(--type-label-15-line-height)
 - `--type-button-label-tracking`: var(--type-label-15-tracking)
 
+### --view-*
+- `--view-field-ink`: var(--foreground-muted)
+
 ### --w-*
 - `--w-220`: 220px
 - `--w-300`: 300px
@@ -432,7 +435,7 @@
 - `detail-sheet.css` — .detail-sheet, .detail-sheet__panel, .detail-sheet__head, .detail-sheet__back, .detail-sheet__title ｜ detail-sheet — 清單點進細節時的覆蓋層（2026-07-28 使用者裁示）
 - `donut-mix.css` — .donut-mix, .donut-mix__ringwrap, .donut-mix__ring, .donut-mix__track, .donut-mix__seg ｜ donut-mix — 一個總數拆成幾塊的圓環（2026-08-31 建）
 - `drawer.css` — .drawer, .drawer__scrim, .drawer__panel, .drawer--wide, .drawer--full
-- `dropdown-menu.css` — .dropdown, .dropdown__menu, .dropdown__item, .dropdown--left, .dropdown__item--toggle ｜ Ztor — Dropdown menu (action menu)
+- `dropdown-menu.css` — .dropdown, .dropdown__menu, .dropdown__item, .dropdown--left, .dropdown--up ｜ Ztor — Dropdown menu (action menu)
 - `earnings-feed.css` — .earnings-feed, .earnings-feed__item, .earnings-feed__name, .earnings-feed__amount, .earnings-feed__amount--neg ｜ earnings-feed.css · 近期收入：一筆一個框
 - `embed-modal.css` — .embed-modal, .embed-modal__sheet, .embed-modal__head, .embed-modal__title, .embed-modal__close ｜ Embed modal · full-viewport popup that hosts ano
 - `empty-card.css` — .empty-card, .empty-card--framed, .card, .empty-card__icon, .empty-card__icon--primary ｜ Empty card — in-card empty state for a loaded-bu

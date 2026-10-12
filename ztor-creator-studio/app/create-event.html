@@ -542,28 +542,13 @@
            D340（2026-09-30）：兩個開關**預設關**，文字由運營每場自己填（關閉 TERM-001 主要部分）；
            同意紀錄的保存與法遵仍待上游（TERM-001 其餘部分）。
            D362（2026-10-07）：bookyay 帶入時「條款及細則」改由 bookyay 帶入並鎖定——開關照 bookyay 是否勾選、
-           文字照 bookyay 內容（只留文字與換行），開關列標題旁掛 From bookyay（bkyTerms()）。直接促銷同意不帶入、照 D340。
+           文字照 bookyay 內容（只留文字與換行），開關列標題旁掛 From bookyay（bkyTerms()）。
+           墓碑 2026-10-12（D395）：「接受主辦者用於直接促銷」開關與行銷同意文字整組移除（原掛 data-feat="S80"），只留「條款及細則」。
            開關列標題的字包在 span 裡：來源標記插在 span 後面，切語言時 i18n 只換 span 的字、不會把標記洗掉。 -->
       <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="ce.terms">Terms and conditions</h3>
           <p class="form-section__sub" data-i18n="ce.terms.sub">What fans have to see before they buy.</p>
-        </div>
-        <div class="control-group" data-feat="S80">
-          <div class="control-row">
-            <div>
-              <div class="control-row__main" data-i18n="ce.terms.marketing">Consent to direct marketing</div>
-              <div class="control-row__sub" data-i18n="ce.terms.marketing.hint">Attendee data may be used by the organiser to market to them directly.</div>
-            </div>
-            <button type="button" class="switch" data-ce-term="marketing" role="switch" aria-checked="false"
-                    aria-label="Consent to direct marketing" data-i18n-aria-label="ce.terms.marketing"></button>
-          </div>
-          <div class="control-group__body" hidden>
-            <div class="field">
-              <label class="field__label" data-di="d.terms.marketing.label">Marketing message</label>
-              <textarea class="textarea" data-ce="terms-marketing-text" data-di-ph="d.terms.marketing.ph" placeholder="What fans will see, e.g. how their info may be used to send updates and offers"></textarea>
-            </div>
-          </div>
         </div>
         <div class="control-group">
           <div class="control-row">
@@ -1668,8 +1653,12 @@
       venue:  !!s.venue,
       /* 免票入場撤除後這一項恆為硬閘：一定要有票才發布得了（2026-08-10）。
          D329（5.1.6.1 F11 第五項）：改為「至少 1 張顯示中的門票，或至少 1 組組合包」——全部門票隱藏、又沒有組合包時擋發布。 */
-      ticket: hasSellable()
+      ticket: hasSellable(),
+      /* D396：開了提前入場時間的場次都要填時間；沒有場次開著＝這一項不列、恆過 */
+      doors:  !series.list.some(x => sessDoorsErr(x))
     };
+    /* 停在發布步驟還有這一項沒過：之後回步驟 3 就地標紅（同按過發布的 sessShowErr） */
+    if (step === total && !checks.doors) sessShowErr = true;
     /* D310：檢核清單搬進第 8 步側欄第三段（js/publish-stage.js 的 checks()），本頁只算狀態。 */
     qcState = checks;
     let done = 0;
@@ -1920,6 +1909,15 @@
         alert(T("ce.publish-blocked-enddate", "A multi-day date needs a start time, an end time, and an end later than its start. Check the dates."));
         return;
       }
+      /* D396：提前入場時間開著卻沒填——同跨日，回步驟 3、該場展開、欄位就地紅字 */
+      const badD = series.list.find(x => sessDoorsErr(x));
+      if (badD) {
+        sessShowErr = true;
+        sessOpen.add(badD.id);
+        step = 3; render(); renderSessions();
+        alert(T("ce.publish-blocked-doors", "Early entry time is turned on for a date but left empty. Add the time or turn it off."));
+        return;
+      }
     }
     /* D390（稽核第一節原型第 12 條）：票種名稱 1–40 字、不重名、預設價格上限——有錯回第 4 步（內部 5）打開票務設定就地標紅 */
     if (!isWP() && typesBad()) {
@@ -2047,6 +2045,8 @@
     { key: "poster", labelKey: "ce.qc.poster", fb: "Key visual added",     step: 2 },   // D390 決定三
     { key: "date",   labelKey: "ce.qc.date",   fb: "Date set",             step: 3 },
     { key: "venue",  labelKey: "ce.qc.venue",  fb: "Venue set",            step: 3 },
+    /* D396（5.1.6.1 v2.63〔推導〕）：有場次開了提前入場時間才列這一項——開著的每一場都要填時間 */
+    { key: "doors",  labelKey: "ce.qc.doors",  fb: "Early entry time set", step: 3, cond: () => series.list.some(doorsOnOf) },
     /* D329（F11 第五項）：「至少 1 種票種」改為「至少 1 張顯示中的門票或 1 組組合包」；新 key，舊 key 留給 create-event-legacy。 */
     { key: "ticket", labelKey: "ce.qc.sellable", fb: "At least 1 visible ticket or 1 bundle", step: 5 }
   ];
@@ -2060,13 +2060,13 @@
     { key: "wp-ticket",   labelKey: "ce.wp.qc.ticket",   fb: "Admission set",     step: 4 }
   ];
   function stageChecks() {
-    return (isWP() ? QC_ROWS_WP : QC_ROWS).map(r =>
+    return (isWP() ? QC_ROWS_WP : QC_ROWS).filter(r => !r.cond || r.cond()).map(r =>
       ({ key: r.key, label: T(r.labelKey, r.fb), ok: !!qcState[r.key], step: r.step }));
   }
   function stageSyncChecks() { if (stage) stage.syncChecks(); }
   /* 上一個看得到的步驟（跳過的步不算），側欄「上一步」用 */
   function prevStep(st) { let n = st - 1; while (n > first && skipped(n)) n--; return n; }
-  function goStep(st) { if (!st) return; step = st; render(); }
+  function goStep(st) { if (!st) return; step = st; render(); if (st === 3) renderSessions(); }   // D396：回步驟 3 時重畫場次，就地標紅才跟得上
   function mountStage() {
     const host = document.querySelector("[data-ce-stage]");
     if (!host || !window.ztorPublishStage) return;
@@ -2104,10 +2104,10 @@
     /* 墓碑 2026-09-29（D334）：需攜帶物品／活動須知兩份清單隨「進階詳細資料」整組刪除。
        墓碑 2026-10-05（D354）：說明區塊的翻譯欄位（infoFields）隨說明區塊退場，改由描述的文字區塊各列一格。 */
     const termOn = key => q('[data-ce-term="' + key + '"]')?.getAttribute("aria-checked") === "true";
-    const tnc = q('[data-ce="terms-tnc-text"]'), mkt = q('[data-ce="terms-marketing-text"]');
+    const tnc = q('[data-ce="terms-tnc-text"]');
     const termFields = [];
     if (tnc && termOn("tnc") && tnc.value.trim()) termFields.push({ key: "tnc", el: tnc, kind: "textarea", labelKey: "pp.field.tnc", labelFallback: "Terms & conditions" });
-    if (mkt && termOn("marketing") && mkt.value.trim()) termFields.push({ key: "marketing", el: mkt, kind: "textarea", labelKey: "pp.field.marketing", labelFallback: "Marketing consent" });
+    /* 墓碑 2026-10-12（D395）：直接促銷同意的文字（marketing）隨開關移除，不再列入翻譯表。 */
     termFields.forEach(f => fields.push(f));
     const st = readState();
     /* 墓碑 2026-09-29（D327）：取票說明欄不再是可翻譯欄位——欄位已隨電子門票附屬設定刪除。 */
@@ -3042,7 +3042,7 @@
 
   function tierFieldHTML(key, labelKey, labelFb, value, opts) {
     const o = opts || {};
-    const dis = o.locked ? " disabled" : "";
+    const dis = (o.locked || o.off) ? " disabled" : "";   // off（D396）：不適用而停用，不掛來源標記
     const inner = o.money
       ? '<span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' +
         '<input class="input amount-field__input" type="number" min="0" step="1" data-tier-f="' + key + '" value="' + esc(value) +
@@ -3055,7 +3055,7 @@
       '<span class="tier-card__control" data-tier-wrap="' + key + '" data-empty="' + (String(value).length ? "false" : "true") + '">' +
         inner +
         /* 鎖定的欄位不給清空鈕（2026-10-07，bookyay 票名鎖定時補） */
-        (o.locked ? '' : '<button type="button" class="tier-card__clear" data-tier-clear="' + key + '" aria-label="' + esc(T("ce.tier.clear", "Clear")) +
+        ((o.locked || o.off) ? '' : '<button type="button" class="tier-card__clear" data-tier-clear="' + key + '" aria-label="' + esc(T("ce.tier.clear", "Clear")) +
           '"><i data-lucide="x" class="ztor-icon"></i></button>') +
       '</span>' +
       '<p class="field__hint" data-tier-hint="' + key + '">' + esc(o.hint || "") + '</p>' +
@@ -3132,7 +3132,7 @@
         /* 墓碑 2026-09-23（D316）：卡面的「手續費」事實列隨欄位退場。 */
         /* 提前入場只在真的設了才出現（2026-08-11 使用者指示）：跟場次一樣的票不用特別標，
            掃一眼票務清單，看得到這一列的才是「跟其他票不一樣、能早進」的那幾張。 */
-        (Number(dv.earlymin) > 0 ? '<div class="tier-card__fact"><dt>' + esc(dT("d.tier.early.fact")) + '</dt><dd>' +
+        (Number(dv.earlymin) > 0 && sessDoors(t) ? '<div class="tier-card__fact"><dt>' + esc(dT("d.tier.early.fact")) + '</dt><dd>' +
           esc(earlyFactValue(t, dv)) + '</dd></div>' : '') +
         (buySummary(t) ? '<div class="tier-card__fact"><dt>' + esc(dT("d.tier.buycond")) + '</dt><dd>' + esc(buySummary(t)) + '</dd></div>' : '') +
         (capSummary(t) ? '<div class="tier-card__fact"><dt>' + esc(dT("d.rule.cap")) + '</dt><dd>' + esc(capSummary(t)) + '</dd></div>' : '') +
@@ -3308,8 +3308,8 @@
   function earlyHintText(t, d) {
     const mins = Number(d.earlymin) || 0;
     const doors = sessDoors(t);
-    if (mins <= 0) return doors ? dT("d.tier.early.hint.default").replace("{doors}", doors) : "";
-    if (!doors) return dT("d.tier.early.hint.nodoors");
+    if (!doors) return dT("d.tier.early.hint.nodoors");   // D396：場次沒開提前入場時間＝不適用（欄位停用）
+    if (mins <= 0) return dT("d.tier.early.hint.default").replace("{doors}", doors);
     return dT("d.tier.early.hint.set").replace("{n}", mins).replace("{time}", subtractMinutes(doors, mins));
   }
   /* 早於開放時間入場：票種層的複寫（2026-08-11 使用者指示「預設是場次裡的設定，
@@ -3543,6 +3543,7 @@
            字串——場次的開放入場一改，這裡自動跟上）。 */
         tierFieldHTML("earlymin", "d.tier.early", "Early entry", d.earlymin == null ? "" : d.earlymin,
                       { phKey: "d.tier.early.ph", phFb: "0", num: true, min0: true, opt: true,
+                        off: !sessDoors(t),   // D396：場次沒開提前入場時間＝沒有基準時間，票的提前入場不適用
                         hint: earlyHintText(t, d) }) +
         tierEarlyPolicyHTML(t, d), "", true)) +
       tierRulesSecHTML(t, d);
@@ -3974,6 +3975,22 @@
      這一組每一場各有一份（2026-08-11 使用者指示：每一場都可以設定不同的），所以控制項
      用 radio-list **不帶副標**的緊湊版——同一段字重複十場等於把清單灌長，選項名稱本身
      已經把結果與機制都講完（提醒職員仍可放行／擋下不能入場）。 */
+  /* 提前入場時間開關（D396）：s.doorsOn 有值照它；舊資料（含 bookyay 帶入）沒有這個鍵時，有填時間或分鐘就算開著。 */
+  const doorsOnOf = s => (typeof s.doorsOn === "boolean") ? s.doorsOn
+    : !!((s.doors || "").trim() || String(s.doorsMin == null ? "" : s.doorsMin).trim());
+  /* D396（5.1.6.1 v2.63〔推導〕）：開關打開時提前入場時間必填（時間或開演前分鐘填一格即可，兩格互算）；
+     錯誤按過發布才顯示（sessShowErr），發布前擋下並回步驟 3（同跨日）。 */
+  const sessDoorsErr = s => (doorsOnOf(s) && !((s.doors || "").trim() || String(s.doorsMin == null ? "" : s.doorsMin).trim()))
+    ? T("ce.doors.err.req", "Add an early entry time.") : "";
+  function syncDoorsErr(row, s) {
+    const f = row.querySelector("[data-sess-doors-field]");
+    if (!f) return;
+    const err = sessShowErr ? sessDoorsErr(s) : "";
+    f.classList.toggle("is-invalid", !!err);
+    f.querySelector("input")?.setAttribute("aria-invalid", err ? "true" : "false");
+    const m = f.querySelector("[data-sess-doors-err]");
+    if (m) m.textContent = err;
+  }
   function sessDoorsHTML(s) {
     const cur = s.early || "warn";
     /* 控制項用 `.segmented.radio-cards`（2026-08-11 使用者指示，比照建立商品的「商品選項」）：
@@ -4000,43 +4017,52 @@
        強迫其中一方自己心算，就會有人算錯。
        input 一律出乾淨的 `<input type="time">`——`partials/date-input.js` 會在執行期
        自己包一層 .date-input 並補上日曆圖示與 placeholder，這裡先包好反而會被它跳過。 */
-    const hasDoors = !!((s.doors || "").trim() || String(s.doorsMin == null ? "" : s.doorsMin).trim());
     /* 2026-08-13 使用者指示「UI 上加一個層級，用線框的 layer」：開放入場整組
        （時間／開演前兩格＋說明＋早到規則）用 .control-group--plain 的 1px 線框圈起來。
        它跟上面的日期、開始結束時間不是同一層——那些是「這一場什麼時候」，
        這一組是「門什麼時候開、早到怎麼辦」的附屬設定。填色層只到 L2（見 nest.css），
        第三層以後一律用線框表達層級，所以這裡用線框不用底色。 */
-    return '<div class="field control-group control-group--plain">' +
-      '<div class="field__label">' +
-        '<span>' + esc(T("ce.doors", "Doors open")) + '</span> ' +
-        '<span class="text-sub">' + esc(T("ce.opt", "(optional)")) + '</span>' +
-        /* D365：bookyay 帶入時開放入場（過早入場提示）與早到處理（過早入場的處理）鎖定，兩層標籤各掛來源標記 */
-        (sessLocked ? srcChip() : '') + '</div>' +
-      '<div class="form-grid">' +
-        '<label class="field">' +
-          '<span class="field__label">' + esc(dT("d.doors.at")) + '</span>' +
-          '<input class="input" type="time" data-sess-f="doors" value="' + esc(s.doors || "") + '">' +
-        '</label>' +
-        '<label class="field">' +
-          '<span class="field__label">' + esc(dT("d.doors.before")) + '</span>' +
-          '<span class="amount-field amount-field--suffix amount-field--readonly">' +
-            '<input class="input amount-field__input" type="number" min="0" step="5" data-sess-f="doorsMin" value="' +
-              esc(s.doorsMin == null ? "" : s.doorsMin) + '" placeholder="0">' +
-            '<span class="amount-field__unit">' + esc(dT("d.min")) + '</span>' +
-          '</span>' +
-        '</label>' +
-      '</div>' +
-      /* 墓碑（2026-08-13 使用者指示「不需要」）：「兩格填一個就好…」那句說明退場——
-         填了任一格另一格就自己算出來，看一次就懂，不必先用一句話講。字典 key `d.doors.hint` 保留未用。 */
-      '<div class="rule-sub" data-early-block' + (hasDoors ? "" : " hidden") + '>' +
-        '<div class="field__label">' + esc(dT("d.early.policy")) + (sessLocked ? srcChip() : '') + '</div>' +
-        '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(dT("d.early.policy")) + '"' +
-          (sessLocked ? ' aria-disabled="true"' : '') + '>' +
-          opt("warn", "d.early.warn") + opt("block", "d.early.block") +
+    /* D396（2026-10-12 使用者指示）：「開放入場（選填）」改名「提前入場時間」，改成跟跨日同一種開關列＋揭示區
+       （.control-group＋.control-row＋.switch）。開＝露出時間／開演前兩格與早於提前入場時間入場的處理；
+       關＝收起並清空（doors／doorsMin 清空、處理回到預設「仍可入場」）。開關狀態存在 s.doorsOn，
+       舊資料沒有這個鍵時由有沒有值推得（doorsOnOf）。bookyay 帶入（sessLocked）時開關鎖定、標題旁掛來源標記：
+       有過早入場值＝開著、沒有＝關著（D365 的「留空並鎖定」）。
+       墓碑 2026-10-12（D396）：原本的 .control-group--plain 線框＋「（選填）」標籤，以及「時間有值才露出早到處理」的規則。 */
+    const on = doorsOnOf(s);
+    const dErr = sessShowErr ? sessDoorsErr(s) : "";
+    return '<div class="control-group" data-sess-doors-group>' +
+      '<div class="control-row">' +
+        '<div>' +
+          '<div class="control-row__main"><span>' + esc(T("ce.doors", "Early entry time")) + '</span>' + (sessLocked ? " " + srcChip() : "") + '</div>' +
+          '<div class="control-row__sub">' + esc(T("ce.doors.hint", "When staff can start scanning and letting attendees in")) + '</div>' +
         '</div>' +
-        /* 墓碑（2026-08-13 使用者指示「刪除」）：「票種可以各自提前入場，在票務那一步設定」
-           那句退場——它講的是別的步驟的事，讀到這裡的人正在決定這一場的門禁。
-           字典 key `d.early.policy.hint` 保留未用。 */
+        '<button type="button" class="switch' + (on ? " switch--on" : "") + (sessLocked ? " switch--locked" : "") +
+          '" role="switch" aria-checked="' + (on ? "true" : "false") + '"' + (sessLocked ? ' aria-disabled="true"' : "") +
+          ' data-sess-doors aria-label="' + esc(T("ce.doors", "Early entry time")) + '"></button>' +
+      '</div>' +
+      '<div class="control-group__body"' + (on ? "" : " hidden") + '>' +
+        '<div class="form-grid">' +
+          '<label class="field' + (dErr ? " is-invalid" : "") + '" data-sess-doors-field>' +
+            '<span class="field__label">' + esc(dT("d.doors.at")) + ' <span class="field__req">*</span></span>' +
+            '<input class="input" type="time" data-sess-f="doors" value="' + esc(s.doors || "") + '"' + (dErr ? ' aria-invalid="true"' : "") + '>' +
+            '<span class="ce-field-error" data-sess-doors-err>' + esc(dErr) + '</span>' +
+          '</label>' +
+          '<label class="field">' +
+            '<span class="field__label">' + esc(dT("d.doors.before")) + '</span>' +
+            '<span class="amount-field amount-field--suffix amount-field--readonly">' +
+              '<input class="input amount-field__input" type="number" min="0" step="5" data-sess-f="doorsMin" value="' +
+                esc(s.doorsMin == null ? "" : s.doorsMin) + '" placeholder="0">' +
+              '<span class="amount-field__unit">' + esc(dT("d.min")) + '</span>' +
+            '</span>' +
+          '</label>' +
+        '</div>' +
+        '<div class="rule-sub" data-early-block>' +
+          '<div class="field__label">' + esc(dT("d.early.policy")) + (sessLocked ? srcChip() : '') + '</div>' +
+          '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(dT("d.early.policy")) + '"' +
+            (sessLocked ? ' aria-disabled="true"' : '') + '>' +
+            opt("warn", "d.early.warn") + opt("block", "d.early.block") +
+          '</div>' +
+        '</div>' +
       '</div>' +
     '</div>';
   }
@@ -4192,7 +4218,7 @@
     /* 開放入場那一組（時間↔分鐘）互相換算，並決定早到規則要不要出現。
        就地更新，不重繪整份清單——重繪會把游標從剛打好的欄位彈掉。 */
     const k = f.dataset.sessF;
-    if (k === "doors" || k === "doorsMin" || k === "start") syncDoorsPair(row, s, k);
+    if (k === "doors" || k === "doorsMin" || k === "start") { syncDoorsPair(row, s, k); syncDoorsErr(row, s); }
     if (k === "endDate" || k === "date" || k === "start" || k === "end") syncSessErr(row, s);
     /* 折疊態的摘要跟著改的值走：就地換那一行，一樣不重繪整份清單。 */
     const sum = row.querySelector(".collapse-head__sum");
@@ -4226,8 +4252,7 @@
     const mEl = row.querySelector('[data-sess-f="doorsMin"]');
     if (dEl && edited !== "doors") { dEl.value = s.doors || ""; dEl.dispatchEvent(new Event("change")); }
     if (mEl && edited !== "doorsMin") mEl.value = s.doorsMin == null ? "" : s.doorsMin;
-    const blk = row.querySelector("[data-early-block]");
-    if (blk) blk.hidden = !((s.doors || "").trim() || String(s.doorsMin == null ? "" : s.doorsMin).trim());
+    /* 墓碑 2026-10-12（D396）：早到處理不再跟著「有沒有值」顯示，改由提前入場時間開關的揭示區管。 */
   }
   sessList?.addEventListener("click", e => {
     const row = e.target.closest("[data-sess]");
@@ -4263,6 +4288,33 @@
       syncReview(); scheduleSave();
       return;
     }
+    /* 提前入場時間開關（D396）：就地翻開關與揭示區。關掉＝清空時間、分鐘，早到處理回到預設「仍可入場」，
+       再打開是空的（跟跨日不同：跨日關掉留著結束日期，這裡依指示清掉）。bookyay 帶入時鎖住。 */
+    const dr = e.target.closest("[data-sess-doors]");
+    if (dr && s) {
+      if (dr.classList.contains("switch--locked")) return;
+      const on = !doorsOnOf(s);
+      s.doorsOn = on;
+      const grp = dr.closest("[data-sess-doors-group]");
+      if (!on) {
+        s.doors = ""; s.doorsMin = ""; s.early = "warn";
+        grp?.querySelectorAll("[data-sess-f]").forEach(x => { x.value = ""; x.dispatchEvent(new Event("change")); });
+        grp?.querySelectorAll("[data-sess-early]").forEach(b => {
+          const act = b.dataset.sessEarly === "warn";
+          b.classList.toggle("segmented__btn--active", act);
+          b.setAttribute("aria-checked", act ? "true" : "false");
+        });
+      }
+      dr.classList.toggle("switch--on", on);
+      dr.setAttribute("aria-checked", on ? "true" : "false");
+      const body = grp?.querySelector(".control-group__body");
+      if (body) body.hidden = !on;
+      syncDoorsErr(row, s);
+      const sum = row.querySelector(".collapse-head__sum");
+      if (sum) sum.outerHTML = sessSummaryHTML(s);
+      syncReview(); scheduleSave();
+      return;
+    }
     /* 未到入場時間：只改那一場的值，不重繪整份清單——重繪會把使用者剛填到一半的
        日期或時間欄的游標彈掉。這一組是純 DOM 狀態，就地換 active 就好。 */
     const pick = e.target.closest("[data-sess-early]");
@@ -4281,7 +4333,7 @@
     if (e.target.closest("[data-sess-copy1]") && s) {
       const s0 = series.list[0];
       if (s0 && s0 !== s) {
-        ["start", "end", "doors", "doorsMin", "early"].forEach(k => { s[k] = s0[k]; });
+        ["start", "end", "doors", "doorsMin", "doorsOn", "early"].forEach(k => { s[k] = s0[k]; });
         renderSessions(); syncReview(); scheduleSave();
       }
       return;
@@ -5142,12 +5194,13 @@
        這格問的是跟場次開放入場的差距，不是另一個獨立的絕對時間。 */
     "d.tier.early":   { en: "Early entry (minutes)", zh: "提前入場（分鐘）" },
     "d.tier.early.ph": { en: "0",                 zh: "0" },
-    "d.tier.early.hint.default": { en: "Follows the date's doors-open time ({doors}).",
-                                    zh: "跟著場次的開放入場時間（{doors}）。" },
-    "d.tier.early.hint.set": { en: "{n} minutes before doors — opens at {time}.",
-                                zh: "比開放入場提早 {n} 分鐘，也就是 {time} 可以入場。" },
-    "d.tier.early.hint.nodoors": { en: "This date doesn't have a doors-open time yet — set one first so this can be calculated.",
-                                    zh: "場次還沒填開放入場時間，先設定好才能算出實際入場時間。" },
+    /* D396（2026-10-12）：場次的「開放入場」改名「提前入場時間」，這幾句跟著改稱呼 */
+    "d.tier.early.hint.default": { en: "Follows the date's early entry time ({doors}).",
+                                    zh: "跟著場次的提前入場時間（{doors}）。" },
+    "d.tier.early.hint.set": { en: "{n} minutes before the date's early entry time — opens at {time}.",
+                                zh: "比場次的提前入場時間再早 {n} 分鐘，也就是 {time} 可以入場。" },
+    "d.tier.early.hint.nodoors": { en: "This date has no early entry time, so early entry doesn't apply.",
+                                    zh: "場次沒有開啟提前入場時間，票的提前入場不適用。" },
     "d.tier.early.fact": { en: "Early entry",     zh: "提前入場" },
     "d.tier.early.fact.value": { en: "{n} min early ({time})", zh: "提早 {n} 分鐘（{time}）" },
     "d.tier.early.fact.value.nodoors": { en: "{n} min early", zh: "提早 {n} 分鐘" },
@@ -5163,7 +5216,7 @@
     "d.sess.detail.sub": { en: "Shared by every date.", zh: "所有場次共用。" },
     "d.sess.add":     { en: "Add a date",        zh: "新增場次" },
     /* 折疊態的一行摘要（2026-08-13，A 案）：{t}＝開放入場時間 */
-    "d.sess.sum.doors":  { en: "doors {t}",       zh: "{t} 開場" },
+    "d.sess.sum.doors":  { en: "early entry {t}", zh: "{t} 提前入場" },   // D396 改稱呼
     "d.sess.sum.nodate": { en: "Date not set",    zh: "日期尚未設定" },
     "d.sess.copy1":   { en: "Copy the first date's setup", zh: "套用第一場的設定" },
     "d.sess.name":    { en: "Date name",         zh: "場次名稱" },
@@ -5186,7 +5239,7 @@
     "d.min":              { en: "min",               zh: "分鐘" },
     "d.doors.hint":       { en: "Fill either one and the other works itself out. Both empty means fans can come in any time.",
                             zh: "兩格填一個就好，另一格會自動算；都留空就是不限制。" },
-    "d.early.policy":     { en: "Arriving before doors open", zh: "早於開放時間入場" },
+    "d.early.policy":     { en: "Arriving before early entry time", zh: "早於提前入場時間入場" },   // D396 改稱呼
     "d.early.warn":       { en: "Allow entry",        zh: "仍可入場" },
     "d.early.warn.sub":   { en: "Staff can confirm and let them through.", zh: "票務人員可人工確認。" },
     "d.early.block":      { en: "Deny entry",         zh: "不能入場" },
@@ -5196,7 +5249,7 @@
     "d.early.mode.follow": { en: "Follow the date",  zh: "跟隨場次" },
     "d.early.mode.custom": { en: "Custom",           zh: "自訂" },
     /* D385 決定三：bookyay 帶入的票，提前入場鎖定為跟隨場次（唯讀讀數） */
-    "d.tier.early.bky":      { en: "Follows the date — doors open at {t}", zh: "跟隨場次——開放入場 {t}" },
+    "d.tier.early.bky":      { en: "Follows the date — early entry at {t}", zh: "跟隨場次——提前入場時間 {t}" },   // D396 改稱呼
     "d.tier.early.bky.none": { en: "Follows the date",  zh: "跟隨場次" },
     /* 墓碑 2026-09-22（D311）：`d.early.follow`／`d.early.own`（繼承與複寫的兩句提示）與
        `d.early.followback`（「改回跟著場次」按鈕）隨二選一退場——現在哪一邊生效由選中的
@@ -5210,10 +5263,8 @@
     "d.prod.towel":   { en: "Official towel",    zh: "官方毛巾" },
     "d.prod.photo":   { en: "Limited photobook", zh: "限定寫真集" },
     "d.prod.light":   { en: "Light stick",       zh: "應援手燈" },
-    /* 條款與細則的兩個揭示欄（2026-08-09）：開關管「顯不顯示」，這裡填「顯示什麼」。 */
-    "d.terms.marketing.label": { en: "Marketing message", zh: "行銷同意文字" },
-    "d.terms.marketing.ph":    { en: "What fans will see, e.g. how their info may be used to send updates and offers",
-                                  zh: "例如：我們可能會用你的資料寄送最新消息與優惠" },
+    /* 條款與細則的揭示欄（2026-08-09）：開關管「顯不顯示」，這裡填「顯示什麼」。
+       墓碑 2026-10-12（D395）：直接促銷同意的行銷同意文字（d.terms.marketing.*）隨欄位移除。 */
     "d.terms.tnc.label": { en: "Terms text", zh: "條款內容" },
     "d.terms.tnc.ph":    { en: "Paste or write the terms fans must accept before checkout",
                             zh: "貼上或撰寫粉絲結帳前需同意的條款文字" }
@@ -5723,7 +5774,7 @@
          D362（2026-10-07）起整份描述的每個區塊都鎖定（原本只鎖第 1 段）。
        · 條款及細則 `showTncs`＋`tncs`（2026-10-07 D362；bookyay「顯示條款及細則」，API `tncs`，富文本）：
          帶入 F2 條款與細則的「條款及細則」——開關照 showTncs、文字照 tncs 轉純文字（只留文字與換行），兩者都鎖定，見 bkyTerms()。
-         bky-1、bky-2、bky-4 有勾；bky-3、bky-5 沒勾（開關帶入為關、同樣鎖定）。直接促銷同意不帶入（D362 決定三）。
+         bky-1、bky-2、bky-4 有勾；bky-3、bky-5 沒勾（開關帶入為關、同樣鎖定）。（直接促銷同意已於 D395 整組移除。）
          bky-1 三段（第 1 段帶一張圖＝鎖定的媒體區塊；第 2 段含粗體、斜體、連結；第 3 段含清單）、bky-2 兩段（第 2 段文字後一張圖＝不鎖的媒體區塊）、其餘一段。
      五筆刻意各示範一條規則（驗收用）：
        bky-1 同一個時段三種票 → 只帶第一種（VIP）＋略過提示；VIP 有早鳥（1 人票：折扣覆寫、鎖定）與門票簡介（D353 起不帶入）。
@@ -6399,7 +6450,7 @@
      （ztorRichBody.plainOf：段落之間空一行、<br> 與清單項各成一行）。開關與文字都鎖定、ztor 端沒有解鎖入口：
      開關掛 .switch--locked＋aria-disabled（同 1 人票的顯示開關），文字欄 disabled＋.is-source-locked，
      來源標記只掛一枚、在開關列標題旁（文字欄是開關揭示出來的附屬欄位，同一組不重複標，ASSUMPTIONS UIA-212）。
-     直接促銷同意不在 D362 範圍：不帶入、不鎖，照 D340 由運營填。 */
+     墓碑 2026-10-12（D395）：直接促銷同意整組移除，條款與細則只剩這一組。 */
   /* 運費的換算來源（D368 決定四）：港幣原值寫在運費欄底下一句，同票價列 bkyBaseText 的做法 */
   function syncShipFeeSrc(rec) {
     const el = document.querySelector("[data-ship-fee-src]");
@@ -6808,20 +6859,13 @@
       if (imgs.length) { renderGallery(imgs); syncImgRatioNote(); }
       if (src.publish && typeof src.publish.shown === "boolean") setShown(src.publish.shown);
       /* D390（稽核第一節原型第 13 條）補齊其餘已儲存、不在鎖定範圍的欄位：
-           · 直接促銷同意（D362 不帶入、不鎖）：開關與文字照草稿。
+           · 墓碑 2026-10-12（D395）：原本還保留「直接促銷同意」的開關與文字——欄位整組移除。
            · 上架方式（不上架／立刻上架／定時上架＋時間）與定時下架（D364）。
            · 單張門票的門票圖片與顯示開關（1 人票的隱藏鎖定 hideFix 不動）；草稿裡創作者自己加的票（沒有 bookyay 價格、不是 1 人票）
              接回第一場、照存的名稱／價格／張數／圖片／顯示（入場照 D386 鎖定跟隨場次）。
            · 墓碑 2026-10-09（D385 決定一）：原本還保留「活動預設購票規則裡創作者另加的條件」——bookyay 活動的活動層只帶入限購、
              唯讀鎖定、不能另加條件，草稿裡不該有另加的條件，續填一律以 bookyay 帶入的那一份為準。
            · 活動語言：bookyay 沒有語言值時欄位不鎖（D390 決定十八），草稿存的語言照帶回。 */
-      const mk = src.terms && src.terms.marketing;
-      if (mk) {
-        const sw = document.querySelector('[data-ce-term="marketing"]');
-        const ta = document.querySelector('[data-ce="terms-marketing-text"]');
-        if (sw && !sw.classList.contains("switch--locked")) setTerm(sw, !!mk.on);
-        if (ta && mk.text != null) { ta.value = mk.text; ta.dispatchEvent(new Event("input", { bubbles: true })); }
-      }
       const lst = src.listing || null;
       if (lst) {
         const mode = lst.mode || (lst.from ? "schedule" : "now");

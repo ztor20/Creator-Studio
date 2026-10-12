@@ -1000,6 +1000,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 
       <p class="field-text" data-en><code>--locked-field-ink</code> = <code>color-mix(in srgb, var(--muted-foreground) 55%, transparent)</code> — one step below <code>--faint-ink</code>, reserved for the value of a source-locked field. It is a separate token rather than a dimmer <code>--faint-ink</code> because that one also inks 10 table-header components, which are not meant to fade. <strong>Its contrast is deliberately below AA</strong> (measured: dark <code>#606061</code> on <code>#1C1D1E</code> = 2.69:1, light <code>#AFAFAC</code> on white = 2.20:1). That holds only because it carries a disabled read-only value, not information the page is asking you to read — the field label and the "From bookyay" source tag keep normal contrast and are what answer "what is this, and why can't I edit it". Do not use it for text meant to be read.</p>
       <p class="field-text" data-zh><code>--locked-field-ink</code> ＝ <code>color-mix(in srgb, var(--muted-foreground) 55%, transparent)</code> —— 比 <code>--faint-ink</code> 再輕一階，專給來源鎖定欄位的值。之所以另立一個 token 而不是把 <code>--faint-ink</code> 調更淡：那一支同時是 10 支表頭元件的墨色，表頭並沒有要跟著變淡。<strong>對比刻意低於 AA</strong>（實測：深色 <code>#606061</code> 對 <code>#1C1D1E</code> ＝ 2.69:1、亮色 <code>#AFAFAC</code> 對白 ＝ 2.20:1）。成立的前提是它只承載 disabled 的唯讀值、不是本頁要讀的資訊——欄位標籤與「bookyay 帶入」來源標記都維持正常對比，「這格是什麼、為什麼不能改」由那兩個回答。不要拿它去寫需要閱讀的文字。</p>
+      <p class="field-text" data-en><code>--view-field-ink</code> = <code>var(--foreground-muted)</code> (2026-10-12) — the value ink of view-mode fields in a two-step panel that opts into disabled boxes (<code>[data-vm-style="disabled"]</code>, see Field system). Not <code>--locked-field-ink</code>: that one is below AA and only for "this cell is not yours"; in view mode the whole panel is content to read. Dark ≈ white 70%, light <code>#4D4D4D</code>.</p>
+      <p class="field-text" data-zh><code>--view-field-ink</code> ＝ <code>var(--foreground-muted)</code>（2026-10-12）—— 兩段式面板選用「disabled 框」變體（<code>[data-vm-style="disabled"]</code>，見 Field system）時，檢視態欄位值的墨色。不用 <code>--locked-field-ink</code>：那一支低於 AA、只給「這一格不是你管的」；檢視態整個面板都是要讀的內容。深色 ≈ 白 70%、亮色 <code>#4D4D4D</code>。</p>
 
       <p class="field-label" data-en>Column header ink (Q41, 2026-07-31)</p>
       <p class="field-label" data-zh>欄位表頭墨色（Q41，2026-07-31）</p>
@@ -2560,14 +2562,31 @@ Letterpress cover, uncoated stock.</textarea></div>
         <div class="field"><label class="field__label">Marketplace visibility <span class="field-note">(exception: state display, inert in view mode)</span></label><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></div></div>
       </div>
     </div>
+  </div>
+  <div class="matrix-block"><div class="matrix-block__head"><span class="gallery__name">view mode — disabled boxes <code>[data-vm-style="disabled"]</code></span><span class="gallery__when" data-en>2026-10-12, user instruction (UI-CHANGES 167, STYLE-DECISIONS Q119 addendum + Q128 pending): an <strong>opt-in</strong> variant of the two-step panel. Put <code>data-vm-style="disabled"</code> on the panel and view mode keeps every input, select, textarea and description editor in place, drawn as disabled — transparent fill, 1px border kept, no focus ring, default cursor — instead of swapping them for plain-text readouts. Values use <code>--view-field-ink</code> (＝ <code>--foreground-muted</code>), not <code>--locked-field-ink</code>: in view mode the whole panel is content to read, so it must stay legible. In edit mode, fields that are still locked (readonly by a source lock or a stage lock, or always-disabled facts like the event type) take the one sitewide disabled look (<code>--locked-field-ink</code>). Empty values show the empty box with its placeholder. First consumer: event-detail "Setup" tab. Every other two-step panel still uses the plain-text readouts above.</span><span class="gallery__when" data-zh>2026-10-12 使用者指示（UI-CHANGES 一百六十七；STYLE-DECISIONS Q119 補充、Q128 待裁決）：兩段式面板的 <strong>opt-in 變體</strong>。面板掛 <code>data-vm-style="disabled"</code>，檢視態的輸入框、下拉、多行文字、描述編輯器都留在原位、畫成 disabled——透明底、保留 1px 邊界、不出 focus 環、游標回預設——不再換成純文字讀數。值的墨色用 <code>--view-field-ink</code>（＝<code>--foreground-muted</code>），不用 <code>--locked-field-ink</code>：檢視態整頁都是要讀的內容，必須可讀。編輯態仍鎖住的欄位（來源鎖定、依階段鎖、類型這種永遠唯讀的事實格）照全站唯一的 disabled 樣子（<code>--locked-field-ink</code>）。空值就是空的框＋placeholder。首位消費者：event-detail「設定」分頁；其餘兩段式面板仍是上面那種純文字讀數。</span></div>
+    <div class="demo" data-vm-demo>
+      <div class="flex-row" style="justify-content:flex-end;margin-bottom:var(--sp-12)"><button class="btn btn--outline btn--sm" type="button" data-view-safe data-vm-demo-toggle aria-pressed="false"><span data-en>Edit</span><span data-zh>編輯</span></button></div>
+      <div class="ds-preview ds-preview--narrow" data-editable data-mode="view" data-vm-style="disabled">
+        <div class="field"><label class="field__label">Type</label><input class="input" value="Concert · in-person" disabled><div class="field__hint">Locked after creation.</div></div>
+        <div class="field"><label class="field__label">Event name <span class="field__req">*</span></label><input class="input" value="Inner Circle Fan Meet — Taipei"></div>
+        <div class="field"><label class="field__label">Highlight</label><input class="input" value="" placeholder="e.g. The only Taipei date"></div>
+        <div class="form-grid form-grid--2">
+          <div class="field"><label class="field__label">Country</label><select class="select"><option>Taiwan</option><option>Hong Kong</option></select></div>
+          <div class="field"><label class="field__label">Sale closes</label><input class="input" type="date"></div>
+        </div>
+        <div class="field"><label class="field__label">Terms text</label><textarea class="textarea" rows="3">Tickets are non-refundable.</textarea></div>
+        <div class="field"><label class="field__label">Postage</label><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" value="60"></span></div>
+      </div>
+    </div>
     <script>
-      /* DS 示範專用：切換 data-mode 並比照各頁 applyReadonly 設 readonly／disabled；讀數由 js/view-mode.js 自動接手 */
-      (function () {
-        var box = document.querySelector('[data-vm-demo]'); if (!box) return;
+      /* DS 示範專用：切換 data-mode 並比照各頁 applyReadonly 設 readonly／disabled；讀數由 js/view-mode.js 自動接手
+         （data-vm-style="disabled" 那一組不插讀數，改由 shared.css 畫 disabled 框；永遠 disabled 的事實格標 disabled 屬性、不受切換影響） */
+      document.querySelectorAll('[data-vm-demo]').forEach(function (box) {
         var panel = box.querySelector('[data-editable]'), btn = box.querySelector('[data-vm-demo-toggle]');
+        if (!panel || !btn) return;
         function apply() {
           var ro = panel.getAttribute('data-mode') !== 'edit';
-          panel.querySelectorAll('input, textarea').forEach(function (el) { el.readOnly = ro; });
+          panel.querySelectorAll('input:not([disabled]), textarea').forEach(function (el) { el.readOnly = ro; });
           panel.querySelectorAll('select').forEach(function (el) { el.disabled = ro; });
           btn.setAttribute('aria-pressed', ro ? 'false' : 'true');
           btn.classList.toggle('btn--primary', !ro); btn.classList.toggle('btn--outline', ro);
@@ -2577,7 +2596,7 @@ Letterpress cover, uncoated stock.</textarea></div>
         }
         btn.addEventListener('click', function () { panel.setAttribute('data-mode', panel.getAttribute('data-mode') === 'edit' ? 'view' : 'edit'); apply(); });
         apply();
-      })();
+      });
     </script>
   </div>
   </div>

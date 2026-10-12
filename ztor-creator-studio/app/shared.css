@@ -2001,8 +2001,8 @@ html[data-theme="light"] .wizard__top::before {
    只留字——字級改吃 .field-readout 的 --fs-14 ui 字體、前景色（不再是 disabled 的淡墨）。
    觸發鈕仍是 shared.css 白名單放行的 button（見下），disabled 由各頁 applyReadonly 設，pointer-events 關掉當雙保險。
    [data-edit-exempt] 區段（自己有編輯態的方案編輯器、活動準備清單）不歸兩段式管，整組排除。 */
-[data-mode="view"] .select:not([data-edit-exempt] *),
-[data-mode="view"] .zselect__trigger:not([data-edit-exempt] *) {
+[data-mode="view"]:not([data-vm-style="disabled"]) .select:not([data-edit-exempt] *),
+[data-mode="view"]:not([data-vm-style="disabled"]) .zselect__trigger:not([data-edit-exempt] *) {
   height: auto;
   min-height: 0;
   padding: 0;
@@ -2019,18 +2019,45 @@ html[data-theme="light"] .wizard__top::before {
   appearance: none;
   -webkit-appearance: none;
 }
-[data-mode="view"] .zselect__trigger:disabled:not([data-edit-exempt] *),
-[data-mode="view"] .select:disabled:not([data-edit-exempt] *) { color: var(--foreground); cursor: default; opacity: 1; }
-[data-mode="view"] .zselect__trigger:not([data-edit-exempt] *) .zselect__caret { display: none; }
+[data-mode="view"]:not([data-vm-style="disabled"]) .zselect__trigger:disabled:not([data-edit-exempt] *),
+[data-mode="view"]:not([data-vm-style="disabled"]) .select:disabled:not([data-edit-exempt] *) { color: var(--foreground); cursor: default; opacity: 1; }
+[data-mode="view"]:not([data-vm-style="disabled"]) .zselect__trigger:not([data-edit-exempt] *) .zselect__caret { display: none; }
 /* 標籤輸入欄：chips 本身就是值——欄位框、薄膜底、內距與最小高度都收掉，只剩一排 chip；
    × 由下方白名單藏掉（它是 button），chip 為 × 預留的 26px 對稱內距回到一般 chip 的 12px。 */
-[data-mode="view"] .tag-input__field {
+[data-mode="view"]:not([data-vm-style="disabled"]) .tag-input__field {
   min-height: 0;
   padding: 0;
   background: transparent;
   box-shadow: none;
 }
-[data-mode="view"] .tag-input__field .chip--removable { padding-inline: var(--sp-12); }
+[data-mode="view"]:not([data-vm-style="disabled"]) .tag-input__field .chip--removable { padding-inline: var(--sp-12); }
+/* ── 檢視態變體：disabled 輸入框（opt-in，2026-10-12 使用者指示，UI-CHANGES 一百六十七、STYLE-DECISIONS Q119 補充與 Q128）──
+   面板掛 [data-vm-style="disabled"] 時，檢視態不換成純文字讀數：輸入框、下拉、多行文字框、描述編輯器都留在原位、
+   幾何與編輯態一模一樣，只是顯示成 disabled——透明底、保留 1px 邊界、不出 focus 環、游標回預設。
+   js/view-mode.js 看到這個屬性就不插讀數；上面幾條「去框留字」的規則都以 :not([data-vm-style="disabled"]) 排除。
+   值的墨色用 --view-field-ink（＝--foreground-muted），**不用** --locked-field-ink：後者實測 2.2～2.7:1、
+   只給「這一格不是你管的」；檢視態整頁都是要讀的資訊，必須維持可讀對比（深色 ≈ 白 70%、亮色 #4D4D4D）。
+   編輯態下仍鎖住的欄位（bookyay 帶入、發布設定依階段鎖、類型等永遠唯讀的事實格）照全庫唯一的 disabled 樣子
+   （input.css 的 .input:disabled＝--locked-field-ink）；頁面用 readonly 鎖的欄位在這裡補上同一個樣子。
+   首位消費者：event-detail.html「設定」分頁。其餘兩段式面板仍是 Q119 純文字讀數。 */
+[data-vm-style="disabled"][data-mode="view"] :is(.input, .textarea, .select, .rich-body__text):not([data-edit-exempt] *):not(.linkf__input),
+[data-vm-style="disabled"][data-mode="view"] :is(.input, .textarea, .select):disabled:not([data-edit-exempt] *):not(.linkf__input) {
+  background-color: transparent;
+  background-image: none;
+  color: var(--view-field-ink);
+  cursor: default;
+  opacity: 1;
+}
+[data-vm-style="disabled"][data-mode="view"] :is(.input, .textarea, .select):focus:not([data-edit-exempt] *):not(.linkf__input) { box-shadow: 0 0 0 1px var(--border); }
+[data-vm-style="disabled"][data-mode="view"] .rich-body__text { pointer-events: none; }
+[data-vm-style="disabled"][data-mode="view"] .tag-input__field { background-color: transparent; }
+/* 編輯態：readonly 鎖住的欄位與 :disabled 同一個樣子（全庫唯一的 disabled，Q58）；複製用的連結框（.linkf__input）不算 */
+[data-vm-style="disabled"][data-mode="edit"] :is(.input, .textarea)[readonly]:not(.linkf__input) {
+  background-color: transparent;
+  color: var(--locked-field-ink);
+  cursor: not-allowed;
+}
+[data-vm-style="disabled"][data-mode="edit"] :is(.input, .textarea)[readonly]:not(.linkf__input):focus { box-shadow: 0 0 0 1px var(--border); }
 /* 開關、單選卡、單選清單、選擇卡：本來就是「狀態展示」不是可填的框，維持原元件、不可操作
    （Q119 例外清單）。div 做的 .switch／.radio-list 不是 button，上面那條白名單掃不到，這裡關 pointer-events。
    .segmented 只鎖 .radio-cards 那種「單選卡」用法——同一個殼在總覽分頁也拿來當圖表區間切換（data-view-safe），

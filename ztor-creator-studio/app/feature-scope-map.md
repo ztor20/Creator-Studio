@@ -19,7 +19,7 @@
 
 Tier 欄的 release 編號就是程式用的 tier 代號：`devtools.js` 讀到 `🟢 release2.3` 就把該功能歸到 `release2.3`。之後交付 release2.4 時，那批功能改標 `🟢 release2.4`（保留它是哪一版交付的），新的下一版標 `🔵 release2.5`。
 
-本期統計：🟢 release2.3 92 · 🔵 release2.4 27 · ⚪ TBD 37 · ⚫ 退場 5（2026-10-09 媒體庫三分頁補登 S93 ⚪；2026-10-09 D383：補登 S87–S91 ⚪、S92 🔵，S78 改 🔵；2026-10-08 D377 補登 S86 ⚪；2026-10-07 依功能表逐列重數，同日補登 S82〔D366〕；2026-10-08 D371：S81 改 🔵、補登 S83 🔵；同日 D375 補登 S85 🔵；各模組小計與功能總數另待校正）
+本期統計：🟢 release2.3 92 · 🔵 release2.4 27 · ⚪ TBD 36 · ⚫ 退場 6（2026-10-12 D395：S80 直接促銷同意改 ⚫ 退場；2026-10-09 媒體庫三分頁補登 S93 ⚪；2026-10-09 D383：補登 S87–S91 ⚪、S92 🔵，S78 改 🔵；2026-10-08 D377 補登 S86 ⚪；2026-10-07 依功能表逐列重數，同日補登 S82〔D366〕；2026-10-08 D371：S81 改 🔵、補登 S83 🔵；同日 D375 補登 S85 🔵；各模組小計與功能總數另待校正）
 
 ## Build 狀態圖例
 
@@ -109,6 +109,8 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 **2026-10-09 D387 自建活動也唯讀顯示活動預設購票規則**（不新增功能編號，屬 S72 活動詳情，🔵 release2.4）：`event-detail.html` 票務分頁 `#ed-evrules` 改為所有活動都顯示；條件列裡的粉絲分級三種（限粉絲分級購買、粉絲分級折扣、限時＋限粉絲分級折扣）掛 `data-feat="S82"`，release2.4 收起。
 
+**2026-10-12 D394 bookyay 活動的現場報到台**（不新增功能編號、不掛新標記，同 D385 的做法屬 S73／S56 延伸，🔵 release2.4）：`event-detail.html` `#ed-scanner` 對 bookyay 活動收起 ztor 掃碼器三格（`[data-ztor-scan]`），改顯示 `#ed-bky-scan`（bookyay 掃描器連結＋複製，值＝`ev.bkyScanUrl`）與 `#ed-scanner-bky`（前往取貨管理）；release2.4 與最終版都看得到。
+
 **2026-10-09 D385 bookyay 帶入活動在活動詳情的補齊**（不新增功能編號、不掛新標記，屬 S56 bookyay 帶入欄位規則與 S73 的延伸，🔵 release2.4）：`event-detail.html` 單張門票彈窗的唯讀購買條件區 `#ed-tm-rules-sec`、票務分頁的唯讀預設購票規則卡 `#ed-evrules`、bookyay 門票刪除停用＋原因、提前入場鎖定；`create-event.html` bookyay 票入場區唯讀、bookyay 草稿續填重跑帶入；示範活動 `hsinchu-vinyl-sf`（順豐寄送、單一時段）。release2.4 與最終版都看得到（實測）。
 
 **data-feat 標註現況（2026-07-14 全面切割）**：S05/S06 商店設定付款·出貨、S11 拍賣入口/頁級、S24 專案引用卡、S45 組合限量、O04/O09 已取消／爭議 KPI·篩選、O17/O18/O22/O23 訂單詳情升級功能、E08/E09/E13–E18/E20/E22/E23/E24 收入與提款功能皆有 gate。scope 未列的產品頁以 `data-page-feat="full"` 限為 Phase 4；跨頁連結在低版本隱藏。S31.1 保持 `data-feat`／`data-feat-off` 成對切換。
@@ -117,7 +119,7 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 ## S · 商店管理 — Shop Management
 
-ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 14 · ⚫ 退場 3
+ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 13 · ⚫ 退場 4
 
 | ID    | 功能                              | English                                          | Tier       | Build    | 備註                                                        |
 | ----- | ------------------------------- | ------------------------------------------------ | ---------- | -------- | --------------------------------------------------------- |
@@ -199,7 +201,7 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 14 · ⚫ 退場 3
 | `S74` | 　手動建立活動（略過 bookyay、切換活動類型）          | Create an event manually (skip bookyay)          | ⚪ TBD      | ✅⬆ ahead | create-event `#ce-bky-skip`「略過」、步驟頁頭的切換類型鈕 `#ce-type-switch`（切換後不再經過 bookyay 關卡） |
 | `S75` | 　Watch Party 活動類型                    | Watch Party event type                           | 🔵 release2.4| ✅⬆ ahead | create-event 類型卡 `[data-gate-type="watchparty"]`；Watch Party 不經 bookyay、只能手動建立；2026-10-07 使用者裁示 release2.4 保留 |
 | `S79` | 　其他線下活動類型入口（見面會、音樂節、發表會、線上活動） | Other offline event type entries | ⚪ TBD      | ✅⬆ ahead | create-event 類型卡 `[data-gate-type="meet|festival|launch|virtual"]`；這四類的建立表單與演唱會相同（只有 Watch Party 走專屬分支），release2.4 只留演唱會一個入口（2026-10-07 使用者裁示） |
-| `S80` | 　條款與細則：直接促銷同意開關（接受主辦者用於直接促銷＋行銷同意文字） | Consent to direct marketing | ⚪ TBD      | ✅⬆ ahead | D340；create-event 步驟 2「條款與細則」的第一組 `.control-group[data-feat="S80"]`；release2.4 只留「條款及細則」開關（2026-10-07 使用者裁示）；2026-10-07 D362 起 event-detail 活動內容的「條款與細則」（`#ed-terms`）同一組也掛 S80 |
+| `S80` | 　條款與細則：直接促銷同意開關（接受主辦者用於直接促銷＋行銷同意文字） | Consent to direct marketing | ⚫ 退場      | ✅⬆ ahead | 2026-10-12（D395）已退場——使用者裁示移除「接受主辦者用於直接促銷」，條款與細則只留「條款及細則」；create-event、create-event-legacy、event-localization 翻譯表、events-store 假資料已移除。event-detail 活動內容 `#ed-terms` 的同一組已於同日移除。原：D340；release2.4 只留「條款及細則」開關（2026-10-07 使用者裁示）；2026-10-07 D362 起 event-detail 同一組也掛 S80 |
 | `S76` | 　複製活動／再辦一次                         | Duplicate / run it again                         | ⚪ TBD      | ✅⬆ ahead | events.html 列選單「Duplicate」×50、event-detail `[data-ed-duplicate]`（頁首＋結束後總覽卡）；兩者都是不經 bookyay 的建立方式 |
 | `S77` | 　舊版建立流程（對照用備份頁）                   | Create event (old flow)                          | ⚪ TBD      | ✅⬆ ahead | events.html 建立鈕下拉第二項 → create-event-legacy.html（該頁本身仍是頁級 `full`） |
 | `S78` | 　活動預覽與在地化                          | Event preview & localization                     | 🔵 release2.4| ✅⬆ ahead | event-detail 頁首 `[data-ed-localize]`、設定子分頁「在地化」與其面板；event-localization.html 本身仍是頁級 `full`；2026-10-09 D383 決定七改 🔵 release2.4（對齊 D375 決定四、D330），event-localization.html 頁級改掛 `data-page-feat="S78"`，release2.4 也進得去 |

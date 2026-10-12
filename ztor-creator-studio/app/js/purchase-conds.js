@@ -379,4 +379,20 @@
     html: html, syncWarn: syncWarn, discTimeBad: discTimeBad, mount: mount,
     periodWins: periodWins, periodErrs: periodErrs, syncPeriod: syncPeriod
   };
+  /* 「新增條件」選單打開時量下方空間（2026-10-12 使用者回報被遮住）：觸發鈕常坐在彈窗內文（overflow:auto）的底部，
+     往下展開會被切掉。找最近的捲動容器（沒有就用視窗），下方放不下、上方放得下就掛 dropdown--up 往上開。 */
+  document.addEventListener("toggle", e => {
+    const d = e.target;
+    if (!(d instanceof HTMLDetailsElement) || !d.classList.contains("cond-list__add")) return;
+    d.classList.remove("dropdown--up");
+    if (!d.open) return;
+    const menu = d.querySelector(".dropdown__menu");
+    if (!menu) return;
+    let box = d.parentElement;
+    while (box && box !== document.body && !/(auto|scroll|hidden)/.test(getComputedStyle(box).overflowY)) box = box.parentElement;
+    const bound = (box && box !== document.body) ? box.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+    const trig = d.getBoundingClientRect();
+    const need = menu.offsetHeight + 12;
+    if (bound.bottom - trig.bottom < need && trig.top - bound.top >= need) d.classList.add("dropdown--up");
+  }, true);
 })();
