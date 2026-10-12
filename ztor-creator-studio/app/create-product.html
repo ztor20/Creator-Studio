@@ -32,7 +32,8 @@
 <link rel="stylesheet" href="ds-components/combobox.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/section-outline.css?v=r2.2"><!-- 2026-10-12：左側空白欄的「本頁大綱」區段導覽（partials/section-outline.js） -->
+<link rel="stylesheet" href="ds-components/section-outline.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/progress-mark.css?v=r2.2"><!-- 2026-10-12：本頁大綱的列尾記號改用 progress-mark --><!-- 2026-10-12：左側空白欄的「本頁大綱」區段導覽（partials/section-outline.js） -->
 <link rel="stylesheet" href="ds-components/nest.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
@@ -60,6 +61,8 @@
 <link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2"><!-- D317：頁首兩段進度條（商品內容／預覽與發布），做法對齊 create-event 第 8 步 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
+  /* 2026-10-12 使用者：中間內容欄最大寬度稍微縮小——有本頁大綱時 1140 → 1100（逐規格表＋320 預覽欄的下限約 1100，見 shared.css .wizard__body--mid 註解） */
+  .wizard__body { --section-outline-body: 1040px; }   /* 同日再收（使用者：「content 的寬度可以再小一點」）1100 → 1040 */
   /* create-product 專屬樣式。可重用的區段骨架／radio 卡／control row／form-grid／
      型別卡 icon 變體／upload hero 已 promote 成 ds-components（form-section /
      radio-card / control-row / form-grid / selection-card--icon / upload-tile）。 */
@@ -859,45 +862,19 @@
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.listing.sec-listed">Listing</h3>
       </div>
+      <!-- 2026-10-12 使用者：「改成像組合包一樣的 UI」（同 create-bundle.html 上架區）：三選一並排卡（三張一排）→
+           線框盒（選定時上架時最上面是上架日期與時間、分隔線、定時下架）→ 顯示於商店（線框，放最後）。 -->
       <div class="lctl">
-        <div class="lctl__row lctl__row--choice">
-          <div class="lctl__body">
-            <div class="radio-list radio-list--collapsible" id="cp-listing-mode">
-              <button class="radio-list__trigger" type="button" aria-expanded="false">
-                <span class="radio-list__dot"></span>
-                <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
-                <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
-              </button>
-              <div class="radio-list__options" hidden>
-                <button class="radio-list__item" type="button" data-cp-listing="none">
-                  <span class="radio-list__dot"></span>
-                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-list__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
-                </button>
-                <button class="radio-list__item radio-list__item--active" type="button" data-cp-listing="now">
-                  <span class="radio-list__dot"></span>
-                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
-                </button>
-                <button class="radio-list__item" type="button" data-cp-listing="schedule">
-                  <span class="radio-list__dot"></span>
-                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-list__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="lctl__rule"></div>
-        <!-- 顯示於商店自己一項（D247；2026-09-04 使用者再裁示：不要外框、與第 2 層對調位置）：
-             它回答的是「上架之後找不找得到」，緊接在上架的主決定後面才是這個順序；
-             第 2 層那個線框盒裝的是排程（什麼時候上、什麼時候下），排在它下面。
-             無外框——有框會讀成「跟下面那個盒子是兩個對等的盒子」，實際上它只是一列開關。 -->
-        <div class="lctl__row" data-cp-shown-row hidden>
-          <div class="lctl__head">
-            <div class="lctl__titles">
-              <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
-              <p class="lctl__hint" data-i18n="cp.listing.shown-hint">Hidden items stay purchasable via the private link and inside bundles</p>
-            </div>
-            <div class="switch switch--on lctl__control" id="cp-shown-toggle" role="switch" aria-checked="true" tabindex="0"></div>
-          </div>
+        <div class="segmented radio-cards radio-cards--3" id="cp-listing-mode" data-value="now">
+          <button class="segmented__btn" type="button" data-cp-listing="none">
+            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-card__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
+          </button>
+          <button class="segmented__btn segmented__btn--active" type="button" data-cp-listing="now">
+            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.now">List now</span><span class="radio-card__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
+          </button>
+          <button class="segmented__btn" type="button" data-cp-listing="schedule">
+            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-card__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
+          </button>
         </div>
         <!-- 第 2 層：上架成立之後才存在的設定（排程）。 -->
         <div class="control-group control-group--plain lctl__derived" data-cp-listed-body hidden>
@@ -905,6 +882,7 @@
             <div class="field__label"><span data-i18n="cp.listing.time">Listing time</span> <span class="field__req">*</span></div>
             <input class="input" type="datetime-local" id="cp-listing-time">
           </div>
+          <div class="lctl__rule lctl__rule--group" data-cp-listing-rule hidden></div>
           <div class="lctl__row">
             <div class="lctl__head">
               <div class="lctl__titles">
@@ -921,6 +899,16 @@
             </div>
           </div>
         </div>
+        <!-- 顯示於商店（D247）：放最後、有線框（同建立組合包，2026-10-12） -->
+        <div class="lctl__row control-group control-group--plain" data-cp-shown-row hidden>
+          <div class="lctl__head">
+            <div class="lctl__titles">
+              <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
+              <p class="lctl__hint" data-i18n="cp.listing.shown-hint">Hidden items stay purchasable via the private link and inside bundles</p>
+            </div>
+            <div class="switch switch--on lctl__control" id="cp-shown-toggle" role="switch" aria-checked="true" tabindex="0"></div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -930,35 +918,22 @@
         <!-- D332：開賣與停售只管單售、不影響之後含本商品的組合包；要連組合包一起停用下架（5.1.5.2 §4.6） -->
         <p class="form-section__sub" data-i18n="cp.listing.sale-scope">Applies to single sales only — unlist to stop bundles too</p>
       </div>
+      <!-- 2026-10-12 同建立組合包開賣區：二選一並排卡 → 線框盒（選定時開賣時最上面是開賣日期與時間、分隔線、定時停售） -->
       <div class="lctl">
-        <div class="lctl__row lctl__row--choice">
-          <div class="lctl__body">
-            <div class="radio-list radio-list--collapsible" id="cp-sale-mode">
-              <button class="radio-list__trigger" type="button" aria-expanded="false">
-                <span class="radio-list__dot"></span>
-                <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-list__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
-                <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
-              </button>
-              <div class="radio-list__options" hidden>
-                <button class="radio-list__item radio-list__item--active" type="button" data-cp-sale-mode="follow">
-                  <span class="radio-list__dot"></span>
-                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-list__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
-                </button>
-                <button class="radio-list__item" type="button" data-cp-sale-mode="schedule">
-                  <span class="radio-list__dot"></span>
-                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-list__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
-                </button>
-              </div>
-            </div>
-          </div>
+        <div class="segmented radio-cards" id="cp-sale-mode" data-value="follow">
+          <button class="segmented__btn segmented__btn--active" type="button" data-cp-sale-mode="follow">
+            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-card__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
+          </button>
+          <button class="segmented__btn" type="button" data-cp-sale-mode="schedule">
+            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-card__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
+          </button>
         </div>
-        <div class="lctl__rule"></div>
-        <!-- 第 2 層：停售恆在（兩種開賣方式都可以設一個收攤時間）；開賣時間只有選「定時開賣」才有意義。 -->
-        <div class="lctl__derived">
+        <div class="lctl__derived control-group control-group--plain">
           <div class="field" data-cp-sale-start-field hidden>
             <div class="field__label"><span data-i18n="cp.listing.sale-start">Sale start</span> <span class="field__req">*</span></div>
             <input class="input" type="datetime-local" id="cp-listing-sale-start">
           </div>
+          <div class="lctl__rule lctl__rule--group" data-cp-sale-rule hidden></div>
           <div class="lctl__row">
             <div class="lctl__head">
               <div class="lctl__titles">
@@ -2282,25 +2257,33 @@
     if (shownRow) shownRow.hidden = !listed;
     const f = document.querySelector('[data-cp-listing-fields]');
     if (f) f.hidden = listingMode !== 'schedule';
+    const rl = document.querySelector('[data-cp-listing-rule]');
+    if (rl) rl.hidden = listingMode !== 'schedule';
     const saleSec = document.querySelector('[data-cp-sale-section]');
     if (saleSec) saleSec.hidden = !listed;
   }
-  if (cpLm) cpLm.addEventListener('radio-list:change', e => {
-    listingMode = e.detail.item.dataset.cpListing;
-    syncListingRows();
-  });
+  /* 並排卡（2026-10-12，同建立組合包）：點卡＝換選項 */
+  function wireCards(host, attr, set) {
+    if (!host) return;
+    host.addEventListener('click', e => {
+      const btn = e.target.closest('.segmented__btn');
+      if (!btn || !host.contains(btn)) return;
+      host.querySelectorAll('.segmented__btn').forEach(b => b.classList.toggle('segmented__btn--active', b === btn));
+      host.dataset.value = btn.dataset[attr];
+      set(btn.dataset[attr]);
+    });
+  }
+  wireCards(cpLm, 'cpListing', v => { listingMode = v || 'now'; syncListingRows(); });
   syncListingRows();   /* 初始＝立刻上架：第二層與開賣設定一開始就在 */
 
   const cpSm = document.getElementById('cp-sale-mode');
   function syncSaleMode() {
     const f = document.querySelector('[data-cp-sale-start-field]');
     if (f) f.hidden = saleMode !== 'schedule';
+    const rl = document.querySelector('[data-cp-sale-rule]');
+    if (rl) rl.hidden = saleMode !== 'schedule';
   }
-  if (cpSm) cpSm.addEventListener('radio-list:change', e => {
-    saleMode = e.detail.item.dataset.cpSaleMode;
-    syncSaleMode();
-    checkSaleWindow();
-  });
+  wireCards(cpSm, 'cpSaleMode', v => { saleMode = v || 'follow'; syncSaleMode(); checkSaleWindow(); });
   syncSaleMode();
 
   /* 顯示於商店開關。建立流程只收這個值——非公開連結在商品細節頁取得與重置（規格 5.1.5.2 §4.6）。 */

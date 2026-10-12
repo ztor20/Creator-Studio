@@ -66,7 +66,18 @@
         suggest.appendChild(b);
       });
       none.hidden = avail.length > 0;
+      fitOneRow();
     }
+    /* 建議列只留一行（2026-10-12 使用者：「只要建議一行就好」）：折到第二行的 chip 先藏起來；想找其他部就用上面的搜尋格。
+       排版要量得到才算（區塊收起或還沒顯示時略過，視窗縮放時再算一次）。 */
+    function fitOneRow() {
+      var chips = suggest.children, top0 = null;
+      for (var i = 0; i < chips.length; i++) chips[i].hidden = false;
+      if (!chips.length || !suggest.getClientRects().length) return;
+      top0 = chips[0].offsetTop;
+      for (var j = 0; j < chips.length; j++) if (chips[j].offsetTop > top0) chips[j].hidden = true;
+    }
+    window.addEventListener('resize', fitOneRow);
     function refresh() { renderSelected(); renderSuggest(); onChange(selected.slice()); }
 
     field.addEventListener('click', function (e) {

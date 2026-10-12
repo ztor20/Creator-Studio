@@ -1010,8 +1010,11 @@
             <span class="radio-card__text"><span class="radio-card__title" data-di="d.list.schedule">定時上架</span><span class="radio-card__sub" data-di="d.list.schedule.sub">到指定時間自動上架</span></span>
           </button>
         </div>
+        <!-- 2026-10-12 使用者：「創建活動的發布設定也要一致」（同建立組合包、建立商品）：卡片下方一個線框盒——
+             選定時上架時最上面是上架日期與時間、分隔線，再來是定時下架；選「不上架」整個盒子收起。 -->
+        <div class="control-group control-group--plain lctl__derived" id="ce-list-box" style="margin-top:var(--sp-16)">
         <div id="ce-list-time" hidden>
-          <div class="field" style="margin-top:12px">
+          <div class="field" style="margin-bottom:0">
             <label class="field__label"><span data-di="d.list.time">上架日期與時間</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
             <div class="form-grid">
               <input class="input" type="date" data-ce="list-d">
@@ -1024,7 +1027,8 @@
         </div>
         <!-- 定時下架（D364，2026-10-07）：與電子商店商品、組合包、拍賣同一個元件與名稱（listing-controls 的 lctl__row＋定時下架開關）。
              預設關＝不自動下架、不用填；打開才露出下架日期與時間（必填）。 -->
-        <div id="ce-unlist" style="margin-top:12px">
+        <div class="lctl__rule lctl__rule--group" id="ce-list-rule" hidden></div>
+        <div id="ce-unlist">
           <div class="lctl__row">
             <div class="lctl__head">
               <div class="lctl__titles">
@@ -1048,6 +1052,7 @@
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
 
@@ -1073,7 +1078,9 @@
             <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-card__sub" data-i18n="cp.listing.sale-sched-sub">Checkout opens at the time you set</span></span>
           </button>
         </div>
-        <div class="field" style="margin-top:12px" data-when="sale-mode" data-when-val="schedule" hidden>
+        <!-- 2026-10-12 同上架：線框盒——選定時開賣時最上面是開賣日期與時間、分隔線，再來是停售日期與時間（選填） -->
+        <div class="control-group control-group--plain lctl__derived" style="margin-top:var(--sp-16)">
+        <div class="field" style="margin-bottom:0" data-when="sale-mode" data-when-val="schedule" hidden>
           <label class="field__label"><span data-di="d.sale.from">開賣日期與時間</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
           <div class="form-grid">
             <input class="input" type="date" data-ce="sale-from-d" data-bky="saleFromD">
@@ -1083,7 +1090,8 @@
           <!-- D342／D391 第 14 題：開賣時間必須落在上架區間（上架到下架）內，超出就地紅字說明原因、發布前彙整阻擋 -->
           <p class="field__error" data-ce-tl-err="sale-from" hidden data-feat="S62"></p>
         </div>
-        <div class="field" style="margin:var(--sp-16) 0 0">
+        <div class="lctl__rule lctl__rule--group" data-when="sale-mode" data-when-val="schedule" hidden></div>
+        <div class="field" style="margin-bottom:0">
           <label class="field__label"><span data-di="d.sale.to">停售日期與時間</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
           <div class="form-grid">
             <input class="input" type="date" data-ce="sale-to-d" data-bky="saleToD">
@@ -1091,6 +1099,7 @@
           </div>
           <p class="field__hint" data-di="d.sale.to.hint">留空＝賣到活動開始。</p>
           <p class="field__error" data-ce-tl-err="sale-to" hidden data-feat="S62"></p>
+        </div>
         </div>
         <!-- 其他售票時間（2026-10-07 · D361 決定一，5.1.6.1 F23）：早於正式開賣、就能購買的時間——單張門票購買條件或折扣的
              限時間（第 5 步，F22）與票務商品另設的開賣時間（第 6 步，F20）。這裡只唯讀列出，設定位置不變；
@@ -2343,6 +2352,9 @@
     listModeSeg.dataset.value = btn.dataset.val;
     listModeSeg.querySelectorAll(".segmented__btn").forEach(b => b.classList.toggle("segmented__btn--active", b === btn));
     const t = document.getElementById("ce-list-time"), u = document.getElementById("ce-unlist");
+    const box = document.getElementById("ce-list-box"), rule = document.getElementById("ce-list-rule");   /* 2026-10-12 線框盒與盒內分隔線 */
+    if (box) box.hidden = btn.dataset.val === "none";
+    if (rule) rule.hidden = btn.dataset.val !== "schedule";
     if (t) t.hidden = btn.dataset.val !== "schedule";
     if (u) u.hidden = btn.dataset.val === "none";
   });

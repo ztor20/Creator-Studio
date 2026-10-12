@@ -229,6 +229,9 @@
        只在 shares:false 時有意義：共創本來就沒有作品這一段。 */
     var WORK = opts.work !== false;
     var COVER = !!opts.cover;
+    /* 收合列縮圖的圖源（2026-10-12 使用者：「這個應該要用圖片」）：組合包封面 → 第一件商品的圖 → 頁面給的備援（opts.rowThumb(b)，
+       活動建立流程給「活動主視覺」，因為票券成員預設就是用活動那張）；都沒有才退回 package 圖示。 */
+    var rowThumb = typeof opts.rowThumb === 'function' ? opts.rowThumb : null;
     var getTickets = typeof opts.tickets === 'function' ? opts.tickets
                    : (opts.tickets ? function () { return opts.tickets; } : null);
     /* 隨場次刪除的門票（2026-10-09 · D391 第 13 題，5.1.5.4 §4 F2「場次被刪除時的票券成員」）：開賣前移除場次會一併刪掉
@@ -1035,7 +1038,7 @@
       var PL = plApi();
       if (!PL) return '';
       var mem = limitMembers(b), fix = srcFix(b);
-      if (!mem.length) return '<div data-bd-pl><p class="field__hint">' + esc(T('cb.min-items')) + '</p></div>';
+      if (!mem.length) return '<div data-bd-pl></div>';   /* 2026-10-12 使用者：沒有成員時限購整塊不顯示（原本一句「至少加入 1 個成員」） */
       return '<div data-bd-pl>' + PL.blockHTML(b.limits, PL.derive(mem), T, {
         title: true, locked: fix, lockNote: fix ? T('pl.lock.bky') : ''
       }) + '</div>';
@@ -1822,8 +1825,8 @@
       var lo = tixMinPrice(b), hi = tixMaxPrice(b), left = tixLeftSum(b);
       var price = !lines.length ? '—'
         : lines.length > 1 ? T('cpp.bd.price.from').replace('{sum}', money(lo)) : (lo === 0 ? T('ce.tier.free') : money(lo));
-      var sub = (lines.length && hi > lo ? rangeText(lo, hi) : '') +
-        (left !== null ? ((lines.length && hi > lo ? ' · ' : '') + leftText(left)) : '');
+      var sub = lines.length && hi > lo ? rangeText(lo, hi) : '';   /* 2026-10-12：區間小字留在原價欄，剩餘獨立一欄 */
+      var leftCell = '';   /* 2026-10-12 使用者：票券列的剩餘數量刪除（各門票的剩餘在展開的允許門票表裡） */
       var q = tixQty(b);
       return '<div class="member-table__row" data-bd-tix-row>' +
           '<button type="button" class="member-table__open" data-bd-tix-open aria-expanded="' + open + '" aria-label="' + esc(T('cb.mt.open')) + '"><i data-lucide="chevron-right" class="ztor-icon"></i></button>' +
@@ -1831,10 +1834,10 @@
             '<span class="member-table__thumb"><i data-lucide="ticket" class="ztor-icon"></i></span>' +
             '<span class="member-table__txt">' +
               '<span class="member-table__t">' + esc(ev.name || T('cpp.bd.sp.tix')) + '</span>' +
-              '<button type="button" class="member-table__link" data-bd-tix-open aria-expanded="' + open + '">' + esc(label) + '</button>' +
             '</span>' +
           '</div>' +
           '<span class="member-table__price">' + esc(price) + (sub ? '<span class="member-table__sub">' + esc(sub) + '</span>' : '') + '</span>' +
+          '<span class="member-table__left">' + esc(leftCell) + '</span>' +
           '<span class="member-table__qty">' +
             '<span class="amount-field amount-field--suffix amount-field--readonly zstep">' +
               '<span class="amount-field__unit">' + esc(T('cb.tix.unit')) + '</span>' +
@@ -1851,15 +1854,15 @@
         /* 展開區：允許的門票表（D296／D380）＋語意句（「粉絲從 VIP、Floor 任選一種，拿到 2 張」） */
         '<div class="member-table__exp" data-bd-tix-exp' + (open ? '' : ' hidden') + '>' +
           '<div class="field">' + tixTableHTML(b) + '</div>' +
-          (kindRows().length ? '<div class="field__hint" data-bd-sem>' + esc(semanticText(b)) + '</div>' : '') +
+          /* 墓碑 2026-10-12（使用者：同建立組合包，展開區下的語意句不用留）：原本這裡一句 data-bd-sem「粉絲從 VIP、Floor 任選一種，拿到 2 張」 */
         '</div>';
     }
     function itemRowsHTML(b) {
       var locked = isLocked(b);
       return b.items.map(function (it) {
         var st = num(it.stock);
-        var sub = (itemRange(it) ? rangeText(itemMin(it), itemMax(it)) : '') +
-          (Number.isFinite(st) ? (itemRange(it) ? ' · ' : '') + leftText(st) : '');
+        var sub = itemRange(it) ? rangeText(itemMin(it), itemMax(it)) : '';
+        var leftCell = Number.isFinite(st) ? leftText(st) : '';
         return '<div class="member-table__row" data-bd-ref="' + esc(it.id) + '">' +
           '<span></span>' +
           '<div class="member-table__name">' +
@@ -1868,6 +1871,7 @@
               '<span class="member-table__s">' + esc(it.id.indexOf('draft:') === 0 ? T('cpp.bd.item.draft') : specText(it)) + '</span></span>' +
           '</div>' +
           '<span class="member-table__price">' + esc(itemPriceText(it)) + (sub ? '<span class="member-table__sub">' + esc(sub) + '</span>' : '') + '</span>' +
+          '<span class="member-table__left">' + esc(leftCell) + '</span>' +
           /* 活動變體每組固定 1 件（既有規則不變），只顯示、不給步進器 */
           '<span class="member-table__qty">1 ' + esc(T('stock.unit-pcs')) + '</span>' +
           (locked ? '<span></span>' :
@@ -1908,23 +1912,23 @@
        各自一個 `.bd-field--table` 欄位）併進 datesFieldHTML。表本體 sessionsTableHTML／perTableHTML 不變。 */
     function secContentSplitHTML(b) {
       /* 來源鎖（bookyay，D329／D330）優先於已售出鎖：它鎖得更多，一句講完、不疊兩句（原 ticketBlockHTML／productsBlockHTML 的兩句合在表上方）。 */
+      /* 2026-10-12 使用者：bookyay 帶入的兩句鎖定說明刪除，改在標題列右邊掛一枚「bookyay 帶入」標籤（同其他區塊的來源徽章）；
+         已售出鎖的那一句不是來源說明，保留。 */
       var lockNote = srcFix(b)
-        ? '<div class="field__hint field__hint--fact bd-lock-note" data-feat="S56"><i data-lucide="lock" class="ztor-icon"></i>' +
-            esc(T('cpp.bd.sp.srclocked')) + '</div>' +
-          '<div class="field__hint field__hint--fact bd-lock-note" data-feat="S56"><i data-lucide="lock" class="ztor-icon"></i>' +
-            esc(T('cpp.bd.sp.items.srclocked')) + '</div>'
+        ? ''
         : isLocked(b)
         ? '<div class="field__hint field__hint--fact bd-lock-note"><i data-lucide="lock" class="ztor-icon"></i>' +
             esc(T('cpp.bd.sp.locked').replace('{n}', String(b.sold))) + '</div>'
         : '';
       var any = !!getTickets || b.items.length > 0;
       return '<section class="bd-sec bd-sec--stack" data-bd-sec="content">' +
-        '<div class="bd-sec__head">' +
+        '<div class="bd-sec__head' + (srcFix(b) ? ' bd-sec__head--actions' : '') + '">' +
           '<h3 class="bd-sec__title">' + esc(T('cb.sec.members')) + '</h3>' +
+          (srcFix(b) ? '<span class="badge badge--neutral" data-feat="S56">' + esc(T('ed.src.bky', 'From bookyay')) + '</span>' : '') +
         '</div>' +
         lockNote +
-        '<div class="member-table" data-bd-members>' +
-          (any ? '<div class="member-table__head"><span></span><span>' + esc(T('cb.mt.name')) + '</span><span>' + esc(T('cb.mt.price')) + '</span>' +
+        '<div class="member-table member-table--no-left" data-bd-members>' +   /* 2026-10-12：同建立組合包，沒有剩餘欄 */
+          (any ? '<div class="member-table__head"><span></span><span>' + esc(T('cb.mt.name')) + '</span><span>' + esc(T('cb.mt.price')) + '</span><span>' + esc(T('cb.mt.col.left')) + '</span>' +
             '<span>' + esc(T('cb.qty.col')) + '</span><span></span></div>' : '') +
           tixRowHTML(b) +
           itemRowsHTML(b) +
@@ -2060,7 +2064,7 @@
             '</div>'
           : '')
         : '<div class="price-ladder__step" data-feat="S64">' +
-            ladderK(esc(T('cb.pl.sale')) + '<span class="badge badge--neutral">' + esc(T('cb.pl.optional')) + '</span>', T('cb.pl.sale.s')) +
+            ladderK(esc(T('cb.pl.sale')), T('cb.pl.sale.s')) +
             ladderSwitch('data-bd-sale-toggle', !!b.saleOn, false, T('cb.pl.sale')) +
           '</div>' +
           '<div class="price-ladder__step price-ladder__step--panel" data-feat="S64"' + (b.saleOn ? '' : ' hidden') + '>' +
@@ -2184,8 +2188,8 @@
         '</div>';
       }
       /* 2026-10-12 改版：分卡標題「展示」已說是素材，欄位標籤不重述（同建立組合包） */
+      /* 2026-10-12：說明小字搬到分卡標題底下（secNameSplitHTML 的 head），不再放在欄位裡跟標題隔一段 */
       return '<div class="field" data-feat="S64">' +
-        '<div class="field__hint">' + esc(T('cb.media.sub')) + '</div>' +
         '<div class="upload-assets upload-assets--fill" data-upload-reveal>' + tiles + '</div></div>';
     }
     /* ── ① 組合包介紹：組合資訊（名稱、說明）／展示（素材）／電影關聯（2026-10-12 改版，D402／UI-CHANGES 一百八十八）──
@@ -2201,9 +2205,7 @@
         '<div class="field">' +
           '<label class="field__label">' + esc(T('cpp.bd.name')) + ' <span class="field__req">*</span></label>' +
           '<input class="input" data-bd-f="name" value="' + esc(shown) + '" placeholder="' + esc(sug || T('cpp.bd.sp.name.ph')) + '">' +
-          (sug && b.nameTouched && b.name !== sug
-            ? '<button class="bd-suggest" type="button" data-bd-usesug>' + esc(T('cpp.bd.suggest').replace('{n}', sug)) + '</button>'
-            : '') +
+          /* 墓碑 2026-10-12：名稱欄底下的「套用建議名稱」連結退場（使用者：「這個建議不需要有」）——建議名稱只留在 placeholder。 */
         '</div>' +
         '<div class="field">' +
           '<label class="field__label">' + esc(T('cpp.bd.sp.desc')) + '</label>' +
@@ -2212,17 +2214,22 @@
       '</section>' +
       (COVER
         ? '<section class="bd-sec bd-sec--stack" data-bd-sec="media">' +
-            '<div class="bd-sec__head"><h3 class="bd-sec__title">' + esc(T('cb.sec.media')) + '</h3></div>' +
+            '<div class="bd-sec__head"><h3 class="bd-sec__title">' + esc(T('cb.sec.media')) + '</h3>' +   /* 2026-10-12 同建立組合包：卡片標題「圖片與影片」 */
+              '<p class="bd-sec__sub">' + esc(T('cb.media.sub')) + '</p></div>' +
             mediaFieldHTML(b) +
           '</section>'
-        : '') +
-      /* 電影關聯（5.1.5.4 §4 F10）：共用 partials/film-picker，render() 之後掛進這個空殼 */
-      (films
+        : '');
+    }
+    /* 電影關聯（5.1.5.4 §4 F10）：共用 partials/film-picker，render() 之後掛進這個空殼。
+       2026-10-12 使用者「電影關聯移到最後面」（建立組合包）→ 這裡同步：不再接在圖片與影片後面，改放整頁最後、自成第四類「其他」。 */
+    function secFilmsSplitHTML(b) {
+      var films = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createFilmPicker;
+      return films
         ? '<section class="bd-sec bd-sec--stack" data-bd-sec="films" data-feat="S64">' +
             '<div class="bd-sec__head"><h3 class="bd-sec__title">' + esc(T('cp.films')) + '</h3></div>' +
             '<div class="field"><div class="field__hint">' + esc(T('cb.films.sub')) + '</div><div data-bd-films></div></div>' +
           '</section>'
-        : '');
+        : '';
     }
     /* ── ④ 上架與開賣（D342，5.1.6.1 F20「上架與開賣：跟隨活動或另設」）──────────────────
        顯示設定（同 5.1.5.4 §4 F6）＋四個時間逐格「跟隨活動／另設」（js/ticket-bundle.js）。
@@ -2233,13 +2240,13 @@
         '<div class="bd-sec__head">' +
           '<h3 class="bd-sec__title">' + esc(T('cpp.bd.sp.sec.listing')) + '</h3>' +
         '</div>' +
-        '<div class="field">' +
-          '<div class="kv-list bd-listing">' +
-            '<div class="kv kv--lead"><span class="kv__k">' + esc(T('cpp.bd.sp.follow')) + '</span>' +
-              '<span class="kv__v">' + esc(ev.name || T('event-detail.untitled')) + eventBadgeHTML(ev) + '</span></div>' +
-          '</div>' +
-          '<div class="field__hint">' + esc(T(ev.status === 'draft' ? 'cpp.bd.sp.follow.draft' : 'cpp.bd.sp.follow.hint')) + '</div>' +
+        /* 2026-10-12 使用者：「跟著活動」換成外框列（同顯示於商店），並拿掉「預設跟隨…」那句提示（草稿活動的「維持草稿」說明仍保留） */
+        '<div class="control-row">' +
+          '<div><div class="control-row__main">' + esc(T('cpp.bd.sp.follow')) + '</div>' +
+            '<div class="control-row__sub">' + esc(ev.name || T('event-detail.untitled')) + '</div></div>' +
+          eventBadgeHTML(ev) +
         '</div>' +
+        (ev.status === 'draft' ? '<div class="field__hint">' + esc(T('cpp.bd.sp.follow.draft')) + '</div>' : '') +
         /* D363 決定二：活動隱藏中（第 7 步顯示開關關掉，et.shown === false）→ 這顆開關停用、畫成關，下面多一句原因；
            組合包自己的值（b.shown）保留，活動切回顯示後照它自己的開關。彈窗每次開都重畫，所以第 7 步改了再回來就是新的狀態。 */
         (function () {
@@ -2271,7 +2278,7 @@
           '<h3 class="bd-sec__title">' + esc(T(tk)) + '</h3>' +
         '</div>' +
         '<div class="stack">' +
-        (buyOn ? '<div class="field" data-feat="S63">' +
+        (buyOn ? '<div class="field control-group control-group--plain control-group--readout" data-feat="S63">' +   /* 2026-10-12：同建立組合包「購買條件」線框、讀數靠右 */
           '<div class="field__label">' + esc(T('tb.rules.buy')) + '</div>' +
           /* D390 決定十九／二十（2026-10-09）：bookyay 自動建立的組合包——套票的門票層條件（限購、折扣）不放 1 人票、放在這一組
              （b.rules／組合折扣，create-event bkyMap），而且整組鎖定：只畫唯讀讀數＋一句原因，不給跟隨開關與調整欄位。
@@ -2444,7 +2451,7 @@
     /* D342：命名段改「命名與素材」，上架另成一段「上架與開賣」，再加「購買條件與限購」（5.1.6.1 F20 收齊組合包欄位）。 */
     /* 2026-10-12 改版（D402，UI-CHANGES 一百八十八）：分頁改成與三大分類一致（組合包介紹／選擇組合物／販售設定），
        錨點是每一類開頭的空錨點（[data-st-section]；原分類小標 .form-cat 已撤除）；原五節分頁（內容物／定價與庫存／命名與素材／上架與開賣／購買條件與限購）退場。 */
-    var ST_SECTIONS = [['intro', 'cb.sec.intro'], ['content', 'cb.sec.content'], ['sale', 'cb.sec.sale']];
+    var ST_SECTIONS = [['intro', 'cb.sec.intro'], ['content', 'cb.sec.content'], ['sale', 'cb.sec.sale'], ['more', 'cb.sec.more']];
     function catHTML(key, n) {
       /* 2026-10-12 使用者「不要有這種小標籤」：分類小標撤除，只留看不見的錨點給頂部三個分頁捲動（分類名已在分頁上） */
       return '<div data-st-section="' + key + '" aria-hidden="true"></div>';
@@ -2452,7 +2459,7 @@
     function sectionTabsHTML() {
       return '<nav class="section-tabs section-tabs--dialog" data-section-tabs data-st-scroller=".payout-dialog__body" aria-label="' + esc(T('st.aria')) + '">' +
         '<div class="tabs tabs--underline-short tabs--underline-label">' +
-          ST_SECTIONS.map(function (it, i) {
+          ST_SECTIONS.filter(function (it) { return it[0] !== 'more' || (window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createFilmPicker); }).map(function (it, i) {   /* 「其他」分頁只在有電影選擇器時才有 */
             return '<button type="button" class="tabs__item' + (i === 0 ? ' tabs__item--active' : '') + '" data-st-tab="' + it[0] + '"' +
               (i === 0 ? ' aria-current="location"' : '') + '><span>' + esc(T(it[1])) + '</span></button>';
           }).join('') +
@@ -2480,6 +2487,7 @@
                 catHTML('intro', 1) + secNameSplitHTML(b) +
                 catHTML('content', 2) + secContentSplitHTML(b) +
                 catHTML('sale', 3) + secPriceSplitHTML(b) + secQtySplitHTML(b) + secRulesSplitHTML(b) + secListingSplitHTML(b) +
+                (secFilmsSplitHTML(b) ? catHTML('more', 4) + secFilmsSplitHTML(b) : '') +
               '</div>' +
               '<aside class="payout-dialog__split-side bd-split__side">' +
                 '<h3 class="bpc__title">' + esc(T('cpp.bd.sp.fan.title')) + '</h3>' +
@@ -2686,17 +2694,34 @@
         : '<span class="fc-sum__thumb fc-sum__thumb--empty"><i data-lucide="package" class="ztor-icon"></i></span>';
     }
 
+    /* 收合列的內含物（2026-10-12 使用者：「名稱、內含物 a／b／c，一件一行，最前面不要序號」）：
+       名稱底下每一項內含物各自一行——先是票券那一行（「二人套票・1 人 × 2」），再是每件商品的名字；
+       什麼都沒有才退回原本的摘要句。 */
+    function rowLinesHTML(b) {
+      var lines = [];
+      if (getTickets) { var tl = tixLineText(b); if (tl) lines.push(tl); }
+      (b.items || []).forEach(function (it) { if (it && it.name) lines.push(it.name); });
+      if (!lines.length) lines.push(summaryMeta(b));
+      return lines.map(function (l) { return '<span class="bd-row__meta">' + esc(l) + '</span>'; }).join('');
+    }
+
+    function rowThumbHTML(b) {
+      var src = (typeof b.cover === 'string' && b.cover) || (b.items && b.items[0] && b.items[0].img) || (rowThumb ? rowThumb(b) : '');
+      return src
+        ? '<span class="bd-row__thumb bd-row__thumb--img"><img src="' + esc(src) + '" alt="" loading="lazy"></span>'
+        : '<span class="bd-row__thumb"><i data-lucide="package" class="ztor-icon"></i></span>';
+    }
+
     /* 收合列：叫什麼、裡面有什麼、賣多少。整列可點、點開就是上面那個彈窗。 */
     function secRowHTML(b, i) {
       var base = listPrice(b), fin = finalPrice(b);
       /* 列用 data-bd-open、彈窗才是 data-bd-card：編輯中兩者同時存在，共用同一個屬性的話
          「找這張卡的某個欄位」會先命中沒有欄位的那一列，打字時的焦點還原就會斷。 */
       return '<button class="card bd-row" type="button" data-bd-open="' + b.id + '">' +
-        '<span class="bd-row__thumb"><i data-lucide="package" class="ztor-icon"></i></span>' +
+        rowThumbHTML(b) +
         '<span>' +
-          '<span class="bd-row__name"><span class="fc-bundle__index">' + String(i + 1).padStart(2, '0') + '</span>' +
-            esc(b.name || T('cpp.bd.untitled')) + '</span>' +
-          '<span class="bd-row__meta">' + esc(summaryMeta(b)) + '</span>' +
+          '<span class="bd-row__name">' + esc(b.name || T('cpp.bd.untitled')) + '</span>' +
+          rowLinesHTML(b) +
         '</span>' +
         '<span class="bd-row__price">' + esc(moneyFrom(b, fin)) +
           (base > fin ? '<span class="bd-row__was">' + esc(moneyFrom(b, base)) + '</span>' : '') + '</span>' +

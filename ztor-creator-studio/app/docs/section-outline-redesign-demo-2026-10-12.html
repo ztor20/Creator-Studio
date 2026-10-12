@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 探索頁（lab）· 本頁大綱（section-outline）重新設計（2026-10-12，第二版）。資產一律以 ../ 為前綴。
+     使用者：「請考慮現有的 UI style 與元件設計」——每一種都只用站上既有元件組合（section-outline、section-nav、readiness、
+     progress-mark、completeness、progress-stepper、ztor-badge、data-list 的群組標），頁內 <style> 只剩示意台的版面
+     （lab- 前綴、只吃 token），不另造新的視覺。五欄同一份資料，點任一節切換目前位置。 -->
+<title>LAB · 本頁大綱重新設計</title>
+<script src="../js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/section-outline.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/section-nav.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/readiness.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/progress-mark.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/completeness.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/progress-stepper.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="../shared.css?v=r2.2">
+<style>
+  /* 示意台版面（只排版、不造新視覺） */
+  body { background: var(--background); color: var(--foreground); }
+  .lab-wrap { max-width: 1320px; margin: 0 auto; padding: var(--sp-32) var(--sp-16) var(--sp-48); }
+  .lab-h1 { font-size: var(--fs-20); margin: 0 0 var(--sp-8); font-weight: var(--fw-regular); }
+  .lab-lead { font-size: var(--fs-13); color: var(--muted-foreground); margin: 0 0 var(--sp-24); line-height: var(--lh-relaxed); max-width: 900px; }
+  .lab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--sp-16); }
+  .lab-card { border: 1px solid var(--border-soft); border-radius: var(--radius-xl); padding: var(--sp-16); display: flex; flex-direction: column; gap: var(--sp-10); min-width: 0; }
+  .lab-card__t { font-size: var(--fs-14); }
+  .lab-card__t b { font-family: var(--font-mono); color: var(--primary); font-weight: var(--fw-regular); margin-right: var(--sp-6); }
+  .lab-card__s { font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-relaxed); margin: 0; }
+  .lab-card__uses { font-size: var(--fs-11); color: var(--faint-ink); margin: 0; }
+  .lab-stage { width: 184px; padding-top: var(--sp-8); --pmark-size: 16px; }
+  .lab-stage .section-outline__inner { position: static; max-height: none; }
+  .lab-stage .section-nav { position: static; }
+  .lab-stage .section-nav__item { min-height: 0; justify-content: space-between; }
+  .lab-gap { height: var(--sp-12); }
+  /* readiness 卡原本不可點：示意台讓列可點、目前節用既有的 --done 前景色＋medium 表達 */
+  .lab-stage .readiness__item { cursor: pointer; }
+  .lab-stage .readiness__item.is-active { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-stage .readiness__item .lab-sp { width: 18px; flex: none; }
+  /* C 第二輪（使用者 2026-10-12）：① 選填節前也放點 ②③ 記號欄上到下一條線串起 ④ 完成的勾看不清楚＝綠底白勾對比不足，改深色勾 ⑤ 拿掉卡頭「本頁大綱」
+     正式採用時：④ 要改 readiness.css 本身（建立商品的就緒檢查卡一起變）；① ②③ 做成 readiness 的 --outline 變體。 */
+  .lab-c .readiness__list { position: relative; padding-top: var(--sp-14); }
+  .lab-c .readiness__list::before { content: ''; position: absolute; left: calc(var(--sp-16) + 8.5px); top: var(--sp-24); bottom: var(--sp-24); width: 1px; background: var(--border); }
+  .lab-c .readiness__mark { position: relative; background: var(--background); box-shadow: inset 0 0 0 1.4px var(--muted-foreground); }   /* 底改實色蓋住串線後，原本 --border 的圈太淡，圈色提一階 */
+  .lab-c .readiness__item--done .readiness__mark { background: var(--status-success); color: var(--background); }
+  .lab-c .readiness__mark .ztor-icon { stroke-width: 3; }
+  .lab-c .lab-dot { position: relative; display: grid; place-items: center; width: 18px; height: 18px; flex: none; }
+  .lab-c .lab-dot::after { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--faint-ink); box-shadow: 0 0 0 4px var(--background); }
+  .lab-c .data-list__group-label { position: relative; padding-left: calc(18px + 9px); }
+  /* G＝C＋D（使用者 2026-10-12）：就緒檢查卡的串線記號，套側欄分節導覽的列距與分隔線（section-nav__item：上下 --sp-10、
+     每列 border-bottom --border-soft、分類最後一列去線）；目前節照 section-nav 的已選＝--selected-ink＋medium。 */
+  .lab-g .readiness__list { gap: 0; }
+  .lab-g .readiness__list::before { left: calc(var(--sp-16) + var(--sp-4) + 8.5px); }
+  .lab-g .readiness__item { padding: var(--sp-10) var(--sp-4); border-bottom: 1px solid var(--border-soft); }
+  .lab-g .readiness__item:has(+ .data-list__group-label), .lab-g .readiness__item:last-child { border-bottom: 0; }
+  .lab-g .readiness__item.is-active { color: var(--selected-ink); }
+  .lab-g .data-list__group-label { padding: var(--sp-16) 0 var(--sp-4) calc(var(--sp-4) + 18px + 9px); }
+  .lab-g .data-list__group-label:first-child { padding-top: 0; }
+  .lab-stage .data-list__group-label { padding: var(--sp-10) 0 0; }
+  .lab-stage .readiness__list .data-list__group-label:first-child { padding-top: 0; }
+  .lab-stage .lab-row { display: flex; justify-content: space-between; align-items: center; }
+</style>
+</head>
+<body>
+<div class="lab-wrap">
+  <h1 class="lab-h1">本頁大綱 · 重新設計（第二版：只用既有元件）</h1>
+  <p class="lab-lead">每一種都用站上已經有的元件拼出來，卡片下方小字寫用到哪些。資料相同：建立組合包 3 個分類、8 節，必填 3 節（完成 1）、目前停在「電影關聯」。點任一節可切換目前位置。A 是現在的樣子。</p>
+  <div class="lab-grid" id="lab-grid"></div>
+</div>
+<script>
+(function () {
+  var GROUPS = [
+    { name: '組合包介紹', items: [{ t: '組合資訊', st: 'todo' }, { t: '展示', st: 'opt' }, { t: '電影關聯', st: 'opt' }] },
+    { name: '選擇組合物', items: [{ t: '組合物', st: 'todo' }] },
+    { name: '販售設定', items: [{ t: '價格', st: 'opt' }, { t: '數量', st: 'opt' }, { t: '購買條件與限購', st: 'opt' }, { t: '上架與開賣', st: 'done' }] }
+  ];
+  var active = 2;
+  var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ztor-icon"><path d="M5 12l5 5l10 -10"/></svg>';
+  function flat() { var o = []; GROUPS.forEach(function (g, gi) { g.items.forEach(function (x) { o.push({ g: gi, t: x.t, st: x.st }); }); }); return o; }
+  function req() { var m = flat().filter(function (x) { return x.st !== 'opt'; }); return { done: m.filter(function (x) { return x.st === 'done'; }).length, all: m.length }; }
+  function gStat(gi) { var m = GROUPS[gi].items.filter(function (x) { return x.st !== 'opt'; }); return { done: m.filter(function (x) { return x.st === 'done'; }).length, all: m.length }; }
+  function curGroup() { return flat()[active].g; }
+  /* progress-mark：空心圈＋淡勾＝必填未填、實心綠＝完成、--ghost 小點＝選填 */
+  function pmark(st) { return st === 'done' ? '<span class="pmark pmark--done">' + CHECK + '</span>' : st === 'todo' ? '<span class="pmark">' + CHECK + '</span>' : '<span class="pmark pmark--ghost"></span>'; }
+  function each(fn) { var i = -1; return GROUPS.map(function (g, gi) { return fn(g, gi, function (x) { i++; return { i: i, x: x }; }); }).join(''); }
+
+  var V = [
+    { k: 'A', t: '現行（對照）', uses: 'section-outline',
+      s: '左側細線＋目前節亮線；節前狀態圓（橘圈＝必填未填、綠勾＝完成、灰點＝選填）；頂部「必填 N／M」＋進度條。',
+      html: function () {
+        var r = req();
+        return '<div class="section-outline__inner"><div class="section-outline__head">本頁大綱</div>' +
+          '<div class="section-outline__sum" style="--section-outline-progress:' + Math.round(r.done / r.all * 100) + '%"><span class="section-outline__count">必填 <b>' + r.done + '</b>／' + r.all + '</span><div class="section-outline__bar"></div></div>' +
+          '<div class="section-outline__list">' + each(function (g, gi, nx) {
+            return '<div class="section-outline__group">' + g.name + '</div>' + g.items.map(function (x) { var n = nx(x);
+              return '<button class="section-outline__item' + (n.i === active ? ' is-active' : '') + '" data-i="' + n.i + '"><span class="section-outline__mk" data-st="' + x.st + '">' + CHECK + '</span><span class="section-outline__text">' + x.t + '</span></button>'; }).join('');
+          }) + '</div></div>';
+      } },
+    { k: 'B', t: '大綱＋進度記號', uses: 'section-outline ＋ progress-mark ＋ completeness',
+      s: '骨架照舊（細線、亮線、分類標），只把節前的自製狀態圓換成站上的「進度記號」（同專案進度時間軸那一顆，空心圈＋淡勾＝還沒、綠底白勾＝完成、小灰點＝選填），頂部換成「完整度」元件。全站狀態記號統一成一種讀法。',
+      html: function () {
+        var r = req();
+        return '<div class="completeness"><div class="completeness__head"><span class="completeness__label">必填完成</span><span class="completeness__count">' + r.done + '/' + r.all + '</span></div>' +
+          '<div class="completeness__track"><div class="completeness__fill" style="width:' + Math.round(r.done / r.all * 100) + '%"></div></div></div><div class="lab-gap"></div>' +
+          '<div class="section-outline__list">' + each(function (g, gi, nx) {
+            return '<div class="section-outline__group">' + g.name + '</div>' + g.items.map(function (x) { var n = nx(x);
+              return '<button class="section-outline__item' + (n.i === active ? ' is-active' : '') + '" data-i="' + n.i + '" style="align-items:center">' + pmark(x.st) + '<span class="section-outline__text">' + x.t + '</span></button>'; }).join('');
+          }) + '</div>';
+      } },
+    { k: 'C', t: '就緒檢查卡', uses: 'readiness ＋ data-list 群組標',
+      s: '（第二輪）大綱直接長成建立商品右欄那張「就緒檢查卡」，拿掉卡頭標題；記號欄由上到下一條線串起，空心圈＝必填未填、綠底深色勾＝完成、小點＝選填、卡底一句「還差 2 項必填」，全部備齊轉綠。分類用清單的群組標。跟建立商品的檢查卡同一種東西，創作者已經看得懂。',
+      html: function () {
+        var r = req(), left = r.all - r.done;
+        return '<div class="readiness lab-c"><ul class="readiness__list">' + each(function (g, gi, nx) {
+          return '<li class="data-list__group-label">' + g.name + '</li>' + g.items.map(function (x) { var n = nx(x);
+            return '<li class="readiness__item' + (x.st === 'done' ? ' readiness__item--done' : '') + (n.i === active ? ' is-active' : '') + '" data-i="' + n.i + '">' +
+              (x.st === 'opt' ? '<span class="lab-dot"></span>' : '<span class="readiness__mark">' + CHECK + '</span>') + x.t + '</li>'; }).join('');
+        }) + '</ul><div class="readiness__banner' + (left ? '' : ' readiness__banner--ready') + '">' + (left ? '還差 ' + left + ' 項必填' : '必填都完成了') + '</div></div>';
+      } },
+    { k: 'G', t: 'C＋D：檢查卡串線＋側欄列距', uses: 'readiness ＋ section-nav（列距、分隔線、已選）＋ data-list 群組標',
+      s: 'C 的就緒檢查卡（串線記號、選填小點、完成深色勾、卡底「還差 N 項必填」），每一節換成 D 側欄分節導覽的列：上下留白加大、列與列之間細分隔線（分類最後一列不畫線），目前節用側欄的已選色＋字重。',
+      html: function () {
+        var r = req(), left = r.all - r.done;
+        return '<div class="readiness lab-c lab-g"><ul class="readiness__list">' + each(function (g, gi, nx) {
+          return '<li class="data-list__group-label">' + g.name + '</li>' + g.items.map(function (x) { var n = nx(x);
+            return '<li class="readiness__item' + (x.st === 'done' ? ' readiness__item--done' : '') + (n.i === active ? ' is-active' : '') + '" data-i="' + n.i + '">' +
+              (x.st === 'opt' ? '<span class="lab-dot"></span>' : '<span class="readiness__mark">' + CHECK + '</span>') + x.t + '</li>'; }).join('');
+        }) + '</ul><div class="readiness__banner' + (left ? '' : ' readiness__banner--ready') + '">' + (left ? '還差 ' + left + ' 項必填' : '必填都完成了') + '</div></div>';
+      } },
+    { k: 'D', t: '側欄分節導覽', uses: 'section-nav ＋ progress-mark ＋ data-list 群組標',
+      s: '改用設定頁、活動詳情「售票與名單」那種側欄分節導覽：每節一列、列與列細分隔線、已選只換字色與字重；狀態記號放在列尾。分類用清單的群組標。和站上其他「左選右看」的側欄同一種長相。',
+      html: function () {
+        return '<nav class="section-nav">' + each(function (g, gi, nx) {
+          return '<div class="data-list__group-label">' + g.name + '</div>' + g.items.map(function (x) { var n = nx(x);
+            return '<button type="button" class="section-nav__item' + (n.i === active ? ' section-nav__item--active' : '') + '" data-i="' + n.i + '"><span>' + x.t + '</span>' + (x.st === 'opt' ? '' : pmark(x.st)) + '</button>'; }).join('');
+        }) + '</nav>';
+      } },
+    { k: 'E', t: '分類分段進度＋目前分類', uses: 'progress-stepper（分段）＋ section-outline ＋ ztor-badge',
+      s: '頂部用標題列那條「分段進度條」，一段＝一個分類（從第一類起連續完成的段＝橘、目前所在＝亮灰、其他＝暗），點段跳到該分類；下面只列目前分類的節，分類名旁用徽章寫「必填 0/1」。最短，捲到哪一類就只看那一類。',
+      html: function () {
+        var cg = curGroup(), done = 0;
+        for (var q = 0; q < GROUPS.length; q++) { var sq = gStat(q); if (sq.all && sq.done < sq.all) break; done++; }   /* 分段條由左往右填：只算從第一類開始連續完成的類 */
+        var firstIdx = []; var c = 0; GROUPS.forEach(function (g) { firstIdx.push(c); c += g.items.length; });
+        var labels = GROUPS.map(function (g, gi) {
+          return '<span class="progress-stepper__label' + (gi === cg ? ' progress-stepper__label--current' : '') + '" data-i="' + firstIdx[gi] + '" style="font-size:var(--fs-11)">' + (gi + 1) + '</span>'; }).join('');
+        var g = GROUPS[cg], s = gStat(cg);
+        var items = g.items.map(function (x, k) { var i = firstIdx[cg] + k;
+          return '<button class="section-outline__item' + (i === active ? ' is-active' : '') + '" data-i="' + i + '"><span class="section-outline__mk" data-st="' + x.st + '">' + CHECK + '</span><span class="section-outline__text">' + x.t + '</span></button>'; }).join('');
+        return '<div class="progress-stepper progress-stepper--segmented" style="--steps:3;--at:' + (cg + 1) + ';--progress:' + Math.round(done / 3 * 100) + '%;max-width:none"><div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div><div class="progress-stepper__labels">' + labels + '</div></div>' +
+          '<div class="lab-gap"></div><div class="lab-row"><span style="font-size:var(--fs-13)">' + g.name + '</span>' + (s.all ? '<span class="ztor-badge' + (s.done === s.all ? ' ztor-badge--success' : '') + '">必填 ' + s.done + '/' + s.all + '</span>' : '<span class="ztor-badge">選填</span>') + '</div>' +
+          '<div class="lab-gap"></div><div class="section-outline__list">' + items + '</div>';
+      } },
+    { k: 'F', t: '分類徽章', uses: 'section-outline ＋ ztor-badge',
+      s: '現行骨架不動，只在每個分類標題右邊加一顆徽章「必填 0/1」（做完轉綠）、全是選填的分類不加。頂部總數拿掉，改看各分類自己的進度。改動最小。',
+      html: function () {
+        return '<div class="section-outline__list">' + each(function (g, gi, nx) {
+          var s = gStat(gi);
+          return '<div class="section-outline__group lab-row">' + g.name + (s.all ? '<span class="ztor-badge' + (s.done === s.all ? ' ztor-badge--success' : '') + '" style="font-size:var(--fs-11)">' + s.done + '/' + s.all + '</span>' : '') + '</div>' +
+            g.items.map(function (x) { var n = nx(x);
+              return '<button class="section-outline__item' + (n.i === active ? ' is-active' : '') + '" data-i="' + n.i + '"><span class="section-outline__mk" data-st="' + x.st + '">' + CHECK + '</span><span class="section-outline__text">' + x.t + '</span></button>'; }).join('');
+        }) + '</div>';
+      } }
+  ];
+  var grid = document.getElementById('lab-grid');
+  function render() {
+    grid.innerHTML = V.map(function (v) {
+      return '<section class="lab-card"><div class="lab-card__t"><b>' + v.k + '</b>' + v.t + '</div><p class="lab-card__s">' + v.s + '</p><p class="lab-card__uses">用到：' + v.uses + '</p><div class="lab-stage">' + v.html() + '</div></section>';
+    }).join('');
+  }
+  grid.addEventListener('click', function (e) { var b = e.target.closest('[data-i]'); if (!b) return; active = +b.dataset.i; render(); });
+  render();
+})();
+</script>
+</body>
+</html>

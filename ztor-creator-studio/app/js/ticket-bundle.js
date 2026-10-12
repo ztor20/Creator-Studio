@@ -140,24 +140,31 @@
     return e;
   }
   var LABEL = { listAt: 'tb.f.listAt', unlistAt: 'tb.f.unlistAt', saleStart: 'tb.f.saleStart', saleEnd: 'tb.f.saleEnd' };
-  /* 一格時間：標籤＋「跟隨活動／另設」二選一（segmented），跟隨＝唯讀讀數、另設＝時間欄。 */
-  function rowHTML(st, key, et, T, opts) {
-    var custom = isCustom(st, key), dis = opts && opts.disabled;
-    var seg = function (v, k) {
-      var on = (v === 'custom') === custom;
-      return '<button type="button" class="segmented__btn' + (on ? ' segmented__btn--active' : '') + '" role="radio" aria-checked="' + on + '"' +
-        ' data-tb-follow="' + key + '" data-tb-v="' + v + '"' + (dis ? ' disabled' : '') + '>' + esc(T(k)) + '</button>';
-    };
-    return '<div class="follow-field" data-tb-sched="' + key + '" data-state="' + (custom ? 'custom' : 'follow') + '">' +
+  /* 兩兩一組（2026-10-12 使用者：「上下架的日期與時間一個開關，開賣的一個開關」）：上架＋下架一條外框、開賣＋停售一條外框，
+     每條外框右側一顆「跟隨活動」開關（開＝兩格都跟隨、關＝兩格都另設，無狀態字）；跟隨時框內兩行讀數（活動那兩格的值），
+     另設時換成兩個時間欄。資料仍是逐格 st.sched[key]（null＝跟隨）：舊資料兩格狀態不同時，該組當作「另設」顯示，
+     跟隨的那格先以活動的值當時間欄的值。 */
+  var GROUPS = [['listAt', 'unlistAt'], ['saleStart', 'saleEnd']];
+  var GROUP_TITLE = { listAt: 'tb.g.list', saleStart: 'tb.g.sale' };
+  var SHORT = { listAt: 'tb.f.s.listAt', unlistAt: 'tb.f.s.unlistAt', saleStart: 'tb.f.s.saleStart', saleEnd: 'tb.f.s.saleEnd' };
+  function groupHTML(st, keys, et, T, opts) {
+    var custom = keys.some(function (k) { return isCustom(st, k); }), dis = opts && opts.disabled;
+    var title = GROUP_TITLE[keys[0]] ? T(GROUP_TITLE[keys[0]]) : T(LABEL[keys[0]]);
+    var body = keys.map(function (k) {
+      var v = custom
+        ? '<div class="field follow-field__field"><label class="field__label">' + esc(T(LABEL[k])) + '</label>' +
+          '<input class="input" type="datetime-local" data-tb-at="' + k + '" value="' + esc(local(isCustom(st, k) ? sched(st)[k] : eventValue(k, et))) + '"' + (dis ? ' disabled' : '') + '></div>'
+        : '<div class="follow-field__line"><span class="follow-field__k">' + esc(T(SHORT[k])) + '</span><span class="follow-field__v">' + esc(followText(k, et, T)) + '</span></div>';
+      return v + '<p class="field__error" data-tb-err="' + k + '" hidden></p>';
+    }).join('');
+    return '<div class="follow-field" data-tb-sched="' + keys.join(',') + '" data-state="' + (custom ? 'custom' : 'follow') + '">' +
       '<div class="follow-field__head">' +
-        '<span class="field__label">' + esc(T(LABEL[key])) + '</span>' +
-        '<div class="segmented follow-field__seg' + (dis ? ' segmented--locked' : '') + '" role="radiogroup" aria-label="' + esc(T(LABEL[key])) + '">' +
-          seg('follow', 'tb.follow') + seg('custom', 'tb.custom') + '</div>' +
+        '<div class="follow-field__txt"><span class="follow-field__t">' + esc(title) + '</span></div>' +
+        '<span class="follow-field__follow"><span>' + esc(T('tb.follow')) + '</span>' +
+          '<div class="switch' + (custom ? '' : ' switch--on') + (dis ? ' switch--disabled' : '') + '" role="switch" tabindex="0" aria-checked="' + (!custom) + '"' + (dis ? ' aria-disabled="true"' : '') +
+            ' aria-label="' + esc(T('tb.follow') + ' · ' + title) + '" data-tb-follow="' + keys.join(',') + '" data-tb-v="' + (custom ? 'follow' : 'custom') + '"></div></span>' +
       '</div>' +
-      (custom
-        ? '<input class="input" type="datetime-local" data-tb-at="' + key + '" value="' + esc(local(sched(st)[key])) + '"' + (dis ? ' disabled' : '') + '>'
-        : '<div class="field-readout">' + esc(followText(key, et, T)) + '</div>') +
-      '<p class="field__error" data-tb-err="' + key + '" hidden></p>' +
+      '<div class="follow-field__body">' + body + '</div>' +
     '</div>';
   }
   /* keys：只畫哪幾格（bundle-detail 的上架卡畫 listAt／unlistAt、開賣卡畫 saleStart／saleEnd） */
@@ -165,7 +172,9 @@
     opts = opts || {};
     var keys = opts.keys || KEYS;
     return '<div class="follow-fields">' +
-      keys.map(function (k) { return rowHTML(st, k, et, T, opts); }).join('') +
+      GROUPS.map(function (g) { return g.filter(function (k) { return keys.indexOf(k) >= 0; }); })
+        .filter(function (g) { return g.length; })
+        .map(function (g) { return groupHTML(st, g, et, T, opts); }).join('') +
       (opts.note === false ? '' : '<p class="field__hint">' + esc(T('tb.sched.note').replace('{period}', periodText(et, T))) + '</p>') +
     '</div>';
   }
@@ -424,11 +433,12 @@
   function onClick(e, st, ctx) {
     var f = e.target.closest('[data-tb-follow]');
     if (f) {
-      if (f.disabled) return false;
-      var key = f.dataset.tbFollow;
+      if (f.disabled || f.getAttribute('aria-disabled') === 'true') return false;
       st.sched = st.sched || {};
-      if (f.dataset.tbV === 'follow') st.sched[key] = null;
-      else if (!isCustom(st, key)) st.sched[key] = eventValue(key, ctx && ctx.et);   // 另設從活動目前的值起手
+      f.dataset.tbFollow.split(',').forEach(function (key) {   // 一顆開關管一組（上架＋下架、開賣＋停售）
+        if (f.dataset.tbV === 'follow') st.sched[key] = null;
+        else if (!isCustom(st, key)) st.sched[key] = eventValue(key, ctx && ctx.et);   // 另設從活動目前的值起手
+      });
       return true;
     }
     var sw = e.target.closest('[data-tb-rules-follow]');
@@ -471,6 +481,14 @@
     return Object.keys(Object.assign({}, schedErrors(st, ctx.et, T), ctx.def ? rulesErrors(st, ctx.def, ctx.et, T, ctx) : {})).length;
   }
 
+  /* 跟隨活動開關是 div role=switch（2026-10-12 由二選一改開關外框列）：補鍵盤 Enter／空白鍵＝點擊，頁面的 click 委派照用。 */
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== ' ' && e.key !== 'Enter') return;
+    var sw = e.target && e.target.closest && e.target.closest('.follow-field .switch[data-tb-follow]');
+    if (!sw) return;
+    e.preventDefault();
+    sw.click();
+  });
   window.ZtorTicketBundle = {
     KEYS: KEYS, ms: ms, local: local, fmt: fmt, times: times, outside: outside, periodText: periodText,
     evHidden: evHidden, saleCeil: saleCeil, lateEnd: lateEnd, lateText: lateText,

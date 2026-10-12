@@ -3,22 +3,24 @@
    ------------------------------------------------------------
    票務商品（含票券的組合包）的四個排程時間——上架、下架、開賣、停售日期與時間——
    預設跟隨所屬活動、可逐格另設（主規格 §7.14「活動販售的時間層級」第 5–7 條）。
-   規格要求畫面看得出每一格是跟隨還是另設：每一格的標題列右側放一組
-   「跟隨活動｜另設」二選一（DS 的 .segmented），值的形態跟著換——
-     跟隨＝唯讀讀數（.field-readout），寫出活動那一格的值或它的意思（例「賣到活動開始」）
-     另設＝時間欄（.input type=datetime-local）
+   規格要求畫面看得出每一格是跟隨還是另設。2026-10-12 使用者裁示改成「顯示於商店」同款的開關外框列：
+   （同日再改：兩兩一組——上架＋下架一條外框、開賣＋停售一條外框，各一顆開關管兩格；下面的敘述以「一格」讀成「一組」。）
+   一格一條外框（同 .control-row 的外框與圓角），左邊標題＋讀數（跟隨＝寫出活動那一格的值或它的意思，例「賣到活動開始」），
+   右邊「跟隨活動」開關（開＝跟隨、關＝另設，開關上不寫狀態字）；關掉（另設）時讀數換成時間欄（.input type=datetime-local）接在框內下方。
    錯誤句一律在該格底下（.field__error），由 js/ticket-bundle.js 就地填寫。
    消費者：js/bundle-editor.js（建立活動第 6 步）、bundle-detail.html、create-bundle.html，
    markup 一律由 js/ticket-bundle.js 的 schedHTML() 產生，不各頁手刻。
 
    anatomy
      .follow-fields                 容器：格與格的節奏（gap，Q103 由容器持有）
-       .follow-field[data-state]    一格（data-state＝follow｜custom）
-         .follow-field__head        標題列：.field__label ＋ .follow-field__seg
-           .follow-field__seg       DS .segmented 的緊湊版（只縮內距與字級）
-         .field-readout | .input    值
+       .follow-field[data-state]    一格＝一條外框（data-state＝follow｜custom）
+         .follow-field__head        一列：左 __txt、右 __follow
+           .follow-field__txt       __t 標題（組名：上架與下架／開賣與停售）
+         .follow-field__body        框內主體：跟隨＝兩行 __line（__k 名、__v 值）；另設＝兩個 .field（label＋時間欄）
+           .follow-field__follow    「跟隨活動」小字＋ .switch（div role=switch，檢視態照常顯示、不可點）
+         .input                     另設時的時間欄（框內下方）
          .field__error              就地錯誤
-   surface：白卡與灰底皆可（.segmented 軌道自帶 1px border；讀數與輸入框吃各自元件的面）。
+   surface：白卡與灰底皆可（外框用 --layer-line 內描邊，同 .control-row）。
    ============================================================ */
 .follow-fields {
   display: grid;
@@ -27,19 +29,38 @@
 }
 .follow-field {
   display: grid;
-  gap: var(--sp-6);
+  gap: var(--sp-16);   /* 標題列到內容：2026-10-12 加大（原 --sp-10 → --sp-14 → 有分隔線後 --sp-16） */
   min-width: 0;
+  padding: var(--sp-14) var(--sp-16);
+  border-radius: var(--radius-xl);
+  box-shadow: inset 0 0 0 1px var(--layer-line);   /* 全周外框，不撐版面高度（同 .control-row） */
 }
 .follow-field__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sp-12);
-  flex-wrap: wrap;
+  gap: var(--sp-14);
+  /* 標題列下一條分隔線（使用者 2026-10-12：「這邊要一條分隔線，並且間距要留出來」）：線拉到框的內緣、線上方留 --sp-14、線下方由 .follow-field 的 gap 留出 */
+  margin-inline: calc(var(--sp-16) * -1);
+  padding: 0 var(--sp-16) var(--sp-14);
+  border-bottom: 1px solid var(--border-soft);
 }
-/* 緊湊版：跟在欄位標籤旁的切換，份量要比頁面級的 segmented 輕一階，否則標題列會比值還搶眼 */
-.follow-field__seg .segmented__btn {
-  padding: var(--sp-4) var(--sp-12);
-  font-size: var(--fs-12);
+.follow-field__txt { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.follow-field__t { font-size: var(--fs-14); color: var(--foreground); }
+.follow-field__s { font-size: var(--fs-12); color: var(--muted-foreground); }
+.follow-field__follow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-10);
+  flex: none;
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
 }
 .follow-field .field__error[hidden] { display: none; }
+/* 兩兩一組（2026-10-12）：框內主體——跟隨＝兩行讀數、另設＝兩個時間欄 */
+.follow-field__body { display: grid; gap: var(--sp-24); min-width: 0; }   /* 2026-10-12 使用者：上下間距加大（原 --sp-10 → --sp-16 → 再「太窄了」→ --sp-24） */
+.follow-field__body:empty { display: none; }
+.follow-field__line { display: flex; justify-content: space-between; gap: var(--sp-16); font-size: var(--fs-13); }
+.follow-field__k { color: var(--muted-foreground); }
+.follow-field__v { color: var(--foreground); font-variant-numeric: tabular-nums; text-align: right; }
+.follow-field__field { margin: 0; }

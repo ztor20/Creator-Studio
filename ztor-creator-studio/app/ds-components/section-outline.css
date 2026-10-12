@@ -2,23 +2,23 @@
    section-outline.css · 本頁大綱（長表單的區段導覽）
    ------------------------------------------------------------
    長表單一路排下來有十幾張卡，這支回答「我現在在哪、還有哪些必填沒填」：
-   直排細字清單，目前所在節亮起並在左側標一條細線（scroll-spy 由 partials/section-outline.js 算），
-   每一列前面有狀態圓，頂部一行「必填 N／M」加進度條。
+   一節一列、列與列細分隔線（同 section-nav），目前所在節換字色與字重（scroll-spy 由 partials/section-outline.js 算），
+   列尾是進度記號（progress-mark）。2026-10-12 改版前：左側細線＋亮線、節前狀態圓、頂部「必填 N／M」加進度條（已撤）。
 
    來源：2026-10-12 使用者在 lab-section-nav.html 六種擺法裡選定 C（狀態清單）。
 
    結構：
      .section-outline            <nav> 根；aria-label 由 JS 填
        .section-outline__inner   sticky 的內層（top 用 --section-outline-top，預設 96px＝與預覽欄同一條線）
-         .section-outline__head  標題「本頁大綱」
-         .section-outline__sum   摘要列
+         .section-outline__head  標題「本頁大綱」（2026-10-12 起不顯示）
+         .section-outline__sum   摘要列（2026-10-12 起不顯示）
            .section-outline__count  「必填 N／M」（N 用 <b>）
            .section-outline__bar    進度條；寬度讀 --section-outline-progress（JS 寫）
-         .section-outline__list  清單（左側一條細線）
-           .section-outline__group             群組標題列（選配，2026-10-12；mount 傳 group 才出現，不可點）
-           .section-outline__item(.is-active)  一節；<button>，aria-current="location" 標目前節
-             .section-outline__mk[data-st]     狀態圓：todo＝橘色空心圈／done＝實心打勾／opt＝灰點
-             .section-outline__text            節名（最多兩行）
+         .section-outline__list  清單
+           .section-outline__group             群組標題列（選配；mount 傳 group 才出現，不可點）
+           .section-outline__item(.is-active)  一節＝一列（下緣分隔線）；<button>，aria-current="location" 標目前節
+             .section-outline__text            節名（左，最多兩行）
+             .section-outline__mk.pmark[data-st] 列尾記號：todo＝空心圈＋淡勾／done＝.pmark--done／opt＝不畫
 
    修飾與掛載：
      .section-outline--gutter    放進頁面左側空白欄（相對 .section-outline-host 絕對定位）。
@@ -52,6 +52,18 @@
 }
 @media (max-width: 1399px) {
   .section-outline--gutter { display: none; }
+}
+/* 整組置中（2026-10-12 使用者：「整個要置中」）：大綱掛在左側空白欄時，把「大綱＋表單＋預覽」視為一組置中——
+   內容欄往右推（大綱寬＋間距）的一半，左右留白才對稱。用 position: relative 的 left 推，不用 transform
+   （transform 會讓內層 position: fixed 的彈窗改以內容欄為基準）。同時內容欄最大寬度改讀 --section-outline-body
+   （頁面掛在 .wizard__body：建立商品 1040、建立組合包／拍賣 1000），使用者同日指示建立商品內容欄「稍微縮小」。 */
+@media (min-width: 1400px) {
+  .wizard__body:has(.section-outline--gutter:not([hidden])) {
+    --_ow: clamp(120px, calc((100vw - var(--section-outline-body, 1140px)) / 2 - var(--sp-12)), 184px);
+    max-width: var(--section-outline-body, 1140px);
+    position: relative;
+    left: calc((var(--_ow) + var(--sp-16) + var(--sp-12)) / 2);   /* 實測：不加 --sp-12 時左側留白比右側少 12px，多推半個 --sp-12 才左右等距 */
+  }
 }
 
 .section-outline__inner {
@@ -98,40 +110,50 @@
   transition: width var(--duration);
 }
 
-/* ── 清單：左側一條細線，目前節在線上疊一段品牌色 ── */
+/* ── 2026-10-12 改版（使用者在 docs/section-outline-redesign-demo-2026-10-12.html 選 D「側欄分節導覽」）：
+   長相改用站上既有的側欄分節導覽（section-nav）——每節一列、列與列細分隔線（分類最後一列不畫）、
+   已選只換字色（--selected-ink）與字重；分類標照清單的群組標（data-list__group-label）；
+   狀態記號改用站上的進度記號（progress-mark，.pmark）放在列尾：空心圈＋淡勾＝必填未填、綠底勾＝完成、選填不畫。
+   頂部標題「本頁大綱」與「必填 N／M」摘要不顯示（D 案沒有；元素仍由 JS 產生、供 aria-label 與之後需要時打開）。
+   墓碑：左側細線＋目前節品牌色亮線、節前狀態圓（橘圈／綠勾／灰點）。 ── */
+.section-outline__head,
+.section-outline__sum { display: none; }
 .section-outline__list {
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--border-soft);
 }
 .section-outline__item {
   display: flex;
-  align-items: flex-start;
-  gap: var(--sp-6);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-12);
   width: 100%;
   box-sizing: border-box;
   appearance: none;
-  margin-left: -1px;                           /* 讓 2px 的亮線蓋住 1px 的底線 */
-  padding: 5px var(--sp-8);
+  padding: var(--sp-10) var(--sp-4);
   border: 0;
-  border-left: 2px solid transparent;
+  border-bottom: 1px solid var(--border-soft);
   background: none;
-  font: inherit;
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  line-height: var(--lh-snug);
   text-align: left;
-  color: var(--muted-foreground);
+  color: var(--foreground-muted);
   cursor: pointer;
 }
+.section-outline__item:last-child,
+.section-outline__item:has(+ .section-outline__group) { border-bottom: 0; }
 .section-outline__item:hover { color: var(--foreground); }
 .section-outline__item.is-active {
-  color: var(--foreground);
+  color: var(--selected-ink);
   font-weight: var(--fw-medium);
-  border-left-color: var(--primary);
 }
 .section-outline__item:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: -2px;                        /* 內縮：內層是 overflow 容器，外擴的框線會被裁掉 */
 }
 .section-outline__text {
+  order: -1;                                   /* 節名在左、記號在列尾 */
   min-width: 0;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -140,39 +162,19 @@
   overflow-wrap: anywhere;
 }
 
-/* ── 群組標題列（2026-10-12，選配）：mount({ group }) 給了分類時，進到新分類的第一節前插一列。
-   純標示、不可點、不計入必填 N／M；字級比節名小一階、淡色，上方留一點距離把群組分開。
-   貼著清單左側那條細線（不加左亮線），讀起來是「這幾節屬於某分類」而不是另一個節。 ── */
+/* 群組標題列：同清單群組標（data-list__group-label）的字級、字距與色；純標示、不可點、不計入必填 */
 .section-outline__group {
-  padding: var(--sp-10) var(--sp-8) var(--sp-2);
-  font-size: var(--fs-11);
-  color: var(--foreground-muted);
-  letter-spacing: .04em;
+  padding: var(--sp-16) 0 var(--sp-6);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  letter-spacing: .05em;
+  color: var(--column-head-ink);
 }
-.section-outline__group:first-child { padding-top: var(--sp-2); }
+.section-outline__group:first-child { padding-top: 0; }
 
-/* ── 狀態圓：必填未填＝橘色空心圈、已完成＝實心打勾、選填＝灰點（由 data-st 切換） ── */
-.section-outline__mk {
-  display: inline-grid;
-  place-items: center;
-  flex: none;
-  box-sizing: border-box;
-  width: 12px;
-  height: 12px;
-  margin-top: 3px;                             /* 與第一行字的中線對齊 */
-  border-radius: 50%;
-}
-.section-outline__mk .ztor-icon { display: none; width: 8px; height: 8px; stroke-width: 3; }
-.section-outline__mk[data-st="todo"] { border: 1.5px solid var(--primary); }
-.section-outline__mk[data-st="done"] { background: var(--status-success); color: var(--background); }
-.section-outline__mk[data-st="done"] .ztor-icon { display: block; }
-.section-outline__mk[data-st="opt"]::after {
-  content: '';
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--faint-ink);
-}
+/* 狀態記號：JS 在 .section-outline__mk 上同時掛 .pmark（progress-mark.css）；尺寸收到 16px，選填不畫 */
+.section-outline__mk { --pmark-size: 16px; }
+.section-outline__mk[data-st="opt"] { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .section-outline__bar::before { transition: none; }

@@ -61,7 +61,8 @@
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 全頁畫面的翻譯表／價格表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
 <link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- 翻譯表／價格表的滑出面板 -->
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- 粉絲視角組合包頁（前台 shop-item 組合分支鏡像，第 5 段；只給 js/fan-bundle-page.js 用） -->
-<link rel="stylesheet" href="ds-components/section-outline.css?v=r2.2"><!-- 2026-10-12（UI-CHANGES 一百七十七）：左側空白欄的「本頁大綱」區段導覽（partials/section-outline.js），比照建立商品 -->
+<link rel="stylesheet" href="ds-components/section-outline.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/progress-mark.css?v=r2.2"><!-- 2026-10-12：本頁大綱的列尾記號改用 progress-mark --><!-- 2026-10-12（UI-CHANGES 一百七十七）：左側空白欄的「本頁大綱」區段導覽（partials/section-outline.js），比照建立商品 -->
 <link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- 「預覽與發布」全頁版型（主區預覽＋右側側欄） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
@@ -96,7 +97,7 @@
   .cb-sec > .field { margin-bottom: 0; }
   .cb-sec [hidden] { display: none; }
   /* 本頁大綱（UI-CHANGES 一百七十七）：內容欄是 .wizard__body--narrow 的 1000px，不是建立商品的 1140，左欄寬度照這個算 */
-  .preview-split__form { --section-outline-body: 1000px; }
+  .wizard__body { --section-outline-body: 1000px; }   /* 2026-10-12：改掛在 .wizard__body，置中位移（section-outline.css）在這一層算 */
 </style>
 </head>
 <body>
@@ -186,21 +187,6 @@
       </div>
     </section>
 
-    <!-- ③ 電影關聯（F10） -->
-    <section class="form-section form-section--outlined cb-sec" data-st-section="films" data-outline-group="intro">
-      <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cp.films">Linked movies</h3>
-      </div>
-      <div class="stack">
-        <!-- 電影關聯（spec 5.1.5.4 §4 F10；同建立商品 §4.5；可多部、選填、可搜尋；共用 partials/film-picker） -->
-        <div class="field">
-          <div class="field__hint" data-i18n="cb.films.sub">Tag released movies this bundle relates to.</div>
-          <div data-cb-film-picker></div>
-        </div>
-
-      </div>
-    </section>
-
     <!-- ④ 組合物（F2 成員；D292／D295／D296／D380／D401） -->
     <section class="form-section form-section--outlined cb-sec" data-st-section="content" data-outline-group="content">
       <div class="form-section__head">
@@ -209,18 +195,18 @@
       <div class="stack">
         <!-- 組合物表（member-table）：票券列（一場活動）＋商品列在同一張；票券列可展開（最左箭頭與名稱下的文字同步）。
              票券列與展開區是頁面上的固定 markup（renderTierTable／renderTixRow 填值）；商品列由 renderItems() 畫進 [data-cb-items-table]。 -->
-        <div class="member-table" data-cb-members>
-          <div class="member-table__head" data-cb-members-head hidden><span></span><span data-i18n="cb.mt.name">Name</span><span data-i18n="cb.mt.price">Price · left</span><span data-i18n="cb.qty.col">Per set</span><span></span></div>
+        <div class="member-table member-table--no-left" data-cb-members>
+          <div class="member-table__head" data-cb-members-head hidden><span></span><span data-i18n="cb.mt.name">Name</span><span data-i18n="cb.mt.price">Price</span><span data-i18n="cb.mt.col.left">Left</span><span data-i18n="cb.qty.col">Per set</span><span></span></div>
           <div class="member-table__row" data-cb-tix-row hidden>
             <button type="button" class="member-table__open" data-cb-tix-open aria-expanded="false" aria-label="Show ticket options" data-i18n-aria-label="cb.mt.open"><i data-lucide="chevron-right" class="ztor-icon"></i></button>
             <div class="member-table__name">
               <span class="member-table__thumb" data-cb-tix-thumb><i data-lucide="ticket" class="ztor-icon"></i></span>
               <span class="member-table__txt">
                 <span class="member-table__t" data-cb-tier-ev></span>
-                <button type="button" class="member-table__link" data-cb-tix-open data-cb-tix-label aria-expanded="false"></button>
               </span>
             </div>
             <span class="member-table__price"><span data-cb-tix-price></span><span class="member-table__sub" data-cb-tix-sub></span></span>
+            <span class="member-table__left" data-cb-tix-left></span>
             <span class="member-table__qty" data-cb-tier-qty-field><span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit" data-i18n="cb.tix.unit">tickets</span><input class="amount-field__input input zstep__input" type="number" min="1" step="1" value="1" data-cb-tier-qty aria-label="Tickets per set" data-i18n-aria-label="cpp.bd.tix.per"><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span></span>
             <button class="btn btn--ghost btn--icon btn--xs member-table__x" type="button" data-cb-tix-remove aria-label="Remove tickets" data-i18n-aria-label="cb.tix.remove"><i data-lucide="x" class="ztor-icon"></i></button>
           </div>
@@ -231,12 +217,12 @@
               <div data-cb-tier-table></div>
               <div class="cb-no-result" data-cb-tier-empty hidden data-i18n="cb.tix.notiers">This event has no ticket tiers yet.</div>
             </div>
-            <div class="field__hint" data-cb-sem></div>
-            <p class="field__hint field__hint--fact" data-cb-ev-locked hidden data-i18n="cb.tix.locked">You're creating this bundle from this event's page, so its event can't be changed.</p>
-            <div><button class="btn btn--ghost btn--xs" type="button" data-cb-tier-back data-i18n="cb.tix.change">Change event</button></div>
+            <!-- 墓碑 2026-10-12（使用者：3、4 都不用留）：語意句 [data-cb-sem] 與「活動固定為這一場」[data-cb-ev-locked] 拿掉 -->
+            
+            <!-- 墓碑 2026-10-12（使用者：「這應該不需要有」）：「換一場活動」鈕拿掉；一個組合包只含一場活動（D403），要換就移除這一列再從「加入組合物」重挑 -->
           </div>
           <div data-cb-items-table></div>
-          <div class="member-table__empty" data-cb-members-empty data-i18n="cpp.bd.sum.empty">Nothing in it yet</div>
+          <!-- 2026-10-12 使用者：還沒有成員時只留下面的「加入組合物」，「還沒有內容」那句與上緣分隔線都不要（墓碑 [data-cb-members-empty]） -->
         </div>
         <button type="button" class="cb-add-tile" data-cb-add-open>
           <i data-lucide="plus" class="ztor-icon"></i>
@@ -282,7 +268,7 @@
 
         <div class="price-ladder__step">
           <div class="price-ladder__k">
-            <span class="price-ladder__t"><span data-i18n="cb.pl.sale">Limited-time discount</span><span class="badge badge--neutral" data-i18n="cb.pl.optional">Optional</span></span>
+            <span class="price-ladder__t"><span data-i18n="cb.pl.sale">Limited-time discount</span></span>
             <span class="price-ladder__s" data-i18n="cb.pl.sale.s">Takes more off the selling price, only during your dates</span>
           </div>
           <div class="price-ladder__v price-ladder__v--switch"><div class="switch" role="switch" aria-checked="false" tabindex="0" id="cb-sale-toggle" aria-label="Limited-time discount" data-i18n-aria-label="cb.pl.sale"></div></div>
@@ -374,7 +360,8 @@
       <!-- 購買條件與限購（F2；D342、D398、D400）：購買條件——含門票＝跟隨所含門票（取最嚴）的唯讀讀數，調整在組合包細節頁；
            純商品＝預設不限、可加「限時購買／限粉絲分級購買」。限購——js/purchase-limits.js 畫「限購」標題＋「跟隨成員預設」開關＋三列。 -->
       <div class="stack" data-cb-rules>
-        <div class="field" data-cb-buy>
+        <!-- 2026-10-12 使用者：「這個也用線框的」——購買條件整塊同定時下架等列的線框（control-group--plain） -->
+        <div class="field control-group control-group--plain control-group--readout" data-cb-buy>
           <div class="field__label" data-i18n="tb.rules.buy">Who can buy</div>
           <div data-tb-host="cb-rules" data-feat="S63" hidden></div>
           <div data-cb-conds-wrap hidden>
@@ -395,11 +382,13 @@
              跟著哪一場（＋徽章）→ 顯示設定 → 上架、下架、開賣、停售四格「跟隨活動／另設」（js/ticket-bundle.js）→
              購買條件與限購的預設讀數（建立時照預設帶入、調整在組合包細節頁，5.1.5.4 F2「購買條件與限購」） -->
         <div class="stack" data-cb-listing-follow hidden data-feat="S62">
-          <div class="field">
-            <div class="kv-list bd-listing">
-              <div class="kv kv--lead"><span class="kv__k" data-i18n="cpp.bd.sp.follow">Follows the event</span><span class="kv__v" data-cb-follow-ev></span></div>
+          <!-- 2026-10-12 使用者：「跟著活動」換成外框列（同顯示於商店），並拿掉「預設跟隨…」那句提示 -->
+          <div class="control-row">
+            <div>
+              <div class="control-row__main" data-i18n="cpp.bd.sp.follow">Follows the event</div>
+              <div class="control-row__sub" data-cb-follow-ev></div>
             </div>
-            <div class="field__hint" data-i18n="cpp.bd.sp.follow.hint">Listing and sale times follow the event unless you set your own below.</div>
+            <span data-cb-follow-badge></span>
           </div>
           <div class="control-row">
             <div>
@@ -423,34 +412,22 @@
                  選「定時上架」時上架時間緊接在卡片下方出現，不再排到「顯示於商店」後面。 -->
             <div class="segmented radio-cards radio-cards--3" id="cb-listing-mode" data-value="now">
               <button class="segmented__btn" type="button" data-cb-listing="none">
-                <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-card__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
+                <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-card__sub" data-i18n="cb.listing.none-sub">Published, but not listed yet</span></span>
               </button>
               <button class="segmented__btn segmented__btn--active" type="button" data-cb-listing="now">
-                <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.now">List now</span><span class="radio-card__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
+                <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.now">List now</span><span class="radio-card__sub" data-i18n="cb.listing.now-sub">Goes live when you publish</span></span>
               </button>
               <button class="segmented__btn" type="button" data-cb-listing="schedule">
                 <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-card__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
               </button>
             </div>
-            <div class="field" data-cb-listing-fields hidden>
-              <div class="field__label"><span data-i18n="cp.listing.time">Listing time</span> <span class="field__req">*</span></div>
-              <input class="input" type="datetime-local" id="cb-listing-time">
-            </div>
-            <div class="lctl__rule"></div>
-            <!-- 顯示於商店（D247）：緊接在上架的主決定後面 -->
-            <div class="lctl__row" data-cb-shown-row hidden>
-              <div class="lctl__head">
-                <div class="lctl__titles">
-                  <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
-                  <p class="lctl__hint" data-i18n="cp.listing.shown-hint">Hidden items stay purchasable via the private link and inside bundles</p>
-                </div>
-                <div class="switch switch--on lctl__control" role="switch" aria-checked="true" tabindex="0" id="cb-shown"></div>
-              </div>
-              <div class="lctl__body" data-cb-shown-body hidden>
-                <p class="lctl__hint" data-i18n="cb.listing.hidden-note">The private link is created once you save, on the bundle page</p>
-              </div>
-            </div>
             <div class="control-group control-group--plain lctl__derived" data-cb-listed-body hidden>
+              <div class="field" data-cb-listing-fields hidden>
+                <div class="field__label"><span data-i18n="cp.listing.time">Listing time</span> <span class="field__req">*</span></div>
+                <input class="input" type="datetime-local" id="cb-listing-time">
+              </div>
+              <!-- 2026-10-12 使用者：上架日期與時間和定時下架之間要有分隔線（只在選定時上架、上架時間欄出現時才有） -->
+              <div class="lctl__rule lctl__rule--group" data-cb-listing-rule hidden></div>
               <div class="lctl__row">
                 <div class="lctl__head">
                   <div class="lctl__titles">
@@ -467,9 +444,23 @@
                 </div>
               </div>
             </div>
+            <!-- 顯示於商店（D247）：放在上架區最後（2026-10-12 使用者：定時上架的時間與定時下架放一起、顯示於商店放最後）。2026-10-12 使用者：「這個可以也有線框嗎」——與定時下架、定時停售同一種線框（control-group--plain），上下的分隔線拿掉 -->
+            <div class="lctl__row control-group control-group--plain" data-cb-shown-row hidden>
+              <div class="lctl__head">
+                <div class="lctl__titles">
+                  <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
+                  <p class="lctl__hint" data-i18n="cp.listing.shown-hint">Hidden items stay purchasable via the private link and inside bundles</p>
+                </div>
+                <div class="switch switch--on lctl__control" role="switch" aria-checked="true" tabindex="0" id="cb-shown"></div>
+              </div>
+              <div class="lctl__body" data-cb-shown-body hidden>
+                <p class="lctl__hint" data-i18n="cb.listing.hidden-note">The private link is created once you save, on the bundle page</p>
+              </div>
+            </div>
           </div>
 
           <div class="stack" data-cb-sale-section hidden>
+            <div class="lctl__rule"></div><!-- 2026-10-12 使用者：上架設定與開賣設定中間要有分隔線（隨開賣區一起顯示／隱藏） -->
             <div class="bd-sub"><span class="bd-sub__title" data-i18n="cp.listing.sec-sale">Sale</span></div>
             <div class="lctl lctl--stack">
               <!-- 開賣二選一改並排卡（2026-10-12，同上架）；開賣時間緊接在卡片下方 -->
@@ -481,12 +472,13 @@
                   <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-card__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
                 </button>
               </div>
-              <div class="field" data-cb-sale-start-field hidden>
-                <div class="field__label"><span data-i18n="cp.listing.sale-start">Sale start</span> <span class="field__req">*</span></div>
-                <input class="input" type="datetime-local" id="cb-sale-open">
-              </div>
-              <div class="lctl__rule"></div>
-              <div class="lctl__derived">
+              <div class="lctl__derived control-group control-group--plain">
+                <!-- 2026-10-12 使用者：「開賣設定的定時開賣也要這樣改」——選定時開賣時，開賣日期與時間進這個線框、與定時停售之間一條分隔線（同上架區） -->
+                <div class="field" data-cb-sale-start-field hidden>
+                  <div class="field__label"><span data-i18n="cp.listing.sale-start">Sale start</span> <span class="field__req">*</span></div>
+                  <input class="input" type="datetime-local" id="cb-sale-open">
+                </div>
+                <div class="lctl__rule lctl__rule--group" data-cb-sale-rule hidden></div>
                 <div class="lctl__row">
                   <div class="lctl__head">
                     <div class="lctl__titles">
@@ -508,6 +500,21 @@
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- 電影關聯（F10）：2026-10-12 使用者「電影關聯移到最後面」——原在展示與組合物之間，改放整頁最後；大綱分類另立「其他」（不再算組合包介紹） -->
+    <section class="form-section form-section--outlined cb-sec" data-st-section="films" data-outline-group="more">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cp.films">Linked movies</h3>
+      </div>
+      <div class="stack">
+        <!-- 電影關聯（spec 5.1.5.4 §4 F10；同建立商品 §4.5；可多部、選填、可搜尋；共用 partials/film-picker） -->
+        <div class="field">
+          <div class="field__hint" data-i18n="cb.films.sub">Tag released movies this bundle relates to.</div>
+          <div data-cb-film-picker></div>
+        </div>
+
       </div>
     </section>
 
@@ -557,7 +564,7 @@
       <button class="btn btn--icon" type="button" data-cb-member-close aria-label="Close" data-i18n-aria-label="cpp.bd.close"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
     <div class="payout-dialog__body">
-      <div class="tabs tabs--underline-short tabs--underline-label" role="tablist">
+      <div class="tabs tabs--underline-short tabs--underline-label tabs--ruled" role="tablist">
         <button type="button" class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-cb-pick-tab="item"><span data-i18n="cb.pick.items">Products</span></button>
         <button type="button" class="tabs__item" role="tab" aria-selected="false" data-cb-pick-tab="tix"><span data-i18n="cb.pick.tix">Event tickets</span></button>
       </div>
@@ -592,7 +599,7 @@
       </div>
     </div>
     <div class="payout-dialog__foot">
-      <button class="btn btn--ghost" type="button" id="cb-add-tile"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="cb.pick.new">Create a new product</span></button>
+      <button class="btn btn--outline" type="button" id="cb-add-tile"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="cb.pick.new">Create a new product</span></button>
       <div class="payout-dialog__foot-actions"><button class="btn btn--primary" type="button" data-cb-member-close data-i18n="cb.pick.done">Done</button></div>
     </div>
   </section>
@@ -1142,12 +1149,14 @@
       const p = products[m.productId] || { name: m.productId };
       const st = itemStock(p);
       const nm = isReal(m.productId) ? '<a class="card__link" href="product-detail.html?id=' + esc(m.productId) + '" target="_blank" rel="noopener">' + esc(p.name) + '</a>' : esc(p.name);
-      const sub = (itemRange(p) ? esc(rangeText(itemMin(p), itemMax(p))) + ' · ' : '') + (st === 0 ? '<span class="text-error">' + esc(leftText(0)) + '</span>' : esc(leftText(st)));
+      const sub = itemRange(p) ? esc(rangeText(itemMin(p), itemMax(p))) : '';   /* 價格區間小字留在原價欄；剩餘獨立一欄（2026-10-12 使用者：分開欄位） */
+      const leftCell = st === 0 ? '<span class="text-error">' + esc(leftText(0)) + '</span>' : esc(leftText(st));
       return '<div class="member-table__row" data-cb-item="' + esc(m.productId) + '">' +
         '<span></span>' +
         '<div class="member-table__name"><span class="member-table__thumb">' + itemThumbHTML(p) + '</span>' +
           '<span class="member-table__txt"><span class="member-table__t">' + nm + '</span><span class="member-table__s">' + esc(specText(p)) + '</span></span></div>' +
-        '<span class="member-table__price">' + esc(itemPriceText(p)) + '<span class="member-table__sub">' + sub + '</span></span>' +
+        '<span class="member-table__price">' + esc(itemPriceText(p)) + (sub ? '<span class="member-table__sub">' + sub + '</span>' : '') + '</span>' +
+        '<span class="member-table__left">' + leftCell + '</span>' +
         '<span class="member-table__qty">' + qtyStepperHTML(m.qty || 1, m.productId) + '</span>' +
         '<button class="btn btn--ghost btn--icon btn--xs member-table__x" type="button" data-cb-item-remove="' + esc(m.productId) + '" aria-label="Remove item" data-i18n-aria-label="cpp.bd.item.remove"><i data-lucide="x" class="ztor-icon"></i></button>' +
       '</div>';
@@ -1440,6 +1449,8 @@
     const shownRow = document.querySelector('[data-cb-shown-row]');
     if (shownRow) shownRow.hidden = !listed;
     if (listingSched) listingSched.hidden = listingMode !== 'schedule';
+    const listingRule = document.querySelector('[data-cb-listing-rule]');
+    if (listingRule) listingRule.hidden = listingMode !== 'schedule';
     if (saleSection) saleSection.hidden = !listed;
   }
   /* 並排卡（2026-10-12）：點卡＝換選項，選中樣式由 segmented__btn--active 表達 */
@@ -1457,7 +1468,8 @@
   syncListing();
   const cbSm = document.getElementById('cb-sale-mode');
   const saleStartField = document.querySelector('[data-cb-sale-start-field]');
-  function syncSaleMode() { if (saleStartField) saleStartField.hidden = saleMode !== 'schedule'; }
+  const saleRule = document.querySelector('[data-cb-sale-rule]');
+  function syncSaleMode() { if (saleStartField) saleStartField.hidden = saleMode !== 'schedule'; if (saleRule) saleRule.hidden = saleMode !== 'schedule'; }
   wireCards(cbSm, 'cbSaleMode', v => { saleMode = v || 'follow'; syncSaleMode(); recompute(); });
   syncSaleMode();
   function wireSchedToggle(toggleId, fieldsSel) {
@@ -1505,7 +1517,9 @@
     if (follow) follow.hidden = !ev;
     if (controls) controls.hidden = !!ev;
     const slot = document.querySelector('[data-cb-follow-ev]');
-    if (slot && ev) slot.innerHTML = '<a class="card__link" href="event-detail.html?id=' + esc(ev.id) + '" target="_blank" rel="noopener">' + esc(evName(ev)) + '</a>' + evTinyBadgeHTML(ev);
+    const badge = document.querySelector('[data-cb-follow-badge]');
+    if (slot && ev) slot.innerHTML = '<a class="card__link" href="event-detail.html?id=' + esc(ev.id) + '" target="_blank" rel="noopener">' + esc(evName(ev)) + '</a>';
+    if (badge && ev) badge.innerHTML = evTinyBadgeHTML(ev);
     renderTbFollow(ev);
   }
   /* ── D342：票務商品的上架與開賣（跟隨活動／另設）與購買條件預設（js/ticket-bundle.js 共用）──────────────
@@ -1600,8 +1614,8 @@
     const sig = JSON.stringify(der) + '|' + (cbRulesState.limits ? 'o' : 'f') + '|' + document.documentElement.lang;
     if (force || sig !== cbLimSig) {
       cbLimSig = sig;
-      host.innerHTML = bundleDraft.members.length ? PLc.blockHTML(cbRulesState.limits, der, T, { title: true })
-        : '<p class="field__hint" data-i18n="cb.min-items">' + esc(T('cb.min-items', 'Add at least 1 item')) + '</p>';
+      /* 2026-10-12 使用者：沒有成員時限購區塊整個不顯示（原本放一句「至少加入 1 個成員」） */
+      host.innerHTML = bundleDraft.members.length ? PLc.blockHTML(cbRulesState.limits, der, T, { title: true }) : '';
       if (window.ztorIcons) window.ztorIcons.applyIcons(host);
     }
     PLc.syncErrors(host, cbRulesState, der, T);
@@ -1829,7 +1843,9 @@
     if (tixThumb) tixThumb.innerHTML = (ev.images && ev.images.keyvisual) ? '<img src="' + esc(ev.images.keyvisual) + '" alt="">' : '<i data-lucide="ticket" class="ztor-icon"></i>';
     const lo = lines.length ? tixMinPrice() : 0, hi = tixMaxPrice();
     if (tixPriceEl) tixPriceEl.textContent = lines.length ? moneyFrom(lo, lines.length > 1) : '—';
-    if (tixSubEl) tixSubEl.textContent = (hi > lo ? rangeText(lo, hi) + ' · ' : '') + leftText(lines.reduce((a, l) => a + l.left, 0));
+    if (tixSubEl) tixSubEl.textContent = hi > lo ? rangeText(lo, hi) : '';
+    const tixLeftEl = document.querySelector('[data-cb-tix-left]');
+    if (tixLeftEl) tixLeftEl.textContent = '';   /* 2026-10-12 使用者：票券列的剩餘數量刪除（各門票的剩餘在展開的允許門票表裡） */
     if (window.ztorIcons && tixThumb) window.ztorIcons.applyIcons(tixThumb);
   }
   tixOpeners.forEach(b => b.addEventListener('click', () => { tixOpen = !tixOpen; renderTixRow(); }));
@@ -1853,7 +1869,7 @@
     const tabTix = pickTabs.find(b => b.dataset.cbPickTab === 'tix');
     if (tabTix) { tabTix.disabled = has; if (has) tabTix.setAttribute('aria-disabled', 'true'); else tabTix.removeAttribute('aria-disabled'); }
     if (pickWhy) {
-      pickWhy.hidden = !has;
+      pickWhy.hidden = !has || tixLocked;   /* 2026-10-12 使用者：「從這場活動的詳情頁建立，活動固定為這一場」這句多餘——從活動詳情進來（D401 鎖定）時整句不顯示 */
       const wk = tixLocked ? 'cb.tix.locked' : 'cb.pick.tix.one';   /* 從活動詳情進來（D401 鎖定）時不叫人去移除——那一列移除不了 */
       pickWhy.setAttribute('data-i18n', wk);
       pickWhy.textContent = T(wk, pickWhy.textContent);
