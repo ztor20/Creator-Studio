@@ -95,7 +95,13 @@
     var actionsEl = modal.querySelector('[data-leave-actions]');
     if (typeof applyIcons === 'function') applyIcons(modal);
 
-    function leave() { if (history.length > 1) history.back(); else location.href = 'index.html'; }
+    // .wizard[data-exit-href]：指定離開後回哪一頁（2026-10-12 D397：建立組合包從活動詳情進來時回那場的票務分頁）；
+    // 頁面可在載入後才設，所以離開當下才讀。沒設照舊 history.back()。
+    function leave() {
+      var exit = wizard.getAttribute('data-exit-href');
+      if (exit) { location.href = exit; return; }
+      if (history.length > 1) history.back(); else location.href = 'index.html';
+    }
     function close() { modal.removeAttribute('data-open'); }
     function mkBtn(cls, label, fn) {
       var b = document.createElement('button');

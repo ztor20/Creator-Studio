@@ -25,8 +25,15 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-12 建立組合（5.1.5.4）、建立拍賣（5.1.5.10）新增「本頁大綱」區段導覽（UI-CHANGES 一百七十七、ASSUMPTIONS UIA-246）**：呈現層新增，不改規格。左側空白欄放各節導覽，「必填」「已完成」沿用各頁既有的檢查——建立組合讀發布前檢核（`stageChecks()`，＝`gateWhy()`）、建立拍賣讀就緒檢查（`buildChecks()` 8 項），不另訂規則；元件同建立商品（design-system §4.233）；視窗 <1400px 隱藏。
+
+> **2026-10-12 兩段式詳情頁檢視態改 disabled 框（UI-CHANGES 一百七十六、STYLE-DECISIONS Q128）**：純呈現，不動任何需求對應——product-detail 商品設定、bundle-detail 組合設定、auction-detail 標籤、project-detail 設定、store-settings 的欄位在檢視態顯示成 disabled 輸入框（取代 Q119 純文字讀數），編輯態鎖住的欄位改可讀墨色 `--view-field-ink`；組合包售價與自動建立組合包的購買條件改成永遠 disabled 的輸入框。規格欄位、可編輯範圍、鎖定條件都不變。
+
 > **2026-10-12 建立商品「內容」頁新增「本頁大綱」區段導覽（UI-CHANGES 一百七十三、ASSUMPTIONS UIA-243）**：呈現層新增，不改規格。對應 5.1.5.2（Create Product）內容頁：左側空白欄放每一節的導覽，「必填」「已完成」沿用 `create-product.html` 既有的就緒檢查（§4.4 Ready to sell?，`buildChecks()`），不另訂規則；新元件 `ds-components/section-outline.css`＋`partials/section-outline.js`（design-system §4.233）；視窗 <1400px 隱藏。
 
+> **2026-10-12 D397 原型同步（UI-CHANGES 一百七十五、ASSUMPTIONS UIA-244）**：5.1.6.3 §2.4 bookyay 現場掃碼卡 → `event-detail.html` `#ed-bky-scancard`；§2.6.1 建立入口自動帶入這場活動 → `event-detail.html` `[data-ed-bundle-create]`＋`create-bundle.html` `?ev=&from=event-detail`（5.1.5.4 §2 入口 3、§4 F2 預帶、§9 回程）；§2.6 bookyay 沒有活動限購 → 既有行為（一百六十九）已符合；5.1.5.14 F1.2 活動票券的提前入場 → `scanner.html` 結果卡＋示範鈕；5.1.6.1 F7／F22「誰看得到」→ 粉絲端查核無提前入場資訊。
+
+> **2026-10-12 活動詳情已結束總覽重排（UI-CHANGES 一百七十四）**：`event-detail.html` 已結束總覽改成「已使用」與「淨收入」兩張卡，動作貼在對應數字旁（名單匯出在入場卡；交易匯出與收入管理在收入卡），原場次／地點／可售張數／已撤銷四格與三色報到格退場（使用者選 lab-ended-overview 的 A＋B 動作位置）。口徑依使用者裁決：結算只有「已結算」、撤銷等於沒賣出、淨收入維持票務淨額；呈現層調整，未改 5.1.6.3 §2.3／§2.4.2 的欄位定義。
 > **2026-10-12 活動詳情四項調整（UI-CHANGES 一百六十七～一百六十九）**：`event-detail.html` 設定分頁檢視態改成 disabled 輸入框（使用者指示，opt-in `data-vm-style="disabled"`，STYLE-DECISIONS Q128 待裁決）；D394 bookyay 活動的現場報到台改成「bookyay 掃描器連結＋複製」與「前往取貨管理」（`ev.bkyScanUrl` 示意，ASSUMPTIONS UIA-241）；票務分頁沒有資料的分節（組合包、招待票、轉售、預設購票規則）檢視態收起、編輯態才出現空狀態與建立入口（使用者指示）；總覽售票中的「售票期間」那一格退場（使用者指示）。規格 5.1.6.2／5.1.6.3 由另一路同步。
 
 > **2026-10-10 D392 活動詳情的門票、預設購票規則、通知開關跟頁面一起儲存（5.1.6.2 §2 第 5 項、F9、F12；5.1.6.3 §2.10，規格由另一個 session 同步）**：`event-detail.html` 門票彈窗主按鈕改「套用」，門票修改／新增／刪除、預設購票規則、通知開關都改成頁面草稿，算進「儲存 N 項變更」、捨棄還原、走同一套儲存檢查；發放招待票與列表的暫停販售仍是營運動作。D392 補充：檢視態門票彈窗全唯讀（含暫停售票開關）；「售票與名單」已排程起就出現，開賣前各節空狀態（`#ed-tx-empty`）。D392 補充二：暫存標記（已修改／新增／將刪除＋復原，新元件 `staged-change.css`）、程式導頁入口也走離開提醒（`leaveTo()`），見 UI-CHANGES「一百六十六」。紀錄見 [`UI-CHANGES.md`](UI-CHANGES.md)「一百六十五」，ASSUMPTIONS EDIT-003 改為已確認。

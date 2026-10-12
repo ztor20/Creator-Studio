@@ -13,6 +13,111 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-12（一百七十七）· 建立組合、建立拍賣左側空白欄也加上「本頁大綱」區段導覽（B feedback）
+
+**標籤**：release2.4
+
+**範圍**：`create-bundle.html`、`create-auction.html`、`js/i18n.js`（`ca.outline.kind` 一鍵；其餘沿用 `cp.outline.*`）、`design-system.md`（§4.233 Consumers）、`design-system.html`（§4.233 版面一句）、`BUILD-SPEC.md` §4h、`ASSUMPTIONS.md` UIA-246、`requirements-map.md`。元件 `section-outline.css`／`section-outline.js` 未改。
+
+**依據**：使用者 2026-10-12「大綱也要做在建立組合和拍賣，商品詳情先不動」；並確認「開賣設定不是必填沒錯」（建立商品的大綱把開賣設定標選填是對的，不改）。
+
+### B · feedback
+
+- **建立組合**：大綱列出頁面上的三張分卡「內容」「定價與庫存」「名稱與上架」，與頂列分節分頁同一段；右欄預覽卡不列入。「必填」「已完成」讀「預覽與發布」的發布前檢核（`stageChecks()`，＝表單擋關 `gateWhy()` 同一組條件），每個檢核項用 `cbSectionOf(step)` 對到所在分卡：至少一個成員→內容、名稱與上架時間→名稱與上架、折扣／鎖定套數／限量上限／限時折扣只在開了才有檢核項→定價與庫存（沒開就是選填）。進「預覽與發布」全頁畫面時表單欄收起、大綱隨之消失。
+- **建立拍賣**：大綱列出左欄實際顯示的各節——拍賣種類、展示、故事、真實性證明、競標設定、競標資格、運送（種類選數位或活動時換成「交付」）、標籤；右欄的預覽、上架設定、開拍設定不在表單欄、不列入。「必填」「已完成」讀既有的就緒檢查 `buildChecks()`（8 項，Ready to start auction?，每項新增 `at` 欄位指到它所在的欄位，經 `closest('.form-section')` 對到節）：主圖與附圖→展示、名稱與故事 50 字以上→故事、真實性照片→真實性證明、起標價與競標時長→競標設定、競標資格→競標資格；種類、運送／交付、標籤沒有就緒項＝選填。
+- **版面**：兩頁內容欄都是 `.wizard__body--narrow` 的 1000px（建立商品是 1140），所以兩頁各設 `--section-outline-body: 1000px`；1440 寬實測導覽 184px（上限）、1400 寬同樣放得下、視窗 <1400px 沿用元件既有降級整個隱藏，1366 寬不破版。
+- **拍賣第一節沒有標題**（拍賣種類三選一卡片）：節名用新鍵 `ca.outline.kind`（Type／種類），不改頁面本身的畫面。
+- **只讀就緒檢查、不自創規則**：兩頁的必填判準都沿用各頁既有的就緒檢查，缺口記 ASSUMPTIONS UIA-246。
+
+### D · infra
+
+- 元件與樣式未改；`design-system.md`／`.html` §4.233 補 Consumers 與內容欄寬覆寫說明。
+- 未掛 `data-feat`：沿用兩頁既有的 tier（建立組合 S 系列、建立拍賣）。大綱是呈現輔助，不另登記功能表。
+
+## 2026-10-12（一百七十七）· 活動掃描只剩「已掃描／未掃描」兩種，重複掃描改成紀錄（B feedback）
+
+**範圍**：`event-detail.html`（名單分頁圖例、名單徽章、`fillLegend()`）、`js/events-store.js`（`roster()` 已結束分支加掃描次數）、`js/i18n.js`（`event-detail.wrap.*`／`checkin.*`／`att.*`）。
+
+**依據**：使用者 2026-10-12 回覆（規格的「已使用」其實指第二次掃描，與原型把成功入場叫「已使用」衝突）：「要統一用詞，重複掃描的不需要特別當作狀態，只要有記錄知道這個已經重複使用兩次就好。所以掃描其實只會有兩種：已掃描（含 1 次與 2 次重複掃描）、未掃描。」取代一百七十四與一百七十四續記的「已使用」命名。
+
+### B · feedback
+
+- **兩種狀態**：總覽入場卡主數字改「已掃描 546 / 600」、「未掃描 54」（原「已使用」「未到場」）；名單分頁圖例由三格改兩格「已掃描」「未掃描」，已掃描下方附一行小字「含重複掃描 9 次」；名單徽章「已掃描」「未掃描」（原「已使用」「未到」）。
+- **重複掃描是紀錄不是狀態**：名單裡掃了兩次的票在「已掃描」徽章旁標「掃描 2 次」；總覽入場卡的次級列仍有「重複掃描 9 次」。
+- **無效 QR 不在圖例**：它不屬於任何一張票，不是票的狀態，名單分頁圖例不放；總覽入場卡次級列保留「無效 QR 2 次」。
+- **未掃描 ＝ 實售 − 已掃描**（撤銷票不在實售裡，同一百七十四）。
+- 進行中的「現場即時名單」與 bookyay 唯讀名單維持「到了／還沒到」說法，本筆不動；取貨與 Scanner 的核銷語彙屬 5.1.5.14／5.1.5.15，本筆不動。
+- 規格仍寫 valid／already_used／invalid 三色，待使用者確認回寫範圍（見 ASSUMPTIONS UIA-245）。
+
+## 2026-10-12（一百七十六）· 兩段式詳情頁的欄位一律是輸入框，檢視時顯示 disabled；鎖住的欄位改用讀得清楚的墨色（B feedback · STYLE-DECISIONS Q128）
+
+**標籤**：release2.4
+
+> release2.3 同步待裁決：本筆改到 🟢 release2.3 的頁（product-detail 商品設定 S21、bundle-detail 組合設定、store-settings 商店設定 S03），以及全站共用的 `input.css`／`shared.css`。依規則要問使用者要不要搬進凍結的 release2.3；本輪未搬，先只標 release2.4，使用者選同步再補標並跑 `release-port.sh`。
+
+**範圍**：`shared.css`（「檢視模式」區塊改寫）、`ds-components/input.css`、`ds-components/rich-body.css`、`ds-components/store-settings.css`、`ds-components/_tokens.css`（註解）、`js/view-mode.js`（退成相容空殼）、`product-detail.html`、`bundle-detail.html`、`auction-detail.html`、`project-detail.html`、`store-settings.html`、`design-system.md`／`design-system.html`、`design-components.html`、`STYLE-DECISIONS.md`（Q128 裁決、Q119 標改判）、`requirements-map.md`
+
+**依據**：使用者 2026-10-12「照建議」——一百六十七在 event-detail 設定分頁做的 disabled 框推到其餘兩段式詳情頁；編輯態仍鎖住的欄位改成可讀墨色。
+
+### B · feedback
+
+- **檢視態一律是 disabled 框（Q128 選項 B）**：商品設定、組合設定、拍賣標籤區、項目設定、商店設定的欄位在檢視時不再換成純文字，同一批輸入框留在原位、顯示成 disabled（透明底、留 1px 邊界、不出 focus 環、游標回預設、textarea 沒有拖拉把手）；按「編輯」同一批框變成可填。做法從 opt-in 改成預設：`shared.css` 的規則直接作用在 `[data-mode="view"]`，`data-vm-style` 分支、Q119 的讀數顯隱與下拉／標籤欄「去框留字」、`rich-body.css` 的區塊攤平全部刪掉。event-detail 不用改檔就跟著走（該頁設定分頁上的 `data-vm-style` 屬性變成無作用的殘留，總覽分頁沒有表單欄位）。
+- **`js/view-mode.js` 退成空殼**：五頁拿掉 `<script>` 與 `ZtorViewMode.sync()`／`configure()` 呼叫（product-detail 的 `money()` 格式函式、尺寸列的 `data-vm-group` 一併移除）；檔案留著是因為 event-detail（本輪不動）與舊快取還會載入它，API 同名、只清殘留讀數。
+- **唯讀事實改成永遠 disabled 的輸入框**：組合設定的「售價」（原 `.field-readout.bd-readout--big` 大字）改 `.input#bd-autoprice[disabled]`；bookyay 自動建立組合包的購買條件摘要改 `.input[data-bd-rules-fix][disabled]`。項目設定的排程表與合作者表是資料表（Q118 範圍），不改。
+- **鎖住的欄位改用可讀墨色（Q128 甲，擴大到編輯態）**：`input.css` 的 `.input:disabled`／`.textarea:disabled`／`.select:disabled`、`rich-body` 的鎖定文字、編輯態 `readonly` 鎖住的框，從 `--locked-field-ink`（2.2～2.7:1）改成 `--view-field-ink`（深色約 9:1、亮色約 8.6:1）。類型、摘要、bookyay 帶入、依階段鎖的發布設定、商品主分類等全站一起生效；仍是透明底、`not-allowed` 游標與鎖定提示，看得出不能改。`--locked-field-ink` 只剩未選的鎖定選項卡與作廢連結在用。
+- **商店網址框**（`.ss-url`）：檢視態保留整格的框與「ztor.com/shop/」前綴，只收掉薄膜底。
+- **DS 文件**：Field system 的兩個示範（Q119 讀數、opt-in disabled 框）合併成一個「view mode / edit mode — disabled boxes」示範（含永遠 disabled 的事實格與算出來的售價）；`--view-field-ink`、`--locked-field-ink`、Input `:disabled`、Field source tag、Zselect 檢視態、Rich body 檢視態的說明同步；design-components.html 同步。
+
+**驗證**：五頁在 `?version=full` 與 `release2.4`（商品、組合）切檢視／編輯截圖，深色與亮色各一輪（`screenshots/ui173-*.png`）；event-detail 設定分頁編輯態鎖住欄位墨色實測 `rgba(255,255,255,.7)`；八頁 `full`／`release2.4` 無 JS 錯誤；check_ds_sync。亮色主題整站本來就是「深色畫布、未調校」（design-system.md 已註記），亮色截圖只看墨色與框，不代表亮色定稿。
+
+## 2026-10-12（一百七十六）· filter-tabs 未選計數改平鋪、活動詳情售票紀錄表格上方補間距（B feedback）
+
+**範圍**：`ds-components/filter-tabs.css`、`event-detail.html`（售票紀錄表格卡）、`design-system.html`／`design-system.md`（filter-tabs 條目）、`STYLE-DECISIONS.md`（Q129）。
+
+**依據**：使用者 2026-10-12 在活動詳情「售票紀錄」截圖標示：（1）狀態標籤列與下方表格貼在一起，要有間距；（2）未選的數字不要有外框與底色，只需要比標題文字暗一階，並有一點小間距。
+
+### B · feedback
+
+- **未選計數平鋪**：`.filter-tabs__count` 去掉泡泡底色、圓角、內距與最小寬，只留一個 `--muted-foreground`（比標籤字 `--foreground-muted` 暗一階）的數字，與標籤間距由 `--sp-6` 加 `margin-left: --sp-2`。已選計數維持橘六成；`.filter-tabs--brand` 的計數覆寫因基底已同樣平鋪而退場（修飾類保留，不用改 9 個消費頁）。改在元件層一次，20 個使用 filter-tabs 的頁面同步生效，其中 e-shop／orders 等 `--brand` 頁視覺不變。
+- **售票紀錄表格上方補間距**：表格卡加 `mt-16`，標籤列與表格之間 16px（原本 0）。同一區塊的備註與匯出鈕本來就用 margin 排距，沿用同一寫法。
+
+## 2026-10-12（一百七十五）· D397 原型同步：活動詳情建立組合包自動帶入這場活動、bookyay 現場掃碼卡提早到已排程、掃描器顯示提前入場（A spec-derived · D397）
+
+**標籤**：release2.4
+
+**範圍**：`event-detail.html`（總覽右欄新卡 `#ed-bky-scancard`、`fillBkyScan()` 抽出共用、`syncBkyCheckin()`；`renderBundles()` 的建立入口與新增卡）、`create-bundle.html`（`?ev=&from=event-detail` 預帶與回程）、`partials/wizard-chrome.js`（`.wizard[data-exit-href]`）、`scanner.html`（提前入場結果與兩顆示範鈕）、`js/i18n.js`。
+
+**依據**：D397（使用者 2026-10-12 裁決）；5.1.6.3 v56 §2.4／§2.6／§2.6.1、5.1.5.4 v2.44 §2 入口 3／§4 F2／§9、5.1.6.1 v2.64 F7／F22、5.1.5.14 v1.9 F1.2。呈現假設見 ASSUMPTIONS UIA-244。
+
+### A · spec-derived
+
+- **建立組合包自動帶入這場活動**（決定一）：票務商品空狀態的入口改名「建立組合包」，連到 `create-bundle.html?ev=<id>&from=event-detail`；有組合包時在格子最後多一張「＋ 建立組合包」新增卡（沿用票種的新增卡長相，同空狀態只在編輯態出現）。建立頁收到參數就把那場設成票券成員、那場全部門票勾選、每組 1 張，仍可「更換活動」或加商品；取消（返回箭頭、底部取消）與建立完成都回 `event-detail.html?id=<id>#tiers`。已結束、已取消不提供入口。
+- **bookyay 現場掃碼卡**（決定二）：bookyay 匯入的活動在已排程與售票中，總覽右欄多一張「現場掃碼」卡：bookyay 掃描器連結（可複製）＋前往取貨管理，內容與字串整套沿用 D394 現場報到台；沒有連結時寫既有那句說明。進行中由現場報到台承接、這張卡收起，已結束、已取消、自建活動與線上類型都不出現。兩張卡的連結填值與複製改由同一支 `fillBkyScan()` 處理。
+- **掃描器顯示提前入場**（決定四）：掃到開了提前入場的活動票券時，結果卡多四列（場次提前入場時間、門票提前入場、最早可入場、早到處理）。早於最早可入場時間：仍可入場→黃色結果卡、確認後才核銷；不能入場→紅色結果卡、只給返回並寫出最早時間；場次沒開提前入場的票照舊不顯示、不限制。示範列加「早到：仍可入場」「早到：不能入場」兩顆（示範掃描時刻固定 17:40）。
+- **已查核不改**：決定三（bookyay 沒有活動限購時檢視態不顯示說明、編輯態才顯示）在一百六十九已是這個行為；粉絲活動頁與發布前預覽（`js/fan-event-page.js`）沒有畫任何提前入場資訊。
+
+## 2026-10-12（一百七十四）· 活動詳情「已結束」總覽重排：入場與收入各一張卡，動作貼在對應數字旁（B feedback）
+
+**範圍**：`event-detail.html`（`#ed-wrapup` 標記與 `renderWrapUp()`、`#ed-glance`／`#ed-glance-voided-card` 的階段）、`js/i18n.js`（`event-detail.wrap.*`）。探索頁 `lab-ended-overview.html`（三版比較，使用者選 A＋B 的動作位置）。
+
+**依據**：使用者 2026-10-12「已結束的活動詳情總覽，需要重新整理一下資訊，再按照使用者旅程去重新設計 UI」；研究旅程後看三版比較頁，選「A，再借 B 的動作位置」，並裁決：結算只有「已結算」、主數字只叫「已使用」（已到場人數容錯等同已使用）、重複掃描與無效 QR 為次級資訊、撤銷等於沒賣出、淨收入維持票務淨額（不加成本）。
+
+### B · feedback
+
+- **已結束總覽改成兩張卡**：「已使用 546 / 600」（含未到場、量條、重複掃描、無效 QR、匯出參加者名單）與「淨收入 $16,200」（含售票收入、平台費、已撤銷票券、結算、匯出交易、前往收入管理）；原本頂端「場次／地點／可售張數／已撤銷票券」四張卡與「報到結果」三色格退場（已結束階段不再出現，頁首已有日期與場地，可售張數就是分母）。
+- **動作貼在服務的數字旁**：名單匯出在入場卡、交易匯出與收入管理在收入卡；結案卡底部那排四顆按鈕整排退場。「再辦一場」不在總覽重複放，頁首同一顆（`data-ed-duplicate`）即是入口。
+- **口徑**：入場主數字改名「已使用」（原「實際到場」），到場率改寫「佔實售張數」；撤銷票不在 store 的 sold 裡，分母與未到場不變，已撤銷張數只列在收入卡對帳；結算只有「已結算」（已取消仍顯示「已取消」）。
+- **沒有現場報到的活動**（線上、共看派對、已取消）整張入場卡收起，收入卡獨佔一列，不再顯示一排「—」。已取消保留「場次概況」那排，並在收入卡上方保留「已取消——以下是取消前已付款的部分」說明。
+- 沒有新增 CSS 或元件：全用既有的 `.bento`、`.card`、`.stat-row`、`.stock-bar`、`.kv`、`.btn`；`#ed-wrapup` 由單張卡改為 `.stack.stack--bento` 容器。
+- i18n：`event-detail.wrap.attended` 改為「已使用／Used」、`wrap.rate` 改為「佔實售張數」；新增 `wrap.dup`、`wrap.invalid`、`wrap.times`、`wrap.tickets`、`wrap.gross`、`wrap.fee`。
+
+### B · feedback（續：名單分頁同口徑，使用者 2026-10-12「名單分頁的三色圖例一起改」）
+
+- **「售票與名單」分頁的報到圖例**（`#ed-roster-checkin`，進行中與已結束顯示）三格改名：有效（綠）→「已使用」、已使用（黃）→「重複掃描」、無效（紅）→「無效 QR」；色調不變，去掉「（綠／黃／紅）」色名（那是掃描器燈號用語，統計格上由底色承擔）。與總覽入場卡同一口徑，同一份 `checkinSummary()`，兩處數字一致。
+- **名單徽章**：已結束名單裡到場的那列徽章由「有效」改「已使用」；沒到的仍是「未到」。
+- i18n：`event-detail.checkin.valid／used／invalid`、`event-detail.att.state.valid／used／invalid` 改值（`att.state.used`、`att.state.invalid` 目前沒有消費端，一併對齊以免日後出現舊詞）。規格用語的出入記在 ASSUMPTIONS UIA-245。
+
+
 ## 2026-10-12（一百七十三）· 建立商品「內容」頁左側空白欄新增「本頁大綱」區段導覽（B feedback ＋ D infra／新元件）
 
 **標籤**：release2.4
