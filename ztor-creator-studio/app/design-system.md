@@ -943,6 +943,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Step list | 🟡 molecule | ✓ App | 階段清單（2026-08-18，參考設計 Project status）：一串回答「走到第幾步」的列，**不是時間軸**——沒有日期欄、沒有今天、不能往回捲。`.step-list__row`［`--done`／`--current`／`--alert`／`--todo`］＞ 記號用 [Progress mark](#progress-mark)（與時間軸共用**同一顆**記號，不只是同一套規則）＋ `__body`（`__title` ＋ `__meta`，**同一行不換行**）＋ `__end`（靠右的標籤，逾期用）＋ `__act`（hover 才出現的動作，與 `__end` 共用右端那一格、互換）。列高 50px（14/12 內距，2026-08-18 使用者裁決加高一階：列太薄時滑鼠掃過去底色一閃即逝、hover 出現的按鈕來不及被看見）。掛 `--interactive` 的列 hover／focus-within 給一層 `--accent` 底（負 margin 讓底色比文字往兩側各長 12px，不然 hover 起來像文字被框住）。`--alert` 把整列一起上色（記號太小、只染記號會被略過）；`--todo` 整列 55% 不透明度。2026-08-18 撤除（墓碑）：`--current`——里程碑的「進行中」狀態由使用者裁決取消，這個修飾子沒有產生者了。消費頁：project-detail 總覽的進度摘要 | [step-list.css](./ds-components/step-list.css) |
 | Progress timeline | 🟠 organism | ✓ App | 交付時間軸（2026-08-17，spec 5.1.2.2 §2.2.10 v3.0／D193、D194）：一條由真實日期驅動的垂直時間流，**未來在上、今天在中、過去在下**。版面三欄（日期欄／軸線與軸點／內容欄），排序只有一個依據就是日期。軸上有四種不是里程碑的列：釘頂的 `--system`（完成作品，不帶日期）、`--today`（今天，實心品牌色軸點＋情境句＋內嵌發文框 `.post-composer`（2026-08-18 promote 至 [post-composer.css](./ds-components/post-composer.css)））、軸底的 `--start`（項目建立，軸線在此停）、`--day`（按天收合的更新列）。狀態色只上在軸點與軸線，內容區不染色。內容由 `js/project-progress-store.js`（里程碑與更新，日期是真實 `Date`）＋ `js/work-review-store.js`（送審件）產生，完成作品那一顆不另存狀態。詳見 §4.51b | [progress-timeline.css](./ds-components/progress-timeline.css) |
 | Section nav | 🟡 molecule | ✓ App | 分頁內的側欄分節導覽（原 `.settings-nav`，2026-08-17 提升為中性元件）。**Q75 全站統一分隔線式（2026-08-25）**：取代原本比照 filter-tabs 的藥丸／橘 tint 底畫法——每列 1px `--border-soft` 下緣線、末列去線、無底色、無藥丸、無 icon，已選只換 `--selected-ink`＋medium 字重。**2026-08-26 擴大為所有詳情頁的頁級導覽**：product／project／auction／bundle／creator／fan／ip 七個詳情頁由橫排 `.tabs` 改為本元件，加上 series-detail 與 settings（舊別名 `.settings-nav__item` 選擇器隨元件本體生效，見下方 Settings nav 行）共九頁同款；橫排 `.tabs` 留給清單頁工具列與節內篩選。同日新增 `.section-nav__count`（素面 11px 數字、`margin-left:auto` 靠右貼列尾、tabular-nums、已選列跟著換 `--selected-ink`，與 `.tabs--count-plain` 同一種素面數字語言），承接 creator-detail／ip-detail 分頁原本的計數 | [section-nav.css](./ds-components/section-nav.css) |
+| Section outline | 🟡 molecule | ✓ App | 長表單的本頁大綱（2026-10-12，lab-section-nav 選定 C 款）：直排細字清單，目前節亮起＋左側細線（scroll-spy），點擊平滑捲到該節；每列前有狀態圓（必填未填＝橘色空心圈／已完成＝實心打勾／選填＝灰點），頂部「必填 N／M」＋進度條，sticky。`--gutter` 變體放進頁面左側空白欄、視窗 <1400px 隱藏。與 `.section-nav`（分頁內側欄、無狀態）、`.section-tabs`（頂端橫排、無狀態）的分工：只有本支帶「必填完成度」。詳見 §4.233 | [section-outline.css](./ds-components/section-outline.css) |
 | Roster picker | 🟠 organism | ⚠ 退場候選（2026-10-08 D372 起零消費，待使用者裁決）| 上面選人、下面看那一位：上段是一張卡一個對象的網格（可換行、窄畫面掉成一欄），下段是選定那一位的內容、佔整個內容寬度。卡面與已選態整個交給 `.selection-card`（1px 橘 outline ＋中性陰影），本支只排卡內與網格。與 `section-nav-layout`（140px、選的是「同一個東西的哪一段」）分工：本支選的是「哪一個對象」。詳見 §4.203 | [roster-picker.css](./ds-components/roster-picker.css) |
 | Row disclosure | 🟡 molecule | ✓ App | 母列收成一列、點開才看到底下每一筆。站上「可展開子列」的單一答案（Q107 裁決，取代 `product-list` 的 `__row--group`／`__row--child` 與 `data-list` 的 `__row--child`；2026-09-04 改寫成 L3「整組換層」）。階層不靠縮排說，靠「母列與子項一起坐進哪一層面」說：展開時整組包進 `.rowdis__group` 那塊 L2 薄膜面板，第二層改用 `.rowdis__frame` 的 1px 框。欄位版面仍歸所在容器，因此表格型與清單型兩種骨架都能疊。2026-09-04（Q109，參考 Braintrust）再加**列首欄** `.rowdis__lead`：展開 chevron 移到列的最前緣獨立一欄、`⋯` 維持在列尾，子列在同一格放組內序號，一般列留空；表格型兩頁已導入，清單型三頁維持現況（理由見 §4.204）。互動走 `js/row-disclosure.js` 的 `data-rowdis` 契約。詳見 §4.204 | [row-disclosure.css](./ds-components/row-disclosure.css) |
 | Listing controls | 🟠 organism | ✓ App | §7.14（D241）的三個獨立開關——上架 `listed`／顯示於商店 `shown`／開賣 `saleStart`–`saleEnd`——三列並列的骨架。 **`--locked`／`.lctl__row--locked`＋`.lctl__lock-note`（2026-09-11 D265）**：下架時顯示列與開賣區留在畫面但停用（整塊變淡、控件不吃事件）、上方一句說明「要重新上架後才能調整」；商品／組合詳情共用。只擁有列的版型（標題＋一行說明、控制擺哪、排程欄何時展開、三列的距離由容器 `gap` 持有），控制本身重用 Switch／Radio list `--collapsible`／Field＋Input／Link field。上架列用哪一種由頁面決定：建立頁三選一、細節頁開關。數字與狀態一律問 `js/listing-state.js`。詳見 §4.205 | [listing-controls.css](./ds-components/listing-controls.css) |
@@ -7292,3 +7293,33 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 **Consumers** — `event-detail.html`（票務卡片與列表、預設購票規則卡、通知開關；`stagedBadge()`／`stagedRemoveKeep()`／`setStagedMark()`）。
 
 **CSS** — [`staged-change.css`](./ds-components/staged-change.css)
+
+### 4.233 Section outline（長表單的本頁大綱）
+
+**Purpose** — 建立商品「內容」頁一路排下來有十幾張卡，使用者最常需要的是「我現在在哪、還有哪些必填沒填」。使用者 2026-10-12 指示在頁面左側（左側欄與表單卡片之間的空白欄）加每個 section 的導覽，看完 `lab-section-nav.html` 六種擺法後選定 C（狀態清單）。本支是把 C 做成正式元件：導覽兼就緒檢查，一眼看出哪些必填還沒填。
+
+**`_layer`** · molecule ｜ **source tier** · App ｜ **surface 層** · 無底色、無卡面，直接坐在頁面底（`--surface-page`）上；不是玻璃卡。
+
+**Anatomy**
+- `nav.section-outline` — 根；`aria-label`＝標題「本頁大綱」（JS 填）；`[hidden]`＝目前沒有可見的節時整個收起
+- `.section-outline__inner` — sticky 內層，`top` 讀 `--section-outline-top`（預設 96px，與 `.preview-col` 同一條線）；高度超過視窗時自己可捲（隱藏捲軸）
+- `.section-outline__head` — 標題「本頁大綱」
+- `.section-outline__sum` ＞ `__count`（「必填 `<b>N</b>`／M」）＋ `__bar`（3px 進度條，寬度讀 `--section-outline-progress`）— 沒有任何必填節時整列 `[hidden]`
+- `.section-outline__list` — 左側一條 1px `--border-soft` 細線
+- `.section-outline__item(.is-active)` — `<button>`，一節一列；目前節 `--foreground`＋`--fw-medium`＋左側 2px `--primary` 亮線，並帶 `aria-current="location"`
+- `.section-outline__mk[data-st="todo|done|opt"]` — 12px 狀態圓：todo＝1.5px `--primary` 空心圈；done＝`--status-success` 實心＋白勾（`.ztor-icon`）；opt＝5px `--faint-ink` 灰點
+- `.section-outline__text` — 節名，最多兩行（`line-clamp: 2`），完整名稱在 `title`；另有 `.u-visually-hidden` 的狀態文字給讀屏
+- `.section-outline--gutter` — 修飾：放進頁面左側空白欄，相對 `.section-outline-host` 絕對定位（`top:0; bottom:0; right: calc(100% + --sp-16)`），不佔 grid、不推擠表單；寬度＝(視窗 − `--section-outline-body`（預設 1140）) / 2 − 12px，夾在 120–184px；視窗 <1400px 時 `display: none`
+- `.section-outline-host` — 掛 `--gutter` 的那一欄，只負責 `position: relative`（建立商品＝`.preview-split__form`）
+
+**Behaviour（`partials/section-outline.js`）** — `window.ztorSectionOutline.mount({ host, sections, status, labels, title?, offset?, observe?, gutter? })`。輸入＝節容器清單（`sections()`）＋必填判斷函式（`status(els)` 回同長度的 `'todo'|'done'|'opt'`）＋文案（`labels()`）；輸出＝導覽。元件自己濾掉不可見的節（`hidden` 或 `getClientRects` 為空）、節標題讀 `.form-section__title` 現況文字；節增減靠 MutationObserver 監看 `hidden`／`class`（只對節本身與其祖先的變動反應，自己的 class 變動不算），另聽 `input`／`change`／`click`／`upload:change`／`i18n:applied`／`ztor:lang-changed`，全部節流 80ms，不輪詢。scroll-spy：capture 階段聽任一捲動容器，目前節＝最後一個頂端越過「頁首高度＋16」的節，捲到底固定亮最後一節。點擊用 `scrollIntoView`＋`scroll-margin-top`；`prefers-reduced-motion` 時不平滑。回傳 `{ refresh(), destroy() }`。
+
+**States** — 每節三態（todo／done／opt）、目前節亮起、hover 文字轉 `--foreground`、`:focus-visible` 內縮 2px `--ring` 框線；摘要「必填 N／M」的 M＝目前顯示的節裡有必填欄位的節數、N＝其中已完成者；沒有可見節時整個元件收起。
+
+**Token usage** — `--sp-4`／`--sp-6`／`--sp-8`／`--sp-12`／`--sp-16`／`--sp-24`、`--fs-11`／`--fs-12`、`--fw-medium`、`--lh-snug`、`--duration`、`--primary`、`--status-success`、`--background`、`--foreground`／`--foreground-muted`／`--muted-foreground`、`--faint-ink`、`--border-soft`、`--ring`。覆寫 hook（自訂屬性，頁面可設）：`--section-outline-top`、`--section-outline-body`；`--section-outline-progress` 由 JS 寫。
+
+**Dependencies** — Icon（`.ztor-icon` 打勾）、`.u-visually-hidden`（shared.css）、Form section（節標題 `.form-section__title` 是預設的標題來源）。
+
+**Consumers** — `create-product.html`（內容頁，唯一）。「必填」判斷沿用該頁既有的就緒檢查 `buildChecks()`：每個就緒項用 `cpSectionOf(step)` 對到所在節，節內有就緒項＝必填節、項目全過＝已完成、沒有就緒項＝選填，不另訂規則（缺口與降級記在 `ASSUMPTIONS.md`、`BUILD-SPEC.md`）。可延伸頁：`create-bundle.html`、`create-auction.html`、`product-detail.html` 編輯態（尚未接）。
+
+**CSS** — [`section-outline.css`](./ds-components/section-outline.css)

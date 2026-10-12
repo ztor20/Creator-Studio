@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>已結束總覽 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-bar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* ============================================================
+     lab-ended-overview — 活動詳情「已結束」總覽的版型探索（2026-10-12）
+
+     ── 為什麼要重排 ──────────────────────────────────────────
+     現在的已結束總覽是依系統欄位堆出來的：頂端一排「場次／地點／可售張數／已撤銷票券」
+     四張同權重的卡，下面才是「結案」大卡。創作者打開這頁，其實依序在問：
+       ① 這場來了多少人　② 淨賺多少、錢到了沒　③ 帳對得上嗎（對帳與匯出）　④ 要不要再辦一場
+     所以三版都照這個順序排，差別只在「怎麼講」。
+
+     ── 已定案的資料口徑（使用者 2026-10-12 裁決）────────────────
+     · 入場主數字叫「已使用」＝核銷入場的票數；已到場人數容錯等同已使用。
+     · 重複掃描、無效 QR 是次級資訊，降成小字，不再跟主數字並列成三格。
+     · 撤銷等於沒賣出：實售張數 ＝ 售出 − 已撤銷（原型的 600 已不含撤銷票）；
+       未到場 ＝ 實售 − 已使用。
+     · 結算只有「已結算」。
+     · 淨收入維持票務淨額（已付款毛額扣平台費），不加成本欄位。
+
+     ── 邊界（刻意的自我約束）────────────────────────────────
+     卡片、數字列、量條、鍵值列、按鈕、徽章、下拉全部用真的元件。
+     本頁自有的規則一律 lab- 前綴，所有數值一律吃 DS token，不寫裸值、
+     不覆寫也不重新定義既有 class 與 token。資料取自示範活動 lrh-taichung。
+     ============================================================ */
+
+  .lab [hidden] { display: none !important; }
+  .lab-variants { display: grid; gap: var(--sp-48); margin-top: var(--sp-32); }
+  .lab-variant__head { display: flex; align-items: flex-start; gap: var(--sp-12); flex-wrap: wrap; padding-bottom: var(--sp-16); }
+  .lab-variant__code {
+    flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: var(--sp-32); height: var(--sp-24); padding: 0 var(--sp-8);
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    font-family: var(--font-ui); font-size: var(--fs-12); color: var(--foreground);
+  }
+  .lab-variant__name { font-family: var(--font-display); font-size: var(--fs-18); margin: 0; }
+  .lab-variant__pos { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-4) 0 0; }
+  .lab-variant__stage { display: flex; flex-direction: column; gap: var(--sp-16); }
+  .lab-note { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-16) 0 0; }
+  .lab-note b { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-diag { margin: var(--sp-12) 0 0; padding-left: var(--sp-20); font-size: var(--fs-14); line-height: var(--lh-relaxed, 1.7); }
+  .lab-diag li + li { margin-top: var(--sp-8); }
+  .lab-diag b { font-weight: var(--fw-medium); }
+
+  /* ── 三版共用的小零件 ───────────────────────────────── */
+  .lab-ended-bar { display: flex; align-items: center; gap: var(--sp-12); flex-wrap: wrap; font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-ended-bar__title { font-family: var(--font-display); font-size: var(--fs-16); color: var(--foreground); }
+  .lab-meta { display: flex; flex-wrap: wrap; gap: var(--sp-4) var(--sp-16); font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-meta span + span::before { content: "·"; margin-right: var(--sp-16); color: var(--faint-ink); }
+  .lab-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-8); }
+  .lab-actions--end { margin-left: auto; }
+  .lab-sub { font-size: var(--fs-12); color: var(--muted-foreground); margin: var(--sp-12) 0 0; }
+  .lab-caption { font-size: var(--fs-12); color: var(--faint-ink); }
+  .lab-kv-group { margin-top: var(--sp-16); padding-top: var(--sp-12); border-top: 1px solid var(--border-soft); }
+  .lab-kv-group .kv__k--minor, .lab-kv-group .kv__v--minor { font-size: var(--fs-12); }
+  .lab-link { display: inline-flex; align-items: center; gap: var(--sp-4); margin-top: var(--sp-16); font-size: var(--fs-13); color: var(--brand-ink); text-decoration: none; }
+  .lab-link:hover { text-decoration: underline; }
+
+  /* ── 版型 B：每一列回答一個問題 ───────────────────────── */
+  .lab-steps { display: flex; flex-direction: column; }
+  .lab-step { display: grid; grid-template-columns: minmax(var(--sp-96), 1fr) minmax(0, 2fr) auto; gap: var(--sp-24); align-items: start; padding: var(--sp-20) 0; border-top: 1px solid var(--border-soft); }
+  .lab-step:first-child { border-top: 0; padding-top: 0; }
+  .lab-step:last-child { padding-bottom: 0; }
+  .lab-step__no { font-size: var(--fs-12); color: var(--faint-ink); letter-spacing: .05em; }
+  .lab-step__q { font-family: var(--font-display); font-size: var(--fs-16); margin: var(--sp-4) 0 0; }
+  .lab-step__body .stat-row { margin-bottom: 0; }
+  .lab-step__aside { display: flex; flex-direction: column; align-items: flex-end; gap: var(--sp-8); }
+  @media (max-width: 880px) {
+    .lab-step { grid-template-columns: 1fr; gap: var(--sp-12); }
+    .lab-step__aside { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
+  }
+
+  /* ── 版型 C：一句話摘要＋收合明細 ─────────────────────── */
+  .lab-hero { display: flex; align-items: flex-end; gap: var(--sp-32); flex-wrap: wrap; }
+  .lab-hero__item .stat__value { font-size: var(--fs-56); }
+  .lab-hero__item .stat__of { font-size: var(--fs-20); }
+  .lab-hero__sep { align-self: stretch; width: 1px; background: var(--border); }
+  .lab-fold { margin-top: var(--sp-20); border-top: 1px solid var(--border-soft); padding-top: var(--sp-12); }
+  .lab-fold > summary { cursor: pointer; font-size: var(--fs-13); color: var(--muted-foreground); list-style: none; display: flex; align-items: center; gap: var(--sp-6); }
+  .lab-fold > summary::-webkit-details-marker { display: none; }
+  .lab-fold[open] > summary { color: var(--foreground); margin-bottom: var(--sp-12); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page lab">
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title">已結束總覽（設計探索）</h1>
+          <p class="page-intro__sub">比較用的探索頁，不是產品頁，沒有任何既有頁面被改動。三版都照創作者的四個問題排序——<b>來了多少人、淨賺多少、帳對不對、要不要再辦一場</b>——差別只在怎麼講。設定資訊（場次、地點、可售張數）全部降成一行小字；重複掃描與無效 QR 降成次級資訊。示範資料為 lrh-taichung（2026-04-11，Legacy Taichung）。</p>
+        </div>
+      </div>
+
+      <div class="lab-variants">
+
+        <!-- ═══════════ A · 雙主角 ═══════════ -->
+        <section class="lab-variant" id="v-a">
+          <div class="lab-variant__head">
+            <span class="lab-variant__code">A</span>
+            <div>
+              <h2 class="lab-variant__name">雙主角：入場與收入各佔一張卡</h2>
+              <p class="lab-variant__pos">最接近現在的結構。進頁面先看到兩個大數字，次級資訊與明細收在各自卡的下半。</p>
+            </div>
+          </div>
+          <div class="lab-variant__stage">
+            <div class="lab-ended-bar">
+              <span class="lab-ended-bar__title">結案</span>
+              <span class="badge badge--success">已結算</span>
+              <span>2026/4/11 結束</span>
+            </div>
+            <div class="lab-meta"><span>2026-04-11 20:00</span><span>Legacy Taichung</span><span>1 場</span><span>可售 600 張</span></div>
+
+            <div class="bento">
+              <section class="card bento--span-7">
+                <div class="stat-row">
+                  <div class="stat">
+                    <div class="stat__label">已使用</div>
+                    <div class="stat__value stat__value--success">546<span class="stat__of"> / 600</span></div>
+                    <div class="stat__meta">佔實售張數 91%</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat__label">未到場</div>
+                    <div class="stat__value">54</div>
+                    <div class="stat__meta">買了票但沒有入場</div>
+                  </div>
+                </div>
+                <div class="stock-bar stock-bar--total"><span class="stock-bar__fill" style="width: 91%;"></span></div>
+                <div class="lab-kv-group">
+                  <div class="kv kv--lead"><span class="kv__k kv__k--minor">重複掃描</span><span class="kv__v kv__v--minor">9 次</span></div>
+                  <div class="kv"><span class="kv__k kv__k--minor">無效 QR</span><span class="kv__v kv__v--minor">2 次</span></div>
+                  <div class="kv"><span class="kv__k kv__k--minor">已撤銷票券（不計入實售）</span><span class="kv__v kv__v--minor">2 張</span></div>
+                </div>
+              </section>
+
+              <section class="card bento--span-5">
+                <div class="stat-row">
+                  <div class="stat">
+                    <div class="stat__label">淨收入</div>
+                    <div class="stat__value">$16,200</div>
+                    <div class="stat__meta">扣掉平台費之後</div>
+                  </div>
+                </div>
+                <div class="lab-kv-group">
+                  <div class="kv kv--lead"><span class="kv__k">售票收入</span><span class="kv__v">$18,000</span></div>
+                  <div class="kv"><span class="kv__k">平台費</span><span class="kv__v">−$1,800</span></div>
+                </div>
+                <a class="lab-link" href="earnings.html">前往收入管理 <i data-lucide="arrow-right" class="ztor-icon"></i></a>
+              </section>
+            </div>
+
+            <section class="card">
+              <div class="lab-actions">
+                <button class="btn btn--outline btn--sm" type="button"><i data-lucide="download" class="ztor-icon"></i> 匯出交易</button>
+                <button class="btn btn--outline btn--sm" type="button"><i data-lucide="download" class="ztor-icon"></i> 匯出參加者名單</button>
+                <span class="lab-actions--end"><button class="btn btn--primary btn--sm" type="button"><i data-lucide="copy" class="ztor-icon"></i> 再辦一場</button></span>
+              </div>
+            </section>
+          </div>
+          <p class="lab-note"><b>取捨</b>：兩個大數字馬上講完「人」與「錢」，也最容易從現在的版面改過來；已撤銷與重複掃描都在入場卡的小字裡，看得到但不搶。代價是「對帳」只靠一列匯出按鈕承接，沒有獨立的視覺位置，旅程第三步比較弱。</p>
+        </section>
+
+        <!-- ═══════════ B · 一列一個問題 ═══════════ -->
+        <section class="lab-variant" id="v-b">
+          <div class="lab-variant__head">
+            <span class="lab-variant__code">B</span>
+            <div>
+              <h2 class="lab-variant__name">依問題逐列：一張卡，四個步驟</h2>
+              <p class="lab-variant__pos">把旅程直接做成版面。左邊是創作者心裡的問題，中間是答案，右邊是這一步能做的動作。</p>
+            </div>
+          </div>
+          <div class="lab-variant__stage">
+            <div class="lab-ended-bar">
+              <span class="lab-ended-bar__title">結案</span>
+              <span class="badge badge--success">已結算</span>
+              <span>2026/4/11 結束</span>
+            </div>
+            <div class="lab-meta"><span>2026-04-11 20:00</span><span>Legacy Taichung</span><span>1 場</span><span>可售 600 張</span></div>
+
+            <section class="card">
+              <div class="lab-steps">
+                <div class="lab-step">
+                  <div><div class="lab-step__no">01</div><h3 class="lab-step__q">這場來了多少人</h3></div>
+                  <div class="lab-step__body">
+                    <div class="stat-row">
+                      <div class="stat">
+                        <div class="stat__label">已使用</div>
+                        <div class="stat__value stat__value--success">546<span class="stat__of"> / 600</span></div>
+                        <div class="stat__meta">佔實售張數 91%</div>
+                      </div>
+                      <div class="stat">
+                        <div class="stat__label">未到場</div>
+                        <div class="stat__value">54</div>
+                        <div class="stat__meta">買了票但沒有入場</div>
+                      </div>
+                    </div>
+                    <p class="lab-sub">掃描異常：重複掃描 9 次、無效 QR 2 次</p>
+                  </div>
+                  <div class="lab-step__aside"></div>
+                </div>
+
+                <div class="lab-step">
+                  <div><div class="lab-step__no">02</div><h3 class="lab-step__q">賺了多少，錢到了嗎</h3></div>
+                  <div class="lab-step__body">
+                    <div class="stat-row">
+                      <div class="stat">
+                        <div class="stat__label">淨收入</div>
+                        <div class="stat__value">$16,200</div>
+                        <div class="stat__meta">扣掉平台費之後</div>
+                      </div>
+                      <div class="stat">
+                        <div class="stat__label">結算</div>
+                        <div class="stat__value">已結算</div>
+                        <div class="stat__meta">只計已結算收入</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="lab-step__aside"><a class="btn btn--outline btn--sm" href="earnings.html">前往收入管理</a></div>
+                </div>
+
+                <div class="lab-step">
+                  <div><div class="lab-step__no">03</div><h3 class="lab-step__q">帳對得上嗎</h3></div>
+                  <div class="lab-step__body">
+                    <div class="kv kv--lead"><span class="kv__k">售票收入</span><span class="kv__v">$18,000</span></div>
+                    <div class="kv"><span class="kv__k">平台費</span><span class="kv__v">−$1,800</span></div>
+                    <div class="kv"><span class="kv__k">已撤銷票券（不計入實售）</span><span class="kv__v">2 張</span></div>
+                  </div>
+                  <div class="lab-step__aside">
+                    <button class="btn btn--outline btn--sm" type="button"><i data-lucide="download" class="ztor-icon"></i> 匯出交易</button>
+                    <button class="btn btn--outline btn--sm" type="button"><i data-lucide="download" class="ztor-icon"></i> 匯出參加者名單</button>
+                  </div>
+                </div>
+
+                <div class="lab-step">
+                  <div><div class="lab-step__no">04</div><h3 class="lab-step__q">還要再辦嗎</h3></div>
+                  <div class="lab-step__body"><p class="lab-sub" style="margin: 0;">帶入名稱、說明、圖片與票種；日期、場地與銷售數字重新開始。</p></div>
+                  <div class="lab-step__aside"><button class="btn btn--primary btn--sm" type="button"><i data-lucide="copy" class="ztor-icon"></i> 再辦一場</button></div>
+                </div>
+              </div>
+            </section>
+          </div>
+          <p class="lab-note"><b>取捨</b>：旅程順序一目了然，「對帳」有專屬位置，動作都貼在它服務的那一步旁邊。代價是版面最長、需要捲動，而且步驟問句是新增的文案；數字被切成四段，一眼掃完「人與錢」的效率不如 A。</p>
+        </section>
+
+        <!-- ═══════════ C · 一句話摘要＋收合明細 ═══════════ -->
+        <section class="lab-variant" id="v-c">
+          <div class="lab-variant__head">
+            <span class="lab-variant__code">C</span>
+            <div>
+              <h2 class="lab-variant__name">一句話摘要：兩個超大數字，明細收合</h2>
+              <p class="lab-variant__pos">最極簡。進頁面只看到結論；要對帳或看異常再展開。</p>
+            </div>
+          </div>
+          <div class="lab-variant__stage">
+            <section class="card">
+              <div class="lab-ended-bar" style="margin-bottom: var(--sp-20);">
+                <span class="lab-ended-bar__title">結案</span>
+                <span class="badge badge--success">已結算</span>
+                <span>2026/4/11 結束</span>
+                <span class="lab-actions lab-actions--end">
+                  <a class="btn btn--outline btn--sm" href="earnings.html">前往收入管理</a>
+                  <details class="dropdown">
+                    <summary class="btn btn--outline btn--sm"><i data-lucide="download" class="ztor-icon"></i> 匯出</summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem"><i data-lucide="receipt" class="ztor-icon"></i><span>匯出交易</span></button>
+                      <button class="dropdown__item" type="button" role="menuitem"><i data-lucide="users" class="ztor-icon"></i><span>匯出參加者名單</span></button>
+                    </div>
+                  </details>
+                  <button class="btn btn--primary btn--sm" type="button"><i data-lucide="copy" class="ztor-icon"></i> 再辦一場</button>
+                </span>
+              </div>
+
+              <div class="lab-hero">
+                <div class="lab-hero__item stat">
+                  <div class="stat__label">已使用</div>
+                  <div class="stat__value stat__value--success">546<span class="stat__of"> / 600</span></div>
+                  <div class="stat__meta">佔實售張數 91% · 未到場 54</div>
+                </div>
+                <div class="lab-hero__sep"></div>
+                <div class="lab-hero__item stat">
+                  <div class="stat__label">淨收入</div>
+                  <div class="stat__value">$16,200</div>
+                  <div class="stat__meta">扣掉平台費之後</div>
+                </div>
+              </div>
+
+              <details class="lab-fold">
+                <summary><i data-lucide="chevron-down" class="ztor-icon"></i> 入場與收入明細</summary>
+                <div class="bento">
+                  <div class="bento--span-6">
+                    <div class="kv kv--lead"><span class="kv__k">已使用</span><span class="kv__v">546</span></div>
+                    <div class="kv"><span class="kv__k">未到場</span><span class="kv__v">54</span></div>
+                    <div class="kv"><span class="kv__k">重複掃描</span><span class="kv__v">9 次</span></div>
+                    <div class="kv"><span class="kv__k">無效 QR</span><span class="kv__v">2 次</span></div>
+                    <div class="kv"><span class="kv__k">已撤銷票券（不計入實售）</span><span class="kv__v">2 張</span></div>
+                  </div>
+                  <div class="bento--span-6">
+                    <div class="kv kv--lead"><span class="kv__k">售票收入</span><span class="kv__v">$18,000</span></div>
+                    <div class="kv"><span class="kv__k">平台費</span><span class="kv__v">−$1,800</span></div>
+                    <div class="kv"><span class="kv__k">淨收入</span><span class="kv__v">$16,200</span></div>
+                    <div class="kv"><span class="kv__k">結算</span><span class="kv__v">已結算</span></div>
+                  </div>
+                </div>
+              </details>
+              <div class="lab-meta" style="margin-top: var(--sp-20);"><span>2026-04-11 20:00</span><span>Legacy Taichung</span><span>1 場</span><span>可售 600 張</span></div>
+            </section>
+          </div>
+          <p class="lab-note"><b>取捨</b>：最安靜，頁面上幾乎只有兩個數字加一排動作，適合「看完就走」的人。代價是對帳、重複掃描、撤銷這些次級資訊藏在收合裡，需要點一下；匯出收進下拉，動作入口少一層可見度。</p>
+        </section>
+
+      </div>
+
+      <section class="card" style="margin-top: var(--sp-40);">
+        <div class="card__head"><h2 class="card__title">我的建議：A，再借 B 的動作位置</h2></div>
+        <ol class="lab-diag">
+          <li><b>以 A 為底</b>：首屏把「人」與「錢」兩件最常被問的事講完，也最貼近現有版面，改動與風險最小；舊的四張設定卡確定降成一行小字。</li>
+          <li><b>借 B 的一個想法</b>：「前往收入管理」不要放在動作列，而是貼在收入卡裡（A 已經這樣做）；「匯出交易」可再放到收入卡，「匯出參加者名單」放入場卡，動作就貼在它服務的數字旁，動作列只剩「再辦一場」。</li>
+          <li><b>C 適合的情境</b>：如果你認為創作者結案後只想確認結果、不太對帳，C 最乾淨；但它把對帳入口收進下拉，違背「對帳是旅程第三步」的判斷。</li>
+          <li><b>三版共同未決</b>：撤銷發生在結案之後時，淨收入怎麼更新，規格列為〔產品變更提案〕未核准，本頁一律用靜態示範數字。</li>
+        </ol>
+        <p class="lab-note">挑一個編號告訴我（例如「A，匯出貼在各卡」），我再改產品頁、同步設計系統文件與 UI-CHANGES。</p>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+</body>
+</html>

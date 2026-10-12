@@ -515,6 +515,17 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - **保存檔**：`media-vault-popup.html`（總覽卡片牆＋單一庫房彈窗）**已過時**——2026-08-01 起沒有頁面連過去，本輪沒有改它也沒連 `vault-task.css`；它共用同一支 JS，所以會畫出第二層小標但沒有樣式。2026-10-09 起同理會畫出方法小卡與縮圖列（沒連 `vault-access.css`），三分頁的節點它沒有，對應函式各自判斷節點存在才畫（卡片牆函式改名 `renderWall`）。要拿來看請用正式頁；若要復用彈窗版型，先補連結再談。
 - **呈現假設與缺口**：ASSUMPTIONS UIA-230（含示意的指定貼文／影片清單、N 預設值、沒有逐人解開紀錄等）；三分頁版面的呈現假設（頂端人數條、每種方法符合人數、「方法 N」編號、鑰匙清單欄位與「有效」狀態名、無條件但有鑰匙時的提示句、待補數字的佔位）見 UIA-235。功能標記 S86（第二層）、S93（三分頁新增讀數）。
 
+## 4h. 長表單的本頁大綱（2026-10-12 · UI-CHANGES 一百七十三、ASSUMPTIONS UIA-243）
+
+- **元件**：`ds-components/section-outline.css`（§4.233）＋ `partials/section-outline.js`。`window.ztorSectionOutline.mount({ host, sections, status, labels, title?, offset?, observe?, gutter? })`——輸入＝節容器清單＋必填判斷函式，輸出＝導覽（清單、狀態圓、「必填 N／M」、scroll-spy、點擊跳節）。元件不訂必填規則，規則由頁面的 `status(els)` 提供。
+- **create-product 的接法**：`sections` 取 `.preview-split__form > .form-section`（預覽卡在 `.preview-col`、天然不在內），元件自己濾掉 `hidden` 或不佔版面的節；`status` 讀 `buildChecks()`，每個就緒項經 `cpSectionOf(step)` 對到所在節（與「預覽與發布」檢核項點了跳回表單是同一張對照）；`refresh()` 末尾叫一次 `cpOutline.refresh()`。節標題讀 `.form-section__title` 現況文字。
+- **同步時機**：MutationObserver 監看 `[data-cp-sheet]` 子樹的 `hidden`／`class`（只對節本身與其祖先的變動反應；元件自己的 class 變動忽略），加上 `input`／`change`／`click`／`upload:change`／`i18n:applied`／`ztor:lang-changed`，全部節流 80ms，不輪詢。
+- **版面**：`.section-outline--gutter` 相對 `.section-outline-host`（`.preview-split__form`）絕對定位在表單欄左側（`right: calc(100% + 16px)`，`top:0; bottom:0`，內層 `position: sticky; top: 96px` 與 `.preview-col` 同線）；寬度＝(視窗 − 1140) / 2 − 12px，夾 120–184px；不佔 grid、不推擠表單與預覽欄。
+- **響應式降級**：視窗 <1400px `display: none`（內容欄 1140 置中，左欄放不下就隱藏而不是擠壓表單）。這頁是全頁 wizard，沒有側欄，故沒有側欄展開／收合兩種狀態；`?embed` 以頁面 CSS 隱藏；「預覽與發布」全頁畫面時表單欄收起，導覽隨之消失。1100px 以下單欄堆疊時同樣不顯示。
+- **a11y 與動效**：`<nav aria-label>`、項目是 `<button>`、目前節 `aria-current="location"`、`:focus-visible` 內縮 2px `--ring` 框線、讀屏狀態文字；`prefers-reduced-motion` 時 `scrollIntoView` 用 `auto`、進度條不做寬度動畫。
+- **文案**：`cp.outline.*` 五鍵（標題、必填摘要、三種狀態文字），zh／en 皆補。
+- **可延伸**：`create-bundle.html`、`create-auction.html`、`product-detail.html` 編輯態同為長表單，尚未接；接法＝連 CSS、載 partial、給 `sections`／`status`／`labels`。
+
 ## 4e. 商店預覽＝粉絲端創作者頁的手機鏡像，放在頁內右欄（2026-09-11）
 
 - **容器**：e-shop 的 F5 不再是切開外殼的固定面板，而是 `.preview-split--phone.preview-split--toggle` 的右欄——與建立商品同一套（sticky `.preview-col` ＋ 卡內標題的 `form-section--outlined`）。`--toggle` 是 preview-column 的新變體：沒 `is-open` 就單欄、右欄不佔位。這一頁沒有 wizard header，sticky 頂距改 `--preview-col-top: var(--sp-24)`。
