@@ -98,6 +98,9 @@
             <button class="btn btn--primary btn--sm" type="button" data-pk-create><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pk.btn.create">Create pickup session</span></button>
           </div>
         </div>
+        <!-- D401 決定四〔推導〕：從活動詳情「前往領取場次」進來、這場活動的組合包商品綁了多個取貨場次時（?ev=<活動 id>），
+             清單預先只留與這場相關的列（列上的 data-pk-events，原型示意），這一行說明＋「顯示全部」解除。 -->
+        <p class="field__hint field__hint--fact mb-16" data-pk-evfilter hidden><span data-i18n="pk.evfilter">Showing pickup sessions for this event's bundles.</span> <a class="card__link" href="pickup.html" data-i18n="pk.evfilter.clear">Show all</a></p>
 
         <!-- F4 · 取貨清單 · product-list（對齊電子商店 F4）· 列操作收進 kebab（⋯）-->
         <div class="product-list-scroll">
@@ -128,7 +131,7 @@
             </div>
 
             <!-- Scheduled session -->
-            <div class="product-list__row product-list__row--link" role="row" tabindex="0" data-pk-open="pickup-detail.html?s=scheduled" data-pk-row data-pk-session-status="scheduled" data-pk-text="fan meet kaohsiung 高雄 vip card" data-pk-url="ztor.app/scan/khh-fanmeet-9d1c4">
+            <div class="product-list__row product-list__row--link" role="row" tabindex="0" data-pk-open="pickup-detail.html?s=scheduled" data-pk-events="taipei-nye" data-pk-row data-pk-session-status="scheduled" data-pk-text="fan meet kaohsiung 高雄 vip card" data-pk-url="ztor.app/scan/khh-fanmeet-9d1c4">
               <div class="product-list__image-cell" role="cell"><div class="product-list__thumb"><i data-lucide="qr-code" class="ztor-icon"></i></div></div>
               <div class="product-list__product" role="cell"><div class="product-list__body">
                 <div class="product-list__title"><a class="card__link" href="pickup-detail.html" data-i18n="pk.row2.name">Kaohsiung fan-meet — pickup</a></div>
@@ -286,6 +289,17 @@
         apply();
       };
     }
+    /* D401 決定四〔推導〕：?ev=<活動 id> 只留這場活動相關的取貨場次（data-pk-events），在 wireFilter 收集列之前先移除其餘列 */
+    (function () {
+      var evId = new URLSearchParams(location.search).get('ev');
+      if (!evId) return;
+      document.querySelectorAll('[data-pk-row]').forEach(function (r) {
+        var ids = (r.getAttribute('data-pk-events') || '').split(/\s+/);
+        if (ids.indexOf(evId) < 0) r.remove();
+      });
+      var note = document.querySelector('[data-pk-evfilter]');
+      if (note) note.hidden = false;
+    })();
     var clearSessions = wireFilter('[data-pk-status]', '[data-pk-row]', 'data-pk-session-status', 'data-pk-text', '[data-pk-search]', '.pk-noresult', '[data-pk-footer]', '[data-pk-count]', 'pk.footer.count');
     var clearBtn = document.querySelector('[data-pk-clear]');
     if (clearBtn && clearSessions) clearBtn.addEventListener('click', clearSessions);

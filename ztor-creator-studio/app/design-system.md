@@ -944,7 +944,10 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Progress timeline | 🟠 organism | ✓ App | 交付時間軸（2026-08-17，spec 5.1.2.2 §2.2.10 v3.0／D193、D194）：一條由真實日期驅動的垂直時間流，**未來在上、今天在中、過去在下**。版面三欄（日期欄／軸線與軸點／內容欄），排序只有一個依據就是日期。軸上有四種不是里程碑的列：釘頂的 `--system`（完成作品，不帶日期）、`--today`（今天，實心品牌色軸點＋情境句＋內嵌發文框 `.post-composer`（2026-08-18 promote 至 [post-composer.css](./ds-components/post-composer.css)））、軸底的 `--start`（項目建立，軸線在此停）、`--day`（按天收合的更新列）。狀態色只上在軸點與軸線，內容區不染色。內容由 `js/project-progress-store.js`（里程碑與更新，日期是真實 `Date`）＋ `js/work-review-store.js`（送審件）產生，完成作品那一顆不另存狀態。詳見 §4.51b | [progress-timeline.css](./ds-components/progress-timeline.css) |
 | Section nav | 🟡 molecule | ✓ App | 分頁內的側欄分節導覽（原 `.settings-nav`，2026-08-17 提升為中性元件）。**Q75 全站統一分隔線式（2026-08-25）**：取代原本比照 filter-tabs 的藥丸／橘 tint 底畫法——每列 1px `--border-soft` 下緣線、末列去線、無底色、無藥丸、無 icon，已選只換 `--selected-ink`＋medium 字重。**2026-08-26 擴大為所有詳情頁的頁級導覽**：product／project／auction／bundle／creator／fan／ip 七個詳情頁由橫排 `.tabs` 改為本元件，加上 series-detail 與 settings（舊別名 `.settings-nav__item` 選擇器隨元件本體生效，見下方 Settings nav 行）共九頁同款；橫排 `.tabs` 留給清單頁工具列與節內篩選。同日新增 `.section-nav__count`（素面 11px 數字、`margin-left:auto` 靠右貼列尾、tabular-nums、已選列跟著換 `--selected-ink`，與 `.tabs--count-plain` 同一種素面數字語言），承接 creator-detail／ip-detail 分頁原本的計數 | [section-nav.css](./ds-components/section-nav.css) |
 | Section outline | 🟡 molecule | ✓ App | 長表單的本頁大綱（2026-10-12，lab-section-nav 選定 C 款）：直排細字清單，目前節亮起＋左側細線（scroll-spy），點擊平滑捲到該節；每列前有狀態圓（必填未填＝橘色空心圈／已完成＝實心打勾／選填＝灰點），頂部「必填 N／M」＋進度條，sticky。`--gutter` 變體放進頁面左側空白欄、視窗 <1400px 隱藏。與 `.section-nav`（分頁內側欄、無狀態）、`.section-tabs`（頂端橫排、無狀態）的分工：只有本支帶「必填完成度」。詳見 §4.233 | [section-outline.css](./ds-components/section-outline.css) |
-| Limit set | 🟡 molecule | ✓ App | 限購三種上限（2026-10-12 D398 promote）：每人總限購數量／每次交易限購數量／限購次數，每欄一句輔助說明、只換單位（件／組／張）；組合包變體 `.limit-set--bundle` 多一列「跟隨成員／已覆寫」徽章＋一句額度說明＋覆寫／改回跟隨成員，每欄下方寫取自哪個成員。markup 一律由 `js/purchase-limits.js` 產生。詳見 §4.234 | [limit-set.css](./ds-components/limit-set.css) |
+| Limit set | 🟡 molecule | ✓ App | 限購三種上限（2026-10-12 D398 promote）：每人總限購數量／每次交易限購數量／限購次數，每欄一句輔助說明、只換單位（件／組／張）；組合包變體 `.limit-set--bundle` 為「限購」標題＋「跟隨成員預設」開關（開＝跟隨、關＝覆寫）＋一句額度說明＋三列細框（左名稱與說明、右輸入框與取自誰）。markup 一律由 `js/purchase-limits.js` 產生。詳見 §4.234 | [limit-set.css](./ds-components/limit-set.css) |
+| Price ladder | 🟡 molecule | ✓ App | 價格階梯（2026-10-12 D402）：原價 → 組合折扣 → 限時折扣 → 可與優惠碼疊加 → 粉絲實付，排成一條由上往下的列；開關列右邊放開關、打開後展開面板列；「看怎麼算」展開逐項明細；價格不是單一值時主價格下加區間小字。詳見 §4.235 | [price-ladder.css](./ds-components/price-ladder.css) |
+| Member table | 🟡 molecule | ✓ App | 組合物表（2026-10-12 D402）：商品與活動票券成員同一張表，五欄（展開｜名稱｜原價・剩餘｜每組數量｜移除），票券列可展開、展開入口兩處同步。詳見 §4.236 | [member-table.css](./ds-components/member-table.css) |
+| Form ask | 🟡 molecule | ✓ App | 問句式設定塊（問句→說明→二選一→選了才出現的內容）＋表單分類標 `.form-cat`＋標題列讀數 `.form-tally`（2026-10-12 D402）。詳見 §4.237 | [form-ask.css](./ds-components/form-ask.css) |
 | Roster picker | 🟠 organism | ⚠ 退場候選（2026-10-08 D372 起零消費，待使用者裁決）| 上面選人、下面看那一位：上段是一張卡一個對象的網格（可換行、窄畫面掉成一欄），下段是選定那一位的內容、佔整個內容寬度。卡面與已選態整個交給 `.selection-card`（1px 橘 outline ＋中性陰影），本支只排卡內與網格。與 `section-nav-layout`（140px、選的是「同一個東西的哪一段」）分工：本支選的是「哪一個對象」。詳見 §4.203 | [roster-picker.css](./ds-components/roster-picker.css) |
 | Row disclosure | 🟡 molecule | ✓ App | 母列收成一列、點開才看到底下每一筆。站上「可展開子列」的單一答案（Q107 裁決，取代 `product-list` 的 `__row--group`／`__row--child` 與 `data-list` 的 `__row--child`；2026-09-04 改寫成 L3「整組換層」）。階層不靠縮排說，靠「母列與子項一起坐進哪一層面」說：展開時整組包進 `.rowdis__group` 那塊 L2 薄膜面板，第二層改用 `.rowdis__frame` 的 1px 框。欄位版面仍歸所在容器，因此表格型與清單型兩種骨架都能疊。2026-09-04（Q109，參考 Braintrust）再加**列首欄** `.rowdis__lead`：展開 chevron 移到列的最前緣獨立一欄、`⋯` 維持在列尾，子列在同一格放組內序號，一般列留空；表格型兩頁已導入，清單型三頁維持現況（理由見 §4.204）。互動走 `js/row-disclosure.js` 的 `data-rowdis` 契約。詳見 §4.204 | [row-disclosure.css](./ds-components/row-disclosure.css) |
 | Listing controls | 🟠 organism | ✓ App | §7.14（D241）的三個獨立開關——上架 `listed`／顯示於商店 `shown`／開賣 `saleStart`–`saleEnd`——三列並列的骨架。 **`--locked`／`.lctl__row--locked`＋`.lctl__lock-note`（2026-09-11 D265）**：下架時顯示列與開賣區留在畫面但停用（整塊變淡、控件不吃事件）、上方一句說明「要重新上架後才能調整」；商品／組合詳情共用。只擁有列的版型（標題＋一行說明、控制擺哪、排程欄何時展開、三列的距離由容器 `gap` 持有），控制本身重用 Switch／Radio list `--collapsible`／Field＋Input／Link field。上架列用哪一種由頁面決定：建立頁三選一、細節頁開關。數字與狀態一律問 `js/listing-state.js`。詳見 §4.205 | [listing-controls.css](./ds-components/listing-controls.css) |
@@ -1069,7 +1072,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Size mix | 🟡 molecule | ✓ Project | 各尺寸占比（2026-10-05 D360 建，需求看板 5.1.5.16 F4.1）：每個尺寸一格固定寬的小直條，依尺寸順序排，整張表同一尺寸落在同一欄、上下列可直接比；條高以該列最大尺寸為滿格、精確值寫在條下，最大那格上品牌色。數值可為占比或建議生產量（條形永遠是占比）。**不用 split-bar**：分段寬度隨資料變，同一尺寸每列位置不同、無法對比。詳見 §4.224。 | [size-mix.css](./ds-components/size-mix.css) |
 | Demand table | 🟠 organism | ✓ Project | 市場需求表（2026-10-05 D360 建，5.1.5.16 F4）：`.product-list--demand` 欄軌＋這張表特有的格（市場與狀態徽章、需求指數＋細量條、建議生產量、計畫生產量輸入、差距）；列沿用 Product list、展開城市沿用 Row disclosure（Q107／Q109），不是第三種表格。詳見 §4.225。 | [demand-table.css](./ds-components/demand-table.css) |
 | Demand focus | 🟠 organism | ✓ Project | 選定對象面板（2026-10-05 D360 建，5.1.5.16 F3／F4.1／F4.2）：選定一個市場後顯示預測售罄天數、尺寸差距與可填「市場＋尺寸層」計畫生產量的各尺寸表；放在表格旁常駐欄，點列不會把表格往下推。詳見 §4.226。 | [demand-focus.css](./ds-components/demand-focus.css) |
-| Section tabs | 🟡 molecule | ✓ App | 長表單頂端的分節分頁（2026-09-21，使用者反饋「popup 要有 fix 在最上面的 tab 可以快速滾動到指定區塊」）：點了平滑捲到那一段、捲動時亮目前那一段（scrollspy）、←／→／Home／End 鍵盤可移。殼 `.section-tabs`（44px、align-items:stretch）承接 Q38 配方 `.tabs.tabs--underline-short.tabs--underline-label`，併進既有頂列當第二排（彈窗 `--dialog`＝`__head` 與 `__body` 之間；建立流程 `--wizard`＝`.wizard__top` 第二排），畫面只有一條固定列（Q115 精神）。行為 `js/section-tabs.js`（`ZtorSectionTabs.init/sync`）。消費：create-event 第 5 步組合包彈窗（`js/bundle-editor.js` `layout:'split'`）、create-bundle。demo 見 §4.214 | [section-tabs.css](./ds-components/section-tabs.css) |
+| Section tabs | 🟡 molecule | ✓ App | 長表單頂端的分節分頁（2026-09-21，使用者反饋「popup 要有 fix 在最上面的 tab 可以快速滾動到指定區塊」）：點了平滑捲到那一段、捲動時亮目前那一段（scrollspy）、←／→／Home／End 鍵盤可移。殼 `.section-tabs`（44px、align-items:stretch）承接 Q38 配方 `.tabs.tabs--underline-short.tabs--underline-label`，併進既有頂列當第二排（彈窗 `--dialog`＝`__head` 與 `__body` 之間；建立流程 `--wizard`＝`.wizard__top` 第二排），畫面只有一條固定列（Q115 精神）。行為 `js/section-tabs.js`（`ZtorSectionTabs.init/sync`）。消費：create-event 第 5 步組合包彈窗（`js/bundle-editor.js` `layout:'split'`）；create-bundle 2026-10-12 起不再用（左側「本頁大綱」已能跳段，UI-CHANGES 一百八十二）。demo 見 §4.214 | [section-tabs.css](./ds-components/section-tabs.css) |
 | State check | 🟡 molecule | ✓ Project | 唯讀的開／關狀態排（2026-09-11）：每個狀態一顆 16px 圓標記（字符 12）＋標籤，開＝`--status-success` 實色底＋畫布色勾（2026-09-11 兩輪後定案）＋前景色標籤、關＝`--border` 空心圓＋輔助色標籤。**不是輸入控件**——點的是所在整列。首用商品／組合詳情「上架與開賣」卡：上架／顯示於商店／開賣**各自一列**（2026-09-11 使用者：有的有定時上下架或開賣，要個別顯示），一顆勾＋一句現況與排程（使用者：「將上架／顯示／開賣拆出來，做成 checkbox 的形式，但設計不一定要用 checkbox」），值由三組開關與排程推導：上架、顯示於商店（上架且顯示）、開賣（上架且此刻在販售窗口內）。demo 見 §4.209 | [state-check.css](./ds-components/state-check.css) |
 | Stock tip | 🟢 atom | ✓ App | E-Shop 商品清單「狀態」／「庫存」欄 hover/focus 浮出的資訊卡：多選項商品攤到單一選項組合、組合商品攤到「成員 · 選項組合」；單一選項商品顯示目前庫存一行（原本還有低庫存門檻，2026-07-23 使用者裁示移除）。列徽章為「急需補貨」時，選項清單只留真的需要補貨的項目（此規則不影響單一選項那一行）。定位由 JS 算（`position: fixed`），viewport 上半部往下開、下半部往上開，避免被 sticky 頂欄擋到或超出視窗。詳見 §4.56 | [stock-tip.css](./ds-components/stock-tip.css) |
 | Nest | 🔵 atom | ✓ Project | 嵌在卡片底緣的滿版子層（左右下三邊切齊母卡外緣），用於「切換模式後長出一整組設定」。**Q71（2026-08-25）**：拿掉向上陰影，改用上緣 1px `border-top: var(--nest-line)` 分層——亮色兩層同為白靠這道線分層，深色 `--nest-line` 透明、改靠 `--nest-surface` 4% 薄膜分層。層級系統只有兩層填色，L3+ 改邊框。與 `.card--muted`（卡片內單純換底色的靜態子區塊）分工不同、不可混用。詳見 §4.53 | [nest.css](./ds-components/nest.css) |
@@ -7307,13 +7310,14 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 - `.section-outline__head` — 標題「本頁大綱」
 - `.section-outline__sum` ＞ `__count`（「必填 `<b>N</b>`／M」）＋ `__bar`（3px 進度條，寬度讀 `--section-outline-progress`）— 沒有任何必填節時整列 `[hidden]`
 - `.section-outline__list` — 左側一條 1px `--border-soft` 細線
+- `.section-outline__group` — 選配群組標題列（2026-10-12）：兩節相鄰且群組不同時插在中間的一行小字（`--fs-11`、`--foreground-muted`、字距 .04em）；不是按鈕、不進必填 N／M、群組內的節全被藏起來時跟著消失；`:not(:first-child)` 上方留一段間距。
 - `.section-outline__item(.is-active)` — `<button>`，一節一列；目前節 `--foreground`＋`--fw-medium`＋左側 2px `--primary` 亮線，並帶 `aria-current="location"`
 - `.section-outline__mk[data-st="todo|done|opt"]` — 12px 狀態圓：todo＝1.5px `--primary` 空心圈；done＝`--status-success` 實心＋白勾（`.ztor-icon`）；opt＝5px `--faint-ink` 灰點
 - `.section-outline__text` — 節名，最多兩行（`line-clamp: 2`），完整名稱在 `title`；另有 `.u-visually-hidden` 的狀態文字給讀屏
 - `.section-outline--gutter` — 修飾：放進頁面左側空白欄，相對 `.section-outline-host` 絕對定位（`top:0; bottom:0; right: calc(100% + --sp-16)`），不佔 grid、不推擠表單；寬度＝(視窗 − `--section-outline-body`（預設 1140）) / 2 − 12px，夾在 120–184px；視窗 <1400px 時 `display: none`
 - `.section-outline-host` — 掛 `--gutter` 的那一欄，只負責 `position: relative`（建立商品＝`.preview-split__form`）
 
-**Behaviour（`partials/section-outline.js`）** — `window.ztorSectionOutline.mount({ host, sections, status, labels, title?, offset?, observe?, gutter? })`。輸入＝節容器清單（`sections()`）＋必填判斷函式（`status(els)` 回同長度的 `'todo'|'done'|'opt'`）＋文案（`labels()`）；輸出＝導覽。元件自己濾掉不可見的節（`hidden` 或 `getClientRects` 為空）、節標題讀 `.form-section__title` 現況文字；節增減靠 MutationObserver 監看 `hidden`／`class`（只對節本身與其祖先的變動反應，自己的 class 變動不算），另聽 `input`／`change`／`click`／`upload:change`／`i18n:applied`／`ztor:lang-changed`，全部節流 80ms，不輪詢。scroll-spy：capture 階段聽任一捲動容器，目前節＝最後一個頂端越過「頁首高度＋16」的節，捲到底固定亮最後一節。點擊用 `scrollIntoView`＋`scroll-margin-top`；`prefers-reduced-motion` 時不平滑。回傳 `{ refresh(), destroy() }`。
+**Behaviour（`partials/section-outline.js`）** — `window.ztorSectionOutline.mount({ host, sections, status, labels, title?, group?, offset?, observe?, gutter? })`。輸入＝節容器清單（`sections()`）＋必填判斷函式（`status(els)` 回同長度的 `'todo'|'done'|'opt'`）＋文案（`labels()`）；輸出＝導覽。`group`（選配）：`el => '群組標題'`，預設讀節的 `data-outline-group`、回空字串＝不分組；群組標題改變時視為清單簽章變動、會重畫（換語言標題跟著更新）；同一群組的節在 DOM 裡必須相鄰，否則標題會重複出現。元件自己濾掉不可見的節（`hidden` 或 `getClientRects` 為空）、節標題讀 `.form-section__title` 現況文字；節增減靠 MutationObserver 監看 `hidden`／`class`（只對節本身與其祖先的變動反應，自己的 class 變動不算），另聽 `input`／`change`／`click`／`upload:change`／`i18n:applied`／`ztor:lang-changed`，全部節流 80ms，不輪詢。scroll-spy：capture 階段聽任一捲動容器，目前節＝最後一個頂端越過「頁首高度＋16」的節，捲到底固定亮最後一節。點擊用 `scrollIntoView`＋`scroll-margin-top`；`prefers-reduced-motion` 時不平滑。回傳 `{ refresh(), destroy() }`。
 
 **States** — 每節三態（todo／done／opt）、目前節亮起、hover 文字轉 `--foreground`、`:focus-visible` 內縮 2px `--ring` 框線；摘要「必填 N／M」的 M＝目前顯示的節裡有必填欄位的節數、N＝其中已完成者；沒有可見節時整個元件收起。
 
@@ -7321,7 +7325,7 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **Dependencies** — Icon（`.ztor-icon` 打勾）、`.u-visually-hidden`（shared.css）、Form section（節標題 `.form-section__title` 是預設的標題來源）。
 
-**Consumers** — `create-product.html`（內容頁；內容欄 1140）、`create-bundle.html`（三張分卡；內容欄 `.wizard__body--narrow` 1000、頁面設 `--section-outline-body: 1000px`；必填讀發布前檢核 `stageChecks()`）、`create-auction.html`（左欄各節；同 1000；必填讀就緒檢查 `buildChecks()`，節標題缺的第一節用 `title` 選項補）。「必填」判斷沿用該頁既有的就緒檢查 `buildChecks()`：每個就緒項用 `cpSectionOf(step)` 對到所在節，節內有就緒項＝必填節、項目全過＝已完成、沒有就緒項＝選填，不另訂規則（缺口與降級記在 `ASSUMPTIONS.md`、`BUILD-SPEC.md`）。可延伸頁：`product-detail.html` 編輯態（尚未接）。
+**Consumers** — `create-product.html`（內容頁；內容欄 1140）、`create-bundle.html`（八張分卡，以 `data-outline-group` 分成「組合包介紹／選擇組合物／販售設定」三個群組，群組標題與 `.form-cat` 分類標同名；內容欄 `.wizard__body--narrow` 1000、頁面設 `--section-outline-body: 1000px`；必填讀發布前檢核 `stageChecks()`）、`create-auction.html`（左欄各節；同 1000；必填讀就緒檢查 `buildChecks()`，節標題缺的第一節用 `title` 選項補）。「必填」判斷沿用該頁既有的就緒檢查 `buildChecks()`：每個就緒項用 `cpSectionOf(step)` 對到所在節，節內有就緒項＝必填節、項目全過＝已完成、沒有就緒項＝選填，不另訂規則（缺口與降級記在 `ASSUMPTIONS.md`、`BUILD-SPEC.md`）。可延伸頁：`product-detail.html` 編輯態（尚未接）。
 
 **CSS** — [`section-outline.css`](./ds-components/section-outline.css)
 
@@ -7329,21 +7333,122 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 ### 4.234 Limit set（限購三種上限）
 
-**Purpose** — 商品、組合包與活動門票共用同一套三種上限：每人總限購數量、每次交易限購數量、限購次數（計下單次數）。每欄一句輔助說明，句型一致、只換單位——商品「件」、組合包「組」、活動門票「張」（D398，2026-10-12；主規格 §7.2、§7.14「組合包的限購」、5.1.6.1 F22）。組合包的限購預設跟隨成員（各成員上限 ÷ 每組用量取整後的最小值，限購次數不換算），可覆寫、可改回跟隨成員。
+**Purpose** — 商品、組合包與活動門票共用同一套三種上限：每人總限購數量、每次交易限購數量、限購次數（計下單次數）。每欄一句輔助說明，句型一致、只換單位——商品「件」、組合包「組」、活動門票「張」（D398，2026-10-12；主規格 §7.2、§7.14「組合包的限購」、5.1.6.1 F22）。組合包的限購預設跟隨成員（各成員上限 ÷ 每組用量取整後的最小值，限購次數不換算），可覆寫、可改回跟隨成員。2026-10-12 建立組合包改版（使用者裁示）：組合包變體由「徽章＋覆寫按鈕」改成「限購」標題＋「跟隨成員預設」開關，三欄改成一個細框裡的三列，與 [Price ladder](#4235-price-ladder價格階梯) 同一種列。
 
 **`_layer`** · molecule ｜ **source tier** · App ｜ **surface 層** · 白卡與灰底皆可；跟隨時三欄是 disabled 輸入框（Q128）
 
 **Anatomy**
 - `.limit-set__fields` — 三欄的容器（grid、`gap: --sp-16`，Q103）；商品直接放在限購開關的 `.control-group__body` 裡
 - `.limit-set__field` — 一欄＝`.field`：`.field__label`（`pl.<unit>.<欄位>`）＋ `.input.limit-set__input`（`type=number`、`min=1`、寬度上限 `--w-220`、空＝placeholder「不限」）＋ `.field__hint`（`pl.<unit>.<欄位>.hint`）＋（組合包）`.limit-set__src` ＋ `.field__error[data-pl-err]`
-- `.limit-set.limit-set--bundle[data-state="follow"|"override"|"locked"]` — 組合包變體（grid、`gap: --sp-16`）
-  - `.limit-set__head` — flex 可換行：`.badge.limit-set__state`（跟隨成員＝`--neutral`、已覆寫＝`--info`、bookyay 帶入＝`--neutral`）＋ `.limit-set__sub`（一句額度說明，`--fs-13`、`--muted-foreground`）＋ `.btn.limit-set__act`（覆寫＝`btn--outline btn--sm`、改回跟隨成員＝`btn--ghost btn--sm`，`margin-left:auto`）
+- `.limit-set.limit-set--bundle[data-state="follow"|"override"|"locked"]` — 組合包變體（grid、`gap: --sp-10`）
+  - `.limit-set__head` — 不換行：左邊 `.limit-set__title`「限購」標題（選配，`blockHTML` 的 `title` 選項）；右邊 `.limit-set__follow`（`margin-left:auto`）＝文字「跟隨成員預設」＋ `button.switch.limit-set__switch`（開＝跟隨成員、關＝覆寫；`data-pl-act` 開時按下＝override、關時按下＝follow）。bookyay 鎖定（`locked`）時不畫開關，改放 `.badge.badge--neutral.limit-set__state`「已鎖定」
+  - `.limit-set__sub` — 標題列下方一句額度說明（`--fs-13`、`--muted-foreground`、`--lh-relaxed`）；跟隨＝與成員共用額度、覆寫＝獨立計算，含門票時門票部分永遠與單張門票共用
+  - `.limit-set__fields` — 三列外框：1px `--border-soft` 細框、`--radius-md`、`gap:0`；每列 `.limit-set__field` 為兩欄 grid（`1fr｜160px`），左＝`.field__label`（`--fs-14`）＋ `.field__hint`、右＝輸入框＋ `.limit-set__src`（靠右對齊），列與列之間細線；跟隨時輸入框 `disabled`（Q128）
   - `.limit-set__src` — 跟隨時寫「取自 {成員}：{上限} ÷ 每組 {n}」（同值多個成員都列）；覆寫時寫「跟隨成員時：{值}」與門票上限
 
-**Behavior** — `js/purchase-limits.js`（`window.ztorPurchaseLimits`）：`fieldsHTML()` 畫三欄；`derive(members)` 算交集與門票天花板；`blockHTML()` 畫組合包區塊；`onClick()`（覆寫從跟隨值起手／改回跟隨）、`onInput()`、`errors()`／`syncErrors()`（跟隨時任一成員不足 1 組、覆寫超過門票換算上限、非正整數 → 擋存）；`hintHTML(field, unit)` 給 `js/purchase-conds.js` 的「限購」條件卡借用。
+**Behavior** — `js/purchase-limits.js`（`window.ztorPurchaseLimits`）：`fieldsHTML()` 畫三欄；`derive(members)` 算交集與門票天花板；`blockHTML(lim, der, T, { locked, lockNote, disabled, title })` 畫組合包區塊（`title:true` 畫「限購」標題）；`onClick()`（覆寫從跟隨值起手／改回跟隨）、`onInput()`、`errors()`／`syncErrors()`（跟隨時任一成員不足 1 組、覆寫超過門票換算上限、非正整數 → 擋存）；`hintHTML(field, unit)` 給 `js/purchase-conds.js` 的「限購」條件卡借用。
 
-**Token usage** — `--sp-8`／`--sp-12`／`--sp-16`、`--fs-13`、`--muted-foreground`、`--w-220`；其餘外觀來自 `.field`、`.input`、`.badge`、`.btn`。
+**Token usage** — `--sp-2`／`--sp-8`／`--sp-10`／`--sp-12`／`--sp-14`／`--sp-16`、`--fs-13`／`--fs-14`、`--lh-relaxed`、`--foreground`／`--foreground-muted`／`--muted-foreground`、`--border-soft`、`--radius-md`、`--w-220`；其餘外觀來自 `.field`、`.input`、`.badge`、`.switch`。
 
-**Consumers** — `create-product.html`、`product-detail.html`（商品三欄）；`create-bundle.html`、`bundle-detail.html`（組合包區塊）；`create-event.html`、`event-detail.html`（經 `purchase-conds.js` 只用輔助說明）。
+**Consumers** — `create-product.html`、`product-detail.html`（商品三欄）；`create-bundle.html`、`bundle-detail.html`（組合包區塊，含標題與開關）；`create-event.html`、`event-detail.html`（經 `purchase-conds.js` 只用輔助說明）。
 
 **CSS** — [`limit-set.css`](./ds-components/limit-set.css)
+
+---
+
+### 4.235 Price ladder（價格階梯）
+
+**Purpose** — 把「原價 → 一步步打折 → 粉絲實付」排成由上往下的一條線（建立組合包，2026-10-12 D402，使用者在示意頁逐項定案）。每一列回答「這一步做了什麼、填了什麼、算到這裡是多少」：左＝這一步（標題＋一句說明，有輸入框時換行放在說明下面）、右＝算到這一步的價格。開關列（組合折扣、限時折扣、可與優惠碼疊加）右邊放開關本身、不另寫狀態字；打開後展開的內容（% 與折後價、起訖日）用面板列接在下面，淡淡壓深一階；「看怎麼算」展開的逐項明細同樣是面板，每一項名稱與金額對齊上方欄軌。價格寫法（D402）：主價格維持「從 $X 起」；含多種允許門票或多規格成員、價格不是單一值時，主價格下方加一行區間小字 `__range`「$最低–$最高」——只在創作者後台出現，粉絲端不變。
+
+**`_layer`** · molecule ｜ **source tier** · App ｜ **surface 層** · 坐在 `form-section--outlined` 卡面上；展開區壓的是 `--layer-0-surface`（頁面最深底色）25%。
+
+**Anatomy**
+- `.price-ladder` — 整條階梯的細框（單一外框、列與列之間細線）
+- `.price-ladder__step` — 一列；兩欄 grid（`1fr｜180px`）：左 `__k`（＋ `__ctl`）、右 `__v`
+- `.price-ladder__k` — 標題 `__t`（可帶 Badge）＋ 說明 `__s`（＋ 展開鈕 `__disc`）
+- `.price-ladder__ctl` — 輸入框（% 步進器固定寬 132px），換行在 `__k` 下方、與 `__v` 同一行
+- `.price-ladder__v` — 算到這裡的價格；`__range` 區間小字、`small` 一行附註（「粉絲省 …」「期間售價」）；`__v--switch` 讓右欄就是開關
+- `.price-ladder__step--panel` — 展開區（看怎麼算／組合折扣 %／限時折扣 %）：淡壓深一階、上緣細線
+  - `.price-ladder__items` ＞ `.price-ladder__item`（`__item-k` 名稱｜`__item-v` 金額＋區間小字）— 逐項明細
+  - `.price-ladder__dates` — 限時折扣的起訖日：上緣通欄分隔線，日期上下兩行、欄寬維持半列
+- `.price-ladder__step--total` — 粉絲實付：只有金額用品牌色（`--fs-20`、`--primary`）
+- `.price-ladder__disc` — 「看怎麼算」展開鈕（文字＋chevron，`aria-expanded` 轉向）
+- `.price-ladder__err` — 列內錯誤句（整列通欄）
+
+**Behavior** — 純呈現，無自帶 JS；展開／開關由消費頁（`create-bundle.html`）切 `[hidden]` 與 `aria-expanded`、`aria-checked`。
+
+**States** — 開關列開／關；面板列 `[hidden]`；`__range[hidden]`（價格是單一值時不顯示）；`__disc[aria-expanded]` 的 chevron 轉向（`prefers-reduced-motion` 時不動畫）；`:focus-visible` 2px `--ring`。
+
+**Token usage** — `--sp-2`／`--sp-4`／`--sp-8`／`--sp-10`／`--sp-12`／`--sp-14`／`--sp-16`、`--fs-11`／`--fs-12`／`--fs-13`／`--fs-14`／`--fs-16`／`--fs-20`、`--foreground`／`--foreground-muted`／`--muted-foreground`、`--primary`、`--border-soft`、`--radius-md`／`--radius-sm`、`--layer-0-surface`、`--ring`、`--duration`。
+
+**Dependencies** — Amount field（% 步進器）、Switch、Badge、Field（起訖日）、Icon。
+
+**Consumers** — `create-bundle.html`（價格卡）、`bundle-detail.html`（組合設定分頁的價格卡）、`js/bundle-editor.js`（建立活動第 5 步組合包彈窗 `layout:'split'`）。
+
+**CSS** — [`price-ladder.css`](./ds-components/price-ladder.css)
+
+---
+
+### 4.236 Member table（組合物表）
+
+**Purpose** — 組合包「裡面有什麼」只有一張表：商品成員與活動票券成員排在同一張（兩者都是「成員」，5.1.5.4 F2），欄位＝展開鈕｜名稱｜原價・剩餘｜每組數量｜移除（建立組合包，2026-10-12 D402，使用者在示意頁逐項定案）。票券列可展開（勾允許的門票、換活動）：展開入口有兩處且同步——最左一顆箭頭鈕（一眼看得到）＋名稱下方一行可點的文字（「已選 VIP／搖滾區 任選 · 調整」）；右邊的 ✕ 只負責移除。原價與剩餘合成一欄（上＝原價、下＝小字「剩 N」，價格是區間時小字前面先寫「$低–$高」），讓名稱欄夠寬、不被擠斷。
+
+**`_layer`** · molecule ｜ **source tier** · App ｜ **surface 層** · 坐在 `form-section--outlined` 卡面上；縮圖底用 `--muted` 媒體井（同 Card 的 Q66 例外）。
+
+**Anatomy**
+- `.member-table` — 表（上緣 1px `--border-soft`）
+- `.member-table__head` — 表頭，五欄 grid（`20px｜1fr｜132px｜112px｜28px`），「原價・剩餘」靠右
+- `.member-table__row` — 一列，欄位同表頭
+  - `.member-table__open` — 展開鈕（只有票券列有，商品列放空的 `<span>`）；`aria-expanded`，chevron 轉 90°
+  - `.member-table__name` — 縮圖 `__thumb`（36px）＋ 文字 `__txt`（`__t` 名稱，單行省略；`__s` 規格小字，或 `__link` 展開文字）
+  - `.member-table__price` — 原價（上）＋ `__sub` 小字（區間・剩餘）
+  - `.member-table__qty` — 每組數量步進器（Amount field＋zstep，112px）
+  - `.member-table__x` — 移除（`btn--ghost btn--icon btn--xs`）
+- `.member-table__exp` — 票券列展開區（允許的門票表、換一場活動、鎖定說明），左緣對齊名稱欄
+- `.member-table__empty` — 還沒有組合物時的一句
+
+**Behavior** — 純呈現，無自帶 JS；展開由消費頁切 `[hidden]`，`__open` 與 `__link` 兩處的 `aria-expanded` 同步。
+
+**States** — 展開／收合；空表（`__empty` 顯示、其餘列 `[hidden]`）；`:focus-visible` 2px `--ring`；hover 文字轉 `--foreground`（`prefers-reduced-motion` 時 chevron 不動畫）。
+
+**Token usage** — `--sp-2`／`--sp-4`／`--sp-8`／`--sp-10`／`--sp-14`、`--fs-11`／`--fs-13`、`--foreground`／`--muted-foreground`／`--foreground-muted`、`--muted`、`--border-soft`、`--radius-sm`、`--ring`、`--duration`。
+
+**Dependencies** — Amount field（數量）、Button（移除）、Icon。
+
+**Consumers** — `create-bundle.html`（組合物卡）、`bundle-detail.html`（組合設定分頁的成員清單）、`js/bundle-editor.js`（建立活動第 5 步組合包彈窗 `layout:'split'`）。
+
+**CSS** — [`member-table.css`](./ds-components/member-table.css)
+
+---
+
+### 4.237 Form ask（問句式設定塊、分類標與標題列讀數）
+
+**Purpose** — 三個小零件，都是「長表單裡幫人分段、看結果」（建立組合包，2026-10-12 D402，使用者在示意頁逐項定案）。`.form-ask` 是一個要使用者做決定的問題（例「要鎖定庫存給這個組合嗎？」「要另設販售上限嗎？」）：問句 → 一句白話說明（寫清楚選了會怎樣）→ 二選一 → 選了才出現的內容。`.form-cat` 是表單分類標：一張分卡上方的一行小字（序號＋分類名），把連續幾張分卡歸成一類；同樣的分類也是 [Section outline](#4233-section-outline長表單的本頁大綱) 的群組標題。`.form-tally` 是分卡標題列右側的結果讀數（例「數量」卡的「最多可賣 60 組」）。
+
+**`_layer`** · molecule ｜ **source tier** · App ｜ **surface 層** · `.form-ask`、`.form-tally` 坐在 `form-section--outlined` 卡面上；`.form-cat` 坐在頁面底（卡與卡之間）。
+
+**Anatomy**
+- `.form-ask` — 垂直堆疊，`gap: --sp-8`
+  - `.form-ask__t` — 問句（`--fs-14`）
+  - `.form-ask__s` — 說明（`--fs-12`、`--lh-relaxed`、`--muted-foreground`）
+  - `.segmented.radio-cards` — 二選一（既有 Segmented，不屬本檔）
+  - `.form-ask__body[hidden]` — 選了才出現的內容
+    - `.form-ask__row` — 要填值的一列：名稱 `__row-k` 在左、控制項（`.amount-field` 固定 132px）推到最右；下面接鎖定量表（Lock sets）時加 `__row--lockset`，讓輸入框右緣對齊表格「已鎖定」欄
+  - `.form-ask + .form-ask` — 同卡連續幾題時，題與題之間 1px `--border-soft` 細線
+- `.form-cat` — 分類標，一行小字（`--fs-12`、字距 .04em、`--foreground-muted`）
+  - `.form-cat__n` — 序號（`--primary`、`--font-mono`）；`.form-cat:first-child` 不留上邊距
+- `.form-tally` — 讀數，不換行
+  - `.form-tally__k` — 名稱（`--fs-12`）
+  - `.form-tally__v` — 數字（`--fs-28`、tabular-nums）＋ `small` 單位（`--fs-14`）；放在 `.form-section__head-actions` 槽，與標題同一行
+
+**Behavior** — 純呈現，無自帶 JS；`__body` 的顯示由消費頁依二選一的選擇切 `[hidden]`。
+
+**States** — `__body` 顯示／`[hidden]`；二選一的選中態屬 Segmented。
+
+**Token usage** — `--sp-4`／`--sp-8`／`--sp-10`／`--sp-12`／`--sp-16`／`--sp-24`／`--sp-32`、`--fs-12`／`--fs-14`／`--fs-28`、`--lh-relaxed`／`--lh-tight`、`--foreground`／`--foreground-muted`／`--muted-foreground`、`--primary`、`--font-mono`、`--border-soft`。
+
+**Dependencies** — Segmented（radio-cards）、Amount field、Lock sets（`__row--lockset` 下接）、Form section（`__head-actions` 槽）。
+
+**Consumers** — `create-bundle.html`（數量卡、分類標）、`bundle-detail.html`（組合庫存分頁的鎖定、組合設定分頁的數量卡與分類標）、`js/bundle-editor.js`（建立活動第 5 步組合包彈窗的數量卡與分類標）。
+
+**CSS** — [`form-ask.css`](./ds-components/form-ask.css)

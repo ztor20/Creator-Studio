@@ -502,8 +502,9 @@
          鎖定，港幣以外——含創作者幣別欄 TWD——都可覆寫。所以本筆不再寫 `currency`（＝DEFAULT_CURRENCY 'TWD'），
          票種 `price` 是換算後的 TWD 基準價、`hkd` 是 bookyay 原價。這一筆是站上唯一的 source:'bookyay'。 */
       source: 'bookyay',
-      /* bookyay 掃描器連結（2026-10-12 D394）：活動詳情總覽「現場報到台」顯示這條連結＋複製。網址格式是原型示意
-         （ASSUMPTIONS BKY-SCAN-001）；這一筆沒有 bkyId，路徑用活動代號。hsinchu-vinyl-sf 刻意不給，示範「bookyay 還沒給連結」。 */
+      /* bookyay 掃描器連結（2026-10-12 D394；D401 決定一：bookyay 建立活動時產生、匯入時直接帶入的欄位）：活動詳情的掃碼器卡顯示這條連結＋複製。
+         網址格式是原型示意（ASSUMPTIONS BKY-SCAN-001）；這一筆沒有 bkyId，路徑用活動代號。
+         墓碑（D401）：原本 hsinchu-vinyl-sf 刻意不給、示範「bookyay 還沒給連結」——連結改為必定帶入，兩筆都給；缺漏時的說明只留作防呆。 */
       bkyScanUrl: 'https://organizer.bookyay.com/scan/taipei-nye',
       name: "Taipei New Year's Eve countdown",
       desc: "Countdown stage set for Taipei's New Year's Eve city party.",
@@ -580,7 +581,9 @@
            （events-store bkyBundleHkd）。基準價＝（NT$1,212 ＋ NT$400）× 0.9＝NT$1,450.8 → NT$1,451；創作者把 TWD 欄覆寫成 NT$1,450，
            清單、摘要、KPI 顯示 NT$1,450（D331 決定一）。disc＝組合折扣 %（本輪新欄，見 bkyBundleHkd 說明）。 */
         { id: 'bd-nye-ga-band', name: 'GA + countdown wristband', tickets: { tierIds: ['tier-ga'], qty: 1 },
-          products: [{ name: 'Countdown night wristband', img: 'images/products/wristband.webp', price: 400 }],
+          /* pickup（D401 決定四，原型示意欄位，ASSUMPTIONS UIA-248）：這個商品在哪個取貨場次領取——s＝pickup-detail.html 的示範狀態、
+             nameKey＝場次名稱（pickup.html 的示範列）。活動詳情「前往領取場次」依綁到的場次數分三種去處。 */
+          products: [{ name: 'Countdown night wristband', img: 'images/products/wristband.webp', price: 400, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
           disc: 10, price: 1451, sold: 0, cap: 300, override: { TWD: 1450 } }
       ],
       sold: 0,
@@ -605,6 +608,7 @@
       typeLabelKey: 'ce.type.launch',
       category: 'fans-meet',
       source: 'bookyay',
+      bkyScanUrl: 'https://organizer.bookyay.com/scan/bky-14',   // D401 決定一：匯入時帶入（原型示意網址，BKY-SCAN-001）
       series: null,
       name: 'Vinyl signing night — Hsinchu',
       desc: '新專輯黑膠首賣簽名場，購票附一張實體收藏票券，以順豐寄送到府。',

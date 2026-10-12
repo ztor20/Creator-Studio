@@ -4277,7 +4277,12 @@
     /* D375 決定五 → D394：bookyay 匯入活動的門票入場由 bookyay 掃票、唯讀名單（'event-detail.live.scanner.off'「已停用」2026-10-12 退場，徽章改 scanner.bky.badge） */
     'event-detail.scanner.bky':           { en: 'Tickets are scanned at the door with the bookyay Organizer App. Products in ticket bundles are picked up the same way as E-Shop pickups.',
                                             zh: '門票入場由 bookyay Organizer App 掃票。票務商品裡的商品照電子商店的取貨流程領取。' },
-    'event-detail.scanner.bky.pickup':    { en: 'Go to Pickup',             zh: '前往取貨管理' },
+    /* D401 決定四：「前往取貨管理」改「前往領取場次」，連到這場組合包商品所在的取貨場次（一個／多個／沒有三種說明） */
+    'event-detail.scanner.bky.pickup':    { en: 'Go to pickup session',     zh: '前往領取場次' },
+    'event-detail.scanner.bky.pickup.one':  { en: 'Bundle products are picked up at “{name}”.', zh: '組合包裡的商品在「{name}」領取。' },
+    'event-detail.scanner.bky.pickup.many': { en: 'Bundle products are picked up across {n} pickup sessions. Pick one in Pickup.', zh: '組合包裡的商品分在 {n} 個取貨場次，到取貨管理挑一個。' },
+    'event-detail.scanner.bky.pickup.none': { en: 'No pickup session yet. Create one in Pickup so fans can collect bundle products.', zh: '還沒有取貨場次。先到取貨管理建立取貨場次，粉絲才能領取組合包裡的商品。' },
+    'event-detail.scanner.bky.pickup.go':   { en: 'Go to Pickup',           zh: '前往取貨管理' },
     /* D394（2026-10-12）：bookyay 活動的報到台改成「bookyay 掃描器連結＋複製」與「前往取貨管理」兩格 */
     'event-detail.scanner.bky.badge':     { en: 'Via bookyay',              zh: '由 bookyay 掃票' },
     'event-detail.scanner.bky.url':       { en: 'bookyay scanner link',     zh: 'bookyay 掃描器連結' },
@@ -4285,7 +4290,7 @@
     'event-detail.scanner.bky.nourl':     { en: 'bookyay hasn’t sent a scanner link for this event yet. Door staff can still scan tickets with the bookyay Organizer App.', zh: 'bookyay 還沒提供這場的掃描器連結。門口仍可用 bookyay Organizer App 掃票。' },
     'event-detail.scanner.bky.pickup.label': { en: 'Bundle pickup',         zh: '組合包取貨' },
     'event-detail.scanner.bky.pickup.hint':  { en: 'Products in ticket bundles are picked up through ztor pickup sessions, not bookyay’s scanner.', zh: '組合包裡的商品用 ztor 的取貨場次領取，不經過 bookyay 掃描器。' },
-    'event-detail.bkycard.title':        { en: 'On-site scanning',          zh: '現場掃碼' },   /* 一百七十五（D397 決定二）：bookyay 現場掃碼卡（已排程／售票中） */
+    /* 墓碑 2026-10-12（D401 決定四）：event-detail.bkycard.title（D397 bookyay 現場掃碼卡標題）隨卡片撤除 */
     'event-detail.scanner.bky.short':     { en: 'Tickets are scanned with the bookyay Organizer App', zh: '門票由 bookyay Organizer App 掃票' },
     'event-detail.att.bky':               { en: 'Who’s in and who isn’t comes from bookyay’s door scans. This list is read-only.', zh: '已入場與未入場名單來自 bookyay 的入場掃票，這裡只能檢視。' },
     'event-detail.summary.title':  { en: 'Event summary',                 zh: '活動摘要' },
@@ -5218,6 +5223,9 @@
     'ce.lineup.empty':      { en: 'No matching Ztor users. Type a name to add them as an external performer.', zh: '沒有符合的 Ztor 用戶，輸入名字即可新增為站外表演者' },
     'ce.lineup.remove':     { en: 'Remove performer',                 zh: '移除表演者' },
     'ce.images':            { en: 'Images',                           zh: '圖片' },
+    'ce.basic.title':       { en: 'Basic info',                       zh: '基本資訊' },
+    'ce.desc.title':        { en: 'Event description',                zh: '活動描述' },
+    'ce.images.event':      { en: 'Event images',                     zh: '活動圖片' },   /* 2026-10-12 使用者：建立活動與活動詳情的這一段叫「活動圖片」；系列頁等其他頁仍用 ce.images */
     /* 2026-07-31 D164：活動由四格收斂為三格（主視覺／橫式橫幅／圖庫圖片），必填數 4→3。
        退場 key：ce.img.thumb、ce.img.thumb-hint、ce.img.poster、ce.img.poster-hint
        （原「縮圖」與「直式海報」兩格併為 ce.img.keyvisual，見 documents 5.1.6.1 F4）。 */
@@ -5994,6 +6002,8 @@
     'cb.tix.one-event':     { en: 'One event per bundle',             zh: '一組只含一場活動的票' },
     'cb.tix.tiers-of':      { en: 'Ticket tiers ·',                   zh: '票種 ·' },
     'cb.tix.change':        { en: 'Change event',                     zh: '換一場活動' },
+    /* D401 決定三：從活動詳情建立組合包時活動鎖定 */
+    'cb.tix.locked':        { en: "You're creating this bundle from this event's page, so its event can't be changed.", zh: '從這場活動的詳情頁建立，活動固定為這一場。' },
     'cb.tix.notiers':       { en: 'This event has no ticket tiers yet.', zh: '這場活動還沒有票種。' },
     'cb.tix.left':          { en: '{n} left',                         zh: '剩 {n} 張' },
     'cb.tix.unit':          { en: 'tickets',                          zh: '張' },
@@ -6674,6 +6684,54 @@
     'cpp.bd.sp.sec.content':   { en: 'Contents',                       zh: '內容物' },
     'cpp.bd.sp.sec.price':     { en: 'Pricing & stock',                zh: '定價與庫存' },
     'cpp.bd.sp.sec.name':      { en: 'Name & listing',                 zh: '命名與上架' },
+    /* 2026-10-12 建立組合（create-bundle）三段重排（UI-CHANGES 一百八十三）：介紹 → 組合物 → 販售設定；建立活動的組合包彈窗仍用上面三把 */
+    /* intro／content 兩把含「組合」是使用者逐字指定（STYLE-DECISIONS Q131，check_ds_sync 檢查 12 例外） */
+    'cb.sec.intro':            { en: 'About the bundle',               zh: '組合包介紹' },
+    'cb.sec.content':          { en: 'Choose contents',                zh: '選擇組合物' },
+    'cb.sec.sale':             { en: 'Sales settings',                 zh: '販售設定' },
+    /* 2026-10-12 建立組合包改版（UI-CHANGES 一百八十八；D402）：8 張分卡標題、組合物表、加入組合物彈窗、價格階梯、數量卡 */
+    'cb.sec.info':              { en: 'Bundle info', zh: '組合資訊' },
+    'cb.sec.media':             { en: 'Show it off', zh: '展示' },
+    'cb.sec.members':           { en: 'What’s in it', zh: '組合物' },
+    'cb.sec.price':             { en: 'Price', zh: '價格' },
+    'cb.sec.qty':               { en: 'Quantity', zh: '數量' },
+    'cb.sec.listing':           { en: 'Listing & sale', zh: '上架與開賣' },
+    'cb.mt.name':               { en: 'Name', zh: '名稱' },
+    'cb.mt.price':              { en: 'Price · left', zh: '原價・剩餘' },
+    'cb.mt.open':               { en: 'Show ticket options', zh: '展開門票設定' },
+    'cb.mt.left':               { en: '{n} left', zh: '剩 {n}' },
+    'cb.mt.tix.none':           { en: 'No tickets picked · change', zh: '尚未選門票 · 調整' },
+    'cb.mt.tix.any':            { en: 'Picked: {names} (pick one) · change', zh: '已選 {names} 任選 · 調整' },
+    'cb.mt.tix.one':            { en: 'Picked: {name} · change', zh: '已選 {name} · 調整' },
+    'cb.add.open':              { en: 'Add to bundle', zh: '加入組合物' },
+    'cb.pick.title':            { en: 'Add to bundle', zh: '加入組合物' },
+    'cb.pick.items':            { en: 'Products', zh: '商品' },
+    'cb.pick.tix':              { en: 'Event tickets', zh: '活動票券' },
+    'cb.pick.tix.one':          { en: 'This bundle already has tickets from one event. A bundle can hold one event only — remove that row to switch.', zh: '已經加了一場活動的票券；一個組合包只能有一場活動，要換請先移除表格裡的票券那一列。' },
+    'cb.pick.new':              { en: 'Create a new product', zh: '建立新商品' },
+    'cb.pick.done':             { en: 'Done', zh: '完成' },
+    'cb.pl.how':                { en: 'See how', zh: '看怎麼算' },
+    'cb.pl.disc.s':             { en: 'Cheaper than the full price; off = no discount', zh: '比原價合計便宜；關閉＝不打折' },
+    'cb.pl.disc.pct':           { en: 'Bundle discount %', zh: '組合折扣 %' },
+    'cb.pl.sale':               { en: 'Limited-time discount', zh: '限時折扣' },
+    'cb.pl.optional':           { en: 'Optional', zh: '選填' },
+    'cb.pl.sale.s':             { en: 'Takes more off the selling price, only during your dates', zh: '在售價上再折，只在你設的期間有效' },
+    'cb.pl.sale.price':         { en: 'During the window', zh: '期間售價' },
+    'cb.pl.total.usual':        { en: 'Usual', zh: '平時' },
+    'cb.pl.total.both':         { en: 'Usual / during the discount', zh: '平時／限時折扣期間' },
+    'cb.pl.total.during':       { en: 'During the discount: {p}', zh: '期間 {p}' },
+    'cb.qty.max':               { en: 'Can sell', zh: '最多可賣' },
+    'cb.lock.q':                { en: 'Lock stock for this bundle?', zh: '要鎖定庫存給這個組合嗎？' },
+    'cb.lock.s':                { en: 'Locked stock can’t be bought as single items. Without a lock, the bundle shares what’s left with single sales — first come, first served.', zh: '鎖定後，這些組數用到的成員庫存不會被單買買走；不鎖定就和單買共用剩餘，先買先得。' },
+    'cb.lock.no':               { en: 'Don’t lock', zh: '不鎖定' },
+    'cb.lock.yes':              { en: 'Lock', zh: '鎖定' },
+    'cb.lock.sets':             { en: 'Sets to lock', zh: '鎖定組數' },
+    'cb.lock.max':              { en: 'Up to {n} sets can be locked.', zh: '最多可鎖定 {n} 組。' },
+    'cb.lock.blank':            { en: 'Enter how many sets to lock — up to {n}.', zh: '填要鎖定幾組，最多 {n} 組。' },
+    'cb.lock.col.member':       { en: 'Member', zh: '成員' },
+    'cb.cap.q':                 { en: 'Set your own sales cap?', zh: '要另設販售上限嗎？' },
+    'cb.cap.s':                 { en: 'A cap only limits how many sets this bundle sells. It doesn’t lock stock.', zh: '上限只限制這個組合最多賣幾組，不會鎖定庫存。' },
+    'cb.cap.label':             { en: 'Sales cap', zh: '販售上限' },
     'st.aria':                 { en: 'Jump to a section',              zh: '跳到區段' },   /* section-tabs 分節分頁的 nav 名稱（js/section-tabs.js 消費頁共用） */
     'cpp.bd.sp.tix':           { en: 'Tickets',                        zh: '票券' },
     /* 2026-09-22 第二輪：多場活動的場次相關控制（二選一卡＋適用場次表／每場預覽表）在 SPLIT 合成
@@ -6820,6 +6878,7 @@
     'pl.u.item':               { en: 'items',                          zh: '件' },
     'pl.state.follow':         { en: 'Following members',              zh: '跟隨成員' },
     'pl.state.override':       { en: 'Overridden',                     zh: '已覆寫' },
+    'pl.follow.default':       { en: 'Follow members',                 zh: '跟隨成員預設' },   /* 2026-10-12 組合包限購的開關標籤：開＝跟隨成員、關＝覆寫 */
     /* D400（2026-10-12 使用者裁決）：跟隨成員＝與成員共用額度（買組合包會扣成員商品的個人限購額度）；
        已覆寫＝組合包獨立計算、不扣成員商品；含門票時門票部分永遠與單張門票共用（D342）、只能收窄 */
     'pl.sub.follow':           { en: 'Uses the strictest member limit, counted in sets. Shares each member’s allowance — each set bought uses up its units from them.', zh: '取各成員換算成組後最嚴的上限；與成員商品共用額度，買組合包會扣成員商品的個人限購額度（件數＝組數 × 每組件數）。' },
@@ -7603,6 +7662,9 @@
     'pk.footer.count':  { en: 'Showing {n} of {m} sessions', zh: '顯示 {m} 個中的 {n} 個場次' },
     'pk.scanner.on':    { en: 'Scanner on',    zh: 'Scanner 已啟用' },
     'pk.scanner.off':   { en: 'Scanner off',   zh: 'Scanner 未啟用' },
+    /* D401 決定四：從活動詳情「前往領取場次」（多個取貨場次）進來時的篩選說明 */
+    'pk.evfilter':       { en: "Showing pickup sessions for this event's bundles.", zh: '只顯示這場活動組合包的取貨場次。' },
+    'pk.evfilter.clear': { en: 'Show all', zh: '顯示全部' },
     'pk.row1.name':     { en: 'Taipei signing — pickup', zh: '台北簽書會取貨' },
     'pk.row1.meta':     { en: '2 items · 1 event ticket', zh: '2 商品 · 1 活動票券' },
     'pk.row1.loc':      { en: 'Legacy Books, Xinyi', zh: '典藏書店 信義' },
@@ -8117,7 +8179,9 @@
     /* 跨日活動（D328，5.1.6.1 F7）：每場一個開關，開了才有結束日期 */
     /* 規格名「跨日活動」；標籤照鐵律 12 拿掉頁面已交代的「活動」（建立活動頁、場次區段），只留「跨日」 */
     'ce.sess.multiday':  { en: 'Multi-day',                        zh: '跨日' },
-    'ce.sess.enddate':   { en: 'End date',                         zh: '結束日期' },
+    /* 2026-10-12：跨日打開時日期欄改排成「開始日期｜開始時間」「結束日期｜結束時間」兩列，日期標籤寫明是哪一端 */
+    'ce.sess.startdate': { en: 'Start date',                       zh: '活動開始日期' },
+    'ce.sess.enddate':   { en: 'End date',                         zh: '活動結束日期' },
     'ce.sess.enddate.err.req':   { en: 'Add an end date.',         zh: '請填結束日期。' },
     'ce.sess.enddate.err.order': { en: 'End must be later than the start.', zh: '結束要晚於開始。' },
     'ce.publish-blocked-enddate': { en: 'A multi-day date needs a start time, an end time, and an end later than its start. Check the dates.', zh: '跨日場次要填開始與結束時間，且結束要晚於開始，請檢查場次。' },

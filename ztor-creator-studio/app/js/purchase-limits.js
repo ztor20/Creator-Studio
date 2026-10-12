@@ -12,6 +12,7 @@
      · js/purchase-conds.js   活動的「限購」條件卡（create-event 第 4 步、event-detail 活動層與門票彈窗）——只借 hintHTML()
      · create-product.html／product-detail.html   商品的限購開關底下三欄（fieldsHTML，unit=item）
      · create-bundle.html／bundle-detail.html     組合包的「限購」區塊（blockHTML，unit=set：跟隨成員／覆寫）
+     · js/bundle-editor.js（create-event 組合包彈窗 layout:'split'）  同上（2026-10-12 改接，UI-CHANGES 一百八十八；存在 b.limits）
 
    對外 API（window.ztorPurchaseLimits）：
      KEYS                                     ['person','order','times']
@@ -181,7 +182,12 @@
     return e;
   }
 
-  /* opts：{ locked（bookyay 鎖定：不給動作）, lockNote（鎖定時取代說明的一句原因）, disabled（檢視態：動作與欄位停用） } */
+  /* opts：{ locked（bookyay 鎖定：不給動作）, lockNote（鎖定時取代說明的一句原因）, disabled（檢視態：動作與欄位停用）,
+             title（2026-10-12：true＝標題列左邊畫「限購」標題，頁面就不必在外面另放欄位標籤） }
+     2026-10-12（使用者裁示，建立組合包改版）：「跟隨成員／已覆寫」由「徽章＋覆寫按鈕」改成標題列右側
+     「跟隨成員預設」＋ on／off 開關（同購買條件的「跟隨活動預設」）：開＝跟隨成員、關＝覆寫。
+     開關本身是 <button class="switch" role="switch">，鍵盤可操作；data-pl-act 照舊（開時按下＝override、關時按下＝follow），
+     所以頁面的 onClick 委派不用改。鎖定（bookyay）時不畫開關，只留「已鎖定」徽章。 */
   function blockHTML(lim, der, T, opts) {
     opts = opts || {};
     var over = lim ? norm(lim) : null;
@@ -190,12 +196,12 @@
     /* 說明句同時交代額度怎麼算（D400）：跟隨＝與成員共用額度、已覆寫＝獨立計算；含門票時門票部分永遠與單張門票共用 */
     var tix = !!(der && der.hasTicket);
     var sub = over ? (tix ? 'pl.sub.override.tix' : 'pl.sub.override') : (tix ? 'pl.sub.follow.tix' : 'pl.sub.follow');
-    var stateKey = opts.locked ? 'pl.state.locked' : (over ? 'pl.state.override' : 'pl.state.follow');
-    var act = opts.locked ? '' : (over
-      ? '<button type="button" class="btn btn--ghost btn--sm limit-set__act" data-pl-act="follow"' + (opts.disabled ? ' disabled' : '') + '>' +
-          '<i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="pl.act.follow">' + esc(tr(T, 'pl.act.follow')) + '</span></button>'
-      : '<button type="button" class="btn btn--outline btn--sm limit-set__act" data-pl-act="override"' + (opts.disabled ? ' disabled' : '') + '>' +
-          '<i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="pl.act.override">' + esc(tr(T, 'pl.act.override')) + '</span></button>');
+    var act = opts.locked
+      ? '<span class="badge badge--neutral limit-set__state" data-i18n="pl.state.locked">' + esc(tr(T, 'pl.state.locked')) + '</span>'
+      : '<span class="limit-set__follow"><span data-i18n="pl.follow.default">' + esc(tr(T, 'pl.follow.default')) + '</span>' +
+          '<button type="button" class="switch' + (over ? '' : ' switch--on') + ' limit-set__switch" role="switch" aria-checked="' + (over ? 'false' : 'true') + '"' +
+          ' data-pl-act="' + (over ? 'follow' : 'override') + '" aria-label="' + esc(tr(T, 'pl.follow.default')) + '" data-i18n-aria-label="pl.follow.default"' +
+          (opts.disabled ? ' disabled aria-disabled="true"' : '') + '></button></span>';
     var extra = function (k) {
       if (opts.locked) return '';
       if (!over) return '<p class="field__hint field__hint--fact limit-set__src" data-pl-src="' + k + '">' + esc(srcText(k, der, T)) + '</p>';
@@ -206,12 +212,11 @@
     };
     return '<div class="limit-set limit-set--bundle" data-pl-block data-state="' + state + '">' +
       '<div class="limit-set__head">' +
-        '<span class="badge ' + (over && !opts.locked ? 'badge--info' : 'badge--neutral') + ' limit-set__state" data-i18n="' + stateKey + '">' +
-          esc(tr(T, stateKey)) + '</span>' +
-        (opts.locked && opts.lockNote ? '<span class="limit-set__sub">' + esc(opts.lockNote) + '</span>'
-          : '<span class="limit-set__sub" data-i18n="' + sub + '">' + esc(tr(T, sub)) + '</span>') +
+        (opts.title ? '<span class="limit-set__title" data-i18n="tb.rules.cap">' + esc(tr(T, 'tb.rules.cap')) + '</span>' : '') +
         act +
       '</div>' +
+      (opts.locked && opts.lockNote ? '<p class="limit-set__sub">' + esc(opts.lockNote) + '</p>'
+        : '<p class="limit-set__sub" data-i18n="' + sub + '">' + esc(tr(T, sub)) + '</p>') +
       fieldsHTML({ unit: 'set', vals: vals, T: T, disabled: !over || opts.locked || opts.disabled, extra: extra, errs: true }) +
     '</div>';
   }

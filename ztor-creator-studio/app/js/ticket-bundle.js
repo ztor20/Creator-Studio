@@ -26,7 +26,8 @@
 
    D398（2026-10-12）：限購擴及所有組合包、預設取所有成員（含商品成員）的交集，改由 js/purchase-limits.js 的組合包限購區塊負責；
    bundle-detail 與 create-bundle 呼叫 rulesHTML／syncErrors／errorCount 時帶 buyOnly（ctx.buyOnly），這裡只剩購買條件。
-   建立活動第 6 步（js/bundle-editor.js）尚未改接，照舊用本檔的「購買條件與限購」合併區塊（ASSUMPTIONS UIA-247）。
+   建立活動的組合包彈窗（js/bundle-editor.js）2026-10-12 也改接（UI-CHANGES 一百八十八）：三個消費頁都帶 buyOnly，
+   本檔的限購分支（非 buyOnly）目前沒有消費者，留著不刪（舊資料 rules.cap 由 purchase-limits.fromRules 相容讀取）。
 
    活動設定是最高優先層級（D363，2026-10-07；主規格 §7.14「三個狀態開關」）——三個消費頁與電子商店清單共用同一口徑：
      · 顯示：活動隱藏（et.shown === false）時，含其票券的組合包在電子商店一律不顯示、自己的顯示開關不能切成顯示；
@@ -279,7 +280,7 @@
   /* 清單分隔：中文用頓號、英文用逗號＋空格 */
   function sepList(T) { return String(document.documentElement.lang || '').indexOf('zh') === 0 ? '、' : ', '; }
   /* opts.buyOnly（D398，2026-10-12）：限購改由 js/purchase-limits.js 的組合包限購區塊管（所有組合包、含商品成員的交集），
-     這裡只檢查購買條件；bundle-detail／create-bundle 傳 buyOnly，建立活動第 6 步（bundle-editor）照舊含限購 */
+     這裡只檢查購買條件；bundle-detail／create-bundle／bundle-editor（2026-10-12 起）都傳 buyOnly */
   function rulesErrors(st, def, et, T, opts) {
     var e = {}, r = st && st.rules, buyOnly = !!(opts && opts.buyOnly);
     if (!def || !def.count) return e;

@@ -1,0 +1,112 @@
+/* ============================================================
+   member-table.css · 組合物表（2026-10-12，建立組合包改版；使用者在示意頁逐項定案）
+   ------------------------------------------------------------
+   組合包「裡面有什麼」只有一張表：商品成員與活動票券成員排在同一張（兩者都是「成員」，5.1.5.4 F2），
+   欄位＝展開鈕｜名稱｜原價・剩餘｜每組數量｜移除。
+   票券列可展開（勾允許的門票、換活動）：展開入口有兩處且同步——最左一顆箭頭鈕（__open，一眼看得到）＋
+   名稱下方一行可點的文字（__link「已選 VIP／搖滾區 任選 · 調整」）。右邊的 ✕ 只負責移除。
+   原價與剩餘合成一欄（上＝原價、下＝小字「剩 N」，價格是區間時小字前面先寫「$低–$高」），讓名稱欄夠寬、不被擠斷。
+
+   anatomy
+     .member-table                     表（上緣細線）
+       .member-table__head             表頭（展開｜名稱｜原價・剩餘｜每組數量｜空）
+       .member-table__row              一列：五欄 grid
+         .member-table__open           展開鈕（只有票券列有；商品列放空的 <span>）；aria-expanded 轉向
+         .member-table__name           縮圖 __thumb ＋ 文字 __txt（__t 名稱、__s 規格小字或 __link 展開文字）
+         .member-table__price          原價（上）＋ __sub 小字（區間・剩餘）
+         .member-table__qty            每組數量步進器（amount-field＋zstep）
+         .member-table__x              移除（btn--icon btn--xs）
+       .member-table__exp              票券列展開區（允許的門票表、換一場活動、鎖定說明）
+     .member-table__empty              還沒有組合物時的一句
+   消費：create-bundle.html（組合物卡）、bundle-detail.html（組合設定分頁的成員清單）、js/bundle-editor.js（建立活動第 5 步組合包彈窗 layout:'split'）
+   surface：坐在 form-section--outlined 卡面上；縮圖底用 --muted 媒體井（同 card.css 的 Q66 例外）。
+   ============================================================ */
+.member-table { border-top: 1px solid var(--border-soft); }
+.member-table__head,
+.member-table__row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 132px 112px 28px;
+  gap: var(--sp-8);
+  align-items: center;
+}
+.member-table__head {
+  padding: var(--sp-8) 0;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+.member-table__head > :nth-child(3) { text-align: right; }
+.member-table__row {
+  padding: var(--sp-10) 0;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: var(--fs-13);
+}
+.member-table__row[hidden] { display: none; }
+.member-table__name { display: flex; align-items: center; gap: var(--sp-10); min-width: 0; }
+.member-table__thumb {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+.member-table__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.member-table__thumb .ztor-icon { width: 16px; height: 16px; }
+.member-table__txt { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+.member-table__t { color: var(--foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.member-table__t a { color: inherit; }
+.member-table__s { font-size: var(--fs-11); color: var(--muted-foreground); }
+.member-table__price { text-align: right; font-variant-numeric: tabular-nums; color: var(--foreground); }
+.member-table__sub { display: block; font-size: var(--fs-11); color: var(--muted-foreground); }
+.member-table__qty .amount-field { width: 112px; }
+.member-table__x { justify-self: end; }
+
+/* 展開入口：最左箭頭鈕＋名稱下方可點文字（兩者同步 aria-expanded） */
+.member-table__open {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-4) 0;
+  border: 0;
+  background: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.member-table__open:hover { color: var(--foreground); }
+.member-table__open:focus-visible,
+.member-table__link:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: var(--radius-sm); }
+.member-table__open .ztor-icon { width: 16px; height: 16px; transition: transform var(--duration); }
+.member-table__open[aria-expanded="true"] .ztor-icon { transform: rotate(90deg); }
+.member-table__link {
+  appearance: none;
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--fs-11);
+  text-align: left;
+  color: var(--muted-foreground);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.member-table__link:hover { color: var(--foreground); }
+
+.member-table__exp {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+  padding: var(--sp-4) 0 var(--sp-14) calc(20px + var(--sp-8) + 36px + var(--sp-10));
+  border-bottom: 1px solid var(--border-soft);
+}
+.member-table__exp[hidden] { display: none; }
+.member-table__exp > .field { margin: 0; }
+
+.member-table__empty { padding: var(--sp-14) 0; font-size: var(--fs-13); color: var(--muted-foreground); text-align: center; }
+.member-table__empty[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .member-table__open .ztor-icon { transition: none; } }

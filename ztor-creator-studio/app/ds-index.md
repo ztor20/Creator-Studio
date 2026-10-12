@@ -394,7 +394,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 172 支；主 class 前 5 個）
+## 元件（ds-components/，共 175 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -454,6 +454,7 @@
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs__dot ｜ Filter Tabs — secondary, lighter pill row for na
 - `finding-card.css` — .finding, .finding__kicker, .finding__title, .finding__sub, .finding__basis ｜ Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160）
 - `follow-field.css` — .follow-fields, .follow-field, .follow-field__head, .follow-field__seg ｜ follow-field.css · 跟隨／另設的時間列（D342，2026-10-01）
+- `form-ask.css` — .form-ask, .form-ask__t, .form-ask__s, .form-ask__body, .form-ask__row ｜ form-ask.css · 問句式設定塊、表單分類標與標題列讀數（2026-10-12，建立組
 - `form-grid.css` — .form-grid, .form-grid--3 ｜ form-grid.css · 表單欄位並排網格 helper
 - `form-section.css` — .form-section, .form-section--dense, .form-section__actions, .form-section--outlined, .form-section__head ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
 - `funding-panel.css` — .funding-panel, .funding-panel__amount-row, .funding-panel__amount, .funding-panel__backers, .funding-panel__goal ｜ Funding panel · 募資概況面板（2026-07-24 promote）
@@ -476,6 +477,7 @@
 - `lock-sets.css` — .lockset__sets, .lockset__sets-titles, .lockset__sets-title, .lockset__sets-hint, .lockset__sets-ctl ｜ lock-sets.css · 組合包「鎖定套數」區（規則：2026-09-11 使用者重定義；
 - `manage-ip.css` — .mi-chips, .mi-dot, .mi-verify, .mi-verify__title, .mi-verify__text ｜ manage-ip.css — 「管理我的 IP」頁專屬版面（manage-ip.html）。
 - `media-vault.css` — .vault-layout, .vault-layout--norail, .vault-rail, .vault-rail__head, .vault-rail__label ｜ Media Vault · 加密媒體庫（Fans → 媒體庫）
+- `member-table.css` — .member-table, .member-table__head, .member-table__row, .member-table__name, .member-table__thumb ｜ member-table.css · 組合物表（2026-10-12，建立組合包改版；使用者在示
 - `message-modal.css` — .payout-dialog, .msg-dialog, .msg-compose, .msg-field, .msg-field__label
 - `meter-list.css` — .meter-list__row, .meter-list__name, .meter-list__num, .meter-list__num--hot, .meter-list__row--off ｜ meter-list.css · 逐項水位清單（名稱 → 量條 → 數字，三欄一線）
 - `nest.css` — .nest, .form-section--outlined ｜ nest.css · 巢狀層（卡片內的滿版子層）
@@ -493,6 +495,7 @@
 - `preview-card.css` — .preview-card, .preview-card__media, .preview-card__dots, .preview-card__dot, .preview-card__dot--on ｜ Preview Card · 粉絲端即時預覽卡（spec §5.2.5）
 - `preview-column.css` — .preview-split, .preview-split__form, .preview-split--narrow, .preview-split--phone, .preview-col ｜ preview-column.css · 即時預覽欄（表單旁 sticky 常駐欄）
 - `preview-panel.css` — .preview-panel, .preview-panel--inset, .wizard, .main, .preview-panel__backdrop ｜ Preview Panel · 建立流程即時預覽的右側面板（spec §5.2.5）
+- `price-ladder.css` — .price-ladder, .price-ladder__step, .price-ladder__k, .price-ladder__t, .price-ladder__s ｜ price-ladder.css · 價格階梯（2026-10-12，建立組合包改版；使用者在示
 - `product-list.css` — .product-list, .product-list__head, .product-list__row, .product-list--eshop, .product-list--bundles ｜ Product list — borderless inventory table for E-
 - `product-post-modal.css` — .payout-dialog, .npp-intro, .npp-product, .npp-product__thumb, .npp-product__info ｜ New Product Post — composer popup for announcing
 - `profile-avatar-row.css` — .profile-avatar-row, .profile-avatar-row__img, .profile-avatar-row__name ｜ profile-avatar-row.css · 頭像列（頭像＋名字＋「變更相片」）
