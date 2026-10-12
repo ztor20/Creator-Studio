@@ -104,10 +104,10 @@
 /* 連結：沿用字色、靠底線辨識（品牌橘不用在內文連結，STYLE-DECISIONS 維度 5） */
 .rich-body__text a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .rich-body__text hr { border: 0; border-top: 1px solid var(--border); margin: var(--sp-12) 0; }
-/* 鎖定：比照 .textarea:disabled（input.css，全庫唯一的 disabled 樣子）——透明底、鎖定墨色、不可點 */
+/* 鎖定：比照 .textarea:disabled（input.css，全庫唯一的 disabled 樣子）——透明底、可讀墨色 --view-field-ink（Q128）、不可點 */
 .rich-body__text[aria-disabled="true"] {
   background: transparent;
-  color: var(--locked-field-ink);
+  color: var(--view-field-ink);
   cursor: not-allowed;
 }
 
@@ -140,19 +140,9 @@
 .rich-body--locked .rich-body__grip,
 .rich-body--locked .rich-body__foot { display: none; }
 
-/* 兩段式面板的檢視態（Q119：檢視就是看、不該長得像能填）：區塊拿掉卡面、文字塊本身就是讀數——
-   拿掉框與底、不可點，格式照原樣顯示；把手、刪除、格式與插入鈕是 button，隨 shared.css 收起，工具列與底部整列也收起。
-   空白文字塊：整份只有它時顯示「—」；有媒體時整塊收起，不留一排破折號。 */
-[data-mode="view"]:not([data-vm-style="disabled"]) .rich-body__block { background: transparent; border-color: transparent; padding: 0; }
+/* 兩段式面板的檢視態（2026-10-12 Q128，取代 Q119 的「文字塊本身就是讀數」）：區塊卡面與文字框都留著、
+   文字框由 shared.css 畫成 disabled（透明底、--view-field-ink、不可點）；把手、刪除、格式與插入鈕是 button，
+   隨 shared.css 收起，工具列、連結列與底部整列也收起。 */
 [data-mode="view"] .rich-body__tools,
 [data-mode="view"] .rich-body__linkbar,
 [data-mode="view"] .rich-body__foot { display: none; }
-[data-mode="view"]:not([data-vm-style="disabled"]) .rich-body__text {
-  box-shadow: none;
-  background: transparent;
-  padding-inline: 0;
-  min-height: 0;
-  pointer-events: none;
-}
-[data-mode="view"]:not([data-vm-style="disabled"]) .rich-body__text.is-blank::before { content: "—"; color: var(--foreground-muted); }
-[data-mode="view"]:not([data-vm-style="disabled"]) .rich-body--has-media .rich-body__block:has(.rich-body__text.is-blank) { display: none; }

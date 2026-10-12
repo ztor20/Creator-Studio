@@ -524,7 +524,10 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - **響應式降級**：視窗 <1400px `display: none`（內容欄 1140 置中，左欄放不下就隱藏而不是擠壓表單）。這頁是全頁 wizard，沒有側欄，故沒有側欄展開／收合兩種狀態；`?embed` 以頁面 CSS 隱藏；「預覽與發布」全頁畫面時表單欄收起，導覽隨之消失。1100px 以下單欄堆疊時同樣不顯示。
 - **a11y 與動效**：`<nav aria-label>`、項目是 `<button>`、目前節 `aria-current="location"`、`:focus-visible` 內縮 2px `--ring` 框線、讀屏狀態文字；`prefers-reduced-motion` 時 `scrollIntoView` 用 `auto`、進度條不做寬度動畫。
 - **文案**：`cp.outline.*` 五鍵（標題、必填摘要、三種狀態文字），zh／en 皆補。
-- **可延伸**：`create-bundle.html`、`create-auction.html`、`product-detail.html` 編輯態同為長表單，尚未接；接法＝連 CSS、載 partial、給 `sections`／`status`／`labels`。
+- **create-bundle 的接法（2026-10-12 · UI-CHANGES 一百七十七、ASSUMPTIONS UIA-246）**：`sections` 取 `.preview-split__form > .form-section`（三張分卡「內容」「定價與庫存」「名稱與上架」，與頂列分節分頁同段）；`status` 讀「預覽與發布」的發布前檢核 `stageChecks()`（＝`gateWhy()` 同一組條件），每個檢核項經 `cbSectionOf(step)` 對到所在分卡，折扣／鎖定套數／限量上限／限時折扣只在開了才有檢核項，所以「定價與庫存」平常選填、開了才必填；`recompute()` 末尾叫 `cbOutline.refresh()`；`observe` 監看 `.wizard__sheet`。頁尾腳本載入順序：`section-outline.js` 必須在頁面內嵌腳本之前（內嵌腳本載入時就要用 `window.ztorSectionOutline`）。進入「預覽與發布」全頁畫面時表單欄 `hidden`，元件濾掉不可見的節、整個收起，回表單時回來。頂列已有的分節分頁照舊並存。
+- **create-auction 的接法（同上）**：`sections` 同為 `.preview-split__form > .form-section`（拍賣種類、展示、故事、真實性證明、競標設定、競標資格、運送或交付〔依種類〕、標籤）；`status` 讀就緒檢查 `buildChecks()`，8 個檢查項各新增 `at`（欄位選擇器），經 `closest('.form-section')` 對到節；節裡有檢查項＝必填。拍賣種類那節沒有標題，以 `title` 選項回退 `ca.outline.kind`。右欄的預覽、上架設定、開拍設定不在表單欄，不列入。`refresh()` 末尾叫 `caOutline.refresh()`。
+- **兩頁差異**：內容欄是 `.wizard__body--narrow` 的 1000px（建立商品 1140），兩頁各設 `.preview-split__form { --section-outline-body: 1000px }`；其餘版面、降級（<1400px 隱藏）與建立商品相同。1440 寬導覽 184px。這兩頁在 1366 寬左側仍有約 135px，放得下 120px 最小寬，但元件斷點統一 1400，未為窄內容欄另開門檻（UIA-246 第 6 條）。
+- **可延伸**：`product-detail.html` 編輯態同為長表單，尚未接；接法＝連 CSS、載 partial（先於頁面腳本）、給 `sections`／`status`／`labels`。
 
 ## 4e. 商店預覽＝粉絲端創作者頁的手機鏡像，放在頁內右欄（2026-09-11）
 

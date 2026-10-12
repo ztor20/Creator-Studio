@@ -2424,7 +2424,14 @@
       if (ev.status === 'ended') {
         var done = clone(ev);
         done.arrivedAtOpen = Math.round((ev.sold || 0) * 0.91);
-        return buildRoster(done);
+        /* 掃描次數（2026-10-12）：掃描只有「已掃描／未掃描」兩種，重複掃描只是紀錄。
+           已掃描的列掃了一次或兩次；兩次的筆數與 checkinSummary().used 同一個比例（sold×0.015），
+           平均散落在已掃描列裡，非真實核銷資料。 */
+        var rows = buildRoster(done);
+        var repeats = Math.round((ev.sold || 0) * 0.015);
+        var step = repeats ? Math.floor(done.arrivedAtOpen / repeats) : 0;
+        rows.forEach(function (r, i) { if (r.arrived) r.scans = (step && i % step === 3) ? 2 : 1; });
+        return rows;
       }
       return [];
     },

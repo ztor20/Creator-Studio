@@ -938,7 +938,7 @@
           </div>
           <div class="field">
             <div class="field__label" data-i18n="cp.delivery.dim">Dimensions</div>
-            <div class="form-grid form-grid--3" data-vm-group=" × " data-vm-suffix=" cm"><!-- 檢視態併成一句「21 × 15 × 2 cm」（js/view-mode.js） -->
+            <div class="form-grid form-grid--3">
               <input class="input" value="21" data-i18n-placeholder="cp.delivery.dim.l" placeholder="L (CM)">
               <input class="input" value="15" data-i18n-placeholder="cp.delivery.dim.w" placeholder="W (CM)">
               <input class="input" value="2" data-i18n-placeholder="cp.delivery.dim.h" placeholder="H (CM)">
@@ -1301,7 +1301,6 @@
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="partials/field-more.js?v=r2.2"></script><script src="partials/date-input.js?v=r2.2"></script>
-<script src="js/view-mode.js?v=r2.2"></script><!-- 兩段式面板檢視態讀數（Q119）：欄位在檢視態畫成純文字、按「編輯」才變輸入框 -->
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/detail-topbar.js?v=r2.2"></script>
 <script src="js/row-disclosure.js?v=r2.2"></script>
@@ -1953,7 +1952,7 @@
         state.delivery = v;
         if (product) product.delivery = v;
         paintDeliverySeg(); applyVis(); paintDeliveryTitle();
-        /* 快照／設定總覽靠 change 事件知道切過（js/view-mode.js 與 renderSettingsOverview 都聽 change） */
+        /* 快照／設定總覽靠 change 事件知道切過（renderSettingsOverview 聽 change） */
         seg.dispatchEvent(new Event('change', { bubbles: true }));
       });
     }());
@@ -3501,15 +3500,8 @@
       settingsPanel.querySelectorAll('input, textarea').forEach(function (el) { el.readOnly = ro; });
       /* 建立後鎖死的欄位（主分類／次分類，D137）本來就是 disabled，編輯態也不放開 */
       settingsPanel.querySelectorAll('select:not([id="pd-main-cat"]):not([id="pd-sub-phys"]):not([id="pd-sub-digi"])').forEach(function (el) { el.disabled = ro; });
-      /* 檢視態讀數（Q119，js/view-mode.js）：欄位畫成純文字；金額走本頁的 money()，與定價表（Q118）同一種寫法 */
-      if (window.ZtorViewMode) window.ZtorViewMode.sync(settingsPanel);
+      /* 檢視態＝同一批框顯示成 disabled（2026-10-12 Q128，shared.css）；Q119 的純文字讀數與 money() 格式函式退場 */
     }
-    if (window.ZtorViewMode && settingsPanel) window.ZtorViewMode.configure(settingsPanel, {
-      format: function (root, input) {
-        if (root.classList.contains('amount-field') && !root.classList.contains('amount-field--suffix')) return money(String(input.value == null ? '' : input.value).trim());
-        return null;
-      }
-    });
     function setMode(editing) {
       if (!settingsPanel) return;
       settingsPanel.setAttribute('data-mode', editing ? 'edit' : 'view');

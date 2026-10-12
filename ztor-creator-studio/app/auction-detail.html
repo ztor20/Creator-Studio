@@ -170,7 +170,7 @@
 
         <!-- 商品標籤（2026-09-22 使用者裁決；建立拍賣 5.1.5.10 共用設定的 ca-tags 同一組 .tag-input）：
              沿用本頁既有的限度編輯——Upcoming（還沒開拍）可加減，Live／完售／流標唯讀；封存另由 archived-gate 兜底。
-             唯讀怎麼畫：整區是一個兩段式面板（data-editable ＋ data-mode），開拍後切成 view，shared.css／js/view-mode.js 把 chips 畫成純文字（Q119）；
+             唯讀怎麼畫：整區是一個兩段式面板（data-editable ＋ data-mode），開拍後切成 view，shared.css 把欄位畫成 disabled 框、chips 留著但收掉 ×（Q128）；
              Upcoming 切成 edit，輸入框與建議候選露出。沒有「編輯」鈕——模式由拍賣狀態決定，不由使用者切。 -->
         <section class="form-section form-section--outlined" data-ad-tags-section data-editable data-mode="view">
           <div class="form-section__head">
@@ -444,7 +444,6 @@
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/link-field.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
-<script src="js/view-mode.js?v=r2.2"></script><!-- 標籤區的檢視態讀數（Q119）：開拍後 chips 去框去 ×、一顆都沒有時補「—」 -->
 <script src="partials/radio-list.js?v=r2.2"></script>
 <script src="partials/archived-gate.js?v=r2.2"></script><!-- 封存態唯讀的事件層閘門（D288） -->
 <script src="js/sidebar.js?v=r2.2"></script>
@@ -648,7 +647,6 @@
       });
       if (window.ztorIcons) window.ztorIcons.applyIcons(tagsField);
       document.querySelectorAll('#ad-tags-suggest [data-tag-suggest]').forEach(b => b.classList.toggle('chip--active', a.tags.includes(b.textContent.trim())));
-      if (window.ZtorViewMode && tagsSection) window.ZtorViewMode.sync(tagsSection);
     }
     function tagsEditable() {
       if (L.isArchived(a)) return false;
@@ -660,7 +658,6 @@
       const editable = tagsEditable();
       tagsSection.setAttribute('data-mode', editable ? 'edit' : 'view');
       if (tagsEntry) tagsEntry.readOnly = !editable;
-      if (window.ZtorViewMode) window.ZtorViewMode.sync(tagsSection);
     }
     if (tagsField && tagsEntry) {
       tagsEntry.addEventListener('keydown', e => {

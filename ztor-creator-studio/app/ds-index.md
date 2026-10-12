@@ -451,7 +451,7 @@
 - `field-pill.css` — .field-pill, .field-pill__icon, .field-pill__chevron, .field-pill__input, .field-pill__select ｜ Field pill · inline control pill — search / sele
 - `field-source-tag.css` — .field-source, .field__label, .is-source-locked ｜ Field source tag · 「這一格從哪裡來」的來源標記＋鎖定樣式
 - `field-system.css` — .field, .field__label, .field__hint, .field__req, .field__error ｜ Ztor Creator Studio - Field system molecule
-- `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs--brand ｜ Filter Tabs — secondary, lighter pill row for na
+- `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs__dot ｜ Filter Tabs — secondary, lighter pill row for na
 - `finding-card.css` — .finding, .finding__kicker, .finding__title, .finding__sub, .finding__basis ｜ Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160）
 - `follow-field.css` — .follow-fields, .follow-field, .follow-field__head, .follow-field__seg ｜ follow-field.css · 跟隨／另設的時間列（D342，2026-10-01）
 - `form-grid.css` — .form-grid, .form-grid--3 ｜ form-grid.css · 表單欄位並排網格 helper

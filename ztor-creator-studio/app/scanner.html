@@ -182,6 +182,9 @@
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="dup"><i data-lucide="rotate-ccw" class="ztor-icon"></i> <span data-i18n="sc.demo.dup">Duplicate scan</span></button>
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="notin"><i data-lucide="x-circle" class="ztor-icon"></i> <span data-i18n="sc.demo.notin">Not in this session</span></button>
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="void"><i data-lucide="ban" class="ztor-icon"></i> <span data-i18n="sc.demo.void">Cancelled</span></button>
+    <!-- D397 決定四（UI-CHANGES 一百七十五）：活動票券的提前入場——早到可入場／早到不能入場（示範掃描時刻 17:40） -->
+    <button class="btn btn--outline btn--sm" type="button" data-sc-demo="earlyok"><i data-lucide="clock" class="ztor-icon"></i> <span data-i18n="sc.demo.earlyok">Early arrival: allowed</span></button>
+    <button class="btn btn--outline btn--sm" type="button" data-sc-demo="earlyno"><i data-lucide="clock" class="ztor-icon"></i> <span data-i18n="sc.demo.earlyno">Early arrival: denied</span></button>
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="offline"><i data-lucide="alert-triangle" class="ztor-icon"></i> <span data-i18n="sc.demo.offline">Toggle offline</span></button>
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="time"><i data-lucide="clock" class="ztor-icon"></i> <span data-i18n="sc.demo.time">Cycle session time</span></button>
     <button class="btn btn--outline btn--sm" type="button" data-sc-demo="lock"><i data-lucide="lock" class="ztor-icon"></i> <span data-i18n="sc.demo.lock">Password lockout</span></button>
@@ -246,8 +249,37 @@
       from: null, session: SESSION, status: 'pending', at: null },
     { code: 'TK-88213', buyer: 'Aria S.', src: 'Ticket TK-88213', kind: 'ticket',
       itemKey: 'pk.tk.signing', itemName: 'Signing session · GA entry', variant: null,
-      from: null, session: SESSION, status: 'done', at: '14:05' }
+      from: null, session: SESSION, status: 'done', at: '14:05' },
+    /* 提前入場（5.1.5.14 F1.2「活動票券的提前入場」，D397 決定四；UI-CHANGES 一百七十五）：
+       early＝該場開了提前入場時間時才有（場次開關關閉＝不帶 early，照一般流程、不顯示、不限制）。
+         open    該場的提前入場時間（5.1.6.1 F7）
+         min     這張門票的提前入場分鐘（F22；0＝跟著場次時間）
+         policy  早於最早可入場時間的處理：allow 仍可入場｜block 不能入場
+         own     true＝門票自訂早到處理、false＝跟隨場次
+       示範用掃描時刻固定 DEMO_NOW（原型沒有真時鐘，ASSUMPTIONS UIA-244）：Mina 早到但可入場、Leo 早到不能入場、Ivy 已過最早時間。 */
+    { code: 'TK-88250', buyer: 'Mina K.', src: 'Ticket TK-88250', kind: 'ticket',
+      itemKey: 'pk.tk.signing', itemName: 'Signing session · GA entry', variant: null,
+      from: null, session: SESSION, status: 'pending', at: null,
+      early: { open: '18:30', min: 30, policy: 'allow', own: false } },
+    { code: 'TK-88251', buyer: 'Leo W.', src: 'Ticket TK-88251', kind: 'ticket',
+      itemKey: 'pk.tk.signing', itemName: 'Signing session · GA entry', variant: null,
+      from: null, session: SESSION, status: 'pending', at: null,
+      early: { open: '18:30', min: 15, policy: 'block', own: true } },
+    { code: 'TK-88252', buyer: 'Ivy C.', src: 'Ticket TK-88252', kind: 'ticket',
+      itemKey: 'pk.tk.signing', itemName: 'Signing session · GA entry', variant: null,
+      from: null, session: SESSION, status: 'pending', at: null,
+      early: { open: '17:30', min: 0, policy: 'block', own: false } }
   ];
+  var DEMO_NOW = '17:40';   /* 示範的掃描時刻（HH:MM） */
+  function toMin(hhmm) { var p = String(hhmm || '0:0').split(':'); return (Number(p[0]) || 0) * 60 + (Number(p[1]) || 0); }
+  function fromMin(m) { m = ((m % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+  /* 這張票最早可入場時間＝該場提前入場時間再提早門票分鐘數；回傳 null＝沒有提前入場限制 */
+  function earlyOf(u) {
+    if (!u || u.kind !== 'ticket' || !u.early || !u.early.open) return null;
+    var e = u.early, at = toMin(e.open) - (Number(e.min) || 0);
+    return { open: e.open, min: Number(e.min) || 0, earliest: fromMin(at), policy: e.policy === 'block' ? 'block' : 'allow',
+             own: !!e.own, tooEarly: toMin(DEMO_NOW) < at };
+  }
   /* 已取消的單位（D242 定義、2026-09-08 Admin 作廢；2026-09-09 隨 D253 收斂觸發源為
      只剩 Admin 作廢）：orders-store 現在有真實 void 範例
      （#ZT-10471 的 PU-10471-01、#ZT-10473 的 PU-10473-01／02，見 js/orders-store.js
@@ -499,14 +531,43 @@
   function note(key, fb) {
     return '<div class="info-banner"><i data-lucide="info" class="ztor-icon info-banner__icon"></i><span data-i18n="' + key + '">' + T(key, fb) + '</span></div>';
   }
+  /* 帶變數的說明（{t} 已代入）：不掛 data-i18n，切語言時由 i18n:applied 重開不到——結果卡是一次性的，關掉重掃即換語言 */
+  function noteText(key, text) {
+    return '<div class="info-banner"><i data-lucide="info" class="ztor-icon info-banner__icon"></i><span>' + text + '</span></div>';
+  }
+  /* 提前入場四列（只給工作人員看；粉絲端不顯示任何提前入場資訊，D397 決定四） */
+  function earlyRows(ea) {
+    function row(k, fb, v) { return '<div class="scanner-result__row"><dt data-i18n="' + k + '">' + T(k, fb) + '</dt><dd>' + v + '</dd></div>'; }
+    var pol = T(ea.policy === 'block' ? 'sc.early.block' : 'sc.early.allow', ea.policy === 'block' ? 'Deny entry' : 'Allow entry') +
+      ' · ' + T(ea.own ? 'sc.early.own' : 'sc.early.follow', ea.own ? 'ticket setting' : 'follows the date');
+    return row('sc.early.open', 'Early entry time', ea.open) +
+      row('sc.early.min', 'Ticket early entry', ea.min ? fill(T('sc.early.min.val', '{n} min earlier'), { n: ea.min }) : T('sc.early.min.none', 'None')) +
+      row('sc.early.earliest', 'Earliest entry', '<b>' + ea.earliest + '</b>') +
+      row('sc.early.policy', 'If early', pol);
+  }
   function openSheet(kind, unit, rawCode) {
     var band = q('[data-sc-sheet-band]'), body = q('[data-sc-sheet-body]'), foot = q('[data-sc-sheet-foot]');
     sheet.className = 'scanner-sheet is-on scanner-sheet--' + ({ ok: 'ok', dup: 'warn', notin: 'bad', void: 'bad' }[kind]);
     scrim.classList.add('is-on');
     var back = '<button class="btn btn--primary" type="button" data-sc-close data-i18n="sc.res.back">' + T('sc.res.back', 'Back') + '</button>';
-    if (kind === 'ok') {
+    var ea = kind === 'ok' ? earlyOf(unit) : null;
+    if (ea && ea.tooEarly) {
+      /* 早於最早可入場時間（D397 決定四推導）：仍可入場＝提醒＋人工確認後才核銷；不能入場＝擋下、只給返回 */
+      var allow = ea.policy === 'allow';
+      sheet.className = 'scanner-sheet is-on scanner-sheet--' + (allow ? 'warn' : 'bad');
+      band.innerHTML = '<i data-lucide="' + (allow ? 'alert-triangle' : 'clock') + '" class="ztor-icon"></i><span data-i18n="' + (allow ? 'sc.res.early' : 'sc.res.earlyno') + '">' +
+        T(allow ? 'sc.res.early' : 'sc.res.earlyno', allow ? 'Early — confirm before redeeming' : 'Too early to enter') + '</span>';
+      body.innerHTML = buyerBlock(unit) + detailRows(unit, earlyRows(ea)) +
+        noteText(allow ? 'sc.note.early.allow' : 'sc.note.early.block', fill(T(allow ? 'sc.note.early.allow' : 'sc.note.early.block',
+          allow ? 'It’s before this ticket’s earliest entry time ({t}). Early arrivals can still enter — check with the guest, then redeem.'
+                : 'This ticket can’t enter before {t}. Ask the guest to come back then.'), { t: ea.earliest }));
+      foot.innerHTML = allow
+        ? '<button class="btn btn--primary" type="button" data-sc-confirm data-i18n="sc.res.confirmearly">' + T('sc.res.confirmearly', 'Let in and redeem') + '</button>' + back.replace('btn--primary', 'btn--outline')
+        : back;
+      if (allow) foot.querySelector('[data-sc-confirm]').addEventListener('click', function () { confirmRedeem(unit); });
+    } else if (kind === 'ok') {
       band.innerHTML = '<i data-lucide="badge-check" class="ztor-icon"></i><span data-i18n="sc.res.valid">' + T('sc.res.valid') + '</span>';
-      body.innerHTML = buyerBlock(unit) + detailRows(unit);
+      body.innerHTML = buyerBlock(unit) + detailRows(unit, ea ? earlyRows(ea) : '');
       foot.innerHTML = '<button class="btn btn--primary" type="button" data-sc-confirm data-i18n="sc.res.confirmone">' + T('sc.res.confirmone', 'Redeem this item') + '</button>' +
         '<button class="btn btn--outline" type="button" data-sc-close data-i18n="sc.res.back">' + T('sc.res.back', 'Back') + '</button>';
       foot.querySelector('[data-sc-confirm]').addEventListener('click', function () { confirmRedeem(unit); });
@@ -664,6 +725,11 @@
         openSheet('notin', x, x ? x.code : 'PU-10490-01');
       }
       if (k === 'void') openSheet('void', firstUnit(function (u) { return u.status === 'void'; }));
+      if (k === 'earlyok' || k === 'earlyno') {
+        var want = k === 'earlyok' ? 'allow' : 'block';
+        var eu = firstUnit(function (u) { var ea = earlyOf(u); return live(u) && u.status === 'pending' && ea && ea.tooEarly && ea.policy === want; });
+        if (eu) openSheet('ok', eu);
+      }
     });
   });
 

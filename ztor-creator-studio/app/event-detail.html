@@ -390,7 +390,7 @@
                  一張卡裡橫排三個數字時，卡是那三個數字的容器、不是它們的標題，讀起來像
                  「一個區塊裡塞了三件事」；一格一張卡之後，每個數字自己就是一張卡的主詞。
                  做法與售票中的兩格 KPI、進行中的到場兩格同一套，三個階段的總覽從此同一種長相。 -->
-            <div class="bento" id="ed-glance" data-stage-show="draft scheduled ended cancelled" hidden>
+            <div class="bento" id="ed-glance" data-stage-show="draft scheduled cancelled" hidden>
               <section class="card bento--span-4">
                 <div class="stat-row">
                   <div class="stat">
@@ -420,7 +420,7 @@
                    draft／scheduled／ended／cancelled 四階段，但 D188 只要求已結束與已取消可見
                    （草稿與已排程沒有持票人）。這張卡自己掛 data-stage-show，通用的階段可見性迴圈
                    （querySelectorAll('[data-stage-show]')）會單獨判斷它，不受父層四階段共用影響。 -->
-              <section class="card bento--span-4" id="ed-glance-voided-card" data-stage-show="ended cancelled" hidden>
+              <section class="card bento--span-4" id="ed-glance-voided-card" data-stage-show="cancelled" hidden>
                 <div class="stat-row">
                   <div class="stat">
                     <div class="stat__label" data-i18n="event-detail.kpi.voided">Voided tickets</div>
@@ -487,6 +487,41 @@
                  左側區域導覽的「設定」一直在，捲到哪裡都看得見。
                  renderLiveWhere() 與 [data-where-list] 保留——進行中階段的 #ed-live-where
                  仍在用同一支 renderer（那個階段的頁首講的是別的事）。 -->
+            <!-- ═══ bookyay 現場掃碼卡（D397 決定二，5.1.6.3 §2.4；UI-CHANGES 一百七十五）═══
+                 bookyay 匯入的活動從已排程起就給 bookyay 掃描器連結（可複製）與「前往取貨管理」，讓創作者開演前先把連結交給門口。
+                 進行中改由右欄的現場報到台（#ed-scanner 的 bookyay 兩格）承接，這張卡收起、同一條連結不出現兩份；
+                 已結束／已取消／ztor 自建活動不出現。落點＝右欄、開演前檢核之上（規格寫「報到快照卡旁」，原型的報到快照卡
+                 2026-08-17 已併進結案卡，已排程與售票中沒有那張卡；位置非約束，ASSUMPTIONS UIA-244）。
+                 內層 markup 與字串整套沿用現場報到台的 D394 兩格（.scanner-access--bare），不另做第二種長相。
+                 不掛 data-feat：同 D394，屬 bookyay 帶入活動的活動詳情。syncBkyCheckin() 切換顯隱並填值。 -->
+            <section class="card" id="ed-bky-scancard" hidden>
+              <div class="card__head">
+                <div class="card__title-group">
+                  <h3 class="card__title" data-i18n="event-detail.bkycard.title">On-site scanning</h3>
+                </div>
+                <span class="badge badge--neutral"><span data-i18n="event-detail.scanner.bky.badge">Via bookyay</span></span>
+              </div>
+              <div class="scanner-access scanner-access--nomedia scanner-access--bare">
+                <div class="scanner-access__main">
+                  <div class="scanner-access__field" data-bky-scan>
+                    <div class="scanner-access__label" data-i18n="event-detail.scanner.bky.url">bookyay scanner link</div>
+                    <div class="scanner-access__url" data-bky-scan-row>
+                      <code data-bky-scan-url>—</code>
+                      <button class="btn btn--icon btn--sm" type="button" data-view-safe data-bky-scan-copy
+                              aria-label="Copy link" title="Copy link"
+                              data-i18n-aria-label="event-detail.live.scanner.copy" data-i18n-title="event-detail.live.scanner.copy"><i data-lucide="copy" class="ztor-icon"></i></button>
+                    </div>
+                    <p class="field__hint field__hint--fact" data-bky-scan-none hidden data-i18n="event-detail.scanner.bky.nourl">bookyay hasn't sent a scanner link for this event yet. Door staff can still scan tickets with the bookyay Organizer App.</p>
+                    <p class="field__hint field__hint--fact" data-bky-scan-hint data-i18n="event-detail.scanner.bky.hint">Tickets are scanned at the door with bookyay's scanner. Send this link to door staff.</p>
+                  </div>
+                  <div class="scanner-access__field">
+                    <div class="scanner-access__label" data-i18n="event-detail.scanner.bky.pickup.label">Bundle pickup</div>
+                    <a class="btn btn--outline btn--block" href="pickup.html" data-i18n="event-detail.scanner.bky.pickup">Go to Pickup</a>
+                    <p class="field__hint field__hint--fact" data-i18n="event-detail.scanner.bky.pickup.hint">Products in ticket bundles are picked up through ztor pickup sessions, not bookyay's scanner.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
   <!-- ═══ 開演前檢核（規格 5.1.6.3 §2.4.1；2026-08-17 使用者裁決改成可編輯的待辦清單）═══
                  規格原本只定義兩個寫死的項目（退款政策、現場人力）與一個「完成」動作。現場人力
                  已於同日依使用者指示刪除，只剩一項，一整張卡在講一句話；規格自己也把「這份清單
@@ -687,14 +722,14 @@
                        syncBkyCheckin() 切換。 -->
                   <div class="scanner-access__field" id="ed-bky-scan" hidden>
                     <div class="scanner-access__label" data-i18n="event-detail.scanner.bky.url">bookyay scanner link</div>
-                    <div class="scanner-access__url" id="ed-bky-scan-row">
-                      <code id="ed-bky-scan-url">—</code>
-                      <button class="btn btn--icon btn--sm" type="button" data-view-safe id="ed-bky-scan-copy"
+                    <div class="scanner-access__url" id="ed-bky-scan-row" data-bky-scan-row>
+                      <code id="ed-bky-scan-url" data-bky-scan-url>—</code>
+                      <button class="btn btn--icon btn--sm" type="button" data-view-safe id="ed-bky-scan-copy" data-bky-scan-copy
                               aria-label="Copy link" title="Copy link"
                               data-i18n-aria-label="event-detail.live.scanner.copy" data-i18n-title="event-detail.live.scanner.copy"><i data-lucide="copy" class="ztor-icon"></i></button>
                     </div>
-                    <p class="field__hint field__hint--fact" id="ed-bky-scan-none" hidden data-i18n="event-detail.scanner.bky.nourl">bookyay hasn't sent a scanner link for this event yet. Door staff can still scan tickets with the bookyay Organizer App.</p>
-                    <p class="field__hint field__hint--fact" id="ed-bky-scan-hint" data-i18n="event-detail.scanner.bky.hint">Tickets are scanned at the door with bookyay's scanner. Send this link to door staff.</p>
+                    <p class="field__hint field__hint--fact" id="ed-bky-scan-none" data-bky-scan-none hidden data-i18n="event-detail.scanner.bky.nourl">bookyay hasn't sent a scanner link for this event yet. Door staff can still scan tickets with the bookyay Organizer App.</p>
+                    <p class="field__hint field__hint--fact" id="ed-bky-scan-hint" data-bky-scan-hint data-i18n="event-detail.scanner.bky.hint">Tickets are scanned at the door with bookyay's scanner. Send this link to door staff.</p>
                   </div>
                   <div class="scanner-access__field" id="ed-scanner-bky" hidden>
                     <div class="scanner-access__label" data-i18n="event-detail.scanner.bky.pickup.label">Bundle pickup</div>
@@ -713,65 +748,61 @@
           <!-- ═══ 結案（已結束才出現，2026-08-13）═══
                此前活動結束後的分頁與售票中一模一樣，等於沒有「收工」這一步：最終到了多少人
                沒有答案、名單與帳要自己翻分頁找、想照同一套再開一場只能回清單用 kebab。 -->
-          <section class="card" id="ed-wrapup" hidden>
-            <div class="card__head">
-              <div class="card__title-group">
-                <span class="card__title-icon card__title-icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></span>
-                <h3 class="card__title" data-i18n="event-detail.wrap.title">Wrap-up</h3>
-              </div>
-              <span class="text-sub" style="font-size: var(--fs-12)" id="ed-wrap-when">—</span>
-            </div>
-            <!-- 數字改用 .stat-row（2026-08-17）：原本是四張 .kpi 卡排成一排，那是「一格一張卡」
-                 的量體，塞進另一張卡裡就成了卡中卡。 -->
-            <div class="stat-row">
-              <div class="stat">
-                <div class="stat__label" data-i18n="event-detail.wrap.attended">Attended</div>
-                <div class="stat__value stat__value--success" id="ed-wrap-att">—</div>
-                <div class="stat__meta" id="ed-wrap-att-meta">—</div>
-              </div>
-              <div class="stat">
-                <div class="stat__label" data-i18n="event-detail.wrap.noshow">No-shows</div>
-                <div class="stat__value" id="ed-wrap-noshow">—</div>
-                <div class="stat__meta" data-i18n="event-detail.wrap.noshow-meta">Sold but never scanned</div>
-              </div>
-              <div class="stat">
-                <div class="stat__label" data-i18n="event-detail.wrap.net">Net to you</div>
-                <div class="stat__value" id="ed-wrap-net">—</div>
-                <div class="stat__meta" data-i18n="event-detail.wrap.net-meta">After the platform fee</div>
-              </div>
-              <div class="stat">
-                <div class="stat__label" data-i18n="event-detail.wrap.settle">Settlement</div>
-                <div class="stat__value" id="ed-wrap-settle">—</div>
-                <div class="stat__meta" data-i18n="event-detail.wrap.settle-meta">Settled revenue only</div>
-              </div>
-            </div>
+          <!-- 改版 2026-10-12（使用者指示，依 lab-ended-overview.html 版型 A「雙主角」＋B 的動作位置）：
+               原本是一張大卡裡塞四個數字、三色報到、四顆按鈕；現在入場與收入各自一張卡，
+               動作貼在它服務的數字旁——名單匯出在入場卡、交易匯出與收入管理在收入卡。
+               · 場次／地點／可售張數三格不再出現（頁首已有日期與場地；可售張數是分母）。
+               · 「再辦一場」不在這裡重複放：頁首已有同一顆（data-ed-duplicate），同一個動作不出現兩次。
+               · 主數字叫「已使用」＝核銷入場的票數；重複掃描與無效 QR 降成入場卡下方的次級列。
+               · 撤銷等於沒賣出：已撤銷票券列在收入卡（對帳用），不計入實售與未到場。
+               · 已取消沿用本區（只剩收入卡）；#ed-wrapup 本身不再是卡，顯隱由 renderWrapUp 全權決定。 -->
+          <div class="stack stack--bento" id="ed-wrapup" hidden>
+            <p class="text-sub" style="font-size: var(--fs-12)" id="ed-wrap-note" hidden>—</p>
+            <div class="bento">
+              <section class="card bento--span-7" id="ed-wrap-att-card">
+                <div class="stat-row">
+                  <div class="stat">
+                    <div class="stat__label" data-i18n="event-detail.wrap.attended">Used</div>
+                    <div class="stat__value stat__value--success" id="ed-wrap-att">—</div>
+                    <div class="stat__meta" id="ed-wrap-att-meta">—</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat__label" data-i18n="event-detail.wrap.noshow">No-shows</div>
+                    <div class="stat__value" id="ed-wrap-noshow">—</div>
+                    <div class="stat__meta" data-i18n="event-detail.wrap.noshow-meta">Sold but never scanned</div>
+                  </div>
+                </div>
+                <div class="stock-bar stock-bar--total"><span class="stock-bar__fill" id="ed-wrap-att-bar" style="width: 0%;"></span></div>
+                <div class="mt-16">
+                  <div class="kv kv--lead"><span class="kv__k" data-i18n="event-detail.wrap.dup">Repeat scans</span><span class="kv__v" id="ed-wrap-dup">—</span></div>
+                  <div class="kv"><span class="kv__k" data-i18n="event-detail.wrap.invalid">Invalid QR</span><span class="kv__v" id="ed-wrap-invalid">—</span></div>
+                </div>
+                <div class="flex-row mt-16" style="flex-wrap:wrap">
+                  <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-export="attendees"><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="event-detail.att.export">Export attendee list</span></button>
+                </div>
+              </section>
 
-            <!-- 報到三色（自原「報到快照」卡併入，2026-08-17）：共看派對沒有 QR 報到，整段收起。 -->
-            <div id="ed-wrap-checkin" data-hide-type="watchparty virtual">
-              <div class="card__subhead" data-i18n="event-detail.wrap.checkin">Check-in result</div>
-              <div class="bento">
-                <div class="kpi kpi--success bento--span-4">
-                  <div class="kpi__label" data-i18n="event-detail.checkin.valid">Valid (green)</div>
-                  <div class="kpi__value">—</div>
+              <section class="card bento--span-5" id="ed-wrap-income-card">
+                <div class="stat-row">
+                  <div class="stat">
+                    <div class="stat__label" data-i18n="event-detail.wrap.net">Net to you</div>
+                    <div class="stat__value" id="ed-wrap-net">—</div>
+                    <div class="stat__meta" data-i18n="event-detail.wrap.net-meta">After the platform fee</div>
+                  </div>
                 </div>
-                <div class="kpi kpi--warning bento--span-4">
-                  <div class="kpi__label" data-i18n="event-detail.checkin.used">Already used (yellow)</div>
-                  <div class="kpi__value">—</div>
+                <div class="mt-16">
+                  <div class="kv kv--lead"><span class="kv__k" data-i18n="event-detail.wrap.gross">Ticket sales</span><span class="kv__v" id="ed-wrap-gross">—</span></div>
+                  <div class="kv"><span class="kv__k" data-i18n="event-detail.wrap.fee">Platform fee</span><span class="kv__v" id="ed-wrap-fee">—</span></div>
+                  <div class="kv" id="ed-wrap-voided-row"><span class="kv__k" data-i18n="event-detail.kpi.voided">Voided tickets</span><span class="kv__v" id="ed-wrap-voided">—</span></div>
+                  <div class="kv"><span class="kv__k" data-i18n="event-detail.wrap.settle">Settlement</span><span class="kv__v" id="ed-wrap-settle">—</span></div>
                 </div>
-                <div class="kpi kpi--destructive bento--span-4">
-                  <div class="kpi__label" data-i18n="event-detail.checkin.invalid">Invalid (red)</div>
-                  <div class="kpi__value">—</div>
+                <div class="flex-row mt-16" style="flex-wrap:wrap">
+                  <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-export="transactions"><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="event-detail.tx.export">Export transactions</span></button>
+                  <a class="btn btn--ghost btn--sm" href="earnings.html" data-i18n="event-detail.fin.link.earnings">Open Earnings</a>
                 </div>
-              </div>
+              </section>
             </div>
-
-            <div class="flex-row mt-16" style="flex-wrap:wrap">
-              <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-duplicate data-feat="S76"><i data-lucide="copy" class="ztor-icon"></i> <span data-i18n="event-detail.btn.duplicate">Run it again</span></button>
-              <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-export="attendees"><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="event-detail.att.export">Export attendee list</span></button>
-              <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-export="transactions"><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="event-detail.tx.export">Export transactions</span></button>
-              <a class="btn btn--ghost btn--sm" href="earnings.html" data-i18n="event-detail.fin.link.earnings">Open Earnings</a>
-            </div>
-          </section>
+          </div>
             </div>
 
             <div data-nav-panel="next">
@@ -1499,9 +1530,12 @@
             <p class="empty-card__text" data-i18n="ed.bd.empty.sub">Create one in step 6 of the create flow, or from the e-shop.</p>
             <!-- 2026-10-12（UI-CHANGES 一百六十九，使用者「開啟編輯在顯示無資料畫面，並引導創建」）：空狀態只在編輯態出現（檢視態整節收起），
                  帶一顆通往電子商店「建立組合包」的入口——規格的空狀態本來就寫「或從電子商店建立」，這裡只是把那句話做成連結；
-                 不預帶本活動（create-bundle.html 沒有預選活動的參數，要不要做屬產品決定，ASSUMPTIONS BDL-EMPTY-001）。
-                 已結束／已取消整頁唯讀、不會進編輯態，所以不必另擋。 -->
-            <a class="btn btn--outline btn--sm empty-card__cta" href="create-bundle.html" data-ed-bundle-create data-i18n="ed.bd.empty.cta">Create a bundle in the E-Shop</a>
+                 已結束／已取消整頁唯讀、不會進編輯態，所以不必另擋。
+                 〔2026-10-12 D397 決定一，UI-CHANGES 一百七十五〕改成自動帶入這場活動：href 由 renderBundles() 換成
+                 create-bundle.html?ev=<id>&from=event-detail（票券成員預選這場、全部門票勾選、張數 1；建立或取消回本頁 #tiers）；
+                 文案改「建立組合包」。原「不預帶本活動」（BDL-EMPTY-001）由 D397 取代。建立不屬活動編輯模式、不併入整頁儲存；
+                 編輯中有未儲存改動時，點下去由頁面的連結攔截（leaveTo）跳離開確認。 -->
+            <a class="btn btn--outline btn--sm empty-card__cta" href="create-bundle.html" data-ed-bundle-create data-i18n="ed.bd.empty.cta">Create a bundle</a>
           </div>
           <!-- 墓碑 2026-08-17（使用者指示刪除）：這裡原本有一則 info-banner 寫著
                「組合包在建立流程設定；這裡的編輯能力等上游規格定案後補（BDL-001）」。
@@ -1620,7 +1654,7 @@
           <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tx-filter="voided"><span data-i18n="event-detail.tx.f.cancelled">Cancelled</span><span class="filter-tabs__count" data-tx-count="voided">0</span></button>
         </nav>
 
-        <section class="card" style="padding:0;overflow:hidden">
+        <section class="card mt-16" style="padding:0;overflow:hidden">
           <div style="overflow-x:auto">
             <table class="ztor-table">
               <thead>
@@ -1672,9 +1706,11 @@
           <span data-i18n="event-detail.att.bky">Who’s in and who isn’t comes from bookyay’s door scans. This list is read-only.</span>
         </div>
         <div class="bento" id="ed-roster-checkin" data-stage-show="live ended" data-hide-type="watchparty virtual">
-          <div class="kpi kpi--success bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.valid">Valid (green)</div><div class="kpi__value">—</div></div>
-          <div class="kpi kpi--warning bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.used">Already used (yellow)</div><div class="kpi__value">—</div></div>
-          <div class="kpi kpi--destructive bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.invalid">Invalid (red)</div><div class="kpi__value">—</div></div>
+          <!-- 2026-10-12 掃描只有兩種（使用者裁示）：已掃描（含只掃一次與重複掃描）／未掃描。
+               重複掃描不是狀態，只是紀錄（「含重複掃描 N 次」附在已掃描下方、名單列上標掃描次數）；
+               無效 QR 不屬於任何一張票，不在這裡；總覽入場卡的次級列仍有。 -->
+          <div class="kpi kpi--success bento--span-6"><div class="kpi__label" data-i18n="event-detail.checkin.valid">Scanned</div><div class="kpi__value">—</div><div class="kpi__meta" data-scan-dup hidden></div></div>
+          <div class="kpi bento--span-6"><div class="kpi__label" data-i18n="event-detail.checkin.notscanned">Not scanned</div><div class="kpi__value">—</div></div>
         </div>
 
         <!-- 進行中場次的即時名單（其餘場次維持下方的靜態示例表）。
@@ -2636,6 +2672,34 @@
   /* 報到（2026-10-08 · D375 決定五）：bookyay 匯入活動的門票入場由 bookyay Organizer App 掃票——
      現場報到台（掃碼器卡）保留但停用：狀態徽章改「已停用」、連結的複製／分享／開啟停用，下方說明＋取貨管理連結
      （票務商品裡的商品照電子商店取貨流程）。名單分頁的已入場／未入場名單改唯讀說明來源，「開啟掃碼器」停用。 */
+  /* bookyay 掃描器連結的兩格（D394 現場報到台、D397 現場掃碼卡共用一支）：有連結畫連結＋複製，沒有寫一句說明。
+     元素用 data-bky-scan-* 找，同一套 markup 在兩張卡各一份，不靠 id。 */
+  function fillBkyScan(root) {
+    const url = String(ev.bkyScanUrl || '').trim();
+    const pick = k => root.querySelector('[data-bky-scan-' + k + ']');
+    const row = pick('row'), none = pick('none'), hint = pick('hint'), code = pick('url'), copy = pick('copy');
+    if (row) row.hidden = !url;
+    if (hint) hint.hidden = !url;
+    if (none) none.hidden = !!url;
+    if (code) code.textContent = url || '—';
+    if (copy && !copy.dataset.bound) {
+      copy.dataset.bound = '1';
+      copy.addEventListener('click', () => {
+        const u = String(ev.bkyScanUrl || '').trim();
+        if (!u) return;
+        if (navigator.clipboard) navigator.clipboard.writeText(u).catch(() => {});
+        const done = T('event-detail.live.scanner.copied', 'Link copied');
+        copy.removeAttribute('data-i18n-title'); copy.removeAttribute('data-i18n-aria-label');
+        copy.title = done; copy.setAttribute('aria-label', done);
+        if (window.ztorToast) window.ztorToast.show(done);
+        setTimeout(() => {
+          copy.setAttribute('data-i18n-title', 'event-detail.live.scanner.copy');
+          copy.setAttribute('data-i18n-aria-label', 'event-detail.live.scanner.copy');
+          if (window.applyI18n) window.applyI18n(copy);
+        }, 1600);
+      });
+    }
+  }
   function syncBkyCheckin() {
     const bky = isBky();
     const card = document.getElementById('ed-scanner');
@@ -2663,34 +2727,18 @@
       const bkyBox = document.getElementById('ed-bky-scan');
       if (bkyBox) {
         bkyBox.hidden = !bky;
-        const url = bky ? String(ev.bkyScanUrl || '').trim() : '';
-        const row = document.getElementById('ed-bky-scan-row');
-        const none = document.getElementById('ed-bky-scan-none');
-        const hint = document.getElementById('ed-bky-scan-hint');
-        const code = document.getElementById('ed-bky-scan-url');
-        if (row) row.hidden = !url;
-        if (hint) hint.hidden = !url;
-        if (none) none.hidden = !!url;
-        if (code) code.textContent = url || '—';
-        const copy = document.getElementById('ed-bky-scan-copy');
-        if (copy && !copy.dataset.bound) {
-          copy.dataset.bound = '1';
-          copy.addEventListener('click', () => {
-            const u = String(ev.bkyScanUrl || '').trim();
-            if (!u) return;
-            if (navigator.clipboard) navigator.clipboard.writeText(u).catch(() => {});
-            const done = T('event-detail.live.scanner.copied', 'Link copied');
-            copy.removeAttribute('data-i18n-title'); copy.removeAttribute('data-i18n-aria-label');
-            copy.title = done; copy.setAttribute('aria-label', done);
-            if (window.ztorToast) window.ztorToast.show(done);
-            setTimeout(() => {
-              copy.setAttribute('data-i18n-title', 'event-detail.live.scanner.copy');
-              copy.setAttribute('data-i18n-aria-label', 'event-detail.live.scanner.copy');
-              if (window.applyI18n) window.applyI18n(copy);
-            }, 1600);
-          });
-        }
+        if (bky) fillBkyScan(bkyBox);
       }
+    }
+    /* D397 決定二（2026-10-12，UI-CHANGES 一百七十五）：bookyay 現場掃碼卡——已排程與售票中在總覽右欄提前給同樣兩格；
+       進行中由上面的現場報到台承接（不重複），已結束／已取消、自建活動、線上類型都不出現。 */
+    const early = document.getElementById('ed-bky-scancard');
+    if (early) {
+      const online = typeof ONLINE_TYPES !== 'undefined' && ONLINE_TYPES.indexOf(ev.type) >= 0;
+      const on = bky && !online && ['scheduled', 'on-sale'].indexOf(ev.status) >= 0;
+      early.hidden = !on;
+      if (on) fillBkyScan(early);
+      if (typeof syncOverviewBento === 'function') syncOverviewBento();   // 右欄可能因這張卡由空變有，重算欄寬
     }
     const rosterNote = document.getElementById('ed-roster-bky');
     if (rosterNote) rosterNote.hidden = !bky;
@@ -6695,6 +6743,10 @@
     /* 2026-10-12（UI-CHANGES 一百六十九）：沒有組合包＝檢視態整節不出現（syncNavSections 讀 data-view-empty）；
        編輯態才出現空狀態＋「在電子商店建立組合包」入口 */
     card.closest('[data-nav-panel]')?.toggleAttribute('data-view-empty', !bds.length);
+    /* D397 決定一（UI-CHANGES 一百七十五）：建立入口自動帶入這場活動；已結束／已取消不提供（這場的票不能加入組合包） */
+    const canCreate = ['ended', 'cancelled'].indexOf(ev.status) < 0;
+    const createHref = 'create-bundle.html?ev=' + encodeURIComponent(ev.id) + '&from=event-detail';
+    document.querySelectorAll('[data-ed-bundle-create]').forEach(a => { a.href = createHref; a.hidden = !canCreate; });
     /* 2026-08-19 清掉 #ed-bundle-count 死分支：計數徽章已在 2026-08-18 依使用者指示
        從 markup 移除，這段 guard 住的填值程式永遠不會執行，只會讓 id 稽核一直掛名。 */
     if (!bds.length) return;
@@ -6751,7 +6803,15 @@
         /* 入口連結放卡尾、不放卡頭：卡頭放的話三欄格裡名稱被擠成三行（1440 寬實測）。 */
         '<div class="mt-8"><a class="card__link" href="' + esc(href) + '">' + esc(T('ed.bd.manage', 'Manage in e-shop →')) + '</a></div>' +
       '</div>';
-    }).join('') + '</div>';
+    }).join('') +
+      /* D397 決定一：有組合包時的新增入口＝空狀態那顆的同一個目的地。長相沿用票種的「新增門票」卡（.upload-tile.tier-add），
+         跟著組合包卡排在格子最後；檢視態由共用規則收起（[data-mode="view"] .upload-tile:not(.is-filled)），同空狀態只在編輯態出現。 */
+      (canCreate ? '<a class="upload-tile tier-add" href="' + esc(createHref) + '" data-ed-bundle-create>' +
+        '<span class="upload-tile__icon"><i data-lucide="package" class="ztor-icon"></i></span>' +
+        '<span class="upload-tile__title" data-i18n="ed.bd.add">' + esc(T('ed.bd.add', '＋ Create a bundle')) + '</span>' +
+        '<span class="upload-tile__hint" data-i18n="ed.bd.add.hint">' + esc(T('ed.bd.add.hint', 'Starts with this event\u2019s tickets')) + '</span>' +
+      '</a>' : '') +
+      '</div>';
     if (window.ztorIcons) window.ztorIcons.applyIcons(list);
   }
   renderBundles();
@@ -6818,31 +6878,54 @@
     card.hidden = !on;
     if (!on) return;
     const ci = window.ztorEvents.checkinSummary(ev.id);
-    const tx = window.ztorEvents.transactions(ev.id).filter(t => t.status === 'paid');
+    const txs = window.ztorEvents.transactions(ev.id);
+    const tx = txs.filter(t => t.status === 'paid');
     const gross = tx.reduce((a, t) => a + t.gross, 0);
     const fee = tx.reduce((a, t) => a + t.fee, 0);
-    const when = $('#ed-wrap-when');
-    if (when) when.textContent = ev.status === 'cancelled'
-      ? T('event-detail.wrap.cancelled', 'Cancelled — sales below are what had already been paid')
-      : T('event-detail.wrap.when', 'Ended {d}').replace('{d}', fmtDate(ev.date));
+    /* 撤銷等於沒賣出（使用者 2026-10-12 裁決）：store 的 sold 本來就不含作廢票（見 buildTx 註解），
+       所以到場率與未到場的分母不用再扣；已撤銷張數只作為對帳資訊列在收入卡。 */
+    const voidedQty = txs.filter(t => t.status === 'voided').reduce((a, t) => a + (t.qty || 0), 0);
+    const cancelled = ev.status === 'cancelled';
+    const note = $('#ed-wrap-note');
+    if (note) {
+      note.hidden = !cancelled;
+      if (cancelled) note.textContent = T('event-detail.wrap.cancelled', 'Cancelled — sales below are what had already been paid');
+    }
     const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
     /* 2026-08-19 修復：判斷式仍只排除共看派對，2026-08-17 全站已把「線上」統一改成
        ONLINE_TYPES（其餘 5 處都改過，唯獨這裡漏網）——結果線上活動（virtual）結束後
-       照樣套用實體報到率，對純直播活動顯示不存在的「開演當天門口報到」數字。 */
-    if (ci && ONLINE_TYPES.indexOf(ev.type) < 0) {
+       照樣套用實體報到率，對純直播活動顯示不存在的「開演當天門口報到」數字。
+       2026-10-12：沒有現場報到的活動（線上、共看派對、已取消）整張入場卡收起，不再顯示一排「—」；
+       收入卡因此獨佔整列。 */
+    const showAtt = !!ci && ONLINE_TYPES.indexOf(ev.type) < 0;
+    const attCard = $('#ed-wrap-att-card');
+    const incomeCard = $('#ed-wrap-income-card');
+    if (attCard) attCard.hidden = !showAtt;
+    if (incomeCard) {
+      incomeCard.classList.toggle('bento--span-5', showAtt);
+      incomeCard.classList.toggle('bento--span-12', !showAtt);
+    }
+    if (showAtt) {
       set('#ed-wrap-att', fmtNum(ci.valid) + ' / ' + fmtNum(ci.sold));
       set('#ed-wrap-att-meta', T('event-detail.wrap.rate', '{n}% of tickets sold').replace('{n}', ci.rate));
       set('#ed-wrap-noshow', fmtNum(ci.sold - ci.valid));
-    } else {
-      /* 共看派對與已取消的場次沒有到場數這件事 */
-      set('#ed-wrap-att', '—');
-      set('#ed-wrap-att-meta', T('event-detail.wrap.noattendance', 'No door check-in for this event'));
-      set('#ed-wrap-noshow', '—');
+      const bar = $('#ed-wrap-att-bar');
+      if (bar) bar.style.width = ci.rate + '%';
+      const times = n => T('event-detail.wrap.times', '{n} times').replace('{n}', fmtNum(n));
+      set('#ed-wrap-dup', times(ci.used));
+      set('#ed-wrap-invalid', times(ci.invalid));
     }
     set('#ed-wrap-net', money0(gross - fee));
+    set('#ed-wrap-gross', money0(gross));
+    set('#ed-wrap-fee', '−' + money0(fee));
+    /* 已取消的撤銷張數在場次概況那格已經有（#ed-glance-voided-card），這裡只給已結束，免得同一個數字出現兩次。 */
+    const voidedRow = $('#ed-wrap-voided-row');
+    if (voidedRow) voidedRow.hidden = cancelled;
+    set('#ed-wrap-voided', T('event-detail.wrap.tickets', '{n} tickets').replace('{n}', fmtNum(voidedQty)));
     /* 2026-09-09（D253）：已取消不再意味著「退款進行中」——改為手動作廢，這裡改顯示
-       「已取消」，與付款．結算軸的整體改名一致（見 renderTx／renderFinance）。 */
-    set('#ed-wrap-settle', ev.status === 'cancelled'
+       「已取消」，與付款．結算軸的整體改名一致（見 renderTx／renderFinance）。
+       2026-10-12：已結束的結算只有「已結算」（使用者裁決，沒有「待結算」這一態）。 */
+    set('#ed-wrap-settle', cancelled
       ? T('event-detail.wrap.settle.cancelled', 'Cancelled')
       : T('event-detail.wrap.settle.done', 'Settled'));
   }
@@ -6859,8 +6942,12 @@
       if (!card || !ci) return;
       const vals = card.querySelectorAll('.kpi .kpi__value');
       if (vals[0]) vals[0].textContent = fmtNum(ci.valid);
-      if (vals[1]) vals[1].textContent = fmtNum(ci.used);
-      if (vals[2]) vals[2].textContent = fmtNum(ci.invalid);
+      if (vals[1]) vals[1].textContent = fmtNum(ci.sold - ci.valid);   // 未掃描＝實售 − 已掃描（撤銷票不在 sold 裡）
+      const dup = card.querySelector('[data-scan-dup]');
+      if (dup) {
+        dup.hidden = !ci.used;
+        dup.textContent = T('event-detail.checkin.dupmeta', 'Includes {n} repeat scans').replace('{n}', fmtNum(ci.used));
+      }
     };
     fillLegend(document.getElementById('ed-wrap-checkin'));
     fillLegend(document.getElementById('ed-roster-checkin'));
@@ -6924,8 +7011,9 @@
     body.innerHTML = list.slice(0, CAP).map(r => {
       const state = ended
         ? (r.arrived
-            ? '<span class="badge badge--success"><span>' + T('event-detail.att.state.valid', 'Valid') + '</span></span>'
-            : '<span class="badge"><span>' + T('event-detail.live.notarrived', 'Not arrived') + '</span></span>')
+            ? '<span class="badge badge--success"><span>' + T('event-detail.att.state.valid', 'Scanned') + '</span></span>' +
+              (r.scans > 1 ? ' <span class="text-sub" style="font-size: var(--fs-12)">' + T('event-detail.att.scans', '{n} scans').replace('{n}', r.scans) + '</span>' : '')
+            : '<span class="badge"><span>' + T('event-detail.att.state.notscanned', 'Not scanned') + '</span></span>')
         : '—';
       return '<tr class="ztor-table__row"><td>' + esc(r.name) + '</td><td>' + esc(r.tier) + soloTag(r) + '</td>' +
         '<td><code>' + esc(r.code) + '</code></td><td data-att-col-state>' + state + '</td></tr>';

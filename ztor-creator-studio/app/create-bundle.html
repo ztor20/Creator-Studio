@@ -55,6 +55,7 @@
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 全頁畫面的翻譯表／價格表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
 <link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- 翻譯表／價格表的滑出面板 -->
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- 粉絲視角組合包頁（前台 shop-item 組合分支鏡像，第 5 段；只給 js/fan-bundle-page.js 用） -->
+<link rel="stylesheet" href="ds-components/section-outline.css?v=r2.2"><!-- 2026-10-12（UI-CHANGES 一百七十七）：左側空白欄的「本頁大綱」區段導覽（partials/section-outline.js），比照建立商品 -->
 <link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- 「預覽與發布」全頁版型（主區預覽＋右側側欄） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
@@ -91,6 +92,8 @@
   /* 分卡內直排：段落之間由容器持有（Q103），.field 自己的下外距歸零；小節之間留一階 */
   .cb-sec > .field { margin-bottom: 0; }
   .cb-sec [hidden] { display: none; }
+  /* 本頁大綱（UI-CHANGES 一百七十七）：內容欄是 .wizard__body--narrow 的 1000px，不是建立商品的 1140，左欄寬度照這個算 */
+  .preview-split__form { --section-outline-body: 1000px; }
 </style>
 </head>
 <body>
@@ -610,6 +613,7 @@
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
 <script src="js/row-disclosure.js?v=r2.2"></script>
+<script src="partials/section-outline.js?v=r2.2"></script><!-- 本頁大綱的行為（UI-CHANGES 一百七十七）；要先於下面的頁面腳本載入 -->
 <script>
 /* Create bundle 互動 · spec 5.1.5.4。
    2026-09-21 第 2 批：版面改成與建立活動第 6 步（js/bundle-editor.js layout:'split'）同一個心智模型，
@@ -678,6 +682,13 @@
   const state = { discountOn: false, nameTouched: false, avail: 'unlimited' };
   /* 票券成員的工作狀態：挑到的活動、勾選的允許票種、整組張數 */
   const tix = { event: null, tierIds: [], qty: 1 };
+  /* D397：從活動詳情進來（?ev=<id>&from=event-detail）時記下那場與回程網址；預帶與回程見頁尾 */
+  const FROM_EV = (function () {
+    const sp = new URLSearchParams(location.search);
+    const id = sp.get('ev');   // 不用 ?event=：devtools.js 把 ?event= 讀成「活動日」示範狀態
+    if (!id || sp.get('from') !== 'event-detail') return null;
+    return { id: id, back: 'event-detail.html?id=' + encodeURIComponent(id) + '#tiers' };
+  })();
   /* 粉絲端預覽卡的選擇（只影響那張卡，不寫回表單） */
   const FAN = { tier: null, variants: {} };
   let lockBad = false;
@@ -1339,6 +1350,7 @@
     if (whyEl) { whyEl.hidden = !why; whyEl.textContent = why; }
     createBtn.disabled = !!why;
     renderStepper();
+    if (cbOutline) cbOutline.refresh();   /* 本頁大綱跟著刷新（UI-CHANGES 一百七十七） */
   }
 
   /* 組合折扣開關 */
@@ -1806,6 +1818,8 @@
     const q = new URLSearchParams({ posted: '1', type: 'bundle' });
     if (nm) q.set('name', nm);
     if (pr) q.set('price', pr);
+    /* D397（UI-CHANGES 一百七十五）：從活動詳情進來的，建立完成回那場活動詳情的票務分頁（5.1.5.4 §9 推導） */
+    if (FROM_EV) { location.href = FROM_EV.back; return; }
     location.href = 'e-shop.html?' + q.toString();
   }
   /* ── 兩步驟：頁首進度條＋第 2 步「預覽與發布」全頁畫面（D321，D310 組合側，2026-09-23，比照建立商品 D317）──────
@@ -2081,9 +2095,67 @@
   });
 
 
+  /* ── 本頁大綱（左側空白欄的區段導覽，2026-10-12，UI-CHANGES 一百七十七；元件 partials/section-outline.js，比照 create-product）──
+     「必填」「已完成」不另訂規則：直接讀「預覽與發布」的發布前檢核 stageChecks()（＝表單擋關 gateWhy() 同一組條件），
+     每個檢核項用 cbSectionOf(step) 對到所在分卡（同檢核項點了跳回表單的對照）；分卡裡有檢核項＝必填、全過＝已完成、
+     沒有檢核項＝選填（例：定價段只在開折扣／鎖定套數／限量／限時折扣時才有檢核項）。三張分卡＝頂列分節分頁的三段；
+     預覽欄（aside）不在 .preview-split__form 內、天然不列；全頁「預覽與發布」時表單欄收起、導覽隨之消失。 */
+  var cbOutline = null;
+  function cbOutlineStatus(vis) {
+    const byGroup = new Map();
+    stageChecks().forEach(c => {
+      const t = cbSectionOf(c.step).target;
+      const sec = t ? (t.closest('.form-section') || t) : null;
+      if (!sec) return;
+      const r = byGroup.get(sec) || { ok: true };
+      if (!c.ok) r.ok = false;
+      byGroup.set(sec, r);
+    });
+    return vis.map(s => { const r = byGroup.get(s); return !r ? 'opt' : (r.ok ? 'done' : 'todo'); });
+  }
+  if (window.ztorSectionOutline) {
+    cbOutline = window.ztorSectionOutline.mount({
+      host: document.querySelector('.preview-split__form'),
+      observe: document.querySelector('.wizard__sheet') || document.body,
+      gutter: true,
+      sections: () => Array.from(document.querySelectorAll('.preview-split__form > .form-section')),
+      status: cbOutlineStatus,
+      labels: () => ({
+        title: T('cp.outline.title', 'On this page'),
+        required: T('cp.outline.required', 'Required {n}/{m}'),
+        todo: T('cp.outline.todo', 'Required, not filled'),
+        done: T('cp.outline.done', 'Done'),
+        opt: T('cp.outline.opt', 'Optional')
+      }),
+      /* 頁首（含分節分頁那一排）是 sticky 的：跳節與 scroll-spy 都扣掉它的高度＋16（同 exitStage 的 scrollMarginTop） */
+      offset: () => { const top = document.querySelector('.wizard__top'); return (top ? top.getBoundingClientRect().bottom : 0) + 16; }
+    });
+  }
+
   renderItems();
   renderAlloc();
   recompute();
+
+  /* ── D397 決定一（2026-10-12，5.1.5.4 §2 入口 3、§4 F2「從活動詳情進入時的預帶」；UI-CHANGES 一百七十五）──────
+     活動詳情票務商品的「建立組合包」帶 ?ev=<id>&from=event-detail 進來：票券成員預選那場活動、那場全部門票都勾、
+     每組 1 張（同建立活動第 5 步的活動脈絡預帶）；仍可「更換活動」改選別場、照常加商品成員。
+     返回箭頭／底部取消與建立完成，都回那場活動詳情的票務分頁（#tiers）——取消走 wizard-chrome 的離開確認，
+     .wizard[data-exit-href] 讓它回指定頁而不是 history.back()。草稿、已結束、已取消的活動不預帶（照一般流程從頭挑）。 */
+  if (FROM_EV) {
+    const wz = document.querySelector('.wizard');
+    if (wz) wz.setAttribute('data-exit-href', FROM_EV.back);
+    /* 等頁尾的 i18n.js 等腳本載完才預帶：重算會畫跟隨活動的時間列（js/ticket-bundle.js），那裡要用到翻譯字串 */
+    const prefill = () => {
+      const pre = EV && EV.get(FROM_EV.id);
+      if (!pre || evBlocked(pre) || pre.status === 'draft') return;
+      tix.event = pre; tix.tierIds = (pre.tiers || []).map(t => t.id); tix.qty = 1; FAN.tier = null;
+      if (tierQtyInp) tierQtyInp.value = '1';
+      showTixStage('tiers');
+      renderTierTable();
+      syncTicketMember(); renderAlloc(); recompute();
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', prefill); else prefill();
+  }
 })();
 </script>
 <script src="js/icons.js?v=r2.2"></script>

@@ -29,6 +29,7 @@
 <link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/section-outline.css?v=r2.2"><!-- 2026-10-12（UI-CHANGES 一百七十七）：左側空白欄的「本頁大綱」區段導覽（partials/section-outline.js），比照建立商品 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* create-auction 專屬樣式。無卡片區段／radio 卡／control row／form-grid／upload hero
@@ -37,6 +38,8 @@
      黑夜版維持 shared.css 全域預設（content #2B2B2C／footer #191A1A）；對調僅 create-product。 */
 
   .ca-field[hidden] { display: none; }
+  /* 本頁大綱（UI-CHANGES 一百七十七）：內容欄是 .wizard__body--narrow 的 1000px，不是建立商品的 1140，左欄寬度照這個算 */
+  .preview-split__form { --section-outline-body: 1000px; }
   .ca-note { font-size: var(--fs-12); color: var(--foreground-muted); line-height: 1.5; padding: 13px 14px; border-radius: var(--radius-md); background: var(--muted); box-shadow: inset 0 0 0 1px var(--border); }
 
   .wizard__top-actions[aria-hidden="true"] { min-width: 52px; }
@@ -515,6 +518,7 @@
 
 <!-- §5.2.5 即時預覽已移到表單旁 sticky 欄（.preview-col），就緒檢查移到 footer chip tooltip。 -->
 
+<script src="partials/section-outline.js?v=r2.2"></script><!-- 本頁大綱的行為（UI-CHANGES 一百七十七）；要先於下面的頁面腳本載入 -->
 <script>
 /* 建立拍賣流程互動 · spec 5.1.5.10 §4-5
    種類切換（實體／數位／活動，只影響分類與 F6 交付）、競標設定、競標資格、
@@ -535,15 +539,52 @@
   /* ---- 就緒檢查（8 項，spec §4 就緒檢查卡）---- */
   function buildChecks() {
     return [
-      { k: T('ca.chk.hero', 'Hero image'),        done: () => !!assets['a-hero'] },
-      { k: T('ca.chk.gallery', 'Gallery images'), done: () => !!assets['a-gallery'] },
-      { k: T('ca.chk.name', 'Item name'),         done: () => has(fName) },
-      { k: T('ca.chk.story', 'Story (50+)'),      done: () => len(fStory) >= 50 },
-      { k: T('ca.chk.auth', 'Authenticity photo'),done: () => !!assets['a-auth'] },
-      { k: T('ca.chk.start', 'Starting price'),   done: () => has(fStart) },
-      { k: T('ca.chk.duration', 'Duration'),      done: () => !!document.querySelector('#ca-duration .selection-card--active') },
-      { k: T('ca.chk.elig', 'Who can bid'),       done: () => !!document.querySelector('#ca-elig .segmented__btn--active') },
+      { k: T('ca.chk.hero', 'Hero image'),        done: () => !!assets['a-hero'], at: '[data-ca-asset="a-hero"]' },
+      { k: T('ca.chk.gallery', 'Gallery images'), done: () => !!assets['a-gallery'], at: '[data-ca-asset="a-gallery"]' },
+      { k: T('ca.chk.name', 'Item name'),         done: () => has(fName), at: '#ca-f-name' },
+      { k: T('ca.chk.story', 'Story (50+)'),      done: () => len(fStory) >= 50, at: '#ca-f-story' },
+      { k: T('ca.chk.auth', 'Authenticity photo'),done: () => !!assets['a-auth'], at: '[data-ca-asset="a-auth"]' },
+      { k: T('ca.chk.start', 'Starting price'),   done: () => has(fStart), at: '#ca-startprice' },
+      { k: T('ca.chk.duration', 'Duration'),      done: () => !!document.querySelector('#ca-duration .selection-card--active'), at: '#ca-duration' },
+      { k: T('ca.chk.elig', 'Who can bid'),       done: () => !!document.querySelector('#ca-elig .segmented__btn--active'), at: '#ca-elig' },
     ];
+  }
+
+  /* ---- 本頁大綱（左側空白欄的區段導覽，2026-10-12，UI-CHANGES 一百七十七；元件 partials/section-outline.js，比照 create-product）----
+     「必填」「已完成」不另訂規則：直接讀上面的就緒檢查 buildChecks()（8 項，Ready to start auction?）——每個檢查項的 at 是它所在的欄位，
+     closest('.form-section') 就是它所在的那一節；節裡有檢查項＝必填、全過＝已完成、沒有檢查項＝選填
+     （拍賣種類有預設值、運送／交付／標籤沒有檢查項）。節標題讀 .form-section__title；拍賣種類那節沒有標題，用 ca.outline.kind。
+     上架設定與開拍設定在右側預覽欄（aside），不在 .preview-split__form 內，所以不列入大綱。 */
+  var caOutline = null;
+  function caOutlineStatus(vis) {
+    const byGroup = new Map();
+    buildChecks().forEach(c => {
+      const el = c.at ? document.querySelector(c.at) : null;
+      const sec = el ? el.closest('.form-section') : null;
+      if (!sec) return;
+      const r = byGroup.get(sec) || { ok: true };
+      if (!c.done()) r.ok = false;
+      byGroup.set(sec, r);
+    });
+    return vis.map(s => { const r = byGroup.get(s); return !r ? 'opt' : (r.ok ? 'done' : 'todo'); });
+  }
+  if (window.ztorSectionOutline) {
+    caOutline = window.ztorSectionOutline.mount({
+      host: document.querySelector('.preview-split__form'),
+      observe: document.querySelector('.wizard__sheet') || document.body,
+      gutter: true,
+      sections: () => Array.from(document.querySelectorAll('.preview-split__form > .form-section')),
+      title: s => { const t = s.querySelector('.form-section__title'); return t ? t.textContent.replace(/\s+/g, ' ').trim() : T('ca.outline.kind', 'Type'); },
+      status: caOutlineStatus,
+      labels: () => ({
+        title: T('cp.outline.title', 'On this page'),
+        required: T('cp.outline.required', 'Required {n}/{m}'),
+        todo: T('cp.outline.todo', 'Required, not filled'),
+        done: T('cp.outline.done', 'Done'),
+        opt: T('cp.outline.opt', 'Optional')
+      }),
+      offset: () => { const top = document.querySelector('.wizard__top'); return (top ? top.getBoundingClientRect().bottom : 0) + 16; }
+    });
   }
 
   const listEl   = document.getElementById('ca-ready-list');
@@ -629,7 +670,7 @@
     }
   }
 
-  function refresh() { renderReadiness(); renderPreview(); }
+  function refresh() { renderReadiness(); renderPreview(); if (caOutline) caOutline.refresh(); }
 
   /* ---- 種類切換：只影響分類與 F6 交付（data-ca-show）---- */
   function applyVisibility() {

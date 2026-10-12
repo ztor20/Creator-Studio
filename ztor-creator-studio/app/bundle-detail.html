@@ -387,7 +387,7 @@
           <!-- 票券成員（D292）：張數與單賣票共用同一個票種數量池；每張各自 QR、各自報到；已佔用張數＝每套張數 × 已售套數 -->
           <div class="field__hint field__hint--fact mt-8" data-bd-ticket-note hidden data-i18n="bd.members.ticket-note">Ticket members draw from the tier's own pool — each set sold takes its tickets from the tier. Every ticket gets its own QR and checks in on its own.</div>
           <!-- 額外權益（spec 5.1.5.9 §2.3「額外權益（Perks）」，D292 共通選填欄；2026-09-22 補進細節頁）：
-               與建立組合 data-cb-perks 同一組（.bd-sub 小標＋一行一項的 textarea）；檢視態由 js/view-mode.js 畫成純文字段落（Q119），
+               與建立組合 data-cb-perks 同一組（.bd-sub 小標＋一行一項的 textarea）；檢視態同一個框顯示成 disabled（Q128），
                成員鎖定（已售出）不鎖這一格——鎖的是成員與數量。兌現方式〔產品待確認〕。 -->
           <div class="stack mt-16" data-bd-perks-group>
             <div class="bd-sub"><span class="bd-sub__title" data-i18n="cpp.bd.perks">Perks</span></div>
@@ -427,7 +427,8 @@
           </div>
           <div class="field" style="margin-bottom:0">
             <div class="field__label" data-i18n="cb.price.bundle">Selling price</div>
-            <div class="field-readout bd-readout--big" id="bd-autoprice">$0.00</div>
+            <!-- 2026-10-12（UI-CHANGES 一百七十六，Q128）：原本是 .field-readout.bd-readout--big 大字讀數，改成跟其他欄位同一種輸入框——永遠 disabled（算出來的值，不分模式）；改價格走上方折扣 % -->
+            <input class="input" id="bd-autoprice" disabled value="$0.00" style="max-width:240px" aria-label="Selling price" data-i18n-aria-label="cb.price.bundle">
             <div class="field__hint field__hint--fact" data-bd-save></div><!-- 事實說明（粉絲省多少）：檢視態也要看得到，走 --fact -->
           </div>
         </section>
@@ -713,7 +714,6 @@
 <script src="partials/stepper.js?v=r2.2"></script><!-- .zstep 步進行為（成員數量） -->
 <script src="js/link-field.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
-<script src="js/view-mode.js?v=r2.2"></script><!-- 兩段式面板檢視態讀數（Q119）：欄位在檢視態畫成純文字、按「編輯」才變輸入框 -->
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/detail-topbar.js?v=r2.2"></script>
 <script src="js/row-disclosure.js?v=r2.2"></script>
@@ -1710,12 +1710,11 @@
       /* D390 決定十九／二十：自動建立的組合包只畫唯讀讀數＋原因（同 create-event 第 5 步 bundle-editor 的 srcFix 畫法），不給跟隨開關與調整欄位 */
       if (hr) hr.innerHTML = (seed && seed.srcFix)
         ? '<p class="lctl__lock-note">' + esc(T('tb.rules.fix', '')) + '</p>' +
-          '<div class="field-readout" data-bd-rules-fix>' + esc(TB.rulesSummary(bundleModel, c.def, T) || T('ce.rule.any', 'No limit')) + '</div>'
+          '<input class="input" data-bd-rules-fix disabled value="' + esc(TB.rulesSummary(bundleModel, c.def, T) || T('ce.rule.any', 'No limit')) + '" aria-label="' + esc(T('tb.rules.fix', '')) + '">'   /* Q128：唯讀事實＝永遠 disabled 的輸入框 */
         : (c.locked ? '<p class="lctl__lock-note">' + esc(T('tb.rules.locked', '')) + '</p>' : '') +
           TB.rulesHTML(bundleModel, c.def, c.et, T, { n: c.n, locked: c.locked });
       const editing = settingsPanel && settingsPanel.getAttribute('data-mode') === 'edit';
       [hl, hs, hr].forEach(h => { if (!h) return; h.querySelectorAll('input, textarea').forEach(el => { el.readOnly = !editing; }); h.querySelectorAll('select').forEach(el => { el.disabled = !editing; }); });
-      if (window.ZtorViewMode && settingsPanel) window.ZtorViewMode.sync(settingsPanel);
       TB.syncErrors(settingsPanel, bundleModel, c, T);
       tbApply(c);
     }
@@ -1868,7 +1867,7 @@
       /* 平台費依成員型別分流（D293 裁決二）：含票券才露出說明 */
       const feeNote = document.querySelector('[data-bd-fee-note]');
       if (feeNote) feeNote.hidden = !hasTicketMember();
-      if (bdAuto) bdAuto.textContent = bdMoneyFrom(final);
+      if (bdAuto) bdAuto.value = bdMoneyFrom(final);
       /* 售價底下一句「粉絲省 $Z（12%）」／「折扣 0%，售價＝原價」（同建立組合 saveText） */
       const saveEl = document.querySelector('[data-bd-save]');
       if (saveEl) saveEl.textContent = !pct ? T('cpp.bd.sp.save.zero', '0% off — selling price = list price')
@@ -2070,7 +2069,7 @@
       rows.push({ g: 'pricing', go: 'members', key: 'cpp.bd.perks', fb: 'Perks', v: perks.length ? perks.join('、') : T('product-detail.setov.none', 'None') });
       const disc = v('bd-discount');
       /* 摘要列跟頁首同一個數（D331 決定一：基準欄被覆寫時顯示覆寫值＝粉絲實付價）；定價段的售價欄仍是算式結果 */
-      const ovPrice = bdHeroPrice ? bdHeroPrice.textContent : (bdAuto ? bdAuto.textContent : '');
+      const ovPrice = bdHeroPrice ? bdHeroPrice.textContent : (bdAuto ? bdAuto.value : '');
       rows.push({ g: 'pricing', go: 'pricing', key: 'cb.pricing', fb: 'Bundle price', v: ovPrice + (disc && Number(disc) > 0 ? ' · −' + disc + '%' : '') });
       const salePct = v('bd-sale-percent');
       rows.push({ g: 'pricing', go: 'pricing', key: 'cp.discount.title', fb: 'Discount settings', v: [on('bd-sale-toggle') ? (T('cp.discount.limited', 'Limited-time discount') + (salePct ? ' −' + salePct + '%' : '')) : T('product-detail.setov.off', 'Off'), on('bd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : ''].filter(Boolean).join(' · ') });
@@ -2210,7 +2209,6 @@
       const applyReadonly = ro => {
         sp.querySelectorAll('input, textarea').forEach(el => { el.readOnly = ro; });
         sp.querySelectorAll('select').forEach(el => { el.disabled = ro; });
-        if (window.ZtorViewMode) window.ZtorViewMode.sync(sp);   /* 檢視態讀數（Q119，js/view-mode.js） */
       };
       const setMode = editing => {
         sp.setAttribute('data-mode', editing ? 'edit' : 'view');
