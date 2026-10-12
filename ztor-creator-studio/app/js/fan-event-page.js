@@ -62,7 +62,7 @@
  *     bundles: [{ name:'…', priceObj, listPriceObj|null, priceKey:'bundle:bd-1', img:'…',
  *                 tickets:{ names:['VIP','Floor'], qty:2 } | null,      // 允許票種 × 張數（D296）
  *                 goods:[{ name:'官方 Tee', spec:true, img:'…' }],       // 商品成員；spec＝有規格要下單時選
- *                 perks:['…'], note:'商品於活動現場領取' | '' , desc:'…',
+ *                 note:'商品於活動現場領取' | '' , desc:'…',   // perks 依 D402（2026-10-12）退場：組合包不再有額外權益，給了也不畫
  *                 contents:[…] }],                                     // 舊形狀（icon/text 列）仍相容，tickets／goods 沒給時退回它
  *     related: true | [{ name, cat, price:'NT$ 1,200 起', img }]   // true＝三張佔位卡；陣列＝指定內容（都標「非本活動」）
  *   }
@@ -572,12 +572,7 @@
           parts.appendChild(gl);
         });
         body.appendChild(parts);
-        var perks = (b.perks || []).map(function (p) { return typeof p === 'string' ? p : (p.title || '') + (p.desc ? ' ' + p.desc : ''); }).filter(Boolean);
-        if (perks.length) {
-          var pu = el('ul', 'pdp-rec-card__perks');
-          perks.forEach(function (p) { pu.appendChild(el('li', '', esc(p))); });
-          body.appendChild(pu);
-        }
+        /* 2026-10-12 D402／UI-CHANGES 一百八十八：墓碑——組合包卡不再列額外權益（原 b.perks 清單）。 */
         body.appendChild(el('span', 'pdp-rec-card__note', esc(b.note || '')));
         var priceEl = el('span', 'pdp-rec-card__price');
         priceEl.setAttribute('data-fep-price-key', b.priceKey || '');   /* D310：點價格開價格表 */

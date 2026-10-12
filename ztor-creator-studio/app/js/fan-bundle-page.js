@@ -9,10 +9,10 @@
  *   前台 https://ztor.vercel.app/shop-item.html 的兩個組合分支，assets/shop-detail-render.js：
  *   · 純商品套組（type 'bundle'）：renderBundle()／bundleBuyHtml()／bundlePickerHtml()／bundleContentsHtml()
  *   · 含票券組合（type 'eventset'）：renderEventSet()／setCrumbsHtml()／setBuyHtml()／setTiersHtml()／
- *     setContentsHtml()／setPerksHtml()（價格與可售由 bundleResolve() 推）
+ *     setContentsHtml()（價格與可售由 bundleResolve() 推；setPerksHtml() 依 D402 2026-10-12 退場，組合包不再有額外權益）
  *   CSS 是前台 components.css?v=20260922j 同名規則加 `.fep-shop` 前綴（ds-components/fan-shop.css 第 5 段），
  *   第 1–4 段與活動頁、商品頁共用。與前台的差別只在：
- *   · 資料全部來自建立組合表單（成員、允許票種、每套數量、折扣、可售套數、名稱、說明、權益、素材）
+ *   · 資料全部來自建立組合表單（成員、允許票種、每套數量、折扣、可售套數、名稱、說明、素材；額外權益依 D402 退場）
  *   · 前台專有的互動拿掉：加入購物車／購買組合／收藏／數量／選規格／放大一律不動作（data-pp-inert）
  *   · 「你可能也喜歡／相關活動」不畫（2026-09-23 使用者：「你可能也喜歡都移除」）
  *   · 含票券組合的「主辦活動的活動介紹／注意事項／取票／退換票／購票條款」不畫——那是活動自己的內容，
@@ -48,13 +48,13 @@
  *       pct: 0                                    // 組合折扣 %（票種價差也照這個 % 打折，見 tierRows）
  *     },
  *     stock: null | 12,                           // 可售套數；null＝不限。前台只在 ≤10 時提示、0＝售完
- *     perks: [{ key:'perk-0' }, …]                // 組合專屬權益（每行一項，可翻譯）
+ *     perks: [{ key:'perk-0' }, …]                // 組合專屬權益（每行一項，可翻譯）（D402 已移除，fan-bundle-page 不再讀）
  *   }
  *
  * 價格節點帶 `data-fep-price-key`（沿用活動頁的屬性名：js/publish-stage.js 認這個屬性把價格表滑出來，
  * D310「價格不就地改」），另掛 `data-fbp-price-key` 標明是組合頁的價格節點。
  * 可給 editZones 選的區塊：[data-fbp-gallery]、.pdp-buy__title、[data-fbp-meta]、[data-fbp-price]、
- * [data-fbp-stock]、[data-fbp-picker]、[data-fbp-tiers]、[data-fbp-members]、[data-fbp-perks]、[data-fbp-desc]。
+ * [data-fbp-stock]、[data-fbp-picker]、[data-fbp-tiers]、[data-fbp-members]、[data-fbp-desc]（[data-fbp-perks] 依 D402 退場）。
  *
  * api（由 js/publish-stage.js 的 previewRender 提供，與活動頁／商品頁同介面）：
  *   lang；getValue(key)；bindEditable(el, key)；priceIn(priceObj, priceKey)；money(priceObj, priceKey)；fmt(n)。
@@ -145,7 +145,7 @@
     var members = m.members || [];
     var tixMember = members.filter(function (x) { return x.kind === 'ticket'; })[0] || null;
     var goods = members.filter(function (x) { return x.kind === 'product'; });
-    var perks = (m.perks || []).filter(function (p) { return valueOf(api, p); });
+    /* 2026-10-12 D402／UI-CHANGES 一百八十八：額外權益已從組合包移除，model.perks 不再讀（墓碑：原 perks 變數）。 */
 
     var root = el('div', 'fep-shop rf-shop');
     root.setAttribute('data-fbp-view', isSet ? 'eventset' : 'bundle');
@@ -324,7 +324,7 @@
       }
       buy.appendChild(slot(api, 'h1', 'pdp-buy__title', m.name, T('cpp.bd.untitled.ev', 'Untitled bundle')));
       var hr2 = hostRow(); if (hr2) buy.appendChild(hr2);
-      /* 活動資訊框（前台 pdp-event-meta）：內容／日期／時間／場館／領取／專屬權益 */
+      /* 活動資訊框（前台 pdp-event-meta）：內容／日期／時間／場館／領取（專屬權益一列依 D402 退場） */
       var box = el('div', 'pdp-event-meta'); box.setAttribute('data-fbp-meta', '');
       function metaRow(k, v, mod) {
         if (!v) return;
@@ -338,7 +338,7 @@
       else metaRow(T('fep.venue', 'Venue'), ev.venue || '', 'pdp-event-meta__row--names');
       /* 前台這裡還有一列「領取：商品於活動現場憑 QR 領取」（含商品時）——那是前台示範資料的交付規則，
          Creator Studio 的組合沒有這條規則，不照抄（不在預覽裡替產品訂規則） */
-      if (perks.length) metaRow(T('fbp.meta.perks', 'Perks'), perks.map(function (p) { return valueOf(api, p); }).join(' · '), 'pdp-event-meta__row--names');
+      /* 2026-10-12 D402／UI-CHANGES 一百八十八：墓碑——原此處有「專屬權益」一列，額外權益已從組合包移除。 */
       buy.appendChild(box);
       buy.appendChild(priceBox());
       var sl2 = stockLine(); if (sl2) buy.appendChild(sl2);
@@ -426,24 +426,7 @@
       return secC;
     }
 
-    /* ── 組合專屬權益（前台 setPerksHtml）：一行一項；圖示走站上 lucide（第 3 段 .ds-icon 補丁）── */
-    function perksSection() {
-      if (!(m.perks || []).length) return null;
-      var secP = el('section', 'pdp-bundle pdp-perks'); secP.setAttribute('data-fbp-perks', '');
-      secP.setAttribute('aria-label', T('fbp.sec.perks.label', 'Bundle perks'));
-      secP.innerHTML = '<h2 class="pdp-bundle__title">' + esc(T('fbp.sec.perks', 'Bundle perks · {n}').replace('{n}', m.perks.length)) + '</h2>';
-      var ul = el('ul', 'pdp-perks__list');
-      m.perks.forEach(function (p) {
-        var li = el('li', 'pdp-perks__item');
-        li.innerHTML = '<span class="ds-icon pdp-perks__icon" aria-hidden="true"><i data-lucide="gift" class="ztor-icon"></i></span>';
-        var txt = el('span', 'pdp-perks__text');
-        txt.appendChild(slot(api, 'b', 'pdp-perks__title', p, ''));
-        li.appendChild(txt);
-        ul.appendChild(li);
-      });
-      secP.appendChild(ul);
-      return secP;
-    }
+    /* 2026-10-12 D402／UI-CHANGES 一百八十八：墓碑——原「組合專屬權益」區塊（perksSection）已移除，額外權益不再屬於組合包。 */
 
     /* ── 說明（組合自己的說明欄）：前台商品套組放 .pdp-details 的 lead、含票券組合的同位置是活動介紹，
        這裡兩種都畫成同一個 .pdp-details（標題「組合介紹」）；留空＝整段不畫 ── */
@@ -461,19 +444,17 @@
 
     function add(parent, node) { if (node) parent.appendChild(node); }
     if (!isSet) {
-      /* 前台 renderBundle：container{麵包屑、兩欄、套組內容} → 詳情；權益接在套組內容後（前台套組沒有權益欄） */
+      /* 前台 renderBundle：container{麵包屑、兩欄、套組內容} → 詳情（原本接在套組內容後的權益區塊依 D402 退場） */
       add(container, contents());
-      add(container, perksSection());
       page.appendChild(container);
       add(page, details());
     } else {
-      /* 前台 renderEventSet：container{麵包屑、兩欄} → （活動詳情的位置＝組合說明）→ container{座位區域、套組內容、權益} */
+      /* 前台 renderEventSet：container{麵包屑、兩欄} → （活動詳情的位置＝組合說明）→ container{座位區域、套組內容}（權益區塊依 D402 退場） */
       page.appendChild(container);
       add(page, details());
       var c2 = el('div', 'container');
       add(c2, tierRows());
       add(c2, contents());
-      add(c2, perksSection());
       if (c2.childNodes.length) page.appendChild(c2);
     }
     pdp.appendChild(page);

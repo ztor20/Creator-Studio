@@ -1,0 +1,65 @@
+/* ============================================================
+   form-ask.css · 問句式設定塊、表單分類標與標題列讀數（2026-10-12，建立組合包改版；使用者在示意頁逐項定案）
+   ------------------------------------------------------------
+   三個小零件，都是「長表單裡幫人分段、看結果」：
+
+   1. .form-ask — 一個要使用者做決定的問題（例「要鎖定庫存給這個組合嗎？」「要另設販售上限嗎？」）：
+      問句（14）→ 一句白話說明（12，寫清楚選了會怎樣）→ 二選一（segmented radio-cards）→ 選了才出現的 __body。
+      __body 裡要填值的那一列用 __row：名稱在左、輸入框靠右（右緣對齊下方表格的最右欄）。
+      同一張卡裡連續幾題時，題與題之間一條細線（.form-ask + .form-ask）。
+   2. .form-cat — 表單分類標：一張分卡上方的一行小字（序號＋分類名），把連續幾張分卡歸成一類
+      （例「1 組合包介紹」「2 選擇組合物」「3 販售設定」）；同樣的分類也是本頁大綱的群組標題。
+
+   3. .form-tally — 分卡標題列右側的結果讀數（例「數量」卡的「最多可賣 60 組」）：小字名稱＋大數字＋單位，
+      放在 .form-section__head--actions 的 __head-actions 槽裡，與標題同一行。
+
+   anatomy
+     .form-ask
+       .form-ask__t                    問句
+       .form-ask__s                    說明
+       （.segmented.radio-cards）
+       .form-ask__body[hidden]         選了才出現
+         .form-ask__row                名稱 __row-k ＋ 控制項（推到最右）
+     .form-cat
+       .form-cat__n                    序號（品牌色、等寬數字）
+     .form-tally
+       .form-tally__k                  名稱（小字）
+       .form-tally__v                  數字（大）＋ small 單位
+   消費：create-bundle.html（數量卡、分類標）、bundle-detail.html（組合庫存分頁的鎖定、組合設定分頁的數量卡與分類標）、js/bundle-editor.js（建立活動第 5 步組合包彈窗的數量卡與分類標）
+   surface：.form-ask、.form-tally 坐在 form-section--outlined 卡面上；.form-cat 坐在頁面底（卡與卡之間）。
+   ============================================================ */
+.form-ask { display: flex; flex-direction: column; gap: var(--sp-8); min-width: 0; }
+.form-ask + .form-ask { padding-top: var(--sp-16); border-top: 1px solid var(--border-soft); }
+.form-ask__t { font-size: var(--fs-14); color: var(--foreground); }
+.form-ask__s { font-size: var(--fs-12); line-height: var(--lh-relaxed); color: var(--muted-foreground); }
+.form-ask__body { display: flex; flex-direction: column; gap: var(--sp-8); min-width: 0; }
+.form-ask__body[hidden] { display: none; }
+.form-ask__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-16);
+  padding: var(--sp-12) 0;
+}
+.form-ask__row-k { font-size: var(--fs-14); color: var(--foreground); }
+.form-ask__row > .amount-field { flex: none; width: 132px; }   /* 鎖定組數、販售上限的輸入框固定寬、靠右 */
+/* 下面接著鎖定量表（.lockset）時：右側讓出表格最後一欄（展開鈕 32px）＋欄距，輸入框右緣對齊表格的「已鎖定」欄
+   （欄距同 lock-sets.css 的 --lockset-colgap；padding 的 % 與表格 column-gap 的 % 都以同一個容器寬計） */
+.form-ask__row--lockset { padding-right: calc(32px + var(--sp-12) + clamp(var(--sp-12), 4%, var(--sp-32))); }   /* 32＝展開欄、--sp-12＝列的右內距 */
+
+.form-cat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-8);
+  margin: var(--sp-24) 0 var(--sp-10) var(--sp-4);
+  font-size: var(--fs-12);
+  letter-spacing: .04em;
+  color: var(--foreground-muted);
+}
+.form-cat:first-child { margin-top: 0; }
+.form-cat__n { font-family: var(--font-mono); color: var(--primary); }
+
+.form-tally { display: flex; align-items: baseline; gap: var(--sp-8); white-space: nowrap; }
+.form-tally__k { font-size: var(--fs-12); color: var(--muted-foreground); }
+.form-tally__v { font-size: var(--fs-28); line-height: var(--lh-tight); font-variant-numeric: tabular-nums; color: var(--foreground); }
+.form-tally__v small { margin-left: var(--sp-4); font-size: var(--fs-14); color: var(--muted-foreground); }

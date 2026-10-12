@@ -1,0 +1,107 @@
+/* ============================================================
+   price-ladder.css · 價格階梯（2026-10-12，建立組合包改版；使用者在示意頁逐項定案）
+   ------------------------------------------------------------
+   把「原價 → 一步步打折 → 粉絲實付」排成由上往下的一條線：每一列回答「這一步做了什麼、
+   填了什麼、算到這裡是多少」。左＝這一步（標題＋一句說明，有輸入框時換行放在說明下面）、
+   右＝算到這一步的價格。開關列（組合折扣、限時折扣、可與優惠碼疊加）右邊放開關本身、不另寫狀態字；
+   打開後展開的內容（% 與折後價、起訖日）用 --panel 列接在下面，淡淡壓深一階。
+   「看怎麼算」展開的逐項明細同樣是 --panel，裡面每一項（__item）名稱與金額對齊上方欄軌。
+
+   價格寫法（D402，2026-10-12）：主價格維持「從 $X 起」；含多種允許門票或多規格成員、價格不是單一值時，
+   主價格下方加一行區間小字 __range「$最低–$最高」——只在創作者後台出現，粉絲端不變。
+
+   anatomy
+     .price-ladder                         整條階梯的細框（單一外框、列與列之間細線）
+       .price-ladder__step                 一列；兩欄 grid：左 __k（＋ __ctl）、右 __v
+         .price-ladder__k                  標題 __t（可帶 badge）＋ 說明 __s（＋ 展開鈕 __disc）
+         .price-ladder__ctl                輸入框（換行在 __k 下方，與 __v 同一行）
+         .price-ladder__v                  算到這裡的價格；__range 區間小字、small 一行附註（「粉絲省 …」「期間售價」）
+         .price-ladder__v--switch          開關列：右欄就是開關
+       .price-ladder__step--panel          展開區（看怎麼算／組合折扣 %／限時折扣 %）：淡壓深一階、上緣細線
+         .price-ladder__items > .price-ladder__item  逐項明細（名稱｜金額＋區間小字）
+         .price-ladder__dates              限時折扣的起訖日：上緣通欄分隔線，日期上下兩行、欄寬維持半列
+       .price-ladder__step--total          粉絲實付：只有金額用品牌色
+     .price-ladder__disc                   「看怎麼算」展開鈕（文字＋chevron，aria-expanded 轉向）
+   消費：create-bundle.html（價格卡）、bundle-detail.html（組合設定分頁的價格卡）、js/bundle-editor.js（建立活動第 5 步組合包彈窗 layout:'split'）
+   surface：坐在 form-section--outlined 卡面上；展開區壓的是 --layer-0-surface（頁面最深底色）25%。
+   ============================================================ */
+.price-ladder {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.price-ladder__step {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  grid-template-areas: "k v" "ctl v";
+  column-gap: var(--sp-16);
+  align-items: center;
+  padding: var(--sp-14) var(--sp-16);
+  border-top: 1px solid var(--border-soft);
+}
+.price-ladder__step:first-child { border-top: 0; }
+.price-ladder__step[hidden] { display: none; }
+/* 有輸入框的列：標題與說明獨佔第一行，輸入框和算出來的價格並排在第二行 */
+.price-ladder__step:has(> .price-ladder__ctl) { grid-template-areas: "k k" "ctl v"; }
+.price-ladder__step:has(> .price-ladder__ctl) > .price-ladder__v { margin-top: var(--sp-16); }
+.price-ladder__k { grid-area: k; display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.price-ladder__t { display: flex; align-items: center; gap: var(--sp-8); font-size: var(--fs-14); color: var(--foreground); }
+.price-ladder__s { font-size: var(--fs-12); color: var(--muted-foreground); }
+.price-ladder__ctl { grid-area: ctl; display: flex; justify-content: flex-start; margin-top: var(--sp-16); }
+.price-ladder__ctl .amount-field { width: 132px; }   /* % 步進器固定寬（同鎖定套數），不撐滿整欄 */
+.price-ladder__v {
+  grid-area: v;
+  text-align: right;
+  font-size: var(--fs-16);
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+.price-ladder__v small,
+.price-ladder__range { display: block; font-size: var(--fs-11); color: var(--muted-foreground); }
+.price-ladder__range[hidden] { display: none; }
+.price-ladder__v--switch { display: flex; justify-content: flex-end; }
+.price-ladder__err { grid-column: 1 / -1; margin: var(--sp-8) 0 0; }
+.price-ladder__err[hidden] { display: none; }
+
+/* 展開區：淡壓深一階（--layer-0-surface 25%，2026-10-12 使用者調過深淺） */
+.price-ladder__step--panel { background: color-mix(in srgb, var(--layer-0-surface) 25%, transparent); }
+.price-ladder__items { grid-column: 1 / -1; display: flex; flex-direction: column; gap: var(--sp-10); }
+.price-ladder__item { display: grid; grid-template-columns: minmax(0, 1fr) 180px; gap: var(--sp-16); align-items: baseline; }
+.price-ladder__item-k { font-size: var(--fs-13); color: var(--foreground-muted); min-width: 0; }
+.price-ladder__item-v { text-align: right; font-size: var(--fs-13); font-variant-numeric: tabular-nums; color: var(--foreground-muted); }
+.price-ladder__dates {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-12);
+  margin: var(--sp-16) calc(-1 * var(--sp-16)) calc(-1 * var(--sp-4));
+  padding: var(--sp-16) var(--sp-16) 0;
+  border-top: 1px solid var(--border-soft);
+}
+.price-ladder__dates > .field { grid-column: 1; margin: 0; }   /* 開始、結束上下兩行，欄寬維持半列 */
+.price-ladder__dates > .field__hint { grid-column: 1 / -1; margin: 0; }
+
+.price-ladder__step--total > .price-ladder__v { font-size: var(--fs-20); color: var(--primary); }
+
+.price-ladder__disc {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.price-ladder__disc:hover { color: var(--foreground); }
+.price-ladder__disc:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: var(--radius-sm); }
+.price-ladder__disc .ztor-icon { width: 12px; height: 12px; transition: transform var(--duration); }
+.price-ladder__disc[aria-expanded="true"] .ztor-icon { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .price-ladder__disc .ztor-icon { transition: none; } }

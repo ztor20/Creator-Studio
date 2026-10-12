@@ -487,41 +487,13 @@
                  左側區域導覽的「設定」一直在，捲到哪裡都看得見。
                  renderLiveWhere() 與 [data-where-list] 保留——進行中階段的 #ed-live-where
                  仍在用同一支 renderer（那個階段的頁首講的是別的事）。 -->
-            <!-- ═══ bookyay 現場掃碼卡（D397 決定二，5.1.6.3 §2.4；UI-CHANGES 一百七十五）═══
-                 bookyay 匯入的活動從已排程起就給 bookyay 掃描器連結（可複製）與「前往取貨管理」，讓創作者開演前先把連結交給門口。
-                 進行中改由右欄的現場報到台（#ed-scanner 的 bookyay 兩格）承接，這張卡收起、同一條連結不出現兩份；
-                 已結束／已取消／ztor 自建活動不出現。落點＝右欄、開演前檢核之上（規格寫「報到快照卡旁」，原型的報到快照卡
-                 2026-08-17 已併進結案卡，已排程與售票中沒有那張卡；位置非約束，ASSUMPTIONS UIA-244）。
-                 內層 markup 與字串整套沿用現場報到台的 D394 兩格（.scanner-access--bare），不另做第二種長相。
-                 不掛 data-feat：同 D394，屬 bookyay 帶入活動的活動詳情。syncBkyCheckin() 切換顯隱並填值。 -->
-            <section class="card" id="ed-bky-scancard" hidden>
-              <div class="card__head">
-                <div class="card__title-group">
-                  <h3 class="card__title" data-i18n="event-detail.bkycard.title">On-site scanning</h3>
-                </div>
-                <span class="badge badge--neutral"><span data-i18n="event-detail.scanner.bky.badge">Via bookyay</span></span>
-              </div>
-              <div class="scanner-access scanner-access--nomedia scanner-access--bare">
-                <div class="scanner-access__main">
-                  <div class="scanner-access__field" data-bky-scan>
-                    <div class="scanner-access__label" data-i18n="event-detail.scanner.bky.url">bookyay scanner link</div>
-                    <div class="scanner-access__url" data-bky-scan-row>
-                      <code data-bky-scan-url>—</code>
-                      <button class="btn btn--icon btn--sm" type="button" data-view-safe data-bky-scan-copy
-                              aria-label="Copy link" title="Copy link"
-                              data-i18n-aria-label="event-detail.live.scanner.copy" data-i18n-title="event-detail.live.scanner.copy"><i data-lucide="copy" class="ztor-icon"></i></button>
-                    </div>
-                    <p class="field__hint field__hint--fact" data-bky-scan-none hidden data-i18n="event-detail.scanner.bky.nourl">bookyay hasn't sent a scanner link for this event yet. Door staff can still scan tickets with the bookyay Organizer App.</p>
-                    <p class="field__hint field__hint--fact" data-bky-scan-hint data-i18n="event-detail.scanner.bky.hint">Tickets are scanned at the door with bookyay's scanner. Send this link to door staff.</p>
-                  </div>
-                  <div class="scanner-access__field">
-                    <div class="scanner-access__label" data-i18n="event-detail.scanner.bky.pickup.label">Bundle pickup</div>
-                    <a class="btn btn--outline btn--block" href="pickup.html" data-i18n="event-detail.scanner.bky.pickup">Go to Pickup</a>
-                    <p class="field__hint field__hint--fact" data-i18n="event-detail.scanner.bky.pickup.hint">Products in ticket bundles are picked up through ztor pickup sessions, not bookyay's scanner.</p>
-                  </div>
-                </div>
-              </div>
-            </section>
+            <!-- ═══ 掃碼器提前顯示的落點（D401 決定四，5.1.6.3 v58 §2.4／§2.5；UI-CHANGES 一百八十七）═══
+                 bookyay 匯入的活動在已排程與售票中，把現場報到台那張原本的「掃碼器」卡（#ed-scanner）整張搬來這裡顯示，
+                 不另做第二張卡：內容是 bookyay 票券掃描器連結＋複製、「前往領取場次」兩部分（syncBkyCheckin 搬移與填值）。
+                 進行中搬回現場報到台；已結束／已取消、ztor 自建活動、線上類型不提前顯示。落點＝右欄、開演前檢核之上
+                 （規格寫「報到快照卡旁」，原型的報到快照卡 2026-08-17 已併進結案卡；位置非約束，ASSUMPTIONS UIA-244）。
+                 墓碑 2026-10-12（D401 決定四）：D397 的 #ed-bky-scancard「bookyay 現場掃碼卡」（標題「現場掃碼」）整張撤除。 -->
+            <div id="ed-scanner-early" hidden></div>
   <!-- ═══ 開演前檢核（規格 5.1.6.3 §2.4.1；2026-08-17 使用者裁決改成可編輯的待辦清單）═══
                  規格原本只定義兩個寫死的項目（退款政策、現場人力）與一個「完成」動作。現場人力
                  已於同日依使用者指示刪除，只剩一項，一整張卡在講一句話；規格自己也把「這份清單
@@ -731,10 +703,13 @@
                     <p class="field__hint field__hint--fact" id="ed-bky-scan-none" data-bky-scan-none hidden data-i18n="event-detail.scanner.bky.nourl">bookyay hasn't sent a scanner link for this event yet. Door staff can still scan tickets with the bookyay Organizer App.</p>
                     <p class="field__hint field__hint--fact" id="ed-bky-scan-hint" data-bky-scan-hint data-i18n="event-detail.scanner.bky.hint">Tickets are scanned at the door with bookyay's scanner. Send this link to door staff.</p>
                   </div>
+                  <!-- D401 決定四（取代 D394 決定二的「前往取貨管理」）：「前往領取場次」——連到這場組合包商品所在的取貨場次。
+                       一個場次＝直接進取貨場次詳情；多個＝進取貨管理並預先篩出這場相關的場次（pickup.html?ev=）；
+                       沒有＝按鈕停用、說明先到取貨管理建立取貨場次並附入口（三種分支皆〔推導〕）。syncBkyPickup() 決定分支。 -->
                   <div class="scanner-access__field" id="ed-scanner-bky" hidden>
                     <div class="scanner-access__label" data-i18n="event-detail.scanner.bky.pickup.label">Bundle pickup</div>
-                    <a class="btn btn--outline btn--block" href="pickup.html" data-i18n="event-detail.scanner.bky.pickup">Go to Pickup</a>
-                    <p class="field__hint field__hint--fact" data-i18n="event-detail.scanner.bky.pickup.hint">Products in ticket bundles are picked up through ztor pickup sessions, not bookyay's scanner.</p>
+                    <a class="btn btn--outline btn--block" id="ed-bky-pickup" data-view-safe href="pickup.html" data-i18n="event-detail.scanner.bky.pickup">Go to pickup session</a>
+                    <p class="field__hint field__hint--fact" id="ed-bky-pickup-hint">—</p>
                   </div>
                 </div>
             </div>
@@ -1007,7 +982,7 @@
 
           <!-- 圖片沿用建立流程 2026-08-06 改好的相簿：排第一的就是主視覺，末格是「＋ 新增圖片」。 -->
           <div class="field">
-            <div class="field__label" data-i18n="ce.images">Images</div>
+            <div class="field__label" data-i18n="ce.images.event">Event images</div>
             <div class="upload-assets upload-assets--fill" id="ed-gallery"></div>
             <p class="field__hint" data-i18n="ce.img.note">Portrait 750 × 1125, up to 8. The first one is the key visual; hover an image to replace or delete it.</p>
           </div>
@@ -1417,7 +1392,7 @@
              不掛 data-editable：這一頁沒有靜態表單欄位，不需要 applyReadonly 與 view-mode.js 的讀數。 -->
         <!-- 側欄四節（2026-08-17）：票種／組合包／招待票／轉售。組合包排在票種正下方是因為
              它吃票種的庫存——賣掉一組就從它含的那張票扣一張，主從關係要讀得出來。 -->
-        <div data-nav="tickets">
+        <div data-nav="tickets" data-nav-mode="switch"><!-- 2026-10-12（使用者指示）：票務底下四節也各自一頁、點 tab 換頁；設定仍是同頁錨點跳轉 -->
         <!-- 分節橫列改用清單頁那組（2026-08-17 使用者指示「要用這個元件」）：
                `.tabs--underline-short` ＋ `--underline-label` ＋ `--count-plain`。
                連 `.list-toolbar` 殼一起用，不是只抄修飾類——那組修飾子在 tabs.css 有一條
@@ -1596,7 +1571,7 @@
         </div>
       </div>
 <div class="tab-panel" data-panel="sales" role="tabpanel">
-        <div data-nav="sales">
+        <div data-nav="sales" data-nav-mode="switch"><!-- 2026-10-12（使用者指示）：這一頁底下五節各自是一頁，點 tab 換頁（互斥）；設定仍是同頁錨點跳轉 -->
         <!-- 分節橫列改用清單頁那組（2026-08-17 使用者指示「要用這個元件」）：
                `.tabs--underline-short` ＋ `--underline-label` ＋ `--count-plain`。
                連 `.list-toolbar` 殼一起用，不是只抄修飾類——那組修飾子在 tabs.css 有一條
@@ -2701,6 +2676,45 @@
       });
     }
   }
+  /* 「前往領取場次」（D401 決定四〔推導〕）：這場活動組合包裡的商品綁在哪些取貨場次（bundles[].products[].pickup，
+     原型示意欄位 { s, nameKey }，ASSUMPTIONS UIA-248），依數量分三種：
+       · 一個 → 按鈕直接進那個取貨場次詳情（pickup-detail.html?s=）。
+       · 多個 → 進取貨管理並預先篩出與這場相關的場次（pickup.html?ev=；不用 ?event=——devtools.js 把它讀成活動日示範狀態）。
+       · 沒有（組合包沒有商品成員，或商品還沒綁取貨場次）→ 按鈕停用，說明先到取貨管理建立取貨場次並附入口。 */
+  function bkyPickupSessions() {
+    const seen = {}, out = [];
+    (ev.bundles || []).forEach(b => (b.products || []).forEach(p => {
+      const pk = p && p.pickup;
+      if (!pk) return;
+      const k = (pk.s || '') + '|' + (pk.nameKey || pk.name || '');
+      if (!seen[k]) { seen[k] = 1; out.push(pk); }
+    }));
+    return out;
+  }
+  function syncBkyPickup() {
+    const btn = document.getElementById('ed-bky-pickup');
+    const hint = document.getElementById('ed-bky-pickup-hint');
+    if (!btn || !hint) return;
+    const list = bkyPickupSessions();
+    const nameOf = pk => pk.nameKey ? T(pk.nameKey, pk.name || '') : (pk.name || '');
+    btn.removeAttribute('aria-disabled'); btn.tabIndex = 0;
+    hint.removeAttribute('data-i18n');
+    if (list.length === 1) {
+      btn.href = 'pickup-detail.html?s=' + encodeURIComponent(list[0].s || 'scheduled');
+      hint.textContent = T('event-detail.scanner.bky.pickup.one', 'Bundle products are picked up at “{name}”.').replace('{name}', nameOf(list[0]));
+    } else if (list.length > 1) {
+      btn.href = 'pickup.html?ev=' + encodeURIComponent(ev.id);
+      hint.textContent = T('event-detail.scanner.bky.pickup.many', 'Bundle products are picked up across {n} pickup sessions. Pick one in Pickup.').replace('{n}', list.length);
+    } else {
+      btn.removeAttribute('href'); btn.setAttribute('aria-disabled', 'true'); btn.tabIndex = -1;
+      hint.textContent = T('event-detail.scanner.bky.pickup.none', 'No pickup session yet. Create one in Pickup so fans can collect bundle products.') + ' ';
+      const go = document.createElement('a');
+      go.className = 'card__link'; go.href = 'pickup.html';
+      go.textContent = T('event-detail.scanner.bky.pickup.go', 'Go to Pickup');
+      hint.appendChild(go);
+    }
+  }
+  document.addEventListener('ztor:lang-changed', () => { if (typeof isBky === 'function' && isBky()) syncBkyPickup(); });
   function syncBkyCheckin() {
     const bky = isBky();
     const card = document.getElementById('ed-scanner');
@@ -2731,16 +2745,21 @@
         if (bky) fillBkyScan(bkyBox);
       }
     }
-    /* D397 決定二（2026-10-12，UI-CHANGES 一百七十五）：bookyay 現場掃碼卡——已排程與售票中在總覽右欄提前給同樣兩格；
-       進行中由上面的現場報到台承接（不重複），已結束／已取消、自建活動、線上類型都不出現。 */
-    const early = document.getElementById('ed-bky-scancard');
-    if (early) {
+    /* D401 決定四（2026-10-12，5.1.6.3 v58；UI-CHANGES 一百八十七）：bookyay 活動在已排程與售票中，把上面那張掃碼器卡整張搬到
+       總覽右欄的 #ed-scanner-early 提前顯示（同一張卡、同一份內容，不另做第二張）；其他階段搬回現場報到台原位。
+       進行中由現場報到台承接，已結束／已取消、自建活動、線上類型都不提前顯示。
+       墓碑：D397 決定二的 #ed-bky-scancard（另一張「現場掃碼」卡）。 */
+    const slot = document.getElementById('ed-scanner-early');
+    if (card && slot) {
+      if (!card._home) card._home = { parent: card.parentNode, next: card.nextSibling };
       const online = typeof ONLINE_TYPES !== 'undefined' && ONLINE_TYPES.indexOf(ev.type) >= 0;
-      const on = bky && !online && ['scheduled', 'on-sale'].indexOf(ev.status) >= 0;
-      early.hidden = !on;
-      if (on) fillBkyScan(early);
+      const early = bky && !online && ['scheduled', 'on-sale'].indexOf(ev.status) >= 0;
+      if (early && card.parentNode !== slot) slot.appendChild(card);
+      if (!early && card.parentNode === slot) card._home.parent.insertBefore(card, card._home.next);
+      slot.hidden = !early;
       if (typeof syncOverviewBento === 'function') syncOverviewBento();   // 右欄可能因這張卡由空變有，重算欄寬
     }
+    if (bky) syncBkyPickup();
     const rosterNote = document.getElementById('ed-roster-bky');
     if (rosterNote) rosterNote.hidden = !bky;
     document.querySelectorAll('[data-i18n="event-detail.att.scanner"]').forEach(b => {
@@ -3994,26 +4013,31 @@
         (edPreSale() ? '<button type="button" class="btn btn--icon btn--sm" data-sess-remove aria-label="' + tixEsc(T('ed.sess.remove', 'Remove this date')) + '"><i data-lucide="x" class="ztor-icon"></i></button>' : '') +
       '</div>' : '') +
       (multi ? '<div class="ed-sess__body collapse-body"' + (open ? '' : ' hidden') + '>' : '') +
-      '<div class="form-grid">' + f(T('ce.date', 'Event date'), 'date', 'date', s.date) + '</div>' +
-      '<div class="form-grid">' +
-        ft(T('ce.start', 'Start time'), 'start') +
-        ft(T('ce.end', 'End time'), 'end') +
-      '</div>' +
-      /* 跨日活動（D328，5.1.6.2 F7 → 5.1.6.1 F7）：與建立流程同一組開關列＋揭示區（.control-group）。
-         開＝結束日期必填、結束須晚於開始（就地標紅，見 edSessEndErr）；bookyay 帶入者鎖定。
-         開關掛 data-view-safe：檢視態也要看得到現在是開還是關（Q119 例外：開關是狀態展示）。 */
+      /* 日期與時間（2026-10-12 使用者指示，同建立流程 sessWhenHTML）：
+           關：活動日期一列；開始時間｜結束時間一列。
+           開：活動開始日期｜開始時間一列；活動結束日期｜結束時間一列（同一個時刻的日期與時間並排）。
+         結束日期必填、結束須晚於開始（就地標紅，見 edSessEndErr）。 */
+      (s.multiDay
+        ? '<div class="form-grid">' + f(T('ce.sess.startdate', 'Start date'), 'date', 'date', s.date) + ft(T('ce.start', 'Start time'), 'start') + '</div>' +
+          '<div class="form-grid">' +
+            '<label class="field' + (edSessEndErr(s) ? ' is-invalid' : '') + '" data-sess-end-field>' +
+              '<span class="field__label">' + tixEsc(T('ce.sess.enddate', 'End date')) + ' <span class="field__req">*</span>' + (bky ? ' ' + bkySrcChip() : '') + '</span>' +
+              '<input class="input" type="date" data-sess-f="endDate" value="' + tixEsc(s.endDate || '') + '">' +
+              '<span class="field__error" data-sess-end-err' + (edSessEndErr(s) ? '' : ' hidden') + '>' + tixEsc(edSessEndErr(s)) + '</span>' +
+            '</label>' +
+            ft(T('ce.end', 'End time'), 'end') +
+          '</div>'
+        : '<div class="form-grid">' + f(T('ce.date', 'Event date'), 'date', 'date', s.date) + '</div>' +
+          '<div class="form-grid">' + ft(T('ce.start', 'Start time'), 'start') + ft(T('ce.end', 'End time'), 'end') + '</div>') +
+      /* 跨日活動（D328，5.1.6.2 F7 → 5.1.6.1 F7）：開關列放在日期／時間欄位**下面**、提前入場時間上面，與建立流程同一套（2026-10-12 使用者指示，取代同日稍早放在上面的版本）。
+         開關只剩一列；打開後底下的欄位整組改排（mdWhen）。bookyay 帶入者鎖定。
+         開關掛 data-view-safe：檢視態也要看得到現在是開還是關（Q119 例外：開關是狀態展示）。
+         墓碑 2026-10-12：開關底下只放一格「結束日期」的揭示區撤除。 */
       '<div class="control-group" data-sess-md-group data-feat="S53">' +
         '<div class="control-row">' +
           '<div class="control-row__main">' + tixEsc(T('ce.sess.multiday', 'Multi-day')) + (bky ? ' ' + bkySrcChip() : '') + '</div>' +
           '<button type="button" class="switch' + (s.multiDay ? ' switch--on' : '') + '" role="switch" aria-checked="' +
             (s.multiDay ? 'true' : 'false') + '" data-view-safe data-sess-md aria-label="' + tixEsc(T('ce.sess.multiday', 'Multi-day')) + '"></button>' +
-        '</div>' +
-        '<div class="control-group__body"' + (s.multiDay ? '' : ' hidden') + '>' +
-          '<label class="field' + (edSessEndErr(s) ? ' is-invalid' : '') + '" data-sess-end-field>' +
-            '<span class="field__label">' + tixEsc(T('ce.sess.enddate', 'End date')) + ' <span class="field__req">*</span></span>' +
-            '<input class="input" type="date" data-sess-f="endDate" value="' + tixEsc(s.endDate || '') + '">' +
-            '<span class="field__error" data-sess-end-err' + (edSessEndErr(s) ? '' : ' hidden') + '>' + tixEsc(edSessEndErr(s)) + '</span>' +
-          '</label>' +
         '</div>' +
       '</div>' +
       /* D396（2026-10-12 使用者指示；同建立流程）：「開放入場（選填）」改名「提前入場時間」，改成跟跨日同一種開關列＋揭示區
@@ -4115,17 +4139,15 @@
       if (open) sessOpen.add(row.dataset.sess); else sessOpen.delete(row.dataset.sess);
       return;
     }
-    /* 跨日活動開關（D328）：就地翻開關與揭示區 */
+    /* 跨日活動開關（D328）：翻開關後日期／時間欄位整組改排（2026-10-12），重繪場次清單（展開狀態存在 sessOpen；
+       renderSessions 會重套檢視／編輯態）。關掉不清結束日期（再開回填）。 */
     const md = e.target.closest('[data-sess-md]');
     if (md && s && !md.disabled) {
       s.multiDay = !s.multiDay;
-      md.classList.toggle('switch--on', s.multiDay);
-      md.setAttribute('aria-checked', s.multiDay ? 'true' : 'false');
-      const body = md.closest('[data-sess-md-group]')?.querySelector('.control-group__body');
-      if (body) body.hidden = !s.multiDay;
-      syncEdSessErr(row, s);
-      const sum = row.querySelector('.collapse-head__sum');
-      if (sum) sum.outerHTML = sessSummaryHTML(s);
+      if (edSessions.length > 1) sessOpen.add(s.id);
+      renderSessions();
+      document.querySelector('#ed-sess-list [data-sess="' + s.id + '"] [data-sess-md]')?.focus();
+      if (edBaseline) syncDirty();
       return;
     }
     /* 提前入場時間開關（D396）：就地翻開關與揭示區；關掉清空時間、分鐘，早到處理回到「仍可入場」。 */
@@ -4391,7 +4413,7 @@
     const origSess = sessFromEv();
     (edSessions || []).forEach((s, i) => {
       const orig = origSess.find(x => x.id === s.id) || {};
-      push(T('ce.date', 'Event date') + suffix(i), fmtDate(orig.date), fmtDate(s.date));
+      push(T(s.multiDay ? 'ce.sess.startdate' : 'ce.date', s.multiDay ? 'Start date' : 'Event date') + suffix(i), fmtDate(orig.date), fmtDate(s.date));
       push(T('ce.start', 'Start time') + suffix(i), fmtTime(orig.start), fmtTime(s.start));
       push(T('ce.sess.enddate', 'End date') + suffix(i), fmtDate(orig.multiDay ? orig.endDate : ''), fmtDate(s.multiDay ? s.endDate : ''));
     });
@@ -4418,7 +4440,7 @@
     const multi = edSessions.length > 1;
     edSessions.forEach((s, i) => {
       const sfx = multi ? ' · ' + T('ed.sess.n', 'Date {n}').replace('{n}', i + 1) : '';
-      if (!(s.date || '').trim()) errs.push({ label: T('ce.date', 'Event date') + sfx, nav: 'dates', sess: s.id, f: 'date' });
+      if (!(s.date || '').trim()) errs.push({ label: T(s.multiDay ? 'ce.sess.startdate' : 'ce.date', s.multiDay ? 'Start date' : 'Event date') + sfx, nav: 'dates', sess: s.id, f: 'date' });
       if (edSessTimeErr(s, 'start') || edSessTimeErr(s, 'end')) errs.push({ label: T('ed.save.err.times', 'Start and end time') + sfx, nav: 'dates', sess: s.id, f: 'start' });
       if (edSessEndErr(s)) errs.push({ label: T('ce.sess.enddate', 'End date') + sfx, nav: 'dates', sess: s.id, f: 'endDate' });
       if (edSessDoorsErr(s)) errs.push({ label: T('ce.doors', 'Early entry time') + sfx, nav: 'dates', sess: s.id, f: 'doors' });   // D396
@@ -5697,7 +5719,22 @@
        上面那排改成「跳到那一節」的錨點。理由是這幾節本來就是同一件事的不同段落
        （設定＝活動內容→場次→地點→發布→連結），互斥切換會逼人記住「剛剛那一節寫了什麼」
        才能對照下一節；排在一起則可以直接往下讀，也還能一鍵跳。 */
+    /* 2026-10-12（使用者指示「售票與名單這頁底下的這幾個都要是自己一頁，不是全部放同一頁，點選 tab 做換頁」）：
+       標了 data-nav-mode="switch" 的分頁（售票與名單、票務）改回互斥切換——一次只顯示一節，點 tab 換節。
+       哪一節是目前這一節記在 root.dataset.navCur，顯隱由 syncNavSections 統一算（它本來就是 panel.hidden 的唯一出口，
+       這裡另設 hidden 會被它下一次重算蓋掉）。吸頂 dock 會把 tabs 搬出 root，所以切換模式的點擊
+       掛在 document 上、以「這個 key 屬於哪個 root」比對，搬走之後仍然有效。 */
+    const switchMode = root.dataset.navMode === 'switch';
     const go = key => {
+      if (switchMode) {
+        if (!panels().some(p => p.dataset.navPanel === key)) return;
+        root.dataset.navCur = key;
+        syncNavSections();
+        /* 換節後內容高度變了：目前捲得比新那一節還下面時，回到這一排 tab 的位置，不要停在一片空白。 */
+        if (root.getBoundingClientRect().top < 0) root.scrollIntoView({ block: 'start' });
+        if (window.ZtorDetailTopbar && window.ZtorDetailTopbar.resync) window.ZtorDetailTopbar.resync();
+        return;
+      }
       const t = panels().find(p => p.dataset.navPanel === key);
       if (!t) return;
       mark(key);
@@ -5711,10 +5748,18 @@
     };
 
     let spyOff = false, spyTimer = null;
-    root.addEventListener('click', e => {
-      const b = e.target.closest('[data-nav-item]');
-      if (b && !b.hidden) go(b.dataset.navItem);
-    });
+    if (switchMode) {
+      document.addEventListener('click', e => {
+        const b = e.target.closest('[data-nav-item]');
+        if (!b || b.hidden) return;
+        if (root.querySelector('[data-nav-panel="' + b.dataset.navItem + '"]')) go(b.dataset.navItem);
+      });
+    } else {
+      root.addEventListener('click', e => {
+        const b = e.target.closest('[data-nav-item]');
+        if (b && !b.hidden) go(b.dataset.navItem);
+      });
+    }
 
     /* 捲動同步：標「目前跨過上緣參考線的最後一節」。
        只看 IntersectionObserver 的 isIntersecting 會有一個破口——捲到最頂端時，
@@ -5724,7 +5769,7 @@
     const LINE = 96;                       // 上緣參考線：吸附橫列底下一點
     const scroller = () => document.querySelector('.main') || document.scrollingElement;
     const sync = () => {
-      if (spyOff) return;
+      if (spyOff || switchMode) return;      // 切換模式一次只有一節，沒有「捲到哪一節」這件事
       /* 只同步「現在看得到的那個分頁」（2026-08-17 修）：三個分頁的分節橫列同時存在，
          沒被選到的那兩個整片是 display:none，所有節的 getBoundingClientRect() 都是 0——
          底下那條「捲到底就標最後一節」的規則於是無條件成立，設定與票務的作用中標記
@@ -6041,6 +6086,20 @@
         const item = group.querySelector('[data-nav-item="' + panel.dataset.navPanel + '"]');
         if (item) item.hidden = !alive;
       });
+      /* 切換模式（售票與名單）：只留目前這一節。目前這一節不成立（例如已取消沒有名單）就落回第一個看得到的；
+         入口（tab）的顯隱只看「這一節成不成立」，不受目前選哪一節影響。作用中底線也在這裡一起標。
+         dock 收編後 tabs 不在 group 裡，所以入口用 document 找、以所屬 panel 的 key 比對。 */
+      if (group.dataset.navMode === 'switch') {
+        const keys = Array.from(group.querySelectorAll('[data-nav-panel]')).filter(p => !p.hidden).map(p => p.dataset.navPanel);
+        let cur = group.dataset.navCur;
+        if (keys.indexOf(cur) < 0) cur = keys[0] || '';
+        group.dataset.navCur = cur;
+        group.querySelectorAll('[data-nav-panel]').forEach(p => { if (p.dataset.navPanel !== cur) p.hidden = true; });
+        const allKeys = Array.from(group.querySelectorAll('[data-nav-panel]')).map(p => p.dataset.navPanel);
+        document.querySelectorAll('[data-nav-item]').forEach(b => {
+          if (allKeys.indexOf(b.dataset.navItem) >= 0) b.classList.toggle('tabs__item--active', b.dataset.navItem === cur);
+        });
+      }
     });
   }
 
@@ -6762,6 +6821,20 @@
        在那邊還沒有對應紀錄（會顯示查無資料），第 3 批再讓它認得票券成員（ASSUMPTIONS EDIT-001）。
        tickets 形狀＝{ tierIds, qty }（2026-09-21 D296：允許票種清單 × 每組張數，粉絲任選一種；
        相容讀取走 ztorEvents.bundleTickets）。「內含票券」寫「VIP／Floor 任選 × n」（一種「VIP × n」）。 */
+    /* 2026-10-12 D402／UI-CHANGES 一百八十八：組合包價格不是單一值（允許多種門票）時，主價格改「從 $X 起」，下方加一行區間小字「$最低–$最高」。
+       最高價〔推導，5.1.6.3 §2.6〕：允許門票中最貴的 × 每組張數＋商品單價合計，再套同一個組合折扣（折扣比＝售價 ÷ 以最便宜門票算的原價合計）；
+       算法同 create-bundle.html 的 baseMax()。額外權益已從組合包移除，卡上不顯示。 */
+    const priceHTML = (b, tk) => {
+      const Z = window.ztorEvents, po = Z.bundlePriceOf(ev, b);
+      const prices = tk.tierIds.map(id => { const t = (ev.tiers || []).find(y => y.id === id); return t ? Number(t.price) || 0 : null; }).filter(v => v !== null);
+      const prodSum = (b.products || []).reduce((a, x) => a + (Number(x && x.price) || 0), 0);
+      const lo = prices.length ? Math.min.apply(null, prices) * tk.qty + prodSum : 0;
+      const hi = prices.length ? Math.max.apply(null, prices) * tk.qty + prodSum : 0;
+      if (prices.length < 2 || !(hi > lo) || !(lo > 0)) return esc(Z.moneyIn(po));
+      const k = po.amount / lo, plain = Object.assign({}, po, { override: {} });
+      return esc(T('cpp.bd.price.from', 'from {sum}').replace('{sum}', Z.moneyIn(po))) +
+        '<small class="text-sub tier-card__line" data-ed-bundle-range>' + esc(Z.moneyIn(plain) + '–' + Z.moneyIn(Object.assign({}, plain, { amount: Math.round(hi * k) }))) + '</small>';
+    };
     list.innerHTML = '<div class="tier-grid">' + bds.map(b => {
       const tk = window.ztorEvents.bundleTickets(b);
       const tixNames = tk.tierIds.map(id => { const t = (ev.tiers || []).find(y => y.id === id); return t ? t.name : id; });
@@ -6789,7 +6862,7 @@
           '<h4 class="tier-card__name">' + esc(b.name) + '</h4>' +
         '</div>' +
         '<dl class="tier-card__facts">' +
-          fact(T('ed.bd.price', 'Bundle price'), esc(window.ztorEvents.moneyIn(window.ztorEvents.bundlePriceOf(ev, b)))) +   // 基準幣別（D306）
+          fact(T('ed.bd.price', 'Bundle price'), priceHTML(b, tk)) +   // 基準幣別（D306）；多票種時「從 $X 起」＋區間小字（D402）
           fact(T('ed.bd.tickets', 'Tickets inside'), esc(tixLine || '—')) +
           // products 是 { name, img }（2026-08-17 起）——直接 join 會印出 [object Object]
           fact(T('ed.bd.products', 'Products inside'),
@@ -7182,6 +7255,7 @@
      此前 initSectionNav 只在點擊與捲動時 mark，所以剛進來整排沒有底線。 */
   function markFirstSections() {
     document.querySelectorAll('[data-nav]').forEach(root => {
+      if (root.dataset.navMode === 'switch') { root.dataset.navCur = ''; syncNavSections(); return; }   // 切換模式：落回第一個成立的那一節，由 syncNavSections 一併標底線
       const first = Array.from(root.querySelectorAll('[data-nav-item]')).find(b => !b.hidden);
       root.querySelectorAll('[data-nav-item]').forEach(b =>
         b.classList.toggle('tabs__item--active', b === first));

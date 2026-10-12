@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 探索頁（lab）· 建立組合包重新規劃（2026-10-12）。資產一律以 ../ 為前綴、不用 <base>。
+     頁內 <style> 只放 demo 專用規則、一律 lab- 前綴、只吃既有 token；不建 ds-components、不動正式頁 create-bundle.html。
+     三大分類（組合包介紹／選擇組合物／販售設定）＝大綱的群組標＋表單裡每組第一張分卡上方一行分類小字；
+     底下 8 張分卡（額外權益 2026-10-12 依使用者指示拿掉，待之後檢查）。重點是兩個新做法：④ 組合物（商品＋票券同一張表）、⑥ 價格階梯、⑦ 數量「一個結果＋兩個問題」。 -->
+<title>LAB · 建立組合包重新規劃</title>
+<script src="../js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/upload-tile.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/stack.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/radio-card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/stepper.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/kv-list.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/calc-list.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/bundle-editor.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/picker.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/preview-column.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/follow-field.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/progress-stepper.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/section-outline.css?v=r2.2">
+<link rel="stylesheet" href="../shared.css?v=r2.2">
+<style>
+  /* ═════════ LAB 專用（lab- 前綴；只用既有 token） ═════════ */
+  .preview-split__form { --section-outline-body: 1000px; }
+  /* 情境切換：含活動票券／純商品。只在對應情境顯示的區塊標 data-lab-only="tix"／"goods" */
+  .lab-scn-goods [data-lab-only="tix"], .lab-scn-tix [data-lab-only="goods"] { display: none !important; }
+  .lab-scn-sw { display: inline-flex; align-items: center; white-space: nowrap; margin-right: var(--sp-8); }
+  .lab-scn-sw .segmented__btn { white-space: nowrap; }
+  .lab-note {
+    max-width: 1000px; margin: 0 auto var(--sp-16); padding: var(--sp-12) var(--sp-16);
+    border: 1px dashed var(--layer-2-line); border-radius: var(--radius-md);
+    font-size: var(--fs-12); line-height: var(--lh-relaxed); color: var(--foreground-muted);
+  }
+  .lab-note b { color: var(--foreground); font-weight: var(--fw-medium); }
+
+  /* 大綱的分類群組標（正式做要擴充 section-outline 元件） */
+  .lab-og { padding: var(--sp-12) var(--sp-8) var(--sp-4); font-size: var(--fs-11); color: var(--foreground-muted);
+    letter-spacing: .04em; }
+  .lab-og:first-child { padding-top: 0; }
+
+  /* 表單裡每組第一張分卡上方的分類小字 */
+  .lab-cat { display: flex; align-items: baseline; gap: var(--sp-8); margin: var(--sp-24) 0 var(--sp-10) var(--sp-4);
+    font-size: var(--fs-12); color: var(--foreground-muted); letter-spacing: .04em; }
+  .lab-cat:first-child { margin-top: 0; }
+  .lab-cat__n { font-family: var(--font-mono); color: var(--primary); }
+  .preview-split__form > .form-section + .form-section { margin-top: var(--sp-12); }
+
+  /* ④ 組合物：商品＋票券同一張表 */
+  .lab-mtbl { border-top: 1px solid var(--border-soft); }
+  .lab-mtbl__head, .lab-mrow {
+    display: grid; grid-template-columns: 20px minmax(0, 1fr) 124px 104px 24px; gap: var(--sp-8); align-items: center;
+  }
+  .lab-mtbl__head { padding: var(--sp-8) 0; font-size: var(--fs-11); color: var(--muted-foreground); border-bottom: 1px solid var(--border-soft); }
+  .lab-mtbl__head > :nth-child(3) { text-align: right; }
+  .lab-mrow { padding: var(--sp-10) 0; border-bottom: 1px solid var(--border-soft); font-size: var(--fs-13); }
+  .lab-mrow > :nth-child(3) { text-align: right; font-variant-numeric: tabular-nums; }
+  .lab-mrow__name { display: flex; align-items: center; gap: var(--sp-10); min-width: 0; }
+  .lab-mrow__thumb { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--radius-sm);
+    background: var(--muted); color: var(--muted-foreground); }
+  .lab-mrow__thumb .ztor-icon { width: 16px; height: 16px; }
+  .lab-mrow__txt { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .lab-mrow__t { color: var(--foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lab-mrow__s { font-size: var(--fs-11); color: var(--muted-foreground); }
+  .lab-mrow__x { appearance: none; border: 0; background: none; color: var(--muted-foreground); cursor: pointer; padding: 4px; }
+  .lab-mrow__x:hover { color: var(--foreground); }
+  .lab-mrow__x .ztor-icon { width: 14px; height: 14px; }
+  /* 票券列的展開入口：最左一顆箭頭鈕（整列的第一個東西，一眼看得到）＋名稱下方一行可點的文字「已選 … · 調整」，兩者同步 */
+  .lab-mrow__open { appearance: none; border: 0; background: none; padding: 4px; color: var(--muted-foreground); cursor: pointer; display: grid; place-items: center; }
+  .lab-mrow__open:hover { color: var(--foreground); }
+  .lab-mrow__open .ztor-icon { width: 16px; height: 16px; transition: transform var(--duration); }
+  .lab-mrow__open[aria-expanded="true"] .ztor-icon { transform: rotate(90deg); }
+  .lab-link { appearance: none; border: 0; background: none; padding: 0; font: inherit; font-size: var(--fs-11); text-align: left;
+    color: var(--muted-foreground); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .lab-link:hover { color: var(--foreground); }
+  .lab-disc { appearance: none; border: 0; background: none; padding: 0; color: var(--muted-foreground); cursor: pointer;
+    display: inline-flex; align-items: center; gap: 2px; font: inherit; font-size: var(--fs-11); }
+  .lab-disc:hover { color: var(--foreground); }
+  .lab-disc .ztor-icon { width: 12px; height: 12px; transition: transform var(--duration); }
+  .lab-disc[aria-expanded="true"] .ztor-icon { transform: rotate(180deg); }
+  .lab-mstep { width: 104px; }
+  .lab-mrow__sub { display: block; font-size: var(--fs-11); color: var(--muted-foreground); }
+  .lab-mexp { padding: var(--sp-4) 0 var(--sp-12) 82px; border-bottom: 1px solid var(--border-soft); }
+  .lab-mexp[hidden] { display: none; }
+  .lab-tier { display: grid; grid-template-columns: 16px minmax(0, 1fr) 80px 72px; gap: var(--sp-12); align-items: center;
+    padding: 6px 0; font-size: var(--fs-12); }
+  .lab-tier > :nth-child(3), .lab-tier > :nth-child(4) { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted-foreground); }
+  .lab-tier__h { font-size: var(--fs-11); color: var(--muted-foreground); }
+  .lab-add { display: flex; align-items: center; justify-content: center; gap: var(--sp-6); width: 100%; padding: var(--sp-12);
+    border: 1px dashed var(--layer-2-line); border-radius: var(--radius-md); background: var(--layer-2-surface);
+    color: var(--foreground); font: inherit; font-size: var(--fs-13); cursor: pointer; }
+  .lab-add:hover { background: var(--accent); }
+  .lab-add .ztor-icon { width: 16px; height: 16px; }
+  .lab-modal .lab-pick__row:last-child { border-bottom: 0; }
+  .lab-pick__tabs { display: flex; gap: var(--sp-16); border-bottom: 1px solid var(--border-soft); margin-bottom: var(--sp-10); }
+  .lab-pick__tab { appearance: none; border: 0; background: none; padding: var(--sp-6) 0; margin-bottom: -1px; font: inherit;
+    font-size: var(--fs-13); color: var(--muted-foreground); border-bottom: 2px solid transparent; cursor: pointer; }
+  .lab-pick__tab[aria-selected="true"] { color: var(--foreground); border-bottom-color: var(--primary); }
+  .lab-pick__tab:disabled { cursor: not-allowed; opacity: .5; }
+  .lab-pick__why { font-size: var(--fs-11); color: var(--muted-foreground); margin: 0 0 var(--sp-8); }
+  .lab-pick__row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12); padding: var(--sp-8) 0;
+    border-bottom: 1px solid var(--border-soft); font-size: var(--fs-13); }
+  .lab-pick__row:last-child { border-bottom: 0; }
+  .lab-pick__meta { font-size: var(--fs-11); color: var(--muted-foreground); }
+
+  /* ⑥ 價格階梯：每列「這一步｜填的值｜算到這裡的價格」 */
+  .lab-ladder { display: flex; flex-direction: column; border: 1px solid var(--border-soft); border-radius: var(--radius-md); overflow: hidden; }
+  /* 兩欄：左＝這一步（標題、說明，有輸入框時換行放在說明下面）、右＝算到這裡的價格 */
+  .lab-step { display: grid; grid-template-columns: minmax(0, 1fr) 160px; grid-template-areas: "k v" "ctl v";
+    column-gap: var(--sp-16); align-items: center;
+    padding: var(--sp-14) var(--sp-16); border-top: 1px solid var(--border-soft); }
+  .lab-step > .lab-step__k { grid-area: k; }
+  .lab-step > .lab-step__ctl { grid-area: ctl; margin-top: var(--sp-16); justify-content: flex-start; }
+  .lab-step > .lab-step__v { grid-area: v; }
+  /* 有輸入框的列：標題與說明獨佔第一行，輸入框和算出來的價格並排在第二行 */
+  .lab-step:has(> .lab-step__ctl) { grid-template-areas: "k k" "ctl v"; }
+  .lab-step:has(> .lab-step__ctl) > .lab-step__v { margin-top: var(--sp-16); }
+  .lab-step:first-child { border-top: 0; }
+  .lab-step__k { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .lab-step__t { display: flex; align-items: center; gap: var(--sp-8); font-size: var(--fs-14); color: var(--foreground); }
+  .lab-step__s { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-step__v { text-align: right; font-variant-numeric: tabular-nums; font-size: var(--fs-16); color: var(--foreground); }
+  .lab-step__v small { display: block; font-size: var(--fs-11); color: var(--muted-foreground); }
+  .lab-step__v--muted { color: var(--muted-foreground); font-size: var(--fs-13); }
+  .lab-step__ctl { display: flex; justify-content: flex-end; }
+  .lab-step__v--switch { display: flex; justify-content: flex-end; }   /* 開關列：開關本身就是結果，靠右對齊、不另寫狀態字 */
+  /* 展開區（「看怎麼算」與「限時折扣」的內容）共用同一個樣式：淡底＋上緣分隔線＋同一組內距 */
+  /* 底色用最深的頁面底色（--layer-0-surface）疊半透明，讀起來是「往下陷」的內凹區；要更深就把 25% 往上調 */
+  .lab-step--sub, .lab-step--detail { background: color-mix(in srgb, var(--layer-0-surface) 25%, transparent); }
+  .lab-step--sub[hidden], .lab-step--detail[hidden] { display: none; }
+  .lab-step--detail { display: block; }
+  /* 「看怎麼算」展開：不另包框，一條分隔線後逐項列出，欄位與上方「原價合計」同一組欄軌（名稱左、金額右對齊） */
+  .lab-items { display: flex; flex-direction: column; gap: var(--sp-10); }
+  .lab-item { display: grid; grid-template-columns: minmax(0, 1fr) 160px; gap: var(--sp-16); align-items: baseline; }
+  .lab-item__t { font-size: var(--fs-13); color: var(--foreground-muted); }
+  .lab-item__v { text-align: right; font-variant-numeric: tabular-nums; font-size: var(--fs-13); color: var(--foreground-muted); }
+  /* 粉絲實付：只有金額用品牌橘，底色不另外染（2026-10-12 使用者指示） */
+  .lab-step--total .lab-step__v { font-size: var(--fs-20); color: var(--primary); }
+  .lab-ladder__dates > .field { grid-column: 1; }   /* 開始、結束日期上下兩行；欄寬維持原本的半列，不隨之變寬 */
+  .lab-ladder__dates { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-12); grid-column: 1 / -1; grid-row: 3;
+    /* % 與起訖日之間一條通欄分隔線（左右抵銷列的內距，線貼齊列邊） */
+    margin: var(--sp-16) calc(-1 * var(--sp-16)) calc(-1 * var(--sp-4)); padding: var(--sp-16) var(--sp-16) 0; border-top: 1px solid var(--border-soft); }
+  .lab-fee { margin-top: var(--sp-8); }
+
+  /* ⑦ 數量：一個結果＋兩個問題 */
+  .lab-q { display: flex; flex-direction: column; gap: var(--sp-8); padding-top: var(--sp-16); border-top: 1px solid var(--border-soft); }
+  .lab-q__t { font-size: var(--fs-14); color: var(--foreground); }
+  .lab-q__s { font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-relaxed); }
+  .lab-q__body[hidden] { display: none; }
+  .lab-q__body { display: flex; flex-direction: column; gap: var(--sp-8); }
+  .lab-qty-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-16); }
+  .lab-qty-res { display: flex; align-items: baseline; gap: var(--sp-8); }
+  .lab-qty-res__k { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-qty-head + .stack > .lab-q:first-child { border-top: 0; padding-top: 0; }   /* 第一題緊接標題列，不再畫分隔線 */
+  /* 各成員鎖定量表：成員名左、三個數字靠右，欄軌固定 */
+  /* 鎖定量表：欄序「成員｜庫存｜未鎖定｜鎖定」——「鎖定」放最右，就是上面輸入框（鎖定組數）的正下方，右緣對齊；
+     輸入框＝你填的，「鎖定」欄＝它乘出來的結果，所以那一欄用較亮的字。表格不畫上框，只留列與列之間的細線 */
+  .lab-lk__row, .lab-lk__set { display: grid; grid-template-columns: minmax(0, 1fr) 72px 72px 104px; gap: var(--sp-8); align-items: start; }
+  .lab-lk__row { padding: var(--sp-10) 0; border-bottom: 1px solid var(--border-soft); font-size: var(--fs-13); }
+  .lab-lk__row > :nth-child(n+2) { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted-foreground); }
+  .lab-lk__row > :nth-child(4) { color: var(--foreground); }
+  .lab-lk__h { padding: 0 0 var(--sp-6); font-size: var(--fs-11); color: var(--muted-foreground); }
+  .lab-lk__h > :nth-child(4) { color: var(--muted-foreground); }
+  /* 「鎖定組數」「販售上限」兩列：上下各留 12px，和上面的二選一、下面的表格／下一題拉開 */
+  .lab-lk__set { align-items: center; padding: var(--sp-12) 0; margin: 0; }
+  .lab-lk__set-k { grid-column: 1 / 4; font-size: var(--fs-14); color: var(--foreground); }
+  .lab-lk__set .lab-lk__in { grid-column: 4; }
+  .lab-lk__in { width: 104px; justify-self: end; }   /* 輸入框寬度＝「鎖定」欄寬，右緣貼齊整個容器 */
+  .lab-lk__row .lab-link { display: block; margin-top: 2px; }
+  .lab-big { font-size: var(--fs-28); font-variant-numeric: tabular-nums; color: var(--foreground); line-height: var(--lh-tight); }
+  .lab-big small { font-size: var(--fs-14); color: var(--muted-foreground); margin-left: var(--sp-4); }
+
+  /* 右欄預覽（簡化示意） */
+  .segmented.radio-cards.lab-seg3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }   /* 三選一排同一行 */
+  /* 限購：標題列（標題＋狀態徽章＋覆寫鈕）→ 一句說明 → 三列（左＝名稱與輔助說明、右＝值或輸入框，右緣對齊） */
+  .lab-limit { margin-top: var(--sp-16); padding-top: var(--sp-16); border-top: 1px solid var(--border-soft); }
+  .lab-limit__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12); }
+  .lab-limit__follow { display: inline-flex; align-items: center; gap: var(--sp-10); font-size: var(--fs-13); color: var(--foreground-muted); cursor: pointer; }
+  .lab-limit__sub { margin: var(--sp-6) 0 var(--sp-4); font-size: var(--fs-12); line-height: var(--lh-relaxed); color: var(--muted-foreground); }
+  /* 三列做成跟「價格」階梯同一種：整塊一個細框，每列 14/16 內距、標題 14px、輔助 12px 淡色、右邊值 16px、列與列之間細線 */
+  .lab-limit__rows { margin-top: var(--sp-10); border: 1px solid var(--border-soft); border-radius: var(--radius-md); overflow: hidden; }
+  .lab-limit__row { display: grid; grid-template-columns: minmax(0, 1fr) 228px; gap: var(--sp-16); align-items: center;
+    padding: var(--sp-14) var(--sp-16); border-top: 1px solid var(--border-soft); }
+  .lab-limit__row:first-child { border-top: 0; }
+  .lab-limit__k { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .lab-limit__t { font-size: var(--fs-14); color: var(--foreground); }
+  .lab-limit__h { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-limit__v { text-align: right; font-size: var(--fs-16); font-variant-numeric: tabular-nums; color: var(--foreground); }
+  .lab-limit__v small { display: block; font-size: var(--fs-11); color: var(--muted-foreground); }
+  .lab-limit__in { width: 160px; justify-self: end; }
+  .lab-limit__in[hidden], .lab-limit__v[hidden] { display: none; }
+  .lab-limit__row.is-bad .amount-field { box-shadow: 0 0 0 1px var(--status-error); }
+  .lab-rev { padding: 0 0 var(--sp-4); }
+  .lab-rev[hidden] { display: none; }
+  .lab-pv { display: flex; flex-direction: column; gap: var(--sp-10); font-size: var(--fs-13); }
+  .lab-pv__img { aspect-ratio: 2 / 1; border-radius: var(--radius-md); background: var(--muted); display: grid; place-items: center; color: var(--muted-foreground); }
+  .lab-pv__name { font-size: var(--fs-16); color: var(--foreground); }
+  .lab-pv__price { font-size: var(--fs-20); color: var(--foreground); font-variant-numeric: tabular-nums; }
+  .lab-pv__was { font-size: var(--fs-12); color: var(--muted-foreground); text-decoration: line-through; margin-left: var(--sp-6); }
+  .lab-pv__li { display: flex; justify-content: space-between; color: var(--foreground-muted); font-size: var(--fs-12); }
+</style>
+</head>
+<body class="lab-scn-tix">
+<div class="wizard">
+  <div class="wizard__sheet wizard__sheet--sectioned">
+  <header class="wizard__top">
+    <div class="wizard__top-bar">
+      <div class="wizard__top-lead">
+        <button class="wizard__back" type="button" aria-label="返回"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+        <div class="wizard__top-titlewrap">
+          <span class="wizard__top-title">建立組合包</span>
+          <span class="wizard__top-sub">示意頁 · 2026-10-12 重新規劃</span>
+        </div>
+      </div>
+      <div class="wizard__progress">
+        <div class="progress-stepper progress-stepper--segmented" style="--steps:2;--at:1;--progress:0%">
+          <div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>
+          <div class="progress-stepper__labels">
+            <span class="progress-stepper__label progress-stepper__label--current">內容</span>
+            <span class="progress-stepper__label">預覽與發布</span>
+          </div>
+        </div>
+      </div>
+      <div class="wizard__top-actions">
+        <div class="lab-scn-sw">
+          <div class="segmented" role="radiogroup" aria-label="示意情境" data-lab-scn>
+            <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-v="tix">含活動票券</button>
+            <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-v="goods">純商品</button>
+          </div></div>
+        <button class="btn btn--outline" type="button">存草稿</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="wizard__body wizard__body--form wizard__body--narrow preview-split">
+    <div class="preview-split__form section-outline-host">
+
+      <!-- 大綱（靜態示意；正式版要讓 section-outline 元件支援群組標） -->
+      <nav class="section-outline section-outline--gutter" aria-label="本頁大綱">
+        <div class="section-outline__inner">
+          <div class="section-outline__head">本頁大綱</div>
+          <div class="section-outline__sum"><span class="section-outline__count">必填 <b>1</b>/3</span><div class="section-outline__bar" style="--section-outline-progress:33%"></div></div>
+          <div class="section-outline__list" data-lab-outline>
+            <div class="lab-og">組合包介紹</div>
+            <button class="section-outline__item" data-to="info"><span class="section-outline__mk" data-st="todo"></span><span class="section-outline__text">組合資訊</span></button>
+            <button class="section-outline__item" data-to="media"><span class="section-outline__mk" data-st="opt"></span><span class="section-outline__text">展示</span></button>
+            <button class="section-outline__item" data-to="films"><span class="section-outline__mk" data-st="opt"></span><span class="section-outline__text">電影關聯</span></button>
+            <div class="lab-og">選擇組合物</div>
+            <button class="section-outline__item" data-to="members"><span class="section-outline__mk" data-st="done"><i data-lucide="check" class="ztor-icon"></i></span><span class="section-outline__text">組合物</span></button>
+            <div class="lab-og">販售設定</div>
+            <button class="section-outline__item" data-to="price"><span class="section-outline__mk" data-st="opt"></span><span class="section-outline__text">價格</span></button>
+            <button class="section-outline__item" data-to="qty"><span class="section-outline__mk" data-st="opt"></span><span class="section-outline__text">數量</span></button>
+            <button class="section-outline__item" data-to="rules"><span class="section-outline__mk" data-st="opt"></span><span class="section-outline__text">購買條件與限購</span></button>
+            <button class="section-outline__item" data-to="listing"><span class="section-outline__mk" data-st="todo"></span><span class="section-outline__text">上架與開賣</span></button>
+          </div>
+        </div>
+      </nav>
+
+      <div class="lab-note"><b>這是示意頁，不是正式頁。</b>看三件事：
+        ① 三大分類改成大綱的群組標，加上表單裡一行分類小字；
+        ④ 商品與票券合成同一張「組合物」表（票券列點「門票」可展開）；
+        ⑥ 價格改成由上往下算的「價格階梯」、⑦ 數量改成「最多可賣 N 組」加兩個問題。
+        欄位與規則都沿用目前的正式頁，只動呈現。數字是假資料，改折扣 % 會即時重算。右上角可切換「含活動票券／純商品」兩種組合包，看各段怎麼變。</div>
+
+      <!-- ═══════════ 組合包介紹 ═══════════ -->
+      <div class="lab-cat"><span class="lab-cat__n">1</span>組合包介紹</div>
+
+      <section class="form-section form-section--outlined" id="info">
+        <div class="form-section__head"><h3 class="form-section__title">組合資訊</h3></div>
+        <div class="stack">
+          <div class="field">
+            <div class="field__label">組合名稱 <span class="field__req">*</span></div>
+            <input class="input" placeholder="例：巡演粉絲組合">
+            <button class="bd-suggest" type="button" data-lab-only="tix">使用建議名稱：VIP／搖滾區 任選 × 2 ＋ 巡演 T 恤</button><button class="bd-suggest" type="button" data-lab-only="goods">使用建議名稱：巡演 T 恤 ＋ 簽名海報</button>
+          </div>
+          <div class="field">
+            <div class="field__label">描述</div>
+            <textarea class="textarea" rows="3" placeholder="告訴粉絲會拿到什麼"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section form-section--outlined" id="media">
+        <div class="form-section__head"><h3 class="form-section__title">展示</h3></div>
+        <div class="field">
+          <div class="field__hint">買家摸不到實物，靠你的照片和影片。第一格是封面。</div>
+          <div class="upload-assets upload-assets--fill">
+            <div class="upload-tile upload-tile--portrait" data-upload>
+              <span class="upload-tile__flag">封面</span>
+              <span class="upload-tile__icon"><i data-lucide="photo-video" class="ztor-icon ztor-icon--md"></i></span>
+              <span class="upload-tile__title">新增圖片或影片</span>
+              <span class="upload-tile__hint">750 × 1125 · 直式</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section form-section--outlined" id="films">
+        <div class="form-section__head"><h3 class="form-section__title">電影關聯</h3></div>
+        <div class="field">
+          <div class="field__hint">標記這個組合相關的已上映電影。</div>
+          <input class="input" placeholder="搜尋電影名稱">
+        </div>
+      </section>
+
+      <!-- ═══════════ 選擇組合物 ═══════════ -->
+      <div class="lab-cat"><span class="lab-cat__n">2</span>選擇組合物</div>
+
+      <section class="form-section form-section--outlined" id="members">
+        <div class="form-section__head"><h3 class="form-section__title">組合物</h3></div>
+        <div class="stack">
+          <div class="lab-mtbl">
+            <div class="lab-mtbl__head"><span></span><span>名稱</span><span>原價・剩餘</span><span>每組數量</span><span></span></div>
+
+            <!-- 票券成員 -->
+            <div class="lab-mrow" data-lab-only="tix">
+              <button class="lab-mrow__open" type="button" aria-expanded="false" aria-label="展開門票設定" data-lab-exp="tix"><i data-lucide="chevron-right" class="ztor-icon"></i></button>
+              <div class="lab-mrow__name">
+                <span class="lab-mrow__thumb"><i data-lucide="ticket" class="ztor-icon"></i></span>
+                <span class="lab-mrow__txt">
+                  <span class="lab-mrow__t">REALIVE 2026 台中場</span>
+                  <button class="lab-link" type="button" aria-expanded="false" data-lab-exp="tix" data-lab-out="tixlabel">已選 VIP／搖滾區 · 調整</button>
+                </span>
+              </div>
+              <span><span data-lab-out="mprice">$2,800–$4,200</span><span class="lab-mrow__sub">剩 <span data-lab-out="mleft">160</span></span></span>
+              <span class="amount-field amount-field--suffix amount-field--readonly zstep lab-mstep"><span class="amount-field__unit">張</span>
+                <input class="amount-field__input input zstep__input" type="number" min="1" value="2" data-lab-tixqty aria-label="每組張數">
+                <span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+              <button class="lab-mrow__x" type="button" aria-label="移除"><i data-lucide="x" class="ztor-icon"></i></button>
+            </div>
+            <div class="lab-mexp" data-lab-exp-body="tix" data-lab-only="tix" hidden>
+              <div class="lab-tier lab-tier__h"><span></span><span>允許的門票（粉絲購買時任選一種）</span><span>單價</span><span>剩餘</span></div>
+              <label class="lab-tier" data-price="4200" data-left="40"><span class="zcheck"><input type="checkbox" checked><span class="zcheck__box"></span></span><span>VIP</span><span>$4,200</span><span>40</span></label>
+              <label class="lab-tier" data-price="2800" data-left="120"><span class="zcheck"><input type="checkbox" checked><span class="zcheck__box"></span></span><span>搖滾區</span><span>$2,800</span><span>120</span></label>
+              <label class="lab-tier" data-price="1800" data-left="300"><span class="zcheck"><input type="checkbox"><span class="zcheck__box"></span></span><span>一般座位</span><span>$1,800</span><span>300</span></label>
+            </div>
+
+            <!-- 商品成員 -->
+            <div class="lab-mrow">
+              <span></span>
+              <div class="lab-mrow__name">
+                <span class="lab-mrow__thumb"><i data-lucide="shirt" class="ztor-icon"></i></span>
+                <span class="lab-mrow__txt">
+                  <span class="lab-mrow__t">巡演 T 恤</span>
+                  <span class="lab-mrow__s">多規格 · 尺寸由粉絲購買時選</span>
+                </span>
+              </div>
+              <span>$800<span class="lab-mrow__sub">剩 60</span></span>
+              <span class="amount-field amount-field--suffix amount-field--readonly zstep lab-mstep"><span class="amount-field__unit">件</span>
+                <input class="amount-field__input input zstep__input" type="number" min="1" value="1" data-lab-itemqty aria-label="每組件數">
+                <span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+              <button class="lab-mrow__x" type="button" aria-label="移除"><i data-lucide="x" class="ztor-icon"></i></button>
+            </div>
+            <div class="lab-mrow" data-lab-only="goods">
+              <span></span>
+              <div class="lab-mrow__name">
+                <span class="lab-mrow__thumb"><i data-lucide="image" class="ztor-icon"></i></span>
+                <span class="lab-mrow__txt">
+                  <span class="lab-mrow__t">簽名海報</span>
+                  <span class="lab-mrow__s">單一規格</span>
+                </span>
+              </div>
+              <span>$300<span class="lab-mrow__sub">剩 25</span></span>
+              <span class="amount-field amount-field--suffix amount-field--readonly zstep lab-mstep"><span class="amount-field__unit">件</span>
+                <input class="amount-field__input input zstep__input" type="number" min="1" value="1" data-lab-posterqty aria-label="每組件數">
+                <span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+              <button class="lab-mrow__x" type="button" aria-label="移除"><i data-lucide="x" class="ztor-icon"></i></button>
+            </div>
+          </div>
+
+          <button class="lab-add" type="button" data-lab-add><i data-lucide="plus" class="ztor-icon"></i>加入組合物</button>
+        </div>
+      </section>
+
+      <!-- ═══════════ 販售設定 ═══════════ -->
+      <div class="lab-cat"><span class="lab-cat__n">3</span>販售設定</div>
+
+      <section class="form-section form-section--outlined" id="price">
+        <div class="form-section__head"><h3 class="form-section__title">價格</h3></div>
+        <div class="lab-ladder">
+          <div class="lab-step">
+            <div class="lab-step__k">
+              <span class="lab-step__t">原價合計</span>
+              <button class="lab-disc" type="button" aria-expanded="false" data-lab-exp="calc">看怎麼算<i data-lucide="chevron-down" class="ztor-icon"></i></button>
+            </div>
+            <div class="lab-step__v" data-lab-out="list">$6,400–$9,200</div>
+          </div>
+          <div class="lab-step lab-step--detail" data-lab-exp-body="calc" hidden>
+            <div class="lab-items">
+              <div class="lab-item" data-lab-only="tix">
+                <div class="lab-step__k"><span class="lab-item__t" data-lab-out="tixname">門票 × 2 張</span></div>
+                <div class="lab-item__v" data-lab-out="tixsum">$5,600–$8,400</div>
+              </div>
+              <div class="lab-item">
+                <div class="lab-step__k"><span class="lab-item__t" data-lab-out="itemname">巡演 T 恤 × 1 件</span></div>
+                <div class="lab-item__v" data-lab-out="itemsum">$800</div>
+              </div>
+              <div class="lab-item" data-lab-only="goods">
+                <div class="lab-step__k"><span class="lab-item__t" data-lab-out="postername">簽名海報 × 1 件</span></div>
+                <div class="lab-item__v" data-lab-out="postersum">$300</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lab-step">
+            <div class="lab-step__k">
+              <span class="lab-step__t">組合折扣</span>
+              <span class="lab-step__s">比原價合計便宜；關閉＝不打折</span>
+            </div>
+            <div class="lab-step__v lab-step__v--switch"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-lab-disc-toggle aria-label="組合折扣"></div></div>
+          </div>
+          <div class="lab-step lab-step--sub" data-lab-disc-body>
+            <div class="lab-step__k"><span class="lab-step__t">組合折扣 %</span></div>
+            <div class="lab-step__ctl">
+              <span class="amount-field amount-field--suffix amount-field--readonly zstep bd-disc"><span class="amount-field__unit">%</span>
+                <input class="amount-field__input input zstep__input" type="number" min="0" max="100" value="10" data-lab-disc aria-label="組合折扣 %">
+                <span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+            </div>
+            <div class="lab-step__v" data-lab-out="sell">$5,760–$8,280<small>粉絲省 $640–$920</small></div>
+          </div>
+
+          <div class="lab-step">
+            <div class="lab-step__k">
+              <span class="lab-step__t">限時折扣 <span class="badge badge--neutral">選填</span></span>
+              <span class="lab-step__s">在售價上再折，只在你設的期間有效</span>
+            </div>
+            <div class="lab-step__v lab-step__v--switch"><div class="switch" role="switch" aria-checked="false" tabindex="0" data-lab-sale aria-label="限時折扣"></div></div>
+          </div>
+          <div class="lab-step lab-step--sub" data-lab-sale-body hidden>
+            <div class="lab-step__k"><span class="lab-step__t">限時折扣 %</span></div>
+            <div class="lab-step__ctl">
+              <span class="amount-field amount-field--suffix amount-field--readonly zstep bd-disc"><span class="amount-field__unit">%</span>
+                <input class="amount-field__input input zstep__input" type="number" min="0" max="100" value="5" data-lab-salepct aria-label="限時折扣 %">
+                <span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+            </div>
+            <div class="lab-step__v" data-lab-out="salesell">$5,472–$7,866<small>期間售價</small></div>
+            <div class="lab-ladder__dates">
+              <div class="field"><div class="field__label">開始日期 <span class="field__req">*</span></div><input class="input" type="date" value="2026-11-01"></div>
+              <div class="field"><div class="field__label">結束日期 <span class="field__req">*</span></div><input class="input" type="date" value="2026-11-11"></div>
+            </div>
+          </div>
+
+          <div class="lab-step">
+            <div class="lab-step__k">
+              <span class="lab-step__t">可與優惠碼疊加</span>
+              <span class="lab-step__s">關閉時，粉絲只拿到對他最划算的那一個折扣</span>
+            </div>
+            <div class="lab-step__v lab-step__v--switch"><div class="switch" role="switch" aria-checked="false" tabindex="0" data-lab-switch aria-label="可與優惠碼疊加"></div></div>
+          </div>
+
+          <div class="lab-step lab-step--total">
+            <div class="lab-step__k"><span class="lab-step__t">粉絲實付</span><span class="lab-step__s" data-lab-out="totalwhy">平時</span></div>
+            <div class="lab-step__v" data-lab-out="total">$5,760–$8,280</div>
+          </div>
+        </div>
+        <div class="field__hint field__hint--fact lab-fee" data-lab-only="tix">含活動票券：平台費整筆走活動票務費率，不按成員拆。</div>
+      </section>
+
+      <section class="form-section form-section--outlined" id="qty">
+        <!-- 結果放在標題列：標題在左、「最多可賣 N 組」在右同一行；下面直接是兩題 -->
+        <div class="form-section__head lab-qty-head">
+          <h3 class="form-section__title">數量</h3>
+          <div class="lab-qty-res"><span class="lab-qty-res__k">最多可賣</span><span class="lab-big" data-lab-out="max">60<small>組</small></span></div>
+        </div>
+        <div class="stack">
+          <div class="lab-q">
+            <div class="lab-q__t">要鎖定庫存給這個組合嗎？</div>
+            <div class="lab-q__s">鎖定後，這些組數用到的成員庫存不會被單買買走；不鎖定就和單買共用剩餘，先買先得。</div>
+            <div class="segmented radio-cards" role="radiogroup" data-lab-seg="lock">
+              <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-v="no"><span class="radio-card__text"><span class="radio-card__title">不鎖定</span></span></button>
+              <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-v="yes"><span class="radio-card__text"><span class="radio-card__title">鎖定</span></span></button>
+            </div>
+            <div class="lab-q__body" data-lab-when="lock:yes" hidden>
+              <!-- 鎖定組數（輸入）在表格外、成員鎖定量表（算出）在它下面；兩者共用同一組欄軌，輸入框落在「鎖定」欄，右緣和成員的鎖定數字對齊 -->
+              <div class="lab-lk__set">
+                <span class="lab-lk__set-k">鎖定組數</span>
+                <span class="amount-field amount-field--suffix amount-field--readonly zstep lab-lk__in"><span class="amount-field__unit">組</span>
+                  <input class="amount-field__input input zstep__input" type="number" min="1" value="20" data-lab-lock aria-label="鎖定組數">
+                  <span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+              </div>
+              <div class="lab-lk">
+                <div class="lab-lk__row lab-lk__h"><span>成員</span><span>庫存</span><span>未鎖定</span><span>鎖定</span></div>
+                <div class="lab-lk__row" data-lab-only="tix"><span>REALIVE 2026 台中場 · 門票<span class="lab-mrow__sub">從 VIP、搖滾區的剩餘依序扣</span></span><span data-lab-out="lkTixStock">160 張</span><span data-lab-out="lkTixFree">120 張</span><span data-lab-out="lkTix">40 張</span></div>
+                <div class="lab-lk__row"><span>巡演 T 恤<button class="lab-link" type="button">指定鎖哪些尺寸（選填）</button></span><span>60 件</span><span data-lab-out="lkItemFree">40 件</span><span data-lab-out="lkItem">20 件</span></div>
+                <div class="lab-lk__row" data-lab-only="goods"><span>簽名海報</span><span>25 件</span><span data-lab-out="lkPosterFree">5 件</span><span data-lab-out="lkPoster">20 件</span></div>
+              </div>
+              <div class="field__hint" data-lab-out="lkNote">最多可鎖定 60 組；鎖定的庫存補貨時不會自動補回，要再鎖一次。</div>
+            </div>
+          </div>
+
+          <div class="lab-q">
+            <div class="lab-q__t">要另設販售上限嗎？</div>
+            <div class="lab-q__s">上限只限制這個組合最多賣幾組，不會鎖定庫存。</div>
+            <div class="segmented radio-cards" role="radiogroup" data-lab-seg="cap">
+              <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-v="no"><span class="radio-card__text"><span class="radio-card__title">不限量</span></span></button>
+              <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-v="yes"><span class="radio-card__text"><span class="radio-card__title">限量</span></span></button>
+            </div>
+            <div class="lab-q__body" data-lab-when="cap:yes" hidden>
+              <!-- 同「鎖定組數」那一列：標題在左、輸入框靠右 -->
+              <div class="lab-lk__set">
+                <span class="lab-lk__set-k">販售上限</span>
+                <span class="amount-field amount-field--suffix amount-field--readonly zstep lab-lk__in"><span class="amount-field__unit">組</span>
+                  <input class="amount-field__input input zstep__input" type="number" min="1" value="50" data-lab-cap aria-label="販售上限">
+                  <span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section form-section--outlined" id="rules">
+        <div class="form-section__head"><h3 class="form-section__title">購買條件與限購</h3></div>
+        <div class="stack" data-lab-only="tix">
+          <div class="field">
+            <div class="field__label">誰可以買</div>
+            <div class="kv-list"><div class="kv"><span class="kv__k">跟隨門票</span><span class="kv__v">登入會員即可購買</span></div></div>
+          </div>
+        </div>
+        <div class="stack" data-lab-only="goods">
+          <!-- 純商品：購買條件預設不限，可加「限時購買／限粉絲分級購買」（D400）；限購預設跟隨成員、可覆寫 -->
+          <div class="control-row">
+            <div><div class="control-row__main">限時購買</div><div class="control-row__sub">只在你設的期間可以買</div></div>
+            <div class="switch" role="switch" aria-checked="false" tabindex="0" data-lab-rev="buywin" aria-label="限時購買"></div>
+          </div>
+          <div class="lab-rev" data-lab-rev-body="buywin" hidden>
+            <div class="form-grid">
+              <div class="field"><div class="field__label">開始 <span class="field__req">*</span></div><input class="input" type="datetime-local"></div>
+              <div class="field"><div class="field__label">結束 <span class="field__req">*</span></div><input class="input" type="datetime-local"></div>
+            </div>
+          </div>
+          <div class="control-row">
+            <div><div class="control-row__main">限粉絲分級購買</div><div class="control-row__sub">只有指定分級以上的粉絲可以買</div></div>
+            <div class="switch" role="switch" aria-checked="false" tabindex="0" aria-label="限粉絲分級購買"></div>
+          </div>
+        </div>
+        <!-- 限購（D398／D400）：兩種情境共用。預設跟隨成員（唯讀，標出取自哪個成員），可「覆寫」成自己的三種上限，也可「改回跟隨成員」 -->
+        <div class="lab-limit" data-lab-limit>
+          <!-- 跟「購買條件」的跟隨活動預設同一種做法：標題列右邊「跟隨成員預設」＋ on／off 開關（開＝跟隨成員、關＝自己覆寫），開關上不放字 -->
+          <div class="follow-field__head lab-limit__head">
+            <span class="field__label">限購</span>
+            <label class="lab-limit__follow"><span>跟隨成員預設</span><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-lab-limit-sw aria-label="限購跟隨成員預設"></div></label>
+          </div>
+          <p class="lab-limit__sub" data-lab-limit-sub></p>
+          <div class="lab-limit__rows">
+            <div class="lab-limit__row" data-lim="person">
+              <div class="lab-limit__k"><span class="lab-limit__t">每人總限購數量</span><span class="lab-limit__h">計每位買家累計能買的總組數，是這個組合包的總額度。</span></div>
+              <div class="lab-limit__v"><span data-lim-follow></span><small data-lim-src></small></div>
+              <span class="amount-field amount-field--suffix amount-field--readonly lab-limit__in" hidden><span class="amount-field__unit">組</span><input class="amount-field__input input" type="number" min="1" step="1" placeholder="不限" data-lim-in="person" aria-label="每人總限購數量"></span>
+            </div>
+            <div class="lab-limit__row" data-lim="order">
+              <div class="lab-limit__k"><span class="lab-limit__t">每次交易限購數量</span><span class="lab-limit__h">計單筆訂單最多能買幾組。</span></div>
+              <div class="lab-limit__v"><span data-lim-follow></span><small data-lim-src></small></div>
+              <span class="amount-field amount-field--suffix amount-field--readonly lab-limit__in" hidden><span class="amount-field__unit">組</span><input class="amount-field__input input" type="number" min="1" step="1" placeholder="不限" data-lim-in="order" aria-label="每次交易限購數量"></span>
+            </div>
+            <div class="lab-limit__row" data-lim="times">
+              <div class="lab-limit__k"><span class="lab-limit__t">限購次數</span><span class="lab-limit__h">計每位買家最多可以下幾次單，不管每次買幾組。</span></div>
+              <div class="lab-limit__v"><span data-lim-follow></span><small data-lim-src></small></div>
+              <span class="amount-field amount-field--suffix amount-field--readonly lab-limit__in" hidden><span class="amount-field__unit">次</span><input class="amount-field__input input" type="number" min="1" step="1" placeholder="不限" data-lim-in="times" aria-label="限購次數"></span>
+            </div>
+          </div>
+          <p class="field__error" data-lab-limit-err hidden></p>
+        </div>
+      </section>
+
+      <section class="form-section form-section--outlined" id="listing">
+        <div class="form-section__head"><h3 class="form-section__title">上架與開賣</h3></div>
+        <div class="stack" data-lab-only="tix">
+          <div class="kv-list bd-listing"><div class="kv kv--lead"><span class="kv__k">跟著活動</span><span class="kv__v">REALIVE 2026 台中場 <span class="badge badge--neutral">售票中</span></span></div></div>
+          <div class="control-row">
+            <div><div class="control-row__main">顯示於商店</div><div class="control-row__sub">關閉時只能透過非公開連結購買</div></div>
+            <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-lab-switch></div>
+          </div>
+          <div class="field__hint">上架、下架、開賣、停售四個時間預設跟隨活動，可逐一另設（示意頁沿用正式頁內容，本輪不改這一張）。</div>
+        </div>
+        <div class="stack" data-lab-only="goods">
+          <!-- 純商品：完整的上架設定（上架方式、顯示於商店、定時下架、開賣、定時停售），沿用正式頁做法 -->
+          <div class="lab-q">
+            <div class="lab-q__t">上架方式</div>
+            <div class="segmented radio-cards lab-seg3" role="radiogroup" data-lab-seg="listing">
+              <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-v="now"><span class="radio-card__text"><span class="radio-card__title">立即上架</span></span></button>
+              <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-v="sched"><span class="radio-card__text"><span class="radio-card__title">定時上架</span></span></button>
+              <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-v="none"><span class="radio-card__text"><span class="radio-card__title">先不上架</span></span></button>
+            </div>
+            <div class="lab-q__body" data-lab-when="listing:sched" hidden>
+              <div class="field"><div class="field__label">上架時間 <span class="field__req">*</span></div><input class="input" type="datetime-local"></div>
+            </div>
+          </div>
+          <div class="control-row">
+            <div><div class="control-row__main">顯示於商店</div><div class="control-row__sub">關閉時只能透過非公開連結購買</div></div>
+            <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-lab-switch aria-label="顯示於商店"></div>
+          </div>
+          <div class="control-row">
+            <div><div class="control-row__main">定時下架</div><div class="control-row__sub">到你設的時間自動下架</div></div>
+            <div class="switch" role="switch" aria-checked="false" tabindex="0" data-lab-rev="unlist" aria-label="定時下架"></div>
+          </div>
+          <div class="lab-rev" data-lab-rev-body="unlist" hidden><div class="field"><div class="field__label">下架時間 <span class="field__req">*</span></div><input class="input" type="datetime-local"></div></div>
+          <div class="lab-q">
+            <div class="lab-q__t">開賣</div>
+            <div class="segmented radio-cards" role="radiogroup" data-lab-seg="sale">
+              <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-v="follow"><span class="radio-card__text"><span class="radio-card__title">上架即開賣</span></span></button>
+              <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-v="sched"><span class="radio-card__text"><span class="radio-card__title">指定時間開賣</span></span></button>
+            </div>
+            <div class="lab-q__body" data-lab-when="sale:sched" hidden>
+              <div class="field"><div class="field__label">開賣時間 <span class="field__req">*</span></div><input class="input" type="datetime-local"></div>
+            </div>
+          </div>
+          <div class="control-row">
+            <div><div class="control-row__main">定時停售</div><div class="control-row__sub">到你設的時間停止結帳，頁面仍可看到</div></div>
+            <div class="switch" role="switch" aria-checked="false" tabindex="0" data-lab-rev="saleend" aria-label="定時停售"></div>
+          </div>
+          <div class="lab-rev" data-lab-rev-body="saleend" hidden><div class="field"><div class="field__label">停售時間 <span class="field__req">*</span></div><input class="input" type="datetime-local"></div></div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="preview-col">
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head"><h3 class="form-section__title">粉絲看到的</h3></div>
+        <div class="lab-pv">
+          <div class="lab-pv__img"><i data-lucide="photo-video" class="ztor-icon ztor-icon--md"></i></div>
+          <div class="lab-pv__name" data-lab-only="tix">VIP／搖滾區 任選 × 2 ＋ 巡演 T 恤</div>
+          <div class="lab-pv__name" data-lab-only="goods">巡演 T 恤 ＋ 簽名海報</div>
+          <div class="lab-pv__li" data-lab-only="tix"><span>門票（任選一種）× 2</span><span>VIP · 搖滾區</span></div>
+          <div class="lab-pv__li"><span>巡演 T 恤 × 1</span><span>S · M · L</span></div>
+          <div class="lab-pv__li" data-lab-only="goods"><span>簽名海報 × 1</span><span></span></div>
+          <div><span class="lab-pv__price" data-lab-out="pv">$5,760–$8,280</span><span class="lab-pv__was" data-lab-out="pvwas">$6,400–$9,200</span></div>
+        </div>
+      </section>
+    </aside>
+  </div>
+  </div>
+
+  <footer class="wizard__bottom">
+    <div class="bd-foot-price">
+      <span class="bd-foot-price__k">粉絲實付</span>
+      <span class="bd-foot-price__v" data-lab-out="foot">$5,760–$8,280</span>
+      <span class="bd-foot-price__sub">原價 $6,400–$9,200 · 最多 60 組</span>
+    </div>
+    <div class="wizard__bottom-actions">
+      <button class="btn btn--outline" type="button">取消</button>
+      <button class="btn btn--primary" type="button">下一步：預覽</button>
+    </div>
+  </footer>
+</div>
+
+<!-- 「加入組合物」彈窗：借用 payout-modal 的殼（同建立活動第 5 步的組合包彈窗）。商品／活動票券兩個分頁，已加了活動時票券分頁停用並說明原因 -->
+<div class="payout-modal" data-lab-modal hidden>
+  <section class="payout-dialog payout-dialog--narrow lab-modal" role="dialog" aria-modal="true" aria-labelledby="lab-modal-t">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="lab-modal-t">加入組合物</h2>
+      <button class="btn btn--icon" type="button" data-lab-modal-close aria-label="關閉"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div class="lab-pick__tabs" role="tablist">
+        <button class="lab-pick__tab" role="tab" aria-selected="true">商品</button>
+        <button class="lab-pick__tab" role="tab" aria-selected="false" disabled>活動票券</button>
+      </div>
+      <p class="lab-pick__why">已經加了一場活動的票券；一個組合包只能有一場活動，要換請先移除表格裡的票券那一列。</p>
+      <input class="input" placeholder="搜尋你的商品…">
+      <div class="lab-pick__row"><span>26MS Hoodie<br><span class="lab-pick__meta">服飾 · 3 種規格 · 剩 3</span></span><button class="btn btn--outline btn--sm" type="button" data-lab-addrow>加入</button></div>
+      <div class="lab-pick__row"><span>簽名海報<br><span class="lab-pick__meta">周邊 · 剩 25</span></span><button class="btn btn--outline btn--sm" type="button" data-lab-addrow>加入</button></div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--ghost" type="button">建立新商品</button>
+      <div class="payout-dialog__foot-actions"><button class="btn btn--primary" type="button" data-lab-modal-close>完成</button></div>
+    </div>
+  </section>
+</div>
+
+<script src="../js/icons.js?v=r2.2"></script>
+<script>
+(function () {
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const money = n => '$' + Math.round(n).toLocaleString('en-US');
+  const out = (k, html) => $$('[data-lab-out="' + k + '"]').forEach(e => { e.innerHTML = html; });
+
+  /* 假資料：允許門票最低價 2,800、T 恤 800；剩餘 VIP 40、搖滾區 120、T 恤 60 */
+  /* 價格有兩種長相：固定（只有一個數）與區間（允許多種門票、票價不同時）。區間兩端各自套折扣，一個價格寫成「低–高」，
+     固定價格就只寫一個數。沒有「起」字。 */
+  const rng = (lo, hi) => lo === hi ? money(lo) : money(lo) + '–' + money(hi);
+  let scn = 'tix';   /* 示意情境：tix＝含活動票券、goods＝純商品 */
+  function recompute() {
+    const goods = scn === 'goods';
+    const n = Math.max(1, +$('[data-lab-tixqty]').value || 1);
+    const m = Math.max(1, +$('[data-lab-itemqty]').value || 1);
+    const q = Math.max(1, +$('[data-lab-posterqty]').value || 1);
+    const tiers = $$('.lab-tier[data-price]').filter(t => $('input', t).checked);
+    const prices = tiers.map(t => +t.dataset.price), lefts = tiers.map(t => +t.dataset.left);
+    const pLo = prices.length ? Math.min(...prices) : 0, pHi = prices.length ? Math.max(...prices) : 0;
+    const tixLo = goods ? 0 : pLo * n, tixHi = goods ? 0 : pHi * n;
+    const shirt = 800 * m, poster = goods ? 300 * q : 0, item = shirt + poster;
+    const listLo = tixLo + item, listHi = tixHi + item;
+    const discOn = $('[data-lab-disc-toggle]').getAttribute('aria-checked') === 'true';
+    const d = discOn ? Math.min(100, Math.max(0, +$('[data-lab-disc]').value || 0)) : 0;
+    const k = 1 - d / 100;
+    const sellLo = listLo * k, sellHi = listHi * k;
+    const saleOn = $('[data-lab-sale]').getAttribute('aria-checked') === 'true';
+    const sp = Math.min(100, Math.max(0, +$('[data-lab-salepct]').value || 0));
+    const kk = 1 - sp / 100;
+    out('mprice', rng(pLo, pHi)); out('mleft', lefts.reduce((a, b) => a + b, 0));
+    out('tixsum', rng(tixLo, tixHi)); out('itemsum', money(shirt)); out('postersum', money(poster || 300));
+    out('tixname', '門票 × ' + n + ' 張'); out('itemname', '巡演 T 恤 × ' + m + ' 件'); out('postername', '簽名海報 × ' + q + ' 件');
+    out('list', rng(listLo, listHi));
+    out('sell', rng(sellLo, sellHi) + '<small>' + (d ? '粉絲省 ' + rng(listLo - sellLo, listHi - sellHi) : '未打折') + '</small>');
+    out('salesell', rng(sellLo * kk, sellHi * kk) + '<small>期間售價</small>');
+    out('total', rng(sellLo, sellHi) + (saleOn ? '<small>期間 ' + rng(sellLo * kk, sellHi * kk) + '</small>' : ''));
+    out('totalwhy', saleOn ? '平時／限時折扣期間' : '平時');
+    out('pv', rng(sellLo, sellHi)); out('pvwas', d ? rng(listLo, listHi) : '');
+    out('foot', rng(sellLo, sellHi));
+    const tixSets = goods ? Infinity : lefts.reduce((a, l) => a + Math.floor(l / n), 0);
+    const itemSets = Math.min(Math.floor(60 / m), goods ? Math.floor(25 / q) : Infinity);
+    const max = Math.min(tixSets, itemSets);
+    out('max', max + '<small>組</small>');
+    const lockIn = $('[data-lab-lock]'); lockIn.max = max;
+    $('[data-lab-cap]').max = max;
+    const L = Math.min(Math.max(1, +lockIn.value || 1), Math.max(max, 1));
+    const tixAll = lefts.reduce((a, b) => a + b, 0);
+    out('lkTixStock', tixAll + ' 張'); out('lkTix', L * n + ' 張'); out('lkTixFree', (tixAll - L * n) + ' 張');
+    out('lkItem', L * m + ' 件'); out('lkItemFree', (60 - L * m) + ' 件');
+    out('lkPoster', L * q + ' 件'); out('lkPosterFree', (25 - L * q) + ' 件');
+    out('lkNote', '最多可鎖定 ' + max + ' 組；鎖定的庫存補貨時不會自動補回，要再鎖一次。');
+    $('.bd-foot-price__sub').textContent = '原價 ' + rng(listLo, listHi) + ' · 最多 ' + max + ' 組';
+    out('tixlabel', prices.length > 1 ? '已選 ' + tiers.map(t => t.children[1].textContent).join('／') + ' 任選 · 調整' : prices.length ? '已選 ' + tiers[0].children[1].textContent + ' · 調整' : '尚未選門票 · 調整');
+  }
+
+  /* 限購（D398／D400）：跟隨成員（唯讀）⇄ 覆寫（自己的三種上限）。含票券時覆寫不得超過門票推導上限，至少填一種 */
+  const LIM = {
+    tix:   { ceil: 4, person: [4, '取自 REALIVE 台中場：8 張 ÷ 每組 2 張'], order: [null, '成員都沒設'], times: [null, '成員都沒設'],
+             follow: '取各成員換算成組後最嚴的上限；與成員商品、單張門票共用額度，買組合包會一併扣它們的個人限購額度。',
+             over: '自訂上限；商品成員的部分可以放寬、自己計算額度，門票只能收窄、仍與單張門票共用額度。' },
+    goods: { ceil: null, person: [3, '取自 巡演 T 恤：3 件 ÷ 每組 1 件'], order: [null, '成員都沒設'], times: [null, '成員都沒設'],
+             follow: '取各成員換算成組後最嚴的上限；與成員商品共用額度，買組合包會扣成員商品的個人限購額度（件數＝組數 × 每組件數）。',
+             over: '自訂上限，可以比成員寬或嚴；組合包自己計算額度，不扣成員商品的額度。' }
+  };
+  const limFmt = { person: n => '每人 ' + n + ' 組', order: n => '每次 ' + n + ' 組', times: n => '限 ' + n + ' 次' };
+  let limOver = false;
+  function renderLimit() {
+    const d = LIM[scn];
+    const sw = $('[data-lab-limit-sw]'); sw.setAttribute('aria-checked', String(!limOver)); sw.classList.toggle('switch--on', !limOver);
+    $('[data-lab-limit-sub]').textContent = limOver ? d.over : d.follow;
+    ['person', 'order', 'times'].forEach(k => {
+      const row = $('[data-lim="' + k + '"]'), v = d[k][0];
+      $('[data-lim-follow]', row).textContent = v == null ? '不限' : limFmt[k](v);
+      $('[data-lim-src]', row).textContent = d[k][1];
+      $('.lab-limit__v', row).hidden = limOver; $('.lab-limit__in', row).hidden = !limOver;
+    });
+    checkLimit();
+  }
+  function checkLimit() {
+    const err = $('[data-lab-limit-err]'); let msg = '';
+    $$('[data-lim]').forEach(r => r.classList.remove('is-bad'));
+    if (limOver) {
+      const vals = {}; ['person', 'order', 'times'].forEach(k => { vals[k] = $('[data-lim-in="' + k + '"]').value.trim(); });
+      const filled = Object.entries(vals).filter(([, v]) => v !== '');
+      const bad = filled.find(([, v]) => !/^[1-9][0-9]*$/.test(v));
+      const d = LIM[scn];
+      if (bad) { msg = '請填 1 以上的整數。'; $('[data-lim="' + bad[0] + '"]').classList.add('is-bad'); }
+      else if (!filled.length) msg = '至少填一種上限。';
+      else if (d.ceil != null) {
+        const over = filled.find(([k, v]) => k !== 'times' && +v > d.ceil);
+        if (over) { msg = '不得超過 ' + d.ceil + '：所含門票換算最多 ' + d.ceil + ' 組。'; $('[data-lim="' + over[0] + '"]').classList.add('is-bad'); }
+      }
+    }
+    err.textContent = msg; err.hidden = !msg;
+  }
+  /* 共用的開關處理器（頁尾）會先把 aria-checked 翻過來；這裡等它翻完再讀：開＝跟隨成員、關＝覆寫 */
+  $('[data-lab-limit-sw]').addEventListener('click', () => setTimeout(() => {
+    limOver = $('[data-lab-limit-sw]').getAttribute('aria-checked') !== 'true';
+    if (limOver) { const d = LIM[scn]; ['person', 'order', 'times'].forEach(k => { $('[data-lim-in="' + k + '"]').value = d[k][0] == null ? '' : d[k][0]; }); }
+    renderLimit();
+  }, 0));
+  $$('[data-lim-in]').forEach(i => i.addEventListener('input', checkLimit));
+
+  /* 示意情境切換：換 body 的 class（CSS 依 data-lab-only 顯示／隱藏），並讓「加入組合物」彈窗的活動票券分頁跟著可用／停用 */
+  $$('[data-lab-scn] .segmented__btn').forEach(b => b.addEventListener('click', () => {
+    scn = b.dataset.v;
+    $$('[data-lab-scn] .segmented__btn').forEach(x => { const on = x === b; x.classList.toggle('segmented__btn--active', on); x.setAttribute('aria-checked', String(on)); });
+    document.body.classList.toggle('lab-scn-goods', scn === 'goods'); document.body.classList.toggle('lab-scn-tix', scn === 'tix');
+    $$('.lab-pick__tab')[1].disabled = scn === 'tix';
+    limOver = false; renderLimit();
+    recompute();
+  }));
+  /* 開關連動展開（純商品情境的限時購買、定時下架、定時停售） */
+  $$('[data-lab-rev]').forEach(sw => sw.addEventListener('click', () => {
+    const on = sw.getAttribute('aria-checked') !== 'true';   /* 這支先於共用的開關處理器執行，讀到的是切換前的狀態 */
+    $('[data-lab-rev-body="' + sw.dataset.labRev + '"]').hidden = !on;
+  }));
+
+  /* 步進器（示意頁自己接，正式頁用 partials/stepper.js） */
+  $$('.zstep').forEach(z => z.addEventListener('click', e => {
+    const b = e.target.closest('[data-step]'); if (!b) return;
+    const i = $('input', z); const v = (+i.value || 0) + (b.dataset.step === 'up' ? 1 : -1);
+    i.value = Math.max(+i.min || 0, Math.min(i.max ? +i.max : Infinity, v)); recompute();
+  }));
+  $$('input').forEach(i => i.addEventListener('input', recompute));
+
+  /* 開關 */
+  $$('.switch').forEach(s => s.addEventListener('click', () => {
+    const on = s.getAttribute('aria-checked') !== 'true';
+    s.setAttribute('aria-checked', String(on)); s.classList.toggle('switch--on', on);
+    if (s.hasAttribute('data-lab-sale')) $('[data-lab-sale-body]').hidden = !on;
+    if (s.hasAttribute('data-lab-disc-toggle')) $('[data-lab-disc-body]').hidden = !on;
+    recompute();
+  }));
+
+  /* 展開／收合 */
+  $$('[data-lab-exp]').forEach(b => b.addEventListener('click', () => {
+    const key = b.dataset.labExp, body = $('[data-lab-exp-body="' + key + '"]');
+    const open = b.getAttribute('aria-expanded') !== 'true';
+    $$('[data-lab-exp="' + key + '"]').forEach(x => x.setAttribute('aria-expanded', String(open))); body.hidden = !open;
+  }));
+  /* 加入組合物：彈窗（點背景、✕、完成、Esc 都能關） */
+  const modal = $('[data-lab-modal]');
+  const closeModal = () => { modal.hidden = true; $('[data-lab-add]').focus(); };
+  $('[data-lab-add]').addEventListener('click', () => { modal.hidden = false; $('input', modal).focus(); });
+  $$('[data-lab-modal-close]').forEach(b => b.addEventListener('click', closeModal));
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
+  $$('[data-lab-addrow]').forEach(b => b.addEventListener('click', () => { b.textContent = '已加入'; b.disabled = true; }));
+
+  /* 二選一 */
+  $$('[data-lab-seg]').forEach(g => g.addEventListener('click', e => {
+    const b = e.target.closest('.segmented__btn'); if (!b) return;
+    $$('.segmented__btn', g).forEach(x => { const on = x === b; x.classList.toggle('segmented__btn--active', on); x.setAttribute('aria-checked', String(on)); });
+    $$('[data-lab-when^="' + g.dataset.labSeg + ':"]').forEach(w => { w.hidden = w.dataset.labWhen !== g.dataset.labSeg + ':' + b.dataset.v; });
+  }));
+
+  /* 大綱：點了捲到、捲動時亮目前那一段 */
+  const sheet = $('.wizard__sheet');
+  const items = $$('[data-lab-outline] .section-outline__item');
+  const off = () => $('.wizard__top').getBoundingClientRect().bottom + 16;
+  items.forEach(it => it.addEventListener('click', () => {
+    const t = document.getElementById(it.dataset.to);
+    sheet.scrollTo({ top: sheet.scrollTop + t.getBoundingClientRect().top - off(), behavior: 'smooth' });
+  }));
+  function spy() {
+    let cur = items[0];
+    items.forEach(it => { if (document.getElementById(it.dataset.to).getBoundingClientRect().top <= off() + 8) cur = it; });
+    if (sheet.scrollTop + sheet.clientHeight >= sheet.scrollHeight - 2) cur = items[items.length - 1];
+    items.forEach(it => it.classList.toggle('is-active', it === cur));
+  }
+  sheet.addEventListener('scroll', () => requestAnimationFrame(spy));
+
+  renderLimit(); recompute(); spy();
+  if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(document);
+})();
+</script>
+</body>
+</html>

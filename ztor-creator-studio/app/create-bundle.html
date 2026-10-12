@@ -39,6 +39,10 @@
 <!-- 2026-09-21 第 2 批：與建立活動第 6 步同一套建構體驗——票券表／已加入表／算式列／footer 由 bundle-editor.css 提供，
      右欄「粉絲看到的」預覽卡由 bundle-preview-card.css 提供（第二個消費者） -->
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/price-ladder.css?v=r2.2"><!-- 2026-10-12 改版：價格階梯（原價合計→折扣→粉絲實付，區間小字） -->
+<link rel="stylesheet" href="ds-components/member-table.css?v=r2.2"><!-- 2026-10-12 改版：組合物表（商品＋票券同一張，票券列可展開） -->
+<link rel="stylesheet" href="ds-components/form-ask.css?v=r2.2"><!-- 2026-10-12 改版：問句設定塊（鎖定／販售上限）、分類標、標題列讀數 -->
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2"><!-- 2026-10-12 改版：「加入組合物」彈窗的商品／活動票券分頁 -->
 <link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398：組合包限購（跟隨成員／覆寫；js/purchase-limits.js） -->
 <link rel="stylesheet" href="ds-components/cond-list.css?v=r2.2"><!-- D400：純商品組合包的購買條件（js/purchase-conds.js 條件清單） -->
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
@@ -63,7 +67,7 @@
 <style>
   /* page-specific：Create bundle 表單 · spec 5.1.5.4
      2026-09-21 第 2 批：版面改成與建立活動第 6 步（bundle-editor layout:'split'）同一個心智模型——
-     左欄三段分卡「內容物 → 定價與庫存 → 命名與上架」（2026-09-21 同日改名）、右欄「粉絲看到的」預覽卡、底部固定列粉絲實付；跳段靠左側空白欄的「本頁大綱」（2026-10-12 起；頂列第二排的分節分頁同日移除，兩者重複）。
+     左欄三段分卡「組合包介紹 → 選擇組合物 → 販售設定」（2026-10-12 重排，原為 2026-09-21 的「內容物 → 定價與庫存 → 命名與上架」）、右欄「粉絲看到的」預覽卡、底部固定列粉絲實付；跳段靠左側空白欄的「本頁大綱」（2026-10-12 起；頂列第二排的分節分頁同日移除，兩者重複）。
      分卡殼沿用頁面級的 form-section--outlined（建立商品同款），卡內節奏吃 .stack；表格／算式／footer
      一律用 bundle-editor.css 的元件 class；此處只留本頁獨有的一次性版面。 */
   /* 合併的新增方塊（商品：嵌入建立商品流程；票券：打開活動挑選器）：虛線邊＝「可以放東西進來」的訊號 */
@@ -129,262 +133,17 @@
   <div class="wizard__body wizard__body--form wizard__body--narrow preview-split">
     <div class="preview-split__form">
 
-    <!-- ══ ① 內容物（spec 5.1.5.4 §4 F2 成員 ＋ 額外權益）══════════════════════════════════
-         同建立活動第 6 步的第一張分卡：先定「粉絲拿到什麼」。票券小節在電子商店脈絡多一個「挑活動」步驟
-         （D292／D294：草稿活動不列、已取消／已結束不可加入）；選了活動後票種表出現、預設不勾（D296）。 -->
-    <section class="form-section form-section--outlined cb-sec" data-st-section="content">
+    <!-- 2026-10-12 改版（UI-CHANGES 一百八十八；規格 5.1.5.4 §5 呈現參考）：三大分類（.form-cat 分類標＋本頁大綱群組）、8 張分卡。
+         分類 intro＝組合資訊／展示／電影關聯；content＝組合物（商品＋票券同一張表、「加入組合物」彈窗）；
+         sale＝價格（價格階梯）／數量（最多可賣＋鎖定＋上限）／購買條件與限購／上架與開賣。
+         額外權益依使用者 2026-10-12 裁決從組合包移除（墓碑：原第二張分卡的 [data-cb-perks-group]）。 -->
+    <div class="form-cat" data-cb-cat="intro"><span class="form-cat__n">1</span><span data-i18n="cb.sec.intro">About the bundle</span></div>
+    <!-- ① 組合資訊（spec 5.1.5.4 §4 F1）：名稱由組合物自動建議（使用者改過就不再覆蓋） -->
+    <section class="form-section form-section--outlined cb-sec" data-st-section="info" data-outline-group="intro">
       <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cpp.bd.sp.sec.content">Contents</h3>
+        <h3 class="form-section__title" data-i18n="cb.sec.info">Bundle info</h3>
       </div>
-      <div class="stack stack--loose">
-
-        <!-- 票券小節 -->
-        <div class="stack" data-cb-tix>
-          <div class="bd-sub"><span class="bd-sub__title" data-i18n="cpp.bd.sp.tix">Tickets</span><span class="bd-sub__hint" data-i18n="cb.tix.entry.hint">Optional · one event per bundle</span></div>
-          <!-- 入口：還沒挑活動時只有一顆方塊 -->
-          <button type="button" class="cb-add-tile" data-cb-tix-entry>
-            <i data-lucide="ticket" class="ztor-icon"></i>
-            <span class="cb-add-tile__main" data-i18n="cb.tix.entry">Add event tickets</span>
-            <span class="cb-add-tile__sub" data-i18n="cb.tix.entry.sub">Pick an event, check the tiers fans can choose from, set tickets per set</span>
-          </button>
-          <!-- 活動候選（D292／D293／D294）：預設列近期瀏覽的活動、搜尋涵蓋全部；草稿不列；已取消／已結束照列、標狀態、不可加入；每列附活動詳情外開連結 -->
-          <div data-cb-event-panel hidden>
-            <div class="cb-sublabel" id="cb-ev-label" data-i18n="cb.tix.recent">Recently viewed events</div>
-            <div class="picker">
-              <div class="picker__search">
-                <input class="picker__search-input" id="cb-ev-search" placeholder="Search your events…" data-i18n-placeholder="cb.tix.search.ph">
-              </div>
-              <div class="picker__list">
-                <div class="data-list" id="cb-events"></div>
-                <div class="cb-no-result" id="cb-ev-noresult" hidden data-i18n="cb.tix.noresult">No events match.</div>
-              </div>
-            </div>
-            <div class="cb-pick-foot"><button class="btn btn--ghost btn--sm" type="button" data-cb-tix-cancel data-i18n="cpp.bd.sp.cancel">Cancel</button></div>
-          </div>
-          <!-- 選了活動：票種表（允許票種，預設不勾）→ 每組張數 → 語意句 -->
-          <div class="stack" data-cb-tier-panel hidden>
-            <div class="cb-tix-head">
-              <!-- 選到的活動名：是一個值不是群組小標，2026-09-22 `.bd-sub__title` 改成小型大寫的群組小字標後改走 `.field__label`，活動名不被轉大寫 -->
-              <span class="field__label" data-cb-tier-ev></span>
-              <span class="cb-tix-head__actions">
-                <button class="btn btn--ghost btn--xs" type="button" data-cb-tier-back data-i18n="cb.tix.change">Change event</button>
-                <button class="btn btn--ghost btn--xs" type="button" data-cb-tix-remove data-i18n="cb.tix.remove">Remove tickets</button>
-              </span>
-            </div>
-            <!-- 2026-09-22 方案 A：「允許票種」標籤（表頭「票種」已承擔）與表下那句規則 hint 一起退場；
-                 不足一組改由列自己表達（灰化＋「不足 n 張」徽章）。 -->
-            <div class="field">
-              <div data-cb-tier-table></div>
-              <div class="cb-no-result" data-cb-tier-empty hidden data-i18n="cb.tix.notiers">This event has no ticket tiers yet.</div>
-            </div>
-            <div class="field" data-cb-tier-qty-field>
-              <div class="field__label" data-i18n="cpp.bd.tix.per">Tickets per set</div>
-              <span class="amount-field amount-field--suffix amount-field--readonly zstep bd-tix-qty"><span class="amount-field__unit" data-i18n="cb.tix.unit">tickets</span>
-                <input class="amount-field__input input zstep__input" type="number" min="1" step="1" value="1" data-cb-tier-qty aria-label="Tickets per set" data-i18n-aria-label="cpp.bd.tix.per">
-                <span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
-              <!-- 這一格底下是內容物段唯一的規則句（方案 A）：用這一組的實際值講，一般 hint 層級、不用 info 列。 -->
-              <div class="field__hint" data-cb-sem></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 商品小節（spec 5.1.5.4 §4 F2；D254／D256／D284 候選狀態；D295 規格由商品決定） -->
-        <div class="stack" data-cb-items>
-          <div class="bd-sub"><span class="bd-sub__title" data-i18n="cpp.bd.sp.items">Items</span></div>
-          <!-- 已加入的商品成員：名稱＋規格小字｜原價｜庫存｜每組用量｜✕ -->
-          <div data-cb-items-table></div>
-          <!-- 新增商品方塊：嵌入完整 create-product 流程（?embed=1） -->
-          <button type="button" class="cb-add-tile" id="cb-add-tile">
-            <i data-lucide="plus" class="ztor-icon"></i>
-            <span class="cb-add-tile__main" data-i18n="cb.add">New item</span>
-            <span class="cb-add-tile__sub" data-i18n="cb.add.sub">Create a new product to add to this bundle</span>
-          </button>
-          <!-- 候選商品由 js/products-store.js 產生（2026-09-09）：搜尋涵蓋全部商品、已下架／已封存照列但不可加入、每列附「商品詳情」外開連結。見頁尾 buildCandidates()。 -->
-          <div id="cb-prod-pick">
-            <div class="cb-sublabel" id="cb-recent-label" data-i18n="cb.recent">Recently viewed</div>
-            <div class="picker">
-              <div class="picker__search">
-                <input class="picker__search-input" placeholder="Search your products…" data-i18n-placeholder="cb.search.ph">
-              </div>
-              <div class="picker__list">
-                <div class="data-list" id="cb-recent"></div>
-                <div class="cb-no-result" id="cb-no-result" hidden data-i18n="cb.search.noresult">No products match. Create a New item above to add it to this bundle.</div>
-              </div>
-            </div>
-          </div>
-          <!-- 成員相容性提示（spec §6.4 / D031 / UIA-008，顯示層）：限量成員、多選項成員、含票券 -->
-          <div data-cb-notes></div>
-        </div>
-
-        <!-- 額外權益（spec 5.1.5.4 §4 F2「額外權益（Perks）」，D292 共通選填欄；兌現方式〔產品待確認〕）
-             2026-09-22 第二輪：與票券、商品同一階的小標（同 bundle-editor.js 的 perksBlockHTML），不再是欄位標籤 -->
-        <div class="stack" data-cb-perks-group>
-          <div class="bd-sub"><span class="bd-sub__title" data-i18n="cpp.bd.perks">Perks</span></div>
-          <textarea class="input textarea" rows="2" data-cb-perks placeholder="One per line, e.g. Priority entry to the signing" data-i18n-placeholder="cpp.bd.sp.perks.ph" aria-label="Perks" data-i18n-aria-label="cpp.bd.perks"></textarea>
-        </div>
-
-        <!-- 購買條件與限購（5.1.5.4 §4 F2；D342、D398、D400）：所有組合包都有兩組，放在成員之後（預設都是從成員來的）。
-             · 購買條件：含門票＝預設套用所含門票（取最嚴）的唯讀讀數，調整在組合包細節頁（D342，js/ticket-bundle.js buyOnly）；
-               純商品＝預設不限、可加「限時購買／限粉絲分級購買」（js/purchase-conds.js 條件清單，只開這兩種；期間須在組合包的上架區間內）。
-             · 限購：預設跟隨成員（取交集）、可覆寫、可改回（js/purchase-limits.js）；跟隨＝與成員共用額度、已覆寫＝獨立計算。 -->
-        <div class="stack" data-cb-rules data-feat="S94">
-          <div class="bd-sub"><span class="bd-sub__title" data-i18n="cpp.bd.sp.sec.rules">Purchase rules</span></div>
-          <div class="field" data-cb-buy>
-            <div class="field__label" data-i18n="tb.rules.buy">Who can buy</div>
-            <div data-tb-host="cb-rules" data-feat="S63" hidden></div>
-            <div data-cb-conds-wrap hidden>
-              <div data-cb-conds-host></div>
-            </div>
-          </div>
-          <div class="field">
-            <div class="field__label" data-i18n="tb.rules.cap">Purchase limits</div>
-            <div data-pl-host="cb"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══ ② 定價與庫存（spec 5.1.5.4 §4 F3 定價、F4 庫存、F7 折扣設定）══════════════════════
-         原價合計逐項算式 → 組合折扣開關＋% → 售價 → 鎖定套數 → 可售套數 → 限量；限時折扣（F7）是疊在售價上的第二層折扣，
-         放在同一張分卡的尾段；「指定鎖定項目」（D266 逐規格分配）是既有入口，保留。 -->
-    <section class="form-section form-section--outlined cb-sec" data-st-section="price">
-      <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cpp.bd.sp.sec.price">Pricing &amp; stock</h3>
-      </div>
-      <div class="stack stack--loose">
-        <!-- 「原價合計」標籤與算式表最後一列一字不差，刪標籤、留合計列（2026-09-22 方案 A）。 -->
-        <div class="field">
-          <div data-cb-calc></div>
-          <!-- 含活動票券成員時費率整筆走活動票務（D292 裁決九／D293 裁決二，主規格 §7.6）：只說明、不算數字 -->
-          <div class="field__hint field__hint--fact" id="cb-fee-note" hidden data-i18n="cb.fee.ticket-rate">Includes event tickets — the platform fee follows the event ticket rate for the whole bundle, not split by member.</div>
-        </div>
-        <!-- 組合折扣 %（D261）：填的是折扣不是售價——原價是區間時售價才會跟著是區間 -->
-        <div>
-          <div class="control-group">
-            <div class="control-row">
-              <div>
-                <div class="control-row__main" data-i18n="cpp.bd.sp.disc.on">Bundle discount</div>
-                <div class="control-row__sub" data-i18n="cpp.bd.sp.disc.on.sub">How many % under the list total. A discount, not a price: when the list price is a range, so is the selling price.</div>
-              </div>
-              <div class="switch" role="switch" aria-checked="false" tabindex="0" data-cb-disc-toggle></div>
-            </div>
-            <div class="control-group__body" data-cb-disc-body hidden>
-              <div class="form-grid bd-disc-grid">
-                <div class="field">
-                  <span class="amount-field amount-field--suffix amount-field--readonly zstep bd-disc"><span class="amount-field__unit">%</span>
-                    <input class="amount-field__input input zstep__input" type="number" min="0" max="100" step="1" value="" id="cb-discount" aria-label="Discount" data-i18n-aria-label="cpp.bd.sp.disc">
-                    <span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
-                  <div class="field__hint" id="cb-disc-hint" hidden></div>
-                </div>
-                <div class="field">
-                  <div class="field__label" data-i18n="cpp.bd.sp.sell">Selling price</div>
-                  <div class="field-readout bd-readout--big" id="cb-sellprice">—</div>
-                  <div class="field__hint" data-cb-save></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 可售套數（唯讀）：這一段的結果，2026-09-22 方案 A 升成大讀數並移到鎖定套數之前——
-             鎖定與限量是對它的兩個調整。「上限」這個事實整頁只在這裡講一次。 -->
-        <div class="field">
-          <div class="field__label" data-i18n="cpp.bd.sp.sets">Sellable sets</div>
-          <div class="field-readout bd-readout--big" data-cb-sets>—</div>
-          <div class="field__hint" data-cb-sets-why></div>
-        </div>
-        <!-- 鎖定套數（D266）：整張清單的前提，一列講完（空白／0＝不鎖定）；上限由 ListingState.bundleMaxSets 算 -->
-        <div class="lockset__sets">
-          <div class="lockset__sets-titles">
-            <span class="lockset__sets-title" data-i18n="cpp.bd.sp.lock">Locked sets</span>
-            <span class="lockset__sets-hint" data-cb-sets-hint></span>
-          </div>
-          <div class="lockset__sets-ctl">
-            <span class="amount-field amount-field--suffix amount-field--readonly zstep bd-disc"><span class="amount-field__unit" data-i18n="cpp.bd.sp.unit.group">sets</span>
-              <input class="amount-field__input input zstep__input" type="number" min="0" step="1" value="" id="cb-lock-sets" aria-label="Locked sets" data-i18n-aria-label="cpp.bd.sp.lock" disabled>
-              <span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
-          </div>
-        </div>
-        <!-- 限量（F4 庫存版本）：不限量／限量二選一，限量才出現上限；硬上限不得大於成員能供應的套數（D292） -->
-        <div class="field">
-          <div class="segmented radio-cards" role="radiogroup" aria-label="Limit" data-i18n-aria-label="cpp.bd.sp.limit" id="cb-edition">
-            <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-cb-edition="unlimited">
-              <span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.bd.qty.unlim">Unlimited</span></span>
-            </button>
-            <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-cb-edition="limited" data-feat="S45">
-              <span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.bd.avail.limited">Limited</span><span class="radio-card__sub" data-i18n="cpp.bd.sp.limit.lim.sub">Set a smaller cap of your own</span></span>
-            </button>
-          </div>
-          <div class="mt-8" data-when-cb-edition="limited" data-feat="S45" hidden>
-            <span class="amount-field amount-field--suffix amount-field--readonly zstep bd-disc"><span class="amount-field__unit" data-i18n="cpp.bd.sp.unit.group">sets</span>
-              <input class="amount-field__input input zstep__input" type="number" min="1" step="1" value="" id="cb-total" aria-label="Total quantity" data-i18n-aria-label="cb.total">
-              <span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
-            <div class="field__hint" data-cb-capmax></div>
-          </div>
-        </div>
-        <!-- 指定鎖定項目（D266／D268，既有入口保留）：一列一個成員；多選項成員展開逐規格「選填」分配 -->
-        <div class="field bd-field--table" data-cb-alloc-field hidden>
-          <div class="field__label" data-i18n="bd.lock.items">Locked items</div>
-          <div class="field__hint" data-i18n="bd.lock.items.hint">Single-option items lock N × quantity per set automatically; multi-option items can optionally pin which options to lock</div>
-          <div class="lockset" id="cb-alloc">
-            <div class="lockset__head"><span data-i18n="bd.lock.col.item">Items in bundle</span><span data-i18n="bd.lock.col.stock">Item stock</span><span data-i18n="stock.free">Unlocked</span><span data-i18n="bd.lock.col.locked">Locked</span><span></span></div>
-          </div>
-          <p class="lctl__note" data-i18n="stock.restock-hint">Restocks land in unlocked stock; locked ones need to lock again</p>
-        </div>
-
-        <!-- 折扣設定 → 限時折扣（spec 5.1.5.4 §4 F7 · D144／D261）：疊在上方售價之上、依檔期另設 %；可與優惠碼疊加（D183／D260 補充四） -->
-        <div class="stack">
-          <div class="bd-sub"><span class="bd-sub__title" data-i18n="cp.discount.title">Discount settings</span><span class="bd-sub__hint" data-i18n="cb.discount.note">A limited-time discount stacks on top of the bundle price above for a campaign window — set its own % and dates.</span></div>
-          <div class="stack stack--tight">
-            <div class="control-group">
-              <div class="control-row">
-                <div>
-                  <div class="control-row__main" data-i18n="cp.discount.limited">Limited-time discount</div>
-                  <div class="control-row__sub" data-i18n="cp.discount.limited-sub">Apply the discount only during a set period</div>
-                </div>
-                <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cb-sale-toggle"></div>
-              </div>
-              <div class="control-group__body" data-cb-sale-fields hidden>
-                <div class="field">
-                  <div class="field__label"><span data-i18n="cb.sale.percent">Limited-time discount %</span> <span class="field__req">*</span></div>
-                  <span class="amount-field amount-field--suffix amount-field--readonly zstep bd-disc"><span class="amount-field__unit">%</span>
-                    <input class="amount-field__input input zstep__input" type="number" min="0" max="100" step="1" value="" id="cb-sale-percent" aria-label="Limited-time discount %" data-i18n-aria-label="cb.sale.percent">
-                    <span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
-                  <div class="field__hint" id="cb-sale-pct-hint" data-i18n="cb.sale.percent-hint">Taken off the bundle price during the window.</div>
-                </div>
-                <div class="form-grid">
-                  <div class="field" style="margin-bottom:0">
-                    <div class="field__label"><span data-i18n="cb.sale.start">Discount start date</span> <span class="field__req">*</span></div>
-                    <input class="input" type="date" id="cb-sale-start">
-                  </div>
-                  <div class="field" style="margin-bottom:0">
-                    <div class="field__label"><span data-i18n="cb.sale.end">Discount end date</span> <span class="field__req">*</span></div>
-                    <input class="input" type="date" id="cb-sale-end">
-                    <div class="field__hint" id="cb-sale-hint" data-i18n="cb.sale.pending">Sale price source &amp; time zone pending spec (5.1.5.4 §4 F7).</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="control-row">
-              <div>
-                <div class="control-row__main" data-i18n="cp.discount.stack">Stack with discount codes</div>
-                <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means the buyer gets whichever single discount is best for them</div>
-              </div>
-              <div class="switch" role="switch" aria-checked="false" tabindex="0" data-cb-stack></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══ ③ 命名與上架（spec 5.1.5.4 §4 F1 組合資訊、F8 素材、F10 電影關聯、F6 上架設定）══════════════
-         名稱由內容自動建議（使用者改過就不再覆蓋）；素材沿用十格上傳；上架＝三開關（D241／D245–D247），
-         含票券成員時改成「跟著活動」一句＋活動狀態徽章（D293／D294）。 -->
-    <section class="form-section form-section--outlined cb-sec" data-st-section="name">
-      <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cpp.bd.sp.sec.name">Name &amp; listing</h3>
-      </div>
-      <div class="stack stack--loose">
+      <div class="stack">
         <div class="field">
           <div class="field__label"><span data-i18n="cb.name">Bundle name</span> <span class="field__req">*</span></div>
           <input class="input" id="cb-name" placeholder="e.g., Ultimate Fan Bundle" data-i18n-placeholder="cb.name.ph">
@@ -394,9 +153,17 @@
           <div class="field__label" data-i18n="cpp.bd.sp.desc">Description</div>
           <textarea class="textarea" id="cb-desc" rows="3" placeholder="Tell fans what they get" data-i18n-placeholder="cpp.bd.sp.desc.ph"></textarea>
         </div>
+      </div>
+    </section>
+
+    <!-- ② 展示（F8；D243 十格、D259 可放影片）：卡片標題已說是展示，欄位標籤不重述 -->
+    <section class="form-section form-section--outlined cb-sec" data-st-section="media" data-outline-group="intro">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cb.sec.media">Show it off</h3>
+      </div>
+      <div class="stack">
         <!-- 素材（spec 5.1.5.4 §4 F8，D243 十格＝封面 1＋附圖 9；D259 每格可放影片）：封面同時是預覽卡的圖 -->
         <div class="field">
-          <div class="field__label" data-i18n="cb.media.show">Show it off</div>
           <div class="field__hint" data-i18n="cb.media.sub">Buyers can't touch it. Your photos do that job.</div>
           <div class="upload-assets upload-assets--fill" data-upload-reveal>
             <div class="upload-tile upload-tile--portrait" data-cb-asset="hero" data-upload>
@@ -417,13 +184,216 @@
             <div class="upload-tile upload-tile--portrait" data-cb-asset="gallery" data-upload hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ③ 電影關聯（F10） -->
+    <section class="form-section form-section--outlined cb-sec" data-st-section="films" data-outline-group="intro">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cp.films">Linked movies</h3>
+      </div>
+      <div class="stack">
         <!-- 電影關聯（spec 5.1.5.4 §4 F10；同建立商品 §4.5；可多部、選填、可搜尋；共用 partials/film-picker） -->
         <div class="field">
-          <div class="field__label" data-i18n="cp.films">Linked movies</div>
           <div class="field__hint" data-i18n="cb.films.sub">Tag released movies this bundle relates to.</div>
           <div data-cb-film-picker></div>
         </div>
 
+      </div>
+    </section>
+
+    <div class="form-cat" data-cb-cat="content"><span class="form-cat__n">2</span><span data-i18n="cb.sec.content">Choose contents</span></div>
+    <!-- ④ 組合物（F2 成員；D292／D295／D296／D380／D401） -->
+    <section class="form-section form-section--outlined cb-sec" data-st-section="content" data-outline-group="content">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cb.sec.members">What’s in it</h3>
+      </div>
+      <div class="stack">
+        <!-- 組合物表（member-table）：票券列（一場活動）＋商品列在同一張；票券列可展開（最左箭頭與名稱下的文字同步）。
+             票券列與展開區是頁面上的固定 markup（renderTierTable／renderTixRow 填值）；商品列由 renderItems() 畫進 [data-cb-items-table]。 -->
+        <div class="member-table" data-cb-members>
+          <div class="member-table__head" data-cb-members-head hidden><span></span><span data-i18n="cb.mt.name">Name</span><span data-i18n="cb.mt.price">Price · left</span><span data-i18n="cb.qty.col">Per set</span><span></span></div>
+          <div class="member-table__row" data-cb-tix-row hidden>
+            <button type="button" class="member-table__open" data-cb-tix-open aria-expanded="false" aria-label="Show ticket options" data-i18n-aria-label="cb.mt.open"><i data-lucide="chevron-right" class="ztor-icon"></i></button>
+            <div class="member-table__name">
+              <span class="member-table__thumb" data-cb-tix-thumb><i data-lucide="ticket" class="ztor-icon"></i></span>
+              <span class="member-table__txt">
+                <span class="member-table__t" data-cb-tier-ev></span>
+                <button type="button" class="member-table__link" data-cb-tix-open data-cb-tix-label aria-expanded="false"></button>
+              </span>
+            </div>
+            <span class="member-table__price"><span data-cb-tix-price></span><span class="member-table__sub" data-cb-tix-sub></span></span>
+            <span class="member-table__qty" data-cb-tier-qty-field><span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit" data-i18n="cb.tix.unit">tickets</span><input class="amount-field__input input zstep__input" type="number" min="1" step="1" value="1" data-cb-tier-qty aria-label="Tickets per set" data-i18n-aria-label="cpp.bd.tix.per"><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span></span>
+            <button class="btn btn--ghost btn--icon btn--xs member-table__x" type="button" data-cb-tix-remove aria-label="Remove tickets" data-i18n-aria-label="cb.tix.remove"><i data-lucide="x" class="ztor-icon"></i></button>
+          </div>
+          <!-- 票券列展開：允許的門票表（D296／D380，預設不勾）→ 語意句；「換一場活動」。D401：從活動詳情進來時活動鎖定，
+               「換一場活動」與列上的 ✕ 收起（tixLocked），改一句事實說明 -->
+          <div class="member-table__exp" data-cb-tier-panel hidden>
+            <div class="field">
+              <div data-cb-tier-table></div>
+              <div class="cb-no-result" data-cb-tier-empty hidden data-i18n="cb.tix.notiers">This event has no ticket tiers yet.</div>
+            </div>
+            <div class="field__hint" data-cb-sem></div>
+            <p class="field__hint field__hint--fact" data-cb-ev-locked hidden data-i18n="cb.tix.locked">You're creating this bundle from this event's page, so its event can't be changed.</p>
+            <div><button class="btn btn--ghost btn--xs" type="button" data-cb-tier-back data-i18n="cb.tix.change">Change event</button></div>
+          </div>
+          <div data-cb-items-table></div>
+          <div class="member-table__empty" data-cb-members-empty data-i18n="cpp.bd.sum.empty">Nothing in it yet</div>
+        </div>
+        <button type="button" class="cb-add-tile" data-cb-add-open>
+          <i data-lucide="plus" class="ztor-icon"></i>
+          <span class="cb-add-tile__main" data-i18n="cb.add.open">Add to bundle</span>
+        </button>
+        <!-- 成員相容性提示（spec §6.4 / D031 / UIA-008，顯示層）：限量成員、多選項成員、含票券 -->
+        <div data-cb-notes></div>
+      </div>
+    </section>
+
+    <div class="form-cat" data-cb-cat="sale"><span class="form-cat__n">3</span><span data-i18n="cb.sec.sale">Sales settings</span></div>
+    <!-- ⑤ 價格（F3 定價、F7 折扣設定） -->
+    <section class="form-section form-section--outlined cb-sec" data-st-section="price" data-outline-group="sale">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cb.sec.price">Price</h3>
+      </div>
+      <div class="stack">
+      <!-- 價格階梯（price-ladder）：原價合計 → 組合折扣（開關＋%）→ 限時折扣（開關＋%＋起訖日）→ 可與優惠碼疊加 → 粉絲實付。
+           主價格維持「從 $X 起」，價格不是單一值時下方加一行區間小字（使用者 2026-10-12 裁決，創作者後台才有）。 -->
+      <div class="price-ladder">
+        <div class="price-ladder__step">
+          <div class="price-ladder__k">
+            <span class="price-ladder__t" data-i18n="cpp.bd.calc.base">Full price</span>
+            <button type="button" class="price-ladder__disc" data-cb-calc-toggle aria-expanded="false"><span data-i18n="cb.pl.how">See how</span><i data-lucide="chevron-down" class="ztor-icon"></i></button>
+          </div>
+          <div class="price-ladder__v"><span data-cb-list>—</span><span class="price-ladder__range" data-cb-list-range hidden></span></div>
+        </div>
+        <div class="price-ladder__step price-ladder__step--panel" data-cb-calc-panel hidden><div class="price-ladder__items" data-cb-calc></div></div>
+
+        <div class="price-ladder__step">
+          <div class="price-ladder__k">
+            <span class="price-ladder__t" data-i18n="cpp.bd.sp.disc.on">Bundle discount</span>
+            <span class="price-ladder__s" data-i18n="cb.pl.disc.s">Cheaper than the full price; off = no discount</span>
+          </div>
+          <div class="price-ladder__v price-ladder__v--switch"><div class="switch" role="switch" aria-checked="false" tabindex="0" data-cb-disc-toggle aria-label="Bundle discount" data-i18n-aria-label="cpp.bd.sp.disc.on"></div></div>
+        </div>
+        <!-- 組合折扣 %（D261）：填的是折扣不是售價——原價是區間時售價才會跟著是區間 -->
+        <div class="price-ladder__step price-ladder__step--panel" data-cb-disc-body hidden>
+          <div class="price-ladder__k"><span class="price-ladder__t" data-i18n="cb.pl.disc.pct">Bundle discount %</span></div>
+          <div class="price-ladder__ctl"><span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit">%</span><input class="amount-field__input input zstep__input" type="number" min="0" max="100" step="1" value="" id="cb-discount" aria-label="Discount" data-i18n-aria-label="cpp.bd.sp.disc"><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span></div>
+          <div class="price-ladder__v"><span id="cb-sellprice">—</span><span class="price-ladder__range" data-cb-sell-range hidden></span><small data-cb-save></small></div>
+          <p class="field__hint field__hint--warn price-ladder__err" id="cb-disc-hint" hidden></p>
+        </div>
+
+        <div class="price-ladder__step">
+          <div class="price-ladder__k">
+            <span class="price-ladder__t"><span data-i18n="cb.pl.sale">Limited-time discount</span><span class="badge badge--neutral" data-i18n="cb.pl.optional">Optional</span></span>
+            <span class="price-ladder__s" data-i18n="cb.pl.sale.s">Takes more off the selling price, only during your dates</span>
+          </div>
+          <div class="price-ladder__v price-ladder__v--switch"><div class="switch" role="switch" aria-checked="false" tabindex="0" id="cb-sale-toggle" aria-label="Limited-time discount" data-i18n-aria-label="cb.pl.sale"></div></div>
+        </div>
+        <!-- 限時折扣（F7 · D144／D261）：疊在售價之上、另設 % 與檔期 -->
+        <div class="price-ladder__step price-ladder__step--panel" data-cb-sale-fields hidden>
+          <div class="price-ladder__k"><span class="price-ladder__t" data-i18n="cb.sale.percent">Limited-time discount %</span></div>
+          <div class="price-ladder__ctl"><span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit">%</span><input class="amount-field__input input zstep__input" type="number" min="0" max="100" step="1" value="" id="cb-sale-percent" aria-label="Limited-time discount %" data-i18n-aria-label="cb.sale.percent"><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span></div>
+          <div class="price-ladder__v"><span data-cb-sale-price>—</span><span class="price-ladder__range" data-cb-sale-range hidden></span><small data-i18n="cb.pl.sale.price">During the window</small></div>
+          <p class="field__hint field__hint--warn price-ladder__err" id="cb-sale-pct-hint" hidden></p>
+          <div class="price-ladder__dates">
+            <div class="field"><div class="field__label"><span data-i18n="cb.sale.start">Discount start date</span> <span class="field__req">*</span></div><input class="input" type="date" id="cb-sale-start"></div>
+            <div class="field"><div class="field__label"><span data-i18n="cb.sale.end">Discount end date</span> <span class="field__req">*</span></div><input class="input" type="date" id="cb-sale-end"></div>
+            <div class="field__hint" id="cb-sale-hint" data-i18n="cb.sale.pending">Sale price source &amp; time zone pending spec (5.1.5.4 §4 F7).</div>
+          </div>
+        </div>
+
+        <div class="price-ladder__step">
+          <div class="price-ladder__k">
+            <span class="price-ladder__t" data-i18n="cp.discount.stack">Stack with discount codes</span>
+            <span class="price-ladder__s" data-i18n="cp.discount.stack-sub">Off means the buyer gets whichever single discount is best for them</span>
+          </div>
+          <div class="price-ladder__v price-ladder__v--switch"><div class="switch" role="switch" aria-checked="false" tabindex="0" data-cb-stack aria-label="Stack with discount codes" data-i18n-aria-label="cp.discount.stack"></div></div>
+        </div>
+
+        <div class="price-ladder__step price-ladder__step--total">
+          <div class="price-ladder__k"><span class="price-ladder__t" data-i18n="cpp.bd.calc.final">Fans pay</span><span class="price-ladder__s" data-cb-total-sub></span></div>
+          <div class="price-ladder__v"><span data-cb-total>—</span><span class="price-ladder__range" data-cb-total-range hidden></span><small data-cb-total-during hidden></small></div>
+        </div>
+      </div>
+      <!-- 含活動票券成員時費率整筆走活動票務（D292 裁決九／D293 裁決二，主規格 §7.6）：只說明、不算數字 -->
+      <div class="field__hint field__hint--fact" id="cb-fee-note" hidden data-i18n="cb.fee.ticket-rate">Includes event tickets — the platform fee follows the event ticket rate for the whole bundle, not split by member.</div>
+      </div>
+    </section>
+
+    <!-- ⑥ 數量（F4 庫存；D266 鎖定、D292 上限）：標題列右側「最多可賣 N 組」 -->
+    <section class="form-section form-section--outlined cb-sec" data-st-section="qty" data-outline-group="sale">
+      <div class="form-section__head form-section__head--actions">
+        <h3 class="form-section__title" data-i18n="cb.sec.qty">Quantity</h3>
+        <div class="form-section__head-actions"><span class="form-tally"><span class="form-tally__k" data-i18n="cb.qty.max">Can sell</span><span class="form-tally__v" data-cb-sets>—</span></span></div>
+      </div>
+      <div class="stack">
+        <!-- 鎖定（D266）：要不要先把庫存鎖給這個組合；鎖定組數靠右，成員鎖定量由 ListingState 推導、唯讀；
+             多選項成員可展開逐規格「選填」分配（D268）。空白＝不鎖定（同既有語意）。 -->
+        <div class="form-ask">
+          <div class="form-ask__t" data-i18n="cb.lock.q">Lock stock for this bundle?</div>
+          <div class="form-ask__s" data-i18n="cb.lock.s">Locked stock can’t be bought as single items. Without a lock, the bundle shares what’s left with single sales — first come, first served.</div>
+          <div class="segmented radio-cards" role="radiogroup" aria-label="Lock stock" data-i18n-aria-label="cb.lock.q" data-cb-lockmode>
+            <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-cb-lock="no"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cb.lock.no">Don’t lock</span></span></button>
+            <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-cb-lock="yes"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cb.lock.yes">Lock</span></span></button>
+          </div>
+          <div class="form-ask__body" data-cb-lock-body hidden>
+            <div class="form-ask__row form-ask__row--lockset">
+              <span class="lockset__sets-titles"><span class="form-ask__row-k" data-i18n="cb.lock.sets">Sets to lock</span><span class="lockset__sets-hint" data-cb-sets-hint></span></span>
+              <span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit" data-i18n="cpp.bd.sp.unit.group">sets</span><input class="amount-field__input input zstep__input" type="number" min="0" step="1" value="" id="cb-lock-sets" aria-label="Locked sets" data-i18n-aria-label="cb.lock.sets" disabled><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+            </div>
+            <div class="field bd-field--table" data-cb-alloc-field hidden>
+              <div class="lockset" id="cb-alloc">
+                <div class="lockset__head"><span data-i18n="cb.lock.col.member">Member</span><span data-i18n="bd.lock.col.stock">Item stock</span><span data-i18n="stock.free">Unlocked</span><span data-i18n="bd.lock.col.locked">Locked</span><span></span></div>
+              </div>
+              <p class="lctl__note" data-i18n="stock.restock-hint">Restocks land in unlocked stock; locked ones need to lock again</p>
+            </div>
+          </div>
+        </div>
+        <!-- 販售上限（F4 庫存版本）：不限量／限量二選一；限量的上限不得大於成員能供應的組數（D292） -->
+        <div class="form-ask">
+          <div class="form-ask__t" data-i18n="cb.cap.q">Set your own sales cap?</div>
+          <div class="form-ask__s" data-i18n="cb.cap.s">A cap only limits how many sets this bundle sells. It doesn’t lock stock.</div>
+          <div class="segmented radio-cards" role="radiogroup" aria-label="Limit" data-i18n-aria-label="cpp.bd.sp.limit" id="cb-edition">
+            <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-cb-edition="unlimited"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.bd.qty.unlim">Unlimited</span></span></button>
+            <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-cb-edition="limited" data-feat="S45"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.bd.avail.limited">Limited</span></span></button>
+          </div>
+          <div class="form-ask__body" data-when-cb-edition="limited" data-feat="S45" hidden>
+            <div class="form-ask__row">
+              <span class="form-ask__row-k" data-i18n="cb.cap.label">Sales cap</span>
+              <span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit" data-i18n="cpp.bd.sp.unit.group">sets</span><input class="amount-field__input input zstep__input" type="number" min="1" step="1" value="" id="cb-total" aria-label="Sales cap" data-i18n-aria-label="cb.cap.label"><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+            </div>
+            <div class="field__hint field__hint--warn" data-cb-capmax hidden></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑦ 購買條件與限購 -->
+    <section class="form-section form-section--outlined cb-sec" data-st-section="rules" data-outline-group="sale" data-feat="S94">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cpp.bd.sp.sec.rules">Purchase rules</h3>
+      </div>
+      <!-- 購買條件與限購（F2；D342、D398、D400）：購買條件——含門票＝跟隨所含門票（取最嚴）的唯讀讀數，調整在組合包細節頁；
+           純商品＝預設不限、可加「限時購買／限粉絲分級購買」。限購——js/purchase-limits.js 畫「限購」標題＋「跟隨成員預設」開關＋三列。 -->
+      <div class="stack" data-cb-rules>
+        <div class="field" data-cb-buy>
+          <div class="field__label" data-i18n="tb.rules.buy">Who can buy</div>
+          <div data-tb-host="cb-rules" data-feat="S63" hidden></div>
+          <div data-cb-conds-wrap hidden>
+            <div data-cb-conds-host></div>
+          </div>
+        </div>
+        <div data-pl-host="cb"></div>
+      </div>
+    </section>
+
+    <!-- ⑧ 上架與開賣（F6；含票券＝跟著活動＋四格跟隨／另設（D342）；純商品＝三開關（D241）） -->
+    <section class="form-section form-section--outlined cb-sec" data-st-section="listing" data-outline-group="sale">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cb.sec.listing">Listing &amp; sale</h3>
+      </div>
+      <div class="stack">
         <!-- 上架（含票券成員，D293；2026-10-01 D342 改寫）：純商品那組三開關收起，換成——
              跟著哪一場（＋徽章）→ 顯示設定 → 上架、下架、開賣、停售四格「跟隨活動／另設」（js/ticket-bundle.js）→
              購買條件與限購的預設讀數（建立時照預設帶入、調整在組合包細節頁，5.1.5.4 F2「購買條件與限購」） -->
@@ -452,30 +422,22 @@
         <div class="stack" data-cb-listing-controls>
           <div class="bd-sub"><span class="bd-sub__title" data-i18n="cp.listing.sec-listed">Listing</span></div>
           <div class="lctl lctl--stack">
-            <div class="lctl__row lctl__row--choice">
-              <div class="lctl__body">
-                <div class="radio-list radio-list--collapsible" id="cb-listing-mode">
-                  <button class="radio-list__trigger" type="button" aria-expanded="false">
-                    <span class="radio-list__dot"></span>
-                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
-                    <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
-                  </button>
-                  <div class="radio-list__options" hidden>
-                    <button class="radio-list__item" type="button" data-cb-listing="none">
-                      <span class="radio-list__dot"></span>
-                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-list__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
-                    </button>
-                    <button class="radio-list__item radio-list__item--active" type="button" data-cb-listing="now">
-                      <span class="radio-list__dot"></span>
-                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
-                    </button>
-                    <button class="radio-list__item" type="button" data-cb-listing="schedule">
-                      <span class="radio-list__dot"></span>
-                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-list__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
-                    </button>
-                  </div>
-                </div>
-              </div>
+            <!-- 上架三選一改並排卡（2026-10-12 使用者裁示，UI-CHANGES 一百八十八）：與建立活動「上架設定」同一個元件、同一個順序；
+                 選「定時上架」時上架時間緊接在卡片下方出現，不再排到「顯示於商店」後面。 -->
+            <div class="segmented radio-cards radio-cards--3" id="cb-listing-mode" data-value="now">
+              <button class="segmented__btn" type="button" data-cb-listing="none">
+                <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-card__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
+              </button>
+              <button class="segmented__btn segmented__btn--active" type="button" data-cb-listing="now">
+                <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.now">List now</span><span class="radio-card__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
+              </button>
+              <button class="segmented__btn" type="button" data-cb-listing="schedule">
+                <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-card__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
+              </button>
+            </div>
+            <div class="field" data-cb-listing-fields hidden>
+              <div class="field__label"><span data-i18n="cp.listing.time">Listing time</span> <span class="field__req">*</span></div>
+              <input class="input" type="datetime-local" id="cb-listing-time">
             </div>
             <div class="lctl__rule"></div>
             <!-- 顯示於商店（D247）：緊接在上架的主決定後面 -->
@@ -492,10 +454,6 @@
               </div>
             </div>
             <div class="control-group control-group--plain lctl__derived" data-cb-listed-body hidden>
-              <div class="field" data-cb-listing-fields hidden>
-                <div class="field__label"><span data-i18n="cp.listing.time">Listing time</span> <span class="field__req">*</span></div>
-                <input class="input" type="datetime-local" id="cb-listing-time">
-              </div>
               <div class="lctl__row">
                 <div class="lctl__head">
                   <div class="lctl__titles">
@@ -517,33 +475,21 @@
           <div class="stack" data-cb-sale-section hidden>
             <div class="bd-sub"><span class="bd-sub__title" data-i18n="cp.listing.sec-sale">Sale</span></div>
             <div class="lctl lctl--stack">
-              <div class="lctl__row lctl__row--choice">
-                <div class="lctl__body">
-                  <div class="radio-list radio-list--collapsible" id="cb-sale-mode">
-                    <button class="radio-list__trigger" type="button" aria-expanded="false">
-                      <span class="radio-list__dot"></span>
-                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-list__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
-                      <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
-                    </button>
-                    <div class="radio-list__options" hidden>
-                      <button class="radio-list__item radio-list__item--active" type="button" data-cb-sale-mode="follow">
-                        <span class="radio-list__dot"></span>
-                        <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-list__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
-                      </button>
-                      <button class="radio-list__item" type="button" data-cb-sale-mode="schedule">
-                        <span class="radio-list__dot"></span>
-                        <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-list__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+              <!-- 開賣二選一改並排卡（2026-10-12，同上架）；開賣時間緊接在卡片下方 -->
+              <div class="segmented radio-cards" id="cb-sale-mode" data-value="follow">
+                <button class="segmented__btn segmented__btn--active" type="button" data-cb-sale-mode="follow">
+                  <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-card__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
+                </button>
+                <button class="segmented__btn" type="button" data-cb-sale-mode="schedule">
+                  <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-card__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
+                </button>
+              </div>
+              <div class="field" data-cb-sale-start-field hidden>
+                <div class="field__label"><span data-i18n="cp.listing.sale-start">Sale start</span> <span class="field__req">*</span></div>
+                <input class="input" type="datetime-local" id="cb-sale-open">
               </div>
               <div class="lctl__rule"></div>
               <div class="lctl__derived">
-                <div class="field" data-cb-sale-start-field hidden>
-                  <div class="field__label"><span data-i18n="cp.listing.sale-start">Sale start</span> <span class="field__req">*</span></div>
-                  <input class="input" type="datetime-local" id="cb-sale-open">
-                </div>
                 <div class="lctl__row">
                   <div class="lctl__head">
                     <div class="lctl__titles">
@@ -567,6 +513,7 @@
         </div>
       </div>
     </section>
+
     </div><!-- /.preview-split__form -->
 
     <!-- §4 F6 即時預覽欄：右欄「粉絲看到的」（第 1 批的 bundle-preview-card，第二個消費者）。
@@ -602,6 +549,56 @@
       <button class="btn btn--primary" id="cb-create" disabled data-i18n="cb.next-preview">Next: Preview</button><!-- 2026-09-23：按下＝進第 2 步預覽（最終的「建立組合」在全頁畫面側欄） -->
     </div>
   </footer>
+</div>
+
+<!-- 「加入組合物」彈窗（2026-10-12 改版）：借 payout-modal 的殼。兩個分頁：商品（候選清單＋建立新商品）／活動票券（活動清單）。
+     一個組合包只能有一場活動（D292 裁決十六）：已有票券成員時「活動票券」分頁停用並寫原因。 -->
+<div class="payout-modal" data-cb-member-modal hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="cb-member-modal-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="cb-member-modal-title" data-i18n="cb.pick.title">Add to bundle</h2>
+      <button class="btn btn--icon" type="button" data-cb-member-close aria-label="Close" data-i18n-aria-label="cpp.bd.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div class="tabs tabs--underline-short tabs--underline-label" role="tablist">
+        <button type="button" class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-cb-pick-tab="item"><span data-i18n="cb.pick.items">Products</span></button>
+        <button type="button" class="tabs__item" role="tab" aria-selected="false" data-cb-pick-tab="tix"><span data-i18n="cb.pick.tix">Event tickets</span></button>
+      </div>
+      <p class="field__hint field__hint--fact" data-cb-pick-why hidden data-i18n="cb.pick.tix.one">This bundle already has tickets from one event. A bundle can hold one event only — remove that row to switch.</p>
+      <div class="stack" data-cb-pick-panel="item">
+          <div id="cb-prod-pick">
+            <div class="cb-sublabel" id="cb-recent-label" data-i18n="cb.recent">Recently viewed</div>
+            <div class="picker">
+              <div class="picker__search">
+                <input class="picker__search-input" placeholder="Search your products…" data-i18n-placeholder="cb.search.ph">
+              </div>
+              <div class="picker__list">
+                <div class="data-list" id="cb-recent"></div>
+                <div class="cb-no-result" id="cb-no-result" hidden data-i18n="cb.search.noresult">No products match. Create a New item above to add it to this bundle.</div>
+              </div>
+            </div>
+          </div>
+      </div>
+      <div class="stack" data-cb-pick-panel="tix" hidden>
+        <div data-cb-event-panel>
+            <div class="cb-sublabel" id="cb-ev-label" data-i18n="cb.tix.recent">Recently viewed events</div>
+            <div class="picker">
+              <div class="picker__search">
+                <input class="picker__search-input" id="cb-ev-search" placeholder="Search your events…" data-i18n-placeholder="cb.tix.search.ph">
+              </div>
+              <div class="picker__list">
+                <div class="data-list" id="cb-events"></div>
+                <div class="cb-no-result" id="cb-ev-noresult" hidden data-i18n="cb.tix.noresult">No events match.</div>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--ghost" type="button" id="cb-add-tile"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="cb.pick.new">Create a new product</span></button>
+      <div class="payout-dialog__foot-actions"><button class="btn btn--primary" type="button" data-cb-member-close data-i18n="cb.pick.done">Done</button></div>
+    </div>
+  </section>
 </div>
 
 <!-- 臨時新增商品 popup：嵌入完整 create-product 流程（?embed=1），
@@ -648,7 +645,6 @@
 
   const nameEl = document.getElementById('cb-name');
   const descEl = document.getElementById('cb-desc');
-  const perksEl = document.querySelector('[data-cb-perks]');
   const createBtn = document.getElementById('cb-create');
   const discEl = document.getElementById('cb-discount');
   const discToggle = document.querySelector('[data-cb-disc-toggle]');
@@ -918,8 +914,8 @@
   function lockHintText() {
     const c = capWho();
     if (c.n === Infinity) return T('cpp.bd.sp.lock.none', 'Add a member first');
-    if (!lockOver()) return T('cpp.bd.sp.lock.hint', 'Blank = shares what’s left with single sales');
-    return T('cpp.bd.sp.lock.over', 'Over the ceiling of {n} sets (limited by {who})').replace('{n}', fmtInt(c.n)).replace('{who}', whoText(c.who));
+    if (lockOver()) return T('cpp.bd.sp.lock.over', 'Over the ceiling of {n} sets (limited by {who})').replace('{n}', fmtInt(c.n)).replace('{who}', whoText(c.who));
+    return T(setsInput && setsInput.value.trim() ? 'cb.lock.max' : 'cb.lock.blank', 'Up to {n} sets can be locked.').replace('{n}', fmtInt(c.n));
   }
   /* 可售套數（受限量之前）：把 cap 暫時拿掉問 ListingState */
   function setsBeforeCap() {
@@ -936,10 +932,11 @@
     return q === Infinity ? null : q;
   }
   /* 2026-09-22 方案 A：可售套數拆成讀數（數字）與 hint（受誰限制）兩層，同建立活動第 6 步。 */
-  function setsValText() {
+  /* 2026-10-12 改版：數量卡標題列右側讀數（form-tally）＝大數字＋小字單位，標籤「最多可賣」在讀數左邊 */
+  function setsValHTML() {
     const s = sellableSets();
-    if (s === null) return hasContent() ? T('cb.stock.unlimited', 'Unlimited') : '—';
-    return T('cpp.bd.sp.sets.val', 'Up to {n} sets').replace('{n}', fmtInt(s));
+    if (s === null) return esc(hasContent() ? T('cb.stock.unlimited', 'Unlimited') : '—');
+    return esc(fmtInt(s)) + '<small>' + esc(T('cpp.bd.sp.unit.group', 'sets')) + '</small>';
   }
   function setsWhyText() {
     const s = sellableSets(), c = capWho();
@@ -954,10 +951,11 @@
       .replace('{who}', c.who === 'tix' ? T('cpp.bd.sp.sets.by.tix', 'ticket supply') : T('cpp.bd.sp.sets.by.item', '{name} stock').replace('{name}', String(c.who || '')));
   }
   /* 限量 hint：前半「成員最多供應 N 組」是同一個上限第 3 次出現，刪；只留「賣完自動售罄」。 */
+  /* 2026-10-12 改版：上限只在超過時說話（使用者拿掉了「賣完自動售罄」那句常駐說明） */
   function capHintText() {
     const s = setsBeforeCap();
     if (s !== null && capOver()) return T('cpp.bd.sp.cap.over', 'Over the {n} sets members can supply').replace('{n}', fmtInt(s));
-    return T('cpp.bd.sp.cap.hint', 'Sells out on its own.');
+    return '';
   }
 
   /* 數字、錯誤態與可售套數：一律問 ListingState；沒有成員時鎖定 UI 收起 */
@@ -1015,6 +1013,16 @@
     void lim;
     lockBad = anyBad || !!over;
   }
+  /* 2026-10-12 改版：「要鎖定庫存給這個組合嗎？」不鎖定／鎖定二選一；選不鎖定＝清空鎖定組數（同既有「空白＝不鎖定」語意） */
+  const lockModeEl = document.querySelector('[data-cb-lockmode]');
+  const lockBody = document.querySelector('[data-cb-lock-body]');
+  if (lockModeEl) lockModeEl.querySelectorAll('[data-cb-lock]').forEach(btn => btn.addEventListener('click', () => {
+    const yes = btn.dataset.cbLock === 'yes';
+    lockModeEl.querySelectorAll('[data-cb-lock]').forEach(b => { const on = b === btn; b.classList.toggle('segmented__btn--active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+    if (lockBody) lockBody.hidden = !yes;
+    if (!yes && setsInput) { setsInput.value = ''; bundleDraft.lockSets = null; applyLock(); }
+    recompute();
+  }));
   /* 鎖定套數：空白／0＝不鎖定；填正數＝鎖定 N 套。超過上限不寫進模型（成員會被鎖到負數），只標紅 */
   if (setsInput) setsInput.addEventListener('input', () => {
     if (!LS) return;
@@ -1053,6 +1061,18 @@
     return { pct: v, ok: true, empty: false };
   }
   const finalPrice = () => baseTotal() * (1 - discInfo().pct / 100);
+  /* D402（2026-10-12）：主價格維持「從 $X 起」；價格不是單一值時，創作者後台在主價格下方加一行區間小字「$最低–$最高」。
+     最高價〔推導，5.1.5.4 F3〕：門票取允許門票中最貴的 × 每組張數；多規格商品取最貴規格 × 每組用量；加總後套同一組折扣。 */
+  const tixMaxPrice = () => tixLines().reduce((m, l) => Math.max(m, l.price), 0);
+  const ticketMax = () => tixLines().length ? tixMaxPrice() * tix.qty : 0;
+  const baseMax = () => ticketMax() + productMembers().reduce((a, m) => a + itemMax(products[m.productId]) * (m.qty > 0 ? m.qty : 1), 0);
+  const rangeText = (lo, hi) => money(lo) + '–' + money(hi);
+  function setRange(el, lo, hi) {
+    if (!el) return;
+    const on = hasContent() && priceRange() && hi > lo;
+    el.hidden = !on;
+    el.textContent = on ? rangeText(lo, hi) : '';
+  }
   const discountOf = () => baseTotal() - finalPrice();
   function salePctInfo() {
     const raw = salePctEl ? salePctEl.value.trim() : '';
@@ -1061,30 +1081,21 @@
     if (isNaN(v) || v < 0 || v > 100) return { pct: 0, ok: false, empty: false };
     return { pct: v, ok: true, empty: false };
   }
-  /* 原價合計的算式：一行一項（kv 列），每項底下一句「怎麼算」，合計列加粗一階（同第 1 批 calcListHTML） */
+  /* 「看怎麼算」展開的逐項明細（price-ladder__item）：名稱｜金額，價格不是單一值的那項加區間小字。
+     2026-10-12 改版：合計不再另列一行——它就是上面「原價合計」那一列的值（墓碑：原 calcListHTML 的 .calc-list 與 #cb-autoprice）。 */
   function calcListHTML() {
     const rows = [];
     const lines = tixLines();
-    if (lines.length) {
-      const mp = money(tixMinPrice()), n = String(tix.qty);
-      rows.push({ k: tixLineText(),
-        how: lines.length === 1 ? T('cpp.bd.sp.calc.how.one', '{price} × {n}').replace('{price}', mp).replace('{n}', n)
-                                : T('cpp.bd.sp.calc.how.any', 'Lowest tier {price} × {n}').replace('{price}', mp).replace('{n}', n),
-        v: moneyFrom(ticketValue(), lines.length > 1) });
-    }
+    const itemRow = (k, v, lo, hi) => '<div class="price-ladder__item"><span class="price-ladder__item-k">' + esc(k) + '</span><span class="price-ladder__item-v">' + esc(v) +
+      (hi > lo ? '<span class="price-ladder__range">' + esc(rangeText(lo, hi)) + '</span>' : '') + '</span></div>';
+    if (lines.length) rows.push(itemRow(tixLineText(), moneyFrom(ticketValue(), lines.length > 1), ticketValue(), ticketMax()));
     productMembers().forEach(m => {
       const p = products[m.productId]; if (!p) return;
       const q = m.qty > 0 ? m.qty : 1;
-      const how = T(itemOptions(p) ? 'cpp.bd.sp.calc.how.item.multi' : 'cpp.bd.sp.calc.how.item.single', '');
-      rows.push({ k: q > 1 ? T('cpp.bd.sum.line', '{name} × {n}').replace('{name}', p.name || '').replace('{n}', String(q)) : (p.name || ''),
-        how: q > 1 ? (itemRange(p) ? moneyFrom(itemMin(p), true) : money(itemMin(p))) + ' × ' + q + (how ? ' · ' + how : '') : how,
-        v: moneyFrom(itemMin(p) * q, itemRange(p)) });
+      rows.push(itemRow(T('cpp.bd.sum.line', '{name} × {n}').replace('{name}', p.name || '').replace('{n}', String(q)), moneyFrom(itemMin(p) * q, itemRange(p)), itemMin(p) * q, itemMax(p) * q));
     });
     if (!rows.length) return '<div class="field__hint">' + esc(T('cpp.bd.sp.calc.empty', 'Add members and the list price breaks down here.')) + '</div>';
-    return '<div class="calc-list">' +
-      rows.map(r => '<div class="kv"><span class="kv__k">' + esc(r.k) + (r.how ? '<span class="calc-list__how">' + esc(r.how) + '</span>' : '') + '</span><span class="kv__v">' + esc(r.v) + '</span></div>').join('') +
-      '<div class="kv calc-list__total"><span class="kv__k">' + esc(T('cpp.bd.calc.base', 'Full price')) + '</span><span class="kv__v" id="cb-autoprice">' + esc(moneyFrom(baseTotal(), priceRange())) + '</span></div>' +
-    '</div>';
+    return rows.join('');
   }
   function saveText() {
     const d = discInfo();
@@ -1119,34 +1130,34 @@
     + '<input class="amount-field__input input zstep__input" type="number" min="1" step="1" value="' + esc(String(v)) + '" data-cb-qty="' + esc(id) + '" aria-label="Quantity per set" data-i18n-aria-label="cb.qty.label">'
     + '<span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button>'
     + '<button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>';
+  /* 組合物表的商品列（member-table，2026-10-12 改版）：展開欄留空｜縮圖＋名稱＋規格小字｜原價（＋區間・剩餘小字）｜每組用量｜✕。
+     票券列是頁面上的固定 markup（renderTixRow），這裡只畫商品列。 */
+  function itemThumbHTML(p) {
+    if (p && p.imgSrc) return '<img src="' + esc(p.imgSrc) + '" alt="">';
+    if (p && p.img) return '<img src="images/products/' + esc(p.img) + '" alt="">';
+    return '<i data-lucide="package" class="ztor-icon"></i>';
+  }
+  const leftText = n => n === Infinity ? T('cb.stock.unlimited', 'Unlimited') : T('cb.mt.left', '{n} left').replace('{n}', fmtInt(n));
   function renderItems() {
     if (!itemsTableEl) return;
     const ms = productMembers();
-    if (!ms.length) { itemsTableEl.innerHTML = ''; return; }
-    itemsTableEl.innerHTML = '<div class="bd-tbl bd-tbl--items bd-tbl--items-qty">' +
-      '<div class="bd-tbl__head">' +
-        /* 表頭原本是「已加入」——這張表列的本來就是已加入的，欄名改回主詞「商品」（2026-09-22 方案 A）。 */
-        '<span class="bd-tbl__col">' + esc(T('cpp.bd.sp.items', 'Items')) + '</span>' +
-        '<span class="bd-tbl__col bd-tbl__col--num">' + esc(T('cpp.bd.sp.tbl.list', 'List price')) + '</span>' +
-        '<span class="bd-tbl__col bd-tbl__col--num">' + esc(T('cpp.bd.sp.tbl.stock', 'Stock')) + '</span>' +
-        '<span class="bd-tbl__col bd-tbl__col--num">' + esc(T('cb.qty.col', 'Per set')) + '</span>' +
+    itemsTableEl.innerHTML = ms.map(m => {
+      const p = products[m.productId] || { name: m.productId };
+      const st = itemStock(p);
+      const nm = isReal(m.productId) ? '<a class="card__link" href="product-detail.html?id=' + esc(m.productId) + '" target="_blank" rel="noopener">' + esc(p.name) + '</a>' : esc(p.name);
+      const sub = (itemRange(p) ? esc(rangeText(itemMin(p), itemMax(p))) + ' · ' : '') + (st === 0 ? '<span class="text-error">' + esc(leftText(0)) + '</span>' : esc(leftText(st)));
+      return '<div class="member-table__row" data-cb-item="' + esc(m.productId) + '">' +
         '<span></span>' +
-      '</div>' +
-      ms.map(m => {
-        const p = products[m.productId] || { name: m.productId };
-        const st = itemStock(p);
-        const nm = isReal(m.productId) ? '<a class="card__link" href="product-detail.html?id=' + esc(m.productId) + '" target="_blank" rel="noopener">' + esc(p.name) + '</a>' : esc(p.name);
-        return '<div class="bd-tbl__row" data-cb-item="' + esc(m.productId) + '">' +
-          '<span class="bd-tbl__cell"><span class="bd-tbl__name">' + nm + '</span><span class="bd-tbl__sub">' + esc(specText(p)) + '</span></span>' +
-          '<span class="bd-tbl__num">' + esc(itemPriceText(p)) + '</span>' +
-          '<span class="bd-tbl__num">' + (st === Infinity ? esc(T('cb.stock.unlimited', 'Unlimited')) : (st === 0 ? '<span class="text-error">0</span>' : esc(fmtInt(st)))) + '</span>' +
-          '<span class="bd-tbl__per">' + qtyStepperHTML(m.qty || 1, m.productId) + '</span>' +
-          '<span class="bd-tbl__act"><button class="btn btn--ghost btn--icon btn--xs" type="button" data-cb-item-remove="' + esc(m.productId) + '" aria-label="Remove item" data-i18n-aria-label="cpp.bd.item.remove"><i data-lucide="x" class="ztor-icon"></i></button></span>' +
-        '</div>';
-      }).join('') +
-    '</div>';
+        '<div class="member-table__name"><span class="member-table__thumb">' + itemThumbHTML(p) + '</span>' +
+          '<span class="member-table__txt"><span class="member-table__t">' + nm + '</span><span class="member-table__s">' + esc(specText(p)) + '</span></span></div>' +
+        '<span class="member-table__price">' + esc(itemPriceText(p)) + '<span class="member-table__sub">' + sub + '</span></span>' +
+        '<span class="member-table__qty">' + qtyStepperHTML(m.qty || 1, m.productId) + '</span>' +
+        '<button class="btn btn--ghost btn--icon btn--xs member-table__x" type="button" data-cb-item-remove="' + esc(m.productId) + '" aria-label="Remove item" data-i18n-aria-label="cpp.bd.item.remove"><i data-lucide="x" class="ztor-icon"></i></button>' +
+      '</div>';
+    }).join('');
     if (window.ztorIcons) window.ztorIcons.applyIcons(itemsTableEl);
     if (window.applyI18n) window.applyI18n(itemsTableEl);
+    syncMembersFrame();
   }
   if (itemsTableEl) {
     itemsTableEl.addEventListener('input', e => {
@@ -1232,7 +1243,6 @@
       }).join(''))).join('') : '';
       rows.push('<div class="bpc__row"><i data-lucide="package" class="ztor-icon"></i><div><div class="bpc__what">' + esc(T('cpp.bd.sum.line', '{name} × {n}').replace('{name}', p.name || '').replace('{n}', String(q))) + '</div>' + picks + '</div></div>');
     });
-    perkLines().forEach(l => { rows.push('<div class="bpc__row"><i data-lucide="sparkles" class="ztor-icon"></i><div class="bpc__what">' + esc(l) + '</div></div>'); });
     if (!rows.length) rows.push('<div class="bpc__what is-empty">' + esc(T('cpp.bd.sum.empty', 'Nothing in it yet')) + '</div>');
 
     const fp = fanPrice(), d = discInfo().pct, sets = sellableSets();
@@ -1281,7 +1291,6 @@
       renderFan();
     }
   });
-  const perkLines = () => (perksEl ? perksEl.value : '').split('\n').map(s => s.trim()).filter(Boolean);
 
   /* ── footer 與主鈕的停用理由（同第 1 批 gateWhyText）── */
   function gateWhy() {
@@ -1322,26 +1331,45 @@
       if (ticketMember()) notes += '<div class="field__hint field__hint--fact" data-i18n="cb.note.tickets">' + esc(T('cb.note.tickets', '')) + '</div>';
       notesEl.innerHTML = notes;
     }
-    /* 定價段 */
+    /* 組合物表：票券列與表頭／空狀態（商品列在 renderItems） */
+    renderTixRow();
+    /* 價格階梯（2026-10-12 改版）：每一列右邊＝算到這一步的價；價格不是單一值時主價格下方加區間小字（D402） */
+    const q = s => document.querySelector(s);
+    const has = hasContent(), rng = priceRange();
+    const k1 = 1 - discInfo().pct / 100;
+    const listEl = q('[data-cb-list]');
+    if (listEl) listEl.textContent = has ? moneyFrom(baseTotal(), rng) : '—';
+    setRange(q('[data-cb-list-range]'), baseTotal(), baseMax());
     if (calcEl) calcEl.innerHTML = calcListHTML();
     const feeNote = document.getElementById('cb-fee-note');
     if (feeNote) feeNote.hidden = !ticketMember();
     const d = discInfo();
-    if (sellPriceEl) sellPriceEl.textContent = hasContent() ? moneyFrom(finalPrice(), priceRange()) : '—';
+    if (sellPriceEl) sellPriceEl.textContent = has ? moneyFrom(finalPrice(), rng) : '—';
+    setRange(q('[data-cb-sell-range]'), finalPrice(), baseMax() * k1);
     if (saveEl) saveEl.textContent = saveText();
-    if (discHintEl) { discHintEl.hidden = d.ok; discHintEl.className = 'field__hint field__hint--warn'; discHintEl.textContent = d.ok ? '' : T('cb.price.discount-bad', 'Discount must be 0–100.'); }
-    if (setsOut) setsOut.textContent = setsValText();
-    if (setsWhyEl) setsWhyEl.textContent = setsWhyText();
-    if (capHintEl) { capHintEl.textContent = capHintText(); capHintEl.classList.toggle('fc-hint--over', capOver()); }
+    if (discHintEl) { discHintEl.hidden = d.ok; discHintEl.textContent = d.ok ? '' : T('cb.price.discount-bad', 'Discount must be 0–100.'); }
+    if (setsOut) setsOut.innerHTML = setsValHTML();
+    if (capHintEl) { const ct = capHintText(); capHintEl.textContent = ct; capHintEl.hidden = !ct; }
     if (totalInput) { if (capOver()) totalInput.setAttribute('aria-invalid', 'true'); else totalInput.removeAttribute('aria-invalid'); }
-    /* 限時折扣 %：疊在售價之上，提示句算出檔期內的價 */
+    /* 限時折扣：疊在售價之上；右欄＝檔期內的價（錯誤才出提示句） */
+    const sp0 = salePctInfo(), saleK = sp0.ok ? 1 - sp0.pct / 100 : 1;
+    const saleLive = saleOn() && sp0.ok && has;
+    const salePriceEl = q('[data-cb-sale-price]');
+    if (salePriceEl) salePriceEl.textContent = saleLive ? moneyFrom(finalPrice() * saleK, rng) : '—';
+    setRange(q('[data-cb-sale-range]'), saleLive ? finalPrice() * saleK : 0, saleLive ? baseMax() * k1 * saleK : 0);
+    const totalEl = q('[data-cb-total]');
+    if (totalEl) totalEl.textContent = has ? moneyFrom(finalPrice(), rng) : '—';
+    setRange(q('[data-cb-total-range]'), finalPrice(), baseMax() * k1);
+    const totalSub = q('[data-cb-total-sub]');
+    if (totalSub) totalSub.textContent = saleOn() ? T('cb.pl.total.both', 'Usual / during the discount') : T('cb.pl.total.usual', 'Usual');
+    const during = q('[data-cb-total-during]');
+    if (during) { during.hidden = !saleLive; during.textContent = saleLive ? T('cb.pl.total.during', 'During the discount: {p}').replace('{p}', moneyFrom(finalPrice() * saleK, rng)) : ''; }
     if (saleOn()) {
-      const sp = salePctInfo();
+      const sp = sp0;
       if (salePctHint) {
-        salePctHint.removeAttribute('data-i18n');
-        if (!sp.ok && !sp.empty) { salePctHint.className = 'field__hint field__hint--warn'; salePctHint.textContent = T('cb.price.discount-bad', 'Discount must be 0–100.'); }
-        else if (sp.ok && hasContent()) { salePctHint.className = 'field__hint field__hint--ok'; salePctHint.textContent = T('cb.sale.percent-hint', 'Taken off the bundle price during the window.') + ' ' + moneyFrom(finalPrice() * (1 - sp.pct / 100), priceRange()); }
-        else { salePctHint.className = 'field__hint'; salePctHint.textContent = T('cb.sale.percent-hint', 'Taken off the bundle price during the window.'); }
+        const bad = !sp.ok && !sp.empty;
+        salePctHint.hidden = !bad;
+        salePctHint.textContent = bad ? T('cb.price.discount-bad', 'Discount must be 0–100.') : '';
       }
       const s = saleStart ? saleStart.value : '', e = saleEnd ? saleEnd.value : '';
       if (saleHint) {
@@ -1364,6 +1392,12 @@
     if (cbOutline) cbOutline.refresh();   /* 本頁大綱跟著刷新（UI-CHANGES 一百七十七） */
   }
 
+  /* 「看怎麼算」：展開原價合計的逐項明細（price-ladder 的 --panel 列） */
+  (function () {
+    const tg = document.querySelector('[data-cb-calc-toggle]'), panel = document.querySelector('[data-cb-calc-panel]');
+    if (!tg || !panel) return;
+    tg.addEventListener('click', () => { const open = tg.getAttribute('aria-expanded') !== 'true'; tg.setAttribute('aria-expanded', open ? 'true' : 'false'); panel.hidden = !open; });
+  })();
   /* 組合折扣開關 */
   if (discToggle) {
     const flip = () => { state.discountOn = !state.discountOn; discToggle.setAttribute('aria-checked', state.discountOn ? 'true' : 'false'); discToggle.classList.toggle('switch--on', state.discountOn); if (discBody) discBody.hidden = !state.discountOn; recompute(); };
@@ -1411,12 +1445,23 @@
     if (listingSched) listingSched.hidden = listingMode !== 'schedule';
     if (saleSection) saleSection.hidden = !listed;
   }
-  if (cbLm) cbLm.addEventListener('radio-list:change', e => { listingMode = e.detail.item.dataset.cbListing || 'now'; syncListing(); recompute(); });
+  /* 並排卡（2026-10-12）：點卡＝換選項，選中樣式由 segmented__btn--active 表達 */
+  function wireCards(host, attr, set) {
+    if (!host) return;
+    host.addEventListener('click', e => {
+      const btn = e.target.closest('.segmented__btn');
+      if (!btn || !host.contains(btn)) return;
+      host.querySelectorAll('.segmented__btn').forEach(b => b.classList.toggle('segmented__btn--active', b === btn));
+      host.dataset.value = btn.dataset[attr];
+      set(btn.dataset[attr]);
+    });
+  }
+  wireCards(cbLm, 'cbListing', v => { listingMode = v || 'now'; syncListing(); recompute(); });
   syncListing();
   const cbSm = document.getElementById('cb-sale-mode');
   const saleStartField = document.querySelector('[data-cb-sale-start-field]');
   function syncSaleMode() { if (saleStartField) saleStartField.hidden = saleMode !== 'schedule'; }
-  if (cbSm) cbSm.addEventListener('radio-list:change', e => { saleMode = e.detail.item.dataset.cbSaleMode || 'follow'; syncSaleMode(); recompute(); });
+  wireCards(cbSm, 'cbSaleMode', v => { saleMode = v || 'follow'; syncSaleMode(); recompute(); });
   syncSaleMode();
   function wireSchedToggle(toggleId, fieldsSel) {
     const t = document.getElementById(toggleId);
@@ -1558,7 +1603,7 @@
     const sig = JSON.stringify(der) + '|' + (cbRulesState.limits ? 'o' : 'f') + '|' + document.documentElement.lang;
     if (force || sig !== cbLimSig) {
       cbLimSig = sig;
-      host.innerHTML = bundleDraft.members.length ? PLc.blockHTML(cbRulesState.limits, der, T, {})
+      host.innerHTML = bundleDraft.members.length ? PLc.blockHTML(cbRulesState.limits, der, T, { title: true })
         : '<p class="field__hint" data-i18n="cb.min-items">' + esc(T('cb.min-items', 'Add at least 1 item')) + '</p>';
       if (window.ztorIcons) window.ztorIcons.applyIcons(host);
     }
@@ -1605,7 +1650,7 @@
   /* 臨時新增商品：以 popup 嵌入完整 create-product 流程 */
   const addModal = document.getElementById('cb-add-modal');
   const addFrame = document.getElementById('cb-add-frame');
-  const openAdd = () => { addFrame.src = 'create-product.html?embed=1&cb=20260617t'; addModal.hidden = false; document.body.classList.add('is-modal-open'); };
+  const openAdd = () => { closeMemberModal(); addFrame.src = 'create-product.html?embed=1&cb=20260617t'; addModal.hidden = false; document.body.classList.add('is-modal-open'); };
   const closeAdd = () => { addModal.hidden = true; document.body.classList.remove('is-modal-open'); addFrame.src = 'about:blank'; };
   addTile.addEventListener('click', openAdd);
   addModal.addEventListener('click', e => { if (e.target === addModal) closeAdd(); });
@@ -1625,7 +1670,6 @@
   });
   if (nameEl) nameEl.addEventListener('input', () => { state.nameTouched = !!nameEl.value.trim(); recompute(); });
   if (descEl) descEl.addEventListener('input', recompute);
-  if (perksEl) perksEl.addEventListener('input', recompute);
   if (discEl) discEl.addEventListener('input', recompute);
   if (salePctEl) salePctEl.addEventListener('input', recompute);
   /* 封面上傳後預覽卡的媒體格跟著換 */
@@ -1757,14 +1801,88 @@
   const tierQtyField = document.querySelector('[data-cb-tier-qty-field]');
   const semEl = document.querySelector('[data-cb-sem]');
   const RECENT_EV_N = 5;
-  function showTixStage(stage) {
-    if (tixEntry) tixEntry.hidden = stage !== 'entry';
-    if (evPanel) evPanel.hidden = stage !== 'events';
-    if (tierPanel) tierPanel.hidden = stage !== 'tiers';
+  /* 2026-10-12 改版：票券不再有「入口方塊／活動面板／票種面板」三態——
+     活動在「加入組合物」彈窗的「活動票券」分頁挑；挑好後組合物表多一列票券、預設展開（允許的門票表＋換一場活動）。
+     showTixStage 保留舊名稱給既有呼叫點：'events'＝開彈窗到活動票券分頁、'tiers'＝展開票券列、'entry'＝只重畫。 */
+  const tixRow = document.querySelector('[data-cb-tix-row]');
+  const tixOpeners = Array.from(document.querySelectorAll('[data-cb-tix-open]'));
+  const tixLabel = document.querySelector('[data-cb-tix-label]');
+  const tixThumb = document.querySelector('[data-cb-tix-thumb]');
+  const tixPriceEl = document.querySelector('[data-cb-tix-price]');
+  const tixSubEl = document.querySelector('[data-cb-tix-sub]');
+  const membersHead = document.querySelector('[data-cb-members-head]');
+  const membersEmpty = document.querySelector('[data-cb-members-empty]');
+  let tixOpen = false;
+  function syncMembersFrame() {
+    const any = !!tix.event || productMembers().length > 0;
+    if (membersHead) membersHead.hidden = !any;
+    if (membersEmpty) membersEmpty.hidden = any;
   }
-  if (tixEntry) tixEntry.addEventListener('click', () => { buildEvents(); showTixStage('events'); });
-  const tixCancel = document.querySelector('[data-cb-tix-cancel]');
-  if (tixCancel) tixCancel.addEventListener('click', () => showTixStage('entry'));
+  function renderTixRow() {
+    const ev = tix.event;
+    if (tixRow) tixRow.hidden = !ev;
+    if (tierPanel) tierPanel.hidden = !(ev && tixOpen);
+    tixOpeners.forEach(b => b.setAttribute('aria-expanded', ev && tixOpen ? 'true' : 'false'));
+    syncMembersFrame();
+    if (!ev) return;
+    const lines = tixLines(), names = lines.map(l => l.name);
+    if (tixLabel) tixLabel.textContent = !lines.length ? T('cb.mt.tix.none', 'No tickets picked · change')
+      : lines.length > 1 ? T('cb.mt.tix.any', 'Picked: {names} (pick one) · change').replace('{names}', names.join('／'))
+      : T('cb.mt.tix.one', 'Picked: {name} · change').replace('{name}', names[0]);
+    if (tixThumb) tixThumb.innerHTML = (ev.images && ev.images.keyvisual) ? '<img src="' + esc(ev.images.keyvisual) + '" alt="">' : '<i data-lucide="ticket" class="ztor-icon"></i>';
+    const lo = lines.length ? tixMinPrice() : 0, hi = tixMaxPrice();
+    if (tixPriceEl) tixPriceEl.textContent = lines.length ? moneyFrom(lo, lines.length > 1) : '—';
+    if (tixSubEl) tixSubEl.textContent = (hi > lo ? rangeText(lo, hi) + ' · ' : '') + leftText(lines.reduce((a, l) => a + l.left, 0));
+    if (window.ztorIcons && tixThumb) window.ztorIcons.applyIcons(tixThumb);
+  }
+  tixOpeners.forEach(b => b.addEventListener('click', () => { tixOpen = !tixOpen; renderTixRow(); }));
+
+  /* 「加入組合物」彈窗（payout-modal 殼）：商品／活動票券兩個分頁；已有票券成員時活動票券分頁停用並寫原因（一個組合包只能有一場活動） */
+  const memberModal = document.querySelector('[data-cb-member-modal]');
+  const pickTabs = Array.from(document.querySelectorAll('[data-cb-pick-tab]'));
+  const pickPanels = Array.from(document.querySelectorAll('[data-cb-pick-panel]'));
+  const pickWhy = document.querySelector('[data-cb-pick-why]');
+  let pickCur = 'item';
+  function setPickTab(t) {
+    if (t === 'tix' && (tix.event || tixLocked)) t = 'item';
+    pickCur = t;
+    pickTabs.forEach(b => { const on = b.dataset.cbPickTab === t; b.classList.toggle('tabs__item--active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    pickPanels.forEach(pn => { pn.hidden = pn.dataset.cbPickPanel !== t; });
+    if (t === 'tix') buildEvents();
+  }
+  function openMemberModal(t) {
+    if (!memberModal) return;
+    const has = !!tix.event || tixLocked;
+    const tabTix = pickTabs.find(b => b.dataset.cbPickTab === 'tix');
+    if (tabTix) { tabTix.disabled = has; if (has) tabTix.setAttribute('aria-disabled', 'true'); else tabTix.removeAttribute('aria-disabled'); }
+    if (pickWhy) {
+      pickWhy.hidden = !has;
+      const wk = tixLocked ? 'cb.tix.locked' : 'cb.pick.tix.one';   /* 從活動詳情進來（D401 鎖定）時不叫人去移除——那一列移除不了 */
+      pickWhy.setAttribute('data-i18n', wk);
+      pickWhy.textContent = T(wk, pickWhy.textContent);
+    }
+    setPickTab(t || 'item');
+    memberModal.hidden = false;
+    document.body.classList.add('is-modal-open');
+    const box = memberModal.querySelector('[data-cb-pick-panel="' + pickCur + '"] .picker__search-input');
+    if (box) box.focus();
+  }
+  function closeMemberModal() {
+    if (!memberModal || memberModal.hidden) return;
+    memberModal.hidden = true;
+    if (!addModal || addModal.hidden) document.body.classList.remove('is-modal-open');
+  }
+  pickTabs.forEach(b => b.addEventListener('click', () => { if (!b.disabled) setPickTab(b.dataset.cbPickTab); }));
+  document.querySelectorAll('[data-cb-member-close]').forEach(b => b.addEventListener('click', closeMemberModal));
+  if (memberModal) memberModal.addEventListener('click', e => { if (e.target === memberModal) closeMemberModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && memberModal && !memberModal.hidden && (!addModal || addModal.hidden)) closeMemberModal(); });
+  const addOpenBtn = document.querySelector('[data-cb-add-open]');
+  if (addOpenBtn) addOpenBtn.addEventListener('click', () => openMemberModal('item'));
+  function showTixStage(stage) {
+    if (stage === 'events') { openMemberModal('tix'); return; }
+    if (stage === 'tiers') tixOpen = true;
+    renderTixRow();
+  }
   function buildEvents() {
     if (!EV || !evList) return;
     const q = evSearch ? evSearch.value.trim().toLowerCase() : '';
@@ -1800,6 +1918,7 @@
   function openEvent(ev) {
     tix.event = ev; tix.tierIds = []; tix.qty = 1; FAN.tier = null;
     if (tierQtyInp) tierQtyInp.value = '1';
+    closeMemberModal();
     showTixStage('tiers');
     renderTierTable();
     syncTicketMember(); renderAlloc(); recompute();
@@ -1849,11 +1968,13 @@
     syncTicketMember(); renderAlloc(); recompute();
   });
   const tierBack = document.querySelector('[data-cb-tier-back]');
-  if (tierBack) tierBack.addEventListener('click', () => { removeTickets(); buildEvents(); showTixStage('events'); });
+  /* D401 決定三：從活動詳情進來、活動已鎖定（tixLocked）時這兩顆收起；這裡再守一次，避免被別的路徑觸發 */
+  var tixLocked = false;   // var：加入組合物彈窗（上方）也會讀
+  if (tierBack) tierBack.addEventListener('click', () => { if (tixLocked) return; removeTickets(); buildEvents(); showTixStage('events'); });
   const tixRemove = document.querySelector('[data-cb-tix-remove]');
-  if (tixRemove) tixRemove.addEventListener('click', () => { removeTickets(); showTixStage('entry'); });
+  if (tixRemove) tixRemove.addEventListener('click', () => { if (tixLocked) return; removeTickets(); showTixStage('entry'); });
   function removeTickets() {
-    tix.event = null; tix.tierIds = []; tix.qty = 1; FAN.tier = null;
+    tix.event = null; tix.tierIds = []; tix.qty = 1; FAN.tier = null; tixOpen = false;
     if (tierQtyInp) tierQtyInp.value = '1';
     syncTicketMember(); applyLock(); renderAlloc(); recompute();
   }
@@ -1880,7 +2001,6 @@
         ? { kind: 'ticket', eventId: m.eventId, tierIds: (m.tierIds || []).slice(), qty: m.qty || 1, lock: LS ? LS.bundleMemberLock(bundleDraft, m) : null }
         : { kind: 'product', productId: m.productId, qty: m.qty || 1, lock: LS ? LS.bundleMemberLock(bundleDraft, m) : null }),
       eventId: (ticketMember() || {}).eventId || null,
-      perks: perkLines(),
       cap: bundleDraft.cap,
       lockSets: bundleDraft.lockSets,
       alloc: bundleDraft.alloc || {},
@@ -1930,7 +2050,7 @@
      翻譯模式不傳：電子商店的多語規則是自動翻譯（主規格 §7.4 通則；D312 只把活動改成手動），用元件預設值。
      幣別覆寫依 D318：組合成員含活動票券時可覆寫、只含商品時唯讀——用 prices[i].overridable 列級旗標，不傳全域 priceOverrides。
      本頁沒有編輯態／嵌入態（沒有 ?edit／?embed 分支），進度條一律顯示。 */
-  const CB_STEP = { content: 1, price: 2, name: 3, perks: 4, media: 5, desc: 6 };
+  const CB_STEP = { content: 1, price: 2, name: 3, qty: 4, media: 5, desc: 6, listing: 7, rules: 8 };   /* 4 原為 perks（D402 移除），改給數量卡 */
   const stageBody = document.querySelector('.wizard__body');
   const stageHost = document.querySelector('[data-cb-stage]');
   const stageSheet = document.querySelector('.wizard__sheet');
@@ -1965,13 +2085,12 @@
     return (window.ztorEvents && window.ztorEvents.DEFAULT_CURRENCY) || 'TWD';
   }
 
-  /* 可翻譯欄位：名稱（使用者沒填＝自動建議名，與存檔的 bundleName() 同一個值）、說明（有填才收）、權益每行一欄。
+  /* 可翻譯欄位：名稱（使用者沒填＝自動建議名，與存檔的 bundleName() 同一個值）、說明（有填才收）。
+     額外權益依 D402（2026-10-12）從組合包移除，不再列入。
      成員名稱是各自商品／活動的內容，不在這裡翻。el 只要有 .value（publish-stage 的 syncData 只讀 f.el.value）。 */
   function stageFields() {
-    const perkLabel = T('cpp.bd.perks', 'Perks');
     const out = [{ key: 'name', el: { get value() { return bundleName(); } }, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' }];
     if (descEl && descEl.value.trim()) out.push({ key: 'desc', el: descEl, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' });
-    perkLines().forEach((l, i) => out.push({ key: 'perk-' + i, el: { value: l }, kind: 'input', group: perkLabel, labelFallback: perkLabel + ' ' + (i + 1) }));
     return out;
   }
   /* 價格：組合售價一列（＝表單「售價」：原價合計最低組合 × (1 − 組合折扣 %)）。
@@ -2049,8 +2168,7 @@
       members,
       price: { priceObj: prices[0].priceObj, priceKey: prices[0].key, wasObj: { base, amount: baseTotal(), override: {} },
                from: priceRange(), pct: discInfo().pct },
-      stock: sellableSets(),
-      perks: perkLines().map((l, i) => ({ key: 'perk-' + i }))
+      stock: sellableSets()
     };
   }
   /* 發布前檢核＝表單擋關 gateWhy() 的同一組條件（只換成「項目＋是否通過」的形狀，同建立商品 stageChecks），
@@ -2061,16 +2179,16 @@
     push('members', 'cb.qc.members', 'At least 1 item or ticket', hasContent(), CB_STEP.content);
     push('name', 'cb.qc.name', 'Name', !!bundleName(), CB_STEP.name);
     if (state.discountOn) push('disc', 'cb.qc.disc', 'Discount between 0–100%', discInfo().ok, CB_STEP.price);
-    if (bundleDraft.lockSets || (setsInput && setsInput.value.trim())) push('lock', 'cb.qc.lock', 'Locked sets within the ceiling', !(lockOver() || lockBad), CB_STEP.price);
-    if (limitedEdition()) push('cap', 'cb.qc.cap', 'Cap filled in, within supply', !!capN() && !capOver(), CB_STEP.price);
+    if (bundleDraft.lockSets || (setsInput && setsInput.value.trim())) push('lock', 'cb.qc.lock', 'Locked sets within the ceiling', !(lockOver() || lockBad), CB_STEP.qty);
+    if (limitedEdition()) push('cap', 'cb.qc.cap', 'Cap filled in, within supply', !!capN() && !capOver(), CB_STEP.qty);
     if (saleOn()) {
       const sp = salePctInfo(), s = saleStart ? saleStart.value : '', e = saleEnd ? saleEnd.value : '';
       push('sale', 'cb.qc.sale', 'Limited-time discount complete', sp.ok && s && e && e > s, CB_STEP.price);
     }
-    if (!ticketMember()) push('listing', 'cb.qc.listing', 'Listing & sale times', saleWindowOk() && !(listingMode === 'schedule' && listingTime && !listingTime.value), CB_STEP.name);
-    else push('listing', 'cb.qc.listing', 'Listing & sale times', !tbErrCount(), CB_STEP.name);   /* D342：跟隨／另設的時間與購買條件 */
+    if (!ticketMember()) push('listing', 'cb.qc.listing', 'Listing & sale times', saleWindowOk() && !(listingMode === 'schedule' && listingTime && !listingTime.value), CB_STEP.listing);
+    else push('listing', 'cb.qc.listing', 'Listing & sale times', !tbErrCount(), CB_STEP.listing);   /* D342：跟隨／另設的時間與購買條件 */
     /* D398：限購（跟隨時不足 1 組、覆寫超過門票上限）與純商品的購買條件期間（超出組合包的上架區間）——有錯才列、擋下一步 */
-    if (window.cbRulesErr && window.cbRulesErr()) push('rules', 'pl.qc.rules', 'Purchase rules & limits', false, CB_STEP.content);
+    if (window.cbRulesErr && window.cbRulesErr()) push('rules', 'pl.qc.rules', 'Purchase rules & limits', false, CB_STEP.rules);
     return out;
   }
   /* 預覽區塊的「編輯」入口：hover 到哪一塊，點了就回表單對應的分卡（先比對的先贏，內層放前面） */
@@ -2080,23 +2198,26 @@
       { sel: '.pdp-buy__title', step: CB_STEP.name },
       { sel: '[data-fbp-meta]', step: CB_STEP.content },
       { sel: '[data-fbp-price]', step: CB_STEP.price },
-      { sel: '[data-fbp-stock]', step: CB_STEP.price },
+      { sel: '[data-fbp-stock]', step: CB_STEP.qty },
       { sel: '[data-fbp-picker]', step: CB_STEP.content },
       { sel: '[data-fbp-tiers]', step: CB_STEP.content },
       { sel: '[data-fbp-members]', step: CB_STEP.content },
-      { sel: '[data-fbp-perks]', step: CB_STEP.perks },
       { sel: '[data-fbp-desc]', step: CB_STEP.desc }
     ];
   }
-  /* 區段代號 → 表單上要捲到的節點（＋要聚焦的欄位）；三張分卡就是左側「本頁大綱」的三段 */
+  /* 區段代號 → 表單上要捲到的節點（＋要聚焦的欄位）；8 張分卡就是左側「本頁大綱」的 8 節（依三大分類分組）。
+     2026-10-12 改版（UI-CHANGES 一百八十八）：名稱→組合資訊、素材→展示、成員→組合物、折扣與限時折扣→價格、
+     鎖定與上限→數量、購買條件與限購→購買條件與限購、上架→上架與開賣。 */
   function cbSectionOf(step) {
     const q = s => document.querySelector(s);
     switch (step) {
       case CB_STEP.content: return { target: q('[data-st-section="content"]') };
       case CB_STEP.price: return { target: q('[data-st-section="price"]') };
-      case CB_STEP.name: return { target: q('[data-st-section="name"]'), focus: nameEl };
-      case CB_STEP.perks: return { target: q('[data-cb-perks-group]'), focus: perksEl };
-      case CB_STEP.media: { const t = q('[data-cb-asset="hero"]'); return { target: t ? (t.closest('.field') || t) : null }; }
+      case CB_STEP.qty: return { target: q('[data-st-section="qty"]') };
+      case CB_STEP.name: return { target: q('[data-st-section="info"]'), focus: nameEl };
+      case CB_STEP.listing: return { target: q('[data-cb-listing-follow]:not([hidden])') || q('[data-cb-listing-controls]') };
+      case CB_STEP.rules: return { target: q('[data-cb-rules]') };
+      case CB_STEP.media: return { target: q('[data-st-section="media"]') };
       case CB_STEP.desc: return { target: descEl ? (descEl.closest('.field') || descEl) : null, focus: descEl };
     }
     return { target: null };
@@ -2195,7 +2316,7 @@
   /* ── 本頁大綱（左側空白欄的區段導覽，2026-10-12，UI-CHANGES 一百七十七；元件 partials/section-outline.js，比照 create-product）──
      「必填」「已完成」不另訂規則：直接讀「預覽與發布」的發布前檢核 stageChecks()（＝表單擋關 gateWhy() 同一組條件），
      每個檢核項用 cbSectionOf(step) 對到所在分卡（同檢核項點了跳回表單的對照）；分卡裡有檢核項＝必填、全過＝已完成、
-     沒有檢核項＝選填（例：定價段只在開折扣／鎖定套數／限量／限時折扣時才有檢核項）。三張分卡＝左側「本頁大綱」的三段；
+     沒有檢核項＝選填（例：價格卡只在開折扣／限時折扣時才有檢核項）。8 張分卡＝左側「本頁大綱」的 8 節，依三大分類分組；
      預覽欄（aside）不在 .preview-split__form 內、天然不列；全頁「預覽與發布」時表單欄收起、導覽隨之消失。 */
   var cbOutline = null;
   function cbOutlineStatus(vis) {
@@ -2216,6 +2337,7 @@
       observe: document.querySelector('.wizard__sheet') || document.body,
       gutter: true,
       sections: () => Array.from(document.querySelectorAll('.preview-split__form > .form-section')),
+      group: el => { const g = el.getAttribute('data-outline-group'); return g ? T('cb.sec.' + g, g) : ''; },   /* 三大分類＝大綱群組標題（與分卡上方的 .form-cat 同一組字） */
       status: cbOutlineStatus,
       labels: () => ({
         title: T('cp.outline.title', 'On this page'),
@@ -2235,7 +2357,9 @@
 
   /* ── D397 決定一（2026-10-12，5.1.5.4 §2 入口 3、§4 F2「從活動詳情進入時的預帶」；UI-CHANGES 一百七十五）──────
      活動詳情票務商品的「建立組合包」帶 ?ev=<id>&from=event-detail 進來：票券成員預選那場活動、那場全部門票都勾、
-     每組 1 張（同建立活動第 5 步的活動脈絡預帶）；仍可「更換活動」改選別場、照常加商品成員。
+     每組 1 張（同建立活動第 5 步的活動脈絡預帶）；照常加商品成員。
+     D401 決定三（2026-10-12，5.1.5.4 v2.47）：帶入的活動鎖定、不能改選別場——「換一場活動」與「移除票券」收起（tixLocked），
+     票種表下方一句說明。墓碑：D397 原本「仍可更換活動改選別場」。
      返回箭頭／底部取消與建立完成，都回那場活動詳情的票務分頁（#tiers）——取消走 wizard-chrome 的離開確認，
      .wizard[data-exit-href] 讓它回指定頁而不是 history.back()。草稿、已結束、已取消的活動不預帶（照一般流程從頭挑）。 */
   if (FROM_EV) {
@@ -2246,6 +2370,11 @@
       const pre = EV && EV.get(FROM_EV.id);
       if (!pre || evBlocked(pre) || pre.status === 'draft') return;
       tix.event = pre; tix.tierIds = (pre.tiers || []).map(t => t.id); tix.qty = 1; FAN.tier = null;
+      tixLocked = true;
+      if (tierBack) tierBack.hidden = true;
+      if (tixRemove) tixRemove.hidden = true;
+      const lockNote = document.querySelector('[data-cb-ev-locked]');
+      if (lockNote) lockNote.hidden = false;
       if (tierQtyInp) tierQtyInp.value = '1';
       showTixStage('tiers');
       renderTierTable();

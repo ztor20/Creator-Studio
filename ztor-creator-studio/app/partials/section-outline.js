@@ -13,6 +13,8 @@
        host:     el,                     // 導覽掛在哪（會加 .section-outline-host；--gutter 變體相對它定位）
        sections: () => [el, el, ...],    // 候選節（含目前被藏起來的）；元件自己濾掉不可見的
        title:    el => '節標題',          // 選配；預設取 .form-section__title 的文字
+       group:    el => '群組標題',        // 選配（2026-10-12）：節所屬的分類；相鄰兩節群組不同時，清單在中間插一列群組標題
+                                          //   （不是按鈕、不計入必填 N／M）。預設讀節的 data-outline-group；回空字串＝不分組
        status:   els => ['todo'|'done'|'opt', ...],   // 必填判斷函式：吃目前可見的節陣列，回同長度的狀態
        labels:   () => ({ title, required: 'Required {n}/{m}', todo, done, opt }),  // 文案（頁面走 i18n）
        offset:   () => px,               // 選配：頁首遮住的高度，scroll-spy 與跳節都扣掉
@@ -54,6 +56,7 @@
     if (!host) return null;
     var getSections = opts.sections || function () { return []; };
     var getTitle = opts.title || defTitle;
+    var getGroup = opts.group || function (el) { return el.getAttribute('data-outline-group') || ''; };
     var getStatus = opts.status || function (els) { return els.map(function () { return 'opt'; }); };
     var getLabels = opts.labels || function () { return {}; };
     var getOffset = opts.offset || function () { return 0; };
@@ -101,9 +104,11 @@
       });
     }
 
-    function build(vis, titles) {
+    function build(vis, titles, groups) {
       list.textContent = '';
       items = vis.map(function (sec, i) {
+        /* 群組標題列：進到新群組的第一節前插一列（純標示，不進 items、不可點） */
+        if (groups[i] && groups[i] !== groups[i - 1]) list.appendChild(el('div', 'section-outline__group', groups[i]));
         var btn = el('button', 'section-outline__item');
         btn.type = 'button';
         btn.dataset.idx = String(i);
@@ -127,15 +132,16 @@
       raf = 0;
       var vis = getSections().filter(isShown);
       var titles = vis.map(function (s) { return getTitle(s); });
+      var groups = vis.map(function (s) { return getGroup(s) || ''; });
       var l = L();
       head.textContent = l.title;
       root.setAttribute('aria-label', l.title);
 
-      var nextSig = titles.join('\u0001');
+      var nextSig = titles.join('\u0001') + '\u0002' + groups.join('\u0001');
       var rebuilt = false;
       if (nextSig !== sig || vis.length !== items.length || vis.some(function (s, i) { return items[i].sec !== s; })) {
         sig = nextSig;
-        build(vis, titles);
+        build(vis, titles, groups);
         rebuilt = true;
       }
       root.hidden = items.length === 0;

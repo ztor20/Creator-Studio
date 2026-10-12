@@ -111,6 +111,8 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 **2026-10-12 D397 原型同步**（不新增功能編號、不掛新標記，🔵 release2.4）：`event-detail.html` 總覽右欄新增 `#ed-bky-scancard`（bookyay 現場掃碼卡，已排程／售票中，屬 S73／S56 延伸，同 D394）；票務商品的「建立組合包」（空狀態＋有組合包時的新增卡）帶 `?ev=&from=event-detail` 進 `create-bundle.html` 預帶票券成員（屬 S72 活動詳情與建立組合包的票券成員）；`scanner.html`（O29，🟢 release2.3 頁面）新增活動票券提前入場的結果呈現與兩顆示範鈕，屬活動提前入場設定（S72 活動頁面本體，release2.4）的掃描端，release2.3 凍結版不搬。
 
+**2026-10-12 D401 原型同步**（不新增功能編號、不掛新標記，🔵 release2.4）：`#ed-bky-scancard` 撤除，改把原本的掃碼器卡 `#ed-scanner` 在已排程／售票中搬到總覽右欄（同 S73／S56 延伸）並加「前往領取場次」；`create-bundle.html` 從活動詳情進入鎖定活動（S72）；`pickup.html`（🟢 release2.3 頁面）新增 `?ev=` 篩選，只由活動詳情的「前往領取場次」帶入，release2.3 凍結版不搬（是否同步待使用者決定）。
+
 **2026-10-12 D394 bookyay 活動的現場報到台**（不新增功能編號、不掛新標記，同 D385 的做法屬 S73／S56 延伸，🔵 release2.4）：`event-detail.html` `#ed-scanner` 對 bookyay 活動收起 ztor 掃碼器三格（`[data-ztor-scan]`），改顯示 `#ed-bky-scan`（bookyay 掃描器連結＋複製，值＝`ev.bkyScanUrl`）與 `#ed-scanner-bky`（前往取貨管理）；release2.4 與最終版都看得到。
 
 **2026-10-09 D385 bookyay 帶入活動在活動詳情的補齊**（不新增功能編號、不掛新標記，屬 S56 bookyay 帶入欄位規則與 S73 的延伸，🔵 release2.4）：`event-detail.html` 單張門票彈窗的唯讀購買條件區 `#ed-tm-rules-sec`、票務分頁的唯讀預設購票規則卡 `#ed-evrules`、bookyay 門票刪除停用＋原因、提前入場鎖定；`create-event.html` bookyay 票入場區唯讀、bookyay 草稿續填重跑帶入；示範活動 `hsinchu-vinyl-sf`（順豐寄送、單一時段）。release2.4 與最終版都看得到（實測）。

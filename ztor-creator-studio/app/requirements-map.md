@@ -31,6 +31,14 @@
 
 > **2026-10-12 建立商品「內容」頁新增「本頁大綱」區段導覽（UI-CHANGES 一百七十三、ASSUMPTIONS UIA-243）**：呈現層新增，不改規格。對應 5.1.5.2（Create Product）內容頁：左側空白欄放每一節的導覽，「必填」「已完成」沿用 `create-product.html` 既有的就緒檢查（§4.4 Ready to sell?，`buildChecks()`），不另訂規則；新元件 `ds-components/section-outline.css`＋`partials/section-outline.js`（design-system §4.233）；視窗 <1400px 隱藏。
 
+> **2026-10-12 D401 原型同步（UI-CHANGES 一百八十七）**：5.1.6.3 §2.4／§2.5 bookyay 掃碼兩部分 → `event-detail.html` 原掃碼器卡在已排程／售票中提前顯示＋「前往領取場次」（三種去處）；5.1.5.4 §4 F2 從活動詳情進入鎖定活動 → `create-bundle.html`；5.1.5.15 多場次去處 → `pickup.html?ev=`。
+
+> **2026-10-12 跨日欄位整組改排（UI-CHANGES 一百八十六，呈現層）**：5.1.6.1 F7／5.1.6.2 F7 跨日 → `create-event.html` 步驟 3 與 `event-detail.html` 設定 › 場次，跨日開時欄位改「活動開始日期｜開始時間」「活動結束日期｜結束時間」兩列；欄位、必填與驗證不變。
+
+> **2026-10-12 D402 原型同步：組合包改版（UI-CHANGES 一百八十八、ASSUMPTIONS UIA-249）**：5.1.5.4 v2.48 §4 F2 額外權益刪除 → `create-bundle.html` 拿掉權益欄、預覽卡與「預覽與發布」權益；F3「後台的價格區間小字」→ 組合物表原價欄、價格階梯各列（`.price-ladder__range`）；§5 佈局三大分類 8 張分卡 → `create-bundle.html` 8 張 `data-st-section`＋本頁大綱分組；5.1.5.9 v1.60、5.1.6.1 v2.67、5.1.6.3 v59 的同步見同一筆 UI-CHANGES 的「同步」段。
+
+> **2026-10-12 建立組合三段重排（UI-CHANGES 一百八十三，呈現層）**：5.1.5.4 §5 填寫順序 → `create-bundle.html` 三張分卡改「組合包介紹（F1、F8、F10）→ 選擇組合物（F2 成員、額外權益）→ 販售設定（F3、F4、F7、F2 購買條件與限購、F6）」；欄位與規則不變。
+
 > **2026-10-12 D398、D400 原型同步：限購三種上限與組合包的購買條件（UI-CHANGES 一百八十、ASSUMPTIONS UIA-247；S94）**：5.1.5.2 F9／§4.6 → `create-product.html` 限購開關底下三欄（`[data-cp-limit-host]`）、就緒檢查「至少一種限購上限」、本頁大綱「購買限制」節跟著變；5.1.5.1 §2.12 → `product-detail.html` 三欄（`[data-pd-limit-host]`，檢視態 disabled 輸入框、沒設寫「不限」）、儲存擋「至少一種」、設定總覽一行摘要；主規格 §7.14「組合包的限購」、5.1.5.4 §4 F2、5.1.5.9 §2.3 → `create-bundle.html` `[data-cb-rules]` 與 `bundle-detail.html` `[data-bd-rules-sec]`（組合內容分頁）：所有組合包都有限購（跟隨成員＝取交集、與成員共用額度；已覆寫＝獨立計算；改回跟隨成員；含門票時覆寫不得超過門票上限、跟隨時不足 1 組擋存），含門票的購買條件與限購整合成一節；主規格 §7.14「組合包的購買條件」（D400）→ 純商品組合包的購買條件（限時購買／限粉絲分級購買，預設不限，期間須在組合包上架區間內）；5.1.6.1 F22 → `create-event.html`、`event-detail.html` 限購條件卡三句輔助說明。共用 `js/purchase-limits.js`、`ds-components/limit-set.css`（§4.234）。建立活動第 6 步組合包編輯器未改接（UIA-247 第 9 項）。
 
 > **2026-10-12 D397 原型同步（UI-CHANGES 一百七十五、ASSUMPTIONS UIA-244）**：5.1.6.3 §2.4 bookyay 現場掃碼卡 → `event-detail.html` `#ed-bky-scancard`；§2.6.1 建立入口自動帶入這場活動 → `event-detail.html` `[data-ed-bundle-create]`＋`create-bundle.html` `?ev=&from=event-detail`（5.1.5.4 §2 入口 3、§4 F2 預帶、§9 回程）；§2.6 bookyay 沒有活動限購 → 既有行為（一百六十九）已符合；5.1.5.14 F1.2 活動票券的提前入場 → `scanner.html` 結果卡＋示範鈕；5.1.6.1 F7／F22「誰看得到」→ 粉絲端查核無提前入場資訊。
