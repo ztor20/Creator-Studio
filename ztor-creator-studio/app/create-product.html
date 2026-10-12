@@ -32,6 +32,7 @@
 <link rel="stylesheet" href="ds-components/combobox.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/section-outline.css?v=r2.2"><!-- 2026-10-12：左側空白欄的「本頁大綱」區段導覽（partials/section-outline.js） -->
 <link rel="stylesheet" href="ds-components/nest.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
@@ -82,6 +83,8 @@
      彈窗空間有限——隱藏常駐側邊預覽、表單回單欄。 */
   body.cp-embed .preview-col { display: none; }
   body.cp-embed .preview-split { grid-template-columns: 1fr; }
+  /* 本頁大綱放在左側空白欄；彈窗裡沒有這塊空白，整個藏掉 */
+  body.cp-embed .section-outline { display: none; }
 
   /* ✝ 墓碑 2026-09-23：發布前預覽確認層（D223）的買家前台 mock `.cp-shopmock*`（整組 30 條規則）撤除——
      D310 商品側：按下「開始販售」改進全頁畫面（js/publish-stage.js），主區由 js/fan-product-page.js
@@ -1072,6 +1075,7 @@
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
+<script src="partials/section-outline.js?v=r2.2"></script>
 <script>
 /* 建立商品流程互動 · spec 5.1.5.2 §3-4 + §4.5 + §5.2.4/§5.2.5
    類型切換、多規格 Variations、庫存版本 Edition、取貨方式、每人限購、
@@ -2046,7 +2050,44 @@
 
   /* 全頁畫面開著時，側欄檢核跟著表單狀態重算（只重畫側欄、不重畫預覽；i18n:applied 也走這裡，
      而 publish-stage 每次畫預覽都會 applyI18n——所以這裡只能 syncChecks，不能 refresh，否則會互相觸發） */
-  function refresh() { renderReadiness(); renderStepper(); renderPreview(); if (stage) stage.syncChecks(); }
+  function refresh() { renderReadiness(); renderStepper(); renderPreview(); if (stage) stage.syncChecks(); if (cpOutline) cpOutline.refresh(); }
+
+  /* ---- 本頁大綱（左側空白欄的區段導覽，2026-10-12；元件 partials/section-outline.js）----
+     「必填」與「已完成」不另訂規則：直接讀上面的就緒檢查（buildChecks）——每個就緒項用 cpSectionOf(step)
+     對到它所在的那一節（同「預覽與發布」檢核項點了跳回表單的對照），一節裡有就緒項＝必填節，
+     項目全過＝已完成；沒有就緒項的節＝選填（例如庫存只在「限量」時才有就緒項、取貨方式只在「物流配送」時才有）。
+     節標題讀各節 .form-section__title 的現況文字（跟著 i18n）；節的顯隱由元件監看 hidden／class。 */
+  var cpOutline = null;
+  function cpOutlineStatus(vis) {
+    const byGroup = new Map();
+    buildChecks().filter(c => !c.pending).forEach(c => {
+      const t = cpSectionOf(c.step).target;
+      const s = t ? (t.closest('.form-section') || t) : null;
+      if (!s) return;
+      const r = byGroup.get(s) || { ok: true };
+      if (!c.done()) r.ok = false;
+      byGroup.set(s, r);
+    });
+    return vis.map(s => { const r = byGroup.get(s); return !r ? 'opt' : (r.ok ? 'done' : 'todo'); });
+  }
+  if (window.ztorSectionOutline) {
+    cpOutline = window.ztorSectionOutline.mount({
+      host: document.querySelector('.preview-split__form'),
+      observe: document.querySelector('[data-cp-sheet]'),
+      gutter: true,
+      sections: () => Array.from(document.querySelectorAll('.preview-split__form > .form-section')),
+      status: cpOutlineStatus,
+      labels: () => ({
+        title: T('cp.outline.title', 'On this page'),
+        required: T('cp.outline.required', 'Required {n}/{m}'),
+        todo: T('cp.outline.todo', 'Required, not filled'),
+        done: T('cp.outline.done', 'Done'),
+        opt: T('cp.outline.opt', 'Optional')
+      }),
+      /* 頁首是 sticky 的膠囊：跳節與 scroll-spy 都扣掉它的高度＋16（同 exitStage 的 scrollMarginTop） */
+      offset: () => { const top = document.querySelector('.wizard__top'); return (top ? top.getBoundingClientRect().bottom : 0) + 16; }
+    });
+  }
 
   /* ---- 條件顯示：依 type / varMode / edition / delivery 統一切換 ---- */
   function applyVisibility() {

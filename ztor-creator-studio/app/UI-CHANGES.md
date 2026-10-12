@@ -13,6 +13,131 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-12（一百七十二）· 新增探索頁：建立商品「內容」頁的區段導覽六種樣式（D infra／探索頁）
+
+**範圍**：`lab-section-nav.html`（新增）；不改 `create-product.html` 與任何正式頁、不新增元件、不新增 token、不進站台導覽。僅最終版。
+
+**依據**：使用者 2026-10-12「創建商品第一步『內容』頁，頁面左側（左側欄與表單卡片之間的空白欄，約 160–200px 寬）需要新增一個這一頁中每一個 section 的導覽。做一個 demo 給我看看，不同樣式」。
+
+### D · infra／探索頁
+
+- **一頁六個迷你頁面框（固定高約 520px、框內自己捲動，scroll-spy 只看框內）**：同一份節清單排成六種導覽，供使用者直接選編號。
+  - A 文字清單：左欄直排細字，亮起項目加左線，捲動追蹤、點擊平滑捲到該節。
+  - B 圓點刻度軌：約 24px 窄軌，目前節的圓點放大，滑過或聚焦才浮出節名。
+  - C 狀態清單：像 A，每列前多一個狀態圓（必填未填＝橘色空心圈、已完成＝實心打勾、選填＝灰點），頂部「必填 N／M」摘要與進度條。
+  - D 頂部橫向吸附列：頁首下方一條 sticky 橫列 chip，可橫捲，目前節高亮並自動捲到可見位置。
+  - E 圖示 rail：左欄 48px 圖示欄，滑過或聚焦展開成含文字的浮層，不推擠版面。
+  - F 併入預覽欄：不動左欄，預覽卡下方多接一張「本頁大綱」卡（含必填進度），預覽與大綱同欄 sticky。
+- **共用控制列**：「商品類型：實體／數位」「選項：單一／多選項」兩組 segmented，六個框的節清單同步增減；數位商品沒有商品選項，選數位時「多選項」停用。每張卡右上角的小鈕可假切換「未填／已完成／選填」，六個框共用同一組狀態。
+- **節標題與顯示條件照 `create-product.html` 與 `js/i18n.js` 的 `cp.*.title` 原文**：單一選項實體 11 節、多選項實體 11 節（「定價」換成「各選項組合價格與庫存」、折扣設定換成多選項那張）、數位 10 節（多「內容檔案」、少「商品選項」「取貨方式」）。
+- 樣式全部 `lab-` 前綴收在頁內 `<style>`，只用既有 token，無裸 hex／rgb；沿用 `segmented`、`button`、`card`、`page-intro` 既有元件 CSS。
+- 結論待使用者挑選編號；挑定後另輪才做成元件並掛進 `create-product.html`（屆時該頁加 `data-feat` 並登記功能表）。
+
+## 2026-10-12（一百七十一）· 場次的「開放入場」改成「提前入場時間」開關（A spec-derived · D396 ＋ B feedback）
+
+**標籤**：release2.4
+
+**範圍**：`create-event.html`、`event-detail.html`、`js/i18n.js`、`ASSUMPTIONS.md`（UIA-242）
+
+**依據**：使用者 2026-10-12「開放入場時間現在是選填，也要像跨日一樣用開關的。並且名稱要改為"提前入場時間"，小字補充描述"設定工作人員可提前掃描並放行觀眾入場的時間"」（D396；規格 5.1.6.1 v2.63、5.1.6.2 v3.51、5.1.6.3 v55）。
+
+### A · spec-derived
+
+- **建立活動步驟 3 每一場的「開放入場（選填）」改成開關列**：與跨日同一組元件（`.control-group`＋`.control-row`＋`.switch`），標題「提前入場時間」、小字「設定工作人員可提前掃描並放行觀眾入場的時間」。開關打開才露出時間／開演前兩格與「早於提前入場時間入場」的處理；關掉收起並清空時間、分鐘，處理回到「仍可入場」。開關狀態存在 `s.doorsOn`，「套用第一場的設定」一併複製。
+- **bookyay 帶入**：有過早入場值＝開著，開關鎖定（`.switch--locked`）、標題旁掛 From bookyay；沒有值＝關著並鎖定（D365）。
+- 退場：原本的 `.control-group--plain` 線框、「（選填）」字樣，以及「時間有值才露出早到處理」的判斷（`syncDoorsPair` 那段）。
+
+### B · feedback（稱呼一致）
+
+- i18n：`ce.doors` 改為「提前入場時間／Early entry time」，新增 `ce.doors.hint`（「設定工作人員可提前掃描並放行觀眾入場的時間／When staff can start scanning and letting attendees in」）。`ce.doors` 活動詳情與舊版備份頁也在用，那兩頁的標籤會跟著換名。
+- 建立活動頁內字典：「早於開放時間入場」→「早於提前入場時間入場」（`d.early.policy`）；票的提前入場說明句（`d.tier.early.hint.*`）、bookyay 票的唯讀讀數（`d.tier.early.bky`）、場次折疊摘要（`d.sess.sum.doors`，「18:30 開場」→「18:30 提前入場」）同步改稱呼。
+- Review 摘要與粉絲頁預覽本來就沒有顯示這個時間，不用改。票卡上「提前入場（分鐘）」標籤撞名，未改，記 UIA-242 第 4 條待裁決。
+
+### A · spec-derived（D396 規格落地後補）
+
+- **開著就必填**：建立活動的發布前檢核在有場次開著提前入場時間時多一項「已填提前入場時間」（`ce.qc.doors`，沒過不能發布、點了回步驟 3）；時間欄加星號與就地紅字「請填提前入場時間。」（`ce.doors.err.req`），按發布時另擋一次（`ce.publish-blocked-doors`，同跨日）。
+- **場次關著，票的提前入場不適用**：門票卡「提前入場（分鐘）」停用、說明句改「場次沒有開啟提前入場時間，票的提前入場不適用。」、卡面不顯示提前入場那一列（`tierFieldHTML` 新增 `off` 選項：停用但不掛來源標記）。
+
+### A · 活動詳情同步（`event-detail.html`）
+
+- 設定 › 場次的「開放入場（選填）」改成同一種開關列（`data-sess-doors`，掛 `data-view-safe`），小字同建立活動；開關打開才露出兩格與早到處理，關掉清空、處理回到「仍可入場」；檢視模式與 bookyay 活動鎖定（`applyReadonly` 與跨日同一條），bookyay 標題掛來源標記。紀錄多存 `doorsOn`（`sessFromEv` 先補齊，捨棄比對才不誤判）。
+- 開著時必填：時間欄就地紅字，儲存時列進「這些填好才能儲存」清單。
+- 門票彈窗：場次沒有提前入場時間時「提前入場（分鐘）」唯讀、說明句寫不適用。
+- i18n 改稱呼（zh＋en）：`ed.early.policy`「早於提前入場時間入場」、`ed.tm.early.pol`「早於提前入場時間的處理」、`ed.tm.early.bky`／`.bky.none`、`ed.tix.early.hint`／`.nodoors`／`.follow`、`ed.sess.sum.doors`「{t} 提前入場」、`event-detail.live.where.doors`「提前入場時間」。票的「提前入場（分鐘）」標籤照舊（待使用者裁決）。
+
+
+## 2026-10-12（一百七十）· 條款與細則移除「接受主辦者用於直接促銷」（A spec-derived · D395）
+
+**標籤**：release2.4
+
+**範圍**：`create-event.html`、`create-event-legacy.html`、`event-localization.html`、`js/events-store.js`、`js/i18n.js`、`feature-scope-map.md`（S80 改 ⚫ 退場）、`ASSUMPTIONS.md`（TERM-001、UIA-190 第 7 條追記）
+
+**依據**：使用者 2026-10-12「條款與細則/接受主辦者用於直接促銷 需要移除」（D395，規格由另一個 session 同步）。
+
+### A · spec-derived
+
+- **建立活動步驟 2「條款與細則」只剩「條款及細則」一組**：直接促銷同意開關（`data-ce-term="marketing"`）、行銷同意文字欄（`data-ce="terms-marketing-text"`）與外層 `.control-group[data-feat="S80"]` 整組移除；發布預覽翻譯表的「行銷同意」一列、續填 bookyay 草稿保留直接促銷同意那段（keepDraft，D390 第 13 條）一併移除；頁內字典 `d.terms.marketing.*` 刪除。粉絲結帳預覽本來就只帶條款及細則，不受影響。
+- **舊版備份頁 `create-event-legacy.html`** 同一個開關列移除，留墓碑註解。
+- **活動在地化翻譯表**拿掉 D390 補上的「直接促銷同意」一列，只列條款及細則。
+- **假資料**：`events-store.js` 兩筆活動的 `terms.marketing` 與 khh-countdown-draft 草稿示範的直接促銷同意刪除。
+- **i18n**：刪除 `pp.field.marketing`（已無人使用）。`ce.terms.marketing`／`.hint`／`.label`／`.ph` 保留——`event-detail.html` 活動內容的條款與細則還在用，該頁由另一個 session 處理，移除後再刪這四個鍵。
+- **功能表**：S80 由 ⚪ TBD 改 ⚫ 退場，統計同步。
+- **活動詳情同步移除**：`event-detail.html` 活動內容 `#ed-terms` 的直接促銷同意整組（S80、`data-ed-term="marketing"`、`#ed-terms-marketing`）刪除，`TERM_KEYS` 只剩 `tnc`（存檔與變更比對不再帶 marketing）；`js/i18n.js` 的 `ce.terms.marketing*` 四把鍵全站已無引用，一併刪除。
+
+## 2026-10-12（一百六十九）· 票務分頁沒有資料的分節只在編輯時出現、總覽拿掉售票期間、圖表切換鈕修正（B feedback）
+
+**標籤**：release2.4
+
+**範圍**：`event-detail.html`、`js/i18n.js`、`ASSUMPTIONS.md`（UIA-241）、`requirements-map.md`
+
+**依據**：使用者 2026-10-12「活動詳情頁中 票務中沒有的項目，非編輯狀態下就不顯示，開啟編輯在顯示無資料畫面，並引導創建(若條件可以創建)。例如活動沒有組合包，那票務中的組合包預設非編輯狀態下，無需顯示無資料(這場沒有組合包)」；同日「活動詳情售票中的總覽不需要售票期間這一塊」；同日回報售票趨勢切換鈕「文字下似乎有色塊，看起來像壞掉的」。
+
+### B · feedback
+
+- **票務分頁沒有資料的分節，檢視態整節不出現**：組合包（這場沒有組合包）、招待票（這場沒有門票可發）、轉售（Phase 2 說明，永遠沒有資料）三節連同分節橫列的標籤一起收起；按「編輯活動」後才出現，顯示原本的空狀態。做法是渲染函式在沒有資料時掛 `data-view-empty`，`syncNavSections()` 在所在分頁是檢視態時把那一節判成不存在；切換模式（`ed:mode`）時重算。
+- **預設購票規則卡同一規則**：沒有任何條件時（自建活動「目前無設定條件」、bookyay 活動「bookyay 沒有設定」）檢視態整張卡不出現，編輯態才出現；自建活動照舊有「編輯」可以加條件，bookyay 活動沒有（條件由 bookyay 管）。
+- **組合包空狀態加建立入口**：編輯態的空狀態多一顆「到電子商店建立組合包」（`create-bundle.html`，經過離開提醒）。規格空狀態本來就寫「或從電子商店建立」，這裡只是把那句做成連結；不預帶本活動（缺口記 ASSUMPTIONS UIA-241 第 4、6 條）。已結束與已取消整頁唯讀、進不了編輯態，所以不用另外擋。
+- **票種不套用**：活動一定有門票，而且新增門票卡就在這一節，所以票種永遠顯示。全部分節都沒資料時，檢視態只剩票種一節。
+- **總覽售票中拿掉「售票期間」**：已售出／活動收入／售票期間／已撤銷票券那一排的第三格（還剩幾天＋開賣到停售區間）連同計算整段退場，剩三格剛好排滿一列（span-4 × 3），不留空位。這一格只出現在售票中（`#ed-sales data-stage-show="on-sale"`），其他階段沒有同一張卡。i18n 移除 `event-detail.sales.window`／`.left`／`.today`／`.closed`／`.opens`；`.untilstart` 發布設定摘要還在用，保留。
+- **售票趨勢等切換鈕不再像壞掉**（協調 session 代改，這裡記錄）：`segmented__item` 這個 class 從來沒有樣式，售票趨勢的「天／週／月」、現場節奏的級距切換、折線／長條切換因此畫成瀏覽器預設按鈕（字底下一塊色塊）。全部改成元件既有的 `segmented__btn`（含 `--active` 與 JS 選擇器），外觀回到 DS 的分段切換。
+- **「新增條件」下拉被遮住**（使用者回報）：購票規則的新增條件選單坐在彈窗內文（`overflow:auto`）底部時，往下展開被切掉。設計系統 `dropdown-menu.css` 新增 `.dropdown--up` 修飾類；`js/purchase-conds.js` 在選單打開時量最近捲動容器的下方空間，放不下就往上開（建立活動票務設定彈窗、活動詳情規則卡共用）。`design-system.md` 下拉變體同步。
+
+## 2026-10-12（一百六十八）· bookyay 活動的現場報到台改成 bookyay 掃描器連結＋前往取貨管理（A spec-derived · D394）
+
+**標籤**：release2.4
+
+**範圍**：`event-detail.html`、`js/events-store.js`（`bkyScanUrl`）、`js/i18n.js`、`ds-components/pickup.css`（`.scanner-access__url[hidden]`）、`ASSUMPTIONS.md`（UIA-241）、`feature-scope-map.md`、`requirements-map.md`
+
+**依據**：D394（2026-10-12，規格由另一個 session 同步）：bookyay 帶入的活動，總覽「現場報到台」要給 bookyay 掃描器連結（可複製），組合包商品照 ztor 取貨場次領取。
+
+### A · spec-derived
+
+- **ztor 掃碼器三格收起**：連結／掃碼器密碼／開啟掃碼器與底下說明（`[data-ztor-scan]`）對 bookyay 活動不顯示（原本是停用狀態留在畫面上）。
+- **新增「bookyay 掃描器連結」**：值＝`ev.bkyScanUrl`，同 ztor 連結那一格的長相（`.scanner-access__url`＋複製 icon），複製後提示「已複製連結」；沒有連結時不畫空框，改寫一句「bookyay 還沒提供這場的掃描器連結，門口仍可用 bookyay Organizer App 掃票」。示範：taipei-nye 有連結、hsinchu-vinyl-sf 沒有。網址是示意（ASSUMPTIONS UIA-241 第 5 條）。
+- **新增「組合包取貨」**：「前往取貨管理」按鈕（`pickup.html`）＋一句「組合包裡的商品用 ztor 的取貨場次領取，不經過 bookyay 掃描器」。取代原本那行「門票入場由 bookyay Organizer App 掃票…前往取貨管理」的說明連結。
+- **卡頭徽章**：bookyay 活動由「已停用」改「由 bookyay 掃票」（呈現假設，ASSUMPTIONS UIA-241 第 2 條）；`event-detail.live.scanner.off` 不再使用、移除。
+- **元件小修**：`.scanner-access__url` 的 `display:flex` 會蓋掉 `[hidden]`，補一條 `[hidden]{display:none}`（沒有連結時整列收起要靠它）。
+- **出現時機不變**：整張報到台照舊只在「進行中」、非線上類型時出現；taipei-nye 目前是已排程，畫面上看不到這張卡（ASSUMPTIONS UIA-241 第 7 條）。
+- **版本**：不掛新的 `data-feat`，同 D385 屬 bookyay 帶入活動的活動詳情（S73／S56 延伸），release2.4 與最終版都看得到。
+
+## 2026-10-12（一百六十七）· 活動詳情設定分頁：欄位一律是輸入框，檢視時顯示 disabled（B feedback）
+
+**標籤**：release2.4
+
+**範圍**：`event-detail.html`、`js/view-mode.js`、`shared.css`（新區塊「檢視態變體：disabled 輸入框」、檢視態去框規則加排除）、`ds-components/rich-body.css`（檢視態攤平規則加排除）、`ds-components/_tokens.css`（新 token `--view-field-ink`）、`design-system.html`／`design-system.md`（Field system 新增 demo 與條目、token 文件）、`STYLE-DECISIONS.md`（Q119 補充、Q128 待裁決）、`ASSUMPTIONS.md`（UIA-241）、`requirements-map.md`
+
+**依據**：使用者 2026-10-12「活動詳情的設定頁中欄位的UI形式有很多種，是否可以統一使用有輸入匡的，並且在非編輯的條件下，輸入匡依舊存在，但顯示為disable狀態即可」。
+
+### B · feedback
+
+- **檢視態不再換成純文字**：設定分頁（活動內容、場次、地點、發布設定、連結與 QR、在地化）的輸入框、下拉、多行文字、日期時間、金額欄、描述編輯器在檢視態都留在原位、幾何跟編輯態一樣，只是畫成 disabled：透明底、保留 1px 邊界、不出 focus 環、游標回預設。空值就是空的框＋placeholder，不再寫「—」。單選卡、開關原本就保留元件，不變。
+- **做成 opt-in，只套這個分頁**：面板掛 `data-vm-style="disabled"`；`js/view-mode.js` 看到它就不插讀數，`shared.css` 與 `rich-body.css` 原本「去框留字」的檢視態規則一律以 `:not([data-vm-style="disabled"])` 排除。其餘兩段式面板（商品細節、組合細節、拍賣細節、項目細節、商店設定、活動詳情總覽）仍照 STYLE-DECISIONS Q119 純文字讀數；全站要不要跟進記 Q128 待裁決。
+- **墨色要讀得清楚**：檢視態的值用新 token `--view-field-ink`（＝`--foreground-muted`：深色約白 70%、亮色 `#4D4D4D`），不用全站 disabled 的 `--locked-field-ink`（實測 2.2～2.7:1，只給「這一格不是你管的」）。
+- **編輯態仍鎖住的欄位看得出來**：bookyay 帶入的場地、場次、國家語言、條款，以及發布設定依階段鎖住的欄位，頁面是用 `readonly` 鎖的，原本長得跟可編輯欄位一樣；這個分頁補上跟 `:disabled` 同一個樣子（透明底＋`--locked-field-ink`＋不可點游標），來源標記照舊。複製用的連結框不套。
+- **唯讀事實也改成輸入框**：「活動內容」卡原本的唯讀列（類型、系列、票種、組合包）改成永遠 disabled 的輸入框（類型的鎖定說明照舊只在編輯態出現）；票種與組合包摘要保留在這裡（回答「這場賣什麼」），管理照舊走「管理門票與組合包」。在地化卡的翻譯語系／基準幣別／覆寫格數、「活動連結與 QR」的網址同樣改成 disabled 輸入框。
+- **演出陣容的列跟著模式鎖**：輸入框不再被讀數蓋住後，重畫的演出陣容列會在檢視態維持可打字，`lineupRow()` 補上依目前模式設 `readonly`。
+- **描述編輯器**：檢視態保留區塊卡與文字框（disabled 樣子、不可點），工具列、把手、刪除與「新增描述」照舊收起。
+
 ## 2026-10-10（一百六十六）· 建立取貨場次彈窗移除組合包選項（A spec-derived · D393）
 
 **標籤**：release2.3、release2.4

@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>建立商品 · 區段導覽樣式 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* ============================================================
+     lab-section-nav — 建立商品「內容」頁：區段導覽的設計探索頁（2026-10-12）
+
+     這是探索頁，不是產品頁。起因是使用者 2026-10-12 的需求：「創建商品第一步『內容』頁，
+     頁面左側（左側欄與表單卡片之間的空白欄，約 160–200px 寬）需要新增一個這一頁中每一個
+     section 的導覽。做一個 demo 給我看看，不同樣式」。這頁把同一份節清單排成六種擺法，
+     供設計師當場挑編號。挑定之後才會另輪做成元件、掛進 create-product.html。
+
+     ── 邊界（刻意的自我約束）────────────────────────────────
+     本頁的 <style> 不覆寫、不重新定義任何既有共用 class 或 token：
+     所有選擇器一律 `lab-` 前綴，所有值一律走既有 token。
+     節標題與顯示條件照 create-product.html 與 js/i18n.js 的 cp.*.title 原文，不自己編。
+     迷你頁面框是本頁自有的縮小版骨架（.lab-frame），不是站上的 wizard／form-section。
+     ============================================================ */
+
+  .lab [hidden] { display: none !important; }
+
+  /* ── 頁面骨架 ───────────────────────────────────────────── */
+  .lab-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-16); margin: var(--sp-24) 0 var(--sp-8); }
+  .lab-toolbar__label { font-size: var(--fs-12); letter-spacing: 0.09em; color: var(--column-head-ink); }
+  .lab-toolbar__count { margin-left: auto; font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-toolbar .segmented__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .lab-note { margin: 0 0 var(--sp-24); font-size: var(--fs-13); color: var(--muted-foreground); line-height: var(--lh-relaxed); }
+  .lab-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-40) var(--sp-24); }
+  @media (min-width: 1100px) { .lab-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .lab-cell { display: flex; flex-direction: column; gap: var(--sp-12); min-width: 0; }
+  .lab-cell__head { display: flex; align-items: center; gap: var(--sp-10); }
+  .lab-cell__id { display: inline-grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--foreground); color: var(--background); font-size: var(--fs-13); font-weight: var(--fw-medium); }
+  .lab-cell__name { margin: 0; font-size: var(--fs-16); font-weight: var(--fw-medium); }
+  .lab-cell__where { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-cap { margin: 0; font-size: var(--fs-13); line-height: var(--lh-relaxed); color: var(--foreground-muted); }
+  .lab-cap b { font-weight: var(--fw-medium); color: var(--foreground); }
+  .lab-foot { margin-top: var(--sp-48); }
+  .lab-foot ol { margin: 0; padding-left: var(--sp-20); display: flex; flex-direction: column; gap: var(--sp-8); font-size: var(--fs-14); line-height: var(--lh-relaxed); }
+
+  /* ── 迷你頁面框：固定高度、自己內部捲動，scroll-spy 在框內運作 ── */
+  .lab-frame {
+    position: relative;
+    height: 520px;
+    overflow: auto;
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    scrollbar-width: thin;
+    font-size: var(--fs-12);
+  }
+  /* 縮小版 sticky 頁首：返回、標題、兩步驟、儲存為草稿 */
+  .lab-hd { position: sticky; top: 0; z-index: 5; height: 40px; box-sizing: border-box; display: flex; align-items: center; gap: var(--sp-10); padding: 0 var(--sp-12); background: var(--card); border-bottom: 1px solid var(--border); font-size: var(--fs-12); white-space: nowrap; }
+  .lab-hd__back { display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px; border: 1px solid var(--border); border-radius: 50%; }
+  .lab-hd__back .ztor-icon { width: 12px; height: 12px; }
+  .lab-hd__title { font-weight: var(--fw-medium); }
+  .lab-hd__title small { font-size: inherit; font-weight: var(--fw-regular); color: var(--muted-foreground); }
+  .lab-hd__steps { margin-left: auto; display: flex; align-items: center; gap: var(--sp-6); color: var(--muted-foreground); }
+  .lab-hd__steps b { font-weight: var(--fw-medium); color: var(--foreground); }
+  .lab-hd__draft { padding: 3px 8px; border: 1px solid var(--border); border-radius: var(--radius-pill); color: var(--foreground-muted); }
+
+  .lab-body { display: grid; align-items: start; gap: var(--sp-12); padding: var(--sp-12) var(--sp-12) 300px; }
+  .lab-body--A { grid-template-columns: 104px minmax(0, 1fr) 112px; }
+  .lab-body--B { grid-template-columns: 24px minmax(0, 1fr) 112px; }
+  .lab-body--C { grid-template-columns: 124px minmax(0, 1fr) 112px; }
+  .lab-body--D { grid-template-columns: minmax(0, 1fr) 112px; }
+  .lab-body--E { grid-template-columns: 40px minmax(0, 1fr) 112px; }
+  .lab-body--F { grid-template-columns: minmax(0, 1fr) 150px; }
+  /* 導覽欄與預覽欄要拉滿整列高度（align-self:stretch），裡面的 sticky 才有空間可黏 */
+  .lab-navcol, .lab-prevcol { align-self: stretch; }
+  .lab-navin { position: sticky; top: 52px; }
+  .lab-navcol { z-index: 2; min-width: 0; }
+  .lab-navcol--E { z-index: 3; }
+  .lab-stick { position: sticky; top: 52px; display: flex; flex-direction: column; gap: var(--sp-8); }
+  .lab-body--D .lab-stick { top: 88px; }
+
+  /* 表單欄：一節一張卡 */
+  .lab-form { display: flex; flex-direction: column; gap: var(--sp-10); min-width: 0; }
+  .lab-card { display: flex; flex-direction: column; gap: var(--sp-10); padding: var(--sp-12); background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  .lab-card__head { display: flex; align-items: center; gap: var(--sp-8); }
+  .lab-card__title { flex: 1; min-width: 0; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-13); font-weight: var(--fw-medium); }
+  .lab-card__st { display: inline-flex; align-items: center; gap: var(--sp-6); flex: none; appearance: none; padding: 2px 8px 2px 6px; border: 1px solid var(--border); border-radius: var(--radius-pill); background: transparent; color: var(--foreground-muted); font: inherit; font-size: var(--fs-11); cursor: pointer; }
+  .lab-card__st:hover { background: var(--accent); }
+  .lab-card__st:focus-visible, .lab-ni:focus-visible, .lab-dot:focus-visible, .lab-chip:focus-visible, .lab-ri:focus-visible, .lab-ol__item:focus-visible { outline: 2px solid var(--ring); outline-offset: 1px; }
+
+  /* 狀態標記：必填未填＝橘色空心圈、已完成＝實心打勾、選填＝灰點（四處共用，由 data-st 切換） */
+  .lab-mk { display: inline-grid; place-items: center; flex: none; box-sizing: border-box; width: 12px; height: 12px; border-radius: 50%; }
+  .lab-mk .ztor-icon { display: none; width: 8px; height: 8px; stroke-width: 3; }
+  .lab-mk[data-st="todo"] { border: 1.5px solid var(--primary); }
+  .lab-mk[data-st="done"] { background: var(--status-success); color: var(--background); }
+  .lab-mk[data-st="done"] .ztor-icon { display: block; }
+  .lab-mk[data-st="opt"]::after { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--faint-ink); }
+
+  /* 骨架：灰線、欄位框、磚塊 */
+  .lab-sk { display: block; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--foreground) 9%, transparent); }
+  .lab-fld { display: flex; flex-direction: column; gap: var(--sp-4); min-width: 0; }
+  .lab-fld__lb { font-size: var(--fs-11); color: var(--muted-foreground); }
+  .lab-fld__lb i { font-style: normal; color: var(--primary); }
+  .lab-box { display: flex; align-items: center; box-sizing: border-box; padding: 0 var(--sp-8); border: 1px solid var(--border); border-radius: 6px; background: var(--input-surface); font-size: var(--fs-11); color: var(--faint-ink); }
+  .lab-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-8); }
+  .lab-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-6); }
+  .lab-tiles span { aspect-ratio: 3 / 4; border-radius: 6px; background: color-mix(in srgb, var(--foreground) 7%, transparent); }
+  .lab-drop { display: flex; align-items: center; justify-content: center; gap: var(--sp-8); height: 56px; border: 1px dashed var(--border); border-radius: 6px; color: var(--faint-ink); }
+  .lab-drop .ztor-icon { width: 16px; height: 16px; }
+  .lab-pills { display: inline-flex; gap: 2px; padding: 2px; align-self: flex-start; border: 1px solid var(--border); border-radius: var(--radius-pill); }
+  .lab-pills span { padding: 2px 10px; border-radius: var(--radius-pill); color: var(--muted-foreground); font-size: var(--fs-11); }
+  .lab-pills .is-on { background: var(--accent); color: var(--foreground); }
+  .lab-sw { display: flex; align-items: center; gap: var(--sp-8); }
+  .lab-sw i { width: 24px; height: 14px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--foreground) 14%, transparent); position: relative; flex: none; }
+  .lab-sw i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--card); }
+  .lab-trow { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: var(--sp-8); align-items: center; padding: var(--sp-6) 0; border-top: 1px solid var(--border-soft); }
+  .lab-opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-6); }
+  .lab-opts span { height: 34px; border: 1px solid var(--border); border-radius: 6px; }
+  .lab-opts .is-on { border-color: var(--primary); }
+  .lab-chipsk { display: flex; flex-wrap: wrap; gap: var(--sp-4); }
+  .lab-chipsk span { width: 34px; height: 16px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--foreground) 8%, transparent); }
+
+  /* 右側預覽卡（所有框共用） */
+  .lab-prevcol { min-width: 0; }
+  .lab-pv { display: flex; flex-direction: column; gap: var(--sp-6); padding: var(--sp-8); background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  .lab-pv__lb { font-size: var(--fs-11); color: var(--muted-foreground); }
+  .lab-pv__cover { height: 64px; border-radius: 6px; background: color-mix(in srgb, var(--foreground) 7%, transparent); }
+
+  /* ── A 文字清單 ── */
+  .lab-navA { display: flex; flex-direction: column; border-left: 1px solid var(--border-soft); }
+  .lab-ni { display: flex; align-items: center; gap: var(--sp-6); width: 100%; box-sizing: border-box; appearance: none; margin-left: -1px; padding: 5px 8px; border: 0; border-left: 2px solid transparent; background: none; font: inherit; font-size: var(--fs-12); text-align: left; color: var(--muted-foreground); cursor: pointer; }
+  .lab-ni__t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lab-ni:hover { color: var(--foreground); }
+  .lab-ni.is-active { color: var(--foreground); font-weight: var(--fw-medium); border-left-color: var(--primary); }
+
+  /* ── B 圓點刻度軌 ── */
+  .lab-navB { position: relative; display: flex; flex-direction: column; align-items: center; padding: var(--sp-4) 0; }
+  .lab-navB::before { content: ''; position: absolute; top: 12px; bottom: 12px; left: 50%; width: 1px; background: var(--border); transform: translateX(-50%); }
+  .lab-dot { position: relative; display: grid; place-items: center; width: 24px; height: 22px; padding: 0; appearance: none; border: 0; background: none; cursor: pointer; }
+  .lab-dot::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--faint-ink); transition: all var(--duration); }
+  .lab-dot:hover::before { background: var(--foreground); }
+  .lab-dot.is-active::before { width: 10px; height: 10px; background: var(--primary); }
+  .lab-dot__tip { position: absolute; left: 100%; top: 50%; z-index: 3; margin-left: var(--sp-6); padding: 3px 8px; transform: translateY(-50%); background: var(--card); border: 1px solid var(--border); border-radius: 6px; box-shadow: var(--shadow-float); color: var(--foreground); font-size: var(--fs-11); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity var(--duration); }
+  .lab-dot:hover .lab-dot__tip, .lab-dot:focus-visible .lab-dot__tip { opacity: 1; }
+
+  /* ── C 狀態清單 ── */
+  .lab-sum { display: flex; flex-direction: column; gap: var(--sp-4); padding: 0 0 var(--sp-8) var(--sp-8); font-size: var(--fs-11); color: var(--foreground-muted); }
+  .lab-sum b { font-weight: var(--fw-medium); color: var(--foreground); }
+  .lab-bar { height: 3px; overflow: hidden; border-radius: 2px; background: color-mix(in srgb, var(--foreground) 9%, transparent); }
+  .lab-bar i { display: block; height: 100%; background: var(--primary); transition: width var(--duration); }
+
+  /* ── D 頂部橫向吸附列 ── */
+  .lab-chipbar { position: sticky; top: 40px; z-index: 4; height: 36px; box-sizing: border-box; display: flex; align-items: center; background: var(--card); border-bottom: 1px solid var(--border); }
+  .lab-chips { position: relative; display: flex; gap: var(--sp-6); width: 100%; padding: 0 var(--sp-12); overflow-x: auto; scrollbar-width: none; }
+  .lab-chips::-webkit-scrollbar { display: none; }
+  .lab-chip { flex: none; appearance: none; padding: 3px 10px; border: 1px solid var(--border); border-radius: var(--radius-pill); background: transparent; font: inherit; font-size: var(--fs-12); white-space: nowrap; color: var(--muted-foreground); cursor: pointer; }
+  .lab-chip:hover { color: var(--foreground); }
+  .lab-chip.is-active { background: var(--selected-surface); border-color: transparent; color: var(--foreground); font-weight: var(--fw-medium); }
+
+  /* ── E 圖示 rail：窄欄放圖示，滑過或聚焦展開成浮層，不推擠版面 ── */
+  .lab-rail { position: absolute; top: 0; left: 0; z-index: 3; display: flex; flex-direction: column; gap: 2px; box-sizing: border-box; width: 40px; padding: var(--sp-4); overflow: hidden; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); transition: width 160ms ease; }
+  .lab-rail:hover, .lab-rail:focus-within { width: 176px; box-shadow: var(--shadow-float); }
+  .lab-ri { display: flex; align-items: center; gap: var(--sp-10); flex: none; width: 100%; height: 30px; box-sizing: border-box; appearance: none; padding: 0 7px; border: 0; border-radius: 6px; background: none; font: inherit; font-size: var(--fs-12); text-align: left; white-space: nowrap; color: var(--muted-foreground); cursor: pointer; }
+  .lab-ri .ztor-icon { width: 16px; height: 16px; flex: none; }
+  .lab-ri__t { opacity: 0; transition: opacity var(--duration); }
+  .lab-rail:hover .lab-ri__t, .lab-rail:focus-within .lab-ri__t { opacity: 1; }
+  .lab-ri:hover { background: var(--accent); color: var(--foreground); }
+  .lab-ri.is-active { background: var(--selected-surface); color: var(--foreground); }
+
+  /* ── F 併入預覽欄：預覽卡下面接一張「本頁大綱」卡 ── */
+  .lab-ol { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-8); background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  .lab-ol__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-6); font-size: var(--fs-11); color: var(--foreground-muted); }
+  .lab-ol__head b { font-weight: var(--fw-medium); color: var(--foreground); font-size: var(--fs-12); }
+  .lab-ol .lab-bar { margin: var(--sp-4) 0 var(--sp-4); }
+  .lab-ol__item { display: flex; align-items: center; gap: var(--sp-6); width: 100%; box-sizing: border-box; appearance: none; padding: 3px 4px; border: 0; border-radius: 5px; background: none; font: inherit; font-size: var(--fs-11); text-align: left; color: var(--muted-foreground); cursor: pointer; }
+  .lab-ol__item:hover { color: var(--foreground); }
+  .lab-ol__item.is-active { background: var(--selected-surface); color: var(--foreground); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lab-rail, .lab-bar i, .lab-dot::before, .lab-dot__tip, .lab-ri__t { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page lab">
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title">建立商品 · 區段導覽樣式</h1>
+          <p class="page-intro__sub">這是一張比較用的探索頁，不是產品頁：「新增商品」第一步「內容」頁的表單一路排下來有十幾張卡，這裡把「每一節的導覽」排出六種擺法，請直接回我編號。每個框都是縮小版頁面，可以在框內捲動、點導覽跳節，亮起的項目會跟著捲動位置變。</p>
+        </div>
+      </div>
+
+      <div class="lab-toolbar">
+        <span class="lab-toolbar__label">商品類型</span>
+        <div class="segmented" id="lab-type" role="group" aria-label="商品類型">
+          <button class="segmented__btn segmented__btn--active" type="button" data-type="physical">實體商品</button>
+          <button class="segmented__btn" type="button" data-type="digital">數位商品</button>
+        </div>
+        <span class="lab-toolbar__label">選項</span>
+        <div class="segmented" id="lab-var" role="group" aria-label="商品選項">
+          <button class="segmented__btn segmented__btn--active" type="button" data-var="single">單一選項</button>
+          <button class="segmented__btn" type="button" data-var="multiple">多選項</button>
+        </div>
+        <span class="lab-toolbar__count" id="lab-count" aria-live="polite"></span>
+      </div>
+      <p class="lab-note">切換後六個框的節清單會同步增減：數位商品多了「內容檔案」、少了「商品選項」與「取貨方式」，且沒有多選項（所以「多選項」會停用）；多選項則把「定價」換成「各選項組合價格與庫存」。框內是等比縮小的示意，實際左欄約 160–200px 寬。每張卡右上角的小鈕可以假切換「未填／已完成／選填」，六個框共用同一組狀態。</p>
+
+      <div class="lab-grid" id="lab-grid"></div>
+
+      <section class="card lab-foot">
+        <div class="card__head"><h2 class="card__title">怎麼挑</h2></div>
+        <ol>
+          <li><b>表單有多長</b>：實體多選項一路排下來 11 節，長頁面裡你最常需要「我現在在哪、還有哪些沒填」。要回答這件事的是 C 與 F，A、B、D、E 只回答前半句。</li>
+          <li><b>左欄要不要動</b>：A、B、C、E 都動用左側那塊空白欄，F 只動右欄，D 完全不動兩側。左欄愈窄，愈不容易跟側欄、表單搶視覺。</li>
+          <li><b>觸控與可發現性</b>：B 要滑過才看得到名稱、E 要記圖示意思，兩者在手機上最吃虧；A、C、D 的字一直看得到。</li>
+        </ol>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ── 節清單：標題、顯示條件照 create-product.html 與 i18n 的 cp.*.title 原文 ──
+     only＝只在該商品類型出現（data-cp-show）；when＝只在單一／多選項出現（data-when-var）；
+     req＝必填（名稱與描述、定價、庫存、取貨方式；數位多一個內容檔案；多選項的價格表取代定價） */
+  const SECTIONS = [
+    { k: 'info',      t: '商品資訊',             i: 'info',        req: 1 },
+    { k: 'media',     t: '展示它',               i: 'image' },
+    { k: 'cfile',     t: '內容檔案',             i: 'file',        req: 1, only: 'digital' },
+    { k: 'options',   t: '商品選項',             i: 'layout-grid', only: 'physical' },
+    { k: 'price',     t: '定價',                 i: 'dollar-sign', req: 1, when: 'single' },
+    { k: 'discount',  t: '折扣設定',             i: 'percent',     when: 'single' },
+    { k: 'stock',     t: '庫存',                 i: 'package',     req: 1 },
+    { k: 'vartable',  t: '各選項組合價格與庫存', i: 'list',        req: 1, only: 'physical', when: 'multiple' },
+    { k: 'discountM', t: '折扣設定',             i: 'percent',     only: 'physical', when: 'multiple' },
+    { k: 'delivery',  t: '取貨方式',             i: 'truck',       req: 1, only: 'physical' },
+    { k: 'limits',    t: '購買限制',             i: 'lock' },
+    { k: 'tags',      t: '商品標籤',             i: 'tag' },
+    { k: 'films',     t: '電影關聯',             i: 'film' },
+    { k: 'listing',   t: '上架設定',             i: 'eye' }
+  ];
+  const FRAMES = [
+    { id: 'A', name: '文字清單',       where: '放在左側空白欄、sticky', tip: '最直白、省空間，節名太長時要截斷。' },
+    { id: 'B', name: '圓點刻度軌',     where: '極窄的左欄、約 24px',   tip: '最省空間、不搶戲，但要滑過才知道名稱，觸控較不友善。' },
+    { id: 'C', name: '狀態清單',       where: '左欄、含必填進度',       tip: '導覽兼就緒檢查，一眼看出哪些必填還沒填，但資訊較滿。' },
+    { id: 'D', name: '頂部橫向吸附列', where: '頁首下方、不佔左欄',     tip: '版面最乾淨、兩側都不動，但節多時要橫向捲動、看不到全部。' },
+    { id: 'E', name: '圖示 rail',      where: '左欄 48px、滑過展開',    tip: '又窄又直覺，但要記得每個圖示的意思；展開時浮在表單上、不推擠版面。' },
+    { id: 'F', name: '併入預覽欄',     where: '右欄、預覽卡下方',       tip: '左欄完全不用動，但右欄會變長，預覽卡下面要留得下大綱。' }
+  ];
+  const LABEL = { todo: '必填未填', done: '已完成', opt: '選填' };
+
+  /* 六個框共用的狀態 */
+  const state = {
+    type: 'physical',
+    multi: false,
+    st: { info: 'todo', media: 'done', cfile: 'todo', price: 'todo', stock: 'done', vartable: 'todo', delivery: 'done' }
+  };
+  SECTIONS.forEach(s => { if (!state.st[s.k]) state.st[s.k] = s.req ? 'todo' : 'opt'; });
+
+  const visible = () => SECTIONS.filter(s =>
+    (!s.only || s.only === state.type) && (!s.when || (s.when === 'multiple') === state.multi));
+  function progress() {
+    const r = visible().filter(s => s.req);
+    return [r.filter(s => state.st[s.k] === 'done').length, r.length];
+  }
+
+  /* ── 骨架小零件 ── */
+  const sk = w => '<span class="lab-sk" style="width:' + w + '%"></span>';
+  const fld = (lw, h, ph) => '<div class="lab-fld"><span class="lab-fld__lb">' + sk(lw) + '</span><span class="lab-box" style="height:' + (h || 24) + 'px">' + (ph || '') + '</span></div>';
+  const mk = k => '<span class="lab-mk" data-st-key="' + k + '"><i data-lucide="check" class="ztor-icon"></i></span>';
+
+  function body(k) {
+    switch (k) {
+      case 'info':      return fld(26, 24, '例：夏日巡迴帽 T') + fld(34, 52) + '<div class="lab-row2">' + fld(40, 24) + fld(30, 24) + '</div>';
+      case 'media':     return '<div class="lab-tiles"><span></span><span></span><span></span><span></span></div>' + sk(70);
+      case 'cfile':     return '<div class="lab-drop"><i data-lucide="file" class="ztor-icon"></i>' + sk(40) + '</div>' + sk(60);
+      case 'options':   return '<div class="lab-pills"><span class="' + (state.multi ? '' : 'is-on') + '">單一</span><span class="' + (state.multi ? 'is-on' : '') + '">多選項</span></div>' + (state.multi ? '<div class="lab-chipsk"><span></span><span></span><span></span></div>' : sk(55));
+      case 'price':     return fld(22, 24, '0.00') + sk(48);
+      case 'discount':
+      case 'discountM': return '<div class="lab-sw"><i></i>' + sk(46) + '</div>' + sk(72);
+      case 'stock':     return '<div class="lab-row2">' + fld(44, 24, '0') + fld(36, 24) + '</div>' + '<div class="lab-sw"><i></i>' + sk(50) + '</div>';
+      case 'vartable':  return '<div class="lab-trow">' + sk(60) + sk(70) + sk(50) + '</div><div class="lab-trow">' + sk(50) + sk(70) + sk(60) + '</div><div class="lab-trow">' + sk(70) + sk(50) + sk(70) + '</div>';
+      case 'delivery':  return '<div class="lab-opts"><span class="is-on"></span><span></span><span></span></div>' + fld(30, 24) + sk(65);
+      case 'limits':    return '<div class="lab-sw"><i></i>' + sk(48) + '</div>' + fld(28, 24, '0');
+      case 'tags':      return fld(26, 24, '輸入標籤、按 Enter') + '<div class="lab-chipsk"><span></span><span></span><span></span><span></span></div>';
+      case 'films':     return fld(30, 24) + sk(58);
+      case 'listing':   return '<div class="lab-sw"><i></i>' + sk(44) + '</div><div class="lab-sw"><i></i>' + sk(60) + '</div>' + sk(36);
+    }
+    return '';
+  }
+  const card = s => '<section class="lab-card" data-sec="' + s.k + '">' +
+    '<div class="lab-card__head"><h4 class="lab-card__title">' + s.t + '</h4>' +
+    '<button type="button" class="lab-card__st" data-toggle="' + s.k + '" title="點一下假切換狀態">' + mk(s.k) + '<span data-st-key="' + s.k + '" data-st-text></span></button></div>' +
+    body(s.k) + '</section>';
+
+  const header = () => '<div class="lab-hd"><span class="lab-hd__back"><i data-lucide="chevron-left" class="ztor-icon"></i></span>' +
+    '<span class="lab-hd__title">新增商品<small> / ' + (state.type === 'physical' ? '實體商品' : '數位商品') + '</small></span>' +
+    '<span class="lab-hd__steps"><b>① 內容</b><span>② 預覽與發布</span></span><span class="lab-hd__draft">儲存為草稿</span></div>';
+  const preview = () => '<div class="lab-pv"><span class="lab-pv__lb">商品預覽</span><span class="lab-pv__cover"></span>' + sk(80) + sk(45) + '</div>';
+  const progText = () => '必填 <b data-prog-n></b>／<span data-prog-t></span>';
+  const progBar = () => '<div class="lab-bar"><i data-prog-bar></i></div>';
+
+  /* ── 六種導覽 ── */
+  const NAV = {
+    A: vis => '<nav class="lab-navA" aria-label="本頁區段">' + vis.map(s =>
+      '<button type="button" class="lab-ni" data-go="' + s.k + '" title="' + s.t + '"><span class="lab-ni__t">' + s.t + '</span></button>').join('') + '</nav>',
+    B: vis => '<nav class="lab-navB" aria-label="本頁區段">' + vis.map(s =>
+      '<button type="button" class="lab-dot" data-go="' + s.k + '" aria-label="' + s.t + '"><span class="lab-dot__tip">' + s.t + '</span></button>').join('') + '</nav>',
+    C: vis => '<div class="lab-sum"><span>' + progText() + '</span>' + progBar() + '</div><nav class="lab-navA" aria-label="本頁區段">' + vis.map(s =>
+      '<button type="button" class="lab-ni" data-go="' + s.k + '" title="' + s.t + '（' + (s.req ? '必填' : '選填') + '）">' + mk(s.k) + '<span class="lab-ni__t">' + s.t + '</span></button>').join('') + '</nav>',
+    D: vis => '<div class="lab-chipbar"><nav class="lab-chips" aria-label="本頁區段">' + vis.map(s =>
+      '<button type="button" class="lab-chip" data-go="' + s.k + '">' + s.t + '</button>').join('') + '</nav></div>',
+    E: vis => '<nav class="lab-rail" aria-label="本頁區段">' + vis.map(s =>
+      '<button type="button" class="lab-ri" data-go="' + s.k + '" aria-label="' + s.t + '"><i data-lucide="' + s.i + '" class="ztor-icon"></i><span class="lab-ri__t">' + s.t + '</span></button>').join('') + '</nav>',
+    F: vis => '<div class="lab-ol"><div class="lab-ol__head"><b>本頁大綱</b><span>' + progText() + '</span></div>' + progBar() + vis.map(s =>
+      '<button type="button" class="lab-ol__item" data-go="' + s.k + '">' + mk(s.k) + '<span class="lab-ni__t">' + s.t + '</span></button>').join('') + '</div>'
+  };
+
+  function frameHTML(id) {
+    const vis = visible();
+    const hasCol = 'ABCE'.indexOf(id) >= 0;
+    return header() + (id === 'D' ? NAV.D(vis) : '') +
+      '<div class="lab-body lab-body--' + id + '">' +
+      (hasCol ? '<div class="lab-navcol lab-navcol--' + id + '"><div class="lab-navin">' + NAV[id](vis) + '</div></div>' : '') +
+      '<div class="lab-form">' + vis.map(card).join('') + '</div>' +
+      '<aside class="lab-prevcol"><div class="lab-stick">' + preview() + (id === 'F' ? NAV.F(vis) : '') + '</div></aside></div>';
+  }
+
+  /* ── 組出六格 ── */
+  const grid = document.getElementById('lab-grid');
+  grid.innerHTML = FRAMES.map(f =>
+    '<div class="lab-cell"><div class="lab-cell__head"><span class="lab-cell__id">' + f.id + '</span><h2 class="lab-cell__name">' + f.name + '</h2><span class="lab-cell__where">' + f.where + '</span></div>' +
+    '<div class="lab-frame" data-style="' + f.id + '" tabindex="0" role="region" aria-label="樣式 ' + f.id + ' 迷你頁面，可捲動"></div>' +
+    '<p class="lab-cap"><b>取捨　</b>' + f.tip + '</p></div>').join('');
+  const frames = [].slice.call(grid.querySelectorAll('.lab-frame'));
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── 狀態塗回 DOM（不重建，免得捲動位置與 hover 跑掉） ── */
+  function paint() {
+    document.querySelectorAll('[data-st-key]').forEach(el => {
+      const s = state.st[el.dataset.stKey];
+      el.dataset.st = s;
+      if (el.hasAttribute('data-st-text')) el.textContent = LABEL[s];
+    });
+    const p = progress();
+    document.querySelectorAll('[data-prog-n]').forEach(e => { e.textContent = p[0]; });
+    document.querySelectorAll('[data-prog-t]').forEach(e => { e.textContent = p[1]; });
+    document.querySelectorAll('[data-prog-bar]').forEach(e => { e.style.width = (p[1] ? Math.round(p[0] / p[1] * 100) : 0) + '%'; });
+  }
+  function toggle(k) {
+    const req = SECTIONS.filter(s => s.k === k)[0].req;
+    state.st[k] = state.st[k] === 'done' ? (req ? 'todo' : 'opt') : 'done';
+    paint();
+  }
+
+  /* ── scroll-spy：框自己的捲動容器，不綁整頁 ── */
+  const offsetOf = f => {
+    const cb = f.querySelector('.lab-chipbar');
+    return f.querySelector('.lab-hd').offsetHeight + (cb ? cb.offsetHeight : 0) + 12;
+  };
+  function setActive(f, key) {
+    f._cur = key;
+    f.querySelectorAll('[data-go]').forEach(b => {
+      const on = b.dataset.go === key;
+      b.classList.toggle('is-active', on);
+      if (on) b.setAttribute('aria-current', 'location'); else b.removeAttribute('aria-current');
+    });
+    const chips = f.querySelector('.lab-chips');
+    const chip = chips && chips.querySelector('.is-active');
+    if (chip) chips.scrollTo({ left: chip.offsetLeft - (chips.clientWidth - chip.offsetWidth) / 2, behavior: reduce ? 'auto' : 'smooth' });
+  }
+  function spy(f) {
+    if (f._lock && performance.now() < f._lock) return;
+    const cards = [].slice.call(f.querySelectorAll('.lab-card'));
+    if (!cards.length) return;
+    const base = f.getBoundingClientRect().top + f.clientTop + offsetOf(f);
+    let cur = cards[0];
+    cards.forEach(c => { if (c.getBoundingClientRect().top <= base + 4) cur = c; });
+    if (f.scrollTop + f.clientHeight >= f.scrollHeight - 2) cur = cards[cards.length - 1];
+    if (f._cur !== cur.dataset.sec) setActive(f, cur.dataset.sec);
+  }
+  function goTo(f, key) {
+    const c = f.querySelector('.lab-card[data-sec="' + key + '"]');
+    if (!c) return;
+    const top = c.getBoundingClientRect().top - (f.getBoundingClientRect().top + f.clientTop) + f.scrollTop - offsetOf(f);
+    f.scrollTo({ top: top, behavior: reduce ? 'auto' : 'smooth' });
+    f._lock = performance.now() + 800;
+    setActive(f, key);
+    setTimeout(function () { f._lock = 0; spy(f); }, 850);
+  }
+
+  function renderAll() {
+    frames.forEach(f => {
+      const top = f.scrollTop;
+      f.innerHTML = frameHTML(f.dataset.style);
+      if (window.ztorIcons) window.ztorIcons.applyIcons(f);
+      f.scrollTop = top;
+      f._cur = null; f._lock = 0;
+    });
+    paint();
+    frames.forEach(spy);
+    const n = visible().length;
+    document.getElementById('lab-count').textContent = '目前 ' + n + ' 節 · ' + (state.type === 'physical' ? '實體商品' : '數位商品') + ' · ' + (state.multi ? '多選項' : '單一選項');
+  }
+
+  frames.forEach(f => f.addEventListener('scroll', function () { spy(f); }, { passive: true }));
+  grid.addEventListener('click', function (e) {
+    const go = e.target.closest('[data-go]');
+    if (go) { goTo(go.closest('.lab-frame'), go.dataset.go); return; }
+    const tg = e.target.closest('[data-toggle]');
+    if (tg) toggle(tg.dataset.toggle);
+  });
+
+  /* ── 共用切換器 ── */
+  const typeSeg = document.getElementById('lab-type');
+  const varSeg = document.getElementById('lab-var');
+  function syncSeg() {
+    typeSeg.querySelectorAll('[data-type]').forEach(b => b.classList.toggle('segmented__btn--active', b.dataset.type === state.type));
+    varSeg.querySelectorAll('[data-var]').forEach(b => {
+      b.classList.toggle('segmented__btn--active', (b.dataset.var === 'multiple') === state.multi);
+      if (b.dataset.var === 'multiple') b.disabled = state.type === 'digital';
+    });
+  }
+  typeSeg.addEventListener('click', function (e) {
+    const b = e.target.closest('[data-type]'); if (!b) return;
+    state.type = b.dataset.type;
+    if (state.type === 'digital') state.multi = false;   /* 數位商品沒有商品選項 */
+    syncSeg(); renderAll();
+  });
+  varSeg.addEventListener('click', function (e) {
+    const b = e.target.closest('[data-var]'); if (!b || b.disabled) return;
+    state.multi = b.dataset.var === 'multiple';
+    syncSeg(); renderAll();
+  });
+
+  syncSeg();
+  renderAll();
+})();
+</script>
+</body>
+</html>

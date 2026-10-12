@@ -129,6 +129,7 @@
 
   /* 發布設定：連結與 QR 並排（QR 是輔助，尺寸壓小） */
   .ed-pub__linkrow { display: flex; align-items: center; gap: var(--sp-16); }
+  .ed-pub__linkmain { flex: 1 1 auto; min-width: 0; }   /* 連結改成 disabled 輸入框（2026-10-12），右欄要吃滿剩下的寬度 */
   .ed-pub__qr { width: 96px; height: 96px; flex: none; color: var(--foreground); background: var(--card); border-radius: var(--radius); padding: var(--sp-6); }
 </style>
 </head>
@@ -305,22 +306,8 @@
                     </div>
                   </div>
                 </section>
-                <!-- 售票期間（2026-08-31 使用者指示「這一排新增一個販售時間」；2026-10-01 D342 正名「售票期間」＝活動的開賣到停售）。
-                     大字放「還剩幾天可賣」而不是日期區間：這一排的另外兩格都是可掃的數字，
-                     一段「8/1 10:00 – 9/11 23:59」在 span-4 的寬度裡只會換行，而且它回答的
-                     是「設定是什麼」；售票中真正要盯的是「還來得及賣幾天」。區間本身退到
-                     meta，設定與剩餘時間同一格讀得完。
-                     終點取「停售日期與時間，沒設就是開演」——與設定頁二選一卡的說明同一句話
-                     （發布後直接開賣＝賣到開演）。 -->
-                <section class="card bento--span-4">
-                  <div class="stat-row">
-                    <div class="stat">
-                      <div class="stat__label" data-i18n="event-detail.sales.window">Sales period</div>
-                      <div class="stat__value" id="ed-sales-window">—</div>
-                      <div class="stat__meta" id="ed-sales-window-meta">—</div>
-                    </div>
-                  </div>
-                </section>
+                <!-- 墓碑 2026-10-12（UI-CHANGES 一百六十九，使用者指示）：「售票期間」那一格退場（2026-08-31 加入、D342 正名）；
+                     這一排剩已售出／活動收入／已作廢票券三格，span-4 × 3 剛好排滿一列。 -->
                 <!-- 已作廢票券 KPI（§2.3，2026-09-09 新增，D253）：規格把它列為 KPI 快照四項之一，
                      此前站上從未真的畫出這張卡（i18n key 早就定義好但零元素綁定）。呈現層已知落差：
                      D188 要求售票中／進行中／已結束／已取消四階段可見，本輪只接售票中（這裡）與
@@ -350,9 +337,9 @@
                 </div>
                 <div class="chart-card__controls">
                   <div class="segmented" role="tablist" aria-label="Range" data-range-of="onsale">
-                    <button class="segmented__item segmented__item--active" type="button" role="tab" aria-selected="true" data-view-safe data-range="day" data-i18n="event-detail.trend.day">Day</button>
-                    <button class="segmented__item" type="button" role="tab" aria-selected="false" data-view-safe data-range="week" data-i18n="event-detail.trend.week">Week</button>
-                    <button class="segmented__item" type="button" role="tab" aria-selected="false" data-view-safe data-range="month" data-i18n="event-detail.trend.month">Month</button>
+                    <button class="segmented__btn segmented__btn--active" type="button" role="tab" aria-selected="true" data-view-safe data-range="day" data-i18n="event-detail.trend.day">Day</button>
+                    <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-view-safe data-range="week" data-i18n="event-detail.trend.week">Week</button>
+                    <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-view-safe data-range="month" data-i18n="event-detail.trend.month">Month</button>
                   </div>
                 </div>
               </div>
@@ -597,9 +584,9 @@
               </div>
               <div class="chart-card__controls">
                 <div class="segmented" role="tablist" aria-label="Resolution" data-rhythm-step>
-                  <button class="segmented__item" type="button" role="tab" aria-selected="false" data-view-safe data-step="sec" data-i18n="event-detail.live.unit.sec">Sec</button>
-                  <button class="segmented__item segmented__item--active" type="button" role="tab" aria-selected="true" data-view-safe data-step="min" data-i18n="event-detail.live.unit.min">Min</button>
-                  <button class="segmented__item" type="button" role="tab" aria-selected="false" data-view-safe data-step="hr" data-i18n="event-detail.live.unit.hr">Hr</button>
+                  <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-view-safe data-step="sec" data-i18n="event-detail.live.unit.sec">Sec</button>
+                  <button class="segmented__btn segmented__btn--active" type="button" role="tab" aria-selected="true" data-view-safe data-step="min" data-i18n="event-detail.live.unit.min">Min</button>
+                  <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-view-safe data-step="hr" data-i18n="event-detail.live.unit.hr">Hr</button>
                 </div>
               </div>
             </div>
@@ -623,8 +610,8 @@
             <div class="chart-card__foot">
               <span id="ed-livetrend-note">—</span>
               <div class="chart-card__foot-actions" data-chart-toggle>
-                <button class="segmented__item segmented__item--active" type="button" data-view-safe data-view="line" aria-label="Line chart" title="Line chart"><i data-lucide="chart-line" class="ztor-icon" style="width:14px;height:14px"></i></button>
-                <button class="segmented__item" type="button" data-view-safe data-view="bar" aria-label="Bar chart" title="Bar chart"><i data-lucide="chart-column" class="ztor-icon" style="width:14px;height:14px"></i></button>
+                <button class="segmented__btn segmented__btn--active" type="button" data-view-safe data-view="line" aria-label="Line chart" title="Line chart"><i data-lucide="chart-line" class="ztor-icon" style="width:14px;height:14px"></i></button>
+                <button class="segmented__btn" type="button" data-view-safe data-view="bar" aria-label="Bar chart" title="Bar chart"><i data-lucide="chart-column" class="ztor-icon" style="width:14px;height:14px"></i></button>
               </div>
             </div>
           </section>
@@ -666,7 +653,7 @@
                        連結／掃碼器密碼／開啟掃碼器。此前這張卡混著三種寫法——標籤＋值、一排按鈕、
                        一條帶鑰匙圖示的行——三件事同樣重要卻長成三種樣子，得逐塊重新判讀。
                        現在每一塊都是「標籤在上、內容在下」，掃過去就知道各有一件事。 -->
-                  <div class="scanner-access__field">
+                  <div class="scanner-access__field" data-ztor-scan>
                     <div class="scanner-access__label" data-i18n="event-detail.live.scanner.url">Link</div>
                     <div class="scanner-access__url">
                       <code id="ed-live-url">—</code>
@@ -682,18 +669,38 @@
                               data-i18n-aria-label="event-detail.live.scanner.share" data-i18n-title="event-detail.live.scanner.share"><i data-lucide="send" class="ztor-icon"></i></button>
                     </div>
                   </div>
-                  <div class="scanner-access__field">
+                  <div class="scanner-access__field" data-ztor-scan>
                     <div class="scanner-access__label" data-i18n="event-detail.live.scanner.pw">Scanner password</div>
                     <div class="scanner-access__url"><code>••••••</code></div>
                   </div>
-                  <div class="scanner-access__field">
+                  <div class="scanner-access__field" data-ztor-scan>
                     <div class="scanner-access__label" data-i18n="event-detail.live.scanner.open">Open scanner</div>
                     <a class="btn btn--outline btn--block" id="ed-live-open" href="#" target="_blank" rel="noopener" data-i18n="event-detail.live.scanner.opencta">Open in a new tab</a>
                   </div>
-                  <div class="field__hint mt-8" data-i18n="event-detail.live.scanner.hint">Staff open the link, enter the password, then scan. The scanner only redeems — it never shows amounts, Earnings or fan data.</div>
-                  <!-- D375 決定五：匯入活動的門票入場由 bookyay Organizer App 掃票，這張報到台保留但停用；
-                       票務商品裡的商品照電子商店取貨流程（取貨管理掃取貨 QR）。syncBkyCheckin() 切換。 -->
-                  <p class="field__hint field__hint--fact mt-8" id="ed-scanner-bky" hidden><span data-i18n="event-detail.scanner.bky">Tickets are scanned at the door with the bookyay Organizer App. Products in ticket bundles are picked up the same way as E-Shop pickups.</span> <a class="card__link" href="pickup.html" data-i18n="event-detail.scanner.bky.pickup">Go to Pickup</a></p>
+                  <div class="field__hint mt-8" data-ztor-scan data-i18n="event-detail.live.scanner.hint">Staff open the link, enter the password, then scan. The scanner only redeems — it never shows amounts, Earnings or fan data.</div>
+                  <!-- D375 決定五 → 2026-10-12 D394（UI-CHANGES 一百六十八）：匯入活動的門票入場由 bookyay 的掃描器掃票。
+                       ztor 自己的三格（連結／掃碼器密碼／開啟掃碼器，[data-ztor-scan]）收起，改成兩格：
+                       · bookyay 掃描器連結＋複製（值＝events-store 的 bkyScanUrl，原型示意網址，ASSUMPTIONS BKY-SCAN-001）；
+                         沒有連結時顯示一句說明，不畫空框。
+                       · 前往取貨管理：票務商品（組合包）裡的商品用 ztor 的取貨場次領取，不走 bookyay 掃描器。
+                       不掛 data-feat：屬 bookyay 帶入活動的活動詳情（S73／S56 延伸，同 D385 做法），release2.4 與最終版都看得到。
+                       syncBkyCheckin() 切換。 -->
+                  <div class="scanner-access__field" id="ed-bky-scan" hidden>
+                    <div class="scanner-access__label" data-i18n="event-detail.scanner.bky.url">bookyay scanner link</div>
+                    <div class="scanner-access__url" id="ed-bky-scan-row">
+                      <code id="ed-bky-scan-url">—</code>
+                      <button class="btn btn--icon btn--sm" type="button" data-view-safe id="ed-bky-scan-copy"
+                              aria-label="Copy link" title="Copy link"
+                              data-i18n-aria-label="event-detail.live.scanner.copy" data-i18n-title="event-detail.live.scanner.copy"><i data-lucide="copy" class="ztor-icon"></i></button>
+                    </div>
+                    <p class="field__hint field__hint--fact" id="ed-bky-scan-none" hidden data-i18n="event-detail.scanner.bky.nourl">bookyay hasn't sent a scanner link for this event yet. Door staff can still scan tickets with the bookyay Organizer App.</p>
+                    <p class="field__hint field__hint--fact" id="ed-bky-scan-hint" data-i18n="event-detail.scanner.bky.hint">Tickets are scanned at the door with bookyay's scanner. Send this link to door staff.</p>
+                  </div>
+                  <div class="scanner-access__field" id="ed-scanner-bky" hidden>
+                    <div class="scanner-access__label" data-i18n="event-detail.scanner.bky.pickup.label">Bundle pickup</div>
+                    <a class="btn btn--outline btn--block" href="pickup.html" data-i18n="event-detail.scanner.bky.pickup">Go to Pickup</a>
+                    <p class="field__hint field__hint--fact" data-i18n="event-detail.scanner.bky.pickup.hint">Products in ticket bundles are picked up through ztor pickup sessions, not bookyay's scanner.</p>
+                  </div>
                 </div>
             </div>
           </section>
@@ -803,7 +810,10 @@
           </div>
         </div>
       </div>
-<div class="tab-panel" data-panel="dates" role="tabpanel" data-editable data-mode="view">
+<!-- data-vm-style="disabled"（2026-10-12 使用者指示，UI-CHANGES 一百六十七）：這個分頁的欄位在檢視態不換成純文字讀數——
+     輸入框、下拉、多行文字、描述編輯器留在原位、顯示成 disabled（shared.css 同名區塊、js/view-mode.js 不插讀數）。
+     其餘兩段式面板仍照 Q119 純文字。唯讀事實（類型、系列、票務摘要、在地化摘要、活動連結）也改成永遠 disabled 的輸入框。 -->
+<div class="tab-panel" data-panel="dates" role="tabpanel" data-editable data-mode="view" data-vm-style="disabled">
         <!-- 2026-08-17 使用者指示「其他分頁有多個項目 section 的，也都要加入側邊欄」：
              這一格有五節（活動內容／場次／地點／發布設定／連結 QR），全部攤開要捲很久，
              而多數時候只是要改其中一項。側欄一節一個入口，順序仍照建立流程走。 -->
@@ -849,18 +859,27 @@
                2026-09-18（D281、5.1.6.2 F1）：類型「建立後即鎖死」，與是否開賣無關。鎖定說明
                掛在類型列標籤底下、只在編輯態出現（`.field__hint` 在 [data-mode="view"] 由
                shared.css 收起）——檢視態看到的是一列唯讀事實，不需要解釋為什麼不能改。 -->
-          <div class="data-list">
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.type">Type</span><div class="field__hint" data-i18n="ee.ov.type.locked">Locked after creation — the rest of the form depends on it. To change it, create a new event.</div></div><span data-i18n="event-detail.ov.type-val">Concert · in-person</span></div>
-            <div class="data-list__row" data-hide-type="watchparty" data-feat="S88"><div class="data-list__row-main"><span data-i18n="event-detail.ov.series">Series</span></div><span data-i18n="event-detail.ov.series-val">Kowloon Café 10th Anniv. · 1 of 3</span></div>
-            <!-- 票務摘要（2026-08-13）：票種與組合包本來只活在「票務」分頁，總覽看不出這場
-                 賣的是什麼、有沒有綁商品。這兩列是唯讀摘要，點右邊的連結切到票務分頁去管理。 -->
-            <div class="data-list__row" data-hide-type="watchparty">
-              <div class="data-list__row-main"><span data-i18n="event-detail.ov.tiers">Ticket types</span></div>
-              <span id="ed-ov-tiers">—</span>
+          <!-- 2026-10-12（UI-CHANGES 一百六十七）：原本是 .data-list 唯讀列，改成跟下方欄位同一種輸入框——永遠 disabled（不分模式），
+               值由 hydrate() 寫進 value。票種／組合包兩格是票務分頁的摘要，保留在這裡（「這場賣什麼」一眼看得到），管理仍走下方連結。 -->
+          <div class="form-grid mb-16">
+            <div class="field">
+              <label class="field__label" for="ed-ov-type" data-i18n="event-detail.ov.type">Type</label>
+              <input class="input" id="ed-ov-type" disabled>
+              <p class="field__hint" data-i18n="ee.ov.type.locked">Locked after creation — the rest of the form depends on it. To change it, create a new event.</p>
             </div>
-            <div class="data-list__row" data-hide-type="watchparty">
-              <div class="data-list__row-main"><span data-i18n="event-detail.ov.bundles">Ticket bundles</span></div>
-              <span id="ed-ov-bundles">—</span>
+            <div class="field" id="ed-ov-series-field" data-hide-type="watchparty" data-feat="S88">
+              <label class="field__label" for="ed-ov-series" data-i18n="event-detail.ov.series">Series</label>
+              <input class="input" id="ed-ov-series" disabled>
+            </div>
+          </div>
+          <div class="form-grid" data-hide-type="watchparty">
+            <div class="field">
+              <label class="field__label" for="ed-ov-tiers" data-i18n="event-detail.ov.tiers">Ticket types</label>
+              <input class="input" id="ed-ov-tiers" disabled>
+            </div>
+            <div class="field">
+              <label class="field__label" for="ed-ov-bundles" data-i18n="event-detail.ov.bundles">Ticket bundles</label>
+              <input class="input" id="ed-ov-bundles" disabled>
             </div>
           </div>
           <div class="flex-row mt-8" data-hide-type="watchparty">
@@ -922,30 +941,15 @@
           <!-- 墓碑 2026-10-05（D354）：說明區塊（#ed-info、data-feat="S57"，D334）整組退場，由描述的無標題文字區塊取代。 -->
 
           <!-- 條款與細則（2026-10-07 D362 決定五；5.1.6.2 F2，定義同 5.1.6.1 F2）：描述之後，跟建立活動同一組——
-               直接促銷同意、條款及細則兩個開關（.control-group＋.switch），開著才露出各自的文字欄。
-               直接促銷同意掛 data-feat="S80"（同建立活動，release2.4 不出現）。
+               條款及細則開關（.control-group＋.switch），開著才露出文字欄。
+               D395（2026-10-12）：直接促銷同意整組移除，本節只剩條款及細則。
                bookyay 帶入的活動：條款及細則的開關與文字不分模式一律鎖定（.switch--locked＋文字欄 disabled），
-               開關列標題旁掛 From bookyay（lockTermsFromBky()）；直接促銷同意不帶入、照常可改（D362 決定三）。
+               開關列標題旁掛 From bookyay（lockTermsFromBky()）。
                兩段式面板：開關是 data-view-safe（檢視態留著顯示狀態、shared.css 擋點擊，同跨日開關），
                檢視態由 applyReadonly() 一起鎖上；觀影派對沒有這一節（同建立活動 data-hide-type）。 -->
           <div class="field" id="ed-terms" data-hide-type="watchparty">
             <div class="field__label" data-i18n="ce.terms">Terms and conditions</div>
-            <div class="control-group" data-feat="S80">
-              <div class="control-row">
-                <div>
-                  <div class="control-row__main"><span data-i18n="ce.terms.marketing">Consent to direct marketing</span></div>
-                  <div class="control-row__sub" data-i18n="ce.terms.marketing.hint">Attendee data may be used by the organiser to market to them directly.</div>
-                </div>
-                <button type="button" class="switch" data-ed-term="marketing" role="switch" aria-checked="false" data-view-safe
-                        aria-label="Consent to direct marketing" data-i18n-aria-label="ce.terms.marketing"></button>
-              </div>
-              <div class="control-group__body" hidden>
-                <div class="field">
-                  <label class="field__label" for="ed-terms-marketing" data-i18n="ce.terms.marketing.label">Marketing message</label>
-                  <textarea class="textarea" id="ed-terms-marketing" data-ed="terms-marketing-text" data-i18n-placeholder="ce.terms.marketing.ph" placeholder="What fans will see, e.g. how their info may be used to send updates and offers"></textarea>
-                </div>
-              </div>
-            </div>
+            <!-- 墓碑 2026-10-12（D395）：直接促銷同意（data-feat="S80"、data-ed-term="marketing"、#ed-terms-marketing）整組移除。 -->
             <div class="control-group">
               <div class="control-row">
                 <div>
@@ -1280,8 +1284,8 @@
           </div>
           <div class="ed-pub__linkrow">
             <div class="ed-pub__qr" id="ed-pub-qr" aria-hidden="true"></div>
-            <div>
-              <div class="field-readout" id="ed-pub-url">—</div>
+            <div class="ed-pub__linkmain">
+              <input class="input" id="ed-pub-url" disabled aria-label="Event link" data-i18n-aria-label="ed.pub.link.hidden">
               <p class="field__hint" data-i18n="ed.pub.link.hint">Where fans buy tickets. The QR points at the same page.</p>
             </div>
           </div>
@@ -1297,10 +1301,20 @@
           <div class="card__head">
             <h3 class="card__title" data-i18n="ed.loc.title">Localization</h3>
           </div>
-          <div class="data-list">
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.loc.langs">Translations</span></div><span data-i18n="ed.loc.langs.val">4 languages · auto-generated, editable</span></div>
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.loc.base">Base currency</span></div><span id="ed-loc-base">—</span></div>
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.loc.overrides">Currency overrides</span></div><span id="ed-loc-overrides">—</span></div>
+          <!-- 摘要三格（2026-10-12，UI-CHANGES 一百六十七）：同設定分頁其他欄位，改成永遠 disabled 的輸入框；改內容走下方入口 -->
+          <div class="field">
+            <label class="field__label" for="ed-loc-langs" data-i18n="ed.loc.langs">Translations</label>
+            <input class="input" id="ed-loc-langs" disabled data-i18n-value="ed.loc.langs.val" value="4 languages · auto-generated, editable">
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label class="field__label" for="ed-loc-base" data-i18n="ed.loc.base">Base currency</label>
+              <input class="input" id="ed-loc-base" disabled>
+            </div>
+            <div class="field">
+              <label class="field__label" for="ed-loc-overrides" data-i18n="ed.loc.overrides">Currency overrides</label>
+              <input class="input" id="ed-loc-overrides" disabled>
+            </div>
           </div>
           <div class="info-banner mt-16" id="ed-loc-locked" hidden>
             <i data-lucide="lock" class="ztor-icon info-banner__icon"></i>
@@ -1483,6 +1497,11 @@
             <!-- 2026-09-18（5.1.6.3 §2.6.1 空狀態）：說明從哪裡建——「這場沒有」與「這個功能
                  不存在」是兩件事，所以子集不隱藏、補一句建立入口。 -->
             <p class="empty-card__text" data-i18n="ed.bd.empty.sub">Create one in step 6 of the create flow, or from the e-shop.</p>
+            <!-- 2026-10-12（UI-CHANGES 一百六十九，使用者「開啟編輯在顯示無資料畫面，並引導創建」）：空狀態只在編輯態出現（檢視態整節收起），
+                 帶一顆通往電子商店「建立組合包」的入口——規格的空狀態本來就寫「或從電子商店建立」，這裡只是把那句話做成連結；
+                 不預帶本活動（create-bundle.html 沒有預選活動的參數，要不要做屬產品決定，ASSUMPTIONS BDL-EMPTY-001）。
+                 已結束／已取消整頁唯讀、不會進編輯態，所以不必另擋。 -->
+            <a class="btn btn--outline btn--sm empty-card__cta" href="create-bundle.html" data-ed-bundle-create data-i18n="ed.bd.empty.cta">Create a bundle in the E-Shop</a>
           </div>
           <!-- 墓碑 2026-08-17（使用者指示刪除）：這裡原本有一則 info-banner 寫著
                「組合包在建立流程設定；這裡的編輯能力等上游規格定案後補（BDL-001）」。
@@ -1521,7 +1540,8 @@
              i18n 的 event-detail.tiers.rule.* 與 .tiers.tbd 保留未用。 -->
           </div>
 
-          <div data-nav-panel="resale" data-feat="S90">
+          <!-- data-view-empty（2026-10-12，UI-CHANGES 一百六十九）：轉售是 Phase 2 說明、這場沒有任何轉售資料，檢視態不出現，編輯態才看得到 -->
+          <div data-nav-panel="resale" data-feat="S90" data-view-empty>
 <!-- 轉售（2026-08-17 自「系列」分頁搬來）：它談的是「這場的票能不能轉手」，跟系列
              一點關係也沒有。掛在系列分頁裡等於只有系列子場的創作者看得到這則說明，一般活動的
              創作者永遠看不到——那顯然不是本意。票的事歸票務。 -->
@@ -2377,7 +2397,7 @@
       /* 2026-08-31 使用者指示：第一行「開演＋開放入場」、第二行「地點」。
          這兩行答的是不同問題（幾點到／去哪裡），過去串成一條時，長場地名把時間
          擠到換行，斷點落在哪由視窗寬度決定，讀者每次看到的分組都不一樣。
-         開放入場沿用建立流程的字典鍵 ce.doors，不另發明第二個「開放入場」。 */
+         提前入場時間沿用建立流程的字典鍵 ce.doors（D396 由「開放入場」改名），不另發明第二個名稱。 */
       /* 跨日（D328，5.1.6.3 §2.4）：有結束日期就寫成「開始日期 – 結束日期」 */
       const when = [fmtDate(ev.date) + (ev.endDate ? ' – ' + fmtDate(ev.endDate) : ''), fmtTime(ev.start)].filter(Boolean).join(' · ');
       const doors = (ev.doors || '').trim()
@@ -2461,23 +2481,23 @@
        票種／組合包四列）已於 2026-08-17 搬進「設定」分頁（`data-panel="dates"`）——搬遷後
        這裡永遠找不到目標，四個 if 區塊全部靜默不執行，畫面因此卡死在示例活動的假資料
        （見 documents ASSUMPTIONS 素材）。改指向 `dates`，四列才吃得到這一場的真實 ev 資料。 */
-    const rowVal = key => {
-      const label = document.querySelector('[data-panel="dates"] .data-list__row [data-i18n="' + key + '"]');
-      const row = label && label.closest('.data-list__row');
-      return row ? { row: row, val: row.querySelector(':scope > span:last-child') } : null;
-    };
-    const typeRow = rowVal('event-detail.ov.type');
-    if (typeRow && typeRow.val) { typeRow.val.removeAttribute('data-i18n'); typeRow.val.innerHTML = T(ev.typeLabelKey, ev.type); }
+    /* 2026-10-12（UI-CHANGES 一百六十七）：四列改成 disabled 輸入框，直接按 id 寫 value（不再用標籤 key 找列） */
+    const typeIn = document.getElementById('ed-ov-type');
+    if (typeIn) {   /* 類型字串是 HTML（例：Meet &amp; Greet），先解成純文字再放進 value */
+      const tmp = document.createElement('span');
+      tmp.innerHTML = T(ev.typeLabelKey, ev.type);
+      typeIn.value = tmp.textContent;
+    }
     /* 系列：store 有 series 欄位——有值就填真實的巡演資訊，沒有就整列收起
        （粉絲見面會顯示「Series 2 of 3」是對這場活動陳述不實）。 */
-    const serRow = rowVal('event-detail.ov.series');
-    if (serRow && serRow.val) {
+    const serIn = document.getElementById('ed-ov-series');
+    const serField = document.getElementById('ed-ov-series-field');
+    if (serIn && serField) {
       if (ev.series) {
-        serRow.row.hidden = false;
-        serRow.val.removeAttribute('data-i18n');
-        serRow.val.textContent = T('event-detail.series.val', '{name} · {i} of {n}')
+        serField.hidden = false;
+        serIn.value = T('event-detail.series.val', '{name} · {i} of {n}')
           .replace('{name}', ev.series.name).replace('{i}', ev.series.index).replace('{n}', ev.series.total);
-      } else serRow.row.hidden = true;
+      } else serField.hidden = true;
     }
     /* 頁首的系列徽章同理：有系列才顯示，內容用真實的巡演名稱 */
     const seriesBadge = document.querySelectorAll('.page-intro .badge')[1];
@@ -2489,21 +2509,19 @@
       } else seriesBadge.hidden = true;
     }
     /* 總覽的票務摘要兩列（2026-08-13）：值跟著 store 走，管理仍在票務分頁。 */
-    const ovT = rowVal('event-detail.ov.tiers');
-    if (ovT && ovT.val) {
+    const ovT = document.getElementById('ed-ov-tiers');
+    if (ovT) {
       const n = (ev.tiers || []).length;
       const sum = (ev.tiers || []).reduce((a, t) => a + (Number(t.qty) || 0), 0);
-      ovT.val.removeAttribute('data-i18n');
-      ovT.val.textContent = n
+      ovT.value = n
         ? T('event-detail.ov.tiers.val', '{n} types · {m} tickets').replace('{n}', n).replace('{m}', fmtNum(sum))
         : T('event-detail.ov.none', 'None yet');
     }
-    const ovB = rowVal('event-detail.ov.bundles');
-    if (ovB && ovB.val) {
+    const ovB = document.getElementById('ed-ov-bundles');
+    if (ovB) {
       const bds = ev.bundles || [];
       const soldSum = bds.reduce((a, b) => a + (Number(b.sold) || 0), 0);
-      ovB.val.removeAttribute('data-i18n');
-      ovB.val.textContent = bds.length
+      ovB.value = bds.length
         ? T('ed.bd.count', '{n} bundles · {m} sold').replace('{n}', bds.length).replace('{m}', fmtNum(soldSum))
         : T('event-detail.ov.none', 'None yet');
     }
@@ -2627,9 +2645,10 @@
         badge.className = 'badge ' + (bky ? 'badge--neutral' : 'badge--success');
         const sp = badge.querySelector('span');
         if (sp) {
-          const key = bky ? 'event-detail.live.scanner.off' : 'event-detail.live.scanner.on';
+          /* D394（2026-10-12）：bookyay 活動有自己的掃描器可用，徽章不再寫「已停用」（會跟下方可用的連結矛盾），改寫掃票由誰負責 */
+          const key = bky ? 'event-detail.scanner.bky.badge' : 'event-detail.live.scanner.on';
           sp.setAttribute('data-i18n', key);
-          sp.textContent = T(key, bky ? 'Disabled' : 'Enabled');
+          sp.textContent = T(key, bky ? 'Via bookyay' : 'Enabled');
         }
       }
       ['ed-live-copy', 'ed-live-share'].forEach(id => { const b = document.getElementById(id); if (b) b.disabled = bky; });
@@ -2639,6 +2658,39 @@
       }
       const note = document.getElementById('ed-scanner-bky');
       if (note) note.hidden = !bky;
+      /* D394（2026-10-12）：ztor 掃碼器三格收起，換成 bookyay 掃描器連結（有才畫連結＋複製，沒有寫一句說明） */
+      card.querySelectorAll('[data-ztor-scan]').forEach(el => { el.hidden = bky; });
+      const bkyBox = document.getElementById('ed-bky-scan');
+      if (bkyBox) {
+        bkyBox.hidden = !bky;
+        const url = bky ? String(ev.bkyScanUrl || '').trim() : '';
+        const row = document.getElementById('ed-bky-scan-row');
+        const none = document.getElementById('ed-bky-scan-none');
+        const hint = document.getElementById('ed-bky-scan-hint');
+        const code = document.getElementById('ed-bky-scan-url');
+        if (row) row.hidden = !url;
+        if (hint) hint.hidden = !url;
+        if (none) none.hidden = !!url;
+        if (code) code.textContent = url || '—';
+        const copy = document.getElementById('ed-bky-scan-copy');
+        if (copy && !copy.dataset.bound) {
+          copy.dataset.bound = '1';
+          copy.addEventListener('click', () => {
+            const u = String(ev.bkyScanUrl || '').trim();
+            if (!u) return;
+            if (navigator.clipboard) navigator.clipboard.writeText(u).catch(() => {});
+            const done = T('event-detail.live.scanner.copied', 'Link copied');
+            copy.removeAttribute('data-i18n-title'); copy.removeAttribute('data-i18n-aria-label');
+            copy.title = done; copy.setAttribute('aria-label', done);
+            if (window.ztorToast) window.ztorToast.show(done);
+            setTimeout(() => {
+              copy.setAttribute('data-i18n-title', 'event-detail.live.scanner.copy');
+              copy.setAttribute('data-i18n-aria-label', 'event-detail.live.scanner.copy');
+              if (window.applyI18n) window.applyI18n(copy);
+            }, 1600);
+          });
+        }
+      }
     }
     const rosterNote = document.getElementById('ed-roster-bky');
     if (rosterNote) rosterNote.hidden = !bky;
@@ -3446,6 +3498,10 @@
       '<button class="btn btn--ghost btn--sm" type="button" data-ed-lineup-remove aria-label="' +
       T('ee.lineup.remove', 'Remove') + '"><i data-lucide="x" class="ztor-icon"></i></button>';
     row.querySelector('input').value = name || '';
+    /* 2026-10-12（UI-CHANGES 一百六十七）：設定分頁的檢視態改成「輸入框留著、顯示 disabled」之後，輸入框不再被讀數蓋住——
+       重畫出來的列要跟著目前模式鎖上（原本靠 applyReadonly，但重填演出陣容發生在它之後時會漏掉） */
+    const pnl = document.querySelector('.tab-panel[data-editable]');
+    row.querySelector('input').readOnly = !(pnl && pnl.getAttribute('data-mode') === 'edit');
     return row;
   }
 
@@ -3472,9 +3528,9 @@
   }
 
   /* ── 條款與細則（D362 決定五；5.1.6.2 F2，定義同 5.1.6.1 F2）──────────────────
-     紀錄形狀：ev.terms＝{ marketing: { on, text }, tnc: { on, text } }；沒寫＝兩個都關（D340 預設關）。
-     bookyay 帶入的活動：tnc 照 bookyay 帶入（D362 決定二），不分模式一律鎖定（lockTermsFromBky），marketing 照常可改。 */
-  const TERM_KEYS = ['marketing', 'tnc'];
+     紀錄形狀：ev.terms＝{ tnc: { on, text } }；沒寫＝關（D340 預設關）。D395：marketing 退場。
+     bookyay 帶入的活動：tnc 照 bookyay 帶入（D362 決定二），不分模式一律鎖定（lockTermsFromBky）。 */
+  const TERM_KEYS = ['tnc'];
   const termSw = k => document.querySelector('[data-ed-term="' + k + '"]');
   const termTa = k => document.querySelector('[data-ed="terms-' + k + '-text"]');
   function setEdTerm(k, on) {
@@ -3726,7 +3782,7 @@
       sw.disabled = lock; sw.classList.toggle('switch--locked', lock); sw.setAttribute('aria-disabled', lock ? 'true' : 'false');
     });
     /* 跨日活動開關（D328）：檢視模式鎖住（.switch--locked）；bookyay 帶入者不分模式一律鎖（5.1.6.2 F7 → 5.1.6.1 F21） */
-    root.querySelectorAll('[data-sess-md]').forEach(sw => {
+    root.querySelectorAll('[data-sess-md], [data-sess-doors]').forEach(sw => {   // D396：提前入場時間開關同一條規則
       const lock = ro || (typeof isBky === 'function' && isBky());
       sw.disabled = lock; sw.classList.toggle('switch--locked', lock); sw.setAttribute('aria-disabled', lock ? 'true' : 'false');
     });
@@ -3747,11 +3803,14 @@
   }
 
   /* ── 場次清單（2026-08-11 使用者指示：定點活動的多場次收進同一頁）────────────
-     一場一盒，欄位一行一組（同建立流程）：日期／開始｜結束／開放入場（時間↔開演前分鐘互算，
-     基準＝該場開始時間）／早到政策（填了入場時間才問）。只有一場時不畫外框、不出盒標。
+     一場一盒，欄位一行一組（同建立流程）：日期／開始｜結束／提前入場時間（D396 起是開關；時間↔開演前分鐘互算，
+     基準＝該場開始時間）／早到政策（開關打開才問）。只有一場時不畫外框、不出盒標。
      沒有 sessions 的舊紀錄由單值欄位合成一場（第 1 場＝原本那組值）。 */
   const hhmmToMin = s => { const m = /^(\d{1,2}):(\d{2})$/.exec(String(s == null ? '' : s).trim()); return m ? +m[1] * 60 + +m[2] : null; };
   const minToHhmm = v => { const t = ((Math.round(v) % 1440) + 1440) % 1440; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); };
+  /* 提前入場時間開關（D396，同建立流程 doorsOnOf）：s.doorsOn 有值照它；沒有時有填時間或分鐘就算開著。 */
+  const doorsOnOf = s => (typeof s.doorsOn === 'boolean') ? s.doorsOn
+    : !!((s.doors || '').trim() || String(s.doorsMin == null ? '' : s.doorsMin).trim());
   /* 活動紀錄 → 場次清單（2026-10-09 抽成一支：初次載入、捨棄、高影響比對三處共用同一份合成規則） */
   function sessFromEv() {
     const list = ((ev.sessions && ev.sessions.length) ? ev.sessions : [{
@@ -3762,13 +3821,14 @@
     list.forEach(s => {
       if ((s.doorsMin == null || s.doorsMin === '') && hhmmToMin(s.start) != null && hhmmToMin(s.doors) != null)
         s.doorsMin = String(Math.max(0, hhmmToMin(s.start) - hhmmToMin(s.doors)));
+      s.doorsOn = doorsOnOf(s);   // D396：提前入場時間開關，舊紀錄沒有這個鍵時由有沒有值推得（基準與現況同一份形狀，捨棄比對才不會誤判）
     });
     return list;
   }
   let edSessions = sessFromEv();
 
   /* ── 場次盒的折疊（2026-08-13 使用者裁決「A 案」，與建立流程同一套）──────
-     折疊態只留一行摘要：日期 · 起訖時間 · 開放入場。
+     折疊態只留一行摘要：日期 · 起訖時間 · 提前入場時間。
      只有一場時不折（盒子本身也不畫）；多場預設全折，新增的那一場自動展開；
      可以同時展開好幾場。展開狀態存在 Set 而不是 DOM——renderSessions() 會整段重畫。 */
   const sessOpen = new Set();
@@ -3814,6 +3874,19 @@
     const st = (s.start || '').trim(), en = (s.end || '').trim();
     const later = (st && en) ? (ed + ' ' + en) > (d + ' ' + st) : ed > d;
     return later ? '' : T('ce.sess.enddate.err.order', 'End must be later than the start.');
+  }
+  /* D396（5.1.6.2 v3.51〔推導〕）：提前入場時間開著時必填（時間或開演前分鐘填一格即可）；詳情頁就地即時標，儲存時列入擋下清單。 */
+  function edSessDoorsErr(s) {
+    if (!s || !doorsOnOf(s)) return '';
+    return ((s.doors || '').trim() || String(s.doorsMin == null ? '' : s.doorsMin).trim()) ? '' : T('ce.doors.err.req', 'Add an early entry time.');
+  }
+  function syncEdDoorsErr(row, s) {
+    const f = row.querySelector('[data-sess-doors-field]');
+    if (!f) return;
+    const err = edSessDoorsErr(s);
+    f.classList.toggle('is-invalid', !!err);
+    const m = f.querySelector('[data-sess-doors-err]');
+    if (m) { m.textContent = err; m.hidden = !err; }
   }
   function syncEdSessErr(row, s) {
     /* 開始／結束時間（D329）：星號跟著跨日開關、錯誤就地即時標。 */
@@ -3894,30 +3967,36 @@
           '</label>' +
         '</div>' +
       '</div>' +
-      /* 2026-08-13 使用者指示「UI 上加一個層級，用線框的 layer」：開放入場整組
-         （時間／開演前兩格＋說明＋早到規則）用 .control-group--plain 的 1px 線框圈起來。
-         它跟上面的日期、開始結束時間不是同一層——那些是「這一場什麼時候」，
-         這一組是「門什麼時候開、早到怎麼辦」的附屬設定。填色層只到 L2（見 nest.css），
-         第三層以後一律用線框表達層級，所以這裡用線框不用底色。 */
-      /* D365：bookyay 帶入者的開放入場（過早入場提示）與早到處理（過早入場的處理）不分模式一律鎖定——
-         整組掛 .is-source-locked（segmented 點不動）、兩層標籤各掛來源標記；輸入欄與選項卡的鎖在 applyReadonly。 */
-      '<div class="field control-group control-group--plain' + (bky ? ' is-source-locked' : '') + '" data-sess-doors-group>' +
-        '<div class="field__label"><span>' + tixEsc(T('ce.doors', 'Doors open')) + '</span> <span class="text-sub">' + tixEsc(T('ce.opt', '(optional)')) + '</span>' + (bky ? bkySrcChip() : '') + '</div>' +
+      /* D396（2026-10-12 使用者指示；同建立流程）：「開放入場（選填）」改名「提前入場時間」，改成跟跨日同一種開關列＋揭示區
+         （.control-group＋.control-row＋.switch）。開＝露出時間／開演前兩格與早於提前入場時間入場的處理；關＝收起並清空
+         （doors／doorsMin 清空、處理回到「仍可入場」）。bookyay 帶入者開關不分模式一律鎖（applyReadonly），標題旁掛來源標記；
+         有過早入場值＝開著、沒有＝關著（D365）。開關掛 data-view-safe：檢視態也看得到開或關（Q119 例外：開關是狀態展示）。
+         墓碑 2026-10-12（D396）：原本的 .control-group--plain 線框、「（選填）」字樣，以及「時間有值才露出早到處理」。 */
+      '<div class="control-group' + (bky ? ' is-source-locked' : '') + '" data-sess-doors-group>' +
+        '<div class="control-row">' +
+          '<div>' +
+            '<div class="control-row__main"><span>' + tixEsc(T('ce.doors', 'Early entry time')) + '</span>' + (bky ? ' ' + bkySrcChip() : '') + '</div>' +
+            '<div class="control-row__sub">' + tixEsc(T('ce.doors.hint', 'When staff can start scanning and letting attendees in')) + '</div>' +
+          '</div>' +
+          '<button type="button" class="switch' + (doorsOnOf(s) ? ' switch--on' : '') + '" role="switch" aria-checked="' +
+            (doorsOnOf(s) ? 'true' : 'false') + '" data-view-safe data-sess-doors aria-label="' + tixEsc(T('ce.doors', 'Early entry time')) + '"></button>' +
+        '</div>' +
+        '<div class="control-group__body"' + (doorsOnOf(s) ? '' : ' hidden') + '>' +
         '<div class="form-grid">' +
-          f(T('ed.doors.at', 'Time'), 'doors', 'time', s.doors) +
+          '<label class="field' + (edSessDoorsErr(s) ? ' is-invalid' : '') + '" data-sess-doors-field><span class="field__label">' + tixEsc(T('ed.doors.at', 'Time')) +
+            ' <span class="field__req">*</span>' + (bky ? ' ' + bkySrcChip() : '') + '</span>' +
+            '<input class="input" type="time" data-sess-f="doors" value="' + tixEsc(s.doors || '') + '">' +
+            '<span class="field__error" data-sess-doors-err' + (edSessDoorsErr(s) ? '' : ' hidden') + '>' + tixEsc(edSessDoorsErr(s)) + '</span></label>' +
           '<label class="field"><span class="field__label">' + tixEsc(T('ed.doors.before', 'Before start')) + '</span>' +
             '<span class="amount-field amount-field--suffix amount-field--readonly">' +
               '<input class="input amount-field__input" type="number" min="0" step="5" placeholder="0" data-sess-f="doorsMin" value="' + tixEsc(mins) + '">' +
               '<span class="amount-field__unit">' + tixEsc(T('ed.min', 'min')) + '</span>' +
             '</span></label>' +
         '</div>' +
-        /* 墓碑（2026-08-13 使用者指示「不需要」）：「兩格填一個就好…」那句說明退場。
-           兩格互相換算這件事，填了任一格就會自己演示給使用者看，不必先講。
-           i18n key `ed.doors.hint` 保留未用。 */
-        /* 單選卡是狀態展示（Q119 例外）：標 data-view-safe 讓檢視態看得到選了哪個（此前被 shared.css 白名單整組藏掉、只剩標籤），
+        /* 單選卡是狀態展示（Q119 例外）：標 data-view-safe 讓檢視態看得到選了哪個，
            不可點由 applyReadonly 的 disabled ＋ shared.css 的 .segmented.radio-cards pointer-events 擋。 */
-        '<div class="rule-sub" data-early-block' + ((s.doors || '').trim() || String(mins).trim() ? '' : ' hidden') + '>' +
-          '<div class="field__label">' + tixEsc(T('ed.early.policy', 'Arriving before that')) + (bky ? bkySrcChip() : '') + '</div>' +
+        '<div class="rule-sub" data-early-block>' +
+          '<div class="field__label">' + tixEsc(T('ed.early.policy', 'Arriving before early entry time')) + (bky ? bkySrcChip() : '') + '</div>' +
           '<div class="segmented radio-cards" role="radiogroup"' + (bky ? ' aria-disabled="true"' : '') + '>' +
             ['warn', 'block'].map(v => '<button type="button" class="segmented__btn' +
               ((s.early || 'warn') === v ? ' segmented__btn--active' : '') + '" role="radio" aria-checked="' +
@@ -3926,6 +4005,7 @@
           '</div>' +
           /* 墓碑（2026-08-13 使用者指示「刪除」）：「票種可以各自提前入場…」那句退場，
              同 create-event。i18n key `ed.early.policy.hint` 保留未用。 */
+        '</div>' +
         '</div>' +
       '</div>' +
       (multi ? '</div>' : '') +
@@ -3963,8 +4043,8 @@
         else if (doorsM != null) { s.doorsMin = String(Math.max(0, startM - doorsM)); mEl.value = s.doorsMin; }
         else if (mins !== '') { s.doors = minToHhmm(startM - Number(mins)); dEl.value = s.doors; dEl.dispatchEvent(new Event('change')); }
       }
-      const blk = row.querySelector('[data-early-block]');
-      if (blk) blk.hidden = !((s.doors || '').trim() || String(s.doorsMin == null ? '' : s.doorsMin).trim());
+      /* 墓碑 2026-10-12（D396）：早到處理不再跟著「有沒有值」顯示，改由提前入場時間開關的揭示區管 */
+      syncEdDoorsErr(row, s);
       refreshTix();
     }
     if (k === 'endDate' || k === 'date' || k === 'start' || k === 'end') syncEdSessErr(row, s);   // D328 跨日
@@ -3997,6 +4077,32 @@
       syncEdSessErr(row, s);
       const sum = row.querySelector('.collapse-head__sum');
       if (sum) sum.outerHTML = sessSummaryHTML(s);
+      return;
+    }
+    /* 提前入場時間開關（D396）：就地翻開關與揭示區；關掉清空時間、分鐘，早到處理回到「仍可入場」。 */
+    const dr = e.target.closest('[data-sess-doors]');
+    if (dr && s && !dr.disabled) {
+      const on = !doorsOnOf(s);
+      s.doorsOn = on;
+      const grp = dr.closest('[data-sess-doors-group]');
+      if (!on) {
+        s.doors = ''; s.doorsMin = ''; s.early = 'warn';
+        grp?.querySelectorAll('[data-sess-f]').forEach(x => { x.value = ''; x.dispatchEvent(new Event('change')); });
+        grp?.querySelectorAll('[data-sess-early]').forEach(b => {
+          const act = b.dataset.sessEarly === 'warn';
+          b.classList.toggle('segmented__btn--active', act);
+          b.setAttribute('aria-checked', act ? 'true' : 'false');
+        });
+      }
+      dr.classList.toggle('switch--on', on);
+      dr.setAttribute('aria-checked', on ? 'true' : 'false');
+      const body = grp?.querySelector('.control-group__body');
+      if (body) body.hidden = !on;
+      syncEdDoorsErr(row, s);
+      const sum = row.querySelector('.collapse-head__sum');
+      if (sum) sum.outerHTML = sessSummaryHTML(s);
+      refreshTix();
+      if (edBaseline) syncDirty();
       return;
     }
     const pick = e.target.closest('[data-sess-early]');
@@ -4138,7 +4244,7 @@
   const ED_ASPECTS = [
     ['basics', s => s.name + '' + s.highlight + '' + s.desc],   // D354：描述的區塊（含原說明區塊的內容）與名稱同屬 F2 一列
     ['locale', s => s.country + '' + s.langs],                    // D370：活動國家＋活動語言算一項
-    ['terms',  s => s.terms],                                     // D362：條款與細則（兩個開關＋文字）算一項
+    ['terms',  s => s.terms],                                     // D362：條款與細則（條款及細則開關＋文字，D395 起只剩一個開關）算一項
     ['venue',  s => s.venue + '' + s.address + '' + s.meet + '' + s.transit],   // D370：集合地點、交通併入場地這一項
     ['dates',  s => s.sessions],
     ['lineup', s => s.lineup],
@@ -4266,6 +4372,7 @@
       if (!(s.date || '').trim()) errs.push({ label: T('ce.date', 'Event date') + sfx, nav: 'dates', sess: s.id, f: 'date' });
       if (edSessTimeErr(s, 'start') || edSessTimeErr(s, 'end')) errs.push({ label: T('ed.save.err.times', 'Start and end time') + sfx, nav: 'dates', sess: s.id, f: 'start' });
       if (edSessEndErr(s)) errs.push({ label: T('ce.sess.enddate', 'End date') + sfx, nav: 'dates', sess: s.id, f: 'endDate' });
+      if (edSessDoorsErr(s)) errs.push({ label: T('ce.doors', 'Early entry time') + sfx, nav: 'dates', sess: s.id, f: 'doors' });   // D396
     });
     return errs;
   }
@@ -4614,7 +4721,7 @@
     const kv = document.querySelector('[data-kpi="sold"] .kpi__value');
     if (kv) kv.textContent = fmtNum(ev.sold) + ' / ' + fmtNum(qsum || ev.sold);
     const ovT = document.getElementById('ed-ov-tiers');
-    if (ovT) ovT.textContent = ev.tiers.length
+    if (ovT) ovT.value = ev.tiers.length
       ? T('event-detail.ov.tiers.val', '{n} types · {m} tickets').replace('{n}', ev.tiers.length).replace('{m}', fmtNum(qsum))
       : T('event-detail.ov.none', 'None yet');
   }
@@ -4667,12 +4774,12 @@
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   function earlyHintFor(n) {
-    /* 換算基準＝第 1 場的開放入場（多場時各場可能不同，票種層先跟第 1 場，見 EDIT-001 ⑦）。 */
+    /* 換算基準＝第 1 場的提前入場時間（多場時各場可能不同，票種層先跟第 1 場，見 EDIT-001 ⑦）。 */
     const doorsM = hhmmToMin((edSessions[0] || {}).doors || '');
-    if (!(Number(n) > 0)) return T('ed.tix.early.follow', 'Empty or 0 — follows the doors-open time.');
+    if (!(Number(n) > 0)) return T('ed.tix.early.follow', "Empty or 0 — follows the date's early entry time.");
     return doorsM != null
       ? T('ed.tix.early.hint', '{n} min before doors — in at {t}').replace('{n}', Number(n)).replace('{t}', minToHhmm(doorsM - Number(n)))
-      : T('ed.tix.early.nodoors', 'Set the doors-open time first — the actual entry time comes from it.');
+      : T('ed.tix.early.nodoors', "This date has no early entry time, so early entry doesn't apply.");
   }
 
   /* bookyay 帶入的票（D330）：priceObj 帶 pin＝{ HKD: 原價 }。回「HK$300」；不是 bookyay 帶入的回空字串。 */
@@ -5088,6 +5195,10 @@
     } else {
       const rows = ruleCondRows(evRuleConds(), null);
       const noneKey = bky ? 'ed.evrules.none' : 'ed.evrules.none.own';
+      /* 2026-10-12（UI-CHANGES 一百六十九）：沒有任何條件＝檢視態整張卡不出現；編輯態才出現「目前無設定條件」＋「編輯」
+         （bookyay 帶入者編輯態寫「bookyay 沒有設定」、不給編輯——條件由 bookyay 管） */
+      const tixTab = document.querySelector('.tab-panel[data-panel="tiers"]');
+      if (!rows && !(tixTab && tixTab.getAttribute('data-mode') === 'edit')) sec.hidden = true;
       body.innerHTML = rows
         /* --fact（2026-10-10）：票務分頁改跟整頁編輯模式後，檢視態會收起一般 .field__hint——這兩句是事實說明（沒有條件／跟隨規則），檢視態照常顯示 */
         ? '<div>' + rows + '</div><p class="field__hint field__hint--fact" data-i18n="ed.evrules.hint">' + tixEsc(T('ed.evrules.hint', '')) + '</p>'
@@ -5196,6 +5307,11 @@
         : T('ed.tm.early.bky.none', 'Follows the date — bookyay has no doors-open time for it.');
     }
     if (ef) ef.classList.toggle('is-source-locked', entryLock);
+    /* D396（5.1.6.2 v3.51〔推導〕）：場次沒開提前入場時間＝沒有基準時間，票的提前入場不適用——欄位唯讀、說明句寫原因 */
+    if (!entryLock && !(sess.doors || '').trim()) {
+      early.readOnly = true;
+      tmEl('ed-tm-early-hint').textContent = T('ed.tix.early.nodoors', "This date has no early entry time, so early entry doesn't apply.");
+    }
     const pol = tmEl('ed-tm-early-pol');
     pol.hidden = !entryLock || !(sess.doors || '').trim();
     if (!pol.hidden) tmEl('ed-tm-early-pol-v').textContent =
@@ -5494,6 +5610,7 @@
     if (!tmEl('ed-tier-modal').hidden) closeTierModal();
     renderEvRules();
     refreshTix();
+    try { syncNavSections(); } catch (e) {}   /* 2026-10-12：沒有資料的分節只在編輯態出現（data-view-empty） */
   });
   document.getElementById('ed-tix-view')?.addEventListener('click', e => {
     const btn = e.target.closest('[data-tix-view]');
@@ -5811,12 +5928,12 @@
       .replace('{t}', clock(peak.at)).replace('{n}', fmtNum(peak.n));
   }
 
-  document.querySelectorAll('[data-rhythm-step] .segmented__item').forEach(btn => {
+  document.querySelectorAll('[data-rhythm-step] .segmented__btn').forEach(btn => {
     btn.addEventListener('click', () => {
       rhythmStep = btn.dataset.step;
-      document.querySelectorAll('[data-rhythm-step] .segmented__item').forEach(b => {
+      document.querySelectorAll('[data-rhythm-step] .segmented__btn').forEach(b => {
         const on = b === btn;
-        b.classList.toggle('segmented__item--active', on);
+        b.classList.toggle('segmented__btn--active', on);
         b.setAttribute('aria-selected', on ? 'true' : 'false');
       });
       renderLiveRhythm();
@@ -5864,7 +5981,12 @@
         const offByType = (panel.dataset.hideType || '').split(/\s+/).indexOf(ev.type) >= 0;
         const offByStage = !!panel.dataset.stageShow &&
           panel.dataset.stageShow.split(/\s+/).indexOf(ev.status) < 0;
-        const alive = !offByType && !offByStage &&
+        /* 2026-10-12（UI-CHANGES 一百六十九，使用者「票務中沒有的項目，非編輯狀態下就不顯示」）：
+           渲染函式在「這一節沒有資料」時掛 [data-view-empty]；所在分頁是檢視態就整節連同橫列標籤收起，
+           按「編輯活動」後才出現（空狀態＋建立入口）。 */
+        const tp = panel.closest('.tab-panel');
+        const offByEmpty = panel.hasAttribute('data-view-empty') && !(tp && tp.getAttribute('data-mode') === 'edit');
+        const alive = !offByType && !offByStage && !offByEmpty &&
           Array.from(panel.children).some(el => !el.hidden);
         panel.hidden = !alive;
         const item = group.querySelector('[data-nav-item="' + panel.dataset.navPanel + '"]');
@@ -6046,62 +6168,9 @@
     const bar = document.getElementById('ed-sales-bar');
     if (bar) bar.style.width = p + '%';
 
-    /* 售票期間（2026-08-31；D342 正名）：三種狀態走同一條路徑，差別只在「起點是什麼」與「終點是什麼」。
-         ev.sale.from ＋ ev.sale.to  → 完整區間
-         ev.sale.from ＋ to 空       → 只設開賣，終點＝開演（設定頁「停售（選填）」的落地）
-         沒有 ev.sale               → 上架即開賣（D340 開賣設定不填開賣時間），終點同樣＝開演
-       終點一律有值，所以「還剩幾天」永遠算得出來；賣完那天之後顯示已停售，不給負數。 */
-    const sale = ev.sale || {};
-    const saleFrom = (sale.from || '').trim();
-    const saleTo = (sale.to || '').trim();
-    /* 終點沒設時用開演當天的開始時間，不用整天——開演之後就不該再賣。 */
-    const endStr = saleTo || ((ev.date || '') + (ev.start ? ' ' + ev.start : ' 00:00'));
-    const parseDT = t => {
-      const m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?$/.exec((t || '').trim());
-      return m ? new Date(+m[1], +m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0)) : null;
-    };
-    /* meta 這一格是 12px、寬度只有 span-4，格式要比頁首副標更省：日期去掉年份（兩端同年，
-       寫兩次是噪音）、時間用 24 小時制（區間是技術性事實，「上午 10:00 – 晚上 11:59」比
-       「10:00 – 23:59」長一倍、也更難比大小；同頁的場次摘要本來就是 24 小時制）。 */
-    const fmtDT = t => {
-      const seg = (t || '').trim().split(' ');
-      const d = String(seg[0] || '').split('-');
-      if (d.length !== 3) return '';
-      const day = isZh() ? Number(d[1]) + '/' + Number(d[2])
-                         : MON[Number(d[1]) - 1] + ' ' + Number(d[2]);
-      return [day, seg[1]].filter(Boolean).join(isZh() ? ' ' : ', ');
-    };
-    const endAt = parseDT(endStr);
-    const now = new Date();
-    const DAY = 86400000;
-    /* 以「日」為單位、兩邊都取當天零點再相減：差 23 小時卻跨了午夜時，人會說「還有 1 天」
-       而不是「還有 0 天」。 */
-    const dayDiff = endAt
-      ? Math.round((new Date(endAt.getFullYear(), endAt.getMonth(), endAt.getDate()) -
-                    new Date(now.getFullYear(), now.getMonth(), now.getDate())) / DAY)
-      : null;
-    let winVal;
-    if (dayDiff == null) winVal = '—';
-    else if (dayDiff < 0) winVal = esc(T('event-detail.sales.window.closed', 'Closed'));
-    else if (dayDiff === 0) winVal = esc(T('event-detail.sales.window.today', 'Last day'));
-    else winVal = fmtNum(dayDiff) +
-      '<span class="stat__of"> ' + esc(T('event-detail.sales.window.left', 'days left')) + '</span>';
-    set('ed-sales-window', winVal);
-
-    /* meta 一律寫出「這個終點是怎麼來的」：有停售就給完整區間，沒有就明說賣到開演——
-       否則讀者無從分辨「剩 11 天」是設定的停售日還是開演日。 */
-    const winMetaEl = document.getElementById('ed-sales-window-meta');
-    if (winMetaEl) {
-      /* 兩端都有＝寫成區間，不再加「開賣」二字（破折號已經說了那是起點）。
-         只有起點＝「X 開賣 · 賣到開演」。兩端都沒有＝上架即開賣、賣到開演（D340 開賣設定兩個時間都選填）。 */
-      const opensTxt = saleFrom
-        ? T('event-detail.sales.window.opens', 'Opens {t}').replace('{t}', fmtDT(saleFrom))
-        : T('ed.pub.sale.atlist', 'On sale once listed');
-      winMetaEl.textContent = saleFrom && saleTo
-        ? fmtDT(saleFrom) + ' – ' + fmtDT(saleTo)
-        : opensTxt + ' · ' + T('event-detail.sales.window.untilstart', 'until the event begins');
-    }
-
+    /* 墓碑 2026-10-12（UI-CHANGES 一百六十九，使用者「活動詳情售票中的總覽不需要售票期間這一塊」）：
+       「售票期間」那一格（#ed-sales-window／-meta，還剩幾天＋開賣到停售區間）連同計算整段退場。
+       開賣與停售的設定值仍在「設定 › 發布設定」讀得到。i18n event-detail.sales.window* 只剩 untilstart 有別處在用（發布設定摘要）。 */
     /* 票券：每一列掛活動主視覺——同一場活動的每一種票長的就是同一張臉，
        那正是粉絲票夾裡看到的東西。 */
     const kv = (ev.images && ev.images.keyvisual) || '';
@@ -6217,12 +6286,12 @@
 
   document.querySelectorAll('[data-range-of]').forEach(group => {
     const which = group.dataset.rangeOf;
-    group.querySelectorAll('.segmented__item').forEach(btn => {
+    group.querySelectorAll('.segmented__btn').forEach(btn => {
       btn.addEventListener('click', () => {
         trendRange = btn.dataset.range;
-        group.querySelectorAll('.segmented__item').forEach(b => {
+        group.querySelectorAll('.segmented__btn').forEach(b => {
           const on = b === btn;
-          b.classList.toggle('segmented__item--active', on);
+          b.classList.toggle('segmented__btn--active', on);
           b.setAttribute('aria-selected', on ? 'true' : 'false');
         });
         renderSalesChart(which);
@@ -6562,7 +6631,7 @@
     const shownNow = !ev.publish || ev.publish.shown !== false;
     const url = shownNow ? 'ztor.live/e/' + ev.id : ('ztor.live/e/' + ev.id + '?k=' + ((ev.publish || {}).linkKey || ''));
     const urlEl = document.getElementById('ed-pub-url');
-    if (urlEl) urlEl.textContent = url;
+    if (urlEl) urlEl.value = url;
     const qr = document.getElementById('ed-pub-qr');
     if (qr && window.ztorFauxQr) qr.innerHTML = window.ztorFauxQr(ev.id.length * 3 + 5);
   }
@@ -6623,6 +6692,9 @@
     const empty = document.getElementById('ed-bundle-empty');
     if (empty) empty.hidden = !!bds.length;
     list.hidden = !bds.length;
+    /* 2026-10-12（UI-CHANGES 一百六十九）：沒有組合包＝檢視態整節不出現（syncNavSections 讀 data-view-empty）；
+       編輯態才出現空狀態＋「在電子商店建立組合包」入口 */
+    card.closest('[data-nav-panel]')?.toggleAttribute('data-view-empty', !bds.length);
     /* 2026-08-19 清掉 #ed-bundle-count 死分支：計數徽章已在 2026-08-18 依使用者指示
        從 markup 移除，這段 guard 住的填值程式永遠不會執行，只會讓 id 稽核一直掛名。 */
     if (!bds.length) return;
@@ -6710,6 +6782,8 @@
     const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c =>
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const tiers = ev.tiers || [];
+    /* 2026-10-12（UI-CHANGES 一百六十九）：沒有招待票＝檢視態整節不出現，編輯態才出現空狀態與「發放招待票」 */
+    list.closest('[data-nav-panel]')?.toggleAttribute('data-view-empty', !tiers.length);
     if (!tiers.length) {
       list.innerHTML = '';
       list.hidden = true;
@@ -7084,11 +7158,11 @@
     const ov = document.getElementById('ed-loc-overrides');
     if (!base || !ov) return;
     const baseCur = ev.currency || S.DEFAULT_CURRENCY;
-    base.textContent = baseCur + ' (' + S.SYMBOL[baseCur] + ')';
+    base.value = baseCur + ' (' + S.SYMBOL[baseCur] + ')';
     let n = 0;
     edTiers.forEach(t => { n += overrideLine(S.priceOf(ev, t)) ? Object.keys(t.override || {}).length : 0; });
     (ev.bundles || []).forEach(b => { n += Object.keys(b.override || {}).filter(c => b.override[c] != null && b.override[c] !== '').length; });
-    ov.textContent = n ? T('ed.loc.overrides.n', '{n} overridden').replace('{n}', n) : T('ed.loc.overrides.none', 'None — all converted');
+    ov.value = n ? T('ed.loc.overrides.n', '{n} overridden').replace('{n}', n) : T('ed.loc.overrides.none', 'None — all converted');
     const lock = document.getElementById('ed-loc-locked');
     if (lock) lock.hidden = ev.source !== 'bookyay';
   }

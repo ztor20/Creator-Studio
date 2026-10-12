@@ -36,6 +36,10 @@
    · 頁面自己呼叫 ZtorViewMode.sync(panel)（各頁 applyReadonly 補一行，讓流程看得見）
    編輯態不動讀數（CSS 已藏），切回檢視態時整批重算。
 
+   opt-in 變體（2026-10-12）：面板另掛 data-vm-style="disabled" 時，這支什麼讀數都不插——檢視態保留輸入框、
+   由 shared.css 畫成 disabled（使用者對 event-detail 設定分頁的指示：「非編輯時輸入框依舊存在，顯示為 disabled」）。
+   沒掛的面板照 Q119 純文字讀數。
+
    API：window.ZtorViewMode = { mount(scope), sync(panel), configure(panel, { format }) }
    載入順序：放在 i18n.js、date-input.js、stepper.js 之後（讀數要看到包好的 .date-input）。
    ============================================================ */
@@ -153,6 +157,14 @@
   function sync(panel) {
     if (!panel || !panel.hasAttribute('data-editable')) return;
     if (panel.getAttribute('data-mode') === 'edit') return;
+    /* opt-in 變體 [data-vm-style="disabled"]（2026-10-12，UI-CHANGES 一百六十七）：檢視態保留輸入框、顯示成 disabled，
+       不插讀數——之前插過的（屬性是之後才掛上的）一併清掉。樣子由 shared.css 同名區塊負責。 */
+    if (panel.getAttribute('data-vm-style') === 'disabled') {
+      panel.querySelectorAll('[data-vm-readout]').forEach(function (ro) { ro.remove(); });
+      panel.querySelectorAll('[data-vm-control]').forEach(function (el) { el.removeAttribute('data-vm-control'); });
+      if (panel.__vmObserver) panel.__vmObserver.takeRecords();
+      return;
+    }
     var opts = OPTS.get(panel);
     roots(panel).forEach(function (root) {
       setAttr(root, 'data-vm-control', '');
