@@ -1,0 +1,48 @@
+/* ============================================================
+   date-range.css · 日期區間篩選（2026-10-13 · D411）
+
+   用途：清單篩選列上的「訂單日期（起）～（訖）」——兩個日期欄並排、可只填一邊，
+   與其他篩選同時成立。第一次出現就有兩個消費頁（電子商店訂單管理 orders.html、
+   活動詳情的交易明細 event-detail.html），照鐵律直接 promote。
+
+   本檔只管「並排與間距」：日期欄本身是既有的 `.input[type=date]`，空值的 placeholder
+   與日曆圖示由 date-input.css＋partials/date-input.js 執行期包一層 `.date-input` 提供，
+   這裡不重畫任何輸入框外觀。
+
+   anatomy
+     .date-range                 一列（inline-flex、可換行）
+       .date-range__label        欄名（例：訂單日期），選配
+       .date-range__field        一格日期（固定寬，內放 .input[type=date]）
+       .date-range__sep          中間的「–」
+       .date-range__clear        清除（btn--ghost btn--xs），兩格都空時 [hidden]
+
+   行為：本檔不帶 JS；篩選邏輯由消費頁讀兩格的 value（'YYYY-MM-DD' 字串直接比大小）。
+   ============================================================ */
+
+.date-range {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  min-width: 0;
+}
+
+.date-range__label {
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+/* 一格日期的寬度：容得下「2026/10/13」與空值 placeholder「選擇日期」＋左側圖示，不吃掉整列 */
+.date-range__field {
+  flex: none;
+  width: calc(var(--w-220) - var(--sp-56));
+}
+.date-range__field .date-input { width: 100%; }
+
+.date-range__sep {
+  color: var(--muted-foreground);
+  font-size: var(--fs-13);
+}
+
+.date-range__clear[hidden] { display: none; }

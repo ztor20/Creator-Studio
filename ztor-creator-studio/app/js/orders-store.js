@@ -944,6 +944,59 @@
       amounts: { goods: '$64.00', shipping: '$5.00', platform: '−$9.60', payment: '−$1.54', net: '$57.86' },
       total: '$64.00', totalAmt: 64,
       fx: { currency: 'TWD', paid: 'NT$2,173.50', rate: '1 USD = 31.5 TWD' }
+    },
+    /* ── 免費訂單（2026-10-14 · D414 決定一）──────────────────────────────────
+       金額 0 的商品訂單也是訂單：照常列在訂單管理、能打開訂單詳情；不經金流，所以沒有付款資訊（PAY_INFO 不收，
+       payment 為 null → 清單付款欄「—」、詳情付款區寫「免費訂單，不經金流」、不顯示付款編號）。
+       三筆：免費數位下載（已交付）、免費數位下載（預購未發行，可整單撤銷）、免費實體貼紙組（待出貨，可整單撤銷）。
+       金額一律 $0.00：平台費、支付費都是 0，淨額 0。fx 為 null（買家沒付錢，沒有換算）。 */
+    {
+      id: 'ZT-10492', date: '2026-06-11', kind: 'digital',
+      pay: 'paid', fulfil: ['completed'],
+      text: 'zt-10492 free 免費 試聽單曲 數位下載 free sample track digital download rae',
+      buyer: { name: 'Rae S.', shipTo: '', country: '', city: '', contact: 'rae.s@example.com' },
+      items: [
+        {
+          nameKey: 'od.item15.name', name: 'Kowloon After Dark — free sample track',
+          catKey: 'cp.dsub.album', qty: 1, unit: '$0.00', amt: 0, mode: 'digital',
+          snap: { price: '$0.00', variant: '', desc: 'Free sample track — instant download, no payment.', manage: 'product-detail.html?id=album' }
+        }
+      ],
+      amounts: { goods: '$0.00', shipping: '', platform: '−$0.00', payment: '−$0.00', net: '$0.00' },
+      total: '$0.00', totalAmt: 0, fx: null,
+      delivery: { methodKey: 'od.dig.method.instant', on: '2026-06-11', downloads: '1' }
+    },
+    {
+      id: 'ZT-10491', date: '2026-06-11', kind: 'digital',
+      pay: 'paid', fulfil: [],
+      text: 'zt-10491 free 免費 預購 數位 free pre-order digital theo',
+      buyer: { name: 'Theo L.', shipTo: '', country: '', city: '', contact: 'theo.l@example.com' },
+      items: [
+        {
+          nameKey: 'od.item16.name', name: 'Kowloon After Dark III — free pre-order',
+          catKey: 'cp.dsub.album', qty: 1, unit: '$0.00', amt: 0, mode: 'digital',
+          snap: { price: '$0.00', variant: '', desc: 'Free pre-order — the download opens on release day.', manage: 'product-detail.html?id=album' }
+        }
+      ],
+      amounts: { goods: '$0.00', shipping: '', platform: '−$0.00', payment: '−$0.00', net: '$0.00' },
+      total: '$0.00', totalAmt: 0, fx: null,
+      delivery: { methodKey: 'od.dig.method.preorder', on: '', downloads: '0' }
+    },
+    {
+      id: 'ZT-10490', date: '2026-06-11', kind: 'shipping',
+      pay: 'paid', fulfil: ['toship'],
+      text: 'zt-10490 free 免費 貼紙組 sticker pack free giveaway mei',
+      buyer: { name: 'Mei C.', shipTo: 'No. 21, Sec. 2, Zhongshan N Rd, Taipei 104, TW', country: 'TW', city: 'Taipei', contact: 'mei.c@example.com' },
+      items: [
+        {
+          nameKey: 'od.item17.name', name: 'Neon sign sticker pack (free gift)',
+          catKey: 'e-shop.cat.accessories', qty: 1, unit: '$0.00', amt: 0, mode: 'ship',
+          productId: 'pin', opts: {},
+          snap: { price: '$0.00', variant: '', desc: 'Five-sticker pack, free with sign-up. Ships at no charge.', manage: 'product-detail.html?id=pin' }
+        }
+      ],
+      amounts: { goods: '$0.00', shipping: '', platform: '−$0.00', payment: '−$0.00', net: '$0.00' },
+      total: '$0.00', totalAmt: 0, fx: null
     }
   ];
 
@@ -989,7 +1042,51 @@
   function refreshDerived(o) {
     o.cancelled = isCancelled(o);
     o.filters = computeFilters(o);
+    o.free = Number(o.totalAmt) === 0;   /* D414：金額 0 的免費訂單，不經金流 */
     return o;
+  }
+  /* ── 付款資訊與發貨時間（2026-10-13 · D411）────────────────────────
+     規格 5.1.5.3 F3（清單的付款時間、付款方式、發貨時間欄）、5.1.5.3.1 §2.2.1（訂單詳情的付款區）。
+     既有 16 筆電子商店訂單用一張表補，不逐筆改上面的物件：
+       [付款時間, 付款方式, 付款編號]——付款時間取下單當天；待付款（ZT-10486）沒有這一列＝付款欄全「—」。
+       付款方式三值：card／applepay／linepay（字樣走 od.pay.method.*）；金流商一律 Stripe（D411 範例）。
+       付款編號為示意字串（原型，非真實金流資料）。
+     SHIPPED_AT＝訂單內出貨型品項第一次出貨的時間（F3「發貨時間」）；只有已出貨的三筆有值，其餘清單顯示「—」。
+     訂單類型（商品／門票／組合包）與來源由 typesOf() 從品項推導，不另存。 */
+  var PAY_INFO = {
+    'ZT-10489': ['2026-06-10 14:22', 'card', 'pi_3PQx7k2eZvKYlo2C0a8R4Tqd'],
+    'ZT-10485': ['2026-06-09 21:05', 'applepay', 'pi_3PQw1n2eZvKYlo2C1kD93mXa'],
+    'ZT-10484': ['2026-06-09 11:48', 'linepay', 'pi_3PQv9c2eZvKYlo2C0Pq7LbEe'],
+    'ZT-10482': ['2026-06-08 19:31', 'card', 'pi_3PQu4s2eZvKYlo2C1Hn2RyWc'],
+    'ZT-10471': ['2026-06-05 13:12', 'card', 'pi_3PQq8f2eZvKYlo2C0Zt6UeGb'],
+    'ZT-10473': ['2026-06-04 16:40', 'applepay', 'pi_3PQp2a2eZvKYlo2C1Mw5JsQf'],
+    'ZT-10467': ['2026-06-02 10:26', 'card', 'pi_3PQm7h2eZvKYlo2C0Rx1NcTy'],
+    'ZT-10466': ['2026-06-01 22:14', 'linepay', 'pi_3PQl3d2eZvKYlo2C1Vb8KaPo'],
+    'ZT-10481': ['2026-06-08 09:57', 'applepay', 'pi_3PQt6g2eZvKYlo2C0Ey4WdLm'],
+    'ZT-10488': ['2026-06-10 08:33', 'card', 'pi_3PQy2j2eZvKYlo2C1Cs9HfVn'],
+    'ZT-10479': ['2026-06-07 20:48', 'card', 'pi_3PQs5b2eZvKYlo2C0Gu3TiRk'],
+    'ZT-10477': ['2026-06-06 12:03', 'card', 'pi_3PQr1e2eZvKYlo2C1Lp6YoBj'],
+    'ZT-10476': ['2026-06-06 18:19', 'linepay', 'pi_3PQr9k2eZvKYlo2C0Nf2QzSd'],
+    'ZT-10472': ['2026-06-05 15:36', 'applepay', 'pi_3PQq3m2eZvKYlo2C1Ja7XgUh'],
+    'ZT-10470': ['2026-06-05 09:12', 'card', 'pi_3PQp8r2eZvKYlo2C0Kc4VbNw'],
+    'ZT-10469': ['2026-06-04 23:41', 'applepay', 'pi_3PQo6t2eZvKYlo2C1Dh5ZmQe'],
+    'ZT-10474': ['2026-06-03 14:55', 'card', 'pi_3PQn4w2eZvKYlo2C0Bg9SkTr']
+  };
+  var SHIPPED_AT = { 'ZT-10477': '2026-06-07 15:20', 'ZT-10472': '2026-06-06 11:05', 'ZT-10470': '2026-06-06 10:12' };
+  var METHOD_KEY = { card: 'od.pay.method.card', applepay: 'od.pay.method.applepay', linepay: 'od.pay.method.linepay' };
+  var METHOD_EN = { card: 'Credit card', applepay: 'Apple Pay', linepay: 'LINE Pay' };
+  ORDERS.forEach(function (o) {
+    var p = PAY_INFO[o.id];
+    o.payment = p ? { paidAt: p[0], provider: 'Stripe', method: p[1], paymentId: p[2] } : null;
+    o.shippedAt = SHIPPED_AT[o.id] || '';
+    o.source = 'ztor';
+  });
+  /* 訂單類型（D411 決定五）：品項 mode 推導——bundle＝組合包、ticket＝門票、其餘（出貨／取貨／數位）＝商品。
+     一筆訂單可含多種，依「商品 → 門票 → 組合包」固定順序回傳。 */
+  function typesOf(o) {
+    var has = {};
+    (o.items || []).forEach(function (it) { has[it.mode === 'bundle' ? 'bundle' : it.mode === 'ticket' ? 'ticket' : 'product'] = true; });
+    return ['product', 'ticket', 'bundle'].filter(function (t) { return has[t]; });
   }
   ORDERS.forEach(refreshDerived);
 
@@ -1008,11 +1105,11 @@
     var newest = ORDERS.reduce(function (m, o) { return Math.max(m, toTime(o.date)); }, 0);
     var floor = newest - 30 * 24 * 60 * 60 * 1000;
     var n = { toship: 0, pending: 0, cancelDisputed: 0, completed: 0 };
-    ORDERS.forEach(function (o) {
+    allOrders().forEach(function (o) {   /* D411：含門票訂單（「近 30 天」的錨點仍取電子商店示範資料最新的一天） */
       if (o.fulfil.indexOf('toship') >= 0) n.toship++;
       if (o.pay === 'unpaid') n.pending++;
       if (o.filters.indexOf('cancelled') >= 0 || o.filters.indexOf('disputed') >= 0) n.cancelDisputed++;
-      if (o.fulfil.indexOf('completed') >= 0 && toTime(o.date) >= floor) n.completed++;
+      if (o.fulfil.indexOf('completed') >= 0 && toTime(o.date) >= floor && toTime(o.date) <= newest) n.completed++;
     });
     return n;
   }
@@ -1116,6 +1213,9 @@
     /* 出貨型／數位／全為 ship 成員的組合：沒有領取單位可驗，改看品項自己的 voided
        旗標與所屬訂單的履約階段。 */
     if (item.voided) return 'voided';
+    /* D411：門票品項的撤銷在活動詳情執行（5.1.5.3.1 §2.3.4），本頁不提供；含門票的組合包門票已報到＝已完成履約（D361 決定四）。 */
+    if (item.mode === 'ticket') return 'elsewhere';
+    if (item.redeemed) return 'redeemed';
     /* 數位：交付與否看訂單層的 delivery 紀錄（有 on 日期＝已交付、終態）。預購或
        尚未發布的數位商品沒有 delivery.on，屬未完成履約，D253 起可作廢。 */
     if (item.mode === 'digital') return (order && order.delivery && order.delivery.on) ? 'redeemed' : 'ok';
@@ -1155,6 +1255,35 @@
     return true;
   }
 
+  /* ── 整單撤銷（D414，5.1.5.3.1 §2.8「整單撤銷」）────────────────────────────
+     wholeVoidState(order) 回答「這張訂單現在能不能整單撤銷」，一個字串讓按鈕與提示吃同一個答案：
+       'ok'         每個品項都未完成履約、也都還沒撤銷 → 可整單撤銷〔推導的條件，待確認〕
+       'cancelled'  訂單已經是已取消
+       'ticket'     含門票品項（直接買票的品項在活動詳情撤銷，本頁不處理；此為示範處理，ASSUMPTIONS）
+       'fulfilled'  有品項已完成履約 → 請改為逐一撤銷尚可撤銷的品項
+       'voided'     有品項已撤銷、其餘還在 → 請改為逐一撤銷其餘品項
+     優先順序＝品項本身的事實先於身分（誰能按由呈現層的 adminScope() 另外判斷，與 voidState 同一個切法）。
+     voidWholeOrder(order, reason)：效果＝每個品項各撤銷一次（呼叫 voidItem，所以領取單位失效、狀態轉已取消照品項撤銷），
+     每個品項另標 voidWhole:true 供撤銷紀錄顯示「整單撤銷」；訂單層已取消由 refreshDerived 算出。不呼叫金流。 */
+  function wholeVoidState(order) {
+    var items = (order && order.items) || [];
+    if (!items.length) return 'fulfilled';
+    if (isCancelled(order)) return 'cancelled';
+    var st = items.map(function (it) { return voidState(it, order); });
+    if (st.indexOf('elsewhere') >= 0) return 'ticket';
+    if (st.indexOf('redeemed') >= 0) return 'fulfilled';
+    if (st.indexOf('voided') >= 0) return 'voided';
+    return 'ok';
+  }
+  function voidWholeOrder(order, reason) {
+    if (wholeVoidState(order) !== 'ok') return false;
+    (order.items || []).forEach(function (it) {
+      if (voidItem(order, it, reason)) it.voidWhole = true;
+    });
+    refreshDerived(order);
+    return true;
+  }
+
   /* 訂單層「已取消」＝所有品項都已作廢（終態）。衍生、不是第三條狀態軸：fulfil 軸的
      語意不動（PCR-001 兩軸不混用）；pay 軸則依 D253 把 cancelled 當作 unpaid／paid／
      disputed 之外的第四個值，清單與詳情頁改用這顆徽章取代原本的 paid／已退款。
@@ -1181,7 +1310,8 @@
     var n = parseFloat(String(str || '').replace(/[^0-9.]/g, ''));
     return isNaN(n) ? 0 : Math.round(n * 100);
   }
-  function fmtCents(c) {
+  function fmtCents(c, cur, dec) {
+    if (cur) return cur + (c / 100).toLocaleString('en-US', { minimumFractionDigits: dec || 0, maximumFractionDigits: dec || 0 });
     return '$' + (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
   function platformLines(order) {
@@ -1204,18 +1334,151 @@
       var baseC = g.grossC - share;
       var feeC = Math.round(baseC * g.pct / 100);
       return { leaf: g.leaf, leafKey: g.leafKey, pct: g.pct, count: g.count,
-               base: fmtCents(baseC), fee: '\u2212' + fmtCents(feeC), feeCents: feeC };
+               base: fmtCents(baseC, order.cur, order.dec), fee: '\u2212' + fmtCents(feeC, order.cur, order.dec), feeCents: feeC };
     });
+  }
+
+  /* ── 門票訂單（2026-10-13 · D411 決定三）──────────────────────────────
+     直接購買活動門票的訂單、與活動裡的組合包訂單，共用電子商店的訂單管理與訂單詳情。
+     資料不在本檔另寫一份：來源是 js/events-store.js 的交易明細（transactions／bundleTransactions），
+     本檔只把「一筆交易」轉成訂單詳情吃得下的形狀（ticketOrder）。兩處是同一筆訂單、同一個訂單編號。
+       · 訂單管理清單的示範＝EVENT_DEMO 指定的幾場 bookyay 演唱會各取幾筆（不把整場幾百筆灌進清單）。
+       · 訂單詳情 get(id) 查不到電子商店訂單時，交給 ztorEvents.findOrder(id) 反查——交易明細的每一列都打得開。
+     需要頁面先載入 js/events-store.js；沒載入時門票訂單整組不存在，電子商店訂單照舊。
+     金額：活動以創作者幣別計價（示範 TWD，整數），訂單詳情照活動幣別顯示（cur／dec）；平台費 10%（events.onsite，
+     與交易明細同一個數字），支付費照 §7.6 的 2.4% 以實付算一次——所以訂單詳情的淨額會比交易明細的「淨額」
+     （毛額扣平台費）多扣支付費，見 ASSUMPTIONS UIA-253。 */
+  var EVENT_DEMO = [
+    { ev: 'nick-live-taichung-bky', tickets: 2, bundles: ['bd-tc-duo', 'bd-tc-ga-tee'] },
+    { ev: 'nick-live-taoyuan-bky', tickets: 2, bundles: ['bd-ty-ga-tee'] },
+    { ev: 'nick-live-kaohsiung-bky', tickets: 2, bundles: ['bd-kh-duo'] },
+    { ev: 'nick-summer-pingtung-bky', tickets: 1, bundles: ['bd-pt-duo'] },
+    /* D414：免費門票訂單——nantou-lantern-opening 的「Kids under 6 · free」（金額 0）取 3 筆；free＝要幾筆金額 0 的交易 */
+    { ev: 'nantou-lantern-opening', tickets: 0, free: 3 }
+  ];
+  var TX_METHOD = { 'Card': 'card', 'Apple Pay': 'applepay', 'LINE Pay': 'linepay' };
+  function curOf(ev) {
+    var c = (ev && ev.currency) || 'TWD';
+    return c === 'TWD' ? 'NT$' : c === 'HKD' ? 'HK$' : c === 'USD' ? '$' : c + ' ';
+  }
+  function ticketOrder(ev, tx) {
+    var cur = curOf(ev);
+    var fmt = function (n) { return cur + Math.round(n).toLocaleString('en-US'); };
+    var nth = Number(String(tx.orderId).slice(-4)) || 0;
+    var voided = tx.status === 'voided';
+    var tierOf = function (id) { return (ev.tiers || []).filter(function (t) { return t.id === id; })[0] || null; };
+    var when = ev.date + (ev.start ? ' ' + ev.start : '');
+    var kv = (ev.images && ev.images.keyvisual) || '';
+    var voidMeta = voided ? { voided: true, voidedAt: tx.voidedAt || '', voidedBy: tx.voidedBy === 'bookyay' ? 'bookyay' : 'admin' } : {};
+    var items = [], tickets = [], kind = 'ticket', fulfil = [];
+    var tkCode = function (i) { return 'TK-' + String(tx.orderId).replace(/^ZT-/, '') + '-' + String(i + 1).padStart(2, '0'); };
+    /* 已報到：直接買票的交易照 transactions() 標的 checkedIn；組合包交易沒有這一欄，進行中／已結束的場次依編號決定性標（示範）。 */
+    var bundleIn = !voided && (ev.status === 'ended' ? (nth % 10) < 9 : ev.status === 'live' ? (nth % 10) < 6 : false);
+    if (tx.kind !== 'bundle') {
+      var tier = tierOf(tx.tierId);
+      var it = {
+        nameKey: '', name: tx.tier, catKey: 'od.cat.ticket', qty: tx.qty, unit: fmt(tx.gross / tx.qty), amt: tx.gross,
+        mode: 'ticket', feeLeaf: 'events.onsite', feePct: 10, thumb: (tier && tier.img) || kv,
+        event: { id: ev.id, name: ev.name }, solo: !!tx.solo
+      };
+      for (var k in voidMeta) it[k] = voidMeta[k];
+      items.push(it);
+      for (var i = 0; i < tx.qty; i++) {
+        tickets.push({ code: tkCode(i), eventId: ev.id, eventName: ev.name, when: when, tier: tx.tier, solo: !!tx.solo, source: '',
+                       status: voided ? 'void' : tx.checkedIn ? 'in' : 'valid' });
+      }
+    } else {
+      var b = (ev.bundles || []).filter(function (x) { return x.id === tx.bundleId; })[0] || { name: tx.tier, tickets: { tierIds: [], qty: 1 } };
+      var per = (b.tickets && b.tickets.qty) || 1;
+      var t0 = tierOf(b.tickets && b.tickets.tierIds && b.tickets.tierIds[0]);
+      var members = [{ name: t0 ? t0.name : tx.tier, qty: per * tx.qty, mode: 'ticket' }];
+      var unitN = 0;
+      (b.products || []).forEach(function (p) {
+        var q = (Number(p.qty) || 1) * tx.qty, units = [];
+        for (var u = 0; u < q; u++) {
+          unitN++;
+          units.push({ code: 'PU-' + String(tx.orderId).replace(/^ZT-/, '') + '-' + String(unitN).padStart(2, '0'),
+                       status: voided ? 'void' : ev.status === 'ended' ? 'done' : 'pending',
+                       at: voided ? String(tx.voidedAt || '').slice(0, 10) : ev.status === 'ended' ? '17:' + String(10 + unitN).padStart(2, '0') : null,
+                       session: PICKUP_SESSION, from: '' });
+        }
+        members.push({ name: p.name, qty: q, mode: 'pickup', units: units });
+      });
+      var bit = {
+        nameKey: '', name: b.name, catKey: 'bundle', qty: tx.qty, unit: fmt(tx.gross / tx.qty), amt: tx.gross, mode: 'bundle',
+        feeLeaf: 'events.onsite', feePct: 10, thumb: kv, event: { id: ev.id, name: ev.name },
+        snap: { price: fmt(tx.gross / tx.qty), variant: '', desc: '', manage: 'event-detail.html?id=' + encodeURIComponent(ev.id) + '#tiers' },
+        members: members, redeemed: bundleIn
+      };
+      for (var k2 in voidMeta) bit[k2] = voidMeta[k2];
+      items.push(bit);
+      for (var j = 0; j < per * tx.qty; j++) {
+        tickets.push({ code: tkCode(j), eventId: ev.id, eventName: ev.name, when: when, tier: t0 ? t0.name : tx.tier, solo: !!(t0 && t0.solo),
+                       source: b.name, status: voided ? 'void' : bundleIn ? 'in' : 'valid' });
+      }
+      if (unitN) { kind = 'pickup'; fulfil = ev.status === 'ended' ? ['completed'] : ['pickup']; }
+    }
+    var payFee = Math.round(tx.gross * 0.024);
+    var first = String(tx.buyer || '').split(' ');
+    var o = {
+      id: tx.orderId, date: tx.orderDate, kind: kind, pay: 'paid', fulfil: fulfil,
+      text: (tx.orderId + ' ' + tx.buyer + ' ' + ev.name + ' ' + tx.tier + ' ticket 門票' + (tx.kind === 'bundle' ? ' bundle 組合包' : '')).toLowerCase(),
+      buyer: { name: tx.buyer, shipTo: '', country: '', city: '',
+               contact: (first[0] || 'fan').toLowerCase() + '.' + ((first[1] || 'x').charAt(0)).toLowerCase() + '@example.com' },
+      items: items, tickets: tickets,
+      amounts: { goods: fmt(tx.gross), shipping: '', platform: '\u2212' + fmt(tx.fee), payment: '\u2212' + fmt(payFee), net: fmt(tx.gross - tx.fee - payFee) },
+      total: fmt(tx.gross), totalAmt: tx.gross, fx: null, cur: cur, dec: 0,
+      /* D414：金額 0 的免費訂單不經金流，沒有付款資訊（清單與詳情顯示「—」） */
+      payment: tx.gross > 0 ? { paidAt: tx.paidAt, provider: tx.provider || 'Stripe', method: TX_METHOD[tx.method] || 'card', paymentId: tx.paymentId } : null,
+      shippedAt: '', source: 'ztor',
+      event: { id: ev.id, name: ev.name, bky: ev.source === 'bookyay' }
+    };
+    return refreshDerived(o);
+  }
+  var evOrders = null, evById = {};
+  function eventOrders() {
+    if (evOrders) return evOrders;
+    evOrders = [];
+    var E = window.ztorEvents;
+    if (!E || !E.get || !E.transactions) return evOrders;
+    EVENT_DEMO.forEach(function (d) {
+      var ev = E.get(d.ev);
+      if (!ev) return;
+      E.transactions(d.ev).filter(function (t) { return t.orderId; }).slice(0, d.tickets).forEach(function (t) {
+        var o = ticketOrder(ev, t); evOrders.push(o); evById[o.id] = o;
+      });
+      if (d.free) E.transactions(d.ev).filter(function (t) { return t.orderId && t.gross === 0; }).slice(0, d.free).forEach(function (t) {
+        var o = ticketOrder(ev, t); evOrders.push(o); evById[o.id] = o;
+      });
+      var btx = E.bundleTransactions ? E.bundleTransactions(d.ev) : [];
+      (d.bundles || []).forEach(function (bid) {
+        var t = btx.filter(function (x) { return x.bundleId === bid && x.orderId; })[0];
+        if (t) { var o = ticketOrder(ev, t); evOrders.push(o); evById[o.id] = o; }
+      });
+    });
+    return evOrders;
+  }
+  /* 清單順序：新的在上（下單日期由新到舊，同一天維持原本的排列）。 */
+  function allOrders() {
+    var all = ORDERS.concat(eventOrders());
+    return all.map(function (o, i) { return [o, i]; })
+      .sort(function (a, b) { return (toTime(b[0].date) - toTime(a[0].date)) || (a[1] - b[1]); })
+      .map(function (x) { return x[0]; });
   }
 
   var CANCELLED_BADGE = { key: 'orders.status.cancelled', text: 'Cancelled', cls: 'badge--error' };
 
   window.ztorOrders = {
-    list: function () { return ORDERS.slice(); },
+    list: function () { return allOrders(); },
     get: function (id) {
       var key = normalize(id);
       if (!key) return null;
       for (var i = 0; i < ORDERS.length; i++) if (ORDERS[i].id === key) return ORDERS[i];
+      /* D411：門票訂單——先找清單示範，再請 events-store 由編號反查（交易明細每一列都打得開） */
+      eventOrders();
+      if (evById[key]) return evById[key];
+      var hit = window.ztorEvents && window.ztorEvents.findOrder ? window.ztorEvents.findOrder(key) : null;
+      if (hit) { evById[key] = ticketOrder(hit.ev, hit.tx); return evById[key]; }
       return null;
     },
     first: function () { return ORDERS[0]; },
@@ -1227,7 +1490,12 @@
     unitSummary: unitSummary,
     voidState: voidState,
     voidItem: voidItem,
+    wholeVoidState: wholeVoidState,                    /* D414：整單撤銷可用條件 */
+    voidWholeOrder: voidWholeOrder,
     isCancelled: isCancelled,
-    platformLines: platformLines
+    platformLines: platformLines,
+    typesOf: typesOf,                                   /* D411：訂單類型（product／ticket／bundle） */
+    methodKey: function (m) { return METHOD_KEY[m] || null; },
+    methodText: function (m) { return METHOD_EN[m] || m || ''; }
   };
 })();

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>媒體庫 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261013a">
-<script src="shell.js?v=20261013a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261014b">
+<script src="shell.js?v=20261014b" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -130,6 +130,10 @@ td.num{font-variant-numeric:tabular-nums}
 .flow .arr{color:var(--text-3)}
 .flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
 ul.plain ul.plain{margin:4px 0 4px}
+ol.plain{margin:4px 0 10px;padding-left:22px}
+ol.plain li{margin-bottom:4px}
+ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
 table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
 table.map{min-width:720px}
 table.map td:nth-child(1){width:20%}
@@ -146,34 +150,166 @@ table.map td:nth-child(2){width:22%}
 <div class="wrap">
 <h1>媒體庫</h1>
 <p class="lede">創作者把圖片、影片、音檔放進庫房，只開放給達成進庫方法或拿到鑰匙的粉絲，並可為每一件內容再設一道任務。</p>
-<div class="dg" role="img" aria-label="媒體庫流程圖：創作者建立庫房、設定進庫方法、放入內容並替每件內容設任務；粉絲符合進庫方法或持有鑰匙才進庫，再依每件內容的任務直接看、依分級解開或完成行動任務後解開">
-<div class="dg-v" style="--dg-c:5">
-  <div class="dg-node" style="grid-row:1;grid-column:1/6"><span class="s">1</span>建立庫房<small>創作者為庫房命名</small></div>
-  <div class="dg-node in" style="grid-row:2;grid-column:1/6"><span class="s">2</span>設定進庫方法<small>創作者列出條件，或發鑰匙給粉絲</small></div>
-  <div class="dg-node in" style="grid-row:3;grid-column:1/6"><span class="s">3</span>放入內容<small>創作者上傳圖片、影片、音檔</small></div>
-  <div class="dg-node in" style="grid-row:4;grid-column:1/6"><span class="s">4</span>每件內容設任務<small>創作者三選一：不設任務、行動任務、等級任務</small></div>
-  <div class="dg-node q in" style="grid-row:5;grid-column:1/6">符合任一種進庫方法，或持有鑰匙嗎？<small>粉絲想打開這座庫房</small></div>
-  <span class="dg-exit in" style="grid-row:6;grid-column:1">否</span>
-  <span class="dg-exit in" style="grid-row:6;grid-column:2/6">是</span>
-  <div class="dg-node stop in" style="grid-row:7;grid-column:1">進不了庫<small>看不到庫房內容</small></div>
-  <div class="dg-node in" style="grid-row:7;grid-column:2/6">進庫<small>粉絲進得了庫，接著看每一件內容</small></div>
-  <div class="dg-node q in" style="grid-row:8;grid-column:2/6">這件內容的任務是什麼？<small>每件各自判斷</small></div>
-  <span class="dg-exit in" style="grid-row:9;grid-column:2">不設任務</span>
-  <span class="dg-exit in" style="grid-row:9;grid-column:3/5">等級任務</span>
-  <span class="dg-exit in" style="grid-row:9;grid-column:5">行動任務</span>
-  <div class="dg-node end in" style="grid-row:10;grid-column:2">直接看<small>進得了庫就看得到</small></div>
-  <div class="dg-node q in" style="grid-row:10;grid-column:3/5">分級夠嗎？<small>達到任務等級</small></div>
-  <div class="dg-node q in" style="grid-row:10;grid-column:5">完成了嗎？<small>創作者指定的那件事</small></div>
-  <span class="dg-exit in" style="grid-row:11;grid-column:3">夠</span>
-  <span class="dg-exit in" style="grid-row:11;grid-column:4">不夠</span>
-  <span class="dg-exit in" style="grid-row:11;grid-column:5">完成</span>
-  <div class="dg-node end in" style="grid-row:12;grid-column:3">解開</div>
-  <div class="dg-node stop in" style="grid-row:12;grid-column:4">維持上鎖</div>
-  <div class="dg-node end in" style="grid-row:12;grid-column:5">解開</div>
-</div>
-</div>
-<p class="dg-cap">流程圖：前四步是創作者設定，由上往下走；進庫之後的判斷是粉絲看到的，一欄一種任務，同一列是同一個步驟。紫色虛線框是要回答的問題，綠框是看得到或解開，橘框是擋下。解開之後的收回：行動任務完成一次就永久解開，前提是粉絲仍進得了庫；等級任務跟著分級走，分級掉到任務等級以下就收回，回升後再解開。</p>
 <div class="toc"></div>
+
+<h2 id="vault-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>進庫與看內容是兩道各自獨立的門：進庫方法或鑰匙管進不進得了庫，每件內容的任務管進庫後看不看得到該件</li>
+  <li>創作者可以建立多座庫房，每座各自決定誰打得開</li>
+  <li>創作者隨時看得到現在有幾位粉絲打得開，也能站在某個分級粉絲的角度檢視，見<a href="#viewas">以分級身分檢視</a></li>
+</ul>
+
+<h2 id="vault-flow"><span class="n"></span>操作流程</h2>
+<p>創作者先設定庫房，粉絲再依設定進庫、看內容；圖上的圓圈數字對應下方清單的前四點。</p>
+<div class="dg" role="img" aria-label="媒體庫流程圖，由左往右走：創作者建立庫房、設定進庫方法、放入內容並替每件內容設任務；粉絲符合進庫方法或持有鑰匙才進庫，再依每件內容的任務直接看、依分級解開或完成行動任務後解開">
+<div class="dg-hg" style="--dg-c:9">
+  <div class="dg-node" style="grid-row:1/6;grid-column:1"><span class="s">1</span>建立庫房<small>創作者為庫房命名</small></div>
+  <span class="dg-a" style="grid-row:1/6;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/6;grid-column:3"><span class="s">2</span>設定進庫方法<small>創作者列出條件，或發鑰匙給粉絲</small></div>
+  <span class="dg-a" style="grid-row:1/6;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1/6;grid-column:5"><span class="s">3</span>放入內容<small>創作者上傳圖片、影片、音檔</small></div>
+  <span class="dg-a" style="grid-row:1/6;grid-column:6"></span>
+  <div class="dg-node" style="grid-row:1/6;grid-column:7"><span class="s">4</span>每件內容設任務<small>創作者三選一：不設任務、行動任務、等級任務</small></div>
+  <span class="dg-a" style="grid-row:1/6;grid-column:8"></span>
+  <div class="dg-node q" style="grid-row:1/6;grid-column:9">符合任一種進庫方法，或持有鑰匙嗎？<small>粉絲想打開這座庫房</small></div>
+  <span class="dg-a" data-t="否" style="grid-row:1;grid-column:10"></span>
+  <span class="dg-a" data-t="是" style="grid-row:2/6;grid-column:10"></span>
+  <div class="dg-node stop" style="grid-row:1;grid-column:11">進不了庫<small>看不到庫房內容</small></div>
+  <div class="dg-node" style="grid-row:2/6;grid-column:11">進庫<small>粉絲進得了庫，接著看每一件內容</small></div>
+  <span class="dg-a" style="grid-row:2/6;grid-column:12"></span>
+  <div class="dg-node q" style="grid-row:2/6;grid-column:13">這件內容的任務是什麼？<small>每件各自判斷</small></div>
+  <span class="dg-a" data-t="不設任務" style="grid-row:2;grid-column:14"></span>
+  <span class="dg-a" data-t="等級任務" style="grid-row:3/5;grid-column:14"></span>
+  <span class="dg-a" data-t="行動任務" style="grid-row:5;grid-column:14"></span>
+  <div class="dg-node end" style="grid-row:2;grid-column:15">直接看<small>進得了庫就看得到</small></div>
+  <div class="dg-node q" style="grid-row:3/5;grid-column:15">分級夠嗎？<small>達到任務等級</small></div>
+  <div class="dg-node q" style="grid-row:5;grid-column:15">完成了嗎？<small>創作者指定的那件事</small></div>
+  <span class="dg-a" data-t="夠" style="grid-row:3;grid-column:16"></span>
+  <span class="dg-a" data-t="不夠" style="grid-row:4;grid-column:16"></span>
+  <span class="dg-a" data-t="完成" style="grid-row:5;grid-column:16"></span>
+  <div class="dg-node end" style="grid-row:3;grid-column:17">解開</div>
+  <div class="dg-node stop" style="grid-row:4;grid-column:17">維持上鎖</div>
+  <div class="dg-node end" style="grid-row:5;grid-column:17">解開</div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，同一列是同一條路線，同一欄是同一個步驟。前四步是創作者設定；進庫之後的判斷是粉絲看到的，依每件內容的任務分列：不設任務一列、等級任務兩列（夠、不夠）、行動任務一列。紫色虛線框是要回答的問題，綠框是看得到或解開，橘框是擋下。解開之後的收回：行動任務完成一次就永久解開，前提是粉絲仍進得了庫；等級任務跟著分級走，分級掉到任務等級以下就收回，回升後再解開。</p>
+<ol class="plain">
+  <li>建立庫房：只要替庫房命名，見<a href="#vault-new">新增庫房</a></li>
+  <li>設定進庫方法：列出一種或多種進庫方法，各放一條或多條條件，見<a href="#unlock">進庫方法</a>；也可以發鑰匙給原本進不來的粉絲，見<a href="#keys">鑰匙</a></li>
+  <li>放入內容：上傳圖片、影片、音檔，見<a href="#content">庫房內容</a></li>
+  <li>替每件內容設任務：三選一，不設任務、行動任務、等級任務，見<a href="#tasks">每件內容的任務</a></li>
+  <li>粉絲想打開庫房：符合任一種進庫方法，或持有鑰匙嗎？
+    <ul class="plain">
+      <li>是：進庫，進下一點</li>
+      <li>否：進不了庫，看不到庫房內容</li>
+    </ul>
+  </li>
+  <li>粉絲進庫後，每件內容各自判斷任務是什麼：
+    <ul class="plain">
+      <li>不設任務：直接看</li>
+      <li>等級任務：分級達到任務等級就解開，不夠就維持上鎖</li>
+      <li>行動任務：完成創作者指定的那件事就解開</li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>新庫房一開始沒有進庫方法也沒有鑰匙，所以沒有人打得開</li>
+  <li>撤銷鑰匙後，靠這把鑰匙進來的粉絲立刻失去存取權，見<a href="#key-setup">發鑰匙與撤銷</a></li>
+  <li>創作者事後改任務時，已經解開的粉絲保留，見<a href="#task-edit">修改任務</a></li>
+</ul>
+
+<h2 id="s7"><span class="n"></span>庫房清單</h2>
+<p>庫房清單讓創作者一眼看出有哪些庫房、各收了多少內容、現在有幾位粉絲打得開，也是切換庫房與新增庫房的入口。</p>
+<ul class="plain">
+  <li>清單上方顯示庫房總數</li>
+  <li>庫房清單每一列顯示：
+    <ul class="plain">
+      <li>代表圖</li>
+      <li>名稱</li>
+      <li>各類內容的數量，例如幾張圖片、幾段影片、幾個音檔；完全沒有內容時顯示尚無內容的提示</li>
+      <li>目前打得開的人數（只算能進庫的人，不受各件內容的任務影響，見<a href="#reach">打得開的人數</a>）</li>
+    </ul>
+  </li>
+  <li>代表圖用庫房裡第一件有圖的內容</li>
+  <li>沒有圖的庫房用圖示當代表圖</li>
+  <li>一座庫房都沒有時，整頁改成建立第一座庫房的引導</li>
+</ul>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>庫房</td><td>有庫房時</td><td>點選後打開這座庫房的設定與內容<br>有庫房時預設打開其中一座</td></tr>
+    <tr id="vault-new"><td>新增庫房（New vault）</td><td>—</td><td>只要命名就能建立<br>創作者可以建立多座庫房，每座各自決定誰打得開<br>新庫房沒有進庫方法也沒有鑰匙，所以沒有人打得開</td></tr>
+    <tr><td>庫房名稱</td><td>必填</td><td>創作者自訂，之後可以改</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.7.3 F1、頁面狀態；D150、D377。</p>
+
+<h2 id="access-setup"><span class="n"></span>設定誰進得了庫</h2>
+<p>打開一座庫房後，創作者在這裡設定進庫的兩條路，並看到結果的人數。列進庫方法與條件，見<a href="#entry-setup">進庫方法與條件</a>；發鑰匙給粉絲或做成商品，見<a href="#key-setup">發鑰匙與撤銷</a>。</p>
+
+<h3 id="entry-setup">進庫方法與條件</h3>
+<p>這一區列出這座庫房目前的每一種進庫方法與各自的條件；判定規則見<a href="#unlock">進庫方法</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>進庫方法清單</td><td>有庫房時</td><td>列出每一種進庫方法與它的條件<br>說明時用「進庫方法」「這些要一起達成」「或是」這類說法，不用「且／或／AND／OR」（規格標為呈現參考）</td></tr>
+    <tr><td>新增進庫方法</td><td>有庫房時</td><td>多加一種進庫方法<br>還沒放條件之前不算任何人達成</td></tr>
+    <tr><td>新增條件</td><td>在某一種進庫方法裡</td><td>從五種條件選一種並指定對象，見<a href="#conditions">可選的條件</a><br>每個候選項旁顯示這條條件本身會觸及幾人</td></tr>
+    <tr><td>移除條件</td><td>每一條條件</td><td>只能一條一條移除，不能整批清空</td></tr>
+    <tr><td>打得開的人數</td><td>有庫房時</td><td>總數、各分級人數與依來源拆開的數字，見<a href="#reach">打得開的人數</a><br>「沒有任何進庫方法也沒有鑰匙」和「有進庫方法但沒人達成」人數都是 0，畫面要分得出是哪一種</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="key-setup">發鑰匙與撤銷</h3>
+<p>這一區讓創作者發鑰匙給原本進不來的粉絲，並管理已發出的鑰匙；鑰匙的規則見<a href="#keys">鑰匙</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>送給一位粉絲（Send to one fan）</td><td>有庫房時</td><td>可用次數固定 1 次<br>做完拿到可複製的連結</td></tr>
+    <tr><td>做成 NFC 商品（Make an NFC product）</td><td>有庫房時</td><td>可用次數由創作者指定<br>做完前往電子商店建立對應商品</td></tr>
+    <tr><td>已發出的鑰匙</td><td>有庫房時</td><td>列出這座庫房發出去的鑰匙；每一把顯示哪些資料見頁尾尚待確認<br>還沒有任何鑰匙時，顯示尚無鑰匙的提示，打得開的人數只看進庫方法</td></tr>
+    <tr><td>撤銷（Revoke）</td><td>每一把還沒撤銷的鑰匙</td><td>撤銷前顯示「將有幾位粉絲失去存取權」，不只問確定嗎<br>撤銷後的結果見<a href="#keys">鑰匙</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.7.3 F2、F3、F4；D376、D377。</p>
+
+<h2 id="content"><span class="n"></span>庫房內容</h2>
+<p>庫房內容讓創作者把素材放進庫房，並依媒體類型分組，方便辨認；每件內容可以各自設任務。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>新增內容（Add media）</td><td>有庫房時</td><td>圖片、影片、音檔一起上傳，依檔案類型自動分組，上傳前不用先選分組</td></tr>
+    <tr><td>內容分組</td><td>有庫房時</td><td>三個分組固定依序是圖片（Photos）、影片（Clips）、音檔（Audio）<br>沒有內容的分組照樣顯示，並顯示尚無內容的提示</td></tr>
+    <tr><td>每件內容的資訊</td><td>每件內容</td><td>名稱、檔案大小、加入日期<br>影片與音檔另顯示長度</td></tr>
+    <tr><td>改名</td><td>每件內容</td><td>直接在原處改名</td></tr>
+    <tr><td>任務（Task）</td><td>每件內容各一個</td><td>三選一：不設任務、行動任務、等級任務，見<a href="#tasks">每件內容的任務</a><br>選行動任務時，再選種類並填該種要設定的內容，見<a href="#action-tasks">行動任務的種類</a><br>選等級任務時，能選的等級見<a href="#tier-task-range">等級任務能選哪幾級</a></td></tr>
+    <tr><td>可看人數</td><td>每件內容</td><td>有幾位粉絲看得到這件，見<a href="#item-reach">每件內容的可看人數</a></td></tr>
+    <tr><td>大彩蛋（Grand surprise）</td><td>每件內容，選用</td><td>只是標記，不影響該件的任務與解開規則</td></tr>
+    <tr><td>刪除</td><td>每件內容</td><td>刪除前要確認，確認文字要寫明「粉絲會立刻失去這件內容」<br>刪除後無法復原</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.7.3 F3、F5、F8；D377。</p>
+
+<h2 id="viewas"><span class="n"></span>以分級身分檢視</h2>
+<p>以分級身分檢視讓創作者站在某個分級粉絲的角度，看整份庫房清單在那一級粉絲眼中是什麼樣子。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>檢視身分</td><td>有庫房時<br>預設創作者本人</td><td>可選創作者本人（等於不套用，看全部粉絲）或四個分級之一<br>切回創作者本人就回到原本的角度</td></tr>
+    <tr><td>套用後的庫房清單</td><td>選了某個分級時</td><td>每座庫房的人數改成「這個分級有幾人打得開」<br>完全打不開的庫房，要和人數很少的庫房明顯區分</td></tr>
+    <tr><td>套用後的打得開人數</td><td>選了某個分級時</td><td>改成這個分級的角度</td></tr>
+    <tr><td>套用後的每件內容</td><td>選了某個分級、而且該分級進得了這座庫房時</td><td>每件內容分得出三種結果，見下表</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">結果</th><th>什麼情況</th></tr></thead>
+  <tbody>
+    <tr><td>該分級看得到</td><td>該件不設任務，或該件是等級任務且該分級達到任務等級</td></tr>
+    <tr><td>該分級看不到，等級不足</td><td>該件是等級任務，且該分級低於任務等級</td></tr>
+    <tr><td>需完成行動任務</td><td>該件是行動任務，該分級的粉絲要各自完成任務才看得到</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.7.3 F6；D377。</p>
 
 <h2 id="unlock"><span class="n"></span>進庫方法</h2>
 <p>進庫方法讓創作者決定哪些粉絲進得了這座庫房，這是粉絲看到庫房內容之前的第一道門。粉絲掉級時進庫方法還算不算達成，見<a href="#tier-drop">分級條件與掉級</a>；一種進庫方法能放哪些條件，見<a href="#conditions">可選的條件</a>。</p>
@@ -329,99 +465,6 @@ table.map td:nth-child(2){width:22%}
   </tbody>
 </table></div>
 <p class="note">依據：5.1.7.3 F3；D377。</p>
-
-<h2 id="s7"><span class="n"></span>庫房清單</h2>
-<p>庫房清單讓創作者一眼看出有哪些庫房、各收了多少內容、現在有幾位粉絲打得開，也是切換庫房與新增庫房的入口。</p>
-<ul class="plain">
-  <li>清單上方顯示庫房總數</li>
-  <li>庫房清單每一列顯示：
-    <ul class="plain">
-      <li>代表圖</li>
-      <li>名稱</li>
-      <li>各類內容的數量，例如幾張圖片、幾段影片、幾個音檔；完全沒有內容時顯示尚無內容的提示</li>
-      <li>目前打得開的人數（只算能進庫的人，不受各件內容的任務影響，見<a href="#reach">打得開的人數</a>）</li>
-    </ul>
-  </li>
-  <li>代表圖用庫房裡第一件有圖的內容</li>
-  <li>沒有圖的庫房用圖示當代表圖</li>
-  <li>一座庫房都沒有時，整頁改成建立第一座庫房的引導</li>
-</ul>
-<div class="tablewrap"><table class="fields">
-  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
-  <tbody>
-    <tr><td>庫房</td><td>有庫房時</td><td>點選後打開這座庫房的設定與內容<br>有庫房時預設打開其中一座</td></tr>
-    <tr id="vault-new"><td>新增庫房（New vault）</td><td>—</td><td>只要命名就能建立<br>創作者可以建立多座庫房，每座各自決定誰打得開<br>新庫房沒有進庫方法也沒有鑰匙，所以沒有人打得開</td></tr>
-    <tr><td>庫房名稱</td><td>必填</td><td>創作者自訂，之後可以改</td></tr>
-  </tbody>
-</table></div>
-<p class="note">依據：5.1.7.3 F1、頁面狀態；D150、D377。</p>
-
-<h2 id="access-setup"><span class="n"></span>設定誰進得了庫</h2>
-<p>打開一座庫房後，創作者在這裡設定進庫的兩條路，並看到結果的人數。列進庫方法與條件，見<a href="#entry-setup">進庫方法與條件</a>；發鑰匙給粉絲或做成商品，見<a href="#key-setup">發鑰匙與撤銷</a>。</p>
-
-<h3 id="entry-setup">進庫方法與條件</h3>
-<p>這一區列出這座庫房目前的每一種進庫方法與各自的條件；判定規則見<a href="#unlock">進庫方法</a>。</p>
-<div class="tablewrap"><table class="fields">
-  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
-  <tbody>
-    <tr><td>進庫方法清單</td><td>有庫房時</td><td>列出每一種進庫方法與它的條件<br>說明時用「進庫方法」「這些要一起達成」「或是」這類說法，不用「且／或／AND／OR」（規格標為呈現參考）</td></tr>
-    <tr><td>新增進庫方法</td><td>有庫房時</td><td>多加一種進庫方法<br>還沒放條件之前不算任何人達成</td></tr>
-    <tr><td>新增條件</td><td>在某一種進庫方法裡</td><td>從五種條件選一種並指定對象，見<a href="#conditions">可選的條件</a><br>每個候選項旁顯示這條條件本身會觸及幾人</td></tr>
-    <tr><td>移除條件</td><td>每一條條件</td><td>只能一條一條移除，不能整批清空</td></tr>
-    <tr><td>打得開的人數</td><td>有庫房時</td><td>總數、各分級人數與依來源拆開的數字，見<a href="#reach">打得開的人數</a><br>「沒有任何進庫方法也沒有鑰匙」和「有進庫方法但沒人達成」人數都是 0，畫面要分得出是哪一種</td></tr>
-  </tbody>
-</table></div>
-
-<h3 id="key-setup">發鑰匙與撤銷</h3>
-<p>這一區讓創作者發鑰匙給原本進不來的粉絲，並管理已發出的鑰匙；鑰匙的規則見<a href="#keys">鑰匙</a>。</p>
-<div class="tablewrap"><table class="fields">
-  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
-  <tbody>
-    <tr><td>送給一位粉絲（Send to one fan）</td><td>有庫房時</td><td>可用次數固定 1 次<br>做完拿到可複製的連結</td></tr>
-    <tr><td>做成 NFC 商品（Make an NFC product）</td><td>有庫房時</td><td>可用次數由創作者指定<br>做完前往電子商店建立對應商品</td></tr>
-    <tr><td>已發出的鑰匙</td><td>有庫房時</td><td>列出這座庫房發出去的鑰匙；每一把顯示哪些資料見頁尾尚待確認<br>還沒有任何鑰匙時，顯示尚無鑰匙的提示，打得開的人數只看進庫方法</td></tr>
-    <tr><td>撤銷（Revoke）</td><td>每一把還沒撤銷的鑰匙</td><td>撤銷前顯示「將有幾位粉絲失去存取權」，不只問確定嗎<br>撤銷後的結果見<a href="#keys">鑰匙</a></td></tr>
-  </tbody>
-</table></div>
-<p class="note">依據：5.1.7.3 F2、F3、F4；D376、D377。</p>
-
-<h2 id="content"><span class="n"></span>庫房內容</h2>
-<p>庫房內容讓創作者把素材放進庫房，並依媒體類型分組，方便辨認；每件內容可以各自設任務。</p>
-<div class="tablewrap"><table class="fields">
-  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
-  <tbody>
-    <tr><td>新增內容（Add media）</td><td>有庫房時</td><td>圖片、影片、音檔一起上傳，依檔案類型自動分組，上傳前不用先選分組</td></tr>
-    <tr><td>內容分組</td><td>有庫房時</td><td>三個分組固定依序是圖片（Photos）、影片（Clips）、音檔（Audio）<br>沒有內容的分組照樣顯示，並顯示尚無內容的提示</td></tr>
-    <tr><td>每件內容的資訊</td><td>每件內容</td><td>名稱、檔案大小、加入日期<br>影片與音檔另顯示長度</td></tr>
-    <tr><td>改名</td><td>每件內容</td><td>直接在原處改名</td></tr>
-    <tr><td>任務（Task）</td><td>每件內容各一個</td><td>三選一：不設任務、行動任務、等級任務，見<a href="#tasks">每件內容的任務</a><br>選行動任務時，再選種類並填該種要設定的內容，見<a href="#action-tasks">行動任務的種類</a><br>選等級任務時，能選的等級見<a href="#tier-task-range">等級任務能選哪幾級</a></td></tr>
-    <tr><td>可看人數</td><td>每件內容</td><td>有幾位粉絲看得到這件，見<a href="#item-reach">每件內容的可看人數</a></td></tr>
-    <tr><td>大彩蛋（Grand surprise）</td><td>每件內容，選用</td><td>只是標記，不影響該件的任務與解開規則</td></tr>
-    <tr><td>刪除</td><td>每件內容</td><td>刪除前要確認，確認文字要寫明「粉絲會立刻失去這件內容」<br>刪除後無法復原</td></tr>
-  </tbody>
-</table></div>
-<p class="note">依據：5.1.7.3 F3、F5、F8；D377。</p>
-
-<h2 id="viewas"><span class="n"></span>以分級身分檢視</h2>
-<p>以分級身分檢視讓創作者站在某個分級粉絲的角度，看整份庫房清單在那一級粉絲眼中是什麼樣子。</p>
-<div class="tablewrap"><table class="fields">
-  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
-  <tbody>
-    <tr><td>檢視身分</td><td>有庫房時<br>預設創作者本人</td><td>可選創作者本人（等於不套用，看全部粉絲）或四個分級之一<br>切回創作者本人就回到原本的角度</td></tr>
-    <tr><td>套用後的庫房清單</td><td>選了某個分級時</td><td>每座庫房的人數改成「這個分級有幾人打得開」<br>完全打不開的庫房，要和人數很少的庫房明顯區分</td></tr>
-    <tr><td>套用後的打得開人數</td><td>選了某個分級時</td><td>改成這個分級的角度</td></tr>
-    <tr><td>套用後的每件內容</td><td>選了某個分級、而且該分級進得了這座庫房時</td><td>每件內容分得出三種結果，見下表</td></tr>
-  </tbody>
-</table></div>
-<div class="tablewrap"><table>
-  <thead><tr><th style="width:30%">結果</th><th>什麼情況</th></tr></thead>
-  <tbody>
-    <tr><td>該分級看得到</td><td>該件不設任務，或該件是等級任務且該分級達到任務等級</td></tr>
-    <tr><td>該分級看不到，等級不足</td><td>該件是等級任務，且該分級低於任務等級</td></tr>
-    <tr><td>需完成行動任務</td><td>該件是行動任務，該分級的粉絲要各自完成任務才看得到</td></tr>
-  </tbody>
-</table></div>
-<p class="note">依據：5.1.7.3 F6；D377。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>

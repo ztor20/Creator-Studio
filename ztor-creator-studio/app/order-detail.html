@@ -28,6 +28,8 @@
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* Order amount breakdown · spec 5.1.5.3.1 §2.3 */
@@ -115,10 +117,11 @@
     <div class="page page--narrow">
 
       <!-- §2.1 導航與返回脈絡 -->
+      <!-- §2.1：從活動詳情的交易明細打開（?from=event&ev=<活動>）時，返回鈕與麵包屑改回到該活動的交易明細（D411），見頁末 renderBack -->
       <div class="page-crumb page-crumb--back">
-        <a class="btn btn--icon-circle btn--sm page-crumb__back" href="orders.html" aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
-        <a href="e-shop.html" class="card__link" data-i18n="od.crumb.eshop">E-Shop</a> <span style="margin:0 6px">/</span>
-        <a href="orders.html" class="card__link" data-i18n="od.crumb.orders">Order management</a> <span style="margin:0 6px">/</span>
+        <a class="btn btn--icon-circle btn--sm page-crumb__back" href="orders.html" data-od-back aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
+        <a href="e-shop.html" class="card__link" data-od-crumb-1 data-i18n="od.crumb.eshop">E-Shop</a> <span style="margin:0 6px">/</span>
+        <a href="orders.html" class="card__link" data-od-crumb-2 data-i18n="od.crumb.orders">Order management</a> <span style="margin:0 6px">/</span>
         <span data-od-crumb-id>#ZT-10482</span>
       </div>
 
@@ -146,6 +149,12 @@
                取消訂單品項的唯一路徑是 §2.8 作廢（見下方品項列的作廢鈕）。 -->
           <!-- 純數位訂單沒有出貨動作（§2.5「數位商品呈現下載／存取權限的交付狀態」）：
                同一顆按鈕改叫「數位交付」、開的是唯讀的交付狀態彈窗 -->
+          <!-- §2.2 補寄信（D411）：只有 Admin 代管態能按；創作者本人看得到但停用、title 說明要聯繫 Admin（同 §2.8 撤銷）。
+               停用與否由頁末 renderResend() 依 adminScope() 決定；按下開 #od-resend-modal 確認收件信箱 -->
+          <!-- §2.8 整單撤銷（D414）：只有 Admin 代管態能按；創作者本人看得到但停用。停用原因寫在 title（同品項撤銷鈕）：
+               有品項已完成履約／已撤銷、含門票品項、訂單已取消、非 Admin。狀態由頁末 renderWhole() 依 S.wholeVoidState() 與 adminScope() 決定 -->
+          <button class="btn btn--soft btn--destructive" type="button" id="od-void-whole-open" data-feat="O38"><i data-lucide="ban" class="ztor-icon"></i><span data-i18n="od.void.whole.btn">Void whole order</span></button>
+          <button class="btn btn--outline" type="button" id="od-resend-open" data-feat="O37"><i data-lucide="mail" class="ztor-icon"></i><span data-i18n="od.resend.btn">Resend email</span></button>
           <button class="btn btn--primary" id="od-ship-open" data-i18n="od.btn.ship">Mark shipped</button>
         </div>
       </div>
@@ -197,6 +206,37 @@
             </div>
           </section>
 
+          <!-- §2.3.4 門票資料（D411）：訂單含門票（直接買票，或組合包裡的門票成員）才出現。一張票一列：
+               票券編號／活動與場次／票種（獨立票加標籤）／來源（直接購買或組合包名稱）／狀態。不顯示票券 QR。
+               撤銷門票在活動詳情（bookyay 匯入的活動在 bookyay 後台），本區只給入口。列由 renderTickets() 產生。 -->
+          <section class="form-section form-section--outlined" id="od-tickets" data-feat="O36" hidden>
+            <div class="form-section__head form-section__head--actions">
+              <div class="form-section__head-titles">
+                <h3 class="form-section__title" data-i18n="od.tk.title">Tickets</h3>
+                <p class="form-section__sub" data-i18n="od.tk.sub">Every ticket in this order. Ticket QR codes only show in the buyer's ztor account.</p>
+              </div>
+              <span class="chip chip--static" data-od-tk-count>—</span>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="ztor-table">
+                <thead>
+                  <tr>
+                    <th data-i18n="od.tk.col.id">Ticket ID</th>
+                    <th data-i18n="od.tk.col.event">Event &amp; date</th>
+                    <th data-i18n="od.tk.col.tier">Ticket</th>
+                    <th data-i18n="od.tk.col.source">Source</th>
+                    <th data-i18n="od.tk.col.status">Status</th>
+                  </tr>
+                </thead>
+                <tbody data-od-tk-body></tbody>
+              </table>
+            </div>
+            <div class="od-amt-foot">
+              <span class="field__hint" data-od-tk-note></span>
+              <a class="btn btn--outline btn--sm" data-od-tk-goto href="events.html" data-i18n="od.tk.goto">Void tickets in the event →</a>
+            </div>
+          </section>
+
         </div>
 
         <aside class="detail-rail">
@@ -210,6 +250,51 @@
             <div class="field">
               <div class="field__label" data-i18n="od.info.placed">Placed</div>
               <div class="field-readout" data-od-placed>2026-06-08</div>
+            </div>
+            <!-- §2.2 訂單類型與來源（D411）：類型由品項推導（商品／門票／組合包，可多個），來源目前只有 ztor 前台 -->
+            <div class="field" data-feat="O36">
+              <div class="field__label" data-i18n="od.info.type">Order type</div>
+              <div class="field-readout status-axes" data-od-types>—</div>
+            </div>
+            <div class="field" data-feat="O36">
+              <div class="field__label" data-i18n="od.info.source">Source</div>
+              <div class="field-readout" data-i18n="od.info.source.ztor">ztor storefront</div>
+            </div>
+            <!-- §2.2 補寄信的寄送紀錄（D411）：寄出後留一筆（時間、執行的 Admin、收件信箱）；沒有紀錄時整列不出現 -->
+            <div class="field" data-feat="O37" data-od-mail-field hidden>
+              <div class="field__label" data-i18n="od.resend.log">Email resent</div>
+              <div class="text-sub" style="font-size: var(--fs-13)" data-od-mail-log></div>
+            </div>
+          </section>
+
+          <!-- §2.2.1 付款資訊（D411）：付款時間、金流商、付款方式、付款編號（可複製，共用 link-field）。創作者與 Admin 都看得到；
+               只顯示金流商回傳的識別資訊，不顯示卡號。未付款整區顯示「—」、不出現付款編號。 -->
+          <section class="form-section form-section--outlined" data-feat="O34">
+            <div class="form-section__head">
+              <h3 class="form-section__title" data-i18n="od.pay.title">Payment</h3>
+            </div>
+            <div class="field">
+              <div class="field__label" data-i18n="od.pay.at">Paid at</div>
+              <div class="field-readout" data-od-pay-at>—</div>
+            </div>
+            <div class="field">
+              <div class="field__label" data-i18n="od.pay.provider">Payment provider</div>
+              <div class="field-readout" data-od-pay-provider>—</div>
+            </div>
+            <div class="field">
+              <div class="field__label" data-i18n="od.pay.method">Payment method</div>
+              <div class="field-readout" data-od-pay-method>—</div>
+            </div>
+            <!-- 免費訂單（D414）：金額 0 不經金流，上面三格維持「—」、不出現付款編號，這裡補一句說明 -->
+            <p class="field__hint" data-od-pay-free hidden data-i18n="od.pay.free">Free order — no payment is taken.</p>
+            <div class="field" data-od-pay-id-field>
+              <div class="linkf" data-linkf>
+                <span class="linkf__label" data-i18n="od.pay.id">Payment ID</span>
+                <div class="linkf__row">
+                  <input class="input linkf__input" readonly value="" data-od-pay-id aria-label="Payment ID" data-i18n-aria-label="od.pay.id">
+                  <button class="btn btn--outline btn--sm linkf__act linkf__act--copy" type="button" data-linkf-copy><span data-i18n="link.copy">Copy</span></button>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -340,6 +425,34 @@
      ＋ .btn--destructive 組成，沒有新的 modal CSS；組裝規則寫在 design-system.md §5.1.11 pattern 卡。
      內容順序＝先確認動的是哪一項 → 前置提醒（金流在平台外）→ 會發生什麼 → 不可逆，
      讓人在按下去之前就把後果讀完。 -->
+<!-- §2.2 補寄信確認 popup（D411）：Admin 專屬。寄出前確認收件信箱（預填買家的聯絡信箱、可改），
+     列出會重寄哪幾封（訂單確認信；含門票時加購票成功信＋電子門票）；寄出後在「訂單資訊」留一筆寄送紀錄。
+     殼沿用 canonical 對話框（.payout-modal／.payout-dialog），沒有新 CSS。 -->
+<div class="payout-modal" id="od-resend-modal" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="od-resend-title">
+    <div class="payout-dialog__head">
+      <h3 class="payout-dialog__title" id="od-resend-title" data-i18n="od.resend.title">Resend order email</h3>
+      <button class="btn btn--icon btn--sm" type="button" data-od-resend-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div class="field__label" data-i18n="od.resend.what">Emails to resend</div>
+      <div class="field__hint" data-i18n="od.resend.what.order">Order confirmation</div>
+      <div class="field__hint mt-8" data-od-resend-tickets hidden data-i18n="od.resend.what.tickets">Ticket confirmation with e-tickets</div>
+      <div class="field mt-16">
+        <label class="field__label" for="od-resend-to" data-i18n="od.resend.to">Send to</label>
+        <input class="input" type="email" id="od-resend-to" autocomplete="off">
+        <div class="field__hint mt-8" data-i18n="od.resend.to.hint">Check the address first. The emails go to this address only.</div>
+        <div class="field__error" data-od-resend-err hidden data-i18n="od.resend.to.err">Enter a valid email address.</div>
+      </div>
+      <div class="field__hint mt-16" data-od-resend-bky hidden data-i18n="od.resend.bky">This event was imported from bookyay. This order was sold on ztor, so ztor resends it.</div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--ghost btn--sm" type="button" data-od-resend-close data-i18n="od.void.cancel">Cancel</button>
+      <button class="btn btn--primary btn--sm" type="button" id="od-resend-confirm" data-i18n="od.resend.send">Send</button>
+    </div>
+  </div>
+</div>
+
 <div class="payout-modal" id="od-void-modal" hidden>
   <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="od-void-title">
     <div class="payout-dialog__head">
@@ -347,8 +460,9 @@
       <button class="btn btn--icon btn--sm" type="button" data-od-void-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
     <div class="payout-dialog__body">
-      <!-- 動到哪一項：品名＋數量，與 §2.3.1 品項表同一份資料 -->
-      <div class="data-list">
+      <!-- 動到哪一項：品名＋數量，與 §2.3.1 品項表同一份資料。整單撤銷（D414）時由 JS 把這份清單換成全部品項，上方多一行「將撤銷的品項」 -->
+      <div class="field__label" data-od-void-scope-label hidden data-i18n="od.void.whole.scope">Items to void</div>
+      <div class="data-list" data-od-void-list>
         <div class="data-list__row">
           <div class="data-list__row-main"><div class="data-list__body">
             <div class="data-list__title" data-od-void-name>—</div>
@@ -356,6 +470,7 @@
           </div></div>
         </div>
       </div>
+      <div class="data-list" data-od-void-wholelist hidden></div>
       <!-- 前置：人工退款在 Stripe 後台完成，平台不碰金流 -->
       <div class="field__hint mt-16" data-i18n="od.void.stripe">Refund the buyer in Stripe first — voiding moves no money and never calls Stripe.</div>
       <div class="field__label mt-16" data-i18n="od.void.effects">What voiding does</div>
@@ -365,8 +480,11 @@
            每種型態都適用。email 一律顯示（三種型態都會通知買家）。 -->
       <div class="field__hint" data-od-void-effect="codes" data-i18n="od.void.effect.codes">This item's pickup codes stop working immediately — they can't be scanned at a session.</div>
       <div class="field__hint mt-8" data-od-void-effect="stock" data-i18n="od.void.effect.stock">Stock goes back on the shelf; a bundle restocks each of its members.</div>
-      <div class="field__hint mt-8" data-i18n="od.void.effect.email">The buyer gets an order-cancelled email listing this item.</div>
-      <div class="field__hint mt-16" data-i18n="od.void.irreversible">There's no undo — a voided item can't be reinstated.</div>
+      <div class="field__hint mt-8" data-od-void-effect="email" data-i18n="od.void.effect.email">The buyer gets an order-cancelled email listing this item.</div>
+      <!-- 整單撤銷專用的兩條（D414）：訂單轉已取消、信中列出全部品項；單品撤銷時隱藏 -->
+      <div class="field__hint mt-8" data-od-void-effect="whole-email" hidden data-i18n="od.void.whole.effect.email">The buyer gets an order-cancelled email listing every item.</div>
+      <div class="field__hint mt-8" data-od-void-effect="whole-status" hidden data-i18n="od.void.whole.effect.status">The order becomes Cancelled.</div>
+      <div class="field__hint mt-16" data-od-void-irreversible data-i18n="od.void.irreversible">There's no undo — a voided item can't be reinstated.</div>
       <!-- 撤銷原因（D271，2026-09-15）：選填、自由填寫；下方預設理由 chip 一鍵帶入、帶入後可改寫。
            有填才進買家信與品項列的撤銷紀錄。元件全用既有的 field／textarea／chip，沒有新 CSS。 -->
       <div class="field mt-16">
@@ -381,6 +499,8 @@
           <button class="chip" type="button" data-od-void-preset="od.void.reason.p5" data-i18n="od.void.reason.p5">Listing or price error</button>
           <button class="chip" type="button" data-od-void-preset="od.void.reason.p6" data-i18n="od.void.reason.p6">Pickup session cancelled or changed</button>
           <button class="chip" type="button" data-od-void-preset="od.void.reason.p7" data-i18n="od.void.reason.p7">Not collected by the pickup deadline</button>
+          <!-- D411 決定七：換票這次不做——撤銷後重新購買，原因記為換票 -->
+          <button class="chip" type="button" data-od-void-preset="od.void.reason.p8" data-i18n="od.void.reason.p8">Ticket exchange</button>
         </div>
       </div>
     </div>
@@ -432,6 +552,7 @@
 
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="js/events-store.js?v=r2.2"></script><!-- D411：門票訂單（活動交易明細）的資料來源 -->
 <script src="js/orders-store.js?v=r2.2"></script>
 <script src="js/demand-store.js?v=r2.2"></script><!-- D360 · O33：只用 countryName（國家名跟語言） -->
 <script>
@@ -522,6 +643,8 @@
     shipBtn.textContent = 'Pickup status';
   }
   if (order.pay === 'unpaid') shipBtn.disabled = true;
+  /* D411：只有門票的訂單沒有出貨或取貨動作（電子門票付款當下就交付），主操作整顆收起 */
+  if (order.kind === 'ticket') shipBtn.hidden = true;
 
   /* ── §2.3.1 品項明細 ──────────────────────────────────────── */
   var itemsHost = document.querySelector('.od-items');
@@ -639,15 +762,18 @@
     var at = it.voidedAt;
     if (!at && it.units && it.units.length) at = it.units[0].at;
     if (!at && it.members) it.members.some(function (m) { return (m.units || []).some(function (u) { if (u.status === 'void' && u.at) { at = u.at; return true; } return false; }); });
-    var who = T(it.voidedBy === 'creator' ? 'od.void.record.creator' : 'od.void.record.admin', it.voidedBy === 'creator' ? 'Creator' : 'Admin');
+    var who = it.voidedBy === 'bookyay' ? 'bookyay'   /* D375：bookyay 端取消、撤銷同步回 ztor */
+      : T(it.voidedBy === 'creator' ? 'od.void.record.creator' : 'od.void.record.admin', it.voidedBy === 'creator' ? 'Creator' : 'Admin');
     var line = T('od.void.record', 'Voided {date} · {who}').replace('{date}', esc(at || '—')).replace('{who}', who);
+    if (it.voidWhole) line += ' · ' + T('od.void.record.whole', 'Whole-order void');   /* D414：整單撤銷標註 */
     if (it.voidReason) line += ' · ' + esc(it.voidReason);
     return '<div class="data-list__meta">' + line + '</div>';
   };
   var voidBtnHtml = function (it, i) {
     var st = S.voidState(it, order);
-    if (st === 'voided') return '';
-    var why = st === 'redeemed' ? (VOID_WHY_FULFILLED[it.mode] || VOID_WHY_FULFILLED.pickup)
+    /* D411：門票品項（直接買票）在活動詳情撤銷，本頁不放撤銷鈕；入口在 §2.3.4 門票資料 */
+    if (st === 'voided' || st === 'elsewhere') return '';
+    var why = st === 'redeemed' ? (it.redeemed ? { key: 'od.void.why.checkedin', en: "Tickets already checked in — can't be voided" } : (VOID_WHY_FULFILLED[it.mode] || VOID_WHY_FULFILLED.pickup))
       : (adminScope() ? null : VOID_WHY_ADMIN);
     return '<button class="btn btn--soft btn--destructive btn--sm od-void-open" type="button"' +
       ' data-od-void="' + i + '"' +
@@ -702,7 +828,7 @@
           var memberRowHtml =
             '<div class="data-list__row rowdis__child rowdis__child--compact' + (memberIsGroup ? ' rowdis__head' : '') + '" data-rowdis-child="' + gid + '" hidden>' +
               '<div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title">' +
-                '<span data-i18n="' + esc(m.nameKey) + '">' + esc(m.name) + '</span></div></div></div>' +
+                (m.nameKey ? '<span data-i18n="' + esc(m.nameKey) + '">' + esc(m.name) + '</span>' : esc(m.name)) + '</div></div></div>' +
               '<span class="od-cell">' + m.qty + '</span><span class="od-cell"></span>' +
               '<div class="od-item-pickup">' + memberFulfil + '</div>' +
               '<span class="data-list__amount"></span>' +
@@ -712,6 +838,9 @@
             ? ('<div class="rowdis__frame">' + memberRowHtml + memberExtra + '</div>')
             : memberRowHtml;
         });
+      } else if (it.mode === 'ticket' && !it.voided) {
+        /* D411：直接買票的品項——電子門票付款當下交付，逐張狀態看 §2.3.4 門票資料 */
+        cellHtml = badge({ cls: 'badge--neutral badge--inline', key: 'ed.pub.pickup.eticket', text: 'E-ticket' });
       } else if (it.voided) {
         /* 出貨型／數位品項作廢（D253）：沒有領取單位可失效，改讀品項自己的 voided
            旗標——已作廢的品項一律顯示已取消徽章，不再讀 shipStage／交付狀態。 */
@@ -734,11 +863,15 @@
       var pRec = pidM && window.ztorGetProduct ? window.ztorGetProduct(pidM[1]) : null;
       var bRec = !pRec && pidM && window.ztorGetBundle ? window.ztorGetBundle(pidM[1]) : null;
       var thumbSrc = (pRec && pRec.img) || (bRec && bRec.img) || '';
+      /* D411：門票訂單的品項圖直接帶完整路徑（門票圖片或活動主視覺），不經 products-store */
+      var thumbFull = it.thumb || '';
       /* 分類跟著找到的商品走（nick 別名對到的商品分類與訂單寫死的 catKey 可能不同，例：zine → 球衣）；
          實體次分類對到 e-shop 的分類 key，對不到就維持訂單自己的。 */
       var SUB2CAT = { apparel: 'e-shop.cat.apparel', zine: 'e-shop.cat.books', merch: 'e-shop.cat.accessories', collectible: 'e-shop.cat.collectibles', poster: 'e-shop.cat.prints' };
       if (pRec && pRec.cat === 'physical' && SUB2CAT[pRec.subKey]) catI18nKey = SUB2CAT[pRec.subKey];
-      var thumbHtml = thumbSrc
+      var thumbHtml = thumbFull
+        ? '<img class="data-list__thumb data-list__thumb--lg" src="' + esc(thumbFull) + '" alt="" loading="lazy">'
+        : thumbSrc
         ? '<img class="data-list__thumb data-list__thumb--lg" src="images/products/' + esc(thumbSrc) + '" alt="" loading="lazy">'
         : '<div class="data-list__icon"><i data-lucide="' + iconName + '" class="ztor-icon"></i></div>';
       var row = document.createElement('div');
@@ -747,21 +880,28 @@
         '<div class="data-list__row-main">' +
           thumbHtml +
           '<div class="data-list__body">' +
-            /* §2.3.1 品項名稱點擊開商品快照 popup，不直接連活商品 */
-            '<div class="data-list__title"><a class="card__link od-snap-open" role="button" href="#"' +
-              ' data-snap-name-key="' + esc(it.nameKey) + '" data-snap-name="' + esc(it.name) + '"' +
-              ' data-snap-price="' + esc(it.snap.price) + '" data-snap-cat-key="' + esc(it.catKey) + '"' +
-              (it.snap.variant ? ' data-snap-variant="' + esc(it.snap.variant) + '"' : '') +
-              ' data-snap-desc="' + esc(it.snap.desc) + '" data-snap-manage="' + esc(it.snap.manage) + '">' +
-              '<span data-i18n="' + esc(it.nameKey) + '">' + esc(it.name) + '</span></a></div>' +
+            /* §2.3.1 品項名稱點擊開商品快照 popup，不直接連活商品。
+               D411：門票訂單的品項（名稱來自活動資料、沒有 i18n key）——門票沒有商品快照，名稱寫純文字；
+               分類下多一行活動名稱，連到活動詳情。 */
+            '<div class="data-list__title">' + (it.snap
+              ? '<a class="card__link od-snap-open" role="button" href="#"' +
+                ' data-snap-name-key="' + esc(it.nameKey) + '" data-snap-name="' + esc(it.name) + '"' +
+                ' data-snap-price="' + esc(it.snap.price) + '" data-snap-cat-key="' + esc(it.catKey) + '"' +
+                (it.snap.variant ? ' data-snap-variant="' + esc(it.snap.variant) + '"' : '') +
+                ' data-snap-desc="' + esc(it.snap.desc) + '" data-snap-manage="' + esc(it.snap.manage) + '">' +
+                (it.nameKey ? '<span data-i18n="' + esc(it.nameKey) + '">' + esc(it.name) + '</span>' : esc(it.name)) + '</a>'
+              : esc(it.name)) +
+              (it.solo ? ' <span class="badge badge--neutral badge--inline"><span data-i18n="od.tk.solo">Standalone ticket</span></span>' : '') + '</div>' +
             '<div class="data-list__meta" data-i18n="' + esc(catI18nKey) + '">—</div>' +
+            (it.event ? '<div class="data-list__meta"><a class="card__link" href="event-detail.html?id=' + encodeURIComponent(it.event.id) + '">' + esc(it.event.name) + '</a></div>' : '') +
             voidRecordHtml(it) +
           '</div>' +
         '</div>' +
         '<span class="od-cell">' + it.qty + '</span>' +
         '<span class="od-cell od-col-r">' + esc(it.unit) + '</span>' +
         '<div class="od-item-pickup">' + cellHtml + '</div>' +
-        '<span class="data-list__amount">$' + it.amt.toFixed(2) + '</span>' +
+        /* D411：門票訂單照活動幣別（order.cur，例 NT$、整數）；電子商店訂單照舊 $ 兩位小數 */
+        '<span class="data-list__amount">' + (order.cur ? order.cur + Math.round(it.amt).toLocaleString('en-US') : '$' + it.amt.toFixed(2)) + '</span>' +
         '<span class="od-cell od-col-r">' + voidBtnHtml(it, i) + '</span>';
       /* L3 整組換層：可展開的品項（isGroup）與它的子列一起包進 `.rowdis__group
          rowdis__group--gutter`（清單型容器要補內距，見 row-disclosure.css）；
@@ -886,6 +1026,79 @@
   /* 金額拆解只畫一次（不像品項表會因作廢重畫），init 一次即可；點擊走 document 級委派。 */
   window.rowDisclosure.init(amtHost);
 
+  /* ── §2.1 返回脈絡（D411）：從活動詳情的交易明細打開（?from=event&ev=<活動>）→ 返回該活動的交易明細 ── */
+  (function renderBack() {
+    var q = new URLSearchParams(location.search);
+    var evId = q.get('from') === 'event' ? q.get('ev') : '';
+    var ev = evId && window.ztorEvents ? window.ztorEvents.get(evId) : null;
+    if (!ev) return;
+    var back = 'event-detail.html?id=' + encodeURIComponent(ev.id) + '&sec=tx#sales';
+    $('[data-od-back]').setAttribute('href', back);
+    var c1 = $('[data-od-crumb-1]'), c2 = $('[data-od-crumb-2]');
+    c1.setAttribute('href', 'events.html'); c1.setAttribute('data-i18n', 'nav.events'); c1.textContent = 'Events';
+    c2.setAttribute('href', back); c2.removeAttribute('data-i18n'); c2.textContent = ev.name;
+  })();
+
+  /* ── §2.2 訂單類型與來源（D411）── */
+  var TYPE_LABEL = { product: ['od.type.product', 'Product'], ticket: ['od.type.ticket', 'Ticket'], bundle: ['od.type.bundle', 'Bundle'] };
+  $('[data-od-types]').innerHTML = S.typesOf(order).map(function (t) {
+    return badge({ cls: 'badge--neutral', key: TYPE_LABEL[t][0], text: TYPE_LABEL[t][1] });
+  }).join('') || '—';
+
+  /* ── §2.2.1 付款資訊（D411）── */
+  (function renderPayment() {
+    var pm = order.payment;
+    $('[data-od-pay-at]').textContent = pm ? pm.paidAt : '—';
+    $('[data-od-pay-provider]').textContent = pm ? pm.provider : '—';
+    var mEl = $('[data-od-pay-method]');
+    if (pm && S.methodKey(pm.method)) { mEl.setAttribute('data-i18n', S.methodKey(pm.method)); mEl.textContent = S.methodText(pm.method); }
+    else mEl.textContent = '—';
+    $('[data-od-pay-id-field]').hidden = !pm;
+    $('[data-od-pay-free]').hidden = !order.free;   /* D414：免費訂單，不經金流 */
+    if (pm) $('[data-od-pay-id]').value = pm.paymentId;
+  })();
+
+  /* ── §2.3.4 門票資料（D411）── */
+  (function renderTickets() {
+    var host = $('#od-tickets');
+    var list = order.tickets || [];
+    /* 電子商店訂單裡的票務組合包（ZT-10489）也有門票成員：資料層沒有逐張票號，由成員推導示範列（同一套欄位） */
+    if (!list.length) {
+      order.items.forEach(function (it) {
+        (it.members || []).forEach(function (m) {
+          if (m.mode !== 'ticket') return;
+          for (var i = 0; i < m.qty; i++) list.push({ code: 'TK-' + order.id.replace(/^ZT-/, '') + '-' + String(list.length + 1).padStart(2, '0'),
+            eventId: '', eventName: '', when: '', tier: m.name, tierKey: m.nameKey, solo: false, source: it.name, sourceKey: it.nameKey, status: it.voided ? 'void' : 'valid' });
+        });
+      });
+    }
+    if (!list.length) return;
+    host.hidden = false;
+    var ST = { valid: ['badge--success', 'od.tk.st.valid', 'Valid'], 'in': ['badge--neutral', 'od.tk.st.in', 'Checked in'], 'void': ['badge--error', 'od.tk.st.void', 'Voided'] };
+    $('[data-od-tk-body]').innerHTML = list.map(function (t) {
+      var st = ST[t.status] || ST.valid;
+      return '<tr class="ztor-table__row">' +
+        '<td><code>' + esc(t.code) + '</code></td>' +
+        '<td>' + (t.eventId ? '<a class="card__link" href="event-detail.html?id=' + encodeURIComponent(t.eventId) + '">' + esc(t.eventName) + '</a><div class="text-sub">' + esc(t.when) + '</div>' : '<span class="text-sub">—</span>') + '</td>' +
+        '<td>' + (t.tierKey ? '<span data-i18n="' + esc(t.tierKey) + '">' + esc(t.tier) + '</span>' : esc(t.tier)) +
+          (t.solo ? ' <span class="badge badge--neutral badge--inline"><span data-i18n="od.tk.solo">Standalone ticket</span></span>' : '') + '</td>' +
+        '<td>' + (t.source ? (t.sourceKey ? '<span data-i18n="' + esc(t.sourceKey) + '">' + esc(t.source) + '</span>' : esc(t.source)) : '<span data-i18n="od.tk.src.direct">Direct purchase</span>') + '</td>' +
+        '<td>' + badge({ cls: st[0] + ' badge--inline', key: st[1], text: st[2] }) + '</td></tr>';
+    }).join('');
+    $('[data-od-tk-count]').setAttribute('data-od-tk-n', list.length);
+    var evId = list[0].eventId;
+    var go = $('[data-od-tk-goto]'), note = $('[data-od-tk-note]');
+    var bky = order.event && order.event.bky;
+    if (evId) go.setAttribute('href', 'event-detail.html?id=' + encodeURIComponent(evId) + '&sec=tx#sales');
+    /* 撤銷門票：直接買票的在活動詳情；組合包裡的門票照 §2.8 在本頁撤銷整個組合包品項；bookyay 匯入的活動在 bookyay 後台（D375） */
+    var onlyBundle = order.items.every(function (it) { return it.mode !== 'ticket'; });
+    go.hidden = onlyBundle || bky || !evId;
+    var nk = onlyBundle ? 'od.tk.note.bundle' : bky ? 'od.tk.note.bky' : 'od.tk.note.event';
+    note.setAttribute('data-i18n', nk);
+    note.textContent = T(nk, onlyBundle ? 'These tickets came in a bundle — void the bundle item above.'
+      : bky ? 'This event was imported from bookyay — void tickets in the bookyay back office.' : 'Ticket voiding happens in the event.');
+  })();
+
   /* ── §2.4 買家 ────────────────────────────────────────────── */
   $('[data-od-buyer-name]').textContent = order.buyer.name;
   $('[data-od-contact]').textContent = order.buyer.contact;
@@ -949,6 +1162,8 @@
     var key = n === 1 ? 'od.items.count1' : 'od.items.count';
     var fb = n === 1 ? '1 item' : '{n} items';
     $('[data-od-count]').textContent = T(key, fb).replace('{n}', n);
+    var tkc = $('[data-od-tk-count]');
+    if (tkc && tkc.dataset.odTkN) tkc.textContent = T('od.tk.count', '{n} tickets').replace('{n}', tkc.dataset.odTkN);
     /* 墓碑（2026-09-09，D253）：退款事實那一行與可退品項標題／分類的重畫邏輯移除，
        隨 §2.6 退款彈窗與事實列一起退場——平台不記錄退款金額、不呈現退款事實。 */
     /* 領取單位彙總「N 件中已核銷 M 件」與單位子列的最近核銷時間：兩個變數，同一套
@@ -980,6 +1195,7 @@
 <script src="js/sticky-actions.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>
+<script src="js/link-field.js?v=r2.2"></script>
 <script>
   /* §2.2 標記出貨 popup（§2.5 出貨與履約內容）：
      - 頂部 Mark shipped 開窗；backdrop／Esc／Cancel 關窗（.is-modal-open 鎖背景捲動）。
@@ -1087,6 +1303,34 @@
     const presetHost = modal.querySelector('[data-od-void-presets]');
     const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb;
     let target = null;
+    /* 整單撤銷（D414）：同一個確認視窗換內容——標題／確認鈕／撤銷對象（全部品項）／效果預告／不可逆提醒換成整單版本 */
+    const listEl = modal.querySelector('[data-od-void-list]');
+    const scopeLabel = modal.querySelector('[data-od-void-scope-label]');
+    const titleEl = document.getElementById('od-void-title');
+    const irrevEl = modal.querySelector('[data-od-void-irreversible]');
+    const emailEl = modal.querySelector('[data-od-void-effect="email"]');
+    const wholeEmailEl = modal.querySelector('[data-od-void-effect="whole-email"]');
+    const wholeStatusEl = modal.querySelector('[data-od-void-effect="whole-status"]');
+    const wholeListEl = modal.querySelector('[data-od-void-wholelist]');
+    let whole = false;
+    const setText = (el, key, fb) => { el.setAttribute('data-i18n', key); el.textContent = T(key, fb); };
+    const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const hasUnitsOf = item => {
+      const agg = S.unitSummary(item);
+      return (item.mode === 'pickup' && item.units && item.units.length) || (item.mode === 'bundle' && agg.total > 0);
+    };
+    /* 切換單品／整單版面 */
+    function setMode(w) {
+      whole = w;
+      scopeLabel.hidden = !w; wholeListEl.hidden = !w; listEl.hidden = w;
+      wholeEmailEl.hidden = !w; wholeStatusEl.hidden = !w; emailEl.hidden = w;
+      setText(titleEl, w ? 'od.void.whole.title' : 'od.void.title', w ? 'Void whole order' : 'Void item');
+      setText(confirmBtn, w ? 'od.void.whole.confirm' : 'od.void.confirm', w ? 'Void whole order' : 'Void this item');
+      setText(irrevEl, w ? 'od.void.whole.irreversible' : 'od.void.irreversible',
+        w ? "There's no undo — a voided order can't be reinstated." : "There's no undo — a voided item can't be reinstated.");
+      if (reasonEl) reasonEl.setAttribute('data-i18n-placeholder', w ? 'od.void.whole.reason.ph' : 'od.void.reason.ph');
+      if (reasonEl) reasonEl.setAttribute('placeholder', T(w ? 'od.void.whole.reason.ph' : 'od.void.reason.ph', reasonEl.getAttribute('placeholder')));
+    }
     /* 撤銷原因（D271）：chip 點了把該理由的當前語言文字灌進 textarea 並標 active；
        使用者自己改字就把 active 拿掉（帶入只是起手，最後以 textarea 內容為準）。 */
     const clearPreset = () => { if (presetHost) presetHost.querySelectorAll('.chip--active').forEach(c => c.classList.remove('chip--active')); };
@@ -1099,10 +1343,31 @@
     if (reasonEl) reasonEl.addEventListener('input', clearPreset);
 
     const open = () => { modal.hidden = false; document.body.classList.add('is-modal-open'); };
-    const close = () => { modal.hidden = true; document.body.classList.remove('is-modal-open'); target = null; };
+    const close = () => {
+      modal.hidden = true; document.body.classList.remove('is-modal-open'); target = null;
+      if (whole) setMode(false);
+    };
     modal.querySelectorAll('[data-od-void-close]').forEach(el => el.addEventListener('click', close));
     modal.addEventListener('click', e => { if (e.target === modal) close(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
+
+    /* 整單撤銷入口（D414）：撤銷對象列出全部品項；退款前置提醒、不可逆提醒、撤銷原因同單品；效果預告依全部品項合併 */
+    const wholeBtn = document.getElementById('od-void-whole-open');
+    if (wholeBtn) wholeBtn.addEventListener('click', () => {
+      if (wholeBtn.disabled || S.wholeVoidState(order) !== 'ok') return;
+      setMode(true);
+      wholeListEl.innerHTML = order.items.map(it =>
+        '<div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">' +
+        '<div class="data-list__title">' + (it.nameKey ? '<span data-i18n="' + esc(it.nameKey) + '">' + esc(it.name) + '</span>' : esc(it.name)) + '</div>' +
+        '<div class="data-list__meta">' + esc(T('od.void.qty', '{n} × {price}').replace('{n}', it.qty).replace('{price}', it.unit)) + '</div>' +
+        '</div></div></div>').join('');
+      if (window.applyI18n) window.applyI18n(wholeListEl);
+      if (codesEffect) codesEffect.hidden = !order.items.some(hasUnitsOf);
+      if (stockEffect) stockEffect.hidden = order.items.every(it => it.mode === 'digital');
+      if (reasonEl) reasonEl.value = '';
+      clearPreset();
+      open();
+    });
 
     /* 委派：品項表會重畫，按鈕不是固定節點 */
     document.addEventListener('click', e => {
@@ -1129,6 +1394,18 @@
     });
 
     confirmBtn.addEventListener('click', () => {
+      if (whole) {
+        /* 整單撤銷：每個品項各撤銷一次（原因套用到每個品項），訂單成為已取消；原型不呼叫金流、庫存與通知信由後端執行 */
+        const doneAll = S.voidWholeOrder(order, reasonEl ? reasonEl.value.trim() : '');
+        close();
+        if (!doneAll) return;
+        view.items();
+        view.status();
+        if (window.renderWholeVoid) window.renderWholeVoid();
+        if (window.applyI18n) window.applyI18n(document);
+        if (window.ztorToast) window.ztorToast.show(T('od.void.whole.toast', 'Voided the whole order — the buyer will be notified.'), { tone: 'success' });
+        return;
+      }
       if (!target) return close();
       const label = T(target.nameKey, target.name);
       const done = S.voidItem(order, target, reasonEl ? reasonEl.value.trim() : '');
@@ -1136,15 +1413,105 @@
       if (!done) return;
       view.items();
       view.status();
+      if (window.renderWholeVoid) window.renderWholeVoid();
       if (window.applyI18n) window.applyI18n(document);
       if (window.ztorToast) {
         window.ztorToast.show(T('od.void.toast', 'Voided {item} — the buyer will be notified.').replace('{item}', label), { tone: 'success' });
       }
     });
 
+    /* 整單撤銷鈕的可用／停用（D414）：品項本身的事實先於身分——有品項已完成履約／已撤銷、含門票、訂單已取消，
+       不論誰看都停用並寫原因；只有這些都過了才輪到「需要 Admin 角色」。停用原因寫在 title（同品項撤銷鈕，不做沉默停用）。 */
+    const WHOLE_WHY = {
+      fulfilled: ['od.void.whole.why.fulfilled', 'An item is already fulfilled — void the items that can still be voided one by one'],
+      ticket:    ['od.void.whole.why.ticket', 'This order has ticket items — void the tickets in the event detail'],
+      voided:    ['od.void.whole.why.voided', 'An item is already voided — void the remaining items one by one'],
+      cancelled: ['od.void.whole.why.cancelled', 'This order is already cancelled']
+    };
+    window.renderWholeVoid = function () {
+      if (!wholeBtn) return;
+      const st = S.wholeVoidState(order);
+      const admin = !!(window.ztorCreator && window.ztorCreator.adminScope && window.ztorCreator.adminScope());
+      const why = st !== 'ok' ? WHOLE_WHY[st] : (admin ? null : ['od.void.why.admin', 'Requires the Admin role']);
+      wholeBtn.disabled = !!why;
+      if (why) {
+        wholeBtn.setAttribute('aria-disabled', 'true');
+        wholeBtn.setAttribute('data-i18n-title', why[0]);
+        wholeBtn.setAttribute('title', T(why[0], why[1]));
+      } else {
+        wholeBtn.removeAttribute('aria-disabled'); wholeBtn.removeAttribute('data-i18n-title'); wholeBtn.removeAttribute('title');
+      }
+    };
+
     /* sidebar.js 已就緒 → 用正式的 adminScope() 再畫一次；切換代管對象時同理 */
     view.items();
-    document.addEventListener('ztor:creator-changed', () => { view.items(); });
+    window.renderWholeVoid();
+    document.addEventListener('ztor:creator-changed', () => { view.items(); window.renderWholeVoid(); });
+    document.addEventListener('i18n:applied', () => { window.renderWholeVoid(); });
+  })();
+
+  /* §2.2 補寄信（D411）：Admin 專屬——創作者本人看得到但停用，title 說明要聯繫 Admin（同 §2.8 撤銷、活動詳情撤銷的同一句做法）。
+     Admin：開確認窗 → 確認收件信箱（預填買家聯絡信箱、可改、要是合法信箱）→ 寄出 → 「訂單資訊」留一筆寄送紀錄＋toast。
+     原型不真的寄信；紀錄只存在這一頁的記憶體（重新整理即消失）。 */
+  (function () {
+    const view = window.ztorOrderView;
+    const btn = document.getElementById('od-resend-open');
+    const modal = document.getElementById('od-resend-modal');
+    if (!view || !btn || !modal) return;
+    const order = view.order;
+    const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb;
+    const to = document.getElementById('od-resend-to');
+    const err = modal.querySelector('[data-od-resend-err]');
+    const isAdmin = () => !!(window.ztorCreator && window.ztorCreator.adminScope && window.ztorCreator.adminScope());
+    function renderBtn() {
+      const ok = isAdmin();
+      btn.disabled = !ok;
+      if (ok) { btn.removeAttribute('aria-disabled'); btn.removeAttribute('title'); btn.removeAttribute('data-i18n-title'); }
+      else {
+        btn.setAttribute('aria-disabled', 'true');
+        btn.setAttribute('data-i18n-title', 'od.resend.why.admin');
+        btn.setAttribute('title', T('od.resend.why.admin', 'Only an Admin can resend emails. Contact an Admin.'));
+      }
+    }
+    function renderLog() {
+      const log = order.mailLog || [];
+      const field = document.querySelector('[data-od-mail-field]');
+      const host = document.querySelector('[data-od-mail-log]');
+      if (!field || !host) return;
+      field.hidden = !log.length;
+      host.innerHTML = log.map(r => '<div>' + T('od.resend.log.row', '{at} · {who} · to {to}')
+        .replace('{at}', r.at).replace('{who}', 'Admin').replace('{to}', r.to.replace(/</g, '&lt;')) + '</div>').join('');
+    }
+    const hasTickets = (order.tickets && order.tickets.length) ||
+      order.items.some(it => it.mode === 'ticket' || (it.members || []).some(m => m.mode === 'ticket'));
+    const open = () => {
+      to.value = order.buyer.contact || '';
+      err.hidden = true;
+      modal.querySelector('[data-od-resend-tickets]').hidden = !hasTickets;
+      modal.querySelector('[data-od-resend-bky]').hidden = !(order.event && order.event.bky);
+      modal.hidden = false; document.body.classList.add('is-modal-open'); to.focus();
+    };
+    const close = () => { modal.hidden = true; document.body.classList.remove('is-modal-open'); };
+    btn.addEventListener('click', () => { if (!btn.disabled) open(); });
+    modal.querySelectorAll('[data-od-resend-close]').forEach(el => el.addEventListener('click', close));
+    modal.addEventListener('click', e => { if (e.target === modal) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
+    to.addEventListener('input', () => { err.hidden = true; });
+    document.getElementById('od-resend-confirm').addEventListener('click', () => {
+      const v = to.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { err.hidden = false; to.focus(); return; }
+      const d = new Date();
+      const at = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') +
+        ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+      (order.mailLog = order.mailLog || []).push({ at: at, by: 'admin', to: v });
+      close();
+      renderLog();
+      if (window.ztorToast) window.ztorToast.show(T('od.resend.toast', 'Email resent to {to}').replace('{to}', v), { tone: 'success' });
+    });
+    renderBtn();
+    renderLog();
+    document.addEventListener('ztor:creator-changed', renderBtn);
+    document.addEventListener('i18n:applied', renderLog);
   })();
 </script>
 <script src="js/devtools.js?v=r2.2"></script>

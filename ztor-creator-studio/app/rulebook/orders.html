@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>訂單列表 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261014b">
+<script src="shell.js?v=20261014b" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="orders">訂單列表</h1>
+<p class="lede">創作者在訂單列表查看與追蹤所有訂單，包含電子商店的商品與組合包訂單，以及直接購買活動門票的訂單，找到要處理的那一筆後打開<a href="order-detail.html">訂單詳情</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="orders-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>畫面標題是「訂單管理（Order management）」，頁首四個數字看待處理的量，下方用篩選找訂單</li>
+  <li>出貨、撤銷與對帳都在訂單詳情處理</li>
+  <li>平台不提供退款動作，這一頁沒有退款或取消的按鈕</li>
+  <li>金額與收入管理（Earnings）同一個口徑，這一頁不另外計算</li>
+</ul>
+
+<h2 id="orders-flow"><span class="n"></span>操作流程</h2>
+<p>創作者進訂單列表後，先看摘要決定先處理什麼，再用篩選找到訂單，打開詳情處理或匯出。</p>
+<div class="dg" role="img" aria-label="訂單列表流程圖，由左往右：進訂單列表看訂單摘要，用關鍵字、訂單日期、訂單類型與狀態篩選，再選要做什麼；處理一筆訂單就開啟訂單詳情，要留存或對帳就匯出目前的篩選結果">
+<div class="dg-hg" style="--dg-c:4">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>進訂單列表<small>看訂單摘要</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:3"><span class="s">2</span>篩選找訂單<small>關鍵字、訂單日期、訂單類型、狀態</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:4"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:5"><span class="s">3</span>要做什麼？</div>
+  <span class="dg-a" data-t="處理一筆訂單" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" data-t="留存或對帳" style="grid-row:2;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:7">訂單詳情<small>按「開啟（Open）」</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:7">匯出<small>照目前的篩選結果</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，紫色虛線框是要回答的問題，綠框是這個選擇接到的地方。圓圈數字對應下方步驟清單的編號。圖上沒畫的細節（還沒有訂單、篩選沒有結果）列在下方步驟清單後面。</p>
+<ol class="plain">
+  <li>進訂單列表：
+    <ul class="plain">
+      <li>頁首是<a href="#orders-summary">摘要</a>的四個數字</li>
+      <li>下方是訂單清單</li>
+    </ul>
+  </li>
+  <li>縮小範圍，見<a href="#orders-filter">篩選與匯出</a>：
+    <ul class="plain">
+      <li>關鍵字</li>
+      <li>訂單日期</li>
+      <li>訂單類型</li>
+      <li>狀態</li>
+      <li>條件同時成立</li>
+    </ul>
+  </li>
+  <li>要做什麼？
+    <ul class="plain">
+      <li>處理一筆訂單：按該列的「開啟（Open）」，進<a href="order-detail.html">訂單詳情</a>出貨、查付款或對帳</li>
+      <li>留存或對帳：按「匯出（Export）」，匯出目前的篩選結果</li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>帳號還沒有任何訂單，或篩選沒有結果時顯示什麼，見<a href="#orders-empty">沒有資料時</a></li>
+  <li>直接買門票的訂單也能從活動詳情的交易明細打開，見<a href="#orders-scope">列在這裡的訂單</a></li>
+</ul>
+<p class="note">依據：5.1.5.3 F1～F4、使用情境；D411。</p>
+
+<h2 id="orders-list"><span class="n"></span>訂單清單</h2>
+<p>這一頁讓創作者掌握待處理的訂單量，並逐筆查看訂單狀態與金額。頁首的四個數字見<a href="#orders-summary">摘要</a>；每一列有哪些欄位、怎麼找到訂單，見<a href="#orders-rows">清單</a>；還沒有訂單或篩選沒有結果時，見<a href="#orders-empty">沒有資料時</a>。</p>
+
+<h3 id="orders-summary">摘要</h3>
+<p>四個數字讓創作者一眼看到待處理的訂單量與近期完成量，決定先處理什麼。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">數字</th><th>算哪些訂單</th></tr></thead>
+  <tbody>
+    <tr><td>待出貨（To ship）</td><td>等待物流出貨的訂單數<br>現場 QR 領取的品項不算，改在品項上顯示取貨狀態</td></tr>
+    <tr><td>待處理（Pending）</td><td>還在等待處理的訂單數，例如待付款</td></tr>
+    <tr><td>已取消／爭議（Cancelled / disputes）</td><td>已取消或爭議中的訂單數</td></tr>
+    <tr><td>近 30 天完成（Completed · 30d）</td><td>近 30 天已完成的訂單數</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>沒有任何訂單時，四個數字都顯示 0，不隱藏</li>
+  <li>數字裡有金額加總時，用單一顯示幣別與同一個匯率時點</li>
+</ul>
+
+<h3 id="orders-rows">清單</h3>
+<p>清單一列是一筆訂單，是處理訂單的主要工作區。怎麼找到特定訂單與匯出，見<a href="#orders-filter">篩選與匯出</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>訂單編號與買家</td><td>訂單編號加買家名稱</td></tr>
+    <tr><td>品項摘要</td><td>一行列出這筆訂單的品項與數量</td></tr>
+    <tr><td>金額</td><td>訂單金額，口徑同收入管理（Earnings）</td></tr>
+    <tr><td>付款與結算狀態（Payment · Settlement）</td><td>付款與收入結算的狀態徽章，例如已付款、爭議<br>狀態的意思見<a href="order-detail.html#status">訂單的狀態</a></td></tr>
+    <tr><td>履約狀態（Fulfilment）</td><td>出貨或取貨的狀態徽章，例如待出貨、已出貨、已完成、已取消<br>跟付款與結算狀態分兩欄並列，不合併<br>同時有物流商品與現場 QR 領取商品時，可以並列兩顆徽章，例如「待出貨」加「待取貨」<br>只有部分品項被撤銷時維持原本的狀態，取消只顯示在訂單詳情的品項上</td></tr>
+    <tr><td>訂單日期</td><td>下單的日期</td></tr>
+    <tr><td>付款時間與付款方式</td><td>付款完成的時間與付款方式，例如信用卡、Apple Pay<br>還沒付款顯示「—」<br>創作者與 Admin 都看得到</td></tr>
+    <tr><td>發貨時間</td><td>訂單裡出貨型品項第一次出貨的時間<br>沒有出貨型品項，或還沒出貨，顯示「—」</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>開啟（Open）</td><td>每一列都有</td><td>開啟這筆訂單的<a href="order-detail.html">訂單詳情</a><br>從詳情返回時，保留原本的狀態篩選與搜尋</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="orders-filter">篩選與匯出</h4>
+<p>關鍵字、訂單日期、訂單類型與狀態同時成立，取交集。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>關鍵字搜尋</td><td>—</td><td>依訂單編號、買家或商品搜尋目前的清單</td></tr>
+    <tr><td>訂單日期（起）、訂單日期（訖）</td><td>可以只填一邊</td><td>依下單日期篩選區間</td></tr>
+    <tr><td>訂單類型</td><td>—</td><td>選項：<br>全部<br>商品<br>門票<br>組合包<br>依訂單含的品項類型篩選；一筆訂單含好幾種類型時，選其中任一種都會出現，見<a href="#orders-type">訂單類型</a></td></tr>
+    <tr><td>狀態分頁</td><td>—</td><td>選項：<br>全部（All status）<br>待付款（Unpaid）<br>已付款（Paid）<br>待出貨（To ship）<br>已出貨（Shipped）<br>已完成（Completed）<br>爭議（Disputed）<br>已取消（Cancelled）<br>沒有「已退款」，平台不提供退款動作<br>「已取消」只篩出所有品項都已取消的訂單；只有部分品項被取消的訂單留在原本的狀態</td></tr>
+    <tr><td>匯出（Export）</td><td>—</td><td>放在篩選工作列<br>匯出目前的篩選結果</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="orders-empty">沒有資料時</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">情況</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>帳號還沒有任何訂單</td><td>四個數字顯示 0<br>清單顯示「目前沒有訂單」，說明訂單會在粉絲下單後出現<br>篩選仍在，但沒有內容可篩</td></tr>
+    <tr><td>有訂單，但篩選沒有結果</td><td>顯示「查無符合的訂單」，並提供清除篩選的入口<br>跟「目前沒有訂單」是兩種畫面，不混用</td></tr>
+    <tr><td>載入中、載入失敗、沒有權限</td><td>照全站共用的狀態規則顯示</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.3 F1、F2、F3、F4、頁面狀態；主規格 §6、§7.2、§7.3；D169、D252、D253、D411。</p>
+
+<h2 id="orders-scope"><span class="n"></span>列在這裡的訂單</h2>
+<p>訂單列表收電子商店的所有訂單，也收直接購買活動門票的訂單。一筆訂單算哪一種類型，見<a href="#orders-type">訂單類型</a>；同一筆訂單還會出現在哪裡，見<a href="#orders-where">同一筆訂單出現的地方</a>。</p>
+<ul class="plain">
+  <li>金額為 0 的免費訂單也算訂單，照常列出</li>
+  <li>免費訂單不經金流，付款資訊顯示「—」</li>
+</ul>
+
+<h3 id="orders-type">訂單類型</h3>
+<p>訂單類型看這筆訂單含哪些品項；一筆訂單可以同時含好幾種。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">訂單類型</th><th>含什麼品項</th></tr></thead>
+  <tbody>
+    <tr><td>商品</td><td>電子商店單獨販售的商品</td></tr>
+    <tr><td>門票</td><td>直接購買的活動門票</td></tr>
+    <tr><td>組合包</td><td>組合包，含帶活動門票的票務商品，見<a href="bundles.html#what">組合包的成員</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="orders-where">同一筆訂單出現的地方</h3>
+<ul class="plain">
+  <li>直接買門票的訂單，以及含活動門票的組合包訂單，同時列在該活動的交易明細，兩處是同一筆訂單，見活動詳情「售票與名單」的<a href="event-detail-sales.html#sales-tx">售票紀錄</a></li>
+  <li>從活動交易明細打開的也是同一個<a href="order-detail.html">訂單詳情</a></li>
+  <li>現場 QR 領取的品項仍在這裡管訂單</li>
+  <li>取貨場次與掃碼核銷在取貨管理，核銷結果寫回訂單詳情的品項</li>
+</ul>
+<p class="note">依據：5.1.5.3 頁面定位、F2「訂單類型」、F3「範圍」；5.1.6.3 §2.7；D407、D411、D414。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.3-訂單管理.md</code>（v1.15）頁面定位、F1～F4、頁面狀態、使用情境；<code>5.1.6.3-活動詳情.md</code> §2.7；<code>0-設計規格書.md</code>（v4.57）§6、§7.2、§7.3</li>
+    <li>決策：D169、D252、D253、D407、D411、D414</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>待處理（Pending）算哪些狀態：規格舉例「待付款／待確認」，「待確認」沒有定義</li>
+    <li>匯出的檔案格式與包含哪些欄位</li>
+    <li>清單的預設排序，以及狀態分頁要不要顯示筆數</li>
+    <li>關鍵字搜尋是否打部分字串就能命中、支不支援多個關鍵字</li>
+  </ul>
+  <p class="k">最近同步：2026-10-14（至 D414）</p>
+</details>
+</div>
+</body>
+</html>

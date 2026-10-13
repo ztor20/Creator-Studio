@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>活動詳情：設定 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261014b">
+<script src="shell.js?v=20261014b" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>活動詳情：設定</h1>
+<p class="lede">創作者在設定分頁查看並修改一場已發布活動的內容、場次、地點、發布設定與在地化。頁首、階段動作與編輯模式的共通規則，見<a href="event-detail.html">活動詳情</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="settings-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>設定分頁分六個子區塊；欄位本身的定義在建立活動的各步驟，這一頁只寫發布後的差異</li>
+  <li>能不能改，看活動的階段，也看活動是不是從 bookyay 帶入</li>
+  <li>只有在地化自己儲存；其餘子區塊都要先進編輯模式，改完按整頁的「儲存」才生效</li>
+</ul>
+
+<h2 id="settings-flow"><span class="n"></span>操作流程</h2>
+<p>創作者進設定分頁後，先選子區塊，再依要改的內容走在地化或編輯模式。</p>
+<div class="dg" role="img" aria-label="設定分頁流程圖，由左往右：進設定分頁選子區塊，再選要改什麼；改譯文或價格就按預覽與在地化，改完按儲存立即生效；改其他欄位就按編輯活動進入編輯模式，改完按儲存，改了高影響欄位時先確認">
+<div class="dg-hg" style="--dg-c:4">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>進設定分頁<small>選要改的子區塊</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:3"><span class="s">2</span>要改什麼？</div>
+  <span class="dg-a" data-t="譯文或價格" style="grid-row:1;grid-column:4"></span>
+  <span class="dg-a" data-t="其他欄位" style="grid-row:2;grid-column:4"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:5"><span class="s">3</span>預覽與在地化<small>改完按「儲存」，立即生效</small></div>
+  <div class="dg-node" style="grid-row:2;grid-column:5"><span class="s">4</span>按「編輯活動」<small>改可改的欄位</small></div>
+  <span class="dg-a" style="grid-row:2;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:2;grid-column:7"><span class="s">5</span>按「儲存」<small>高影響欄位先確認</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，紫色虛線框是要回答的問題，綠框是這條路線的結果。圓圈數字對應下方步驟清單的編號。圖上沒畫的細節（捨棄變更、離開時的提醒、被鎖定的欄位）列在下方步驟清單後面。</p>
+<ol class="plain">
+  <li>進設定分頁，用上方的子導覽選要改的子區塊，見<a href="#settings-fields">功能與欄位</a></li>
+  <li>要改什麼？
+    <ul class="plain">
+      <li>譯文或價格：走第 3 點</li>
+      <li>其他欄位：走第 4 點</li>
+    </ul>
+  </li>
+  <li>按「預覽與在地化」，改譯文或價格，按「儲存」；不必進編輯模式，儲存後立即生效，見<a href="#set-local">在地化</a></li>
+  <li>按「編輯活動」進入編輯模式；可以改的欄位轉為可輸入，鎖定的欄位只顯示，哪個階段能改哪些欄位，見<a href="#settings-edit">編輯狀態</a></li>
+  <li>按「儲存」；改了高影響欄位時先確認再儲存，見<a href="#edit-impact">高影響欄位</a></li>
+</ol>
+<ul class="plain">
+  <li>編輯開關在設定、票務、售票與名單三個分頁的工具列右側，整頁共用一個；捨棄變更與離開時的提醒，見<a href="event-detail.html">活動詳情</a></li>
+  <li>已結束與已取消的活動沒有編輯開關，整頁唯讀</li>
+  <li>從 bookyay 帶入的活動，有些欄位在任何階段都鎖定，見<a href="#settings-bookyay">從 bookyay 帶入時</a></li>
+</ul>
+<p class="note">依據：5.1.6.3 §3；5.1.6.2 §3；D392 決定一、三。</p>
+
+<h2 id="settings-fields"><span class="n"></span>功能與欄位</h2>
+<p>子導覽依序是<a href="#set-content">活動內容</a>、<a href="#set-sessions">場次</a>、<a href="#set-venue">地點</a>、<a href="#set-publish">發布設定</a>、<a href="#set-link">活動連結與 QR</a>、<a href="#set-local">在地化</a>。欄位的完整定義在建立活動的步驟頁，下面每張表只寫發布後的差異；哪個階段能不能改，見<a href="#settings-edit">編輯狀態</a>。</p>
+
+<h3 id="set-content">活動內容</h3>
+<p>創作者在這裡確認並修改活動是什麼：名稱、描述、圖片、表演者與條款。欄位定義見<a href="event-create-step2.html">步驟 2 基本資料</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>活動類型</td><td>只顯示</td><td>建立後就不能改，不論有沒有開賣<br>要換活動類型，只能用「再辦一場」另建一場，見<a href="event-detail.html">活動詳情</a></td></tr>
+    <tr><td>活動名稱</td><td>必填</td><td>儲存後粉絲端立即反映，不算高影響變更</td></tr>
+    <tr><td>亮點</td><td>選填</td><td>可以改或清空<br>儲存後粉絲端立即反映，不算高影響變更</td></tr>
+    <tr><td>活動國家</td><td>必填</td><td>可以改，不能清空，定義同<a href="event-create-step2.html">步驟 2 基本資料</a><br>列入高影響欄位，見<a href="#edit-impact">高影響欄位</a></td></tr>
+    <tr><td>活動語言</td><td>必填，至少留 1 種</td><td>可以改，不算高影響變更，定義同<a href="event-create-step2.html">步驟 2 基本資料</a></td></tr>
+    <tr><td>描述</td><td>必填，至少一個文字區塊有字</td><td>區塊可以新增、刪除、拖動調整順序與改內容，不算高影響變更<br>只有圖片或影片區塊不算有字<br>區塊的規則見<a href="event-create-step2.html#description">步驟 2 基本資料</a></td></tr>
+    <tr><td>條款與細則</td><td>—</td><td>只有「條款及細則」一個開關附一段條款文字，定義同<a href="event-create-step2.html#terms">步驟 2 基本資料</a>的條款與細則；沒有直接促銷同意<br>可以改，不算高影響變更<br>改了之後，已購票的粉絲不必重新同意；每筆同意都記下同意時間與條款版本</td></tr>
+    <tr><td>表演陣容</td><td>—</td><td>可以新增、修改、移除表演者，不算高影響變更</td></tr>
+    <tr><td>主視覺</td><td>必填</td><td>顯示目前已上線的主視覺，可以替換，不能清空；移除到沒有主視覺時擋下儲存<br>只用直式圖片，規格同<a href="event-create-step2.html#media">步驟 2 基本資料</a>的圖片<br>不算高影響變更</td></tr>
+    <tr><td>圖庫</td><td>選填</td><td>可以替換或移除，移除一格時其餘遞補<br>不算高影響變更</td></tr>
+    <tr><td>影片預告</td><td>選填</td><td>可以上傳、替換或移除，移除後可以直接儲存<br>不算高影響變更</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.6.2 F1、F2、F3、F4、F5；D281、D300、D340、D354、D362、D370、D390、D395。</p>
+
+<h3 id="set-sessions">場次</h3>
+<p>創作者在這裡查看並修改每一場的日期與時間；一場活動可以有多個場次，所有場次共用一份場地。欄位定義見<a href="event-create-step3.html#sessions-time">步驟 3 場次</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>場次</td><td>—</td><td>可以新增場次<br>移除場次時，該場已有門票就先跳出確認，列出會一併刪除的門票，見<a href="event-rules.html#remove-date">移除場次與門票</a><br>哪個階段能移除，見<a href="#edit-matrix">欄位在各階段能不能改</a></td></tr>
+    <tr><td>活動日期、開始時間</td><td>活動日期必填</td><td>每一場各一組<br>列入高影響欄位，見<a href="#edit-impact">高影響欄位</a></td></tr>
+    <tr><td>結束時間</td><td>選填</td><td>不算高影響變更，改了不通知持票人</td></tr>
+    <tr><td>提前入場時間</td><td>開關，每一場各一個</td><td>定義同<a href="event-create-step3.html#sessions-time">步驟 3 場次</a><br>不算高影響變更，改了不通知持票人<br>只有現場工作人員在掃描器看得到，粉絲端不顯示，見<a href="event-create-step3.html#sessions-early">誰看得到提前入場</a></td></tr>
+    <tr><td>跨日活動與結束日期</td><td>開啟跨日活動時，結束日期、開始時間與結束時間必填</td><td>結束要晚於開始，定義同<a href="event-create-step3.html#multi-day">步驟 3 場次</a><br>結束日期列入高影響欄位，見<a href="#edit-impact">高影響欄位</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.6.2 F7；D328、D329、D390、D391、D396。</p>
+
+<h3 id="set-venue">地點</h3>
+<p>創作者在這裡修改活動在哪裡、粉絲怎麼到。共看派對與線上活動不顯示這個子區塊。欄位定義見<a href="event-create-step3.html#sessions-venue">步驟 3 場次</a>的場地。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>場地名稱、完整地址</td><td>場地名稱必填<br>共看派對與線上活動不顯示</td><td>場地沒有城市或國家欄，國家看活動國家<br>列入高影響欄位，見<a href="#edit-impact">高影響欄位</a></td></tr>
+    <tr><td>集合地點、交通</td><td>選填</td><td>可以改或清空，不算高影響變更，定義同<a href="event-create-step3.html#sessions-venue">步驟 3 場次</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.6.2 F6；D370、D390。</p>
+
+<h3 id="set-publish">發布設定</h3>
+<p>創作者在這裡查看並調整活動什麼時候上架、什麼時候開賣、怎麼取票、出不出現在列表。欄位定義見<a href="event-create-step7.html">步驟 6 發布設定</a>；已取消的活動不顯示這個子區塊。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>上架方式、上架日期與時間</td><td>—</td><td>改上架時間時，照<a href="event-rules.html#timing">活動的販售時間</a>同一套檢查</td></tr>
+    <tr><td>定時下架、下架日期與時間</td><td>—</td><td>下架時間不能早於活動結束</td></tr>
+    <tr><td>開賣方式與開賣日期與時間</td><td>—</td><td>立即開賣或定時開賣，見<a href="event-create-step7.html#publish-sale">步驟 6 的開賣設定</a><br>開賣時間要在上架區間內，超出就擋下儲存並說明原因</td></tr>
+    <tr><td>停售日期與時間</td><td>—</td><td>照<a href="event-rules.html#timing">活動的販售時間</a>同一套檢查</td></tr>
+    <tr><td>取票方式</td><td>—</td><td>包括順豐寄送的運費與到店自取的取票地點，見<a href="event-create-step7.html#publish-delivery">步驟 6 的取票方式</a></td></tr>
+    <tr><td>顯示設定</td><td>—</td><td>顯示或隱藏，規則見<a href="event-create-step7.html#publish-visibility">步驟 6 的顯示設定</a><br>活動連結跟著顯示設定產生與撤銷，見<a href="#set-link">活動連結與 QR</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>改了上架、下架、開賣、停售或活動時間之後，有門票的限時購買或票務商品另設的時間落到活動上架區間外，或晚於活動停售，就擋下這次修改，並列出衝突的門票與票務商品</li>
+  <li>發生衝突時，先調整那些門票與票務商品，再改活動</li>
+  <li>門票的兩種限時折扣，期間可以晚於活動停售，不算衝突</li>
+</ul>
+<p class="note">依據：5.1.6.2 F14；5.1.6.1 F12b、F23、F24、F25；D340、D342、D361、D363、D390。</p>
+
+<h3 id="set-link">活動連結與 QR</h3>
+<p>活動隱藏時只能經活動連結進入，這個子區塊放那條連結與對應的 QR。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>活動連結與 QR</td><td>活動隱藏時產生</td><td>活動由隱藏改為顯示後，原本的非公開連結失效<br>之後再改隱藏，產生新連結，不沿用舊連結<br>活動下架時失效<br>完整規則見<a href="event-create-step7.html#publish-visibility">步驟 6 的顯示設定</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.6.2 F14「顯示設定」；5.1.6.1 F25；主規格 §7.14「非公開連結」；D341、D363。</p>
+
+<h3 id="set-local">在地化</h3>
+<p>創作者在這裡於發布後修正譯文與各幣別價格，不必改基準內容重發。「預覽與在地化」開啟的是全頁畫面，跟建立活動<a href="event-create-step8.html">步驟 7 預覽與發布</a>是同一個畫面、同一份資料；差別是右側第三段改成未儲存的變更（本語系改了幾欄、本幣別覆寫了幾項），主要動作改成「儲存」。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>預覽與在地化</td><td>—</td><td>開啟全頁畫面，修改譯文與各幣別價格</td></tr>
+    <tr><td>票券頁與票務商品頁</td><td>有組合包時才有票務商品頁</td><td>在預覽的工具列切換兩個視圖</td></tr>
+    <tr><td>語言</td><td>四個語系</td><td>切換預覽語系，可以清除譯文、開翻譯表<br>規則同步驟 7 的<a href="event-create-step8.html#preview-translation">翻譯</a></td></tr>
+    <tr><td>幣別</td><td>五種幣別</td><td>切換預覽幣別，點價格開價格表<br>規則同步驟 7 的<a href="event-create-step8.html#preview-prices">各幣別價格</a><br>基準幣別欄唯讀，票價回票務分頁改</td></tr>
+    <tr><td>儲存</td><td>—</td><td>在地化自己儲存：不必先按「編輯活動」就能開啟與儲存，也不算進整頁的「儲存 N 項變更」<br>儲存後立即對已上架的活動生效，不改變上架狀態<br>有沒儲存的改動卻要離開時，先確認，比照<a href="event-detail.html">活動詳情</a>的儲存與離開</td></tr>
+    <tr><td>返回</td><td>—</td><td>回到活動詳情的檢視模式</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>活動不自動翻譯：某語系的欄位沒填譯文，顯示預設語言的原文</li>
+  <li>改基準內容，不會覆蓋已填的譯文</li>
+  <li>從 bookyay 帶入的活動，價格表的港幣欄鎖定，見<a href="event-create-step8.html#preview-bookyay">步驟 7 的從 bookyay 帶入時</a></li>
+</ul>
+<p class="note">依據：5.1.6.3 §2.13；5.1.6.2 F2；主規格 §7.4、§7.15；D305、D306、D310、D312、D330、D331、D392 決定三、D413。</p>
+
+<h2 id="settings-bookyay"><span class="n"></span>從 bookyay 帶入時</h2>
+<p>從 bookyay 帶入的活動，有些欄位在任何階段都鎖定，有些已填好但可以改，有些要自己填。逐欄對照見<a href="event-bookyay.html#map-detail">bookyay 匯入與對照</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:34%">欄位</th><th>帶入後</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="2">帶入並鎖定（要改回 bookyay 改）</td></tr>
+    <tr><td>活動國家</td><td>鎖定、只顯示</td></tr>
+    <tr><td>活動語言</td><td>鎖定、只顯示<br>bookyay 沒有帶入任何語言時不鎖，創作者自己補選</td></tr>
+    <tr><td>描述</td><td>整份鎖定：不能改、刪、排序，也不能新增區塊或插入圖片、影片</td></tr>
+    <tr><td>條款與細則</td><td>開關與條款文字鎖定</td></tr>
+    <tr><td>場地名稱、完整地址</td><td>鎖定</td></tr>
+    <tr><td>集合地點、交通</td><td>鎖定、只顯示</td></tr>
+    <tr><td>場次</td><td>不能新增或移除</td></tr>
+    <tr><td>每一場的活動日期、開始與結束時間</td><td>鎖定，包括跨日場次的結束日期</td></tr>
+    <tr><td>提前入場時間</td><td>每一場的開關、時間與早於提前入場時間入場的處理鎖定，開關不能切換</td></tr>
+    <tr><td>開賣方式與開賣日期與時間、停售日期與時間、取票方式（含運費）</td><td>在任何階段都不能改</td></tr>
+    <tr class="grp"><td colspan="2">帶入、可以改</td></tr>
+    <tr><td>活動名稱</td><td>可以改；在 ztor 改名不會改到 bookyay</td></tr>
+    <tr><td>主視覺</td><td>可以替換</td></tr>
+    <tr><td>顯示設定</td><td>可以切換</td></tr>
+    <tr class="grp"><td colspan="2">不帶入、要自己填</td></tr>
+    <tr><td>亮點、表演陣容、影片預告</td><td>不帶入，選填，可以自己改</td></tr>
+    <tr><td>上架方式、上架日期與時間、定時下架</td><td>不帶入，照階段規則自己改</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>鎖定的欄位不能在 ztor 端解鎖</li>
+  <li>鎖定的欄位在 bookyay 端修改後，自動同步到 ztor</li>
+  <li>活動名稱、顯示設定這類可以在 ztor 改的欄位，不會被 bookyay 端的修改覆蓋</li>
+  <li>場地名稱、完整地址、活動國家、場次的日期與開始時間、跨日結束日期在 bookyay 端修改並同步到 ztor 時，不出現確認，照樣寄出活動變更通知給持票人</li>
+</ul>
+<p class="note">依據：5.1.6.1 F21；5.1.6.2 F2、F6、F7、F14；D301、D308、D327、D340、D362、D365、D369、D370、D390 第 16 題、D396。</p>
+
+<h2 id="settings-edit"><span class="n"></span>編輯狀態</h2>
+<p>設定分頁的可改範圍隨活動階段變化。各階段看得到哪些子區塊，見<a href="#edit-visible">各階段的子區塊與編輯</a>；每個欄位在各階段能不能改，見<a href="#edit-matrix">欄位在各階段能不能改</a>；進行中分兩層，見<a href="#edit-live">進行中的兩層</a>；哪些欄位改了要先確認，見<a href="#edit-impact">高影響欄位</a>。</p>
+
+<h3 id="edit-visible">各階段的子區塊與編輯</h3>
+<p>草稿不是活動，不進活動詳情，草稿的編輯在<a href="event-create.html">建立活動</a>流程；詳情頁的編輯從已排程開始。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:14%">階段</th><th style="width:30%">看得到哪些子區塊</th><th>編輯</th></tr></thead>
+  <tbody>
+    <tr><td>已排程</td><td>六個子區塊都在</td><td>可以編輯；發布設定全部能改</td></tr>
+    <tr><td>售票中</td><td>六個子區塊都在</td><td>可以編輯；發布設定只剩顯示設定、停售時間與下架時間（只能延後）能改<br>高影響欄位儲存前要先確認</td></tr>
+    <tr><td>進行中</td><td>六個子區塊都在</td><td>可以編輯，分兩層：低風險欄位直接改，高影響欄位要先下架才能改<br>活動類型與活動國家不能改</td></tr>
+    <tr><td>已結束</td><td>六個子區塊都在，整頁唯讀</td><td>沒有「編輯活動」，在地化也唯讀</td></tr>
+    <tr><td>已取消</td><td>不顯示發布設定，其餘整頁唯讀</td><td>沒有「編輯活動」，在地化也唯讀</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>任一張門票或票務商品開始能買（包括早鳥）就算進入售票中；已排程不會有成交</li>
+  <li>已結束與已取消的活動，仍可以下架與重新上架，Admin 仍可以撤銷票券，見<a href="event-detail.html">活動詳情</a></li>
+  <li>要先進編輯模式的欄位，改動併入整頁的「儲存 N 項變更」；在地化例外，自己儲存</li>
+</ul>
+
+<h3 id="edit-matrix">欄位在各階段能不能改</h3>
+<p>「暫」表示進行中暫時沿用售票中的規則，進行中是否沿用待產品確認。從 bookyay 帶入而鎖定的欄位，不論階段都不能改，見<a href="#settings-bookyay">從 bookyay 帶入時</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th style="width:22%">欄位</th><th>已排程</th><th>售票中</th><th>進行中</th><th>已結束</th><th>已取消</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="6">活動內容</td></tr>
+    <tr><td>活動類型</td><td colspan="5">任何階段都不能改，建立即鎖死</td></tr>
+    <tr><td>描述、主視覺、圖庫</td><td>可改</td><td>可改</td><td>可改，不必下架</td><td>唯讀</td><td>唯讀</td></tr>
+    <tr><td>活動名稱、亮點、活動語言、條款與細則、表演陣容、影片預告</td><td>可改</td><td>可改</td><td>可改（暫）</td><td>唯讀</td><td>唯讀</td></tr>
+    <tr><td>活動國家</td><td>可改</td><td>可改，儲存前要確認</td><td>不能改</td><td>唯讀</td><td>唯讀</td></tr>
+    <tr class="grp"><td colspan="6">場次</td></tr>
+    <tr><td>活動日期與開始時間、跨日活動的結束日期</td><td>可改</td><td>可改，儲存前要確認</td><td>先下架才能改；已開始的場次鎖定</td><td>唯讀</td><td>唯讀</td></tr>
+    <tr><td>結束時間、提前入場時間</td><td>可改</td><td>可改，不通知</td><td>可改（暫）</td><td>唯讀</td><td>唯讀</td></tr>
+    <tr><td>新增場次</td><td>可以</td><td>可以</td><td>可以（暫）</td><td>唯讀</td><td>唯讀</td></tr>
+    <tr><td>移除場次</td><td>可以，該場有門票先確認</td><td>不能</td><td>不能</td><td>唯讀</td><td>唯讀</td></tr>
+    <tr class="grp"><td colspan="6">地點</td></tr>
+    <tr><td>場地名稱、完整地址</td><td>可改</td><td>可改，儲存前要確認</td><td>先下架才能改；有一場已開始就鎖定</td><td>唯讀</td><td>唯讀</td></tr>
+    <tr><td>集合地點、交通</td><td>可改</td><td>可改</td><td>可改（暫）</td><td>唯讀</td><td>唯讀</td></tr>
+    <tr class="grp"><td colspan="6">發布設定</td></tr>
+    <tr><td>上架方式、上架日期與時間</td><td>可改</td><td>唯讀</td><td>唯讀（暫）</td><td>唯讀</td><td>不顯示</td></tr>
+    <tr><td>定時下架、下架日期與時間</td><td>可改</td><td>只能延後</td><td>只能延後，不必下架</td><td>唯讀</td><td>不顯示</td></tr>
+    <tr><td>開賣方式與開賣日期與時間</td><td>可改</td><td>不能改</td><td>不能改（暫）</td><td>唯讀</td><td>不顯示</td></tr>
+    <tr><td>停售日期與時間</td><td>可改</td><td>可提前或延後</td><td>可提前或延後，不必下架</td><td>唯讀</td><td>不顯示</td></tr>
+    <tr><td>取票方式</td><td>可改</td><td>不能改</td><td>不能改（暫）</td><td>唯讀</td><td>不顯示</td></tr>
+    <tr><td>顯示設定</td><td>可切換</td><td>可切換</td><td>可切換（暫）</td><td>唯讀</td><td>不顯示</td></tr>
+    <tr class="grp"><td colspan="6">在地化</td></tr>
+    <tr><td>譯文、各幣別價格（自己儲存，不受編輯模式管）</td><td>可改</td><td>可改</td><td>可改，不必下架</td><td>唯讀</td><td>唯讀</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>「唯讀」＝看得到、不能改</li>
+  <li>活動連結與 QR 跟著顯示設定，已取消時是否顯示見頁尾尚待確認</li>
+  <li>共看派對沒有地點，也沒有票種、票務商品與系列</li>
+</ul>
+
+<h3 id="edit-live">進行中的兩層</h3>
+<p>活動進入進行中（活動開始即進入）後照常可以編輯，但分兩層。</p>
+<ul class="plain">
+  <li>低風險欄位：進編輯模式直接改，不必下架
+    <ul class="plain">
+      <li>描述</li>
+      <li>圖片（主視覺、圖庫）</li>
+      <li>預覽與在地化</li>
+      <li>通知開關</li>
+      <li>停售時間</li>
+      <li>下架時間（只能延後）</li>
+    </ul>
+  </li>
+  <li>高影響欄位：要先下架才能改，改完再上架
+    <ul class="plain">
+      <li>場地名稱</li>
+      <li>完整地址</li>
+      <li>場次的活動日期與開始時間</li>
+      <li>跨日活動的結束日期</li>
+    </ul>
+  </li>
+  <li>下架後改這些欄位，儲存時照樣出現高影響確認，並寄出活動變更通知</li>
+  <li>活動上架中時，這些欄位鎖定並說明要先下架；下架與上架是營運動作，不受編輯模式管，見<a href="event-detail.html">活動詳情</a></li>
+  <li>以場次為單位：已開始的場次，日期、開始時間與場地鎖定，下架也不能改；還沒開始的場次，這些欄位下架後可以改</li>
+  <li>場地是整場活動共用，只要有一場已開始，場地名稱與完整地址就鎖定</li>
+  <li>活動類型與活動國家，進行中一律不能改</li>
+  <li>上面沒涵蓋的欄位，進行中暫時沿用售票中的規則，見<a href="#edit-matrix">欄位在各階段能不能改</a>標「暫」的格子</li>
+</ul>
+
+<h3 id="edit-impact">高影響欄位</h3>
+<p>活動在售票中或進行中，改了下列任一欄位，儲存前要先確認，確認後才儲存並通知持票人。</p>
+<ul class="plain">
+  <li>場地名稱</li>
+  <li>完整地址</li>
+  <li>活動國家（進行中鎖定，所以只在售票中出現確認）</li>
+  <li>任一場次的活動日期與開始時間</li>
+  <li>跨日活動的結束日期</li>
+</ul>
+<ul class="plain">
+  <li>結束時間、提前入場時間，以及描述、條款、表演陣容、圖片、影片預告、集合地點、交通、購買條件、通知開關等其他欄位，改了不出現確認，也不通知</li>
+  <li>活動還在已排程（沒有成交），或沒改到這些欄位時，不出現確認</li>
+  <li>確認視窗怎麼逐條列出改前與改後、通知幾位持票人，以及確認與取消的操作，見<a href="event-detail.html">活動詳情</a></li>
+</ul>
+<p class="note">依據：5.1.6.2 §3「進行中的編輯」、F2、F4、F6、F7、F12、F14、F17；5.1.6.3 §2.13、第 4 段「頁面狀態」；D188、D361、D363、D390、D391、D413。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.6.3-活動詳情.md</code>（v67）§2.13、§3、§4；<code>5.1.6.2-編輯活動.md</code>（v3.56）§3「進行中的編輯」、F1–F7、F12、F14；<code>5.1.6.1-建立活動流程.md</code>（v2.72）F2–F7、F12b、F21、F23–F25；<code>0-設計規格書.md</code>（v4.58）§7.4、§7.14、§7.15</li>
+    <li>決策：D188、D281、D300、D301、D305、D306、D308、D310、D312、D327、D328、D329、D330、D331、D340、D341、D342、D354、D361、D362、D363、D365、D369、D370、D390、D391、D392、D395、D396、D413</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>進行中沿用售票中規則的欄位（標「暫」的格子）是否真的沿用</li>
+    <li>場地是整場活動共用，只要有一場已開始就鎖定（推導）</li>
+    <li>進行中能不能新增場次（規格沒寫，表中暫標可以）</li>
+    <li>切換跨日活動的開關，讓結束日期出現或消失，要不要列入高影響欄位</li>
+    <li>活動變更通知的內容格式</li>
+    <li>發布後改譯文要不要審核或留版本紀錄；原文已改時是否提醒譯文過期</li>
+    <li>活動連結與 QR 在活動顯示時是否仍出現，以及詳情頁是否提供複製與重置連結</li>
+    <li>已取消的活動是否也不顯示活動連結與 QR（推導：跟發布設定一起不顯示）</li>
+    <li>線上活動是否以線上平台或連結欄位取代實體場地</li>
+    <li>共看派對編輯時，要不要改走建立時自己的那組欄位（房間名稱、可觀看地區、隱私、入場券）</li>
+    <li>屬於系列的場次在編輯時怎麼跟系列同步，改過的場次能不能重新跟隨系列</li>
+    <li>從 bookyay 帶入的活動，圖庫能不能改</li>
+    <li>活動規則相關的待確認列在<a href="event-rules.html">活動規則</a>頁尾</li>
+  </ul>
+  <p class="k">最近同步：2026-10-14（至 D413）</p>
+</details>
+</div>
+</body>
+</html>

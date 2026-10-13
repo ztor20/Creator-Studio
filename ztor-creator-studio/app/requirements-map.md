@@ -25,6 +25,17 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-13 D411 原型同步（UI-CHANGES 二百二十五、ASSUMPTIONS UIA-253；O34–O37）**：
+> - 5.1.5.3 F2／F3：`orders.html` 訂單日期區間、訂單類型篩選、匯出照篩選結果；付款時間、付款方式、發貨時間欄；清單含門票訂單。
+> - 5.1.5.3.1 §2.1、§2.2、§2.2.1、§2.3.4、§2.8：`order-detail.html` 從活動返回、訂單類型與來源、Admin 補寄信、付款資訊、門票資料、撤銷原因「換票」。
+> - 5.1.6.3 §2.7：`event-detail.html` 交易明細日期區間、付款時間欄、每一列打開訂單詳情。
+> - D410 決定四補缺（UI-CHANGES 二百二十六、UIA-254）：六個狀態代表補跨日、亮點、圖庫、影片等。
+
+> **2026-10-13 D410 原型同步（UI-CHANGES 二百二十二到二百二十四、ASSUMPTIONS UIA-252；S95）**：
+> - 5.1.6.1 F22／5.1.6.3 §2.6：bookyay 活動不出現新增門票入口，涵蓋 `create-event.html` 第 4 步與 `event-detail.html` 票務分頁。
+> - 5.1.6.3 §2.3：bookyay 活動的已報到改讀 `events-store` 的 `bkyCheckin`；沒有資料時寫「暫無資料」。
+> - D410 決定四：release2.4 的示範資料只留 bookyay 活動與共看派對，其餘掛 S95；六個狀態各有一場全選項 bookyay 演唱會，共看派對補齊 F13–F19 設定。
+
 > **2026-10-12 建立組合（5.1.5.4）、建立拍賣（5.1.5.10）新增「本頁大綱」區段導覽（UI-CHANGES 一百七十七、ASSUMPTIONS UIA-246）**：呈現層新增，不改規格。左側空白欄放各節導覽，「必填」「已完成」沿用各頁既有的檢查——建立組合讀發布前檢核（`stageChecks()`，＝`gateWhy()`）、建立拍賣讀就緒檢查（`buildChecks()` 8 項），不另訂規則；元件同建立商品（design-system §4.233）；視窗 <1400px 隱藏。
 
 > **2026-10-12 兩段式詳情頁檢視態改 disabled 框（UI-CHANGES 一百七十六、STYLE-DECISIONS Q128）**：純呈現，不動任何需求對應——product-detail 商品設定、bundle-detail 組合設定、auction-detail 標籤、project-detail 設定、store-settings 的欄位在檢視態顯示成 disabled 輸入框（取代 Q119 純文字讀數），編輯態鎖住的欄位改可讀墨色 `--view-field-ink`；組合包售價與自動建立組合包的購買條件改成永遠 disabled 的輸入框。規格欄位、可編輯範圍、鎖定條件都不變。

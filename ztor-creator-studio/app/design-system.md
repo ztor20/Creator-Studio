@@ -949,6 +949,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Price ladder | 🟡 molecule | ✓ App | 價格階梯（2026-10-12 D402）：原價 → 組合折扣 → 限時折扣 → 可與優惠碼疊加 → 粉絲實付，排成一條由上往下的列；開關列右邊放開關、打開後展開面板列；「看怎麼算」展開逐項明細；價格不是單一值時主價格下加區間小字。詳見 §4.235 | [price-ladder.css](./ds-components/price-ladder.css) |
 | Member table | 🟡 molecule | ✓ App | 組合物表（2026-10-12 D402）：商品與活動票券成員同一張表，五欄（展開｜名稱｜原價・剩餘｜每組數量｜移除），票券列可展開、展開入口兩處同步。詳見 §4.236 | [member-table.css](./ds-components/member-table.css) |
 | Form ask | 🟡 molecule | ✓ App | 問句式設定塊（問句→說明→二選一→選了才出現的內容）＋標題列讀數 `.form-tally`（分類標 `.form-cat` 已撤除）（2026-10-12 D402）。詳見 §4.237 | [form-ask.css](./ds-components/form-ask.css) |
+| Date range | 🟡 molecule | ✓ App | 清單篩選列的日期區間「訂單日期（起）–（訖）」，可只填一邊、附清除鈕（2026-10-13 D411）。詳見 §4.238 | [date-range.css](./ds-components/date-range.css) |
 | Roster picker | 🟠 organism | ⚠ 退場候選（2026-10-08 D372 起零消費，待使用者裁決）| 上面選人、下面看那一位：上段是一張卡一個對象的網格（可換行、窄畫面掉成一欄），下段是選定那一位的內容、佔整個內容寬度。卡面與已選態整個交給 `.selection-card`（1px 橘 outline ＋中性陰影），本支只排卡內與網格。與 `section-nav-layout`（140px、選的是「同一個東西的哪一段」）分工：本支選的是「哪一個對象」。詳見 §4.203 | [roster-picker.css](./ds-components/roster-picker.css) |
 | Row disclosure | 🟡 molecule | ✓ App | 母列收成一列、點開才看到底下每一筆。站上「可展開子列」的單一答案（Q107 裁決，取代 `product-list` 的 `__row--group`／`__row--child` 與 `data-list` 的 `__row--child`；2026-09-04 改寫成 L3「整組換層」）。階層不靠縮排說，靠「母列與子項一起坐進哪一層面」說：展開時整組包進 `.rowdis__group` 那塊 L2 薄膜面板，第二層改用 `.rowdis__frame` 的 1px 框。欄位版面仍歸所在容器，因此表格型與清單型兩種骨架都能疊。2026-09-04（Q109，參考 Braintrust）再加**列首欄** `.rowdis__lead`：展開 chevron 移到列的最前緣獨立一欄、`⋯` 維持在列尾，子列在同一格放組內序號，一般列留空；表格型兩頁已導入，清單型三頁維持現況（理由見 §4.204）。互動走 `js/row-disclosure.js` 的 `data-rowdis` 契約。詳見 §4.204 | [row-disclosure.css](./ds-components/row-disclosure.css) |
 | Listing controls | 🟠 organism | ✓ App | §7.14（D241）的三個獨立開關——上架 `listed`／顯示於商店 `shown`／開賣 `saleStart`–`saleEnd`——三列並列的骨架。 **`--locked`／`.lctl__row--locked`＋`.lctl__lock-note`（2026-09-11 D265）**：下架時顯示列與開賣區留在畫面但停用（整塊變淡、控件不吃事件）、上方一句說明「要重新上架後才能調整」；商品／組合詳情共用。只擁有列的版型（標題＋一行說明、控制擺哪、排程欄何時展開、三列的距離由容器 `gap` 持有），控制本身重用 Switch／Radio list `--collapsible`／Field＋Input／Link field。上架列用哪一種由頁面決定：建立頁三選一、細節頁開關。數字與狀態一律問 `js/listing-state.js`。詳見 §4.205 | [listing-controls.css](./ds-components/listing-controls.css) |
@@ -7456,3 +7457,30 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 **Consumers** — `create-bundle.html`（數量卡、分類標）、`bundle-detail.html`（組合庫存分頁的鎖定、組合設定分頁的數量卡與分類標）、`js/bundle-editor.js`（建立活動第 5 步組合包彈窗的數量卡與分類標）。
 
 **CSS** — [`form-ask.css`](./ds-components/form-ask.css)
+
+---
+
+### 4.238 Date range（日期區間篩選）
+
+**Purpose** — 清單篩選列上的「訂單日期（起）–（訖）」（2026-10-13 D411；5.1.5.3 F2、5.1.6.3 §2.7）：兩個日期欄並排、可只填一邊，與頁面其他篩選同時成立。第一次出現就有兩個消費頁，照鐵律直接 promote。本元件只管並排與間距；每一格是一般的 `.input[type=date]`，日曆圖示與空值 placeholder 由 Date input（`date-input.css`＋`partials/date-input.js`）提供，不重畫輸入框。
+
+**`_layer`** · molecule ｜ **source tier** · App ｜ **surface 層** · 坐在頁面底或卡面上皆可（只排版、不帶表面）。
+
+**Anatomy**
+- `.date-range` — 一列（inline-flex、可換行、`gap: --sp-8`）
+  - `.date-range__label` — 欄名（選配，`--fs-13`、`--muted-foreground`）
+  - `.date-range__field` — 一格日期（固定寬 `calc(--w-220 − --sp-56)`），內放 `.input[type=date]`
+  - `.date-range__sep` — 中間的「–」
+  - `.date-range__clear` — 清除（`btn--ghost btn--xs`），兩格都空時 `[hidden]`
+
+**Behavior** — 不帶 JS；消費頁讀兩格的 value（'YYYY-MM-DD' 字串直接比大小），程式清空時對 input 派 `input` 事件讓 `.date-input` 的空值態同步。
+
+**States** — 兩格都空（清除鈕收起）／任一格有值（清除鈕出現）。
+
+**Token usage** — `--sp-8`、`--sp-56`、`--w-220`、`--fs-13`、`--muted-foreground`。
+
+**Dependencies** — Input（`.input[type=date]`）、Date input、Button。
+
+**Consumers** — `orders.html`（訂單管理 F2，左側與訂單類型下拉並排）、`event-detail.html`（交易明細，子集篩選下方）。
+
+**CSS** — [`date-range.css`](./ds-components/date-range.css)

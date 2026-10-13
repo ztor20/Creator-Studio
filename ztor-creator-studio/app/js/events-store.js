@@ -66,6 +66,13 @@
     var day = String(d.getDate()).padStart(2, '0');
     return y + '-' + m + '-' + day;
   }
+  /* 'YYYY-MM-DD' 加減天數（2026-10-13 D410／D411）：進行中活動的跨日結束日（今天＋1）與交易的下單日期都用它推。
+     純日期運算、不讀時鐘，不違反 deterministic 原則。 */
+  function addDays(ymd, n) {
+    var p = String(ymd || '').split('-');
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]) + (n || 0));
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
 
   var EVENTS = [
     {
@@ -347,7 +354,13 @@
       /* 線上房間（2026-08-13，D149 落地）：共看派對不套票種頁與取票方式，但入場方式與
          付費門檻總得有個地方看。room.url＝觀眾進的房間、entry＝單一入場券的價格（同 tiers[0]，
          此處不另存一份金額）、chat＝是否開聊天室。實際房控功能仍待上游（見 ASSUMPTIONS WP-001）。 */
-      room: { url: 'ztor.live/w/lrh-taichung-watchback', chat: true, capacity: 300 },
+      /* 2026-10-13 D410 決定四（示範資料）：共看派對 F13–F19 的設定補齊（5.1.6.1 §4.9）——
+         film＝播放內容（films-store id）、name＝房間名稱、endEst＝預估結束、capMode＝人數上限（limited／unlimited）、
+         region＝可觀看地區（global／include／exclude ＋ 地區清單）、privacy＝隱私（public／private）；入場券＝tiers[0]。
+         活動詳情的線上房間卡照 5.1.6.3 §2.4.3 只呈現連結、入場費、人數上限、聊天室；其餘值由建立流程續填草稿讀回。 */
+      room: { url: 'ztor.live/w/lrh-taichung-watchback', chat: true, capacity: 300, capMode: 'limited',
+              name: 'Taichung night, again', film: 'film-neon-harbor', endEst: '2026-09-16 23:00',
+              region: { mode: 'include', list: ['TW', 'HK', 'MY'] }, privacy: 'public' },
       tiers: [{ id: 'tier-entry', name: 'Admission', price: 5, qty: 300, sold: 38 }],
       sold: 38,
       revenue: 190,
@@ -493,8 +506,10 @@
     },
     {
       id: 'taipei-nye',
-      type: 'festival',
-      typeLabelKey: 'ce.type.festival',
+      /* 2026-10-13 D410 決定四（示範資料）：release2.4 只開放演唱會類型，原本的 festival 改成 concert；
+         這一場是「已排程」的 bookyay 演唱會全選項示範（亮點、陣容、圖庫、影片預告、門票圖片另補，其餘原本就有）。 */
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
       category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
       series: null,
       /* bookyay 帶入的活動示範（2026-09-29 D330 改寫，取代 D306 起的「票種基準幣別強制港幣」）：
@@ -506,7 +521,8 @@
          網址格式是原型示意（ASSUMPTIONS BKY-SCAN-001）；這一筆沒有 bkyId，路徑用活動代號。
          墓碑（D401）：原本 hsinchu-vinyl-sf 刻意不給、示範「bookyay 還沒給連結」——連結改為必定帶入，兩筆都給；缺漏時的說明只留作防呆。 */
       bkyScanUrl: 'https://organizer.bookyay.com/scan/taipei-nye',
-      name: "Taipei New Year's Eve countdown",
+      name: "Taipei New Year's Eve countdown concert",
+      highlight: 'Fireworks at midnight, encore after',   // D410 示範：亮點不在 bookyay 鎖定範圍，創作者帶入後自己補
       desc: "Countdown stage set for Taipei's New Year's Eve city party.",
       /* 描述（2026-10-09 D385 決定五示範）：bookyay 活動詳情（intros）多段帶入——第 1 段文字＋段內圖片、第 2 段起各成文字區塊
          （D354 決定六），整份鎖定（D362）。活動詳情的描述照這份區塊顯示並鎖住；內容是原型自擬的中文示範。 */
@@ -516,7 +532,7 @@
         { type: 'text', html: '<p><strong>入場須知</strong></p><ul><li>21:00 開放入場，限制提早入場（早到者請於廣場外排隊）</li><li>場內禁止攜帶自拍棒、雷射筆與玻璃瓶</li></ul>' },
         { type: 'text', html: '<p><strong>交通管制</strong></p><p>12/31 18:00 起信義區周邊道路管制，建議搭乘捷運；散場後市政府站單向進站。<br>詳見 <a href="https://example.com/taipei-nye/traffic">交通管制說明</a>。</p>' }
       ],
-      lineup: ['NICKTHEREAL 周湯豪'],
+      lineup: ['NICKTHEREAL 周湯豪', 'Kai Band 凱樂團'],
       venue: "Taipei New Year's Eve",
       city: 'Taipei, Taiwan',
       meetPoint: '市府廣場服務台',
@@ -532,7 +548,8 @@
       end: '00:30',
       /* 過早入場（2026-10-07 D365；5.1.6.1 F21）：bookyay「過早入場提示」60 分鐘 → 開放入場＝開演前 60 分鐘（21:00）；
          「過早入場的處理」＝限制操作 → 早於開放時間入場＝不能入場（block）。兩者帶入後鎖定（活動詳情也鎖）。
-         khh-countdown-draft 的 doors 留空＝bookyay 沒設定過早入場，開放入場留空並鎖定（推導〔產品待確認〕）。 */
+         「bookyay 沒設定過早入場」（開放入場留空並鎖定）的示範改由 create-event 匯入清單的 bky-5 承擔——
+         khh-countdown-draft 自 2026-10-13（D410 示範資料）起改為有設定過早入場。 */
       doors: '21:00',
       early: 'block',
       /* 活動語言（D328）：活動現場用的語言，可複選；值＝語言碼（yue／cmn／en／ja／ko／th／vi），顯示字串走 ce.evlang.*。
@@ -554,15 +571,23 @@
            2026-09-29（D329 示範）：原本的「Early bird」票種改成 bookyay 二人套票轉出的 1 人票——
            港幣＝現價 HK$550 ÷ 2＝HK$275 → NT$1,111、張數＝floor(上限 400 ÷ 2) × 2＝400、隱藏且鎖定為隱藏（hideFix）；
            只透過下面自動建立的組合包 bd-nye-duo 賣（D328 早鳥改用限時折扣表達，票種名不再叫 Early bird）。 */
-        { id: 'tier-duo', name: 'Duo pass · 1 person', price: 1111, hkd: 275, qty: 400, sold: 0, hidden: true, hideFix: true },
+        { id: 'tier-duo', name: 'Duo pass · 1 person', price: 1111, hkd: 275, qty: 400, sold: 0, hidden: true, hideFix: true, img: 'images/projects/nick-i.jpg' },   // D410 示範：門票圖片
         /* 購買條件（2026-10-09 D385 決定一示範；形狀同 create-event 的門票規則 { conds }，bky:true＝由 bookyay 帶入、鎖定）：
            本門票限購（每人 4 張、每次 2 張）、折扣優惠 HK$280 → NT$1,131（折後價，D367）、早鳥 HK$260 → NT$1,050（限時折扣，
            期間＝開賣 11/01 12:00 → bookyay 優惠完結 11/30 23:59）。有 bookyay 門票層條件＝這張票用自己那一組、整組鎖定（rulesFix，D367 決定五）。
            1 人票沒有門票層條件、早鳥在組合包（D329）→ 跟隨活動層。活動詳情單張門票彈窗唯讀呈現、掛 From bookyay。 */
-        { id: 'tier-ga',    name: 'General admission', price: 1212, hkd: 300, qty: 1600, sold: 0, override: { TWD: 1200 },
+        { id: 'tier-ga',    name: 'General admission', price: 1212, hkd: 300, qty: 1600, sold: 0, override: { TWD: 1200, USD: 38 }, img: 'images/projects/nick-baipa-goods.jpg',
           rules: { conds: { cap: { person: '4', order: '2', times: '', bky: true },
                             disc: { price: '1131', bky: true },
                             discTime: { price: '1050', from: '2026-11-01T12:00', to: '2026-11-30T23:59', bky: true } } },
+          rulesFix: true },
+        /* D414 示範資料裁決（2026-10-14）：一場 bookyay 演唱會可以放多種門票（不改 D328 產品規則）。下面兩種是 bookyay 時段裡的其他票種，
+           各有自己的購買條件（鎖定）：站席限購、座席限購＋早鳥。這場還沒開賣，三種票 sold 都是 0。 */
+        { id: 'tier-floor', name: 'Standing zone', price: 2020, hkd: 500, qty: 600, sold: 0, img: 'images/projects/nick-asn.jpg',
+          rules: { conds: { cap: { person: '2', order: '2', times: '', bky: true } } }, rulesFix: true },
+        { id: 'tier-seat', name: 'Reserved seating', price: 1010, hkd: 250, qty: 800, sold: 0, img: 'images/projects/nick-wln.jpg',
+          rules: { conds: { cap: { person: '4', order: '4', times: '', bky: true },
+                            discTime: { price: '909', from: '2026-11-01T12:00', to: '2026-11-30T23:59', bky: true } } },
           rulesFix: true }
       ],
       /* 活動層預設購票規則（D385 決定一示範）：bookyay 在活動層只有活動限購（maxPurchaseCnt 6／EachTime 4／Time 2）→「限購」條件、鎖定
@@ -575,6 +600,7 @@
       bundles: [
         { id: 'bd-nye-duo', name: 'Duo pass', tickets: { tierIds: ['tier-duo'], qty: 2 },
           price: 2222, hkd: 550, sold: 0, lockSets: 200, fix: true,
+          rules: { conds: { cap: { person: '2', order: '1', times: '', bky: true } } },   // D410 示範：套票限購落在自動組合包（D390 第 19 題）
           sale: { pct: 9.1, from: '2026-11-01T12:00', to: '2026-11-30T23:59' } },
         /* 創作者自建、成員含 bookyay 匯入票券的組合包（2026-09-29 D331 決定六示範）：不是自動建立（沒有 fix／hkd）、欄位照一般組合包
            可編輯；只有價格表港幣欄依公式鎖定——（GA 港幣原價 HK$300 × 1 ＋ 手環 NT$400 換算 HK$99）×（1 − 10%）＝HK$359.10
@@ -590,12 +616,13 @@
       revenue: 0,
       status: 'scheduled',
       /* 圖片（D385 決定五）：bookyay 原圖 1:1（D328 不裁切、不鎖；不合 2:3 不擋發布，D329）。原本是 hero-event.jpg（橫幅），看不出 1:1 帶入 */
-      images: { keyvisual: 'images/projects/nick-baipa.jpg', banner: '', gallery: [] },
-      video: false,
+      images: { keyvisual: 'images/projects/nick-baipa.jpg', banner: '', gallery: ['images/projects/nick-realive.jpg', 'images/projects/nick-r2.jpg'] },
+      video: 'images/events/teaser-demo.mp4',   // D410 示範：影片預告（原型自製的 4 秒示意影片）
       /* 發布設定：bookyay 帶入者的取票方式本身在詳情頁也鎖（值來自 bookyay、要改回 bookyay 改；
          D308 決定一經 D327 修訂為只剩取票方式本身）。 */
       publish: { pickup: 'eticket', shown: true },
       sale: { from: '2026-11-01 12:00', to: '' },   // D340：原 onsale:'scheduled' 沒有時間，補上開賣時間（與自動組合包的早鳥檔期同起點）
+      listing: { from: '2026-10-25 12:00', to: '2027-01-01 12:00' }   // D410 示範：上架時間（排程上架）
     },
     {
       /* bookyay 帶入、取票方式＝順豐寄送的示範（2026-10-09 D385 決定五）：單一時段，release2.4 也看得到（順豐不在 S89 到店自取的範圍）。
@@ -604,16 +631,18 @@
          沒有活動限購（活動預設購票規則顯示「bookyay 沒有設定」）。對應 create-event 匯入清單的已帶過列 bky-14。 */
       id: 'hsinchu-vinyl-sf',
       bkyId: 'bky-14',
-      type: 'launch',
-      typeLabelKey: 'ce.type.launch',
-      category: 'fans-meet',
+      /* 2026-10-13 D410 決定四（示範資料）：release2.4 只開放演唱會，發表會改成演唱會（名稱同步改；順豐寄送示範不變） */
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
       source: 'bookyay',
       bkyScanUrl: 'https://organizer.bookyay.com/scan/bky-14',   // D401 決定一：匯入時帶入（原型示意網址，BKY-SCAN-001）
       series: null,
-      name: 'Vinyl signing night — Hsinchu',
-      desc: '新專輯黑膠首賣簽名場，購票附一張實體收藏票券，以順豐寄送到府。',
+      name: 'Vinyl release concert — Hsinchu',
+      highlight: 'Signed collector ticket shipped to you',   // D410 示範：亮點
+      desc: '新專輯黑膠發行演唱會，購票附一張實體收藏票券，以順豐寄送到府。',
       descBlocks: [
-        { type: 'text', html: '<p>新專輯黑膠首賣簽名場，購票附一張實體收藏票券，以順豐寄送到府。</p>' },
+        { type: 'text', html: '<p>新專輯黑膠發行演唱會，購票附一張實體收藏票券，以順豐寄送到府。</p>' },
         { type: 'text', html: '<p><strong>寄送說明</strong></p><ul><li>開演前 10 天統一寄出，收件地址僅限台灣本島</li><li>票券遺失或毀損不補發</li></ul>' }
       ],
       lineup: ['NICKTHEREAL 周湯豪'],
@@ -630,10 +659,10 @@
       doors: '18:30',
       early: 'warn',
       terms: {
-        tnc: { on: true, text: '實體收藏票券以順豐寄送，寄出後恕不退換。\n簽名場每人限簽一件，限本場販售之黑膠商品。' }
+        tnc: { on: true, text: '實體收藏票券以順豐寄送，寄出後恕不退換。\n散場後簽名會每人限簽一件，限本場販售之黑膠商品。' }
       },
       tiers: [
-        { id: 'tier-hc-sign', name: 'Signing entry', price: 2788, hkd: 690, qty: 300, sold: 0,
+        { id: 'tier-hc-sign', name: 'Concert entry', price: 2788, hkd: 690, qty: 300, sold: 0,
           rules: { conds: { cap: { person: '1', order: '', times: '1', bky: true } } }, rulesFix: true }
       ],
       bundles: [],
@@ -644,6 +673,354 @@
       video: false,
       publish: { pickup: 'sf', shipFee: 121, shipFeeHkd: 30, shown: true },
       sale: { from: '2026-11-01 12:00', to: '2026-12-05 23:59' }
+    },
+    /* ── bookyay 演唱會：六個狀態的全選項示範（2026-10-13 D410 決定四，原型示範資料、不是產品規則）──────────────
+       release2.4 只顯示 bookyay 匯入的活動與共看派對；每個狀態各一場「所有選項都填入或開啟」的 bookyay 演唱會：
+         草稿＝khh-countdown-draft、已排程＝taipei-nye（另有順豐寄送 hsinchu-vinyl-sf）、售票中＝nick-live-taichung-bky（暫停售票）
+         ＋nick-acoustic-tainan-bky（已下架）、進行中＝nick-live-taoyuan-bky、已結束＝nick-live-kaohsiung-bky、已取消＝nick-summer-pingtung-bky。
+       金額口徑同 taipei-nye（D330）：hkd＝bookyay 港幣原價（鎖定）、price＝換算成創作者幣別 TWD 的基準價（HK$ ÷ 7.8 × 31.5，四捨五入）。
+       門票：二人套票拆成隱藏 1 人票＋自動組合包（D328／D329；套票的限購、折扣、早鳥落在組合包，D390 第 19 題、D391 第 15 題），
+       另一張單人票帶自己的 bookyay 限購／折扣／早鳥（D366、D367，rulesFix）。⚠ 一個時段兩種票與 D328「只帶第一種門票」不一致，
+       沿用 taipei-nye 的既有示範寫法（ASSUMPTIONS UIA-252 第 3 項待裁決）。
+       已報到（D410 決定三）：bkyCheckin＝bookyay QR 掃描回傳的入場紀錄；received:true 才有人數（count），沒有這欄或 received:false＝暫無資料。
+       tier.sold 含經組合包賣出的票（D408）；revenue＝直接買票＋組合包整組金額，與 event-detail edRevTotals() 同口徑。 */
+    {
+      id: 'nick-live-taichung-bky',
+      bkyId: 'bky-16',   /* D414：對應 js/sidebar.js BOOKYAY_EVENTS 的 bky-16（Admin 創作者活動管理，已發布） */
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      source: 'bookyay',
+      bkyScanUrl: 'https://organizer.bookyay.com/scan/nick-live-taichung-bky',
+      series: null,
+      name: 'NICKTHEREAL LIVE 2026 — Taichung',
+      highlight: 'Taichung only — full band',
+      desc: '全新編制樂團的台中站，專輯完整曲序演出，安可加碼未發表新歌。',
+      descBlocks: [
+        { type: 'text', html: '<p>全新編制樂團的台中站，專輯完整曲序演出，<strong>安可加碼未發表新歌</strong>。</p>' },
+        { type: 'image', src: 'images/projects/nick-mxw.jpg' },
+        { type: 'video', src: 'images/events/teaser-demo.mp4' },
+        { type: 'text', html: '<p><strong>入場須知</strong></p><ul><li>開演前 60 分鐘開放入場，二人套票兩人須一起驗票</li><li>場內禁止攜帶自拍棒、雷射筆與玻璃瓶</li></ul>' },
+        { type: 'text', html: '<p><strong>輪椅席</strong></p><p>開演前 7 天來信客服登記，每位輪椅使用者可有 1 位陪同者。<br>詳見 <a href="https://example.com/nick-live-taichung/access">無障礙說明</a>。</p>' }
+      ],
+      lineup: ['NICKTHEREAL 周湯豪', 'Kai Band 凱樂團'],
+      venue: '臺中洲際棒球場',
+      city: 'Taichung, Taiwan',
+      country: 'TW',
+      languages: ['cmn', 'en'],
+      meetPoint: '1 號門售票口',
+      transit: '台中捷運文心崇德站轉接駁車約 15 分鐘',
+      address: '北屯區',
+      date: '2026-11-21',
+      endDate: '2026-11-22',   // D410 示範：跨日（bookyay 時段 11/21 19:30 → 11/22 00:30，安可後加演）
+      start: '19:30',
+      end: '00:30',
+      doors: '18:30',
+      early: 'warn',
+      terms: {
+        tnc: { on: true, text: '本票券一經售出，除活動取消或延期外，恕不退換。\n二人套票限兩人同行，須一起驗票入場。\n入場時須出示電子票券 QR Code 與身分證件；轉售票券不予入場。' }
+      },
+      tiers: [
+        /* 二人套票 HK$880 → 1 人票 HK$440（NT$1,777）、張數 floor(301 ÷ 2) × 2＝300、隱藏且鎖定；賣出的 120 張全經組合包（60 組） */
+        { id: 'tier-tc-duo', name: 'Duo pass · 1 person', price: 1777, hkd: 440, qty: 300, sold: 120, hidden: true, hideFix: true, img: 'images/projects/nick-i.jpg' },
+        /* 單人票：本門票限購（每人 4、每次 2）、折扣 HK$480 → NT$1,938、早鳥 HK$440 → NT$1,777（開賣 → 10/15）；整組鎖定（rulesFix）。
+           門票圖片換成自己的圖（D383 決定五）；美元覆寫成 US$65（在地化覆寫，港幣欄鎖 HK$520）。 */
+        { id: 'tier-tc-ga', name: 'General admission', price: 2100, hkd: 520, qty: 500, sold: 160, override: { USD: 65 }, img: 'images/projects/nick-lwh.jpg',
+          rules: { conds: { cap: { person: '4', order: '2', times: '', bky: true },
+                            disc: { price: '1938', bky: true },
+                            discTime: { price: '1777', from: '2026-09-15T12:00', to: '2026-10-15T23:59', bky: true } } },
+          rulesFix: true },
+        /* D414 示範資料裁決（2026-10-14）：一場 bookyay 演唱會可以放多種門票（不改 D328 產品規則）。下面兩種是 bookyay 時段裡的其他票種，
+           各有自己的購買條件（鎖定）：站席限購、座席限購＋早鳥。sold 由原本單人票的張數拆出，event.sold 不變、revenue 依三種票價重算。 */
+        { id: 'tier-tc-floor', name: 'Standing zone', price: 3192, hkd: 790, qty: 300, sold: 110, img: 'images/projects/nick-asn.jpg',
+          rules: { conds: { cap: { person: '2', order: '2', times: '', bky: true } } }, rulesFix: true },
+        { id: 'tier-tc-seat', name: 'Reserved seating', price: 1495, hkd: 370, qty: 400, sold: 70, img: 'images/projects/nick-wln.jpg',
+          rules: { conds: { cap: { person: '4', order: '4', times: '', bky: true },
+                            discTime: { price: '1313', from: '2026-09-15T12:00', to: '2026-10-15T23:59', bky: true } } },
+          rulesFix: true }
+      ],
+      rules: { conds: { cap: { person: '6', order: '4', times: '2', bky: true } } },
+      bundles: [
+        /* 自動建立：套票限購每人 2 組／每次 1 組；早鳥 HK$792 → 1 − 792 ÷ 880＝10%（開賣 → 10/15）；鎖定 150 套 */
+        { id: 'bd-tc-duo', name: 'Duo pass', tickets: { tierIds: ['tier-tc-duo'], qty: 2 },
+          price: 3554, hkd: 880, sold: 60, lockSets: 150, fix: true,
+          rules: { conds: { cap: { person: '2', order: '1', times: '', bky: true } } },
+          sale: { pct: 10, from: '2026-09-15T12:00', to: '2026-10-15T23:59' } },
+        /* 創作者自建：單人票 ＋ 電子商店商品（官方 Tee，綁取貨場次）；組合折扣 10%、限量 200、美元覆寫 */
+        { id: 'bd-tc-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-tc-ga'], qty: 1 },
+          products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
+          disc: 10, price: 2430, sold: 25, cap: 200, override: { USD: 76 } }
+      ],
+      sold: 460,
+      revenue: 1013260,
+      status: 'on-sale',
+      paused: true,      // D375 決定七示範：暫停售票（bookyay 演唱會版本；自建活動的示範在 nantou-lantern-opening）
+      images: { keyvisual: 'images/projects/nick-mxw.jpg', banner: '', gallery: ['images/projects/nick-asn.jpg', 'images/projects/nick-i.jpg'] },
+      video: 'images/events/teaser-demo.mp4',
+      publish: { pickup: 'eticket', shown: true },
+      sale: { from: '2026-09-15 12:00', to: '2026-11-20 23:59' },
+      listing: { from: '2026-09-01 12:00', to: '2026-11-22 12:00' }
+    },
+    {
+      /* 售票中＋已下架（D361 決定五／D371）：bookyay 演唱會版本；單一單人票、本門票限購。 */
+      id: 'nick-acoustic-tainan-bky',
+      bkyId: 'bky-17',   /* D414：對應 js/sidebar.js BOOKYAY_EVENTS 的 bky-17（Admin 創作者活動管理，已發布） */
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      source: 'bookyay',
+      bkyScanUrl: 'https://organizer.bookyay.com/scan/nick-acoustic-tainan-bky',
+      series: null,
+      name: 'NICKTHEREAL Acoustic Night — Tainan',
+      highlight: 'Just guitar and piano, all seated',   // D410 示範：亮點
+      desc: '只有一把吉他與鋼琴的原聲之夜。',
+      descBlocks: [
+        { type: 'text', html: '<p>只有一把吉他與鋼琴的原聲之夜，全場座席。</p>' }
+      ],
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: '台南文化中心 演藝廳',
+      city: 'Tainan, Taiwan',
+      country: 'TW',
+      languages: ['cmn'],
+      meetPoint: '演藝廳大廳',
+      transit: '台鐵台南站轉公車約 20 分鐘',
+      address: '東區',
+      date: '2026-12-05',
+      start: '19:30',
+      end: '21:30',
+      doors: '19:00',
+      early: 'warn',
+      terms: { tnc: { on: true, text: '全場座席，開演後依工作人員引導入座。' } },
+      tiers: [
+        { id: 'tier-tn-seat', name: 'Seated', price: 1615, hkd: 400, qty: 500, sold: 88,
+          rules: { conds: { cap: { person: '2', order: '2', times: '', bky: true } } }, rulesFix: true }
+      ],
+      bundles: [],
+      sold: 88,
+      revenue: 142120,
+      status: 'on-sale',
+      unlisted: true,
+      images: { keyvisual: 'images/projects/nick-wln.jpg', banner: '', gallery: [] },
+      video: false,
+      publish: { pickup: 'eticket', shown: true },
+      sale: { from: '2026-10-01 12:00', to: '2026-12-04 23:59' }
+    },
+    {
+      /* 進行中：bookyay 已回傳入場紀錄（bkyCheckin.received），已報到＝1,236 人 */
+      id: 'nick-live-taoyuan-bky',
+      bkyId: 'bky-18',   /* D414：對應 js/sidebar.js BOOKYAY_EVENTS 的 bky-18（Admin 創作者活動管理，已發布） */
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      source: 'bookyay',
+      bkyScanUrl: 'https://organizer.bookyay.com/scan/nick-live-taoyuan-bky',
+      series: null,
+      name: 'NICKTHEREAL LIVE 2026 — Taoyuan',
+      highlight: 'Tour opener — first night',
+      desc: '巡演首站，全新舞台與完整曲序。',
+      descBlocks: [
+        { type: 'text', html: '<p>巡演首站，全新舞台與完整曲序，<strong>安可加碼未發表新歌</strong>。</p>' },
+        { type: 'image', src: 'images/projects/nick-realive.jpg' },
+        { type: 'text', html: '<p><strong>入場須知</strong></p><ul><li>開演前 90 分鐘開放入場，提早到場不能入場</li><li>二人套票兩人須一起驗票</li></ul>' }
+      ],
+      lineup: ['NICKTHEREAL 周湯豪', 'Kai Band 凱樂團'],
+      venue: '桃園巨蛋',
+      city: 'Taoyuan, Taiwan',
+      country: 'TW',
+      languages: ['cmn', 'en'],
+      meetPoint: '巨蛋 A 門',
+      transit: '捷運桃園巨蛋站（施工中）改搭接駁車約 10 分鐘',
+      address: '桃園區',
+      date: todayStr(),          // live 活動的日期一律動態＝今天，見檔頭規則
+      endDate: addDays(todayStr(), 1),   // D410 示範：跨日（今天 19:30 → 明天 00:30），結束日跟著今天走
+      start: '19:30',
+      end: '00:30',
+      doors: '18:00',
+      early: 'block',
+      terms: {
+        tnc: { on: true, text: '本票券一經售出，除活動取消或延期外，恕不退換。\n入場時須出示電子票券 QR Code；轉售票券不予入場。' }
+      },
+      tiers: [
+        { id: 'tier-ty-duo', name: 'Duo pass · 1 person', price: 1777, hkd: 440, qty: 400, sold: 400, hidden: true, hideFix: true, img: 'images/projects/nick-i.jpg' },
+        { id: 'tier-ty-ga', name: 'General admission', price: 2100, hkd: 520, qty: 700, sold: 600, override: { USD: 65 }, img: 'images/projects/nick-lwh.jpg',
+          rules: { conds: { cap: { person: '4', order: '2', times: '', bky: true },
+                            disc: { price: '1938', bky: true },
+                            discTime: { price: '1777', from: '2026-08-01T12:00', to: '2026-08-31T23:59', bky: true } } },
+          rulesFix: true },
+        /* D414 示範資料裁決（2026-10-14）：一場 bookyay 演唱會可以放多種門票（不改 D328 產品規則）。下面兩種是 bookyay 時段裡的其他票種，
+           各有自己的購買條件（鎖定）：站席限購、座席限購＋早鳥。sold 由原本單人票的張數拆出，event.sold 不變、revenue 依三種票價重算。 */
+        { id: 'tier-ty-floor', name: 'Standing zone', price: 3192, hkd: 790, qty: 350, sold: 330, img: 'images/projects/nick-asn.jpg',
+          rules: { conds: { cap: { person: '2', order: '2', times: '', bky: true } } }, rulesFix: true },
+        { id: 'tier-ty-seat', name: 'Reserved seating', price: 1495, hkd: 370, qty: 250, sold: 174, img: 'images/projects/nick-wln.jpg',
+          rules: { conds: { cap: { person: '4', order: '4', times: '', bky: true },
+                            discTime: { price: '1313', from: '2026-08-01T12:00', to: '2026-08-31T23:59', bky: true } } },
+          rulesFix: true }
+      ],
+      rules: { conds: { cap: { person: '6', order: '4', times: '2', bky: true } } },
+      bundles: [
+        { id: 'bd-ty-duo', name: 'Duo pass', tickets: { tierIds: ['tier-ty-duo'], qty: 2 },
+          price: 3554, hkd: 880, sold: 200, lockSets: 200, fix: true,
+          rules: { conds: { cap: { person: '2', order: '1', times: '', bky: true } } },
+          sale: { pct: 10, from: '2026-08-01T12:00', to: '2026-08-31T23:59' } },
+        { id: 'bd-ty-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-ty-ga'], qty: 1 },
+          products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
+          disc: 10, price: 2430, sold: 80, cap: 120, override: { USD: 76 } }
+      ],
+      sold: 1504,
+      revenue: 3310690,
+      status: 'live',
+      bkyCheckin: { received: true, count: 1236 },
+      images: { keyvisual: 'images/projects/nick-realive.jpg', banner: '', gallery: ['images/projects/nick-r2.jpg', 'images/projects/nick-asn.jpg'] },
+      video: 'images/events/teaser-demo.mp4',
+      publish: { pickup: 'eticket', shown: true },
+      sale: { from: '2026-08-01 12:00', to: '' },
+      listing: { from: '2026-07-25 12:00', to: '' }
+    },
+    {
+      /* 已結束：bookyay 已回傳入場紀錄，最終已報到＝1,688 人 */
+      id: 'nick-live-kaohsiung-bky',
+      bkyId: 'bky-19',   /* D414：對應 js/sidebar.js BOOKYAY_EVENTS 的 bky-19（Admin 創作者活動管理，已發布） */
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      source: 'bookyay',
+      bkyScanUrl: 'https://organizer.bookyay.com/scan/nick-live-kaohsiung-bky',
+      series: null,
+      name: 'NICKTHEREAL LIVE 2026 — Kaohsiung',
+      highlight: 'Harbour stage, sunset start',
+      desc: '高雄港邊的露天場，日落開唱。',
+      descBlocks: [
+        { type: 'text', html: '<p>高雄港邊的露天場，<strong>日落開唱</strong>，安可後港邊煙火。</p>' },
+        { type: 'image', src: 'images/projects/nick-baipa.jpg' },
+        { type: 'text', html: '<p><strong>雨天備案</strong></p><p>小雨照常演出，請自備輕便雨衣；<em>現場禁止撐傘</em>。</p>' }
+      ],
+      lineup: ['NICKTHEREAL 周湯豪', 'Kai Band 凱樂團'],
+      venue: '高雄流行音樂中心 海音館',
+      city: 'Kaohsiung, Taiwan',
+      country: 'TW',
+      languages: ['cmn', 'en'],
+      meetPoint: '海音館 1 樓大廳',
+      transit: '輕軌真愛碼頭站步行 5 分鐘',
+      address: '鹽埕區',
+      date: '2026-09-26',
+      endDate: '2026-09-27',   // D410 示範：跨日（日落 18:00 開唱 → 港邊煙火後 00:15 散場）
+      start: '18:00',
+      end: '00:15',
+      doors: '17:00',
+      early: 'block',
+      terms: {
+        tnc: { on: true, text: '本票券一經售出，除活動取消或延期外，恕不退換。\n戶外場地如遇天候因素，將依主辦單位公告調整演出內容。' }
+      },
+      tiers: [
+        { id: 'tier-kh-duo', name: 'Duo pass · 1 person', price: 1777, hkd: 440, qty: 400, sold: 380, hidden: true, hideFix: true, img: 'images/projects/nick-i.jpg' },
+        { id: 'tier-kh-ga', name: 'General admission', price: 2100, hkd: 520, qty: 900, sold: 800, override: { USD: 65 }, img: 'images/projects/nick-lwh.jpg',
+          rules: { conds: { cap: { person: '4', order: '2', times: '', bky: true },
+                            disc: { price: '1938', bky: true },
+                            discTime: { price: '1777', from: '2026-07-01T12:00', to: '2026-07-31T23:59', bky: true } } },
+          rulesFix: true },
+        /* D414 示範資料裁決（2026-10-14）：一場 bookyay 演唱會可以放多種門票（不改 D328 產品規則）。下面兩種是 bookyay 時段裡的其他票種，
+           各有自己的購買條件（鎖定）：站席限購、座席限購＋早鳥。sold 由原本單人票的張數拆出，event.sold 不變、revenue 依三種票價重算。 */
+        { id: 'tier-kh-floor', name: 'Standing zone', price: 3192, hkd: 790, qty: 400, sold: 380, img: 'images/projects/nick-asn.jpg',
+          rules: { conds: { cap: { person: '2', order: '2', times: '', bky: true } } }, rulesFix: true },
+        { id: 'tier-kh-seat', name: 'Reserved seating', price: 1495, hkd: 370, qty: 300, sold: 220, img: 'images/projects/nick-wln.jpg',
+          rules: { conds: { cap: { person: '4', order: '4', times: '', bky: true },
+                            discTime: { price: '1313', from: '2026-07-01T12:00', to: '2026-07-31T23:59', bky: true } } },
+          rulesFix: true }
+      ],
+      rules: { conds: { cap: { person: '6', order: '4', times: '2', bky: true } } },
+      bundles: [
+        { id: 'bd-kh-duo', name: 'Duo pass', tickets: { tierIds: ['tier-kh-duo'], qty: 2 },
+          price: 3554, hkd: 880, sold: 190, lockSets: 200, fix: true,
+          rules: { conds: { cap: { person: '2', order: '1', times: '', bky: true } } },
+          sale: { pct: 10, from: '2026-07-01T12:00', to: '2026-07-31T23:59' } },
+        { id: 'bd-kh-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-kh-ga'], qty: 1 },
+          products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
+          disc: 10, price: 2430, sold: 90, cap: 120, override: { USD: 76 } }
+      ],
+      sold: 1780,
+      revenue: 3926820,
+      status: 'ended',
+      bkyCheckin: { received: true, count: 1688 },
+      images: { keyvisual: 'images/projects/nick-baipa.jpg', banner: '', gallery: ['images/projects/nick-realive.jpg'] },
+      video: 'images/events/teaser-demo.mp4',
+      publish: { pickup: 'eticket', shown: true },
+      sale: { from: '2026-07-01 12:00', to: '2026-09-25 23:59' },
+      listing: { from: '2026-06-25 12:00', to: '' }
+    },
+    {
+      /* 已取消（D375 決定二）：bookyay 端取消、同步到 ztor——活動轉已取消、暫停並下架、票券撤銷（撤銷結果由 bookyay 同步，
+         transactions() 把這場的已付款訂單一律標成已撤銷、執行者 bookyay）；含其門票的上架中組合包隨活動下架（listed:false）。 */
+      id: 'nick-summer-pingtung-bky',
+      bkyId: 'bky-20',   /* D414：對應 js/sidebar.js BOOKYAY_EVENTS 的 bky-20（Admin 創作者活動管理，已發布） */
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      source: 'bookyay',
+      bkyScanUrl: 'https://organizer.bookyay.com/scan/nick-summer-pingtung-bky',
+      series: null,
+      name: 'NICKTHEREAL Summer Live — Pingtung',
+      highlight: 'Beachside, one night only',
+      desc: '墾丁海邊的夏日場。因颱風於 bookyay 取消。',
+      descBlocks: [
+        { type: 'text', html: '<p>墾丁海邊的夏日場，日落開唱。</p>' },
+        { type: 'text', html: '<p><strong>取消說明</strong></p><p>因颱風警報，主辦單位已於 8/20 取消本場演出，票券由 bookyay 統一撤銷。</p>' }
+      ],
+      lineup: ['NICKTHEREAL 周湯豪', 'Kai Band 凱樂團'],   // D410 示範：表演陣容補第二組
+      venue: '墾丁大灣沙灘',
+      city: 'Pingtung, Taiwan',
+      country: 'TW',
+      languages: ['cmn'],
+      meetPoint: '大灣遊客中心',
+      transit: '墾丁快線大灣站步行 3 分鐘',
+      address: '恆春鎮',
+      date: '2026-08-29',
+      endDate: '2026-08-30',   // D410 示範：跨日（海邊夜場 18:30 → 隔天 00:30）
+      start: '18:30',
+      end: '00:30',
+      doors: '17:30',
+      early: 'warn',
+      terms: { tnc: { on: true, text: '活動如因天候取消，票券由 bookyay 統一撤銷，退款依付款方式原路退回。' } },
+      tiers: [
+        /* D410 示範（2026-10-13 驗收補缺）：兩張門票都補門票圖片；單人票補折扣與早鳥（bookyay 帶入、鎖定），
+           單人票 sold 421 含經自建組合包賣出的 12 張（D408）。 */
+        { id: 'tier-pt-duo', name: 'Duo pass · 1 person', price: 808, hkd: 200, qty: 200, sold: 60, hidden: true, hideFix: true, img: 'images/projects/nick-i.jpg' },
+        { id: 'tier-pt-ga', name: 'General admission', price: 1615, hkd: 400, qty: 450, sold: 240, override: { USD: 50 }, img: 'images/projects/nick-lwh.jpg',
+          rules: { conds: { cap: { person: '4', order: '2', times: '', bky: true },
+                            disc: { price: '1494', bky: true },
+                            discTime: { price: '1373', from: '2026-06-15T12:00', to: '2026-07-15T23:59', bky: true } } },
+          rulesFix: true },
+        /* D414 示範資料裁決（2026-10-14）：一場 bookyay 演唱會可以放多種門票（不改 D328 產品規則）。下面兩種是 bookyay 時段裡的其他票種，
+           各有自己的購買條件（鎖定）：站席限購、座席限購＋早鳥。sold 由原本單人票的張數拆出，event.sold 不變、revenue 依三種票價重算。 */
+        { id: 'tier-pt-floor', name: 'Standing zone', price: 2400, hkd: 595, qty: 150, sold: 100, img: 'images/projects/nick-asn.jpg',
+          rules: { conds: { cap: { person: '2', order: '2', times: '', bky: true } } }, rulesFix: true },
+        { id: 'tier-pt-seat', name: 'Reserved seating', price: 1200, hkd: 297, qty: 200, sold: 81, img: 'images/projects/nick-wln.jpg',
+          rules: { conds: { cap: { person: '4', order: '4', times: '', bky: true },
+                            discTime: { price: '1090', from: '2026-06-15T12:00', to: '2026-07-15T23:59', bky: true } } },
+          rulesFix: true }
+      ],
+      rules: { conds: { cap: { person: '6', order: '4', times: '', bky: true } } },
+      bundles: [
+        /* 自動建立的套票組合包：補限購與早鳥（D410 示範） */
+        { id: 'bd-pt-duo', name: 'Duo pass', tickets: { tierIds: ['tier-pt-duo'], qty: 2 },
+          price: 1615, hkd: 400, sold: 30, lockSets: 100, fix: true, listed: false,
+          rules: { conds: { cap: { person: '2', order: '1', times: '', bky: true } } },
+          sale: { pct: 10, from: '2026-06-15T12:00', to: '2026-07-15T23:59' } },
+        /* 創作者自建（D410 示範）：單人票＋電子商店商品（綁取貨場次），隨活動取消一併下架、訂單由 bookyay 撤銷同步 */
+        { id: 'bd-pt-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-pt-ga'], qty: 1 },
+          products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
+          disc: 10, price: 1994, sold: 12, cap: 100, listed: false, override: { USD: 62 } }
+      ],
+      sold: 481,
+      revenue: 0,        // bookyay 取消後所有票券（含組合包裡的）都已撤銷，沒有留下的收入；撤銷前的成交在交易明細逐筆看得到
+      status: 'cancelled',
+      paused: true,
+      unlisted: true,
+      bkyCancel: { at: '2026-08-20 10:00' },
+      images: { keyvisual: 'images/projects/nick-smdbbs.jpg', banner: '', gallery: ['images/projects/nick-asn.jpg', 'images/projects/nick-wln.jpg'] },   // D410 示範：圖庫補兩張
+      video: 'images/events/teaser-demo.mp4',   // D410 示範：影片預告
+      publish: { pickup: 'eticket', shown: true },
+      sale: { from: '2026-06-15 12:00', to: '2026-08-28 23:59' },
+      listing: { from: '2026-06-10 12:00', to: '' }   // D410 示範：上架時間（bookyay 取消後已下架，見 unlisted）
     },
     {
       id: 'realive-r2-watchparty',
@@ -665,7 +1042,9 @@
       /* 線上房間（2026-08-13，D149 落地）：共看派對不套票種頁與取票方式，但入場方式與
          付費門檻總得有個地方看。room.url＝觀眾進的房間、entry＝單一入場券的價格（同 tiers[0]，
          此處不另存一份金額）、chat＝是否開聊天室。實際房控功能仍待上游（見 ASSUMPTIONS WP-001）。 */
-      room: { url: 'ztor.live/w/realive-r2-watchparty', chat: true, capacity: 200 },
+      room: { url: 'ztor.live/w/realive-r2-watchparty', chat: true, capacity: 200, capMode: 'limited',
+              name: 'REALIVE R2 film night', film: 'film-last-typhoon', endEst: '2027-02-01 23:30',
+              region: { mode: 'global', list: [] }, privacy: 'public' },   // D410 示範：F13–F19 補齊
       tiers: [{ id: 'tier-entry', name: 'Admission', price: 5, qty: 200, sold: 142 }],
       sold: 142,
       revenue: 710,
@@ -954,9 +1333,12 @@
       start: '21:00',
       end: '',
       doors: '',
-      room: { url: 'ztor.live/w/flames-mv-premiere', chat: true, capacity: 500 },
+      /* D410 示範：F13–F19 補齊；這一場示範「不限人數」（capMode unlimited，入場券張數＝平台單場硬上限 1,000）與「排除特定地區」 */
+      room: { url: 'ztor.live/w/flames-mv-premiere', chat: true, capacity: null, capMode: 'unlimited',
+              name: 'FLAMES premiere room', film: 'film-midnight-canton', endEst: '2026-12-24 22:30',
+              region: { mode: 'exclude', list: ['CN'] }, privacy: 'public' },
       tiers: [
-        { id: 'tier-entry', name: 'Admission', price: 150, qty: 500, sold: 0 }
+        { id: 'tier-entry', name: 'Admission', price: 150, qty: 1000, sold: 0 }
       ],
       sold: 0,
       revenue: 0,
@@ -984,7 +1366,10 @@
       doors: '18:00',
       tiers: [
         { id: 'tier-front', name: 'Front block', price: 1200, qty: 1000, sold: 642 },
-        { id: 'tier-rear', name: 'Rear block', price: 800, qty: 2000, sold: 1198 }
+        { id: 'tier-rear', name: 'Rear block', price: 800, qty: 2000, sold: 1198 },
+        /* D414 免費訂單示範（2026-10-14）：金額 0 的門票也算訂單——交易明細與訂單管理照常列出，付款資訊顯示「—」、不經金流。
+           sold 36 張全是直接領取，所以活動 sold 加 36、revenue 不變。 */
+        { id: 'tier-kids', name: 'Kids under 6 · free', price: 0, qty: 200, sold: 36 }
       ],
       bundles: [
         { id: 'bd-front-vinyl', name: '前區票 ＋ 限量黑膠', tickets: { tierIds: ['tier-front'], qty: 1 },
@@ -992,10 +1377,11 @@
           price: 1900, sold: 63, cap: 200 }
       ],
       publish: { pickup: 'eticket', shown: true },
-      sold: 1840,
+      sold: 1876,
       revenue: 1728800,
       status: 'on-sale',
       paused: true,     // D375 決定七示範：暫停售票（2026-10-09 D390 稽核原型第 16 條：自系列子場 realive-chongqing 移到這一場單場、非系列活動，release2.4 看得到）
+      sale: { from: '2026-09-20 12:00', to: '' },   // D414：補開賣時間——免費門票訂單的下單日期落在開賣日之後、不晚於昨天（沒寫時下單日期會落到未來）
       images: { keyvisual: 'images/projects/nick-flames.jpg', banner: '', gallery: [] },
       video: false
     },
@@ -1174,7 +1560,9 @@
       start: '13:30',
       end: '',
       doors: '',
-      room: { url: 'ztor.live/w/lrh-doc', chat: true, capacity: 600 },
+      room: { url: 'ztor.live/w/lrh-doc', chat: true, capacity: 600, capMode: 'limited',
+              name: 'Tour doc — director in chat', film: 'film-silk-echo', endEst: '',
+              region: { mode: 'include', list: ['TW', 'HK', 'SG', 'MY'] }, privacy: 'private' },   // D410 示範：F13–F19 補齊（私密房間）
       tiers: [
         { id: 'tier-entry', name: 'Admission', price: 120, qty: 600, sold: 418 }
       ],
@@ -1309,7 +1697,9 @@
       start: '21:00',
       end: '',
       doors: '',
-      room: { url: 'ztor.live/w/sdfs-mv-watchback', chat: true, capacity: 400 },
+      room: { url: 'ztor.live/w/sdfs-mv-watchback', chat: true, capacity: 400, capMode: 'limited',
+              name: 'Ten years on', film: 'film-fist-of-fury', endEst: '2026-02-14 23:00',
+              region: { mode: 'global', list: [] }, privacy: 'public' },   // D410 示範：F13–F19 補齊
       tiers: [
         { id: 'tier-entry', name: 'Admission', price: 100, qty: 400, sold: 313 }
       ],
@@ -1469,7 +1859,9 @@
       start: '21:00',
       end: '',
       doors: '',
-      room: { url: 'ztor.live/w/r2-rehearsal', chat: true, capacity: 300 },
+      room: { url: 'ztor.live/w/r2-rehearsal', chat: true, capacity: 300, capMode: 'limited',
+              name: 'R2 rehearsal room', film: 'film-zheng-yi-sao', endEst: '2026-09-19 23:00',
+              region: { mode: 'exclude', list: ['CN', 'RU'] }, privacy: 'private' },   // D410 示範：F13–F19 補齊
       tiers: [
         { id: 'tier-entry', name: 'Admission', price: 120, qty: 300, sold: 96 }
       ],
@@ -1565,46 +1957,73 @@
          金額口徑同 taipei-nye（D330）：hkd＝bookyay 港幣原價、price＝換算成創作者幣別 TWD 的基準價。 */
       id: 'khh-countdown-draft',
       bkyId: 'bky-12',   /* D374：對應到 js/sidebar.js BOOKYAY_EVENTS 的 bky-12（創作者活動管理那一列）；刪這份草稿＝解除對應 */
-      type: 'festival',
-      typeLabelKey: 'ce.type.festival',
+      /* 2026-10-13 D410 決定四（示範資料）：「草稿」狀態的 bookyay 演唱會全選項示範（原本是 festival）。
+         續填時建立流程用 create-event BKY 的 bky-12 重跑帶入（D385 決定四），鎖定欄位一律以那份為準——這裡的鎖定欄位值與它對齊；
+         亮點、表演陣容、圖片、上架方式、門票圖片、自建組合包等不鎖的欄位照這裡保留（D386 決定二，keepDraft）。
+         票：bky-12 只有一個時段，release2.4 照 D328 只帶第一種門票（二人套票），第二種（General admission）帶入時略過並出現提示——
+         所以草稿只有套票拆出的隱藏 1 人票＋自動組合包；套票的限購、折扣、早鳥照 D390 第 19 題落在自動組合包。 */
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
       category: 'concert',
       source: 'bookyay',
+      bkyScanUrl: 'https://organizer.bookyay.com/scan/bky-12',
       series: null,
-      name: 'Kaohsiung countdown (bookyay draft)',
-      desc: '',
-      lineup: ['NICKTHEREAL 周湯豪'],
+      name: 'Kaohsiung countdown concert',
+      highlight: 'Harbour fireworks right after midnight',
+      desc: '駁二港邊的跨年演唱會，21:00 開唱一路唱過零點，倒數後港邊煙火。',
+      descBlocks: [
+        { type: 'text', html: '<p>駁二港邊的跨年演唱會，21:00 開唱一路唱過零點，倒數後港邊煙火。</p>' },
+        { type: 'image', src: 'images/projects/nick-asn.jpg' },
+        { type: 'text', html: '<p><strong>入場與寄物</strong></p><ul><li>大義倉庫入口驗票，二人套票兩人須一起驗票入場</li><li>現場不提供寄物</li></ul>' },
+        { type: 'text', html: '<p><strong>散場交通</strong></p><p>零點後輕軌加開班次至 01:30，<em>駁二大義站單向進站</em>。詳見 <a href="https://example.com/khh-countdown/traffic">交通說明</a>。</p>' }
+      ],
+      lineup: ['NICKTHEREAL 周湯豪', 'Kai Band 凱樂團'],
       venue: 'Kaohsiung Pier-2',
       city: 'Kaohsiung, Taiwan',
       country: 'TW',
-      languages: ['cmn'],
+      languages: ['cmn', 'en'],
       meetPoint: '駁二大義倉庫入口',
       transit: '輕軌駁二大義站步行 2 分鐘',
       address: '鹽埕區',   // 2026-10-09 D385：對齊 create-event BKY bky-12 的地區（帶入後鎖定）
       date: '2026-12-31',
+      endDate: '2027-01-01',   // 跨日（bookyay 時段 12/31 21:00 → 1/1 00:30）
       start: '21:00',
-      end: '23:59',
-      doors: '',
+      end: '00:30',
+      doors: '20:00',          // bookyay 過早入場提示 60 分鐘 → 提前入場時間開啟（D396）
+      early: 'block',
+      terms: {
+        tnc: { on: true, text: '二人套票限兩人同行，須一起驗票入場；單人持票恕不入場。\n票券一經售出，除活動取消或延期外，恕不退換。\n戶外場地如遇天候因素，將依主辦單位公告調整演出內容。' }
+      },
       tiers: [
         /* D390（稽核第一節原型第 13 條）示範：草稿裡存過的門票圖片（不在鎖定範圍）——續填重跑帶入後照樣留著 */
         { id: 'tier-khh-duo', name: 'Duo pass · 1 person', price: 1111, hkd: 275, qty: 200, sold: 0, hidden: true, hideFix: true, img: 'images/projects/nick-i.jpg' }
       ],
+      /* 活動層限購（bookyay maxPurchaseCnt 6／EachTime 4／Time 2，鎖定） */
+      rules: { conds: { cap: { person: '6', order: '4', times: '2', bky: true } } },
       /* D390（稽核第一節原型第 13 條）示範：草稿裡存過、不在 bookyay 鎖定範圍的發布設定——續填時保留（create-event keepDraft）。
          墓碑 2026-10-12（D395）：原本一併示範的直接促銷同意（terms.marketing）隨欄位移除。 */
       listing: { mode: 'schedule', from: '2026-11-10 12:00', to: '2027-01-01 12:00' },
       bundles: [
+        /* 自動建立的組合包：套票的限購（每人 2 組、每次 1 組）與折扣優惠（HK$550 → HK$500，組合折扣 9.1%）落在這一組（D390 第 19 題）；
+           早鳥 HK$460 疊在折後價上：1 − 460 ÷ 500 ＝ 8%（D391 第 15 題）。港幣欄鎖 HK$500，基準價換算 NT$2,019。 */
         { id: 'bd-khh-duo', name: 'Duo pass', tickets: { tierIds: ['tier-khh-duo'], qty: 2 },
-          price: 2222, hkd: 550, sold: 0, lockSets: 100, fix: true },
-        /* D340 示範：創作者自己建立、成員含本草稿活動票券的草稿組合包——草稿活動刪除時同樣一起刪除，確認彈窗列出（5.1.6 F1）。 */
+          price: 2019, hkd: 500, disc: 9.1, sold: 0, lockSets: 100, fix: true,
+          rules: { conds: { cap: { person: '2', order: '1', times: '', bky: true } } },
+          sale: { pct: 8, from: '2026-11-15T12:00', to: '2026-11-30T23:59' } },
+        /* D340 示範：創作者自己建立、成員含本草稿活動票券的草稿組合包——草稿活動刪除時同樣一起刪除，確認彈窗列出（5.1.6 F1）。
+           D410 示範：商品成員綁取貨場次（前往領取場次）。 */
         { id: 'bd-khh-duo-tee', name: 'Duo pass ＋ 紀念 T 恤', tickets: { tierIds: ['tier-khh-duo'], qty: 2 },
-          products: [{ name: '九龍夜行 紀念 T 恤', img: 'images/products/coastline-tee.webp', price: 600 }],
-          price: 2822, sold: 0 }
+          products: [{ name: '九龍夜行 紀念 T 恤', img: 'images/products/coastline-tee.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
+          price: 2822, sold: 0, override: { USD: 90 } }
       ],
       sold: 0,
       revenue: 0,
       status: 'draft',
       /* D386 決定二示範：草稿裡創作者自己加的第二張圖（不在鎖定範圍）——續填重跑帶入後照樣留著，不被 bookyay 的圖覆蓋。 */
-      images: { keyvisual: 'images/hero-event.jpg', banner: '', gallery: ['images/projects/nick-i.jpg'] },
-      video: false
+      images: { keyvisual: 'images/hero-event.jpg', banner: '', gallery: ['images/projects/nick-i.jpg', 'images/projects/nick-asn.jpg'] },
+      video: 'images/events/teaser-demo.mp4',
+      publish: { pickup: 'eticket', shown: true },
+      sale: { from: '2026-11-15 12:00', to: '2026-12-31 18:00' }
     },
     {
       /* bky-2 的創作者端草稿（2026-10-09 D390 稽核第一節原型第 16 條）：Admin 創作者活動管理裡 bky-2 是「草稿」（已對應 Gary Lin、已存），
@@ -1613,13 +2032,14 @@
          金額口徑同 khh-countdown-draft：hkd＝bookyay 港幣原價（二人套票 399 → 1 人 199.5）、price＝換算成 TWD 的基準價。 */
       id: 'mirror-khh-draft',
       bkyId: 'bky-2',
-      type: 'meet',
-      typeLabelKey: 'ce.type.meet',
-      category: 'fans-meet',
+      /* 2026-10-13 D410 決定四（示範資料）：見面會改成演唱會（release2.4 只開放演唱會；三場＝多場次，release2.4 本來就不列） */
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
       source: 'bookyay',
       series: null,
-      name: 'MIRROR FANMEETING 2026 高雄',
-      desc: '三天三場的粉絲見面會，每一場都有各自的主題單元與抽選互動；購票即參加抽選，中選者上台合影。',
+      name: 'MIRROR LIVE 2026 高雄',
+      desc: '三天三場的演唱會，每一場都有各自的主題歌單與抽選互動；購票即參加抽選，中選者上台合影。',
       lineup: [],
       venue: '高雄流行音樂中心',
       city: '',
@@ -1702,17 +2122,23 @@
       typeLabelKey: 'ce.type.watchparty',
       category: 'online',
       series: null,
+      /* 2026-10-13 D410 決定四（示範資料）：草稿狀態的共看派對，F13–F19 七項全填（建立流程續填時由 dupFrom 讀回 room）。
+         清單與草稿名稱沿用原本的「(planning)」；房間名稱另存 room.name。 */
       name: 'ON STAGE concert film — Watch party (planning)',
       desc: '',
       lineup: [],
-      venue: '',
+      venue: 'Online',
       city: '',
+      languages: ['cmn'],
       address: '',
-      date: '',
-      start: '',
+      date: '2027-03-06',
+      start: '20:00',
       end: '',
       doors: '',
-      tiers: [],
+      room: { url: 'ztor.live/w/onstage-film-watchparty-draft', chat: true, capacity: 250, capMode: 'limited',
+              name: 'ON STAGE concert film — Watch party', film: 'film-neon-harbor', endEst: '2027-03-06 22:30',
+              region: { mode: 'include', list: ['TW', 'HK'] }, privacy: 'private' },
+      tiers: [{ id: 'tier-entry', name: 'Admission', price: 180, qty: 250, sold: 0 }],
       sold: 0,
       revenue: 0,
       status: 'draft',
@@ -1841,6 +2267,46 @@
          固定產生 2 筆 status:'refunded' 的示例交易，只是把「退款」換成「作廢」的資料語意——
          demo 筆改成 status:'voided'，並補上 voidedAt／voidedBy 兩欄供作廢紀錄（§2.9.2）顯示；
          使用者透過 UI 執行的作廢（voidTicket／voidAllRemaining）也寫這兩欄，同一套欄位。 */
+  /* ── 訂單編號與付款資訊（2026-10-13 · D411）────────────────────
+     交易明細的每一列＝一筆訂單，要能打開電子商店的訂單詳情（直接購票的訂單共用同一頁）。
+     訂單編號＝'ZT-' ＋ 活動在 EVENTS 的序號（100 起）＋ 4 碼流水：門票訂單 0000 起、組合包訂單 5000 起、
+     作廢示範 9000 起；orders-store 的 get() 用 findOrder() 反查回「哪一場活動的哪一筆交易」。
+     下單日期在開賣起日到活動前一天（不晚於今天；bookyay 取消的活動不晚於取消前一天）之間決定性散開，
+     付款時間＝下單日期＋ atMin 的時刻；金流商一律 Stripe（D411 範例），付款編號為示意字串（原型、非真實）。 */
+  function evIndex(ev) {
+    for (var i = 0; i < EVENTS.length; i++) if (EVENTS[i].id === (ev && ev.id)) return i;
+    return -1;
+  }
+  function orderNo(ev, n) {
+    var i = evIndex(ev);
+    return i < 0 ? '' : 'ZT-' + (100 + i) + ('000' + n).slice(-4);
+  }
+  function txDays(ev) {
+    var from = String((ev.sale && ev.sale.from) || '').slice(0, 10) || addDays(ev.date || todayStr(), -45);
+    var to = addDays(ev.date || todayStr(), -1);
+    if (to >= todayStr()) to = addDays(todayStr(), -1);   // 下單日期最晚到昨天，付款時間不會落在「今天稍後」
+    if (ev.bkyCancel && ev.bkyCancel.at) { var c = addDays(String(ev.bkyCancel.at).slice(0, 10), -1); if (c < to) to = c; }
+    if (to < from) to = from;
+    var span = Math.round((new Date(to + 'T00:00:00') - new Date(from + 'T00:00:00')) / 86400000);
+    return { from: from, span: Math.max(0, span) };
+  }
+  function payFields(ev, n, atMin) {
+    var w = txDays(ev);
+    var day = addDays(w.from, w.span ? (n * 7) % (w.span + 1) : 0);
+    var hh = String(Math.floor((atMin || 0) / 60) % 24).padStart(2, '0'), mm = String((atMin || 0) % 60).padStart(2, '0');
+    var seed = ((evIndex(ev) + 3) * 2654435761 + (n + 1) * 40503 * 97) % 2821109907456;   // 36^8，示意字串用
+    return {
+      orderId: orderNo(ev, n), orderDate: day, paidAt: day + ' ' + hh + ':' + mm,
+      provider: 'Stripe', paymentId: 'pi_3Q' + ('0000000' + seed.toString(36)).slice(-8) + String(n % 100).padStart(2, '0') + 'Zt'
+    };
+  }
+  function withPay(t, f) {
+    for (var k in f) t[k] = f[k];
+    /* D414：金額 0 的免費訂單不經金流——訂單編號與下單日期照給，付款時間、金流商、付款編號、付款方式留空（畫面顯示「—」） */
+    if (t.gross === 0) { t.paidAt = ''; t.provider = ''; t.paymentId = ''; t.method = '—'; }
+    return t;
+  }
+
   function buildTx(ev) {
     var out = [], seq = 0, day = ev.date || '2026-01-01';
     (ev.tiers || []).forEach(function (t, ti) {
@@ -1850,14 +2316,15 @@
         if (qty > left) qty = left;
         var gross = effAmount(priceOf(ev, t)) * qty;   // D331：收入用粉絲實付價（基準欄覆寫優先）
         var fee = Math.round(gross * 0.10);
-        out.push({
+        var atMin = (10 * 60 + (seq * 37) % 720);
+        out.push(withPay({
           id: 'TX-' + String(10240 + seq * 7).slice(-5),
           buyer: GIVEN[(seq * 3) % GIVEN.length] + ' ' + FAMILY[(seq * 5 + ti) % FAMILY.length],
-          tier: t.name, qty: qty, gross: gross, ticketGross: gross, fee: fee, net: gross - fee,
+          tier: t.name, tierId: t.id, solo: !!t.solo, qty: qty, gross: gross, ticketGross: gross, fee: fee, net: gross - fee,
           method: ['Card', 'Apple Pay', 'LINE Pay'][seq % 3],
           status: 'paid',
-          at: day, atMin: (10 * 60 + (seq * 37) % 720)        // 顯示用；原型不接真實時鐘
-        });
+          at: day, atMin: atMin        // 顯示用；原型不接真實時鐘
+        }, payFields(ev, seq, atMin)));   // D411：訂單編號、下單日期、付款時間、金流商、付款編號
         left -= qty; seq++;
       }
     });
@@ -1871,13 +2338,13 @@
     if (t0 && (ev.sold || 0) > 4) {
       for (var k = 0; k < 2; k++) {
         var g = effAmount(priceOf(ev, t0));   // D331：同上
-        out.push({
+        out.push(withPay({
           id: 'TX-' + String(90100 + k * 11).slice(-5),
           buyer: GIVEN[(k * 11) % GIVEN.length] + ' ' + FAMILY[(k * 9) % FAMILY.length],
-          tier: t0.name, qty: 1, gross: g, fee: Math.round(g * 0.10), net: g - Math.round(g * 0.10),
+          tier: t0.name, tierId: t0.id, solo: !!t0.solo, qty: 1, gross: g, fee: Math.round(g * 0.10), net: g - Math.round(g * 0.10),
           method: 'Card', status: 'voided', at: day, atMin: 9 * 60 + k * 25,
           voidedAt: day + ' ' + (14 + k) + ':00', voidedBy: 'Admin'
-        });
+        }, payFields(ev, 9000 + k, 9 * 60 + k * 25)));
       }
     }
     return out;
@@ -1912,13 +2379,15 @@
         var qty = (seq % 4 === 1 && left >= 2) ? 2 : 1;
         var gross = (Number(b.price) || 0) * qty;
         var fee = Math.round(gross * 0.10);
-        out.push({
-          id: 'TX-B' + String(3100 + seq * 13).slice(-4), kind: 'bundle', orderId: 'ZT-10489',   // 原型的訂單 mock 與活動沒有串接，一律連到含票務組合包的示例訂單（ASSUMPTIONS UIA-250）
+        var atMin = (10 * 60 + (seq * 151 + 700) % 720);
+        /* D411（2026-10-13）：每一筆組合包訂單有自己的訂單編號（原本一律連到 ZT-10489，UIA-250 已解）。bundleId 給訂單詳情展開成員用。 */
+        out.push(withPay({
+          id: 'TX-B' + String(3100 + seq * 13).slice(-4), kind: 'bundle', bundleId: b.id,
           buyer: GIVEN[(seq * 7 + 2) % GIVEN.length] + ' ' + FAMILY[(seq * 3 + bi) % FAMILY.length],
           tier: b.name, qty: qty, tickets: qty * (bundleTickets(b).qty || 1), ticketGross: Math.round(gross * share), gross: gross, fee: fee, net: gross - fee,
           method: ['Apple Pay', 'Card', 'LINE Pay'][seq % 3],
-          status: 'paid', at: day, atMin: (10 * 60 + (seq * 151 + 700) % 720)
-        });
+          status: 'paid', at: day, atMin: atMin
+        }, payFields(ev, 5000 + seq, atMin)));
         left -= qty; seq++;
       }
     });
@@ -2299,8 +2768,37 @@
     catch (e) { return {}; }
   }
 
+  /* release2.4 留下的示範活動（D410 決定四）：bookyay 匯入的活動與共看派對。其餘＝功能 S95「非 bookyay 的示範活動（2.4 隱藏）」。 */
+  function isRel24Demo(ev) { return !!ev && (ev.source === 'bookyay' || ev.type === 'watchparty'); }
+
+  /* ── bookyay 活動的已報到（2026-10-13 · D410 決定三，5.1.6.3 §2.3）──────────────────────────
+     bookyay 匯入的活動，門票入場由 bookyay QR 掃描（D375 決定五）；已報到人數來自 bookyay 回傳的入場紀錄。
+     資料形狀：ev.bkyCheckin＝{ received: true, count: N }＝已收到、N 人已入場；沒有這欄或 received 不是 true＝還沒收到。
+     還沒收到時，活動詳情所有顯示已報到數字的地方（現場報到台、結案卡、名單的報到統計與篩選計數、各票種到場、進場頻率）
+     一律寫「暫無資料」，不寫 0——0 是「沒人到」，跟「還不知道」是兩件事。ztor 自建活動維持原本的推導（arrivedAtOpen、sold × 0.91）。 */
+  function bkyArrived(ev) {
+    if (!ev || ev.source !== 'bookyay') return null;
+    var c = ev.bkyCheckin;
+    if (!c || c.received !== true) return null;
+    return Math.max(0, Math.min(Number(ev.sold) || 0, Number(c.count) || 0));
+  }
+  function checkinNoData(ev) { return !!ev && ev.source === 'bookyay' && bkyArrived(ev) == null; }
+  /* 這一場「到場人數」的統一入口：bookyay＝回傳的人數（沒資料＝0，畫面另以 checkinNoData 改寫成暫無資料）；
+     自建＝進行中 arrivedAtOpen、已結束 sold × 0.91（同 checkinSummary 原本的口徑）。 */
+  function arrivedOf(ev) {
+    if (!ev) return 0;
+    if (ev.source === 'bookyay') return bkyArrived(ev) || 0;
+    if (ev.status === 'ended') return Math.round((ev.sold || 0) * 0.91);
+    return ev.arrivedAtOpen || 0;
+  }
+
   window.ztorEvents = {
     bundleTickets: bundleTickets,
+    isRel24Demo: isRel24Demo,             /* D410 決定四：release2.4 留下的示範活動（bookyay 匯入＋共看派對） */
+    checkinNoData: function (evOrId) {    /* D410 決定三：bookyay 活動還沒收到入場紀錄＝暫無資料 */
+      var ev = typeof evOrId === 'string' ? window.ztorEvents.get(evOrId) : evOrId;
+      return checkinNoData(ev);
+    },
     /* 定價幣別（D306）：常數與 helper，見上方說明區塊 */
     CURRENCIES: CURRENCIES,
     DEFAULT_CURRENCY: DEFAULT_CURRENCY,
@@ -2392,7 +2890,13 @@
       /* 2026-10-09 D383：release2.4 沒有多場次活動（S87 ⚪）——版本切換不含 S87 時，多場的示範活動（album-signing-taipei）
          不進清單，活動清單、計數與組合包示範都看不到它；最終版照舊。get() 不濾（直連照樣查得到，畫面上的多場元素由 data-feat 收起）。 */
       var multiOff = window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S87');
-      return clone(EVENTS).concat(dynDrafts()).filter(function (e) { return !isRemoved(e.id) && !(multiOff && e.sessions && e.sessions.length > 1); }).map(function (e) {
+      /* 2026-10-13 D410 決定四（示範資料）：release2.4 只顯示 bookyay 匯入的活動與共看派對——其餘示範活動掛功能 S95（⚪），
+         版本不含 S95 時不進清單（活動清單、計數、店鋪設定的活動候選、首頁畫布等 list() 的消費端一起收起）；get() 不濾（直連照樣查得到）。 */
+      var demoOff = window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S95');
+      return clone(EVENTS).concat(dynDrafts()).filter(function (e) {
+        return !isRemoved(e.id) && !(multiOff && e.sessions && e.sessions.length > 1) &&
+          !(demoOff && !isRel24Demo(e));
+      }).map(function (e) {
         applyEdits(e);                       // D390：活動詳情的編輯結果
         if (m[e.id]) e.status = m[e.id];
         return applyUnlist(applyRm(applyFx(e)));
@@ -2451,10 +2955,15 @@
       var ev = window.ztorEvents.get(id);
       if (!ev || ['on-sale', 'live', 'ended', 'cancelled'].indexOf(ev.status) < 0) return [];
       var out = buildTx(ev);
-      var rate = ev.status === 'ended' ? 0.91
-        : (ev.status === 'live' && ev.sold ? Math.min(1, (ev.arrivedAtOpen || 0) / ev.sold) : 0);
+      /* D410 決定三：bookyay 活動照回傳的入場人數（沒資料＝沒有任何一筆標已報到）；自建照舊 */
+      var rate = (ev.status === 'ended' || ev.status === 'live') && ev.sold ? Math.min(1, arrivedOf(ev) / ev.sold) : 0;
       if (rate > 0) out.forEach(function (t, i) {
         if (t.status === 'paid' && ((i * 37) % 100) < rate * 100) t.checkedIn = true;
+      });
+      /* D375 決定二：bookyay 端取消的活動，票券由 bookyay 撤銷、同步回 ztor——已付款的一律標成已撤銷（執行者 bookyay，唯讀顯示）。 */
+      if (ev.status === 'cancelled' && ev.source === 'bookyay' && ev.bkyCancel) out.forEach(function (t) {
+        if (t.status !== 'paid') return;
+        t.status = 'voided'; t.voidedAt = ev.bkyCancel.at || ''; t.voidedBy = 'bookyay';
       });
       return out;
     },
@@ -2463,7 +2972,13 @@
     bundleTransactions: function (id) {
       var ev = window.ztorEvents.get(id);
       if (!ev || ['on-sale', 'live', 'ended', 'cancelled'].indexOf(ev.status) < 0) return [];
-      return buildBundleTx(ev);
+      var out = buildBundleTx(ev);
+      /* D375 決定二：bookyay 端取消＝組合包裡的門票同樣由 bookyay 撤銷，組合包訂單一併標成已撤銷（同 transactions()） */
+      if (ev.status === 'cancelled' && ev.source === 'bookyay' && ev.bkyCancel) out.forEach(function (t) {
+        if (t.status !== 'paid') return;
+        t.status = 'voided'; t.voidedAt = ev.bkyCancel.at || ''; t.voidedBy = 'bookyay';
+      });
+      return out;
     },
     /* 最終報到統計（2026-08-13）：現場報到台只在進行中出現，活動結束後那張報到快照卡
        仍要回答「這場最後到了多少人」——結束後還顯示「開演當天才開放」是錯的。
@@ -2472,7 +2987,9 @@
       var ev = window.ztorEvents.get(id);
       if (!ev || ev.status !== 'ended') return null;
       var sold = ev.sold || 0;
-      var valid = Math.round(sold * 0.91);          // 正常核銷入場
+      /* D410 決定三：bookyay 活動還沒收到入場紀錄 → noData（數字一律不顯示，呼叫端改寫暫無資料） */
+      if (checkinNoData(ev)) return { sold: sold, valid: 0, used: 0, invalid: 0, rate: 0, noData: true };
+      var valid = arrivedOf(ev);                    // 正常核銷入場（bookyay＝回傳人數；自建＝sold × 0.91）
       var used = Math.round(sold * 0.015);          // 重複掃描（第二次起回黃燈）
       var invalid = Math.round(sold * 0.004);       // 無效票（作廢／非本場）
       return { sold: sold, valid: valid, used: used, invalid: invalid,
@@ -2488,10 +3005,16 @@
     roster: function (id) {
       var ev = window.ztorEvents.get(id);
       if (!ev) return [];
-      if (ev.status === 'live' || ev.status === 'on-sale') return buildRoster(ev);
+      if (ev.status === 'on-sale') return buildRoster(ev);
+      if (ev.status === 'live') {
+        /* D410 決定三：bookyay 活動的到場＝回傳人數（沒資料＝全員未到，畫面另寫暫無資料） */
+        if (ev.source !== 'bookyay') return buildRoster(ev);
+        var lv = clone(ev); lv.arrivedAtOpen = arrivedOf(ev);
+        return buildRoster(lv);
+      }
       if (ev.status === 'ended') {
         var done = clone(ev);
-        done.arrivedAtOpen = Math.round((ev.sold || 0) * 0.91);
+        done.arrivedAtOpen = arrivedOf(ev);
         /* 掃描次數（2026-10-12）：掃描只有「已掃描／未掃描」兩種，重複掃描只是紀錄。
            已掃描的列掃了一次或兩次；兩次的筆數與 checkinSummary().used 同一個比例（sold×0.015），
            平均散落在已掃描列裡，非真實核銷資料。 */
@@ -2517,6 +3040,19 @@
        三種狀態：'ok'（可作廢）／'voided'（已作廢，終態、不可逆）／'redeemed'（已報到，終態、不可作廢）。
        2026-10-07（D361 決定四）：已報到（已使用）的票比照電子商店「已完成為終態」（D253 決定四）不能撤銷；
        已結束活動中未報到的票仍可撤銷。已報到的來源是 transactions() 依到場比例標的 checkedIn（見上方說明）。 */
+    /* D411（2026-10-13）：由訂單編號反查「哪一場活動的哪一筆交易」，給 orders-store 的 get() 用
+       （交易明細每一列都能打開訂單詳情）。編號格式見 orderNo()；查不到回 null。 */
+    findOrder: function (orderId) {
+      var m = /^ZT-(\d{3})(\d{4})$/.exec(String(orderId || '').replace(/^#/, '').trim().toUpperCase());
+      if (!m) return null;
+      var src = EVENTS[Number(m[1]) - 100];
+      if (!src) return null;
+      var ev = window.ztorEvents.get(src.id);
+      if (!ev) return null;
+      var all = window.ztorEvents.transactions(ev.id).concat(window.ztorEvents.bundleTransactions(ev.id));
+      for (var i = 0; i < all.length; i++) if (all[i].orderId === m[0]) return { ev: ev, tx: all[i] };
+      return null;
+    },
     ticketVoidState: function (tx) {
       if (!tx) return 'ok';
       if (tx.status === 'voided') return 'voided';

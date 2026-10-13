@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>票務 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261014b">
+<script src="shell.js?v=20261014b" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>票務</h1>
+<p class="lede">創作者在票務分頁看與改這場活動賣的門票，查看含本活動門票的票務商品，並核發招待票。編輯開關、儲存與離開等整頁共通規則，見<a href="event-detail.html">活動詳情</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="tix-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>票務分頁分四段：票種、票務商品、招待票、轉售；共看派對沒有這個分頁</li>
+  <li>票種要先進編輯模式才能改，改動併入整頁儲存；招待票不必進編輯模式；票務商品改到<a href="bundles.html">組合包與票務商品</a>頁；轉售只有說明</li>
+  <li>bookyay 匯入的活動不能新增門票、不能刪門票，票名、票價與張數唯讀</li>
+</ul>
+
+<h2 id="tix-flow"><span class="n"></span>操作流程</h2>
+<p>創作者進票務分頁後，先決定要改門票、處理票務商品，還是發招待票。</p>
+<div class="dg" role="img" aria-label="票務分頁流程圖，由左往右：進票務分頁，選要做什麼；改門票就按編輯活動進編輯模式、新增或修改門票、按儲存；看或建票務商品就到組合包與票務商品頁；發招待票不必進編輯模式，發出就生效">
+<div class="dg-hg" style="--dg-c:5">
+  <div class="dg-node" style="grid-row:1/4;grid-column:1"><span class="s">1</span>進票務分頁<small>票種、票務商品、招待票、轉售</small></div>
+  <span class="dg-a" style="grid-row:1/4;grid-column:2"></span>
+  <div class="dg-node q" style="grid-row:1/4;grid-column:3"><span class="s">2</span>要做什麼？</div>
+  <span class="dg-a" data-t="改門票" style="grid-row:1;grid-column:4"></span>
+  <span class="dg-a" data-t="看或建票務商品" style="grid-row:2;grid-column:4"></span>
+  <span class="dg-a" data-t="發招待票" style="grid-row:3;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:5">按「編輯活動」<small>整頁進入編輯模式</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:5">組合包與票務商品頁<small>點卡連過去修改</small></div>
+  <div class="dg-node end" style="grid-row:3;grid-column:5">核發招待票<small>不必進編輯模式，發出就生效</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:6"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:7">新增或修改門票<small>彈窗按「套用」暫存</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:8"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:9">按整頁「儲存」<small>檢查通過才寫入</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，紫色虛線框是要回答的問題，綠框是這個選擇的終點。圓圈數字對應下方步驟清單的編號。圖上沒畫的細節（暫停單張門票、轉售）列在步驟清單後面。</p>
+<ol class="plain">
+  <li>進票務分頁；上方切換票種、票務商品、招待票、轉售四段，見<a href="#tix-fields">功能與欄位</a></li>
+  <li>要做什麼？
+    <ul class="plain">
+      <li>改門票：
+        <ul class="plain">
+          <li>按工具列右側的「編輯活動」，整頁進入編輯模式；這顆開關與設定、售票與名單兩個分頁是同一個動作</li>
+          <li>新增門票，或點一張門票在彈窗修改，按「套用」暫存，見<a href="#tix-tier-popup">單張門票彈窗</a>與<a href="#tix-add">新增與刪除門票</a></li>
+          <li>按整頁「儲存」，通過檢查才寫入；各階段能改什麼，見<a href="#tix-edit-state">編輯狀態</a></li>
+        </ul>
+      </li>
+      <li>看或建票務商品：看含本活動門票的組合包；點卡或按「建立組合包」，進<a href="bundles.html">組合包與票務商品</a>頁，見<a href="#tix-bundles">票務商品</a></li>
+      <li>發招待票：選票種後核發，不必進編輯模式，見<a href="#tix-comp">招待票</a></li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>暫停或恢復單張門票：在票種的列表檢視操作，不必進編輯模式，按下就生效</li>
+  <li>轉售目前不提供，只顯示說明，見<a href="#tix-resale">轉售</a></li>
+</ul>
+
+<h2 id="tix-fields"><span class="n"></span>功能與欄位</h2>
+<p>票務分頁四段的畫面與操作：<a href="#tix-tiers">票種</a>看與改每張門票；<a href="#tix-bundles">票務商品</a>看含本活動門票的組合包；<a href="#tix-comp">招待票</a>核發 $0 的票；<a href="#tix-resale">轉售</a>只顯示說明。</p>
+
+<h3 id="tix-tiers">票種</h3>
+<p>票種讓創作者看每張門票的售出進度並逐張修改；沒進編輯模式時整段只能看。畫面分四塊：<a href="#tix-tier-list">票種列表</a>、<a href="#tix-tier-popup">單張門票彈窗</a>、<a href="#tix-add">新增與刪除門票</a>、<a href="#tix-evrules">活動預設購票規則</a>。</p>
+
+<h4 id="tix-tier-list">票種列表</h4>
+<p>列表有卡片與列表兩種檢視，每張門票列出以下內容；獨立票跟票種門票一樣列在所屬場次底下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">項目</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>票名與可購買時間</td><td>票名<br>可購買時間：有加限時購買條件顯示限時購買的期間，沒加顯示活動的售票期間</td></tr>
+    <tr><td>價格</td><td>以票種的基準幣別顯示<br>其他幣別的換算價與覆寫，見<a href="event-detail-settings.html">設定</a>的預覽與在地化</td></tr>
+    <tr><td>入場形式</td><td>實體入場、實體加直播、僅直播三種</td></tr>
+    <tr><td>已售／上限</td><td>已售張數與上限，達 80% 與 95% 時用視覺警示標示</td></tr>
+    <tr><td>隱藏標示</td><td>顯示開關關閉的門票標「隱藏」</td></tr>
+    <tr><td>獨立票</td><td>不掛票種、只屬於一場的門票，加「獨立票」標籤，不另分區<br>入場形式預設實體入場</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>卡片／列表檢視切換</td><td>—</td><td>切換兩種檢視，不必進編輯模式</td></tr>
+    <tr><td>點一列門票</td><td>—</td><td>開啟單張門票的彈窗，見<a href="#tix-tier-popup">單張門票彈窗</a><br>沒進編輯模式時只能看、不能改</td></tr>
+    <tr><td>暫停單一門票</td><td>—</td><td>票種門票跟著票種暫停；獨立票可以逐張暫停<br>暫停的門票照常顯示在活動頁、標「暫停售票中」，但不能購買，在組合包裡也不能選；已售出的票照常有效<br>跟隱藏的差別，見<a href="event-create-step4.html#ticket-hide-pause">隱藏與暫停售票的差別</a><br>跟整場活動的暫停售票並存<br>在票種的列表檢視操作，不必進編輯模式，按下就生效<br>編輯模式下也能用門票彈窗裡的暫停售票開關，同樣按下就生效，不算進「儲存 N 項變更」，按捨棄也不還原</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="tix-tier-popup">單張門票彈窗</h4>
+<p>點一列門票時開啟，單欄不分頁，欄位同建立活動的<a href="event-create-step4.html#fields-ticket">單張門票</a>；沒進編輯模式時整個彈窗只能看。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>票名</td><td>必填</td><td>已售出的票種也可以改名，改名後已售出的票顯示新名稱</td></tr>
+    <tr><td>門票圖片</td><td>選填</td><td>預設沿用活動主視覺，可以換成這張票自己的圖，也可以改回</td></tr>
+    <tr><td>顯示開關</td><td>預設顯示</td><td>隱藏的門票不列在粉絲端活動頁、不能單張購買，仍可當組合包的成員照常售出<br>把最後一張顯示中的門票改成隱藏、而活動沒有仍在販售的組合包時，按「套用」時就先提示，整頁儲存時再檢查一次，不通過就擋下儲存，見<a href="event-create.html#sellable">可賣條件與發布檢核</a><br>隱藏跟暫停售票不同，見<a href="event-create-step4.html#ticket-hide-pause">隱藏與暫停售票的差別</a></td></tr>
+    <tr><td>張數</td><td>必填</td><td>不能低於已售張數</td></tr>
+    <tr><td>票價</td><td>必填</td><td>改的是基準幣別的票價<br>改基準票價時，其他幣別的覆寫全部依新換算值重算，不保留<br>已售出的票種能不能改價、改價影響哪些購買，見<a href="#tix-state-matrix">票種各欄位在各狀態能不能改</a></td></tr>
+    <tr><td>提前入場與早於提前入場時間的處理</td><td>—</td><td>提前入場填的是比該場的提前入場時間再提早幾分鐘<br>粉絲端不顯示，只在掃描器給現場工作人員看，見<a href="event-create-step3.html#sessions-early">誰看得到提前入場</a></td></tr>
+    <tr><td>購買條件</td><td>—</td><td>ztor 自建的活動可以改：預設跟隨活動預設購票規則，也可以改成這張門票自己的一組<br>可以新增、修改、移除條件，條件的種類與規則同建立活動的<a href="event-create-step4.html#purchase-rules">購票規則</a><br>各狀態能不能改，以及只影響之後的購買，見<a href="#tix-state-matrix">票種各欄位在各狀態能不能改</a><br>限時購買與兩種限時折扣的期間要在活動的上架區間內；超出就不能儲存，並在該條件旁說明原因，檢查與建立活動相同，見<a href="event-rules.html#timing">活動的販售時間</a><br>限時購買的結束不能晚於活動停售；限時折扣的期間可以晚於停售，折扣只在這張門票可購買的時間內生效<br>修改購買條件不算高影響變更，儲存時不出現確認，也不通知已購票的粉絲；其他儲存前檢查照常</td></tr>
+    <tr><td>暫停售票開關</td><td>—</td><td>沒進編輯模式時停用；編輯模式下按下就生效，規則見上方的暫停單一門票</td></tr>
+    <tr><td>套用</td><td>編輯模式</td><td>只把改動放進整頁的草稿，按整頁「儲存」才寫入，按捨棄時還原<br>套用後，這張門票的卡片與列表那一列標「已修改」，整頁儲存或捨棄後拿掉</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="tix-add">新增與刪除門票</h4>
+<p>新增門票要先進編輯模式，新增與刪除都併入整頁儲存；各狀態能不能新增、能不能刪，見<a href="#tix-state-matrix">票種各欄位在各狀態能不能改</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>新增門票</td><td>編輯模式<br>bookyay 匯入的活動不出現，見<a href="#tix-bookyay">從 bookyay 帶入時</a></td><td>二選一：以票種建立，或建獨立票，跟建立活動的<a href="event-create-step4.html#tickets-topic">兩種建法</a>相同<br>新增的門票按整頁「儲存」才生效，按捨棄時一併移除<br>建立後兩種不能互相轉換，要換就刪除重建</td></tr>
+    <tr><td>以票種建立</td><td>新增門票時選</td><td>新增一個票種，其他場次跟著長出同名門票<br>欄位定義同<a href="event-create-step4.html#ticket-types">建立與調整票種</a></td></tr>
+    <tr><td>獨立票</td><td>新增門票時選</td><td>只屬於一場、不掛票種，欄位同建立活動的<a href="event-create-step4.html#ticket-standalone">獨立票</a><br>票名必填；入場形式預設實體入場；可以逐張暫停售票<br>建好後列在所屬場次底下，加「獨立票」標籤</td></tr>
+    <tr><td>所屬場次</td><td>選獨立票時出現，必填</td><td>選這張獨立票屬於哪一場</td></tr>
+    <tr><td>刪除票種</td><td>—</td><td>已經有人買的票種不能刪除，並說明「已有 n 位買家持有此票種」<br>未售出的票種只有活動還在已排程時能刪；進入售票中之後，場次、票種與門票（含未售出的）都不能刪除，刪除鈕停用並說明只能暫停售票或隱藏，見<a href="event-rules.html#remove-date">移除場次與門票</a><br>刪除票種或把門票改成隱藏時，受<a href="event-create.html#sellable">可賣條件與發布檢核</a>約束<br>bookyay 帶入的門票不能刪，見<a href="#tix-bookyay">從 bookyay 帶入時</a></td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="tix-evrules">活動預設購票規則</h4>
+<p>活動層的購票條件，跟隨活動預設的門票照這組生效。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>條件列表</td><td>—</td><td>ztor 自建的活動列出建立時設的<a href="event-create-step4.html#purchase-rules">活動預設購票規則</a>全部條件，沒有設任何條件時顯示「目前無設定條件」<br>跟隨活動預設的門票照這組生效</td></tr>
+    <tr><td>新增、修改、移除條件</td><td>編輯模式<br>ztor 自建的活動</td><td>條件的種類與規則同建立活動的購票規則<br>各狀態能不能改，以及只影響之後的購買，見<a href="#tix-state-matrix">票種各欄位在各狀態能不能改</a><br>限時條件的期間檢查與不通知，同上方單張門票彈窗的購買條件</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="tix-bundles">票務商品</h3>
+<p>票務商品是電子商店的組合包，只是成員含本活動的門票；這一段是「含本活動門票的組合包」的篩選視圖，資料跟電子商店的組合包分頁是同一批。票務商品不在本頁編輯，改到<a href="bundles.html">組合包與票務商品</a>頁。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">項目</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>篩選條件</td><td>成員含本活動任一門票（票種門票或獨立票）的組合包都列出<br>不論是從活動內建立，還是直接在電子商店建立</td></tr>
+    <tr><td>數量摘要</td><td>「N 組 · 已售 M 組」，沒有組合包時顯示「無」</td></tr>
+    <tr><td>組合包卡</td><td>一組一張卡，列出：<br>組合價（有多種可能價格時顯示「從 $X 起」，下方另加一行價格區間，見<a href="bundles.html#price">組合包的價格</a>）<br>內含票券（允許的門票任選 × n，允許的門票可以同時有票種與獨立票）<br>內含商品<br>已售／上限<br>每個允許項目各佔用了多少張票<br>上架與開賣是跟隨活動還是另設</td></tr>
+    <tr><td>空狀態</td><td>沒有組合包時說明票務商品是什麼、從哪裡建立，並提供「建立組合包」入口，不隱藏這一段</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>建立組合包</td><td>有組合包時的新增入口與空狀態裡的入口是同一個</td><td>走建立組合流程，自動帶入這場活動：票券成員已選好這場，允許的門票只列這場的門票<br>帶入的活動鎖定，不能改選別場<br>仍可以照常加入商品成員<br>組合包是獨立的商品，建立的規則見<a href="bundles.html#from-detail">從活動詳情建立</a></td></tr>
+    <tr><td>點一張組合包卡</td><td>有組合包時</td><td>票務商品不在活動詳情頁編輯，點組合包卡進組合商品細節頁修改<br>已售出後的鎖定與票價連動，見組合包與票務商品的<a href="bundles.html#unlist">組合包的下架連動與刪除</a>與<a href="bundles.html#price">組合包的價格</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="tix-comp">招待票</h3>
+<p>招待票是 $0 並標 comp 的票，發給表演者、工作人員等；不進淨利分配。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">項目</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>招待票列表</td><td>每張招待票列出：<br>持有人<br>票種<br>金額與標記：一律是 $0 並標 comp</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>核發招待票</td><td>—</td><td>發一張 $0 並標 comp 的票，發的時候選票種<br>不必進編輯模式，發出就生效，不算進「儲存 N 項變更」，按捨棄也不還原</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="tix-resale">轉售</h3>
+<p>轉售目前不提供，這一段只顯示說明，沒有任何操作。</p>
+<ul class="plain">
+  <li>說明寫「Phase 2，本版不提供」</li>
+  <li>說明一直顯示，不論活動是否屬於系列</li>
+</ul>
+<p class="note">依據：5.1.6.3 §2.6、§2.6.1、§2.9.3、§2.12；5.1.6.2 F9、F15；D292、D296、D342、D363、D380、D381、D384、D387、D388、D389、D390、D391、D392、D397、D401、D402。</p>
+
+<h2 id="tix-bookyay"><span class="n"></span>從 bookyay 帶入時</h2>
+<p>bookyay 匯入的活動，門票只來自 bookyay，所以不能新增、不能刪；鎖定的欄位在 bookyay 端修改後自動同步到 ztor，可以在 ztor 改的欄位不被 bookyay 端的修改覆蓋。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">ztor 的欄位</th><th>帶入後的結果</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="2">帶入並鎖定（要改回 bookyay 改）</td></tr>
+    <tr><td>票名</td><td>鎖定</td></tr>
+    <tr><td>張數</td><td>鎖定</td></tr>
+    <tr><td>票價</td><td>鎖定；基準價由港幣原價換算而來</td></tr>
+    <tr><td>購買條件</td><td>唯讀，列出這張門票由 bookyay 帶入的限購、折扣、限時折扣，標 bookyay 帶入<br>沒有門票層條件的門票，顯示跟隨活動預設<br>不能改、不能移除，也不能另加條件</td></tr>
+    <tr><td>活動預設購票規則</td><td>唯讀，只有活動限購，標 bookyay 帶入<br>bookyay 沒有設定活動限購時，檢視模式不顯示說明，跟其他沒有資料的區塊一樣；進了編輯模式才說明這場活動沒有活動限購，區塊仍唯讀</td></tr>
+    <tr><td>提前入場與早於提前入場時間的處理</td><td>每張門票鎖定為跟隨場次，不能改成自訂，標 bookyay 帶入<br>場次的提前入場時間與早於提前入場時間入場由 bookyay 帶入</td></tr>
+    <tr><td>套票拆出的 1 人票的顯示開關</td><td>鎖定為隱藏，不能改回顯示</td></tr>
+    <tr><td>刪除門票</td><td>全部不能刪（含隱藏的 1 人票），不論有沒有賣出，刪除鈕旁說明原因</td></tr>
+    <tr><td>新增門票</td><td>不能新增，票種門票與獨立票都不行，新增入口不出現</td></tr>
+    <tr><td>套票自動建立的組合包</td><td>整組鎖定，不能刪除、不能加入商品成員；名稱、素材與上架、顯示、開賣三個開關可以改，見<a href="bundles.html">組合包與票務商品</a></td></tr>
+    <tr class="grp"><td colspan="2">帶入、可以改</td></tr>
+    <tr><td>門票圖片</td><td>同樣可以改</td></tr>
+    <tr><td>其他門票的顯示開關</td><td>可以切換顯示或隱藏，只影響 ztor 的粉絲端，不改 bookyay 的資料</td></tr>
+  </tbody>
+</table></div>
+<p>bookyay 一側的欄位與轉換規則，見<a href="event-bookyay.html">bookyay 匯入與對照</a>。</p>
+<p class="note">依據：5.1.6.2 F9、F15；5.1.6.3 §2.6；5.1.6.1 F21、F22；D329、D330、D331、D384、D385、D386、D387、D388、D390、D391、D410。</p>
+
+<h2 id="tix-edit-state"><span class="n"></span>編輯狀態</h2>
+<p>票務分頁的編輯開關在工具列右側，與設定、售票與名單兩個分頁是同一個動作；哪些操作要先進編輯模式、怎麼儲存、捨棄與離開，見<a href="event-detail.html">活動詳情</a>。各階段的定義見<a href="event-rules.html#stage">活動的階段</a>。本節寫票務分頁在各狀態看得到什麼（<a href="#tix-state-who">各狀態看得到什麼、能不能編輯</a>）、票種的各欄位能不能改（<a href="#tix-state-matrix">票種各欄位在各狀態能不能改</a>），以及哪些操作不受編輯模式管（<a href="#tix-state-ops">不必進編輯模式的操作</a>）。</p>
+
+<h3 id="tix-state-who">各狀態看得到什麼、能不能編輯</h3>
+<p>草稿不進詳情頁，草稿的門票在建立活動流程的<a href="event-create-step4.html">步驟 4 票種與票務</a>編輯。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:16%">狀態</th><th style="width:34%">看得到</th><th>可編輯</th></tr></thead>
+  <tbody>
+    <tr><td>已排程</td><td>票種、票務商品、招待票、轉售</td><td>可：票種與活動預設購票規則<br>還沒有成交，未售出的門票可以刪</td></tr>
+    <tr><td>售票中</td><td>同已排程</td><td>可<br>場次與門票（含未售出的）不能刪，已售出的票種不能刪</td></tr>
+    <tr><td>進行中</td><td>同已排程</td><td>可，暫沿用售票中的規則，尚待確認</td></tr>
+    <tr><td>已結束</td><td>同已排程</td><td>不可：整頁唯讀，「編輯活動」不出現</td></tr>
+    <tr><td>已取消</td><td>票種、票務商品、招待票<br>轉售是否保留，見頁尾尚待確認</td><td>不可：整頁唯讀，「編輯活動」不出現</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>任一張門票或票務商品開始能買（包括早鳥）就算進入售票中</li>
+  <li>票務商品不論哪個狀態都不在本頁編輯</li>
+</ul>
+
+<h3 id="tix-state-matrix">票種各欄位在各狀態能不能改</h3>
+<p>以下限於 ztor 自建的活動；bookyay 匯入的活動，見<a href="#tix-bookyay">從 bookyay 帶入時</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">項目</th><th colspan="2">已排程、售票中</th><th style="width:16%">進行中</th><th style="width:14%">已結束與已取消</th></tr></thead>
+  <tbody>
+    <tr><td>新增門票</td><td colspan="2">可</td><td>同售票中，尚待確認</td><td>不可</td></tr>
+    <tr><td>刪除未售出的門票</td><td>已排程：可</td><td>售票中：不可，只能暫停售票或隱藏，見<a href="event-rules.html#remove-date">移除場次與門票</a></td><td>同售票中，尚待確認</td><td>不可</td></tr>
+    <tr><td>刪除已售出的票種</td><td colspan="4">任何狀態都不能刪，並說明「已有 n 位買家持有此票種」</td></tr>
+    <tr><td>票名</td><td colspan="2">可；已售出的票種也可以改，已售出的票顯示新名稱</td><td>同售票中，尚待確認</td><td>不可</td></tr>
+    <tr><td>票價</td><td colspan="2">可；已售出的票種也可以改，改價只影響之後的購買，已售出的票與訂單照成交當下的價格</td><td>同售票中，尚待確認</td><td>不可</td></tr>
+    <tr><td>張數</td><td colspan="2">可；不能低於已售張數</td><td>同售票中，尚待確認</td><td>不可</td></tr>
+    <tr><td>門票圖片、顯示開關</td><td colspan="2">可</td><td>同售票中，尚待確認</td><td>不可</td></tr>
+    <tr><td>購買條件、活動預設購票規則</td><td colspan="2">可；改動只影響之後的購買，已售出的票與訂單不變<br>限購改小時，已買超過新上限的粉絲不追回，只是不能再買</td><td>同售票中，尚待確認</td><td>不可</td></tr>
+    <tr><td>最後一張顯示中的門票</td><td colspan="2">不能改成隱藏，也不能刪除，除非活動還有仍在販售的組合包，見<a href="event-create.html#sellable">可賣條件與發布檢核</a></td><td>同售票中，尚待確認</td><td>不可</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="tix-state-ops">不必進編輯模式的操作</h3>
+<p>以下是營運動作，在編輯模式裡照樣能按；已經生效，按捨棄也不會還原。</p>
+<ul class="plain">
+  <li>暫停與恢復單張門票</li>
+  <li>核發招待票</li>
+  <li>卡片與列表檢視切換</li>
+</ul>
+<p class="note">依據：5.1.6.3 §2.6、§2.9.3、§3、§4；5.1.6.2 §2、§3「進行中的編輯」、F9；D361、D381、D388、D389、D391、D392、D413。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.6.3-活動詳情.md</code>（v67）§2.6、§2.6.1、§2.9.3、§2.12、§3、§4；<code>5.1.6.2-編輯活動.md</code>（v3.56）§2、§3、F9、F15；<code>5.1.6.1-建立活動流程.md</code> F21、F22；<code>5.1.5.4-建立組合流程.md</code> §2、F2</li>
+    <li>決策：D190、D292、D296、D306、D329、D330、D331、D342、D361、D363、D380、D381、D384、D385、D386、D387、D388、D389、D390、D391、D392、D397、D401、D402、D410、D413</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>進行中的活動，票種的新增門票、票名、價格與數量、顯示開關、購買條件與活動預設購票規則是否沿用售票中的規則</li>
+    <li>已結束與已取消的活動，暫停或恢復單張門票、核發招待票能不能用</li>
+    <li>已取消的活動是否仍顯示轉售說明</li>
+    <li>票種的「Almost sold out」「Near capacity」是正式狀態，還是只是警示文案</li>
+    <li>門票圖片的尺寸與格式</li>
+    <li>新增或刪除後還沒儲存的門票與活動預設購票規則，是否也加「已修改」這類標記</li>
+    <li>票務商品已售出後，購買條件、限購與另設的上架開賣時間能不能改</li>
+    <li>從活動詳情建立組合包時，預設勾選與張數，以及建立完成或取消後是否回到這場活動的票務分頁（皆為推導）</li>
+    <li>已結束與已取消的活動是否不提供建立組合包入口（推導）</li>
+  </ul>
+  <p class="k">最近同步：2026-10-14（至 D413）</p>
+</details>
+</div>
+</body>
+</html>

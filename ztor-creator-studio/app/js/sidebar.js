@@ -112,7 +112,7 @@
       /* D386 決定三（2026-10-09）：bky-14（順豐示範，已發布成 events-store `hsinchu-vinyl-sf`）對應周湯豪、已設定完成＝已發布 */
       /* D390（2026-10-09，稽核第一節原型第 16 條；ASSUMPTIONS UIA-237）：建立流程帶入閘門的 bky-9／10／13 補進匯入清單、對應給周湯豪
          （預設 persona）＝待設定——建立流程把這三場當成目前創作者的候選，兩邊才一致。 */
-      bookyayPool: ["bky-12", "bky-14", "bky-9", "bky-10", "bky-13"], bookyayEvents: ["bky-12", "bky-14", "bky-9", "bky-10", "bky-13"], bookyaySetup: ["bky-14"], bookyayDrafts: ["bky-12"], lastImportAt: null },
+      bookyayPool: ["bky-12", "bky-14", "bky-9", "bky-10", "bky-13", "bky-16", "bky-17", "bky-18", "bky-19", "bky-20"], bookyayEvents: ["bky-12", "bky-14", "bky-9", "bky-10", "bky-13", "bky-16", "bky-17", "bky-18", "bky-19", "bky-20"], bookyaySetup: ["bky-14", "bky-16", "bky-17", "bky-18", "bky-19", "bky-20"], bookyayDrafts: ["bky-12"], lastImportAt: null },
     { handle: "userB",   name: "User B",             shop: "/shop/userb", status: "active", email: "userb@example.com", phone: "",                 created: "2026-05-30",
       bookyayPool: [], bookyayEvents: [], bookyaySetup: [], lastImportAt: null },
   ];
@@ -141,25 +141,33 @@
   const BOOKYAY_EVENTS = [
     { id: "bky-1", name: "REALIVE World Tour — Taipei", date: "2026-09-12", venue: "台北小巨蛋",               organizer: "嘉立音樂工作室" },
     /* D390（稽核第一節原型第 16 條）：bky-2 的創作者端草稿＝events-store `mirror-khh-draft`（Gary Lin 的活動清單草稿列；三場＝多場次，release2.4 不列） */
-    { id: "bky-2", name: "MIRROR FANMEETING 2026 高雄", date: "2026-10-02", venue: "高雄流行音樂中心 海音館", organizer: "鏡光娛樂製作", slots: 3, draftId: "mirror-khh-draft" },
-    { id: "bky-3", name: "城市草地音樂節 2026",          date: "2026-11-08", venue: "大佳河濱公園",             organizer: "草地派對有限公司" },
-    { id: "bky-4", name: "限量黑膠簽名場 — 台中",        date: "2026-12-06", venue: "Legacy Taichung",          organizer: "綺音工作室" },
+    { id: "bky-2", name: "MIRROR LIVE 2026 高雄", date: "2026-10-02", venue: "高雄流行音樂中心 海音館", organizer: "鏡光娛樂製作", slots: 3, draftId: "mirror-khh-draft" },
+    { id: "bky-3", name: "城市之聲 2026 巡迴演唱會 — 台北站", date: "2026-11-08", venue: "大佳河濱公園",             organizer: "草地派對有限公司" },
+    { id: "bky-4", name: "迴響 限量黑膠巡迴演唱會 — 台中站", date: "2026-12-06", venue: "Legacy Taichung",          organizer: "綺音工作室" },
     { id: "bky-5", name: "冬季特別公演 — 台南",          date: "2027-01-17", venue: "台南文化中心 演藝廳",      organizer: "南風演藝經紀", ship: "pickup" },
     /* D384 決定三（2026-10-09）：補一場重覆活動（create-event BKY 的 bky-11，每週六共 3 場），待對應創作者——
        讓創作者活動管理在 release2.4 三種不支援的原因（多時段 bky-2、重覆 bky-11、到店自取 bky-5）各有一列可看。 */
-    { id: "bky-11", name: "週末聆聽會 — 台北",          date: "2026-11-07", venue: "小白兔唱片行",             organizer: "小白兔唱片", repeat: true },
+    { id: "bky-11", name: "週末巡迴演唱會 — 台北站", date: "2026-11-07", venue: "小白兔唱片行",             organizer: "小白兔唱片", repeat: true },
     /* D374（2026-10-08）：bky-12＝活動清單裡那筆 bookyay 草稿（events-store `khh-countdown-draft`，`bkyId: 'bky-12'`）。
        已對應周湯豪、已存草稿：在活動清單刪掉這份草稿＝解除對應，這一場回到待對應創作者。
        id 從 12 起跳：create-event 的 BKY 已用到 bky-11（bky-6～8 是「已帶過」的示範）。 */
-    { id: "bky-12", name: "Kaohsiung countdown",          date: "2026-12-31", venue: "Kaohsiung Pier-2",          organizer: "港都跨年製作", draftId: "khh-countdown-draft" },
+    { id: "bky-12", name: "Kaohsiung countdown concert",  date: "2026-12-31", venue: "Kaohsiung Pier-2",          organizer: "港都跨年製作", draftId: "khh-countdown-draft" },
     /* D386 決定三（2026-10-09）：bky-14＝順豐運費示範（events-store `hsinchu-vinyl-sf`，已排程；create-event BKY 的已帶過列 bky-14）。
        單一時段、不重覆、取票方式順豐寄送（ship: "sf"）＝release2.4 能帶入，不標「release2.4 不支援」。已對應周湯豪、已發布。 */
-    { id: "bky-14", name: "Vinyl signing night — Hsinchu", date: "2026-12-12", venue: "The Wall Hsinchu",          organizer: "風城唱片", ship: "sf" },
+    { id: "bky-14", name: "Vinyl release concert — Hsinchu", date: "2026-12-12", venue: "The Wall Hsinchu",          organizer: "風城唱片", ship: "sf" },
     /* D390（2026-10-09，稽核第一節原型第 16 條；ASSUMPTIONS UIA-237）：建立流程 BKY 正本裡有、這份投影原本沒有的三場，補齊並對應給周湯豪（待設定）。
        值同 create-event 的 BKY：bky-9 免費入場、bky-10 不設門票（線上）、bky-13 二人套票單一時段。三場都是單一時段、非到店自取＝release2.4 能帶入。 */
-    { id: "bky-9",  name: "社區快閃見面會 — 台北",       date: "2026-11-21", venue: "華山 1914 中 4B",           organizer: "社區音樂推廣協會" },
-    { id: "bky-10", name: "創作者線上分享夜",            date: "2026-12-12", venue: "線上",                     organizer: "ztor 創作者社群" },
+    { id: "bky-9",  name: "社區快閃演唱會 — 台北站", date: "2026-11-21", venue: "華山 1914 中 4B",           organizer: "社區音樂推廣協會" },
+    { id: "bky-10", name: "創作者線上演唱會之夜", date: "2026-12-12", venue: "線上",                     organizer: "ztor 創作者社群" },
     { id: "bky-13", name: "Duo Night — 雙人限定場",       date: "2026-11-28", venue: "Legacy Taipei",            organizer: "傳音娛樂" },
+    /* D414（2026-10-14，使用者「好」）：D410 新增的 5 場 bookyay 演唱會示範活動（events-store 的 nick-*-bky，各帶 bkyId）補進 Admin 創作者活動管理——
+       全部對應周湯豪、已發布（售票中／已下架／進行中／已結束／已取消各一）。id 從 16 起：bky-15 已被 create-event 的「條件全開」示範占用。
+       name＝bookyay 原名（與 ztor 端活動名稱相同）；taoyuan 是進行中場次、日期恆為今天，所以用執行當天。 */
+    { id: "bky-16", name: "NICKTHEREAL LIVE 2026 — Taichung",    date: "2026-11-21", venue: "臺中洲際棒球場",       organizer: "嘉立音樂工作室" },
+    { id: "bky-17", name: "NICKTHEREAL Acoustic Night — Tainan", date: "2026-12-05", venue: "台南文化中心 演藝廳",  organizer: "南風演藝經紀" },
+    { id: "bky-18", name: "NICKTHEREAL LIVE 2026 — Taoyuan",     date: (function () { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); })(), venue: "桃園巨蛋", organizer: "嘉立音樂工作室" },
+    { id: "bky-19", name: "NICKTHEREAL LIVE 2026 — Kaohsiung",   date: "2026-09-26", venue: "高雄流行音樂中心 海音館", organizer: "港都跨年製作" },
+    { id: "bky-20", name: "NICKTHEREAL Summer Live — Pingtung",  date: "2026-08-29", venue: "墾丁大灣沙灘",         organizer: "南風演藝經紀" },
   ];
   /* D372（2026-10-08）：organizer＝bookyay feed 帶來的主辦方名稱，只當 Admin 對應創作者時的參考
      （唯讀、不帶入活動資料）。示範資料：bky-1～3 已對應 Gary Lin，bky-4、bky-5 待對應創作者，bky-12 已對應周湯豪且已存草稿（D374）。
