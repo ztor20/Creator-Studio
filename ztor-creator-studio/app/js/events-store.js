@@ -1792,6 +1792,13 @@
 
   function buildRoster(ev) {
     var n = ev.sold || 0, arrived = ev.arrivedAtOpen || 0, out = [];
+    /* D408：經組合包拿到門票的買家照常進名單，另標購買來源（viaBundle＝組合包名稱）；每個門票分到的組合包張數見 bundleSoldOfTier() */
+    var viaLeft = {};
+    ((ev && ev.bundles) || []).forEach(function (b) {
+      var tk = bundleTickets(b), t = null;
+      (ev.tiers || []).forEach(function (x) { if (x.id === tk.tierIds[0]) t = x; });
+      if (t) (viaLeft[t.name] = viaLeft[t.name] || []).push({ name: b.name, left: (Number(b.sold) || 0) * (tk.qty || 1) });
+    });
     var pickTier = tierPicker(ev);
     var times = arrivalTimes(ev, arrived);
     for (var i = 0; i < n; i++) {
@@ -1803,6 +1810,12 @@
         name: g + ' ' + f,
         tier: pk.name,
         solo: pk.solo,
+        viaBundle: (function () {
+          var q = (viaLeft[pk.name] || []).filter(function (v) { return v.left > 0; })[0];
+          var nth = viaLeft['#' + pk.name] = (viaLeft['#' + pk.name] || 0) + 1;
+          if (!q || (nth % 3) !== 2) return '';        // 同一張門票每 3 位標 1 位，散在名單裡、不全擠在前面
+          q.left--; return q.name;
+        })(),
         code: 'ZT-' + String(4200 + i * 13).slice(-4),
         arrived: i < arrived,
         // 到場時間：見 arrivalTimes()。at＝分（既有消費端用），atSec＝秒（進場頻率圖用）
@@ -1831,7 +1844,7 @@
   function buildTx(ev) {
     var out = [], seq = 0, day = ev.date || '2026-01-01';
     (ev.tiers || []).forEach(function (t, ti) {
-      var left = t.sold || 0;
+      var left = Math.max(0, (t.sold || 0) - bundleSoldOfTier(ev, t.id));   // D408：經組合包賣出的票走組合包訂單，不重複算
       while (left > 0) {
         var qty = (seq % 3 === 0 && left >= 2) ? 2 : 1;      // 每三筆有一筆是兩張
         if (qty > left) qty = left;
@@ -1840,7 +1853,7 @@
         out.push({
           id: 'TX-' + String(10240 + seq * 7).slice(-5),
           buyer: GIVEN[(seq * 3) % GIVEN.length] + ' ' + FAMILY[(seq * 5 + ti) % FAMILY.length],
-          tier: t.name, qty: qty, gross: gross, fee: fee, net: gross - fee,
+          tier: t.name, qty: qty, gross: gross, ticketGross: gross, fee: fee, net: gross - fee,
           method: ['Card', 'Apple Pay', 'LINE Pay'][seq % 3],
           status: 'paid',
           at: day, atMin: (10 * 60 + (seq * 37) % 720)        // 顯示用；原型不接真實時鐘
@@ -1867,6 +1880,48 @@
         });
       }
     }
+    return out;
+  }
+
+  /* 組合包訂單（2026-10-13 · D407）：活動詳情的交易明細也列「含這場活動門票的組合包」訂單。
+     另起一支、不併進 buildTx()——撤銷全部與撤銷紀錄只處理門票（組合包到訂單詳情撤銷）；
+     D408 起收入、持票人數與購票通知由各消費端自己合併兩支（event-detail 的 edRevTotals()、本檔 holdersOf()）。
+     產生規則同 buildTx：決定性、每 1–2 組一筆；金額＝組合售價 × 組數〔推導〕；kind:'bundle' 供頁面分流。 */
+  /* D408（2026-10-13）：門票的 sold 含經組合包賣出的票（5.1.6.3 §2.6「隱藏的票照常作為組合包成員售出並計入售出進度」）。
+     示範口徑：每組扣允許清單第一張門票 × 每組張數〔推導〕。直接買票的訂單、名單的購買來源都靠它拆。 */
+  function bundleSoldOfTier(ev, tierId) {
+    return ((ev && ev.bundles) || []).reduce(function (n, b) {
+      var tk = bundleTickets(b);
+      return n + (tk.tierIds[0] === tierId ? (Number(b.sold) || 0) * (tk.qty || 1) : 0);
+    }, 0);
+  }
+  /* D408：組合包金額裡屬於門票的部分〔推導〕＝組合售價 × 門票原價 ÷ 成員原價合計（門票取允許清單第一張）。 */
+  function bundleTicketShare(ev, b) {
+    var tk = bundleTickets(b), t = null;
+    ((ev && ev.tiers) || []).forEach(function (x) { if (x.id === tk.tierIds[0]) t = x; });
+    var tix = t ? effAmount(priceOf(ev, t)) * (tk.qty || 1) : 0;
+    var goods = (b.products || []).reduce(function (n, p) { return n + (Number(p.price) || 0) * (Number(p.qty) || 1); }, 0);
+    return tix + goods > 0 ? tix / (tix + goods) : 1;
+  }
+  function buildBundleTx(ev) {
+    var out = [], seq = 0, day = ev.date || '2026-01-01';
+    (ev.bundles || []).forEach(function (b, bi) {
+      if (!bundleTickets(b).tierIds.length) return;
+      var left = Number(b.sold) || 0, share = bundleTicketShare(ev, b);
+      while (left > 0) {
+        var qty = (seq % 4 === 1 && left >= 2) ? 2 : 1;
+        var gross = (Number(b.price) || 0) * qty;
+        var fee = Math.round(gross * 0.10);
+        out.push({
+          id: 'TX-B' + String(3100 + seq * 13).slice(-4), kind: 'bundle', orderId: 'ZT-10489',   // 原型的訂單 mock 與活動沒有串接，一律連到含票務組合包的示例訂單（ASSUMPTIONS UIA-250）
+          buyer: GIVEN[(seq * 7 + 2) % GIVEN.length] + ' ' + FAMILY[(seq * 3 + bi) % FAMILY.length],
+          tier: b.name, qty: qty, tickets: qty * (bundleTickets(b).qty || 1), ticketGross: Math.round(gross * share), gross: gross, fee: fee, net: gross - fee,
+          method: ['Apple Pay', 'Card', 'LINE Pay'][seq % 3],
+          status: 'paid', at: day, atMin: (10 * 60 + (seq * 151 + 700) % 720)
+        });
+        left -= qty; seq++;
+      }
+    });
     return out;
   }
 
@@ -2309,7 +2364,9 @@
        高影響確認的「會通知 N 位持票人」用它。原型的買家名是從小名單池決定性生成的、會重名，不能拿來去重——
        以有效（已付款、未撤銷）訂單筆數當持票人數，一筆訂單＝一位買家（呈現假設，ASSUMPTIONS UIA-238）。 */
     holdersOf: function (id) {
-      return window.ztorEvents.transactions(id).filter(function (t) { return t.status === 'paid'; }).length;
+      /* D408：經組合包拿到門票的買家也是持票人，組合包訂單一筆＝一位 */
+      return window.ztorEvents.transactions(id).concat(window.ztorEvents.bundleTransactions(id))
+        .filter(function (t) { return t.status === 'paid'; }).length;
     },
     changeNotices: function (id) { return (noticeMap()[id] || []).slice(); },
     logChangeNotice: function (id, rec) {
@@ -2400,6 +2457,13 @@
         if (t.status === 'paid' && ((i * 37) % 100) < rate * 100) t.checkedIn = true;
       });
       return out;
+    },
+    /* D407：含這場活動門票的組合包訂單，階段條件同 transactions() */
+    bundleTicketShare: bundleTicketShare,
+    bundleTransactions: function (id) {
+      var ev = window.ztorEvents.get(id);
+      if (!ev || ['on-sale', 'live', 'ended', 'cancelled'].indexOf(ev.status) < 0) return [];
+      return buildBundleTx(ev);
     },
     /* 最終報到統計（2026-08-13）：現場報到台只在進行中出現，活動結束後那張報到快照卡
        仍要回答「這場最後到了多少人」——結束後還顯示「開演當天才開放」是錯的。

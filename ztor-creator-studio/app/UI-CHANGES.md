@@ -13,6 +13,22 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-13（二百二十）· 活動詳情收入含組合包、另列門票收入，名單標組合包買家（A spec）
+
+**標籤**：release2.4
+
+**範圍**：`event-detail.html`（新增 `edRevTotals()`：售票卡的活動收入改為門票＋組合包，副標改「門票收入（含組合包內的門票）」；收支的毛額含組合包、新增「門票收入」一列、收入事件表每個組合包一列；名單票種旁加 `viaTag`「組合包」徽章）、`js/events-store.js`（`bundleSoldOfTier()`：直接買票的訂單扣掉經組合包賣出的票；`bundleTicketShare()`：組合包訂單帶 `ticketGross`；`buildRoster()` 標 `viaBundle`）、`js/i18n.js`（`event-detail.rev.tickets`、`event-detail.fin.tickets`；`event-detail.tx.col.qty` 中文改「數量」）。
+
+**依據**：D408、5.1.6.3 v63。見 ASSUMPTIONS UIA-251。
+
+## 2026-10-13（二百一十九）· 活動詳情交易明細加列組合包訂單（A spec）
+
+**標籤**：release2.4
+
+**範圍**：`event-detail.html`（`renderTx()`／`initTx()`：新增 `txBundle`，表格與摘要合併門票與組合包訂單；組合包列的品項格加「組合包」標籤、操作欄改放「查看訂單」連到訂單詳情；表頭「票種」改「品項」）、`js/events-store.js`（新增 `buildBundleTx()` 與 `bundleTransactions()`，不併進 `transactions()`）、`js/i18n.js`（`event-detail.tx.col.tier` 改「品項」，新增 `tx.bundle`、`tx.vieworder`、`tx.vieworder.why`）。
+
+**依據**：D407、5.1.6.3 v62 §2.7。撤銷全部、撤銷紀錄、收支與持票人數仍只讀門票訂單，組合包金額是否計入活動收入待確認。見 ASSUMPTIONS UIA-250。
+
 ## 2026-10-12（二百一十八）· 組合包編輯器「組合物」區塊：bookyay 帶入的兩句鎖定說明刪除，改掛標題列右邊的「bookyay 帶入」標籤（B feedback）
 
 **標籤**：release2.4

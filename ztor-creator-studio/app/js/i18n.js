@@ -4248,8 +4248,13 @@
     'event-detail.tx.col.actions': { en: 'Actions', zh: '動作' },
     'event-detail.tx.col.order':  { en: 'Order',                zh: '訂單' },
     'event-detail.tx.col.buyer':  { en: 'Buyer',                zh: '買家' },
-    'event-detail.tx.col.tier':   { en: 'Tier',                 zh: '票種' },
-    'event-detail.tx.col.qty':    { en: 'Qty',                  zh: '張數' },
+    'event-detail.tx.col.tier':   { en: 'Item',                 zh: '品項' },   // D407：門票與組合包訂單同表，由「票種」改名
+    'event-detail.tx.bundle':     { en: 'Bundle',               zh: '組合包' },
+    'event-detail.rev.tickets':   { en: 'Ticket revenue {v} (incl. tickets in bundles)', zh: '門票收入 {v}（含組合包內的門票）' },   // D408
+    'event-detail.fin.tickets':   { en: 'Ticket revenue (incl. tickets in bundles)', zh: '門票收入（含組合包內的門票）' },
+    'event-detail.tx.vieworder':  { en: 'View order',           zh: '查看訂單' },
+    'event-detail.tx.vieworder.why': { en: 'Bundle orders are voided from the order page', zh: '組合包訂單在訂單詳情撤銷' },
+    'event-detail.tx.col.qty':    { en: 'Qty',                  zh: '數量' },
     'event-detail.tx.col.gross':  { en: 'Gross',                zh: '金額' },
     'event-detail.tx.col.fee':    { en: 'Fee',                  zh: '平台費' },
     'event-detail.tx.col.net':    { en: 'Net',                  zh: '淨額' },
