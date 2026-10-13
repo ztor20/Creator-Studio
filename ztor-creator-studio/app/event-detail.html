@@ -302,7 +302,7 @@
                     <div class="stat">
                       <div class="stat__label" data-i18n="event-detail.kpi.revenue">Event revenue</div>
                       <div class="stat__value" id="ed-sales-rev">—</div>
-                      <div class="stat__meta" data-i18n="event-detail.kpi.revenue-meta">Earnings figure · not recomputed</div>
+                      <div class="stat__meta" id="ed-sales-rev-meta" data-i18n="event-detail.kpi.revenue-meta">Earnings figure · not recomputed</div>
                     </div>
                   </div>
                 </section>
@@ -1636,7 +1636,7 @@
                 <tr>
                   <th data-i18n="event-detail.tx.col.order">Order</th>
                   <th data-i18n="event-detail.tx.col.buyer">Buyer</th>
-                  <th data-i18n="event-detail.tx.col.tier">Tier</th>
+                  <th data-i18n="event-detail.tx.col.tier">Item</th>
                   <th data-i18n="event-detail.tx.col.qty">Qty</th>
                   <th data-i18n="event-detail.tx.col.gross">Gross</th>
                   <th data-i18n="event-detail.tx.col.fee">Fee</th>
@@ -1924,6 +1924,7 @@
             <tbody id="ed-fin-body"></tbody>
           </table>
         </section>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.tickets">Ticket revenue (incl. tickets in bundles)</span></div><span id="ed-fin-tickets">—</span></div>
         </div>
         <div class="empty-card empty-card--framed" id="ed-fin-empty" hidden>
           <span class="empty-card__icon"><i data-lucide="receipt" class="ztor-icon"></i></span>
@@ -2470,7 +2471,7 @@
     /* 分母＝本活動所有門票的張數合計（含隱藏的門票；D340 上游刪除容量後的口徑，5.1.6.3 §2.3、events-store totalQty()）。 */
     const qtySum = window.ztorEvents && window.ztorEvents.totalQty ? window.ztorEvents.totalQty(ev) : (ev.tiers || []).reduce((a, t) => a + (Number(t.qty) || 0), 0);
     if (kpiVal('sold')) kpiVal('sold').textContent = fmtNum(ev.sold) + ' / ' + fmtNum(qtySum || ev.sold);
-    if (kpiVal('revenue')) kpiVal('revenue').textContent = '$' + fmtNum(ev.revenue);
+    if (kpiVal('revenue')) kpiVal('revenue').textContent = '$' + fmtNum(edRevTotals().total || ev.revenue);   // D408：含組合包
     /* 「Across 3 tiers」是寫死的示例值——這場只有 2 個票種，數字要跟著資料走 */
     const soldMeta = document.querySelector('[data-kpi="sold"] .kpi__meta');
     if (soldMeta) {
@@ -2585,6 +2586,8 @@
     if (!r || !r.arrived) return;
     openConfirm({
       title: T('event-detail.att.undo.title', 'Mark as not arrived?'),
+  /* D408：經組合包拿到門票的買家照常進名單，票種旁標「組合包」，滑過看是哪一組 */
+  const viaTag = r => r && r.viaBundle ? ' <span class="badge badge--neutral" title="' + String(r.viaBundle).replace(/"/g, '&quot;') + '"><span>' + T('event-detail.tx.bundle', 'Bundle') + '</span></span>' : '';
       body: '<p>' + T('event-detail.att.undo.body', 'Only for fixing a mistaken scan. {name}’s ticket {code} goes back to not arrived and can be scanned again.')
         .replace('{name}', r.name).replace('{code}', r.code) + '</p>',
       okLabel: T('event-detail.att.undo.ok', 'Mark not arrived'),
@@ -2617,7 +2620,7 @@
       const tr = document.createElement('tr');
       tr.className = 'ztor-table__row' + (r.isNew ? ' ed-att-row--new' : '');
       tr.innerHTML =
-        '<td>' + r.name + '</td><td>' + r.tier + soloTag(r) + '</td><td><code>' + r.code + '</code></td>' +
+        '<td>' + r.name + '</td><td>' + r.tier + soloTag(r) + viaTag(r) + '</td><td><code>' + r.code + '</code></td>' +
         '<td>' + (r.arrived
           ? '<span class="badge badge--success"><span>' + T('event-detail.live.arrived', 'Arrived') + '</span></span>' +
             (canUndo ? ' <button type="button" class="btn btn--ghost btn--xs" data-view-safe data-att-undo="' + r.seq + '">' + T('event-detail.att.undo', 'Mark not arrived') + '</button>' : '')
@@ -3285,7 +3288,10 @@
   });
 
   /* ── 交易明細 ─────────────────────────────────────────────── */
-  let txAll = [], txFilter = 'all';
+  /* D407（2026-10-13）：txBundle＝含這場活動門票的組合包訂單，只進交易明細的表格與摘要；
+     txAll 維持只有門票訂單——撤銷全部、撤銷紀錄、收支與持票人數都讀 txAll，
+     組合包金額是否計入活動收入還待確認（5.1.6.3 §2.7）。 */
+  let txAll = [], txBundle = [], txFilter = 'all';
   const money = n => '$' + fmtNum(n);
   /* 2026-09-09（D253）：狀態 'refunded' 全面改成 'voided'——顯示徽章沿用 orders 模組
      已定案的用詞「Cancelled／已取消」＋ badge--error（見 order-detail.html 的
@@ -3294,8 +3300,10 @@
   function renderTx() {
     const body = $('#ed-tx-body');
     if (!body) return;
-    const paid = txAll.filter(t => t.status === 'paid');
-    const voided = txAll.filter(t => t.status === 'voided');
+    /* 兩種訂單照下單時間交錯排（新的在上），組合包訂單才不會全擠在表尾、被 50 列上限截掉 */
+    const txList = txAll.concat(txBundle).sort((x, y) => (y.atMin || 0) - (x.atMin || 0));
+    const paid = txList.filter(t => t.status === 'paid');
+    const voided = txList.filter(t => t.status === 'voided');
     const gross = paid.reduce((a, t) => a + t.gross, 0);
     const fee = paid.reduce((a, t) => a + t.fee, 0);
     $('#ed-tx-gross').textContent = money(gross);
@@ -3304,11 +3312,11 @@
     $('#ed-tx-fee').textContent = '−' + money(fee);
     $('#ed-tx-net').textContent = money(gross - fee);
     $('#ed-tx-cancelled').textContent = fmtNum(voided.length);
-    document.querySelector('[data-tx-count="all"]').textContent = txAll.length;
+    document.querySelector('[data-tx-count="all"]').textContent = txList.length;
     document.querySelector('[data-tx-count="paid"]').textContent = paid.length;
     document.querySelector('[data-tx-count="voided"]').textContent = voided.length;
 
-    const list = txFilter === 'all' ? txAll : txAll.filter(t => t.status === txFilter);
+    const list = txFilter === 'all' ? txList : txList.filter(t => t.status === txFilter);
     const CAP = 50;
     body.innerHTML = '';
     list.slice(0, CAP).forEach(t => {
@@ -3335,6 +3343,19 @@
         '<td>' + (t.status === 'paid'
           ? '<span class="badge badge--success"><span>' + T('event-detail.tx.paid', 'Paid') + '</span></span>'
           : '<span class="badge badge--error"><span>' + T('event-detail.tx.cancelledbadge', 'Cancelled') + '</span></span>') + '</td>' +
+      /* D407：組合包訂單列——品項格加「組合包」標籤；撤銷在電子商店的訂單詳情做，本列改放「查看訂單」連過去 */
+      if (t.kind === 'bundle') {
+        tr.innerHTML =
+          '<td><code>' + t.id + '</code></td><td>' + t.buyer + '</td>' +
+          '<td>' + t.tier + ' <span class="badge badge--neutral"><span>' + T('event-detail.tx.bundle', 'Bundle') + '</span></span></td>' +
+          '<td>' + t.qty + '</td><td>' + money(t.gross) + '</td><td class="text-sub">−' + money(t.fee) + '</td>' +
+          '<td>' + money(t.net) + '</td><td class="text-sub">' + t.method + '</td>' +
+          '<td><span class="badge badge--success"><span>' + T('event-detail.tx.paid', 'Paid') + '</span></span></td>' +
+          '<td><a class="btn btn--outline btn--sm" data-view-safe href="order-detail.html?id=' + t.orderId + '" title="' +
+          T('event-detail.tx.vieworder.why', 'Bundle orders are voided from the order page') + '">' + T('event-detail.tx.vieworder', 'View order') + '</a></td>';
+        body.appendChild(tr);
+        return;
+      }
         '<td>' + (canVoid
           ? '<button class="btn btn--soft btn--destructive btn--sm" type="button" data-view-safe data-ed-void-tx="' + t.id + '"' + voidAttrs + '>' + T('event-detail.tx.void', 'Void') + '</button>'
           : '—') + '</td>';
@@ -3351,12 +3372,13 @@
   function initTx() {
     txAll = window.ztorEvents.transactions(ev.id);
     /* D392 補充：沒有交易（已排程還沒開賣，或開賣了還沒人買）→ 空狀態；開賣前與開賣後說明不同 */
-    const txEmpty = !txAll.length;
+    const txEmpty = !txAll.length && !txBundle.length;
     const txHas = document.getElementById('ed-tx-has'), txEm = document.getElementById('ed-tx-empty');
     if (txHas) txHas.hidden = txEmpty;
     if (txEm) txEm.hidden = !txEmpty;
     const txEmSub = document.getElementById('ed-tx-empty-sub');
     if (txEmSub) {
+    txBundle = window.ztorEvents.bundleTransactions ? window.ztorEvents.bundleTransactions(ev.id) : [];
       const k = edPreSale() ? 'event-detail.tx.empty.sub.pre' : 'event-detail.tx.empty.sub';
       txEmSub.setAttribute('data-i18n', k);
       txEmSub.textContent = T(k, edPreSale() ? 'Sales haven’t opened yet. Every paid order shows up here once they do.' : 'Every paid order shows up here.');
@@ -3390,10 +3412,10 @@
     const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c =>
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-    const paid = txAll.filter(t => t.status === 'paid');
+    /* D408：收支含組合包訂單（整組金額），另列門票收入（含組合包內的門票）；撤銷筆數仍只看門票 */
     const voided = txAll.filter(t => t.status === 'voided');
-    const gross = paid.reduce((a, t) => a + t.gross, 0);
-    const fee = paid.reduce((a, t) => a + t.fee, 0);
+    const rv = edRevTotals();
+    const gross = rv.total, fee = rv.fee;
     setVal('ed-fin-gross', money(gross));
     setVal('ed-fin-fee', '−' + money(fee));
     setVal('ed-fin-net', money(gross - fee));
@@ -3402,6 +3424,7 @@
     if (!tiers.length || !(ev.sold || 0)) {
       body.innerHTML = '';
       if (wrap) wrap.hidden = true;
+    setVal('ed-fin-tickets', money(rv.tickets));
       if (empty) empty.hidden = false;
       return;
     }
@@ -3410,7 +3433,8 @@
     const settledBadge = '<span class="badge badge--success"><span data-i18n="event-detail.fin.st.settled">' +
       T('event-detail.fin.st.settled', 'Settled') + '</span></span>';
     const rows = tiers.filter(t => (Number(t.sold) || 0) > 0).map((t, i) => {
-      const amt = window.ztorEvents.effAmount(window.ztorEvents.priceOf(ev, t)) * (Number(t.sold) || 0);   // D331：粉絲實付價（基準欄覆寫優先）
+      /* D331：粉絲實付價（基準欄覆寫優先）；D408：只算直接買票的部分，經組合包賣出的另列在組合包那一行 */
+      const amt = txAll.filter(x => x.status === 'paid' && x.tier === t.name).reduce((a, x) => a + x.gross, 0);
       return '<tr class="ztor-table__row"><td><code>rev_' + esc(t.id || ('tier' + i)) + '</code></td>' +
         '<td>' + esc(t.name) + '</td><td>' + money(amt) + '</td><td>cfg-2026.02</td>' +
         '<td>' + settledBadge + '</td></tr>';
@@ -3422,6 +3446,11 @@
     body.innerHTML = rows.join('');
   }
 
+    Object.entries(txBundle.filter(x => x.status === 'paid').reduce((m, x) => { m[x.tier] = (m[x.tier] || 0) + x.gross; return m; }, {})).forEach(([name, amt], i) => {
+      rows.push('<tr class="ztor-table__row"><td><code>rev_bundle' + (i + 1) + '</code></td>' +
+        '<td>' + esc(name) + ' <span class="badge badge--neutral"><span>' + esc(T('event-detail.tx.bundle', 'Bundle')) + '</span></span></td><td>' + money(amt) + '</td><td>cfg-2026.02</td>' +
+        '<td>' + settledBadge + '</td></tr>');
+    });
   /* ── 作廢紀錄（§2.9.2，2026-09-09 由「退款」改寫，D253）───────────────
      位置不動（D191 掛在同一個分頁槽），內容從「退款彙總卡」換成逐筆作廢紀錄表格
      ——票券編號／原持票人／票種／作廢時間／作廢者，資料就是 txAll 裡 status
@@ -6256,6 +6285,19 @@
             : '<span class="stock-bar"><span class="stock-bar__fill" style="width:' + (withProgress ? p : 100) + '%"></span></span>' +
               '<span class="meter-list__num' + (hot ? ' meter-list__num--hot' : '') + '">' + num + '</span>') +
         '</div>';
+  /* D408（2026-10-13）：活動收入的兩個加總，交易明細、售票卡與收支三處共用同一份算式。
+     total＝門票訂單＋組合包訂單（整組，含組合包裡的商品）；tickets＝門票訂單＋組合包裡門票的部分（ticketGross，store 依原價比例拆〔推導〕）。 */
+  function edRevTotals() {
+    const S = window.ztorEvents;
+    const all = S.transactions(ev.id).concat(S.bundleTransactions ? S.bundleTransactions(ev.id) : []).filter(t => t.status === 'paid');
+    return {
+      total: all.reduce((a, t) => a + t.gross, 0),
+      tickets: all.reduce((a, t) => a + (t.ticketGross != null ? t.ticketGross : t.gross), 0),
+      fee: all.reduce((a, t) => a + t.fee, 0)
+    };
+  }
+  const edTixRevText = v => T('event-detail.rev.tickets', 'Ticket revenue {v} (incl. tickets in bundles)').replace('{v}', '$' + fmtNum(v));
+
     }).join('');
   }
 
@@ -6269,7 +6311,11 @@
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.innerHTML = v; };
     set('ed-sales-sold', fmtNum(sold) + '<span class="stat__of"> / ' + fmtNum(qty) + '</span>');
     set('ed-sales-pct', p + '%');
-    set('ed-sales-rev', '$' + fmtNum(ev.revenue || 0));
+    /* D408：活動收入改用交易加總（門票＋組合包），副標寫門票收入（含組合包內的門票）；沒有交易的階段沿用 ev.revenue */
+    const rv = edRevTotals();
+    set('ed-sales-rev', '$' + fmtNum(rv.total || ev.revenue || 0));
+    const revMeta = document.getElementById('ed-sales-rev-meta');
+    if (revMeta && rv.total) { revMeta.removeAttribute('data-i18n'); revMeta.textContent = edTixRevText(rv.tickets); }
     /* 墓碑 2026-08-18（使用者指示刪除）：卡頭原本有一顆「離售罄還差 N 張」徽章。
        每一列右端已經各自寫著「剩 N」，總數在上面那格 KPI 的「已售 / 可售」裡也讀得出來。
        i18n `event-detail.sales.tosellout` 保留未用。 */
@@ -6953,9 +6999,9 @@
     if (!on) return;
     const ci = window.ztorEvents.checkinSummary(ev.id);
     const txs = window.ztorEvents.transactions(ev.id);
-    const tx = txs.filter(t => t.status === 'paid');
-    const gross = tx.reduce((a, t) => a + t.gross, 0);
-    const fee = tx.reduce((a, t) => a + t.fee, 0);
+    /* D408：結案卡的毛額與平台費含組合包訂單，跟售票卡、交易明細、收支同一份算式 */
+    const rvw = edRevTotals();
+    const gross = rvw.total, fee = rvw.fee;
     /* 撤銷等於沒賣出（使用者 2026-10-12 裁決）：store 的 sold 本來就不含作廢票（見 buildTx 註解），
        所以到場率與未到場的分母不用再扣；已撤銷張數只作為對帳資訊列在收入卡。 */
     const voidedQty = txs.filter(t => t.status === 'voided').reduce((a, t) => a + (t.qty || 0), 0);
@@ -7089,7 +7135,7 @@
               (r.scans > 1 ? ' <span class="text-sub" style="font-size: var(--fs-12)">' + T('event-detail.att.scans', '{n} scans').replace('{n}', r.scans) + '</span>' : '')
             : '<span class="badge"><span>' + T('event-detail.att.state.notscanned', 'Not scanned') + '</span></span>')
         : '—';
-      return '<tr class="ztor-table__row"><td>' + esc(r.name) + '</td><td>' + esc(r.tier) + soloTag(r) + '</td>' +
+      return '<tr class="ztor-table__row"><td>' + esc(r.name) + '</td><td>' + esc(r.tier) + soloTag(r) + viaTag(r) + '</td>' +
         '<td><code>' + esc(r.code) + '</code></td><td data-att-col-state>' + state + '</td></tr>';
     }).join('');
     if (note) {
@@ -7179,7 +7225,9 @@
         });
       }
     });
-    const paid = window.ztorEvents.transactions(ev.id).filter(t => t.status === 'paid').length;
+    /* D408：組合包訂單也會寄購票成功通知，一筆訂單一封 */
+    const paid = window.ztorEvents.transactions(ev.id).concat(window.ztorEvents.bundleTransactions ? window.ztorEvents.bundleTransactions(ev.id) : [])
+      .filter(t => t.status === 'paid').length;
     const set = (id, txt) => { const el = $(id); if (el) el.textContent = txt; };
     set('#ed-notif-log-purchase', paid
       ? T('event-detail.notif.log.purchase.n', '{n} sent · one per paid order').replace('{n}', fmtNum(paid))
