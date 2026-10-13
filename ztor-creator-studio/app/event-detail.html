@@ -34,6 +34,7 @@
 <link rel="stylesheet" href="ds-components/field-source-tag.css?v=r2.2"><!-- D335／F21：bookyay 帶入者的描述掛「bookyay 帶入」來源標記 -->
 <link rel="stylesheet" href="ds-components/rich-body.css?v=r2.2"><!-- D354：描述區塊編輯器（文字／圖片／影片區塊，可排序） -->
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/date-range.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
 <!-- 2026-08-11：開放入場與建立流程同步（分鐘欄＋早到政策＋從屬縮排）跟著進來 -->
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
@@ -119,6 +120,7 @@
   /* 票務列表檢視（2026-08-11）：名稱格帶一張小縮圖。門票沒有自己的圖時跟著活動主視覺
      （與建立流程同一條規則），縮圖沿用全站直式比例縮小。 */
   .ed-tixrow__name { display: inline-flex; align-items: center; gap: var(--sp-8); }
+  .ed-tixrow__text { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }   /* 名稱＋灰色小字（門票種類）上下兩行 */
   .ed-tixrow__thumb { width: 28px; height: 42px; object-fit: cover; border-radius: var(--radius); flex: none; }
 
   /* 場次一場一盒（2026-08-11，與建立流程同節奏）：盒內列距由 flex gap 統一發。 */
@@ -1628,6 +1630,14 @@
           <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tx-filter="paid"><span data-i18n="event-detail.tx.f.paid">Paid</span><span class="filter-tabs__count" data-tx-count="paid">0</span></button>
           <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tx-filter="voided"><span data-i18n="event-detail.tx.f.cancelled">Cancelled</span><span class="filter-tabs__count" data-tx-count="voided">0</span></button>
         </nav>
+        <!-- D411（5.1.6.3 §2.7）：訂單日期（起）／（訖），可只填一邊，與子集篩選同時成立；匯出照篩選結果。共用 date-range（同訂單管理） -->
+        <div class="date-range mt-16" data-feat="O35" data-tx-dates>
+          <span class="date-range__label" data-i18n="orders.filter.date">Order date</span>
+          <span class="date-range__field"><input class="input" type="date" data-tx-date-from data-view-safe aria-label="Order date (from)" data-i18n-aria-label="orders.filter.date.from"></span>
+          <span class="date-range__sep">–</span>
+          <span class="date-range__field"><input class="input" type="date" data-tx-date-to data-view-safe aria-label="Order date (to)" data-i18n-aria-label="orders.filter.date.to"></span>
+          <button class="btn btn--ghost btn--xs date-range__clear" type="button" data-tx-date-clear data-view-safe hidden data-i18n="orders.filter.date.clear">Clear dates</button>
+        </div>
 
         <section class="card mt-16" style="padding:0;overflow:hidden">
           <div style="overflow-x:auto">
@@ -1642,6 +1652,7 @@
                   <th data-i18n="event-detail.tx.col.fee">Fee</th>
                   <th data-i18n="event-detail.tx.col.net">Net</th>
                   <th data-i18n="event-detail.tx.col.method">Method</th>
+                  <th data-i18n="event-detail.tx.col.paidat">Paid at</th>
                   <th data-i18n="event-detail.tx.col.status">Status</th>
                   <th data-i18n="event-detail.tx.col.actions">Actions</th>
                 </tr>
@@ -1653,7 +1664,7 @@
         <p class="text-sub" style="font-size: var(--fs-12);margin-top:10px" id="ed-tx-note">—</p>
 
         <div class="flex-row mt-16" style="gap:8px">
-          <button class="btn btn--outline" type="button" data-i18n="event-detail.tx.export">Export transactions</button>
+          <button class="btn btn--outline" type="button" data-tx-export data-view-safe data-i18n="event-detail.tx.export">Export transactions</button>
         </div>
         </div><!-- /#ed-tx-has -->
           </div>
@@ -1924,7 +1935,6 @@
             <tbody id="ed-fin-body"></tbody>
           </table>
         </section>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.tickets">Ticket revenue (incl. tickets in bundles)</span></div><span id="ed-fin-tickets">—</span></div>
         </div>
         <div class="empty-card empty-card--framed" id="ed-fin-empty" hidden>
           <span class="empty-card__icon"><i data-lucide="receipt" class="ztor-icon"></i></span>
@@ -1936,6 +1946,7 @@
             <div class="card__head"><h3 class="card__title" data-i18n="event-detail.fin.summary.title">Summary</h3></div>
             <div class="data-list">
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.gross">Gross</span></div><span id="ed-fin-gross">—</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.tickets">Ticket revenue (incl. tickets in bundles)</span></div><span id="ed-fin-tickets">—</span></div>
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.fee">Platform fee</span></div><span id="ed-fin-fee">—</span></div>
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.net">Net to you</span></div><span id="ed-fin-net">—</span></div>
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.cancelled">Cancelled</span></div><span id="ed-fin-cancelled">—</span></div>
@@ -2551,7 +2562,22 @@
   /* ── 現場報到台 ───────────────────────────────────────── */
   let roster = [], arrived = 0, timer = null, recent = [];
 
+  /* D410 決定三（2026-10-13，5.1.6.3 §2.3）：bookyay 活動的已報到來自 bookyay 掃描回傳；還沒收到入場紀錄時，
+     每個顯示已報到數字的地方（本台、名單的報到統計與篩選計數、各票種到場、進場頻率、結案卡）都寫「暫無資料」，不寫 0。 */
+  function ciNoData() { return !!(window.ztorEvents && window.ztorEvents.checkinNoData && window.ztorEvents.checkinNoData(ev)); }
+  const noDataTxt = () => T('event-detail.checkin.nodata', 'No data yet');
+
   function paintLive() {
+    if (ciNoData()) {
+      $('#ed-live-arrived').textContent = noDataTxt();
+      $('#ed-live-of').textContent = '';
+      $('#ed-live-fill').style.width = '0%';
+      $('#ed-live-missing').textContent = '—';
+      $('#ed-live-rate').textContent = T('event-detail.checkin.nodata.hint', 'Check-ins appear once bookyay sends its scan records.');
+      renderLiveTiers();
+      paintRoster();
+      return;
+    }
     const sold = ev.sold || 0;
     const missing = sold - arrived;
     const pct = sold ? Math.round(arrived / sold * 100) : 0;
@@ -2579,6 +2605,8 @@
   let attFilter = 'all';
   /* 名單上的獨立票（D390 決定二十七，5.1.6.3 §2.8）：票名後加「獨立票」標籤（同票務分頁的標籤） */
   const soloTag = r => r && r.solo ? ' <span class="badge badge--neutral">' + T('ed.tix.standalone', 'Standalone') + '</span>' : '';
+  /* D408：經組合包拿到門票的買家照常進名單，票種旁標「組合包」，滑過看是哪一組 */
+  const viaTag = r => r && r.viaBundle ? ' <span class="badge badge--neutral" title="' + String(r.viaBundle).replace(/"/g, '&quot;') + '"><span>' + T('event-detail.tx.bundle', 'Bundle') + '</span></span>' : '';
   document.addEventListener('click', e => {
     const b = e.target.closest && e.target.closest('[data-att-undo]');
     if (!b) return;
@@ -2586,8 +2614,6 @@
     if (!r || !r.arrived) return;
     openConfirm({
       title: T('event-detail.att.undo.title', 'Mark as not arrived?'),
-  /* D408：經組合包拿到門票的買家照常進名單，票種旁標「組合包」，滑過看是哪一組 */
-  const viaTag = r => r && r.viaBundle ? ' <span class="badge badge--neutral" title="' + String(r.viaBundle).replace(/"/g, '&quot;') + '"><span>' + T('event-detail.tx.bundle', 'Bundle') + '</span></span>' : '';
       body: '<p>' + T('event-detail.att.undo.body', 'Only for fixing a mistaken scan. {name}’s ticket {code} goes back to not arrived and can be scanned again.')
         .replace('{name}', r.name).replace('{code}', r.code) + '</p>',
       okLabel: T('event-detail.att.undo.ok', 'Mark not arrived'),
@@ -2616,20 +2642,21 @@
     /* 已報到可更正為未報到（D390 決定十四，5.1.6 F5「報到狀態」、5.1.6.3 §2.8）：只為更正誤掃、由創作者操作——已報到的列多一顆「改回未報到」，
        按下先確認。bookyay 匯入的活動名單唯讀（入場由 bookyay 掃票），不給這顆。 */
     const canUndo = !isBky();
+    const nd = ciNoData();   // D410：還沒收到 bookyay 入場紀錄——報到欄與篩選計數寫暫無資料／—，不寫「未到場」
     list.slice(0, CAP).forEach(r => {
       const tr = document.createElement('tr');
       tr.className = 'ztor-table__row' + (r.isNew ? ' ed-att-row--new' : '');
       tr.innerHTML =
         '<td>' + r.name + '</td><td>' + r.tier + soloTag(r) + viaTag(r) + '</td><td><code>' + r.code + '</code></td>' +
-        '<td>' + (r.arrived
+        '<td>' + (nd ? '<span class="text-sub">' + noDataTxt() + '</span>' : r.arrived
           ? '<span class="badge badge--success"><span>' + T('event-detail.live.arrived', 'Arrived') + '</span></span>' +
             (canUndo ? ' <button type="button" class="btn btn--ghost btn--xs" data-view-safe data-att-undo="' + r.seq + '">' + T('event-detail.att.undo', 'Mark not arrived') + '</button>' : '')
           : '<span class="badge"><span>' + T('event-detail.live.notarrived', 'Not arrived') + '</span></span>') + '</td>';
       body.appendChild(tr);
     });
     document.querySelector('[data-att-count="all"]').textContent = roster.length;
-    document.querySelector('[data-att-count="arrived"]').textContent = roster.filter(r => r.arrived).length;
-    document.querySelector('[data-att-count="missing"]').textContent = roster.filter(r => !r.arrived).length;
+    document.querySelector('[data-att-count="arrived"]').textContent = nd ? '—' : roster.filter(r => r.arrived).length;
+    document.querySelector('[data-att-count="missing"]').textContent = nd ? '—' : roster.filter(r => !r.arrived).length;
     const note = $('#ed-live-roster-note');
     if (note) note.textContent = list.length > CAP
       ? T('event-detail.live.more', 'Showing {n} of {m} — use the scanner or export for the full list').replace('{n}', CAP).replace('{m}', list.length)
@@ -3301,17 +3328,27 @@
     const body = $('#ed-tx-body');
     if (!body) return;
     /* 兩種訂單照下單時間交錯排（新的在上），組合包訂單才不會全擠在表尾、被 50 列上限截掉 */
-    const txList = txAll.concat(txBundle).sort((x, y) => (y.atMin || 0) - (x.atMin || 0));
+    /* D411：新的在上改看付款時間（paidAt＝下單日期＋時刻）；訂單日期區間與子集篩選同時成立。
+       上方交易摘要（毛額／平台費／淨額／已取消）維持整場合計、不跟日期區間變——它要與 KPI 快照、收支摘要一致（§2.7）；
+       日期區間只收斂子集計數與表格（UIA-253）。 */
+    const txFrom = (document.querySelector('[data-tx-date-from]') || {}).value || '';
+    const txTo = (document.querySelector('[data-tx-date-to]') || {}).value || '';
+    const txEvery = txAll.concat(txBundle);
+    const txList = txEvery
+      .filter(t => (!txFrom || (t.orderDate || '') >= txFrom) && (!txTo || (t.orderDate || '') <= txTo))
+      /* 依下單日期與時間由新到舊（D414：免費訂單沒有付款時間，不能用付款時間排序，否則全部沉到最後被 50 列上限截掉） */
+      .sort((x, y) => String(y.orderDate || '').localeCompare(String(x.orderDate || '')) || (y.atMin || 0) - (x.atMin || 0));
+    const paidAll = txEvery.filter(t => t.status === 'paid');
     const paid = txList.filter(t => t.status === 'paid');
     const voided = txList.filter(t => t.status === 'voided');
-    const gross = paid.reduce((a, t) => a + t.gross, 0);
-    const fee = paid.reduce((a, t) => a + t.fee, 0);
+    const gross = paidAll.reduce((a, t) => a + t.gross, 0);
+    const fee = paidAll.reduce((a, t) => a + t.fee, 0);
     $('#ed-tx-gross').textContent = money(gross);
     $('#ed-tx-orders').textContent = T('event-detail.tx.orders', '{n} orders · {q} tickets')
-      .replace('{n}', fmtNum(paid.length)).replace('{q}', fmtNum(paid.reduce((a, t) => a + t.qty, 0)));
+      .replace('{n}', fmtNum(paidAll.length)).replace('{q}', fmtNum(paidAll.reduce((a, t) => a + (t.kind === 'bundle' ? t.tickets : t.qty), 0)));
     $('#ed-tx-fee').textContent = '−' + money(fee);
     $('#ed-tx-net').textContent = money(gross - fee);
-    $('#ed-tx-cancelled').textContent = fmtNum(voided.length);
+    $('#ed-tx-cancelled').textContent = fmtNum(txEvery.filter(t => t.status === 'voided').length);
     document.querySelector('[data-tx-count="all"]').textContent = txList.length;
     document.querySelector('[data-tx-count="paid"]').textContent = paid.length;
     document.querySelector('[data-tx-count="voided"]').textContent = voided.length;
@@ -3336,26 +3373,35 @@
         ? ' disabled aria-disabled="true" title="' + T('event-detail.void.why.redeemed', "Already checked in — can't be voided") + '"'
         : edAdminScope() ? '' :
         ' disabled aria-disabled="true" title="' + T('event-detail.void.why.admin', 'Only an Admin can void. Contact an Admin.') + '"';   /* D371 決定二：創作者在平台外聯繫 Admin */
-      tr.innerHTML =
-        '<td><code>' + t.id + '</code></td><td>' + t.buyer + '</td><td>' + t.tier + '</td>' +
-        '<td>' + t.qty + '</td><td>' + money(t.gross) + '</td><td class="text-sub">−' + money(t.fee) + '</td>' +
-        '<td>' + money(t.net) + '</td><td class="text-sub">' + t.method + '</td>' +
-        '<td>' + (t.status === 'paid'
-          ? '<span class="badge badge--success"><span>' + T('event-detail.tx.paid', 'Paid') + '</span></span>'
-          : '<span class="badge badge--error"><span>' + T('event-detail.tx.cancelledbadge', 'Cancelled') + '</span></span>') + '</td>' +
       /* D407：組合包訂單列——品項格加「組合包」標籤；撤銷在電子商店的訂單詳情做，本列改放「查看訂單」連過去 */
+      /* D411（5.1.6.3 §2.7）：每一列都能打開電子商店的訂單詳情（門票訂單共用同一頁）——訂單欄改寫訂單編號並連過去，
+         帶 from=event&ev= 讓訂單詳情的返回回到這場活動的交易明細。付款時間另起一欄。 */
+      const odHref = 'order-detail.html?id=' + encodeURIComponent(t.orderId || '') + '&from=event&ev=' + encodeURIComponent(ev.id);
+      const orderCell = t.orderId
+        ? '<td><a class="card__link" data-view-safe href="' + odHref + '"><code>#' + t.orderId + '</code></a></td>'
+        : '<td><code>' + t.id + '</code></td>';
+      const paidCell = '<td class="text-sub">' + (t.paidAt || '—') + '</td>';
       if (t.kind === 'bundle') {
         tr.innerHTML =
-          '<td><code>' + t.id + '</code></td><td>' + t.buyer + '</td>' +
+          orderCell + '<td>' + t.buyer + '</td>' +
           '<td>' + t.tier + ' <span class="badge badge--neutral"><span>' + T('event-detail.tx.bundle', 'Bundle') + '</span></span></td>' +
           '<td>' + t.qty + '</td><td>' + money(t.gross) + '</td><td class="text-sub">−' + money(t.fee) + '</td>' +
-          '<td>' + money(t.net) + '</td><td class="text-sub">' + t.method + '</td>' +
-          '<td><span class="badge badge--success"><span>' + T('event-detail.tx.paid', 'Paid') + '</span></span></td>' +
-          '<td><a class="btn btn--outline btn--sm" data-view-safe href="order-detail.html?id=' + t.orderId + '" title="' +
+          '<td>' + money(t.net) + '</td><td class="text-sub">' + t.method + '</td>' + paidCell +
+          '<td>' + (t.status === 'paid'
+            ? '<span class="badge badge--success"><span>' + T('event-detail.tx.paid', 'Paid') + '</span></span>'
+            : '<span class="badge badge--error"><span>' + T('event-detail.tx.cancelledbadge', 'Cancelled') + '</span></span>') + '</td>' +
+          '<td><a class="btn btn--outline btn--sm" data-view-safe href="' + odHref + '" title="' +
           T('event-detail.tx.vieworder.why', 'Bundle orders are voided from the order page') + '">' + T('event-detail.tx.vieworder', 'View order') + '</a></td>';
         body.appendChild(tr);
         return;
       }
+      tr.innerHTML =
+        orderCell + '<td>' + t.buyer + '</td><td>' + t.tier + '</td>' +
+        '<td>' + t.qty + '</td><td>' + money(t.gross) + '</td><td class="text-sub">−' + money(t.fee) + '</td>' +
+        '<td>' + money(t.net) + '</td><td class="text-sub">' + t.method + '</td>' + paidCell +
+        '<td>' + (t.status === 'paid'
+          ? '<span class="badge badge--success"><span>' + T('event-detail.tx.paid', 'Paid') + '</span></span>'
+          : '<span class="badge badge--error"><span>' + T('event-detail.tx.cancelledbadge', 'Cancelled') + '</span></span>') + '</td>' +
         '<td>' + (canVoid
           ? '<button class="btn btn--soft btn--destructive btn--sm" type="button" data-view-safe data-ed-void-tx="' + t.id + '"' + voidAttrs + '>' + T('event-detail.tx.void', 'Void') + '</button>'
           : '—') + '</td>';
@@ -3371,6 +3417,7 @@
   }
   function initTx() {
     txAll = window.ztorEvents.transactions(ev.id);
+    txBundle = window.ztorEvents.bundleTransactions ? window.ztorEvents.bundleTransactions(ev.id) : [];
     /* D392 補充：沒有交易（已排程還沒開賣，或開賣了還沒人買）→ 空狀態；開賣前與開賣後說明不同 */
     const txEmpty = !txAll.length && !txBundle.length;
     const txHas = document.getElementById('ed-tx-has'), txEm = document.getElementById('ed-tx-empty');
@@ -3378,7 +3425,6 @@
     if (txEm) txEm.hidden = !txEmpty;
     const txEmSub = document.getElementById('ed-tx-empty-sub');
     if (txEmSub) {
-    txBundle = window.ztorEvents.bundleTransactions ? window.ztorEvents.bundleTransactions(ev.id) : [];
       const k = edPreSale() ? 'event-detail.tx.empty.sub.pre' : 'event-detail.tx.empty.sub';
       txEmSub.setAttribute('data-i18n', k);
       txEmSub.textContent = T(k, edPreSale() ? 'Sales haven’t opened yet. Every paid order shows up here once they do.' : 'Every paid order shows up here.');
@@ -3392,6 +3438,22 @@
       });
       renderTx();
     }));
+    /* D411：訂單日期區間——改任一格就重畫（摘要、計數、表格一起照篩選後的結果）；清除鈕兩格都空時收起 */
+    const txF = document.querySelector('[data-tx-date-from]'), txT = document.querySelector('[data-tx-date-to]');
+    const txClr = document.querySelector('[data-tx-date-clear]');
+    const syncTxClr = () => { if (txClr) txClr.hidden = !((txF && txF.value) || (txT && txT.value)); };
+    [txF, txT].forEach(el => el && ['input', 'change'].forEach(n => el.addEventListener(n, () => { syncTxClr(); renderTx(); })));
+    if (txClr) txClr.addEventListener('click', () => {
+      [txF, txT].forEach(el => { if (el) { el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true })); } });
+      syncTxClr(); renderTx();
+    });
+    /* 匯出照目前篩選結果（D411）：原型不產檔，只回報筆數 */
+    const txExp = document.querySelector('[data-tx-export]');
+    if (txExp) txExp.addEventListener('click', () => {
+      const n = (document.querySelectorAll('#ed-tx-body tr') || []).length;
+      const all = Number((document.querySelector('[data-tx-count="' + txFilter + '"]') || {}).textContent) || n;
+      if (window.ztorToast) window.ztorToast.show(T('event-detail.tx.export.toast', 'Exporting {n} orders that match your filters').replace('{n}', all));
+    });
     renderTx();
     /* 切換 Role · 身分（Admin 代管 ↔ 創作者本人）時重畫，撤銷鈕的停用狀態跟著變（D282，2026-10-05） */
     document.addEventListener('ztor:creator-changed', () => renderTx());
@@ -3417,6 +3479,7 @@
     const rv = edRevTotals();
     const gross = rv.total, fee = rv.fee;
     setVal('ed-fin-gross', money(gross));
+    setVal('ed-fin-tickets', money(rv.tickets));
     setVal('ed-fin-fee', '−' + money(fee));
     setVal('ed-fin-net', money(gross - fee));
     setVal('ed-fin-cancelled', fmtNum(voided.length));
@@ -3424,7 +3487,6 @@
     if (!tiers.length || !(ev.sold || 0)) {
       body.innerHTML = '';
       if (wrap) wrap.hidden = true;
-    setVal('ed-fin-tickets', money(rv.tickets));
       if (empty) empty.hidden = false;
       return;
     }
@@ -3439,6 +3501,11 @@
         '<td>' + esc(t.name) + '</td><td>' + money(amt) + '</td><td>cfg-2026.02</td>' +
         '<td>' + settledBadge + '</td></tr>';
     });
+    Object.entries(txBundle.filter(x => x.status === 'paid').reduce((m, x) => { m[x.tier] = (m[x.tier] || 0) + x.gross; return m; }, {})).forEach(([name, amt], i) => {
+      rows.push('<tr class="ztor-table__row"><td><code>rev_bundle' + (i + 1) + '</code></td>' +
+        '<td>' + esc(name) + ' <span class="badge badge--neutral"><span>' + esc(T('event-detail.tx.bundle', 'Bundle')) + '</span></span></td><td>' + money(amt) + '</td><td>cfg-2026.02</td>' +
+        '<td>' + settledBadge + '</td></tr>');
+    });
     if (fee > 0) {
       rows.push('<tr class="ztor-table__row"><td><code>fee_' + esc(ev.id) + '</code></td>' +
         '<td>' + esc(T('event-detail.tx.fee', 'Platform fee')) + '</td><td>−' + money(fee) + '</td><td>—</td><td>—</td></tr>');
@@ -3446,11 +3513,6 @@
     body.innerHTML = rows.join('');
   }
 
-    Object.entries(txBundle.filter(x => x.status === 'paid').reduce((m, x) => { m[x.tier] = (m[x.tier] || 0) + x.gross; return m; }, {})).forEach(([name, amt], i) => {
-      rows.push('<tr class="ztor-table__row"><td><code>rev_bundle' + (i + 1) + '</code></td>' +
-        '<td>' + esc(name) + ' <span class="badge badge--neutral"><span>' + esc(T('event-detail.tx.bundle', 'Bundle')) + '</span></span></td><td>' + money(amt) + '</td><td>cfg-2026.02</td>' +
-        '<td>' + settledBadge + '</td></tr>');
-    });
   /* ── 作廢紀錄（§2.9.2，2026-09-09 由「退款」改寫，D253）───────────────
      位置不動（D191 掛在同一個分頁槽），內容從「退款彙總卡」換成逐筆作廢紀錄表格
      ——票券編號／原持票人／票種／作廢時間／作廢者，資料就是 txAll 裡 status
@@ -4934,7 +4996,7 @@
         '</div>';
       /* 一張票都沒有時，新增卡是唯一的入口，接在空狀態後面（沒有 grid 可以塞） */
       const addEmpty = document.getElementById('ed-tier-add');
-      if (addEmpty) { list.appendChild(addEmpty); addEmpty.hidden = stageRO() || !edEditing(); }
+      if (addEmpty) { list.appendChild(addEmpty); addEmpty.hidden = tixAddOff(); }
       if (window.ztorIcons) window.ztorIcons.applyIcons(list);
       return;
     }
@@ -4994,11 +5056,15 @@
       stagedRemoved().map(t => cardHTML(t, true)).join('') + '</div>';
     if (addTile) {
       list.querySelector('.tier-grid').appendChild(addTile);
-      addTile.hidden = stageRO() || !edEditing();   // 2026-10-10：檢視態不出現；D361 決定三：已結束、已取消整頁唯讀，不能再新增門票（D390 稽核第一節原型第 1 條）
+      addTile.hidden = tixAddOff();   // 2026-10-10：檢視態不出現；D361 決定三：已結束、已取消整頁唯讀，不能再新增門票（D390 稽核第一節原型第 1 條）；D410：bookyay 活動不出現
     }
     if (window.ztorIcons) window.ztorIcons.applyIcons(list);
     regateFeat();   // 新畫的「隱藏」徽章（S92／S55）照版本收起
   }
+
+  /* 新增門票卡要不要出現（2026-10-13 D410 決定一，5.1.6.3 §2.6）：bookyay 匯入的活動門票只來自 bookyay，
+     票種門票與獨立票都不能另外新增——入口整個不出現（隱藏，不是停用）；其餘照舊（檢視態、已結束／已取消整頁唯讀時不出現）。 */
+  function tixAddOff() { return stageRO() || !edEditing() || isBky(); }
 
   /* 點卡開彈窗（2026-09-22 D311：單欄區塊＋計算列表）。系列子場唯讀——共用設定在母頁改。 */
   const tmEl = id => document.getElementById(id);
@@ -5633,7 +5699,7 @@
   });
 
   document.getElementById('ed-tier-add')?.addEventListener('click', () => {
-    if (tmRO()) return;   // 2026-10-10：新增卡在檢視態已收起，這裡再擋一次
+    if (tmRO() || isBky()) return;   // 2026-10-10：新增卡在檢視態已收起，這裡再擋一次；D410：bookyay 活動不能另外新增門票
     /* D381：新票先不進 edTiers——按儲存才加入（見 ed-tm-save），取消就丟掉 */
     const t = { id: 'tier-new-' + Date.now(), name: '', price: 0, qty: 0, sold: 0, earlyMin: '' };
     tmNew = true;
@@ -5657,9 +5723,13 @@
       return '<tr' + (removed ? ' class="staged-remove" data-ed-tier-removed="' + esc(t.id) + '"' : '') + '>' +
         '<td><span class="ed-tixrow__name">' +
           (tierImgOf(t) ? '<img class="ed-tixrow__thumb" src="' + esc(tierImgOf(t)) + '" alt="">' : '') +   // D384
+          /* 2026-10-13 使用者：名稱下加灰色小字寫門票種類（票種門票／獨立票），取代名稱後的「獨立票」徽章；獨立票的所屬場次接在小字後 */
+          '<span class="ed-tixrow__text"><span>' +
           (removed ? '<span class="staged-remove__strike">' + esc(t.name || '—') + '</span>' : esc(t.name || '—')) +
-          (soloSessText(t) ? ' · ' + esc(soloSessText(t)) : '') + (removed ? '' : ' ' + stagedBadge(t)) + soloBadge(t) +
+          (removed ? '' : ' ' + stagedBadge(t)) +
           (t.hidden ? ' <span class="badge badge--neutral" data-feat="' + ((t.hideFix || (ev && ev.source === 'bookyay')) ? 'S92' : 'S55') + '">' + esc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '') +   // D390 稽核原型第 17 條
+          '</span><span class="ztor-table__sub">' + esc(isSoloTier(t) ? T('ed.tix.standalone', 'Standalone') : T('ed.tix.kind.type', 'Ticket-type ticket')) +
+          (soloSessText(t) ? ' · ' + esc(soloSessText(t)) : '') + '</span></span>' +
           '</span></td>' +
         '<td>' + fmtNum(stock) + '</td>' +
         '<td>' + (resv ? fmtNum(resv) : '0') + '</td>' +
@@ -5725,7 +5795,7 @@
     document.getElementById('ed-tier-table').hidden = tixView !== 'list';
     // 新增門票是編輯行為，跟著卡片檢視走；列表是營運視角
     const add = document.getElementById('ed-tier-add');
-    if (add) add.hidden = tixView !== 'cards' || stageRO() || !edEditing();
+    if (add) add.hidden = tixView !== 'cards' || tixAddOff();
     refreshTix();
   });
 
@@ -5942,9 +6012,10 @@
     /* 順序照票種設定，不照 roster 出現順序——票種表的順序是創作者自己排的 */
     const order = (ev.tiers || []).map(t => t.name).filter(n => per[n]);
     Object.keys(per).forEach(n => { if (order.indexOf(n) < 0) order.push(n); });
+    const nd = ciNoData();   // D410：還沒收到 bookyay 入場紀錄——到場數寫暫無資料、量條留空
     box.innerHTML = order.map(name => {
       const t = per[name];
-      const pct = t.sold ? Math.round(t.arrived / t.sold * 100) : 0;
+      const pct = t.sold && !nd ? Math.round(t.arrived / t.sold * 100) : 0;
       const left = t.sold - t.arrived;
       /* 每一列掛活動主視覺（2026-08-17 使用者指示「每一項都需要有圖片」）：同一場活動的
          每一種票長的就是同一張臉，那正是粉絲票夾裡看到的東西。畫法與售票進度那張卡一致。 */
@@ -5956,13 +6027,13 @@
            兩種說法，分成左右兩欄要眼睛走兩趟才配得起來。
            第二行是「還有幾位沒到」——接下來要處理的事，與上面那組事實不同性質。 */
         '<span class="meter-list__meter">' +
-          '<span class="meter-list__num"><b>' + fmtNum(t.arrived) + '</b> / ' + fmtNum(t.sold) + '</span>' +
+          '<span class="meter-list__num">' + (nd ? esc(noDataTxt()) : '<b>' + fmtNum(t.arrived) + '</b>') + ' / ' + fmtNum(t.sold) + '</span>' +
           '<span class="stock-bar"><span class="stock-bar__fill" style="width:' + pct + '%"></span></span>' +
         '</span>' +
         /* 「還有幾位沒到」自成最右一欄（2026-08-17 使用者指示）：它跟左邊那組數字是
            兩種性質——一個是既成事實，一個是接下來要處理的事。 */
         '<span class="meter-list__left">' +
-          esc(T('event-detail.live.tierleft', '{n} to come').replace('{n}', fmtNum(left))) +
+          (nd ? '—' : esc(T('event-detail.live.tierleft', '{n} to come').replace('{n}', fmtNum(left)))) +
         '</span>' +
       '</div>';
     }).join('');
@@ -5990,7 +6061,7 @@
       .forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
     const times = (roster || []).filter(r => r.arrived && r.atSec != null)
       .map(r => r.atSec).sort((a, b) => a - b);
-    if (!times.length) { svg.innerHTML = ''; clear(); if (note) note.textContent = ''; return; }
+    if (!times.length) { svg.innerHTML = ''; clear(); if (note) note.textContent = ciNoData() ? noDataTxt() : ''; return; }
 
     const STEP = RHYTHM_STEPS[rhythmStep] || 300;
     const from = Math.floor(times[0] / STEP) * STEP;
@@ -6285,6 +6356,9 @@
             : '<span class="stock-bar"><span class="stock-bar__fill" style="width:' + (withProgress ? p : 100) + '%"></span></span>' +
               '<span class="meter-list__num' + (hot ? ' meter-list__num--hot' : '') + '">' + num + '</span>') +
         '</div>';
+    }).join('');
+  }
+
   /* D408（2026-10-13）：活動收入的兩個加總，交易明細、售票卡與收支三處共用同一份算式。
      total＝門票訂單＋組合包訂單（整組，含組合包裡的商品）；tickets＝門票訂單＋組合包裡門票的部分（ticketGross，store 依原價比例拆〔推導〕）。 */
   function edRevTotals() {
@@ -6297,9 +6371,6 @@
     };
   }
   const edTixRevText = v => T('event-detail.rev.tickets', 'Ticket revenue {v} (incl. tickets in bundles)').replace('{v}', '$' + fmtNum(v));
-
-    }).join('');
-  }
 
   function renderSales() {
     const card = document.getElementById('ed-sales');
@@ -7025,7 +7096,16 @@
       incomeCard.classList.toggle('bento--span-5', showAtt);
       incomeCard.classList.toggle('bento--span-12', !showAtt);
     }
-    if (showAtt) {
+    if (showAtt && ci.noData) {
+      /* D410：bookyay 還沒回傳入場紀錄——已使用寫暫無資料，衍生的未入場／重複掃描／無效 QR 都寫 — */
+      set('#ed-wrap-att', noDataTxt());
+      set('#ed-wrap-att-meta', T('event-detail.checkin.nodata.hint', 'Check-ins appear once bookyay sends its scan records.'));
+      set('#ed-wrap-noshow', '—');
+      const bar0 = $('#ed-wrap-att-bar');
+      if (bar0) bar0.style.width = '0%';
+      set('#ed-wrap-dup', '—');
+      set('#ed-wrap-invalid', '—');
+    } else if (showAtt) {
       set('#ed-wrap-att', fmtNum(ci.valid) + ' / ' + fmtNum(ci.sold));
       set('#ed-wrap-att-meta', T('event-detail.wrap.rate', '{n}% of tickets sold').replace('{n}', ci.rate));
       set('#ed-wrap-noshow', fmtNum(ci.sold - ci.valid));
@@ -7061,11 +7141,11 @@
     const fillLegend = card => {
       if (!card || !ci) return;
       const vals = card.querySelectorAll('.kpi .kpi__value');
-      if (vals[0]) vals[0].textContent = fmtNum(ci.valid);
-      if (vals[1]) vals[1].textContent = fmtNum(ci.sold - ci.valid);   // 未掃描＝實際售出 − 已掃描（撤銷票不在 sold 裡）
+      if (vals[0]) vals[0].textContent = ci.noData ? noDataTxt() : fmtNum(ci.valid);   // D410：bookyay 還沒回傳＝暫無資料
+      if (vals[1]) vals[1].textContent = ci.noData ? '—' : fmtNum(ci.sold - ci.valid);   // 未掃描＝實際售出 − 已掃描（撤銷票不在 sold 裡）
       const dup = card.querySelector('[data-scan-dup]');
       if (dup) {
-        dup.hidden = !ci.used;
+        dup.hidden = !ci.used || !!ci.noData;
         dup.textContent = T('event-detail.checkin.dupmeta', 'Includes {n} repeat scans').replace('{n}', fmtNum(ci.used));
       }
     };
@@ -7128,8 +7208,9 @@
     const ended = ev.status === 'ended';
     const list = window.ztorEvents.roster(ev.id);
     const CAP = 40;
+    const nd = ended && ciNoData();   // D410：bookyay 還沒回傳入場紀錄
     body.innerHTML = list.slice(0, CAP).map(r => {
-      const state = ended
+      const state = nd ? '<span class="text-sub">' + esc(noDataTxt()) + '</span>' : ended
         ? (r.arrived
             ? '<span class="badge badge--success"><span>' + T('event-detail.att.state.valid', 'Scanned') + '</span></span>' +
               (r.scans > 1 ? ' <span class="text-sub" style="font-size: var(--fs-12)">' + T('event-detail.att.scans', '{n} scans').replace('{n}', r.scans) + '</span>' : '')
@@ -7166,9 +7247,12 @@
     $('#ed-room-entry').textContent = !prices.length || !hi
       ? T('ce.tier.free', 'Free')
       : (lo === hi ? money0(hi) : money0(lo) + ' – ' + money0(hi));
-    $('#ed-room-seats').textContent = room.capacity
-      ? T('event-detail.room.seats.n', '{n} viewers').replace('{n}', fmtNum(room.capacity))
-      : '—';
+    /* D410 示範資料補齊 F16 後：建立流程選「不限人數」（capMode unlimited）照實寫「不限人數」，不再是 — */
+    $('#ed-room-seats').textContent = room.capMode === 'unlimited'
+      ? T('ce.wp.cap.unlimited', 'No limit')
+      : room.capacity
+        ? T('event-detail.room.seats.n', '{n} viewers').replace('{n}', fmtNum(room.capacity))
+        : '—';
     $('#ed-room-chat').textContent = room.chat === false
       ? T('event-detail.room.chat.off', 'Off') : T('event-detail.room.chat.on', 'On');
     const copy = $('#ed-room-copy');
@@ -7310,6 +7394,12 @@
     });
   }
   markFirstSections();
+  /* D411：從訂單詳情返回（?sec=tx#sales）＝停在售票與名單的交易明細那一節 */
+  (function () {
+    const sec = new URLSearchParams(location.search).get('sec');
+    const root = document.querySelector('[data-nav="sales"]');
+    if (sec && root && root.querySelector('[data-nav-panel="' + sec + '"]')) { root.dataset.navCur = sec; syncNavSections(); }
+  })();
   /* 活動清單的「編輯」（5.1.6.2 §2 第 2 項，D390 稽核第一節原型第 14 條）：帶 ?edit=1 進來＝直接進入編輯模式、停在「設定」分頁。
      已結束、已取消整頁唯讀，清單本來就不給這個入口；直接改網址進來也只開檢視模式。 */
   if (new URLSearchParams(location.search).get('edit') === '1' && !stageClosed()) {

@@ -3260,6 +3260,8 @@
   /* 一場一組：組內是那一場實際會賣的幾張門票，末格是「這一場新增一張票」。
      一場一張的活動只有一組，不顯示組標題——「第 1 場」這種標題對單場是廢話。
      卡片完全沿用 tierCardHTML，門票不是另一種卡。 */
+  /* D410：這一場是不是 bookyay 帶入的（bkyOn 宣告在後段，包 try 避開 TDZ；同 followLocked 的寫法） */
+  const bkyImportOn = () => { try { return !!bkyOn; } catch (e) { return false; } };
   function sessTiersHTML() {
     const many = series.list.length > 1;
     return series.list.map((ss, i) =>
@@ -3280,8 +3282,11 @@
            要多一種賣法就從既有的票分票出去，不是在這裡憑空多一張。 */
         /* 2026-10-09 D390 決定八（修訂上段 2026-08-09 的「bookyay 帶入時整個不出現」）：bookyay 活動在建立流程也能新增門票，
            與活動詳情一致；新增的票不是 bookyay 帶入的票（價格、張數可改），只有入場照 D386 鎖定跟隨場次（entryLocked）。 */
+        /* 2026-10-13 D410 決定一（取代上段 D390 決定八）：bookyay 匯入的活動門票只來自 bookyay，票種門票與獨立票都不能另外新增——
+           新增格對 bookyay 活動整個不出現（隱藏，不是停用），與活動詳情一致。 */
         '<div class="tier-grid">' + tiersOf(ss.id).map(tierCardHTML).join("") +
-          ('<button type="button" class="upload-tile tier-add" data-tier-add="' + esc(ss.id) + '">' +
+          (bkyImportOn() ? "" :
+            '<button type="button" class="upload-tile tier-add" data-tier-add="' + esc(ss.id) + '">' +
               '<span class="upload-tile__icon"><i data-lucide="ticket" class="ztor-icon"></i></span>' +
               '<span class="upload-tile__title">' + esc(dT(tiersOf(ss.id).length ? "d.manual" : "d.manual.first")) + '</span>' +
               '<span class="upload-tile__hint">' + esc(dT("d.manual.hint")) + '</span>' +
@@ -5634,7 +5639,7 @@
 
   document.addEventListener("click", e => {
     const add = e.target.closest("[data-tier-add]");
-    if (!add) return;   // D390 決定八：bookyay 活動同樣可新增（原本 fromBky() 直接擋）
+    if (!add || bkyImportOn()) return;   // D410 決定一：bookyay 活動不能另外新增門票（取代 D390 決定八）
     const ss = series.list.find(x => x.id === add.dataset.tierAdd);
     if (!ss) return;
     if (!tiers.length) { openTixStart(ss); return; }
@@ -5875,12 +5880,14 @@
       ],
       slots: [{ startD: "2026-09-12", startT: "19:30", endD: "2026-09-12", endT: "22:00", earlyEntryInMin: 60, earlyMode: "warn",
                 cap: 100, types: [0, 1, 2] }] },
-    { id: "bky-2", type: "meet",
-      label: "MIRROR FANMEETING 2026",
+    /* 2026-10-13 D410 決定四（示範資料）：release2.4 只開放演唱會，候選清單裡原本是見面會、音樂節、發表會的條目一律改成演唱會；
+       對應到站上示範活動的三筆（bky-2、bky-12、bky-14）名稱一起改，其餘只改類型、名稱不動。 */
+    { id: "bky-2", type: "concert",
+      label: "MIRROR LIVE 2026",
       note:  "2026/10/02–10/04 · 高雄流行音樂中心（三場）",
-      name: "MIRROR FANMEETING 2026 高雄",
+      name: "MIRROR LIVE 2026 高雄",
       intros: [
-        "<p>三天三場的粉絲見面會，每一場都有各自的主題單元與抽選互動；購票即參加抽選，中選者上台合影。</p>",
+        "<p>三天三場的演唱會，每一場都有各自的主題歌單與抽選互動；購票即參加抽選，中選者上台合影。</p>",
         "<p>抽選結果於每場開演前 1 小時公布在官方帳號，中選者請於開演前 30 分鐘到海音館 1 樓大廳報到。</p><p><img src=\"images/ip/a-lin.webp\" alt=\"\"></p>"
       ],
       country: "TW", langs: ["yue", "cmn"],
@@ -5908,11 +5915,11 @@
         { startD: "2026-10-03", startT: "19:00", endD: "2026-10-03", endT: "21:30", earlyEntryInMin: 60, earlyMode: "block", cap: 200, types: [0] },
         { startD: "2026-10-04", startT: "19:00", endD: "2026-10-04", endT: "21:30", earlyEntryInMin: 60, earlyMode: "block", cap: 200, types: [0] }
       ] },
-    { id: "bky-3", type: "festival",
-      label: "城市草地音樂節 2026",
+    { id: "bky-3", type: "concert",
+      label: "城市之聲 2026 巡迴演唱會 — 台北站",
       note:  "2026/11/08–11/09 · 大佳河濱公園（跨夜）",
-      name: "城市草地音樂節 2026",
-      intros: ["<p>從午後唱到深夜的戶外音樂節，兩座舞台輪番演出，草地自由入座，現場有市集與餐飲攤位。</p>"],
+      name: "城市之聲 2026 巡迴演唱會 — 台北站",
+      intros: ["<p>從午後唱到深夜的戶外巡迴演唱會，兩座舞台輪番演出，草地自由入座，現場有市集與餐飲攤位。</p>"],
       country: "TW", langs: ["cmn", "en", "ja"],
       images: ["images/hero-event.jpg"],
       location: "大佳河濱公園", region: "中山區",
@@ -5932,11 +5939,11 @@
     /* 這兩筆是為了示範「取票方式不是電子門票時要多問什麼」（2026-08-10 使用者指示）：
        順豐寄送要運費、到店自取要取貨地點。兩個欄位不是 bookyay 帶來的，
        帶入後仍要創作者自己填，所以刻意留空。 */
-    { id: "bky-4", type: "launch",
-      label: "限量黑膠簽名場 — 台中",
+    { id: "bky-4", type: "concert",
+      label: "迴響 限量黑膠巡迴演唱會 — 台中站",
       note:  "2026/12/06 · 台中 Legacy（實體票寄送 · 私人活動）",
-      name: "限量黑膠簽名場 — 台中",
-      intros: ["<p>新專輯黑膠首賣場，購票附一張實體收藏票券，當天憑票入場並可參加簽名。</p>"],
+      name: "迴響 限量黑膠巡迴演唱會 — 台中站",
+      intros: ["<p>新專輯黑膠首賣的巡迴演唱會，購票附一張實體收藏票券，當天憑票入場並可參加演後簽名。</p>"],
       country: "TW", langs: ["cmn"],
       images: ["images/hero-event.jpg"],
       location: "台中 Legacy", region: "西區",
@@ -5945,8 +5952,8 @@
       ship: "sf", shipFee: "30",   // 順豐運費（F24，港幣；D368 決定四：帶入時照 D330 換算成創作者幣別並鎖定）
       isPrivate: true,
       showTncs: true,
-      tncs: "<p>實體收藏票券以順豐寄送，寄出後恕不退換。</p><ul><li>收件地址僅限台灣本島。</li><li>票券遺失或毀損不補發，請妥善保管。</li><li>簽名場每人限簽一件，限本場販售之黑膠商品。</li></ul>",
-      ticketTypes: [{ name: "簽名場入場", priceHkd: "690", persons: 1, limit: { maxPurchaseCnt: 1, maxPurchaseTime: 1 } }],   // D366 示範：只有本門票限購
+      tncs: "<p>實體收藏票券以順豐寄送，寄出後恕不退換。</p><ul><li>收件地址僅限台灣本島。</li><li>票券遺失或毀損不補發，請妥善保管。</li><li>演後簽名每人限簽一件，限本場販售之黑膠商品。</li></ul>",
+      ticketTypes: [{ name: "演唱會入場", priceHkd: "690", persons: 1, limit: { maxPurchaseCnt: 1, maxPurchaseTime: 1 } }],   // D366 示範：只有本門票限購
       slots: [{ startD: "2026-12-06", startT: "19:00", endD: "2026-12-06", endT: "21:00", earlyEntryInMin: 60, earlyMode: "block", cap: 400, types: [0] }] },
     { id: "bky-5", type: "concert",
       label: "冬季特別公演 — 台南",
@@ -5967,11 +5974,11 @@
        bky-10 不設門票 → 不能匯入（ztor 一場活動至少要一張門票）：清單裡那一列停用、說明原因，選不了、「帶入」維持停用。
        bky-11 重覆活動（每週六、共 3 次）→ bookyay 已展開的 3 個時段各帶成一場、鎖定（D369 決定五）；
               `repeat`（每場持續時間、每場活動間距、重覆日子）是產生場次用的設定，留在假資料示範來源有這組欄位，不帶入。 */
-    { id: "bky-9", type: "meet", ticketMode: "free",
-      label: "社區快閃見面會 — 台北",
+    { id: "bky-9", type: "concert", ticketMode: "free",
+      label: "社區快閃演唱會 — 台北站",
       note:  "2026/11/21 · 華山 1914 中 4B（免費入場）",
-      name: "社區快閃見面會 — 台北",
-      intros: ["<p>新歌發行前的社區快閃見面會，免費入場、現場簽名，名額有限、先登記先入場。</p>"],
+      name: "社區快閃演唱會 — 台北站",
+      intros: ["<p>新歌發行前的社區快閃演唱會，免費入場、演後簽名，名額有限、先登記先入場。</p>"],
       country: "TW", langs: ["cmn"],
       images: ["images/hero-event.jpg"],
       location: "華山 1914 文化創意產業園區 中 4B", region: "中正區",
@@ -5982,11 +5989,11 @@
       /* 免費門票：bookyay 沒有現價（priceHkd 留空）；帶入時票價一律 0 */
       ticketTypes: [{ name: "免費入場", priceHkd: "", persons: 1 }],
       slots: [{ startD: "2026-11-21", startT: "15:00", endD: "2026-11-21", endT: "17:00", earlyEntryInMin: 30, earlyMode: "warn", cap: 120, types: [0] }] },
-    { id: "bky-10", type: "meet", ticketMode: "none",
-      label: "創作者線上分享夜",
+    { id: "bky-10", type: "concert", ticketMode: "none",
+      label: "創作者線上演唱會之夜",
       note:  "2026/12/12 · 線上（不設門票）",
-      name: "創作者線上分享夜",
-      intros: ["<p>一小時的線上分享，不需購票、直接進場。</p>"],
+      name: "創作者線上演唱會之夜",
+      intros: ["<p>一小時的線上演唱會，不需購票、直接進場。</p>"],
       country: "TW", langs: ["cmn"],
       images: ["images/hero-event.jpg"],
       location: "線上", region: "",
@@ -5994,11 +6001,11 @@
       isPrivate: false,
       ticketTypes: [],
       slots: [{ startD: "2026-12-12", startT: "20:00", endD: "2026-12-12", endT: "21:00", cap: 0, types: [] }] },
-    { id: "bky-11", type: "meet",
-      label: "週末聆聽會 — 台北（每週六 · 3 場）",
+    { id: "bky-11", type: "concert",
+      label: "週末巡迴演唱會 — 台北站（每週六 · 3 場）",
       note:  "2026/11/07–11/21 · 小白兔唱片行（重覆活動）",
-      name: "週末聆聽會 — 台北",
-      intros: ["<p>新專輯完整試聽，每週六一場、共三場，每場限 40 人。</p>"],
+      name: "週末巡迴演唱會 — 台北站",
+      intros: ["<p>新專輯完整曲序的小型巡迴演唱會，每週六一場、共三場，每場限 40 人。</p>"],
       country: "TW", langs: ["cmn"],
       images: ["images/projects/nick-realive.jpg"],
       location: "小白兔唱片行", region: "大安區",
@@ -6006,7 +6013,7 @@
       saleFromD: "2026-10-15", saleFromT: "12:00", saleToD: "2026-11-21", saleToT: "12:00",
       ship: "eticket",
       isPrivate: false,
-      ticketTypes: [{ name: "聆聽席", priceHkd: "150", persons: 1 }],
+      ticketTypes: [{ name: "入場席", priceHkd: "150", persons: 1 }],
       /* 重覆活動：bookyay 的產生設定（不帶入，D369 決定五）＋已展開的時段（帶入） */
       repeat: { type: "weekly", days: ["sat"], durationMin: 90, intervalMin: 0, times: 3 },
       slots: [
@@ -6047,27 +6054,38 @@
        草稿續填只能走一般續填、鎖定全部掉光；補上後續填改用這份資料重跑帶入（D385 決定四，見 demoInit 的 draft 分支）。
        已經在 ztor 上（存成草稿）＝匯入清單照樣列出、標已匯入不能再選（imported），同 bky-6～8。
        內容對齊草稿：高雄駁二跨年、二人套票 HK$550（→ 1 人票 HK$275 × 200 張、自動組合包鎖 100 套）、沒設定過早入場（開放入場留空並鎖定，D365）。 */
-    { id: "bky-12", imported: true, type: "festival",
-      label: "Kaohsiung countdown",
-      note:  "2026/12/31 · Kaohsiung Pier-2（二人套票 · 草稿）",
-      name: "Kaohsiung countdown",
+    { id: "bky-12", imported: true, type: "concert",
+      /* 2026-10-13 D410 決定四：草稿狀態的 bookyay 演唱會全選項示範（events-store khh-countdown-draft）——跨日時段、提前入場 60 分鐘且不能入場、
+         活動限購三項、條款及細則、兩種語言、多段描述（含圖片、粗體、斜體、連結、清單）、兩張圖；
+         二人套票帶本門票限購＋折扣＋早鳥（落在自動組合包，D390 第 19 題、D391 第 15 題），第二種票 General admission 示範「只帶第一種」的略過提示（D328）。 */
+      label: "Kaohsiung countdown concert",
+      note:  "2026/12/31–2027/01/01 · Kaohsiung Pier-2（二人套票 · 跨日 · 草稿）",
+      name: "Kaohsiung countdown concert",
       intros: [
-        "<p>駁二港邊的跨年倒數，21:00 開唱、零點倒數後港邊煙火。全場站席，二人同行入場。</p>",
-        "<p><strong>入場與寄物</strong></p><ul><li>大義倉庫入口驗票，兩人須一起驗票入場</li><li>現場不提供寄物</li></ul>"
+        "<p>駁二港邊的跨年演唱會，21:00 開唱一路唱過零點，倒數後港邊煙火。</p><p><img src=\"images/projects/nick-asn.jpg\" alt=\"\"></p>",
+        "<p><strong>入場與寄物</strong></p><ul><li>大義倉庫入口驗票，二人套票兩人須一起驗票入場</li><li>現場不提供寄物</li></ul>",
+        "<p><strong>散場交通</strong></p><p>零點後輕軌加開班次至 01:30，<em>駁二大義站單向進站</em>。詳見 <a href=\"https://example.com/khh-countdown/traffic\">交通說明</a>。</p>"
       ],
-      country: "TW", langs: ["cmn"],
-      images: ["images/hero-event.jpg"],
+      country: "TW", langs: ["cmn", "en"],
+      images: ["images/hero-event.jpg", "images/projects/nick-asn.jpg"],
       location: "Kaohsiung Pier-2", region: "鹽埕區",
       meet: "駁二大義倉庫入口", transit: "輕軌駁二大義站步行 2 分鐘",
       saleFromD: "2026-11-15", saleFromT: "12:00", saleToD: "2026-12-31", saleToT: "18:00",
       ship: "eticket",
       isPrivate: false,
-      showTncs: false,
-      ticketTypes: [{ name: "Duo pass", priceHkd: "550", persons: 2 }],
-      slots: [{ startD: "2026-12-31", startT: "21:00", endD: "2026-12-31", endT: "23:59", cap: 200, types: [0] }] },
+      maxPurchaseCnt: 6, maxPurchaseCntEachTime: 4, maxPurchaseTime: 2,
+      showTncs: true,
+      tncs: "<p>二人套票限兩人同行，須一起驗票入場；單人持票恕不入場。</p><ul><li>票券一經售出，除活動取消或延期外，恕不退換。</li><li>戶外場地如遇天候因素，將依主辦單位公告調整演出內容。</li></ul>",
+      ticketTypes: [
+        { name: "Duo pass", priceHkd: "550", persons: 2,
+          limit: { maxPurchaseCnt: 2, maxPurchaseCntEachTime: 1 }, discount: { priceHkd: "500" },
+          early: { priceHkd: "460", endD: "2026-11-30", endT: "23:59" } },
+        { name: "General admission", priceHkd: "300", persons: 1 }
+      ],
+      slots: [{ startD: "2026-12-31", startT: "21:00", endD: "2027-01-01", endT: "00:30", earlyEntryInMin: 60, earlyMode: "block", cap: 200, types: [0, 1] }] },
     /* bky-14（2026-10-09 D385 決定五）：順豐寄送的 bookyay 示範，已帶入成活動詳情的 `hsinchu-vinyl-sf`（已排程）——清單只標已匯入。 */
-    { id: "bky-14", imported: true,
-      label: "Vinyl signing night — Hsinchu",
+    { id: "bky-14", imported: true, type: "concert",
+      label: "Vinyl release concert — Hsinchu",
       note:  "2026/12/12 · The Wall Hsinchu（順豐寄送實體票）" },
     /* 已經帶過的場次（2026-08-13 使用者指示）：同一場 bookyay 活動只會在 ztor 上存在一次，
        所以清單裡照樣找得到它——找到才回答得了「我上次是不是已經建過了」——但不能再選一次。
@@ -6818,6 +6836,32 @@
     set("name", src.name);
     if (src.country) set("country", src.country);   // D390 決定七：國家必填，續填／再辦一場把來源的國家帶回來（可改）
     set("highlight", src.highlight);   // D300：草稿續填要把亮點帶回來；再辦一場也照名稱／描述一起帶、可改
+    /* 共看派對（5.1.6.1 §4.9 F13–F19；2026-10-13 D410 示範資料補齊後）：續填／再辦一場把房間設定帶回——
+       播放內容、房間名稱、開始與預估結束、人數上限、可觀看地區、隱私、入場券。地區清單沒有輸入欄（規格待補），只帶三選一。 */
+    if (src.type === "watchparty" && src.room) {
+      const r = src.room;
+      const film = document.getElementById("ce-film");
+      if (film && r.film) { film.value = r.film; film.dispatchEvent(new Event("change", { bubbles: true })); }
+      set("room", r.name || src.name);
+      const dt = v => { const m = /^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}:\d{2}))?/.exec(String(v || "")); return m ? [m[1], m[2] || ""] : ["", ""]; };
+      const pair = (input, d, t) => {
+        if (!input) return;
+        const grid = input.closest(".form-grid"), ins = grid ? grid.querySelectorAll("input") : [input];
+        [d, t].forEach((v, i) => { if (ins[i] && v) { ins[i].value = v; ins[i].dispatchEvent(new Event("input", { bubbles: true })); } });
+      };
+      pair(document.querySelector('[data-ce="wpstart"]'), src.date, src.start);
+      const endField = document.querySelector('[data-i18n="ce.wp.end"]');
+      const [ed, et] = dt(r.endEst);
+      pair(endField && endField.closest(".field") && endField.closest(".field").querySelector("input"), ed, et);
+      const seg = (k, v) => { const b = document.querySelector('[data-seg="' + k + '"] [data-val="' + v + '"]'); if (b) b.click(); };
+      seg("wpcap", r.capMode === "unlimited" || !r.capacity ? "unlimited" : "limited");
+      if (r.capMode !== "unlimited" && r.capacity) set("wpcaplimit", r.capacity);
+      seg("wpregion", (r.region && r.region.mode) || "global");
+      seg("wppriv", r.privacy || "public");
+      const fee = Number(((src.tiers || [])[0] || {}).price) || 0;
+      seg("wpticket", fee > 0 ? "paid" : "free");
+      if (fee > 0) set("wpprice", fee);
+    }
     /* 描述（D354）：有 descBlocks 就整份帶回，沒有就帶純文字；舊資料的說明區塊（infoSections）由 migrate() 轉成
        接在後面的文字區塊（標題有字→併成該區塊第一行並設粗體，D354 決定八）。草稿續填與再辦一場都可改。 */
     if (descEd) descEd.set(window.ztorRichBody.migrate(src.descBlocks || src.desc || "", src.infoSections)); else set("desc", src.desc);

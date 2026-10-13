@@ -29,14 +29,15 @@
     {n:'5', t:'電子商店', groups:[
       {t:'電子商店規則', pages:[{h:'eshop-sales.html', t:'電子商店販售流程'},{h:'bundles.html', t:'組合包與票務商品'},{h:'promo-rules.html', t:'優惠規則'}]},
       {t:'電子商店', pages:[{t:'建立商品與商品細節'},{t:'拍賣'},{t:'補貨與新品貼文'},{t:'商店設定'}]},
-      {t:'訂單管理', pages:[{t:'訂單列表'},{t:'訂單詳情'}]},
+      {t:'訂單管理', pages:[{h:'orders.html', t:'訂單列表'},{h:'order-detail.html', t:'訂單詳情'}]},
       {t:'取貨管理', pages:[{t:'取貨場次'},{t:'手機 Scanner'}]},
       {t:'需求看板', pages:[{h:'demand-board.html', t:'需求看板'}]}
     ]},
     {n:'6', t:'活動', groups:[
       {t:'活動規則', pages:[{h:'event-rules.html', t:'活動規則'},{h:'event-journey.html', t:'活動用戶旅程圖'},{h:'event-bookyay.html', t:'bookyay 匯入與對照'}]},
       {t:'建立活動', pages:[{h:'event-create.html', t:'建立活動'},{h:'event-create-step1.html', t:'步驟 1 活動類型與 bookyay 帶入'},{h:'event-create-step2.html', t:'步驟 2 基本資料'},{h:'event-create-step3.html', t:'步驟 3 場次'},{h:'event-create-step4.html', t:'步驟 4 票種與票務'},{h:'event-create-step6.html', t:'步驟 5 票務商品'},{h:'event-create-step7.html', t:'步驟 6 發布設定'},{h:'event-create-step8.html', t:'步驟 7 預覽與發布'},{h:'event-create-watchparty.html', t:'共看派對的建立'}]},
-      {t:'活動', pages:[{h:'events.html', t:'活動總覽'},{h:'event-detail.html', t:'活動詳情與編輯'}]}
+      {t:'活動', pages:[{h:'events.html', t:'活動總覽'}]},
+      {t:'活動詳情', pages:[{h:'event-detail.html', t:'活動詳情'},{h:'event-detail-overview.html', t:'總覽'},{h:'event-detail-settings.html', t:'設定'},{h:'event-detail-tickets.html', t:'票務'},{h:'event-detail-sales.html', t:'售票與名單'}]}
     ]},
     {n:'7', t:'粉絲', groups:[
       {t:'粉絲規則', pages:[{h:'fans-tiers.html', t:'粉絲分級'}]},
@@ -64,14 +65,14 @@
   }
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 
-  /* 內容區標題加序號：h1＝頁號，h2＝頁號.節，h3＝頁號.節.小節；h4 的字母由 letterH4 另外加；頁首目錄由 buildToc 依序號重建 */
+  /* 內容區標題加序號：h1＝頁號，h2＝頁號.節，h3＝頁號.節.小節；h4 的字母由 letterH4 另外加；h2 加 class="no-num"（例如「概述」）不編號也不佔號；頁首目錄由 buildToc 依序號重建 */
   function numberHeadings(base){
     var wrap=document.querySelector('body>.wrap'); if(!wrap) return;
     function put(h,num){ var n=h.querySelector(':scope>.n'); if(!n){ n=document.createElement('span'); n.className='n'; h.insertBefore(n,h.firstChild); } n.textContent=num; }
     var h1=wrap.querySelector(':scope>h1'); if(h1) put(h1,base);
     var i=0,j=0,map={};
     [].forEach.call(wrap.children,function(el){
-      if(el.tagName==='H2' && !el.classList.contains('sr-only')){ i++; j=0; put(el,base+'.'+i); if(el.id) map[el.id]=base+'.'+i; }
+      if(el.tagName==='H2' && !el.classList.contains('sr-only') && !el.classList.contains('no-num')){ i++; j=0; put(el,base+'.'+i); if(el.id) map[el.id]=base+'.'+i; }
       else if(el.tagName==='H3' && i>0){ j++; put(el,base+'.'+i+'.'+j); }
     });
   }

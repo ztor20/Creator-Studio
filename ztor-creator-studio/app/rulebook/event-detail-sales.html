@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>售票與名單 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261014b">
+<script src="shell.js?v=20261014b" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>售票與名單</h1>
+<p class="lede">創作者在售票與名單分頁對帳售票紀錄、查看與匯出活動名單、確認通知寄出了沒有、查看撤銷紀錄與成本與收入摘要；通知開關是這個分頁唯一要進編輯模式才能改的設定。分頁整體的位置與各狀態有哪些分頁，見<a href="event-detail.html">活動詳情</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="sales-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>分頁從已排程（開賣前）起就在，還沒有資料的區塊顯示空狀態；已取消的活動不顯示活動名單與報到，其餘區塊照常顯示</li>
+  <li>通知開關是活動設定，要先進編輯模式、併入整頁儲存；篩選、匯出、報到更正、Admin 撤銷這類營運動作不必進編輯模式，按下就生效</li>
+  <li>bookyay 匯入的活動，名單與撤銷唯讀，資料由 bookyay 同步回來；共看派對沒有報到與撤銷紀錄</li>
+</ul>
+
+<h2 id="sales-flow"><span class="n"></span>操作流程</h2>
+<p>創作者進分頁後，先在子導覽選要看的區塊，再做該區塊的事；只有通知開關要先進編輯模式。</p>
+<div class="dg" role="img" aria-label="售票與名單流程圖，由左往右：進入售票與名單分頁，選子導覽的區塊；售票紀錄可篩選、匯出並進訂單詳情，活動名單可篩選、匯出、開啟掃描器與更正報到，通知要先按編輯活動再切開關並儲存，撤銷紀錄和成本與收入摘要只能查看">
+<div class="dg-hg" style="--dg-c:3">
+  <div class="dg-node" style="grid-row:1/6;grid-column:1"><span class="s">1</span>進售票與名單分頁<small>開賣前就在，沒有資料時顯示空狀態</small></div>
+  <span class="dg-a" style="grid-row:1/6;grid-column:2"></span>
+  <div class="dg-node q" style="grid-row:1/6;grid-column:3"><span class="s">2</span>在子導覽選哪一塊？</div>
+  <span class="dg-a" data-t="對帳" style="grid-row:1;grid-column:4"></span>
+  <span class="dg-a" data-t="查名單" style="grid-row:2;grid-column:4"></span>
+  <span class="dg-a" data-t="管通知" style="grid-row:3;grid-column:4"></span>
+  <span class="dg-a" data-t="查撤銷" style="grid-row:4;grid-column:4"></span>
+  <span class="dg-a" data-t="看收入" style="grid-row:5;grid-column:4"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:5">售票紀錄<small>篩選、匯出，點一列進訂單詳情</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:5">活動名單<small>篩選、匯出、開啟掃描器、改回未報到</small></div>
+  <div class="dg-node end" style="grid-row:3;grid-column:5">通知<small>按「編輯活動」，切開關，再儲存</small></div>
+  <div class="dg-node end" style="grid-row:4;grid-column:5">撤銷紀錄<small>只能查看，撤銷由 Admin 執行</small></div>
+  <div class="dg-node end" style="grid-row:5;grid-column:5">成本與收入摘要<small>只能查看，可前往收入管理</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，紫色虛線框是要回答的問題，綠框是各區塊能做的事。圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進售票與名單分頁；子導覽依序是售票紀錄、活動名單、通知、撤銷紀錄、成本與收入摘要</li>
+  <li>在子導覽選要看的區塊，一次看一塊
+    <ul class="plain">
+      <li>售票紀錄：先用狀態與訂單日期篩出要對的訂單，再匯出，或點一列打開訂單詳情，見<a href="#sales-tx">售票紀錄</a></li>
+      <li>活動名單：查誰買了票、拿到哪一張票券；進行中與已結束另有報到欄，見<a href="#sales-roster">活動名單</a></li>
+      <li>通知：先按工具列的「編輯活動」，切換三個通知開關，按「儲存」才生效，見<a href="#sales-notif">通知</a></li>
+      <li>撤銷紀錄：看哪些票被撤銷；撤銷由 Admin 執行，創作者看得到入口但不能按，見<a href="#sales-void">撤銷紀錄</a></li>
+      <li>成本與收入摘要：看收入事件與結算狀態，要看最終數字就前往收入管理，見<a href="#sales-finance">成本與收入摘要</a></li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>篩選、匯出、開啟掃描器、改回未報到與 Admin 撤銷各自按下就生效，不必先進編輯模式</li>
+  <li>已取消的活動沒有活動名單與報到，其餘區塊唯讀</li>
+</ul>
+
+<h2 id="sales-fields"><span class="n"></span>功能與欄位</h2>
+<p>子導覽的五個區塊各一節：<a href="#sales-tx">售票紀錄</a>對帳每一筆訂單，<a href="#sales-roster">活動名單</a>查誰會來，<a href="#sales-notif">通知</a>管三種通知的開關與寄送結果，<a href="#sales-void">撤銷紀錄</a>列出被撤銷的票，<a href="#sales-finance">成本與收入摘要</a>對照收入事件與結算。各區塊在各狀態怎麼顯示，見<a href="#sales-state">各子區塊在各狀態的顯示</a>。</p>
+
+<h3 id="sales-tx">售票紀錄</h3>
+<p>售票紀錄（規格稱交易明細）回答「活動收入由哪些筆款項組成、每一筆後來怎麼了」：一列是一筆訂單，不是一張票。列出兩種訂單：</p>
+<ul class="plain">
+  <li>直接買門票的訂單</li>
+  <li>買了含這場活動門票的組合包的訂單</li>
+</ul>
+<p>兩種訂單都同時出現在電子商店的<a href="orders.html">訂單列表</a>，是同一筆訂單的兩個入口。頁首的四個摘要見下表；篩選、匯出與看訂單詳情的操作見<a href="#sales-tx-ops">篩選、匯出與訂單詳情</a>；活動收入與門票收入怎麼加總，見<a href="#sales-tx-sum">活動收入與門票收入</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">摘要</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>毛額</td><td>篩選結果的票款與組合包金額合計</td></tr>
+    <tr><td>平台費</td><td>各筆成交當時套用的平台費合計<br>平台費由創作者負擔，自收入內扣，粉絲付的就是票價<br>費率與支付費的規則見<a href="order-detail.html#fee-rule">平台費與支付費</a></td></tr>
+    <tr><td>淨額</td><td>毛額扣平台費後的金額，結算到收入管理（Earnings）</td></tr>
+    <tr><td>已取消筆數</td><td>篩選結果裡已取消的訂單數</td></tr>
+  </tbody>
+</table></div>
+<p>摘要與篩選的筆數、毛額、平台費、淨額，都含組合包訂單。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">每一列的欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>訂單編號</td><td>這筆訂單的識別碼<br>每一列都能打開電子商店的訂單詳情，見<a href="#sales-tx-ops">篩選、匯出與訂單詳情</a></td></tr>
+    <tr><td>買家</td><td>購票人姓名</td></tr>
+    <tr><td>品項</td><td>門票訂單顯示所購票種名稱<br>組合包訂單顯示組合包名稱，加「組合包」標籤</td></tr>
+    <tr><td>數量</td><td>門票訂單是張數<br>組合包訂單是組數</td></tr>
+    <tr><td>毛額</td><td>門票訂單是票款總額<br>組合包訂單是該組合包品項的實付金額，整組計入，含組合包裡的商品</td></tr>
+    <tr><td>平台費</td><td>該筆交易成交當時套用的平台費<br>費率由 Admin 設定，一經發版不回溯，這裡不重算</td></tr>
+    <tr><td>淨額</td><td>毛額扣平台費後的金額</td></tr>
+    <tr><td>支付方式</td><td>付款方式，例如信用卡、Apple Pay、LINE Pay</td></tr>
+    <tr><td>付款時間</td><td>付款完成的時間</td></tr>
+    <tr><td>狀態</td><td>已付款或已取消</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="sales-tx-ops">篩選、匯出與訂單詳情</h4>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>篩選：全部、已付款、已取消</td><td>—</td><td>三個子集各自帶筆數<br>一次只選一個，不疊加</td></tr>
+    <tr><td>訂單日期（起）、訂單日期（訖）</td><td>選填<br>可以只填一邊</td><td>依訂單日期篩選<br>跟上面的子集篩選同時成立，取交集</td></tr>
+    <tr><td>匯出交易明細</td><td>售票中<br>進行中<br>已結束<br>已取消</td><td>匯出這場活動的交易明細，照目前的篩選結果匯出<br>不必進編輯模式，按下就生效</td></tr>
+    <tr><td>打開訂單詳情</td><td>每一列都有</td><td>開啟電子商店的<a href="order-detail.html">訂單詳情</a>，看<a href="order-detail.html#fields-payment">付款資訊</a>與<a href="order-detail.html#fields-tickets">門票資料</a><br>直接買門票的訂單與電子商店共用同一個訂單詳情頁<br>組合包訂單的撤銷也在訂單詳情做，這裡的組合包訂單列不提供逐張撤銷，見<a href="order-detail.html#void-where">門票與組合包在哪裡撤銷</a></td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="sales-tx-sum">活動收入與門票收入</h4>
+<p>活動詳情有兩個收入加總，售票紀錄、總覽的活動收入與成本與收入摘要三處用同一套數字，最終數字以收入管理（Earnings）為準，這裡不重算。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">加總</th><th>算哪些錢</th></tr></thead>
+  <tbody>
+    <tr><td>活動收入</td><td>直接買門票的訂單<br>含這場活動門票的組合包訂單，整組金額，含組合包裡的商品</td></tr>
+    <tr><td>門票收入</td><td>直接買門票的訂單<br>組合包裡門票的部分：組合售價 × 門票原價 ÷ 成員原價合計<br>門票有多張可選時，取允許清單的第一張</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.6.3 §2.3、§2.7、§2.11；D407、D408、D409、D411。</p>
+
+<h3 id="sales-roster">活動名單</h3>
+<p>活動名單回答「誰買了票、拿到哪一張票券」；報到只是名單上多出來的一欄，活動當天才會有資料。掃描圖例、報到欄與掃描器入口只在進行中與已結束出現，售票中沒有人核銷過，不放；已取消的活動不顯示名單與報到。每一列有哪些欄位見下表；篩選、匯出、開啟掃描器與更正報到的操作見<a href="#sales-roster-ops">名單的操作</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>掃描圖例</td><td>已掃描與未掃描兩格統計，已掃描格附「含重複掃描 N 次」<br>無法對上任何一張票的無效掃描不進圖例</td></tr>
+    <tr><td>持票人</td><td>持票人姓名<br>無法辨識的 QR 顯示為「未辨識 QR」</td></tr>
+    <tr><td>票種</td><td>所持票券的票種名稱<br>經由組合包拿到門票的買家也在名單裡，票種旁加「組合包」標籤<br>獨立票照常進名單，這一欄顯示獨立票的票名，加「獨立票」標籤</td></tr>
+    <tr><td>票券編號</td><td>票券的識別碼，供核對與追蹤</td></tr>
+    <tr><td>報到狀態</td><td>已掃描或未掃描徽章<br>已掃描的票若掃描次數大於 1，徽章旁標出次數，重複掃描只是紀錄<br>只在進行中與已結束出現</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="sales-roster-ops">名單的操作</h4>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>篩選：全部、已到場、未到場</td><td>進行中</td><td>即時名單依報到狀態篩選<br>已到場就是已掃描，未到場就是未掃描</td></tr>
+    <tr><td>匯出名單</td><td>售票中<br>進行中<br>已結束</td><td>匯出參加者名單</td></tr>
+    <tr><td>開啟掃描器</td><td>只在進行中與已結束<br>bookyay 匯入的活動不掃門票，不出現</td><td>開啟手機掃描器核銷門票<br>掃描器可離線運作約 4 小時，重連後同步<br>同一張票掃兩次，以最早的掃描為準</td></tr>
+    <tr><td>改回未報到</td><td>—<br>bookyay 匯入的活動不提供</td><td>誤掃時，創作者把已報到的票改回未報到，只用於更正<br>不必進編輯模式，按下就生效</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>bookyay 匯入的活動，門票入場由 bookyay Organizer App 掃票，名單的報到欄改成來自 bookyay 的唯讀已入場與未入場，ztor 不更正</li>
+  <li>bookyay 匯入的活動，總覽的已報到數同樣來自 bookyay 掃描回傳的入場紀錄，還沒收到時顯示「暫無資料」，見<a href="event-detail-overview.html">總覽</a></li>
+  <li>票務商品裡的商品由 ztor 掃取貨 QR，流程同電子商店取貨；掃碼連結與「前往領取場次」在<a href="event-detail-overview.html">總覽</a></li>
+  <li>線上活動靠外部平台的報到資料可能不完整</li>
+  <li>共看派對沒有報到：名單不放報到欄，也沒有掃描器</li>
+</ul>
+
+<h3 id="sales-notif">通知</h3>
+<p>通知管三種可開關的通知和一種不能關的取消通知，並用寄送紀錄回答「到底寄出去了沒」。開關要先進編輯模式才能切換，見<a href="#sales-edit">編輯狀態</a>；寄送紀錄只能看。三個開關與取消通知見下表；寄送紀錄每一項顯示什麼見<a href="#sales-notif-log">寄送紀錄</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>購票成功<br>活動前提醒<br>活動變更通知</td><td>三個各自的開關<br>預設開啟<br>要先進編輯模式才能切換</td><td>關掉就不寄這一種通知<br>沒進編輯模式時只顯示目前開或關<br>切換併入整頁儲存，按捨棄時還原<br>切換不算高影響變更，儲存時不出現確認，也不通知持票人<br>各種通知何時寄出、內容是什麼，不在這裡定義</td></tr>
+    <tr><td>活動取消通知</td><td>不能關，標示「系統」<br>已取消的活動照樣顯示</td><td>活動取消後，寄給受影響的持票人<br>取消後仍有效的票券由 Admin 逐票或整場撤銷，撤銷不會自動發生</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="sales-notif-log">寄送紀錄</h4>
+<p>寄送紀錄是三項通知各一列，每列帶狀態徽章與說明，只能看，不受編輯模式影響。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">通知</th><th>顯示什麼</th></tr></thead>
+  <tbody>
+    <tr><td>購票成功</td><td>已寄出的封數，每筆已付款訂單一封<br>還沒有銷售時，明說尚未寄出</td></tr>
+    <tr><td>活動前提醒</td><td>還沒寄出時，顯示預定寄出時間：開演前 24 小時，依該場次日期<br>已結束或已取消時，顯示已寄出<br>活動沒有日期時，顯示「要先有日期才能排定」</td></tr>
+    <tr><td>活動變更通知</td><td>開賣後沒有發生高影響變更時，顯示未寄出<br>活動取消時，顯示取消通知已寄給所有持票人</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="sales-void">撤銷紀錄</h3>
+<p>撤銷紀錄列出這場活動被撤銷的票券，回答「哪些票被撤銷了」；平台不提供退款動作，這裡不呈現退款金流。規格把撤銷紀錄併在交易明細這一組，畫面上是子導覽的獨立一格。撤銷後該票的 QR 立即失效。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>票券編號</td><td>票券的識別碼，供核對與追蹤</td></tr>
+    <tr><td>原持票人</td><td>撤銷前的持票人姓名</td></tr>
+    <tr><td>撤銷時間</td><td>撤銷動作發生的時間</td></tr>
+    <tr><td>執行的 Admin</td><td>執行撤銷的 Admin 帳號</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>逐張撤銷、整場撤銷</td><td>只有 Admin 能按，創作者看得到入口但不能按<br>bookyay 匯入的活動停用</td><td>撤銷後該票的 QR 立即失效<br>獨立票與票種門票相同：可以逐張撤銷，整場撤銷時一併撤銷，撤銷後同樣列在撤銷紀錄<br>已報到的票不能撤銷；已結束活動裡沒報到的票仍能撤銷<br>已結束與已取消的活動整頁唯讀，Admin 仍可撤銷<br>不必進編輯模式<br>創作者需要撤銷時，在平台外聯繫 Admin，產品內沒有申請畫面<br>需要退款時，Admin 先在 Stripe 後台退款，再撤銷；撤銷動作本身不呼叫金流</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>撤銷票券時，該票用掉的優惠碼次數歸還，因撤銷跌破門檻的平台滿額折抵追回，規則見電子商店<a href="order-detail.html#void-after">撤銷之後</a></li>
+  <li>bookyay 匯入的活動，撤銷由 Admin 在 bookyay 後台執行，結果同步回 ztor、唯讀；ztor 的撤銷功能保留在畫面上但全部停用，並說明「撤銷在 bookyay 後台處理」；退款仍由 Admin 在金流後台處理</li>
+  <li>共看派對沒有撤銷紀錄</li>
+  <li>尚無票券被撤銷時，顯示空狀態說明</li>
+</ul>
+
+<h3 id="sales-finance">成本與收入摘要</h3>
+<p>成本與收入摘要把收入事件逐筆列出並附結算狀態，讓創作者對照售票紀錄的數字；最終數字以收入管理（Earnings）為準，這裡不重算。已結算的金額加總要和總覽的活動收入、售票紀錄一致，三處不能互相矛盾。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>收入事件識別</td><td>這筆收入事件的識別碼</td></tr>
+    <tr><td>票種</td><td>對應的票種名稱<br>組合包的收入事件顯示組合包名稱，加「組合包」標籤</td></tr>
+    <tr><td>金額</td><td>這筆收入事件的金額<br>門票只算直接買票的部分<br>組合包算整組金額</td></tr>
+    <tr><td>費率版本</td><td>這筆事件凍結的費率版本識別</td></tr>
+    <tr><td>結算狀態</td><td>已結算（Settled）<br>待結算（Accrued）<br>招待票（Comp），僅供審計</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">摘要</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>毛票務收入</td><td>含組合包訂單</td></tr>
+    <tr><td>門票收入</td><td>含組合包裡門票的部分</td></tr>
+    <tr><td>待結算金額</td><td>毛票務收入中還沒結算的部分</td></tr>
+    <tr><td>已結算金額</td><td>毛票務收入中已結算的部分</td></tr>
+    <tr><td>分類</td><td>活動票務</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>前往收入管理<br>前往項目淨利</td><td>售票中<br>進行中<br>已結束<br>已取消</td><td>只有已結算的收入計入可提領金額與可分配淨利，待結算的不計入<br>不必進編輯模式</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.6.3 §2.7、§2.8、§2.9.2、§2.10、§2.10.1、§2.11；5.1.6.2 F17；D253、D282、D361、D375、D392、D399、D407、D408、D409、D410、D411、D413。</p>
+
+<h2 id="sales-edit"><span class="n"></span>編輯狀態</h2>
+<p>這個分頁只有通知開關要進編輯模式；編輯開關、儲存、捨棄與離開的共通規則寫在<a href="event-detail.html">活動詳情</a>，不在這裡重抄。各子區塊在各狀態看得到什麼、能不能改，見<a href="#sales-state">各子區塊在各狀態的顯示</a>；哪些操作要先進編輯模式，見<a href="#sales-edit-scope">哪些操作要先進編輯模式</a>。</p>
+
+<h3 id="sales-state">各子區塊在各狀態的顯示</h3>
+<p>已排程時，各區塊沒有資料，以空狀態顯示；已結束與已取消整頁唯讀，只有 Admin 撤銷仍可做；載入中、載入失敗、沒有資料與沒有權限，照全站共用的狀態規則顯示。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:15%">子區塊</th><th>已排程</th><th>售票中</th><th>進行中</th><th>已結束</th><th>已取消</th></tr></thead>
+  <tbody>
+    <tr><td>售票紀錄</td><td>空狀態<br>唯讀</td><td>看得到<br>唯讀</td><td>看得到<br>唯讀</td><td>看得到<br>唯讀</td><td>看得到<br>唯讀，仍可匯出</td></tr>
+    <tr><td>活動名單</td><td>空狀態<br>唯讀</td><td>看得到名單<br>沒有報到欄與掃描器<br>唯讀</td><td>即時名單<br>有報到欄與掃描器<br>唯讀</td><td>看得到名單<br>有報到欄與掃描器<br>唯讀</td><td>不顯示</td></tr>
+    <tr><td>通知開關</td><td>看得到<br>進編輯模式可改</td><td>看得到<br>進編輯模式可改</td><td>看得到<br>進編輯模式可改，不必下架</td><td>看得到<br>唯讀</td><td>看得到<br>唯讀，取消通知恆開</td></tr>
+    <tr><td>寄送紀錄</td><td>看得到<br>唯讀</td><td>看得到<br>唯讀</td><td>看得到<br>唯讀</td><td>看得到<br>唯讀</td><td>看得到<br>唯讀</td></tr>
+    <tr><td>撤銷紀錄</td><td>空狀態<br>唯讀</td><td>看得到<br>Admin 可撤銷</td><td>看得到<br>Admin 可撤銷</td><td>看得到<br>Admin 仍可撤銷</td><td>看得到<br>Admin 仍可撤銷</td></tr>
+    <tr><td>成本與收入摘要</td><td>空狀態<br>唯讀</td><td>看得到<br>唯讀</td><td>看得到<br>唯讀</td><td>看得到<br>唯讀</td><td>看得到<br>唯讀</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>已取消的活動照樣顯示通知區塊，包含開關與寄送紀錄，唯讀；活動取消通知恆開、不能關，寄送紀錄顯示取消通知已寄給所有持票人</li>
+  <li>已取消的活動不顯示活動名單與報到；撤銷由 Admin 逐票或整場執行</li>
+  <li>共看派對沒有名單的報到欄與撤銷紀錄</li>
+  <li>編輯開關在這個分頁的工具列右側，與設定、票務兩個分頁的是同一個動作、狀態同步；已結束與已取消不出現</li>
+</ul>
+
+<h3 id="sales-edit-scope">哪些操作要先進編輯模式</h3>
+<p>改活動設定的操作要先按「編輯活動」，改動一起儲存；營運動作與檢視控制不必進編輯模式，按下就各自生效。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">操作</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="2">要先進編輯模式，併入整頁儲存</td></tr>
+    <tr><td>購票成功、活動前提醒、活動變更通知三個開關</td><td>算進「儲存 N 項變更」，按捨棄時還原<br>不算高影響變更，儲存時不出現確認</td></tr>
+    <tr class="grp"><td colspan="2">不必進編輯模式，按下就生效</td></tr>
+    <tr><td>篩選與匯出</td><td>售票紀錄的子集與日期篩選、匯出交易明細，名單的篩選與匯出名單</td></tr>
+    <tr><td>開啟掃描器、改回未報到</td><td>進行中與已結束；在編輯模式裡照樣能按，已生效，捨棄不會還原</td></tr>
+    <tr><td>Admin 撤銷票券</td><td>只有 Admin 能按；已結束與已取消的活動仍可撤銷</td></tr>
+    <tr><td>前往收入管理、前往項目淨利</td><td>—</td></tr>
+    <tr class="grp"><td colspan="2">不受編輯模式影響</td></tr>
+    <tr><td>寄送紀錄</td><td>只能看</td></tr>
+    <tr><td>活動取消通知</td><td>恆開，不能切換</td></tr>
+  </tbody>
+</table></div>
+
+<p class="note">依據：5.1.6.2 §2、F17；5.1.6.3 §2.10、§4；D392、D413。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.6.3-活動詳情.md</code>（v67）§2.3、§2.7、§2.8、§2.9.2、§2.10、§2.10.1、§2.11、§3、§4；<code>5.1.6.2-編輯活動.md</code>（v3.56）F17</li>
+    <li>決策：D253、D282、D361、D375、D392、D399、D407、D408、D409、D410、D411、D413</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>已結束與進行中以外的名單內容：非進行中場次的完整名單長什麼樣，以及最終報到統計接上真實核銷紀錄前怎麼呈現</li>
+    <li>寄送紀錄要不要列出逐封的寄送明細（收件人、時間、是否開信），以及重寄的路徑；目前只顯示彙總結果</li>
+    <li>已取消的活動，撤銷紀錄要不要額外顯示撤銷進度</li>
+    <li>通知開關有尚未儲存的改動時，要不要標示為已修改（規格為推導）</li>
+    <li>售票紀錄、活動名單、撤銷紀錄與成本與收入摘要在載入中、載入失敗與沒有權限時的畫面，規格只寫照全站共用狀態規則</li>
+  </ul>
+  <p class="k">最近同步：2026-10-14（至 D413）</p>
+</details>
+</div>
+</body>
+</html>

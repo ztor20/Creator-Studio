@@ -13,6 +13,118 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-14（二百二十七）· 訂單詳情加「撤銷整張訂單」、免費訂單示範、bookyay 演唱會示範資料補多種門票與 Admin 清單（A spec）
+
+**標籤**：release2.4
+
+**範圍**：
+- `order-detail.html`（5.1.5.3.1 v2.17 §2.8）：
+  - 頁首新增「撤銷整張訂單」（掛 `data-feat="O38"`）：Admin 代管態可按，創作者本人看得到但停用，滑過說明「需要 Admin 角色」（同品項撤銷鈕寫法）。
+  - 停用原因：有品項已完成履約、含門票品項、有品項已撤銷、訂單已取消；品項本身的事實先於身分，都過了才輪到「需要 Admin 角色」。
+  - 確認視窗沿用既有撤銷確認元件，內容換成整單版本：撤銷對象列出全部品項、退款前置提醒、效果預告（領取碼失效、庫存回補、買家收取消信、訂單轉已取消）、不可逆提醒、撤銷原因（含預設理由）。
+  - 確認後每個品項各記一筆撤銷（領取單位失效、狀態轉已取消），訂單成為已取消，品項列的撤銷紀錄加「整單撤銷」。
+  - 付款資訊區：免費訂單（金額 0）寫「免費訂單，不經金流」，付款時間、金流商、付款方式顯示「—」、不出現付款編號。
+- `js/orders-store.js`：新增 `wholeVoidState()`、`voidWholeOrder()`；新增 3 筆免費商品訂單（ZT-10490 實體贈品待出貨、ZT-10491 數位預購未發行、ZT-10492 數位下載已交付）；`refreshDerived()` 補 `free` 旗標；門票訂單金額 0 時 `payment` 為 null；`EVENT_DEMO` 加免費門票 3 筆。
+- `js/events-store.js`：
+  - `nantou-lantern-opening` 新增免費票種「Kids under 6 · free」（sold 36），補開賣時間；`buildTx()` 對金額 0 的交易不給付款時間、金流商、付款編號，付款方式顯示「—」。
+  - 五場 bookyay 演唱會（`nick-live-taichung-bky`、`nick-live-taoyuan-bky`、`nick-live-kaohsiung-bky`、`nick-summer-pingtung-bky`、`taipei-nye`）各由 1 種擴成 3 種門票（一般票、站席、座位，各有限購或早鳥），三種票的 sold 由原本單人票的張數拆出、活動 sold 不變、revenue 依票價重算；`khh-countdown-draft` 維持只帶第一種（示範「略過第二種」的提示）。
+  - 5 場示範活動各補 `bkyId`（bky-16 至 bky-20）。
+- `js/sidebar.js`：`BOOKYAY_EVENTS` 補 bky-16 至 bky-20 並對應周湯豪、列為已發布；bky-3、4、9、10、11 的名稱改成演唱會。
+- `create-event.html`：只改 bky-3、4、9、10、11 五筆的標籤、名稱、說明與其中的票名、條款字樣。
+- `js/i18n.js`：新增 `od.void.whole.*`、`od.void.record.whole`、`od.pay.free`、`od.item15–17.name`（中英都有）。
+- `js/devtools.js`：`FEAT_TIER` 後備補 O38。
+- `rulebook/order-detail.html`、`rulebook/orders.html`：同步整單撤銷與免費訂單。
+
+**依據**：D414。見 ASSUMPTIONS UIA-255。
+
+## 2026-10-13（二百二十六）· release2.4 示範資料補缺：六個狀態代表都補跨日、亮點、圖庫、影片等選項（A spec）
+
+**標籤**：release2.4
+
+**範圍**：
+- `js/events-store.js`：
+  - 跨日：售票中 `nick-live-taichung-bky`（11/21 19:30 → 11/22 00:30）、進行中 `nick-live-taoyuan-bky`（今天 → 明天 00:30，結束日跟著今天走，新增 `addDays()`）、已結束 `nick-live-kaohsiung-bky`（9/26 → 9/27 00:15）、已取消 `nick-summer-pingtung-bky`（8/29 → 8/30 00:30）。開始日期與時間不變，所以 `events.html` 清單列的日期不用改。
+  - 亮點：`hsinchu-vinyl-sf`、`nick-acoustic-tainan-bky` 補一句。
+  - 已取消 `nick-summer-pingtung-bky`：補第二組表演陣容、圖庫兩張、影片預告、兩張門票圖片、單人票的折扣與早鳥、套票組合包的限購與早鳥、自建組合包「GA ＋ 巡演官方 Tee」（綁取貨場次、隨活動下架、sold 12 含在單人票 sold 內）、上架時間。
+  - 已排程 `taipei-nye`：1 人票補門票圖片、套票組合包補限購、補上架時間。
+
+**依據**：D410 決定四（驗收發現的缺口）。見 ASSUMPTIONS UIA-254。
+
+## 2026-10-13（二百二十五）· 訂單管理補齊：付款資訊、日期區間與類型篩選、門票訂單與門票資料、Admin 補寄信、發貨時間（A spec）
+
+**標籤**：release2.4
+
+**範圍**：
+- `orders.html`（5.1.5.3 v1.14）：F2 左側加「訂單日期（起）–（訖）」（可只填一邊）與訂單類型下拉（全部／商品／門票／組合包），與狀態、搜尋同時成立，狀態頁籤的數量跟著連動；匯出改成回報「匯出符合目前篩選的 N 筆」；F3 加「付款時間」（時間＋付款方式兩行）與「發貨時間」兩欄，日期欄改名「訂單日期」；清單加入門票訂單的示範（四場 bookyay 演唱會的直接買票與組合包訂單共 11 筆），新的在上。
+- `order-detail.html`（5.1.5.3.1 v2.16）：
+  - §2.1：從活動交易明細打開（`?from=event&ev=`）時，返回鈕與麵包屑回到該活動的交易明細。
+  - §2.2：「訂單資訊」加訂單類型（徽章，可多個）與來源（ztor 前台）；頁首加「補寄信」——創作者本人停用、滑過說明要聯繫 Admin，Admin 代管態可按，開確認窗確認收件信箱（預填、可改、要是合法信箱），寄出後「訂單資訊」多一列補寄紀錄並跳 toast。只有門票的訂單沒有出貨動作，主操作收起。
+  - §2.2.1：右欄新增「付款資訊」：付款時間、金流商、付款方式、付款編號（共用 link-field 複製）；未付款顯示「—」、不出現付款編號。
+  - §2.3.4：新增「門票資料」：每張票一列（票券編號、活動與場次、票種＋獨立票標籤、來源、狀態有效／已報到／已撤銷），不顯示 QR；直接買票的附「到活動撤銷門票」入口，組合包的門票提示在上方撤銷組合包品項，bookyay 匯入的活動提示到 bookyay 後台。
+  - §2.8：撤銷原因預設理由加「換票」。
+  - 門票品項顯示活動名稱（連到活動詳情）、電子門票徽章；門票品項不放撤銷鈕；組合包門票已報到時撤銷鈕停用並說明。
+- `event-detail.html`（5.1.6.3 v66 §2.7）：交易明細加訂單日期區間（篩表格與子集計數；上方摘要維持整場合計）與「付款時間」欄；訂單欄改成訂單編號、每一列都連到訂單詳情（組合包列的「查看訂單」改連各自的訂單）；排序改看付款時間；匯出回報筆數；帶 `?sec=tx` 進來時停在交易明細。
+- `js/events-store.js`：交易資料加訂單編號、下單日期、付款時間、金流商、付款編號、門票代號；組合包交易帶 `bundleId`、不再一律連 `ZT-10489`；新增 `findOrder()` 由訂單編號反查交易。
+- `js/orders-store.js`：既有 16 筆補付款資訊與發貨時間；新增門票訂單（由交易轉成訂單、照活動幣別顯示）、`typesOf()`；`get()` 查得到任何活動交易的訂單；平台費組成照訂單幣別格式化。
+- 新元件 `ds-components/date-range.css`（design-system §4.238，`.html` demo＋TOC＋目錄列、`.md` 條目）；`ds-components/product-list.css` 訂單清單欄位 8 → 10 欄。
+- `js/i18n.js`：上述字串中英。`feature-scope-map.md` 登記 O34–O37（🔵 release2.4）、`js/devtools.js` 後備表同步。
+
+**依據**：D411。見 ASSUMPTIONS UIA-253。⚠ 這批也屬電子商店（release2.3 已凍結）的功能；是否同步進 release2.3 待使用者決定，未搬。
+
+## 2026-10-13（二百二十四）· release2.4 示範資料：只留 bookyay 活動與共看派對，六個狀態各一場全選項 bookyay 演唱會、共看派對設定補齊（A spec）
+
+**標籤**：release2.4
+
+**範圍**：
+- `js/events-store.js`：`list()` 在版本不含新功能 S95 時濾掉 bookyay 與共看派對以外的示範活動（`isRel24Demo()`）；`taipei-nye`、`hsinchu-vinyl-sf`、`khh-countdown-draft`、`mirror-khh-draft` 改成演唱會並補滿選項；新增五場 bookyay 演唱會（售票中暫停售票 `nick-live-taichung-bky`、售票中已下架 `nick-acoustic-tainan-bky`、進行中 `nick-live-taoyuan-bky`、已結束 `nick-live-kaohsiung-bky`、已取消 `nick-summer-pingtung-bky`）；bookyay 端取消的活動，交易與組合包訂單一律標成由 bookyay 撤銷；六場共看派對的 `room` 補齊 5.1.6.1 F13–F19（播放內容、房間名稱、預估結束、人數上限模式、可觀看地區、隱私）。
+- `events.html`：非 bookyay、非共看派對的單場列與草稿列掛 `data-feat="S95"`；新增五列；新竹、高雄草稿、MIRROR 草稿與台北跨年列改成演唱會的分類、標題與搜尋字串。
+- `create-event.html`：匯入候選清單的見面會、音樂節、發表會條目都改成演唱會；bky-12 補成全選項來源（跨日、提前入場、限購、折扣、早鳥、第二種票示範略過提示）；續填與再辦一場的共看派對會把房間設定帶回表單。
+- `event-detail.html`：共看派對選「不限人數」時，線上房間卡寫「不限人數」。
+- `js/sidebar.js`：bky-2、bky-12、bky-14 的名稱與建立流程同步。
+- `js/i18n.js`：新增五列的列表字串，改寫既有列的類型字串。
+- `feature-scope-map.md`：登記 S95（⚪）；`js/devtools.js`：`FEAT_TIER` 後備表加入 S95。
+- 新增素材 `images/events/teaser-demo.mp4`：用既有主視覺做的 4 秒示意影片，給影片預告與描述影片區塊使用。
+
+**依據**：D410 決定四（示範資料，最終版的示範活動不動）。見 ASSUMPTIONS UIA-252。
+
+## 2026-10-13（二百二十三）· bookyay 活動的已報到改讀 bookyay 回傳，沒資料寫「暫無資料」（A spec）
+
+**標籤**：release2.4
+
+**範圍**：
+- `js/events-store.js`：新增 `bkyCheckin`（`{ received, count }`）與 `checkinNoData()`。bookyay 活動在進行中與已結束時，名單、`checkinSummary()` 和交易的已報到標記都改用回傳人數；還沒收到資料時 `checkinSummary()` 回傳 `noData`。
+- `event-detail.html`：沒有資料時，以下位置都寫「暫無資料」或「—」，不寫 0：
+  - 現場報到台的已到場與未到場
+  - 各票種到場
+  - 進場頻率的註記
+  - 名單的報到欄與篩選計數
+  - 結案卡的已使用、未入場、重複掃描、無效 QR
+  - 名單分頁的報到統計
+- `events.html`：頁首出席率不計沒有資料的場次。
+- `js/i18n.js`：新增 `event-detail.checkin.nodata` 與 `event-detail.checkin.nodata.hint`。
+- ztor 自建活動維持原本的推導，行為不變。
+
+**依據**：D410 決定三、5.1.6.3 v65 §2.3。
+
+## 2026-10-13（二百二十二）· bookyay 匯入的活動不出現新增門票入口（A spec）
+
+**標籤**：release2.4
+
+**範圍**：
+- `create-event.html`：第 4 步的新增門票格對 bookyay 帶入的活動整個不出現，點擊處理也一併擋下（`bkyImportOn()`）。
+- `event-detail.html`：票務分頁的新增門票卡對 bookyay 活動隱藏，空狀態、卡片檢視、列表切換三處都改走 `tixAddOff()`；點擊處理也一併擋下。
+- bookyay 帶入的票照舊顯示。ztor 自建活動不受影響。
+
+**依據**：D410 決定一（取代 D390 決定八）、5.1.6.1 v2.72 F22、5.1.6.3 v65 §2.6。
+
+## 2026-10-13（二百二十一）· 活動詳情票務列表：門票名稱下加灰色小字寫門票種類（B feedback）
+
+**標籤**：release2.4
+
+**範圍**：`event-detail.html`（`renderEdTierTable()`：名稱格改兩行，第二行用 `.ztor-table__sub` 寫「票種門票」或「獨立票」，獨立票的所屬場次接在後面；原本名稱後的「獨立票」徽章移除；新增頁內 `.ed-tixrow__text`）、`js/i18n.js`（新增 `ed.tix.kind.type`）。
+
+**依據**：使用者 2026-10-13 圈選列表名稱格：「門票名稱下，加上灰色小字門票種類或獨立票的標籤」。
+
 ## 2026-10-13（二百二十）· 活動詳情收入含組合包、另列門票收入，名單標組合包買家（A spec）
 
 **標籤**：release2.4

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>訂單詳情 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261014b">
+<script src="shell.js?v=20261014b" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="order-detail">訂單詳情</h1>
+<p class="lede">創作者在訂單詳情查看單一訂單的付款、品項、金額、門票與買家，並標記出貨；撤銷品項、撤銷整張訂單與補寄信只有 Admin 能做。</p>
+
+<div class="toc"></div>
+
+<h2 id="detail-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>從<a href="orders.html">訂單列表</a>或活動詳情的交易明細打開，兩處打開的是同一筆訂單、同一個頁面</li>
+  <li>平台不提供退款動作，退款由 Admin 在平台外完成</li>
+  <li>平台上取消品項的唯一方法是 Admin 撤銷</li>
+  <li>金額與收入管理（Earnings）同一個來源，這一頁不另外計算</li>
+</ul>
+
+<h2 id="detail-flow"><span class="n"></span>操作流程</h2>
+<p>一筆訂單從粉絲下單開始，品項各自完成出貨、取貨或數位交付後，整筆訂單完成；途中可能被 Admin 撤銷，或被買家的銀行發起爭議。</p>
+<div class="dg" role="img" aria-label="訂單流程圖，由左往右：粉絲下單並付款後，品項依交付方式各自完成：物流配送由創作者標記出貨，現場 QR 領取在取貨場次掃碼核銷，數位商品交付下載或存取權限，所有品項都完成後訂單已完成。另外兩條路：Admin 先在平台外退款，再撤銷未完成的品項，品項轉已取消，全部品項取消時訂單已取消；買家或其銀行發起爭議時，訂單爭議中、金額凍結，調查解決後回到對應的結算狀態">
+<div class="dg-hg" style="--dg-c:6">
+  <div class="dg-node" style="grid-row:1/6;grid-column:1"><span class="s">1</span>粉絲下單</div>
+  <span class="dg-a" style="grid-row:1/6;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/6;grid-column:3"><span class="s">2</span>付款完成</div>
+  <span class="dg-a" style="grid-row:1/4;grid-column:4"></span>
+  <span class="dg-a" data-t="退款申請或其他因素" style="grid-row:4;grid-column:4"></span>
+  <span class="dg-a" data-t="買家或銀行發起" style="grid-row:5;grid-column:4"></span>
+  <div class="dg-node q" style="grid-row:1/4;grid-column:5"><span class="s">3</span>品項怎麼交付？</div>
+  <span class="dg-a" data-t="物流配送" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" data-t="現場 QR 領取" style="grid-row:2;grid-column:6"></span>
+  <span class="dg-a" data-t="數位商品" style="grid-row:3;grid-column:6"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:7">創作者標記出貨<small>填物流商與追蹤碼</small></div>
+  <div class="dg-node" style="grid-row:2;grid-column:7">掃領取碼核銷<small>在取貨管理</small></div>
+  <div class="dg-node" style="grid-row:3;grid-column:7">交付下載或存取權限</div>
+  <span class="dg-a" style="grid-row:1;grid-column:8"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:8"></span>
+  <span class="dg-a" style="grid-row:3;grid-column:8"></span>
+  <div class="dg-node" style="grid-row:1/4;grid-column:9"><span class="s">4</span>所有品項都完成履約</div>
+  <span class="dg-a" style="grid-row:1/4;grid-column:10"></span>
+  <div class="dg-node end" style="grid-row:1/4;grid-column:11">已完成</div>
+  <div class="dg-node" style="grid-row:4;grid-column:5"><span class="s">5</span>Admin 在平台外退款<small>Stripe 後台</small></div>
+  <span class="dg-a" style="grid-row:4;grid-column:6"></span>
+  <div class="dg-node stop" style="grid-row:4;grid-column:7">Admin 撤銷未完成的品項</div>
+  <span class="dg-a" style="grid-row:4;grid-column:8"></span>
+  <div class="dg-node stop" style="grid-row:4;grid-column:9/12">品項已取消<small>全部品項都取消時，訂單已取消</small></div>
+  <div class="dg-node stop" style="grid-row:5;grid-column:5"><span class="s">6</span>爭議中<small>金額凍結</small></div>
+  <span class="dg-a" style="grid-row:5;grid-column:6/9"></span>
+  <div class="dg-node" style="grid-row:5;grid-column:9/12">調查解決<small>回到對應的結算狀態</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走一筆訂單，同一列是同一條路線；上面三列是品項依交付方式各自完成，第四列是 Admin 撤銷，最下面一列是爭議。紫色虛線框是要回答的問題，綠框是訂單完成，橘框是品項被取消或金額被凍結。圓圈數字對應下方步驟清單的編號。圖上沒畫的細節（混合訂單、撤銷的條件、補寄信）列在下方步驟清單後面。</p>
+<ol class="plain">
+  <li>粉絲在 ztor 前台下單：
+    <ul class="plain">
+      <li>訂單出現在<a href="orders.html">訂單列表</a></li>
+      <li>含活動門票時，也出現在該活動的交易明細</li>
+    </ul>
+  </li>
+  <li>付款完成，下列資料記在<a href="#fields-payment">付款資訊</a>：
+    <ul class="plain">
+      <li>付款時間</li>
+      <li>金流商</li>
+      <li>付款方式</li>
+      <li>付款編號</li>
+    </ul>
+  </li>
+  <li>品項怎麼交付？
+    <ul class="plain">
+      <li>物流配送：創作者按「標記出貨」，填物流商與追蹤碼，見<a href="#fields-ship">標記出貨視窗</a></li>
+      <li>現場 QR 領取：在取貨場次掃領取碼核銷，核銷結果寫回<a href="#fields-items">品項明細</a></li>
+      <li>數位商品：交付下載或存取權限</li>
+    </ul>
+  </li>
+  <li>所有品項都完成對應的履約後，訂單轉為已完成</li>
+  <li>買家來信申請退款，或 Admin 因其他因素決定取消時，見<a href="#void">撤銷品項</a>：
+    <ul class="plain">
+      <li>Admin 先在 Stripe 後台退款，再撤銷未完成的品項</li>
+      <li>品項轉已取消</li>
+      <li>全部品項都取消時，訂單轉已取消</li>
+      <li>整筆訂單都要取消時，Admin 也可以按頁首的「撤銷整張訂單」，見<a href="#void-whole">整單撤銷</a></li>
+    </ul>
+  </li>
+  <li>買家或其銀行發起爭議時，見<a href="#dispute">爭議與平台外退款</a>：
+    <ul class="plain">
+      <li>訂單轉爭議、金額凍結</li>
+      <li>調查解決後，回到對應的結算狀態</li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>同一筆訂單同時有物流商品與取貨商品時，物流商品可以先標記出貨，取貨商品維持待取貨，直到掃碼核銷</li>
+  <li>取貨期限過了也不會自動取消，沒取貨的品項一直停在等待取貨，取消只能由 Admin 撤銷</li>
+  <li>Admin 可以補寄訂單確認信，見<a href="#fields-header">頁首</a></li>
+</ul>
+<p class="note">依據：5.1.5.3.1 §1、§2.5、§2.6、§2.8、§4；主規格 §7.2；D252、D253、D271、D411。</p>
+
+<h2 id="detail-fields"><span class="n"></span>功能與欄位</h2>
+<p>頁面常駐的區塊依序是<a href="#fields-header">頁首</a>、<a href="#fields-payment">付款資訊</a>、<a href="#fields-items">品項明細</a>、<a href="#fields-amount">金額拆解</a>、<a href="#fields-tickets">門票資料</a>與<a href="#fields-buyer">買家</a>；按操作才出現的視窗是<a href="#fields-ship">標記出貨視窗</a>、<a href="#fields-snapshot">商品快照視窗</a>與<a href="#fields-void">撤銷確認視窗</a>。</p>
+
+<h3 id="fields-header">頁首</h3>
+<p>頁首讓人認出是哪一筆訂單、目前是什麼狀態，並放這筆訂單的主要操作。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>麵包屑</td><td>—</td><td>顯示從哪裡進來的路徑，例如「E-Shop / Order management / 訂單編號」</td></tr>
+    <tr><td>返回</td><td>—</td><td>從訂單列表打開：回到訂單列表，保留原本的狀態篩選與搜尋<br>從活動詳情的交易明細打開：回到該活動的交易明細</td></tr>
+    <tr><td>狀態徽章</td><td>—</td><td>付款與結算、履約兩條狀態各自顯示，不混用，見<a href="#status">訂單的狀態</a><br>爭議中顯示爭議徽章，見<a href="#dispute">爭議與平台外退款</a></td></tr>
+    <tr><td>訂單編號與摘要</td><td>—</td><td>標題是訂單編號<br>摘要寫下單時間與品項數</td></tr>
+    <tr><td>訂單類型與來源</td><td>—</td><td>這筆訂單含哪些類型：商品、門票、組合包，見<a href="orders.html#orders-type">訂單類型</a><br>訂單來源，目前只有 ztor 前台</td></tr>
+    <tr><td>標記出貨（Mark shipped）</td><td>—</td><td>開啟<a href="#fields-ship">標記出貨視窗</a><br>頁面沒有「退款」按鈕</td></tr>
+    <tr><td>撤銷整張訂單</td><td>只有 Admin 能按<br>創作者看得到但停用，說明需要 Admin</td><td>一次撤銷這筆訂單的全部品項，見<a href="#void-whole">整單撤銷</a><br>開啟<a href="#fields-void">撤銷確認視窗</a></td></tr>
+    <tr><td>補寄信</td><td>只有 Admin 能按<br>創作者看得到但停用，說明要聯繫 Admin</td><td>重寄這筆訂單的確認信；含門票時一併重寄購票成功信，附電子門票<br>寄出前先確認收件信箱<br>寄出後在訂單上留一筆寄送紀錄：時間與執行的 Admin<br>bookyay 匯入的活動，只有在 ztor 賣出的訂單由 ztor 補寄</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="fields-payment">付款資訊</h3>
+<p>付款資訊讓創作者對帳與回答客服問題；創作者與 Admin 都看得到。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>付款時間</td><td>—</td><td>付款完成的時間<br>還沒付款顯示「—」</td></tr>
+    <tr><td>金流商（Payment provider）</td><td>—</td><td>例如 Stripe</td></tr>
+    <tr><td>付款方式</td><td>—</td><td>例如信用卡、Apple Pay、LINE Pay</td></tr>
+    <tr><td>付款編號（Payment ID）</td><td>—</td><td>金流商的交易編號，可以複製<br>Admin 撤銷前到金流商後台退款時，用這個編號找到交易</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>只顯示金流商回傳的識別資訊，不顯示卡號等付款憑證</li>
+</ul>
+
+<h3 id="fields-items">品項明細</h3>
+<p>品項明細列出這筆訂單買了哪些品項，一列一個品項；出貨、核銷與撤銷都以這裡記的規格為準。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>品項列</td><td>—</td><td>商品名稱、次分類、單價與數量<br>多選項商品標明粉絲買的選項，例如尺寸 M</td></tr>
+    <tr><td>組合包的成員</td><td>品項是組合包時</td><td>展開列出成員<br>商品成員：有多個選項的，各自標明粉絲下單時選到的規格；只有單一選項的，記商品本身<br>門票成員：記粉絲從允許的門票裡選到的那一張（票種或獨立票）× n 張，每張各一個領取單位</td></tr>
+    <tr><td>點商品名稱</td><td>—</td><td>開啟<a href="#fields-snapshot">商品快照視窗</a>，看下單當時的商品，不直接連到現在的商品頁</td></tr>
+    <tr><td>取貨狀態</td><td>品項是現場 QR 領取時</td><td>顯示「N 件中已核銷 M 件」、所屬取貨場次與最近核銷紀錄的入口<br>可以展開看每個領取單位的狀態與最近核銷時間，狀態見<a href="#status-unit">品項與領取單位的狀態</a><br>被撤銷而失效的件不算待核銷，要分得出還有幾件待領、幾件已失效<br>不顯示買家的領取碼 QR，QR 只在 ztor 前台的買家帳號<br>這是品項的狀態，不取代訂單的狀態</td></tr>
+    <tr><td>撤銷</td><td>每個品項一個<br>只有 Admin 能按</td><td>開啟<a href="#fields-void">撤銷確認視窗</a><br>什麼時候能按、什麼時候停用，見<a href="#void-when">能撤銷的條件</a></td></tr>
+    <tr><td>撤銷紀錄</td><td>品項已被撤銷時</td><td>在該品項的列上顯示撤銷時間、執行者與原因<br>沒填原因時只顯示時間與執行者</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="fields-amount">金額拆解</h3>
+<p>金額拆解從創作者這一端說明這筆訂單賺多少、被扣多少；數字與收入管理（Earnings）同一個來源。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>商品金額（Goods）</td><td>—</td><td>品項的金額</td></tr>
+    <tr><td>運費（Shipping）</td><td>—</td><td>買家付的運費</td></tr>
+    <tr><td>平台費（Platform fee）</td><td>—</td><td>顯示合計；所有品項同一個費率時附上費率，費率不只一種時標「多種費率」<br>可以展開，依費率類別分列，每列顯示費率類別名稱、費率、計費基準與該列平台費，各列加總等於合計<br>算法見<a href="#fee-rule">平台費與支付費</a></td></tr>
+    <tr><td>支付費（Payment fee）</td><td>—</td><td>單列，不能展開<br>算法見<a href="#fee-rule">平台費與支付費</a></td></tr>
+    <tr><td>淨額（Net to you）</td><td>—</td><td>創作者這筆實際拿到的金額</td></tr>
+    <tr><td>前往收入管理（View in Earnings →）</td><td>—</td><td>開啟這筆訂單在收入管理的收入紀錄</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>跨幣別的訂單，顯示原幣、換算幣、匯率與匯率時點</li>
+</ul>
+
+<h3 id="fields-tickets">門票資料</h3>
+<p>訂單含門票時出現，包含直接買的門票與組合包裡的門票，讓創作者查這筆訂單拿到哪幾張票。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>票券編號</td><td>一張票一列</td></tr>
+    <tr><td>活動與場次</td><td>這張票屬於哪一場活動、哪一個場次</td></tr>
+    <tr><td>票種</td><td>票種名稱<br>獨立票顯示票名，加「獨立票」標籤</td></tr>
+    <tr><td>來源</td><td>直接購買，或組合包名稱</td></tr>
+    <tr><td>狀態</td><td>有效<br>已報到<br>已撤銷</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>前往活動</td><td>—</td><td>連到這張票所屬的活動；直接買的門票要撤銷時，在活動詳情撤銷，見<a href="#void-where">門票與組合包在哪裡撤銷</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>這一區不顯示票券 QR，票券只在 ztor 前台的買家帳號</li>
+</ul>
+
+<h3 id="fields-buyer">買家</h3>
+<p>買家區顯示誰買的、寄到哪裡、怎麼聯絡。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>買家（Buyer）</td><td>—</td><td>買家名稱，可以連到粉絲紀錄（View fan record）</td></tr>
+    <tr><td>收件地址（Address）</td><td>實體商品</td><td>完整收件地址，粉絲結帳時必填</td></tr>
+    <tr><td>國家（Country）、城市（City）</td><td>實體商品</td><td>粉絲結帳時填的國家與城市，跟完整地址各自獨立<br>粉絲結帳頁還沒提供這兩欄，上線前為空，畫面要看得出是「未提供」<br>不從完整地址推估國家或城市<br><a href="demand-board.html">需求看板</a>用這兩欄分市場，沒有國家的訂單歸為「未提供地區」</td></tr>
+    <tr><td>聯絡（Contact）</td><td>—</td><td>買家的聯絡 email</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="fields-ship">標記出貨視窗</h3>
+<p>按頁首的「標記出貨」開啟；在視窗裡確認後，完成這筆訂單的出貨或交付。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>物流商（Carrier）</td><td>有物流配送的品項時</td><td>下拉選常見物流商，最後一項是「其他」</td></tr>
+    <tr><td>自訂物流商</td><td>物流商選「其他」時出現</td><td>填物流商名稱</td></tr>
+    <tr><td>追蹤碼（Tracking number）</td><td>有物流配送的品項時</td><td>填出貨的追蹤碼</td></tr>
+    <tr><td>標記出貨（Mark shipped）</td><td>—</td><td>完成物流配送品項的出貨；也用於補寄貨品<br>記一筆履約紀錄，不產生收入、不改金額</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>只有數位商品的訂單：不顯示物流商與追蹤碼，改顯示下載或存取權限的交付狀態</li>
+  <li>只有取貨商品的訂單：不顯示物流商與追蹤碼，改引導到取貨管理查看或核銷</li>
+  <li>現場 QR 領取的品項不在這裡標記取貨，要在取貨場次掃碼核銷</li>
+  <li>完成後顯示對應的憑證：追蹤碼或核銷紀錄</li>
+</ul>
+
+<h3 id="fields-snapshot">商品快照視窗</h3>
+<p>點品項的商品名稱開啟，呈現下單當時的商品，讓創作者對照買家實際買到的樣子。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>快照卡</td><td>—</td><td>用買家看到的樣子呈現主圖、商品名稱、單價與描述<br>不隨商品之後的修改或下架而改變</td></tr>
+    <tr><td>訂單資訊</td><td>—</td><td>粉絲買的選項<br>次分類</td></tr>
+    <tr><td>管理此商品</td><td>—</td><td>連到商品管理頁修改商品</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>快照凍結的是商品呈現（名稱、主圖、單價、描述、所購選項），跟金額拆解凍結的費率是兩件事</li>
+</ul>
+
+<h3 id="fields-void">撤銷確認視窗</h3>
+<p>Admin 按品項的「撤銷」或頁首的「撤銷整張訂單」後出現，送出前一次確認；Admin 不必離開這筆訂單就能看完再決定。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>退款前置提醒</td><td>—</td><td>寫明這個動作不會退款，要先在 Stripe 後台完成退款</td></tr>
+    <tr><td>撤銷對象</td><td>—</td><td>列出要撤銷的品項：品項名、所購選項、數量，讓 Admin 核對跟退款的對象一致<br>撤銷整張訂單時，列出全部品項</td></tr>
+    <tr><td>效果預告</td><td>—</td><td>列出撤銷之後會發生的事，見<a href="#void-after">撤銷之後</a></td></tr>
+    <tr><td>不可逆提醒</td><td>—</td><td>寫明撤銷後不能還原</td></tr>
+    <tr><td>撤銷原因</td><td>選填</td><td>自由填寫，可以留空<br>撤銷整張訂單時，原因套用到每個品項<br>下方有預設理由，可以一鍵帶入，帶入後仍可改寫<br>預設理由有「換票」：換票這次不做，改成撤銷後重新購買，原因記為換票<br>不做分類代碼，也不做統計</td></tr>
+    <tr><td>確認撤銷</td><td>—</td><td>送出後立即生效</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.3.1 §2.1、§2.2、§2.2.1、§2.3.1、§2.3.2、§2.3.3、§2.3.4、§2.4、§2.5、§2.7、§2.8；D143、D295、D296、D333、D360、D380、D411。</p>
+
+<h2 id="status"><span class="n"></span>訂單的狀態</h2>
+<p>一筆訂單同時有兩條狀態，分開顯示、不合併，見<a href="#status-axes">兩條狀態</a>；每個品項與領取單位另有自己的狀態，見<a href="#status-unit">品項與領取單位的狀態</a>。</p>
+
+<h3 id="status-axes">兩條狀態</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">狀態</th><th>管什麼</th><th style="width:34%">例如</th></tr></thead>
+  <tbody>
+    <tr><td>付款與結算（Payment · Settlement）</td><td>付款與收入結算的進度</td><td>已付款（Paid）<br>爭議（Disputed）</td></tr>
+    <tr><td>履約（Fulfilment）</td><td>出貨、取貨或數位交付的進度</td><td>待出貨（To ship）<br>已出貨（Shipped）<br>已完成（Completed）<br>已取消（Cancelled）</td></tr>
+  </tbody>
+</table></div>
+<p>訂單的狀態共有七種：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">狀態</th><th>意思</th></tr></thead>
+  <tbody>
+    <tr><td>待付款（Unpaid）</td><td>還沒付款</td></tr>
+    <tr><td>已付款（Paid）</td><td>已經付款</td></tr>
+    <tr><td>待出貨（To ship）</td><td>等待物流出貨</td></tr>
+    <tr><td>已出貨（Shipped）</td><td>已標記出貨</td></tr>
+    <tr><td>已完成（Completed）</td><td>所有品項都完成對應的履約：已出貨、已核銷或已交付</td></tr>
+    <tr><td>爭議（Disputed）</td><td>買家或其銀行發起爭議，見<a href="#dispute">爭議與平台外退款</a></td></tr>
+    <tr><td>已取消（Cancelled）</td><td>所有品項都已撤銷；這是終態，之後不再有出貨或取貨</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>沒有「已退款」：平台不提供退款動作，退款在平台外完成、一定先於撤銷，所以只用「已取消」表達</li>
+  <li>只有部分品項被撤銷時，訂單狀態不變，取消只顯示在品項上</li>
+  <li>同一筆訂單同時有物流商品與取貨商品時，履約狀態可以並列兩顆徽章，例如「待出貨」加「待取貨」</li>
+  <li>取貨狀態不改寫成訂單的狀態</li>
+  <li>已取消與爭議在訂單列表可以併成同一個篩選分組，但一筆訂單只屬於其中一種</li>
+</ul>
+
+<h3 id="status-unit">品項與領取單位的狀態</h3>
+<p>領取單位（Pickup unit）是一件實體商品的一個實例：買幾件就有幾個，每個各有一組唯一的領取碼（QR）。</p>
+<ul class="plain">
+  <li>組合包下單時展開成成員的領取單位，數量是成員數量 × 組數</li>
+  <li>組合包本身沒有領取碼，每個領取單位記得來自哪個組合包</li>
+  <li>活動門票一票一碼，也算一種領取單位</li>
+  <li>領取單位的狀態：
+    <ul class="plain">
+      <li>取貨場次待設定：商品還沒加入任何取貨場次</li>
+      <li>待核銷</li>
+      <li>已核銷：掃一個領取碼核銷一個領取單位，同一位買家有好幾件時逐件掃</li>
+      <li>已取消：只來自 Admin 撤銷，領取碼即刻失效、不能再核銷</li>
+      <li>已取消是終態</li>
+    </ul>
+  </li>
+  <li>場次結束後沒核銷的領取單位維持待核銷</li>
+  <li>品項被撤銷後轉為已取消，品項的列上顯示撤銷紀錄</li>
+</ul>
+<p class="note">依據：5.1.5.3 F3；5.1.5.3.1 §2.2、§2.3.1、§2.5；主規格 §7.2「訂單」「取貨資格／核銷」「使用限制」「領取單位的正式定義」；D169、D240、D242、D252、D253。</p>
+
+<h2 id="actions"><span class="n"></span>誰能做哪些動作</h2>
+<p>創作者處理出貨；撤銷品項、撤銷整張訂單與補寄信只有 Admin 能做，創作者看得到入口但不能按。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">動作</th><th>創作者</th><th>Admin 額外能做</th></tr></thead>
+  <tbody>
+    <tr><td>標記出貨</td><td>能</td><td>—</td></tr>
+    <tr><td>查看付款資訊</td><td>看得到</td><td>—</td></tr>
+    <tr><td>撤銷品項</td><td>看得到入口，但不能按，說明要 Admin 角色</td><td>能撤銷，條件見<a href="#void-when">能撤銷的條件</a></td></tr>
+    <tr><td>撤銷整張訂單</td><td>看得到入口，但不能按，說明需要 Admin</td><td>能撤銷，見<a href="#void-whole">整單撤銷</a></td></tr>
+    <tr><td>補寄信</td><td>看得到按鈕但停用，說明要聯繫 Admin</td><td>能補寄，見<a href="#fields-header">頁首</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>平台不提供退款動作：沒有退款按鈕、沒有退款申請或審核的介面</li>
+  <li>粉絲端沒有自助取消或退款的入口，也沒有申請表單</li>
+  <li>每次撤銷都記進操作紀錄，標記是哪一位 Admin 執行</li>
+</ul>
+<p class="note">依據：5.1.5.3.1 §2.2、§2.2.1、§2.8；D252、D253、D411、D414。</p>
+
+<h2 id="void"><span class="n"></span>撤銷品項</h2>
+<p>撤銷是平台上取消訂單品項的唯一方法，把 Admin 已在平台外退款的那一筆在 ztor 收乾淨。整個流程見<a href="#void-steps">撤銷的步驟</a>；哪些品項能撤銷，見<a href="#void-when">能撤銷的條件</a>；送出後會發生什麼，見<a href="#void-after">撤銷之後</a>；整筆訂單都要取消時，見<a href="#void-whole">整單撤銷</a>；門票與組合包在哪裡撤銷，見<a href="#void-where">門票與組合包在哪裡撤銷</a>。</p>
+
+<h3 id="void-steps">撤銷的步驟</h3>
+<ol class="plain">
+  <li>決定要撤銷，有兩種來源：
+    <ul class="plain">
+      <li>買家寫信申請，由 Admin 審核，可以接受也可以拒絕</li>
+      <li>Admin 因其他因素自行決定，例如：
+        <ul class="plain">
+          <li>缺貨</li>
+          <li>重複下單</li>
+          <li>付款異常</li>
+          <li>取貨場次取消</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>Admin 在 Stripe 後台完成退款，用<a href="#fields-payment">付款資訊</a>的付款編號找到交易</li>
+  <li>Admin 回到訂單詳情，按該品項的「撤銷」，在<a href="#fields-void">撤銷確認視窗</a>核對後送出</li>
+</ol>
+<ul class="plain">
+  <li>買家申請的收件、審核與准駁都在平台外，買家用通知信頁尾的「聯絡我們」地址聯繫</li>
+  <li>品項的「撤銷」一次撤銷一個品項</li>
+  <li>整筆訂單都要取消時，用頁首的「撤銷整張訂單」一次撤銷全部品項，見<a href="#void-whole">整單撤銷</a></li>
+</ul>
+
+<h3 id="void-when">能撤銷的條件</h3>
+<p>要同時符合兩項才能撤銷：目前是 Admin，而且這個品項還沒完成履約。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">品項</th><th>還沒完成，可以撤銷</th><th>已完成，不能撤銷</th></tr></thead>
+  <tbody>
+    <tr><td>現場 QR 領取，含組合包裡的取貨成員</td><td>所有領取單位都還沒核銷</td><td>任一件已核銷</td></tr>
+    <tr><td>物流配送</td><td>還沒標記出貨</td><td>已標記出貨</td></tr>
+    <tr><td>數位商品</td><td>還沒交付下載或存取權限</td><td>已交付</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>不能撤銷時，入口停用並說明原因，不只是隱藏：
+    <ul class="plain">
+      <li>不是 Admin：說明需要 Admin 角色</li>
+      <li>已完成履約：說明這個品項已完成，是終態、不能撤銷</li>
+      <li>已撤銷過：顯示這個品項已取消</li>
+    </ul>
+  </li>
+  <li>爭議中的品項，符合條件時照樣可以撤銷</li>
+</ul>
+
+<h3 id="void-after">撤銷之後</h3>
+<p>確認後，下列各項同時發生：</p>
+<ul class="plain">
+  <li>品項轉為已取消</li>
+  <li>品項有領取單位時，全部領取單位轉為已取消，領取碼即刻失效</li>
+  <li>撤銷的是組合包時，展開的成員領取單位一起失效</li>
+  <li>實體商品的件數補回庫存，組合包補回各成員的庫存</li>
+  <li>數位商品沒有庫存，不適用補回庫存</li>
+  <li>買家收到「訂單已取消」email，信中列出被撤銷的品項</li>
+  <li>有填原因時，email 附上原因，信中不預設是買家申請的</li>
+  <li>訂單的所有品項都取消時，訂單轉為已取消</li>
+  <li>還有品項未取消時，訂單狀態不變</li>
+  <li>記進操作紀錄，標記執行的 Admin，有填原因時一併記錄</li>
+  <li>不呼叫金流、不產生退款</li>
+</ul>
+<ul class="plain">
+  <li>撤銷不能還原，沒有「取消撤銷」</li>
+  <li>取貨期限過了不會自動撤銷</li>
+</ul>
+
+<h3 id="void-whole">整單撤銷</h3>
+<p>整筆訂單都要取消時，Admin 不必逐個品項撤銷，在頁首按「撤銷整張訂單」，一次撤銷這筆訂單的全部品項。</p>
+<ul class="plain">
+  <li>入口在訂單詳情的頁首</li>
+  <li>只有 Admin 能按：創作者看得到入口，但停用，說明需要 Admin</li>
+  <li>確認視窗跟撤銷品項相同，見<a href="#fields-void">撤銷確認視窗</a></li>
+  <li>撤銷對象列出全部品項</li>
+  <li>撤銷原因套用到每個品項</li>
+  <li>效果等同每個品項各撤銷一次，各項效果見<a href="#void-after">撤銷之後</a></li>
+  <li>訂單轉為已取消</li>
+  <li>每個品項的撤銷紀錄都標註「整單撤銷」</li>
+  <li>不呼叫金流，Admin 要先在 Stripe 後台完成退款</li>
+</ul>
+<p>什麼情況下整單撤銷可以用，規格還在確認，見頁尾的尚待確認。</p>
+
+<h3 id="void-where">門票與組合包在哪裡撤銷</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:34%">品項</th><th>在哪裡撤銷</th></tr></thead>
+  <tbody>
+    <tr><td>直接買的活動門票</td><td>活動詳情，見<a href="event-rules.html#revoke">撤銷票券</a>；門票資料區有連到該活動的入口</td></tr>
+    <tr><td>組合包，含帶門票的票務商品</td><td>這一頁，照本節的規則撤銷</td></tr>
+    <tr><td>bookyay 匯入的活動的門票</td><td>bookyay 後台</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.3.1 §2.3.4、§2.8、§4 情境 6；主規格 §7.2「使用限制」「領取單位的正式定義」；D242、D252、D253、D271、D282、D375、D409、D411、D414。</p>
+
+<h2 id="fee-rule"><span class="n"></span>平台費與支付費</h2>
+<p>平台費與支付費都是創作者這一端的扣項，從創作者的收入裡扣；買家只付折後售價加運費，買家的收據不列這兩筆。</p>
+<ul class="plain">
+  <li>平台費與支付費的算法（逐品項算、折抵分攤、買家看不到），見優惠規則的<a href="promo-rules.html#s2-fees">平台費與支付費怎麼算</a></li>
+  <li>支付費一筆訂單只算一次：以買家實付（含運費）為基準，每筆固定額不因品項多寡重複算</li>
+  <li>售出當下每個品項各記一筆收入，費率鎖在當時的版本</li>
+  <li>之後改費率不回溯，展開看到的費率也是售出當時的，不是平台費率設定現在的值</li>
+</ul>
+<p class="note">依據：5.1.5.3.1 §2.3.2；主規格 §7.6「費率版本」「平台費率」；D278、D309、D316、D333。</p>
+
+<h2 id="dispute"><span class="n"></span>爭議與平台外退款</h2>
+<p>爭議與退款都不是創作者在這一頁能按的操作，這一節說明兩件事怎麼反映在訂單上。</p>
+<ul class="plain">
+  <li>爭議由買家或其銀行發起（chargeback），創作者不能操作</li>
+  <li>訂單爭議中時，金額從可提領暫扣並凍結，調查解決後回到收入管理對應的結算狀態</li>
+  <li>爭議跟撤銷是兩件事：撤銷不會讓爭議提前解決，平台也擋不掉爭議</li>
+  <li>退款由 Admin 在 Stripe 後台完成，平台不記錄退款金額，也沒有退款查詢</li>
+  <li>平台上看得到的只有撤銷的結果：品項轉為已取消</li>
+  <li>訂單詳情與收入管理都不出現「退款」這個動作或狀態</li>
+</ul>
+<p class="note">依據：5.1.5.3.1 §2.2、§2.6；主規格 §7.2、§7.3；D253。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.3.1-訂單詳情.md</code>（v2.17）§1～§5；<code>5.1.5.3-訂單管理.md</code>（v1.15）F3；<code>0-設計規格書.md</code>（v4.57）§7.2、§7.3、§7.6</li>
+    <li>決策：D143、D169、D240、D242、D252、D253、D271、D278、D282、D295、D296、D309、D316、D333、D360、D375、D380、D398、D407、D409、D411、D414</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>七種訂單狀態之間怎麼轉換（例如待付款、已付款、待出貨、已出貨各自什麼時候進入），規格沒有逐條定義</li>
+    <li>「標記出貨」在哪些狀態出現或停用</li>
+    <li>平台費與支付費的確切費率（目前畫面示意一般商品 15%、拍賣 10%、支付費 2.4%）</li>
+    <li>支付費怎麼分攤回各品項的收入</li>
+    <li>撤銷在收入端怎麼沖銷（目前是產品變更提案，未經上游核准）：實際退款金額與沖銷金額怎麼對帳、平台費與支付費退不退、跨幣別用哪個匯率、要不要預扣準備金</li>
+    <li>整單撤銷可用條件（推導為全部品項皆未履約且未撤銷）與含門票品項時的處理</li>
+    <li>品項部分核銷或部分出貨時，剩下的部分能不能撤銷</li>
+    <li>能不能只撤銷組合包裡的部分成員</li>
+    <li>撤銷後限購額度要不要補回</li>
+    <li>撤銷原因的預設理由清單（換票以外）、物流商選項清單，目前是畫面示意</li>
+    <li>城市欄位是自由填寫，還是從平台提供的清單選</li>
+    <li>商品已下架或刪除時，商品快照視窗的「管理此商品」怎麼降級或停用</li>
+    <li>領取單位展開、失效件數與爭議說明怎麼呈現，目前是畫面示意</li>
+  </ul>
+  <p class="k">最近同步：2026-10-14（至 D414）</p>
+</details>
+</div>
+</body>
+</html>

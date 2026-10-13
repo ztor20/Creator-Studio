@@ -394,7 +394,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 175 支；主 class 前 5 個）
+## 元件（ds-components/，共 176 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -428,6 +428,7 @@
 - `control-row.css` — .control-row, .control-row__main, .control-row__sub, .control-group, .control-group--plain ｜ control-row.css · 有外框的「左文字右控件」獨立列
 - `data-list.css` — .data-list, .data-list__row, .data-list__group-label, .data-list__row-main, .data-list__row--disabled ｜ Data list — row-divider list (no card per row).
 - `date-input.css` — .date-input, .date-input__icon, .date-input__ph ｜ date-input.css · 日期／時間欄位的 placeholder 外觀（2026-07
+- `date-range.css` — .date-range, .date-range__label, .date-range__field, .date-range__sep, .date-range__clear ｜ date-range.css · 日期區間篩選（2026-10-13 · D411）
 - `demand-focus.css` — .demand-focus, .demand-focus__head, .demand-focus__titles, .demand-focus__kicker, .demand-focus__title ｜ demand-focus — 選定對象面板（2026-10-05 建，D360 需求看板 S68
 - `demand-table.css` — .demand-table__bar, .demand-table__title, .product-list--demand, .demand-market, .demand-market__name ｜ demand-table — 市場需求表（2026-10-05 建，D360 需求看板 S68，
 - `detail-overview.css` — .detail-overview, .detail-overview--2col, .detail-overview__col, .detail-overview__kpis, .detail-overview__kpi-row ｜ detail-overview.css · 詳情頁總覽的三欄骨架（2026-08-31 使用者裁
