@@ -25,6 +25,9 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-15 D417／D398 原型同步：自動組合包限購（UI-CHANGES 二百三十四、ASSUMPTIONS UIA-259；S94）**：
+> - 主規格 §7.14「組合包的限購」、5.1.5.4 §4 F2、5.1.5.9 §2.3：`js/bundle-editor.js`、`bundle-detail.html` 的 bookyay 自動組合包限購區只畫每人總限購與每次交易限購（`js/purchase-limits.js` `KEYS_BKY`）；`fromRules` 讀條件清單形狀，細節頁限購摘要顯示帶入值與「bookyay 帶入」。
+
 > **2026-10-15 D418 原型同步（UI-CHANGES 二百三十二、ASSUMPTIONS UIA-258）**：
 > - 5.1.6.3 §2.4.2、§2.7：`event-detail.html` 交易摘要加支付費、淨額（摘要、每列、收支、結案）改扣平台費與支付費（支付費借 `js/orders-store.js` `payFee`）；交易明細匯出支付費欄填值、加買家名稱。
 

@@ -570,7 +570,7 @@
     'pprom.code.f.code.ph': { en: 'WELCOME50', zh: 'WELCOME50' },
     'pprom.code.copy': { en: 'Copy', zh: '複製' },
     'pprom.code.generate': { en: 'Generate', zh: '自動產生' },
-    'pprom.code.f.code.hint': { en: '8–20 letters or digits, no symbols. Case-sensitive.', zh: '8–20 個英數字，不含符號，區分大小寫。' },
+    'pprom.code.f.code.hint': { en: '8–20 letters or digits, no symbols, not case-sensitive.', zh: '8–20 個英數字，不含符號，不分大小寫。' },
     'pprom.code.f.discount': { en: 'Discount', zh: '折扣' },
     'pprom.code.f.discount.hint': { en: 'Off the item price, before shipping.', zh: '折抵商品售價，不含運費。' },
     'pprom.code.f.fixedmode': { en: 'Fixed-amount split', zh: '固定金額折法' },

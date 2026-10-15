@@ -16,14 +16,15 @@
 
    對外 API（window.ztorPurchaseLimits）：
      KEYS                                     ['person','order','times']
+     KEYS_BKY                                 ['person','order']（bookyay 套票自動建立的組合包只有這兩種，限購次數不帶入、也不能設定，D417）
      norm(v)                                  → { person, order, times }（字串）｜null；舊資料的單一數字＝每人總限購
      has(v) / posInt(v)                       有沒有填任何一種／正整數或 null
      text(v, unit, T)                         一行摘要：「每人 3 件 · 每次 2 件 · 限 1 次」（沒設＝不限）
      hintHTML(field, unit)                    一句輔助說明（purchase-conds 的條件卡用）
-     fieldsHTML(o)                            三欄（標籤＋輸入框＋輔助說明＋就地錯誤）；o 見函式說明
+     fieldsHTML(o)                            三欄（標籤＋輸入框＋輔助說明＋就地錯誤）；o 見函式說明（o.keys 可只畫其中幾欄）
      read(root, attr)                         從畫好的三欄讀回 { person, order, times }
      derive(members)                          組合包預設＝成員交集（取最嚴）＋門票上限（只能收窄的那條天花板）
-     fromRules(rules)                         舊的票務商品 rules（cap='cap' 時）→ 已覆寫的值（相容 D342 的資料形狀）
+     fromRules(rules)                         舊的票務商品 rules（cap='cap' 時）或條件清單形狀（rules.conds.cap）→ 已覆寫的值
      errors(lim, der, T)                      組合包限購的擋存錯誤 { 欄位: 訊息 }（lim＝null 是跟隨成員）
      blockHTML(lim, der, T, opts)             組合包的限購區塊（跟隨成員／已覆寫＋三欄＋取自誰）
      onClick(e, holder, der) / onInput(e, holder)   互動（holder.limits：null＝跟隨、物件＝覆寫）；回傳 true＝要重畫／有處理
@@ -41,6 +42,8 @@
   if (window.ztorPurchaseLimits) return;
 
   var KEYS = ['person', 'order', 'times'];
+  /* D417（2026-10-15）：bookyay 套票自動建立的組合包，限購只有每人總限購與每次交易限購（限購次數不帶入、也不能設定） */
+  var KEYS_BKY = ['person', 'order'];
   var esc = function (s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -84,11 +87,12 @@
     return '<p class="field__hint" data-i18n="' + k + '">' + esc(Tdef(k)) + '</p>';
   }
   /* o：{ unit, vals, T, attr（輸入框的屬性名，預設 data-pl-f）, disabled, idPrefix（選填：輸入框 id 前綴）,
-         extra(k)（選填：插在輔助說明下的一段 HTML，例如組合包的「取自誰」）, errs（true＝每欄留一個就地錯誤） } */
+         extra(k)（選填：插在輔助說明下的一段 HTML，例如組合包的「取自誰」）, errs（true＝每欄留一個就地錯誤）,
+         keys（選填：只畫這幾欄，預設三欄；bookyay 自動組合包傳 KEYS_BKY，D417） } */
   function fieldsHTML(o) {
     o = o || {};
     var unit = o.unit || 'item', vals = norm(o.vals) || {}, attr = o.attr || 'data-pl-f';
-    return '<div class="limit-set__fields">' + KEYS.map(function (k) {
+    return '<div class="limit-set__fields">' + (o.keys || KEYS).map(function (k) {
       var lk = 'pl.' + unit + '.' + k, id = o.idPrefix ? o.idPrefix + '-' + k : '';
       return '<div class="field limit-set__field" data-pl-field="' + k + '">' +
         '<label class="field__label"' + (id ? ' for="' + id + '"' : '') + ' data-i18n="' + lk + '">' + esc(tr(o.T, lk)) + '</label>' +
@@ -142,8 +146,14 @@
     return o;
   }
   function fromRules(rules) {
-    if (!rules || rules.cap !== 'cap') return null;
-    return { person: String(rules.person || ''), order: String(rules.order || ''), times: String(rules.times || '') };
+    if (!rules) return null;
+    if (rules.cap === 'cap') return { person: String(rules.person || ''), order: String(rules.order || ''), times: String(rules.times || '') };
+    /* 2026-10-15（UI-CHANGES 二百三十四）：D366 起的條件清單形狀 rules.conds.cap（events-store 的 bookyay 自動組合包，
+       套票限購帶入落在這裡，D390 第 19 題）。原本只認 cap='cap' 的舊形狀，這種資料讀成 null＝跟隨成員，
+       組合商品細節頁因此把帶入的「每人 2 組 · 每次 1 組」顯示成「不限 · 跟隨成員」。 */
+    var c = rules.conds && rules.conds.cap;
+    if (c && typeof c === 'object') return { person: String(c.person || ''), order: String(c.order || ''), times: String(c.times || '') };
+    return null;
   }
   /* 「取自誰」：商品寫名字＋件數算式，門票寫張數算式；限購次數不換算、只寫名字 */
   function whoText(k, c, T) {
@@ -183,6 +193,7 @@
   }
 
   /* opts：{ locked（bookyay 鎖定：不給動作）, lockNote（鎖定時取代說明的一句原因）, disabled（檢視態：動作與欄位停用）,
+             keys（選填：只畫這幾欄；bookyay 自動組合包傳 KEYS_BKY，不畫「限購次數」，D417）,
              title（2026-10-12：true＝標題列左邊畫「限購」標題，頁面就不必在外面另放欄位標籤） }
      2026-10-12（使用者裁示，建立組合包改版）：「跟隨成員／已覆寫」由「徽章＋覆寫按鈕」改成標題列右側
      「跟隨成員預設」＋ on／off 開關（同購買條件的「跟隨活動預設」）：開＝跟隨成員、關＝覆寫。
@@ -217,7 +228,7 @@
       '</div>' +
       (opts.locked && opts.lockNote ? '<p class="limit-set__sub">' + esc(opts.lockNote) + '</p>'
         : '<p class="limit-set__sub" data-i18n="' + sub + '">' + esc(tr(T, sub)) + '</p>') +
-      fieldsHTML({ unit: 'set', vals: vals, T: T, disabled: !over || opts.locked || opts.disabled, extra: extra, errs: true }) +
+      fieldsHTML({ unit: 'set', vals: vals, T: T, disabled: !over || opts.locked || opts.disabled, extra: extra, errs: true, keys: opts.keys }) +
     '</div>';
   }
   function onClick(e, holder, der) {
@@ -245,7 +256,7 @@
   }
 
   window.ztorPurchaseLimits = {
-    KEYS: KEYS, norm: norm, has: has, posInt: posInt, text: text,
+    KEYS: KEYS, KEYS_BKY: KEYS_BKY, norm: norm, has: has, posInt: posInt, text: text,
     hintHTML: hintHTML, fieldsHTML: fieldsHTML, read: read,
     derive: derive, followVals: followVals, fromRules: fromRules, errors: errors,
     blockHTML: blockHTML, onClick: onClick, onInput: onInput, syncErrors: syncErrors

@@ -1857,7 +1857,9 @@
       /* 2026-10-12 改版（D402，UI-CHANGES 一百八十八）：title:true＝元件自己畫「限購」標題＋「跟隨成員預設」開關（同建立組合包），外層小標退場 */
       host.innerHTML = PL.blockHTML(bundleModel.limits, der, T, {
         locked: limitsLocked(), disabled: !editing, title: true,
-        lockNote: limitsLocked() ? T('pl.lock.bky', 'Created automatically from a bookyay package ticket — the limits are locked.') : ''
+        lockNote: limitsLocked() ? T('pl.lock.bky', 'Created automatically from a bookyay package ticket — the limits are locked.') : '',
+        /* D417（2026-10-15，UI-CHANGES 二百三十四）：bookyay 自動組合包只帶每人總限購與每次交易限購，不畫「限購次數」 */
+        keys: limitsLocked() ? PL.KEYS_BKY : null
       });
       /* 2026-10-12（UI-CHANGES 一百八十八）：「跟隨成員預設」開關是 <button>，檢視態會被 shared.css 的按鈕白名單整顆藏掉——
          標成 data-view-safe 讓它照樣看得到（檢視態本來就 disabled、不能切，Q128） */
@@ -1897,9 +1899,12 @@
       if (!PL) return '';
       const der = PL.derive(limitMembers());
       const v = bundleModel.limits || PL.followVals(der);
-      return PL.text(v, 'set', T) + ' · ' + T(bundleModel.limits ? 'pl.state.override' : 'pl.state.follow', '');
+      /* 2026-10-15（UI-CHANGES 二百三十四）：bookyay 自動組合包的限購是帶入並鎖定的兩項，狀態寫「bookyay 帶入」、不寫跟隨成員／已覆寫 */
+      const st = limitsLocked() ? 'pl.state.locked' : (bundleModel.limits ? 'pl.state.override' : 'pl.state.follow');
+      return PL.text(v, 'set', T) + ' · ' + T(st, '');
     };
-    const limitsErrCount = () => (PL ? Object.keys(PL.errors(bundleModel.limits, PL.derive(limitMembers()), T)).length : 0) + condsErrCount();
+    /* bookyay 自動組合包的限購鎖定、改不了，不擋存（同 bundle-editor limitsErrCount 的 srcFix 判斷） */
+    const limitsErrCount = () => (PL && !limitsLocked() ? Object.keys(PL.errors(bundleModel.limits, PL.derive(limitMembers()), T)).length : 0) + condsErrCount();
     if (settingsPanel && PL) {
       settingsPanel.addEventListener('click', e => {
         if (!tbEditing() || limitsLocked()) return;
