@@ -105,6 +105,17 @@
   text-align: left;
   margin-inline: 0;
 }
+/* 分段版的標籤寬度＝一格（2026-10-15 目視檢查 C8）：標籤是 nowrap，字比一格長時會直接畫進下一格、跟鄰居疊字
+   （英文「TICKET TYPES & TICKETS」壓到「BUNDLES」）。格子自己裁切、超出的字以刪節號收尾——文案仍要寫得進一格，
+   這條只是最後一道保險，不讓兩個標籤疊在一起。 */
+.progress-stepper--segmented .progress-stepper__label { min-width: 0; overflow: hidden; }
+.progress-stepper--segmented .progress-stepper__label > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+/* 最後一格右邊沒有鄰居，可以往右多借一段空白（英文「PREVIEW & PUBLISH」），但**只借到 `--progress-stepper-tail` 為止**，
+   超出一樣以刪節號收尾（2026-10-15 驗收：原本「往右無限延伸」，768／1024 寬時字一路畫進頂列右側的「Saved · just now」）。
+   可借多少由消費端決定：wizard 頂列把自己進度欄的右內距（28px）交給它（shared.css `.wizard__progress`），
+   沒設的消費頁＝0、最後一格與其他格一樣裁切。完整字由消費頁寫進標籤的 title。 */
+.progress-stepper--segmented .progress-stepper__label:last-child { overflow: visible; }
+.progress-stepper--segmented .progress-stepper__label:last-child > span { max-width: calc(100% + var(--progress-stepper-tail, 0px)); }
 
 .progress-stepper__labels {
   display: flex;
@@ -185,4 +196,10 @@
 /* 窄螢幕：標籤縮小、軌道加高一點維持可見 */
 @media (max-width: 720px) {
   .progress-stepper__label { font-size: var(--fs-11); letter-spacing: .02em; }
+  /* 手機上最後一格照其他格裁切：wizard 頂列 ≤1024 已把 --progress-stepper-tail 歸 0（shared.css），
+     這裡的 overflow:hidden 是給沒設 tail 的消費頁的保險，避免畫出視窗。 */
+  .progress-stepper--segmented .progress-stepper__label:last-child { overflow: hidden; }
+  /* 狀態小字（已完成／未完成）在手機一格只剩約 50px，只會被裁成「Don」「Not do」這種殘字；
+     完成與否由上方分段軌道的實色／淡色表達，手機上收起這行。 */
+  .progress-stepper--segmented .progress-stepper__state { display: none; }
 }

@@ -59,16 +59,17 @@
 /* [hidden] 要能收起：class 直接寫 display 會蓋掉 [hidden] 的 display:none，
    故補這條，讓以 hidden 屬性切換顯隱（如每類型空狀態）的用法正確收起。 */
 .empty-card[hidden] { display: none; }
+/* 2026-10-12 使用者：「空畫面的 icon 可以不要有方形外框」——圖示直接坐在畫布上，不再裝在一顆 40px 底色方塊裡；
+   原本方塊裡的 20px 圖示放大成 32px 補回視覺重量。下面的色彩修飾類只剩墨色（底色一併退場）。
+   舊值：background var(--ztu-film)（舊 var(--muted)）＋ border-radius var(--radius-md)。 */
 .empty-card__icon {
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--ztu-film);   /* ztorUI 換裝補漏 2026-09-11（稽核 A 表）：舊值 var(--muted) */
-  color: var(--foreground-muted);
+  color: var(--muted-foreground);   /* 2026-10-12 使用者：「要灰色的」——圖示與標題都退成灰（原 --foreground-muted／標題前景白） */
   display: grid;
   place-items: center;
 }
-.empty-card__icon .ztor-icon { width: 20px; height: 20px; }
+.empty-card__icon .ztor-icon { width: 32px; height: 32px; }
 /* Color modifiers — for a card whose header already carries a matching
    .card__title-icon accent (card.css): tints the empty-state icon to the
    SAME hue so the box reads as one continuous accent region across its
@@ -76,16 +77,17 @@
    tokens as .card__title-icon, plus the color-mix recipe already used by
    .kpi__delta). Sections without a colored header icon keep the plain
    muted default above — don't apply a modifier just for variety. */
-.empty-card__icon--primary { background: color-mix(in srgb, var(--primary) 14%, var(--card)); color: var(--primary); }
-.empty-card__icon--warning { background: color-mix(in srgb, var(--status-warning) 14%, var(--card)); color: var(--status-warning-ink); }
-.empty-card__icon--info    { background: color-mix(in srgb, var(--status-info) 14%, var(--card)); color: var(--status-info); }
-.empty-card__icon--accent  { background: color-mix(in srgb, var(--status-accent) 14%, var(--card)); color: var(--status-accent); }
-.empty-card__icon--success { background: color-mix(in srgb, var(--status-success) 14%, var(--card)); color: var(--status-success); }
+.empty-card__icon--primary { color: var(--primary); }
+.empty-card__icon--warning { color: var(--status-warning-ink); }
+.empty-card__icon--info    { color: var(--status-info); }
+.empty-card__icon--accent  { color: var(--status-accent); }
+.empty-card__icon--success { color: var(--status-success); }
 .empty-card__title {
   font-family: var(--font-display);
   font-size: var(--fs-14);
   font-weight: var(--fw-regular);
   margin: 0;
+  color: var(--muted-foreground);
 }
 .empty-card__text {
   font-size: var(--fs-12);

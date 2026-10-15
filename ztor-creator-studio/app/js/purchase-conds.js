@@ -71,7 +71,7 @@
     "d.cond.add":      { en: "Add condition",           zh: "新增條件" },
     "d.cond.remove":   { en: "Remove",                  zh: "移除" },
     "d.cond.empty":    { en: "No conditions yet. Anyone can buy, at the ticket price.", zh: "還沒有條件：任何人都買得到，照票價賣。" },
-    "d.cond.none":     { en: "No conditions",           zh: "沒有條件" },
+    "d.cond.none":     { en: "No conditions set",       zh: "未設定條件" },
     "d.cond.price.disc":     { en: "Discounted price",  zh: "折扣價" },
     "d.cond.price.discTime": { en: "Price in the window", zh: "期間內價格" },
     "d.cond.price.discTier": { en: "Price for the tier", zh: "分級價格" },
@@ -228,7 +228,7 @@
       if (k === "discTime") h += '<p class="field__error" data-cond-warn="discTime" hidden>' + esc(t("d.cond.warn.time")) + '</p>';
       return h;
     }
-    /* chip＝要不要在卡頂列掛來源標記：整組鎖定時區塊標題旁已經有一枚，卡上不重複（UIA-212） */
+    /* chip＝要不要在卡頂列掛來源標記：bookyay 帶入的條件卡一律掛（2026-10-15 起，取代原本「整組鎖定時不重複」的做法） */
     function cardHTML(k, c, l, chip) {
       const m = meta(k);
       return '<div class="cond-list__item control-group control-group--plain' + (l ? " is-source-locked" : "") + '" data-cond="' + k + '"' + (m.feat ? ' data-feat="' + m.feat + '"' : "") + '>' +
@@ -264,7 +264,9 @@
     const featOf = k => only && !r.conds[k].bky && only.indexOf(k) >= 0 ? ctx.addFeat : "";
     return '<div class="cond-list">' +
         (keys.length ? keys.map(k => {
-                         const h = cardHTML(k, r.conds[k], lockOf(k), !locked && !!r.conds[k].bky);
+                         /* 2026-10-15 目視檢查 C5（照 design-system 條件清單的 anatomy）：bookyay 帶入的條件卡一律在卡頂列掛來源標記——
+                            整組鎖定時也掛（取代原本「區塊標題已有一枚、卡上不重複」的做法：區塊標題那一枚同輪拿掉，標記跟著被鎖的那張卡） */
+                         const h = cardHTML(k, r.conds[k], lockOf(k), !!r.conds[k].bky);
                          const f = featOf(k);
                          return f ? h.replace('<div class="cond-list__item', '<div data-feat="' + f + '" class="cond-list__item') : h;   // disc／discTime 本身沒有 feat，可直接掛
                        }).join("")

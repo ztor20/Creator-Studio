@@ -1934,7 +1934,8 @@
       return '<section class="bd-sec bd-sec--stack" data-bd-sec="content">' +
         '<div class="bd-sec__head' + (srcFix(b) ? ' bd-sec__head--actions' : '') + '">' +
           '<h3 class="bd-sec__title">' + esc(T('cb.sec.members')) + '</h3>' +
-          (srcFix(b) ? '<span class="badge badge--neutral" data-feat="S56">' + esc(T('ed.src.bky', 'From bookyay')) + '</span>' : '') +
+          /* 2026-10-15 目視檢查 C4：來源標記由膠囊徽章改用全站同一支 .field-source（鎖頭＋bookyay 帶入） */
+          (srcFix(b) ? '<span class="field-source" data-feat="S56"><i data-lucide="lock" class="ztor-icon"></i>' + esc(T('ed.src.bky', 'From bookyay')) + '</span>' : '') +
         '</div>' +
         lockNote +
         '<div class="member-table member-table--no-left" data-bd-members>' +   /* 2026-10-12：同建立組合包，沒有剩餘欄 */
@@ -2235,7 +2236,8 @@
     function secFilmsSplitHTML(b) {
       var films = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createFilmPicker;
       return films
-        ? '<section class="bd-sec bd-sec--stack" data-bd-sec="films" data-feat="S64">' +
+        /* 2026-10-15 D422 決定二：電影關聯從 S64 拆出、改掛 S97（🔵 release2.4）——建立活動的票務商品在 release2.4 也提供電影關聯；S64 其餘欄位維持 ⚪ */
+        ? '<section class="bd-sec bd-sec--stack" data-bd-sec="films" data-feat="S97">' +
             '<div class="bd-sec__head"><h3 class="bd-sec__title">' + esc(T('cp.films')) + '</h3></div>' +
             '<div class="field"><div class="field__hint">' + esc(T('cb.films.sub')) + '</div><div data-bd-films></div></div>' +
           '</section>'

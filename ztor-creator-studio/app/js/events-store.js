@@ -222,10 +222,10 @@
       end: '22:00',
       doors: '18:30',
       tiers: [
-        /* reserved＝下單未付款佔走的、paused＝暫停販售（2026-08-11 新欄，示範營運列表用）。 */
+        /* reserved＝下單未付款佔走的（2026-08-11 新欄，示範營運列表用）。墓碑 2026-10-15（D422 決定三）：單張門票的 paused（暫停販售）欄位退場，示範值一併拿掉。 */
         { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 40, earlyMin: 30, reserved: 6 },
         { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 60, reserved: 11 },
-        { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 100, paused: true }
+        { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 100 }
       ],
       bundles: [
         { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-vip'], qty: 1 },
@@ -1389,7 +1389,7 @@
       room: { url: 'ztor.live/v/lrh-studio-live', chat: true, capacity: 800 },
       tiers: [
         { id: 'tier-stream', name: 'Live stream', price: 350, qty: 700, sold: 402 },
-        { id: 'tier-bts', name: 'Stream + behind the scenes', price: 650, qty: 100, sold: 71, paused: true }   // D391 補充二：release2.4 看得到的單張門票暫停示範（售票中、單場、非系列）
+        { id: 'tier-bts', name: 'Stream + behind the scenes', price: 650, qty: 100, sold: 71 }   // 墓碑 2026-10-15（D422 決定三）：單張門票暫停示範（D391 補充二）退場
       ],
       bundles: [
         { id: 'bd-stream-album', name: '直播票 ＋ 數位專輯', tickets: { tierIds: ['tier-stream'], qty: 1 },
@@ -2754,7 +2754,8 @@
     catch (e) { return {}; }
   }
 
-  /* release2.4 留下的示範活動（D410 決定四）：bookyay 匯入的活動與共看派對。其餘＝功能 S95「非 bookyay 的示範活動（2.4 隱藏）」。 */
+  /* release2.4 留下的示範活動（D410 決定四）：bookyay 匯入的活動與共看派對。其餘＝功能 S95「非 bookyay 的示範活動（2.4 隱藏）」。
+     2026-10-15 D422 決定一：共看派對另受 S75 管（release2.4 不含，list() 另濾），這支只回答「是不是 S95 那一批」。 */
   function isRel24Demo(ev) { return !!ev && (ev.source === 'bookyay' || ev.type === 'watchparty'); }
 
   /* ── bookyay 活動的已報到（2026-10-13 · D410 決定三，5.1.6.3 §2.3）──────────────────────────
@@ -2879,9 +2880,12 @@
       /* 2026-10-13 D410 決定四（示範資料）：release2.4 只顯示 bookyay 匯入的活動與共看派對——其餘示範活動掛功能 S95（⚪），
          版本不含 S95 時不進清單（活動清單、計數、店鋪設定的活動候選、首頁畫布等 list() 的消費端一起收起）；get() 不濾（直連照樣查得到）。 */
       var demoOff = window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S95');
+      /* 2026-10-15 D422 決定一：release2.4 不含共看派對（S75 改 ⚪）——版本不含 S75 時共看派對的示範活動也不進清單；
+         與 events.html 靜態列掛 data-feat="S75" 同一個標記（最終版照舊）。get() 不濾。 */
+      var wpOff = window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S75');
       return clone(EVENTS).concat(dynDrafts()).filter(function (e) {
         return !isRemoved(e.id) && !(multiOff && e.sessions && e.sessions.length > 1) &&
-          !(demoOff && !isRel24Demo(e));
+          !(demoOff && !isRel24Demo(e)) && !(wpOff && e.type === 'watchparty');
       }).map(function (e) {
         applyEdits(e);                       // D390：活動詳情的編輯結果
         if (m[e.id]) e.status = m[e.id];

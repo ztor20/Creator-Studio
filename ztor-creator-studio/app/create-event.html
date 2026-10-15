@@ -521,26 +521,15 @@
              的展示相簿——第一張就是主視覺（角落掛 __flag 標記），其餘是圖庫，末格永遠是「＋ 新增圖片」。
              為什麼這樣比較好：原本要人先決定「這張是主視覺還是圖庫」再選檔，但那是同一批素材的排序問題，
              不是兩種東西；排在第一就是主視覺，改順序＝改主視覺，少一個要先想清楚的分類決定。 -->
-        <div class="upload-assets upload-assets--fill" id="ce-gallery">
+        <div class="upload-assets upload-assets--fill" id="ce-gallery" data-gallery-kv>
           <div class="upload-tile upload-tile--portrait is-empty" data-upload data-gallery-add>
             <span class="upload-tile__icon">＋</span>
             <span class="upload-tile__title" data-i18n="ce.img.add">Add image</span>
           </div>
         </div>
         <!-- D329（5.1.6.1 F21）：bookyay 原圖（1:1）不擋發布，只提示換成 2:3。相簿裡還留著帶入的原圖就顯示，換掉就收（syncImgRatioNote）。 -->
-        <p class="field__hint mt-8" id="ce-img-ratio-note" data-feat="S56" data-di="d.img.ratio" hidden>bookyay 原圖是 1:1，可以換一張 2:3 的圖，或在下方調整主視覺的裁切。</p>
-        <!-- 主視覺裁切（2026-10-09 · D391 第 9 題，5.1.6.1 F4／F21「圖片」）：bookyay 主視覺帶入後當直式主視覺，創作者可換圖或調整裁切。
-             1:1 原圖放進 2:3 直式框時左右會被裁掉，這裡選保留哪一側（靠左／置中／靠右，寫成主視覺的 object-position）。
-             只在相簿第一張仍是帶入的原圖時出現（syncImgRatioNote）；控制項用既有 .segmented，不另做裁切元件。 -->
-        <div class="field mt-8" id="ce-kv-crop" data-feat="S56" hidden>
-          <div class="field__label" data-di="d.img.crop">主視覺裁切</div>
-          <div class="segmented" role="radiogroup" id="ce-kv-crop-seg">
-            <button class="segmented__btn" type="button" role="radio" aria-checked="false" data-crop="left" data-di="d.img.crop.left">靠左</button>
-            <button class="segmented__btn segmented__btn--active" type="button" role="radio" aria-checked="true" data-crop="center" data-di="d.img.crop.center">置中</button>
-            <button class="segmented__btn" type="button" role="radio" aria-checked="false" data-crop="right" data-di="d.img.crop.right">靠右</button>
-          </div>
-          <p class="field__hint" data-di="d.img.crop.hint">1:1 的原圖放進 2:3 的直式框，左右會裁掉一部分；選要保留哪一側。</p>
-        </div>
+        <p class="field__hint mt-8" id="ce-img-ratio-note" data-feat="S56" data-di="d.img.ratio" hidden>bookyay 原圖是 1:1，可以換一張 2:3 的圖。</p>
+        <!-- 2026-10-12 D404：主視覺裁切（#ce-kv-crop）退場——不提供調整裁切，只能換圖。 -->
         <div class="field" style="margin-top:var(--sp-24)">
           <div class="field__label"><span data-i18n="ce.video">Video teaser</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></div>
           <div class="upload-tile upload-tile--video" data-asset="video">
@@ -1476,6 +1465,16 @@
 
   const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb || k;
 
+  /* 步驟標籤的完整字放進 title（2026-10-15）：窄寬時標籤會以刪節號收尾，滑過仍讀得到全文。
+     語言切換後字會換，i18n:applied 再同步一次。 */
+  function syncStepTitles() {
+    document.querySelectorAll(".progress-stepper__label").forEach(s => {
+      const tx = s.firstElementChild;
+      if (tx) s.title = tx.textContent.trim();
+    });
+  }
+  document.addEventListener("i18n:applied", syncStepTitles);
+
   function render() {
     document.querySelectorAll("[data-step-panel]").forEach(p => {
       p.classList.toggle("hidden", Number(p.dataset.stepPanel) !== step);
@@ -1486,6 +1485,7 @@
       s.classList.toggle("progress-stepper__label--current", n === step);
       s.classList.toggle("progress-stepper__label--done", n < step);
     });
+    syncStepTitles();
     const ps = document.getElementById("stepper");
     /* 進度用「還看得到幾格」算：跳掉的格子不佔位，否則走到最後一步進度條也填不滿。 */
     const shown = Array.from(labels).filter(l => !skipped(labelStep(l)));
@@ -2260,7 +2260,6 @@
       typeLabel: st.typeName,
       region: cSel && cSel.value ? (cSel.options[cSel.selectedIndex]?.textContent || "").trim() : "",
       keyvisual: kv, gallery: kvImgs, video: hasVideo,
-      keyvisualPos: (kv && kvCrop[kv]) || "",   // D391 第 9 題：主視覺裁切位置（相簿下方 #ce-kv-crop）
       name: { key: "name" }, highlight: { key: "highlight" },
       /* 主辦＝創作者本人（原型無主辦欄，取目前 persona 的名冊名＋頭像） */
       organizer: persona ? persona.name : "Gary Lin", organizerAvatar: persona ? (persona.avatar || "") : "",
@@ -2685,6 +2684,13 @@
       renderPreview(); scheduleSave();
     });
 
+    /* 2026-10-12：hover 的「設為主視覺」把那一格移到最前面（partials/upload-tile.js initGalleryKv），這裡重算標記與預覽 */
+    gal.addEventListener("gallery:reorder", () => {
+      syncFlags();
+      renderTiers();
+      renderPreview(); scheduleSave();
+    });
+
     document.addEventListener("i18n:applied", () => {
       const f = gal.querySelector(".upload-tile__flag");
       if (f) f.textContent = T("ce.img.keyvisual", "Key visual");
@@ -3031,18 +3037,13 @@
       /* 側排（2026-09-22 D311）：彈窗改單欄之後，這一格不再住在右半欄，縮成一格 104px
          的上傳格、說明排在旁邊——圖片是選填的辨識物，不該占掉一整欄的高度。 */
       '<div class="upload-tile-aside">' +
-        '<div class="upload-tile upload-tile--portrait ' + (src ? "is-filled" : "is-empty") + '" data-upload data-tier-img>' +
+        '<div class="upload-tile upload-tile--portrait ' + (src ? "is-filled" : "is-empty") + '" data-upload data-tier-img' +
+          (own ? ' data-upload-reset="data-tier-img-reset" data-upload-reset-label="' + esc(dT("d.tier.img.reset")) + '"' : '') + '>' +
           (src ? '<img class="upload-tile__thumb" src="' + esc(src) + '" alt="">'
                : '<span class="upload-tile__icon">＋</span>') +
         '</div>' +
-        '<div class="upload-tile-aside__side">' +
-          /* 用自己的圖／用活動主視覺才需要說明；活動還沒有主視覺那句撤除
-             （2026-08-11 使用者指示）——上傳格本身的「＋」已經在說「按這裡加圖」，
-             不必再用一段文字複述一次。 */
-          (own || src ? '<p class="field__hint">' + esc(dT(own ? "d.tier.img.own" : "d.tier.img.event")) + '</p>' : '') +
-          (own ? '<button type="button" class="btn btn--outline btn--sm" data-tier-img-reset>' +
-                   esc(dT("d.tier.img.reset")) + '</button>' : '') +
-        '</div>' +
+        /* 2026-10-12 使用者：「這行字不需要有」——旁邊「現在用的是活動主視覺…／這張票用的是自己的圖」兩句說明整塊退場，
+           圖片格本身（含 hover 的還原圖示）已經夠說明。 */
       '</div></div>';
   }
 
@@ -3205,7 +3206,7 @@
         /* 名字那一欄的常駐說明要跟著「以票種建立／以獨立票建立」換一句，
            不能寫死票種那一版——切到獨立票之後說明會與欄位標籤互相矛盾。 */
         else if (k === "ntype") hint.textContent = newTypeHintText(t);
-        else if (k === "price" && t.fix) hint.textContent = bkyBaseText(t);   // bookyay 票價列的港幣原值說明
+        else if (k === "price") hint.textContent = priceHowText(t);   // 票價列常駐說明（粉絲實付；bookyay 另附港幣原值）
         else hint.textContent = "";
         if (input) input.setAttribute("aria-invalid", show ? "true" : "false");
       });
@@ -3445,8 +3446,10 @@
   const calcRO = (v, key) => '<span class="calc-list__ro"' +
     (key ? ' data-tier-calc="' + key + '"' : '') + '>' + esc(v) + '</span>';
   function calcMoneyInput(key, value, dis) {
-    return '<span class="amount-field amount-field--readonly">' +
-      '<span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' +
+    /* 2026-10-12 使用者：「前面的 $ 應該要顯示實際幣別」「金額太貼左邊」——前綴改成創作者幣別代碼（amount-field--code，
+       輸入框左側多留一段間距），不再寫死 $。 */
+    return '<span class="amount-field amount-field--readonly amount-field--code">' +
+      '<span class="amount-field__unit">' + esc(CE_BASE_CURRENCY) + '</span>' +
       '<input class="input amount-field__input" type="number" min="0" step="1" data-tier-f="' + key +
         '" value="' + esc(value == null ? "" : value) + '" placeholder="0"' + (dis ? " disabled" : "") + '></span>';
   }
@@ -3460,17 +3463,19 @@
          底下兩格又各自無關，多一行「基本」只是把空間還給自己）；
        quiet=true      → 標題退成群組小字標那一階（「入場」：這一層沒有任何控制項）。
      正常那一階留給價格與數量（算式單元）與購買條件（區塊層的跟隨開關）。 */
-  function tierSecHTML(titleKey, body, tail, quiet) {
+  function tierSecHTML(titleKey, body, tail, quiet, end) {
     const title = titleKey
       ? '<h3 class="form-section__title' + (quiet ? " form-section__title--quiet" : "") + '">' +
           esc(dT(titleKey)) + '</h3>'
       : "";
-    const head = !titleKey && !tail
+    /* tail＝緊接在標題後面的徽章（來源標記）；end＝區塊最右邊的控制（開關）。2026-10-12 使用者：徽章跟標題，開關依舊靠右。 */
+    const head = !titleKey && !tail && !end
       ? ""
-      : (tail
-        ? '<div class="form-section__head form-section__head--actions">' +
+      : (tail || end
+        ? '<div class="form-section__head form-section__head--actions form-section__head--lead">' +
             '<div class="form-section__head-titles">' + title + '</div>' +
-            '<div class="form-section__head-actions">' + tail + '</div>' +
+            (tail ? '<div class="form-section__head-actions">' + tail + '</div>' : '') +
+            (end ? '<div class="form-section__head-actions form-section__head-actions--end">' + end + '</div>' : '') +
           '</div>'
         : '<div class="form-section__head">' + title + '</div>');
     /* 2026-09-23（Q125 修訂）：區塊改成一張卡（--card）——分段由卡面承擔、分隔線退場。 */
@@ -3488,6 +3493,11 @@
     const S = window.ztorEvents;
     return (S ? S.fmtMoney("HKD", Number(ty.hkd)) : "HK$" + ty.hkd) + " · bookyay";
   }
+  /* 票價列底下的小說明（2026-10-12 使用者指示）：票價就是粉絲實付，「粉絲付」那一列退場、改成這句；
+     bookyay 帶入的票接著寫港幣原值（D330 §7.15）。 */
+  function priceHowText(t) {
+    return t.fix ? dT("d.tm.gross") + " · " + bkyBaseText(t) : dT("d.tm.gross");
+  }
   function tierPriceSecHTML(t, d) {
     const m = tierMoney(t, d);
     const bky = !!t.fix;
@@ -3495,23 +3505,30 @@
     const rows =
       /* bookyay 帶入的票：票價列的說明寫港幣原值（§7.15 基準幣別鎖定）；套票轉換出的 1 人票可有小數（D328），
          唯讀值照原樣顯示到分、不取整。 */
-      calcRowHTML({ k: dT("d.tier.face"), req: !bky, how: bky ? bkyBaseText(t) : "", hintFor: "price",
-                    v: bky ? calcRO(moneyExact(m.price)) : calcMoneyInput("price", d.price) }) +
+      calcRowHTML({ k: dT("d.tier.face"), req: !bky, how: priceHowText(t), hintFor: "price",
+                    v: bky ? calcMoneyInput("price", m.price, true) : calcMoneyInput("price", d.price) }) +
       /* 墓碑 2026-09-23（D316）：「＋ 手續費」那一列退場——票價之上沒有粉絲加價。
          「粉絲付」保留為自成一列的結果：它要回答的是「粉絲實際付多少」，答案就是票價。 */
-      calcRowHTML({ op: "＝", k: dT("d.tm.gross"), cls: "calc-list__sum", v: calcRO(moneyExact(m.gross), "gross") }) +
-      calcRowHTML({ op: "−", k: dT("d.tm.plat"), how: feeHow, howAttr: ' data-tier-calc-how',
+      /* 平台費與創作者實收放在同一個次要層方框裡，兩列中間一條縮進的分隔線（2026-10-12 使用者） */
+      '<div class="calc-list__sub">' +
+      calcRowHTML({ k: dT("d.tm.plat"), how: feeHow, howAttr: ' data-tier-calc-how',
                     v: calcRO(money(m.plat), "plat") }) +
-      calcRowHTML({ op: "＝", k: dT("d.tm.net"), how: dT("d.tm.net.how"), cls: "calc-list__total",
-                    v: calcRO(moneyExact(m.net), "net") });
-    const qty = bky
-      ? '<div class="field"><label class="field__label">' + esc(T("ce.tier.qty", "Quantity")) + '</label>' +
-          '<div class="field-readout">' + esc(d.qty == null || d.qty === "" ? "—" : d.qty) + '</div></div>'
-      : tierFieldHTML("qty", "ce.tier.qty", "Quantity", d.qty,
-                      { phKey: "ce.tier.qty.ph", phFb: "e.g., 200", num: true });
+      calcRowHTML({ k: dT("d.tm.net"), how: dT("d.tm.net.how"), cls: "calc-list__total",
+                    v: calcRO(moneyExact(m.net), "net") }) +
+      '</div>';
+    /* 2026-10-12 使用者指示：價格算式與數量各自一張線框表格、切成兩個區塊（卡內仍畫外框，見 calc-list--framed）。
+       數量是單列表格：鍵＝數量，值＝輸入框（bookyay 帶入時唯讀讀數）；欄位機制（data-tier-f／wrap／clear／hint）與 tierFieldHTML 相同。 */
+    const qv = d.qty == null ? "" : d.qty;
+    const qty = '<div class="calc-list calc-list--framed' + " calc-list--form" + '">' +
+      calcRowHTML({ k: T("ce.tier.qty", "Quantity"), req: !bky, how: "", hintFor: "qty",
+        v: '<span class="tier-card__control" data-tier-wrap="qty" data-empty="' + (String(qv).length ? "false" : "true") + '">' +
+                   '<input class="input" type="number" min="1" step="1" data-tier-f="qty" value="' + esc(qv) + '" placeholder="' + esc(T("ce.tier.qty.ph", "e.g., 200")) + '"' + (bky ? " disabled" : "") + '>' +
+                   (bky ? "" : '<button type="button" class="tier-card__clear" data-tier-clear="qty" aria-label="' + esc(T("ce.tier.clear", "Clear")) + '"><i data-lucide="x" class="ztor-icon"></i></button>') +
+                 '</span>' }) +
+      '</div>';
     return tierSecHTML("d.tm.sec.price",
-      '<div class="calc-list' + (bky ? "" : " calc-list--form") + '">' + rows + '</div>' + qty,
-      bky ? '<span class="badge badge--neutral">' + esc(dT("d.src")) + '</span>' : "");
+      '<div class="calc-list calc-list--framed' + " calc-list--form" + '">' + rows + '</div>' + qty,
+      bky ? srcChip() /* 2026-10-15 目視檢查 C4：區塊標題旁的來源標記由膠囊徽章改用全站同一支 .field-source（鎖頭＋bookyay 帶入），同活動詳情 */ : "");
   }
 
   /* 區塊 4：購買條件。開關開＝列出跟隨來的條件（唯讀），關＝攤開這張票自己的一份（新增條件，D366）。
@@ -3522,7 +3539,7 @@
     const rows = COND_TYPES.filter(m => c[m.k]).map(m =>
       '<div class="kv"' + (m.feat ? ' data-feat="' + m.feat + '"' : "") + '><span class="kv__k">' + esc(condName(m.k)) + '</span>' +
         '<span class="kv__v">' + esc(condValText(m.k, c[m.k], t)) + '</span></div>');
-    return '<div>' + (rows.length ? rows.join("") : '<p class="field__hint">' + esc(dT("d.cond.none")) + '</p>') + '</div>';
+    return '<div>' + (rows.length ? rows.join("") : '<div class="empty-card"><span class="empty-card__icon"><i data-lucide="inbox" class="ztor-icon"></i></span><p class="empty-card__title">' + esc(dT("d.cond.none")) + '</p></div>') + '</div>';
   }
   /* 墓碑 2026-10-07（D366）：`earlyValText`（bookyay 早鳥的「折 15.4% · 起 – 訖」讀數）退場——
      早鳥現在是一張鎖定的「限時折扣」條件卡，價格與期間直接寫在卡上。 */
@@ -3535,7 +3552,7 @@
       const anyBky = Object.values(normRules(t.rules).conds || {}).some(c => c && c.bky);
       return tierSecHTML("d.tier.buycond",
         '<div class="tier-card__rules" data-rules-for="' + t.id + '">' + condsHTML(t.rules, t.id, true, bkyAddOn(t)) + '</div>',
-        anyBky ? '<span class="badge badge--neutral">' + esc(dT("d.src")) + '</span>' : "");
+        "" /* 2026-10-15 目視檢查 C5：來源標記改掛在 bookyay 帶入的那張條件卡頂列（js/purchase-conds.js），區塊標題不再掛；anyBky 留著備查 */);
     }
     /* D419 決定一（2026-10-15，取代 D368 決定三的「鎖在跟隨」）：bookyay 活動裡沒有帶入條件的門票，不畫「跟隨活動預設」開關、
        也不掛來源徽章——它自己的條件是空的：空狀態＋（最終版，S96）只列折扣、限時折扣的「新增條件」。 */
@@ -3552,7 +3569,7 @@
     const body = follow
       ? tierRuleSummaryHTML(t)
       : '<div class="tier-card__rules" data-rules-for="' + t.id + '">' + condsHTML(rulesOf(t), t.id) + '</div>';
-    return tierSecHTML("d.tier.buycond", body, sw);
+    return tierSecHTML("d.tier.buycond", body, "", false, sw);
   }
 
   /* 單欄四區塊（2026-09-22，D311）：基本 → 價格與數量 → 入場 → 購買條件。
@@ -3569,8 +3586,7 @@
                           { phKey: "d.tier.tname.ph", phFb: "", opt: true, locked: true })
           : tierFieldHTML("tname", "d.tier.tname", "Ticket name", d.tname == null ? "" : d.tname,
                           { phKey: "d.tier.tname.ph", phFb: "", opt: true, hint: tnameHint(t, d) })) +
-        tierImgFieldHTML(t, d) +
-        tierShowRowHTML(t, d)) +
+        tierImgFieldHTML(t, d)) +
       tierPriceSecHTML(t, d) +
       (entryLocked(t) ? tierEntryLockedHTML(t) : tierSecHTML("d.tm.sec.entry",
         /* 提前入場（2026-08-11 使用者指示，見上方 sessDoors／earlyHintText 說明）：
@@ -3580,8 +3596,12 @@
                       { phKey: "d.tier.early.ph", phFb: "0", num: true, min0: true, opt: true,
                         off: !sessDoors(t),   // D396：場次沒開提前入場時間＝沒有基準時間，票的提前入場不適用
                         hint: earlyHintText(t, d) }) +
-        tierEarlyPolicyHTML(t, d), "", true)) +
-      tierRulesSecHTML(t, d);
+        tierEarlyPolicyHTML(t, d))) +
+      tierRulesSecHTML(t, d) +
+      /* 2026-10-12 使用者指示：顯示開關自成一區「上架與顯示」，不再放在基本區裡。
+         區塊整段掛與開關同一個功能標記（2026-10-15）：開關在版本外被收起時，不留一個只有標題的空區塊。 */
+      tierSecHTML("d.tm.sec.show", tierShowRowHTML(t, d))
+        .replace("<section ", '<section data-feat="' + ((t.hideFix || bkyOn) ? "S92" : "S55") + '" ');
   }
   /* 入場區的 bookyay 鎖定（D385 決定三，2026-10-09；5.1.6.1 F21「過早入場 → 開放入場」末項、F22 入場區）：
      bookyay 帶入的票（t.fix）提前入場與早於開放時間的處理一律跟隨場次、鎖定——不給輸入框與「自訂」，
@@ -3594,14 +3614,29 @@
     try { return !!bkyOn; } catch (e) { return false; }
   }
   function tierEntryLockedHTML(t) {
+    /* 2026-10-12 使用者：「跟隨場次的設定應該反映在 UI 上，不要用文字說明」——鎖定時直接畫出這一場的提前入場設定
+       （時間、開演前幾分鐘，與場次步驟同樣兩格，停用）＋早於提前入場時間入場的選項卡，不再寫「跟隨場次——提前入場時間 16:30」。
+       標題與欄名照場次步驟的用詞。 */
     const s = sessOf(t) || {};
     const doors = sessDoors(t);
-    const ro = (label, v) => '<div class="field"><div class="field__label">' + esc(label) + '</div>' +
-      '<div class="field-readout">' + esc(v) + '</div></div>';
+    const mins = s.doorsMin == null ? "" : s.doorsMin;
+    const card = (active, title, sub) => '<button type="button" disabled class="segmented__btn' + (active ? " segmented__btn--active" : "") +
+      '" role="radio" aria-checked="' + (active ? "true" : "false") + '"><span class="radio-card__text"><span class="radio-card__title">' +
+      esc(title) + '</span>' + (sub ? '<span class="radio-card__sub">' + esc(sub) + '</span>' : '') + '</span></button>';
     return tierSecHTML("d.tm.sec.entry",
-      ro(dT("d.tier.early"), doors ? dT("d.tier.early.bky").replace("{t}", doors) : dT("d.tier.early.bky.none")) +
-      (doors ? ro(dT("d.early.policy"), dT("d.early.mode.follow") + " · " + earlyPolicyLabel(s.early || "warn")) : ""),
-      '<span class="badge badge--neutral">' + esc(dT("d.src")) + '</span>', true);
+      '<div class="form-grid">' +
+        '<div class="field is-source-locked"><label class="field__label"><span>' + esc(dT("d.doors.at")) + '</span> ' + srcChip() + '</label>' +
+          '<input class="input" type="time" value="' + esc(doors || "") + '" disabled></div>' +
+        '<div class="field is-source-locked"><label class="field__label"><span>' + esc(dT("d.doors.before")) + '</span> ' + srcChip() + '</label>' +
+          '<span class="amount-field amount-field--suffix amount-field--readonly">' +
+            '<input class="input amount-field__input" type="number" value="' + esc(mins) + '" placeholder="0" disabled>' +
+            '<span class="amount-field__unit">' + esc(dT("d.min")) + '</span></span></div>' +
+      '</div>' +
+      (doors ? '<div class="field is-source-locked"><div class="field__label"><span>' + esc(dT("d.early.policy")) + '</span> ' + srcChip() + '</div>' +
+        '<div class="segmented radio-cards" role="radiogroup" aria-disabled="true" aria-label="' + esc(dT("d.early.policy")) + '">' +
+          card(true, dT("d.early.mode.follow"), earlyPolicyLabel(s.early || "warn")) +
+          card(false, dT("d.early.mode.custom"), "") +
+        '</div></div>' : ""));
   }
   /* 副標＝這張票屬於哪一場（2026-09-22，D311）：日期・場地。多場次活動只看票名
      （「VIP」）分不出是哪一場的票。場地一律讀整場共用的那一格（D340 只做定點）。兩樣都沒有就不出現這一行。 */
@@ -4923,6 +4958,7 @@
       shares: false,        // 活動套組沒有分潤名額
       work: false,          // 也沒有「作品」本體與份數（賣的是票＋商品）
       cover: true,          // 每一組賣的東西不同，要靠封面圖分辨
+      rowThumb: () => eventImage(),   // 2026-10-12：收合列縮圖用圖片——沒有自己的封面時用活動主視覺（票券成員預設就是那張）
       // 票種即時取：上一步中途新增的票種要立刻出現在勾選清單
       /* 多場活動時票名要帶場次：同一個票種在每一場各有一張，只寫票種名的話
          清單上會出現三個一模一樣的「搖滾區」，勾錯了也看不出來。 */
@@ -5072,7 +5108,7 @@
     "d.step.publish": { en: "Publishing",        zh: "發布設定" },
     /* D380（2026-10-09）：原「票種」「票務」兩步併成第 4 步「票種與票務」。
        墓碑：`d.step.types`（原第 4 步「票種」的進度條字）隨兩格合併退場。 */
-    "d.step.tix":     { en: "Ticket types & tickets", zh: "票種與票務" },
+    "d.step.tix":     { en: "Tickets", zh: "票種與票務" },   // 2026-10-15 目視檢查 C8：英文原「Ticket types & tickets」在七等分的進度條裡蓋到下一格「Bundles」；步驟名照產品慣例取最短的名詞
     "d.step.wp.when":   { en: "Time & access",   zh: "時間與觀看" },
     "d.step.wp.ticket": { en: "Admission",       zh: "入場券" },
     "d.next":         { en: "Next",              zh: "下一步" },
@@ -5157,9 +5193,10 @@
        彈窗標題與副標已經是脈絡，底下兩格彼此無關、各自的標籤也說完了自己是什麼。
        區塊容器留著（維持段間節奏），只是不畫標題列。 */
     "d.tm.sec.price": { en: "Price & quantity",   zh: "價格與數量" },
-    "d.tm.sec.entry": { en: "Entry",              zh: "入場" },
+    "d.tm.sec.entry": { en: "Early entry time",   zh: "提前入場時間" },   // 2026-10-12 使用者：照場次步驟的用詞（原「入場」）
+    "d.tm.sec.show":  { en: "Listing & display",   zh: "上架與顯示" },
     /* 計算列表的三個算出來的數字（D316）：「粉絲付」＝票價，「創作者實收」＝票價−平台費。 */
-    "d.tm.gross":     { en: "Fans pay",           zh: "粉絲付" },
+    "d.tm.gross":     { en: "What fans pay",      zh: "粉絲實付" },
     "d.tm.plat":      { en: "Platform fee",       zh: "平台費" },
     "d.tm.net":       { en: "You receive",        zh: "創作者實收" },
     "d.tm.net.how":   { en: "On the ticket price",
@@ -5186,13 +5223,7 @@
     "d.s5.sub":       { en: "When it goes on sale, how fans collect it, and who can find it.", zh: "什麼時候開賣、怎麼取票、誰看得到。" },
     "d.src":          { en: "From bookyay",      zh: "bookyay 帶入" },
     /* D329（2026-09-29）：1:1 原圖提示、門票所屬組合包、1 人票鎖定為隱藏、早鳥鎖定的讀數。 */
-    "d.img.ratio":    { en: "The bookyay image is 1:1. Swap in a 2:3 one, or adjust how the key visual is cropped below.", zh: "bookyay 原圖是 1:1，可以換一張 2:3 的圖，或在下方調整主視覺的裁切。" },
-    /* 主視覺裁切（D391 第 9 題） */
-    "d.img.crop":        { en: "Key visual crop", zh: "主視覺裁切" },
-    "d.img.crop.left":   { en: "Left",   zh: "靠左" },
-    "d.img.crop.center": { en: "Center", zh: "置中" },
-    "d.img.crop.right":  { en: "Right",  zh: "靠右" },
-    "d.img.crop.hint":   { en: "A 1:1 image in the 2:3 portrait frame loses some of each side. Pick which part to keep.", zh: "1:1 的原圖放進 2:3 的直式框，左右會裁掉一部分；選要保留哪一側。" },
+    "d.img.ratio":    { en: "The bookyay image is 1:1. You can swap in a 2:3 one.", zh: "bookyay 原圖是 1:1，可以換一張 2:3 的圖。" },
     "d.tier.inbd":    { en: "Ticket bundles",    zh: "組合包" },
     "d.bgate.h1":     { en: "Import from bookyay?", zh: "要從 bookyay 帶入嗎？" },
     "d.bgate.sub":    { en: "Already selling this event on bookyay? Search for it instead of typing it again.",
@@ -6086,6 +6117,43 @@
         limit: { maxPurchaseCnt: 2 }, discount: { priceHkd: "504" },
         early: { priceHkd: "448", endD: "2026-11-05", endT: "23:59" } }],
       slots: [{ startD: "2026-11-28", startT: "20:00", endD: "2026-11-28", endT: "22:00", earlyEntryInMin: 60, earlyMode: "warn", cap: 121, types: [0] }] },
+    /* bky-15（2026-10-12）：「條件全開」示範——想一次看完所有帶入與鎖定的樣子就選這一筆。
+       release2.4 一個時段只帶第一種門票，所以刻意用：二人套票（拆 1 人票＋自動組合包）＋本門票限購三項＋折扣優惠＋早鳥，
+       其後再列兩種票（單人票、學生票）觸發「只帶第一種」的略過提示；單一跨夜時段（自動開跨日活動並帶結束日期）、
+       人上限 301 是奇數（示範捨去零頭：1 人票 300 張、鎖定 150 套）、提前入場 90 分鐘且不能入場；
+       活動限購三項、條款及細則（含清單與連結）、四種語言、兩張圖、私人活動（顯示設定＝隱藏）、定時開賣與停售日期、
+       多段描述（含鎖定的圖片區塊、粗體斜體連結、清單）。
+       D417（2026-10-15）之後：活動限購三項、門票的限購次數、折扣優惠、早鳥在 bookyay 端仍設滿，但 ztor 不帶入——
+       這一筆帶入後只看得到門票的每人總限購與每次交易限購（鎖定），其餘示範「bookyay 有、ztor 不帶」。 */
+    { id: "bky-15", type: "concert",
+      label: "ALL-IN NIGHT — 條件全開示範",
+      note:  "2026/12/19–12/20 · 台北流行音樂中心（跨夜 · 二人套票 · 門票限購 · 私人活動）",
+      name: "ALL-IN NIGHT — 條件全開示範",
+      intros: [
+        "<p>跨夜的雙人限定演出：兩人同行、一起入場，演出從傍晚唱到凌晨，場內有限定周邊與合照時間。</p><p><img src=\"images/projects/nick-realive.jpg\" alt=\"\"></p>",
+        "<p><strong>入場須知</strong></p><p>請於開演前 90 分鐘起憑電子票入場，<em>兩人須一起驗票</em>。交通與接駁見 <a href=\"https://example.com/all-in-night\">活動頁面</a>。</p>",
+        "<p>場內規範：</p><ul><li>禁止攜帶專業攝影器材</li><li>凌晨 02:00 後不提供進場</li><li>現場不提供寄物</li></ul>"
+      ],
+      country: "TW", langs: ["cmn", "en", "ja", "yue"],
+      images: ["images/projects/nick-realive.jpg", "images/ip/a-lin.webp"],
+      location: "台北流行音樂中心", region: "南港區",
+      meet: "表演廳 1 樓大廳", transit: "捷運南港展覽館站步行 10 分鐘",
+      saleFromD: "2026-10-25", saleFromT: "12:00", saleToD: "2026-12-18", saleToT: "23:59",
+      ship: "eticket",
+      isPrivate: true,
+      maxPurchaseCnt: 6, maxPurchaseCntEachTime: 4, maxPurchaseTime: 2,
+      showTncs: true,
+      tncs: "<p><strong>購票須知</strong></p><ol><li>二人套票限兩人同行，須一起驗票入場；單人持票恕不入場。</li><li>票券一經售出，除活動取消或延期外，恕不退換。</li><li>跨夜活動凌晨 02:00 後不提供進場，詳見 <a href=\"https://example.com/all-in-night-tnc\">完整條款</a>。</li></ol>",
+      ticketTypes: [
+        { name: "二人套票", priceHkd: "880", persons: 2,
+          desc: "兩人同行，入場時一起驗票。",
+          limit: { maxPurchaseCnt: 2, maxPurchaseCntEachTime: 2, maxPurchaseTime: 1 },
+          discount: { priceHkd: "792" },
+          early: { priceHkd: "704", endD: "2026-11-30", endT: "23:59" } },
+        { name: "單人票", priceHkd: "520", persons: 1 },
+        { name: "學生票", priceHkd: "390", persons: 1 }
+      ],
+      slots: [{ startD: "2026-12-19", startT: "18:00", endD: "2026-12-20", endT: "02:00", earlyEntryInMin: 90, earlyMode: "block", cap: 301, types: [0, 1, 2] }] },
     /* bky-12（2026-10-09 D385 決定五補原始資料）：活動清單裡那筆 bookyay 草稿（events-store `khh-countdown-draft`，`bkyId: 'bky-12'`；
        js/sidebar.js BOOKYAY_EVENTS 的 bky-12，創作者活動管理「草稿」那一列）。原本只有清單摘要、沒有 bookyay 原始欄位，
        草稿續填只能走一般續填、鎖定全部掉光；補上後續填改用這份資料重跑帶入（D385 決定四，見 demoInit 的 draft 分支）。
@@ -6718,35 +6786,8 @@
     const still = bkyImgSrcs.length && Array.from(document.querySelectorAll("#ce-gallery [data-gallery-tile] img"))
       .some(img => bkyImgSrcs.indexOf(img.getAttribute("src")) >= 0);
     note.hidden = !still;
-    syncKvCrop();
   }
-  /* 主視覺裁切（D391 第 9 題）：相簿第一張（主視覺）仍是 bookyay 帶入的原圖才出現；選的位置記在 kvCrop（依圖片網址），
-     相簿重畫後由這裡重新套到主視覺那一格。 */
-  var kvCrop = {};
-  var KV_POS = { left: "0% 50%", center: "50% 50%", right: "100% 50%" };
-  function syncKvCrop() {
-    const box = document.getElementById("ce-kv-crop");
-    if (!box) return;
-    const kv = document.querySelector("#ce-gallery [data-gallery-tile] img");
-    const src = kv && kv.getAttribute("src");
-    const on = !!(src && bkyImgSrcs.indexOf(src) >= 0);
-    box.hidden = !on;
-    if (!on) return;
-    const pos = kvCrop[src] || "center";
-    kv.style.objectPosition = KV_POS[pos];
-    box.querySelectorAll("[data-crop]").forEach(b => {
-      const a = b.dataset.crop === pos;
-      b.classList.toggle("segmented__btn--active", a);
-      b.setAttribute("aria-checked", a ? "true" : "false");
-    });
-  }
-  document.getElementById("ce-kv-crop-seg")?.addEventListener("click", e => {
-    const b = e.target.closest("[data-crop]");
-    const kv = document.querySelector("#ce-gallery [data-gallery-tile] img");
-    if (!b || !kv) return;
-    kvCrop[kv.getAttribute("src")] = b.dataset.crop;
-    syncKvCrop(); scheduleSave();
-  });
+  /* 墓碑 2026-10-12（D404）：主視覺裁切（kvCrop／syncKvCrop／#ce-kv-crop）退場——不提供調整裁切。 */
 
   /* 圖片那一段的來源標記掛在區段標題上（相簿本身是圖片格，掛在格子上會壓到圖）。 */
   function galChip(on) {

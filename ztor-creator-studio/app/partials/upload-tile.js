@@ -75,7 +75,13 @@
       // 站上標準＝替換／刪除兩顆；AI 優化是 opt-in 的第三顆（data-upload-ai）。
       /* 優化前後可來回：優化完成後第三顆換成「還原」（2026-08-09 使用者指示），
          按下回到剛上傳的那一版。兩顆互斥、由 CSS 依狀態顯隱（見 --ai / --undo）。 */
+      /* 選用的第四種動作（2026-10-12 使用者：「改回活動圖片」要在 hover 時出現、用圖示、不放很多字）：
+         格子掛 data-upload-reset="<按鈕要帶的屬性名>"＋data-upload-reset-label="<提示文字>"，hover 動作列最前面多一顆
+         還原圖示鈕（arrow-back-up；undo-2 沒登記在圖示庫會是空白），點擊由頁面自己用那個屬性接。 */
+      var resetHook = tile.getAttribute('data-upload-reset');
+      var resetLabel = tile.getAttribute('data-upload-reset-label') || '';
       actions.innerHTML =
+        (resetHook ? '<button type="button" class="upload-tile__act" ' + resetHook + ' aria-label="' + resetLabel + '" title="' + resetLabel + '"><i data-lucide="arrow-back-up" class="ztor-icon"></i></button>' : '') +
         act('data-upload-play', 'cp.cfile.play', 'Play',
             '<i data-lucide="play" class="ztor-icon upload-tile__ic-play"></i><i data-lucide="pause" class="ztor-icon upload-tile__ic-pause"></i>',
             'upload-tile__act--play') +
@@ -272,7 +278,7 @@
 
     input.addEventListener('change', function () { if (input.files && input.files[0]) startUpload(input.files[0]); });
     tile.addEventListener('click', function (e) {
-      if (e.target.closest('[data-upload-play],[data-upload-replace],[data-upload-optimize],[data-upload-remove]')) return;
+      if (e.target.closest('[data-upload-play],[data-upload-replace],[data-upload-optimize],[data-upload-remove],[data-upload-reset] .upload-tile__act')) return;
       if (tile.classList.contains('is-empty')) { pickAccept(); input.click(); }
     });
     /* role=button 的 <div> 不會自己把 Enter／Space 轉成 click，得手動補，行為與滑鼠點擊一致。
@@ -314,10 +320,53 @@
     sync();
   }
 
+  /* ---- 相簿「設為主視覺」（容器掛 data-gallery-kv；2026-10-12 使用者：hover 時要有一個按鈕可以設定這張為主視覺）----
+     相簿的順序就是語意：排第一的是主視覺。第一張以外的、已填滿的格子，hover 的動作列多一顆星形鈕，
+     按下去把這一格移到最前面，並在容器上發 `gallery:reorder`（bubbles），頁面自己重算主視覺標記、預覽、髒檢查。
+     鈕由這裡長出來（容器內格子增刪、換圖後會補上或收掉），頁面不必各寫一份。 */
+  function initGalleryKv(gal) {
+    if (gal.__galleryKvReady) return; gal.__galleryKvReady = true;
+    function label() { return T('ce.img.setkv', 'Set as key visual'); }
+    function sync() {
+      var tiles = [].slice.call(gal.querySelectorAll('[data-gallery-tile]'));
+      tiles.forEach(function (t, i) {
+        var b = t.querySelector('[data-gallery-setkv]');
+        var acts = t.querySelector('.upload-tile__actions');
+        if (i === 0 || !t.classList.contains('is-filled') || !acts) { if (b) b.remove(); return; }
+        if (!b) {
+          b = document.createElement('button');
+          b.type = 'button'; b.className = 'upload-tile__act'; b.setAttribute('data-gallery-setkv', '');
+          b.innerHTML = '<i data-lucide="star" class="ztor-icon"></i>';
+          acts.insertBefore(b, acts.firstChild);
+          if (window.ztorIcons) window.ztorIcons.applyIcons(b);
+        }
+        b.setAttribute('aria-label', label()); b.setAttribute('title', label());
+      });
+    }
+    var busy = false;
+    new MutationObserver(function () {
+      if (busy) return; busy = true;
+      Promise.resolve().then(function () { busy = false; sync(); });
+    }).observe(gal, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    gal.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-gallery-setkv]');
+      if (!b) return;
+      e.stopPropagation();
+      var tile = b.closest('[data-gallery-tile]');
+      var first = gal.querySelector('[data-gallery-tile]');
+      if (!tile || !first || tile === first) return;
+      gal.insertBefore(tile, first);
+      gal.dispatchEvent(new CustomEvent('gallery:reorder', { bubbles: true, detail: { tile: tile } }));
+    });
+    document.addEventListener('i18n:applied', sync);
+    sync();
+  }
+
   function init() {
     document.querySelectorAll('.upload-tile[data-upload]').forEach(enhance);
     document.querySelectorAll('[data-upload-reveal]').forEach(initReveal);
+    document.querySelectorAll('[data-gallery-kv]').forEach(initGalleryKv);
   }
   if (document.readyState !== 'loading') init(); else document.addEventListener('DOMContentLoaded', init);
-  window.ztorUploadTile = { enhance: enhance, init: init, initReveal: initReveal };
+  window.ztorUploadTile = { enhance: enhance, init: init, initReveal: initReveal, initGalleryKv: initGalleryKv };
 })();

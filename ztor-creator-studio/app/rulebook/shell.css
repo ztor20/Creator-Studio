@@ -157,26 +157,39 @@ body>.wrap{max-width:1280px;margin-left:calc(var(--side-w,232px) + 32px);margin-
 }
 /* ===== 圖表（WRITING-GUIDE「呈現形式」：流程圖、時間軸圖、矩陣圖、繼承圖）=====
    一律用頁面 HTML＋本段樣式畫；外框可橫向捲動，窄螢幕不撐破版面。顏色只用各頁 :root 的 token。 */
+/* 圖表專用 token：沿用各頁 :root 的顏色，淺色與深色自動跟著切換（各頁深色區塊已改寫 --text-2／--text-3）。
+   --dg-sub：圖表裡所有小字（11～12px）一律用它，用 --text-2，兩種模式對比都在 4.5:1 以上。涵蓋：節點內 small、矩陣格 small、
+     分欄標題 .dg-col__h、時間軸列名副字 .dg-tl__k span、時間軸刻度 .dg-tl__axis（含 .l／.r／.low）、停用時段 .dg-tl__bar.off 的 <i>，
+     以及各頁自帶、放在 .dg 裡的節點外說明 small（例：event-create-step2 的 .shapes figcaption small）；
+     --text-3 只能拿來畫線與虛線框（3:1 即可），不能拿來寫字（2026-10-15 驗收：曾有 3.15～3.62:1 的小字）；
+   --dg-dash：選用與跳過的虛線框，用 --text-3，兩種模式對比都在 3:1 以上；
+   --dg-line：一般節點與矩陣格的實線框，與虛線同色（實線連續、看起來略強），兩種模式都在 3:1 以上。
+   語意色框（綠、粉紅、橘、紫）的線用各色的 -key，不用較淡的 -line，同樣為了 3:1；只影響 .dg 系列，頁面其他地方的 --border-strong 不變 */
+:root{--dg-sub:var(--text-2);--dg-dash:var(--text-3);--dg-line:var(--text-3)}
 .wrap .dg{margin:12px 0 6px;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--surface);overflow-x:auto;font-size:12.5px;line-height:1.45;color:var(--text-2);-webkit-overflow-scrolling:touch}
+/* 可左右滑的提示：內容比外框寬時（shell.js 加 .is-ovf），還有內容的那一側邊緣淡出；捲到底（.at-end）右側提示消失，捲離開頭（.at-mid）左側才淡出。內容放得下時不出現 */
+.wrap .dg.is-ovf{--dg-fl:#000;--dg-fr:rgba(0,0,0,.12);-webkit-mask-image:linear-gradient(to right,var(--dg-fl) 0,#000 40px,#000 calc(100% - 56px),var(--dg-fr) 100%);mask-image:linear-gradient(to right,var(--dg-fl) 0,#000 40px,#000 calc(100% - 56px),var(--dg-fr) 100%)}
+.wrap .dg.is-ovf.at-mid{--dg-fl:rgba(0,0,0,.12)}
+.wrap .dg.is-ovf.at-end{--dg-fr:#000}
 .wrap .dg-cap{font-size:12.5px;line-height:1.65;color:var(--text-3);margin:6px 0 16px}
 .wrap .dg-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:0 0 12px;font-size:11.5px;color:var(--text-3)}
 .wrap .dg-legend span{display:inline-flex;align-items:center;gap:6px}
 .wrap .dg-legend i{display:inline-block;width:14px;height:10px;border-radius:3px;border:1px solid var(--border-strong);background:var(--surface)}
 /* 節點：一般步驟；.q 判斷（問句）、.end 結果、.opt 選用、.skip 跳過、.lock 鎖定或帶入、.stop 擋下 */
-.wrap .dg-node{flex:none;display:block;min-width:84px;max-width:168px;padding:7px 10px;border:1px solid var(--border-strong);border-radius:8px;background:var(--surface);color:var(--text);font-size:12.5px;line-height:1.4;text-align:left}
-.wrap .dg-node small{display:block;margin-top:2px;font-size:11px;line-height:1.4;color:var(--text-3)}
+.wrap .dg-node{flex:none;display:block;min-width:84px;max-width:168px;padding:7px 10px;border:1px solid var(--dg-line);border-radius:8px;background:var(--surface);color:var(--text);font-size:12.5px;line-height:1.4;text-align:left;text-wrap:balance}
+.wrap .dg-node small{display:block;margin-top:2px;font-size:11px;line-height:1.4;color:var(--dg-sub);text-wrap:pretty}
 .wrap .dg-node .s{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-right:5px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:10.5px;font-variant-numeric:tabular-nums;vertical-align:1px}
-.wrap .dg-node.q{border-style:dashed;border-color:var(--wait-key);background:var(--wait-fill);color:var(--wait-ink)}
-.wrap .dg-node.q small{color:var(--wait-ink);opacity:.8}
-.wrap .dg-node.end{border-color:var(--ok-line);background:var(--ok-fill);color:var(--ok-ink)}
-.wrap .dg-node.end small{color:var(--ok-ink);opacity:.8}
-.wrap .dg-node.opt{border-style:dashed}
-.wrap .dg-node.skip{border-style:dashed;border-color:var(--border-strong);background:transparent;color:var(--text-3)}
-.wrap .dg-node.skip .s{background:var(--border-strong);color:var(--surface)}
-.wrap .dg-node.lock{border-color:var(--pink-line);background:var(--pink-fill);color:var(--pink-ink)}
-.wrap .dg-node.lock small{color:var(--pink-ink);opacity:.8}
-.wrap .dg-node.stop{border-color:var(--warn-line);background:var(--warn-fill);color:var(--warn-ink)}
-.wrap .dg-node.stop small{color:var(--warn-ink);opacity:.8}
+/* 框線語意：實線是一般步驟、問句與結果；虛線只留給選用（.opt）與整步跳過（.skip），兩者主字維持正常字色 */
+.wrap .dg-node.q{border-color:var(--wait-key);background:var(--wait-fill);color:var(--wait-ink)}
+.wrap .dg-node.q small{color:var(--wait-ink)}
+.wrap .dg-node.end{border-color:var(--ok-key);background:var(--ok-fill);color:var(--ok-ink)}
+.wrap .dg-node.end small{color:var(--ok-ink)}
+.wrap .dg-node.opt,.wrap .dg-node.skip{border-style:dashed;border-color:var(--dg-dash)}
+.wrap .dg-node.skip{background:transparent}
+.wrap .dg-node.lock{border-color:var(--pink-key);background:var(--pink-fill);color:var(--pink-ink)}
+.wrap .dg-node.lock small{color:var(--pink-ink)}
+.wrap .dg-node.stop{border-color:var(--warn-key);background:var(--warn-fill);color:var(--warn-ink)}
+.wrap .dg-node.stop small{color:var(--warn-ink)}
 .wrap .dg-node.wide{max-width:240px}
 /* 流程：節點與箭頭排成一列；箭頭上可寫出口文字（data-t） */
 .wrap .dg-flow{display:flex;align-items:center;min-width:max-content}
@@ -202,22 +215,24 @@ body>.wrap{max-width:1280px;margin-left:calc(var(--side-w,232px) + 32px);margin-
 /* 直排堆疊（例如區塊清單、對照列） */
 .wrap .dg-col{flex:none;display:flex;flex-direction:column;gap:6px}
 .wrap .dg-col>.dg-node{max-width:none}
-.wrap .dg-col__h{font-size:11.5px;color:var(--text-3);margin:0 0 2px}
+.wrap .dg-col__h{font-size:11.5px;color:var(--dg-sub);margin:0 0 2px}
 .wrap .dg-stack{display:flex;flex-direction:column;gap:8px;min-width:max-content}
 .wrap .dg-stack .dg-flow>.dg-node:first-child{width:var(--dg-w1,240px);max-width:none}
 /* 矩陣：列 × 欄生成的格子（例如場次 × 票種 → 門票）；.off 已移除、.hid 隱藏、.sum 合計、.fb 沿用原文 */
 .wrap .dg-mx{display:grid;grid-template-columns:auto repeat(var(--dg-c,2),minmax(112px,1fr));gap:6px;min-width:max-content;align-items:stretch}
 .wrap .dg-mx>*{padding:7px 10px;border-radius:8px;font-size:12.5px;line-height:1.4}
 .wrap .dg-mx .h{padding:4px 10px;color:var(--text-2);font-weight:500;font-size:12px;align-self:end}
-.wrap .dg-mx .h small,.wrap .dg-mx .r small,.wrap .dg-mx .c small{display:block;font-weight:400;font-size:11px;color:var(--text-3)}
+.wrap .dg-mx .h small,.wrap .dg-mx .r small,.wrap .dg-mx .c small{display:block;font-weight:400;font-size:11px;color:var(--dg-sub)}
 .wrap .dg-mx .r{color:var(--text-2);font-weight:500;font-size:12px;background:var(--surface-sunken);display:flex;flex-direction:column;justify-content:center}
-.wrap .dg-mx .c{border:1px solid var(--border-strong);background:var(--surface);color:var(--text)}
-.wrap .dg-mx .c.hid{border-style:dashed;color:var(--text-2)}
-.wrap .dg-mx .c.off{border-style:dashed;border-color:var(--border);background:transparent;color:var(--text-3)}
+.wrap .dg-mx .c{border:1px solid var(--dg-line);background:var(--surface);color:var(--text)}
+/* 虛線格（隱藏、移除、沿用原文）的線色同流程圖的選用框，用 --dg-dash；移除格靠刪除線表達，字色不再調淡 */
+.wrap .dg-mx .c.hid,.wrap .dg-mx .c.off,.wrap .dg-mx .c.fb{border-style:dashed;border-color:var(--dg-dash)}
+.wrap .dg-mx .c.hid{color:var(--text-2)}
+.wrap .dg-mx .c.off{background:transparent;color:var(--text-2)}
 .wrap .dg-mx .c.off b{text-decoration:line-through;font-weight:400}
-.wrap .dg-mx .c.fb{border-style:dashed;background:var(--surface-sunken);color:var(--text-2)}
-.wrap .dg-mx .c.sum{border-color:var(--ok-line);background:var(--ok-fill);color:var(--ok-ink)}
-.wrap .dg-mx .c.sum small{color:var(--ok-ink);opacity:.8}
+.wrap .dg-mx .c.fb{background:var(--surface-sunken);color:var(--text-2)}
+.wrap .dg-mx .c.sum{border-color:var(--ok-key);background:var(--ok-fill);color:var(--ok-ink)}
+.wrap .dg-mx .c.sum small{color:var(--ok-ink)}
 .wrap .dg-mx .c b{font-weight:500}
 .wrap .dg-mx .span{grid-column:2 / -1}
 /* 繼承：上層設定往下分給好幾個對象；實線＝跟隨上層，虛線＝自己的一組 */
@@ -239,7 +254,7 @@ body>.wrap{max-width:1280px;margin-left:calc(var(--side-w,232px) + 32px);margin-
 .wrap .dg-tl{--dg-k:150px;position:relative;min-width:600px}
 .wrap .dg-tl__row{display:grid;grid-template-columns:var(--dg-k) 1fr;gap:12px;align-items:center;margin-bottom:8px}
 .wrap .dg-tl__k{font-size:12.5px;line-height:1.4;color:var(--text)}
-.wrap .dg-tl__k span{display:block;font-size:11px;color:var(--text-3)}
+.wrap .dg-tl__k span{display:block;font-size:11px;color:var(--dg-sub)}
 .wrap .dg-tl__track{position:relative;height:22px;border-radius:999px;background:var(--surface-sunken)}
 .wrap .dg-tl__bar{position:absolute;top:0;bottom:0;z-index:2;display:flex;overflow:hidden;border:1px solid var(--border-strong);border-radius:999px;background:var(--surface);box-sizing:border-box}
 .wrap .dg-tl__bar>i{flex:1 1 0;display:flex;align-items:center;justify-content:center;padding:0 6px;font-style:normal;font-size:11px;line-height:1;color:var(--text);white-space:nowrap;overflow:hidden}
@@ -249,12 +264,12 @@ body>.wrap{max-width:1280px;margin-left:calc(var(--side-w,232px) + 32px);margin-
 .wrap .dg-tl__bar.pink{background:var(--pink-fill);border-color:var(--pink-line)}
 .wrap .dg-tl__bar.warn{background:var(--warn-fill);border-color:var(--warn-line)}
 .wrap .dg-tl__bar.off{background:var(--surface-sunken);border-color:var(--border)}
-.wrap .dg-tl__bar.off>i{color:var(--text-3)}
+.wrap .dg-tl__bar.off>i{color:var(--dg-sub)}
 .wrap .dg-tl__bar.st{border-radius:4px}
 .wrap .dg-tl__bar.pre{border-style:dashed;background:transparent;opacity:.8}
 .wrap .dg-tl__marks{position:absolute;z-index:1;top:0;bottom:22px;left:calc(var(--dg-k) + 12px);right:0;pointer-events:none}
 .wrap .dg-tl__marks>i{position:absolute;top:0;bottom:0;border-left:1px dashed var(--text-3);opacity:.75}
-.wrap .dg-tl__axis{position:relative;height:22px;padding-top:4px;font-size:11px;color:var(--text-3)}
+.wrap .dg-tl__axis{position:relative;height:22px;padding-top:4px;font-size:11px;color:var(--dg-sub)}
 .wrap .dg-tl__row.axis{margin-bottom:0}
 .wrap .dg-tl:has(.low) .dg-tl__axis{height:38px}
 .wrap .dg-tl:has(.low) .dg-tl__marks{bottom:38px}

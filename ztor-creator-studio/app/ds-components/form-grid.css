@@ -18,3 +18,11 @@
    卡片底部多出 16px，讓卡片上下內距不對稱（上 24／下 40）。
    取代 create-product / create-project 散落的 inline `style="margin-bottom:0"`。 */
 .form-grid > .field { margin-bottom: 0; }
+/* 欄寬下限與手機版（2026-10-15，375px 實測建立活動第 2 步「國家｜活動語言」那一列橫向溢出 33px）：
+   `1fr` 的下限是內容的 min-content，下拉複選的觸發鈕（不換行）會把右欄撐出卡外。改成 minmax(0, 1fr)，欄寬只看容器；
+   ≤480px 時兩欄改一欄直排（約 270px 的卡寬放兩個下拉，每個只剩一百多 px、字被截掉）。--3（長寬高等短數字）照舊三欄。 */
+.form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.form-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 480px) {
+  .form-grid:not(.form-grid--3) { grid-template-columns: minmax(0, 1fr); }
+}

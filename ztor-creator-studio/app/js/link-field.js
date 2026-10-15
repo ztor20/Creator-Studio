@@ -45,9 +45,41 @@
     return url;
   }
 
+  /* 讀屏提示（2026-10-15 目視檢查 C3）：按鈕換字不一定會被讀屏唸出來（焦點沒移動、
+     文字節點被替換時多數讀屏不播報），所以在連結列裡放一塊看不見的 aria-live 區，
+     複製成功時寫入「已複製」讓讀屏唸一次。用 shared.css 的 .u-visually-hidden，
+     消費頁不必改 markup——第一次複製時由本模組自己補上。 */
+  function liveOf(root) {
+    var live = root.querySelector('[data-linkf-live]');
+    if (!live) {
+      live = document.createElement('span');
+      live.className = 'u-visually-hidden';
+      live.setAttribute('data-linkf-live', '');
+      live.setAttribute('aria-live', 'polite');
+      live.setAttribute('role', 'status');
+      root.appendChild(live);
+    }
+    return live;
+  }
+  /* 讀屏只播報「已經在無障礙樹裡」的 live 區的變化：頁面載入時先替靜態連結列補好；
+     動態產生的連結列在第一次複製時補，延遲 30ms 再寫字讓它先進樹。 */
+  function seedLive() {
+    document.querySelectorAll('[data-linkf]').forEach(function (r) { liveOf(r); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', seedLive);
+  else seedLive();
+  function announce(root, text) {
+    var live = liveOf(root);
+    live.textContent = '';
+    /* 先清空再寫：同一句連續兩次寫入時，讀屏才會再唸一次 */
+    setTimeout(function () { live.textContent = text; }, 30);
+    setTimeout(function () { live.textContent = ''; }, HOLD + 400);
+  }
+
   /* 回饋長在按鈕自己的字上：手剛離開的地方就是眼睛在看的地方。 */
   function flash(root, btn) {
     root.classList.add('linkf--copied');
+    announce(root, tr('link.copied', '已複製'));
     var label = btn && (btn.querySelector('[data-linkf-copied]') || btn.querySelector('span') || btn);
     var was = label ? label.textContent : null;
     var wasKey = label ? label.getAttribute('data-i18n') : null;

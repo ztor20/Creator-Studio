@@ -247,5 +247,23 @@
       spy();
     }
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',build); else build();
+  /* 圖表可左右滑的提示：.dg 內容比外框寬時加 .is-ovf；捲離開頭加 .at-mid、捲到底加 .at-end（樣式見 shell.css 圖表段） */
+  function dgHint(){
+    var dgs=document.querySelectorAll('.wrap .dg'); if(!dgs.length) return;
+    function upd(d){
+      var max=d.scrollWidth-d.clientWidth, ovf=max>1;
+      d.classList.toggle('is-ovf',ovf);
+      d.classList.toggle('at-mid',ovf&&d.scrollLeft>1);
+      d.classList.toggle('at-end',ovf&&d.scrollLeft>=max-1);
+    }
+    dgs.forEach(function(d){
+      var tk=false;
+      d.addEventListener('scroll',function(){ if(!tk){ tk=true; requestAnimationFrame(function(){ tk=false; upd(d); }); } },{passive:true});
+      upd(d);
+    });
+    if(window.ResizeObserver){ var ro=new ResizeObserver(function(es){ es.forEach(function(e){ upd(e.target); }); }); dgs.forEach(function(d){ ro.observe(d); }); }
+    else window.addEventListener('resize',function(){ dgs.forEach(upd); });
+  }
+  function boot(){ build(); dgHint(); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 })();

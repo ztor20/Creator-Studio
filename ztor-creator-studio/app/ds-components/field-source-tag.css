@@ -33,15 +33,21 @@
   /* 2026-08-10 使用者指示「再降兩階」：--foreground-muted → --muted-foreground → --faint-ink。
      它是「這一格從哪裡來」的註記，不是欄位內容；跟欄位標籤搶對比會讓人先讀到它。 */
   color: var(--faint-ink);
+  /* 2026-10-15 目視檢查 C4：標記掛在區塊標題（.form-section__title，shared.css 設了 uppercase）裡時，
+     會被一起轉成全大寫「BOOKYAY 帶入」；品牌一律小寫 bookyay，標記自己不跟標題的大小寫與字距走。 */
+  text-transform: none;
+  letter-spacing: normal;
 }
-.field-source .ztor-icon { width: 12px; height: 12px; }
-/* 來源標記靠右：它是「這一格從哪裡來」的註記，不是欄名的一部分，緊貼欄名會被
-   讀成同一句。推到欄位右緣，數個欄位疊起來時標記也排成一直線。只在含標記的
-   label 上開 flex（用 :has），避免壓掉「加入商品 （選填）」那種欄名裡的空白。 */
+.field-source .ztor-icon { width: 12px; height: 12px; flex: none; }
+/* 不折行（2026-10-15，375px 門票彈窗的票價欄實測）：標記放在窄欄（算式列表的左欄）時，「鎖頭＋From bookyay」會被拆成
+   鎖頭一行、字兩行。標記是一個單位——整顆換到下一行可以，拆開不行。 */
+.field-source { white-space: nowrap; flex: none; }
+/* 來源標記緊跟欄名（2026-10-12 使用者：「標記放在標題後面」，與區塊標題旁的 badge 一致）：
+   原本推到欄位右緣、讓多個欄位的標記排成一直線；現改成接在欄名後面，全站「來源」一律跟標題走。
+   只在含標記的 label 上開 flex（用 :has），避免壓掉「加入商品 （選填）」那種欄名裡的空白。 */
 /* gap（2026-09-30）：開了 flex 之後，欄名與「（選填）」之間的那個空白字元被吃掉、黏成「開賣日期與時間(選填)」
    （D340 開賣設定兩格選填＋bookyay 鎖定時首次出現）；補回一個字距大小的間隔，等同原本的空白。 */
 .field__label:has(.field-source) { display: flex; align-items: center; gap: var(--sp-4); }
-.field__label .field-source { margin-left: auto; }
 
 /* 鎖住的欄位長什麼樣，本檔不再自己定義（2026-08-09 使用者裁示「整個元件庫只能有一個
    disabled 樣子」）。當天的經過：本檔一度自己寫了一組「透明底＋最輕的墨色」，理由是元件層
@@ -61,3 +67,9 @@
    不是「這一格整組壞了」——把已選項也壓暗，等於連「現在選的是哪一個」都一起藏起來。 */
 .is-source-locked .segmented__btn:not(.segmented__btn--active) .radio-card__title,
 .is-source-locked .segmented__btn:not(.segmented__btn--active) .radio-card__sub { color: var(--locked-field-ink); }
+/* 2026-10-12 使用者：「這個的已選狀態，應該也要有 disable 的」——上面 2026-08-10「已選維持 default 對比」翻掉：
+   鎖定時被選中的那一張也退成停用的樣子——字改 --view-field-ink（鎖住的值仍要讀得到，過 AA）、右上的選中點由橘改灰；
+   「現在選的是哪一個」仍由那張卡較亮的卡面與灰點說，不靠橘色。 */
+.is-source-locked .segmented__btn--active .radio-card__title,
+.is-source-locked .segmented__btn--active .radio-card__sub { color: var(--view-field-ink); }
+.is-source-locked .radio-cards .segmented__btn--active::after { background: radial-gradient(circle at center, var(--muted-foreground) 0 3px, transparent 3.5px); }

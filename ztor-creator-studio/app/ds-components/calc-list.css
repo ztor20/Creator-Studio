@@ -26,6 +26,7 @@
 
    Modifier:
      .calc-list--form                 列裡有輸入控件時用：改置中對齊、右欄收成固定寬
+     .calc-list--framed               卡內也畫外框（價格算式與數量拆成兩張線框表格）
 
    情境規則:
      .form-section--card .calc-list   坐在卡片式區塊裡時去掉外框與內距（卡的邊界已經
@@ -53,6 +54,47 @@
   border: 0;
   border-radius: 0;
 }
+/* --framed（2026-10-12 使用者指示）：卡內也畫外框——「價格與數量」那一段拆成兩張線框表格
+   （價格算式／數量）時用，每張表格自己有邊界，兩張之間靠區塊的 gap 分開。
+   放在去框規則之後、同特異度，後者勝出。其他卡內消費者不掛這個修飾類，維持去框。 */
+.form-section--card .calc-list--framed,
+.calc-list--framed {
+  padding: 0;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+/* 線框表格的列（2026-10-12 使用者：「參考組合包價格的 UI 設計邏輯」＝ price-ladder.css）：
+   列線貼齊外框兩緣（列自己帶內距，不是容器帶），每列一樣高的留白；
+   項目名回到前景色、14px，說明 12px 灰字在下一行；金額 16px。 */
+.calc-list--framed .kv {
+  padding: var(--sp-14) var(--sp-16);
+  font-size: var(--fs-14);
+}
+.calc-list--framed .kv:first-child { padding-top: var(--sp-14); }
+.calc-list--framed .kv__k { color: var(--foreground); }
+.calc-list--framed .kv__v { font-size: var(--fs-16); }
+.calc-list--framed .calc-list__how { margin-top: var(--sp-2); }
+/* 次要層（2026-10-12 使用者：平台費、創作者實收「變成次要層，如組合包價格展開的明細」；同日「這兩個放同一個框，中間用一條
+   分隔線（視覺上看起來不是貼左右的線）」）：算出來的列放進 `.calc-list__sub` 一個方框——淡壓深底（L0 檯面 12%，首版 25% 太深）、
+   13px、墨色 --foreground-muted；方框與上面主要列之間一條貼齊兩緣的列線，方框裡列與列之間的線左右各縮進 16px（用 ::before 畫，不貼邊）。 */
+.calc-list--framed .calc-list__sub {
+  background: color-mix(in srgb, var(--layer-0-surface) 12%, transparent);
+  border-top: 1px solid var(--border-soft);
+}
+.calc-list--framed .calc-list__sub .kv {
+  position: relative;
+  border-top: 0;
+  font-size: var(--fs-13);
+}
+.calc-list--framed .calc-list__sub .kv + .kv::before {
+  content: "";
+  position: absolute;
+  top: 0; left: var(--sp-16); right: var(--sp-16);
+  border-top: 1px solid var(--border-soft);
+}
+.calc-list--framed .calc-list__sub .kv__k { color: var(--foreground-muted); }
+.calc-list--framed .calc-list__sub .kv__v { font-size: var(--fs-13); color: var(--foreground-muted); }
 .calc-list .kv__v {
   font-family: var(--font-numeric);
   font-variant-numeric: tabular-nums;
@@ -82,7 +124,17 @@
    框本身會比鍵高出半行，所以改置中。右欄收成固定寬，讓輸入框與底下的唯讀金額
    右緣對齊（金額是右對齊的，輸入框不收寬就會比金額寬一截、讀不成一疊）。 */
 .calc-list--form .kv { align-items: center; }
-.calc-list--form .kv__v { flex: none; width: 140px; }
+.calc-list--form .kv__v { flex: none; width: 168px; }   /* 140 → 168（2026-10-12）：金額前綴改幣別代碼（amount-field--code，輸入框左側 62px），要給 7 位數留位置 */
+/* 手機（2026-10-15，375px 門票彈窗實測）：右欄固定 168px 時左欄只剩約 80px，「票價／粉絲付」與來源標記被擠成一字一行。
+   ≤480px 右欄收到 112px（幣別代碼 62px＋4 位數），左欄放得下一整顆來源標記、輸入框不再超出外框；來源標記本身不折行（見 field-source-tag.css）。 */
+/* 2026-10-15 驗收：112px 減掉幣別代碼的 62px 左內距與 12px 右內距只剩 38px，4 位數票價「2100」被裁成「210」。
+   右欄改 124px，並把代碼欄的內距在這裡收到左 54／右 8（代碼盒本身約 46px，仍留 8px 空隙）→ 數字區 62px，放得下 7 位數；
+   左欄約 74px，欄名最多折兩行。 */
+@media (max-width: 480px) {
+  .calc-list--form .kv__v { width: 124px; }
+  .calc-list--form .amount-field--code .amount-field__input.input { padding-left: 54px; padding-right: var(--sp-8); }
+  .calc-list--form .kv__k .field-source { margin-left: 0; }   /* 窄欄裡標記會自成一行，行首不留左外距，跟上面的欄名左緣對齊 */
+}
 /* 讀數列（沒有控件的那幾列）維持右對齊的純文字，補回輸入框的內距讓數字與框內文字同一條線。 */
 .calc-list--form .calc-list__ro { padding-right: var(--sp-10); }
 
