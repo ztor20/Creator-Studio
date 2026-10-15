@@ -25,6 +25,19 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-15 D418 原型同步（UI-CHANGES 二百三十二、ASSUMPTIONS UIA-258）**：
+> - 5.1.6.3 §2.4.2、§2.7：`event-detail.html` 交易摘要加支付費、淨額（摘要、每列、收支、結案）改扣平台費與支付費（支付費借 `js/orders-store.js` `payFee`）；交易明細匯出支付費欄填值、加買家名稱。
+
+> **2026-10-15 D417／D419 原型同步（UI-CHANGES 二百三十一、ASSUMPTIONS UIA-257；S96）**：
+> - D419：bookyay 活動在 `create-event.html` 票務設定與 `event-detail.html` 票務分頁都沒有活動預設購票規則，門票沒有「跟隨活動預設」開關。
+> - 5.1.6.1 F20／F21／F22：`create-event.html` bookyay 帶入不帶活動限購、限購次數、折扣、早鳥；自動組合包組合折扣 0、無限時折扣。
+> - 5.1.6.2 F9／F15、5.1.6.3 §2.6：`event-detail.html` bookyay 活動沒有預設購票規則卡；門票彈窗只剩兩項限購；最終版可自加折扣與限時折扣（S96）。
+> - 5.1.5.4 F2／F7、5.1.5.9 §2.3：`js/bundle-editor.js`、`bundle-detail.html` 自動組合包的組合折扣與限時折扣最終版可編輯（S96），release2.4 鎖定。
+
+> **2026-10-15 D416 原型同步（UI-CHANGES 二百三十、ASSUMPTIONS UIA-256；O39）**：
+> - 5.1.5.3 F2：`orders.html` 匯出開確認視窗（筆數、「包含收件資料」核取框預設不勾），按匯出在瀏覽器端產 CSV（`js/csv-export.js`、`js/orders-store.js` `exportTable()`）。
+> - 5.1.6.3 §2.7：`event-detail.html` 交易明細匯出同樣開確認視窗（無收件核取框）並產 CSV；「匯出名單」不在本次範圍。
+
 > **2026-10-13 D411 原型同步（UI-CHANGES 二百二十五、ASSUMPTIONS UIA-253；O34–O37）**：
 > - 5.1.5.3 F2／F3：`orders.html` 訂單日期區間、訂單類型篩選、匯出照篩選結果；付款時間、付款方式、發貨時間欄；清單含門票訂單。
 > - 5.1.5.3.1 §2.1、§2.2、§2.2.1、§2.3.4、§2.8：`order-detail.html` 從活動返回、訂單類型與來源、Admin 補寄信、付款資訊、門票資料、撤銷原因「換票」。

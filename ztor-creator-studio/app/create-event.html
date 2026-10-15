@@ -1328,8 +1328,9 @@
         <!-- 購票規則預設收合成一行摘要（2026-08-10）：它是「設一次就不太會再動」的預設值，
              攤開時高達 1212px（彈窗可視高度的兩倍），把真正每次都要填的票種表擠出畫面。
              收合只做在這一側——票種彈窗的「購買條件」分頁整頁就是給它的、沒有空間競爭，
-             所以規則本體的畫法不改（使用者裁示：只收合快速設定這邊）。2026-10-07（D366）起本體改為「新增條件」（condsHTML）。 -->
-        <div class="form-section form-section--outlined">
+             所以規則本體的畫法不改（使用者裁示：只收合快速設定這邊）。2026-10-07（D366）起本體改為「新增條件」（condsHTML）。
+             D419（2026-10-15）：bookyay 匯入的活動沒有活動預設購票規則——整塊收起（renderRules 依 evRulesLocked 設 hidden）；自建活動照舊。 -->
+        <div class="form-section form-section--outlined" id="ce-rules-sec">
           <div class="form-section__head form-section__head--actions">
             <div class="form-section__head-titles">
               <!-- 標題只寫「購票規則」：這個彈窗本來就叫票務設定、這一段本來就在講預設，
@@ -2031,7 +2032,9 @@
      商品成員合計＝原價 − 票券那一段（最低允許票價 × 張數）；（1 − 折扣%）＝售價 ÷ 原價——都讀編輯器既有的 listPrice／finalPrice，不另算一份。
      沒有 bookyay 票＝null（照一般活動組合包）。 */
   function bdBkyHkd(b) {
-    if (b.hkd != null && b.hkd !== "") return b.hkd;
+    /* D417 決定五〔推導〕：自動建立的組合包組合折扣帶入時為 0；最終版創作者自設後港幣欄＝現價 ×（1 − 組合折扣%） */
+    if (b.hkd != null && b.hkd !== "") return b.discountOn && Number(b.discount) > 0
+      ? Math.round(Number(b.hkd) * (1 - Number(b.discount) / 100) * 100) / 100 : b.hkd;
     if (!bundleEd) return null;
     const ids = (b.tickets && b.tickets.tierIds) || [];
     const tiers = ids.map(id => savedTiers().filter(t => t.id === id)[0]).filter(Boolean);
@@ -2528,7 +2531,7 @@
     if (tlMsg(et.saleFrom, et)) out.push({ step: 7, label: dT("d.sale.from") });
     if (tlMsg(et.saleTo, et)) out.push({ step: 7, label: dT("d.sale.to") });
     if (ruleTlBad(eventRules, et)) out.push({ step: 5, label: T("tb.issue.eventrules") });
-    savedTiers().filter(t => t.rules && !rulesLocked(t) && ruleTlBad(t.rules, et)).forEach(t =>
+    savedTiers().filter(t => t.rules && rulesChecked(t) && ruleTlBad(t.rules, et)).forEach(t =>
       out.push({ step: 5, label: ((val(t).tname || "").trim() || autoTicketName(t)) + " · " + dT("d.tier.buycond") }));
     if (bundleEd && bundleEd.timeIssues) bundleEd.getBundles().filter(b => !b.fresh).forEach(b => {
       if (bundleEd.timeIssues(b)) out.push({ step: 6, label: (b.name || T("cpp.bd.untitled")) + " · " + T("tb.issue.bundle") });
@@ -3525,22 +3528,22 @@
      早鳥現在是一張鎖定的「限時折扣」條件卡，價格與期間直接寫在卡上。 */
   const whenText = v => String(v || "").replace(/-/g, "/").replace("T", " ") || "—";
   function tierRulesSecHTML(t, d) {
-    /* bookyay 帶入條件的門票（D366 決定四／D367 決定五）：整組是這張票自己的一份、全部鎖定、不能另加條件；
-       「跟隨活動預設」開關換成來源徽章（同價格與數量區的 bookyay 唯讀做法）。 */
+    /* bookyay 帶入條件的門票（D366 決定四／D367 決定五）：整組是這張票自己的一份、帶入的條件鎖定；
+       D419（2026-10-15）：bookyay 活動沒有活動預設、也沒有「跟隨活動預設」開關——門票的條件就是它自己的條件。
+       來源徽章只在真的有 bookyay 帶入的條件時掛（只有創作者自加的折扣類時不掛）。 */
     if (rulesLocked(t) && t.rules) {
+      const anyBky = Object.values(normRules(t.rules).conds || {}).some(c => c && c.bky);
       return tierSecHTML("d.tier.buycond",
-        '<div class="tier-card__rules" data-rules-for="' + t.id + '">' + condsHTML(t.rules, t.id, true) + '</div>',
-        '<span class="badge badge--neutral">' + esc(dT("d.src")) + '</span>');
+        '<div class="tier-card__rules" data-rules-for="' + t.id + '">' + condsHTML(t.rules, t.id, true, bkyAddOn(t)) + '</div>',
+        anyBky ? '<span class="badge badge--neutral">' + esc(dT("d.src")) + '</span>' : "");
     }
-    /* D368 決定三：bookyay 帶入的活動，沒有 bookyay 條件的門票鎖在跟隨——開關停用（switch--locked）、
-       旁邊一枚來源徽章，跟隨摘要底下一句短原因。不給攤開自己一組的入口。 */
+    /* D419 決定一（2026-10-15，取代 D368 決定三的「鎖在跟隨」）：bookyay 活動裡沒有帶入條件的門票，不畫「跟隨活動預設」開關、
+       也不掛來源徽章——它自己的條件是空的：空狀態＋（最終版，S96）只列折扣、限時折扣的「新增條件」。 */
     if (followLocked(t)) {
-      const lsw = '<span class="field__label">' + esc(dT("d.tm.follow")) + '</span>' +
-        '<button type="button" class="switch switch--on switch--locked" role="switch" aria-checked="true" aria-disabled="true" data-tier-follow aria-label="' +
-          esc(dT("d.tm.follow")) + '"></button>' +
-        '<span class="badge badge--neutral">' + esc(dT("d.src")) + '</span>';
+      const addHTML = bkyAddOn(t)
+        ? '<div class="tier-card__rules" data-rules-for="' + t.id + '" data-feat="' + BKY_ADD_FEAT + '">' + condsHTML(newRules(), t.id, true, "ne") + '</div>' : "";
       return tierSecHTML("d.tier.buycond",
-        tierRuleSummaryHTML(t) + '<p class="field__hint">' + esc(dT("d.tm.follow.bky")) + '</p>', lsw);
+        '<div class="empty-card"><span class="empty-card__icon"><i data-lucide="inbox" class="ztor-icon"></i></span><p class="empty-card__title">' + esc(dT("d.cond.none")) + '</p></div>' + addHTML);
     }
     const follow = !d.rulesOpen;
     const sw = '<span class="field__label">' + esc(dT("d.tm.follow")) + '</span>' +
@@ -3642,9 +3645,9 @@
         errIds.add(t.id);
         if (!tierValid(t)) { renderTierErrors(); return; }   // 沒過驗證就不關，錯誤留在畫面上
         /* D342：限時間超出活動上架區間就不關（就地紅字）；bookyay 鎖定的早鳥不在這裡檢查（不能改） */
-        if (t.rules && !rulesLocked(t) && ruleTlBad(t.rules)) { syncRuleTl(document.getElementById("ce-tier-modal-body")); return; }
+        if (t.rules && rulesChecked(t) && ruleTlBad(t.rules)) { syncRuleTl(document.getElementById("ce-tier-modal-body")); return; }
         /* D390 決定二十五：限時折扣價高於一般折扣價擋存（就地紅字、不關） */
-        if (t.rules && !rulesLocked(t) && PC.discTimeBad(normRules(t.rules).conds, false)) { syncCondWarn(document.getElementById("ce-tier-modal-body")); return; }
+        if (t.rules && rulesChecked(t) && PC.discTimeBad(normRules(t.rules).conds, false)) { syncCondWarn(document.getElementById("ce-tier-modal-body")); return; }
         commitTier(t);
       } else dropDraft(t);
     }
@@ -4488,7 +4491,20 @@
      scope："event"（活動層預設）或門票 id；locked＝整組鎖定（bookyay 帶入條件的門票） */
   const pcCtx = { esc: esc, featOn: featOn, srcChip: () => srcChip(),
                   pctReadout: (c, scope) => pctReadout(c, scope), evPriceReadout: c => evPriceReadout(c) };
-  function condsHTML(r, scope, locked) { return PC.html(normRules(r), scope, locked, pcCtx); }
+  /* D417 決定五（2026-10-15，〔推導〕）：bookyay 帶入的門票，最終版創作者可自加「折扣」「限時折扣」兩種條件（S96 ⚪，release2.4 不提供）——
+     整組鎖定照舊（bookyay 限購不能改不能移除、其他條件不能加），只有這兩種開放：新增選單只列這兩種、整顆掛 data-feat="S96"。
+     D419（2026-10-15）定案：bookyay 活動沒有活動預設與「跟隨活動預設」，門票的條件就是它自己的——沒有帶入限購的門票直接在自己的條件裡加
+     （內部仍以 t.rules＝null 表示「空的一組」，第一次自加時才長出 t.rules；全部移除就回到空的）。 */
+  const BKY_ADD_FEAT = "S96";
+  const BKY_ADD_KEYS = ["disc", "discTime"];
+  const bkyAddCtx = Object.assign({}, pcCtx, { addOnly: BKY_ADD_KEYS, addFeat: BKY_ADD_FEAT });
+  const bkyAddCtxNE = Object.assign({}, bkyAddCtx, { noEmpty: true });
+  /* 套票轉出的 1 人票（hideFix）不設折扣與早鳥（5.1.6.2 F9：折扣類落在自動組合包），不給自加入口 */
+  const bkyAddOn = t => { try { return !!bkyOn && !!t && !t.hideFix && featOn(BKY_ADD_FEAT); } catch (e) { return false; } };   // bkyOn 宣告在後段（TDZ 保護）
+  const bkyLockedSet = t => !!t && (rulesLocked(t) || followLocked(t));   // bookyay 活動裡購買條件不開放一般編輯的票
+  /* 建立流程的檢核要不要看這張票自己的一組：一般可編輯的票，或最終版 bookyay 門票（自加的折扣類要檢核；bky 限購沒有期間、也沒有折扣價） */
+  const rulesChecked = t => !!t && (!rulesLocked(t) || bkyAddOn(t));
+  function condsHTML(r, scope, locked, add) { return PC.html(normRules(r), scope, locked, add === "ne" ? bkyAddCtxNE : add ? bkyAddCtx : pcCtx); }
 
   /* ── 價格（D367）：折扣是固定價，取代票價；加購商品照加在上面 ─────────────────────
      一般折扣價＝期間外（或沒有限時折扣時）粉絲付的票價；限時折扣價＝期間內的票價；
@@ -4533,6 +4549,8 @@
      只有 bookyay 帶入的活動限購、唯讀鎖定——整份畫成鎖定（不出「新增條件」、不能改不能刪），沒有活動限購時就是空的。 */
   const evRulesLocked = () => { try { return !!bkyOn; } catch (e) { return false; } };   // bkyOn 宣告在後段（TDZ 保護）
   function renderRules() {
+    const rulesSec = document.getElementById("ce-rules-sec");
+    if (rulesSec) rulesSec.hidden = evRulesLocked();   // D419：bookyay 活動整塊不出現
     if (rulesRoot) {
       rulesRoot.innerHTML = condsHTML(eventRules, "event", evRulesLocked());
       if (window.ztorIcons) window.ztorIcons.applyIcons(rulesRoot);
@@ -4579,7 +4597,13 @@
     if (!host) return null;
     if (host.dataset.rulesFor === "event") return evRulesLocked() ? null : eventRules;   // D385 決定一：bookyay 活動的活動層唯讀
     const t = tiers.find(x => x.id === host.dataset.rulesFor);
-    if (!t || rulesLocked(t) || followLocked(t)) return null;   // 整組鎖定、或 bookyay 活動鎖在跟隨的門票（D368）不接受任何寫入
+    if (!t) return null;
+    if (rulesLocked(t) || followLocked(t)) {   // 整組鎖定、或 bookyay 活動鎖在跟隨的門票（D368）不接受一般寫入
+      if (!bkyAddOn(t)) return null;
+      /* D417 決定五（最終版）：只接受自加折扣類——鎖在跟隨的票第一次加時才長出自己的一組（bkyAdd＝這一組只為了自加折扣而存在） */
+      if (!t.rules) { t.rules = newRules(); t.rulesFix = true; t.bkyAdd = true; }
+      return t.rules;
+    }
     return rulesForEdit(t);
   }
   /* 重畫一份規則：只讀路徑（不 copy-on-write）——寫入在呼叫前已經由 rulesFor 做完 */
@@ -4589,7 +4613,8 @@
     const id = host.dataset.rulesFor;
     const t = id === "event" ? null : tiers.find(x => x.id === id);
     if (id !== "event" && !t) return;
-    host.innerHTML = condsHTML(t ? rulesOf(t) : eventRules, id, t ? rulesLocked(t) : evRulesLocked());
+    /* 鎖在跟隨的 bookyay 門票（followLocked）同樣畫成鎖定（換版本重畫時原本會被當成可編輯） */
+    host.innerHTML = condsHTML(t ? rulesOf(t) : eventRules, id, t ? bkyLockedSet(t) : evRulesLocked(), t && bkyAddOn(t) && bkyLockedSet(t) ? (t.rules ? 1 : "ne") : 0);
     if (window.ztorIcons) window.ztorIcons.applyIcons(host);
     syncCondWarn(host);
     regate();
@@ -4606,9 +4631,15 @@
     const add = e.target.closest("[data-cond-add]");
     const rm = !add && e.target.closest("[data-cond-remove]");
     if (!add && !rm) return;
+    const k = (add || rm).dataset[add ? "condAdd" : "condRemove"];
+    /* D417 決定五：bookyay 門票整組鎖定時只有折扣、限時折扣可加可移除（最終版） */
+    const hostId = (add || rm).closest("[data-rules-for]")?.dataset.rulesFor;
+    const tt = hostId && hostId !== "event" ? tiers.find(x => x.id === hostId) : null;
+    const lockedSet = bkyLockedSet(tt);
+    if (lockedSet && BKY_ADD_KEYS.indexOf(k) < 0) return;
+    const hadOwn = !!(tt && tt.rules);
     const r = rulesFor(add || rm);
     if (!r) return;
-    const k = (add || rm).dataset[add ? "condAdd" : "condRemove"];
     if (add) {
       if (r.conds[k]) return;                          // 每種最多一次
       r.conds[k] = condFields(k, add.closest("[data-rules-for]")?.dataset.rulesFor);
@@ -4616,7 +4647,11 @@
     } else {
       if (r.conds[k] && r.conds[k].bky) return;        // bookyay 帶入的不能移除
       delete r.conds[k];
+      /* 自加的折扣類全部移除、這一組又只為它們存在（bkyAdd）→ 回到跟隨活動（鎖在跟隨） */
+      if (tt && tt.bkyAdd && !Object.keys(r.conds).length) { tt.rules = null; tt.rulesFix = false; tt.bkyAdd = false; }
     }
+    /* 跟隨 ↔ 自己的一組切換了（D417 自加），購買條件區塊的畫法跟著換（來源徽章／跟隨開關）——整個彈窗重畫 */
+    if (lockedSet && hadOwn !== !!(tt && tt.rules) && typeof renderTierModal === "function" && modalId === tt.id) { renderTierModal(); afterRuleChange(); return; }
     rerenderRulesFor(add || rm);
     afterRuleChange();
   });
@@ -4635,7 +4670,7 @@
   /* 有沒有哪一份規則的限時折扣價高於一般折扣價：回傳 { step, scope }（scope＝"event" 或門票 id），沒有回 null */
   function discTimeIssue() {
     if (PC.discTimeBad(normRules(eventRules).conds, true)) return { scope: "event" };
-    const t = savedTiers().find(x => x.rules && !rulesLocked(x) && PC.discTimeBad(normRules(x.rules).conds, false));
+    const t = savedTiers().find(x => x.rules && rulesChecked(x) && PC.discTimeBad(normRules(x.rules).conds, false));
     return t ? { scope: t.id } : null;
   }
   document.addEventListener("input", e => {
@@ -5135,7 +5170,6 @@
     /* 墓碑 2026-09-23（D315）：`d.tm.fee.src.exc`（本票例外的來源字串）與例外平台費自己的
        四把 key（`d.tm.exc`／`d.tm.exc.pct`／`d.tm.exc.hint`／`d.tm.exc.err`）隨欄位退場。 */
     "d.tm.follow":    { en: "Follow event defaults", zh: "跟隨活動預設" },
-    "d.tm.follow.bky":{ en: "Tickets on a bookyay event follow the event defaults.", zh: "bookyay 活動的門票一律跟隨活動預設。" },
     "d.tm.fix.n":     { en: "{n} fields need fixing", zh: "{n} 個欄位待修正" },
     "d.tier.gross":   { en: "Total price",        zh: "總價" },
     "d.stix":         { en: "What each date sells", zh: "每一場開哪些票" },
@@ -5846,7 +5880,10 @@
      帶入成該場的開放入場（doorsMin＝分鐘、doors＝開始時間往前推算）與早於開放時間入場（s.early），鎖定。
      bky-5 刻意不設，示範 bookyay 沒設定時開放入場留空並鎖定（推導〔產品待確認〕）。
      票價幣別（D330，取代 D306 起的港幣基準）：bookyay 原幣港幣，`priceHkd` 帶入時換算成創作者幣別當基準價（`types[].price`、鎖），
-     港幣原值記在 `types[].hkd`（價格表港幣欄鎖定）；自動建立的組合包另記 `hkd`＝bookyay 現價。 */
+     港幣原值記在 `types[].hkd`（價格表港幣欄鎖定）；自動建立的組合包另記 `hkd`＝bookyay 現價。
+     D417（2026-10-15）：bookyay 的活動限購（maxPurchaseCnt／maxPurchaseCntEachTime／maxPurchaseTime）、本門票限購的限購次數（limit.maxPurchaseTime）、
+     折扣優惠（discount）、早鳥（early）一律不帶入——下面各筆仍保留這些欄位，示範「bookyay 有、ztor 不帶」；帶入只剩本門票限購的
+     每人總限購與每次交易限購（鎖定）。以下各筆註解凡寫到這四項「帶入／落在…」的，皆為 D417 前的示範說明。 */
   const BKY = [
     { id: "bky-1", type: "concert",
       label: "REALIVE World Tour — Taipei",
@@ -5864,14 +5901,14 @@
       saleFromD: "2026-07-01", saleFromT: "12:00", saleToD: "2026-09-12", saleToT: "18:00",
       ship: "eticket",
       isPrivate: false,
-      /* D366：bookyay 活動限購（活動層）→ 活動預設購票規則的「限購」，鎖定 */
+      /* bookyay 活動限購（活動層）：D417 起不帶入（原 D366 寫進活動預設購票規則的「限購」） */
       maxPurchaseCnt: 6, maxPurchaseCntEachTime: 4, maxPurchaseTime: 2,
       showTncs: true,
       tncs: "<p><strong>購票須知</strong></p><ol><li>本票券一經售出，除活動取消或延期外，恕不退換。</li><li>每筆訂單限購 4 張；同一身分證件重複購票者，主辦單位有權取消其訂單。</li><li>入場時須出示電子票券 QR Code 與身分證件，轉售票券不予入場。</li></ol><p>演出全程禁止攝影、錄影及錄音；違者經勸導不聽，主辦單位得請其離場且不予退費。<br>主辦單位保留調整演出內容與座位安排之權利。</p>",
       ticketTypes: [
         { name: "VIP", priceHkd: "1040", persons: 1,
           desc: "含彩排參觀與限定手環，入場時於 VIP 通道報到。",
-          /* D366／D367：本門票限購、折扣優惠（折後價，港幣）、早鳥（早鳥價＋優惠完結）——三者都帶入並鎖定 */
+          /* bookyay 端有本門票限購、折扣優惠、早鳥；D417 起只帶限購的每人總限購與每次交易限購（鎖定），折扣與早鳥不帶入 */
           limit: { maxPurchaseCnt: 2, maxPurchaseCntEachTime: 2 },
           discount: { priceHkd: "980" },
           early: { priceHkd: "880", endD: "2026-07-31", endT: "23:59" } },
@@ -6240,15 +6277,12 @@
        4. 每張門票人數 n ≥ 2（套票）→ 票種改成「1 人票」：票價＝現價 ÷ n（可有小數，鎖）、每場隱藏且鎖定為隱藏（D329）；
           另外每場自動建一組組合包（票券成員＝該場 1 人票 × n、折扣 0、鎖定套數＝floor(上限 ÷ n)），整組鎖定（`fix`，D329）。
        5. 墓碑 2026-10-05（D353）：「活動門票簡介」不帶入（原本複製到該票種每一場的門票簡介）。
-       6. 早鳥（D329 依人數分流，兩種都鎖定）：
-          n ＝ 1 → 該門票的「限時折扣」條件：期間價＝早鳥價（港幣換算成創作者幣別，D367 決定四）、期間＝開賣時間 → 優惠完結。
-          n ≥ 2 → 1 人票不設早鳥；改寫在自動建的組合包 `sale`：限時折扣 %＝1 − 早鳥價 ÷ 現價、檔期同上；
-                  套票另有折扣優惠時改以折後價為底＝1 − 早鳥價 ÷ 折後價（D391 第 15 題）。
-       7. 限購與折扣優惠（D366 決定四，2026-10-07）：活動限購（maxPurchaseCnt／maxPurchaseCntEachTime／maxPurchaseTime
-          ＝每人總數／每次交易／限購次數）→ 活動預設購票規則的「限購」（回傳 eventCap）；本門票限購 → 該門票的「限購」；
-          折扣優惠（門票層、bookyay 折後價）→ 該門票的「折扣」價。n ≥ 2 的 1 人票不收門票層限購與折扣——D390 決定十九（2026-10-09）定案：條件改放自動建立的組合包（見下方 b.set 段；原 UIA-215 缺口關閉）。
-          門票只要有任一條件由 bookyay 帶入：整組是這張票自己的一份（不跟隨活動）、全部鎖定（rulesFix，D367 決定五）；
-          這一份沒有自己的限購而活動有 bookyay 限購時，把活動限購也放進來（推導，UIA-215）。
+       6. 墓碑 2026-10-15（D417 決定四）：早鳥不帶入——原本 n ＝ 1 寫成門票的「限時折扣」、n ≥ 2 寫在自動組合包的 `sale`（D329／D391 第 15 題）。
+       7. 限購（D366 決定四；D417 修訂，2026-10-15）：只帶本門票限購的每人總限購數量與每次交易限購數量 → 該門票的「限購」（鎖定）；
+          活動限購（maxPurchaseCnt／maxPurchaseCntEachTime／maxPurchaseTime）、本門票限購的「限購次數」（maxPurchaseTime）、
+          折扣優惠（discount）都不帶入（D417 決定一～三；bookyay 示範資料仍保留這些欄位，示範「bookyay 有、ztor 不帶」）。
+          n ≥ 2 的 1 人票不收門票層限購，限購改放自動建立的組合包（D390 決定十九，見下方 b.set 段）。
+          門票有本門票限購：整組是這張票自己的一份（不跟隨活動）、鎖定（rulesFix，D367 決定五）；最終版可自加折扣與限時折扣（S96，D417 決定五）。
      回傳 { sessions, types, cells, bundles, skipped }，由 bkyApply 寫進頁面狀態。純資料轉換、不碰 DOM，
      cheat code／驗收可以直接呼叫（window.__ceBkyMap）。 */
   /* 活動詳情 intros → 描述的區塊（D354 決定六，2026-10-05；5.1.6.1 F21「活動詳情（intros）」；前身 D334 補充／D335／D340）：
@@ -6326,11 +6360,8 @@
         fix: true, _bky: { k: k, n: n, set: n >= 2, name: bt.name, early: bt.early || null }
       };
     });
-    /* 活動限購（D366 決定四）：有任一欄才帶 */
-    const hasEvCap = ["maxPurchaseCnt", "maxPurchaseCntEachTime", "maxPurchaseTime"].some(k => rec[k] != null && rec[k] !== "");
-    const eventCap = hasEvCap ? { person: rec.maxPurchaseCnt != null ? String(rec.maxPurchaseCnt) : "",
-      order: rec.maxPurchaseCntEachTime != null ? String(rec.maxPurchaseCntEachTime) : "",
-      times: rec.maxPurchaseTime != null ? String(rec.maxPurchaseTime) : "", bky: true } : null;
+    /* 墓碑 2026-10-15（D417 決定一）：活動限購（maxPurchaseCnt／maxPurchaseCntEachTime／maxPurchaseTime）不帶入——
+       bookyay 匯入的活動沒有活動層限購、創作者也不能設定（原本 eventCap 寫進活動預設購票規則的「限購」、鎖定）。 */
     const cells = [];
     const bundles = [];
     sessions.forEach((ss, i) => {
@@ -6346,36 +6377,17 @@
       /* 套票的 1 人票張數＝floor(上限 ÷ n) × n，捨去零頭（D329；例：上限 151、二人套票 → 150 張、鎖 75 套）。
          顯示開關鎖定為隱藏（hideFix，D329）：彈窗的開關停用、不能改回顯示。 */
       if (b.set) { cell.qty = String(Math.floor(cap / b.n) * b.n); cell.hidden = true; cell.hideFix = true; cell.decimalOk = true; }
-      /* 早鳥的檔期（D328／D329）：開始＝開賣時間；bookyay「活動發佈同時發售」時改用上架時間；結束＝優惠完結。
-         百分比由「折後價＝早鳥價」反推、取一位小數（折扣欄的精度）；精度造成的 ±1〔產品待確認〕。 */
-      const early = b.early ? (() => {
-        /* D391 第 15 題：套票同時有折扣優惠與早鳥時，早鳥 % 以折後價為底——限時折扣疊在組合折扣後的售價上（5.1.5.4 F7），
-           ＝1 − 早鳥價 ÷ 折後價；沒有折扣優惠時照舊以現價為底（1 − 早鳥價 ÷ 現價）。n ＝ 1 不用 pct（直接寫早鳥價）。 */
-        const bt1 = rec.ticketTypes[b.k] || {};
-        const dh = b.set && bt1.discount && bt1.discount.priceHkd != null && bt1.discount.priceHkd !== "" ? Number(bt1.discount.priceHkd) : null;
-        const base = dh != null && dh > 0 ? dh : (Number(bt1.priceHkd) || 0);
-        const listAt = [document.querySelector("[data-ce=list-d]")?.value, document.querySelector("[data-ce=list-t]")?.value]
-          .filter(Boolean).join("T");
-        return {
-          pct: base > 0 ? Math.round((1 - Number(b.early.priceHkd) / base) * 1000) / 10 : 0,   // 只給 n ≥ 2 的組合包用（底見上）
-          price: String(toBase(Number(b.early.priceHkd) || 0)),
-          from: rec.saleWithPublish ? listAt : (rec.saleFromD ? rec.saleFromD + "T" + (rec.saleFromT || "00:00") : ""),
-          to: b.early.endD + "T" + (b.early.endT || "23:59")
-        };
-      })() : null;
+      /* 墓碑 2026-10-15（D417 決定四）：早鳥不帶入——原本這裡算早鳥的檔期與百分比（D328／D329／D391 第 15 題），
+         n ＝ 1 寫成門票的限時折扣、n ≥ 2 寫成自動組合包的 sale。 */
       if (!b.set) {
-        /* n ＝ 1：bookyay 的門票層條件寫成這張票自己的一份（D366 決定四），只放 bookyay 帶入的條件——
-           不再複製活動層當下的規則（舊做法把當時的購買條件與限購一起凍結在早鳥票上）。 */
+        /* n ＝ 1：bookyay 的門票層條件寫成這張票自己的一份（D366 決定四），只放 bookyay 帶入的條件。
+           D417（2026-10-15）：只剩本門票限購的每人總限購與每次交易限購（限購次數、折扣、早鳥不帶入，也不再補活動限購）。 */
         const bt = rec.ticketTypes[b.k] || {};
         const conds = {};
         const capOf = o => ({ person: o.maxPurchaseCnt != null ? String(o.maxPurchaseCnt) : "",
-          order: o.maxPurchaseCntEachTime != null ? String(o.maxPurchaseCntEachTime) : "",
-          times: o.maxPurchaseTime != null ? String(o.maxPurchaseTime) : "", bky: true });
-        if (bt.limit) conds.cap = capOf(bt.limit);
-        if (bt.discount && bt.discount.priceHkd != null) conds.disc = { price: String(toBase(Number(bt.discount.priceHkd) || 0)), bky: true };
-        if (early) conds.discTime = { price: early.price, from: early.from, to: early.to, bky: true };
+          order: o.maxPurchaseCntEachTime != null ? String(o.maxPurchaseCntEachTime) : "", bky: true });
+        if (bt.limit && (bt.limit.maxPurchaseCnt != null || bt.limit.maxPurchaseCntEachTime != null)) conds.cap = capOf(bt.limit);
         if (Object.keys(conds).length) {
-          if (!conds.cap && eventCap) conds.cap = Object.assign({}, eventCap);
           cell.rules = { conds };
           cell.rulesFix = true;
         }
@@ -6390,26 +6402,26 @@
            D390 決定二十：購買條件整組鎖定（js/bundle-editor.js srcFix → 唯讀讀數）。 */
         const bt0 = rec.ticketTypes[b.k] || {};
         const lim = bt0.limit || null;
-        const capRules = lim ? { on: false, cond: "time", tier: "fan", from: "", to: "", cap: "cap",
+        /* D417（2026-10-15）：限購只帶每人總限購與每次交易限購（限購次數不帶入、也不能設定）；
+           折扣優惠與早鳥不帶入——組合折扣 0、售價＝bookyay 現價、沒有限時折扣（最終版創作者可自設，S96）。 */
+        const capRules = lim && (lim.maxPurchaseCnt != null || lim.maxPurchaseCntEachTime != null) ? { on: false, cond: "time", tier: "fan", from: "", to: "", cap: "cap",
           person: lim.maxPurchaseCnt != null ? String(lim.maxPurchaseCnt) : "",
           order: lim.maxPurchaseCntEachTime != null ? String(lim.maxPurchaseCntEachTime) : "",
-          times: lim.maxPurchaseTime != null ? String(lim.maxPurchaseTime) : "" } : null;
+          times: "" } : null;
         const full = Number(bt0.priceHkd) || 0;
-        const discHkd = bt0.discount && bt0.discount.priceHkd != null && bt0.discount.priceHkd !== "" ? Number(bt0.discount.priceHkd) : null;
-        const discPct = discHkd != null && full > 0 ? Math.round((1 - discHkd / full) * 1000) / 10 : 0;
         bundles.push({
           name: b.name + (sessions.length > 1 ? " · " + sessionLabel(ss, i) : ""),
           nameTouched: true, desc: "",
           tickets: { tierIds: [cell.id], qty: b.n },
-          discountOn: discPct > 0, discount: discPct > 0 ? String(discPct) : "",
+          discountOn: false, discount: "",
           rules: capRules,
           lockSets: String(Math.floor(cap / b.n)),
           scope: "shared", fresh: false, collapsed: true, pickOpen: false,
           fix: true,
           /* D330：價格表港幣欄＝bookyay 現價（整張套票的價）、鎖定；基準欄＝1 人票基準價 × n，依組合包規則加總。
              D390 決定十九：bookyay 有折扣優惠時，港幣欄鎖在折後價（粉絲實付的那個價）。 */
-          hkd: Math.round((discHkd != null && discPct > 0 ? discHkd : full) * 100) / 100,
-          sale: early ? { pct: early.pct, from: early.from, to: early.to } : null
+          hkd: Math.round(full * 100) / 100,   // D417：折扣不帶入，港幣欄＝bookyay 現價
+          sale: null
         });
       }
     });
@@ -6424,7 +6436,7 @@
     const shown = !rec.isPrivate;
     /* 重覆活動（D369 決定五）：bookyay 已展開的每個時段各成一場（上面的 sessions），鎖定與單次活動相同（lockSessions）；
        產生場次用的 rec.repeat（每場持續時間、每場活動間距、重覆日子）不帶入、不回傳。 */
-    return { sessions, types, cells, bundles, skipped: skippedFinal, desc: intro.blocks, shown, eventCap, ticketMode: rec.ticketMode || "custom" };
+    return { sessions, types, cells, bundles, skipped: skippedFinal, desc: intro.blocks, shown, ticketMode: rec.ticketMode || "custom" };
   }
   window.__ceBkyMap = id => bkyMap(BKY.find(r => r.id === id));
 
@@ -6496,8 +6508,8 @@
     lockSessions(true);
     types = m.types;
     tiers = m.cells;
-    /* 活動預設購票規則（D366 決定四）：只放 bookyay 的活動限購（鎖定）；其他條件照常可加 */
-    eventRules = m.eventCap ? { conds: { cap: m.eventCap } } : newRules();
+    /* 活動預設購票規則：D417 決定一起 bookyay 活動限購不帶入、活動層沒有條件且唯讀（evRulesLocked，入口移除） */
+    eventRules = newRules();
     renderRules();
     renderTypes();
     drafts = {}; newIds = new Set(); errIds = new Set();

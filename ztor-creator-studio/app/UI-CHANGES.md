@@ -13,6 +13,109 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-15（二百三十二）· 活動詳情的淨額改扣平台費與支付費、交易明細匯出加買家名稱（A spec）
+
+**標籤**：release2.4
+
+**範圍**：
+- `event-detail.html` 交易明細：交易摘要新增「支付費」一格（五格排成兩排）；每列淨額、摘要淨額改為毛額 − 平台費 − 支付費（D418）。
+- `event-detail.html` 收支：摘要補「支付費」一列、淨額同口徑；收入明細表在平台費之後補一行支付費。
+- `event-detail.html` 結案收入卡：補「支付費」一列，淨收入扣支付費，說明句改「扣掉平台費與支付費之後」。`edRevTotals()` 多回傳 `pay`。
+- 活動交易明細匯出：支付費欄填值、創作者淨額改扣支付費，同一筆門票訂單與訂單管理匯出的創作者淨額相同；活動名稱後新增「買家名稱」欄（只有名稱）。
+- `js/orders-store.js`：門票訂單的支付費算式收成 `payFee()` 並對外提供，訂單詳情與活動詳情共用同一支（不另寫算式）。
+- `js/i18n.js`：新增 `event-detail.tx.payfee`、`event-detail.tx.payfee-meta`，改寫 `event-detail.wrap.net-meta`。
+
+**依據**：D418（decisions.md）；5.1.6.3 v71 §2.4.2、§2.7。
+
+**呈現假設**：見 ASSUMPTIONS UIA-258。
+
+## 2026-10-15（二百三十一）· bookyay 不再帶入活動限購、限購次數、折扣與早鳥；bookyay 活動拿掉活動預設與跟隨開關；最終版可自設折扣與限時折扣（A spec）
+
+**標籤**：release2.4
+
+**範圍**：
+- `create-event.html` 帶入（bkyMap）：不再帶活動限購（活動層預設購票規則一律空、唯讀）、本門票限購的限購次數、折扣優惠、早鳥；門票只帶每人總限購與每次交易限購（鎖定）。套票自動組合包：組合折扣 0、售價＝bookyay 現價、沒有限時折扣、限購不含限購次數。BKY 候選資料保留 bookyay 端欄位（示範「有但不帶」），註解同步。
+- `js/purchase-conds.js`：bookyay 的限購卡只畫每人總限購與每次交易限購兩格；新增 `ctx.addOnly`／`addFeat`／`noEmpty` 與 `mount(opts.locked)`——整組鎖定時仍可只開放少數種類。
+- 最終版（新功能標記 S96 ⚪「bookyay 活動自設折扣與早鳥（最終版）」）：
+  - 建立流程步驟 4 單張門票彈窗、活動詳情單張門票彈窗（編輯模式）：bookyay 門票的「新增條件」只列折扣、限時折扣，加了可改可移除；沒有帶入限購的門票接在空狀態下面（D419）；套票轉出的隱藏 1 人票不給入口。期間與「限時折扣價不得高於一般折扣價」照常檢核。
+  - `js/bundle-editor.js`（建立流程步驟 5）與 `bundle-detail.html`：自動建立組合包的組合折扣與限時折扣改可編輯；release2.4 照舊鎖定。
+  - 自動組合包的價格表港幣欄＝現價 ×（1 − 組合折扣%）（`events-store` `bkyBundleHkd`、`create-event` `bdBkyHkd`，推導）。
+- D419：bookyay 活動的「預設購票規則」整塊不出現（`event-detail.html` 票務分頁的卡、`create-event.html` 票務設定彈窗的「購票規則」區 `#ce-rules-sec`）；兩頁的 bookyay 門票都不再畫「跟隨活動預設」開關，門票條件就是自己的一組（沒有條件＝空狀態），來源標記只在有帶入條件時掛。自建活動照舊。
+- 示範資料 `js/events-store.js`：bookyay 活動門票拿掉帶入的折扣、限時折扣、限購次數，活動層限購拿掉；自動組合包拿掉限時折扣，高雄跨年草稿的自動組合包改組合折扣 0、售價＝現價。交易、名單、KPI、收入只看票面價與組合包售價，加總不變。
+- `js/i18n.js`：`cpp.bd.sp.srclocked` 不再寫「折扣、限時折扣已鎖定」。
+- 功能標記：`feature-scope-map.md` 新增 S96、`js/devtools.js` `FEAT_TIER` 後備補一筆。
+- 設計系統：`design-system.md`／`design-system.html` Condition list 補「整組鎖定但開放少數種類」說明（沒有新樣式）。
+
+**依據**：D417、D419（decisions.md）；5.1.6.1 v2.75 F20、F21、F22；5.1.6.2 v3.59 F9、F15；5.1.6.3 v72 §2.6；5.1.5.4 v2.53 F2、F7；5.1.5.9 v1.65 §2.3；0-設計規格書 v4.61 §7.14、§7.15；note/bookyay ztor mapping.md。
+
+**呈現假設**：見 ASSUMPTIONS UIA-257。
+
+## 2026-10-15（二百三十）· 訂單與活動交易明細的匯出：確認視窗＋真的下載 CSV（A spec）
+
+**標籤**：release2.4
+
+**範圍**：
+- 訂單管理「匯出」（D416，5.1.5.3 F2）：原本只跳一則 toast；改成先開確認視窗——顯示會匯出幾筆（照目前的狀態、搜尋、日期區間、訂單類型篩選）、「包含收件資料（姓名、電話、地址）」核取框（每次開窗都不勾，旁邊一句「預設只匯出買家名稱與電子郵件」）、匯出／取消；按匯出在瀏覽器端產生 CSV 下載。
+  - `js/csv-export.js`（新）：`ztorCsv.build()`（UTF-8 BOM、逗號分隔、含逗號／雙引號／換行的欄位加引號轉義、CRLF）、`download()`、`confirm()`（確認視窗，沿用 `.payout-modal`／`.payout-dialog--narrow`＋`.zcheck`，沒有新 CSS）、`fileRange()`。
+  - `js/orders-store.js`：新增 `exportTable()`、`payLabel()`、`fulfilLabel()`。欄位五組（訂單基本、金額、付款、履約、買家），金額取自訂單詳情「金額拆解」同一份 `amounts`／`discount`，不另寫算式；買家實付＝商品小計 − 折扣合計 + 運費。
+  - `orders.html`：匯出鈕接視窗；載入 `csv-export.js`、`payout-modal.css`、`checkbox.css`。
+  - 檔名：`訂單_起訖日期.csv`（沒篩日期＝`訂單_全部.csv`；英文介面 `Orders_all.csv`）。
+- 活動詳情交易明細「匯出交易」（D416，5.1.6.3 §2.7）：交易明細分頁的按鈕與總覽收尾卡的按鈕都開同一個確認視窗（不含收件核取框，改一句「收件資料不在這份匯出裡」），匯出照目前篩選的列表（訂單日期區間＋全部／已付款／已取消）。
+  - `event-detail.html`：新增 `txFilteredList()`（renderTx 與匯出共用同一份篩選，兩者不會分叉）、`txExportTable()`、`openTxExport()`；欄位＝訂單基本、金額、付款三組＋活動名稱、品項、品項種類、數量、門票收入、活動收入、狀態、撤銷時間、撤銷者。金額與頁面上的毛額、平台費、淨額、門票收入、活動收入同一套算式。載入 `orders-store.js`（借付款／履約狀態字樣）與 `csv-export.js`。
+  - 檔名：`交易明細_活動名稱_起訖日期.csv`。「匯出名單」維持原樣（不在本次範圍）。
+- `js/i18n.js`：新增 `csv.*`（視窗文案、檔名、列舉值、表頭，中英都有）。
+- 設計系統：新增 Pattern 5.1.12 Export confirm（`design-system.html` TOC＋縮圖＋小節與真元件組合實例、`design-system.md` 對照表與卡）。
+- 功能標記：新增 `O39`（🔵 release2.4）登記在 `feature-scope-map.md` 與 `js/devtools.js` `FEAT_TIER`；版本閘關閉（release2.3 預覽）時，兩處匯出維持舊行為（只回報筆數／原型提示）。
+
+**依據**：D416（decisions.md）；5.1.5.3 v1.16 F2、5.1.6.3 v69 §2.7；note/訂單與交易明細匯出欄位規劃.md。
+
+**呈現假設**：見 ASSUMPTIONS UIA-256（收件姓名與電話、訂單時分秒、平台費與支付費正負號、交易明細的支付費與買家欄、已取消列的收入欄）。
+
+## 2026-10-14（二百二十九）· 改過的幣別價不再被覆寫、bookyay 修改同步後自動下架改手動重新上架、下架確認改講粉絲看到已下架（A spec）
+
+**標籤**：release2.4
+
+**範圍**：
+- 價格換算（D415 決定六）：基準價一改，只有沒手動改過的幣別跟著重新換算，手動改過的保留；「重設為換算值」讓該幣別回到跟隨；鎖定欄（bookyay 港幣原價）不變。
+  - `js/publish-stage.js`：草稿遇到基準價變動只更新基準價、保留覆寫（原本整列清空）。
+  - `partials/publish-preview.js`：同上。
+  - `js/events-store.js`：`recalc()` 改成保留覆寫；定價幣別說明區塊改寫。
+  - `bundle-detail.html`：頁首摘要價在成員價或折扣改了之後仍顯示覆寫值（含票券組合包的售價覆寫比照保留）。
+  - `design-system.html`、`design-components.html`、`design-system.md`：Publish preview／Publish stage 條目的重算說明句同步改寫。
+- bookyay 上下架（D415 決定一～三，修訂 D375 決定三）：
+  - `event-detail.html`：設定分頁下架區的 bookyay 說明改成「bookyay 端修改同步時自動下架並通知你、手動重新上架；改回草稿也同步下架」，拿掉「再次發布時同步上架」。
+  - `event-detail.html`：頁首下方新增提示 `#ed-bkysync`（沿用 `.alert--row.alert--warning`），寫 bookyay 改了什麼、已自動下架、檢查後手動重新上架，附「重新上架」鈕（沿用 `data-ed-relist` 既有處理）；只在 bookyay 活動、有 `bkySyncUnlist` 且仍已下架時顯示，重新上架後收起。
+  - `js/events-store.js`：示範活動 `nick-acoustic-tainan-bky`（售票中、已下架）加 `bkySyncUnlist`＝bookyay 把開始時間 19:00 改成 19:30 後自動下架；清單列沿用既有「已下架」徽章。
+- 下架確認文案（D415 決定七、八）：活動、商品、組合包、拍賣的下架說明與確認，從「粉絲看不到／連結失效」改成「粉絲會看到已下架、不能購買，購物車裡的會顯示已失效」。
+  - `js/i18n.js`：`event-detail.unlist.sub`、`event-detail.unlist.confirm.body`、`event-detail.relist.sub`、`event-detail.unlist.bky`、`e-shop.unlist.body`、`ad.unlist.body` 改寫；新增 `ed.bkysync.*`（中英都有）。
+  - `event-detail.html`、`product-detail.html`、`bundle-detail.html`、`auction-detail.html`：對應的英文備援句同步。
+- 沒動：複製連結在已下架時收起（非公開連結下架後能否開已下架頁屬 D415 待確認）；自動下架的通知中心訊息未做示範。
+
+**依據**：D415（decisions.md）；主規格 §7.14、§7.15。
+
+**呈現假設**：bookyay 改動內容以「欄位 舊值 → 新值」一句帶過，同步時間照資料原樣顯示。
+
+## 2026-10-14（二百二十八）· 活動詳情：進行中的編輯分兩層、已取消照樣顯示通知（A spec）
+
+**標籤**：release2.4
+
+**範圍**：
+- `event-detail.html`：
+  - 新增 `edLiveLocks()`，由 `applyReadonly()` 在一律解鎖之後呼叫：只在進行中、編輯模式下作用。
+    - 上架中：既有場次的日期、開始時間、跨日開關與結束日期唯讀；場地名稱與完整地址唯讀。
+    - 已開始的場次（最早的一場，或開始時刻已過）：日期、開始時間、跨日與結束日期下架後仍唯讀；有一場已開始，場地名稱與完整地址就一直唯讀。
+    - 活動國家停用。
+    - 編輯中新增、還沒儲存的場次不鎖；bookyay 帶入者原本就鎖，不另顯示說明。
+  - 場次卡清單下方、完整地址欄下方各加一行說明（`#ed-live-dates-note`、`#ed-live-venue-note`），依情況顯示「先下架才能改，改完再上架」或「已開始的場次不能改」。
+  - 新增 `edLiveRelock()`，由 `syncUnlist()` 呼叫：編輯中按下架或重新上架，鎖定跟著重算（上架／下架仍不受編輯模式管）。
+  - 已取消的通知區塊：既有程式已照 D390 顯示開關與寄送紀錄、開關唯讀，本次只修正售票與名單分節那段過時註解。
+- `js/i18n.js`：新增 `ed.live.unlist-first`、`ed.live.started`（中英都有）。
+- 沒動：低風險欄位（描述、圖片、在地化、通知開關、停售時間、下架時間）沿用既有規則；結束時間、提前入場、顯示設定、票種、購買條件、組合包維持現狀；已結束與已取消整頁唯讀不變。
+
+**依據**：D413；5.1.6.2 v3.56 §3「進行中的編輯」；5.1.6.3 v67 §2.10、第 4 段。
+
+**呈現假設**：「已開始的場次」以最早的一場一定已開始（活動開始即進入進行中）、其他場次比對本機時鐘判斷。
+
 ## 2026-10-14（二百二十七）· 訂單詳情加「撤銷整張訂單」、免費訂單示範、bookyay 演唱會示範資料補多種門票與 Admin 清單（A spec）
 
 **標籤**：release2.4

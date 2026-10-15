@@ -1346,8 +1346,11 @@
        · 訂單詳情 get(id) 查不到電子商店訂單時，交給 ztorEvents.findOrder(id) 反查——交易明細的每一列都打得開。
      需要頁面先載入 js/events-store.js；沒載入時門票訂單整組不存在，電子商店訂單照舊。
      金額：活動以創作者幣別計價（示範 TWD，整數），訂單詳情照活動幣別顯示（cur／dec）；平台費 10%（events.onsite，
-     與交易明細同一個數字），支付費照 §7.6 的 2.4% 以實付算一次——所以訂單詳情的淨額會比交易明細的「淨額」
-     （毛額扣平台費）多扣支付費，見 ASSUMPTIONS UIA-253。 */
+     與交易明細同一個數字），支付費照 §7.6 的 2.4% 以實付算一次（ticketPayFee）。
+     D418（2026-10-15）起活動詳情的交易明細、結案、收支與匯出也扣支付費，直接呼叫這一支（window.ztorOrders.payFee），
+     兩處的淨額因此同一個數字（原 UIA-253 的兩處差異結案）。 */
+  var EVENT_PAY_RATE = 0.024;   /* §7.6 全站支付費率；門票訂單一律以這筆訂單的實付（毛額）算一次 */
+  function ticketPayFee(gross) { return Math.round((Number(gross) || 0) * EVENT_PAY_RATE); }
   var EVENT_DEMO = [
     { ev: 'nick-live-taichung-bky', tickets: 2, bundles: ['bd-tc-duo', 'bd-tc-ga-tee'] },
     { ev: 'nick-live-taoyuan-bky', tickets: 2, bundles: ['bd-ty-ga-tee'] },
@@ -1418,7 +1421,7 @@
       }
       if (unitN) { kind = 'pickup'; fulfil = ev.status === 'ended' ? ['completed'] : ['pickup']; }
     }
-    var payFee = Math.round(tx.gross * 0.024);
+    var payFee = ticketPayFee(tx.gross);
     var first = String(tx.buyer || '').split(' ');
     var o = {
       id: tx.orderId, date: tx.orderDate, kind: kind, pay: 'paid', fulfil: fulfil,
@@ -1466,6 +1469,69 @@
       .map(function (x) { return x[0]; });
   }
 
+  /* ── 匯出 CSV 的表格內容（2026-10-15 · D416，5.1.5.3 F2「匯出」）──────────────
+     exportTable(orders, { ship }) → { headers, rows }，一列一筆訂單，欄位分五組：
+       訂單基本｜金額｜付款｜履約｜買家（ship 為真才加收件姓名／電話／地址）。
+     表頭與列舉值走 i18n（csv.*），所以英文介面匯出的是英文表頭。
+     金額一律是純數字：同一組數字取自訂單的 amounts／discount（訂單詳情「金額拆解」畫的就是它們，
+     平台費、支付費、淨額不在這裡重算）；買家實付＝商品小計 − 折扣合計 + 運費，與詳情頁的算式一致。
+     平台費、支付費匯出為正數（詳情頁畫成負號只是扣項的呈現）。
+     原型沒有的資料留空、不編造：收件電話。訂單時間只有付款時間帶時分，同一天才拿來補訂單日期的時分秒。 */
+  /* 匯出用的狀態文字（跟清單徽章同一份字樣）：已取消訂單兩欄都寫已取消；履約可並列時以 / 隔開，沒有履約動作留空 */
+  function badgeText(b) { var t = window.i18nT; return b ? ((t && t(b.key)) || b.text) : ''; }
+  function payLabel(o) { return badgeText(PAY_BADGE[o.cancelled ? 'cancelled' : o.pay]); }
+  function fulfilLabel(o) {
+    return o.cancelled ? badgeText(PAY_BADGE.cancelled)
+      : (o.fulfil || []).map(function (v) { return badgeText(FULFIL_BADGE[v]); }).join(' / ');
+  }
+  function exportTable(orders, opts) {
+    opts = opts || {};
+    var T = function (k, fb) { return (window.i18nT && window.i18nT(k)) || fb; };
+    var CUR = { '$': 'USD', 'NT$': 'TWD', 'HK$': 'HKD' };
+    var H = function (k, fb) { return T('csv.h.' + k, fb); };
+    var headers = [
+      H('orderid', 'Order #'), H('orderdate', 'Order date'), H('ordertype', 'Order type'), H('source', 'Order source'),
+      H('paystatus', 'Payment status'), H('fulstatus', 'Fulfilment status'),
+      H('cur', 'Currency'), H('subtotal', 'Items subtotal'), H('discount', 'Total discounts'), H('shipping', 'Shipping'),
+      H('paid', 'Buyer paid'), H('platform', 'Platform fee'), H('payfee', 'Payment fee'), H('net', 'Net to creator'),
+      H('paidat', 'Paid at'), H('provider', 'Payment provider'), H('method', 'Payment method'), H('payid', 'Payment ID'),
+      H('shippedat', 'Shipped at'), H('carrier', 'Carrier'), H('tracking', 'Tracking number'), H('summary', 'Items'), H('voidn', 'Voided items'),
+      H('buyer', 'Buyer name'), H('email', 'Buyer email')
+    ];
+    if (opts.ship) headers.push(H('rname', 'Recipient name'), H('rphone', 'Recipient phone'), H('raddr', 'Recipient address'));
+    var rows = (orders || []).map(function (o) {
+      var cur = o.cur ? (CUR[String(o.cur).trim()] || String(o.cur).trim()) : 'USD';
+      var dec = o.dec != null ? o.dec : 2;
+      var A = o.amounts || {}, d = o.discount || {};
+      var goodsC = toCents(A.goods), shipC = toCents(A.shipping);
+      var discC = toCents(d.tierAmount) + toCents(d.codeAmount) + toCents(d.thresholdAmount);
+      var f = function (c) { return (c / 100).toFixed(dec); };
+      var pm = o.payment;
+      /* 訂單日期含時分秒：付款時間與下單同一天時取它的時分，其餘只有日期 */
+      var orderAt = pm && String(pm.paidAt).slice(0, 10) === o.date ? pm.paidAt + ':00' : o.date;
+      var types = typesOf(o).map(function (t) { return T('csv.type.' + t, t); }).join(' / ');
+      var fulfil = fulfilLabel(o);
+      var summary = (o.items || []).map(function (it) {
+        var nm = it.nameKey ? T(it.nameKey, it.name) : ((it.event ? it.event.name + ' · ' : '') + it.name);
+        return nm + ' ×' + it.qty;
+      }).join(' / ');
+      var voidN = (o.items || []).filter(function (it) { return voidState(it, o) === 'voided'; }).length;
+      var sh = o.shipment || {};
+      var row = [
+        o.id, orderAt, types, o.source === 'ztor' ? T('csv.source.ztor', 'ztor storefront') : (o.source || ''),
+        payLabel(o), fulfil,
+        cur, f(goodsC), f(discC), f(shipC), f(goodsC - discC + shipC),
+        f(toCents(A.platform)), f(toCents(A.payment)), f(toCents(A.net)),
+        pm ? pm.paidAt : '', pm ? pm.provider : '', pm ? T(METHOD_KEY[pm.method] || '', METHOD_EN[pm.method] || pm.method) : '', pm ? pm.paymentId : '',
+        o.shippedAt || '', sh.carrier || '', sh.tracking || '', summary, voidN,
+        o.buyer ? o.buyer.name : '', o.buyer ? o.buyer.contact : ''
+      ];
+      if (opts.ship) row.push(o.buyer && o.buyer.shipTo ? o.buyer.name : '', '', o.buyer ? (o.buyer.shipTo || '') : '');
+      return row;
+    });
+    return { headers: headers, rows: rows };
+  }
+
   var CANCELLED_BADGE = { key: 'orders.status.cancelled', text: 'Cancelled', cls: 'badge--error' };
 
   window.ztorOrders = {
@@ -1494,7 +1560,10 @@
     voidWholeOrder: voidWholeOrder,
     isCancelled: isCancelled,
     platformLines: platformLines,
+    payFee: ticketPayFee,                              /* D418：門票／活動組合包訂單的支付費（活動詳情交易明細共用同一支） */
     typesOf: typesOf,                                   /* D411：訂單類型（product／ticket／bundle） */
+    payLabel: payLabel, fulfilLabel: fulfilLabel,        /* D416：匯出與交易明細共用的狀態字樣 */
+    exportTable: exportTable,                           /* D416：匯出 CSV 的表頭與列 */
     methodKey: function (m) { return METHOD_KEY[m] || null; },
     methodText: function (m) { return METHOD_EN[m] || m || ''; }
   };

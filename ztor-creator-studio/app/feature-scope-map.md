@@ -19,7 +19,7 @@
 
 Tier 欄的 release 編號就是程式用的 tier 代號：`devtools.js` 讀到 `🟢 release2.3` 就把該功能歸到 `release2.3`。之後交付 release2.4 時，那批功能改標 `🟢 release2.4`（保留它是哪一版交付的），新的下一版標 `🔵 release2.5`。
 
-本期統計：🟢 release2.3 92 · 🔵 release2.4 32 · ⚪ TBD 37 · ⚫ 退場 6（2026-10-14 D414：補登 O38 🔵；2026-10-13 D411：補登 O34–O37 🔵；2026-10-13 D410：補登 S95 ⚪〔非 bookyay 的示範活動，2.4 隱藏〕；2026-10-12 D395：S80 直接促銷同意改 ⚫ 退場；2026-10-09 媒體庫三分頁補登 S93 ⚪；2026-10-09 D383：補登 S87–S91 ⚪、S92 🔵，S78 改 🔵；2026-10-08 D377 補登 S86 ⚪；2026-10-07 依功能表逐列重數，同日補登 S82〔D366〕；2026-10-08 D371：S81 改 🔵、補登 S83 🔵；同日 D375 補登 S85 🔵；各模組小計與功能總數另待校正）
+本期統計：🟢 release2.3 92 · 🔵 release2.4 33 · ⚪ TBD 37 · ⚫ 退場 6（2026-10-15 D416：補登 O39 🔵；2026-10-14 D414：補登 O38 🔵；2026-10-13 D411：補登 O34–O37 🔵；2026-10-13 D410：補登 S95 ⚪〔非 bookyay 的示範活動，2.4 隱藏〕；2026-10-12 D395：S80 直接促銷同意改 ⚫ 退場；2026-10-09 媒體庫三分頁補登 S93 ⚪；2026-10-09 D383：補登 S87–S91 ⚪、S92 🔵，S78 改 🔵；2026-10-08 D377 補登 S86 ⚪；2026-10-07 依功能表逐列重數，同日補登 S82〔D366〕；2026-10-08 D371：S81 改 🔵、補登 S83 🔵；同日 D375 補登 S85 🔵；各模組小計與功能總數另待校正）
 
 ## Build 狀態圖例
 
@@ -226,6 +226,7 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 13 · ⚫ 退場 4
 | `S93` | 　媒體庫三分頁新增的讀數與清單（總覽的鑰匙使用情況、內容摘要、待補規格的數字；存取權限的即時人數條、已發鑰匙清單〔含撤銷〕） | Media Vault tab readouts (key usage, summary, numbers awaiting spec, live reach line, issued-key list) | ⚪ TBD      | ✅ built  | 2026-10-09 使用者確認的三分頁示範頁移植進正式頁：`media-vault.html` 總覽分頁三張 `.card[data-feat="S93"]`、存取權限分頁 `.vault-reachline[data-feat="S93"]` 與 `.vault-keylist[data-feat="S93"]`；每件可看人數清單沿用 S86。版面重整本身（三分頁、方法小卡、列表化內容）不另編號。整頁 `data-page-feat="full"`（ASSUMPTIONS UIA-235） |
 | `S94` | 　組合包的購買條件與限購（D398、D400：所有組合包都有三種限購，預設跟隨成員〔取交集、與成員共用額度〕、可覆寫〔獨立計算〕、可改回；純商品組合包的購買條件預設不限、可加限時購買／限粉絲分級購買） | Bundle purchase rules & limits (all bundles: follow members / override; product-only bundle conditions) | 🔵 release2.4| ✅⬆ ahead | D398（2026-10-12）：bundle-detail `[data-bd-rules-sec]`（組合內容分頁成員之後；含門票時購買條件仍掛 S63）、create-bundle `[data-cb-rules]`；markup 由 `js/purchase-limits.js`（限購）與 `js/purchase-conds.js`（純商品購買條件，只開 buyTime／buyTier）產生。商品的三種上限屬 S35 的欄位改版、不另掛標記（只進 main／release2.4，不搬 release2.3） |
 | `S95` | 　非 bookyay 的示範活動（2.4 隱藏）                | Non-bookyay demo events (hidden in release2.4)    | ⚪ TBD      | ✅ built  | D410 決定四（2026-10-13，原型示範資料、不是產品功能）：release2.4 只顯示 bookyay 匯入的活動與共看派對。`js/events-store.js` 的 `list()` 在版本不含 S95 時濾掉其餘示範活動（`isRel24Demo()`：`source:'bookyay'` 或 `type:'watchparty'` 以外），活動清單計數、店鋪設定的活動候選、首頁畫布等 `list()` 消費端一起收起；`events.html` 對應的靜態列（含系列母子列）掛 `data-feat="S95"`。`get()` 不濾（直連照樣開得到）。最終版不變。已掛 S87 的 `album-signing-taipei`、`pingtung-bluefin` 列與掛 S88 的系列群組（`.rowdis__group`）維持原標記不另加 S95——`data-feat` 多值是「任一在版本內即顯示」，表達不了兩個條件同時成立；三者都是 ⚪，release2.4 一樣收起 |
+| `S96` | 　bookyay 活動自設折扣與早鳥（最終版）          | Creator-set discount & early bird on bookyay events (final) | ⚪ TBD      | ✅ built  | D417 決定五（2026-10-15）：bookyay 不再帶入折扣優惠與早鳥，最終版由創作者在 ztor 自設、release2.4 不提供。掛在入口上：`js/purchase-conds.js` html() 的 `ctx.addOnly` 選單（bookyay 門票的「新增條件」只列折扣與限時折扣，`[data-feat="S96"]`；create-event 步驟 4 單張門票彈窗、event-detail 單張門票彈窗）；`js/bundle-editor.js` 自動建立組合包的組合折扣與限時折扣（srcFix 時兩區塊改可編輯，`[data-feat="S96"]`；release2.4 收起時改回唯讀讀數）。D419 定案：bookyay 門票沒有「跟隨活動預設」，條件就是自己的一組，只能自加這兩種；套票轉出的隱藏 1 人票不給入口（折扣類落在自動組合包） |
 |       | **粉絲忠誠點數（D347，2026-10-02）**                 | Loyalty points scoring model                    |            |          | 規格 5.1.0.8（新頁）、5.1.7.6 F3；計分規則本體在主規格 §7.5。編號沿用 S 段（devtools 只解析 `S`／`O`／`E`／`B` 開頭的 ID），與活動段 S52–S64 同一做法 |
 | `S65` | 　平台忠誠點數設定（Admin 第 8 個同層目的地：全站活動給分與上限、賽季加倍週、衰減與等級保留、平台常數唯讀、修改紀錄） | Platform Loyalty Settings (Admin) | ⚪ TBD      | ✅ built  | D347／5.1.0.8 F1–F6；上線階段〔產品待確認〕（主規格 §8.29 第 16 項）。`admin-platform-loyalty.html` 頁級 `data-page-feat="S65"`，並比照平台優惠設定登記進 `js/sidebar.js`／`js/devtools.js` 兩份 `FULL_ROUTES`（低版本藏側欄入口、直連導回） |
 | `S66` | 　分級設定的計分設定：各購買品項的份量（5 項）與互動推薦每 90 天最多得分（4 項） | Tier settings: purchase type value & max points per 90 days | ⚪ TBD      | ✅ built  | D347／5.1.7.6 F3.2–F3.3；`fans-crm.html` 分級設定彈窗「計分設定」分頁與 `tier-settings.html` 備份頁的兩組 `[data-feat="S66"]`。四類各類行為的份量（預設改 1.0）與「外部平台訊號本版暫不計入」屬既有分級設定，不掛本編號 |
@@ -238,7 +239,7 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 13 · ⚫ 退場 4
 
 ## O · 訂單管理 — Order Management
 
-ID 起始 `O01…` ｜ 🟢 26 · 🔵 7 · ⚪ 3 · ⚫ 退場 2
+ID 起始 `O01…` ｜ 🟢 26 · 🔵 8 · ⚪ 3 · ⚫ 退場 2
 
 | ID | 功能 | English | Tier | Build | 備註 |
 |---|---|---|---|---|---|
@@ -284,6 +285,7 @@ ID 起始 `O01…` ｜ 🟢 26 · 🔵 7 · ⚪ 3 · ⚫ 退場 2
 | `O36` | 　　門票訂單（清單列門票訂單、訂單詳情門票資料段、訂單類型與來源、交易明細每一列開訂單詳情） | Ticket orders in order management | 🔵 release2.4 | ✅ built | D411／5.1.5.3 F3 範圍、5.1.5.3.1 §2.1、§2.2、§2.3.4、5.1.6.3 §2.7；資料來自 `js/events-store.js` 交易明細（findOrder 反查） |
 | `O37` | 　　補寄信（Admin 專屬；創作者可見但停用，寄出前確認信箱、寄出後留紀錄） | Resend order email (Admin only) | 🔵 release2.4 | ✅ built | D411 決定四／5.1.5.3.1 §2.2 |
 | `O38` | 　　撤銷整張訂單（訂單詳情頁首；Admin 專屬，創作者可見但停用；效果等同每個品項各撤銷一次） | Void whole order (Admin only) | 🔵 release2.4 | ✅ built | D414（2026-10-14）／5.1.5.3.1 §2.8「整單撤銷」；可用條件為〔推導〕（全部品項皆未履約且未撤銷），含門票品項時停用為示範處理（UIA-255）；`order-detail.html` `#od-void-whole-open` |
+| `O39` | 　　匯出 CSV 與確認視窗（訂單管理＋活動交易明細；訂單管理另有「包含收件資料」核取框，預設不勾） | Export CSV & confirm dialog | 🔵 release2.4 | ✅ built | D416（2026-10-15）／5.1.5.3 F2、5.1.6.3 §2.7；`js/csv-export.js`（視窗＋CSV）、`js/orders-store.js` `exportTable()`；版本閘（`ztorDevState.featOn('O39')`）關閉時沿用 O06 舊行為：只回報筆數。O06 的按鈕本身仍是 🟢 release2.3 |
 
 ## E · 收入管理 — Earnings / Income
 
