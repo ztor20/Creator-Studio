@@ -226,7 +226,8 @@
         });
       }
     });
-    /* 基準價變了 → 該列覆寫清空重算（§7.15 重算規則，比照 §7.4 翻譯） */
+    /* 基準價變了 → 沒覆寫的幣別跟著重新換算、手動覆寫過的幣別保留（2026-10-14 D415 決定六，取代 §7.15 舊的整列重算規則）。
+       換算值本來就不落地（priceIn 依 amount 即時換算），所以這裡只更新 amount、覆寫原樣留著；「重設為換算值」才讓該幣別回到跟隨。 */
     (opts.prices || []).forEach(function (p) {
       var po = p.priceObj || {};
       var rec = PRICES[p.key];
@@ -236,7 +237,7 @@
       if (!rec || rec.base !== po.base) {
         PRICES[p.key] = { base: po.base, amount: amount, override: JSON.parse(JSON.stringify(po.override || {})), pin: pin, baseOpen: !!po.baseOpen };
       } else if (rec.amount !== amount) {
-        PRICES[p.key] = { base: po.base, amount: amount, override: {}, pin: pin, baseOpen: !!po.baseOpen };
+        rec.amount = amount; rec.pin = pin; rec.baseOpen = !!po.baseOpen;
       } else {
         rec.pin = pin; rec.baseOpen = !!po.baseOpen;
       }

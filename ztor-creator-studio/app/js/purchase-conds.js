@@ -214,7 +214,8 @@
       if (k === "buyTier") return tierPickHTML(k, c, l);
       /* D398（2026-10-12）：三種上限各附一句輔助說明，句子與商品（件）、組合包（組）同一套，
          住在 js/purchase-limits.js＋i18n.js 的 pl.tix.*（這裡只借 hintHTML，條件卡外框不變） */
-      if (k === "cap") return ["person", "order", "times"].map(f =>
+      /* D417 決定二（2026-10-15）：bookyay 帶入的限購只有每人總限購與每次交易限購，「限購次數」不帶入、也不能設定——bky 的限購卡不畫那一格 */
+      if (k === "cap") return ["person", "order"].concat(c.bky ? [] : ["times"]).map(f =>
         ruleField(t("d.rule.cap." + f),
           '<input class="input" type="number" min="1" step="1" data-rule-f="cap.' + f + '" value="' + esc(c[f]) +
             '" placeholder="' + (l ? "" : esc(t("d.rule.cap." + f + ".ph"))) + '"' + dis(l) + '>' +
@@ -240,11 +241,12 @@
           '<div class="cond-list__body">' + bodyHTML(k, c, l) + '</div>' +
         '</div>';
     }
-    /* 「新增條件」選單：只列還沒加、而且在目前版本內的種類；全部加完就整顆不出現 */
-    function addMenuHTML(r) {
-      const avail = ALLOW.filter(c => !r.conds[c.k]);
+    /* 「新增條件」選單：只列還沒加、而且在目前版本內的種類；全部加完就整顆不出現。
+       addOnly（D417 決定五）：整組鎖定時仍開放的那幾種（bookyay 門票最終版可自加折扣與限時折扣），整顆選單掛 ctx.addFeat */
+    function addMenuHTML(r, only) {
+      const avail = (only ? ALLOW.filter(c => only.indexOf(c.k) >= 0) : ALLOW).filter(c => !r.conds[c.k]);
       if (!avail.filter(c => featOn(c.feat)).length) return "";
-      return '<details class="dropdown dropdown--left cond-list__add">' +
+      return '<details class="dropdown dropdown--left cond-list__add"' + (only && ctx.addFeat ? ' data-feat="' + ctx.addFeat + '"' : '') + '>' +
           '<summary class="btn btn--outline btn--sm"><i data-lucide="plus" class="ztor-icon"></i><span>' + esc(t("d.cond.add")) + '</span></summary>' +
           '<div class="dropdown__menu" role="menu">' +
             avail.map(c => '<button type="button" class="dropdown__item" role="menuitem" data-cond-add="' + c.k + '"' +
@@ -254,11 +256,21 @@
     }
     const r = norm(rules);
     const keys = ALLOW.map(c => c.k).filter(k => r.conds[k]);   // 照種類固定順序排，不照加入先後
+    /* D417 決定五（2026-10-15，〔推導〕）：ctx.addOnly＝整組鎖定的一份裡仍可由創作者自加的種類（bookyay 門票：折扣、限時折扣）。
+       bky 條件照舊鎖；創作者自己加的（沒有 bky 標記、在 addOnly 內）可改可移除；選單只列 addOnly。
+       ctx.noEmpty：沒有任何條件時不寫空狀態句（呼叫端另有自己的空狀態，例如跟隨活動的摘要） */
+    const only = locked && ctx.addOnly ? ctx.addOnly : null;
+    const lockOf = k => only ? (!!r.conds[k].bky || only.indexOf(k) < 0) : (locked || !!r.conds[k].bky);
+    const featOf = k => only && !r.conds[k].bky && only.indexOf(k) >= 0 ? ctx.addFeat : "";
     return '<div class="cond-list">' +
-        (keys.length ? keys.map(k => cardHTML(k, r.conds[k], locked || !!r.conds[k].bky, !locked && !!r.conds[k].bky)).join("")
-                     : '<p class="field__hint cond-list__empty' + (ctx.emptyKey ? ' field__hint--fact' : '') + '"' + (ctx.emptyKey ? ' data-i18n="' + esc(ctx.emptyKey) + '"' : '') + '>' +
-                         esc(ctx.emptyKey ? T(ctx.emptyKey, t("d.cond.empty")) : t("d.cond.empty")) + '</p>') +
-        (locked ? "" : addMenuHTML(r)) +
+        (keys.length ? keys.map(k => {
+                         const h = cardHTML(k, r.conds[k], lockOf(k), !locked && !!r.conds[k].bky);
+                         const f = featOf(k);
+                         return f ? h.replace('<div class="cond-list__item', '<div data-feat="' + f + '" class="cond-list__item') : h;   // disc／discTime 本身沒有 feat，可直接掛
+                       }).join("")
+                     : (ctx.noEmpty ? "" : '<p class="field__hint cond-list__empty' + (ctx.emptyKey ? ' field__hint--fact' : '') + '"' + (ctx.emptyKey ? ' data-i18n="' + esc(ctx.emptyKey) + '"' : '') + '>' +
+                         esc(ctx.emptyKey ? T(ctx.emptyKey, t("d.cond.empty")) : t("d.cond.empty")) + '</p>')) +
+        (locked ? (only ? addMenuHTML(r, only) : "") : addMenuHTML(r)) +
       '</div>';
   }
 
@@ -316,7 +328,8 @@
      opts：{ rules（{conds}，直接改這份）, scope（"event" 或門票 id）, ctx, onChange(),
              times()（選填：回傳活動時間 et——給了就在改期間時就地比上架區間，D389）,
              tr(k)（選填：期間紅字的取字函式；組合包用它把「活動上架區間」換成「組合包的上架區間」） }
-     ctx 另可帶 types（只開放哪幾種條件）、emptyKey（沒有條件時那一句的 i18n key）——D400：純商品組合包的購買條件 */
+     ctx 另可帶 types（只開放哪幾種條件）、emptyKey（沒有條件時那一句的 i18n key）——D400：純商品組合包的購買條件
+     opts.locked＋ctx.addOnly／addFeat／noEmpty（D417，2026-10-15）：整組鎖定的一份（bookyay 門票），只開放 addOnly 那幾種自加 */
   function mount(host, opts) {
     if (!host) return null;
     const st = { rules: norm(opts.rules), scope: opts.scope, ctx: opts.ctx || {} };
@@ -325,7 +338,7 @@
     /* D390 決定二十五：限時折扣價高於一般折扣價同樣算一個錯（擋存） */
     const check = () => (opts.times ? syncPeriod(host, st.rules, opts.times(), opts.tr) : 0) + syncWarn(host, st.rules.conds, isEv);
     function render() {
-      host.innerHTML = html(st.rules, st.scope, false, st.ctx);
+      host.innerHTML = html(st.rules, st.scope, !!opts.locked, st.ctx);   // opts.locked＋ctx.addOnly：bookyay 門票最終版只能自加折扣類（D417）
       if (window.ztorIcons) window.ztorIcons.applyIcons(host);
       host.querySelectorAll("[data-ph-key]").forEach(el => { el.placeholder = T(el.dataset.phKey, ""); });
       syncWarn(host, st.rules.conds, isEv);
@@ -337,6 +350,8 @@
       const rm = !add && e.target.closest("[data-cond-remove]");
       if (!add && !rm) return;
       const k = (add || rm).dataset[add ? "condAdd" : "condRemove"];
+      const only = opts.locked ? (st.ctx.addOnly || []) : null;
+      if (only && only.indexOf(k) < 0) return;         // 整組鎖定：只有 addOnly 內的種類可加可移除（D417）
       if (add) {
         if (st.rules.conds[k]) return;                 // 每種最多一次
         st.rules.conds[k] = fields(k, st.scope);

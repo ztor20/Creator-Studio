@@ -2058,8 +2058,9 @@
     const bdHint = document.getElementById('bd-disc-hint');
     const bdHeroPrice = document.querySelector('[data-bd-hero-price]');
     /* 頁首摘要價（2026-09-29 D331 決定一）：活動組合包的基準欄被覆寫過（只有含 bookyay 票券者吃得到，baseOpen）時，
-       摘要顯示覆寫值＝粉絲實付價；覆寫存在 events-store（在地化頁儲存）。成員價或折扣 % 一改，覆寫全部作廢重算（§7.15），
-       所以只要原價合計或折扣 % 跟載入時不同，就回到算出來的售價。下方價格階梯仍是算式結果（基準價），不換。 */
+       摘要顯示覆寫值＝粉絲實付價；覆寫存在 events-store（在地化頁儲存）。成員價或折扣 % 改了，手動覆寫過的幣別保留不覆寫
+       （2026-10-14 D415 決定六，取代 §7.15 舊的整列重算規則），所以摘要照樣顯示覆寫值；「重設為換算值」（在地化頁）才回到算出來的售價。
+       下方價格階梯仍是算式結果（基準價），不換。 */
     const bdOv = (() => {
       const EVS = window.ztorEvents, ev0 = bundle && bundle.event;
       if (!EVS || !ev0 || !bundle.evBase) return null;
@@ -2069,10 +2070,7 @@
       return (v != null && v !== '' && !isNaN(Number(v))) ? { amount: Number(v), sig: null } : null;
     })();
     function bdHeroAmount(base, pct, final) {
-      if (!bdOv) return final;
-      const sig = base + '|' + pct;
-      if (bdOv.sig === null) bdOv.sig = sig;          // 第一次計算＝載入時的原價與折扣
-      return bdOv.sig === sig ? bdOv.amount : final;
+      return bdOv ? bdOv.amount : final;              // D415：覆寫過就一直用覆寫值，成員價或折扣改了也不作廢
     }
     /* 組合折扣開關（2026-10-12 改版）：開＝露出 % 欄；關＝不打折（% 欄的值保留、不參與計算，同建立組合包 discInfo） */
     let bdDiscOn = !!(detail.discountPct != null && detail.discountPct !== '' && Number(detail.discountPct) > 0);
@@ -2497,14 +2495,14 @@
       function syncMembersLock(editing) {
         const sold = soldUnits();
         /* bookyay 套票自動建立的組合包（D329，5.1.5.9 §2.3）：不論是否已售出，成員與張數從建立起就鎖；說明句換成來源鎖那一句
-           （它鎖得更多——連組合折扣、鎖定套數、限時折扣），不疊兩句。 */
+           （它鎖得更多——連鎖定套數、限購；組合折扣與限時折扣 D417 起不在鎖定範圍、release2.4 仍鎖），不疊兩句。 */
         const fixed = !!detail.srcFix;
         const locked = sold > 0 || fixed;
         const banner = document.querySelector('[data-bd-members-locked]');
         const txt = document.querySelector('[data-bd-members-locked-text]');
         if (banner) banner.hidden = !locked;
         if (txt) txt.textContent = !locked ? '' : fixed
-          ? T('cpp.bd.sp.srclocked', 'Imported from bookyay — tickets, quantity, discount, locked sets and the limited-time discount are locked.')
+          ? T('cpp.bd.sp.srclocked', 'Imported from bookyay — tickets, quantity, locked sets and purchase limits are locked.')
           : T('bd.members.locked', '{n} sold — members and quantities are locked. You can still change the price, discount, cap and sale; to change what is inside, create a new bundle.').replace('{n}', String(sold));
         if (fixed) applySrcFix();
         if (locked) sp.querySelectorAll('[data-bd-edit-only]').forEach(el => { el.hidden = true; });
@@ -2517,6 +2515,12 @@
       /* 來源鎖的其餘欄位（D329，5.1.5.9 §2.3）：組合折扣、限時折扣（開關＋%＋起訖）停用；鎖定套數在 syncLockEditing 處理。
          名稱、描述、素材、權益、三開關不在鎖定範圍，照常可改。用 disabled 而不是 readOnly：編輯態的 applyReadonly 會把 readOnly 全部打開。 */
       function applySrcFix() {
+        /* D417 決定五（2026-10-15，〔推導〕）：組合折扣與限時折扣不再由 bookyay 帶入（帶入時 0／沒有），最終版創作者可以設定（S96 ⚪）——
+           版本內有 S96 就不鎖這兩項；release2.4 照舊鎖住。換版本後重新整理生效。 */
+        const dd = window.ztorDevState;
+        /* devtools.js 還沒載入時讀不到版本：等整頁載入完再判斷一次 */
+        if (!dd || !dd.featOn) { if (document.readyState !== 'complete') window.addEventListener('load', applySrcFix, { once: true }); return; }
+        if (dd.featOn('S96')) return;
         ['bd-discount', 'bd-sale-percent', 'bd-discount-start', 'bd-discount-end'].forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
         /* 2026-10-12：價格階梯的組合折扣開關同樣鎖住（組合折扣由帶入決定） */
         ['bd-sale-toggle', 'bd-disc-toggle'].forEach(id => { const st = document.getElementById(id); if (st) { st.classList.add('switch--locked'); st.setAttribute('aria-disabled', 'true'); st.removeAttribute('tabindex'); } });
@@ -2786,7 +2790,7 @@
         if (listErr) listErr.hidden = true;
         askConfirm({
           title: T('e-shop.unlist.title', 'Unlist “{n}”?').replace('{n}', bname()),
-          body: T('e-shop.unlist.body', 'Public and private links stop working and fans no longer see its page. You can relist it anytime.'),
+          body: T('e-shop.unlist.body', 'Fans see its page as unlisted and can’t buy; anything in their carts shows as unavailable. Listing and sale schedules are cleared; set the sale again after relisting.'),
           okKey: 'e-shop.unlist.confirm', okFallback: 'Unlist',
           onConfirm: () => { LS.unlist(bundleModel); paint(); }
         });

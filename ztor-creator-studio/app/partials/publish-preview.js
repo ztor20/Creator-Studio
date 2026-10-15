@@ -23,8 +23,8 @@
  *   價格。幣別用 .segmented（Q8：它是控件層 toggle，切的是「同一份價格資料用哪個幣別看」，
  *   與語言分頁「看哪一份翻譯」的主要檢視不同層；五個三字碼並排剛好一列，不用下拉）。
  * · 價格草稿 PRICES：跟翻譯草稿一樣存模組變數（priceKey → { base, amount, override }），
- *   「返回編輯」不丟；基準價一改（amount 與上次不同）該列覆寫整個清空重算（§7.15 重算規則，
- *   比照 §7.4 翻譯）。列表檢視多一張價格表（列＝票種／組合包，欄＝五幣別；基準幣別欄唯讀並
+ *   「返回編輯」不丟；基準價一改（amount 與上次不同）沒覆寫的幣別跟著重新換算、手動覆寫過的
+ *   幣別保留（2026-10-14 D415 決定六，取代 §7.15 舊的整列重算規則）。列表檢視多一張價格表（列＝票種／組合包，欄＝五幣別；基準幣別欄唯讀並
  *   標「基準」；其餘欄可輸入、有覆寫時標示並可「重設為換算值」；bookyay 鎖定列基準欄標鎖）。
  * · 視圖：宿主給 views（票券頁／票務商品頁）時，previewRender 的 api 帶 view／setView，
  *   切換的控件由宿主的渲染器自己畫（fan-event-page.js 畫在 .fep-shop 外面的 .pp-fan-viewbar）。
@@ -621,7 +621,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       });
     });
     /* 價格草稿（D306）：第一次看到這個 key → 從宿主給的 priceObj 帶入（含既有覆寫）；
-       再次打開時基準價沒變 → 保留草稿裡的覆寫；基準價變了 → 覆寫整列清空重算（§7.15）。 */
+       再次打開時保留草稿裡的覆寫；基準價變了 → 只更新基準價，沒覆寫的幣別依新基準價換算、覆寫保留（D415 決定六）。 */
     (opts.prices || []).forEach(function (p) {
       var po = p.priceObj || {};
       var rec = PRICES[p.key];
@@ -629,7 +629,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (!rec || rec.base !== po.base) {
         PRICES[p.key] = { base: po.base, amount: amount, override: JSON.parse(JSON.stringify(po.override || {})) };
       } else if (rec.amount !== amount) {
-        PRICES[p.key] = { base: po.base, amount: amount, override: {} };
+        rec.amount = amount;
       }
     });
 

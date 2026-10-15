@@ -1054,7 +1054,7 @@
     }
     /* 限時折扣（排程特價 F7）：開了就要 1–99 的 % 與起訖日（結束不早於開始）；bookyay 鎖定的唯讀讀數不檢核。 */
     function saleBad(b) {
-      if (!SPLIT || !b.saleOn || srcFix(b)) return false;
+      if (!SPLIT || !b.saleOn || discFix(b)) return false;   /* D417：最終版 bookyay 組合包自設的限時折扣照常檢核 */
       var sl = b.sale || {}, p = num(sl.pct);
       return !(Number.isFinite(p) && p > 0 && p < 100) || !sl.from || !sl.to || String(sl.to) < String(sl.from);
     }
@@ -1160,6 +1160,14 @@
        2026-09-29 D330 補兩個動作：**不能加入商品成員**（商品群組的搜尋框換成一句來源鎖說明，productsBlockHTML）、
        **不能刪除**（彈窗底部的「移除」鈕不畫、點擊處理也擋，data-bd-remove）。創作者自建的組合包不受影響。 */
     function srcFix(b) { return SPLIT && !!b.fix; }
+    /* D417 決定五（2026-10-15，〔推導〕）：bookyay 自動建立的組合包，組合折扣與限時折扣不再由 bookyay 帶入、也不在鎖定範圍——
+       最終版創作者可以設定（功能標記 S96，⚪ 未排定）；release2.4 不提供，照舊畫成鎖定（組合折扣 0、沒有限時折扣）。
+       版本在畫的當下判斷（換版本後重畫或重新整理生效）。 */
+    function discFix(b) {
+      if (!srcFix(b)) return false;
+      var dd = window.ztorDevState;
+      return !(!dd || !dd.featOn || dd.featOn('S96'));
+    }
     /* 票券這一群（允許票種、張數、場次對應）的鎖＝已售出鎖或來源鎖任一成立。 */
     function tixLocked(b) { return isLocked(b) || srcFix(b); }
     function tixQtyFieldHTML(b) {
@@ -1956,7 +1964,7 @@
     function finalMax(b) { var m = listMax(b); return m - Math.min(m * discountPct(b) / 100, m); }
     /* 限時折扣生效中的 %（bookyay 帶入的唯讀檔期也算）；沒開或填錯回 0。 */
     function salePct(b) {
-      var on = srcFix(b) ? !!b.sale : (b.saleOn && b.sale);
+      var on = discFix(b) ? !!b.sale : (b.saleOn && b.sale);   /* D417：最終版的 bookyay 組合包走一般開關 */
       var p = on ? num(b.sale.pct) : NaN;
       return Number.isFinite(p) && p > 0 && p < 100 ? p : 0;
     }
@@ -2049,7 +2057,7 @@
         (s ? '<span class="price-ladder__s">' + esc(s) + '</span>' : '') + (extra || '') + '</div>';
     }
     function secPriceSplitHTML(b) {
-      var on = !!b.discountOn, fix = srcFix(b);   /* D329：bookyay 自動建立的組合包，組合折扣與限時折扣鎖定 */
+      var on = !!b.discountOn, fix = discFix(b);   /* D329 → D417：bookyay 自動建立的組合包，組合折扣與限時折扣只在 release2.4 鎖定（最終版可設，S96） */
       var lp = listPrice(b), lm = listMax(b), fp = finalPrice(b), fm = finalMax(b), sp = salePct(b), has = hasContent(b);
       var calcOpen = !!CALCOPEN[b.id];
       var sl = b.sale || {};
@@ -3682,7 +3690,7 @@
         if (tbc && tbc.TB.onClick(e, b, tbc)) { render({ blur: true }); return; }
       }
       if (e.target.closest('[data-bd-disc-toggle]')) {
-        if (srcFix(b)) return;   /* D329：bookyay 自動建立的組合包，組合折扣鎖定 */
+        if (discFix(b)) return;   /* D329 → D417：bookyay 自動建立的組合包，組合折扣只在 release2.4 鎖定 */
         b.discountOn = !b.discountOn;
         /* 關掉就把值清掉：留著一個看不見卻仍在算的折扣，是畫面與價格對不起來的來源。 */
         if (!b.discountOn) b.discount = '';

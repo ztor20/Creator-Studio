@@ -225,6 +225,18 @@
              發布開賣（草稿／已排程）→ 取消活動（尚未結束的階段）→ 再開一場（已結束）。 -->
       </div>
 
+      <!-- D415 示範（2026-10-14）：bookyay 端的修改同步到 ztor 後自動下架的提示。ev.bkySyncUnlist 有值、且仍是已下架時才顯示，
+           syncBkySyncNotice()（由 syncUnlist 呼叫）填內容；重新上架鈕沿用設定分頁的 data-ed-relist 同一支處理（document 委派），
+           重新上架後 ev.unlisted＝false，這則跟著收起。沿用 .alert--row（同 #ed-series-lock），不另造視覺。 -->
+      <div class="alert alert--row alert--warning mb-16" id="ed-bkysync" role="status" data-feat="S81" hidden>
+        <span class="alert__icon"><i data-lucide="refresh-cw" class="ztor-icon"></i></span>
+        <div class="alert__body">
+          <div class="alert__title" id="ed-bkysync-title" data-i18n="ed.bkysync.title">Unlisted automatically after a change in bookyay</div>
+          <div class="alert__meta" id="ed-bkysync-body"></div>
+        </div>
+        <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-relist data-i18n="event-detail.relist.btn">Relist event</button>
+      </div>
+
       <!-- 樣本資料說明橫幅已移除（2026-07-27，使用者指示）。 -->
 
       <!-- ═══ Tabs ═══ -->
@@ -764,12 +776,14 @@
                   <div class="stat">
                     <div class="stat__label" data-i18n="event-detail.wrap.net">Net to you</div>
                     <div class="stat__value" id="ed-wrap-net">—</div>
-                    <div class="stat__meta" data-i18n="event-detail.wrap.net-meta">After the platform fee</div>
+                    <div class="stat__meta" data-i18n="event-detail.wrap.net-meta">After platform and payment fees</div>
                   </div>
                 </div>
                 <div class="mt-16">
                   <div class="kv kv--lead"><span class="kv__k" data-i18n="event-detail.wrap.gross">Ticket sales</span><span class="kv__v" id="ed-wrap-gross">—</span></div>
                   <div class="kv"><span class="kv__k" data-i18n="event-detail.wrap.fee">Platform fee</span><span class="kv__v" id="ed-wrap-fee">—</span></div>
+                  <!-- D418（2026-10-15）：淨收入改扣平台費與支付費，支付費自成一列 -->
+                  <div class="kv"><span class="kv__k" data-i18n="event-detail.tx.payfee">Payment fee</span><span class="kv__v" id="ed-wrap-payfee">—</span></div>
                   <div class="kv" id="ed-wrap-voided-row"><span class="kv__k" data-i18n="event-detail.kpi.voided">Voided tickets</span><span class="kv__v" id="ed-wrap-voided">—</span></div>
                   <div class="kv"><span class="kv__k" data-i18n="event-detail.wrap.settle">Settlement</span><span class="kv__v" id="ed-wrap-settle">—</span></div>
                 </div>
@@ -1041,6 +1055,8 @@
                每盒有日期／開始結束／開放入場（時間↔開演前分鐘互算）／早到政策，與建立流程
                同一套。每站不同場地的需求改用系列活動（每站一場獨立活動，D340）。盒子由 JS 渲染。 -->
           <div id="ed-sess-list"></div>
+          <!-- D413（5.1.6.2 §3「進行中的編輯」）：進行中編輯時，既有場次的日期、開始時間、跨日結束日期鎖定的原因（edLiveLocks 依場次切換兩句） -->
+          <p class="field__hint mt-8" id="ed-live-dates-note" hidden><span data-live-note="unlist" data-i18n="ed.live.unlist-first">Unlist the event to change these, then list it again.</span> <span data-live-note="started" data-i18n="ed.live.started">Once a date has started, its date, start time and venue can't be changed.</span></p>
           <!-- D391 第 12 題（5.1.6.2 F7）：活動進入售票中之後場次不能移除（移除鈕收起），多場時在清單下方說明只能暫停售票或隱藏門票 -->
           <p class="field__hint mt-8" id="ed-sess-locked" data-i18n="ed.sess.locked" hidden>Tickets are on sale, so dates can't be removed. To stop selling a date, pause or hide its tickets.</p>
           <!-- 2026-10-09 D383：新增場次＝多場次（S87 ⚪），release2.4 收起 -->
@@ -1072,6 +1088,8 @@
           <div class="field">
             <label class="field__label" for="ed-address"><span data-i18n="ce.venue.addr">Full address</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
             <input class="input" id="ed-address" data-ed="address">
+            <!-- D413：進行中編輯時，場地名稱與完整地址鎖定的原因（edLiveLocks） -->
+            <p class="field__hint" id="ed-live-venue-note" hidden><span data-live-note="unlist" data-i18n="ed.live.unlist-first">Unlist the event to change these, then list it again.</span> <span data-live-note="started" data-i18n="ed.live.started">Once a date has started, its date, start time and venue can't be changed.</span></p>
           </div>
           <!-- 集合地點與交通（D370，2026-10-07；5.1.6.2 F6，定義同 5.1.6.1 F6）：選填、同建立活動第 3 步那兩欄（同一組 i18n 與 placeholder）。
                建立活動收在「進階」收合裡；這一頁是兩段式面板，檢視態要直接讀得到值，所以平鋪不收合（呈現決策）。
@@ -1347,13 +1365,14 @@
           <div data-nav-panel="unlist" id="ed-unlist" data-feat="S81" hidden>
             <div class="section-head">
               <h2 class="section-head__title" id="ed-unlist-title" data-i18n="event-detail.unlist.title">Unlist this event</h2>
-              <div class="section-head__sub" id="ed-unlist-sub" data-i18n="event-detail.unlist.sub">Fans stop seeing it and can’t buy. It stays in its current stage, and tickets already sold stay valid.</div>
+              <div class="section-head__sub" id="ed-unlist-sub" data-i18n="event-detail.unlist.sub">Fans see it as unlisted and can’t buy; anything in their carts shows as unavailable. It stays in its current stage, and tickets already sold stay valid.</div>
             </div>
             <section class="card">
               <button class="btn btn--outline" type="button" data-view-safe data-ed-unlist data-i18n="event-detail.unlist.btn">Unlist event</button>
               <button class="btn btn--outline" type="button" data-view-safe data-ed-relist hidden data-i18n="event-detail.relist.btn">Relist event</button>
-              <!-- D375 決定三：bookyay 匯入活動的上下架跟著 bookyay 狀態同步；ztor 自己的上下架照舊保留 -->
-              <p class="field__hint field__hint--fact mt-8" id="ed-unlist-bky" hidden data-i18n="event-detail.unlist.bky">When bookyay moves this event back to draft, it’s unlisted here too. When bookyay publishes it again, it’s relisted here, but ticket bundles that came down with it stay unlisted.</p>
+              <!-- D415 決定一、二（2026-10-14，修訂 D375 決定三）：bookyay 端修改同步到 ztor 時自動下架並通知創作者，重新上架一律手動；
+                   bookyay 改回草稿仍同步下架。ztor 自己的上下架照舊保留 -->
+              <p class="field__hint field__hint--fact mt-8" id="ed-unlist-bky" hidden data-i18n="event-detail.unlist.bky">When an edit in bookyay syncs to this event, it’s unlisted automatically and you’ll get a notice — relist it yourself once you’ve checked it. Moving it back to draft in bookyay unlists it here too.</p>
             </section>
             <!-- ═══ 暫停售票／恢復販售（2026-10-08 · D375 決定七）═══
                  售票期間（售票中、進行中）創作者本人與 Admin 代管態都能按；暫停不是階段，頁首另掛「暫停售票」徽章。
@@ -1607,10 +1626,12 @@
         </div>
 
         <div class="bento">
-          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.tx.gross">Gross</div><div class="kpi__value" id="ed-tx-gross">—</div><div class="kpi__meta" id="ed-tx-orders">—</div></div>
-          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.tx.fee">Platform fee</div><div class="kpi__value" id="ed-tx-fee">—</div><div class="kpi__meta" data-i18n="event-detail.tx.fee-meta">10% of gross</div></div>
-          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.tx.net">Net to you</div><div class="kpi__value" id="ed-tx-net">—</div><div class="kpi__meta" data-i18n="event-detail.tx.net-meta">Settles to Earnings</div></div>
-          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.tx.cancelled">Cancelled</div><div class="kpi__value" id="ed-tx-cancelled">—</div><div class="kpi__meta" data-i18n="event-detail.tx.cancelled-meta">Voided — returned to inventory</div></div>
+          <!-- D418（2026-10-15）：交易摘要加「支付費」一格、淨額改扣平台費與支付費。五格排成 3＋2 兩排（既有 bento 欄寬，不另開五等分） -->
+          <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="event-detail.tx.gross">Gross</div><div class="kpi__value" id="ed-tx-gross">—</div><div class="kpi__meta" id="ed-tx-orders">—</div></div>
+          <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="event-detail.tx.fee">Platform fee</div><div class="kpi__value" id="ed-tx-fee">—</div><div class="kpi__meta" data-i18n="event-detail.tx.fee-meta">10% of gross</div></div>
+          <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="event-detail.tx.payfee">Payment fee</div><div class="kpi__value" id="ed-tx-payfee">—</div><div class="kpi__meta" data-i18n="event-detail.tx.payfee-meta">Charged once per order</div></div>
+          <div class="kpi bento--span-6"><div class="kpi__label" data-i18n="event-detail.tx.net">Net to you</div><div class="kpi__value" id="ed-tx-net">—</div><div class="kpi__meta" data-i18n="event-detail.tx.net-meta">Settles to Earnings</div></div>
+          <div class="kpi bento--span-6"><div class="kpi__label" data-i18n="event-detail.tx.cancelled">Cancelled</div><div class="kpi__value" id="ed-tx-cancelled">—</div><div class="kpi__meta" data-i18n="event-detail.tx.cancelled-meta">Voided — returned to inventory</div></div>
         </div>
 
         <!-- D392 補充（2026-10-10）：已排程起就有這個分頁——還沒有任何一筆交易時，篩選、表格與匯出整組收起，換成空狀態（同名單、收支的 empty-card--framed） -->
@@ -1948,6 +1969,7 @@
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.gross">Gross</span></div><span id="ed-fin-gross">—</span></div>
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.tickets">Ticket revenue (incl. tickets in bundles)</span></div><span id="ed-fin-tickets">—</span></div>
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.fee">Platform fee</span></div><span id="ed-fin-fee">—</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.payfee">Payment fee</span></div><span id="ed-fin-payfee">—</span></div>
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.net">Net to you</span></div><span id="ed-fin-net">—</span></div>
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.cancelled">Cancelled</span></div><span id="ed-fin-cancelled">—</span></div>
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.category">Category</span></div><span data-i18n="event-detail.fin.category-val">Event ticketing</span></div>
@@ -2184,6 +2206,8 @@
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/platform-fees.js?v=r2.2"></script><!-- D311：平台費率三層解析 -->
 <script src="js/events-store.js?v=r2.2"></script>
+<script src="js/orders-store.js?v=r2.2"></script><!-- D416：交易明細匯出借用訂單的付款／履約狀態字樣（訂單資料層，不渲染） -->
+<script src="js/csv-export.js?v=r2.2"></script><!-- D416：匯出確認視窗＋CSV 產生 -->
 <script src="js/ticket-bundle.js?v=r2.2"></script><!-- D342：售票期間須落在活動上架區間內（共用比對規則） -->
 <script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購三種上限的輔助說明（purchase-conds 的限購條件卡借用），要先於 purchase-conds 載入 -->
 <script src="js/purchase-conds.js?v=r2.2"></script><!-- D388：購買條件編輯器，與建立流程 create-event 共用同一套 -->
@@ -3115,17 +3139,49 @@
       off ? 'Relist this event' : 'Unlist this event');
     setKey(document.getElementById('ed-unlist-sub'),
       off ? 'event-detail.relist.sub' : 'event-detail.unlist.sub',
-      off ? 'This event is unlisted, so fans can’t see it or buy. Bundles that came down with it stay unlisted after you relist.'
-          : 'Fans stop seeing it and can’t buy. It stays in its current stage, and tickets already sold stay valid.');
+      off ? 'This event is unlisted — fans see it as unlisted and can’t buy. Bundles that came down with it stay unlisted after you relist.'
+          : 'Fans see it as unlisted and can’t buy; anything in their carts shows as unavailable. It stays in its current stage, and tickets already sold stay valid.');
     const un = box.querySelector('[data-ed-unlist]');
     const re = box.querySelector('[data-ed-relist]');
     if (un) un.hidden = off;
     if (re) re.hidden = !off;
     const bkyNote = document.getElementById('ed-unlist-bky');
-    if (bkyNote) bkyNote.hidden = !isBky();   // D375 決定三：bookyay 改回草稿＝同步下架、再次發布＝同步上架
+    if (bkyNote) bkyNote.hidden = !isBky();   // D415（修訂 D375 決定三）：bookyay 修改同步＝自動下架並通知、手動重新上架；改回草稿＝同步下架
+    syncBkySyncNotice();
     syncPause();
+    edLiveRelock();   // D413：進行中的高影響欄位跟著上架／下架鎖或解
   }
   document.addEventListener('ztor:creator-changed', () => syncUnlist());
+
+  /* bookyay 修改同步後自動下架的提示（2026-10-14 · D415 決定一～三）：bookyay 端改到 ztor 同步的欄位（時間、場地、票價）
+     → ztor 自動下架並通知創作者，重新上架一律手動。資料在 ev.bkySyncUnlist＝{ at, changes:[{ field, from, to }] }；
+     只在 bookyay 活動、仍是已下架時顯示。語言切換時由 syncUnlist 重畫。 */
+  /* 已處理旗標：重新上架＝創作者已看過這次自動下架，之後手動下架不再顯示此提示。
+     存 localStorage `ztor.event-bkysync-done`＝{ 活動 id: true }（同下架／暫停覆寫的做法）。 */
+  const BKYSYNC_DONE_KEY = 'ztor.event-bkysync-done';
+  function bkySyncDone() {
+    try { return !!(JSON.parse(localStorage.getItem(BKYSYNC_DONE_KEY) || '{}') || {})[ev.id]; } catch (e) { return false; }
+  }
+  function markBkySyncDone() {
+    try {
+      const m = JSON.parse(localStorage.getItem(BKYSYNC_DONE_KEY) || '{}') || {};
+      m[ev.id] = true;
+      localStorage.setItem(BKYSYNC_DONE_KEY, JSON.stringify(m));
+    } catch (e) {}
+  }
+  function syncBkySyncNotice() {
+    const box = document.getElementById('ed-bkysync');
+    if (!box) return;
+    const info = ev && ev.bkySyncUnlist;
+    const on = !!(info && isBky() && ev.unlisted && !bkySyncDone());
+    box.hidden = !on;
+    if (!on) return;
+    const changes = (info.changes || []).map(c =>
+      T('ed.bkysync.f.' + c.field, '{from} → {to}').replace('{from}', c.from).replace('{to}', c.to)).join(T('ed.bkysync.sep', '; '));
+    const body = document.getElementById('ed-bkysync-body');
+    if (body) body.textContent = T('ed.bkysync.body', 'Synced {when}: {changes}. Check the event, then relist it.')
+      .replace('{when}', info.at || '').replace('{changes}', changes);
+  }
 
   /* 暫停售票／恢復販售＋完售徽章（2026-10-08 · D375 決定七）：暫停只在售票期間（售票中、進行中）可操作，
      恢復後門票與票務商品回到各自原本的販售設定（單一票種的 Paused 等不動）；完售徽章每次依資料重算，有票回補就收起（D375 補裁）。
@@ -3244,7 +3300,7 @@
     if (e.target.closest('[data-ed-unlist]')) {
       const escU = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
       const sold = ev.sold || 0;
-      const lines = [T('event-detail.unlist.confirm.body', 'The event page comes down and nothing can be bought. The event stays in its current stage.')];
+      const lines = [T('event-detail.unlist.confirm.body', 'Fans see the event page as unlisted and can’t buy; anything in their carts shows as unavailable. The event stays in its current stage.')];   // D415 決定七、八
       if (sold) lines.push(T('event-detail.unlist.confirm.sold', 'The {n} tickets already sold stay valid.').replace('{n}', fmtNum(sold)));
       if (['scheduled', 'on-sale'].indexOf(ev.status) >= 0) lines.push(T('event-detail.unlist.confirm.cancel', 'To call off the event, cancel it instead.'));
       const goingDown = window.ztorEvents.cancelBundlesOf ? window.ztorEvents.cancelBundlesOf(ev.id) : [];
@@ -3273,6 +3329,7 @@
       const relist = () => {
         window.ztorEvents.setUnlisted(ev.id, false);
         ev.unlisted = false;
+        markBkySyncDone();   // D415：重新上架後把 bookyay 自動下架提示標成已處理
         syncUnlist();
         if (window.ztorToast) window.ztorToast.show(T('event-detail.relist.toast', 'Event relisted'));
       };
@@ -3308,6 +3365,8 @@
     }
     const exp = e.target.closest('[data-ed-export]');
     if (exp) {
+      /* D416：匯出交易（交易明細）開確認視窗並真的產 CSV；匯出名單不在本次範圍，維持原型不產檔 */
+      if (exp.dataset.edExport === 'transactions' && txExportOn()) { openTxExport(); return; }
       /* 原型不產檔（同站上其他匯出鈕的既有限制），但按了要有回饋 */
       alert(T('event-detail.export.stub', 'Export is not wired up in the prototype — the file would land in your downloads.'));
       return;
@@ -3319,11 +3378,94 @@
      txAll 維持只有門票訂單——撤銷全部、撤銷紀錄、收支與持票人數都讀 txAll，
      組合包金額是否計入活動收入還待確認（5.1.6.3 §2.7）。 */
   let txAll = [], txBundle = [], txFilter = 'all';
+  /* D418（2026-10-15）：淨額一律＝毛額 − 平台費 − 支付費，與電子商店訂單詳情、訂單管理匯出、收入管理同一口徑。
+     支付費不在本頁另寫算式：借 js/orders-store.js 的 payFee（§7.6 支付費率、一筆訂單只算一次），門票訂單詳情也是這一支。 */
+  function txPayFee(t) { return (window.ztorOrders && window.ztorOrders.payFee) ? window.ztorOrders.payFee(t.gross) : 0; }
+  function withNet(t) { t.payFee = txPayFee(t); t.net = t.gross - t.fee - t.payFee; return t; }
   const money = n => '$' + fmtNum(n);
   /* 2026-09-09（D253）：狀態 'refunded' 全面改成 'voided'——顯示徽章沿用 orders 模組
      已定案的用詞「Cancelled／已取消」＋ badge--error（見 order-detail.html 的
      od.unit.status.void，同一個視覺角色只有一個答案）。「作廢」是動作，「已取消」是
      這個動作在付款．結算軸上留下的狀態，兩個詞分工不重複。 */
+  /* 交易明細目前的訂單日期區間篩選＋排序（renderTx 與匯出共用，匯出「照目前的篩選結果」才不會與畫面分叉） */
+  function txFilteredList() {
+    const txFrom = (document.querySelector('[data-tx-date-from]') || {}).value || '';
+    const txTo = (document.querySelector('[data-tx-date-to]') || {}).value || '';
+    return txAll.concat(txBundle)
+      .filter(t => (!txFrom || (t.orderDate || '') >= txFrom) && (!txTo || (t.orderDate || '') <= txTo))
+      /* 依下單日期與時間由新到舊（D414：免費訂單沒有付款時間，不能用付款時間排序，否則全部沉到最後被 50 列上限截掉） */
+      .sort((x, y) => String(y.orderDate || '').localeCompare(String(x.orderDate || '')) || (y.atMin || 0) - (x.atMin || 0));
+  }
+  /* ── 匯出交易明細（D416，5.1.6.3 §2.7「匯出」）──────────────────────────
+     CSV、UTF-8 加 BOM、照目前的篩選結果（訂單日期區間＋全部／已付款／已取消子集，與畫面上的列表同一份）。
+     一列一筆訂單；欄位＝訂單基本、金額、付款三組（定義同 5.1.5.3 F2）＋活動專屬欄，沒有收件資料。
+     金額與畫面同一套：商品小計＝毛額、平台費＝該筆平台費、支付費＝orders-store payFee、創作者淨額＝毛額 − 平台費 − 支付費（D418，畫面的「淨額」）；
+     門票收入、活動收入照 edRevTotals() 的逐筆算式（只算已付款，已取消的留空）。
+     D418：活動專屬欄加「買家名稱」（只有名稱，不含電子郵件與收件資料），排在活動名稱之後。 */
+  function txExportOn() {
+    const dev = window.ztorDevState;
+    return !!(window.ztorCsv && !(dev && dev.featOn && !dev.featOn('O39')));
+  }
+  function txExportList() {
+    const all = txFilteredList();
+    return txFilter === 'all' ? all : all.filter(t => t.status === txFilter);
+  }
+  const TX_METHOD_KEY = { 'Card': 'od.pay.method.card', 'Apple Pay': 'od.pay.method.applepay', 'LINE Pay': 'od.pay.method.linepay' };
+  function txExportTable(list) {
+    const H = (k, fb) => T('csv.h.' + k, fb);
+    const O = window.ztorOrders;
+    const cur = ev.currency || 'TWD';
+    const headers = [
+      H('orderid', 'Order #'), H('orderdate', 'Order date'), H('ordertype', 'Order type'), H('source', 'Order source'),
+      H('paystatus', 'Payment status'), H('fulstatus', 'Fulfilment status'),
+      H('cur', 'Currency'), H('subtotal', 'Items subtotal'), H('discount', 'Total discounts'), H('shipping', 'Shipping'),
+      H('paid', 'Buyer paid'), H('platform', 'Platform fee'), H('payfee', 'Payment fee'), H('net', 'Net to creator'),
+      H('paidat', 'Paid at'), H('provider', 'Payment provider'), H('method', 'Payment method'), H('payid', 'Payment ID'),
+      H('event', 'Event'), H('buyer', 'Buyer name'), H('item', 'Item'), H('itemkind', 'Item type'), H('qty', 'Quantity'),
+      H('tixrev', 'Ticket revenue'), H('evrev', 'Event revenue'), H('status', 'Status'), H('voidat', 'Voided at'), H('voidby', 'Voided by')
+    ];
+    const rows = list.map(t => {
+      const isBundle = t.kind === 'bundle';
+      const paid = t.status === 'paid';
+      const od = O && O.get ? O.get(t.orderId) : null;          /* 履約狀態借訂單資料層的同一筆訂單（含組合包裡的商品成員） */
+      const kind = isBundle ? T('csv.kind.bundle', 'Bundle') : t.solo ? T('csv.kind.solo', 'Standalone ticket') : T('csv.kind.tier', 'Ticket tier');
+      return [
+        t.orderId || t.id,
+        t.paidAt && String(t.paidAt).slice(0, 10) === t.orderDate ? t.paidAt + ':00' : (t.orderDate || ''),
+        isBundle ? T('csv.type.bundle', 'Bundle') : T('csv.type.ticket', 'Ticket'),
+        T('csv.source.ztor', 'ztor storefront'),
+        paid ? T('orders.pay.paid', 'Paid') : T('orders.pay.cancelled', 'Cancelled'),
+        !paid ? T('orders.pay.cancelled', 'Cancelled') : (od && O.fulfilLabel ? O.fulfilLabel(od) : ''),
+        cur, t.gross, 0, 0, t.gross, t.fee, txPayFee(t), t.gross - t.fee - txPayFee(t),
+        t.paidAt || '', t.provider || '', TX_METHOD_KEY[t.method] ? T(TX_METHOD_KEY[t.method], t.method) : '', t.paymentId || '',
+        ev.name, t.buyer || '', t.tier, kind, t.qty,
+        paid ? (t.ticketGross != null ? t.ticketGross : t.gross) : '', paid ? t.gross : '',
+        paid ? T('event-detail.tx.paid', 'Paid') : T('event-detail.tx.cancelledbadge', 'Cancelled'),
+        !paid ? (t.voidedAt || '') : '', !paid ? (t.voidedBy || '') : ''
+      ];
+    });
+    return { headers: headers, rows: rows };
+  }
+  function openTxExport() {
+    const list = txExportList();
+    window.ztorCsv.confirm({
+      title: T('csv.tx.title', 'Export transactions'),
+      count: list.length,
+      withShip: false,
+      note: T('csv.tx.note', 'Shipping details are not in this export.'),
+      onExport: () => {
+        const rows = txExportList();             /* 視窗開著期間篩選不會變；仍以按下「匯出」當下為準 */
+        const t = txExportTable(rows);
+        const from = (document.querySelector('[data-tx-date-from]') || {}).value || '';
+        const to = (document.querySelector('[data-tx-date-to]') || {}).value || '';
+        const name = window.ztorCsv.safeName(T('csv.file.tx', 'Transactions')) + '_' + window.ztorCsv.safeName(ev.name) + '_' +
+          window.ztorCsv.fileRange(from, to) + '.csv';
+        window.ztorCsv.download(name, window.ztorCsv.build(t.headers, t.rows));
+        if (window.ztorToast) window.ztorToast.show(T('csv.toast', 'Exported {n} orders').replace('{n}', rows.length), { tone: 'success' });
+      }
+    });
+  }
+
   function renderTx() {
     const body = $('#ed-tx-body');
     if (!body) return;
@@ -3331,23 +3473,20 @@
     /* D411：新的在上改看付款時間（paidAt＝下單日期＋時刻）；訂單日期區間與子集篩選同時成立。
        上方交易摘要（毛額／平台費／淨額／已取消）維持整場合計、不跟日期區間變——它要與 KPI 快照、收支摘要一致（§2.7）；
        日期區間只收斂子集計數與表格（UIA-253）。 */
-    const txFrom = (document.querySelector('[data-tx-date-from]') || {}).value || '';
-    const txTo = (document.querySelector('[data-tx-date-to]') || {}).value || '';
     const txEvery = txAll.concat(txBundle);
-    const txList = txEvery
-      .filter(t => (!txFrom || (t.orderDate || '') >= txFrom) && (!txTo || (t.orderDate || '') <= txTo))
-      /* 依下單日期與時間由新到舊（D414：免費訂單沒有付款時間，不能用付款時間排序，否則全部沉到最後被 50 列上限截掉） */
-      .sort((x, y) => String(y.orderDate || '').localeCompare(String(x.orderDate || '')) || (y.atMin || 0) - (x.atMin || 0));
+    const txList = txFilteredList();
     const paidAll = txEvery.filter(t => t.status === 'paid');
     const paid = txList.filter(t => t.status === 'paid');
     const voided = txList.filter(t => t.status === 'voided');
     const gross = paidAll.reduce((a, t) => a + t.gross, 0);
     const fee = paidAll.reduce((a, t) => a + t.fee, 0);
+    const payFee = paidAll.reduce((a, t) => a + txPayFee(t), 0);   // D418
     $('#ed-tx-gross').textContent = money(gross);
     $('#ed-tx-orders').textContent = T('event-detail.tx.orders', '{n} orders · {q} tickets')
       .replace('{n}', fmtNum(paidAll.length)).replace('{q}', fmtNum(paidAll.reduce((a, t) => a + (t.kind === 'bundle' ? t.tickets : t.qty), 0)));
     $('#ed-tx-fee').textContent = '−' + money(fee);
-    $('#ed-tx-net').textContent = money(gross - fee);
+    $('#ed-tx-payfee').textContent = '−' + money(payFee);
+    $('#ed-tx-net').textContent = money(gross - fee - payFee);
     $('#ed-tx-cancelled').textContent = fmtNum(txEvery.filter(t => t.status === 'voided').length);
     document.querySelector('[data-tx-count="all"]').textContent = txList.length;
     document.querySelector('[data-tx-count="paid"]').textContent = paid.length;
@@ -3416,8 +3555,8 @@
     refreshVoidAllButton();
   }
   function initTx() {
-    txAll = window.ztorEvents.transactions(ev.id);
-    txBundle = window.ztorEvents.bundleTransactions ? window.ztorEvents.bundleTransactions(ev.id) : [];
+    txAll = window.ztorEvents.transactions(ev.id).map(withNet);   // D418：每列淨額扣支付費
+    txBundle = (window.ztorEvents.bundleTransactions ? window.ztorEvents.bundleTransactions(ev.id) : []).map(withNet);
     /* D392 補充：沒有交易（已排程還沒開賣，或開賣了還沒人買）→ 空狀態；開賣前與開賣後說明不同 */
     const txEmpty = !txAll.length && !txBundle.length;
     const txHas = document.getElementById('ed-tx-has'), txEm = document.getElementById('ed-tx-empty');
@@ -3447,9 +3586,10 @@
       [txF, txT].forEach(el => { if (el) { el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true })); } });
       syncTxClr(); renderTx();
     });
-    /* 匯出照目前篩選結果（D411）：原型不產檔，只回報筆數 */
+    /* 匯出照目前篩選結果（D411）；D416 起開確認視窗並真的產 CSV（版本閘 O39 關閉時維持舊行為：只回報筆數） */
     const txExp = document.querySelector('[data-tx-export]');
     if (txExp) txExp.addEventListener('click', () => {
+      if (txExportOn()) { openTxExport(); return; }
       const n = (document.querySelectorAll('#ed-tx-body tr') || []).length;
       const all = Number((document.querySelector('[data-tx-count="' + txFilter + '"]') || {}).textContent) || n;
       if (window.ztorToast) window.ztorToast.show(T('event-detail.tx.export.toast', 'Exporting {n} orders that match your filters').replace('{n}', all));
@@ -3477,11 +3617,12 @@
     /* D408：收支含組合包訂單（整組金額），另列門票收入（含組合包內的門票）；撤銷筆數仍只看門票 */
     const voided = txAll.filter(t => t.status === 'voided');
     const rv = edRevTotals();
-    const gross = rv.total, fee = rv.fee;
+    const gross = rv.total, fee = rv.fee, payFee = rv.pay;
     setVal('ed-fin-gross', money(gross));
     setVal('ed-fin-tickets', money(rv.tickets));
     setVal('ed-fin-fee', '−' + money(fee));
-    setVal('ed-fin-net', money(gross - fee));
+    setVal('ed-fin-payfee', '−' + money(payFee));   // D418
+    setVal('ed-fin-net', money(gross - fee - payFee));
     setVal('ed-fin-cancelled', fmtNum(voided.length));
     const tiers = ev.tiers || [];
     if (!tiers.length || !(ev.sold || 0)) {
@@ -3509,6 +3650,10 @@
     if (fee > 0) {
       rows.push('<tr class="ztor-table__row"><td><code>fee_' + esc(ev.id) + '</code></td>' +
         '<td>' + esc(T('event-detail.tx.fee', 'Platform fee')) + '</td><td>−' + money(fee) + '</td><td>—</td><td>—</td></tr>');
+    }
+    if (payFee > 0) {   // D418：支付費同平台費自成一行
+      rows.push('<tr class="ztor-table__row"><td><code>payfee_' + esc(ev.id) + '</code></td>' +
+        '<td>' + esc(T('event-detail.tx.payfee', 'Payment fee')) + '</td><td>−' + money(payFee) + '</td><td>—</td><td>—</td></tr>');
     }
     body.innerHTML = rows.join('');
   }
@@ -3956,9 +4101,64 @@
       /* 活動國家、活動語言、集合地點、交通（D370）：同樣不分模式一律鎖；標記見 lockLocaleFromBky／lockVenueFromBky */
       root.querySelectorAll('#ed-country, #ed-lang').forEach(el => { el.disabled = true; });
     }
+    edLiveLocks(root, ro);   // D413：進行中的高影響欄位與活動國家（見下方 edLiveLocks）
     /* 發布設定在同一個面板裡，但逐欄鎖定看階段（pubLocks）——上面一律解鎖之後要再套一次，不然售票中的開賣時間會被打開 */
     if (root.querySelector('#ed-pub-edit')) { try { syncPubLock(); } catch (e) {} }
     if (window.ZtorViewMode) window.ZtorViewMode.sync(root);   /* 檢視態讀數（Q119，js/view-mode.js） */
+  }
+
+  /* ── 進行中的編輯（D413，2026-10-14；唯一定義在 5.1.6.2 §3「進行中的編輯」）──────────
+     進行中照常可進編輯模式，分兩層：低風險欄位（描述、圖片、在地化、通知開關、停售／下架時間）照原本的鎖定規則；
+     高影響欄位（場地名稱、完整地址、場次的日期與開始時間、跨日的結束日期）上架中鎖定、要先下架才能改；
+     已開始的場次日期、開始時間與場地下架也不能改（場地整場共用，有一場開始就鎖〔推導〕）；活動國家進行中鎖定。
+     本段沒涵蓋的欄位（結束時間、提前入場、顯示設定、票種、購買條件、組合包…）維持原狀。
+     「已開始」＝最早的那一場（活動開始即進入進行中）或開始時刻已過；編輯中新增、還沒儲存的場次不算既有值，不鎖。
+     bookyay 帶入者這些欄位原本就鎖（F21），不另顯示說明。只在 applyReadonly 一律解鎖之後補鎖，不改其他階段。 */
+  function edLiveLocks(root, ro) {
+    try {
+      const live = !!ev && ev.status === 'live';
+      const editing = live && !ro;
+      const bky = typeof isBky === 'function' && isBky();
+      const listed = live && !ev.unlisted;
+      const saved = live ? sessFromEv() : [];
+      const t0 = s => {
+        const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s.date || '');
+        if (!m) return Infinity;
+        const hm = hhmmToMin(s.start) || 0;
+        return new Date(+m[1], +m[2] - 1, +m[3], Math.floor(hm / 60), hm % 60).getTime();
+      };
+      const first = saved.reduce((a, s) => (!a || t0(s) < t0(a)) ? s : a, null);
+      const started = s => s === first || t0(s) <= Date.now();
+      const anyStarted = saved.some(started);
+      const anyOpen = saved.some(s => !started(s));
+      if (editing) {
+        root.querySelectorAll('[data-sess]').forEach(row => {
+          const s = saved.find(x => x.id === row.dataset.sess);
+          if (!s || !(listed || started(s))) return;
+          row.querySelectorAll('[data-sess-f="date"], [data-sess-f="start"], [data-sess-f="endDate"]').forEach(el => { el.readOnly = true; });
+          row.querySelectorAll('[data-sess-md]').forEach(sw => {
+            sw.disabled = true; sw.classList.add('switch--locked'); sw.setAttribute('aria-disabled', 'true');
+          });
+        });
+        if (listed || anyStarted) root.querySelectorAll('#ed-venue, #ed-address').forEach(el => { el.readOnly = true; });
+        root.querySelectorAll('#ed-country').forEach(el => { el.disabled = true; });
+      }
+      const note = (id, showUnlist, showStarted) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const u = el.querySelector('[data-live-note="unlist"]'), st = el.querySelector('[data-live-note="started"]');
+        if (u) u.hidden = !showUnlist;
+        if (st) st.hidden = !showStarted;
+        el.hidden = !(editing && !bky && (showUnlist || showStarted));
+      };
+      note('ed-live-dates-note', listed && anyOpen, anyStarted);
+      note('ed-live-venue-note', listed && !anyStarted, anyStarted);
+    } catch (e) {}
+  }
+  /* 上架／下架是營運動作、不受編輯模式管：編輯中按下架或重新上架，鎖定要跟著重算（syncUnlist 呼叫） */
+  function edLiveRelock() {
+    if (!ev || ev.status !== 'live') return;
+    try { document.querySelectorAll('.tab-panel[data-editable]').forEach(p => applyReadonly(p, p.getAttribute('data-mode') !== 'edit')); } catch (e) {}
   }
 
   /* ── 場次清單（2026-08-11 使用者指示：定點活動的多場次收進同一頁）────────────
@@ -5127,6 +5327,8 @@
     if (tmNeedsSess() && !tmEl('ed-tm-sess').value) e.push('sess');   // D381：獨立票要選所屬場次
     /* D389：這張票自己的一組購買條件，期間超出活動上架區間（或限時購買結束晚於活動停售）——擋存，紅字在條件卡上 */
     if (!evIsBky() && !stageRO() && tmRulesOwn && Object.keys(PC.periodErrs(tmRulesOwn, pcTimes(), pcT)).length) e.push('period');
+    /* D417（最終版）：bookyay 門票自加的限時折扣同樣檢查期間與「不得高於一般折扣價」 */
+    if (evIsBky() && tmBkyWork && (Object.keys(PC.periodErrs(tmBkyWork, pcTimes(), pcT)).length || PC.discTimeBad(tmBkyWork.conds, false))) e.push('period');
     /* 墓碑 2026-10-05（D353）：門票簡介 ≤100 字的檢核（'desc'）隨欄位退場。 */
     /* 墓碑 2026-09-23（D315）：例外費率的 0–100 檢核（`excpct`）隨欄位退場。 */
     return e;
@@ -5243,9 +5445,10 @@
   });
 
   /* ── bookyay 帶入活動的唯讀補齊（D385，2026-10-09；5.1.6.2 §4.5 F9、5.1.6.3 §2.6）──────────────
-     決定一：購買條件唯讀呈現——這張票由 bookyay 帶入的限購／折扣（折後價）／限時折扣（早鳥價＋期間），
-             資料形狀同 create-event 的門票規則 `rules: { conds: { cap, disc, discTime } }`（每條帶 bky:true）；
-             沒有門票層條件的票寫「跟隨活動預設」＋活動層的限購（ev.rules.conds.cap，bookyay 在活動層只有這一項）。
+     決定一：購買條件唯讀呈現——這張票由 bookyay 帶入的限購（D417 起只有每人總限購與每次交易限購；限購次數、折扣、早鳥不帶入），
+             資料形狀同 create-event 的門票規則 `rules: { conds: { cap } }`（帶 bky:true）；
+             沒有門票層條件的票寫「跟隨活動預設」（D417 起 bookyay 活動沒有活動層限購，活動層沒有條件）。
+             D417 決定五（最終版，S96）：編輯模式下 bookyay 門票可自加「折扣」「限時折扣」（tmBkyWork），其他條件仍不能加。
              一般活動的單張門票不顯示購買條件區（發布後先不開放改購買條件，2026-08-11 裁決維持）；
              活動層那張唯讀卡（#ed-evrules）D387 起自建活動也顯示，見 renderEvRules。
      決定二：bookyay 帶入的票（含隱藏的 1 人票、含未售出）刪除鈕停用，原因寫在鈕旁（#ed-tm-del-why）。
@@ -5347,8 +5550,11 @@
   function renderEvRules() {
     const sec = document.getElementById('ed-evrules');
     if (!sec || !ev) return;
-    sec.hidden = false;
     const bky = evIsBky();
+    /* D417 決定一（2026-10-15）：bookyay 匯入的活動沒有活動層限購、創作者也不能設定（入口移除）——活動層沒有任何條件，
+       整張「預設購票規則」卡不出現（原 D385／D397 的唯讀卡與「bookyay 沒有設定」說明退場，ed.evrules.none 不再使用）。 */
+    if (bky) { sec.hidden = true; evRulesWork = null; return; }
+    sec.hidden = false;
     const body = document.getElementById('ed-evrules-body');
     const acts = document.getElementById('ed-evrules-actions');
     if (!rulesEditable()) evRulesWork = null;
@@ -5404,25 +5610,54 @@
      ztor 自建的活動（D388）——同建立流程：「跟隨活動預設」開關＋條件清單，tmRulesOwn＝這張票自己的一組（null＝跟隨）。 */
   let tmRulesOwn = null;
   let tmRulesUI = null;   // 條件清單的 mount 回傳（refresh＝票價一改重算折扣讀數）
+  /* D417 決定五（2026-10-15，〔推導〕；S96 ⚪ 只在最終版）：bookyay 門票自加「折扣」「限時折扣」——
+     tmBkyWork＝彈窗裡這張票的一組（bky 限購＋自加的折扣類），開彈窗時從 t.rules 複製、「套用」才寫回；
+     D419 定案：bookyay 門票沒有「跟隨活動預設」，沒有帶入限購的票直接在自己的條件裡加；全部移除就回到空的一組。 */
+  const BKY_ADD_KEYS = ['disc', 'discTime'];
+  let tmBkyWork = null;
+  /* 套票轉出的 1 人票（hideFix）不設折扣與早鳥（5.1.6.2 F9：折扣類落在自動組合包），不給自加入口 */
+  const bkyAddOn = () => evIsBky() && !tmNew && !stageRO() && edEditing() && featOnPC('S96') && !(tmTier && tmTier.hideFix);
   function syncTmRules(t) {
     const rsec = tmEl('ed-tm-rules-sec');
     const acts = tmEl('ed-tm-rules-actions');
     const box = tmEl('ed-tm-rules');
     if (evIsBky()) {
-      /* 購買條件區：bookyay 帶入的活動才有（另外新增的票也列——它同樣跟隨活動層的限購） */
+      /* 購買條件區：bookyay 帶入的活動的每張票都列（D419：沒有活動預設、沒有「跟隨活動預設」——條件就是這張票自己的） */
       const showRules = !tmNew;
       rsec.hidden = !showRules;
       acts.innerHTML = ''; acts.hidden = true;
       if (!showRules) return;
-      const own = (t.rules && t.rules.conds) || {};
+      const addOn = bkyAddOn();
+      if (addOn && !tmBkyWork) tmBkyWork = JSON.parse(JSON.stringify(PC.norm(t.rules || { conds: {} })));
+      const own = ((addOn ? tmBkyWork : t.rules) || {}).conds || {};
       const hasOwn = ['cap', 'disc', 'discTime'].some(k => own[k]);
-      const evRows = ruleCondRows(evRuleConds(), t);
-      box.innerHTML = hasOwn
-        ? '<div>' + ruleCondRows(own, t) + '</div>'
-        : '<div><div class="kv"><span class="kv__k" data-i18n="ed.tm.rules.follow">' + tixEsc(T('ed.tm.rules.follow', 'Follow event defaults')) + '</span>' +
-            '<span class="kv__v" data-i18n="ed.tm.rules.on">' + tixEsc(T('ed.tm.rules.on', 'On')) + '</span></div>' + evRows + '</div>' +
-          '<p class="field__hint" data-i18n="ed.tm.rules.follow.bky">' + tixEsc(T('ed.tm.rules.follow.bky', '')) + '</p>';
-      markBkySource(tmEl('ed-tm-rules-title'), true);
+      /* 2026-10-12 使用者：鎖定時維持可設定時的版型——停用的條件卡，不換成兩欄文字讀數（同建立流程票種彈窗）。
+         D419（2026-10-15，取代 D368 決定三的鎖在跟隨）：bookyay 門票不畫「跟隨活動預設」開關；沒有帶入條件＝空狀態。 */
+      const shown = hasOwn ? own : {};
+      const cardsOK = ['disc', 'discTime'].every(k => !shown[k] || (shown[k].price != null && shown[k].price !== ''));
+      tmRulesUI = null;
+      if (addOn) {
+        /* 最終版編輯中：bky 限購照舊鎖、只開放折扣與限時折扣（新增選單掛 data-feat="S96"）；沒有任何條件時先畫空狀態，選單接在下面 */
+        const empty = !Object.keys(own).length;
+        box.innerHTML = (empty ? '<div class="empty-card"><span class="empty-card__icon"><i data-lucide="inbox" class="ztor-icon"></i></span><p class="empty-card__title">' + tixEsc(T('ed.evrules.none.cond', '未設定條件')) + '</p></div>' : '') +
+          '<div class="tier-card__rules" id="ed-tm-rules-editor"></div>';
+        const ctx = Object.assign({}, pcCtx, { addOnly: BKY_ADD_KEYS, addFeat: 'S96', noEmpty: true });
+        let wasEmpty = empty;
+        tmRulesUI = PC.mount(tmEl('ed-tm-rules-editor'), { rules: tmBkyWork, scope: t.id, ctx: ctx, times: pcTimes, locked: true,
+          onChange: r => { const now = !Object.keys(r.conds).length; if (now !== wasEmpty) { wasEmpty = now; syncTmRules(t); } } });
+        if (window.ztorIcons) window.ztorIcons.applyIcons(box);
+      } else if (Object.keys(shown).length && cardsOK) {
+        box.innerHTML = '<div class="tier-card__rules">' + PC.html(PC.norm({ conds: JSON.parse(JSON.stringify(shown)) }), t.id, true, pcCtx) + '</div>';
+        if (window.ztorIcons) window.ztorIcons.applyIcons(box);
+      } else {
+        const rows = ruleCondRows(shown, t);
+        box.innerHTML = rows ? '<div>' + rows + '</div>'
+          : '<div class="empty-card"><span class="empty-card__icon"><i data-lucide="inbox" class="ztor-icon"></i></span><p class="empty-card__title">' + tixEsc(T('ed.evrules.none.cond', '未設定條件')) + '</p></div>';
+        if (window.ztorIcons) window.ztorIcons.applyIcons(box);
+      }
+      /* 來源標記只在真的有 bookyay 帶入的條件時掛（D419：只有創作者自加的折扣類、或沒有任何條件時不掛） */
+      markBkySource(tmEl('ed-tm-rules-title'), Object.keys(own).some(k => own[k] && own[k].bky));
+      regateFeat();
       return;
     }
     markBkySource(tmEl('ed-tm-rules-title'), false);
@@ -5512,6 +5747,7 @@
     tmEl('ed-tm-name').value = t.name || '';
     tmImg = (t.img || '').trim();   // D384：沒有自己的圖＝沿用活動主視覺
     tmRulesOwn = (!evIsBky() && t.rules) ? JSON.parse(JSON.stringify(PC.norm(t.rules))) : null;   // D388：自建活動這張票自己的一組（null＝跟隨）
+    tmBkyWork = null;   // D417：bookyay 門票自加折扣類的工作副本，syncTmRules 依版本與編輯狀態才建立
     renderTmImg();
     tmEl('ed-tm-price').value = t.price == null ? '' : t.price;
     tmEl('ed-tm-qty').value = t.qty == null ? '' : t.qty;
@@ -5669,6 +5905,11 @@
     tmTier.paused = tmEl('ed-tm-paused').classList.contains('switch--on');
     /* D388：自建活動的購買條件——改後的一組取代原本的，只影響之後的購買；跟隨＝拿掉自己那一份 */
     if (!evIsBky() && !stageRO()) { if (tmRulesOwn) tmTier.rules = tmRulesOwn; else delete tmTier.rules; }
+    /* D417 決定五（最終版）：bookyay 門票自加的折扣類寫回；沒有任何條件＝回到跟隨（拿掉自己那一組） */
+    if (evIsBky() && tmBkyWork && !stageRO()) {
+      if (Object.keys(tmBkyWork.conds || {}).length) { tmTier.rules = tmBkyWork; tmTier.rulesFix = true; }
+      else { delete tmTier.rules; delete tmTier.rulesFix; }
+    }
     /* 新票（D381）：這時才進清單。獨立票帶 standalone＋所屬場次（多場活動），與 events-store 的獨立票同一個形狀；
        票種門票＝新增一個票種（本頁一個票種一張卡，各場同名票併在這一張，同既有「新增票種」）。 */
     if (tmNew) {
@@ -5917,7 +6158,7 @@
 
   /* 售票與名單的五節（2026-08-17 使用者指定的名稱與順序）：
      預設看哪一節隨階段走——售票中盯的是賣得如何、進行中盯的是誰來了。
-     已取消沒有名單與通知（活動不會發生，沒有對象），那兩節整個收起。 */
+     已取消沒有名單（活動不會發生）；通知照樣顯示、唯讀（D390；D413 決定一）。 */
   const SV_DEFAULT = { 'on-sale': 'tx', live: 'roster', ended: 'tx', cancelled: 'tx' };
   /* 三組分節橫列都要有行為（2026-08-17 修）：此前只有「售票與名單」呼叫過
      initSectionNav，設定與票務那兩排點了不會捲、也永遠沒有作用中的那一條底線——
@@ -6367,7 +6608,8 @@
     return {
       total: all.reduce((a, t) => a + t.gross, 0),
       tickets: all.reduce((a, t) => a + (t.ticketGross != null ? t.ticketGross : t.gross), 0),
-      fee: all.reduce((a, t) => a + t.fee, 0)
+      fee: all.reduce((a, t) => a + t.fee, 0),
+      pay: all.reduce((a, t) => a + txPayFee(t), 0)   // D418：支付費（一筆只算一次），淨額＝total − fee − pay
     };
   }
   const edTixRevText = v => T('event-detail.rev.tickets', 'Ticket revenue {v} (incl. tickets in bundles)').replace('{v}', '$' + fmtNum(v));
@@ -7072,7 +7314,7 @@
     const txs = window.ztorEvents.transactions(ev.id);
     /* D408：結案卡的毛額與平台費含組合包訂單，跟售票卡、交易明細、收支同一份算式 */
     const rvw = edRevTotals();
-    const gross = rvw.total, fee = rvw.fee;
+    const gross = rvw.total, fee = rvw.fee, payFee = rvw.pay;
     /* 撤銷等於沒賣出（使用者 2026-10-12 裁決）：store 的 sold 本來就不含作廢票（見 buildTx 註解），
        所以到場率與未到場的分母不用再扣；已撤銷張數只作為對帳資訊列在收入卡。 */
     const voidedQty = txs.filter(t => t.status === 'voided').reduce((a, t) => a + (t.qty || 0), 0);
@@ -7115,9 +7357,10 @@
       set('#ed-wrap-dup', times(ci.used));
       set('#ed-wrap-invalid', times(ci.invalid));
     }
-    set('#ed-wrap-net', money0(gross - fee));
+    set('#ed-wrap-net', money0(gross - fee - payFee));   // D418
     set('#ed-wrap-gross', money0(gross));
     set('#ed-wrap-fee', '−' + money0(fee));
+    set('#ed-wrap-payfee', '−' + money0(payFee));
     /* 已取消的撤銷張數在場次概況那格已經有（#ed-glance-voided-card），這裡只給已結束，免得同一個數字出現兩次。 */
     const voidedRow = $('#ed-wrap-voided-row');
     if (voidedRow) voidedRow.hidden = cancelled;

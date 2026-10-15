@@ -25,6 +25,8 @@
 <link rel="stylesheet" href="ds-components/date-range.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2"><!-- D416：匯出確認視窗（js/csv-export.js 動態建立） -->
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* F2 工作列版型（對齊電子商店 F3 兩排式）：上排＝匯出＋收合搜尋靠右，下排＝狀態 filter-tabs 獨佔整列。
@@ -172,6 +174,7 @@
 </div>
 <script src="js/events-store.js?v=r2.2"></script><!-- D411：門票訂單的資料來源（活動交易明細） -->
 <script src="js/orders-store.js?v=r2.2"></script>
+<script src="js/csv-export.js?v=r2.2"></script><!-- D416：匯出確認視窗＋CSV 產生 -->
 <script>
   /* F2/F3 對齊電子商店：filter-tabs--brand（每項數量）＋收合搜尋＋product-list 過濾＋list-footer 計數。
      每列 data-order-status 為空白分隔的合格篩選 token（一筆訂單可符合多個 tab，如 paid + toship）。
@@ -318,11 +321,32 @@
       syncDateClear();
     };
     if (dClear) dClear.addEventListener('click', () => { resetDates(); apply(); });
-    /* 匯出照目前的篩選結果（D411）：原型不產檔，只回報會匯出幾筆 */
+    /* 匯出（D411 照目前的篩選結果；D416 確認視窗＋瀏覽器端產 CSV）：
+       按下「匯出」先開確認視窗，顯示符合篩選的筆數與「包含收件資料」核取框（預設不勾）；
+       確認後在瀏覽器端產生 CSV 下載。檔名＝訂單_起訖日期.csv（沒篩日期＝全部）。
+       匯出視窗與 CSV 內容掛 O39（🔵 release2.4）；版本閘關閉（release2.3 預覽）時維持舊行為，只回報筆數。 */
     const exportBtn = document.querySelector('[data-orders-export]');
     if (exportBtn) exportBtn.addEventListener('click', () => {
-      const n = rows.filter(r => !r.hidden).length;
-      if (window.ztorToast) window.ztorToast.show(T('orders.export.toast', 'Exporting {n} orders that match your filters').replace('{n}', n));
+      const ids = rows.filter(r => !r.hidden).map(r => r.dataset.orderId);
+      const dev = window.ztorDevState;
+      const csvOn = window.ztorCsv && window.ztorOrders && window.ztorOrders.exportTable && !(dev && dev.featOn && !dev.featOn('O39'));
+      if (!csvOn) {
+        if (window.ztorToast) window.ztorToast.show(T('orders.export.toast', 'Exporting {n} orders that match your filters').replace('{n}', ids.length));
+        return;
+      }
+      window.ztorCsv.confirm({
+        title: T('csv.orders.title', 'Export orders'),
+        count: ids.length,
+        withShip: true,
+        onExport: ship => {
+          const list = ids.map(id => window.ztorOrders.get(id)).filter(Boolean);
+          const t = window.ztorOrders.exportTable(list, { ship: ship });
+          const name = window.ztorCsv.safeName(T('csv.file.orders', 'Orders')) + '_' +
+            window.ztorCsv.fileRange(dFrom && dFrom.value, dTo && dTo.value) + '.csv';
+          window.ztorCsv.download(name, window.ztorCsv.build(t.headers, t.rows));
+          if (window.ztorToast) window.ztorToast.show(T('csv.toast', 'Exported {n} orders').replace('{n}', list.length), { tone: 'success' });
+        }
+      });
     });
 
     /* 收合搜尋（比照電子商店）：放大鏡展開 field-pill、✕/Esc 收起 */
