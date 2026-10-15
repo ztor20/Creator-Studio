@@ -1040,7 +1040,9 @@
       var mem = limitMembers(b), fix = srcFix(b);
       if (!mem.length) return '<div data-bd-pl></div>';   /* 2026-10-12 使用者：沒有成員時限購整塊不顯示（原本一句「至少加入 1 個成員」） */
       return '<div data-bd-pl>' + PL.blockHTML(b.limits, PL.derive(mem), T, {
-        title: true, locked: fix, lockNote: fix ? T('pl.lock.bky') : ''
+        title: true, locked: fix, lockNote: fix ? T('pl.lock.bky') : '',
+        /* D417（2026-10-15，UI-CHANGES 二百三十四）：bookyay 自動組合包只帶每人總限購與每次交易限購，不畫「限購次數」 */
+        keys: fix ? PL.KEYS_BKY : null
       }) + '</div>';
     }
     function limitsSync(card, b) {
