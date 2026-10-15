@@ -154,8 +154,7 @@
     const tiers = edTiers.map(t => ({ key: t.id, name: { key: 'tier-' + t.id }, note: '',
       hidden: !!t.hidden,
       priceObj: S.priceOf(ev, t), priceKey: 'tier:' + t.id,
-      soldOut: Number(t.qty) > 0 && Number(t.sold) >= Number(t.qty),
-      paused: !!t.paused }));   /* D391 補充二：單張門票暫停售票 → 粉絲頁標「暫停售票中」 */
+      soldOut: Number(t.qty) > 0 && Number(t.sold) >= Number(t.qty) }));   /* 墓碑 2026-10-15（D422 決定三）：單張門票的 paused（粉絲頁「暫停售票中」）退場 */
     /* 組合包（D296 形狀）→ 前台組合卡的成員列：票券＝允許票種名單 × 張數、商品＝名稱＋圖（示範資料沒有規格欄）；
        封面＝第一件商品圖。原價＝票券小計＋商品小計（events-store 的 bundleListAmount，bundle-detail 同一支：
        票券成員先換算成組合包的基準幣別再加總，D330 同批修正；活動資料不跨檔查 products-store）。 */
@@ -175,7 +174,6 @@
       status: { labelKey: statusKey[0], fallback: statusKey[1], tone: statusKey[2] },
       typeLabel: T(ev.typeLabelKey, ev.type), region: '',   /* D390 決定六：場地的城市／國家欄已刪除，不再掛地區標記 */ keyvisual: (ev.images && ev.images.keyvisual) || '',
       gallery: [(ev.images && ev.images.keyvisual) || ''].concat((ev.images && ev.images.gallery) || []).filter(Boolean), video: !!ev.video,
-      keyvisualPos: (ev.images && ev.images.kvCrop) || '',   /* D391 第 9 題：活動詳情存的主視覺裁切位置 */
       name: { key: 'name' }, highlight: ev.highlight ? { key: 'highlight' } : null,
       organizer: persona ? persona.name : '', organizerAvatar: persona ? (persona.avatar || '') : '',
       /* 跨日（D328）：場次有 endDate 就寫成日期區間 */

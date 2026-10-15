@@ -13,6 +13,117 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-15（二百四十一）· 驗收缺失修正：英文進度條與頂列疊字、門票彈窗票價被裁字、售票紀錄表 1440 一屏看完、功能表統計與後備表、刪除提示英文備援（B feedback）
+
+**標籤**：release2.4
+
+**範圍**：
+- **建立流程頂列（`shared.css` Wizard frame）**：兩排版型由 ≤720px 擴到 ≤1024px——改前 768／1024 寬三欄 grid 的中欄一格只剩 30～70px，英文最後一格「PREVIEW & PUBLISH」畫進右欄的「Saved · just now」。721～1024 的外距與儲存狀態文字維持桌機版，≤720 才收外距、把儲存狀態收成圓點。
+- **進度條（`progress-stepper.css`）**：`--segmented` 最後一格不再無限往右延伸，最多借 `--progress-stepper-tail`（消費端給，預設 0）；Wizard 頂列 `.wizard__progress` 交出自己的右內距 28px（≤1024 兩排時 0；`create-campaign.html` 頁內覆寫的 12px 同步給 12）。字超出照樣刪節號，完整字由 `create-event.html` 新增的 `syncStepTitles()` 寫進標籤 `title`（切語言後 `i18n:applied` 再同步）。
+- **門票彈窗票價（`calc-list.css`、`amount-field.css`）**：≤480px `--form` 右欄 112 → 124px，`.amount-field--code` 輸入框內距收成左 54／右 8——改前數字區只剩 38px，加上活動詳情沒載入 `stepper.css`、原生上下調整鈕又吃掉約 15px，「2100」顯示成「210」。`amount-field.css` 自己關掉數字欄的原生調整鈕，不再依賴 `stepper.css`。改後 375 寬數字區 62px，7 位數完整可見。
+- **售票紀錄表（`event-detail.html`、`table.css`）**：新增 `.ztor-table--fluid`（左右內距 `--sp-20` → `--sp-16`，Q112 下限；命名同 `.admin-table-wrap--fluid`）；毛額／平台費／淨額三欄與表頭掛既有 `.ztor-table__amt`（靠右、等寬數字、不折行）。改前 1440 寬表格自然寬 964 > 卡內 912、要橫向捲動、Actions 欄被切，平台費「−$210」負號折到上一行；改後 1440 寬剛好 912、不需捲動、金額不折行。375 仍在卡內捲動。
+- **門票刪除提示英文備援（`event-detail.html`）**：`T('ed.tm.del.onsale', …)` 的備援字串由「Pause sales or hide it instead.」改成「Hide it instead.」，與 `i18n.js` 一致（D422：單張門票沒有暫停售票）。
+- **功能表（`feature-scope-map.md`）**：本期統計依表格逐列重數更正為 🟢 92 · 🔵 36 · ⚪ 40 · ⚫ 6 · 合計 174 列（原寫 🔵 34／⚪ 39）。`js/devtools.js` `FEAT_TIER` 後備表對齊表格：E22 `tbd` → `release2.4`、補 B07 `tbd`、B10 `release2.4`（沒登記的 ID 在表格載入前會被當成 release2.3）。
+- **售票與名單「通知」子分頁的匯出鈕**：重測確認已只在售票紀錄、參加者名單兩個子分頁出現（二百三十七的 `data-nav-act` 機制）；本輪 full／release2.4 × 375／1440 × 11 場活動、含編輯模式切換與 `?sec=notif` 直達，通知與作廢紀錄子分頁皆無匯出鈕，未改程式。
+- `design-system.md`／`.html`：Progress stepper、Wizard frame、Calc list、Amount field、Table 各補一段。
+
+**依據**：驗收回報 2026-10-15（fix-1015c）。動到的建立活動、活動詳情屬 🔵 release2.4；Wizard 頂列與 Calc list／Amount field 是共用元件，同時影響 release2.3 的建立商品等頁的中寬頂列，本輪只標 release2.4，要不要搬進凍結的 release2.3 待使用者決定。
+
+**驗證**：獨立 headless Playwright（localhost:4326）：建立活動 `?import=bky-1` 中英文 × 375／768／1024／1025／1100／1180／1280／1440 最後一格與儲存狀態皆不重疊、無整頁溢出；活動詳情門票彈窗 375／414 票價 2100／99999／9999999 皆完整；售票紀錄 1440（full／release2.4、中英文、4 場活動）不需橫捲、金額不折行；console 無錯。截圖 `screenshots/fix-1015c-*.png`。
+
+## 2026-10-15（二百四十）· 手機 375px 橫向溢出清掃：建立流程頂列、活動類型卡、表單兩欄、門票彈窗來源標記、訂單品項表；共用確認視窗的破壞性確認鈕全站套用 Q134（B feedback）
+
+**標籤**：release2.4
+
+**範圍**：
+- **建立流程頂列（`shared.css` Wizard frame，六個建立頁共用）**：≤720px 改兩排——第一排返回／標題（可縮、ellipsis）＋右側工具（儲存狀態＋「儲存為草稿」）、第二排進度條滿寬；外距 28→16；自動儲存狀態收成只剩狀態點（`font-size:0` 藏字、讀屏仍讀得到，手動儲存的 `--button` 變體不收）。改前三欄軌道（左欄下限 180px＋右欄 min-content）在 375px 整頁溢出 128px，進度條被擠成 0 寬、標籤疊在儲存狀態上。
+- **進度條（`progress-stepper.css`）**：≤720px 時 `--segmented` 最後一格也裁切（改前「預覽與發布」往右畫出視窗 30px）；步驟下方的狀態小字在手機收起（一格約 50px 只剩「Don」「Not do」殘字，完成與否由分段軌道表達）。
+- **活動類型卡等並排選項卡（`radio-card.css`）**：欄軌 `1fr` → `minmax(0, 1fr)`（`1fr` 的下限是 min-content，「Festival」「Open at a set time」這種不換行的字把欄撐出容器）；≤720px 時閘門（`--3 --gate`）改兩欄三排、流程內的 `--3`（取票方式等）改一欄直排。改前建立活動第 1 步溢出 42px、發布設定取票方式溢出 99px、建立組合包上架卡溢出 68px。
+- **表單兩欄（`form-grid.css`）**：欄軌改 `minmax(0, 1fr)`；≤480px 兩欄版改一欄直排。改前建立活動第 2 步「國家｜活動語言」那列溢出 33px（下拉複選觸發鈕撐出卡外）。
+- **門票彈窗票價欄的來源標記（`field-source-tag.css`、`calc-list.css`）**：`.field-source` 加 `white-space:nowrap; flex:none`——標記可以整顆換行、不再拆成鎖頭一行＋字兩行；≤480px 時算式列表 `--form` 右欄 168→112px、左欄裡的來源標記去左外距，標記排在「粉絲付」下方、與欄名左緣對齊，輸入框也不再超出外框 11px。
+- **訂單詳情品項表（`order-detail.html` 頁內 `.od-items`）**：≤720px 欄給下限（商品 150px、出貨 110px）、表在卡內橫向捲動，同下方「票券」表的做法。改前六欄擠進約 290px，出貨狀態徽章與小計疊字（頁面本身沒有溢出，屬卡內重疊）。
+- **共用確認視窗（`event-detail.html` `openConfirm()`）**：`danger:true` 的確認鈕由紅框 `.btn--destructive` 改淡紅底 `.btn--soft.btn--destructive`，與訂單詳情整單撤銷確認鈕同一款。走這個視窗的破壞性動作一次全改：撤銷全部剩餘票券、撤銷單張票、取消活動、下架活動、移除場次、捨棄變更。其他頁自帶的確認視窗入口是紅框、ghost、選單項或圖示鈕，紅框確認鈕與入口同級，不改。
+- `STYLE-DECISIONS.md` Q134 備註改為「已全站套用」並列出範圍；`design-system.md`／`.html`：Wizard frame、Progress stepper、Radio card、Form grid、Field source tag、Calc list 各補手機版說明，Pattern 5.1.11 補全站套用一段。
+
+**依據**：使用者 2026-10-15 指示（375px 畫面問題五項）。動到的建立活動、活動詳情門票彈窗與撤銷屬 🔵 release2.4；共用元件（頂列、選項卡、表單兩欄）同時影響 release2.3 的建立商品／組合包等頁，本輪只標 release2.4，要不要搬進 release2.3 待使用者決定。
+
+**驗證**：獨立 headless Playwright（localhost:4326），375 與 1440、`?version=full` 與 `?version=release2.4` 各跑一次：events、event-detail 四個分頁、create-event 閘門＋第 2～8 步、orders、order-detail、bundle-detail、create-bundle、bky 活動門票彈窗、撤銷全部剩餘票券與取消活動確認視窗，整頁 `scrollWidth` 全部等於視窗寬、console 無錯誤。截圖 `screenshots/batch-1015b-*.png`。
+
+## 2026-10-15（二百三十九）· 淺色模式暫時關閉，原型一律深色；Q76 裁決 B 先把 chip 的淺色填色定義好（B feedback）
+
+**範圍**：
+- `js/theme.js`：新增常數 `LIGHT_MODE_OFF = true`——已存的 `ztor.theme.preference`（light／system）與網址 `?theme=` 一律忽略、套深色；`setPreference()`／`cycle()` 不寫入；對外多一個 `ztorTheme.lightModeOff`。已存的偏好值不刪，重開時使用者原本的選擇還在。
+- 切換入口全部收起：`js/devtools.js` cheat code 面板「設置」的 Theme 組整組不畫；`design-system.html`、`design-tokens.html`、`design-layers.html`、`design-components.html` 頁頂的亮／暗切換掛 `hidden`（`design-system.html` 側欄的「主題」鈕一起）；`section-test.html` 三顆主題鈕收起。`settings.html` 本來就沒有主題切換。`docs/` 底下的實驗頁自帶的亮暗切換不在原型範圍、未動。
+- **淺色 token 不刪**：`_tokens.css` 的 `:root` 淺色值全部保留，之後整站重做要用。
+- Q76 裁決 B：`_tokens.css` 新增 role token `--chip-surface`（`:root` 淺色＝`color-mix(in srgb, var(--foreground) 6%, var(--card))`、`[data-theme="dark"]`＝`var(--ztu-film)`，暗色外觀不變）；`chip.css` 的 `.chip`、`--static` hover、`:disabled` hover、`--value` 改吃它。
+- `STYLE-DECISIONS.md`：新增 Q135（淺色模式暫時關閉）、Q76 移到已裁決；`design-system.md`／`.html` 補 `--chip-surface` 的 token 條目與 Chip 一節的說明。
+
+**依據**：使用者 2026-10-15 裁決「原型一律深色展示，淺色模式之後另開一輪整站重做」；Q76 由使用者裁決選 B。主題切換沒有掛功能標記、不屬任何交付版功能，依規則不寫標籤（會隨 `main` 進下一次切出的交付版）。
+
+## 2026-10-15（二百三十八）· 目視檢查八項畫面修正：撤銷確認視窗、付款編號、複製讀屏提示、bookyay 來源標記統一、條件卡來源標記、手機頁尾、英文進度條（B feedback）
+
+**標籤**：release2.4
+
+**範圍**：
+- C1 `order-detail.html` 撤銷確認視窗（單品與整單同一個）：確認鈕由紅框 `.btn--destructive` 改淡紅底 `.btn--soft.btn--destructive`，與入口（頁首「撤銷整張訂單」、品項列「撤銷」）同級（STYLE-DECISIONS Q134）；「請先在 Stripe 完成人工退款」「撤銷不可逆」由兩行灰色 hint 改用既有 `Alert --row`（warning／error）放在原因欄上方；免費訂單（`order.free`）不出現 Stripe 那則（UIA-261〔推導〕）。頁面補載 `alert.css`。淺色模式的視窗底色隨二百三十九關閉淺色而不處理。
+- C2 `order-detail.html` 付款資訊的付款編號改用 `.linkf--stack`（編號獨佔一行、複製鈕在下一行靠右），桌機寬度最後一個字不再被切掉。
+- C3 `js/link-field.js`：每個 `[data-linkf]` 補一塊 `.u-visually-hidden[aria-live=polite][role=status]`，複製成功時寫入「已複製」讓讀屏唸出來（元件層，全站連結列一起生效）。
+- C4 bookyay 來源標記統一成 `.field-source`（鎖頭＋「bookyay 帶入」）：`field-source-tag.css` 補 `text-transform: none; letter-spacing: normal`（掛在大寫的區塊標題裡不再變成「BOOKYAY 帶入」）；`create-event.html` 票務區塊標題旁與 `js/bundle-editor.js`「組合內容」原本的膠囊 `.badge--neutral` 改用 `.field-source`。
+- C5 `js/purchase-conds.js`：bookyay 帶入的條件卡一律在卡頂列掛來源標記（整組鎖定時也掛，取代原本「整組鎖定時卡上不重複」的做法）；活動詳情與建立活動單張門票彈窗「購買條件」區塊標題不再另掛一枚（活動詳情退回 kv 讀數時例外）。停用欄位本來就是全站 `.input:disabled`（Q133 `--disabled-field-bg`），實測無誤、未改。
+- C6 bookyay 門票彈窗「購買條件」標題與第一張卡之間的空白：以目前工作樹實測（活動詳情檢視／編輯、建立活動），標題列與第一張卡相距 12px、沒有空的提示槽或分隔線——前一輪補完的 10/12 半成品已收掉，未改程式。
+- C7 `ds-components/payout-modal.css`：≤640px 頁尾換行，頁尾裡的說明句（`__foot-note`、直接放在頁尾的 `.field__hint`）佔滿一行排在按鈕上方——單張門票彈窗「由 bookyay 帶入，不能刪除；要改請回 bookyay 改。」在 375px 由四行窄條變成一行。
+- C8 建立活動英文進度條：步驟名「Ticket types & tickets」改「Tickets」；`progress-stepper.css` 的 `--segmented` 標籤在自己那一格內裁切、字以刪節號收尾（最後一格例外），不再畫進下一格疊字。
+- 設計系統文件：`design-system.md`／`.html` 的 Link field、Payout dialog、Field source tag、Condition list、Progress stepper 各補一條；Pattern 5.1.11 Destructive confirm 補「確認鈕不得比入口弱、前置與不可逆用 Alert」並更新示範。
+
+**依據**：2026-10-15 目視檢查（截圖 `screenshots/visual-check-*.png`）。⚠ 連結列（`js/link-field.js`）也用在 release2.3 已交付的商品／組合細節頁非公開連結：要不要同步改進凍結的 release2.3 待使用者決定，暫只標 release2.4。
+
+## 2026-10-15（二百三十七）· D423：活動詳情票務商品加卡片／列表與隱藏／顯示、2.4 收起招待票與成本與營收摘要、售票紀錄摘要一行三格、兩顆匯出移到工作列最右邊（A spec）
+
+**標籤**：release2.4
+
+**範圍**：
+- 決定一 `event-detail.html` 票務商品：抬頭列右邊加卡片／列表切換（`#ed-bd-view`，同票種的 filter-tabs）；列表檢視 `#ed-bundle-table`（組合包／組合價／內含票券／已售／剩餘／已佔用票券／狀態／動作）；卡片卡尾與列表每列一顆「隱藏／顯示」（`[data-bd-vis]`），切的是組合包的顯示（`shown`），營運動作、按下立即生效、不算進「儲存 N 項變更」、捨棄不還原〔推導〕；隱藏的組合包卡上標「隱藏」；bookyay 自動組合包也能切；可賣性防呆（最後一組仍在販售、又沒有顯示中的門票）按下當下擋下並跳純告知彈窗；已結束／已取消停用（UIA-264）。寫回 events-store 的活動覆寫，組合商品細節頁讀得到。新功能標記 S99（🔵 release2.4）。
+- 決定二：招待票原本就只有一個入口（票務子分頁標籤＋面板，「發放招待票」在面板內），兩處都已掛 S91（⚪），release2.4 收起；複核後沒有要補的入口。
+- 決定三、五：售票紀錄的「匯出售票紀錄」與參加者名單的「匯出參加者名單」搬到「售票與名單」工作列最右邊（編輯鈕右側，`[data-nav-act]`），跟著目前那一節換：交易明細那一節只出現匯出售票紀錄（還沒有任何交易時收起），參加者名單那一節只出現匯出參加者名單；原本表格下方那兩顆移除，「開啟掃描器」留在原位。
+- 決定四：成本與營收摘要（`[data-nav-item="finance"]`／`[data-nav-panel="finance"]`）掛新標記 S98（⚪），release2.4 收起。其他入口檢查：總覽結案卡的「前往收入管理」連 earnings.html、不連這一節，release2.4 照常可用；本節自己的「專案淨利」連結隨面板收起，沒有死連結。
+- 決定六：交易摘要只留收款總額、實收淨額、已取消三格、排成一行（三格各 span-4）；平台費、支付費兩格與它們的填值移除；淨額照舊扣平台費與支付費（副標改「扣掉平台費與支付費之後」）。交易列表每列照舊有平台費欄、不新增支付費欄；匯出檔照舊有支付費。
+- `feature-scope-map.md`：登記 S98（⚪）、S99（🔵）；S91 備註補 D423 複核；`js/devtools.js` FEAT_TIER 後備同步。
+
+**依據**：D423（2026-10-15）；5.1.6.3 v74 §2.6.1、§2.7、§2.8。
+
+## 2026-10-15（二百三十六）· D422：release2.4 收起共看派對、建立活動的票務商品補電影關聯、單張門票的暫停販售改成隱藏／顯示（A spec）
+
+**標籤**：release2.4
+
+**範圍**：
+- 決定一：`feature-scope-map.md` S75 由 🔵 改 ⚪（`js/devtools.js` FEAT_TIER 後備同步）。建立活動的共看派對類型卡本來就掛 S75，release2.4 選不到；`events.html` 七列共看派對示範活動（含草稿）掛 `data-feat="S75"`，`js/events-store.js` `list()` 在版本不含 S75 時濾掉 `type:'watchparty'`——清單計數（全部 43 → release2.4 8）、各分頁計數、首頁畫布等 `list()` 消費端一起排除；`get()` 不濾。
+- 決定二：`js/bundle-editor.js` 建立活動第 6 步組合包編輯器的「電影關聯」區塊由 S64 改掛新標記 S97（🔵 release2.4），release2.4 看得到；S64 其餘欄位（素材、限時折扣、優惠碼疊加、逐票種分配）維持 ⚪。
+- 決定三 `event-detail.html`：
+  - 票種列表每列最後一格「暫停販售／重新販售」改「隱藏／顯示」（`[data-tix-vis]`）；狀態欄由「販售中／已暫停」改「顯示中／隱藏」（名稱格後的「隱藏」徽章併進狀態欄）。
+  - 卡片檢視點開的門票彈窗：「上架與顯示」的顯示開關改成同一顆「隱藏／顯示」按鈕（狀態句「顯示在活動頁／不在活動頁顯示」＋說明「按下立即生效，不必儲存」）；「販售」區（暫停販售開關）整段移除。
+  - 營運動作：檢視模式與編輯模式都能直接按、立即生效（草稿與已儲存的那一張一起翻、只寫 hidden），不算進「儲存 N 項變更」、捨棄不還原〔推導〕；還沒套用的新門票只改草稿、跟著套用走。
+  - 套票拆出的 1 人票按鈕停用並說明「只透過組合包販售，固定隱藏」；已結束／已取消停用。
+  - 可賣性防呆：隱藏最後一張可賣的門票時，列表按下當下跳純告知彈窗、彈窗按鈕就地紅字。
+  - bookyay 門票可切換；按鈕的功能標記同彈窗顯示列（bookyay 活動的門票掛 S92 🔵、自建活動掛 S55 ⚪）。
+  - 總覽票種讀數的「已暫停」徽章與淡化列改標「隱藏」；`pauseTierNow()` 退場、立即生效改由 `toggleTierVisNow()` 處理。
+- 單張門票 Paused 狀態移除：`js/events-store.js` 兩筆示範值拿掉；`js/fan-event-page.js` 粉絲頁單張門票「暫停售票中」的停用與文案移除、`event-localization.html` 不再傳 `paused`；活動層暫停售票照舊。
+- i18n 中英：新增 `ed.tix.hide`／`ed.tix.show`／`ed.tix.status.shown`／`ed.tm.show.*`／toast 與防呆彈窗字串；`ed.sess.locked`、`ed.tm.del.onsale` 拿掉「暫停售票」。
+
+**依據**：D422（2026-10-15）；5.1.6.3 v73／v74 §2.6、5.1.6.2 v3.60 F9、5.1.6.1 v2.76 F20、F22。
+
+## 2026-10-15（二百三十五）· 2026-10-12 那批改動收尾：設計系統文件補齊、系列場次圖示補登記、「上架與顯示」區塊跟著版本收起（D infra）
+
+**標籤**：release2.4
+
+**範圍**：
+- `design-system.md`／`design-system.html`：補上 2026-10-12 那批元件改動的條目與示範——`calc-list.css` 的 `.calc-list__sub` 次要層方框與 `--form` 右欄 168px（新增 `--framed` 示範：價格表格＋數量單列表格）；`input.css` disabled 列與 Field source tag 說明改寫成 Q133 的半透明暗底 `--disabled-field-bg`，並記被選中的鎖定選項卡也退成停用樣子；`partials/upload-tile.js` 的 `[data-gallery-kv]`（設為主視覺）與 `data-upload-reset`（還原圖示鈕）兩列＋示範；`bundle-editor.css` 的 `.bd-row__thumb--img`、`.bd-sec__head--actions` 條目＋示範；`empty-card` 圖示無外框、標題與圖示改灰；`ticket-tier-card.css` 的 `.tier-add` 等高與門票彈窗購買條件區去分隔線。
+- `js/icons.js`：補登記 `layers`（Tabler `stack`）——活動詳情「系列場次」卡的標題圖示一直用這個名稱，但圖示庫沒有，畫面上是空白。
+- `event-detail.html`、`create-event.html`：「上架與顯示」區塊（`#ed-tm-show-sec`／`tierSecHTML("d.tm.sec.show")`）掛上與顯示開關同一個功能標記（S92／S55）。原本只有開關掛標記，release2.4 下自建活動的開關被收起後，會留下一個只有標題的空區塊。`feature-scope-map.md` 同步註記。
+- `create-event.html`：bky-15 清單說明「限購折扣早鳥」改「門票限購」，註解補 D417 之後只帶入門票的兩項限購。
+- `ASSUMPTIONS.md`：bookyay 門票入場區那條原本誤編為 UIA-246（與「本頁大綱」那條重號），改號 UIA-260、移到檔案最上方，內容補上二百一十三的兩格畫法；一百九十四的引用同步。
+
+**依據**：2026-10-12 那批 B feedback（一百九十四～二百一十八）程式一直沒提交、設計系統文件只同步了一部分；本輪盤點後補齊，畫面規則不變。
+
 ## 2026-10-15（二百三十四）· bookyay 自動組合包的限購只留兩項、組合商品細節頁的限購讀對帶入值（A spec）
 
 **標籤**：release2.4
@@ -421,6 +532,8 @@
 
 **內容**：二人套票（拆 1 人票＋自動組合包；本門票限購三項＋折扣優惠＋早鳥）、其後兩種票觸發「只帶第一種」略過提示、單一跨夜時段（12/19 18:00 → 12/20 02:00）、人數上限 301（捨去零頭：1 人票 300 張、鎖定 150 套）、提前入場 90 分鐘且不能入場、活動限購三項、條款及細則、四種語言、兩張圖、私人活動、定時開賣與停售、多段描述（含圖片、粗體斜體連結、清單）。直接開 `create-event.html?import=bky-15` 即帶入。
 
+**後續（2026-10-15，D417）**：活動限購三項、門票限購次數、折扣優惠、早鳥改為不帶入——bky-15 的這幾個欄位仍留在 bookyay 端資料，帶入後只剩門票的每人總限購與每次交易限購（鎖定）；清單說明由「限購折扣早鳥」改「門票限購」。
+
 **依據**：使用者 2026-10-12：「bookyay匯入建立活動的假資料，有哪個是將各種條件設置點滿的，沒有的話做一個」。既有各筆各示範一條規則，沒有一筆全開；release2.4 一個時段只帶第一種票，故用單一時段把能全開的都開。
 
 ## 2026-10-12（二百零七）· 組合物表欄距加大（B feedback）
@@ -648,7 +761,7 @@
 
 **範圍**：`create-event.html`（`tierEntryLockedHTML`）。
 
-**依據**：使用者 2026-10-12 截圖：「這邊應該可以維持可設定時的UI對嗎」。原本鎖定時換成兩列文字讀數；現在與可設定時同版型——「提前入場（分鐘）」輸入框（停用、來源標記、底下說明寫「跟隨場次——提前入場時間 14:30」）＋「早於提前入場時間入場」兩張選項卡（停用，高亮「跟隨場次」）。與票名鎖定同口徑；區塊標題旁的來源徽章改由各欄位標籤旁的鎖頭標記承擔。只改呈現，不改規則（仍跟隨場次、不能改）；規格 D385 決定三寫「兩列唯讀讀數」的字面是呈現描述，記入 ASSUMPTIONS 供上游確認。
+**依據**：使用者 2026-10-12 截圖：「這邊應該可以維持可設定時的UI對嗎」。原本鎖定時換成兩列文字讀數；現在與可設定時同版型——「提前入場（分鐘）」輸入框（停用、來源標記、底下說明寫「跟隨場次——提前入場時間 14:30」）＋「早於提前入場時間入場」兩張選項卡（停用，高亮「跟隨場次」）。與票名鎖定同口徑；區塊標題旁的來源徽章改由各欄位標籤旁的鎖頭標記承擔。只改呈現，不改規則（仍跟隨場次、不能改）；規格 D385 決定三寫「兩列唯讀讀數」的字面是呈現描述，記入 ASSUMPTIONS（UIA-260，2026-10-15 由重號的 UIA-246 改號）供上游確認。
 
 ## 2026-10-12（一百九十四）· 組合物表改價格階梯的線框（B feedback）
 

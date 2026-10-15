@@ -30,6 +30,7 @@
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* Order amount breakdown · spec 5.1.5.3.1 §2.3 */
@@ -88,6 +89,11 @@
      各自重新算欄寬（正是本次遷移實測踩到的欄位跑版）。 */
   .od-items .rowdis__group,
   .od-items .rowdis__frame { grid-column:1 / -1; display:grid; grid-template-columns:subgrid; }
+  /* 手機（2026-10-15，375px 實測）：六欄擠進約 290px，商品與出貨兩欄被壓到 0、欄位文字互相疊字（出貨狀態壓在小計上）。
+     改成跟下方「票券」表同一個做法：欄給下限、表在卡內橫向捲動，頁面本身不溢出。 */
+  @media (max-width: 720px) {
+    .od-items { grid-template-columns: minmax(150px,1.4fr) auto auto minmax(110px,1fr) auto auto; overflow-x:auto; }
+  }
   .od-items__head { padding-bottom:var(--sp-8); border-bottom:1px solid var(--border); font-size: var(--fs-12); color: var(--muted-foreground); }
   .od-cell { font-size: var(--fs-13); }
   .od-col-r { text-align:right; }
@@ -287,8 +293,10 @@
             </div>
             <!-- 免費訂單（D414）：金額 0 不經金流，上面三格維持「—」、不出現付款編號，這裡補一句說明 -->
             <p class="field__hint" data-od-pay-free hidden data-i18n="od.pay.free">Free order — no payment is taken.</p>
+            <!-- 2026-10-15 目視檢查 C2：右欄約 300px，輸入框＋複製鈕同一列時付款編號最後一個字被切掉；
+                 改用既有窄欄變體 .linkf--stack（第一列編號獨佔滿寬、第二列複製鈕靠右），同商品／組合細節頁的非公開連結 -->
             <div class="field" data-od-pay-id-field>
-              <div class="linkf" data-linkf>
+              <div class="linkf linkf--stack" data-linkf>
                 <span class="linkf__label" data-i18n="od.pay.id">Payment ID</span>
                 <div class="linkf__row">
                   <input class="input linkf__input" readonly value="" data-od-pay-id aria-label="Payment ID" data-i18n-aria-label="od.pay.id">
@@ -471,8 +479,6 @@
         </div>
       </div>
       <div class="data-list" data-od-void-wholelist hidden></div>
-      <!-- 前置：人工退款在 Stripe 後台完成，平台不碰金流 -->
-      <div class="field__hint mt-16" data-i18n="od.void.stripe">Refund the buyer in Stripe first — voiding moves no money and never calls Stripe.</div>
       <div class="field__label mt-16" data-i18n="od.void.effects">What voiding does</div>
       <!-- 效果預告依品項型態顯示（D253 擴大作廢範圍後，不是每種型態都有領取碼／庫存）：
            data-od-void-effect 由下方 JS 依 it.mode 與有無領取單位切換 hidden，
@@ -484,7 +490,19 @@
       <!-- 整單撤銷專用的兩條（D414）：訂單轉已取消、信中列出全部品項；單品撤銷時隱藏 -->
       <div class="field__hint mt-8" data-od-void-effect="whole-email" hidden data-i18n="od.void.whole.effect.email">The buyer gets an order-cancelled email listing every item.</div>
       <div class="field__hint mt-8" data-od-void-effect="whole-status" hidden data-i18n="od.void.whole.effect.status">The order becomes Cancelled.</div>
-      <div class="field__hint mt-16" data-od-void-irreversible data-i18n="od.void.irreversible">There's no undo — a voided item can't be reinstated.</div>
+      <!-- 2026-10-15 目視檢查 C1：「請先在 Stripe 完成人工退款」與「撤銷不可逆」原本是兩行灰色 hint，跟效果預告同一個重量、讀不出是警告；
+           改用既有 .alert--row（同 event-detail #ed-bkysync），放在原因欄上方。前置條件（Stripe）在前、不可逆在後（Pattern 5.1.11 的四段順序）。
+           免費訂單（order.free，金額 0、不經金流）不出現 Stripe 那則（UIA-261〔推導〕）。 -->
+      <div class="mt-16">
+        <div class="alert alert--row alert--warning" role="note" data-od-void-stripe>
+          <span class="alert__icon"><i data-lucide="banknote" class="ztor-icon"></i></span>
+          <div class="alert__body"><div class="alert__title" data-i18n="od.void.stripe">Refund the buyer in Stripe first — voiding moves no money and never calls Stripe.</div></div>
+        </div>
+        <div class="alert alert--row alert--error" role="note">
+          <span class="alert__icon"><i data-lucide="alert-triangle" class="ztor-icon"></i></span>
+          <div class="alert__body"><div class="alert__title" data-od-void-irreversible data-i18n="od.void.irreversible">There's no undo — a voided item can't be reinstated.</div></div>
+        </div>
+      </div>
       <!-- 撤銷原因（D271，2026-09-15）：選填、自由填寫；下方預設理由 chip 一鍵帶入、帶入後可改寫。
            有填才進買家信與品項列的撤銷紀錄。元件全用既有的 field／textarea／chip，沒有新 CSS。 -->
       <div class="field mt-16">
@@ -506,7 +524,9 @@
     </div>
     <div class="payout-dialog__foot">
       <button class="btn btn--ghost btn--sm" type="button" data-od-void-close data-i18n="od.void.cancel">Cancel</button>
-      <button class="btn btn--destructive btn--sm" type="button" id="od-void-confirm" data-i18n="od.void.confirm">Void this item</button>
+      <!-- 2026-10-15 目視檢查 C1：入口（品項列與頁首的撤銷鈕）是 .btn--soft.btn--destructive 淡紅底，確認鈕原本是紅框透明底，
+           讀起來比入口還輕。確認鈕改同一款淡紅底，至少與入口同級（STYLE-DECISIONS Q134） -->
+      <button class="btn btn--soft btn--destructive btn--sm" type="button" id="od-void-confirm" data-i18n="od.void.confirm">Void this item</button>
     </div>
   </div>
 </div>
@@ -1213,7 +1233,11 @@
     const badges = document.getElementById('od-fulfil-badges');
     const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
 
-    const open = () => { modal.hidden = false; document.body.classList.add('is-modal-open'); };
+    const open = () => {
+      /* 免費訂單（D414：金額 0、不經金流）沒有款項可退，不出現 Stripe 退款提醒（UIA-261〔推導〕） */
+      if (stripeEl) stripeEl.hidden = !!order.free;
+      modal.hidden = false; document.body.classList.add('is-modal-open');
+    };
     const close = () => { modal.hidden = true; document.body.classList.remove('is-modal-open'); };
     openBtn.addEventListener('click', open);
     modal.querySelectorAll('[data-od-ship-close]').forEach(el => el.addEventListener('click', close));
@@ -1249,7 +1273,11 @@
     const varRow = document.getElementById('od-snap-variant-row');
     const manage = document.getElementById('od-snap-manage');
 
-    const open = () => { modal.hidden = false; document.body.classList.add('is-modal-open'); };
+    const open = () => {
+      /* 免費訂單（D414：金額 0、不經金流）沒有款項可退，不出現 Stripe 退款提醒（UIA-261〔推導〕） */
+      if (stripeEl) stripeEl.hidden = !!order.free;
+      modal.hidden = false; document.body.classList.add('is-modal-open');
+    };
     const close = () => { modal.hidden = true; document.body.classList.remove('is-modal-open'); };
     modal.querySelectorAll('[data-od-snap-close]').forEach(el => el.addEventListener('click', close));
     modal.addEventListener('click', e => { if (e.target === modal) close(); });
@@ -1320,6 +1348,7 @@
       return (item.mode === 'pickup' && item.units && item.units.length) || (item.mode === 'bundle' && agg.total > 0);
     };
     /* 切換單品／整單版面 */
+    const stripeEl = modal.querySelector('[data-od-void-stripe]');
     function setMode(w) {
       whole = w;
       scopeLabel.hidden = !w; wholeListEl.hidden = !w; listEl.hidden = w;
@@ -1342,7 +1371,11 @@
     });
     if (reasonEl) reasonEl.addEventListener('input', clearPreset);
 
-    const open = () => { modal.hidden = false; document.body.classList.add('is-modal-open'); };
+    const open = () => {
+      /* 免費訂單（D414：金額 0、不經金流）沒有款項可退，不出現 Stripe 退款提醒（UIA-261〔推導〕） */
+      if (stripeEl) stripeEl.hidden = !!order.free;
+      modal.hidden = false; document.body.classList.add('is-modal-open');
+    };
     const close = () => {
       modal.hidden = true; document.body.classList.remove('is-modal-open'); target = null;
       if (whole) setMode(false);

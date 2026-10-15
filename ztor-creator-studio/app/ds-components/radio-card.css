@@ -135,6 +135,22 @@
    與 `--list`（bookyay 搜尋結果，選中改背景 tint）是兩回事，不要混用或合併。 */
 .radio-cards.radio-cards--stack { grid-template-columns: 1fr; gap: var(--sp-8); }
 
+/* 欄寬下限與手機版（2026-10-15，375px 實測建立活動第 1 步閘門與發布設定的取票方式卡橫向溢出）：
+   `1fr` 的下限是內容的 min-content，卡內不換行的長字（Festival、Open at a set time）會把欄撐出容器。
+   改成 minmax(0, 1fr)，欄寬只看容器、字在卡內換行。≤720px 時：閘門（--gate）6 張改兩欄三排；
+   流程內的 --3（取票方式等三選一）改一欄直排，同 --stack 的排法，不留半排孤卡。 */
+.segmented.radio-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.radio-cards.radio-cards--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.radio-cards.radio-cards--3:has(> .segmented__btn.ztd-ver-hidden, > .segmented__btn[hidden]) { grid-template-columns: none; grid-auto-columns: minmax(0, 1fr); }
+.radio-cards.radio-cards--stack, .radio-cards.radio-cards--list { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 720px) {
+  .radio-cards.radio-cards--3.radio-cards--gate { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .radio-cards.radio-cards--3:not(.radio-cards--gate),
+  .radio-cards.radio-cards--3:not(.radio-cards--gate):has(> .segmented__btn.ztd-ver-hidden, > .segmented__btn[hidden]) {
+    grid-template-columns: minmax(0, 1fr); grid-auto-flow: row; gap: var(--sp-8);
+  }
+}
+
 /* --gate 變體（建立專案閘門，Q28 2026-07-24）：卡內加頂部引導圖示（`.radio-card__lead`）、
    內容縱向堆疊（圖示→標題→描述），標題／描述間距加大；radio 點維持右上角（::after 絕對定位）。
    僅閘門使用，流程內表單（純標題）不套。 */

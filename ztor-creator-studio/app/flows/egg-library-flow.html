@@ -1,0 +1,71 @@
+<title>彩蛋庫流程</title>
+<style>
+body{font-family:"PingFang TC","Noto Sans TC",system-ui,sans-serif;background:#fafaf8;color:#222;margin:0;padding:24px}
+h1{font-size:20px;margin:0 0 4px}p{margin:0 0 16px;color:#555}
+.wrap{overflow-x:auto;max-width:760px;margin:0 auto;background:#fff;border:1px solid #e5e5e0;border-radius:12px;padding:16px}
+</style>
+<h1>彩蛋庫流程</h1>
+<p>第一層決定誰進得了庫（後台現有設計），第二層是任務，決定進庫後每一件內容怎麼解開（前台玩法搬進後台）。「鑰匙」只用在第一層。</p>
+<div class="wrap"><pre class="mermaid">
+flowchart TD
+  subgraph CS["創作者・後台 Creator Studio"]
+    C1["建立庫房<br/>只需命名"]
+    C2["設定第一層：進庫門檻<br/>（誰打得開這座庫）"]
+    C2a["條件（符合任一組即可）<br/>等級 ≥ 某級<br/>買過某商品<br/>支持過某項目<br/>出席過某活動<br/>拿過某成就"]
+    C2b["鑰匙（條件之外的另一扇門）<br/>送給一位粉絲：一個連結<br/>做成 NFC 周邊：一批次數"]
+    C3["放入內容<br/>照片／影片／音檔／貼文"]
+    C4["每件內容設定第二層：任務<br/>（可另標「大彩蛋」）"]
+    C4a["不設任務<br/>進庫就能看"]
+    C4b["行動任務<br/>追蹤／分享給 N 人／邀請朋友<br/>看完影片／商城消費／打賞累積 N"]
+    C4c["等級任務<br/>只能選第一層的等級或更高"]
+    C5["檢查觸及人數<br/>第一層：幾人進得了庫<br/>第二層：每件幾人符合"]
+    C6["發布"]
+    C1 --> C2
+    C2 --> C2a
+    C2 --> C2b
+    C2a --> C3
+    C2b --> C3
+    C3 --> C4
+    C4 --> C4a
+    C4 --> C4b
+    C4 --> C4c
+    C4a --> C5
+    C4b --> C5
+    C4c --> C5
+    C5 --> C6
+  end
+
+  subgraph FAN["粉絲・前台"]
+    F1["進入創作者頁的彩蛋入口"]
+    F2{"第一層<br/>符合條件或持有鑰匙？"}
+    F3["庫房上鎖<br/>顯示怎麼取得資格<br/>〔待決：要不要讓他看到這座庫〕"]
+    F4["進入庫房<br/>看到內容清單<br/>未解鎖的格：假檔名＋模糊縮圖"]
+    F5{"這一件的<br/>任務是什麼？"}
+    F6{"等級已達？"}
+    F7["顯示還差幾級<br/>升級後自動打開"]
+    F8["按按鈕去做行動任務"]
+    F9{"任務完成？"}
+    F10["解鎖動效<br/>觀看內容"]
+    F1 --> F2
+    F2 -- 否 --> F3
+    F2 -- 是 --> F4
+    F4 --> F5
+    F5 -- 不設任務 --> F10
+    F5 -- 等級任務 --> F6
+    F6 -- 是，自動解鎖 --> F10
+    F6 -- 否 --> F7
+    F5 -- 行動任務 --> F8
+    F8 --> F9
+    F9 -- 是 --> F10
+    F9 -- 否 --> F8
+  end
+
+  subgraph BACK["回到後台"]
+    C7["成效<br/>每件解鎖人數／解鎖率"]
+  end
+
+  C6 ==> F1
+  F10 -. 解鎖紀錄回寫 .-> C7
+</pre></div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true,theme:"default",themeVariables:{fontSize:"15px"},flowchart:{htmlLabels:true,nodeSpacing:30,rankSpacing:40}});</script>

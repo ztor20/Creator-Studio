@@ -19,7 +19,7 @@
 
 Tier 欄的 release 編號就是程式用的 tier 代號：`devtools.js` 讀到 `🟢 release2.3` 就把該功能歸到 `release2.3`。之後交付 release2.4 時，那批功能改標 `🟢 release2.4`（保留它是哪一版交付的），新的下一版標 `🔵 release2.5`。
 
-本期統計：🟢 release2.3 92 · 🔵 release2.4 33 · ⚪ TBD 37 · ⚫ 退場 6（2026-10-15 D416：補登 O39 🔵；2026-10-14 D414：補登 O38 🔵；2026-10-13 D411：補登 O34–O37 🔵；2026-10-13 D410：補登 S95 ⚪〔非 bookyay 的示範活動，2.4 隱藏〕；2026-10-12 D395：S80 直接促銷同意改 ⚫ 退場；2026-10-09 媒體庫三分頁補登 S93 ⚪；2026-10-09 D383：補登 S87–S91 ⚪、S92 🔵，S78 改 🔵；2026-10-08 D377 補登 S86 ⚪；2026-10-07 依功能表逐列重數，同日補登 S82〔D366〕；2026-10-08 D371：S81 改 🔵、補登 S83 🔵；同日 D375 補登 S85 🔵；各模組小計與功能總數另待校正）
+本期統計：🟢 release2.3 92 · 🔵 release2.4 37 · ⚪ TBD 40 · ⚫ 退場 6 · 合計 175 列（2026-10-15 以程式逐列重數更正，原寫 🔵 34／⚪ 39；合計含 `S31.1`；2026-10-15 D422／D423：S75 改 ⚪、補登 S97 🔵（自 S64 拆出）、S98 ⚪、S99 🔵；2026-10-15 D416：補登 O39 🔵；2026-10-14 D414：補登 O38 🔵；2026-10-13 D411：補登 O34–O37 🔵；2026-10-13 D410：補登 S95 ⚪〔非 bookyay 的示範活動，2.4 隱藏〕；2026-10-12 D395：S80 直接促銷同意改 ⚫ 退場；2026-10-09 媒體庫三分頁補登 S93 ⚪；2026-10-09 D383：補登 S87–S91 ⚪、S92 🔵，S78 改 🔵；2026-10-08 D377 補登 S86 ⚪；2026-10-07 依功能表逐列重數，同日補登 S82〔D366〕；2026-10-08 D371：S81 改 🔵、補登 S83 🔵；同日 D375 補登 S85 🔵；各模組小計與功能總數另待校正）
 
 ## Build 狀態圖例
 
@@ -33,7 +33,7 @@ Tier 欄的 release 編號就是程式用的 tier 代號：`devtools.js` 讀到 
 | ✅⬆ ahead | 超前建置（prototype 已有，規格尚未涵蓋） |
 | ⏳ deferred | 已延後 |
 
-Build 統計：✅ 87 built · 🟡 6 gap · ✅⬆ 29 ahead · ⏳ 2 deferred
+Build 統計：✅ 108 built · 🟡 6 gap · ✅⬆ 59 ahead · ⏳ 2 deferred（2026-10-15 以程式逐列重數更正）
 
 **Feature ID** — `S` Shop · `O` Orders · `E` Earnings · `B` Buyer storefront（例：`E07`），跨團隊引用用，編號穩定不變。
 
@@ -99,8 +99,9 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 - 開賣方式「立即開賣／定時開賣」二選一（第 11 題）：create-event 第 7 步 `#ce-sale-mode`、event-detail 發布設定 `[data-pub="saleMode"]`，屬活動頁面本體（S72）與 bookyay 帶入（S73，帶入後鎖定），不掛 `data-feat`——release2.4 的 bookyay 帶入一定要看得到；開賣超出上架區間的紅字照舊掛 S62。
 - 移除場次的確認（第 5 題）、售票中之後場次不能移除（第 12 題）、組合包裡隨場次刪除的門票停用（第 13 題）：只有多場次活動才會發生，跟著 S87（⚪）——create-event／event-detail 的移除鈕本來就只在兩場以上出現；示範活動 `pingtung-bluefin` 改成兩場（events.html 那一列掛 `data-feat="S87"`，release2.4 由 events-store `list()` 的多場過濾收起）。
 - 售票中之後門票不能刪（第 12 題）：event-detail 單張門票彈窗刪除鈕停用＋原因，產品規則、不掛標記（release2.4 與最終版都有）。
-- 主視覺裁切（第 9 題）：create-event `#ce-kv-crop`、event-detail `#ed-kv-crop` 都掛 S56（🔵，與 1:1 原圖提示同一組）；粉絲預覽的裁切套用（`js/fan-event-page.js` `keyvisualPos`）不掛標記。
+- 主視覺裁切（第 9 題）：**2026-10-12 退場（D404）**——`#ce-kv-crop`、`#ed-kv-crop` 與粉絲預覽的 `keyvisualPos` 都已移除；只剩 1:1 原圖提示（`#ce-img-ratio-note`，S56）。
 - bookyay 帶入門票的顯示／隱藏切換（第 10 題）：2026-10-09 D391 補充二（使用者「照建議」）改掛 S92（🔵 release2.4）——event-detail 單張門票彈窗的顯示開關列 `#ed-tm-show-row`、票卡與票券清單的「隱藏」徽章、create-event `tierShowRowHTML()`，判斷「1 人票（hideFix）或 bookyay 活動」→ S92，其餘（自建活動創作者自己切換）仍是 S55（⚪）。S55 本身不升級，避免把自建活動的顯示開關一起帶進 release2.4。
+- 顯示開關所在的「上架與顯示」區塊（2026-10-12 自基本區獨立，UI-CHANGES 一百九十八）：event-detail `#ed-tm-show-sec`、create-event `tierSecHTML("d.tm.sec.show")` 的 `<section>` 掛與開關同一個標記（S92／S55，判斷同上）——開關被版本收起時整個區塊一起收，不留只有標題的空區塊（2026-10-15 補）。
 - 組合包「無法販售」徽章（D391 補充二）：`js/listing-state.js` `STATUS_META.unavailable`，bundle-detail 頁首與 e-shop 活動組合包列使用；只出現在多場次活動移除場次之後，跟著 S87，不另掛標記。
 - 單張門票暫停售票的粉絲頁「暫停售票中」（D391 補充二）：`js/fan-event-page.js` 門票列，產品規則、不掛標記。
 - 定時開賣在未來的 bookyay 活動不出現「立即開賣」（第 11 題推導）：event-detail `#ed-golive-row`，不掛標記。
@@ -123,7 +124,7 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 ## S · 商店管理 — Shop Management
 
-ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 13 · ⚫ 退場 4
+ID 起始 `S01…` ｜ 🟢 46 · 🔵 22 · ⚪ 28 · ⚫ 退場 4
 
 | ID    | 功能                              | English                                          | Tier       | Build    | 備註                                                        |
 | ----- | ------------------------------- | ------------------------------------------------ | ---------- | -------- | --------------------------------------------------------- |
@@ -198,12 +199,13 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 13 · ⚫ 退場 4
 | `S61` | 　活動顯示設定（顯示／隱藏＋隱藏時活動連結）            | Event display setting (shown / hidden + link)    | 🔵 release2.4| ✅⬆ ahead | D340；create-event 步驟 7、event-detail 設定 → 發布設定的「顯示設定」區塊 `[data-feat="S61"]`；2026-10-07 使用者指出 release2.4 的發布設定看不到顯示與隱藏，改 🔵 release2.4；同日 D363：售票中／進行中顯示設定仍可切換，活動隱藏時含其票券的組合包跟著隱藏（bundle-detail `[data-bd-event-hidden-lock]`、create-bundle `[data-cb-tshown-lock]` 同掛 S61）。 |
 | `S62` | 　活動販售的時間層級＋票務商品上架與開賣跟隨／另設 | Event sales time layers + ticket-bundle follow / custom times | 🔵 release2.4| ✅⬆ ahead | D342；create-event 第 7 步售票期間紅字 `[data-ce-tl-err]`、第 5 步限時間紅字、第 6 步「上架與開賣」段；bundle-detail／create-bundle 含票券成員時的 `[data-tb-host]`；event-detail 開賣設定紅字 `[data-ed-tl-err]`；共用 `js/ticket-bundle.js`＋Follow field；2026-10-07 使用者重申「票務有提前販售時間時，定時上架不可晚於該時間」，改 🔵 release2.4；create-event 上架日期與時間下方新增紅字 `[data-ce-tl-err="list-from"]`（指出最早一筆販售時間）；同日 D363：販售結束不晚於活動停售（`js/ticket-bundle.js` `lateEnd()`）。 |
 | `S63` | 　票務商品的購買條件與限購（預設取最嚴、只能收窄） | Ticket-bundle purchase rules & limits | ⚪ TBD      | ✅⬆ ahead | D342；create-event 第 6 步「購買條件與限購」段、bundle-detail `[data-tb-rules-sec]`、create-bundle 預設讀數 `[data-tb-host="cb-rules"]` |
-| `S64` | 　建立活動第 6 步補齊的組合包欄位（素材、電影關聯、限時折扣、優惠碼疊加、逐票種分配） | Ticket-bundle fields in create-event step 6 | ⚪ TBD      | ✅⬆ ahead | D342／5.1.6.1 F20；`js/bundle-editor.js` SPLIT 的 `[data-feat="S64"]` 區塊 |
+| `S64` | 　建立活動第 6 步補齊的組合包欄位（素材、限時折扣、優惠碼疊加、逐票種分配；電影關聯 2026-10-15 拆出為 S97） | Ticket-bundle fields in create-event step 6 | ⚪ TBD      | ✅⬆ ahead | D342／5.1.6.1 F20；`js/bundle-editor.js` SPLIT 的 `[data-feat="S64"]` 區塊；2026-10-15 D422 決定二：電影關聯區塊改掛 S97 |
+| `S97` | 　建立活動第 6 步票務商品的電影關聯（自 S64 拆出） | Film link on ticket bundles in create-event step 6 | 🔵 release2.4| ✅⬆ ahead | D422 決定二（2026-10-15）：建立活動流程的票務商品提供電影關聯、release2.4 也提供（5.1.6.1 F20，同 5.1.5.4 F10）。`js/bundle-editor.js` SPLIT 的 `section[data-bd-sec="films"][data-feat="S97"]`（共用 `partials/film-picker.js`）；S64 其餘欄位維持 ⚪ |
 |       | **活動 release2.4 切割（2026-10-07）**          | Events — release2.4 slice                        |            |          | 使用者指示：release2.4 主要只交付「由 bookyay 帶入活動來建立」，其他建立方式先隱藏，看過切割畫面再調整 |
 | `S72` | 　活動模組頁面（活動清單、活動詳情、建立活動）            | Events pages (list, detail, create)              | 🔵 release2.4 | ✅⬆ ahead | events.html／event-detail.html／create-event.html 頁級 `data-page-feat="S72"`；已從 `js/devtools.js`／`js/sidebar.js` 兩份 `FULL_ROUTES` 移出，側欄「活動」在 release2.4 出現 |
 | `S73` | 　由 bookyay 帶入建立活動（搜尋 bookyay 活動→帶入→鎖定欄位） | Create an event by importing from bookyay       | 🔵 release2.4 | ✅⬆ ahead | create-event 第 1 步選類型後的 bookyay 帶入關卡 `[data-bgate]`／`#ce-bky-go`；Admin 創作者活動「繼續設定」帶 `?import=` 直接進入。只登記、不掛標記（關掉會沒有建立路徑） |
 | `S74` | 　手動建立活動（略過 bookyay、切換活動類型）          | Create an event manually (skip bookyay)          | ⚪ TBD      | ✅⬆ ahead | create-event `#ce-bky-skip`「略過」、步驟頁頭的切換類型鈕 `#ce-type-switch`（切換後不再經過 bookyay 關卡） |
-| `S75` | 　Watch Party 活動類型                    | Watch Party event type                           | 🔵 release2.4| ✅⬆ ahead | create-event 類型卡 `[data-gate-type="watchparty"]`；Watch Party 不經 bookyay、只能手動建立；2026-10-07 使用者裁示 release2.4 保留 |
+| `S75` | 　Watch Party 活動類型                    | Watch Party event type                           | ⚪ TBD      | ✅⬆ ahead | create-event 類型卡 `[data-gate-type="watchparty"]`；Watch Party 不經 bookyay、只能手動建立；2026-10-07 使用者裁示 release2.4 保留；**2026-10-15 D422 決定一改 ⚪**：release2.4 不含共看派對——建立活動選不到、活動清單的共看派對示範活動一起收起（`events.html` 七列 `data-feat="S75"`、`js/events-store.js` `list()` 在版本不含 S75 時濾掉 `type:'watchparty'`，清單計數跟著排除） |
 | `S79` | 　其他線下活動類型入口（見面會、音樂節、發表會、線上活動） | Other offline event type entries | ⚪ TBD      | ✅⬆ ahead | create-event 類型卡 `[data-gate-type="meet|festival|launch|virtual"]`；這四類的建立表單與演唱會相同（只有 Watch Party 走專屬分支），release2.4 只留演唱會一個入口（2026-10-07 使用者裁示） |
 | `S80` | 　條款與細則：直接促銷同意開關（接受主辦者用於直接促銷＋行銷同意文字） | Consent to direct marketing | ⚫ 退場      | ✅⬆ ahead | 2026-10-12（D395）已退場——使用者裁示移除「接受主辦者用於直接促銷」，條款與細則只留「條款及細則」；create-event、create-event-legacy、event-localization 翻譯表、events-store 假資料已移除。event-detail 活動內容 `#ed-terms` 的同一組已於同日移除。原：D340；release2.4 只留「條款及細則」開關（2026-10-07 使用者裁示）；2026-10-07 D362 起 event-detail 同一組也掛 S80 |
 | `S76` | 　複製活動／再辦一次                         | Duplicate / run it again                         | ⚪ TBD      | ✅⬆ ahead | events.html 列選單「Duplicate」×50、event-detail `[data-ed-duplicate]`（頁首＋結束後總覽卡）；兩者都是不經 bookyay 的建立方式 |
@@ -219,12 +221,14 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 13 · ⚫ 退場 4
 | `S88` | 　系列活動（活動清單系列母子列、活動詳情系列卡／徽章／鎖定提示／系列列、系列母頁） | Series (list parent/child rows, series card, badge, lock notes, series page) | ⚪ TBD      | ✅⬆ ahead | D383 決定二：events.html 七組 `.rowdis__group[data-feat="S88"]`（清單計數與頁首數字排除被收起的列與系列各場）；event-detail 頁首系列徽章、`#ed-series-card`、總覽的系列列、兩則 `[data-series-lock]`；`series-detail.html`（頁級本來就是 `full`）補進 `js/devtools.js`／`js/sidebar.js` 兩份 `FULL_ROUTES`，低版本的連結一併收起 |
 | `S89` | 　取票方式：到店自取                       | Ticket delivery: store pickup                    | ⚪ TBD      | ✅⬆ ahead | D383 決定六：create-event 取票方式 `[data-val="pickup"]`、event-detail 發布設定 `[data-pub-val="store"]`；不在版本內時，取票方式是到店自取的 bookyay 活動在匯入清單標不可帶入（D384 決定一，2026-10-09 裁決）；創作者活動管理同列掛「release2.4 不支援」＋原因（D384 決定三，`admin-creator-events.html` `[data-ace-r24="pickup"]`） |
 | `S90` | 　活動詳情：轉售分頁                       | Event detail: Resale tab                          | ⚪ TBD      | ✅⬆ ahead | D383 決定六：event-detail 票務子分頁 `[data-nav-item="resale"]` 與 `[data-nav-panel="resale"]` |
-| `S91` | 　活動詳情：招待票分頁                     | Event detail: Comp tickets tab                    | ⚪ TBD      | ✅⬆ ahead | D383（2026-10-09 使用者補充）：event-detail 票務子分頁 `[data-nav-item="comp"]` 與 `[data-nav-panel="comp"]`，與轉售同樣處理 |
+| `S91` | 　活動詳情：招待票分頁                     | Event detail: Comp tickets tab                    | ⚪ TBD      | ✅⬆ ahead | D383（2026-10-09 使用者補充）：event-detail 票務子分頁 `[data-nav-item="comp"]` 與 `[data-nav-panel="comp"]`，與轉售同樣處理；2026-10-15 D423 決定二（release2.4 不提供招待票）複核入口：原型上招待票只有這個子分頁（分頁標籤＋面板，「發放招待票」鈕在面板內），兩處都已掛 S91，沒有其他入口要補 |
 | `S92` | 　門票隱藏狀態與標示（bookyay 套票轉換的隱藏 1 人票：「隱藏」徽章、鎖定的顯示開關、可賣性防呆；2026-10-09 D391 補充二起含 bookyay 活動門票的顯示／隱藏開關） | Hidden ticket state & badge (bookyay set-ticket conversion; show/hide toggle on bookyay event tickets) | 🔵 release2.4| ✅⬆ ahead | D383 決定七，自 S55 拆出：create-event 票卡 `[data-tier-hidden-badge]`、event-detail 票卡與票券清單的「隱藏」徽章、單張門票彈窗的顯示開關列在 1 人票（hideFix）時改掛 S92（create-event `tierShowRowHTML()`、event-detail `#ed-tm-show-row`）、bundle-detail 五則可賣性防呆紅字。示範：create-event 匯入清單 bky-13（單一時段二人套票）、活動 taipei-nye／khh-countdown-draft |
 |       | **媒體庫第二層：每件內容的任務（D377，2026-10-08）** | Media Vault item tasks | | | 規格 5.1.7.3 F8（新節）、F3 每件可看人數、F5 大彩蛋、F6 每件三種結果。媒體庫整頁仍是 `data-page-feat="full"`（只在最終版與 funding-test 顯示），本編號讓第二層在功能表上有一列；編號沿用 S 段（devtools 只解析 `S`／`O`／`E`／`B` 開頭的 ID） |
 | `S86` | 　媒體庫每件內容的任務（不設／九種行動任務／等級任務，等級依第一層下限過濾）、大彩蛋標記、每件幾人看得到、以分級檢視每件結果 | Media Vault item tasks, grand surprise, per-item viewers | ⚪ TBD      | ✅ built  | D377（2026-10-08）：`media-vault.html` 單件內容抽屜的 `section.vault-task[data-feat="S86"]` 與大彩蛋列、內容區頂端說明 `vault.grid.fine`、格子與音檔列上的 `.vault-tag[data-feat="S86"]`（JS 畫完呼叫 `ztorDevState.regate()`）；資料與計算在 `js/vault-store.js`。九種行動任務裡只有「商城消費・指定商品」可判定，其餘判定方式〔產品待確認〕（ASSUMPTIONS UIA-230） |
 | `S93` | 　媒體庫三分頁新增的讀數與清單（總覽的鑰匙使用情況、內容摘要、待補規格的數字；存取權限的即時人數條、已發鑰匙清單〔含撤銷〕） | Media Vault tab readouts (key usage, summary, numbers awaiting spec, live reach line, issued-key list) | ⚪ TBD      | ✅ built  | 2026-10-09 使用者確認的三分頁示範頁移植進正式頁：`media-vault.html` 總覽分頁三張 `.card[data-feat="S93"]`、存取權限分頁 `.vault-reachline[data-feat="S93"]` 與 `.vault-keylist[data-feat="S93"]`；每件可看人數清單沿用 S86。版面重整本身（三分頁、方法小卡、列表化內容）不另編號。整頁 `data-page-feat="full"`（ASSUMPTIONS UIA-235） |
 | `S94` | 　組合包的購買條件與限購（D398、D400：所有組合包都有三種限購，預設跟隨成員〔取交集、與成員共用額度〕、可覆寫〔獨立計算〕、可改回；純商品組合包的購買條件預設不限、可加限時購買／限粉絲分級購買） | Bundle purchase rules & limits (all bundles: follow members / override; product-only bundle conditions) | 🔵 release2.4| ✅⬆ ahead | D398（2026-10-12）：bundle-detail `[data-bd-rules-sec]`（組合內容分頁成員之後；含門票時購買條件仍掛 S63）、create-bundle `[data-cb-rules]`；markup 由 `js/purchase-limits.js`（限購）與 `js/purchase-conds.js`（純商品購買條件，只開 buyTime／buyTier）產生。商品的三種上限屬 S35 的欄位改版、不另掛標記（只進 main／release2.4，不搬 release2.3） |
+| `S98` | 　活動詳情：成本與營收摘要分頁（2.4 隱藏）              | Event detail: Cost & revenue summary tab (hidden in release2.4) | ⚪ TBD      | ✅⬆ ahead | D423 決定四（2026-10-15，交付範圍、規格不動）：event-detail 售票與名單子分頁 `[data-nav-item="finance"]` 與 `[data-nav-panel="finance"]`。其他入口檢查：總覽結案卡的「前往收入管理」連 earnings.html（不連這一節），不受影響；本節自己的「專案淨利」連結隨面板收起 |
+| `S99` | 　活動詳情：票務商品卡片／列表檢視與隱藏／顯示            | Event detail: ticket bundles card / list view & hide / show | 🔵 release2.4| ✅⬆ ahead | D423 決定一（2026-10-15）：event-detail 票務商品的檢視切換 `#ed-bd-view`、列表 `#ed-bundle-table`、卡片與列表每組的隱藏／顯示鈕 `[data-bd-vis]` 與卡上「隱藏」徽章；營運動作、立即生效〔推導〕 |
 | `S95` | 　非 bookyay 的示範活動（2.4 隱藏）                | Non-bookyay demo events (hidden in release2.4)    | ⚪ TBD      | ✅ built  | D410 決定四（2026-10-13，原型示範資料、不是產品功能）：release2.4 只顯示 bookyay 匯入的活動與共看派對。`js/events-store.js` 的 `list()` 在版本不含 S95 時濾掉其餘示範活動（`isRel24Demo()`：`source:'bookyay'` 或 `type:'watchparty'` 以外），活動清單計數、店鋪設定的活動候選、首頁畫布等 `list()` 消費端一起收起；`events.html` 對應的靜態列（含系列母子列）掛 `data-feat="S95"`。`get()` 不濾（直連照樣開得到）。最終版不變。已掛 S87 的 `album-signing-taipei`、`pingtung-bluefin` 列與掛 S88 的系列群組（`.rowdis__group`）維持原標記不另加 S95——`data-feat` 多值是「任一在版本內即顯示」，表達不了兩個條件同時成立；三者都是 ⚪，release2.4 一樣收起 |
 | `S96` | 　bookyay 活動自設折扣與早鳥（最終版）          | Creator-set discount & early bird on bookyay events (final) | ⚪ TBD      | ✅ built  | D417 決定五（2026-10-15）：bookyay 不再帶入折扣優惠與早鳥，最終版由創作者在 ztor 自設、release2.4 不提供。掛在入口上：`js/purchase-conds.js` html() 的 `ctx.addOnly` 選單（bookyay 門票的「新增條件」只列折扣與限時折扣，`[data-feat="S96"]`；create-event 步驟 4 單張門票彈窗、event-detail 單張門票彈窗）；`js/bundle-editor.js` 自動建立組合包的組合折扣與限時折扣（srcFix 時兩區塊改可編輯，`[data-feat="S96"]`；release2.4 收起時改回唯讀讀數）。D419 定案：bookyay 門票沒有「跟隨活動預設」，條件就是自己的一組，只能自加這兩種；套票轉出的隱藏 1 人票不給入口（折扣類落在自動組合包） |
 |       | **粉絲忠誠點數（D347，2026-10-02）**                 | Loyalty points scoring model                    |            |          | 規格 5.1.0.8（新頁）、5.1.7.6 F3；計分規則本體在主規格 §7.5。編號沿用 S 段（devtools 只解析 `S`／`O`／`E`／`B` 開頭的 ID），與活動段 S52–S64 同一做法 |

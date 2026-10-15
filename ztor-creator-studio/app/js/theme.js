@@ -267,8 +267,17 @@
 (function () {
   const STORAGE_KEY = "ztor.theme.preference";
   const VALID = new Set(["light", "dark", "system"]);
+  /* ── 淺色模式暫時關閉（2026-10-15 使用者裁決，STYLE-DECISIONS Q135）────────────────
+     原型一律以深色展示；淺色模式之後另開一輪整站重做。關閉期間：
+       · 已存的偏好（ztor.theme.preference＝light／system）一律忽略、套深色——不刪那筆值，重新開放時使用者原本的選擇還在
+       · 網址 ?theme=light 的除錯覆寫也忽略
+       · setPreference()／cycle() 不寫入、不切換
+       · 各處切換入口（cheat code 面板 Theme 組、design-system／tokens／layers／components 頁的亮／暗切換、section-test）同輪隱藏
+     淺色 token（_tokens.css 的 [data-theme="light"] 區塊）保留不刪。重新開放＝把下面這個常數改回 false，再把入口的 hidden 拿掉。 */
+  const LIGHT_MODE_OFF = true;
 
   function readStored() {
+    if (LIGHT_MODE_OFF) return "dark";
     try {
       const v = localStorage.getItem(STORAGE_KEY);
       return VALID.has(v) ? v : "dark";
@@ -276,6 +285,7 @@
   }
 
   function readUrlOverride() {
+    if (LIGHT_MODE_OFF) return null;
     try {
       const v = new URLSearchParams(location.search).get("theme");
       return VALID.has(v) ? v : null;
@@ -305,11 +315,13 @@
 
   function setPreference(pref) {
     if (!VALID.has(pref)) return;
+    if (LIGHT_MODE_OFF) { apply("dark"); return; }   // 淺色關閉期間：不寫入、維持深色
     try { localStorage.setItem(STORAGE_KEY, pref); } catch (e) {}
     apply(pref);
   }
 
   function cycle() {
+    if (LIGHT_MODE_OFF) { apply("dark"); return "dark"; }
     const order = ["dark", "light", "system"];
     const cur = readStored();
     const next = order[(order.indexOf(cur) + 1) % order.length];
@@ -357,6 +369,7 @@
   window.ztorTheme = {
     getPreference: readStored,
     getResolved:   () => resolve(readStored()),
+    lightModeOff:  LIGHT_MODE_OFF,   // 2026-10-15：淺色模式暫時關閉（切換入口據此收起）
     setPreference,
     cycle,
   };

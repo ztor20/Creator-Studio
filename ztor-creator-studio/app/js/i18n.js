@@ -10661,7 +10661,7 @@
     'ed.sess.sum.nodate': { en: 'Date not set',     zh: '日期尚未設定' },
     'ed.sess.remove':     { en: 'Remove this date',       zh: '移除這一場' },
     /* D391 第 5、12、13 題（2026-10-09）：開賣前移除場次的確認（列出一併刪除的門票）；售票中之後場次與門票不能刪 */
-    'ed.sess.locked':     { en: "Tickets are on sale, so dates can't be removed. To stop selling a date, pause or hide its tickets.", zh: '已開賣，場次不能移除；要停止販售某一場，請暫停售票或隱藏它的門票。' },
+    'ed.sess.locked':     { en: "Tickets are on sale, so dates can't be removed. To stop selling a date on its own, hide its tickets.", zh: '已開賣，場次不能移除；要讓某一場的門票不再單獨販售，請隱藏它的門票。' },   // D422：單張門票沒有暫停售票
     /* D413（5.1.6.2 §3「進行中的編輯」）：進行中編輯時高影響欄位鎖定的原因 */
     'ed.live.unlist-first': { en: 'Unlist the event to change these, then list it again.', zh: '先下架才能改，改完再上架。' },
     'ed.live.started':      { en: "Once a date has started, its date, start time and venue can't be changed.", zh: '已開始的場次，日期、開始時間與場地都不能改。' },
@@ -10671,7 +10671,7 @@
     'ed.sess.rm.save':    { en: 'This takes effect when you save.', zh: '按「儲存」後才會生效。' },
     'ed.sess.rm.last':    { en: 'Removing this date would leave nothing to sell — no visible ticket and no bundle on sale. Keep at least 1 visible ticket or 1 bundle.', zh: '移除這一場後，活動就沒有可賣的東西（沒有顯示中的門票，也沒有仍在販售的組合包），不能移除。請至少保留 1 張顯示中的門票或 1 組組合包。' },
     'ed.sess.rm.ok':      { en: 'Remove date and tickets', zh: '移除場次與門票' },
-    'ed.tm.del.onsale':   { en: "Tickets are on sale — tickets can't be deleted. Pause sales or hide it instead.", zh: '已開賣，門票不能刪除；請改用暫停售票或隱藏。' },
+    'ed.tm.del.onsale':   { en: "Tickets are on sale — tickets can't be deleted. Hide it instead.", zh: '已開賣，門票不能刪除；請改用隱藏。' },   // D422：單張門票沒有暫停售票
     'event-detail.tiers.sub': { en: '1–10 tiers per event. Sale progress turns yellow at 80%, red at 95% (§5.1.6 F5).', zh: '每場活動 1–10 個票種。售票進度達 80% 轉黃、95% 轉紅（§5.1.6 F5）。' },
     'event-detail.tiers.sub2':    { en: 'Tiers that already sold can be closed, but not deleted — buyers hold them.', zh: '已經賣出的票種可以關閉銷售，但不能刪除——票在買方手上。' },
     'event-detail.tiers.col.tier': { en: 'Tier', zh: '票種' },
@@ -11619,6 +11619,25 @@
     'ar.detail.rate':     { en: 'Interaction rate', zh: '互動率' },
     'ar.detail.rentals':  { en: 'Rentals',     zh: '內容租借次數' },
     'ar.detail.note':     { en: 'Interaction rate is interactions divided by views.', zh: '互動率＝互動次數 ÷ 曝光次數。' },
+
+    /* D422 決定三／D423 決定一（2026-10-15）：活動詳情票務——單張門票與票務商品的隱藏／顯示（營運動作，立即生效） */
+    'ed.tix.hide':           { en: 'Hide',  zh: '隱藏' },
+    'ed.tix.show':           { en: 'Show',  zh: '顯示' },
+    'ed.tix.status.shown':   { en: 'Shown', zh: '顯示中' },
+    'ed.tm.show.state.on':   { en: 'Shown on the event page', zh: '顯示在活動頁' },
+    'ed.tm.show.state.off':  { en: 'Hidden from the event page', zh: '不在活動頁顯示' },
+    'ed.tm.show.sub.op':     { en: 'Takes effect right away, no need to save. Hidden tickets stay off the price list but can still sell inside bundles.', zh: '按下立即生效，不必儲存。隱藏的門票不在票價清單、不能單張購買，仍可當組合包成員販售。' },
+    'ed.tix.hidden.toast':   { en: 'Hid {name} — it’s off the event page now', zh: '已隱藏「{name}」，活動頁不再列出' },
+    'ed.tix.shown.toast':    { en: 'Showing {name} on the event page again', zh: '「{name}」已重新顯示在活動頁' },
+    'ed.tix.vis.last.title': { en: 'Can’t hide this ticket', zh: '這張門票不能隱藏' },
+    'ed.tix.vis.last.ok':    { en: 'Got it', zh: '知道了' },
+    'ed.bd.view.aria':       { en: 'Bundle view', zh: '組合包檢視' },
+    'ed.bd.col.name':        { en: 'Bundle', zh: '組合包' },
+    'ed.bd.noproducts':      { en: 'Tickets only', zh: '只含門票' },
+    'ed.bd.vis.ro':          { en: 'This event has ended or been cancelled — bundles here are view-only.', zh: '活動已結束或已取消，這裡的組合包只能檢視。' },
+    'ed.bd.vis.last.title':  { en: 'Can’t hide this bundle', zh: '這組組合包不能隱藏' },
+    'ed.bd.hidden.toast':    { en: 'Hid {name} — it’s off the shop and event page now', zh: '已隱藏「{name}」，商店與活動頁不再列出' },
+    'ed.bd.shown.toast':     { en: 'Showing {name} again', zh: '「{name}」已重新顯示' },
 
     'ar.empty.title':     { en: 'Nothing to show', zh: '沒有可顯示的資料' },
     'ar.empty.text':      { en: 'No data for this content type in the selected period.', zh: '所選期間內這個類型沒有資料。' },

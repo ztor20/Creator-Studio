@@ -1451,7 +1451,7 @@ html[data-theme="light"] .wizard__top::before {
 .wizard__top-actions { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: var(--sp-8); }
 /* col2：進度條／舊中央槽（向後相容）。內容寬靠中欄 minmax(0,820) 撐起、padding 28 對齊 .wizard__body 內距 */
 .wizard__progress, .wizard__stepper-slot { grid-column: 2; }
-.wizard__progress { justify-self: stretch; width: 100%; padding-inline: var(--sp-28); }
+.wizard__progress { justify-self: stretch; width: 100%; padding-inline: var(--sp-28); --progress-stepper-tail: var(--sp-28); }   /* 最後一格標籤最多借右內距這 28px，不越過欄界（progress-stepper.css） */
 .wizard__stepper-slot { justify-self: stretch; display: flex; align-items: center; justify-content: center; min-width: 0; }
 /* 標題塊靠左堆疊 */
 .wizard__top-titlewrap { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; min-width: 0; max-width: 100%; }
@@ -1480,6 +1480,34 @@ html[data-theme="light"] .wizard__top::before {
 /* 自動儲存狀態與預覽鈕之間加大間距（2026-06-23 使用者指定）：在 8px gap 外再補右邊距 */
 .wizard__top-actions .wizard__save-status,
 .wizard__top-actions .ce-save-status { margin-inline-end: var(--sp-12); }
+/* 手機版頂列（2026-10-15，375px 實測整頁橫向溢出約 128px）：三欄 grid 的左欄下限 180px＋右欄 min-content
+   （儲存狀態＋「儲存為草稿」鈕）在 375px 就已超寬，中欄進度條還被擠成 0 寬、標籤疊在儲存狀態上。
+   改成兩排：第一排＝返回／標題（可縮、ellipsis）＋右側工具；第二排＝進度條滿寬。
+   儲存狀態收成只剩狀態點（字級 0 藏字、讀屏仍讀得到全文），手動儲存的 --button 變體不收（它是按鈕、要看得到字）。
+   外距同步縮成 16，與 --space-shell-gutter 一致。 */
+/* 中寬也分兩排（2026-10-15 驗收：768／1024 寬時三欄 grid 的中欄只剩 30～70px 一格，
+   英文最後一格「PREVIEW & PUBLISH」畫進右欄的「Saved · just now」）。≤1024 一律走兩排：
+   第一排＝返回／標題＋右側工具，第二排＝進度條滿寬；中寬的外距與儲存狀態文字維持桌機版，只有 ≤720 再收緊。 */
+@media (max-width: 1024px) {
+  .wizard__top-bar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: var(--sp-10);
+  }
+  .wizard__top-lead { grid-column: 1; grid-row: 1; }
+  .wizard__top-actions { grid-column: 2; grid-row: 1; }
+  .wizard__progress, .wizard__stepper-slot { grid-column: 1 / -1; grid-row: 2; }
+  .wizard__progress { padding-inline: 0; --progress-stepper-tail: 0px; }
+}
+@media (max-width: 720px) {
+  .wizard__top { --wizard-top-pad-x: var(--sp-16); --wizard-top-pad-t: var(--sp-12); }
+  .wizard__top-bar {
+    gap: var(--sp-10) var(--sp-12);
+    padding: var(--sp-10) var(--sp-12) var(--sp-10) var(--sp-16);
+  }
+  .wizard__top-actions { gap: var(--sp-6); }
+  .wizard__top-actions .wizard__save-status:not(.wizard__save-status--button),
+  .wizard__top-actions .ce-save-status { font-size: 0; gap: 0; margin-inline-end: var(--sp-4); }
+}
 
 /* 返回離開確認彈窗已 promote 成元件 → ds-components/leave-dialog.css（2026-06-29）*/
 
@@ -1994,7 +2022,7 @@ html[data-theme="light"] .wizard__top::before {
      舊 HTML 上殘留的 data-vm-style 屬性無作用。
    · 2026-09-11「全站檢視態＝disabled 外觀」用的是 --locked-field-ink 淡墨（2.2～2.7:1），這次改成可讀墨色。 */
 [data-mode="view"] :is(.input, .textarea, .select, .rich-body__text):not([data-edit-exempt] *):not(.linkf__input) {
-  background-color: transparent;
+  background-color: var(--disabled-field-bg);
   background-image: none;
   color: var(--view-field-ink);
   cursor: default;
@@ -2008,7 +2036,7 @@ html[data-theme="light"] .wizard__top::before {
 [data-mode="view"] .tag-input__field:not([data-edit-exempt] *) { background-color: transparent; }
 /* 編輯態：readonly 鎖住的欄位與 :disabled 同一個樣子（全庫唯一的 disabled，Q58；墨色 Q128）；複製用的連結框（.linkf__input）不算 */
 [data-mode="edit"] :is(.input, .textarea)[readonly]:not(.linkf__input) {
-  background-color: transparent;
+  background-color: var(--disabled-field-bg);
   color: var(--view-field-ink);
   cursor: not-allowed;
 }

@@ -140,6 +140,9 @@
     O34: 'release2.4', O35: 'release2.4', O36: 'release2.4', O37: 'release2.4',   // 2026-10-13 D411（訂單：付款資訊／日期區間與類型篩選／門票訂單／補寄信）
     O38: 'release2.4',   // 2026-10-14 D414（訂單詳情：撤銷整張訂單）
     O39: 'release2.4',   // 2026-10-15 D416（匯出 CSV 與確認視窗：訂單管理＋活動交易明細）
+    S97: 'release2.4',   // 2026-10-15 D422 決定二（建立活動第 6 步票務商品的電影關聯，自 S64 拆出）
+    S98: 'tbd',          // 2026-10-15 D423 決定四（活動詳情成本與營收摘要，release2.4 不提供）
+    S99: 'release2.4',   // 2026-10-15 D423 決定一（活動詳情票務商品卡片／列表與隱藏／顯示）
     S96: 'tbd',          // 2026-10-15 D417 決定五（bookyay 活動自設折扣與早鳥，只在最終版；後備表先登記，避免載入表格前 release2.4 閃現）
     S95: 'tbd',          // 2026-10-13 D410 決定四（非 bookyay 的示範活動，release2.4 隱藏；後備表先登記，避免載入表格前 release2.4 閃現）
     S94: 'release2.4',   // 2026-10-12 D398（組合包的購買條件與限購：跟隨成員／覆寫、純商品組合包的購買條件）
@@ -150,7 +153,7 @@
     S68: 'tbd', S69: 'tbd', S70: 'tbd', S71: 'tbd', O33: 'tbd',   // 2026-10-05 D360（需求看板頁／商品層需求入口／服飾配件分類與屬性／尺寸顏色快捷預設／訂單收件國家城市）
     S62: 'release2.4',   // 2026-10-07 使用者裁示：時間層級與定時上架上限隨 release2.4
     S63: 'tbd', S64: 'tbd',   // 2026-10-09 D390 稽核第一節原型第 18 條：後備表補登（與 feature-scope-map ⚪ 一致），避免載入表格前 release2.4 閃現
-    S72: 'release2.4', S73: 'release2.4', S74: 'tbd', S75: 'release2.4', S76: 'tbd', S77: 'tbd', S78: 'release2.4', S79: 'tbd', S80: 'tbd',   // 2026-10-07 release2.4 切割（活動模組／bookyay 帶入建立／手動建立／Watch Party／複製與再辦一次／舊流程／在地化／其他線下類型入口／直接促銷同意）
+    S72: 'release2.4', S73: 'release2.4', S74: 'tbd', S75: 'tbd' /* 2026-10-15 D422 決定一：release2.4 不含共看派對 */, S76: 'tbd', S77: 'tbd', S78: 'release2.4', S79: 'tbd', S80: 'tbd',   // 2026-10-07 release2.4 切割（活動模組／bookyay 帶入建立／手動建立／Watch Party／複製與再辦一次／舊流程／在地化／其他線下類型入口／直接促銷同意）
     S81: 'release2.4',                           // 2026-10-07 D361 建；2026-10-08 D371 改 release2.4（活動：創作者與 Admin 上架／下架＋已下架徽章）
     S82: 'tbd',                                  // 2026-10-07 D366／D367（活動：購票規則的粉絲分級條件——限粉絲分級購買、粉絲分級折扣、限時＋限粉絲分級折扣）
     S83: 'release2.4',                           // 2026-10-08 D371 決定四（活動：建立活動第 7 步「其他售票時間」摘要，原掛 S62）
@@ -159,7 +162,8 @@
     S87: 'tbd', S88: 'tbd', S89: 'tbd', S90: 'tbd', S91: 'tbd', S92: 'release2.4',   // 2026-10-09 D383 範圍收斂（多場次／系列活動／到店自取／轉售／招待票 ⚪；門票隱藏狀態與標示 🔵，自 S55 拆出）；同日 S78 改 release2.4
     S67: 'release2.4',                           // 2026-10-05 D354（活動：描述區塊的新增描述與排序；S54 門票簡介〔D353〕、S57 說明區塊、S60 粉絲頁說明區塊同日退場，已無元素掛標記）
     O04: 'tbd', O09: 'tbd', O17: 'release2.4', O18: 'tbd', O22: 'release2.4', O23: 'release2.4',
-    E08: 'release2.4', E09: 'release2.4', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'release2.4', E20: 'release2.4', E22: 'tbd', E23: 'release2.4', E24: 'tbd', E25: 'tbd', E26: 'tbd'
+    E08: 'release2.4', E09: 'release2.4', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'release2.4', E20: 'release2.4', E22: 'release2.4' /* 2026-10-15 對齊功能表 🔵（原誤寫 tbd） */, E23: 'release2.4', E24: 'tbd', E25: 'tbd', E26: 'tbd',
+    B07: 'tbd', B10: 'release2.4'   // 2026-10-15 對齊功能表（B07 ⚪ 貨到付款／B10 🔵 公開探索欄）；沒登記會在載入表格前被當成 release2.3
   };   // { S30:'release2.3', … } 由 md 功能表填
   /* ✝ 2026-07-30：pickup.html／pickup-detail.html／scanner.html 移出本清單——取貨管理已列進
      feature-scope-map（O24–O30，🟢 Phase 1），不再是「未列 scope 的整頁功能」，各版本皆可進入（D157）。 */
@@ -705,8 +709,10 @@
       +     '</div>'
       /* ── 設置：外觀基本（Theme／Language／Display）＋重新顯示首次 popup ── */
       +     '<div class="ztd__tabpanel" data-tab-panel="settings"' + (activeTab !== 'settings' ? ' hidden' : '') + '>'
-      +       '<div class="ztd__group"><p class="ztd__group-label">Theme</p>'
-      +         '<div class="ztd__grid">' + optsHtml(THEME, curTheme(), 'theme') + '</div></div>'
+      /* 2026-10-15 淺色模式暫時關閉（STYLE-DECISIONS Q135）：Theme 組在 theme.js 回報 lightModeOff 時整組不畫 */
+      +       ((window.ztorTheme && window.ztorTheme.lightModeOff) ? '' :
+              '<div class="ztd__group"><p class="ztd__group-label">Theme</p>'
+      +         '<div class="ztd__grid">' + optsHtml(THEME, curTheme(), 'theme') + '</div></div>')
       +       '<div class="ztd__group"><p class="ztd__group-label">Language</p>'
       +         '<div class="ztd__grid">' + optsHtml(LANG, curLang(), 'lang') + '</div></div>'
       +       '<div class="ztd__group"><p class="ztd__group-label">Display mode · 版面</p>'

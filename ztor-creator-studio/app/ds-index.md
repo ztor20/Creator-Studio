@@ -5,7 +5,7 @@
 > 用途：**動手改 UI 前先掃這頁**——色彩／字體／間距／陰影一律用下列 token，版面一律先找既有元件；
 > 用法細節與規範看 `design-system.md`（AI 契約）／`design-system.html`（人看）。只列亮色值，暗色屬 Pillar 3。
 
-## Tokens（_tokens.css，亮色，共 297 條）
+## Tokens（_tokens.css，亮色，共 299 條）
 
 ### --accent-*
 - `--accent`: #F3F3F3
@@ -39,6 +39,9 @@
 - `--chart-7`: #06B6D4
 - `--chart-8`: #7C4A2D
 
+### --chip-*
+- `--chip-surface`: color-mix(in srgb, var(--foreground) 6%, var(--card))
+
 ### --column-*
 - `--column-head-ink`: var(--faint-ink)
 
@@ -57,6 +60,9 @@
 - `--destructive-ink`: #4C0519
 - `--destructive-fill`: color-mix(in srgb, var(--destructive) 12%, transparent)
 - `--destructive-deep`: color-mix(in srgb, var(--status-error) 35%, #1a1208)
+
+### --disabled-*
+- `--disabled-field-bg`: color-mix(in srgb, var(--layer-0-surface) 20%, transparent)
 
 ### --duration-*
 - `--duration`: 200ms
@@ -411,7 +417,7 @@
 - `bundle-editor.css` — .fc-bundle-col, .fc-bundle, .fc-bundle__body, .bd-group, .bd-group__title ｜ bundle-editor.css · 套組編輯器（共創募資回饋方案）
 - `bundle-preview-card.css` — .bpc__title, .bpc, .bpc__list, .bpc__row, .bpc__what ｜ bundle-preview-card.css · 粉絲端組合包預覽卡（建立組合包時右欄「粉絲看
 - `button.css` — .btn, .btn--primary, .btn--outline, .btn--ghost, .btn--destructive ｜ Ztor Creator Studio · R 2.1 — Button
-- `calc-list.css` — .calc-list, .form-section--card, .calc-list__how, .calc-list__sum, .calc-list__total ｜ Calc list — 一行一項的算式列表（加總／扣抵，最後一列是結果）
+- `calc-list.css` — .calc-list, .form-section--card, .calc-list--framed, .calc-list__how, .calc-list__sum ｜ Calc list — 一行一項的算式列表（加總／扣抵，最後一列是結果）
 - `canvas-home.css` — .canvas-home-shell, .canvas-hero, .canvas-below, .canvas-sheet, .canvas-sheet__foot ｜ canvas-home — 一屏不捲的展示版型（2026-08-31 建）
 - `canvas-stage.css` — .canvas-stage, .canvas-stage__bg, .canvas-stage__img, .canvas-stage__scrim, .canvas-stage__marker ｜ canvas-stage — 首頁展示版的滿版舞台（2026-08-31 建）
 - `card-group.css` — .group-title, .group-desc, .group-divider, .card-head, .card-head__title ｜ card-group.css · 卡內分組三件組（Q71 三級制）
@@ -454,7 +460,7 @@
 - `field-system.css` — .field, .field__label, .field__hint, .field__req, .field__error ｜ Ztor Creator Studio - Field system molecule
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs__dot ｜ Filter Tabs — secondary, lighter pill row for na
 - `finding-card.css` — .finding, .finding__kicker, .finding__title, .finding__sub, .finding__basis ｜ Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160）
-- `follow-field.css` — .follow-fields, .follow-field, .follow-field__head, .follow-field__seg ｜ follow-field.css · 跟隨／另設的時間列（D342，2026-10-01）
+- `follow-field.css` — .follow-fields, .follow-field, .follow-field__head, .follow-field__txt, .follow-field__t ｜ follow-field.css · 跟隨／另設的時間列（D342，2026-10-01）
 - `form-ask.css` — .form-ask, .form-ask__t, .form-ask__s, .form-ask__body, .form-ask__row ｜ form-ask.css · 問句式設定塊與標題列讀數（2026-10-12，建立組合包改版；使
 - `form-grid.css` — .form-grid, .form-grid--3 ｜ form-grid.css · 表單欄位並排網格 helper
 - `form-section.css` — .form-section, .form-section--dense, .form-section__actions, .form-section--outlined, .form-section__head ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
@@ -478,7 +484,7 @@
 - `lock-sets.css` — .lockset__sets, .lockset__sets-titles, .lockset__sets-title, .lockset__sets-hint, .lockset__sets-ctl ｜ lock-sets.css · 組合包「鎖定套數」區（規則：2026-09-11 使用者重定義；
 - `manage-ip.css` — .mi-chips, .mi-dot, .mi-verify, .mi-verify__title, .mi-verify__text ｜ manage-ip.css — 「管理我的 IP」頁專屬版面（manage-ip.html）。
 - `media-vault.css` — .vault-layout, .vault-layout--norail, .vault-rail, .vault-rail__head, .vault-rail__label ｜ Media Vault · 加密媒體庫（Fans → 媒體庫）
-- `member-table.css` — .member-table, .member-table__head, .member-table__row, .member-table__name, .member-table__thumb ｜ member-table.css · 組合物表（2026-10-12，建立組合包改版；使用者在示
+- `member-table.css` — .member-table, .member-table__row, .member-table__exp, .member-table__head, .member-table__name ｜ member-table.css · 組合物表（2026-10-12，建立組合包改版；使用者在示
 - `message-modal.css` — .payout-dialog, .msg-dialog, .msg-compose, .msg-field, .msg-field__label
 - `meter-list.css` — .meter-list__row, .meter-list__name, .meter-list__num, .meter-list__num--hot, .meter-list__row--off ｜ meter-list.css · 逐項水位清單（名稱 → 量條 → 數字，三欄一線）
 - `nest.css` — .nest, .form-section--outlined ｜ nest.css · 巢狀層（卡片內的滿版子層）
