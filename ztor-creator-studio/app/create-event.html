@@ -6190,7 +6190,7 @@
       name: "Kaohsiung countdown concert",
       intros: [
         "<p>駁二港邊的跨年演唱會，21:00 開唱一路唱過零點，倒數後港邊煙火。</p><p><img src=\"images/projects/nick-asn.jpg\" alt=\"\"></p>",
-        "<p><strong>入場與寄物</strong></p><ul><li>大義倉庫入口驗票，二人套票兩人須一起驗票入場</li><li>現場不提供寄物</li></ul>",
+        "<p><strong>入場與寄物</strong></p><ol><li>大義倉庫入口驗票，二人套票兩人須一起驗票入場</li><li>現場不提供寄物</li></ol><hr><p>大型背包請改放捷運鹽埕埔站置物櫃。</p>",   // 2026-10-16 示範資料補齊（稽核 E11）：編號清單＋分隔線
         "<p><strong>散場交通</strong></p><p>零點後輕軌加開班次至 01:30，<em>駁二大義站單向進站</em>。詳見 <a href=\"https://example.com/khh-countdown/traffic\">交通說明</a>。</p>"
       ],
       country: "TW", langs: ["cmn", "en"],
@@ -7037,7 +7037,11 @@
         tickets: { tierIds: ((db.tickets && db.tickets.tierIds) || []).map(id => tierMap[id]).filter(Boolean), qty: (db.tickets && db.tickets.qty) || 1 },
         items: (db.products || []).map((it, k) => ({ id: (db.id || "bd") + "-p" + k, name: it.name, img: it.img || "", meta: it.price ? "$" + it.price : "", price: it.price || "" })),
         discountOn: !!db.discount, discount: db.discount || "",
-        lockSets: db.lockSets || "", scope: db.scope || "shared", collapsed: true, pickOpen: false
+        lockSets: db.lockSets || "", scope: db.scope || "shared", collapsed: true, pickOpen: false,
+        /* 2026-10-16（示範資料補齊 E5／E7）：草稿存過的電影關聯與另設的上架／開賣時間同屬不鎖的欄位，照 D386 決定二一併保留——
+           原本只疊回名稱、成員與折扣，草稿裡的 films／sched 在續填時被丟掉。 */
+        films: Array.isArray(db.films) ? db.films.slice() : [],
+        sched: db.sched ? JSON.parse(JSON.stringify(db.sched)) : {}
       }));
       bundleEd.setBundles(cur.concat(own));
       renderBundlePool(); syncBundleEmpty(); renderTiers();

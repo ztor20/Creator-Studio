@@ -109,8 +109,8 @@
        只有品項層顯示已取消。這個值是**衍生**的（isCancelled(order)），不是第三條狀態軸——
        fulfil 軸的語意不動（PCR-001）；pay 軸則依 D253 把 cancelled 當作 unpaid／paid／
        disputed 之外的第四個值，o.cancelled 是把這個衍生結果快取起來給清單與明細頁用。
-     · 原型不做的事：庫存回補與「訂單已取消」email **由後端執行**，本原型只在確認彈窗
-       提示會發生；作廢也不呼叫 Stripe——人工退款是Admin在 Stripe 後台（平台外）先做完
+     · 原型不做的事：庫存回補**由後端執行**，本原型只在確認彈窗提示會發生（D431，2026-10-16：
+       撤銷一律不寄 email，原本的「訂單已取消」信退場）；作廢也不呼叫 Stripe——人工退款是Admin在 Stripe 後台（平台外）先做完
        的前置，平台不處理任何金流。
    demo 資料（都在下方 ORDERS 內）：
      #ZT-10467 部分品項已作廢——黑膠整項作廢、帽子仍可領，訂單狀態不變（pay 仍 paid）。
@@ -790,7 +790,8 @@
           },
           /* 出貨型品項作廢：沒有領取單位可失效，改在品項自己身上記 voided（見檔頭
              「作廢明細」節）。at 為作廢時間。 */
-          voided: true, voidedAt: '2026-06-10', voidedBy: 'admin', voidReason: '重複下單，買家保留另一筆 #ZT-10465'
+          /* 2026-10-16 示範資料補齊（D431：撤銷原因選填）：這一筆示範「沒填原因」——撤銷紀錄只寫時間與執行者（原為「重複下單…」） */
+          voided: true, voidedAt: '2026-06-10', voidedBy: 'admin'
         }
       ],
       amounts: { goods: '$56.00', shipping: '$5.00', platform: '−$8.40', payment: '−$1.34', net: '$51.26' },
@@ -1308,13 +1309,13 @@
      沒有領取單位可轉，改在品項自己身上記 `voided: true` ＋ `voidedAt`。完成後重算
      訂單層的衍生狀態。回傳是否真的作廢了（狀態不允許時回 false，呼叫端不必自己先
      判斷一次）。
-     ⚠ 原型只動狀態：**庫存回補與「訂單已取消」email 由後端執行**，這裡不模擬，也不呼叫
-     Stripe——人工退款是Admin在平台外先完成的前置。確認彈窗會把這三件事告訴操作者。 */
+     ⚠ 原型只動狀態：**庫存回補由後端執行**，這裡不模擬，也不呼叫 Stripe——人工退款是
+     Admin在平台外先完成的前置。確認彈窗會把這些事告訴操作者。D431（2026-10-16）：撤銷不寄 email。 */
   function voidItem(order, item, reason) {
     if (voidState(item, order) !== 'ok') return false;
     var at = new Date().toISOString().slice(0, 10);
     /* 撤銷紀錄（D271）：不分品項型態都在品項上記 voidedAt／voidedBy／voidReason（原因選填、
-       空字串不記），供品項列的撤銷紀錄與買家信讀。取貨型的領取單位仍各自轉 void。 */
+       空字串不記），只供品項列的撤銷紀錄讀、給 Admin 查（D431：不進買家信）。取貨型的領取單位仍各自轉 void。 */
     item.voidedAt = at; item.voidedBy = 'admin';
     if (reason) item.voidReason = String(reason).trim(); else delete item.voidReason;
     var agg = unitSummary(item);
@@ -1430,12 +1431,13 @@
   function ticketPayFee(gross) { return Math.round((Number(gross) || 0) * EVENT_PAY_RATE); }
   var EVENT_DEMO = [
     /* 2026-10-16（D429）：bookyay 自動組合包（bd-tc-duo／bd-kh-duo／bd-pt-duo）退場，改指向同場保留的創作者自建組合包 */
-    { ev: 'nick-live-taichung-bky', tickets: 2, bundles: ['bd-tc-ga-tee'] },
+    /* free（2026-10-16 示範資料補齊，稽核 S7）：免費門票訂單改接 bookyay 活動 nick-live-taichung-bky 的免費陪同票 tier-tc-companion（金額 0）取 3 筆——
+       原本接非 bookyay 的 nantou-lantern-opening，release2.4 收起那場活動、訂單卻照樣出現在清單裡。 */
+    { ev: 'nick-live-taichung-bky', tickets: 2, bundles: ['bd-tc-ga-tee'], free: 3 },
     { ev: 'nick-live-taoyuan-bky', tickets: 2, bundles: ['bd-ty-ga-tee'] },
     { ev: 'nick-live-kaohsiung-bky', tickets: 2, bundles: ['bd-kh-ga-tee'] },
-    { ev: 'nick-summer-pingtung-bky', tickets: 1, bundles: ['bd-pt-ga-tee'] },
-    /* D414：免費門票訂單——nantou-lantern-opening 的「Kids under 6 · free」（金額 0）取 3 筆；free＝要幾筆金額 0 的交易 */
-    { ev: 'nantou-lantern-opening', tickets: 0, free: 3 }
+    { ev: 'nick-summer-pingtung-bky', tickets: 1, bundles: ['bd-pt-ga-tee'] }
+    /* 墓碑 2026-10-16：{ ev: 'nantou-lantern-opening', tickets: 0, free: 3 }（D414 免費門票訂單，「Kids under 6 · free」）改接上面台中場的免費陪同票 */
   ];
   var TX_METHOD = { 'Card': 'card', 'Apple Pay': 'applepay', 'LINE Pay': 'linepay' };
   function curOf(ev) {

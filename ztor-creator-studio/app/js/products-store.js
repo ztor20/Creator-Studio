@@ -248,8 +248,9 @@
     'doc-guide': {
       name: '九龍夜行 拍攝手記（PDF）', img: 'notebook.webp',
       sub: '64-page shooting diary — production notes, storyboards and location scouting. PDF download.',
-      cat: 'digital', subKey: 'document', content: 'document', variant: 'single', edition: 'unlimited',
-      status: 'live', price: '6.00', cost: '', stock: '∞',
+      /* 2026-10-16 示範資料補齊（稽核 S5）：限量數位發行（5.1.5.2 F5.2）——上限 300、已售 63（＝銷售摘要 63 件）、還剩 237 */
+      cat: 'digital', subKey: 'document', content: 'document', variant: 'single', edition: 'limited',
+      status: 'live', price: '6.00', cost: '', stock: '237', cap: '300', sold: '63',
       catLabel: 'Digital Merchandise', subLabel: 'Document · 文件'
     },
     /* 數位 · IP 素材包：尚無銷售（KPI 空狀態）、被 1 個項目引用 */
@@ -451,8 +452,9 @@
     'nick-doc': {
       name: 'REALIVE 巡演手冊（PDF）', img: 'notebook.webp', currency: 'TWD',
       sub: '巡演場次、舞台設計圖與幕後筆記，PDF 下載。',
-      cat: 'digital', subKey: 'document', content: 'document', variant: 'single', edition: 'unlimited',
-      status: 'live', price: '180', cost: '', stock: '∞',
+      /* 2026-10-16 示範資料補齊（稽核 S5）：限量數位發行——上限 500、已售 210（＝銷售摘要 210 件）、還剩 290 */
+      cat: 'digital', subKey: 'document', content: 'document', variant: 'single', edition: 'limited',
+      status: 'live', price: '180', cost: '', stock: '290', cap: '500', sold: '210',
       catLabel: 'Digital Merchandise', subLabel: 'Document · 文件'
     },
     'nick-ip': {
@@ -1116,7 +1118,8 @@
     },
     poster: {
       sales: { units: 97, gross: '$3,880', net: '$3,120' },
-      discount: { price: '32.00', limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
+      /* stack:false（2026-10-16 示範資料補齊，稽核 S8）：排程特價「不可與優惠碼疊加」的示範（其餘特價全是可疊加） */
+      discount: { price: '32.00', limited: { start: '2026-10-01', end: '2026-10-31' }, stack: false },
       limit: { person: '2' }
     },
     jacket: {
@@ -1199,7 +1202,8 @@
       members: [{ productId: 'tee' }, { productId: 'cap' }, { productId: 'shoes' }, { productId: 'zine' }],
       /* 鎖定套數（2026-09-11）：鎖 1 套，四個成員各鎖 1 件（zine 池只有 3：單售 1 ＋ 本組合 1 ＋ 簽名會組 1） */
       lockSets: 1, alloc: {},
-      cap: null, listed: true, listAt: null, unlistAt: null,
+      /* unlistAt（2026-10-16 示範資料補齊，稽核 S3）：組合包定時下架排定（未來）——單售商品早有、組合包原本沒有 */
+      cap: null, listed: true, listAt: null, unlistAt: '2026-12-31T23:59:00',
       /* lowThreshold＝0（2026-09-04 修正，原本兩個組合都是 3）：e-shop 的 Bundles 狀態篩選
          沒有「急需補貨」tab（組合是否設低庫存門檻仍是產品待確認，ASSUMPTIONS UIA-133），
          非 0 門檻卻沒有對應 tab 會讓組合列在某些成員量小時掉進 deriveStatus 判成 low、
@@ -1223,7 +1227,9 @@
       cap: 20, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 10, discount: { percent: 10, limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
-      perks: ['簽名會優先入場', '限量海報一張（現場領取）'],   /* 額外權益（D292）：一行一項；2026-09-22 細節頁補欄的示範 */
+      /* 墓碑 2026-10-16：perks（額外權益，D292 示範）——D402 已從組合包移除，殘留欄位刪除（稽核順帶發現） */
+      /* limits（2026-10-16 示範資料補齊，稽核 S1）：組合包限購「覆寫」每人 1 組（S94，獨立計算、可改回跟隨成員；D427 只剩每人總限購） */
+      limits: { person: '1' },
       sales: { units: 5, gross: '$1,400', net: '$1,120' },
       films: ['film-zheng-yi-sao'],
       history: [{ id: 'b1', date: '2026/09/08', sets: '— → 1', items: [{ productId: 'acetate', delta: '— → 1' }, { productId: 'wristband', combo: 'S', delta: '— → 1' }, { productId: 'jacket', combo: 'Black / M', delta: '— → 1' }, { productId: 'zine', delta: '— → 1' }] }]
@@ -1320,6 +1326,8 @@
       cap: null, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null,
+      /* 2026-10-16 示範資料補齊（稽核 S2）：純商品組合包的購買條件＝限時購買（D400；S94），期間內才買得到 */
+      conds: { conds: { buyTime: { from: '2026-10-01T12:00', to: '2026-12-31T23:59' } } },
       sales: { units: 7, gross: '$245', net: '$196' }
     },
     /* 定時下架到期的自動連動示範（2026-09-18 · D288）：seed 寫成上架中，但成員 coaster 的 unlistAt 已過——
@@ -1360,6 +1368,8 @@
       cap: 50, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 3,
       discountPct: 20, discount: null,
+      /* 2026-10-16 示範資料補齊（稽核 S2）：純商品組合包的購買條件＝限時購買（D400；S94） */
+      conds: { conds: { buyTime: { from: '2026-10-01T12:00', to: '2026-12-31T23:59' } } },
       sales: { units: 38, gross: 'NT$227,240', net: 'NT$193,150' },
       films: ['film-neon-harbor'],
       projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }],
@@ -1378,6 +1388,7 @@
       cap: 30, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 10, discount: { percent: 10, limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
+      limits: { person: '1' },   /* 2026-10-16 示範資料補齊（稽核 S1）：組合包限購覆寫每人 1 組 */
       sales: { units: 8, gross: 'NT$55,840', net: 'NT$47,464' },
       films: ['film-neon-harbor'],
       history: [{ id: 'b1', date: '2026/09/08', sets: '— → 2', items: [{ productId: 'nick-vinyl', delta: '— → 2' }, { productId: 'wy-24ce-tee', delta: '— → 2' }, { productId: 'wy-24ce-jersey', combo: 'M', delta: '— → 2' }] }]
@@ -1409,7 +1420,8 @@
       id: 'nick-preorder-set', persona: 'nick', name: '冬季預購組', img: '26ms-hoodie-01.jpeg',
       description: '26MS Hoodie＋刺繡 Logo 老帽，11 月開放預購。',
       members: [{ productId: 'wy-26ms-hoodie' }, { productId: 'wy-bundle-cap' }],
-      cap: 100, listed: true, listAt: null, unlistAt: null,
+      /* listAt（2026-10-16 示範資料補齊，稽核 S3）：組合包定時上架（未來 10/25），上架後 11/01 才開賣——到 10/25 前顯示「已下架」＋上架時間 */
+      cap: 100, listed: true, listAt: '2026-10-25T12:00:00', unlistAt: null,
       shown: true, privateLink: null, saleStart: '2026-11-01T12:00:00', saleEnd: null, lowThreshold: 0,
       discountPct: 15, discount: null,
       sales: null
@@ -1466,10 +1478,12 @@
   }
   Object.keys(BUNDLE_SEED).forEach(function (k) { seedBundle(BUNDLE_SEED[k]); });
 
-  /* 目前在庫：數位商品與 stock 為 ∞ 的一律 'unlimited'，其餘取現有庫存數。
-     限量版本（edition==='limited'）的 stock 本來就是「還剩幾件」，直接當目前在庫。 */
+  /* 目前在庫：不限量的數位商品與 stock 為 ∞ 的一律 'unlimited'，其餘取現有庫存數。
+     限量版本（edition==='limited'）的 stock 本來就是「還剩幾件」，直接當目前在庫。
+     2026-10-16（示範資料補齊 S5）：限量數位發行（5.1.5.2 F5.2）同樣有剩餘數量——原本數位商品一律當不限量，
+     doc-guide／nick-doc 改限量後清單庫存欄會照舊顯示 ∞。 */
   function poolTotal(p) {
-    if (p.cat === 'digital' || p.stock === '∞' || p.stock === undefined) return 'unlimited';
+    if ((p.cat === 'digital' && p.edition !== 'limited') || p.stock === '∞' || p.stock === undefined) return 'unlimited';
     var n = Number(p.stock);
     return isNaN(n) ? 'unlimited' : n;
   }
@@ -1796,7 +1810,7 @@
   }
   function stockText(p) {
     if (p.edition === 'limited') return (p.sold || '0') + ' / ' + (p.cap || '∞');
-    if (p.stock === '∞' || p.cat === 'digital') return '∞';
+    if (p.stock === '∞' || p.cat === 'digital') return '∞';   /* 限量（含限量數位發行）已在上一行處理 */
     return p.stock + ' / ∞';
   }
   function patchEshopList() {
@@ -1858,6 +1872,13 @@
       if (catSub && p.subLabel) {
         catSub.removeAttribute('data-i18n');
         catSub.textContent = bilingual(p.subLabel, ' · ');
+      }
+      /* 主分類（2026-10-16，稽核順帶發現）：nick 的列是從實體列複製來的，主分類一直寫 Physical goods——6 件數位商品也是。
+         照資料的 cat 換 key（同 data-type）；靜態列本來就對，重設同一個 key 不影響。 */
+      var catMain = row.querySelector('.product-list__cat-main');
+      if (catMain && p.cat) {
+        var ck = p.cat === 'digital' ? 'e-shop.cat.digital' : 'e-shop.cat.physical';
+        catMain.setAttribute('data-i18n', ck); catMain.textContent = tr(ck) || (p.cat === 'digital' ? 'Digital goods' : 'Physical goods');
       }
 
       /* 規格副標：persona 的規格模式可能與 default 那列不同（例：default 的 pin 是單一選項，

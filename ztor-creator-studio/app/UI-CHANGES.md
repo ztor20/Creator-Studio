@@ -13,6 +13,110 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-16（二百五十五）· release2.4 示範資料補齊（稽核 19 個缺口＋4 個順帶發現）
+
+**標籤**：release2.4
+
+依 `note/release2.4 假資料覆蓋稽核.md`（使用者同意照建議補），並對齊稽核後的 D431～D436。只改示範資料與讀取示範資料的接線，不改產品規則；逐項對照與無法補的原因寫在稽核報告末尾「2026-10-16 補齊結果」。
+
+**D infra／文件（示範資料，不是產品變更）**
+
+- `js/events-store.js`：
+  - 活動：`hsinchu-vinyl-sf` 顯示設定改隱藏；`nick-live-taichung-bky` 座席票隱藏、新增 bookyay 免費門票 `tier-tc-companion`（NT$0）、新增已下架且未售出的組合包 `bd-tc-floor-tee`；`nick-acoustic-tainan-bky` 關閉提前入場；`nick-live-taoyuan-bky` 全部賣完（完售）且組合包 `bd-ty-ga-tee` 隱藏；`nick-live-kaohsiung-bky` 改立即開賣；`khh-countdown-draft` 描述加編號清單與分隔線。
+  - 組合包：`bd-nye-ga-band` 開賣另設 10/28、限購覆寫每人 1 組；`bd-khh-duo-tee` 加電影關聯、開賣另設 11/12。
+  - 撤銷原因（D431）：自建活動每場第一筆撤銷紀錄帶原因、第二筆沒填；bookyay 活動不編造原因。
+  - 收入與交易口徑：桃園場 sold 1,700、revenue 4,422,150，台中場 sold 406（免費票不加收入）；`check_events_store.js` PASS。
+- `js/products-store.js`：`doc-guide`、`nick-doc` 改限量數位發行，數位商品的庫存池在限量時也算數量（原本一律不限量，清單會顯示 ∞）；`poster` 特價不可與優惠碼疊加；`signing-set`、`nick-signing-set` 限購覆寫每人 1 組；`roadie-set`、`wish-you-good-life-four-piece` 加限時購買；`coastline-starter-set` 定時下架、`nick-preorder-set` 定時上架；`signing-set` 殘留的 `perks` 刪除；nick persona 清單主分類照資料寫數位或實體（原本 6 件數位商品都寫 Physical goods）。
+- `js/orders-store.js`：免費門票訂單改接台中場免費陪同票（release2.4 看得到），不再接已被 release2.4 收起的 `nantou-lantern-opening`；`ZT-10476` 撤銷原因拿掉，示範「沒填原因」。
+- `js/csv-export.js`：匯出紀錄在瀏覽器還沒存過時預放 4 筆種子（創作者本人、Admin 代管；訂單管理與桃園場交易明細各兩筆）。
+- `create-event.html`：bookyay 匯入候選 `bky-12` 的描述與草稿同步（編號清單＋分隔線）；續填 bookyay 草稿時，草稿組合包的電影關聯與另設時間一併保留（D386 決定二「儲存就保留」，原本只疊回名稱、成員與折扣）。
+- `store-settings.html`：優惠碼補三列狀態示範（未開始、已結束、已停用），各版本都看得到。
+- `e-shop.html`、`events.html`：靜態列的後備數字對齊新資料（`doc-guide` 庫存 237 / 300、桃園與台中場票數與收入）。
+- `feature-scope-map.md` S92 備註改指向新的隱藏門票示範；`docs/示範資料索引.md` 補優惠碼、活動、訂單與匯出紀錄三節。
+- 已知未接線（另一個子代理正在改 `bundle-detail.html`，本輪不動）：組合商品細節頁讀活動組合包時寫死 `shown:true`、`films:[]`、`listed` 只看活動，所以 `bd-tc-floor-tee` 的已下架、`bd-ty-ga-tee` 的隱藏在該頁看不出來（活動詳情的組合包卡看得到隱藏）。
+- 未升 `?v=`（固定字串）。
+
+## 2026-10-16（二百五十四）· 活動組合包上架中，頁首「預覽與在地化」入口停用
+
+**標籤**：release2.4
+
+依據 D435 推導（規格 5.1.5.9 §2.8 編輯時機，2026-10-16 一致性補修 Plan493：翻譯算其他資料，看組合包自己的上架狀態〔推導〕）。
+
+**A spec-derived**
+
+- **組合商品細節頁**（`bundle-detail.html`，S81.1 🔵）：活動組合包（活動已發布、組合包上架中）時，頁首「預覽與在地化」入口停用，title 寫「組合包上架中，要先下架這個組合包才能修改。」（新 key `bd.loc.listed`）；下架後恢復。比照 `event-detail.html` 活動上架中停用在地化入口（二百五十二）。入口是 `<a>`，停用時 href 暫收進 `data-bd-href`、拿掉 tab 焦點；判斷沿用 `bdStockOnly()`，在 `bdStockSync()` 裡一起切。電子商店組合包不受影響。
+- 「組合包上架中，只能改鎖定套數」說明列（`bd.stockonly.body`）的其他資料清單補「翻譯」。
+- 未升 `?v=`（固定字串）。對應 ASSUMPTIONS UIA-268 第 11 條。
+
+## 2026-10-16（二百五十三）· D436 系列同步只套用已下架的場次、組合包賣出後購買條件可改
+
+**標籤**：release2.4
+
+依據 D436（使用者裁決，2026-10-16）。
+
+**A spec-derived**
+
+- **系列母頁**（`series-detail.html`，S88 ⚪ 頁級 full）：「儲存並同步」只套用到已下架（或未上架、定時上架時間未到）的場次；上架中的場次不套用，確認窗列出這些場次並寫「要先下架這些場次才能同步」，全部都上架中時確認窗標題改「目前沒有可以同步的場次」、收起「儲存並同步」。頁頂警示同步改說「其中 N 場上架中，儲存時不會同步」。不自動下架子場（D436 決定一、二）。
+  - 順手修正：確認窗的 markup 排在 script 之後，原本 script 執行時查不到、按儲存永遠直接存；改成點擊時才查。
+- **組合包賣出後的購買條件**：原型本來就沒有因已售出而鎖購買條件與限購；只改兩句已售出說明（`bd.members.locked`、`cpp.bd.sp.locked`）補上「購買條件（含限購）仍可改」。活動的票務組合包仍受 D435 管（組合包上架中要先下架，見二百五十二）。
+
+## 2026-10-16（二百五十二）· D435 活動發布後只能改庫存：上架中編輯鎖定，要先下架
+
+**標籤**：release2.4
+
+依據 D435（使用者指示，2026-10-16）與協調者補充（規格 5.1.6.2、5.1.5.9 §2.3「活動發布後的修改」）。功能閘新登記 `S81.1` 🔵。
+
+**A spec-derived**
+
+- **活動詳情**（`event-detail.html`）：活動已發布（已排程、售票中、進行中）且上架中（定時上架時間未到算已下架）時，按「編輯活動」：
+  - 「設定」分頁的活動內容、場次、地點、在地化四節唯讀——各節掛 `data-mode="view"`（沿用檢視態的樣子與按鈕白名單，不另做第三種鎖定外觀）、欄位逐一設唯讀；發布設定、連結、上下架、取消活動四節不鎖（營運動作，含上下架與開賣停售時間〔推導〕）。
+  - 「設定」與「票務」兩個工作列下方出現說明列 `[data-ed-stockonly-note]`：「活動上架中，目前只能改庫存」＋下架入口（同一個下架確認窗）。
+  - 票務：門票彈窗只開放張數（下限＝已售），票名、票價、入場、圖片、購買條件唯讀、刪除收起，彈窗頁尾寫「活動上架中，只能改張數；其他欄位要先下架活動才能修改」；不能新增門票；預設購票規則的「編輯」收起。隱藏／顯示照常（營運動作）。bookyay 帶入的張數本來就鎖，維持鎖。
+  - 通知開關、「預覽與在地化」入口（翻譯）屬其他資料：上架中鎖定；在地化入口不受整頁編輯管，所以上架中一律停用並用 title 寫原因。
+  - 編輯中按下架：鎖定即時解開、照現行規則開放（bookyay 鎖定欄位與 D413 已開始場次等既有鎖照舊）。編輯中還有未儲存變更時按「重新上架」先擋下並提示「請先儲存或捨棄變更，再重新上架」〔推導〕；儲存後不自動上架。
+- **組合商品細節頁**（`bundle-detail.html`）：活動已發布的組合包，看組合包自己的上架狀態——上架中「編輯組合」停用、「組合設定」頂端出現說明列 `[data-bd-stockonly-note]`（只剩鎖定套數能改，在組合庫存分頁）＋「下架組合包」入口（同頁首下架）；下架後照現行規則開放。電子商店組合包、商品不受影響。
+
+## 2026-10-16（二百五十一）· D434 撤銷含 bookyay 門票的組合包：確認窗補一條 bookyay 作廢說明
+
+**標籤**：release2.4
+
+**A spec-derived**
+
+- **訂單詳情**（`order-detail.html`）：撤銷 bookyay 匯入活動的組合包品項（單品撤銷，或整單裡含這種品項）時，「撤銷之後會發生」多一條「ztor 會通知 bookyay 作廢這張票；未串接時由 Admin 到 bookyay 後台作廢。」（`[data-od-void-effect="bky"]`、`od.void.effect.bky`）。其餘撤銷分工（單買 bookyay 門票在 bookyay 撤銷、自建活動門票在活動詳情撤銷）原型已符合，未改。
+
+## 2026-10-16（二百五十）· D433 組合包選票：活動票券分頁一律可點、改允許的門票與張數
+
+**標籤**：release2.4
+
+**A spec-derived**
+
+- **建立組合包**（`create-bundle.html`）加入組合物彈窗：「活動票券」分頁不再因已有票券而停用（原本點了沒反應）。分頁裡已加入的那場排第一、標「已加入」，點了關彈窗並展開票券列的門票勾選；其他活動整列停用（`aria-disabled`、淡化）並 title 說明；面板頂一句「一個組合包只能有一場活動，要換請先移除票券」。從活動詳情進來（活動鎖定）時改寫「一個組合包只能有一場活動；從活動詳情建立的組合包，活動固定為這一場」。
+- **共用元件 Tabs**（`ds-components/tabs.css`）：補停用態 `.tabs__item:disabled`／`[aria-disabled="true"]`——字退到 `--locked-field-ink`、游標 `not-allowed`、hover 不變亮。`design-system.html` 矩陣加 `:disabled` 欄、`design-system.md` States 表加一列。目前站上沒有停用分頁的消費頁（建立組合包改成一律可點），先備好讓「不能點的分頁看得出不能點」有唯一答案。
+- **組合商品細節頁**（`bundle-detail.html`）：活動組合包編輯模式在票券列下方展開「允許的門票」勾選表，尚未售出可增減允許的門票（至少留一種）、張數沿用每組步進器；已售出後表格鎖定（說明沿用已售出那一列）；取消編輯還原勾選。功能閘新登記 `S47.1` 🔵。
+- **抽共用**：允許的門票表 markup 抽成 `js/tix-tier-table.js`（`ZtorTixTierTable.html`），建立組合包與組合商品細節頁同一份；樣式不變（`bundle-editor.css`／`member-table.css`），`design-system.html`／`.md` 的 Member table 條目補註記。
+
+## 2026-10-16（二百四十九）· D432 優惠碼「指定商品」可選獨立票
+
+**標籤**：release2.4
+
+**A spec-derived**
+
+- **商店設定 › 優惠碼**（`store-settings.html`）：「指定商品」候選多一組「獨立票」（events-store 的 `tier.standalone`，只列售票中、已排程、進行中的活動），每筆 meta 標「獨立票 · 票價」，與「活動票種」分組區分；清單「範圍」浮卡的類型名同步。功能閘新登記 `S51.1` 🔵（關閉時退回舊寫法，獨立票混在票種組）。release2.4 預覽目前沒有帶獨立票的 bookyay 示範活動，所以這一組只在最終版看得到。
+
+## 2026-10-16（二百四十八）· D431 撤銷不寄信；撤銷原因只記在訂單紀錄
+
+**標籤**：release2.4
+
+**C 撤除**
+
+- **訂單詳情**（`order-detail.html`）撤銷確認窗：「寄送訂單已取消信給買家」（單品、整單兩條，`od.void.effect.email`／`od.void.whole.effect.email`）移除；原因欄提示改「只記在訂單紀錄，給 Admin 查」；toast 拿掉「買家將收到通知」。
+- **活動詳情**（`event-detail.html`）門票撤銷確認窗：「持票人會收到取消通知信」移除（`event-detail.void.confirm.effect.email`），toast 拿掉「會通知持票人／買家」。`js/orders-store.js` 註解同步。
+- **示意信退場（墓碑）**：`emails/shop-order-cancelled-zh.html`、`emails/shop-order-cancelled-en.html` 與 `emails/assets/`（只被這兩封引用）刪除，原型內沒有頁面連到它們；要找回從 git 歷史取（最後一版在 2026-10-16 之前的 commit）。
+
+**A spec-derived**
+
+- **活動門票撤銷原因**（協調者補充，比照訂單撤銷）：門票撤銷確認窗加選填「撤銷原因」欄（整場撤銷套用到每一筆），`js/events-store.js` `voidTicket(tx, actor, reason)` 記 `voidReason`；「撤銷紀錄」表多一欄「撤銷原因」（沒填寫「—」）。
+
 ## 2026-10-16（二百四十七）· D429 bookyay「每張門票人數」不帶入：套票拆 1 人票＋自動組合包整組撤除
 
 **標籤**：release2.4

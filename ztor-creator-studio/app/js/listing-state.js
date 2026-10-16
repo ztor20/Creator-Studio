@@ -526,15 +526,23 @@
    *   unlisted＝目前已下架（含排定上架未到、定時下架已過）但未封存的成員——重新上架時會一起被拉上來（先確認）；
    *   blocked ＝已封存的成員（不可由組合包順手解除封存，要先各自解除封存 · D298）＋草稿或查不到的成員（沒有可上架的東西）。
    * productsById：{ [id]: product } 或 function(id)。兩個清單都是 [{ productId, product|null }]。
+   * tickets＝票券成員（活動組合包，kind:'ticket' 或 id 以「tix:」開頭）：票券不是商品，沒有封存／下架／草稿可查，
+   *   不進上面兩個清單、也不會被組合包連帶上架；可不可賣看活動與門票本身，由呼叫端（partials/bundle-relist.js）判斷。
+   *   2026-10-16 修正：原本把票券成員當商品去查，查不到就算「已封存」，活動組合包下架後永遠上架不回來（D435 要求能走通）。
    */
+  function isTicketMember(m) {
+    var id = m && (m.productId || m.id);
+    return !!m && (m.kind === 'ticket' || (typeof id === 'string' && id.indexOf('tix:') === 0));
+  }
   function bundleRelistPlan(bundle, productsById, now) {
-    var at = nowMs(now), unlisted = [], blocked = [];
+    var at = nowMs(now), unlisted = [], blocked = [], tickets = [];
     ((bundle && bundle.members) || []).forEach(function (m) {
       var id = m.productId || m.id, p = resolveProduct(productsById, id);
+      if (isTicketMember(m)) { tickets.push({ productId: id, product: p, member: m }); return; }
       if (!p || isDraftOf(p, null) || isArchived(p)) blocked.push({ productId: id, product: p });
       else if (isUnlisted(p, at)) unlisted.push({ productId: id, product: p });
     });
-    return { unlisted: unlisted, blocked: blocked };
+    return { unlisted: unlisted, blocked: blocked, tickets: tickets };
   }
   /** 相容別名：不在上架中的成員（unlisted ＋ blocked）。 */
   function unlistedMembers(bundle, productsById, now) {
@@ -871,6 +879,7 @@
     unlistWithBundles: unlistWithBundles,
     unlistedMembers: unlistedMembers,
     bundleRelistPlan: bundleRelistPlan,
+    isTicketMember: isTicketMember,
     relistBundle: relistBundle,
     scheduledUnlistCascade: scheduledUnlistCascade,
     expireScheduled: expireScheduled,

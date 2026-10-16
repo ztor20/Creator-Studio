@@ -340,6 +340,19 @@ button.tabs__item:focus-visible {
   border-radius: 2px;
 }
 
+/* Disabled（2026-10-16，D433）：不能點的分頁要看得出不能點，不做「點了沒反應」的沉默停用。
+   原生 <button disabled> 與 div 版的 aria-disabled="true" 吃同一條；字退到鎖定墨色
+   （--locked-field-ink，同未選的鎖定選項卡、Q128／Q58「停用＝退到背景」），游標 not-allowed，
+   hover 不變亮（寫在 --brand 的 hover 之後，同 specificity 由源碼順序決勝）。
+   停用原因由消費頁就地寫一句說明（分頁旁或面板頂），不只靠 title。 */
+.tabs__item:disabled,
+.tabs__item[aria-disabled="true"],
+.tabs__item:disabled:hover,
+.tabs__item[aria-disabled="true"]:hover {
+  color: var(--locked-field-ink);
+  cursor: not-allowed;
+}
+
 /* Panel — switched in sync with .tabs__item--active by inline JS */
 .tab-panel { display: none; }
 .tab-panel--active { display: block; }

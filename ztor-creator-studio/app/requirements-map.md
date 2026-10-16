@@ -25,6 +25,14 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-16 D431～D436 原型同步（UI-CHANGES 二百四十八～二百五十四、ASSUMPTIONS UIA-268；新登記 S47.1、S51.1、S81.1 🔵）**：
+> - D431（5.1.5.3.1 §2.8、5.1.6.3）：`order-detail.html` 撤銷確認窗拿掉寄信兩條、原因欄只記訂單紀錄；`event-detail.html` 門票撤銷拿掉寄信、加選填撤銷原因（`js/events-store.js` `voidTicket(tx, actor, reason)`）與撤銷紀錄欄；示意信 `emails/` 退場。
+> - D432（5.1.5.5）：`store-settings.html` 優惠碼指定商品多一組「獨立票」。
+> - D433（5.1.5.4、5.1.5.9 §2.3）：`create-bundle.html` 活動票券分頁一律可點、已加入／停用列；`ds-components/tabs.css` 停用態；`bundle-detail.html` 改允許的門票與張數；共用 `js/tix-tier-table.js`。
+> - D434（5.1.5.3.1 §2.8）：`order-detail.html` 撤銷含 bookyay 門票的組合包補一條作廢說明。
+> - D435（5.1.6.2、5.1.5.9 §2.3）：`event-detail.html` 上架中只能改庫存（`edStockOnly()`／`edStockSync()`、說明列、在地化入口停用、通知鎖定）；`bundle-detail.html` 活動組合包上架中「編輯組合」停用＋說明（`bdStockOnly()`），頁首「預覽與在地化」入口同樣停用（`bdStockSync()`，5.1.5.9 §2.8，二百五十四）。
+> - D436（5.1.6.2 F16、主規格 §7.14）：`series-detail.html` 同步略過上架中場次；已售出組合包說明補「購買條件仍可改」。
+
 > **2026-10-16 D429 原型同步：bookyay「每張門票人數」不帶入、套票拆 1 人票＋自動組合包整組撤除（UI-CHANGES 二百四十七、ASSUMPTIONS UIA-267；S56、S92 註記，tier 不變）**：
 > - 5.1.6.1 F20／F21／F22：`create-event.html` `bkyMap()` 不讀 `persons`，套票帶入成一張普通 bookyay 門票（票價、張數照 bookyay、本門票限購落在這張票），不再產生隱藏 1 人票（`hideFix`）與自動組合包（`fix`）；帶入時組合包清空。
 > - 5.1.6.2 F9、5.1.6.3 §2.6／§2.6.1：`event-detail.html` 1 人票鎖定隱藏、票價張數鎖、刪除鈕收起與自動組合包卡的鎖定說明整組移除。

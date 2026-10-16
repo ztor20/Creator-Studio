@@ -2303,6 +2303,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | hover | `.tabs__item:hover` | Color → `--foreground` |
 | active | `.tabs__item--active` | Color `--foreground` + `--primary` (orange) bottom border（base 樣式不受換裝影響；`--underline-short`／`--underline-label` 兩個變體的 `::after` 底線改走發光燈條，見下方 Class API） |
 | focus | `button.tabs__item:focus-visible` | `2px solid var(--primary)` outline, 2px offset |
+| disabled | `.tabs__item:disabled`／`.tabs__item[aria-disabled="true"]` | Color → `--locked-field-ink`, `cursor: not-allowed`, hover doesn't brighten（2026-10-16 D433：看得出不能點；停用原因由消費頁就地寫一句說明，不只靠 title） |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
 
@@ -2321,7 +2322,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--primary` (active underline + focus ring) · `--foreground`, `--muted-foreground` (active/hover vs idle) · `--border` (tab-bar hairline) · `--muted` (count pill bg); `--radius-pill` · `--font-ui`
+- `--primary` (active underline + focus ring) · `--foreground`, `--muted-foreground` (active/hover vs idle) · `--locked-field-ink` (disabled item) · `--border` (tab-bar hairline) · `--muted` (count pill bg); `--radius-pill` · `--font-ui`
 
 **Usage** — Use to switch between sibling views of one page section: Earnings (Overview / Transactions / Payouts / Tax), E-Shop (Products / Bundles / Auctions), Projects status filters, Fans CRM views. Avoid for disclosure of optional detail — use Accordion.
 
@@ -7466,6 +7467,8 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 - `.member-table__empty` — 還沒有組合物時的一句
 
 **Behavior** — 純呈現，無自帶 JS；展開由消費頁切 `[hidden]`，`__open` 與 `__link` 兩處的 `aria-expanded` 同步。
+
+**允許的門票表（2026-10-16，D433）** — 展開區裡的 `.bd-tbl.bd-tbl--tix` 勾選表由共用 JS `js/tix-tier-table.js`（`ZtorTixTierTable.html(opts)`）產生 markup，建立組合包（`create-bundle.html` 票券列展開）與組合商品細節頁（`bundle-detail.html` 編輯模式「改允許的門票與張數」）同一份；`opts.locked` 為真時勾選框停用、表加 `.bd-tbl--locked`（已售出後鎖定）。樣式不變，仍在 `bundle-editor.css`／本檔。
 
 **States** — 展開／收合；空表（`__empty` 顯示、其餘列 `[hidden]`）；`:focus-visible` 2px `--ring`；hover 文字轉 `--foreground`（`prefers-reduced-motion` 時 chevron 不動畫）。
 

@@ -484,13 +484,13 @@
       <div class="field__label mt-16" data-i18n="od.void.effects">What voiding does</div>
       <!-- 效果預告依品項型態顯示（D253 擴大作廢範圍後，不是每種型態都有領取碼／庫存）：
            data-od-void-effect 由下方 JS 依 it.mode 與有無領取單位切換 hidden，
-           三段各自對應 §2.8「執行結果」的領取單位／庫存回補／通知三條，只是不是
-           每種型態都適用。email 一律顯示（三種型態都會通知買家）。 -->
+           兩段各自對應 §2.8「執行結果」的領取單位／庫存回補，只是不是每種型態都適用。
+           D431（2026-10-16）：撤銷一律不寄 email，原本的「寄送訂單已取消信」兩條（單品／整單）退場。 -->
       <div class="field__hint" data-od-void-effect="codes" data-i18n="od.void.effect.codes">This item's pickup codes stop working immediately — they can't be scanned at a session.</div>
       <div class="field__hint mt-8" data-od-void-effect="stock" data-i18n="od.void.effect.stock">Stock goes back on the shelf; a bundle restocks each of its members.</div>
-      <div class="field__hint mt-8" data-od-void-effect="email" data-i18n="od.void.effect.email">The buyer gets an order-cancelled email listing this item.</div>
-      <!-- 整單撤銷專用的兩條（D414）：訂單轉已取消、信中列出全部品項；單品撤銷時隱藏 -->
-      <div class="field__hint mt-8" data-od-void-effect="whole-email" hidden data-i18n="od.void.whole.effect.email">The buyer gets an order-cancelled email listing every item.</div>
+      <!-- D434（2026-10-16）：撤銷含 bookyay 門票的組合包品項時多一條——ztor 通知 bookyay 作廢那張票，未串接時由 Admin 到 bookyay 後台作廢 -->
+      <div class="field__hint mt-8" data-od-void-effect="bky" hidden data-i18n="od.void.effect.bky">ztor tells bookyay to void the ticket in this bundle. If the two systems aren't connected yet, an Admin voids it in the bookyay back office.</div>
+      <!-- 整單撤銷專用（D414）：訂單轉已取消；單品撤銷時隱藏 -->
       <div class="field__hint mt-8" data-od-void-effect="whole-status" hidden data-i18n="od.void.whole.effect.status">The order becomes Cancelled.</div>
       <!-- 2026-10-15 目視檢查 C1：「請先在 Stripe 完成人工退款」與「撤銷不可逆」原本是兩行灰色 hint，跟效果預告同一個重量、讀不出是警告；
            改用既有 .alert--row（同 event-detail #ed-bkysync），放在原因欄上方。前置條件（Stripe）在前、不可逆在後（Pattern 5.1.11 的四段順序）。
@@ -506,10 +506,10 @@
         </div>
       </div>
       <!-- 撤銷原因（D271，2026-09-15）：選填、自由填寫；下方預設理由 chip 一鍵帶入、帶入後可改寫。
-           有填才進買家信與品項列的撤銷紀錄。元件全用既有的 field／textarea／chip，沒有新 CSS。 -->
+           D431（2026-10-16）：不再進買家信，只記在訂單紀錄（品項列的撤銷紀錄），給 Admin 查。元件全用既有的 field／textarea／chip，沒有新 CSS。 -->
       <div class="field mt-16">
         <label class="field__label" for="od-void-reason" data-i18n="od.void.reason.label">Reason (optional)</label>
-        <textarea class="input textarea" id="od-void-reason" rows="2" data-i18n-placeholder="od.void.reason.ph" placeholder="Leave a note on why this line is being voided — it goes to the buyer's email and the order record."></textarea>
+        <textarea class="input textarea" id="od-void-reason" rows="2" data-i18n-placeholder="od.void.reason.ph" placeholder="Leave a note on why this line is being voided — it's kept in the order record for Admin only."></textarea>
         <div class="field__hint mt-8" data-i18n="od.void.reason.hint">Or pick a preset — you can still edit it.</div>
         <div class="chip-group mt-8" data-od-void-presets>
           <button class="chip" type="button" data-od-void-preset="od.void.reason.p1" data-i18n="od.void.reason.p1">Buyer requested cancellation by email</button>
@@ -1338,7 +1338,7 @@
      這段刻意跑在 sidebar.js 之後：Admin 代管態的判斷（window.ztorCreator.adminScope()）
      要等 sidebar.js 註冊完才拿得到，所以初始化時先重畫一次品項表，讓按鈕吃到正式訊號；
      代管對象在頁內被切換（ztor:creator-changed）時同樣重畫。
-     ⚠ 原型只改狀態：庫存回補與「訂單已取消」email 由後端執行，這裡只在彈窗裡告知。 */
+     ⚠ 原型只改狀態：庫存回補由後端執行，這裡只在彈窗裡告知。D431：撤銷不寄 email。 */
   (function () {
     const view = window.ztorOrderView;
     const S = window.ztorOrders;
@@ -1359,8 +1359,7 @@
     const scopeLabel = modal.querySelector('[data-od-void-scope-label]');
     const titleEl = document.getElementById('od-void-title');
     const irrevEl = modal.querySelector('[data-od-void-irreversible]');
-    const emailEl = modal.querySelector('[data-od-void-effect="email"]');
-    const wholeEmailEl = modal.querySelector('[data-od-void-effect="whole-email"]');
+    const bkyEffect = modal.querySelector('[data-od-void-effect="bky"]');
     const wholeStatusEl = modal.querySelector('[data-od-void-effect="whole-status"]');
     const wholeListEl = modal.querySelector('[data-od-void-wholelist]');
     let whole = false;
@@ -1375,7 +1374,8 @@
     function setMode(w) {
       whole = w;
       scopeLabel.hidden = !w; wholeListEl.hidden = !w; listEl.hidden = w;
-      wholeEmailEl.hidden = !w; wholeStatusEl.hidden = !w; emailEl.hidden = w;
+      wholeStatusEl.hidden = !w;
+      if (bkyEffect) bkyEffect.hidden = true;
       setText(titleEl, w ? 'od.void.whole.title' : 'od.void.title', w ? 'Void whole order' : 'Void item');
       setText(confirmBtn, w ? 'od.void.whole.confirm' : 'od.void.confirm', w ? 'Void whole order' : 'Void this item');
       setText(irrevEl, w ? 'od.void.whole.irreversible' : 'od.void.irreversible',
@@ -1420,6 +1420,8 @@
       if (window.applyI18n) window.applyI18n(wholeListEl);
       if (codesEffect) codesEffect.hidden = !order.items.some(hasUnitsOf);
       if (stockEffect) stockEffect.hidden = order.items.every(it => it.mode === 'digital');
+      /* D434：整單裡有 bookyay 活動的組合包品項時，同樣告知 ztor 會通知 bookyay 作廢那張票 */
+      if (bkyEffect) bkyEffect.hidden = !(order.event && order.event.bky && order.items.some(it => it.mode === 'bundle'));
       if (reasonEl) reasonEl.value = '';
       clearPreset();
       open();
@@ -1444,6 +1446,8 @@
         (item.mode === 'bundle' && agg.total > 0);
       if (codesEffect) codesEffect.hidden = !hasUnits;
       if (stockEffect) stockEffect.hidden = item.mode === 'digital';
+      /* D434：bookyay 匯入活動的組合包品項（成員含 bookyay 門票）——撤銷後由 ztor 通知 bookyay 作廢那張票 */
+      if (bkyEffect) bkyEffect.hidden = !(item.mode === 'bundle' && order.event && order.event.bky);
       if (reasonEl) reasonEl.value = '';
       clearPreset();
       open();
@@ -1451,7 +1455,7 @@
 
     confirmBtn.addEventListener('click', () => {
       if (whole) {
-        /* 整單撤銷：每個品項各撤銷一次（原因套用到每個品項），訂單成為已取消；原型不呼叫金流、庫存與通知信由後端執行 */
+        /* 整單撤銷：每個品項各撤銷一次（原因套用到每個品項），訂單成為已取消；原型不呼叫金流、庫存由後端執行；D431 不寄信 */
         const doneAll = S.voidWholeOrder(order, reasonEl ? reasonEl.value.trim() : '');
         close();
         if (!doneAll) return;
@@ -1459,7 +1463,7 @@
         view.status();
         if (window.renderWholeVoid) window.renderWholeVoid();
         if (window.applyI18n) window.applyI18n(document);
-        if (window.ztorToast) window.ztorToast.show(T('od.void.whole.toast', 'Voided the whole order — the buyer will be notified.'), { tone: 'success' });
+        if (window.ztorToast) window.ztorToast.show(T('od.void.whole.toast', 'Voided the whole order.'), { tone: 'success' });
         return;
       }
       if (!target) return close();
@@ -1472,7 +1476,7 @@
       if (window.renderWholeVoid) window.renderWholeVoid();
       if (window.applyI18n) window.applyI18n(document);
       if (window.ztorToast) {
-        window.ztorToast.show(T('od.void.toast', 'Voided {item} — the buyer will be notified.').replace('{item}', label), { tone: 'success' });
+        window.ztorToast.show(T('od.void.toast', 'Voided {item}.').replace('{item}', label), { tone: 'success' });
       }
     });
 

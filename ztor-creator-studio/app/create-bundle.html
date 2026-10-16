@@ -556,7 +556,8 @@
 </div>
 
 <!-- 「加入組合物」彈窗（2026-10-12 改版）：借 payout-modal 的殼。兩個分頁：商品（候選清單＋建立新商品）／活動票券（活動清單）。
-     一個組合包只能有一場活動（D292 裁決十六）：已有票券成員時「活動票券」分頁停用並寫原因。 -->
+     一個組合包只能有一場活動（D292 裁決十六）。D433（2026-10-16）：「活動票券」分頁一律可點（原本已有票券時整個分頁停用、點了沒反應）；
+     分頁裡已加入的那場標「已加入」、點了關彈窗並展開該列門票勾選，其他活動整列停用，面板頂就地說明為什麼。 -->
 <div class="payout-modal" data-cb-member-modal hidden>
   <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="cb-member-modal-title">
     <div class="payout-dialog__head">
@@ -568,7 +569,6 @@
         <button type="button" class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-cb-pick-tab="item"><span data-i18n="cb.pick.items">Products</span></button>
         <button type="button" class="tabs__item" role="tab" aria-selected="false" data-cb-pick-tab="tix"><span data-i18n="cb.pick.tix">Event tickets</span></button>
       </div>
-      <p class="field__hint field__hint--fact" data-cb-pick-why hidden data-i18n="cb.pick.tix.one">This bundle already has tickets from one event. A bundle can hold one event only — remove that row to switch.</p>
       <div class="stack" data-cb-pick-panel="item">
           <div id="cb-prod-pick">
             <div class="cb-sublabel" id="cb-recent-label" data-i18n="cb.recent">Recently viewed</div>
@@ -584,6 +584,7 @@
           </div>
       </div>
       <div class="stack" data-cb-pick-panel="tix" hidden>
+        <p class="field__hint field__hint--fact" data-cb-pick-why hidden data-i18n="cb.pick.tix.one">A bundle can hold one event only. To switch events, remove the tickets first.</p>
         <div data-cb-event-panel>
             <div class="cb-sublabel" id="cb-ev-label" data-i18n="cb.tix.recent">Recently viewed events</div>
             <div class="picker">
@@ -616,7 +617,8 @@
 <!-- D241：狀態與可售量的唯一推導層（spec §7.14）。必須早於下面的頁內 script。 -->
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
-<script src="js/events-store.js?v=r2.2"></script><!-- 2026-09-18 D292：活動票券成員的候選（活動與票種） -->
+<script src="js/events-store.js?v=r2.2"></script>
+<script src="js/tix-tier-table.js?v=r2.2"></script><!-- D433：允許的門票勾選表（與 bundle-detail 共用） --><!-- 2026-09-18 D292：活動票券成員的候選（活動與票種） -->
 <script src="js/ticket-bundle.js?v=r2.2"></script><!-- D342：票務商品的上架與開賣（跟隨活動／另設）與購買條件預設 -->
 <script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：組合包限購（預設取成員交集、覆寫、擋存） -->
 <script src="js/purchase-conds.js?v=r2.2"></script><!-- D400：純商品組合包的購買條件（限時購買／限粉絲分級購買） -->
@@ -1850,14 +1852,14 @@
   }
   tixOpeners.forEach(b => b.addEventListener('click', () => { tixOpen = !tixOpen; renderTixRow(); }));
 
-  /* 「加入組合物」彈窗（payout-modal 殼）：商品／活動票券兩個分頁；已有票券成員時活動票券分頁停用並寫原因（一個組合包只能有一場活動） */
+  /* 「加入組合物」彈窗（payout-modal 殼）：商品／活動票券兩個分頁。D433：活動票券分頁一律可點；已有票券成員（或從活動詳情進來鎖定）時，
+     分頁裡已加入那場標「已加入」、其他活動整列停用，面板頂就地說明「一個組合包只能有一場活動」 */
   const memberModal = document.querySelector('[data-cb-member-modal]');
   const pickTabs = Array.from(document.querySelectorAll('[data-cb-pick-tab]'));
   const pickPanels = Array.from(document.querySelectorAll('[data-cb-pick-panel]'));
   const pickWhy = document.querySelector('[data-cb-pick-why]');
   let pickCur = 'item';
   function setPickTab(t) {
-    if (t === 'tix' && (tix.event || tixLocked)) t = 'item';
     pickCur = t;
     pickTabs.forEach(b => { const on = b.dataset.cbPickTab === t; b.classList.toggle('tabs__item--active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
     pickPanels.forEach(pn => { pn.hidden = pn.dataset.cbPickPanel !== t; });
@@ -1866,13 +1868,14 @@
   function openMemberModal(t) {
     if (!memberModal) return;
     const has = !!tix.event || tixLocked;
-    const tabTix = pickTabs.find(b => b.dataset.cbPickTab === 'tix');
-    if (tabTix) { tabTix.disabled = has; if (has) tabTix.setAttribute('aria-disabled', 'true'); else tabTix.removeAttribute('aria-disabled'); }
+    /* D433：分頁本身不再停用；說明寫在活動票券面板頂。從活動詳情進來（D401 鎖定）時也顯示（D433 決定二），
+       但不叫人去移除——那一列移除不了，改說活動固定。 */
     if (pickWhy) {
-      pickWhy.hidden = !has || tixLocked;   /* 2026-10-12 使用者：「從這場活動的詳情頁建立，活動固定為這一場」這句多餘——從活動詳情進來（D401 鎖定）時整句不顯示 */
-      const wk = tixLocked ? 'cb.tix.locked' : 'cb.pick.tix.one';   /* 從活動詳情進來（D401 鎖定）時不叫人去移除——那一列移除不了 */
+      pickWhy.hidden = !has;
+      const wk = tixLocked ? 'cb.pick.tix.locked' : 'cb.pick.tix.one';
       pickWhy.setAttribute('data-i18n', wk);
-      pickWhy.textContent = T(wk, pickWhy.textContent);
+      pickWhy.textContent = T(wk, tixLocked ? "A bundle can hold one event only. This bundle was started from this event's page, so its event stays fixed."
+        : 'A bundle can hold one event only. To switch events, remove the tickets first.');
     }
     setPickTab(t || 'item');
     memberModal.hidden = false;
@@ -1885,7 +1888,7 @@
     memberModal.hidden = true;
     if (!addModal || addModal.hidden) document.body.classList.remove('is-modal-open');
   }
-  pickTabs.forEach(b => b.addEventListener('click', () => { if (!b.disabled) setPickTab(b.dataset.cbPickTab); }));
+  pickTabs.forEach(b => b.addEventListener('click', () => setPickTab(b.dataset.cbPickTab)));
   document.querySelectorAll('[data-cb-member-close]').forEach(b => b.addEventListener('click', closeMemberModal));
   if (memberModal) memberModal.addEventListener('click', e => { if (e.target === memberModal) closeMemberModal(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && memberModal && !memberModal.hidden && (!addModal || addModal.hidden)) closeMemberModal(); });
@@ -1905,23 +1908,35 @@
     all.forEach((ev, i) => { ev._recent = i < RECENT_EV_N; });
     const firstBlocked = all.find(ev => evBlocked(ev));
     if (firstBlocked) firstBlocked._recent = true;
+    /* D433：已有票券成員時，已加入的那場一定列出（排第一）；其他活動整列停用 */
+    const curId = tix.event ? tix.event.id : null;
+    if (curId) {
+      const ci = all.findIndex(ev => ev.id === curId);
+      if (ci > 0) all.unshift(all.splice(ci, 1)[0]);
+      if (ci >= 0) all[0]._recent = true;
+    }
     let shown = 0;
     all.forEach(ev => {
       const hay = (evName(ev) + ' ' + (ev.venue || '') + ' ' + (ev.city || '') + ' ' + (ev.date || '')).toLowerCase();
       const vis = q ? hay.indexOf(q) > -1 : ev._recent;
       if (!vis) return;
       shown++;
-      const blocked = evBlocked(ev);
+      const added = !!curId && ev.id === curId;
+      const otherEv = !!curId && !added;   /* D433：已有一場活動時，其他活動不能選 */
+      const blocked = evBlocked(ev) || otherEv;
       const row = document.createElement('div');
       row.className = 'data-list__row' + (blocked ? ' data-list__row--disabled' : '');
       row.dataset.evId = ev.id;
       if (blocked) row.setAttribute('aria-disabled', 'true');
+      if (otherEv) row.title = T('cb.pick.tix.one', 'A bundle can hold one event only. To switch events, remove the tickets first.');
       const thumb = (ev.images && ev.images.keyvisual) ? '<img class="data-list__thumb data-list__thumb--lg" src="' + esc(ev.images.keyvisual) + '" alt="">' : '<div class="data-list__icon"><i data-lucide="calendar" class="ztor-icon"></i></div>';
       row.innerHTML = '<div class="data-list__row-main">' + thumb
         + '<div class="data-list__body"><div class="data-list__title">' + esc(evName(ev)) + '</div><div class="data-list__meta">' + esc(evMeta(ev)) + '</div></div></div>'
-        + '<div class="data-list__end cb-row-end">' + evBadgeHTML(ev)
+        + '<div class="data-list__end cb-row-end">' + (added ? '<span class="badge badge--neutral" data-i18n="cb.tix.added">' + esc(T('cb.tix.added', 'Added')) + '</span>' : '') + evBadgeHTML(ev)
         + '<a class="btn btn--icon btn--xs" href="event-detail.html?id=' + encodeURIComponent(ev.id) + '" target="_blank" rel="noopener" data-i18n-aria-label="cb.tix.detail" aria-label="' + esc(T('cb.tix.detail', 'Open event in a new tab')) + '"><i data-lucide="external-link" class="ztor-icon"></i></a></div>';
-      if (!blocked) { row.style.cursor = 'pointer'; row.onclick = e => { if (e.target.closest('a')) return; openEvent(ev); }; }
+      /* 已加入那場：點了關彈窗、展開票券列的門票勾選（不重設已勾的門票）；未加入的可選活動：照舊選這場 */
+      if (added) { row.style.cursor = 'pointer'; row.onclick = e => { if (e.target.closest('a')) return; closeMemberModal(); tixOpen = true; renderTixRow(); renderTierTable(); }; }
+      else if (!blocked) { row.style.cursor = 'pointer'; row.onclick = e => { if (e.target.closest('a')) return; openEvent(ev); }; }
       evList.appendChild(row);
     });
     if (evNoResult) evNoResult.hidden = !(q && shown === 0);
@@ -1947,23 +1962,11 @@
     if (tierQtyField) tierQtyField.hidden = tiers.length === 0;
     if (!tiers.length) { tierTableEl.innerHTML = ''; if (semEl) semEl.textContent = ''; return; }
     const q = tix.qty;
-    tierTableEl.innerHTML = '<div class="bd-tbl bd-tbl--tix">' +
-      '<div class="bd-tbl__head"><span></span>' +
-        '<span class="bd-tbl__col">' + esc(T('cpp.bd.tbl.tier', 'Tier')) + '</span>' +
-        '<span class="bd-tbl__col bd-tbl__col--num">' + esc(T('cpp.bd.tbl.price', 'Price')) + '</span>' +
-        '<span class="bd-tbl__col bd-tbl__col--num">' + esc(T('cpp.bd.tbl.qty', 'Left')) + '</span></div>' +
-      tiers.map(t => {
-        const on = tix.tierIds.indexOf(t.id) >= 0, left = tierLeft(t), short = on && left < q;
-        /* 2026-09-22 方案 A：不足一組改用畫面表達——整列灰化（`--short`）＋「不足 n 張」徽章。 */
-        return '<label class="bd-tbl__row bd-tbl__row--pick' + (on ? '' : ' bd-tbl__row--off') + (short ? ' bd-tbl__row--short' : '') + '">' +
-          '<span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-cb-tier-check="' + esc(t.id) + '"' + (on ? ' checked' : '') + '><span class="zcheck__box"></span></span>' +
-          '<span class="bd-tbl__name">' + esc(tixName(ev, t)) +
-            (isSoloTix(t) ? ' <span class="badge badge--neutral">' + esc(T('cpp.bd.tbl.solo', 'Standalone')) + '</span>' : '') + '</span>' +
-          '<span class="bd-tbl__num">' + esc(Number(t.price) === 0 ? T('ce.tier.free', 'Free') : money(Number(t.price) || 0)) + '</span>' +
-          '<span class="bd-tbl__num">' + (left === 0 ? '<span class="text-error">0</span>' : esc(fmtInt(left))) + (short ? '<span class="ztor-badge bd-tbl__short">' + esc(T('cpp.bd.sp.tix.short', 'under {n}').replace('{n}', String(q))) + '</span>' : '') + '</span>' +
-        '</label>';
-      }).join('') +
-      '</div>';
+    /* D433（2026-10-16）：表的 markup 抽成共用 js/tix-tier-table.js，與組合商品細節頁的「改允許的門票」同一份 */
+    tierTableEl.innerHTML = window.ZtorTixTierTable.html({
+      tiers: tiers, picked: tix.tierIds, qty: q, attr: 'data-cb-tier-check', T: T, esc: esc, fmtInt: fmtInt,
+      name: t => tixName(ev, t), money: t => Number(t.price) === 0 ? T('ce.tier.free', 'Free') : money(Number(t.price) || 0), left: tierLeft
+    });
     if (semEl) semEl.textContent = semanticText();
   }
   if (tierTableEl) tierTableEl.addEventListener('change', e => {
