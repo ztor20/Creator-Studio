@@ -140,13 +140,15 @@
      那邊標 imported 的三場（站上已存在的活動）刻意不列，本池維持這五場。 */
   const BOOKYAY_EVENTS = [
     { id: "bky-1", name: "REALIVE World Tour — Taipei", date: "2026-09-12", venue: "台北小巨蛋",               organizer: "嘉立音樂工作室" },
-    /* D390（稽核第一節原型第 16 條）：bky-2 的創作者端草稿＝events-store `mirror-khh-draft`（Gary Lin 的活動清單草稿列；三場＝多場次，release2.4 不列） */
+    /* D390（稽核第一節原型第 16 條）：bky-2 的創作者端草稿＝events-store `mirror-khh-draft`（Gary Lin 的活動清單草稿列）。
+       D440（2026-10-16）：bookyay 三個時段帶入合成同一場、三張門票——草稿改成一場，release2.4 照常列出、Admin 不再標不支援（slots 只記來源時段數）。 */
     { id: "bky-2", name: "MIRROR LIVE 2026 高雄", date: "2026-10-02", venue: "高雄流行音樂中心 海音館", organizer: "鏡光娛樂製作", slots: 3, draftId: "mirror-khh-draft" },
     { id: "bky-3", name: "城市之聲 2026 巡迴演唱會 — 台北站", date: "2026-11-08", venue: "大佳河濱公園",             organizer: "草地派對有限公司" },
     { id: "bky-4", name: "迴響 限量黑膠巡迴演唱會 — 台中站", date: "2026-12-06", venue: "Legacy Taichung",          organizer: "綺音工作室" },
     { id: "bky-5", name: "冬季特別公演 — 台南",          date: "2027-01-17", venue: "台南文化中心 演藝廳",      organizer: "南風演藝經紀", ship: "pickup" },
     /* D384 決定三（2026-10-09）：補一場重覆活動（create-event BKY 的 bky-11，每週六共 3 場），待對應創作者——
-       讓創作者活動管理在 release2.4 三種不支援的原因（多時段 bky-2、重覆 bky-11、到店自取 bky-5）各有一列可看。 */
+       讓創作者活動管理在 release2.4 三種不支援的原因（多時段 bky-2、重覆 bky-11、到店自取 bky-5）各有一列可看。
+       D440（2026-10-16）起多時段、重覆不再擋（多個時段帶入合成同一場），release2.4 只剩到店自取 bky-5 標不支援；repeat 只記來源。 */
     { id: "bky-11", name: "週末巡迴演唱會 — 台北站", date: "2026-11-07", venue: "小白兔唱片行",             organizer: "小白兔唱片", repeat: true },
     /* D374（2026-10-08）：bky-12＝活動清單裡那筆 bookyay 草稿（events-store `khh-countdown-draft`，`bkyId: 'bky-12'`）。
        已對應周湯豪、已存草稿：在活動清單刪掉這份草稿＝解除對應，這一場回到待對應創作者。
@@ -174,7 +176,8 @@
      D375 決定六（2026-10-08）四值各至少一筆：已發布 bky-1／bky-14（D386）、草稿 bky-2／bky-12、待設定（已對應、還沒存過）bky-3、待對應創作者 bky-4／bky-5。
      自動匯入與更新檢查是整份清單一組，最後檢查時間也只有一個。
      D384 決定三（2026-10-09）：摘要投影多帶三個判斷「release2.4 能不能帶入」用的欄位，值與 create-event 的 BKY 正本一致——
-     `slots`（時段數，>1＝多時段）、`repeat`（重覆活動）、`ship`（取票方式，'pickup'＝到店自取）；沒寫＝單一時段、不重覆、非到店自取。 */
+     `slots`（時段數，>1＝多時段）、`repeat`（重覆活動）、`ship`（取票方式，'pickup'＝到店自取）；沒寫＝單一時段、不重覆、非到店自取。
+     D440（2026-10-16）起只有 `ship` 還用來判斷 release2.4 能不能帶入；`slots`、`repeat` 只記來源（多個時段帶入後合成同一場）。 */
   const BOOKYAY_LAST_CHECKED = "2026-10-08 09:40";
   /* 2026-09-02（D233 建、D238 收成兩值）：這四欄就是創作者活動管理頁表格要的全部——
      規格 5.1.0.6 F3 只要求「每一筆至少呈現活動名稱、日期與場地」，狀態不是資料欄位

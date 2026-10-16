@@ -2033,12 +2033,14 @@
     },
     {
       /* bky-2 的創作者端草稿（2026-10-09 D390 稽核第一節原型第 16 條）：Admin 創作者活動管理裡 bky-2 是「草稿」（已對應 Gary Lin、已存），
-         創作者端活動清單原本卻沒有這份草稿——同一筆兩個答案。補上：bookyay 帶入、三場（多時段）、一張二人套票門票（D429 起不拆 1 人票、沒有自動組合包）。
-         三場＝多場次（S87 ⚪）：release2.4 由 list() 的多場過濾收起（bky-2 在 release2.4 本來就不能帶入，Admin 那列標 release2.4 不支援）。
-         金額口徑同 khh-countdown-draft：hkd＝bookyay 港幣原價（二人套票 HK$399）、price＝換算成 TWD 的基準價；張數＝三個時段上限合計 151＋200＋200。 */
+         創作者端活動清單原本卻沒有這份草稿——同一筆兩個答案。補上：bookyay 帶入、二人套票門票（D429 起不拆 1 人票、沒有自動組合包）。
+         D440（2026-10-16）：bookyay 三個時段帶入合成同一場（日期與時間取第一個時段，D440 定案），每個時段的那一種門票各成一張、張數＝各自時段上限 151／200／200；
+         同一種門票出現在三個時段，票名後補「· 時段 N」區分〔推導，ASSUMPTIONS UIA-271〕。一場＝release2.4 照常列出。
+         墓碑 2026-10-16（D440）：原本三場（Day 1～3，多場次 S87，release2.4 收起）、一張二人套票張數＝三個時段合計 551。
+         金額口徑同 khh-countdown-draft：hkd＝bookyay 港幣原價（二人套票 HK$399）、price＝換算成 TWD 的基準價。 */
       id: 'mirror-khh-draft',
       bkyId: 'bky-2',
-      /* 2026-10-13 D410 決定四（示範資料）：見面會改成演唱會（release2.4 只開放演唱會；三場＝多場次，release2.4 本來就不列） */
+      /* 2026-10-13 D410 決定四（示範資料）：見面會改成演唱會（release2.4 只開放演唱會） */
       type: 'concert',
       typeLabelKey: 'ce.type.concert',
       category: 'concert',
@@ -2059,12 +2061,12 @@
       end: '21:30',
       doors: '18:00',
       sessions: [
-        { id: 's1', name: 'Day 1', date: '2026-10-02', start: '19:00', end: '21:30', doors: '18:00', doorsMin: '60', early: 'block' },
-        { id: 's2', name: 'Day 2', date: '2026-10-03', start: '19:00', end: '21:30', doors: '18:00', doorsMin: '60', early: 'block' },
-        { id: 's3', name: 'Day 3', date: '2026-10-04', start: '19:00', end: '21:30', doors: '18:00', doorsMin: '60', early: 'block' }
+        { id: 's1', name: '', date: '2026-10-02', start: '19:00', end: '21:30', doors: '18:00', doorsMin: '60', early: 'block' }
       ],
       tiers: [
-        { id: 'tier-mirror-duo', name: '二人套票', price: 1611, hkd: 399, qty: 551, sold: 0 }   // D429：原「二人套票 · 1 人」HK$199.5（隱藏鎖定 hideFix）
+        { id: 'tier-mirror-duo-1', name: '二人套票 · 時段 1', price: 1611, hkd: 399, qty: 151, sold: 0 },
+        { id: 'tier-mirror-duo-2', name: '二人套票 · 時段 2', price: 1611, hkd: 399, qty: 200, sold: 0 },
+        { id: 'tier-mirror-duo-3', name: '二人套票 · 時段 3', price: 1611, hkd: 399, qty: 200, sold: 0 }
       ],
       bundles: [],   // 墓碑 2026-10-16（D429）：自動組合包 bd-mirror-duo 刪除
       sold: 0,

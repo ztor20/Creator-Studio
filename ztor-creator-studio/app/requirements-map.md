@@ -25,6 +25,10 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-16 D440 原型同步（UI-CHANGES 二百五十八、ASSUMPTIONS UIA-271；S56 🔵，tier 不變）**：
+> - D440 決定二、三（恢復 D328，取代 D439 決定一、二）：`create-event.html` `bkyMap()` 一個時段只帶第一種門票、張數＝該時段人數上限；略過提示 `#ce-bky-skip-note`、`ce.bky.skipped`／`ce.bky.skipped.close` 恢復。
+> - D440 決定四：不管幾個時段（含重覆活動展開的時段）都合成同一場，日期、時間、跨日與提前入場取第一個時段（使用者確認定案），同名門票票名補「· 時段 N」（`ce.bky.slotn`）〔推導〕；D383 對 bookyay 多時段／重覆的 release2.4 限制移除（`create-event.html` `bkyVerBlock()`、`admin-creator-events.html` `verBlock()`）。示範 bky-1 改三個同時間時段、events-store `mirror-khh-draft` 改一場三張門票。
+
 > **2026-10-16 D438～D439 原型同步（UI-CHANGES 二百五十七、ASSUMPTIONS UIA-270；S81.1、S56 🔵，tier 不變）**：
 > - D438（主規格 §7.14「活動發布後的修改規則」營運動作、5.1.5.9 §2.3）：`bundle-detail.html` 活動組合包上架中「編輯組合」不再停用，進編輯後只開放上架與開賣兩節（另設的上架、下架、開賣、停售時間＋開賣開關），其他各節唯讀（`bdStockLockApply()`）；說明列文案 `bd.stockonly.title`／`bd.stockonly.body` 改寫。另設時間寫回 events-store 同一組 bundle 的 `sched`（`evBundlePersist()`），下架時另設時間全部回到跟隨並寫回（D290）。活動層時間（event-detail 發布設定）照既有不鎖。
 > - D439（主規格 §8.1 D439 補記、5.1.6.1 F21「每種門票的張數」）：`create-event.html` `bkyMap()` 一個時段的所有門票種類都帶入、每種一張 bookyay 門票，張數各帶時段人數上限〔推導〕；略過提示 `#ce-bky-skip-note` 與 `ce.bky.skipped`／`ce.bky.skipped.close` 退場。

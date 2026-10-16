@@ -13,6 +13,28 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-16（二百五十八）· D440 bookyay 一個時段只帶第一種門票、多個時段合成同一場
+
+**標籤**：release2.4
+
+依據 D440（使用者說明與回答，2026-10-16；含決定四補充「不管在 bookyay 中設幾個時段，帶入 ztor 中都是同一個場次」），取代 D439 決定一、二，並取代 D383 對 bookyay 帶入的多時段限制。
+
+**A spec-derived**
+
+- **一個時段只帶第一種門票、張數＝該時段人數上限**（D440 決定二、三，恢復 D328，S56）：`create-event.html` `bkyMap()` 每個時段只取 bookyay 排第一的門票種類，各成一張 bookyay 門票，張數＝那個時段的時段人數上限（一對一，不再共用上限）；排第二之後的票名進略過名單。
+- **不管幾個時段都合成同一場**（D440 決定四，S56）：`bkyMap()` 只產生一場，日期、時間、跨日與提前入場都取第一個時段（推導經使用者確認定案），每個時段帶入的那一種門票都放進這一場；重覆活動已展開的時段一樣合成這一場。同一種門票出現在不只一個時段時，票名後補「· 時段 N」區分（i18n `ce.bky.slotn`）〔推導〕。推導見 ASSUMPTIONS UIA-271。
+- **示範資料**：bky-1 改成三個同時間的時段、各放一種票（VIP 100、搖滾區 300、看台 100）→ 一場三張門票；bky-15（三種）與 bky-12（兩種）擔任「一個時段多種門票→只帶第一種＋略過提示」的示範；bky-2 三個時段 → 一場三張「二人套票 · 時段 1／2／3」（151／200／200）；bky-11 重覆活動 → 一場三張「入場席 · 時段 1／2／3」各 40。events-store `mirror-khh-draft`（bky-2 草稿）改成一場三張門票，`events.html` 那一列改掛 S56、日期欄去掉「3 場」（`events.r.mirror-khh-draft.datetime`），release2.4 照常列出。
+
+**B 恢復（D439 曾撤除）**
+
+- 略過提示 `#ce-bky-skip-note`、`renderBkySkipNote()`、i18n `ce.bky.skipped`／`ce.bky.skipped.close`，文案照 D328 原文（「每個場次只帶入第一種票。未帶入：{票名}」），從 git 歷史 `6f04c55d` 前取回。
+
+**C 撤除**
+
+- release2.4 擋 bookyay 多時段與重覆活動（D383）：`create-event.html` `bkyRepeat`／`bkyMultiSlot` 與 i18n `d.bgate.multi`／`d.bgate.repeat`；`admin-creator-events.html` `verBlock()` 的多時段、重覆兩條與 i18n `ace.r24.multi`／`ace.r24.repeat`。只剩到店自取照 D384 擋。墓碑留在原處。
+
+- 未升 `?v=`（固定字串）。feature-scope-map S56 備註同步。
+
 ## 2026-10-16（二百五十七）· D438 組合包時間上架中可改、D439 bookyay 一個時段的所有門票種類都帶入
 
 **標籤**：release2.4
