@@ -8386,8 +8386,7 @@
                            zh: '關閉後不在活動頁票價清單列出、粉絲不能單張購買；仍可放進組合包販售。' },
     'ce.tier.hidden':    { en: 'Hidden',                           zh: '隱藏' },
     /* bookyay 帶入（D328，5.1.6.1 F21）：略過提示。墓碑 2026-10-16（D429）：ce.bky.single（套票轉出的 1 人票票名）刪除。 */
-    'ce.bky.skipped':    { en: 'Only the first ticket type per date is imported. Skipped: {name}', zh: '每個場次只帶入第一種票。未帶入：{name}' },
-    'ce.bky.skipped.close': { en: 'Dismiss',                       zh: '關閉提示' },
+    /* 墓碑 2026-10-16（D439）：ce.bky.skipped／ce.bky.skipped.close（bookyay 略過提示）隨「只帶第一種票」退場 */
     'ce.bky.h':          { en: 'Import from bookyay',              zh: '從 bookyay 帶入' },
     'ce.bky.sub':        { en: 'Already selling this event on bookyay? Pull it in instead of typing it again.', zh: '這場活動已經在 bookyay 上賣了？帶進來就不用重打一次。' },
     'ce.bky.ph':         { en: 'Search your bookyay events…',      zh: '搜尋你在 bookyay 的活動…' },
@@ -10489,8 +10488,8 @@
     'sd.sync.listed.meta': { en: 'Unlist those dates first to sync them, then relist them yourself.', zh: '要先下架這些場次才能同步，同步後再自行重新上架。' },
     'ed.loc.listed': { en: 'This event is listed — unlist it to edit translations.', zh: '活動上架中，要先下架才能修改翻譯。' },
     'event-detail.relist.dirty': { en: 'Save or discard your changes first, then relist the event.', zh: '請先儲存或捨棄變更，再重新上架。' },
-    'bd.stockonly.title': { en: 'This bundle is listed — only locked sets can change', zh: '組合包上架中，只能改鎖定套數' },
-    'bd.stockonly.body': { en: 'Change locked sets in the Stock tab. To edit anything else — contents, price, sales cap, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.', zh: '鎖定套數在「組合庫存」分頁改。其他資料（內容、售價、販售上限、購買條件、翻譯）要先下架這個組合包才能修改，儲存後再自行重新上架。' },
+    'bd.stockonly.title': { en: 'This bundle is listed — only locked sets and listing and sale times can change', zh: '組合包上架中，只能改鎖定套數與上架、開賣時間' },
+    'bd.stockonly.body': { en: 'Change locked sets in the Stock tab. Listing, unlisting, sale start and sale end times change under Edit bundle. To edit anything else — contents, price, sales cap, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.', zh: '鎖定套數在「組合庫存」分頁改；上架、下架、開賣、停售時間按「編輯組合」直接改。其他資料（內容、售價、販售上限、購買條件、翻譯）要先下架這個組合包才能修改，儲存後再自行重新上架。' },
     'bd.tix.min1': { en: 'Keep at least one ticket.', zh: '至少要留一種門票。' },
     'bd.loc.listed': { en: 'This bundle is listed — unlist it first to make changes.', zh: '組合包上架中，要先下架這個組合包才能修改。' },
     'bd.stockonly.go': { en: 'Unlist bundle', zh: '下架組合包' },
