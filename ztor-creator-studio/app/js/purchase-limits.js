@@ -151,9 +151,8 @@
   function fromRules(rules) {
     if (!rules) return null;
     if (rules.cap === 'cap') return { person: String(rules.person || '') };
-    /* 2026-10-15（UI-CHANGES 二百三十四）：D366 起的條件清單形狀 rules.conds.cap（events-store 的 bookyay 自動組合包，
-       套票限購帶入落在這裡，D390 第 19 題）。原本只認 cap='cap' 的舊形狀，這種資料讀成 null＝跟隨成員，
-       組合商品細節頁因此把帶入的限購顯示成「不限 · 跟隨成員」。D427：只讀 person。 */
+    /* 2026-10-15（UI-CHANGES 二百三十四）：D366 起的條件清單形狀 rules.conds.cap 也讀（原本是 events-store 的 bookyay 自動組合包
+       用的形狀，D429 起那批示範已刪；留著當舊資料的寬鬆讀取）。D427：只讀 person。 */
     var c = rules.conds && rules.conds.cap;
     if (c && typeof c === 'object') return { person: String(c.person || '') };
     return null;
@@ -197,28 +196,27 @@
     return e;
   }
 
-  /* opts：{ locked（bookyay 鎖定：不給動作）, lockNote（鎖定時取代說明的一句原因）, disabled（檢視態：動作與欄位停用）,
+  /* opts：{ disabled（檢視態：動作與欄位停用）,
              title（2026-10-12：true＝標題列左邊畫「限購」標題，頁面就不必在外面另放欄位標籤） }
      2026-10-12（使用者裁示，建立組合包改版）：「跟隨成員／已覆寫」由「徽章＋覆寫按鈕」改成標題列右側
      「跟隨成員預設」＋ on／off 開關（同購買條件的「跟隨活動預設」）：開＝跟隨成員、關＝覆寫。
      開關本身是 <button class="switch" role="switch">，鍵盤可操作；data-pl-act 照舊（開時按下＝override、關時按下＝follow），
-     所以頁面的 onClick 委派不用改。鎖定（bookyay）時不畫開關，只留「已鎖定」徽章。 */
+     所以頁面的 onClick 委派不用改。
+     墓碑 2026-10-16（D429）：locked／lockNote 兩個選項（bookyay 套票自動建立的組合包：不畫開關、改放「bookyay 帶入」徽章
+     .limit-set__state〔pl.state.locked〕、說明句換成鎖定原因）隨自動組合包退場——已沒有消費者傳 locked。 */
   function blockHTML(lim, der, T, opts) {
     opts = opts || {};
     var over = lim ? norm(lim) : null;
-    var state = opts.locked ? 'locked' : (over ? 'override' : 'follow');
+    var state = over ? 'override' : 'follow';
     var vals = over || followVals(der);
     /* 說明句同時交代額度怎麼算（D400）：跟隨＝與成員共用額度、已覆寫＝獨立計算；含門票時門票部分永遠與單張門票共用 */
     var tix = !!(der && der.hasTicket);
     var sub = over ? (tix ? 'pl.sub.override.tix' : 'pl.sub.override') : (tix ? 'pl.sub.follow.tix' : 'pl.sub.follow');
-    var act = opts.locked
-      ? '<span class="badge badge--neutral limit-set__state" data-i18n="pl.state.locked">' + esc(tr(T, 'pl.state.locked')) + '</span>'
-      : '<span class="limit-set__follow"><span data-i18n="pl.follow.default">' + esc(tr(T, 'pl.follow.default')) + '</span>' +
+    var act = '<span class="limit-set__follow"><span data-i18n="pl.follow.default">' + esc(tr(T, 'pl.follow.default')) + '</span>' +
           '<button type="button" class="switch' + (over ? '' : ' switch--on') + ' limit-set__switch" role="switch" aria-checked="' + (over ? 'false' : 'true') + '"' +
           ' data-pl-act="' + (over ? 'follow' : 'override') + '" aria-label="' + esc(tr(T, 'pl.follow.default')) + '" data-i18n-aria-label="pl.follow.default"' +
           (opts.disabled ? ' disabled aria-disabled="true"' : '') + '></button></span>';
     var extra = function (k) {
-      if (opts.locked) return '';
       if (!over) return '<p class="field__hint field__hint--fact limit-set__src" data-pl-src="' + k + '">' + esc(srcText(k, der, T)) + '</p>';
       var x = der && der.keys[k], parts = [];
       parts.push(tr(T, 'pl.src.was').replace('{v}', x && x.sets >= 1 ? String(x.sets) : tr(T, 'pl.none')));
@@ -230,9 +228,8 @@
         (opts.title ? '<span class="limit-set__title" data-i18n="tb.rules.cap">' + esc(tr(T, 'tb.rules.cap')) + '</span>' : '') +
         act +
       '</div>' +
-      (opts.locked && opts.lockNote ? '<p class="limit-set__sub">' + esc(opts.lockNote) + '</p>'
-        : '<p class="limit-set__sub" data-i18n="' + sub + '">' + esc(tr(T, sub)) + '</p>') +
-      fieldsHTML({ unit: 'set', vals: vals, T: T, disabled: !over || opts.locked || opts.disabled, extra: extra, errs: true }) +
+      '<p class="limit-set__sub" data-i18n="' + sub + '">' + esc(tr(T, sub)) + '</p>' +
+      fieldsHTML({ unit: 'set', vals: vals, T: T, disabled: !over || opts.disabled, extra: extra, errs: true }) +
     '</div>';
   }
   function onClick(e, holder, der) {

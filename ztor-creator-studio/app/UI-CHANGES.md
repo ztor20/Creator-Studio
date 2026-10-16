@@ -13,6 +13,41 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-16（二百四十七）· D429 bookyay「每張門票人數」不帶入：套票拆 1 人票＋自動組合包整組撤除
+
+**標籤**：release2.4
+
+依據 D429（使用者指示，2026-10-16）：bookyay 的「每張門票人數」不帶入；原本「每張門票人數 ≥2 的套票拆成隱藏且鎖定的 1 人票、再每場自動包成一組組合包」的機制連同衍生規則一起移除。套票帶入後就是一張普通 bookyay 門票——票價、張數照 bookyay 並鎖定，跟其他 bookyay 門票一樣（決定三〔推導〕）。創作者自建的組合包行為不變。
+
+**C 撤除**
+
+- **建立活動**（`create-event.html`）：
+  - `bkyMap()` 不讀 `persons`：票價＝bookyay 現價（不再 ÷ n）、票名照 bookyay（不再加「· 1 人」）、張數＝時段人數上限（不再取 n 的整數倍）；套票的本門票限購照一般 bookyay 門票落在這張票（`rules.conds.cap`＋`rulesFix`）。
+  - 不再產生 `hideFix`（1 人票鎖定為隱藏）、`decimalOk`（小數票價）與自動組合包（`fix`、鎖定套數、港幣欄鎖現價、套票限購落在組合包）；`bkyApply()` 帶入時組合包清空。
+  - 門票彈窗顯示開關的鎖定樣子（`.switch--locked`、來源標記、「只透過組合包販售，固定隱藏」）、1 人票不給自加折扣的排除、續填草稿時自動組合包改名疊回、價格表「自動建立的組合包港幣欄＝現價」（`bdBkyHkd` 第一支）一併刪除。
+- **活動詳情**（`event-detail.html`）：1 人票固定隱藏的停用（`tierVisBlock` 的 `'fix'`）、票價與張數鎖、刪除鈕整顆收起、小數票價不檢核的例外、S92 判斷裡的 `hideFix`、組合包卡上的「由 bookyay 帶入…已鎖定」說明（`.info-banner`）刪除。
+- **組合商品細節頁**（`bundle-detail.html`）：`srcFix` 整組退場——成員與張數從建立起就鎖、鎖定套數鎖、購買條件唯讀讀數、限購鎖定、組合折扣與限時折扣停用（`applySrcFix()`）、沒有刪除入口。自建活動組合包照一般規則（零成交且已下架／封存可刪）。
+- **共用元件**：
+  - `js/bundle-editor.js`：刪 `srcFix()`、`discFix()` 與所有分支（內含物段「bookyay 帶入」標籤、不能加商品、不能移除、帶入的限時折扣唯讀讀數、購買條件唯讀讀數、限購鎖定）；`tixLocked()` 只剩已售出鎖。
+  - `js/purchase-limits.js`：`blockHTML()` 拿掉 `locked`／`lockNote` 選項與 `.limit-set__state` 徽章（已沒有消費者）；`ds-components/limit-set.css` 刪對應兩條規則。
+  - `js/ticket-bundle.js`：刪 `buySummary()`（唯一消費者是自動組合包的唯讀讀數）。
+  - `js/events-store.js`：`bkyBundleHkd()` 刪「自動建立＝bookyay 現價」一支，只剩創作者自建含 bookyay 票券的公式。
+- **i18n**（`js/i18n.js`）：刪 `ce.tier.show.fix`、`ce.bky.single`、`cpp.bd.sp.srclocked`、`cpp.bd.sp.items.srclocked`、`tb.rules.fix`、`pl.lock.bky`、`pl.state.locked`。
+- **活動清單草稿刪除**（`events.html`）：連動刪除的組合包只剩創作者自建的（行為不變，說明與註解改寫）。
+
+**D infra／文件（示範資料）**
+
+- `js/events-store.js`：
+  - taipei-nye：「Duo pass · 1 person」HK$275（隱藏鎖定）＋自動組合包 bd-nye-duo → 一張「Duo pass」HK$550（NT$2,221）× 400 張、每人限購 2 張；自建 bd-nye-ga-band 保留。
+  - nick-live-taichung／taoyuan／kaohsiung／summer-pingtung-bky：1 人票＋自動組合包（bd-tc-duo／bd-ty-duo／bd-kh-duo／bd-pt-duo）→ 一張「Duo pass」，售出張數＝原組合包組數；活動售出改 400／1,304／1,590／451，收入不變；kaohsiung 已報到 1,688 → 1,488（不超過售出）。
+  - khh-countdown-draft：1 人票＋bd-khh-duo → 一張「Duo pass」HK$550 × 200 張；自建 bd-khh-duo-tee 成員改「Duo pass × 1」，售價 NT$2,822 → NT$2,821（原本是兩張 1 人票各自取整的殘差）。
+  - mirror-khh-draft：「二人套票 · 1 人」HK$199.5＋bd-mirror-duo → 一張「二人套票」HK$399（NT$1,611）× 551 張、沒有組合包。
+- `js/orders-store.js`：訂單管理示範原本指向自動組合包的三場改指向同場自建組合包（bd-tc-ga-tee、bd-kh-ga-tee、bd-pt-ga-tee）。
+- `events.html`：taoyuan、kaohsiung 兩列票券欄的靜態初值改成 1,304 / 1,700、1,590 / 2,000（載入後本來就由 store 重算）。
+- `create-event.html` BKY 示範原始資料保留 `persons`，示範「bookyay 有、ztor 不帶」。
+- `feature-scope-map.md`：S56、S92 標註 D429 撤除的部分（兩列其他功能仍在，tier 不變；`devtools.js` 不用動）。
+- `design-system.html`（Bundle editor、Limit set）、`design-system.md`、`BUILD-SPEC.md`、`ASSUMPTIONS.md`（新增 UIA-267；UIA-180～183、192、212、215、240、252、257、259 標 D429 撤除）、`requirements-map.md` 同步。
+
 ## 2026-10-16（二百四十六）· D428 限購開了就要填：門票與組合包補擋存
 
 **標籤**：release2.4

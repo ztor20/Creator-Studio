@@ -25,6 +25,12 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-16 D429 原型同步：bookyay「每張門票人數」不帶入、套票拆 1 人票＋自動組合包整組撤除（UI-CHANGES 二百四十七、ASSUMPTIONS UIA-267；S56、S92 註記，tier 不變）**：
+> - 5.1.6.1 F20／F21／F22：`create-event.html` `bkyMap()` 不讀 `persons`，套票帶入成一張普通 bookyay 門票（票價、張數照 bookyay、本門票限購落在這張票），不再產生隱藏 1 人票（`hideFix`）與自動組合包（`fix`）；帶入時組合包清空。
+> - 5.1.6.2 F9、5.1.6.3 §2.6／§2.6.1：`event-detail.html` 1 人票鎖定隱藏、票價張數鎖、刪除鈕收起與自動組合包卡的鎖定說明整組移除。
+> - 5.1.5.4 F2／F3、5.1.5.9 §2.3：`js/bundle-editor.js` `srcFix()`／`discFix()`、`bundle-detail.html` `srcFix`／`applySrcFix()`、`js/purchase-limits.js` `locked` 狀態、`js/ticket-bundle.js` `buySummary()` 刪除；`js/events-store.js` `bkyBundleHkd()` 只剩創作者自建組合包的公式。
+> - 5.1.6 F1：`events.html` 草稿刪除只連動創作者自建的組合包。示範資料改寫見 ASSUMPTIONS UIA-267。只進 main（release2.4 與最終版）。
+
 > **2026-10-16 D428 原型同步：限購開了就要填（UI-CHANGES 二百四十六、ASSUMPTIONS UIA-266 第 1 條；S35、S94、S72）**：
 > - 5.1.6.1 F22、5.1.6.2 F9、5.1.6.3 §2.6：`js/purchase-conds.js` 限購條件卡空白就地紅字（`capErrKey`／`capBad`、`[data-cond-warn="cap"]`）；`create-event.html` 擋在門票彈窗儲存、票務設定關閉與發布前（`capIssue`）；`event-detail.html` 擋在門票彈窗儲存（`tmErrors` 的 `cap`）與預設購票規則套用（`check()`）。
 > - 主規格 §7.14「組合包的限購」：`js/purchase-limits.js` `errors()` 覆寫（設上限）空白回「請填上限。」，`create-bundle.html`、`bundle-detail.html`、`js/bundle-editor.js` 同擋。

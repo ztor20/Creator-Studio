@@ -231,7 +231,7 @@
     (opts.prices || []).forEach(function (p) {
       var po = p.priceObj || {};
       var rec = PRICES[p.key];
-      /* 保留到分：bookyay 帶入、創作者幣別＝港幣時基準價可有小數（1 人票 HK$199.5，D330）；其他基準價本來就是整數。 */
+      /* 保留到分：bookyay 帶入、創作者幣別＝港幣時基準價可有小數（D330）；其他基準價本來就是整數。 */
       var amount = Math.round((Number(po.amount) || 0) * 100) / 100;
       var pin = po.pin ? JSON.parse(JSON.stringify(po.pin)) : null;
       if (!rec || rec.base !== po.base) {
