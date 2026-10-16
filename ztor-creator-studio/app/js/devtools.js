@@ -133,7 +133,7 @@
      必須在 md 尚未載入或 fetch 失敗時也成立，否則 Phase 1 會短暫漏顯 full-only 功能。 */
   /* 載入前／失敗後的安全後備：非 P1 gate 不能因 fetch 問題降格成 P1。 */
   var FEAT_TIER = {
-    full: 'full', S05: 'release2.4', S06: 'release2.4', S11: 'tbd', S24: 'tbd', 'S31.1': 'release2.4', S45: 'tbd',
+    full: 'full', S05: 'release2.4', S06: 'release2.4', S11: 'tbd', S24: 'tbd', 'S31.1': 'release2.4', S45: 'release2.4' /* 2026-10-16 使用者裁決 release2.4 電子商店範圍 */,
     S52: 'release2.4', S53: 'release2.4', S54: 'tbd', S55: 'tbd', S56: 'release2.4',   // 2026-09-29 D328 補登（活動：語言複選／跨日／門票簡介／顯示／bookyay 帶入）
     S57: 'tbd',   // 2026-09-29 D334（活動：說明區塊）
     S86: 'tbd',   // 2026-10-08 D377（媒體庫第二層：每件內容的任務、大彩蛋、每件可看人數）
@@ -154,7 +154,7 @@
     S65: 'tbd', S66: 'tbd',               // 2026-10-02 D347（平台忠誠點數設定頁／分級設定的各購買品項的份量與互動推薦每 90 天最多得分）
     S68: 'tbd', S69: 'tbd', S70: 'tbd', S71: 'tbd', O33: 'tbd',   // 2026-10-05 D360（需求看板頁／商品層需求入口／服飾配件分類與屬性／尺寸顏色快捷預設／訂單收件國家城市）
     S62: 'release2.4',   // 2026-10-07 使用者裁示：時間層級與定時上架上限隨 release2.4
-    S63: 'tbd', S64: 'tbd',   // 2026-10-09 D390 稽核第一節原型第 18 條：後備表補登（與 feature-scope-map ⚪ 一致），避免載入表格前 release2.4 閃現
+    S63: 'release2.4', S64: 'release2.4',   // 2026-10-16 使用者指示組合包納入 release2.4（原 2026-10-09 D390 補登為 tbd）
     S72: 'release2.4', S73: 'release2.4', S74: 'tbd', S75: 'tbd' /* 2026-10-15 D422 決定一：release2.4 不含共看派對 */, S76: 'tbd', S77: 'tbd', S78: 'release2.4', S79: 'tbd', S80: 'tbd',   // 2026-10-07 release2.4 切割（活動模組／bookyay 帶入建立／手動建立／Watch Party／複製與再辦一次／舊流程／在地化／其他線下類型入口／直接促銷同意）
     S81: 'release2.4',                           // 2026-10-07 D361 建；2026-10-08 D371 改 release2.4（活動：創作者與 Admin 上架／下架＋已下架徽章）
     S82: 'tbd',                                  // 2026-10-07 D366／D367（活動：購票規則的粉絲分級條件——限粉絲分級購買、粉絲分級折扣、限時＋限粉絲分級折扣）
@@ -163,7 +163,8 @@
     S85: 'release2.4',                           // 2026-10-08 D375 決定七（活動：暫停售票／恢復販售＋暫停售票與完售徽章）
     S87: 'tbd', S88: 'tbd', S89: 'tbd', S90: 'tbd', S91: 'tbd', S92: 'release2.4',   // 2026-10-09 D383 範圍收斂（多場次／系列活動／到店自取／轉售／招待票 ⚪；門票隱藏狀態與標示 🔵，自 S55 拆出）；同日 S78 改 release2.4
     S67: 'release2.4',                           // 2026-10-05 D354（活動：描述區塊的新增描述與排序；S54 門票簡介〔D353〕、S57 說明區塊、S60 粉絲頁說明區塊同日退場，已無元素掛標記）
-    O04: 'tbd', O09: 'tbd', O17: 'release2.4', O18: 'tbd', O22: 'release2.4', O23: 'release2.4',
+    O04: 'release2.4', O09: 'release2.4',   /* 2026-10-16 使用者裁決 release2.4 電子商店範圍 */
+    O17: 'release2.4', O18: 'tbd', O22: 'release2.4', O23: 'release2.4',
     E08: 'release2.4', E09: 'release2.4', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'release2.4', E20: 'release2.4', E22: 'release2.4' /* 2026-10-15 對齊功能表 🔵（原誤寫 tbd） */, E23: 'release2.4', E24: 'tbd', E25: 'tbd', E26: 'tbd',
     B07: 'tbd', B10: 'release2.4'   // 2026-10-15 對齊功能表（B07 ⚪ 貨到付款／B10 🔵 公開探索欄）；沒登記會在載入表格前被當成 release2.3
   };   // { S30:'release2.3', … } 由 md 功能表填
@@ -339,6 +340,12 @@
       });
       el.classList.toggle('ztd-ver-hidden', featShown);
     });
+    /* 1c) 空殼收合（2026-10-16）：區段卡片（.bd-sec／.form-section）裡標題列以外的內容
+       全被上面兩步收起時，整段（含標題與說明）一起收起，不留只剩標題的空卡片。
+       只收「因版本閘而空」的殼——內容至少要有一個 .ztd-ver-hidden，其餘只能是同樣被收起的節點
+       或只包著被收起節點的外框；[hidden] 由頁面自己控制，不算空。由內往外處理，巢狀區段也能連鎖收起。
+       自己收的殼標 data-ztd-empty，下次切版本先還原再重算。 */
+    collapseEmptySections();
     /* 作用中分頁被版本藏掉時，自動切到第一個可見的兄弟 tab（點擊觸發頁面自身切換 JS）*/
     document.querySelectorAll('.tabs__item.ztd-ver-hidden, .filter-tabs__item.ztd-ver-hidden').forEach(function (t) {
       var active = t.classList.contains('tabs__item--active') || t.classList.contains('filter-tabs__item--active') || t.getAttribute('aria-selected') === 'true';
@@ -349,6 +356,36 @@
     /* 2) 改接：route:來源=目標（連結改接抽成 applyRouteRedirects，供 DOM 變動後重跑）*/
     applyRouteRedirects();
     applyRouteAvailability();
+  }
+  /* 不含 .card：bento 版面的 .card 收掉會在格線留洞（收入管理「最近交易」卡，2026-10-16 留給使用者決定） */
+  var EMPTY_SEC_SEL = '.bd-sec, .form-section';
+  var EMPTY_SEC_HEAD = '.bd-sec__head, .bd-sec__title, .bd-sec__sub, .form-section__head, .form-section__title, .form-section__sub, h1, h2, h3, h4, h5, h6';
+  function collapseEmptySections() {
+    document.querySelectorAll('[data-ztd-empty]').forEach(function (el) {
+      el.removeAttribute('data-ztd-empty');
+      /* 自己帶功能標記的區段，上面兩步已依版本設好收起與否，不能在這裡把它拿掉 */
+      if (!el.hasAttribute('data-feat') && !el.hasAttribute('data-feat-off')) el.classList.remove('ztd-ver-hidden');
+    });
+    function ownText(el) {
+      for (var n = el.firstChild; n; n = n.nextSibling) if (n.nodeType === 3 && n.textContent.trim()) return true;
+      return false;
+    }
+    /* gone：被版本收起，或是沒有自己的文字、子節點全都 gone 的外框 */
+    function gone(el) {
+      if (el.classList.contains('ztd-ver-hidden')) return true;
+      if (!el.children.length || ownText(el)) return false;
+      for (var i = 0; i < el.children.length; i++) if (!gone(el.children[i])) return false;
+      return true;
+    }
+    var secs = Array.prototype.slice.call(document.querySelectorAll(EMPTY_SEC_SEL)).reverse();
+    secs.forEach(function (sec) {
+      if (sec.classList.contains('ztd-ver-hidden') || ownText(sec)) return;
+      var body = Array.prototype.filter.call(sec.children, function (c) { return !c.matches(EMPTY_SEC_HEAD); });
+      if (!body.length || body.length === sec.children.length) return;   /* 沒有內容或沒有標題列：不是這裡要處理的殼 */
+      if (!body.every(gone)) return;
+      sec.classList.add('ztd-ver-hidden');
+      sec.setAttribute('data-ztd-empty', '');
+    });
   }
   /* route 連結改接：先把上次改過的還原，再套當前版本（標 data-route-keep 的不動）。
      抽成獨立函式，讓 sidebar／i18n 事後重繪注入的新連結（MutationObserver）也能重新改接。 */

@@ -25,6 +25,10 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-16 release2.4 電子商店範圍（UI-CHANGES 二百五十九；使用者指示與裁決，規格不動）**：
+> - 交付範圍：S45、S63、S64、O04、O09 ⚪ 改 🔵 release2.4（建立組合包／組合包詳情／建立活動第 6 步組合包欄位與購買條件／訂單已取消與爭議）；S11、S24、S68～S71、O33 維持 ⚪。
+> - 呈現：`js/devtools.js` 版本閘收完功能後，標題以外全被收起的 `.bd-sec`／`.form-section` 整段收起（`collapseEmptySections()`），無產品行為變動。
+
 > **2026-10-16 D440 原型同步（UI-CHANGES 二百五十八、ASSUMPTIONS UIA-271；S56 🔵，tier 不變）**：
 > - D440 決定二、三（恢復 D328，取代 D439 決定一、二）：`create-event.html` `bkyMap()` 一個時段只帶第一種門票、張數＝該時段人數上限；略過提示 `#ce-bky-skip-note`、`ce.bky.skipped`／`ce.bky.skipped.close` 恢復。
 > - D440 決定四：不管幾個時段（含重覆活動展開的時段）都合成同一場，日期、時間、跨日與提前入場取第一個時段（使用者確認定案），同名門票票名補「· 時段 N」（`ce.bky.slotn`）〔推導〕；D383 對 bookyay 多時段／重覆的 release2.4 限制移除（`create-event.html` `bkyVerBlock()`、`admin-creator-events.html` `verBlock()`）。示範 bky-1 改三個同時間時段、events-store `mirror-khh-draft` 改一場三張門票。
