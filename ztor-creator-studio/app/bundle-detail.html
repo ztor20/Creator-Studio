@@ -299,13 +299,14 @@
             </div>
           </div>
           <!-- D435（2026-10-16，S81.1；規格 5.1.5.9 §2.3「活動發布後的修改」）：活動已發布的組合包，上架中只能改鎖定套數（「組合庫存」分頁，不受這裡的編輯管）；
+               D438（2026-10-16）：另設的上架、下架、開賣、停售時間屬營運動作，上架中也能按「編輯組合」直接改（只開放上架與開賣兩節，bdStockLockApply）；
                其他欄位（內容、售價、販售上限、購買條件…）唯讀——「編輯組合」停用並就地說明，附下架入口（與頁首「下架」同一個動作、同一個確認窗）。
                看的是組合包自己的上架狀態，不是活動的。電子商店組合包不受影響。bdStockSync() 切 hidden -->
           <div class="alert alert--row alert--info mt-16" data-bd-stockonly-note data-feat="S81.1" role="note" hidden>
             <span class="alert__icon"><i data-lucide="lock" class="ztor-icon"></i></span>
             <div class="alert__body">
-              <div class="alert__title" data-i18n="bd.stockonly.title">This bundle is listed — only locked sets can change</div>
-              <div class="alert__meta" data-i18n="bd.stockonly.body">Change locked sets in the Stock tab. To edit anything else — contents, price, sales cap, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.</div>
+              <div class="alert__title" data-i18n="bd.stockonly.title">This bundle is listed — only locked sets and listing and sale times can change</div>
+              <div class="alert__meta" data-i18n="bd.stockonly.body">Change locked sets in the Stock tab. Listing, unlisting, sale start and sale end times change under Edit bundle. To edit anything else — contents, price, sales cap, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.</div>
             </div>
             <button class="btn btn--outline btn--sm" type="button" data-view-safe data-bd-stockonly-unlist data-i18n="bd.stockonly.go">Unlist bundle</button>
           </div>
@@ -1748,6 +1749,16 @@
          下架與重新上架（paint）、編輯取消還原（renderTB）。允許的門票全部隨場次刪除（goneAll）時 onSale 是推導出來的未開賣，不寫。 */
       if (bo && !bo.draft && !(bundle && bundle.goneAll)) put('stopped', bundleModel.onSale === false, false);
       if (window.bdFilmPicker && window.bdFilmPicker.getSelected) put('films', window.bdFilmPicker.getSelected(), []);
+      /* D438 決定二（2026-10-16，UIA-269 第 3 條缺口修正）：另設的上架、下架、開賣、停售時間寫回同一組 bundle 的 sched
+         （形狀同 events-store 示範：{ listAt, unlistAt, saleStart, saleEnd }，格子缺／null＝跟隨活動，只存另設的格子）。
+         只在檢視態寫——編輯中的輸入是工作副本，按「儲存變更」切回檢視態時 renderTB → tbApply → mirror 才寫；取消時還原後寫回原值。
+         下架清除排程（D290）：askUnlist 把 bundleModel.sched 清成全部跟隨，這裡寫回時一併刪掉 sched。 */
+      const spEl = document.querySelector('.tab-panel[data-panel="settings"]');
+      if (bo && !bo.draft && !(spEl && spEl.getAttribute('data-mode') === 'edit')) {
+        const s = {};
+        Object.keys(bundleModel.sched || {}).forEach(k => { const v = bundleModel.sched[k]; if (typeof v === 'string' && v) s[k] = v; });
+        put('sched', s, {});
+      }
       if (changed) EV.saveEdits(ev.id, { bundles: ev.bundles });
     }
     window.bdEvPersist = evBundlePersist;
@@ -1860,6 +1871,7 @@
       [hl, hs, hr].forEach(h => { if (!h) return; h.querySelectorAll('input, textarea').forEach(el => { el.readOnly = !editing; }); h.querySelectorAll('select').forEach(el => { el.disabled = !editing; }); });
       TB.syncErrors(settingsPanel, bundleModel, c, T);
       tbApply(c);
+      if (window.bdStockLockApply) window.bdStockLockApply();   /* D438：上架中重畫購買條件後補鎖 */
     }
     window.bdRenderTB = renderTB;
 
@@ -1909,6 +1921,7 @@
       host.querySelectorAll('.limit-set__switch').forEach(b => b.setAttribute('data-view-safe', ''));
       if (window.ztorIcons) window.ztorIcons.applyIcons(host);
       PL.syncErrors(host, bundleModel, der, T);
+      if (window.bdStockLockApply) window.bdStockLockApply();   /* D438：上架中重畫限購後補鎖 */
     }
     window.bdRenderLimits = renderLimits;
     /* 純商品組合包的購買條件（D400）：編輯態掛 purchase-conds 的條件清單（只開限時購買、限粉絲分級購買），檢視態畫鎖定的條件卡 */
@@ -2650,13 +2663,35 @@
         if (['scheduled', 'on-sale', 'live'].indexOf(tixEvent.status) < 0) return false;
         return !LS.isArchived(bundleModel) && !bundleModel.draft && !LS.isUnlisted(bundleModel);
       }
+      /* D438 決定一（2026-10-16）：組合包另設的上架、下架、開賣、停售時間屬營運動作，上架中也可直接改。
+         做法比照活動詳情的 edStockSync（UIA-268 第 5 條）：上架中「編輯組合」照樣可按，進編輯後只有「上架」與「開賣」兩節
+         （[data-bd-listing]／[data-bd-sale-lctl] 所在的 form-section，含四個時間與開賣開關）可改；其他各節掛 data-mode="view"
+         （沿用檢視態的樣子與按鈕白名單，不另做第三種鎖定外觀）、欄位逐一設唯讀。各節重畫（renderTB／renderLimits／成員表）後
+         由 bdStockLockApply() 補鎖。下架後照現行規則全部開放。 */
+      const bdStockFreeSec = sec => !!(sec.querySelector('[data-bd-listing]') || sec.querySelector('[data-bd-sale-lctl]'));
+      function bdStockLockApply() {
+        const lock = sp.getAttribute('data-mode') === 'edit' && bdStockOnly();
+        sp.querySelectorAll('.form-section').forEach(sec => {
+          if (bdStockFreeSec(sec)) return;
+          if (lock) {
+            sec.setAttribute('data-mode', 'view'); sec.setAttribute('data-bd-stocklock', '');
+            sec.querySelectorAll('input, textarea').forEach(el => { el.readOnly = true; });
+            sec.querySelectorAll('select').forEach(el => { el.disabled = true; });
+            sec.querySelectorAll('[data-bd-edit-only], [data-bd-tix-exp]').forEach(el => { el.hidden = true; });
+          } else if (sec.hasAttribute('data-bd-stocklock')) {
+            sec.removeAttribute('data-mode'); sec.removeAttribute('data-bd-stocklock');
+          }
+        });
+      }
+      window.bdStockLockApply = bdStockLockApply;
       function bdStockSync() {
         const on = bdStockOnly();
         const note = document.querySelector('[data-bd-stockonly-note]'); if (note) note.hidden = !on;
+        /* 墓碑 2026-10-16（D438 決定一）：上架中「編輯組合」停用（title＝bd.stockonly.title）退場——時間設定在上架中也能改，改成進編輯後只鎖其他各節 */
         document.querySelectorAll('[data-bd-editmode]').forEach(b => {
-          if (on && sp.getAttribute('data-mode') !== 'edit') { b.disabled = true; b.setAttribute('aria-disabled', 'true'); b.title = T('bd.stockonly.title', ''); }
-          else if (!on) { b.disabled = false; b.removeAttribute('aria-disabled'); b.removeAttribute('title'); }
+          b.disabled = false; b.removeAttribute('aria-disabled'); b.removeAttribute('title');
         });
+        bdStockLockApply();
         /* 頁首「預覽與在地化」（UIA-268，2026-10-16；規格 5.1.5.9 §2.8 編輯時機，D435 推導）：翻譯算其他資料，
            看組合包自己的上架狀態——上架中停用入口並用 title 寫原因，比照 event-detail 活動上架中停用在地化入口
            （[data-ed-localize]）。入口是 <a>：停用時把 href 收進 data-bd-href、拿掉 tab 焦點，下架後還原。 */
@@ -2765,7 +2800,7 @@
         if (e.target.closest('[data-bd-editmode]')) {
           const editing = sp.getAttribute('data-mode') === 'edit';
           if (editing) { SNAP = null; setMode(false); renderBdSettingsOverview(); bdStockSync(); }
-          else { SNAP = snapshot(); setMode(true); }
+          else { SNAP = snapshot(); setMode(true); bdStockLockApply(); setTimeout(bdStockLockApply, 0); }   /* D438：上架中只開放上架與開賣兩節；renderTB／renderLimits 的延後重畫之後再補鎖一次 */
         }
         if (e.target.closest('[data-bd-edit-cancel]')) {
           /* D433：取消時允許的門票還原成進入編輯時的勾選（勾選框不在 snapshot 的 value 還原範圍內） */
@@ -2950,7 +2985,9 @@
           title: T('e-shop.unlist.title', 'Unlist “{n}”?').replace('{n}', bname()),
           body: T('e-shop.unlist.body', 'Fans see its page as unlisted and can’t buy; anything in their carts shows as unavailable. Listing and sale schedules are cleared; set the sale again after relisting.'),
           okKey: 'e-shop.unlist.confirm', okFallback: 'Unlist',
-          onConfirm: () => { LS.unlist(bundleModel); paint(); }
+          /* D290：下架清除四個排程時間。活動組合包的時間是逐格「跟隨活動／另設」（bundleModel.sched），
+             清除＝另設的格子全部回到跟隨（D438 決定二同批，ASSUMPTIONS UIA-270）；paint() → mirror → evBundlePersist 寫回 events-store。 */
+          onConfirm: () => { LS.unlist(bundleModel); if (seed && seed.isEventBundle) bundleModel.sched = {}; paint(); }
         });
       }
       /* 重新上架（D288 不變式＋D289 做法）：判斷與三種彈窗都在共用的 partials/bundle-relist.js——
