@@ -411,12 +411,8 @@
         '</div>' : err('person')) +   /* D427：每次交易、限購次數兩欄退場 */
       '</div>');
   }
-  /* 只有購買條件那一半的摘要（D398：bookyay 自動建立的組合包，限購另在組合包的限購區塊顯示） */
-  function buySummary(st, def, T) {
-    if (!def || !def.count) return '';
-    var r = st && st.rules;
-    return buyText(r ? curBuy(r) : defBuy(def), T);
-  }
+  /* 墓碑 2026-10-16（D429）：buySummary()（只有購買條件那一半的摘要，D398；唯一消費者是 bookyay 自動建立的組合包的唯讀讀數）
+     隨自動組合包退場，連同匯出一起刪除。 */
   /* 摘要（收合列、清單、細節頁讀數共用）：「超級粉絲以上 · 每人 2 組」 */
   function rulesSummary(st, def, T) {
     if (!def || !def.count) return '';
@@ -490,7 +486,7 @@
     evHidden: evHidden, saleCeil: saleCeil, lateEnd: lateEnd, lateText: lateText,
     eventValue: eventValue, followText: followText, isCustom: isCustom, effective: effective,
     schedErrors: schedErrors, schedHTML: schedHTML,
-    ruleConds: ruleConds, tierRules: tierRules, defaults: defaults, seedFrom: seedFrom, rulesErrors: rulesErrors, rulesHTML: rulesHTML, rulesSummary: rulesSummary, buySummary: buySummary,
+    ruleConds: ruleConds, tierRules: tierRules, defaults: defaults, seedFrom: seedFrom, rulesErrors: rulesErrors, rulesHTML: rulesHTML, rulesSummary: rulesSummary,
     onClick: onClick, onInput: onInput, syncErrors: syncErrors, errorCount: errorCount
   };
 })();

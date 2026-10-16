@@ -475,7 +475,7 @@
 - `kpi.css` — .kpi, .card, .kpi__label, .kpi__value, .kpi__delta ｜ KPI — metric tile (label / value / delta or meta
 - `kv-list.css` — .kv, .kv--lead, .kv__k, .kv__v ｜ KV List — 唯讀鍵值列（label 左、value 右，逐列細分隔線）
 - `leave-dialog.css` — .leave-dialog, .leave-dialog__scrim, .leave-dialog__card, .leave-dialog__close, .leave-dialog__title
-- `limit-set.css` — .limit-set, .limit-set__head, .limit-set__state, .limit-set__sub, .limit-set__act ｜ limit-set.css · 限購（D398，2026-10-12；D427，2026-10-
+- `limit-set.css` — .limit-set, .limit-set__head, .limit-set__sub, .limit-set__act, .limit-set__fields ｜ limit-set.css · 限購（D398，2026-10-12；D427，2026-10-
 - `link-field.css` — .linkf, .linkf__label, .linkf__row, .linkf__input, .linkf__act ｜ link-field.css · 唯讀連結 ＋ 複製 ＋ 重置
 - `list-footer.css` — .list-footer, .list-footer__count, .list-footer--center ｜ List footer — paginated-list footer pairing a "S
 - `list-toolbar.css` — .list-toolbar, .list-toolbar__actions, .list-toolbar__filter, .list-toolbar__filter-count, .list-status-row ｜ List toolbar · 清單頁頭的兩層控制骨架

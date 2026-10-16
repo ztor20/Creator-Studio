@@ -2175,7 +2175,7 @@
         <!-- D422 決定三（2026-10-15）：顯示開關改成「隱藏／顯示」按鈕，與列表檢視每一列的同一顆是同一個動作。
              屬營運動作：檢視模式與編輯模式都能按、按下立即生效，不算進「儲存 N 項變更」、捨棄也不還原〔推導，5.1.6.3 §2.6〕；
              還沒套用的新門票沒有已儲存的那一張，按鈕只改這張草稿、跟著「套用」走。
-             套票拆出的 1 人票（hideFix）固定隱藏：按鈕停用、副標說明原因；已結束／已取消整頁唯讀：停用。
+             已結束／已取消整頁唯讀：停用。（墓碑 2026-10-16 D429：套票拆出的 1 人票 hideFix 固定隱藏的停用隨機制退場）
              D424 決定 9（2026-10-15）：隱藏不受可賣性防呆限制——最後一張可賣的門票也可以隱藏（取代 D422 推導的「按下當下擋下」）；
              刪除的可賣性防呆不變。狀態文字與按鈕字由 syncTmShow() 依目前狀態換。 -->
         <div class="control-row" id="ed-tm-show-row" data-feat="S55">
@@ -2193,7 +2193,7 @@
     </div>
     <div class="payout-dialog__foot">
       <button class="btn btn--ghost btn--sm" type="button" id="ed-tm-delete" data-i18n="ed.tm.delete">Delete tier</button>
-      <!-- 刪除停用的原因（D385 決定二）：bookyay 帶入的票（含隱藏的 1 人票、含未售出）不能刪——寫在刪除鈕旁邊，不是錯誤訊息 -->
+      <!-- 刪除停用的原因（D385 決定二）：bookyay 帶入的票（含未售出）不能刪——寫在刪除鈕旁邊，不是錯誤訊息 -->
       <span class="field__hint" id="ed-tm-del-why" hidden></span>
       <span class="payout-dialog__foot-note" id="ed-tm-foot-note" hidden></span>
       <!-- D361 決定三（D390 稽核第一節原型第 1 條）：已結束、已取消的活動門票只能看 -->
@@ -5230,9 +5230,9 @@
         (Number(t.price) === 0 ? '<span class="badge badge--neutral">' + tixEsc(T('ce.tier.free', 'Free')) + '</span>' : '') +
         /* 墓碑 2026-10-15（D422 決定三）：卡上的「已暫停」徽章隨單張門票暫停販售退場 */
         /* 隱藏標示（D328，5.1.6.3 §2.6）：顯示開關關閉的票——活動頁不列、不能單張買，仍在組合包裡照常賣 */
-        /* 2026-10-09（D390 稽核第一節原型第 17 條）：release2.4 只有 bookyay 套票轉出的 1 人票（hideFix）會隱藏——徽章只對它掛 S92；
-           創作者自己切成隱藏的票屬 S55（⚪，release2.4 收起開關），徽章跟著收，不然看得到「隱藏」卻找不到開關 */
-        (t.hidden ? '<span class="badge badge--neutral" data-feat="' + ((t.hideFix || (ev && ev.source === 'bookyay')) ? 'S92' : 'S55') + '">' + tixEsc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '');
+        /* 2026-10-09（D390 稽核第一節原型第 17 條）：bookyay 活動的門票隱藏徽章掛 S92；創作者自建活動自己切成隱藏的票屬 S55
+           （⚪，release2.4 收起開關），徽章跟著收，不然看得到「隱藏」卻找不到開關。墓碑 2026-10-16（D429）：1 人票（hideFix）條件退場。 */
+        (t.hidden ? '<span class="badge badge--neutral" data-feat="' + ((ev && ev.source === 'bookyay') ? 'S92' : 'S55') + '">' + tixEsc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '');
       const doorsM = hhmmToMin((edSessions[0] || {}).doors || '');
       const n = Number(t.earlyMin) || 0;
       return (removed
@@ -5337,13 +5337,12 @@
      取代單張門票的暫停販售。列表檢視每一列一顆、門票彈窗一顆，同一個動作：
      · 營運動作〔推導〕：檢視模式與編輯模式都能按、立即生效——草稿那一張與已儲存的那一張一起翻、只寫 hidden 這一欄，
        基準跟著已儲存的狀態走，所以不算「儲存 N 項變更」、捨棄（從活動重新複製）也不還原（同原本單張暫停的 pauseTierNow）。
-     · 套票拆出的 1 人票（hideFix，D329）固定隱藏：停用並說明；已結束、已取消整頁唯讀：停用。
+     · 已結束、已取消整頁唯讀：停用。（墓碑 2026-10-16 D429：套票 1 人票 hideFix 固定隱藏的 'fix' 停用退場）
      · 不受可賣性防呆限制（D424 決定 9）：最後一張可賣的票也可以隱藏（原本回傳 'last' 擋下，已撤除）。
      · bookyay 帶入的其他門票可以切換（D391 第 10 題），只影響 ztor 粉絲端。 */
   let tmShown = true;
   function tierVisBlock(t) {
     if (!t) return 'none';
-    if (t.hideFix) return 'fix';
     if (stageRO()) return 'ro';
     return '';
   }
@@ -5369,18 +5368,18 @@
     const setK = (el, k, fb) => { if (el) { el.setAttribute('data-i18n', k); el.textContent = T(k, fb); } };
     setK(st, tmShown ? 'ed.tm.show.state.on' : 'ed.tm.show.state.off', tmShown ? 'Shown on the event page' : 'Hidden from the event page');
     setK(lab, tmShown ? 'ed.tix.hide' : 'ed.tix.show', tmShown ? 'Hide' : 'Show');
-    setK(sub, why === 'fix' ? 'ce.tier.show.fix' : (tmNew ? 'ce.tier.show.hint' : 'ed.tm.show.sub.op'),
-      why === 'fix' ? 'Sold only through its bundle — stays hidden.' : (tmNew ? "Off hides it from the price list — fans can't buy it on its own, but bundles can still include it." : 'Takes effect right away, no need to save. Hidden tickets stay off the price list but can still sell inside bundles.'));
+    setK(sub, tmNew ? 'ce.tier.show.hint' : 'ed.tm.show.sub.op',
+      (tmNew ? "Off hides it from the price list — fans can't buy it on its own, but bundles can still include it." : 'Takes effect right away, no need to save. Hidden tickets stay off the price list but can still sell inside bundles.'));
     b.setAttribute('aria-pressed', tmShown ? 'false' : 'true');
     b.disabled = !!why;
-    if (why) { b.setAttribute('aria-disabled', 'true'); b.title = why === 'fix' ? T('ce.tier.show.fix', 'Sold only through its bundle — stays hidden.') : T('ed.tm.ro', 'This event has ended or been cancelled — tickets are view-only.'); }
+    if (why) { b.setAttribute('aria-disabled', 'true'); b.title = T('ed.tm.ro', 'This event has ended or been cancelled — tickets are view-only.'); }
     else { b.removeAttribute('aria-disabled'); b.removeAttribute('title'); }
   }
   function tmErrors() {
     const e = [];
     if (!tmEl('ed-tm-name').value.trim()) e.push('name');
-    /* bookyay 套票轉出的 1 人票票價可有小數且鎖定（D328／D329），不走整數檢核。 */
-    if (!(tmTier && tmTier.hideFix) && !/^\d+$/.test(String(tmEl('ed-tm-price').value).trim())) e.push('price');
+    /* 墓碑 2026-10-16（D429）：套票轉出的 1 人票（hideFix，小數票價）不走整數檢核的例外退場。 */
+    if (!/^\d+$/.test(String(tmEl('ed-tm-price').value).trim())) e.push('price');
     /* 墓碑（2026-10-15，D424 決定 9）：新門票草稿「隱藏最後一張可賣」的套用檢查（'show'）退場 */
     if (tmNeedsSess() && !tmEl('ed-tm-sess').value) e.push('sess');   // D381：獨立票要選所屬場次
     /* D389：這張票自己的一組購買條件，期間超出活動上架區間（或限時購買結束晚於活動停售）——擋存，紅字在條件卡上 */
@@ -5508,14 +5507,14 @@
              D417 決定五（最終版，S96）：編輯模式下 bookyay 門票可自加「折扣」「限時折扣」（tmBkyWork），其他條件仍不能加。
              一般活動的單張門票不顯示購買條件區（發布後先不開放改購買條件，2026-08-11 裁決維持）；
              活動層那張唯讀卡（#ed-evrules）D387 起自建活動也顯示，見 renderEvRules。
-     決定二：bookyay 帶入的票（含隱藏的 1 人票、含未售出）刪除鈕停用，原因寫在鈕旁（#ed-tm-del-why）。
+     決定二：bookyay 帶入的票（含未售出）刪除鈕停用，原因寫在鈕旁（#ed-tm-del-why）。
      決定三：bookyay 帶入的票，提前入場與早到處理鎖定為跟隨場次（場次的值由 bookyay 帶入，D365）。
-     「bookyay 帶入的票」＝價格帶 bookyay 原價（isBkyTier，D330）或套票轉出的 1 人票（hideFix）；
+     「bookyay 帶入的票」＝價格帶 bookyay 原價（isBkyTier，D330；D429 起不再有套票轉出的 1 人票 hideFix）；
      在活動詳情另外新增的票不算 bookyay 帶入的票，照常可改可刪；但入場（決定三）例外——
      D386 決定一（2026-10-09 使用者裁決「鎖」）：bookyay 活動另外新增的票（含獨立票、含新增中的那一張）提前入場與早到處理
      同樣鎖定為跟隨場次、掛同一枚 From bookyay（場次本身的值由 bookyay 帶入）。判斷用 entryLock（＝evIsBky），不用 tierBky。 */
   const evIsBky = () => !!ev && ev.source === 'bookyay';
-  const tierBky = t => !!t && evIsBky() && (isBkyTier(t) || !!t.hideFix);
+  const tierBky = t => !!t && evIsBky() && isBkyTier(t);
   const ruleWhen = v => String(v || '').replace(/-/g, '/').replace('T', ' ') || '—';
   /* 條件逐列（唯讀 .kv）：種類與順序同 create-event 的 COND_TYPES（限時購買、限粉絲分級購買、限購、折扣、限時折扣、
      粉絲分級折扣、限時＋限粉絲分級折扣），條件名稱字樣同建立流程（ed.rule.*＝create-event d.cond.*）。
@@ -5672,8 +5671,8 @@
      D419 定案：bookyay 門票沒有「跟隨活動預設」，沒有帶入限購的票直接在自己的條件裡加；全部移除就回到空的一組。 */
   const BKY_ADD_KEYS = ['disc', 'discTime'];
   let tmBkyWork = null;
-  /* 套票轉出的 1 人票（hideFix）不設折扣與早鳥（5.1.6.2 F9：折扣類落在自動組合包），不給自加入口 */
-  const bkyAddOn = () => evIsBky() && !tmNew && !stageRO() && edEditing() && featOnPC('S96') && !(tmTier && tmTier.hideFix);
+  /* 墓碑 2026-10-16（D429）：原本排除套票轉出的 1 人票（hideFix，折扣類落在自動組合包）——該票退場。 */
+  const bkyAddOn = () => evIsBky() && !tmNew && !stageRO() && edEditing() && featOnPC('S96');
   function syncTmRules(t) {
     const rsec = tmEl('ed-tm-rules-sec');
     const acts = tmEl('ed-tm-rules-actions');
@@ -5786,7 +5785,7 @@
     if (!pol.hidden) tmEl('ed-tm-early-pol-v').textContent =
       T(sess.early === 'block' ? 'ed.early.block' : 'ed.early.warn', sess.early === 'block' ? 'Deny entry' : 'Allow entry');
     markBkySource(tmEl('ed-tm-entry-title'), entryLock);
-    /* 刪除：bookyay 帶入的票一律停用（含未售出、含 1 人票），原因寫在鈕旁 */
+    /* 刪除：bookyay 帶入的票一律停用（含未售出），原因寫在鈕旁 */
     const why = tmEl('ed-tm-del-why');
     if (bky) {
       const del = tmEl('ed-tm-delete');
@@ -5824,15 +5823,13 @@
     tmEl('ed-tm-early-hint').textContent = earlyHintFor(t.earlyMin);
     tmEl('ed-tm-price-cur').textContent = evCur();   // 2026-10-12 使用者：票價前綴顯示實際幣別（代碼），不寫死 $
     tmShown = !t.hidden;   // D422：隱藏／顯示按鈕的狀態（新門票＝草稿值，已存在的門票＝目前狀態，按下立即寫回）
-    /* bookyay 套票轉換出的 1 人票（hideFix，D329，5.1.6.2 F9）：顯示開關鎖定為隱藏、票價與張數鎖定、不能刪
-       （刪掉它，自動建立的組合包就沒有票可賣）。說明句換成「只透過組合包販售」。 */
-    const fix = !!t.hideFix;
-    /* 2026-10-09 D383：1 人票的鎖定開關屬 S92（🔵 release2.4）、創作者自己切換仍是 S55（⚪）；換掉標記後重跑版本閘 */
+    /* 墓碑 2026-10-16（D429）：bookyay 套票轉換出的 1 人票（hideFix，D329）——顯示開關鎖定為隱藏、票價與張數鎖定、
+       刪除鈕整顆收起、說明句「只透過組合包販售」——隨套票拆票機制移除。 */
     const showRow = tmEl('ed-tm-show-row');
     /* 2026-10-09 D391 補充二（使用者裁決照建議）：bookyay 活動的門票顯示／隱藏開關（第 10 題）也進 release2.4，改掛 S92；
        自建活動創作者自己切換仍是 S55（⚪）。徽章同一個判斷。 */
-    if (showRow) { const feat = (fix || (ev && ev.source === 'bookyay')) ? 'S92' : 'S55'; showRow.setAttribute('data-feat', feat); tmEl('ed-tm-show-sec')?.setAttribute('data-feat', feat); if (window.ztorDevState && window.ztorDevState.regate) window.ztorDevState.regate(); }
-    syncTmShow();   // D422：狀態文字、按鈕字、停用（1 人票固定隱藏／已結束已取消唯讀）
+    if (showRow) { const feat = (ev && ev.source === 'bookyay') ? 'S92' : 'S55'; showRow.setAttribute('data-feat', feat); tmEl('ed-tm-show-sec')?.setAttribute('data-feat', feat); if (window.ztorDevState && window.ztorDevState.regate) window.ztorDevState.regate(); }
+    syncTmShow();   // D422：狀態文字、按鈕字、停用（已結束已取消唯讀）
     const sold = Number(t.sold) || 0;
     tmEl('ed-tm-qty').min = sold;
     tmEl('ed-tm-qty-hint').textContent = sold > 0
@@ -5842,17 +5839,16 @@
     del.title = sold > 0 ? T('ee.tix.nodelete', "Can't delete — {n} buyers hold this tier").replace('{n}', fmtNum(sold)) : '';
     /* 2026-08-18：票種在子場也可以改（在這裡改＝只改這一場）。 */
     ['ed-tm-name', 'ed-tm-price', 'ed-tm-qty', 'ed-tm-early'].forEach(id => { tmEl(id).readOnly = false; });
-    if (fix) { tmEl('ed-tm-price').readOnly = true; tmEl('ed-tm-qty').readOnly = true; }   // D329：1 人票票價與張數鎖定
     if (isBkyTier(t)) tmEl('ed-tm-price').readOnly = true;   // D330：bookyay 帶入的基準價由港幣原價換算而來、鎖定（改價走在地化的逐幣別覆寫）
-    /* 張數（5.1.6.1 F21「票種名稱與預設價格與張數」鎖定；2026-10-07 補，原本只有 1 人票鎖、一般 bookyay 票可改）＋
+    /* 張數（5.1.6.1 F21「票種名稱與預設價格與張數」鎖定；2026-10-07 補）＋
        票價與張數的來源標記（同票名那一枚） */
-    const pqLock = isBkyTier(t) || fix;
+    const pqLock = isBkyTier(t);
     if (pqLock) tmEl('ed-tm-qty').readOnly = true;
     markBkySource(tmEl('ed-tm-qty').closest('.kv')?.querySelector('.kv__k'), pqLock);   // 數量改線框表格的一列（2026-10-12），同票價那一列
     markBkySource(tmEl('ed-tm-price').closest('.kv')?.querySelector('.kv__k'), pqLock);
     /* 票名（5.1.6.1 F22「bookyay 帶入時鎖定」→ 5.1.6.2；2026-10-07 補，原本可改、與規格不一致）：
-       bookyay 帶入的票（含套票轉出的 1 人票）票名唯讀、標籤旁掛來源標記（同描述、條款及細則那一枚）。 */
-    const nameLock = isBkyTier(t) || fix;
+       bookyay 帶入的票票名唯讀、標籤旁掛來源標記（同描述、條款及細則那一枚）。 */
+    const nameLock = isBkyTier(t);
     tmEl('ed-tm-name').readOnly = nameLock;
     const nameField = tmEl('ed-tm-name').closest('.field');
     if (nameField) {
@@ -5865,14 +5861,14 @@
       else if (!nameLock && nchip) nchip.remove();
     }
     tmEl('ed-tm-save').hidden = false;
-    del.hidden = fix || tmNew;   // 新票還沒存過，取消就是丟掉，不需要刪除鈕
-    syncTmBky(t);   // D385：bookyay 帶入的票——購買條件唯讀、入場鎖定、刪除停用＋原因（1 人票的刪除鈕在這裡改回顯示並停用）
+    del.hidden = tmNew;   // 新票還沒存過，取消就是丟掉，不需要刪除鈕
+    syncTmBky(t);   // D385：bookyay 帶入的票——購買條件唯讀、入場鎖定、刪除停用＋原因
     /* 已結束、已取消（D361 決定三，D390 稽核第一節原型第 1 條）：整頁唯讀含門票——彈窗只能看：欄位唯讀、兩個開關鎖住、
        圖片不能換、沒有儲存與刪除；頁尾一句說明為什麼。 */
     const ro = tmRO();   // 2026-10-10：未按編輯＝只能看，同已結束／已取消
     if (ro) {
       ['ed-tm-name', 'ed-tm-price', 'ed-tm-qty', 'ed-tm-early'].forEach(id => { tmEl(id).readOnly = true; });
-      /* D422：隱藏／顯示是營運動作——檢視模式仍可按（syncTmShow 只在已結束／已取消與 1 人票時停用），這裡不鎖 */
+      /* D422：隱藏／顯示是營運動作——檢視模式仍可按（syncTmShow 只在已結束／已取消時停用），這裡不鎖 */
       tmEl('ed-tm-save').hidden = true;
       del.hidden = true;
       tmEl('ed-tm-del-why').hidden = true;
@@ -5929,7 +5925,7 @@
      D424 決定 9：隱藏不受可賣性防呆限制，最後一張可賣的票也照翻（紅字與擋下已撤除）。 */
   tmEl('ed-tm-show')?.addEventListener('click', () => {
     const b = tmEl('ed-tm-show');
-    if (!tmTier || b.disabled) return;   // 1 人票固定隱藏；已結束、已取消唯讀
+    if (!tmTier || b.disabled) return;   // 已結束、已取消唯讀
     if (tmNew) { tmShown = !tmShown; syncTmShow(); return; }
     toggleTierVisNow(tmTier);
     tmShown = !tmTier.hidden;
@@ -6001,7 +5997,7 @@
      票價／狀態。庫存＝張數 − 銷量 − 保留中（保留中＝下單未付款佔走的）。
      D422 決定三（2026-10-15）：每列最後一格由「暫停販售／重新販售」改為「隱藏／顯示」（toggleTierVisNow），
      狀態欄由「販售中／已暫停」改為「顯示中／隱藏」；營運動作、不用先按編輯、立即生效。
-     按鈕的功能標記同彈窗的顯示列：bookyay 活動的門票與 1 人票掛 S92（🔵 release2.4）、自建活動掛 S55（⚪）。 */
+     按鈕的功能標記同彈窗的顯示列：bookyay 活動的門票掛 S92（🔵 release2.4）、自建活動掛 S55（⚪）。 */
   let tixView = 'cards';
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -6010,13 +6006,11 @@
     if (!box) return;
     const kv = (ev.images && ev.images.keyvisual) || '';
     const th = k => '<th>' + esc(T('ed.tix.col.' + k, k)) + '</th>';
-    const visFeat = t => (t.hideFix || (ev && ev.source === 'bookyay')) ? 'S92' : 'S55';
+    const visFeat = () => (ev && ev.source === 'bookyay') ? 'S92' : 'S55';
     const visBtn = t => {
       const why = tierVisBlock(t);
-      /* 1 人票固定隱藏、已結束／已取消唯讀：按鈕留著但停用，title 說明原因（同站上停用鈕的做法，不做沉默停用） */
-      const dis = why ? ' disabled aria-disabled="true" title="' + esc(why === 'fix'
-        ? T('ce.tier.show.fix', 'Sold only through its bundle — stays hidden.')
-        : T('ed.tm.ro', 'This event has ended or been cancelled — tickets are view-only.')) + '"' : '';
+      /* 已結束／已取消唯讀：按鈕留著但停用，title 說明原因（同站上停用鈕的做法，不做沉默停用） */
+      const dis = why ? ' disabled aria-disabled="true" title="' + esc(T('ed.tm.ro', 'This event has ended or been cancelled — tickets are view-only.')) + '"' : '';
       return '<button type="button" class="btn btn--ghost btn--sm" data-view-safe data-tix-vis="' + esc(t.id) + '" data-feat="' + visFeat(t) + '"' + dis + '>' +
         esc(T(t.hidden ? 'ed.tix.show' : 'ed.tix.hide', t.hidden ? 'Show' : 'Hide')) + '</button>';
     };
@@ -6642,7 +6636,7 @@
       return '<div class="meter-list__row">' +
           (thumbFn ? thumbFn(t) : '') +
           '<span class="meter-list__name"><span>' + esc(t.name || '') + '</span>' +
-            (t.hidden ? '<span class="badge badge--neutral" data-feat="' + ((t.hideFix || (ev && ev.source === 'bookyay')) ? 'S92' : 'S55') + '"><span>' + esc(T('ce.tier.hidden', 'Hidden')) + '</span></span>' : '') +
+            (t.hidden ? '<span class="badge badge--neutral" data-feat="' + ((ev && ev.source === 'bookyay') ? 'S92' : 'S55') + '"><span>' + esc(T('ce.tier.hidden', 'Hidden')) + '</span></span>' : '') +
           '</span>' +
           (thumbFn
             ? '<span class="meter-list__meter">' +
@@ -7271,8 +7265,8 @@
         '<div class="tier-card__fact"><dt>' + esc(label) + '</dt><dd>' + val + '</dd></div>';
       /* 同一個組合包 id 會在系列多場各出現一次（每場各一組），帶 &ev= 讓細節頁開到這一場的那一組。 */
       const href = 'bundle-detail.html?id=' + encodeURIComponent(b.id) + '&ev=' + encodeURIComponent(ev.id);
-      /* bookyay 套票自動建立的組合包（fix，D329，5.1.6.3 §2.6.1）：整組鎖定——卡上一句鎖定說明（沿用組合商品細節頁已售出鎖定的
-         `.info-banner`＋鎖頭，同一種鎖定語彙），限時折扣（早鳥）有值時多一列讀數。編輯仍走組合商品細節頁，那邊依同一範圍停用欄位。 */
+      /* 限時折扣有值時多一列讀數。墓碑 2026-10-16（D429）：bookyay 套票自動建立的組合包（fix，D329）卡上的整組鎖定說明
+         （.info-banner＋鎖頭、cpp.bd.sp.srclocked）隨自動組合包退場。 */
       const saleWhen = v => String(v || '').replace(/-/g, '/').replace('T', ' ') || '—';
       const saleVal = b.sale ? T('cpp.bd.sp.sale.val', '{pct}% off · {from} – {to}').replace('{pct}', String(b.sale.pct))
         .replace('{from}', saleWhen(b.sale.from)).replace('{to}', saleWhen(b.sale.to)) : '';
@@ -7294,8 +7288,6 @@
           fact(T('ed.bd.pool', 'Tickets drawn from stock'), fmtNum(tickets)) +
           (saleVal ? fact(T('cpp.bd.sp.sale', 'Limited-time discount'), esc(saleVal)) : '') +
         '</dl>' +
-        (b.fix ? '<div class="info-banner mt-8" data-feat="S56"><i data-lucide="lock" class="ztor-icon info-banner__icon"></i><span>' +
-          esc(T('cpp.bd.sp.srclocked', 'Imported from bookyay — tickets, quantity, discount, locked sets and the limited-time discount are locked.')) + '</span></div>' : '') +
         /* 入口連結放卡尾、不放卡頭：卡頭放的話三欄格裡名稱被擠成三行（1440 寬實測）。 */
         /* D423 決定一：卡尾右邊一顆隱藏／顯示（營運動作、立即生效；點它不導頁，見下方導頁 handler） */
         '<div class="mt-8 flex-row" style="justify-content:space-between;align-items:center;gap:var(--sp-8)"><a class="card__link" href="' + esc(href) + '">' + esc(T('ed.bd.manage', 'Manage in e-shop →')) + '</a>' + bdVisBtn(b) + '</div>' +
@@ -7316,7 +7308,6 @@
   /* ── 票務商品的隱藏／顯示（D423 決定一，2026-10-15；5.1.6.3 §2.6.1「隱藏／顯示」）──────────────
      切的是組合包三開關的「顯示」（shown，主規格 §7.14）。比照單張門票（toggleTierVisNow）：營運動作〔推導〕，
      檢視與編輯模式都能按、立即生效、不算進「儲存 N 項變更」、捨棄不還原——組合包本來就是獨立物件、不併入活動整頁儲存。
-     bookyay 套票自動建立的組合包（fix）也可以切（三開關不鎖，D329 補充）。
      不受可賣性防呆限制（D424 決定 9，組合包比照門票〔推導〕）：隱藏後活動沒有可賣的東西也照翻；停售、下架、刪除的防呆不變。
      已結束、已取消：整頁唯讀（D361 決定三），按鈕停用〔推導，UIA-264〕。
      原型寫回 events-store 的活動覆寫（ev.bundles），組合商品細節頁讀同一份、看得到同一個顯示狀態。 */

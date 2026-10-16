@@ -3920,8 +3920,8 @@
     /* 草稿刪除確認（2026-09-21 · D294，5.1.6 F1）：同 e-shop 草稿刪除的文案節奏——標題帶活動名、內文說明草稿還沒真正建立＋不可復原 */
     'events.delete.title':     { en: 'Delete draft “{n}”?',                   zh: '要刪除草稿「{n}」嗎？' },
     'events.delete.body':      { en: 'This draft has not been created yet — no tickets, no switches, no fan page — so deleting it affects no one. A deleted draft cannot be recovered.', zh: '這份草稿還沒真正建立：沒有票券、沒有開關、沒有粉絲端頁面，刪除不影響任何人。刪除後無法復原。' },
-    /* D331 決定四：草稿活動裡 bookyay 自動建立的組合包隨活動一起刪除，彈窗多一句並列名 */
-    /* D340：自動建立的與創作者自建的（成員含本草稿活動票券）都一起刪、都列出 */
+    /* D331 決定四：草稿活動裡的組合包隨活動一起刪除，彈窗多一句並列名。
+       D340：創作者自建、成員含本草稿活動票券的都一起刪、都列出（D429 起已沒有 bookyay 自動建立的） */
     'events.delete.auto-bundles': { en: 'These bundles include its tickets and are deleted with it:', zh: '以下組合包含有這場活動的票券，會一起刪除：' },
     'events.delete.confirm':   { en: 'Delete',                              zh: '刪除' },
     'events.a.more':           { en: 'More actions',                        zh: '更多操作' },
@@ -6773,10 +6773,8 @@
     'cpp.bd.sp.sem.one':       { en: 'Locked to {name}: {n} per set, nothing for fans to choose.', zh: '鎖定 {name}，每組 {n} 張，粉絲不用挑。' },
     'cpp.bd.sp.sem.any':       { en: 'Fans pick one of {names} and get {n} tickets of it.', zh: '粉絲從 {names} 任選一種，拿到 {n} 張。' },
     'cpp.bd.sp.locked':        { en: '{n} sold — allowed tickets, quantity and items are locked. Discount, locked sets and the cap can still change.', zh: '已售出 {n} 組，允許的門票、張數與商品鎖定；還能改的是折扣、鎖定套數與上限。' },
-    /* D329：bookyay 套票自動建立的組合包整組鎖定（建立活動第 6 步的編輯器、組合商品細節頁同一句）。 */
-    /* D330：補「不能加商品、不能刪除」。 */
-    'cpp.bd.sp.srclocked':     { en: 'Imported from bookyay — tickets, quantity, locked sets and purchase limits are locked. Products can’t be added and the bundle can’t be deleted.', zh: '由 bookyay 帶入：票券、張數、鎖定套數與限購都已鎖定，也不能加入商品或刪除。' },   // D417：折扣與限時折扣不再由 bookyay 帶入
-    'cpp.bd.sp.items.srclocked': { en: 'Imported from bookyay — products can’t be added.', zh: '由 bookyay 帶入，不能加入商品。' },
+    /* 墓碑 2026-10-16（D429）：cpp.bd.sp.srclocked／cpp.bd.sp.items.srclocked（bookyay 套票自動建立的組合包整組鎖定、不能加商品，D329／D330）、
+       tb.rules.fix、pl.lock.bky、pl.state.locked（同一批組合包的購買條件與限購鎖定說明）刪除。 */
     'cpp.bd.sp.sale':          { en: 'Limited-time discount',          zh: '限時折扣' },
     'cpp.bd.sp.sale.val':      { en: '{pct}% off · {from} – {to}',      zh: '折 {pct}% · {from} – {to}' },
     'cpp.bd.sp.sale.price':    { en: '{price} during the window',      zh: '檔期內 {price}' },
@@ -6875,7 +6873,6 @@
     'tb.rules.later':          { en: 'You can tighten them on the bundle page after creating.', zh: '建立後可到組合包細節頁收緊。' },
     'tb.rules.none':           { en: 'Add a ticket first — the rules come from it.', zh: '先加入票券成員，購買條件從門票帶入。' },
     'tb.rules.locked':         { en: 'Includes conditions locked by bookyay — they can’t be changed here.', zh: '含 bookyay 帶入且鎖定的條件，這裡不能調整。' },
-    'tb.rules.fix':            { en: 'Created automatically from a bookyay package ticket — the purchase rules are locked.', zh: 'bookyay 套票自動建立的組合包，購買條件鎖定、不能調整。' },   // D390 決定二十
     'tb.rules.nooverlap':      { en: 'No overlapping time',            zh: '沒有交集的時間' },
     'tb.rules.buy':            { en: 'Who can buy',                    zh: '購買條件' },
     'tb.rules.cap':            { en: 'Purchase limits',                zh: '限購' },
@@ -6921,8 +6918,6 @@
     'pl.err.outside':          { en: 'Outside this bundle’s listing period ({period}).', zh: '超出組合包的上架區間（{period}）。' },
     'pl.qc.rules':             { en: 'Purchase rules & limits',        zh: '購買條件與限購' },
     'pl.err.save':             { en: 'Fix the purchase limits marked in red.', zh: '限購有要修正的地方（見紅字）。' },
-    'pl.state.locked':         { en: 'Set by bookyay',                 zh: 'bookyay 帶入' },
-    'pl.lock.bky':             { en: 'Created automatically from a bookyay package ticket — the limits are locked.', zh: 'bookyay 套票自動建立的組合包，限購鎖定、不能調整。' },
     'tb.time.hint':            { en: 'Must fall within the event’s listing period ({period}); can start before the event goes on sale.', zh: '須在活動上架區間（{period}）內，可以早於活動開賣。' },
     'tb.tier.min':             { en: 'Minimum fan tier',               zh: '買得到的最低分級' },
     'tb.tier.hint':            { en: 'Can’t go below {tier} — the tickets inside require it.', zh: '不能低於「{tier}」，所含門票要求這個門檻。' },
@@ -8374,13 +8369,11 @@
     /* 單張門票的顯示開關（D328，5.1.6.1 F22 基本區）。
        墓碑 2026-10-05（D353）：ce.tier.desc／ce.tier.desc.ph／ce.tier.desc.err（門票簡介）隨欄位整欄移除。 */
     'ce.tier.show':      { en: 'Show on event page',               zh: '顯示' },
-    /* D329：bookyay 套票轉換出的 1 人票鎖定為隱藏（建立活動與活動詳情同一句）。 */
-    'ce.tier.show.fix':  { en: 'Sold only through its bundle — stays hidden.', zh: '只透過組合包販售，固定隱藏。' },
+    /* 墓碑 2026-10-16（D429）：ce.tier.show.fix（bookyay 套票轉換出的 1 人票鎖定為隱藏）隨套票拆票機制刪除。 */
     'ce.tier.show.hint': { en: "Off hides it from the price list — fans can't buy it on its own, but bundles can still include it.",
                            zh: '關閉後不在活動頁票價清單列出、粉絲不能單張購買；仍可放進組合包販售。' },
     'ce.tier.hidden':    { en: 'Hidden',                           zh: '隱藏' },
-    /* bookyay 帶入（D328，5.1.6.1 F21）：套票轉出的 1 人票票名（〔產品待確認〕，原型暫用）與略過提示 */
-    'ce.bky.single':     { en: '{name} · 1 person',                zh: '{name}・1 人' },
+    /* bookyay 帶入（D328，5.1.6.1 F21）：略過提示。墓碑 2026-10-16（D429）：ce.bky.single（套票轉出的 1 人票票名）刪除。 */
     'ce.bky.skipped':    { en: 'Only the first ticket type per date is imported. Skipped: {name}', zh: '每個場次只帶入第一種票。未帶入：{name}' },
     'ce.bky.skipped.close': { en: 'Dismiss',                       zh: '關閉提示' },
     'ce.bky.h':          { en: 'Import from bookyay',              zh: '從 bookyay 帶入' },

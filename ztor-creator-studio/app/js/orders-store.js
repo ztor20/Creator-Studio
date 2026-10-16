@@ -1429,10 +1429,11 @@
   var EVENT_PAY_RATE = 0.024;   /* §7.6 全站支付費率；門票訂單一律以這筆訂單的實付（毛額）算一次 */
   function ticketPayFee(gross) { return Math.round((Number(gross) || 0) * EVENT_PAY_RATE); }
   var EVENT_DEMO = [
-    { ev: 'nick-live-taichung-bky', tickets: 2, bundles: ['bd-tc-duo', 'bd-tc-ga-tee'] },
+    /* 2026-10-16（D429）：bookyay 自動組合包（bd-tc-duo／bd-kh-duo／bd-pt-duo）退場，改指向同場保留的創作者自建組合包 */
+    { ev: 'nick-live-taichung-bky', tickets: 2, bundles: ['bd-tc-ga-tee'] },
     { ev: 'nick-live-taoyuan-bky', tickets: 2, bundles: ['bd-ty-ga-tee'] },
-    { ev: 'nick-live-kaohsiung-bky', tickets: 2, bundles: ['bd-kh-duo'] },
-    { ev: 'nick-summer-pingtung-bky', tickets: 1, bundles: ['bd-pt-duo'] },
+    { ev: 'nick-live-kaohsiung-bky', tickets: 2, bundles: ['bd-kh-ga-tee'] },
+    { ev: 'nick-summer-pingtung-bky', tickets: 1, bundles: ['bd-pt-ga-tee'] },
     /* D414：免費門票訂單——nantou-lantern-opening 的「Kids under 6 · free」（金額 0）取 3 筆；free＝要幾筆金額 0 的交易 */
     { ev: 'nantou-lantern-opening', tickets: 0, free: 3 }
   ];
