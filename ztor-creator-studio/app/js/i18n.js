@@ -325,8 +325,7 @@
     'ace.r24.tag':        { en: 'Not in release2.4',  zh: 'release2.4 不支援' },
     /* D390 決定二十三（5.1.0.6 F3）：名稱欄附 bookyay 原名 */
     'ace.bky.orig':       { en: 'bookyay: {name}',    zh: 'bookyay 原名：{name}' },
-    'ace.r24.multi':      { en: 'More than one time slot — release2.4 only takes single-slot events.', zh: '這場有多個時段，release2.4 只能帶入單一時段的活動' },
-    'ace.r24.repeat':     { en: 'Recurring event — release2.4 only takes one-off, single-slot events.', zh: '這是重覆活動，release2.4 只能帶入單一時段、不重覆的活動' },
+    /* 墓碑 2026-10-16（D440 決定四）：ace.r24.multi／ace.r24.repeat（多時段、重覆活動 release2.4 不支援，D384 決定三）刪除——bookyay 多個時段帶入後合成同一場。 */
     'ace.r24.pickup':     { en: 'Store pickup — release2.4 doesn’t offer store pickup.', zh: '取票方式是到店自取，release2.4 沒有到店自取' },
     'ace.map.event':      { en: 'Event',              zh: '活動' },
     'ace.map.org-hint':   { en: 'For reference only — it isn’t copied into the event.', zh: '只當參考，不會帶入活動資料。' },
@@ -4198,7 +4197,7 @@
     'events.r.nick-summer-pingtung-bky.title':         { en: 'NICKTHEREAL Summer Live — Pingtung', zh: 'NICKTHEREAL 夏日演唱會 — 屏東' },
     'events.r.nick-summer-pingtung-bky.meta':          { en: 'Concert · cancelled in bookyay', zh: '演唱會 · 已在 bookyay 取消' },
     'events.r.nick-summer-pingtung-bky.datetime':      { en: 'Aug 29, 2026 · 6:30 PM', zh: '2026/08/29 · 晚上 6:30' },
-    'events.r.mirror-khh-draft.datetime':              { en: '2026/10/02 · 7:00 PM · 3 dates', zh: '2026/10/02 · 晚上 7:00 · 3 場' },
+    'events.r.mirror-khh-draft.datetime':              { en: '2026/10/02 · 7:00 PM', zh: '2026/10/02 · 晚上 7:00' },   // D440：三個時段合成一場
     'events.r.lrh-meet-draft.title':                   { en: 'LOVE RAGE HOPE fan meet (planning)', zh: 'LOVE RAGE HOPE 見面會（規劃中）' },
     'events.r.lrh-meet-draft.meta':                    { en: 'Meet &amp; Greet', zh: '粉絲見面會' },
     'events.r.lrh-meet-draft.datetime':                { en: 'Date TBD', zh: '日期未定' },
@@ -8386,7 +8385,11 @@
                            zh: '關閉後不在活動頁票價清單列出、粉絲不能單張購買；仍可放進組合包販售。' },
     'ce.tier.hidden':    { en: 'Hidden',                           zh: '隱藏' },
     /* bookyay 帶入（D328，5.1.6.1 F21）：略過提示。墓碑 2026-10-16（D429）：ce.bky.single（套票轉出的 1 人票票名）刪除。 */
-    /* 墓碑 2026-10-16（D439）：ce.bky.skipped／ce.bky.skipped.close（bookyay 略過提示）隨「只帶第一種票」退場 */
+    /* D440（2026-10-16）恢復 ce.bky.skipped／ce.bky.skipped.close（D439 曾隨「所有門票種類都帶入」退場）。 */
+    'ce.bky.skipped':    { en: 'Only the first ticket type per date is imported. Skipped: {name}', zh: '每個場次只帶入第一種票。未帶入：{name}' },
+    'ce.bky.skipped.close': { en: 'Dismiss',                       zh: '關閉提示' },
+    /* D440 決定四：同一種門票出現在不只一個時段時，合成同一場後各成一張，票名後補時段順序區分（推導，ASSUMPTIONS UIA-271） */
+    'ce.bky.slotn':      { en: '{name} · Slot {n}',                zh: '{name} · 時段 {n}' },
     'ce.bky.h':          { en: 'Import from bookyay',              zh: '從 bookyay 帶入' },
     'ce.bky.sub':        { en: 'Already selling this event on bookyay? Pull it in instead of typing it again.', zh: '這場活動已經在 bookyay 上賣了？帶進來就不用重打一次。' },
     'ce.bky.ph':         { en: 'Search your bookyay events…',      zh: '搜尋你在 bookyay 的活動…' },
