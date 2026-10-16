@@ -39,7 +39,7 @@
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398：限購三種上限（js/purchase-limits.js） -->
+<link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398：限購（js/purchase-limits.js）；D427 起只剩每人總限購 -->
 <link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">   <!-- 2026-09-04：折扣區的 .stack--tight 一直沒有這支 CSS，gap 是 0（使用者回報「要有間距」）-->
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
@@ -796,20 +796,21 @@
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.limits.title">Buyer limits</h3>
       </div>
-      <!-- 限購（F9；D398 起三種上限，取代單一「每人最大購買量」）：開關預設關；開啟後三欄各自選填、至少填一種〔推導〕，
-           列入就緒檢查（buildChecks 的 limit 項）。三欄 markup 由 js/purchase-limits.js fieldsHTML(unit='item') 畫進 [data-cp-limit-host]，
+      <!-- 限購（F9；D398 起改由 js/purchase-limits.js 畫；D427（2026-10-16）起只留「每人總限購數量」一欄，
+           每次交易限購數量與限購次數退場）：開關預設關；開啟後要填這一欄（D428 定案，原「至少填一種」收斂），
+           列入就緒檢查（buildChecks 的 limit 項）。markup 由 fieldsHTML(unit='item') 畫進 [data-cp-limit-host]，
            欄位名稱與輔助說明與組合包（組）、活動門票（張）同一套句型。 -->
       <div class="control-group">
         <div class="control-row">
         <div>
           <div class="control-row__main" data-i18n="cp.limit">Purchase limits</div>
-          <div class="control-row__sub" data-i18n="cp.limit.sub">When on, set at least one of the three</div>
+          <div class="control-row__sub" data-i18n="cp.limit.sub">When on, enter a limit</div>
         </div>
         <div class="switch" role="switch" aria-checked="false" id="cp-limit-toggle" data-i18n-aria-label="cp.limit" aria-label="Purchase limits"></div>
       </div>
         <div class="cp-subfields control-group__body" data-cp-limit-fields hidden>
           <div data-cp-limit-host></div>
-          <p class="field__error" data-cp-limit-err hidden data-i18n="pl.err.atleast">Set at least one limit.</p>
+          <p class="field__error" data-cp-limit-err hidden data-i18n="pl.err.required">Enter a limit.</p>
         </div>
       </div>
     </section>
@@ -1054,7 +1055,7 @@
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
 <script src="partials/section-outline.js?v=r2.2"></script>
-<script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購三種上限（三欄與輔助說明；與商品細節、組合包、活動門票共用） -->
+<script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購（欄位與輔助說明；與商品細節、組合包、活動門票共用；D427 起只剩每人總限購） -->
 <script>
 /* 建立商品流程互動 · spec 5.1.5.2 §3-4 + §4.5 + §5.2.4/§5.2.5
    類型切換、多規格 Variations、庫存版本 Edition、取貨方式、每人限購、
@@ -1078,7 +1079,7 @@
   const fStock = document.getElementById('cp-stock');
   const fDCopies = document.getElementById('cp-dcopies');
   const fShipWeight = document.getElementById('cp-ship-weight');
-  /* 限購三欄（D398）：開關打開才算；三種各自選填、至少一種是 1 以上的整數就算填好〔推導，5.1.5.2 §4.6〕 */
+  /* 限購（D398；D427 起只剩每人總限購）：開關打開才算；那一欄是 1 以上的整數就算填好（D428 定案，5.1.5.2 §4.6） */
   const PL = window.ztorPurchaseLimits;
   const limitHost = document.querySelector('[data-cp-limit-host]');
   if (PL && limitHost) limitHost.innerHTML = PL.fieldsHTML({ unit: 'item', idPrefix: 'cp-limit', attr: 'data-cp-limit-f' });
@@ -1419,7 +1420,7 @@
       }
       a.push({ id: 'specs', labelKey: 'cp.qc.specs', step: CP_STEP.specs, k: 'Specifications', done: () => specCount() >= 1 });
       if (state.delivery === 'shipping') a.push({ id: 'weight', labelKey: 'cp.qc.weight', step: CP_STEP.delivery, k: 'Shipping weight', done: () => shippingOk() });
-      if (state.limitOn) a.push({ id: 'limit', labelKey: 'cp.qc.limit', step: CP_STEP.limits, k: 'At least one purchase limit', done: () => limitOk() });
+      if (state.limitOn) a.push({ id: 'limit', labelKey: 'cp.qc.limit', step: CP_STEP.limits, k: 'Purchase limit', done: () => limitOk() });
       return a;
     }
     const a = [
@@ -1430,7 +1431,7 @@
       { id: 'price', labelKey: 'cp.qc.price', step: CP_STEP.price, k: 'Price',                done: () => has(fPrice) },
     ];
     if (state.edition === 'limited') a.push({ id: 'digicap', labelKey: 'cp.qc.digicap', step: CP_STEP.stock, k: 'Total quantity & copies', done: () => digitalCapOk() });
-    if (state.limitOn) a.push({ id: 'limit', labelKey: 'cp.qc.limit', step: CP_STEP.limits, k: 'At least one purchase limit', done: () => limitOk() });
+    if (state.limitOn) a.push({ id: 'limit', labelKey: 'cp.qc.limit', step: CP_STEP.limits, k: 'Purchase limit', done: () => limitOk() });
     return a;
   }
 
@@ -2532,7 +2533,7 @@
     if (ex) { const k = ex.dataset.vexclude; const d = (varData[k] = varData[k] || {}); d.excluded = !d.excluded; ex.closest('.variant-table__row').classList.toggle('is-excluded', d.excluded); refresh(); }
   });
 
-  /* ---- 限購開關（D398：三種上限） ---- */
+  /* ---- 限購開關（D398；D427 起只剩每人總限購） ---- */
   const limitToggle = document.getElementById('cp-limit-toggle');
   const limitFields = document.querySelector('[data-cp-limit-fields]');
   limitToggle.addEventListener('click', () => {
@@ -2543,7 +2544,7 @@
     syncLimitErr();
     refresh();
   });
-  /* 至少一種（D398）：離開這組欄位時還一種都沒填，就地一句紅字；之後每打一次字重看。就緒檢查本身照常即時算 */
+  /* 必填（D398 至少一種 → D427 只剩一欄）：離開欄位時還沒填，就地一句紅字；之後每打一次字重看。就緒檢查本身照常即時算 */
   let limitTouched = false;
   function syncLimitErr() {
     const err = document.querySelector('[data-cp-limit-err]');

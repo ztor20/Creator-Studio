@@ -43,7 +43,7 @@
  *     venue: 'Taipei Music Center', address: '…', language: '廣東話、普通話' | ['廣東話','普通話'],   // D328 活動語言可複選：字串或陣列（陣列以「、」／「, 」串）
  *                                                // D369：address 有值時，詳情左欄多畫「活動地點」一節＝依地址產生的地圖（partials/venue-map.js，頁面要載它與 venue-map.css）
  *     priority: { window: '…', state: '…' } | null,   // 優先購（原型示意）
- *     limit: '每筆最多 4 張' | null,
+ *     limit: '每人最多 4 張' | null,   // D427（2026-10-16）：改讀每人總限購（每次交易限購退場）
  *     desc: { key:'desc' },
  *     descBlocks: [{ type:'text', text, html } | { type:'image'|'video', src }] | undefined,
  *                                                // D354：描述的區塊（文字含粗體、斜體、連結、清單、分隔線；圖片；影片），照排定順序畫；
@@ -344,7 +344,7 @@
     var langVal = Array.isArray(m.language) ? m.language.filter(Boolean).join(T('ce.evlang.sep', ', ')) : m.language;
     row('fep.language', 'Language', esc(langVal));
     if (m.priority) row('fep.priority', 'Early access', '<span class="pdp-event-meta__nowrap">' + esc(m.priority.window) + '</span>' + (m.priority.state ? '<small>' + esc(m.priority.state) + '</small>' : ''), 'pdp-event-meta__row--names');
-    row('fep.limit', 'Per order', esc(m.limit));
+    row('fep.limit', 'Limit', esc(m.limit));
     buy.appendChild(em);
 
     /* 票價區間／組合價區間 ＋「N 種票 ›」／「N 種組合 ›」 */

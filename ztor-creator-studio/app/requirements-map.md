@@ -25,6 +25,17 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-16 D428 原型同步：限購開了就要填（UI-CHANGES 二百四十六、ASSUMPTIONS UIA-266 第 1 條；S35、S94、S72）**：
+> - 5.1.6.1 F22、5.1.6.2 F9、5.1.6.3 §2.6：`js/purchase-conds.js` 限購條件卡空白就地紅字（`capErrKey`／`capBad`、`[data-cond-warn="cap"]`）；`create-event.html` 擋在門票彈窗儲存、票務設定關閉與發布前（`capIssue`）；`event-detail.html` 擋在門票彈窗儲存（`tmErrors` 的 `cap`）與預設購票規則套用（`check()`）。
+> - 主規格 §7.14「組合包的限購」：`js/purchase-limits.js` `errors()` 覆寫（設上限）空白回「請填上限。」，`create-bundle.html`、`bundle-detail.html`、`js/bundle-editor.js` 同擋。
+> - 5.1.5.2 §4.6、5.1.5.1 §2.12：商品端原本就擋，只把程式註解〔推導〕改 D428 定案。只進 main（release2.4 與最終版）。
+
+> **2026-10-16 D427 原型同步：限購只留每人總限購數量（UI-CHANGES 二百四十五、ASSUMPTIONS UIA-266；S35、S94、S72）**：
+> - 主規格 §7.2、5.1.5.2 F9、5.1.5.1 §2.12：`create-product.html`、`product-detail.html` 限購開關底下只剩「每人總限購數量」一欄（`[data-cp-limit-host]`／`[data-pd-limit-host]`），開了就要填。
+> - 主規格 §7.14「組合包的限購」、5.1.5.4 §4 F2、5.1.5.9 §2.3：`create-bundle.html` `[data-cb-rules]`、`bundle-detail.html` `[data-bd-rules-sec]`、`js/bundle-editor.js`（建立活動第 6 步）跟隨成員與覆寫都只有每人總限購。
+> - 5.1.6.1 F21／F22、5.1.6.2 F9、5.1.6.3 §2.6：`create-event.html`、`event-detail.html` 的「限購」條件卡與唯讀讀數只剩每人總限購；bookyay 帶入只帶每人總限購（鎖定），每次交易上限不帶入、不顯示（D427 決定三，修訂 D417）。
+> - 共用：`js/purchase-limits.js`、`js/purchase-conds.js`、`js/ticket-bundle.js`、`ds-components/limit-set.css`（§4.234 文件同步）。只進 main（release2.4 與最終版），不搬 release2.3。
+
 > **2026-10-15 驗收缺失修正（UI-CHANGES 二百四十一）**：
 > - 呈現層：建立流程中寬頂列兩排、進度條最後一格限寬、門票彈窗票價欄手機寬度、售票紀錄表 1440 一屏（5.1.6.3 §2.7 欄位不變）；門票刪除提示英文備援對齊 D422。
 > - `feature-scope-map.md` 本期統計更正、`devtools.js` 後備 tier 對齊 E22／B07／B10（無產品範圍變動）。
@@ -49,7 +60,7 @@
 > - 5.1.6.1 F22 顯示開關：單張門票彈窗「上架與顯示」區塊整段跟著 S92／S55 標記收起。
 
 > **2026-10-15 D417／D398 原型同步：自動組合包限購（UI-CHANGES 二百三十四、ASSUMPTIONS UIA-259；S94）**：
-> - 主規格 §7.14「組合包的限購」、5.1.5.4 §4 F2、5.1.5.9 §2.3：`js/bundle-editor.js`、`bundle-detail.html` 的 bookyay 自動組合包限購區只畫每人總限購與每次交易限購（`js/purchase-limits.js` `KEYS_BKY`）；`fromRules` 讀條件清單形狀，細節頁限購摘要顯示帶入值與「bookyay 帶入」。
+> - 主規格 §7.14「組合包的限購」、5.1.5.4 §4 F2、5.1.5.9 §2.3：`js/bundle-editor.js`、`bundle-detail.html` 的 bookyay 自動組合包限購區只畫每人總限購與每次交易限購（`js/purchase-limits.js` `KEYS_BKY`）〔2026-10-16 D427 取代：`KEYS_BKY` 退場，只畫每人總限購一欄，見 UI-CHANGES 二百四十五〕；`fromRules` 讀條件清單形狀，細節頁限購摘要顯示帶入值與「bookyay 帶入」。
 
 > **2026-10-15 D418 原型同步（UI-CHANGES 二百三十二、ASSUMPTIONS UIA-258）**：
 > - 5.1.6.3 §2.4.2、§2.7：`event-detail.html` 交易摘要加支付費、淨額（摘要、每列、收支、結案）改扣平台費與支付費（支付費借 `js/orders-store.js` `payFee`）；交易明細匯出支付費欄填值、加買家名稱。

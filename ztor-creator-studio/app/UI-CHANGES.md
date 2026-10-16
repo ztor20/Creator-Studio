@@ -13,6 +13,93 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-16（二百四十六）· D428 限購開了就要填：門票與組合包補擋存
+
+**標籤**：release2.4
+
+依據 D428（使用者裁決，2026-10-16）：門票、商品、組合包的限購開關打開後，「每人總限購數量」必填。商品端（建立商品、商品詳情）原本就會擋；這筆把門票與組合包補齊。bookyay 帶入且鎖定的限購值已帶入、不檢查。
+
+**A spec-derived 新增**
+
+- **門票的「限購」條件卡**（`js/purchase-conds.js`）：卡內每人總限購那一格下方加一行就地紅字（`data-cond-warn="cap"`，與限時折扣價那一行走同一套 `syncWarn` 同步）。加入限購條件後空白就出現「請填上限。」（`pl.err.required`），填了不是 1 以上整數出現「請填 1 以上的整數。」（`pl.err.int`），一填好就收掉。新增判斷 `capErrKey()`／`capBad()`；`mount()` 的 `check()` 因為原本就含 `syncWarn`，限購沒填也一起算成錯誤數。
+- **建立活動**（`create-event.html`）：
+  - 門票彈窗按「儲存」：限購沒填就停在彈窗、游標帶到那一格（`closeTierModal`）。
+  - 票務設定（活動層預設購票規則）關閉：限購沒填就展開規則、就地紅字、不關（`closeQuick`）。
+  - 發布前：新增 `capIssue()`，比照限時折扣價高於一般折扣價的擋法——回第 4 步、打開出問題的那一份規則就地紅字，跳出提示「有開了限購卻沒填每人總限購數量，填上後才能發布。」（新字串 `d.cond.cap.blocked`）。
+- **活動詳情**（`event-detail.html`）：門票彈窗 `tmErrors()` 加一項 `cap`，限購沒填擋儲存、捲到那張條件卡；預設購票規則「套用」原本就呼叫 `check()`，限購沒填一起擋。
+- **組合包**（`js/purchase-limits.js` `errors()`）：關掉「跟隨成員預設」（＝設上限）卻沒填，一律擋存、就地「請填上限。」。原本只有含門票成員（有天花板）時才擋，純商品組合包覆寫留空會被當成不限存過去。建立組合包、組合包詳情、建立活動第 6 步組合包彈窗都讀這支 `errors()` 的錯誤數擋存，三處一起生效。
+
+**D infra／文件**
+
+- `create-product.html`、`product-detail.html` 限購必填的程式註解由〔推導〕改成「D428 定案」。
+- `design-system.html`（Condition list 卡補 2026-10-16 說明與 `capBad()`）、`design-system.md`（同條目）、`BUILD-SPEC.md`、`requirements-map.md` 同步。
+
+## 2026-10-16（二百四十五）· D427 限購只留「每人總限購數量」：門票、商品、組合包與 bookyay 帶入一起收斂
+
+**標籤**：release2.4
+
+依據 D427（使用者指示，2026-10-16）：門票、商品、組合包的限購只留「每人總限購數量」，「每次交易限購數量」「限購次數」整組刪除；bookyay 匯入只帶入每人總限購並鎖定，每次交易上限不帶入、不顯示。**不同步進 release2.3**（使用者選建議）：商品限購屬 🟢 release2.3 的 S35，照規則只標 release2.4，凍結版維持三種上限。版本切換面板沒動。
+
+**C 撤除**
+
+- **共用元件 `js/purchase-limits.js`**：`KEYS` 只剩 `person`；`order`、`times` 兩欄、`KEYS_BKY`（bookyay 自動組合包的兩欄版）、`fieldsHTML`／`blockHTML` 的 `keys` 選項、限購次數「不換算」那條交集算法、「取自 {name}：{n} 次」退場（墓碑註解留在原處）。`norm()`／`read()`／`fromRules()` 只回 `{ person }`，舊資料帶 order／times 一律忽略。
+- **活動門票**：`js/purchase-conds.js` 的「限購」條件卡只畫每人總限購一格（自建與 bookyay 帶入都一樣）；`create-event.html` 卡面摘要、`event-detail.html` 唯讀讀數只寫「每人 N 張」。
+- **bookyay 帶入**（`create-event.html` `bkyMap`）：本門票限購只帶 `maxPurchaseCnt`（每人總限購，鎖定），`maxPurchaseCntEachTime` 不再帶入；自動組合包的限購同樣只帶每人總限購。bookyay 原始示範資料照留該欄，示範「bookyay 有、ztor 不帶」。
+- **組合包**：`create-bundle.html`、`bundle-detail.html`、`js/bundle-editor.js` 組成員清單時只傳每人總限購；bookyay 自動組合包不再傳 `keys: KEYS_BKY`。
+- **`js/ticket-bundle.js`**（購買條件與舊限購分支）：`tierRules`／`defaults`／`seedFrom`／`rulesErrors`／`capText`／`rulesHTML` 只剩 person，舊形狀轉換 `ruleConds()` 不再轉入 order／times。
+- **i18n 刪除的 key**（不再被引用）：
+  - `pl.tix.order`、`pl.tix.order.hint`、`pl.tix.order.v`、`pl.tix.times`、`pl.tix.times.hint`、`pl.tix.times.v`
+  - `pl.item.order`、`pl.item.order.hint`、`pl.item.order.v`、`pl.item.times`、`pl.item.times.hint`、`pl.item.times.v`
+  - `pl.set.order`、`pl.set.order.hint`、`pl.set.order.v`、`pl.set.times`、`pl.set.times.hint`、`pl.set.times.v`、`pl.src.times`
+  - `tb.cap.order`、`tb.cap.order.v`、`tb.cap.order.short`、`tb.cap.times`、`tb.cap.times.v`、`tb.err.short.order`
+  - `ed.rule.cap.order`、`ed.rule.cap.times`、`fep.limit.order`
+  - 頁內字典：`js/purchase-conds.js` 的 `d.cond.cap.order`／`.times`、`d.rule.cap.order`／`.order.ph`／`.times`／`.times.ph`；`create-event.html` 的 `d.limit.order`、`d.limit.times`、`d.limit.times.hint`
+- **示範資料**：`js/events-store.js` 26 筆門票／組合包限購拿掉 order／times；`js/products-store.js` hoodie 改不限購（原本只有每次 4 件、限 2 次）、zine 每人 2 件、poster 每人 2 件，`limit` 欄位說明改 `{ person }`。
+
+**B 反饋導入（文案，因欄位只剩一欄）**
+
+- 商品限購：開關說明 `cp.limit.sub`「開啟後三種上限至少設一種」→「開啟後要填上限」；紅字 `pl.err.atleast`「至少填一種上限」改名 `pl.err.required`「請填上限。」；就緒檢查 `cp.qc.limit`「至少一種限購上限」→「限購上限」。
+- 建立活動第 8 步前台鏡像的「限購」列改讀每人總限購（新 key `fep.limit.person`「每人最多 {n} 張」），英文列名 `fep.limit` 由 Per order 改 Limit（`js/fan-event-page.js` 同步後備字）。
+
+**D infra／文件**
+
+- Limit set（§4.234）：`design-system.html` 兩張 demo 卡各刪掉每次交易與限購次數兩列、說明改「一種上限」、TOC 摘要同步；`design-system.md` 總表列與 §4.234 同步（標題改「Limit set（限購）」）；`ds-components/limit-set.css` 只改檔頭註解，樣式沒動。前台鏡像 demo 的 `limit` 示範字改 Up to 4 per person（`design-system.html`、`design-components.html` 同一行）。
+- `BUILD-SPEC.md` §4i 補 D427 段、`feature-scope-map.md` S94 說明、`requirements-map.md`、`ASSUMPTIONS.md` 新增 UIA-266（並在 UIA-247、UIA-259 標註被取代的條目）。
+
+**驗證**：Playwright（localhost:4326，`?version=release2.4` 與 `?version=full`，1440 與 375）實測建立活動自建限購卡、bookyay 匯入門票（bky-1）、bookyay 自動組合包（bky-15）、活動詳情 taipei-nye 門票彈窗、建立商品、商品詳情、建立組合包（含覆寫）、組合包詳情（bookyay bd-nye-duo 與自建 bd-symph-pair）都只剩每人總限購一欄，畫面上查無「每次交易／限購次數」字樣，無橫向捲動，console 0 錯誤；截圖在專案根 `screenshots/d427-*.png`。`check_ds_sync.py` PASS（兩個既有 WARN）、`check_events_store.js` PASS。
+
+## 2026-10-16（二百四十四）· 示範資料修正：活動收入改照組合包口徑、過期的售票中活動往後移、資料檢查腳本跟上現況
+
+**標籤**：release2.4
+
+本筆只修示範資料與檢查腳本，**不是產品變更**：沒有改任何產品規則，資料改成符合既有規格（5.1.6.3 §2.3 活動收入含組合包整組金額、D408；§2.7 只加總已付款）。
+
+**D infra**
+
+- **`scripts/check_events_store.js` 判準修正**（細節寫在腳本檔頭 2026-10-16 段）：
+  - 收入：舊判準「Σ 票價 × 售出數」不含組合包，bookyay 三場被誤報、bookyay 取消那場（收入 0、票券全數由 bookyay 撤銷）也被誤報；改成拿 store 的 `transactions()`＋`bundleTransactions()` 已付款金額加總（＝活動詳情 `edRevTotals()`）比對 `revenue`。改完反而抓到六場自建活動真的錯（見下）。
+  - 組合包商品名：products-store 的 nick 批改成 `Object.assign` 組裝後，舊正則抽到 0 筆、17 筆全是誤報；改成實際執行 products-store.js、收 default 與 nick 兩個 persona 的商品記錄。名稱對不到的 14 筆改列「資訊」（組合商品細節頁會包成不限量示範商品，屬示範資料缺口），名稱對得到但圖不一致才算違反。
+  - 草稿：規格允許草稿帶日期與票種（D294 決定二、D331、5.1.6.1 §2 續填草稿），「草稿應無日期／票種」兩條拿掉；草稿日期已過列為資訊（`mirror-khh-draft`）。
+  - 結果分「違反」與「資訊」兩級，只有違反算 FAIL。現況：**PASS，0 筆違反、15 筆資訊**。
+- **`js/events-store.js` 收入改照 D408 口徑**（門票直接買的部分＋組合包整組金額，經組合包賣出的票不再照票價重算一次；活動詳情本來就這樣算，頁首總收入與清單用的 `revenue` 欄位沒跟上）：
+  - `realive-asia-kaohsiung` 1,800,000 → 1,807,200
+  - `realive-asia-taipei` 606,000 → 608,500
+  - `album-signing-taipei` 590 → 1,630
+  - `nantou-lantern-opening` 1,728,800 → 1,772,900
+  - `lrh-studio-live` 186,850 → 201,810
+  - `fubon-postgame-taipei` 1,294,800 → 1,290,700（組合包有折扣，整組金額低於拆開照票價算）
+- **`js/events-store.js` 過期的售票中活動往後移**（狀態不動，保住各自的示範情境：系列＋完售、共看派對、多場次＋獨立票、已下架）：
+  - REALIVE 亞洲段三場 09-12／09-26／10-03 → 2026-12-19／2027-01-02／2027-01-09（排在東南亞段 2027-01-16 之前）
+  - `lrh-taichung-watchback` 09-16 → 12-16（房間預估結束同步）
+  - `album-signing-taipei` 三場 09-12～09-14 → 11-28～11-30，停售 09-11 → 11-27 23:59
+  - `lrh-studio-live` 09-20 → 12-23
+- **同步顯示文字**：`js/i18n.js` 的 `events.rowSER*.datetime`、`events.rowWP2.datetime`、`events.rowFM.datetime`、`events.r.lrh-studio-live.datetime`、`sd.sub`（en／zh），`events.html`、`series-detail.html` 後備字，`create-event.html` bookyay 已帶過清單 bky-7 的日期註記。
+- **`events.html` 清單收入欄改由資料帶入**（`syncTicketCells()` 同一處）：原本是寫死的數字，bookyay 三場與系列母列都和頁首總收入、活動詳情對不上；收入為 0 的列保留原本的「—」或「$0」。
+
+**驗證**：腳本 PASS；Playwright headless 開 `events.html`、`index.html`、`earnings.html`、`earnings-overview.html`、`series-detail.html?id=realive-asia`、`bundle-detail.html?id=bd-slot-vinyl&ev=album-signing-taipei` 與被改到的 12 場 `event-detail.html`，`?version=release2.4` 與 `?version=full` 各一輪，console 0 錯誤；清單收入欄、頁首總收入、活動詳情活動收入三處數字一致；release2.4 分頁數量不變（全部 8／已排程 2／售票中 2／進行中 1／已結束 1／已取消 1／草稿 1）。
+
+**已知債**：組合包裡 14 筆商品名（例：REALIVE 白趴 官方 Tee）不在 products-store，是否改成電子商店真的有的商品待使用者決定；往後移的日期約 2 個月後會再過期（清單日期是寫死的 i18n 文字，無法跟著資料動態算）。
+
 ## 2026-10-16（二百四十三）· D425 原型落地：可賣性防呆的門票改數「還在的門票」
 
 **標籤**：release2.4

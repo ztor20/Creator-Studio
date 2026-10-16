@@ -1043,7 +1043,7 @@
       /* D342：含票券成員的組合包——四個排程時間的跟隨／另設（null／缺＝跟隨）與購買條件（null＝跟隨所含門票）。 */
       sched: (seed && seed.sched) ? Object.assign({}, seed.sched) : {},
       rules: (seed && seed.rules) ? JSON.parse(JSON.stringify(seed.rules)) : null,
-      /* D398：組合包的限購（所有組合包）。null＝跟隨成員（預設）、{ person, order, times }＝已覆寫（以組計）。
+      /* D398：組合包的限購（所有組合包）。null＝跟隨成員（預設）、{ person }＝已覆寫（以組計；D427 起只剩每人總限購）。
          舊資料（D342 的 rules.cap='cap'，含 bookyay 套票帶入的限購）視為已覆寫的值 */
       /* D400：純商品組合包的購買條件（{ conds: { buyTime?, buyTier? } }，預設不限）；含門票的照 rules（D342） */
       conds: (seed && seed.conds) ? JSON.parse(JSON.stringify(seed.conds)) : { conds: {} },
@@ -1816,7 +1816,7 @@
 
     /* ── 組合包的限購（D398，5.1.5.9 §2.3；主規格 §7.14「組合包的限購」）──────────────────────────────
        所有組合包都有。成員＝商品成員（product.limit，件）＋票券成員（允許的每張門票自己的限購，張）；
-       預設取交集（換算成組取最小，限購次數不換算），可覆寫、可改回跟隨成員；含門票時覆寫不得超過門票換算的上限，
+       預設取交集（換算成組取最小；D427 起只剩每人總限購），可覆寫、可改回跟隨成員；含門票時覆寫不得超過門票換算的上限，
        跟隨時任一成員不足 1 組擋存。算法與 markup 在 js/purchase-limits.js，這裡只組成員清單、管檢視／編輯與擋存。 */
     const PL = window.ztorPurchaseLimits;
     function limitMembers() {
@@ -1827,7 +1827,7 @@
           const ev = (m.eventId && window.ztorEvents) ? window.ztorEvents.get(m.eventId) : null;
           (ev && ev.tiers || []).filter(t => (m.tierIds || []).indexOf(t.id) >= 0).forEach(t => {
             const r = TB ? TB.tierRules(t.rules) : {};
-            out.push({ kind: 'ticket', name: t.name || '', per: per, lim: { person: r.person || '', order: r.order || '', times: r.times || '' } });
+            out.push({ kind: 'ticket', name: t.name || '', per: per, lim: { person: r.person || '' } });
           });
           return;
         }
@@ -1853,9 +1853,8 @@
       /* 2026-10-12 改版（D402，UI-CHANGES 一百八十八）：title:true＝元件自己畫「限購」標題＋「跟隨成員預設」開關（同建立組合包），外層小標退場 */
       host.innerHTML = PL.blockHTML(bundleModel.limits, der, T, {
         locked: limitsLocked(), disabled: !editing, title: true,
-        lockNote: limitsLocked() ? T('pl.lock.bky', 'Created automatically from a bookyay package ticket — the limits are locked.') : '',
-        /* D417（2026-10-15，UI-CHANGES 二百三十四）：bookyay 自動組合包只帶每人總限購與每次交易限購，不畫「限購次數」 */
-        keys: limitsLocked() ? PL.KEYS_BKY : null
+        lockNote: limitsLocked() ? T('pl.lock.bky', 'Created automatically from a bookyay package ticket — the limits are locked.') : ''
+        /* 墓碑 2026-10-16（D427）：keys: PL.KEYS_BKY（bookyay 自動組合包只畫兩欄）退場——限購只剩每人總限購一欄 */
       });
       /* 2026-10-12（UI-CHANGES 一百八十八）：「跟隨成員預設」開關是 <button>，檢視態會被 shared.css 的按鈕白名單整顆藏掉——
          標成 data-view-safe 讓它照樣看得到（檢視態本來就 disabled、不能切，Q128） */
@@ -1895,7 +1894,7 @@
       if (!PL) return '';
       const der = PL.derive(limitMembers());
       const v = bundleModel.limits || PL.followVals(der);
-      /* 2026-10-15（UI-CHANGES 二百三十四）：bookyay 自動組合包的限購是帶入並鎖定的兩項，狀態寫「bookyay 帶入」、不寫跟隨成員／已覆寫 */
+      /* 2026-10-15（UI-CHANGES 二百三十四）：bookyay 自動組合包的限購是帶入並鎖定的（D427 起只有每人總限購），狀態寫「bookyay 帶入」、不寫跟隨成員／已覆寫 */
       const st = limitsLocked() ? 'pl.state.locked' : (bundleModel.limits ? 'pl.state.override' : 'pl.state.follow');
       return PL.text(v, 'set', T) + ' · ' + T(st, '');
     };
