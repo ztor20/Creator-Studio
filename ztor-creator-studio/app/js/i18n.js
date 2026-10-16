@@ -2898,6 +2898,9 @@
     'e-shop.relist.blocked-ok':    { en: 'Got it',                         zh: '知道了' },
     /* 2026-10-16：活動組合包的票券成員不查封存；活動或門票不能賣時才擋（partials/bundle-relist.js defaultTicketBlocked） */
     'e-shop.relist.ticket-blocked-title': { en: '“{n}” can’t be listed yet', zh: '「{n}」還不能上架' },
+    /* D437 決定一：擋下原因是活動已結束或已取消時用這一句（不叫創作者先讓活動回到上架） */
+    'e-shop.relist.ticket-ended-title':   { en: '“{n}” can’t be listed again', zh: '「{n}」不能重新上架' },
+    'e-shop.relist.ticket-ended-body':    { en: 'The event has ended or was cancelled, so a bundle with its tickets can’t be listed again:', zh: '所屬活動已結束或已取消，含它門票的組合包不能重新上架：' },
     'e-shop.relist.ticket-blocked-body':  { en: 'The event or its tickets can’t be sold right now. List the event again (or keep at least one allowed ticket), then list the bundle:', zh: '所屬活動或門票目前不能販售。請先讓活動回到上架（或至少保留一種允許的門票），再上架組合包：' },
     'e-shop.delete.title':      { en: 'Delete draft “{n}”?',               zh: '要刪除草稿「{n}」嗎？' },
     'e-shop.delete.body':       { en: 'A deleted draft cannot be recovered.', zh: '草稿刪除後無法復原。' },
@@ -6067,7 +6070,8 @@
     'cb.fee.ticket-rate':   { en: 'Includes event tickets — the platform fee follows the event ticket rate for the whole bundle, not split by member.', zh: '含活動票券：平台費整筆依活動票務費率計，不拆成員分攤。' },
     'cb.follow-event':      { en: 'Includes tickets for “{name}” ({status}). Stays a draft until the event is published; listing and sale times follow the event unless you set your own; unlisted if the event is cancelled or unlisted.', zh: '含活動「{name}」（{status}）的票券。活動未發布時為草稿；上架與開賣時間預設跟隨活動、可另設；活動取消或下架時一同下架。' },
     'bd.members.ticket-note': { en: "Ticket members draw from the tier's own pool — each set sold takes its tickets from the tier. Every ticket gets its own QR and checks in on its own.", zh: '票券成員與單賣票共用同一個票種數量池，每賣一套就從該票種扣掉張數；每張票各自一個 QR、各自報到。' },
-    'bd.members.locked':    { en: '{n} sold — members and quantities are locked. You can still change the price, discount, cap, purchase rules and limits, and sale; to change what is inside, create a new bundle.', zh: '已售出 {n} 套，成員與數量已鎖定。仍可改售價、折扣、販售上限、購買條件與限購、停售；要換內容請另建新組、停售這一組。' },
+    /* D437 決定二（2026-10-16）：賣出後另設的上架、下架、開賣、停售時間仍可改，只影響之後的購買 */
+    'bd.members.locked':    { en: '{n} sold — members and quantities are locked. You can still change the price, discount, cap, purchase rules and limits, listing and sale times, and sale; to change what is inside, create a new bundle.', zh: '已售出 {n} 套，成員與數量已鎖定。仍可改售價、折扣、販售上限、購買條件與限購、上架與開賣時間、停售；要換內容請另建新組、停售這一組。' },
     'bd.unlist.reason-event': { en: 'Unlisted together with the event “{n}” — it was cancelled.', zh: '隨活動「{n}」一同下架——該活動已取消。' },
     /* 2026-10-05（D352 稽核 B17，主規格 §7.14、D292 裁決十二）：活動結束、轉為不可售時，上架中的組合包自動下架並通知創作者 */
     'bd.unlist.reason-event-ended': { en: 'Unlisted automatically — the event “{n}” has ended.', zh: '活動「{n}」已結束，這個組合包自動下架。' },
@@ -6076,6 +6080,9 @@
     'bd.event.draft':       { en: 'Draft — follows the event “{name}”. It gets its listing, show and sale switches when the event is published.', zh: '草稿：隨活動「{name}」發布。活動發布後才有上架、顯示與開賣三個開關。' },
     'bd.event.list-lock':   { en: 'The event “{name}” is not listed ({status}) — this bundle cannot be listed on its own.', zh: '活動「{name}」未上架（{status}），這個組合包無法自行上架。' },
     /* D363（2026-10-07）：活動設定是最高優先層級——活動下架、隱藏時組合包跟著 */
+    /* D437 決定一（2026-10-16）：活動已結束或已取消 → 含它門票的組合包不能重新上架（與 D352 活動結束自動下架一致） */
+    'bd.event.ended-lock':     { en: 'The event “{name}” has ended — this bundle can’t be listed again.', zh: '活動「{name}」已結束，這個組合包不能重新上架。' },
+    'bd.event.cancelled-lock': { en: 'The event “{name}” was cancelled — this bundle can’t be listed again.', zh: '活動「{name}」已取消，這個組合包不能重新上架。' },
     'bd.event.unlisted-lock': { en: 'The event “{name}” has been unlisted — this bundle can’t be listed until the event is listed again.', zh: '活動「{name}」已下架，活動重新上架前這個組合包無法上架。' },
     'bd.event.hidden-lock':   { en: 'The event “{name}” is hidden, so this bundle is hidden too. Its own show setting is kept and applies again once the event is shown.', zh: '活動「{name}」隱藏中，組合包跟著隱藏。組合包自己的顯示設定會保留，活動改回顯示後照它。' },
     'bd.setov.evhidden':      { en: 'Hidden with the event', zh: '跟著活動隱藏' },
@@ -6778,7 +6785,7 @@
     'cpp.bd.sp.sem.none':      { en: 'No ticket checked yet — check at least one so fans have a ticket to buy.', zh: '還沒勾選門票——至少勾 1 種，粉絲才有票可買。' },
     'cpp.bd.sp.sem.one':       { en: 'Locked to {name}: {n} per set, nothing for fans to choose.', zh: '鎖定 {name}，每組 {n} 張，粉絲不用挑。' },
     'cpp.bd.sp.sem.any':       { en: 'Fans pick one of {names} and get {n} tickets of it.', zh: '粉絲從 {names} 任選一種，拿到 {n} 張。' },
-    'cpp.bd.sp.locked':        { en: '{n} sold — allowed tickets, quantity and items are locked. Discount, locked sets, the cap, and purchase rules and limits can still change.', zh: '已售出 {n} 組，允許的門票、張數與商品鎖定；還能改的是折扣、鎖定套數、上限與購買條件（含限購）。' },
+    'cpp.bd.sp.locked':        { en: '{n} sold — allowed tickets, quantity and items are locked. Discount, locked sets, the cap, purchase rules and limits, and listing and sale times can still change.', zh: '已售出 {n} 組，允許的門票、張數與商品鎖定；還能改的是折扣、鎖定套數、上限、購買條件（含限購），以及上架與開賣時間。' },
     /* 墓碑 2026-10-16（D429）：cpp.bd.sp.srclocked／cpp.bd.sp.items.srclocked（bookyay 套票自動建立的組合包整組鎖定、不能加商品，D329／D330）、
        tb.rules.fix、pl.lock.bky、pl.state.locked（同一批組合包的購買條件與限購鎖定說明）刪除。 */
     'cpp.bd.sp.sale':          { en: 'Limited-time discount',          zh: '限時折扣' },

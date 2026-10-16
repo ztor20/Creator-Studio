@@ -21,7 +21,8 @@
      })
    票券成員（活動組合包，2026-10-16 修正）：票券不是商品，不查封存／下架——ListingState.bundleRelistPlan 把它放在 plan.tickets。
      可不可賣看活動與門票本身，口徑沿用 bundle-detail 的 evBoundsOf().canList 與 e-shop 的 eventBundleModel()（D292／D363）：
-       活動狀態為已排程／售票中／進行中／已結束且未下架 → 可上架；草稿、已取消、活動已下架、活動查不到 → 擋；
+       活動狀態為已排程／售票中／進行中且未下架 → 可上架；草稿、已結束、已取消、活動已下架、活動查不到 → 擋；
+       （D437 決定一，2026-10-16：已結束移出可上架，與 D352「活動結束自動下架」一致；已結束／已取消擋下時改用 ticket-ended-body 那一句）
        允許的門票全部已隨場次刪除（D391 第 13 題 goneAllOf）→ 擋。擋下時用另一組文案（不是「先解除封存」）。
    已封存的組合包不從這裡走（要先按「解除封存」回到已下架，D298）——傳進來一律直接 return。
    consumer：bundle-detail.html、e-shop.html。 */
@@ -44,11 +45,17 @@
     var ref = ticketRef(t), ev = ref.eventId ? EV.get(ref.eventId) : null;
     if (!ev) return true;
     var st = ev.status;
-    var canList = (st === 'on-sale' || st === 'live' || st === 'scheduled' || st === 'ended') && !ev.unlisted;
+    var canList = (st === 'on-sale' || st === 'live' || st === 'scheduled') && !ev.unlisted;   /* D437 決定一：已結束不能重新上架 */
     if (!canList) return true;
     var tiers = ev.tiers || [];
     if (ref.tierIds.length && !ref.tierIds.some(function (id) { return tiers.some(function (x) { return x.id === id; }); })) return true;
     return false;
+  }
+
+  /* D437 決定一：這筆票券成員被擋，是因為活動已結束或已取消（不是活動暫時下架、門票被刪）——文案講「不能重新上架」，不叫人先讓活動回到上架 */
+  function ticketEventOver(t) {
+    var EV = window.ztorEvents, ref = ticketRef(t), ev = (EV && EV.get && ref.eventId) ? EV.get(ref.eventId) : null;
+    return !!ev && (ev.status === 'ended' || ev.status === 'cancelled');
   }
 
   function run(opts) {
@@ -79,9 +86,12 @@
 
     /* 票券擋下：活動或門票現在不能賣（不是封存，不叫創作者去解除封存） */
     if (tixStops.length) {
+      var over = tixStops.every(ticketEventOver);
       ask({
-        title: T('e-shop.relist.ticket-blocked-title', '“{n}” can’t be listed yet').replace('{n}', name),
-        body: T('e-shop.relist.ticket-blocked-body', 'The event or its tickets can’t be sold right now. List the event again (or keep at least one allowed ticket), then list the bundle:'),
+        title: (over ? T('e-shop.relist.ticket-ended-title', '“{n}” can’t be listed again') : T('e-shop.relist.ticket-blocked-title', '“{n}” can’t be listed yet')).replace('{n}', name),
+        body: over
+          ? T('e-shop.relist.ticket-ended-body', 'The event has ended or was cancelled, so a bundle with its tickets can’t be listed again:')
+          : T('e-shop.relist.ticket-blocked-body', 'The event or its tickets can’t be sold right now. List the event again (or keep at least one allowed ticket), then list the bundle:'),
         items: tixStops.map(memberName),
         okKey: 'e-shop.relist.blocked-ok', okFallback: 'Got it', noCancel: true,
         onConfirm: null
