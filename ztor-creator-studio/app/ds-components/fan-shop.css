@@ -340,14 +340,14 @@
 .fep-shop .pdp-gallery__strip { display: none; grid-area: strip; flex-direction: column; gap: var(--space-2); overflow-y: auto; scrollbar-width: none; max-height: min(560px, -160px + 100vh); }
 @media (min-width: 768px) { .fep-shop .pdp-gallery__strip { display: flex; } }
 .fep-shop .pdp-gallery__stage { grid-area: stage; position: relative; display: flex; flex-direction: column; gap: var(--space-3); min-width: 0px; }
-.fep-shop .pdp-gallery__frame { position: relative; display: block; width: auto; aspect-ratio: 2 / 3; height: min(560px, -160px + 100vh); margin-inline: auto; padding: 0px; border: 1px solid var(--border-subtle); border-radius: var(--radius-2xl); background: var(--bg-secondary); overflow: hidden; cursor: zoom-in; }
+.fep-shop .pdp-gallery__frame { position: relative; display: block; width: min(100%, calc(min(560px, 100vh - 160px) * 2 / 3)); aspect-ratio: 2 / 3; height: auto; margin-inline: auto; padding: 0px; border: 1px solid var(--border-subtle); border-radius: var(--radius-2xl); background: var(--bg-secondary); overflow: hidden; cursor: zoom-in; }
 .fep-shop .pdp-gallery__img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .fep-shop .pdp-gallery__zoom-hint { position: absolute; right: var(--space-3); bottom: var(--space-3); width: 38px; height: 38px; display: grid; place-items: center; border-radius: var(--radius-pill); color: var(--text-primary); background: var(--glass-fill); backdrop-filter: var(--glass-backdrop); border: var(--glass-border); opacity: 0; transform: translateY(4px); transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out); }
 .fep-shop .pdp-gallery__zoom-hint svg { width: 18px; height: 18px; }
 @media (hover: hover) and (pointer: fine) { .fep-shop .pdp-gallery__frame:hover .pdp-gallery__zoom-hint, .fep-shop .pdp-gallery__frame:focus-visible .pdp-gallery__zoom-hint { opacity: 1; transform: translateY(0px); } }
 @media (hover: none), (pointer: coarse) { .fep-shop .pdp-gallery__zoom-hint { opacity: 1; transform: none; } }
 .fep-shop .pdp-gallery__frame[hidden], .fep-shop .pdp-gallery__video-wrap[hidden] { display: none; }
-.fep-shop .pdp-gallery__video-wrap { position: relative; width: auto; aspect-ratio: 2 / 3; height: min(560px, -160px + 100vh); margin-inline: auto; border: 1px solid var(--border-subtle); border-radius: var(--radius-2xl); background: rgb(0, 0, 0); overflow: hidden; }
+.fep-shop .pdp-gallery__video-wrap { position: relative; width: min(100%, calc(min(560px, 100vh - 160px) * 2 / 3)); aspect-ratio: 2 / 3; height: auto; margin-inline: auto; border: 1px solid var(--border-subtle); border-radius: var(--radius-2xl); background: rgb(0, 0, 0); overflow: hidden; }
 .fep-shop .pdp-gallery__thumb { position: relative; flex: 0 0 auto; width: 64px; aspect-ratio: 2 / 3; padding: 0px; border: 1.5px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--bg-secondary); overflow: hidden; cursor: pointer; transition: border-color 160ms var(--ease-out), transform 160ms var(--ease-out); }
 .fep-shop .pdp-gallery__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .fep-shop .pdp-gallery__thumb.is-active { border-color: var(--yellow-500); border-width: 2px; }
@@ -510,7 +510,8 @@
   100% { transform: translateX(100%); }
 }
 @media (max-width: 767.98px) { .fep-shop .pdp { padding-block: 0px; } }
-@media (max-width: 767.98px) { .fep-shop .pdp-gallery__frame { width: 100%; height: auto; } }
+/* 2026-10-17 修正：前台 width:100% 再被 max-height 620 截高，600–767 寬時圖框被壓成近正方形；改成寬度封頂、維持 2:3、置中（同第 7 段活動頁，ASSUMPTIONS UIA-272 第 14 條） */
+@media (max-width: 767.98px) { .fep-shop .pdp-gallery__frame, .fep-shop .pdp-gallery__video-wrap, .fep-shop .pdp-gallery__thumbs-mobile { width: min(100%, calc(min(620px, 100vh - 140px) * 2 / 3)); height: auto; margin-inline: auto; } }
 @media (max-width: 767.98px) { .fep-shop .pdp-topbar { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0px 16px; position: sticky; top: 0px; z-index: 200; } }
 @media (max-width: 767.98px) { .fep-shop .pdp-topbar > * { position: relative; z-index: 1; } }
 @media (max-width: 767.98px) { .fep-shop .pdp-topbar::before { content: ""; position: absolute; inset: 0px 0px -24px; z-index: 0; pointer-events: none; background: linear-gradient(rgba(23, 23, 23, 0.7) 0%, rgba(23, 23, 23, 0) 100%); backdrop-filter: blur(12px); mask-image: linear-gradient(rgb(0, 0, 0) 0%, rgb(0, 0, 0) 66%, rgba(0, 0, 0, 0.96) 74%, rgba(0, 0, 0, 0.82) 81%, rgba(0, 0, 0, 0.58) 88%, rgba(0, 0, 0, 0.28) 94%, rgba(0, 0, 0, 0) 100%); } }
@@ -687,6 +688,16 @@
 /* 素材槽可放影片（D259）：主圖框與縮圖裡的 <video> 比照 <img> 的填滿方式（前台只有 img，這是鏡像的延伸） */
 .fep-shop .pdp-gallery__thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .fep-shop video.pdp-gallery__img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* 購買欄窄時（2026-10-17 修 breakpoint 重疊，商品頁與組合包頁共用）：前台依視窗寬度切兩欄，預覽塞在側欄旁時右欄可能只剩 ~230px，
+   數量＋加入購物車＋收藏一列放不下、按鈕被切掉。購買欄設成容器 fep-buy，寬度 ≤340px 時改兩列：數量與收藏一列、主按鈕獨佔下一列。
+   活動頁（.fep-shop--event）不掛：它的標題用 cqi 量整個預覽區，購買欄變容器會改到標題字級；活動頁也沒有數量鈕。 */
+.fep-shop:not(.fep-shop--event) .pdp-buy { container: fep-buy / inline-size; }
+@container fep-buy (max-width: 340px) {
+  .fep-shop .pdp-buy__actions:has(.pdp-qty) { flex-wrap: wrap; }
+  .fep-shop .pdp-buy__actions:has(.pdp-qty) .pdp-buy__add { order: 1; flex: 1 0 100%; }
+  .fep-shop .pdp-buy__actions:has(.pdp-qty) .pdp-buy__heart { margin-left: auto; }
+}
 
 /* ── 5. 組合包頁（js/fan-bundle-page.js，D310 組合側，2026-09-23）──────────────────────
    建立組合「下一步：預覽」後的全頁預覽主區。第 1–3 段是共用的前台殼、第 4 段的價格塊／庫存提醒／
@@ -1116,7 +1127,12 @@
   .fep-shop--event .pdp-gallery { grid-template-columns: 1fr; grid-template-areas: "stage"; }
   .fep-shop--event .pdp-gallery__strip { display: none; }
   .fep-shop--event .pdp-gallery__thumbs-mobile { display: flex; }
-  .fep-shop--event .pdp-gallery__frame { width: 100%; height: auto; }
+  /* 窄版主視覺（2026-10-17）：前台是 width:100% 再被 max-height 620 截高，預覽區 600–767 時圖框會被壓成近正方形；
+     活動頁改成寬度封頂、維持 2:3（D191）、置中，縮圖列同寬對齊（ASSUMPTIONS UIA-272 第 14 條） */
+  .fep-shop--event .pdp-gallery__frame,
+  .fep-shop--event .pdp-gallery__video-wrap,
+  .fep-shop--event .pdp-gallery__thumbs-mobile { width: min(100%, calc(min(620px, 100vh - 140px) * 2 / 3)); height: auto; }
+  .fep-shop--event .pdp-gallery__thumbs-mobile { margin-inline: auto; }   /* 縮圖列跟圖框同寬、左緣對齊圖框 */
   .fep-shop--event .pdp-buy { position: static; }
   .fep-shop--event .pdp-buy__title { font-size: var(--fs-h3); }
   .fep-shop--event .pdp-buy__heart { display: none; }
