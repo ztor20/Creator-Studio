@@ -2234,7 +2234,7 @@
 <script src="js/orders-store.js?v=r2.2"></script><!-- D416：交易明細匯出借用訂單的付款／履約狀態字樣（訂單資料層，不渲染） -->
 <script src="js/csv-export.js?v=r2.2"></script><!-- D416：匯出確認視窗＋CSV 產生 -->
 <script src="js/ticket-bundle.js?v=r2.2"></script><!-- D342：售票期間須落在活動上架區間內（共用比對規則） -->
-<script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購三種上限的輔助說明（purchase-conds 的限購條件卡借用），要先於 purchase-conds 載入 -->
+<script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購的輔助說明（purchase-conds 的限購條件卡借用），要先於 purchase-conds 載入；D427 起只剩每人總限購 -->
 <script src="js/purchase-conds.js?v=r2.2"></script><!-- D388：購買條件編輯器，與建立流程 create-event 共用同一套 -->
 <script src="js/link-field.js?v=r2.2"></script><!-- D340：活動連結列的複製／重置行為 -->
 <script src="js/toast.js?v=r2.2"></script><!-- 2026-09-09：作廢動作的完成回饋（D253），沿用 order-detail.html 同一支 -->
@@ -5387,6 +5387,9 @@
     if (!evIsBky() && !stageRO() && tmRulesOwn && Object.keys(PC.periodErrs(tmRulesOwn, pcTimes(), pcT)).length) e.push('period');
     /* D417（最終版）：bookyay 門票自加的限時折扣同樣檢查期間與「不得高於一般折扣價」 */
     if (evIsBky() && tmBkyWork && (Object.keys(PC.periodErrs(tmBkyWork, pcTimes(), pcT)).length || PC.discTimeBad(tmBkyWork.conds, false))) e.push('period');
+    /* D428（2026-10-16 定案）：開了限購就要填每人總限購數量——空白擋存，紅字在限購那張條件卡（js/purchase-conds.js capBad／syncWarn）；
+       bookyay 帶入鎖定的限購值已帶入、不算 */
+    if (!stageRO() && PC.capBad((tmRulesOwn || tmBkyWork || {}).conds)) e.push('cap');
     /* 墓碑 2026-10-05（D353）：門票簡介 ≤100 字的檢核（'desc'）隨欄位退場。 */
     /* 墓碑 2026-09-23（D315）：例外費率的 0–100 檢核（`excpct`）隨欄位退場。 */
     return e;
@@ -5499,7 +5502,7 @@
   });
 
   /* ── bookyay 帶入活動的唯讀補齊（D385，2026-10-09；5.1.6.2 §4.5 F9、5.1.6.3 §2.6）──────────────
-     決定一：購買條件唯讀呈現——這張票由 bookyay 帶入的限購（D417 起只有每人總限購與每次交易限購；限購次數、折扣、早鳥不帶入），
+     決定一：購買條件唯讀呈現——這張票由 bookyay 帶入的限購（D427 起只有每人總限購；每次交易、限購次數、折扣、早鳥不帶入），
              資料形狀同 create-event 的門票規則 `rules: { conds: { cap } }`（帶 bky:true）；
              沒有門票層條件的票寫「跟隨活動預設」（D417 起 bookyay 活動沒有活動層限購，活動層沒有條件）。
              D417 決定五（最終版，S96）：編輯模式下 bookyay 門票可自加「折扣」「限時折扣」（tmBkyWork），其他條件仍不能加。
@@ -5543,7 +5546,7 @@
     const val = {
       buyTime: x => win(x),
       buyTier: x => tierTxt(x),
-      cap: x => ['person', 'order', 'times'].filter(f => x[f] !== '' && x[f] != null)
+      cap: x => ['person'].filter(f => x[f] !== '' && x[f] != null)   /* D427：只剩每人總限購（ed.rule.cap.order／.times 退場） */
         .map(f => T('ed.rule.cap.' + f, '{n}').replace('{n}', x[f])).join(' · ') || '—',
       disc: x => priceTxt(x),
       discTime: x => priceTxt(x) + ' · ' + win(x),
@@ -5938,7 +5941,7 @@
     if (!tmTier || tmRO()) return;   // 2026-10-10：未按編輯不能存；D361 決定三：已結束、已取消唯讀（儲存鈕已收起，這裡再擋一次）
     tmTried = true;
     if (tmErrors().length) {
-      if (tmRulesUI && tmRulesUI.check()) tmEl('ed-tm-rules-editor')?.querySelector('[data-rule-tl-err]:not([hidden])')?.scrollIntoView({ block: 'center' });   // D389：帶到超出區間的那張條件卡
+      if (tmRulesUI && tmRulesUI.check()) tmEl('ed-tm-rules-editor')?.querySelector('[data-rule-tl-err]:not([hidden]), [data-cond-warn]:not([hidden])')?.scrollIntoView({ block: 'center' });   // D389：帶到超出區間的那張條件卡；D428：或限購沒填的那張
       syncTmFoot(); return; }   // 沒過驗證就不關，理由留在頁尾
     /* 墓碑 2026-09-23（D315）：儲存時不再寫回 `feeException`（D311 的逐門票例外費率）。 */
     tmTier.name = tmEl('ed-tm-name').value.trim();

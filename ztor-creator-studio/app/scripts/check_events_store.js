@@ -11,7 +11,7 @@
    讀法：用最小 window/localStorage shim 把 events-store.js 當成瀏覽器腳本執行，
    讓 window.ztorEvents.list() 吐出「跟頁面實際拿到的一模一樣」的資料，不手抄逐筆核對。
 
-   用法： node scripts/check_events_store.js（在 site/r2.2 目錄下執行，或任何工作目錄皆可，
+   用法： node scripts/check_events_store.js（在 site/app 目錄下執行，或任何工作目錄皆可，
           路徑一律用 __dirname 推算，不依賴呼叫時的 cwd）
    輸出：stdout 印出每條不變量的違反筆數與明細，收尾印一行 PASS/FAIL 總結；
          FAIL 時 process.exitCode = 1，方便串進其他自動化流程判斷成敗。
@@ -28,6 +28,21 @@
      · series.total 與實際同系列筆數的檢查沿用不變（本次沒有理由放寬——total 說謊比日期
        同天更嚴重，那是「宣稱有 N 站、其實沒那麼多」的資料錯誤，見本次修掉的 lrh-taichung
        原本自稱 6 站巡演卻只有 1 站在檔內）。
+
+   2026-10-16 判準修正（UI-CHANGES 二百四十四，示範資料修正，D 類）：
+     · 不變量 3（收入）改照規格口徑：5.1.6.3 §2.3「活動收入」含門票訂單與含本活動門票的組合包訂單（整組金額，D408），
+       已撤銷的不算（§2.7 只加總已付款）。舊判準「Σ 票價 × 售出數」把經組合包賣出的票當成照票價直接賣，
+       bookyay 三場因此被誤報、自建活動含組合包的六場反而漏抓。現在直接拿 store 自己的 transactions()＋
+       bundleTransactions() 已付款金額加總（＝活動詳情 edRevTotals() 的算式）去比 event.revenue；
+       bookyay 端取消的活動票券全數由 bookyay 撤銷，收入 0 是對的（不再誤報）。
+     · 不變量 8a（組合包商品名）：products-store 的 nick 批早已改成 P_NICK = Object.assign(...) 組裝，
+       舊的正則找 `P_NICK = {` 抽到 0 筆、全數誤報。改成用同一個瀏覽器替身把 products-store.js 真的跑一遍，
+       default 與 nick 兩個 persona 的商品記錄都收進來比對。對不到同名商品的成員改列「資訊」不算違反——
+       組合商品細節頁（bundle-detail.html）明確支援這種成員（對不到就包成不限量的示範商品），
+       屬示範資料缺口、不是規則矛盾；名稱對得到但圖不一致才算違反。
+     · 草稿：規格允許草稿帶日期與票種（5.1.6.1 §2 續填草稿、D294 決定二草稿可先設票種、D331 bookyay 帶入存成草稿），
+       「草稿應無日期／無票種」兩條拿掉；只把「草稿日期已過」列成資訊（發布前檢核會擋，不是資料錯）。
+     · 結果分「違反」與「資訊」兩級：違反才算 FAIL；資訊只列出供人判斷，寫在 out.json 的 info 欄。
 */
 'use strict';
 var fs = require('fs');
@@ -94,46 +109,27 @@ console.log('=== 環境檢查 ===');
 console.log('今天（動態）：', TODAY);
 console.log('events-store 載入活動數：', EVENTS.length);
 
-// products-store.js 在檔尾呼叫 document.addEventListener，無法直接用 vm 執行（無 DOM）。
-// 我們只需要「nick persona 底下，商品 name -> img 檔名」這張表來對 bundles.products 做核對，
-// 直接對原始檔源碼做正則抽取（比補一個完整 document shim 更穩、且不受其掛載方式影響）。
-var productsSrc = fs.readFileSync(PRODUCTS_STORE, 'utf8');
-function extractPersonaBlock(src, varName) {
-  var m = new RegExp(varName + '\\s*=\\s*\\{').exec(src);
-  if (!m) return '';
-  var start = m.index + m[0].length - 1; // at '{'
-  var depth = 0, i = start;
-  for (; i < src.length; i++) {
-    if (src[i] === '{') depth++;
-    else if (src[i] === '}') { depth--; if (depth === 0) { i++; break; } }
-  }
-  return src.slice(start, i);
+// products-store.js：用同一個瀏覽器替身真的執行一次，兩個 persona 各跑一遍（2026-10-16 改寫，理由見檔頭）。
+// 檔尾的 document.addEventListener 由替身吃掉；ZTOR_PRODUCTS 是當前 persona 的商品表（含別名，同一筆記錄可能有多個 key）。
+function loadProducts(persona) {
+  var w = makeWindow();
+  w.localStorage.setItem('ztor.persona', persona);
+  loadScriptIntoWindow(w, PRODUCTS_STORE);
+  var P = w.ZTOR_PRODUCTS || {};
+  return Object.keys(P).map(function (k) { return { name: P[k].name, img: P[k].img }; })
+    .filter(function (p) { return p.name; });
 }
-var nickBlock = extractPersonaBlock(productsSrc, 'P_NICK');
-var defaultBlock = extractPersonaBlock(productsSrc, 'P_DEFAULT');
-function extractNameImgPairs(block) {
-  // 逐一比對 `name: '...'` 後面同一物件字面量內最近的 `img: '...'`
-  var pairs = [];
-  var re = /name:\s*'((?:[^'\\]|\\.)*)'/g;
-  var m;
-  while ((m = re.exec(block))) {
-    var nameEnd = re.lastIndex;
-    var imgMatch = /img:\s*'((?:[^'\\]|\\.)*)'/.exec(block.slice(nameEnd, nameEnd + 400));
-    if (imgMatch) pairs.push({ name: m[1], img: imgMatch[1] });
-  }
-  return pairs;
-}
-var nickProducts = extractNameImgPairs(nickBlock);
-var defaultProducts = extractNameImgPairs(defaultBlock);
+var defaultProducts = loadProducts('default');
+var nickProducts = loadProducts('nick');
 var allKnownProducts = nickProducts.concat(defaultProducts);
-console.log('products-store P_NICK 抽出 name/img 對：', nickProducts.length, '筆');
-console.log('products-store P_DEFAULT 抽出 name/img 對：', defaultProducts.length, '筆（供比對用，events 主要對照 nick 批）');
+console.log('products-store nick 商品記錄：', nickProducts.length, '筆（含別名）');
+console.log('products-store default 商品記錄：', defaultProducts.length, '筆（含別名）');
 console.log('');
 
 // ── 結果收集 ─────────────────────────────────────────────────
-var findings = {}; // invariant key -> { violations: [...] }
-function record(key, violations, note) {
-  findings[key] = { violations: violations, note: note || '' };
+var findings = {}; // invariant key -> { violations: [...], info: [...] }
+function record(key, violations, note, info) {
+  findings[key] = { violations: violations, note: note || '', info: info || [] };
 }
 
 // ── 不變量 1：已退場（2026-09-30 D340）──────────────────────────
@@ -166,28 +162,39 @@ record('1_qty_vs_capacity', [], 'D340 容量刪除，本條退場');
   record('2b_tier_sold_sum_vs_event_sold', v);
 })();
 
-// ── 不變量 3：revenue vs Σ(tier.price × tier.sold) ───────────
+// ── 不變量 3：event.revenue vs 規格口徑的活動收入（2026-10-16 改寫，見檔頭）──
+// 期望值＝store 的 transactions()＋bundleTransactions() 裡已付款的金額加總（活動詳情 edRevTotals().total 同一算式）；
+// 沒有交易的階段（草稿、已排程）期望 0。另附「票價 ×（售出 − 經組合包賣出）＋ 組合售價 × 組數」的手算值方便對照。
 (function () {
   var v = [];
+  var S = evWin.window.ztorEvents;
   EVENTS.forEach(function (e) {
-    var calc = (e.tiers || []).reduce(function (s, t) { return s + (t.price || 0) * (t.sold || 0); }, 0);
-    if (calc !== (e.revenue || 0)) {
-      v.push(e.id + '：Σ(price×sold)=' + calc + ' ≠ event.revenue=' + e.revenue + '（差 ' + (e.revenue - calc) + '）');
+    var tx = S.transactions(e.id).concat(S.bundleTransactions ? S.bundleTransactions(e.id) : []);
+    var paid = tx.filter(function (t) { return t.status === 'paid'; }).reduce(function (s, t) { return s + (t.gross || 0); }, 0);
+    if (paid !== (e.revenue || 0)) {
+      var viaBundle = {};
+      (e.bundles || []).forEach(function (b) {
+        var tk = S.bundleTickets(b);
+        if (tk.tierIds[0]) viaBundle[tk.tierIds[0]] = (viaBundle[tk.tierIds[0]] || 0) + (b.sold || 0) * (tk.qty || 1);
+      });
+      var hand = (e.tiers || []).reduce(function (s, t) { return s + (t.price || 0) * ((t.sold || 0) - (viaBundle[t.id] || 0)); }, 0) +
+                 (e.bundles || []).reduce(function (s, b) { return s + (b.price || 0) * (b.sold || 0); }, 0);
+      v.push(e.id + '（' + e.status + '）：已付款交易合計=' + paid + ' ≠ event.revenue=' + e.revenue + '（差 ' + ((e.revenue || 0) - paid) + '；手算 門票＋組合包=' + hand + '）');
     }
   });
-  record('3_revenue_vs_tier_calc', v);
+  record('3_revenue_vs_paid_transactions', v, '口徑：5.1.6.3 §2.3 活動收入含組合包整組金額（D408）、只算已付款（§2.7）');
 })();
 
 // ── 不變量 4：日期 vs 狀態（live 一律＝今天，見檔頭 2026-08-19 註記）───
 (function () {
-  var v = [];
+  var v = [], info = [];
   var todayMs = Date.parse(TODAY + 'T00:00:00');
   EVENTS.forEach(function (e) {
     var status = e.status;
     var dateStr = e.date;
     if (status === 'draft') {
-      // 慣例：草稿沒有日期
-      if (dateStr) v.push(e.id + '（draft）：帶有日期 ' + dateStr + '，草稿慣例應無日期（疑似慣例，非必然錯誤）');
+      // 規格允許草稿帶日期（見檔頭 2026-10-16）；只有日期已過列成資訊——發布前檢核會擋，不是資料錯
+      if (dateStr && Date.parse(dateStr + 'T00:00:00') < todayMs) info.push(e.id + '（draft）：日期 ' + dateStr + ' 已過（發布時會被擋，草稿本身合法）');
       return;
     }
     if (!dateStr) {
@@ -211,7 +218,7 @@ record('1_qty_vs_capacity', [], 'D340 容量刪除，本條退場');
       // 慣例：已取消的日期不拘（可能是原定未來日期被取消，也可能是過去），不強制斷言
     }
   });
-  record('4_date_vs_status', v);
+  record('4_date_vs_status', v, '', info);
 })();
 
 // ── 不變量 5：doors 早於 start；start/end 時間格式一致 ────────
@@ -319,27 +326,30 @@ record('1_qty_vs_capacity', [], 'D340 容量刪除，本條退場');
   record('7_series_consistency', v);
 })();
 
-// ── 不變量 8a：bundles.products 的 name/img 在 products-store 找得到 ──
+// ── 不變量 8a：bundles.products 的 name/img 與 products-store 對得上（2026-10-16 改寫，見檔頭）──
 (function () {
-  var v = [];
+  var v = [], info = [], seenInfo = {};
   var nameSet = {};
-  allKnownProducts.forEach(function (p) { nameSet[p.name] = nameSet[p.name] || []; nameSet[p.name].push(p.img); });
+  allKnownProducts.forEach(function (p) {
+    nameSet[p.name] = nameSet[p.name] || [];
+    if (nameSet[p.name].indexOf(p.img) < 0) nameSet[p.name].push(p.img);
+  });
   EVENTS.forEach(function (e) {
     (e.bundles || []).forEach(function (b) {
       (b.products || []).forEach(function (p) {
         var known = nameSet[p.name];
         if (!known) {
-          v.push(e.id + ' / bundle ' + b.id + '：product name "' + p.name + '" 在 products-store 找不到同名商品');
+          info.push(e.id + ' / bundle ' + b.id + '：「' + p.name + '」不在 products-store（組合商品細節頁會包成不限量的示範商品）');
           return;
         }
-        var imgFile = p.img.replace(/^images\/products\//, '');
+        var imgFile = String(p.img || '').replace(/^images\/products\//, '');
         if (known.indexOf(imgFile) < 0) {
           v.push(e.id + ' / bundle ' + b.id + '：product "' + p.name + '" 的 img="' + p.img + '"（檔名 ' + imgFile + '）與 products-store 記錄的 img（' + known.join(', ') + '）不符');
         }
       });
     });
   });
-  record('8a_bundle_products_match_store', v);
+  record('8a_bundle_products_match_store', v, '名稱對得到但圖不一致＝違反；名稱對不到＝資訊（示範資料缺口）', info);
 })();
 
 // ── 不變量 8b：圖片路徑實際存在（keyvisual/banner/gallery + bundle product img）──
@@ -427,15 +437,12 @@ record('1_qty_vs_capacity', [], 'D340 容量刪除，本條退場');
   record('extra_type_category_map', v);
 })();
 
-// ── 額外檢查：草稿(status=draft)是否符合「無票種/無場地/無日期」的裁定慣例、以及 scheduled 是否至少 1 種票 ──
+// ── 額外檢查：scheduled 是否至少 1 種票（草稿帶票種合法，2026-10-16 拿掉草稿那條，見檔頭）──
 (function () {
   var v = [];
   EVENTS.forEach(function (e) {
     if (e.status === 'scheduled' && (!e.tiers || e.tiers.length === 0)) {
       v.push(e.id + '（scheduled）：tiers 為空——依檔頭 2026-08-18 修正註解，已排程活動票種為必填');
-    }
-    if (e.status === 'draft' && e.tiers && e.tiers.length > 0) {
-      v.push(e.id + '（draft）：帶有 ' + e.tiers.length + ' 筆 tiers（疑似慣例，非必然錯誤——草稿理論上可以已選好票種但未發布）');
     }
   });
   record('extra_draft_scheduled_tier_rule', v);
@@ -460,17 +467,19 @@ record('1_qty_vs_capacity', [], 'D340 容量刪除，本條退場');
 
 // ── 輸出 ─────────────────────────────────────────────────────
 console.log('=== 逐條不變量結果 ===');
-var totalViolations = 0;
+var totalViolations = 0, totalInfo = 0;
 Object.keys(findings).forEach(function (k) {
   var f = findings[k];
   totalViolations += f.violations.length;
-  console.log('[' + k + '] 違反 ' + f.violations.length + ' 筆');
+  totalInfo += f.info.length;
+  console.log('[' + k + '] 違反 ' + f.violations.length + ' 筆' + (f.info.length ? '，資訊 ' + f.info.length + ' 筆' : ''));
   f.violations.forEach(function (line) { console.log('  - ' + line); });
+  f.info.forEach(function (line) { console.log('  · 資訊：' + line); });
 });
 
 console.log('');
 if (totalViolations === 0) {
-  console.log('=== PASS：全部不變量皆通過，0 筆違反 ===');
+  console.log('=== PASS：全部不變量皆通過，0 筆違反' + (totalInfo ? '（另有 ' + totalInfo + ' 筆資訊級項目，不算違反）' : '') + ' ===');
 } else {
   console.log('=== FAIL：共 ' + totalViolations + ' 筆違反，見上方明細 ===');
   process.exitCode = 1;
@@ -481,6 +490,7 @@ var outJson = {
   today: TODAY,
   eventCount: EVENTS.length,
   totalViolations: totalViolations,
+  totalInfo: totalInfo,
   findings: findings
 };
 var outPath = path.join(__dirname, 'check_events_store.out.json');

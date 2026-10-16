@@ -1408,7 +1408,7 @@
 <script src="partials/stepper.js?v=r2.2"></script>   <!-- 2026-09-18：.zstep 步進行為（票券清單表的張數） -->
 <script src="js/section-tabs.js?v=r2.2"></script>   <!-- 2026-09-21：組合包彈窗的分節分頁行為，bundle-editor 每次 render 後呼叫 init -->
 <script src="js/ticket-bundle.js?v=r2.2"></script>   <!-- D342：時間層級（上架區間包住售票期間與限時間）＋票務商品的跟隨／另設與購買條件，與 bundle-detail、create-bundle 共用 -->
-<script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購三種上限的輔助說明（purchase-conds 的限購條件卡借用），要先於 purchase-conds 載入 -->
+<script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購的輔助說明（purchase-conds 的限購條件卡借用），要先於 purchase-conds 載入；D427 起只剩每人總限購 -->
 <script src="js/purchase-conds.js?v=r2.2"></script>   <!-- D388：購買條件編輯器（新增條件清單），與 event-detail 共用 -->
 <script src="partials/film-picker.js?v=r2.2"></script>   <!-- D342：第 6 步收電影關聯（5.1.5.4 F10），共用選片器 -->
 <script src="js/bundle-editor.js?v=r2.2"></script>
@@ -1961,6 +1961,15 @@
         alert(dT("d.cond.warn.time.blocked"));
         return;
       }
+      /* D428：開了限購卻沒填每人總限購數量 → 回第 4 步（內部 5），打開那一份規則就地紅字 */
+      const cIss = capIssue();
+      if (cIss) {
+        step = 5; render();
+        if (cIss.scope === "event") { openQuick(); if (rulesRoot && rulesRoot.hidden) document.querySelector("[data-rules-toggle]")?.click(); capFocus(quickModal); }
+        else { const t0 = tiers.find(x => x.id === cIss.scope); if (t0) { startTier(t0); capFocus(document.getElementById("ce-tier-modal-body")); } }
+        alert(dT("d.cond.cap.blocked"));
+        return;
+      }
     }
     /* D364：下架時間開關打開卻沒填日期 → 擋下、回第 7 步就地標示 */
     if (!isWP() && (listModeSeg?.dataset.value || "now") !== "none" && unlistMissing()) {
@@ -2202,7 +2211,8 @@
     const pickupKey = { eticket: "fep.pickup.eticket", sf: "fep.pickup.sf", pickup: "fep.pickup.pickup" }[st.ship] || "fep.pickup.eticket";
     const evc = normRules(eventRules).conds;   // D366：活動層預設的條件
     const cap = evc.cap || {};
-    const limit = cap.order ? T("fep.limit.order", "Up to {n} per order").replace("{n}", cap.order) : null;
+    /* D427（2026-10-16）：限購只留每人總限購——前台鏡像的「限購」列改讀每人總限購（原本讀已退場的每次交易限購 cap.order） */
+    const limit = cap.person ? T("fep.limit.person", "Up to {n} per person").replace("{n}", cap.person) : null;
     const priority = evc.buyTier && featOn("S82") ? { window: T("fep.priority.tier", "Top fans first"), state: "" } : null;
     const kvImgs = Array.from(document.querySelectorAll('#ce-gallery [data-gallery-tile].is-filled img')).map(i => i.getAttribute("src")).filter(Boolean);
     const kv = kvImgs[0] || "";
@@ -3683,6 +3693,8 @@
         if (t.rules && rulesChecked(t) && ruleTlBad(t.rules)) { syncRuleTl(document.getElementById("ce-tier-modal-body")); return; }
         /* D390 決定二十五：限時折扣價高於一般折扣價擋存（就地紅字、不關） */
         if (t.rules && rulesChecked(t) && PC.discTimeBad(normRules(t.rules).conds, false)) { syncCondWarn(document.getElementById("ce-tier-modal-body")); return; }
+        /* D428：開了限購卻沒填每人總限購數量 → 就地紅字、不關 */
+        if (t.rules && rulesChecked(t) && PC.capBad(normRules(t.rules).conds)) { capFocus(document.getElementById("ce-tier-modal-body")); return; }
         commitTier(t);
       } else dropDraft(t);
     }
@@ -4708,6 +4720,20 @@
     const t = savedTiers().find(x => x.rules && rulesChecked(x) && PC.discTimeBad(normRules(x.rules).conds, false));
     return t ? { scope: t.id } : null;
   }
+  /* D428（2026-10-16 定案）：哪一份規則開了限購卻沒填每人總限購數量（判斷在 js/purchase-conds.js capBad；bookyay 帶入鎖定的不算）。
+     回傳 { scope }（"event" 或門票 id），沒有回 null；擋存在 closeTierModal／closeQuick／tryPublish */
+  function capIssue() {
+    if (!evRulesLocked() && PC.capBad(normRules(eventRules).conds)) return { scope: "event" };
+    const t = savedTiers().find(x => x.rules && rulesChecked(x) && PC.capBad(normRules(x.rules).conds));
+    return t ? { scope: t.id } : null;
+  }
+  /* 寫紅字並把游標帶到那一格 */
+  function capFocus(root) {
+    if (!root) return;
+    syncCondWarn(root);
+    const f = root.querySelector('[data-rule-f="cap.person"]');
+    if (f) { f.scrollIntoView({ block: "center" }); f.focus(); }
+  }
   document.addEventListener("input", e => {
     const f = e.target.closest("[data-rule-f]");
     if (!f) return;
@@ -4721,6 +4747,7 @@
       if (out) out.textContent = field === "pct" ? evPriceReadout(r.conds[k]) : pctReadout(r.conds[k], host.dataset.rulesFor);
       syncCondWarn(host);
     }
+    if (k === "cap") syncCondWarn(host);   // D428：限購一填就收紅字
     if (field === "from" || field === "to") syncRuleTl();   // D342：限時間一改就重比上架區間
     renderCalc(); scheduleSave();
     if (field === "pct") renderTiers();   // D368：活動層 % 一改，跟隨門票卡面的折扣價跟著變
@@ -5171,6 +5198,7 @@
     "d.type.err.dup":  { en: "Another ticket type already has this name.", zh: "已有同名票種。" },
     "d.price.err.max": { en: "Up to 9,999,999.", zh: "最高 9,999,999。" },
     "d.cond.warn.time.blocked": { en: "A limited-time discount price is higher than the regular discounted price. Fix it before publishing.", zh: "有限時折扣價高於一般折扣價，修正後才能發布。" },
+    "d.cond.cap.blocked": { en: "Purchase limits is on but tickets per person is empty. Enter a limit before publishing.", zh: "有開了限購卻沒填每人總限購數量，填上後才能發布。" },
     "d.type.err.blocked": { en: "Some ticket types need fixing. Check the highlighted rows in Ticket setup.", zh: "有票種需要修正，請看票務設定裡標紅的那幾列。" },
     "d.manual.first": { en: "＋ Add the first ticket", zh: "＋ 新增第一張門票" },
     "d.manual.hint":  { en: "Type, price, quantity", zh: "票種、價格、數量" },
@@ -5243,9 +5271,7 @@
     "d.limits":       { en: "Other event settings", zh: "其他活動設定" },
     "d.limits.sub":   { en: "Leave blank for no limit.", zh: "留空就是不限制。" },
     "d.limit.person": { en: "Tickets per person",  zh: "每人總限購數量" },
-    "d.limit.order":  { en: "Tickets per order",   zh: "每次交易限購數量" },
-    "d.limit.times":  { en: "Orders per person",   zh: "限購次數" },
-    "d.limit.times.hint": { en: "How many separate orders one person can place.", zh: "同一個人可以下幾次單。" },
+    /* 墓碑 2026-10-16（D427）：d.limit.order（每次交易限購數量）、d.limit.times／.times.hint（限購次數）退場 */
     "d.list":         { en: "Listing",           zh: "上架設定" },
     "d.list.sub":     { en: "When fans can see the event page, and when it comes down.", zh: "活動頁什麼時候讓粉絲看得到、什麼時候收起來。" },
     "d.list.none":    { en: "Don't list",        zh: "不上架" },
@@ -5635,6 +5661,12 @@
       syncCondWarn(quickModal);
       return;
     }
+    /* D428：活動層預設開了限購卻沒填每人總限購數量 → 展開規則、就地紅字、不關 */
+    if (PC.capBad(normRules(eventRules).conds)) {
+      if (rulesRoot && rulesRoot.hidden) document.querySelector("[data-rules-toggle]")?.click();
+      capFocus(quickModal);
+      return;
+    }
     quickModal.hidden = true;
     document.body.style.overflow = "";
     renderTiers(); scheduleSave();
@@ -5783,7 +5815,7 @@
     };
     if (k === "buyTime") return win();
     if (k === "buyTier") return tierTxt();
-    if (k === "cap") return ["person", "order", "times"].filter(f => c[f] !== "" && c[f] != null)
+    if (k === "cap") return ["person"].filter(f => c[f] !== "" && c[f] != null)   /* D427：只剩每人總限購 */
       .map(f => dT("d.cond.cap." + f).replace("{n}", c[f])).join(" · ") || "—";
     if (k === "disc") return price();
     if (k === "discTime") return price() + " · " + win();
@@ -5914,7 +5946,9 @@
      港幣原值記在 `types[].hkd`（價格表港幣欄鎖定）；自動建立的組合包另記 `hkd`＝bookyay 現價。
      D417（2026-10-15）：bookyay 的活動限購（maxPurchaseCnt／maxPurchaseCntEachTime／maxPurchaseTime）、本門票限購的限購次數（limit.maxPurchaseTime）、
      折扣優惠（discount）、早鳥（early）一律不帶入——下面各筆仍保留這些欄位，示範「bookyay 有、ztor 不帶」；帶入只剩本門票限購的
-     每人總限購與每次交易限購（鎖定）。以下各筆註解凡寫到這四項「帶入／落在…」的，皆為 D417 前的示範說明。 */
+     每人總限購（鎖定）。以下各筆註解凡寫到這四項「帶入／落在…」的，皆為 D417 前的示範說明。
+     D427（2026-10-16）：本門票限購的每次交易上限（limit.maxPurchaseCntEachTime）也不帶入、Creator Studio 不顯示（由 bookyay 結帳時把關），
+     示範資料照留該欄位＝「bookyay 有、ztor 不帶」。 */
   const BKY = [
     { id: "bky-1", type: "concert",
       label: "REALIVE World Tour — Taipei",
@@ -5939,7 +5973,7 @@
       ticketTypes: [
         { name: "VIP", priceHkd: "1040", persons: 1,
           desc: "含彩排參觀與限定手環，入場時於 VIP 通道報到。",
-          /* bookyay 端有本門票限購、折扣優惠、早鳥；D417 起只帶限購的每人總限購與每次交易限購（鎖定），折扣與早鳥不帶入 */
+          /* bookyay 端有本門票限購、折扣優惠、早鳥；D427 起只帶限購的每人總限購（鎖定），每次交易、折扣與早鳥不帶入 */
           limit: { maxPurchaseCnt: 2, maxPurchaseCntEachTime: 2 },
           discount: { priceHkd: "980" },
           early: { priceHkd: "880", endD: "2026-07-31", endT: "23:59" } },
@@ -6124,7 +6158,7 @@
        活動限購三項、條款及細則（含清單與連結）、四種語言、兩張圖、私人活動（顯示設定＝隱藏）、定時開賣與停售日期、
        多段描述（含鎖定的圖片區塊、粗體斜體連結、清單）。
        D417（2026-10-15）之後：活動限購三項、門票的限購次數、折扣優惠、早鳥在 bookyay 端仍設滿，但 ztor 不帶入——
-       這一筆帶入後只看得到門票的每人總限購與每次交易限購（鎖定），其餘示範「bookyay 有、ztor 不帶」。 */
+       這一筆帶入後只看得到門票的每人總限購（鎖定；D427 起每次交易也不帶），其餘示範「bookyay 有、ztor 不帶」。 */
     { id: "bky-15", type: "concert",
       label: "ALL-IN NIGHT — 條件全開示範",
       note:  "2026/12/19–12/20 · 台北流行音樂中心（跨夜 · 二人套票 · 門票限購 · 私人活動）",
@@ -6201,7 +6235,7 @@
       note:  "2026/07/27 · Neo Studio" },
     { id: "bky-7", imported: true, multi: true,   // 對到三場的 album-signing-taipei；release2.4 沒有多場次活動，清單不列（D383）
       label: "Album signing — Taipei",
-      note:  "2026/09/12–09/14 · 誠品信義（三場）" },
+      note:  "2026/11/28–11/30 · 誠品信義（三場）" },
     { id: "bky-8", imported: true,
       label: "LOVE·RAGE·HOPE Live House Tour — 台中",
       note:  "2026/04/11 · Legacy Taichung" }
@@ -6346,7 +6380,8 @@
           另外每場自動建一組組合包（票券成員＝該場 1 人票 × n、折扣 0、鎖定套數＝floor(上限 ÷ n)），整組鎖定（`fix`，D329）。
        5. 墓碑 2026-10-05（D353）：「活動門票簡介」不帶入（原本複製到該票種每一場的門票簡介）。
        6. 墓碑 2026-10-15（D417 決定四）：早鳥不帶入——原本 n ＝ 1 寫成門票的「限時折扣」、n ≥ 2 寫在自動組合包的 `sale`（D329／D391 第 15 題）。
-       7. 限購（D366 決定四；D417 修訂，2026-10-15）：只帶本門票限購的每人總限購數量與每次交易限購數量 → 該門票的「限購」（鎖定）；
+       7. 限購（D366 決定四；D417 修訂，2026-10-15；D427 再修訂，2026-10-16）：只帶本門票限購的每人總限購數量 → 該門票的「限購」（鎖定）；
+          本門票限購的每次交易上限（maxPurchaseCntEachTime）D427 起不帶入、不顯示（由 bookyay 結帳時把關）；
           活動限購（maxPurchaseCnt／maxPurchaseCntEachTime／maxPurchaseTime）、本門票限購的「限購次數」（maxPurchaseTime）、
           折扣優惠（discount）都不帶入（D417 決定一～三；bookyay 示範資料仍保留這些欄位，示範「bookyay 有、ztor 不帶」）。
           n ≥ 2 的 1 人票不收門票層限購，限購改放自動建立的組合包（D390 決定十九，見下方 b.set 段）。
@@ -6449,12 +6484,12 @@
          n ＝ 1 寫成門票的限時折扣、n ≥ 2 寫成自動組合包的 sale。 */
       if (!b.set) {
         /* n ＝ 1：bookyay 的門票層條件寫成這張票自己的一份（D366 決定四），只放 bookyay 帶入的條件。
-           D417（2026-10-15）：只剩本門票限購的每人總限購與每次交易限購（限購次數、折扣、早鳥不帶入，也不再補活動限購）。 */
+           D417（2026-10-15）：只剩本門票限購（限購次數、折扣、早鳥不帶入，也不再補活動限購）；
+           D427（2026-10-16）：再收成只帶每人總限購——每次交易上限（maxPurchaseCntEachTime）不帶入、不顯示。 */
         const bt = rec.ticketTypes[b.k] || {};
         const conds = {};
-        const capOf = o => ({ person: o.maxPurchaseCnt != null ? String(o.maxPurchaseCnt) : "",
-          order: o.maxPurchaseCntEachTime != null ? String(o.maxPurchaseCntEachTime) : "", bky: true });
-        if (bt.limit && (bt.limit.maxPurchaseCnt != null || bt.limit.maxPurchaseCntEachTime != null)) conds.cap = capOf(bt.limit);
+        const capOf = o => ({ person: String(o.maxPurchaseCnt), bky: true });
+        if (bt.limit && bt.limit.maxPurchaseCnt != null) conds.cap = capOf(bt.limit);
         if (Object.keys(conds).length) {
           cell.rules = { conds };
           cell.rulesFix = true;
@@ -6470,12 +6505,10 @@
            D390 決定二十：購買條件整組鎖定（js/bundle-editor.js srcFix → 唯讀讀數）。 */
         const bt0 = rec.ticketTypes[b.k] || {};
         const lim = bt0.limit || null;
-        /* D417（2026-10-15）：限購只帶每人總限購與每次交易限購（限購次數不帶入、也不能設定）；
+        /* D417（2026-10-15）：限購次數不帶入；D427（2026-10-16）：每次交易上限也不帶入——限購只帶每人總限購（鎖定）；
            折扣優惠與早鳥不帶入——組合折扣 0、售價＝bookyay 現價、沒有限時折扣（最終版創作者可自設，S96）。 */
-        const capRules = lim && (lim.maxPurchaseCnt != null || lim.maxPurchaseCntEachTime != null) ? { on: false, cond: "time", tier: "fan", from: "", to: "", cap: "cap",
-          person: lim.maxPurchaseCnt != null ? String(lim.maxPurchaseCnt) : "",
-          order: lim.maxPurchaseCntEachTime != null ? String(lim.maxPurchaseCntEachTime) : "",
-          times: "" } : null;
+        const capRules = lim && lim.maxPurchaseCnt != null ? { on: false, cond: "time", tier: "fan", from: "", to: "", cap: "cap",
+          person: String(lim.maxPurchaseCnt) } : null;
         const full = Number(bt0.priceHkd) || 0;
         bundles.push({
           name: b.name + (sessions.length > 1 ? " · " + sessionLabel(ss, i) : ""),

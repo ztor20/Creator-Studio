@@ -3801,7 +3801,7 @@
     'sd.badge.own':       { en: 'Own settings',          zh: '已自行調整' },
     'sd.sync.note.some':  { en: 'Saving here updates the {n} dates that still follow the series.', zh: '在這裡儲存會更新「還跟著系列走」的 {n} 場。' },
     'sd.h1':             { en: 'REALIVE World Tour — Asia leg',         zh: 'REALIVE 世界巡迴 — 亞洲段' },
-    'sd.sub':            { en: '2026/09/12 – 2026/10/03 · 3 venues',    zh: '2026/09/12 – 2026/10/03 · 3 個場地' },
+    'sd.sub':            { en: '2026/12/19 – 2027/01/09 · 3 venues',    zh: '2026/12/19 – 2027/01/09 · 3 個場地' },
     'sd.badge.series':   { en: 'Series · 3 dates',                      zh: '系列 · 共 3 場' },
     'sd.badge.type':     { en: 'Concert',                               zh: '演唱會' },
     'sd.btn.preview':    { en: 'View ticket page',                      zh: '看售票頁' },
@@ -3883,7 +3883,7 @@
     'event-detail.edit.seriesnote': { en: 'This date follows the series settings — changing it here changes only this date', zh: '這一場的設定跟著系列走；在這裡改只會改這一場，不影響其他場' },
     'events.rowSER.title':     { en: 'REALIVE World Tour — Asia leg',       zh: 'REALIVE 世界巡迴 — 亞洲段' },
     'events.rowSER.meta':      { en: 'Concert · 3 dates',                   zh: '演唱會 · 共 3 場' },
-    'events.rowSER.datetime':  { en: '2026/09/12 – 2026/10/03',             zh: '2026/09/12 – 2026/10/03' },
+    'events.rowSER.datetime':  { en: '2026/12/19 – 2027/01/09',             zh: '2026/12/19 – 2027/01/09' },
     'events.rowSER.venue':     { en: '3 venues',                            zh: '3 個場地' },
     'events.rowSER.leg1':      { en: 'Date 1 of 3',                         zh: '第 1 場 / 共 3 場' },
     'events.rowSER.leg2':      { en: 'Date 2 of 3',                         zh: '第 2 場 / 共 3 場' },
@@ -3891,13 +3891,13 @@
     /* 2026-08-06 使用者裁決：各場先與系列同名，靠日期與場地欄分辨。
        三個 rowSERn.title 暫時無人引用，留著等「各場可自訂名稱」的規格出來（SER-001 ⑥）。 */
     'events.rowSER1.title':    { en: 'Kaohsiung',                           zh: '高雄' },
-    'events.rowSER1.datetime': { en: '2026/09/12 · 7:30 PM',                zh: '2026/09/12 · 晚上 7:30' },
+    'events.rowSER1.datetime': { en: '2026/12/19 · 7:30 PM',                zh: '2026/12/19 · 晚上 7:30' },
     'events.rowSER1.venue':    { en: 'Kaohsiung Arena',                     zh: '高雄巨蛋' },
     'events.rowSER2.title':    { en: 'Taichung',                            zh: '台中' },
-    'events.rowSER2.datetime': { en: '2026/09/26 · 7:30 PM',                zh: '2026/09/26 · 晚上 7:30' },
+    'events.rowSER2.datetime': { en: '2027/01/02 · 7:30 PM',                zh: '2027/01/02 · 晚上 7:30' },
     'events.rowSER2.venue':    { en: 'Taichung Intercontinental',           zh: '台中洲際' },
     'events.rowSER3.title':    { en: 'Taipei',                              zh: '台北' },
-    'events.rowSER3.datetime': { en: '2026/10/03 · 7:30 PM',                zh: '2026/10/03 · 晚上 7:30' },
+    'events.rowSER3.datetime': { en: '2027/01/09 · 7:30 PM',                zh: '2027/01/09 · 晚上 7:30' },
     'events.rowSER3.venue':    { en: 'Taipei Arena',                        zh: '臺北小巨蛋' },
     'events.status.all':       { en: 'All',                                 zh: '全部' },
     'events.status.on-sale':   { en: 'On sale',                             zh: '售票中' },
@@ -3942,7 +3942,7 @@
     'events.rowWP2.meta':      { en: 'Watch Party',                        zh: '共看派對' },
     /* 2026-08-19 修正：events.html 該列的日期改到 9/16（另一 agent 的改動，見該檔第 389 行
        註解），這支字典檔當時不在改動範圍內、日期文字沒有跟著換，造成 fallback 與字典值不同步。 */
-    'events.rowWP2.datetime':  { en: 'Sep 16, 2026 · 9:00 PM',            zh: '2026/9/16 · 晚上 9:00' },
+    'events.rowWP2.datetime':  { en: 'Dec 16, 2026 · 9:00 PM',            zh: '2026/12/16 · 晚上 9:00' },
     'events.rowWP2.venue':     { en: 'Online · Tour recording',            zh: '線上 · 巡演實錄' },
 
     /* 2026-08-19 新增：另一 agent 在 events.html 開了「REALIVE World Tour」這組（母列＋
@@ -4032,7 +4032,7 @@
     /* 示範用的粉絲見面會場次（讓該類型有可評估的內容；不需要時連同 events.html 的列一起刪） */
     'events.rowFM.title':     { en: 'Album signing — Taipei',   zh: '專輯簽名會 — 臺北' },
     'events.rowFM.meta':      { en: 'Fans meet · signing',      zh: '粉絲見面會 · 簽名' },
-    'events.rowFM.datetime':  { en: 'Sep 12, 2026 · 2:00 PM',   zh: '2026/9/12 · 下午 2:00' },
+    'events.rowFM.datetime':  { en: 'Nov 28, 2026 · 2:00 PM',   zh: '2026/11/28 · 下午 2:00' },
     'events.rowFM.venue':     { en: 'Eslite Xinyi',    zh: '誠品信義' },
 
     /* 狀態 × 類型矩陣那批活動的列文案（2026-08-17）。命名：`events.r.<活動 id>.*` 是一般列
@@ -4073,7 +4073,7 @@
     'events.r.nantou-lantern-opening.venue':           { en: 'Nantou Expo Center', zh: '南投會展中心' },
     'events.r.lrh-studio-live.title':                  { en: 'LOVE RAGE HOPE — Studio session, online', zh: 'LOVE RAGE HOPE 錄音室直播場' },
     'events.r.lrh-studio-live.meta':                   { en: 'Virtual Event', zh: '線上活動' },
-    'events.r.lrh-studio-live.datetime':               { en: 'Sep 20, 2026 · 9:00 PM', zh: '2026/9/20 · 晚上 9:00' },
+    'events.r.lrh-studio-live.datetime':               { en: 'Dec 23, 2026 · 9:00 PM', zh: '2026/12/23 · 晚上 9:00' },
     'events.r.lrh-studio-live.venue':                  { en: 'Online', zh: '線上' },
     'events.r.fubon-postgame-taipei.title':            { en: 'Fubon Guardians post-game show — Taipei Dome', zh: '富邦悍將賽後演唱會 — 臺北大巨蛋' },
     'events.r.fubon-postgame-taipei.meta':             { en: 'Concert', zh: '演唱會' },
@@ -4929,7 +4929,7 @@
     'fep.venue':            { en: 'Venue',                            zh: '場館' },
     'fep.language':         { en: 'Language',                         zh: '語言' },
     'fep.priority':         { en: 'Early access',                     zh: '優先購' },
-    'fep.limit':            { en: 'Per order',                        zh: '限購' },
+    'fep.limit':            { en: 'Limit',                            zh: '限購' },   /* D427（2026-10-16）：改讀每人總限購，英文標籤由 Per order 改 Limit */
     'fep.tiers.n':          { en: '{n} ticket types',                 zh: '{n} 種票' },
     'fep.bundles.n':        { en: '{n} bundles',                      zh: '{n} 組組合方案' },
     'fep.link.bundles':     { en: 'Bundles',                          zh: '組合方案' },
@@ -4969,7 +4969,7 @@
     'fep.pickup.eticket':   { en: 'E-ticket (QR)',                    zh: '電子門票（QR）' },
     'fep.pickup.sf':        { en: 'SF Express delivery',              zh: '順豐寄送' },
     'fep.pickup.pickup':    { en: 'In-store pickup',                  zh: '到店自取' },
-    'fep.limit.order':      { en: 'Up to {n} per order',              zh: '每筆最多 {n} 張' },
+    'fep.limit.person':     { en: 'Up to {n} per person',             zh: '每人最多 {n} 張' },   /* D427：取代 fep.limit.order（每筆最多 {n} 張，墓碑） */
     'fep.priority.tier':    { en: 'Top fans first',                   zh: '粉絲分級優先' },
     /* 2026-09-22 前台鏡像：粉絲視角活動頁改照前台 shop-item 的 DOM／CSS 重畫（使用者裁決），前台固定文案補齊 */
     'fep.price.k':          { en: 'Price',                            zh: '票價' },
@@ -5843,7 +5843,7 @@
     'cp.shared.title':      { en: 'Buyer limits &amp; tags',          zh: '購買限制與標籤' },
     'cp.limits.title':      { en: 'Buyer limits',                    zh: '購買限制' },
     'cp.limit':             { en: 'Purchase limits',                  zh: '限購' },
-    'cp.limit.sub':         { en: 'When on, set at least one of the three', zh: '開啟後三種上限至少設一種' },
+    'cp.limit.sub':         { en: 'When on, enter a limit',           zh: '開啟後要填上限' },   /* D427（2026-10-16）：只剩每人總限購一欄，原「三種上限至少設一種」改寫 */
     /* 墓碑 2026-10-12（D398）：cp.limit.max（每人最大購買量，單一欄位）退場，改三種上限 pl.item.*（js/purchase-limits.js） */
     'cp.tags':              { en: 'Product tags',                     zh: '商品標籤' },
     'cp.tags.sub':          { en: 'Make it easier for fans to discover your work.', zh: '讓粉絲更容易發現你的作品。' },
@@ -5900,7 +5900,7 @@
     'cp.qc.cap':            { en: 'Total quantity ≥ stock',           zh: '上限數量 ≥ 目前在庫' },
     'cp.qc.specs':          { en: 'Specifications',                   zh: '詳細規格' },
     'cp.qc.weight':         { en: 'Shipping weight',                  zh: '重量' },
-    'cp.qc.limit':          { en: 'At least one purchase limit',      zh: '至少一種限購上限' },
+    'cp.qc.limit':          { en: 'Purchase limit',                   zh: '限購上限' },   /* D427：原「至少一種限購上限」 */
     'cp.qc.file':           { en: 'Item file',                        zh: '內容檔案' },
     'cp.qc.cover':          { en: 'Cover art',                        zh: '封面' },
     'cp.qc.digicap':        { en: 'Total quantity & copies',          zh: '上限數量與剩餘份數' },
@@ -6880,35 +6880,19 @@
     'tb.rules.buy':            { en: 'Who can buy',                    zh: '購買條件' },
     'tb.rules.cap':            { en: 'Purchase limits',                zh: '限購' },
     'tb.rules.restrict':       { en: 'Restricted',                     zh: '限制' },
-    /* ── D398（2026-10-12）限購三種上限：活動門票（張）／商品（件）／組合包（組）同一套句型，只換單位。
-       共用渲染在 js/purchase-limits.js（pl.*）；欄位名稱＋每欄一句輔助說明（原句見主規格 §7.2、§7.14「組合包的限購」、5.1.6.1 F22）。 */
+    /* ── D398（2026-10-12）限購：活動門票（張）／商品（件）／組合包（組）同一套句型，只換單位。
+       共用渲染在 js/purchase-limits.js（pl.*）；欄位名稱＋一句輔助說明（原句見主規格 §7.2、§7.14「組合包的限購」、5.1.6.1 F22）。
+       墓碑 2026-10-16（D427 只留每人總限購）：pl.<unit>.order／.order.hint／.order.v（每次交易限購數量）、
+       pl.<unit>.times／.times.hint／.times.v（限購次數）、pl.src.times 退場；pl.err.atleast 改名 pl.err.required。 */
     'pl.tix.person':           { en: 'Tickets per person, in total',   zh: '每人總限購數量' },
     'pl.tix.person.hint':      { en: 'Counts every ticket a buyer has bought — the total allowance for the whole event (or this ticket).', zh: '計每位買家累計能買的總張數，是整場活動（或該票）的總額度。' },
-    'pl.tix.order':            { en: 'Tickets per order',              zh: '每次交易限購數量' },
-    'pl.tix.order.hint':       { en: 'The most tickets a single order can include.', zh: '計單筆訂單最多能買幾張。' },
-    'pl.tix.times':            { en: 'Orders per person',              zh: '限購次數' },
-    'pl.tix.times.hint':       { en: 'How many orders each buyer can place, no matter how many tickets are in each.', zh: '計每位買家最多可以下幾次單，不管每次買幾張。' },
     'pl.tix.person.v':         { en: '{n} per person',                 zh: '每人 {n} 張' },
-    'pl.tix.order.v':          { en: '{n} per order',                  zh: '每次 {n} 張' },
-    'pl.tix.times.v':          { en: '{n} orders max',                 zh: '限 {n} 次' },
     'pl.item.person':          { en: 'Items per person, in total',     zh: '每人總限購數量' },
     'pl.item.person.hint':     { en: 'Counts every unit a buyer has bought — the total allowance for this product.', zh: '計每位買家累計能買的總件數，是這個商品的總額度。' },
-    'pl.item.order':           { en: 'Items per order',                zh: '每次交易限購數量' },
-    'pl.item.order.hint':      { en: 'The most units a single order can include.', zh: '計單筆訂單最多能買幾件。' },
-    'pl.item.times':           { en: 'Orders per person',              zh: '限購次數' },
-    'pl.item.times.hint':      { en: 'How many orders each buyer can place, no matter how many units are in each.', zh: '計每位買家最多可以下幾次單，不管每次買幾件。' },
     'pl.item.person.v':        { en: '{n} per person',                 zh: '每人 {n} 件' },
-    'pl.item.order.v':         { en: '{n} per order',                  zh: '每次 {n} 件' },
-    'pl.item.times.v':         { en: '{n} orders max',                 zh: '限 {n} 次' },
     'pl.set.person':           { en: 'Sets per person, in total',      zh: '每人總限購數量' },
     'pl.set.person.hint':      { en: 'Counts every set a buyer has bought — the total allowance for this bundle.', zh: '計每位買家累計能買的總組數，是這個組合包的總額度。' },
-    'pl.set.order':            { en: 'Sets per order',                 zh: '每次交易限購數量' },
-    'pl.set.order.hint':       { en: 'The most sets a single order can include.', zh: '計單筆訂單最多能買幾組。' },
-    'pl.set.times':            { en: 'Orders per person',              zh: '限購次數' },
-    'pl.set.times.hint':       { en: 'How many orders each buyer can place, no matter how many sets are in each.', zh: '計每位買家最多可以下幾次單，不管每次買幾組。' },
     'pl.set.person.v':         { en: '{n} per person',                 zh: '每人 {n} 組' },
-    'pl.set.order.v':          { en: '{n} per order',                  zh: '每次 {n} 組' },
-    'pl.set.times.v':          { en: '{n} orders max',                 zh: '限 {n} 次' },
     'pl.none':                 { en: 'No limit',                       zh: '不限' },
     'pl.u.tix':                { en: 'tickets',                        zh: '張' },
     'pl.u.item':               { en: 'items',                          zh: '件' },
@@ -6926,14 +6910,13 @@
     'pl.src.none':             { en: 'No member sets this',            zh: '成員都沒設' },
     'pl.src.one':              { en: 'From {name}: {n}',               zh: '取自 {name}：{n} {u}' },
     'pl.src.conv':             { en: 'From {name}: {n} ÷ {per} per set', zh: '取自 {name}：{n} {u} ÷ 每組 {per} {u}' },
-    'pl.src.times':            { en: 'From {name}: {n}',               zh: '取自 {name}：{n} 次' },
     'pl.src.was':              { en: 'Members allow {v}',              zh: '跟隨成員時：{v}' },
     'pl.src.ceil':             { en: 'tickets cap it at {n}',          zh: '門票上限 {n} 組' },
     'pl.err.int':              { en: 'Enter a whole number, 1 or more.', zh: '請填 1 以上的整數。' },
     'pl.err.ceil':             { en: 'Can’t be more than {n} — the tickets inside allow {n} sets.', zh: '不得超過 {n}：所含門票換算最多 {n} 組。' },
     'pl.err.short.item':       { en: '{name} allows {n} but each set needs {per} — not even 1 set. Raise its limit, use fewer per set, or override.', zh: '{name} 限購 {n} {u}，每組要 {per} {u}，不足 1 組。請調高它的限購、減少每組件數，或覆寫上限。' },
     'pl.err.short.tix':        { en: '{name} allows {n} but each set needs {per} — not even 1 set. Raise the ticket’s limit or change tickets per set.', zh: '{name} 限購 {n} {u}，每組要 {per} {u}，不足 1 組。請調高門票的限購，或改每組張數。' },
-    'pl.err.atleast':          { en: 'Set at least one limit.',        zh: '至少填一種上限。' },
+    'pl.err.required':         { en: 'Enter a limit.',                 zh: '請填上限。' },
     'pl.cond.empty':           { en: 'No conditions yet — anyone can buy it.', zh: '還沒有條件：任何人都買得到。' },
     'pl.err.outside':          { en: 'Outside this bundle’s listing period ({period}).', zh: '超出組合包的上架區間（{period}）。' },
     'pl.qc.rules':             { en: 'Purchase rules & limits',        zh: '購買條件與限購' },
@@ -6944,13 +6927,10 @@
     'tb.tier.min':             { en: 'Minimum fan tier',               zh: '買得到的最低分級' },
     'tb.tier.hint':            { en: 'Can’t go below {tier} — the tickets inside require it.', zh: '不能低於「{tier}」，所含門票要求這個門檻。' },
     'tb.cap.person':           { en: 'Sets per person',                zh: '每人總限購（組）' },
-    'tb.cap.order':            { en: 'Sets per order',                 zh: '每次交易限購（組）' },
-    'tb.cap.times':            { en: 'Orders per person',              zh: '限購次數' },
+    /* 墓碑 2026-10-16（D427）：tb.cap.order／.order.v／.order.short（每次交易）、tb.cap.times／.times.v（限購次數）、tb.err.short.order 退場 */
     'tb.cap.max':              { en: 'Up to {n}',                      zh: '最多 {n}' },
     'tb.cap.nomax':            { en: 'Optional',                       zh: '選填' },
     'tb.cap.person.v':         { en: '{n} per person',                 zh: '每人 {n} 組' },
-    'tb.cap.order.v':          { en: '{n} per order',                  zh: '每次 {n} 組' },
-    'tb.cap.times.v':          { en: '{n} orders',                     zh: '限 {n} 次' },
     'tb.err.empty.window':     { en: 'The tickets’ purchase periods don’t overlap, so this bundle can’t be bought. Change a ticket’s time window or the allowed tickets.', zh: '所含門票的可購買時間沒有交集，這組賣不出去。請調整門票的限時間或允許的門票。' },
     'tb.err.tier.loose':       { en: 'Can’t be looser than the tickets inside — at least {tier}.', zh: '不能比所含門票寬：最低要「{tier}」。' },
     'tb.err.time.empty':       { en: 'Fill in both start and end.',     zh: '請填開始與結束時間。' },
@@ -6959,10 +6939,8 @@
     'tb.err.cap.loose':        { en: 'Can’t be looser than the tickets inside — {n} at most.', zh: '不能比所含門票寬：最多 {n}。' },
     /* 限購最低 1 組（D342 同日補充）：門票限購張數 < 每套張數 n，換算成套不足 1 組；跟隨或另設都擋存 */
     'tb.err.short.person':     { en: 'Per-person limit is under the {n} tickets in a set, so not even 1 set can be bought ({items}). Raise the ticket’s limit to {n} or more, or lower the tickets per set.', zh: '每人總限購少於每套 {n} 張，連 1 組都買不到（{items}）。請把門票限購調到 {n} 張以上，或改每套張數。' },
-    'tb.err.short.order':      { en: 'Per-order limit is under the {n} tickets in a set, so not even 1 set can be bought ({items}). Raise the ticket’s limit to {n} or more, or lower the tickets per set.', zh: '每次交易限購少於每套 {n} 張，連 1 組都買不到（{items}）。請把門票限購調到 {n} 張以上，或改每套張數。' },
     'tb.err.short.item':       { en: '{name}: {tix}',                  zh: '{name} {tix} 張' },
     'tb.cap.person.short':     { en: 'Under 1 set per person',         zh: '每人不足 1 組' },
-    'tb.cap.order.short':      { en: 'Under 1 set per order',          zh: '每次不足 1 組' },
     'tb.sale.on':              { en: 'On sale',                        zh: '開賣' },
     'tb.sale.on.sub':          { en: 'Off means not on sale — fans can’t check out. On sells on the times below.', zh: '關掉＝未開賣，粉絲不能結帳；開著就照下方的時間販售。' },
     'tb.publish.blocked':      { en: 'These times fall outside the event’s listing period. Fix them before publishing:', zh: '下列時間超出活動上架區間，修正後才能發布：' },
@@ -10637,8 +10615,7 @@
     'ed.tm.rules.on':     { en: 'On',                     zh: '開' },
     'ed.rule.cap':        { en: 'Purchase limits',        zh: '限購' },
     'ed.rule.cap.person': { en: '{n} per person',         zh: '每人 {n} 張' },
-    'ed.rule.cap.order':  { en: '{n} per order',          zh: '每次 {n} 張' },
-    'ed.rule.cap.times':  { en: 'Max orders: {n}',         zh: '限 {n} 次' },
+    /* 墓碑 2026-10-16（D427）：ed.rule.cap.order（每次 {n} 張）、ed.rule.cap.times（限 {n} 次）退場 */
     'ed.rule.disc':       { en: 'Discount',               zh: '折扣' },
     'ed.rule.discTime':   { en: 'Limited-time discount',  zh: '限時折扣' },
     'ed.rule.pct':        { en: ' ({n}% off)',            zh: '（折 {n}%）' },   // 英文含前導空格、中文全形括號不加空格（直接接在金額後）

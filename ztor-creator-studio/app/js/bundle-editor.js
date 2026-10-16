@@ -1007,8 +1007,8 @@
     /* ── 組合包的限購（2026-10-12 改接 js/purchase-limits.js，UI-CHANGES 一百八十八；D398、主規格 §7.14「組合包的限購」）──
        與 create-bundle／bundle-detail 同一套：成員＝允許的每張門票（門票自己的限購，跟隨活動預設時就是活動層那一份；
        每組用量＝每組張數）＋每件商品（商品的 limit，每組 1 件）；預設跟隨成員（換算後取交集），可覆寫（從跟隨值起手）、可改回。
-       存檔形狀 b.limits：null＝跟隨成員、{ person, order, times }（字串，以組計）＝已覆寫。
-       舊資料（D342）只有 b.rules（cap:'cap' 時帶 person／order／times）→ 讀進來時以 PL.fromRules 轉成 b.limits。
+       存檔形狀 b.limits：null＝跟隨成員、{ person }（字串，以組計；D427 起只剩每人總限購）＝已覆寫。
+       舊資料（D342）只有 b.rules（cap:'cap' 時帶 person）→ 讀進來時以 PL.fromRules 轉成 b.limits（舊的 order／times 忽略，D427）。
        bookyay 套票自動建立的組合包（srcFix）照 purchase-limits 的 locked：只顯示「已鎖定」徽章、不畫開關，也不擋存（改不了）。 */
     function plApi() { return (SPLIT && getTickets && window.ztorPurchaseLimits) || null; }
     function productLimit(it) {
@@ -1022,7 +1022,7 @@
       var TB = window.ZtorTicketBundle, n = tixQty(b), out = [];
       tixIds(b).map(ticketById).filter(Boolean).forEach(function (t) {
         var r = TB ? TB.tierRules(t.rules) : {};
-        out.push({ kind: 'ticket', name: t.name || '', per: n, lim: { person: r.person || '', order: r.order || '', times: r.times || '' } });
+        out.push({ kind: 'ticket', name: t.name || '', per: n, lim: { person: r.person || '' } });
       });
       b.items.forEach(function (it) {
         out.push({ kind: 'product', name: it.name || '', per: 1, lim: productLimit(it) });
@@ -1040,9 +1040,8 @@
       var mem = limitMembers(b), fix = srcFix(b);
       if (!mem.length) return '<div data-bd-pl></div>';   /* 2026-10-12 使用者：沒有成員時限購整塊不顯示（原本一句「至少加入 1 個成員」） */
       return '<div data-bd-pl>' + PL.blockHTML(b.limits, PL.derive(mem), T, {
-        title: true, locked: fix, lockNote: fix ? T('pl.lock.bky') : '',
-        /* D417（2026-10-15，UI-CHANGES 二百三十四）：bookyay 自動組合包只帶每人總限購與每次交易限購，不畫「限購次數」 */
-        keys: fix ? PL.KEYS_BKY : null
+        title: true, locked: fix, lockNote: fix ? T('pl.lock.bky') : ''
+        /* 墓碑 2026-10-16（D427）：keys: PL.KEYS_BKY（bookyay 自動組合包只畫兩欄）退場——限購只剩每人總限購一欄 */
       }) + '</div>';
     }
     function limitsSync(card, b) {

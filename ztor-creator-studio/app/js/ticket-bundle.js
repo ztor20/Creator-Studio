@@ -16,12 +16,14 @@
        另設＝自己的值，須在上架區間內、可以早於活動開賣。
      · 購買條件與限購：預設取所含門票最嚴（分級取最高、限時間取各門票可購買時間的交集、限購取最小，限購以張計
        ÷ n 取整成套）；交集為空擋存。調整時分級與限購只能收窄；限時間可在上架區間內任調。
-     · 限購最低 1 組（D342 同日補充）：每人總限購與每次交易限購換算成套不足 1 組（門票限購張數 < 每套張數 n）時，
+     · 限購最低 1 組（D342 同日補充）：每人總限購換算成套不足 1 組（門票限購張數 < 每套張數 n）時，
        跟隨或另設都一樣擋存，就地說明是哪張門票、怎麼改（調高門票限購到 ≥ n，或改每套張數）；手動輸入的限購最低 1 組。
 
    狀態形狀（掛在消費頁自己的物件上，例如 bundle-editor 的 b、bundle-detail 的 bundleModel）：
      st.sched = { listAt, unlistAt, saleStart, saleEnd }  每格 null＝跟隨活動、字串＝另設（'YYYY-MM-DDTHH:MM'；'' ＝另設但還沒填）
-     st.rules = null（跟隨所含門票）｜{ on, cond, tier, from, to, cap, person, order, times }（已調整；person／order 以「組」計）
+     st.rules = null（跟隨所含門票）｜{ on, cond, tier, from, to, cap, person }（已調整；person 以「組」計）
+   D427（2026-10-16）：限購只留每人總限購數量——本檔的每次交易限購（order）與限購次數（times）整組移除（墓碑），
+   舊資料若帶 order／times 一律忽略。
    活動時間（et，由 times(ev) 或頁面自己組）：{ listFrom, listTo, listNow, saleFrom, saleTo, start, draft, shown, unlisted }
 
    D398（2026-10-12）：限購擴及所有組合包、預設取所有成員（含商品成員）的交集，改由 js/purchase-limits.js 的組合包限購區塊負責；
@@ -182,7 +184,7 @@
   /* ── 購買條件與限購 ───────────────────────────────────────────────── */
   var posInt = function (v) { var n = Math.floor(Number(v)); return isFinite(n) && n > 0 ? n : null; };
   /* 單張門票的規則形狀（D366／D367，2026-10-07 起＝「新增條件」）：
-       { conds: { buyTime{from,to}, buyTier{tier}, cap{person,order,times}, disc{price}, discTime{price,from,to},
+       { conds: { buyTime{from,to}, buyTier{tier}, cap{person}, disc{price}, discTime{price,from,to},
                   discTier{price,tier}, discBoth{price,from,to,tier} } }——每種條件最多一個、沒加就沒有那個鍵；
        bookyay 帶入的條件另帶 bky:true（鎖定）。折扣一律存固定價 price（D367），百分比只是顯示。
      ruleConds()＝舊形狀轉換器：2026-10-07 以前的 { buy{mode,…}, cap{mode,…}, disc{mode,pct,…} }（events-store 舊示範、
@@ -197,7 +199,7 @@
     var bm = buy.mode || 'none', dm = disc.mode || 'off';
     if (bm === 'time' || bm === 'both') out.conds.buyTime = { from: buy.from || '', to: buy.to || '' };
     if (bm === 'tier' || bm === 'both') out.conds.buyTier = { tier: buy.tier || 'fan' };
-    if (cap.mode === 'cap') out.conds.cap = { person: cap.person || '', order: cap.order || '', times: cap.times || '' };
+    if (cap.mode === 'cap') out.conds.cap = { person: cap.person || '' };   /* D427：舊形狀的 order／times 不再轉入 */
     var dk = { on: 'disc', time: 'discTime', tier: 'discTier', both: 'discBoth' }[dm];
     if (dk) {
       var c = { price: '', pct: disc.pct == null ? '' : String(disc.pct) };
@@ -215,18 +217,17 @@
       tier: c.buyTier ? (c.buyTier.tier || 'fan') : null,
       timed: !!bt,
       from: bt ? local(bt.from) : '', to: bt ? local(bt.to) : '',
-      person: cp ? posInt(cp.person) : null,
-      order: cp ? posInt(cp.order) : null,
-      times: cp ? posInt(cp.times) : null
+      person: cp ? posInt(cp.person) : null
+      /* 墓碑 2026-10-16（D427）：order（每次交易限購）、times（限購次數）退場 */
     };
   }
   /* 預設＝所含門票最嚴（〔推導〕）。rulesList＝每個允許票種的門票規則（原始形狀）；n＝每組張數；
      names＝與 rulesList 同序的門票名稱（選填，限購不足 1 組時就地指名是哪張門票）。
-     person／order＝{ tix, sets }：sets 可能是 0（＝不足 1 組）；short＝{ person?, order? }，列出不足 1 組的門票與其張數。 */
+     person＝{ tix, sets }：sets 可能是 0（＝不足 1 組）；short＝{ person? }，列出不足 1 組的門票與其張數。 */
   function defaults(rulesList, n, et, names) {
     n = Math.max(1, Math.floor(Number(n) || 1));
     var list = (rulesList || []).map(tierRules);
-    var d = { count: list.length, n: n, tier: null, timed: false, from: '', to: '', empty: false, person: null, order: null, times: null, differ: false, short: {} };
+    var d = { count: list.length, n: n, tier: null, timed: false, from: '', to: '', empty: false, person: null, differ: false, short: {} };
     if (!list.length) return d;
     var saleA = ms((et && (et.saleFrom || et.listFrom)) || ''), saleB = ms((et && (et.saleTo || et.start)) || '');
     var lo = -Infinity, hi = Infinity;
@@ -244,17 +245,17 @@
       d.from = fin(lo) ? loc(lo) : ''; d.to = fin(hi) ? loc(hi) : '';
       d.empty = fin(lo) && fin(hi) && lo >= hi;
     }
-    ['person', 'order', 'times'].forEach(function (k) {
+    ['person'].forEach(function (k) {   /* D427：只剩每人總限購 */
       var vals = list.map(function (r) { return r[k]; }).filter(function (v) { return v != null; });
       if (!vals.length) return;
       var tix = Math.min.apply(null, vals);
-      d[k] = k === 'times' ? { n: tix } : { tix: tix, sets: Math.floor(tix / n) };
-      if (k !== 'times' && d[k].sets < 1) {
+      d[k] = { tix: tix, sets: Math.floor(tix / n) };
+      if (d[k].sets < 1) {
         d.short[k] = list.map(function (r, i) { return { name: (names && names[i]) || '', tix: r[k] }; })
           .filter(function (x) { return x.tix != null && x.tix < n; });
       }
     });
-    var sig = function (r) { return [r.tier, r.timed, r.from, r.to, r.person, r.order, r.times].join('|'); };
+    var sig = function (r) { return [r.tier, r.timed, r.from, r.to, r.person].join('|'); };
     d.differ = list.some(function (r) { return sig(r) !== sig(list[0]); });
     return d;
   }
@@ -264,11 +265,9 @@
       cond: def.tier && def.timed ? 'both' : (def.tier ? 'tier' : 'time'),
       tier: def.tier || 'fan',
       from: def.timed ? def.from : '', to: def.timed ? def.to : '',
-      cap: (def.person || def.order || def.times) ? 'cap' : 'none',
+      cap: def.person ? 'cap' : 'none',
       /* 不足 1 組（sets＝0）不填欄位：0 不是合法的限購，填了只會讓人改不好（錯誤由 rulesErrors 說明怎麼解） */
-      person: def.person && def.person.sets >= 1 ? String(def.person.sets) : '',
-      order: def.order && def.order.sets >= 1 ? String(def.order.sets) : '',
-      times: def.times ? String(def.times.n) : ''
+      person: def.person && def.person.sets >= 1 ? String(def.person.sets) : ''
     };
   }
   var condHas = function (r, part) { return r.on && (r.cond === part || r.cond === 'both'); };
@@ -276,7 +275,7 @@
   /* 限購最低 1 組：不足時的就地說明（跟隨與另設都擋；調整只能收窄，所以只有調高門票限購或改每套張數才解得開） */
   function shortErrors(def, T) {
     var e = {};
-    ['person', 'order'].forEach(function (k) {
+    ['person'].forEach(function (k) {   /* D427：tb.err.short.order 退場 */
       var list = def && def.short && def.short[k];
       if (!list || !list.length) return;
       var items = list.map(function (x) {
@@ -305,9 +304,9 @@
       else if (outside(r.from, et) || outside(r.to, et)) e.time = T('tb.err.outside').replace('{period}', periodText(et, T));
       else if (lateEnd(r.to, et)) e.time = lateText(et, T);   /* D363：限時間的結束不能晚於活動停售（開始可以早於開賣） */
     }
-    if (!buyOnly) ['person', 'order', 'times'].forEach(function (k) {
+    if (!buyOnly) ['person'].forEach(function (k) {   /* D427：只剩每人總限購 */
       if (short[k]) { e[k] = short[k]; return; }
-      var lim = def[k], max = lim ? (k === 'times' ? lim.n : lim.sets) : null;
+      var lim = def[k], max = lim ? lim.sets : null;
       var v = r.cap === 'cap' ? String(r[k] || '').trim() : '';
       if (v && !posInt(v)) { e[k] = T('tb.err.int'); return; }
       if (max != null && (!v || posInt(v) > max)) e[k] = T('tb.err.cap.loose').replace('{n}', String(max));
@@ -325,25 +324,24 @@
   function capText(o, T) {
     var parts = [];
     if (o.person != null) parts.push(o.person < 1 ? T('tb.cap.person.short') : T('tb.cap.person.v').replace('{n}', o.person));
-    if (o.order != null) parts.push(o.order < 1 ? T('tb.cap.order.short') : T('tb.cap.order.v').replace('{n}', o.order));
-    if (o.times != null) parts.push(T('tb.cap.times.v').replace('{n}', o.times));
+    /* 墓碑 2026-10-16（D427）：tb.cap.order.*（每次）與 tb.cap.times.v（限 n 次）退場 */
     return parts.length ? parts.join(' · ') : T('ce.rule.any');
   }
   function defBuy(def) { return { tier: def.tier, timed: def.timed, from: def.from, to: def.to, empty: def.empty }; }
   function defCap(def) {
-    return { person: def.person ? def.person.sets : null, order: def.order ? def.order.sets : null, times: def.times ? def.times.n : null };
+    return { person: def.person ? def.person.sets : null };
   }
   function curBuy(r) { return { tier: condHas(r, 'tier') ? r.tier : null, timed: condHas(r, 'time'), from: r.from, to: r.to }; }
   function curCap(r) {
     var g = function (k) { return r.cap === 'cap' && posInt(r[k]) ? posInt(r[k]) : null; };
-    return { person: g('person'), order: g('order'), times: g('times') };
+    return { person: g('person') };
   }
   function kv(k, v) { return '<div class="kv"><span class="kv__k">' + esc(k) + '</span><span class="kv__v">' + esc(v) + '</span></div>'; }
   /* 句與句之間：中文直接接、英文空一格 */
   function sep() { return String(document.documentElement.lang || '').indexOf('zh') === 0 ? '' : ' '; }
   function defNote(def, n, T) {
     var s = def.count > 1 ? T('tb.rules.from.many').replace('{n}', def.count) : T('tb.rules.from.one');
-    if ((def.person || def.order) && n > 1) s += sep() + T('tb.rules.sets').replace('{n}', n);   // 每組 1 張時組＝張，不必換算
+    if (def.person && n > 1) s += sep() + T('tb.rules.sets').replace('{n}', n);   // 每組 1 張時組＝張，不必換算
     return s;
   }
   function radio(path, val, opts, T, dis) {
@@ -376,7 +374,7 @@
           kv(T('tb.rules.cap'), capText(defCap(def), T)) +
         '</div>') +
         (opts.readonly ? '<p class="field__hint">' + esc(note + sep() + T('tb.rules.later')) + '</p>' : '') +
-        err('empty') + (buyOnly ? '' : err('person') + err('order'));
+        err('empty') + (buyOnly ? '' : err('person'));
     }
     var tierOpts = TIERS_HI.map(function (v) {
       return '<option value="' + v + '"' + (r.tier === v ? ' selected' : '') + '>' + esc(T('ce.rule.tier.' + v)) + '</option>';
@@ -410,9 +408,7 @@
         radio('cap', r.cap, [{ v: 'none', k: 'ce.rule.any' }, { v: 'cap', k: 'ce.rule.cap.on' }], T) +
         (r.cap === 'cap' ? '<div class="rule-sub">' +
           capField('person', def.person ? def.person.sets : null) +
-          capField('order', def.order ? def.order.sets : null) +
-          capField('times', def.times ? def.times.n : null) +
-        '</div>' : (['person', 'order', 'times'].map(err).join(''))) +
+        '</div>' : err('person')) +   /* D427：每次交易、限購次數兩欄退場 */
       '</div>');
   }
   /* 只有購買條件那一半的摘要（D398：bookyay 自動建立的組合包，限購另在組合包的限購區塊顯示） */

@@ -43,7 +43,7 @@
   const FIELDS = {
     buyTime:  { from: "", to: "" },
     buyTier:  { tier: "fan" },
-    cap:      { person: "", order: "", times: "" },
+    cap:      { person: "" },   // D427（2026-10-16）：限購只留每人總限購數量（order／times 退場）
     disc:     { price: "" },
     discTime: { price: "", from: "", to: "" },
     discTier: { price: "", tier: "fan" },
@@ -90,8 +90,7 @@
     "d.cond.pct.minus":      { en: "{n}% off",            zh: "−{n}%" },
     "d.cond.warn.time":{ en: "Can't be higher than the regular discounted price.", zh: "不得高於一般折扣價。" },
     "d.cond.cap.person": { en: "{n} per person",        zh: "每人 {n} 張" },
-    "d.cond.cap.order":  { en: "{n} per order",         zh: "每次 {n} 張" },
-    "d.cond.cap.times":  { en: "{n} orders max",        zh: "限 {n} 次" },
+    /* 墓碑 2026-10-16（D427）：d.cond.cap.order（每次 {n} 張）、d.cond.cap.times（限 {n} 次）退場 */
     "d.cond.deal.win":   { en: "{p} until {to}",        zh: "限時 {p}（至 {to}）" },
     "d.cond.deal.after": { en: "then {p}",              zh: "之後 {p}" },
     "d.cond.deal.gen":   { en: "Discounted to {p}",     zh: "折扣價 {p}" },
@@ -100,11 +99,8 @@
     "d.rule.end":     { en: "Ends",               zh: "結束時間" },
     "d.rule.tierpick":{ en: "Minimum fan tier",   zh: "買得到的最低分級" },
     "d.rule.cap.person":{ en: "Tickets per person, in total", zh: "每人總限購數量" },
-    "d.rule.cap.person.ph":{ en: "e.g., 4",      zh: "4" },
-    "d.rule.cap.order":{ en: "Tickets per order", zh: "每次交易限購數量" },
-    "d.rule.cap.order.ph":{ en: "e.g., 2",       zh: "2" },
-    "d.rule.cap.times":{ en: "Orders per person", zh: "限購次數" },
-    "d.rule.cap.times.ph":{ en: "e.g., 1",       zh: "1" }
+    "d.rule.cap.person.ph":{ en: "e.g., 4",      zh: "4" }
+    /* 墓碑 2026-10-16（D427）：d.rule.cap.order／.order.ph（每次交易限購數量）、d.rule.cap.times／.times.ph（限購次數）退場 */
   };
   const lang = () => (document.documentElement.lang === "zh-Hant" ? "zh" : "en");
   const t = k => (STRINGS[k] ? STRINGS[k][lang()] : ((window.i18nT && window.i18nT(k)) || k));
@@ -212,14 +208,17 @@
     function bodyHTML(k, c, l) {
       if (k === "buyTime") return winFieldsHTML(k, c, l);
       if (k === "buyTier") return tierPickHTML(k, c, l);
-      /* D398（2026-10-12）：三種上限各附一句輔助說明，句子與商品（件）、組合包（組）同一套，
-         住在 js/purchase-limits.js＋i18n.js 的 pl.tix.*（這裡只借 hintHTML，條件卡外框不變） */
-      /* D417 決定二（2026-10-15）：bookyay 帶入的限購只有每人總限購與每次交易限購，「限購次數」不帶入、也不能設定——bky 的限購卡不畫那一格 */
-      if (k === "cap") return ["person", "order"].concat(c.bky ? [] : ["times"]).map(f =>
+      /* D398（2026-10-12）：上限附一句輔助說明，句子與商品（件）、組合包（組）同一套，
+         住在 js/purchase-limits.js＋i18n.js 的 pl.tix.*（這裡只借 hintHTML，條件卡外框不變）
+         D427（2026-10-16）：限購只留每人總限購數量——每次交易限購與限購次數兩格退場（bookyay 帶入的卡也只畫這一格，D427 決定三） */
+      if (k === "cap") return ["person"].map(f =>
         ruleField(t("d.rule.cap." + f),
           '<input class="input" type="number" min="1" step="1" data-rule-f="cap.' + f + '" value="' + esc(c[f]) +
             '" placeholder="' + (l ? "" : esc(t("d.rule.cap." + f + ".ph"))) + '"' + dis(l) + '>' +
-          (window.ztorPurchaseLimits ? window.ztorPurchaseLimits.hintHTML(f, "tix") : ""), l)).join("");
+          (window.ztorPurchaseLimits ? window.ztorPurchaseLimits.hintHTML(f, "tix") : "") +
+          /* D428（2026-10-16）：開了限購就要填每人總限購數量——空白就地紅字、擋存（同商品端）。
+             掛 data-cond-warn，與限時折扣價那一行走同一套同步（syncWarn）；bookyay 帶入鎖定的卡值已帶入，不畫 */
+          (l ? "" : '<p class="field__error" data-cond-warn="cap" hidden></p>'), l)).join("");
       let h = priceFieldHTML(k, c, l);
       if (k === "discTime" || k === "discBoth") h += winFieldsHTML(k, c, l);
       if (k === "discTier" || k === "discBoth") h += tierPickHTML(k, c, l);
@@ -285,11 +284,30 @@
     const a = num(c.discTime, isEvent ? "pct" : "price"), b = num(c.disc, isEvent ? "pct" : "price");
     return a != null && b != null && (isEvent ? a < b : a > b);
   }
+  /* 限購沒填（D428，2026-10-16 定案：開了限購，每人總限購數量必填）：回傳紅字的 i18n key，沒問題回空字串。
+     空白＝pl.err.required「請填上限。」；填了但不是 1 以上整數＝pl.err.int。bookyay 帶入且鎖定的不算（值已帶入、改不了）。 */
+  function capErrKey(conds) {
+    const c = conds && conds.cap;
+    if (!c || c.bky) return "";
+    const v = String(c.person == null ? "" : c.person).trim();
+    if (!v) return "pl.err.required";
+    return /^\d+$/.test(v) && Number(v) >= 1 ? "" : "pl.err.int";
+  }
+  const capBad = conds => !!capErrKey(conds);
+  /* 條件卡的就地紅字：限時折扣價高於一般折扣價（D390 決定二十五）＋限購沒填（D428）；回傳錯誤數 */
   function syncWarn(host, conds, isEvent) {
     const bad = discTimeBad(conds, isEvent);
     const w = host && host.querySelector('[data-cond-warn="discTime"]');
     if (w) w.hidden = !bad;
-    return bad ? 1 : 0;
+    const ck = capErrKey(conds);
+    const cw = host && host.querySelector('[data-cond-warn="cap"]');
+    if (cw) {
+      cw.hidden = !ck;
+      if (ck) { cw.setAttribute("data-i18n", ck); cw.textContent = T(ck, ck); } else cw.removeAttribute("data-i18n");
+      const inp = host.querySelector('[data-rule-f="cap.person"]');
+      if (inp) inp.setAttribute("aria-invalid", ck ? "true" : "false");
+    }
+    return (bad ? 1 : 0) + (ck ? 1 : 0);
   }
 
   /* ── 期間檢查（D342／D363；D389 起活動詳情同用）──────────────────────────────
@@ -369,6 +387,7 @@
       if (!f) return;
       const p = f.dataset.ruleF.split(".");
       if (st.rules.conds[p[0]]) st.rules.conds[p[0]][p[1]] = f.value;
+      if (p[0] === "cap") syncWarn(host, st.rules.conds, isEv);   // D428：限購一填就收紅字
       if (p[1] === "price" || p[1] === "pct") {
         const out = host.querySelector('[data-cond-pct="' + p[0] + '"]');
         const c = st.rules.conds[p[0]];
@@ -403,7 +422,7 @@
     TYPES: TYPES, FIELDS: FIELDS, FIELDS_EV: FIELDS_EV, FAN_TIERS: FAN_TIERS, STRINGS: STRINGS,
     t: t, isDiscK: isDiscK, fields: fields, norm: norm,
     condPrice: condPrice, pctOf: pctOf, pctText: pctText, evPriceText: evPriceText, copyForTicket: copyForTicket,
-    html: html, syncWarn: syncWarn, discTimeBad: discTimeBad, mount: mount,
+    html: html, syncWarn: syncWarn, discTimeBad: discTimeBad, capErrKey: capErrKey, capBad: capBad, mount: mount,
     periodWins: periodWins, periodErrs: periodErrs, syncPeriod: syncPeriod
   };
   /* 「新增條件」選單打開時量下方空間（2026-10-12 使用者回報被遮住）：觸發鈕常坐在彈窗內文（overflow:auto）的底部，

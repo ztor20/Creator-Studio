@@ -947,7 +947,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Progress timeline | 🟠 organism | ✓ App | 交付時間軸（2026-08-17，spec 5.1.2.2 §2.2.10 v3.0／D193、D194）：一條由真實日期驅動的垂直時間流，**未來在上、今天在中、過去在下**。版面三欄（日期欄／軸線與軸點／內容欄），排序只有一個依據就是日期。軸上有四種不是里程碑的列：釘頂的 `--system`（完成作品，不帶日期）、`--today`（今天，實心品牌色軸點＋情境句＋內嵌發文框 `.post-composer`（2026-08-18 promote 至 [post-composer.css](./ds-components/post-composer.css)））、軸底的 `--start`（項目建立，軸線在此停）、`--day`（按天收合的更新列）。狀態色只上在軸點與軸線，內容區不染色。內容由 `js/project-progress-store.js`（里程碑與更新，日期是真實 `Date`）＋ `js/work-review-store.js`（送審件）產生，完成作品那一顆不另存狀態。詳見 §4.51b | [progress-timeline.css](./ds-components/progress-timeline.css) |
 | Section nav | 🟡 molecule | ✓ App | 分頁內的側欄分節導覽（原 `.settings-nav`，2026-08-17 提升為中性元件）。**Q75 全站統一分隔線式（2026-08-25）**：取代原本比照 filter-tabs 的藥丸／橘 tint 底畫法——每列 1px `--border-soft` 下緣線、末列去線、無底色、無藥丸、無 icon，已選只換 `--selected-ink`＋medium 字重。**2026-08-26 擴大為所有詳情頁的頁級導覽**：product／project／auction／bundle／creator／fan／ip 七個詳情頁由橫排 `.tabs` 改為本元件，加上 series-detail 與 settings（舊別名 `.settings-nav__item` 選擇器隨元件本體生效，見下方 Settings nav 行）共九頁同款；橫排 `.tabs` 留給清單頁工具列與節內篩選。同日新增 `.section-nav__count`（素面 11px 數字、`margin-left:auto` 靠右貼列尾、tabular-nums、已選列跟著換 `--selected-ink`，與 `.tabs--count-plain` 同一種素面數字語言），承接 creator-detail／ip-detail 分頁原本的計數 | [section-nav.css](./ds-components/section-nav.css) |
 | Section outline | 🟡 molecule | ✓ App | 長表單的本頁大綱（2026-10-12，lab-section-nav 選定 C 款）：直排細字清單，目前節亮起＋左側細線（scroll-spy），點擊平滑捲到該節；每列前有狀態圓（必填未填＝橘色空心圈／已完成＝實心打勾／選填＝灰點），頂部「必填 N／M」＋進度條，sticky。`--gutter` 變體放進頁面左側空白欄、視窗 <1400px 隱藏。與 `.section-nav`（分頁內側欄、無狀態）、`.section-tabs`（頂端橫排、無狀態）的分工：只有本支帶「必填完成度」。詳見 §4.233 | [section-outline.css](./ds-components/section-outline.css) |
-| Limit set | 🟡 molecule | ✓ App | 限購三種上限（2026-10-12 D398 promote）：每人總限購數量／每次交易限購數量／限購次數，每欄一句輔助說明、只換單位（件／組／張）；組合包變體 `.limit-set--bundle` 為「限購」標題＋「跟隨成員預設」開關（開＝跟隨、關＝覆寫）＋一句額度說明＋三列細框（左名稱與說明、右輸入框與取自誰）。markup 一律由 `js/purchase-limits.js` 產生。詳見 §4.234 | [limit-set.css](./ds-components/limit-set.css) |
+| Limit set | 🟡 molecule | ✓ App | 限購（2026-10-12 D398 promote；2026-10-16 D427 起只剩「每人總限購數量」一欄，每次交易限購數量／限購次數退場）：一欄＋一句輔助說明、只換單位（件／組／張）；組合包變體 `.limit-set--bundle` 為「限購」標題＋「跟隨成員預設」開關（開＝跟隨、關＝覆寫）＋一句額度說明＋細框裡一列（左名稱與說明、右輸入框與取自誰）。markup 一律由 `js/purchase-limits.js` 產生。詳見 §4.234 | [limit-set.css](./ds-components/limit-set.css) |
 | Price ladder | 🟡 molecule | ✓ App | 價格階梯（2026-10-12 D402）：原價 → 組合折扣 → 限時折扣 → 可與優惠碼疊加 → 粉絲實付，排成一條由上往下的列；開關列右邊放開關、打開後展開面板列；「看怎麼算」展開逐項明細；價格不是單一值時主價格下加區間小字。詳見 §4.235 | [price-ladder.css](./ds-components/price-ladder.css) |
 | Member table | 🟡 molecule | ✓ App | 組合物表（2026-10-12 D402）：商品與活動票券成員同一張表，五欄（展開｜名稱｜原價・剩餘｜每組數量｜移除），票券列可展開、展開入口兩處同步。詳見 §4.236 | [member-table.css](./ds-components/member-table.css) |
 | Form ask | 🟡 molecule | ✓ App | 問句式設定塊（問句→說明→二選一→選了才出現的內容）＋標題列讀數 `.form-tally`（分類標 `.form-cat` 已撤除）（2026-10-12 D402）。詳見 §4.237 | [form-ask.css](./ds-components/form-ask.css) |
@@ -7206,7 +7206,7 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
   - `details.dropdown.dropdown--left.cond-list__add` — 新增選單（Dropdown menu），全部加完或整組鎖定時不出現
 
 **States** — 鎖定（`.is-source-locked`：欄位停用、無移除鈕；整組鎖定時連新增選單也不出現）；版本閘（選單項目與卡可掛 `data-feat`，由 devtools 收起）。
-**整組鎖定但開放少數種類**（2026-10-15，D417 決定五）：`html()` 的 `ctx.addOnly`（種類清單）＋`ctx.addFeat`（版本標記）——bookyay 帶入的卡照舊鎖定，新增選單只列 `addOnly` 的種類、整顆掛 `data-feat`（bookyay 門票最終版可自加折扣與限時折扣，S96），創作者自加的卡可改可移除、同樣掛 `data-feat`；`ctx.noEmpty` 不寫空狀態句（呼叫端另有空狀態）。`mount()` 帶 `opts.locked` 走同一套。沒有新樣式，外觀同既有新增選單與條件卡。bookyay 帶入的「限購」卡只畫每人總限購與每次交易限購兩格（限購次數不帶入，D417 決定二）。
+**整組鎖定但開放少數種類**（2026-10-15，D417 決定五）：`html()` 的 `ctx.addOnly`（種類清單）＋`ctx.addFeat`（版本標記）——bookyay 帶入的卡照舊鎖定，新增選單只列 `addOnly` 的種類、整顆掛 `data-feat`（bookyay 門票最終版可自加折扣與限時折扣，S96），創作者自加的卡可改可移除、同樣掛 `data-feat`；`ctx.noEmpty` 不寫空狀態句（呼叫端另有空狀態）。`mount()` 帶 `opts.locked` 走同一套。沒有新樣式，外觀同既有新增選單與條件卡。bookyay 帶入的「限購」卡只畫每人總限購一格（限購次數不帶入，D417 決定二；每次交易也不帶入，D427 決定三）。
 
 **與 Social links 的分工** — Social links 是「同一種東西加很多個」（每列欄位相同）；Condition list 是「好幾種不同的東西各加一次」，每張卡的欄位不同、有鎖定態。
 
@@ -7214,7 +7214,7 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **Consumers** — `create-event.html`（`#ce-rules` 活動層預設、單張門票彈窗 `[data-rules-for]`）、`event-detail.html`（D388：票務分頁「預設購票規則」卡的編輯態 `#ed-evrules-editor`、單張門票彈窗購買條件區 `#ed-tm-rules-editor`，僅自建活動）。
 
-**CSS** — [`cond-list.css`](./ds-components/cond-list.css) ｜ **JS** — `js/purchase-conds.js`（2026-10-09 自 create-event 頁內抽出；`window.ztorPurchaseConds`：`html(rules, scope, locked, ctx)` 畫整份清單、`mount(host, opts)` 畫進容器並自己接新增／移除／輸入（活動詳情用）、`copyForTicket()` 活動層一組複製成門票自己的一組、`condPrice`／`pctText`／`evPriceText` 價格讀數、`STRINGS` 條件字樣（create-event 併回自己的字典）、`periodErrs(rules, et, T)`／`syncPeriod()` 限時條件的期間檢查（D389：超出活動上架區間、限時購買結束晚於活動停售時寫進卡上 `[data-rule-tl-err]`；create-event 與 event-detail 共用），`mount()` 傳 `times` 時回傳 `check()` 供儲存擋下。create-event 的 `condsHTML()` 改為呼叫 `html()`，事件與 copy-on-write 仍在頁內）
+**CSS** — [`cond-list.css`](./ds-components/cond-list.css) ｜ **JS** — `js/purchase-conds.js`（2026-10-09 自 create-event 頁內抽出；`window.ztorPurchaseConds`：`html(rules, scope, locked, ctx)` 畫整份清單、`mount(host, opts)` 畫進容器並自己接新增／移除／輸入（活動詳情用）、`copyForTicket()` 活動層一組複製成門票自己的一組、`condPrice`／`pctText`／`evPriceText` 價格讀數、`STRINGS` 條件字樣（create-event 併回自己的字典）、`periodErrs(rules, et, T)`／`syncPeriod()` 限時條件的期間檢查（D389：超出活動上架區間、限時購買結束晚於活動停售時寫進卡上 `[data-rule-tl-err]`；create-event 與 event-detail 共用），`mount()` 傳 `times` 時回傳 `check()` 供儲存擋下。D428（2026-10-16）：`capErrKey(conds)`／`capBad(conds)` 判斷限購開了卻沒填每人總限購數量（bookyay 帶入 `bky` 不算），紅字 `.field__error[data-cond-warn="cap"]` 畫在該欄下、與限時折扣價那一行同走 `syncWarn()`（錯誤時輸入框 `aria-invalid`），所以 `check()` 也一併算進錯誤數。create-event 的 `condsHTML()` 改為呼叫 `html()`，事件與 copy-on-write 仍在頁內）
 
 ### 4.228 Venue map（活動地點地圖）
 
@@ -7387,26 +7387,26 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 ---
 
-### 4.234 Limit set（限購三種上限）
+### 4.234 Limit set（限購）
 
-**Purpose** — 商品、組合包與活動門票共用同一套三種上限：每人總限購數量、每次交易限購數量、限購次數（計下單次數）。每欄一句輔助說明，句型一致、只換單位——商品「件」、組合包「組」、活動門票「張」（D398，2026-10-12；主規格 §7.2、§7.14「組合包的限購」、5.1.6.1 F22）。組合包的限購預設跟隨成員（各成員上限 ÷ 每組用量取整後的最小值，限購次數不換算），可覆寫、可改回跟隨成員。2026-10-12 建立組合包改版（使用者裁示）：組合包變體由「徽章＋覆寫按鈕」改成「限購」標題＋「跟隨成員預設」開關，三欄改成一個細框裡的三列，與 [Price ladder](#4235-price-ladder價格階梯) 同一種列。
+**Purpose** — 商品、組合包與活動門票共用同一種上限：每人總限購數量。一句輔助說明，句型一致、只換單位——商品「件」、組合包「組」、活動門票「張」（D398，2026-10-12；主規格 §7.2、§7.14「組合包的限購」、5.1.6.1 F22）。**D427（2026-10-16）**：原本的三種上限只留每人總限購，「每次交易限購數量」「限購次數」兩欄整組退場（含 `KEYS_BKY` 與 `keys` 選項；舊資料帶這兩項一律忽略）。組合包的限購預設跟隨成員（各成員上限 ÷ 每組用量取整後的最小值），可覆寫、可改回跟隨成員。2026-10-12 建立組合包改版（使用者裁示）：組合包變體由「徽章＋覆寫按鈕」改成「限購」標題＋「跟隨成員預設」開關，欄位排成一個細框裡的列，與 [Price ladder](#4235-price-ladder價格階梯) 同一種列。
 
-**`_layer`** · molecule ｜ **source tier** · App ｜ **surface 層** · 白卡與灰底皆可；跟隨時三欄是 disabled 輸入框（Q128）
+**`_layer`** · molecule ｜ **source tier** · App ｜ **surface 層** · 白卡與灰底皆可；跟隨時輸入框是 disabled（Q128）
 
 **Anatomy**
-- `.limit-set__fields` — 三欄的容器（grid、`gap: --sp-16`，Q103）；商品直接放在限購開關的 `.control-group__body` 裡
+- `.limit-set__fields` — 欄位容器（grid、`gap: --sp-16`，Q103；D427 起只有一欄）；商品直接放在限購開關的 `.control-group__body` 裡
 - `.limit-set__field` — 一欄＝`.field`：`.field__label`（`pl.<unit>.<欄位>`）＋ `.input.limit-set__input`（`type=number`、`min=1`、寬度上限 `--w-220`、空＝placeholder「不限」）＋ `.field__hint`（`pl.<unit>.<欄位>.hint`）＋（組合包）`.limit-set__src` ＋ `.field__error[data-pl-err]`
-- `.limit-set.limit-set--bundle[data-state="follow"|"override"|"locked"]` — 組合包變體（整個區塊一個細框 `--border-soft`／`--radius-md`，標題列、說明、三列之間細線，同 price-ladder；2026-10-12 使用者裁示）
+- `.limit-set.limit-set--bundle[data-state="follow"|"override"|"locked"]` — 組合包變體（整個區塊一個細框 `--border-soft`／`--radius-md`，標題列、說明、欄位列之間細線，同 price-ladder；2026-10-12 使用者裁示）
   - `.limit-set__head` — 不換行：左邊 `.limit-set__title`「限購」標題（選配，`blockHTML` 的 `title` 選項）；右邊 `.limit-set__follow`（`margin-left:auto`）＝文字「跟隨成員預設」＋ `button.switch.limit-set__switch`（開＝跟隨成員、關＝覆寫；`data-pl-act` 開時按下＝override、關時按下＝follow）。bookyay 鎖定（`locked`）時不畫開關，改放 `.badge.badge--neutral.limit-set__state`「已鎖定」
   - `.limit-set__sub` — 標題列下方一句額度說明（`--fs-13`、`--muted-foreground`、`--lh-relaxed`）；跟隨＝與成員共用額度、覆寫＝獨立計算，含門票時門票部分永遠與單張門票共用
-  - `.limit-set__fields` — 三列外框：1px `--border-soft` 細框、`--radius-md`、`gap:0`；每列 `.limit-set__field` 為兩欄 grid（`1fr｜160px`），左＝`.field__label`（`--fs-14`）＋ `.field__hint`、右＝輸入框＋ `.limit-set__src`（靠右對齊），列與列之間細線；跟隨時輸入框 `disabled`（Q128）
+  - `.limit-set__fields` — 列外框：1px `--border-soft` 細框、`--radius-md`、`gap:0`；每列 `.limit-set__field` 為兩欄 grid（`1fr｜160px`），左＝`.field__label`（`--fs-14`）＋ `.field__hint`、右＝輸入框＋ `.limit-set__src`（靠右對齊），列與列之間細線；跟隨時輸入框 `disabled`（Q128）
   - `.limit-set__src` — 跟隨時寫「取自 {成員}：{上限} ÷ 每組 {n}」（同值多個成員都列）；覆寫時寫「跟隨成員時：{值}」與門票上限
 
-**Behavior** — `js/purchase-limits.js`（`window.ztorPurchaseLimits`）：`fieldsHTML()` 畫三欄；`derive(members)` 算交集與門票天花板；`blockHTML(lim, der, T, { locked, lockNote, disabled, title })` 畫組合包區塊（`title:true` 畫「限購」標題）；`onClick()`（覆寫從跟隨值起手／改回跟隨）、`onInput()`、`errors()`／`syncErrors()`（跟隨時任一成員不足 1 組、覆寫超過門票換算上限、非正整數 → 擋存）；`hintHTML(field, unit)` 給 `js/purchase-conds.js` 的「限購」條件卡借用。
+**Behavior** — `js/purchase-limits.js`（`window.ztorPurchaseLimits`）：`fieldsHTML()` 畫欄位（D427 起只有每人總限購）；`derive(members)` 算交集與門票天花板；`blockHTML(lim, der, T, { locked, lockNote, disabled, title })` 畫組合包區塊（`title:true` 畫「限購」標題）；`onClick()`（覆寫從跟隨值起手／改回跟隨）、`onInput()`、`errors()`／`syncErrors()`（跟隨時任一成員不足 1 組、覆寫超過門票換算上限、非正整數 → 擋存）；`hintHTML(field, unit)` 給 `js/purchase-conds.js` 的「限購」條件卡借用。
 
 **Token usage** — `--sp-2`／`--sp-8`／`--sp-10`／`--sp-12`／`--sp-14`／`--sp-16`、`--fs-13`／`--fs-14`、`--lh-relaxed`、`--foreground`／`--foreground-muted`／`--muted-foreground`、`--border-soft`、`--radius-md`、`--w-220`；其餘外觀來自 `.field`、`.input`、`.badge`、`.switch`。
 
-**Consumers** — `create-product.html`、`product-detail.html`（商品三欄）；`create-bundle.html`、`bundle-detail.html`（組合包區塊，含標題與開關）；`create-event.html`、`event-detail.html`（經 `purchase-conds.js` 只用輔助說明）。
+**Consumers** — `create-product.html`、`product-detail.html`（商品限購欄）；`create-bundle.html`、`bundle-detail.html`（組合包區塊，含標題與開關）；`create-event.html`、`event-detail.html`（經 `purchase-conds.js` 只用輔助說明）。
 
 **CSS** — [`limit-set.css`](./ds-components/limit-set.css)
 
