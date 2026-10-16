@@ -2134,16 +2134,8 @@
       const row = btn.closest('.product-list__row');
       if (!row) return;
       const turnOn = btn.getAttribute('aria-checked') !== 'true';
-      /* 可賣性防呆（2026-09-29 D331 決定三，5.1.5 F4）：活動組合包列切成隱藏、它又是活動最後一組仍在販售的組合包、活動沒有顯示中的門票
-         → 擋下，純告知彈窗（清單列上沒有位置放紅字；同重新上架被擋的「知道了」彈窗）。 */
-      if (!turnOn && eventBundleBlocks(row)) {
-        askConfirm({
-          title: T('bd.stop.title.hide', 'Can’t hide “{n}”').replace('{n}', rowName(row)),
-          body: T('bd.shown.stop.last', "It's the event's last bundle on sale and the event has no visible ticket — it can't be hidden. Keep at least 1 visible ticket or 1 bundle."),
-          okKey: 'e-shop.relist.blocked-ok', okFallback: 'Got it', noCancel: true, onConfirm: null
-        });
-        return;
-      }
+      /* 墓碑（2026-10-15，D424 決定 9）：活動組合包列切成隱藏的可賣性防呆（D331 決定三，原 eventBundleBlocks()）退場——
+         隱藏不受可賣性防呆限制；停售、下架、刪除的防呆不變。 */
       askShopState(row, turnOn);
     });
     document.addEventListener('keydown', e => {
@@ -2512,20 +2504,7 @@
          · 點列／編輯 → bundle-detail.html?id=<組合包 id>&ev=<活動 id>（同 id 多場時開到這一場的那一組）
        列標 data-event-bundle="<活動 id>"，products-store 的 patchBundleRows 會跳過它；rowModel 看到它就問 eventBundleModel。
        顯示開關只寫這一列（row.dataset.shown）＝組合包自己收窄，不回寫活動（D294 決定三）。 */
-    /* 活動組合包列的可賣性防呆（D331）：本列仍在販售（上架、顯示）且扣掉它之後活動沒有顯示中的門票、也沒有其他仍在販售的組合包。
-       草稿活動的組合包不進本清單（D294）；其他組合包的「顯示」讀它們在本清單的列（列上的顯示開關＝組合包自己收窄），
-       其餘狀態讀 events-store（bundleSelling／hasOtherSellable，與活動詳情、組合商品細節頁同一支）。 */
-    function eventBundleBlocks(row) {
-      const EV = window.ztorEvents; if (!EV || !EV.get || !row.dataset.eventBundle) return false;
-      const ev = EV.get(row.dataset.eventBundle); if (!ev || ev.status === 'draft') return false;
-      const m = eventBundleModel(row); if (!m) return false;
-      if (m.entity.listed === false || m.entity.archived || m.entity.shown === false) return false;
-      const bundles = (ev.bundles || []).map(b => {
-        const r = document.querySelector('.product-list__row[data-event-bundle="' + ev.id + '"][data-bundle-id="' + b.id + '"]');
-        return (r && r.dataset.shown === 'false') ? Object.assign({}, b, { shown: false }) : b;
-      });
-      return !EV.hasOtherSellable(Object.assign({}, ev, { bundles: bundles }), { exceptBundleId: row.dataset.bundleId });
-    }
+    /* 墓碑（2026-10-15，D424 決定 9）：eventBundleBlocks()（活動組合包列隱藏的可賣性防呆，D331）隨隱藏防呆一起退場 */
     function eventBundleModel(row) {
       const EV = window.ztorEvents; if (!EV || !EV.get) return null;
       const ev = EV.get(row.dataset.eventBundle); if (!ev) return null;

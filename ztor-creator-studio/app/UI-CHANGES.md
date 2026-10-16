@@ -13,6 +13,56 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-16（二百四十三）· D425 原型落地：可賣性防呆的門票改數「還在的門票」
+
+**標籤**：release2.4
+
+**A spec-derived**
+
+- **判斷口徑（`js/events-store.js` `hasOtherSellable()`）**：門票那一半由「顯示中的門票」（`!t.hidden`）改成「還在的門票」——在活動門票清單裡（未刪除）就算，顯示或隱藏都算。組合商品細節頁、活動詳情共用這一支，所以一處改、各處同步：
+  - `bundle-detail.html`：活動門票全部隱藏後，組合包的停售、下架（開關與頁首鈕）、封存、刪除，以及定時下架／定時停售的排程檢查都不再被擋。
+  - `event-detail.html`：移除場次的防呆同口徑；刪除門票的 `deletesLastSellable()` 拿掉「刪隱藏的票不擋」——刪掉最後一張還在的門票（隱藏的也算）、又沒有仍在販售的組合包時照舊擋；還沒加進活動的新門票草稿刪除不擋。
+  - `e-shop.html` 目前沒有停售／下架／刪除的可賣性防呆入口（隱藏的已於二百四十二撤除），不必改。
+- **就地提示文字（`js/i18n.js` en／zh，頁面英文備援同步）**：`bd.sale.stop.last`、`bd.list.stop.last`、`bd.archive.stop.last`、`bd.delete.stop.last`、`bd.sched.last`、`ed.tm.del.last`、`ed.sess.rm.last` 改新口徑，例：「這是活動最後一組販售中的組合包，活動又沒有門票，不能停售。至少要有 1 張門票或 1 組仍在販售的組合包。」key 名不變。
+- **不變**：`create-event.html` 發布前檢核（5.1.6.1 F11 第五項，`hasSellable()`／`ce.qc.sellable`）照舊看顯示中的門票——全部門票隱藏又沒有仍在販售的組合包就不能發布。
+
+**C 撤除**
+
+- 發布前檢核 `ce.qc.sellable`（中英文與 create-event.html 後備字串）補上「仍在販售」，對齊 5.1.6.1 F11 第五項；判斷本身不變。
+- `js/i18n.js` 刪除 `event-detail.golive.need.sellable`（舊口徑「至少 1 張顯示中的門票或 1 組組合包」，D390 起已無引用），留墓碑註解。
+
+**依據**：D425（2026-10-16）決定一。假設見 ASSUMPTIONS UIA-265 第 13 條。
+
+## 2026-10-15（二百四十二）· D424 原型落地：已過期訂單、匯出中提示與匯出紀錄、隱藏不受可賣性防呆、售票紀錄表併欄、小問題清理
+
+**標籤**：release2.4
+
+**A spec-derived**
+
+- **已過期訂單（D424 決定 1，O40 🔵）**：
+  - `js/orders-store.js`：付款・結算軸新增第五個值 `pay:'expired'`，徽章 `badge--neutral`「已過期」（已成定局的紀錄、不是出事，所以不用紅色）；示範 3 筆（ZT-10495 單件出貨、ZT-10494 出貨＋數位、ZT-10493 純數位），付款資訊空白、平台費／支付費／淨額 0、沒有領取單位。`voidState()`／`wholeVoidState()` 對已過期回 `'expired'`；`kpi()` 的待處理只數 `unpaid`，已過期不算；匯出 CSV 照常含已過期列，付款狀態與履約狀態兩欄都寫「已過期」（比照已取消）。
+  - `orders.html`：狀態篩選加「已過期」分頁（帶筆數），分頁與已過期列掛 `data-feat="O40"`；版本閘收起時這幾列不計入任何分頁數量、頁尾計數與匯出（`ztor:devstate-changed` 時重算）。
+  - `order-detail.html`：狀態徽章「已過期」、履約軸與品項層一律「—」；付款區三格「—」＋一句「付款期限內未付款，訂單已過期」；金額拆解只留商品金額（＋運費）與淨額 $0.00，底下一句「不計入收入，保留的庫存已釋回」、收入管理入口收起；主操作、品項撤銷、整單撤銷、補寄信全部停用，title 說明原因（事實先於身分，同既有停用寫法）。
+  - 活動交易明細不列已過期訂單：資料來源本來就只有已付款與已取消兩態，已在 `event-detail.html` 註記。
+- **匯出中提示（D424 決定 3，O41 🔵）**：Toast 元件新增右下角位置變體 `.ztor-toasts--corner` 與進行中態 `.ztor-toast--busy`／`.ztor-toast__spinner`（`ds-components/toast.css`、`js/toast.js` 的 `show(..., { place, tone:'busy', hold:0 })` 回傳 `update()`）。`js/csv-export.js` 新增 `ztorCsv.run()`：訂單管理與活動交易明細按「匯出」確認後，右下角「匯出中…（N 筆訂單）」約 1 秒原地轉「匯出完成 · N 筆訂單」並下載。`event-detail.html` 補載 `toast.css`（本頁早就用 toast.js，樣式之前漏載）。
+- **匯出紀錄（D424 決定 4，O42 🔵）**：`js/csv-export.js` `openLog()`——匯出鈕旁次要按鈕「匯出紀錄」（`.btn--ghost`＋history icon），開 canonical 對話框殼列出：檔名、時間 · 誰（創作者本人＝名稱 · 創作者；Admin 代管＝Admin · 代管 名稱）、篩選條件 · 筆數，新的在上。創作者與 Admin 都看得到；原型存 localStorage（`ztor.export.log`），重新整理保留；訂單管理一份、每場活動的交易明細各一份。
+- **隱藏不受可賣性防呆（D424 決定 9）**：拿掉「最後一張可賣不能隱藏」的阻擋——`event-detail.html` 門票列表的隱藏鈕、門票彈窗的隱藏鈕（含新門票草稿的套用檢查）、票務商品組合包的隱藏鈕；`bundle-detail.html` 顯示開關與頁首「隱藏」；`e-shop.html` 活動組合包列的顯示開關。刪除、停售、下架、封存的可賣性防呆不變。`create-event.html` 沒有同樣的阻擋（只有發布前檢核），不動。
+- **售票紀錄表（D424 決定 16）**：`event-detail.html` 交易明細表「訂單編號」與「付款時間」合成一欄（編號一行、付款時間 `.ztor-table__sub` 小字一行，兩行不折），表頭同樣兩行；匯出欄位不變；買家格掛 `.ztor-table__nowrap`。共用 `.ztor-table--fluid`（`ds-components/table.css`，目前只有這張表在用）欄距收窄：只有列的最左、最右維持 `--sp-16`（Q112），欄與欄之間每邊 `--sp-6`——實測 1280 寬表格 752＝卡內 752、不需捲動；1440 買家姓名全部單行。
+
+**C 撤除**
+
+- `event-detail.html`：`#ed-tm-show-err` 紅字、`hidesLastSellable()`、`syncTmShowErr()`、`hidesLastSellableBundle()` 與兩個「不能隱藏」告知彈窗；`bundle-detail.html`：`#bd-shown-stop-err`、`BLOCK_KEY.hide`；`e-shop.html`：`eventBundleBlocks()`。皆留墓碑註解。
+- `js/i18n.js` 刪除確認全站無引用的字串：`ed.tm.show.last`、`ed.tix.vis.last.title`、`ed.tix.vis.last.ok`、`ed.bd.vis.last.title`、`bd.shown.stop.last`、`bd.stop.title.hide`、`ed.evrules.none`（event-detail 的 bookyay 分支早在 D417 就提前 return，`noneKey` 改成固定 `ed.evrules.none.own`）。
+- `rulebook/shell.css`：刪除舊的直向流程 `.dg-v` 整段（全站 `rulebook/*.html`、`shell.js` 0 引用），全站規則手冊 35 頁 `?v=` 升到 `20261015b`（只改版本字串）。
+
+**D infra**
+
+- `scripts/check_events_store.js`：補 `location`／`document`／`sessionStorage`／`addEventListener`／`CustomEvent` 等最小替身，修好「events-store.js 讀 location 就 ReferenceError」跑不起來的問題（D424 決定 17）。重跑結果見本輪回報（腳本可執行；仍回報 34 筆資料層發現，未在本輪處理）。
+- `feature-scope-map.md` 補登 O40–O42 🔵、本期統計更新；`js/devtools.js` `FEAT_TIER` 後備補 O40–O42。
+- `design-system.md` §4.107 Toast、§5.1.12 Export confirm／`design-system.html` 兩節同步（右下角進行中 demo、匯出紀錄視窗 demo）；`STYLE-DECISIONS.md` Q106 記下 toast spinner 是第一種的新消費者（不新增第四種）。
+
+**依據**：D424（2026-10-15）決定 1、3、4、7、9、16、17、18。假設見 ASSUMPTIONS UIA-265。
+
 ## 2026-10-15（二百四十一）· 驗收缺失修正：英文進度條與頂列疊字、門票彈窗票價被裁字、售票紀錄表 1440 一屏看完、功能表統計與後備表、刪除提示英文備援（B feedback）
 
 **標籤**：release2.4

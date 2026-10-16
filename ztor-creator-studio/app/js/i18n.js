@@ -5379,7 +5379,7 @@
     'ce.qc.doors':          { en: 'Early entry time set',             zh: '已填提前入場時間' },   // D396：有場次開了提前入場時間才列
     'ce.qc.ticket':         { en: 'At least 1 ticket tier',           zh: '至少 1 種票種' },
     /* D329（5.1.6.1 F11 第五項）：隱藏的票不算，組合包算。舊 key 留給 create-event-legacy。 */
-    'ce.qc.sellable':       { en: 'At least 1 visible ticket or 1 bundle', zh: '至少 1 張顯示中的門票或 1 組組合包' },
+    'ce.qc.sellable':       { en: 'At least 1 visible ticket or 1 bundle on sale', zh: '至少 1 張顯示中的門票或 1 組仍在販售的組合包' },
     'ce.qc.banner':         { en: '5 items needed before publishing', zh: '還差 5 項才能發布' },
     /* Watch Party 分支（D149 §4.7） */
     'ce.subtitle.wp':       { en: 'Watch party',                      zh: '共看派對' },
@@ -6074,18 +6074,17 @@
     'bd.event.unlisted-lock': { en: 'The event “{name}” has been unlisted — this bundle can’t be listed until the event is listed again.', zh: '活動「{name}」已下架，活動重新上架前這個組合包無法上架。' },
     'bd.event.hidden-lock':   { en: 'The event “{name}” is hidden, so this bundle is hidden too. Its own show setting is kept and applies again once the event is shown.', zh: '活動「{name}」隱藏中，組合包跟著隱藏。組合包自己的顯示設定會保留，活動改回顯示後照它。' },
     'bd.setov.evhidden':      { en: 'Hidden with the event', zh: '跟著活動隱藏' },
-    /* D330（5.1.6.1 F22「可賣性防呆」）：停售活動最後一組販售中的組合包、活動又沒有顯示中的門票時擋下。 */
-    'bd.sale.stop.last':    { en: "It's the event's last bundle on sale and the event has no visible ticket — sales can't be stopped. Keep at least 1 visible ticket or 1 bundle.", zh: '這是活動最後一組販售中的組合包，活動又沒有顯示中的門票，不能停售。至少要有 1 張顯示中的門票或 1 組組合包。' },
+    /* D330（5.1.6.1 F22「可賣性防呆」）：停售活動最後一組販售中的組合包、活動又沒有門票時擋下。
+       D425（2026-10-16）：門票那一半改數「還在的門票」（顯示或隱藏都算），以下 bd.*.stop.last、bd.sched.last、ed.tm.del.last、ed.sess.rm.last 的句子同步改口徑。 */
+    'bd.sale.stop.last':    { en: "It's the event's last bundle on sale and the event has no tickets — sales can't be stopped. Keep at least 1 ticket or 1 bundle on sale.", zh: '這是活動最後一組販售中的組合包，活動又沒有門票，不能停售。至少要有 1 張門票或 1 組仍在販售的組合包。' },
     /* D340：定時下架／定時停售的排程檢查——到期後會讓活動沒有可賣的東西，設定當下就擋 */
-    'bd.sched.last':        { en: 'When this time comes the event would have nothing on sale — no visible ticket and no other bundle on sale. Keep at least 1 visible ticket or 1 bundle.', zh: '到了這個時間，活動就沒有顯示中的門票、也沒有其他仍在販售的組合包，這個排程不能設。至少要有 1 張顯示中的門票或 1 組組合包。' },
-    /* D331（5.1.6.1 F22、5.1.5.9 §2.2）：下架、隱藏、封存（與刪除）活動最後一組販售中的組合包、活動又沒有顯示中的門票時擋下。
+    'bd.sched.last':        { en: 'When this time comes the event would have nothing on sale — no tickets and no other bundle on sale. Keep at least 1 ticket or 1 bundle on sale.', zh: '到了這個時間，活動就沒有門票、也沒有其他仍在販售的組合包，這個排程不能設。至少要有 1 張門票或 1 組仍在販售的組合包。' },
+    /* D331（5.1.6.1 F22、5.1.5.9 §2.2）：下架、封存（與刪除）活動最後一組販售中的組合包、活動又沒有門票時擋下（隱藏 D424 起不擋）。
        紅字就地（開關旁）；頁首按鈕與電子商店清單列改純告知彈窗，標題 bd.stop.title.*、內文同一句。 */
-    'bd.list.stop.last':    { en: "It's the event's last bundle on sale and the event has no visible ticket — it can't be unlisted. Keep at least 1 visible ticket or 1 bundle.", zh: '這是活動最後一組販售中的組合包，活動又沒有顯示中的門票，不能下架。至少要有 1 張顯示中的門票或 1 組組合包。' },
-    'bd.shown.stop.last':   { en: "It's the event's last bundle on sale and the event has no visible ticket — it can't be hidden. Keep at least 1 visible ticket or 1 bundle.", zh: '這是活動最後一組販售中的組合包，活動又沒有顯示中的門票，不能隱藏。至少要有 1 張顯示中的門票或 1 組組合包。' },
-    'bd.archive.stop.last': { en: "It's the event's last bundle on sale and the event has no visible ticket — it can't be archived. Keep at least 1 visible ticket or 1 bundle.", zh: '這是活動最後一組販售中的組合包，活動又沒有顯示中的門票，不能封存。至少要有 1 張顯示中的門票或 1 組組合包。' },
-    'bd.delete.stop.last':  { en: "It's the event's last bundle on sale and the event has no visible ticket — it can't be deleted. Keep at least 1 visible ticket or 1 bundle.", zh: '這是活動最後一組販售中的組合包，活動又沒有顯示中的門票，不能刪除。至少要有 1 張顯示中的門票或 1 組組合包。' },
+    'bd.list.stop.last':    { en: "It's the event's last bundle on sale and the event has no tickets — it can't be unlisted. Keep at least 1 ticket or 1 bundle on sale.", zh: '這是活動最後一組販售中的組合包，活動又沒有門票，不能下架。至少要有 1 張門票或 1 組仍在販售的組合包。' },
+    'bd.archive.stop.last': { en: "It's the event's last bundle on sale and the event has no tickets — it can't be archived. Keep at least 1 ticket or 1 bundle on sale.", zh: '這是活動最後一組販售中的組合包，活動又沒有門票，不能封存。至少要有 1 張門票或 1 組仍在販售的組合包。' },
+    'bd.delete.stop.last':  { en: "It's the event's last bundle on sale and the event has no tickets — it can't be deleted. Keep at least 1 ticket or 1 bundle on sale.", zh: '這是活動最後一組販售中的組合包，活動又沒有門票，不能刪除。至少要有 1 張門票或 1 組仍在販售的組合包。' },
     'bd.stop.title.unlist': { en: 'Can’t unlist “{n}”',  zh: '無法下架「{n}」' },
-    'bd.stop.title.hide':   { en: 'Can’t hide “{n}”',    zh: '無法隱藏「{n}」' },
     'bd.stop.title.archive':{ en: 'Can’t archive “{n}”', zh: '無法封存「{n}」' },
     'bd.stop.title.del':    { en: 'Can’t delete “{n}”',  zh: '無法刪除「{n}」' },
     /* 墓碑 2026-10-01（D342）：`bd.event.sale-lock`（活動未開賣時鎖住開賣設定）退場——票務商品的開賣可以另設、可早於活動開賣，邊界改為活動上架區間（主規格 §7.14「活動販售的時間層級」）。 */
@@ -7387,6 +7386,8 @@
        orders.pay.cancelled。 */
     'orders.pay.cancelled':   { en: 'Cancelled',              zh: '已取消' },
     'orders.pay.disputed':    { en: 'Disputed',              zh: '爭議中' },
+    /* D424 決定 1（2026-10-15）：付款畫面倒數到期、訂單被捨棄後留下的紀錄（付款・結算軸第五個值） */
+    'orders.pay.expired':     { en: 'Expired',               zh: '已過期' },
     'orders.status.completed':{ en: 'Completed',             zh: '已完成' },
     /* 墓碑（2026-09-09，D253）：orders.status.refund（「Refund / dispute」併組頁籤）
        移除——平台已無退款動作，改拆成 orders.status.disputed（爭議）與下方
@@ -7397,6 +7398,7 @@
        分開建 key，理由同上一段——那把是徽章的字，這把是篩選頁籤裡的一個值，日後任一邊
        改字不會誤動另一邊。 */
     'orders.status.cancelled':{ en: 'Cancelled',              zh: '已取消' },
+    'orders.status.expired':  { en: 'Expired',                zh: '已過期' },   /* D424 決定 1：篩選分頁 */
     /* F3 list rows */
     'orders.open':          { en: 'Open order',              zh: '開啟訂單' },
     'orders.col.order':     { en: 'Order',                   zh: '訂單' },
@@ -7483,6 +7485,24 @@
     'csv.h.status': { en: 'Status', zh: '狀態' },
     'csv.h.voidat': { en: 'Voided at', zh: '撤銷時間' },
     'csv.h.voidby': { en: 'Voided by', zh: '撤銷者' },
+    /* D424 決定 3：匯出中提示（右下角，約 1 秒後原地轉完成） */
+    'csv.busy': { en: 'Exporting {n} orders…', zh: '匯出中…（{n} 筆訂單）' },
+    'csv.done': { en: 'Export complete · {n} orders', zh: '匯出完成 · {n} 筆訂單' },
+    /* D424 決定 4：匯出紀錄（訂單管理＋活動交易明細；創作者與 Admin 都看得到） */
+    'csv.log.btn': { en: 'Export history', zh: '匯出紀錄' },
+    'csv.log.title': { en: 'Export history', zh: '匯出紀錄' },
+    'csv.log.sub': { en: 'Who exported, when, with which filters, how many orders and the file name — newest first.', zh: '誰在什麼時候、用哪些篩選條件匯出了幾筆，以及檔名；新的在上。' },
+    'csv.log.empty': { en: 'No exports yet.', zh: '還沒有匯出紀錄' },
+    'csv.log.count': { en: '{n} orders', zh: '{n} 筆' },
+    'csv.log.nofilter': { en: 'No filters', zh: '未篩選（全部）' },
+    'csv.log.sep': { en: ': ', zh: '：' },
+    'csv.log.join': { en: ' · ', zh: ' · ' },
+    'csv.log.who.creator': { en: 'Creator', zh: '創作者' },
+    'csv.log.who.admin.for': { en: 'Admin · managing {name}', zh: 'Admin · 代管 {name}' },
+    'csv.log.f.status': { en: 'Status', zh: '狀態' },
+    'csv.log.f.search': { en: 'Search', zh: '搜尋' },
+    'csv.log.f.ship': { en: 'Shipping details', zh: '收件資料' },
+    'csv.log.f.ship.yes': { en: 'included', zh: '包含' },
     'orders.a.more':        { en: 'More actions',            zh: '更多操作' },
     'orders.a.copy':        { en: 'Copy order #',            zh: '複製訂單編號' },
     'orders.a.copied':      { en: 'Copied',                  zh: '已複製' },
@@ -7563,6 +7583,10 @@
     'od.void.whole.why.voided':    { en: 'An item is already voided — void the remaining items one by one', zh: '有品項已撤銷，請改為逐一撤銷其餘品項' },
     'od.void.whole.why.cancelled': { en: 'This order is already cancelled', zh: '訂單已取消' },
     'od.void.record.whole':    { en: 'Whole-order void',        zh: '整單撤銷' },
+    /* D424 決定 1：已過期訂單——付款區說明、主操作／撤銷／補寄信停用原因、金額拆解底下一句 */
+    'od.pay.expired':          { en: 'Not paid before the payment deadline, so the order expired.', zh: '付款期限內未付款，訂單已過期' },
+    'od.expired.why':          { en: 'This order expired before payment — there is nothing to fulfil, void or resend.', zh: '訂單已過期（付款期限內未付款），沒有可履約、撤銷或補寄的內容' },
+    'od.amt.expired':          { en: 'Expired orders don’t count toward revenue, and the reserved stock went back on sale.', zh: '已過期訂單不計入收入，保留的庫存已釋回' },
     'od.pay.free':             { en: 'Free order — no payment is taken.', zh: '免費訂單，不經金流' },
     /* D411（2026-10-13，5.1.5.3.1 §2.2／§2.2.1／§2.3.4）：訂單類型與來源、補寄信、付款資訊、門票資料 */
     'od.info.type':         { en: 'Order type',              zh: '訂單類型' },
@@ -10241,13 +10265,12 @@
     'event-detail.golive.need.date': { en: 'At least one date', zh: '至少一個場次日期' },
     'event-detail.golive.need.venue': { en: 'Venue', zh: '場地' },
     'event-detail.golive.need.tier': { en: 'At least one ticket type', zh: '至少一種門票' },
-    /* D329（5.1.6.3 §2.1，同 5.1.6.1 F11 第五項）：開賣前置條件改「顯示中的門票或組合包」。 */
-    'event-detail.golive.need.sellable': { en: 'At least 1 visible ticket or 1 bundle', zh: '至少 1 張顯示中的門票或 1 組組合包' },
+    /* 墓碑（2026-10-16，D425 同批清理）：event-detail.golive.need.sellable（開賣前置條件「至少 1 張顯示中的門票或 1 組組合包」，D329）
+       隨 goLiveBlockers() 於 D390 退場後已無引用，刪除；發布前檢核用的是 ce.qc.sellable（口徑不變）。 */
     /* 2026-09-29 使用者裁決（D329 延伸）：發布後隱藏最後一張可賣的票、又沒有組合包時擋下，就地提示。 */
     /* D330 起口徑收緊為「沒有仍在販售的組合包」（5.1.6.1 F22「可賣性防呆」）。 */
-    'ed.tm.show.last': { en: "It's the last visible ticket and no bundle is on sale — it can't be hidden. Keep at least 1 visible ticket or 1 bundle.", zh: '這是最後一張顯示中的門票，又沒有販售中的組合包，不能隱藏。至少要有 1 張顯示中的門票或 1 組組合包。' },
-    /* D330（5.1.6.1 F22「可賣性防呆」）：發布後刪除最後一張顯示中的門票，擋下並就地提示。 */
-    'ed.tm.del.last': { en: "It's the last visible ticket and no bundle is on sale — it can't be deleted. Keep at least 1 visible ticket or 1 bundle.", zh: '這是最後一張顯示中的門票，又沒有販售中的組合包，不能刪除。至少要有 1 張顯示中的門票或 1 組組合包。' },
+    /* D330（5.1.6.1 F22「可賣性防呆」）：發布後刪除最後一張門票（D425 起隱藏的也算），擋下並就地提示。 */
+    'ed.tm.del.last': { en: "It's the last ticket and no bundle is on sale — it can't be deleted. Keep at least 1 ticket or 1 bundle on sale.", zh: '這是最後一張門票，又沒有仍在販售的組合包，不能刪除。至少要有 1 張門票或 1 組仍在販售的組合包。' },
     'event-detail.golive.blocked.title': { en: 'Not ready to sell yet', zh: '還不能開賣' },
     'event-detail.golive.blocked.body': { en: 'Fill these in before tickets can go on sale:', zh: '開賣前這幾項要先填：' },
     'event-detail.golive.blocked.ok': { en: 'Open sales now', zh: '立即開賣' },
@@ -10628,7 +10651,6 @@
     'ed.rule.pctOnly':    { en: '{n}% off',               zh: '折 {n}%' },
     'ed.evrules.title':   { en: 'Default purchase rules', zh: '預設購票規則' },
     'ed.evrules.hint':    { en: 'Tickets without their own rules follow these.', zh: '沒有自己一組條件的門票照這組生效。' },
-    'ed.evrules.none':    { en: 'bookyay sets no event-wide limits for this event.', zh: 'bookyay 沒有設定這場活動的活動限購。' },
     'ed.evrules.none.own': { en: 'No conditions set.', zh: '目前無設定條件' },
     /* D388（2026-10-09）：自建活動發布後可改活動預設購票規則與單張門票購買條件——只影響之後的購買 */
     'ed.evrules.edit':    { en: 'Edit',                   zh: '編輯' },
@@ -10669,7 +10691,7 @@
     'ed.sess.rm.lead':    { en: 'Removing this date also deletes these tickets:', zh: '移除這一場會一併刪除以下門票：' },
     'ed.sess.rm.bd':      { en: "Some of them are tickets a bundle lets fans pick. The bundle stays, but those tickets are disabled in it and fans won't see them.", zh: '其中有門票列在組合包的可選門票裡：組合包會保留，這些門票在組合包裡改為停用，粉絲端看不到。' },
     'ed.sess.rm.save':    { en: 'This takes effect when you save.', zh: '按「儲存」後才會生效。' },
-    'ed.sess.rm.last':    { en: 'Removing this date would leave nothing to sell — no visible ticket and no bundle on sale. Keep at least 1 visible ticket or 1 bundle.', zh: '移除這一場後，活動就沒有可賣的東西（沒有顯示中的門票，也沒有仍在販售的組合包），不能移除。請至少保留 1 張顯示中的門票或 1 組組合包。' },
+    'ed.sess.rm.last':    { en: 'Removing this date would leave nothing to sell — no tickets and no bundle on sale. Keep at least 1 ticket or 1 bundle on sale.', zh: '移除這一場後，活動就沒有可賣的東西（沒有門票，也沒有仍在販售的組合包），不能移除。請至少保留 1 張門票或 1 組仍在販售的組合包。' },
     'ed.sess.rm.ok':      { en: 'Remove date and tickets', zh: '移除場次與門票' },
     'ed.tm.del.onsale':   { en: "Tickets are on sale — tickets can't be deleted. Hide it instead.", zh: '已開賣，門票不能刪除；請改用隱藏。' },   // D422：單張門票沒有暫停售票
     'event-detail.tiers.sub': { en: '1–10 tiers per event. Sale progress turns yellow at 80%, red at 95% (§5.1.6 F5).', zh: '每場活動 1–10 個票種。售票進度達 80% 轉黃、95% 轉紅（§5.1.6 F5）。' },
@@ -11629,13 +11651,10 @@
     'ed.tm.show.sub.op':     { en: 'Takes effect right away, no need to save. Hidden tickets stay off the price list but can still sell inside bundles.', zh: '按下立即生效，不必儲存。隱藏的門票不在票價清單、不能單張購買，仍可當組合包成員販售。' },
     'ed.tix.hidden.toast':   { en: 'Hid {name} — it’s off the event page now', zh: '已隱藏「{name}」，活動頁不再列出' },
     'ed.tix.shown.toast':    { en: 'Showing {name} on the event page again', zh: '「{name}」已重新顯示在活動頁' },
-    'ed.tix.vis.last.title': { en: 'Can’t hide this ticket', zh: '這張門票不能隱藏' },
-    'ed.tix.vis.last.ok':    { en: 'Got it', zh: '知道了' },
     'ed.bd.view.aria':       { en: 'Bundle view', zh: '組合包檢視' },
     'ed.bd.col.name':        { en: 'Bundle', zh: '組合包' },
     'ed.bd.noproducts':      { en: 'Tickets only', zh: '只含門票' },
     'ed.bd.vis.ro':          { en: 'This event has ended or been cancelled — bundles here are view-only.', zh: '活動已結束或已取消，這裡的組合包只能檢視。' },
-    'ed.bd.vis.last.title':  { en: 'Can’t hide this bundle', zh: '這組組合包不能隱藏' },
     'ed.bd.hidden.toast':    { en: 'Hid {name} — it’s off the shop and event page now', zh: '已隱藏「{name}」，商店與活動頁不再列出' },
     'ed.bd.shown.toast':     { en: 'Showing {name} again', zh: '「{name}」已重新顯示' },
 

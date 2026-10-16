@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>步驟 5：票務商品 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261015a">
-<script src="shell.js?v=20261015a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261015b">
+<script src="shell.js?v=20261015b" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -223,7 +223,7 @@ tr:last-child td{border-bottom:0}
     <tr><td>門票成員：允許的門票</td><td>已設定並鎖定</td></tr>
     <tr><td>門票成員：每套張數</td><td>已設定並鎖定</td></tr>
     <tr><td>商品成員</td><td>不能加入</td></tr>
-    <tr><td>組合價格</td><td>帶入時售價＝bookyay 現價<br>價格表的港幣欄鎖定</td></tr>
+    <tr><td>組合價格</td><td>帶入時售價＝bookyay 現價<br>價格表的港幣欄鎖定，＝bookyay 現價 ×（1 − 組合折扣 %）<br>帶入時組合折扣 0，港幣欄就是 bookyay 現價</td></tr>
     <tr><td>庫存</td><td>鎖定套數已設定並鎖定</td></tr>
     <tr><td>購買條件與限購</td><td>已設定並鎖定<br>限購由套票的本門票限購帶入，只有每人總限購數量與每次交易限購數量</td></tr>
     <tr class="grp"><td colspan="2">帶入、可以改</td></tr>
@@ -242,7 +242,7 @@ tr:last-child td{border-bottom:0}
   <li>鎖定的欄位不能在 ztor 端解鎖</li>
   <li>完整對照見<a href="event-bookyay.html#package-convert">bookyay 匯入與對照</a></li>
 </ul>
-<p class="note">依據：5.1.6.1 §4.5 F20「bookyay 套票自動建立」、§4.1 F21；5.1.5.4 §4 F3「幣別」；主規格 §7.14「票務商品的購買條件」、§7.15；D328、D329、D330、D331、D375、D390、D391、D417、D419。</p>
+<p class="note">依據：5.1.6.1 §4.5 F20「bookyay 套票自動建立」、§4.1 F21；5.1.5.4 §4 F3「幣別」；主規格 §7.14「票務商品的購買條件」、§7.15；D328、D329、D330、D331、D375、D390、D391、D417、D419、D424。</p>
 
 <h2 id="product-what"><span class="n"></span>票務商品就是組合包</h2>
 <p>票務商品＝成員含本活動門票的電子商店組合包，跟電子商店的組合包是同一種東西；這一步只是從活動直接建立組合包的捷徑。這一頁只寫從活動進來時的差異，組合包的通用規則見<a href="bundles.html">組合包與票務商品</a>。</p>
@@ -258,11 +258,13 @@ tr:last-child td{border-bottom:0}
 <p>這一步選用；唯一牽動發布的是活動有沒有可賣的東西。</p>
 <ul class="plain">
   <li>發布前檢核不檢查這一步的欄位，必填在儲存這個組合包時檢查</li>
-  <li>全部門票都隱藏時，至少要有 1 組仍在販售的組合包才能發布，見<a href="event-create.html#sellable">可賣條件與發布檢核</a></li>
+  <li>發布前，全部門票都隱藏時，至少要有 1 組仍在販售的組合包才能發布，見<a href="event-create.html#sellable-check">發布前檢核</a></li>
+  <li>活動發布後，最後一組仍在販售的組合包也可以隱藏</li>
+  <li>活動發布後，停售、下架、封存或刪除最後一組仍在販售的組合包，只在活動也沒有還在的門票（隱藏的也算）時擋下，見<a href="event-create.html#sellable-block">發布後擋下的動作</a></li>
   <li>活動還是草稿時，這一步建的組合包也是草稿、不對外，停售、下架、隱藏、封存或刪除組合包都不擋，交給發布前檢核，見<a href="bundles.html#timing-draft">活動還是草稿時</a></li>
 </ul>
 
-<p class="note">依據：5.1.6.1 §4.5 F20「是否必做」「上架與開賣」、§4.4 F22「可賣性防呆」、§4.7 F11、F12；D293、D294、D329、D330、D331、D340。</p>
+<p class="note">依據：5.1.6.1 §4.5 F20「是否必做」「上架與開賣」、§4.4 F22「可賣性防呆」、§4.7 F11、F12；D293、D294、D329、D330、D331、D340、D424、D425。</p>
 
 <h2 id="product-diff"><span class="n"></span>從活動進來時的差異</h2>
 <p>從活動進來時，成員已預帶這場活動的門票，而且只能挑這場活動的門票；細節見<a href="bundles.html#from-event-diff">組合包與票務商品的從活動進來時的差異</a>。</p>
@@ -312,8 +314,8 @@ tr:last-child td{border-bottom:0}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.6.1-建立活動流程.md</code>（v2.67；從 bookyay 帶入時對照 v2.75；F20 購買條件不能改、電影關聯對照 v2.76）§4.5 F20、§4.4 F22、§4.1 F21、§4.8；<code>5.1.5.4-建立組合流程.md</code>（v2.48；bookyay 自動建立的組合包對照 v2.53）§4；<code>0-設計規格書.md</code>（v4.49；§7.15 bookyay 帶入的活動對照 v4.61）§5.2.4／§7.14／§7.15</li>
-    <li>決策：D060、D259、D292、D293、D295、D296、D328、D329、D330、D331、D340、D342、D363、D366、D367、D375、D380、D382、D390、D391、D402、D417、D419、D422</li>
+    <li>規格：<code>5.1.6.1-建立活動流程.md</code>（v2.67；從 bookyay 帶入時對照 v2.75；F20 購買條件不能改、電影關聯對照 v2.76；F21 自動建立組合包的港幣欄對照 v2.77；F20、F22 可賣條件對照 v2.78）§4.5 F20、§4.4 F22、§4.1 F21、§4.8；<code>5.1.5.4-建立組合流程.md</code>（v2.48；bookyay 自動建立的組合包對照 v2.53）§4；<code>0-設計規格書.md</code>（v4.49；§7.15 bookyay 帶入的活動對照 v4.61；§7.15 自動建立組合包的港幣欄對照 v4.64；§7.14 可賣性對照 v4.65）§5.2.4／§7.14／§7.15</li>
+    <li>決策：D060、D259、D292、D293、D295、D296、D328、D329、D330、D331、D340、D342、D363、D366、D367、D375、D380、D382、D390、D391、D402、D417、D419、D422、D424、D425</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -324,7 +326,6 @@ tr:last-child td{border-bottom:0}
     <li>票務商品的限時間能不能在活動上架區間內自己調整（含早於活動開賣），不受所含門票的限時購買限制（推導）</li>
     <li>從 bookyay 帶入時自動建立的組合包：名稱與素材的預設值</li>
     <li>從 bookyay 帶入時自動建立的組合包：組合描述、電影關聯能不能改</li>
-    <li>從 bookyay 帶入時自動建立的組合包設了組合折扣後，價格表港幣欄是否改成 bookyay 現價 ×（1 − 組合折扣%）（目前是推導）</li>
     <li>這一步的畫面呈現：新增組合包的按鈕、每一組是可收合的卡片、旁邊列出這場活動的門票被哪幾組用到（目前是原型示意）</li>
     <li>組合包的內容是在彈窗裡填，還是在清單裡展開填；儲存與取消按鈕叫什麼</li>
     <li>票務商品清單每一組顯示哪些資料</li>
@@ -338,7 +339,7 @@ tr:last-child td{border-bottom:0}
     <li>這一步載入中、清單還沒有組合包、儲存失敗時畫面怎麼顯示</li>
     <li>票務商品的其他待確認列在<a href="bundles.html">組合包與票務商品</a>頁尾</li>
   </ul>
-  <p class="k">最近同步：2026-10-15（D422 購買條件不能改的項目拿掉暫停售票，確認電影關聯；D419 自動建立的組合包組合折扣與限時折扣可以設定，比照一般組合包；D417 自動建立的組合包不帶入組合折扣、限時折扣與限購次數）；2026-10-12（至 D391，另加 D402）</p>
+  <p class="k">最近同步：2026-10-16（D425 發布後隱藏組合包不擋定案，停售、下架、封存、刪除改看還在的門票）；2026-10-15（D424 自動建立的組合包港幣欄公式定案）；2026-10-15（D422 購買條件不能改的項目拿掉暫停售票，確認電影關聯；D419 自動建立的組合包組合折扣與限時折扣可以設定，比照一般組合包；D417 自動建立的組合包不帶入組合折扣、限時折扣與限購次數）；2026-10-12（至 D391，另加 D402）</p>
 </details>
 </div>
 </body>

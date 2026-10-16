@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>訂單詳情 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261015a">
-<script src="shell.js?v=20261015a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261015b">
+<script src="shell.js?v=20261015b" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -178,6 +178,7 @@ tr:last-child td{border-bottom:0}
 </table></div>
 <ul class="plain">
   <li>只顯示金流商回傳的識別資訊，不顯示卡號等付款憑證</li>
+  <li>已過期的訂單沒有付款：付款時間、金流商、付款方式顯示「—」，不顯示付款編號，見<a href="#status">訂單的狀態</a></li>
 </ul>
 
 <h3 id="fields-items">品項明細</h3>
@@ -305,7 +306,7 @@ tr:last-child td{border-bottom:0}
     <tr><td>履約（Fulfilment）</td><td>出貨、取貨或數位交付的進度</td><td>待出貨（To ship）<br>已出貨（Shipped）<br>已完成（Completed）<br>已取消（Cancelled）</td></tr>
   </tbody>
 </table></div>
-<p>訂單的狀態共有七種：</p>
+<p>訂單的狀態共有八種：</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:26%">狀態</th><th>意思</th></tr></thead>
   <tbody>
@@ -316,6 +317,7 @@ tr:last-child td{border-bottom:0}
     <tr><td>已完成（Completed）</td><td>所有品項都完成對應的履約：已出貨、已核銷或已交付</td></tr>
     <tr><td>爭議（Disputed）</td><td>買家或其銀行發起爭議，見<a href="#dispute">爭議與平台外退款</a></td></tr>
     <tr><td>已取消（Cancelled）</td><td>所有品項都已撤銷；這是終態，之後不再有出貨或取貨</td></tr>
+    <tr><td>已過期（Expired）</td><td>粉絲在付款畫面倒數到期沒有付款，訂單被捨棄，平台仍留下這筆紀錄；這是終態</td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
@@ -323,6 +325,8 @@ tr:last-child td{border-bottom:0}
   <li>同一筆訂單同時有物流商品與取貨商品時，履約狀態可以並列兩顆徽章，例如「待出貨」加「待取貨」</li>
   <li>取貨狀態不改寫成訂單的狀態</li>
   <li>已取消與爭議在訂單列表可以併成同一個篩選分組，但一筆訂單只屬於其中一種</li>
+  <li>已過期的訂單付款資訊空白、不計入收入，下單時保留的庫存釋回</li>
+  <li>已過期的訂單沒有成立的品項，不提供標記出貨、補寄信、撤銷品項與整單撤銷</li>
 </ul>
 
 <h3 id="status-unit">品項與領取單位的狀態</h3>
@@ -342,7 +346,7 @@ tr:last-child td{border-bottom:0}
   </li>
   <li>場次結束後沒核銷的領取單位維持待核銷</li>
 </ul>
-<p class="note">依據：5.1.5.3 F3；5.1.5.3.1 §2.2、§2.3.1、§2.5；主規格 §7.2「訂單」「取貨資格／核銷」「使用限制」「領取單位的正式定義」；D169、D240、D242、D252、D253。</p>
+<p class="note">依據：5.1.5.3 F3；5.1.5.3.1 §2.2、§2.3.1、§2.5；主規格 §7.2「訂單」「取貨資格／核銷」「使用限制」「領取單位的正式定義」；D169、D240、D242、D252、D253、D424、D425。</p>
 
 <h2 id="actions"><span class="n"></span>誰能做哪些動作</h2>
 <p>創作者處理出貨、查看付款資訊；撤銷品項、撤銷整張訂單與補寄信只有 Admin 能做，創作者看得到入口但不能按。</p>
@@ -434,11 +438,12 @@ tr:last-child td{border-bottom:0}
   <li>效果等同每個品項各撤銷一次，各項效果見<a href="#void-after">撤銷之後</a></li>
   <li>每個品項的撤銷紀錄都標註「整單撤銷」</li>
 </ul>
+<p>整單撤銷只在訂單的每個品項都還沒完成履約、也都還沒被撤銷時可以用。</p>
 <ul class="plain">
+  <li>任一品項已完成履約時，整單撤銷停用，說明「有品項已完成履約，請改為逐一撤銷尚可撤銷的品項」</li>
   <li>訂單含直接購買的門票時，整單撤銷不能用，門票要到活動詳情撤銷，見<a href="event-detail-sales.html">活動詳情的售票與名單</a></li>
   <li>組合包裡含門票時，整單撤銷照常可用，組合包裡的門票隨組合包一起失效</li>
 </ul>
-<p>其他情況下整單撤銷什麼時候可以用，規格還在確認，見頁尾的尚待確認。</p>
 
 <h3 id="void-where">門票與組合包在哪裡撤銷</h3>
 <div class="tablewrap"><table>
@@ -449,7 +454,7 @@ tr:last-child td{border-bottom:0}
     <tr><td>bookyay 匯入的活動的門票</td><td>bookyay 後台</td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.5.3.1 §2.3.4、§2.8、§4 情境 6；主規格 §7.2「使用限制」「領取單位的正式定義」；D242、D252、D253、D271、D282、D375、D409、D411、D414。</p>
+<p class="note">依據：5.1.5.3.1 §2.3.4、§2.8、§4 情境 6；主規格 §7.2「使用限制」「領取單位的正式定義」；D242、D252、D253、D271、D282、D375、D409、D411、D414、D421、D424。</p>
 
 <h2 id="fee-rule"><span class="n"></span>平台費與支付費</h2>
 <p>平台費與支付費都是創作者這一端的扣項，從創作者的收入裡扣；買家只付折後售價加運費，買家的收據不列這兩筆。</p>
@@ -475,17 +480,16 @@ tr:last-child td{border-bottom:0}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.5.3.1-訂單詳情.md</code>（v2.18）§1～§5；<code>5.1.5.3-訂單管理.md</code>（v1.15）F3；<code>0-設計規格書.md</code>（v4.57）§7.2、§7.3、§7.6</li>
-    <li>決策：D143、D169、D240、D242、D252、D253、D271、D278、D282、D295、D296、D309、D316、D333、D360、D375、D380、D398、D407、D409、D411、D414、D421</li>
+    <li>規格：<code>5.1.5.3.1-訂單詳情.md</code>（v2.20）§1～§5；<code>5.1.5.3-訂單管理.md</code>（v1.18）F3；<code>0-設計規格書.md</code>（v4.65）§7.2、§7.3、§7.6</li>
+    <li>決策：D143、D169、D240、D242、D252、D253、D271、D278、D282、D295、D296、D309、D316、D333、D360、D375、D380、D398、D407、D409、D411、D414、D421、D424、D425</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
-    <li>七種訂單狀態之間怎麼轉換（例如待付款、已付款、待出貨、已出貨各自什麼時候進入），規格沒有逐條定義</li>
+    <li>八種訂單狀態之間怎麼轉換（例如待付款、已付款、待出貨、已出貨各自什麼時候進入），規格沒有逐條定義</li>
     <li>「標記出貨」在哪些狀態出現或停用</li>
     <li>平台費與支付費的確切費率（目前畫面示意一般商品 15%、拍賣 10%、支付費 2.4%）</li>
     <li>支付費怎麼分攤回各品項的收入</li>
     <li>撤銷在收入端怎麼沖銷（目前是產品變更提案，未經上游核准）：實際退款金額與沖銷金額怎麼對帳、平台費與支付費退不退、跨幣別用哪個匯率、要不要預扣準備金</li>
-    <li>整單撤銷的可用條件（推導為全部品項皆未履約且未撤銷）</li>
     <li>品項部分核銷或部分出貨時，剩下的部分能不能撤銷</li>
     <li>能不能只撤銷組合包裡的部分成員</li>
     <li>撤銷後限購額度要不要補回</li>
@@ -494,7 +498,7 @@ tr:last-child td{border-bottom:0}
     <li>商品已下架或刪除時，商品快照視窗的「管理此商品」怎麼降級或停用</li>
     <li>領取單位展開、失效件數與爭議說明怎麼呈現，目前是畫面示意</li>
   </ul>
-  <p class="k">最近同步：2026-10-15（D421 整單撤銷遇到門票的處理）；2026-10-14（至 D414）</p>
+  <p class="k">最近同步：2026-10-16（D425 已過期訂單不提供標記出貨、補寄信、撤銷定案）；2026-10-15（D424 已過期訂單、整單撤銷可用條件定案）；2026-10-15（D421 整單撤銷遇到門票的處理）；2026-10-14（至 D414）</p>
 </details>
 </div>
 </body>

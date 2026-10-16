@@ -58,6 +58,25 @@ function makeWindow() {
     removeItem: function (k) { delete store[k]; }
   };
   win.window = win;
+  /* 2026-10-15（D424 決定 17）：events-store.js 之後會讀 location.pathname（建立活動頁的暫存清理）、
+     也可能碰到 document／sessionStorage／console——補最小替身，否則腳本一啟動就 ReferenceError 跑不起來。
+     pathname 設成中性的 /index.html，不觸發任何頁面專屬分支；document 只給事件掛載與查詢的空實作。 */
+  win.location = { pathname: '/index.html', search: '', hash: '', href: 'http://localhost/index.html' };
+  win.sessionStorage = {
+    getItem: function () { return null; }, setItem: function () {}, removeItem: function () {}
+  };
+  win.document = {
+    readyState: 'complete',
+    addEventListener: function () {}, removeEventListener: function () {}, dispatchEvent: function () { return true; },
+    querySelector: function () { return null; }, querySelectorAll: function () { return []; },
+    getElementById: function () { return null; },
+    documentElement: { lang: 'en', getAttribute: function () { return null; }, setAttribute: function () {} }
+  };
+  win.addEventListener = function () {}; win.removeEventListener = function () {};
+  win.dispatchEvent = function () { return true; };
+  win.CustomEvent = function (type, init) { this.type = type; this.detail = init && init.detail; };
+  win.console = console;
+  win.Date = Date; win.Math = Math; win.JSON = JSON;
   return win;
 }
 

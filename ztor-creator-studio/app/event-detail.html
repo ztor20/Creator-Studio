@@ -66,6 +66,7 @@
 <link rel="stylesheet" href="ds-components/calc-list.css?v=r2.2"><!-- D311：票種彈窗的價格算式列表 -->
 <!-- 2026-08-11 第二輪：票務卡點開的輕量編輯彈窗（沿用站上彈窗殼） -->
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2"><!-- D424：匯出中提示（右下角）；本頁早就載入 js/toast.js，樣式之前漏載 -->
 <!-- 2026-09-22（D310）：預覽與在地化由浮層改為全頁（event-localization.html），
      publish-preview.css／fan-shop.css 隨之搬到那一頁，本頁不再自己畫預覽。 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -1619,6 +1620,8 @@
                 <span data-ed-editmode-label data-i18n="event-detail.btn.edit">Edit event</span>
               </button>
               <button class="btn btn--outline" type="button" data-tx-export data-view-safe data-nav-act="tx" hidden><i data-lucide="download" class="ztor-icon"></i><span data-i18n="event-detail.tx.export">Export transactions</span></button>
+              <!-- D424 決定 4：匯出紀錄（這一場的交易明細匯出：誰、何時、篩選條件、筆數、檔名）——匯出鈕旁的次要按鈕，創作者與 Admin 都看得到 -->
+              <button class="btn btn--ghost" type="button" data-tx-export-log data-view-safe data-nav-act="tx" data-feat="O42" hidden><i data-lucide="history" class="ztor-icon"></i><span data-i18n="csv.log.btn">Export history</span></button>
               <button class="btn btn--outline" type="button" data-view-safe data-nav-act="roster" data-ed-export="attendees" hidden><i data-lucide="download" class="ztor-icon"></i><span data-i18n="event-detail.att.export">Export attendee list</span></button>
             </div>
           </div>
@@ -1672,7 +1675,9 @@
             <table class="ztor-table ztor-table--fluid">
               <thead>
                 <tr>
-                  <th data-i18n="event-detail.tx.col.order">Order</th>
+                  <!-- D424 決定 16（2026-10-15）：「訂單編號」與「付款時間」合成一欄（編號一行、付款時間小字一行），
+                       讓 1280 寬不需卡內橫向捲動、1440 買家姓名不折行；匯出欄位不變（付款時間仍是獨立一欄） -->
+                  <th><span data-i18n="event-detail.tx.col.order">Order</span><span class="ztor-table__sub" data-i18n="event-detail.tx.col.paidat">Paid at</span></th>
                   <th data-i18n="event-detail.tx.col.buyer">Buyer</th>
                   <th data-i18n="event-detail.tx.col.tier">Item</th>
                   <th data-i18n="event-detail.tx.col.qty">Qty</th>
@@ -1680,7 +1685,6 @@
                   <th class="ztor-table__amt" data-i18n="event-detail.tx.col.fee">Fee</th>
                   <th class="ztor-table__amt" data-i18n="event-detail.tx.col.net">Net</th>
                   <th data-i18n="event-detail.tx.col.method">Method</th>
-                  <th data-i18n="event-detail.tx.col.paidat">Paid at</th>
                   <th data-i18n="event-detail.tx.col.status">Status</th>
                   <th data-i18n="event-detail.tx.col.actions">Actions</th>
                 </tr>
@@ -2172,13 +2176,13 @@
              屬營運動作：檢視模式與編輯模式都能按、按下立即生效，不算進「儲存 N 項變更」、捨棄也不還原〔推導，5.1.6.3 §2.6〕；
              還沒套用的新門票沒有已儲存的那一張，按鈕只改這張草稿、跟著「套用」走。
              套票拆出的 1 人票（hideFix）固定隱藏：按鈕停用、副標說明原因；已結束／已取消整頁唯讀：停用。
-             隱藏最後一張可賣的門票時（可賣性防呆）：按下當下擋下，紅字就地說明。狀態文字與按鈕字由 syncTmShow() 依目前狀態換。 -->
+             D424 決定 9（2026-10-15）：隱藏不受可賣性防呆限制——最後一張可賣的門票也可以隱藏（取代 D422 推導的「按下當下擋下」）；
+             刪除的可賣性防呆不變。狀態文字與按鈕字由 syncTmShow() 依目前狀態換。 -->
         <div class="control-row" id="ed-tm-show-row" data-feat="S55">
           <div>
             <div class="control-row__main" id="ed-tm-show-state" data-i18n="ed.tm.show.state.on">Shown on the event page</div>
             <div class="control-row__sub" id="ed-tm-show-sub" data-i18n="ed.tm.show.sub.op">Takes effect right away, no need to save. Hidden tickets stay off the price list but can still sell inside bundles.</div>
-            <!-- 2026-09-29 使用者裁決（D329 延伸）：發布後把最後一張顯示中的門票改成隱藏、活動又沒有組合包時擋下並就地提示 -->
-            <div class="field__error" id="ed-tm-show-err" hidden data-i18n="ed.tm.show.last">It's the last visible ticket and there's no bundle — it can't be hidden.</div>
+            <!-- 墓碑（2026-10-15，D424 決定 9）：「最後一張顯示中的門票不能隱藏」紅字（#ed-tm-show-err，D329 延伸）退場——隱藏不再受可賣性防呆限制 -->
           </div>
           <button type="button" class="btn btn--outline btn--sm" id="ed-tm-show" data-view-safe aria-pressed="false"><span id="ed-tm-show-label" data-i18n="ed.tix.hide">Hide</span></button>
         </div>
@@ -3476,15 +3480,20 @@
       count: list.length,
       withShip: false,
       note: T('csv.tx.note', 'Shipping details are not in this export.'),
+      /* D424 決定 3、4：確認後右下角「匯出中…」約 1 秒 → 原地轉「匯出完成」並下載，同時寫一筆這場活動的匯出紀錄（ztorCsv.run） */
       onExport: () => {
         const rows = txExportList();             /* 視窗開著期間篩選不會變；仍以按下「匯出」當下為準 */
-        const t = txExportTable(rows);
         const from = (document.querySelector('[data-tx-date-from]') || {}).value || '';
         const to = (document.querySelector('[data-tx-date-to]') || {}).value || '';
         const name = window.ztorCsv.safeName(T('csv.file.tx', 'Transactions')) + '_' + window.ztorCsv.safeName(ev.name) + '_' +
           window.ztorCsv.fileRange(from, to) + '.csv';
-        window.ztorCsv.download(name, window.ztorCsv.build(t.headers, t.rows));
-        if (window.ztorToast) window.ztorToast.show(T('csv.toast', 'Exported {n} orders').replace('{n}', rows.length), { tone: 'success' });
+        const filters = [];
+        if (txFilter !== 'all') filters.push({ k: 'csv.log.f.status', v: txFilter, vk: txFilter === 'voided' ? 'event-detail.tx.f.cancelled' : 'event-detail.tx.f.' + txFilter });
+        if (from || to) filters.push({ k: 'orders.filter.date', v: (from || '…') + ' – ' + (to || '…') });
+        window.ztorCsv.run({
+          scope: 'tx:' + ev.id, name: name, count: rows.length, filters: filters,
+          make: () => { const t = txExportTable(rows); return window.ztorCsv.build(t.headers, t.rows); }
+        });
       }
     });
   }
@@ -3536,18 +3545,21 @@
         ' disabled aria-disabled="true" title="' + T('event-detail.void.why.admin', 'Only an Admin can void. Contact an Admin.') + '"';   /* D371 決定二：創作者在平台外聯繫 Admin */
       /* D407：組合包訂單列——品項格加「組合包」標籤；撤銷在電子商店的訂單詳情做，本列改放「查看訂單」連過去 */
       /* D411（5.1.6.3 §2.7）：每一列都能打開電子商店的訂單詳情（門票訂單共用同一頁）——訂單欄改寫訂單編號並連過去，
-         帶 from=event&ev= 讓訂單詳情的返回回到這場活動的交易明細。付款時間另起一欄。 */
+         帶 from=event&ev= 讓訂單詳情的返回回到這場活動的交易明細。付款時間 D424 起併進訂單格（第二行小字）。
+         D424 決定 1：已過期訂單不進交易明細——資料來源 events-store 的 transactions／bundleTransactions 只有已付款與已取消兩態，
+         付款畫面倒數到期被捨棄的訂單只留在訂單管理（js/orders-store.js 的 pay:'expired'）。 */
       const odHref = 'order-detail.html?id=' + encodeURIComponent(t.orderId || '') + '&from=event&ev=' + encodeURIComponent(ev.id);
+      /* D424 決定 16：訂單編號與付款時間同一格——編號一行、付款時間小字一行（.ztor-table__sub）；兩行都不折 */
+      const paidSub = '<span class="ztor-table__sub">' + (t.paidAt || '—') + '</span>';
       const orderCell = t.orderId
-        ? '<td><a class="card__link" data-view-safe href="' + odHref + '"><code>#' + t.orderId + '</code></a></td>'
-        : '<td><code>' + t.id + '</code></td>';
-      const paidCell = '<td class="text-sub">' + (t.paidAt || '—') + '</td>';
+        ? '<td class="ztor-table__nowrap"><a class="card__link" data-view-safe href="' + odHref + '"><code>#' + t.orderId + '</code></a>' + paidSub + '</td>'
+        : '<td class="ztor-table__nowrap"><code>' + t.id + '</code>' + paidSub + '</td>';
       if (t.kind === 'bundle') {
         tr.innerHTML =
-          orderCell + '<td>' + t.buyer + '</td>' +
+          orderCell + '<td class="ztor-table__nowrap">' + t.buyer + '</td>' +
           '<td>' + t.tier + ' <span class="badge badge--neutral"><span>' + T('event-detail.tx.bundle', 'Bundle') + '</span></span></td>' +
           '<td>' + t.qty + '</td><td class="ztor-table__amt">' + money(t.gross) + '</td><td class="text-sub ztor-table__amt">−' + money(t.fee) + '</td>' +
-          '<td class="ztor-table__amt">' + money(t.net) + '</td><td class="text-sub">' + t.method + '</td>' + paidCell +
+          '<td class="ztor-table__amt">' + money(t.net) + '</td><td class="text-sub">' + t.method + '</td>' +
           '<td>' + (t.status === 'paid'
             ? '<span class="badge badge--success"><span>' + T('event-detail.tx.paid', 'Paid') + '</span></span>'
             : '<span class="badge badge--error"><span>' + T('event-detail.tx.cancelledbadge', 'Cancelled') + '</span></span>') + '</td>' +
@@ -3557,9 +3569,9 @@
         return;
       }
       tr.innerHTML =
-        orderCell + '<td>' + t.buyer + '</td><td>' + t.tier + '</td>' +
+        orderCell + '<td class="ztor-table__nowrap">' + t.buyer + '</td><td>' + t.tier + '</td>' +
         '<td>' + t.qty + '</td><td class="ztor-table__amt">' + money(t.gross) + '</td><td class="text-sub ztor-table__amt">−' + money(t.fee) + '</td>' +
-        '<td class="ztor-table__amt">' + money(t.net) + '</td><td class="text-sub">' + t.method + '</td>' + paidCell +
+        '<td class="ztor-table__amt">' + money(t.net) + '</td><td class="text-sub">' + t.method + '</td>' +
         '<td>' + (t.status === 'paid'
           ? '<span class="badge badge--success"><span>' + T('event-detail.tx.paid', 'Paid') + '</span></span>'
           : '<span class="badge badge--error"><span>' + T('event-detail.tx.cancelledbadge', 'Cancelled') + '</span></span>') + '</td>' +
@@ -3611,6 +3623,11 @@
       syncTxClr(); renderTx();
     });
     /* 匯出照目前篩選結果（D411）；D416 起開確認視窗並真的產 CSV（版本閘 O39 關閉時維持舊行為：只回報筆數） */
+    /* D424 決定 4：這一場活動的匯出紀錄 */
+    const txLog = document.querySelector('[data-tx-export-log]');
+    if (txLog) txLog.addEventListener('click', () => {
+      if (window.ztorCsv && window.ztorCsv.openLog) window.ztorCsv.openLog({ scope: 'tx:' + ev.id, title: T('csv.log.title', 'Export history') });
+    });
     const txExp = document.querySelector('[data-tx-export]');
     if (txExp) txExp.addEventListener('click', () => {
       if (txExportOn()) { openTxExport(); return; }
@@ -4476,7 +4493,7 @@
       /* D391 第 5、13 題（5.1.6.1 F7「移除場次」、5.1.6.2 F7）：已排程（開賣前）可以移除，至少留一場。
          該場的門票＝每個票種在這一場的那一張＋指定這一場的獨立票；有門票時先確認並列出，沒有就直接移除（D391 補充二定案）。
          移除跟頁面其他編輯一樣按「儲存」才生效：獨立票記進 edSessDrop，commitEdit 時一併刪除（捨棄則還原）。
-         可賣性防呆（D330）：已排程的活動移除後沒有任何顯示中的門票、也沒有仍在販售的組合包時擋下。 */
+         可賣性防呆（D330；D425 起門票算還在的，隱藏也算）：已排程的活動移除後沒有任何門票、也沒有仍在販售的組合包時擋下。 */
       const doRemove = () => {
         edSessions = edSessions.filter(x => x !== s);
         soloOf(s).forEach(t => { if (edSessDrop.indexOf(t.id) < 0) edSessDrop.push(t.id); });
@@ -4487,7 +4504,7 @@
       const left = (edTiers || []).filter(t => goneSolo.indexOf(t) < 0 && edSessDrop.indexOf(t.id) < 0);
       if (edPublished() && !window.ztorEvents.hasOtherSellable(ev, { tiers: left })) {
         openConfirm({ title: T('ed.sess.rm.title', 'Remove {name}?').replace('{name}', sessName(s)),
-          body: '<p>' + T('ed.sess.rm.last', "Removing this date would leave nothing to sell — no visible ticket and no bundle on sale. Keep at least 1 visible ticket or 1 bundle.") + '</p>',
+          body: '<p>' + T('ed.sess.rm.last', "Removing this date would leave nothing to sell — no tickets and no bundle on sale. Keep at least 1 ticket or 1 bundle on sale.") + '</p>',
           okLabel: T('ed.sess.rm.ok', 'Remove date and tickets'), danger: true, blocked: true });
         return;
       }
@@ -5291,36 +5308,37 @@
       T('ed.tm.fee.' + (r.source === 'creator' ? 'creator' : 'general'), r.source);
   }
   /* 頁尾左側的「N 個欄位待修正」：擋下儲存的理由要跟主鈕在同一條視線上。 */
-  /* 可賣性防呆（5.1.6.1 F22「可賣性防呆」，D329 補充 → D330 延伸 → D331 補範圍）：活動**發布之後**至少要有 1 張顯示中的門票，
-     或 1 組仍在販售的組合包。把這張票改成隱藏、或刪掉這張票，會讓活動沒有任何可賣的東西時擋下。
+  /* 可賣性防呆（5.1.6.1 F22「可賣性防呆」，D329 補充 → D330 延伸 → D331 補範圍）：活動**發布之後**至少要有 1 張門票，
+     或 1 組仍在販售的組合包。刪掉這張票會讓活動沒有任何可賣的東西時擋下。
+     · D425 決定一（2026-10-16）：門票那一半從「顯示中的門票」改成「還在的門票」（未刪除，顯示或隱藏都算）——
+       門票全部隱藏後組合包的停售、下架、封存、刪除不再被擋；刪除最後一張還在的門票（又沒有仍在販售的組合包）照舊擋。
+     · 隱藏不在此列（D424 決定 9，2026-10-15）：最後一張可賣的門票也可以隱藏，取代 D329 補充的「改成隱藏也擋」。
      · 發布之後＝狀態不是草稿；草稿階段不在動作當下擋，交給發布前檢核 F11 第五項（D331 決定二——原型本來就只在發布後擋，照舊）
      · 仍在販售的組合包（D331 決定三）＝上架、顯示、開賣三者都成立、未刪除、未封存；判斷集中在 events-store 的
        bundleSelling()／hasOtherSellable()，組合商品細節頁與電子商店清單共用同一支。
-     · 門票售罄不擋（D331）：售罄的票仍是「顯示中」，這裡只看 hidden。 */
+     · 門票售罄不擋（D331）：售罄的票仍是「還在的門票」。 */
   const edPublished = () => !!ev && ev.status !== 'draft';
   function leavesNothingToSell(t) {
     return edPublished() && !window.ztorEvents.hasOtherSellable(ev, { tiers: edTiers || [], exceptTier: t });
   }
-  /* 改成隱藏（D329 補充）：這張本來就是隱藏的不算。 */
-  function hidesLastSellable(t) { return leavesNothingToSell(t); }
-  /* 刪除（D330）：刪的是隱藏的票不影響「顯示中的門票」，不擋。 */
-  function deletesLastSellable(t) { return !!t && !t.hidden && leavesNothingToSell(t); }
+  /* 墓碑（2026-10-15，D424 決定 9）：hidesLastSellable()（改成隱藏的可賣性防呆，D329 補充）退場——隱藏不受可賣性防呆限制，
+     最後一張可賣的門票也可以隱藏；下面刪除的防呆不變。 */
+  /* 刪除（D330）：刪掉這張後活動沒有還在的門票、也沒有仍在販售的組合包就擋。
+     D425（2026-10-16）：隱藏的票也算還在，刪最後一張隱藏的票同樣擋（原本 `!t.hidden`：刪隱藏的票不擋）。
+     還沒加進 edTiers 的新票（tmNew）刪了不改變活動，不擋。 */
+  function deletesLastSellable(t) { return !!t && (edTiers || []).indexOf(t) >= 0 && leavesNothingToSell(t); }
   function syncTmDelErr(on) {
     const note = tmEl('ed-tm-foot-note');
     if (!note) return;
-    if (on) { note.textContent = T('ed.tm.del.last', "It's the last visible ticket and no bundle is on sale — it can't be deleted. Keep at least 1 visible ticket or 1 bundle."); note.hidden = false; }
+    if (on) { note.textContent = T('ed.tm.del.last', "It's the last ticket and no bundle is on sale — it can't be deleted. Keep at least 1 ticket or 1 bundle on sale."); note.hidden = false; }
     else syncTmFoot();
-  }
-  function syncTmShowErr(on) {
-    const el = tmEl('ed-tm-show-err');
-    if (el) el.hidden = !on;
   }
   /* ── 單張門票隱藏／顯示（D422 決定三，2026-10-15；5.1.6.3 §2.6「隱藏標示」）────────────────
      取代單張門票的暫停販售。列表檢視每一列一顆、門票彈窗一顆，同一個動作：
      · 營運動作〔推導〕：檢視模式與編輯模式都能按、立即生效——草稿那一張與已儲存的那一張一起翻、只寫 hidden 這一欄，
        基準跟著已儲存的狀態走，所以不算「儲存 N 項變更」、捨棄（從活動重新複製）也不還原（同原本單張暫停的 pauseTierNow）。
      · 套票拆出的 1 人票（hideFix，D329）固定隱藏：停用並說明；已結束、已取消整頁唯讀：停用。
-     · 可賣性防呆：要隱藏的是最後一張可賣的票、又沒有販售中的組合包 → 不翻，回傳 'last' 由呼叫端說明。
+     · 不受可賣性防呆限制（D424 決定 9）：最後一張可賣的票也可以隱藏（原本回傳 'last' 擋下，已撤除）。
      · bookyay 帶入的其他門票可以切換（D391 第 10 題），只影響 ztor 粉絲端。 */
   let tmShown = true;
   function tierVisBlock(t) {
@@ -5332,7 +5350,6 @@
   function toggleTierVisNow(t) {
     if (tierVisBlock(t)) return 'blocked';
     const toHidden = !t.hidden;
-    if (toHidden && hidesLastSellable(t)) return 'last';
     t.hidden = toHidden;
     const saved = (ev.tiers || []).find(x => x.id === t.id);
     if (saved) {
@@ -5364,7 +5381,7 @@
     if (!tmEl('ed-tm-name').value.trim()) e.push('name');
     /* bookyay 套票轉出的 1 人票票價可有小數且鎖定（D328／D329），不走整數檢核。 */
     if (!(tmTier && tmTier.hideFix) && !/^\d+$/.test(String(tmEl('ed-tm-price').value).trim())) e.push('price');
-    if (tmTier && tmNew && !tmShown && hidesLastSellable(tmTier)) e.push('show');   // D422：已存在的門票在按下當下就擋，只剩新門票的草稿值要在套用時檢查
+    /* 墓碑（2026-10-15，D424 決定 9）：新門票草稿「隱藏最後一張可賣」的套用檢查（'show'）退場 */
     if (tmNeedsSess() && !tmEl('ed-tm-sess').value) e.push('sess');   // D381：獨立票要選所屬場次
     /* D389：這張票自己的一組購買條件，期間超出活動上架區間（或限時購買結束晚於活動停售）——擋存，紅字在條件卡上 */
     if (!evIsBky() && !stageRO() && tmRulesOwn && Object.keys(PC.periodErrs(tmRulesOwn, pcTimes(), pcT)).length) e.push('period');
@@ -5603,7 +5620,7 @@
         '<button type="button" class="btn btn--primary btn--sm" data-evrules-save data-i18n="ed.tm.apply">' + tixEsc(T('ed.tm.apply', 'Apply')) + '</button>';
     } else {
       const rows = ruleCondRows(evRuleConds(), null);
-      const noneKey = bky ? 'ed.evrules.none' : 'ed.evrules.none.own';
+      const noneKey = 'ed.evrules.none.own';   /* bookyay 活動在上面就整張收起（D417），這裡只剩自建活動；舊的 bky 分支（ed.evrules.none）2026-10-15 隨 D424 決定 18 清掉 */
       /* 2026-10-12（UI-CHANGES 一百六十九）：沒有任何條件＝檢視態整張卡不出現；編輯態才出現「目前無設定條件」＋「編輯」
          （bookyay 帶入者編輯態寫「bookyay 沒有設定」、不給編輯——條件由 bookyay 管） */
       const tixTab = document.querySelector('.tab-panel[data-panel="tiers"]');
@@ -5813,7 +5830,6 @@
        自建活動創作者自己切換仍是 S55（⚪）。徽章同一個判斷。 */
     if (showRow) { const feat = (fix || (ev && ev.source === 'bookyay')) ? 'S92' : 'S55'; showRow.setAttribute('data-feat', feat); tmEl('ed-tm-show-sec')?.setAttribute('data-feat', feat); if (window.ztorDevState && window.ztorDevState.regate) window.ztorDevState.regate(); }
     syncTmShow();   // D422：狀態文字、按鈕字、停用（1 人票固定隱藏／已結束已取消唯讀）
-    syncTmShowErr(false);
     const sold = Number(t.sold) || 0;
     tmEl('ed-tm-qty').min = sold;
     tmEl('ed-tm-qty-hint').textContent = sold > 0
@@ -5907,17 +5923,12 @@
   /* 墓碑 2026-09-23（D315）：例外費率欄與例外開關的兩個 listener 隨欄位退場。 */
   /* D422 決定三（2026-10-15）：門票彈窗的隱藏／顯示按鈕——與列表每一列的那顆是同一個動作（toggleTierVisNow）。
      已存在的門票：按下立即生效（營運動作，不進頁面草稿）；還沒套用的新門票：只改草稿，跟著「套用」走。
-     要隱藏的是最後一張可賣的票：按鈕不翻、紅字就地說明（可賣性防呆，D329 補充）。 */
+     D424 決定 9：隱藏不受可賣性防呆限制，最後一張可賣的票也照翻（紅字與擋下已撤除）。 */
   tmEl('ed-tm-show')?.addEventListener('click', () => {
     const b = tmEl('ed-tm-show');
     if (!tmTier || b.disabled) return;   // 1 人票固定隱藏；已結束、已取消唯讀
-    if (tmNew) {
-      if (tmShown && hidesLastSellable(tmTier)) { syncTmShowErr(true); return; }
-      tmShown = !tmShown; syncTmShowErr(false); syncTmShow(); return;
-    }
-    const r = toggleTierVisNow(tmTier);
-    if (r === 'last') { syncTmShowErr(true); return; }
-    syncTmShowErr(false);
+    if (tmNew) { tmShown = !tmShown; syncTmShow(); return; }
+    toggleTierVisNow(tmTier);
     tmShown = !tmTier.hidden;
     syncTmShow();
     refreshTix();
@@ -5926,7 +5937,7 @@
   tmEl('ed-tm-save')?.addEventListener('click', () => {
     if (!tmTier || tmRO()) return;   // 2026-10-10：未按編輯不能存；D361 決定三：已結束、已取消唯讀（儲存鈕已收起，這裡再擋一次）
     tmTried = true;
-    if (tmErrors().length) { syncTmShowErr(tmErrors().indexOf('show') >= 0);
+    if (tmErrors().length) {
       if (tmRulesUI && tmRulesUI.check()) tmEl('ed-tm-rules-editor')?.querySelector('[data-rule-tl-err]:not([hidden])')?.scrollIntoView({ block: 'center' });   // D389：帶到超出區間的那張條件卡
       syncTmFoot(); return; }   // 沒過驗證就不關，理由留在頁尾
     /* 墓碑 2026-09-23（D315）：儲存時不再寫回 `feeException`（D311 的逐門票例外費率）。 */
@@ -6044,16 +6055,8 @@
     if (!btn || btn.disabled) return;
     const t = edTiers.find(x => x.id === btn.dataset.tixVis);
     if (!t) return;
-    const r = toggleTierVisNow(t);
-    /* 可賣性防呆（D329 補充、D330）：按下當下擋下並說明——用確認殼當純告知彈窗（同組合商品細節頁、電子商店清單列的做法） */
-    if (r === 'last') {
-      openConfirm({
-        title: T('ed.tix.vis.last.title', 'Can\u2019t hide this ticket'),
-        body: '<p>' + esc(T('ed.tm.show.last', "It's the last visible ticket and no bundle is on sale — it can't be hidden. Keep at least 1 visible ticket or 1 bundle.")) + '</p>',
-        okLabel: T('ed.tix.vis.last.ok', 'Got it')
-      });
-      return;
-    }
+    /* 墓碑（2026-10-15，D424 決定 9）：隱藏最後一張可賣門票的告知彈窗（D329 補充）退場——隱藏不受可賣性防呆限制 */
+    toggleTierVisNow(t);
     renderEdTierTable();
   });
   /* 墓碑 2026-10-15（D422 決定三）：pauseTierNow()（單張門票暫停／恢復販售立即生效，列表暫停鈕與彈窗暫停開關共用）退場，
@@ -7311,7 +7314,7 @@
      切的是組合包三開關的「顯示」（shown，主規格 §7.14）。比照單張門票（toggleTierVisNow）：營運動作〔推導〕，
      檢視與編輯模式都能按、立即生效、不算進「儲存 N 項變更」、捨棄不還原——組合包本來就是獨立物件、不併入活動整頁儲存。
      bookyay 套票自動建立的組合包（fix）也可以切（三開關不鎖，D329 補充）。
-     可賣性防呆（D330、D331）：隱藏後活動沒有任何顯示中的門票、也沒有其他仍在販售的組合包 → 擋下並說明。
+     不受可賣性防呆限制（D424 決定 9，組合包比照門票〔推導〕）：隱藏後活動沒有可賣的東西也照翻；停售、下架、刪除的防呆不變。
      已結束、已取消：整頁唯讀（D361 決定三），按鈕停用〔推導，UIA-264〕。
      原型寫回 events-store 的活動覆寫（ev.bundles），組合商品細節頁讀同一份、看得到同一個顯示狀態。 */
   let bdView = 'cards';
@@ -7323,22 +7326,12 @@
     return '<button type="button" class="btn btn--ghost btn--sm" data-view-safe data-bd-vis="' + esc(b.id) + '" data-feat="S99"' + dis + '>' +
       esc(T(hidden ? 'ed.tix.show' : 'ed.tix.hide', hidden ? 'Show' : 'Hide')) + '</button>';
   }
-  function hidesLastSellableBundle(b) {
-    return edPublished() && b.shown !== false && window.ztorEvents.bundleSelling(b) &&
-      !window.ztorEvents.hasOtherSellable(ev, { tiers: edTiers || ev.tiers || [], exceptBundleId: b.id });
-  }
+  /* 墓碑（2026-10-15，D424 決定 9）：hidesLastSellableBundle()（組合包隱藏的可賣性防呆，D423 推導）退場——
+     組合包的隱藏比照門票，不受可賣性防呆限制；組合包要停賣用既有的隱藏、停售或下架即可（D424 決定 7）。 */
   function toggleBundleVisNow(id) {
     const b = (ev.bundles || []).find(x => x.id === id);
     if (!b || bdVisBlock()) return;
     const toHidden = b.shown !== false;
-    if (toHidden && hidesLastSellableBundle(b)) {
-      openConfirm({
-        title: T('ed.bd.vis.last.title', 'Can\u2019t hide this bundle'),
-        body: '<p>' + esc(T('bd.shown.stop.last', "It's the event's last bundle on sale and the event has no visible ticket — it can't be hidden. Keep at least 1 visible ticket or 1 bundle.")) + '</p>',
-        okLabel: T('ed.tix.vis.last.ok', 'Got it')
-      });
-      return;
-    }
     b.shown = !toHidden;
     window.ztorEvents.saveEdits(ev.id, { bundles: ev.bundles });
     if (window.ztorToast) window.ztorToast.show(T(toHidden ? 'ed.bd.hidden.toast' : 'ed.bd.shown.toast',

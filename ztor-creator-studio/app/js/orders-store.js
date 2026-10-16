@@ -997,6 +997,74 @@
       ],
       amounts: { goods: '$0.00', shipping: '', platform: '−$0.00', payment: '−$0.00', net: '$0.00' },
       total: '$0.00', totalAmt: 0, fx: null
+    },
+    /* ── 已過期（2026-10-15 · D424 決定 1）──────────────────────────────
+       粉絲在付款畫面倒數到期、訂單被捨棄時，平台仍留一筆紀錄，狀態「已過期」：
+         · pay:'expired'＝付款・結算軸的第五個值（unpaid／paid／disputed／cancelled 之外）；
+           沒有付款資訊（PAY_INFO 不登記＝付款欄全「—」）、沒有履約動作（fulfil 空）。
+         · 不計收入：平台費、支付費、淨額一律 0（amounts 寫 0，訂單詳情的金額拆解另走「不計入收入」的版本）。
+         · 不扣庫存：保留的庫存已釋回——原型的庫存不讀訂單，這裡只記事實，不另做扣回。
+         · 沒有領取單位（不產生取貨碼），所以取貨管理與 scanner 不會讀到它們。
+       倒數幾分鐘不在本次範圍（D424 決定 1）；expiredAt 是示意的到期時間。
+       三筆刻意分散：單件出貨、多件出貨＋數位、純數位——讓「已過期」分頁與訂單類型篩選交叉時都有結果。
+       活動門票訂單不產生已過期（活動交易明細只列已付款與已取消，見 event-detail.html 交易明細）。 */
+    {
+      id: 'ZT-10495', date: '2026-06-11', kind: 'shipping',
+      pay: 'expired', fulfil: [], expiredAt: '2026-06-11 20:45',
+      text: 'zt-10495 ren 九龍夜行 連帽外套 已過期 kowloon after dark hoodie expired',
+      buyer: { name: 'Ren T.', shipTo: 'No. 7, Ln 52, Sec. 4, Ren\'ai Rd, Taipei 106, TW', country: 'TW', city: 'Taipei', contact: 'ren.t@example.com' },
+      items: [
+        {
+          nameKey: 'od.item5.name', name: 'Kowloon After Dark hoodie (L)',
+          catKey: 'e-shop.cat.apparel', qty: 1, unit: '$58.00', amt: 58, mode: 'ship',
+          productId: 'hoodie', opts: { size: 'L' },
+          snap: { price: '$58.00', variant: 'L', desc: 'Brushed-fleece hoodie with an embroidered neon-sign mark. Unisex fit.', manage: 'product-detail.html?id=hoodie' }
+        }
+      ],
+      amounts: { goods: '$58.00', shipping: '$5.00', platform: '−$0.00', payment: '−$0.00', net: '$0.00' },
+      total: '$58.00', totalAmt: 58, fx: null
+    },
+    {
+      id: 'ZT-10494', date: '2026-06-10', kind: 'shipping',
+      pay: 'expired', fulfil: [], expiredAt: '2026-06-10 23:10',
+      text: 'zt-10494 sora 六片帽 琺瑯徽章 原聲帶 已過期 cap pin ost expired',
+      buyer: { name: 'Sora K.', shipTo: '3F, No. 15, Fuxing S. Rd, Taipei 105, TW', country: 'TW', city: 'Taipei', contact: 'sora.k@example.com' },
+      items: [
+        {
+          nameKey: 'od.item6.name', name: 'Kowloon After Dark six-panel cap',
+          catKey: 'e-shop.cat.accessories', qty: 1, unit: '$28.00', amt: 28, mode: 'ship',
+          productId: 'cap', opts: {},
+          snap: { price: '$28.00', variant: '', desc: 'Six-panel cap with an embroidered 九龍夜行 mark.', manage: 'product-detail.html?id=cap' }
+        },
+        {
+          nameKey: 'od.item7.name', name: 'Neon sign enamel pin',
+          catKey: 'e-shop.cat.accessories', qty: 2, unit: '$9.00', amt: 18, mode: 'ship',
+          productId: 'pin', opts: {},
+          snap: { price: '$9.00', variant: '', desc: 'Hard-enamel pin shaped like the film\'s neon sign.', manage: 'product-detail.html?id=pin' }
+        },
+        {
+          nameKey: 'od.item3.name', name: 'Kowloon After Dark OST — digital download',
+          catKey: 'cp.dsub.album', qty: 1, unit: '$12.00', amt: 12, mode: 'digital',
+          snap: { price: '$12.00', variant: '', desc: 'Five-track EP — full download with lyrics.', manage: 'product-detail.html?id=album' }
+        }
+      ],
+      amounts: { goods: '$58.00', shipping: '$5.00', platform: '−$0.00', payment: '−$0.00', net: '$0.00' },
+      total: '$58.00', totalAmt: 58, fx: null
+    },
+    {
+      id: 'ZT-10493', date: '2026-06-07', kind: 'digital',
+      pay: 'expired', fulfil: [], expiredAt: '2026-06-07 09:32',
+      text: 'zt-10493 lena 原聲帶 數位 已過期 ost digital expired',
+      buyer: { name: 'Lena W.', shipTo: '', country: '', city: '', contact: 'lena.w@example.com' },
+      items: [
+        {
+          nameKey: 'od.item3.name', name: 'Kowloon After Dark OST — digital download',
+          catKey: 'cp.dsub.album', qty: 1, unit: '$12.00', amt: 12, mode: 'digital',
+          snap: { price: '$12.00', variant: '', desc: 'Five-track EP — full download with lyrics.', manage: 'product-detail.html?id=album' }
+        }
+      ],
+      amounts: { goods: '$12.00', shipping: '', platform: '−$0.00', payment: '−$0.00', net: '$0.00' },
+      total: '$12.00', totalAmt: 12, fx: null
     }
   ];
 
@@ -1016,7 +1084,11 @@
     unpaid:    { key: 'orders.pay.unpaid',    text: 'Unpaid',    cls: 'badge--warning' },
     paid:      { key: 'orders.pay.paid',      text: 'Paid',      cls: 'badge--success' },
     cancelled: { key: 'orders.pay.cancelled', text: 'Cancelled', cls: 'badge--error' },
-    disputed:  { key: 'orders.pay.disputed',  text: 'Disputed',  cls: 'badge--error' }
+    disputed:  { key: 'orders.pay.disputed',  text: 'Disputed',  cls: 'badge--error' },
+    /* D424 決定 1：已過期＝付款期限內沒付款、訂單被捨棄。中性灰（badge--neutral）：
+       已成定局的紀錄、不需要任何人動手，跟「已出貨」同一個「定局」語意；不用紅色，
+       因為它不是出事（不是爭議、不是撤銷），只是一筆沒成立的訂單。 */
+    expired:   { key: 'orders.pay.expired',   text: 'Expired',   cls: 'badge--neutral' }
   };
 
   /* ── 篩選頁籤（F2）的歸屬由狀態算出來，不手寫 ──────────────────────
@@ -1025,7 +1097,7 @@
      2026-09-09（D253）：退款與爭議不再併成一個篩選分組——平台已無退款動作，「已取消」
      與「爭議」是兩件不同的事，各自成頁籤（cancelled 由下面的 o.cancelled 短路產生，
      disputed 走 PAY_TAB）；待取貨（pickup）沒有對應頁籤（F2 只有七個），所以不產生 token。 */
-  var PAY_TAB = { unpaid: 'unpaid', paid: 'paid', disputed: 'disputed' };
+  var PAY_TAB = { unpaid: 'unpaid', paid: 'paid', disputed: 'disputed', expired: 'expired' };   /* expired：D424 決定 1，獨立頁籤「已過期」 */
   var FULFIL_TAB = { toship: 'toship', shipped: 'shipped', completed: 'completed' };
   function computeFilters(o) {
     var tabs = [];
@@ -1094,7 +1166,8 @@
      一樣由同一份資料算，不寫死數字——寫死的話補一筆訂單就會跟清單對不上。
        待出貨（To ship）    ＝履約軸有「待出貨」的訂單數。現場 QR 領取品項不列入
                              物流待出貨（F1 明文），所以只看 toship、不看 pickup。
-       待處理（Pending）    ＝還沒付款、等著被處理的訂單數。
+       待處理（Pending）    ＝還沒付款、等著被處理的訂單數。已過期（pay:'expired'，D424）不算——
+                             付款期限已過、訂單已捨棄，沒有東西要處理。
        已取消／爭議         ＝落在 cancelled 或 disputed 篩選分組的訂單數（2026-09-09
                              隨 D253 從「退款／爭議」改名——平台已無退款動作）。
        近 30 天完成         ＝履約軸已完成、且日期落在最新一筆訂單往前 30 天內的訂單數。
@@ -1202,6 +1275,8 @@
     return '';
   }
   function voidState(item, order) {
+    /* D424 決定 1：已過期的訂單沒成立、沒收錢，品項沒有可撤銷的東西——回 'expired'，呈現層說明原因 */
+    if (order && order.pay === 'expired') return 'expired';
     var agg = unitSummary(item);
     var hasPickup = (item.mode === 'pickup' && item.units && item.units.length) ||
                     (item.mode === 'bundle' && agg.total > 0);
@@ -1257,8 +1332,9 @@
 
   /* ── 整單撤銷（D414，5.1.5.3.1 §2.8「整單撤銷」）────────────────────────────
      wholeVoidState(order) 回答「這張訂單現在能不能整單撤銷」，一個字串讓按鈕與提示吃同一個答案：
-       'ok'         每個品項都未完成履約、也都還沒撤銷 → 可整單撤銷〔推導的條件，待確認〕
+       'ok'         每個品項都未完成履約、也都還沒撤銷 → 可整單撤銷（D424 定案）
        'cancelled'  訂單已經是已取消
+       'expired'    訂單已過期（D424 決定 1：付款期限內沒付款，沒有可撤銷的東西）
        'ticket'     含門票品項（直接買票的品項在活動詳情撤銷，本頁不處理；此為示範處理，ASSUMPTIONS）
        'fulfilled'  有品項已完成履約 → 請改為逐一撤銷尚可撤銷的品項
        'voided'     有品項已撤銷、其餘還在 → 請改為逐一撤銷其餘品項
@@ -1268,6 +1344,7 @@
   function wholeVoidState(order) {
     var items = (order && order.items) || [];
     if (!items.length) return 'fulfilled';
+    if (order.pay === 'expired') return 'expired';   /* D424：已過期訂單沒有撤銷 */
     if (isCancelled(order)) return 'cancelled';
     var st = items.map(function (it) { return voidState(it, order); });
     if (st.indexOf('elsewhere') >= 0) return 'ticket';
@@ -1477,10 +1554,12 @@
      平台費、支付費、淨額不在這裡重算）；買家實付＝商品小計 − 折扣合計 + 運費，與詳情頁的算式一致。
      平台費、支付費匯出為正數（詳情頁畫成負號只是扣項的呈現）。
      原型沒有的資料留空、不編造：收件電話。訂單時間只有付款時間帶時分，同一天才拿來補訂單日期的時分秒。 */
-  /* 匯出用的狀態文字（跟清單徽章同一份字樣）：已取消訂單兩欄都寫已取消；履約可並列時以 / 隔開，沒有履約動作留空 */
+  /* 匯出用的狀態文字（跟清單徽章同一份字樣）：已取消訂單兩欄都寫已取消（已過期同理，D424）；履約可並列時以 / 隔開，沒有履約動作留空 */
   function badgeText(b) { var t = window.i18nT; return b ? ((t && t(b.key)) || b.text) : ''; }
   function payLabel(o) { return badgeText(PAY_BADGE[o.cancelled ? 'cancelled' : o.pay]); }
   function fulfilLabel(o) {
+    /* D424：已過期比照已取消——履約不會發生，兩欄都寫已過期 */
+    if (o.pay === 'expired') return badgeText(PAY_BADGE.expired);
     return o.cancelled ? badgeText(PAY_BADGE.cancelled)
       : (o.fulfil || []).map(function (v) { return badgeText(FULFIL_BADGE[v]); }).join(' / ');
   }
