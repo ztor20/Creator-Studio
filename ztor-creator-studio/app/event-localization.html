@@ -151,8 +151,9 @@
       cancelled: ['fep.status.cancelled', 'Cancelled', 'badge--error'] }[ev.status] || ['fep.status.soon', 'Coming soon', 'badge--info'];
     const tmM = ev.terms || {};
     /* D328：隱藏的票（hidden）交給渲染器略過。墓碑 2026-10-05（D353）：門票簡介（desc／tdesc-<id>）整欄移除 */
+    const kvImg = (ev.images && ev.images.keyvisual) || '';
     const tiers = edTiers.map(t => ({ key: t.id, name: { key: 'tier-' + t.id }, note: '',
-      hidden: !!t.hidden,
+      hidden: !!t.hidden, img: t.img || kvImg,   /* D443：購票方案大圖卡的圖（門票沒有自己的圖＝主視覺）；示範資料沒有門票折扣，offer 不傳 */
       priceObj: S.priceOf(ev, t), priceKey: 'tier:' + t.id,
       soldOut: Number(t.qty) > 0 && Number(t.sold) >= Number(t.qty) }));   /* 墓碑 2026-10-15（D422 決定三）：單張門票的 paused（粉絲頁「暫停售票中」）退場 */
     /* 組合包（D296 形狀）→ 前台組合卡的成員列：票券＝允許票種名單 × 張數、商品＝名稱＋圖（示範資料沒有規格欄）；
@@ -161,13 +162,19 @@
     const bundles = (ev.bundles || []).map(b => {
       const tk = S.bundleTickets(b);
       const names = tk.tierIds.map(x => { const t = edTiers.find(y => y.id === x); return t ? t.name : x; });
-      const goods = (b.products || []).map(x => ({ name: (x && x.name) || String(x), img: (x && x.img) || '', spec: false }));
+      const bpo = S.bundlePriceOf(ev, b);
+      /* D443：成員的單買價＝單價（商品＝定價；票券＝允許門票裡最低的票價，多種時加「起」），票券另帶第一場的日期時間 · 場館 */
+      const goods = (b.products || []).map(x => ({ name: (x && x.name) || String(x), img: (x && x.img) || '', spec: false, qty: 1,
+        unitPriceObj: x && x.price != null ? { base: bpo.base, amount: Number(x.price) || 0, override: {} } : null }));
+      const tixT = tk.tierIds.map(x => edTiers.find(y => y.id === x)).filter(Boolean);
+      const tixLow = tixT.length ? tixT.reduce((lo, t) => (Number(t.price) || 0) < (Number(lo.price) || 0) ? t : lo) : null;
       const listAmt = S.bundleListAmount(ev, b);
-      return { name: b.name, priceObj: S.bundlePriceOf(ev, b), priceKey: 'bundle:' + b.id,
-        listPriceObj: listAmt > Number(b.price) ? { base: S.bundlePriceOf(ev, b).base, amount: listAmt, override: {} } : null,
-        tickets: names.length ? { names, qty: Number(tk.qty) || 1 } : null,
-        goods, img: (goods[0] && goods[0].img) || '',
-        perks: b.perks || [], desc: b.desc || '', note: '' };
+      return { name: b.name, priceObj: bpo, priceKey: 'bundle:' + b.id,
+        listPriceObj: listAmt > Number(b.price) ? { base: bpo.base, amount: listAmt, override: {} } : null,
+        tickets: names.length ? { names, qty: Number(tk.qty) || 1, unitFrom: tixT.length > 1, unitPriceObj: tixLow ? S.priceOf(ev, tixLow) : null,
+          when: [[fmtDate(first.date || ev.date), first.start || ev.start].filter(Boolean).join(' '), ev.venue].filter(Boolean).join(' · ') } : null,
+        goods, imgs: (b.media || []).filter(x => x && x.src && x.kind !== 'video').map(x => x.src), img: (goods[0] && goods[0].img) || '',
+        desc: b.desc || '' };   /* 墓碑 2026-10-16（D443 決定九）：perks（D402）、note 不再傳；限時折扣（offer）示範資料沒有，不傳 */
     });
     const persona = (window.ztorCreator && window.ztorCreator.list && window.ztorCreator.list.find(c => c.handle === (typeof window.ztorPersonaId === 'function' ? window.ztorPersonaId() : 'default'))) || null;
     return {
@@ -197,7 +204,6 @@
     };
   }
 
-  const hasBundles = !!(ev.bundles && ev.bundles.length);
   /* 已結束、已取消整頁唯讀（D361 決定三，5.1.6.3 §2.13；D390 稽核第一節原型第 6 條）：活動詳情收起了入口，但直接開網址仍進得來——
      這一頁自己也照階段鎖：翻譯格與價格格一律唯讀、主鈕（儲存）收起、預覽不能就地改字，次鈕改「返回」。
      共用的 js/publish-stage.js 沒有唯讀模式，由本頁在它每次重畫後把輸入鎖起來（MutationObserver），不另做第二套畫面。 */
@@ -212,7 +218,7 @@
     prices: locPrices(),
     currencies: S.CURRENCIES.slice(),
     baseCurrency: ev.currency || S.DEFAULT_CURRENCY,
-    views: hasBundles ? [{ key: 'ticket' }, { key: 'bundles' }] : [{ key: 'ticket' }],
+    /* 墓碑 2026-10-16（D443 決定一）：views（票券頁／票務商品頁）不再傳——門票與套組合成同一頁 */
     mode: 'save',
     /* D312：活動的多語內容不自動翻譯，改手動——見 js/publish-stage.js 檔頭 translation 選項。 */
     translation: 'manual',

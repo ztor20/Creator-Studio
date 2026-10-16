@@ -5005,6 +5005,29 @@
     /* 2026-09-29（D327 決定八）：拿掉「（手續費除外）」——D316 後粉絲不付手續費，那四個字已無對象。 */
     'fep.refund.fixed':     { en: 'Tickets sold are non-refundable; if the organizer cancels or postpones, the ticket price is refunded in full.',
                               zh: '售出之票券恕不退換；主辦單位取消或延期時全額退還票款。' },
+    /* 2026-10-16 D443：粉絲活動頁照新前台——門票與套組同一頁、套組卡與「看詳情」彈窗、購票方案大圖卡 */
+    'fep.sec.single':       { en: 'Tickets',                          zh: '單票' },
+    'fep.sec.sets':         { en: 'Sets',                             zh: '套組' },
+    'fep.sec.plans':        { en: 'Ticket options',                   zh: '購票方案' },
+    'fep.plans.n':          { en: '{n} ticket options',               zh: '{n} 種購票方案' },
+    'fep.price.sale':       { en: 'Ticket deals',                     zh: '票券優惠' },
+    'fep.pickup.k':         { en: 'Delivery',                         zh: '取票' },
+    'fep.map.link':         { en: 'View on Google Maps ›',            zh: '在 Google 地圖查看 ›' },
+    'fep.deal.tag':         { en: 'Limited-time offer',               zh: '限時折扣' },
+    'fep.deal.until':       { en: 'Offer ends {t}',                   zh: '優惠至 {t}' },
+    'fep.set.pick':         { en: ' (any seat)',                      zh: '（座位任選）' },
+    'fep.set.spec':         { en: ' (any option)',                    zh: '（規格任選）' },
+    'fep.set.more':         { en: 'Details',                          zh: '看詳情' },
+    'fep.set.view':         { en: 'Set details',                      zh: '套組內容' },
+    'fep.set.kind':         { en: 'Set',                              zh: '套組' },
+    'fep.set.tickets':      { en: 'Tickets',                          zh: '票券' },
+    'fep.set.goods':        { en: 'Goods',                            zh: '商品' },
+    'fep.set.single.tix':   { en: '{p} each',                         zh: '單買 {p}／張' },
+    'fep.set.single.goods': { en: '{p} each',                         zh: '單買 {p}／件' },
+    'fep.set.spec.at':      { en: 'Options chosen at checkout',       zh: '規格 下單時選' },
+    'fep.set.item':         { en: 'View item',                        zh: '查看單品' },
+    'fep.set.buy':          { en: 'Buy set',                          zh: '購買套組' },
+    'fep.close':            { en: 'Close',                            zh: '關閉' },
     /* 粉絲視角商品頁 mock（js/fan-product-page.js，D310 商品側 2026-09-23）：前台 shop-item 商品分支的鏡像。
        靜態標籤跟介面語言走、內容跟預覽語系走（同 fep.*）；與活動頁共用的字（返回／收藏／購物車／圖庫／放大／
        前往創作者商店）直接用 fep.* 那幾個鍵，不另開一份。 */

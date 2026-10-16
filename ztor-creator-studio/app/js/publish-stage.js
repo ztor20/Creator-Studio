@@ -34,7 +34,8 @@
  *       priceObj.baseOpen（D330）＝基準幣別欄也可覆寫、可重設為換算值（bookyay 帶入者：基準價是換算來的、鎖定，
  *       但粉絲以創作者幣別付的價可以改）；沒給＝基準欄唯讀（一般活動，要改回原欄位）。
  *     currencies: ['USD','TWD','HKD','SGD','JPY'], baseCurrency: 'TWD',
- *     views:   [{ key:'ticket' }, { key:'bundles' }],       // 給渲染器的視圖清單
+ *     views:   [{ key:'ticket' }, { key:'bundles' }],       // 選填：給渲染器的視圖清單。2026-10-16（D443）起活動兩個宿主不再傳（門票與套組合成一頁），
+ *                                                          //   目前沒有消費者；機制留著，不傳就是 null
  *     previewRender: function (host, api) {},               // 必填：主區怎麼畫
  *     mode: 'publish' | 'save',
  *     translation: 'auto' | 'manual',                       // 選填，預設 'auto'＝現行行為（原文抄成譯文）。
@@ -810,6 +811,8 @@
       if (!rootEl || !mainEl || !(opts.editZones || []).length) return;
       if (!mainEl.contains(e.target)) { hideEdit(); return; }
       if (editBtn.contains(e.target)) return;
+      /* 預覽裡的浮層（D443 看詳情彈窗，帶 data-pp-no-zone）不是可編輯區塊：滑進去就收起「編輯」 */
+      if (e.target.closest('[data-pp-no-zone]')) { hideEdit(); return; }
       var zone = zoneOf(e.target);
       if (zone) showEdit(zone); else hideEdit();
     });
@@ -820,6 +823,8 @@
     if (!host || !options) return null;
     opts = options;
     host.innerHTML = '';
+    /* 穩定的外層：預覽區重掛時（create-event 切語言）不變，fan-event-page 把看詳情彈窗開著哪一組記在這裡（D443） */
+    host.setAttribute('data-pstage-host', '');
     rootEl = el('div', 'pstage');
     mainEl = el('div', 'pstage__main');
     mainEl.setAttribute('data-stage-main', '');

@@ -2066,9 +2066,13 @@
     { sel: ".pdp-details__lead", step: 2 },                           // 描述
     /* 墓碑 2026-10-05（D354）：.pdp-info（粉絲頁說明區塊）隨說明區塊退場——描述的所有區塊都在 .pdp-details__lead 裡 */
     { sel: ".pdp-event-meta", step: 3 },                              // 場地與時間
-    { sel: ".pdp-terms--tiers", step: 5 },                            // 票種與票價
-    { sel: "[data-fep-bundles]", step: 6 },                           // 組合包
-    { sel: ".pdp-details__shipping-block:first-child", step: 7 }      // 取票方式
+    /* 2026-10-16（D443）：門票與套組合成一頁——單票、套組搬進詳情右側欄，另有頁尾的購票方案大圖卡（兩排各自對回步驟）。
+       墓碑：.pdp-terms--tiers（票種與價格收合段）、[data-fep-bundles]（票務商品頁的組合方案橫排）隨兩個視圖退場。 */
+    { sel: "[data-pdp-tiers-target]", step: 5 },                      // 單票
+    { sel: "[data-fep-plans=\"tiers\"]", step: 5 },                  // 購票方案 · 單票
+    { sel: "[data-fep-sets]", step: 6 },                              // 套組
+    { sel: "[data-fep-plans=\"sets\"]", step: 6 },                   // 購票方案 · 套組
+    { sel: "[data-fep-pickup]", step: 7 }                             // 取票方式
   ];
   let stage = null;            // publish-stage 的 handle（只有停在第 8 步時是非 null）
   let qcState = {};            // 五項硬閘（共看派對為七項）的當前狀態，由 syncReview 寫入
@@ -2115,6 +2119,10 @@
     if (!stage) return;
     stage.unmount();
     stage = null;
+    /* 離開預覽步驟（側欄「上一步」、預覽區的「編輯」跳步）就忘掉看詳情彈窗開著哪一組（js/fan-event-page.js 記在
+       [data-pstage-host] 上）；只有切語言／幣別的原地重畫才要照樣打開 */
+    const host = document.querySelector("[data-ce-stage]");
+    if (host) host.__fepOpenKey = null;
   }
   /* 描述的可翻譯欄位（D354，2026-10-05；前身 D340）：每個有字的文字區塊一格，譯文放回同一個區塊；圖片與影片不翻譯、
      位置跟原文相同。key 由 ztorRichBody.fieldKeys() 算——只有一格時沿用原本的 "desc"，多格時 desc~0…；
@@ -2166,12 +2174,9 @@
                     priceObj: bdPriceObj(b), locked: bdBkyHkd(b) != null });   // D331：自建含 bookyay 票者港幣欄同樣鎖定
     });
 
-    const views = bundles.length
-      ? [{ key: "ticket", labelKey: "fep.view.ticket" }, { key: "bundles", labelKey: "fep.view.bundles" }]
-      : [{ key: "ticket", labelKey: "fep.view.ticket" }];
-
+    /* 墓碑 2026-10-16（D443 決定一）：views（票券頁／票務商品頁兩個視圖）不再傳——門票與套組合成同一頁 */
     return {
-      fields, prices, views,
+      fields, prices,
       currencies: S ? S.CURRENCIES.slice() : ["USD", "TWD", "HKD", "SGD", "JPY"],
       baseCurrency: CE_BASE_CURRENCY,   // D330：bookyay 帶入者的基準幣別也是創作者幣別（不再改成港幣）
       mode: "publish",
@@ -2191,8 +2196,44 @@
     };
   }
   /* 粉絲視角活動頁的 model（結構見 js/fan-event-page.js 檔頭）：文案欄給 { key }、資料值給字串 */
+  /* ── 開賣當下的價（D443 決定三，2026-10-16）──────────────────────────────
+     開賣時間＝定時開賣的開賣時間；立即開賣＝現在（發布即開賣）。時間字串都是 datetime-local 的 'YYYY-MM-DDTHH:MM'，可直接比大小。 */
+  function nowLocal() { const d = new Date(), p = n => String(n).padStart(2, "0"); return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "T" + p(d.getHours()) + ":" + p(d.getMinutes()); }
+  const atText = v => String(v || "").replace("T", " ");
+  /* 門票：限時折扣（discTime）的期間涵蓋開賣時間＝限時價；否則一般折扣（disc）＝折扣價；都沒有＝null（照票價）。
+     amount 換成票種基準價的同一比例（票種價可能與這張門票的價不同），渲染器再用比例套到當前幣別。 */
+  function offerAtOpen(t, ty, at) {
+    const p = ticketPrices(t);
+    const base = Number(p.base) || 0, tyBase = Number(ty.price) || 0;
+    if (!(base > 0) || !(tyBase > 0)) return null;
+    const scale = v => Math.round(tyBase * v / base * 100) / 100;
+    const inWin = p.win != null && (!p.winFrom || p.winFrom <= at) && (!p.winTo || at <= p.winTo);
+    if (inWin) return { amount: scale(p.win), timed: true, to: atText(p.winTo) };
+    if (p.hasGeneral) return { amount: scale(p.general), timed: false, to: "" };
+    return null;
+  }
+  /* 組合包：限時折扣（sale＝{ pct, from, to }，日期）在這組的開賣當天生效＝{ pct, to }。這組的開賣時間＝
+     另設的開賣時間（sched.saleStart，js/ticket-bundle.js）；跟隨活動（null）或另設未填就用活動的開賣時間。 */
+  function bundleOfferAtOpen(b, eventAt) {
+    if (!b.saleOn || !b.sale) return null;
+    const pct = Number(b.sale.pct);
+    if (!(pct > 0)) return null;
+    const own = b.sched && b.sched.saleStart;
+    const day = String(own || eventAt || "").slice(0, 10);
+    const from = b.sale.from || "", to = b.sale.to || "";
+    if ((from && day < from) || (to && day > to)) return null;
+    return { pct, to };
+  }
+  /* 商品單價：單一規格＝定價；多規格＝各規格最低價（同組合包編輯器 itemMin） */
+  function goodsUnit(it) {
+    const cash = v => { const n = parseFloat(String(v == null ? "" : v).replace(/[^0-9.\-]/g, "")); return isFinite(n) ? n : 0; };
+    const vs = it.variant === "multiple" && Array.isArray(it.variants) && it.variants.length ? it.variants : null;
+    if (!vs) return cash(it.price);
+    return vs.reduce((m, v) => Math.min(m, cash(v && v.price ? v.price : it.price)), Infinity);
+  }
   function buildFanModel(ctx) {
     const st = ctx.st;
+    const openAt = eventTimes().saleFrom || nowLocal();
     const cSel = document.getElementById("ce-country");
     const first = series.list[0] || {};
     const timeLine = first.start ? (first.end ? first.start + " – " + first.end : first.start) : "";
@@ -2227,7 +2268,11 @@
         hidden: cells.length > 0 && !shown.length,
         /* D367：折扣是固定價——票價列仍寫票價，底下一行寫期間內與期間後的價格（取這個票種第一張可見的門票，
            各場規則不同時以第一張為準，ASSUMPTIONS UIA-215） */
-        deal: (shown[0] || cells[0]) ? dealModel(shown[0] || cells[0]) : null,
+        /* D443 決定三（2026-10-16）：預覽畫「開賣當下」的價——取這個票種第一張可見的門票（各場不同時以第一張為準，UIA-215），
+           限時折扣的期間涵蓋開賣時間＝限時價（畫限時折扣標與優惠至）、否則有一般折扣＝一般折扣價、都沒有＝票價。
+           墓碑：deal（D367 兩段價寫成一行）不再傳。 */
+        offer: (shown[0] || cells[0]) ? offerAtOpen(shown[0] || cells[0], ty, openAt) : null,
+        img: (shown[0] || cells[0]) ? tierImgOf(shown[0] || cells[0]) : eventImage(),
         priceObj: tyPriceObj(ty),
         priceKey: "tier:" + ty.id, soldOut: false
       };
@@ -2245,18 +2290,31 @@
         const ty = inst ? types.find(x => x.id === inst.type) : types.find(x => x.id === id);
         return ty ? ((ty.name || "").trim() || T("ce.tier.untitled", "Untitled tier")) : id;
       });
+      /* 商品成員（D443）：單買價＝單價（D443 決定四；多規格取最低規格價，同組合包編輯器的原價算法），數量每件 1 */
       const goods = (b.items || []).map(it => ({
-        name: it.name, img: it.img || "",
-        spec: it.variant === "multiple" && Array.isArray(it.options) && it.options.length > 0
+        name: it.name, img: it.img || "", qty: 1,
+        spec: it.variant === "multiple" && Array.isArray(it.options) && it.options.length > 0,
+        unitPriceObj: { base: CE_BASE_CURRENCY, amount: goodsUnit(it), override: {} }
       }));
+      /* 票券成員：單買價＝允許門票裡最低的票價（多種時加「起」）；日期時間 · 場館取第一場 */
+      const tyOfInst = id => { const inst = savedTiers().find(x => x.id === id); return inst ? types.find(x => x.id === inst.type) : types.find(x => x.id === id); };
+      const tixTypes = tk.tierIds.filter(id => goneIds.indexOf(id) < 0).map(tyOfInst).filter(Boolean);
+      const tixLow = tixTypes.length ? tixTypes.reduce((lo, ty) => (Number(ty.price) || 0) < (Number(lo.price) || 0) ? ty : lo) : null;
+      /* 素材（D342 media，第 0 格＝封面）只收圖片；沒有素材退回第一件商品圖 */
+      const imgs = (b.media || []).filter(x => x && x.src && x.kind !== "video").map(x => x.src);
       return {
         name: (b.name || "").trim() || bundleEd.suggestName(b),
         priceObj: bdPriceObj(b),
         listPriceObj: bundleEd.listPrice(b) > bundleEd.finalPrice(b) ? { base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.listPrice(b)), override: {} } : null,
         priceKey: "bundle:" + b.id,
-        tickets: names.length ? { names, qty: Number(tk.qty) || 1 } : null,
-        goods, img: (goods[0] && goods[0].img) || "",
-        perks: (b.perks || []).filter(Boolean), desc: (b.desc || "").trim(), note: ""
+        /* D443 決定三＋協調者補充（2026-10-16 使用者確認）：限時折扣看「這組的開賣時間」——組合包另設開賣時間時用它，否則跟隨活動 */
+        offer: bundleOfferAtOpen(b, openAt),
+        tickets: names.length ? { names, qty: Number(tk.qty) || 1, unitFrom: tixTypes.length > 1,
+          unitPriceObj: tixLow ? tyPriceObj(tixLow) : null,
+          when: [[first.date, first.start].filter(Boolean).join(" "), st.venue].filter(Boolean).join(" · ") } : null,
+        goods, imgs, img: imgs[0] || (goods[0] && goods[0].img) || "",
+        desc: (b.desc || "").trim()
+        /* 墓碑 2026-10-16（D443 決定九）：perks（D402 已退場）、note 不再傳 */
       };
     });
     const persona = (function () {
