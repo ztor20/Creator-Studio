@@ -19,7 +19,7 @@
 
 Tier 欄的 release 編號就是程式用的 tier 代號：`devtools.js` 讀到 `🟢 release2.3` 就把該功能歸到 `release2.3`。之後交付 release2.4 時，那批功能改標 `🟢 release2.4`（保留它是哪一版交付的），新的下一版標 `🔵 release2.5`。
 
-本期統計：🟢 release2.3 92 · 🔵 release2.4 43 · ⚪ TBD 40 · ⚫ 退場 6 · 合計 181 列（2026-10-16 D432／D433／D435：補登 S51.1、S47.1、S81.1 🔵；2026-10-15 D424：補登 O40–O42 🔵；2026-10-15 以程式逐列重數更正，原寫 🔵 34／⚪ 39；合計含 `S31.1`；2026-10-15 D422／D423：S75 改 ⚪、補登 S97 🔵（自 S64 拆出）、S98 ⚪、S99 🔵；2026-10-15 D416：補登 O39 🔵；2026-10-14 D414：補登 O38 🔵；2026-10-13 D411：補登 O34–O37 🔵；2026-10-13 D410：補登 S95 ⚪〔非 bookyay 的示範活動，2.4 隱藏〕；2026-10-12 D395：S80 直接促銷同意改 ⚫ 退場；2026-10-09 媒體庫三分頁補登 S93 ⚪；2026-10-09 D383：補登 S87–S91 ⚪、S92 🔵，S78 改 🔵；2026-10-08 D377 補登 S86 ⚪；2026-10-07 依功能表逐列重數，同日補登 S82〔D366〕；2026-10-08 D371：S81 改 🔵、補登 S83 🔵；同日 D375 補登 S85 🔵；各模組小計與功能總數另待校正）
+本期統計：🟢 release2.3 92 · 🔵 release2.4 48 · ⚪ TBD 35 · ⚫ 退場 6 · 合計 181 列（2026-10-16 使用者指示組合包納入 release2.4：S63、S64 ⚪ 改 🔵；同日使用者裁決 release2.4 電子商店範圍：S45、O04、O09 ⚪ 改 🔵；2026-10-16 D432／D433／D435：補登 S51.1、S47.1、S81.1 🔵；2026-10-15 D424：補登 O40–O42 🔵；2026-10-15 以程式逐列重數更正，原寫 🔵 34／⚪ 39；合計含 `S31.1`；2026-10-15 D422／D423：S75 改 ⚪、補登 S97 🔵（自 S64 拆出）、S98 ⚪、S99 🔵；2026-10-15 D416：補登 O39 🔵；2026-10-14 D414：補登 O38 🔵；2026-10-13 D411：補登 O34–O37 🔵；2026-10-13 D410：補登 S95 ⚪〔非 bookyay 的示範活動，2.4 隱藏〕；2026-10-12 D395：S80 直接促銷同意改 ⚫ 退場；2026-10-09 媒體庫三分頁補登 S93 ⚪；2026-10-09 D383：補登 S87–S91 ⚪、S92 🔵，S78 改 🔵；2026-10-08 D377 補登 S86 ⚪；2026-10-07 依功能表逐列重數，同日補登 S82〔D366〕；2026-10-08 D371：S81 改 🔵、補登 S83 🔵；同日 D375 補登 S85 🔵；各模組小計與功能總數另待校正）
 
 ## Build 狀態圖例
 
@@ -124,7 +124,7 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 ## S · 商店管理 — Shop Management
 
-ID 起始 `S01…` ｜ 🟢 46 · 🔵 22 · ⚪ 28 · ⚫ 退場 4
+ID 起始 `S01…` ｜ 🟢 46 · 🔵 28 · ⚪ 25 · ⚫ 退場 4（2026-10-16 以程式逐列重數：原寫 🔵 22／⚪ 28 已過時；同日 S45、S63、S64 ⚪ 改 🔵）
 
 | ID    | 功能                              | English                                          | Tier       | Build    | 備註                                                        |
 | ----- | ------------------------------- | ------------------------------------------------ | ---------- | -------- | --------------------------------------------------------- |
@@ -179,7 +179,7 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 22 · ⚪ 28 · ⚫ 退場 4
 | `S42` | 　　組合包名稱                         | Name                                             | 🟢 release2.3 | ✅ built  |                                                           |
 | `S43` | 　　商品（新增 / 近期預覽）                 | Items                                            | 🟢 release2.3 | ✅ built  |                                                           |
 | `S44` | 　　定價（固定價 / 折扣價）                 | Pricing (fixed/% off)                            | 🟢 release2.3 | ✅ built  |                                                           |
-| `S45` | 　　限量                            | Quantity limit                                   | ⚪ TBD      | ✅⬆ ahead |                                                           |
+| `S45` | 　　限量                            | Quantity limit                                   | 🔵 release2.4 | ✅⬆ ahead | 2026-10-16 使用者裁決 release2.4 電子商店範圍（建立商品、組合包，以及其流程產出的詳情頁與訂單進 2.4；拍賣、需求看板、服飾尺寸屬性不進）：⚪ 改 🔵 release2.4。 |
 | `S46` | 　　發布貼文                          | Publish post                                     | 🟢 release2.3 | ✅ built  | reuses Ztor's existing social-post feature                |
 | `S47` | 　組合包詳情 / 編輯                     | Bundle detail / edit                             | 🟢 release2.3 | ✅ built  |                                                           |
 | `S47.1` | 　　活動組合包：改允許的門票與張數（尚未售出可改、已售出鎖定） | Event bundle: change allowed tickets & per-set quantity | 🔵 release2.4 | ✅⬆ ahead | D433 決定四（2026-10-16）：bundle-detail 編輯模式票券列下方展開允許門票勾選表（共用 `js/tix-tier-table.js`，與 create-bundle 同一張表）；已售出後表格鎖定。功能閘在 JS（未掛元素標記，表只在活動組合包編輯態出現） |
@@ -200,9 +200,9 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 22 · ⚪ 28 · ⚫ 退場 4
 | `S60` | 　粉絲活動頁呈現說明區塊（關於活動下方、太長收合）        | Info sections on the fan event page              | ⚫ 退場      | ✅⬆ ahead | 2026-10-05（D354）已退場——粉絲頁不再另畫說明區塊，描述的區塊照順序畫在「關於活動」（`.pdp-details__lead`）。原註： D340；`js/fan-event-page.js` `.pdp-info[data-feat="S60"]`（create-event 第 8 步、event-localization 預覽） |
 | `S61` | 　活動顯示設定（顯示／隱藏＋隱藏時活動連結）            | Event display setting (shown / hidden + link)    | 🔵 release2.4| ✅⬆ ahead | D340；create-event 步驟 7、event-detail 設定 → 發布設定的「顯示設定」區塊 `[data-feat="S61"]`；2026-10-07 使用者指出 release2.4 的發布設定看不到顯示與隱藏，改 🔵 release2.4；同日 D363：售票中／進行中顯示設定仍可切換，活動隱藏時含其票券的組合包跟著隱藏（bundle-detail `[data-bd-event-hidden-lock]`、create-bundle `[data-cb-tshown-lock]` 同掛 S61）。 |
 | `S62` | 　活動販售的時間層級＋票務商品上架與開賣跟隨／另設 | Event sales time layers + ticket-bundle follow / custom times | 🔵 release2.4| ✅⬆ ahead | D342；create-event 第 7 步售票期間紅字 `[data-ce-tl-err]`、第 5 步限時間紅字、第 6 步「上架與開賣」段；bundle-detail／create-bundle 含票券成員時的 `[data-tb-host]`；event-detail 開賣設定紅字 `[data-ed-tl-err]`；共用 `js/ticket-bundle.js`＋Follow field；2026-10-07 使用者重申「票務有提前販售時間時，定時上架不可晚於該時間」，改 🔵 release2.4；create-event 上架日期與時間下方新增紅字 `[data-ce-tl-err="list-from"]`（指出最早一筆販售時間）；同日 D363：販售結束不晚於活動停售（`js/ticket-bundle.js` `lateEnd()`）。 |
-| `S63` | 　票務商品的購買條件與限購（預設取最嚴、只能收窄） | Ticket-bundle purchase rules & limits | ⚪ TBD      | ✅⬆ ahead | D342；create-event 第 6 步「購買條件與限購」段、bundle-detail `[data-tb-rules-sec]`、create-bundle 預設讀數 `[data-tb-host="cb-rules"]` |
-| `S64` | 　建立活動第 6 步補齊的組合包欄位（素材、限時折扣、優惠碼疊加、逐票種分配；電影關聯 2026-10-15 拆出為 S97） | Ticket-bundle fields in create-event step 6 | ⚪ TBD      | ✅⬆ ahead | D342／5.1.6.1 F20；`js/bundle-editor.js` SPLIT 的 `[data-feat="S64"]` 區塊；2026-10-15 D422 決定二：電影關聯區塊改掛 S97 |
-| `S97` | 　建立活動第 6 步票務商品的電影關聯（自 S64 拆出） | Film link on ticket bundles in create-event step 6 | 🔵 release2.4| ✅⬆ ahead | D422 決定二（2026-10-15）：建立活動流程的票務商品提供電影關聯、release2.4 也提供（5.1.6.1 F20，同 5.1.5.4 F10）。`js/bundle-editor.js` SPLIT 的 `section[data-bd-sec="films"][data-feat="S97"]`（共用 `partials/film-picker.js`）；S64 其餘欄位維持 ⚪ |
+| `S63` | 　票務商品的購買條件與限購（預設取最嚴、只能收窄） | Ticket-bundle purchase rules & limits | 🔵 release2.4| ✅⬆ ahead | 2026-10-16 使用者指示「電子商店的調整也要包含在 release2.4 中，組合包也要補進去」：⚪ 改 🔵 release2.4（D427／D428／D436 都以組合包有購買條件與限購為前提）。D342；create-event 第 6 步「購買條件與限購」段、bundle-detail `[data-tb-rules-sec]`、create-bundle 預設讀數 `[data-tb-host="cb-rules"]` |
+| `S64` | 　建立活動第 6 步補齊的組合包欄位（素材、限時折扣、優惠碼疊加、逐票種分配；電影關聯 2026-10-15 拆出為 S97） | Ticket-bundle fields in create-event step 6 | 🔵 release2.4| ✅⬆ ahead | 2026-10-16 使用者指示「電子商店的調整也要包含在 release2.4 中，組合包也要補進去」：⚪ 改 🔵 release2.4。D342／5.1.6.1 F20；`js/bundle-editor.js` SPLIT 的 `[data-feat="S64"]` 區塊；2026-10-15 D422 決定二：電影關聯區塊改掛 S97；2026-10-16 起區段內欄位全被收起時整段（含標題）一併收起 |
+| `S97` | 　建立活動第 6 步票務商品的電影關聯（自 S64 拆出） | Film link on ticket bundles in create-event step 6 | 🔵 release2.4| ✅⬆ ahead | D422 決定二（2026-10-15）：建立活動流程的票務商品提供電影關聯、release2.4 也提供（5.1.6.1 F20，同 5.1.5.4 F10）。`js/bundle-editor.js` SPLIT 的 `section[data-bd-sec="films"][data-feat="S97"]`（共用 `partials/film-picker.js`）；S64 其餘欄位 2026-10-16 起亦為 🔵 |
 |       | **活動 release2.4 切割（2026-10-07）**          | Events — release2.4 slice                        |            |          | 使用者指示：release2.4 主要只交付「由 bookyay 帶入活動來建立」，其他建立方式先隱藏，看過切割畫面再調整 |
 | `S72` | 　活動模組頁面（活動清單、活動詳情、建立活動）            | Events pages (list, detail, create)              | 🔵 release2.4 | ✅⬆ ahead | events.html／event-detail.html／create-event.html 頁級 `data-page-feat="S72"`；已從 `js/devtools.js`／`js/sidebar.js` 兩份 `FULL_ROUTES` 移出，側欄「活動」在 release2.4 出現 |
 | `S73` | 　由 bookyay 帶入建立活動（搜尋 bookyay 活動→帶入→鎖定欄位） | Create an event by importing from bookyay       | 🔵 release2.4 | ✅⬆ ahead | create-event 第 1 步選類型後的 bookyay 帶入關卡 `[data-bgate]`／`#ce-bky-go`；Admin 創作者活動「繼續設定」帶 `?import=` 直接進入。只登記、不掛標記（關掉會沒有建立路徑） |
@@ -215,7 +215,7 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 22 · ⚪ 28 · ⚫ 退場 4
 | `S78` | 　活動預覽與在地化                          | Event preview & localization                     | 🔵 release2.4| ✅⬆ ahead | event-detail 頁首 `[data-ed-localize]`、設定子分頁「在地化」與其面板；event-localization.html 本身仍是頁級 `full`；2026-10-09 D383 決定七改 🔵 release2.4（對齊 D375 決定四、D330），event-localization.html 頁級改掛 `data-page-feat="S78"`，release2.4 也進得去 |
 | `S81` | 　活動上架／下架（創作者與 Admin 都能操作，含重新上架）＋「已下架」徽章 | Unlist / relist an event + Unlisted badge | 🔵 release2.4| ✅⬆ ahead | D361 決定五（2026-10-07）建；2026-10-08 D371 決定一、四：創作者本人與 Admin 代管態都能下架與重新上架、草稿以外六個階段都有（已結束／已取消重新上架前先提示），改 🔵 release2.4。event-detail 設定分頁 `#ed-unlist`（`[data-ed-unlist]`／`[data-ed-relist]`）、頁首 `#ed-unlisted-badge`；events.html 清單列狀態欄注入的 `[data-ev-unlisted]` 徽章。上架是階段以外的維度，下架不改階段 |
 | `S81.1` | 　　活動發布後只能改庫存（上架中編輯鎖定、翻譯與通知要先下架；活動組合包看自己的上架狀態） | Published & listed event: stock-only edits | 🔵 release2.4 | ✅⬆ ahead | D435（2026-10-16）：event-detail 編輯模式上架中只開放門票張數，說明列 `[data-ed-stockonly-note]`＋下架入口、在地化入口停用；定時上架未到＝視為已下架。bundle-detail 活動組合包上架中「編輯組合」停用＋`[data-bd-stockonly-note]`（只剩鎖定套數）。2026-10-16 D438：另設的上架、下架、開賣、停售時間屬營運動作——bundle-detail 上架中「編輯組合」改回可按、只開放上架與開賣兩節（`bdStockLockApply()`），說明列改「只能改鎖定套數與上架、開賣時間」；另設時間寫回 events-store `sched` |
-| `S82` | 　購票規則的粉絲分級條件（限粉絲分級購買、粉絲分級折扣、限時＋限粉絲分級折扣） | Fan-tier purchase conditions (fan tier only, fan tier discount, limited-time fan tier discount) | ⚪ TBD      | ✅⬆ ahead | D366 決定五／D367 決定三（2026-10-07）：create-event 購票規則「新增條件」選單的三個選項 `[data-cond-add][data-feat="S82"]` 與已加的條件卡 `.cond-list__item[data-feat="S82"]`（活動層票務設定彈窗、單張門票彈窗）；選單是 JS 畫的，畫完呼叫 `ztorDevState.regate()` 重跑 data-feat、換版本時重畫；2026-10-09 D388 起畫法在共用元件 `js/purchase-conds.js`，event-detail 的條件清單（預設購票規則卡編輯態、單張門票彈窗）同樣掛。其餘四種條件（限時購買、限購、折扣、限時折扣）隨 S72 進 release2.4 |
+| `S82` | 　購票規則的粉絲分級條件（限粉絲分級購買、粉絲分級折扣、限時＋限粉絲分級折扣） | Fan-tier purchase conditions (fan tier only, fan tier discount, limited-time fan tier discount) | ⚪ TBD      | ✅⬆ ahead | D366 決定五／D367 決定三（2026-10-07）：create-event 購票規則「新增條件」選單的三個選項 `[data-cond-add][data-feat="S82"]` 與已加的條件卡 `.cond-list__item[data-feat="S82"]`（活動層票務設定彈窗、單張門票彈窗）；選單是 JS 畫的，畫完呼叫 `ztorDevState.regate()` 重跑 data-feat、換版本時重畫；2026-10-09 D388 起畫法在共用元件 `js/purchase-conds.js`，event-detail 的條件清單（預設購票規則卡編輯態、單張門票彈窗）同樣掛。其餘四種條件（限時購買、限購、折扣、限時折扣）隨 S72 進 release2.4 **2026-10-16 使用者裁決**：粉絲分級條件不進 release2.4（純商品組合包的同類條件同樣由 S82 收起，js/purchase-conds.js）。 |
 | `S83` | 　建立活動第 7 步「其他售票時間」摘要（早於正式開賣就能買的門票與票務商品，唯讀＋回到該步修改） | Other sale times summary (create event step 7) | 🔵 release2.4| ✅⬆ ahead | D361 決定一建（2026-10-07，原掛 S62）；2026-10-08 D371 決定四另登記、標 🔵 release2.4。create-event `#ce-sale-other`（`renderOtherSale()`，沒有任何一筆時整塊收起） |
 | `S84` | 　創作者活動管理（Admin：bookyay 匯入活動清單、逐場對應創作者、解除對應） | Creator event management (admin: imported bookyay events, map / unmap creators) | 🔵 release2.4| ✅⬆ ahead | D373 決定三（2026-10-08）：整頁 `admin-creator-events.html` 頁級 `data-page-feat="S84"`（release2.3 預覽導回 E-Shop）；入口同掛——側欄／頂列 Admin 列「創作者活動管理」（`js/sidebar.js` ADMIN_NAV `feat`）、Creator 詳情「已匯入 M 場活動」（`creator-detail.html` `.cd-imported`）。修訂 D324 把本頁列入 Phase 1 那一項。D374 撤除就地建立待啟用帳號。 |
 | `S85` | 　活動暫停售票／恢復販售（創作者與 Admin 都能操作）＋「暫停售票」「完售」徽章 | Pause / resume event sales + Sales paused and Sold out badges | 🔵 release2.4| ✅⬆ ahead | D375 決定七（2026-10-08）：event-detail 設定分頁上下架區塊內 `#ed-pause`（`[data-ed-pause]`／`[data-ed-resume]`，售票中與進行中才出現）、頁首 `#ed-paused-badge`／`#ed-soldout-badge`；events.html 清單列狀態欄注入的 `[data-ev-paused]`／`[data-ev-soldout]` 徽章。暫停與完售都不是階段，資料在 events-store `paused`／`ztor.event-paused`、`isPaused()`／`isSoldOut()` |
@@ -246,20 +246,20 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 22 · ⚪ 28 · ⚫ 退場 4
 
 ## O · 訂單管理 — Order Management
 
-ID 起始 `O01…` ｜ 🟢 26 · 🔵 11 · ⚪ 3 · ⚫ 退場 2
+ID 起始 `O01…` ｜ 🟢 26 · 🔵 13 · ⚪ 1 · ⚫ 退場 2（2026-10-16 O04、O09 ⚪ 改 🔵）
 
 | ID | 功能 | English | Tier | Build | 備註 |
 |---|---|---|---|---|---|
 | `O01` | 資料統計 | KPI stats | 🟢 release2.3 | ✅ built |  |
 | `O02` | 　待出貨 | To ship | 🟢 release2.3 | ✅ built |  |
 | `O03` | 　待處理 | Pending | 🟢 release2.3 | ✅ built |  |
-| `O04` | 　已取消 / 爭議 | Cancelled / dispute | ⚪ TBD | ✅⬆ ahead | 2026-09-09（D253）：由「退款 / 爭議」更名——平台不提供退款動作，KPI 改計已取消／爭議 |
+| `O04` | 　已取消 / 爭議 | Cancelled / dispute | 🔵 release2.4 | ✅⬆ ahead | 2026-10-16 使用者裁決 release2.4 電子商店範圍（建立商品、組合包，以及其流程產出的詳情頁與訂單進 2.4；拍賣、需求看板、服飾尺寸屬性不進）：⚪ 改 🔵 release2.4。 2026-09-09（D253）：由「退款 / 爭議」更名——平台不提供退款動作，KPI 改計已取消／爭議 |
 | `O05` | 　已完成 · 30天 | Completed · 30d | 🟢 release2.3 | ✅ built |  |
 | `O06` | 匯出 | Export | 🟢 release2.3 | ✅ built |  |
 | `O07` | 搜尋訂單 | Search orders | 🟢 release2.3 | ✅ built |  |
 | | **狀態列** | Status filter | | | |
 | `O08` | 　全部 / 待付款 / 已付款 / 待出貨 / 已出貨 / 已完成 | All → Completed | 🟢 release2.3 | ✅ built | 原文「代付款」為筆誤，依規格 Unpaid＝待付款更正 |
-| `O09` | 　已取消 / 爭議 | Cancelled / dispute | ⚪ TBD | ✅⬆ ahead | 2026-09-09（D253）：由「退款 / 爭議」更名，篩選新增獨立 Disputed tab |
+| `O09` | 　已取消 / 爭議 | Cancelled / dispute | 🔵 release2.4 | ✅⬆ ahead | 2026-10-16 使用者裁決 release2.4 電子商店範圍（建立商品、組合包，以及其流程產出的詳情頁與訂單進 2.4；拍賣、需求看板、服飾尺寸屬性不進）：⚪ 改 🔵 release2.4。 2026-09-09（D253）：由「退款 / 爭議」更名，篩選新增獨立 Disputed tab |
 | `O10` | 訂單列表欄位 | Order list fields | 🟢 release2.3 | ✅ built |  |
 | `O11` | 訂單詳情 | Order detail | 🟢 release2.3 | ✅ built |  |
 | | **　內容** | Content | | | |
@@ -345,7 +345,7 @@ ID 起始 `B01…` ｜ 🟢 8 · 🔵 1 · ⚪ 1
 | `B04` | 結帳 | Checkout | 🟢 release2.3 | ✅ built |  |
 | `B05` | 　Apple Pay / 信用卡 (Stripe) | Apple Pay / card | 🟢 release2.3 | ✅ built |  |
 | `B06` | 　爆米花付款 (Pay by POPCORN) | Pay by POPCORN | 🟢 release2.3 | 🟡 gap | net-new payment option |
-| `B07` | 　貨到付款 (COD) | Cash on delivery | ⚪ TBD | ⏳ deferred | removed from Phase 1 |
+| `B07` | 　貨到付款 (COD) | Cash on delivery | ⚪ TBD | ⏳ deferred | removed from Phase 1 **2026-10-16 使用者裁決**：物流尚未導入，貨到付款不進 release2.4。 |
 | `B08` | 訂單確認 | Order confirmation | 🟢 release2.3 | ✅ built |  |
 | `B09` | 取貨 QR（email + 訂單詳情，靜態） | Pickup QR (static, email + order) | 🟢 release2.3 | 🟡 gap |  |
 | `B10` | 公開探索欄（/shops、首頁商品欄） | Public discovery rails | 🔵 release2.4 | ⏳ deferred | internal-only Phase 1 — no public discovery |
