@@ -293,6 +293,8 @@
             </div>
             <!-- 免費訂單（D414）：金額 0 不經金流，上面三格維持「—」、不出現付款編號，這裡補一句說明 -->
             <p class="field__hint" data-od-pay-free hidden data-i18n="od.pay.free">Free order — no payment is taken.</p>
+            <!-- 已過期（D424 決定 1）：付款畫面倒數到期、訂單被捨棄——上面三格維持「—」、沒有付款編號，這裡說明為什麼是空的 -->
+            <p class="field__hint" data-od-pay-expired hidden data-i18n="od.pay.expired">Not paid before the payment deadline, so the order expired.</p>
             <!-- 2026-10-15 目視檢查 C2：右欄約 300px，輸入框＋複製鈕同一列時付款編號最後一個字被切掉；
                  改用既有窄欄變體 .linkf--stack（第一列編號獨佔滿寬、第二列複製鈕靠右），同商品／組合細節頁的非公開連結 -->
             <div class="field" data-od-pay-id-field>
@@ -663,6 +665,13 @@
     shipBtn.textContent = 'Pickup status';
   }
   if (order.pay === 'unpaid') shipBtn.disabled = true;
+  /* D424 決定 1：已過期訂單沒有付款、也不會履約——主操作停用，title 說明原因（同撤銷鈕的停用寫法，不做沉默停用） */
+  if (order.pay === 'expired') {
+    shipBtn.disabled = true;
+    shipBtn.setAttribute('aria-disabled', 'true');
+    shipBtn.setAttribute('data-i18n-title', 'od.expired.why');
+    shipBtn.setAttribute('title', T('od.expired.why', 'This order expired before payment — there is nothing to fulfil, void or resend.'));
+  }
   /* D411：只有門票的訂單沒有出貨或取貨動作（電子門票付款當下就交付），主操作整顆收起 */
   if (order.kind === 'ticket') shipBtn.hidden = true;
 
@@ -793,7 +802,8 @@
     var st = S.voidState(it, order);
     /* D411：門票品項（直接買票）在活動詳情撤銷，本頁不放撤銷鈕；入口在 §2.3.4 門票資料 */
     if (st === 'voided' || st === 'elsewhere') return '';
-    var why = st === 'redeemed' ? (it.redeemed ? { key: 'od.void.why.checkedin', en: "Tickets already checked in — can't be voided" } : (VOID_WHY_FULFILLED[it.mode] || VOID_WHY_FULFILLED.pickup))
+    var why = st === 'expired' ? { key: 'od.expired.why', en: 'This order expired before payment — there is nothing to fulfil, void or resend.' }   /* D424：已過期 */
+      : st === 'redeemed' ? (it.redeemed ? { key: 'od.void.why.checkedin', en: "Tickets already checked in — can't be voided" } : (VOID_WHY_FULFILLED[it.mode] || VOID_WHY_FULFILLED.pickup))
       : (adminScope() ? null : VOID_WHY_ADMIN);
     return '<button class="btn btn--soft btn--destructive btn--sm od-void-open" type="button"' +
       ' data-od-void="' + i + '"' +
@@ -865,6 +875,9 @@
         /* 出貨型／數位品項作廢（D253）：沒有領取單位可失效，改讀品項自己的 voided
            旗標——已作廢的品項一律顯示已取消徽章，不再讀 shipStage／交付狀態。 */
         cellHtml = badge({ cls: 'badge--error badge--inline', key: 'od.unit.status.void', text: 'Cancelled' });
+      } else if (order.pay === 'expired') {
+        /* D424：已過期訂單沒有履約——品項層同訂單層，一律破折號（不是「待出貨」也不是「尚未發行」） */
+        cellHtml = '<span class="text-sub">—</span>';
       } else if (it.mode === 'digital') {
         /* 數位交付狀態看訂單層 delivery.on：有日期＝已交付完成；預購／尚未發行沒有
            日期，顯示待交付而不是已完成（D253 起這種品項可作廢）。 */
@@ -1041,6 +1054,15 @@
     amtHtml += amtRow('od.amt.threshold', 'Platform threshold discount', disc.thresholdAmount, true);
   }
   amtHtml += amtRow('od.amt.net', 'Net to you', A.net, false);
+  /* D424 決定 1：已過期訂單不計收入——金額拆解只留「商品金額（＋運費）」說明這張單原本多少，
+     平台費、支付費、折抵整段不出現（沒有付款就沒有這些），淨額直接寫 0，底下一句說明；收入管理入口收起。 */
+  if (order.pay === 'expired') {
+    amtHtml = amtRow('od.amt.goods', 'Goods', A.goods, false) +
+      (A.shipping ? amtRow('od.amt.shipping', 'Shipping', A.shipping, false) : '') +
+      amtRow('od.amt.net', 'Net to you', A.net, false);
+    var amtFoot = document.querySelector('.od-amt-foot');
+    if (amtFoot) amtFoot.innerHTML = '<p class="field__hint" data-i18n="od.amt.expired">Expired orders don’t count toward revenue, and the reserved stock went back on sale.</p>';
+  }
   var amtHost = $('[data-od-amounts]');
   amtHost.innerHTML = amtHtml;
   /* 金額拆解只畫一次（不像品項表會因作廢重畫），init 一次即可；點擊走 document 級委派。 */
@@ -1074,7 +1096,8 @@
     if (pm && S.methodKey(pm.method)) { mEl.setAttribute('data-i18n', S.methodKey(pm.method)); mEl.textContent = S.methodText(pm.method); }
     else mEl.textContent = '—';
     $('[data-od-pay-id-field]').hidden = !pm;
-    $('[data-od-pay-free]').hidden = !order.free;   /* D414：免費訂單，不經金流 */
+    $('[data-od-pay-free]').hidden = !order.free || order.pay === 'expired';   /* D414：免費訂單，不經金流 */
+    $('[data-od-pay-expired]').hidden = order.pay !== 'expired';               /* D424：付款期限內未付款，訂單已過期 */
     if (pm) $('[data-od-pay-id]').value = pm.paymentId;
   })();
 
@@ -1459,7 +1482,8 @@
       fulfilled: ['od.void.whole.why.fulfilled', 'An item is already fulfilled — void the items that can still be voided one by one'],
       ticket:    ['od.void.whole.why.ticket', 'This order has ticket items — void the tickets in the event detail'],
       voided:    ['od.void.whole.why.voided', 'An item is already voided — void the remaining items one by one'],
-      cancelled: ['od.void.whole.why.cancelled', 'This order is already cancelled']
+      cancelled: ['od.void.whole.why.cancelled', 'This order is already cancelled'],
+      expired:   ['od.expired.why', 'This order expired before payment — there is nothing to fulfil, void or resend.']   /* D424 決定 1 */
     };
     window.renderWholeVoid = function () {
       if (!wholeBtn) return;
@@ -1496,14 +1520,17 @@
     const to = document.getElementById('od-resend-to');
     const err = modal.querySelector('[data-od-resend-err]');
     const isAdmin = () => !!(window.ztorCreator && window.ztorCreator.adminScope && window.ztorCreator.adminScope());
+    /* D424 決定 1：已過期訂單沒有可補寄的信（訂單沒成立）——事實先於身分，不論誰看都停用並說明 */
+    const expired = order.pay === 'expired';
     function renderBtn() {
-      const ok = isAdmin();
+      const ok = !expired && isAdmin();
       btn.disabled = !ok;
       if (ok) { btn.removeAttribute('aria-disabled'); btn.removeAttribute('title'); btn.removeAttribute('data-i18n-title'); }
       else {
+        const k = expired ? 'od.expired.why' : 'od.resend.why.admin';
         btn.setAttribute('aria-disabled', 'true');
-        btn.setAttribute('data-i18n-title', 'od.resend.why.admin');
-        btn.setAttribute('title', T('od.resend.why.admin', 'Only an Admin can resend emails. Contact an Admin.'));
+        btn.setAttribute('data-i18n-title', k);
+        btn.setAttribute('title', expired ? T(k, 'This order expired before payment — there is nothing to fulfil, void or resend.') : T(k, 'Only an Admin can resend emails. Contact an Admin.'));
       }
     }
     function renderLog() {

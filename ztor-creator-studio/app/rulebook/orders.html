@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>訂單列表 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261015a">
-<script src="shell.js?v=20261015a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261015b">
+<script src="shell.js?v=20261015b" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -131,7 +131,7 @@ tr:last-child td{border-bottom:0}
   <thead><tr><th style="width:30%">數字</th><th>算哪些訂單</th></tr></thead>
   <tbody>
     <tr><td>待出貨（To ship）</td><td>等待物流出貨的訂單數<br>現場 QR 領取的品項不算，改在品項上顯示取貨狀態</td></tr>
-    <tr><td>待處理（Pending）</td><td>還在等待處理的訂單數，例如待付款</td></tr>
+    <tr><td>待處理（Pending）</td><td>還在等待處理的訂單數，例如待付款<br>已過期的訂單不算，已是終態、沒有要處理的事</td></tr>
     <tr><td>已取消／爭議（Cancelled / disputes）</td><td>已取消或爭議中的訂單數</td></tr>
     <tr><td>近 30 天完成（Completed · 30d）</td><td>近 30 天已完成的訂單數</td></tr>
   </tbody>
@@ -172,8 +172,9 @@ tr:last-child td{border-bottom:0}
     <tr><td>關鍵字搜尋</td><td>—</td><td>依訂單編號、買家或商品搜尋目前的清單</td></tr>
     <tr><td>訂單日期（起）、訂單日期（訖）</td><td>可以只填一邊</td><td>依下單日期篩選區間</td></tr>
     <tr><td>訂單類型</td><td>—</td><td>選項：<br>全部<br>商品<br>門票<br>組合包<br>依訂單含的品項類型篩選；一筆訂單含好幾種類型時，選其中任一種都會出現，見<a href="#orders-type">訂單類型</a></td></tr>
-    <tr><td>狀態分頁</td><td>—</td><td>選項：<br>全部（All status）<br>待付款（Unpaid）<br>已付款（Paid）<br>待出貨（To ship）<br>已出貨（Shipped）<br>已完成（Completed）<br>爭議（Disputed）<br>已取消（Cancelled）<br>沒有「已退款」選項<br>「已取消」只篩出所有品項都已取消的訂單；只有部分品項被取消的訂單留在原本的狀態</td></tr>
-    <tr><td>匯出（Export）</td><td>—</td><td>放在篩選工作列<br>匯出目前的篩選結果<br>匯出前可勾選「包含收件資料」，見<a href="#orders-export">匯出的檔案內容</a></td></tr>
+    <tr><td>狀態分頁</td><td>—</td><td>選項：<br>全部（All status）<br>待付款（Unpaid）<br>已付款（Paid）<br>待出貨（To ship）<br>已出貨（Shipped）<br>已完成（Completed）<br>爭議（Disputed）<br>已取消（Cancelled）<br>已過期（Expired）<br>沒有「已退款」選項<br>「已取消」只篩出所有品項都已取消的訂單；只有部分品項被取消的訂單留在原本的狀態<br>「已過期」篩出付款畫面倒數到期、沒有付款的訂單，見<a href="#orders-scope">列在這裡的訂單</a></td></tr>
+    <tr><td>匯出（Export）</td><td>—</td><td>放在篩選工作列<br>匯出目前的篩選結果<br>匯出前可勾選「包含收件資料」，見<a href="#orders-export">匯出的檔案內容</a><br>按下後出現「匯出中」提示，檔案產生完成時提示變成匯出完成，並開始下載<br>每次匯出都出現這個提示，不分筆數多少</td></tr>
+    <tr><td>匯出紀錄</td><td>—</td><td>每次匯出留一筆紀錄：誰匯出、何時、篩選條件、筆數<br>創作者與 Admin 都看得到</td></tr>
   </tbody>
 </table></div>
 
@@ -183,7 +184,7 @@ tr:last-child td{border-bottom:0}
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
     <tr><td>檔案格式</td><td>—</td><td>CSV（用逗號分欄的純文字檔）<br>編碼是 UTF-8 加 BOM，Excel 直接打開，中文不會變亂碼<br>目前只提供 CSV</td></tr>
-    <tr><td>匯出範圍</td><td>—</td><td>照目前的篩選結果<br>已取消的訂單照列，狀態欄寫已取消</td></tr>
+    <tr><td>匯出範圍</td><td>—</td><td>照目前的篩選結果<br>已取消的訂單照列，狀態欄寫已取消<br>已過期的訂單照列，付款狀態與履約狀態都寫已過期，付款欄留空</td></tr>
     <tr><td>包含收件資料</td><td>匯出前出現<br>選填，預設不勾</td><td>勾選才多匯出收件姓名、收件電話、收件地址<br>沒勾時，買家只匯出名稱與電子郵件</td></tr>
   </tbody>
 </table></div>
@@ -214,13 +215,15 @@ tr:last-child td{border-bottom:0}
     <tr><td>載入中、載入失敗、沒有權限</td><td>照全站共用的狀態規則顯示</td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.5.3 F1、F2、F3、F4、頁面狀態；主規格 §6、§7.2、§7.3；D169、D252、D253、D411、D416。</p>
+<p class="note">依據：5.1.5.3 F1、F2、F3、F4、頁面狀態；主規格 §6、§7.2、§7.3；D169、D252、D253、D411、D416、D424、D425。</p>
 
 <h2 id="orders-scope"><span class="n"></span>列在這裡的訂單</h2>
 <p>訂單列表收電子商店的所有訂單，也收直接購買活動門票的訂單。一筆訂單算哪一種類型，見<a href="#orders-type">訂單類型</a>；同一筆訂單還會出現在哪裡，見<a href="#orders-where">同一筆訂單出現的地方</a>。</p>
 <ul class="plain">
   <li>金額為 0 的免費訂單也算訂單，照常列出</li>
   <li>免費訂單不經金流，付款資訊顯示「—」</li>
+  <li>粉絲在付款畫面倒數到期沒有付款，訂單被捨棄時仍留一筆，狀態是已過期（Expired）</li>
+  <li>已過期的訂單付款資訊空白、不計入收入，下單時保留的庫存釋回，見<a href="order-detail.html#status">訂單的狀態</a></li>
 </ul>
 
 <h3 id="orders-type">訂單類型</h3>
@@ -237,29 +240,30 @@ tr:last-child td{border-bottom:0}
 <h3 id="orders-where">同一筆訂單出現的地方</h3>
 <ul class="plain">
   <li>直接買門票的訂單，以及含活動門票的組合包訂單，同時列在該活動的交易明細，兩處是同一筆訂單，打開的也是同一個<a href="order-detail.html">訂單詳情</a>，見活動詳情「售票與名單」的<a href="event-detail-sales.html#sales-tx">售票紀錄</a></li>
+  <li>已過期的訂單只在這裡看得到，不列在活動的交易明細</li>
   <li>現場 QR 領取的品項仍在這裡管訂單</li>
   <li>取貨場次與掃碼核銷在取貨管理，核銷結果寫回訂單詳情的品項</li>
 </ul>
-<p class="note">依據：5.1.5.3 頁面定位、F2「訂單類型」、F3「範圍」；5.1.6.3 §2.7；D407、D411、D414。</p>
+<p class="note">依據：5.1.5.3 頁面定位、F2「訂單類型」、F3「範圍」；主規格 §7.2；5.1.6.3 §2.7；D407、D411、D414、D424、D425。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.5.3-訂單管理.md</code>（v1.16）頁面定位、F1～F4、頁面狀態、使用情境</li>
-    <li>規格：<code>5.1.6.3-活動詳情.md</code>（v69）§2.7</li>
-    <li>規格：<code>0-設計規格書.md</code>（v4.59）§6、§7.2、§7.3</li>
-    <li>決策：D169、D252、D253、D407、D411、D414、D416</li>
+    <li>規格：<code>5.1.5.3-訂單管理.md</code>（v1.18）頁面定位、F1～F4、頁面狀態、使用情境</li>
+    <li>規格：<code>5.1.6.3-活動詳情.md</code>（v76）§2.7</li>
+    <li>規格：<code>0-設計規格書.md</code>（v4.65）§6、§7.2、§7.3</li>
+    <li>決策：D169、D252、D253、D407、D411、D414、D416、D424、D425</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>待處理（Pending）算哪些狀態：規格舉例「待付款／待確認」，「待確認」沒有定義</li>
-    <li>匯出筆數很大時，是否改成背景產生，以及門檻是多少</li>
-    <li>匯出紀錄（誰、何時、用什麼篩選條件匯出）要放在哪裡看，以及誰看得到</li>
+    <li>已過期的訂單在清單怎麼顯示：付款與結算狀態寫已過期、履約狀態顯示「—」（目前是推導）</li>
+    <li>「匯出中」提示的位置與樣式、匯出紀錄的入口放在哪裡，目前是畫面示意</li>
     <li>清單的預設排序，以及狀態分頁要不要顯示筆數</li>
     <li>關鍵字搜尋是否打部分字串就能命中、支不支援多個關鍵字</li>
   </ul>
-  <p class="k">最近同步：2026-10-15（至 D416）</p>
+  <p class="k">最近同步：2026-10-16（D425 已過期訂單不計入待處理、匯出寫法、不列在活動交易明細定案）；2026-10-15（D424 已過期訂單、匯出中提示與匯出紀錄）；2026-10-15（至 D416）</p>
 </details>
 </div>
 </body>

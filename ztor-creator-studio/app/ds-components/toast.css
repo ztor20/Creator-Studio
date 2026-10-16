@@ -53,6 +53,43 @@
 .ztor-toast--error .ztor-toast__icon { color: var(--destructive); }
 .ztor-toast__text { min-width: 0; }
 
+/* ------------------------------------------------------------------
+   Corner placement — `.ztor-toasts--corner`（2026-10-15 · D424 決定 3）
+
+   使用者裁示：匯出時「視窗右下角」要有一個「匯出中」的小提示。這是唯一一個
+   不住在底部中央的 toast，理由跟底部中央的理由剛好相反：底部中央的 toast 回答
+   「你剛按的那一下成功了沒」，看一眼就消失；匯出中的提示是一件還在背景進行
+   的工作，會停留到完成，放在中央會一直擋著清單的最後幾列。角落讓它像一個
+   狀態指示器——在視線邊緣、不擋內容，完成時原地轉成「匯出完成」再退場。
+   由 ztorToast.show(text, { place: 'corner' }) 建立獨立的容器；兩個容器可並存。
+   手機寬度仍靠右，左右各留 16px 外距（max-width 已扣掉）。
+   ------------------------------------------------------------------ */
+.ztor-toasts--corner {
+  left: auto;
+  right: var(--sp-24);
+  transform: none;
+  align-items: flex-end;
+}
+@media (max-width: 640px) {
+  .ztor-toasts--corner { right: var(--sp-16); bottom: var(--sp-16); }
+}
+
+/* Busy tone — `.ztor-toast--busy`：工作還在進行。圖示格換成一顆環形 spinner，
+   沿用站上「獨立 spinner」那一種畫法（2px 環、--primary 缺口、.6s，同
+   upload-tile 的 .upload-tile__spinner；STYLE-DECISIONS Q106 的第一種，不新增
+   第四種），尺寸跟成功／錯誤圖示同為 16px。完成時 JS 把同一則 toast 換成 success
+   tone，不另開一則——眼睛盯著的那個位置直接變成「完成」。 */
+.ztor-toast__spinner {
+  display: block;
+  width: var(--sp-16);
+  height: var(--sp-16);
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  animation: ztor-toast-spin .6s linear infinite;
+}
+@keyframes ztor-toast-spin { to { transform: rotate(360deg); } }
+
 .ztor-toast.is-leaving {
   animation: ztor-toast-out 180ms var(--easing) forwards;
 }
@@ -69,6 +106,7 @@
 @media (prefers-reduced-motion: reduce) {
   .ztor-toast,
   .ztor-toast.is-leaving { animation-duration: 1ms; }
+  .ztor-toast__spinner { animation-duration: 1.6s; }   /* 仍要看得出「還在跑」，只是慢下來 */
 }
 
 /* ------------------------------------------------------------------

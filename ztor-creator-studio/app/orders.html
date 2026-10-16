@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2"><!-- D416：匯出確認視窗（js/csv-export.js 動態建立） -->
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2"><!-- D424：匯出紀錄視窗的列（js/csv-export.js openLog） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* F2 工作列版型（對齊電子商店 F3 兩排式）：上排＝匯出＋收合搜尋靠右，下排＝狀態 filter-tabs 獨佔整列。
@@ -99,6 +100,8 @@
             </label>
           </div>
           <button class="btn btn--outline" type="button" data-orders-export data-i18n="orders.btn.export">Export</button>
+          <!-- D424 決定 4：匯出紀錄（誰、何時、篩選條件、筆數、檔名）——匯出鈕旁的次要按鈕，創作者與 Admin 都看得到；視窗由 js/csv-export.js openLog() 建立 -->
+          <button class="btn btn--ghost" type="button" data-orders-export-log data-feat="O42"><i data-lucide="history" class="ztor-icon"></i><span data-i18n="csv.log.btn">Export history</span></button>
         </div>
         <div class="ord-status-row">
           <nav class="filter-tabs filter-tabs--brand" role="tablist" aria-label="Filter by status" data-orders-status>
@@ -116,6 +119,10 @@
                  computeFilters() 算出，與徽章同一份資料。平台不提供退款動作，
                  此分頁涵蓋原本「Refund / dispute」裡的退款／作廢部分。 -->
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="cancelled"><span data-i18n="orders.status.cancelled">Cancelled</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <!-- 已過期（2026-10-15 · D424 決定 1）：粉絲在付款畫面倒數到期、訂單被捨棄後留下的紀錄。
+                 付款・結算軸的第五個值（js/orders-store.js 的 pay:'expired'），不計收入、不扣庫存、不算進「待處理」。
+                 分頁與已過期列都掛 O40（🔵 release2.4）；版本閘收起時列一併收起、不計入其他分頁的數量。 -->
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="expired" data-feat="O40"><span data-i18n="orders.status.expired">Expired</span><span class="filter-tabs__count" data-status-count>0</span></button>
           </nav>
         </div>
       </section>
@@ -220,6 +227,7 @@
         row.setAttribute('data-order-text', o.text);
         row.setAttribute('data-order-date', o.date);                                   /* D411 日期區間 */
         row.setAttribute('data-order-types', window.ztorOrders.typesOf(o).join(' '));   /* D411 訂單類型 */
+        if (o.pay === 'expired') row.setAttribute('data-feat', 'O40');                  /* D424：已過期列跟著版本閘 */
         row.innerHTML =
           '<div class="product-list__cell product-list__order-id" role="cell">#' + esc(o.id) +
             '<button class="btn btn--icon btn--xs product-list__copy" type="button" data-copy="#' + esc(o.id) + '" aria-label="Copy order #" title="Copy order #" data-i18n-aria-label="orders.a.copy" data-i18n-title="orders.a.copy"><i data-lucide="copy" class="ztor-icon"></i></button></div>' +
@@ -253,7 +261,11 @@
 
     const tabsNav = document.querySelector('[data-orders-status]');
     const search = document.querySelector('[data-orders-search]');
-    const rows = [...document.querySelectorAll('[data-order-row]')];
+    const allRows = [...document.querySelectorAll('[data-order-row]')];
+    /* 版本閘（devtools.js）收起的列（目前只有已過期 O40）不算數：清單、各分頁數量、頁尾計數、匯出都只看留下的列。
+       閘在 devtools.js 載入時才套，所以每次重算都重新過濾，並在 ztor:devstate-changed 時重畫一次。 */
+    const liveRows = () => allRows.filter(r => !r.classList.contains('ztd-ver-hidden'));
+    const rows = allRows;
     const noResult = document.querySelector('.orders-noresult');
     const countEl = document.querySelector('[data-orders-count]');
     const footer = document.querySelector('[data-orders-footer]');
@@ -279,7 +291,7 @@
       const q = (search && search.value.trim().toLowerCase()) || '';
       tabsNav.querySelectorAll('.filter-tabs__item').forEach(btn => {
         const val = btn.dataset.statusVal;
-        const cnt = rows.filter(r => {
+        const cnt = liveRows().filter(r => {
           const okStatus = val === 'all' || (r.dataset.orderStatus || '').split(' ').includes(val);
           const okText = !q || (r.dataset.orderText || '').includes(q);
           return okStatus && okText && okOther(r);
@@ -291,7 +303,9 @@
     function apply() {
       const q = (search && search.value.trim().toLowerCase()) || '';
       let shown = 0;
+      const live = liveRows();
       rows.forEach(r => {
+        if (!live.includes(r)) { r.hidden = true; return; }
         const okStatus = status === 'all' || (r.dataset.orderStatus || '').split(' ').includes(status);
         const okText = !q || (r.dataset.orderText || '').includes(q);
         const vis = okStatus && okText && okOther(r);
@@ -300,7 +314,7 @@
       });
       if (noResult) noResult.hidden = shown !== 0;
       if (footer) footer.hidden = shown === 0;
-      if (countEl) countEl.textContent = T('orders.footer.count', 'Showing {n} of {m} orders').replace('{n}', shown).replace('{m}', rows.length);
+      if (countEl) countEl.textContent = T('orders.footer.count', 'Showing {n} of {m} orders').replace('{n}', shown).replace('{m}', live.length);
       refreshCounts();
     }
     tabsNav.querySelectorAll('.filter-tabs__item').forEach(btn => btn.addEventListener('click', () => {
@@ -326,6 +340,18 @@
        確認後在瀏覽器端產生 CSV 下載。檔名＝訂單_起訖日期.csv（沒篩日期＝全部）。
        匯出視窗與 CSV 內容掛 O39（🔵 release2.4）；版本閘關閉（release2.3 預覽）時維持舊行為，只回報筆數。 */
     const exportBtn = document.querySelector('[data-orders-export]');
+    /* D424 決定 4：匯出紀錄的「篩選條件」——存結構、顯示時才翻譯（js/csv-export.js filterText）。沒有任何篩選＝空陣列（顯示「沒有篩選」） */
+    const filterSummary = ship => {
+      const f = [];
+      if (status !== 'all') f.push({ k: 'csv.log.f.status', v: status, vk: 'orders.status.' + status });
+      const from = dFrom && dFrom.value, to = dTo && dTo.value;
+      if (from || to) f.push({ k: 'orders.filter.date', v: (from || '…') + ' – ' + (to || '…') });
+      if (typeSel && typeSel.value !== 'all') f.push({ k: 'orders.filter.type', v: typeSel.value, vk: 'orders.type.' + typeSel.value });
+      const q = search && search.value.trim();
+      if (q) f.push({ k: 'csv.log.f.search', v: q });
+      if (ship) f.push({ k: 'csv.log.f.ship', v: 'yes', vk: 'csv.log.f.ship.yes' });
+      return f;
+    };
     if (exportBtn) exportBtn.addEventListener('click', () => {
       const ids = rows.filter(r => !r.hidden).map(r => r.dataset.orderId);
       const dev = window.ztorDevState;
@@ -338,16 +364,24 @@
         title: T('csv.orders.title', 'Export orders'),
         count: ids.length,
         withShip: true,
+        /* D424 決定 3：確認後右下角「匯出中…」約 1 秒 → 原地轉「匯出完成」並下載；同一刻寫一筆匯出紀錄（ztorCsv.run） */
         onExport: ship => {
           const list = ids.map(id => window.ztorOrders.get(id)).filter(Boolean);
-          const t = window.ztorOrders.exportTable(list, { ship: ship });
           const name = window.ztorCsv.safeName(T('csv.file.orders', 'Orders')) + '_' +
             window.ztorCsv.fileRange(dFrom && dFrom.value, dTo && dTo.value) + '.csv';
-          window.ztorCsv.download(name, window.ztorCsv.build(t.headers, t.rows));
-          if (window.ztorToast) window.ztorToast.show(T('csv.toast', 'Exported {n} orders').replace('{n}', list.length), { tone: 'success' });
+          window.ztorCsv.run({
+            scope: 'orders', name: name, count: list.length, filters: filterSummary(ship),
+            make: () => { const t = window.ztorOrders.exportTable(list, { ship: ship }); return window.ztorCsv.build(t.headers, t.rows); }
+          });
         }
       });
     });
+    const exportLog = document.querySelector('[data-orders-export-log]');
+    if (exportLog) exportLog.addEventListener('click', () => {
+      if (window.ztorCsv && window.ztorCsv.openLog) window.ztorCsv.openLog({ scope: 'orders', title: T('csv.log.title', 'Export history') });
+    });
+    /* 版本切換（devtools）收起／放出已過期列後重算清單與數量 */
+    document.addEventListener('ztor:devstate-changed', apply);
 
     /* 收合搜尋（比照電子商店）：放大鏡展開 field-pill、✕/Esc 收起 */
     const wrap = document.querySelector('[data-orders-search-wrap]');

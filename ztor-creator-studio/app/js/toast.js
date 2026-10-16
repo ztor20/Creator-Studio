@@ -14,6 +14,14 @@
    在下一頁——語言可能已經被切過；查不到 key 時退回存下來的字串，所以畫面上永遠
    不會出現 raw key。
 
+   匯出中提示（2026-10-15 · D424 決定 3）：
+
+   var t = window.ztorToast.show("匯出中…", { place: "corner", tone: "busy", hold: 0 })
+   t.update("匯出完成", { tone: "success" })   → 同一則原地換字換圖示，3.2 秒後自動收起
+   · place: "corner" ＝ 右下角容器（.ztor-toasts--corner）；不帶＝原本的底部中央
+   · tone: "busy" ＝ 圖示換成環形 spinner（.ztor-toast--busy）
+   · hold: 0 ＝ 不自動收起，等呼叫端 update() 或 dismiss()
+
    Announced via aria-live so a screen-reader user hears the same
    confirmation a sighted user sees; the visual toast alone would leave
    them with no feedback that Save did anything.
@@ -23,16 +31,19 @@
 
   var HOLD = 3200;   // long enough to read a short sentence, short enough not to nag
   var QUEUE_KEY = "ztor.toast.queue";   // sessionStorage：只活在這個分頁、關掉即消失
-  var host = null;
+  var hosts = {};   /* place → 容器；底部中央（center）與右下角（corner）各一個，可並存 */
 
-  function ensureHost() {
+  function ensureHost(place) {
+    place = place === "corner" ? "corner" : "center";
+    var host = hosts[place];
     if (host && document.body.contains(host)) return host;
     host = document.createElement("div");
-    host.className = "ztor-toasts";
+    host.className = "ztor-toasts" + (place === "corner" ? " ztor-toasts--corner" : "");
     host.setAttribute("role", "status");
     host.setAttribute("aria-live", "polite");
     host.setAttribute("aria-atomic", "false");
     document.body.appendChild(host);
+    hosts[place] = host;
     return host;
   }
 
@@ -41,20 +52,28 @@
     error: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="ztor-icon"><path d="M12 8v5M12 16.5v.01"/><path d="M12 3l9 16H3z"/></svg>'
   };
 
+  function toneOf(t) { return t === "error" || t === "busy" ? t : "success"; }
+  function paintTone(el, tone) {
+    el.className = "ztor-toast" + (tone === "success" ? "" : " ztor-toast--" + tone);
+    el.querySelector(".ztor-toast__icon").innerHTML = tone === "busy"
+      ? '<span class="ztor-toast__spinner" aria-hidden="true"></span>'
+      : ICON[tone];
+  }
+
   function show(message, opts) {
     opts = opts || {};
-    var tone = opts.tone === "error" ? "error" : "success";
     var el = document.createElement("div");
-    el.className = "ztor-toast" + (tone === "error" ? " ztor-toast--error" : "");
-    el.innerHTML = '<span class="ztor-toast__icon">' + ICON[tone] + "</span>" +
+    el.innerHTML = '<span class="ztor-toast__icon"></span>' +
                    '<span class="ztor-toast__text"></span>';
+    paintTone(el, toneOf(opts.tone));
     el.querySelector(".ztor-toast__text").textContent = message;
-    ensureHost().appendChild(el);
+    ensureHost(opts.place).appendChild(el);
 
-    var gone = false;
+    var gone = false, timer = null;
     function dismiss() {
       if (gone) return;
       gone = true;
+      if (timer) clearTimeout(timer);
       el.classList.add("is-leaving");
       /* Remove on animationend, with a timer as the backstop — an
          animationend that never fires (background tab) would otherwise
@@ -63,9 +82,23 @@
       el.addEventListener("animationend", done, { once: true });
       setTimeout(done, 400);
     }
-    setTimeout(dismiss, opts.hold || HOLD);
-    el.addEventListener("click", dismiss);
-    return { dismiss: dismiss };
+    function arm(hold) {
+      if (timer) clearTimeout(timer);
+      timer = hold === 0 ? null : setTimeout(dismiss, hold || HOLD);
+    }
+    /* 原地更新（D424 匯出中 → 匯出完成）：換字、換圖示，重新起算停留時間；
+       沒帶 hold 就照一般 toast 的 3.2 秒收起。已收起的不再復活。 */
+    function update(text, o) {
+      o = o || {};
+      if (gone) return;
+      if (text != null) el.querySelector(".ztor-toast__text").textContent = text;
+      if (o.tone) paintTone(el, toneOf(o.tone));
+      arm(o.hold);
+    }
+    arm(opts.hold);
+    /* 點一下收起；進行中的不給點掉——點掉就看不到「完成」了 */
+    el.addEventListener("click", function () { if (!el.classList.contains("ztor-toast--busy")) dismiss(); });
+    return { dismiss: dismiss, update: update };
   }
 
   /* ── Cross-page queue ───────────────────────────────────────────────

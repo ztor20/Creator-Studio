@@ -2575,12 +2575,15 @@
     return round2((tix + goods) * (1 - d / 100));
   }
   /* ── 可賣性防呆（5.1.6.1 F22，D330 → D331 補範圍 → 2026-09-30 D340 補排程、預告期、發布前後同口徑）────────
-     活動發布之後，至少要有 1 張顯示中的門票，或 1 組仍在販售的組合包。
+     活動發布之後，至少要有 1 張門票，或 1 組仍在販售的組合包。
+     2026-10-16 D425 決定一：門票那一半從「顯示中的門票」改成「還在的門票」——未刪除的門票，顯示或隱藏都算
+     （隱藏是暫時的營運動作，隨時可以再顯示；防呆只防刪光、停光、下架光）。門票全部隱藏後，組合包的停售、下架、封存、刪除不再被擋；
+     刪除最後一張還在的門票（又沒有仍在販售的組合包）照舊擋。發布前檢核（5.1.6.1 F11 第五項，create-event 的 hasSellable）不變，仍看顯示中。
      「仍在販售」＝含本活動票券、未刪除、未封存，且上架、顯示，並處於開賣中或預告期。活動資料的組合包沒有三開關欄位
      （三開關的工作副本只在組合商品細節頁、電子商店清單列），以旗標代位：listed:false／shown:false／archived／stopped／
      deleted 任一成立＝不在販售；onSale:false 時只有「預告期」還算（D340：已上架、已顯示、尚未開賣，且開賣時間在未來——
      saleStart 在 now 之後）。沒有開賣排程的 onSale:false（例如重新上架後退回未開賣）算不算預告期〔產品待確認〕，
-     原型不算（ASSUMPTIONS UIA-190）。示範資料都沒寫＝一律仍在販售。門票售罄不影響「顯示中」——售罄是正常結束，不擋。 */
+     原型不算（ASSUMPTIONS UIA-190）。示範資料都沒寫＝一律仍在販售。門票售罄不影響「還在」——售罄是正常結束，不擋。 */
   function bundleSelling(b, now) {
     if (!b || b.listed === false || b.shown === false || b.archived || b.stopped || b.deleted) return false;
     if (b.onSale !== false) return true;
@@ -2592,7 +2595,8 @@
   function hasOtherSellable(ev, opts) {
     opts = opts || {};
     var tiers = opts.tiers || (ev && ev.tiers) || [];
-    var visible = tiers.some(function (t) { return t !== opts.exceptTier && !t.hidden; });
+    /* D425：還在的門票（在 tiers 裡＝未刪除），隱藏的也算；原本 `&& !t.hidden`（顯示中才算） */
+    var hasTicket = tiers.some(function (t) { return t !== opts.exceptTier; });
     var at = opts.at ? new Date(String(opts.at).replace(' ', 'T')).getTime() : 0;
     var ends = function (v) { return v && new Date(String(v).replace(' ', 'T')).getTime() <= at; };
     var selling = ((ev && ev.bundles) || []).some(function (b) {
@@ -2600,7 +2604,7 @@
       if (goneAllOf(ev, b, tiers)) return false;   // D391 第 13 題：允許的門票都隨場次刪了＝整組不能賣
       return !(at && (ends(b.unlistAt) || ends(b.saleEnd)));
     });
-    return visible || selling;
+    return hasTicket || selling;
   }
   /* 隨場次刪除的門票（2026-10-09 · D391 第 13 題，5.1.5.9 §2.3「場次被刪除時的票券成員」）：開賣前移除場次、一併刪除的門票若列在
      組合包允許清單，活動詳情儲存時記進 ev.goneTiers（[{ id, name }]）。組合包保留；這些門票在組合商品細節頁顯示為停用、粉絲端看不到。

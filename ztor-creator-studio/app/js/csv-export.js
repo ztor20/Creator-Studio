@@ -11,6 +11,18 @@
                                 opts: { title, count, withShip, note, onExport(includeShip) }
      · fileRange(from, to)    → 檔名用的起訖日期字串；兩邊都沒填回傳「全部」。
      · safeName(s)            → 檔名不能含的字元換成空白。
+     · run(opts)              → 匯出中提示＋產檔下載＋寫一筆匯出紀錄（D424 決定 3、4，2026-10-15）。
+                                opts: { scope, name, count, filters, make() → CSV 文字 }
+                                右下角 toast「匯出中…」（ztorToast place:'corner' tone:'busy'），約 1 秒後原地轉成
+                                「匯出完成」並觸發下載；同一刻寫進匯出紀錄。版本閘 O41 關閉時不顯示匯出中提示、
+                                直接下載＋底部完成 toast（O39 原行為）；O42 關閉時不寫紀錄。
+     · openLog(opts)          → 匯出紀錄視窗：誰、何時、篩選條件、筆數、檔名，新的在上。opts: { scope, title }
+     · log(scope)             → 讀某個範圍的紀錄陣列（新的在前）。
+
+   匯出紀錄（D424 決定 4）：創作者與 Admin 都看得到；原型存在 localStorage（key ztor.export.log，重新整理保留，
+   上限 200 筆）。scope 區分來源：'orders'＝訂單管理、'tx:<活動 id>'＝那一場活動的交易明細。
+   「誰」記目前的身分與名稱：創作者本人＝persona 名稱；Admin 代管＝「Admin · 代管 <創作者>」。
+   篩選條件存成結構（[{ k: 標籤 key, v: 值, vk: 值的 key }]），顯示時才翻譯——切語言後舊紀錄跟著換。
 
    視窗沿用既有 canonical 對話框殼（.payout-modal／.payout-dialog，站上所有確認彈窗同一套）
    ＋ .zcheck 核取框，沒有新 CSS；組裝規則寫在 design-system.md §5.1.12（Export confirm）。
@@ -126,5 +138,126 @@
     (n ? go : m.querySelector('[data-csv-cancel]')).focus();
   }
 
-  window.ztorCsv = { build: build, download: download, confirm: confirm, fileRange: fileRange, safeName: safeName, cell: cell };
+  /* ── 匯出中提示＋匯出紀錄（D424 決定 3、4）──────────────────────────── */
+  var BUSY_MS = 1000;              /* 匯出中停留約 1 秒再轉完成：原型產檔是瞬間的，留一拍讓人看得到「正在匯出」 */
+  var LOG_KEY = 'ztor.export.log';
+  var LOG_MAX = 200;
+  var featOn = function (id) { var d = window.ztorDevState; return !(d && d.featOn && !d.featOn(id)); };
+
+  function readAll() {
+    try { var a = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); return Array.isArray(a) ? a : []; }
+    catch (e) { return []; }
+  }
+  function log(scope) { return readAll().filter(function (r) { return r && r.scope === scope; }); }
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function nowText() {
+    var d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  /* 誰：Role · 身分（sidebar.js 的 window.ztorCreator）＋目前 persona 的名稱 */
+  function whoNow() {
+    var C = window.ztorCreator, admin = !!(C && C.adminScope && C.adminScope());
+    var pid = typeof window.ztorPersonaId === 'function' ? window.ztorPersonaId() : 'default';
+    var me = C && C.list ? C.list.filter(function (c) { return c.handle === pid; })[0] : null;
+    return { role: admin ? 'admin' : 'creator', name: me ? me.name : '' };
+  }
+  function addLog(rec) {
+    var all = readAll();
+    all.unshift(rec);
+    try { localStorage.setItem(LOG_KEY, JSON.stringify(all.slice(0, LOG_MAX))); } catch (e) {}   /* 存不了（無痕、配額）就安靜放棄，不擋下載 */
+  }
+
+  function run(opts) {
+    var n = opts.count || 0;
+    var finish = function () {
+      download(opts.name, opts.make());
+      if (featOn('O42')) addLog({ scope: opts.scope, at: nowText(), who: whoNow(), filters: opts.filters || [], count: n, file: opts.name });
+      if (opts.onDone) opts.onDone();
+    };
+    var doneText = function () { return T('csv.done', 'Export complete · {n} orders').replace('{n}', n.toLocaleString('en-US')); };
+    var Toast = window.ztorToast;
+    if (!featOn('O41') || !Toast) {           /* 版本閘關閉：沿用 O39 原行為——直接下載、底部完成提示 */
+      finish();
+      if (Toast) Toast.show(T('csv.toast', 'Exported {n} orders').replace('{n}', n), { tone: 'success' });
+      return;
+    }
+    var t = Toast.show(T('csv.busy', 'Exporting {n} orders…').replace('{n}', n.toLocaleString('en-US')), { place: 'corner', tone: 'busy', hold: 0 });
+    setTimeout(function () {
+      finish();
+      t.update(doneText(), { tone: 'success' });
+    }, BUSY_MS);
+  }
+
+  /* ── 匯出紀錄視窗 ─────────────────────────────────────────────
+     沿用 canonical 對話框殼（.payout-modal／.payout-dialog）＋ .data-list 列（同訂單詳情撤銷視窗的品項清單）：
+     一筆一列，標題＝檔名；第一行小字＝時間 · 誰；第二行＝篩選條件 · 筆數。沒有紀錄時一句空狀態。 */
+  var logModal = null;
+  function escH(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function whoText(w) {
+    w = w || {};
+    if (w.role === 'admin') return w.name ? T('csv.log.who.admin.for', 'Admin · managing {name}').replace('{name}', w.name) : 'Admin';
+    var role = T('csv.log.who.creator', 'Creator');
+    return w.name ? w.name + ' · ' + role : role;
+  }
+  function filterText(list) {
+    if (!list || !list.length) return T('csv.log.nofilter', 'No filters (everything)');
+    return list.map(function (f) {
+      var v = f.vk ? T(f.vk, f.v) : f.v;
+      return T(f.k, f.k) + T('csv.log.sep', ': ') + v;
+    }).join(T('csv.log.join', ' · '));
+  }
+  function ensureLog() {
+    if (logModal) return logModal;
+    logModal = document.createElement('div');
+    logModal.className = 'payout-modal';
+    logModal.hidden = true;
+    logModal.innerHTML =
+      '<div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="csv-log-title">' +
+        '<div class="payout-dialog__head">' +
+          '<h3 class="payout-dialog__title" id="csv-log-title" data-csv-log-title></h3>' +
+          '<button class="btn btn--icon btn--sm" type="button" data-csv-log-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>' +
+        '</div>' +
+        '<div class="payout-dialog__body">' +
+          '<p class="field__hint" data-csv-log-sub></p>' +
+          '<div class="data-list mt-16" data-csv-log-list></div>' +
+          '<p class="field__hint mt-16" data-csv-log-empty hidden></p>' +
+        '</div>' +
+        '<div class="payout-dialog__foot">' +
+          '<button class="btn btn--ghost btn--sm" type="button" data-csv-log-close data-csv-log-done></button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(logModal);
+    if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(logModal);
+    var closeLog = function () { logModal.hidden = true; document.body.classList.remove('is-modal-open'); };
+    logModal.querySelectorAll('[data-csv-log-close]').forEach(function (el) { el.addEventListener('click', closeLog); });
+    logModal.addEventListener('click', function (e) { if (e.target === logModal) closeLog(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !logModal.hidden) closeLog(); });
+    return logModal;
+  }
+  function openLog(opts) {
+    var m = ensureLog();
+    var rows = log(opts.scope);
+    m.querySelector('[data-csv-log-title]').textContent = opts.title || T('csv.log.title', 'Export history');
+    m.querySelector('[data-csv-log-sub]').textContent = T('csv.log.sub', 'Every export from this page — who, when, which filters, how many orders and the file name. Creators and Admins both see it.');
+    m.querySelector('[data-csv-log-list]').innerHTML = rows.map(function (r) {
+      return '<div class="data-list__row" data-csv-log-row><div class="data-list__row-main"><div class="data-list__body">' +
+        '<div class="data-list__title">' + escH(r.file) + '</div>' +
+        '<div class="data-list__meta">' + escH(r.at) + ' · ' + escH(whoText(r.who)) + '</div>' +
+        '<div class="data-list__meta">' + escH(filterText(r.filters)) + ' · ' +
+          escH(T('csv.log.count', '{n} orders').replace('{n}', Number(r.count || 0).toLocaleString('en-US'))) + '</div>' +
+      '</div></div></div>';
+    }).join('');
+    m.querySelector('[data-csv-log-list]').hidden = !rows.length;
+    var empty = m.querySelector('[data-csv-log-empty]');
+    empty.hidden = !!rows.length;
+    empty.textContent = T('csv.log.empty', 'No exports yet. Each export you make shows up here.');
+    m.querySelector('[data-csv-log-done]').textContent = T('csv.close', 'Close');
+    m.querySelector('[data-csv-log-close][aria-label]').setAttribute('aria-label', T('csv.close', 'Close'));
+    m.hidden = false;
+    document.body.classList.add('is-modal-open');
+    m.querySelector('[data-csv-log-done]').focus();
+  }
+
+  window.ztorCsv = { build: build, download: download, confirm: confirm, fileRange: fileRange, safeName: safeName, cell: cell,
+                     run: run, log: log, openLog: openLog };
 })();
