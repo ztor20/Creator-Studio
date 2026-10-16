@@ -1987,7 +1987,10 @@
         setBadgeText(main, META.unavailable.i18n);
         return;
       }
-      if (main && evb && status !== 'soldout') {
+      /* 2026-10-16 修正：活動還能上架、是組合包自己下架（或活動下架）→ 徽章寫「已下架」，不套活動的售票中／已排程；
+         活動已結束／已取消照用活動徽章（D437）。 */
+      const evSelfUnlisted = evRow && status === 'unlisted' && evRow.status !== 'ended' && evRow.status !== 'cancelled';
+      if (main && evb && status !== 'soldout' && !evSelfUnlisted) {
         main.className = 'badge badge--' + evb[0];
         setBadgeText(main, evb[1]);
       } else if (main && META[status]) {
@@ -2499,7 +2502,8 @@
        見 ASSUMPTIONS BDL-001 第 3 批追記）。這裡依每一場活動注入一列：
          · 活動狀態為草稿 → 不列（含 Draft 篩選；D294 決定二）
          · 其餘 → 列上顯示成員摘要（票種 × 張數＋商品）與所屬活動；狀態由活動推導（eventBundleModel）：
-           篩選桶：已排程＝即將開賣、售票中／進行中＝販售中、已結束＝已結束、已取消＝已下架（隨活動一同下架，D292）；
+           篩選桶：已排程＝即將開賣、售票中／進行中＝販售中、已結束與已取消＝已下架（已取消隨活動一同下架，D292；
+           已結束自動下架、不能重新上架，D352／D437 決定一，2026-10-16 起由「已結束」桶改進已下架桶）；
            徽章字與色態跟著活動（paintBadges 的 EVB 對照，D294 補述）
          · 點列／編輯 → bundle-detail.html?id=<組合包 id>&ev=<活動 id>（同 id 多場時開到這一場的那一組）
        列標 data-event-bundle="<活動 id>"，products-store 的 patchBundleRows 會跳過它；rowModel 看到它就問 eventBundleModel。
@@ -2513,12 +2517,18 @@
       /* D363（活動設定是最高優先層級）：活動已下架 → 組合包不算上架；活動隱藏 → 組合包在本清單一律算隱藏。
          列上的 data-shown 仍是組合包自己的值、照存，活動切回顯示後照它（evHidden 讓顯示開關知道要停用、寫原因）。 */
       const evHidden = !!(ev.publish && ev.publish.shown === false);
-      const listed = (st === 'on-sale' || st === 'live' || st === 'scheduled' || st === 'ended') && !ev.unlisted;
+      /* D437 決定一（2026-10-16）：活動已結束＝組合包已下架、不能重新上架（同 bundle-detail evBoundsOf().canList、partials/bundle-relist.js） */
+      /* 2026-10-16 修正：上架與顯示也讀組合包自己的值（b.listed／b.shown，缺＝上架／顯示；同 bundle-detail 的 listedByEv && b.listed !== false），
+         活動仍是上限。列上的 data-shown 是本頁切過開關後的值，優先於 b.shown。 */
+      const listedByEv = (st === 'on-sale' || st === 'live' || st === 'scheduled') && !ev.unlisted;
+      const listed = listedByEv && b.listed !== false;
+      const ownShown = row.dataset.shown != null ? row.dataset.shown !== 'false' : b.shown !== false;
       const entity = {
         id: b.id, isEventBundle: true, draft: st === 'draft', listed: listed, listAt: null, unlistAt: null,
-        shown: row.dataset.shown !== 'false' && !evHidden, evHidden: evHidden, privateLink: null,
+        shown: ownShown && !evHidden, evHidden: evHidden, privateLink: null,
         onSale: st !== 'scheduled', saleStart: null, saleEnd: (st === 'ended' && ev.date) ? ev.date + 'T23:59' : null,
-        archived: false, unlistReason: st === 'cancelled' ? { type: 'event-cancelled', eventName: ev.name } : null
+        archived: false, unlistReason: st === 'cancelled' ? { type: 'event-cancelled', eventName: ev.name }
+          : (st === 'ended' ? { type: 'event-ended', eventName: ev.name } : null)
       };
       /* 可售套數（2026-09-21 D296 決定四）＝各允許票種 floor(剩餘 ÷ 每組張數) **加總**（粉絲任選一種，任一票種剩餘 ≥ n 即可賣），
          再與（上限 − 已售）取最小（同 bundle-detail 的算法；商品成員在 events-store 無池，視為不限量） */

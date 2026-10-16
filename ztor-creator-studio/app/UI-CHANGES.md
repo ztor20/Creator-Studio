@@ -13,6 +13,21 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-16（二百五十六）· D437 活動結束後組合包不能重新上架、賣出後上架與開賣時間仍可改
+
+**標籤**：release2.4
+
+依據 D437 決定一、二（使用者回「照建議」，2026-10-16）。決定四（重新上架後「未開賣」沒存回）屬錯誤修正，依檔頭規定不記。
+
+**A spec-derived**
+
+- **活動已結束或已取消 → 組合包不能重新上架**（D437 決定一，與 D352「活動結束自動下架」一致）。三處原本把「活動已結束」當成可以上架，改成同一口徑：
+  - `bundle-detail.html` `evBoundsOf().canList` 拿掉已結束：上架開關停用，上架卡說明句改分四種——已結束（新 key `bd.event.ended-lock`「活動已結束，這個組合包不能重新上架」）、已取消（新 key `bd.event.cancelled-lock`；原本已取消的活動同時掛已下架，誤顯示成「活動重新上架前無法上架」）、活動已下架、其他未上架。
+  - `partials/bundle-relist.js` `defaultTicketBlocked()` 拿掉已結束；頁首「上架」鈕仍在，按下跳純告知彈窗，被擋原因是活動已結束或已取消時改用新標題 `e-shop.relist.ticket-ended-title`「不能重新上架」與內文 `e-shop.relist.ticket-ended-body`，不叫創作者「先讓活動回到上架」。
+  - `e-shop.html` `eventBundleModel()` 拿掉已結束：活動已結束的組合包列改進「已下架」篩選桶（徽章仍寫活動的「已結束」，比照已取消的做法），補 `unlistReason: event-ended`。
+- **賣出後另設的上架、下架、開賣、停售時間可改**（D437 決定二）：查過 `bundle-detail.html`、`js/ticket-bundle.js`、`js/bundle-editor.js`，已售出只鎖成員、張數與商品，沒有鎖時間，不用解鎖；活動組合包上架中仍照 D435 要先下架才能編輯。已售出說明句補上「上架與開賣時間」：`bd.members.locked`（組合商品細節頁）、`cpp.bd.sp.locked`（建立活動的組合包編輯器），中英都改。
+- 未升 `?v=`（固定字串）。推導見 ASSUMPTIONS UIA-269。
+
 ## 2026-10-16（二百五十五）· release2.4 示範資料補齊（稽核 19 個缺口＋4 個順帶發現）
 
 **標籤**：release2.4

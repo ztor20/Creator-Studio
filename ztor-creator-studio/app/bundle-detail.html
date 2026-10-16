@@ -1687,7 +1687,8 @@
     /* ── 跟著活動發布、不回寫（D293／D294；邊界由 D342 修訂，2026-10-01；5.1.5.9 §2.3、主規格 §7.14「活動販售的時間層級」）──
        含票券的組合包跟著所屬活動，本頁的設定只影響本組合、反方向不回寫活動（D294 不變）：
          · 活動為草稿   → 整張上架卡草稿態：上架開關停用、第二層與整個開賣設定不出現（比照 D245 裁決三），說明「隨活動發布」
-         · 活動未上架   → 上架開關停用並說明（已取消的活動也走這裡；已結束的活動仍上架、只是販售已結束）
+         · 活動未上架   → 上架開關停用並說明（已取消、已結束的活動也走這裡——D437 決定一：活動已結束或已取消，含它門票的組合包不能重新上架，
+                         與 D352「活動結束自動下架」一致；說明句分已結束／已取消／已下架三種）
          · 活動已發布   → 上架、下架、開賣、停售四個時間逐格「跟隨活動／另設」（js/ticket-bundle.js），另設須在活動上架區間內、
                          可以早於活動開賣（D342 取代原「活動未開賣就鎖住開賣設定」）；開賣另有一顆開關表達「未開賣」（D290）
        切換只寫 bundleModel（本頁工作副本），永遠不回寫活動本身——「這裡的設定不會影響活動本身」那句常駐在卡上；
@@ -1718,11 +1719,13 @@
       /* D363：活動的顯示與下架讀 js/ticket-bundle.js 的 times(ev)（與 create-bundle、bundle-editor 同一口徑） */
       const TBx = window.ZtorTicketBundle, et = TBx ? TBx.times(ev) : { shown: !(ev.publish && ev.publish.shown === false), unlisted: !!ev.unlisted };
       return { ev: ev, st: st, draft: st === 'draft',
-               canList: (st === 'on-sale' || st === 'live' || st === 'scheduled' || st === 'ended') && !et.unlisted,
+               /* D437 決定一（2026-10-16）：已結束移出可上架——與 partials/bundle-relist.js 的 defaultTicketBlocked、e-shop 的 eventBundleModel 同一口徑 */
+               canList: (st === 'on-sale' || st === 'live' || st === 'scheduled') && !et.unlisted,
+               ended: st === 'ended', cancelled: st === 'cancelled',
                unlisted: !!et.unlisted, hidden: et.shown === false,
                canSell: st === 'on-sale' || st === 'live' };
     }
-    /* 活動組合包自己的上架、顯示、電影關聯寫回 events-store 的同一組 bundle（2026-10-16 修正；照活動詳情的存法
+    /* 活動組合包自己的上架、顯示、電影關聯（D437 起加開賣開關 stopped）寫回 events-store 的同一組 bundle（2026-10-16 修正；照活動詳情的存法
        saveEdits(活動 id, { bundles })，重新整理與換頁都還在）。只寫組合包自己的三欄，不碰活動（D294 不回寫活動）。
        上架只在活動允許上架時寫：活動草稿／未上架時 syncEventBounds 把本頁的上架收成關，那是被活動收窄、不是組合包自己的值，不寫回。
        值沒變就不寫（載入時 renderTB → mirror 也會呼叫到這裡）。 */
@@ -1740,6 +1743,10 @@
       };
       if (bo && !bo.draft && bo.canList) put('listed', bundleModel.listed !== false, true);
       put('shown', bundleModel.shown !== false, true);
+      /* D437 決定四（錯誤修正）：「未開賣」寫回 stopped（D290：下架退回未開賣、重新上架後仍未開賣，要創作者自己再開賣）——
+         原本沒寫，重新整理後 evSeed 讀 !b.stopped 又變回開賣中。呼叫點都經過 mirror()：開賣開關（renderTB → tbApply）、
+         下架與重新上架（paint）、編輯取消還原（renderTB）。允許的門票全部隨場次刪除（goneAll）時 onSale 是推導出來的未開賣，不寫。 */
+      if (bo && !bo.draft && !(bundle && bundle.goneAll)) put('stopped', bundleModel.onSale === false, false);
       if (window.bdFilmPicker && window.bdFilmPicker.getSelected) put('films', window.bdFilmPicker.getSelected(), []);
       if (changed) EV.saveEdits(ev.id, { bundles: ev.bundles });
     }
@@ -1787,7 +1794,12 @@
         if (bundleModel.listed) { bundleModel.listed = false; paintSwitch(listedSwitch, false); syncListedLock(); }
         setDisabled(listedSwitch, true);
         /* D363：活動已下架（階段不變、另掛 unlisted）用自己那一句，不寫「未上架（售票中）」這種自相矛盾的括號 */
-        if (listNote) { listNote.hidden = false; listNote.textContent = (bo.unlisted
+        /* D437 決定一：已結束／已取消各自一句「不能重新上架」，先於「活動已下架」（已取消的活動同時掛 unlisted） */
+        if (listNote) { listNote.hidden = false; listNote.textContent = (bo.ended
+          ? T('bd.event.ended-lock', 'The event “{name}” has ended — this bundle can’t be listed again.')
+          : bo.cancelled
+          ? T('bd.event.cancelled-lock', 'The event “{name}” was cancelled — this bundle can’t be listed again.')
+          : bo.unlisted
           ? T('bd.event.unlisted-lock', 'The event “{name}” has been unlisted — this bundle can’t be listed until the event is listed again.')
           : T('bd.event.list-lock', 'The event “{name}” is not listed ({status}) — this bundle cannot be listed on its own.').replace('{status}', evStatus)).replace('{name}', evName); }
       } else {

@@ -25,6 +25,8 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-16 D437 原型同步（UI-CHANGES 二百五十六、ASSUMPTIONS UIA-269；S81.1 🔵，tier 不變）**：主規格 §7.14、5.1.5.9 §2.2／§2.3 → `bundle-detail.html` `evBoundsOf().canList`、`partials/bundle-relist.js` `defaultTicketBlocked()`、`e-shop.html` `eventBundleModel()` 活動已結束（或已取消）時不能重新上架並就地說明；已售出說明句（`bd.members.locked`、`cpp.bd.sp.locked`）補「上架與開賣時間仍可改」；`evBundlePersist()` 寫回 `stopped`（決定四）。
+
 > **2026-10-16 D431～D436 原型同步（UI-CHANGES 二百四十八～二百五十四、ASSUMPTIONS UIA-268；新登記 S47.1、S51.1、S81.1 🔵）**：
 > - D431（5.1.5.3.1 §2.8、5.1.6.3）：`order-detail.html` 撤銷確認窗拿掉寄信兩條、原因欄只記訂單紀錄；`event-detail.html` 門票撤銷拿掉寄信、加選填撤銷原因（`js/events-store.js` `voidTicket(tx, actor, reason)`）與撤銷紀錄欄；示意信 `emails/` 退場。
 > - D432（5.1.5.5）：`store-settings.html` 優惠碼指定商品多一組「獨立票」。
