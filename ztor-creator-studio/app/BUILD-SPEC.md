@@ -17,6 +17,8 @@
 
 > **2026-10-09 · D386 的呈現（UI-CHANGES 一百五十四、ASSUMPTIONS UIA-232）**：活動詳情另外新增的門票入場鎖定沿用 D385 同一套畫法（提前入場欄唯讀＋說明改寫、`field-readout` 讀數、區塊標題 `field-source`），只把判斷從「這張票是不是 bookyay 帶入」改成「這場活動是不是 bookyay 帶入」；建立流程續填草稿的保留只是資料疊回，沒有新畫面。沒有新元件、沒有新 token。
 
+> **2026-10-16 · 粉絲活動頁照新前台（A spec-derived · D443；UI-CHANGES 二百六十、ASSUMPTIONS UIA-272）**：版型＝前台 `shop-item.html?id=ev-soundtrack-unplugged` 的鏡像，`js/fan-event-page.js` 改寫、`fan-shop.css` 只新增第 7 段（`.fep-shop--event`），第 1–6 段與商品頁、組合包頁、專案頁三個鏡像不動。排版改容器查詢（容器 `fep`＝預覽區寬，斷點 640／768／1024 照前台；前台 `vw` 換 `cqi`）：≥1024 詳情兩欄（720 閱讀欄＋360 側欄 sticky，上緣 `--fep-stick-top`）、<768 手機版（頂欄、底部縮圖、側欄攤平到描述之後、藏購票方案大圖卡）、≤768 彈窗改由下往上面板、≥640 彈窗兩欄。看詳情彈窗掛在 `.fep-shop` 內、`position:absolute` 只蓋預覽區，加一層 `.fep-modal__stage` 黏在可視範圍；開著哪一組記在 publish-stage 外層 `[data-pstage-host]`，切語言幣別重畫時照樣開著；Esc 在價格表開著時讓給價格表。價格由宿主算「開賣當下」交進來（`tiers[].offer`、`bundles[].offer`）。不另掛功能標記（跟著 S78／S63／S64）。
+
 > **2026-10-09 · D385 bookyay 帶入活動唯讀補齊的呈現（UI-CHANGES 一百五十三、ASSUMPTIONS UIA-232）**：活動詳情單張門票彈窗的唯讀購買條件區與票務分頁的「預設購票規則」卡都用 `form-section--card`＋`kv` 列、標題旁 `field-source`（From bookyay）；入場區鎖定時提前入場欄唯讀＋說明改寫、另加 `field-readout` 讀出「跟隨場次 · 仍可／不能入場」，標題掛同一枚來源標記；刪除鈕停用時旁邊一行 `field__hint` 寫原因。建立流程 bookyay 票的入場區改兩列 `field-readout`＋區塊標題旁 `badge--neutral`「bookyay 帶入」（同價格與數量區）。沒有新元件、沒有新 token、不掛新 `data-feat`。
 
 > **2026-10-09 · D384 補三題的呈現（UI-CHANGES 一百五十二、ASSUMPTIONS UIA-231）**：活動詳情單張門票彈窗在票名後加門票圖片欄，沿用建立流程同一個上傳元件（說明一行、換過圖才出現「改回活動圖片」、按儲存才生效、bookyay 帶入不鎖），票卡與列表縮圖改為「有自己的圖就用、否則主視覺」；建立活動匯入清單的到店自取列改寫原因句；創作者活動管理在 release2.4 以 `badge--neutral`「release2.4 不支援」＋ `text-sub` 原因標示多時段、重覆、到店自取的活動（`data-ace-r24`），最終版不顯示。

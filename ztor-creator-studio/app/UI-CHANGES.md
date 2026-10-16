@@ -13,6 +13,38 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-16（二百六十）· 粉絲活動頁照新前台：門票與套組同一頁、套組「看詳情」彈窗、依預覽區寬度排版
+
+**標籤**：release2.4
+
+依據 D443（使用者指示「活動的預覽與發布中預覽畫面有調整，請參照這個網址中的新設計調整，並且考慮到不同 breakpoint 下的排版；套組的『看詳情』會開啟 popup，購買的 popup 就不需要顯示」，細節 8 題回「照建議」），以及協調者補充（使用者確認：組合包另設開賣時間時，開賣當下的折扣照組合包自己的開賣時間）。參考 `https://ztor.vercel.app/shop-item.html?id=ev-soundtrack-unplugged`；研究見 `note/活動預覽改版計畫.md`，證據 `docs/fe-mirror-2026-10-16/`。推導記在 ASSUMPTIONS UIA-272。活動預覽 S78、組合包 S63／S64 都是 🔵 release2.4，本輪不另掛功能標記。
+
+**A spec-derived**
+
+- `js/fan-event-page.js` 改寫（建立活動「預覽與發布」與活動詳情「預覽與在地化」共用）：
+  - 門票與套組合成一頁；寬版右側欄（卡司 → 單票 → 套組）跟著捲動，窄版排在描述之後（決定一）。
+  - 套組卡：名稱、限時折扣標、票券與商品成員列、優惠至、折後價＋刪除線原價＋−%、「看詳情 ›」、購買鈕（不動作）。
+  - 看詳情彈窗：寬版置中 720、圓角 16、左圖右資訊；預覽區 ≤768 由下往上面板（頂端留空、抓柄、沒有 ✕），640 以上仍兩欄、以下單欄（主圖 4:3）；只蓋預覽區，語言與幣別側欄照常可用、切換後彈窗照樣開著；彈窗裡的價格點了開價格表；「購買套組」「查看單品」不動作（決定五、六）。
+  - 頁尾「購票方案」大圖卡（單票一排、套組一排），預覽區窄於 768 不顯示（決定二）。
+  - 折扣畫開賣當下的價（決定三）、單買寫單價（決定四）；活動地點地圖放描述之後，場館下加「在 Google 地圖查看 ›」（決定八）；資訊表多「取票」一列；票價列加「票券優惠」與「N 種購票方案 ›」。
+  - 照現行規則畫（決定九）：不畫額外權益、注意事項、即將售罄；限購只寫每人總限購；退換票平台固定文案。
+- `ds-components/fan-shop.css` 只新增第 7 段（`.fep-shop--event`）：容器查詢（決定七）把版面切換改看預覽區寬度，修掉視窗 1024 時標題擠在 229px 欄的問題；補前台的 `--white-alpha-16／24`、`--sheet-*`、遮罩與陰影 token。商品頁、組合包頁、專案頁三個鏡像不受影響。
+- 宿主：`create-event.html` `buildFanModel()` 算開賣當下的門票價（限時折扣涵蓋開賣時間＝限時價，否則一般折扣）、組合包限時折扣（看組合包自己的開賣時間，跟隨活動時看活動的）、成員單買價、組合包圖片、門票圖片；`CE_EDIT_ZONES` 改指單票、套組、購票方案兩排與取票方式。`event-localization.html` `locModel()` 同步。兩個宿主都不再傳 `views`。
+- `js/i18n.js` 新增 fep.* 文案 22 組（中英成對）。
+
+**C 撤除**
+
+- 「票券頁／票務商品頁」兩個視圖與切換（`.pp-fan-viewbar`、`data-fep-view`、`details.pdp-terms--tiers`、`section.pdp-recs--bundles`、頁內「只買票 ›」）。
+- 門票下的兩段價說明行（「限時 {p}（至 {to}）· 之後 {p}」，`tiers[].deal`）——改畫開賣當下的價。
+
+**D infra**
+
+- `js/publish-stage.js`：掛載時在外層加 `data-pstage-host`（彈窗狀態記在這層）；hover「編輯」浮鈕遇到 `[data-pp-no-zone]` 收起。`ds-components/publish-stage.css`：`.pstage__main` 給 `--fep-stick-top`。
+- `design-system.html`／`.md` §4.215 同步（新 demo：寬版彈窗與面板各一框）、§4.216 補一段；`design-components.html` 由 `scripts/gen_design_gallery.py` 重生。
+- `ds-baseline.json` `fan-shop.css` 83 → 85（第 7 段照前台原值補的兩支 `--white-alpha-*` token，已在 design-system.md §4.215 註記）。
+- 實測：Playwright headless（localhost:4326），bky-1 帶入、`?version=release2.4` 與 `?version=full` 各一輪，手動加一組含限時折扣與商品的組合包，四種視窗寬度與彈窗截圖存 `screenshots/d443-*`；console 0 錯誤。
+- 未升 `?v=`（固定字串）。
+
 ## 2026-10-16（二百五十九）· release2.4 電子商店範圍：組合包欄位與購買條件、組合包限量、訂單已取消／爭議納入；版本收起後不留空卡片
 
 **標籤**：release2.4

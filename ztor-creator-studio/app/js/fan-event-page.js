@@ -1,28 +1,36 @@
-/* fan-event-page.js — 粉絲視角活動頁的渲染函式（D305，2026-09-22；同日改為前台鏡像）
+/* fan-event-page.js — 粉絲視角活動頁的渲染函式（D305，2026-09-22；同日改為前台鏡像；2026-10-16 D443 改照新前台）
  *
  * 發布前預覽確認（主規格 §7.4）的預覽檢視自 D305 起是「粉絲視角完整頁」：內容等同粉絲端
- * 活動頁會呈現的全部設定，活動有「票券頁」與「票務商品頁」兩個視圖（沒有組合包時只有
- * 票券頁）。兩個宿主——建立活動（create-event.html 第 8 步，發布前）與活動詳情的「預覽與在地化」
+ * 活動頁會呈現的全部設定。兩個宿主——建立活動（create-event.html 第 8 步，發布前）與活動詳情的「預覽與在地化」
  * 全頁版（event-localization.html，發布後再開；D310 起不是浮層）——都把自己的資料整理成
  * 同一個 `model`，交給本檔畫；
  * 本檔只知道「粉絲頁長什麼樣」，不知道資料從表單還是從 events-store 來。
  *
+ * ── 2026-10-16 D443：照新前台（https://ztor.vercel.app/shop-item.html?id=ev-soundtrack-unplugged）──
+ *   · 門票與套組合成同一頁：「票券頁／票務商品頁」兩個視圖與 CS 端的切換控件（.pp-fan-viewbar）退場（墓碑）。
+ *   · 活動詳情＝左欄閱讀區（描述 → 活動地點地圖，D443 決定八）＋右側欄（卡司 → 單票 → 套組），寬版右側欄跟著捲動；
+ *     窄版右側欄攤平（display:contents），卡司排到描述前、單票與套組排在描述與地圖之後（前台同款）。
+ *   · 套組卡（.pdp-tier--set）的「看詳情 ›」開組合包詳情彈窗（.ds-modal.pdp-peek.pdp-setview）：寬版置中、
+ *     窄版由下往上的面板；彈窗只蓋預覽區（掛在 .fep-shop 裡，position:absolute），宿主側欄照常可用；
+ *     宿主因切語言／幣別重畫時，彈窗依穩定宿主（[data-pstage-host] 或 host）上記住的那一組（價格鍵）重新打開、不播動畫。
+ *   · 頁面下方「購票方案」大圖卡（.pdp-recs--options），預覽區窄於 768 不顯示（前台同款）。
+ *   · 排版依預覽區自己的寬度切換（容器查詢，fan-shop.css 第 7 段），不依整個視窗（D443 決定七）。
+ *   · 折扣畫「開賣當下」的價格（D443 決定三）：宿主算好 tiers[].offer／bundles[].offer 交進來，本檔只畫。
+ *   · 單買價格一律寫單價（D443 決定四）。
+ *   · 與現行規則衝突處照規則畫（D443 決定九）：不畫額外權益（D402）與注意事項（D334）、限購只寫每人總限購（D427）、
+ *     退換票是平台固定文案（D313）、發布前沒有銷售資料所以不畫「即將售罄」。
+ *   證據：docs/fe-mirror-2026-10-16/（參考頁渲染後的 <main> 與看詳情彈窗 DOM）。
+ *
  * ── 2026-09-22 使用者裁決：「預覽 UI 必須做得和這兩個一模一樣，只是資料和機制套用我們的流程與功能」──
- *   票券頁     https://ztor.vercel.app/shop-item.html?id=ev-score-live
- *   票務商品頁 https://ztor.vercel.app/shop-item.html?id=ev-themesong-night&sets=1#bundles
- * 所以本檔輸出的 DOM 結構與 class 名照前台兩頁渲染後的 <main>（證據：docs/fe-mirror-2026-09-22/
- * ticket.main.html、bundles.main.html），CSS 是前台規則加 `.fep-shop` 前綴的鏡像
- * （ds-components/fan-shop.css）。與前台的差別只在：
- *   · 資料全部來自我們的流程（名稱／亮點／描述／卡司／取票方式／票種／組合包）
- *   · 前台專有的互動拿掉：pdp-topbar 保留 markup 但不可點、「情境展示」浮鈕與 pdp-sheet 抽屜不畫、
- *     購買類按鈕（購票／購買／購買組合／收藏／購物車）不動作（data-pp-inert）
- *   · 相關活動三張卡標「非本活動」（ASSUMPTIONS UIA-165／UIA-167）
+ *   本檔輸出的 DOM 結構與 class 名照前台渲染後的 <main>，CSS 是前台規則加 `.fep-shop` 前綴的鏡像
+ *   （ds-components/fan-shop.css；本頁專用規則在第 7 段）。與前台的差別只在：
+ *   · 資料全部來自我們的流程（名稱／亮點／描述／卡司／取票方式／門票／組合包）
+ *   · 前台專有的互動拿掉：pdp-topbar 保留 markup 但不可點、「情境展示」浮鈕不畫、
+ *     購買類按鈕（購票／購買／購買套組／收藏／購物車／查看單品）不動作（data-pp-inert）；「看詳情」與彈窗的關閉、縮圖切換可以按
  *   · 亮點（D300）前台沒有位置：放名稱下方一行 `.pdp-buy__highlight`（UIA-167）
- *   · 退換票：平台統一文案（2026-09-23 D313 拍板）——不是活動欄位，創作者不填不可改、
- *     也不屬可翻譯欄位；一律吃 i18n `fep.refund.fixed`，預覽裡唯讀、不進 editZones。
+ *   · 退換票：平台統一文案（2026-09-23 D313 拍板）——一律吃 i18n `fep.refund.fixed`，預覽裡唯讀、不進 editZones。
  *     `refund` 參數（字串覆蓋／false 不畫）保留為渲染器彈性，活動宿主不使用。
- * 票券頁／票務商品頁的切換控件是 CS 端的 `.segmented`，畫在 `.fep-shop` 外面（它不是粉絲頁的一部分），
- * 頁內另有前台同款的「只買票 ›」。
+ *   · 地圖（D369）：前台沒有這一節，放左欄描述之後（D443 決定八）；資訊表場館下另加「在 Google 地圖查看 ›」（不動作）
  *
  * 用法：
  *   window.ztorFanEventPage.render(host, model, api)
@@ -40,39 +48,38 @@
  *     name: { key:'name' },  highlight: { key:'highlight' } | null,
  *     organizer: 'NICKTHEREAL', organizerAvatar: 'images/…' | '',   // 主辦（原型＝創作者顯示名／名冊頭像）
  *     date: '2026-12-05', time: '19:30 – 21:30', duration: '2 h', doors: '18:30',
- *     venue: 'Taipei Music Center', address: '…', language: '廣東話、普通話' | ['廣東話','普通話'],   // D328 活動語言可複選：字串或陣列（陣列以「、」／「, 」串）
- *                                                // D369：address 有值時，詳情左欄多畫「活動地點」一節＝依地址產生的地圖（partials/venue-map.js，頁面要載它與 venue-map.css）
+ *     venue: 'Taipei Music Center', address: '…', language: '廣東話、普通話' | ['廣東話','普通話'],   // D328 活動語言可複選
+ *                                                // D369：address 有值時，詳情左欄描述之後多畫「活動地點」一節＝依地址產生的地圖（partials/venue-map.js）
  *     priority: { window: '…', state: '…' } | null,   // 優先購（原型示意）
- *     limit: '每人最多 4 張' | null,   // D427（2026-10-16）：改讀每人總限購（每次交易限購退場）
+ *     limit: '每人最多 4 張' | null,   // D427：每人總限購
  *     desc: { key:'desc' },
- *     descBlocks: [{ type:'text', text, html } | { type:'image'|'video', src }] | undefined,
- *                                                // D354：描述的區塊（文字含粗體、斜體、連結、清單、分隔線；圖片；影片），照排定順序畫；
- *                                                // 文字區塊的可翻譯 key＝ztorRichBody.fieldKeys('desc', descBlocks)（宿主的翻譯表用同一套）
- *     descMedia: [{ type:'image'|'video', src }] | undefined,   // D335 舊形狀（沒給 descBlocks 時才用）：媒體畫在描述文字下方
- *     // 墓碑 2026-10-05（D354）：infoSections（說明區塊的標題＋內文、太長才收合）隨說明區塊退場——內容是描述的無標題文字區塊
+ *     descBlocks: [{ type:'text', text, html } | { type:'image'|'video', src }] | undefined,   // D354：描述的區塊
+ *     descMedia: [{ type:'image'|'video', src }] | undefined,   // D335 舊形狀（沒給 descBlocks 時才用）
  *     lineup: [{ name: '周湯豪', role: { key:'role-0' } | null }],
- *     // 墓碑 2026-09-29（D334）：notes／bring 兩份清單隨「進階詳細資料」刪除
- *     pickup: '電子門票',                                            // D327：取票說明欄已刪
+ *     pickup: '電子門票',                       // 取票方式（資訊表「取票」一列＋詳情的取票方式一節）
  *     refund: undefined | string | false,       // 沒給＝平台固定文案；字串＝自訂；false＝不畫
  *     terms: { key:'tnc' } | null,
- *     tiers: [{ key:'tier-vip', name:{ key:'tier-vip' }, note:'', deal:null, hidden:false, priceObj, soldOut:false, priceKey:'tier:tier-vip' }],   // 墓碑 2026-10-15（D422 決定三）：paused（單張門票暫停售票，D391 補充二）退場——單張門票沒有暫停售票，只有活動層   // deal＝{ win, to, gen } 折扣固定價（D367，選填）
- *                                                // D328：hidden:true 的列不畫（顯示開關關閉＝不在票價清單列出）
- *                                                // 墓碑 2026-10-05（D353）：desc（門票簡介，tdesc-…）整欄移除，票列不再畫簡介附註
- *     bundles: [{ name:'…', priceObj, listPriceObj|null, priceKey:'bundle:bd-1', img:'…',
- *                 tickets:{ names:['VIP','Floor'], qty:2 } | null,      // 允許票種 × 張數（D296）
- *                 goods:[{ name:'官方 Tee', spec:true, img:'…' }],       // 商品成員；spec＝有規格要下單時選
- *                 note:'商品於活動現場領取' | '' , desc:'…',   // perks 依 D402（2026-10-12）退場：組合包不再有額外權益，給了也不畫
- *                 contents:[…] }],                                     // 舊形狀（icon/text 列）仍相容，tickets／goods 沒給時退回它
- *     related: true | [{ name, cat, price:'NT$ 1,200 起', img }]   // true＝三張佔位卡；陣列＝指定內容（都標「非本活動」）
+ *     tiers: [{ key:'tier-vip', name:{ key:'tier-vip' }, note:'', hidden:false, priceObj, soldOut:false, priceKey:'tier:tier-vip',
+ *               img:'images/…',                                  // 購票方案大圖卡的圖（D353 門票圖片；沒給退回主視覺）
+ *               offer:{ amount, timed, to } | null }],           // D443 決定三：開賣當下的折扣價（amount＝基準幣別、與 priceObj.amount 同單位）；
+ *                                                                 //   timed＝限時（畫「限時折扣」標與「優惠至 {to}」）；沒有＝照票價
+ *                                                // D328：hidden:true 的列不畫；墓碑 2026-10-16（D443）：deal（{ win, to, gen } 兩段價寫成一行）不再讀，改讀 offer
+ *     bundles: [{ name:'…', priceObj, listPriceObj|null, priceKey:'bundle:bd-1',
+ *                 imgs:['…'], img:'…',                                  // 組合包圖片（第一張＝封面；沒給 imgs 用 img）
+ *                 offer:{ pct, to } | null,                             // D443 決定三：開賣當下生效的限時折扣（百分比、結束時間顯示字串）
+ *                 tickets:{ names:['VIP','Floor'], qty:2, unitPriceObj, unitFrom:true, when:'2026-12-05 19:30 · Taipei Music Center' } | null,
+ *                 goods:[{ name:'官方 Tee', qty:1, spec:true, img:'…', unitPriceObj }],
+ *                 desc:'…' }],                                          // perks 依 D402 退場：給了也不畫
+ *     related: true | [{ name, cat, price:'NT$ 1,200 起', img }] | false
  *   }
  *
- * 價格節點帶 `data-fep-price-key`（票價、組合價、購買區的價格區間；區間給空字串＝不聚焦單列）：
+ * 價格節點帶 `data-fep-price-key`（票價、組合價、彈窗裡的價格、購買區的價格區間；區間給空字串＝不聚焦單列）：
  * D310 起「價格不就地改」，宿主（js/publish-stage.js）接這個屬性把價格表滑出來。
  *
- * api（由 js/publish-stage.js 的 previewRender 提供；浮層版 partials/publish-preview.js 同介面）：
+ * api（由 js/publish-stage.js 的 previewRender 提供）：
  *   lang；getValue(key) → 當前語系的值；bindEditable(el, key) → 掛 inline 編輯；
- *   priceIn(priceObj, priceKey) → 當前幣別的數字；money(priceObj, priceKey) → 格式化字串；fmt(n)；
- *   view：'ticket' | 'bundles'；views：可切的視圖清單；setView(v)。
+ *   priceIn(priceObj, priceKey) → 當前幣別的數字；money(priceObj, priceKey) → 格式化字串；fmt(n)。
+ *   墓碑 2026-10-16（D443）：view／views／setView（兩個視圖）不再讀。
  */
 (function () {
   'use strict';
@@ -208,40 +215,152 @@
     return out.length ? out : true;
   }
 
+  /* ── 價格：開賣當下的價（D443 決定三）＋刪除線原價＋−% ─────────────────────── */
+  /* 折後價取整：有小數位的幣別（USD／SGD）留兩位，其餘取整數（同 events-store 換算後的顯示習慣） */
+  function roundFor(api) { return /^(USD|SGD)$/.test(api.currency || '') ? function (n) { return Math.round(n * 100) / 100; } : function (n) { return Math.round(n); }; }
+  function pctOff(now, was) { return was > 0 ? Math.round((1 - now / was) * 100) : 0; }
+  /* 單票：offer.amount 與 priceObj.amount 同單位（基準幣別）——用比例套到當前幣別的票價上，
+     幣別覆寫價照樣生效；沒有 offer＝照票價、沒有刪除線 */
+  function tierPrice(api, t) {
+    var cur = numOf(api, t.priceObj, t.priceKey);
+    var o = t.offer;
+    var base = t.priceObj && Number(t.priceObj.amount);
+    if (!o || o.amount == null || !(base > 0) || Number(o.amount) >= base) return { now: cur, was: null, timed: false, to: '' };
+    return { now: roundFor(api)(cur * Number(o.amount) / base), was: cur, timed: !!o.timed, to: o.to || '' };
+  }
+  /* 套組：售價（組合折扣後）× 開賣當下生效的限時折扣；刪除線＝原價合計（沒有原價合計但有限時折扣時＝售價） */
+  function setPrice(api, b) {
+    var sell = numOf(api, b.priceObj, b.priceKey);
+    var o = b.offer && Number(b.offer.pct) > 0 ? b.offer : null;
+    var now = o ? roundFor(api)(sell * (1 - Number(o.pct) / 100)) : sell;
+    var list = b.listPriceObj ? numOf(api, b.listPriceObj, null) : 0;
+    var was = list > now ? list : (o && sell > now ? sell : null);
+    return { now: now, was: was, timed: !!o, to: o ? (o.to || '') : '' };
+  }
+  function multiTix(b) { return !!(b.tickets && b.tickets.names && b.tickets.names.length > 1); }
+  /* 「NT$ 2,800<span class=pdp-tier__was><s>NT$ 3,200</s> <span class=price-pct>−13%</span></span>」——前台 .pdp-tier__price 的內容 */
+  function priceHtml(api, p, from) {
+    var nowStr = fmtNum(api, p.now);
+    if (from) nowStr = T('fep.bd.from', 'From {price}').replace('{price}', nowStr);
+    var h = esc(nowStr);
+    if (p.was) h += '<span class="pdp-tier__was"><s>' + esc(fmtNum(api, p.was)) + '</s> <span class="price-pct">−' + pctOff(p.now, p.was) + '%</span></span>';
+    return h;
+  }
+  function dealTag() { return ' <span class="price-pct price-pct--word pdp-tier__deal" data-i18n="fep.deal.tag">' + esc(T('fep.deal.tag', 'Limited-time offer')) + '</span>'; }
+  function dealEnds(to) { return '<span class="pdp-tier__meta pdp-tier__deal-ends">' + esc(T('fep.deal.until', 'Offer ends {t}').replace('{t}', to)) + '</span>'; }
+
+  /* 套組成員列（前台 .pdp-rec-card__parts[role=list]）：票券＝允許門票名單（多種時「（座位任選）」）× 張數；商品＝名稱（有規格「（規格任選）」）× 數量。
+     「票券」「商品」兩個字是前台 CSS 的 content 字串，英文預覽由 fan-shop.css 換掉（UIA-167）。 */
+  function partsHtml(b) {
+    var out = '';
+    var tx = b.tickets;
+    if (tx && tx.names && tx.names.length) {
+      out += '<span class="pdp-rec-card__part" role="listitem" data-kind="ticket"><span>' +
+        esc(tx.names.join('／') + (tx.names.length > 1 ? T('fep.set.pick', ' (any seat)') : '') + ' × ' + (Number(tx.qty) || 1)) + '</span></span>';
+    }
+    (b.goods || []).forEach(function (g) {
+      out += '<span class="pdp-rec-card__part" role="listitem" data-kind="goods"><span>' +
+        esc((g.name || '') + (g.spec ? T('fep.set.spec', ' (any option)') : '') + ' × ' + (Number(g.qty) || 1)) + '</span></span>';
+    });
+    return out ? '<span class="pdp-rec-card__parts" role="list">' + out + '</span>' : '';
+  }
+  function setImgs(b) { return (b.imgs && b.imgs.length ? b.imgs : [b.img || (b.goods && b.goods[0] && b.goods[0].img) || '']).filter(Boolean); }
+
+  /* ── 看詳情彈窗（前台 #pdpSetView：.ds-modal.pdp-peek.pdp-setview）──────────────────
+     掛在 .fep-shop 裡、只蓋預覽區；.fep-modal__stage 是鏡像唯一加的殼——跟著捲動黏在可視範圍
+     （fan-shop.css 第 7 段），面板照前台：寬版置中 720、窄版由下往上的面板（有抓柄、沒有 ✕）。
+     「購買套組」「查看單品 ›」保留外觀、不動作；價格點了開價格表（宿主認 data-fep-price-key）。 */
+  function setViewEl(api, b, i, instant) {
+    var p = setPrice(api, b);
+    var imgs = setImgs(b);
+    var m = el('div', 'ds-modal pdp-peek pdp-setview is-open' + (instant ? ' is-instant' : ''));
+    m.setAttribute('data-size', 'lg');
+    m.setAttribute('data-fep-setview', String(i));
+    m.setAttribute('data-pp-no-zone', '');
+    m.setAttribute('aria-label', T('fep.set.view', 'Set details'));
+    var gal = '<div class="pdp-setview__gallery"><div class="pdp-peek__media pdp-setview__media' + (imgs[0] ? '' : ' pdp-setview__media--empty') + '">' +
+      (imgs[0] ? '<img class="pdp-peek__img" data-setview-main src="' + esc(imgs[0]) + '" alt="' + esc(b.name || '') + '" draggable="false">' : '<i data-lucide="package" class="ztor-icon"></i>') + '</div>';
+    if (imgs.length > 1) {
+      gal += '<div class="pdp-peek__thumbs pdp-setview__thumbs">' + imgs.map(function (src, k) {
+        return '<button class="pdp-peek__thumb' + (k === 0 ? ' is-active' : '') + '" type="button" data-setview-shot="' + esc(src) + '" aria-label="' +
+          esc(T('fep.gallery.view', 'View image {n}').replace('{n}', k + 1)) + '">' + imgTag(src) + '</button>';
+      }).join('') + '</div>';
+    }
+    gal += '</div>';
+    var info = '<div class="pdp-setview__info"><div class="pdp-setview__head">' +
+      '<span class="pdp-rec-card__kind" data-i18n="fep.set.kind">' + esc(T('fep.set.kind', 'Set')) + '</span>' +
+      '<h2 class="ds-modal__title pdp-peek__name">' + esc(b.name || T('cpp.bd.untitled', 'Untitled bundle')) + (p.timed ? dealTag() : '') + '</h2>' +
+      '<p class="pdp-peek__price pdp-setview__total" data-fep-price-key="' + esc(b.priceKey || '') + '">' +
+        esc(multiTix(b) ? T('fep.bd.from', 'From {price}').replace('{price}', fmtNum(api, p.now)) : fmtNum(api, p.now)) +
+        (p.was ? ' <s>' + esc(fmtNum(api, p.was)) + '</s> <span class="price-pct">−' + pctOff(p.now, p.was) + '%</span>' : '') + '</p>' +
+      (p.timed && p.to ? dealEnds(p.to) : '') +
+      (b.desc ? '<p class="pdp-setview__note">' + esc(b.desc) + '</p>' : '') +
+      '</div>';
+    /* 單買＝單價（D443 決定四）：票券「單買 NT$ 1,200／張」（多種門票可選時取最低、加「起」）、商品「單買 NT$ 790／件」 */
+    var tx = b.tickets;
+    if (tx && tx.names && tx.names.length) {
+      var tu = tx.unitPriceObj ? fmtNum(api, numOf(api, tx.unitPriceObj, null)) : '';
+      if (tu && tx.unitFrom) tu = T('fep.bd.from', 'From {price}').replace('{price}', tu);
+      info += '<section class="pdp-bundle pdp-setview__sec" aria-label="' + esc(T('fep.set.tickets', 'Tickets')) + '"><h2 class="pdp-bundle__title" data-i18n="fep.set.tickets">' + esc(T('fep.set.tickets', 'Tickets')) + '</h2>' +
+        '<ul class="pdp-setview__list"><li class="pdp-setview__row"><span class="pdp-setview__name">' +
+        esc(tx.names.join('／') + (tx.names.length > 1 ? T('fep.set.pick', ' (any seat)') : '') + ' × ' + (Number(tx.qty) || 1)) + '</span>' +
+        (tx.when ? '<span class="pdp-setview__meta">' + esc(tx.when) + '</span>' : '') +
+        (tu ? '<span class="pdp-setview__price">' + esc(T('fep.set.single.tix', '{p} each').replace('{p}', tu)) + '</span>' : '') +
+        '</li></ul></section>';
+    }
+    var goods = b.goods || [];
+    if (goods.length) {
+      info += '<section class="pdp-bundle pdp-setview__sec" aria-label="' + esc(T('fep.set.goods', 'Goods')) + '"><h2 class="pdp-bundle__title" data-i18n="fep.set.goods">' + esc(T('fep.set.goods', 'Goods')) + '</h2><ul class="pdp-setview__list">' +
+        goods.map(function (g) {
+          var gu = g.unitPriceObj ? fmtNum(api, numOf(api, g.unitPriceObj, null)) : '';
+          return '<li class="pdp-setview__row pdp-setview__row--goods">' +
+            '<span class="pdp-setview__thumb" aria-hidden="true">' + (g.img ? imgTag(g.img) : '') + '</span>' +
+            '<span class="pdp-setview__name">' + esc((g.name || '') + ' × ' + (Number(g.qty) || 1)) + '</span>' +
+            (g.spec ? '<span class="pdp-setview__meta"><span>' + esc(T('fep.set.spec.at', 'Options chosen at checkout')) + '</span></span>' : '') +
+            '<a class="pdp-setview__link" data-pp-inert tabindex="-1">' + esc(T('fep.set.item', 'View item')) + '<span aria-hidden="true"> ›</span></a>' +
+            (gu ? '<span class="pdp-setview__price">' + esc(T('fep.set.single.goods', '{p} each').replace('{p}', gu)) + '</span>' : '') +
+            '</li>';
+        }).join('') + '</ul></section>';
+    }
+    /* 墓碑 2026-10-16（D443 決定九）：前台彈窗的額外權益清單（.pdp-rec-card__perks）不畫——D402 組合包沒有額外權益 */
+    m.innerHTML = '<div class="ds-modal__scrim" data-fep-setview-close></div>' +
+      '<div class="fep-modal__stage">' +
+        '<div class="ds-modal__panel" role="dialog" aria-modal="true" aria-label="' + esc(b.name || '') + '">' +
+          '<div class="pdp-peek__grip" aria-hidden="true"><span></span></div>' +
+          '<button class="ds-modal__close" type="button" data-fep-setview-close aria-label="' + esc(T('fep.close', 'Close')) + '"><i data-lucide="x" class="ztor-icon"></i></button>' +
+          '<div class="ds-modal__body pdp-peek__body"><div class="pdp-setview__layout">' + gal + info + '</div></div>' +
+          '<div class="ds-modal__footer pdp-peek__footer"><button class="btn btn--mono btn--lg" type="button" data-setview-buy data-pp-inert tabindex="-1" data-i18n="fep.set.buy">' + esc(T('fep.set.buy', 'Buy set')) + '</button></div>' +
+        '</div>' +
+      '</div>';
+    /* 縮圖切主圖（預覽裡可以按：只換圖，不涉及購買） */
+    m.addEventListener('click', function (e) {
+      var shot = e.target.closest('[data-setview-shot]');
+      if (!shot) return;
+      var main = m.querySelector('[data-setview-main]');
+      if (main) main.src = shot.getAttribute('data-setview-shot');
+      m.querySelectorAll('.pdp-peek__thumb').forEach(function (x) { x.classList.toggle('is-active', x === shot); });
+    });
+    return m;
+  }
+
+  /* 看詳情彈窗開著哪一組（價格鍵）：記在「穩定的宿主」上——publish-stage 掛載的外層（[data-pstage-host]，
+     create-event 切語言會整個重掛預覽區，外層不變），沒有就記在 host 本身；宿主重畫後照樣打開（render 末段）。
+     同一頁有好幾份渲染（design-system.html 的 demo）時各記各的。 */
+  var escWired = false;
+  function anchorOf(host) { return (host.closest && host.closest('[data-pstage-host]')) || host; }
+
   /* ── 主體 ─────────────────────────────────────────────────────────── */
   function render(host, model, api) {
     host.innerHTML = '';
     var m = model || {};
-    var view = api.view || 'ticket';
-    var hasBundles = !!(m.bundles && m.bundles.length);
-    var views = api.views || (hasBundles ? ['ticket', 'bundles'] : ['ticket']);
-    if (views.indexOf(view) < 0) view = views[0];
-    var isBundles = view === 'bundles' && hasBundles;
-    /* D328：隱藏的票不在票價清單列出（也不算進價格區間與「N 種票」）；它仍可在組合包裡被賣出。 */
+    /* D328：隱藏的票不在票價清單列出（也不算進價格區間與「N 種購票方案」）；它仍可在組合包裡被賣出。 */
     var tiers = (m.tiers || []).filter(function (t) { return !t.hidden; });
     var bundles = m.bundles || [];
     var nameText = valueOf(api, m.name);
+    /* 墓碑 2026-10-16（D443 決定一）：CS 端的視圖切換（.pp-fan-viewbar ＋ .segmented「票券頁／票務商品頁」）與
+       data-fep-view／isBundles 分支退場——門票與套組合成同一頁。 */
 
-    /* CS 端的視圖切換（兩個視圖才畫）：.segmented 是控件層 toggle（STYLE-DECISIONS Q8），畫在粉絲頁外面。 */
-    if (views.length > 1) {
-      var bar = el('div', 'pp-fan-viewbar');
-      var seg = el('div', 'segmented');
-      views.forEach(function (v) {
-        var b = el('button', 'segmented__btn' + (v === view ? ' segmented__btn--active' : ''));
-        b.type = 'button';
-        b.setAttribute('data-fep-set-view', v);
-        var k = v === 'bundles' ? 'fep.view.bundles' : 'fep.view.ticket';
-        b.setAttribute('data-i18n', k);
-        b.textContent = T(k, v === 'bundles' ? 'Ticket bundles page' : 'Ticket page');
-        b.addEventListener('click', function () { if (api.setView) api.setView(v); });
-        seg.appendChild(b);
-      });
-      bar.appendChild(seg);
-      host.appendChild(bar);
-    }
-
-    var root = el('div', 'fep-shop rf-shop');
-    root.setAttribute('data-fep-view', view);
+    var root = el('div', 'fep-shop fep-shop--event rf-shop');
     root.setAttribute('lang', api.lang === 'zh' ? 'zh-Hant' : (api.lang || 'en'));
 
     var main = el('main');
@@ -249,7 +368,7 @@
     var pdp = el('div', 'pdp');
     pdp.setAttribute('data-pdp', ''); pdp.setAttribute('aria-busy', 'false'); pdp.setAttribute('data-type', 'event');
 
-    /* 手機頂欄（≤768 才顯示）：保留結構，不可點 */
+    /* 手機頂欄（預覽區 <768 才顯示）：保留結構，不可點 */
     var topbar = el('div', 'pdp-topbar');
     topbar.setAttribute('data-pdp-topbar', '');
     topbar.innerHTML =
@@ -307,10 +426,6 @@
       st.setAttribute('data-i18n', m.status.labelKey); st.textContent = T(m.status.labelKey, m.status.fallback || '');
       meta.appendChild(st);
     }
-    if (isBundles) {
-      var bt = el('span', 'pdp-buy__badge status-tag status-tag--yellow'); bt.setAttribute('data-i18n', 'fep.bd.tag'); bt.textContent = T('fep.bd.tag', 'Bundle');
-      meta.appendChild(bt);
-    }
     if (m.typeLabel) meta.appendChild(el('span', 'pdp-buy__badge status-tag status-tag--cat', esc(m.typeLabel)));
     if (m.region) meta.appendChild(el('span', 'pdp-buy__badge status-tag status-tag--yellow', esc(m.region)));
     buy.appendChild(meta);
@@ -328,7 +443,7 @@
       '<span class="pdp-host__more" data-i18n="fep.host.more">' + esc(T('fep.host.more', 'Visit creator shop ›')) + '</span>';
     buy.appendChild(hostEl);
 
-    /* 資訊表：日期／時間／時長／場館＋地址／語言／優先購／限購 */
+    /* 資訊表：日期／時間／時長／場館＋地址＋地圖連結／語言／優先購／限購／取票 */
     var em = el('div', 'pdp-event-meta');
     function row(labelKey, labelFb, valueHtml, extraCls) {
       if (!valueHtml) return;
@@ -339,74 +454,83 @@
     row('fep.date', 'Date', esc(m.date));
     row('fep.time', 'Time', esc(m.time));
     row('fep.duration', 'Length', esc(m.duration));
-    row('fep.venue', 'Venue', m.venue ? esc(m.venue) + (m.address ? '<small>' + esc(m.address) + '</small>' : '') : '');
-    /* D328：活動語言可複選——陣列依序以語系分隔符串成一行 */
+    /* 新前台：場館下多一行「在 Google 地圖查看 ›」（預覽不動作，D443 決定八的呈現參考） */
+    row('fep.venue', 'Venue', m.venue ? esc(m.venue) + (m.address ? '<small>' + esc(m.address) + '</small>' +
+      '<a class="pdp-event-meta__map" data-pp-inert>' + dsIcon('map-pin') + '<span data-i18n="fep.map.link">' + esc(T('fep.map.link', 'View on Google Maps ›')) + '</span></a>' : '') : '');
     var langVal = Array.isArray(m.language) ? m.language.filter(Boolean).join(T('ce.evlang.sep', ', ')) : m.language;
     row('fep.language', 'Language', esc(langVal));
     if (m.priority) row('fep.priority', 'Early access', '<span class="pdp-event-meta__nowrap">' + esc(m.priority.window) + '</span>' + (m.priority.state ? '<small>' + esc(m.priority.state) + '</small>' : ''), 'pdp-event-meta__row--names');
     row('fep.limit', 'Limit', esc(m.limit));
+    row('fep.pickup.k', 'Tickets', esc(m.pickup));
     buy.appendChild(em);
 
-    /* 票價區間／組合價區間 ＋「N 種票 ›」／「N 種組合 ›」 */
+    /* 票價區間（開賣當下的單票價；沒有單票時改用套組價）＋「票券優惠」＋「N 種購票方案 ›」 */
+    var tierPs = tiers.map(function (t) { return tierPrice(api, t); });
+    var setPs = bundles.map(function (b) { return setPrice(api, b); });
     var price = el('div', 'pdp-event-price');
-    var pk = el('span', 'pdp-event-price__k');
+    var pk = el('span', 'pdp-event-price__k'); pk.setAttribute('data-i18n', 'fep.price.k'); pk.textContent = T('fep.price.k', 'Price');
     var pv = el('span', 'pdp-event-price__v');
-    var plink = el('button', 'pdp-event-price__link'); plink.type = 'button';
-    if (!isBundles) {
-      pk.setAttribute('data-i18n', 'fep.price.k'); pk.textContent = T('fep.price.k', 'Price');
-      if (tiers.length) {
-        pv.textContent = rangeText(api, tiers.map(function (t) { return numOf(api, t.priceObj, t.priceKey); }));
-        plink.textContent = T('fep.tiers.n', '{n} ticket types').replace('{n}', tiers.length) + ' ›';
-        plink.setAttribute('data-pdp-tiers', '');
-        plink.addEventListener('click', function () { var d = root.querySelector('[data-pdp-tiers-target]'); if (d) { d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
-      } else {
-        pv.classList.add('is-empty'); pv.textContent = T('ce.pv.tickets', 'Tickets coming soon');
-        plink = null;
-      }
-    } else {
-      pk.setAttribute('data-i18n', 'fep.price.bundles.k'); pk.textContent = T('fep.price.bundles.k', 'Bundle price');
-      pv.textContent = rangeText(api, bundles.map(function (b) { return numOf(api, b.priceObj, b.priceKey); }));
-      plink.textContent = T('fep.bundles.link', '{n} bundles').replace('{n}', bundles.length) + ' ›';
-      plink.addEventListener('click', function () { var s = root.querySelector('[data-fep-bundles]'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    var rangeSrc = tierPs.length ? tierPs : setPs;
+    if (rangeSrc.length) {
+      pv.textContent = rangeText(api, rangeSrc.map(function (p) { return p.now; }));
+      /* D310：區間不對應單一列，key 給空字串＝開表但不聚焦任何一格 */
+      pv.setAttribute('data-fep-price-key', '');
+    } else { pv.classList.add('is-empty'); pv.textContent = T('ce.pv.tickets', 'Tickets coming soon'); }
+    price.appendChild(pk); price.appendChild(pv);
+    if (tierPs.concat(setPs).some(function (p) { return !!p.was; })) {
+      var sale = el('span', 'status-tag status-tag--green pdp-event-price__sale'); sale.setAttribute('data-i18n', 'fep.price.sale'); sale.textContent = T('fep.price.sale', 'Ticket deals');
+      price.appendChild(sale);
     }
-    /* D310：預覽裡的價格點了開右側的價格表（價格不就地改）。區間不對應單一列，
-       key 給空字串＝開表但不聚焦任何一格；宿主（publish-stage.js）認 [data-fep-price-key]。 */
-    if (!pv.classList.contains('is-empty')) pv.setAttribute('data-fep-price-key', '');
-    price.appendChild(pk); price.appendChild(pv); if (plink) price.appendChild(plink);
+    var nPlans = tiers.length + bundles.length;
+    if (nPlans) {
+      var plink = el('button', 'pdp-event-price__link'); plink.type = 'button'; plink.setAttribute('data-pdp-tiers', '');
+      plink.textContent = T('fep.plans.n', '{n} ticket options').replace('{n}', nPlans) + ' ›';
+      plink.addEventListener('click', function () { var d = root.querySelector('[data-pdp-tiers-target]'); if (d) d.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+      price.appendChild(plink);
+    }
     buy.appendChild(price);
 
     var actions = el('div', 'pdp-buy__actions');
-    var ctaKey = isBundles ? 'fep.cta.bundle' : 'fep.cta.buy';
     actions.innerHTML =
-      '<button class="btn btn--mono btn--lg pdp-buy__add" type="button" data-pdp-ticket data-pp-inert tabindex="-1"><span data-add-label data-i18n="' + ctaKey + '">' + esc(T(ctaKey, isBundles ? 'Choose a bundle' : 'Buy tickets')) + '</span></button>' +
+      '<button class="btn btn--mono btn--lg pdp-buy__add" type="button" data-pdp-ticket data-pp-inert tabindex="-1"><span data-add-label data-i18n="fep.cta.buy">' + esc(T('fep.cta.buy', 'Buy tickets')) + '</span></button>' +
       '<button class="pdp-buy__heart" type="button" data-pdp-wish data-pp-inert tabindex="-1" aria-pressed="false" aria-label="' + esc(T('fep.wish', 'Add to wishlist')) + '">' + SVG.heart + '</button>';
     buy.appendChild(actions);
     grid.appendChild(buy);
     container.appendChild(grid);
     page.appendChild(container);
 
-    /* ── 活動詳情：介紹／卡司／取票方式／退換票／票種與價格／購票條款 ── */
+    /* ── 活動詳情：左欄（描述 → 活動地點）＋右側欄（卡司 → 單票 → 套組） ── */
     var details = el('section', 'pdp-details pdp-details--event');
     details.setAttribute('aria-label', T('fep.details.label', 'Event details'));
     var inner = el('div', 'pdp-details__inner container');
     var h2 = el('h2', 'pdp-details__heading'); h2.setAttribute('data-i18n', 'fep.sec.about'); h2.textContent = T('fep.sec.about', 'About');
     inner.appendChild(h2);
+    var layout = el('div', 'pdp-details__layout');
+    var dmain = el('div', 'pdp-details__main');
     /* 描述（D354）：宿主給了 descBlocks 就照區塊順序畫（文字含格式、圖片、影片，見 richBody），
-       整塊仍掛前台的 lead 段 class（版寬、字級、預覽的「編輯」入口都認它）。
-       沒給的舊宿主退回 D335 的最小做法：一整段可翻譯文字＋媒體畫在下方（ASSUMPTIONS UIA-187）。 */
+       整塊仍掛 lead 段 class（預覽的「編輯」入口認它）。沒給的舊宿主退回 D335 的最小做法（UIA-187）。
+       整段過長的收合交 UI 層，原型照長度展開（UIA-196）。 */
     if (m.descBlocks) {
-      inner.appendChild(richBody(api, m.descBlocks, (m.desc && m.desc.key) || 'desc', 'pdp-details__lead', T('cp.pv.desc-ph', 'Description')));
+      dmain.appendChild(richBody(api, m.descBlocks, (m.desc && m.desc.key) || 'desc', 'pdp-details__lead', T('cp.pv.desc-ph', 'Description')));
     } else {
-      inner.appendChild(slot(api, 'p', 'pdp-details__lead', m.desc, T('cp.pv.desc-ph', 'Description')));
-      (m.descMedia || []).forEach(function (md) { if (md && md.src) inner.appendChild(mediaFig(md)); });
+      dmain.appendChild(slot(api, 'p', 'pdp-details__lead', m.desc, T('cp.pv.desc-ph', 'Description')));
+      (m.descMedia || []).forEach(function (md) { if (md && md.src) dmain.appendChild(mediaFig(md)); });
     }
-    /* 墓碑 2026-10-05（D354）：說明區塊（infoSections）不再另畫在描述下方——內容已是描述的區塊 */
+    /* 活動地點（D369）：依完整地址產生的地圖。新前台沒有這一節，D443 決定八放在描述之後。沒有地址＝不畫。 */
+    var mapHtml = (m.address && window.ztorVenueMap) ? window.ztorVenueMap.html({ address: m.address }) : '';
+    if (mapHtml) {
+      var vb = el('div', 'pdp-details__specs-block pdp-details__venue');
+      vb.setAttribute('data-fep-venue', '');
+      vb.innerHTML = '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('map-pin') + '<span data-i18n="fep.sec.venue">' + esc(T('fep.sec.venue', 'Location')) + '</span></h3>' +
+        (m.venue ? '<p class="pdp-details__shipping-text">' + esc(m.venue) + '</p>' : '') + mapHtml;
+      dmain.appendChild(vb);
+    }
+    layout.appendChild(dmain);
 
-    var cols = el('div', 'pdp-details__cols');
-    var left = el('div', 'pdp-details__left');
-    /* 卡司陣容 chips：人名維持原文、角色標籤可翻譯（§7.4 顯示規則），前台寫法是「角色 人名」一顆 chip */
+    var aside = el('aside', 'pdp-details__aside');
+    /* 卡司陣容 chips：人名維持原文、角色標籤可翻譯（§7.4），前台寫法是「角色 人名」一顆 chip */
     if (m.lineup && m.lineup.length) {
-      var blk = el('div', 'pdp-details__specs-block');
+      var blk = el('div', 'pdp-details__specs-block pdp-story__lineup');
       blk.innerHTML = '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('user') + '<span data-i18n="fep.sec.lineup">' + esc(T('fep.sec.lineup', 'Lineup')) + '</span></h3>';
       var list = el('div', 'pdp-lineup__list');
       m.lineup.forEach(function (p) {
@@ -416,30 +540,100 @@
         list.appendChild(chip);
       });
       blk.appendChild(list);
-      left.appendChild(blk);
+      aside.appendChild(blk);
     }
-    /* 墓碑 2026-09-29（D334）：「注意事項」一節（需攜帶物品／活動須知兩份清單合併成一份 ul，`fep.sec.notes`）
-       隨兩份清單刪除。 */
-    /* 活動地點（D369 決定二，2026-10-07）：依完整地址自動產生的地圖，前台現有版型沒有這一節，
-       放在詳情左欄卡司之後（ASSUMPTIONS UIA-216）。沒有地址＝不畫；地圖是靜態示意（partials/venue-map.js）。 */
-    var mapHtml = (m.address && window.ztorVenueMap) ? window.ztorVenueMap.html({ address: m.address }) : '';
-    if (mapHtml) {
-      var vb = el('div', 'pdp-details__specs-block');
-      vb.setAttribute('data-fep-venue', '');
-      vb.innerHTML = '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('map-pin') + '<span data-i18n="fep.sec.venue">' + esc(T('fep.sec.venue', 'Location')) + '</span></h3>' +
-        (m.venue ? '<p class="pdp-details__shipping-text">' + esc(m.venue) + '</p>' : '') + mapHtml;
-      left.appendChild(vb);
+
+    /* 單票（前台 .pdp-tiers-block）：票名＋限時折扣標、說明、優惠至；價格＝開賣當下的價＋刪除線原價＋−%；購買鈕不動作。
+       發布前沒有銷售資料，「即將售罄」不畫（D443 決定九）。 */
+    var tb = el('div', 'pdp-details__specs-block pdp-tiers-block'); tb.setAttribute('data-pdp-tiers-target', '');
+    tb.innerHTML = '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('ticket') + '<span data-i18n="fep.sec.single">' + esc(T('fep.sec.single', 'Tickets')) + '</span></h3>';
+    var tl = el('div', 'pdp-tiers pdp-tiers--info'); tl.setAttribute('data-tiers', ''); tl.setAttribute('role', 'list'); tl.setAttribute('aria-label', T('fep.sec.single', 'Tickets'));
+    if (!tiers.length) {
+      var e0 = el('div', 'pdp-tier pdp-tier--info');
+      e0.innerHTML = '<span class="pdp-tier__main"><span class="pdp-tier__label is-empty">' + esc(T('ce.pv.tickets', 'Tickets coming soon')) + '</span></span>';
+      tl.appendChild(e0);
+    }
+    tiers.forEach(function (t, i) {
+      var p = tierPs[i];
+      var tr = el('div', 'pdp-tier pdp-tier--info' + (t.soldOut ? ' is-oos' : '')); tr.setAttribute('data-tier', String(i)); tr.setAttribute('role', 'listitem');
+      var mainEl = el('span', 'pdp-tier__main');
+      var lab = slot(api, 'span', 'pdp-tier__label', t.name, T('ce.tier.untitled', 'Untitled tier'));
+      mainEl.appendChild(lab);
+      if (p.timed) { var dtag = el('span', 'price-pct price-pct--word pdp-tier__deal'); dtag.setAttribute('data-i18n', 'fep.deal.tag'); dtag.textContent = T('fep.deal.tag', 'Limited-time offer'); lab.insertAdjacentElement('afterend', dtag); }
+      if (t.note) mainEl.appendChild(el('span', 'pdp-tier__meta', esc(t.note)));
+      if (p.timed && p.to) mainEl.insertAdjacentHTML('beforeend', dealEnds(p.to));
+      /* 墓碑 2026-10-16（D443 決定三）：D367 的兩段價說明行（「限時 {p}（至 {to}）· 之後 {p}」）不再畫——預覽只畫開賣當下的價 */
+      tr.appendChild(mainEl);
+      var tprice = el('span', 'pdp-tier__price' + (p.was ? ' pdp-tier__price--sale' : ''), priceHtml(api, p, false));
+      tprice.setAttribute('data-fep-price-key', t.priceKey || '');   /* D310：點價格開價格表 */
+      tr.appendChild(tprice);
+      var b = el('button', 'btn btn--yellow-ghost btn--sm pdp-tier__buy'); b.type = 'button'; b.setAttribute('data-pp-inert', ''); b.tabIndex = -1;
+      var tn = valueOf(api, t.name);
+      /* 墓碑 2026-10-15（D422 決定三）：單張門票暫停售票的停用與文案退場；活動層暫停由宿主頁另行停用購買鈕 */
+      if (t.soldOut) { b.disabled = true; b.setAttribute('data-i18n', 'fep.tier.soldout'); b.textContent = T('fep.tier.soldout', 'Sold out'); b.setAttribute('aria-label', tn + ' ' + T('fep.tier.soldout', 'Sold out')); }
+      else { b.setAttribute('data-pdp-tier-buy', t.key || ''); b.setAttribute('data-i18n', 'fep.tier.buy'); b.textContent = T('fep.tier.buy', 'Buy'); b.setAttribute('aria-label', T('fep.tier.buy', 'Buy') + ' ' + tn); }
+      tr.appendChild(b);
+      tl.appendChild(tr);
+    });
+    tb.appendChild(tl);
+    aside.appendChild(tb);
+
+    /* 套組（前台 .pdp-sets-aside）：名稱＋限時折扣標、成員列、優惠至、價格、「看詳情 ›」；右側購買鈕不動作。
+       限購只寫每人總限購（在資訊表，D427）；額外權益不畫（D402）。 */
+    var anchor = anchorOf(host);
+    function openSet(i, instant) {
+      closeSet();
+      if (!bundles[i]) return;
+      anchor.__fepOpenKey = bundles[i].priceKey || ('#' + i);
+      var mv = setViewEl(api, bundles[i], i, instant);
+      root.appendChild(mv);
+      if (window.ztorIcons) window.ztorIcons.applyIcons(mv);
+      if (window.applyI18n && !instant) { /* 文字已由 T() 給，避免重套 */ }
+      var cls = mv.querySelector('.ds-modal__close');
+      if (cls && !instant) try { cls.focus({ preventScroll: true }); } catch (_) {}
+    }
+    function closeSet() {
+      var old = root.querySelector('[data-fep-setview]');
+      if (old) old.remove();
+      anchor.__fepOpenKey = null;
+    }
+    if (bundles.length) {
+      var sb2 = el('div', 'pdp-details__specs-block pdp-tiers-block pdp-sets-aside'); sb2.setAttribute('data-fep-sets', '');
+      sb2.innerHTML = '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('ticket') + '<span data-i18n="fep.sec.sets">' + esc(T('fep.sec.sets', 'Sets')) + '</span></h3>';
+      var sl = el('div', 'pdp-tiers pdp-tiers--info'); sl.setAttribute('role', 'list'); sl.setAttribute('aria-label', T('fep.sec.sets', 'Sets'));
+      bundles.forEach(function (b, i) {
+        var p = setPs[i];
+        var card = el('div', 'pdp-tier pdp-tier--info pdp-tier--set'); card.setAttribute('role', 'listitem'); card.setAttribute('data-bundle', b.priceKey || String(i));
+        var bn = b.name || T('cpp.bd.untitled', 'Untitled bundle');
+        card.innerHTML = '<span class="pdp-tier__main">' +
+            '<span class="pdp-tier__label">' + esc(bn) + (p.timed ? dealTag() : '') + '</span>' +
+            partsHtml(b) +
+            (p.timed && p.to ? dealEnds(p.to) : '') +
+            '<span class="pdp-tier__price' + (p.was ? ' pdp-tier__price--sale' : '') + '" data-fep-price-key="' + esc(b.priceKey || '') + '">' + priceHtml(api, p, multiTix(b)) + '</span>' +
+            '<button class="pdp-bundle-item__link pdp-tier__more" type="button" data-set-view="' + i + '"><span data-i18n="fep.set.more">' + esc(T('fep.set.more', 'Details')) + '</span><span aria-hidden="true"> ›</span></button>' +
+          '</span>' +
+          '<button class="btn btn--yellow-ghost btn--sm pdp-tier__buy" type="button" data-bundle-buy="' + i + '" data-pp-inert tabindex="-1" aria-label="' + esc(T('fep.tier.buy', 'Buy') + ' ' + bn) + '" data-i18n="fep.tier.buy">' + esc(T('fep.tier.buy', 'Buy')) + '</button>';
+        sl.appendChild(card);
+      });
+      sb2.appendChild(sl);
+      aside.appendChild(sb2);
+    }
+    layout.appendChild(aside);
+    inner.appendChild(layout);
+
+    /* 取票方式／退換票：前台是「注意事項（左）＋取票方式、退換票（右）」兩欄；注意事項已刪（D334），
+       左欄改放取票方式、右欄放退換票，兩欄不留空（ASSUMPTIONS UIA-272）。 */
+    var cols = el('div', 'pdp-details__cols');
+    var left = el('div', 'pdp-details__left');
+    if (m.pickup) {
+      var pb = el('div', 'pdp-details__shipping-block'); pb.setAttribute('data-fep-pickup', '');
+      pb.innerHTML = '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('ticket') + '<span data-i18n="fep.sec.pickup">' + esc(T('fep.sec.pickup', 'Ticket delivery')) + '</span></h3>';
+      pb.appendChild(el('p', 'pdp-details__shipping-text', esc(m.pickup)));
+      left.appendChild(pb);
     }
     cols.appendChild(left);
-
     var right = el('div', 'pdp-details__right');
-    if (m.pickup) {
-      var sb = el('div', 'pdp-details__shipping-block');
-      sb.innerHTML = '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('ticket') + '<span data-i18n="fep.sec.pickup">' + esc(T('fep.sec.pickup', 'Ticket delivery')) + '</span></h3>';
-      sb.appendChild(el('p', 'pdp-details__shipping-text', esc(m.pickup)));
-      right.appendChild(sb);
-    }
-    /* 退換票：表單沒有此欄，前台那句當平台固定文案（UIA-167）；宿主給字串就用宿主的、給 false 不畫 */
+    /* 退換票：平台固定文案（D313）；宿主給字串就用宿主的、給 false 不畫 */
     if (m.refund !== false) {
       var rb = el('div', 'pdp-details__shipping-block');
       rb.innerHTML = '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('history') + '<span data-i18n="fep.sec.refund">' + esc(T('fep.sec.refund', 'Refunds & exchanges')) + '</span></h3>';
@@ -451,49 +645,7 @@
     }
     cols.appendChild(right);
     inner.appendChild(cols);
-
-    /* 票種與價格（票券頁才畫；票務商品頁把這一節換成下面的組合方案） */
-    if (!isBundles) {
-      var dt = el('details', 'pdp-terms pdp-terms--tiers'); dt.setAttribute('data-pdp-tiers-target', ''); dt.open = true;
-      dt.innerHTML = '<summary class="pdp-terms__summary" data-i18n="fep.sec.tiers">' + esc(T('fep.sec.tiers', 'Tickets & prices')) + '</summary>';
-      var tl = el('div', 'pdp-tiers pdp-tiers--info'); tl.setAttribute('data-tiers', ''); tl.setAttribute('role', 'list'); tl.setAttribute('aria-label', T('fep.sec.tiers', 'Tickets & prices'));
-      if (!tiers.length) {
-        var e0 = el('div', 'pdp-tier pdp-tier--info');
-        e0.innerHTML = '<span class="pdp-tier__main"><span class="pdp-tier__label is-empty">' + esc(T('ce.pv.tickets', 'Tickets coming soon')) + '</span></span>';
-        tl.appendChild(e0);
-      }
-      tiers.forEach(function (t, i) {
-        var tr = el('div', 'pdp-tier pdp-tier--info' + (t.soldOut ? ' is-oos' : '')); tr.setAttribute('data-tier', String(i));
-        var mainEl = el('span', 'pdp-tier__main');
-        mainEl.appendChild(slot(api, 'span', 'pdp-tier__label', t.name, T('ce.tier.untitled', 'Untitled tier')));
-        if (t.note) mainEl.appendChild(el('span', 'pdp-tier__meta', esc(t.note)));
-        /* D367（2026-10-07）：折扣是固定價——票價照列，期間內與期間後的價格寫成票名下一行（t.deal，宿主已組好字串） */
-        if (t.deal) {
-          /* deal＝{ win, to, gen }：win＝期間內價、to＝期間結束（顯示字串）、gen＝期間後／一般折扣價；數字是基準幣別，
-             用票價的價格物件換掉 amount 再交給 api.money，跟著目前的顯示幣別換算（不吃覆寫價） */
-          var dpo = function (n) { return Object.assign({}, t.priceObj, { amount: n, override: {}, pin: null }); };
-          var dparts = [];
-          if (t.deal.win != null) dparts.push(T('fep.deal.win', '{p} until {to}').replace('{p}', moneyOf(api, dpo(t.deal.win), null)).replace('{to}', t.deal.to || ''));
-          if (t.deal.gen != null) dparts.push(T(t.deal.win != null ? 'fep.deal.after' : 'fep.deal.gen', t.deal.win != null ? 'then {p}' : 'Discounted to {p}').replace('{p}', moneyOf(api, dpo(t.deal.gen), null)));
-          if (dparts.length) mainEl.appendChild(el('span', 'pdp-tier__meta', esc(dparts.join(' · '))));
-        }
-        /* 墓碑 2026-10-05（D353）：門票簡介（D328，票名下的 meta 行、可翻譯 tdesc-…）整欄移除 */
-        tr.appendChild(mainEl);
-        var tprice = el('span', 'pdp-tier__price', esc(moneyOf(api, t.priceObj, t.priceKey)));
-        tprice.setAttribute('data-fep-price-key', t.priceKey || '');   /* D310：點價格開價格表 */
-        tr.appendChild(tprice);
-        var b = el('button', 'btn btn--yellow-ghost btn--sm pdp-tier__buy'); b.type = 'button'; b.setAttribute('data-pp-inert', ''); b.tabIndex = -1;
-        var tn = valueOf(api, t.name);
-        /* 墓碑 2026-10-15（D422 決定三）：單張門票暫停售票（2026-10-09 · D391 補充二）的「暫停售票中」停用與文案退場——
-           單張門票沒有暫停售票；活動層暫停由宿主頁另行停用購買鈕，照舊 */
-        if (t.soldOut) { b.disabled = true; b.setAttribute('data-i18n', 'fep.tier.soldout'); b.textContent = T('fep.tier.soldout', 'Sold out'); b.setAttribute('aria-label', tn + ' ' + T('fep.tier.soldout', 'Sold out')); }
-        else { b.setAttribute('data-pdp-tier-buy', t.key || ''); b.setAttribute('data-i18n', 'fep.tier.buy'); b.textContent = T('fep.tier.buy', 'Buy'); b.setAttribute('aria-label', T('fep.tier.buy', 'Buy') + ' ' + tn); }
-        tr.appendChild(b);
-        tl.appendChild(tr);
-      });
-      dt.appendChild(tl);
-      inner.appendChild(dt);
-    }
+    /* 墓碑 2026-10-16（D443 決定一）：「票種與價格」收合段（details.pdp-terms--tiers）退場——單票搬進右側欄 */
 
     /* 購票條款（收合） */
     if (m.terms) {
@@ -505,85 +657,62 @@
     details.appendChild(inner);
     page.appendChild(details);
 
-    /* ── 組合方案（票務商品頁）：前台的 pdp-recs--bundles ── */
-    if (isBundles) {
-      var bs = el('section', 'pdp-recs pdp-recs--bundles'); bs.setAttribute('data-fep-bundles', ''); bs.setAttribute('aria-label', T('fep.sec.bundles', 'Bundles'));
-      var bin = el('div', 'pdp-recs__inner container');
-      var hr = el('div', 'pdp-recs__headrow');
-      hr.innerHTML = '<h2 class="pdp-recs__heading" data-i18n="fep.sec.bundles">' + esc(T('fep.sec.bundles', 'Bundles')) + '</h2>';
-      var back = el('a', 'pdp-recs__headlink'); back.setAttribute('role', 'button'); back.tabIndex = 0;
-      back.textContent = T('fep.link.ticket', 'Tickets only') + ' ›';
-      back.addEventListener('click', function (e) { e.preventDefault(); if (api.setView) api.setView('ticket'); });
-      hr.appendChild(back);
-      bin.appendChild(hr);
-      var rail = el('div', 'pdp-recs__rail');
-      bundles.forEach(function (b, i) {
-        var card = el('article', 'pdp-rec-card pdp-rec-card--bundle'); card.setAttribute('data-bundle', b.priceKey || String(i));
-        var goods = b.goods || [];
-        var tix = b.tickets || null;
-        /* 舊形狀相容：contents[]（icon/text）→ 拆成票券列與商品列 */
-        if (!tix && !goods.length && b.contents && b.contents.length) {
-          goods = []; tix = null;
-          b.contents.forEach(function (c) {
-            if ((c.icon || 'ticket') === 'ticket') tix = tix || { line: c.text || c };
-            else goods.push({ name: c.text || c, spec: false, img: '' });
-          });
-        }
-        var coverImg = b.img || (goods[0] && goods[0].img) || imgs[0] || '';
-        var media = el('div', 'pdp-rec-card__media' + (coverImg ? '' : ' pdp-rec-card__media--empty'));
-        media.innerHTML = (coverImg ? imgTag(coverImg, '', b.name) : '<i data-lucide="package" class="ztor-icon"></i>') +
-          '<span class="rf-flag rf-flag--limited" data-i18n="fep.bd.tag">' + esc(T('fep.bd.tag', 'Bundle')) + '</span>';
-        card.appendChild(media);
-        var body = el('div', 'pdp-rec-card__body');
-        /* eyebrow：「票 ＋ 商品 · 較單買省 NT$ X」／「票 × 2 · 較單買省 NT$ X」 */
-        var nowN = numOf(api, b.priceObj, b.priceKey);
-        var wasN = b.listPriceObj ? numOf(api, b.listPriceObj, null) : 0;
-        var kind = goods.length ? T('fep.kind.mix', 'Ticket + goods') : T('fep.kind.tix', 'Ticket × {n}').replace('{n}', (tix && tix.qty) || 1);
-        var save = wasN > nowN ? T('fep.save', 'Save {amt} vs. buying separately').replace('{amt}', fmtNum(api, wasN - nowN).replace(/ /g, ' ')) : '';
-        body.appendChild(el('span', 'pdp-rec-card__cat', esc(kind) + (save ? ' · ' + esc(save) : '')));
-        var h3 = el('h3', 'pdp-rec-card__title');
-        h3.innerHTML = '<a class="pdp-rec-card__title-link" data-pp-inert>' + esc(b.name || T('cpp.bd.untitled', 'Untitled bundle')) + '</a>';
-        body.appendChild(h3);
-        /* 成員列：票券＝允許票種清單 ×張數（多種時「座位區域下單時選」）；商品＝名稱＋規格「下單時選」 */
-        var parts = el('ul', 'pdp-rec-card__parts');
-        if (tix) {
-          var li = el('li'); li.setAttribute('data-kind', 'ticket');
-          var line = tix.line;
-          if (!line) {
-            var names = tix.names || [];
-            line = names.join('／') + (names.length > 1 ? T('fep.bd.pick', ' (pick a section at checkout)') : '') + (Number(tix.qty) > 1 ? ' × ' + tix.qty : '');
-          }
-          li.innerHTML = '<span>' + esc(line) + '</span>';
-          parts.appendChild(li);
-        }
-        goods.forEach(function (g) {
-          var gl = el('li'); gl.setAttribute('data-kind', 'goods');
-          gl.innerHTML = (g.img ? imgTag(g.img, 'pdp-rec-card__partimg') : '') + '<span>' + esc(g.name) + (g.spec ? esc(T('fep.bd.spec', ' (pick options at checkout)')) : '') + '</span>';
-          parts.appendChild(gl);
+    /* ── 購票方案（前台 .pdp-recs--options）：單票一排、套組一排的大圖卡；預覽區 <768 不顯示（D443 決定二）──
+       墓碑 2026-10-16（D443 決定一）：票務商品頁的組合方案橫排（.pdp-recs--bundles、[data-fep-bundles]）退場。 */
+    if (nPlans) {
+      var os = el('section', 'pdp-recs pdp-recs--options'); os.setAttribute('aria-label', T('fep.sec.plans', 'Ticket options'));
+      var oin = el('div', 'pdp-recs__inner container');
+      oin.innerHTML = '<h2 class="pdp-recs__heading" data-i18n="fep.sec.plans">' + esc(T('fep.sec.plans', 'Ticket options')) + '</h2>';
+      function flag(cls, key, fb) { return '<span class="rf-flag ' + cls + '" data-i18n="' + key + '">' + esc(T(key, fb)) + '</span>'; }
+      function cardPrice(api2, p, from, key) {
+        var nowStr = fmtNum(api2, p.now);
+        if (from) nowStr = T('fep.bd.from', 'From {price}').replace('{price}', nowStr);
+        return '<span class="shop-card__price" data-fep-price-key="' + esc(key || '') + '">' + (p.was ? '<s>' + esc(fmtNum(api2, p.was)) + '</s>' : '') + esc(nowStr) +
+          (p.was ? '<span class="price-pct">−' + pctOff(p.now, p.was) + '%</span>' : '') + '</span>';
+      }
+      if (tiers.length) {
+        oin.insertAdjacentHTML('beforeend', '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('ticket') + '<span data-i18n="fep.sec.single">' + esc(T('fep.sec.single', 'Tickets')) + '</span></h3>');
+        var g1 = el('div', 'shop-grid pdp-plans'); g1.setAttribute('data-fep-plans', 'tiers');
+        tiers.forEach(function (t, i) {
+          var p = tierPs[i];
+          var src = t.img || imgs[0] || '';
+          var tn = valueOf(api, t.name) || T('ce.tier.untitled', 'Untitled tier');
+          var cat = [t.note ? esc(t.note) : '', p.timed && p.to ? esc(T('fep.deal.until', 'Offer ends {t}').replace('{t}', p.to)) : ''].filter(Boolean).join('<span aria-hidden="true"> · </span>');
+          var c = el('article', 'shop-card shop-card--plan pdp-bundle-item'); c.setAttribute('data-tier-card', t.key || '');
+          c.innerHTML = '<div class="shop-card__media pdp-bundle-item__media' + (src ? '' : ' shop-card__media--empty') + '">' + (src ? imgTag(src, '', tn) : '<i data-lucide="ticket" class="ztor-icon"></i>') +
+              '<div class="shop-card__flags">' + flag('rf-flag--neutral', 'fep.sec.single', 'Tickets') + (p.timed ? flag('rf-flag--sale', 'fep.deal.tag', 'Limited-time offer') : '') + '</div></div>' +
+            '<div class="shop-card__body"><h3 class="shop-card__title">' + esc(tn) + '</h3>' + (cat ? '<span class="shop-card__cat">' + cat + '</span>' : '') +
+              '<div class="shop-card__bottom"><div class="shop-card__foot">' + cardPrice(api, p, false, t.priceKey) + '</div>' +
+              '<div class="shop-card__actions"><button class="btn btn--mono btn--sm" type="button" data-pp-inert tabindex="-1" data-i18n="fep.tier.buy">' + esc(T('fep.tier.buy', 'Buy')) + '</button></div></div></div>';
+          g1.appendChild(c);
         });
-        body.appendChild(parts);
-        /* 2026-10-12 D402／UI-CHANGES 一百八十八：墓碑——組合包卡不再列額外權益（原 b.perks 清單）。 */
-        body.appendChild(el('span', 'pdp-rec-card__note', esc(b.note || '')));
-        var priceEl = el('span', 'pdp-rec-card__price');
-        priceEl.setAttribute('data-fep-price-key', b.priceKey || '');   /* D310：點價格開價格表 */
-        var nowStr = moneyOf(api, b.priceObj, b.priceKey);
-        priceEl.textContent = (tix && tix.names && tix.names.length > 1) ? T('fep.bd.from', 'From {price}').replace('{price}', nowStr) : nowStr;
-        if (wasN > nowN) { priceEl.appendChild(document.createTextNode(' ')); priceEl.appendChild(el('s', '', esc(moneyOf(api, b.listPriceObj, null)))); }
-        body.appendChild(priceEl);
-        var act = el('span', 'pdp-rec-card__actions');
-        act.innerHTML = '<button class="btn btn--mono btn--sm pdp-rec-card__cta" type="button" data-bundle-buy="' + i + '" data-pp-inert tabindex="-1" data-i18n="fep.cta.bundle.buy">' + esc(T('fep.cta.bundle.buy', 'Buy bundle')) + '</button>' +
-          '<button class="icon-btn pdp-rec-card__cart" type="button" data-bundle-cart="' + i + '" data-pp-inert tabindex="-1" aria-label="' + esc(T('fep.cart.add', 'Add to cart')) + '" title="' + esc(T('fep.cart.add', 'Add to cart')) + '">' + SVG.cart + '</button>';
-        body.appendChild(act);
-        card.appendChild(body);
-        rail.appendChild(card);
-      });
-      bin.appendChild(rail);
-      bs.appendChild(bin);
-      page.appendChild(bs);
+        oin.appendChild(g1);
+      }
+      if (bundles.length) {
+        oin.insertAdjacentHTML('beforeend', '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('ticket') + '<span data-i18n="fep.sec.sets">' + esc(T('fep.sec.sets', 'Sets')) + '</span></h3>');
+        var g2 = el('div', 'shop-grid pdp-plans'); g2.setAttribute('data-fep-plans', 'sets');
+        bundles.forEach(function (b, i) {
+          var p = setPs[i];
+          var src = setImgs(b)[0] || '';
+          var bn = b.name || T('cpp.bd.untitled', 'Untitled bundle');
+          var c = el('article', 'shop-card shop-card--plan pdp-bundle-item'); c.setAttribute('data-bundle', b.priceKey || String(i));
+          c.innerHTML = '<div class="shop-card__media pdp-bundle-item__media' + (src ? '' : ' shop-card__media--empty') + '">' + (src ? imgTag(src, '', bn) : '<i data-lucide="package" class="ztor-icon"></i>') +
+              '<div class="shop-card__flags">' + flag('rf-flag--neutral', 'fep.sec.sets', 'Sets') + (p.timed ? flag('rf-flag--sale', 'fep.deal.tag', 'Limited-time offer') : '') + '</div></div>' +
+            '<div class="shop-card__body"><h3 class="shop-card__title"><button class="pdp-setview__open" type="button" data-set-view="' + i + '">' + esc(bn) + '</button></h3>' +
+              (p.timed && p.to ? '<span class="shop-card__cat">' + esc(T('fep.deal.until', 'Offer ends {t}').replace('{t}', p.to)) + '</span>' : '') +
+              partsHtml(b) +
+              '<div class="shop-card__bottom"><div class="shop-card__foot">' + cardPrice(api, p, multiTix(b), b.priceKey) + '</div>' +
+              '<div class="shop-card__actions"><button class="btn btn--mono btn--sm" type="button" data-pp-inert tabindex="-1" data-i18n="fep.tier.buy">' + esc(T('fep.tier.buy', 'Buy')) + '</button></div></div></div>';
+          g2.appendChild(c);
+        });
+        oin.appendChild(g2);
+      }
+      os.appendChild(oin);
+      page.appendChild(os);
     }
 
     /* ── 相關活動：三張卡、全部標「非本活動」（非本活動內容是否出現在預覽，上游待確認 §8.26） ── */
-    if (m.related !== false) {
+    if (m.related !== false && m.related != null) {
       var rs = el('section', 'pdp-recs'); rs.setAttribute('aria-label', T('fep.sec.related', 'Related events'));
       var rin = el('div', 'pdp-recs__inner container');
       rin.innerHTML = '<h2 class="pdp-recs__heading" data-i18n="fep.sec.related">' + esc(T('fep.sec.related', 'Related events')) + '</h2>';
@@ -613,13 +742,41 @@
     /* 手機底部購買列（≤768 才顯示）：保留結構、不動作 */
     var buybar = el('div', 'shop-buybar'); buybar.setAttribute('data-buybar', ''); buybar.setAttribute('aria-hidden', 'true');
     buybar.innerHTML = '<div class="shop-buybar__info"><span class="shop-buybar__name">' + esc(nameText) + '</span><span class="shop-buybar__price">' + esc(pv.textContent) + '</span></div>' +
-      '<button class="btn btn--mono shop-buybar__add pdp-buy__add" type="button" data-pdp-ticket data-pp-inert tabindex="-1">' + esc(T(ctaKey, isBundles ? 'Choose a bundle' : 'Buy tickets')) + '</button>';
+      '<button class="btn btn--mono shop-buybar__add pdp-buy__add" type="button" data-pdp-ticket data-pp-inert tabindex="-1">' + esc(T('fep.cta.buy', 'Buy tickets')) + '</button>';
     pdp.appendChild(buybar);
 
     section.appendChild(pdp);
     main.appendChild(section);
     root.appendChild(main);
+
+    /* 看詳情：套組卡與購票方案卡都開同一個彈窗；關＝✕、點遮罩、Esc（有抽屜開著時 Esc 先給抽屜） */
+    root.addEventListener('click', function (e) {
+      var open = e.target.closest('[data-set-view]');
+      if (open && root.contains(open)) { e.preventDefault(); openSet(Number(open.getAttribute('data-set-view')), false); return; }
+      if (e.target.closest('[data-fep-setview-close]')) { e.preventDefault(); closeSet(); }
+    });
+    if (!escWired) {
+      escWired = true;
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        /* 價格表開著時 Esc 先關抽屜（publish-stage）、彈窗留著。用 capture 階段：publish-stage 的 Esc 在 bubble 階段先登記、
+           會先把抽屜關掉，bubble 階段再判斷就看不到抽屜、兩層一起關 */
+        if (document.querySelector('.drawer.is-open')) return;
+        document.querySelectorAll('[data-fep-setview]').forEach(function (x) {
+          var r = x.closest('.fep-shop--event'), h = r && r.parentNode;
+          if (h) anchorOf(h).__fepOpenKey = null;
+          x.remove();
+        });
+      }, true);
+    }
     host.appendChild(root);
+    /* 宿主重畫（切語言／幣別、改價格表；create-event 切語言會整個重掛預覽區）時，原本開著的那一組
+       （以價格鍵認，不靠位置）照樣開著、不播動畫 */
+    if (anchor.__fepOpenKey != null) {
+      var reIdx = -1;
+      bundles.forEach(function (b, k) { if (reIdx < 0 && (b.priceKey || ('#' + k)) === anchor.__fepOpenKey) reIdx = k; });
+      if (reIdx >= 0) openSet(reIdx, true); else anchor.__fepOpenKey = null;
+    }
     if (window.ztorIcons) window.ztorIcons.applyIcons(host);
     return root;
   }

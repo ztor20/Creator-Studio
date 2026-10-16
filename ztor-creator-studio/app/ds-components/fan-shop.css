@@ -910,3 +910,231 @@
   .fep-shop .reward-tiers, .fep-shop .project-timeline { grid-template-columns: 1fr; }
   .fep-shop .budget-split__legend, .fep-shop .media-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ── 7. 活動頁 2026-10 版（js/fan-event-page.js，D443，2026-10-16）──────────────────────
+   來源：前台 https://ztor.vercel.app/shop-item.html?id=ev-soundtrack-unplugged（2026-10-16 Playwright 抽出命中規則，
+   components.css?v=20261018y、ds.css、tokens.css；證據 docs/fe-mirror-2026-10-16/）。只收活動頁這次新增或改寫的規則，
+   全部掛 `.fep-shop--event`（js/fan-event-page.js 的根節點才有這個 modifier）——商品頁、組合包頁、專案頁三個鏡像
+   （第 4–6 段）與它們共用的第 1–3 段一律不動。
+   兩個例外（不是前台原樣，寫在這裡讓下次重抓時知道要保留）：
+     ① 容器查詢（D443 決定七）：前台用視窗寬度（@media）切版，預覽卻塞在側欄旁邊，寬度遠小於視窗。本段把
+        `.fep-shop--event` 設成容器 `fep`，斷點數字照前台（640／768／1024），判斷的是預覽區自己的寬度。
+        第 1–3 段的 @media 規則在「視窗寬、預覽區窄」時會誤套寬版——本段在 @container (max-width: 767.98px) 裡
+        把那些規則改回窄版的值、並補上前台窄版才有的規則（同前台 @media (max-width: 767.98px) 的內容）。
+     ② 看詳情彈窗只蓋預覽區（D443 決定五）：前台 .ds-modal 是 position:fixed 蓋整個視窗；這裡改 absolute 蓋住
+        .fep-shop，再加一層 `.fep-modal__stage`（sticky、高度＝可視範圍）讓面板一直在畫面裡；側欄不被蓋。
+        `--fep-stick-top` 由宿主給（publish-stage.css：頂列高度），demo 沒有就是 0。
+   本段沒有新增裸 hex：前台的 rgba(var(--success-rgb), a)／rgba(0,0,0,a) 改寫成等值的 color-mix()；前台的 --white-alpha-16／24
+   兩支 token 照前台原值補在本段開頭（rgba，數量記在 ds-baseline.json）。 */
+.fep-shop--event {
+  /* 前台 :root 有、第 1 段沒收的 token（只收本段用到的） */
+  --white-alpha-16: rgba(255, 255, 255, 0.16);
+  --white-alpha-24: rgba(255, 255, 255, 0.24);
+  --sheet-bg: var(--bg-secondary);
+  --sheet-hairline: 1px solid var(--border-default);
+  --sheet-handle-w: 40px;
+  --sheet-handle-h: 4px;
+  --sheet-handle-bg: var(--white-alpha-24);
+  --sheet-radius: 20px;
+  --sheet-shadow: 0 -12px 40px color-mix(in srgb, black 50%, transparent);
+  --modal-scrim: color-mix(in srgb, black 55%, transparent);
+  --modal-shadow: color-mix(in srgb, black 70%, transparent) 0px 32px 80px -16px;
+  /* 前台 --space-section 是 clamp(64px, 9vw, 100px)：vw 換成 cqi，跟著預覽區寬 */
+  --space-section: clamp(64px, 9cqi, 100px);
+  position: relative;
+  container: fep / inline-size;
+}
+
+/* 單票列／套組卡（前台 theme-sharp：直角） */
+.fep-shop--event .pdp-tier { border-radius: 0; }
+.fep-shop--event .pdp-tier__label { text-wrap: pretty; }
+.fep-shop--event .pdp-tier__price { text-align: right; }
+.fep-shop--event .pdp-tier__was { display: block; margin-top: var(--space-1); font-size: var(--fs-caption); font-weight: var(--fw-regular); color: var(--text-tertiary); text-align: right; }
+.fep-shop--event .pdp-tier__price--sale { color: var(--success-500); }
+.fep-shop--event .pdp-tier--info .pdp-tier__meta { word-break: keep-all; }
+.fep-shop--event .pdp-tier__deal { margin-left: var(--space-1); font-weight: var(--fw-regular); }
+.fep-shop--event .price-pct { display: inline-block; padding: 0 var(--space-1); border: 1px solid color-mix(in srgb, var(--success-500) 40%, transparent); border-radius: var(--radius-pill); background: color-mix(in srgb, var(--success-500) 12%, transparent); font-family: var(--font-latin); font-size: var(--fs-caption); line-height: 1.5; color: var(--success-500); vertical-align: 1px; }
+.fep-shop--event .price-pct--word { font-family: var(--font-cjk-text); vertical-align: 2px; }
+.fep-shop--event .pdp-tiers-block .pdp-tiers { margin: 0; }
+.fep-shop--event .pdp-tiers-block { scroll-margin-top: calc(var(--fep-stick-top, 0px) + var(--space-4)); }
+.fep-shop--event .pdp-sets-aside .pdp-tier__price { margin-top: var(--space-1); text-align: left; }
+.fep-shop--event .pdp-sets-aside .pdp-tier__was { display: inline; margin-left: var(--space-2); }
+.fep-shop--event .pdp-sets-aside .pdp-tier__more { align-self: flex-start; margin-top: var(--space-1); padding: 0; border: 0; background: none; cursor: pointer; }
+.fep-shop--event .pdp-bundle-item__link { font-family: var(--font-cjk-text); font-size: var(--fs-caption); color: var(--yellow-500); }
+.fep-shop--event .pdp-bundle-item__link:hover { color: var(--yellow-400); }
+/* 套組成員列：「票券」「商品」是前台 CSS 的 content 字串；同類第二列起不重複寫類別 */
+.fep-shop--event .pdp-rec-card__parts[role="list"] { display: flex; flex-direction: column; gap: var(--space-1); margin: var(--space-1) 0 0; padding: 0; list-style: none; font-family: var(--font-cjk-text); font-size: var(--fs-caption); line-height: 1.6; color: var(--text-secondary); }
+.fep-shop--event .pdp-rec-card__parts[role="list"] > [data-kind] { display: flex; align-items: flex-start; gap: var(--space-2); text-wrap: pretty; }
+.fep-shop--event .pdp-rec-card__parts[role="list"] > [data-kind]::before { content: "票券"; flex: 0 0 auto; width: 2.6em; color: var(--text-tertiary); font-size: var(--fs-caption); }
+.fep-shop--event .pdp-rec-card__parts[role="list"] > [data-kind="goods"]::before { content: "商品"; }
+.fep-shop--event .pdp-rec-card__parts[role="list"] > [data-kind="ticket"] + [data-kind="ticket"]::before,
+.fep-shop--event .pdp-rec-card__parts[role="list"] > [data-kind="goods"] + [data-kind="goods"]::before { visibility: hidden; }
+.fep-shop--event .pdp-rec-card__parts[role="list"] > [data-kind] > span { word-break: keep-all; text-wrap: balance; }
+.fep-shop--event[lang="en"] .pdp-rec-card__parts[role="list"] > [data-kind]::before { content: "Ticket"; width: 3.4em; }
+.fep-shop--event[lang="en"] .pdp-rec-card__parts[role="list"] > [data-kind="goods"]::before { content: "Goods"; }
+
+/* 資訊表與票價列 */
+.fep-shop--event .pdp-event-meta__k { flex: 0 0 auto; min-width: 48px; white-space: nowrap; }
+.fep-shop--event .pdp-event-meta small { text-wrap: pretty; }
+.fep-shop--event .pdp-event-meta__map { display: flex; align-items: center; gap: var(--space-1); width: fit-content; margin-top: var(--space-1); font-family: var(--font-cjk-text); font-size: var(--fs-caption); color: var(--text-secondary); }
+.fep-shop--event .pdp-event-meta__map .ds-icon { width: 12px; height: 12px; }
+.fep-shop--event .pdp-event-price__sale,
+.fep-shop--event .pdp-event-price__link { align-self: center; }
+
+/* 活動詳情：窄版一欄（右側欄攤平，卡司排到最前）；預覽區 ≥1024 左 720 閱讀欄＋右 360 側欄、側欄跟著捲 */
+.fep-shop--event .pdp-details__layout { display: flex; flex-direction: column; }
+.fep-shop--event .pdp-details__aside { display: contents; }
+.fep-shop--event .pdp-details__main { display: flex; flex-direction: column; gap: var(--space-10); min-width: 0; }
+.fep-shop--event .pdp-details__lead { max-width: 720px; margin-bottom: 0; }
+.fep-shop--event .pdp-details__media { max-width: none; }
+.fep-shop--event .pdp-details__venue { margin-bottom: 0; }
+.fep-shop--event .pdp-story__lineup { order: -1; margin-bottom: var(--space-10); }
+.fep-shop--event .pdp-details__layout > .pdp-details__aside > .pdp-tiers-block { margin-top: var(--space-10); margin-bottom: 0; }
+.fep-shop--event .pdp-details__cols { margin-top: var(--space-12); }
+@container fep (min-width: 1024px) {
+  .fep-shop--event .pdp-details__layout { display: grid; grid-template-columns: minmax(0, 720px) minmax(280px, 360px); justify-content: space-between; column-gap: var(--space-12); align-items: start; }
+  .fep-shop--event .pdp-details__aside { display: flex; flex-direction: column; gap: var(--space-8); position: sticky; top: var(--fep-stick-top, var(--space-6)); }
+  .fep-shop--event .pdp-story__lineup { order: 0; margin-bottom: 0; }
+  .fep-shop--event .pdp-details__layout > .pdp-details__aside > .pdp-tiers-block { margin-top: 0; }
+}
+
+/* 購票方案大圖卡（前台 .pdp-recs--options ＋ .shop-card--plan）：預覽區 <768 不顯示 */
+.fep-shop--event .pdp-recs--options .pdp-details__sub-heading { margin-bottom: var(--space-6); }
+.fep-shop--event .pdp-recs--options .pdp-plans + .pdp-details__sub-heading { margin-top: var(--space-10); }
+.fep-shop--event .shop-grid.pdp-plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); }
+.fep-shop--event .shop-card { display: flex; flex-direction: column; color: inherit; cursor: default; }
+.fep-shop--event .shop-card__media { position: relative; aspect-ratio: 2 / 3; background: var(--bg-secondary); overflow: hidden; }
+.fep-shop--event .shop-card__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fep-shop--event .shop-card__media--empty { display: grid; place-items: center; color: var(--text-tertiary); }
+.fep-shop--event .shop-card__flags { position: absolute; top: 10px; left: 10px; right: 50px; z-index: 2; display: flex; flex-wrap: wrap; gap: 6px; }
+.fep-shop--event .shop-card__flags .rf-flag { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; font-family: var(--font-latin); font-size: 10.5px; font-weight: var(--fw-bold); letter-spacing: 0.07em; backdrop-filter: blur(4px); }
+.fep-shop--event .shop-card__flags .rf-flag--neutral { color: var(--text-primary); background: color-mix(in srgb, var(--neutral-900) 62%, transparent); border: 1px solid var(--white-alpha-16); }
+.fep-shop--event .shop-card__flags .rf-flag--sale { color: var(--success-500); background: color-mix(in srgb, var(--success-500) 16%, transparent); border: 1px solid color-mix(in srgb, var(--success-500) 45%, transparent); letter-spacing: 0.02em; }
+.fep-shop--event .shop-card__body { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); flex: 1 1 auto; padding-top: var(--space-3); }
+.fep-shop--event .shop-card__title { margin: 0; font-family: var(--font-cjk-text); font-size: calc(var(--fs-body-sm) - 1px); font-weight: var(--fw-regular); line-height: 1.5; color: var(--text-primary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-wrap: pretty; }
+.fep-shop--event .shop-card__cat { margin-top: calc(var(--space-1) * -1); font-size: calc(var(--fs-caption) - 1px); letter-spacing: 0.06em; color: var(--text-tertiary); word-break: keep-all; overflow-wrap: anywhere; }
+.fep-shop--event .shop-card--plan .pdp-rec-card__parts { margin-top: var(--space-2); }
+.fep-shop--event .shop-card__bottom { margin-top: auto; padding-top: var(--space-3); align-self: stretch; }
+.fep-shop--event .shop-card__foot { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-3); }
+.fep-shop--event .shop-card__price { display: flex; align-items: center; gap: var(--space-2); min-width: 0; margin-top: 2px; font-family: var(--font-latin); font-size: calc(var(--fs-body-sm) - 1px); font-weight: var(--fw-medium); color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.fep-shop--event .shop-card__price:has(s) { color: var(--success-500); }
+.fep-shop--event .shop-card__price s { order: 1; font-size: var(--fs-caption); font-weight: var(--fw-regular); color: var(--text-tertiary); }
+.fep-shop--event .shop-card__price .price-pct { order: 2; }
+.fep-shop--event .shop-card__actions { display: flex; align-items: center; gap: var(--space-4); margin-top: var(--space-3); }
+.fep-shop--event .pdp-setview__open { display: inline; margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: inherit; cursor: pointer; }
+.fep-shop--event .pdp-setview__open:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── 看詳情彈窗（前台 .ds-modal.pdp-peek.pdp-setview；殼的定位見本段檔頭例外 ②）── */
+.fep-shop--event .ds-modal { position: absolute; inset: 0; z-index: 300; }
+.fep-shop--event .ds-modal__scrim { position: absolute; inset: 0; background: var(--modal-scrim); backdrop-filter: blur(8px); animation: fep-fade-in 200ms var(--ease-out); }
+.fep-shop--event .fep-modal__stage { position: sticky; top: var(--fep-stick-top, 0px); height: calc(100vh - var(--fep-stick-top, 0px)); max-height: 100%; display: flex; align-items: center; justify-content: center; padding: var(--space-6); pointer-events: none; }
+.fep-shop--event .ds-modal__panel { position: relative; width: 100%; max-width: 720px; max-height: 100%; overflow-y: auto; overscroll-behavior: contain; padding: var(--space-8); background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); box-shadow: var(--modal-shadow); pointer-events: auto; animation: fep-pop-in 240ms var(--ease-out); }
+.fep-shop--event .ds-modal__close { position: absolute; top: var(--space-6); right: var(--space-4); width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--radius-pill); background: var(--glass-bg-default); color: var(--text-secondary); cursor: pointer; transition: background 150ms var(--ease-out), color 150ms var(--ease-out); }
+.fep-shop--event .ds-modal__close:hover { background: var(--glass-bg-hover); color: var(--text-primary); }
+.fep-shop--event .ds-modal__close .ztor-icon { width: 16px; height: 16px; }
+.fep-shop--event .ds-modal__title { margin: 0; font-family: var(--font-cjk-display); font-size: var(--fs-h3); font-weight: var(--fw-bold); line-height: 1.3; text-wrap: balance; }
+.fep-shop--event .ds-modal__body { margin-top: var(--space-2); font-family: var(--font-cjk-text); font-size: var(--fs-body); line-height: var(--lh-body); color: var(--text-secondary); }
+.fep-shop--event .ds-modal__footer { margin-top: var(--space-6); display: grid; grid-template-columns: 1fr; gap: var(--space-3); }
+.fep-shop--event .ds-modal__footer .btn { width: 100%; height: 50px; padding-block: 0; justify-content: center; }
+.fep-shop--event .ds-modal.is-instant .ds-modal__scrim,
+.fep-shop--event .ds-modal.is-instant .ds-modal__panel { animation: none; }
+.fep-shop--event .pdp-peek__grip { display: none; }
+.fep-shop--event .pdp-peek__name { padding-right: var(--space-8); color: var(--text-primary); }
+.fep-shop--event .pdp-peek__media { position: relative; aspect-ratio: 2 / 3; overflow: hidden; background: var(--bg-tertiary); }
+.fep-shop--event .pdp-peek__img { width: 100%; height: 100%; object-fit: cover; display: block; user-select: none; }
+.fep-shop--event .pdp-setview__media--empty { display: grid; place-items: center; color: var(--text-tertiary); }
+.fep-shop--event .pdp-peek__thumbs { display: flex; gap: var(--space-2); }
+.fep-shop--event .pdp-peek__thumb { width: 44px; aspect-ratio: 1 / 1; padding: 0; border: 1px solid var(--border-subtle); overflow: hidden; background: var(--bg-tertiary); cursor: pointer; transition: border-color 160ms var(--ease-out); }
+.fep-shop--event .pdp-peek__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fep-shop--event .pdp-peek__thumb.is-active { border-color: var(--yellow-500); }
+.fep-shop--event .pdp-peek__price { margin: 0; font-family: var(--font-cjk-text); font-variant-numeric: tabular-nums; }
+.fep-shop--event .pdp-setview__layout { display: flex; flex-direction: column; gap: var(--space-5); }
+.fep-shop--event .pdp-setview__info { flex: 1 1 auto; min-width: 0; }
+.fep-shop--event .pdp-setview__gallery { display: flex; flex-direction: column; gap: var(--space-2); }
+.fep-shop--event .pdp-setview__media { aspect-ratio: 4 / 3; }
+.fep-shop--event .pdp-setview__media .pdp-peek__img { object-fit: contain; }
+.fep-shop--event .pdp-setview__head { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; }
+.fep-shop--event .pdp-rec-card__kind { align-self: flex-start; display: inline-block; padding: 1px 8px; border: 1px solid var(--white-alpha-16); border-radius: var(--radius-pill); font-family: var(--font-cjk-text); font-size: var(--fs-caption); line-height: 1.5; color: var(--text-secondary); }
+.fep-shop--event .pdp-setview__total { font-family: var(--font-latin); font-size: var(--fs-h4); font-weight: var(--fw-bold); color: var(--yellow-500); }
+.fep-shop--event .pdp-setview__total s { margin-left: 6px; font-size: var(--fs-caption); font-weight: var(--fw-regular); color: var(--text-tertiary); }
+.fep-shop--event .pdp-setview__note { margin: var(--space-1) 0 0; font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); line-height: 1.7; color: var(--text-secondary); text-wrap: pretty; white-space: pre-line; }
+.fep-shop--event .pdp-setview .pdp-bundle { margin-top: var(--space-6); }
+.fep-shop--event .pdp-setview .pdp-bundle__title { margin: 0 0 var(--space-3); font-family: var(--font-cjk-display); font-size: var(--fs-h5); font-weight: var(--fw-bold); color: var(--text-primary); }
+.fep-shop--event .pdp-setview__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.fep-shop--event .pdp-setview__row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px var(--space-3); padding: var(--space-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); background: var(--bg-secondary); }
+.fep-shop--event .pdp-setview__name { font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); font-weight: var(--fw-medium); color: var(--text-primary); word-break: keep-all; overflow-wrap: anywhere; }
+.fep-shop--event .pdp-setview__meta { grid-column: 1; font-family: var(--font-cjk-text); font-size: var(--fs-caption); line-height: 1.5; color: var(--text-tertiary); text-wrap: pretty; }
+.fep-shop--event .pdp-setview__meta > span { white-space: nowrap; }
+.fep-shop--event .pdp-setview__price { grid-area: 1 / 2 / span 2; align-self: start; font-family: var(--font-cjk-text); font-size: var(--fs-caption); color: var(--text-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fep-shop--event .pdp-setview__row--goods { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: auto auto auto; column-gap: var(--space-3); }
+.fep-shop--event .pdp-setview__thumb { grid-area: 1 / 1 / span 3; display: block; width: 56px; aspect-ratio: 2 / 3; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-tertiary); }
+.fep-shop--event .pdp-setview__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fep-shop--event .pdp-setview__row--goods .pdp-setview__name,
+.fep-shop--event .pdp-setview__row--goods .pdp-setview__meta { grid-column: 2; }
+.fep-shop--event .pdp-setview__row--goods .pdp-setview__price { grid-area: 1 / 3 / span 3; }
+.fep-shop--event .pdp-setview__link { grid-column: 2; justify-self: start; margin-top: 2px; font-family: var(--font-cjk-text); font-size: var(--fs-caption); color: var(--yellow-500); }
+/* 價格可點（開價格表）：預覽層的提示樣式由 publish-stage.css 給（[data-fep-price-key]） */
+@keyframes fep-fade-in { from { opacity: 0; } }
+@keyframes fep-pop-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+@keyframes fep-sheet-in { from { transform: translateY(100%); } }
+@container fep (min-width: 640px) {
+  .fep-shop--event .pdp-peek__name { padding-right: 0; }
+  .fep-shop--event .pdp-setview__layout { flex-direction: row; align-items: flex-start; gap: var(--space-6); }
+  .fep-shop--event .pdp-setview__gallery { flex: 0 0 240px; position: sticky; top: 0; }
+  .fep-shop--event .pdp-setview__media { aspect-ratio: 2 / 3; }
+  .fep-shop--event .pdp-setview__media .pdp-peek__img { object-fit: cover; }
+}
+/* 預覽區 <768：由下往上滑出的面板（頂端留 70px、抓柄、沒有 ✕）；斷點同其他處 767.98px */
+@container fep (max-width: 767.98px) {
+  .fep-shop--event main { --container-padding-x: 20px; }
+  .fep-shop--event .fep-modal__stage { align-items: flex-end; padding: 0; }
+  .fep-shop--event .ds-modal__panel { max-width: none; width: 100%; max-height: calc(100% - 70px); padding: 0 var(--space-5) var(--space-6); background: var(--sheet-bg); border: 0; border-top: var(--sheet-hairline); border-radius: var(--sheet-radius) var(--sheet-radius) 0 0; box-shadow: var(--sheet-shadow); animation: fep-sheet-in 560ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .fep-shop--event .pdp-peek__grip { display: flex; justify-content: center; align-items: center; position: sticky; top: 0; z-index: 2; height: 32px; margin: 0 calc(-1 * var(--space-5)); background: var(--sheet-bg); }
+  .fep-shop--event .pdp-peek__grip span { width: var(--sheet-handle-w); height: var(--sheet-handle-h); border-radius: 999px; background: var(--sheet-handle-bg); }
+  .fep-shop--event .ds-modal__close { display: none; }
+  .fep-shop--event .pdp-peek__name { padding-right: 0; }
+  .fep-shop--event .section { padding-block: clamp(48px, 12cqi, 72px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fep-shop--event .ds-modal__scrim, .fep-shop--event .ds-modal__panel { animation: none; }
+}
+
+/* 寬版標題：前台 clamp(--fs-h3, 4vw, --fs-h2)，vw 換 cqi */
+@container fep (min-width: 768px) {
+  .fep-shop--event .pdp-buy__title { font-size: clamp(var(--fs-h3), 4cqi, var(--fs-h2)); }
+}
+
+/* 預覽區 <768（視窗可能仍 ≥768）：第 1–3 段 @media (min-width: 768px) 的寬版規則改回窄版值，
+   並補上前台 @media (max-width: 767.98px) 才有的規則（例外 ①）。 */
+@container fep (max-width: 767.98px) {
+  .fep-shop--event main { --container-padding-x: 16px; }
+  .fep-shop--event .pdp { padding-block: 0; }
+  .fep-shop--event.rf-shop .section--flush-top { padding-top: 16px; }
+  .fep-shop--event main { padding-bottom: 0; }
+  .fep-shop--event .page-head__crumbs a { padding-block: 8px; margin-block: -8px; }
+  .fep-shop--event .pdp__grid { grid-template-columns: 1fr; gap: var(--space-8); }
+  .fep-shop--event .pdp-gallery { grid-template-columns: 1fr; grid-template-areas: "stage"; }
+  .fep-shop--event .pdp-gallery__strip { display: none; }
+  .fep-shop--event .pdp-gallery__thumbs-mobile { display: flex; }
+  .fep-shop--event .pdp-gallery__frame { width: 100%; height: auto; }
+  .fep-shop--event .pdp-buy { position: static; }
+  .fep-shop--event .pdp-buy__title { font-size: var(--fs-h3); }
+  .fep-shop--event .pdp-buy__heart { display: none; }
+  .fep-shop--event .pdp-details__cols { grid-template-columns: 1fr; gap: var(--space-10); }
+  .fep-shop--event .pdp-recs__rail { display: flex; flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; gap: var(--space-4); padding-bottom: var(--space-2); }
+  .fep-shop--event .pdp-rec-card { flex: 0 0 200px; scroll-snap-align: start; }
+  .fep-shop--event .pdp-recs--options { display: none; }
+  /* 黏在宿主頂列下緣（--fep-stick-top＝頂列高＋24，減回 24）；前台是 top:0 */
+  .fep-shop--event .pdp-topbar { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 16px; position: sticky; top: calc(var(--fep-stick-top, var(--space-6)) - var(--space-6)); z-index: 200; }
+  .fep-shop--event .pdp-topbar > * { position: relative; z-index: 1; }
+  .fep-shop--event .pdp-topbar__back { display: inline-flex; align-items: center; gap: 16px; }
+  .fep-shop--event .pdp-topbar__backlabel { font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); font-weight: var(--fw-medium); color: var(--text-primary); }
+  .fep-shop--event .pdp-topbar__spacer { flex: 1 1 0%; }
+  .fep-shop--event .pdp-topbar .icon-btn svg { width: 20px; height: 20px; }
+  .fep-shop--event .pdp-topbar__cart { position: relative; }
+  .fep-shop--event .pdp-topbar__badge { display: none; }
+}
+/* 預覽區 ≥768：前台的手機頂欄不畫（視窗 <768 時第 2 段 @media 會把它打開，這裡依預覽區寬度蓋回） */
+@container fep (min-width: 768px) {
+  .fep-shop--event .pdp-topbar { display: none; }
+}

@@ -25,6 +25,10 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-16 D443 粉絲活動頁照新前台（UI-CHANGES 二百六十、ASSUMPTIONS UIA-272；主規格 §7.4、5.1.6.1 §4.8、5.1.6.3 §2.13 的預覽）**：
+> - `js/fan-event-page.js`：門票與套組合成一頁（兩個視圖退場）、詳情左欄描述→地圖＋右側欄卡司→單票→套組、套組卡「看詳情」彈窗、頁尾購票方案大圖卡；折扣畫開賣當下（組合包另設開賣時間時照組合包自己的）、單買寫單價；不畫額外權益（D402）、注意事項（D334）、即將售罄，限購只寫每人總限購（D427），退換票平台固定文案（D313）。
+> - `ds-components/fan-shop.css` 第 7 段（只掛 `.fep-shop--event`，容器查詢）；`ds-components/publish-stage.css`（`--fep-stick-top`）、`js/publish-stage.js`（`data-pstage-host`、`data-pp-no-zone`）；宿主 `create-event.html`（`buildFanModel()` 的 offer／單買價／圖片、`CE_EDIT_ZONES`、不再傳 views）、`event-localization.html`（`locModel()` 同步、不再傳 views）；`js/i18n.js` 新增 fep.* 文案；`design-system.html`／`.md` §4.215、§4.216。
+
 > **2026-10-16 release2.4 電子商店範圍（UI-CHANGES 二百五十九；使用者指示與裁決，規格不動）**：
 > - 交付範圍：S45、S63、S64、O04、O09 ⚪ 改 🔵 release2.4（建立組合包／組合包詳情／建立活動第 6 步組合包欄位與購買條件／訂單已取消與爭議）；S11、S24、S68～S71、O33 維持 ⚪。
 > - 呈現：`js/devtools.js` 版本閘收完功能後，標題以外全被收起的 `.bd-sec`／`.form-section` 整段收起（`collapseEmptySections()`），無產品行為變動。
