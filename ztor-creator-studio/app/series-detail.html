@@ -440,12 +440,15 @@
     /* 已開賣警示：只在真的有場次開賣時出現 */
     const alert = document.querySelector('.alert--warning');
     if (alert) {
-      const onsale = S.legs.filter(e => ['on-sale', 'live'].indexOf(e.status) >= 0);
+      /* D436 決定三：上架中的場次不會被同步——警示改說「要先下架這些場次才能同步」（原「已開賣、已售幾張」的說法退場） */
+      const isListed = e => window.sdListedNow ? window.sdListedNow(e) : (['scheduled', 'on-sale', 'live'].indexOf(e.status) >= 0 && !e.unlisted);
+      const onsale = S.legs.filter(isListed);
       alert.hidden = !onsale.length;
       const t = alert.querySelector('.alert__title');
       if (t && onsale.length) { t.removeAttribute('data-i18n');
-        t.textContent = T('sd.sync.onsale.n', '{n} of these dates are already on sale — {m} tickets sold')
-          .replace('{n}', onsale.length).replace('{m}', num(onsale.reduce((a, e) => a + (e.sold || 0), 0))); }
+        t.textContent = T('sd.sync.listed.n', '{n} of these dates are listed — they won’t be synced').replace('{n}', onsale.length); }
+      const mt = alert.querySelector('.alert__meta');
+      if (mt) { mt.setAttribute('data-i18n', 'sd.sync.listed.meta'); mt.textContent = T('sd.sync.listed.meta', 'Unlist those dates first to sync them, then relist them yourself.'); }
     }
 
     /* ── 母設定 vs 已自行調整（2026-08-18 使用者裁決）──────────────────
@@ -767,29 +770,42 @@
     const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
     const fmtNum = n => String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const dlg = document.querySelector('[data-sd-confirm]');
+    /* 2026-10-16 修正：確認窗的 markup 排在這支 script 之後，script 執行當下查不到——改成點擊時才查（原本永遠走「直接存」） */
+    let dlg = null;
     const done = n => alert(T('sd.save.done.n', 'Saved. The change is now on all {n} dates.').replace('{n}', n));
     const close = () => { if (dlg) dlg.removeAttribute('data-open'); };
+    /* D436 決定三（2026-10-16）：同步屬 ztor 端修改，不自動下架子場——只套用到已下架（或未上架）的子場；
+       上架中的子場（已發布＝已排程／售票中／進行中，未下架、定時上架時間已到）不套用，確認窗列出「要先下架這些場次才能同步」。
+       取代原本「已開賣場次照套、只說明影響」的確認（D390 稽核第 8 條的寫法；已下架的場次沒有人能買，影響說明不再需要）。 */
+    const listedNow = e => {
+      if (['scheduled', 'on-sale', 'live'].indexOf(e.status) < 0 || e.unlisted) return false;
+      const lf = (e.listing || {}).from, t = lf ? new Date(String(lf).replace(' ', 'T')).getTime() : NaN;
+      return !(!isNaN(t) && t > Date.now());
+    };
+    window.sdListedNow = listedNow;
     btn.addEventListener('click', () => {
+      if (!dlg) {
+        dlg = document.querySelector('[data-sd-confirm]');
+          }
       const S = window.sdSeries;
       const legs = (S && S.legs) || [];
-      const onSale = legs.filter(e => ['on-sale', 'live'].indexOf(e.status) >= 0);
-      if (!onSale.length || !dlg) { done(legs.length || 3); return; }
-      const EVS = window.ztorEvents;
-      const sold = onSale.reduce((n, e) => n + (Number(e.sold) || 0), 0);
-      const holders = onSale.reduce((n, e) => n + (EVS && EVS.holdersOf ? EVS.holdersOf(e.id) : (Number(e.sold) || 0)), 0);
-      dlg.querySelector('[data-sd-confirm-title]').textContent = T('sd.confirm.title', 'Sync to {n} dates?').replace('{n}', legs.length);
-      dlg.querySelector('[data-sd-confirm-body]').textContent = T('sd.confirm.body',
-        '{m} of them are on sale — {s} tickets sold to {h} holders. These shared settings aren’t high-impact changes, so no event-change notice goes out; tickets already sold stay as they are, and a new price applies to later purchases only.')
-        .replace('{m}', onSale.length).replace('{s}', fmtNum(sold)).replace('{h}', fmtNum(holders));
-      dlg.querySelector('[data-sd-confirm-list]').innerHTML = onSale.map(e =>
+      const skip = legs.filter(listedNow);
+      const apply = legs.length - skip.length;
+      if (!skip.length || !dlg) { done(legs.length || 3); return; }
+      dlg.querySelector('[data-sd-confirm-title]').textContent = apply
+        ? T('sd.confirm.title.some', 'Sync to {n} of {m} dates?').replace('{n}', apply).replace('{m}', legs.length)
+        : T('sd.confirm.title.none', 'No dates can be synced yet');
+      dlg.querySelector('[data-sd-confirm-body]').textContent = T('sd.confirm.body.listed',
+        'These {n} dates are listed, so they won’t be updated. Unlist them first to sync — then relist them yourself.').replace('{n}', skip.length);
+      dlg.querySelector('[data-sd-confirm-list]').innerHTML = skip.map(e =>
         '<li class="leave-dialog__list-item"><i data-lucide="calendar" class="ztor-icon"></i><span>' +
-        esc((e.date || '').replace(/-/g, '/') + ' · ' + (e.venue || '')) + ' · ' + esc(T('sd.confirm.sold', '{n} sold').replace('{n}', fmtNum(e.sold))) + '</span></li>').join('');
+        esc((e.date || '').replace(/-/g, '/') + ' · ' + (e.venue || '')) + '</span></li>').join('');
+      const ok = dlg.querySelector('[data-sd-confirm-ok]');
+      ok.hidden = !apply;
       if (window.ztorIcons) window.ztorIcons.applyIcons(dlg);
       dlg.setAttribute('data-open', '');
-      dlg.querySelector('[data-sd-confirm-ok]').onclick = () => { close(); done(legs.length); };
+      ok.onclick = () => { close(); done(apply); };
     });
-    if (dlg) dlg.addEventListener('click', e => { if (e.target.closest('[data-sd-confirm-cancel]')) close(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
   })();
 </script>

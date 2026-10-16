@@ -144,9 +144,32 @@
   var LOG_MAX = 200;
   var featOn = function (id) { var d = window.ztorDevState; return !(d && d.featOn && !d.featOn(id)); };
 
+  /* 種子紀錄（2026-10-16 示範資料補齊，note/release2.4 假資料覆蓋稽核 S6）：瀏覽器還沒存過任何匯出紀錄時（key 不存在），
+     先放幾筆示範，讓匯出紀錄視窗一打開就看得到兩種「誰」——創作者本人、Admin 代管——以及訂單管理與活動交易明細兩種範圍。
+     第一次真的匯出就把新紀錄疊在這些種子上一起存起來（addLog 讀的是同一份）；清掉 localStorage 會回到種子。
+     「誰」的名稱跟目前 persona 走（顯示時才補，同 whoNow）；檔名照實際匯出的英文命名規則。內容是原型自擬的示範，不是真實紀錄。 */
+  var LOG_SEED = [
+    { scope: 'tx:nick-live-taoyuan-bky', at: '2026-10-15 18:40', who: { role: 'admin' }, filters: [{ k: 'csv.log.f.status', v: 'paid', vk: 'event-detail.tx.f.paid' }],
+      count: 120, file: 'Transactions_NICKTHEREAL LIVE 2026 — Taoyuan_all.csv' },
+    { scope: 'tx:nick-live-taoyuan-bky', at: '2026-10-12 11:05', who: { role: 'creator' }, filters: [],
+      count: 128, file: 'Transactions_NICKTHEREAL LIVE 2026 — Taoyuan_all.csv' },
+    { scope: 'orders', at: '2026-10-14 16:20', who: { role: 'admin' }, filters: [{ k: 'orders.filter.type', v: 'ticket', vk: 'orders.type.ticket' }],
+      count: 14, file: 'Orders_all.csv' },
+    { scope: 'orders', at: '2026-06-12 09:30', who: { role: 'creator' },
+      filters: [{ k: 'csv.log.f.status', v: 'paid', vk: 'orders.status.paid' }, { k: 'orders.filter.date', v: '2026-06-01 – 2026-06-11' }, { k: 'csv.log.f.ship', v: 'yes', vk: 'csv.log.f.ship.yes' }],
+      count: 21, file: 'Orders_2026-06-01_to_2026-06-11.csv' }
+  ];
+  function seedLog() {
+    var name = whoNow().name;
+    return LOG_SEED.map(function (r) { var o = JSON.parse(JSON.stringify(r)); o.who.name = name; o.seed = true; return o; });
+  }
   function readAll() {
-    try { var a = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); return Array.isArray(a) ? a : []; }
-    catch (e) { return []; }
+    try {
+      var raw = localStorage.getItem(LOG_KEY);
+      if (raw == null) return seedLog();
+      var a = JSON.parse(raw || '[]'); return Array.isArray(a) ? a : [];
+    }
+    catch (e) { return seedLog(); }
   }
   function log(scope) { return readAll().filter(function (r) { return r && r.scope === scope; }); }
   function pad(n) { return String(n).padStart(2, '0'); }

@@ -867,6 +867,15 @@
               </button>
             </div>
           </div>
+        <!-- D435（2026-10-16，S81.1）：已發布且上架中的活動按「編輯活動」只能改庫存——就地說明＋下架入口（按鈕帶 data-ed-unlist，與「上架與下架」那顆同一個動作、同一個確認窗）。edStockSync() 切 hidden -->
+        <div class="alert alert--row alert--info mt-16" data-ed-stockonly-note data-feat="S81.1" role="note" hidden>
+          <span class="alert__icon"><i data-lucide="lock" class="ztor-icon"></i></span>
+          <div class="alert__body">
+            <div class="alert__title" data-i18n="ed.stockonly.title">This event is listed — only stock can change right now</div>
+            <div class="alert__meta" data-i18n="ed.stockonly.body">You can change ticket quantities (not below what's sold) and each bundle's locked sets (in the bundle's Stock tab). To edit anything else, unlist the event first. After you save, relist it yourself.</div>
+          </div>
+          <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-unlist data-i18n="event-detail.unlist.btn">Unlist event</button>
+        </div>
         <div class="nav-sections">
 
           <div data-nav-panel="content">
@@ -1427,6 +1436,15 @@
               </button>
             </div>
           </div>
+        <!-- D435（2026-10-16，S81.1）：已發布且上架中的活動按「編輯活動」只能改庫存——就地說明＋下架入口（按鈕帶 data-ed-unlist，與「上架與下架」那顆同一個動作、同一個確認窗）。edStockSync() 切 hidden -->
+        <div class="alert alert--row alert--info mt-16" data-ed-stockonly-note data-feat="S81.1" role="note" hidden>
+          <span class="alert__icon"><i data-lucide="lock" class="ztor-icon"></i></span>
+          <div class="alert__body">
+            <div class="alert__title" data-i18n="ed.stockonly.title">This event is listed — only stock can change right now</div>
+            <div class="alert__meta" data-i18n="ed.stockonly.body">You can change ticket quantities (not below what's sold) and each bundle's locked sets (in the bundle's Stock tab). To edit anything else, unlist the event first. After you save, relist it yourself.</div>
+          </div>
+          <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-unlist data-i18n="event-detail.unlist.btn">Unlist event</button>
+        </div>
         <div class="nav-sections">
 
           <div data-nav-panel="tiers">
@@ -1916,6 +1934,7 @@
                     <th data-i18n="event-detail.void.col.tier">Tier</th>
                     <th data-i18n="event-detail.void.col.at">Voided at</th>
                     <th data-i18n="event-detail.void.col.by">Voided by</th>
+                    <th data-i18n="event-detail.void.col.reason">Reason</th>
                   </tr>
                 </thead>
                 <tbody id="ed-void-body"></tbody>
@@ -3353,6 +3372,13 @@
     /* 重新上架（D371 決定一）：已結束／已取消先提示「粉絲找得到活動頁但不能購買」，確認才上架；
        其他階段直接上架（可逆的營運動作，與下架對稱不必再問一次）。組合包不自動重新上架，說明句寫在區塊副標。 */
     if (e.target.closest('[data-ed-relist]')) {
+      /* D435〔推導〕：編輯中還有沒儲存的變更時先不重新上架——上架後只剩庫存能改，未儲存的其他變更會卡在草稿裡。
+         改完儲存後由創作者自行重新上架（D435 決定三），不自動上架。 */
+      const pEd = document.querySelector('.tab-panel[data-editable]');
+      if (pEd && pEd.getAttribute('data-mode') === 'edit' && isDirty()) {
+        if (window.ztorToast) window.ztorToast.show(T('event-detail.relist.dirty', 'Save or discard your changes first, then relist the event.'));
+        return;
+      }
       const relist = () => {
         window.ztorEvents.setUnlisted(ev.id, false);
         ev.unlisted = false;
@@ -3723,7 +3749,9 @@
       '<tr class="ztor-table__row"><td><code>' + esc(t.id) + '</code></td><td>' + esc(t.buyer) + '</td><td>' +
       esc(t.tier) + '</td><td>' + esc(t.voidedAt || '—') + '</td><td>' +
       /* D375 決定一：匯入活動的撤銷由 bookyay 同步回來，作廢者欄標來源（唯讀） */
-      esc(isBky() ? T('event-detail.void.by.bky', 'bookyay (synced)') : (t.voidedBy || '—')) + '</td></tr>'
+      esc(isBky() ? T('event-detail.void.by.bky', 'bookyay (synced)') : (t.voidedBy || '—')) + '</td>' +
+      /* 撤銷原因（2026-10-16，D431 補充）：選填，沒填寫「—」；只記在這裡給 Admin 查，不寄信 */
+      '<td>' + esc(t.voidReason || '—') + '</td></tr>'
     ).join('');
   }
   /* §5.1.11 should：停用的入口保留在畫面上並用 title 說明原因，不要直接隱藏。 */
@@ -3768,7 +3796,8 @@
   /* ── 作廢確認彈窗（§5.1.11 Destructive confirm pattern）───────────────
      重用既有的 openConfirm()（.payout-modal／.payout-dialog／danger:true 時
      btn--soft btn--destructive，2026-10-15 Q134），不新建第二套彈窗——同一份殼，跟 order-detail.html 的
-     作廢彈窗一致。target 是單一 tx 物件（逐票作廢）或字串 'all'（整場作廢）。 */
+     作廢彈窗一致。target 是單一 tx 物件（逐票作廢）或字串 'all'（整場作廢）。
+     D431（2026-10-16）：撤銷不寄 email，「持票人會收到取消通知信」那條與 toast 的「會通知」拿掉。 */
   function openVoidConfirm(target) {
     const esc2 = t => String(t == null ? '' : t).replace(/[&<>"']/g, c =>
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -3786,8 +3815,10 @@
       '<div class="field__hint mt-16">' + T('event-detail.void.confirm.stripe', 'Refund the buyer in Stripe first, if any refund is owed — voiding moves no money and never calls Stripe.') + '</div>' +
       '<div class="field__label mt-16">' + T('event-detail.void.confirm.effects', 'What voiding does') + '</div>' +
       '<div class="field__hint">' + T('event-detail.void.confirm.effect.qr', 'This ticket’s QR stops working immediately — it can’t be scanned at the door.') + '</div>' +
-      '<div class="field__hint mt-8">' + T('event-detail.void.confirm.effect.email', 'The ticket holder gets a cancellation email.') + '</div>' +
-      '<div class="field__hint mt-16">' + T('event-detail.void.confirm.irreversible', 'There’s no undo — a voided ticket can’t be reinstated.') + '</div>';
+      '<div class="field__hint mt-16">' + T('event-detail.void.confirm.irreversible', 'There’s no undo — a voided ticket can’t be reinstated.') + '</div>' +
+      /* 撤銷原因（2026-10-16，D431 補充，比照訂單撤銷 D271）：選填、只記在撤銷紀錄給 Admin 查；整場撤銷時套用到每一筆 */
+      '<div class="field mt-16"><label class="field__label" for="ed-void-reason">' + T('od.void.reason.label', 'Reason (optional)') + '</label>' +
+      '<textarea class="input textarea" id="ed-void-reason" rows="2" placeholder="' + esc2(T('event-detail.void.reason.ph', "Leave a note on why — it's kept in the void record for Admin only.")) + '"></textarea></div>';
     openConfirm({
       title: target === 'all'
         ? T('event-detail.void.confirm.all-title', 'Void all remaining tickets?')
@@ -3798,12 +3829,14 @@
         : T('event-detail.void.confirm.ok', 'Void ticket'),
       danger: true,
       onOk: () => {
-        list.forEach(t => window.ztorEvents.voidTicket(t, 'Admin'));
+        const rEl = document.getElementById('ed-void-reason');
+        const reason = rEl ? rEl.value.trim() : '';
+        list.forEach(t => window.ztorEvents.voidTicket(t, 'Admin', reason));
         renderTx();  // 內部已一併呼叫 refreshVoidedKpi／renderVoidRecord／refreshVoidAllButton
         if (window.ztorToast) window.ztorToast.show(
           target === 'all'
-            ? T('event-detail.void.toast.all', 'Voided {n} tickets — holders will be notified.').replace('{n}', fmtNum(qty))
-            : T('event-detail.void.toast.one', 'Voided {n} ticket(s) — the buyer will be notified.').replace('{n}', fmtNum(target.qty || 1))
+            ? T('event-detail.void.toast.all', 'Voided {n} tickets.').replace('{n}', fmtNum(qty))
+            : T('event-detail.void.toast.one', 'Voided {n} ticket(s).').replace('{n}', fmtNum(target.qty || 1))
         );
       }
     });
@@ -4169,8 +4202,67 @@
   }
   /* 上架／下架是營運動作、不受編輯模式管：編輯中按下架或重新上架，鎖定要跟著重算（syncUnlist 呼叫） */
   function edLiveRelock() {
-    if (!ev || ev.status !== 'live') return;
-    try { document.querySelectorAll('.tab-panel[data-editable]').forEach(p => applyReadonly(p, p.getAttribute('data-mode') !== 'edit')); } catch (e) {}
+    /* D435：不只進行中——任何階段在編輯中下架／重新上架，欄位的唯讀都要先依新狀態重算一次，再交給 edStockSync 補鎖 */
+    if (ev) {
+      try { document.querySelectorAll('.tab-panel[data-editable]').forEach(p => applyReadonly(p, p.getAttribute('data-mode') !== 'edit')); } catch (e) {}
+    }
+    edStockSync();   // D435：上架／下架是營運動作，編輯中按下架或重新上架，「只能改庫存」跟著開或關
+  }
+
+  /* ── 活動發布後的修改規則（D435，2026-10-16；功能閘 S81.1）────────────────────────
+     活動已發布（已排程、售票中、進行中）且仍上架時，「編輯活動」只能改庫存：門票張數（下限＝已售，門票彈窗）、
+     組合包鎖定套數（在組合包細節頁的「組合庫存」分頁改，那裡不受整頁編輯管）。其他資料（名稱、描述、場地、場次、
+     票價、購買條件、通知設定、組合包內容與售價…）唯讀，就地說明「要先下架才能修改」並附下架入口。
+     營運動作不受影響：隱藏／顯示、上架／下架、開賣／停售（含發布設定的時間〔D435 推導〕）、撤銷、報到更正。
+     做法：設定分頁裡要鎖的分節（活動內容／場次／地點／在地化）各自掛 data-mode="view"（沿用檢視態的樣子與按鈕白名單，
+     不另做第三種鎖定外觀），欄位逐一設唯讀；發布設定、連結、上下架、取消活動四節不鎖。票務分頁的入口由
+     rulesEditable／tixAddOff／門票彈窗各自問 edStockOnly()。下架後（ev.unlisted）照現行規則開放，bookyay 鎖定欄位照舊鎖。
+     var 宣告：syncUnlist 在初始化早期就會呼叫到這裡，避免 TDZ。 */
+  var edStockLocked = false;
+  function edStockOnly() {
+    const d = window.ztorDevState;
+    const on = !d || !d.featOn || d.featOn('S81.1');
+    if (!on || !ev || ['scheduled', 'on-sale', 'live'].indexOf(ev.status) < 0 || ev.unlisted) return false;
+    /* 規格 5.1.6.2（協調者 2026-10-16 補充）：設了定時上架、時間還沒到的活動視為已下架，可以直接改 */
+    const lf = (ev.listing || {}).from;
+    const t = lf ? new Date(String(lf).replace(' ', 'T')).getTime() : NaN;
+    if (!isNaN(t) && t > Date.now()) return false;
+    return true;
+  }
+  var ED_STOCK_FREE = ['publish', 'link', 'unlist', 'danger'];
+  function edStockSync() { try { edStockSync0(); } catch (e) {} }
+  function edStockSync0() {
+    const p0 = document.querySelector('.tab-panel[data-editable]');
+    const editing = !!p0 && p0.getAttribute('data-mode') === 'edit';
+    const lock = editing && edStockOnly();
+    document.querySelectorAll('.tab-panel[data-panel="dates"] [data-nav-panel]').forEach(blk => {
+      if (ED_STOCK_FREE.indexOf(blk.getAttribute('data-nav-panel')) >= 0) return;
+      if (lock) {
+        blk.setAttribute('data-mode', 'view'); blk.setAttribute('data-ed-stocklock', '');
+        blk.querySelectorAll('input, textarea').forEach(el => { if (!editExempt(el)) el.readOnly = true; });
+        blk.querySelectorAll('select').forEach(el => { if (!editExempt(el)) el.disabled = true; });
+        blk.querySelectorAll('[data-sess-early], [data-sess-remove], #ed-sess-add, #ed-lineup-add').forEach(el => { el.disabled = true; });
+        blk.querySelectorAll('[data-ed-term], [data-sess-md], [data-sess-doors]').forEach(sw => {
+          sw.disabled = true; sw.classList.add('switch--locked'); sw.setAttribute('aria-disabled', 'true');
+        });
+      } else if (blk.hasAttribute('data-ed-stocklock')) {
+        blk.removeAttribute('data-mode'); blk.removeAttribute('data-ed-stocklock');
+      }
+    });
+    document.querySelectorAll('[data-ed-stockonly-note]').forEach(n => { n.hidden = !lock; });
+    /* 翻譯（預覽與在地化）屬其他資料（規格 5.1.6.2，協調者 2026-10-16 補充）：活動上架中要先下架才能改。
+       在地化有自己的儲存、不受整頁編輯管，所以不論是否在編輯，上架中一律停用入口並用 title 寫原因（不做沉默停用）。 */
+    const locOff = edStockOnly();
+    document.querySelectorAll('[data-ed-localize]').forEach(b => {
+      b.disabled = locOff;
+      if (locOff) { b.setAttribute('aria-disabled', 'true'); b.title = T('ed.loc.listed', 'This event is listed — unlist it to edit translations.'); }
+      else { b.removeAttribute('aria-disabled'); b.removeAttribute('title'); }
+    });
+    if (window.ZtorViewMode) document.querySelectorAll('.tab-panel[data-panel="dates"]').forEach(p => window.ZtorViewMode.sync(p));
+    const was = edStockLocked;
+    edStockLocked = lock;
+    /* 編輯中切換（下架／重新上架）：票務分頁、預設購票規則、通知開關照新狀態重畫（沿用整頁模式切換的事件） */
+    if (was !== lock && editing) document.dispatchEvent(new CustomEvent('ed:mode', { detail: { mode: 'edit' } }));
   }
 
   /* ── 場次清單（2026-08-11 使用者指示：定點活動的多場次收進同一頁）────────────
@@ -4565,6 +4657,7 @@
     document.querySelectorAll('[data-ed-follow]').forEach(p => p.setAttribute('data-mode', editing ? 'edit' : 'view'));
     /* 發布設定面板不掛 data-editable（理由見 syncPubLock），所以要在這裡一起翻 */
     syncPubLock();
+    edStockSync();   // D435：上架中的已發布活動只能改庫存
     const show = (sel, on) => document.querySelectorAll(sel).forEach(el => { el.hidden = !on; });
     /* 墓碑 2026-09-18（D281）：`show('[data-ed-delete]', editing)` 退場——刪除活動鈕已自頁首移除。 */
     show('[data-ed-cancel]', editing);
@@ -5279,7 +5372,7 @@
 
   /* 新增門票卡要不要出現（2026-10-13 D410 決定一，5.1.6.3 §2.6）：bookyay 匯入的活動門票只來自 bookyay，
      票種門票與獨立票都不能另外新增——入口整個不出現（隱藏，不是停用）；其餘照舊（檢視態、已結束／已取消整頁唯讀時不出現）。 */
-  function tixAddOff() { return stageRO() || !edEditing() || isBky(); }
+  function tixAddOff() { return stageRO() || !edEditing() || isBky() || edStockOnly(); }   // D435：上架中不能新增門票
 
   /* 點卡開彈窗（2026-09-22 D311：單欄區塊＋計算列表）。系列子場唯讀——共用設定在母頁改。 */
   const tmEl = id => document.getElementById(id);
@@ -5566,7 +5659,7 @@
      D392：門票彈窗的「套用」只改頁面草稿，算進「儲存 N 項變更」、捨棄會還原（ASSUMPTIONS EDIT-003）。 */
   const edEditing = () => { const p = document.querySelector('.tab-panel[data-editable]'); return !!p && p.getAttribute('data-mode') === 'edit'; };
   const tmRO = () => stageRO() || !edEditing();   // 門票彈窗唯讀：已結束／已取消，或還沒按編輯
-  const rulesEditable = () => !!ev && !evIsBky() && !stageRO() && edEditing();
+  const rulesEditable = () => !!ev && !evIsBky() && !stageRO() && edEditing() && !edStockOnly();   // D435：上架中只能改庫存
   const regateFeat = () => { if (window.ztorDevState && window.ztorDevState.regate) window.ztorDevState.regate(); };
   const featOnPC = id => { const d = window.ztorDevState; return !id || !d || !d.featOn || d.featOn(id); };
   const evCur = () => {
@@ -5672,7 +5765,7 @@
   const BKY_ADD_KEYS = ['disc', 'discTime'];
   let tmBkyWork = null;
   /* 墓碑 2026-10-16（D429）：原本排除套票轉出的 1 人票（hideFix，折扣類落在自動組合包）——該票退場。 */
-  const bkyAddOn = () => evIsBky() && !tmNew && !stageRO() && edEditing() && featOnPC('S96');
+  const bkyAddOn = () => evIsBky() && !tmNew && !stageRO() && edEditing() && !edStockOnly() && featOnPC('S96');
   function syncTmRules(t) {
     const rsec = tmEl('ed-tm-rules-sec');
     const acts = tmEl('ed-tm-rules-actions');
@@ -5720,7 +5813,7 @@
     markBkySource(tmEl('ed-tm-rules-title'), false);
     tmRulesUI = null;
     rsec.hidden = false;
-    const edit = !tmRO();   // 2026-10-10：檢視態（未按編輯）也唯讀
+    const edit = !tmRO() && !edStockOnly();   // 2026-10-10：檢視態（未按編輯）也唯讀；D435：上架中只能改張數
     const follow = !tmRulesOwn;
     acts.innerHTML = '<span class="field__label" data-i18n="ed.tm.rules.follow">' + tixEsc(T('ed.tm.rules.follow', 'Follow event defaults')) + '</span>' +
       '<button type="button" class="switch' + (follow ? ' switch--on' : '') + (edit ? '' : ' switch--locked') + '" role="switch" aria-checked="' + (follow ? 'true' : 'false') + '"' +
@@ -5874,12 +5967,25 @@
       tmEl('ed-tm-del-why').hidden = true;
       tmEl('ed-tm-img-field').querySelectorAll('[data-tm-img], [data-tm-img-reset]').forEach(x => { x.style.pointerEvents = 'none'; if (x.matches('[data-tm-img-reset]')) x.hidden = true; });
     }
+    /* D435：活動上架中（已發布）只能改張數（下限＝已售，上面 min 已設）；票名、票價、入場、圖片、購買條件唯讀，刪除收起。
+       隱藏／顯示是營運動作，照常可按。bookyay 帶入的票張數本來就鎖（F21），維持鎖定。 */
+    const stockOnly = !ro && edStockOnly();
+    if (stockOnly) {
+      ['ed-tm-name', 'ed-tm-price', 'ed-tm-early'].forEach(id => { tmEl(id).readOnly = true; });
+      del.hidden = true;
+      tmEl('ed-tm-del-why').hidden = true;
+      tmEl('ed-tm-img-field').querySelectorAll('[data-tm-img], [data-tm-img-reset]').forEach(x => { x.style.pointerEvents = 'none'; if (x.matches('[data-tm-img-reset]')) x.hidden = true; });
+    } else if (!ro) {
+      tmEl('ed-tm-img-field').querySelectorAll('[data-tm-img]').forEach(x => { x.style.pointerEvents = ''; });
+    }
     const roNote = tmEl('ed-tm-ro-note');
     if (roNote) {
-      const rk = stageRO() ? 'ed.tm.ro' : 'ed.tm.ro.view';
+      const rk = stageRO() ? 'ed.tm.ro' : stockOnly ? 'ed.tm.ro.stock' : 'ed.tm.ro.view';
       roNote.setAttribute('data-i18n', rk);
-      roNote.textContent = T(rk, stageRO() ? 'This event has ended or been cancelled — tickets are view-only.' : 'Select Edit to change this ticket.');
-      roNote.hidden = !ro;
+      roNote.textContent = T(rk, stageRO() ? 'This event has ended or been cancelled — tickets are view-only.'
+        : stockOnly ? "This event is listed — only the quantity can change. Unlist the event to edit anything else."
+        : 'Select Edit to change this ticket.');
+      roNote.hidden = !(ro || stockOnly);
     }
     syncTmHow();   // 二選一與場次只在新票出現；票名標籤與副標（含獨立票所屬場次）在這裡一起算
     syncTmCalc(); syncTmFoot();
@@ -7678,7 +7784,7 @@
       /* D361 決定三：已結束、已取消整頁唯讀——通知開關一併鎖住（照樣看得到開或關） */
       /* 2026-10-10：通知開關是這場活動的設定，跟著整頁編輯模式——按「編輯活動」後才能切（D392：切的是草稿，儲存才生效） */
       const editingNow = (() => { const p = document.querySelector('.tab-panel[data-editable]'); return !!p && p.getAttribute('data-mode') === 'edit'; })();
-      const ro = ['ended', 'cancelled'].indexOf(ev.status) >= 0 || !editingNow;
+      const ro = ['ended', 'cancelled'].indexOf(ev.status) >= 0 || !editingNow || edStockOnly();   // D435：通知設定不是庫存，上架中要先下架才能改
       sw.classList.toggle('switch--locked', ro);
       if (ro) sw.setAttribute('aria-disabled', 'true'); else sw.removeAttribute('aria-disabled');
       if (!sw.dataset.wired) {
