@@ -10197,13 +10197,19 @@
     'event-detail.unlist.confirm.ok':    { en: 'Unlist', zh: '下架' },
     'event-detail.unlist.toast':   { en: 'Event unlisted', zh: '活動已下架' },
     'event-detail.relist.title':   { en: 'Relist this event', zh: '重新上架活動' },
-    'event-detail.relist.sub':     { en: 'This event is unlisted — fans see it as unlisted and can’t buy. Bundles that came down with it stay unlisted after you relist.', zh: '這場活動已下架，粉絲會看到已下架、不能購買。重新上架後，跟著下架的組合包不會自動上架。' },
+    'event-detail.relist.sub':     { en: 'This event is unlisted — fans see it as unlisted and can’t buy. When you relist, you can choose to relist the bundles that came down with it.', zh: '這場活動已下架，粉絲會看到已下架、不能購買。重新上架時，可以選擇要不要把跟著下架的組合包一起上架。' },
     'event-detail.relist.btn':     { en: 'Relist event', zh: '重新上架' },
     'event-detail.relist.confirm.title':     { en: 'Relist this event?', zh: '確定重新上架？' },
     'event-detail.relist.confirm.ended':     { en: 'This event has ended. Once relisted, fans can find the event page but can’t buy anything.', zh: '這場活動已結束。上架後粉絲找得到活動頁，但不能購買。' },
     'event-detail.relist.confirm.cancelled': { en: 'This event was cancelled. Once relisted, fans can find the event page but can’t buy anything.', zh: '這場活動已取消。上架後粉絲找得到活動頁，但不能購買。' },
     'event-detail.relist.confirm.ok': { en: 'Relist', zh: '上架' },
     'event-detail.relist.toast':   { en: 'Event relisted', zh: '活動已重新上架' },
+    /* D448（2026-10-19）：重新上架前，有含本活動票券、已下架的組合包就彈窗問要不要同時上架 */
+    'event-detail.relist.bundles.title': { en: 'Relist the bundles too?', zh: '要同時上架組合包嗎？' },
+    'event-detail.relist.bundles.body':  { en: 'These unlisted bundles include this event’s tickets. They don’t come back on their own — relist them together with the event, or relist only the event and bring them back one by one later.', zh: '這些已下架的組合包含有這場活動的門票，不會自己回來：可以跟活動一起上架，或只上架活動、之後再各自上架。' },
+    'event-detail.relist.bundles.note':  { en: 'Bundles relisted here go back to listed but not on sale — set each one’s sale start for fans to buy.', zh: '這裡一起上架的組合包會回到「上架、未開賣」，要各自再設開賣，粉絲才買得到。' },
+    'event-detail.relist.bundles.ok':    { en: 'Relist event and bundles', zh: '同時上架活動與組合包' },
+    'event-detail.relist.bundles.alt':   { en: 'Relist event only', zh: '只上架活動' },
     /* D375 決定三：bookyay 狀態同步上下架 */
     'event-detail.unlist.bky':     { en: 'When an edit in bookyay syncs to this event, it’s unlisted automatically and you’ll get a notice — relist it yourself once you’ve checked it. Moving it back to draft in bookyay unlists it here too.', zh: 'bookyay 端的修改同步到 ztor 時會自動下架並通知你，檢查後要手動重新上架；bookyay 改回草稿時也會同步下架。' },   /* D415 決定一、二：取代 D375 決定三的「再次發布時同步上架」 */
     /* D415 示範：bookyay 端修改同步後自動下架的提示（活動詳情頁首下方；ev.bkySyncUnlist 有值且仍下架時顯示） */
@@ -11666,6 +11672,19 @@
     'ed.bd.view.aria':       { en: 'Bundle view', zh: '組合包檢視' },
     'ed.bd.col.name':        { en: 'Bundle', zh: '組合包' },
     'ed.bd.noproducts':      { en: 'Tickets only', zh: '只含門票' },
+
+    /* D447（2026-10-19，S100）：活動詳情票務——門票「庫存設為 0」、票務商品「庫存設為 0」（營運動作，立即生效） */
+    'ed.tix.zero':           { en: 'Set stock to 0', zh: '庫存設為 0' },
+    'ed.tix.zero.done':      { en: 'Stock is already 0', zh: '庫存已經是 0' },
+    'ed.tix.zero.new':       { en: 'Apply this ticket first', zh: '先套用這張門票' },
+    'ed.tix.zero.bky':       { en: 'Quantity comes from bookyay and is locked. To stop sales, bring the stop time forward, unlist the event or hide this ticket.',
+                               zh: '張數由 bookyay 帶入並鎖定，不能設為 0。要停賣，請把停售時間提前、下架活動，或隱藏這張門票。' },
+    'ed.tix.zero.toast':     { en: 'Stock of {name} set to 0 — raise the quantity to sell again', zh: '「{name}」庫存已設為 0，調高張數即可恢復販售' },
+    'ed.tm.zero.state':      { en: 'In stock: {n}', zh: '目前庫存：{n}' },
+    'ed.tm.zero.sub':        { en: 'Takes effect right away, no need to save. The quantity becomes what is sold, held or locked; raise it to sell again.',
+                               zh: '按下立即生效，不必儲存。張數會調成已售、保留與已鎖定的總和；要恢復販售就把張數調高。' },
+    'ed.bd.zero.done':       { en: 'Stock is already 0 — raise the total in the bundle page to sell again', zh: '庫存已經是 0，要恢復販售請到組合商品細節頁調高總量' },
+    'ed.bd.zero.toast':      { en: 'Stock of {name} set to 0 — raise the total in the bundle page to sell again', zh: '「{name}」庫存已設為 0，到組合商品細節頁調高總量即可恢復販售' },
     'ed.bd.vis.ro':          { en: 'This event has ended or been cancelled — bundles here are view-only.', zh: '活動已結束或已取消，這裡的組合包只能檢視。' },
     'ed.bd.hidden.toast':    { en: 'Hid {name} — it’s off the shop and event page now', zh: '已隱藏「{name}」，商店與活動頁不再列出' },
     'ed.bd.shown.toast':     { en: 'Showing {name} again', zh: '「{name}」已重新顯示' },

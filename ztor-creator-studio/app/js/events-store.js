@@ -2438,8 +2438,61 @@
   function isSoldOut(ev) {
     if (!ev || ['draft', 'cancelled'].indexOf(ev.status) >= 0) return false;
     var q = (ev.tiers || []).reduce(function (a, t) { return a + (Number(t.qty) || 0); }, 0);
-    return q > 0 && (Number(ev.sold) || 0) >= q;
+    if (q > 0 && (Number(ev.sold) || 0) >= q) return true;
+    /* D447 決定六〔推導〕：營運把庫存設為 0 也算賣完——每張門票庫存 0，且每個票務商品可售套數 0 或沒有票務商品 */
+    var tiers = ev.tiers || [];
+    if (!(q > 0) || !tiers.every(function (t) { return tierStock(ev, t) <= 0; })) return false;
+    return (ev.bundles || []).every(function (b) { return !bundleTickets(b).tierIds.length || bundleLeft(ev, b) === 0; });
   }
+
+  /* ── 庫存設為 0（D447，2026-10-19）──────────────────────────────────────────
+     門票的庫存＝還能賣的張數＝張數 − 已售 − 保留 − 其他組合包已鎖定張數（算法沿用 D446：組合包鎖的張數＝鎖定套數 × 每套張數，
+     先由它自己獨有的門票吸收，吸收不了的才壓在這張門票上；bundle-detail 的 otherTixLocks、bundle-editor 的 otherTixTaken 同口徑）。
+     「庫存設為 0」＝把張數改成剛好等於已售＋保留＋已鎖定（tierZeroQty），之後不能再單獨買；調高張數就恢復販售。
+     組合包的「庫存設為 0」＝切成限量（cap）並把總量收到已售，剩餘 0；不新增欄位（最終版，使用者改裁決併入既有限量）。 */
+  function tierLocked(ev, t) {
+    if (!ev || !t) return 0;
+    var tiers = ev.tiers || [], taken = 0;
+    (ev.bundles || []).forEach(function (o) {
+      var n = Number(o && o.lockSets);
+      if (!(n > 0)) return;
+      var tk = bundleTickets(o);
+      if (tk.tierIds.indexOf(t.id) < 0) return;
+      var rest = Math.floor(n) * (tk.qty || 1);
+      tk.tierIds.forEach(function (id) {
+        if (id === t.id) return;
+        var x = null;
+        for (var i = 0; i < tiers.length; i++) if (tiers[i].id === id) { x = tiers[i]; break; }
+        if (x) rest -= Math.max(0, (Number(x.qty) || 0) - (Number(x.sold) || 0));
+      });
+      if (rest > 0) taken += rest;
+    });
+    return Math.min(taken, Math.max(0, (Number(t.qty) || 0) - (Number(t.sold) || 0)));
+  }
+  function tierStock(ev, t) {
+    return Math.max(0, (Number(t && t.qty) || 0) - (Number(t && t.sold) || 0) - (Number(t && t.reserved) || 0) - tierLocked(ev, t));
+  }
+  function tierZeroQty(ev, t) {
+    return (Number(t && t.sold) || 0) + (Number(t && t.reserved) || 0) + tierLocked(ev, t);
+  }
+  /* 組合包實際可售量（D447 決定三）：限量剩餘（總量 cap − 已售 sold；沒設 cap＝不限量）與票券成員剩餘（各允許票種 floor(剩餘 ÷ 每套張數) 加總）取小；
+     回 null＝沒有任何上限可算。「庫存設為 0」＝把 cap 改成剛好等於已售（bundleZeroCap），剩餘 0。 */
+  function bundleLeft(ev, b) {
+    var caps = [], c = b && b.cap;
+    if (c !== null && c !== undefined && c !== '' && isFinite(Number(c))) caps.push(Math.max(0, Number(c) - (Number(b.sold) || 0)));
+    var tk = bundleTickets(b);
+    if (tk.tierIds.length) {
+      var tiers = (ev && ev.tiers) || [], sum = 0;
+      tk.tierIds.forEach(function (id) {
+        for (var i = 0; i < tiers.length; i++) if (tiers[i].id === id) {
+          sum += Math.floor(Math.max(0, (Number(tiers[i].qty) || 0) - (Number(tiers[i].sold) || 0) - (Number(tiers[i].reserved) || 0)) / (tk.qty || 1));
+        }
+      });
+      caps.push(sum);
+    }
+    return caps.length ? Math.min.apply(null, caps) : null;
+  }
+  function bundleZeroCap(b) { return Number(b && b.sold) || 0; }
 
   /* 組合包票券成員的相容讀取（2026-09-21 D296）：一律回 `{ tierIds:[…], qty:n }`。
      舊 `[{ id, qty }]`／`['id']` 視為 tierIds＝各 id、qty＝第一筆的張數；沒有票券成員回空清單。 */
@@ -2824,6 +2877,13 @@
       var ev = window.ztorEvents.get(id);
       return ev ? (ev.bundles || []).filter(function (b) { return b.listed !== false && !b.archived && !b.deleted; }) : [];
     },
+    /* D448（2026-10-19）：活動重新上架前，問要不要同時上架的組合包——含本活動票券、目前已下架的（已封存、已刪除的不列）。
+       已結束、已取消的活動，組合包本來就不能重新上架（D437 決定一），回空陣列、不問。活動詳情「重新上架」用這一支。 */
+    relistBundlesOf: function (id) {
+      var ev = window.ztorEvents.get(id);
+      if (!ev || ev.status === 'ended' || ev.status === 'cancelled') return [];
+      return (ev.bundles || []).filter(function (b) { return b.listed === false && !b.archived && !b.deleted; });
+    },
     removeDraft: function (id) {
       var ev = window.ztorEvents.get(id);
       if (!ev || ev.status !== 'draft') return false;
@@ -2927,6 +2987,11 @@
       try { localStorage.setItem(UNLIST_KEY, JSON.stringify(u)); } catch (e) {}
     },
     isSoldOut: isSoldOut,
+    tierLocked: tierLocked,
+    tierStock: tierStock,
+    tierZeroQty: tierZeroQty,
+    bundleLeft: bundleLeft,
+    bundleZeroCap: bundleZeroCap,
     /* 階段轉換（原型層級）：寫進 localStorage，下一次 get() 就是新階段。
        允許哪些轉換由呼叫端（event-detail.html）依 §7.2 狀態機判斷，本檔只負責存。 */
     setStage: function (id, status) { if (id) writeStage(id, status); },

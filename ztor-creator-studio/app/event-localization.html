@@ -172,7 +172,7 @@
     const tiers = edTiers.map(t => ({ key: t.id, name: { key: 'tier-' + t.id }, note: '',
       hidden: !!t.hidden, img: t.img || kvImg,   /* D443：購票方案大圖卡的圖（門票沒有自己的圖＝主視覺）；示範資料沒有門票折扣，offer 不傳 */
       priceObj: S.priceOf(ev, t), priceKey: 'tier:' + t.id,
-      soldOut: Number(t.qty) > 0 && Number(t.sold) >= Number(t.qty) }));
+      soldOut: Number(t.qty) > 0 && S.tierStock(ev, t) <= 0 }));   /* D447：庫存（張數 − 已售 − 保留 − 其他組合包已鎖定）為 0 就是售罄，含營運把庫存設為 0 */
     /* 組合包（D296 形狀）→ 前台組合卡的成員列：票券＝允許票種名單 × 張數、商品＝名稱＋圖（示範資料沒有規格欄）；
        封面＝第一件商品圖。原價＝票券小計＋商品小計（events-store 的 bundleListAmount，bundle-detail 同一支：
        票券成員先換算成組合包的基準幣別再加總，D330 同批修正；活動資料不跨檔查 products-store）。 */
@@ -186,7 +186,7 @@
       const tixT = tk.tierIds.map(x => edTiers.find(y => y.id === x)).filter(Boolean);
       const tixLow = tixT.length ? tixT.reduce((lo, t) => (Number(t.price) || 0) < (Number(lo.price) || 0) ? t : lo) : null;
       const listAmt = S.bundleListAmount(ev, b);
-      return { name: { key: 'bundle-name-' + b.id }, priceObj: bpo, priceKey: 'bundle:' + b.id,   /* D445：名稱與描述吃譯文 */
+      return { name: { key: 'bundle-name-' + b.id }, priceObj: bpo, priceKey: 'bundle:' + b.id, soldOut: S.bundleLeft(ev, b) === 0,   /* D447：組合實際可售量 0（含限量剩餘 0）＝完售 */   /* D445：名稱與描述吃譯文 */
         listPriceObj: listAmt > Number(b.price) ? { base: bpo.base, amount: listAmt, override: {} } : null,
         tickets: names.length ? { names, qty: Number(tk.qty) || 1, unitFrom: tixT.length > 1, unitPriceObj: tixLow ? S.priceOf(ev, tixLow) : null,
           whenBase: [fmtDate(first.date || ev.date), first.start || ev.start].filter(Boolean).join(' ') } : null,   /* D445：場地名稱（譯文）由渲染器接上 */

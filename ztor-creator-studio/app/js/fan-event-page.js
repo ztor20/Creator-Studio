@@ -67,7 +67,8 @@
  *               offer:{ amount, timed, to } | null }],           // D443 決定三：開賣當下的折扣價（amount＝基準幣別、與 priceObj.amount 同單位）；
  *                                                                 //   timed＝限時（畫「限時折扣」標與「優惠至 {to}」）；沒有＝照票價
  *                                                // D328：hidden:true 的列不畫；墓碑 2026-10-16（D443）：deal（{ win, to, gen } 兩段價寫成一行）不再讀，改讀 offer
- *     bundles: [{ name:'…' | { key:'bundle-name-bd-1' }, priceObj, listPriceObj|null, priceKey:'bundle:bd-1',   // D445：name／desc 可給 { key }（可翻譯文案）
+ *     bundles: [{ soldOut:false,   // D447：組合實際可售量 0（含限量剩餘 0）→ true，購買鈕停用並寫「完售」
+ *                 name:'…' | { key:'bundle-name-bd-1' }, priceObj, listPriceObj|null, priceKey:'bundle:bd-1',   // D445：name／desc 可給 { key }（可翻譯文案）
  *                 imgs:['…'], img:'…',                                  // 組合包圖片（第一張＝封面；沒給 imgs 用 img）
  *                 offer:{ pct, to } | null,                             // D443 決定三：開賣當下生效的限時折扣（百分比、結束時間顯示字串）
  *                 tickets:{ names:['VIP','Floor'], qty:2, unitPriceObj, unitFrom:true, when:'2026-12-05 19:30 · Taipei Music Center',
@@ -90,6 +91,13 @@
 
   function T(k, fb) { return (window.i18nT && window.i18nT(k)) || fb; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  /* 購買鈕（方案大圖卡）：售罄（D447：庫存 0 的門票、可售量 0 的組合包）停用並寫「售罄」，沿用 fep.tier.soldout */
+  function planBuy(soldOut) {
+    return soldOut
+      ? '<button class="btn btn--mono btn--sm" type="button" disabled data-pp-inert tabindex="-1" data-i18n="fep.tier.soldout">' + esc(T('fep.tier.soldout', 'Sold out')) + '</button>'
+      : '<button class="btn btn--mono btn--sm" type="button" data-pp-inert tabindex="-1" data-i18n="fep.tier.buy">' + esc(T('fep.tier.buy', 'Buy')) + '</button>';
+  }
 
   function el(tag, cls, html) {
     var n = document.createElement(tag);
@@ -333,7 +341,9 @@
           '<div class="pdp-peek__grip" aria-hidden="true"><span></span></div>' +
           '<button class="ds-modal__close" type="button" data-fep-setview-close aria-label="' + esc(T('fep.close', 'Close')) + '"><i data-lucide="x" class="ztor-icon"></i></button>' +
           '<div class="ds-modal__body pdp-peek__body"><div class="pdp-setview__layout">' + gal + info + '</div></div>' +
-          '<div class="ds-modal__footer pdp-peek__footer"><button class="btn btn--mono btn--lg" type="button" data-setview-buy data-pp-inert tabindex="-1" data-i18n="fep.set.buy">' + esc(T('fep.set.buy', 'Buy set')) + '</button></div>' +
+          '<div class="ds-modal__footer pdp-peek__footer">' + (b.soldOut
+            ? '<button class="btn btn--mono btn--lg" type="button" disabled data-setview-buy data-pp-inert tabindex="-1" data-i18n="fep.tier.soldout">' + esc(T('fep.tier.soldout', 'Sold out')) + '</button>'
+            : '<button class="btn btn--mono btn--lg" type="button" data-setview-buy data-pp-inert tabindex="-1" data-i18n="fep.set.buy">' + esc(T('fep.set.buy', 'Buy set')) + '</button>') + '</div>' +
         '</div>' +
       '</div>';
     /* 縮圖切主圖（預覽裡可以按：只換圖，不涉及購買） */
@@ -634,7 +644,9 @@
             '<span class="pdp-tier__price' + (p.was ? ' pdp-tier__price--sale' : '') + '" data-fep-price-key="' + esc(b.priceKey || '') + '">' + priceHtml(api, p, multiTix(b)) + '</span>' +
             '<button class="pdp-bundle-item__link pdp-tier__more" type="button" data-set-view="' + i + '"><span data-i18n="fep.set.more">' + esc(T('fep.set.more', 'Details')) + '</span><span aria-hidden="true"> ›</span></button>' +
           '</span>' +
-          '<button class="btn btn--yellow-ghost btn--sm pdp-tier__buy" type="button" data-bundle-buy="' + i + '" data-pp-inert tabindex="-1" aria-label="' + esc(T('fep.tier.buy', 'Buy') + ' ' + bn) + '" data-i18n="fep.tier.buy">' + esc(T('fep.tier.buy', 'Buy')) + '</button>';
+          (b.soldOut
+            ? '<button class="btn btn--yellow-ghost btn--sm pdp-tier__buy" type="button" disabled data-pp-inert tabindex="-1" aria-label="' + esc(bn + ' ' + T('fep.tier.soldout', 'Sold out')) + '" data-i18n="fep.tier.soldout">' + esc(T('fep.tier.soldout', 'Sold out')) + '</button>'
+            : '<button class="btn btn--yellow-ghost btn--sm pdp-tier__buy" type="button" data-bundle-buy="' + i + '" data-pp-inert tabindex="-1" aria-label="' + esc(T('fep.tier.buy', 'Buy') + ' ' + bn) + '" data-i18n="fep.tier.buy">' + esc(T('fep.tier.buy', 'Buy')) + '</button>');
         sl.appendChild(card);
       });
       sb2.appendChild(sl);
@@ -705,7 +717,7 @@
               '<div class="shop-card__flags">' + flag('rf-flag--neutral', 'fep.sec.single', 'Tickets') + (p.timed ? flag('rf-flag--sale', 'fep.deal.tag', 'Limited-time offer') : '') + '</div></div>' +
             '<div class="shop-card__body"><h3 class="shop-card__title">' + esc(tn) + '</h3>' + (cat ? '<span class="shop-card__cat">' + cat + '</span>' : '') +
               '<div class="shop-card__bottom"><div class="shop-card__foot">' + cardPrice(api, p, false, t.priceKey) + '</div>' +
-              '<div class="shop-card__actions"><button class="btn btn--mono btn--sm" type="button" data-pp-inert tabindex="-1" data-i18n="fep.tier.buy">' + esc(T('fep.tier.buy', 'Buy')) + '</button></div></div></div>';
+              '<div class="shop-card__actions">' + planBuy(t.soldOut) + '</div></div></div>';
           g1.appendChild(c);
         });
         oin.appendChild(g1);
@@ -724,7 +736,7 @@
               (p.timed && p.to ? '<span class="shop-card__cat">' + esc(T('fep.deal.until', 'Offer ends {t}').replace('{t}', p.to)) + '</span>' : '') +
               partsHtml(b) +
               '<div class="shop-card__bottom"><div class="shop-card__foot">' + cardPrice(api, p, multiTix(b), b.priceKey) + '</div>' +
-              '<div class="shop-card__actions"><button class="btn btn--mono btn--sm" type="button" data-pp-inert tabindex="-1" data-i18n="fep.tier.buy">' + esc(T('fep.tier.buy', 'Buy')) + '</button></div></div></div>';
+              '<div class="shop-card__actions">' + planBuy(b.soldOut) + '</div></div></div>';
           g2.appendChild(c);
         });
         oin.appendChild(g2);
