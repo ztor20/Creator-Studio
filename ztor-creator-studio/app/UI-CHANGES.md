@@ -13,6 +13,44 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-19（二百六十七）· D453 掃碼器卡補「組合包取貨掃碼器連結」、設定分頁「在地化」卡拿掉
+
+**標籤**：release2.4
+
+依據 D453（使用者 2026-10-19 指示：掃碼器除了 bookyay 的也要有組合包取貨的掃碼器網址並保留「前往領取場次」；設定分頁在地化卡整張拿掉、翻譯與幣別一律從頁首「預覽與在地化」進）。
+
+**A spec-derived**
+
+- `event-detail.html`：bookyay 匯入活動的「掃碼器」卡（`#ed-scanner`）由兩部分改成三部分——bookyay 掃描器連結（不變）、組合包取貨掃碼器連結（新增 `#ed-bky-pickup-urls`，列出取貨場次的 scanner 網址，用卡上既有的「網址＋複製鈕」列，不新增樣式）、「前往領取場次」按鈕（保留，位置在網址之後）。一個取貨場次只列網址；多個取貨場次逐場列「場次名稱＋網址＋複製」；沒有取貨場次不畫網址、欄位標籤退回「組合包取貨」，按鈕停用並顯示既有的先建立取貨場次提示。`syncBkyPickup()` 新增 `renderBkyPickupUrls()`／`pickupScanUrl()`／`PICKUP_SCAN_URL`（ASSUMPTIONS UIA-277）。
+- `js/i18n.js`：新增 `event-detail.scanner.bky.pickup.scan`（中英）；`event-detail.scanner.bky.pickup.label` 維持「組合包取貨」，只在沒有取貨場次時使用。
+
+**C 撤除**
+
+- `event-detail.html`：設定分頁的「在地化」子分頁與卡（`#ed-loc-card`：翻譯／基準幣別／幣別覆寫三格、`#ed-loc-locked` 港幣鎖定說明、卡內 `[data-ed-localize]` 按鈕）整張拿掉，連同 `renderLocSummary()` 與其兩處呼叫。頁首「預覽與在地化」按鈕不變（含 bookyay、上架中停用與 `ed.loc.listed` 提示，D435；存完帶回的 `?saved=loc` 回饋不依賴摘要卡，仍正常）。
+- `js/i18n.js`：刪除不再有消費者的 `ed.loc.title`／`langs`／`langs.val`／`base`／`overrides`／`overrides.none`／`overrides.n`／`locked`，留墓碑註解；`ed.loc.btn`、`ed.loc.saved`、`ed.loc.listed` 保留。
+
+**D infra**
+
+- `js/fan-event-page.js`：卡司陣容 chips 的註解「角色標籤可翻譯（§7.4）」改成「角色標籤不翻譯（D445）」（只改註解）。
+- `event-localization.html` 檔頭註解的入口說明改為只剩頁首一顆。
+
+## 2026-10-19（二百六十六）· D452 同步稽核後的原型修正：平台優惠設定頁舊說法、活動組合包上架中恢復庫存、缺中文字串補齊
+
+**標籤**：release2.4
+
+依據 D452 決定三（同步稽核發現的落差一律以規格為準逐項修正；稽核見 note/同步稽核-電子商店與訂單.md、同步稽核-制度與紀錄檔.md、同步稽核-活動.md）。
+
+**A spec-derived**
+
+- `admin-platform-promotions.html`／`js/i18n.js`：`pprom.sub` 改成「滿額折扣成本由創作者吸收、平台優惠碼成本由平台吸收」（D424 決定五，5.1.0.7）；`pprom.th.auction.note` 由「產品待確認」改成「拍賣不計入門檻、不被折抵」（D424 決定六）；中英兩份一起改。
+- `bundle-detail.html`：活動組合包上架中進編輯，「數量」卡（販售上限的不限量／限量與總量）一併放行，其他各節仍唯讀（D447 決定三、四：庫存設為 0 後的恢復是營運動作，不必下架；5.1.5.9 營運動作清單、5.1.5.4 §4 F4）。`bdStockFreeSec` 加入 `data-nav-sec="qty"`。
+- `bundle-detail.html`：販售上限不得低於已售套數（D447 決定四〔推導〕）——欄位下方紅字提示、儲存前擋（沿用既有超過成員供應量的擋法）。`js/i18n.js` 新增 `bd.cap.under`、`bd.cap.under.why`；`bd.stockonly.title`／`bd.stockonly.body` 改寫成「可改鎖定套數、販售上限、上架與開賣時間」。
+
+**D infra**
+
+- `js/i18n.js` 補缺的 key：`ce.req.mark`（create-event 的必填星號，14 處，中英同為 `*`）、`ip-detail.meta.term`（租期）、`roy.total-meta`、`roy.works.plays`（earnings-overview）。create-event-legacy 的 `ce.attend*`／`ce.err.capacity` 是 D340 刻意退場的容量字串，該頁是舊版對照備份，不補。
+- `create-event.html`、`js/i18n.js`：三處程式註解的「第 8 步」改成「步驟 7（預覽與發布）」（D380 已把 8 步改 7 步），只改註解、不影響畫面。
+
 ## 2026-10-19（二百六十五）· D448 活動重新上架時，有已下架的組合包就彈窗問要不要同時上架
 
 **標籤**：release2.4
@@ -622,6 +660,8 @@
 **範圍**：`js/i18n.js`（`pprom.code.f.code.hint` 中英文由「區分大小寫」改為「不分大小寫」，與創作者優惠碼 `store-settings.codes.f.code.hint` 一致；儲存時轉大寫的既有做法不變）。
 
 **依據**：D420、5.1.0.7 v2.7 F3。原型檢查（2026-10-15）發現平台優惠設定頁仍寫「區分大小寫」，與 D420 相反。
+
+平台優惠設定頁整頁掛 `data-page-feat="full"`（只進最終版），依檔頭規則不寫標籤（2026-10-19 稽核確認）。
 
 ## 2026-10-15（二百三十二）· 活動詳情的淨額改扣平台費與支付費、交易明細匯出加買家名稱（A spec）
 

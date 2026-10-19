@@ -1342,13 +1342,24 @@
       const c = Math.floor(Number(totalInput.value)), sup = capSupply();
       return !isNaN(c) && c > 0 && sup !== null && c > sup;
     };
+    /* D452／D447 決定四：限量總量的下限＝已售套數〔推導〕；空白不算低於（沿用既有「未填」行為） */
+    const capUnder = () => {
+      if (!totalInput || !limitedEdition() || totalInput.value.trim() === '') return false;
+      const c = Math.floor(Number(totalInput.value));
+      return !isNaN(c) && c < soldUnits();
+    };
     function syncCapOver() {
-      const over = capOver();
+      const over = capOver(), under = !over && capUnder();
       const hint = document.querySelector('[data-bd-capmax]');
-      if (hint) { hint.hidden = !over; hint.textContent = over ? T('cpp.bd.sp.cap.over', 'Over the {n} sets members can supply').replace('{n}', capSupply().toLocaleString('en-US')) : ''; }
-      if (totalInput) { if (over) totalInput.setAttribute('aria-invalid', 'true'); else totalInput.removeAttribute('aria-invalid'); }
+      if (hint) {
+        hint.hidden = !over && !under;
+        hint.textContent = over ? T('cpp.bd.sp.cap.over', 'Over the {n} sets members can supply').replace('{n}', capSupply().toLocaleString('en-US'))
+          : under ? T('bd.cap.under', 'Can’t go below the {n} sets already sold').replace('{n}', soldUnits().toLocaleString('en-US')) : '';
+      }
+      if (totalInput) { if (over || under) totalInput.setAttribute('aria-invalid', 'true'); else totalInput.removeAttribute('aria-invalid'); }
     }
     window.bdCapOver = capOver;
+    window.bdCapUnder = capUnder;
     window.bdCapSig = () => (limitedEdition() ? 'limited' : 'unlimited') + '|' + (totalInput ? totalInput.value.trim() : '');
     /* 頁首徽章：主徽章走 deriveFlags（跳過 hidden 那一層），「已隱藏」另掛一顆。 */
     function refreshBadges(qty) {
@@ -2058,6 +2069,14 @@
           if (window.ztorToast) window.ztorToast.show(msg, { tone: 'error' }); else alert(msg);
           return;
         }
+        /* D452／D447 決定四：販售上限不得低於已售套數（上架中恢復庫存也走同一道擋） */
+        if (window.bdCapUnder && window.bdCapUnder() && window.bdCapSig && window.bdCapSig() !== bdCapSig) {
+          e.stopPropagation(); e.preventDefault();
+          if (window.bdSettingsGo) window.bdSettingsGo('qty');
+          const msg = T('bd.cap.under.why', 'Sales cap can’t be lower than the sets already sold');
+          if (window.ztorToast) window.ztorToast.show(msg, { tone: 'error' }); else alert(msg);
+          return;
+        }
         if (c && TB.syncErrors(settingsPanel, bundleModel, c, T) > 0) {
           e.stopPropagation(); e.preventDefault();
           if (window.bdSettingsGo) window.bdSettingsGo('publish');
@@ -2689,7 +2708,9 @@
          （[data-bd-listing]／[data-bd-sale-lctl] 所在的 form-section，含四個時間與開賣開關）可改；其他各節掛 data-mode="view"
          （沿用檢視態的樣子與按鈕白名單，不另做第三種鎖定外觀）、欄位逐一設唯讀。各節重畫（renderTB／renderLimits／成員表）後
          由 bdStockLockApply() 補鎖。下架後照現行規則全部開放。 */
-      const bdStockFreeSec = sec => !!(sec.querySelector('[data-bd-listing]') || sec.querySelector('[data-bd-sale-lctl]'));
+      /* D452／D447 決定三、四（2026-10-19）：「數量」卡（data-nav-sec="qty"）也放行——庫存設為 0 之後要恢復販售（調高販售上限、改回不限量）
+         屬營運動作、上架中不必下架（是 D435「販售上限要先下架才能改」的例外）。下限＝已售套數（syncCapOver 擋、儲存前也擋）。 */
+      const bdStockFreeSec = sec => !!(sec.querySelector('[data-bd-listing]') || sec.querySelector('[data-bd-sale-lctl]') || sec.getAttribute('data-nav-sec') === 'qty');
       function bdStockLockApply() {
         const lock = sp.getAttribute('data-mode') === 'edit' && bdStockOnly();
         sp.querySelectorAll('.form-section').forEach(sec => {
