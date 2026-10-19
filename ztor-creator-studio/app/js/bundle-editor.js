@@ -1539,16 +1539,42 @@
        2026-08-13 的前身 `ticketCapMax` 只看票、且沒有除以張數（每套恆 1 張）。 */
     /* 2026-09-21（D296 決定四）：票券部分改「各允許票種 floor(剩餘 ÷ n) **加總**」——粉絲任選一種，
        任一票種剩餘 ≥ n 這組就可賣，所以是加總不是取最小；商品部分不變，最後兩段取最小。 */
+    /* D446（2026-10-19）：同一張門票，各組合包鎖的張數加起來不超過張數——本組合包的剩餘要扣掉其他組合包已鎖的。
+       其他組合包鎖的張數（鎖定套數 × 每套張數）先由它自己獨有的門票吸收，吸收不了的才壓在跟本組合包共用的門票上，
+       依序從共用門票的剩餘張數扣。回 { 門票 id: 被其他組合包鎖走的張數 }。 */
+    function otherTixTaken(b) {
+      var taken = {};
+      if (!getTickets) return taken;
+      BUNDLES.forEach(function (o) {
+        if (o === b || !lockN(o)) return;
+        var ids = tixIds(o), shared = ids.filter(function (id) { return tixHas(b, id); });
+        if (!shared.length) return;
+        var rest = lockN(o) * tixQty(o);
+        ids.forEach(function (id) {
+          if (tixHas(b, id)) return;
+          var t = ticketById(id), cap = num(t && t.qty);
+          if (Number.isFinite(cap) && cap > 0) rest -= cap;
+        });
+        shared.forEach(function (id) {
+          if (rest <= 0) return;
+          var t = ticketById(id), cap = num(t && t.qty) - (taken[id] || 0);
+          if (!(Number.isFinite(cap) && cap > 0)) return;
+          var use = Math.min(rest, cap);
+          taken[id] = (taken[id] || 0) + use; rest -= use;
+        });
+      });
+      return taken;
+    }
     function memberCapMax(b) { return memberCapWho(b).n; }
     /* 同一個硬頂，連同「是誰壓出這個數字」——票券成員回 who:'tix'，商品成員回商品名。 */
     function memberCapWho(b) {
       if (!SECTIONS || !getTickets) return { n: Infinity, who: '' };
       var caps = [];
-      var q = tixQty(b), byGroup = {}, tixAny = false;
+      var q = tixQty(b), byGroup = {}, tixAny = false, taken = otherTixTaken(b);
       setLines(b).forEach(function (l) {
         l.k.ids.forEach(function (id) {
           if (!tixHas(b, id)) return;
-          var t = ticketById(id), left = num(t && t.qty);
+          var t = ticketById(id), left = num(t && t.qty) - (taken[id] || 0);
           if (!(Number.isFinite(left) && left > 0)) return;
           var g = (t.group && t.group.id) || '';
           byGroup[g] = (byGroup[g] || 0) + Math.floor(left / q);

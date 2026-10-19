@@ -25,6 +25,8 @@
 - `js/orders-store.js`：`voidState` 組合包有取貨成員時，也檢查門票是否已入場（原本會漏判，門票已入場、商品沒領的組合包仍能撤銷）。整單撤銷沿用同一個判斷，所以這類訂單的整單撤銷也一起停用。
 - `js/i18n.js`：改 `od.void.why.checkedin`、`od.void.effect.bky`，新增 `od.void.why.bundle-picked`。
 - 原型不模擬 bookyay 撤銷失敗，見 ASSUMPTIONS UIA-273。
+- `js/bundle-editor.js`：新增 `otherTixTaken(b)`，`memberCapWho` 的門票剩餘張數扣掉其他組合包已鎖的張數（鎖定套數上限跨組合包加總）。
+- `bundle-detail.html`：新增 `otherTixLocks()`，門票池的 `locks.bundles` 帶入同一場活動其他組合包壓在共用門票上的鎖定張數，鎖定套數上限與可售套數跟著扣。
 
 ## 2026-10-19（二百六十一）· D444 活動拿掉暫停售票：要停賣改用提前停售時間或下架，並清掉單張門票暫停的殘留
 
