@@ -1283,6 +1283,8 @@
                     (item.mode === 'bundle' && agg.total > 0);
     if (hasPickup) {
       if (agg.voided === agg.total) return 'voided';
+      /* D446：組合包裡有門票已入場（item.redeemed）也算已完成——原本取貨成員還沒領時會漏掉這一條、直接回 'ok'。 */
+      if (item.mode === 'bundle' && item.redeemed) return 'redeemed';
       if (agg.done > 0) return 'redeemed';
       return 'ok';
     }

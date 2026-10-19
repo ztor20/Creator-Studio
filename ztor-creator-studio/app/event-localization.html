@@ -143,10 +143,7 @@
     const a = hhmmToMin(start), b = hhmmToMin(end);
     if (!first.endDate && a != null && b != null && b > a) { const d = b - a; duration = ((d >= 60 ? Math.floor(d / 60) + ' h' : '') + (d % 60 ? ' ' + (d % 60) + ' min' : '')).trim(); }
     const pickupKey = { eticket: 'fep.pickup.eticket', sf: 'fep.pickup.sf', pickup: 'fep.pickup.pickup', store: 'fep.pickup.pickup' }[(ev.publish || {}).pickup] || 'fep.pickup.eticket';
-    /* 暫停售票期間（D390 決定二十九，主規格 §7.14「活動層級暫停售票與完售」）：粉絲頁寫「暫停售票中」並停用購買鈕——
-       狀態標記換成暫停、購買鈕在 previewRender 畫完後停用（renderer 沒有暫停狀態，宿主補） */
-    const paused = !!(S.isPaused && S.isPaused(ev));
-    const statusKey = paused ? ['fep.status.paused', 'Sales paused', 'badge--neutral'] : { 'on-sale': ['fep.status.on-sale', 'On sale', 'badge--success'], live: ['fep.status.on-sale', 'On sale', 'badge--success'],
+    const statusKey = { 'on-sale': ['fep.status.on-sale', 'On sale', 'badge--success'], live: ['fep.status.on-sale', 'On sale', 'badge--success'],
       scheduled: ['fep.status.soon', 'Coming soon', 'badge--info'], ended: ['fep.status.ended', 'Ended', 'badge--neutral'],
       cancelled: ['fep.status.cancelled', 'Cancelled', 'badge--error'] }[ev.status] || ['fep.status.soon', 'Coming soon', 'badge--info'];
     const tmM = ev.terms || {};
@@ -155,7 +152,7 @@
     const tiers = edTiers.map(t => ({ key: t.id, name: { key: 'tier-' + t.id }, note: '',
       hidden: !!t.hidden, img: t.img || kvImg,   /* D443：購票方案大圖卡的圖（門票沒有自己的圖＝主視覺）；示範資料沒有門票折扣，offer 不傳 */
       priceObj: S.priceOf(ev, t), priceKey: 'tier:' + t.id,
-      soldOut: Number(t.qty) > 0 && Number(t.sold) >= Number(t.qty) }));   /* 墓碑 2026-10-15（D422 決定三）：單張門票的 paused（粉絲頁「暫停售票中」）退場 */
+      soldOut: Number(t.qty) > 0 && Number(t.sold) >= Number(t.qty) }));
     /* 組合包（D296 形狀）→ 前台組合卡的成員列：票券＝允許票種名單 × 張數、商品＝名稱＋圖（示範資料沒有規格欄）；
        封面＝第一件商品圖。原價＝票券小計＋商品小計（events-store 的 bundleListAmount，bundle-detail 同一支：
        票券成員先換算成組合包的基準幣別再加總，D330 同批修正；活動資料不跨檔查 products-store）。 */
@@ -224,14 +221,6 @@
     translation: 'manual',
     previewRender: (h, api) => {
       if (window.ztorFanEventPage) window.ztorFanEventPage.render(h, locModel(), api);
-      /* D390 決定二十九：暫停售票期間購買鈕停用（主鈕換成「暫停售票中」，各票的購買鈕停用） */
-      if (S.isPaused && S.isPaused(ev)) {
-        h.querySelectorAll('[data-pdp-ticket], .pdp-tier__buy').forEach(b => {
-          b.disabled = true; b.setAttribute('aria-disabled', 'true');
-          const lab = b.querySelector('[data-add-label]') || b;
-          lab.setAttribute('data-i18n', 'fep.status.paused'); lab.textContent = T('fep.status.paused', 'Sales paused');
-        });
-      }
     },
     /* 儲存：逐幣別覆寫寫回 events-store（localStorage），翻譯草稿留在 publish-stage 的模組
        變數（原型無後端，UIA-165）。存完回詳情頁——那裡的票種卡與在地化摘要重新讀 store 就會反映。 */

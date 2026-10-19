@@ -1198,7 +1198,7 @@
       var ids = tixIds(b);
       return (getGone() || []).filter(function (g) { return ids.indexOf(g.id) >= 0 && !ticketById(g.id); });
     }
-    /* 允許清單的門票全部被刪＝票券成員沒有可選項，整組不能賣（D391 第 13 題〔推導〕，比照 §7.14「允許項目全部暫停時整組不能賣」）。 */
+    /* 允許清單的門票全部被刪＝票券成員沒有可選項，整組不能賣（D391 第 13 題〔推導〕，比照 §7.14「允許項目全部隱藏時整組不能賣」）。 */
     function goneAll(b) { return goneIn(b).length > 0 && setLines(b).length === 0; }
     function goneRowsHTML(b) {
       return goneIn(b).map(function (g) {

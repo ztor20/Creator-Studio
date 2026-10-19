@@ -13,6 +13,43 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-19（二百六十二）· D446 撤銷含 bookyay 門票的組合包：跟 bookyay 一起成功或一起不撤；組合包有商品已領取或門票已入場就不能撤銷
+
+**標籤**：release2.4
+
+依據 D446（使用者指示「要嘛全部撤銷成功，要嘛都不撤」「只要有任何一個商品已領取，或任何一張門票已掃碼入場，就不能撤銷」）。
+
+**A spec-derived**
+
+- `order-detail.html`：撤銷確認視窗的 bookyay 效果預告改成「會同時到 bookyay 撤銷這幾張門票；任何一張沒撤成功，整筆都不撤」（取代「ztor 通知 bookyay 作廢，未串接由 Admin 手動作廢」）；組合包撤銷鈕的停用說明分成「組合包裡有門票已入場」與「組合包裡有商品已領取」兩種。
+- `js/orders-store.js`：`voidState` 組合包有取貨成員時，也檢查門票是否已入場（原本會漏判，門票已入場、商品沒領的組合包仍能撤銷）。整單撤銷沿用同一個判斷，所以這類訂單的整單撤銷也一起停用。
+- `js/i18n.js`：改 `od.void.why.checkedin`、`od.void.effect.bky`，新增 `od.void.why.bundle-picked`。
+- 原型不模擬 bookyay 撤銷失敗，見 ASSUMPTIONS UIA-273。
+
+## 2026-10-19（二百六十一）· D444 活動拿掉暫停售票：要停賣改用提前停售時間或下架，並清掉單張門票暫停的殘留
+
+**標籤**：release2.4
+
+依據 D444（使用者指示「把暫停售票都移除」，追問後回「可以設停賣也可以下架」「一起清」）：活動沒有暫停售票與恢復販售，整場與單張門票都沒有；完售（Sold out）保留。沒有新增任何功能，只移除。
+
+**C 撤除**
+
+- `event-detail.html`：頁首「暫停售票」徽章（`#ed-paused-badge`）、設定分頁的暫停／恢復販售區塊（`#ed-pause`、`[data-ed-pause]`／`[data-ed-resume]`）、確認彈窗與提示訊息、`syncPause()`；`syncSaleBadges()` 只剩完售徽章（`#ed-soldout-badge` 保留）；單張門票的墓碑註解縮掉或刪除。
+- `events.html`：清單列「暫停售票」徽章（`[data-ev-paused]`）、搜尋關鍵字裡的「暫停售票 paused」。
+- `event-localization.html`：粉絲頁預覽的暫停狀態標記與「暫停售票中」停用購買鈕。
+- `js/events-store.js`：`paused` 欄位（三筆示範活動：`nick-live-taichung-bky`、已取消的 bookyay 活動、`nantou-lantern-opening`）、`PAUSE_KEY`（`ztor.event-paused`）、`pauseMap()`、`applyPause()`、`isPaused()`、`setPaused()` 及匯出；瀏覽器裡殘留的 `ztor.event-paused` 無人再讀。
+- `js/i18n.js`：`events.badge.paused`、`fep.status.paused`、`event-detail.pause.*`、`event-detail.resume.*`、孤兒 key `ed.tix.status.paused`、`ed.tix.pause`、`ed.tix.resume`、`ed.tm.pause.hint`、`event-detail.tiers.rule.pause`／`.pause-meta`／`.pause-state`（共 23 組，刪前確認全站無引用）。
+- `js/fan-event-page.js`、`js/bundle-editor.js`、`js/devtools.js`（S85 註解）：過時註解改現況。
+- 要停止販售時的做法不需新增畫面：設定分頁既有的「下架」，以及門票的停售時間（上架中可直接改，D438）。
+
+**D infra**
+
+- `feature-scope-map.md` S85 改成只剩完售徽章（功能標記保留，因完售徽章仍掛 S85）；刪掉單張門票暫停那行。
+- `design-system.html`／`design-components.html`／`design-system.md`／`ds-components/meter-list.css` 註解／`STYLE-DECISIONS.md`：Seated 範例徽章由「已暫停」改「隱藏」、`--off` 說明改「淡化已隱藏的列」、票種彈窗的「販售（暫停販售）」描述改成現況。
+- `docs/event-overview-demo.html`、`docs/示範資料索引.md`：示範資料的暫停改成隱藏或移除。
+- `ASSUMPTIONS.md`（UIA-219 及單張門票舊條目標「已由 D444 移除」，不刪條目）、`requirements-map.md`、`BUILD-SPEC.md` 更新成現況。
+- 未升 `?v=`（固定字串）。
+
 ## 2026-10-16（二百六十）· 粉絲活動頁照新前台：門票與套組同一頁、套組「看詳情」彈窗、依預覽區寬度排版
 
 **標籤**：release2.4
