@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>項目詳情 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>項目詳情</h1>
+<p class="lede">創作者在項目詳情看一個已建立項目的現況、維護各區段設定，並回報交付進度與追蹤作品上架。</p>
+
+<div class="toc"></div>
+
+<h2 id="detail-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>有哪些分頁，看發行模式（直接發佈、共創、預購）與項目狀態，見<a href="#detail-tabs">各發行模式有哪些分頁</a></li>
+  <li>還沒建立完成的草稿項目不進詳情頁，一律回建立項目流程續填，見<a href="#draft">草稿項目不進詳情頁</a></li>
+  <li>已取消的項目大部分凍結，只剩少數內容能改，見<a href="#frozen">已取消的凍結範圍</a></li>
+</ul>
+
+<h2 id="detail-flow"><span class="n"></span>操作流程</h2>
+<p>創作者從項目列表點進一個項目，先看總覽，再依這一刻要做的事進對應的分頁。</p>
+<div class="dg" role="img" aria-label="項目詳情流程圖，由左往右：從項目列表點進項目，看總覽，再選要做什麼；回報進度在進度分頁發更新，送作品上架從進度的上架階段進作品上架流程，改設定在設定或方案分頁修改後儲存，看錢與表現進收益、表現或版稅分頁">
+<div class="dg-hg" style="--dg-c:5">
+  <div class="dg-node" style="grid-row:1/5;grid-column:1"><span class="s">1</span>進項目詳情<small>從項目列表點一個項目</small></div>
+  <span class="dg-a" style="grid-row:1/5;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/5;grid-column:3"><span class="s">2</span>看總覽<small>重點面板與下一步</small></div>
+  <span class="dg-a" style="grid-row:1/5;grid-column:4"></span>
+  <div class="dg-node q" style="grid-row:1/5;grid-column:5"><span class="s">3</span>要做什麼？</div>
+  <span class="dg-a" data-t="回報進度" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" data-t="送作品上架" style="grid-row:2;grid-column:6"></span>
+  <span class="dg-a" data-t="改設定" style="grid-row:3;grid-column:6"></span>
+  <span class="dg-a" data-t="看錢與表現" style="grid-row:4;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:7">在進度發一則更新<small>共創與預購</small></div>
+  <div class="dg-node" style="grid-row:2;grid-column:7">進度上的「送出審核」那一段<small>影片家族</small></div>
+  <span class="dg-a" style="grid-row:2;grid-column:8"></span>
+  <div class="dg-node end" style="grid-row:2;grid-column:9">作品上架流程</div>
+  <div class="dg-node" style="grid-row:3;grid-column:7">修改區段<small>設定或方案分頁</small></div>
+  <span class="dg-a" style="grid-row:3;grid-column:8"></span>
+  <div class="dg-node end" style="grid-row:3;grid-column:9">儲存變更</div>
+  <div class="dg-node end" style="grid-row:4;grid-column:7">收益、表現或版稅分頁</div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，紫色框是要回答的問題，綠框是結束的地方。圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進項目詳情：從<a href="projects.html">項目列表</a>點一個項目；點到草稿會被帶回建立項目流程，見<a href="#draft">草稿項目不進詳情頁</a></li>
+  <li>看總覽：重點面板說這一刻該盯什麼，下一步說最該做哪一件事，見<a href="project-detail-overview.html">總覽</a></li>
+  <li>要做什麼？
+    <ul class="plain">
+      <li>回報進度：在<a href="project-detail-progress.html">進度</a>的時間軸或總覽的進度摘要發一則更新，見<a href="project-detail-updates.html">發布更新</a>；只有共創與預購</li>
+      <li>送作品上架：在進度上「送出審核」那一段按「送作品上架」，進<a href="project-publish.html">作品上架</a>流程，見<a href="project-detail-work.html">作品與上架階段</a></li>
+      <li>改設定：在<a href="project-detail-settings.html">設定</a>或<a href="project-detail-plans.html">方案</a>分頁修改後儲存，見<a href="#edit">編輯操作狀態</a></li>
+      <li>看錢與表現：進<a href="project-detail-earnings.html">收益</a>或<a href="project-detail-performance.html">表現與版稅</a>分頁</li>
+    </ul>
+  </li>
+</ol>
+<p class="note">依據：5.1.2.2 §1、§2.4、§4；D193、D207。</p>
+
+<h2 id="detail-header"><span class="n"></span>頁首與頁首操作</h2>
+<p>頁首讓創作者認出是哪一個項目，並提供不屬於任何分頁的操作。顯示什麼見<a href="#detail-header-info">頁首顯示</a>，有哪些操作見<a href="#detail-header-ops">頁首操作</a>。</p>
+
+<h3 id="detail-header-info">頁首顯示</h3>
+<p>頁首放項目的識別，每一個項目狀態都顯示。</p>
+<ul class="plain">
+  <li>項目名稱</li>
+  <li>封面</li>
+  <li>簡短描述</li>
+  <li>項目狀態，狀態用詞見<a href="project-rules.html">項目規則</a></li>
+</ul>
+<p>內容類型、發行模式與建立日期這些不會變的事實，由總覽的<a href="project-detail-overview.html#ov-summary">項目摘要</a>承擔。</p>
+<p class="note">依據：5.1.2.2 §2.1 第 1 項、§2.1.1「項目摘要」；D195。</p>
+
+<h3 id="detail-header-ops">頁首操作</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>返回項目列表</td><td>—</td><td>回到<a href="projects.html">項目列表</a></td></tr>
+    <tr><td>在 Ztor 上預覽（Preview on Ztor）</td><td>—</td><td>用粉絲端的視角唯讀預覽本項目</td></tr>
+    <tr><td>分享項目（Share）</td><td>三種發行模式都有</td><td>取得本項目粉絲端公開頁的連結，帶去站外<br>分享是站外的事；站內對名單發訊息是直接發佈的「通知粉絲」，見<a href="project-detail-overview.html#ov-notify">通知粉絲的出口</a></td></tr>
+    <tr><td>前往專責模組</td><td>—</td><td>進入收益拆解、項目淨利、粉絲行為等專責頁面看完整資料；本頁的數字只引用，不重算</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.2.2 §2.1、§2.4 第 9～12 項、§3；D200。</p>
+
+<h2 id="detail-tabs"><span class="n"></span>各發行模式有哪些分頁</h2>
+<p>項目詳情分八個分頁；哪些分頁出現看發行模式，表現與版稅另看項目狀態與作品家族。下表是出現條件，點分頁名稱進該頁看內容。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:18%">分頁</th><th style="width:22%">回答什麼</th><th>直接發佈</th><th>共創</th><th>預購</th></tr></thead>
+  <tbody>
+    <tr><td><a href="project-detail-overview.html">總覽</a></td><td>現在怎麼樣、我該做什麼</td><td>有</td><td>有</td><td>有</td></tr>
+    <tr><td><a href="project-detail-progress.html">進度</a></td><td>共創與預購：答應做什麼、做到哪、說了什麼<br>直接發佈：這件作品上架走到哪</td><td>有，名稱是「上架進度」<br>只有上架那條線</td><td>有，名稱是「項目進度」</td><td>有，名稱是「項目進度」</td></tr>
+    <tr><td><a href="project-detail-plans.html">方案</a></td><td>賣的是哪幾個方案、各含什麼</td><td>沒有</td><td>有</td><td>有</td></tr>
+    <tr><td><a href="project-detail-backers.html">支持者</a></td><td>誰付了錢、款項到哪</td><td>沒有</td><td>有</td><td>有，標籤換成預購的用字</td></tr>
+    <tr><td><a href="project-detail-settings.html">設定</a></td><td>這個項目是什麼、誰參與</td><td>有，含營利設定</td><td>有，沒有營利設定</td><td>有，沒有營利設定</td></tr>
+    <tr><td><a href="project-detail-earnings.html">收益</a></td><td>這個項目賺了多少</td><td>有</td><td>有</td><td>有</td></tr>
+    <tr><td><a href="project-detail-performance.html#perf">表現</a></td><td>多少人看了、聽了</td><td>已上線，且作品家族是影視或音樂</td><td>同左</td><td>同左</td></tr>
+    <tr><td><a href="project-detail-performance.html#royalty">版稅</a></td><td>外部平台版稅的收入明細</td><td>沒有</td><td>已上線，且作品家族是影視或音樂</td><td>沒有</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>不適用的分頁不出現，不以停用的樣子留著</li>
+  <li>進度分頁裡另有兩組規則各自成頁：<a href="project-detail-updates.html">發布更新</a>（只有共創與預購），與<a href="project-detail-work.html">作品與上架階段</a>（影片家族）</li>
+  <li>作品這一塊：直接發佈的影片作品從項目建立完成起就有；共創與預購要等作品第一次送審之後才有</li>
+  <li>分頁的名稱與順序屬畫面安排；直接發佈與共創、預購的進度分頁不同名，是產品決定，因為兩者承載的東西不同</li>
+</ul>
+<p class="note">依據：5.1.2.2 §2.0、§3；D166、D192、D193、D203。</p>
+
+<h3 id="draft">草稿項目不進詳情頁</h3>
+<p>詳情頁承載的是準備中以後的項目；還沒建立完成的草稿一律回<a href="project-create.html">建立項目</a>流程續填。</p>
+<ul class="plain">
+  <li>項目列表的草稿項目連到建立項目流程，不連詳情頁</li>
+  <li>詳情頁被直接開啟（書籤或別人轉貼的連結）而項目仍是草稿時，導回建立項目流程</li>
+  <li>導回的判斷排在狀態算出來之後，剛送審、狀態已離開草稿的項目不會被誤導回去</li>
+  <li>建立項目流程接住續填，帶入已填的內容</li>
+</ul>
+<p class="note">依據：5.1.2.2 §2.0 末段；5.1.2 F3；D193。</p>
+
+<h2 id="edit"><span class="n"></span>編輯操作狀態</h2>
+<p>詳情頁可以隨時單獨改某一個區段，不必重走建立流程。怎麼進出編輯見<a href="#edit-mode">檢視與編輯兩段式</a>；各狀態能改什麼見<a href="#edit-by-stage">各狀態能編輯什麼</a>；已取消時見<a href="#frozen">已取消的凍結範圍</a>。各區段的欄位見<a href="project-detail-settings.html">設定</a>與<a href="project-detail-plans.html">方案</a>分頁。</p>
+
+<h3 id="edit-mode">檢視與編輯兩段式</h3>
+<p>總覽與公開資訊兩個區段群預設是檢視狀態，創作者要明確進入編輯狀態才能改，守住已發布的內容不會被誤觸改到；其他區段是否也走兩段式見頁尾尚待確認。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>進入編輯</td><td>檢視狀態</td><td>進入後區段的欄位才可以改</td></tr>
+    <tr><td>完成</td><td>編輯狀態</td><td>改動生效，回到檢視狀態</td></tr>
+    <tr><td>取消</td><td>編輯狀態</td><td>放棄這次的改動，所有欄位回到進入編輯前的值</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>檢視狀態下欄位唯讀，不出現任何能改動內容或素材的入口，目前沒有例外</li>
+  <li>日後要開例外時，逐一列出「檢視狀態下仍允許」的操作，不用列舉要禁止的操作</li>
+  <li>唯讀要是真的唯讀：值仍可以讀、選取、複製，不只是變灰</li>
+  <li>檢視狀態下看到的值，就是粉絲端會看到的值</li>
+</ul>
+<p class="note">依據：5.1.2.2 §2.2 開頭；D155、D156。</p>
+
+<h3 id="edit-by-stage">各狀態能編輯什麼</h3>
+<p>下列變更涉及已對外的承諾或金流，要先確認。已取消見<a href="#frozen">已取消的凍結範圍</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">變更</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>發行模式</td><td>建立時鎖定，發布後不能改，保護支持者的契約與分潤名額持有者的權益</td></tr>
+    <tr><td>共創目標、預購條件</td><td>要先確認，見<a href="project-detail-plans.html">方案</a></td></tr>
+    <tr><td>已有人下單或支持的方案</td><td>價格組成、內容與數量上限要先確認，見<a href="project-detail-plans.html#plan-sold">已成立方案的調整</a></td></tr>
+    <tr><td>已售出後的價格或存取模式</td><td>要先確認，見<a href="project-detail-settings.html#monetization">營利設定</a></td></tr>
+    <tr><td>已對外承諾的交付日期</td><td>要先確認，並通知已支持或已預購的粉絲，見<a href="project-detail-progress.html#milestone">里程碑</a></td></tr>
+    <tr><td>上映日期</td><td>同交付日期；作品上線後不能再改，見<a href="project-detail-work.html#premiere-date">設定與修改上映日期</a></td></tr>
+    <tr><td>已上架作品的影片檔、定價、年齡限制</td><td>改了要重新送審，見<a href="project-detail-work.html#resubmit">哪些變更要重新送審</a></td></tr>
+    <tr><td>已發布項目的主要素材</td><td>更換時提示對粉絲端呈現的影響，見<a href="project-detail-settings.html#showcase">展示內容</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.2.2 §2.2.1、§2.2.2、§2.2.3、§2.2.5、§2.2.10、§2.2.11；D041。</p>
+
+<h3 id="frozen">已取消的凍結範圍</h3>
+<p>已取消的項目不能再轉回其他狀態；下表是取消後哪些凍結、哪些仍可改、哪些只剩歷史。凍結的欄位要是真的唯讀：值仍可以讀、選取、複製，不只是把編輯入口藏起來。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">項目</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="2">一律凍結，不能再改</td></tr>
+    <tr><td>營利設定</td><td>存取模式、價格、廣告、品牌合作、預期收益結構</td></tr>
+    <tr><td>方案與承諾</td><td>方案內容、門檻、數量上限、未達標自動全額退款開關</td></tr>
+    <tr><td>交付時程與里程碑</td><td>不能新增里程碑、不能改狀態；既有紀錄與已發的更新保留可讀</td></tr>
+    <tr><td>作品上架與重新送審</td><td>不能從已取消的項目發起新的送審，也不能重送在途的送審件</td></tr>
+    <tr><td>終止原因</td><td>轉入已取消當下寫入，之後不能改</td></tr>
+    <tr><td>發行模式</td><td>建立時就鎖定，取消後同樣不解鎖</td></tr>
+    <tr class="grp"><td colspan="2">仍可以改</td></tr>
+    <tr><td>一般更新</td><td>共創與預購仍可以發一般更新，向粉絲說明取消原因與退款進度；發文類型鎖定在一般更新，見<a href="project-detail-updates.html#post-cancelled">已取消時發文</a><br>直接發佈要對買家說明，改用<a href="fans-broadcast.html">群發訊息</a></td></tr>
+    <tr><td>公開資訊、展示內容</td><td>錯字與素材的更正仍可以改，取消說明本身可能要改到這些文字</td></tr>
+    <tr><td>合作者、IP Rental</td><td>紀錄的補正仍可以改，這兩區是權利與分潤的事實登記</td></tr>
+    <tr class="grp"><td colspan="2">只剩歷史</td></tr>
+    <tr><td>收益、分配、表現與版稅</td><td>只顯示歷史，不接受新的收入事件<br>已產生的收入、退款與分配紀錄只能新增、不能改寫，更正用沖銷分錄</td></tr>
+  </tbody>
+</table></div>
+<p>頁首與各分頁的其他操作，照這張表收起或改為唯讀。</p>
+<p class="note">依據：5.1.2.2 §2.2.3、§2.2.4「已取消（Cancelled）項目的凍結範圍」、§2.4 末段；主規格 §7.6；D041、D192。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.2.2-專案詳情.md</code>（v3.23）§1、§2、§2.0、§2.2、§2.2.1～§2.2.4、§2.4、§3、§4；<code>5.1.2-專案.md</code> F3；<code>0-設計規格書.md</code> §7.2、§7.6</li>
+    <li>決策：D041、D155、D156、D166、D192、D193、D200、D203、D207</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>兩段式只寫明適用於總覽與公開資訊兩個區段群，其他區段（例如方案、營利設定、合作者）是否也走兩段式</li>
+    <li>分享項目的連結格式、是否開裝置的分享面板、是否帶追蹤參數</li>
+    <li>從草稿續填時是否回到上次離開的那一步；目前一律從第一步開始並帶入已填的值</li>
+    <li>平台是否提供誤取消的復原路徑，由誰執行</li>
+    <li>取消前已上線的作品怎麼處置</li>
+    <li>公開資訊與展示內容在取消後是否也凍結；裁決前維持可改</li>
+    <li>取消前尚未觸發的淨利池分配，取消後是否仍可觸發</li>
+    <li>已有人下單或支持的方案，可以調整的範圍與是否鎖定</li>
+    <li>網址找不到項目、載入中或載入失敗時的畫面</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新建頁面；對照 5.1.2.2 v3.23）</p>
+</details>
+</div>
+</body>
+</html>

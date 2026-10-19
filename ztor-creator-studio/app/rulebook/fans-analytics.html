@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>粉絲分析 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>粉絲分析</h1>
+<p class="lede">創作者在粉絲分析看自己的作品被消費了多少次，以及消費的人有哪些共同特徵。</p>
+
+<div class="toc"></div>
+
+<h2 id="fa-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>依內容分影視、音樂、貼文三個分析範圍，一次只看一種，見<a href="#scope">分析範圍</a></li>
+  <li>作品被消費多少用「次數」算，消費者是誰用「人數」算，兩種單位不能加總或比較，見<a href="#units">數字的單位</a></li>
+  <li>本頁不出現任何金額，見<a href="#no-money">不出現金額</a></li>
+</ul>
+
+<h2 id="fa-flow"><span class="n"></span>操作流程</h2>
+<p>創作者先確認資料有多新，再選要看哪一種內容與期間，往下由「被消費了多少次」看到「消費者是誰」。</p>
+<div class="dg" role="img" aria-label="粉絲分析流程圖，由左往右：進粉絲分析先看資料截至日，選分析範圍與期間；影視或音樂看消費總覽、作品排行、地區與串流平台，貼文看消費總覽、作品排行、地區與貼文類型；再看受眾屬性；貼文另外可以逐則看貼文明細；最後可以選用匯出報表">
+<div class="dg-hg" style="--dg-c:6">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>進粉絲分析<small>先看資料截至日</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:3"><span class="s">2</span>看哪一種內容？<small>選分析範圍與期間</small></div>
+  <span class="dg-a" data-t="影視或音樂" style="grid-row:1;grid-column:4"></span>
+  <span class="dg-a" data-t="貼文" style="grid-row:2;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:5"><span class="s">3</span>看被消費了多少次<small>消費總覽、作品排行、地區、串流平台</small></div>
+  <div class="dg-node" style="grid-row:2;grid-column:5"><span class="s">3</span>看被消費了多少次<small>消費總覽、作品排行、地區、貼文類型</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:6"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:7"><span class="s">4</span>看消費者是誰<small>受眾屬性，只算人數</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:8/11"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:8"></span>
+  <div class="dg-node" style="grid-row:2;grid-column:9"><span class="s">5</span>逐則看貼文明細</div>
+  <span class="dg-a" style="grid-row:2;grid-column:10"></span>
+  <div class="dg-node opt" style="grid-row:1/3;grid-column:11"><span class="s">6</span>匯出報表<small>選用</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，上面一列是影視或音樂，下面一列是貼文；圓圈數字對應下方步驟清單的編號。紫色框是要回答的問題，虛線框是選用。</p>
+<ol class="plain">
+  <li>進粉絲分析；頁首先寫資料截至日與資料來源，見<a href="#asof">資料截至日與來源說明</a></li>
+  <li>看哪一種內容？選分析範圍，再選期間，見<a href="#scope">分析範圍</a>與<a href="#period">期間</a>
+    <ul class="plain">
+      <li>影視或音樂：往下看串流平台表現</li>
+      <li>貼文：往下看貼文類型表現，最後多一段貼文明細</li>
+    </ul>
+  </li>
+  <li>看被消費了多少次：見<a href="#consumption">作品被消費了多少次</a></li>
+  <li>看消費者是誰：見<a href="#audience">受眾屬性</a></li>
+  <li>只有貼文：逐則看貼文明細，見<a href="#post-detail">貼文明細</a></li>
+  <li>選用：匯出報表，見<a href="#export">匯出報表</a></li>
+</ol>
+<p>想知道貼文帶了多少收入，本頁不回答，到<a href="revenue.html">收入總覽</a>看，見<a href="#no-money">不出現金額</a>。</p>
+<p class="note">依據：5.1.7.9 頁面佈局、使用情境；D181。</p>
+
+<h2 id="header"><span class="n"></span>看哪些資料</h2>
+<p>頁首這一段決定下方所有數字怎麼取、怎麼帶走：數字有多新、從哪來，見<a href="#asof">資料截至日與來源說明</a>；看哪一種內容，見<a href="#scope">分析範圍</a>；看哪一段時間，見<a href="#period">期間</a>；把資料帶走，見<a href="#export">匯出報表</a>。</p>
+
+<h3 id="asof">資料截至日與來源說明</h3>
+<p>讓創作者看任何數字之前，先知道數字有多新、從哪裡來、為什麼可能比現實落後。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>資料截至日（Data as of）</td><td>本頁數字涵蓋到哪一天<br>三個分析範圍各有自己的截至日，換範圍時一起換</td></tr>
+    <tr><td>資料來源與延遲說明（Source &amp; latency note）</td><td>一句白話，寫資料怎麼來<br>影視、音樂：發行商定期提供的版稅報表，不是即時數據，部分來源有明顯延遲<br>貼文：平台內部統計</td></tr>
+    <tr><td>和收入的關係</td><td>說明裡點明：本頁的數字和收入管理的收益分開計算，不能拿次數推估收入</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="scope">分析範圍</h3>
+<p>三種內容的資料來源與可得欄位都不同，混在一起看會誤讀，創作者一次只看一種。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>分析範圍</td><td>—</td><td>選項：<br>影視（Film &amp; TV）<br>音樂（Music）<br>貼文（Posts）<br>同一時間只看一個範圍<br>換範圍時，資料截至日、期間與各區塊的數字一起換，不沿用上一個範圍的數字<br>三個範圍的數字不能加總，內容型態、資料來源與計次方式都不同<br>某個範圍完全沒有資料時仍可進入，見<a href="#empty">沒有資料時</a></td></tr>
+  </tbody>
+</table></div>
+<p>各範圍有哪些區塊：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:28%">區塊</th><th>影視</th><th>音樂</th><th>貼文</th></tr></thead>
+  <tbody>
+    <tr><td>排行與明細計算的對象</td><td>單一影片</td><td>單一歌曲</td><td>單一貼文</td></tr>
+    <tr><td><a href="#overview">消費總覽</a></td><td>有</td><td>有</td><td>有</td></tr>
+    <tr><td><a href="#top-works">作品排行</a></td><td>有</td><td>有</td><td>有</td></tr>
+    <tr><td><a href="#regions">地區表現</a></td><td>有</td><td>有</td><td>有</td></tr>
+    <tr><td><a href="#platforms">串流平台表現</a></td><td>有</td><td>有</td><td>沒有，貼文只發生在 ztor 站內</td></tr>
+    <tr><td><a href="#post-types">貼文類型表現</a></td><td>沒有</td><td>沒有</td><td>有</td></tr>
+    <tr><td><a href="#audience">受眾屬性</a></td><td>有</td><td>有</td><td>有</td></tr>
+    <tr><td><a href="#post-detail">貼文明細</a></td><td>沒有</td><td>沒有</td><td>有</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="period">期間</h3>
+<p>讓創作者把數字限定在要判斷的時間範圍內。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>期間（Period）</td><td>—</td><td>至少可選：<br>月<br>季<br>年<br>自訂區間<br>套用到本頁所有區塊，單一區塊不能有自己的期間<br>選的區間超過資料截至日時，超出的部分說明尚無資料，不以 0 呈現<br>預設值與可選範圍見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="export">匯出報表</h3>
+<p>讓創作者把資料帶走，例如給外部夥伴看。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>匯出報表（Export report）</td><td>—</td><td>匯出目前分析範圍、期間與篩選下的資料<br>檔案格式與內容見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.7.9 F1、F2、F3；D181。</p>
+
+<h2 id="consumption"><span class="n"></span>作品被消費了多少次</h2>
+<p>這一段以次數為主，回答作品被消費了多少次：總量見<a href="#overview">消費總覽</a>；哪幾件最好見<a href="#top-works">作品排行</a>；在哪裡被消費見<a href="#regions">地區表現</a>與<a href="#platforms">串流平台表現</a>；哪種貼文形式有效見<a href="#post-types">貼文類型表現</a>。作品排行、地區、串流平台可以切換到人數，切換規則見<a href="#axis">各區塊用哪一種單位</a>。</p>
+
+<h3 id="overview">消費總覽</h3>
+<p>一眼看到本期間作品被消費的總量，作為往下追細節的起點。每個指標都標明單位與資料來源；不做「總版稅」這類金額指標。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:14%">分析範圍</th><th style="width:30%">指標</th><th>是什麼</th><th style="width:8%">單位</th></tr></thead>
+  <tbody>
+    <tr><td rowspan="2">影視</td><td>總串流次數（Total streams）</td><td>作品在各串流平台被播放的次數合計，來自發行商報表</td><td>次</td></tr>
+    <tr><td>觀看人數（Viewers）</td><td>看過作品、且在 ztor 站上認得出身分的人數，去重<br>一併標示涵蓋率，見<a href="#coverage">涵蓋率</a></td><td>人</td></tr>
+    <tr><td rowspan="2">音樂</td><td>總串流／下載次數（Total streams &amp; downloads）</td><td>歌曲被串流播放與下載的次數合計，來自發行商報表</td><td>次</td></tr>
+    <tr><td>聆聽人數（Listeners）</td><td>聽過作品、且在 ztor 站上認得出身分的人數，去重<br>一併標示涵蓋率</td><td>人</td></tr>
+    <tr><td rowspan="3">貼文</td><td>總瀏覽量（Total views）</td><td>貼文被瀏覽的次數合計，來自平台內部統計</td><td>次</td></tr>
+    <tr><td>總互動次數（Total engagements）</td><td>按讚、留言、分享等互動行為的次數合計</td><td>次</td></tr>
+    <tr><td>內容租借次數（Content rentals）</td><td>透過貼文專屬連結成交的內容租借筆數；只計次數，收益見<a href="#no-money">不出現金額</a><br>專屬連結怎麼產生、成交怎麼歸給哪一則貼文，見頁尾尚待確認</td><td>次</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="top-works">作品排行</h3>
+<p>讓創作者看到本期間表現最好的是哪幾件內容，作為經營判斷的依據。排序依據是次數，不是金額。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">每一列</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>作品名稱（Title）</td><td>辨識是哪一件作品：影視是單一影片，音樂是單一歌曲，貼文是單一貼文</td></tr>
+    <tr><td>次數（Count）</td><td>這件作品本期間的串流、觀看或瀏覽次數，標單位</td></tr>
+    <tr><td>人數（People）</td><td>切換到人數時顯示；只涵蓋站上認得出身分的人，標涵蓋率</td></tr>
+    <tr><td>辨識資訊（Identity）</td><td>區分同名或系列作品的必要資訊；實際欄位見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>次數／人數切換</td><td>—</td><td>預設依次數排序，可切換到人數；切換後名次可能不同，畫面標明目前依哪一種排序</td></tr>
+    <tr><td>排行筆數</td><td>—</td><td>預設前 10 名</td></tr>
+    <tr><td>點一列貼文</td><td>只在貼文範圍</td><td>連到<a href="#post-detail">貼文明細</a>的那一則</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="regions">地區表現</h3>
+<p>回答內容在哪些地區被消費，作為判斷市場與活動地點的依據。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">每一列</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>地區（Region）</td><td>地區名稱；粒度照資料來源實際提供的層級，不推估<br>無法歸類的資料收進「其他地區」，不省略，佔比加總才會是 100%</td></tr>
+    <tr><td>次數或人數（Count / People）</td><td>依目前選的單位，標單位</td></tr>
+    <tr><td>佔比（Share）</td><td>這個地區佔全體的百分比；標明分母是次數還是人數</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>次數／人數切換</td><td>—</td><td>預設次數，可切換到人數，見<a href="#axis">各區塊用哪一種單位</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="platforms">串流平台表現</h3>
+<p>回答內容在哪個平台被消費得最多。只在影視與音樂。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">每一列</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>平台</td><td>平台名稱；清單照發行商報表實際回傳的平台，畫面不預設任何平台一定存在</td></tr>
+    <tr><td>次數或人數</td><td>依目前選的單位，標單位</td></tr>
+    <tr><td>佔比</td><td>這個平台佔全體的百分比；標明分母是次數還是人數</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>次數／人數切換</td><td>—</td><td>預設次數，可切換到人數，見<a href="#axis">各區塊用哪一種單位</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="post-types">貼文類型表現</h3>
+<p>讓創作者知道哪一種貼文形式帶得動人，作為下次發文的依據。只在貼文；類型分圖文、影片、文字三種，一型一列。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:28%">每一列</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>類型（Post type）</td><td>圖文、影片或文字</td></tr>
+    <tr><td>貼文數（Posts）</td><td>本期間這個類型的貼文則數</td></tr>
+    <tr><td>有帶貨（With rental link）</td><td>其中帶了內容租借專屬連結的則數<br>專屬連結怎麼產生、成交怎麼歸給哪一則貼文，見頁尾尚待確認</td></tr>
+    <tr><td>提及影片（Mentions a film）</td><td>其中提及某一部影片的則數</td></tr>
+    <tr><td>影片類型（Film type）</td><td>被提及影片的類型</td></tr>
+    <tr><td>瀏覽量（Views）</td><td>這個類型貼文的瀏覽次數合計，單位為次</td></tr>
+    <tr><td>內容租借次數（Content rentals）</td><td>這個類型貼文帶出的內容租借筆數，單位為次；不顯示收益</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.7.9 F4、F5、F6、F7、F8；主規格 §7.9；D181。</p>
+
+<h2 id="audience"><span class="n"></span>受眾屬性</h2>
+<p>回答消費這些內容的是哪些人，讓創作者在次數之外看到人的輪廓。這一段只用人數，不能切換到次數：屬性只存在於 ztor 的會員資料，發行商報表與外部平台回傳的彙總次數推不出來。顯示哪些屬性見<a href="#attrs">四個屬性</a>；每個屬性的分母怎麼揭露見<a href="#coverage">涵蓋率</a>。</p>
+
+<h3 id="attrs">四個屬性</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">屬性</th><th>顯示什麼</th></tr></thead>
+  <tbody>
+    <tr><td>性別（Gender）</td><td>女、男、其他三類的人數與佔比</td></tr>
+    <tr><td>星座（Zodiac sign）</td><td>12 星座的人數排行與佔比<br>資料來源確認前不呈現，見頁尾尚待確認</td></tr>
+    <tr><td>MBTI</td><td>16 型的人數排行與佔比<br>資料來源確認前不呈現</td></tr>
+    <tr><td>生肖（Chinese zodiac）</td><td>12 生肖的人數排行與佔比<br>資料來源確認前不呈現</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="coverage">涵蓋率</h3>
+<p>受眾屬性最容易被誤讀成全體觀眾的比例，每個屬性都要揭露分母：</p>
+<ul class="plain">
+  <li>分母只涵蓋本期間有消費、在 ztor 站上認得出身分、且這個屬性有值的人</li>
+  <li>顯示涵蓋率：這個分母佔本期間可辨識人數的比例</li>
+  <li>四個屬性各自標示，不共用同一個數字，例如有人填了生日但沒填 MBTI</li>
+  <li>說明直接寫在屬性區塊上，不收在要展開才看得到的位置</li>
+</ul>
+<p class="note">依據：5.1.7.9 F9；主規格 §7.9 計量軸使用規則第 3 條；D181。</p>
+
+<h2 id="post-detail"><span class="n"></span>貼文明細</h2>
+<p>讓創作者逐則檢查貼文成效，用來對照、找原因與匯出；上面幾段給趨勢，這裡給一則一則的證據。只在貼文。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:28%">每一則</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>貼文標題（Post title）</td><td>辨識是哪一則</td></tr>
+    <tr><td>提及內容（Mentioned content）</td><td>這則貼文提及的影片或商品</td></tr>
+    <tr><td>建立日期（Created date）</td><td>—</td></tr>
+    <tr><td>貼文形式（Post format）</td><td>圖文、影片或文字，同<a href="#post-types">貼文類型表現</a></td></tr>
+    <tr><td>曝光次數（Impressions）</td><td>這則貼文被送到粉絲眼前的次數，單位為次</td></tr>
+    <tr><td>有效瀏覽（Views over 3s）</td><td>看這則貼文超過 3 秒的次數，單位為次</td></tr>
+    <tr><td>互動次數（Engagements）</td><td>這則貼文的互動行為次數，單位為次</td></tr>
+    <tr><td>互動率（Engagement rate）</td><td>互動次數的比率；畫面標明分母</td></tr>
+    <tr><td>內容租借次數（Content rentals）</td><td>這則貼文帶出的內容租借筆數，單位為次；不顯示這則的獲利金額</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>期間篩選</td><td>—</td><td>和頁首期間的關係見頁尾尚待確認</td></tr>
+    <tr><td>欄位說明</td><td>—</td><td>每個欄位的定義在本區就看得到，不用去別處查</td></tr>
+    <tr><td>匯出</td><td>—</td><td>匯出貼文明細；格式與欄位同<a href="#export">匯出報表</a></td></tr>
+    <tr><td>前往收入管理</td><td>—</td><td>指路到<a href="revenue.html">收入總覽</a>看貼文帶貨收益，本區不重複呈現金額</td></tr>
+    <tr><td>分批取用</td><td>資料量大時</td><td>貼文多時分批載入</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.7.9 F10；D181。</p>
+
+<h2 id="empty"><span class="n"></span>沒有資料時</h2>
+<p>「沒有資料」與「資料還沒到」對創作者是兩件事，畫面要分得出來；任何區塊都不以 0 冒充沒有資料。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:34%">情況</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>所選分析範圍在所選期間沒有任何資料</td><td>頁首照常顯示資料截至日與來源說明<br>下方說明是哪一種原因，三種要分得出來：<br>還沒有作品上架<br>報表還沒回傳<br>所選期間超過資料截至日</td></tr>
+    <tr><td>某個分析範圍完全沒有資料</td><td>這個範圍仍可進入並說明原因，不隱藏入口</td></tr>
+    <tr><td>有次數資料，但本期間沒有認得出身分的消費者，或屬性全數無值</td><td>次數的區塊照常顯示<br>受眾屬性不顯示，說明原因<br>作品排行、地區、串流平台的人數切換不能用，說明原因</td></tr>
+    <tr><td>期間內沒有任何作品有資料</td><td>作品排行說明原因，不列空名次或 0 次的排行</td></tr>
+    <tr><td>資料來源不提供地區</td><td>地區表現不顯示，說明原因，不用空圖或零值</td></tr>
+    <tr><td>某個平台期間內沒有資料</td><td>這一列標「無資料」，不標 0；0 會被讀成有上架但沒人看</td></tr>
+    <tr><td>某個貼文類型期間內沒有貼文</td><td>這一列顯示 0 則並標明，不移除；三型並列才比得出差異</td></tr>
+    <tr><td>期間內沒有貼文明細</td><td>空狀態說明原因，兩種要分得出來：<br>沒發過文<br>發過文但期間內沒有成效資料</td></tr>
+    <tr><td>載入中、載入失敗、沒有權限</td><td>照全站共用的狀態規則顯示</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.7.9 F1、F2、F4–F10 其他狀態、頁面狀態；主規格 §6。</p>
+
+<h2 id="units"><span class="n"></span>數字的單位</h2>
+<p>次數與人數的定義、兩種單位不能加總或比較的規則，見用詞規則的<a href="common-terms.html#counts-people">次數與人數</a>。本頁各區塊用哪一種、本頁特有的並列規則見<a href="#axis">各區塊用哪一種單位</a>；金額為什麼不在本頁，見<a href="#no-money">不出現金額</a>。</p>
+
+<h3 id="axis">各區塊用哪一種單位</h3>
+<p>人數只涵蓋 ztor 站上認得出身分的人，和<a href="fans-roster.html">粉絲總覽與詳情</a>用同一份站上名冊。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:34%">區塊</th><th>用哪一種</th></tr></thead>
+  <tbody>
+    <tr><td>消費總覽</td><td>每個指標各自標明</td></tr>
+    <tr><td>作品排行<br>地區表現<br>串流平台表現</td><td>次數為主，可切換到人數；切換後畫面標明目前依哪一種排序或計算</td></tr>
+    <tr><td>貼文類型表現<br>貼文明細</td><td>次數（貼文數以則計）</td></tr>
+    <tr><td>受眾屬性</td><td>只用人數，並揭露涵蓋率，見<a href="#coverage">涵蓋率</a></td></tr>
+  </tbody>
+</table></div>
+<p>本頁另外兩條：</p>
+<ul class="plain">
+  <li>「作品被消費了多少次」與「受眾屬性」在畫面上要看得出是兩段，不並列比較</li>
+  <li>受眾屬性的人數和<a href="dashboard.html">儀表板</a>的站上粉絲分級組成分母不同，不能互相比較或加總；粉絲分級本身見<a href="fans-tiers.html">粉絲分級</a></li>
+</ul>
+
+<h3 id="no-money">不出現金額</h3>
+<p>本頁只計次數與人數，任何金額都不出現，也不拿金額排序；金額一律在<a href="revenue.html">收入總覽</a>看，口徑見<a href="common-finance.html">財務術語與收入事件</a>。</p>
+<ul class="plain">
+  <li>版稅金額：不做總版稅指標；作品排行、地區、串流平台都不列金額</li>
+  <li>貼文帶貨收益：本頁只到內容租借次數，收益是收入管理的一個收入來源；貼文明細提供前往收入管理的指路</li>
+</ul>
+<p class="note">依據：5.1.7.9 頁面定位（度量衡）、頁面佈局；主規格 §7.9 計量軸；D181。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.7.9-粉絲分析.md</code>（最後更新 2026-08-09）頁面定位、F1–F10、頁面佈局、頁面狀態；<code>0-設計規格書.md</code> §7.9 受眾指標術語（計量軸：次數與人數）、§6</li>
+    <li>決策：D181</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>影視、音樂報表的實際延遲幅度與更新頻率要不要對外承諾</li>
+    <li>貼文統計什麼時候更新、是否保證每日更新</li>
+    <li>匯出報表與貼文明細匯出的檔案格式、欄位，是否含受眾屬性與個人層級資料</li>
+    <li>進粉絲分析時預設哪一個分析範圍</li>
+    <li>期間的預設值與可選範圍</li>
+    <li>要不要提供和上一個同長度期間的比較</li>
+    <li>貼文明細的期間篩選和頁首期間怎麼配合（頁首期間規定套用到所有區塊）</li>
+    <li>音樂的串流與下載合成一個數字或分開列</li>
+    <li>貼文的互動行為包含哪些</li>
+    <li>「貼文成效」與「內容租借」兩個概念的正式規格，包含專屬連結怎麼產生、成交怎麼歸給哪一則貼文</li>
+    <li>作品排行的辨識資訊放哪些欄位</li>
+    <li>作品排行的筆數能不能調、能不能看完整清單</li>
+    <li>影視、音樂作品能不能連回項目詳情或 IP；確認前不提供連結</li>
+    <li>串流平台的範圍；目前照發行商報表實際回傳</li>
+    <li>貼文類型（圖文、影片、文字）和新品貼文、項目更新貼文是不是同一套分類</li>
+    <li>「提及影片」與「提及內容」怎麼判定，自動偵測或創作者自選</li>
+    <li>影片類型有哪些值</li>
+    <li>有效瀏覽的 3 秒門檻由平台自訂還是另有定義</li>
+    <li>互動率的分母是曝光次數還是有效瀏覽</li>
+    <li>涵蓋率的計算口徑：分母取本期間可辨識人數或全體會員，屬性沒填的人算不算進分母</li>
+    <li>涵蓋率太低時要不要隱藏該屬性、門檻多少</li>
+    <li>性別的分類是否和會員資料一致、有沒有「未填」</li>
+    <li>星座、MBTI、生肖的資料由會員自填或由生日推算、會員資料有沒有這些欄位、粉絲端怎麼取得同意；確認前這三個屬性不呈現</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新建，對照 5.1.7.9 最後更新 2026-08-09、主規格 §7.9）</p>
+</details>
+</div>
+</body>
+</html>

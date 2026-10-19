@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>粉絲總覽與詳情 — ztor Creator Studio 規則手冊</title>
+<title>粉絲總覽 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261015b">
-<script src="shell.js?v=20261015b" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -58,8 +58,9 @@ p{margin:0 0 10px}
 .lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
 .src{font-size:13px;color:var(--text-3);margin:0 0 28px}
 .src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
-ul.plain{margin:4px 0 10px;padding-left:20px}
-ul.plain li{margin-bottom:4px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
 table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
 th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
@@ -126,46 +127,67 @@ td.num{font-variant-numeric:tabular-nums}
 .toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
 .toc a:hover{border-color:var(--text-3);color:var(--text)}
 .k{font-size:12px;color:var(--text-3)}
-.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
-.flow .arr{color:var(--text-3)}
-.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
-ul.plain ul.plain{margin:4px 0 4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
 table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
 table.map{min-width:720px}
 table.map td:nth-child(1){width:20%}
 table.map td:nth-child(2){width:22%}
 .sim label{font-size:13px;color:var(--text-2)}
 .card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
-/* 流程圖 */
 /* 內文連結（章節互指） */
 .wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
 .wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
 </style>
 </head>
 <body>
 <div class="wrap">
-<h1>粉絲總覽與詳情</h1>
-<p class="lede">創作者依價值排序看自己所有的粉絲，也能點進任一位粉絲，看這位粉絲的消費與互動紀錄。</p>
+<h1>粉絲總覽</h1>
+<p class="lede">創作者在粉絲總覽依價值排序看自己所有的粉絲，找出最值得經營的粉絲，並點進任一位看<a href="fans-roster-detail.html">粉絲詳情</a>。</p>
 <div class="toc"></div>
 
 <h2 id="roster-intro" class="no-num">概述</h2>
 <ul class="plain">
-  <li>每位粉絲的狀態（活躍、流失風險、已挽回）自動判定，有流失風險時，粉絲總覽會主動提醒創作者，見<a href="#roster-alert">流失風險提醒</a></li>
-  <li>點數與分級每週重算一次，畫面上是上一次重算的結果</li>
+  <li>每位粉絲的狀態（活躍、流失風險、已挽回）自動判定，見<a href="#status">粉絲狀態</a>；有流失風險時，頁面最上方會提醒，見<a href="#roster-alert">流失風險提醒</a></li>
+  <li>忠誠點數與分級每週重算一次，畫面上是上一次重算的結果，規則見<a href="fans-tiers.html">粉絲分級</a></li>
+  <li>還沒有任何粉絲時，整頁改成取得第一批粉絲的引導，見<a href="#roster-empty">沒有資料時</a></li>
 </ul>
 
 <h2 id="roster-flow"><span class="n"></span>操作流程</h2>
 <p>平常的用法見<a href="#roster-flow-find">找粉絲和看詳情</a>；有粉絲可能流失時的提醒與挽回，見<a href="#roster-flow-risk">挽回有流失風險的粉絲</a>。</p>
 
 <h3 id="roster-flow-find">找粉絲和看詳情</h3>
+<div class="dg" role="img" aria-label="找粉絲和看詳情的流程圖，由左往右：打開粉絲總覽看整體狀況，在排行榜找粉絲，再決定要看這位粉絲的詳情、發訊息給這位粉絲，或發訊息給目前篩選出的一群粉絲">
+<div class="dg-hg" style="--dg-c:4">
+  <div class="dg-node" style="grid-row:1/4;grid-column:1"><span class="s">1</span>打開粉絲總覽<small>看摘要指標與分級分布</small></div>
+  <span class="dg-a" style="grid-row:1/4;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/4;grid-column:3"><span class="s">2</span>在排行榜找粉絲<small>預設依價值排序；可搜尋、篩選、改排序</small></div>
+  <span class="dg-a" style="grid-row:1/4;grid-column:4"></span>
+  <div class="dg-node q" style="grid-row:1/4;grid-column:5"><span class="s">3</span>要做什麼？</div>
+  <span class="dg-a" data-t="看這位粉絲" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" data-t="聯絡這位粉絲" style="grid-row:2;grid-column:6"></span>
+  <span class="dg-a" data-t="聯絡一群粉絲" style="grid-row:3;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:7">粉絲詳情<small>按這一列的「詳情」</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:7">群發訊息<small>按這一列的「發訊息」，收件對象帶入這位粉絲</small></div>
+  <div class="dg-node end" style="grid-row:3;grid-column:7">群發訊息<small>按「Message segment」，收件對象帶入目前的分級或篩選</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
 <ol class="plain">
   <li>打開粉絲總覽，看<a href="#roster-kpi">摘要指標</a>與<a href="#roster-tiers">分級分布</a>，掌握整體狀況</li>
   <li>在<a href="#roster-rank">排行榜</a>找粉絲，預設依價值排序；搜尋、篩選與其他排序見排行榜的功能與欄位表</li>
-  <li>按該列的「詳情」，進入這位粉絲的<a href="#s4">粉絲詳情</a></li>
-  <li>在詳情看這位粉絲的檔案與各項紀錄，各區見<a href="#s4">粉絲詳情</a></li>
-  <li>需要聯絡時，按「發訊息」，開啟<a href="fans-broadcast.html">群發訊息</a>，收件對象帶入這位粉絲</li>
+  <li>要做什麼？
+    <ul class="plain">
+      <li>看這位粉絲：按這一列的「詳情」，進入<a href="fans-roster-detail.html">粉絲詳情</a></li>
+      <li>聯絡這位粉絲：按這一列的「發訊息」，開啟<a href="fans-broadcast.html">群發訊息</a>，收件對象帶入這位粉絲</li>
+      <li>聯絡一群粉絲：按「群發訊息（Message segment）」，收件對象帶入目前的分級或篩選</li>
+    </ul>
+  </li>
 </ol>
-<p class="note">依據：5.1.7 F1～F6、F12；5.1.7.7 §2.1～§2.7。</p>
+<p class="note">依據：5.1.7 F1～F6、F7；5.1.7.7 §4。</p>
 
 <h3 id="roster-flow-risk">挽回有流失風險的粉絲</h3>
 <div class="dg" role="img" aria-label="流失風險（只講這一種狀態）的提醒與挽回流程圖，由左往右走：判定流失風險，創作者收到提醒後發訊息，粉絲回來互動後標為已挽回">
@@ -173,7 +195,7 @@ table.map td:nth-child(2){width:22%}
   <div class="dg-node q" style="grid-row:1/3;grid-column:1"><span class="s">1</span>三條同時符合嗎？<small>近 30 天互動低於前 90 天日均的 40%；30～120 天前曾經活躍；有消費或屬前三個分級</small></div>
   <span class="dg-a" data-t="是" style="grid-row:1;grid-column:2"></span>
   <span class="dg-a" data-t="否" style="grid-row:2;grid-column:2"></span>
-  <div class="dg-node stop" style="grid-row:1;grid-column:3"><span class="s">2</span>標為流失風險<small>只有是或否，沒有機率分數</small></div>
+  <div class="dg-node stop" style="grid-row:1;grid-column:3"><span class="s">2</span>標為流失風險<small>目前只標是或否，沒有機率分數</small></div>
   <div class="dg-node end" style="grid-row:2;grid-column:3/16;justify-self:start;max-width:340px">維持 Active 活躍<small>加入未滿 30 天、計畫性休眠、終身互動少於 5 次，一律不算</small></div>
   <span class="dg-a" style="grid-row:1;grid-column:4"></span>
   <div class="dg-node" style="grid-row:1;grid-column:5"><span class="s">3</span>總覽出現橫幅<small>最上方出現可關閉的「N 位粉絲有流失風險」</small></div>
@@ -184,7 +206,7 @@ table.map td:nth-child(2){width:22%}
   <span class="dg-a" style="grid-row:1;grid-column:10"></span>
   <div class="dg-node" style="grid-row:1;grid-column:11"><span class="s">6</span>粉絲回來互動</div>
   <span class="dg-a" style="grid-row:1;grid-column:12"></span>
-  <div class="dg-node q" style="grid-row:1;grid-column:13">14 天內的互動回到前 90 天基準的 60% 以上嗎？</div>
+  <div class="dg-node q" style="grid-row:1;grid-column:13"><span class="s">7</span>14 天內的互動回到前 90 天基準的 60% 以上嗎？</div>
   <span class="dg-a" data-t="是" style="grid-row:1;grid-column:14"></span>
   <div class="dg-node end" style="grid-row:1;grid-column:15">已挽回<small>暫時狀態，約維持 7 天</small></div>
 </div>
@@ -201,7 +223,8 @@ table.map td:nth-child(2){width:22%}
   <li>粉絲總覽最上方出現可關閉的「N 位粉絲有流失風險」，見<a href="#roster-alert">流失風險提醒</a></li>
   <li>創作者按橫幅的「Message them」，流失風險粉絲被帶進群發訊息當收件對象</li>
   <li>創作者寫訊息並發送，細節見<a href="fans-broadcast.html">群發訊息</a></li>
-  <li>粉絲回來互動後，符合已挽回的條件嗎（見<a href="#status">粉絲狀態</a>）？
+  <li>粉絲回來互動</li>
+  <li>14 天內的互動回到前 90 天基準的 60% 以上嗎？條件見<a href="#status">粉絲狀態</a>
     <ul class="plain">
       <li>是：標為已挽回</li>
     </ul>
@@ -209,9 +232,17 @@ table.map td:nth-child(2){width:22%}
 </ol>
 <p class="note">依據：5.1.7 F4、F5。</p>
 
-
-<h2 id="s3"><span class="n"></span>粉絲總覽</h2>
-<p>創作者在粉絲總覽一眼看出粉絲的整體狀況，並找到最值得經營的粉絲。有粉絲可能流失時的提醒，見<a href="#roster-alert">流失風險提醒</a>；整體的數字，見<a href="#roster-kpi">摘要指標</a>；各分級的人數與貢獻，見<a href="#roster-tiers">分級分布</a>；依價值排序的粉絲清單，見<a href="#roster-rank">排行榜</a>；長期高貢獻的粉絲，見<a href="#roster-fame">名人堂</a>；還沒有粉絲或查不到時顯示什麼，見<a href="#roster-empty">沒有資料時</a>。</p>
+<h2 id="s3"><span class="n"></span>功能與欄位</h2>
+<p>粉絲總覽讓創作者一眼看出粉絲的整體狀況，並找到最值得經營的粉絲。各小節依序是：</p>
+<ul class="plain">
+  <li><a href="#roster-alert">流失風險提醒</a>：有粉絲可能流失時的提醒</li>
+  <li><a href="#roster-help">看懂指標的說明</a>：說明開關與粉絲系統說明</li>
+  <li><a href="#roster-kpi">摘要指標</a>：整體的數字</li>
+  <li><a href="#roster-tiers">分級分布</a>：各分級的人數與貢獻</li>
+  <li><a href="#roster-rank">排行榜</a>：依價值排序的粉絲清單</li>
+  <li><a href="#roster-fame">名人堂</a>：長期高貢獻的粉絲</li>
+  <li><a href="#roster-empty">沒有資料時</a>：還沒有粉絲或查不到時顯示什麼</li>
+</ul>
 
 <h3 id="roster-alert">流失風險提醒</h3>
 <p>流失風險提醒在有粉絲可能流失時主動告訴創作者，並提供發訊息的入口；怎麼判定見<a href="#status">粉絲狀態</a>。</p>
@@ -221,6 +252,16 @@ table.map td:nth-child(2){width:22%}
     <tr><td>提醒橫幅</td><td>有粉絲被判定為流失風險時才出現</td><td>放在頁面最上方，在頁首之上<br>標題寫有幾位粉絲有流失風險，例如「5 位粉絲有流失風險」（人數為假設）<br>副標寫分級與沉默天數，例如「超級粉絲 · 已 14+ 天未互動」</td></tr>
     <tr><td>Message them</td><td>提醒出現時</td><td>開啟<a href="fans-broadcast.html">群發訊息</a>，收件對象帶入有流失風險的粉絲</td></tr>
     <tr><td>關閉</td><td>提醒出現時</td><td>關閉這則提醒</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="roster-help">看懂指標的說明</h3>
+<p>這兩個入口幫助不熟悉忠誠點數與流失風險的創作者讀懂頁面上的數字。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>說明開關（View explanations）</td><td>—</td><td>打開後，摘要指標、分級定義與流失風險的理由旁會顯示說明</td></tr>
+    <tr><td>粉絲系統說明</td><td>—</td><td>前往<a href="fans-guide.html">粉絲系統說明</a></td></tr>
   </tbody>
 </table></div>
 
@@ -235,42 +276,45 @@ table.map td:nth-child(2){width:22%}
     <tr><td>平均忠誠點數（Avg loyalty points）</td><td>活躍粉絲的平均忠誠點數</td><td>與上月比較</td></tr>
   </tbody>
 </table></div>
-<p>說明開關見<a href="#roster-rank">排行榜</a>的功能與欄位表。</p>
 
 <h3 id="roster-tiers">分級分布</h3>
-<p>分級分布顯示各分級的人數與貢獻比例，作為經營與設計福利的依據。</p>
+<p>分級分布顯示各分級的人數與貢獻比例，作為經營與設計福利的依據。分級的定義見<a href="fans-tiers.html#tiers">四個分級</a>。</p>
 <ul class="plain">
   <li>比例長條顯示四個分級各自的人數與占比</li>
   <li>自動產生一行洞察，例如「最小的 X% 粉絲貢獻 Y% 收入」</li>
   <li>洞察挑的是人數占比最小、而且收入占比大於人數占比的分級</li>
   <li>沒有符合的分級時，洞察整行隱藏，不顯示 0%</li>
-  <li>這一區有前往<a href="fans-tiers.html#settings">分級設定</a>的唯一入口</li>
 </ul>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>分級設定（Tier settings）</td><td>—</td><td>前往粉絲分級設定分頁；門檻與各級福利在同一個分頁，從這裡進入，見<a href="fans-tier-settings.html">分級設定</a>與<a href="fans-benefits.html">各級福利</a></td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="roster-rank">排行榜</h3>
 <p>排行榜依價值排序列出所有粉絲，讓創作者找出最值得經營的粉絲，並點進任一位粉絲看詳情。清單每一列顯示的欄位見第一張表；搜尋、篩選、排序、發訊息與匯出見第二張表。</p>
 <div class="tablewrap"><table>
-  <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
+  <thead><tr><th style="width:26%">欄位</th><th>內容</th></tr></thead>
   <tbody>
-    <tr><td>Fan</td><td>姓名，附 Email 與所在地</td></tr>
-    <tr><td>Tier</td><td>目前分級</td></tr>
-    <tr><td>Loyalty points</td><td>忠誠點數</td></tr>
-    <tr><td>Spent</td><td>累積消費金額</td></tr>
-    <tr><td>Progress</td><td>離下一個分級還差多少</td></tr>
-    <tr><td>Status</td><td>粉絲狀態，見<a href="#status">粉絲狀態</a></td></tr>
+    <tr><td>粉絲（Fan）</td><td>姓名，附 Email 與所在地</td></tr>
+    <tr><td>分級（Tier）</td><td>目前分級</td></tr>
+    <tr><td>忠誠點數（Loyalty points）</td><td>決定分級的排名分數，見<a href="fans-tiers.html#points">忠誠點數</a></td></tr>
+    <tr><td>累積消費（Spent）</td><td>累積消費金額</td></tr>
+    <tr><td>升級進度（Progress）</td><td>離下一個分級的門檻還差多少</td></tr>
+    <tr><td>狀態（Status）</td><td>粉絲狀態，見<a href="#status">粉絲狀態</a></td></tr>
   </tbody>
 </table></div>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>說明開關（View explanations）</td><td>—</td><td>打開後，指標、分級與流失風險旁會顯示說明</td></tr>
     <tr><td>排行榜（Leaderboard）／名人堂（Hall of fame）</td><td>—</td><td>同一張清單的兩個分頁，名人堂見<a href="#roster-fame">名人堂</a></td></tr>
     <tr id="roster-filter"><td>搜尋</td><td>有粉絲時</td><td>依姓名或 Email 搜尋</td></tr>
     <tr><td>分級篩選</td><td>有粉絲時</td><td>All fans 或四個分級之一</td></tr>
     <tr><td>快速篩選</td><td>有粉絲時</td><td>VIP<br>High spender（高消費）<br>Event attendee（活動出席）<br>International（國際）<br>能不能複選見頁尾尚待確認</td></tr>
-    <tr><td>排序</td><td>有粉絲時</td><td>預設依價值排序<br>也能改依消費、忠誠點數（決定分級的排名分數，見<a href="fans-tiers.html#s2">粉絲分級</a>）、近期或分級排序</td></tr>
+    <tr><td>排序</td><td>有粉絲時</td><td>預設依價值排序<br>也能改依消費、忠誠點數、近期或分級排序</td></tr>
     <tr><td>發訊息（每一列）</td><td>每一列</td><td>開啟<a href="fans-broadcast.html">群發訊息</a>，收件對象帶入這位粉絲</td></tr>
-    <tr><td>詳情（每一列）</td><td>每一列</td><td>進入這位粉絲的<a href="#s4">粉絲詳情</a></td></tr>
+    <tr><td>詳情（每一列）</td><td>每一列</td><td>進入這位粉絲的<a href="fans-roster-detail.html">粉絲詳情</a></td></tr>
     <tr><td>載入更多（Load more）</td><td>有粉絲時</td><td>每次載入 25 列，一開始顯示 25 列<br>顯示已載入與總數，例如「Showing 25 of 30」</td></tr>
     <tr id="roster-message"><td>群發訊息（Message segment）</td><td>見頁尾尚待確認</td><td>開啟<a href="fans-broadcast.html">群發訊息</a>，收件對象帶入目前的分級或篩選</td></tr>
     <tr id="roster-export"><td>匯出 CSV（Export CSV）</td><td>見頁尾尚待確認</td><td>把粉絲名單匯出成 CSV</td></tr>
@@ -288,126 +332,11 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table>
   <thead><tr><th style="width:26%">情況</th><th>畫面</th></tr></thead>
   <tbody>
-    <tr><td>完全沒有粉絲</td><td>整頁改成取得第一批粉絲的引導，例如分享項目、開店<br>指標、分布、清單與流失提醒都不出現</td></tr>
+    <tr><td>完全沒有粉絲</td><td>整頁改成取得第一批粉絲的引導，例如分享項目、開店<br>下列都不出現：<br>摘要指標<br>分級分布<br>排行榜與搜尋篩選<br>流失風險提醒</td></tr>
     <tr><td>有粉絲但查不到</td><td>清單顯示「查無符合的粉絲」，並提供清除條件</td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.7 F1～F6、F12、頁面狀態；主規格 §6.10、§7.5；D069、D150。</p>
-
-<h2 id="s4"><span class="n"></span>粉絲詳情</h2>
-<p>創作者在粉絲詳情看一位粉絲的完整檔案、互動、消費與分級；這一頁只彙整各模組的紀錄、不重算，金額與收入管理一致。各小節依序是：</p>
-<ul class="plain">
-  <li><a href="#detail-profile">粉絲檔案</a>：這位粉絲是誰</li>
-  <li><a href="#detail-points">忠誠點數與升級進度</a>：點數與離下一個分級還差多少</li>
-  <li><a href="#detail-timeline">行為時間線</a>：做過哪些事</li>
-  <li><a href="#detail-spend">消費紀錄</a>：花了多少錢</li>
-  <li><a href="#detail-events">活動與項目紀錄</a>：參與過哪些活動與項目</li>
-  <li><a href="#detail-tags">標籤與長期貢獻</a>：怎麼分類、怎麼記住長期支持</li>
-  <li><a href="#detail-empty">沒有資料時</a>：沒有紀錄時顯示什麼</li>
-</ul>
-
-<h3 id="detail-profile">粉絲檔案</h3>
-<p>粉絲檔案讓創作者認出這位粉絲是誰、目前在哪個分級、狀態如何。</p>
-<ul class="plain">
-  <li>頁首顯示：
-    <ul class="plain">
-      <li>頭像與姓名</li>
-      <li>Email 與所在地</li>
-      <li>加入時間</li>
-      <li>分級與狀態</li>
-      <li>標籤摘要，完整標籤見<a href="#detail-tags">標籤與長期貢獻</a></li>
-    </ul>
-  </li>
-</ul>
-<div class="tablewrap"><table class="fields">
-  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
-  <tbody>
-    <tr><td>麵包屑與返回</td><td>—</td><td>顯示來源路徑，例如「Fans / Wei Yu-han」<br>回到粉絲總覽時，保留原本的篩選、分級與搜尋</td></tr>
-    <tr><td>發訊息（Message）</td><td>—</td><td>開啟<a href="fans-broadcast.html">群發訊息</a>，收件對象帶入這位粉絲</td></tr>
-    <tr><td>分級設定（Tier settings）</td><td>—</td><td>前往<a href="fans-tiers.html#settings">分級設定</a>，調整分級門檻與計分設定</td></tr>
-    <tr><td>系統說明（Fans Guide）</td><td>—</td><td>前往粉絲系統說明，看忠誠點數與分級的用詞</td></tr>
-  </tbody>
-</table></div>
-
-<h3 id="detail-points">忠誠點數與升級進度</h3>
-<p>這一區顯示這位粉絲的點數，以及離下一個分級還差多少。</p>
-<div class="tablewrap"><table>
-  <thead><tr><th style="width:24%">指標</th><th>內容</th></tr></thead>
-  <tbody>
-    <tr><td>忠誠點數</td><td>目前點數，附與上一次重算相比的變化</td></tr>
-    <tr><td>累積消費（Spent）</td><td>累積消費金額，附訂單數</td></tr>
-    <tr><td>下一分級進度</td><td>離下一分級的兩道門檻還差多少<br>已是核心圈（Inner Circle）時改顯示「已達最高分級」</td></tr>
-    <tr><td>最近活躍</td><td>距離最近一次互動多久，附互動內容</td></tr>
-  </tbody>
-</table></div>
-<ul class="plain">
-  <li>這一區要放每週重算的提示，內容見<a href="#roster-intro">概述</a></li>
-</ul>
-
-<h3 id="detail-timeline">行為時間線</h3>
-<p>行為時間線依時間列出這位粉絲在電子商店、活動、項目做過哪些事。</p>
-<ul class="plain">
-  <li>依時間分組，列出電子商店、活動、項目與互動（例如留言、推薦好友）的行為</li>
-  <li>每一筆寫出：
-    <ul class="plain">
-      <li>行為</li>
-      <li>來源</li>
-      <li>時間</li>
-      <li>金額</li>
-    </ul>
-  </li>
-  <li>純互動沒有金額</li>
-  <li>附「點數從哪來」說明卡，只概覽各類行為的權重，不能編輯</li>
-</ul>
-
-<h3 id="detail-spend">消費紀錄</h3>
-<p>消費紀錄顯示這位粉絲花了多少錢、買了哪些商品、票券或項目。</p>
-<div class="tablewrap"><table>
-  <thead><tr><th style="width:24%">指標</th><th>內容</th></tr></thead>
-  <tbody>
-    <tr><td>累積消費</td><td>與上方 Spent 同一個數字，涵蓋商店、票券、項目</td></tr>
-    <tr><td>平均訂單金額</td><td>累積消費 ÷ 訂單數</td></tr>
-    <tr><td>近 90 天消費</td><td>附與前 90 天的比較</td></tr>
-  </tbody>
-</table></div>
-<ul class="plain">
-  <li>消費明細逐筆列出：
-    <ul class="plain">
-      <li>品項</li>
-      <li>來源</li>
-      <li>日期</li>
-      <li>金額</li>
-    </ul>
-  </li>
-</ul>
-
-<h3 id="detail-events">活動與項目紀錄</h3>
-<p>這一區彙整這位粉絲參與活動、支持項目的紀錄，讓創作者了解參與深度。</p>
-<ul class="plain">
-  <li>活動：名稱、狀態（例如已出席 Attended、已報名 RSVP'd）與日期</li>
-  <li>項目：名稱、所選支持方案或追蹤中（Following）、日期</li>
-  <li>項目有支持才有金額</li>
-</ul>
-
-<h3 id="detail-tags">標籤與長期貢獻</h3>
-<p>標籤用來分類粉絲、方便在清單篩選；長期貢獻摘要記住長期支持的粉絲。</p>
-<ul class="plain">
-  <li>標籤例如 VIP、High spender、Event attendee、Early backer</li>
-  <li>可以新增標籤</li>
-  <li>長期貢獻摘要：
-    <ul class="plain">
-      <li>成為粉絲多久</li>
-      <li>累積消費</li>
-      <li>名人堂的最高分級與達成年份</li>
-    </ul>
-  </li>
-</ul>
-
-<h3 id="detail-empty">沒有資料時</h3>
-<ul class="plain">
-  <li>時間線、消費、活動與項目紀錄沒有資料時，各自顯示空狀態，不放假資料</li>
-</ul>
-<p class="note">依據：5.1.7.7 §2.1～§2.7、§3、§5；5.1.7 F7、F9～F12；主規格 §7.5；D169、D347、D348。</p>
+<p class="note">依據：5.1.7 F1～F6、F12、頁面狀態；5.1.7.5 F4；主規格 §6.10、§7.5；D069、D150、D169。</p>
 
 <h2 id="status"><span class="n"></span>粉絲狀態</h2>
 <p>粉絲狀態自動判定，三種狀態依序轉換，條件如下。</p>
@@ -424,7 +353,7 @@ table.map td:nth-child(2){width:22%}
   </tbody>
 </table></div>
 <ul class="plain">
-  <li>流失風險只標「是／否」，沒有機率分數</li>
+  <li>流失風險目前只標是或否，沒有機率分數</li>
 </ul>
 <p class="note">依據：5.1.7 F4、F5。</p>
 
@@ -432,28 +361,24 @@ table.map td:nth-child(2){width:22%}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.7-粉絲關係管理.md</code>、<code>5.1.7.7-粉絲詳情.md</code>、<code>0-設計規格書.md §6.10／§7.5／§8.10.3／§8.18</code></li>
-    <li>決策：D069、D150、D169、D347、D348</li>
+    <li>規格：<code>5.1.7-粉絲關係管理.md</code>（最後更新 2026-10-05）、<code>5.1.7.5-粉絲系統說明.md</code> F4、<code>0-設計規格書.md §6.10／§7.5</code></li>
+    <li>決策：D069、D150、D169</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>快速篩選要恢復可複選，還是維持單選</li>
     <li>流失風險三個條件的門檻數值是否再微調</li>
-    <li>頭像是否支援真實大頭照，以及預設樣式</li>
-    <li>粉絲的正式識別依據用帳號 ID 還是 Email</li>
-    <li>Email、所在地、加入時間能顯示到什麼範圍、能不能複製或匯出</li>
-    <li>哪些行為算「互動」、記錄到多細</li>
-    <li>時間線的分組界線、更早紀錄怎麼載入、資料保留多久</li>
-    <li>消費明細能不能點進對應的訂單詳情</li>
-    <li>粉絲標籤由創作者自訂，還是由平台統一定義</li>
-    <li>粉絲詳情要不要正式顯示「是否以你為主要應援對象」欄；全站活動的點數來源長條目前保留顯示</li>
     <li>完全沒有粉絲時，群發訊息（Message segment）與匯出 CSV 是否照樣出現</li>
     <li>匯出 CSV 匯出的是全部粉絲還是目前篩選出的粉絲，以及包含哪些欄位</li>
     <li>流失風險提醒關閉後，什麼時候會再出現</li>
-    <li>粉絲詳情的行為時間線、消費紀錄、活動與項目紀錄、標籤與長期貢獻四區，是否用切換的方式共用同一塊畫面（規格標為呈現參考）</li>
+    <li>粉絲詳情相關的待確認列在<a href="fans-roster-detail.html">粉絲詳情</a>頁尾</li>
   </ul>
-  <p class="k">最近同步：2026-10-09</p>
+  <p class="k">最近同步：2026-10-19（粉絲詳情拆成獨立一頁；排行榜欄位名改中文附英文；補說明開關與粉絲系統說明入口）；2026-10-09</p>
 </details>
 </div>
+<script>
+/* 舊錨點轉址：粉絲詳情拆成 fans-roster-detail.html 後，舊網址的 #錨點 轉到新頁 */
+(function(){var m={'s4':'fans-roster-detail.html#s4','detail-profile':'fans-roster-detail.html#detail-profile','detail-points':'fans-roster-detail.html#detail-points','detail-timeline':'fans-roster-detail.html#detail-timeline','detail-spend':'fans-roster-detail.html#detail-spend','detail-events':'fans-roster-detail.html#detail-events','detail-tags':'fans-roster-detail.html#detail-tags','detail-empty':'fans-roster-detail.html#detail-empty'};var h=location.hash.slice(1);if(!m[h])return;var p=m[h].split("#");if(p[0]!==(location.pathname.split("/").pop()||"index.html")){location.replace(m[h]);}else{history.replaceState(null,"","#"+p[1]);var el=document.getElementById(p[1]);if(el)el.scrollIntoView();}})();
+</script>
 </body>
 </html>

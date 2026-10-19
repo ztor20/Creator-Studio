@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>商品設定 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>商品設定</h1>
+<p class="lede">創作者在商品設定分頁看與改一件商品的內容、定價、交付與販售開關，並從頁首的「預覽與在地化」修譯文。頁首、分頁與已封存唯讀等整頁共通規則，見<a href="eshop-product.html">商品細節頁</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="set-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>分頁預設唯讀，按「編輯商品」才能改，改完儲存或取消</li>
+  <li>各區塊的順序與欄位跟建立商品同軌，欄位定義以建立商品為準：<a href="eshop-create-physical.html">實體商品</a>、<a href="eshop-create-digital.html">數位商品</a></li>
+  <li>主分類、選項模式、庫存版本建立後就不能改，本頁只顯示</li>
+</ul>
+
+<h2 id="set-flow"><span class="n"></span>操作流程</h2>
+<p>創作者進商品設定分頁先看現值，要改就進編輯，改完決定儲存或取消。</p>
+<div class="dg" role="img" aria-label="商品設定分頁流程圖，由左往右：進商品設定分頁唯讀看現值，按編輯商品，改各區塊，再決定要不要保留；儲存就生效，取消就回到改之前">
+<div class="dg-hg" style="--dg-c:4">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>進商品設定<small>唯讀看現值</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:3"><span class="s">2</span>按「編輯商品」</div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:5"><span class="s">3</span>改各區塊<small>用頂端的分節錨點跳</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:6"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:7"><span class="s">4</span>要保留嗎？</div>
+  <span class="dg-a" data-t="保留" style="grid-row:1;grid-column:8"></span>
+  <span class="dg-a" data-t="不要" style="grid-row:2;grid-column:8"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:9">儲存<small>生效</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:9">取消<small>回到改之前</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，紫色框是要回答的問題，綠框是結束的地方。圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進商品設定：預設唯讀</li>
+  <li>按「編輯商品」：見<a href="#set-edit">編輯與儲存</a></li>
+  <li>改各區塊：各區塊的欄位見<a href="#set-fields">功能與欄位</a></li>
+  <li>要保留嗎？
+    <ul class="plain">
+      <li>保留：按「儲存」</li>
+      <li>不要：按「取消」</li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>修譯文、看各幣別價格從頁首開，見<a href="#local">預覽與在地化</a></li>
+  <li>已封存的商品沒有「編輯商品」，整頁唯讀，見商品細節頁的<a href="eshop-product.html#pd-tabs">各狀態有哪些分頁</a></li>
+</ul>
+<p class="note">依據：5.1.5.1 §3 第 4 項、第 4 段「頁面狀態」。</p>
+
+<h2 id="set-fields"><span class="n"></span>功能與欄位</h2>
+<p>各區塊由上往下：</p>
+<ul class="plain">
+  <li><a href="#set-edit">編輯與儲存</a></li>
+  <li><a href="#media">商品素材</a></li>
+  <li><a href="#info">商品資訊</a></li>
+  <li><a href="#content-file">數位內容檔案</a></li>
+  <li><a href="#variants">商品選項</a></li>
+  <li><a href="#price">價格</a></li>
+  <li><a href="#discount">折扣設定</a></li>
+  <li><a href="#low-stock">低庫存提醒</a></li>
+  <li><a href="#limits">限購</a></li>
+  <li><a href="#delivery">取貨與交付</a></li>
+  <li><a href="#tags">商品標籤</a></li>
+  <li><a href="#switches">上架、顯示與開賣</a></li>
+  <li><a href="#private">非公開連結</a></li>
+</ul>
+
+<h3 id="set-edit">編輯與儲存</h3>
+<p>商品設定預設唯讀，按「編輯商品」才能改；商品上架中也能直接改，不必先下架。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>分節錨點</td><td>分頁頂端</td><td>跳到各區塊</td></tr>
+    <tr><td>編輯商品</td><td>未完成（草稿）、上架中、已下架<br>已封存不出現</td><td>把分頁切成可以改</td></tr>
+    <tr><td>儲存</td><td>編輯中</td><td>改動生效，回到唯讀</td></tr>
+    <tr><td>取消</td><td>編輯中</td><td>不保留這次的改動，回到唯讀</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="media">商品素材</h3>
+<p>商品的展示素材，每一格可以放圖片或影片。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>商品素材</td><td>實體：主圖＋附圖<br>數位：封面＋附圖</td><td>每一格可以是圖片或影片，主圖也可以是影片<br>型別、張數、尺寸與格式同建立商品，本頁不另訂，見<a href="eshop-create-physical.html">實體商品</a>與<a href="eshop-create-digital.html">數位商品</a>的建立規則<br>主圖是粉絲端與商品清單縮圖的來源；主圖是影片時，縮圖取影片第一格畫面</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="info">商品資訊</h3>
+<p>商品「是什麼」的描述性內容，不含定價與庫存。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>商品名稱</td><td>—</td><td>商品顯示名稱；可翻譯</td></tr>
+    <tr><td>主分類</td><td>—</td><td>實體商品或數位商品<br>建立後不能改，只顯示，因為改主分類等於換整個交付方式</td></tr>
+    <tr><td>大類</td><td>只有實體的服飾配件</td><td>例如上衣、外套；可以改<br>改大類時要重選次分類，見<a href="taxonomy.html#apparel">服飾配件的大類與次分類</a></td></tr>
+    <tr><td>次分類</td><td>—</td><td>粉絲看得到的商品類型，例如書籍、服飾、海報與印刷、收藏品<br>實體商品可以改<br>數位商品改次分類會改變內容檔的型態，已有下載或訂單時是否受限，見頁尾尚待確認</td></tr>
+    <tr><td>適用對象</td><td>只有實體的服飾配件</td><td>男、女、中性、童；可以改，見<a href="taxonomy.html#department">適用對象</a></td></tr>
+    <tr><td>描述</td><td>—</td><td>含限定條件、注意事項與交付說明；可翻譯</td></tr>
+    <tr><td>系統屬性</td><td>只有實體<br>依所選分類出現對應項目</td><td>用選的，整件商品設一次；可以改<br>分類改了，出現的項目跟著變，見<a href="taxonomy.html#spec-two-parts">詳細規格分成系統屬性與自訂規格</a></td></tr>
+    <tr><td>自訂規格</td><td>只有實體</td><td>逐筆的規格名稱＋規格值，例如刺繡工法、洗滌方式；可以改；可翻譯</td></tr>
+    <tr><td>尺寸指南</td><td>只有實體</td><td>二選一：<br>沿用商店的尺寸指南（預設）：<a href="eshop-settings.html">商店設定</a>建的每一份都出現在這件商品上<br>這件商品專屬的一份：就地填、可以改、可以移除；設了之後粉絲在這件商品只看得到這一份</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="content-file">數位內容檔案</h3>
+<p>數位商品實際交付給買家的內容檔；管理方式依次分類切換。實體商品沒有這一塊。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>檔案上傳格</td><td>影視（電影、短片、影集、MV）<br>音樂單曲</td><td>上傳買家下載或觀看的檔案</td></tr>
+    <tr><td>曲目管理</td><td>音樂專輯</td><td>逐曲管理曲目檔案、封面、曲名、順序、歌詞</td></tr>
+    <tr><td>卡面自訂</td><td>會員卡</td><td>用文字與圖片設計卡面，附即時預覽</td></tr>
+    <tr><td>通用檔案</td><td>文檔</td><td>上傳文件檔</td></tr>
+    <tr><td>素材槽</td><td>IP 資產</td><td>依 IP 類型出現對應的素材槽</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="variants">商品選項</h3>
+<p>商品是否分多種可售的選項組合，例如尺寸與顏色。只有實體商品支援，數位商品沒有這一塊。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>選項模式</td><td>—</td><td>單一選項或多選項<br>建立後不能改，只顯示，因為改了會打亂既有選項組合的訂單</td></tr>
+    <tr><td>選項與選項值</td><td>多選項</td><td>選項名（例如尺寸）與選項值（例如 S、M、L）<br>尺寸與顏色的值分標準值與自行輸入的值，見<a href="taxonomy.html#presets">尺寸與顏色的快捷預設與自行輸入</a><br>建立後再加選項或選項值的處理，見頁尾尚待確認</td></tr>
+    <tr><td>逐選項組合表</td><td>多選項</td><td>每一列一個選項組合：商品圖、價格、庫存、上限（限量時）、SKU、單件成本<br>價格、庫存、SKU、單件成本可以改</td></tr>
+    <tr><td>選項組合的商品圖</td><td>多選項<br>選填，每個選項組合最多一張</td><td>隨時可以改，換圖不影響 SKU 與既有訂單<br>沒設就用主圖</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="price">價格</h3>
+<p>商品「怎麼賣」的定價。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>定價</td><td>—</td><td>基準幣別的現金定價，例如（假設）「$24.00 USD」；基準幣別是建立當下的預設幣別，建立後固定<br>多選項商品的逐選項組合價格在<a href="#variants">商品選項</a>的表裡改<br>其他四種幣別由基準價自動換算、一律唯讀，本頁不能逐幣別覆寫，換算值在<a href="#local">預覽與在地化</a>的價格表看，見<a href="common-currency.html">定價幣別</a><br>已售出後改價，只影響之後的購買</td></tr>
+    <tr><td>成本價</td><td>選填</td><td>創作者內部成本，只有創作者看得到，不對買家顯示<br>多選項商品逐選項組合填單件成本</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="discount">折扣設定</h3>
+<p>商品折扣用排程特價設定；折扣怎麼算、怎麼跟其他折扣疊加，見<a href="promo-rules.html#s4-1">排程特價</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>排程特價</td><td>—</td><td>開關</td></tr>
+    <tr><td>特價價格</td><td>只有單一選項商品<br>開啟排程特價時，特價價格與折扣 % 至少填一欄</td><td>跟折扣 % 二擇一輸入、雙向連動</td></tr>
+    <tr><td>折扣 %</td><td>開啟排程特價時</td><td>多選項商品只收折扣 %，套用到當下所有已啟用的選項組合</td></tr>
+    <tr><td>特價開始與結束日期</td><td>開啟排程特價時必填</td><td>結束要晚於開始</td></tr>
+    <tr><td>可與優惠碼疊加</td><td>—</td><td>關閉：商店優惠碼跟本商品折扣擇一，取對買家最有利的一項<br>開啟：優惠碼可以再疊上<br>見<a href="promo-rules.html#s4-5-5">與特價、分級折扣的疊加</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="low-stock">低庫存提醒</h3>
+<p>庫存低於門檻時提醒創作者補貨。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>低庫存提醒</td><td>—</td><td>預設開<br>開啟後，庫存低於門檻時提醒創作者</td></tr>
+    <tr><td>低庫存門檻</td><td>—</td><td>預設是庫存上限的 10%：限量商品＝上限 × 10%<br>可以逐商品調整<br>低於門檻時，商品狀態變成低庫存（Low Stock），電子商店出現<a href="eshop-list.html#banner-stock">低庫存提醒</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="limits">限購</h3>
+<p>限制每位買家能買多少；規則見<a href="eshop-sales.html#limits">商品的限購</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>限購</td><td>—</td><td>開關，預設關</td></tr>
+    <tr><td>每人總限購數量</td><td>開啟限購時必填</td><td>每位買家累計能買的總件數<br>改了上限，含這件商品、還在跟隨成員的組合包立刻跟著改，見<a href="bundles.html#limits">組合包的限購</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="delivery">取貨與交付</h3>
+<p>商品怎麼交到買家手上。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>交付設定</td><td>—</td><td>實體商品：履約與物流<br>數位商品：下載與存取規則</td></tr>
+    <tr><td>取貨方式</td><td>只有實體</td><td>物流配送或現場 QR 領取<br>以<a href="eshop-settings.html">商店設定</a>的取貨預設為底，可以覆寫<br>本頁可以切換兩種方式；已有未完成訂單時怎麼處理，見頁尾尚待確認</td></tr>
+    <tr><td>重量、尺寸、出貨分類、寄件地</td><td>選物流配送時</td><td>物流配送需要的資料</td></tr>
+    <tr><td>取貨場次</td><td>選現場 QR 領取時</td><td>選既有的取貨場次，或開啟建立取貨場次的彈窗，見<a href="pickup-create.html">建立取貨場次</a><br>取貨說明寫在場次那一層<br>掃碼器網址、密碼、名單與核銷紀錄在<a href="pickup.html">取貨管理</a></td></tr>
+    <tr><td>取貨與退貨說明</td><td>只有實體<br>選填</td><td>寫給買家的取貨與退貨規則，多行、約 200 字內<br>物流配送與現場 QR 領取共用同一份<br>可翻譯<br>顯示在粉絲端商品頁的「取貨與退換」段，留空就不顯示</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="tags">商品標籤</h3>
+<p>商品標籤是創作者替商品加的自訂標籤，用來標記與整理商品。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>商品標籤</td><td>—</td><td>創作者自訂的標籤，可以新增與移除</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="switches">上架、顯示與開賣</h3>
+<p>三個各自獨立的開關，決定這件商品的單售有沒有上架、在商店找不找得到、此刻能不能結帳；規則與組合出的狀態，見<a href="eshop-sales.html#switches">上架、顯示、開賣三個開關</a>。每個組合包各有自己一組開關，在<a href="eshop-bundle.html">組合包細節頁</a>管理。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>上架／下架</td><td>—</td><td>跟頁首的「上架」「下架」是同一個動作，下架同樣要先確認，見商品細節頁的<a href="eshop-product.html#pd-header-ops">頁首操作</a><br>下架後商品頁顯示「已下架」，購物車裡的這個品項顯示「已失效」</td></tr>
+    <tr><td>上架日期與時間</td><td>選填</td><td>不填＝立即上架</td></tr>
+    <tr><td>下架日期與時間</td><td>選填</td><td>不填＝不自動下架</td></tr>
+    <tr><td>顯示／隱藏</td><td>下架時停用，附「要重新上架後才能調整」</td><td>不能排程<br>隱藏＝商店裡找不到，只能經<a href="#private">非公開連結</a>進入<br>跟商品清單每一列的顯示開關是同一個值</td></tr>
+    <tr><td>開賣／未開賣</td><td>下架時停用，退回未開賣</td><td>此刻能不能結帳<br>只管單售，不影響含這件商品的組合包；要連組合包一起停賣，用下架，見<a href="eshop-sales.html#switches-bundle">商品的開關對組合包的影響</a></td></tr>
+    <tr><td>開賣日期與時間</td><td>選填</td><td>不填＝上架即開賣</td></tr>
+    <tr><td>停售日期與時間</td><td>選填</td><td>不填＝不自動停售</td></tr>
+    <tr><td>粉絲端呈現</td><td>—</td><td>唯讀徽章，由三個開關與庫存推導，見<a href="eshop-sales.html#states">開關組合出的狀態</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>下架當下清除上架、下架、開賣、停售四個排程時間，見<a href="eshop-sales.html#switches-unlisted">下架期間的顯示與開賣</a></li>
+  <li>封存時一併取消還沒生效的上架排程；封存後三個開關與排程都不能調</li>
+</ul>
+
+<h3 id="private">非公開連結</h3>
+<p>單售隱藏時，用來繞過商店、直接進入商品頁的連結；用途是內部實際下單測試，或先把連結給別人檢查再正式顯示。規則見<a href="eshop-sales.html#private">非公開連結</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>連結網址</td><td>只在隱藏時出現</td><td>切回顯示時這條連結撤銷，訪客改用公開連結</td></tr>
+    <tr><td>複製</td><td>隱藏時</td><td>複製連結網址</td></tr>
+    <tr><td>重置</td><td>隱藏時</td><td>舊連結立即撤銷，產生一條新連結</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.1 §2.5–§2.17、§3 第 4 項；主規格 §7.1、§7.2、§7.10、§7.14、§7.15、§7.16；D085、D137、D144、D183、D211、D241、D244、D259、D265、D268、D290、D291、D304、D318、D332、D360、D398、D405、D415、D427。</p>
+
+<h2 id="local"><span class="n"></span>預覽與在地化</h2>
+<p>商品上線後才發現譯文要調時，創作者從頁首的「預覽與在地化」開啟全頁畫面直接修，不必改基準內容重發；開的是跟建立商品步驟 2 側欄的「開始販售」同一個畫面、同一份翻譯與幣別價資料。差別是側欄第三段改成未儲存的變更，主要動作改成「儲存」。翻譯怎麼產生與重新產生，見<a href="common-i18n.html">語言與在地化</a>；幣別怎麼換算，見<a href="common-currency.html">定價幣別</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>預覽與在地化</td><td>在商品細節頁頁首<br>已封存只能看</td><td>開啟全頁畫面，保有返回本頁的脈絡</td></tr>
+    <tr><td>粉絲視角預覽</td><td>畫面主區</td><td>用所選語系與幣別呈現完整的商品頁，內容等同粉絲端商品頁；商品只有一個視圖</td></tr>
+    <tr><td>語言</td><td>側欄，四個語系</td><td>切換預覽語系，開翻譯表<br>語言與幣別兩軸各自切換</td></tr>
+    <tr><td>翻譯表</td><td>—</td><td>列出可翻譯欄位 × 四個語系：商品名稱、商品描述、自訂規格的規格名稱與規格值、選項名與選項值、取貨與退貨說明<br>可以直接修改任一語系的譯文<br>預設語言那一欄是原文，在這裡唯讀，要改回<a href="#info">商品資訊</a>、<a href="#variants">商品選項</a>或<a href="#delivery">取貨與交付</a>改；原文一改，其他語系重新產生</td></tr>
+    <tr><td>幣別</td><td>側欄，五種幣別</td><td>切換預覽幣別</td></tr>
+    <tr><td>價格表</td><td>—</td><td>本商品的定價 × 五種幣別；單一選項商品一列，多選項商品每個選項組合一列<br>電子商店一律唯讀，沒有覆寫入口：基準幣別要回<a href="#price">價格</a>或<a href="#variants">商品選項</a>改，其他四欄只顯示換算值<br>排程特價的特價價格目前不進價格表</td></tr>
+    <tr><td>未儲存的變更</td><td>側欄第三段</td><td>本語系改了幾欄的摘要</td></tr>
+    <tr><td>儲存</td><td>側欄</td><td>儲存即對已上架的商品生效，不改變<a href="#switches">上架、顯示與開賣</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.1 §2.2、§2.18；主規格 §7.4「發布前預覽確認」「發布後再開」、§7.15；D305、D306、D310、D317、D318、D319。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.1-商品細節頁.md</code>（v1.58）§2.5–§2.18、§3 第 4 項、第 4 段「頁面狀態」；<code>0-設計規格書.md</code> §7.1、§7.2、§7.4、§7.10、§7.14、§7.15、§7.16</li>
+    <li>決策：D085、D137、D144、D183、D211、D241、D244、D259、D265、D268、D284、D288、D290、D291、D304、D305、D306、D310、D317、D318、D319、D332、D360、D398、D405、D415、D427</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>按「儲存」前的必填檢查，以及有未儲存的改動卻要離開時怎麼提示</li>
+    <li>數位商品改次分類，在已有下載或訂單時是否受限</li>
+    <li>改大類或次分類後，已填的系統屬性不再適用時保留還是清空、要不要提示；已有訂單後改分類或適用對象，對需求看板歷史統計的影響</li>
+    <li>系統屬性的值要不要翻譯</li>
+    <li>建立後再加選項或選項值，以及從標準清單補值、刪除預設值的處理</li>
+    <li>已有訂單的選項組合能不能刪除</li>
+    <li>多選項商品的價格區塊怎麼呈現定價、哪些可以改</li>
+    <li>毛利（定價 − 成本）的計算口徑與顯示位置</li>
+    <li>特價要不要低於定價的檢查，以及檔期中的特價能不能改</li>
+    <li>不限量商品的低庫存門檻，10% 用什麼當基準</li>
+    <li>已有未完成訂單時切換取貨方式怎麼處理：沿用舊方式出貨、擋下切換，或提示逐筆處理</li>
+    <li>下架後，非公開連結能不能開到「已下架」頁</li>
+    <li>上線後改譯文是否需要審核或留版本紀錄</li>
+    <li>開預覽與在地化、改譯文前，要不要先按「編輯商品」</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.5.1 v1.58，至 D427）</p>
+</details>
+</div>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>預購設定 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain{margin:4px 0 4px}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ol.plain li{margin-bottom:4px}
+ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+table.stage{min-width:820px}
+table.stage td:nth-child(1){width:11%;white-space:nowrap}
+table.stage td:nth-child(2){width:19%}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1 id="step-presale">預購設定</h1>
+<p class="lede">預購項目的創作者在第 3 步設作品單價、最少預購數、預購截止與預期交付，向粉絲承諾成立條件與交付日期。四條路徑的全貌見<a href="project-create.html">建立項目</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="po-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>只有預購走這一步，下一步是<a href="project-create-tiers.html">方案</a>，方案價格以這一步的單位價格為基礎</li>
+  <li>最少預購數決定項目算不算成功，見<a href="project-rules.html#stage">項目的階段</a></li>
+</ul>
+
+<h2 id="po-flow"><span class="n"></span>操作流程</h2>
+<p>這一步從展示內容按下一步開始，到進入方案為止。</p>
+<div class="dg" role="img" aria-label="預購設定流程圖，由左往右：填單位價格；填最少預購數，以作品份數計；填預購截止天數；選預期交付日期；進方案">
+<div class="dg-flow">
+  <div class="dg-node"><span class="s">1</span>單位價格<small>作品一份的價格</small></div><span class="dg-arr"></span>
+  <div class="dg-node"><span class="s">2</span>最少預購數<small>以作品份數計</small></div><span class="dg-arr"></span>
+  <div class="dg-node"><span class="s">3</span>預購截止<small>天數</small></div><span class="dg-arr"></span>
+  <div class="dg-node"><span class="s">4</span>預期交付<small>日期</small></div><span class="dg-arr"></span>
+  <div class="dg-node end">方案</div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>填單位價格</li>
+  <li>填最少預購數</li>
+  <li>填預購截止</li>
+  <li>選預期交付日期，再進方案</li>
+</ol>
+<p class="note">依據：5.1.2.1 §5.3.1 F26、F27。</p>
+
+<h2 id="po-fields"><span class="n"></span>功能與欄位</h2>
+<p>這一步有兩塊：頂部的<a href="#po-banner">退款承諾</a>與<a href="#po-terms">預購條件</a>。</p>
+
+<h3 id="po-banner">退款承諾</h3>
+<p>這一步最上方的綠色提示框，告訴創作者未達量會退款。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>退款提示</td><td>—</td><td>未達最少預購數時退款的承諾<br>文案以作品份數表述</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="po-terms">預購條件</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>單位價格（Price per unit）</td><td>必填</td><td>金額，例如「29.99」<br>作品一份的價格，見<a href="#unit-price">單位價格與方案價格</a><br>改了單價，還沒鎖定的方案價格跟著重算</td></tr>
+    <tr><td>最少預購數（Minimum units）</td><td>必填</td><td>數字，例如「100」，單位是作品份數<br>累計賣出的作品份數達到這個數，預購成立；沒達到退款，見<a href="#min-units">最少預購數怎麼數</a></td></tr>
+    <tr><td>預購截止（Presale deadline）</td><td>必填</td><td>天數，例如「30」，預購開放幾天，見<a href="project-rules.html#timing">項目的時間</a></td></tr>
+    <tr><td>預期交付（Expected delivery）</td><td>必填</td><td>日期，向粉絲承諾的交付日期<br>應晚於預購截止加上合理的製造時間<br>和預覽與發布的<a href="project-create-preview.html#delivery">交付時程</a>是同一筆</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.2.1 §5.3.1 F26、F27；D167。</p>
+
+<h2 id="unit-price"><span class="n"></span>單位價格與方案價格</h2>
+<p>單位價格是作品一份多少錢，方案價格是粉絲選這一級實際付多少錢；方案價格由單位價格加算得出，創作者不手填。</p>
+<ul class="plain">
+  <li>方案價格的算式與例子見<a href="project-create-tiers.html#price">方案價格怎麼算</a></li>
+</ul>
+
+<h3 id="min-units">最少預購數怎麼數</h3>
+<p>預購成不成立看累計賣出的作品份數，與成立幾筆訂單無關。</p>
+<ul class="plain">
+  <li>份數依方案的含作品份數累計：含 2 份的方案賣出一筆，計 2 份</li>
+  <li>所有方案都設了販售數量上限時，各方案「販售數量上限 × 含作品份數」的總和要大於或等於最少預購數，否則發布前檢核擋下，見<a href="project-create-preview.html#checks">發布前檢核</a></li>
+  <li>任一方案不限量時，可售份數沒有上限，不做這項檢查</li>
+  <li>擋下時由創作者自己提高上限、增加方案或調降最少預購數，任何欄位都不會被自動改動</li>
+</ul>
+<p class="note">依據：5.1.2.1 §5.3.1 F27「單位價格與方案價格的關係」「販售數量上限總和與最少預購數的校驗」；D167。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.2.1-建立專案流程.md</code>（v4.13）§5.3.1</li>
+    <li>決策：D166、D167</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>預購的開賣時間在哪裡設定；預購截止的欄位說明寫「自發布起計」，與「以開賣為起點換算」的規則不一致</li>
+    <li>退款提示的定稿文案（目前原型英文文案仍以訂單數表述）</li>
+    <li>預期交付晚於預購截止多少才算「合理的製造時間」</li>
+    <li>未達量時是否一律全額退款，以及預購是否套用項目詳情的「未達標時自動全額退款」開關，見<a href="project-rules.html">項目規則</a>頁尾</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.2.1 v4.13）</p>
+</details>
+</div>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>各級福利 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>各級福利</h1>
+<p class="lede">創作者在各級福利定義有哪些福利，並決定每項福利開放給哪些分級。分級本身怎麼判定，見<a href="fans-tiers.html">粉絲分級</a>。</p>
+<div class="toc"></div>
+
+<h2 id="benefits-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>一項福利只定義一次，再由四個分級各自決定給不給</li>
+  <li>福利儲存後立即生效，不等每週重算；門檻與計分設定則要等下一次重算，見<a href="fans-tier-settings.html">分級設定</a></li>
+  <li>各級福利和分級設定放在粉絲總覽的同一個「粉絲分級設定」分頁</li>
+</ul>
+
+<h2 id="benefits-flow"><span class="n"></span>操作流程</h2>
+<p>創作者決定有哪些福利、每一級給哪些，儲存後立即生效。</p>
+<div class="dg" role="img" aria-label="各級福利流程圖，由左往右：進各級福利，選用的一步是新增自訂福利或移除福利，接著逐項決定每一級給不給，看階梯提示，最後儲存並立即生效">
+<div class="dg-flow">
+  <div class="dg-node"><span class="s">1</span>進各級福利<small>從粉絲總覽的「分級設定」</small></div><span class="dg-arr"></span>
+  <div class="dg-node opt"><span class="s">2</span>新增或移除福利<small>選用</small></div><span class="dg-arr"></span>
+  <div class="dg-node"><span class="s">3</span>逐項決定每一級給不給<small>開關或填數值</small></div><span class="dg-arr"></span>
+  <div class="dg-node"><span class="s">4</span>看階梯提示<small>只提醒，不擋儲存</small></div><span class="dg-arr"></span>
+  <div class="dg-node end"><span class="s">5</span>儲存<small>立即生效</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，灰色虛線框是選用的一步；圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>從粉絲總覽<a href="fans-roster.html#roster-tiers">分級分布</a>的「分級設定」進來</li>
+  <li>選用：新增自訂福利或移除福利，見<a href="#matrix">福利矩陣</a></li>
+  <li>每項福利逐一決定四個分級給不給，開關型打開或關閉，數值型填帶單位的量</li>
+  <li>看<a href="#benefit-check">福利階梯與用詞</a>的提示；低分級有、高分級沒有只提醒，不擋儲存</li>
+  <li>儲存，立即生效，見<a href="#benefits-save">儲存與放棄</a></li>
+</ol>
+<ul class="plain">
+  <li>不想保留這次的修改：按放棄，回到上次儲存的版本</li>
+</ul>
+<p class="note">依據：5.1.7.2 F1～F3、使用情境；5.1.7 F8。</p>
+
+<h2 id="benefits"><span class="n"></span>功能與欄位</h2>
+<p>每項福利開放給哪些分級，見<a href="#matrix">福利矩陣</a>；儲存或放棄這次的修改，見<a href="#benefits-save">儲存與放棄</a>。</p>
+
+<h3 id="matrix">福利矩陣</h3>
+<p>福利矩陣讓創作者一次決定每項福利開放給哪些分級，同一項福利不必在多處重複填寫。</p>
+<ul class="plain">
+  <li>一列是一項福利、一欄是一個分級，四個分級由高到低排列</li>
+  <li>矩陣預先放好一組預置福利，正式清單與各級預設值見頁尾尚待確認</li>
+  <li>每一欄即時顯示這一級拿到幾項福利，不必等儲存</li>
+  <li>福利全部移除時，矩陣顯示空狀態並引導新增</li>
+  <li id="vault-benefit">「創作者庫房 VIP 權限」目前只是對粉絲的承諾，不會連動媒體庫的設定，見<a href="fans-vault-rules.html#unlock">進庫方法</a></li>
+</ul>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>開關型福利的格子</td><td>每項開關型福利，四個分級各一格</td><td>這一級有或沒有這項福利</td></tr>
+    <tr><td>數值型福利的格子</td><td>每項數值型福利，四個分級各一格</td><td>填帶單位的量，例如天數、百分比</td></tr>
+    <tr id="benefit-edit"><td>新增福利（Add benefit）</td><td>—</td><td>自己命名新增一項福利，成為矩陣的一列<br>四個分級預設全關，要逐一打開<br>命名後不能清空名字，只能整列移除</td></tr>
+    <tr><td>移除福利（Remove benefit）</td><td>每一項福利各一個</td><td>整列移除，同時從四個分級拿掉<br>這項福利已在任一級打開時，移除前先跳出確認，並告知有幾級在用<br>沒有任何一級打開時，直接移除</td></tr>
+    <tr><td>福利說明</td><td>只有需要更多說明的福利，例如創作者庫房</td><td>打開說明，可前往對應頁面<br>滑鼠、鍵盤、觸控都打得開，打開時不遺失目前的設定</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="benefits-save">儲存與放棄</h3>
+<p>儲存與放棄管的是福利矩陣這次的修改，畫面上顯示這次修改的儲存狀態。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>儲存（Save benefits）</td><td>—</td><td>送出福利矩陣的修改<br>儲存後立即生效，不等每週重算<br>成功時提示「Benefits saved（權益已儲存）」<br>福利文字要通過用詞檢核，見<a href="#benefit-check">福利階梯與用詞</a></td></tr>
+    <tr><td>放棄（Discard）</td><td>—</td><td>捨棄這次沒儲存的福利修改，回到上次儲存的版本</td></tr>
+    <tr><td>粉絲系統說明</td><td>—</td><td>前往<a href="fans-guide.html">粉絲系統說明</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.7.2 F1、F2、F3。</p>
+
+<h2 id="benefit-check"><span class="n"></span>福利階梯與用詞</h2>
+<p>福利通常照分級由低到高增加；不遞增時只提示。福利文字不能暗示保證報酬。</p>
+<ul class="plain">
+  <li>較低分級有、較高分級沒有的福利，該列會提示，例如「上榜粉絲有這項，但更高的超級粉絲沒有」</li>
+  <li>這個提示目前只提醒，不擋儲存，創作者可以刻意這樣設計</li>
+  <li>福利文字（含自訂名稱）要通過 NFT／共創用詞檢核（避免暗示保證報酬的字眼）</li>
+  <li>不能用的詞例如 investment、yield、ROI</li>
+</ul>
+<p class="note">依據：5.1.7.2 F2、F3；主規格 §7.8。</p>
+
+<h2 id="merch-discount"><span class="n"></span>週邊折扣</h2>
+<p>週邊折扣（Merch discount）是數值型福利，依分級給不同的百分比。</p>
+<ul class="plain">
+  <li>收入算法比照優惠碼，見<a href="promo-rules.html#s4-4">優惠規則的粉絲分級折扣</a></li>
+  <li>商品在特價檔期內以特價為準，分級折扣不疊加，也不比較</li>
+  <li>和優惠碼能不能一起用，由商品自己的設定決定</li>
+</ul>
+<p class="note">依據：5.1.7.2 F2；D275、D276、D278。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.7.2-分級權益.md</code>（最後更新 2026-10-08）、<code>5.1.7-粉絲關係管理.md</code>、<code>5.1.7.3-媒體庫.md</code>、<code>0-設計規格書.md §7.8</code></li>
+    <li>決策：D169、D275、D276、D278、D377</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>福利該用開關型還是數值型的判斷規則</li>
+    <li>預置福利的正式清單與各級預設值（原型示意十項）</li>
+    <li>低分級有、高分級沒有的福利，日後是否改成擋儲存</li>
+    <li>「創作者庫房 VIP 權限」開關要不要和媒體庫的分級條件連動</li>
+    <li>自訂福利名稱的字數上限（原型示意 60 字）</li>
+    <li>同一次儲存時，門檻（下次重算才生效）與福利（立即生效）怎麼分別套用</li>
+    <li>福利用詞檢核的時機（輸入時攔下或送出後審核），以及沒通過怎麼處理</li>
+    <li>福利數值是原型示意，正式資料來源還沒定</li>
+    <li>福利矩陣載入中時畫面怎麼顯示</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（從粉絲分級拆成獨立畫面頁，補概述與操作流程）；2026-10-09（至 D351）</p>
+</details>
+</div>
+</body>
+</html>

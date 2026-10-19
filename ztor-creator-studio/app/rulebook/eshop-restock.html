@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>補貨 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="restock">補貨</h1>
+<p class="lede">創作者用補貨為低庫存或售罄的實體商品補上庫存，並記下供應商與到貨資訊。</p>
+
+<div class="toc"></div>
+
+<h2 id="restock-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>只有實體商品能補貨，數位商品不適用</li>
+  <li>補貨後的庫存與狀態反映在<a href="eshop-list.html">商品清單</a>，補貨紀錄在<a href="eshop-product-stock.html">商品細節頁的商品庫存</a>查看</li>
+</ul>
+
+<h2 id="restock-flow"><span class="n"></span>操作流程</h2>
+<p>這張補貨單從進入補貨開始，到品項入庫為止；立即補貨送出就入庫，計時補貨要等到貨確認。</p>
+<div class="dg" role="img" aria-label="補貨流程圖，由左往右：進入補貨，選補貨方式，計時補貨填預計到貨，選填供應商與備註，逐品項填補貨數量，送出補貨；立即補貨送出後庫存立即增加，計時補貨送出後品項進入補貨中，在商品細節頁按到貨確認後庫存才增加">
+<div class="dg-hg" style="--dg-c:9">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>進入補貨<small>入口見下方步驟 1</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:3"><span class="s">2</span>選補貨方式<small>立即或計時</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:5"><span class="s">3</span>填預計到貨<small>選計時補貨時</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:6"></span>
+  <div class="dg-node opt" style="grid-row:1/3;grid-column:7"><span class="s">4</span>填供應商與備註<small>選填</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:8"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:9"><span class="s">5</span>逐品項填補貨數量<small>留空＝這次不補</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:10"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:11"><span class="s">6</span>送出補貨</div>
+  <span class="dg-a" data-t="立即補貨" style="grid-row:1;grid-column:12/17"></span>
+  <span class="dg-a" data-t="計時補貨" style="grid-row:2;grid-column:12"></span>
+  <div class="dg-node" style="grid-row:2;grid-column:13">補貨中<small>等待到貨</small></div>
+  <span class="dg-a" style="grid-row:2;grid-column:14"></span>
+  <div class="dg-node" style="grid-row:2;grid-column:15"><span class="s">7</span>到貨確認<small>商品細節頁的補貨中區</small></div>
+  <span class="dg-a" style="grid-row:2;grid-column:16"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:17">庫存立即增加<small>狀態重算</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:17">庫存增加<small>狀態重算</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：上面一列是立即補貨，下面一列是計時補貨，虛線框是選填的步驟；圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進入補貨：各入口帶進來哪些品項，見<a href="#restock-entry">補貨品項從哪來</a></li>
+  <li>選補貨方式：立即補貨或計時補貨，見<a href="#restock-method">立即補貨與計時補貨</a></li>
+  <li>選計時補貨時，填預計到貨</li>
+  <li>需要時填供應商與備註</li>
+  <li>在品項清單逐列填補貨數量，見<a href="#restock-items">品項清單</a></li>
+  <li>送出補貨
+    <ul class="plain">
+      <li>立即補貨：各品項庫存立即增加，狀態重算</li>
+      <li>計時補貨：各品項進入補貨中</li>
+    </ul>
+  </li>
+  <li>計時補貨的貨到了，在<a href="eshop-product-stock.html#st-pending">商品細節頁的補貨中區</a>按到貨確認：各品項庫存增加，狀態重算</li>
+</ol>
+<ul class="plain">
+  <li>每次送出都寫進補貨紀錄，見<a href="#restock-log">補貨紀錄</a></li>
+</ul>
+<p class="note">依據：5.1.5.6 §2～§4；5.1.5.1 §2.10；主規格 §7.2、§7.14；D100、D104、D241、D260。</p>
+
+<h2 id="restock-fields"><span class="n"></span>功能與欄位</h2>
+<p>補貨畫面分兩塊：逐品項填數量的<a href="#restock-items">品項清單</a>，以及整張填一次的<a href="#restock-order">補貨單資訊</a>。</p>
+
+<h3 id="restock-items">品項清單</h3>
+<p>進入補貨就出現，一個品項一列；有哪些列由入口決定，見<a href="#restock-entry">補貨品項從哪來</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>補貨數量（Restock quantity）</td><td>每一列一格<br>選填，留空＝這一列不補</td><td>正整數<br>至少一列大於 0 才能送出<br>限量版本的品項，補後在庫不能超過該品項的上限（Total Quantity）<br>多選項商品逐選項組合各自計算上限<br>不限量版本沒有上限</td></tr>
+    <tr><td>成員分區</td><td>從組合包進入時</td><td>每個成員商品各自一區<br>多選項的成員在自己那一區逐選項組合列出</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>每一列顯示：
+    <ul class="plain">
+      <li>品項名稱：多選項商品寫選項組合名</li>
+      <li>商品圖縮圖：只有多選項商品才有，放在列首，顯示該選項組合的商品圖，沒設就用商品主圖</li>
+      <li>目前庫存與低庫存門檻</li>
+      <li>庫存狀態：充足、低庫存（Low Stock）或售罄（Sold Out）</li>
+      <li>補後在庫：目前庫存＋補貨數量，隨輸入即時算出</li>
+    </ul>
+  </li>
+  <li>從低庫存清單進入、而目前沒有低庫存或售罄的實體商品時，顯示「目前所有商品庫存充足」</li>
+  <li>從單一商品或組合包進入時，不顯示這句</li>
+</ul>
+
+<h3 id="restock-order">補貨單資訊</h3>
+<p>和品項清單在同一個畫面，整張補貨單只填一次，送出時套用到所有數量大於 0 的品項。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>補貨方式（Restock method）</td><td>必填，二選一</td><td>立即補貨（Restock now）或計時補貨（Scheduled restock）<br>目前整張補貨單只能選一種<br>兩種的差別見<a href="#restock-method">立即補貨與計時補貨</a></td></tr>
+    <tr><td>預計到貨（Expected arrival）</td><td>選計時補貨時出現，必填</td><td>選立即補貨時不顯示</td></tr>
+    <tr><td>供應商（Supplier）</td><td>選填</td><td>記進這次每一筆補貨紀錄</td></tr>
+    <tr><td>備註（Notes）</td><td>選填</td><td>—</td></tr>
+    <tr><td>送出補貨（Submit restock）</td><td>至少一列補貨數量大於 0</td><td>只對數量大於 0 的品項生效<br>送出後的結果見<a href="#restock-method">立即補貨與計時補貨</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.6 §4 ①～④、§6；D101、D104、D106、D268。</p>
+
+<h2 id="restock-entry"><span class="n"></span>補貨品項從哪來</h2>
+<p>品項清單有哪些列，由從哪裡進入補貨決定。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">入口</th><th>品項清單</th></tr></thead>
+  <tbody>
+    <tr><td>單一選項的商品<br><span class="k">商品清單該列的補貨，或商品細節頁的補貨</span></td><td>1 列，帶入商品名稱、圖片、目前庫存與低庫存門檻</td></tr>
+    <tr><td>多選項的商品<br><span class="k">同上</span></td><td>每個啟用中的選項組合一列，商品名稱放在清單最上面<br>沒啟用的選項組合不列</td></tr>
+    <tr><td>商品細節頁的批次補貨<br><span class="k">商品庫存分頁 › 庫存管理區頂端</span></td><td>同單一選項或多選項的商品</td></tr>
+    <tr><td>單一選項組合的補貨<br><span class="k">商品庫存分頁 › 庫存管理表該選項組合那一列</span></td><td>見頁尾尚待確認</td></tr>
+    <tr><td>組合包<br><span class="k">商品清單組合包那一列的補貨</span></td><td>組合包自己沒有庫存，補的是成員：每個實體成員商品各自一區<br>數位商品成員不列</td></tr>
+    <tr><td>低庫存提醒<br><span class="k">電子商店的低庫存提醒 › 低庫存清單 › 該商品列的補貨</span></td><td>同單一選項或多選項的商品</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>組合包的可售量取所有成員中最少的那一個，見<a href="bundles.html#stock-sellable">組合包可售量</a></li>
+</ul>
+<p class="note">依據：5.1.5.6 §2；5.1.5.1 §3；主規格 §7.2；D100、D104、D106、D260。</p>
+
+<h2 id="restock-method"><span class="n"></span>立即補貨與計時補貨</h2>
+<p>補貨方式決定補貨數量什麼時候算進庫存。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:18%">補貨方式</th><th style="width:26%">什麼時候用</th><th>送出後</th><th>什麼時候算進庫存</th></tr></thead>
+  <tbody>
+    <tr><td>立即補貨</td><td>手邊已經有現貨</td><td>不經過補貨中</td><td>送出當下</td></tr>
+    <tr><td>計時補貨</td><td>向供應商下單，貨之後才到</td><td>各品項進入補貨中（Restocking），記下預計到貨</td><td>在<a href="eshop-product-stock.html#st-pending">商品細節頁的補貨中區</a>按到貨確認（Mark received）時</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>目前到貨確認以整張補貨單為單位，單上各品項一起入庫</li>
+  <li>入庫後各品項的庫存狀態重新判定：回到充足或低庫存</li>
+</ul>
+
+<h3 id="restock-link">補貨後的連動</h3>
+<ul class="plain">
+  <li>有鎖定庫存的販售管道，補進來的量算未鎖定，要再鎖定一次才能繼續賣，見<a href="eshop-sales.html#stock-lock">鎖定庫存</a></li>
+  <li>成員補貨後回到有貨，含這個成員的組合包可能恢復可售</li>
+  <li>組合包什麼時候能賣，見<a href="bundles.html#deal">組合包什麼時候能成交</a></li>
+</ul>
+<p class="note">依據：5.1.5.6 §4 ②、④、§7；5.1.5.1 §2.10；主規格 §7.2、§7.14；D100、D104、D241、D260、D342。</p>
+
+<h2 id="restock-log"><span class="n"></span>補貨紀錄</h2>
+<p>每次送出補貨，對數量大於 0 的品項逐品項寫入補貨紀錄。</p>
+<ul class="plain">
+  <li>在<a href="eshop-product-stock.html#st-history">商品細節頁的庫存歷史紀錄</a>查看，最新的在上面</li>
+  <li>庫存歷史紀錄裡一張補貨單一筆，點開看逐品項的明細</li>
+</ul>
+<ul class="plain">
+  <li>每一筆記錄：
+    <ul class="plain">
+      <li>補貨數量</li>
+      <li>時間</li>
+      <li>供應商</li>
+      <li>狀態：計時補貨到貨前是「補貨中」，立即補貨與已到貨的是「已完成」</li>
+      <li>選項組合：多選項商品才有</li>
+    </ul>
+  </li>
+  <li>同一張補貨單的各筆，時間、供應商與補貨方式相同</li>
+</ul>
+<p class="note">依據：5.1.5.6 §4 ⑤、§5；5.1.5.1 §2.10；D100、D101、D104、D260。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.6-補貨流程.md</code>（v1.8）§1～§7；<code>5.1.5.1-商品細節頁.md</code> §2.10、§3；<code>0-設計規格書.md</code> §7.2、§7.14</li>
+    <li>決策：D051、D078、D100、D101、D104、D106、D241、D260、D268、D342</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>同一張補貨單能不能混用立即補貨與計時補貨（目前要混用就分兩張送出）</li>
+    <li>計時補貨能不能只收到一部分品項就先入庫（目前以整張到貨確認為準）</li>
+    <li>補貨數量要不要提供建議量，以及建議量怎麼算（例如補到門檻的 2 倍）</li>
+    <li>從庫存管理表某一個選項組合那一列進入補貨時，品項清單是不是只有那 1 列</li>
+    <li>組合包裡不限量版本的實體成員要不要列進品項清單（規格寫「數位／不限量成員不列入」，但不限量版本的實體商品可以補貨）</li>
+    <li>品項清單載入中、送出失敗時畫面怎麼顯示</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（對照 5.1.5.6 v1.8）</p>
+</details>
+</div>
+</body>
+</html>

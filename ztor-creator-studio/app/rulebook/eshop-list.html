@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>商品清單 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>商品清單</h1>
+<p class="lede">創作者在電子商店的商品清單管理商品、組合包與拍賣：切換類型、找到要處理的項目、在列上操作，並排定粉絲端的陳列順序。上架、顯示、開賣、下架與封存的規則，見<a href="eshop-sales.html">電子商店販售流程</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="list-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>商品、組合包、拍賣三類在同一頁切換，共用同一種列的骨架，欄位與列操作依類型不同</li>
+  <li>每一類清單的列順序，就是粉絲端商店該類的陳列順序，見<a href="#order">陳列順序與釘選</a></li>
+  <li>列操作依狀態互斥，一次只出現該狀態允許的動作，見<a href="eshop-sales.html#archive-actions">每個狀態能做的動作</a></li>
+</ul>
+
+<h2 id="list-flow"><span class="n"></span>操作流程</h2>
+<p>創作者進電子商店後，先切到要管理的類型、找到項目，再決定是建新的、進單一項目，還是直接在列上操作或排陳列順序。</p>
+<div class="dg" role="img" aria-label="商品清單流程圖，由左往右：進電子商店，切類型並用搜尋與狀態篩選找項目，再選要做什麼；建新的就按建立，管理一項就點進細節頁，列上操作有顯示開關、下架、上架、封存、補貨，排陳列就拖曳重排或釘選">
+<div class="dg-hg" style="--dg-c:4">
+  <div class="dg-node" style="grid-row:1/5;grid-column:1"><span class="s">1</span>進電子商店<small>看提醒橫條與清單</small></div>
+  <span class="dg-a" style="grid-row:1/5;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/5;grid-column:3"><span class="s">2</span>切類型、找項目<small>商品、組合包、拍賣；搜尋與狀態篩選</small></div>
+  <span class="dg-a" style="grid-row:1/5;grid-column:4"></span>
+  <div class="dg-node q" style="grid-row:1/5;grid-column:5"><span class="s">3</span>要做什麼？</div>
+  <span class="dg-a" data-t="建新的" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" data-t="管理一項" style="grid-row:2;grid-column:6"></span>
+  <span class="dg-a" data-t="在列上操作" style="grid-row:3;grid-column:6"></span>
+  <span class="dg-a" data-t="排陳列" style="grid-row:4;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:7">建立流程<small>按「建立」</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:7">細節頁<small>點進這一列</small></div>
+  <div class="dg-node end" style="grid-row:3;grid-column:7">列操作<small>顯示開關、下架、上架、封存、補貨</small></div>
+  <div class="dg-node end" style="grid-row:4;grid-column:7">陳列順序<small>拖曳重排、釘選</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，紫色框是要回答的問題，綠框是這個選擇的終點。圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進電子商店；有低庫存或進行中的拍賣時，清單上方先出現提醒橫條，見<a href="#banners">提醒橫條</a></li>
+  <li>切類型、找項目：見<a href="#toolbar">清單工作列</a></li>
+  <li>要做什麼？
+    <ul class="plain">
+      <li>建新的：按「建立」，見<a href="#toolbar-create">建立</a></li>
+      <li>管理一項：點進這一列，進<a href="eshop-product.html">商品細節頁</a>、<a href="eshop-bundle.html">組合包細節頁</a>或<a href="eshop-auction.html">拍賣細節頁</a></li>
+      <li>在列上操作：各類型能做的事，見<a href="#products-actions">商品的列操作</a>、<a href="#bundles-actions">組合包的列操作</a>、<a href="#auctions-actions">拍賣的列操作</a></li>
+      <li>排陳列：拖曳重排或釘選，見<a href="#order">陳列順序與釘選</a></li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>以粉絲視角檢查商店：按「預覽商店」，見<a href="#toolbar-preview">商店預覽</a></li>
+  <li>改店名、幣別、付款、出貨預設等商店層級的設定：按「商店設定」，見<a href="#toolbar-store">商店設定</a></li>
+</ul>
+<p class="note">依據：5.1.5 F3、F4、頁面佈局、使用情境。</p>
+
+<h2 id="toolbar"><span class="n"></span>清單工作列</h2>
+<p>清單工作列讓創作者在同一頁切換商品形態、縮小清單範圍，並從這裡進建立、商店設定與商店預覽。切換類型見<a href="#toolbar-type">類型切換</a>；縮小範圍見<a href="#toolbar-filter">搜尋與狀態篩選</a>；建新項目見<a href="#toolbar-create">建立</a>；以粉絲視角檢查見<a href="#toolbar-preview">商店預覽</a>；商店層級設定見<a href="#toolbar-store">商店設定</a>。</p>
+
+<h3 id="toolbar-type">類型切換</h3>
+<p>創作者在同一頁切換要管理的商品形態，不另開頁。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>商品（Products）</td><td>—</td><td>一般實體商品與數位商品，見<a href="#products">商品清單</a></td></tr>
+    <tr><td>組合包（Bundles）</td><td>—</td><td>組合包，含票務商品，見<a href="#bundles">組合包清單</a></td></tr>
+    <tr><td>拍賣（Auctions）</td><td>—</td><td>一物一拍的拍賣與限時競標，見<a href="#auctions">拍賣清單</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="toolbar-filter">搜尋與狀態篩選</h3>
+<p>搜尋與狀態篩選只作用在目前的類型，不跨商品、組合包、拍賣混查；只影響檢視，不改已存的陳列順序與釘選。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>搜尋</td><td>—</td><td>依名稱搜尋目前類型的清單<br>沒有命中時顯示「查無符合的商品」，並提供清除搜尋與篩選的入口</td></tr>
+    <tr><td>狀態篩選</td><td>—</td><td>選項依目前的類型切換，三類各自不同，見下表<br>每個選項附這個狀態在目前類型下的數量，例如「全部 24」「販售中 12」<br>切換類型時數量重算；數量只輔助辨識，不改狀態的定義<br>已封存的項目只在「已封存」選項下出現，不算進「全部」</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:18%">類型</th><th>狀態篩選的選項</th></tr></thead>
+  <tbody>
+    <tr><td>商品</td><td>全部（All）<br>販售中（Live）<br>即將開賣（Coming Soon）<br>販售結束（Ended）<br>急需補貨（Low Stock）<br>售罄（Sold Out）<br>已隱藏（Hidden）<br>已下架（Unlisted）<br>未完成（Draft）<br>已封存（Archived）</td></tr>
+    <tr><td>組合包</td><td>全部<br>販售中<br>即將開賣<br>販售結束<br>售罄<br>已隱藏<br>已下架<br>未完成<br>已封存</td></tr>
+    <tr><td>拍賣</td><td>全部<br>競標中（Live）<br>密封競標（Sealed）<br>未開始（Upcoming）<br>完售（Sold）：結標時有出價<br>流標（Unsold）：結標時沒有出價<br>已隱藏<br>已下架<br>未完成<br>已封存</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>各狀態由上架、顯示、開賣三個開關與庫存推導，定義見<a href="eshop-sales.html#states">開關組合出的狀態</a>；拍賣的狀態見<a href="eshop-sales.html#auction-states">拍賣的狀態</a></li>
+  <li>密封競標是一種競標模式、不是狀態，它跟三個開關的關係見頁尾尚待確認</li>
+</ul>
+
+<h3 id="toolbar-create">建立</h3>
+<p>創作者從這裡開始建一個新的商品、組合包或拍賣。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>建立（主按鈕）</td><td>—</td><td>文字隨目前的類型切換：<br>商品：建立商品，進<a href="eshop-create.html">建立商品</a><br>組合包：建立組合包，進<a href="eshop-create-bundle.html">建立組合包</a><br>拍賣：建立拍賣，進<a href="eshop-create-auction.html">建立拍賣</a></td></tr>
+    <tr><td>建立的下拉選單</td><td>—</td><td>不限目前的類型，三項都在：建立商品、建立組合包、建立拍賣</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="toolbar-preview">商店預覽</h3>
+<p>商店預覽讓創作者一邊管理、一邊以粉絲視角對照商店在粉絲端的樣子；只供檢查，不改資料。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>預覽商店（See as fan）</td><td>預設關閉</td><td>按下開啟商店預覽，看完可以隨時關閉，不離開電子商店<br>跟商店設定、商品細節頁的粉絲視角是同一個，跟粉絲端同源</td></tr>
+    <tr><td>預覽的內容</td><td>開啟時</td><td>只列上架且顯示的項目，照<a href="#order">陳列順序</a>排，已釘選的排最前，不帶精選標記<br>隱藏與下架的項目都不出現</td></tr>
+    <tr><td>沒有上架的商品時</td><td>開啟時</td><td>顯示空店面，並引導去上架或建立商品</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="toolbar-store">商店設定</h3>
+<p>商店設定是店名、幣別、付款、出貨預設等商店層級的設定，跟單一商品的設定範圍不重疊。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>商店設定（Store settings）</td><td>—</td><td>導向<a href="eshop-settings.html">商店設定</a>頁<br>返回電子商店時，還原原本的類型、狀態篩選與搜尋</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5 F3、F5、三類共通「清單行為」；主規格 §7.14；D065、D066、D084、D172、D184、D241、D284、D285、D286、D287。</p>
+
+<h2 id="products"><span class="n"></span>商品清單</h2>
+<p>商品清單是商店的主工作區，讓創作者瀏覽、搜尋、篩選並快速管理一般與數位商品的上架與庫存。每一列有哪些欄位，見<a href="#products-cols">欄位</a>；列上能做什麼，見<a href="#products-actions">列操作</a>。</p>
+
+<h3 id="products-cols">欄位</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>商品圖片</td><td>取自商品主圖或封面，由直式原圖置中裁切填滿顯示框，見<a href="common-media.html">展示素材與年齡分級</a><br>沒上傳時顯示預設圖</td></tr>
+    <tr><td>商品名稱</td><td>附縮圖或類型圖示輔助辨識</td></tr>
+    <tr><td>次分類</td><td>創作者看得到的次分類，例如服飾、海報與印刷、書籍、收藏品、數位內容<br>主分類隨商品記錄、用於報表分組，清單不另立欄位，見<a href="taxonomy.html">商品分類與模組應用</a></td></tr>
+    <tr><td>價格</td><td>商品價格</td></tr>
+    <tr><td>狀態</td><td>狀態徽章，由三個開關推導，不是可以直接改的欄位：<br>販售中<br>即將開賣<br>販售結束<br>售罄<br>急需補貨<br>已隱藏<br>已下架<br>未完成<br>已封存<br>無法販售：只用於含門票的組合包<br>已封存優先於其他所有徽章<br>售罄與急需補貨不混用：售罄是可售量歸零，急需補貨是低於門檻<br>販售結束由停售時間推導，跟售罄分開，見<a href="eshop-sales.html#soldout">售罄與販售結束</a></td></tr>
+    <tr><td>庫存</td><td>單售這條販售管道的可售量<br>所有販售管道都設了鎖定時，庫存欄旁加註「（N 件未鎖定）」，提醒創作者重新分配，見<a href="eshop-sales.html#stock-lock">鎖定庫存</a><br>訂單品項被撤銷時，實體商品回補庫存，見<a href="order-detail.html">訂單詳情</a></td></tr>
+    <tr><td>顯示開關</td><td>獨立一欄的開關，見下方<a href="#products-actions">列操作</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="products-actions">列操作</h3>
+<p>商品的列操作依狀態出現；下架、封存、解除封存與上架一次只出現該狀態允許的那幾個，規則的家見<a href="eshop-sales.html#archive">下架、封存與刪除</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>編輯</td><td>每一列都有</td><td>進<a href="eshop-product.html">商品細節頁</a><br>未完成（草稿）的列也從這裡進去補齊</td></tr>
+    <tr><td>補貨（Restock）</td><td>急需補貨或售罄的實體商品</td><td>進<a href="eshop-restock.html">補貨</a></td></tr>
+    <tr><td>顯示開關（Show in shop）</td><td>—<br>已下架的列停用，含排定上架還沒到與定時下架已過，提示「要先上架才能調整顯示」</td><td>切換這件商品在商店陳列或隱藏<br>點了先跳確認彈窗，標題帶品名，確認才切換，取消就維持原狀<br>彈窗內文寫切換的後果：<br>隱藏：粉絲在商店找不到<br>隱藏：持非公開連結仍可買<br>隱藏：含這件商品的組合包照賣<br>顯示：回到商店陳列，非公開連結撤銷<br>隱藏不等於下架：隱藏的商品仍可經非公開連結購買，也仍可被組合包帶著賣<br>上架與開賣不在清單改，在商品細節頁的<a href="eshop-product-settings.html#switches">上架、顯示與開賣</a></td></tr>
+    <tr><td>下架（Unlist）</td><td>上架中<br>要確認</td><td>還在上架中的組合包會一起下架，確認時列出，見<a href="eshop-sales.html#archive-unlist">下架與重新上架</a></td></tr>
+    <tr><td>上架</td><td>已下架，含定時下架已過、排定上架還沒到</td><td>跟細節頁頁首的「上架」是同一個動作，狀態連動<br>上架後是未開賣，要自己再設開賣</td></tr>
+    <tr><td>封存（Archive）</td><td>已下架</td><td>只看已下架，不檢查組合包，見<a href="eshop-sales.html#archive-archive">封存販售管道</a></td></tr>
+    <tr><td>解除封存（Unarchive）</td><td>已封存，是這一列唯一的主要動作</td><td>回到已下架，不直接回到上架</td></tr>
+    <tr><td>刪除（Delete）</td><td>未完成（草稿）<br>已下架或已封存，而且零成交<br>要確認</td><td>零成交的刪除不可復原，被組合包成員擋下等規則見<a href="eshop-sales.html#archive-delete">刪除販售管道</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5 F4 商品（Products）；主規格 §7.2、§7.10、§7.14；D093、D241、D263、D265、D284、D288、D290、D298、D307、D314、D391。</p>
+
+<h2 id="bundles"><span class="n"></span>組合包清單</h2>
+<p>組合包清單讓創作者管理組合包的上架與庫存；組合包的成員與定價規則見<a href="bundles.html">組合包與票務商品</a>。每一列有哪些欄位，見<a href="#bundles-cols">欄位</a>；列上能做什麼，見<a href="#bundles-actions">列操作</a>。</p>
+
+<h3 id="bundles-cols">欄位</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>組合包名稱</td><td>附成員縮圖或圖示輔助辨識</td></tr>
+    <tr><td>成員摘要</td><td>組合包內含的成員摘要</td></tr>
+    <tr><td>庫存</td><td>組合包可售量：有鎖定套數時是鎖定套數，沒鎖定時由各成員共用的量換算成套數取最小，見<a href="bundles.html#stock-sellable">組合包可售量</a><br>照公式顯示算出的套數，跟狀態欄分開表達</td></tr>
+    <tr><td>組合價</td><td>組合包售價，見<a href="bundles.html#price">組合包的價格</a></td></tr>
+    <tr><td>狀態</td><td>徽章集跟商品相同，已封存優先於其他徽章<br>因成員下架而一起被下架的組合包標「已下架」，原因在組合包細節頁看<br>含活動門票的組合包，徽章跟所屬活動一致，見<a href="bundles.html#timing-badge">電子商店清單的徽章</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>成員含還沒發布活動門票的組合包，跟著活動是草稿，活動發布前不列入本清單，連「未完成」篩選也看不到，見<a href="bundles.html#timing-draft">活動還是草稿時</a></li>
+  <li>成員隱藏、成員單售未開賣或販售結束，都不影響組合包能不能賣；成員下架或成員的可售量歸零才會，見<a href="bundles.html#deal-blocked">什麼會讓組合包不能賣</a></li>
+</ul>
+
+<h3 id="bundles-actions">列操作</h3>
+<p>組合包的列操作同樣依狀態出現，規則的家見<a href="bundles.html#unlist">組合包的下架連動與刪除</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>點一列</td><td>每一列都有</td><td>進<a href="eshop-bundle.html">組合包細節頁</a>，名稱、成員、定價、限量都在那裡改</td></tr>
+    <tr><td>下架（Unlist）</td><td>上架中<br>要確認</td><td>含活動門票、而且是活動最後一組仍在販售的組合包、活動又沒有還在的門票時，擋下並就地提示，見<a href="event-create.html#sellable">可賣條件與發布檢核</a><br>下架當下清除四個排程時間、退回未開賣</td></tr>
+    <tr><td>上架</td><td>已下架</td><td>跟細節頁頁首的「上架」是同一個動作，狀態連動<br>連帶上架已下架的成員：先確認並列出這些成員；成員有已封存的就擋下，提示「先解除封存」，見<a href="bundles.html#unlist-relist">組合包重新上架時帶著成員上架</a><br>含活動門票、所屬活動已結束或已取消時不能上架，按下時擋下並就地說明原因<br>上架後本組合包與連帶上架的成員各自回到未開賣，要各自再設開賣</td></tr>
+    <tr><td>封存（Archive）</td><td>已下架</td><td>不牽連成員商品<br>擋下的情形同下架</td></tr>
+    <tr><td>解除封存（Unarchive）</td><td>已封存，是這一列唯一的主要動作</td><td>回到已下架，不直接回到上架，不連動任何成員</td></tr>
+    <tr><td>刪除（Delete）</td><td>未完成（草稿）<br>已下架或已封存，而且零成交<br>要確認</td><td>零成交的刪除不可復原，不影響成員，見<a href="bundles.html#unlist-delete">刪除組合包</a><br>有成交的組合包沒有刪除入口，只能封存</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5 F4 組合（Bundles）；主規格 §7.14；D087、D266、D288、D289、D290、D294、D298、D307、D314、D331、D332、D342、D363、D425、D429、D437。</p>
+
+<h2 id="auctions"><span class="n"></span>拍賣清單</h2>
+<p>拍賣清單讓創作者管理一物一拍的競標進程、出價狀態與結標後的履約；欄位隨拍賣的狀態變化。每一列都有的欄位，見<a href="#auctions-cols">欄位</a>；各狀態多出的欄位與列操作，見<a href="#auctions-actions">各狀態的欄位與列操作</a>。</p>
+
+<h3 id="auctions-cols">欄位</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>縮圖與品名</td><td>拍賣標的的縮圖與名稱</td></tr>
+    <tr><td>狀態</td><td>未開始（Upcoming）<br>競標中（Live）<br>完售（Sold）<br>流標（Unsold）<br>已出貨（Shipped）<br>已隱藏、已下架、未完成、已封存，跟商品同義<br>由三個開關推導，已封存優先於其他徽章，見<a href="eshop-sales.html#auction-states">拍賣的狀態</a></td></tr>
+    <tr><td>次分類</td><td>拍賣標的所屬的次分類，任何商品都可以拍</td></tr>
+    <tr><td>物品狀況（Condition）</td><td>全新（預設）<br>近全新<br>良好<br>使用痕跡明顯</td></tr>
+    <tr><td>競標資格（Eligibility）</td><td>Inner Circle<br>Super Fans+<br>All fans<br>對應粉絲分級，正式對應見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="auctions-actions">各狀態的欄位與列操作</h3>
+<p>點一列進<a href="eshop-auction.html">拍賣細節頁</a>，監看競標進程、出價活動與拍賣設定。各狀態多出的欄位與列操作如下；下架、封存與刪除的規則的家見<a href="eshop-sales.html#auction-archive">拍賣的下架、封存與刪除</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">未開始</td></tr>
+    <tr><td>起標價、距開始倒數、關注數</td><td>未開始</td><td>只看</td></tr>
+    <tr><td>編輯</td><td>未開始</td><td>進拍賣細節頁修改設定</td></tr>
+    <tr class="grp"><td colspan="3">競標中</td></tr>
+    <tr><td>目前出價、出價次數、出價人數、剩餘時間</td><td>競標中</td><td>只看</td></tr>
+    <tr><td>複製連結</td><td>競標中</td><td>複製競標連結分享</td></tr>
+    <tr><td>下架</td><td>競標中不提供</td><td>競標中不能下架，不論有沒有出價</td></tr>
+    <tr class="grp"><td colspan="3">完售與流標</td></tr>
+    <tr><td>成交價、出價次數、得標者、創作者實收</td><td>完售</td><td>只看；創作者實收的口徑見<a href="common-finance.html">財務術語與收入事件</a></td></tr>
+    <tr><td>追蹤履約</td><td>完售</td><td>進<a href="orders.html">訂單管理</a><br>已出貨時列上標「已出貨」</td></tr>
+    <tr><td>下架</td><td>完售<br>流標</td><td>流標的拍賣粉絲端不能購買，跟已下架的商品同路：可以下架，下架後可以封存</td></tr>
+    <tr class="grp"><td colspan="3">已下架、已封存、未完成</td></tr>
+    <tr><td>上架</td><td>已下架</td><td>跟細節頁頁首的「上架」是同一個動作<br>上架後是未開拍，要再設一次開拍</td></tr>
+    <tr><td>封存（Archive）</td><td>已下架</td><td>見<a href="eshop-sales.html#auction-archive">拍賣的下架、封存與刪除</a></td></tr>
+    <tr><td>解除封存（Unarchive）</td><td>已封存，是這一列唯一的主要動作</td><td>回到已下架，不直接回到上架</td></tr>
+    <tr><td>刪除（Delete）</td><td>未完成（草稿）<br>已下架或已封存，而且從沒有任何出價紀錄、沒有成交，含從沒開拍與流標<br>要確認</td><td>不可復原<br>曾有出價紀錄的拍賣沒有刪除入口，只能封存</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5 F4 競標（Auctions）；主規格 §7.14、§8.14；D075、D080、D284、D285、D286、D287、D290、D298、D307、D314、D347。</p>
+
+<h2 id="order"><span class="n"></span>陳列順序與釘選</h2>
+<p>三類清單各自的列順序，就是粉絲端商店該類的陳列順序；釘選讓主打項目排在最前。怎麼排，見<a href="#order-drag">陳列排序</a>；怎麼讓項目置頂，見<a href="#order-pin">釘選</a>。</p>
+
+<h3 id="order-drag">陳列排序</h3>
+<p>創作者直接在清單拖曳重排，決定粉絲端的陳列順序；這是粉絲端順序唯一的來源。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>拖曳握把</td><td>—</td><td>拖曳重排後立即儲存，重新載入後維持<br>只有上架且顯示的項目對粉絲呈現；隱藏或下架的項目仍在管理清單裡，但不對粉絲顯示<br>搜尋與狀態篩選只影響檢視，不改已存的順序</td></tr>
+    <tr><td>排到任一位置</td><td>—</td><td>排序要能排到任一位置，不受目前已載入的批次限制<br>項目少時進入排序就載入全部，直接拖曳<br>項目多到不全部載入時，改用移到最前、移到最後或輸入指定位置，達到同樣的效果</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="order-pin">釘選</h3>
+<p>創作者把主打項目釘選，已釘選的項目在粉絲端該類的陳列中強制排在未釘選的項目之前。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>釘選／解除釘選</td><td>三類清單每一列<br>未完成（草稿）與已封存不提供</td><td>每一類最多 10 個，三類各自計；達上限要先解除一項才能再釘選<br>只影響位置，粉絲端不附任何精選徽章或標籤<br>釘選區內的先後照<a href="#order-drag">陳列排序</a>，跟排序是同一條順序<br>還沒載入的項目也能釘選或解除釘選</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>釘選跟上架、顯示、庫存各自獨立：隱藏或下架的項目保有釘選，但不佔粉絲端位置，切回顯示或重新上架後回到釘選區</li>
+  <li>組合包因成員下架或可售量歸零而不能賣時，保有釘選，但不佔粉絲端位置</li>
+  <li>封存時原本已釘選的一併解除，之後重新上架要再釘選一次</li>
+  <li>未完成（草稿）在管理清單維持置頂，排在釘選區之前</li>
+</ul>
+<p class="note">依據：5.1.5 F4 商品「陳列排序」、三類共通「釘選」「排序與分批載入」；D083、D094、D172、D262、D286。</p>
+
+<h2 id="banners"><span class="n"></span>提醒橫條</h2>
+<p>兩種條件式橫條各自獨立，有狀況才出現。低庫存見<a href="#banner-stock">低庫存提醒</a>；進行中的拍賣見<a href="#banner-auction">拍賣即時橫條</a>。</p>
+
+<h3 id="banner-stock">低庫存提醒</h3>
+<p>低庫存提醒讓創作者在看清單前，先知道哪些商品要優先補貨；放在頁面最上方，在麵包屑與頁首之上。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>提醒內容</td><td>有商品低於低庫存門檻才出現<br>帳號還沒有任何商品時不出現</td><td>標題寫低於門檻的商品數，例如「3 件商品低於低庫存門檻」；副標列出商品名<br>門檻怎麼設，見商品細節頁的<a href="eshop-product-settings.html#low-stock">低庫存提醒</a></td></tr>
+    <tr><td>查看低庫存（View low stock）</td><td>提醒出現時</td><td>查看低庫存的商品</td></tr>
+    <tr><td>補貨</td><td>提醒出現時</td><td>進<a href="eshop-restock.html">補貨</a></td></tr>
+    <tr><td>關閉（×）</td><td>提醒出現時</td><td>關閉後收合，下方內容回到原位<br>條件仍成立時，下次登入使用時可以再出現</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="banner-auction">拍賣即時橫條</h3>
+<p>拍賣即時橫條提醒創作者有進行中的競標，並提供監看入口；只在拍賣分頁出現，放在狀態篩選與清單之間。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>橫條內容</td><td>拍賣分頁，而且有競標中的拍賣才出現</td><td>寫出競標中的拍賣數，例如「1 個拍賣競標中」<br>附重點拍賣的摘要：品名、目前出價、狀態</td></tr>
+    <tr><td>查看（View →）</td><td>橫條出現時</td><td>進<a href="eshop-auction.html">拍賣細節頁</a>監看競標</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5 F2、F6、頁面佈局；主規格 §6.10、§7.2。</p>
+
+<h2 id="loading"><span class="n"></span>載入與沒有資料時</h2>
+<p>清單分批載入，未完成的列用占位顯示缺漏，沒有任何項目與篩選沒命中分兩種畫面。分批怎麼載，見<a href="#loading-batch">分批載入</a>；草稿列怎麼顯示，見<a href="#loading-draft">未完成的列</a>；空清單的畫面，見<a href="#loading-empty">沒有資料時</a>。</p>
+
+<h3 id="loading-batch">分批載入</h3>
+<ul class="plain">
+  <li>清單分批漸進載入，底部「載入更多」載下一批</li>
+  <li>縮圖在該列捲進畫面時才載入</li>
+  <li>全部載完時，「載入更多」不出現，底部改寫「已顯示全部 N 筆」，N 跟狀態篩選的數量一致</li>
+  <li>切換類型、改搜尋或狀態篩選時，從第一批重新載入</li>
+  <li>每批幾筆、按鈕或捲到底自動載入，屬工程與呈現決定</li>
+</ul>
+
+<h3 id="loading-draft">未完成的列</h3>
+<p>未完成（草稿）的列，或必填欄還沒填的列，每一欄都用占位顯示，不留空白；占位只提示缺漏，不改項目的狀態。三類清單都適用。</p>
+<ul class="plain">
+  <li>名稱沒填：顯示「未命名（Untitled）」</li>
+  <li>圖片沒有：顯示預設圖</li>
+  <li>次分類、價格、庫存等沒定的欄：顯示「—」</li>
+</ul>
+
+<h3 id="loading-empty">沒有資料時</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">情況</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>帳號還沒建立任何商品、組合包或拍賣</td><td>清單顯示「尚未建立」與建立引導，不留白<br>低庫存提醒不出現<br>商店預覽顯示空店面<br>清單工作列照常可以操作</td></tr>
+    <tr><td>目前的類型還沒有任何項目</td><td>顯示「尚未建立」並引導建立：<br>商品與拍賣：引導到<a href="eshop-create.html">建立商品</a><br>組合包：引導到<a href="eshop-create-bundle.html">建立組合包</a></td></tr>
+    <tr><td>搜尋或篩選沒有命中</td><td>顯示「查無符合的商品」，並提供清除搜尋與篩選的入口；跟「尚未建立」分開，不混用</td></tr>
+    <tr><td>清單載入中、載入失敗</td><td>照全站共用的載入與錯誤狀態規則顯示，載入失敗可以重試</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5 三類共通「分批載入」「草稿空值占位」「空狀態」、頁面狀態；主規格 §6.1、§6.6；D092、D094。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5-電子商店.md</code>（最後更新 2026-10-16）F1–F6、頁面佈局、頁面狀態、使用情境；<code>0-設計規格書.md</code> §6、§7.2、§7.10、§7.14、§8.14</li>
+    <li>決策：D065、D066、D075、D080、D083、D084、D087、D092、D093、D094、D172、D184、D241、D262、D263、D265、D266、D284、D285、D286、D287、D288、D289、D290、D294、D298、D307、D314、D331、D332、D342、D347、D363、D391、D425、D429、D437</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>狀態篩選的數量是否隨關鍵字搜尋連動</li>
+    <li>組合包的狀態篩選要不要有「急需補貨」，也就是組合包要不要設低庫存門檻</li>
+    <li>「無法販售」要不要另列成組合包的篩選選項</li>
+    <li>密封競標（Sealed）跟三個開關的關係</li>
+    <li>多選項商品的價格欄怎麼顯示價格區間、庫存欄怎麼顯示各選項組合的合計</li>
+    <li>限量商品的庫存欄是否顯示上限進度，例如「12/50」</li>
+    <li>低庫存提醒的「查看低庫存」導向哪裡</li>
+    <li>在搜尋、篩選或依欄排序的檢視中，能不能拖曳重排</li>
+    <li>商品、組合包、拍賣三類在粉絲端是併成同一條陳列順序，還是各自分區；釘選是各自置頂還是混排</li>
+    <li>釘選何時儲存，以及跟定時上架排程怎麼互動</li>
+    <li>完售或流標的拍賣是否自動解除釘選</li>
+    <li>含活動門票的組合包預售時（活動還是已排程、組合包已開賣），徽章照組合包自己的開賣狀態標，還是維持跟活動一致</li>
+    <li>拍賣的競標資格怎麼對應粉絲分級，以及密封競標、結標後付款與履約的正式規則</li>
+    <li>有出價但沒達保留價時怎麼處理，流標的拍賣能不能重新開拍</li>
+    <li>拍賣即時橫條怎麼即時更新、「重點拍賣」怎麼挑</li>
+    <li>商店預覽是否即時反映還沒儲存的管理變更</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.5 最後更新 2026-10-16，至 D437）</p>
+</details>
+</div>
+</body>
+</html>

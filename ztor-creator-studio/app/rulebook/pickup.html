@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>取貨管理 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+table.stage{min-width:820px}
+table.stage td:nth-child(1){width:11%;white-space:nowrap}
+table.stage td:nth-child(2){width:19%}
+table.stage td:nth-child(4){width:12%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="pickup">取貨管理</h1>
+<p class="lede">創作者在取貨管理建立取貨場次、把手機 Scanner 交給現場工作人員，讓工作人員逐件核銷取貨商品與活動票券。</p>
+
+<div class="toc"></div>
+
+<h2 id="pickup-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>一個取貨場次把好幾個取貨商品與好幾種活動票券放進同一個核銷範圍，現場共用同一個 Scanner；物流配送的商品照訂單逐筆出貨，不經過這裡</li>
+  <li>場次的階段、能核銷的範圍、核銷與領取碼、跟訂單與活動的關係，見<a href="pickup-rules.html">取貨規則</a></li>
+</ul>
+
+<h2 id="pickup-flow"><span class="n"></span>操作流程</h2>
+<p>創作者進取貨管理後，先在清單找到場次，再決定是建新場次、管理一個場次，還是把 Scanner 交給現場。</p>
+<div class="dg" role="img" aria-label="取貨管理流程圖，由左往右：進取貨管理看摘要與取貨清單，用狀態篩選與搜尋找場次，再選要做什麼；建新場次就開啟建立取貨場次視窗，管理一個場次就開啟取貨場次詳情，交給現場就開始掃描或複製 Scanner 網址，在手機開 Scanner">
+<div class="dg-hg" style="--dg-c:4">
+  <div class="dg-node" style="grid-row:1/4;grid-column:1"><span class="s">1</span>進取貨管理<small>看摘要與取貨清單</small></div>
+  <span class="dg-a" style="grid-row:1/4;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/4;grid-column:3"><span class="s">2</span>找場次<small>狀態篩選、搜尋</small></div>
+  <span class="dg-a" style="grid-row:1/4;grid-column:4"></span>
+  <div class="dg-node q" style="grid-row:1/4;grid-column:5"><span class="s">3</span>要做什麼？</div>
+  <span class="dg-a" data-t="建新場次" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" data-t="管理一個場次" style="grid-row:2;grid-column:6"></span>
+  <span class="dg-a" data-t="交給現場" style="grid-row:3;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:7">建立取貨場次<small>開啟建立視窗</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:7">取貨場次詳情<small>按「開啟詳情」</small></div>
+  <div class="dg-node end" style="grid-row:3;grid-column:7">手機 Scanner<small>開始掃描或複製網址</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進取貨管理；頁首是<a href="#summary">摘要</a>，下方是取貨清單</li>
+  <li>找場次：見<a href="#filter">搜尋與篩選</a></li>
+  <li>要做什麼？
+    <ul class="plain">
+      <li>建新場次：按「建立取貨場次」，開啟<a href="pickup-create.html">建立取貨場次</a>視窗</li>
+      <li>管理一個場次：按列上的「開啟詳情」，進<a href="pickup-detail.html">取貨場次詳情</a></li>
+      <li>交給現場：按「開始掃描」，或複製 Scanner 網址、顯示 QR code 交給工作人員，在手機開<a href="pickup-scanner.html">手機 Scanner</a></li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>建立實體商品或在商品細節頁把取貨方式設成現場 QR 領取時，也能開啟同一個建立視窗，見<a href="pickup-create.html#entry">從哪裡開啟</a></li>
+  <li>bookyay 匯入的活動，活動詳情的「前往領取場次」也會連到取貨場次，見取貨規則的<a href="pickup-rules.html#sync">取貨與訂單、活動的關係</a></li>
+</ul>
+<p class="note">依據：5.1.5.11 頁面定位、F3、F4.2、使用情境；5.1.5.12 §2。</p>
+
+<h2 id="list"><span class="n"></span>取貨清單</h2>
+<p>取貨清單讓創作者管理所有取貨場次，快速進入詳情、複製 Scanner 網址或開始掃描。頁首的數字見<a href="#summary">摘要</a>；每一列有什麼見<a href="#rows">清單</a>；從哪裡建新場次見<a href="#create-entry">建立取貨場次</a>；還沒有場次時見<a href="#empty">沒有資料時</a>。</p>
+
+<h3 id="summary">摘要</h3>
+<p>三個指標讓創作者一眼看到今天現場的工作量。件數一律以件（領取單位數）計，不以買家人數計：一位買家有好幾件就計好幾件，跟掃描次數對得上。</p>
+<ul class="plain">
+  <li>今日待核銷：目前日期落在場次開始與結束時間內、仍待核銷的件數</li>
+  <li>今日已核銷：今天完成核銷的件數</li>
+  <li>進行中場次：目前時間介於開始與結束時間之間的場次數</li>
+</ul>
+
+<h3 id="rows">清單</h3>
+<p>清單一列是一個取貨場次。每一列能做的事見<a href="#row-actions">列操作</a>；怎麼找到特定場次見<a href="#filter">搜尋與篩選</a>；場次很多時怎麼載入見<a href="#load-more">分批載入</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>場次名稱</td><td>創作者設定的名稱，例如「台北簽書會取貨」</td></tr>
+    <tr><td>取貨地點</td><td>場次地點或現場辨識資訊</td></tr>
+    <tr><td>開始與結束時間</td><td>這個場次可以核銷的時間範圍</td></tr>
+    <tr><td>場次狀態</td><td>尚未開始、進行中、已結束、已封存，見<a href="pickup-rules.html#stage">取貨場次的階段</a></td></tr>
+    <tr><td>可核銷項目摘要</td><td>這個場次包含的取貨商品與活動票券數量<br>逐項內容見手機 Scanner 的<a href="pickup-scanner.html#screen-items">可核銷項目</a></td></tr>
+    <tr><td>名單摘要</td><td>待核銷、已核銷的件數，以件計</td></tr>
+    <tr><td>Scanner 狀態</td><td>Scanner 網址已啟用、已停用或已重設</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="row-actions">列操作</h4>
+<p>創作者不離開清單，就能對單一場次做常用的動作。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>開啟詳情</td><td>—</td><td>進<a href="pickup-detail.html">取貨場次詳情</a></td></tr>
+    <tr><td>複製 Scanner 網址</td><td>—</td><td>複製這個場次的 Scanner 網址交給工作人員；網址與密碼的管理見取貨場次詳情的<a href="pickup-detail.html#scanner">Scanner 存取</a></td></tr>
+    <tr><td>顯示 Scanner QR code</td><td>—</td><td>把 Scanner 網址顯示成 QR code，工作人員用手機掃了就能開</td></tr>
+    <tr><td>開始掃描</td><td>—</td><td>開啟這個場次的<a href="pickup-scanner.html">手機 Scanner</a></td></tr>
+    <tr><td>編輯</td><td>—</td><td>開啟建立取貨場次的同一個視窗，見<a href="pickup-create.html#edit">編輯既有場次</a></td></tr>
+    <tr><td>封存</td><td>—</td><td>見<a href="pickup-rules.html#actions">場次的動作</a></td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="filter">搜尋與篩選</h4>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>關鍵字搜尋</td><td>—</td><td>比對下列欄位：<br>場次名稱<br>地點<br>商品<br>活動<br>票種</td></tr>
+    <tr><td>狀態篩選</td><td>—</td><td>選項：<br>全部<br>尚未開始<br>進行中<br>已結束<br>已封存<br>各狀態的定義見<a href="pickup-rules.html#stage">取貨場次的階段</a></td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="load-more">分批載入</h4>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>載入更多</td><td>—</td><td>場次分批載入，底部按「載入更多」載下一批，做法同電子商店的商品清單</td></tr>
+    <tr><td>已顯示全部</td><td>全部載完時</td><td>顯示「已顯示全部 N 筆」；N 跟狀態篩選後的總數一致</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="create-entry">建立取貨場次</h3>
+<p>創作者從這裡開始建一個新場次。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>建立取貨場次</td><td>—</td><td>開啟<a href="pickup-create.html">建立取貨場次</a>視窗</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="empty">沒有資料時</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">情況</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>還沒建立任何取貨場次</td><td>顯示「尚未建立取貨場次」，並提供建立入口</td></tr>
+    <tr><td>清單載入中、載入失敗</td><td>照全站共用的載入與錯誤狀態規則顯示</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.11 F1～F4（F4.1～F4.3）、頁面狀態；主規格 §6、§7.2「取貨場次」；D094、D117、D118、D119、D120、D240。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.11-取貨管理.md</code>（v2.8）；<code>5.1.5.12-建立取貨場次.md</code>（v1.11）§2；<code>0-設計規格書.md</code>（v4.90）§6、§7.2</li>
+    <li>決策：D094、D111、D117、D118、D119、D120、D240、D394、D401</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>各列操作（開始掃描、複製網址、編輯、封存等）在哪些場次狀態出現</li>
+    <li>搜尋與狀態篩選是否同時生效取交集；搜尋或篩選沒有命中時顯示什麼</li>
+    <li>每批載入幾筆（規格預設 25 筆）與載入方式（按鈕或捲到底自動載入），由畫面決定</li>
+    <li>清單每一列的欄位排法與名單摘要的呈現</li>
+    <li>場次規則相關的待確認列在<a href="pickup-rules.html">取貨規則</a>頁尾</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新建頁面，規則節拆到取貨規則；對照 5.1.5.11 v2.8、5.1.5.12 v1.11、5.1.5.14 v1.11、5.1.5.15 v1.13、主規格 v4.90）</p>
+</details>
+
+<script>
+/* 舊錨點轉址：規則節拆到取貨規則（pickup-rules.html）後，舊網址的 #錨點 轉到新頁 */
+(function(){var m={'stage':'pickup-rules.html#stage','stage-who':'pickup-rules.html#stage-who','stage-time':'pickup-rules.html#stage-time','actions':'pickup-rules.html#actions','scope':'pickup-rules.html#scope','scope-what':'pickup-rules.html#scope-what','scope-bind':'pickup-rules.html#scope-bind','scope-remove':'pickup-rules.html#scope-remove','redeem':'pickup-rules.html#redeem','redeem-unit':'pickup-rules.html#redeem-unit','code-void':'pickup-rules.html#code-void','sync':'pickup-rules.html#sync'};var h=location.hash.slice(1);if(!m[h])return;var p=m[h].split("#");if(p[0]!==(location.pathname.split("/").pop()||"index.html")){location.replace(m[h]);}else if(p[1]){history.replaceState(null,"","#"+p[1]);var el=document.getElementById(p[1]);if(el)el.scrollIntoView();}})();
+</script>
+</div>
+</body>
+</html>

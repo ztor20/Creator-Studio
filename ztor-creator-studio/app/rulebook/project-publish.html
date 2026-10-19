@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>作品上架 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>作品上架</h1>
+<p class="lede">影片家族的創作者把做好的作品建檔，送交平台審核；審核通過後，作品依上映日期在 ztor 前台上線。各步驟的欄位與規則在各步驟頁。</p>
+
+<div class="toc"></div>
+
+<h2 id="pub-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>作品的欄位只在這裡定義一次，兩個入口共用：共創與預購從項目詳情進來走完 6 步；直接發佈的步驟 1～4 內嵌在建立項目裡</li>
+  <li>送出後怎麼審、什麼時候上線，見<a href="#review">審核狀態</a>與項目詳情的<a href="project-detail-work.html#go-live">審核與上線</a></li>
+</ul>
+
+<h2 id="pub-steps"><span class="n"></span>作品上架的 6 個步驟</h2>
+<p>流程圖先走一次兩個入口，下表再列出每一步收什麼，點步驟名稱看該步的操作流程、欄位與規則。</p>
+<div class="dg" role="img" aria-label="作品上架流程圖：上面一列是共創與預購，從項目詳情的送作品上架進來，走步驟 1 到 6，在步驟 6 送出審核；下面一列是直接發佈，從建立項目選直接發佈與影片家族進來，步驟 1 到 4 內嵌在建立項目裡，沒有步驟 5，改在建立項目自己的預覽與送審送出">
+<div class="dg-hg" style="--dg-c:8">
+  <div class="dg-node" style="grid-row:1;grid-column:1">項目詳情<small>按「送作品上架」</small></div>
+  <div class="dg-node" style="grid-row:2;grid-column:1">建立項目<small>選直接發佈與影片家族</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:2"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:3"><span class="s">1</span>音訊與字幕</div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:5"><span class="s">2</span>封面與影音素材</div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:6"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:7"><span class="s">3</span>影片詳情</div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:8"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:9"><span class="s">4</span>演職人員詳情</div>
+  <span class="dg-a" style="grid-row:1;grid-column:10"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:10"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:11"><span class="s">5</span>給粉絲的話</div>
+  <div class="dg-node skip" style="grid-row:2;grid-column:11">沒有這一步</div>
+  <span class="dg-a" style="grid-row:1;grid-column:12"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:12"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:13"><span class="s">6</span>預覽與送審</div>
+  <div class="dg-node" style="grid-row:2;grid-column:13">建立項目的預覽與送審</div>
+  <span class="dg-a" style="grid-row:1;grid-column:14"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:14"></span>
+  <div class="dg-node end" style="grid-row:1/3;grid-column:15">送出審核<small>作品進入平台審核</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，上面一列是共創與預購，下面一列是直接發佈，同一欄是同一個步驟；圓圈數字對應下方表格的步驟編號，虛線框是整步跳過。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:6%">步</th><th style="width:22%">步驟</th><th style="width:36%">這一步收什麼</th><th>直接發佈在建立項目的哪一步</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td><a href="project-publish-step1.html">音訊與字幕</a></td><td>影片本體<br>原始語音<br>字幕</td><td>步驟 2 作品檔案</td></tr>
+    <tr><td class="num">2</td><td><a href="project-publish-step2.html">封面與影音素材</a></td><td>封面圖<br>劇照<br>花絮<br>預告片</td><td>步驟 3 展示內容</td></tr>
+    <tr><td class="num">3</td><td><a href="project-publish-step3.html">影片詳情</a></td><td>標題與說明<br>片長<br>上映日期<br>分類<br>標籤<br>年齡限制<br>定價</td><td>步驟 4 詳情與定價</td></tr>
+    <tr><td class="num">4</td><td><a href="project-publish-step4.html">演職人員詳情</a></td><td>各角色的參與者名單與備註</td><td>步驟 4 詳情與定價</td></tr>
+    <tr><td class="num">5</td><td><a href="project-publish-step5.html">給粉絲的話</a></td><td>作品完成時要發給粉絲的那則更新：內文與受眾</td><td>沒有這一步</td></tr>
+    <tr><td class="num">6</td><td><a href="project-publish-step6.html">預覽與送審</a></td><td>看粉絲視角的完整作品頁<br>檢查語言、幣別與發布前檢核<br>送出審核</td><td>改在建立項目自己的預覽與送審，見<a href="project-create.html">建立項目</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.2.2.1 §1、§2、§3、§5；D182、D207、D323。</p>
+
+<h2 id="entry"><span class="n"></span>從哪裡進入作品上架</h2>
+<p>作品上架有兩個入口，前置條件不同；被退件後從原入口回來重送。兩個入口見<a href="#entry-table">入口與前置條件</a>，共創與預購已經填過的欄位怎麼帶進來見<a href="#prefill">帶入建立時填過的值</a>。</p>
+
+<h3 id="entry-table">入口與前置條件</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">入口</th><th style="width:30%">前置條件</th><th>進入後</th></tr></thead>
+  <tbody>
+    <tr><td>項目詳情進度上「送出審核」那一段的「送作品上架」</td><td>共創或預購<br>項目已成功<br>內容類型屬影片家族</td><td>獨立走完 6 步，在步驟 6 送出<br>見項目詳情的<a href="project-detail-work.html#stages">上架階段</a></td></tr>
+    <tr><td>建立項目選直接發佈、內容類型屬影片家族</td><td>沒有；作品在建立當下就已完成</td><td>步驟 1～4 內嵌成建立項目的步驟 2～4，沒有獨立的入口按鈕<br>送出落在建立項目自己的最後一步，見<a href="project-create.html">建立項目</a></td></tr>
+    <tr><td>被退件後重送</td><td>作品審核不通過</td><td>共創與預購：從進度上「審核退回」那一段回來<br>直接發佈：從項目詳情上架進度的「審核退回」那一段回來<br>修改任一步驟的內容後重送，重送回到待審核</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>上架不是發文：入口不在發文框，見項目詳情的<a href="project-detail-updates.html">發布更新</a></li>
+  <li>已取消的項目不能發起新的送審，也不能重送</li>
+</ul>
+
+<h3 id="prefill">帶入建立時填過的值</h3>
+<p>共創與預購從項目詳情進來時，和建立項目重疊的欄位一律帶入已填的值，創作者可以改，從重填變成確認。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:36%">作品上架的欄位</th><th>帶入建立項目的哪一欄</th></tr></thead>
+  <tbody>
+    <tr><td>封面圖（步驟 2）</td><td>主視覺</td></tr>
+    <tr><td>劇照（步驟 2）</td><td>圖庫</td></tr>
+    <tr><td>預告片（步驟 2）</td><td>影片</td></tr>
+    <tr><td>標題與說明（步驟 3）</td><td>項目名稱與項目描述，同一份資料</td></tr>
+    <tr><td>上映日期（步驟 3）</td><td>預期交付日期</td></tr>
+    <tr><td>分類（步驟 3）</td><td>影視類型欄位的分類</td></tr>
+    <tr><td>年齡限制（步驟 3）</td><td>影視類型欄位的年齡分級，同一份資料</td></tr>
+    <tr><td>演職人員的導演與演員（步驟 4）</td><td>影視類型欄位的導演與演員陣容</td></tr>
+  </tbody>
+</table></div>
+<p>標題與說明、年齡限制本來就是同一份資料，在這裡改了，項目端一起改。</p>
+<p class="note">依據：5.1.2.2.1 §2；5.1.2.2 §2.2.9「重疊欄位預帶建立階段填過的值」、§2.2.4；D182、D207。</p>
+
+<h2 id="review"><span class="n"></span>審核狀態</h2>
+<p>送出後作品進入待審核，由 Admin 在<a href="admin-video-review.html">影片上架審核</a>處理；審核不通過時退回並附退件理由，創作者修改後可以重送。各審核狀態的意思，以及作品審核和項目階段的關係，見項目規則的<a href="project-rules.html#review">作品審核與項目階段</a>。</p>
+<p class="note">依據：5.1.2.2.1 §3.3；主規格 §7.2；D179、D192。</p>
+
+<h2 id="shared"><span class="n"></span>每一步共用的操作</h2>
+<p>步驟 1～5 共用下列操作，各步驟頁不再重寫；步驟 6 的操作見<a href="project-publish-step6.html">預覽與送審</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>儲存草稿</td><td>每一步</td><td>保存已填的內容，稍後回來續填；作品審核狀態為草稿</td></tr>
+    <tr><td>上一步</td><td>—</td><td>回前一步修改，已填的資料不會遺失</td></tr>
+    <tr><td>下一步</td><td>步驟 1～5</td><td>前往下一步</td></tr>
+    <tr><td>步驟指示</td><td>每一步</td><td>看得出目前在第幾步、還有幾步，可以回到已完成的步驟</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>中途離開或沒送出時，已填的上架資料保留為草稿；從項目詳情進來的共創與預購，項目維持已成功</li>
+  <li>送出前的檢查統一在步驟 6 跑，包括影片要處理完成，見<a href="project-publish-step6.html#checks">發布前檢核</a></li>
+</ul>
+<p class="note">依據：5.1.2.2.1 §3、§4「共用操作與送出」、§5；5.1.2.2 §2.2.9；D192、D323。</p>
+
+<h2 id="not-collected"><span class="n"></span>不收的欄位</h2>
+<p>作品上架的欄位照 ztor 片方後台的「管理影片」建立作品流程，下列幾項刻意不收。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">不收的欄位</th><th>原因</th></tr></thead>
+  <tbody>
+    <tr><td>新舊影片（New／Old title）</td><td>平台端的營運分類，決定作品走哪一種銷售條件，創作者沒有決定權</td></tr>
+    <tr><td>獨立的影片資產庫</td><td>不先把檔案傳進資產庫再挑，改在步驟 1 直接上傳影片檔</td></tr>
+    <tr><td>逐語言封面</td><td>全站共用單一直式圖片標準，封面只收一張</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.2.2.1 §3.2；D179。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.2.2.1-作品上架流程.md</code>（v1.13）§1～§5、§7、§8；<code>5.1.2.2-專案詳情.md</code>（v3.23）§2.2.4、§2.2.9；<code>0-設計規格書.md</code> §7.2</li>
+    <li>決策：D178、D179、D182、D192、D207、D323</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>共創與預購在上架流程改動的預帶值，是否回寫項目端的原欄位（標題與說明、年齡限制本來同一份，不在此列）</li>
+    <li>給粉絲的話綁在作品上線那一刻發出、而不是審核通過當下，目前是規格的建議做法，待使用者覆核</li>
+  <li>封面與劇照是否和項目的主視覺、圖庫是同一份素材（作品上架流程寫同一份，項目詳情的帶入對照只把標題說明與年齡限制算同一份）</li>
+  <li>草稿的保留期限，以及未完成的上架草稿是否在項目詳情提醒</li>
+    <li>是否允許跳步</li>
+    <li>送出後是否還需要一個獨立的「處理中」狀態</li>
+    <li>退件次數上限、重送是否重跑整份檢核、退件後資料的保留期限</li>
+    <li>退件重送是否要再走一次步驟 6 預覽與送審</li>
+    <li>審核時效、審核者怎麼指派、審核時是否決定這件作品交易適用的費率</li>
+    <li>音樂、活動等非影片家族的完成作品要走哪一套上架流程</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新建頁面；對照 5.1.2.2.1 v1.13）</p>
+</details>
+</div>
+</body>
+</html>

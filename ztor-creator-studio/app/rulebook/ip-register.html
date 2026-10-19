@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>登錄 IP — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="register">登錄 IP</h1>
+<p class="lede">創作者用四個步驟把一筆 Ztor 之外既有的 IP 登錄進 IP 資產，記下類型、使用規則與分潤，並決定要上架出租還是保持私有。</p>
+
+<div class="toc"></div>
+
+<h2 id="register-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>只有站外既有的權利走這個流程；在 Ztor 上由項目產出的 IP 會自動建立紀錄，見<a href="ip-rules.html#ip-origin">兩種來源</a></li>
+  <li>送出後建立一筆 IP 紀錄，回到<a href="my-ip.html">我的 IP</a>；選上架出租的，也出現在 <a href="ip-market.html">IP 市場</a></li>
+  <li>選保持私有也算登錄完成，之後可以再上架，見<a href="#list-or-private">上架出租或保持私有</a></li>
+</ul>
+
+<h2 id="register-flow"><span class="n"></span>操作流程</h2>
+<p>這個流程從我的 IP 按「＋ Add your IP」開始，到送出審閱、回到我的 IP 為止。</p>
+<div class="dg" role="img" aria-label="登錄 IP 流程圖，由左往右：從我的 IP 按 Add your IP；第 1 步類型與資訊；第 2 步使用規則；第 3 步定價與收益，問要不要上架出租，上架出租就填定價，保持私有就不顯示定價；第 4 步審閱，可回任一步修改；送出後建立 IP 紀錄並回到我的 IP">
+<div class="dg-hg" style="--dg-c:7">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>我的 IP<small>按「＋ Add your IP」</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:3"><span class="s">2</span>類型與資訊</div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:5"><span class="s">3</span>使用規則</div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:6"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:7"><span class="s">4</span>要上架出租嗎？<small>先填分潤比例</small></div>
+  <span class="dg-a" data-t="上架出租" style="grid-row:1;grid-column:8"></span>
+  <span class="dg-a" data-t="保持私有" style="grid-row:2;grid-column:8/11"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:9">填定價<small>一次性授權費、獨家授權費</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:10"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:11"><span class="s">5</span>審閱<small>可回任一步修改</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:12"></span>
+  <div class="dg-node end" style="grid-row:1/3;grid-column:13"><span class="s">6</span>建立 IP 紀錄<small>回到我的 IP</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，上面一列是上架出租、下面一列是保持私有；圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>從我的 IP 按「＋ Add your IP」進入，畫面頂端有關閉與四步進度</li>
+  <li>第 1 步類型與資訊：選 IP 類型，填名稱與描述，可附所有權證明，見<a href="#step1">第 1 步：類型與資訊</a></li>
+  <li>第 2 步使用規則：選允許用途與授權地區，見<a href="#step2">第 2 步：使用規則</a></li>
+  <li>第 3 步定價與收益：填分潤比例，再決定要不要上架出租，見<a href="#step3">第 3 步：定價與收益</a>
+    <ul class="plain">
+      <li>上架出租：接著填定價</li>
+      <li>保持私有：不顯示定價，直接到審閱</li>
+    </ul>
+  </li>
+  <li>第 4 步審閱：核對三張摘要卡，要改就按 Edit 回到該步，見<a href="#step4">第 4 步：審閱</a></li>
+  <li>送出：建立 IP 紀錄，回到我的 IP</li>
+</ol>
+<ul class="plain">
+  <li>每一步必填沒填齊，不能進下一步</li>
+</ul>
+<p class="note">依據：5.1.4.1 §1、§2、§3、§4；5.1.4 F6；D037。</p>
+
+<h2 id="register-fields"><span class="n"></span>功能與欄位</h2>
+<p>四個步驟各一個畫面：<a href="#step1">第 1 步：類型與資訊</a>、<a href="#step2">第 2 步：使用規則</a>、<a href="#step3">第 3 步：定價與收益</a>、<a href="#step4">第 4 步：審閱</a>；每一步共用的關閉與進度，見<a href="#step-common">每一步都有的操作</a>。</p>
+
+<h3 id="step-common">每一步都有的操作</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>四步進度</td><td>—</td><td>依序是類型與資訊（Type &amp; Info）、使用規則（Usage Rules）、定價與收益（Pricing &amp; Earnings）、審閱（Review）</td></tr>
+    <tr><td>下一步</td><td>這一步必填都填齊才能按</td><td>進到下一步</td></tr>
+    <tr><td>法律揭露</td><td>—</td><td>要揭露「平台記錄不等同正式法律合約」，見<a href="ip-rules.html#legal">平台紀錄與正式合約</a><br>放在哪一步見頁尾尚待確認</td></tr>
+    <tr><td>關閉</td><td>—</td><td>離開登錄流程；離開時已填的內容怎麼處理，見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="step1">第 1 步：類型與資訊</h3>
+<p>記下這筆 IP 是什麼。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>IP 類型（IP Type）</td><td>必填，單選</td><td>六張卡：Story World、Music、Person-Based、Brand、Event Format、Other，分類見<a href="ip-rules.html#ip-type">IP 類型</a></td></tr>
+    <tr><td>IP 名稱（IP Name）</td><td>必填</td><td>2–100 字元<br>下方顯示字數計數</td></tr>
+    <tr><td>描述（Description）</td><td>必填</td><td>10–2000 字元<br>寫這筆 IP 是什麼、價值在哪裡</td></tr>
+    <tr><td>所有權證明（Proof of Ownership）</td><td>選填</td><td>上傳合約、證書或創作證據<br>接受 PDF、JPG、PNG，單檔上限 10MB<br>有助於驗證，跟驗證狀態的關係見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="step2">第 2 步：使用規則</h3>
+<p>決定承租方可以拿這筆 IP 做什麼、在哪裡用。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>允許用途（Permitted Usage）</td><td>必填，多選，至少一項</td><td>選項：<br>Streaming（VOD／PPV）：承租方可以做串流影片內容<br>Adaptation（衍生作品）：以這筆 IP 為基礎的新故事、角色或內容<br>Promotion only：只做行銷宣傳，不做獨立內容<br>Merchandise：有這筆 IP 的實體或數位商品<br>Live events：用這筆 IP 辦演唱會、放映或見面會</td></tr>
+    <tr><td>授權地區（Territory）</td><td>必填，多選，至少一項</td><td>選項：<br>Worldwide<br>Hong Kong<br>Taiwan<br>Japan<br>Korea<br>Southeast Asia<br>North America<br>Europe<br>Other<br>提示文案寫「Worldwide 涵蓋所有地區，取消 Worldwide 才能選個別地區」；互斥邏輯見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="step3">第 3 步：定價與收益</h3>
+<p>先定分潤比例，再決定要不要上架出租；價格的組成與請洽詢的規則，見<a href="ip-rules.html#pricing">授權的定價</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>版稅比例（Royalty Rate）</td><td>必填：填比例或勾選請洽詢</td><td>0–30%<br>畫面文案寫：從每個用到這筆 IP 的項目的毛營收（gross revenue）中分到的比例，業界參考 5–15%<br>分潤的計算基礎見<a href="ip-rules.html">IP 授權規則</a>頁尾尚待確認</td></tr>
+    <tr><td>分潤請洽詢（Royalty on request）</td><td>選填</td><td>勾選後不公開比例，比例欄收起</td></tr>
+    <tr><td>要上架出租嗎（List this IP for rental?）</td><td>必填，兩張卡選一張</td><td>上架出租（List for rental）：其他創作者可以瀏覽與租用<br>保持私有（Keep private）：只有自己能用，之後可以再上架<br>結果見<a href="#list-or-private">上架出租或保持私有</a></td></tr>
+    <tr><td>一次性授權費（One-off licence fee）</td><td>只在選上架出租時出現<br>必填：填金額或勾選請洽詢，二選一</td><td>金額，前綴 $，要是有效的正值<br>幣別照收入管理的設定</td></tr>
+    <tr><td>價格請洽詢（Price on request，一次性授權費）</td><td>只在選上架出租時出現<br>選填</td><td>勾選後不公開金額</td></tr>
+    <tr><td>獨家授權（Exclusive licence）</td><td>只在選上架出租時出現<br>選填</td><td>金額，前綴 $，填了就要是有效的正值<br>留空代表不提供獨家授權<br>也可以勾選請洽詢</td></tr>
+  </tbody>
+</table></div>
+<p>定價區下方提示上架後的出租照授權的階段走：承租方提出、擁有者核准、條款齊全才生效，見<a href="ip-rules.html#stage">授權的階段</a>。</p>
+
+<h3 id="step4">第 4 步：審閱</h3>
+<p>送出前核對前三步填的內容。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>類型與資訊摘要卡</td><td>—</td><td>名稱、類型、所有權證明（沒上傳顯示「Not uploaded」）</td></tr>
+    <tr><td>使用規則摘要卡</td><td>—</td><td>允許用途標籤、授權地區標籤</td></tr>
+    <tr><td>定價與收益摘要卡</td><td>—</td><td>版稅：例如「12% of gross revenue」；勾選請洽詢時顯示「Royalty on request」<br>上架：保持私有顯示「No, private」；上架出租顯示「Yes, listed for rental」<br>上架出租而且填了價格時，另列一次性授權費與獨家授權費，各自是金額或「Price on request」</td></tr>
+    <tr><td>Edit</td><td>每張摘要卡各一個</td><td>回到對應的那一步修改</td></tr>
+    <tr><td>上架狀態提示</td><td>選保持私有時</td><td>提示文案寫「This IP is private. List anytime from IP detail page.」與「Only you can use this IP.」<br>選上架出租時的提示見頁尾尚待確認</td></tr>
+    <tr><td>送出</td><td>—</td><td>建立 IP 紀錄，回到我的 IP；按鈕文案見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.4.1 §1、§3、§4、§6；主規格 §7.1、§7.3；D079、D169。</p>
+
+<h2 id="list-or-private"><span class="n"></span>上架出租或保持私有</h2>
+<p>第 3 步的選擇決定這筆 IP 登錄後找不找得到；兩種都算登錄完成，不必當下決定。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">選擇</th><th>登錄後</th></tr></thead>
+  <tbody>
+    <tr><td>上架出租</td><td>其他創作者可以在 IP 市場瀏覽並送出租用申請；市場上架開關是否立刻打開見頁尾尚待確認<br>我的 IP 清單的 Mktplace 與 Rental Price 欄反映這個選擇</td></tr>
+    <tr><td>保持私有</td><td>不出現在 IP 市場，只追蹤收益分配<br>之後在管理 IP 的<a href="ip-manage.html#licensing">授權定價</a>上架，我的 IP 清單的 Mktplace 是同一個開關，見<a href="ip-rules.html#listing-switch">市場上架開關</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>上架或授權生效時，凍結當下的素材包，見<a href="ip-rules.html#media-pack">素材包</a></li>
+  <li>登錄後的驗證狀態與上架資格的關係，見<a href="ip-rules.html#listing-status">上架狀態</a></li>
+</ul>
+<p class="note">依據：5.1.4.1 §2、§4③④、§6 第 5 項、§7；5.1.4 F1、F6；主規格 §7.7。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.4.1-登錄IP流程.md</code>（v2.2）§1–§7；<code>5.1.4-我的IP.md</code>（最後更新 2026-07-30）F1、F6；<code>0-設計規格書.md</code>（v4.90）§7.1、§7.3、§7.7</li>
+    <li>決策：D037、D079、D169</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>所有權證明跟驗證狀態的關係、驗證門檻與上架資格</li>
+    <li>授權地區選了 Worldwide 與選個別地區怎麼互斥或取代</li>
+    <li>選上架出租時，審閱頁的上架狀態提示寫什麼</li>
+    <li>送出按鈕的文案</li>
+    <li>「平台記錄不等同正式法律合約」的揭露放在哪一步、哪個位置</li>
+    <li>選上架出租後，市場上架開關是否立刻打開（開關預設關閉），以及驗證還沒完成時能不能上架</li>
+    <li>私有 IP 的提示文案寫「從 IP 詳情頁上架」，上架開關的家在管理 IP，IP 詳情（從我的 IP 進入）的市場設定能不能切換</li>
+    <li>中途關閉時已填的內容怎麼處理，有沒有存成草稿（畫面示意有「Save as draft」）</li>
+    <li>畫面示意另有的「Rights covered」「Likeness age range」「Asset upload」欄位，規格沒有定義</li>
+    <li>版稅比例在這裡限 0–30%，管理 IP 改分潤時規格寫 0–100%，兩處範圍是否一致</li>
+    <li>IP 類型的最終分類與需求文件列的 Character、Visual 怎麼對齊</li>
+    <li>IP 授權規則相關的待確認列在<a href="ip-rules.html">IP 授權規則</a>頁尾</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.4.1 v2.2，至 D169）</p>
+</details>
+</div>
+</body>
+</html>

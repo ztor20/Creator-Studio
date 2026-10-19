@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>收入管理 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>收入管理</h1>
+<p class="lede">創作者在收入管理（Earnings）查看賺了多少、錢從哪裡來、哪些還在結算、哪些可以提領，並在這裡申請提款與下載稅務文件。財務用詞與收入分類的定義見<a href="common-finance.html">財務術語與收入事件</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="rev-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>收入管理只呈現收入的結果，商品、活動、IP、項目與粉絲本身的操作在各自的頁面完成</li>
+  <li>收入管理是全站收入數字的唯一出處，儀表板與項目都引用這裡，不另外重算</li>
+  <li>頁面分五個分頁，財務摘要卡在每個分頁都一樣，見<a href="#rev-header">頁首與財務摘要</a></li>
+</ul>
+
+<h2 id="rev-flow"><span class="n"></span>操作流程</h2>
+<p>創作者進收入管理後先看財務摘要卡，再依要做的事切到對應的分頁。</p>
+<div class="dg" role="img" aria-label="收入管理流程圖，由左往右：進收入管理，先看財務摘要卡，再選要做什麼；看收入變化到收入總覽分頁，查帳到交易明細分頁，看項目賺多少到項目收益分頁，提款到提款管理分頁並開啟申請提款，下載稅務文件到稅務文件分頁">
+<div class="dg-hg" style="--dg-c:3">
+  <div class="dg-node" style="grid-row:1/6;grid-column:1"><span class="s">1</span>進收入管理<small>預設在收入總覽分頁</small></div>
+  <span class="dg-a" style="grid-row:1/6;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/6;grid-column:3"><span class="s">2</span>看財務摘要卡<small>總收入、淨利、待結算、可提領</small></div>
+  <span class="dg-a" style="grid-row:1/6;grid-column:4"></span>
+  <div class="dg-node q" style="grid-row:1/6;grid-column:5"><span class="s">3</span>要做什麼？</div>
+  <span class="dg-a" data-t="看收入變化" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" data-t="查帳" style="grid-row:2;grid-column:6"></span>
+  <span class="dg-a" data-t="看賺到哪" style="grid-row:3;grid-column:6"></span>
+  <span class="dg-a" data-t="提款" style="grid-row:4;grid-column:6"></span>
+  <span class="dg-a" data-t="報稅" style="grid-row:5;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:7">收入總覽<small>趨勢、來源、近期交易</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:7">交易明細<small>可手動補登</small></div>
+  <div class="dg-node end" style="grid-row:3;grid-column:7">項目收益<small>收入去向、單一項目</small></div>
+  <div class="dg-node end" style="grid-row:4;grid-column:7">提款管理<small>選銀行後申請提款</small></div>
+  <div class="dg-node end" style="grid-row:5;grid-column:7">稅務文件<small>下載</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，最右邊一列一個分頁；圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進收入管理，預設停在收入總覽分頁</li>
+  <li>看財務摘要卡，見<a href="#rev-cards">財務摘要卡</a></li>
+  <li>要做什麼？
+    <ul class="plain">
+      <li>看收入變化：留在<a href="#rev-overview">收入總覽</a></li>
+      <li>查帳：切到<a href="#rev-transactions">交易明細</a>；要補登平台外的收入，從這裡開<a href="revenue-manual.html">手動補登收入</a></li>
+      <li>看錢怎麼一路扣到淨利、單一項目賺多少：切到<a href="#rev-breakdown">項目收益</a></li>
+      <li>提款：切到<a href="#rev-payouts">提款管理</a>，選銀行後開<a href="revenue-withdraw.html">申請提款</a></li>
+      <li>報稅：切到<a href="#rev-tax">稅務文件</a>下載</li>
+    </ul>
+  </li>
+</ol>
+<p class="note">依據：5.1.8 頁面定位、F1、F2、頁面佈局、使用情境與任務。</p>
+
+<h2 id="rev-header"><span class="n"></span>頁首與財務摘要</h2>
+<p>每個分頁上方都有同一組頁首、財務摘要卡與分頁列：頁首的操作見<a href="#rev-top">頁首</a>；四張卡見<a href="#rev-cards">財務摘要卡</a>；五個分頁見<a href="#rev-tabs">分頁</a>。</p>
+
+<h3 id="rev-top">頁首</h3>
+<p>頁首標題是「Earnings」，副標說明這頁用來追蹤收入與管理提款。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>期間與篩選</td><td>—</td><td>切換目前分頁的查看範圍</td></tr>
+    <tr><td>匯出（Export）</td><td>—</td><td>匯出目前分頁與篩選範圍的收入、交易或稅務資料<br>交易的匯出範圍跟交易明細一致</td></tr>
+    <tr><td>申請提款（Request Payout）</td><td>—</td><td>主要操作，帶到<a href="#rev-payouts">提款管理</a>；選好銀行後才開申請提款</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="rev-cards">財務摘要卡</h3>
+<p>四張卡讓創作者不論在哪個分頁，都先掌握同一組財務狀態；切換分頁時卡片內容不變。每個用詞的定義見<a href="common-finance.html">財務術語與收入事件</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:18%">卡片</th><th>顯示什麼</th></tr></thead>
+  <tbody>
+    <tr><td>總收入</td><td>本期間的總收入</td></tr>
+    <tr><td>淨利</td><td>本期間跨項目加總的淨利；單一項目的拆解見<a href="#rev-project">單一項目收益拆解</a></td></tr>
+    <tr><td>待結算</td><td>金額、幣別與資料期間<br>附一行解鎖時間</td></tr>
+    <tr><td>可提領</td><td>金額、幣別與資料期間<br>附一個申請提款入口，帶到<a href="#rev-payouts">提款管理</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>待結算與可提領分開顯示，只有已結算的收入算進可提領</li>
+  <li>提款申請中、已付款這類提款進度不放在摘要卡，放在<a href="#rev-history">提款紀錄</a></li>
+  <li>卡片包含手動補登的資料時，要標示出來，見<a href="revenue-manual.html">手動補登收入</a></li>
+</ul>
+
+<h3 id="rev-tabs">分頁</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">分頁</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>收入總覽（Overview）</td><td>預設分頁，見<a href="#rev-overview">收入總覽</a></td></tr>
+    <tr><td>交易明細（Transactions）</td><td>見<a href="#rev-transactions">交易明細</a></td></tr>
+    <tr><td>項目收益（Breakdown）</td><td>見<a href="#rev-breakdown">項目收益</a></td></tr>
+    <tr><td>提款管理（Payouts）</td><td>見<a href="#rev-payouts">提款管理</a></td></tr>
+    <tr><td>稅務文件（Tax Documents）</td><td>見<a href="#rev-tax">稅務文件</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.8 F1、F2、F3、F10；主規格 §7.2、§7.3。</p>
+
+<h2 id="rev-overview"><span class="n"></span>收入總覽</h2>
+<p>收入總覽分頁看收入怎麼變化與從哪裡來：時間上的變化見<a href="#rev-trend">收入趨勢</a>；各來源的比重見<a href="#rev-source">收入來源</a>；最新幾筆見<a href="#rev-recent">近期交易</a>。</p>
+
+<h3 id="rev-trend">收入趨勢</h3>
+<p>收入趨勢讓創作者用時間軸判斷收入是成長、下降、季節波動，還是來自特定期間的營運事件。依目前篩選的期間畫，預設一個點是一個月，期間較短時改成週或日。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>曲線圖、直條圖切換</td><td>—</td><td>曲線看走勢與波動，直條比各期高低</td></tr>
+    <tr><td>資料點</td><td>滑入或點擊時顯示</td><td>期間<br>總收入金額與幣別<br>跟前一期比的變化<br>資料狀態：正常、資料不足、同步延遲、含手動補登</td></tr>
+    <tr><td>點一個期間</td><td>—</td><td>帶著同一段時間進<a href="#rev-transactions">交易明細</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>撤銷沖銷、提款、扣款、手續費與爭議調整不算進收入趨勢，在交易明細看</li>
+  <li>資料不足時保留圖表位置，說明缺少收入資料、期間太短或外部同步還沒完成，不畫成 0</li>
+</ul>
+
+<h3 id="rev-source">收入來源</h3>
+<p>收入來源讓創作者看出收入主要來自商品、活動、IP、授權、項目支持或分潤的哪一種。來源就是收入事件的 10 類，定義見<a href="common-finance.html">財務術語與收入事件</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>每個來源</td><td>—</td><td>來源名稱<br>金額與幣別<br>占總收入的百分比<br>對應目前篩選的期間</td></tr>
+    <tr><td>其他（Other）</td><td>空間不夠時</td><td>只列金額最高的前四項，其餘合併成其他<br>其他可以展開，或帶到交易明細看完整來源</td></tr>
+    <tr><td>點一個來源</td><td>—</td><td>帶著這個來源進<a href="#rev-transactions">交易明細</a><br>項目支持可以進<a href="#rev-project">單一項目收益拆解</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>貼文帶貨收益跟項目支持、串流・版稅是三筆不同的錢，分開計算，不合併也不互相抵</li>
+  <li>貼文帶貨收益這裡只看金額，瀏覽、互動與租借次數在<a href="fans-analytics.html">粉絲分析</a>；兩邊互相有入口</li>
+  <li>一筆貼文帶貨收益要追得到帶出它的貼文與被租借的內容</li>
+</ul>
+
+<h3 id="rev-recent">近期交易</h3>
+<p>近期交易讓創作者在收入總覽快速確認最近的收入、提款、扣款或版稅，不用先進完整的交易明細。依最近發生或更新的時間排序。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>日期</td><td>—</td><td>月日，例如 06/08</td></tr>
+    <tr><td>交易項目</td><td>—</td><td>名稱與分類，例如「限量黑膠組合包銷售（商品銷售）」</td></tr>
+    <tr><td>金額與幣別</td><td>—</td><td>收入是正值<br>提款、扣款與費用調整是負值或扣減</td></tr>
+    <tr><td>交易狀態</td><td>—</td><td>見<a href="#rev-tx-cols">交易明細表</a>的狀態列</td></tr>
+    <tr><td>查看全部（View All Transactions）</td><td>—</td><td>進<a href="#rev-transactions">交易明細</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.8 F4、F5、F6；主規格 §7.3；D181、D250、D253、D325。</p>
+
+<h2 id="rev-transactions"><span class="n"></span>交易明細</h2>
+<p>交易明細是查帳、對帳與匯出的地方，列出完整的交易與每一筆的扣項。收入事件與帳務異動兩族放在同一張表、依時間排序，讓創作者在一條時間軸上看這段期間進了什麼、出了什麼；兩族的定義見<a href="common-finance.html">財務術語與收入事件</a>。每一欄怎麼顯示見<a href="#rev-tx-cols">交易明細表</a>；怎麼找見<a href="#rev-tx-filter">篩選與匯出</a>；點開一筆看什麼見<a href="#rev-tx-expand">展開一筆</a>。</p>
+
+<h3 id="rev-tx-cols">交易明細表</h3>
+<p>欄位依交易的族別切換，不適用的欄位留白，不填 0；填 0 會被讀成「這筆真的扣了 0 元」。Admin 撤銷後交易明細怎麼呈現，見尚待確認。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:14%">欄位</th><th style="width:30%">收入事件</th><th style="width:26%">提款</th><th>扣款</th></tr></thead>
+  <tbody>
+    <tr><td>日期</td><td>入帳日</td><td>申請日或入帳日</td><td>發生日</td></tr>
+    <tr><td>交易項目</td><td>名稱與分類</td><td>收款銀行與遮蔽帳號</td><td>名稱</td></tr>
+    <tr><td>金額與匯率</td><td>原幣、換算後金額與匯率，例如 USD 120.00 → TWD 3,744（31.20）<br>同幣別只顯示金額</td><td>提款金額</td><td>負值</td></tr>
+    <tr><td>狀態</td><td>待結算<br>可提領<br>Paid<br>Disputed</td><td>Payout Requested<br>Paid<br>Failed</td><td>已扣款</td></tr>
+    <tr><td>逐筆扣項</td><td>平台費、支付費</td><td>留白</td><td>留白</td></tr>
+    <tr><td>該筆淨額</td><td>收入扣掉逐筆扣項</td><td>實際入帳金額</td><td>負值</td></tr>
+    <tr><td>費率版本</td><td>展開後顯示</td><td>留白</td><td>—</td></tr>
+    <tr><td>事件編號</td><td>展開後顯示，可複製</td><td>提款批次編號</td><td>—</td></tr>
+    <tr><td>資料來源</td><td>平台驗證<br>外部同步<br>手動補登</td><td>平台</td><td>平台或客服</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>兩族的狀態用不同色票：收入的 Paid 跟提款的 Paid 是不同的事；狀態用詞見<a href="common-status.html">狀態語言</a></li>
+  <li>爭議中（Disputed）的列標示凍結，爭議期間從可提領扣除</li>
+  <li>待結算的列在狀態後面接預計可提領的日期，例如「11/30 可提領」；手動補登的待結算列改接「不計入可提領」，因為它永遠不會轉成可提領</li>
+  <li>帳務異動列是負值，視覺份量比收入列低</li>
+  <li>手動補登是資料來源，不是分類，任何一種收入分類都可能來自手動補登</li>
+  <li>毛利、直接成本、合作者分潤與淨利屬項目層級，逐筆交易不顯示，看<a href="#rev-project">單一項目收益拆解</a></li>
+  <li>可以追到項目的交易列，有進單一項目收益拆解的入口</li>
+</ul>
+
+<h3 id="rev-tx-filter">篩選與匯出</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>只看收入、只看金流異動</td><td>—</td><td>切換只顯示其中一族</td></tr>
+    <tr><td>收入分類</td><td>—</td><td>排在第一排<br>收入事件的分類；還沒有資料的分類不出現</td></tr>
+    <tr><td>狀態與資料來源</td><td>多選</td><td>排在第二排<br>待結算<br>可提領<br>爭議中<br>手動補登</td></tr>
+    <tr><td>期間、幣別</td><td>—</td><td>—</td></tr>
+    <tr><td>匯出</td><td>—</td><td>匯出目前篩選的交易</td></tr>
+    <tr><td>手動補登收入</td><td>—</td><td>開啟補登視窗，見<a href="revenue-manual.html">手動補登收入</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="rev-tx-expand">展開一筆</h3>
+<p>每一筆都能展開，內容依交易種類不同；Admin 撤銷後的沖銷紀錄怎麼展開，見尚待確認。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">交易</th><th>展開後看到</th></tr></thead>
+  <tbody>
+    <tr><td>收入事件</td><td>這一筆自己的收入去向：計算基準、費率與逐項扣項<br>費率版本：售出當時凍結的費率<br>事件編號</td></tr>
+    <tr><td>提款</td><td>這批提款含哪些收入事件<br>收款銀行<br>送出與入帳時間<br>失敗原因</td></tr>
+    <tr><td>手動補登</td><td>來源說明<br>附件<br>為什麼不計入可提領</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.8 F7、F10；主規格 §7.2、§7.3、§7.6；D250、D253、D316、D452。</p>
+
+<h2 id="rev-breakdown"><span class="n"></span>項目收益</h2>
+<p>項目收益分頁看錢怎麼從總收入一路扣到淨利：本期間全部收入的去向見<a href="#rev-waterfall">收入去向</a>；單一項目的收益見<a href="#rev-project">單一項目收益拆解</a>。</p>
+
+<h3 id="rev-waterfall">收入去向</h3>
+<p>收入去向（Where the money goes）讓創作者看懂本期間總收入怎麼一路被扣到可分配淨利、再分配出去，也是對帳與解釋爭議的畫面。分頁上先顯示一行摘要，按「查看完整拆解」才開完整內容。</p>
+<ul class="plain">
+  <li>依頁首篩選的期間，涵蓋全部收入來源</li>
+  <li>每一階的順序、算法與可分配淨利怎麼分配，見<a href="common-finance.html#ladder">財務術語與收入事件</a>，這裡不另算</li>
+  <li>每一階可以顯示計算基準、費率與這一階含幾筆收入事件；費率以那段期間各收入事件的費率版本為準</li>
+</ul>
+
+<h3 id="rev-project">單一項目收益拆解</h3>
+<p>單一項目收益拆解讓創作者看一個項目的收入、成本、扣項、分潤與淨利，對照預期與實際入帳。分頁上是「我的項目」表格，一列一個項目，顯示項目名、類型與項目淨收入；點一列開啟這個項目的收益拆解。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>從哪裡進來</td><td>—</td><td>項目收益分頁的「我的項目」表格<br><a href="project-detail.html">項目詳情</a><br>交易明細的項目交易列<br>收入來源的項目支持</td></tr>
+    <tr><td>收益階梯</td><td>—</td><td>總收入 → 直接成本 → 毛利 → 扣項與分潤 → 淨利；算法見<a href="common-finance.html">財務術語與收入事件</a></td></tr>
+    <tr><td>來源追溯</td><td>—</td><td>每一筆收入或扣項都追得到對應的交易、商品、活動、IP 授權或支持方案</td></tr>
+    <tr><td>回項目、看交易、匯出</td><td>—</td><td>回項目詳情、看交易明細或匯出這個項目的收益資料</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.8 F11、F12、頁面佈局；主規格 §5.2.2、§7.3、§7.6；D041。</p>
+
+<h2 id="rev-payouts"><span class="n"></span>提款管理</h2>
+<p>提款管理分頁看可提領金額、提款紀錄與進度，並從這裡申請提款：選銀行見<a href="#rev-banks">提款銀行</a>；可分配淨利見<a href="#rev-pool">可分配淨利與沖銷準備金</a>；過去的提款見<a href="#rev-history">提款紀錄</a>。</p>
+
+<h3 id="rev-banks">提款銀行</h3>
+<p>創作者在這裡選這次要匯入的銀行，再開申請提款。畫面依有沒有提款銀行分兩種：</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>銀行卡片</td><td>已新增提款銀行時</td><td>每張顯示銀行名稱、遮蔽帳號、帳戶持有人、收款幣別、帳戶狀態、是不是預設帳戶<br>帳戶狀態：可用、預設、驗證中、不可用<br>只有可用與預設的銀行能選</td></tr>
+    <tr><td>新增新的銀行</td><td>已新增提款銀行時，固定在最後一張</td><td>開申請提款的新增銀行畫面，見<a href="revenue-withdraw.html#wd-bank">新增銀行</a></td></tr>
+    <tr><td>新增提款銀行</td><td>還沒有提款銀行時，只出現這一張與原因提示</td><td>開申請提款的新增銀行畫面，見<a href="revenue-withdraw.html#wd-bank">新增銀行</a></td></tr>
+    <tr><td>申請提款（Request Payout）</td><td>選了可用的銀行後</td><td>按鈕文字帶本次可申請的金額<br>開啟<a href="revenue-withdraw.html">申請提款</a></td></tr>
+    <tr><td>提款前要知道的事</td><td>—</td><td>費用<br>匯率<br>預估到帳時間<br>最低提款金額<br>自動提款規則</td></tr>
+  </tbody>
+</table></div>
+<p>什麼情況下申請提款不能送出，見<a href="revenue-withdraw.html#wd-main">申請提款主畫面</a>。</p>
+
+<h3 id="rev-pool">可分配淨利與沖銷準備金</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">項目</th><th>顯示什麼</th></tr></thead>
+  <tbody>
+    <tr><td>可分配淨利（畫面上的 Distributable profit）</td><td>本期可分配的淨利，是收入去向的最後一段<br>為負時改成警示並暫停分配，說明虧損往後結轉、已撥出的款不追回</td></tr>
+    <tr><td>沖銷準備金（Void Reserve）</td><td>比例目前為 0%，不預扣；定義見<a href="common-finance.html#void-reserve">沖銷準備金</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="rev-history">提款紀錄</h3>
+<p>提款紀錄以清單列出最近的提款，不用表格。提款紀錄怎麼更正，見<a href="revenue-withdraw.html#wd-after">送出成功後的連動</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>日期篩選</td><td>—</td><td>例如近 12 個月、自訂區間</td></tr>
+    <tr><td>提款方式與帳戶</td><td>—</td><td>例如 Bank transfer · •••3417</td></tr>
+    <tr><td>日期與進度</td><td>—</td><td>例如申請日與預估到帳日、實際到帳日與手續費、被銀行退回並建議重試</td></tr>
+    <tr><td>提款狀態與金額</td><td>—</td><td>Payout Requested<br>Paid<br>Failed</td></tr>
+    <tr><td>失敗時的處理</td><td>只有 Failed</td><td>查看原因<br>更新付款資訊<br>重新申請</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.8 F8；5.1.8.1 §2；主規格 §7.2、§7.3、§7.6；D041、D253。</p>
+
+<h2 id="rev-tax"><span class="n"></span>稅務文件</h2>
+<p>稅務文件分頁讓創作者在同一頁查看與下載收入相關的稅務文件：怎麼找與下載見<a href="#rev-tax-docs">文件清單</a>；哪些地區自動產出見<a href="#rev-tax-regions">支援的地區</a>。</p>
+<h3 id="rev-tax-docs">文件清單</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>年份</td><td>—</td><td>可用的年份與全部年度</td></tr>
+    <tr><td>季度</td><td>—</td><td>全部季度或指定季度</td></tr>
+    <tr><td>文件清單</td><td>—</td><td>依年份分組，例如「2025 年文件」<br>右上顯示幣別與稅務識別資訊摘要</td></tr>
+    <tr><td>每份文件</td><td>—</td><td>文件名稱，例如 1099-NEC<br>文件資訊：稅務年度、格式、大小<br>可下載時顯示 Download；還沒產生時顯示 Not yet 與可用時間</td></tr>
+  </tbody>
+</table></div>
+<h3 id="rev-tax-regions">支援的地區</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">地區</th><th>自動產出的文件</th></tr></thead>
+  <tbody>
+    <tr><td>United States</td><td>1099-NEC<br>1099-K</td></tr>
+    <tr><td>United Kingdom</td><td>self-assessment summary</td></tr>
+    <tr><td>European Union</td><td>OSS VAT statement</td></tr>
+    <tr><td>Japan</td><td>支払調書</td></tr>
+    <tr><td>Taiwan</td><td>各類所得扣繳暨免扣繳憑單</td></tr>
+    <tr><td>Australia</td><td>BAS summary</td></tr>
+    <tr><td>Canada</td><td>T4A</td></tr>
+  </tbody>
+</table></div>
+<p>所在地區還不支援時，提示仍可下載年度收入摘要作為當地報稅的起點，並提供客服入口。</p>
+<p class="note">依據：5.1.8 F9。</p>
+
+<h2 id="rev-empty"><span class="n"></span>還沒有收入時</h2>
+<p>帳號還沒產生任何收入時，各分頁顯示空狀態與說明，不用 0 誤導創作者。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">區塊</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>財務摘要卡</td><td>空狀態與引導，不顯示 0 元</td></tr>
+    <tr><td>收入趨勢、收入來源</td><td>說明收入產生後會出現在這裡；不用範例或假資料填圖表</td></tr>
+    <tr><td>近期交易、交易明細</td><td>說明收入產生後會出現在這裡，保留手動補登入口</td></tr>
+    <tr><td>項目收益</td><td>說明有可結算的收入後才會出現</td></tr>
+    <tr><td>提款管理</td><td>說明有可提領餘額後可以在這裡申請；仍可先新增提款銀行</td></tr>
+    <tr><td>稅務文件</td><td>文件清單顯示空狀態；支援地區照常顯示</td></tr>
+  </tbody>
+</table></div>
+<p>「還沒有收入」跟「還沒有提款銀行」是兩件事，可能同時發生。</p>
+<p class="note">依據：5.1.8 頁面狀態、F3～F12 其他狀態。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.8-收入管理.md</code>（最後更新 2026-09-24）F1～F12、頁面佈局、頁面狀態、情境；<code>5.1.8.1-申請提款流程.md</code> §2；<code>0-設計規格書.md</code> §5.2.2、§7.2、§7.3、§7.6</li>
+    <li>決策：D041、D181、D250、D253、D316、D325、D452</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>結算週期（T+N 日、月結或其他）：待結算卡的解鎖時間與交易明細「幾月幾日可提領」的日期目前只是示意</li>
+    <li>Admin 撤銷後是否自動產生沖銷分錄與其呈現（§7.6 提案未核准，D452 留待裁決）</li>
+    <li>要不要預扣沖銷準備金</li>
+    <li>貼文帶貨收益的分潤比例、結算週期、跟平台費率的關係、內容租借的定價權，以及內容租借本身的定義</li>
+    <li>同一筆租借經過多則貼文時，貼文帶貨收益算給哪一則</li>
+    <li>自動提款規則與最低提款金額的內容</li>
+    <li>各分頁載入中與載入失敗的畫面</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.8 最後更新 2026-09-24、D452）</p>
+</details>
+</div>
+</body>
+</html>

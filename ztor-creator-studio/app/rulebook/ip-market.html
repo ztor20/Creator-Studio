@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IP 市場 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="market">IP 市場</h1>
+<p class="lede">創作者在 IP 市場瀏覽、比較並挑選其他創作者上架出租的 IP，替自己的項目、商品或活動找到可用的權利來源。</p>
+
+<div class="toc"></div>
+
+<h2 id="market-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>只列擁有者已上架的 IP，見<a href="ip-rules.html#listing-switch">市場上架開關</a></li>
+  <li>點一張卡片進 <a href="ip-detail.html">IP 詳情</a>，在那裡看完整條件並送出租用申請或出價</li>
+</ul>
+
+<h2 id="market-flow"><span class="n"></span>操作流程</h2>
+<p>創作者用搜尋與篩選收斂清單，比較卡片後進 IP 詳情決定要不要租。</p>
+<div class="dg" role="img" aria-label="IP 市場流程圖，由左往右：進 IP 市場；用搜尋與篩選縮小清單；比較卡片上的價格、版稅與可用狀態；點卡片進 IP 詳情，直接租用就送出租用申請，競標中就出價">
+<div class="dg-hg" style="--dg-c:5">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>進 IP 市場</div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:3"><span class="s">2</span>搜尋與篩選<small>類型、版稅、地區、狀態</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:5"><span class="s">3</span>比較卡片<small>價格、版稅、可用名額</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:6"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:7"><span class="s">4</span>進 IP 詳情，用哪種方式取得？</div>
+  <span class="dg-a" data-t="直接租用" style="grid-row:1;grid-column:8"></span>
+  <span class="dg-a" data-t="競標中" style="grid-row:2;grid-column:8"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:9">送出租用申請<small>等擁有者核准</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:9">出價</div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進 IP 市場</li>
+  <li>用搜尋與篩選縮小清單，見<a href="#search">搜尋</a>與<a href="#filters">篩選</a></li>
+  <li>比較卡片上的價格、版稅、可用名額與素材包完整度，見<a href="#cards">卡片</a></li>
+  <li>點卡片進 IP 詳情，依這筆 IP 的取得方式：
+    <ul class="plain">
+      <li>直接租用：送出租用申請，見 IP 詳情的<a href="ip-detail.html#rent">租用</a></li>
+      <li>競標中：出價，見 IP 詳情的<a href="ip-detail.html#bid">競標</a></li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>從建立項目流程找他人 IP 時也會來到這裡，見<a href="project-create.html">建立項目</a></li>
+</ul>
+<p class="note">依據：5.1.3 F1–F4、情境；5.1.3.1 §3、§4；D232。</p>
+
+<h2 id="list"><span class="n"></span>可授權 IP 清單</h2>
+<p>清單呈現符合條件的 IP，讓創作者一眼比較價格、版稅與可用性。怎麼找，見<a href="#search">搜尋</a>與<a href="#filters">篩選</a>；每張卡片顯示什麼，見<a href="#cards">卡片</a>；清單沒有東西時，見<a href="#empty">沒有資料時</a>。</p>
+
+<h3 id="search">搜尋</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>搜尋框</td><td>—</td><td>比對 IP 名稱、權利人、關鍵字或內容描述<br>範圍是目前的 IP 市場清單</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="filters">篩選</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>類型（Type）</td><td>—</td><td>預設 All types（不限）<br>選項：<br>Story World（故事世界）<br>Music（音樂）<br>Person-Based（人物角色）<br>Brand（品牌）<br>Event Format（活動形式）<br>類型的定義見<a href="ip-rules.html#ip-type">IP 類型</a></td></tr>
+    <tr><td>版稅上限（Royalty ≤）</td><td>—</td><td>只留下版稅不高於所選比例的 IP</td></tr>
+    <tr><td>租期（Term）</td><td>—</td><td>預設 Any（不限）<br>選項：3、6、12、24 個月<br>是否保留見頁尾尚待確認</td></tr>
+    <tr><td>地區（Region）</td><td>—</td><td>選項：<br>Worldwide（全球）<br>Asia（亞洲）<br>Americas（美洲）<br>EU（歐盟）</td></tr>
+    <tr><td>狀態（Availability）</td><td>—</td><td>選項：<br>Available（可租用）<br>Bidding（競標中）<br>Exclusive（獨家）</td></tr>
+    <tr><td>僅顯示可立即租用（Only rentable now）</td><td>—</td><td>開關；開啟後只留下目前可以直接租用的 IP</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="cards">卡片</h3>
+<p>一張卡片是一筆可授權的 IP，點卡片進 <a href="ip-detail.html">IP 詳情</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>IP 名稱與權利人</td><td>標題是 IP 名稱，下方是權利人與可用名額，例如「5 名額剩 3」</td></tr>
+    <tr><td>起始價格</td><td>固定租金的 IP 顯示「起 $420」；競標中的 IP 顯示「出價 $2,140 起」（數字為假設）</td></tr>
+    <tr><td>版稅比例</td><td>例如「版稅 12%」</td></tr>
+    <tr><td>授權狀態</td><td>Available（可租用）、Bidding（競標中）、Exclusive（獨家）</td></tr>
+    <tr><td>素材包完整度</td><td>這筆 IP 目前的完整度，不是某一筆授權凍結的值，見<a href="ip-rules.html#media-pack">素材包</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="empty">沒有資料時</h3>
+<p>市場沒貨與帳號還沒開始用是兩種不同的情況，畫面分開。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">情況</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>整個市場可授權的 IP 太少（市場冷啟動）</td><td>不顯示空的卡片格，改引導創作者「成為第一個上架者」</td></tr>
+    <tr><td>帳號還沒探索或租用過任何 IP（含第一次進來）</td><td>清單退位，改以探索引導為主，說明可以在這裡瀏覽與租用其他創作者的 IP<br>搜尋與篩選不搶第一眼</td></tr>
+    <tr><td>清單載入中、載入失敗</td><td>照全站共用的載入與錯誤狀態規則顯示</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.3 F1、F2、F3、F4、頁面狀態；主規格 §6.1–§6.4、§7.1、§7.7「素材包」；D080、D150、D169。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.3-IP市場.md</code>（最後更新 2026-06-17）F1–F4、頁面狀態、情境；<code>5.1.3.1-IP詳情頁.md</code>（v2.3）§3、§4；<code>0-設計規格書.md</code>（v4.90）§7.1、§7.7</li>
+    <li>決策：D080、D150、D169、D232</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>授權定價改成一次性費用加分潤後，租期篩選（3、6、12、24 個月）是否保留</li>
+    <li>卡片的「起 $420」在一次性費用加分潤的定價下顯示什麼，以及請洽詢、尚未定價時怎麼顯示</li>
+    <li>類型篩選沒有 Other，登錄時可選 Other 的 IP 怎麼篩</li>
+    <li>地區篩選的四個選項跟登錄時授權地區的九個選項怎麼對應</li>
+    <li>版稅上限有哪些可選的比例</li>
+    <li>可授權 IP「太少」的門檻是多少</li>
+    <li>清單怎麼排序、能不能儲存搜尋條件</li>
+    <li>搜尋或篩選沒有命中時的畫面</li>
+    <li>卡片上「影響租用判斷」的其他資訊有哪些</li>
+    <li>IP 授權規則相關的待確認列在<a href="ip-rules.html">IP 授權規則</a>頁尾</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.3 最後更新 2026-06-17，至 D169）</p>
+</details>
+</div>
+</body>
+</html>

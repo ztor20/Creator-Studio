@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>營利設定 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain{margin:4px 0 4px}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ol.plain li{margin-bottom:4px}
+ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+table.stage{min-width:820px}
+table.stage td:nth-child(1){width:11%;white-space:nowrap}
+table.stage td:nth-child(2){width:19%}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1 id="step-monetization">營利設定</h1>
+<p class="lede">直接發佈非影片家族的創作者在第 3 步決定粉絲怎麼取得內容、要不要廣告與品牌合作，以及什麼時候發布。四條路徑的全貌見<a href="project-create.html">建立項目</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="mon-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>只有直接發佈非影片家族走這一步；影片家族改走<a href="project-create-video.html">作品檔案、詳情與定價</a></li>
+  <li>這一步的設定是收入管理與項目淨利的初始收益資料</li>
+  <li>發布後依存取模式與廣告營利，沒有達標門檻、不送審</li>
+</ul>
+
+<h2 id="mon-flow"><span class="n"></span>操作流程</h2>
+<p>這一步從展示內容按下一步開始，到進入預覽與發布為止。</p>
+<div class="dg" role="img" aria-label="營利設定流程圖，由左往右：選存取模式；免費直接往下，單次付費觀看或混合模式要填價格；廣告與品牌合作可以略過；選立即發布或稍後排程；進預覽與發布">
+<div class="dg-hg" style="--dg-c:6">
+  <div class="dg-node q" style="grid-row:1/3;grid-column:1"><span class="s">1</span>選哪一種存取模式？</div>
+  <span class="dg-a" data-t="付費或混合" style="grid-row:1;grid-column:2"></span>
+  <span class="dg-a" data-t="免費" style="grid-row:2;grid-column:2/5"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:3"><span class="s">2</span>填價格</div>
+  <span class="dg-a" style="grid-row:1;grid-column:4"></span>
+  <div class="dg-node opt" style="grid-row:1/3;grid-column:5"><span class="s">3</span>廣告與品牌合作<small>選用</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:6"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:7"><span class="s">4</span>什麼時候發布？</div>
+  <span class="dg-a" data-t="立即" style="grid-row:1;grid-column:8/11"></span>
+  <span class="dg-a" data-t="稍後排程" style="grid-row:2;grid-column:8"></span>
+  <div class="dg-node" style="grid-row:2;grid-column:9">設發布日期與時間</div>
+  <span class="dg-a" style="grid-row:2;grid-column:10"></span>
+  <div class="dg-node end" style="grid-row:1/3;grid-column:11">預覽與發布</div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號；虛線框可以略過。</p>
+<ol class="plain">
+  <li>選存取模式：免費、單次付費觀看或混合模式
+    <ul class="plain">
+      <li>免費：直接往下</li>
+      <li>單次付費觀看、混合模式：填價格</li>
+    </ul>
+  </li>
+  <li>填價格，下方自動算出收入估算</li>
+  <li>要的話開啟廣告、新增品牌合作</li>
+  <li>選什麼時候發布
+    <ul class="plain">
+      <li>立即發布：通過預覽與發布後直接上線</li>
+      <li>稍後排程：設發布日期與時間</li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>兩種發布時間都可以另設下架日期與時間，見<a href="#publish-timing">發布時間</a></li>
+</ul>
+<p class="note">依據：5.1.2.1 §5.1.1 F13～F18。</p>
+
+<h2 id="mon-fields"><span class="n"></span>功能與欄位</h2>
+<p>這一步有四塊：<a href="#access">存取模式與價格</a>、<a href="#ads">廣告</a>、<a href="#brand">品牌合作</a>與<a href="#publish-timing">發布時間</a>。</p>
+
+<h3 id="access">存取模式與價格</h3>
+<p>決定粉絲怎麼取得內容。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>存取模式（Access model）</td><td>必填，三選一</td><td>免費（Free）：副標「Ad-supported」，免費觀看或取得，搭配廣告收入<br>單次付費觀看（Pay per view）：副標「One-time purchase」，一次性購買<br>混合模式（Hybrid）：副標「First free, rest paid」，部分免費、後續付費</td></tr>
+    <tr><td>價格（Price）</td><td>選單次付費觀看或混合模式才出現，出現時必填</td><td>金額，提示「9.99」，顯示幣別</td></tr>
+    <tr><td>收入估算</td><td>跟著價格出現</td><td>例如「If 1,000 fans watch at $9.99, you earn approximately $8,491.5」，已扣掉平台費與 Stripe 手續費，見<a href="#fee">平台費</a></td></tr>
+    <tr><td>平台費說明</td><td>—</td><td>見<a href="#fee">平台費</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="ads">廣告</h3>
+<p>用廣告位置賺額外收入；免費模式可以把廣告當主要收入。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>廣告（Enable ads）</td><td>—</td><td>開關，預設關，副標「Earn additional revenue from ad placements」</td></tr>
+    <tr><td>廣告位置</td><td>開啟廣告後</td><td>選項與規則見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="brand">品牌合作</h3>
+<p>記錄贊助、推廣、分潤或品牌合作的收入。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>新增品牌合作（＋ Add brand）</td><td>選填</td><td>可以在這裡先設，也可以在項目上線後補登</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="publish-timing">發布時間</h3>
+<p>決定項目什麼時候上線、什麼時候下架。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>發布時間（Publish timing）</td><td>必填，二選一<br>預設立即發布</td><td>立即發布（Immediately）：通過預覽與發布後直接上線<br>稍後排程（Schedule for later）：展開發布日期與時間<br>上線前後的項目階段，見<a href="#mon-stage">發布時間與項目階段</a></td></tr>
+    <tr><td>發布日期與時間</td><td>選稍後排程時出現，出現時必填</td><td>到時項目上線</td></tr>
+    <tr><td>下架日期與時間（Unlist time）</td><td>選填<br>兩種發布時間都出現</td><td>到時項目頁自動轉為看不到<br>不填就不自動下架</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.2.1 §5.1.1 F13～F18；D239。</p>
+
+<h2 id="fee"><span class="n"></span>平台費</h2>
+<p>直接發佈對營收抽成，費率與誰負擔見<a href="project-rules.html#fee">項目的類型</a>。收入估算與預覽與發布都要清楚標示平台費，避免創作者以為顯示的收入就是可提領的錢。</p>
+<p class="note">依據：5.1.2.1 §5.1.1 F14、F15；主規格 §7.3、§7.6；D316。</p>
+
+<h2 id="mon-stage"><span class="n"></span>發布時間與項目階段</h2>
+<p>這一步的發布是項目看得到的起點；直接發佈非影片家族看得到就買得到，不另設販售期間。</p>
+<ul class="plain">
+  <li>立即發布：按下發布就上線，項目轉已上線</li>
+  <li>稍後排程：排程期間項目在準備中，到發布時間轉已上線</li>
+  <li>兩段時間的完整規則見<a href="project-rules.html#timing">項目的時間</a></li>
+</ul>
+
+<p class="note">依據：5.1.2.1 §5.1.1 F18「兩軸對應」；主規格 §7.2；D239。</p>
+
+<h2 id="income-vs-ip"><span class="n"></span>營利設定與 IP 租借的分別</h2>
+<p>廣告與品牌合作是營利設定的延伸收入；IP 租借屬關於項目的權利揭露，不是營利模式，見<a href="project-rules.html#ip">IP 在項目裡的身分</a>。</p>
+<p class="note">依據：5.1.2.1 §5.1.1 F17；D232。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.2.1-建立專案流程.md</code>（v4.13）§5.1.1；<code>0-設計規格書.md</code>（v4.90）§7.2、§7.3、§7.6、§7.14 適用範圍</li>
+    <li>決策：D239、D316</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>混合模式的付費規則：哪些免費、哪些付費</li>
+    <li>廣告位置的選項與規則</li>
+    <li>單次付費觀看與混合模式能不能同時開廣告</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.2.1 v4.13）</p>
+</details>
+</div>
+</body>
+</html>

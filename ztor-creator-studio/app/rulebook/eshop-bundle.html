@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>組合包細節頁 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>組合包細節頁</h1>
+<p class="lede">創作者在組合包細節頁看一個組合包的銷售與庫存、直接編輯內容，並做上架、下架、封存與刪除。組合包的成員、價格、庫存、上架與購買條件等規則，見<a href="bundles.html">組合包與票務商品</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="bd-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>細節頁本身就是編輯介面，欄位與檢查同<a href="eshop-create-bundle.html">建立組合包</a>，這一頁只寫細節頁才有的部分</li>
+  <li>含門票的組合包也能從活動詳情的票務商品分頁點進來，兩處是同一份資料</li>
+  <li>含已發布活動門票的組合包，上架中時大部分內容要先下架才能改，見<a href="#bd-state">各狀態能編輯什麼</a></li>
+</ul>
+
+<h2 id="bd-flow"><span class="n"></span>操作流程</h2>
+<p>創作者點進一個組合包，先看各分頁，再決定做頁首動作、改設定，或改翻譯與各幣別價格。</p>
+<div class="dg" role="img" aria-label="組合包細節頁流程圖，由左往右：進組合包細節頁，看各分頁，再選要做什麼；上架下架等頁首動作確認後生效，改內容在組合設定分頁按編輯組合後儲存或取消，改翻譯與幣別價格在預覽與在地化畫面儲存">
+<div class="dg-hg" style="--dg-c:5">
+  <div class="dg-node" style="grid-row:1/4;grid-column:1"><span class="s">1</span>進組合包細節頁<small>電子商店組合包清單或活動詳情</small></div>
+  <span class="dg-a" style="grid-row:1/4;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/4;grid-column:3"><span class="s">2</span>看各分頁<small>總覽、組合庫存、組合設定、關聯</small></div>
+  <span class="dg-a" style="grid-row:1/4;grid-column:4"></span>
+  <div class="dg-node q" style="grid-row:1/4;grid-column:5"><span class="s">3</span>要做什麼？</div>
+  <span class="dg-a" data-t="頁首動作" style="grid-row:1;grid-column:6/9"></span>
+  <span class="dg-a" data-t="改內容" style="grid-row:2;grid-column:6"></span>
+  <span class="dg-a" data-t="改翻譯或幣別價" style="grid-row:3;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:9">確認後生效<small>上架、下架、封存、解除封存、刪除</small></div>
+  <div class="dg-node" style="grid-row:2;grid-column:7">按「編輯組合」<small>組合設定分頁</small></div>
+  <span class="dg-a" style="grid-row:2;grid-column:8"></span>
+  <div class="dg-node end" style="grid-row:2;grid-column:9">儲存變更或取消</div>
+  <div class="dg-node" style="grid-row:3;grid-column:7">按「預覽與在地化」<small>全頁畫面</small></div>
+  <span class="dg-a" style="grid-row:3;grid-column:8"></span>
+  <div class="dg-node end" style="grid-row:3;grid-column:9">儲存</div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，紫色框是要回答的問題，綠框是結束的地方；圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進組合包細節頁：從電子商店的組合包清單點一個組合包，或在活動詳情的票務商品分頁點組合包卡</li>
+  <li>看各分頁：<a href="#bd-overview">總覽</a>、<a href="#bd-stock">組合庫存</a>、<a href="#bd-settings">組合設定</a>、<a href="#bd-links">關聯</a></li>
+  <li>要做什麼？
+    <ul class="plain">
+      <li>頁首動作：上架、下架、封存、解除封存或刪除，確認後生效，見<a href="#bd-header-ops">頁首動作</a></li>
+      <li>改內容：在組合設定分頁按「編輯組合」，改完按「儲存變更」或「取消」，見<a href="#bd-settings-edit">編輯與儲存</a></li>
+      <li>改翻譯或各幣別價格：按頁首「預覽與在地化」，在全頁畫面改完按「儲存」，見<a href="#bd-local">預覽與在地化</a></li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>鎖定套數在組合庫存分頁改，見<a href="#bd-stock">組合庫存分頁</a></li>
+</ul>
+<p class="note">依據：5.1.5.9 §1、§2.2、§3；5.1.6.3 §2.6.1；D260、D305、D310、D319。</p>
+
+<h2 id="bd-header"><span class="n"></span>頁首與狀態</h2>
+<p>頁首讓創作者認出是哪一個組合包、目前什麼狀態，並放上下架與封存等動作。頁首顯示什麼，見<a href="#bd-header-info">頁首顯示</a>；各動作什麼時候出現、做了什麼，見<a href="#bd-header-ops">頁首動作</a>。</p>
+
+<h3 id="bd-header-info">頁首顯示</h3>
+<p>頁首放組合包的基本資訊與狀態徽章。</p>
+<ul class="plain">
+  <li>麵包屑：顯示來源路徑，例如「E-Shop / Bundles / Ultimate Fan Bundle」；回到電子商店時，保留原本的主篩選（商品、組合包、拍賣）、狀態篩選與搜尋</li>
+  <li>組合名稱</li>
+  <li>狀態徽章：組合包的狀態與三個開關的現況，狀態用語見<a href="common-status.html">狀態語言</a>；已封存優先於其他徽章</li>
+  <li>某一個門票成員允許的門票全部隨場次刪除時，狀態標「無法販售（Unavailable）」，取代「即將開賣」或「販售中」，見<a href="bundles.html#what-ticket">票務商品</a></li>
+  <li>因成員下架而一同下架時，看得出原因與是哪一個成員，見<a href="bundles.html#unlist-cascade">誰下架會帶著組合包一起下架</a></li>
+</ul>
+
+<h3 id="bd-header-ops">頁首動作</h3>
+<p>上架、下架、封存三種狀態的動作互斥，一次只出現該狀態能做的：上架中只有下架，已下架有封存與上架，已封存只有解除封存；零成交時另有刪除。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>預覽與在地化（Preview &amp; localization）</td><td>—</td><td>開啟全頁畫面改翻譯與各幣別價格，見<a href="#bd-local">預覽與在地化</a><br>粉絲視角預覽已含在這個畫面，不另設預覽鈕</td></tr>
+    <tr><td>下架（Unlist bundle）</td><td>上架中</td><td>按下要先確認<br>下架時四個排程時間一併清除，開賣退回「未開賣」，顯示的值保留，見<a href="eshop-sales.html#archive-unlist">下架</a><br>含已發布活動門票、而且是活動最後一組仍在販售的組合包時，可能被擋下，見<a href="event-create.html#sellable-block">發布後擋下的動作</a></td></tr>
+    <tr><td>上架</td><td>已下架</td><td>連帶重新上架所有已下架的成員；有已封存成員，或所屬活動已結束或已取消時擋下，見<a href="bundles.html#unlist-relist">組合包重新上架時帶著成員上架</a></td></tr>
+    <tr><td>封存（Archive）</td><td>已下架</td><td>封存後整頁唯讀，見<a href="#bd-state">各狀態能編輯什麼</a><br>封存組合包不牽連成員商品<br>活動最後一組仍在販售的組合包可能被擋下，同下架</td></tr>
+    <tr><td>解除封存（Unarchive）</td><td>已封存</td><td>回到已下架，不直接回到上架；要對外販售，之後再按上架<br>不連動任何成員</td></tr>
+    <tr><td>刪除（Delete）</td><td>已下架或已封存，而且零成交<br>草稿也可以刪除</td><td>按下要先確認，說明不可復原<br>曾有任何訂單品項的組合包沒有刪除入口，只能封存<br>含已發布活動門票的自建組合包，是活動最後一組仍在販售的組合包時會被擋下，見<a href="event-create.html#sellable-block">發布後擋下的動作</a><br>刪除後的影響見<a href="bundles.html#unlist-delete">刪除組合包</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.9 §2.1、§2.2；主規格 §7.14「下架確認與組合包連動」「封存與刪除」；D284、D288、D289、D290、D298、D307、D314、D319、D330、D331、D340、D391、D424、D425、D437。</p>
+
+<h2 id="bd-overview"><span class="n"></span>總覽分頁</h2>
+<p>總覽讓創作者一眼看到銷售成績，以及組合設定每一塊目前的值。</p>
+<ul class="plain">
+  <li>已售套數（Bundles sold）：累計賣出幾組</li>
+  <li>毛收（Gross）</li>
+  <li>淨額（Net after fees）：扣掉平台費、支付費與物流後的金額</li>
+  <li>關聯中：<a href="#bd-links">關聯分頁</a>的列數，也就是引用這個組合包的項目數加關聯的電影數；不是銷售數字，點了切到關聯分頁</li>
+  <li>毛收與淨額跟<a href="revenue.html">收入管理</a>同一份數字，不另算</li>
+  <li>還沒有任何銷售時，數字顯示 0 或 —，並說明「尚無銷售紀錄」</li>
+</ul>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>收入紀錄入口</td><td>—</td><td>前往收入管理，看這個組合包的交易、費用與撤銷沖銷<br>資料還沒同步或還在結算時要標示</td></tr>
+    <tr><td>設定概覽</td><td>—</td><td>組合設定分頁的每一塊一行，寫目前的值<br>點一行就前往那一節修改<br>電影關聯那一行點了切到關聯分頁</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.9 §2.4、§3 第 2 項；D260。</p>
+
+<h2 id="bd-stock"><span class="n"></span>組合庫存分頁</h2>
+<p>組合庫存讓創作者看這個組合包還能賣幾組、被誰壓住，並調整鎖定套數。可售量與鎖定的算法，見<a href="bundles.html#stock">組合包的庫存與鎖定套數</a>。</p>
+<ul class="plain">
+  <li>頂端三個數字：可售套數、鎖定套數、組合上限</li>
+  <li>可售套數旁一句寫出原因：「鎖定 N 套」，或「受「某成員」限制」</li>
+  <li>多規格成員或允許多項門票時，要看得出是哪一個成員的哪一個規格或門票壓住可售量</li>
+</ul>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>鎖定套數（Locked sets）</td><td>選填，單位「套」</td><td>規則同建立組合包，見<a href="eshop-create-bundle.html#cb-qty">數量</a><br>含已發布活動門票、組合包上架中時也能直接改，不必先下架，見<a href="bundles.html#published-edit">組合包在活動發布後的修改</a></td></tr>
+    <tr><td>指定鎖定項目（Locked items）</td><td>有成員時</td><td>一列一個成員：商品庫存、沒有被鎖定的庫存量、已鎖定＝N × 每套用量，都不能改</td></tr>
+    <tr><td>逐規格或逐項門票分配</td><td>選填<br>多規格商品成員，或允許多項門票的門票成員</td><td>規則同建立組合包，見<a href="eshop-create-bundle.html#cb-qty">數量</a></td></tr>
+    <tr><td>操作紀錄</td><td>—</td><td>每次改動記一筆「鎖定套數 前 → 後」，點開看各成員算出來的量前 → 後<br>只改分配也記一筆<br>組合包沒有補貨，紀錄裡沒有補貨這一類</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>組合上限（販售上限）的數值在組合設定分頁改，見<a href="#bd-settings-diff">細節頁才有的欄位與限制</a></li>
+</ul>
+<p class="note">依據：5.1.5.9 §2.3「庫存」、§3 第 3 項；5.1.5.4 §4 F4；D266、D268、D295、D296、D435。</p>
+
+<h2 id="bd-settings"><span class="n"></span>組合設定分頁</h2>
+<p>組合設定預設唯讀，按「編輯組合」才能改；分組照建立組合包的三大類：組合包介紹、選擇組合物、販售設定，各欄位的規則見<a href="eshop-create-bundle.html#cb-fields">建立組合包的功能與欄位</a>。怎麼進入編輯與儲存，見<a href="#bd-settings-edit">編輯與儲存</a>；細節頁才有的欄位與限制，見<a href="#bd-settings-diff">細節頁才有的欄位與限制</a>；成員含現場領取商品時，見<a href="#bd-pickup">取貨與核銷</a>。</p>
+
+<h3 id="bd-settings-edit">編輯與儲存</h3>
+<p>細節頁就是編輯介面，不走建立時的兩步驟，儲存就生效。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>編輯組合</td><td>已封存時不能用</td><td>把組合設定切成可以改</td></tr>
+    <tr><td>儲存變更（Save changes）</td><td>編輯中</td><td>儲存就生效，檢查同建立組合包，見<a href="eshop-create-bundle.html#cb-check">進入預覽前的檢查</a></td></tr>
+    <tr><td>取消（Cancel）</td><td>編輯中</td><td>放棄這次改動，回到唯讀</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="bd-settings-diff">細節頁才有的欄位與限制</h3>
+<p>下表只列跟建立組合包不同的地方；沒列出的欄位照建立組合包。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">組合包介紹</td></tr>
+    <tr><td>電影關聯</td><td>—</td><td>不在這裡，在<a href="#bd-links">關聯分頁</a></td></tr>
+    <tr class="grp"><td colspan="3">選擇組合物</td></tr>
+    <tr><td>成員列</td><td>至少 1 個成員</td><td>可以點到該商品的<a href="eshop-product.html">商品細節頁</a><br>顯示各成員沒有被鎖定與已鎖定的量，不能在這裡改<br>編輯中可以移除成員，或從候選加入，見<a href="eshop-create-bundle.html#cb-picker">加入組合物</a></td></tr>
+    <tr><td>門票成員：前往活動</td><td>有門票成員時</td><td>前往所屬活動的活動詳情，看票種與售票狀況</td></tr>
+    <tr><td>門票成員：已佔用張數</td><td>有門票成員時</td><td>逐項列出這個組合包用掉的張數＝n × 該項的已售套數<br>加總＝n × 這個組合包的已售套數</td></tr>
+    <tr><td>門票成員：改允許的門票與張數</td><td>有門票成員時</td><td>還沒賣出任何一套時可以改，操作同建立時的勾選與張數<br>賣出後鎖定，並說明鎖定的理由</td></tr>
+    <tr><td>隨場次刪除的門票</td><td>活動開賣前移除了場次</td><td>顯示停用；允許的門票全部被刪時組合包標「無法販售」，見<a href="bundles.html#what-ticket">票務商品</a></td></tr>
+    <tr><td>成員變更的影響</td><td>—</td><td>寫在這一類的說明：修改成員商品的價格、庫存或可見狀態，會影響這個組合包的價格與可售量</td></tr>
+    <tr><td>賣出後鎖定的成員內容</td><td>已賣出任何一套</td><td>成員清單、允許的門票與各成員數量鎖定，畫面要說明鎖定的理由，不默默變成唯讀<br>還能改什麼，見<a href="bundles.html#unlist-lock">售出後鎖定成員內容</a></td></tr>
+    <tr class="grp"><td colspan="3">販售設定</td></tr>
+    <tr><td>價格</td><td>—</td><td>以組合包的基準幣別顯示；其他幣別在<a href="#bd-local">預覽與在地化</a>看與改</td></tr>
+    <tr><td>庫存版本與販售上限</td><td>—</td><td>鎖定套數在<a href="#bd-stock">組合庫存分頁</a><br>含門票的組合包在活動詳情庫存設為 0 之後，要恢復就在這裡把販售上限調高，或改回不限量；組合包上架中也不必先下架，見<a href="bundles.html#stock-zero">把票務商品的庫存設為 0</a></td></tr>
+    <tr><td>購買條件與限購</td><td>—</td><td>看得出限購是跟隨成員還是已覆寫、購買條件是跟隨所含門票還是已調整，旁邊附計數說明<br>賣出後仍可以改，只影響之後的購買</td></tr>
+    <tr><td>上架設定與開賣設定</td><td>—</td><td>含門票時，說明跟著哪一場活動，並看得出每個時間是跟隨還是另設<br>組合包已下架時，顯示設定停用並附說明，顯示的值保留；開賣已退回未開賣，要重新上架後再設</td></tr>
+    <tr><td>非公開連結（Private link）</td><td>顯示設定為隱藏時</td><td>複製連結<br>重置連結：舊連結撤銷，產生新連結<br>切回顯示時，非公開連結撤銷<br>組合包下架時連結灰化<br>見<a href="eshop-sales.html#private">非公開連結</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.9 §2.3、§2.5、§3 第 4 項；D245、D265、D290、D292、D296、D391、D400、D433、D436、D437、D447。</p>
+
+<h3 id="bd-pickup">取貨與核銷</h3>
+<p>成員含現場 QR 領取的商品時才出現，只有說明、沒有輸入欄；規則同建立組合包的<a href="eshop-create-bundle.html#cb-items">選擇組合物</a>。</p>
+<ul class="plain">
+  <li>取貨場次照各成員商品自己的設定，要改到各成員的<a href="eshop-product.html">商品細節頁</a></li>
+  <li>撤銷只能整組，撤銷後各成員的領取碼一起失效，見<a href="bundles.html#unlist-lock">售出後鎖定成員內容</a></li>
+  <li>沒有任何成員採現場 QR 領取時，這一塊不顯示</li>
+</ul>
+<p class="note">依據：5.1.5.9 §2.6；5.1.5.4 §4 F9；D240、D242、D452。</p>
+
+<h2 id="bd-links"><span class="n"></span>關聯分頁</h2>
+<p>關聯列出這個組合包和站上其他東西的關係；組合包不能被另一個組合包包住，所以沒有組合包這一區。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>項目引用（Referenced by Projects）</td><td>—</td><td>把這個組合包當回饋或引用它的項目，只能看，可以點到項目<br>沒有時顯示尚未被任何項目引用</td></tr>
+    <tr><td>電影關聯（Linked movies）</td><td>選填，可以多部</td><td>加入與移除同建立組合包，見<a href="eshop-create-bundle.html#cb-intro-fields">組合包介紹</a><br>沒有時顯示尚未關聯任何電影</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.9 §2.7、§3 第 5 項；D260。</p>
+
+<h2 id="bd-local"><span class="n"></span>預覽與在地化</h2>
+<p>組合包建好後，再開建立時步驟 2 的同一個畫面（全頁版、同一份翻譯與幣別價格），不用改基準內容重發，就能修翻譯與各幣別售價。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>入口</td><td>頁首「預覽與在地化」</td><td>開啟全頁畫面，返回時回到細節頁的檢視模式</td></tr>
+    <tr><td>粉絲視角預覽</td><td>—</td><td>以所選語系與幣別顯示完整組合包頁<br>含門票的組合包也出現在那場活動的活動頁預覽，兩處改的是同一份資料</td></tr>
+    <tr><td>語言</td><td>側欄第一段</td><td>四種語系，切換預覽語系，開啟翻譯表</td></tr>
+    <tr><td>幣別</td><td>側欄第二段</td><td>五種幣別，切換預覽幣別</td></tr>
+    <tr><td>未儲存的變更（Unsaved changes）</td><td>側欄第三段</td><td>這個語系改了幾欄；含門票時另寫這個幣別覆寫了幾項<br>建立時這一段是發布前檢核</td></tr>
+    <tr><td>翻譯表</td><td>從語言段開啟</td><td>組合名稱與組合描述 × 四種語系，可以直接改任一語系的翻譯<br>預設語言那一欄是來源，這裡不能改，要改回組合設定分頁<br>來源一改，其他語系重新生成</td></tr>
+    <tr><td>價格表</td><td>點主區的價格</td><td>售價 × 五種幣別；有多種可能價格時各幣別都以區間顯示<br>基準幣別欄不能改，要改回組合設定分頁改組合折扣 %<br>含門票成員：其他幣別可以覆寫、每格可以重設回換算值<br>只含商品成員：五種幣別一律唯讀<br>規則見<a href="common-currency.html">定價幣別</a><br>排程特價目前不進價格表</td></tr>
+    <tr><td>儲存（Save）</td><td>側欄主鈕</td><td>儲存就生效，不改三個開關與排程</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>已售出後成員內容鎖定，不影響這裡改翻譯與價格；已售出後改價只影響之後的購買</li>
+  <li>含已發布活動門票的組合包上架中時，價格表要先下架才能改，見<a href="bundles.html#published-edit">組合包在活動發布後的修改</a>；翻譯要不要先下架，見頁尾尚待確認</li>
+  <li>成員含 bookyay 匯入活動的門票時，港幣欄自動算出並鎖定，見<a href="event-bookyay.html#import-currency">bookyay 匯入與對照的金額與幣別</a></li>
+</ul>
+<p class="note">依據：5.1.5.9 §2.2、§2.8；主規格 §7.4、§7.15；D305、D306、D310、D318、D319、D330、D331、D415、D435、D443。</p>
+
+<h2 id="bd-state"><span class="n"></span>各狀態能編輯什麼</h2>
+<p>組合包在草稿、上架中、已下架時都能編輯，已封存時整頁唯讀；含已發布活動門票、組合包上架中時另有限制。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:18%">狀態</th><th>能編輯什麼</th></tr></thead>
+  <tbody>
+    <tr><td>草稿</td><td>各分頁都能編輯<br>活動還是草稿時，組合包也是草稿，不出現在電子商店的組合包清單，仍可以從活動側進來編輯</td></tr>
+    <tr><td>上架中</td><td>各分頁都能編輯<br>含已發布活動門票時：只有鎖定套數與營運動作能直接改，其他要先下架，見<a href="bundles.html#published-edit">組合包在活動發布後的修改</a></td></tr>
+    <tr><td>已下架</td><td>內容照樣能編輯<br>顯示設定不能調，開賣設定不能調，開賣已退回未開賣</td></tr>
+    <tr><td>已封存</td><td>整頁唯讀，所有分頁與逐列操作都不能改，包括鎖定套數的分配與關聯分頁<br>銷售摘要、操作紀錄與非公開連結的歷史照常可以看<br>頁首只有解除封存，零成交時另有刪除</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>含已發布活動門票、組合包上架中時，哪些不必下架就能改、哪些要先下架，見<a href="bundles.html#published-edit">組合包在活動發布後的修改</a></li>
+  <li>賣出任何一套之後，成員內容鎖定，見<a href="bundles.html#unlist-lock">售出後鎖定成員內容</a></li>
+  <li>所屬活動已結束或已取消後，組合包不能重新上架，見<a href="#bd-header-ops">頁首動作</a></li>
+</ul>
+<p class="note">依據：5.1.5.9 第 4 段「頁面狀態」、§2.3「活動發布後的修改」「已售出後成員內容鎖定」；主規格 §7.14「活動發布後的修改規則」；D265、D284、D288、D289、D290、D294、D298、D307、D435、D436、D437、D438、D447。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.9-組合商品細節頁.md</code>（v1.79）§1～§5；<code>5.1.5.4-建立組合流程.md</code>（v2.63）§4 F4、F9；<code>0-設計規格書.md</code> §7.4、§7.14、§7.15</li>
+    <li>決策：D240、D242、D245、D260、D265、D266、D268、D284、D288、D289、D290、D292、D294、D295、D296、D298、D305、D306、D307、D310、D314、D318、D319、D330、D331、D340、D391、D400、D415、D424、D425、D433、D435、D436、D437、D438、D443、D447、D452</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>組合庫存分頁的鎖定套數，要不要先按編輯、怎麼儲存</li>
+    <li>組合設定編輯中有未儲存的改動就離開時怎麼處理</li>
+    <li>成員變更影響提示的寫法與時機</li>
+    <li>限量的販售上限最低是否就是已售套數（推導）</li>
+    <li>含已發布活動門票、組合包上架中時，預覽與在地化的翻譯是否也要先下架才能改，以及這時能不能進入這個畫面編輯（推導）</li>
+    <li>要先下架時，看的是組合包自己的上架狀態（推導）</li>
+    <li>頁首是否顯示封面、組合價與成員件數；總覽設定概覽裡鎖定套數那一行點了是否切到組合庫存分頁（目前是呈現參考）</li>
+    <li>發布後改翻譯是否需要審核或留版本紀錄</li>
+    <li>粉絲端怎麼呈現組合包裡的門票</li>
+    <li>總覽的設定概覽怎麼分組、排了時間的開關怎麼標示（目前是呈現參考）</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（對照 5.1.5.9，至 D452）</p>
+</details>
+</div>
+</body>
+</html>

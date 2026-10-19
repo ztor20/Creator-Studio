@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>申請提款 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>申請提款</h1>
+<p class="lede">創作者在收入管理的提款管理選好銀行，在同一個視窗輸入金額、看過費用與到帳資訊後送出，把可提領金額轉到自己的銀行帳戶。</p>
+
+<div class="toc"></div>
+
+<h2 id="wd-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>申請提款是提款管理裡開啟的視窗，不是獨立頁面，創作者不用離開收入管理</li>
+  <li>視窗有兩個畫面：申請提款主畫面與新增銀行畫面；確認資訊直接放在主畫面，不另開確認步驟</li>
+  <li>只有已結算的可提領金額能提，見<a href="#wd-amount-rule">哪些錢可以提</a></li>
+</ul>
+
+<h2 id="wd-flow"><span class="n"></span>操作流程</h2>
+<p>這個流程從提款管理點銀行卡片開始，到送出申請為止。</p>
+<div class="dg" role="img" aria-label="申請提款流程圖，由左往右：在提款管理點可用的銀行卡片就進申請提款主畫面；點新增銀行卡片就先進新增銀行畫面，新增完回到主畫面並選中新銀行；在主畫面輸入金額、看確認摘要並勾選不可逆確認，送出時檢查是否有效，有效就提款申請中，無效就擋下並顯示原因">
+<div class="dg-hg" style="--dg-c:6">
+  <div class="dg-node q" style="grid-row:1/3;grid-column:1"><span class="s">1</span>在提款管理點哪一張？</div>
+  <span class="dg-a" data-t="可用的銀行" style="grid-row:1;grid-column:2/5"></span>
+  <span class="dg-a" data-t="新增銀行" style="grid-row:2;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:2;grid-column:3">新增銀行畫面<small>填完按新增帳戶</small></div>
+  <span class="dg-a" style="grid-row:2;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:5"><span class="s">2</span>申請提款主畫面<small>選中這家銀行</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:6"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:7"><span class="s">3</span>輸入金額、看摘要<small>勾選不可逆確認</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:8"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:9"><span class="s">4</span>送出時都有效嗎？</div>
+  <span class="dg-a" data-t="有效" style="grid-row:1;grid-column:10"></span>
+  <span class="dg-a" data-t="無效" style="grid-row:2;grid-column:10"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:11">提款申請中<small>Payout Requested</small></div>
+  <div class="dg-node stop" style="grid-row:2;grid-column:11">擋下並顯示原因<small>重新確認或更正</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，上面一列是已有可用銀行，下面一列是先新增銀行；圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>在<a href="revenue.html#rev-banks">提款銀行</a>點哪一張？
+    <ul class="plain">
+      <li>可用或預設的銀行：直接進主畫面，帶入這家銀行</li>
+      <li>「新增提款銀行」或「新增新的銀行」：先進<a href="#wd-bank">新增銀行</a>畫面，新增完回到主畫面並選中剛新增的銀行</li>
+    </ul>
+  </li>
+  <li>在<a href="#wd-main">申請提款主畫面</a>確認銀行</li>
+  <li>輸入金額、看確認摘要，勾選不可逆確認</li>
+  <li>按申請提款，送出時檢查銀行、金額與可提領金額
+    <ul class="plain">
+      <li>都有效：提款申請中，見<a href="#wd-result">送出結果</a></li>
+      <li>無效：擋下並顯示原因</li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>頁首或可提領卡的申請提款入口，先帶到提款管理選銀行</li>
+  <li>關閉視窗時，若已填了金額或銀行資料，先問要不要離開</li>
+</ul>
+<p class="note">依據：5.1.8.1 §1、§2、§3；5.1.8 F1、F8。</p>
+
+<h2 id="wd-fields"><span class="n"></span>功能與欄位</h2>
+<p>視窗有兩個畫面：<a href="#wd-main">申請提款主畫面</a>與<a href="#wd-bank">新增銀行</a>；送出後見<a href="#wd-result">送出結果</a>。</p>
+
+<h3 id="wd-main">申請提款主畫面</h3>
+<p>從可用的銀行卡片點進來，或新增銀行完成後回到這裡。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>提款銀行</td><td>—</td><td>顯示目前選中的銀行：銀行名稱、遮蔽帳號、帳戶持有人、收款幣別、帳戶狀態、是不是預設帳戶<br>從新增銀行回來時，預設選中剛新增的銀行<br>驗證中或不可用的銀行不能送出</td></tr>
+    <tr><td>切換銀行</td><td>有好幾家可用銀行時</td><td>在視窗內切換；完整的銀行清單仍在提款管理</td></tr>
+    <tr><td>可提領金額</td><td>—</td><td>顯示目前可提領的金額與幣別</td></tr>
+    <tr><td>提款金額</td><td>—</td><td>可以預設帶入可提領全額，也可以自己輸入<br>不能高於可提領金額<br>不能低於最低提款金額</td></tr>
+    <tr><td>快速選項</td><td>—</td><td>例如全額、固定金額、清除</td></tr>
+    <tr><td>確認摘要</td><td>放在申請提款按鈕前</td><td>見<a href="#wd-summary">確認摘要</a></td></tr>
+    <tr><td>不可逆確認</td><td>必勾</td><td>例如「我已確認上述金額與明細，且了解提款不可逆」；沒勾不能送出</td></tr>
+    <tr><td>申請提款（Request Payout）</td><td>—</td><td>按鈕文字可以帶本次金額，例如「Request payout · $8,940」<br>送出前檢查銀行狀態、提款金額、最低提款金額與可提領金額<br>送出時可提領金額或銀行狀態已經變了，中止送出，要創作者重新確認<br>可提領金額為 0、低於最低提款金額，或銀行不可用時，不能送出並顯示原因<br>送出後不能重複送出<br>身分驗證（KYC）沒通過或碰到合規上限時不能送出，並顯示原因</td></tr>
+    <tr><td>關閉</td><td>—</td><td>已填了金額或銀行資料時，先問要不要離開</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="wd-summary">確認摘要</h4>
+<p>確認摘要讓創作者送出前看清楚這次提款的全部資訊，和簽署的不可逆確認、費率版本一起構成日後對帳與解釋爭議的依據。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">項目</th><th>顯示什麼</th></tr></thead>
+  <tbody>
+    <tr><td>提款帳戶</td><td>銀行名稱、帳戶持有人、遮蔽帳號</td></tr>
+    <tr><td>提款金額</td><td>這次申請的原始金額與幣別</td></tr>
+    <tr><td>手續費</td><td>平台費、支付通道費或銀行轉帳費</td></tr>
+    <tr><td>預估入帳金額</td><td>扣掉手續費後的金額</td></tr>
+    <tr><td>匯率</td><td>提款帳戶幣別跟收入幣別不同時才出現：目前採用的匯率與預估換算後金額</td></tr>
+    <tr><td>預估到帳時間</td><td>日期或工作天範圍</td></tr>
+    <tr><td>這次金額的來源</td><td>這次可提領金額來自哪些已結算收入的簡要摘要</td></tr>
+    <tr><td>費率版本</td><td>這次結算依據的費率版本，見<a href="common-finance.html">財務術語與收入事件</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="wd-bank">新增銀行</h3>
+<p>從「新增提款銀行」或「新增新的銀行」卡片點進來；是主畫面的次畫面，不顯示步驟線。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>帳戶持有人姓名（Account Holder Name）</td><td>必填</td><td>要能跟創作者的付款或身分資料對上；對不上時提示可能需要額外審核</td></tr>
+    <tr><td>銀行名稱（Bank Name）</td><td>必填</td><td>—</td></tr>
+    <tr><td>SWIFT／BIC</td><td>必填</td><td>8 或 11 個字元；不對時提示向銀行確認</td></tr>
+    <tr><td>銀行帳號（Bank Account Number）</td><td>必填</td><td>輸入時可以看到完整內容；儲存後只顯示遮蔽的帳號</td></tr>
+    <tr><td>再次確認銀行帳號（Confirm Bank Account Number）</td><td>必填</td><td>要跟銀行帳號一致</td></tr>
+    <tr><td>設為預設收款帳戶（Set as Default Account）</td><td>—</td><td>—</td></tr>
+    <tr><td>新增帳戶（Add Account）</td><td>必填欄位都完成才能按</td><td>新增成功後回到主畫面，並選中剛新增的銀行<br>需要後續驗證的帳戶顯示驗證中，驗證完成前主畫面的申請提款不能送出</td></tr>
+  </tbody>
+</table></div>
+<p>這裡新增銀行是為了完成這一次提款；銀行帳戶的長期管理、預設帳戶、刪除與驗證狀態在設定的付款與收款設定。</p>
+
+<h3 id="wd-result">送出結果</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">結果</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>成功</td><td>在視窗內顯示成功，或關閉視窗回到提款管理並顯示成功提示<br>內容：狀態提款申請中（Payout Requested）、提款金額、預估到帳時間、提款帳戶摘要<br>附查看提款紀錄的入口</td></tr>
+    <tr><td>銀行帳戶資料錯誤</td><td>回到新增銀行畫面，或提示更新資料</td></tr>
+    <tr><td>帳戶驗證還沒完成</td><td>提示驗證完成後再申請</td></tr>
+    <tr><td>可提領金額不足</td><td>回到提款管理看最新的可提領金額</td></tr>
+    <tr><td>支付通道暫時不能用</td><td>可以稍後重試</td></tr>
+    <tr><td>撤銷沖銷或爭議讓金額被扣住</td><td>提示看交易明細或爭議狀態</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.8.1 §2、§4、§5、§6、§7；5.1.8 F8；主規格 §7.6；D043。</p>
+
+<h2 id="wd-amount-rule"><span class="n"></span>哪些錢可以提</h2>
+<p>只有已結算的收入算進可提領；可提領、待結算、爭議款的定義見<a href="common-finance.html">財務術語與收入事件</a>。</p>
+<ul class="plain">
+  <li>待結算、爭議中與被扣住的金額不算進可提款金額</li>
+  <li>手動補登的收入不算進可提款金額，見<a href="revenue-manual.html">手動補登收入</a></li>
+</ul>
+<p class="note">依據：5.1.8.1 §4.3、§7；主規格 §7.3；D253、D452。</p>
+
+<h2 id="wd-after"><span class="n"></span>送出成功後的連動</h2>
+<ul class="plain">
+  <li>提款管理的<a href="revenue.html#rev-history">提款紀錄</a>新增一筆提款申請中</li>
+  <li><a href="revenue.html#rev-transactions">交易明細</a>新增對應的提款交易</li>
+  <li>可提領金額扣掉這次申請的金額，不能重複申請</li>
+  <li>之後的狀態是已付款（Paid）或失敗（Failed），見<a href="common-status.html">狀態語言</a></li>
+  <li>提款紀錄只能新增，不能編輯或刪除，更正用沖銷分錄</li>
+</ul>
+<p class="note">依據：5.1.8.1 §6.1、§7；主規格 §7.2。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.8.1-申請提款流程.md</code>（最後更新 2026-10-19）§1～§7；<code>5.1.8-收入管理.md</code> F1、F8；<code>0-設計規格書.md</code> §7.2、§7.3、§7.6</li>
+    <li>決策：D043、D253、D452</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>最低提款金額是多少</li>
+    <li>預估到帳時間怎麼算</li>
+    <li>身分驗證（KYC）與合規上限在哪裡設定、門檻是多少</li>
+    <li>提款手續費各項的金額或比例</li>
+    <li>帳戶持有人姓名對不上時的額外審核怎麼進行</li>
+    <li>視窗載入中與送出中的畫面</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.8.1 最後更新 2026-10-19、D452）</p>
+</details>
+</div>
+</body>
+</html>

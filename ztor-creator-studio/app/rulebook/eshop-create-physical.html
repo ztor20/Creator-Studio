@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>賣實體商品 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>賣實體商品</h1>
+<p class="lede">創作者在建立商品的步驟 1 選「實體商品（Physical item）」，填展示素材、商品資訊、選項價格與庫存，以及交給買家的方式。2 個步驟的全貌見<a href="eshop-create.html">建立商品</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="phys-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>實體商品是唯一支援多選項的商品類型，每個選項組合各自定價與庫存</li>
+  <li>這一頁填的分類、適用對象、系統屬性與選項值，之後是<a href="demand-board.html">需求看板</a>跨商品統計的資料來源</li>
+  <li>限購、商品標籤、折扣設定、電影關聯，以及上架、顯示與開賣設定，兩種商品共用，見<a href="eshop-create.html#common">兩種商品共用的設定</a></li>
+</ul>
+
+<h2 id="phys-flow"><span class="n"></span>操作流程</h2>
+<p>從選實體商品開始，到按「下一步：預覽」為止。</p>
+<div class="dg" role="img" aria-label="賣實體商品流程圖，由左往右：選實體商品，放展示素材，填商品資訊；選單一選項就填一組價格與庫存，選多選項就建立選項、逐選項組合填價格與庫存；選物流配送就填寄送資料，選現場 QR 領取就選或建立取貨場次；再填兩種商品共用的設定，按下一步預覽">
+<div class="dg-hg" style="--dg-c:9">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>選實體商品</div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:3"><span class="s">2</span>展示素材<small>主圖＋附圖</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:5"><span class="s">3</span>商品資訊<small>名稱、描述、分類、規格、尺寸指南</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:6"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:7"><span class="s">4</span>有幾種選項？</div>
+  <span class="dg-a" data-t="單一選項" style="grid-row:1;grid-column:8"></span>
+  <span class="dg-a" data-t="多選項" style="grid-row:2;grid-column:8"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:9">一組價格與庫存</div>
+  <div class="dg-node" style="grid-row:2;grid-column:9">建立選項<small>逐選項組合填價格與庫存</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:10"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:10"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:11"><span class="s">5</span>怎麼交給買家？</div>
+  <span class="dg-a" data-t="物流配送" style="grid-row:1;grid-column:12"></span>
+  <span class="dg-a" data-t="現場 QR 領取" style="grid-row:2;grid-column:12"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:13">填寄送資料<small>重量必填</small></div>
+  <div class="dg-node" style="grid-row:2;grid-column:13">選或建立取貨場次</div>
+  <span class="dg-a" style="grid-row:1;grid-column:14"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:14"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:15"><span class="s">6</span>兩種商品共用的設定</div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:16"></span>
+  <div class="dg-node end" style="grid-row:1/3;grid-column:17"><span class="s">7</span>下一步：預覽<small>就緒檢查通過才能進</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，同一欄是同一個步驟，分岔的兩條路在下一個問題前收回；圓圈數字對應下方步驟清單的編號，紫色框是要回答的問題。</p>
+<ol class="plain">
+  <li>在建立商品的步驟 1 選「實體商品（Physical item）」</li>
+  <li>放展示素材：主圖必填，附圖選填</li>
+  <li>填商品資訊：名稱、描述、分類、詳細規格與尺寸指南；服飾配件另選大類、次分類與適用對象</li>
+  <li>選選項模式
+    <ul class="plain">
+      <li>單一選項：整件商品填一組價格與庫存</li>
+      <li>多選項：建立選項，在逐選項組合表逐列填價格與庫存</li>
+    </ul>
+  </li>
+  <li>選取貨方式
+    <ul class="plain">
+      <li>物流配送：填重量，其餘選填</li>
+      <li>現場 QR 領取：選既有的取貨場次，或建立一個</li>
+    </ul>
+  </li>
+  <li>填兩種商品共用的設定，以及上架、顯示與開賣設定，見<a href="eshop-create.html#common">兩種商品共用的設定</a></li>
+  <li>就緒檢查都通過後，按「下一步：預覽」，見<a href="eshop-create.html#ready">就緒檢查</a></li>
+</ol>
+<ul class="plain">
+  <li>兩種取貨方式都可以另填取貨與退貨說明，見<a href="#returns">取貨與退貨說明</a></li>
+</ul>
+<p class="note">依據：5.1.5.2 §3「共用主幹」、§4.1、§6 第 1 項。</p>
+
+<h2 id="phys-fields"><span class="n"></span>功能與欄位</h2>
+<p>實體商品的表單依序有這些區塊：</p>
+<ul class="plain">
+  <li><a href="#media">展示素材</a></li>
+  <li><a href="#info">商品資訊</a></li>
+  <li><a href="#specs">詳細規格</a></li>
+  <li><a href="#size-guide">尺寸指南</a></li>
+  <li><a href="#option-mode">選項模式</a></li>
+  <li><a href="#single">單一選項的價格與庫存</a></li>
+  <li><a href="#variant">多選項的選項與庫存</a></li>
+  <li><a href="#variant-rows">逐選項組合表</a></li>
+  <li><a href="#delivery">取貨方式與物流配送</a></li>
+  <li><a href="#qr">現場 QR 領取</a></li>
+  <li><a href="#returns">取貨與退貨說明</a></li>
+</ul>
+
+<h3 id="media">展示素材</h3>
+<p>展示素材（Show it off）讓買家看清楚摸不到的商品，每一格都可以放圖片或影片；尺寸與裁切規則見<a href="common-media.html">展示素材與年齡分級</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>主圖（Hero image）</td><td>必填，1 格</td><td>買家第一眼看到的素材<br>直式 750×1125px（2:3），不能低於這個尺寸<br>商店卡與清單縮圖等方形版位由主圖置中裁切，不另上傳；主圖是影片時，縮圖用影片首幀</td></tr>
+    <tr><td>附圖（Additional photos）</td><td>選填，最多 9 格</td><td>含主圖共 10 格，圖片與影片共用這個額度<br>直式 750×1125px，最小 600×900px<br>一次只顯示一個空格，填完一格才長出下一格，到上限不再長</td></tr>
+    <tr><td>影片</td><td>主圖或附圖放影片時</td><td>MP4、MOV、WEBM，單檔 1.8GB</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>主圖放影片同樣算填了</li>
+  <li>選項組合的商品圖另計額度，不佔這 10 格，見<a href="#variant-rows">逐選項組合表</a></li>
+</ul>
+
+<h3 id="info">商品資訊</h3>
+<p>商品資訊讓買家知道會拿到什麼，並決定商品歸在哪個分類。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>商品名稱（Product name）</td><td>必填</td><td>單行文字<br>可翻譯</td></tr>
+    <tr><td>商品描述（Tell your fans what they're getting）</td><td>必填，至少 30 字元</td><td>多行文字<br>空白時顯示「0/30 minimum」，輸入後顯示累計字數<br>可翻譯</td></tr>
+    <tr><td>分類（Category）</td><td>—</td><td>下拉單選，選項見<a href="taxonomy.html">商品分類與模組應用</a><br>服飾配件先選大類，再選該大類底下的次分類；改選大類要重選次分類，見<a href="taxonomy.html#apparel">服飾配件的大類與次分類</a></td></tr>
+    <tr><td>適用對象（Department）</td><td>只在服飾配件類出現</td><td>男、女、中性、童，單選<br>排在分類之後，見<a href="taxonomy.html#department">適用對象</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="specs">詳細規格</h3>
+<p>詳細規格（Specifications）讓買家清楚會拿到什麼，分上段系統屬性與下段自訂規格，兩段怎麼分工見<a href="taxonomy.html#spec-two-parts">詳細規格分成系統屬性與自訂規格</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>系統屬性（System attributes）</td><td>依分類出現對應的項目<br>沒有對應項目的分類不出現這一段</td><td>從固定值清單選，不能自己打字；部分項目可以多選<br>整件商品設一次，所有選項組合共用<br>有哪些項目與值，見<a href="taxonomy.html#attrs">商品屬性</a></td></tr>
+    <tr><td>自訂規格（Custom specifications）</td><td>選填</td><td>每筆是一組規格名稱＋規格值<br>可翻譯<br>不參與定價、庫存與需求統計</td></tr>
+    <tr><td>規格名稱</td><td>每一筆必填</td><td>單行文字，例如 Material</td></tr>
+    <tr><td>規格值</td><td>每一筆必填</td><td>單行文字，例如 100% organic cotton</td></tr>
+    <tr><td>刪除</td><td>每一筆</td><td>刪掉這一筆</td></tr>
+    <tr><td>新增規格（＋ Add spec）</td><td>—</td><td>加一筆自訂規格</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="size-guide">尺寸指南</h3>
+<p>尺寸指南（Size guide）是這件商品給粉絲看的量測對照；沿用商店的或改成專屬一份，見<a href="#guide">尺寸指南：沿用商店或專屬一份</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>尺寸指南</td><td>二選一<br>預設沿用商店的</td><td>沿用商店的：<a href="eshop-settings.html">商店設定</a>建的每一份都出現在這件商品上，不能只挑幾份<br>這件商品專屬的一份：就地填一份</td></tr>
+    <tr><td>編輯專屬指南</td><td>選專屬一份時</td><td>欄位同商店設定的尺寸指南</td></tr>
+    <tr><td>移除專屬指南</td><td>選專屬一份時</td><td>回到沿用商店的</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="option-mode">選項模式</h3>
+<p>選項模式決定這件商品怎麼賣：整件一個價格，或分成好幾個可售組合各自定價。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>單一選項（Non-Variant）／多選項（Variant）</td><td>二選一<br>預設單一選項</td><td>單一選項：整件商品一組價格與庫存，見<a href="#single">單一選項的價格與庫存</a><br>多選項：每個選項組合各自定價與庫存，見<a href="#variant">多選項的選項與庫存</a><br>切換時，下方欄位換成該模式的欄位</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="single">單一選項的價格與庫存</h3>
+<p>選單一選項時出現，整件商品共用一組價格與庫存。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>定價（Price）</td><td>必填<br>預設 0.00</td><td>現金金額，以基準幣別輸入；其他四種幣別自動換算、唯讀，見<a href="common-currency.html">定價幣別</a><br>填了之後顯示同分類在 ztor 的均價，輔助定價<br>折扣不在這裡設，見<a href="eshop-create.html#discount">折扣設定</a></td></tr>
+    <tr><td>成本價（Cost）</td><td>選填</td><td>創作者內部成本，用於毛利顯示<br>只有創作者看得到，不對買家顯示</td></tr>
+    <tr><td>庫存版本（Edition）</td><td>二選一<br>預設不限量</td><td>不限量（Unlimited edition）或限量（Limited edition），見<a href="#edition">庫存版本：不限量與限量</a></td></tr>
+    <tr><td>目前在庫（Goods in stock）</td><td>選限量時必填</td><td>這件商品現在有多少件</td></tr>
+    <tr><td>上限（Total quantity）</td><td>選限量時必填</td><td>硬上限，也是補貨的天花板<br>不能小於目前在庫</td></tr>
+    <tr><td>低庫存提醒（Alert me when running low）</td><td>開關，預設開</td><td>庫存低於門檻時提醒創作者<br>門檻預設為庫存上限的 10%，可以逐商品調整</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="variant">多選項的選項與庫存</h3>
+<p>選多選項時出現，用選項描述這件商品有哪些可售的變化，例如尺寸與顏色。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>選項建構器</td><td>至少 1 個選項<br>每個選項至少 1 個值</td><td>選項名（Option name），例如尺寸<br>選項值（Option values），例如 S、M、L<br>可以新增多個選項，自動生成所有值的組合，見<a href="#combos">選項組合怎麼生成</a><br>選項名與選項值可翻譯</td></tr>
+    <tr><td>尺寸、顏色快捷</td><td>已建過同名選項時不出現</td><td>按一下建好整組選項與預設值，見<a href="taxonomy.html#preset-quick">快捷帶入預設值</a></td></tr>
+    <tr><td>自行輸入選項值</td><td>—</td><td>可以輸入新值，例如 Free Size<br>照常販售，但不算標準值，見<a href="taxonomy.html#custom-values">自行輸入的值怎麼統計</a></td></tr>
+    <tr><td>色號（Colour hex）</td><td>選項是顏色時，每個值一個</td><td>格式 #RRGGBB，預設 Black 是 #000000、White 是 #FFFFFF，可以改<br>顏色名稱前顯示一顆該色號的色球</td></tr>
+    <tr><td>庫存版本（Edition）</td><td>二選一<br>預設不限量</td><td>套用到全部選項組合<br>選限量時，逐選項組合表每列多一欄上限，見<a href="#edition">庫存版本：不限量與限量</a></td></tr>
+    <tr><td>低庫存提醒（Alert me when running low）</td><td>開關，預設開</td><td>任一選項組合低於門檻時提醒創作者</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="variant-rows">逐選項組合表</h3>
+<p>逐選項組合表（Variant rows）在選項建構器有選項時出現，每個選項組合一列，逐列填價格與庫存。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>排除</td><td>每一列</td><td>不建立這個組合</td></tr>
+    <tr><td>商品圖（Image）</td><td>選填，每個組合最多一張</td><td>只收圖片<br>獨立上傳，不從附圖挑，也不佔展示素材的額度<br>沒設定時沿用主圖<br>買家選到這個組合時，商品頁的主展示位換成這張圖<br>建立後可以在商品細節頁換圖</td></tr>
+    <tr><td>選項組合（Variant）</td><td>唯讀</td><td>由選項值組成，例如「Black / M」</td></tr>
+    <tr><td>價格（Price）</td><td>必填</td><td>現金金額，以基準幣別輸入，其他幣別自動換算、唯讀</td></tr>
+    <tr><td>庫存（Stock）</td><td>必填</td><td>這個組合目前在庫</td></tr>
+    <tr><td>上限（Total quantity）</td><td>選限量時每列出現，必填</td><td>這個組合的硬上限，也是補貨的天花板<br>不能小於這個組合的庫存</td></tr>
+    <tr><td>SKU</td><td>選填</td><td>這個組合的庫存單位編號</td></tr>
+    <tr><td>單件成本（Cost per item）</td><td>選填</td><td>同成本價，只有創作者看得到</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="delivery">取貨方式與物流配送</h3>
+<p>取貨方式（Delivery method）決定商品怎麼交給買家；以<a href="eshop-settings.html">商店設定</a>的出貨預設為底，可以逐商品改。選物流配送時出現寄送資料。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>取貨方式</td><td>二選一</td><td>物流配送（Shipping）或現場 QR 領取（QR code pickup）</td></tr>
+    <tr><td>重量（Weight）</td><td>選物流配送時必填</td><td>含單位，例如 KG</td></tr>
+    <tr><td>尺寸（Dimension）</td><td>選物流配送時，選填</td><td>長、寬、高，含單位，例如 CM</td></tr>
+    <tr><td>出貨分類（Shipping category）</td><td>選物流配送時，選填</td><td>沒選時要明確提示未選，不能看起來像已選好某一類</td></tr>
+    <tr><td>寄件地（Pickup location）</td><td>選物流配送時，選填</td><td>物流取件的地址<br>沒設時用商店設定的寄件地</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>尺寸、出貨分類與寄件地可以收合，只常駐重量；收合區裡任一欄已有值時，預設展開</li>
+</ul>
+
+<h3 id="qr">現場 QR 領取</h3>
+<p>選現場 QR 領取時出現，把商品排進一個取貨場次，買家到現場掃碼領取；下單後怎麼領，見<a href="#pickup">現場 QR 領取與取貨場次</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>取貨場次（Pickup session）</td><td>—</td><td>選一個既有的取貨場次，這件商品加入該場次的取貨商品</td></tr>
+    <tr><td>建立取貨場次</td><td>—</td><td>打開建立取貨場次彈窗，這件商品已預先加入取貨商品，還可以再加其他商品與活動門票，見<a href="pickup-create.html">建立取貨場次</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="returns">取貨與退貨說明</h3>
+<p>取貨與退貨說明（Pickup &amp; returns）是這件商品自己的取貨與退換規則，掛在買家看到的商品頁。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>取貨與退貨說明</td><td>選填<br>兩種取貨方式共用一欄</td><td>多行短文字，約 200 字內，例如備貨天數、可否退換、退換期限與條件<br>顯示在買家商品頁的「取貨與退換」段，留空不顯示<br>切換取貨方式時內容不變<br>可翻譯<br>建立後可以在商品細節頁改</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>現場指示，例如排隊位置、要帶的證件，寫在取貨場次的取貨說明，見<a href="pickup-create.html">建立取貨場次</a></li>
+</ul>
+<p class="note">依據：5.1.5.2 §1、§4.1 F1～F4、§7；主規格 §7.1、§7.2、§7.10、§7.15、§7.16；D085、D105、D145、D148、D211、D243、D244、D249、D259、D268、D291、D318、D360。</p>
+
+<h2 id="variants"><span class="n"></span>多選項商品的選項組合</h2>
+<p>多選項商品用選項決定買家下單時要挑什麼，整件商品設一次的特徵（例如版型、材質）放詳細規格，見<a href="#combos-vs-specs">選項與詳細規格的分工</a>；選項怎麼變成一列列組合，見<a href="#combos">選項組合怎麼生成</a>。</p>
+
+<h3 id="combos-vs-specs">選項與詳細規格的分工</h3>
+<p>選項各自有價格與庫存，詳細規格沒有；兩者怎麼分，見<a href="taxonomy.html#attr-vs-option">屬性與選項怎麼分工</a>。</p>
+
+<h3 id="combos">選項組合怎麼生成</h3>
+<p>選項建構器的每個選項值互相交叉，每一格就是一個選項組合，也就是逐選項組合表的一列；選項或選項值有增刪時，表格即時重算。</p>
+<div class="dg" role="img" aria-label="選項組合示意，選項為假設：尺寸 S、M 與顏色 Black、White 交叉出 4 個組合，其中 White / S 被排除，剩 3 列各自定價與庫存">
+<div class="dg-mx" style="--dg-c:2">
+  <span></span><span class="h">Black<small>顏色</small></span><span class="h">White<small>顏色</small></span>
+  <span class="r">S<small>尺寸</small></span><span class="c"><b>Black / S</b><small>一列，自己的價格與庫存</small></span><span class="c off"><b>White / S</b><small>排除，不建立這個組合</small></span>
+  <span class="r">M<small>尺寸</small></span><span class="c"><b>Black / M</b><small>一列，自己的價格與庫存</small></span><span class="c"><b>White / M</b><small>一列，自己的價格與庫存</small></span>
+</div>
+</div>
+<p class="dg-cap">示意圖（選項與選項值皆為假設）：尺寸是列、顏色是欄，每一格是逐選項組合表的一列。排除的組合（虛線）不建立，也不會賣。</p>
+<p class="note">依據：5.1.5.2 §4.1 F2「詳細規格」、F3、F3.1、F3.4；主規格 §7.16；D063、D146、D360。</p>
+
+<h2 id="edition"><span class="n"></span>庫存版本：不限量與限量</h2>
+<p>庫存版本決定這件商品有沒有硬上限，單一選項與多選項都要選，多選項時套用到全部組合。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:20%">項目</th><th>不限量（Unlimited edition）</th><th>限量（Limited edition）</th></tr></thead>
+  <tbody>
+    <tr><td>要填什麼</td><td>目前在庫</td><td>上限＋目前在庫，上限不能小於在庫</td></tr>
+    <tr><td>補貨</td><td>沒有上限，不會自動售罄</td><td>最多補到上限</td></tr>
+    <tr><td>粉絲看得到</td><td>—</td><td>上限與剩餘量</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>建立時填的是這件商品的目前在庫；要鎖給單售或組合包的量，在商品細節頁與建立組合包時設，見<a href="eshop-sales.html#stock">庫存怎麼分配：共用與鎖定</a></li>
+  <li>庫存版本跟庫存狀態（例如低庫存、售罄）是兩件事，庫存狀態見<a href="common-status.html">狀態語言</a></li>
+</ul>
+<p class="note">依據：5.1.5.2 §4.1 F3.3、F3.4；主規格 §7.2、§7.14；D105。</p>
+
+<h2 id="guide"><span class="n"></span>尺寸指南：沿用商店或專屬一份</h2>
+<p>怎麼切換見<a href="#size-guide">尺寸指南</a>的欄位表；下圖是兩種做法粉絲各看到什麼。</p>
+<div class="dg" role="img" aria-label="尺寸指南示意，指南名稱為假設：商店設定有上衣、褲子兩份指南；沿用商店的商品顯示這兩份，商店改了跟著變；改成專屬一份的商品只顯示自己那份，商店那兩份不出現，商店改或刪也不影響">
+<div class="dg-inh">
+  <div class="dg-node">商店設定的尺寸指南<small>上衣、褲子兩份</small></div>
+  <div class="dg-inh__kids">
+    <div class="dg-inh__kid"><span class="dg-inh__rel">沿用商店的（預設）</span><div class="dg-node">商品 A<small>顯示上衣、褲子兩份<br>商店改了跟著變</small></div></div>
+    <div class="dg-inh__kid own"><span class="dg-inh__rel">這件商品專屬的一份</span><div class="dg-node">商品 B<small>只顯示自己那一份<br>商店改或刪都不影響</small></div></div>
+  </div>
+</div>
+</div>
+<p class="dg-cap">示意圖（指南名稱皆為假設）：實線是沿用商店的商品，虛線是改成專屬一份的商品。</p>
+<ul class="plain">
+  <li>專屬指南只屬於這件商品，不進商店的指南清單</li>
+  <li>尺寸指南是給粉絲看的量測對照，跟決定價格與庫存的尺寸選項是兩件事</li>
+</ul>
+<p class="note">依據：5.1.5.2 §4.1 F2「尺寸指南」；5.1.5.5 F7；D211。</p>
+
+<h2 id="pickup"><span class="n"></span>現場 QR 領取與取貨場次</h2>
+<p>取貨場次綁在商品上；買家下單後，訂單品項依購買數量產生同樣數量的領取單位（Pickup unit），每個單位有一組唯一的領取碼。</p>
+<ul class="plain">
+  <li>商品已加入取貨場次：領取單位進入該場次的名單</li>
+  <li>商品還沒加入任何場次：這件商品的領取單位與取貨管理顯示「取貨場次待設定」</li>
+  <li>領取單位跟著商品的場次，同一個品項的多件不會分到不同場次</li>
+  <li>現場用<a href="pickup-scanner.html">手機 Scanner</a>逐一核銷每個領取單位，並回寫訂單品項的取貨狀態，見<a href="order-detail.html">訂單詳情</a></li>
+  <li>取貨場次的名單、Scanner 網址與密碼，見<a href="pickup-detail.html">取貨場次詳情</a></li>
+</ul>
+<p class="note">依據：5.1.5.2 §4.1 F4「現場 QR 領取」；主規格 §7.2；5.1.5.12；5.1.5.15 F2；D111、D114、D116、D240。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.2-建立商品流程.md</code>（v6.40）§1、§3、§4.1、§6、§7、§8；<code>5.1.5.5-商店設定.md</code> F5、F7；<code>5.1.5.12-建立取貨場次.md</code>；<code>5.1.5.15-取貨場次詳情.md</code> F2；<code>0-設計規格書.md</code>（v4.90）§7.1、§7.2、§7.10、§7.14、§7.15、§7.16</li>
+    <li>決策：D063、D085、D105、D111、D114、D116、D145、D146、D148、D211、D240、D243、D244、D249、D259、D268、D291、D318、D360</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>商品名稱的字數上限</li>
+    <li>適用對象是否必填</li>
+    <li>系統屬性的完整值域、各分類出現哪些項目、各項目是否必填</li>
+    <li>原本「服飾」「配件」兩個分類的既有商品怎麼遷移到新的大類與次分類</li>
+    <li>選項數與每個選項值數的上限</li>
+    <li>快捷帶入的預設清單與標準清單內容</li>
+    <li>能不能刪掉快捷帶入的預設值</li>
+    <li>能不能從標準清單補上沒帶入的值</li>
+    <li>鞋類、童裝、內衣是否各用一套尺寸清單</li>
+    <li>顏色以外的選項是否也能帶視覺屬性；標準顏色的預設色號</li>
+    <li>選項組合的商品圖是否也能放影片；訂單、取貨清單、Scanner 縮圖等其他版位是否也換成這張圖</li>
+    <li>毛利（定價減成本）的計算口徑與顯示位置</li>
+    <li>低庫存門檻要逐商品還是逐選項組合設定</li>
+    <li>出貨分類的選項來源，以及跟運費的關係</li>
+    <li>專屬尺寸指南能不能另存成商店的指南；尺寸指南跟尺寸選項要不要對齊</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.5.2 v6.40，至 D428）</p>
+</details>
+</div>
+</body>
+</html>

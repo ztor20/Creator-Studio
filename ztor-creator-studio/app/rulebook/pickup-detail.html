@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>取貨場次詳情 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+table.stage{min-width:820px}
+table.stage td:nth-child(1){width:11%;white-space:nowrap}
+table.stage td:nth-child(2){width:19%}
+table.stage td:nth-child(4){width:12%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="pickup-detail">取貨場次詳情</h1>
+<p class="lede">創作者在取貨場次詳情確認一個場次的設定、把 Scanner 交給工作人員，並查名單與核銷紀錄、更正錯誤核銷。</p>
+
+<div class="toc"></div>
+
+<h2 id="detail-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>從取貨清單列上的「開啟詳情」進入；bookyay 匯入的活動，活動詳情的「前往領取場次」也連到這裡</li>
+  <li>各階段能做什麼，見取貨規則的<a href="pickup-rules.html#stage">取貨場次的階段</a>；已封存的場次只供查看歷史紀錄</li>
+  <li>名單與核銷紀錄的單位都是一件（一個領取單位），見<a href="pickup-rules.html#redeem-unit">一個領取碼核銷一件</a></li>
+</ul>
+
+<h2 id="detail-flow"><span class="n"></span>操作流程</h2>
+<p>創作者進場次詳情後，依要處理的事走到頁面上不同的區塊。</p>
+<div class="dg" role="img" aria-label="取貨場次詳情流程圖，由左往右：進場次詳情，再選要做什麼；改設定就按編輯開啟建立取貨場次視窗，交給現場就複製 Scanner 網址或顯示 QR code，收回存取就重設網址、改密碼或停用網址，查進度就看取貨與入場名單，查核與更正就在名單或核銷紀錄上反轉錯誤核銷">
+<div class="dg-hg" style="--dg-c:3">
+  <div class="dg-node" style="grid-row:1/6;grid-column:1"><span class="s">1</span>進場次詳情<small>從取貨清單「開啟詳情」</small></div>
+  <span class="dg-a" style="grid-row:1/6;grid-column:2"></span>
+  <div class="dg-node q" style="grid-row:1/6;grid-column:3"><span class="s">2</span>要做什麼？</div>
+  <span class="dg-a" data-t="改設定" style="grid-row:1;grid-column:4"></span>
+  <span class="dg-a" data-t="交給現場" style="grid-row:2;grid-column:4"></span>
+  <span class="dg-a" data-t="收回存取" style="grid-row:3;grid-column:4"></span>
+  <span class="dg-a" data-t="查進度" style="grid-row:4;grid-column:4"></span>
+  <span class="dg-a" data-t="查核與更正" style="grid-row:5;grid-column:4"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:5">編輯場次<small>開啟建立取貨場次視窗</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:5">複製網址或顯示 QR code</div>
+  <div class="dg-node end" style="grid-row:3;grid-column:5">重設網址、改密碼或停用</div>
+  <div class="dg-node end" style="grid-row:4;grid-column:5">取貨與入場名單<small>預設分頁</small></div>
+  <div class="dg-node end" style="grid-row:5;grid-column:5">反轉錯誤核銷<small>在名單或核銷紀錄上</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進場次詳情：頁面依序是<a href="#info">場次資訊</a>、<a href="#scanner">Scanner 存取</a>，下方是名單與核銷紀錄，在同一區切換</li>
+  <li>要做什麼？
+    <ul class="plain">
+      <li>改設定：按「編輯」，見<a href="#info">場次資訊</a></li>
+      <li>交給現場：複製 Scanner 網址或顯示 QR code，見<a href="#scanner-url">網址與交付</a></li>
+      <li>收回存取：重設網址、改密碼或停用網址，見<a href="#scanner-life">密碼與網址的有效期</a></li>
+      <li>查進度：在<a href="#roster">取貨與入場名單</a>搜尋或篩選，看待核銷、已核銷的件數，以及某位買家已領幾件、共幾件</li>
+      <li>查核與更正：在<a href="#log">核銷紀錄</a>查每一次掃描的結果；核銷錯了，在名單或核銷紀錄上反轉那一件，見<a href="#reverse">反轉錯誤核銷</a></li>
+    </ul>
+  </li>
+</ol>
+<p class="note">依據：5.1.5.15 引言、頁面佈局、使用情境；D123。</p>
+
+<h2 id="info"><span class="n"></span>場次資訊</h2>
+<p>創作者在這裡確認場次的基本設定，並從這裡編輯。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>場次名稱、取貨地點、開始時間、結束時間、取貨說明</td><td>—</td><td>顯示建立時填的內容；各欄規則見建立取貨場次的<a href="pickup-create.html#fields-basic">場次基本資訊</a></td></tr>
+    <tr><td>場次狀態</td><td>—</td><td>尚未開始、進行中、已結束、已封存，見<a href="pickup-rules.html#stage">取貨場次的階段</a></td></tr>
+    <tr><td>編輯</td><td>—</td><td>開啟建立取貨場次的同一個視窗，見<a href="pickup-create.html#edit">編輯既有場次</a><br>已結束的場次要延長，也用這個按鈕改結束時間，見<a href="pickup-rules.html#actions">場次的動作</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.15 F1；D337、D338。</p>
+
+<h2 id="scanner"><span class="n"></span>Scanner 存取</h2>
+<p>創作者把現場掃描工具交給工作人員，工作人員不必登入 Creator Studio。怎麼交出去見<a href="#scanner-url">網址與交付</a>；人員更換或網址外流時怎麼收回見<a href="#scanner-life">密碼與網址的有效期</a>。</p>
+
+<h3 id="scanner-url">網址與交付</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>Scanner 網址</td><td>—</td><td>每個場次建立後產生一組唯一網址，打開就是這個場次的<a href="pickup-scanner.html">手機 Scanner</a></td></tr>
+    <tr><td>複製連結</td><td>—</td><td>複製網址交給工作人員</td></tr>
+    <tr><td>顯示 QR code</td><td>—</td><td>把網址顯示成 QR code，工作人員用手機掃了就能開</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="scanner-life">密碼與網址的有效期</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>Scanner 密碼</td><td>—</td><td>不明文顯示，只能修改或重設<br>改密碼後，已登入的 Scanner 要重新輸入</td></tr>
+    <tr><td>重設網址</td><td>—</td><td>舊網址立即失效，尚未送出的掃描結果不能再送出<br>新網址沿用原本的密碼，或重新設定</td></tr>
+    <tr><td>停用網址</td><td>—</td><td>停用後，工作人員打開網址只看到停用狀態，不能掃描</td></tr>
+    <tr><td>啟用網址</td><td>—</td><td>恢復可以掃描</td></tr>
+  </tbody>
+</table></div>
+<p>密碼連錯幾次會鎖定、Scanner 能看到哪些資料，見手機 Scanner 的<a href="pickup-scanner.html#access">掃描器能看到什麼</a>；鎖定只擋 Scanner 入口，不影響創作者在這裡改密碼或停用網址。</p>
+<p class="note">依據：5.1.5.15 F2（F2.1～F2.3）；5.1.5.12 F3。</p>
+
+<h2 id="roster"><span class="n"></span>取貨與入場名單</h2>
+<p>名單讓創作者看誰可以取貨或入場、名下每一件是否已核銷，出問題時追到來源並人工處理；這份名單是這個場次核銷進度的正式依據。名單與<a href="#log">核銷紀錄</a>在同一區切換，預設顯示名單；切換不離開本頁，兩邊的搜尋與篩選各自獨立。每一列有什麼見<a href="#roster-rows">名單列</a>；怎麼找見<a href="#roster-filter">搜尋與篩選</a>；怎麼追到來源與更正見<a href="#roster-actions">查看來源與反轉</a>。</p>
+
+<h3 id="roster-rows">名單列</h3>
+<p>名單一列是一件（一個領取單位）：買家買 3 件就有 3 列，各有自己的領取碼與狀態。</p>
+<ul class="plain">
+  <li>取貨商品來自已付款的訂單品項，依購買數量展開；組合包展開成成員商品的領取單位</li>
+  <li>活動票券來自已售出或已發出的票券，一張票一列</li>
+  <li>同一位買家可以同時有取貨商品與活動票券，合在同一份名單，每一件各自保留來源與領取碼</li>
+  <li>名單要看得出同一位買家在這個場次已領幾件、共幾件</li>
+</ul>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>買家／持票人</td><td>這一件屬於哪位買家或持票人</td></tr>
+    <tr><td>來源</td><td>來自訂單或活動票券，帶出訂單編號或票券編號（ticket_id）</td></tr>
+    <tr><td>項目</td><td>這一件的商品名；票券顯示活動與票種</td></tr>
+    <tr><td>選項組合</td><td>這一件的選項組合</td></tr>
+    <tr><td>領取碼</td><td>領取碼的識別字串，供對照與客服查詢<br>不顯示買家的 QR 圖</td></tr>
+    <tr><td>來源組合</td><td>這一件由組合包展開時，標示來自哪一個組合包<br>不是來自組合包就留空</td></tr>
+    <tr><td>目前狀態</td><td>取貨商品：取貨場次待設定、待取貨、已取貨、已取消<br>活動票券：待入場、已入場、已取消<br>已取消只來自 Admin 撤銷，見<a href="pickup-rules.html#code-void">領取碼什麼時候失效</a></td></tr>
+    <tr><td>最近核銷時間</td><td>這一件最近一次核銷的時間</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="roster-filter">搜尋與篩選</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>搜尋</td><td>—</td><td>比對下列欄位：<br>買家名稱<br>email<br>訂單編號<br>ticket_id<br>領取碼<br>商品名<br>活動名<br>票種<br>用領取碼搜尋時，直接定位到那一件</td></tr>
+    <tr><td>狀態篩選</td><td>—</td><td>選項：<br>待核銷<br>已核銷<br>已取消<br>篩選後的計數以件計</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="roster-actions">查看來源與反轉</h3>
+<p>創作者在單一件的層級追到來源，並更正錯誤核銷。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>查看來源</td><td>—</td><td>取貨商品連回<a href="order-detail.html">訂單詳情</a>，活動票券連回活動詳情或票券名單</td></tr>
+    <tr><td>反轉核銷</td><td>已核銷的件</td><td>見<a href="#reverse">反轉錯誤核銷</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.15 F3、F4（F4.1～F4.3）；5.1.5.14 F3；主規格 §7.2「取貨資格／核銷」「領取單位的正式定義」；D122、D123、D240、D252、D253。</p>
+
+<h2 id="log"><span class="n"></span>核銷紀錄</h2>
+<p>核銷紀錄讓創作者在活動後逐件查核取貨、入場與異常處理。一筆紀錄是一件的一次核銷事件：同一位買家連續核銷 3 件，留下 3 筆。每筆記了什麼見<a href="#log-fields">紀錄內容</a>；結果分哪幾種見<a href="#log-results">結果類型</a>；匯出與同步失敗見<a href="#log-sync">匯出與資料同步</a>。</p>
+
+<h3 id="log-fields">紀錄內容</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>核銷時間</td><td>這次核銷發生的時間</td></tr>
+    <tr><td>場次</td><td>這次核銷所屬的取貨場次</td></tr>
+    <tr><td>Scanner 網址版本</td><td>經由哪一版 Scanner 網址送出</td></tr>
+    <tr><td>工作人員</td><td>操作的工作人員，進入 Scanner 時有填才記</td></tr>
+    <tr><td>買家／持票人</td><td>這一件的買家或持票人</td></tr>
+    <tr><td>來源訂單或 ticket_id</td><td>這一件追溯回的訂單編號或票券編號</td></tr>
+    <tr><td>領取碼</td><td>這次核銷的領取碼識別字串，用來對應到是哪一件</td></tr>
+    <tr><td>項目</td><td>商品名與選項組合；票券顯示活動與票種</td></tr>
+    <tr><td>來源組合</td><td>這一件由組合包展開時，記下來自哪一個組合包</td></tr>
+    <tr><td>結果</td><td>見<a href="#log-results">結果類型</a></td></tr>
+    <tr><td>錯誤原因</td><td>核銷沒成功時的原因</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="log-results">結果類型</h3>
+<p>每筆紀錄的結果是下列其中一種；工作人員在 Scanner 上看到的對應畫面，見手機 Scanner 的<a href="pickup-scanner.html#results">掃描結果有哪幾種</a>。</p>
+<ul class="plain">
+  <li>成功</li>
+  <li>重複掃描</li>
+  <li>不屬於此場次</li>
+  <li>已取消：包括掃到已失效的領取碼</li>
+  <li>場次未開始</li>
+  <li>場次已結束</li>
+  <li>密碼或網址問題</li>
+  <li>人工反轉：見<a href="#reverse">反轉錯誤核銷</a></li>
+</ul>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>結果篩選</td><td>—</td><td>依結果類型篩選紀錄，跟名單的篩選各自獨立</td></tr>
+    <tr><td>查看來源</td><td>—</td><td>取貨商品紀錄連回訂單詳情，活動票券紀錄連回活動詳情或票券名單</td></tr>
+    <tr><td>反轉核銷</td><td>成功核銷的紀錄</td><td>見<a href="#reverse">反轉錯誤核銷</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="log-sync">匯出與資料同步</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>匯出</td><td>—</td><td>匯出這個場次的名單與核銷紀錄，供活動後對帳或現場人員交接</td></tr>
+    <tr><td>同步失敗標示與重試</td><td>核銷紀錄跟訂單品項或活動票券狀態沒同步上時</td><td>標示待同步或同步失敗，並提供重試<br>核銷紀錄是查核的依據；訂單品項與活動票券的狀態是營運的依據</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.15 F3、F5（F5.1～F5.3）；主規格 §7.2「領取單位的正式定義」；D240、D242、D252、D253。</p>
+
+<h2 id="reverse"><span class="n"></span>反轉錯誤核銷</h2>
+<p>核銷錯了，創作者在<a href="#roster-actions">名單</a>或<a href="#log-results">核銷紀錄</a>上反轉那一件；Scanner 上不能反轉。</p>
+<ul class="plain">
+  <li>一次只反轉一件，同一位買家的其他件不變</li>
+  <li>商品取貨：寫回訂單品項那一件的核銷狀態</li>
+  <li>活動票券：寫回活動的票券狀態</li>
+  <li>不刪原本的紀錄，另外新增一筆人工反轉紀錄</li>
+  <li>反轉後，這一件可以再掃描核銷</li>
+  <li>已核銷之後才被撤銷的件，核銷紀錄保留、不自動反轉，見取貨規則的<a href="pickup-rules.html#code-void">領取碼什麼時候失效</a></li>
+</ul>
+<p class="note">依據：5.1.5.15 F4.3、F5.2；5.1.5.14 F1.3；D240、D242。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.15-取貨場次詳情.md</code>（v1.13）；<code>5.1.5.14-手機Scanner.md</code>（v1.11）F1.3、F3；<code>5.1.5.12-建立取貨場次.md</code>（v1.11）F3；<code>0-設計規格書.md</code>（v4.90）§7.2</li>
+    <li>決策：D116、D121、D122、D123、D240、D242、D252、D253、D337、D338、D401、D453</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>頁面狀態要分幾種：規格的頁面狀態列了進行中、已結束、已封存，沒有尚未開始</li>
+    <li>人工核銷的入口、能用的情況與效果（規格只寫操作對象是單一件）</li>
+    <li>反轉要不要確認、要不要填原因，以及「有權限的創作者」指的是誰</li>
+    <li>名單以買家分組、列首顯示進度、子列展開的做法，以及名單與核銷紀錄用什麼控制項切換（目前是呈現參考）</li>
+    <li>狀態篩選有沒有「全部」，以及篩選後要不要並列買家人數</li>
+    <li>結果篩選有哪些選項</li>
+    <li>匯出的檔案格式與欄位</li>
+    <li>已核銷之後才被撤銷的件（只會出現在歷史資料）在名單上怎麼呈現</li>
+    <li>名單沒有資料或搜尋沒有命中時顯示什麼</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新建頁面；對照 5.1.5.15 v1.13、5.1.5.14 v1.11、主規格 v4.90）</p>
+</details>
+</div>
+</body>
+</html>

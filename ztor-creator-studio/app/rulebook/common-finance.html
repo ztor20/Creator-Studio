@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>財務術語與收入事件 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+ul.plain ul.plain{margin:4px 0 4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+.k{font-size:12px;color:var(--text-3)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+table.fee td:nth-child(1){width:22%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="overview">財務術語與收入事件</h1>
+<p class="lede">創作者與 Admin 照這頁的同一套用詞看收入、扣項與淨利，並查一筆進帳怎麼記錄、歸哪一類、用哪一版費率。總覽、項目、電子商店、活動等頁的收入數字都引用收入管理的口徑，不自行重算。</p>
+
+<div class="toc"></div>
+
+<h2 id="terms"><span class="n"></span>財務用詞</h2>
+<p>各頁提到收入、扣項與提款時，一律用下表的名稱。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">用詞</th><th>指什麼</th></tr></thead>
+  <tbody>
+    <tr><td>總收入（Gross Revenue）</td><td>扣除任何成本與費用前的收入頂層金額</td></tr>
+    <tr><td>直接成本（COGS）</td><td>這筆收入直接對應的進貨、製作、物流等成本</td></tr>
+    <tr><td>毛利（Gross Profit）</td><td>總收入扣掉直接成本</td></tr>
+    <tr><td>淨利（Net Income）</td><td>毛利再扣掉平台費、支付費、稅費與分潤</td></tr>
+    <tr><td>待結算</td><td>已經產生、還不能提領的金額</td></tr>
+    <tr><td>可提領（Available）</td><td>已結算、可以申請提款的金額</td></tr>
+    <tr><td>提款（Payout）</td><td>把可提領金額轉進收款帳戶</td></tr>
+    <tr><td>費用（Fee）</td><td>手續費或扣項，要拆開寫出來源</td></tr>
+    <tr><td>收入去向（Where the money goes）</td><td>從總收入一路扣到可分配淨利的拆解，見<a href="#ladder">從總收入到淨利</a><br>規格與決策紀錄稱為「金流瀑布（Waterfall）」</td></tr>
+    <tr><td>可分配淨利（Distributable profit）</td><td>項目扣完各階、要分給創作者與 NFT 持有者的那筆錢<br>規格與決策紀錄稱為「淨利池（Net Profit Pool）」</td></tr>
+    <tr><td>IP Bank 應付（IP Bank Owed）</td><td>Admin 的 IP Bank 報表算出的金額＝影片淨收入 × 分成比例<br>只供報表閱讀，不是另一本收入帳</td></tr>
+    <tr><td>IP Bank 可提（IP Bank Available）</td><td>IP Bank 應付減掉同一位擁有者在同一部影片已提領的金額<br>擁有者還沒認領時顯示 locked until claim：認領之前這筆金額鎖住、不能提</td></tr>
+  </tbody>
+</table></div>
+<p>收入、提款的狀態詞見<a href="common-status.html#revenue">狀態語言的收入與提款的狀態</a>。</p>
+<p class="note">依據：主規格 §7.3「共用欄位」「金流瀑布與淨利池」介面呈現名稱；D041、D129。</p>
+
+<h2 id="ladder"><span class="n"></span>從總收入到淨利</h2>
+<p>收入從總收入一路往下扣，扣到最後的可分配淨利，再分給創作者與 NFT 持有者。</p>
+<div class="dg" role="img" aria-label="收入去向流程圖：總收入扣直接成本得毛利，扣平台費、支付費、稅費，再扣 IP 版稅與推薦分潤得淨收入，扣 Ztor 平台抽成得可分配淨利，最後分給創作者與 NFT 持有者">
+<div class="dg-flow">
+  <div class="dg-node">總收入</div><span class="dg-arr" data-t="− 直接成本"></span>
+  <div class="dg-node">毛利</div><span class="dg-arr" data-t="− 平台費、支付費、稅費"></span>
+  <div class="dg-node">扣完費用</div><span class="dg-arr" data-t="− IP 版稅、推薦分潤"></span>
+  <div class="dg-node">淨收入</div><span class="dg-arr" data-t="− Ztor 平台抽成"></span>
+  <div class="dg-node end">可分配淨利<small>預設創作者 60%<br>NFT 持有者 40%</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右，每一支箭頭是這一階扣掉的項目；推薦分潤只有發生時才扣。</p>
+<ul class="plain">
+  <li>毛利與淨利牽涉成本與分潤分攤，算到項目層級；一筆一筆的交易只顯示能逐筆歸屬的收入、平台費與支付費</li>
+  <li>平台費與支付費一律由創作者負擔、從收入內扣，所有販售管道（電子商店、活動、項目、IP）都一樣；買家只付折後售價加運費（門票是票價），買家端看不到任何費用項目；兩筆怎麼算見優惠規則的<a href="promo-rules.html#s2-fees">平台費與支付費怎麼算</a></li>
+  <li>粉絲分級折扣、創作者優惠碼、平台滿額折扣的折抵，在收入拆解各列一行，發生在平台費之前，見優惠規則的<a href="promo-rules.html#s2-absorb">折扣由創作者與平台一起吸收</a></li>
+  <li>多個 IP 的版稅都以毛收入平行扣，不逐層複利</li>
+  <li>推薦分潤的第一個具體來源是商店優惠碼的代理分成：從發碼創作者的收入扣，不影響平台費與其他扣項，見商店設定的<a href="eshop-settings.html#codes-partner">代理銷售紀錄</a></li>
+  <li>可分配淨利預設創作者 60%、NFT 持有者 40%，可以逐項目在範圍內調整；沒有 NFT 的非共創項目全歸創作者</li>
+  <li>可分配淨利由創作者手動觸發分配，不會自動撥款，見<a href="project-detail.html">項目詳情</a></li>
+  <li>每一階扣項對應它的費率版本，事後改費率不回溯，見<a href="#fee-version">費率版本與平台費率</a></li>
+</ul>
+<p class="note">依據：主規格 §7.3「共用欄位」財務階梯、「金流瀑布與淨利池」；§5.2.2；D041、D183、D278、D316、D424。</p>
+
+<h2 id="cocreate-funds"><span class="n"></span>共創項目的兩筆錢</h2>
+<p>共創項目有兩筆錢：平台把募得款分期撥給創作者，以及創作者分配可分配淨利；兩筆規則分開。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:16%"></th><th>可分配淨利的分配</th><th>募得款撥付</th></tr></thead>
+  <tbody>
+    <tr><td>哪一筆錢</td><td>項目收入扣完各階之後的可分配淨利</td><td>粉絲在共創期間支持的募得款</td></tr>
+    <tr><td>誰給誰</td><td>分給創作者與 NFT 持有者</td><td>平台撥給創作者</td></tr>
+    <tr><td>怎麼發動</td><td>創作者手動觸發，不會自動撥款</td><td>平台依級距與各期條件分期撥付</td></tr>
+    <tr><td>前提</td><td>項目有已結算的收入</td><td>項目已成功</td></tr>
+  </tbody>
+</table></div>
+<p>募得款撥付的規則：</p>
+<ul class="plain">
+  <li>只適用共創項目；直接發佈沒有募得款</li>
+  <li>級距由平台依項目預算決定，創作者不能選，Admin 也不逐案改；預算以美金計，門檻 5 萬美金</li>
+  <li>兩個級距都分期撥款，沒有一次撥款</li>
+  <li>第 1 期在完成所有扣款後撥付，不經 Admin 審核</li>
+  <li>之後各期的「平台確認」就是 Admin 審核，確認後 14 天內撥付</li>
+  <li>各期撥付的是扣除系統費用後的金額</li>
+  <li>撥付不改變項目狀態，也不新增收入分類，仍歸「項目支持」</li>
+  <li>撥款進度顯示在<a href="project-detail.html">項目詳情</a>的共創資訊</li>
+</ul>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">項目預算</th><th>各期撥付條件與比例</th></tr></thead>
+  <tbody>
+    <tr><td>未滿 5 萬美金，分 2 期</td><td>第 1 期：完成所有扣款，80%<br>第 2 期：平台確認發起人遞交所有物料及發行計劃，20%</td></tr>
+    <tr><td>5 萬美金以上，分 4 期</td><td>第 1 期：完成所有扣款，10%<br>第 2 期：平台確認發起人遞交完整劇本，10%<br>第 3 期：平台確認發起人遞交演職人員名單及拍攝時間表，60%<br>第 4 期：平台確認發起人遞交所有物料及發行計劃，20%</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：主規格 §7.3「募得款撥付」；§5.2.2；D041、D345、D346。</p>
+
+<h2 id="void-reserve"><span class="n"></span>撤銷沖銷與爭議</h2>
+<p>Admin 撤銷訂單品項或票券時，沖銷以新分錄表達，原事件不改寫；項目吸收沖銷金額時，依序從三個地方扣。</p>
+<div class="flow">
+  <span class="tag">沖銷準備金（Void Reserve）</span><span class="arr">→</span><span class="tag">當期可分配淨利</span><span class="arr">→</span><span class="tag warn">結轉到之後的赤字</span>
+</div>
+<ul class="plain">
+  <li>結轉的赤字不回收已經撥出去的錢</li>
+  <li>吸收不足時暫停這個項目的分配，直到補足</li>
+  <li>沖銷準備金的預扣比例目前是 0%（不預扣），這個比例可以調整</li>
+  <li>平台不提供退款動作：實際退款由 Admin 在平台外（Stripe 後台）先完成，再撤銷；平台吸收的是撤銷產生的沖銷分錄，不是退款本身</li>
+  <li>每個項目的收益各自結算，不能跨項目挪用或互相補貼</li>
+</ul>
+<p>爭議和撤銷是兩回事：爭議由買家或銀行端發起（chargeback），平台擋不掉。</p>
+<ul class="plain">
+  <li>爭議期間，金額從可提領扣除並凍結</li>
+  <li>創作者申訴成立，金額還原到可提領；申訴不成立，維持扣除</li>
+</ul>
+<p class="note">依據：主規格 §7.3「撤銷沖銷吸收與準備金」「使用限制」；§7.6「收入事件」第 3 項；D041、D253。</p>
+
+<h2 id="categories"><span class="n"></span>收入與交易分類</h2>
+<p>交易分兩族：收入事件回答「我賺了什麼」，帳務異動回答「我的餘額為什麼變了」。這是收入管理的交易明細、收入來源與各處篩選唯一的分類來源。</p>
+<h3 id="cat-income">收入事件的 10 類</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">分類</th><th>收入來自哪裡</th></tr></thead>
+  <tbody>
+    <tr><td>商品銷售</td><td>電子商店的商品、組合包、拍賣或數位內容</td></tr>
+    <tr><td>活動票務</td><td>活動門票、報名費或活動相關收入</td></tr>
+    <tr><td>項目支持</td><td>共創、預購、粉絲支持或項目方案</td></tr>
+    <tr><td>IP 版稅</td><td>自有 IP 被租用、引用或產生版稅</td></tr>
+    <tr><td>授權收入</td><td>授權費、租用費、競標付款或其他授權合約</td></tr>
+    <tr><td>串流・版稅</td><td>外部平台的串流、廣告或內容收益（YouTube、Spotify、OTT 等），以及平台外以報表補登或同步的版稅</td></tr>
+    <tr><td>合作者分潤</td><td>以合作者身分參與他人作品的分潤，以及贊助與品牌合作</td></tr>
+    <tr><td>推薦分潤</td><td>把別人的東西推出去取得的抽成：商店優惠碼的代理分成、推薦人佣金、聯盟分潤</td></tr>
+    <tr><td>貼文帶貨收益</td><td>粉絲經創作者貼文的專屬連結完成內容租借的收益；成效指標在<a href="fans-analytics.html">粉絲分析</a>，金額只在收入管理</td></tr>
+    <tr><td>Fanvestor 分潤</td><td>Fanvestor 或粉絲投資、支持機制產生的分潤</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>貼文帶貨收益與 Fanvestor 分潤在有第一筆資料之前，畫面上不提供對應的篩選項</li>
+</ul>
+
+<h3 id="cat-ledger">帳務異動的 3 類</h3>
+<p>帳務異動是錢的搬動或回吐，不套費率、不進可分配淨利。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">分類</th><th>指什麼</th></tr></thead>
+  <tbody>
+    <tr><td>提款</td><td>可提領金額轉進收款帳戶的付款紀錄</td></tr>
+    <tr><td>撤銷沖銷</td><td>訂單品項或票券被 Admin 撤銷時記的沖銷分錄：以新分錄表達，原事件不改寫</td></tr>
+    <tr><td>扣款</td><td>平台費、支付費、稅費、爭議調整或其他扣減</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="cat-source">資料來源的標記</h3>
+<p>手動補登、外部平台同步、平台驗證是資料來源，不是分類，任何一類收入都可能是手動補登的。</p>
+<ul class="plain">
+  <li>手動補登（未驗證）的收入不計入可提領與可申請提款的金額，也不計入平台稅務文件；最多計入展示用的收入統計，並標明未驗證</li>
+  <li>手動輸入或預估的資料不呈現成已驗證</li>
+  <li>補登的操作見<a href="revenue-manual.html">手動補登收入</a></li>
+</ul>
+<p class="note">依據：主規格 §7.3「收入與交易分類」「使用限制」；D181、D183、D250、D253。</p>
+
+<h2 id="revenue-event"><span class="n"></span>收入事件</h2>
+<p>每一筆收入產生時，由來源模組（電子商店、活動、項目、IP Bank）記成一個收入事件，交收入管理統一彙整；每筆進帳因此只有一個答案：從哪來、綁哪個項目或 IP、用哪一版費率、結算到哪一步。</p>
+<ul class="plain">
+  <li>每個收入事件至少記：
+    <ul class="plain">
+      <li>來源分類，見<a href="#categories">收入與交易分類</a></li>
+      <li>所屬項目</li>
+      <li>引用的 IP 版本（有的話）</li>
+      <li>金額與幣別</li>
+      <li>結算狀態，見<a href="common-status.html#revenue">收入與提款的狀態</a></li>
+      <li>費率版本，見<a href="#fee-version">費率版本與平台費率</a></li>
+    </ul>
+  </li>
+  <li>收入事件只增不改：撤銷沖銷與爭議都記成新的調整事件，原事件不改寫；更正也只加沖銷分錄</li>
+  <li>每筆收入事件綁一個項目，項目綁它用的 IP 版本；被引用的一方之後修改，不改寫既有事件的綁定</li>
+  <li>IP Bank 報表只讀取擁有者 × 影片的撥付結果並顯示算出的數字，不另建收入或提款帳本</li>
+  <li>收入事件記原幣（粉絲實付的幣別與金額）與換算幣（基準幣別），見<a href="common-currency.html#fan-pay">粉絲付款與收款</a></li>
+</ul>
+<p class="note">依據：主規格 §7.6「收入事件」「綁定原則」；§7.15「粉絲端與收款」；D041、D129、D253。</p>
+
+<h2 id="fee-version"><span class="n"></span>費率版本與平台費率</h2>
+<p>售出當下，當時生效的費率（平台費、支付費、分潤或版稅比例）凍結成一個費率版本，記在那筆收入事件上；平台之後改費率只影響之後的收入事件，既有事件與它的沖銷分錄都沿用原版本。</p>
+<ul class="plain">
+  <li>平台費率只有 Admin 能在<a href="admin-fees.html">平台費率設定</a>改；儲存就產生新的費率版本</li>
+  <li>創作者端的頁面（商品細節、訂單詳情、拍賣商品細節、收入管理）只顯示解析後的費率，不提供編輯</li>
+  <li>平台費與支付費是兩筆不同的扣項</li>
+</ul>
+<h3 id="fee-tree">平台費依收費維度與交易類型分</h3>
+<p>平台費依四個收費維度（進帳來自哪個模組）× 交易類型組成一棵費率樹，不另立第五個維度。</p>
+<div class="tablewrap"><table class="fee">
+  <thead><tr><th>收費維度</th><th>交易類型</th></tr></thead>
+  <tbody>
+    <tr><td>電子商店（E-Shop）</td><td>直售的實體商品<br>直售的數位商品<br>組合商品（Bundle）<br>拍賣商品（Auction，成交時）</td></tr>
+    <tr><td>活動（Events）</td><td>現場活動門票<br>線上活動門票<br>報名與免費活動處理費</td></tr>
+    <tr><td>項目（Projects）</td><td>共創成功抽成<br>預購成交抽成<br>實體回饋履約<br>數位回饋履約</td></tr>
+    <tr><td>IP（IP Bank、IP Market）</td><td>IP 授權金抽成<br>版稅分潤抽成<br>IP 租用抽成</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>拍賣的費率低於一般商品，是刻意區分（拍賣是單件高價）</li>
+  <li>組合包的成員含活動門票時，整筆走活動維度的門票費率，不拆成員分攤；只含商品的組合包走電子商店維度</li>
+  <li>同一張訂單混有活動門票與電子商店商品時，各品項用各自維度的費率</li>
+</ul>
+<h3 id="fee-layers">費率怎麼決定用哪一個值</h3>
+<p>一筆收入事件的平台費依序找：這位創作者對這個交易類型有覆寫值就用覆寫值，沒有就用全平台預設（General）的值。</p>
+<ul class="plain">
+  <li>覆寫逐個交易類型設，設定與稽核見<a href="admin-fees.html">平台費率設定</a></li>
+  <li>找到的值連同費率版本凍結進收入事件，沖銷與對帳都沿用，不回溯</li>
+  <li>收入管理收入拆解的平台費一列，取自這裡找到的值</li>
+</ul>
+<p class="note">依據：主規格 §7.6「費率版本」「平台費率」；D041、D139、D141、D292、D293、D309、D315、D316。</p>
+
+<h2 id="display"><span class="n"></span>財務數字怎麼顯示</h2>
+<p>每個財務數字都要看得出幣別、來源、狀態與是否已驗證。</p>
+<ul class="plain">
+  <li>跨幣別的資料顯示原始幣別、換算幣別、匯率與匯率時間</li>
+  <li>跨幣別的彙總數字（摘要卡、收入趨勢等）指定一個顯示幣別，同一頁所有卡片與趨勢用同一個匯率時點，預設是結算日的匯率</li>
+  <li>總覽、項目、項目淨利不自行重算收入，一律引用收入管理的口徑</li>
+  <li>Creator Studio 內的清單、摘要、KPI 與收入一律用基準幣別，見<a href="common-currency.html#base">基準幣別與換算價</a></li>
+</ul>
+<p class="note">依據：主規格 §7.3「顯示規則」「使用限制」；§7.15「使用限制」。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>0-設計規格書.md §7.3、§7.6</code>（v4.90）、<code>§5.2.2</code></li>
+    <li>決策：D041、D129、D139、D141、D181、D183、D250、D253、D278、D292、D293、D309、D315、D316、D345、D346、D424</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>三種促銷折抵在收入去向中的確切位置，以及是否影響 IP 版稅的計算基準</li>
+    <li>平台優惠碼由平台吸收時，平台費與創作者收入以未扣平台優惠碼的品項實付計（目前是推導）</li>
+    <li>撤銷的財務口徑：沖銷是否連同平台費與支付費退給創作者、平台外實際退款金額與沖銷金額怎麼對帳、跨幣別用哪個匯率</li>
+    <li>撤銷沖銷是否需要預扣沖銷準備金</li>
+    <li>代理分成的結算與撥款</li>
+    <li>貼文帶貨收益的分潤比例、結算週期、與平台費率的關係、內容租借的定價權</li>
+    <li>各交易類型的確切費率值，以及交易類型的確切歸類</li>
+    <li>支付費是全站單一費率，還是逐金流商各自「百分比加每筆固定額」</li>
+    <li>募得款撥付的「項目預算」對應哪個欄位，非美金幣別怎麼換算成美金</li>
+    <li>影視以外的內容類型（例如音樂），募得款各期的撥付條件</li>
+    <li>募得款各期條件與建立項目時訂的作品進度怎麼對應</li>
+    <li>「確認後 14 天內撥付」由誰監控、逾期怎麼辦；第 1 期在扣款完成後多久內撥付</li>
+    <li>Admin 審核放款的操作入口在哪一頁，審核不通過怎麼處理與通知</li>
+    <li>交件延遲或未完成時，未撥的款項怎麼處理</li>
+    <li>預購項目是否適用募得款分期撥付</li>
+    <li>未撥付的款項在結算狀態、可提領與收入管理交易明細中怎麼呈現</li>
+    <li>「系統費用」的範圍，各期比例以扣費前或扣費後的金額為基數，費用在哪一期扣</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新建；對照主規格 v4.90 §7.3、§7.6）</p>
+</details>
+</div>
+</body>
+</html>

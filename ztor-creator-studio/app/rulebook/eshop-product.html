@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>商品細節頁 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>商品細節頁</h1>
+<p class="lede">創作者在商品細節頁管理一件商品的內容、庫存、販售開關與關聯，並看它賣得如何。上架、顯示、開賣、下架與封存的規則，見<a href="eshop-sales.html">電子商店販售流程</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="pd-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>只涵蓋實體與數位商品；欄位依主分類分流，實體才有商品選項、取貨方式與商品庫存分頁，數位才有數位內容檔案</li>
+  <li>商品上架中也能直接改內容，不必先下架</li>
+  <li>已封存的商品整頁唯讀，見<a href="#pd-tabs">各狀態有哪些分頁</a></li>
+</ul>
+
+<h2 id="pd-flow"><span class="n"></span>操作流程</h2>
+<p>創作者從商品清單點進一件商品，先看總覽，再決定做狀態操作、改內容、管庫存，或修翻譯。</p>
+<div class="dg" role="img" aria-label="商品細節頁流程圖，由左往右：從商品清單進商品細節頁，看總覽，再選要做什麼；狀態操作在頁首，下架與刪除要先確認，改內容到商品設定分頁按編輯商品、改完儲存或取消，管庫存到商品庫存分頁補貨或鎖定，修翻譯開預覽與在地化改完儲存">
+<div class="dg-hg" style="--dg-c:5">
+  <div class="dg-node" style="grid-row:1/5;grid-column:1"><span class="s">1</span>進商品細節頁<small>從商品清單點進一件商品</small></div>
+  <span class="dg-a" style="grid-row:1/5;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/5;grid-column:3"><span class="s">2</span>看總覽<small>銷售摘要與設定概覽</small></div>
+  <span class="dg-a" style="grid-row:1/5;grid-column:4"></span>
+  <div class="dg-node q" style="grid-row:1/5;grid-column:5"><span class="s">3</span>要做什麼？</div>
+  <span class="dg-a" data-t="狀態操作" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" data-t="改內容" style="grid-row:2;grid-column:6"></span>
+  <span class="dg-a" data-t="管庫存" style="grid-row:3;grid-column:6"></span>
+  <span class="dg-a" data-t="修翻譯" style="grid-row:4;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:7">頁首操作<small>下架與刪除要先確認</small></div>
+  <div class="dg-node" style="grid-row:2;grid-column:7">商品設定分頁<small>按「編輯商品」</small></div>
+  <span class="dg-a" style="grid-row:2;grid-column:8"></span>
+  <div class="dg-node end" style="grid-row:2;grid-column:9">儲存或取消</div>
+  <div class="dg-node end" style="grid-row:3;grid-column:7">商品庫存分頁<small>補貨、到貨確認、鎖定</small></div>
+  <div class="dg-node" style="grid-row:4;grid-column:7">預覽與在地化<small>全頁畫面</small></div>
+  <span class="dg-a" style="grid-row:4;grid-column:8"></span>
+  <div class="dg-node end" style="grid-row:4;grid-column:9">儲存<small>立即生效</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，紫色框是要回答的問題，綠框是這個選擇的終點。圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進商品細節頁：從<a href="eshop-list.html#products">商品清單</a>點進一件商品；組合包與拍賣各有自己的細節頁</li>
+  <li>看總覽：見<a href="#pd-overview">總覽</a></li>
+  <li>要做什麼？
+    <ul class="plain">
+      <li>狀態操作：在頁首按下架、上架、封存、解除封存或刪除，下架與刪除要先確認，見<a href="#pd-header-ops">頁首操作</a></li>
+      <li>改內容：到<a href="eshop-product-settings.html">商品設定</a>分頁按「編輯商品」，改完儲存或取消</li>
+      <li>管庫存：到<a href="eshop-product-stock.html">商品庫存</a>分頁補貨、確認到貨或設單售的鎖定量；只有實體商品有這個分頁</li>
+      <li>修翻譯：按頁首的「預覽與在地化」，改完按「儲存」立即生效，見商品設定的<a href="eshop-product-settings.html#local">預覽與在地化</a></li>
+    </ul>
+  </li>
+</ol>
+<p class="note">依據：5.1.5.1 §2.2、§3、§4。</p>
+
+<h2 id="pd-header"><span class="n"></span>頁首與狀態操作</h2>
+<p>頁首讓創作者認出是哪一件商品、目前是什麼狀態，並依狀態提供下架、上架、封存、解除封存與刪除。頁首顯示什麼，見<a href="#pd-header-info">頁首顯示</a>；每個操作什麼時候出現、做了什麼，見<a href="#pd-header-ops">頁首操作</a>。</p>
+
+<h3 id="pd-header-info">頁首顯示</h3>
+<ul class="plain">
+  <li>主圖</li>
+  <li>商品名稱與一行摘要</li>
+  <li>狀態徽章：跟商品清單的狀態同一組，見商品清單的<a href="eshop-list.html#products-cols">欄位</a></li>
+  <li>類型徽章：例如實體商品、書籍</li>
+  <li>價格與選項模式的小字</li>
+</ul>
+
+<h3 id="pd-header-ops">頁首操作</h3>
+<p>下架、上架、封存、解除封存一次只出現這個狀態允許的那幾個；各狀態能做的動作總表見<a href="eshop-sales.html#archive-actions">每個狀態能做的動作</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>麵包屑</td><td>—</td><td>顯示來源路徑，例如「電子商店 / 商品 / 商品名稱」<br>回到電子商店時，保留原本的類型、狀態篩選與搜尋</td></tr>
+    <tr><td>預覽與在地化</td><td>—<br>已封存只能看</td><td>開啟全頁畫面，主區就是粉絲視角的完整商品頁；修改譯文、查看各幣別價格，見<a href="eshop-product-settings.html#local">預覽與在地化</a><br>商品資訊不足或庫存不允許上架時，在上架前提示<br>取代原本獨立的粉絲視角預覽，頁首不另放唯讀預覽鈕</td></tr>
+    <tr><td>補貨（Restock）</td><td>—</td><td>進<a href="eshop-restock.html">補貨</a></td></tr>
+    <tr><td>儲存（Save）</td><td>—</td><td>跟商品設定分頁「編輯商品」後的儲存是否同一個動作，見頁尾尚待確認</td></tr>
+    <tr><td>下架（Unlist）</td><td>上架中<br>要確認</td><td>還在上架中的組合包會一起下架，確認時列出，見<a href="eshop-sales.html#archive-unlist">下架與重新上架</a></td></tr>
+    <tr><td>上架</td><td>已下架，含定時下架已過、排定上架還沒到</td><td>跟商品設定分頁的上架開關、商品清單列上的「上架」是同一個動作，狀態連動<br>上架後是上架＋顯示沿用＋未開賣，要自己再設開賣才會對外販售<br>只影響這件商品，不連動任何組合包；組合包上架時帶著成員上架的規則，見<a href="bundles.html#unlist-relist">組合包重新上架時帶著成員上架</a></td></tr>
+    <tr><td>封存（Archive）</td><td>已下架<br>上架中不出現；從其他入口觸發時停用，提示「要先下架」</td><td>只看已下架，不檢查組合包，見<a href="eshop-sales.html#archive-archive">封存販售管道</a><br>封存後整頁唯讀，見<a href="#pd-tabs">各狀態有哪些分頁</a></td></tr>
+    <tr><td>解除封存（Unarchive）</td><td>已封存，是唯一的主要動作</td><td>回到已下架，不直接回到上架；要再賣，之後再按「上架」</td></tr>
+    <tr><td>刪除（Delete）</td><td>未完成（草稿）<br>已下架或已封存，而且零成交<br>上架中不提供，要先下架<br>要確認</td><td>不可復原；零成交的定義、被組合包成員擋下與刪除後的紀錄，見<a href="eshop-sales.html#archive-delete">刪除販售管道</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.1 §2.1、§2.2、§3 第 1 項；主規格 §7.14「封存與刪除」「下架確認與組合包連動」；D265、D284、D288、D289、D290、D298、D307、D314、D319。</p>
+
+<h2 id="pd-tabs"><span class="n"></span>各狀態有哪些分頁</h2>
+<p>商品細節頁分四個分頁：庫存的「看」在總覽、「做」在商品庫存、「設定」在商品設定、「關係」在關聯。各分頁在各狀態能不能改，見下表；分頁各自管什麼，點分頁名稱進該頁或該節。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>狀態</th><th><a href="#pd-overview">總覽</a></th><th><a href="eshop-product-stock.html">商品庫存</a></th><th><a href="eshop-product-settings.html">商品設定</a></th><th><a href="#pd-links">關聯</a></th></tr></thead>
+  <tbody>
+    <tr><td>未完成（草稿）<br>上架中<br>已下架</td><td>看得到</td><td>實體商品看得到<br>可操作</td><td>看得到<br>按「編輯商品」可改</td><td>看得到<br>電影關聯可改</td></tr>
+    <tr><td>已封存</td><td>看得到<br>唯讀</td><td>實體商品看得到<br>唯讀</td><td>看得到<br>唯讀</td><td>看得到<br>唯讀</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>商品庫存分頁只有實體商品有</li>
+  <li>已下架的商品內容照常可改，只有顯示與開賣不能調，見商品設定的<a href="eshop-product-settings.html#switches">上架、顯示與開賣</a></li>
+  <li>已封存的唯讀涵蓋所有分頁與逐列操作，不只「編輯商品」這一個入口，包括：
+    <ul class="plain">
+      <li>選項組合逐列的上架與鎖定</li>
+      <li>庫存表</li>
+      <li>關聯分頁</li>
+      <li>商品標籤</li>
+    </ul>
+  </li>
+  <li>已封存時，訂單、收入、操作紀錄與非公開連結的歷史照常可看；需求數據照常可以開</li>
+</ul>
+<p class="note">依據：5.1.5.1 §3、第 4 段「頁面狀態」；D260、D288。</p>
+
+<h2 id="pd-overview"><span class="n"></span>總覽</h2>
+<p>總覽讓創作者一眼看到這件商品賣得如何，以及所有設定的現值。賣得如何見<a href="#pd-sales">銷售摘要</a>；設定現值見<a href="#pd-summary">設定概覽</a>。</p>
+
+<h3 id="pd-sales">銷售摘要</h3>
+<p>銷售摘要放在可編輯內容之前，數字來自收入管理，口徑一致、不另算；資料還沒同步或結算中時要標示。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">指標</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>已售件數</td><td>這件商品累計售出的件數</td></tr>
+    <tr><td>毛收</td><td>這件商品的毛收入</td></tr>
+    <tr><td>淨額</td><td>扣掉平台費、支付費、物流後的淨額，附扣項說明，見<a href="promo-rules.html#s2-fees">平台費與支付費怎麼算</a></td></tr>
+    <tr><td>關聯中</td><td>關聯分頁的列數：含這件商品的組合包數＋引用它的項目數＋關聯的電影數<br>不是銷售數字、不來自收入管理<br>跟組合包細節頁的「關聯中」同一個定義</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>關聯中</td><td>—</td><td>點了切到<a href="#pd-links">關聯</a>分頁</td></tr>
+    <tr><td>查看銷售與收入紀錄</td><td>—</td><td>連到<a href="revenue.html">收入管理</a>，看這件商品的交易、費用、物流、撤銷沖銷與爭議</td></tr>
+    <tr><td>還沒有銷售時</td><td>—</td><td>指標顯示 0 或「—」，並說明「尚無銷售紀錄」<br>查看紀錄的入口可以照常提供，點進去是空清單</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="pd-summary">設定概覽</h3>
+<p>設定概覽是本頁唯一「所有設定一眼看完」的地方：商品設定分頁的每個區塊一行一句現值，點了前往那一節修改。</p>
+<p class="note">依據：5.1.5.1 §2.3、§3 第 2 項；主規格 §7.3；D260。</p>
+
+<h2 id="pd-links"><span class="n"></span>關聯</h2>
+<p>關聯分頁收這件商品跟站上其他東西的關係，分兩個方向：被誰用，只看、可以點過去，見<a href="#pd-links-bundles">組合包</a>與<a href="#pd-links-projects">項目</a>；掛在哪，可以改，見<a href="#pd-links-movies">電影關聯</a>。商品標籤是商品自己的屬性，留在商品設定。</p>
+
+<h3 id="pd-links-bundles">組合包</h3>
+<p>列出每個含這件商品的組合包，以及它從這件商品鎖走的量，讓創作者知道庫存去了哪裡。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>組合包與鎖走的量</td><td>有組合包含這件商品時</td><td>只看；鎖定量在組合包那邊用「鎖定套數」設，見<a href="bundles.html#stock-lock">鎖定套數</a><br>沒設鎖定的組合包標「未鎖定，出貨時從未鎖定的部分取」<br>多選項商品逐選項組合列出明細，每列最前面是該選項組合的商品圖縮圖，沒設就用主圖<br>多選項商品沒指定規格的部分，算在商品層沒有被鎖定的量裡扣，不列在任何一個選項組合上</td></tr>
+    <tr><td>前往組合包</td><td>—</td><td>進<a href="eshop-bundle.html">組合包細節頁</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="pd-links-projects">項目</h3>
+<p>列出引用這件商品的項目方案，避免改商品時讓方案資訊對不上。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>引用清單</td><td>—</td><td>每一列是一個引用它的項目方案，附影響範圍，例如（假設）「列為回饋品項 · 影響 62 位支持者」</td></tr>
+    <tr><td>前往項目</td><td>—</td><td>進<a href="project-detail.html">項目詳情</a></td></tr>
+    <tr><td>變更影響提示</td><td>有項目引用時</td><td>修改價格、庫存、交付方式或可見狀態時，提示可能影響引用這件商品的項目方案</td></tr>
+    <tr><td>沒有引用時</td><td>—</td><td>顯示「尚未被任何項目引用」，可省略變更影響提示</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="pd-links-movies">電影關聯</h3>
+<p>創作者把商品關聯到 ztor 前台已上架的電影；電影在前台管理，本頁只增刪關聯。實體與數位商品都適用。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>加入電影</td><td>選填<br>可以多部</td><td>從建議清單直接點選，或輸入電影名稱搜尋後加入<br>候選來自前台電影目錄，只有已上架的電影<br>項目裡的電影還沒上架，跟這裡關聯的電影是不同的東西</td></tr>
+    <tr><td>移除</td><td>已加入的每部電影</td><td>個別移除</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.1 §2.4、§2.10「庫存去向」、§2.14、§3 第 5 項；主規格 §7.1、§7.14「組合包：鎖定套數」；D138、D140、D258、D260、D266、D268。</p>
+
+<h2 id="pd-demand"><span class="n"></span>需求數據</h2>
+<p>需求數據讓創作者在決定生產量前，直接看這件商品各尺寸的需求，不必回需求看板自己篩。只對實體商品出現。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>需求數據入口</td><td>只對實體商品<br>已封存照常可以開</td><td>開啟這件商品的需求數據，保有返回本頁的脈絡</td></tr>
+    <tr><td>這件商品的需求數據</td><td>開啟後</td><td>是<a href="demand-board.html">需求看板</a>的單品切片，口徑跟看板一致，算法見<a href="demand-board.html#algo">需求看板的算法</a><br>照實顯示這件商品全部的選項值，包括自行輸入的值<br>只供參考，不連動庫存、補貨或出貨，也不改本頁任何欄位</td></tr>
+    <tr><td>還沒有需求資料時</td><td>開啟後</td><td>說明「尚無資料」與資料來源，不顯示空白畫面</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.1 §2.19；主規格 §7.17；D360。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.1-商品細節頁.md</code>（v1.58）§1、§2.1–§2.4、§2.10「庫存去向」、§2.14、§2.19、§3、§4、§5；<code>0-設計規格書.md</code> §7.1、§7.3、§7.14、§7.17</li>
+    <li>決策：D138、D140、D258、D260、D265、D266、D268、D284、D288、D289、D290、D298、D307、D314、D319、D360</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>頁首的「儲存」跟商品設定分頁按「編輯商品」後的儲存，是不是同一個動作</li>
+    <li>頁首「補貨」對數位商品是否出現</li>
+    <li>關聯分頁的電影關聯，要不要先按「編輯商品」才能改</li>
+    <li>需求數據對數位商品是否適用，以及未完成（草稿）的商品是否出現入口</li>
+    <li>網址沒帶商品或找不到這件商品時，畫面怎麼呈現</li>
+    <li>電子商店的下架、封存、刪除相關待確認，列在<a href="eshop-sales.html">電子商店販售流程</a>頁尾</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.5.1 v1.58，至 D427）</p>
+</details>
+</div>
+</body>
+</html>

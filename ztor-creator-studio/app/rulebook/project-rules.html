@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>項目規則 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain{margin:4px 0 4px}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ol.plain li{margin-bottom:4px}
+ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+table.stage{min-width:820px}
+table.stage td:nth-child(1){width:11%;white-space:nowrap}
+table.stage td:nth-child(2){width:19%}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1 id="overview">項目規則</h1>
+<p class="lede">創作者與 Admin 照這頁的規則判斷一個項目是哪一種類型、由什麼組成、走到哪個階段、什麼時候看得到與買得到，其他項目頁提到這些規則時會連回這裡。</p>
+
+<div class="toc"></div>
+
+<h2 id="types"><span class="n"></span>項目的類型</h2>
+<p>項目分三種類型，類型決定建立流程走哪幾步、有沒有方案、平台費什麼時候收。直接發佈另依作品家族分兩條路，見<a href="#families">直接發佈的兩個作品家族</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:20%">項目類型</th><th style="width:26%">一句話</th><th style="width:24%">成立條件</th><th style="width:12%">方案</th><th>平台費</th></tr></thead>
+  <tbody>
+    <tr><td>直接發佈（Direct release）</td><td>內容已就緒，粉絲可以立即觀看或購買</td><td>沒有達標門檻<br>沒有退款機制</td><td>沒有</td><td>對營收抽成</td></tr>
+    <tr><td>共創（Co-create）</td><td>粉絲先支持，達到共創目標後再發布或交付</td><td>共創目標<br>未達標退款，方式見頁尾尚待確認</td><td>至少 3 個</td><td>達標才收</td></tr>
+    <tr><td>預購（Presale）</td><td>粉絲提前下單，達到最少預購數後再生產交付</td><td>最少預購數<br>未達量退款，方式見頁尾尚待確認</td><td>至少 1 個（是否提高到 3 個見<a href="project-create-tiers.html">方案</a>頁尾）</td><td>達量才收</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li id="fee">平台費是 5% 平台費加 3% Stripe 手續費，兩筆都由創作者負擔、從創作者的收入內扣，粉絲付的是標示價格，粉絲端不列出這兩筆；直接發佈對營收抽成，共創與預購只在成立時收；口徑見<a href="common-finance.html">財務術語與收入事件</a></li>
+  <li>項目類型在建立項目流程裡決定，建立完成後鎖定，取消後也不解鎖</li>
+</ul>
+
+<h3 id="families">直接發佈的兩個作品家族</h3>
+<p>直接發佈依內容類型分成兩個作品家族，差別在作品有沒有可播放的影片本體。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:20%">作品家族</th><th style="width:30%">內容類型</th><th>直接發佈時</th></tr></thead>
+  <tbody>
+    <tr><td>影片家族</td><td>電影<br>短片<br>影集<br>MV<br>紀錄片</td><td>建立時一併上架作品，共 5 步<br>送出即送審，審核通過後依上映日期上線</td></tr>
+    <tr><td>非影片家族</td><td>單曲<br>專輯<br>活動<br>周邊<br>自訂</td><td>共 4 步<br>發布即上線，不送審</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>共創與預購不因作品家族改變步驟</li>
+  <li>只有影片家族的作品走得到作品上架與審核，見<a href="project-publish.html">作品上架</a></li>
+</ul>
+<p class="note">依據：5.1.2.1 §1、§3、§4.1 F1、§5.1.1 F15、§6 第 8 項；5.1.2.2 §2.2.4；主規格 §7.3；D041、D166、D182、D316。</p>
+
+<h2 id="composition"><span class="n"></span>項目的組成：作品與方案</h2>
+<p>一個項目由作品與方案兩個成分組成，直接發佈只有作品。兩個成分各是什麼，見<a href="#work">作品</a>與<a href="#tier">方案</a>；IP 在項目裡只有一種身分，見<a href="#ip">IP 在項目裡的身分</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:34%">項目類型</th><th style="width:33%">作品</th><th>方案</th></tr></thead>
+  <tbody>
+    <tr><td>直接發佈</td><td>有</td><td>沒有</td></tr>
+    <tr><td>共創</td><td>有</td><td>有</td></tr>
+    <tr><td>預購</td><td>有</td><td>有</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="work">作品</h3>
+<p>作品是這個項目要直接發佈、共創或預購的那個主要物品，沒有作品就沒有項目。</p>
+<ul class="plain">
+  <li>作品的類型就是建立時選的內容類型，選項見<a href="project-create-step1.html#content-type">內容類型與作品家族</a>；落到哪個商品分類見<a href="taxonomy.html">商品分類與模組應用</a></li>
+  <li>作品上架講的作品是同一個東西：影片家族的作品多走一道檔案上架與審核，其他家族不走</li>
+  <li>數位影視類與數位音樂類的次分類只能以作品的身分存在於項目，不能在電子商店販售，也不會出現在方案的商品清單；同名的實體版照常在商店賣</li>
+  <li>作品能落的次分類有 15 個，方案能引用的商品次分類有 22 個；談「項目支援哪些分類」時先講清楚問的是作品還是方案</li>
+</ul>
+
+<h3 id="tier">方案</h3>
+<p>方案是共創與預購打包給粉絲的一組東西：粉絲先付錢、東西還沒做出來時，方案說明粉絲會拿到什麼。直接發佈的作品已完成、直接賣，所以沒有方案。</p>
+<ul class="plain">
+  <li>方案依附於一個項目而存在，離開項目沒有意義</li>
+  <li>共創方案的主體是分潤名額，名額可以是 0（純回饋方案）</li>
+  <li>預購方案必含作品至少一份，可以再加附屬商品</li>
+  <li>方案與電子商店的組合包是同一套定價模式，見<a href="bundles.html">組合包與票務商品</a>：
+    <ul class="plain">
+      <li>成員引用既有商品</li>
+      <li>價格自動算出</li>
+      <li>折扣用百分比</li>
+    </ul>
+  </li>
+  <li>方案的欄位與價格算式見<a href="project-create-tiers.html">方案</a></li>
+</ul>
+
+<h3 id="ip">IP 在項目裡的身分</h3>
+<p>IP 資產不是項目的貨：IP 在項目裡只能以 IP 租借出現，用來揭露作品借用了哪些 IP 並連結授權，見<a href="project-create-step1.html#ip-rental">IP 租借</a>。</p>
+<ul class="plain">
+  <li>IP 資產不能當作品</li>
+  <li>IP 資產不能被方案引用，方案的商品清單不出現 IP 資產次分類；借用關係不是可販售的貨</li>
+  <li>IP 租借屬關於項目的權利揭露，不是營利模式，不取代營利設定的廣告與品牌合作</li>
+  <li>IP 資產包括 Story World、Person-Based、Brand、Event Format、Other 五類</li>
+  <li>IP 的販售與出租走<a href="ip-market.html">IP 市場</a>，與項目是兩條路</li>
+</ul>
+<p class="note">依據：主規格 §7.12、§7.13；5.1.2.1 §3、§4.1 F5、§5.2.2、§5.3.2；D166、D167、D227、D228、D230、D232、D251。</p>
+
+<h2 id="stage"><span class="n"></span>項目的階段</h2>
+<p>一個項目從草稿往前走，同時只落在一個階段，任一階段都可以轉成已取消。每個階段誰能做什麼，見<a href="#stage-who">各階段誰能做什麼</a>；三種類型各走哪幾個階段，見<a href="#stage-paths">各類型走哪幾個階段</a>；一個項目算在哪個階段，見<a href="#stage-rule">階段怎麼判定</a>。</p>
+<div class="flow">
+  <span class="tag wait">草稿</span><span class="arr">→</span><span class="tag">準備中</span><span class="arr">→</span><span class="tag ok">進行中</span><span class="arr">→</span><span class="tag ok">已成功</span><span class="arr">→</span><span class="tag pink">已上線</span>
+  <span class="flow__alt">任一階段 → <span class="tag warn">已取消</span></span>
+</div>
+
+<h3 id="stage-who">各階段誰能做什麼</h3>
+<p>Admin 能做創作者能做的一切（代管），表中「Admin 額外能做」只寫創作者做不到的事。</p>
+<div class="tablewrap"><table class="stage">
+  <thead><tr><th>階段</th><th>什麼時候進入</th><th>創作者能做</th><th>Admin 額外能做</th><th>連動</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag wait">草稿</span><div class="k">Draft</div></td><td>建立項目時自動保存，還沒發布或送審</td><td>回到建立項目流程續填<br>發布或送出審核<br>草稿沒有項目詳情，點進去一律回到建立流程</td><td>—</td><td>—</td></tr>
+    <tr><td><span class="tag">準備中</span><div class="k">Scheduled</div></td><td>直接發佈選稍後排程發布<br>直接發佈影片家族送出審核<br>共創與預購發布後、還沒開募或開賣<br>共創與預購的影片作品審核通過、還沒上線</td><td>影片作品還沒上線時，在項目詳情設定或修改上映日期</td><td>審核送出的影片作品，見<a href="admin-video-review.html">影片上架審核</a></td><td>影片作品另有審核狀態，見<a href="#review">作品審核與項目階段</a></td></tr>
+    <tr><td><span class="tag ok">進行中</span><div class="k">Published</div></td><td>共創開始募集、預購開始販售</td><td>在<a href="project-detail.html">項目詳情</a>編輯、發更新、維護里程碑</td><td>—</td><td>粉絲支持或預購方案</td></tr>
+    <tr><td><span class="tag ok">已成功</span><div class="k">Succeeded</div></td><td>共創達到共創目標<br>預購達到最少預購數</td><td>交付作品<br>影片作品走<a href="project-publish.html">作品上架</a>送出審核</td><td>審核送出的影片作品<br>審核共創募得款需要平台確認的各期撥付</td><td>共創的募得款開始分期撥付，見<a href="common-finance.html">財務術語與收入事件</a></td></tr>
+    <tr><td><span class="tag pink">已上線</span><div class="k">Live</div></td><td>作品實際上線的那一刻<br>直接發佈非影片家族發布或排程時間到</td><td>在項目詳情維護項目</td><td>—</td><td>—</td></tr>
+    <tr><td><span class="tag warn">已取消</span><div class="k">Cancelled</div></td><td>任一階段被取消<br>共創或預購到期沒達標</td><td>發一般更新說明取消原因與退款進度（共創與預購）<br>直接發佈沒有項目更新，要對買家說明改走群發訊息<br>其餘凍結，見<a href="#cancel">項目的取消</a></td><td>—</td><td>必帶終止原因</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>進行中（Published）不分類型一律顯示「進行中」，已成功（Succeeded）一律顯示「已成功」</li>
+  <li>「已完成（Completed）」不是項目階段，作品完成並上線後的階段是已上線</li>
+</ul>
+
+<h3 id="stage-paths">各類型走哪幾個階段</h3>
+<p>直接發佈沒有募集階段，不經進行中與已成功。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:28%">路徑</th><th>階段順序</th></tr></thead>
+  <tbody>
+    <tr><td>直接發佈 · 影片家族</td><td>草稿 → 準備中 → 已上線<br>送出審核即進準備中</td></tr>
+    <tr><td>直接發佈 · 非影片家族</td><td>立即發布：草稿 → 已上線<br>稍後排程：草稿 → 準備中 → 已上線</td></tr>
+    <tr><td>共創、預購</td><td>草稿 → 準備中 → 進行中 → 已成功 → 準備中 → 已上線<br>已成功之後，影片作品審核通過才回到準備中，等作品上線</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="stage-rule">階段怎麼判定</h3>
+<ul class="plain">
+  <li>影片作品轉已上線只有一條路：作品審核通過，且作品實際上線；沒有手動切換</li>
+  <li>作品什麼時候上線由上映日期決定，見作品上架的<a href="project-publish-step3.html#premiere-review">上映日期與審核</a></li>
+  <li>準備中在影片作品上可能是在等三件事之一：
+    <ul class="plain">
+      <li>等審核放行</li>
+      <li>等創作者設定上映日期</li>
+      <li>等上映日期到</li>
+    </ul>
+  </li>
+  <li>清單與項目詳情都要讓創作者分辨在等哪一件</li>
+  <li>直接發佈非影片家族不經審核，發布或排程時間到就轉已上線</li>
+  <li>共創或預購到期沒達標，轉已取消，終止原因是未達標</li>
+</ul>
+<p class="note">依據：主規格 §7.2「項目」與「適用範圍與待確認」；5.1.2.1 §5.1.1 F18、§5.1.2「送出的結果」；5.1.2.2 §2.2.4；D151、D154、D177、D178、D179、D182、D192、D196、D239、D345、D346。</p>
+
+<h2 id="timing"><span class="n"></span>項目的時間</h2>
+<p>項目的時間分兩段：什麼時候看得到（從發布到下架），以及什麼時候買得到（販售期間）。發布是看得到的起點，販售期間依類型不同。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:28%">路徑</th><th style="width:34%">什麼時候看得到</th><th>什麼時候買得到</th></tr></thead>
+  <tbody>
+    <tr><td>直接發佈 · 非影片家族</td><td>立即發布或稍後排程<br>可另設下架日期與時間，到時項目頁不可見；不填不自動下架</td><td>看得到就買得到</td></tr>
+    <tr><td>直接發佈 · 影片家族</td><td>由上映日期決定，見<a href="#stage-rule">階段怎麼判定</a></td><td>作品上線後，依設定的畫質與價格租看</td></tr>
+    <tr><td>共創</td><td>發布後看得到</td><td>共創周期，7–90 天</td></tr>
+    <tr><td>預購</td><td>發布後看得到</td><td>預購截止前</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>共創周期與預購截止的天數，以開賣的日期與時間為起點換算，不以發布為起點</li>
+  <li>看得到但還沒開始募集或販售時，項目在準備中；看得到也已開始募集或販售時，項目在進行中</li>
+</ul>
+<p class="note">依據：5.1.2.1 §5.1.1 F18「兩軸對應」、§5.2.1 F21、§5.3.1 F27；主規格 §7.14 適用範圍；D192、D239。</p>
+
+<h2 id="cancel"><span class="n"></span>項目的取消</h2>
+<p>已取消是死路階段：不能轉回其他階段，也不會再往前走。</p>
+<ul class="plain">
+  <li>任一階段都可以轉成已取消；會影響金流或粉絲承諾的轉換要確認</li>
+  <li>轉入已取消時必帶終止原因，有兩種：
+    <ul class="plain">
+      <li>未達標（Not funded）：共創或預購到期沒達到目標</li>
+      <li>創作者取消（Creator cancelled）：創作者主動終止</li>
+    </ul>
+  </li>
+  <li>終止原因寫入後不能改</li>
+  <li>取消的操作、退款怎麼處理與取消後哪些內容凍結，見<a href="project-detail.html">項目詳情</a></li>
+</ul>
+<p class="note">依據：主規格 §7.2「適用範圍與待確認」終止原因；5.1.2.2 §2.2.4；D151、D154。</p>
+
+<h2 id="review"><span class="n"></span>作品審核與項目階段</h2>
+<p>影片作品另有一套審核狀態，描述一件送審作品走到哪一步；項目階段描述整個項目走到哪一步。兩套並存顯示，不能互相代用，例如不能把「待審核」寫成項目階段。</p>
+<div class="flow">
+  <span class="tag off">草稿</span><span class="arr">→</span><span class="tag pink">待審核</span><span class="arr">→</span><span class="tag wait">審核中</span><span class="arr">→</span><span class="tag ok">審核通過</span>
+  <span class="flow__alt">審核中 → <span class="tag warn">審核不通過</span>，修改後重送回到待審核</span>
+</div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th>什麼時候進入</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag off">草稿（Draft）</span></td><td>創作者在作品上架或建立項目流程按「儲存草稿」產生，還沒送出<br>不進審核佇列</td></tr>
+    <tr><td><span class="tag pink">待審核（Pending review）</span></td><td>創作者送出，還沒有審核者接手<br>退件後重送也回到這裡</td></tr>
+    <tr><td><span class="tag wait">審核中（In review）</span></td><td>已有審核者接手處理<br>對創作者來說和待審核一樣是等待中，作品還沒上線</td></tr>
+    <tr><td><span class="tag ok">審核通過（Approved）</span></td><td>審核者通過；只代表放行，作品這一刻還沒上線</td></tr>
+    <tr><td><span class="tag warn">審核不通過（Rejected）</span></td><td>審核者不通過，附退件理由退回創作者</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>送審來源有兩個：直接發佈影片家族由建立項目流程送審，共創與預購由項目詳情走作品上架送審</li>
+  <li>審核通過只代表放行，項目不會因此轉已上線，見<a href="#stage-rule">階段怎麼判定</a></li>
+  <li>審核不通過時作品退回創作者並附退件理由，項目留在原本的階段；修改後可以重送</li>
+  <li>Admin 審核的操作與退件理由，見<a href="admin-video-review.html">影片上架審核</a></li>
+</ul>
+<p class="note">依據：主規格 §7.2「作品審核」列與「適用範圍與待確認」；5.1.2.1 §5.1.2「送出的結果」；5.1.2.2.1 §3.3；5.1.0.4 F2、F4；D179、D182、D192。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>0-設計規格書.md</code>（v4.90）§7.2、§7.3「募得款撥付」、§7.12、§7.13、§7.14 適用範圍；<code>5.1.2.1-建立專案流程.md</code>（v4.13）§1、§3、§4.1、§5；<code>5.1.2.2-專案詳情.md</code>（v3.23）§2.2.4；<code>5.1.2.2.1-作品上架流程.md</code> §3.3；<code>5.1.0.4-影片上架審核.md</code>（v1.7）F2、F4</li>
+    <li>決策：D041、D151、D154、D166、D167、D177、D178、D179、D182、D192、D196、D227、D228、D230、D232、D239、D251、D316、D345、D346</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>影片以外的內容類型，共創與預購怎麼從已成功轉到已上線（目前只有影片作品有上架流程）</li>
+    <li>準備中的三段等待，是否要在清單篩選或狀態標示上各自表達</li>
+    <li>共創與預購的開募或開賣時間在哪裡設定；預購截止的欄位說明寫「自發布起計」，與「以開賣為起點換算」的規則不一致</li>
+    <li>共創與預購沒有下架日期與時間的欄位，看得到的終點怎麼定</li>
+    <li>未達標時是否一律全額退款：建立流程寫未達標全額退款，項目詳情另有可開可關的「未達標時自動全額退款」開關；預購是否套用這個開關也未定</li>
+    <li>終止原因由誰決定：終止當下自動判定，或創作者取消時自己指定</li>
+    <li>兩種終止原因給支持者的通知文案是否相同</li>
+    <li>平台端是否提供誤取消的復原路徑、由誰執行</li>
+    <li>方案能不能引用組合包</li>
+    <li>共創與預購的完成作品更新，是否在作品實際上線的那一刻才發布（規格已寫入，待使用者覆核）</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照主規格 v4.90、5.1.2.1 v4.13）</p>
+</details>
+</div>
+</body>
+</html>
