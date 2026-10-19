@@ -569,7 +569,6 @@
       tr.appendChild(tprice);
       var b = el('button', 'btn btn--yellow-ghost btn--sm pdp-tier__buy'); b.type = 'button'; b.setAttribute('data-pp-inert', ''); b.tabIndex = -1;
       var tn = valueOf(api, t.name);
-      /* 墓碑 2026-10-15（D422 決定三）：單張門票暫停售票的停用與文案退場；活動層暫停由宿主頁另行停用購買鈕 */
       if (t.soldOut) { b.disabled = true; b.setAttribute('data-i18n', 'fep.tier.soldout'); b.textContent = T('fep.tier.soldout', 'Sold out'); b.setAttribute('aria-label', tn + ' ' + T('fep.tier.soldout', 'Sold out')); }
       else { b.setAttribute('data-pdp-tier-buy', t.key || ''); b.setAttribute('data-i18n', 'fep.tier.buy'); b.textContent = T('fep.tier.buy', 'Buy'); b.setAttribute('aria-label', T('fep.tier.buy', 'Buy') + ' ' + tn); }
       tr.appendChild(b);

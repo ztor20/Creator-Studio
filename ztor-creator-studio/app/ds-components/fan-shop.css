@@ -955,6 +955,23 @@
   position: relative;
   container: fep / inline-size;
 }
+/* 頂列下緣的實色遮擋條（2026-10-17 修：捲過頭的內容從宿主頂列膠囊與預覽自己的返回頂欄之間那一截透明縫隙露出來）。
+   高度 `--fep-clip-h` 由宿主給（publish-stage.css：＝頂列框底部的透明下外距）；DS demo 沒有宿主＝0、不畫。
+   做法：sticky 貼在「宿主頂列框底部往上 clip-h」，負的 margin-bottom 讓它不佔版面；底色＝預覽根節點自己的底色，
+   z-index 比返回頂欄（200）低，所以不蓋頂欄；pointer-events 關掉，不擋滑鼠。前台沒有宿主頂列，不需要這條。 */
+.fep-shop--event::before,
+.fep-shop--event .ds-modal::before {
+  content: "";
+  display: block;
+  position: sticky;
+  top: calc(var(--fep-stick-top, var(--space-6)) - var(--space-6) - var(--fep-clip-h, 0px));
+  height: var(--fep-clip-h, 0px);
+  margin-bottom: calc(var(--fep-clip-h, 0px) * -1);
+  background: var(--bg-primary);
+  pointer-events: none;
+  z-index: 190;
+}
+.fep-shop--event .ds-modal::before { z-index: 1; }   /* 彈窗（z 300）的半透明遮罩也要被切掉：同一條放進彈窗殼裡、疊在遮罩上 */
 
 /* 單票列／套組卡（前台 theme-sharp：直角） */
 .fep-shop--event .pdp-tier { border-radius: 0; }

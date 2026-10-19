@@ -223,7 +223,7 @@
       end: '22:00',
       doors: '18:30',
       tiers: [
-        /* reserved＝下單未付款佔走的（2026-08-11 新欄，示範營運列表用）。墓碑 2026-10-15（D422 決定三）：單張門票的 paused（暫停販售）欄位退場，示範值一併拿掉。 */
+        /* reserved＝下單未付款佔走的（2026-08-11 新欄，示範營運列表用）。 */
         { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 40, earlyMin: 30, reserved: 6 },
         { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 60, reserved: 11 },
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 100 }
@@ -275,8 +275,6 @@
       sold: 84,
       revenue: 2520,
       status: 'on-sale',
-      /* 墓碑 2026-10-09（D390 稽核第一節原型第 16 條）：暫停售票示範（paused: true）原本掛在這一場（系列子場），release2.4 收起系列就看不到；
-         改掛單場、非系列的 nantou-lantern-opening。 */
       images: { keyvisual: 'images/projects/nick-realive.jpg', banner: 'images/projects/nick-asn.jpg', gallery: ['images/projects/nick-i.jpg', 'images/projects/nick-lwh.jpg'] },
       video: false
     },
@@ -675,7 +673,7 @@
     },
     /* ── bookyay 演唱會：六個狀態的全選項示範（2026-10-13 D410 決定四，原型示範資料、不是產品規則）──────────────
        release2.4 只顯示 bookyay 匯入的活動與共看派對；每個狀態各一場「所有選項都填入或開啟」的 bookyay 演唱會：
-         草稿＝khh-countdown-draft、已排程＝taipei-nye（另有順豐寄送 hsinchu-vinyl-sf）、售票中＝nick-live-taichung-bky（暫停售票）
+         草稿＝khh-countdown-draft、已排程＝taipei-nye（另有順豐寄送 hsinchu-vinyl-sf）、售票中＝nick-live-taichung-bky
          ＋nick-acoustic-tainan-bky（已下架）、進行中＝nick-live-taoyuan-bky、已結束＝nick-live-kaohsiung-bky、已取消＝nick-summer-pingtung-bky。
        金額口徑同 taipei-nye（D330）：hkd＝bookyay 港幣原價（鎖定）、price＝換算成創作者幣別 TWD 的基準價（HK$ ÷ 7.8 × 31.5，四捨五入）。
        門票：二人套票帶入後就是一張普通門票（D429，2026-10-16；票價照 bookyay 現價、張數照時段上限、本門票限購落在這張票，rulesFix；
@@ -760,7 +758,6 @@
       sold: 406,   // D429：原 460（套票 1 人票 120 張 → 套票門票 60 張）；收入不變。2026-10-16 ＋6（免費陪同票 tier-tc-companion）
       revenue: 1013260,
       status: 'on-sale',
-      paused: true,      // D375 決定七示範：暫停售票（bookyay 演唱會版本；自建活動的示範在 nantou-lantern-opening）
       images: { keyvisual: 'images/projects/nick-mxw.jpg', banner: '', gallery: ['images/projects/nick-asn.jpg', 'images/projects/nick-i.jpg'] },
       video: 'images/events/teaser-demo.mp4',
       publish: { pickup: 'eticket', shown: true },
@@ -955,7 +952,7 @@
       listing: { from: '2026-06-25 12:00', to: '' }
     },
     {
-      /* 已取消（D375 決定二）：bookyay 端取消、同步到 ztor——活動轉已取消、暫停並下架、票券撤銷（撤銷結果由 bookyay 同步，
+      /* 已取消（D375 決定二）：bookyay 端取消、同步到 ztor——活動轉已取消、下架、票券撤銷（撤銷結果由 bookyay 同步，
          transactions() 把這場的已付款訂單一律標成已撤銷、執行者 bookyay）；含其門票的上架中組合包隨活動下架（listed:false）。 */
       id: 'nick-summer-pingtung-bky',
       bkyId: 'bky-20',   /* D414：對應 js/sidebar.js BOOKYAY_EVENTS 的 bky-20（Admin 創作者活動管理，已發布） */
@@ -1015,7 +1012,6 @@
       sold: 451,   // D429：原 481（套票 1 人票 60 張 → 套票門票 30 張）
       revenue: 0,        // bookyay 取消後所有票券（含組合包裡的）都已撤銷，沒有留下的收入；撤銷前的成交在交易明細逐筆看得到
       status: 'cancelled',
-      paused: true,
       unlisted: true,
       bkyCancel: { at: '2026-08-20 10:00' },
       images: { keyvisual: 'images/projects/nick-smdbbs.jpg', banner: '', gallery: ['images/projects/nick-asn.jpg', 'images/projects/nick-wln.jpg'] },   // D410 示範：圖庫補兩張
@@ -1383,7 +1379,6 @@
       sold: 1876,
       revenue: 1772900,   // 2026-10-16 示範資料修正（UI-CHANGES 二百四十四）：含組合包整組金額（D408）＝門票 1,653,200＋組合包 63 × 1,900
       status: 'on-sale',
-      paused: true,     // D375 決定七示範：暫停售票（2026-10-09 D390 稽核原型第 16 條：自系列子場 realive-chongqing 移到這一場單場、非系列活動，release2.4 看得到）
       sale: { from: '2026-09-20 12:00', to: '' },   // D414：補開賣時間——免費門票訂單的下單日期落在開賣日之後、不晚於昨天（沒寫時下單日期會落到未來）
       images: { keyvisual: 'images/projects/nick-flames.jpg', banner: '', gallery: [] },
       video: false
@@ -1408,7 +1403,7 @@
       room: { url: 'ztor.live/v/lrh-studio-live', chat: true, capacity: 800 },
       tiers: [
         { id: 'tier-stream', name: 'Live stream', price: 350, qty: 700, sold: 402 },
-        { id: 'tier-bts', name: 'Stream + behind the scenes', price: 650, qty: 100, sold: 71 }   // 墓碑 2026-10-15（D422 決定三）：單張門票暫停示範（D391 補充二）退場
+        { id: 'tier-bts', name: 'Stream + behind the scenes', price: 650, qty: 100, sold: 71 }
       ],
       bundles: [
         { id: 'bd-stream-album', name: '直播票 ＋ 數位專輯', tickets: { tierIds: ['tier-stream'], qty: 1 },
@@ -2435,26 +2430,9 @@
   function applyUnlist(ev) {
     var u = unlistMap();
     if (ev && Object.prototype.hasOwnProperty.call(u, ev.id)) ev.unlisted = !!u[ev.id];
-    return applyPause(ev);
-  }
-
-  /* ── 暫停售票（2026-10-08 · D375 決定七）──────────────────────────────
-     活動層級的暫停售票：售票期間（售票中、進行中）創作者與 Admin 都能暫停整場活動的販售、也能恢復。
-     暫停不是階段（status 不動），另掛 `paused: true`；活動頁照常看得到、所有門票與含其門票的票務商品都不能買，已售票照常有效。
-     寫法同已下架：覆寫表存 localStorage `ztor.event-paused`（true／false 兩值，恢復要能蓋過 mock 寫死的 `paused: true`）。
-     單一票種的暫停（既有 Paused）不受影響。 */
-  var PAUSE_KEY = 'ztor.event-paused';
-  function pauseMap() {
-    try { return JSON.parse(localStorage.getItem(PAUSE_KEY) || '{}') || {}; }
-    catch (e) { return {}; }
-  }
-  function applyPause(ev) {
-    var p = pauseMap();
-    if (ev && Object.prototype.hasOwnProperty.call(p, ev.id)) ev.paused = !!p[ev.id];
     return ev;
   }
-  /* 「暫停售票」徽章只在售票期間成立：活動照時間走到已結束後，暫停記號留著也不再顯示（D375 決定七：暫停不是階段）。 */
-  function isPaused(ev) { return !!(ev && ev.paused && ['on-sale', 'live'].indexOf(ev.status) >= 0); }
+
   /* 完售（D375 決定七）：所有門票與票務商品都賣完。票務商品吃門票的庫存（賣一組扣它含的票），門票張數合計（含隱藏）賣光
      ＝票務商品也買不到，所以以門票合計判定（同 event-detail 系列卡既有口徑）。完售不是階段（D361 決定七），草稿與已取消不掛。 */
   function isSoldOut(ev) {
@@ -2706,9 +2684,9 @@
 
   /* ── 活動詳情的編輯結果（2026-10-09 · D390 稽核第一節原型第 3、4 條）──────────────────────
      活動詳情（event-detail）原本按「儲存」只改頁面記憶體裡那一份，門票逐筆編輯更是完全沒寫回——重新整理或換頁就回到 mock 原值，
-     「直接生效」只是看起來生效。改成寫進 localStorage `ztor.event-edits`＝{ 活動 id: { 欄位: 值 } }（同階段覆寫、下架、暫停的做法），
+     「直接生效」只是看起來生效。改成寫進 localStorage `ztor.event-edits`＝{ 活動 id: { 欄位: 值 } }（同階段覆寫、下架的做法），
      get()／list() 讀出來時整欄覆蓋（淺合併：tiers、sessions、publish、sale、listing、rules 等都以整份為單位）。
-     寫入端：頁面編輯的儲存（commitEdit）、門票逐筆編輯的儲存／刪除／暫停、活動預設購票規則的儲存、立即開賣改開賣時間。
+     寫入端：頁面編輯的儲存（commitEdit）、門票逐筆編輯的儲存／刪除、活動預設購票規則的儲存、立即開賣改開賣時間。
      原型限制：清單頁（events.html）的列是靜態 HTML，名稱與場地欄不吃這份覆寫（同 STAGE-001 的既有限制）。 */
   var EDIT_KEY = 'ztor.event-edits';
   function editMap() {
@@ -2948,14 +2926,6 @@
       u[id] = !!on;
       try { localStorage.setItem(UNLIST_KEY, JSON.stringify(u)); } catch (e) {}
     },
-    /* 暫停售票／恢復販售（D375 決定七：創作者與 Admin 都能做）：只寫暫停記號，不改階段 */
-    setPaused: function (id, on) {
-      if (!id) return;
-      var p = pauseMap();
-      p[id] = !!on;
-      try { localStorage.setItem(PAUSE_KEY, JSON.stringify(p)); } catch (e) {}
-    },
-    isPaused: isPaused,
     isSoldOut: isSoldOut,
     /* 階段轉換（原型層級）：寫進 localStorage，下一次 get() 就是新階段。
        允許哪些轉換由呼叫端（event-detail.html）依 §7.2 狀態機判斷，本檔只負責存。 */

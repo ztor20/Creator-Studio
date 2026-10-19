@@ -208,8 +208,7 @@
             <!-- 已下架（D361 決定五）：上架是階段以外的另一維度，階段徽章不動、另掛這一顆；syncUnlist() 依 ev.unlisted 顯示。
                  排在最後：前三顆由 hydrate 以位置索引（[0] 階段、[1] 系列、[2] 類型）改寫，插在前面會錯位。 -->
             <span class="badge badge--neutral" id="ed-unlisted-badge" data-feat="S81" hidden><span data-i18n="events.badge.unlisted">Unlisted</span></span>
-            <!-- 暫停售票／完售（D375 決定七）：都不是階段，同已下架另掛一顆；syncSaleBadges() 依 ztorEvents.isPaused()／isSoldOut() 顯示 -->
-            <span class="badge badge--neutral" id="ed-paused-badge" data-feat="S85" hidden><span data-i18n="events.badge.paused">Sales paused</span></span>
+            <!-- 完售（D375 決定七）：不是階段，同已下架另掛一顆；syncSaleBadges() 依 ztorEvents.isSoldOut() 顯示 -->
             <span class="badge badge--neutral" id="ed-soldout-badge" data-feat="S85" hidden><span data-i18n="events.badge.soldout">Sold out</span></span>
           </div>
           <h1 class="page-intro__title" data-i18n="event-detail.h1">Kowloon Café 10th Anniv. — Kowloon After Dark OST listening party</h1>
@@ -1056,7 +1055,7 @@
           <div id="ed-sess-list"></div>
           <!-- D413（5.1.6.2 §3「進行中的編輯」）：進行中編輯時，既有場次的日期、開始時間、跨日結束日期鎖定的原因（edLiveLocks 依場次切換兩句） -->
           <p class="field__hint mt-8" id="ed-live-dates-note" hidden><span data-live-note="unlist" data-i18n="ed.live.unlist-first">Unlist the event to change these, then list it again.</span> <span data-live-note="started" data-i18n="ed.live.started">Once a date has started, its date, start time and venue can't be changed.</span></p>
-          <!-- D391 第 12 題（5.1.6.2 F7）：活動進入售票中之後場次不能移除（移除鈕收起），多場時在清單下方說明只能暫停售票或隱藏門票 -->
+          <!-- D391 第 12 題（5.1.6.2 F7）：活動進入售票中之後場次不能移除（移除鈕收起），多場時在清單下方說明要停止販售某一場，改隱藏門票 -->
           <p class="field__hint mt-8" id="ed-sess-locked" data-i18n="ed.sess.locked" hidden>Tickets are on sale, so dates can't be removed. To stop selling a date, pause or hide its tickets.</p>
           <!-- 2026-10-09 D383：新增場次＝多場次（S87 ⚪），release2.4 收起 -->
           <button class="btn btn--outline btn--add mt-16" type="button" id="ed-sess-add" data-feat="S87"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ed.sess.add">Add a date</span></button>
@@ -1373,19 +1372,6 @@
                    bookyay 改回草稿仍同步下架。ztor 自己的上下架照舊保留 -->
               <p class="field__hint field__hint--fact mt-8" id="ed-unlist-bky" hidden data-i18n="event-detail.unlist.bky">When an edit in bookyay syncs to this event, it’s unlisted automatically and you’ll get a notice — relist it yourself once you’ve checked it. Moving it back to draft in bookyay unlists it here too.</p>
             </section>
-            <!-- ═══ 暫停售票／恢復販售（2026-10-08 · D375 決定七）═══
-                 售票期間（售票中、進行中）創作者本人與 Admin 代管態都能按；暫停不是階段，頁首另掛「暫停售票」徽章。
-                 放在上下架旁邊：兩者都是「整場活動能不能買」的營運開關，差別是暫停時活動頁照常看得到。 -->
-            <div id="ed-pause" data-feat="S85" hidden>
-              <div class="section-head mt-24">
-                <h2 class="section-head__title" id="ed-pause-title" data-i18n="event-detail.pause.title">Pause ticket sales</h2>
-                <div class="section-head__sub" id="ed-pause-sub" data-i18n="event-detail.pause.sub">Fans can still see the event, but no tickets or ticket bundles can be bought. Tickets already sold stay valid.</div>
-              </div>
-              <section class="card">
-                <button class="btn btn--outline" type="button" data-view-safe data-ed-pause data-i18n="event-detail.pause.btn">Pause sales</button>
-                <button class="btn btn--outline" type="button" data-view-safe data-ed-resume hidden data-i18n="event-detail.resume.btn">Resume sales</button>
-              </section>
-            </div>
           </div>
 
           <div data-nav-panel="danger" id="ed-danger" hidden>
@@ -1408,7 +1394,7 @@
              syncEditMode 一起翻 data-mode）。檢視態沒有任何編輯入口：預設購票規則的「編輯」、新增門票卡都不出現，
              點門票卡只開唯讀的門票彈窗；按工具列右側「編輯活動」後才能改。D392 起門票與預設購票規則的「套用」只改頁面草稿，
              跟其他欄位一起按「儲存」才寫入。shared.css 的檢視態按鈕白名單一起生效，
-             所以檢視態也要能按的（卡片／列表切換、列表的暫停販售、發放招待票）標 data-view-safe。
+             所以檢視態也要能按的（卡片／列表切換、列表的隱藏／顯示、發放招待票）標 data-view-safe。
              不掛 data-editable：這一頁沒有靜態表單欄位，不需要 applyReadonly 與 view-mode.js 的讀數。 -->
         <!-- 側欄四節（2026-08-17）：票種／組合包／招待票／轉售。組合包排在票種正下方是因為
              它吃票種的庫存——賣掉一組就從它含的那張票扣一張，主從關係要讀得出來。 -->
@@ -1450,7 +1436,7 @@
           <div data-nav-panel="tiers">
 <!-- 卡片／列表雙檢視（2026-08-11 使用者指示）：卡片＝就地編輯欄位（同建立流程的
              一票一卡邏輯）；列表＝營運視角，一列一票看庫存／保留中／銷量／狀態，
-             並在這裡暫停或重新販售。暫停販售是營運動作、不是表單欄位，兩種檢視都不用先按編輯。
+             並在這裡隱藏或顯示單張門票。隱藏／顯示是營運動作、不是表單欄位，兩種檢視都不用先按編輯。
              2026-08-17 使用者指示：移進抬頭列最右邊、改用 filter-tabs——它是「這一節怎麼看」
              的控制項，屬標題列而不是內容的第一項；元件同樣是「一排可選、選中的用品牌橘 tint」，
              站上這個角色只該有一種畫法。 -->
@@ -1583,8 +1569,8 @@
 
         <!-- 墓碑（2026-08-13 使用者確認後刪除）：「售票規則」說明卡整張退場。
              它講的兩件事都不需要在這一頁用文字陳述——硬性庫存上限是系統行為（創作者
-             不能改也不用決定），暫停售票則是站上已經做出來的操作（票務列表每一列可暫停、
-             票種彈窗也有開關），說明卡等於把看得到的功能再解釋一次。連同那則 R 2.1.1 的
+             不能改也不用決定），隱藏／顯示則是站上已經做出來的操作（票務列表每一列有按鈕、
+             票種彈窗也有），說明卡等於把看得到的功能再解釋一次。連同那則 R 2.1.1 的
              TBD 施工註記一起收掉。規則本身仍由規格 §2.6 定義（引用 F5），只是不在畫面上重述；
              i18n 的 event-detail.tiers.rule.* 與 .tiers.tbd 保留未用。 -->
           </div>
@@ -2056,7 +2042,7 @@
 <!-- ═══ 票務的編輯彈窗（2026-08-11 重新設計，使用者裁決「輕量」；2026-09-22 D311 改為
      與建立流程第 5 步同一套資訊結構）：單欄區塊——基本／價格與數量（計算列表＋Admin 專屬的
      例外平台費）／入場／販售。**一般活動的購買條件在這裡沒有**：發布後先不開放改（2026-08-11 裁決，
-     2026-10-09 D385 決定一維持），所以可編輯的最後一個區塊是「販售」（暫停販售——它是只有發布後才存在的營運動作）。
+     2026-10-09 D385 決定一維持），（原最後一個區塊「販售」已隨 D422／D444 退場）。
      例外（D385，5.1.6.2 §4.5 F9）：bookyay 帶入的活動多一個唯讀的「購買條件」區塊（#ed-tm-rules-sec），列出這張票由 bookyay
      帶入的限購／折扣／限時折扣、掛 From bookyay；沒有門票層條件的票寫「跟隨活動預設」＋活動層限購。入場區對 bookyay 帶入的票
      鎖定為跟隨場次（#ed-tm-early-pol 唯讀讀數），刪除鈕停用＋原因（#ed-tm-del-why）。系列子場唯讀（共用設定在母頁改）。 -->
@@ -2175,7 +2161,7 @@
            ztor 自建的活動——D388（2026-10-09）起可改，結構同建立流程的單張門票彈窗：抬頭右邊「跟隨活動預設」開關，
            開＝唯讀列出活動預設、關＝攤開這張票自己的一組（js/purchase-conds.js 的條件清單，與 create-event 同一套）；
            區塊底下一句「只影響之後的購買」。內容由 syncTmRules() 畫。
-           位置：入場之後、販售之前——與建立流程同序（基本／價格與數量／入場／購買條件），販售（暫停）是詳情頁才有的營運區，排最後。 -->
+           位置：入場之後、與建立流程同序（基本／價格與數量／入場／購買條件）。 -->
       <section class="form-section form-section--dense form-section--card" id="ed-tm-rules-sec" hidden>
         <div class="form-section__head form-section__head--actions">
           <div class="form-section__head-titles"><h3 class="form-section__title" id="ed-tm-rules-title"><span data-i18n="ed.tm.sec.rules">Purchase rules</span></h3></div>
@@ -2207,8 +2193,6 @@
         </div>
       </section>
 
-      <!-- 墓碑（2026-10-15，D422 決定三）：「販售」區（#ed-tm-sale-sec：暫停販售開關 #ed-tm-paused＋說明）整段退場——
-           單張門票沒有暫停售票，暫停只有活動層一種（設定分頁的暫停售票）；要讓某張票不在活動頁單獨賣，用上面的隱藏／顯示。 -->
     </div>
     <div class="payout-dialog__foot">
       <button class="btn btn--ghost btn--sm" type="button" id="ed-tm-delete" data-i18n="ed.tm.delete">Delete tier</button>
@@ -3194,7 +3178,7 @@
     const bkyNote = document.getElementById('ed-unlist-bky');
     if (bkyNote) bkyNote.hidden = !isBky();   // D415（修訂 D375 決定三）：bookyay 修改同步＝自動下架並通知、手動重新上架；改回草稿＝同步下架
     syncBkySyncNotice();
-    syncPause();
+    syncSaleBadges();
     edLiveRelock();   // D413：進行中的高影響欄位跟著上架／下架鎖或解
   }
   document.addEventListener('ztor:creator-changed', () => syncUnlist());
@@ -3203,7 +3187,7 @@
      → ztor 自動下架並通知創作者，重新上架一律手動。資料在 ev.bkySyncUnlist＝{ at, changes:[{ field, from, to }] }；
      只在 bookyay 活動、仍是已下架時顯示。語言切換時由 syncUnlist 重畫。 */
   /* 已處理旗標：重新上架＝創作者已看過這次自動下架，之後手動下架不再顯示此提示。
-     存 localStorage `ztor.event-bkysync-done`＝{ 活動 id: true }（同下架／暫停覆寫的做法）。 */
+     存 localStorage `ztor.event-bkysync-done`＝{ 活動 id: true }（同下架覆寫的做法）。 */
   const BKYSYNC_DONE_KEY = 'ztor.event-bkysync-done';
   function bkySyncDone() {
     try { return !!(JSON.parse(localStorage.getItem(BKYSYNC_DONE_KEY) || '{}') || {})[ev.id]; } catch (e) { return false; }
@@ -3229,65 +3213,13 @@
       .replace('{when}', info.at || '').replace('{changes}', changes);
   }
 
-  /* 暫停售票／恢復販售＋完售徽章（2026-10-08 · D375 決定七）：暫停只在售票期間（售票中、進行中）可操作，
-     恢復後門票與票務商品回到各自原本的販售設定（單一票種的 Paused 等不動）；完售徽章每次依資料重算，有票回補就收起（D375 補裁）。
-     創作者本人與 Admin 代管態都能按；頁首「暫停售票」與「完售」徽章都不是階段，階段徽章不動。 */
+  /* 完售徽章（2026-10-08 · D375 決定七）：每次依資料重算，有票回補就收起（D375 補裁）；完售不是階段，階段徽章不動。
+     （D444：活動要停賣改用提前停售時間或下架，沒有暫停入口。） */
   function syncSaleBadges() {
     const S = window.ztorEvents;
-    const pb = document.getElementById('ed-paused-badge');
     const sb = document.getElementById('ed-soldout-badge');
-    if (pb) pb.hidden = !(S && S.isPaused && S.isPaused(ev));
     if (sb) sb.hidden = !(S && S.isSoldOut && S.isSoldOut(ev));
   }
-  function syncPause() {
-    syncSaleBadges();
-    const box = document.getElementById('ed-pause');
-    if (!box) return;
-    box.hidden = ['on-sale', 'live'].indexOf(ev.status) < 0;
-    const on = !!ev.paused;
-    const setKey = (el, key, fb) => { if (!el) return; el.setAttribute('data-i18n', key); el.textContent = T(key, fb); };
-    setKey(document.getElementById('ed-pause-title'),
-      on ? 'event-detail.resume.title' : 'event-detail.pause.title',
-      on ? 'Resume ticket sales' : 'Pause ticket sales');
-    setKey(document.getElementById('ed-pause-sub'),
-      on ? 'event-detail.resume.sub' : 'event-detail.pause.sub',
-      on ? 'Sales are paused. Fans can see the event but can’t buy anything until you resume.'
-         : 'Fans can still see the event, but no tickets or ticket bundles can be bought. Tickets already sold stay valid.');
-    const pa = box.querySelector('[data-ed-pause]');
-    const re = box.querySelector('[data-ed-resume]');
-    if (pa) pa.hidden = on;
-    if (re) re.hidden = !on;
-  }
-  document.addEventListener('click', e => {
-    if (e.target.closest('[data-ed-pause]')) {
-      openConfirm({
-        title: T('event-detail.pause.confirm.title', 'Pause ticket sales?'),
-        body: '<p>' + T('event-detail.pause.confirm.body', 'The event page stays up, but no tickets or ticket bundles with its tickets can be bought. Tickets already sold stay valid. You can resume any time.') + '</p>',
-        okLabel: T('event-detail.pause.confirm.ok', 'Pause sales'),
-        onOk: () => {
-          window.ztorEvents.setPaused(ev.id, true);
-          ev.paused = true;
-          syncPause();
-          if (window.ztorToast) window.ztorToast.show(T('event-detail.pause.toast', 'Ticket sales paused'));
-        }
-      });
-      return;
-    }
-    if (e.target.closest('[data-ed-resume]')) {
-      openConfirm({
-        title: T('event-detail.resume.confirm.title', 'Resume ticket sales?'),
-        body: '<p>' + T('event-detail.resume.confirm.body', 'Tickets and ticket bundles go back to their own sale settings, and fans can buy them again.') + '</p>',
-        okLabel: T('event-detail.resume.confirm.ok', 'Resume sales'),
-        onOk: () => {
-          window.ztorEvents.setPaused(ev.id, false);
-          ev.paused = false;
-          syncPause();
-          if (window.ztorToast) window.ztorToast.show(T('event-detail.resume.toast', 'Ticket sales resumed'));
-        }
-      });
-    }
-  });
-
   document.addEventListener('click', e => {
     /* 立即開賣（D390 決定二，5.1.6.3 §2.1，取代「發布並開賣」）：已排程、開賣時間設在未來才出現；按下＝開賣時間改成現在，活動轉售票中。
        活動已發布、發布前檢核已通過，不再另做開賣前置條件檢查（goLiveBlockers 隨之退場）。頁面正在編輯時先存或捨棄——
@@ -5197,7 +5129,7 @@
   }
   /* ── 暫存標記（D392 補充二，2026-10-10 使用者「暫存以後 UI 要讓那張卡片看得出來是更改過的」）──────────────
      只在整頁編輯中（有基準 edBaseline）才標；儲存或捨棄後 setMode 重畫，標記自然消失。
-     比對對象是「已儲存的活動」（ev.tiers），不是進入編輯當下的快照——列表暫停是立即生效的營運動作，兩邊一起翻，不會被標成修改。
+     比對對象是「已儲存的活動」（ev.tiers），不是進入編輯當下的快照——列表的隱藏／顯示是立即生效的營運動作，兩邊一起翻，不會被標成修改。
      已修改／新增＝.badge--info；刪除但還沒儲存的那一張留在原處、淡一階＋劃線＋「將刪除」（.badge--error）＋「復原」（ds-components/staged-change.css）。 */
   const savedTierOf = id => (ev.tiers || []).find(x => x.id === id);
   function tierStage(t) {
@@ -5321,7 +5253,6 @@
         (removed ? '' : stagedBadge(t)) +   // D392 補充二：套用後還沒儲存——「已修改」／「新增」
         soloBadge(t) +
         (Number(t.price) === 0 ? '<span class="badge badge--neutral">' + tixEsc(T('ce.tier.free', 'Free')) + '</span>' : '') +
-        /* 墓碑 2026-10-15（D422 決定三）：卡上的「已暫停」徽章隨單張門票暫停販售退場 */
         /* 隱藏標示（D328，5.1.6.3 §2.6）：顯示開關關閉的票——活動頁不列、不能單張買，仍在組合包裡照常賣 */
         /* 2026-10-09（D390 稽核第一節原型第 17 條）：bookyay 活動的門票隱藏徽章掛 S92；創作者自建活動自己切成隱藏的票屬 S55
            （⚪，release2.4 收起開關），徽章跟著收，不然看得到「隱藏」卻找不到開關。墓碑 2026-10-16（D429）：1 人票（hideFix）條件退場。 */
@@ -5427,9 +5358,9 @@
     else syncTmFoot();
   }
   /* ── 單張門票隱藏／顯示（D422 決定三，2026-10-15；5.1.6.3 §2.6「隱藏標示」）────────────────
-     取代單張門票的暫停販售。列表檢視每一列一顆、門票彈窗一顆，同一個動作：
+     列表檢視每一列一顆、門票彈窗一顆，同一個動作：
      · 營運動作〔推導〕：檢視模式與編輯模式都能按、立即生效——草稿那一張與已儲存的那一張一起翻、只寫 hidden 這一欄，
-       基準跟著已儲存的狀態走，所以不算「儲存 N 項變更」、捨棄（從活動重新複製）也不還原（同原本單張暫停的 pauseTierNow）。
+       基準跟著已儲存的狀態走，所以不算「儲存 N 項變更」、捨棄（從活動重新複製）也不還原。
      · 已結束、已取消整頁唯讀：停用。（墓碑 2026-10-16 D429：套票 1 人票 hideFix 固定隱藏的 'fix' 停用退場）
      · 不受可賣性防呆限制（D424 決定 9）：最後一張可賣的票也可以隱藏（原本回傳 'last' 擋下，已撤除）。
      · bookyay 帶入的其他門票可以切換（D391 第 10 題），只影響 ztor 粉絲端。 */
@@ -5888,7 +5819,7 @@
       why.textContent = T('ed.tm.del.bky', "Imported from bookyay — it can't be deleted. Change it in bookyay.");
     }
     /* D391 第 12 題（5.1.6.2 F9、5.1.6.3 §2.6）：活動進入售票中之後（售票中、進行中），門票含未售出者一律不能刪，
-       只能暫停售票或隱藏——刪除鈕停用、原因寫在鈕旁（同 bookyay 的寫法）。已結束、已取消整頁唯讀另有處理（刪除鈕收起）。 */
+       只能隱藏——刪除鈕停用、原因寫在鈕旁（同 bookyay 的寫法）。已結束、已取消整頁唯讀另有處理（刪除鈕收起）。 */
     const sold0 = !bky && !tmNew && !edPreSale() && !tmRO();
     if (sold0) {
       const del = tmEl('ed-tm-delete');
@@ -5904,7 +5835,6 @@
     tmTried = false;
     tmEl('ed-tm-title').textContent = tmNew ? T('ed.tm.new', 'New ticket') : (t.name || T('ce.tier.untitled', 'Untitled tier'));
     if (tmNew) { tmHow = 'type'; fillTmSess(); }
-    /* 墓碑 2026-10-15（D422 決定三）：「販售（暫停）」區退場，新增門票時收起它的那一行一併拿掉 */
     tmEl('ed-tm-name').value = t.name || '';
     tmImg = (t.img || '').trim();   // D384：沒有自己的圖＝沿用活動主視覺
     tmRulesOwn = (!evIsBky() && t.rules) ? JSON.parse(JSON.stringify(PC.norm(t.rules))) : null;   // D388：自建活動這張票自己的一組（null＝跟隨）
@@ -6038,7 +5968,6 @@
     syncTmShow();
     refreshTix();
   });
-  /* 墓碑 2026-10-15（D422 決定三）：彈窗暫停販售開關（#ed-tm-paused）的 listener 隨開關退場 */
   tmEl('ed-tm-save')?.addEventListener('click', () => {
     if (!tmTier || tmRO()) return;   // 2026-10-10：未按編輯不能存；D361 決定三：已結束、已取消唯讀（儲存鈕已收起，這裡再擋一次）
     tmTried = true;
@@ -6054,7 +5983,6 @@
     if (!evIsBky()) tmTier.earlyMin = tmEl('ed-tm-early').value;   // D385／D386：bookyay 活動的票（含另外新增的）鎖定跟隨場次，不寫回
     tmTier.hidden = !tmShown; // D328：關＝隱藏（D422：已存在的門票按鈕當下已寫回，這裡寫同一個值；新門票跟著套用寫入）
     tmTier.img = (tmImg || '').trim();   // D384：空字串＝沿用活動主視覺
-    /* 墓碑 2026-10-15（D422 決定三）：不再寫回 paused（單張門票暫停販售退場） */
     /* D388：自建活動的購買條件——改後的一組取代原本的，只影響之後的購買；跟隨＝拿掉自己那一份 */
     if (!evIsBky() && !stageRO()) { if (tmRulesOwn) tmTier.rules = tmRulesOwn; else delete tmTier.rules; }
     /* D417 決定五（最終版）：bookyay 門票自加的折扣類寫回；沒有任何條件＝回到跟隨（拿掉自己那一組） */
@@ -6101,8 +6029,8 @@
 
   /* ── 列表檢視（2026-08-11 使用者指示）：營運視角，一列一票——庫存／保留中／銷量／
      票價／狀態。庫存＝張數 − 銷量 − 保留中（保留中＝下單未付款佔走的）。
-     D422 決定三（2026-10-15）：每列最後一格由「暫停販售／重新販售」改為「隱藏／顯示」（toggleTierVisNow），
-     狀態欄由「販售中／已暫停」改為「顯示中／隱藏」；營運動作、不用先按編輯、立即生效。
+     D422 決定三（2026-10-15）：每列最後一格是「隱藏／顯示」（toggleTierVisNow），
+     狀態欄是「顯示中／隱藏」；營運動作、不用先按編輯、立即生效。
      按鈕的功能標記同彈窗的顯示列：bookyay 活動的門票掛 S92（🔵 release2.4）、自建活動掛 S55（⚪）。 */
   let tixView = 'cards';
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
@@ -6162,8 +6090,6 @@
     toggleTierVisNow(t);
     renderEdTierTable();
   });
-  /* 墓碑 2026-10-15（D422 決定三）：pauseTierNow()（單張門票暫停／恢復販售立即生效，列表暫停鈕與彈窗暫停開關共用）退場，
-     立即生效的寫法搬到 toggleTierVisNow()（隱藏／顯示）。 */
   function refreshTix() { if (tixView === 'cards') renderEdTiers(); else renderEdTierTable(); }
   /* 2026-10-10：整頁編輯模式一翻，票務的編輯入口跟著開關；離開編輯時預設購票規則的草稿一併丟掉（rulesEditable 為假即清草稿），
      開著的門票彈窗收起（它是照開啟當下的模式畫的） */
@@ -6738,7 +6664,6 @@
       const num = withProgress
         ? '<b>' + fmtNum(sold) + '</b> / ' + fmtNum(qty) + (thumbFn ? '' : ' · ' + leftTxt)
         : esc(window.ztorEvents.moneyIn(window.ztorEvents.priceOf(ev, t))) + ' · <b>' + fmtNum(qty) + '</b> ' + T('event-detail.sales.tickets', 'tickets');   // D331：覆寫值優先、基準幣別符號
-      /* D422 決定三：單張門票沒有暫停販售——「已暫停」徽章與淡化列退場，改標隱藏（同票種卡的徽章與功能標記） */
       return '<div class="meter-list__row">' +
           (thumbFn ? thumbFn(t) : '') +
           '<span class="meter-list__name"><span>' + esc(t.name || '') + '</span>' +

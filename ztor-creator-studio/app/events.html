@@ -773,8 +773,8 @@
             </div>
           </div>
 
-          <!-- D410 決定四（2026-10-13，示範資料）：bookyay 演唱會的售票中（暫停售票）示範（events-store nick-live-taichung-bky）。票券欄由 syncTicketCells() 依資料重算 -->
-          <div class="product-list__row" role="row" data-go="event-detail.html?id=nick-live-taichung-bky" data-stage="on-sale" data-category="concert" data-search="nickthereal live 2026 台中 臺中 taichung 洲際 演唱會 concert bookyay 暫停售票 paused 周湯豪 nick chou">
+          <!-- D410 決定四（2026-10-13，示範資料）：bookyay 演唱會的售票中示範（events-store nick-live-taichung-bky）。票券欄由 syncTicketCells() 依資料重算 -->
+          <div class="product-list__row" role="row" data-go="event-detail.html?id=nick-live-taichung-bky" data-stage="on-sale" data-category="concert" data-search="nickthereal live 2026 台中 臺中 taichung 洲際 演唱會 concert bookyay 周湯豪 nick chou">
             <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
               <div class="product-list__image"><img src="images/projects/nick-mxw.jpg" alt="" loading="lazy"></div>
@@ -2157,16 +2157,14 @@
   applyUnlisted();
   document.addEventListener('i18n:applied', applyUnlisted);
 
-  /* 暫停售票／完售徽章（2026-10-08 · D375 決定七）：都不是階段，與已下架同一格直排（階段徽章後面依序掛）。
-     來源是 events-store 的 isPaused()（mock 的 paused ＋ 詳情頁暫停／恢復寫進的 ztor.event-paused，只在售票中與進行中成立）
-     與 isSoldOut()（所有門票與票務商品都賣完；有票回補、不再全部賣完時徽章移除，D375 補裁）。系列母列不掛：逐場的事。
+  /* 完售徽章（2026-10-08 · D375 決定七）：不是階段，與已下架同一格直排（階段徽章後面依序掛）。
+     來源是 events-store 的 isSoldOut()（所有門票與票務商品都賣完；有票回補、不再全部賣完時徽章移除，D375 補裁）。系列母列不掛：逐場的事。
      靜態列上原本寫死的完售徽章也掛 data-ev-soldout，一律由這裡依資料顯示或收起。 */
   function applySaleBadges() {
     const store = window.ztorEvents;
-    if (!store || !store.list || !store.isPaused) return;
+    if (!store || !store.list || !store.isSoldOut) return;
     const byId = new Map(store.list().map(e => [e.id, e]));
     const KINDS = [
-      { attr: 'data-ev-paused',  key: 'events.badge.paused',  fb: 'Sales paused', on: e => store.isPaused(e) },
       { attr: 'data-ev-soldout', key: 'events.badge.soldout', fb: 'Sold out',     on: e => store.isSoldOut(e) }
     ];
     Array.from(list.querySelectorAll('[data-go]')).forEach(r => {

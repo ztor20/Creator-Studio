@@ -3774,9 +3774,8 @@
     'events.badge.scheduled':  { en: 'Scheduled',                           zh: '已排程' },
     'events.badge.ended':      { en: 'Ended',                               zh: '已結束' },
     'events.badge.draft':      { en: 'Draft',                               zh: '草稿' },
-    /* D375 決定七：完售與暫停售票都不是階段，另掛徽章（清單列與詳情頁首共用）；中文統一叫「完售」 */
+    /* D375 決定七：完售不是階段，另掛徽章（清單列與詳情頁首共用）；中文統一叫「完售」 */
     'events.badge.soldout':    { en: 'Sold out',                            zh: '完售' },
-    'events.badge.paused':     { en: 'Sales paused',                        zh: '暫停售票' },
     /* 系列場次（2026-08-06）：清單上收成一列母列，點開才看到每一場 */
     'events.series.expand':    { en: 'Show dates',                          zh: '展開場次' },
     'events.series.manage':    { en: 'Manage the series',                    zh: '管理整個系列' },
@@ -4874,6 +4873,15 @@
     'pp.field.tnc':         { en: 'Terms & conditions',               zh: '條款與細則' },
     /* 墓碑 2026-09-29（D327）：pp.field.entry-note（取票說明欄）退場 */
     'pp.field.tier-name':   { en: 'Ticket type name',                 zh: '票種名稱' },
+    /* D445（2026-10-19）：翻譯表補列場地名稱、集合地點、交通說明、場次名稱、組合包名稱與描述；bookyay 匯入且原文鎖定的列標小鎖頭 */
+    'pp.field.venue':       { en: 'Venue name',                       zh: '場地名稱' },
+    'pp.field.meet':        { en: 'Meeting point',                    zh: '集合地點' },
+    'pp.field.transit':     { en: 'Getting there',                    zh: '交通說明' },
+    'pp.field.session-name':{ en: 'Date name',                        zh: '場次名稱' },
+    'pp.field.bundle-name': { en: 'Bundle name',                      zh: '組合包名稱' },
+    'pp.field.bundle-desc': { en: 'Bundle description',               zh: '組合包描述' },
+    'pp.group.sessions':    { en: 'Dates',                            zh: '場次' },
+    'pp.field.locked':      { en: 'From bookyay, original text locked', zh: '來自 bookyay，原文鎖定' },
     /* 墓碑 2026-10-05（D353）：pp.field.tier-desc（門票簡介在翻譯表的分組名，D328）隨欄位整欄移除 */
     /* ─── js/publish-stage.js — D310（2026-09-22）發布前預覽確認的**全頁**版 ───
        浮層（pp.*）在活動側退場：建立活動第 8 步「預覽與發布」與活動詳情的「預覽與在地化」
@@ -4971,8 +4979,6 @@
     'fep.status.soon':      { en: 'Coming soon',                      zh: '即將開賣' },
     'fep.status.ended':     { en: 'Ended',                            zh: '已結束' },
     'fep.status.cancelled': { en: 'Cancelled',                        zh: '已取消' },
-    /* D390 決定二十九：暫停售票期間粉絲頁的狀態標記與購買鈕 */
-    'fep.status.paused':    { en: 'Sales paused',                     zh: '暫停售票中' },
     'fep.pickup.eticket':   { en: 'E-ticket (QR)',                    zh: '電子門票（QR）' },
     'fep.pickup.sf':        { en: 'SF Express delivery',              zh: '順豐寄送' },
     'fep.pickup.pickup':    { en: 'In-store pickup',                  zh: '到店自取' },
@@ -5013,6 +5019,8 @@
     'fep.price.sale':       { en: 'Ticket deals',                     zh: '票券優惠' },
     'fep.pickup.k':         { en: 'Delivery',                         zh: '取票' },
     'fep.map.link':         { en: 'View on Google Maps ›',            zh: '在 Google 地圖查看 ›' },
+    'fep.meet':             { en: 'Meeting point',                    zh: '集合地點' },
+    'fep.transit':          { en: 'Getting there',                    zh: '交通說明' },
     'fep.deal.tag':         { en: 'Limited-time offer',               zh: '限時折扣' },
     'fep.deal.until':       { en: 'Offer ends {t}',                   zh: '優惠至 {t}' },
     'fep.set.pick':         { en: ' (any seat)',                      zh: '（座位任選）' },
@@ -7574,7 +7582,9 @@
     'od.col.actions':       { en: 'Actions',                 zh: '操作' },
     'od.void.action':       { en: 'Void',                    zh: '撤銷' },
     'od.void.why.admin':    { en: 'Requires the Admin role',  zh: '需要 Admin 角色' },
-    'od.void.why.checkedin': { en: "Tickets already checked in — can't be voided", zh: '門票已報到，不可撤銷' },
+    /* D446（2026-10-19）：組合包只要有一張門票已入場、或一件商品已領取就不能撤銷，說明點出是哪一種。 */
+    'od.void.why.checkedin': { en: "A ticket in this bundle has been checked in — can't be voided", zh: '組合包裡有門票已入場，不能撤銷' },
+    'od.void.why.bundle-picked': { en: "An item in this bundle has been picked up — can't be voided", zh: '組合包裡有商品已領取，不能撤銷' },
     'od.void.reason.p8':     { en: 'Ticket exchange',          zh: '換票' },   // D411 決定七：換票＝撤銷後重新購買
     /* D414（2026-10-14，5.1.5.3.1 §2.8「整單撤銷」）：撤銷整張訂單的入口、停用原因、確認視窗與紀錄；免費訂單的付款區說明 */
     'od.void.whole.btn':       { en: 'Void whole order',        zh: '撤銷整張訂單' },
@@ -7655,7 +7665,8 @@
     'od.void.effects':      { en: 'What voiding does',       zh: '撤銷之後會發生' },
     'od.void.effect.codes': { en: "This item's pickup codes stop working immediately — they can't be scanned at a session.", zh: '這個品項的領取碼即刻失效，場次現場掃不過。' },
     'od.void.effect.stock': { en: 'Stock goes back on the shelf; a bundle restocks each of its members.', zh: '庫存回補；組合品項逐一回補它的成員。' },
-    'od.void.effect.bky':   { en: "ztor tells bookyay to void the ticket in this bundle. If the two systems aren't connected yet, an Admin voids it in the bookyay back office.", zh: 'ztor 會通知 bookyay 作廢這張票；未串接時由 Admin 到 bookyay 後台作廢。' },
+    /* D446（2026-10-19，取代 D434 決定三的手動作廢）：跟 bookyay 一起成功或一起不撤。 */
+    'od.void.effect.bky':   { en: "The tickets in this bundle are voided in bookyay at the same time. If any of them can't be voided there, nothing is voided.", zh: '會同時到 bookyay 撤銷這幾張門票；任何一張沒撤成功，整筆都不撤。' },
     'od.void.irreversible': { en: "There's no undo — a voided item can't be reinstated.", zh: '撤銷不可逆，已撤銷的品項無法還原。' },
     'od.void.cancel':       { en: 'Cancel',                  zh: '取消' },
     'od.void.confirm':      { en: 'Void this item',          zh: '確認撤銷' },
@@ -10203,21 +10214,6 @@
     'ed.bkysync.f.date':           { en: 'show date {from} → {to}', zh: '場次日期 {from} → {to}' },
     'ed.bkysync.f.venue':          { en: 'venue {from} → {to}', zh: '場地 {from} → {to}' },
     'ed.bkysync.f.price':          { en: 'ticket price {from} → {to}', zh: '票價 {from} → {to}' },
-    /* D375 決定七：活動層級暫停售票／恢復販售 */
-    'event-detail.pause.title':    { en: 'Pause ticket sales', zh: '暫停售票' },
-    'event-detail.pause.sub':      { en: 'Fans can still see the event, but no tickets or ticket bundles can be bought. Tickets already sold stay valid.', zh: '粉絲照常看得到活動，但所有門票與票務商品都不能購買；已售出的票照常有效。' },
-    'event-detail.pause.btn':      { en: 'Pause sales', zh: '暫停售票' },
-    'event-detail.pause.confirm.title': { en: 'Pause ticket sales?', zh: '確定暫停售票？' },
-    'event-detail.pause.confirm.body':  { en: 'The event page stays up, but no tickets or ticket bundles with its tickets can be bought. Tickets already sold stay valid. You can resume any time.', zh: '活動頁照常顯示，但門票與含其門票的票務商品都不能購買；已售出的票照常有效。隨時可以恢復販售。' },
-    'event-detail.pause.confirm.ok':    { en: 'Pause sales', zh: '暫停售票' },
-    'event-detail.pause.toast':    { en: 'Ticket sales paused', zh: '已暫停售票' },
-    'event-detail.resume.title':   { en: 'Resume ticket sales', zh: '恢復販售' },
-    'event-detail.resume.sub':     { en: 'Sales are paused. Fans can see the event but can’t buy anything until you resume.', zh: '目前暫停售票。粉絲看得到活動，但恢復販售前都不能購買。' },
-    'event-detail.resume.btn':     { en: 'Resume sales', zh: '恢復販售' },
-    'event-detail.resume.confirm.title': { en: 'Resume ticket sales?', zh: '確定恢復販售？' },
-    'event-detail.resume.confirm.body':  { en: 'Tickets and ticket bundles go back to their own sale settings, and fans can buy them again.', zh: '門票與票務商品回到各自原本的販售設定，粉絲可以再次購買。' },
-    'event-detail.resume.confirm.ok':    { en: 'Resume sales', zh: '恢復販售' },
-    'event-detail.resume.toast':   { en: 'Ticket sales resumed', zh: '已恢復販售' },
     /* 撤銷只有 Admin 代管態能按（D361 決定二）；創作者視角的停用說明指向平台外聯繫 Admin（D371 決定二）。
        活動票券專用，不動 order-detail 共用的 od.void.why.admin（E-Shop 已交付 release2.3）。 */
     'event-detail.void.why.admin': { en: 'Only an Admin can void. Contact an Admin.', zh: '只有 Admin 能撤銷，請聯繫 Admin' },
@@ -10360,7 +10356,7 @@
     /* 分頁叫「票務」，裡面第一節不該也叫「票務」——那是重述上下文（見 CLAUDE.md
        「UI 文案不重述上下文」）。節名改「票種」，跟它列的東西一致。 */
     'event-detail.tiers.title': { en: 'Ticket tiers', zh: '票種' },
-    /* 2026-08-11 票務分頁改版：卡片／列表雙檢視、庫存欄位、暫停販售、票務商品 */
+    /* 2026-08-11 票務分頁改版：卡片／列表雙檢視、庫存欄位、票務商品 */
     'ed.tix.view.cards':  { en: 'Cards',            zh: '卡片' },
     'ed.tix.view.list':   { en: 'List',             zh: '列表' },
     'ed.tix.col.name':    { en: 'Ticket',           zh: '門票名稱' },
@@ -10371,7 +10367,6 @@
     /* 墓碑 2026-09-23（D316）：'ed.tix.col.fee'（票務列表檢視的手續費欄）隨欄位退場。 */
     'ed.tix.col.status':  { en: 'Status',           zh: '狀態' },
     'ed.tix.status.on':   { en: 'On sale',          zh: '販售中' },
-    'ed.tix.status.paused': { en: 'Paused',         zh: '已暫停' },
     /* D380 決定五（2026-10-09）：活動詳情票務清單裡獨立票的標籤，以及多場活動時它所屬場次那一列。 */
     'ed.tix.standalone':    { en: 'Standalone',     zh: '獨立票' },
     'ed.tix.kind.type':     { en: 'Ticket-type ticket', zh: '票種門票' },   // 2026-10-13 列表檢視名稱下的門票種類小字
@@ -10395,8 +10390,6 @@
                               zh: '現在用的是活動主視覺。在這裡換一張，這張票就有自己的圖。' },
     'ed.tm.img.own':        { en: 'This ticket has its own image.', zh: '這張票用的是自己的圖。' },
     'ed.tm.img.reset':      { en: 'Back to the event image', zh: '改回活動圖片' },
-    'ed.tix.pause':      { en: 'Pause sales',      zh: '暫停販售' },
-    'ed.tix.resume':      { en: 'Resume sales',     zh: '重新販售' },
     'ed.venue.title': { en: 'Venue', zh: '地點' },
     'ed.venue.sub': { en: 'Shared by every date of this event.', zh: '這場活動所有場次共用。' },
     'ed.bd.price': { en: 'Bundle price', zh: '組合價' },
@@ -10642,7 +10635,6 @@
     'ed.pub.edit-tbd':    { en: 'You can still switch the display setting at any time. The other settings lock once tickets are on sale — changing them would affect buyers, and which ones can change is still being decided upstream.', zh: '顯示設定隨時都能切換。其他設定開賣後鎖住——改動會影響已購票的粉絲，哪些還能改上游還沒定。' },
     'ed.tix.early.card':  { en: '{n} min early ({t})',    zh: '提早 {n} 分鐘（{t}）' },
     'ed.tm.delete':       { en: 'Delete tier',            zh: '刪除門票' },
-    'ed.tm.pause.hint':   { en: 'Rejects new purchases; tickets already sold stay valid.', zh: '擋掉新的購買，已售出的票維持有效。' },
     /* 票種彈窗的區塊與計算列表（2026-09-22，D311）：與建立流程第 5 步的單張門票彈窗同一套
        資訊結構——基本／價格與數量／入場／販售。購買條件在詳情頁沒有（上游未定，2026-08-11）。 */
     /* 墓碑 'ed.tm.sec.basic'（en Basics／zh 基本）：2026-09-23 Q125 拿掉票種彈窗「基本」的
@@ -10705,7 +10697,7 @@
     'ed.sess.sum.nodate': { en: 'Date not set',     zh: '日期尚未設定' },
     'ed.sess.remove':     { en: 'Remove this date',       zh: '移除這一場' },
     /* D391 第 5、12、13 題（2026-10-09）：開賣前移除場次的確認（列出一併刪除的門票）；售票中之後場次與門票不能刪 */
-    'ed.sess.locked':     { en: "Tickets are on sale, so dates can't be removed. To stop selling a date on its own, hide its tickets.", zh: '已開賣，場次不能移除；要讓某一場的門票不再單獨販售，請隱藏它的門票。' },   // D422：單張門票沒有暫停售票
+    'ed.sess.locked':     { en: "Tickets are on sale, so dates can't be removed. To stop selling a date on its own, hide its tickets.", zh: '已開賣，場次不能移除；要讓某一場的門票不再單獨販售，請隱藏它的門票。' },   // D422、D444
     /* D413（5.1.6.2 §3「進行中的編輯」）：進行中編輯時高影響欄位鎖定的原因 */
     'ed.live.unlist-first': { en: 'Unlist the event to change these, then list it again.', zh: '先下架才能改，改完再上架。' },
     'ed.live.started':      { en: "Once a date has started, its date, start time and venue can't be changed.", zh: '已開始的場次，日期、開始時間與場地都不能改。' },
@@ -10715,7 +10707,7 @@
     'ed.sess.rm.save':    { en: 'This takes effect when you save.', zh: '按「儲存」後才會生效。' },
     'ed.sess.rm.last':    { en: 'Removing this date would leave nothing to sell — no tickets and no bundle on sale. Keep at least 1 ticket or 1 bundle on sale.', zh: '移除這一場後，活動就沒有可賣的東西（沒有門票，也沒有仍在販售的組合包），不能移除。請至少保留 1 張門票或 1 組仍在販售的組合包。' },
     'ed.sess.rm.ok':      { en: 'Remove date and tickets', zh: '移除場次與門票' },
-    'ed.tm.del.onsale':   { en: "Tickets are on sale — tickets can't be deleted. Hide it instead.", zh: '已開賣，門票不能刪除；請改用隱藏。' },   // D422：單張門票沒有暫停售票
+    'ed.tm.del.onsale':   { en: "Tickets are on sale — tickets can't be deleted. Hide it instead.", zh: '已開賣，門票不能刪除；請改用隱藏。' },   // D422、D444
     'event-detail.tiers.sub': { en: '1–10 tiers per event. Sale progress turns yellow at 80%, red at 95% (§5.1.6 F5).', zh: '每場活動 1–10 個票種。售票進度達 80% 轉黃、95% 轉紅（§5.1.6 F5）。' },
     'event-detail.tiers.sub2':    { en: 'Tiers that already sold can be closed, but not deleted — buyers hold them.', zh: '已經賣出的票種可以關閉銷售，但不能刪除——票在買方手上。' },
     'event-detail.tiers.col.tier': { en: 'Tier', zh: '票種' },
@@ -10735,9 +10727,6 @@
     'event-detail.tiers.rules.title': { en: 'Sale rules', zh: '售票規則' },
     'event-detail.tiers.rule.cap': { en: 'Hard inventory cap — no overselling', zh: '硬性庫存上限──不超賣' },
     'event-detail.tiers.rule.cap-meta': { en: 'Concurrent sales use atomic decrement; the N+1 purchase fails with tier_sold_out and emits no revenue event.', zh: '並發售票採原子遞減；第 N+1 筆購買會以 tier_sold_out 失敗，且不產生營收事件。' },
-    'event-detail.tiers.rule.pause': { en: 'Pause sales (Paused)', zh: '暫停售票（Paused）' },
-    'event-detail.tiers.rule.pause-meta': { en: 'Rejects new purchases; existing tickets stay valid.', zh: '拒絕新購買；既有票券維持有效。' },
-    'event-detail.tiers.rule.pause-state': { en: 'All active', zh: '全部啟用中' },
     'event-detail.tiers.tbd': { en: '<strong>TBD:</strong> Full per-tier field editor (purchase eligibility detail, currency list) lands with the R 2.1.1 tier setup UI. A tier has no sale dates of its own — tickets use the time window in their purchase rules (D342). Fields shown here illustrate defined attributes only.', zh: '<strong>TBD：</strong>完整的單票種欄位編輯器（購買資格細節、幣別清單）將隨 R 2.1.1 票種設定 UI 一併落地。票種沒有自己的售票時間，門票用購買條件的限時間（D342）。此處欄位僅示意已定義的屬性。' },
     'event-detail.att.title': { en: 'Attendee list', zh: '參加者名單' },
     'event-detail.att.sub': { en: 'Who bought a ticket and which ticket they hold. Check-in appears on the event day.', zh: '誰買了票、拿到哪一張票券。報到欄在活動當天才出現。' },

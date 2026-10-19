@@ -27,7 +27,7 @@
 
 > **2026-10-09 · 建立活動 7 步進度條、獨立票標籤（D380；UI-CHANGES 一百四十九、ASSUMPTIONS SOLO-001 追記）**：進度條一格可對應兩個內部步驟（`data-step`＋`data-step-wp`，`labelStep()` 換算），「票種與票務」一格在一般活動指票務矩陣、在共看派對指入場券；內部步驟號不重編，顯示編號對照表寫在 `create-event.html` script 檔頭。獨立票標籤一律用 `badge--neutral`「獨立票」——建立活動票卡（既有）、組合包允許清單的獨立票列（`.bd-tbl__name` 內）、活動詳情票卡與列表（名稱後）三處同一種。活動詳情多場活動的獨立票以排序（票種門票之後、依場次）＋「場次」事實列呈現，不另分區。沒有新元件、沒有新 token。
 
-> **2026-10-08 · bookyay 匯入活動停用撤銷／取消／報到台、暫停售票與完售徽章、創作者活動管理四值（D375；UI-CHANGES 一百四十七、ASSUMPTIONS UIA-219）**：停用的功能留在原位＝停用鈕＋title＋一句 `field__hint--fact`（檢視模式不藏）；掃碼器卡徽章改 `badge--neutral`「已停用」；名單分頁加 `info-banner` 唯讀說明。暫停售票區塊（`#ed-pause`）放在上下架區塊下方、同一個設定面板，按鈕 `btn--outline`，確認走既有 `openConfirm()`。「暫停售票」「完售」徽章都用 `badge--neutral`，頁首排在已下架之後、清單列在狀態欄階段徽章之後。創作者活動管理「草稿」徽章 `badge--neutral`。沒有新元件、沒有新 token。
+> **2026-10-08 · bookyay 匯入活動停用撤銷／取消／報到台、完售徽章（暫停售票部分已由 D444 移除）、創作者活動管理四值（D375；UI-CHANGES 一百四十七、ASSUMPTIONS UIA-219）**：停用的功能留在原位＝停用鈕＋title＋一句 `field__hint--fact`（檢視模式不藏）；掃碼器卡徽章改 `badge--neutral`「已停用」；名單分頁加 `info-banner` 唯讀說明。〔2026-10-19 D444：暫停售票區塊與「暫停售票」徽章已移除，活動要停賣改用提前停售時間或下架。〕「完售」徽章用 `badge--neutral`，頁首排在已下架之後、清單列在狀態欄階段徽章之後。創作者活動管理「草稿」徽章 `badge--neutral`。沒有新元件、沒有新 token。
 >
 > **2026-10-05 · 描述改成區塊模型、說明區塊退場；門票簡介移除（A spec-derived ＋ C 撤除 · D354／D353；UI-CHANGES 一百二十七、ASSUMPTIONS UIA-196／UIA-197）**：`create-event.html` 步驟 2 分兩張外框卡——第一組名稱 → 亮點 → 國家＋語言（同一列 `.form-grid`），第二組「描述」＝ `partials/rich-body.js` 區塊編輯器（文字／圖片／影片區塊，每個區塊 `.card--muted`：把手｜內容｜✕，無標題、按住把手拖動或上下鍵排序；文字區塊工具列＝粗體、斜體、連結、編號清單、項目符號清單、分隔線｜插入圖片、插入影片；媒體插入後成為獨立區塊排在該文字區塊之後；整份描述媒體合計 10 個、滿了插入鈕停用＋底部說明；底部「新增描述」`data-feat="S67"`）。清單與分隔線由元件自己轉 DOM（不用 execCommand）；連結展開一列網址輸入、只收 http／https。bookyay 帶入：第 1 段文字＋其媒體鎖定（可拖動）、第 2 段起各成不鎖的文字區塊、段內媒體拆成獨立區塊。說明區塊（`info-sections.css`／`partials/info-sections.js`）墓碑、DS §4.221 標退場；`event-detail.html` 活動內容描述同一支（檢視態區塊去卡面）；粉絲頁 `js/fan-event-page.js` 照區塊順序畫（`em`／`a`／`hr` 樣式在 `fan-shop.css`），`.pdp-info*` 收合退場；翻譯欄位＝每個有字的文字區塊一格。D353：單張門票彈窗基本區剩門票名稱、門票圖片、顯示開關；`TIER_DESC_MAX`、翻譯欄位 `tdesc-*`、粉絲頁票列簡介、i18n `ce.tier.desc*`／`pp.field.tier-desc` 墓碑。
 >
@@ -856,7 +856,7 @@ cheat code 的 `route:` 規則在目標頁住在子目錄時（`funding-test/cre
 
 - **一個儲存流程**：「儲存」鈕與離開防護的「儲存並離開」共用 `trySave()`：發布設定檢查（`pubErrs`）→ 必填（`saveErrors`，彈窗列出＋就地 `.is-invalid`）→ 時間衝突（`timeConflicts`，只擋這次造成的）→ 高影響確認（`highImpactDiffs`＋`holdersOf`）→ `commitEdit()` 寫回 `ztorEvents.saveEdits()`。
 - **發布設定草稿**：`pubDraft` 在 `setMode('edit')` 建立、離開時丟掉；`pubLocks()` 依階段與 bookyay 逐欄鎖（`.segmented--locked`、`readOnly`、`.switch--locked`）；`applyReadonly()` 解鎖後會再套一次 `syncPubLock()`。上架設定用既有 `.segmented.radio-cards` 與 `.control-group`，沒有新元件。
-- **門票不屬頁面編輯**：門票彈窗的存／刪、列表暫停直接 `saveTiers()`，不進變更計數、不被捨棄還原；已結束／已取消彈窗唯讀。
+- **門票不屬頁面編輯**：門票彈窗的存／刪、列表的隱藏／顯示直接寫回，不進變更計數、不被捨棄還原；已結束／已取消彈窗唯讀。
 - **影片預告**：`.upload-tile--video`＋`data-upload-kind="video"`（同建立流程與 rich-body 的預填影片），檢視模式空的格收起、改一句提示。
 - **列操作與動態列**：`events.html` 的 `syncRowActions()` 依 store 階段重算編輯連結與現場報到台；`injectBkyDrafts()` 以 khh 草稿列為範本補 Admin 首存草稿列。
 - **在地化唯讀**：`event-localization.html` 以 MutationObserver 在 publish-stage 重畫後鎖輸入、收主鈕；加連 `info-banner.css`。系列母頁確認用既有 `.leave-dialog`＋`__list`（加連 `leave-dialog.css`）。

@@ -488,8 +488,9 @@
            D431（2026-10-16）：撤銷一律不寄 email，原本的「寄送訂單已取消信」兩條（單品／整單）退場。 -->
       <div class="field__hint" data-od-void-effect="codes" data-i18n="od.void.effect.codes">This item's pickup codes stop working immediately — they can't be scanned at a session.</div>
       <div class="field__hint mt-8" data-od-void-effect="stock" data-i18n="od.void.effect.stock">Stock goes back on the shelf; a bundle restocks each of its members.</div>
-      <!-- D434（2026-10-16）：撤銷含 bookyay 門票的組合包品項時多一條——ztor 通知 bookyay 作廢那張票，未串接時由 Admin 到 bookyay 後台作廢 -->
-      <div class="field__hint mt-8" data-od-void-effect="bky" hidden data-i18n="od.void.effect.bky">ztor tells bookyay to void the ticket in this bundle. If the two systems aren't connected yet, an Admin voids it in the bookyay back office.</div>
+      <!-- D434（2026-10-16）撤銷含 bookyay 門票的組合包品項時多一條；D446（2026-10-19）改為跟 bookyay 一起成功或一起不撤（手動作廢退場）。
+           原型不模擬 bookyay 撤銷失敗，送出一律成功（ASSUMPTIONS UIA-273）。 -->
+      <div class="field__hint mt-8" data-od-void-effect="bky" hidden data-i18n="od.void.effect.bky">The tickets in this bundle are voided in bookyay at the same time. If any of them can't be voided there, nothing is voided.</div>
       <!-- 整單撤銷專用（D414）：訂單轉已取消；單品撤銷時隱藏 -->
       <div class="field__hint mt-8" data-od-void-effect="whole-status" hidden data-i18n="od.void.whole.effect.status">The order becomes Cancelled.</div>
       <!-- 2026-10-15 目視檢查 C1：「請先在 Stripe 完成人工退款」與「撤銷不可逆」原本是兩行灰色 hint，跟效果預告同一個重量、讀不出是警告；
@@ -768,7 +769,7 @@
      狀態由履約欄的已取消徽章講。 */
   var VOID_WHY_FULFILLED = {
     pickup: { key: 'od.void.why.redeemed', en: "Already picked up — can't be voided" },
-    bundle: { key: 'od.void.why.redeemed', en: "Already picked up — can't be voided" },
+    bundle: { key: 'od.void.why.bundle-picked', en: "An item in this bundle has been picked up — can't be voided" },   /* D446 */
     ship:   { key: 'od.void.why.shipped',  en: "Already shipped — can't be voided" },
     digital:{ key: 'od.void.why.delivered', en: "Already delivered — can't be voided" }
   };
@@ -803,7 +804,7 @@
     /* D411：門票品項（直接買票）在活動詳情撤銷，本頁不放撤銷鈕；入口在 §2.3.4 門票資料 */
     if (st === 'voided' || st === 'elsewhere') return '';
     var why = st === 'expired' ? { key: 'od.expired.why', en: 'This order expired before payment — there is nothing to fulfil, void or resend.' }   /* D424：已過期 */
-      : st === 'redeemed' ? (it.redeemed ? { key: 'od.void.why.checkedin', en: "Tickets already checked in — can't be voided" } : (VOID_WHY_FULFILLED[it.mode] || VOID_WHY_FULFILLED.pickup))
+      : st === 'redeemed' ? (it.redeemed ? { key: 'od.void.why.checkedin', en: "A ticket in this bundle has been checked in — can't be voided" } : (VOID_WHY_FULFILLED[it.mode] || VOID_WHY_FULFILLED.pickup))
       : (adminScope() ? null : VOID_WHY_ADMIN);
     return '<button class="btn btn--soft btn--destructive btn--sm od-void-open" type="button"' +
       ' data-od-void="' + i + '"' +
