@@ -561,7 +561,7 @@
     layout.appendChild(dmain);
 
     var aside = el('aside', 'pdp-details__aside');
-    /* 卡司陣容 chips：人名維持原文、角色標籤可翻譯（§7.4），前台寫法是「角色 人名」一顆 chip */
+    /* 卡司陣容 chips：人名維持原文、角色標籤不翻譯（D445），前台寫法是「角色 人名」一顆 chip */
     if (m.lineup && m.lineup.length) {
       var blk = el('div', 'pdp-details__specs-block pdp-story__lineup');
       blk.innerHTML = '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('user') + '<span data-i18n="fep.sec.lineup">' + esc(T('fep.sec.lineup', 'Lineup')) + '</span></h3>';

@@ -488,7 +488,7 @@
     'ploy.log.season-remove': { en: 'Season double week removed: {range}', zh: '移除賽季加倍週：{range}' },
     'ploy.log.by-admin': { en: 'Admin', zh: 'Admin' },
     'ploy.saved': { en: 'Saved', zh: '已儲存' },
-    'pprom.sub': { en: 'Two kinds of platform-wide promotion for buyers — threshold discounts and platform codes — each set up as its own record. Creators absorb the cost; exclude individual creators globally or per record below.', zh: '平台對買家的兩種促銷——滿額折扣與平台優惠碼——各自逐筆獨立設定。成本由創作者吸收；可在全局或逐筆設定例外藝人。' },
+    'pprom.sub': { en: 'Two kinds of platform-wide promotion for buyers — threshold discounts and platform codes — each set up as its own record. Creators absorb the cost of threshold discounts and the platform absorbs the cost of platform codes; exclude individual creators globally or per record below.', zh: '平台對買家的兩種促銷——滿額折扣與平台優惠碼——各自逐筆獨立設定。滿額折扣成本由創作者吸收、平台優惠碼成本由平台吸收；可在全局或逐筆設定例外藝人。' },
     'pprom.tab.threshold': { en: 'Threshold discounts', zh: '滿額折扣' },
     'pprom.tab.codes': { en: 'Platform codes', zh: '平台優惠碼' },
     'pprom.tab.excluded': { en: 'Excluded creators', zh: '例外藝人' },
@@ -541,7 +541,7 @@
     'pprom.th.col.exceptions': { en: 'Excluded creators', zh: '例外藝人數' },
     'pprom.th.empty.title': { en: 'No threshold discounts yet', zh: '尚無滿額折扣' },
     'pprom.th.empty.text': { en: 'Create the first one so buyers get a discount when their order reaches a spend threshold.', zh: '建立第一筆，買家訂單滿額即可自動折抵。' },
-    'pprom.th.auction.note': { en: 'Whether auction sales count toward the threshold: product decision pending.', zh: '拍賣是否計入門檻與折抵：產品待確認。' },
+    'pprom.th.auction.note': { en: 'Auctions are excluded: they do not count toward the threshold and are not discounted.', zh: '拍賣不計入門檻、不被折抵。' },
     'pprom.th.modal.add': { en: 'Add a threshold discount', zh: '新增滿額折扣' },
     'pprom.th.modal.edit': { en: 'Edit threshold discount', zh: '編輯滿額折扣' },
     'pprom.th.f.name.ph': { en: 'e.g., Launch week', zh: '例：開站慶' },
@@ -1499,6 +1499,9 @@
     'roy.period.custom':      { en: 'Custom',           zh: '自訂區間' },
     'roy.export':             { en: 'Export report',    zh: '匯出報表' },
     'roy.total':              { en: 'Total royalties',  zh: '總版稅' },
+    /* D452 稽核補缺：earnings-overview.html 的總額說明與作品排行標題（原只有 pd-roy.* 版） */
+    'roy.total-meta':         { en: '2026 Q2 (Apr–Jun) · all works, platforms and regions', zh: '2026 年第二季（4–6 月）· 全部作品、平台與地區' },
+    'roy.works.plays':        { en: 'Top works · by streams & downloads', zh: '表現最佳作品 · 依串流／下載次數' },
     /* 版稅期間 meta：四個期間各一個鍵。切期間時只換 data-i18n 再呼叫 applyI18n，
        語言切換就沿用既有機制，不必在頁面裡自己判斷語言（2026-07-31 踩過：
        誤用 lang === 'zh' 判斷，實際值是 'zh-Hant'，中文介面下會顯示英文）。 */
@@ -2424,6 +2427,8 @@
     'ip-detail.royalty.value':    { en: '12% of gross revenue',        zh: '總收益的 12%' },
     'ip-detail.meta.start-fee':   { en: 'Starting fee',                zh: '起租費' },
     'ip-detail.meta.term-val':    { en: '3–24 mo',                     zh: '3–24 個月' },
+    /* D452 稽核補缺：ip-detail.html 的 Term 標籤一直指向沒定義的 key（只定義了 -val） */
+    'ip-detail.meta.term':        { en: 'Term',                        zh: '租期' },
     'ip-detail.meta.exclusivity': { en: 'Exclusivity',                 zh: '獨家' },
     'ip-detail.meta.exclusivity-val': { en: 'Optional',                zh: '可選' },
     'ip-detail.rent-title':       { en: 'Rent this IP',                zh: '租用此 IP' },
@@ -4320,6 +4325,8 @@
     'event-detail.scanner.bky.hint':      { en: 'Tickets are scanned at the door with bookyay’s scanner. Send this link to door staff.', zh: '門票入場用 bookyay 的掃描器掃票，把這條連結傳給門口的工作人員。' },
     'event-detail.scanner.bky.nourl':     { en: 'bookyay hasn’t sent a scanner link for this event yet. Door staff can still scan tickets with the bookyay Organizer App.', zh: 'bookyay 還沒提供這場的掃描器連結。門口仍可用 bookyay Organizer App 掃票。' },
     'event-detail.scanner.bky.pickup.label': { en: 'Bundle pickup',         zh: '組合包取貨' },
+    /* D453：組合包取貨掃碼器網址（取貨場次的 scanner 網址）的欄位標籤；沒有取貨場次時退回上面的「組合包取貨」 */
+    'event-detail.scanner.bky.pickup.scan': { en: 'Bundle pickup scanner link', zh: '組合包取貨掃碼器連結' },
     'event-detail.scanner.bky.pickup.hint':  { en: 'Products in ticket bundles are picked up through ztor pickup sessions, not bookyay’s scanner.', zh: '組合包裡的商品用 ztor 的取貨場次領取，不經過 bookyay 掃描器。' },
     /* 墓碑 2026-10-12（D401 決定四）：event-detail.bkycard.title（D397 bookyay 現場掃碼卡標題）隨卡片撤除 */
     'event-detail.scanner.bky.short':     { en: 'Tickets are scanned with the bookyay Organizer App', zh: '門票由 bookyay Organizer App 掃票' },
@@ -5137,16 +5144,8 @@
     'fpj.field.budget':     { en: 'Category {n}',                     zh: '分類 {n}' },
     /* 活動詳情頁「預覽與在地化」入口（5.1.6.3 §2.13） */
     'ed.loc.btn':           { en: 'Preview & localization',           zh: '預覽與在地化' },
-    'ed.loc.title':         { en: 'Localization',                     zh: '在地化' },
-    'ed.loc.langs':         { en: 'Translations',                     zh: '翻譯' },
-    'ed.loc.langs.val':     { en: '4 languages · auto-generated, editable', zh: '4 語系 · 自動生成、可改' },
-    'ed.loc.base':          { en: 'Base currency',                    zh: '基準幣別' },
-    'ed.loc.overrides':     { en: 'Currency overrides',               zh: '幣別覆寫' },
-    'ed.loc.overrides.none':{ en: 'None — all converted',             zh: '無 · 全部為換算值' },
-    'ed.loc.overrides.n':   { en: '{n} overridden',                   zh: '{n} 格已覆寫' },
     'ed.loc.saved':         { en: 'Saved — prices and translations are live.', zh: '已儲存，翻譯與幣別價已生效。' },
-    /* D330：基準價由 bookyay 港幣原價換算成創作者幣別、鎖定；港幣欄鎖原價，其他幣別（含創作者幣別）可覆寫。 */
-    'ed.loc.locked':        { en: 'Prices come from bookyay in HKD. The HKD price stays locked; the base is converted from it. Other currencies, including the base, can be overridden.', zh: '票價來自 bookyay（港幣）：港幣原價鎖定，基準價由它換算而來；其他幣別（含基準幣別）可覆寫。' },
+    /* D453（2026-10-19）墓碑：設定分頁「在地化」卡拿掉，ed.loc.title／langs／langs.val／base／overrides／overrides.none／overrides.n／locked（D330 港幣鎖定說明）不再有消費者，已刪；入口只剩頁首 ed.loc.btn。 */
     'ed.tix.other-cur':     { en: 'Other currencies',                 zh: '其他幣別' },
     'ed.tix.bky-price':     { en: 'bookyay price',                    zh: 'bookyay 原價' },
     'ed.tix.overrides':     { en: 'Overridden',                       zh: '已覆寫' },
@@ -5212,6 +5211,8 @@
     'ce.subtitle':          { en: 'Offline event',                    zh: '線下活動' },
     'ce.req':               { en: '· required',                       zh: '· 必填' },
     'ce.opt':               { en: '(optional)',                       zh: '（選填）' },
+    /* D452 稽核補缺（2026-10-19）：必填星號短標記，create-event 14 處 data-i18n="ce.req.mark" 一直沒有定義；兩種語言都是同一個星號，與其他頁的必填標示一致 */
+    'ce.req.mark':          { en: '*',                                zh: '*' },
     'ce.step.type':         { en: 'Type',                             zh: '類型' },
     'ce.step.details':      { en: 'Details',                          zh: '細節' },
     'ce.step.venue':        { en: 'Venue & Time',                     zh: '場地與時間' },
@@ -5401,7 +5402,7 @@
     'ce.rev.name':          { en: 'Event name',                       zh: '活動名稱' },
     'ce.rev.venue':         { en: 'Venue & time',                     zh: '場地與時間' },
     'ce.rev.tickets':       { en: 'Tickets',                          zh: '票種' },
-    /* 步驟 8 摘要補一列組合包（2026-09-18，5.1.6.1 §4.6 F20／D292） */
+    /* 步驟 7（預覽與發布）摘要補一列組合包（2026-09-18，5.1.6.1 §4.6 F20／D292） */
     /* 2026-09-21（D296）：票券成員＝允許票種 × 每組張數，Review 改報每組幾張（張數不同時「1／2」並列） */
     'ce.rev.edit':          { en: 'Edit →',                           zh: '編輯 →' },
     'ce.ph.notsel':         { en: 'Not selected',                     zh: '尚未選擇' },
@@ -10513,10 +10514,12 @@
     'sd.sync.listed.meta': { en: 'Unlist those dates first to sync them, then relist them yourself.', zh: '要先下架這些場次才能同步，同步後再自行重新上架。' },
     'ed.loc.listed': { en: 'This event is listed — unlist it to edit translations.', zh: '活動上架中，要先下架才能修改翻譯。' },
     'event-detail.relist.dirty': { en: 'Save or discard your changes first, then relist the event.', zh: '請先儲存或捨棄變更，再重新上架。' },
-    'bd.stockonly.title': { en: 'This bundle is listed — only locked sets and listing and sale times can change', zh: '組合包上架中，只能改鎖定套數與上架、開賣時間' },
-    'bd.stockonly.body': { en: 'Change locked sets in the Stock tab. Listing, unlisting, sale start and sale end times change under Edit bundle. To edit anything else — contents, price, sales cap, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.', zh: '鎖定套數在「組合庫存」分頁改；上架、下架、開賣、停售時間按「編輯組合」直接改。其他資料（內容、售價、販售上限、購買條件、翻譯）要先下架這個組合包才能修改，儲存後再自行重新上架。' },
+    'bd.stockonly.title': { en: 'This bundle is listed — only locked sets, sales cap and listing and sale times can change', zh: '組合包上架中，只能改鎖定套數、販售上限與上架、開賣時間' },
+    'bd.stockonly.body': { en: 'Change locked sets in the Stock tab. Under Edit bundle you can raise the sales cap or switch back to unlimited to restock (never below the sets already sold), and change listing, unlisting, sale start and sale end times. To edit anything else — contents, price, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.', zh: '鎖定套數在「組合庫存」分頁改；按「編輯組合」可調高販售上限或改回不限量來恢復庫存（不得低於已售套數），也能改上架、下架、開賣、停售時間。其他資料（內容、售價、購買條件、翻譯）要先下架這個組合包才能修改，儲存後再自行重新上架。' },
     'bd.tix.min1': { en: 'Keep at least one ticket.', zh: '至少要留一種門票。' },
     'bd.loc.listed': { en: 'This bundle is listed — unlist it first to make changes.', zh: '組合包上架中，要先下架這個組合包才能修改。' },
+    'bd.cap.under': { en: 'Can’t go below the {n} sets already sold', zh: '不得低於已售出的 {n} 套' },
+    'bd.cap.under.why': { en: 'Sales cap can’t be lower than the sets already sold', zh: '販售上限不得低於已售套數' },
     'bd.stockonly.go': { en: 'Unlist bundle', zh: '下架組合包' },
     'event-detail.att.undo': { en: 'Mark not arrived', zh: '改回未報到' },
     'event-detail.att.undo.title': { en: 'Mark as not arrived?', zh: '要改回未報到嗎？' },

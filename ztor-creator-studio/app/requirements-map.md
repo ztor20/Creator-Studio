@@ -49,6 +49,8 @@
 > - D438（主規格 §7.14「活動發布後的修改規則」營運動作、5.1.5.9 §2.3）：`bundle-detail.html` 活動組合包上架中「編輯組合」不再停用，進編輯後只開放上架與開賣兩節（另設的上架、下架、開賣、停售時間＋開賣開關），其他各節唯讀（`bdStockLockApply()`）；說明列文案 `bd.stockonly.title`／`bd.stockonly.body` 改寫。另設時間寫回 events-store 同一組 bundle 的 `sched`（`evBundlePersist()`），下架時另設時間全部回到跟隨並寫回（D290）。活動層時間（event-detail 發布設定）照既有不鎖。
 > - D439（主規格 §8.1 D439 補記、5.1.6.1 F21「每種門票的張數」）：`create-event.html` `bkyMap()` 一個時段的所有門票種類都帶入、每種一張 bookyay 門票，張數各帶時段人數上限〔推導〕；略過提示 `#ce-bky-skip-note` 與 `ce.bky.skipped`／`ce.bky.skipped.close` 退場。
 
+> **2026-10-19 D453 原型同步（UI-CHANGES 二百六十七、ASSUMPTIONS UIA-277；S78 🔵、S56 延伸，tier 不變）**：5.1.6.3 §2.8 掃碼連結存取、§2.13 預覽與在地化 → `event-detail.html` bookyay 活動掃碼器卡改三部分（bookyay 連結、組合包取貨掃碼器連結、前往領取場次）；設定分頁「在地化」子分頁與卡拿掉，翻譯與幣別一律從頁首「預覽與在地化」進。
+>
 > **2026-10-16 D437 原型同步（UI-CHANGES 二百五十六、ASSUMPTIONS UIA-269；S81.1 🔵，tier 不變）**：主規格 §7.14、5.1.5.9 §2.2／§2.3 → `bundle-detail.html` `evBoundsOf().canList`、`partials/bundle-relist.js` `defaultTicketBlocked()`、`e-shop.html` `eventBundleModel()` 活動已結束（或已取消）時不能重新上架並就地說明；已售出說明句（`bd.members.locked`、`cpp.bd.sp.locked`）補「上架與開賣時間仍可改」；`evBundlePersist()` 寫回 `stopped`（決定四）。
 
 > **2026-10-16 D431～D436 原型同步（UI-CHANGES 二百四十八～二百五十四、ASSUMPTIONS UIA-268；新登記 S47.1、S51.1、S81.1 🔵）**：

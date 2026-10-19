@@ -503,7 +503,7 @@
                  仍在用同一支 renderer（那個階段的頁首講的是別的事）。 -->
             <!-- ═══ 掃碼器提前顯示的落點（D401 決定四，5.1.6.3 v58 §2.4／§2.5；UI-CHANGES 一百八十七）═══
                  bookyay 匯入的活動在已排程與售票中，把現場報到台那張原本的「掃碼器」卡（#ed-scanner）整張搬來這裡顯示，
-                 不另做第二張卡：內容是 bookyay 票券掃描器連結＋複製、「前往領取場次」兩部分（syncBkyCheckin 搬移與填值）。
+                 不另做第二張卡：內容是 bookyay 票券掃描器連結＋複製、組合包取貨掃碼器網址＋複製、「前往領取場次」三部分（D453）（syncBkyCheckin 搬移與填值）。
                  進行中搬回現場報到台；已結束／已取消、ztor 自建活動、線上類型不提前顯示。落點＝右欄、開演前檢核之上
                  （規格寫「報到快照卡旁」，原型的報到快照卡 2026-08-17 已併進結案卡；位置非約束，ASSUMPTIONS UIA-244）。
                  墓碑 2026-10-12（D401 決定四）：D397 的 #ed-bky-scancard「bookyay 現場掃碼卡」（標題「現場掃碼」）整張撤除。 -->
@@ -700,7 +700,7 @@
                   </div>
                   <div class="field__hint mt-8" data-ztor-scan data-i18n="event-detail.live.scanner.hint">Staff open the link, enter the password, then scan. The scanner only redeems — it never shows amounts, Earnings or fan data.</div>
                   <!-- D375 決定五 → 2026-10-12 D394（UI-CHANGES 一百六十八）：匯入活動的門票入場由 bookyay 的掃描器掃票。
-                       ztor 自己的三格（連結／掃碼器密碼／開啟掃碼器，[data-ztor-scan]）收起，改成兩格：
+                       ztor 自己的三格（連結／掃碼器密碼／開啟掃碼器，[data-ztor-scan]）收起，改成三格（D453）：
                        · bookyay 掃描器連結＋複製（值＝events-store 的 bkyScanUrl，原型示意網址，ASSUMPTIONS BKY-SCAN-001）；
                          沒有連結時顯示一句說明，不畫空框。
                        · 前往取貨管理：票務商品（組合包）裡的商品用 ztor 的取貨場次領取，不走 bookyay 掃描器。
@@ -721,7 +721,11 @@
                        一個場次＝直接進取貨場次詳情；多個＝進取貨管理並預先篩出這場相關的場次（pickup.html?ev=）；
                        沒有＝按鈕停用、說明先到取貨管理建立取貨場次並附入口（三種分支皆〔推導〕）。syncBkyPickup() 決定分支。 -->
                   <div class="scanner-access__field" id="ed-scanner-bky" hidden>
-                    <div class="scanner-access__label" data-i18n="event-detail.scanner.bky.pickup.label">Bundle pickup</div>
+                    <div class="scanner-access__label" id="ed-bky-pickup-label" data-i18n="event-detail.scanner.bky.pickup.scan">Bundle pickup scanner link</div>
+                    <!-- D453（2026-10-19）：組合包取貨掃碼器網址——取貨場次的 scanner 網址（用上面 bookyay 那一格同一套「網址＋複製」列，不新增樣式）。
+                         一個場次＝只列網址；多個＝逐場「場次名稱＋網址＋複製」；沒有場次＝不畫網址，下方說明先建立取貨場次。
+                         由 syncBkyPickup() 填；「前往領取場次」按鈕在網址之後。 -->
+                    <div id="ed-bky-pickup-urls" data-bky-pickup-urls></div>
                     <a class="btn btn--outline btn--block" id="ed-bky-pickup" data-view-safe href="pickup.html" data-i18n="event-detail.scanner.bky.pickup">Go to pickup session</a>
                     <p class="field__hint field__hint--fact" id="ed-bky-pickup-hint">—</p>
                   </div>
@@ -834,7 +838,7 @@
       </div>
 <!-- data-vm-style="disabled"（2026-10-12 使用者指示，UI-CHANGES 一百六十七）：這個分頁的欄位在檢視態不換成純文字讀數——
      輸入框、下拉、多行文字、描述編輯器留在原位、顯示成 disabled（shared.css 同名區塊、js/view-mode.js 不插讀數）。
-     其餘兩段式面板仍照 Q119 純文字。唯讀事實（類型、系列、票務摘要、在地化摘要、活動連結）也改成永遠 disabled 的輸入框。 -->
+     其餘兩段式面板仍照 Q119 純文字。唯讀事實（類型、系列、票務摘要、活動連結；在地化摘要 D453 已拿掉）也改成永遠 disabled 的輸入框。 -->
 <div class="tab-panel" data-panel="dates" role="tabpanel" data-editable data-mode="view" data-vm-style="disabled">
         <!-- 2026-08-17 使用者指示「其他分頁有多個項目 section 的，也都要加入側邊欄」：
              這一格有五節（活動內容／場次／地點／發布設定／連結 QR），全部攤開要捲很久，
@@ -852,7 +856,6 @@
             <button type="button" class="tabs__item" data-view-safe data-hide-type="watchparty virtual" data-nav-item="venue" data-i18n="ed.venue.title">Venue</button>
             <button type="button" class="tabs__item" data-view-safe data-nav-item="publish" data-i18n="ed.pub.title">Publish</button>
             <button type="button" class="tabs__item" data-view-safe data-nav-item="link" data-i18n="ed.pub.link">Link & QR</button>
-            <button type="button" class="tabs__item" data-view-safe data-nav-item="localization" data-feat="S78" data-i18n="ed.loc.title">Localization</button>
               </nav>
             <!-- 動作群（2026-08-18 使用者指示「這裡要像電子商店的 topbar 一樣的元件」）：
                  `.list-toolbar` 本來就是「左邊切分頁、右邊放這一頁的動作」那組骨架（e-shop
@@ -1237,7 +1240,7 @@
               </button>
             </div>
             <!-- bookyay 帶入者（D308 決定一，2026-09-29 經 D327 修訂）：取票方式本身不分階段一律唯讀——值來自 bookyay、要改回 bookyay 改。
-                 用既有的 .info-banner（同上方票價鎖 #ed-loc-locked 的做法）說明為什麼這一區在編輯模式也不能改；syncPubLock 負責鎖。 -->
+                 用既有的 .info-banner（同票價鎖的做法）說明為什麼這一區在編輯模式也不能改；syncPubLock 負責鎖。 -->
             <div class="info-banner" id="ed-pub-bky-locked" hidden>
               <i data-lucide="lock" class="ztor-icon info-banner__icon"></i>
               <span data-i18n="ed.pub.bky-locked">Ticket delivery comes from bookyay. Change it there.</span>
@@ -1316,39 +1319,9 @@
         </section>
           </div>
 
-          <!-- ═══ 預覽與在地化（2026-09-22 · D305／D306，5.1.6.3 §2.13）═══
-               設定分頁的一個子集：摘要（翻譯語系、基準幣別、覆寫格數）＋開啟同一個畫面的入口。
-               翻譯與幣別價的資料住在 partials/publish-preview.js 的草稿與 events-store 的覆寫（localStorage），
-               不走本頁的檢視／編輯模式；儲存即生效、不改上架狀態。 -->
-          <div data-nav-panel="localization" data-feat="S78">
-<section class="card mt-16" id="ed-loc-card">
-          <div class="card__head">
-            <h3 class="card__title" data-i18n="ed.loc.title">Localization</h3>
-          </div>
-          <!-- 摘要三格（2026-10-12，UI-CHANGES 一百六十七）：同設定分頁其他欄位，改成永遠 disabled 的輸入框；改內容走下方入口 -->
-          <div class="field">
-            <label class="field__label" for="ed-loc-langs" data-i18n="ed.loc.langs">Translations</label>
-            <input class="input" id="ed-loc-langs" disabled data-i18n-value="ed.loc.langs.val" value="4 languages · auto-generated, editable">
-          </div>
-          <div class="form-grid">
-            <div class="field">
-              <label class="field__label" for="ed-loc-base" data-i18n="ed.loc.base">Base currency</label>
-              <input class="input" id="ed-loc-base" disabled>
-            </div>
-            <div class="field">
-              <label class="field__label" for="ed-loc-overrides" data-i18n="ed.loc.overrides">Currency overrides</label>
-              <input class="input" id="ed-loc-overrides" disabled>
-            </div>
-          </div>
-          <div class="info-banner mt-16" id="ed-loc-locked" hidden>
-            <i data-lucide="lock" class="ztor-icon info-banner__icon"></i>
-            <span data-i18n="ed.loc.locked">Ticket prices are set by bookyay (HKD). Other currencies can be overridden.</span>
-          </div>
-          <div class="mt-16">
-            <button class="btn btn--outline" type="button" data-ed-localize data-view-safe><i data-lucide="globe" class="ztor-icon"></i><span data-i18n="ed.loc.btn">Preview &amp; localization</span></button>
-          </div>
-        </section>
-          </div>
+          <!-- D453（2026-10-19）：設定分頁的「在地化」子分頁與卡（翻譯／基準幣別／幣別覆寫三格摘要、bookyay 港幣鎖定說明、卡內按鈕）整張拿掉；
+               要翻譯、改幣別或覆寫價格，一律從頁首的「預覽與在地化」按鈕進 event-localization.html（5.1.6.3 §2.13，D305／D306／D310）。
+               bookyay 港幣價格鎖定的說明由預覽與在地化頁價格表的港幣欄鎖頭承擔。 -->
 
 
           <!-- ═══ 取消活動（2026-08-17 自頁首搬來）═══
@@ -2782,12 +2755,65 @@
     }));
     return out;
   }
+  /* D453〔推導〕：取貨場次的 scanner 網址。示意網址對照 pickup.html 各列的 data-pk-url（active／scheduled），
+     沒登錄的場次代號用 ztor.app/scan/<場次代號>（ASSUMPTIONS UIA-271）。 */
+  const PICKUP_SCAN_URL = { active: 'ztor.app/scan/tpe-signing-7f3a2', scheduled: 'ztor.app/scan/khh-fanmeet-9d1c4' };
+  const pickupScanUrl = pk => (pk && PICKUP_SCAN_URL[pk.s || 'scheduled']) || ('ztor.app/scan/' + ((pk && pk.s) || 'scheduled'));
+  function renderBkyPickupUrls(list, nameOf) {
+    const box = document.getElementById('ed-bky-pickup-urls');
+    if (!box) return;
+    box.textContent = '';
+    box.hidden = !list.length;
+    list.forEach(pk => {
+      const url = pickupScanUrl(pk);
+      if (list.length > 1) {
+        const nm = document.createElement('p');
+        nm.className = 'field__hint field__hint--fact';
+        nm.textContent = nameOf(pk);
+        box.appendChild(nm);
+      }
+      const row = document.createElement('div');
+      row.className = 'scanner-access__url';
+      const code = document.createElement('code');
+      code.textContent = url;
+      const copy = document.createElement('button');
+      copy.type = 'button'; copy.className = 'btn btn--icon btn--sm'; copy.setAttribute('data-view-safe', '');
+      copy.setAttribute('data-bky-pickup-copy', '');
+      const lbl = T('event-detail.live.scanner.copy', 'Copy link');
+      copy.title = lbl; copy.setAttribute('aria-label', lbl);
+      copy.setAttribute('data-i18n-title', 'event-detail.live.scanner.copy'); copy.setAttribute('data-i18n-aria-label', 'event-detail.live.scanner.copy');
+      copy.innerHTML = '<i data-lucide="copy" class="ztor-icon"></i>';
+      copy.addEventListener('click', () => {
+        if (navigator.clipboard) navigator.clipboard.writeText(url).catch(() => {});
+        const done = T('event-detail.live.scanner.copied', 'Link copied');
+        copy.removeAttribute('data-i18n-title'); copy.removeAttribute('data-i18n-aria-label');
+        copy.title = done; copy.setAttribute('aria-label', done);
+        if (window.ztorToast) window.ztorToast.show(done);
+        setTimeout(() => {
+          copy.setAttribute('data-i18n-title', 'event-detail.live.scanner.copy');
+          copy.setAttribute('data-i18n-aria-label', 'event-detail.live.scanner.copy');
+          if (window.applyI18n) window.applyI18n(copy);
+        }, 1600);
+      });
+      row.appendChild(code); row.appendChild(copy);
+      box.appendChild(row);
+    });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(box);
+  }
   function syncBkyPickup() {
     const btn = document.getElementById('ed-bky-pickup');
     const hint = document.getElementById('ed-bky-pickup-hint');
     if (!btn || !hint) return;
     const list = bkyPickupSessions();
     const nameOf = pk => pk.nameKey ? T(pk.nameKey, pk.name || '') : (pk.name || '');
+    renderBkyPickupUrls(list, nameOf);
+    /* 有網址時標籤寫「組合包取貨掃碼器連結」；沒有場次時下面沒有連結，標籤退回「組合包取貨」，不留一個空的「連結」標題 */
+    const lab = document.getElementById('ed-bky-pickup-label');
+    if (lab) {
+      const k = list.length ? 'event-detail.scanner.bky.pickup.scan' : 'event-detail.scanner.bky.pickup.label';
+      lab.setAttribute('data-i18n', k);
+      lab.textContent = T(k, list.length ? 'Bundle pickup scanner link' : 'Bundle pickup');
+    }
     btn.removeAttribute('aria-disabled'); btn.tabIndex = 0;
     hint.removeAttribute('data-i18n');
     if (list.length === 1) {
@@ -7996,44 +8022,25 @@
     renderVoidRecord();      // 2026-09-09（原 renderRefunds，D253 改寫）：作廢紀錄文字要跟著語言重畫
     syncStage();
     if (isLive) paintLive();
-    renderLocSummary();      // 2026-09-22（D306）：基準幣別／覆寫格數的文字要跟著語言重畫
     setTimeout(() => { i18nBusy = false; }, 0);
   });
 
-  /* ── 預覽與在地化（5.1.6.3 §2.13；D305／D306 建立、D310 改呈現層級）──────────
-     D310（2026-09-22）：這個畫面由浮層改為**全頁**——入口改成導去 `event-localization.html?id=`，
-     那一頁用同一支 js/publish-stage.js（mode:'save'）與同一份粉絲視角預覽，側欄第三段是
-     「未儲存的變更」、主鈕「儲存」，存完回本頁。本頁只剩兩件事：下面這張摘要卡
-     （翻譯語系／基準幣別／覆寫格數）與入口本身；備料（locFields／locPrices／locModel）
-     整組搬去那一頁，不在兩處各留一份。 */
-  function renderLocSummary() {
-    const S = window.ztorEvents;
-    const base = document.getElementById('ed-loc-base');
-    const ov = document.getElementById('ed-loc-overrides');
-    if (!base || !ov) return;
-    const baseCur = ev.currency || S.DEFAULT_CURRENCY;
-    base.value = baseCur + ' (' + S.SYMBOL[baseCur] + ')';
-    let n = 0;
-    edTiers.forEach(t => { n += overrideLine(S.priceOf(ev, t)) ? Object.keys(t.override || {}).length : 0; });
-    (ev.bundles || []).forEach(b => { n += Object.keys(b.override || {}).filter(c => b.override[c] != null && b.override[c] !== '').length; });
-    ov.value = n ? T('ed.loc.overrides.n', '{n} overridden').replace('{n}', n) : T('ed.loc.overrides.none', 'None — all converted');
-    const lock = document.getElementById('ed-loc-locked');
-    if (lock) lock.hidden = ev.source !== 'bookyay';
-  }
+  /* ── 預覽與在地化（5.1.6.3 §2.13；D305／D306 建立、D310 改全頁、D453 拿掉設定分頁的摘要卡）──────────
+     入口只剩頁首的 [data-ed-localize] 按鈕，導去 `event-localization.html?id=`；
+     那一頁用同一支 js/publish-stage.js（mode:'save'）與同一份粉絲視角預覽，存完回本頁。
+     墓碑：設定分頁「在地化」卡的 renderLocSummary()（翻譯語系／基準幣別／覆寫格數／港幣鎖定說明）與其 #ed-loc-* 欄位，D453 整張拿掉。 */
   function openLocalization() {
     leaveTo('event-localization.html?id=' + encodeURIComponent(ev.id || ''));   // D392 補充二：有未儲存的變更先問
   }
   document.querySelectorAll('[data-ed-localize]').forEach(b => b.addEventListener('click', openLocalization));
-  renderLocSummary();
   /* 從全頁版存完回來（event-localization.html 帶 ?saved=loc）：覆寫已經在 events-store 裡，
-     本頁的 ev／edTiers 是載入時從 store 取的副本，重新套一次再重畫票種卡與摘要。 */
+     本頁的 ev／edTiers 是載入時從 store 取的副本，重新套一次再重畫票種卡。 */
   if (new URLSearchParams(location.search).get('saved') === 'loc') {
     const fx = (window.ztorEvents.getOverrides(ev.id)) || { tiers: {}, bundles: {} };
     edTiers.forEach(t => { t.override = (fx.tiers || {})[t.id] || {}; });
     (ev.tiers || []).forEach(t => { t.override = (fx.tiers || {})[t.id] || {}; });
     (ev.bundles || []).forEach(b => { b.override = (fx.bundles || {})[b.id] || {}; });
     renderEdTiers();
-    renderLocSummary();
     if (window.ztorToast) window.ztorToast.show(T('ed.loc.saved', 'Saved — prices and translations are live.'));
   }
 })();
