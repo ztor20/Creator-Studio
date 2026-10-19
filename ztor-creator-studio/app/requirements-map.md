@@ -25,6 +25,10 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-19 D448 原型同步（UI-CHANGES 二百六十五、ASSUMPTIONS UIA-276；tier 不變）**：5.1.6.3 §2.1 重新上架、主規格 §7.14「活動取消或下架時連動組合包」 → `event-detail.html` 重新上架前彈窗問要不要同時上架已下架的組合包；`js/events-store.js` `relistBundlesOf()`。
+
+> **2026-10-19 D447 門票與票務商品庫存設為 0（UI-CHANGES 二百六十四、ASSUMPTIONS UIA-275；tier 🔵 release2.4，S100）**：主規格 §7.14、5.1.6.2、5.1.6.3 §2.6／§2.6.1、5.1.5.9 → `event-detail.html`（門票列表與彈窗「庫存設為 0」`tierZeroBlock`／`setTierStockZeroNow`、票務商品「庫存設為 0」`setBundleSetsZeroNow`：改為限量、總量＝已售）、`bundle-detail.html`（`evBundlePersist` 補寫回限量總量 `cap`）、`js/events-store.js`（`tierStock`／`tierZeroQty`／`bundleLeft`／`bundleZeroCap`、`isSoldOut`）、`js/fan-event-page.js`＋`event-localization.html`（粉絲端售罄）、`js/i18n.js`、`js/devtools.js`、`feature-scope-map.md`。
+
 > **2026-10-19 D445 翻譯表欄位與預覽補畫（UI-CHANGES 二百六十三、ASSUMPTIONS UIA-274；tier 🔵 release2.4，跟 S78）**：5.1.6.1 §1／§4.7、5.1.6.3 §2.13 → `create-event.html`（`buildStageOpts`／`buildFanModel`）、`event-localization.html`（`locFields`／`locModel`）翻譯表補列場地名稱、集合地點、交通說明、場次名稱、組合包名稱與描述；`js/fan-event-page.js` 場地名稱與組合包名稱、描述吃譯文，活動地點一節地圖下方畫集合地點與交通說明（關閉 5.1.6.1 該處〔產品待確認〕位置題）；`js/publish-stage.js` bookyay 匯入列標小鎖頭；`ds-components/fan-shop.css`、`js/i18n.js`、`js/events-store.js`（示範組合包描述）、`design-system.md`／`.html`。`ty.tag` 無輸入處、已從預覽 model 移除。表演陣容角色標籤依 D445 決定四不做。
 
 > **2026-10-19 D446 原型同步（UI-CHANGES 二百六十二、ASSUMPTIONS UIA-273；tier 不變）**：5.1.5.3.1 §2.8 → `order-detail.html` 撤銷確認窗的 bookyay 效果預告改「跟 bookyay 一起成功或一起不撤」、組合包停用說明分「門票已入場」與「商品已領取」；`js/orders-store.js` `voidState` 組合包有取貨成員時也檢查門票入場。

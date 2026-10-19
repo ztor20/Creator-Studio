@@ -1777,6 +1777,8 @@
         const s = {};
         Object.keys(bundleModel.sched || {}).forEach(k => { const v = bundleModel.sched[k]; if (typeof v === 'string' && v) s[k] = v; });
         put('sched', s, {});
+        /* D447：限量總量（cap；null＝不限量）也寫回——活動詳情「庫存設為 0」把總量收到已售後，這裡調高總量或改回不限量才會留住 */
+        put('cap', (bundleModel.cap === undefined ? null : bundleModel.cap), null);
       }
       if (changed) EV.saveEdits(ev.id, { bundles: ev.bundles });
     }
