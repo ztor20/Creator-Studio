@@ -2151,11 +2151,29 @@
     if (tnc && termOn("tnc") && tnc.value.trim()) termFields.push({ key: "tnc", el: tnc, kind: "textarea", labelKey: "pp.field.tnc", labelFallback: "Terms & conditions" });
     /* 墓碑 2026-10-12（D395）：直接促銷同意的文字（marketing）隨開關移除，不再列入翻譯表。 */
     termFields.forEach(f => fields.push(f));
+    /* D445（2026-10-19）：bookyay 匯入的活動，描述與條款及細則的原文鎖定（活動名稱帶入後可改、不鎖，D301；亮點 bookyay 沒有）——
+       這幾列在翻譯表的欄位名後標小鎖頭（js/publish-stage.js 的 f.locked），譯文欄照常可填。 */
+    const bkyLock = bkyImportOn();
+    fields.forEach(f => { if (bkyLock && f.key !== "name" && f.key !== "highlight") f.locked = true; });
+    /* D445：場地名稱、集合地點、交通說明（步驟 3 場地；bookyay 匯入的也列，原文鎖定）。完整地址是到場與地圖用的資料，不列；
+       集合地點與交通說明是選填，有值才列（同條款及細則的做法）。粉絲預覽用同一組 key（buildFanModel）。 */
+    const venueEl = q('[data-ce="venue"]'), meetEl = q('[data-ce="venue-meet"]'), transitEl = q('[data-ce="venue-transit"]');
+    if (venueEl) fields.push({ key: "venue", el: venueEl, kind: "input", labelKey: "pp.field.venue", labelFallback: "Venue name", locked: bkyLock });
+    if (meetEl && meetEl.value.trim()) fields.push({ key: "venue-meet", el: meetEl, kind: "input", labelKey: "pp.field.meet", labelFallback: "Meeting point", locked: bkyLock });
+    if (transitEl && transitEl.value.trim()) fields.push({ key: "venue-transit", el: transitEl, kind: "input", labelKey: "pp.field.transit", labelFallback: "Getting there", locked: bkyLock });
+    /* D445：場次名稱（自建多場次才有；沒填名稱的場次沿用「第 N 場」自動標籤，那不是創作者寫的文字，不列）。bookyay 匯入的場次沒有名稱（D369 決定六）。 */
+    if (multi()) {
+      const sessGroup = T("pp.group.sessions", "Dates");
+      series.list.forEach((x, i) => {
+        if ((x.name || "").trim()) fields.push({ key: "session-" + x.id, el: { value: x.name.trim() }, kind: "input", labelKey: null,
+          labelFallback: T("pp.field.session-name", "Date name") + " " + (i + 1), group: sessGroup });
+      });
+    }
     const st = readState();
     /* 墓碑 2026-09-29（D327）：取票說明欄不再是可翻譯欄位——欄位已隨電子門票附屬設定刪除。 */
     const tierGroup = T("pp.price.tiers", "Ticket types");
     types.forEach(ty => fields.push({ key: "tier-" + ty.id, el: { value: (ty.name || "").trim() }, kind: "input",
-      labelKey: null, labelFallback: T("pp.field.tier-name", "Ticket type name"), group: tierGroup }));
+      labelKey: null, labelFallback: T("pp.field.tier-name", "Ticket type name"), group: tierGroup, locked: !!ty.fix }));   // D445：bookyay 票種名稱原文鎖定（D410）
     /* 墓碑 2026-10-05（D353）：門票簡介（tdesc-<id>，D328）隨欄位整欄移除，不再列入翻譯表。 */
 
     /* 價格：票種（基準＝創作者幣別；bookyay 帶入者另帶港幣鎖定欄，D330）＋組合包（基準＝創作者幣別，售價＝finalPrice）。
@@ -2172,6 +2190,14 @@
       prices.push({ key: "bundle:" + b.id, label: (b.name || "").trim() || bundleEd.suggestName(b) || T("cpp.bd.untitled", "Untitled bundle"),
                     groupKey: "pp.price.bundles", groupFallback: "Ticket bundles",
                     priceObj: bdPriceObj(b), locked: bdBkyHkd(b) != null });   // D331：自建含 bookyay 票者港幣欄同樣鎖定
+    });
+
+    /* D445：組合包名稱與描述（價格表另列售價）——每組一列名稱、有描述才加一列描述，歸在「Ticket bundles」分組；
+       隨場次刪除而整組不能賣的組合包粉絲端不出現，這裡也不列。 */
+    const bdGroup = T("pp.price.bundles", "Ticket bundles");
+    bundles.filter(b => !(bundleEd && bundleEd.goneAll && bundleEd.goneAll(b))).forEach(b => {
+      fields.push({ key: "bundle-name-" + b.id, el: { value: (b.name || "").trim() || bundleEd.suggestName(b) }, kind: "input", labelKey: "pp.field.bundle-name", labelFallback: "Bundle name", group: bdGroup });
+      if ((b.desc || "").trim()) fields.push({ key: "bundle-desc-" + b.id, el: { value: b.desc.trim() }, kind: "textarea", labelKey: "pp.field.bundle-desc", labelFallback: "Bundle description", group: bdGroup });
     });
 
     /* 墓碑 2026-10-16（D443 決定一）：views（票券頁／票務商品頁兩個視圖）不再傳——門票與套組合成同一頁 */
@@ -2264,7 +2290,8 @@
       const cells = savedTiers().filter(t => t.type === ty.id);
       const shown = cells.filter(t => !t.hidden);
       return {
-        key: ty.id, name: { key: "tier-" + ty.id }, note: ty.tag ? String(ty.tag) : "",
+        /* 墓碑 2026-10-19（D445 決定七）：note（原讀 ty.tag，門票標籤）不再傳——建立流程全站沒有任何輸入處（commitTier 的 d.tag 永遠是空），是舊欄位殘留 */
+        key: ty.id, name: { key: "tier-" + ty.id },
         hidden: cells.length > 0 && !shown.length,
         /* D367：折扣是固定價——票價列仍寫票價，底下一行寫期間內與期間後的價格（取這個票種第一張可見的門票，
            各場規則不同時以第一張為準，ASSUMPTIONS UIA-215） */
@@ -2303,7 +2330,8 @@
       /* 素材（D342 media，第 0 格＝封面）只收圖片；沒有素材退回第一件商品圖 */
       const imgs = (b.media || []).filter(x => x && x.src && x.kind !== "video").map(x => x.src);
       return {
-        name: (b.name || "").trim() || bundleEd.suggestName(b),
+        /* D445：名稱與描述改給 { key }，吃翻譯表的譯文（key 同 buildStageOpts 的 bundle-name-／bundle-desc-<id>） */
+        name: { key: "bundle-name-" + b.id },
         priceObj: bdPriceObj(b),
         listPriceObj: bundleEd.listPrice(b) > bundleEd.finalPrice(b) ? { base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.listPrice(b)), override: {} } : null,
         priceKey: "bundle:" + b.id,
@@ -2311,9 +2339,10 @@
         offer: bundleOfferAtOpen(b, openAt),
         tickets: names.length ? { names, qty: Number(tk.qty) || 1, unitFrom: tixTypes.length > 1,
           unitPriceObj: tixLow ? tyPriceObj(tixLow) : null,
-          when: [[first.date, first.start].filter(Boolean).join(" "), st.venue].filter(Boolean).join(" · ") } : null,
+          /* D445：場地名稱是可翻譯文案——只給日期時間，渲染器接上場地名稱（譯文）；組合成「日期 時間 · 場地」 */
+          whenBase: [first.date, first.start].filter(Boolean).join(" ") } : null,
         goods, imgs, img: imgs[0] || (goods[0] && goods[0].img) || "",
-        desc: (b.desc || "").trim()
+        desc: (b.desc || "").trim() ? { key: "bundle-desc-" + b.id } : ""
         /* 墓碑 2026-10-16（D443 決定九）：perks（D402 已退場）、note 不再傳 */
       };
     });
@@ -2330,7 +2359,10 @@
       /* 主辦＝創作者本人（原型無主辦欄，取目前 persona 的名冊名＋頭像） */
       organizer: persona ? persona.name : "Gary Lin", organizerAvatar: persona ? (persona.avatar || "") : "",
       date: dateLine, time: timeLine, duration, doors: first.doors || "",
-      venue: st.venue, address: (document.querySelector('[data-ce="addr"]')?.value || "").trim(),
+      /* D445：場地名稱給 { key }（可翻譯）；集合地點與交通說明有值才給 key（畫在活動地點一節、地圖下方），沒值＝null 不畫 */
+      venue: { key: "venue" }, address: (document.querySelector('[data-ce="addr"]')?.value || "").trim(),
+      meet: (document.querySelector('[data-ce="venue-meet"]')?.value || "").trim() ? { key: "venue-meet" } : null,
+      transit: (document.querySelector('[data-ce="venue-transit"]')?.value || "").trim() ? { key: "venue-transit" } : null,
       /* D328：活動語言可複選——多值依選項順序串成一行（中文「、」、英文「, 」）。 */
       language: langText(),
       priority, limit,

@@ -123,8 +123,28 @@
        （tnc＝條款及細則）；原本漏列。墓碑 2026-10-12（D395）：「直接促銷同意」一列隨欄位移除。 */
     const tm = ev.terms || {};
     if (tm.tnc && tm.tnc.on && (tm.tnc.text || '').trim()) f.push({ key: 'tnc', el: { value: tm.tnc.text }, kind: 'textarea', labelKey: 'pp.field.tnc', labelFallback: 'Terms & conditions' });
+    /* D445（2026-10-19）：bookyay 匯入的活動，描述與條款及細則、場地名稱、集合地點、交通說明、票種名稱的原文鎖定
+       （活動名稱帶入後可改、不鎖，D301）——這幾列在欄位名後標小鎖頭（js/publish-stage.js 的 f.locked），譯文欄照常可填。 */
+    const bky = ev.source === 'bookyay';
+    f.forEach(x => { if (bky && x.key !== 'name' && x.key !== 'highlight') x.locked = true; });
+    /* D445：場地名稱、集合地點、交通說明（完整地址不列；集合地點與交通說明是選填，有值才列）。key 與建立流程同一套。 */
+    f.push({ key: 'venue', el: { value: ev.venue || '' }, kind: 'input', labelKey: 'pp.field.venue', labelFallback: 'Venue name', locked: bky });
+    if ((ev.meetPoint || '').trim()) f.push({ key: 'venue-meet', el: { value: ev.meetPoint }, kind: 'input', labelKey: 'pp.field.meet', labelFallback: 'Meeting point', locked: bky });
+    if ((ev.transit || '').trim()) f.push({ key: 'venue-transit', el: { value: ev.transit }, kind: 'input', labelKey: 'pp.field.transit', labelFallback: 'Getting there', locked: bky });
+    /* D445：場次名稱（多場次、有填名稱才列；沒名稱的場次沿用自動標籤，不是創作者寫的文字） */
+    if (edSessions.length > 1) {
+      const sg = T('pp.group.sessions', 'Dates');
+      edSessions.forEach((x, i) => { if ((x.name || '').trim()) f.push({ key: 'session-' + (x.id || i), el: { value: x.name.trim() }, kind: 'input', labelKey: null,
+        labelFallback: T('pp.field.session-name', 'Date name') + ' ' + (i + 1), group: sg }); });
+    }
     const g = T('pp.price.tiers', 'Ticket types');
-    edTiers.forEach(t => f.push({ key: 'tier-' + t.id, el: { value: t.name || '' }, kind: 'input', labelKey: null, labelFallback: T('pp.field.tier-name', 'Ticket type name'), group: g }));
+    edTiers.forEach(t => f.push({ key: 'tier-' + t.id, el: { value: t.name || '' }, kind: 'input', labelKey: null, labelFallback: T('pp.field.tier-name', 'Ticket type name'), group: g, locked: bky }));
+    /* D445：組合包名稱與描述（描述有填才列），歸在「Ticket bundles」分組 */
+    const bg = T('pp.price.bundles', 'Ticket bundles');
+    (ev.bundles || []).forEach(b => {
+      f.push({ key: 'bundle-name-' + b.id, el: { value: b.name || '' }, kind: 'input', labelKey: 'pp.field.bundle-name', labelFallback: 'Bundle name', group: bg });
+      if ((b.desc || '').trim()) f.push({ key: 'bundle-desc-' + b.id, el: { value: b.desc }, kind: 'textarea', labelKey: 'pp.field.bundle-desc', labelFallback: 'Bundle description', group: bg });
+    });
     /* 墓碑 2026-10-05（D353）：門票簡介（tdesc-<id>，D328）隨欄位整欄移除，不再列入翻譯表。 */
     return f;
   }
@@ -166,12 +186,12 @@
       const tixT = tk.tierIds.map(x => edTiers.find(y => y.id === x)).filter(Boolean);
       const tixLow = tixT.length ? tixT.reduce((lo, t) => (Number(t.price) || 0) < (Number(lo.price) || 0) ? t : lo) : null;
       const listAmt = S.bundleListAmount(ev, b);
-      return { name: b.name, priceObj: bpo, priceKey: 'bundle:' + b.id,
+      return { name: { key: 'bundle-name-' + b.id }, priceObj: bpo, priceKey: 'bundle:' + b.id,   /* D445：名稱與描述吃譯文 */
         listPriceObj: listAmt > Number(b.price) ? { base: bpo.base, amount: listAmt, override: {} } : null,
         tickets: names.length ? { names, qty: Number(tk.qty) || 1, unitFrom: tixT.length > 1, unitPriceObj: tixLow ? S.priceOf(ev, tixLow) : null,
-          when: [[fmtDate(first.date || ev.date), first.start || ev.start].filter(Boolean).join(' '), ev.venue].filter(Boolean).join(' · ') } : null,
+          whenBase: [fmtDate(first.date || ev.date), first.start || ev.start].filter(Boolean).join(' ') } : null,   /* D445：場地名稱（譯文）由渲染器接上 */
         goods, imgs: (b.media || []).filter(x => x && x.src && x.kind !== 'video').map(x => x.src), img: (goods[0] && goods[0].img) || '',
-        desc: b.desc || '' };   /* 墓碑 2026-10-16（D443 決定九）：perks（D402）、note 不再傳；限時折扣（offer）示範資料沒有，不傳 */
+        desc: (b.desc || '').trim() ? { key: 'bundle-desc-' + b.id } : '' };   /* 墓碑 2026-10-16（D443 決定九）：perks（D402）、note 不再傳；限時折扣（offer）示範資料沒有，不傳 */
     });
     const persona = (window.ztorCreator && window.ztorCreator.list && window.ztorCreator.list.find(c => c.handle === (typeof window.ztorPersonaId === 'function' ? window.ztorPersonaId() : 'default'))) || null;
     return {
@@ -184,7 +204,8 @@
       date: fmtDate(first.date || ev.date) + (first.endDate ? ' – ' + fmtDate(first.endDate) : ''),
       time: start ? (end ? start + ' – ' + end : start) : '', duration, doors: first.doors || ev.doors || '',
       /* 活動語言（D328，可複選）：store 有 languages 才顯示（多值交給渲染器以語系分隔符串起） */
-      venue: ev.venue || '', address: ev.address || '',
+      venue: { key: 'venue' }, address: ev.address || '',   /* D445：場地名稱吃譯文；集合地點與交通說明有值才畫（地圖下方） */
+      meet: (ev.meetPoint || '').trim() ? { key: 'venue-meet' } : null, transit: (ev.transit || '').trim() ? { key: 'venue-transit' } : null,
       language: (ev.languages || []).map(k => T('ce.evlang.' + k, k)),
       priority: null, limit: null,
       desc: { key: 'desc' },

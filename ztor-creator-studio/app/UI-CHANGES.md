@@ -13,6 +13,31 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-19（二百六十三）· D445 翻譯表列出建立流程所有有文字的欄位、粉絲預覽補畫集合地點與交通說明、bookyay 匯入列標鎖頭
+
+**標籤**：release2.4
+
+依據 D445（使用者指示「翻譯表要列出創建流程中所有填寫（或匯入）的欄位，有文字的部分」「場地名稱要翻」「集合地點和交通說明在預覽顯示、放在活動地點區塊靠近地圖、一起加進翻譯表」「翻譯表標出 bookyay 匯入、原文鎖定的列」）。稽核見 `note/翻譯表欄位稽核.md`。
+
+**A spec-derived**
+
+- `create-event.html` `buildStageOpts()`、`event-localization.html` `locFields()`（同一套 key）：翻譯表新增六類列。
+  - 場地名稱 `venue`、集合地點 `venue-meet`、交通說明 `venue-transit`（bookyay 匯入的也列；集合地點與交通說明是選填，有值才列）。
+  - 場次名稱 `session-<id>`（自建多場次、有填名稱才列，歸「場次」分組）。
+  - 組合包名稱 `bundle-name-<id>`、組合包描述 `bundle-desc-<id>`（描述有填才列，歸「Ticket bundles」分組）。
+  - 獨立票名稱實測與票種同列進表（`tier-<id>`，沿用 `types` 資料），不另改。
+  - 表演陣容角色標籤不做（D445 決定四）。
+- `js/publish-stage.js`：翻譯表欄位新增選項 `locked`，欄位名後標小鎖頭（沿用 `.pp-price-lock`＋`lock` 圖示，與價格表港幣欄鎖頭同一語彙；`aria-label`／`title`＝i18n `pp.field.locked`「來自 bookyay，原文鎖定」）。bookyay 匯入的活動，描述、條款及細則、場地名稱、集合地點、交通說明、票種名稱列帶鎖頭；活動名稱帶入後可改（D301）、亮點 bookyay 沒有，不帶。原文欄本來就唯讀，譯文欄照常可填。
+- `js/fan-event-page.js`：model 的 `venue`、`bundles[].name`、`bundles[].desc` 改可給 `{ key }` 吃譯文（缺譯文時由 publish-stage 回原文）；新增 `meet`、`transit`，有值才畫在「活動地點」一節地圖下方（沿用 `.pdp-event-meta` 的框與列，窄版寬版皆實測不破版）；組合包成員票券的「日期時間 · 場地」由本檔用場地名稱譯文接上（`tickets.whenBase`）。
+- `ds-components/fan-shop.css`：第 7 段新增 `.pdp-event-meta--venue`（只調上緣間距，不新增元件）。
+- `js/i18n.js`：新增 `pp.field.venue`／`meet`／`transit`／`session-name`／`bundle-name`／`bundle-desc`、`pp.group.sessions`、`pp.field.locked`、`fep.meet`、`fep.transit`。
+- `js/events-store.js`：兩組示範組合包（`bd-vip-tee`、`bd-tc-floor-tee`）補 `desc`，讓活動詳情的預覽與在地化看得到組合包描述列。
+- `design-system.md`／`design-system.html`：Fan event page 與 Publish stage 兩節補 D445 的 model 與 `fields[].locked` 說明；Fan event page 示範 model 補 `meet`、`transit`。
+
+**C 撤除**
+
+- `create-event.html` `buildFanModel()` 的 `note: ty.tag`（門票標籤）移除，留墓碑註解：建立流程全站沒有任何輸入處（`commitTier` 的 `d.tag` 永遠為空），是舊欄位殘留。
+
 ## 2026-10-19（二百六十二）· D446 撤銷含 bookyay 門票的組合包：跟 bookyay 一起成功或一起不撤；組合包有商品已領取或門票已入場就不能撤銷
 
 **標籤**：release2.4
@@ -25,6 +50,8 @@
 - `js/orders-store.js`：`voidState` 組合包有取貨成員時，也檢查門票是否已入場（原本會漏判，門票已入場、商品沒領的組合包仍能撤銷）。整單撤銷沿用同一個判斷，所以這類訂單的整單撤銷也一起停用。
 - `js/i18n.js`：改 `od.void.why.checkedin`、`od.void.effect.bky`，新增 `od.void.why.bundle-picked`。
 - 原型不模擬 bookyay 撤銷失敗，見 ASSUMPTIONS UIA-273。
+- `js/bundle-editor.js`：新增 `otherTixTaken(b)`，`memberCapWho` 的門票剩餘張數扣掉其他組合包已鎖的張數（鎖定套數上限跨組合包加總）。
+- `bundle-detail.html`：新增 `otherTixLocks()`，門票池的 `locks.bundles` 帶入同一場活動其他組合包壓在共用門票上的鎖定張數，鎖定套數上限與可售套數跟著扣。
 
 ## 2026-10-19（二百六十一）· D444 活動拿掉暫停售票：要停賣改用提前停售時間或下架，並清掉單張門票暫停的殘留
 
