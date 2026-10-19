@@ -138,7 +138,7 @@
          同一個組合包 id（bd-vip-tee）在系列的高雄／台北兩場各出現一次＝「每場各一組」沿用同一份清單；
          細節頁沒帶 `&ev=` 時取第一場（示範資料的缺口，見 ASSUMPTIONS BDL-001 追記）。 */
       bundles: [
-        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-vip'], qty: 1 },
+        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', desc: '一張 VIP 票加一件巡演官方 Tee，現場憑票一併領取。', tickets: { tierIds: ['tier-vip'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600 }],
           price: 4800, sold: 12, cap: 50, override: { HKD: 1188 } }   // HKD 換算 1,189 → 覆寫 1,188（D306 示範）
       ],
@@ -229,7 +229,7 @@
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 100 }
       ],
       bundles: [
-        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-vip'], qty: 1 },
+        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', desc: '一張 VIP 票加一件巡演官方 Tee，現場憑票一併領取。', tickets: { tierIds: ['tier-vip'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600 }],
           price: 4800, sold: 3, cap: 50 },
         /* 2026-09-21（D296 示範）：允許兩種票種、粉絲任選——原價「從 $4,300 起」（最低票價 Floor 3,300 × 1 ＋ 1,000）。 */
@@ -747,7 +747,7 @@
         /* 墓碑 2026-10-16（D429）：自動建立的套票組合包 bd-tc-duo（賣出 60 組）刪除，銷量改記在門票 tier-tc-duo。 */
         /* 2026-10-16 示範資料補齊（D435／D433 示範；不是產品規則）：創作者自建、已下架、尚未售出的組合包——
            活動發布後，組合包下架了才能改庫存以外的資料（D435）；尚未售出，所以允許的門票與張數也還能改（D433）。 */
-        { id: 'bd-tc-floor-tee', name: 'Standing zone ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-tc-floor'], qty: 1 },
+        { id: 'bd-tc-floor-tee', name: 'Standing zone ＋ 巡演官方 Tee', desc: '站區票加一件巡演官方 Tee，演出當天現場領取。', tickets: { tierIds: ['tier-tc-floor'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
           disc: 10, price: 3413, sold: 0, cap: 100, listed: false },
         /* 創作者自建：單人票 ＋ 電子商店商品（官方 Tee，綁取貨場次）；組合折扣 10%、限量 200、美元覆寫 */

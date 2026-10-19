@@ -809,6 +809,25 @@
     /* 假商品（extraProducts）：票券成員與 products-store 查不到的活動組合包商品成員都包成 ListingState 認得的形狀
        （一顆池＋三態鎖定量），可售套數、鎖定套數上限與商品成員同一套算法；本頁 productOf()／allProducts() 先查這裡再查 store。 */
     const extraProducts = {};
+    /* D446（2026-10-19）：同一場活動的門票，各組合包鎖的張數加起來不超過張數——本組合包的剩餘要先扣掉「其他組合包已鎖、而且只能從共用門票出的張數」。
+       其他組合包鎖的張數（鎖定套數 × 每套張數）先由它自己獨有的門票吸收（沒有別的組合包可以搶那幾張），吸收不了的才算壓在共用門票上。
+       回 { 組合包 id: 張數 }，餵進池的 locks.bundles，ListingState 的未鎖定量就會自動扣掉。 */
+    function otherTixLocks(ev, self, myTiers) {
+      const mine = new Set(myTiers.map(t => t.id)), out = {};
+      (ev.bundles || []).forEach(o => {
+        if (!o || o.id === self.id) return;
+        const n = Number(o.lockSets);
+        if (!(n > 0)) return;
+        const ok = EV.bundleTickets(o), ids = ok.tierIds || [];
+        if (!ids.some(id => mine.has(id))) return;
+        const tiers = ids.map(id => (ev.tiers || []).find(tt => tt.id === id)).filter(Boolean);
+        const locked = Math.floor(n) * Math.max(1, Number(ok.qty) || 1);
+        const own = tiers.filter(t => !mine.has(t.id)).reduce((a, t) => a + tierLeft(t), 0);
+        const onShared = Math.max(0, locked - own);
+        if (onShared > 0) out[o.id] = onShared;
+      });
+      return out;
+    }
     function fromEventBundle(hit) {
       const ev = hit.ev, b = hit.b;
       const evName = (ev.name || '').trim() || T0('event-detail.untitled', 'Untitled event');
@@ -833,7 +852,7 @@
         const maxPrice = tiersIn.reduce((m, t) => Math.max(m, inBase(t)), 0);
         extraProducts[key] = { id: key, kind: 'ticket', eventId: ev.id, tierIds: tiersIn.map(t => t.id), tierNames: names, tierLefts: lefts, eventName: evName,
           name: evName + ' · ' + tixNamesText(names, tk.qty), price: minPrice, priceFrom: names.length > 1, imgSrc: (ev.images && ev.images.keyvisual) || '',
-          pool: { total: tixPoolTotal(lefts, tk.qty), locks: { single: null, bundles: {} } }, listed: listedByEv && ev.status !== 'ended', onSale: true };
+          pool: { total: tixPoolTotal(lefts, tk.qty), locks: { single: null, bundles: otherTixLocks(ev, b, tiersIn) } }, listed: listedByEv && ev.status !== 'ended', onSale: true };
         members.push({ productId: key, kind: 'ticket', eventId: ev.id, tierIds: tiersIn.map(t => t.id), qty: tk.qty });
         memberItems.push({ id: key, kind: 'ticket', name: names.join('／'), tierNames: names, tierLefts: lefts, priceFrom: names.length > 1, eventName: evName, eventId: ev.id,
           meta: [ev.date || '', ev.venue || ''].filter(Boolean).join(' · '), priceAmount: minPrice, priceMax: maxPrice, price: moneyFromText(fmtBase(minPrice), names.length > 1),

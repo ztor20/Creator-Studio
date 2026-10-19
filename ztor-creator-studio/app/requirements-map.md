@@ -25,6 +25,8 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-19 D445 翻譯表欄位與預覽補畫（UI-CHANGES 二百六十三、ASSUMPTIONS UIA-274；tier 🔵 release2.4，跟 S78）**：5.1.6.1 §1／§4.7、5.1.6.3 §2.13 → `create-event.html`（`buildStageOpts`／`buildFanModel`）、`event-localization.html`（`locFields`／`locModel`）翻譯表補列場地名稱、集合地點、交通說明、場次名稱、組合包名稱與描述；`js/fan-event-page.js` 場地名稱與組合包名稱、描述吃譯文，活動地點一節地圖下方畫集合地點與交通說明（關閉 5.1.6.1 該處〔產品待確認〕位置題）；`js/publish-stage.js` bookyay 匯入列標小鎖頭；`ds-components/fan-shop.css`、`js/i18n.js`、`js/events-store.js`（示範組合包描述）、`design-system.md`／`.html`。`ty.tag` 無輸入處、已從預覽 model 移除。表演陣容角色標籤依 D445 決定四不做。
+
 > **2026-10-19 D446 原型同步（UI-CHANGES 二百六十二、ASSUMPTIONS UIA-273；tier 不變）**：5.1.5.3.1 §2.8 → `order-detail.html` 撤銷確認窗的 bookyay 效果預告改「跟 bookyay 一起成功或一起不撤」、組合包停用說明分「門票已入場」與「商品已領取」；`js/orders-store.js` `voidState` 組合包有取貨成員時也檢查門票入場。
 
 > **2026-10-16 D443 粉絲活動頁照新前台（UI-CHANGES 二百六十、ASSUMPTIONS UIA-272；主規格 §7.4、5.1.6.1 §4.8、5.1.6.3 §2.13 的預覽）**：

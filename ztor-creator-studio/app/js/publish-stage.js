@@ -27,7 +27,7 @@
  *
  * 用法（宣告式，同站上其他共用渲染器）：
  *   var stage = window.ztorPublishStage.mount(hostEl, {
- *     fields: [{ key, el:{value}, kind:'input'|'textarea', labelKey, labelFallback, group }],
+ *     fields: [{ key, el:{value}, kind:'input'|'textarea', labelKey, labelFallback, group, locked }],   // locked（D445）＝bookyay 匯入、原文鎖定：欄位名後標小鎖頭（譯文仍可填）
  *     prices: [{ key, label, labelKey, groupKey, groupFallback, priceObj:{base,amount,override,pin,baseOpen}, locked }],
  *       priceObj.pin（D330，2026-09-29）＝鎖定欄 `{ HKD: bookyay 原價 }`：該幣別格唯讀、掛鎖、可有小數、沒有重設，
  *       也不計入「已覆寫」；pin 落在基準幣別上（創作者幣別＝港幣）＝基準欄鎖定。
@@ -521,7 +521,11 @@
       }
       lastGroup = f.group || null;
       var tr = el('tr');
-      tr.appendChild(el('td', 'ztor-table__feature', esc(f.labelKey ? T(f.labelKey, f.labelFallback || f.key) : (f.labelFallback || f.key))));
+      /* D445：bookyay 匯入、原文鎖定的列（f.locked）在欄位名後標小鎖頭——語彙同價格表港幣欄鎖頭（.pp-price-lock＋lock 圖示）；
+         原文欄本來就唯讀、譯文欄照常可填，鎖頭只是告訴創作者「原文要回 bookyay 改」。 */
+      var lockTip = f.locked ? T('pp.field.locked', 'From bookyay, original text locked') : '';
+      tr.appendChild(el('td', 'ztor-table__feature', esc(f.labelKey ? T(f.labelKey, f.labelFallback || f.key) : (f.labelFallback || f.key)) +
+        (f.locked ? '<span class="pp-price-lock" role="img" data-pp-field-lock title="' + esc(lockTip) + '" aria-label="' + esc(lockTip) + '"><i data-lucide="lock" class="ztor-icon"></i></span>' : '')));
       LANGS.forEach(function (l) {
         var td = el('td');
         var val = getFieldValue(f.key, l.code);
@@ -548,6 +552,7 @@
     table.appendChild(tbody);
     scroll.appendChild(table);
     host.appendChild(scroll);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(host);   // D445：欄位名後的小鎖頭
   }
 
   /* 價格表（列＝票種／組合包、欄＝五幣別；基準欄唯讀、bookyay 鎖定列標鎖） */

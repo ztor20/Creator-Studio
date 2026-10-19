@@ -48,7 +48,10 @@
  *     name: { key:'name' },  highlight: { key:'highlight' } | null,
  *     organizer: 'NICKTHEREAL', organizerAvatar: 'images/…' | '',   // 主辦（原型＝創作者顯示名／名冊頭像）
  *     date: '2026-12-05', time: '19:30 – 21:30', duration: '2 h', doors: '18:30',
- *     venue: 'Taipei Music Center', address: '…', language: '廣東話、普通話' | ['廣東話','普通話'],   // D328 活動語言可複選
+ *     venue: 'Taipei Music Center' | { key:'venue' }, address: '…', language: '廣東話、普通話' | ['廣東話','普通話'],   // D328 活動語言可複選
+ *                                                // D445（2026-10-19）：venue 可給 { key }（場地名稱是可翻譯文案）；meet／transit 同形，沒值給 null＝不畫
+ *     meet: { key:'venue-meet' } | '2 號門售票口' | null,         // 集合地點（D445）：畫在「活動地點」一節、地圖下方；有值才畫
+ *     transit: { key:'venue-transit' } | '捷運站步行 3 分鐘' | null,   // 交通說明（D445）：同上
  *                                                // D369：address 有值時，詳情左欄描述之後多畫「活動地點」一節＝依地址產生的地圖（partials/venue-map.js）
  *     priority: { window: '…', state: '…' } | null,   // 優先購（原型示意）
  *     limit: '每人最多 4 張' | null,   // D427：每人總限購
@@ -64,12 +67,13 @@
  *               offer:{ amount, timed, to } | null }],           // D443 決定三：開賣當下的折扣價（amount＝基準幣別、與 priceObj.amount 同單位）；
  *                                                                 //   timed＝限時（畫「限時折扣」標與「優惠至 {to}」）；沒有＝照票價
  *                                                // D328：hidden:true 的列不畫；墓碑 2026-10-16（D443）：deal（{ win, to, gen } 兩段價寫成一行）不再讀，改讀 offer
- *     bundles: [{ name:'…', priceObj, listPriceObj|null, priceKey:'bundle:bd-1',
+ *     bundles: [{ name:'…' | { key:'bundle-name-bd-1' }, priceObj, listPriceObj|null, priceKey:'bundle:bd-1',   // D445：name／desc 可給 { key }（可翻譯文案）
  *                 imgs:['…'], img:'…',                                  // 組合包圖片（第一張＝封面；沒給 imgs 用 img）
  *                 offer:{ pct, to } | null,                             // D443 決定三：開賣當下生效的限時折扣（百分比、結束時間顯示字串）
- *                 tickets:{ names:['VIP','Floor'], qty:2, unitPriceObj, unitFrom:true, when:'2026-12-05 19:30 · Taipei Music Center' } | null,
+ *                 tickets:{ names:['VIP','Floor'], qty:2, unitPriceObj, unitFrom:true, when:'2026-12-05 19:30 · Taipei Music Center',
+ *                           whenBase:'2026-12-05 19:30', 【D445：給了就由本檔接「 · 場地名稱（譯文）」，when 可省略】 } | null,
  *                 goods:[{ name:'官方 Tee', qty:1, spec:true, img:'…', unitPriceObj }],
- *                 desc:'…' }],                                          // perks 依 D402 退場：給了也不畫
+ *                 desc:'…' | { key:'bundle-desc-bd-1' } }],              // perks 依 D402 退場：給了也不畫
  *     related: true | [{ name, cat, price:'NT$ 1,200 起', img }] | false
  *   }
  *
@@ -355,7 +359,20 @@
     var m = model || {};
     /* D328：隱藏的票不在票價清單列出（也不算進價格區間與「N 種購票方案」）；它仍可在組合包裡被賣出。 */
     var tiers = (m.tiers || []).filter(function (t) { return !t.hidden; });
-    var bundles = m.bundles || [];
+    /* D445：場地名稱與組合包名稱／描述是可翻譯文案，宿主給 { key }（或舊式純字串）；這裡一次換成當前語系的字串
+       （沒填譯文就是原文，publish-stage 的 displayValue 負責），其餘各處照舊吃字串。 */
+    var venueText = valueOf(api, m.venue);
+    var meetText = valueOf(api, m.meet);
+    var transitText = valueOf(api, m.transit);
+    var bundles = (m.bundles || []).map(function (b) {
+      var r = Object.assign({}, b);
+      r.name = valueOf(api, b.name);
+      r.desc = valueOf(api, b.desc);
+      if (b.tickets && b.tickets.whenBase != null) {
+        r.tickets = Object.assign({}, b.tickets, { when: [b.tickets.whenBase, venueText].filter(Boolean).join(' · ') });
+      }
+      return r;
+    });
     var nameText = valueOf(api, m.name);
     /* 墓碑 2026-10-16（D443 決定一）：CS 端的視圖切換（.pp-fan-viewbar ＋ .segmented「票券頁／票務商品頁」）與
        data-fep-view／isBundles 分支退場——門票與套組合成同一頁。 */
@@ -455,7 +472,7 @@
     row('fep.time', 'Time', esc(m.time));
     row('fep.duration', 'Length', esc(m.duration));
     /* 新前台：場館下多一行「在 Google 地圖查看 ›」（預覽不動作，D443 決定八的呈現參考） */
-    row('fep.venue', 'Venue', m.venue ? esc(m.venue) + (m.address ? '<small>' + esc(m.address) + '</small>' +
+    row('fep.venue', 'Venue', venueText ? esc(venueText) + (m.address ? '<small>' + esc(m.address) + '</small>' +
       '<a class="pdp-event-meta__map" data-pp-inert>' + dsIcon('map-pin') + '<span data-i18n="fep.map.link">' + esc(T('fep.map.link', 'View on Google Maps ›')) + '</span></a>' : '') : '');
     var langVal = Array.isArray(m.language) ? m.language.filter(Boolean).join(T('ce.evlang.sep', ', ')) : m.language;
     row('fep.language', 'Language', esc(langVal));
@@ -518,11 +535,17 @@
     }
     /* 活動地點（D369）：依完整地址產生的地圖。新前台沒有這一節，D443 決定八放在描述之後。沒有地址＝不畫。 */
     var mapHtml = (m.address && window.ztorVenueMap) ? window.ztorVenueMap.html({ address: m.address }) : '';
-    if (mapHtml) {
+    /* 集合地點與交通說明（D445 決定三）：畫在「活動地點」一節、地圖下方；有值才畫（兩項都沒有、也沒有地址＝整節不畫）。
+       沿用資訊表的列樣式（.pdp-event-meta），不新增元件。 */
+    var metaRows = '';
+    if (meetText) metaRows += '<div class="pdp-event-meta__row" data-fep-meet><span class="pdp-event-meta__k" data-i18n="fep.meet">' + esc(T('fep.meet', 'Meeting point')) + '</span><span>' + esc(meetText) + '</span></div>';
+    if (transitText) metaRows += '<div class="pdp-event-meta__row" data-fep-transit><span class="pdp-event-meta__k" data-i18n="fep.transit">' + esc(T('fep.transit', 'Getting there')) + '</span><span>' + esc(transitText) + '</span></div>';
+    if (mapHtml || metaRows) {
       var vb = el('div', 'pdp-details__specs-block pdp-details__venue');
       vb.setAttribute('data-fep-venue', '');
       vb.innerHTML = '<h3 class="pdp-details__sub-heading pdp-details__sub-heading--icon">' + dsIcon('map-pin') + '<span data-i18n="fep.sec.venue">' + esc(T('fep.sec.venue', 'Location')) + '</span></h3>' +
-        (m.venue ? '<p class="pdp-details__shipping-text">' + esc(m.venue) + '</p>' : '') + mapHtml;
+        (venueText ? '<p class="pdp-details__shipping-text">' + esc(venueText) + '</p>' : '') + mapHtml +
+        (metaRows ? '<div class="pdp-event-meta pdp-event-meta--venue">' + metaRows + '</div>' : '');
       dmain.appendChild(vb);
     }
     layout.appendChild(dmain);
