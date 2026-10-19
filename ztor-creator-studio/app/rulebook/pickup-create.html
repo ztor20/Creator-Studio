@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>建立取貨場次 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+table.stage{min-width:820px}
+table.stage td:nth-child(1){width:11%;white-space:nowrap}
+table.stage td:nth-child(2){width:19%}
+table.stage td:nth-child(4){width:12%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="pickup-create">建立取貨場次</h1>
+<p class="lede">創作者在建立取貨場次視窗設定場次的時間與地點、這一場能核銷的商品與票券，以及 Scanner 密碼，建立後取得 Scanner 網址。</p>
+
+<div class="toc"></div>
+
+<h2 id="create-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>同一個視窗從取貨管理、建立實體商品、商品細節頁三個地方開啟，編輯既有場次也用它，見<a href="#entry">從哪裡開啟</a></li>
+  <li>建好的場次在<a href="pickup.html#list">取貨清單</a>管理，Scanner 網址在<a href="pickup-detail.html#scanner">取貨場次詳情</a>取得</li>
+  <li>能加入哪些商品與票券、一個商品只屬於一個場次，見取貨規則的<a href="pickup-rules.html#scope">場次能核銷哪些商品與票券</a></li>
+</ul>
+
+<h2 id="create-flow"><span class="n"></span>操作流程</h2>
+<p>從開啟視窗開始，到按下「建立場次」、取得 Scanner 網址為止。</p>
+<div class="dg" role="img" aria-label="建立取貨場次流程圖，由左往右：開啟視窗，填場次基本資訊，加入可核銷項目；至少加入一項才往下，設定 Scanner 密碼後建立場次並產生 Scanner 網址；一項都沒加時「建立場次」不能按">
+<div class="dg-hg" style="--dg-c:6">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>開啟視窗<small>取貨管理、建立商品、商品細節頁</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:3"><span class="s">2</span>填場次基本資訊<small>名稱、地點、開始與結束時間</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:5"><span class="s">3</span>加入可核銷項目<small>取貨商品、活動票券</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:6"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:7"><span class="s">4</span>至少加入一項？</div>
+  <span class="dg-a" data-t="有" style="grid-row:1;grid-column:8"></span>
+  <span class="dg-a" data-t="沒有" style="grid-row:2;grid-column:8"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:9"><span class="s">5</span>設 Scanner 密碼</div>
+  <div class="dg-node stop" style="grid-row:2;grid-column:9">「建立場次」不能按<small>回去加入項目</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:10"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:11"><span class="s">6</span>建立場次<small>產生 Scanner 網址</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>開啟視窗：見<a href="#entry">從哪裡開啟</a>；從商品進來時，該商品已經預先加入</li>
+  <li>填場次基本資訊：見<a href="#fields-basic">場次基本資訊</a></li>
+  <li>加入可核銷項目：取貨商品與活動票券在同一處搜尋加入，見<a href="#fields-items">可核銷項目</a></li>
+  <li>至少加入一項？
+    <ul class="plain">
+      <li>有：繼續設密碼</li>
+      <li>沒有：「建立場次」不能按，沒有草稿可存</li>
+    </ul>
+  </li>
+  <li>設 Scanner 密碼：見<a href="#fields-scanner">Scanner 存取</a></li>
+  <li>按「建立場次」：產生一組 Scanner 網址，回到開啟視窗的那一頁並顯示新網址</li>
+</ol>
+<ul class="plain">
+  <li>必填檢查、儲存成功與送出失敗重試，照全站共用的表單規則</li>
+  <li>編輯既有場次時的差別，見<a href="#edit">編輯既有場次</a></li>
+</ul>
+<p class="note">依據：5.1.5.12 §2、§3、F1～F3、§6；主規格 §6.6。</p>
+
+<h2 id="create-fields"><span class="n"></span>功能與欄位</h2>
+<p>視窗的欄位分三組：先填<a href="#fields-basic">場次基本資訊</a>，再加<a href="#fields-items">可核銷項目</a>，最後設<a href="#fields-scanner">Scanner 存取</a>。</p>
+
+<h3 id="fields-basic">場次基本資訊</h3>
+<p>決定這個場次在哪裡、什麼時候可以核銷。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>場次名稱（Session name）</td><td>必填</td><td>創作者內部與 Scanner 上顯示的名稱</td></tr>
+    <tr><td>取貨地點（Pickup location）</td><td>必填</td><td>現場地址、攤位、入口或活動地點說明</td></tr>
+    <tr><td>開始時間（Start time）</td><td>必填</td><td>這個場次可以開始核銷的時間</td></tr>
+    <tr><td>結束時間（End time）</td><td>必填</td><td>這個場次停止核銷的時間<br>必須晚於開始時間<br>時間怎麼決定能不能核銷，見<a href="pickup-rules.html#stage-time">場次時間怎麼管核銷</a></td></tr>
+    <tr><td>取貨說明（Pickup notes）</td><td>選填</td><td>給買家或工作人員的現場指示，例如排隊位置、需出示證件、取貨限制</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="fields-items">可核銷項目</h3>
+<p>把取貨商品與活動票券放進同一個核銷範圍；哪些能放、怎麼綁，見取貨規則的<a href="pickup-rules.html#scope">場次能核銷哪些商品與票券</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>搜尋加入（Search to add）</td><td>—</td><td>取貨商品與活動票券在同一處用名稱搜尋、加入<br>可以只加一種，也可以兩種都加<br>搜尋清單不列組合包</td></tr>
+    <tr><td>取貨商品（Add pickup products）</td><td>取貨商品與活動票券至少一項</td><td>可複選<br>能選的商品見<a href="pickup-rules.html#scope-what">能加入的項目</a><br>選的是整個商品，這個商品賣出的每一件都歸這一場<br>有多個選項的商品，每個選項組合的每一件各有一個領取碼</td></tr>
+    <tr><td>已綁定的商品</td><td>商品已在其他場次時</td><td>列在可加入的商品裡，但不能選，標示「已綁定」<br>編輯本場次時，本場次原有的商品照常顯示為已加入、可以移除，不標「已綁定」</td></tr>
+    <tr><td>活動票券（Add event tickets）</td><td>取貨商品與活動票券至少一項</td><td>可複選<br>從活動建立的活動與票種挑選，可以選好幾個活動與票種</td></tr>
+    <tr><td>移除項目</td><td>已加入的項目</td><td>移除後的結果見<a href="pickup-rules.html#scope-remove">加入與移除項目</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="fields-scanner">Scanner 存取</h3>
+<p>設定保護 Scanner 網址的密碼，並建立場次。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>Scanner 密碼</td><td>必填</td><td>工作人員打開 Scanner 網址後，要輸入這組密碼才能進掃描畫面<br>改密碼後，已登入的 Scanner 要重新輸入</td></tr>
+    <tr><td>建立場次</td><td>至少加入一個取貨商品或一種活動票券才能按</td><td>建立成功後產生一組 Scanner 網址，回到開啟視窗的那一頁並顯示新網址<br>網址的複製、QR code、重設與停用，見取貨場次詳情的<a href="pickup-detail.html#scanner">Scanner 存取</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.12 F1～F3、§5、§6；主規格 §7.2「領取單位的正式定義」；D240、D339、D393。</p>
+
+<h2 id="entry"><span class="n"></span>從哪裡開啟</h2>
+<p>同一個視窗有四個開啟的地方，開啟時帶進來的內容不同。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:20%">從哪裡</th><th style="width:34%">怎麼開</th><th>開啟時</th></tr></thead>
+  <tbody>
+    <tr><td><a href="pickup.html">取貨管理</a></td><td>按「建立取貨場次」<br>或在清單的列上按「編輯」</td><td>建立：空白<br>編輯：帶入這個場次原本的設定</td></tr>
+    <tr><td><a href="eshop-create-physical.html">建立實體商品</a></td><td>取貨方式選「現場 QR 領取」後，按「建立取貨場次」</td><td>這個商品預先加入取貨商品，仍可再加其他商品與活動票券<br>建立完成後，這個商品的取貨方式關聯到新場次</td></tr>
+    <tr><td><a href="eshop-product.html">商品細節頁</a></td><td>取貨方式改成現場 QR 領取時，選既有的取貨場次，或開啟這個視窗建新的</td><td>同建立實體商品</td></tr>
+    <tr><td><a href="pickup-detail.html">取貨場次詳情</a></td><td>按「編輯」</td><td>帶入這個場次原本的設定</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.12 §2、§5 第 5 項、§7；5.1.5.15 F1。</p>
+
+<h2 id="edit"><span class="n"></span>編輯既有場次</h2>
+<p>編輯用同一個視窗，帶入這個場次原本的設定。</p>
+<ul class="plain">
+  <li>已有核銷紀錄的場次，仍可新增可核銷項目</li>
+  <li>移除項目的結果與提示，見<a href="pickup-rules.html#scope-remove">加入與移除項目</a></li>
+  <li>已結束的場次要讓人繼續領，就在這裡把結束時間往後調，見<a href="pickup-rules.html#actions">場次的動作</a></li>
+  <li>建立後其他欄位能不能改，見頁尾尚待確認</li>
+</ul>
+<p class="note">依據：5.1.5.12 F1「建立後的欄位編輯性」、編輯規則；D337、D338。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.12-建立取貨場次.md</code>（v1.11）；<code>5.1.5.15-取貨場次詳情.md</code>（v1.13）F1；<code>0-設計規格書.md</code>（v4.90）§6.6、§7.2</li>
+    <li>決策：D111、D114、D240、D337、D338、D339、D393</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>場次名稱、地點、時間、取貨說明在建立後是否都能改</li>
+    <li>已有核銷紀錄後，能不能把結束時間縮短</li>
+    <li>延長後的結束時間是否必須晚於現在，延長有沒有次數或長度上限</li>
+    <li>視窗是一個畫面還是分兩步（原型示意為兩步：先填時間地點，再加入項目）</li>
+    <li>視窗的標題，以及關閉、取消與填到一半離開時已填內容怎麼處理</li>
+    <li>搜尋清單每一列顯示哪些資料，以及「已綁定」標示的樣子</li>
+    <li>活動票券要不要能細到單張門票（目前選到活動與票種）</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新建頁面；對照 5.1.5.12 v1.11、5.1.5.15 v1.13、主規格 v4.90）</p>
+</details>
+</div>
+</body>
+</html>

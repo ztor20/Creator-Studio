@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>語言與在地化 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+ul.plain ul.plain{margin:4px 0 4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+.k{font-size:12px;color:var(--text-3)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+table.cmp td:nth-child(1){width:20%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="overview">語言與在地化</h1>
+<p class="lede">創作者用一個預設語言操作介面與填寫內容，發布前在預覽與在地化畫面確認其他語系的文案與各幣別價格。</p>
+
+<div class="toc"></div>
+
+<h2 id="default-language"><span class="n"></span>預設語言</h2>
+<p>一個帳號只有一個語言值，叫預設語言（Default language），同時決定兩件事：介面文字用哪個語言顯示，以及建立商品、活動、項目、作品時內容用哪個語言填寫（也是翻譯的來源語言）。</p>
+<ul class="plain">
+  <li>支援四個語系：
+    <ul class="plain">
+      <li>英文（en）</li>
+      <li>繁體中文（zh-Hant）</li>
+      <li>簡體中文（zh-Hans）</li>
+      <li>印尼語（id）</li>
+    </ul>
+  </li>
+  <li>能改預設語言的地方有三處，改的都是同一個值，任一處改了全站立刻生效：
+    <ul class="plain">
+      <li>設定頁的語言區塊，一個下拉選單</li>
+      <li>頁首帳戶選單的語言切換，列出四個語系</li>
+      <li>登入畫面的語言選擇，規則見<a href="#login-language">登入時選的語言</a></li>
+    </ul>
+  </li>
+  <li>沒有另外的「顯示語言」，也不會出現兩個語言值不一致的情況</li>
+</ul>
+<p class="note">依據：主規格 §7.4「規格用途」「預設語言」「與 §5.2.1 的關係」；D220、D222。</p>
+
+<h2 id="login-language"><span class="n"></span>登入時選的語言</h2>
+<p>登入畫面選的語言先只用在登入畫面，登入後才跟帳號的預設語言比對。</p>
+<div class="dg" role="img" aria-label="登入語言流程圖：在登入畫面選語言，登入畫面立即換成該語言；登入後比對與帳號預設語言是否相同，相同就直接用，不同就詢問改成所選語言或保留預設語言">
+<div class="dg-flow">
+  <div class="dg-node">在登入畫面選語言<small>只換登入畫面本身</small></div><div class="dg-arr"></div>
+  <div class="dg-node">登入完成</div><div class="dg-arr"></div>
+  <div class="dg-node q">跟帳號的預設語言相同嗎？</div><span class="dg-arr"></span>
+  <div class="dg-fork">
+    <div class="dg-lane"><span class="dg-exit">相同</span><span class="dg-arr"></span><div class="dg-node end">不詢問，直接用這個語言</div></div>
+    <div class="dg-lane"><span class="dg-exit">不同</span><span class="dg-arr"></span><div class="dg-node">詢問一次</div><span class="dg-arr"></span><div class="dg-node end">改成所選語言<small>或保留帳號的預設語言</small></div></div>
+  </div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右；紫色框是要回答的問題，綠框是結果。</p>
+<ul class="plain">
+  <li>登入畫面選語言時，不立刻寫進帳號的預設語言</li>
+  <li>選「改成所選語言」：該語言成為帳號的預設語言，效果跟在設定頁改一樣</li>
+  <li>選「保留預設」：預設語言不變，介面回到帳號原本的預設語言，不停在登入時選的語言</li>
+  <li>每次登入最多詢問一次；回答後，全站仍然只有一個語言值</li>
+</ul>
+<p class="note">依據：主規格 §7.4「登入時的語言選擇」；5.1.10 F7；D222、D225。</p>
+
+<h2 id="preview"><span class="n"></span>預覽與在地化畫面</h2>
+<p>所有含可翻譯文案的建立流程，表單全程只用預設語言填寫；按下發布前，先進一個全頁的預覽與在地化畫面確認其他語系的文案與各幣別價格。畫面上有哪些區塊，見<a href="#preview-layout">畫面的組成</a>；哪些流程用這個畫面，見<a href="#preview-where">哪些流程用這個畫面</a>；發布後怎麼再開，見<a href="#preview-after">發布後再開</a>。</p>
+
+<h3 id="preview-layout">畫面的組成</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">區塊</th><th>做什麼</th></tr></thead>
+  <tbody>
+    <tr><td>主區：粉絲視角預覽</td><td>呈現粉絲端這個項目頁面的全部設定，照選的語系與幣別顯示<br>預設語言是初始語系，畫面上要標示哪一個是預設語言<br>可以直接修改目前語系的文案<br>點價格打開價格表；價格不在主區直接改</td></tr>
+    <tr><td>側欄第一段：語言（Language）</td><td>四個語系各一列，標出各語系的狀態；點一列，主區切到該語系<br>「逐欄位對照」打開翻譯表（可翻譯欄位 × 四個語系），在同一張表把四個語系一次改完<br>各語系的狀態與動作，電子商店與活動不同，見<a href="#auto-vs-manual">自動翻譯與活動的手動翻譯</a></td></tr>
+    <tr><td>側欄第二段：幣別（Currency）</td><td>基準幣別與四個換算幣別各一列；點一列，主區的價格切到該幣別<br>價格表能不能改，見<a href="common-currency.html#override">定價幣別的逐幣別覆寫</a></td></tr>
+    <tr><td>側欄第三段：發布前檢核（Pre-publish checks）</td><td>逐項列出這個流程的必填與擋下條件是否通過，點一項跳回對應的步驟或欄位<br>檢核項目由各流程自己定，例如建立活動見<a href="event-create-step8.html#preview-check">步驟 7 的發布前檢核</a></td></tr>
+    <tr><td>主鈕：發布或送出審核</td><td>在側欄，按下就發布，不再跳第二層確認</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>語言與幣別是兩條獨立的軸：切語言不改幣別，切幣別不改語言</li>
+  <li>翻譯表與價格表各有自己的入口，不共用同一個切換</li>
+  <li>預覽是粉絲端的鏡像：粉絲端版型改了，預覽跟著改；粉絲端版型與現行規則衝突時，預覽照規則畫</li>
+  <li>活動頁預覽的區塊與預覽裡的價格怎麼顯示，見<a href="event-create-step8.html#preview-page">步驟 7 的預覽裡的活動頁</a></li>
+</ul>
+
+<h3 id="preview-where">哪些流程用這個畫面</h3>
+<p>多步驟的建立流程，這個畫面就是流程的最後一步，不另外彈出視窗。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">流程</th><th>在哪一步</th></tr></thead>
+  <tbody>
+    <tr><td><a href="eshop-create.html">建立商品</a></td><td>第 2 步「預覽與發布」（第 1 步是商品內容）</td></tr>
+    <tr><td><a href="eshop-create-bundle.html">建立組合包</a></td><td>第 2 步「預覽與發布」（第 1 步是組合內容）</td></tr>
+    <tr><td><a href="event-create.html">建立活動</a></td><td>最後一步「預覽與發布」</td></tr>
+    <tr><td><a href="project-create.html">建立項目</a></td><td>最後一步，依項目類型與作品家族共 4 到 5 步</td></tr>
+    <tr><td><a href="project-publish.html">作品上架</a></td><td>第 6 步「預覽與送審」；從建立項目進入時沿用建立項目自己的最後一步</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="preview-after">發布後再開</h3>
+<p>已發布的項目可以從詳情頁頁首的「預覽與在地化」再開同一個全頁畫面，改的是同一份翻譯與幣別價格。</p>
+<ul class="plain">
+  <li>入口在三個詳情頁的頁首主操作：
+    <ul class="plain">
+      <li><a href="event-detail.html">活動詳情</a>，這是活動唯一的入口</li>
+      <li><a href="eshop-product.html">商品細節頁</a></li>
+      <li><a href="eshop-bundle.html">組合包細節頁</a></li>
+    </ul>
+  </li>
+  <li>商品與組合包的粉絲視角預覽已含在這個畫面裡，不另放唯讀的預覽按鈕</li>
+  <li>跟建立流程只差兩處：
+    <ul class="plain">
+      <li>主鈕是「儲存」：儲存就對已上架的項目生效，不改上架狀態</li>
+      <li>側欄第三段改成「未儲存的變更（Unsaved changes）」：本語系改了幾欄、本幣別覆寫了幾項</li>
+    </ul>
+  </li>
+  <li>什麼時候能改，比照該詳情頁其他欄位；活動見活動規則的<a href="event-rules.html#edit-limit">發布後的修改</a>，草稿不進活動詳情，草稿的翻譯與幣別價格在建立活動的最後一步處理</li>
+</ul>
+<p class="note">依據：主規格 §7.4「發布前預覽確認」「發布後再開」「適用範圍」；D223、D305、D310、D317、D318、D319、D321、D322、D323、D413、D435、D443、D453。</p>
+
+<h2 id="translatable"><span class="n"></span>可翻譯欄位</h2>
+<p>使用者以自然語言輸入的文案欄位都是可翻譯欄位；資料值與檔案不翻譯，各語系共用。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%"></th><th>包括</th></tr></thead>
+  <tbody>
+    <tr><td>可翻譯</td><td>名稱<br>描述、簡介類欄位<br>結構化清單裡逐筆輸入的文案，例如商品的詳細規格（規格名稱與規格值）、商品選項（選項名與選項值）、活動描述的每個文字區塊</td></tr>
+    <tr><td>不翻譯、各語系共用</td><td>價格、數量、日期、SKU<br>檔案，包括文案欄位裡夾帶的圖片與影片</td></tr>
+    <tr><td>不列入翻譯、維持原文</td><td>姓名、暱稱，包括表演陣容的人名<br>表演陣容的角色標籤<br>IP 條款與法律文件<br>第三方平台名稱</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>這是通則；各流程實際涵蓋哪些欄位，由各流程逐一列出，例如活動見<a href="event-create-step8.html#preview-translation">步驟 7 的翻譯</a></li>
+</ul>
+<p class="note">依據：主規格 §7.4「可翻譯欄位的判準」「活動例外：手動翻譯」第 7 項、「顯示規則」；D223、D305、D335、D354、D445。</p>
+
+<h2 id="auto-vs-manual"><span class="n"></span>自動翻譯與活動的手動翻譯</h2>
+<p>電子商店（商品、組合包）、建立項目與作品上架的其他語系自動翻譯；活動例外，其他語系由創作者手動填。</p>
+<div class="tablewrap"><table class="cmp">
+  <thead><tr><th>事項</th><th>電子商店、項目、作品上架</th><th>活動</th></tr></thead>
+  <tbody>
+    <tr><td>其他語系怎麼來</td><td>依預設語言的內容自動產生翻譯</td><td>創作者在預覽主區就地填，或在翻譯表逐欄填<br>某語系沒填的欄位，粉絲與預覽都顯示預設語言原文，不產生機器譯文</td></tr>
+    <tr><td>預設語言的內容改了</td><td>其他語系一律重新產生翻譯，手動改過的翻譯也會被覆蓋</td><td>已填的譯文保留，不被覆蓋</td></tr>
+    <tr><td>側欄語言段的狀態</td><td>預設<br>自動翻譯（沒改過）<br>已修改 N 欄</td><td>預設<br>未翻譯（一欄都沒填）<br>已翻譯 n／N 欄（n 是已填欄數，N 是可翻譯欄位總數）</td></tr>
+    <tr><td>側欄語言段的動作</td><td>還原自動翻譯：把目前語系的手動修改退回自動翻譯</td><td>清除譯文：清掉該欄在該語系的譯文，回到顯示原文</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>兩邊的表單都只用預設語言填，翻譯只在預覽與在地化畫面處理</li>
+  <li>各幣別價格的重算規則跟翻譯是兩套，見<a href="common-currency.html#recalc">定價幣別的重算規則</a></li>
+</ul>
+<p class="note">依據：主規格 §7.4「自動翻譯與重生成規則」「活動例外：手動翻譯」；D223、D312。</p>
+
+<h2 id="display"><span class="n"></span>語言怎麼顯示</h2>
+<ul class="plain">
+  <li>卡片、清單等摘要顯示預設語言那一份內容</li>
+  <li>日期、數字、幣別與相對時間，依預設語言的習慣格式顯示</li>
+  <li>金額用交易原本的幣別與使用者的設定，不隨介面語言改變；幣別規則見<a href="common-currency.html">定價幣別</a></li>
+  <li>介面上不出現空白文字或翻譯鍵名</li>
+</ul>
+<p class="note">依據：主規格 §7.4「顯示規則」「使用限制」；D306。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>0-設計規格書.md §7.4</code>（v4.90）；<code>5.1.10-登入.md</code> F7；<code>5.1.9-設定.md</code> F8</li>
+    <li>決策：D220、D222、D223、D225、D305、D306、D310、D312、D317、D318、D319、D321、D322、D323、D335、D354、D413、D435、D443、D445、D453</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>新帳號還沒設定時，預設語言的初始值是哪一語</li>
+    <li>還沒登入時，登入畫面語言選擇的初始值來自瀏覽器語言、上次選擇或固定值</li>
+    <li>登入後詢問是否提供「不再詢問」這類跨登入的記憶</li>
+    <li>自動翻譯什麼時候觸發（即時或儲存時），以及翻譯失敗怎麼處理</li>
+    <li>手動改過的翻譯被重新產生覆蓋前，是否提示</li>
+    <li>活動的原文改了、譯文可能過期時，是否提醒創作者</li>
+    <li>單頁表單型的流程從預覽畫面返回表單時怎麼處理</li>
+    <li>發布後改翻譯是否需要審核或留版本紀錄</li>
+    <li>活動發布後，翻譯是否算要先下架才能改的資料（目前是推導）</li>
+    <li>建立拍賣是否套用預覽與在地化畫面、是否改成兩步驟</li>
+    <li>拍賣商品細節頁是否也提供「預覽與在地化」入口</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新建；對照主規格 v4.90 §7.4）</p>
+</details>
+</div>
+</body>
+</html>

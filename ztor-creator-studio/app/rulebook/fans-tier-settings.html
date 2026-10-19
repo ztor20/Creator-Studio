@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>分級設定 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>分級設定</h1>
+<p class="lede">創作者在分級設定（Tier settings）設定各分級的兩道門檻與計分設定，並查核目前生效的是哪一版。門檻與點數的規則見<a href="fans-tiers.html">粉絲分級</a>。</p>
+<div class="toc"></div>
+
+<h2 id="settings-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>分級設定和<a href="fans-benefits.html">各級福利</a>放在粉絲總覽的同一個「粉絲分級設定」分頁，從分級分布的「分級設定（Tier settings）」進入</li>
+  <li>門檻與計分設定改了，下一次每週重算才生效；各級福利則是儲存後立即生效</li>
+  <li>全站活動、賽季加倍週、衰減、多久沒有行為就往下掉一階、降級緩衝由 Admin 設定，不在這頁，見<a href="fans-tiers.html#who-adjusts">誰能調整什麼</a></li>
+</ul>
+
+<h2 id="settings-flow"><span class="n"></span>操作流程</h2>
+<p>創作者調好門檻與計分設定後儲存，通過檢查就存成新的設定版本，等下一次每週重算生效。</p>
+<div class="dg" role="img" aria-label="分級設定流程圖，由左往右：進分級設定，調門檻與計分設定並看將重新分級幾位粉絲，按儲存；門檻高低順序正確就存成新的設定版本、下一次每週重算生效，順序不對就擋下儲存">
+<div class="dg-hg" style="--dg-c:5">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>進分級設定<small>從粉絲總覽或粉絲詳情的「分級設定」</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:3"><span class="s">2</span>調門檻與計分設定<small>看「將重新分級 N 位粉絲」預覽</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:5"><span class="s">3</span>按儲存</div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:6"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:7"><span class="s">4</span>門檻的高低順序對嗎？</div>
+  <span class="dg-a" data-t="對" style="grid-row:1;grid-column:8"></span>
+  <span class="dg-a" data-t="不對" style="grid-row:2;grid-column:8"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:9">存成新的設定版本<small>下一次每週重算才生效</small></div>
+  <div class="dg-node stop" style="grid-row:2;grid-column:9">擋下儲存<small>改好再存</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>從粉絲總覽<a href="fans-roster.html#roster-tiers">分級分布</a>或<a href="fans-roster-detail.html#detail-profile">粉絲詳情</a>的「分級設定」進來</li>
+  <li>在<a href="#thresholds">門檻</a>與<a href="#scoring">計分設定</a>調整數值，並看「將重新分級 N 位粉絲」的預覽</li>
+  <li>按儲存，見<a href="#settings-save">儲存與放棄</a></li>
+  <li>門檻的高低順序對嗎？見<a href="#threshold-check">儲存前檢查</a>
+    <ul class="plain">
+      <li>對：存成新的<a href="#versions">設定版本</a>，下一次每週重算才生效</li>
+      <li>不對：擋下儲存</li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>不想保留這次的修改：按放棄，回到上次儲存的版本</li>
+</ul>
+<p class="note">依據：5.1.7.6 F1、F2、F4、使用情境；5.1.7 F3、F8。</p>
+
+<h2 id="settings"><span class="n"></span>功能與欄位</h2>
+<p>每一級的兩道門檻，見<a href="#thresholds">門檻</a>；各類行為與購買品項的份量、互動與推薦的上限，見<a href="#scoring">計分設定</a>；查核目前生效的是哪一版，見<a href="#versions">設定版本</a>；儲存或放棄這次的修改，見<a href="#settings-save">儲存與放棄</a>。</p>
+
+<h3 id="thresholds">門檻</h3>
+<p>門檻決定粉絲要達到什麼條件才能升上這一級；兩道門檻各管什麼，見<a href="fans-tiers.html#gates">兩道門檻</a>。門檻的高低順序不對時怎麼處理，見<a href="#threshold-check">儲存前檢查</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>前 % 名（Top %）</td><td>核心圈<br>超級粉絲<br>上榜粉絲<br>一般粉絲不設</td><td>每一級各設一個<br>各級預設見<a href="fans-tiers.html#gate-defaults">預設值</a></td></tr>
+    <tr><td>最低忠誠點數（Min. loyalty points）</td><td>核心圈<br>超級粉絲<br>上榜粉絲<br>一般粉絲不設</td><td>每一級各設一個<br>各級預設見<a href="fans-tiers.html#gate-defaults">預設值</a></td></tr>
+    <tr><td>門檻說明</td><td>—</td><td>前 % 名與最低忠誠點數各有一個入口<br>說明這道門檻管什麼<br>滑鼠、鍵盤、觸控都打得開，打開時不遺失目前的設定</td></tr>
+    <tr><td>各級目前人數</td><td>—</td><td>每一級顯示目前人數<br>還沒有粉絲時顯示 0，門檻照樣能儲存</td></tr>
+    <tr><td>重新分級預覽</td><td>—</td><td>儲存前顯示「將重新分級 N 位粉絲」<br>還沒有粉絲時顯示 0</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="threshold-check">儲存前檢查</h4>
+<p>門檻的高低順序不對，儲存會被擋下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">門檻</th><th>規定的順序</th></tr></thead>
+  <tbody>
+    <tr><td>前 % 名</td><td>核心圈小於超級粉絲，超級粉絲小於上榜粉絲</td></tr>
+    <tr><td>最低忠誠點數</td><td>核心圈大於超級粉絲，超級粉絲大於上榜粉絲</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="scoring">計分設定</h3>
+<p>計分設定（Scoring）讓創作者決定哪些行為對忠誠點數的貢獻比較大：調高某類行為的份量，做這類行為的粉絲排名上升得比較快。各項的給分見<a href="fans-tiers.html#sources">點數從哪來</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>各類行為的份量（Activity value）</td><td>—</td><td>每一類各設一個：<br>購買<br>活動報到<br>互動<br>推薦<br>這一類行為的點數乘上幾倍<br>預設都是 1 倍<br>全站活動不套用</td></tr>
+    <tr><td>各購買品項的份量（Purchase type value）</td><td>—</td><td>每種品項各設一個：<br>項目支持<br>拍賣成交<br>活動票券<br>電子商店商品<br>影片作品的付費租賃<br>付費首映（預設 0.8，對應哪個品項見頁尾尚待確認）<br>買這種品項時，點數乘上幾倍<br>各品項預設見<a href="fans-tiers.html#buy">購買怎麼換算成點數</a></td></tr>
+    <tr><td>互動與推薦每 90 天最多得分（Max points per 90 days）</td><td>—</td><td>每一項各設一個：<br>共創投票<br>按讚與收藏合計<br>帶貨推薦<br>邀請朋友追蹤這位創作者<br>每 90 天最多拿多少，以滾動 90 天計，在給分當下判定<br>各項預設見<a href="fans-tiers.html#sources">點數從哪來</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>外部平台行為見<a href="fans-tiers.html#external">外部平台的行為目前不計入點數</a></li>
+</ul>
+
+<h3 id="versions">設定版本</h3>
+<p>設定版本保存每一次儲存的門檻與計分設定，讓創作者查核目前生效的是哪一版。</p>
+<ul class="plain">
+  <li>每次儲存門檻或計分設定，都會存成一個不能修改的設定版本</li>
+  <li>已發生的收入、粉絲當時的分級，不會因為後來的調整被改寫</li>
+  <li>版本歷史是唯讀清單，列出每個版本與生效時間</li>
+</ul>
+
+<h3 id="settings-save">儲存與放棄</h3>
+<p>儲存與放棄管的是門檻與計分設定這次的修改，畫面上顯示這次修改的儲存狀態。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>儲存（Save thresholds）</td><td>—</td><td>一次送出門檻與計分設定的修改<br>沒通過<a href="#threshold-check">儲存前檢查</a>就擋下<br>成功時提示「Thresholds saved（門檻已儲存）」<br>每次儲存存成一個<a href="#versions">設定版本</a><br>下一次每週重算才生效</td></tr>
+    <tr><td>放棄（Discard）</td><td>—</td><td>捨棄這次沒儲存的門檻與計分設定修改，回到上次儲存的版本</td></tr>
+    <tr><td>粉絲系統說明</td><td>—</td><td>前往<a href="fans-guide.html">粉絲系統說明</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.7.6 F1～F4；5.1.7 F8；主規格 §7.5；D169、D347、D348、D350、D351。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.7.6-分級設定.md</code>（最後更新 2026-10-05）、<code>5.1.7-粉絲關係管理.md</code>、<code>0-設計規格書.md §7.5／§8.29</code></li>
+    <li>決策：D169、D347、D348、D350、D351</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>創作者能調整的份量與上限，各自可調的範圍</li>
+    <li>付費首映對應哪一種品項</li>
+    <li>同一次儲存時，門檻（下次重算才生效）與福利（立即生效）怎麼分別套用</li>
+    <li>門檻順序檢查：相鄰兩級能不能設成一樣、要不要和一般粉絲比、輸入時還是儲存時檢查</li>
+    <li>「將重新分級 N 位粉絲」何時計算、算進哪些粉絲</li>
+    <li>各級目前人數多久更新一次</li>
+    <li>設定版本保留多久、能不能看差異、匯出或還原舊版</li>
+    <li>門檻、人數與份量的畫面數值是原型示意，正式資料來源還沒定</li>
+    <li>分級設定載入中時畫面怎麼顯示</li>
+    <li>門檻與點數規則的待確認列在<a href="fans-tiers.html">粉絲分級</a>頁尾</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（從粉絲分級拆成獨立畫面頁，補概述與操作流程）；2026-10-09（至 D351）</p>
+</details>
+</div>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin IP Bank — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.ex{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--wait-key);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.ex p{margin:0 0 4px}
+.ex ul{margin:0;padding-left:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Admin IP Bank</h1>
+<p class="lede">Admin 在 Admin IP Bank 記錄每部影片（Film）的 IP 由哪些權利人（Owner）持有，以及每位權利人分到多少收入比例。分到的金額怎麼算，見<a href="admin-ipbank-report.html">IP Bank Reporting</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="ipb-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>一筆資料是「一部影片的一個 IP 給一位權利人」</li>
+  <li>同一部影片可以有好幾筆，每筆只連結一位權利人</li>
+  <li>Admin 不用先選定創作者就能進這頁</li>
+  <li>這頁只管全平台影片的分潤分配，創作者自己的 IP、上架與授權在<a href="my-ip.html">我的 IP</a></li>
+</ul>
+
+<h2 id="ipb-flow"><span class="n"></span>操作流程</h2>
+<p>Admin 進 Admin IP Bank 後，從清單決定要建一筆新的、調整既有的，還是去看分潤數字。</p>
+<div class="dg" role="img" aria-label="Admin IP Bank 流程圖，由左往右：進 Admin IP Bank 看清單，再選要做什麼；建一筆新的就進建立 IP Entry，調整已連結的就編輯，移除還在邀請中的要先確認，看分潤數字就到 IP Bank Reporting">
+<div class="dg-hg" style="--dg-c:3">
+  <div class="dg-node" style="grid-row:1/5;grid-column:1"><span class="s">1</span>進 Admin IP Bank<small>看 IP 權利分配清單</small></div>
+  <span class="dg-a" style="grid-row:1/5;grid-column:2"></span>
+  <div class="dg-node q" style="grid-row:1/5;grid-column:3"><span class="s">2</span>要做什麼？</div>
+  <span class="dg-a" data-t="建一筆新的" style="grid-row:1;grid-column:4"></span>
+  <span class="dg-a" data-t="調整已連結的" style="grid-row:2;grid-column:4"></span>
+  <span class="dg-a" data-t="移除邀請中的" style="grid-row:3;grid-column:4"></span>
+  <span class="dg-a" data-t="看分潤數字" style="grid-row:4;grid-column:4"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:5">建立 IP Entry<small>存好後回到清單</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:5">編輯<small>重新檢查分潤比例</small></div>
+  <div class="dg-node stop" style="grid-row:3;grid-column:5">移除<small>確認後才執行，不能復原</small></div>
+  <div class="dg-node end" style="grid-row:4;grid-column:5">IP Bank Reporting<small>唯讀報表</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進 Admin IP Bank；畫面是 IP 權利分配清單，見<a href="#ipb-list">清單</a></li>
+  <li>要做什麼？
+    <ul class="plain">
+      <li>建一筆新的：按「建立 IP Entry（Add IP entry）」，見<a href="admin-ipbank-create.html">建立 IP Entry</a>；存好後回到清單，看得到新增的這一筆</li>
+      <li>調整已連結的：在這一列按編輯，見<a href="#ipb-actions">列操作</a></li>
+      <li>移除還在邀請中的：在這一列按移除，確認後才執行，見<a href="#ipb-remove">移除的確認</a></li>
+      <li>看分潤數字：從同層導覽到<a href="admin-ipbank-report.html">IP Bank Reporting</a></li>
+    </ul>
+  </li>
+</ol>
+<p class="note">依據：5.1.0.1 頁面定位、F2、使用情境；D129、D130。</p>
+
+<h2 id="ipb-fields"><span class="n"></span>功能與欄位</h2>
+<p>這頁只有一個畫面：上方是<a href="#ipb-header">頁面說明與導覽</a>，下方是 IP 權利分配的<a href="#ipb-list">清單</a>；移除時跳出<a href="#ipb-remove">移除的確認</a>；還沒有任何資料時，見<a href="#ipb-empty">沒有資料時</a>。</p>
+
+<h3 id="ipb-header">頁面說明與導覽</h3>
+<p>頁首讓 Admin 知道正在管理全平台影片的 IP 權利分配，並能切到其他 Admin 目的地。頁面名稱是「Admin IP Bank」，下方一句說明每部影片可以有多筆 IP 與權利人，各自分配收入比例。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>麵包屑</td><td>—</td><td>顯示「Admin Creator Studio → IP Bank」<br>點 Admin Creator Studio 回到 Admin 的起始目的地</td></tr>
+    <tr><td>同層導覽</td><td>—</td><td>可前往其他七個 Admin 目的地：<br><a href="admin-creators.html">Creator 管理</a><br><a href="admin-events.html">創作者活動管理</a><br><a href="admin-ipbank-report.html">IP Bank Reporting</a><br><a href="admin-fees.html">平台費率設定</a><br><a href="admin-promotions.html">平台優惠設定</a><br><a href="admin-loyalty.html">平台忠誠點數設定</a><br><a href="admin-video-review.html">影片上架審核</a></td></tr>
+    <tr><td>建立 IP Entry（Add IP entry）</td><td>—</td><td>進入<a href="admin-ipbank-create.html">建立 IP Entry</a><br>存好後回到清單，看得到新增的這一筆</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="ipb-list">清單</h3>
+<p>清單讓 Admin 檢視與維護每一筆「影片 × IP × 權利人」的分配。一列是一筆，欄位如下；每一列能做的事，見<a href="#ipb-actions">列操作</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>影片（Film）</td><td>這一筆屬於哪部影片，顯示名稱與辨識資訊</td></tr>
+    <tr><td>IP 名稱（IP title）</td><td>權利人在這部影片持有的 IP</td></tr>
+    <tr><td>類型（Type）</td><td>IP 類型，選項見<a href="admin-ipbank-create.html#create-ip">建立 IP Entry 的 IP 資料</a></td></tr>
+    <tr><td>權利人（Owner）</td><td>已有 Ztor 帳號的使用者，或受邀的 email</td></tr>
+    <tr><td>狀態（Status）</td><td>已連結（Linked）或已邀請（Invited (Pending)），見<a href="#ipb-owner">權利人的連結狀態</a></td></tr>
+    <tr><td>分潤比例（Share）</td><td>這位權利人在這部影片分到的收入比例，見<a href="#ipb-share">分潤比例怎麼檢查</a></td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="ipb-actions">列操作</h4>
+<p>每一列的操作收在「⋯」選單裡，依權利人的連結狀態只提供一種。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>編輯（Edit）</td><td>只有已連結</td><td>Admin 可以更新這一筆<br>存檔時重新檢查這部影片的分潤比例合計，見<a href="#ipb-share">分潤比例怎麼檢查</a><br>已連結的資料不能移除</td></tr>
+    <tr><td>移除（Remove）</td><td>只有已邀請<br>要確認</td><td>確認後才移除，見<a href="#ipb-remove">移除的確認</a><br>已邀請的資料不能編輯</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="ipb-remove">移除的確認</h3>
+<p>在已邀請的那一列按移除時跳出，Admin 看完影響再決定。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>影響說明</td><td>—</td><td>說明這個操作不能復原<br>說明移除會影響後續的分潤結算</td></tr>
+    <tr><td>確認移除</td><td>—</td><td>移除這一筆，清單少一列</td></tr>
+    <tr><td>取消</td><td>—</td><td>不移除，回到清單</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="ipb-empty">沒有資料時</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">情況</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>還沒有任何一筆</td><td>說明還沒有 IP 權利分配<br>提供「建立 IP Entry」入口，引導建第一筆</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.0.1 F1、F2、F3.1、F3.3、頁面狀態；D129、D130、D273、D347。</p>
+
+<h2 id="ipb-share"><span class="n"></span>分潤比例怎麼檢查</h2>
+<p>同一部影片所有權利人的分潤比例加起來不能超過 100%，沒分出去的部分歸平台。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">規則</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>單筆的範圍</td><td>見建立 IP Entry 的<a href="admin-ipbank-create.html#create-share">分潤配置</a></td></tr>
+    <tr><td>同一部影片的合計</td><td>不能超過 100%</td></tr>
+    <tr><td>已配置比例（Allocated share）</td><td>這部影片已經分給權利人的比例合計，建立與編輯時都顯示</td></tr>
+    <tr><td>剩餘比例（Remaining share）</td><td>這部影片還能分配的比例，建立與編輯時都顯示</td></tr>
+    <tr><td>平台剩餘（Platform remainder）</td><td>沒有分配出去的比例歸平台</td></tr>
+    <tr><td>超過 100% 時</td><td>不能存檔，畫面指出超出多少</td></tr>
+  </tbody>
+</table></div>
+<div class="ex">
+  <p>範例（數字皆為假設）：影片 A 已有兩位權利人，各 30% 與 30%。</p>
+  <ul>
+    <li>已配置 60%，剩餘 40%，平台剩餘目前是 40%</li>
+    <li>再加一位填 50%：合計 110%，不能存檔，畫面指出超出 10%</li>
+    <li>改填 40%：合計 100%，可以存檔，平台剩餘變成 0%</li>
+  </ul>
+</div>
+<p class="note">依據：5.1.0.1 F3.2；5.1.0.1.1 F3；D129、D131。</p>
+
+<h2 id="ipb-owner"><span class="n"></span>權利人的連結狀態</h2>
+<p>權利人有兩種連結狀態，由建立時選了誰決定，Admin 不能手動改：已邀請 → 已連結。狀態用詞的全站定義見<a href="common-status.html">狀態語言</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:20%">狀態</th><th style="width:34%">什麼時候進入</th><th style="width:16%">Admin 能做</th><th>分潤報表上</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag wait">已邀請（Invited (Pending)）</span></td><td>建立時填了還沒註冊的有效 email，存檔後進入，同時建立邀請</td><td>移除</td><td>應計金額照常累積<br>認領帳號前不能提款</td></tr>
+    <tr><td><span class="tag ok">已連結（Linked）</span></td><td>建立時選了既有的 Ztor 帳號，存檔後進入<br>受邀的人接受邀請、認領帳號（claim）後，從已邀請自動轉入</td><td>編輯</td><td>顯示已提款與可用金額</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>怎麼找權利人、怎麼發出邀請，見<a href="admin-ipbank-create.html#create-owner">建立 IP Entry 的權利人連結</a></li>
+  <li>報表上各金額怎麼算、已邀請時怎麼顯示，見<a href="admin-ipbank-report.html#report-calc">分潤金額怎麼算</a></li>
+</ul>
+<p class="note">依據：5.1.0.1 F3.1、F3.3；5.1.0.1.1 F2；主規格 §7.2、§7.3；D129、D131、D132。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.0.1-Admin-IP-Bank.md</code>（最後更新 2026-10-02）頁面定位、F1、F2、F3、頁面狀態、使用情境；<code>5.1.0.1.1-建立IP-Entry流程.md</code>（最後更新 2026-07-15）F2、F3；<code>0-設計規格書.md</code> §7.2、§7.3、§8.15</li>
+    <li>決策：D128、D129、D130、D131、D132、D233、D273、D347</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>調整分潤比例對已經產生的應計金額、已提款與提款紀錄，從什麼時候生效、會不會回溯</li>
+    <li>新增、編輯、移除與認領帳號的操作紀錄，誰看得到、保存多久</li>
+    <li>編輯已連結的資料時，用哪個畫面、哪些欄位可以改（目前畫面示意沿用建立 IP Entry 的表單）</li>
+    <li>邀請的重送、撤銷、到期與寄送失敗怎麼處理</li>
+    <li>清單載入中、載入失敗時畫面怎麼顯示</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（首次撰寫，對照 5.1.0.1、5.1.0.1.1、主規格 §8.15，至 D347）</p>
+</details>
+</div>
+</body>
+</html>

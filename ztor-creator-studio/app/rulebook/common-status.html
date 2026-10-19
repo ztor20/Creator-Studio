@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>狀態語言 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+ul.plain ul.plain{margin:4px 0 4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+.k{font-size:12px;color:var(--text-3)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+table.objs td:nth-child(1){width:16%;white-space:nowrap}
+table.objs td:nth-child(3){width:24%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="overview">狀態語言</h1>
+<p class="lede">創作者與 Admin 在每一頁看到的狀態，都照這頁的同一組狀態詞；各類資料有哪些狀態集中列在這裡，怎麼轉換寫在各自的規則頁。</p>
+
+<div class="toc"></div>
+
+<h2 id="rules"><span class="n"></span>狀態用詞的通則</h2>
+<p>同一類資料全站只用一組狀態詞，任何一頁都不另創狀態。</p>
+<ul class="plain">
+  <li>流程進行中需要暫時的狀態時，要能對回這頁列的狀態，或標明是流程中的狀態</li>
+  <li>狀態第一次出現時，要讓人看懂實際含義，例如：
+    <ul class="plain">
+      <li>待結算不等於可提領</li>
+      <li>項目的進行中不等於已成功</li>
+      <li>外部整合的部分支援不等於完整同步</li>
+    </ul>
+  </li>
+  <li>同一個對象有好幾條獨立的狀態時（例如商品的上架與庫存、訂單的付款與履約），各條分開顯示，不混成一個狀態</li>
+  <li>平台不提供退款動作，所有資料都沒有「已退款」狀態；取消一律由 Admin 撤銷，見訂單詳情的<a href="order-detail.html#void-where">門票與組合包在哪裡撤銷</a></li>
+</ul>
+<p class="note">依據：主規格 §7.2「規格用途」「顯示規則」「使用限制」；D252、D253。</p>
+
+<h2 id="objects"><span class="n"></span>各類資料的狀態</h2>
+<p>下表列出每一類資料的狀態詞；規則完整寫在「規則在哪」欄連到的地方。</p>
+<div class="tablewrap"><table class="objs">
+  <thead><tr><th>資料</th><th>狀態</th><th>規則在哪</th></tr></thead>
+  <tbody>
+    <tr><td>收入</td><td>待結算（Accrued）→ 已結算（Settled）→ 已取消（Cancelled）或爭議中（Disputed）</td><td><a href="#revenue">收入與提款的狀態</a></td></tr>
+    <tr><td>提款</td><td>提款申請中（Payout Requested）<br>已付款（Paid）<br>提款失敗（Failed）</td><td><a href="#revenue">收入與提款的狀態</a></td></tr>
+    <tr><td>項目</td><td>草稿（Draft）→ 準備中（Scheduled）→ 進行中（Published）→ 已成功（Succeeded）→ 已上線（Live）<br>任一階段可轉已取消（Cancelled）</td><td>項目規則的<a href="project-rules.html#stage">項目的階段</a></td></tr>
+    <tr><td>作品審核</td><td>草稿（Draft）→ 待審核（Pending review）→ 審核中（In review）→ 審核通過（Approved）或審核不通過（Rejected）<br>審核不通過修改後重送，回到待審核</td><td>項目規則的<a href="project-rules.html#review">作品審核</a>；<a href="admin-video-review.html">影片上架審核</a></td></tr>
+    <tr><td>商品的販售</td><td>三個開關：上架（Listed）／下架（Unlisted）、顯示（Shown）／隱藏（Hidden）、開賣（On sale）／未開賣（Off sale）<br>三個開關之外另有已封存（Archived）</td><td><a href="eshop-sales.html">電子商店販售流程</a></td></tr>
+    <tr><td>商品的庫存</td><td>充足（In stock）<br>低庫存（Low Stock）<br>售罄（Sold Out）<br>補貨中（Restocking）<br>不限量（Unlimited）</td><td><a href="#stock">商品的庫存狀態</a></td></tr>
+    <tr><td>訂單</td><td>待付款（Unpaid）<br>已付款（Paid）<br>待出貨（To Ship）<br>已出貨（Shipped）<br>已完成（Completed）<br>爭議（Disputed）<br>已取消（Cancelled）<br>已過期（Expired）</td><td>訂單詳情的<a href="order-detail.html#status">訂單的狀態</a></td></tr>
+    <tr><td>領取單位</td><td>取貨場次待設定<br>待核銷<br>已核銷<br>已取消（Cancelled）</td><td>訂單詳情的<a href="order-detail.html#status-unit">品項與領取單位的狀態</a></td></tr>
+    <tr><td>取貨場次</td><td>尚未開始（Scheduled）<br>進行中（Active）<br>已結束（Ended）<br>已封存（Archived）</td><td><a href="pickup.html">取貨管理</a></td></tr>
+    <tr><td>優惠碼</td><td>未開始（Scheduled）<br>進行中（Active）<br>已用完（Exhausted）<br>已結束（Ended）<br>已停用（Disabled）</td><td>優惠規則的<a href="promo-rules.html#s4-5-4">優惠碼的狀態</a></td></tr>
+    <tr><td>活動</td><td>草稿（Draft）→ 已排程（Scheduled）→ 售票中（On sale）→ 進行中（Live）→ 已結束（Ended）<br>另有已取消（Cancelled）</td><td>活動規則的<a href="event-rules.html#stage">活動的階段</a></td></tr>
+    <tr><td>IP 授權</td><td>草稿（Draft）→ 生效（Active）→ 到期（Expired）、撤銷（Revoked）或爭議（Disputed）</td><td>IP 授權規則的<a href="ip-rules.html#stage">授權的階段</a></td></tr>
+    <tr><td>身分驗證（KYC）</td><td>未開始 → 審核中 → 已驗證、已拒絕或已過期<br>已驗證滿 12 個月過期，要重新驗證<br>是提款的前置條件</td><td><a href="revenue-withdraw.html">申請提款</a></td></tr>
+    <tr><td>收款方式</td><td>未驗證 → 驗證中 → 已驗證 → 啟用或停用<br>可以設主要與備用；唯一一個已驗證的收款方式不能移除</td><td><a href="revenue-withdraw.html">申請提款</a></td></tr>
+    <tr><td>IP Bank 擁有者連結</td><td>已連結（Linked）<br>已邀請（Invited），等擁有者認領<br>已邀請時可以累積應付金額，但不能提款；認領後轉已連結</td><td><a href="admin-ipbank.html">IP Bank</a></td></tr>
+    <tr><td>外部整合</td><td>未連結<br>已連結<br>同步中<br>同步失敗<br>部分支援<br>已撤銷</td><td>—</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：主規格 §7.2「共用欄位」；D041、D122、D129、D169、D179、D240、D252、D253、D272、D284、D298、D361、D424。</p>
+
+<h2 id="revenue"><span class="n"></span>收入與提款的狀態</h2>
+<p>一筆收入照結算狀態走：待結算 → 已結算，之後可能因 Admin 撤銷變成已取消，或因買家端發起爭議變成爭議中。</p>
+<div class="flow">
+  <span class="tag wait">待結算</span><span class="arr">→</span><span class="tag ok">已結算</span>
+  <span class="flow__alt">已結算之後 → <span class="tag off">已取消</span>（Admin 撤銷）或 <span class="tag warn">爭議中</span>（買家或銀行端發起）</span>
+</div>
+<ul class="plain">
+  <li>只有已結算的收入計入可提領（Available）與項目的可分配淨利；待結算的不能提領，也不進可分配淨利</li>
+  <li>已取消來自 Admin 撤銷時產生的沖銷分錄：沖銷以新分錄表達，原事件不改寫</li>
+  <li>爭議中的金額從可提領扣除並凍結，處理方式見財務術語與收入事件的<a href="common-finance.html#void-reserve">撤銷沖銷與爭議</a></li>
+  <li>收入類交易顯示待結算、可提領、已付款、爭議；提款類交易顯示提款申請中、已付款、提款失敗；一列交易只顯示自己那一類的狀態</li>
+  <li>已付款在收入類表示這筆收入已撥付結清，在提款類表示提款已成功入帳</li>
+  <li>手動補登、未驗證是資料來源的標記，不是交易狀態，可以和上面的狀態並存，見<a href="common-finance.html#categories">收入與交易分類</a></li>
+</ul>
+<p class="note">依據：主規格 §7.2「共用欄位」收入列、「使用限制」；§7.3「使用限制」；D041、D253、D452。</p>
+
+<h2 id="stock"><span class="n"></span>商品的庫存狀態</h2>
+<p>庫存狀態是商品上架開關以外的另一條狀態，兩條並存、不混用；庫存狀態每次售出、撤銷、補貨與手動調整後重新計算。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">庫存狀態</th><th>什麼時候</th></tr></thead>
+  <tbody>
+    <tr><td>充足（In stock）</td><td>在庫量不低於低庫存門檻</td></tr>
+    <tr><td>低庫存（Low Stock）</td><td>在庫量低於低庫存門檻<br>門檻預設是庫存上限的 10%，可以逐商品調整</td></tr>
+    <tr><td>售罄（Sold Out）</td><td>販售管道的可賣量歸零<br>和販售結束（停售時間到了）是兩回事</td></tr>
+    <tr><td>補貨中（Restocking）</td><td>送出計時補貨後，到收貨確認之前</td></tr>
+    <tr><td>不限量（Unlimited）</td><td>不受售出扣減<br>跟庫存版本的「不限量」是兩件事，庫存版本見<a href="eshop-create-physical.html#edition">實體商品的庫存版本</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>立即補貨送出就計入庫存並重新計算，不進補貨中</li>
+  <li>計時補貨送出後進補貨中；收貨確認後計入庫存，回到充足或低庫存</li>
+  <li>補貨的操作見<a href="eshop-restock.html">補貨</a></li>
+  <li>清單上的徽章（例如即將開賣、已結束、售罄、低庫存、隱藏、已下架、已封存）由三個開關與庫存推導出來，不是另外存的欄位，見<a href="eshop-sales.html">電子商店販售流程</a></li>
+</ul>
+<p class="note">依據：主規格 §7.2「共用欄位」商品列、「使用限制」第 2 段；5.1.5.6；D105、D241。</p>
+
+<h2 id="project"><span class="n"></span>項目的狀態</h2>
+<p>項目照發行模式走不同的狀態順序，任一階段都可以轉已取消；完整規則見<a href="project-rules.html#stage">項目規則的項目的階段</a>。</p>
+<span id="project-paths"></span><span id="project-live"></span><span id="project-cancel"></span><span id="review"></span>
+<p class="note">依據：主規格 §7.2「共用欄位」項目列、作品審核列，「使用限制」項目狀態機與適用範圍；D151、D154、D177、D178、D179、D182、D192、D196。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>0-設計規格書.md §7.2</code>（v4.90）、<code>§7.3</code>「使用限制」</li>
+    <li>決策：D041、D105、D122、D129、D151、D154、D169、D177、D178、D179、D182、D192、D196、D240、D241、D252、D253、D272、D284、D298、D361、D424、D452</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>不限量商品沒有固定的庫存上限，低庫存門檻 10% 的基準是什麼</li>
+    <li>庫存狀態的「不限量」與庫存版本的「不限量」之間的關係</li>
+    <li>撤銷在收入端的沖銷口徑仍待上游核准，見<a href="common-finance.html">財務術語與收入事件</a>頁尾</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新建；對照主規格 v4.90 §7.2）</p>
+</details>
+</div>
+</body>
+</html>

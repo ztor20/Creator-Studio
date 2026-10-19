@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>建立拍賣 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>建立拍賣</h1>
+<p class="lede">創作者在建立拍賣把一件物品用競標的方式賣給粉絲，起標價、競標時長與誰能出價都在這一頁設定。整張表單一頁填完，按「開始拍賣」送出。</p>
+
+<div class="toc"></div>
+
+<h2 id="ca-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>表單最上方先選拍賣種類（實體、數位、活動），種類只影響分類的選項與得標後怎麼交付，其餘欄位三種相同，見<a href="#auction-types">三種拍賣的差別</a></li>
+  <li>拍賣一次只賣一件，沒有數量、選項與庫存，見<a href="#auction-vs-product">拍賣跟一般商品不同的地方</a></li>
+  <li>送出後的競標現況、出價紀錄與上架開關，在<a href="eshop-auction.html">拍賣細節頁</a>管理</li>
+</ul>
+
+<h2 id="ca-flow"><span class="n"></span>操作流程</h2>
+<p>這個流程從進入建立拍賣開始，到開始拍賣或存成草稿為止。</p>
+<div class="dg" role="img" aria-label="建立拍賣流程圖，由左往右：進入建立拍賣，選拍賣種類，填拍賣內容，設定上架與開拍，再決定要不要開始拍賣；開始拍賣就依上架與開拍設定開始，稍後再說就存成草稿">
+<div class="dg-hg" style="--dg-c:6">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>進入建立拍賣<small>電子商店的「建立」選「建立拍賣」</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:3"><span class="s">2</span>選拍賣種類<small>實體、數位、活動</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:5"><span class="s">3</span>填拍賣內容<small>素材、故事、真實性證明、競標設定、競標資格、交付</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:6"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:7"><span class="s">4</span>設定上架與開拍</div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:8"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:9"><span class="s">5</span>要開始拍賣嗎？</div>
+  <span class="dg-a" data-t="開始拍賣" style="grid-row:1;grid-column:10"></span>
+  <span class="dg-a" data-t="稍後再說" style="grid-row:2;grid-column:10"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:11">依上架與開拍設定開始<small>立刻或定時</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:11">存成草稿</div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，紫色框是要回答的問題，綠框是結束的地方。圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>從電子商店的「建立」選「建立拍賣」，或從拍賣（Auctions）分頁的建立入口進入</li>
+  <li>選拍賣種類，見<a href="#ca-type">拍賣種類</a></li>
+  <li>由上往下填素材、故事與物品狀況、真實性證明、競標設定、競標資格、交付與商品標籤，各欄規則見<a href="#ca-fields">功能與欄位</a></li>
+  <li>設定什麼時候上架、什麼時候開拍，見<a href="#ca-listing">上架與開拍設定</a></li>
+  <li>要開始拍賣嗎？
+    <ul class="plain">
+      <li>開始拍賣：依上架與開拍設定送出，見<a href="#ca-actions">送出與草稿</a></li>
+      <li>稍後再說：存成草稿，之後回來續填</li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>上架方式選「不上架」時，按「開始拍賣」等於稍後再說，存成草稿</li>
+</ul>
+<p class="note">依據：5.1.5.10 §2、§3、§4「共用操作、即時預覽與就緒檢查」；主規格 §5.2.4；D081、D285、D343。</p>
+
+<h2 id="ca-fields"><span class="n"></span>功能與欄位</h2>
+<p>整張表單一頁由上往下排列，即時預覽與就緒檢查跟著填的內容同步更新。依序是：</p>
+<ul class="plain">
+  <li><a href="#ca-type">拍賣種類</a></li>
+  <li><a href="#ca-media">素材</a></li>
+  <li><a href="#ca-story">故事與物品狀況</a></li>
+  <li><a href="#ca-proof">真實性證明</a></li>
+  <li><a href="#ca-rules">競標設定</a></li>
+  <li><a href="#ca-eligibility">競標資格</a></li>
+  <li><a href="#ca-delivery">交付</a></li>
+  <li><a href="#ca-tags">商品標籤</a></li>
+  <li><a href="#ca-listing">上架與開拍設定</a></li>
+  <li><a href="#ca-actions">送出與草稿</a></li>
+  <li><a href="#ca-preview">即時預覽</a></li>
+  <li><a href="#ca-ready">就緒檢查</a></li>
+</ul>
+
+<h3 id="ca-type">拍賣種類</h3>
+<p>表單最上方先選這一項。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>拍賣種類</td><td>必填，三選一</td><td>實體、數位、活動，各自的差別見<a href="#auction-types">三種拍賣的差別</a><br>決定分類的選項與交付這一區的內容，其餘欄位三種相同</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="ca-media">素材</h3>
+<p>標題是「Show it off」，放粉絲看得到的主圖與附圖。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>主圖（Hero image）</td><td>必填，1 格</td><td>可放圖片或影片<br>直式 750×1125px（2:3），不能低於這個尺寸<br>拍賣清單與拍賣細節頁的方形縮圖由主圖置中裁切，主圖是影片時取第一格畫面</td></tr>
+    <tr><td>附圖（Additional photos）</td><td>選填，最多 9 格</td><td>每格可放圖片或影片，跟主圖合計最多 10 格，圖片與影片共用額度<br>直式 750×1125px，最小 600×900px<br>格下提示多放幾個角度，讓粉絲更信任</td></tr>
+  </tbody>
+</table></div>
+<p>影片的格式與檔案大小、各版位怎麼取圖，見<a href="common-media.html">展示素材與年齡分級</a>。</p>
+
+<h3 id="ca-story">故事與物品狀況</h3>
+<p>標題是「The story」，寫這件物品為什麼特別，並標出物品的新舊程度。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>物品名稱（Item name）</td><td>必填</td><td>單行文字</td></tr>
+    <tr><td>為何特別（Tell fans why this is special）</td><td>必填</td><td>多行文字，至少 50 個字元<br>提示故事越個人，出價越高</td></tr>
+    <tr><td>分類（Category）</td><td>—</td><td>下拉單選，選項是所選拍賣種類底下的次分類，見<a href="taxonomy.html">商品分類與模組應用</a><br>數位種類不出現電影、短片、影集、MV、紀錄片、音樂單曲、音樂專輯這 7 個次分類，它們只能透過項目發售<br>實體的音樂單曲與專輯照常可以拍賣</td></tr>
+    <tr><td>物品狀況（Condition）</td><td>預設全新</td><td>四選一：<br>全新（New）：未使用、未拆封或如新<br>近全新（Like new）：幾乎沒有使用痕跡，保存極佳<br>良好（Good）：正常使用痕跡，功能與外觀完好<br>使用痕跡明顯（Well-loved）：明顯使用或穿戴痕跡，仍完整堪用</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="ca-proof">真實性證明</h3>
+<p>標題是「Prove it's real」，讓粉絲相信物品真的來自創作者。這一區的照片與檔案是證明用的原始資料，不放進粉絲端的展示版位，也不套用展示素材的直式標準。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>與物品合照（Photo of you with the item）</td><td>必填，1 張</td><td>不限比例，最小 800×800px<br>例如自拍拿著物品，或看得到簽名的照片</td></tr>
+    <tr><td>來源說明（Provenance note）</td><td>選填</td><td>單行文字，例如哪一年買的、用在哪些演出</td></tr>
+    <tr><td>證書（Certificate）</td><td>選填</td><td>PDF 或圖片</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="ca-rules">競標設定</h3>
+<p>標題是「Auction rules」。拍賣沒有固定售價，由粉絲出價競標。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>起標價（Starting price）</td><td>必填</td><td>拍賣從這個金額開始出價</td></tr>
+    <tr><td>保留價（Reserve price）</td><td>選填</td><td>創作者設的底價<br>有出價但沒達到保留價時怎麼處理，見頁尾尚待確認</td></tr>
+    <tr><td>競標時長（Duration）</td><td>必填，三選一<br>預設 5 天</td><td>3 天、5 天、7 天<br>結標時間＝開拍時間＋競標時長，見<a href="#auction-time">開拍與結標的時間</a></td></tr>
+    <tr><td>密封終局（Sealed final round）</td><td>預設關</td><td>開啟後，結標前最後一段時間，每位出價者各有一次不公開的最終出價，最高者得標<br>最後一段時間多長、出價誰看得到，見頁尾尚待確認</td></tr>
+    <tr><td>最低出價增額（Minimum increment）</td><td>—</td><td>自動算出：目前最高出價再加上一個固定比例<br>比例多少、能不能調，見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="ca-eligibility">競標資格</h3>
+<p>標題是「Who can bid?」，限定哪些粉絲分級可以出價；分級沿用<a href="fans-tiers.html#tiers">粉絲分級</a>，不另外定義。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>競標資格</td><td>必填，三選一<br>預設值見頁尾尚待確認</td><td>僅限核心圈（Inner Circle only）：只有最高分級能出價<br>超級粉絲以上（Super Fans and above）：超級粉絲與更高分級<br>全部粉絲（All fans）：所有粉絲都能出價<br>畫面提示限定前幾級，會把這件物品讓給下一次 Drop；這個機制見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="ca-delivery">交付</h3>
+<p>這一區依拍賣種類出現不同內容，交代得標後物品怎麼到得標者手上。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>得標者付運費（Winner pays shipping）</td><td>只在實體<br>預設開</td><td>開：運費由得標者付<br>關：運費由誰吸收，見頁尾尚待確認<br>拍賣不適用<a href="eshop-settings.html">商店設定</a>的免運門檻</td></tr>
+    <tr><td>出貨時限（Ship by）</td><td>只在實體</td><td>競標結束後幾天內出貨<br>可選天數與預設值，見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>數位：得標後用下載或存取的方式交付，比照數位商品</li>
+  <li>活動：得標後給得標者入場憑證或門票</li>
+</ul>
+
+<h3 id="ca-tags">商品標籤</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>商品標籤（Product tags）</td><td>—</td><td>自己建立，或選既有的標籤<br>跟分類並存，不取代分類</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="ca-listing">上架與開拍設定</h3>
+<p>決定這件拍賣什麼時候出現在商店、什麼時候開始競標。對拍賣來說，開賣就是開拍；上架、顯示、開賣三個開關的通用規則見<a href="eshop-sales.html#switches">上架、顯示、開賣三個開關</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>上架方式</td><td>必填，三選一<br>預設立刻上架</td><td>不上架（Don't list）：維持草稿，不收任何時間、不產生連結<br>立刻上架（List now）：送出後就上架<br>定時上架（Scheduled listing）：到了上架時間才上架</td></tr>
+    <tr><td>上架日期與時間（Listing time）</td><td>選定時上架才出現，必填</td><td>時間到之前維持下架，時間到自動上架</td></tr>
+    <tr><td>定時下架（Unlist at a set time）</td><td>上架方式選立刻上架或定時上架才出現<br>預設關</td><td>開啟才收下架日期與時間</td></tr>
+    <tr><td>下架日期與時間（Unlist time）</td><td>開啟定時下架才出現，必填</td><td>時間到自動下架，不經確認<br>下架後粉絲看到什麼，見<a href="eshop-sales.html#archive-fan">下架與封存後的粉絲端</a></td></tr>
+    <tr><td>顯示於商店（Show in shop）</td><td>預設顯示</td><td>隱藏時商店不陳列，另外產生一條非公開連結，見<a href="eshop-sales.html#private">非公開連結</a><br>非公開連結在拍賣細節頁取得與重置</td></tr>
+    <tr><td>開拍方式</td><td>上架方式選不上架時不出現<br>二選一，預設跟著上架一起開拍</td><td>跟著上架一起開拍（Start with listing）：上架那一刻就開拍<br>定時開拍（Scheduled start）：到了開拍時間才開始競標，之前是即將開拍（Upcoming）</td></tr>
+    <tr><td>開拍時間（Sale start）</td><td>選定時開拍才出現，必填</td><td>必須是未來的時間</td></tr>
+    <tr><td>結標時間（Sale end）</td><td>唯讀</td><td>開拍時間＋競標時長，自動算出，不能單獨手填<br>拍賣沒有定時停售的開關</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="ca-actions">送出與草稿</h3>
+<p>建立拍賣是一頁完成的表單，沒有分步驟。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>開始拍賣（Start auction）</td><td>必填填齊才能送出：拍賣種類、物品名稱、故事（至少 50 個字元）、起標價、競標時長、競標資格、與物品合照，以及選了定時的上架、下架、開拍時間</td><td>依上架與開拍設定送出<br>上架方式選不上架時，等於稍後再說<br>就緒檢查的其他項目（例如附圖）會不會擋送出，見頁尾尚待確認</td></tr>
+    <tr><td>稍後再說（Save for later）</td><td>—</td><td>存成草稿，之後回來續填</td></tr>
+    <tr><td>自動儲存</td><td>—</td><td>填寫時自動存草稿；離開頁面時以最後一次自動儲存為準</td></tr>
+    <tr><td>關閉</td><td>—</td><td>有還沒存的內容時先跳確認，可以存成草稿稍後回來</td></tr>
+    <tr><td>刪除草稿</td><td>編輯草稿時</td><td>刪除前要先確認<br>發布過的拍賣能不能刪，見<a href="eshop-sales.html#auction-archive">拍賣的下架、封存與刪除</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="ca-preview">即時預覽</h3>
+<p>標題是「Now fans see it」，照目前填的內容模擬粉絲端的拍賣卡，只是預覽，不改資料。卡片上有：</p>
+<ul class="plain">
+  <li>主圖與附圖的輪播</li>
+  <li>物品名稱與狀態徽章</li>
+  <li>賣家「by Creator」</li>
+  <li>分類</li>
+  <li>故事的第一句</li>
+  <li>起標價（Starting at）</li>
+  <li>主按鈕「Watch this auction」</li>
+</ul>
+
+<h3 id="ca-ready">就緒檢查</h3>
+<p>標題是「Ready to start auction?」，逐項列出開拍前要備齊的 8 項內容；全部備齊時變成綠字，沒備齊時顯示還差幾項。</p>
+<ul class="plain">
+  <li>主圖</li>
+  <li>附圖</li>
+  <li>物品名稱</li>
+  <li>故事，至少 50 個字元</li>
+  <li>與物品合照</li>
+  <li>起標價</li>
+  <li>競標時長</li>
+  <li>競標資格</li>
+</ul>
+<p>8 項裡哪些會擋住送出、哪些只是建議，見頁尾尚待確認。</p>
+<p class="note">依據：5.1.5.10 §4 拍賣種類、F1～F6、「共用設定」「共用操作、即時預覽與就緒檢查」、§8；主規格 §5.2.4、§5.2.5、§7.10、§7.14；D073、D075、D080、D164、D243、D251、D259、D285、D347、D415、D427。</p>
+
+<h2 id="auction-types"><span class="n"></span>三種拍賣的差別</h2>
+<p>拍賣種類只決定分類的選項與得標後怎麼交付，其餘欄位三種相同。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>拍賣種類</th><th>拍什麼</th><th>分類的選項</th><th>得標後怎麼交付</th></tr></thead>
+  <tbody>
+    <tr><td>實體</td><td>實體單件，例如演出穿過的服裝、紀念物</td><td>實體的次分類</td><td>出貨給得標者</td></tr>
+    <tr><td>數位</td><td>數位物品</td><td>數位的次分類，影視類與音樂類不出現</td><td>下載或存取</td></tr>
+    <tr><td>活動（Experiences &amp; Events）</td><td>限量體驗或活動入場，例如私人見面會</td><td>活動的次分類</td><td>入場憑證或門票</td></tr>
+  </tbody>
+</table></div>
+<p>數位與活動拍賣的交付細節還沒定，見頁尾尚待確認。</p>
+<p class="note">依據：5.1.5.10 §1、§3、§4 拍賣種類、F6；主規格 §7.1；D080、D081、D251。</p>
+
+<h2 id="auction-vs-product"><span class="n"></span>拍賣跟一般商品不同的地方</h2>
+<p>拍賣一次只賣一件、用競標決定價格，所以下面幾件事跟單售商品不同。</p>
+<ul class="plain">
+  <li>一件一屬性：沒有數量、沒有選項、沒有庫存，也不套用庫存池與鎖定庫存，見<a href="eshop-sales.html#auction-states">拍賣的狀態</a></li>
+  <li>限購不適用，因為拍賣只有一件</li>
+  <li>不設排程特價，優惠碼與平台滿額折扣也不套用，見<a href="promo-rules.html#s2-auction">拍賣不折</a></li>
+  <li>物品狀況是所有商品都有的屬性，預設全新，在拍賣的畫面顯示與編輯</li>
+</ul>
+<p class="note">依據：5.1.5.10 §1、§4 F2、F4、F6、「共用設定」「共用操作、即時預覽與就緒檢查」、§8；主規格 §7.1、§7.14；D080、D144、D427。</p>
+
+<h2 id="auction-time"><span class="n"></span>開拍與結標的時間</h2>
+<p>上架、開拍與結標三個時間點的先後如下圖。</p>
+<div class="dg" role="img" aria-label="拍賣時間示意：上架期間最長；定時開拍時，上架到開拍之間是即將開拍，開拍到結標之間是競標中，結標時間等於開拍時間加競標時長，結標後是完售或流標">
+<div class="dg-tl">
+  <div class="dg-tl__marks"><i style="left:0"></i><i style="left:25%"></i><i style="left:75%"></i></div>
+  <div class="dg-tl__row"><div class="dg-tl__k">拍賣狀態<span>Status</span></div><div class="dg-tl__track"><span class="dg-tl__bar st" style="left:0;width:25%"><i>即將開拍</i></span><span class="dg-tl__bar st ok" style="left:25%;width:50%"><i>競標中</i></span><span class="dg-tl__bar st off" style="left:75%;width:25%"><i>完售或流標</i></span></div></div>
+  <div class="dg-tl__row"><div class="dg-tl__k">上架<span>上架設定 · Listing</span></div><div class="dg-tl__track"><span class="dg-tl__bar ok" style="left:0;width:100%"><i>上架期間</i></span></div></div>
+  <div class="dg-tl__row"><div class="dg-tl__k">開拍<span>開賣設定 · Bidding</span></div><div class="dg-tl__track"><span class="dg-tl__bar wait" style="left:25%;width:50%"><i>競標時長</i></span></div></div>
+  <div class="dg-tl__row axis"><div class="dg-tl__k"></div><div class="dg-tl__axis"><span class="l" style="left:0">上架</span><span class="key" style="left:25%">開拍</span><span class="key" style="left:75%">結標</span></div></div>
+</div>
+</div>
+<p class="dg-cap">示意圖：時間由左到右，畫的是顯示於商店、選了定時開拍的情形；選跟著上架一起開拍時，開拍與上架在同一點，沒有即將開拍這一段。結標時間＝開拍時間＋競標時長。開拍與結標的規則見<a href="eshop-sales.html#auction-timing">開拍與結標</a>，各狀態能做什麼見<a href="eshop-auction.html#lifecycle">拍賣的生命週期</a>。</p>
+<p class="note">依據：5.1.5.10 §4「共用操作、即時預覽與就緒檢查」的上架設定與開賣設定；主規格 §7.14；D285、D286、D287。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.10-建立拍賣流程.md</code>（v1.12）§1～§4、§8；<code>0-設計規格書.md</code>（v4.90）§5.2.4、§5.2.5、§7.1、§7.10、§7.14、§8.14、§8.26 第 25 項</li>
+    <li>決策：D073、D075、D080、D081、D144、D164、D243、D251、D259、D284、D285、D286、D287、D307、D343、D347、D415、D427</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>建立拍賣要不要比照建立商品，改成「內容」與「預覽與發布」兩步驟</li>
+    <li>有出價、但沒達到保留價時，算成交還是流標</li>
+    <li>競標時長能不能自訂</li>
+    <li>密封終局的最後一段時間多長、最終出價誰看得到</li>
+    <li>最低出價增額的比例多少、能不能調（畫面示意為高於目前最高出價 5%）</li>
+    <li>競標資格的預設值（畫面示意預設僅限核心圈）</li>
+    <li>競標資格「讓給下一次 Drop」的機制，以及各分級的確切門檻</li>
+    <li>得標者付運費關閉時，運費由誰吸收</li>
+    <li>出貨時限可選哪些天數、預設幾天（畫面示意預設結束後 5 天）</li>
+    <li>實體拍賣要不要比照實體商品收重量、尺寸與寄件地</li>
+    <li>數位拍賣的交付與權利（例如 1-of-1）怎麼定</li>
+    <li>活動拍賣的入場憑證怎麼跟活動模組對接（報到、權利）</li>
+    <li>就緒檢查的 8 項裡，哪些會擋住送出、哪些只是建議</li>
+    <li>編輯既有拍賣時怎麼儲存</li>
+    <li>上架、開拍時間的時區與時間粒度</li>
+    <li>拍賣下架後，非公開連結能不能開到「已下架」頁</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.5.10 v1.12，至 D427）</p>
+</details>
+</div>
+</body>
+</html>

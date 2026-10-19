@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>項目列表 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain{margin:4px 0 4px}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ol.plain li{margin-bottom:4px}
+ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+table.stage{min-width:820px}
+table.stage td:nth-child(1){width:11%;white-space:nowrap}
+table.stage td:nth-child(2){width:19%}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>項目列表</h1>
+<p class="lede">創作者在項目列表瀏覽、搜尋與篩選自己的所有項目，從這裡建立新項目或進入單一項目管理。項目的類型、階段與時間的規則，見<a href="project-rules.html">項目規則</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="list-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>方案、合作者分潤、資金用途等詳細設定不在這一頁，在<a href="project-create.html">建立項目</a>與<a href="project-detail.html">項目詳情</a></li>
+  <li>草稿項目點進去回到建立項目流程續填，其他項目進項目詳情</li>
+</ul>
+
+<h2 id="list-flow"><span class="n"></span>操作流程</h2>
+<p>創作者進項目列表後，先在清單找到項目，再決定是建新項目、續填草稿，還是進單一項目管理。</p>
+<div class="dg" role="img" aria-label="項目列表流程圖，由左往右：進項目列表，用項目狀態、發行模式與搜尋找項目，再選要做什麼；建新項目就進建立項目流程，點到草稿回建立項目流程續填，點到其他項目進項目詳情">
+<div class="dg-hg" style="--dg-c:4">
+  <div class="dg-node" style="grid-row:1/4;grid-column:1"><span class="s">1</span>進項目列表</div>
+  <span class="dg-a" style="grid-row:1/4;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/4;grid-column:3"><span class="s">2</span>在清單找項目<small>項目狀態、發行模式、搜尋</small></div>
+  <span class="dg-a" style="grid-row:1/4;grid-column:4"></span>
+  <div class="dg-node q" style="grid-row:1/4;grid-column:5"><span class="s">3</span>要做什麼？</div>
+  <span class="dg-a" data-t="建新項目" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" data-t="點草稿" style="grid-row:2;grid-column:6"></span>
+  <span class="dg-a" data-t="點其他項目" style="grid-row:3;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:7">建立項目流程<small>按「＋ New Project」</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:7">建立項目流程<small>續填草稿</small></div>
+  <div class="dg-node end" style="grid-row:3;grid-column:7">項目詳情</div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進項目列表；頁首是頁面標題與一句說明，下方是清單</li>
+  <li>在清單找項目：見<a href="#list-filter">篩選、搜尋與檢視切換</a></li>
+  <li>要做什麼？
+    <ul class="plain">
+      <li>建新項目：按「建立項目（＋ New Project）」，進<a href="project-create.html">建立項目</a>流程</li>
+      <li>點到草稿：回到建立項目流程續填，見<a href="project-create.html#entry">從哪裡進入建立項目</a></li>
+      <li>點到其他項目：進<a href="project-detail.html">項目詳情</a></li>
+    </ul>
+  </li>
+</ol>
+<p class="note">依據：5.1.2 F1～F3、使用情境；D193。</p>
+
+<h2 id="list"><span class="n"></span>項目清單</h2>
+<p>項目清單讓創作者掃視所有項目的狀態與進度，並進入單一項目管理。每一列有哪些欄位，見<a href="#list-rows">清單</a>；每一列的進度怎麼寫，見<a href="#progress">進度摘要</a>；從哪裡開始建一個新項目，見<a href="#list-create">建立項目</a>；還沒有項目時顯示什麼，見<a href="#list-empty">沒有資料時</a>。</p>
+
+<h3 id="list-rows">清單</h3>
+<p>清單一列是一個項目，預設依最近更新排序。每一列能做的事，見<a href="#list-actions">點進項目</a>；怎麼找到特定項目，見<a href="#list-filter">篩選、搜尋與檢視切換</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>內容類型</td><td>要能分辨項目的內容類型，例如音樂、影片、實體商品</td></tr>
+    <tr><td>項目名稱</td><td>單行，過長截斷<br>顯示預設語言那一份</td></tr>
+    <tr><td>簡短描述</td><td>項目描述，2～3 行，過長截斷<br>顯示預設語言那一份</td></tr>
+    <tr><td>狀態</td><td>項目階段，用詞同<a href="project-rules.html#stage">項目的階段</a></td></tr>
+    <tr><td>進度摘要</td><td>依類型與階段顯示不同重點，見<a href="#progress">進度摘要</a></td></tr>
+    <tr><td>建立日期</td><td>格式為「Created 月份縮寫 日, 年」，例如「Created Mar 15, 2026」</td></tr>
+    <tr><td>未完成提示</td><td>讓創作者查到這個項目還沒完成的事，例如素材待補、IP 租借未連結、營利設定未完成、排程待確認<br>觸控與鍵盤也要能查到</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>排序：最近更新的排前面；次排序可以另定，但不能改變最近更新優先</li>
+  <li>資訊的優先順序依序是：內容類型與狀態、項目名稱、簡短描述、進度摘要、建立日期</li>
+</ul>
+
+<h4 id="list-actions">點進項目</h4>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>點一列</td><td>草稿以外的項目</td><td>進<a href="project-detail.html">項目詳情</a>，檢視與編輯各項設定</td></tr>
+    <tr><td>點一列（草稿）</td><td>草稿</td><td>回到建立項目流程續填，不進項目詳情<br>草稿那一列的編輯操作同樣指向建立流程</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="list-filter">篩選、搜尋與檢視切換</h4>
+<p>項目狀態與發行模式是兩個獨立的篩選，可以組合使用，搜尋只在目前篩選的結果裡找。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>項目狀態</td><td>—</td><td>選項：<br>全部<br>草稿（Draft）<br>準備中（Scheduled）<br>進行中（Published）<br>已成功（Succeeded）<br>已上線（Live）<br>已取消（Cancelled）<br>各階段的定義見<a href="project-rules.html#stage">項目的階段</a></td></tr>
+    <tr><td>發行模式</td><td>—</td><td>選項：<br>全部<br>共創<br>預購<br>直接發佈</td></tr>
+    <tr><td>搜尋</td><td>—</td><td>依項目名稱或描述查找<br>只在目前篩選的結果裡找，和頁首的全域搜尋不同</td></tr>
+    <tr><td>檢視切換</td><td>—</td><td>在適合快速掃視與適合比較資訊的檢視間切換</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="progress">進度摘要</h3>
+<p>每一列的進度摘要依項目類型與階段，顯示創作者當下最需要看的數字。收入相關的數字一律照收入管理（Earnings）的口徑，清單不另算，見<a href="common-finance.html">財務術語與收入事件</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:16%">項目類型</th><th style="width:24%">階段</th><th>進度摘要</th></tr></thead>
+  <tbody>
+    <tr><td rowspan="2">直接發佈</td><td>草稿、準備中</td><td>建立或排程時間<br>影片作品在準備中時，要分辨是在等審核、等設定上映日期，還是等上映日期到</td></tr>
+    <tr><td>已上線</td><td>累計收入<br>觀看數</td></tr>
+    <tr><td rowspan="5">共創</td><td>草稿、準備中</td><td>目標金額<br>預計開募時間</td></tr>
+    <tr><td>進行中</td><td>已募金額／目標金額<br>支持者數<br>剩餘時間</td></tr>
+    <tr><td>已成功</td><td>達標<br>交付進度</td></tr>
+    <tr><td>已上線</td><td>交付完成後的累計表現</td></tr>
+    <tr><td>已取消</td><td>結果：未達標或主動取消</td></tr>
+    <tr><td rowspan="4">預購</td><td>草稿、準備中</td><td>目標數<br>預計開賣日期與時間</td></tr>
+    <tr><td>進行中</td><td>已預購／目標數<br>單價<br>剩餘時間</td></tr>
+    <tr><td>已成功</td><td>成立數量<br>交付進度</td></tr>
+    <tr><td>已取消</td><td>結果：未成立或主動取消</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="list-create">建立項目</h3>
+<p>創作者從這裡開始建一個新項目。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>建立項目（＋ New Project）</td><td>—</td><td>進建立項目流程，先問項目類型與內容類型，見<a href="project-create.html">建立項目</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="list-empty">沒有資料時</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">情況</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>帳號還沒建立任何項目，包括第一次進這一頁</td><td>清單改顯示空狀態與「建立項目」入口，不留白<br>頁首與篩選、搜尋照常顯示</td></tr>
+    <tr><td>有項目，但篩選與搜尋沒有命中</td><td>顯示篩選沒有結果，和帳號沒有項目的空狀態不同</td></tr>
+    <tr><td>清單載入中、載入失敗</td><td>照全站共用的載入與錯誤狀態規則顯示</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.2 F1、F2、F3、頁面狀態；5.1.2.1 §4.1 F2「名稱與描述逐語言」；主規格 §6、§7.2、§7.3；D151、D152、D177、D182、D192、D193、D196、D220、D223。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.2-專案.md</code>（最後更新 2026-08-17）F1、F2、F3、頁面狀態、使用情境；<code>5.1.2.1-建立專案流程.md</code>（v4.13）§2、§4.1 F2；<code>0-設計規格書.md</code>（v4.90）§6、§7.2、§7.3</li>
+    <li>決策：D151、D152、D177、D182、D192、D193、D196、D220、D223</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>項目狀態與發行模式的篩選是否顯示各自的筆數</li>
+    <li>篩選沒有結果時的文案，以及要不要提供清除篩選的入口</li>
+    <li>內容類型怎麼標示（是否用圖示）</li>
+    <li>預購項目在已上線時的進度摘要顯示什麼</li>
+    <li>未完成提示具體列出哪些事、怎麼判定</li>
+    <li>從清單進入收入管理項目收益拆解的入口在哪裡</li>
+    <li>直接發佈的影片作品在準備中等哪一件事，清單怎麼標示</li>
+    <li>項目狀態與發行模式的相關待確認，列在<a href="project-rules.html">項目規則</a>頁尾</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.2 最後更新 2026-08-17）</p>
+</details>
+</div>
+</body>
+</html>

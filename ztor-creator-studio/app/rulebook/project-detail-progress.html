@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>進度 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>進度</h1>
+<p class="lede">創作者在項目詳情的進度分頁，用一條依真實日期排列的時間軸看自己答應做什麼、做到哪、跟支持者說了什麼。頁首與編輯規則見<a href="project-detail.html">項目詳情</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="pg-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>共創與預購的分頁叫「項目進度」，軸上有里程碑、更新、上架階段與收單的事件；直接發佈叫「上架進度」，軸上只有上架階段</li>
+  <li>怎麼發更新見<a href="project-detail-updates.html">發布更新</a>，上架那幾段怎麼走見<a href="project-detail-work.html">作品與上架階段</a></li>
+</ul>
+
+<h2 id="pg-flow"><span class="n"></span>操作流程</h2>
+<p>創作者進進度分頁，先從今天那一列看整體有沒有事，再處理接下來要交代的那一件，或往下回顧。</p>
+<div class="dg" role="img" aria-label="進度操作流程圖，由左往右：進進度分頁，看今天那一列有沒有事，再選要做什麼；交代一顆里程碑就在它底下的發文框寫完成宣告並送出，里程碑轉為已完成；維護里程碑就在軸上就地新增、修改或刪除；回顧就往下看過去段，展開收合的貼文或點開紀錄">
+<div class="dg-hg" style="--dg-c:5">
+  <div class="dg-node" style="grid-row:1/4;grid-column:1"><span class="s">1</span>進進度分頁</div>
+  <span class="dg-a" style="grid-row:1/4;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/4;grid-column:3"><span class="s">2</span>看今天那一列<small>幾件逾期、幾件還沒到</small></div>
+  <span class="dg-a" style="grid-row:1/4;grid-column:4"></span>
+  <div class="dg-node q" style="grid-row:1/4;grid-column:5"><span class="s">3</span>要做什麼？</div>
+  <span class="dg-a" data-t="交代一顆" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" data-t="維護里程碑" style="grid-row:2;grid-column:6"></span>
+  <span class="dg-a" data-t="回顧" style="grid-row:3;grid-column:6"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:7">在它底下的發文框寫完成宣告<small>送出</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:8"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:9">里程碑轉為已完成</div>
+  <div class="dg-node end" style="grid-row:2;grid-column:7/10">在軸上就地新增、修改或刪除<small>共創與預購</small></div>
+  <div class="dg-node end" style="grid-row:3;grid-column:7/10">往下看過去段<small>展開收合的貼文，點開紀錄</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，紫色框是要回答的問題，綠框是結束的地方。圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進進度分頁</li>
+  <li>看<a href="#today">今天那一列</a>：這個項目整體有沒有事</li>
+  <li>要做什麼？
+    <ul class="plain">
+      <li>交代一顆：往下就是接下來要交代的那一顆里程碑，發文框已經長在它底下；寫完送出，那段文字就是它的完成宣告，里程碑隨即轉為已完成，見<a href="project-detail-updates.html">發布更新</a></li>
+      <li>維護里程碑：在軸上就地新增、修改或刪除，見<a href="#milestone">里程碑</a></li>
+      <li>回顧：往下看過去段，展開收合的一般貼文，點開任一則的紀錄，見<a href="#collapse">過去的一般貼文怎麼收合</a>與<a href="#record">點開一則的紀錄</a></li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>送作品上架、修改後重送、設定上映日期，按的是上架階段那一段上的動作，見<a href="project-detail-work.html#stages">上架階段</a></li>
+</ul>
+<p class="note">依據：5.1.2.2 §2.2.10、§4 情境 7～9、15；D194、D197、D204、D207。</p>
+
+<h2 id="pg-screen"><span class="n"></span>功能與欄位</h2>
+<p>進度分頁的主體是一條時間軸。軸上有哪幾種列見<a href="#rows">時間軸上的列</a>；里程碑的欄位與維護見<a href="#milestone">里程碑</a>；點開任一則看完整內容見<a href="#record">點開一則的紀錄</a>；過去段怎麼收起來見<a href="#collapse">過去的一般貼文怎麼收合</a>。</p>
+
+<h3 id="rows">時間軸上的列</h3>
+<p>時間軸把交付故事的每一件事放在同一條軸上，一顆點就是一件事；軸的上方還有一塊交付摘要。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:20%">列</th><th style="width:22%">出現條件</th><th>內容與規則</th></tr></thead>
+  <tbody>
+    <tr><td>交付摘要</td><td>共創與預購</td><td>預期交付日期<br>里程碑完成度<br>共創另看共創目標與撥款進度，預購另看最少預購數與集單結果</td></tr>
+    <tr><td>今天那一列</td><td>一律</td><td>軸上一個真實的節點，講跨里程碑的狀態摘要，見<a href="#today">今天那一列</a></td></tr>
+    <tr><td>里程碑</td><td>共創與預購</td><td>創作者答應的交付步驟，見<a href="#milestone">里程碑</a></td></tr>
+    <tr><td>上架階段</td><td>影片家族</td><td>送出審核、平台審核、設定上映日期、作品上線四段，長相與里程碑相同，不能編輯也不能刪除，見<a href="project-detail-work.html#stages">上架階段</a></td></tr>
+    <tr><td>更新</td><td>共創與預購</td><td>里程碑更新掛在那一顆底下；一般更新依發布時間自己站在軸上，見<a href="project-detail-updates.html#post-attach">更新怎麼掛上時間軸</a></td></tr>
+    <tr><td>收單的事件</td><td>共創與預購</td><td>開始共創或開始預購：收單起日<br>共創達標或預購達量：收單迄日，項目成功<br>沒有動作、沒有內容，不能編輯也不能刪除，只有名字與日期</td></tr>
+    <tr><td>項目建立</td><td>一律</td><td>固定是軸底最後一列，不能刪除、不能改名、不能移到中間<br>建立當天不另立一列，由今天那一列承擔起點</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>收單的事件與其他列同等份量：與下一列的間距、分隔與軸線一律比照其他列，不壓成附註</li>
+  <li>只有軸的終點那一列（項目建立）沒有下方間距、不畫分隔、軸線停在這裡，表示軸到此結束</li>
+  <li>發文框全軸只有一格拿得到，落在哪一格見<a href="project-detail-updates.html#post-where">發文框長在哪一格</a></li>
+</ul>
+<p class="note">依據：5.1.2.2 §2.2.10「組成」「軸向與排序」「上架階段怎麼上軸」「共創與預購兩型的差別」；D193、D202、D203、D204、D209。</p>
+
+<h3 id="milestone">里程碑</h3>
+<p>里程碑是共創與預購的創作者對支持者答應的交付步驟，是交付故事的骨架；和建立項目時填的交付時程是同一份資料。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>名稱（Name）</td><td>必填</td><td>這一步要做完什麼，單行文字<br>里程碑更新沒有標題欄，這個名稱就是它的標題</td></tr>
+    <tr><td>預計日期（Target date）</td><td>選填</td><td>用日期選擇取得，不接受自由文字<br>是排序依據與倒數基準<br>留白代表尚未排定，不擋建立；這一顆排在未來段最上方，不參與倒數，也不會被判逾期</td></tr>
+    <tr><td>說明（Description）</td><td>選填</td><td>一段文字，說明這一步要交付什麼</td></tr>
+    <tr><td>狀態（Status）</td><td>—</td><td>未開始、已完成兩選一，由創作者手選<br>推進到已完成有兩條路，並存：在這一顆的發文框送出一則里程碑更新；或直接編輯這一顆，把狀態改成已完成<br>走後者時這一顆沒有完成宣告，那一格空著，不補佔位文字</td></tr>
+    <tr><td>完成日（Completed at）</td><td>轉為已完成時</td><td>自動記下，創作者不手填；決定這一顆落在軸上的位置</td></tr>
+    <tr><td>對粉絲端公開（Public）</td><td>—</td><td>決定這一顆是否出現在粉絲端的項目藍圖</td></tr>
+    <tr><td>新增、修改、刪除</td><td>共創與預購<br>已取消時收起</td><td>在時間軸上就地維護，不離開頁面<br>可以新增、改名、改說明、改預計日期、改狀態、刪除<br>沒有調整順序：順序由預計日期決定，要改順序就改日期</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>新項目可能一顆里程碑都沒有（建立項目時選填），這時提示補上里程碑，讓支持者看得出打算怎麼走</li>
+  <li>改已對外承諾的交付日期要先確認，並通知已支持或已預購的粉絲</li>
+  <li>預計日期與完成日都不能早於項目建立時間</li>
+</ul>
+<p class="note">依據：5.1.2.2 §2.2.10「里程碑」「日期與時間的型別」、§2.4 第 5 項；5.1.2.1 F10；D166、D193、D194、D197、D199。</p>
+
+<h3 id="record">點開一則的紀錄</h3>
+<p>軸上每一列只放讀得下去的份量，其餘收進一份唯讀的紀錄，讓創作者查「這則發過什麼、發給誰、掛在哪」。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>點開更新</td><td>每一則更新，含掛在里程碑底下的完成宣告</td><td>軸上那一列只放標題、內文、日期，以及非公開時的可見度<br>紀錄另外寫：<br>屬於一般貼文或里程碑貼文<br>發給誰<br>發布時間<br>通知人數<br>掛在哪一顆里程碑，或沒有掛<br>掛里程碑時：原定日期、標記完成的日期、與原定相差幾天</td></tr>
+    <tr><td>點開已完成的里程碑</td><td>已完成的里程碑，整條標題列</td><td>發過完成宣告：開那則貼文的紀錄<br>沒發過：開里程碑自己的紀錄，寫名稱、可見度、說明、原定日期、標記完成的日期、與原定相差幾天，以及這一顆有沒有發過完成宣告</td></tr>
+    <tr><td>未完成的里程碑</td><td>—</td><td>不能點，還沒有可記的歷史</td></tr>
+    <tr><td>里程碑的編輯、刪除</td><td>共創與預購</td><td>點標題列右端的編輯或刪除是維護這一顆，不開紀錄</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>更新貼文只有兩類：一般貼文（沒有掛里程碑）與里程碑貼文（掛了任何一顆，含上架那幾段）</li>
+  <li>紀錄是唯讀的，不是編輯器，也不用等待輸入的欄位樣子呈現；要發新內容走<a href="project-detail-updates.html">發布更新</a></li>
+  <li>每一則更新都要有內文，只有標題的更新在軸上展開來沒有話</li>
+</ul>
+<p class="note">依據：5.1.2.2 §2.2.10「一則更新的完整紀錄」；D205、D206、D208。</p>
+
+<h3 id="collapse">過去的一般貼文怎麼收合</h3>
+<p>項目跑上一年會累積上百則更新，過去段要收得起來才讀得下去。</p>
+<ul class="plain">
+  <li>收合的單位是「兩顆里程碑之間」：之間的所有一般貼文一起收合、一起展開，不分日期；收合時是一列，寫這一段有幾則</li>
+  <li>展開後每一則各自是軸上的一列，一則一顆點、日期在自己的日期欄；收合那一列留在原處，當展開與收合的控制項</li>
+  <li>收單的事件把一段一般貼文切成兩段時，兩段各自收合</li>
+  <li>今天發出的更新不收合，直接排在今天那一列底下</li>
+  <li>里程碑不收合進那一段，已完成與逾期的里程碑各自成列</li>
+  <li>里程碑更新掛在里程碑底下，不再出現在收合列裡</li>
+</ul>
+<p class="note">依據：5.1.2.2 §2.2.10「過去的一般貼文怎麼收合」「更新怎麼掛上時間軸」；D209。</p>
+
+<h2 id="axis"><span class="n"></span>時間軸怎麼排列</h2>
+<p>時間軸只有一個排序依據：真實日期。方向是未來在上、今天在中、過去在下；今天要先是軸上的一個位置，倒數與逾期才有立足點。</p>
+<ul class="plain">
+  <li>里程碑、上架階段、更新、收單的事件與項目建立都掛在同一條軸上，各依自己的日期落位，沒有第二條並行的清單</li>
+  <li>沒有日期的里程碑與上架階段，排在未來段最上方；沒有日期的里程碑依建立順序排</li>
+  <li>上架階段不因為是最後一步就釘在軸頂，有日期的照日期排</li>
+  <li>同一天有多筆時，依序是里程碑、收單的事件、更新：骨架先讀，內容在後</li>
+  <li>逾期的里程碑排在今天正下方，不留在原本的日期位置，各自標示逾期天數</li>
+  <li>提前或延後完成的里程碑落在實際完成日；軸上不附註原定日期，原定日期放在<a href="#record">紀錄</a>裡</li>
+  <li>今天到期但還沒完成的那一顆、今天剛完成的那一顆，各自落在今天的日期位置、自成一列，不併進今天那一列</li>
+</ul>
+<p class="note">依據：5.1.2.2 §2.2.10「時間軸的軸向與排序」「倒數、逾期與提前完成怎麼判定」「狀態變體」「上架階段怎麼上軸」；D194、D199、D202、D204、D205。</p>
+
+<h2 id="today"><span class="n"></span>今天那一列</h2>
+<p>今天那一列是軸上唯一會隨情境換說法的地方，只回答「我在哪」與「有沒有事」；處理哪一件由往下那顆里程碑自己說。各情境的內容見<a href="#today-cases">各種情境</a>。</p>
+<ul class="plain">
+  <li>講跨里程碑的狀態摘要：幾件逾期、幾件還沒到，或都在進度上</li>
+  <li>不點名任何一顆里程碑，也不重複任何一顆的名稱、日期或倒數天數</li>
+  <li>不承載任何一顆里程碑；每一顆的名字、日期與內容都在它自己那一列</li>
+  <li>摘要只數里程碑</li>
+  <li>直接發佈沒有里程碑，今天那一列改講作品走到哪，依上架階段當下的狀態擇一說法</li>
+  <li>發文框不固定在今天那一列，只在沒有可交代的承諾時才回到這裡</li>
+</ul>
+
+<h3 id="today-cases">各種情境</h3>
+<p>下表逐情境寫今天那一列說什麼、發文框落在哪一格、軸上其他地方跟著怎麼變；發文框的落點規則見<a href="project-detail-updates.html#post-where">發文框長在哪一格</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:15%">情境</th><th style="width:19%">判定</th><th style="width:22%">今天那一列</th><th style="width:18%">發文框</th><th>軸上其他</th></tr></thead>
+  <tbody>
+    <tr><td>項目剛建立</td><td>今天是項目建立日</td><td>說明交付故事從這裡開始，邀請發第一則更新</td><td>照落點規則；還沒建里程碑時在今天那一列</td><td>軸底不另立項目建立那一列</td></tr>
+    <tr><td>一顆里程碑都沒有</td><td>沒有任何里程碑</td><td>提示補上里程碑</td><td>今天那一列，預設一般更新</td><td>沒有里程碑列</td></tr>
+    <tr><td>都在進度上</td><td>有未完成的里程碑，沒有逾期</td><td>都在進度上，還有幾件未完成</td><td>最早的未完成里程碑</td><td>那一顆仍在未來段</td></tr>
+    <tr><td>今天是里程碑日</td><td>最早的未完成里程碑預計日期是今天</td><td>摘要照常，今天到期的算在未完成裡</td><td>那一顆里程碑</td><td>那一顆落在今天的日期位置、自成一列</td></tr>
+    <tr><td>有里程碑逾期</td><td>有預計日期早於今天、還沒完成的里程碑</td><td>幾件逾期、幾件還沒到</td><td>最早的未完成里程碑，逾期的不跳過</td><td>逾期的排在今天正下方，各自標示逾期天數與需要處理</td></tr>
+    <tr><td>今天完成一顆</td><td>某顆今天轉為已完成</td><td>摘要重算，那一顆不再算未完成</td><td>移到下一顆未完成的；沒有就照下一條落點規則</td><td>那一顆落在今天的日期位置、自成一列，完成宣告掛在它底下；沒有完成宣告時那一格空著</td></tr>
+    <tr><td>提前完成</td><td>完成日早於預計日期</td><td>摘要重算</td><td>下一顆未完成的里程碑</td><td>那一顆落在實際完成日的位置，不附註原定日期</td></tr>
+    <tr><td>里程碑全部完成、作品還沒上線</td><td>沒有未完成的里程碑，作品上線那一段還沒完成</td><td>依上架走到哪，指向下一步：<br>送作品上架<br>等審核結果<br>挑上映日</td><td>今天那一列；上架階段拿不到發文框</td><td>上架階段照日期排</td></tr>
+    <tr><td>里程碑全部完成、作品已上線</td><td>作品上線那一段已完成</td><td>邀請繼續發更新，時間軸不關閉</td><td>今天那一列，預設一般更新</td><td>已發的更新照日期排進過去段</td></tr>
+    <tr><td>里程碑都沒有預計日期</td><td>未完成的里程碑預計日期都留白</td><td>只講還有幾件未完成，提示補上預計日期</td><td>建立順序最早的那一顆</td><td>未來段的日期欄留白，完成後才有日期</td></tr>
+    <tr><td>已取消</td><td>項目已取消</td><td>只講取消這件事，用來說明取消原因與退款進度</td><td>今天那一列，鎖定一般更新</td><td>里程碑凍結：不能新增、不能改狀態，既有紀錄保留可讀</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>目前不提供定時發布：每一則更新送出當下就發布，未來段不會出現還沒發出的內容</li>
+</ul>
+<p class="note">依據：5.1.2.2 §2.2.10「今天這一列」「狀態變體」；D194、D197、D199、D203、D204、D205、D207。</p>
+
+<h2 id="judge"><span class="n"></span>倒數、逾期與提前完成</h2>
+<p>倒數與逾期都以天為單位，用里程碑的預計日期和今天相減。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:20%">名稱</th><th>怎麼判定</th></tr></thead>
+  <tbody>
+    <tr><td>下一個目標</td><td>預計日期在今天或之後、還沒完成、日期最接近今天的那一顆；沒有預計日期的不算</td></tr>
+    <tr><td>倒數天數</td><td>下一個目標的預計日期減今天；等於 0 代表今天就是里程碑日</td></tr>
+    <tr><td>逾期</td><td>預計日期早於今天、還沒完成<br>逾期天數＝今天減預計日期<br>同時有多顆逾期時，各自標示自己的天數</td></tr>
+    <tr><td>提前完成</td><td>完成日早於預計日期，落在實際完成日</td></tr>
+    <tr><td>延後完成</td><td>完成日晚於預計日期，同樣落在實際完成日</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>逾期在創作者端只做顯示，目前不寄提醒、不設罰則</li>
+</ul>
+<p class="note">依據：5.1.2.2 §2.2.10「倒數、逾期與提前完成怎麼判定」「其餘既有規定」；D194、D197、D205。</p>
+
+<h2 id="dates"><span class="n"></span>日期的規則</h2>
+<p>時間軸上的每一個日期都是可以比較、相減的真實日期，不是顯示用的字串；這是排序、倒數、逾期與收合成立的前提。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">日期</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>里程碑的預計日期</td><td>年月日，可以留白，用日期選擇取得</td></tr>
+    <tr><td>里程碑的完成日</td><td>日期與時間，轉為已完成時自動寫入</td></tr>
+    <tr><td>更新的發布時間</td><td>日期與時間，發出當下自動寫入</td></tr>
+    <tr><td>項目建立時間</td><td>日期與時間；軸底那一列與「建立當天」都看它</td></tr>
+    <tr><td>上映日期</td><td>可以留白；在作品上架流程填，這裡只讀，見<a href="project-detail-work.html#premiere-date">設定與修改上映日期</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>日期欄的日期不能在數字中間被折斷，例如「2025/12/16」不能斷成「2025/12/1」和「6」</li>
+  <li>跨年的日期，年自己一行，年與月日各自完整；哪一行是年跟隨該語言的日期寫法，中文年在上、英文年在下</li>
+</ul>
+<p class="note">依據：5.1.2.2 §2.2.10「日期與時間的型別」；D194、D199、D209。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.2.2-專案詳情.md</code>（v3.23）§2.0、§2.2.10、§2.4 第 5 項、§3、§4；<code>5.1.2.1-建立專案流程.md</code> F10</li>
+    <li>決策：D166、D193、D194、D197、D199、D202、D203、D204、D205、D206、D207、D208、D209</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>倒數與逾期的天數用哪個時區算（創作者所在地或平台統一時區）；裁決前只承諾以天為單位</li>
+    <li>逾期是否對粉絲端顯示</li>
+    <li>回報頻率是否有下限，逾期未回報是否提醒或罰則</li>
+    <li>日後是否開放定時發布</li>
+    <li>里程碑的預計日期是否改為必填</li>
+    <li>里程碑「對粉絲端公開」的預設值，與粉絲端怎麼呈現</li>
+    <li>公開資訊裡的里程碑與進度的里程碑是否同一份資料（目前假設是同一份）</li>
+    <li>今天那一列的摘要，是否納入里程碑以外的事，例如送審作品被退件</li>
+    <li>已取消的項目沒有終止時間可讀，軸上暫時沒有終止事件</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新建頁面；對照 5.1.2.2 v3.23）</p>
+</details>
+</div>
+</body>
+</html>

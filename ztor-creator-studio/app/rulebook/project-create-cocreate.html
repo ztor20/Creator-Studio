@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>共創設定 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain{margin:4px 0 4px}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ol.plain li{margin-bottom:4px}
+ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+table.stage{min-width:820px}
+table.stage td:nth-child(1){width:11%;white-space:nowrap}
+table.stage td:nth-child(2){width:19%}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1 id="step-cocreate">共創設定</h1>
+<p class="lede">共創項目的創作者在第 3 步設共創目標、周期、資金分配與預算分配，作為粉絲支持的動機與平台計費的基準。四條路徑的全貌見<a href="project-create.html">建立項目</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="cc-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>只有共創走這一步，下一步是<a href="project-create-tiers.html">方案</a>，方案價格用到這一步算出的單位成本</li>
+  <li>共創目標決定項目算不算成功，見<a href="project-rules.html#stage">項目的階段</a></li>
+</ul>
+
+<h2 id="cc-flow"><span class="n"></span>操作流程</h2>
+<p>這一步從展示內容按下一步開始，到進入方案為止。</p>
+<div class="dg" role="img" aria-label="共創設定流程圖，由左往右：填共創目標，至少 500 美元；填共創周期，7 到 90 天；填資金池百分比與支持者位數，單位成本自動算出；編預算分配，總和到 100% 才能進下一步，沒到就不能進">
+<div class="dg-flow">
+  <div class="dg-node"><span class="s">1</span>共創目標<small>至少 $500</small></div><span class="dg-arr"></span>
+  <div class="dg-node"><span class="s">2</span>共創周期<small>7–90 天</small></div><span class="dg-arr"></span>
+  <div class="dg-node"><span class="s">3</span>資金分配<small>單位成本自動算出</small></div><span class="dg-arr"></span>
+  <div class="dg-node q"><span class="s">4</span>預算分配合計 100% 了嗎？</div><span class="dg-arr"></span>
+  <div class="dg-fork">
+    <div class="dg-lane"><span class="dg-exit">是</span><span class="dg-arr"></span><div class="dg-node end">方案</div></div>
+    <div class="dg-lane"><span class="dg-exit">否</span><span class="dg-arr"></span><div class="dg-node stop">不能進下一步</div></div>
+  </div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>填共創目標</li>
+  <li>填共創周期</li>
+  <li>填資金池百分比與支持者位數，單位成本自動算出</li>
+  <li>編預算分配，合計 100% 才能進方案</li>
+</ol>
+<p class="note">依據：5.1.2.1 §5.2.1 F19～F23。</p>
+
+<h2 id="cc-fields"><span class="n"></span>功能與欄位</h2>
+<p>這一步有四塊：頂部的<a href="#cc-banner">退款承諾</a>、<a href="#cc-goal">共創目標與周期</a>、<a href="#cc-dist">資金分配</a>與<a href="#cc-budget">預算分配</a>。</p>
+
+<h3 id="cc-banner">退款承諾</h3>
+<p>這一步最上方的綠色提示框，告訴創作者支持者零風險。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>退款提示</td><td>—</td><td>文案「Your backers take zero risk. If goal not met, every backer refunded.」</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="cc-goal">共創目標與周期</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>共創目標（Co-create goal）</td><td>必填</td><td>金額，提示「10000」<br>最低 $500，下方提示「Minimum $500」<br>決定項目算不算成功與交付時程</td></tr>
+    <tr><td>共創周期（Co-create length）</td><td>必填</td><td>天數，7～90，預設 30，下方提示「7-90 days」<br>天數從哪裡起算，見<a href="project-rules.html#timing">項目的時間</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="cc-dist">資金分配</h3>
+<p>標題是「Distribution settings」，決定共創切成多少個分潤名額、每個名額值多少。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>資金池百分比（Pool %）</td><td>必填</td><td>數字，例如 10，代表創作者最終得到的百分比</td></tr>
+    <tr><td>支持者位數（Supporter slots）</td><td>必填</td><td>數字，例如 100，整個共創最多幾個支持者名額</td></tr>
+    <tr><td>單位成本（Per slot）</td><td>自動算出，唯讀</td><td>共創目標 ÷ 支持者位數，例如「$10」<br>也是方案價格裡每個名額的單價，見<a href="project-create-tiers.html#price">方案價格怎麼算</a></td></tr>
+    <tr><td>分配提示</td><td>—</td><td>說明最終淨額怎麼分，例如「If $200k net, each slot = $200」</td></tr>
+    <tr><td>平台費提示</td><td>—</td><td>「5% platform fee (only if goal met) + 3% Stripe. No fees if goal not met.」</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="cc-budget">預算分配</h3>
+<p>標題是「Budget allocation」，說明募到的錢打算怎麼用，上方用分色的堆疊長條顯示比例。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>項目名稱</td><td>每一列一項</td><td>文字，例如 Production、Marketing、Talent、Operations</td></tr>
+    <tr><td>百分比</td><td>每一列一項</td><td>數字（%）</td></tr>
+    <tr><td>移除（×）</td><td>每一列</td><td>移除這一項</td></tr>
+    <tr><td>新增項目（＋ Add category）</td><td>—</td><td>加一列</td></tr>
+    <tr><td>總和檢查</td><td>—</td><td>合計 100% 時顯示勾號<br>未滿 100% 不能進下一步</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.2.1 §5.2.1 F19～F23。</p>
+
+<h2 id="cc-fee"><span class="n"></span>共創的平台費與退款</h2>
+<p>共創有達標門檻：平台費只在達標時收，見<a href="project-rules.html#fee">項目的類型</a>；未達標時退款，退款方式見頁尾尚待確認。</p>
+<ul class="plain">
+  <li>達標後的募得款依項目預算分期撥付給創作者，見<a href="common-finance.html">財務術語與收入事件</a></li>
+</ul>
+<p class="note">依據：5.1.2.1 §5.2.1 F19、F22、§6 第 8 項；主規格 §7.3；D316、D345、D346。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.2.1-建立專案流程.md</code>（v4.13）§5.2.1；<code>0-設計規格書.md</code>（v4.90）§7.3</li>
+    <li>決策：D316、D345、D346</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>共創的開募時間在哪裡設定（共創周期從開募起算）</li>
+    <li>未達標時是否一律全額退款：這一步提示全額退款，項目詳情另有可開可關的「未達標時自動全額退款」開關，見<a href="project-rules.html">項目規則</a>頁尾</li>
+    <li>募得款撥付看的「項目預算」對應哪個欄位</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.2.1 v4.13）</p>
+</details>
+</div>
+</body>
+</html>

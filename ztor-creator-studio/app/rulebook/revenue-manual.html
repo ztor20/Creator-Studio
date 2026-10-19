@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>手動補登收入 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>手動補登收入</h1>
+<p class="lede">創作者在交易明細補登一筆平台外或還沒自動同步的收入，讓收入紀錄更完整；補登的收入一律標為手動、未驗證。</p>
+
+<div class="toc"></div>
+
+<h2 id="me-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>手動補登是交易明細裡開啟的視窗，一張表單填完送出，沒有類型分支</li>
+  <li>補登的收入不算進可提領、提款與稅務文件，最多算進展示用的收入統計並標未驗證，見<a href="#me-scope">補登的收入算進哪裡</a></li>
+</ul>
+
+<h2 id="me-flow"><span class="n"></span>操作流程</h2>
+<p>這個流程從交易明細按手動補登收入開始，到回到交易明細為止。</p>
+<div class="dg" role="img" aria-label="手動補登收入流程圖：在交易明細按手動補登收入，填表單並看送出前提示，必填都完成才能送出，送出後回到交易明細，新增一列標手動未驗證；必填沒完成時送出不能按">
+<div class="dg-flow">
+  <div class="dg-node"><span class="s">1</span>交易明細<small>按「手動補登收入」</small></div><span class="dg-arr"></span>
+  <div class="dg-node"><span class="s">2</span>填表單、看提示</div><span class="dg-arr"></span>
+  <div class="dg-node q"><span class="s">3</span>必填都完成了嗎？</div><span class="dg-arr"></span>
+  <div class="dg-fork">
+    <div class="dg-lane"><span class="dg-exit">完成</span><span class="dg-arr"></span><div class="dg-node end"><span class="s">4</span>送出，回到交易明細<small>新增一列，標手動、未驗證</small></div></div>
+    <div class="dg-lane"><span class="dg-exit">沒完成</span><span class="dg-arr"></span><div class="dg-node stop">送出不能按<small>補齊後再送</small></div></div>
+  </div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，綠框是送出成功，橘框是擋下；圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>在<a href="revenue.html#rev-tx-filter">交易明細</a>按「手動補登收入」，開啟補登視窗</li>
+  <li>填<a href="#me-form">補登表單</a>，看送出前提示</li>
+  <li>必填都完成了嗎？
+    <ul class="plain">
+      <li>完成：進下一點</li>
+      <li>沒完成：送出不能按</li>
+    </ul>
+  </li>
+  <li>送出後回到交易明細，新增一列補登收入，見<a href="#me-result">送出結果</a></li>
+</ol>
+<ul class="plain">
+  <li>關閉視窗時，若已填了內容，先問要不要離開</li>
+</ul>
+<p class="note">依據：5.1.8.2 §1、§2、§3；5.1.8 F7、F10。</p>
+
+<h2 id="me-fields"><span class="n"></span>功能與欄位</h2>
+<p>視窗只有一張<a href="#me-form">補登表單</a>；送出後見<a href="#me-result">送出結果</a>。</p>
+
+<h3 id="me-form">補登表單</h3>
+<p>從交易明細按「手動補登收入」開啟。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>交易項目（Transaction item）</td><td>必填</td><td>這筆收入的名稱，例如「Neon Tide 線下展售」</td></tr>
+    <tr><td>收入分類（Revenue category）</td><td>必填，單選</td><td>選項就是收入事件的分類，見<a href="common-finance.html">財務術語與收入事件</a>；不能自創分類</td></tr>
+    <tr><td>日期（Date）</td><td>必填</td><td>收入發生的日期</td></tr>
+    <tr><td>金額（Amount）</td><td>必填</td><td>要是正數</td></tr>
+    <tr><td>幣別（Currency）</td><td>必填，單選</td><td>USD、TWD、HKD、SGD、JPY 五種，跟全站的幣別清單同一份，見<a href="common-currency.html">定價幣別</a><br>換算與顯示照收入管理的規則，這裡不另算匯率</td></tr>
+    <tr><td>備註（Note）</td><td>—</td><td>補充說明</td></tr>
+    <tr><td>佐證附件（Attachment）</td><td>—</td><td>佐證資料；上傳失敗時見<a href="#me-result">送出結果</a></td></tr>
+    <tr><td>送出前提示</td><td>送出按鈕前</td><td>提醒手動資料可能影響收入統計與稅務文件的判讀<br>說明這筆會標手動、未驗證，不算進可提領、提款與稅務文件</td></tr>
+    <tr><td>送出補登</td><td>必填都完成才能按</td><td>送出後不能重複送出</td></tr>
+    <tr><td>關閉</td><td>—</td><td>已填了內容時，先問要不要離開</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="me-result">送出結果</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:28%">結果</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>成功</td><td>回到交易明細，新增一列補登收入<br>這一列的資料來源顯示手動補登、驗證狀態顯示未驗證</td></tr>
+    <tr><td>必填沒填完，或金額、日期不合法</td><td>標出對應欄位並提示更正</td></tr>
+    <tr><td>佐證附件上傳失敗</td><td>可以移除或重試，不擋其他欄位送出</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.8.2 §4.1、§4.2；主規格 §7.15；D316。</p>
+
+<h2 id="me-scope"><span class="n"></span>補登的收入算進哪裡</h2>
+<p>手動補登是一種資料來源標記，不是收入分類，任何一種收入分類都可能來自手動補登；可提領與提款不算未驗證收入的規則，見<a href="common-finance.html">財務術語與收入事件</a>。補登的收入在收入管理各處的呈現：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:34%">位置</th><th>怎麼呈現</th></tr></thead>
+  <tbody>
+    <tr><td>交易明細</td><td>顯示資料來源（手動補登）與驗證狀態（未驗證）<br>狀態是待結算時，後面接「不計入可提領」</td></tr>
+    <tr><td>財務摘要卡、收入趨勢、收入來源</td><td>算進統計時，標示含手動補登資料</td></tr>
+    <tr><td>可提領、提款可申請金額、稅務文件</td><td>不算進去</td></tr>
+    <tr><td>儀表板的近期收入</td><td>不出現，因為補登的收入永遠不會結算</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.8.2 §4.1.3、§5、§7；5.1.8 F7、F10；5.1.1 F3；主規格 §7.2、§7.3；D250。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.8.2-手動補登收入流程.md</code>（最後更新 2026-09-23）§1～§7；<code>5.1.8-收入管理.md</code> F7、F10；<code>5.1.1-儀表板.md</code> F3；<code>0-設計規格書.md</code> §7.2、§7.3、§7.15</li>
+    <li>決策：D250、D316</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>補登要不要經過審核</li>
+    <li>佐證附件的格式與大小限制</li>
+    <li>日期能不能填未來的日期</li>
+    <li>每位創作者補登的次數或金額有沒有上限</li>
+    <li>補登後能不能編輯或刪除</li>
+    <li>團隊成員裡哪些角色可以補登；沒有權限時入口停用並顯示原因</li>
+    <li>視窗送出中的畫面</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.8.2 最後更新 2026-09-23）</p>
+</details>
+</div>
+</body>
+</html>

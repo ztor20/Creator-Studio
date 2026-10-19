@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>展示素材與年齡分級 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+ul.plain ul.plain{margin:4px 0 4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+.k{font-size:12px;color:var(--text-3)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.dg-flow.shapes{align-items:flex-end;gap:28px}
+.shapes figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.shapes .frame{position:relative;border:1px solid var(--border-strong);border-radius:6px;background:var(--surface-sunken)}
+.shapes .r23{width:80px;height:120px}
+.shapes .r23.sm{width:60px;height:90px}
+.shapes .r11{width:80px;height:80px}
+.shapes .r169{width:142px;height:80px}
+.shapes .crop i{position:absolute;left:-1px;right:-1px;border:2px solid var(--ok-key);border-radius:4px;background:color-mix(in srgb,var(--ok-fill) 70%,transparent)}
+.shapes .crop.sq i{top:19px;height:80px}
+.shapes .crop.wide i{top:38px;height:45px}
+.shapes figcaption{font-size:12.5px;line-height:1.4;color:var(--text);text-align:center}
+.shapes figcaption small{display:block;font-size:11px;color:var(--dg-sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="overview">展示素材與年齡分級</h1>
+<p class="lede">創作者上傳讓人看見「這東西長什麼樣」的圖片與影片時，全站照同一套比例、尺寸與格式；作品的年齡分級全站也只有一套值。</p>
+
+<div class="toc"></div>
+
+<h2 id="what"><span class="n"></span>什麼是展示素材</h2>
+<p>展示素材是用來展示「這東西長什麼樣」的圖片與影片，全站的展示素材槽共用這頁的規則，各模組不另訂尺寸、比例或可接受的檔案類型。</p>
+<ul class="plain">
+  <li>適用的素材槽：
+    <ul class="plain">
+      <li>電子商店的商品、拍賣與組合包</li>
+      <li>活動</li>
+      <li>項目</li>
+      <li>作品上架的封面與劇照</li>
+    </ul>
+  </li>
+  <li>每一格都同時收圖片與影片，由創作者逐格選；同一組槽位裡圖片與影片可以混放</li>
+  <li>主圖（封面、主視覺）也可以放影片</li>
+  <li>必填不因類型改變：主圖原本必填就仍必填，放影片也算填了；附圖原本選填就仍選填</li>
+  <li>張數上限由各模組自訂，圖片與影片共用同一個額度，例如商品的主圖 1 張加附圖 9 張共 10 格</li>
+</ul>
+<p>下列檔案槽不是展示素材，各自在所屬流程定義：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:34%">檔案槽</th><th>規格</th></tr></thead>
+  <tbody>
+    <tr><td>活動的影片預告</td><td>MP4、MOV，單檔 2GB，見<a href="event-create-step2.html#basics-teaser">步驟 2 的影片預告</a></td></tr>
+    <tr><td>項目的宣傳片<br>項目詳情的 Demo 影片</td><td>MP4、MOV，單檔 2GB，見<a href="project-create.html">建立項目</a></td></tr>
+    <tr><td>數位商品的內容檔</td><td>買家買到的東西本身，見<a href="eshop-create-digital.html">數位商品</a></td></tr>
+    <tr><td>拍賣的證書與物品合照</td><td>真實性證明的原始照片，不限比例，最小 800×800px，見<a href="eshop-create-auction.html">建立拍賣</a></td></tr>
+    <tr><td>活動描述裡的圖片與影片</td><td>描述的一部分，見<a href="event-create-step2.html#description-media">步驟 2 的描述裡的圖片與影片</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：主規格 §7.10「規格用途」「素材型別：圖片或影片」「使用限制」「內文媒體」；D164、D259、D335、D340、D354。</p>
+
+<h2 id="size"><span class="n"></span>比例與尺寸</h2>
+<p>全站展示素材只有一個標準比例：直式 2:3，標準尺寸 750×1125px；影片也用同一組比例與尺寸。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:34%">素材</th><th>最小尺寸</th></tr></thead>
+  <tbody>
+    <tr><td>主要展示素材<br>主圖、封面、主視覺</td><td>750×1125px，等於標準尺寸</td></tr>
+    <tr><td>次要展示素材<br>附圖、圖庫</td><td>600×900px（短邊 600px）</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>多選項商品每個選項組合可以各設一張商品圖，尺寸同主圖（750×1125px、2:3），只收圖片；其他規則見<a href="eshop-create-physical.html">實體商品</a></li>
+</ul>
+<p class="note">依據：主規格 §7.10「標準比例與尺寸」「選項組合的商品圖」；D176、D259、D268。</p>
+
+<h2 id="video"><span class="n"></span>影片的格式與縮圖</h2>
+<p>展示素材槽收 MP4、MOV、WEBM 影片，單檔上限 1.8GB。</p>
+<ul class="plain">
+  <li>需要縮圖的版位（商店清單、商品卡、訂單、粉絲端卡片等）遇到影片時，自動取影片的第一個畫面當縮圖，創作者不必另外上傳封面圖</li>
+  <li>這張縮圖是一張真正的圖檔，清單、訂單、通知與分享卡都引用它</li>
+  <li>縮圖的裁切照<a href="#crop">各版位怎麼取圖</a></li>
+  <li>Creator Studio 的素材格放影片時，只有一顆播放／暫停鈕，在格子裡直接播放，不做完整播放器</li>
+  <li>粉絲端怎麼播放影片，不在本產品範圍</li>
+</ul>
+<p class="note">依據：主規格 §7.10「影片的格式與單檔上限」「影片的縮圖：系統抽首幀」；D259。</p>
+
+<h2 id="crop"><span class="n"></span>各版位怎麼取圖</h2>
+<p>粉絲端與後台的各個顯示版位維持各自的比例，全部從同一份直式素材置中裁切填滿；不另外要求方形或橫式的素材。</p>
+<div class="dg" role="img" aria-label="取圖示意：一張直式 2:3 素材，方形版位與橫式版位都從畫面中央裁出">
+<div class="dg-flow shapes">
+  <figure><div class="frame r23"></div><figcaption>上傳的素材<small>直式 2:3</small></figcaption></figure>
+  <span class="dg-arr" data-t="置中裁切"></span>
+  <figure><div class="frame r23 crop sq"><i></i></div><figcaption>方形版位<small>綠框是保留的範圍</small></figcaption></figure>
+  <figure><div class="frame r23 crop wide"><i></i></div><figcaption>橫式版位<small>上下裁掉更多</small></figcaption></figure>
+</div>
+</div>
+<p class="dg-cap">示意圖：比例照實際畫，大小不照實際；綠框以外的部分在該版位被裁掉。</p>
+<ul class="plain">
+  <li>裁切方式：等比放大到填滿顯示框，超出的部分從中央往外平均裁掉</li>
+  <li>素材是影片時，裁切的是影片畫面；縮圖版位裁切取出的第一個畫面</li>
+  <li>人臉、標題文字、商品主體等重要資訊要放在畫面中央，貼近上下邊緣的內容在方形與橫式版位會被裁掉</li>
+  <li>不提供讓創作者自己選裁切範圍的工具</li>
+  <li>全站沒有橫式素材槽，活動也只用直式；活動的桌面端主視覺、社群分享卡等橫式版位從直式主視覺置中裁切，任何模組都不新增橫式槽</li>
+</ul>
+<p class="note">依據：主規格 §7.10「顯示版位與取圖方式」「例外：活動的橫式橫幅（已退場）」；D156、D164、D390。</p>
+
+<h2 id="age"><span class="n"></span>年齡分級</h2>
+<p>年齡分級（Age Rating）回答「這件作品幾歲以上可以看」，全站只有一套值、一份資料。</p>
+<ul class="plain">
+  <li>六級單選，預設「全部」：
+    <ul class="plain">
+      <li>全部（All ages）：沒有年齡門檻</li>
+      <li>7 歲以上（7+）</li>
+      <li>10 歲以上（10+）</li>
+      <li>13 歲以上（13+）</li>
+      <li>16 歲以上（16+）</li>
+      <li>18 歲以上（18+）</li>
+    </ul>
+  </li>
+  <li>三處指同一個值，任一處改了，其餘兩處跟著更新：
+    <ul class="plain">
+      <li><a href="project-publish.html">作品上架</a>的年齡限制：必填，送審一定要有分級</li>
+      <li><a href="project-create.html">建立項目</a>影視類的年齡分級：選填，沒填就在作品上架時補</li>
+      <li><a href="project-detail.html">項目詳情</a>公開資訊的年齡分級</li>
+    </ul>
+  </li>
+  <li>作品上架後改年齡分級，要重新送審，見<a href="project-detail.html">項目詳情</a></li>
+  <li>介面上不聲稱這六級等同任何地區的法定分級</li>
+</ul>
+<p class="note">依據：主規格 §7.11；D182。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>0-設計規格書.md §7.10、§7.11</code>（v4.90）</li>
+    <li>決策：D156、D164、D176、D182、D259、D268、D335、D340、D354、D390</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>上傳的素材比例不是 2:3 時怎麼處理：拒收、自動置中裁切後存檔，或保留原檔、只在顯示時裁切；影片是否同一套處理</li>
+    <li>展示素材槽（MP4、MOV、WEBM，1.8GB）與專用影片槽（MP4、MOV，2GB）兩套格式與上限，日後是否收斂成一套</li>
+    <li>影片第一個畫面是黑畫面或沒有意義時，是否讓創作者改挑一格當縮圖</li>
+    <li>展示素材的圖片格式與單檔上限（目前沒有定義，活動描述裡的圖片也沿用這條）</li>
+    <li>活動描述裡的圖片與影片是否不佔素材格的張數額度、不當縮圖來源（目前是推導）</li>
+    <li>選項組合的商品圖是否開放影片；訂單、取貨清單、Scanner 縮圖是否用選項組合圖</li>
+    <li>六級年齡分級與各地法定分級（例如台灣的普遍級、保護級、輔導級、限制級）怎麼對應</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新建；對照主規格 v4.90 §7.10、§7.11）</p>
+</details>
+</div>
+</body>
+</html>

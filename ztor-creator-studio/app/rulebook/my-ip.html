@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的 IP — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="my-ip">我的 IP</h1>
+<p class="lede">創作者在我的 IP（IP 資產，IP Assets）管理自己擁有與向他人租入的 IP，處理別人送來的租用申請，並掃一眼 IP 帶來的收入。上架、定價與授權的共通規則，見<a href="ip-rules.html">IP 授權規則</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="myip-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>這頁只管當前這位創作者的 IP；跨創作者的權利分配與分潤在 Admin 的 <a href="admin-ipbank.html">IP Bank</a></li>
+  <li>單筆 IP 的定價與上架開關的家在<a href="ip-manage.html">管理 IP</a>，出租與刪除也在那裡；承租方會看到的完整條件在 <a href="ip-detail.html">IP 詳情</a></li>
+</ul>
+
+<h2 id="myip-flow"><span class="n"></span>操作流程</h2>
+<p>創作者進我的 IP 後，先切到自有或租入，再決定登錄新的 IP、處理一筆 IP，或處理租用申請。</p>
+<div class="dg" role="img" aria-label="我的 IP 流程圖，由左往右：進我的 IP，切自有 IP 或租入 IP 分頁，再選要做什麼；登錄站外 IP 進登錄 IP 流程，管理一筆自有 IP 按 Manage 進管理 IP，看完整權利與條件點 IP 進 IP 詳情，上架或下架切 Mktplace 開關，處理別人的租用申請到授權核准佇列">
+<div class="dg-hg" style="--dg-c:4">
+  <div class="dg-node" style="grid-row:1/6;grid-column:1"><span class="s">1</span>進我的 IP<small>看統計與清單</small></div>
+  <span class="dg-a" style="grid-row:1/6;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/6;grid-column:3"><span class="s">2</span>切分頁<small>自有 IP 或租入 IP</small></div>
+  <span class="dg-a" style="grid-row:1/6;grid-column:4"></span>
+  <div class="dg-node q" style="grid-row:1/6;grid-column:5"><span class="s">3</span>要做什麼？</div>
+  <span class="dg-a" data-t="登錄站外 IP" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" data-t="管理一筆 IP" style="grid-row:2;grid-column:6"></span>
+  <span class="dg-a" data-t="看完整條件" style="grid-row:3;grid-column:6"></span>
+  <span class="dg-a" data-t="上架或下架" style="grid-row:4;grid-column:6"></span>
+  <span class="dg-a" data-t="處理租用申請" style="grid-row:5;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:7">登錄 IP<small>按「＋ Add your IP」</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:7">管理 IP<small>按「Manage」</small></div>
+  <div class="dg-node end" style="grid-row:3;grid-column:7">IP 詳情<small>點這筆 IP</small></div>
+  <div class="dg-node end" style="grid-row:4;grid-column:7">切 Mktplace 開關</div>
+  <div class="dg-node end" style="grid-row:5;grid-column:7">授權核准佇列<small>核准、議價或拒絕</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進我的 IP；頁首是統計，下方是 IP 清單</li>
+  <li>切自有 IP 或租入 IP 分頁，見<a href="#list">IP 清單</a></li>
+  <li>要做什麼？
+    <ul class="plain">
+      <li>登錄站外 IP：按「＋ Add your IP」進<a href="ip-register.html">登錄 IP</a></li>
+      <li>管理一筆 IP：按該列的「Manage」進<a href="ip-manage.html">管理 IP</a></li>
+      <li>看完整條件：點該筆 IP 進 <a href="ip-detail.html">IP 詳情</a></li>
+      <li>上架或下架：切該列的 Mktplace 開關，見<a href="#list-owned">自有 IP</a></li>
+      <li>處理租用申請：到<a href="#queue">授權核准佇列</a></li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>想租別人的 IP，到 <a href="ip-market.html">IP 市場</a>找</li>
+</ul>
+<p class="note">依據：5.1.4 F1、F6、F7、F8、頁面佈局、情境；5.1.4.2 §1；D150。</p>
+
+<h2 id="list"><span class="n"></span>IP 清單</h2>
+<p>IP 清單讓創作者掃視自己擁有與租入的所有 IP，以及每一筆的權利、租用與收入。頁首數字見<a href="#stats">統計</a>；自己擁有的 IP 見<a href="#list-owned">自有 IP</a>；向別人租的見<a href="#list-rented">租入 IP</a>；頁首的入口與提示見<a href="#list-top">登錄入口與提示條</a>；還沒有 IP 時見<a href="#list-empty">沒有資料時</a>。</p>
+
+<h3 id="stats">統計</h3>
+<p>三個指標讓創作者一眼掌握 IP 的總量、出租與收入。</p>
+<ul class="plain">
+  <li>IP 總數（Total IP）：附自有與租入的拆分，例如「自有 8 · 租入 4」</li>
+  <li>租出數（Total rentals）：目前生效中的授權數，附進行中授權；生效的定義見<a href="ip-rules.html#stage">授權的階段</a></li>
+  <li>IP 總收入（Total IP revenue）：附「年初至今 · USD」；口徑同收入管理，明細到<a href="revenue.html">收入總覽</a>看，這頁不重算</li>
+</ul>
+
+<h3 id="list-top">登錄入口與提示條</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>登錄 IP（＋ Add your IP）</td><td>—</td><td>頁首主要入口，進<a href="ip-register.html">登錄 IP</a>流程</td></tr>
+    <tr><td>提示條</td><td>—</td><td>說明項目上架時會自動建立 IP 紀錄，要登錄站外既有的權利用 Add your IP，登錄後可以上架 IP 市場，見<a href="ip-rules.html#ip-origin">兩種來源</a></td></tr>
+    <tr><td>關閉提示條</td><td>—</td><td>關閉後不再出現</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="list-owned">自有 IP</h3>
+<p>自有 IP 讓創作者管理自己擁有的 IP：上架、追蹤租用與收入。依來源分兩組，各組顯示筆數：</p>
+<ul class="plain">
+  <li>在 Ztor 上產出（IP I made on Ztor）</li>
+  <li>站外既有（IP I own outside Ztor）</li>
+</ul>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>IP</td><td>媒體類型圖示、IP 名稱<br>類型標籤：Original 或 Derivative<br>驗證狀態標籤，例如 Verifying<br>發布或登記日期</td></tr>
+    <tr><td>權利資訊（Rights Information）</td><td>當前創作者看得到的權利人或授權方；多位權利人與跨創作者的呈現見頁尾尚待確認</td></tr>
+    <tr><td>Rented</td><td>這筆 IP 被租出的次數</td></tr>
+    <tr><td>Revenue</td><td>這筆 IP 的累積收入，口徑同收入管理</td></tr>
+    <tr><td>Rental Price</td><td>價格摘要，組字方式見<a href="ip-rules.html#price-display">價格摘要</a><br>沒上架顯示 $—</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="owned-actions">列操作</h4>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>上架開關（Mktplace）</td><td>—</td><td>預設關閉<br>開：其他創作者可以搜尋與租用<br>關：只追蹤收益分配，不能被租用<br>跟管理 IP 的市場上架開關是同一個，見<a href="ip-rules.html#listing-switch">市場上架開關</a><br>價格在管理 IP 的<a href="ip-manage.html#licensing">授權定價</a>設定</td></tr>
+    <tr><td>Manage</td><td>—</td><td>進這筆 IP 的<a href="ip-manage.html">管理 IP</a></td></tr>
+    <tr><td>點 IP</td><td>—</td><td>進這筆 IP 的 <a href="ip-detail.html">IP 詳情</a>，看完整權利、授權與到期資訊</td></tr>
+  </tbody>
+</table></div>
+<p>清單下方的圖例說明 Mktplace 開與關的差別。</p>
+
+<h3 id="list-rented">租入 IP</h3>
+<p>租入 IP 讓創作者集中查看向別人租來的 IP、授權範圍與到期狀態。</p>
+<ul class="plain">
+  <li>清單只列摘要，每一列顯示哪些欄位見頁尾尚待確認</li>
+  <li>來源、授權範圍、期限與到期提醒在 IP 詳情查看，見 IP 詳情的<a href="ip-detail.html#manage-info">IP 資產管理資訊</a></li>
+  <li>到期提醒也會出現在儀表板的今日待處理，見<a href="ip-rules.html#term">授權的期限與到期提醒</a></li>
+</ul>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>自有 IP／租入 IP 分頁</td><td>—</td><td>切換清單的資料範圍</td></tr>
+    <tr><td>Manage</td><td>—</td><td>租入 IP 的列也有 Manage 入口，進<a href="ip-manage.html">管理 IP</a>；租入 IP 在管理 IP 能做什麼見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="list-empty">沒有資料時</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">情況</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>還沒登錄或租入任何 IP（含第一次進來）</td><td>清單改顯示空狀態，以「Add your IP」引導登錄<br>統計顯示 0 或空值，不以數字佔焦點</td></tr>
+    <tr><td>沒有自有 IP</td><td>引導用 Add your IP 登錄站外既有的 IP，或說明項目上架後會自動建立 IP 紀錄</td></tr>
+    <tr><td>沒有租入 IP</td><td>引導到 IP 市場找可授權的 IP</td></tr>
+    <tr><td>篩選或搜尋沒有命中</td><td>顯示「查無符合的 IP」，並提供清除條件；跟沒有自有 IP 是兩種不同畫面</td></tr>
+    <tr><td>清單載入中、載入失敗</td><td>照全站共用的載入與錯誤狀態規則顯示</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.4 F1、F2、F5、F6、頁面佈局、頁面狀態；5.1.4.2 §1；主規格 §6.1–§6.4、§7.3、§7.7；D128、D150、D169。</p>
+
+<h2 id="queue"><span class="n"></span>授權核准佇列</h2>
+<p>授權核准佇列（License Out Queue）讓擁有者處理別人對自有 IP 送出的租用申請，是授權從草稿走到生效的核准入口。佇列放在畫面哪裡由畫面決定。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>待核准清單</td><td>有別人送出的草稿授權時</td><td>每筆顯示 IP、申請方與條款摘要<br>申請來自承租方在 IP 詳情頁送出租用，見<a href="ip-rules.html#act-request">送出租用申請</a></td></tr>
+    <tr><td>核准（Approve）</td><td>—</td><td>核准而且條款齊全，授權才轉生效，見<a href="ip-rules.html#terms-required">生效前條款要齊全</a></td></tr>
+    <tr><td>議價（Counter）</td><td>—</td><td>向申請方提出不同條件；怎麼往返見頁尾尚待確認</td></tr>
+    <tr><td>拒絕（Decline）</td><td>—</td><td>拒絕這筆申請</td></tr>
+    <tr><td>沒有申請時</td><td>—</td><td>顯示空狀態，例如「目前沒有待處理的租用申請」，不留白</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>稽核軌跡見<a href="ip-rules.html#act-review">核准、議價與拒絕</a></li>
+  <li>收到租用或詢問時，儀表板的今日待處理也會提醒，點擊導向我的 IP 或 IP 詳情</li>
+</ul>
+<p class="note">依據：5.1.4 F8；5.1.3.1 §3.4；5.1.1 F4；主規格 §7.7「授權生命週期」；D047。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.4-我的IP.md</code>（最後更新 2026-07-30）F1、F2、F5、F6、F7、F8、頁面佈局、頁面狀態；<code>5.1.4.2-管理IP.md</code>（最後更新 2026-07-30）§1；<code>0-設計規格書.md</code>（v4.90）§6、§7.3、§7.7</li>
+    <li>決策：D047、D128、D150、D169</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>權利資訊欄怎麼呈現多位權利人與跨創作者的權利配置</li>
+    <li>租入 IP 清單每一列顯示哪些欄位（目前畫面示意為 IP、類型、授權方、期間、到期日、價格與續約按鈕）</li>
+    <li>租入 IP 從 Manage 進到管理 IP 時能做什麼（管理 IP 是擁有者的管理頁）</li>
+    <li>清單的搜尋與篩選有哪些條件（規格只定義了沒有命中時的畫面）</li>
+    <li>議價（Counter）怎麼提出新條件、雙方怎麼往返</li>
+    <li>授權核准佇列裡每筆條款摘要顯示哪些條款</li>
+    <li>IP 授權規則相關的待確認列在<a href="ip-rules.html">IP 授權規則</a>頁尾</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.4 最後更新 2026-07-30，至 D169）</p>
+</details>
+</div>
+</body>
+</html>

@@ -14,23 +14,32 @@
   var TREE=[
     {n:'1', t:'專案概覽', groups:[
       {t:'專案概覽', pages:[{h:'index.html', t:'專案概覽'}]},
-      {t:'共同規格', pages:[{h:'taxonomy.html', t:'商品分類與模組應用'},{t:'狀態語言'},{t:'財務術語與收入事件'},{t:'語言與在地化'},{t:'定價幣別'},{t:'展示素材與年齡分級'},{t:'用詞規則'}]}
+      {t:'共同規格', pages:[{h:'taxonomy.html', t:'商品分類與模組應用'},{h:'common-status.html', t:'狀態語言'},{h:'common-finance.html', t:'財務術語與收入事件'},{h:'common-i18n.html', t:'語言與在地化'},{h:'common-currency.html', t:'定價幣別'},{h:'common-media.html', t:'展示素材與年齡分級'},{h:'common-terms.html', t:'用詞規則'}]}
     ]},
     {n:'2', t:'總覽', groups:[
-      {t:'總覽', pages:[{t:'儀表板'},{t:'Hero Banner'}]}
+      {t:'總覽', pages:[{h:'dashboard.html', t:'儀表板'},{h:'dashboard-hero.html', t:'首頁輪播（Hero Banner）'}]}
     ]},
     {n:'3', t:'項目', groups:[
-      {t:'項目', pages:[{t:'項目列表'},{t:'建立項目'},{t:'項目詳情'},{t:'作品上架'}]}
+      {t:'項目規則', pages:[{h:'project-rules.html', t:'項目規則'}]},
+      {t:'建立項目', pages:[{h:'project-create.html', t:'建立項目'},{h:'project-create-step1.html', t:'步驟 1 關於項目'},{h:'project-create-step2.html', t:'步驟 2 展示內容'},{h:'project-create-video.html', t:'作品檔案、詳情與定價'},{h:'project-create-monetization.html', t:'營利設定'},{h:'project-create-cocreate.html', t:'共創設定'},{h:'project-create-presale.html', t:'預購設定'},{h:'project-create-tiers.html', t:'方案'},{h:'project-create-preview.html', t:'預覽與發布'}]},
+      {t:'項目', pages:[{h:'projects.html', t:'項目列表'}]},
+      {t:'項目詳情', pages:[{h:'project-detail.html', t:'項目詳情'},{h:'project-detail-overview.html', t:'總覽'},{h:'project-detail-progress.html', t:'進度'},{h:'project-detail-updates.html', t:'發布更新'},{h:'project-detail-work.html', t:'作品與上架階段'},{h:'project-detail-plans.html', t:'方案'},{h:'project-detail-backers.html', t:'支持者'},{h:'project-detail-settings.html', t:'設定'},{h:'project-detail-earnings.html', t:'收益'},{h:'project-detail-performance.html', t:'表現與版稅'}]},
+      {t:'作品上架', pages:[{h:'project-publish.html', t:'作品上架'},{h:'project-publish-step1.html', t:'步驟 1 音訊與字幕'},{h:'project-publish-step2.html', t:'步驟 2 封面與影音素材'},{h:'project-publish-step3.html', t:'步驟 3 影片詳情'},{h:'project-publish-step4.html', t:'步驟 4 演職人員詳情'},{h:'project-publish-step5.html', t:'步驟 5 給粉絲的話'},{h:'project-publish-step6.html', t:'步驟 6 預覽與送審'}]}
     ]},
     {n:'4', t:'IP', groups:[
-      {t:'我的 IP', pages:[{t:'我的 IP'},{t:'登錄 IP'},{t:'管理 IP'}]},
-      {t:'IP 市場', pages:[{t:'IP 市場'},{t:'IP 詳情'}]}
+      {t:'IP 規則', pages:[{h:'ip-rules.html', t:'IP 授權規則'}]},
+      {t:'我的 IP', pages:[{h:'my-ip.html', t:'我的 IP'},{h:'ip-register.html', t:'登錄 IP'},{h:'ip-manage.html', t:'管理 IP'}]},
+      {t:'IP 市場', pages:[{h:'ip-market.html', t:'IP 市場'},{h:'ip-detail.html', t:'IP 詳情'}]}
     ]},
     {n:'5', t:'電子商店', groups:[
-      {t:'電子商店規則', pages:[{h:'eshop-sales.html', t:'電子商店販售流程'},{h:'bundles.html', t:'組合包與票務商品'},{h:'promo-rules.html', t:'優惠規則'}]},
-      {t:'電子商店', pages:[{t:'建立商品與商品細節'},{t:'拍賣'},{t:'補貨與新品貼文'},{t:'商店設定'}]},
+      {t:'電子商店規則', pages:[{h:'eshop-sales.html', t:'電子商店販售流程'},{h:'bundles.html', t:'組合包與票務商品'},{h:'promo-rules.html', t:'優惠規則'},{h:'pickup-rules.html', t:'取貨規則'}]},
+      {t:'建立商品', pages:[{h:'eshop-create.html', t:'建立商品'},{h:'eshop-create-physical.html', t:'賣實體商品'},{h:'eshop-create-digital.html', t:'賣數位商品'},{h:'eshop-create-bundle.html', t:'建立組合包'},{h:'eshop-create-auction.html', t:'建立拍賣'}]},
+      {t:'電子商店', pages:[{h:'eshop-list.html', t:'商品清單'}]},
+      {t:'商品詳情', pages:[{h:'eshop-product.html', t:'商品細節頁'},{h:'eshop-product-stock.html', t:'商品庫存'},{h:'eshop-product-settings.html', t:'商品設定'},{h:'eshop-bundle.html', t:'組合包細節頁'},{h:'eshop-auction.html', t:'拍賣細節頁'}]},
+      {t:'補貨與新品貼文', pages:[{h:'eshop-restock.html', t:'補貨'},{h:'eshop-post.html', t:'新品貼文'}]},
+      {t:'商店設定', pages:[{h:'eshop-settings.html', t:'商店設定'}]},
       {t:'訂單管理', pages:[{h:'orders.html', t:'訂單列表'},{h:'order-detail.html', t:'訂單詳情'}]},
-      {t:'取貨管理', pages:[{t:'取貨場次'},{t:'手機 Scanner'}]},
+      {t:'取貨管理', pages:[{h:'pickup.html', t:'取貨管理'},{h:'pickup-create.html', t:'建立取貨場次'},{h:'pickup-detail.html', t:'取貨場次詳情'},{h:'pickup-scanner.html', t:'手機 Scanner'}]},
       {t:'需求看板', pages:[{h:'demand-board.html', t:'需求看板'}]}
     ]},
     {n:'6', t:'活動', groups:[
@@ -40,22 +49,23 @@
       {t:'活動詳情', pages:[{h:'event-detail.html', t:'活動詳情'},{h:'event-detail-overview.html', t:'總覽'},{h:'event-detail-settings.html', t:'設定'},{h:'event-detail-tickets.html', t:'票務'},{h:'event-detail-sales.html', t:'售票與名單'}]}
     ]},
     {n:'7', t:'粉絲', groups:[
-      {t:'粉絲規則', pages:[{h:'fans-tiers.html', t:'粉絲分級'}]},
-      {t:'粉絲管理', pages:[{h:'fans-roster.html', t:'粉絲總覽與詳情'},{h:'fans-broadcast.html', t:'群發訊息'}]},
+      {t:'粉絲規則', pages:[{h:'fans-tiers.html', t:'粉絲分級'},{h:'fans-vault-rules.html', t:'媒體庫規則'},{h:'fans-guide.html', t:'粉絲系統說明'}]},
+      {t:'粉絲管理', pages:[{h:'fans-roster.html', t:'粉絲總覽'},{h:'fans-roster-detail.html', t:'粉絲詳情'},{h:'fans-broadcast.html', t:'群發訊息'},{h:'fans-tier-settings.html', t:'分級設定'},{h:'fans-benefits.html', t:'各級福利'}]},
       {t:'媒體庫', pages:[{h:'fans-vault.html', t:'媒體庫'}]},
-      {t:'粉絲活動', pages:[{h:'fans-campaigns.html', t:'粉絲活動'}]}
+      {t:'粉絲活動', pages:[{h:'fans-campaigns.html', t:'粉絲活動'},{h:'fans-campaign-report.html', t:'成效報告'}]},
+      {t:'粉絲分析', pages:[{h:'fans-analytics.html', t:'粉絲分析'}]}
     ]},
     {n:'8', t:'收入管理', groups:[
-      {t:'收入管理', pages:[{t:'收入總覽'},{t:'申請提款'},{t:'手動補登收入'}]}
+      {t:'收入管理', pages:[{h:'revenue.html', t:'收入管理'},{h:'revenue-withdraw.html', t:'申請提款'},{h:'revenue-manual.html', t:'手動補登收入'}]}
     ]},
     {n:'9', t:'Admin', groups:[
-      {t:'Creator 管理', pages:[{t:'Creator 列表'},{t:'Creator 詳情'}]},
+      {t:'Creator 管理', pages:[{h:'admin-creators.html', t:'Creator 列表'},{h:'admin-creator-detail.html', t:'Creator 詳情'}]},
       {t:'創作者活動管理', pages:[{h:'admin-events.html', t:'創作者活動管理'}]},
-      {t:'影片上架審核', pages:[{t:'影片上架審核'}]},
-      {t:'Admin IP Bank', pages:[{t:'IP Bank'},{t:'建立 IP Entry'}]},
-      {t:'IP Bank Reporting', pages:[{t:'IP Bank Reporting'}]},
-      {t:'平台費率設定', pages:[{t:'平台費率設定'}]},
-      {t:'平台優惠設定', pages:[{t:'平台優惠設定'}]},
+      {t:'影片上架審核', pages:[{h:'admin-video-review.html', t:'影片上架審核'}]},
+      {t:'Admin IP Bank', pages:[{h:'admin-ipbank.html', t:'IP Bank'},{h:'admin-ipbank-create.html', t:'建立 IP Entry'}]},
+      {t:'IP Bank Reporting', pages:[{h:'admin-ipbank-report.html', t:'IP Bank Reporting'}]},
+      {t:'平台費率設定', pages:[{h:'admin-fees.html', t:'平台費率設定'}]},
+      {t:'平台優惠設定', pages:[{h:'admin-promotions.html', t:'平台優惠設定'}]},
       {t:'平台忠誠點數設定', pages:[{h:'admin-loyalty.html', t:'平台忠誠點數設定'}]}
     ]}
   ];

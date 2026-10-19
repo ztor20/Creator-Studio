@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>影片上架審核 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+ul.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+/* 販售層級示意圖 */
+.layers{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px 10px;margin:10px 0 6px}
+.layer{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;margin-bottom:8px}
+.layer__k{font-size:12.5px;color:var(--text-2);line-height:1.4}
+.layer__k span{display:block;font-size:11.5px;color:var(--text-3)}
+.layer__track{position:relative;height:18px;border-radius:999px;background:var(--surface-sunken)}
+.layer__bar{position:absolute;top:0;bottom:0;border-radius:999px;border:1px solid var(--border-strong)}
+.layer__bar.l1{background:var(--ok-fill);border-color:var(--ok-line)}
+.layer__bar.l2{background:var(--wait-fill);border-color:var(--wait-line)}
+.layer__bar.l3{background:var(--pink-fill);border-color:var(--pink-line)}
+.layer__bar.l4{background:var(--warn-fill);border-color:var(--warn-key);border-style:dashed}
+.layer__axis{position:relative;height:18px;font-size:11.5px;color:var(--text-3)}
+.layer__axis span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.layer__axis span:first-child{transform:none}
+.layer__axis span:last-child{transform:translateX(-100%)}
+@media (max-width:600px){.layer{grid-template-columns:1fr;gap:4px}.layer--axis .layer__k{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>影片上架審核</h1>
+<p class="lede">Admin 在這頁審核創作者送出的影片作品：看完創作者填的全部內容，決定通過放行，或寫下理由退回創作者。</p>
+<div class="toc"></div>
+
+<h2 id="intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>送審來源有兩個，送來的欄位與審核動作相同：
+    <ul class="plain">
+      <li>共創與預購：從項目詳情的完成作品發文送審</li>
+      <li>直接發佈的影片：從建立項目流程送出即送審</li>
+    </ul>
+  </li>
+  <li>通過的意思是平台放行，作品什麼時候上線由上映日期決定，見<a href="#after-approve">審核通過之後</a></li>
+  <li>這頁跨全平台所有創作者，Admin 不需要先選定創作者就能進入</li>
+</ul>
+
+<h2 id="flow"><span class="n"></span>操作流程</h2>
+<p>一件送審作品從創作者送出，到 Admin 通過或退回，走下面幾步。</p>
+<div class="dg" role="img" aria-label="影片上架審核流程圖：創作者送審後狀態為待審核，Admin 接手審核、看完送審內容，可以上線就審核通過，不能上線就寫退件理由退回創作者">
+<div class="dg-flow">
+  <div class="dg-node"><span class="s">1</span>創作者送審<small>狀態：待審核</small></div><span class="dg-arr"></span>
+  <div class="dg-node"><span class="s">2</span>接手審核<small>狀態：審核中</small></div><span class="dg-arr"></span>
+  <div class="dg-node"><span class="s">3</span>看完送審內容<small>影片、素材、詳情、演職名單</small></div><span class="dg-arr"></span>
+  <div class="dg-node q"><span class="s">4</span>可以上線嗎？</div><span class="dg-arr"></span>
+  <div class="dg-fork">
+    <div class="dg-lane"><span class="dg-exit">可以</span><span class="dg-arr"></span><div class="dg-node end">審核通過<small>項目落在準備中，等上線</small></div></div>
+    <div class="dg-lane"><span class="dg-exit">不行</span><span class="dg-arr"></span><div class="dg-node stop">審核不通過<small>附退件理由退回<br>創作者改完重送，回到待審核</small></div></div>
+  </div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號；綠框是放行，橘框是退回。</p>
+<ol class="plain">
+  <li>創作者送出作品，狀態為待審核，出現在<a href="#queue">待審清單</a></li>
+  <li>Admin 接手審核，狀態轉為審核中，並記下審核者</li>
+  <li>在<a href="#submission">送審內容</a>看完創作者填的全部內容</li>
+  <li>可以上線嗎？
+    <ul class="plain">
+      <li>可以：審核通過，之後怎麼上線見<a href="#after-approve">審核通過之後</a></li>
+      <li>不行：審核不通過，必填退件理由，退回創作者</li>
+      <li>創作者修改後重送，回到待審核</li>
+    </ul>
+  </li>
+</ol>
+<p class="note">依據：5.1.0.4 頁面定位、F4、F5、情境；D179、D182、D192。</p>
+
+<h2 id="queue"><span class="n"></span>待審清單</h2>
+<p>待審清單讓 Admin 看出目前有哪些作品在等、誰送的、等多久了，決定先處理哪一件。怎麼縮小範圍，見<a href="#queue-filter">篩選與搜尋</a>；每一列顯示什麼、怎麼排，見<a href="#queue-rows">清單</a>。</p>
+
+<h3 id="queue-filter">篩選與搜尋</h3>
+<p>篩選與搜尋都只影響檢視，不改資料。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>狀態篩選（Status Filter）</td><td>—</td><td>選項：<br>全部<br>待審核<br>審核中<br>審核通過<br>審核不通過<br>每個選項附件數<br>狀態的意思見<a href="#status">作品審核的狀態</a></td></tr>
+    <tr><td>搜尋（Search）</td><td>—</td><td>用作品標題、創作者名稱或來源項目名稱搜尋</td></tr>
+    <tr><td>清除</td><td>搜尋或篩選沒有結果時</td><td>顯示查無符合，並提供清除的入口</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="queue-rows">清單</h3>
+<p>一列是一件送審作品。只列已送出的作品，創作者還沒送出的上架草稿不進這頁。每一列顯示：</p>
+<ul class="plain">
+  <li>作品封面</li>
+  <li>作品標題</li>
+  <li>創作者：哪一位創作者送的</li>
+  <li>來源項目：觸發這次上架的項目，可以連回<a href="project-detail.html">項目詳情</a></li>
+  <li>送審來源：完成作品發文（共創與預購）或建立項目流程（直接發佈），通過後會連帶發生什麼由它決定</li>
+  <li>作品審核狀態</li>
+  <li>送出時間：最近一次送出的時間</li>
+  <li>等待時間：從送出時間起算</li>
+  <li>送出次數：退件重送會加一，看得出是不是重送件</li>
+  <li>審核者：目前接手的 Admin；還沒人接手時是空的</li>
+</ul>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>選一件作品</td><td>—</td><td>打開這一件的<a href="#submission">送審內容</a>與<a href="#actions">審核動作</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>預設排序：待審核與審核中排在已審完的前面；同一狀態裡，送出時間由舊到新，等最久的排最前</li>
+  <li>完全沒有送審作品時，顯示空狀態與說明</li>
+  <li>只剩已審完的作品時仍然列出，供事後查閱</li>
+</ul>
+<p class="note">依據：5.1.0.4 F2、頁面狀態；D182。</p>
+
+<h2 id="submission"><span class="n"></span>送審內容</h2>
+<p>審核者在同一處看完創作者填的全部內容，據以判斷能不能上線。審核者只看與判斷，不代創作者修改作品，要改一律退回創作者自己改後重送。看哪些內容，見<a href="#submission-work">作品內容</a>；這件作品屬於哪個項目、通過後會發出什麼，見<a href="#submission-project">來源項目</a>；以前送過幾次、為什麼被退，見<a href="#submission-history">送審歷程</a>。</p>
+
+<h3 id="submission-work">作品內容</h3>
+<p>創作者在<a href="project-publish.html">作品上架</a>四個步驟填的全部欄位都看得到，欄位意思以作品上架為準。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">作品上架的步驟</th><th>審核者看得到</th></tr></thead>
+  <tbody>
+    <tr><td>音訊與字幕</td><td>影片檔與它的處理狀態<br>原始語音<br>字幕檔與各自的語言<br>影片本身要能實際播放，不只看檔名</td></tr>
+    <tr><td>封面與影音素材</td><td>封面圖<br>劇照<br>花絮<br>預告片<br>圖片可以放大、影片可以播放</td></tr>
+    <tr><td>影片詳情</td><td>各語言的標題與說明<br>片長<br>上映日期<br>分類<br>標籤<br>年齡限制<br>定價：是否付費、幣別與各畫質的價格</td></tr>
+    <tr><td>演職人員詳情</td><td>演職名單與備註</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="submission-project">來源項目</h3>
+<ul class="plain">
+  <li>顯示這件作品屬於哪一個項目、送審來源、項目目前的狀態</li>
+  <li>完成作品發文送來的，項目狀態應為已成功；建立項目流程送來的，應為準備中</li>
+  <li>完成作品發文送來的，另顯示待發布的那則完成作品更新的內容與受眾，讓審核者知道會發什麼給粉絲</li>
+  <li>直接發佈的沒有這則更新</li>
+</ul>
+
+<h3 id="submission-history">送審歷程</h3>
+<ul class="plain">
+  <li>列出這件作品歷來的送出、通過與退件，每一筆有時間、動作、審核者與退件理由</li>
+  <li>只增不改，重送件的審核者看得出上一次為什麼被退</li>
+  <li>已審完的作品仍可檢視，內容唯讀，結果與退件理由一併顯示</li>
+</ul>
+<p class="note">依據：5.1.0.4 F3；5.1.2.2.1；5.1.2.2 §2.2.9；D179、D182。</p>
+
+<h2 id="actions"><span class="n"></span>審核動作</h2>
+<p>審核者把判斷落成一次明確的動作。已審完的作品不再提供通過與不通過，只能檢視。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>接手審核（Start Review）</td><td>狀態是待審核</td><td>狀態轉為審核中<br>記下審核者</td></tr>
+    <tr><td>審核通過（Approve）</td><td>—</td><td>狀態轉為審核通過<br>只做放行，之後怎麼上線見<a href="#after-approve">審核通過之後</a></td></tr>
+    <tr><td>審核不通過（Reject）</td><td>—</td><td>狀態轉為審核不通過，退回創作者<br>項目維持送出時的狀態：共創與預購是已成功，直接發佈是準備中</td></tr>
+    <tr><td>退件理由（Rejection Reason）</td><td>選審核不通過時必填</td><td>自由文字，寫給創作者看，說明哪裡要改<br>跟著退件結果顯示在創作者端</td></tr>
+    <tr><td>確認</td><td>按審核通過或審核不通過時</td><td>執行前要審核者確認<br>執行後結果不能原地撤回</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.0.4 F4、頁面狀態；D179、D192。</p>
+
+<h2 id="status"><span class="n"></span>作品審核的狀態</h2>
+<p>一件送審作品走過草稿、待審核、審核中，最後是審核通過或審核不通過；五種狀態的意思見項目規則的<a href="project-rules.html#review">作品審核</a>。這頁只有 Admin 這一側的規則：</p>
+<ul class="plain">
+  <li>草稿不進這頁的清單，送出後才以待審核出現</li>
+  <li>接手審核讓待審核轉為審核中，通過或不通過見<a href="#actions">審核動作</a></li>
+  <li>審核通過是終態，這頁不再提供通過與不通過</li>
+</ul>
+<p class="note">依據：5.1.0.4 F2「資料邊界」、F4、F5「作品審核狀態流」（審核通過：終態）；主規格 §7.2 作品審核；D179。</p>
+
+<h2 id="result"><span class="n"></span>審核結果的後續</h2>
+<p>審核結果決定作品接下來怎麼走，並顯示在創作者的項目詳情。通過後作品什麼時候上線，見<a href="#after-approve">審核通過之後</a>；創作者在哪裡看到結果，見<a href="#creator-side">創作者在哪裡看到審核結果</a>。</p>
+
+<h3 id="after-approve">審核通過之後</h3>
+<p>審核通過只代表平台放行，作品還沒上線；作品上架與項目轉為已上線，發生在作品實際上線的那一刻。</p>
+<ul class="plain">
+  <li>通過當下，項目落在準備中：共創與預購從已成功轉入，直接發佈原本就在準備中</li>
+  <li>作品上線那一刻，作品在 ztor 前台上架、項目轉為已上線，兩件事一起生效；任一項失敗就都不生效，作品維持未上線、項目維持準備中</li>
+  <li>完成作品更新在審核通過之前一律不發出；直接發佈沒有這則更新</li>
+  <li>審核不通過時，上面這些都不發生</li>
+</ul>
+<p>作品什麼時候上線，看創作者填的上映日期：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">上映日期</th><th>作品什麼時候上線</th></tr></thead>
+  <tbody>
+    <tr><td>已到或已過</td><td>跟審核通過同一刻</td></tr>
+    <tr><td>在未來</td><td>停在準備中，到那一天上線</td></tr>
+    <tr><td>留白</td><td>停在準備中，等創作者到項目詳情的作品區設定日期</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>審核者不決定上映日期，也不會因為日期還沒定就不能通過</li>
+</ul>
+
+<h3 id="creator-side">創作者在哪裡看到審核結果</h3>
+<ul class="plain">
+  <li>項目詳情讓創作者看到這次送審的審核狀態、最近一次送出時間、不通過時的退件理由與退件時間，以及回到作品上架修改重送的入口</li>
+  <li>共創與預購顯示在進度的完成作品節點</li>
+  <li>直接發佈顯示在總覽的上架追蹤</li>
+  <li>兩處讀同一份送審資料，畫面見<a href="project-detail.html">項目詳情</a></li>
+</ul>
+<p class="note">依據：5.1.0.4 F4、F5；主規格 §7.2；D178、D179、D182、D192、D193。</p>
+
+<h2 id="access"><span class="n"></span>誰能審核與操作紀錄</h2>
+<p>只有 Admin 能審核，創作者不能審自己的作品，每一次審核都留紀錄。</p>
+<ul class="plain">
+  <li>只有 Admin 能進入這頁與執行審核動作；創作者工作區沒有這頁</li>
+  <li>沒有權限時，顯示無權限狀態並說明需要什麼身分，不只是把入口藏起來</li>
+  <li>Admin 代為操作某位創作者時，做的是創作者那一側的事</li>
+  <li>審核一律回到這頁以 Admin 身分執行，不能用代操身分把自己送的件審過</li>
+  <li>每一次接手、通過與不通過，都記錄執行者、時間、對象作品與退件理由；只增不改，更正以新的一筆表示</li>
+  <li>審核紀錄與代為操作的紀錄看得出差別，見<a href="admin-creators.html#workspace">代為操作創作者的工作區</a></li>
+</ul>
+<p class="note">依據：5.1.0.4 F1、F6、頁面狀態；主規格 §4.1；D179。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.0.4-影片上架審核.md</code>（v1.7）、<code>5.1.2.2.1-作品上架流程.md</code>、<code>5.1.2.2-專案詳情.md</code> §2.2.9、<code>0-設計規格書.md §4.1／§7.2</code></li>
+    <li>決策：D178、D179、D182、D192、D193、D233、D273、D347、D391</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>完成作品更新是否在作品上線那一刻才發出（目前是建議，待使用者覆核）</li>
+    <li>作品標題有多種語言時，清單以哪一種為主</li>
+    <li>等待時間要不要設逾時提醒，以及審核時效（送出後多久內要有結果）</li>
+    <li>清單能不能切換其他排序</li>
+    <li>是否一定要先接手才能通過或不通過；同一件能不能多位審核者同時接手</li>
+    <li>審核者怎麼指派、能不能轉派，Admin 團隊是否分可檢視與可裁決兩種權限</li>
+    <li>審核判準（內容合規、素材規格、分級與定價等）</li>
+    <li>審核者能不能加只給內部看的註記</li>
+    <li>退件理由要不要另提供預設分類、字數上限多少，退件次數有沒有上限</li>
+    <li>能不能撤回通過或撤回退件，可以的話已發出的粉絲通知怎麼處理</li>
+    <li>審核時是否決定這件作品的交易適用哪一個平台費率</li>
+    <li>等待審核或等待上映日期期間，要不要給創作者或粉絲提示</li>
+    <li>審核結果是否通知創作者、走哪一條通路</li>
+    <li>操作紀錄在哪裡查看、能不能篩選</li>
+    <li>清單載入中、載入失敗時怎麼顯示</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.0.4 v1.7）</p>
+</details>
+</div>
+</body>
+</html>

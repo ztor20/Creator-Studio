@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>用詞規則 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+ul.plain ul.plain{margin:4px 0 4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+.k{font-size:12px;color:var(--text-3)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+table.cmp td:nth-child(1){width:18%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="overview">用詞規則</h1>
+<p class="lede">創作者寫給粉絲的文字、各頁的受眾數字與項目的組成名稱，全站照這頁用同一套說法，避免誤導或同一件事有兩種叫法。</p>
+
+<div class="toc"></div>
+
+<h2 id="no-return-words"><span class="n"></span>不暗示保證報酬的用詞</h2>
+<p>共創的分潤涉及法律風險，粉絲看得到、創作者能編輯的文字，不能暗示保證報酬或投資收益。</p>
+<ul class="plain">
+  <li>不能用的詞：
+    <ul class="plain">
+      <li>investment</li>
+      <li>yield</li>
+      <li>guaranteed payout</li>
+      <li>ROI</li>
+      <li>passive income</li>
+      <li>dividend</li>
+      <li>其他暗示保證報酬或投資收益的字眼</li>
+    </ul>
+  </li>
+  <li>可以用中性、據實描述的說法，例如 performance-based distribution（依績效分配）</li>
+  <li>適用的文字：粉絲權益文案、群發訊息、公告、共創說明等可編輯的文字欄</li>
+  <li>儲存時檢查，擋下不能用的詞並提示替代說法</li>
+</ul>
+<p class="note">依據：主規格 §7.8；§5.2.2。</p>
+
+<h2 id="audience"><span class="n"></span>受眾指標</h2>
+<p>粉絲分析、儀表板與項目詳情的受眾數字共用這裡的名稱與單位，各頁不另取名稱或另算口徑。外部平台給的數字，見<a href="#metrics-external">外部平台的指標</a>；ztor 自己彙總的數字，見<a href="#metrics-ztor">ztor 彙總的指標</a>；兩種單位怎麼分，見<a href="#counts-people">次數與人數</a>；呈現時不能做的事，見<a href="#metrics-limits">受眾數字的呈現限制</a>。</p>
+
+<h3 id="metrics-external">外部平台的指標</h3>
+<p>這些數字由外部平台提供，ztor 只呈現、不重新計算；各平台支援哪些欄位，見<a href="fans-analytics.html">粉絲分析</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">指標</th><th>指什麼</th></tr></thead>
+  <tbody>
+    <tr><td>粉絲追蹤數（Followers）</td><td>該平台上追蹤這位創作者的帳號數<br>各平台定義不同，不能不揭露就跨平台直接相加</td></tr>
+    <tr><td>訂閱數（Subscribers）</td><td>訂閱制平台（例如 YouTube）的訂閱帳號數</td></tr>
+    <tr><td>觀看數（Views）</td><td>影音內容的播放次數，算一次的門檻依各平台定義</td></tr>
+    <tr><td>串流數（Streams）</td><td>音樂串流平台的播放次數，和觀看數不合併</td></tr>
+    <tr><td>互動數（Engagements）</td><td>按讚、留言、分享等互動的次數合計</td></tr>
+    <tr><td>受眾地區（Audience regions）</td><td>該平台提供的受眾地理分布</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="metrics-ztor">ztor 彙總的指標</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">指標</th><th>指什麼</th></tr></thead>
+  <tbody>
+    <tr><td>總追蹤人數（Total following）</td><td>跨平台去重後的受眾總數<br>去重規則確定前，要標明是各平台加總，或說明涵蓋的範圍</td></tr>
+    <tr><td>活躍粉絲（Active fans）</td><td>站內活躍粉絲數，口徑照<a href="fans-tiers.html">粉絲分級</a></td></tr>
+    <tr><td>付費粉絲（Paying fans）</td><td>有過消費的粉絲數，金額口徑照<a href="common-finance.html">財務術語與收入事件</a></td></tr>
+    <tr><td>觸及廣度（Reach）</td><td>影響力四個維度之一：受眾的數量規模</td></tr>
+    <tr><td>互動深度（Engagement depth）</td><td>影響力四個維度之一：受眾互動的頻率與強度</td></tr>
+    <tr><td>商業價值（Commercial value）</td><td>影響力四個維度之一：受眾帶來的實際收入</td></tr>
+    <tr><td>成長速度（Growth rate）</td><td>影響力四個維度之一：受眾規模的變化速度</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="counts-people">次數與人數</h3>
+<p>受眾數字有次數與人數兩種單位，兩者不能互相加總或比較，每個數字都要在畫面上標明是哪一種。</p>
+<div class="tablewrap"><table class="cmp">
+  <thead><tr><th>單位</th><th>算什麼</th><th>資料來源</th><th>認得出人嗎</th></tr></thead>
+  <tbody>
+    <tr><td>次數（Counts）</td><td>串流、觀看、瀏覽、互動等行為發生的件數</td><td>發行商的版稅報表<br>外部平台回傳的彙總數字<br>站內的貼文成效統計</td><td>認不出；同一個人做三次和三個人各做一次分不出來</td></tr>
+    <tr><td>人數（People）</td><td>去重後的人數</td><td>站內可辨識身分的行為紀錄</td><td>認得出，但只涵蓋 ztor 站上認得出身分的人</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>同一畫面並列次數與人數時，各自標明單位，不只寫數字</li>
+  <li>兩種單位的百分比不並列成同一組比例，因為分母不同</li>
+  <li>只存在於 ztor 會員資料的屬性（性別、星座、MBTI、生肖等）只能用人數，並揭露涵蓋率：分母只含站上認得出身分、且這個屬性有值的人</li>
+  <li>同名的切面不代表同一件事：「平台」「地區」在次數問的是作品在哪裡被消費，在人數問的是人在哪裡</li>
+  <li>各頁用哪一種單位：
+    <ul class="plain">
+      <li><a href="fans-analytics.html">粉絲分析</a>：兩種並存，各自標明</li>
+      <li>粉絲分析（含外部）：一律算人數</li>
+      <li>儀表板與項目詳情的表現區塊：一律算次數</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="metrics-limits">受眾數字的呈現限制</h3>
+<ul class="plain">
+  <li>四個影響力維度不合併成單一的影響力分數或排名分數，任何頁面都不呈現總分</li>
+  <li>任何彙總數字都要看得出涵蓋哪些平台；沒連結或不支援的平台不能不揭露就混進去</li>
+</ul>
+<p class="note">依據：主規格 §7.9；D158、D162、D163、D181。</p>
+
+<h2 id="project-names"><span class="n"></span>作品、方案與組合包</h2>
+<p>項目由作品與方案組成；方案與電子商店的組合包是同一種打包模式的兩種用法。作品與方案的規則所在，見<a href="#work-tier">作品與方案</a>；方案與組合包哪裡相同、哪裡不同，見<a href="#tier-bundle">方案與組合包的異同</a>。</p>
+
+<h3 id="work-tier">作品與方案</h3>
+<p>項目由作品與方案組成：三種發行模式都有作品，只有共創與預購有方案；兩者的定義與限制見<a href="project-rules.html#composition">項目規則的項目的組成</a>。</p>
+
+<h3 id="tier-bundle">方案與組合包的異同</h3>
+<p>改其中一方的價格規則時，要一起檢查另一方，不讓兩套分歧。</p>
+<div class="tablewrap"><table class="cmp">
+  <thead><tr><th>事項</th><th>方案（項目）</th><th>組合包（電子商店）</th></tr></thead>
+  <tbody>
+    <tr><td>內容從哪來</td><td colspan="2">引用電子商店既有的商品，不在自己的流程新建，也不改商品在電子商店的定價</td></tr>
+    <tr><td>價格</td><td colspan="2">自動推導，創作者不手填售價；折扣用百分比，不用絕對金額</td></tr>
+    <tr><td>依附關係</td><td>依附一個項目，離開項目沒有意義</td><td>獨立存在於商店</td></tr>
+    <tr><td>賣的是什麼</td><td>承諾：粉絲先付錢，東西還沒做出來</td><td>現貨：成員都是已存在、能出貨的商品</td></tr>
+    <tr><td>商品以外的內容</td><td>共創有支持者名額（分潤）與額外權益<br>預購有作品份數</td><td>只有成員</td></tr>
+    <tr><td>主體</td><td>預購方案一定含作品至少一份<br>共創方案的主體是分潤名額，可以是 0（只給商品與權益的純回饋方案）</td><td>沒有主體，成員彼此平等，至少 1 個成員</td></tr>
+  </tbody>
+</table></div>
+<p>組合包的完整規則見<a href="bundles.html">組合包與票務商品</a>；方案見<a href="project-create.html">建立項目</a>。</p>
+<p class="note">依據：主規格 §7.12、§7.13；D102、D166、D167、D228、D230、D232、D251、D293。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>0-設計規格書.md §7.8、§7.9、§7.12、§7.13</code>（v4.90）</li>
+    <li>決策：D102、D158、D162、D163、D166、D167、D181、D228、D230、D232、D251、D293</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>總追蹤人數跨平台去重的規則</li>
+    <li>只能用人數的屬性，涵蓋率怎麼計算</li>
+    <li>方案能不能引用一個組合包：禁止，或攤平成成員各自計價</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新建；對照主規格 v4.90 §7.8、§7.9、§7.12、§7.13）</p>
+</details>
+</div>
+</body>
+</html>

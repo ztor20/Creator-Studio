@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>平台優惠設定 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+ul.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+/* 販售層級示意圖 */
+.layers{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px 10px;margin:10px 0 6px}
+.layer{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;margin-bottom:8px}
+.layer__k{font-size:12.5px;color:var(--text-2);line-height:1.4}
+.layer__k span{display:block;font-size:11.5px;color:var(--text-3)}
+.layer__track{position:relative;height:18px;border-radius:999px;background:var(--surface-sunken)}
+.layer__bar{position:absolute;top:0;bottom:0;border-radius:999px;border:1px solid var(--border-strong)}
+.layer__bar.l1{background:var(--ok-fill);border-color:var(--ok-line)}
+.layer__bar.l2{background:var(--wait-fill);border-color:var(--wait-line)}
+.layer__bar.l3{background:var(--pink-fill);border-color:var(--pink-line)}
+.layer__bar.l4{background:var(--warn-fill);border-color:var(--warn-key);border-style:dashed}
+.layer__axis{position:relative;height:18px;font-size:11.5px;color:var(--text-3)}
+.layer__axis span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.layer__axis span:first-child{transform:none}
+.layer__axis span:last-child{transform:translateX(-100%)}
+@media (max-width:600px){.layer{grid-template-columns:1fr;gap:4px}.layer--axis .layer__k{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>平台優惠設定</h1>
+<p class="lede">Admin 在這頁開平台滿額折扣、發平台優惠碼、設例外藝人，並查折抵紀錄。這兩種優惠怎麼判門檻、誰吸收成本、跟其他折扣的套用順序，見優惠規則的<a href="promo-rules.html#s4-6">平台滿額折扣</a>與<a href="promo-rules.html#s4-7">平台優惠碼</a>。</p>
+<div class="toc"></div>
+
+<h2 id="intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>兩種平台優惠都一筆一筆獨立設定，各有自己的名稱、期間、啟用開關、備註、例外藝人與修改歷史</li>
+  <li>只有 Admin 能進入與修改，沒有權限時顯示無權限狀態；創作者不能修改或退出平台優惠，個案的出口是<a href="#exclude">例外藝人</a></li>
+  <li>儲存只對之後成立的訂單生效，既有訂單不變</li>
+</ul>
+
+<h2 id="flow"><span class="n"></span>操作流程</h2>
+<p>Admin 選要開哪一種優惠，填完設定儲存，之後在紀錄查折了多少。</p>
+<div class="dg" role="img" aria-label="平台優惠設定流程圖：選要開滿額折扣或平台優惠碼，填門檻與折抵或碼與折扣，再設期間、啟用與本筆例外藝人，儲存後只對之後的訂單生效，最後在紀錄查折抵">
+<div class="dg-hg" style="--dg-c:5">
+  <div class="dg-node q" style="grid-row:1/3;grid-column:1"><span class="s">1</span>開哪一種優惠？</div>
+  <span class="dg-a" data-t="滿額折扣" style="grid-row:1;grid-column:2"></span>
+  <span class="dg-a" data-t="平台優惠碼" style="grid-row:2;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:3"><span class="s">2</span>新增一筆<small>填門檻與折抵</small></div>
+  <div class="dg-node" style="grid-row:2;grid-column:3">新增一組<small>填碼、折扣與使用次數</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:4"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:5"><span class="s">3</span>設期間與例外<small>開始與結束時間、啟用、本筆例外藝人</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1/3;grid-column:7"><span class="s">4</span>儲存<small>只對之後成立的訂單生效</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:8"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:9"><span class="s">5</span>查紀錄<small>哪些訂單套了、折了多少</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，上面一列是滿額折扣，下面一列是平台優惠碼，兩條路在設期間與例外合流；圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>選要開哪一種優惠
+    <ul class="plain">
+      <li>滿額折扣：訂單達門檻自動折，買家不用輸碼</li>
+      <li>平台優惠碼：平台發碼，買家結帳時輸入</li>
+    </ul>
+  </li>
+  <li>新增一筆滿額折扣或一組平台優惠碼，欄位見<a href="#threshold-edit">一筆滿額折扣的設定</a>與<a href="#code-edit">一組平台優惠碼的設定</a></li>
+  <li>設開始與結束時間、啟用開關與本筆例外藝人</li>
+  <li>儲存，修改歷史追加一筆</li>
+  <li>在<a href="#records">折抵紀錄</a>查哪些訂單套了、折了多少</li>
+</ol>
+<ul class="plain">
+  <li>要讓某位藝人退出所有平台優惠，在<a href="#exclude">例外藝人</a>加入</li>
+</ul>
+<p class="note">依據：5.1.0.7 頁面定位、F2、F3、F4、F5、情境；D273、D277。</p>
+
+<h2 id="threshold"><span class="n"></span>滿額折扣</h2>
+<p>Admin 逐筆建立「訂單達多少、折多少」的活動，可以多筆同時存在。先看到<a href="#threshold-list">滿額折扣清單</a>；新增或編輯時填<a href="#threshold-edit">一筆滿額折扣的設定</a>。門檻、多筆重疊、例外與撤銷的規則見優惠規則的<a href="promo-rules.html#s4-6">平台滿額折扣</a>。</p>
+
+<h3 id="threshold-list">滿額折扣清單</h3>
+<p>每一列是一筆滿額折扣，顯示：</p>
+<ul class="plain">
+  <li>名稱</li>
+  <li>門檻與折抵</li>
+  <li>生效期間</li>
+  <li>狀態：未開始、進行中、已結束、已停用，依期間與啟用開關自動算出</li>
+  <li>啟用</li>
+  <li>例外藝人數</li>
+</ul>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>新增</td><td>—</td><td>開一筆新的滿額折扣</td></tr>
+    <tr><td>編輯</td><td>—</td><td>改這一筆的設定</td></tr>
+    <tr><td>複製</td><td>—</td><td>複製這一筆</td></tr>
+    <tr><td>停用</td><td>—</td><td>立刻停止套用到之後成立的訂單，不必刪除</td></tr>
+    <tr><td>刪除</td><td>—</td><td>什麼情況能刪除，見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>還沒建立任何滿額折扣或平台優惠碼時，顯示空狀態與建立第一筆的引導</li>
+</ul>
+
+<h3 id="threshold-edit">一筆滿額折扣的設定</h3>
+<p>在清單按新增或編輯時出現。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>名稱（Name）</td><td>必填</td><td>內部與紀錄用</td></tr>
+    <tr><td>門檻金額（Threshold）</td><td>必填</td><td>以平台基準幣別記錄<br>看訂單的品項小計判斷，換算與比對方式見<a href="promo-rules.html#s4-6">平台滿額折扣</a></td></tr>
+    <tr><td>折抵（Discount）</td><td>必填，固定金額或百分比二選一</td><td>固定金額不超過品項小計，超過時折到 0</td></tr>
+    <tr><td>開始時間</td><td>必填</td><td>—</td></tr>
+    <tr><td>結束時間</td><td>選填</td><td>留空＝長期有效</td></tr>
+    <tr><td>啟用（Enabled）</td><td>—</td><td>開關<br>關掉＝暫停這一筆，立刻停止套用到之後成立的訂單</td></tr>
+    <tr><td>備註（Notes）</td><td>選填</td><td>內部用，不對買家顯示</td></tr>
+    <tr><td>本筆例外藝人</td><td>—</td><td>挑選的藝人只退出這一筆，挑法與每列顯示同<a href="#exclude">例外藝人</a></td></tr>
+    <tr><td>修改歷史（Change History）</td><td>—</td><td>這一筆自己的修改紀錄：時間、操作者、改了什麼<br>只增不改，更正以新的一筆表示</td></tr>
+    <tr><td>儲存</td><td>—</td><td>只對之後成立的訂單生效<br>修改歷史追加一筆</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>套用範圍固定是全平台的電子商店、活動票券與項目，沒有逐模組的開關；拍賣不折</li>
+</ul>
+<p class="note">依據：5.1.0.7 F2、F4、F5、頁面狀態；主規格 §7.15；D273、D275、D277、D316、D424。</p>
+
+<h2 id="code"><span class="n"></span>平台優惠碼</h2>
+<p>平台自己發放、買家結帳時輸入的碼，一組一組設定；欄位與買家端行為跟創作者在商店設定發的優惠碼一樣。先看到<a href="#code-list">平台優惠碼清單</a>；新增或編輯時填<a href="#code-edit">一組平台優惠碼的設定</a>。成本由平台吸收，規則見優惠規則的<a href="promo-rules.html#s4-7">平台優惠碼</a>。</p>
+
+<h3 id="code-list">平台優惠碼清單</h3>
+<p>每一列是一組平台優惠碼，顯示：</p>
+<ul class="plain">
+  <li>名稱</li>
+  <li>碼</li>
+  <li>折扣</li>
+  <li>適用範圍</li>
+  <li>生效期間</li>
+  <li>狀態：未開始、進行中、已用完、已結束、已停用，意思見優惠規則的<a href="promo-rules.html#s4-5-4">優惠碼的狀態</a></li>
+  <li>已用／總兌換上限</li>
+  <li>例外藝人數</li>
+</ul>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>新增</td><td>—</td><td>開一組新的平台優惠碼</td></tr>
+    <tr><td>編輯</td><td>—</td><td>改這一組的設定</td></tr>
+    <tr><td>複製</td><td>—</td><td>複製這一組</td></tr>
+    <tr><td>停用</td><td>—</td><td>立刻停止受理這組碼</td></tr>
+    <tr><td>刪除</td><td>—</td><td>什麼情況能刪除，見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="code-edit">一組平台優惠碼的設定</h3>
+<p>在清單按新增或編輯時出現。跟創作者優惠碼相同的欄位，規則見優惠規則的<a href="promo-rules.html#s4-5-1">一組碼有哪些設定</a>，下表只寫平台碼自己的部分。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>名稱（Name）</td><td>必填</td><td>內部用</td></tr>
+    <tr><td>優惠碼（Code）</td><td>必填</td><td>全平台唯一<br>格式與比對方式同創作者優惠碼</td></tr>
+    <tr><td>自動產生</td><td>優惠碼欄旁</td><td>按了填入一組符合規則的碼</td></tr>
+    <tr><td>折扣（Discount）</td><td>必填，百分比或固定金額</td><td>範圍與固定金額的折法同創作者優惠碼</td></tr>
+    <tr><td>適用範圍（Applies to）</td><td>—</td><td>全平台<br>拍賣一律不折，見<a href="promo-rules.html#s2-auction">拍賣不折</a></td></tr>
+    <tr><td>開始時間</td><td>必填</td><td>—</td></tr>
+    <tr><td>結束時間</td><td>選填</td><td>留空＝長期有效</td></tr>
+    <tr><td>啟用（Enabled）</td><td>—</td><td>開關</td></tr>
+    <tr><td>每張訂單可折件數</td><td>預設 1</td><td>同創作者優惠碼，怎麼數見<a href="promo-rules.html#s4-5-3">次數怎麼數</a></td></tr>
+    <tr><td>每人總次數</td><td>—</td><td>同創作者優惠碼</td></tr>
+    <tr><td>總兌換次數</td><td>—</td><td>同創作者優惠碼</td></tr>
+    <tr><td>可與其他優惠碼疊加（Stack with other codes）</td><td>開關，預設關閉</td><td>跟創作者優惠碼同一單並用時，看雙方各自的開關，見<a href="promo-rules.html#s4-5-1">一組碼有哪些設定</a></td></tr>
+    <tr><td>備註（Notes）</td><td>選填</td><td>內部用</td></tr>
+    <tr><td>本組例外藝人</td><td>—</td><td>挑選的藝人只退出這一組，挑法與每列顯示同<a href="#exclude">例外藝人</a></td></tr>
+    <tr><td>修改歷史（Change History）</td><td>—</td><td>這一組自己的修改紀錄：時間、操作者、改了什麼<br>只增不改，更正以新的一筆表示</td></tr>
+    <tr><td>儲存</td><td>—</td><td>只對之後成立的訂單生效<br>修改歷史追加一筆</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.0.7 F3、F4、F5；5.1.5.5 F8.2；D272、D275、D277、D280、D420、D424。</p>
+
+<h2 id="exclude"><span class="n"></span>例外藝人</h2>
+<p>全局例外清單：列入的藝人，所有平台優惠（滿額折扣與平台優惠碼）都不套用。全局例外、每筆滿額折扣與每組平台碼各自的例外怎麼合起來，以及例外藝人的品項怎麼算，見優惠規則的<a href="promo-rules.html#s4-6">平台滿額折扣</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>搜尋</td><td>—</td><td>找清單裡的藝人</td></tr>
+    <tr><td>加入</td><td>—</td><td>用 Creator 管理的創作者識別挑選藝人</td></tr>
+    <tr><td>原因</td><td>加入時選填</td><td>—</td></tr>
+    <tr><td>移除</td><td>—</td><td>移出全局例外</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>清單每一列顯示藝人、加入時間、操作者、原因；每筆滿額折扣與每組平台碼裡的例外清單也一樣</li>
+</ul>
+<p class="note">依據：5.1.0.7 F5；D273、D277。</p>
+
+<h2 id="records"><span class="n"></span>折抵紀錄</h2>
+<p>折抵紀錄讓 Admin 對帳與解釋爭議：哪些訂單、哪些藝人、套了哪一筆、折了多少。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>篩選</td><td>—</td><td>依期間、來源模組、藝人、優惠篩選</td></tr>
+    <tr><td>依藝人彙總</td><td>切換檢視</td><td>以藝人為單位，看期間內累計的折抵金額</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>每一筆顯示：
+    <ul class="plain">
+      <li>成交時間</li>
+      <li>訂單</li>
+      <li>來源模組（電子商店、活動、項目）</li>
+      <li>品項小計</li>
+      <li>套用的優惠（哪一筆滿額折扣或哪一組平台碼）</li>
+      <li>折抵金額</li>
+      <li>分攤到各藝人的金額</li>
+    </ul>
+  </li>
+  <li>撤銷的訂單標示已沖銷</li>
+  <li>金額取自收入管理，這裡只顯示、不另外計算</li>
+</ul>
+<p class="note">依據：5.1.0.7 F6；主規格 §7.3；D273、D277。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.0.7-平台優惠設定.md</code>（v2.9）、<code>5.1.5.5-商店設定.md</code> F8.2、<code>0-設計規格書.md §4.1／§7.3／§7.6／§7.15</code></li>
+    <li>決策：D272、D273、D275、D277、D278、D280、D316、D391、D420、D424、D452</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>滿額折扣的名稱會不會顯示給買家</li>
+    <li>滿額折扣與平台優惠碼什麼情況能刪除</li>
+    <li>生效期間的時區與時間粒度（沿用排程特價的規則，該規則也還沒定）</li>
+    <li>平台優惠碼的字串是否要跟各商店的優惠碼互相唯一</li>
+    <li>平台優惠碼能不能限定模組或商品類型</li>
+    <li>折抵紀錄是否提供匯出</li>
+    <li>頁面載入中、儲存失敗時怎麼顯示</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.0.7 v2.9）</p>
+</details>
+</div>
+</body>
+</html>

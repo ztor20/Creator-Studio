@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>儀表板 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>儀表板</h1>
+<p class="lede">創作者登入後先到儀表板，一頁掃過收入、今日待處理、近期動態、粉絲與外部資料的摘要，再點進來源模組處理。</p>
+
+<div class="toc"></div>
+
+<h2 id="dash-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>儀表板只放摘要與入口，不能在這頁改任何狀態；數字與狀態都引用來源模組，不另外重算</li>
+  <li>帳號還沒有任何內容時，頁面以引導第一個建立任務為主，見<a href="#dash-states">沒有內容與有內容時</a></li>
+  <li>每一區各自載入，一區失敗不影響其他區，見<a href="#dash-loading">載入失敗時</a></li>
+</ul>
+
+<h2 id="dash-flow"><span class="n"></span>操作流程</h2>
+<p>創作者登入後進儀表板，依帳號有沒有內容走兩條路。</p>
+<div class="dg" role="img" aria-label="儀表板流程圖：登入後進儀表板，帳號還沒有內容時從首頁輪播的建立項目開始第一個建立任務；已有內容時看營運摘要與今日待處理，點進來源模組處理">
+<div class="dg-flow">
+  <div class="dg-node"><span class="s">1</span>登入後進儀表板</div><span class="dg-arr"></span>
+  <div class="dg-node q"><span class="s">2</span>帳號有內容了嗎？</div><span class="dg-arr"></span>
+  <div class="dg-fork">
+    <div class="dg-lane"><span class="dg-exit">還沒有</span><span class="dg-arr"></span><div class="dg-node">看首頁輪播</div><span class="dg-arr"></span><div class="dg-node end">進入建立流程<small>項目、IP 市場或活動</small></div></div>
+    <div class="dg-lane"><span class="dg-exit">已經有</span><span class="dg-arr"></span><div class="dg-node"><span class="s">3</span>看摘要與今日待處理</div><span class="dg-arr"></span><div class="dg-node end"><span class="s">4</span>點進來源模組處理</div></div>
+  </div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，上面一列是還沒有內容的帳號，下面一列是已有內容的帳號；圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>登入後進儀表板，頁首常駐「建立項目（New Project）」入口</li>
+  <li>帳號有內容了嗎？
+    <ul class="plain">
+      <li>還沒有：從<a href="#dash-banner">首頁輪播</a>的建立項目、探索 IP 市場或建立活動開始第一個建立任務</li>
+      <li>已經有：進下一點</li>
+    </ul>
+  </li>
+  <li>看<a href="#dash-summary">營運摘要</a>、<a href="#dash-alerts">今日待處理</a>與其他摘要區</li>
+  <li>點任一筆或處理按鈕，進對應的來源模組處理；狀態變更都在來源模組完成</li>
+</ol>
+<p class="note">依據：5.1.1 頁面定位、使用情境與任務；5.1.1.1 頁面內容。</p>
+
+<h2 id="dash-fields"><span class="n"></span>功能與欄位</h2>
+<p>儀表板由上到下依序是：</p>
+<ul class="plain">
+  <li><a href="#dash-header">歡迎詞與建立項目</a></li>
+  <li><a href="#dash-banner">首頁輪播</a></li>
+  <li><a href="#dash-summary">營運摘要</a></li>
+  <li><a href="#dash-tiers">站上粉絲分級組成</a></li>
+  <li><a href="#dash-earnings">近期收入</a>與<a href="#dash-alerts">今日待處理</a></li>
+  <li><a href="#dash-activity">近期動態</a>與<a href="#dash-ongoing">近期活動與進行中項目</a></li>
+  <li><a href="#dash-fans">粉絲關係與受眾趨勢</a>與<a href="#dash-external">外部資料狀態</a></li>
+</ul>
+
+<h3 id="dash-header">歡迎詞與建立項目</h3>
+<p>頁首的歡迎詞與建立項目入口，讓創作者隨時開始一個新項目。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>歡迎詞</td><td>—</td><td>可以帶創作者名稱<br>沒有名稱時改用不帶稱呼的版本</td></tr>
+    <tr><td>建立項目（New Project）</td><td>常駐</td><td>主要入口，進建立項目流程，見<a href="project-create.html">建立項目</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="dash-banner">首頁輪播（Hero Banner）</h3>
+<p>首頁輪播讓第一次使用的創作者知道平台能做什麼並開始第一個建立任務，也讓已在營運的創作者看到官方活動與營運機會。每一張的內容、順序與切換規則見<a href="dashboard-hero.html">首頁輪播（Hero Banner）</a>。</p>
+
+<h3 id="dash-summary">營運摘要</h3>
+<p>營運摘要讓創作者不用進各模組，就先掃到目前的收入與待處理狀況。共三項，淨利、待結算、可提領不放在這裡，看<a href="revenue.html">收入管理</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>當前總收入</td><td>—</td><td>引用收入管理的收入統計，總收入的定義見<a href="common-finance.html">財務術語與收入事件</a><br>點擊進<a href="revenue.html">收入管理</a><br>顯示資料的最後更新時間<br>有收入結算後，要在約定的時間內反映，時限見頁尾尚待確認</td></tr>
+    <tr><td>與上週比較</td><td>附在當前總收入旁</td><td>本週對上週：（本週 − 上週）÷ 上週<br>負成長標示向下<br>上週為 0 時顯示「new」，不出現無限大或無法計算的數字</td></tr>
+    <tr><td>待處理事項</td><td>—</td><td>數量＝今日待處理裡處理狀態為 Open 與 In Progress 的筆數，不含 Snoozed<br>顯示真實總數，不受今日待處理首頁最多 5 筆的限制<br>點擊進完整待辦清單，見<a href="#dash-alerts-all">完整待辦清單</a></td></tr>
+    <tr><td>進行中項目</td><td>—</td><td>進行中、排程中或需要追蹤的項目數，引用<a href="projects.html">項目</a>與<a href="#dash-ongoing">近期活動與進行中項目</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="dash-tiers">站上粉絲分級組成</h3>
+<p>站上粉絲分級組成讓創作者不用離開儀表板，就看到站上粉絲依分級的組成與消費。</p>
+<ul class="plain">
+  <li>每一級顯示：分級名稱、占比、人數、這一級的累計消費金額</li>
+  <li>分級有 Inner Circle、Super Fans、Ranked Fans、Fan 四級，門檻與算法見<a href="fans-tiers.html#tiers">四個分級</a>，這一區不另算</li>
+  <li>只算站上有帳號的粉絲，跟粉絲名冊是同一份；不含只在外部平台看得到的受眾</li>
+  <li>畫面上要標示分母：這一區的人數跟<a href="#dash-fans">粉絲關係與受眾趨勢</a>、<a href="fans-analytics.html">粉絲分析</a>的人數分母不同，不能互相比較或加總</li>
+</ul>
+
+<h3 id="dash-earnings">近期收入</h3>
+<p>近期收入讓創作者在首頁看到最近幾筆進帳，不用進收入頁翻交易。</p>
+<ul class="plain">
+  <li>只列已結算的收入，因此不另顯示狀態欄；待結算與爭議中的收入看<a href="revenue.html#rev-transactions">交易明細</a></li>
+  <li>依結算時間排序，跨所有項目最多 8 筆，不依項目分組</li>
+  <li>手動補登的收入不列在這裡，因為手動補登永遠不會結算，見<a href="revenue-manual.html">手動補登收入</a></li>
+  <li>撤銷沖銷、提款、扣款、手續費與爭議調整不算收入，不列在這裡</li>
+</ul>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>名稱</td><td>—</td><td>看得出來自哪個項目、商品、活動、IP 或外部平台</td></tr>
+    <tr><td>收入來源</td><td>—</td><td>收入分類，跟收入管理用同一組，見<a href="common-finance.html">財務術語與收入事件</a></td></tr>
+    <tr><td>日期</td><td>—</td><td>—</td></tr>
+    <tr><td>金額與幣別</td><td>—</td><td>—</td></tr>
+    <tr><td>點一筆</td><td>—</td><td>依收入來源導向，見下表</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:34%">收入來源</th><th>點進去到哪裡</th></tr></thead>
+  <tbody>
+    <tr><td>商品銷售（E-Shop Sales）</td><td>商品細節頁或交易明細</td></tr>
+    <tr><td>活動票務（Event Tickets）</td><td>活動詳情或交易明細</td></tr>
+    <tr><td>IP 版稅（IP Royalties）</td><td>IP 詳情或交易明細</td></tr>
+    <tr><td>授權收入（Licensing）</td><td>IP 詳情、授權紀錄或交易明細</td></tr>
+    <tr><td>項目支持（Project Support）</td><td>項目詳情或單一項目收益拆解</td></tr>
+    <tr><td>合作者分潤（Collaborator Royalties）</td><td>單一項目收益拆解或交易明細</td></tr>
+    <tr><td>Fanvestor 分潤（Fanvestor Royalties）</td><td>單一項目收益拆解或交易明細</td></tr>
+    <tr><td>串流・版稅（Streaming &amp; Royalties）</td><td>交易明細；有缺漏可以手動補登</td></tr>
+    <tr><td>推薦分潤（Referral Commission）</td><td>交易明細</td></tr>
+    <tr><td>貼文帶貨收益（Post-driven Rental Revenue）</td><td>交易明細；成效指標看<a href="fans-analytics.html">粉絲分析</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="dash-alerts">今日待處理</h3>
+<p>今日待處理集中列出各模組需要創作者處理的警告與待辦，讓首頁成為處理入口。已完成、純紀錄或一般更新放在<a href="#dash-activity">近期動態</a>。每一筆的欄位見下表；怎麼排序見<a href="#dash-alerts-order">排序</a>；各模組會出現哪些待辦見<a href="#dash-alerts-src">各模組的待辦</a>；看全部見<a href="#dash-alerts-all">完整待辦清單</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>重要程度</td><td>—</td><td>Critical<br>Warning<br>Info</td></tr>
+    <tr><td>待辦名稱</td><td>—</td><td>例如 IP 授權即將到期、商品低庫存、活動前檢核未完成</td></tr>
+    <tr><td>關聯對象</td><td>—</td><td>對應的項目、商品、活動、IP、粉絲群、收入紀錄或外部整合</td></tr>
+    <tr><td>原因摘要</td><td>—</td><td>一句話說明為什麼要處理</td></tr>
+    <tr><td>處理狀態</td><td>—</td><td>Open<br>In Progress<br>Snoozed<br>已解決（Resolved）的不出現在這裡</td></tr>
+    <tr><td>暫時關掉（Snooze）</td><td>只有資訊型待辦</td><td>關掉後約 7 天自動重新出現，並留下紀錄</td></tr>
+    <tr><td>關閉（阻斷型）</td><td>阻斷型待辦，例如合規上限</td><td>不能關閉，按鈕停用並提示去哪裡處理；只能在來源模組解決</td></tr>
+    <tr><td>處理按鈕</td><td>每一筆都有</td><td>直接帶到具體處理動作，例如續約授權、補貨、完成檢核、重新同步、查看交易，不只帶到狀態頁<br>狀態、文案與處理結果以來源模組為準</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="dash-alerts-order">排序</h4>
+<p>依急迫程度排序，首頁最多顯示 5 筆：</p>
+<ol class="plain">
+  <li>阻斷</li>
+  <li>即將到期（7 天內）</li>
+  <li>待審</li>
+  <li>待確認付款</li>
+  <li>低庫存</li>
+  <li>資訊</li>
+</ol>
+<p>整體急迫分數隨天齡輕微衰減；阻斷永遠排最前面。</p>
+
+<h4 id="dash-alerts-src">各模組的待辦</h4>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:16%">來源模組</th><th style="width:42%">會出現的待辦</th><th>處理入口</th></tr></thead>
+  <tbody>
+    <tr><td>項目</td><td>素材<br>排程<br>IP 租用<br>收益資料<br>共創與預購進度</td><td>項目詳情<br>發布確認</td></tr>
+    <tr><td>IP 市場</td><td>租用<br>詢問<br>競標<br>可用名額<br>授權狀態變更</td><td>IP 詳情<br>IP 市場篩選結果</td></tr>
+    <tr><td>IP 資產</td><td>授權到期<br>授權失效<br>權利資料待補<br>市場上架異常</td><td>IP 詳情<br>租入 IP<br>自有 IP 管理</td></tr>
+    <tr><td>電子商店</td><td>低庫存<br>售罄<br>商品資訊缺漏<br>交付設定<br>撤銷與爭議</td><td>商品清單<br>商品細節<br>建立商品流程</td></tr>
+    <tr><td>活動</td><td>活動前檢核<br>票種與名單<br>通知排程<br>報到<br>結算</td><td>活動清單<br>建立活動流程<br>活動詳情</td></tr>
+    <tr><td>粉絲</td><td>流失風險<br>分級與福利設定<br>訊息跟進</td><td>流失風險提醒<br>粉絲名冊<br>分級設定</td></tr>
+    <tr><td>收入管理</td><td>提款失敗<br>付款帳戶<br>交易爭議<br>收入同步或匯率資料</td><td>收入管理<br>交易明細<br>申請提款</td></tr>
+    <tr><td>設定</td><td>外部整合<br>稅務資料<br>收款方式<br>安全設定</td><td>設定的整合、付款、稅務資料、隱私與安全</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="dash-alerts-all">完整待辦清單</h4>
+<p>完整待辦清單列出全部待辦，可以依來源模組篩選；從首頁的今日待處理或營運摘要的待處理事項點進來。</p>
+
+<h3 id="dash-activity">近期動態</h3>
+<p>近期動態讓創作者快速掌握最近已經發生的事。需要創作者處理的狀態，同時出現在<a href="#dash-alerts">今日待處理</a>。首頁最多顯示 5 筆。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>事件類型</td><td>—</td><td>例如收入、內容、商品、活動、粉絲、IP、整合、系統</td></tr>
+    <tr><td>事件名稱</td><td>—</td><td>一句話描述發生了什麼，例如影片上架成功、粉絲數達標、IP 更新逾期</td></tr>
+    <tr><td>事件來源</td><td>—</td><td>產生事件的模組：項目、IP 市場、IP 資產、電子商店、活動、粉絲、收入管理、設定<br>儀表板本身不是事件來源<br>項目淨利（Project Net Income）或受眾洞察（Audience Intelligence）產生的事件，歸到觸發它的來源模組</td></tr>
+    <tr><td>發生時間</td><td>—</td><td>可以用相對時間顯示，要能查到精確時間</td></tr>
+    <tr><td>事件狀態</td><td>—</td><td>例如成功、已更新、已完成、失敗、已逾期</td></tr>
+  </tbody>
+</table></div>
+<h4 id="dash-activity-all">完整動態清單</h4>
+<p>完整動態清單列出近 90 天的動態，每頁約 50 筆，可以依事件類型篩選；從首頁的近期動態點進來。</p>
+
+<h3 id="dash-ongoing">近期活動與進行中項目</h3>
+<p>近期活動與進行中項目讓創作者在首頁看到活動與項目的營運狀態。只引用活動與項目兩個模組，首頁最多顯示 5 筆，完整清單在<a href="events.html">活動總覽</a>與<a href="projects.html">項目列表</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>類型</td><td>—</td><td>活動或項目</td></tr>
+    <tr><td>名稱</td><td>—</td><td>活動名稱或項目名稱</td></tr>
+    <tr><td>來源模組</td><td>—</td><td>活動或項目；儀表板本身不是來源</td></tr>
+    <tr><td>時間或進度</td><td>—</td><td>活動：活動時間或倒數<br>項目：上線、共創或預購進度</td></tr>
+    <tr><td>狀態</td><td>—</td><td>沿用活動或項目的狀態用詞，見<a href="common-status.html">狀態語言</a></td></tr>
+    <tr><td>主要摘要</td><td>—</td><td>例如票券銷售、活動倒數、共創進度、預購數量</td></tr>
+    <tr><td>處理入口</td><td>—</td><td>進<a href="event-detail.html">活動詳情</a>、<a href="events.html">活動總覽</a>或<a href="project-detail.html">項目詳情</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="dash-fans">粉絲關係與受眾趨勢</h3>
+<p>粉絲關係與受眾趨勢讓創作者在首頁看到粉絲經營與受眾變化的摘要；一張卡分兩欄，粉絲關係引用粉絲名冊，受眾趨勢引用跨平台的受眾資料。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>指標名稱與數值</td><td>—</td><td>例如活躍粉絲（Active fans）、流失風險（At risk）、活躍粉絲帶來的收入、主要平台、主要地區、轉換趨勢</td></tr>
+    <tr><td>資料來源</td><td>—</td><td>粉絲名冊或受眾資料</td></tr>
+    <tr><td>更新時間或同步狀態</td><td>—</td><td>外部資料有異常會影響這一區時，標出對應的來源或同步狀態，見<a href="#dash-external">外部資料狀態</a></td></tr>
+    <tr><td>處理入口（粉絲關係）</td><td>—</td><td>進<a href="fans-roster.html">粉絲名冊</a>、粉絲詳情或<a href="fans-tiers.html">粉絲分級</a></td></tr>
+    <tr><td>處理入口（受眾趨勢）</td><td>—</td><td>導向哪一頁見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+<p>跨平台受眾的完整分析頁（粉絲分析：含外部）啟用前，受眾趨勢只呈現實際拿得到的資料，不以該頁的完整內容對創作者承諾。</p>
+
+<h3 id="dash-external">外部資料狀態</h3>
+<p>外部資料狀態讓創作者確認外部平台進來的資料是否可用、多久前更新，以及有沒有延遲、缺漏或權限限制。這一區只顯示，不管理平台連結、授權或上傳資料檔。粉絲分析：含外部啟用前，這一區只呈現實際可得的資料。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>資料來源</td><td>—</td><td>例如 Instagram、YouTube、Spotify、TikTok、StreetVoice</td></tr>
+    <tr><td>資料類型</td><td>—</td><td>例如追蹤數、訂閱數、觀看數、串流數、互動數、受眾地區、外部平台收益</td></tr>
+    <tr><td>最後同步時間</td><td>—</td><td>—</td></tr>
+    <tr><td>資料狀態</td><td>—</td><td>依接入方式分兩組：<br>官方串接：正常、延遲、缺漏、資料限制<br>自行上傳：未上傳、已上傳、資料過期<br>定義以粉絲分析：含外部為準，這一區只顯示</td></tr>
+    <tr><td>影響摘要</td><td>—</td><td>一句話說明會影響哪些儀表板、粉絲、受眾或收入的指標</td></tr>
+    <tr><td>處理入口</td><td>資料正常時不提供</td><td>自行上傳的平台與 Spotify：導向粉絲分析：含外部上傳資料檔<br>官方串接的 StreetVoice：只說明 ztor 處理中，不給操作<br>授權型整合（金流、分析、發佈型整合與 Webhooks）：導向設定的整合</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.1 F1～F9；5.1.1.1；主規格 §7.3、§7.5；D165、D177、D181、D250、D253、D325、D344、D349。</p>
+
+<h2 id="dash-states"><span class="n"></span>沒有內容與有內容時</h2>
+<p>儀表板的重點隨帳號有沒有內容切換。「有內容」指帳號下建過任何項目、商品、活動或 IP。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">區塊</th><th style="width:38%">還沒有內容</th><th>已經有內容</th></tr></thead>
+  <tbody>
+    <tr><td>整頁</td><td>以引導第一個建立任務為主，數據區退居次位</td><td>數據區是主要內容</td></tr>
+    <tr><td>首頁輪播</td><td>帳號是新的時，建立項目卡固定第一張，是主要入口；判斷條件見頁尾尚待確認</td><td>改以官方活動公告、平台企劃與營運機會排序，建立推廣退為次要</td></tr>
+    <tr><td>營運摘要</td><td>顯示空狀態與建立引導，不用數字佔首屏焦點</td><td>顯示三項摘要</td></tr>
+    <tr><td>近期收入</td><td>說明收入產生後會出現在這裡</td><td>顯示近期收入</td></tr>
+    <tr><td>今日待處理</td><td>顯示空狀態</td><td>依重要程度顯示</td></tr>
+    <tr><td>近期動態</td><td>顯示空狀態</td><td>顯示近期動態</td></tr>
+    <tr><td>近期活動與進行中項目</td><td>說明原因與下一步</td><td>顯示活動與項目</td></tr>
+    <tr><td>粉絲關係與受眾趨勢</td><td>顯示空狀態，引導到資料來源</td><td>顯示摘要</td></tr>
+    <tr><td>外部資料狀態</td><td>五個資料來源都沒有資料時，引導到粉絲分析：含外部上傳第一份資料檔或看官方串接的狀況</td><td>顯示各來源的同步狀態</td></tr>
+    <tr><td>站上粉絲分級組成</td><td>顯示空狀態</td><td>顯示分級占比、人數與消費金額</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.1 頁面狀態、F1～F9 其他狀態；D165。</p>
+
+<h2 id="dash-loading"><span class="n"></span>載入失敗時</h2>
+<ul class="plain">
+  <li>每一區各自載入，一區失敗不拖垮整頁</li>
+  <li>營運摘要的數字拿不到時，顯示上次的數值與更新時間，不留白</li>
+  <li>首頁輪播的官方公告載入失敗時，只顯示固定的引導張，見<a href="dashboard-hero.html#hero-loading">載入失敗時</a></li>
+</ul>
+<p class="note">依據：5.1.1 頁面定位；主規格 §6.2、§6.3。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.1-儀表板.md</code>（最後更新 2026-10-09）頁面定位、F1～F9、頁面佈局、頁面狀態、情境；<code>5.1.1.1-Dashboard-Hero-Banner.md</code>（v3）；<code>0-設計規格書.md</code> §6.2、§6.3、§7.3、§7.5</li>
+    <li>決策：D165、D177、D181、D250、D253、D325、D344、D349、D391</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>粉絲關係與受眾趨勢的受眾趨勢欄，要導向粉絲分析還是粉絲分析：含外部，以及要不要改成呈現粉絲分析的指標</li>
+    <li>營運摘要的當前總收入在收入結算後多久要反映</li>
+    <li>「帳號是新的」怎麼判斷：儀表板規格寫帳號沒有任何內容，首頁輪播規格寫還沒建立任何項目</li>
+    <li>各區載入中的畫面</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.1 最後更新 2026-10-09）</p>
+</details>
+</div>
+</body>
+</html>

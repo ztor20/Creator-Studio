@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>取貨規則 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+table.stage{min-width:820px}
+table.stage td:nth-child(1){width:11%;white-space:nowrap}
+table.stage td:nth-child(2){width:19%}
+table.stage td:nth-child(4){width:12%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="pickup-rules">取貨規則</h1>
+<p class="lede">創作者與 Admin 照這頁的規則判斷一個取貨場次走到哪個階段、能核銷哪些商品與票券、一個領取碼怎麼核銷與何時失效，以及核銷結果怎麼寫回訂單與活動；其他取貨頁提到這些規則時會連回這裡。</p>
+
+<div class="toc"></div>
+
+<h2 id="stage"><span class="n"></span>取貨場次的階段</h2>
+<p>一個取貨場次依開始與結束時間，從尚未開始走到已結束，創作者封存後轉為已封存。每個階段誰能做什麼見<a href="#stage-who">各階段誰能做什麼</a>。</p>
+<div class="flow">
+  <span class="tag">尚未開始</span><span class="arr">→</span><span class="tag ok">進行中</span><span class="arr">→</span><span class="tag off">已結束</span>
+  <span class="flow__alt">創作者封存 → <span class="tag off">已封存</span></span>
+</div>
+
+<h4 id="stage-who">各階段誰能做什麼</h4>
+<p>Admin 能做創作者能做的一切（代管），表中「Admin 額外能做」只寫創作者做不到的事。表內只寫已定案的動作；各階段能不能編輯場次，見頁尾尚待確認。</p>
+<div class="tablewrap"><table class="stage">
+  <thead><tr><th>階段</th><th>什麼時候進入</th><th>創作者能做</th><th>Admin 額外能做</th><th>Scanner</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag">尚未開始</span><div class="k">Scheduled</div></td><td>建立後，開始時間還沒到</td><td>把 Scanner 網址交給工作人員</td><td>—</td><td>阻擋核銷，顯示場次未開始</td></tr>
+    <tr><td><span class="tag ok">進行中</span><div class="k">Active</div></td><td>開始時間到，結束時間還沒到</td><td>查看名單與核銷紀錄<br>反轉錯誤核銷</td><td>—</td><td>可以核銷</td></tr>
+    <tr><td><span class="tag off">已結束</span><div class="k">Ended</div></td><td>結束時間過了</td><td>查看名單與核銷紀錄、匯出<br>反轉錯誤核銷<br>延長結束時間</td><td>—</td><td>阻擋新核銷，顯示場次已結束</td></tr>
+    <tr><td><span class="tag off">已封存</span><div class="k">Archived</div></td><td>創作者封存</td><td>只能查看歷史紀錄</td><td>—</td><td>—</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.11 頁面狀態；5.1.5.15 頁面狀態；主規格 §7.2「取貨場次」。</p>
+
+<h2 id="stage-time"><span class="n"></span>場次時間怎麼管核銷</h2>
+<ul class="plain">
+  <li>開始與結束時間就是這個場次可以核銷的範圍；結束時間必須晚於開始時間</li>
+  <li>目前時間不在範圍內時，Scanner 顯示場次未開始或已結束，並阻擋核銷</li>
+  <li>場次結束後，沒核銷的件維持待核銷，不會轉成其他狀態，領取碼也不會因此失效</li>
+  <li>場次結束後還有人沒來領，創作者延長結束時間，見<a href="#actions">場次的動作</a></li>
+</ul>
+<p class="note">依據：5.1.5.11 頁面狀態；5.1.5.14 F1.3；主規格 §7.2「核銷為二元」；D122。</p>
+
+<h2 id="actions"><span class="n"></span>場次的動作</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:20%">動作</th><th style="width:20%">什麼時候能做</th><th>效果</th></tr></thead>
+  <tbody>
+    <tr><td>編輯</td><td>見頁尾尚待確認</td><td>開啟建立取貨場次的同一個視窗，見<a href="pickup-create.html#edit">編輯既有場次</a></td></tr>
+    <tr><td>延長結束時間</td><td>已結束</td><td>用「編輯」把結束時間往後調並儲存，不另設入口、按鈕或欄位<br>場次依新時間回到進行中，Scanner 恢復可以核銷<br>Scanner 網址與密碼不變，工作人員用原本的網址繼續掃</td></tr>
+    <tr><td>封存</td><td>—</td><td>場次轉為已封存，只供查看歷史紀錄</td></tr>
+    <tr><td>重設、停用 Scanner 網址</td><td>—</td><td>見取貨場次詳情的<a href="pickup-detail.html#scanner-life">密碼與網址的有效期</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.12 F1「建立後的欄位編輯性」；5.1.5.15 F1；D337、D338。</p>
+
+<h2 id="scope"><span class="n"></span>場次能核銷哪些商品與票券</h2>
+<p>一個場次可以同時放好幾個取貨商品與好幾種活動票券，取貨與入場共用同一個 Scanner。能放什麼見<a href="#scope-what">能加入的項目</a>；商品與場次怎麼綁見<a href="#scope-bind">一個商品只屬於一個場次</a>；拿掉項目會怎樣見<a href="#scope-remove">加入與移除項目</a>。</p>
+
+<h3 id="scope-what">能加入的項目</h3>
+<ul class="plain">
+  <li>單售的實體商品：取貨方式是現場 QR 領取，或正在設定成現場 QR 領取</li>
+  <li>活動票券：從活動建立的活動與票種挑選；新建的票種入場形式預設是實體入場，仍可在活動調整，見步驟 4 的<a href="event-create-step4.html">票種與票務</a></li>
+  <li>一個場次至少要有一個取貨商品或一種活動票券</li>
+  <li>組合包不能直接加入：組合包的成員可能分屬不同場次，組合包無法同時屬於兩場
+    <ul class="plain">
+      <li>組合包展開的每個成員，各自沿用成員商品自己的取貨場次，見<a href="bundles.html">組合包與票務商品</a></li>
+      <li>要讓組合包的某個成員進某一場，把該成員商品本身加入那一場</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="scope-bind">一個商品只屬於一個場次</h3>
+<ul class="plain">
+  <li>場次綁在商品上：加入時選的是整個商品，這個商品賣出的每一件都歸這個場次</li>
+  <li>同一個品項的好幾件不會分屬不同場次</li>
+  <li>有多個選項的商品照樣整個綁；名單與核銷保留每一件的選項組合</li>
+  <li>一個商品同時只能屬於一個取貨場次；要改到另一場，先從原場次移除</li>
+  <li>商品還沒加入任何場次時，賣出的每一件都是「取貨場次待設定」；加入場次後進入該場次的名單</li>
+</ul>
+
+<h3 id="scope-remove">加入與移除項目</h3>
+<ul class="plain">
+  <li>加入與移除都在編輯場次的視窗裡做，見<a href="pickup-create.html#edit">編輯既有場次</a>；場次詳情與 Scanner 沒有獨立的加入或移除介面</li>
+  <li>已有核銷紀錄的場次，仍可新增項目</li>
+  <li>移除取貨商品：這個商品還沒核銷的全部件回到「取貨場次待設定」，不逐件挑選；已核銷的件維持已核銷</li>
+  <li>移除活動票券：票券保留活動原本的票務狀態，只是不再由這個場次的 Scanner 核銷</li>
+  <li>移除有核銷紀錄的項目前，先提示不會刪除歷史紀錄；既有的核銷紀錄不能刪除</li>
+</ul>
+<p class="note">依據：5.1.5.12 F2、編輯規則、§6；5.1.5.14 F2.2；主規格 §7.2「領取單位的正式定義」；D240、D339、D393。</p>
+
+<h2 id="redeem"><span class="n"></span>核銷與領取碼</h2>
+<p>核銷就是工作人員掃一件的領取碼、確認這一件已經交給買家或已經入場。核銷怎麼算見<a href="#redeem-unit">一個領取碼核銷一件</a>；領取碼什麼時候不能再用見<a href="#code-void">領取碼什麼時候失效</a>。</p>
+
+<h3 id="redeem-unit">一個領取碼核銷一件</h3>
+<ul class="plain">
+  <li>領取單位（Pickup unit）是一件實體商品的一個實例：買幾件就有幾個，各有一個唯一的領取碼；組合包展開成成員的領取單位，完整定義見訂單詳情的<a href="order-detail.html#status-unit">品項與領取單位的狀態</a></li>
+  <li>活動票券一票一碼，票號就是它的領取碼，也算一種領取單位</li>
+  <li>核銷是二元的：掃一個領取碼核銷一件，待核銷轉為已核銷；沒有部分核銷、有問題或未到場</li>
+  <li>同一位買家有好幾件時逐件掃，不一次核銷全部</li>
+  <li>摘要、名單與統計的數字一律以件計，不以買家人數計</li>
+  <li>掃描當下各種擋下的情況，見手機 Scanner 的<a href="pickup-scanner.html#results">掃描結果有哪幾種</a></li>
+  <li>核銷錯了，創作者在取貨場次詳情反轉那一件，見<a href="pickup-detail.html#reverse">反轉錯誤核銷</a></li>
+</ul>
+
+<h3 id="code-void">領取碼什麼時候失效</h3>
+<ul class="plain">
+  <li>只有一種情況：Admin 在訂單詳情撤銷該品項，領取碼即刻失效、不能再核銷；能撤銷的條件與撤銷後的結果，見<a href="order-detail.html#void-when">能撤銷的條件</a>與<a href="order-detail.html#void-after">撤銷之後</a></li>
+  <li>已核銷之後才被撤銷的件，核銷紀錄保留，不自動反轉</li>
+  <li>場次時間跟領取碼是否有效無關，見<a href="#stage-time">場次時間怎麼管核銷</a></li>
+  <li>買家的領取 QR 只顯示在 ztor 前台的買家帳號；Creator Studio 只顯示領取碼的識別字串供對照</li>
+</ul>
+<p class="note">依據：5.1.5.11 引言、情境 3、4、8；5.1.5.14 F1.2、F1.3；5.1.5.15 F5.2；主規格 §7.2「取貨資格／核銷」「領取單位的正式定義」；D122、D240、D242、D252、D253。</p>
+
+<h2 id="sync"><span class="n"></span>取貨與訂單、活動的關係</h2>
+<p>取貨管理只管現場核銷，核銷結果寫回訂單與活動；商品、訂單、票務本身仍由各自的模組管。</p>
+<ul class="plain">
+  <li>取貨商品核銷後，寫回訂單品項那一件的核銷狀態，見訂單詳情的<a href="order-detail.html#fields-items">品項明細</a></li>
+  <li>物流與取貨並存的訂單怎麼算完成，見訂單詳情的<a href="order-detail.html#status-axes">兩條狀態</a></li>
+  <li>活動票券核銷後，寫回活動的票券狀態：已發出轉為已使用、記為報到，同時在取貨場次留下核銷紀錄</li>
+  <li>取貨商品的庫存、訂單與收入，仍由電子商店、訂單管理與收入管理負責；活動票券的票種、報到狀態與撤銷，仍由活動負責；取貨場次只決定這一場能掃哪些</li>
+  <li>核銷是履約紀錄，跟收入分開記</li>
+  <li>核銷紀錄跟訂單或票券狀態沒同步上時，見取貨場次詳情的<a href="pickup-detail.html#log-sync">匯出與資料同步</a></li>
+  <li>bookyay 匯入的活動，門票在 bookyay 掃，組合包裡的商品在取貨場次核銷：
+    <ul class="plain">
+      <li>活動詳情的掃碼連結有組合包取貨掃碼器網址與「前往領取場次」，見活動詳情總覽的<a href="event-detail-overview.html#scan-links">掃碼連結</a></li>
+      <li>這場活動的組合包商品只綁一個取貨場次時，「前往領取場次」直接進該場次的<a href="pickup-detail.html">取貨場次詳情</a></li>
+    </ul>
+  </li>
+</ul>
+<p class="note">依據：5.1.5.11 頁面定位、情境 5、6；5.1.5.14 F1.4、F2.3；5.1.5.15 與其他頁面的關係；主規格 §7.2「核銷為二元」、§7.6；D253、D394、D401、D453。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.11-取貨管理.md</code>（v2.8）；<code>5.1.5.12-建立取貨場次.md</code>（v1.11）F1、F2、編輯規則；<code>5.1.5.14-手機Scanner.md</code>（v1.11）F1.2～F1.4、F2；<code>5.1.5.15-取貨場次詳情.md</code>（v1.13）F1、F5.2、頁面狀態；<code>0-設計規格書.md</code>（v4.90）§7.2、§7.6</li>
+    <li>決策：D122、D240、D242、D252、D253、D337、D338、D339、D393、D394、D401、D453</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>建立後哪些欄位能改、尚未開始與進行中能不能編輯場次，見<a href="pickup-create.html">建立取貨場次</a>頁尾</li>
+    <li>封存的條件（例如是否只有已結束的場次能封存）、封存後能不能解除，以及 Scanner 在已封存時的狀態</li>
+    <li>「前往領取場次」在組合包商品綁了多個取貨場次、或還沒有取貨場次時怎麼處理（推導：多個時進取貨管理並預先篩出相關場次，沒有時提示先建立）</li>
+    <li>已核銷之後才被撤銷的件（只會出現在歷史資料）在名單上怎麼呈現</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新建頁面，規則節由取貨管理拆出；對照 5.1.5.11 v2.8、5.1.5.12 v1.11、5.1.5.14 v1.11、5.1.5.15 v1.13、主規格 v4.90）</p>
+</details>
+</div>
+</body>
+</html>

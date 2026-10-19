@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>粉絲系統說明 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>粉絲系統說明</h1>
+<p class="lede">創作者在粉絲系統說明（Fans Guide）用白話與示意畫面看懂粉絲分級、福利設定、分級階梯與品牌活動分潤怎麼串在一起。</p>
+<div class="toc"></div>
+
+<h2 id="guide-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>這一頁只解釋，不定義規則；名稱、指標與規則一律以各自的規則頁為準</li>
+  <li>創作者第一次打開任一粉絲頁時，會先被帶到這一頁看一次，見<a href="#guide-entry">入口與第一次導向</a></li>
+  <li>這一頁不佔粉絲的子選單位置，從各粉絲頁的「系統說明」連結進來</li>
+</ul>
+
+<h2 id="guide-flow"><span class="n"></span>操作流程</h2>
+<p>創作者從兩種方式進這一頁，看完說明後按主要行動離開；離開去哪裡，看是怎麼進來的。</p>
+<div class="dg" role="img" aria-label="粉絲系統說明流程圖，由左往右：創作者第一次打開粉絲頁時被帶進來，或從系統說明連結自己進來；看完四個概念後按主要行動，第一次被帶進來的回到原本要去的頁面，自己進來的去粉絲總覽">
+<div class="dg-hg" style="--dg-c:3">
+  <div class="dg-node" style="grid-row:1;grid-column:1"><span class="s">1</span>第一次打開任一粉絲頁<small>先被帶到這一頁，記下原本要去的頁面</small></div>
+  <div class="dg-node" style="grid-row:2;grid-column:1"><span class="s">1</span>按某一頁的「系統說明」<small>自己進來，次數不限</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:2"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:3"><span class="s">2</span>看四個概念<small>粉絲排序、福利設定、分級階梯、品牌活動分潤</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:4"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:5"><span class="s">3</span>按主要行動：有記下原本要去的頁面嗎？</div>
+  <span class="dg-a" data-t="有" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" data-t="沒有" style="grid-row:2;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:7">回到原本要去的頁面</div>
+  <div class="dg-node end" style="grid-row:2;grid-column:7">粉絲總覽</div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，上面一列是第一次被帶進來，下面一列是自己進來；圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>進這一頁有兩種方式：
+    <ul class="plain">
+      <li>第一次打開任一粉絲頁時，先被帶到這一頁，原本要去的頁面記下來</li>
+      <li>之後隨時從各粉絲頁的「系統說明」連結自己進來</li>
+    </ul>
+  </li>
+  <li>依序看<a href="#guide-content">說明的內容</a>的四個概念</li>
+  <li>按主要行動，有記下原本要去的頁面嗎？
+    <ul class="plain">
+      <li>有：回到原本要去的頁面</li>
+      <li>沒有：去<a href="fans-roster.html">粉絲總覽</a></li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>看完分級與福利的概念想直接動手：按「設定分級權益」，去<a href="fans-benefits.html">各級福利</a></li>
+</ul>
+<p class="note">依據：5.1.7.5 F3、F4、使用情境與任務。</p>
+
+<h2 id="guide-content"><span class="n"></span>說明的內容</h2>
+<p>頁面依序是開場、四個概念與收尾；概念說明的內容見<a href="#guide-concepts">四個概念</a>，收尾的兩個行動見<a href="#guide-actions">收尾與後續行動</a>。</p>
+<ul class="plain">
+  <li>開場：一句破題加副標，說明粉絲系統把「有互動」變成「知道是誰、做過什麼、能給什麼」</li>
+  <li>收尾：一句話把四個概念收起來，再接兩個後續行動</li>
+  <li>標題、比喻與示意數字都是教學文案，不是產品承諾</li>
+</ul>
+
+<h3 id="guide-concepts">四個概念</h3>
+<p>四個概念依序說明，每個概念的正式規則在右欄的頁面。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">概念</th><th>這一段說明什麼</th><th style="width:26%">正式規則在哪</th></tr></thead>
+  <tbody>
+    <tr><td>粉絲排序與忠誠點數</td><td>粉絲清單為什麼有名次、依什麼排<br>用白話摘要點數怎麼來：消費、活動報到、投入類、全站活動與主要應援對象、每週重算、衰減</td><td><a href="fans-tiers.html#s2">分級與忠誠點數</a></td></tr>
+    <tr><td>分級與福利設定</td><td>一項福利定義一次，再由各分級決定給不給</td><td><a href="fans-benefits.html">各級福利</a></td></tr>
+    <tr><td>分級階梯與稀缺性</td><td>分級越高，福利越稀有，推動粉絲往上一級</td><td><a href="fans-tiers.html#tiers">四個分級</a></td></tr>
+    <tr><td>品牌活動與分潤</td><td>粉絲消費、掃碼歸屬、粉絲拿點數、創作者拿分潤四步</td><td><a href="fans-campaigns.html">粉絲活動</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="guide-actions">收尾與後續行動</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>設定分級權益（Set tier benefits）</td><td>—</td><td>前往<a href="fans-benefits.html">各級福利</a></td></tr>
+    <tr><td>主要行動（See my fans／Continue）</td><td>—</td><td>去哪裡見<a href="#guide-return">看完之後去哪裡</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.7.5 F1、F2、F3；主規格 §7.5；D150、D347。</p>
+
+<h2 id="guide-entry"><span class="n"></span>入口與第一次導向</h2>
+<p>粉絲系統說明有常駐入口，創作者第一次進粉絲頁時也會被主動帶來看一次。哪些頁有入口，見<a href="#guide-links">常駐入口</a>；第一次怎麼帶、之後還會不會帶，見<a href="#guide-first">第一次自動導向</a>；看完按主要行動去哪裡，見<a href="#guide-return">看完之後去哪裡</a>。</p>
+
+<h3 id="guide-links">常駐入口</h3>
+<p>下列粉絲頁都有前往粉絲系統說明的連結：</p>
+<ul class="plain">
+  <li><a href="fans-roster.html">粉絲總覽</a>，含粉絲分級設定分頁的<a href="fans-tier-settings.html">分級設定</a>與<a href="fans-benefits.html">各級福利</a></li>
+  <li><a href="fans-roster-detail.html">粉絲詳情</a></li>
+  <li><a href="fans-vault.html">媒體庫</a></li>
+  <li><a href="fans-campaigns.html">粉絲活動</a>與<a href="fans-campaign-report.html">成效報告</a></li>
+</ul>
+
+<h3 id="guide-first">第一次自動導向</h3>
+<ul class="plain">
+  <li>創作者第一次打開任一粉絲頁時，先被帶到粉絲系統說明一次</li>
+  <li>帶過來的當下，原本要去的頁面記下來，當作看完之後的去處</li>
+  <li>看過之後，再打開粉絲頁不會再被帶過來</li>
+  <li>創作者仍可隨時從常駐入口自己進來重看，次數不限，不受「已看過」影響</li>
+  <li>「第一次」以裝置還是帳號判定，見頁尾尚待確認</li>
+</ul>
+
+<h3 id="guide-return">看完之後去哪裡</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:40%">怎麼進來的</th><th>按主要行動後</th></tr></thead>
+  <tbody>
+    <tr><td>第一次打開粉絲頁時被帶進來</td><td>回到原本要去的頁面</td></tr>
+    <tr><td>從常駐入口自己進來</td><td>去<a href="fans-roster.html">粉絲總覽</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.7.5 F3、F4；主規格 §3.2.1；D150、D169。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.7.5-粉絲系統說明.md</code>（最後更新 2026-10-02）、<code>0-設計規格書.md §3.2.1／§7.5</code></li>
+    <li>決策：D150、D169、D347、D349</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>「第一次」的判定層級：目前以裝置與瀏覽器記錄，換裝置或清除瀏覽器資料會再被帶過來一次；要不要改成以帳號記錄、跨裝置只算一次</li>
+    <li>品牌活動的正式分潤條件（固定金額制或比例制）與費率要不要納入收入事件與費率版本，說明頁的示例數字只是示意</li>
+    <li>開場、概念與收尾的實際文案，以畫面為準</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新增頁面）</p>
+</details>
+</div>
+</body>
+</html>

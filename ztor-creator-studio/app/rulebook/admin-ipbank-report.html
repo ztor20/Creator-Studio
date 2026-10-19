@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IP Bank Reporting — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.ex{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--wait-key);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.ex p{margin:0 0 4px}
+.ex ul{margin:0;padding-left:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>IP Bank Reporting</h1>
+<p class="lede">Admin 在 IP Bank Reporting 選一部影片與一段期間，看這部影片的收入分給各權利人與平台各多少。這頁只能看，要改分配回 <a href="admin-ipbank.html">Admin IP Bank</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="report-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>報表的數字是從 Admin IP Bank 的權利人與分潤比例，加上收入管理（Earnings）與 Profile 既有的提款（payout）結果推算出來的衍生數字（derived figures），目前是示意（illustrative），畫面上要標明這兩點</li>
+  <li>收入與提款的正式資料只在<a href="revenue.html">收入管理</a>；這頁不另記一份，也不能新增、編輯、移除、調整分潤比例或設定提款</li>
+  <li>Admin 不用先選定創作者就能進這頁</li>
+</ul>
+
+<h2 id="report-flow"><span class="n"></span>操作流程</h2>
+<p>Admin 先選影片與期間，有分配資料就讀摘要與分潤列表，沒有就回 Admin IP Bank 建立。</p>
+<div class="dg" role="img" aria-label="IP Bank Reporting 流程圖，由左往右：進 IP Bank Reporting，選影片與起迄日期，再看這部影片有沒有 IP 權利分配；有就讀統計摘要與分潤列表，沒有就顯示沒有分配資料，並引導到 Admin IP Bank 建立">
+<div class="dg-hg" style="--dg-c:4">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>進 IP Bank Reporting</div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:3"><span class="s">2</span>選影片與期間<small>摘要與列表跟著更新</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:4"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:5"><span class="s">3</span>這部影片有分配資料嗎？</div>
+  <span class="dg-a" data-t="有" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" data-t="沒有" style="grid-row:2;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:7">讀摘要與分潤列表<small>只能看</small></div>
+  <div class="dg-node stop" style="grid-row:2;grid-column:7">沒有分配資料<small>引導到 Admin IP Bank 建立</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>從同層導覽進 IP Bank Reporting</li>
+  <li>選影片與期間：見<a href="#report-filter">影片與期間</a></li>
+  <li>這部影片有分配資料嗎？
+    <ul class="plain">
+      <li>有：先看<a href="#report-summary">統計摘要</a>掌握收入與平台剩餘，再看<a href="#report-list">分潤列表</a>對照各權利人</li>
+      <li>沒有：見<a href="#report-empty">沒有資料時</a></li>
+    </ul>
+  </li>
+</ol>
+<ul class="plain">
+  <li>發現 IP、權利人或分潤比例不對時，回 <a href="admin-ipbank.html">Admin IP Bank</a> 修正；這頁不能改</li>
+</ul>
+<p class="note">依據：5.1.0.2 頁面定位、F2、使用情境；D129、D130。</p>
+
+<h2 id="report-fields"><span class="n"></span>功能與欄位</h2>
+<p>畫面由上到下是<a href="#report-filter">影片與期間</a>、<a href="#report-summary">統計摘要</a>、<a href="#report-list">分潤列表</a>；選定的影片沒有資料時，見<a href="#report-empty">沒有資料時</a>。</p>
+
+<h3 id="report-filter">影片與期間</h3>
+<p>頁面名稱是「IP Bank Reporting」，下方一句說明這頁顯示影片分潤的衍生數字。影片與期間放在同一列。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>麵包屑</td><td>—</td><td>顯示「Admin Creator Studio → IP Bank Reporting」<br>點 Admin Creator Studio 回到 Admin 的起始目的地</td></tr>
+    <tr><td>同層導覽</td><td>—</td><td>可前往其他七個 Admin 目的地：<br><a href="admin-creators.html">Creator 管理</a><br><a href="admin-events.html">創作者活動管理</a><br><a href="admin-ipbank.html">Admin IP Bank</a><br><a href="admin-fees.html">平台費率設定</a><br><a href="admin-promotions.html">平台優惠設定</a><br><a href="admin-loyalty.html">平台忠誠點數設定</a><br><a href="admin-video-review.html">影片上架審核</a></td></tr>
+    <tr><td>影片（Film）</td><td>單選</td><td>一次看一部影片<br>選定後統計摘要與分潤列表跟著更新</td></tr>
+    <tr><td>起始日期（Start date）</td><td>—</td><td>報表期間的起點<br>選定後統計摘要與分潤列表跟著更新</td></tr>
+    <tr><td>結束日期（End date）</td><td>—</td><td>報表期間的終點<br>選定後統計摘要與分潤列表跟著更新</td></tr>
+    <tr><td>資料性質說明</td><td>—</td><td>標明數字是衍生數字，目前為示意</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="report-summary">統計摘要</h3>
+<p>四個指標讓 Admin 先掌握一部影片的收入、分給權利人的部分與平台剩餘之間的關係。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">指標</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>影片淨收入（Film net revenue）</td><td>這部影片在選定期間的報表基準收入；正式定義見頁尾尚待確認</td></tr>
+    <tr><td>已分配給權利人（Allocated to owners）</td><td>分潤列表各權利人應計金額的加總</td></tr>
+    <tr><td>平台剩餘（Platform remainder）</td><td>分潤列表平台列的比例與金額</td></tr>
+    <tr><td>更新節奏（Refresh cadence）</td><td>顯示資料多久更新一次；實際節奏見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="report-list">分潤列表</h3>
+<p>分潤列表讓 Admin 對照每一筆 IP 與權利人的分潤比例，以及對應的金額。一列是一筆 IP 權利分配，最後一列是平台；各金額怎麼算見<a href="#report-calc">分潤金額怎麼算</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">欄位</th><th>內容</th></tr></thead>
+  <tbody>
+    <tr><td>IP 名稱（IP title）</td><td>對應 Admin IP Bank 裡的那一筆 IP</td></tr>
+    <tr><td>權利人（Owner）</td><td>對應那一筆的權利人；平台列不屬於任何權利人</td></tr>
+    <tr><td>狀態（Status）</td><td>已連結（Linked）或已邀請，已邀請在報表上簡寫為 Pending，見<a href="admin-ipbank.html#ipb-owner">權利人的連結狀態</a></td></tr>
+    <tr><td>分潤比例（Share）</td><td>這位權利人在這部影片的比例<br>平台列顯示沒分配出去的比例</td></tr>
+    <tr><td>應計金額（Owed）</td><td>這位權利人在這部影片應得的金額</td></tr>
+    <tr><td>已提款（Withdrawn）</td><td>這位權利人在這部影片已經提走的金額</td></tr>
+    <tr><td>可用金額（Available）</td><td>這位權利人在這部影片還能提的金額</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="report-empty">沒有資料時</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">情況</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>選定的影片還沒有任何 IP 權利分配</td><td>顯示沒有分配資料<br>引導前往 <a href="admin-ipbank.html">Admin IP Bank</a> 建立分配<br>不顯示任何分潤數字</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.0.2 F1、F2、F3、F4、頁面狀態；D129、D130、D273、D347。</p>
+
+<h2 id="report-calc"><span class="n"></span>分潤金額怎麼算</h2>
+<p>每位權利人的金額都只看同一部影片：應計金額照分潤比例算，扣掉這部影片已提款的部分就是可用金額。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">金額</th><th>怎麼算</th></tr></thead>
+  <tbody>
+    <tr><td>應計金額（Owed）</td><td>影片淨收入 × 分潤比例</td></tr>
+    <tr><td>已提款（Withdrawn）</td><td>讀取<a href="revenue.html">收入管理</a>（Earnings）與 Profile 既有的提款（payout）結果，只算同一位權利人在同一部影片的部分<br>不能拿這位權利人在所有影片的提款總額來扣</td></tr>
+    <tr><td>可用金額（Available）</td><td>應計金額 − 已提款</td></tr>
+    <tr><td>平台列</td><td>只顯示沒分配出去的比例與對應的應計金額<br>不顯示已提款與可用金額</td></tr>
+  </tbody>
+</table></div>
+<p>權利人還在已邀請時，應計金額照常累積，提款鎖住直到認領帳號、轉為已連結：</p>
+<ul class="plain">
+  <li>已提款：不顯示數值</li>
+  <li>可用金額：顯示「locked until claim」</li>
+</ul>
+<div class="ex">
+  <p>範例（數字皆為假設）：影片 A 在選定期間的淨收入 100,000；權利人甲 30%、已連結、已提款 10,000；權利人乙 20%、已邀請。</p>
+  <ul>
+    <li>甲：應計 30,000，可用 20,000</li>
+    <li>乙：應計 20,000，已提款不顯示，可用金額顯示「locked until claim」</li>
+    <li>平台列：50%，應計 50,000</li>
+  </ul>
+</div>
+<p class="note">依據：5.1.0.2 F3、F4；主規格 §7.3「IP Bank Owed」「IP Bank Available」、§7.6；D004、D129。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.0.2-IP-Bank-Reporting.md</code>（最後更新 2026-10-02）頁面定位、F1～F4、頁面狀態、使用情境；<code>0-設計規格書.md</code> §7.2、§7.3、§7.6、§8.15</li>
+    <li>決策：D004、D129、D130、D233、D273、D347</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>影片淨收入包含哪些收入、扣掉哪些項目</li>
+    <li>報表多久更新一次，以及一段期間的資料什麼時候算完成</li>
+    <li>分潤的結算與計算由哪裡負責、怎麼對帳</li>
+    <li>報表數字什麼時候從示意改成正式對帳資料</li>
+    <li>進頁時預設選哪部影片、哪段期間，以及沒選日期時看的是哪段資料</li>
+    <li>調整或移除分潤比例後，已產生的應計金額與已提款要不要回溯重算</li>
+    <li>報表載入中、載入失敗時畫面怎麼顯示</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（首次撰寫，對照 5.1.0.2、主規格 §7.3、§8.15，至 D347）</p>
+</details>
+</div>
+</body>
+</html>

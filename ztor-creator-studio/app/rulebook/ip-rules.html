@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IP 授權規則 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="ip-rules">IP 授權規則</h1>
+<p class="lede">創作者照這頁的規則判斷一筆 IP 怎麼上架、怎麼定價、一筆授權走到哪個階段，以及版本與素材包怎麼留存。</p>
+
+<div class="toc"></div>
+
+<h2 id="ip-source"><span class="n"></span>IP 的來源與類型</h2>
+<p>創作者這一側只管當前這位創作者（Artist）範圍內的 IP；一筆 IP 可以有其他創作者的權利人，跨創作者的權利分配與分潤比例在 Admin 的 <a href="admin-ipbank.html">IP Bank</a> 設定，創作者這一側只看得到唯讀摘要。IP 有兩種來源，見<a href="#ip-origin">兩種來源</a>；類型怎麼分，見<a href="#ip-type">IP 類型</a>。</p>
+
+<h4 id="ip-origin">兩種來源</h4>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">來源</th><th>怎麼產生</th></tr></thead>
+  <tbody>
+    <tr><td>在 Ztor 上產出<div class="k">Made on Ztor</div></td><td>項目上架時自動建立一筆 IP 紀錄，不走登錄流程</td></tr>
+    <tr><td>站外登錄<div class="k">Registered externally</div></td><td>Ztor 之外既有的權利，由創作者按「Add your IP」走<a href="ip-register.html">登錄 IP</a>建立</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="ip-type">IP 類型</h4>
+<ul class="plain">
+  <li>登錄時選的 IP 類型有六種：
+    <ul class="plain">
+      <li>Story World</li>
+      <li>Music</li>
+      <li>Person-Based</li>
+      <li>Brand</li>
+      <li>Event Format</li>
+      <li>Other</li>
+    </ul>
+  </li>
+  <li>IP 類型就是數位商品底下的「IP 資產」次分類，其中 Music 跟數位音樂共用、不另列，見<a href="taxonomy.html">商品分類與模組應用</a></li>
+  <li>IP 在項目裡只能以 IP 租借出現，見<a href="project-rules.html#ip">IP 在項目裡的身分</a></li>
+</ul>
+<p class="note">依據：5.1.4 頁面定位、F1、F6 提示條；5.1.4.1 §1、§4①；主規格 §7.1；D079、D080、D128、D129、D232。</p>
+
+<h2 id="listing"><span class="n"></span>上架 IP 市場與接受租約</h2>
+<p>一筆 IP 能不能被別人找到、租用，由兩個各自獨立的開關決定：<a href="#listing-switch">市場上架開關</a>管「找不找得到」，<a href="#accept-switch">接受新租約</a>管「收不收新申請」；兩個開關合起來就是這筆 IP 的<a href="#listing-status">上架狀態</a>。可租用的 IP 怎麼取得授權，見<a href="#rent-or-bid">直接租用或競標</a>。</p>
+
+<h4 id="listing-switch">市場上架開關</h4>
+<ul class="plain">
+  <li>預設關閉</li>
+  <li>開啟：其他創作者可以在 IP 市場搜尋到這筆 IP，並送出租用申請</li>
+  <li>關閉：不出現在 IP 市場搜尋、不能被租用，但照樣追蹤收益分配（waterfall，這筆 IP 產生的收益依權利人分配的紀錄）</li>
+  <li>開關只決定能不能被搜尋與發起申請；一筆授權要生效，仍要走完<a href="#stage">授權的階段</a></li>
+  <li>開關的家在管理 IP 的<a href="ip-manage.html#licensing">授權定價</a>（List in IP Market）；我的 IP 清單的「Mktplace」欄是同一個開關，兩處變更互相反映</li>
+  <li>登錄 IP 第 3 步選「上架出租（List for rental）」後開關是否立刻打開，以及 IP 詳情（從我的 IP 進入）的市場設定能不能切換，見頁尾尚待確認</li>
+</ul>
+
+<h4 id="accept-switch">接受新租約</h4>
+<ul class="plain">
+  <li>在管理 IP 的出租營運設定切換，見<a href="ip-manage.html#settings-ops">出租營運設定</a></li>
+  <li>關閉時暫停接受新的租用申請，但不下架；既有租約不受影響</li>
+</ul>
+
+<h4 id="listing-status">上架狀態</h4>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">上架狀態</th><th style="width:22%">市場上架開關</th><th style="width:22%">接受新租約</th><th>結果</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag off">未上架</span></td><td>關</td><td>—</td><td>不出現在 IP 市場；管理 IP 不顯示「以承租方視角檢視」</td></tr>
+    <tr><td><span class="tag wait">暫停接單</span></td><td>開</td><td>關</td><td>出現在 IP 市場，但不接受新的租用申請</td></tr>
+    <tr><td><span class="tag ok">已在 IP 市場上架</span></td><td>開</td><td>開</td><td>可以被搜尋，也可以發起新的租用申請</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>IP 的驗證還沒完成（驗證中、站外登錄待驗證）時，管理 IP 頁首的橫幅寫明「完成驗證前不能上架、也不會產生收益」；上架與定價的操作是否真的擋下，見頁尾尚待確認</li>
+  <li>登錄時上傳的所有權證明有助於驗證，驗證門檻與上架資格的關係見頁尾尚待確認</li>
+</ul>
+
+<h4 id="rent-or-bid">直接租用或競標</h4>
+<ul class="plain">
+  <li>擁有者在管理 IP 選下一個可承租檔期的計價模式：固定租金（Flat rental）或限時競標（Auction），見<a href="ip-manage.html#settings-ops">出租營運設定</a></li>
+  <li>固定租金：承租方在 IP 詳情頁看到定價並送出租用申請，見 IP 詳情的<a href="ip-detail.html#rent">租用</a></li>
+  <li>限時競標：承租方在 IP 詳情頁出價，見 IP 詳情的<a href="ip-detail.html#bid">競標</a></li>
+  <li>擁有者切換後，承租方看到的是否就是同一個模式，見頁尾尚待確認</li>
+</ul>
+<p class="note">依據：5.1.4 F1、F6「Mktplace」、頁尾圖例；5.1.4.1 §4③；5.1.4.2 §2.1、§2.4、§2.6、§4 頁面狀態；5.1.3.1 §2.5；主規格 §7.7；D037、D150。</p>
+
+<h2 id="pricing"><span class="n"></span>授權的定價</h2>
+<p>一筆 IP 的授權價格由一次性授權費加上分潤組成，另可加開獨家授權費；價格跟租期脫鉤，租期不是計價單位。三種價格各管什麼，見<a href="#price-parts">價格的組成</a>；不公開金額時怎麼顯示，見<a href="#on-request">請洽詢與尚未定價</a>；各頁怎麼顯示同一句價格，見<a href="#price-display">價格摘要</a>。</p>
+
+<h4 id="price-parts">價格的組成</h4>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">價格</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>一次性授權費<div class="k">One-off licence fee</div></td><td>使用這筆 IP 付一次的費用，不依租期分段計價<br>上架出租時必填：填金額或勾選請洽詢，二選一</td></tr>
+    <tr><td>分潤<div class="k">Royalty</div></td><td>承租方使用這筆 IP 對外產生營收時，依這個比例分給權利人<br>跟一次性授權費各自獨立<br>計算基礎與結算頻率見頁尾尚待確認</td></tr>
+    <tr><td>獨家授權費<div class="k">Exclusive licence fee</div></td><td>承租方要求獨家（排他）授權時收的另一筆一次性費用，不是在一次性授權費上加成<br>選填；留空代表不提供獨家授權，不是還沒定價</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>授權仍有到期日，也可以續約；租期只是授權的屬性，見<a href="#term">授權的期限與到期提醒</a></li>
+  <li>定價的家在管理 IP 的<a href="ip-manage.html#licensing">授權定價</a>；登錄 IP 第 3 步可以先填第一次的價格</li>
+  <li>幣別照創作者在收入管理的設定，見<a href="revenue.html">收入總覽</a></li>
+  <li>一次性授權費是否已含平台抽成、與平台費率的關係，見頁尾尚待確認</li>
+</ul>
+
+<h4 id="on-request">請洽詢與尚未定價</h4>
+<ul class="plain">
+  <li>一次性授權費、分潤、獨家授權費都可以各自勾選「請洽詢（on request）」，改成不公開數字</li>
+  <li>勾選請洽詢後，各頁顯示「請洽詢」，不顯示數字；承租方的主要動作改成向權利人洽詢，同樣建立一筆草稿授權，見<a href="#act-request">送出租用申請</a></li>
+  <li>一次性授權費與分潤都沒定價時顯示「尚未定價」，不顯示成 $0 或 0%，免得被讀成免費授權</li>
+</ul>
+
+<h4 id="price-display">價格摘要</h4>
+<p>下列三個頁面用同一套組字方式顯示同一句價格，不各自換算：</p>
+<ul class="plain">
+  <li>我的 IP 清單的「Rental Price」</li>
+  <li>管理 IP 的「目前費率」與「承租方會看到」</li>
+  <li>IP 詳情頁的定價</li>
+</ul>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:44%">設定（數字為假設）</th><th>顯示</th></tr></thead>
+  <tbody>
+    <tr><td>一次性授權費 6,800、分潤 12%</td><td>$6,800 + 12% royalty</td></tr>
+    <tr><td>一次性授權費請洽詢、分潤 12%</td><td>Fee on request + 12% royalty</td></tr>
+    <tr><td>兩者都沒定價</td><td>尚未定價</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.4.1 §4③、§6；5.1.4.2 §2.2、§2.4；5.1.3.1 §3.1、§3.2、§3.3；D169。</p>
+
+<h2 id="stage"><span class="n"></span>授權的階段</h2>
+<p>一筆授權（License）從草稿開始，雙方核准且條款齊全才生效，生效後以到期、撤銷或爭議其中一種結束。每個階段下誰能做什麼，見<a href="#stage-who">各階段誰能做什麼</a>；生效前條款要填齊哪些，見<a href="#terms-required">生效前條款要齊全</a>；平台紀錄的效力，見<a href="#legal">平台紀錄與正式合約</a>。</p>
+<div class="flow">
+  <span class="tag wait">草稿</span><span class="arr">→</span><span class="tag ok">生效</span><span class="arr">→</span><span class="tag off">到期</span><span class="arr">／</span><span class="tag warn">撤銷</span><span class="arr">／</span><span class="tag pink">爭議</span>
+</div>
+
+<h4 id="stage-who">各階段誰能做什麼</h4>
+<p>擁有者與承租方都是創作者；Admin 能做創作者能做的一切（代管）。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:14%">階段</th><th style="width:26%">什麼時候進入</th><th style="width:34%">創作者能做</th><th>連動</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag wait">草稿</span><div class="k">Draft</div></td><td>承租方在 IP 詳情頁送出租用申請或洽詢<br>續約時，以舊條款複製出新草稿</td><td>擁有者在授權核准佇列核准、議價或拒絕，見<a href="#act-review">核准、議價與拒絕</a></td><td>還不是正式授權，承租方不能當作已取得授權</td></tr>
+    <tr><td><span class="tag ok">生效</span><div class="k">Active</div></td><td>擁有者與承租方雙方明確核准，而且條款齊全</td><td>撤銷，要附書面理由<br>改條款要開新版本，見<a href="#act-change">修改已生效的條款</a></td><td>凍結素材包，見<a href="#media-pack">素材包</a><br>計入我的 IP 的「Total rentals」與管理 IP 的進行中租約數</td></tr>
+    <tr><td><span class="tag off">到期</span><div class="k">Expired</div></td><td>授權期滿</td><td>—</td><td>—</td></tr>
+    <tr><td><span class="tag warn">撤銷</span><div class="k">Revoked</div></td><td>生效中的授權被撤銷</td><td>—</td><td>撤銷理由寫進稽核軌跡</td></tr>
+    <tr><td><span class="tag pink">爭議</span><div class="k">Disputed</div></td><td>見頁尾尚待確認</td><td>—</td><td>素材包的凍結版本供爭議時對照</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>每次階段變更都寫進不可變的稽核軌跡，記錄時間、操作者與項目；只能往後加，要更正用沖銷或補登</li>
+</ul>
+
+<h4 id="terms-required">生效前條款要齊全</h4>
+<p>草稿要轉生效，下列條款都要填齊：</p>
+<ul class="plain">
+  <li>期限</li>
+  <li>地區</li>
+  <li>使用範圍</li>
+  <li>是否排他</li>
+  <li>衍生權</li>
+  <li>付款模式</li>
+  <li>分潤</li>
+  <li>終止條款</li>
+  <li>爭議條款</li>
+</ul>
+
+<h4 id="legal">平台紀錄與正式合約</h4>
+<ul class="plain">
+  <li>平台只記錄雙方約定的內容；正式合約以雙方簽署的文件為準</li>
+  <li>登錄 IP 流程與 IP 詳情頁的條款區都要揭露這一句</li>
+</ul>
+<p class="note">依據：5.1.4 F3、F8、F6「Total rentals」；5.1.4.1 §6；5.1.4.2 §2.2；5.1.3.1 §2.4、§2.5、§3.4；主規格 §7.2「IP 授權」、§7.7「授權生命週期」；D047。</p>
+
+<h2 id="term"><span class="n"></span>授權的期限與到期提醒</h2>
+<ul class="plain">
+  <li>每筆授權都有起訖期間，期滿進入到期</li>
+  <li>擁有者在管理 IP 開啟到期提醒後，任一租約到期前會收到提醒；提前幾天提醒見頁尾尚待確認</li>
+  <li>租入 IP 的到期提醒記在 IP 詳情頁</li>
+  <li>到期提醒會出現在儀表板的今日待處理（Alerts &amp; Actions），點擊導向我的 IP，見<a href="dashboard.html">儀表板</a></li>
+  <li>到期後續約是否要重付一次性授權費，見頁尾尚待確認</li>
+</ul>
+<p class="note">依據：5.1.4 F2、F4；5.1.4.2 §2.6；5.1.3.1 §2.5、§3.1；5.1.1 F4；D169。</p>
+
+<h2 id="actions"><span class="n"></span>授權的動作與效果</h2>
+<p>一筆授權從申請到結束有五種動作：<a href="#act-request">送出租用申請</a>、<a href="#act-review">核准、議價與拒絕</a>、<a href="#act-revoke">撤銷</a>、<a href="#act-renew">續約</a>、<a href="#act-change">修改已生效的條款</a>。</p>
+
+<h4 id="act-request">送出租用申請</h4>
+<ul class="plain">
+  <li>承租方在 IP 詳情頁按送出，建立一筆草稿授權，進入擁有者的授權核准佇列</li>
+  <li>價格是請洽詢時，送出就是向權利人洽詢，不是直接送出報價</li>
+  <li>送出之後、雙方核准之前，不構成正式授權；需要審核或付款時，畫面不能讓承租方以為已完成授權</li>
+  <li>送出前要不要二次確認、申請方能不能撤回、承租方在哪裡追蹤自己的申請，見頁尾尚待確認</li>
+</ul>
+
+<h4 id="act-review">核准、議價與拒絕</h4>
+<ul class="plain">
+  <li>擁有者在我的 IP 的<a href="my-ip.html#queue">授權核准佇列</a>處理，可以核准（Approve）、議價（Counter）或拒絕（Decline）</li>
+  <li>核准而且條款齊全，授權才轉生效</li>
+  <li>每次核准、拒絕都寫進稽核軌跡</li>
+</ul>
+
+<h4 id="act-revoke">撤銷</h4>
+<ul class="plain">
+  <li>生效中的授權可以撤銷，撤銷時要附書面理由，理由寫進稽核軌跡</li>
+  <li>誰可以發起撤銷，見頁尾尚待確認</li>
+</ul>
+
+<h4 id="act-renew">續約</h4>
+<ul class="plain">
+  <li>續約是把舊條款複製成一筆新草稿，雙方重新核准</li>
+  <li>原授權保留它的歷史狀態，不被新草稿覆蓋</li>
+</ul>
+
+<h4 id="act-change">修改已生效的條款</h4>
+<ul class="plain">
+  <li>授權生效後要改條款，一律開新版本，不在原授權上直接改</li>
+  <li>已生效的授權沿用簽署時的版本</li>
+  <li>擁有者在管理 IP 改定價時，畫面提示只套用於之後新成立的租約；這條是否有強制保證、是否開新費率版本，見頁尾尚待確認</li>
+</ul>
+<p class="note">依據：5.1.4 F8；5.1.4.2 §2.4；5.1.3.1 §2.5、§3.1、§3.4；主規格 §7.6、§7.7「授權生命週期」；D047、D169。</p>
+
+<h2 id="history"><span class="n"></span>版本歷史與素材包</h2>
+<p>IP 本身與一筆授權用到的素材都會留下可回溯的紀錄：IP 的權利狀態見<a href="#version">IP 的版本歷史</a>，授權時交付的素材見<a href="#media-pack">素材包</a>，收入怎麼對到版本見<a href="#income">收入</a>。</p>
+
+<h4 id="version">IP 的版本歷史</h4>
+<ul class="plain">
+  <li>每筆 IP 有一個不會變的識別碼（IP ID），版本只能往後加</li>
+  <li>站外登錄的 IP 從 v1 開始，第一次編輯後成為 v2</li>
+  <li>可以還原任一時間點的權利狀態</li>
+  <li>版本歷史與稽核軌跡在 IP 詳情頁（從我的 IP 進入時）查看</li>
+</ul>
+
+<h4 id="media-pack">素材包</h4>
+<p>素材包（Media Pack）是一筆 IP 提供給承租方使用的素材組合。</p>
+<ul class="plain">
+  <li>每種 IP 類型有自己的素材欄位，並自動算出完整度</li>
+  <li>上架或授權生效時，凍結當下的素材包版本，供日後爭議時對照</li>
+  <li>IP 市場的卡片顯示這筆 IP「目前」的完整度，不是某一筆授權凍結的值；兩者不混用</li>
+</ul>
+
+<h4 id="income">收入</h4>
+<ul class="plain">
+  <li>每筆收入綁定發生當時的 IP 版本；IP 之後改版，不改寫已發生收入的綁定</li>
+  <li>授權費、競標付款與分潤的實際收入與明細都在收入管理，IP 相關頁面只引用、不重算，見<a href="revenue.html">收入總覽</a></li>
+</ul>
+<p class="note">依據：5.1.4 F5；5.1.3 F3「素材包完整度」；5.1.3.1 §2.5、§4.3；主規格 §7.3、§7.6、§7.7「IP 版本歷史」「素材包」；D047。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>0-設計規格書.md</code>（v4.90）§7.1、§7.2、§7.3、§7.6、§7.7；<code>5.1.4-我的IP.md</code>（最後更新 2026-07-30）；<code>5.1.4.1-登錄IP流程.md</code>（v2.2）；<code>5.1.4.2-管理IP.md</code>（最後更新 2026-07-30）；<code>5.1.3-IP市場.md</code>（最後更新 2026-06-17）；<code>5.1.3.1-IP詳情頁.md</code>（v2.3）</li>
+    <li>決策：D037、D047、D079、D080、D128、D129、D150、D169、D232</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>驗證還沒完成時，上架與定價的操作是否真的擋下（目前只在管理 IP 的橫幅文案寫明）</li>
+    <li>IP 驗證的門檻，以及所有權證明與上架資格的關係</li>
+    <li>擁有者切換固定租金與限時競標後，IP 詳情頁怎麼跟著切換</li>
+    <li>分潤的計算基礎（毛額或淨額）與結算頻率</li>
+    <li>一次性授權費是否已含平台抽成、與平台費率設定的關係</li>
+    <li>授權到期後續約，是否要重付一次性授權費</li>
+    <li>選獨家授權是否影響可用名額或其他授權條件（例如鎖定全部名額）</li>
+    <li>授權什麼情況下進入爭議、由誰發起</li>
+    <li>誰可以撤銷一筆生效中的授權</li>
+    <li>續約可以在哪些階段發起（生效中、到期後），到期、撤銷、爭議之後原授權怎麼保留</li>
+    <li>一次性授權費與分潤都勾選請洽詢時，價格摘要顯示什麼</li>
+    <li>登錄 IP 第 3 步選上架出租後，市場上架開關是否立刻打開</li>
+    <li>IP 詳情（從我的 IP 進入）的市場設定能不能切換上架</li>
+    <li>送出租用申請前要不要二次確認、申請方能不能撤回草稿與撤回後是否留痕、承租方在哪一頁追蹤自己送出的申請</li>
+    <li>擁有者修改定價後，是否強制保證既有租約維持簽署時的條款、是否比照費率版本開新版本</li>
+    <li>到期提醒提前幾天送出（目前畫面示意為 14、7、1 天）</li>
+    <li>貨幣是否支援多幣別（目前畫面固定顯示 $）</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照主規格 v4.90 §7.7、5.1.4.1 v2.2、5.1.3.1 v2.3，至 D169）</p>
+</details>
+</div>
+</body>
+</html>

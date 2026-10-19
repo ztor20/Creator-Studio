@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creator 列表 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+ul.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+/* 販售層級示意圖 */
+.layers{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px 10px;margin:10px 0 6px}
+.layer{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;margin-bottom:8px}
+.layer__k{font-size:12.5px;color:var(--text-2);line-height:1.4}
+.layer__k span{display:block;font-size:11.5px;color:var(--text-3)}
+.layer__track{position:relative;height:18px;border-radius:999px;background:var(--surface-sunken)}
+.layer__bar{position:absolute;top:0;bottom:0;border-radius:999px;border:1px solid var(--border-strong)}
+.layer__bar.l1{background:var(--ok-fill);border-color:var(--ok-line)}
+.layer__bar.l2{background:var(--wait-fill);border-color:var(--wait-line)}
+.layer__bar.l3{background:var(--pink-fill);border-color:var(--pink-line)}
+.layer__bar.l4{background:var(--warn-fill);border-color:var(--warn-key);border-style:dashed}
+.layer__axis{position:relative;height:18px;font-size:11.5px;color:var(--text-3)}
+.layer__axis span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.layer__axis span:first-child{transform:none}
+.layer__axis span:last-child{transform:translateX(-100%)}
+@media (max-width:600px){.layer{grid-template-columns:1fr;gap:4px}.layer--axis .layer__k{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Creator 列表</h1>
+<p class="lede">Admin 在 Creator 管理（Creator Management）查看平台上所有創作者、建立新的創作者，並選一位進入他的工作區代為操作。</p>
+<div class="toc"></div>
+
+<h2 id="intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>Creator 管理是 Admin 登入後落地的第一頁，也是進入任何一位創作者工作區的入口</li>
+  <li>創作者本人先在 ztor 前台自己註冊帳號，Admin 再以這個帳號建立創作者；建好後創作者也能自己登入 Creator Studio</li>
+  <li>修改單一創作者的店鋪網址或電話，在<a href="admin-creator-detail.html">Creator 詳情</a></li>
+</ul>
+
+<h2 id="flow"><span class="n"></span>操作流程</h2>
+<p>創作者從註冊帳號到被 Admin 代為操作，走下面五步。</p>
+<div class="dg" role="img" aria-label="Creator 管理流程圖：創作者在 ztor 前台註冊帳號，Admin 建立創作者，自動產生電子商店，Admin 前往工作區代為操作，再返回 Creator 管理">
+<div class="dg-flow">
+  <div class="dg-node"><span class="s">1</span>註冊 ztor 帳號<small>創作者本人在 ztor 前台註冊</small></div><span class="dg-arr"></span>
+  <div class="dg-node"><span class="s">2</span>建立創作者<small>Admin 以這個帳號建立</small></div><span class="dg-arr"></span>
+  <div class="dg-node"><span class="s">3</span>自動產生電子商店<small>創作者狀態為啟用中</small></div><span class="dg-arr"></span>
+  <div class="dg-node"><span class="s">4</span>前往工作區<small>Admin 代為操作</small></div><span class="dg-arr"></span>
+  <div class="dg-node end"><span class="s">5</span>返回 Creator 管理<small>或改進入另一位創作者</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>創作者本人在 ztor 前台（買家端）自己註冊 ztor 帳號，這一步不在 Creator Studio</li>
+  <li>Admin 按「建立創作者」，填寫的欄位見<a href="#create">建立創作者</a></li>
+  <li>建立成功後，自動產生這位創作者的電子商店；創作者狀態為啟用中</li>
+  <li>Admin 在名冊按「前往工作區」，進入後能做什麼見<a href="#workspace">代為操作創作者的工作區</a></li>
+  <li>做完後返回 Creator 管理，或改進入另一位創作者</li>
+</ol>
+<ul class="plain">
+  <li>停用或重新啟用一位創作者，見<a href="#status">創作者的狀態</a></li>
+</ul>
+<p class="note">依據：5.1.0 頁面定位、F2、F4、情境；D086、D107、D170。</p>
+
+<h2 id="roster"><span class="n"></span>創作者名冊</h2>
+<p>名冊讓 Admin 掌握平台上所有創作者的狀態，決定要進入哪一位。怎麼縮小範圍，見<a href="#filter">篩選與搜尋</a>；每一列顯示什麼、能做什麼，見<a href="#rows">清單</a>；新增一位，見<a href="#create">建立創作者</a>。</p>
+
+<h3 id="filter">篩選與搜尋</h3>
+<p>篩選與搜尋都只影響檢視，不改名冊的資料。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>狀態篩選（Status）</td><td>—</td><td>單選，選項：<br>全部<br>啟用中<br>已停用<br>每個選項附數量，隨名冊即時重算<br>狀態的意思見<a href="#status">創作者的狀態</a></td></tr>
+    <tr><td>搜尋（Search）</td><td>—</td><td>用創作者名稱或店鋪識別縮小名冊</td></tr>
+    <tr><td>清除</td><td>搜尋或篩選沒有結果時</td><td>名冊改顯示查無符合，並提供清除的入口<br>跟還沒有任何創作者的空狀態分開顯示</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="rows">清單</h3>
+<p>一列一位創作者，每一列顯示：</p>
+<ul class="plain">
+  <li>頭像</li>
+  <li>名稱：顯示名稱或藝名</li>
+  <li>店鋪識別：這位創作者電子商店的網址識別，例如 <code>ztor.com/shop/denise</code></li>
+  <li>創建時間：帳號建立的時間，自動記錄</li>
+  <li>狀態：啟用中或已停用</li>
+</ul>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>前往工作區（Enter Workspace）</td><td>—</td><td>進入這位創作者的工作區代為操作，見<a href="#workspace">代為操作創作者的工作區</a></td></tr>
+    <tr><td>編輯（Edit）</td><td>—</td><td>打開這位創作者的<a href="admin-creator-detail.html">Creator 詳情</a><br>能改店鋪網址與電話，ztor 帳號不能改</td></tr>
+    <tr><td>停用（Disable）</td><td>狀態是啟用中</td><td>切為已停用，效果見<a href="#status">創作者的狀態</a></td></tr>
+    <tr><td>啟用（Enable）</td><td>狀態是已停用</td><td>切回啟用中</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>狀態變更後，清單那一列立刻反映</li>
+  <li>平台還沒有任何創作者時，名冊改顯示空狀態與建立創作者的引導</li>
+</ul>
+
+<h3 id="create">建立創作者</h3>
+<p>按「建立創作者（Create）」時出現。對象是創作者本人已在 ztor 前台註冊的帳號，不是憑空開一個新帳號。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>名稱（Creator Name）</td><td>必填</td><td>創作者的顯示名稱或藝名</td></tr>
+    <tr><td>頭像（Avatar）</td><td>—</td><td>創作者的頭像圖片</td></tr>
+    <tr><td>email</td><td>必填</td><td>對應創作者已註冊的 ztor 帳號，也用來聯絡</td></tr>
+    <tr><td>電話（Phone）</td><td>選填</td><td>—</td></tr>
+    <tr><td>店鋪網址（Shop URL）</td><td>必填</td><td>格式 <code>ztor.com/shop/xxx</code><br>全平台唯一，建立時就擋下重複</td></tr>
+    <tr><td>幣別（Currency）</td><td>必填，五選一</td><td>選項：<br>美元（USD）<br>新台幣（TWD）<br>港幣（HKD）<br>新加坡幣（SGD）<br>日圓（JPY）<br>選的就是這位創作者的創作者幣別，定義見<a href="common-currency.html">定價幣別</a><br>建立後創作者與 Admin 都不能改，送出前要讓 Admin 知道這一格不能再改</td></tr>
+    <tr><td>建立</td><td>—</td><td>建立成功後：<br>自動產生這位創作者的電子商店<br>創作者狀態為啟用中<br>創建時間自動記錄</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>建立的成功、失敗與欄位錯誤，照全站共用的狀態規則顯示</li>
+</ul>
+<p class="note">依據：5.1.0 F2、F3、頁面狀態；主規格 §7.15；D097、D107、D218、D316、D326、D374。</p>
+
+<h2 id="status"><span class="n"></span>創作者的狀態</h2>
+<p>創作者的營運狀態只有兩個，停用可以隨時復原。</p>
+<div class="flow"><span class="tag ok">啟用中</span><span class="arr">⇄</span><span class="tag off">已停用</span></div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:18%">狀態</th><th style="width:30%">什麼時候進入</th><th>效果</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag ok">啟用中（Active）</span></td><td>新建立的創作者預設<br>已停用的創作者被重新啟用後</td><td>正常營運<br>Admin 可以進入工作區代為操作</td></tr>
+    <tr><td><span class="tag off">已停用（Disabled）</span></td><td>Admin 停用後</td><td>電子商店對外停止存取<br>資料不刪除<br>名冊仍看得到，可以重新啟用</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>停用與啟用在名冊和 Creator 詳情都能做，效果相同</li>
+</ul>
+<p class="note">依據：5.1.0 F3；5.1.0.5 F1；D097、D374。</p>
+
+<h2 id="workspace"><span class="n"></span>代為操作創作者的工作區</h2>
+<p>Admin 從名冊進入一位創作者的工作區後，看到的畫面跟創作者本人一樣，另外多了只有 Admin 能做的操作。</p>
+<ul class="plain">
+  <li>還沒選定創作者前，創作者工作區的模組不出現在導航；Admin 的其他頁（例如創作者活動管理、影片上架審核、平台費率設定）照常可用</li>
+  <li>進入後，導航提供「返回 Creator 管理」，並標示目前正在操作哪一位創作者</li>
+  <li>要換一位創作者，回到名冊再進入另一位</li>
+  <li>代為操作只發生在選定的那一位創作者範圍內，不跨創作者混用資料</li>
+  <li>每一筆操作都記錄執行身分：Admin 代為操作，或創作者本人</li>
+  <li>代為操作時可以做只有 Admin 能做的操作，例如訂單詳情的<a href="order-detail.html#void">撤銷品項</a>；這類操作同樣記錄執行身分</li>
+</ul>
+<p class="note">依據：5.1.0 F4、情境 3、情境 4；主規格 §4.1；D086、D107、D128、D252。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.0-Creator管理.md</code>（最後更新 2026-10-09）、<code>5.1.0.5-Creator詳情.md</code> F1、<code>0-設計規格書.md §4.1／§7.15</code></li>
+    <li>決策：D086、D097、D107、D128、D170、D218、D233、D252、D316、D326、D372、D374、D391</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>店鋪網址可以用哪些字元、長度限制多少</li>
+    <li>建立創作者其餘欄位的驗證與預設值</li>
+    <li>自動產生的電子商店，初始內容與狀態是什麼</li>
+    <li>建立創作者時怎麼挑選已註冊的 ztor 帳號，以及怎麼取消或關閉建立畫面</li>
+    <li>幣別建立後是否開放 Admin 代改</li>
+    <li>已停用的創作者，Admin 是否仍能進入工作區代為操作</li>
+    <li>停用與啟用是否需要二次確認</li>
+    <li>停用、啟用與編輯是否留操作紀錄</li>
+    <li>操作紀錄在哪裡查看、能不能篩選</li>
+    <li>名冊載入中、載入失敗時怎麼顯示</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.0 最後更新 2026-10-09）</p>
+</details>
+</div>
+</body>
+</html>

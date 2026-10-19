@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>建立商品 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>建立商品</h1>
+<p class="lede">創作者照 2 個步驟建立一件實體或數位商品：先填商品內容，再用粉絲視角預覽，按「開始販售」上架。各類型的欄位在<a href="eshop-create-physical.html">賣實體商品</a>與<a href="eshop-create-digital.html">賣數位商品</a>。</p>
+
+<div class="toc"></div>
+
+<h2 id="create"><span class="n"></span>建立商品的 2 個步驟</h2>
+<p>建立商品分 2 步，步驟 1 選的商品類型決定表單裡有哪些欄位。流程圖先走一次整條路，下表再列出每一步做什麼。</p>
+<div class="dg" role="img" aria-label="建立商品流程圖：從電子商店進入，步驟 1 選商品類型後分兩條路，實體商品與數位商品各填自己的欄位，再填兩種商品共用的設定；就緒檢查都通過才進步驟 2 預覽與發布，按開始販售上架，接著彈出新品貼文">
+<div class="dg-hg" style="--dg-c:8">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1">電子商店<small>「＋ New」選 Create new product</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:3"><span class="s">1</span>選哪一種商品類型？<small>預設實體</small></div>
+  <span class="dg-a" data-t="實體" style="grid-row:1;grid-column:4"></span>
+  <span class="dg-a" data-t="數位" style="grid-row:2;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:5">實體商品的欄位<small>選項、價格、庫存與取貨方式</small></div>
+  <div class="dg-node" style="grid-row:2;grid-column:5">數位商品的欄位<small>內容檔案、價格與庫存</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:6"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:6"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:7">兩種商品共用的設定<small>限購、標籤、折扣、電影關聯、上架與開賣</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:8"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:9">就緒檢查都通過嗎？<small>沒通過：停在步驟 1 補齊</small></div>
+  <span class="dg-a" data-t="通過" style="grid-row:1/3;grid-column:10"></span>
+  <div class="dg-node" style="grid-row:1/3;grid-column:11"><span class="s">2</span>預覽與發布</div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:12"></span>
+  <div class="dg-node end" style="grid-row:1/3;grid-column:13">開始販售<small>商品上架</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:14"></span>
+  <div class="dg-node opt" style="grid-row:1/3;grid-column:15">新品貼文<small>可以發布或略過</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走一次建立商品，上面一列是實體商品，下面一列是數位商品，同一欄是同一個步驟；圓圈數字對應下方表格的步驟編號。紫色框是要回答的問題，虛線框可以略過。兩個步驟都能存成草稿，見<a href="#shared">每一步都能用的操作</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:8%">步</th><th style="width:28%">步驟</th><th>這一步做什麼</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td>商品內容（Details）</td><td>選商品類型，見<a href="#types">商品類型</a><br>填該類型的欄位，見<a href="eshop-create-physical.html">賣實體商品</a>、<a href="eshop-create-digital.html">賣數位商品</a><br>填<a href="#common">兩種商品共用的設定</a><br>設定<a href="#listing">上架、顯示與開賣</a><br>通過<a href="#ready">就緒檢查</a>後按「下一步：預覽」</td></tr>
+    <tr><td class="num">2</td><td><a href="#preview">預覽與發布（Preview &amp; publish）</a></td><td>用粉絲視角看完整商品頁<br>切換語系與幣別，確認譯文與價格<br>按「開始販售」上架</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.2 §1、§3、§4 前言；D310、D317。</p>
+
+<h2 id="entry"><span class="n"></span>從哪裡進入建立商品</h2>
+<p>創作者從<a href="eshop-list.html">商品清單</a>工作列的「＋ New」下拉進入；同一個下拉也是建立組合包與拍賣的入口。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:36%">「＋ New」的選項</th><th>進入後</th></tr></thead>
+  <tbody>
+    <tr><td>Create new product</td><td>進入建立商品的步驟 1<br>從 Products 分頁進入時，帶入對應的預設商品類型</td></tr>
+    <tr><td>Create bundle from products</td><td>進入<a href="eshop-create-bundle.html">建立組合包</a></td></tr>
+    <tr><td>Create auction</td><td>進入<a href="eshop-create-auction.html">建立拍賣</a>；拍賣也可以從 Auctions 分頁的建立入口進入</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.2 §2；5.1.5 F3；D081。</p>
+
+<h2 id="types"><span class="n"></span>商品類型</h2>
+<p>步驟 1 頂部用兩張卡選商品類型，預設實體；選哪一種，下方表單就換成那一種的欄位。兩種類型的差別如下表，各類型的欄位見類型頁。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">項目</th><th>實體商品（Physical item）</th><th>數位商品（Digital file）</th></tr></thead>
+  <tbody>
+    <tr><td>交給買家的方式</td><td>物流配送或現場 QR 領取</td><td>購買後下載</td></tr>
+    <tr><td>展示素材</td><td>主圖＋附圖</td><td>封面＋附圖</td></tr>
+    <tr><td>內容檔案</td><td>沒有</td><td>依分類上傳檔案或自訂會員卡卡面</td></tr>
+    <tr><td>多選項</td><td>支援</td><td>不支援，只有一個價格</td></tr>
+    <tr><td>庫存版本</td><td>不限量或限量，都要填目前在庫</td><td>不限量或限量，限量只設上限</td></tr>
+    <tr><td>詳細規格與尺寸指南</td><td>有</td><td>沒有</td></tr>
+    <tr><td>各類型的欄位</td><td><a href="eshop-create-physical.html">賣實體商品</a></td><td><a href="eshop-create-digital.html">賣數位商品</a></td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>商品類型卡片</td><td>必填，二選一<br>預設實體</td><td>實體商品（Physical item）或數位商品（Digital file）<br>選了哪一種，下方表單換成那一種的欄位</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>拍賣是一件一件競標的賣法，另走<a href="eshop-create-auction.html">建立拍賣</a></li>
+  <li>把好幾件商品或門票包成一組賣，另走<a href="eshop-create-bundle.html">建立組合包</a></li>
+</ul>
+<p class="note">依據：5.1.5.2 §3「類型差異一覽」、§4.3；D081、D251。</p>
+
+<h2 id="shared"><span class="n"></span>每一步都能用的操作</h2>
+<p>兩個步驟共用同一組操作，只在步驟 1 出現的即時預覽與就緒檢查見<a href="#ready">即時預覽與就緒檢查</a>；畫面標題建立時是「New item」，編輯既有商品時是商品名稱，例如「Edit Art Print」。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>進度</td><td>—</td><td>顯示兩段：商品內容、預覽與發布<br>在步驟 2 點第 1 段，回到步驟 1</td></tr>
+    <tr id="shared-draft"><td>存草稿（Save for later）</td><td>兩個步驟都有</td><td>存成草稿，商品不上架<br>結果跟上架方式選「不上架」一樣，見<a href="#listing-list">上架設定</a></td></tr>
+    <tr id="shared-next"><td>下一步：預覽（Next: Preview）</td><td>只在步驟 1，主要動作</td><td>依就緒檢查擋關，通過才進步驟 2<br>沒通過時停在步驟 1，標示待補項，見<a href="#ready">就緒檢查</a></td></tr>
+    <tr><td>返回</td><td>只在步驟 2</td><td>回到步驟 1，已填的內容保留</td></tr>
+    <tr><td>開始販售（Start selling）</td><td>只在步驟 2</td><td>按下即上架，見<a href="#preview-publish">發布前檢核與開始販售</a></td></tr>
+    <tr><td>儲存變更（Save changes）</td><td>編輯既有商品時</td><td>跟「存草稿」一起取代建立時的主要動作</td></tr>
+    <tr><td>刪除草稿</td><td>草稿</td><td>刪除前必須確認<br>有成交的商品只能下架後封存<br>零成交且已下架或已封存的商品可以刪除，見<a href="eshop-sales.html#archive">下架、封存與刪除</a></td></tr>
+    <tr><td>離開</td><td>—</td><td>有還沒儲存的內容時，先確認再離開</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.2 §3、§4.6「共用操作」、§8 第 6 項；主規格 §5.2.4、§7.14「封存與刪除」；D284、D307、D317。</p>
+
+<h2 id="ready"><span class="n"></span>即時預覽與就緒檢查</h2>
+<p>步驟 1 邊填邊看兩樣東西：<a href="#live">即時預覽</a>讓創作者看粉絲會看到的商品卡，<a href="#ready-check">就緒檢查</a>列出上架前還缺什麼。</p>
+
+<h3 id="live">即時預覽</h3>
+<p>即時預覽（How buyers see it on Ztor）用粉絲視角顯示商品卡，隨輸入更新。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr id="shared-live"><td>即時預覽（How buyers see it on Ztor）</td><td>可開關，預設開</td><td>用粉絲視角看商品卡，隨輸入更新：<br>主圖縮圖<br>商品名稱<br>價格<br>描述<br>還沒填的顯示占位，例如描述顯示「Missing: description」<br>關閉後表單佔滿主區，隨時可以再開；開關不影響已填的資料</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="ready-check">就緒檢查</h3>
+<p>就緒檢查（Ready to sell?）逐項列出上架前要備齊的內容；按「下一步：預覽」時依就緒檢查擋關，詳細規格這一項擋不擋關見頁尾尚待確認。檢查項依商品類型不同，依設定還會多出幾項。</p>
+<ul class="plain">
+  <li>已備齊的項目打勾，還沒備齊的是空心圈</li>
+  <li>卡底統計還差幾項，例如「5 items needed to start selling」；全部備齊改成綠字「Ready to sell!」</li>
+</ul>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:16%">類型</th><th>檢查項</th></tr></thead>
+  <tbody>
+    <tr><td>實體</td><td>主圖（Hero image）<br>商品名稱（Product name）<br>描述至少 30 字元（Description）<br>價格（Price）與庫存<br>詳細規格（Specifications）</td></tr>
+    <tr><td>數位</td><td>Item image<br>封面（Cover art）<br>商品名稱（Product name）<br>描述至少 30 字元（Description）<br>價格（Price）</td></tr>
+  </tbody>
+</table></div>
+<p>依設定多出或改變的檢查：</p>
+<ul class="plain">
+  <li>實體商品選多選項：「價格與庫存」改成每個啟用的選項組合都有價格與庫存，列出還差幾個組合</li>
+  <li>實體商品選限量：上限與目前在庫都要填</li>
+  <li>實體商品選限量：上限不能小於目前在庫，多選項時逐列檢查</li>
+  <li>數位商品選限量：要填上限</li>
+  <li>取貨方式選物流配送：要填重量</li>
+  <li>限購打開：要填每人總限購數量</li>
+</ul>
+<p>不列入就緒檢查的：</p>
+<ul class="plain">
+  <li>附圖，因為附圖本來就是選填</li>
+  <li>開賣設定，預設立即開賣，不動也能進下一步；選定時開賣時，開賣日期與時間仍是必填</li>
+</ul>
+<p class="note">依據：5.1.5.2 §4.6「即時預覽卡」「就緒檢查卡」「開賣設定」、§8 第 2 項；主規格 §5.2.5；D026、D084、D148、D226、D398、D427、D428。</p>
+
+<h2 id="common"><span class="n"></span>兩種商品共用的設定</h2>
+<p>實體與數位商品都有這四組設定，彼此獨立，可以只設其中幾組：<a href="#limits">限購</a>、<a href="#tags">商品標籤</a>、<a href="#discount">折扣設定</a>、<a href="#movies">電影關聯</a>。</p>
+
+<h3 id="limits">限購</h3>
+<p>限購讓創作者限制每位買家能買多少，規則見<a href="eshop-sales.html#limits">商品的限購</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>限購（Purchase limits）</td><td>開關，預設關</td><td>打開才出現每人總限購數量</td></tr>
+    <tr><td>每人總限購數量</td><td>限購打開時必填</td><td>見<a href="eshop-sales.html#limits">商品的限購</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>含這件商品的組合包，限購預設取各成員的交集，見<a href="bundles.html#limits">組合包的限購</a></li>
+</ul>
+
+<h3 id="tags">商品標籤</h3>
+<p>商品標籤是創作者替商品加的標籤，跟分類並存。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>標籤（Product tags）</td><td>選填</td><td>自建新標籤，或選既有標籤<br>不取代分類，見<a href="taxonomy.html">商品分類與模組應用</a><br>跟項目的標籤、粉絲的標籤是不同的東西</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="discount">折扣設定</h3>
+<p>折扣設定用排程特價在限時檔期內以特價取代定價，實體與數位商品都有；欄位見<a href="promo-rules.html#s5-2-product">商品的折扣設定</a>，規則見<a href="promo-rules.html#s4-1">排程特價</a>。</p>
+
+<h3 id="movies">電影關聯</h3>
+<p>電影關聯把商品標記為跟 ztor 前台一或多部已上架電影相關，讓前台在電影頁呈現周邊、在商品頁標示所屬電影。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>電影關聯（Linked movies）</td><td>選填，可以選多部</td><td>只能選前台已上架的正式電影<br>項目裡還沒上架的電影不能選</td></tr>
+    <tr><td>建議清單</td><td>—</td><td>點一部電影直接加入</td></tr>
+    <tr><td>搜尋電影</td><td>—</td><td>輸入電影名稱，從候選清單裡找出來加入<br>只在候選裡找，不能新建電影</td></tr>
+    <tr><td>移除</td><td>每一部已加入的電影</td><td>個別移除<br>移除只拿掉關聯，不影響電影本身</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>電影在前台管理，不在 Creator Studio 建立或編輯</li>
+</ul>
+<p class="note">依據：5.1.5.2 §4.4 F9、F10、F13、§4.5 F12；主規格 §7.1、§7.2、§7.14「組合包的限購」；D138、D140、D144、D145、D304、D398、D427、D428。</p>
+
+<h2 id="listing"><span class="n"></span>上架、顯示與開賣設定</h2>
+<p>步驟 1 用三組設定決定商品什麼時候上架、在商店找不找得到、什麼時候能結帳：<a href="#listing-list">上架設定</a>、<a href="#listing-show">顯示設定</a>、<a href="#listing-sale">開賣設定</a>。三個開關怎麼互相作用，見<a href="eshop-sales.html#switches">上架、顯示、開賣三個開關</a>。</p>
+
+<h3 id="listing-list">上架設定</h3>
+<p>上架設定決定單售這個販售管道什麼時候開始能賣。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>上架方式</td><td>三選一<br>預設立刻上架</td><td>不上架（Don't list）：維持草稿，不收任何時間，不產生連結<br>立刻上架（List now）：儲存後即上架<br>定時上架（Scheduled listing）：時間到之前維持下架，時間到自動上架</td></tr>
+    <tr><td>上架日期與時間（Listing time）</td><td>選定時上架時必填</td><td>—</td></tr>
+    <tr><td>定時下架（Unlist at a set time）</td><td>選立刻上架或定時上架時出現<br>開關，預設關</td><td>打開才出現下架日期與時間<br>關掉等於取消排程，已填的時間一併清除</td></tr>
+    <tr><td>下架日期與時間（Unlist time）</td><td>定時下架打開時必填</td><td>時間到自動下架，單售停止販售</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="listing-show">顯示設定</h3>
+<p>顯示設定決定商品在電子商店陳列或隱藏。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>顯示於商店（Show in shop）</td><td>開關，預設顯示</td><td>隱藏時商店不陳列這件商品，只能經非公開連結進入<br>連結在<a href="eshop-product.html">商品細節頁</a>取得與重置，建立時不顯示，見<a href="eshop-sales.html#private">非公開連結</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="listing-sale">開賣設定</h3>
+<p>開賣設定決定粉絲什麼時候能結帳。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>開賣方式</td><td>二選一<br>預設立即開賣</td><td>立即開賣（Sell immediately）：上架後立刻可以結帳<br>定時開賣（Scheduled sale）：時間到才開放結帳，之前照上架與顯示設定呈現</td></tr>
+    <tr><td>開賣日期與時間（Sale start）</td><td>選定時開賣時必填</td><td>—</td></tr>
+    <tr><td>定時停售（Close sales at a set time）</td><td>兩種開賣方式都有<br>開關，預設關</td><td>打開才出現停售日期與時間<br>關掉等於取消排程，已填的時間一併清除</td></tr>
+    <tr><td>停售日期與時間（Sale end）</td><td>定時停售打開時必填</td><td>要晚於開賣日期與時間<br>時間到停止結帳，商品仍看得到</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>三組設定互不蘊含，隱藏＋開賣是合法組合，用於內部實際下單測試</li>
+  <li>開賣與停售只管單售，不影響含這件商品的組合包；要連組合包一起停賣，要用下架，見<a href="eshop-sales.html#switches-bundle">商品的開關對組合包的影響</a></li>
+</ul>
+<p class="note">依據：5.1.5.2 §4.6「上架、顯示與開賣設定」；主規格 §7.14；D144、D145、D241、D246、D332、D398。</p>
+
+<h2 id="preview"><span class="n"></span>預覽與發布</h2>
+<p>步驟 2 是一個全頁畫面，讓創作者上架前用粉絲視角確認商品頁、譯文與各幣別價格：主區是<a href="#preview-main">預覽</a>，側欄依序是<a href="#preview-lang">語言</a>、<a href="#preview-currency">幣別</a>、<a href="#preview-publish">發布前檢核與開始販售</a>；上架之後的去向見<a href="#preview-after">開始販售之後</a>。</p>
+
+<h3 id="preview-main">預覽</h3>
+<p>主區是粉絲會看到的完整商品頁，商品只有一個視圖；就地改譯文、點價格開價格表等通用操作見<a href="common-i18n.html#preview-layout">畫面的組成</a>。</p>
+<p>商品的可翻譯欄位：</p>
+<ul class="plain">
+  <li>商品名稱</li>
+  <li>商品描述</li>
+  <li>自訂規格的規格名稱與規格值（實體）</li>
+  <li>多選項的選項名與選項值（實體）</li>
+  <li>取貨與退貨說明（實體）</li>
+</ul>
+
+<h3 id="preview-lang">語言</h3>
+<p>側欄第一段切換預覽的語系並開翻譯表，畫面怎麼用見<a href="common-i18n.html#preview-layout">畫面的組成</a>；電子商店照通則自動翻譯，見<a href="common-i18n.html#auto-vs-manual">自動翻譯與活動的手動翻譯</a>。</p>
+
+<h3 id="preview-currency">幣別</h3>
+<p>側欄第二段切換預覽的幣別；商品的價格表是定價 × 五種幣別，一律唯讀，電子商店沒有逐幣別覆寫，見<a href="common-currency.html#base">基準幣別與換算價</a>。</p>
+
+<h3 id="preview-publish">發布前檢核與開始販售</h3>
+<p>側欄第三段是發布前檢核，主鈕是「開始販售」。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>發布前檢核</td><td>—</td><td>逐項顯示通過與否<br>點一項回到對應的欄位</td></tr>
+    <tr><td>返回</td><td>—</td><td>回到步驟 1，已填的內容保留</td></tr>
+    <tr><td>開始販售（Start selling）</td><td>—</td><td>按下即上架，不再彈第二層確認</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="preview-after">開始販售之後</h3>
+<ul class="plain">
+  <li>回到電子商店的<a href="eshop-list.html">商品清單</a>，並自動彈出<a href="eshop-post.html">新品貼文</a>，可以發布或略過；略過不影響商品已上架</li>
+  <li>之後在<a href="eshop-product.html">商品細節頁</a>繼續編輯；頁首的預覽與在地化可以再開同一個畫面</li>
+</ul>
+<p class="note">依據：5.1.5.2 §1、§4.6「步驟 2」「返回步驟 1」、§9；主規格 §7.4、§7.15；D068、D223、D305、D310、D317、D318、D319。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.2-建立商品流程.md</code>（v6.40）§1～§4.6、§8、§9；<code>5.1.5-電子商店.md</code> F3；<code>0-設計規格書.md</code>（v4.90）§5.2.4、§5.2.5、§7.1、§7.2、§7.4、§7.14、§7.15</li>
+    <li>決策：D068、D081、D084、D138、D140、D144、D145、D148、D223、D226、D241、D246、D251、D284、D304、D305、D307、D310、D317、D318、D319、D332、D398、D427、D428</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>步驟 1 切換商品類型時，已填的欄位怎麼處理</li>
+    <li>上架方式選「不上架」跟「存草稿」是同一個動作的兩個入口，還是要區分「明確選擇不上架」與「還沒填完先存」</li>
+    <li>就緒檢查裡哪些是硬性必填、哪些只是建議項不擋上架，例如詳細規格擋不擋關</li>
+    <li>數位商品就緒檢查的「Item image」跟「封面」各指哪個欄位</li>
+    <li>步驟 2 的發布前檢核列哪些項目，是否就是步驟 1 的就緒檢查</li>
+    <li>多選項商品的限購上限是否算整個商品（目前是推導）</li>
+    <li>下單時怎麼累計買家已買的量</li>
+    <li>撤銷後限購額度回不回補</li>
+    <li>每人總限購數量的數值校驗</li>
+    <li>商品標籤的用途，例如設定、推廣、探索</li>
+    <li>已關聯的電影日後在前台下架時，關聯怎麼呈現</li>
+    <li>上架、下架、開賣、停售時間的時區與時間粒度</li>
+    <li>自動翻譯什麼時候觸發、失敗時怎麼處理；手動修訂被重新翻譯覆蓋前要不要提示</li>
+    <li>系統屬性的值是否隨語系顯示對應語言</li>
+    <li>換算幣別的匯率來源與時點、進位方式</li>
+    <li>步驟進度與即時預覽卡的版面（原型屬呈現參考）</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.5.2 v6.40，至 D428）</p>
+</details>
+</div>
+</body>
+</html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>商店設定 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261019a">
+<script src="shell.js?v=20261019a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+  --border:#33313a; --border-strong:#4a4854;
+  --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+  --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+  --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+  --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+  --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+  --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain,ol.plain{margin:4px 0 10px;padding-left:22px}
+ul.plain li,ol.plain li{margin-bottom:4px}
+ul.plain ul.plain,ol.plain ul.plain{margin:4px 0 4px}
+.wrap ol.plain li{font-size:15px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.k{font-size:12px;color:var(--text-3)}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 id="settings">商店設定</h1>
+<p class="lede">創作者在商店設定管理整間商店的基本設定：店面身分、收款狀態、出貨與幣別、尺寸指南與優惠碼。</p>
+
+<div class="toc"></div>
+
+<h2 id="settings-intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>這裡的設定作用於整間商店與底下所有商品</li>
+  <li>單一商品的設定在<a href="eshop-product.html">商品細節頁</a></li>
+  <li>商店設定是獨立頁面，從電子商店頁的「商店設定」按鈕進入，不在 E-Shop 的頂部下拉選單裡</li>
+  <li>粉絲端的商品陳列順序不在這裡調，在<a href="eshop-list.html">商品清單</a>拖曳排序</li>
+</ul>
+
+<h2 id="settings-flow"><span class="n"></span>操作流程</h2>
+<p>從電子商店頁進入，選一個設定群組處理，處理完用麵包屑回到電子商店。</p>
+<div class="dg" role="img" aria-label="商店設定流程圖，由左往右：從電子商店按商店設定進入，選設定群組；店面與銷售預設要按編輯、改欄位、再儲存或取消；尺寸指南與優惠碼在各自的清單裡管理；付款設定只能查看">
+<div class="dg-hg" style="--dg-c:5">
+  <div class="dg-node" style="grid-row:1/4;grid-column:1"><span class="s">1</span>進入商店設定<small>電子商店頁按「商店設定」</small></div>
+  <span class="dg-a" style="grid-row:1/4;grid-column:2"></span>
+  <div class="dg-node q" style="grid-row:1/4;grid-column:3"><span class="s">2</span>處理哪一個設定群組？</div>
+  <span class="dg-a" data-t="店面、銷售預設" style="grid-row:1;grid-column:4"></span>
+  <span class="dg-a" data-t="尺寸指南、優惠碼" style="grid-row:2;grid-column:4/9"></span>
+  <span class="dg-a" data-t="付款設定" style="grid-row:3;grid-column:4/9"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:5"><span class="s">3</span>按編輯</div>
+  <span class="dg-a" style="grid-row:1;grid-column:6"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:7"><span class="s">4</span>改欄位<small>右欄預覽即時反映</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:8"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:9"><span class="s">5</span>儲存變更或取消</div>
+  <div class="dg-node end" style="grid-row:2;grid-column:9">在清單裡管理<small>新增、編輯、複製、停用、刪除</small></div>
+  <div class="dg-node end" style="grid-row:3;grid-column:9">只能查看<small>金流連接狀態</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：同一列是同一條路線，紫色框是要回答的問題；圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>從電子商店頁按「商店設定」進入，預設開啟店面</li>
+  <li>選設定群組
+    <ul class="plain">
+      <li>店面、銷售預設：接著做步驟 3～5</li>
+      <li>尺寸指南、優惠碼：在各自的清單裡管理，見<a href="#size">尺寸指南</a>、<a href="#codes">優惠碼</a></li>
+      <li>付款設定：只能查看，見<a href="#payment">付款設定</a></li>
+    </ul>
+  </li>
+  <li>按「編輯（Edit）」放開欄位</li>
+  <li>改欄位，右欄的粉絲視角預覽即時反映</li>
+  <li>按「儲存變更（Save changes）」生效，或按「取消（Cancel）」還原</li>
+</ol>
+<ul class="plain">
+  <li>改到一半切換到別的群組，視同取消</li>
+  <li>用麵包屑回到電子商店時，商品清單的篩選、搜尋與分頁照原樣還原</li>
+</ul>
+<p class="note">依據：5.1.5.5「頁面定位」、F1、「頁面佈局」；D184、D267。</p>
+
+<h2 id="groups"><span class="n"></span>設定群組與編輯</h2>
+<p>頁面上方以分頁切換設定群組，一次處理一組；右欄常駐粉絲視角預覽，讓創作者邊改邊看店面。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>設定群組分頁</td><td>—</td><td>五組：店面、付款設定、銷售預設（出貨預設＋幣別）、尺寸指南、優惠碼<br>進入時開啟店面</td></tr>
+    <tr><td>編輯（Edit）</td><td>只在店面與銷售預設出現</td><td>沒按編輯前，欄位只能看、不能改<br>按下後欄位放開，同一顆按鈕變成儲存變更，旁邊出現取消</td></tr>
+    <tr><td>儲存變更（Save changes）</td><td>按編輯之後</td><td>這一組的設定生效</td></tr>
+    <tr><td>取消（Cancel）</td><td>按編輯之後</td><td>還原到按編輯前的值<br>切換到別的群組視同取消</td></tr>
+    <tr><td>粉絲視角預覽（See as fan）</td><td>常駐右欄</td><td>和商品清單的商店預覽是同一個元件，見<a href="eshop-list.html">商品清單</a><br>欄位一改預覽就跟著變，取消就回復<br>只能看，不能在預覽裡改資料</td></tr>
+    <tr><td>麵包屑</td><td>—</td><td>回到電子商店，清單的篩選、搜尋與分頁照原樣還原</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.5 F1、「頁面佈局」；D083、D184、D267。</p>
+
+<h2 id="storefront"><span class="n"></span>店面</h2>
+<p>店面設定粉絲端創作者頁最上面那一段：粉絲進來第一眼看到的頭像、名字、身分、簡介與社群連結。商店設定是粉絲可見身分的唯一編輯處，設定頁沒有個人資料。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>頭像（Photo）</td><td>—</td><td>圓形，粉絲端頁首與釘頂列的縮圖用同一張</td></tr>
+    <tr><td>變更相片</td><td>—</td><td>上傳一張替換頭像</td></tr>
+    <tr><td>顯示名稱（Display name）</td><td>—</td><td>創作者在粉絲端的公開名稱</td></tr>
+    <tr><td>身分（What you do）</td><td>—</td><td>顯示在名字下方的一句身分，例如「音樂人」</td></tr>
+    <tr><td>所在地（Location）</td><td>選填</td><td>顯示在粉絲端名字下方、身分之後</td></tr>
+    <tr><td>自我介紹（Bio）</td><td>—</td><td>最多 200 字元<br>粉絲端摺成兩行，點「更多」展開</td></tr>
+    <tr><td>商店網址（Shop URL）</td><td>—</td><td>固定前綴 ztor.com/shop/ 加一段可編輯的代稱，組成粉絲端的商店網址</td></tr>
+    <tr><td>新增社群連結</td><td>—</td><td>展開還沒加入的平台清單，選一個就多一列<br>可加的平台：Instagram、X、Threads、小紅書、Spotify、Twitch、TikTok、YouTube、個人網站（Website）</td></tr>
+    <tr><td>社群連結的網址</td><td>加入平台之後，每個平台一列</td><td>每個平台最多一條網址<br>有填網址的平台才出現在粉絲端的社群圓鈕列，順序照這裡的順序<br>ztor 自己的連結固定排第一、不能編輯</td></tr>
+    <tr><td>移除</td><td>每一列社群連結</td><td>移除這個平台</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>粉絲端創作者頁沒有封面，店面不設封面圖</li>
+  <li>追蹤數、加入社群、彩蛋解鎖與頁面分頁列是粉絲端功能，不在這裡編輯</li>
+</ul>
+<p class="note">依據：5.1.5.5 F2；D267、D269。</p>
+
+<h2 id="payment"><span class="n"></span>付款設定</h2>
+<p>付款設定讓創作者確認商店能正常收款與出款，只能查看。</p>
+<ul class="plain">
+  <li>金流連接狀態（Stripe connection）顯示：
+    <ul class="plain">
+      <li>連接的服務，例如 Stripe connected</li>
+      <li>出款排程與帳戶尾碼，例如 Payouts every Monday to ****4242</li>
+      <li>連接是否生效（Active）</li>
+    </ul>
+  </li>
+  <li>還沒連結金流或驗證沒完成時，顯示未連接狀態與不能收款的原因，並帶創作者去收入管理或設定完成連結</li>
+  <li>連結流程不在商店設定處理</li>
+  <li>Stripe 連接、出款排程與幣別以<a href="revenue.html">收入總覽</a>為準，這裡只顯示、不另外計算</li>
+</ul>
+<p class="note">依據：5.1.5.5 F4；主規格 §7.3。</p>
+
+<h2 id="sales-defaults"><span class="n"></span>銷售預設</h2>
+<p>銷售預設放新商品共用的預設底：<a href="#shipping">出貨預設</a>與<a href="#currency">幣別</a>。</p>
+
+<h3 id="shipping">出貨預設</h3>
+<p>出貨預設替實體商品建立一致的預設運費與寄送規則。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>出貨地址（Ships from）</td><td>—</td><td>實體商品預設的寄出地</td></tr>
+    <tr><td>免運門檻（Free shipping on orders over）</td><td>—</td><td>訂單金額達到這個值就免運</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>只作用於實體商品，數位商品不適用</li>
+  <li>商品的取貨方式與寄件地以這裡為底，可以逐商品改成自己的，見<a href="eshop-create-physical.html#delivery">賣實體商品</a></li>
+  <li>商品沒設時用這裡的預設，商品改了也不會回頭改這裡</li>
+  <li>拍賣例外：運費由得標者付，不適用免運門檻，見<a href="eshop-create-auction.html">建立拍賣</a></li>
+</ul>
+
+<h3 id="currency">幣別</h3>
+<p>幣別讓創作者知道店內定價以哪一種幣別計，只能查看。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>幣別（Currency）</td><td>唯讀，沒有切換</td><td>就是創作者幣別，不是另一個值<br>五種之一：HKD、TWD、SGD、USD、JPY<br>建立創作者帳號時由 Admin 選定，之後創作者與 Admin 都不能改<br>定義與用途見<a href="common-currency.html">定價幣別</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.5 F5、F6；主規格 §7.15；5.1.9 F5；5.1.0 F2；D184、D306、D316、D326。</p>
+
+<h2 id="size"><span class="n"></span>尺寸指南</h2>
+<p>尺寸指南讓創作者在商店層級一次建好這間店的尺寸資料，建了就出現在所有商品上，粉絲因此有一致的尺寸依據、減少因尺寸不合的退換貨。畫面上先看到<a href="#size-list">尺寸指南清單</a>，編輯一份時填<a href="#size-fields">一份尺寸指南的欄位</a>；四種尺碼標示與公分英吋的規則見<a href="#size-units">尺碼制與量測單位</a>，商品怎麼用這些指南見<a href="#size-apply">套用到商品</a>。</p>
+
+<h3 id="size-list">尺寸指南清單</h3>
+<p>進到尺寸指南就出現，列出這間商店的每一份尺寸指南，一間店可以有好幾份。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>新增</td><td>—</td><td>建一份新的尺寸指南</td></tr>
+    <tr><td>編輯</td><td>—</td><td>改這一份的內容<br>改了之後，沿用商店指南的商品立刻跟著改</td></tr>
+    <tr><td>複製</td><td>—</td><td>複製這一份</td></tr>
+    <tr><td>刪除</td><td>—</td><td>刪了之後，沿用商店指南的商品就少這一份<br>刪除時要讓創作者知道會影響這些商品</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>新商店預設帶三份：衣服、褲子、帽子，商品類型都是服飾配件</li>
+  <li>預設的三份都能改名、編輯、複製、刪除</li>
+  <li>清單不記每一份套用在幾件商品上</li>
+  <li>清單層交代有幾件商品改用了自己的專屬指南</li>
+  <li>一份都沒有時，顯示空狀態與建立第一份的引導</li>
+  <li>一份都沒有時，沿用商店指南的商品沒有尺寸指南可顯示</li>
+</ul>
+
+<h3 id="size-fields">一份尺寸指南的欄位</h3>
+<p>在清單按新增或編輯時出現；以下是商品類型為服飾配件的欄位，商品的專屬指南也用同一組。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>名稱（Name）</td><td>必填</td><td>創作者自訂，用來在清單裡辨識</td></tr>
+    <tr><td>商品類型（Item type）</td><td>必填</td><td>決定這一份有哪些欄位<br>目前只有服飾配件（Apparel &amp; accessories）一種，服飾與配件共用同一套欄位</td></tr>
+    <tr><td>尺碼制分頁（Size system）</td><td>四種都必填</td><td>國際（International）、US、EU、JP 四個分頁，各填一份尺碼標示<br>看得出每一制還有幾格沒填<br>規則見<a href="#size-units">尺碼制與量測單位</a></td></tr>
+    <tr><td>量測單位切換（Unit）</td><td>—</td><td>公分（cm）或英吋（inch），預設公分<br>切換只換顯示，不改資料，見<a href="#size-units">尺碼制與量測單位</a></td></tr>
+    <tr><td>尺寸表（Size chart）</td><td>必填</td><td>逐尺碼一列，每列填各量測欄的數值</td></tr>
+    <tr><td>尺碼列</td><td>—</td><td>尺碼由創作者自訂，不限於 S～XL<br>列可以新增、刪除、重排；新增或刪除一列，四種尺碼制一起增減</td></tr>
+    <tr><td>量測欄（Measurement columns）</td><td>—</td><td>欄位由創作者定義，例如胸寬、衣長、袖長<br>欄可以新增、改名、刪除</td></tr>
+    <tr><td>數值</td><td>—</td><td>正數，可以有小數</td></tr>
+    <tr><td>版型與選購建議（Fit &amp; sizing advice）</td><td>選填</td><td>一段文字：版型鬆緊、內搭建議、模特兒試穿參考、介於兩個尺寸時選哪一號</td></tr>
+    <tr><td>身高體重參考（Height &amp; weight guide）</td><td>選填，整張表可以不啟用</td><td>逐尺碼一列：尺碼、身高區間、體重區間</td></tr>
+    <tr><td>量測方式說明（How to measure）</td><td>選填</td><td>逐部位一筆：部位名稱與量法說明，例如胸圍、腰圍、臀圍</td></tr>
+    <tr><td>免責說明（Measurement disclaimer）</td><td>—</td><td>說明數值是商品平放測量，因材質不同可能有誤差，例如 1～2 cm</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="size-units">尺碼制與量測單位</h3>
+<p>尺碼制要四種逐一填，量測單位只是切換顯示，因為兩者能不能換算不一樣。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:20%">項目</th><th style="width:26%">能不能換算</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>尺碼制</td><td>不能：各國尺碼是慣例對照，不是公式</td><td>四種都必填<br>一列＝一個實體尺碼，四種標示是它的四個名字，假設的例子：國際 M、US 6、EU 38、JP 11<br>量測數值四制共用</td></tr>
+    <tr><td>量測單位</td><td>能：1 inch = 2.54 cm</td><td>公分或英吋都能輸入，自動換算<br>資料以公分為準，顯示到小數一位</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="size-apply">套用到商品</h3>
+<p>商店的每一份尺寸指南都出現在所有商品上，除非該商品設了自己的專屬指南；兩種狀態見<a href="eshop-create-physical.html#guide">賣實體商品的尺寸指南</a>。</p>
+<p class="note">依據：5.1.5.5 F7、F7.1～F7.3；5.1.5.2 §4.1 F2；主規格 §7.1；D171、D210、D211、D212、D214。</p>
+
+<h2 id="codes"><span class="n"></span>優惠碼</h2>
+<p>優惠碼讓創作者建立對外發放的折扣碼，粉絲結帳時輸入就折抵；自用碼發給粉絲，代理碼交給 ztor 上另一位創作者代為推廣。這一節只寫畫面上的欄位與操作，折扣、適用範圍、次數與狀態的規則見<a href="promo-rules.html#s4-5">優惠規則的優惠碼</a>。畫面上先看到<a href="#codes-list">優惠碼清單</a>，新增或編輯時填<a href="#codes-form">一組優惠碼的設定</a>，代理碼成交後看<a href="#codes-partner">代理銷售紀錄</a>。</p>
+
+<h3 id="codes-list">優惠碼清單</h3>
+<p>進到優惠碼就出現，列出這間商店已建立的優惠碼，可以有好幾組。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>新增</td><td>—</td><td>開一組新的優惠碼，見<a href="#codes-form">一組優惠碼的設定</a></td></tr>
+    <tr><td>編輯</td><td>—</td><td>改這一組的設定</td></tr>
+    <tr><td>複製</td><td>—</td><td>複製這一組</td></tr>
+    <tr><td>停用</td><td>—</td><td>即刻停收這組碼，既有訂單與分成紀錄保留，見<a href="promo-rules.html#s4-5-4">狀態</a></td></tr>
+    <tr><td>刪除</td><td>—</td><td>什麼情況能刪，見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>每一列顯示：
+    <ul class="plain">
+      <li>優惠碼</li>
+      <li>類型（自用或代理）</li>
+      <li>折扣</li>
+      <li>適用範圍</li>
+      <li>期間</li>
+      <li>狀態</li>
+      <li>已用／總兌換上限，沒設上限時只顯示已用件數</li>
+      <li>推廣者：只有代理碼才有</li>
+    </ul>
+  </li>
+  <li>還沒建立任何優惠碼時，顯示空狀態與建立第一組的引導</li>
+</ul>
+
+<h3 id="codes-form">一組優惠碼的設定</h3>
+<p>在優惠碼清單按新增或編輯時出現；自用碼與代理碼共用同一組欄位，代理碼多兩格。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>類型（Code type）</td><td>必填，自用碼或代理碼二選一</td><td>選代理碼時多出推廣者與分成比例兩格<br>兩種類型的差別見<a href="promo-rules.html#s4-5-1">一組碼有哪些設定</a></td></tr>
+    <tr><td>優惠碼（Code）</td><td>必填</td><td>格式、唯一性與比對方式見<a href="promo-rules.html#s4-5-1">一組碼有哪些設定</a></td></tr>
+    <tr><td>自動產生</td><td>優惠碼欄旁</td><td>按了填入一組符合規則的碼，可以再改</td></tr>
+    <tr><td>折扣（Discount）</td><td>必填，百分比或固定金額二選一</td><td>範圍見<a href="promo-rules.html#s4-5-1">一組碼有哪些設定</a></td></tr>
+    <tr><td>固定金額的折法（Fixed-amount mode）</td><td>折扣是固定金額、而且每張訂單可折件數不是 1 時才出現</td><td>兩種折法見<a href="promo-rules.html#s4-5-1">一組碼有哪些設定</a></td></tr>
+    <tr><td>開始時間（Starts）</td><td>必填</td><td>—</td></tr>
+    <tr><td>結束時間（Ends）</td><td>選填，留空＝不設結束</td><td>要晚於開始時間</td></tr>
+    <tr><td>適用範圍（Applies to）</td><td>必填，預設全部商店</td><td>全部商店、特定品項、特定商品三級可混選，見<a href="promo-rules.html#s4-5-2">適用範圍：三級可混選</a></td></tr>
+    <tr><td>每張訂單可折件數（Per-order items）</td><td>預設 1</td><td>留空或 0＝不限，見<a href="promo-rules.html#s4-5-3">次數怎麼數</a></td></tr>
+    <tr><td>每人總次數（Per-buyer total）</td><td>選填，留空或 0＝不限</td><td>見<a href="promo-rules.html#s4-5-3">次數怎麼數</a></td></tr>
+    <tr><td>總兌換次數（Total redemptions）</td><td>選填，留空或 0＝不限</td><td>用完時狀態轉「已用完」，見<a href="promo-rules.html#s4-5-3">次數怎麼數</a></td></tr>
+    <tr><td>可與其他優惠碼疊加（Stack with other codes）</td><td>開關，預設關閉</td><td>能不能同一單並用見<a href="promo-rules.html#s4-5-1">一組碼有哪些設定</a></td></tr>
+    <tr><td>推廣者（Partner）</td><td>類型是代理碼時出現<br>必填</td><td>ztor 上的另一位創作者，一組代理碼綁一位<br>要發給多人就開多組碼</td></tr>
+    <tr><td>分成比例（Partner share）</td><td>類型是代理碼時出現<br>必填</td><td>由發碼的創作者決定<br>以折扣後的實際成交金額計，從發碼創作者的收入扣，不影響平台費與其他既有扣項</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>優惠碼能不能疊在特價或分級折扣上，由商品的「可與優惠碼疊加」開關決定，不逐碼設定，見<a href="promo-rules.html#s4-5-5">與特價、分級折扣的疊加</a></li>
+</ul>
+
+<h3 id="codes-partner">代理銷售紀錄</h3>
+<p>代理銷售紀錄列出透過代理碼成交的訂單與分成金額，目前只看得到成交紀錄。</p>
+<ul class="plain">
+  <li>每一筆顯示：
+    <ul class="plain">
+      <li>成交時間</li>
+      <li>訂單</li>
+      <li>商品</li>
+      <li>成交金額</li>
+      <li>推廣者</li>
+      <li>這一筆的分成金額</li>
+    </ul>
+  </li>
+  <li>金額取自<a href="revenue.html">收入總覽</a>，這裡只顯示、不另外計算</li>
+  <li>分成落在金流的「推薦／聯盟分潤」那一階</li>
+</ul>
+<p class="note">依據：5.1.5.5 F8、F8.1～F8.3；主規格 §7.2、§7.3；D183、D272、D275、D280、D297、D299、D309、D432。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.5.5-商店設定.md</code>（v41）；<code>5.1.5.2-建立商品流程.md</code> §4.1 F2、F4；<code>0-設計規格書.md</code> §7.1、§7.2、§7.3、§7.15</li>
+    <li>決策：D065、D083、D171、D183、D184、D210、D211、D212、D214、D267、D269、D272、D275、D278、D280、D297、D299、D306、D309、D316、D326、D432、D452</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>有未儲存變更時離開，要不要提示</li>
+    <li>頭像的尺寸與格式限制</li>
+    <li>顯示名稱、身分的長度上限</li>
+    <li>所在地的格式與長度</li>
+    <li>自我介紹是否必填</li>
+    <li>商店網址代稱的合法字元與唯一性，以及改了之後舊連結會不會失效</li>
+    <li>社群連結的網址格式與平台網域要不要檢查</li>
+    <li>金流連接、斷開與更換帳戶的操作入口在哪裡</li>
+    <li>出貨地址是否必填、格式怎麼檢查</li>
+    <li>免運門檻留空或填 0 時怎麼算</li>
+    <li>出貨預設裡，取貨方式與寄件地以外的設定（例如免運門檻）能不能逐商品改</li>
+    <li>多幣別的顯示怎麼鎖定（依 IP、依創作者或活動設定、買家自選），以及混幣怎麼結算</li>
+    <li>尺寸指南名稱的長度上限，以及要不要商店內唯一</li>
+    <li>服飾配件以外的商品類型（例如器材樂器、印刷書籍）有哪些欄位</li>
+    <li>四種尺碼制沒填完時能不能儲存，以及粉絲端預設先看哪一制</li>
+    <li>尺碼列要不要提供預設的一組</li>
+    <li>量測欄最多幾欄</li>
+    <li>數值能不能留空</li>
+    <li>版型與選購建議的長度上限</li>
+    <li>身高體重參考的區間單位要不要跟著量測單位切換，尺碼列要不要和尺寸表一致</li>
+    <li>量測方式說明的示意圖由平台提供，還是創作者上傳</li>
+    <li>免責說明由平台提供還是創作者自填，誤差值能不能改</li>
+    <li>尺寸表用平量（胸寬、衣長、袖長），量測方式說明教的是圍度（胸圍、腰圍、臀圍），兩者基準不一致時怎麼處理</li>
+    <li>商品的專屬指南能不能另存成商店指南</li>
+    <li>尺寸指南的尺碼與商品選項的尺寸要不要對齊或自動帶入</li>
+    <li>優惠碼建立後能不能改類型</li>
+    <li>優惠碼能不能刪除，尤其是已有成交紀錄的代理碼</li>
+    <li>優惠碼的最高折抵上限</li>
+    <li>優惠碼開始與結束時間的時區與時間粒度（沿用排程特價的規則，該規則本身尚待確認）</li>
+    <li>推廣者怎麼挑選、要不要對方同意、對方在哪裡看到自己被指定</li>
+    <li>分成比例的上下限，平台要不要對分成另外抽成</li>
+    <li>品項撤銷或訂單取消時，分成怎麼回沖、紀錄怎麼標示</li>
+    <li>推廣者在自己的收入管理看到的科目歸屬</li>
+  </ul>
+  <p class="k">最近同步：2026-10-19（對照 5.1.5.5 v41，至 D452）</p>
+</details>
+</div>
+</body>
+</html>
