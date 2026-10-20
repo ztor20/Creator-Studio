@@ -43,7 +43,7 @@
 <link rel="stylesheet" href="ds-components/member-table.css?v=r2.2"><!-- 2026-10-12 改版：組合物表（商品＋票券同一張，票券列可展開） -->
 <link rel="stylesheet" href="ds-components/form-ask.css?v=r2.2"><!-- 2026-10-12 改版：問句設定塊（鎖定／販售上限）、分類標、標題列讀數 -->
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2"><!-- 2026-10-12 改版：「加入組合物」彈窗的商品／活動票券分頁 -->
-<link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398：組合包限購（跟隨成員／覆寫；js/purchase-limits.js） -->
+<link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398／D456：組合包限購（自己的設定、獨立計算；js/purchase-limits.js） -->
 <link rel="stylesheet" href="ds-components/cond-list.css?v=r2.2"><!-- D400：純商品組合包的購買條件（js/purchase-conds.js 條件清單） -->
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2"><!-- 條件卡的期間兩欄 .rule-row -->
@@ -53,6 +53,8 @@
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/picker.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/code-picker.css?v=r2.2"><!-- D458：優惠碼總開關的選擇欄 -->
+<link rel="stylesheet" href="ds-components/combobox.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <!-- D321（D321，D310 組合側，2026-09-23，比照建立商品 D317）：兩步驟——第 2 步「預覽與發布」全頁畫面（js/publish-stage.js）＋主區粉絲視角組合包頁（js/fan-bundle-page.js） -->
@@ -286,12 +288,18 @@
           </div>
         </div>
 
+        <!-- 使用優惠碼（D458，2026-10-20；原「可與優惠碼疊加」）：這個組合包的優惠碼總開關，定義見 5.1.5.4 F7／5.1.5.2 F13。
+             關閉＝不能用任何商店優惠碼；開啟＝全部商店的碼自動適用，另可多選特定商品範圍的碼、或建立新碼（js/code-picker.js）。
+             開關列的右欄是開關，打開後接一條 --panel 列放選擇欄；組合包上架前（建立流程）不鎖。 -->
         <div class="price-ladder__step">
           <div class="price-ladder__k">
-            <span class="price-ladder__t" data-i18n="cp.discount.stack">Stack with discount codes</span>
-            <span class="price-ladder__s" data-i18n="cp.discount.stack-sub">Off means the buyer gets whichever single discount is best for them</span>
+            <span class="price-ladder__t" data-i18n="cp.discount.stack">Use discount codes</span>
+            <span class="price-ladder__s" data-i18n="cp.discount.stack-sub">Off means no store discount code can be used here</span>
           </div>
-          <div class="price-ladder__v price-ladder__v--switch"><div class="switch" role="switch" aria-checked="false" tabindex="0" data-cb-stack aria-label="Stack with discount codes" data-i18n-aria-label="cp.discount.stack"></div></div>
+          <div class="price-ladder__v price-ladder__v--switch"><div class="switch" role="switch" aria-checked="false" tabindex="0" data-cb-stack aria-label="Use discount codes" data-i18n-aria-label="cp.discount.stack"></div></div>
+        </div>
+        <div class="price-ladder__step price-ladder__step--panel" data-cb-codes-body hidden>
+          <div class="price-ladder__codes" data-cb-codes-host></div>
         </div>
 
         <div class="price-ladder__step price-ladder__step--total">
@@ -357,8 +365,9 @@
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cpp.bd.sp.sec.rules">Purchase rules</h3>
       </div>
-      <!-- 購買條件與限購（F2；D342、D398、D400）：購買條件——含門票＝跟隨所含門票（取最嚴）的唯讀讀數，調整在組合包細節頁；
-           純商品＝預設不限、可加「限時購買／限粉絲分級購買」。限購——js/purchase-limits.js 畫「限購」標題＋「跟隨成員預設」開關＋三列。 -->
+      <!-- 購買條件與限購（F2；D342、D398、D400；2026-10-20 D455 B7）：建立時一律照預設帶入、不能調整，調整統一在組合包細節頁。
+           購買條件——含門票＝跟隨所含門票（取最嚴）的唯讀讀數；純商品＝預設不限的唯讀讀數。
+           限購——js/purchase-limits.js 畫「限購」標題＋一句額度說明＋每人總限購一欄，停用（disabled，D456：預設不限）。 -->
       <div class="stack" data-cb-rules>
         <!-- 2026-10-12 使用者：「這個也用線框的」——購買條件整塊同定時下架等列的線框（control-group--plain） -->
         <div class="field control-group control-group--plain control-group--readout" data-cb-buy>
@@ -369,6 +378,8 @@
           </div>
         </div>
         <div data-pl-host="cb"></div>
+        <!-- 2026-10-20 D455（B7）：建立時照預設帶入、不能調整；一句話交代去哪裡改（沒有成員時跟限購區塊一起收） -->
+        <p class="field__hint" data-cb-rules-later data-i18n="cb.rules.later" hidden>Set from the defaults. You can change them on the bundle page after creating.</p>
       </div>
     </section>
 
@@ -617,10 +628,12 @@
 <!-- D241：狀態與可售量的唯一推導層（spec §7.14）。必須早於下面的頁內 script。 -->
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="js/discount-codes-store.js?v=r2.2"></script><!-- D458：優惠碼端資料 -->
+<script src="js/code-picker.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script>
 <script src="js/tix-tier-table.js?v=r2.2"></script><!-- D433：允許的門票勾選表（與 bundle-detail 共用） --><!-- 2026-09-18 D292：活動票券成員的候選（活動與票種） -->
 <script src="js/ticket-bundle.js?v=r2.2"></script><!-- D342：票務商品的上架與開賣（跟隨活動／另設）與購買條件預設 -->
-<script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：組合包限購（預設取成員交集、覆寫、擋存） -->
+<script src="js/purchase-limits.js?v=r2.2"></script><!-- D398／D456：組合包限購（自己設、獨立計算、擋存） -->
 <script src="js/purchase-conds.js?v=r2.2"></script><!-- D400：純商品組合包的購買條件（限時購買／限粉絲分級購買） -->
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
@@ -730,8 +743,8 @@
   /* ── 票券成員（D292／D293／D294／D296）─────────────────────────────── */
   const EV = window.ztorEvents;
   const EV_BADGE = { 'live': ['events.badge.live', 'warning'], 'on-sale': ['events.badge.on-sale', 'success'], 'draft': ['events.status.draft', 'neutral'],
-                     'ended': ['events.badge.ended', 'neutral'], 'scheduled': ['events.badge.scheduled', 'neutral'], 'cancelled': ['event-detail.badge.cancelled', 'error'] };
-  const evBlocked = ev => ev.status === 'cancelled' || ev.status === 'ended';
+                     'ended': ['events.badge.ended', 'neutral'], 'scheduled': ['events.badge.scheduled', 'neutral'] };
+  const evBlocked = ev => ev.status === 'ended' || !!ev.archived;   /* D457：已取消階段退場，已封存取代（已結束不變） */
   const evName = ev => (ev.name || '').trim() || T('event-detail.untitled', 'Untitled event');
   const evMeta = ev => [ev.date || '', ev.venue || '', ev.typeLabelKey ? T(ev.typeLabelKey, '') : ''].filter(Boolean).join(' · ');
   const evBadgeHTML = ev => { if (!ev) return ''; const b = EV_BADGE[ev.status] || EV_BADGE.scheduled; return '<span class="badge badge--' + b[1] + '" data-i18n="' + b[0] + '">' + esc(T(b[0], ev.status)) + '</span>'; };
@@ -794,9 +807,13 @@
     if (FAN.tier && p.tierIds.indexOf(FAN.tier) < 0) FAN.tier = null;
   }
 
-  /* ── 可與優惠碼疊加（純開關，同建立商品的 data-cp-stack）── */
+  /* ── 使用優惠碼（D458：原「可與優惠碼疊加」純開關改為優惠碼總開關；打開才露出 js/code-picker.js 的選擇欄）──
+     選取與暫存的新碼留在元件裡，doCreate 存檔時才 commit 進碼端範圍。 */
+  const cbCodesBody = document.querySelector('[data-cb-codes-body]');
+  const cbCodesHost = document.querySelector('[data-cb-codes-host]');
+  const cbCodes = (cbCodesHost && window.ztorCodePicker) ? window.ztorCodePicker.mount(cbCodesHost, { key: null, label: () => ((document.getElementById('cb-name') || document.querySelector('[data-cb-name]') || {}).value || '').trim() }) : null;
   document.querySelectorAll('[data-cb-stack]').forEach(t => {
-    const flip = () => { const on = t.getAttribute('aria-checked') !== 'true'; t.setAttribute('aria-checked', on ? 'true' : 'false'); t.classList.toggle('switch--on', on); };
+    const flip = () => { const on = t.getAttribute('aria-checked') !== 'true'; t.setAttribute('aria-checked', on ? 'true' : 'false'); t.classList.toggle('switch--on', on); if (cbCodesBody) cbCodesBody.hidden = !on; };
     t.addEventListener('click', flip);
     t.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
   });
@@ -1555,30 +1572,13 @@
      所有組合包都有兩組，畫在第一張分卡成員之後的 [data-cb-rules]：
        · 購買條件：含門票＝上面 renderTbFollow 畫的唯讀預設（跟隨所含門票，buyOnly）；純商品＝預設不限、
          用 js/purchase-conds.js 的條件清單加「限時購買／限粉絲分級購買」，期間須在組合包自己的上架區間內〔推導〕。
-       · 限購：js/purchase-limits.js——預設跟隨成員（各成員上限 ÷ 每組用量取整後的最小值），可覆寫、可改回；
-         跟隨＝與成員共用額度、已覆寫＝獨立計算（含門票時門票部分永遠與單張門票共用、只能收窄）。
-     限購區塊只在結構變了（成員、每組用量、跟隨／覆寫、語言）才重畫，打字不重畫、游標不跑。 */
+       · 限購：js/purchase-limits.js——D456（2026-10-20）起不繼承成員：預設不限、不帶入成員的限購，獨立計算
+         （買組合包不扣成員商品或單張門票的額度）；沒有跟隨成員開關。建立時只呈現預設值，要設上限到組合包細節頁。
+     限購區塊只在結構變了（有沒有成員、語言）才重畫，打字不重畫、游標不跑。 */
   var PLc = window.ztorPurchaseLimits, PCc = window.ztorPurchaseConds;
   var cbRulesState = { limits: null, conds: { conds: {} } };
   window.cbRulesState = cbRulesState;
   var cbCondsApi = null, cbLimSig = '';
-  function cbLimitMembers() {
-    const out = [];
-    bundleDraft.members.forEach(m => {
-      const per = Math.max(1, Math.floor(Number(m.qty)) || 1);
-      if (m.kind === 'ticket') {
-        const ev = tix.event ? (EV ? (EV.get(tix.event.id) || tix.event) : tix.event) : null;
-        (ev && ev.tiers || []).filter(t => tix.tierIds.indexOf(t.id) >= 0).forEach(t => {
-          const r = TB ? TB.tierRules(t.rules) : {};
-          out.push({ kind: 'ticket', name: t.name || '', per: per, lim: { person: r.person || '' } });   /* D427：只剩每人總限購 */
-        });
-        return;
-      }
-      const p = products[m.productId] || {};
-      out.push({ kind: 'product', name: p.name || '', per: per, lim: p.limit || null });
-    });
-    return out;
-  }
   /* 純商品組合包的上架區間：定時上架＝起點、下架時間＝終點；立刻上架＝起點是發布當下（不擋起點，同 D342-02） */
   function cbEt() {
     return { listFrom: (listingMode === 'schedule' && listingTime) ? (listingTime.value || '') : '',
@@ -1588,7 +1588,7 @@
   const featOnC = id => { const d = window.ztorDevState; return !id || !d || !d.featOn || d.featOn(id); };
   function cbRulesErr() {
     let n = 0;
-    if (PLc) n += Object.keys(PLc.errors(cbRulesState.limits, PLc.derive(cbLimitMembers()), T)).length;
+    if (PLc) n += Object.keys(PLc.errors(cbRulesState.limits, T)).length;
     if (PCc && !ticketMember()) n += Object.keys(PCc.periodErrs(cbRulesState.conds, cbEt(), cbTr)).length;
     return n;
   }
@@ -1601,36 +1601,34 @@
     if (hr) hr.hidden = !tixOn;
     if (wrap) wrap.hidden = tixOn;
     if (buy) buy.hidden = tixOn && !featOnC('S63');   /* 含門票的購買條件（S63）不在版本內時，連標籤一起收 */
-    if (!tixOn && PCc && wrap) {
-      if (!cbCondsApi) cbCondsApi = PCc.mount(wrap.querySelector('[data-cb-conds-host]'), {
-        rules: cbRulesState.conds, scope: 'bundle',
-        ctx: { types: ['buyTime', 'buyTier'], emptyKey: 'pl.cond.empty', featOn: featOnC },
-        times: cbEt, tr: cbTr,
-        onChange: () => { recompute(); }
-      });
-      else cbCondsApi.check();
+    /* 2026-10-20 D455（B7，5.1.5.4 F2）：建立時購買條件與限購一律照預設帶入、不能調整，調整統一在組合包細節頁。
+       純商品的購買條件預設不限（D400）→ 只畫唯讀讀數，不再掛 js/purchase-conds.js 的條件清單（cbCondsApi 留空）。 */
+    const later = document.querySelector('[data-cb-rules-later]');
+    if (later) later.hidden = !bundleDraft.members.length;
+    if (!tixOn && wrap) {
+      const ch = wrap.querySelector('[data-cb-conds-host]');
+      if (ch) ch.innerHTML = '<div class="field-readout">' + esc(T('ce.rule.any', 'No limit')) + '</div>';
     }
     const host = document.querySelector('[data-pl-host="cb"]');
     if (!PLc || !host) return;
-    const der = PLc.derive(cbLimitMembers());
-    const sig = JSON.stringify(der) + '|' + (cbRulesState.limits ? 'o' : 'f') + '|' + document.documentElement.lang;
+    const sig = (bundleDraft.members.length ? 'm' : 'n') + '|' + document.documentElement.lang;
     if (force || sig !== cbLimSig) {
       cbLimSig = sig;
-      /* 2026-10-12 使用者：沒有成員時限購區塊整個不顯示（原本放一句「至少加入 1 個成員」） */
-      host.innerHTML = bundleDraft.members.length ? PLc.blockHTML(cbRulesState.limits, der, T, { title: true }) : '';
+      /* 2026-10-12 使用者：沒有成員時限購區塊整個不顯示（原本放一句「至少加入 1 個成員」）
+         D455：disabled＝欄位停用，建立時只呈現預設值（D456：預設不限） */
+      host.innerHTML = bundleDraft.members.length ? PLc.blockHTML(cbRulesState.limits, T, { title: true, disabled: true }) : '';
       if (window.ztorIcons) window.ztorIcons.applyIcons(host);
     }
-    PLc.syncErrors(host, cbRulesState, der, T);
+    PLc.syncErrors(host, cbRulesState, T);
   }
   window.cbRenderRules = renderCbRules;
   (function () {
     const host = document.querySelector('[data-pl-host="cb"]');
     if (!host || !PLc) return;
-    host.addEventListener('click', e => { if (PLc.onClick(e, cbRulesState, PLc.derive(cbLimitMembers()))) { renderCbRules(true); recompute(); } });
     host.addEventListener('input', e => {
       if (!PLc.onInput(e, cbRulesState)) return;
       e.stopPropagation();   /* 不觸發整頁 recompute（只要就地重算錯誤與檢核） */
-      PLc.syncErrors(host, cbRulesState, PLc.derive(cbLimitMembers()), T);
+      PLc.syncErrors(host, cbRulesState, T);
       recompute();
     });
   })();
@@ -2007,6 +2005,8 @@
     const nm = bundleName();
     const pr = moneyFrom(finalPrice(), priceRange());
     const bundleId = 'cb-' + Date.now().toString(36);
+    const cbSw = document.querySelector('[data-cb-stack]');
+    const cbCodesOn = !!(cbSw && cbSw.getAttribute('aria-checked') === 'true');
     const following = !!ticketMember();
     const tbC = following ? tbCtx() : null;
     const tbEff = tbC ? TB.effective(tbState, tbC.et) : {};
@@ -2032,18 +2032,22 @@
       saleEnd: following ? (tbEff.saleEnd || null) : ((listingMode !== 'none' && saleClose && saleClose.value) || null),
       sched: following ? Object.assign({}, tbState.sched) : undefined,
       rules: following ? null : undefined,
-      /* D398：限購 null＝跟隨成員（與成員共用額度）、{ person, order, times }＝已覆寫（獨立計算，以組計）；
+      /* D398／D456：限購 null＝不限、{ person }＝組合包自己設的上限（獨立計算，以組計）；
          純商品組合包的購買條件（限時購買／限粉絲分級購買，預設不限）——含門票的照 rules（跟隨所含門票） */
       limits: window.cbRulesState ? window.cbRulesState.limits : null,
       conds: (!following && window.cbRulesState) ? JSON.parse(JSON.stringify(window.cbRulesState.conds)) : undefined,
       films: linkedFilms.slice(),
       discountPct: discInfo().pct || null,
+      /* D458：優惠碼總開關與限時折扣無關（折扣沒開也能用碼），獨立存 codesOn；discount.stack 沿用舊欄位同值（讀端相容） */
+      codesOn: cbCodesOn,
       discount: saleOn() ? {
         percent: salePctInfo().pct,
         limited: { start: (saleStart && saleStart.value) || null, end: (saleEnd && saleEnd.value) || null },
-        stack: !!(document.querySelector('[data-cb-stack]') && document.querySelector('[data-cb-stack]').getAttribute('aria-checked') === 'true')
+        stack: cbCodesOn
       } : null
     };
+    if (window.ztorCodes) window.ztorCodes.setSwitch(bundleId, cbCodesOn);
+    if (cbCodes) cbCodes.commit(bundleId, nm || bundleId);   /* D458：選取與暫存的新碼隨組合包儲存寫進碼端的特定商品範圍 */
     rec.members.forEach(m => {
       if (m.kind === 'ticket') return;   /* 票券的鎖定住在票種池（原型只到呈現，見 ASSUMPTIONS BDL-001） */
       const p = window.ProductsStore && window.ProductsStore.get(m.productId);
@@ -2138,7 +2142,7 @@
   const stageGallery = () => Array.from(document.querySelectorAll('[data-cb-asset="hero"], [data-cb-asset="gallery"]')).map(tileMedia).filter(Boolean);
   /* 活動狀態 → 前台狀態膠囊（售票中／進行中＝綠、即將開賣＝黃、其餘無色） */
   const FAN_EV_STATUS = { 'on-sale': ['fep.status.on-sale', 'green'], 'live': ['events.badge.live', 'green'], 'scheduled': ['fep.status.soon', 'yellow'],
-                          'ended': ['fep.status.ended', 'cat'], 'cancelled': ['fep.status.cancelled', 'cat'] };
+                          'ended': ['fep.status.ended', 'cat'] };
   function stageEvent() {
     const ev = tix.event && ticketMember() ? ((EV && EV.get(tix.event.id)) || tix.event) : null;
     if (!ev) return null;

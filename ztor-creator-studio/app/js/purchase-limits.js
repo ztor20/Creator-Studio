@@ -13,7 +13,7 @@
    消費者：
      · js/purchase-conds.js   活動的「限購」條件卡（create-event 第 4 步、event-detail 活動層與門票彈窗）——只借 hintHTML()
      · create-product.html／product-detail.html   商品的限購開關底下那一欄（fieldsHTML，unit=item）
-     · create-bundle.html／bundle-detail.html     組合包的「限購」區塊（blockHTML，unit=set：跟隨成員／覆寫）
+     · create-bundle.html／bundle-detail.html     組合包的「限購」區塊（blockHTML，unit=set：自己的設定、獨立計算）
      · js/bundle-editor.js（create-event 組合包彈窗 layout:'split'）  同上（2026-10-12 改接，UI-CHANGES 一百八十八；存在 b.limits）
 
    對外 API（window.ztorPurchaseLimits）：
@@ -25,20 +25,18 @@
      hintHTML(field, unit)                    一句輔助說明（purchase-conds 的條件卡用）
      fieldsHTML(o)                            一欄（標籤＋輸入框＋輔助說明＋就地錯誤）；o 見函式說明
      read(root, attr)                         從畫好的欄位讀回 { person }
-     derive(members)                          組合包預設＝成員交集（取最嚴）＋門票上限（只能收窄的那條天花板）
-     fromRules(rules)                         舊的票務商品 rules（cap='cap' 時）或條件清單形狀（rules.conds.cap）→ 已覆寫的值
-     errors(lim, der, T)                      組合包限購的擋存錯誤 { 欄位: 訊息 }（lim＝null 是跟隨成員）
-     blockHTML(lim, der, T, opts)             組合包的限購區塊（跟隨成員／已覆寫＋每人總限購一欄＋取自誰）
-     onClick(e, holder, der) / onInput(e, holder)   互動（holder.limits：null＝跟隨、物件＝覆寫）；回傳 true＝要重畫／有處理
-     syncErrors(root, holder, der, T)         把錯誤寫進就地的 [data-pl-err]，回傳錯誤數
+     fromRules(rules)                         舊的票務商品 rules（cap='cap' 時）或條件清單形狀（rules.conds.cap）→ 組合包自己的限購值
+     errors(lim, T)                           組合包限購的擋存錯誤 { 欄位: 訊息 }（空白＝不限，沒有錯）
+     blockHTML(lim, T, opts)                  組合包的限購區塊（標題＋一句額度說明＋每人總限購一欄）
+     onInput(e, holder)                       輸入（holder.limits：null＝不限、物件＝自己設的上限）；回傳 true＝有處理
+     syncErrors(root, holder, T)              把錯誤寫進就地的 [data-pl-err]，回傳錯誤數
 
-   組合包預設的算法（§7.14「組合包的限購」）：
-     · 每人總限購：成員上限（商品以件、門票以張）÷ 該成員每組用量，取整數部分；取所有成員的最小值。
-     · 墓碑 2026-10-16（D427）：每次交易限購（同上換算）與限購次數（不換算、直接取最小值）兩條算法隨欄位退場。
-     · 成員沒設該項的不參與；所有成員都沒設＝不限。
-     · 門票成員換算出的值另記一份 ceil（天花板）：覆寫只能收窄到它以內（D342、D390 第 25 題）；商品成員推導的值可放寬也可收窄。
-     · 跟隨成員時任一成員換算不足 1 組 → 擋存並就地說明是誰、怎麼改〔推導，比照 D342「限購最低 1 組」〕；覆寫值最低 1 組。
-     · 覆寫（設上限）時每人總限購必填（D428 定案，2026-10-16）：空白擋存、就地「請填上限。」。
+   組合包的限購（§7.14「組合包的限購」，D456，2026-10-20）：
+     · 不繼承成員：預設不限，成員商品與門票的限購都不帶入，成員改了也不跟；沒有「跟隨成員／已覆寫」，也沒有開關。
+     · 可以比成員寬或嚴；設上限時最低 1 組；空白＝不限（不再擋存）。
+     · 額度一律獨立計算：買組合包不扣成員商品或單張門票的限購額度，反過來也一樣。
+     · 墓碑 2026-10-20（D456）：derive／followVals（成員交集與跟隨值）、onClick（跟隨／覆寫開關）、取自誰（pl.src.*）、
+       門票天花板（pl.err.ceil）、成員不足 1 組（pl.err.short.*）隨「不繼承」退場；D428「覆寫時必填」同時失效（空白＝不限）。
    ============================================================ */
 (function () {
   'use strict';
@@ -119,35 +117,7 @@
     return o;
   }
 
-  /* ── 組合包：成員交集 ─────────────────────────────────────── */
-  /* members：[{ kind:'product'|'ticket', name, per（每組用量，≥1）, lim（norm 形狀或 null） }] */
-  function derive(members) {
-    var d = { keys: {}, ceil: {}, short: {}, hasTicket: false, count: 0 };
-    var list = (members || []).map(function (m) {
-      return { kind: m.kind === 'ticket' ? 'ticket' : 'product', name: m.name || '', per: Math.max(1, Math.floor(Number(m.per) || 1)), lim: norm(m.lim) };
-    });
-    d.count = list.length;
-    d.hasTicket = list.some(function (m) { return m.kind === 'ticket'; });
-    KEYS.forEach(function (k) {
-      var cands = list.filter(function (m) { return m.lim && posInt(m.lim[k]) != null; }).map(function (m) {
-        var raw = posInt(m.lim[k]);
-        return { kind: m.kind, name: m.name, per: m.per, raw: raw, sets: Math.floor(raw / m.per) };
-      });
-      if (!cands.length) { d.keys[k] = null; d.ceil[k] = null; d.short[k] = []; return; }
-      var min = Math.min.apply(null, cands.map(function (c) { return c.sets; }));
-      d.keys[k] = { sets: min, by: cands.filter(function (c) { return c.sets === min; }) };
-      var tk = cands.filter(function (c) { return c.kind === 'ticket'; });
-      d.ceil[k] = tk.length ? Math.min.apply(null, tk.map(function (c) { return c.sets; })) : null;
-      d.short[k] = cands.filter(function (c) { return c.sets < 1; });
-    });
-    return d;
-  }
-  /* 跟隨時的值（字串；不限或不足 1 組＝空） */
-  function followVals(der) {
-    var o = {};
-    KEYS.forEach(function (k) { var x = der && der.keys[k]; o[k] = x && x.sets >= 1 ? String(x.sets) : ''; });
-    return o;
-  }
+  /* ── 組合包：自己的設定（D456 起不繼承成員）──────────────────── */
   function fromRules(rules) {
     if (!rules) return null;
     if (rules.cap === 'cap') return { person: String(rules.person || '') };
@@ -157,96 +127,40 @@
     if (c && typeof c === 'object') return { person: String(c.person || '') };
     return null;
   }
-  /* 「取自誰」：商品寫名字＋件數算式，門票寫張數算式（墓碑 2026-10-16 D427：限購次數的「取自 {name}：{n} 次」pl.src.times 退場） */
-  function whoText(k, c, T) {
-    var u = tr(T, 'pl.u.' + (c.kind === 'ticket' ? 'tix' : 'item'));
-    var key = c.per > 1 ? 'pl.src.conv' : 'pl.src.one';
-    return tr(T, key).replace('{name}', c.name || '—').split('{n}').join(c.raw).split('{per}').join(c.per).split('{u}').join(u);
-  }
-  function srcText(k, der, T) {
-    var x = der && der.keys[k];
-    if (!x) return tr(T, 'pl.src.none');
-    return x.by.map(function (c) { return whoText(k, c, T); }).join(listSep());
-  }
-  function shortMsg(c, T) {
-    var u = tr(T, 'pl.u.' + (c.kind === 'ticket' ? 'tix' : 'item'));
-    return tr(T, c.kind === 'ticket' ? 'pl.err.short.tix' : 'pl.err.short.item')
-      .replace('{name}', c.name || '—').split('{n}').join(c.raw).split('{per}').join(c.per).split('{u}').join(u);
-  }
-  function errors(lim, der, T) {
+  /* 空白＝不限；有填就要是 1 以上的整數（最低 1 組）。不看成員、不看門票（D456） */
+  function errors(lim, T) {
     var e = {};
-    if (!der) return e;
-    var over = lim ? norm(lim) : null;
+    var n = lim ? norm(lim) : null;
+    if (!n) return e;
     KEYS.forEach(function (k) {
-      var sh = (der.short[k] || []);
-      if (!over) {                               // 跟隨成員：任一成員不足 1 組就擋
-        if (sh.length) e[k] = sh.map(function (c) { return shortMsg(c, T); }).join(' ');
-        return;
-      }
-      var tkShort = sh.filter(function (c) { return c.kind === 'ticket'; });
-      if (tkShort.length) { e[k] = tkShort.map(function (c) { return shortMsg(c, T); }).join(' '); return; }   // 門票不足 1 組：覆寫解不開
-      var raw = String(over[k] || '').trim();
-      /* D428（2026-10-16 定案）：組合包的限購是「不限（跟隨成員都沒設），或設上限」——選了覆寫（設上限）就要填，空白擋存
-         （原本只有含門票成員、有天花板時才擋，純商品組合包覆寫留空會被當成不限存過去） */
-      if (!raw) { e[k] = tr(T, 'pl.err.required'); return; }
-      if (posInt(raw) == null) { e[k] = tr(T, 'pl.err.int'); return; }
-      var ceil = der.ceil[k];
-      if (ceil != null && posInt(raw) > ceil) e[k] = tr(T, 'pl.err.ceil').split('{n}').join(ceil);
+      var raw = String(n[k] || '').trim();
+      if (raw && posInt(raw) == null) e[k] = tr(T, 'pl.err.int');
     });
     return e;
   }
 
-  /* opts：{ disabled（檢視態：動作與欄位停用）,
+  /* opts：{ disabled（檢視態：欄位停用）,
              title（2026-10-12：true＝標題列左邊畫「限購」標題，頁面就不必在外面另放欄位標籤） }
-     2026-10-12（使用者裁示，建立組合包改版）：「跟隨成員／已覆寫」由「徽章＋覆寫按鈕」改成標題列右側
-     「跟隨成員預設」＋ on／off 開關（同購買條件的「跟隨活動預設」）：開＝跟隨成員、關＝覆寫。
-     開關本身是 <button class="switch" role="switch">，鍵盤可操作；data-pl-act 照舊（開時按下＝override、關時按下＝follow），
-     所以頁面的 onClick 委派不用改。
-     墓碑 2026-10-16（D429）：locked／lockNote 兩個選項（bookyay 套票自動建立的組合包：不畫開關、改放「bookyay 帶入」徽章
-     .limit-set__state〔pl.state.locked〕、說明句換成鎖定原因）隨自動組合包退場——已沒有消費者傳 locked。 */
-  function blockHTML(lim, der, T, opts) {
+     D456（2026-10-20）：標題列右側的「跟隨成員預設」開關與「取自誰」事實句整個拿掉；說明句固定交代額度獨立計算。
+     墓碑 2026-10-16（D429）：locked／lockNote 兩個選項（bookyay 套票自動建立的組合包）隨自動組合包退場。 */
+  function blockHTML(lim, T, opts) {
     opts = opts || {};
-    var over = lim ? norm(lim) : null;
-    var state = over ? 'override' : 'follow';
-    var vals = over || followVals(der);
-    /* 說明句同時交代額度怎麼算（D400）：跟隨＝與成員共用額度、已覆寫＝獨立計算；含門票時門票部分永遠與單張門票共用 */
-    var tix = !!(der && der.hasTicket);
-    var sub = over ? (tix ? 'pl.sub.override.tix' : 'pl.sub.override') : (tix ? 'pl.sub.follow.tix' : 'pl.sub.follow');
-    var act = '<span class="limit-set__follow"><span data-i18n="pl.follow.default">' + esc(tr(T, 'pl.follow.default')) + '</span>' +
-          '<button type="button" class="switch' + (over ? '' : ' switch--on') + ' limit-set__switch" role="switch" aria-checked="' + (over ? 'false' : 'true') + '"' +
-          ' data-pl-act="' + (over ? 'follow' : 'override') + '" aria-label="' + esc(tr(T, 'pl.follow.default')) + '" data-i18n-aria-label="pl.follow.default"' +
-          (opts.disabled ? ' disabled aria-disabled="true"' : '') + '></button></span>';
-    var extra = function (k) {
-      if (!over) return '<p class="field__hint field__hint--fact limit-set__src" data-pl-src="' + k + '">' + esc(srcText(k, der, T)) + '</p>';
-      var x = der && der.keys[k], parts = [];
-      parts.push(tr(T, 'pl.src.was').replace('{v}', x && x.sets >= 1 ? String(x.sets) : tr(T, 'pl.none')));
-      if (der && der.ceil[k] != null && der.ceil[k] >= 1) parts.push(tr(T, 'pl.src.ceil').split('{n}').join(der.ceil[k]));
-      return '<p class="field__hint field__hint--fact limit-set__src" data-pl-src="' + k + '">' + esc(parts.join(' · ')) + '</p>';
-    };
-    return '<div class="limit-set limit-set--bundle" data-pl-block data-state="' + state + '">' +
-      '<div class="limit-set__head">' +
-        (opts.title ? '<span class="limit-set__title" data-i18n="tb.rules.cap">' + esc(tr(T, 'tb.rules.cap')) + '</span>' : '') +
-        act +
-      '</div>' +
-      '<p class="limit-set__sub" data-i18n="' + sub + '">' + esc(tr(T, sub)) + '</p>' +
-      fieldsHTML({ unit: 'set', vals: vals, T: T, disabled: !over || opts.disabled, extra: extra, errs: true }) +
+    var vals = norm(lim) || {};
+    return '<div class="limit-set limit-set--bundle" data-pl-block>' +
+      (opts.title ? '<div class="limit-set__head"><span class="limit-set__title" data-i18n="tb.rules.cap">' + esc(tr(T, 'tb.rules.cap')) + '</span></div>' : '') +
+      '<p class="limit-set__sub" data-i18n="pl.sub">' + esc(tr(T, 'pl.sub')) + '</p>' +
+      fieldsHTML({ unit: 'set', vals: vals, T: T, disabled: !!opts.disabled, errs: true }) +
     '</div>';
-  }
-  function onClick(e, holder, der) {
-    var b = e.target.closest && e.target.closest('[data-pl-act]');
-    if (!b || b.disabled) return false;
-    if (b.dataset.plAct === 'override') holder.limits = followVals(der);   // 覆寫從跟隨的值起手
-    else holder.limits = null;
-    return true;
   }
   function onInput(e, holder) {
     var f = e.target.closest && e.target.closest('[data-pl-block] [data-pl-f]');
-    if (!f || !holder.limits) return false;
+    if (!f) return false;
+    if (!holder.limits) holder.limits = { person: '' };
     holder.limits[f.dataset.plF] = f.value;
     return true;
   }
-  function syncErrors(root, holder, der, T) {
-    var e = errors(holder && holder.limits, der, T);
+  function syncErrors(root, holder, T) {
+    var e = errors(holder && holder.limits, T);
     if (root) root.querySelectorAll('[data-pl-block] [data-pl-err]').forEach(function (p) {
       var m = e[p.dataset.plErr] || '';
       p.hidden = !m; p.textContent = m;
@@ -259,7 +173,7 @@
   window.ztorPurchaseLimits = {
     KEYS: KEYS, norm: norm, has: has, posInt: posInt, text: text,
     hintHTML: hintHTML, fieldsHTML: fieldsHTML, read: read,
-    derive: derive, followVals: followVals, fromRules: fromRules, errors: errors,
-    blockHTML: blockHTML, onClick: onClick, onInput: onInput, syncErrors: syncErrors
+    fromRules: fromRules, errors: errors,
+    blockHTML: blockHTML, onInput: onInput, syncErrors: syncErrors
   };
 })();

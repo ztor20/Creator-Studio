@@ -843,7 +843,7 @@
     if (ev) {
       ev.list().forEach(function (e) {
         var img = e.images && e.images.keyvisual;
-        if (!img) return;
+        if (!img || e.archived) return;   /* D457：已封存的活動離開主清單，首頁畫布也不列 */
         /* 活動同樣寫階段（售票中／進行中／準備中），不寫「活動」——「活動」是分類，
            而這一排上的每一件都需要回答「現在到哪一步」。 */
         var row = { kind: 'event', img: img, title: e.name,
@@ -2161,7 +2161,7 @@
       var ev = window.ztorEvents;
       if (!ev) return [];
       return ev.list().filter(function (e) {
-        return CANVAS_EVENT_OPEN[e.status] && e.images && e.images.keyvisual;
+        return CANVAS_EVENT_OPEN[e.status] && !e.archived && e.images && e.images.keyvisual;   /* D457：已封存不列 */
       }).map(function (e) {
         var sold = typeof e.sold === 'number' ? e.sold
           : (e.tiers || []).reduce(function (a, t) { return a + (t.sold || 0); }, 0);

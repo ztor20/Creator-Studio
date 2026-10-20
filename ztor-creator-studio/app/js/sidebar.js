@@ -613,6 +613,9 @@
     /* 定時下架到期的自動連動（2026-09-18 · D288 裁決二）：成員單售依排程下架、含它的上架中組合包一併下架，經通知中心通知創作者。
        靜態示範，對應 products-store.js 的 coaster／backstage-set（載入時由 ListingState.scheduledUnlistCascade 連動）。 */
     { icon: "calendar-clock", href: "bundle-detail.html?id=backstage-set", k: "notif.auto-unlist", source: "notif.source.eshop" },
+    /* 拍賣未達保留價流標（2026-10-20 · D455 B3）：有出價但最高出價沒達到保留價 → 流標並通知創作者。
+       靜態示範，對應 products-store.js 的 AUCTION_SEED['tour-patch-set']。 */
+    { icon: "gavel",          href: "auction-detail.html?id=tour-patch-set", k: "notif.reserve-unmet", source: "notif.source.eshop" },
     { icon: "banknote",       href: "earnings.html",              k: "notif.available",    source: "notif.source.earnings" },
     { icon: "receipt",        href: "order-detail.html",          k: "notif.new-order",    source: "notif.source.orders" },
     { icon: "rocket",         href: "projects.html",              k: "notif.funded",       source: "notif.source.projects" },

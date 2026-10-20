@@ -35,6 +35,7 @@
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/restock-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=r2.2"><!-- 2026-10-20 D455（B1）：組合補貨的逐選項列帶唯讀縮圖 .variant-thumb--ro -->
 <link rel="stylesheet" href="ds-components/split-button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/message-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/product-post-modal.css?v=r2.2">
@@ -1074,6 +1075,18 @@
             <div class="product-list__cell product-list__activity" role="cell" data-i18n="e-shop.a7.activity">0 bids · No winner</div>          <div class="product-list__cell product-list__shown" role="cell"><div class="switch switch--on" role="switch" tabindex="0" aria-checked="true" data-eshop-shop aria-label="Show in shop" data-i18n-aria-label="e-shop.a.shoplist"></div></div><div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="auction-detail.html?id=tour-enamel-pin" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a></div></details></div>
           </div>
 
+          <!-- Unsold（流標、未達保留價，2026-10-20 · D455 B3）：有出價但最高出價 $140 沒達到保留價 $200 → 流標、不成交，並通知創作者
+               （通知中心那一則見 js/sidebar.js NOTIF_INFO）。狀態由 ListingState.auctionUnsoldReason 推導，data-status 只是初值。 -->
+          <div class="product-list__row" role="row" data-status="unsold" data-type="auction" data-name="Signed tour patch set" data-auction-id="tour-patch-set">
+            <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+            <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/patch-set.webp" alt="" loading="lazy"></div></div>
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title" data-i18n="e-shop.a9.name">Signed tour patch set</div><div class="product-list__meta" data-i18n="e-shop.a9.meta">Like new · All fans</div></div></div>
+            <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="cp.acat.collectibles">Collectibles</div>
+            <div class="product-list__cell product-list__price" role="cell">$140</div>
+            <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--neutral"><span data-i18n="e-shop.astatus.unsold">Unsold</span></span></div>
+            <div class="product-list__cell product-list__activity" role="cell" data-i18n="e-shop.a9.activity">6 bids · Reserve not met</div>          <div class="product-list__cell product-list__shown" role="cell"><div class="switch switch--on" role="switch" tabindex="0" aria-checked="true" data-eshop-shop aria-label="Show in shop" data-i18n-aria-label="e-shop.a.shoplist"></div></div><div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="auction-detail.html?id=tour-patch-set" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a></div></details></div>
+          </div>
+
           <!-- 已下架／已封存／隱藏三列（2026-09-18 · D284／D285，主規格 §7.14）：狀態、徽章、顯示開關與 kebab 的封存／重新上架
                全由 AUCTION_SEED（products-store.js）＋ ListingState.deriveAuctionStatus 推導，data-status 只是初值。 -->
           <div class="product-list__row" role="row" data-status="unlisted" data-type="auction" data-name="Handwritten lyric sheet" data-auction-id="lyric-sheet">
@@ -1978,7 +1991,7 @@
          用活動自己的徽章字與色態，不套商品的「販售中／販售結束／已下架」；售罄是組合包自己的狀態，仍照商品表。篩選桶（status）不變。 */
       const evRow = row.dataset.eventBundle && window.ztorEvents && window.ztorEvents.get ? window.ztorEvents.get(row.dataset.eventBundle) : null;
       const EVB = { 'on-sale': ['success', 'events.badge.on-sale'], 'live': ['warning', 'events.badge.live'], 'scheduled': ['neutral', 'events.badge.scheduled'],
-                    'ended': ['neutral', 'events.badge.ended'], 'cancelled': ['error', 'event-detail.badge.cancelled'] };
+                    'ended': ['neutral', 'events.badge.ended'] };
       const evb = evRow ? EVB[evRow.status] : null;
       /* D391 補充二：活動組合包的可選門票全部隨場次刪除＝「無法販售」，蓋過活動徽章與販售軸的字（已下架、草稿、封存照舊）。篩選桶不變。 */
       const evBd = evRow ? (evRow.bundles || []).find(b => b.id === row.dataset.bundleId) : null;
@@ -1989,7 +2002,7 @@
       }
       /* 2026-10-16 修正：活動還能上架、是組合包自己下架（或活動下架）→ 徽章寫「已下架」，不套活動的售票中／已排程；
          活動已結束／已取消照用活動徽章（D437）。 */
-      const evSelfUnlisted = evRow && status === 'unlisted' && evRow.status !== 'ended' && evRow.status !== 'cancelled';
+      const evSelfUnlisted = evRow && status === 'unlisted' && evRow.status !== 'ended' && !evRow.archived;
       if (main && evb && status !== 'soldout' && !evSelfUnlisted) {
         main.className = 'badge badge--' + evb[0];
         setBadgeText(main, evb[1]);
@@ -2527,8 +2540,7 @@
         id: b.id, isEventBundle: true, draft: st === 'draft', listed: listed, listAt: null, unlistAt: null,
         shown: ownShown && !evHidden, evHidden: evHidden, privateLink: null,
         onSale: st !== 'scheduled', saleStart: null, saleEnd: (st === 'ended' && ev.date) ? ev.date + 'T23:59' : null,
-        archived: false, unlistReason: st === 'cancelled' ? { type: 'event-cancelled', eventName: ev.name }
-          : (st === 'ended' ? { type: 'event-ended', eventName: ev.name } : null)
+        archived: false, unlistReason: st === 'ended' ? { type: 'event-ended', eventName: ev.name } : null   /* D457：event-cancelled 退場 */
       };
       /* 可售套數（2026-09-21 D296 決定四）＝各允許票種 floor(剩餘 ÷ 每組張數) **加總**（粉絲任選一種，任一票種剩餘 ≥ n 即可賣），
          再與（上限 − 已售）取最小（同 bundle-detail 的算法；商品成員在 events-store 無池，視為不限量） */
@@ -2569,8 +2581,7 @@
           /* 徽章與篩選桶跟著活動（D294 補述，2026-09-21 使用者：「和活動一樣」）：售票中／進行中＝販售中、已排程＝即將開賣、
              已結束＝已結束、已取消＝已取消（下架桶）——用活動自己的徽章字，不套商品的「販售結束」。 */
           const EVB = { 'on-sale': ['live', 'success', 'events.badge.on-sale'], 'live': ['live', 'warning', 'events.badge.live'],
-                        'scheduled': ['coming', 'neutral', 'events.badge.scheduled'], 'ended': ['ended', 'neutral', 'events.badge.ended'],
-                        'cancelled': ['unlisted', 'error', 'event-detail.badge.cancelled'] };
+                        'scheduled': ['coming', 'neutral', 'events.badge.scheduled'], 'ended': ['ended', 'neutral', 'events.badge.ended'] };
           const evb = EVB[ev.status] || EVB['scheduled'];
           html.push('<div class="product-list__row" role="row" data-status="' + evb[0] + '" data-type="bundle" data-bundle-id="' + esc(b.id) + '" data-event-bundle="' + esc(ev.id) + '" data-name="' + esc(b.name || '') + '">'
             + '<div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>'
@@ -2685,6 +2696,34 @@
         return { name: name.trim(), current, status };
       }
 
+      /* 2026-10-20 D455（B1，5.1.5.6 §2 入口 3）：組合補貨的成員從商品資料推導——實體成員全部列入（限量與不限量都列、
+         不限量補貨無上限），只有數位成員不列；多選項成員以選項組合矩陣列出（兩層選項照第一層分組，同 product-detail）。
+         推不出來（store 沒有這個組合）才退回上面的 BUNDLE_MEMBERS 示範資料。 */
+      function storeBundleMembers(row) {
+        const id = row.getAttribute('data-bundle-id');
+        const PS = window.ProductsStore;
+        const b = (id && window.ztorGetBundle) ? window.ztorGetBundle(id) : null;
+        if (!b || !PS || !(b.members || []).length) return null;
+        const out = [];
+        b.members.forEach(m => {
+          const p = PS.get(m.productId);
+          if (!p || p.cat === 'digital') return;
+          const vs = p.variant === 'multiple' ? (p.variants || []) : [];
+          if (!vs.length) { out.push({ name: p.name, current: parseInt(p.stock, 10) || 0, status: p.status }); return; }
+          const two = (vs[0].combo || []).length >= 2;
+          const groups = [], byLabel = {};
+          vs.forEach((v, i) => {
+            const combo = v.combo || [];
+            const gl = two ? combo[0] : null;
+            const thumb = PS.variantThumb ? PS.variantThumb(p, v, { label: combo.join(' / ') }) : '';
+            if (!byLabel[gl]) { byLabel[gl] = { label: gl, items: [] }; groups.push(byLabel[gl]); }
+            byLabel[gl].items.push({ name: (two ? combo.slice(1) : combo).join(' / '), current: parseInt(v.stock, 10) || 0, vi: i, thumb: thumb });
+          });
+          out.push({ name: p.name, matrix: groups });
+        });
+        return out.length ? out : null;
+      }
+
       document.addEventListener('click', e => {
         const trig = e.target.closest('[data-eshop-restock]');
         if (!trig) return;
@@ -2693,7 +2732,7 @@
         if (!row) return;
         const name = row.getAttribute('data-name');
         if (row.getAttribute('data-type') === 'bundle') {
-          restock.openBundle(BUNDLE_MEMBERS[name] || [], row);
+          restock.openBundle(storeBundleMembers(row) || BUNDLE_MEMBERS[name] || [], row);
         } else if (PRODUCT_MATRIX[name]) {
           restock.openProduct(PRODUCT_MATRIX[name], row);   /* 2-option matrix → colour groups × size lines, no tabs */
         } else if (row.hasAttribute('data-variants')) {

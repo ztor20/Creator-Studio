@@ -13,6 +13,163 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-20（二百七十四）· D458 商品與組合包的「可與優惠碼疊加」改為優惠碼總開關，開啟後選碼或建立新碼（A spec-derived · C 撤除）
+
+**標籤**：release2.4、最終版（商品與組合包的優惠碼開關兩版都有；代理碼與次數用完的示範碼只在最終版）
+
+規格：`documents/decisions.md` D458（使用者 2026-10-20 裁決；修訂 D183／D260 補充四／D275 第 3 項／D276），5.1.5.2 v6.45 §4.4 F13（唯一定義處）、5.1.5.1 v1.64 §2.15、5.1.5.4 v2.68 F7、5.1.5.9 v1.84 §2.3、5.1.5.5 v44 F8.2。
+
+**A spec-derived**
+
+- 新資料層 `js/discount-codes-store.js`（`window.ztorCodes`）：優惠碼端的示範資料（與商店設定清單的 SUMMER25／TOURVIP15／EARLYBIRD10／SPRING2026／FANCLUB30／AIKO10／LAUNCH50 一一對應，另補 FANDAY20 當「特定商品範圍、尚未選任何現有商品」的示範），加 localStorage `ztor.codes.v1` 覆蓋層（新碼、各碼特定商品範圍的增減、各商品的優惠碼開關、新建流程商品的顯示名）。`applicable(key)` 回傳實際可用的碼：開關關閉＝空陣列（連「全部商店」的碼也不算）。
+- 新元件 **Code picker**（`ds-components/code-picker.css`＋`js/code-picker.js`，`design-system.md` §4.239、`design-system.html` #code-picker、`design-components.html` 重生）：開關打開後出現——唯讀「已自動適用」（範圍是全部商店且可用的碼）、「優惠碼」多選（chip＋combobox，可選的是範圍含「特定商品」且可用的碼，已選過的保留並標尚未開始／已結束／已停用／已用完）、「建立新的優惠碼」小彈窗（重用 payout-modal；代碼 8–20 英數字、折扣 1–100%、起訖日，適用範圍唯讀預帶「特定商品：本商品」，Phase 1 只能建自用碼）。選取結果與新碼隨商品或組合包儲存才寫進碼端（`commit`），取消編輯 `reset`；建立流程（還沒有商品 id）的新碼整個暫存到儲存。
+- `create-product.html`：原折扣群組內兩顆純開關（單一規格 `data-cp-stack`、多選項 `data-cp-vstack`）退場，改為折扣設定之後獨立一段「優惠碼」（`#cp-codes-toggle`＋Code picker），單一規格與多選項共用一顆；按「開始販售」（`doPublishNew`）時 commit。
+- `product-detail.html`：同樣改成獨立一段「優惠碼」（開關 id 沿用 `pd-stack-codes`）；檢視態唯讀、編輯態可改，儲存寫回碼端、取消還原；設定概覽的標籤跟著改。
+- `create-bundle.html`、`bundle-detail.html`、`js/bundle-editor.js`（建立活動第 6 步票務商品，S64）：價格階梯的「可與優惠碼疊加」列改為「使用優惠碼」開關列，打開後下接一條放 Code picker 的面板列（`.price-ladder__codes`，`price-ladder.css` 補一條通欄規則）。與限時折扣開不開無關，折扣關著也能用碼。組合細節頁上架中的活動組合包（`bdStockOnly()`）開關與選碼鎖定、說明要先下架，與其他欄位同一條路徑（`bdStockLockApply`）。
+- `store-settings.html`：優惠碼清單的「範圍」欄改從資料層重畫（商品端選碼後商品出現在該碼的特定商品浮卡裡；商品端新建的碼長出新列）；浮卡裡開關為關閉的商品多一行「商品端優惠碼開關為關閉，不適用」；清單新建的碼同時寫進資料層，商品端選擇欄才選得到（全部商店→已自動適用）。
+- `js/i18n.js`：`cp.discount.stack` 改「使用優惠碼／Use discount codes」、`cp.discount.stack-sub` 改「關閉時，任何商店優惠碼都不能用在這裡」；新增 `cpk.*`（選擇欄與新碼彈窗）、`store-settings.codes.scope.off`。
+- 示範資料：`js/products-store.js` 檔頭說明 `discount.stack` 即優惠碼總開關預設值（新增選填 `codesOn`，沒寫讀 `discount.stack`）：既有「開啟疊加」的商品與組合包（tee、signing-set 等）轉成開關開啟、沒選任何碼；「關閉」的維持關閉。
+
+**C 撤除**
+
+- 「可與優惠碼疊加」純開關與其「擇一、取對買家最有利」副標（`create-product.html` 兩顆、`product-detail.html`、`create-bundle.html`、`bundle-detail.html`、`js/bundle-editor.js` 各一）；`i18n.js` 舊字面留墓碑註解。
+- `create-product.html` 的 `wireSwitchOnly()`（只服務那兩顆開關）。
+
+**D infra / 文件**
+
+- `ASSUMPTIONS.md` UIA-280（D458 推導與呈現假設）、`requirements-map.md`、`BUILD-SPEC.md` 同步。
+- `design-system.md` 價格階梯條目補 `.price-ladder__codes` 與「使用優惠碼」列說明；`design-system.html` 價格階梯展示列同步改字。
+
+**使用者回饋補修（2026-10-20，B 反饋）**
+
+- 「建立新的優惠碼」由欄位下方的獨立按鈕改成下拉清單裡的一個選項（固定放清單最上面，下方分隔線；下拉常被卡片邊界裁掉，放最上面才看得到）：`js/code-picker.js`（menuHTML）、`ds-components/code-picker.css`（`.code-picker__new` → `.code-picker__new-opt`）、`design-system.md`／`.html`／`design-components.html` 條目與 demo 同步。
+- 開關名稱統一為「使用優惠碼」（規格、規則手冊同步）。
+- 下拉被價格階梯裁掉：`.price-ladder` 為了圓角設了 `overflow:hidden`，會壓住下拉；`ds-components/code-picker.css` 加 `.price-ladder:has(.code-picker__field) { overflow: visible; }`。建立組合頁實測下拉浮在下方「數量」卡片上方、選項完整可見。
+- 驗證：`create-bundle.html?version=full` 開關開啟後點欄位，選項第一個是「＋ 建立新的優惠碼」，點下去開小彈窗、預帶「特定商品：本商品」，Console 0 錯誤。
+
+## 2026-10-20（二百七十三）· D457 活動拿掉取消功能與已取消階段、新增活動封存與「已封存」篩選（A spec-derived · C 撤除）
+
+**標籤**：release2.4、最終版（掛 S81 的封存入口在 release2.4 與最終版都出現；其餘為移除，兩版同步）
+
+規格：主規格 v4.97 §7.2／§7.14、5.1.6 F1／F3／F5、5.1.6.3 v96 §2.1／§2.10／第 4 段頁面狀態、5.1.6.1／5.1.6.2（D457，使用者 2026-10-20 裁決；封存比照商品 D284／D288／D298）。
+
+**A spec-derived**
+
+- `js/events-store.js`：新增 `archived` 旗標（mock 可直接帶，詳情頁與清單列的封存／解除封存寫進 localStorage `ztor.event-archived`，存 true／false 兩值，做法同 `ztor.event-unlisted`）；`get()`／`list()` 讀出時套用（封存必然下架）；新 API `setArchived(id, on)`；組合包連動只剩下架（`cancelBundlesOf` 改名 `unlistBundlesOf`）；`relistBundlesOf()` 已封存回空。
+- `event-detail.html`：「設定」分頁底部原「取消活動」整塊（`#ed-danger`）改成「封存活動」區塊（`#ed-archive`，掛 `data-feat="S81"`），只在活動已下架且未封存時出現，確認對話說明離開主清單、整頁唯讀、已售出的票與訂單不受影響、可解除封存，尚未結束（已排程、售票中、進行中）多提醒一次並取消尚未生效的上架排程；確認後重載整頁。已封存：頁首徽章「已封存」（優先於已下架與完售徽章）、info-banner 說明、整頁唯讀（原已結束／已取消的唯讀判斷收進 `edIsClosed(ev)`＝已結束或已封存）、頁首只有一顆「解除封存」（不確認、回到已下架、不自動上架），「檢視售票頁」「預覽與在地化」「再辦一場」「編輯活動」與上架／下架區塊、bookyay 同步下架提示一併收起。「再辦一場」頁首入口改為已結束或已下架（已封存不提供）。
+- `events.html`：階段分頁「已取消」改「已封存」（排在草稿之後）；列帶 `data-archived`，已封存列狀態欄只留「已封存」徽章（優先於其他徽章）、離開「全部」與各階段分頁、只在「已封存」篩選出現，頁首四個數字也不含已封存；列操作：已下架列加「封存」（確認彈窗借既有 leave-dialog 殼）、已封存列只有「解除封存」（不確認）與「查看活動頁」，編輯與複製收起；系列母列底下各場全封存才算封存。
+- `js/i18n.js`：新增 `events.stage.archived`、`events.archive.title`、`event-detail.btn.unarchive`、`event-detail.archived.banner`、`event-detail.archive.*`（title、sub、needunlist、confirm.title／body／notended／ok）、`event-detail.unlist.bundles`、`bd.event.archived-lock`；共用 `shop.status.archived`、`e-shop.a.archive`、`e-shop.a.unarchive`、`e-shop.archive.confirm`。
+- 唯讀與連動：`create-bundle.html`（`evBlocked` 已結束或已封存）、`bundle-detail.html`（`evBoundsOf().archived`、上架鎖定句 `bd.event.archived-lock`）、`partials/bundle-relist.js`、`event-localization.html`（唯讀判斷）、`js/components.js`（首頁畫布不列已封存活動）、`store-settings.html`（優惠碼可選活動不列已封存）、`series-detail.html`／`e-shop.html` 對照表。
+- 示範資料：原 7 筆 cancelled 活動轉成已下架（`unlisted`）＋部分已封存——`nick-summer-pingtung-bky`（bookyay，已結束、已封存，收入 777,798 依四種票價重算）、`hualien-summer-love`、`lrh-meet-tokyo`（已結束、已封存）、`realive-china-fuzhou`／`realive-china-hangzhou`（售票中、已封存，示範未結束的封存；系列母列整組封存）、`lrh-backers-briefing`／`r2-rehearsal-watchparty`（已結束、已下架但未封存，示範「封存」入口）；描述文字拿掉「取消」說法。
+
+**C 撤除**
+
+- 「取消活動」：詳情頁設定分頁底部按鈕與確認、清單列「取消活動」項與停用的 bookyay 取消項、`syncCancelItems`／`evAskCancel`、`ed-cancel-bky`、`data-ed-cancelevent` 全部退場。
+- 「已取消」階段：`events.html` 分頁與 `STAGE_BADGE`、`event-detail.html` 的 `STAGE_KEY`／`TABS_BY_STAGE`／`SV_DEFAULT`／`syncSalesView` 不顯示名單的分支、結案卡已取消備註與結算字樣、`#ed-glance-voided-card`、系列場次徽章，`create-bundle.html`／`bundle-detail.html`／`e-shop.html`／`series-detail.html`／`event-localization.html` 的 cancelled 對照，`events-store` 的 `cancelled` 狀態與完售排除。
+- bookyay 取消同步：`bkyCancel` 欄位、`transactions()`／`bundleTransactions()` 把已付款訂單標成已撤銷的分支、`txDays()` 的取消前一天上限。
+- 通知設定：「取消通知」常駐系統項與寄送紀錄的取消通知。
+- 字串墓碑（零消費者）：`events.stage.cancelled`、`event-detail.btn.cancelevent`／`badge.cancelled`／`danger.*`／`cancel.*`／`unlist.confirm.cancel`／`relist.confirm.cancelled`／`wrap.cancelled`／`wrap.settle.cancelled`／`notif.cancel.*`／`notif.log.change.cancel`、`bd.unlist.reason-event`、`bd.event.cancelled-lock`；`event-detail.ov.statemachine` 改寫。
+- design-system：`.dropdown__note` 範例由「取消活動」改為「現場報到台」；`page-intro__actions` demo 的「Cancel event」改「Run it again」；Q134 確認鈕備註拿掉取消活動（`design-system.md`、`design-system.html`、`design-components.html`）。封存沿用既有 `info-banner`、`leave-dialog`、`badge`，沒有新元件。
+- 驗證：`check_ds_sync.py` PASS（WARN 為既有裸色與相鄰節奏存量）；`check_events_store.js` 0 違反；`?version=full`／`?version=release2.4` 下清單「已封存」篩選可見、已下架列有「封存」、已封存列只有「解除封存」、詳情頁已封存唯讀、取消按鈕不見，375／1440 寬、Console 0 錯誤（僅 favicon 404）。
+
+**驗收補修（2026-10-20）**
+
+- `series-detail.html`＋`js/i18n.js`：系列活動單場列的「取消這一場」選單項與「取消一場的規則」橫幅移除（刪 `sd.act.cancel`、`sd.cancel.note`，留墓碑）；活動沒有取消動作。
+- `bundle-detail.html`：英文 fallback 句「cancelled or unlisted」改「unlisted」。
+
+## 2026-10-20（二百七十二）· release2.4 取票方式只有電子門票：順豐寄送收起（B 反饋）
+
+**標籤**：release2.4
+
+使用者 2026-10-20 指示：release2.4 活動取票方式沒有郵寄或自取，只有電子門票。只切版本標記，不改規格（到店自取早已在 S89 收起）。
+
+**B 反饋**
+
+- `feature-scope-map.md`：新登記 S102「取票方式：順豐寄送」⚪ TBD；`js/devtools.js` FEAT_TIER 後備表補 `S102: 'tbd'`。
+- `create-event.html`：取票方式的順豐寄送卡掛 `data-feat="S102"`；匯入清單 `bkyVerBlock()` 增加「順豐寄送不能帶入」，新增原因字串 `d.bgate.sf`。
+- `event-detail.html`：發布設定取票方式的順豐寄送鈕掛 `data-feat="S102"`。
+- `admin-creator-events.html`＋`js/i18n.js`：`verBlock()` 增加順豐寄送，新增 `ace.r24.sf`；示範列 bky-14（Vinyl release concert — Hsinchu，D386 原本「release2.4 能帶入」）在 release2.4 改標「release2.4 不支援」。
+- 驗證：`?version=release2.4` 下建立活動取票方式只剩電子門票，創作者活動管理標出 bky-5（到店自取）與 bky-14（順豐寄送）兩列不支援，Console 無錯誤。
+
+## 2026-10-20（二百七十一）· release2.4 活動類型：見面會、音樂節、發表派對跟演唱會一起保留（B 反饋）
+
+**標籤**：release2.4
+
+使用者 2026-10-20 指示：release2.4 保留演唱會、見面會、音樂節、發表派對四類，四類建立流程相同；只切版本標記，不改規格。
+
+**B 反饋**
+
+- `feature-scope-map.md`：S79 由 ⚪ 改 🔵 release2.4，範圍改為見面會／音樂節／發表派對（Launch Party）三個入口；線上活動（Virtual Event）拆成新登記 S101（⚪，release2.4 仍不含）。
+- `js/devtools.js`：FEAT_TIER 後備表 S79 改 `release2.4`、新增 `S101: 'tbd'`。
+- `create-event.html`：Virtual Event 類型卡的 `data-feat` 由 S79 改 S101；其餘三張維持 S79。
+- 驗證：`?version=release2.4` 下類型卡顯示演唱會、見面會、音樂節、發表派對，線上活動與 Watch Party 收起。
+
+## 2026-10-20（二百七十）· D456 組合包限購不繼承成員：預設不限、獨立計算，拿掉「跟隨成員預設」開關
+
+**標籤**：release2.4
+
+依據 D456（使用者 2026-10-20 裁決：「都改成不能繼承，所以組合包或票務組合包都可以自己重新設定限購或是優惠折扣」；購買條件仍保留只能收窄、額度完全獨立計算、新建預設不限）。主規格 §7.14「組合包的限購」v4.96。
+
+**A spec-derived**
+- `js/purchase-limits.js`：組合包限購區塊只剩「限購」標題＋一句額度說明＋每人總限購一欄；`derive`／`followVals`／`onClick` 與「跟隨成員預設」開關、「取自誰」事實句、門票天花板、成員不足 1 組擋存退場；`errors(lim, T)`、`blockHTML(lim, T, opts)`、`syncErrors(root, holder, T)` 去掉 `der` 參數；空白＝不限，填了要是 1 以上整數。
+- `create-bundle.html`（欄位仍停用、只呈現預設不限，D455）、`bundle-detail.html`（編輯態輸入框一律可填，摘要列不再寫「跟隨成員／已覆寫」）、`js/bundle-editor.js`（建立活動的組合包彈窗）：拿掉成員清單與開關的接線。
+- `js/i18n.js`：新增 `pl.sub`（獨立計算的說明）；刪 `pl.state.*`、`pl.follow.default`、`pl.sub.follow／override`（含 .tix）、`pl.act.*`、`pl.src.*`、`pl.err.ceil`、`pl.err.short.*`；`pl.err.required` 留給商品與活動門票。
+- `js/products-store.js`：冬季預購組示範資料補 `limits: { person: '1' }`（改版前跟隨成員的推導值，〔推導：既有組合包轉換〕）。
+- 優惠折扣：原型本來就是組合包自己的一組（組合價格 F3、限時折扣 F7），沒有繼承成員，不用改。
+
+**D infra / 文件**
+- `ds-components/limit-set.css`：刪 `.limit-set__follow`、`.limit-set__src` 與 `data-state`；`design-system.md`／`design-system.html` 的 Limit set 條目與 demo 改成「預設不限」「不合法的值」兩張，`design-components.html` 重新生成。
+- ASSUMPTIONS UIA-278；feature-scope-map S94 說明句、BUILD-SPEC 與 requirements-map 對應句同步。
+- check_ds_sync：PASS（既有 WARN 不變）。
+
+## 2026-10-20（二百六十九）· D455 商店與活動規格疑點裁決落地：翻譯與通知開關要先下架、拍賣流標、組合包建立與補貨、取貨收斂
+
+**標籤**：release2.4
+
+依據 D455（使用者 2026-10-20 裁決：A 類規格矛盾清理、B 類「照建議」、活動上架中改翻譯「下架才可改」）。原型只示意，不新增產品規則。
+
+**A spec-derived**
+
+- 活動（`event-localization.html`、`event-detail.html`、`bundle-detail.html`）：活動上架中時，預覽與在地化頁照樣能開，但翻譯格、價格格、「重設為換算值」鈕鎖住並以橫幅說明要先下架（判斷條件同 `edStockOnly()`，定時上架未到視同已下架）；組合包自己已下架時，只有該組合包的名稱、描述、售價可改（組合包是否已下架問 `ListingState.isUnlisted()`，含定時上架未到、定時下架已過，與 `bundle-detail` 的 `bdStockOnly()` 同一判準）。售票與名單分頁的通知設定上架中會鎖並出現就地說明與下架鈕。頁首「預覽與在地化」入口不再停用，改以 title 預告唯讀。
+- 活動門票改價後若這張票、或含這張票的組合包有手動改價的幣別：toast 列出幣別（組合包列出名稱與幣別），提示到預覽與在地化重新確認；取消活動的確認窗補「粉絲購物車裡的這場門票與組合包會顯示已失效」。
+- 拍賣（`js/listing-state.js`、`create-auction.html`、`auction-detail.html`、`e-shop.html`、`js/sidebar.js`、`js/products-store.js`）：有出價但沒達保留價，結標顯示流標並通知創作者（新增示範拍賣 `tour-patch-set`、通知中心新增一筆）；定時下架時間落在競標中時順延到結標（`effectiveUnlistAt()`）；就緒檢查必填 7 項，附圖改列提示項（字尾標「選填」、上傳後照樣打勾，不計入「還差 N 項」、不擋送出、不算進本頁大綱的必填）；平台費不寫死 10%，改顯示「依平台費率設定」。拍賣細節的出價次數、出價人數與「查看全部 N 筆出價」改讀資料（原本寫死 18 與 8 筆）。流標判斷：有保留價、有出價但沒記最高出價時，改取資料裡能取得的最高出價（`auctionTopBid()`），取不到就不判未達保留價。
+- 建立商品（`create-product.html`）：數位就緒檢查只留封面（4 項）；「立刻上架」說明改成按「開始販售」後上架。商品細節（`product-detail.html`）：單獨下架只下架該選項組合，下架與重新上架各出 toast。
+- 建立組合包（`create-bundle.html`、`js/ticket-bundle.js`）：限購與購買條件在建立時唯讀、照預設帶入，卡片底部補一句「建立後可到組合包細節頁調整」。補貨（`e-shop.html`）：組合包的補貨成員改由商品資料推導，不限量的實體成員也列入、只排除數位成員；`restock.*` 文案拿掉「不限量不適用」，補貨方式字樣統一「計時補貨」。
+- 取貨（`pickup.html`、`pickup-detail.html`、`partials/pickup-session-modal.js`）：場次狀態補「已封存」共 4 種（pickup.html 新增一列示範）；Scanner 密碼改必填（清空時「下一步」停用）。
+
+**C 撤除**
+
+- 取貨：人工核銷（`Redeem manually`）、核銷紀錄的工作人員姓名、Scanner 密碼畫面的「工作人員標示」欄、已結束數字卡的 `Export no-shows` 按鈕（D122）；`js/i18n.js` 刪除對應 key。
+- 建立商品：數位就緒檢查的 `Item file`（`cp.qc.file` key 同步刪除）。
+- 建立組合包：`tb.rules.later` key 零引用，刪除。
+- 取貨：`ds-components/pickup.css` 的 `.pickup-board__acts`（收尾動作列）撤掉人工核銷後零消費，刪除；`design-system.md`、`design-system.html`、`design-components.html` 的類別清單同步拿掉。
+- 示範與文件同步：`design-system.html`、`design-components.html`、`lab-stock-tab.html` 的掃碼器與補貨示範字樣。
+
+**D infra**
+
+- `js/i18n.js` 新增多組中英 key（`evloc.listed*`、`ed.notif.listed.*`、`ed.tm.applied.recheck`、`ca.listing.unlist-sched-sub`、`ad.result.*`、`notif.reserve-unmet.*`、`cb.rules.later`、`pk.row5.*`、`ed.tm.applied.recheck.bd`、`ed.tm.applied.recheck.both` 等）；`ad.bids.viewall` 改帶 `{n}`；`pks.f.pw` 中文由「Scanner 密碼」改「掃碼密碼」。
+- `e-shop.html` 新增引用 `ds-components/variant-builder.css`（組合補貨逐選項列的唯讀縮圖 `.variant-thumb--ro`）；`event-localization.html` 新增載入 `js/listing-state.js`。
+
+**已知落差（不在本次範圍）**
+
+- `ip-kit`、`nick-ip` 示範商品仍標 IP 資產；建立拍賣「立即上架」說明仍寫儲存後即上架；平台費示範數字各頁不一致；拍賣細節「剩餘時間」是固定文字；Scanner 密碼目前明文顯示並附複製鈕（5.1.5.15 F2.2 規定不可明文）；建立活動步驟 5 的組合包彈窗（`js/bundle-editor.js`）限購與購買條件仍可調整，5.1.6.1 未寫 D455 的建立時不能調整；實驗頁 `lab-row-hover.html` 仍留「手動核銷」示範（實驗頁不改）。
+
+## 2026-10-19（二百六十八）· D454 掃碼器卡的 bookyay 掃描器連結改成「請由 bookyay App 掃碼」＋App Store 按鈕
+
+**標籤**：release2.4
+
+依據 D454（使用者 2026-10-19 指示：bookyay 有自己的 App 掃碼器，這格改成提示「請由 app 進行掃碼」加一顆開啟 App Store 連結的按鈕）。
+
+**A spec-derived**
+
+- `event-detail.html`：`#ed-bky-scan` 由「網址＋複製鈕＋說明」改成提示文字＋按鈕 `#ed-bky-scan-app`（`target="_blank"`，連到 bookyay 商戶 App 的 App Store 頁）；組合包取貨掃碼器網址與「前往領取場次」不變。`events-store` 的 `bkyScanUrl` 欄位照舊保存，只是不再顯示。
+- `js/i18n.js`：新增 `event-detail.scanner.bky.app`、`event-detail.scanner.bky.app.open`（中英）。
+
+**C 撤除**
+
+- `event-detail.html`：`fillBkyScan()`、`#ed-bky-scan-url`／`-copy`／`-none` 與複製鈕行為移除。
+- `js/i18n.js`：刪除不再有消費者的 `event-detail.scanner.bky.url`／`hint`／`nourl`。
+
 ## 2026-10-19（二百六十七）· D453 掃碼器卡補「組合包取貨掃碼器連結」、設定分頁「在地化」卡拿掉
 
 **標籤**：release2.4

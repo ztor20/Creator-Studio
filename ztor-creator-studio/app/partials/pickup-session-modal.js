@@ -6,7 +6,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
    add other items and event tickets.
 
    2026-08-01 改版（使用者裁決）：三頁籤 → 兩步流程，result step 撤除。
-     · step 1「這場是什麼」— 名稱／地點／起訖／說明，加上**選填**的掃碼密碼（已預先
+     · step 1「這場是什麼」— 名稱／地點／起訖／說明，加上**必填**的掃碼密碼（D455；已預先
        產生一組）；編輯場次時多出掃碼網址的重設與停用（原本在詳情頁 F2 那張卡上）。
      · step 2「可以領什麼」— ONE search-to-add combobox（已選項目是可移除的 chip）。
    刻意不放 stepper：只有兩步，dialog 副標與「上一步／下一步」已經說明位置。
@@ -56,7 +56,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     </div>
 
     <!-- STEP 1 / 2 · form — 兩步流程（spec 5.1.5.12 §4）：
-         step 1「這場是什麼」＝名稱／地點／起訖／說明＋選填掃碼密碼（編輯時多出掃碼網址的
+         step 1「這場是什麼」＝名稱／地點／起訖／說明＋必填掃碼密碼（編輯時多出掃碼網址的
          重設與停用）；step 2「可以領什麼」＝項目 combobox。一次只顯示一步，不放 stepper。 -->
     <div class="payout-dialog__body" data-pks-form>
       <section class="pks-step" data-pks-step="basic">
@@ -83,9 +83,10 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
           <span class="field__label" data-i18n="pks.f.instr">Pickup instructions (optional)</span>
           <textarea class="textarea" data-pks-instr placeholder="Queue location, ID needed, limits…" data-i18n-placeholder="pks.f.instr.ph"></textarea>
         </label>
-        <!-- 掃碼密碼＝工作人員那支掃碼器網址的鎖，屬於這場的基本設定。已預先產生一組。 -->
+        <!-- 掃碼密碼＝工作人員那支掃碼器網址的鎖，屬於這場的基本設定。已預先產生一組。
+             2026-10-20 D455（B10，5.1.5.12 F3）：必填——清空就不能按「下一步」。 -->
         <label class="field mt-16">
-          <span class="field__label" data-i18n="pks.f.pw.opt">Scanner password (optional)</span>
+          <span class="field__label"><span data-i18n="pks.f.pw">Scanner password</span> <span class="field__req">*</span></span>
           <div class="input-action">
             <input class="input" type="text" data-pks-pw autocomplete="off">
             <button class="btn btn--outline btn--sm" type="button" data-pks-pwgen><i data-lucide="refresh-cw" class="ztor-icon"></i> <span data-i18n="pks.f.pw.gen">Regenerate</span></button>
@@ -198,10 +199,10 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     function addItem(id) { if (id && selected.indexOf(id) < 0) selected.push(id); var s = modal.querySelector('[data-pks-search]'); if (s) s.value = ''; renderChips(); renderMenu(); syncCreateEnabled(); }
     function removeItem(id) { var i = selected.indexOf(id); if (i >= 0) selected.splice(i, 1); renderChips(); renderMenu(); syncCreateEnabled(); }
     /* 兩步各自檢查自己的必填：step 1 名稱＋地點＋時間先後，step 2 至少 1 個項目
-       （D112 無草稿態）。掃碼密碼自 2026-08-01 起是選填，不進這份檢查。 */
+       （D112 無草稿態）。掃碼密碼 2026-10-20 起改回必填（D455 B10），一起檢查。 */
     function syncCreateEnabled() {
       var ok = step === 1
-        ? (!!val('[data-pks-name]') && !!val('[data-pks-loc]') && validTime())
+        ? (!!val('[data-pks-name]') && !!val('[data-pks-loc]') && validTime() && !!val('[data-pks-pw]'))
         : selected.length > 0;
       var btn = modal.querySelector(step === 1 ? '[data-pks-next]' : '[data-pks-create]');
       if (btn) btn.disabled = !ok;
@@ -263,6 +264,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (e.target.closest('[data-pks-back]')) { setStep(1); return; }
       if (e.target.closest('[data-pks-pwgen]')) {
         modal.querySelector('[data-pks-pw]').value = genPw();
+        syncCreateEnabled();   /* 密碼必填（D455）：清空後按重新產生要即時解鎖「下一步」 */
         return;
       }
       if (e.target.closest('[data-pks-urlreset]')) {

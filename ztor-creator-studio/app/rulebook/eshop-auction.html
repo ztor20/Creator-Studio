@@ -271,7 +271,7 @@ table.map td:nth-child(2){width:22%}
     <tr><td>篩選：全部（All）、Open</td><td>—</td><td>切換看全部出價或 Open 的出價<br>Open 怎麼算，見頁尾尚待確認</td></tr>
     <tr><td>出價列</td><td>—</td><td>一列一筆出價：出價者、金額、時間<br>目前最高的一筆標「New highest」<br>出價者在創作者端怎麼顯示，見頁尾尚待確認</td></tr>
     <tr><td>查看全部（View all bids）</td><td>—</td><td>展開完整的出價紀錄</td></tr>
-    <tr><td>保留價提示（Reserve met）</td><td>達到保留價時出現</td><td>有出價但沒達到保留價時怎麼呈現，見頁尾尚待確認</td></tr>
+    <tr><td>保留價提示（Reserve met）</td><td>達到保留價時出現</td><td>結標時最高出價仍沒達到保留價就流標，見<a href="#lc-stages">拍賣的階段</a></td></tr>
     <tr><td>沒有出價時</td><td>還沒有任何出價</td><td>顯示「尚無出價」，並引導創作者分享連結招攬出價</td></tr>
   </tbody>
 </table></div>
@@ -287,10 +287,10 @@ table.map td:nth-child(2){width:22%}
   <li>競標資格</li>
   <li>起標價</li>
   <li>保留價</li>
-  <li>平台費：照平台費率設定，不在這一頁設定，見<a href="promo-rules.html#s2-fees">平台費與支付費怎麼算</a></li>
+  <li>平台費：照<a href="admin-fees.html#platform-fee">平台費率設定</a>裡電子商店「拍賣商品」的費率，這一頁不寫死數字；怎麼算見<a href="promo-rules.html#s2-fees">平台費與支付費怎麼算</a></li>
   <li>結標與履約：結標後顯示成交價與得標者，見<a href="#lc-after">結標後的訂單與收入</a></li>
 </ul>
-<p class="note">依據：5.1.5.8 §2.1～§2.7、§4「頁面狀態」；主規格 §7.6、§7.14；D284、D285、D286、D287、D290、D298、D304、D307、D314。</p>
+<p class="note">依據：5.1.5.8 §2.1～§2.7、§4「頁面狀態」；5.1.0.3；主規格 §7.6、§7.14；D284、D285、D286、D287、D290、D298、D304、D307、D314、D455。</p>
 
 <h2 id="lifecycle"><span class="n"></span>拍賣的生命週期</h2>
 <p>拍賣從草稿走到完售或流標，再下架、封存。各階段誰能做什麼，見<a href="#lc-stages">拍賣的階段</a>；開拍與結標的時間，見<a href="#lc-time">開拍到結標的時間</a>；各階段能改哪些設定，見<a href="#lc-edit">各階段能改什麼</a>；結標之後交給誰，見<a href="#lc-after">結標後的訂單與收入</a>。</p>
@@ -303,9 +303,9 @@ table.map td:nth-child(2){width:22%}
     <tr><td><span class="tag wait">草稿</span></td><td>建立時按稍後再說，或上架方式選不上架</td><td>繼續編輯<br>刪除（須確認）</td><td>—</td></tr>
     <tr><td><span class="tag wait">即將開拍（Upcoming）</span></td><td>已上架、顯示於商店，還沒到開拍時間</td><td>改拍賣設定與商品標籤<br>調三個開關<br>下架</td><td>開拍時間到，自動轉競標中</td></tr>
     <tr><td><span class="tag ok">競標中（Live）</span></td><td>開拍時間到</td><td>看出價<br>切換顯示與隱藏</td><td>結標時間到，自動轉完售或流標</td></tr>
-    <tr><td><span class="tag ok">完售（Sold）</span></td><td>結標時有出價</td><td>前往訂單管理<br>下架</td><td>得標訂單交給訂單管理</td></tr>
-    <tr><td><span class="tag off">流標（Unsold）</span></td><td>結標時沒有任何出價</td><td>下架</td><td>—</td></tr>
-    <tr><td><span class="tag off">已下架</span></td><td>創作者下架，或定時下架到期</td><td>上架；流標或完售後能不能再開拍，見頁尾尚待確認<br>封存<br>刪除</td><td>—</td></tr>
+    <tr><td><span class="tag ok">完售（Sold）</span></td><td>結標時最高出價達到保留價<br>沒設保留價時，有出價即可</td><td>前往訂單管理<br>下架</td><td>得標訂單交給訂單管理</td></tr>
+    <tr><td><span class="tag off">流標（Unsold）</span></td><td>結標時沒有任何出價<br>或有出價、但最高出價沒達到保留價</td><td>下架</td><td>沒達到保留價而流標時，通知創作者</td></tr>
+    <tr><td><span class="tag off">已下架</span></td><td>創作者下架，或定時下架到期<br>定時下架時間落在競標中時不生效，結標後才處理</td><td>上架；流標或完售後能不能再開拍，見頁尾尚待確認<br>封存<br>刪除</td><td>—</td></tr>
     <tr><td><span class="tag warn">已封存</span></td><td>已下架後封存</td><td>整頁唯讀<br>解除封存<br>刪除</td><td>—</td></tr>
   </tbody>
 </table></div>
@@ -333,14 +333,14 @@ table.map td:nth-child(2){width:22%}
   <li>得標者付不付運費、幾天內出貨，照建立時的<a href="eshop-create-auction.html#ca-delivery">交付</a>設定</li>
   <li>成交金額、平台費與淨額由<a href="revenue.html">收入管理</a>承接，這一頁的數字跟收入管理一致</li>
 </ul>
-<p class="note">依據：5.1.5.8 §2.2、§2.4、§2.7、§4、§5；主規格 §7.14「封存與刪除」、§8.14；D284、D285、D286、D287、D290、D298、D304、D307。</p>
+<p class="note">依據：5.1.5.8 §2.2、§2.4、§2.7、§4、§5；主規格 §7.14「封存與刪除」、§8.14；D284、D285、D286、D287、D290、D298、D304、D307、D455。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.5.8-拍賣商品細節頁.md</code>（v1.16）§1～§5；<code>5.1.5.10-建立拍賣流程.md</code>（v1.12）共用操作；<code>0-設計規格書.md</code>（v4.90）§7.6、§7.14、§8.14、§8.26 第 24 項</li>
-    <li>決策：D077、D080、D284、D285、D286、D287、D290、D298、D304、D307、D314、D319</li>
+    <li>規格：<code>5.1.5.8-拍賣商品細節頁.md</code>（v1.17）§1～§5；<code>5.1.5.10-建立拍賣流程.md</code>（v1.15）共用操作；<code>5.1.0.3-平台費率設定.md</code>；<code>0-設計規格書.md</code>（v4.95）§7.6、§7.14、§8.14、§8.26 第 24 項</li>
+    <li>決策：D077、D080、D284、D285、D286、D287、D290、D298、D304、D307、D314、D319、D455</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -349,19 +349,17 @@ table.map td:nth-child(2){width:22%}
     <li>競標中能改哪些設定、哪些鎖定</li>
     <li>競標中能不能改商品標籤</li>
     <li>結標後（完售、流標、已下架）能改哪些設定</li>
-    <li>有出價、但沒達到保留價時，算成交還是流標，畫面怎麼呈現</li>
     <li>流標或完售的拍賣能不能重新開拍，還是只能封存</li>
     <li>拍賣是否一律跑到結標、由最高出價者得標，平台不提供中途中止（目前為暫定）</li>
     <li>重新上架、還沒設開拍時，頁首顯示哪一個狀態徽章</li>
     <li>出價活動的「Open」出價怎麼算</li>
     <li>出價者在創作者端怎麼顯示（暱稱、匿名、能不能連到粉絲詳情）</li>
     <li>出價行為要不要算進粉絲的行為紀錄</li>
-    <li>拍賣的平台費率（畫面示意為 10%）</li>
     <li>得標訂單在訂單管理怎麼呈現、怎麼履約，得標者沒付款怎麼處理</li>
     <li>頁首要不要比照商品細節頁，加「預覽與在地化」入口</li>
     <li>上架、開拍時間的時區與時間粒度</li>
   </ul>
-  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.5.8 v1.16，至 D314）</p>
+  <p class="k">最近同步：2026-10-20（對照 5.1.5.8 v1.17、5.1.5.10 v1.15、主規格 v4.95，至 D455：沒達到保留價即流標並通知創作者、定時下架落在競標中結標後才處理、平台費照平台費率設定）</p>
 </details>
 </div>
 </body>

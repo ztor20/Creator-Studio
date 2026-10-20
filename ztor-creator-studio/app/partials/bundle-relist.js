@@ -52,10 +52,10 @@
     return false;
   }
 
-  /* D437 決定一：這筆票券成員被擋，是因為活動已結束或已取消（不是活動暫時下架、門票被刪）——文案講「不能重新上架」，不叫人先讓活動回到上架 */
+  /* D437 決定一：這筆票券成員被擋，是因為活動已結束或已封存（不是活動暫時下架、門票被刪）——文案講「不能重新上架」，不叫人先讓活動回到上架 */
   function ticketEventOver(t) {
     var EV = window.ztorEvents, ref = ticketRef(t), ev = (EV && EV.get && ref.eventId) ? EV.get(ref.eventId) : null;
-    return !!ev && (ev.status === 'ended' || ev.status === 'cancelled');
+    return !!ev && (ev.status === 'ended' || !!ev.archived);   /* D457：已取消階段退場，已封存取代 */
   }
 
   function run(opts) {
@@ -90,7 +90,7 @@
       ask({
         title: (over ? T('e-shop.relist.ticket-ended-title', '“{n}” can’t be listed again') : T('e-shop.relist.ticket-blocked-title', '“{n}” can’t be listed yet')).replace('{n}', name),
         body: over
-          ? T('e-shop.relist.ticket-ended-body', 'The event has ended or was cancelled, so a bundle with its tickets can’t be listed again:')
+          ? T('e-shop.relist.ticket-ended-body', 'The event has ended or is archived, so a bundle with its tickets can’t be listed again:')
           : T('e-shop.relist.ticket-blocked-body', 'The event or its tickets can’t be sold right now. List the event again (or keep at least one allowed ticket), then list the bundle:'),
         items: tixStops.map(memberName),
         okKey: 'e-shop.relist.blocked-ok', okFallback: 'Got it', noCancel: true,

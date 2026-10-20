@@ -838,6 +838,7 @@
 <!-- 粉絲端鏡像的商品卡問 ProductsStore（名稱／價格／圖依人格），所以要先載它與它的推導層。 -->
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="js/discount-codes-store.js?v=r2.2"></script><!-- D458：優惠碼資料層（商品端選碼寫回這裡的特定商品範圍；範圍欄與「不適用」標示從它重畫） -->
 <script src="js/events-store.js?v=r2.2"></script><!-- 優惠碼「指定商品」的活動票種候選（D299）讀 ztorEvents.list() -->
 <script src="js/currency.js?v=r2.2"></script><!-- 創作者幣別（D316）：唯讀讀數的單一來源，與 settings.html 同一支 -->
 <script src="js/store-profile-store.js?v=r2.2"></script>
@@ -1047,7 +1048,7 @@
       let scopeSelected = [];
 
       /* 候選三組（D299 決定 1）：單售、組合包（ProductsStore，拍賣天然不在）＋活動票種——
-         ztorEvents.list() 裡售票中／已排程／進行中的活動，逐票種一筆；草稿、已結束、已取消不列
+         ztorEvents.list() 裡售票中／已排程／進行中的活動，逐票種一筆；草稿、已結束、已封存不列
          （沒有票可賣的活動，綁了也折不到）。票種顯示「活動名 M/D · 票種名」，價格放 meta；
          同系列三場名稱相同（events-store 刻意如此），靠日期分辨。價格寫法同 events-store 的 money()。 */
       const ticketMoney = n => '$' + Math.round(Number(n) || 0).toLocaleString('en-US');
@@ -1063,7 +1064,7 @@
            所以要另外撈——它就是組合包，掛在組合包群組、meta 標「票務商品」讓人看得出含票券；活動狀態門檻同票種。
            bookyay 帶入的活動（source:'bookyay'）不排除：優惠碼不在 bookyay 鎖定範圍（D309 決定 1）。 */
         events.forEach(ev => {
-          if (['on-sale', 'scheduled', 'live'].indexOf(ev.status) < 0) return;
+          if (['on-sale', 'scheduled', 'live'].indexOf(ev.status) < 0 || ev.archived) return;   /* D457：已封存（原已取消）不列 */
           (ev.bundles || []).forEach(b => out.push({
             id: 'evbundle:' + ev.id + ':' + b.id, kind: 'bundle', name: b.name,
             /* 同系列多場同名（同票種的做法），meta 帶活動名＋日期分辨 */
@@ -1258,7 +1259,9 @@
         return '<span class="stock-tip stock-tip--anchored ss-code-scope" tabindex="0">' +
           '<span class="ss-code-scope__count" data-scope-count="' + scope.items.length + '"' + (typeNames ? ' data-scope-types="' + esc(typeNames) + '"' : '') + '></span>' +
           '<div class="stock-tip__pop" role="tooltip">' +
-          rows.map(r => '<div class="stock-tip__row"><span class="stock-tip__qty">' + esc(r.name) + '</span><span class="stock-tip__name" data-i18n="' + KIND_KEY[r.kind] + '"></span></div>').join('') +
+          rows.map(r => '<div class="stock-tip__row"><span class="stock-tip__qty">' + esc(r.name) + '</span><span class="stock-tip__name" data-i18n="' + KIND_KEY[r.kind] + '"></span></div>' +
+            /* D458：該商品的「使用優惠碼」開關為關閉＝這組碼對它不適用（開關優先於碼端範圍，選取仍保留） */
+            (r.off ? '<div class="stock-tip__row"><span class="stock-tip__name stock-tip__qty--low" data-i18n="store-settings.codes.scope.off">' + esc(T('store-settings.codes.scope.off') || '') + '</span></div>' : '')).join('') +
           '</div></span>';
       }
       panel.querySelectorAll('.ss-code-scope').forEach(wireTip);
@@ -1298,6 +1301,8 @@
             '<td><div class="ss-code-sold"><span class="ss-code-sold__count">—</span></div></td>' +
             '<td>' + (template ? template.cells[6].innerHTML : '') + '</td>';
           rows.appendChild(tr);
+          /* D458：新碼寫進優惠碼資料層，商品端的選擇欄才看得到（全部商店→「已自動適用」；特定商品→可勾選） */
+          if (window.ztorCodes) window.ztorCodes.create({ code: raw, pct: dv, period: period, status: 'active', all: scope.all, items: scope.items.map(i => i.id).filter(Boolean) });
           if (window.ztorIcons) window.ztorIcons.applyIcons(tr);
           if (window.applyI18n) window.applyI18n(tr);
           /* 新列帶 data-feat 閘門（「自用」meta 只在 Phase 4），devtools 沒有針對新節點的 API，
@@ -1434,6 +1439,49 @@
         if (e.target && e.target.id === 'ss-code-perorder') updateFixedModeVisibility();
       });
       modal.addEventListener('focusin', e => { if (e.target === scopeSearch) openScopeMenu(); });
+
+      /* ── D458：清單與優惠碼資料層（js/discount-codes-store.js）同步 ──
+         商品端「使用優惠碼」選擇欄選碼＝把商品加進該碼的「特定商品」範圍，資料存在這一邊；
+         所以範圍欄從資料層重畫（含商品端新增的商品、商品端新建的碼會長出新列）。
+         商品的優惠碼開關為關閉時，該商品在範圍浮卡裡標「不適用」。 */
+      (function syncFromStore() {
+        const C = window.ztorCodes; if (!C) return;
+        const P = window.ProductsStore;
+        const kindOf = key => (P && P.getBundle && P.getBundle(key)) || /^evbundle:/.test(key) ? 'bundle' : 'product';
+        const itemsOf = c => c.items.map(it => typeof it === 'string'
+          ? { id: it, name: C.labelFor(it), kind: kindOf(it), off: !C.switchOn(it) }
+          : { name: it.label, kind: it.kind });
+        const rowOf = code => [...rows.querySelectorAll('tr')].find(tr => ((tr.querySelector('.ss-code-cell__code') || {}).textContent || '').trim() === code);
+        const BADGE = { active: ['success', 'active'], scheduled: ['info', 'scheduled'], ended: ['neutral', 'ended'], disabled: ['neutral', 'disabled'], exhausted: ['warning', 'exhausted'] };
+        C.all().forEach(c => {
+          let tr = rowOf(c.code);
+          const keepStatic = c.kind === 'partner' && !c.fresh;   /* 代理碼 AIKO10 的「服飾＋2 件」類型文字是示範，類型樹未進資料層 */
+          if (!tr) {
+            const template = rows.querySelector('tr');
+            const b = BADGE[c.status] || BADGE.active;
+            tr = document.createElement('tr');
+            tr.dataset.codeKind = c.kind;
+            if (c.full) tr.setAttribute('data-feat', 'full');
+            tr.innerHTML =
+              '<td class="ztor-table__feature"><div class="ss-code-cell"><span class="ss-code-cell__code">' + esc(c.code) + '</span>' +
+              '<span class="ss-code-cell__meta" data-feat="full"><span data-i18n="store-settings.codes.type.own">Own</span></span></div></td>' +
+              '<td>' + esc(c.pct) + '%</td><td></td><td>' + esc(c.period || '—') + '</td>' +
+              '<td><span class="badge badge--' + b[0] + '" data-i18n="store-settings.codes.status.' + b[1] + '">' + esc(T('store-settings.codes.status.' + b[1])) + '</span></td>' +
+              '<td><div class="ss-code-sold"><span class="ss-code-sold__count">—</span></div></td>' +
+              '<td>' + (template ? template.cells[6].innerHTML : '') + '</td>';
+            rows.appendChild(tr);
+          }
+          if (keepStatic) return;
+          if (c.all) { if (!tr.cells[2].textContent.trim()) tr.cells[2].innerHTML = scopeCellHTML({ all: true }); return; }
+          if (!c.items.length) { if (!tr.cells[2].textContent.trim()) tr.cells[2].innerHTML = '<span data-i18n="store-settings.codes.f.scope.items">Specific items</span>'; return; }
+          tr.cells[2].innerHTML = scopeCellHTML({ all: false, types: [], items: itemsOf(c) });
+          tr.cells[2].querySelectorAll('.ss-code-scope').forEach(wireTip);
+        });
+        if (window.ztorIcons) window.ztorIcons.applyIcons(rows);
+        if (window.applyI18n) window.applyI18n(rows);
+        if (window.ztorDevState && window.ztorDevState.set) window.ztorDevState.set({});
+        paintScopeCounts(rows);
+      })();
 
       paintEmpty();
     })();
