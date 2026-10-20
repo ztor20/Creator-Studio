@@ -46,6 +46,8 @@
 - 開關名稱統一為「使用優惠碼」（規格、規則手冊同步）。
 - 下拉被價格階梯裁掉：`.price-ladder` 為了圓角設了 `overflow:hidden`，會壓住下拉；`ds-components/code-picker.css` 加 `.price-ladder:has(.code-picker__field) { overflow: visible; }`。建立組合頁實測下拉浮在下方「數量」卡片上方、選項完整可見。
 - 驗證：`create-bundle.html?version=full` 開關開啟後點欄位，選項第一個是「＋ 建立新的優惠碼」，點下去開小彈窗、預帶「特定商品：本商品」，Console 0 錯誤。
+- 選碼欄的下拉按 Esc 或點外面關掉後，再點一下欄位不會展開（輸入框已有焦點、不再觸發展開）：`js/code-picker.js` 的欄位點擊處理在下拉關閉時主動展開。實測點欄位→Esc→再點，下拉重新展開，Console 0 錯誤。
+- 下拉展開後被下一張卡片（「數量」）蓋住：卡片都是 `position:relative`、`z-index:auto`，後面的卡後畫、蓋在往下長的下拉上；`ds-components/code-picker.css` 讓「含展開中下拉的卡」（`.form-section`／`.control-group:has(.code-picker .combobox__menu:not([hidden]))`）暫時 `z-index:20`。建立組合頁實測下拉四個選項完整浮在「數量」卡上方。
 
 ## 2026-10-20（二百七十三）· D457 活動拿掉取消功能與已取消階段、新增活動封存與「已封存」篩選（A spec-derived · C 撤除）
 

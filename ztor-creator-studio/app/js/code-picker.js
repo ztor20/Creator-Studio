@@ -194,7 +194,15 @@
         changed(); return;
       }
       if (t.closest('[data-cpk-new]')) { st.menu = false; openModal(self); return; }
-      if (t.closest('[data-cpk-field]')) { var inp = host.querySelector('[data-cpk-search]'); if (inp && document.activeElement !== inp) inp.focus(); }
+      if (t.closest('[data-cpk-field]') && !t.closest('[data-cpk-rm]')) {
+        var inp = host.querySelector('[data-cpk-search]'); if (inp && document.activeElement !== inp) inp.focus();
+        /* 輸入框已有焦點（按過 Esc 或點外面關掉下拉）時再點欄位不會再觸發 focusin，要自己展開 */
+        if (!st.menu) {
+          st.menu = true; var m = host.querySelector('[data-cpk-menu]');
+          if (m) { m.innerHTML = menuHTML(); m.hidden = false; if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(m); }
+          if (inp) inp.setAttribute('aria-expanded', 'true');
+        }
+      }
     });
     host.addEventListener('focusin', function (e) {
       if (st.locked || st.ro || !e.target.hasAttribute || !e.target.hasAttribute('data-cpk-search') || st.menu) return;
