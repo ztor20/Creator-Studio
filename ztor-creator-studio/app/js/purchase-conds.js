@@ -1,23 +1,24 @@
 /* ============================================================
    purchase-conds.js · 購買條件編輯器（「新增條件」清單）— 共用 vanilla JS 元件
    ------------------------------------------------------------
-   2026-10-09 建（D388）：自建活動發布後可在活動詳情修改活動預設購票規則與單張門票購買條件，
+   2026-10-09 建（D388）：自建活動發布後可在活動詳情修改單張門票購買條件，
    條件模型同建立流程（5.1.6.1 F22，D366／D367／D368）。原本這套畫法寫在 create-event.html 頁內
    （condsHTML 一族），活動詳情要用同一套，所以從 create-event 抽出來放這裡，兩頁共用——
-   不在活動詳情另寫一份。外觀走 ds-components/cond-list.css（＋ dropdown-menu.css、
+   不在活動詳情另寫一份。2026-10-20（D460）：活動層預設購票規則永久移除——本檔的「活動層」分支（scope="event"：折扣類百分比欄、
+   evPriceText 讀數、copyForTicket「活動層複製成門票自己一組」、FIELDS_EV）整組退場，只剩單張門票與組合包自己的購買條件。外觀走 ds-components/cond-list.css（＋ dropdown-menu.css、
    ticket-tier-card.css 的 .rule-row、amount-field.css、field-system.css）。
 
    對外 API（window.ztorPurchaseConds）：
-     TYPES / FIELDS / FIELDS_EV / FAN_TIERS   條件種類（固定順序）與每種的欄位形狀
+     TYPES / FIELDS / FAN_TIERS   條件種類（固定順序）與每種的欄位形狀
+     TIX_FEAT / featFor(k, c, ctx)            門票專用的條件 feat 對照（D461：buyTime／cap＝S104）與一張條件卡實際掛的 feat
      STRINGS / t(k)                           條件編輯器的中英字樣（d.cond.*、d.rule.*）；t() 依 <html lang> 取字，
                                               查不到落回 window.i18nT
-     isDiscK(k) / fields(k, scope)            折扣類判斷；新加一張條件的空欄位（scope="event" 時折扣類用百分比，D368）
-     condPrice(c, base) / pctOf(price, base)  折扣條件換算成這張票的價格；回推百分比（D367）
-     pctText(c, bases) / evPriceText(c, bases, money)   兩種唯讀讀數（門票層回推 %、活動層算出的門票價）
-     copyForTicket(rules, base)               活動層一組複製成門票自己的一組（拿掉 bookyay 標記、% 換成這張票的固定價）
+     isDiscK(k) / fields(k)                   折扣類判斷；新加一張條件的空欄位（折扣類一律固定價 price，D367）
+     condPrice(c, base) / pctOf(price, base)  折扣條件換算成這張票的價格；回推百分比（D367；舊資料的 pct 仍讀得懂）
+     pctText(c, bases)                        唯讀讀數（門票層回推 %）
      html(rules, scope, locked, ctx)          畫一整份條件清單（ctx 見下）
-     discTimeBad(conds, isEvent)              限時折扣價高於一般折扣價？（D390 決定二十五追認：擋存）
-     syncWarn(host, conds, isEvent)           把上一條寫成條件卡內的紅字；回傳 1／0（呼叫端據以擋存）
+     discTimeBad(conds)                       限時折扣價高於一般折扣價？（D390 決定二十五追認：擋存）
+     syncWarn(host, conds)                    把上一條寫成條件卡內的紅字；回傳 1／0（呼叫端據以擋存）
      periodWins(rules) / periodErrs(rules, et, T) / syncPeriod(host, rules, et, T)
                                               期間檢查（D342／D363；D389 起活動詳情同用）：有時間窗的條件須落在活動上架區間內、
                                               限時購買的結束不晚於活動停售；回傳 / 寫入 [data-rule-tl-err] 紅字。建立流程與活動詳情共用
@@ -27,8 +28,10 @@
 
    限購三欄的輔助說明（D398）借 js/purchase-limits.js 的 hintHTML()——要先於本檔載入（create-event、event-detail）。
 
-   ctx（呼叫端提供）：{ esc, featOn(id), srcChip(), pctReadout(c, scope), evPriceReadout(c) }
+   ctx（呼叫端提供）：{ esc, featOn(id), srcChip(), pctReadout(c, scope), typeFeat }
    粉絲分級三種（feat S82，⚪ 未排定）掛 data-feat，release2.4 由 devtools 的 regate() 收起（D366 決定五／D367 決定三）。
+   ctx.typeFeat（2026-10-20 D461）：呼叫端另外給某幾種條件掛的 feat——門票傳 TIX_FEAT（限時購買、限購＝S104 ⚪），
+   release2.4 的門票只剩折扣與限時折扣可加；組合包不傳，限時購買與限購照舊。bookyay 帶入的條件（bky）不掛（帶入資料照樣顯示）。
    ============================================================ */
 (function () {
   const TYPES = [
@@ -48,13 +51,6 @@
     discTime: { price: "", from: "", to: "" },
     discTier: { price: "", tier: "fan" },
     discBoth: { price: "", from: "", to: "", tier: "fan" }
-  };
-  /* D368 決定一：活動層的折扣類條件設的是百分比 pct；門票層照 D367 設固定價 price */
-  const FIELDS_EV = {
-    disc:     { pct: "" },
-    discTime: { pct: "", from: "", to: "" },
-    discTier: { pct: "", tier: "fan" },
-    discBoth: { pct: "", from: "", to: "", tier: "fan" }
   };
   const FAN_TIERS = ["inner", "superfan", "devoted", "fan"];    // 高→低，與 e-shop 粉絲分級門檻同一套
 
@@ -81,13 +77,6 @@
     "d.cond.pct.range":{ en: "{a}–{b}% off, varies by ticket", zh: "折 {a}%–{b}%（各張票不同）" },
     "d.cond.pct.paren":{ en: "({n}% off)",              zh: "（折 {n}%）" },
     /* D368：活動層的折扣類條件填百分比，讀數是跟隨門票算出來的價格 */
-    "d.cond.pctin.disc":     { en: "Discount",            zh: "折扣" },
-    "d.cond.pctin.discTime": { en: "Discount in the window", zh: "期間內折扣" },
-    "d.cond.pctin.discTier": { en: "Discount for the tier",  zh: "分級折扣" },
-    "d.cond.pctin.discBoth": { en: "Tier discount in the window", zh: "期間內分級折扣" },
-    "d.cond.evprice":        { en: "Ticket price becomes", zh: "門票折後價" },
-    "d.cond.evprice.range":  { en: "{a}–{b}, varies by ticket", zh: "{a}–{b}（各張票不同）" },
-    "d.cond.pct.minus":      { en: "{n}% off",            zh: "−{n}%" },
     "d.cond.warn.time":{ en: "Can't be higher than the regular discounted price.", zh: "不得高於一般折扣價。" },
     "d.cond.cap.person": { en: "{n} per person",        zh: "每人 {n} 張" },
     /* 墓碑 2026-10-16（D427）：d.cond.cap.order（每次 {n} 張）、d.cond.cap.times（限 {n} 次）退場 */
@@ -109,8 +98,12 @@
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   const isDiscK = k => k === "disc" || k === "discTime" || k === "discTier" || k === "discBoth";
-  const fields = (k, scope) => JSON.parse(JSON.stringify(scope === "event" && FIELDS_EV[k] ? FIELDS_EV[k] : FIELDS[k]));
+  const fields = k => JSON.parse(JSON.stringify(FIELDS[k]));
   const meta = k => TYPES.filter(c => c.k === k)[0] || {};
+  /* D461（2026-10-20）：門票的限時購買與限購只在最終版（S104 ⚪）；只由門票的呼叫端經 ctx.typeFeat 掛上，組合包不受影響 */
+  const TIX_FEAT = { buyTime: "S104", cap: "S104" };
+  /* 一種條件實際掛的 feat：種類本身的（S82）優先，其次呼叫端給的 typeFeat；bookyay 帶入的條件（c.bky）不掛 typeFeat */
+  const featFor = (k, c, ctx) => meta(k).feat || (ctx && ctx.typeFeat && !(c && c.bky) ? (ctx.typeFeat[k] || "") : "");
   const name = k => t("d.cond." + k);
   const norm = r => {
     const TBX = window.ZtorTicketBundle;
@@ -118,7 +111,7 @@
     return r && r.conds ? r : { conds: {} };
   };
 
-  /* ── 價格（D367 固定價／D368 活動層百分比）─────────────────────────────── */
+  /* ── 價格（D367 固定價；舊資料的 pct 百分比仍讀得懂）─────────────────────────────── */
   const condPrice = (c, base) => {
     if (!c) return null;
     if (c.price !== "" && c.price != null && isFinite(Number(c.price))) return Math.min(Number(c.price), base);
@@ -135,29 +128,6 @@
     const lo = Math.min.apply(null, pcts), hi = Math.max.apply(null, pcts);
     return lo === hi ? t("d.cond.pct.v").replace("{n}", lo) : t("d.cond.pct.range").replace("{a}", lo).replace("{b}", hi);
   }
-  /* 活動層讀數：跟隨的門票各自算出來的價格；全部同價寫一個數，不同寫區間 */
-  function evPriceText(c, bases, money) {
-    if (!c || c.pct === "" || c.pct == null || !isFinite(Number(c.pct))) return "—";
-    const bs = (bases || []).filter(b => b > 0);
-    if (!bs.length) return "—";
-    const ps = bs.map(b => condPrice(c, b));
-    const lo = Math.min.apply(null, ps), hi = Math.max.apply(null, ps);
-    return lo === hi ? money(lo) : t("d.cond.evprice.range").replace("{a}", money(lo)).replace("{b}", money(hi));
-  }
-  /* 活動層一組 → 門票自己的一組：拿掉 bookyay 標記（D366 決定四）、% 換成這張票的固定價（D368） */
-  function copyForTicket(rules, base) {
-    const r = JSON.parse(JSON.stringify(norm(rules)));
-    Object.keys(r.conds).forEach(k => {
-      const c = r.conds[k];
-      delete c.bky;
-      if (isDiscK(k) && (c.price === "" || c.price == null) && c.pct !== "" && c.pct != null) {
-        const p = condPrice(c, base);
-        c.price = p == null ? "" : String(p);
-      }
-      if (isDiscK(k)) delete c.pct;
-    });
-    return r;
-  }
 
   /* ── 畫法（原 create-event 的 ruleField／winFieldsHTML／tierPickHTML／priceFieldHTML／condBodyHTML／
      condCardHTML／addMenuHTML／condsHTML）─────────────────────────────────── */
@@ -167,7 +137,6 @@
     const featOn = ctx.featOn || (() => true);
     const srcChip = ctx.srcChip || (() => "");
     const pctReadout = ctx.pctReadout || (() => "—");
-    const evPriceReadout = ctx.evPriceReadout || (() => "—");
     /* ctx.types（D400，2026-10-12）：只開放哪幾種條件——組合包的購買條件只用 buyTime／buyTier；缺＝全部（活動） */
     const ALLOW = ctx.types ? TYPES.filter(c => ctx.types.indexOf(c.k) >= 0) : TYPES;
     const dis = l => l ? " disabled" : "";
@@ -188,15 +157,6 @@
           esc(T("ce.rule.tier." + v, v)) + '</option>').join("") +
       '</select>', l);
     function priceFieldHTML(k, c, l) {
-      if (scope === "event") {
-        const pctIn = ruleField(t("d.cond.pctin." + k),
-          '<span class="amount-field amount-field--suffix amount-field--readonly">' +
-            '<input class="input amount-field__input" type="number" min="0" max="100" step="0.1" data-rule-f="' + k + '.pct" value="' +
-              esc(c.pct == null ? "" : c.pct) + '" placeholder="0"' + dis(l) + '>' +
-            '<span class="amount-field__unit">%</span></span>', l);
-        const out = ruleField(t("d.cond.evprice"), '<div class="field-readout" data-cond-pct="' + k + '">' + esc(evPriceReadout(c)) + '</div>');
-        return '<div class="rule-row">' + pctIn + out + '</div>';
-      }
       const price = ruleField(t("d.cond.price." + k),
         '<span class="amount-field' + (l ? " amount-field--readonly" : "") + '">' +
           '<span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' +
@@ -230,7 +190,8 @@
     /* chip＝要不要在卡頂列掛來源標記：bookyay 帶入的條件卡一律掛（2026-10-15 起，取代原本「整組鎖定時不重複」的做法） */
     function cardHTML(k, c, l, chip) {
       const m = meta(k);
-      return '<div class="cond-list__item control-group control-group--plain' + (l ? " is-source-locked" : "") + '" data-cond="' + k + '"' + (m.feat ? ' data-feat="' + m.feat + '"' : "") + '>' +
+      const cf = featFor(k, c, ctx);   // D461：門票的限時購買／限購另掛 S104（bookyay 帶入的不掛）
+      return '<div class="cond-list__item control-group control-group--plain' + (l ? " is-source-locked" : "") + '" data-cond="' + k + '"' + (cf ? ' data-feat="' + cf + '"' : "") + '>' +
           '<div class="cond-list__head">' +
             '<span class="cond-list__title"><i data-lucide="' + m.icon + '" class="ztor-icon"></i>' + esc(name(k)) + '</span>' +
             (chip ? srcChip() : "") +
@@ -244,12 +205,12 @@
        addOnly（D417 決定五）：整組鎖定時仍開放的那幾種（bookyay 門票最終版可自加折扣與限時折扣），整顆選單掛 ctx.addFeat */
     function addMenuHTML(r, only) {
       const avail = (only ? ALLOW.filter(c => only.indexOf(c.k) >= 0) : ALLOW).filter(c => !r.conds[c.k]);
-      if (!avail.filter(c => featOn(c.feat)).length) return "";
+      if (!avail.filter(c => featOn(featFor(c.k, null, ctx))).length) return "";
       return '<details class="dropdown dropdown--left cond-list__add"' + (only && ctx.addFeat ? ' data-feat="' + ctx.addFeat + '"' : '') + '>' +
           '<summary class="btn btn--outline btn--sm"><i data-lucide="plus" class="ztor-icon"></i><span>' + esc(t("d.cond.add")) + '</span></summary>' +
           '<div class="dropdown__menu" role="menu">' +
             avail.map(c => '<button type="button" class="dropdown__item" role="menuitem" data-cond-add="' + c.k + '"' +
-              (c.feat ? ' data-feat="' + c.feat + '"' : "") + '><i data-lucide="' + c.icon + '" class="ztor-icon"></i>' + esc(name(c.k)) + '</button>').join("") +
+              (featFor(c.k, null, ctx) ? ' data-feat="' + featFor(c.k, null, ctx) + '"' : "") + '><i data-lucide="' + c.icon + '" class="ztor-icon"></i>' + esc(name(c.k)) + '</button>').join("") +
           '</div>' +
         '</details>';
     }
@@ -275,14 +236,14 @@
       '</div>';
   }
 
-  /* 限時折扣價高於一般折扣價（D390 決定二十五：擋存）：活動層比百分比（限時 % 比一般 % 小＝期間內反而貴），門票層比價格。
+  /* 限時折扣價高於一般折扣價（D390 決定二十五：擋存）：比價格（D460 起活動層比百分比的分支退場）。
      bookyay 帶入且鎖定的兩條不算（創作者改不了，擋了也解不開）。 */
-  function discTimeBad(conds, isEvent) {
+  function discTimeBad(conds) {
     const c = conds || {};
     if (c.discTime && c.discTime.bky && c.disc && c.disc.bky) return false;
     const num = (x, f) => x && x[f] !== "" && x[f] != null && isFinite(Number(x[f])) ? Number(x[f]) : null;
-    const a = num(c.discTime, isEvent ? "pct" : "price"), b = num(c.disc, isEvent ? "pct" : "price");
-    return a != null && b != null && (isEvent ? a < b : a > b);
+    const a = num(c.discTime, "price"), b = num(c.disc, "price");
+    return a != null && b != null && a > b;
   }
   /* 限購沒填（D428，2026-10-16 定案：開了限購，每人總限購數量必填）：回傳紅字的 i18n key，沒問題回空字串。
      空白＝pl.err.required「請填上限。」；填了但不是 1 以上整數＝pl.err.int。bookyay 帶入且鎖定的不算（值已帶入、改不了）。 */
@@ -295,8 +256,8 @@
   }
   const capBad = conds => !!capErrKey(conds);
   /* 條件卡的就地紅字：限時折扣價高於一般折扣價（D390 決定二十五）＋限購沒填（D428）；回傳錯誤數 */
-  function syncWarn(host, conds, isEvent) {
-    const bad = discTimeBad(conds, isEvent);
+  function syncWarn(host, conds) {
+    const bad = discTimeBad(conds);
     const w = host && host.querySelector('[data-cond-warn="discTime"]');
     if (w) w.hidden = !bad;
     const ck = capErrKey(conds);
@@ -345,7 +306,7 @@
   }
 
   /* 活動詳情用：把一份規則畫進 host、接好新增／移除／輸入。
-     opts：{ rules（{conds}，直接改這份）, scope（"event" 或門票 id）, ctx, onChange(),
+     opts：{ rules（{conds}，直接改這份）, scope（門票 id）, ctx, onChange(),
              times()（選填：回傳活動時間 et——給了就在改期間時就地比上架區間，D389）,
              tr(k)（選填：期間紅字的取字函式；組合包用它把「活動上架區間」換成「組合包的上架區間」） }
      ctx 另可帶 types（只開放哪幾種條件）、emptyKey（沒有條件時那一句的 i18n key）——D400：純商品組合包的購買條件
@@ -353,15 +314,14 @@
   function mount(host, opts) {
     if (!host) return null;
     const st = { rules: norm(opts.rules), scope: opts.scope, ctx: opts.ctx || {} };
-    const isEv = st.scope === "event";
     /* 期間紅字：shown＝已經按過儲存被擋（之後每改一次就重比）；還沒按儲存前只在改期間欄位時比 */
     /* D390 決定二十五：限時折扣價高於一般折扣價同樣算一個錯（擋存） */
-    const check = () => (opts.times ? syncPeriod(host, st.rules, opts.times(), opts.tr) : 0) + syncWarn(host, st.rules.conds, isEv);
+    const check = () => (opts.times ? syncPeriod(host, st.rules, opts.times(), opts.tr) : 0) + syncWarn(host, st.rules.conds);
     function render() {
       host.innerHTML = html(st.rules, st.scope, !!opts.locked, st.ctx);   // opts.locked＋ctx.addOnly：bookyay 門票最終版只能自加折扣類（D417）
       if (window.ztorIcons) window.ztorIcons.applyIcons(host);
       host.querySelectorAll("[data-ph-key]").forEach(el => { el.placeholder = T(el.dataset.phKey, ""); });
-      syncWarn(host, st.rules.conds, isEv);
+      syncWarn(host, st.rules.conds);
       check();
       const d = window.ztorDevState; if (d && d.regate) d.regate();
     }
@@ -374,7 +334,7 @@
       if (only && only.indexOf(k) < 0) return;         // 整組鎖定：只有 addOnly 內的種類可加可移除（D417）
       if (add) {
         if (st.rules.conds[k]) return;                 // 每種最多一次
-        st.rules.conds[k] = fields(k, st.scope);
+        st.rules.conds[k] = fields(k);
       } else {
         if (st.rules.conds[k] && st.rules.conds[k].bky) return;
         delete st.rules.conds[k];
@@ -387,14 +347,12 @@
       if (!f) return;
       const p = f.dataset.ruleF.split(".");
       if (st.rules.conds[p[0]]) st.rules.conds[p[0]][p[1]] = f.value;
-      if (p[0] === "cap") syncWarn(host, st.rules.conds, isEv);   // D428：限購一填就收紅字
-      if (p[1] === "price" || p[1] === "pct") {
+      if (p[0] === "cap") syncWarn(host, st.rules.conds);   // D428：限購一填就收紅字
+      if (p[1] === "price") {
         const out = host.querySelector('[data-cond-pct="' + p[0] + '"]');
         const c = st.rules.conds[p[0]];
-        if (out) out.textContent = p[1] === "pct"
-          ? (st.ctx.evPriceReadout ? st.ctx.evPriceReadout(c) : "—")
-          : (st.ctx.pctReadout ? st.ctx.pctReadout(c, st.scope) : "—");
-        syncWarn(host, st.rules.conds, isEv);
+        if (out) out.textContent = st.ctx.pctReadout ? st.ctx.pctReadout(c, st.scope) : "—";
+        syncWarn(host, st.rules.conds);
       }
       if (p[1] === "from" || p[1] === "to") check();   // D389：期間一改就重比上架區間（同 create-event 改限時間時 syncRuleTl）
       if (opts.onChange) opts.onChange(st.rules);
@@ -408,20 +366,18 @@
         const out = host.querySelector('[data-cond-pct="' + k + '"]');
         if (!out) return;
         const c = st.rules.conds[k];
-        out.textContent = isEv
-          ? (st.ctx.evPriceReadout ? st.ctx.evPriceReadout(c) : "—")
-          : (st.ctx.pctReadout ? st.ctx.pctReadout(c, st.scope) : "—");
+        out.textContent = st.ctx.pctReadout ? st.ctx.pctReadout(c, st.scope) : "—";
       });
-      syncWarn(host, st.rules.conds, isEv);
+      syncWarn(host, st.rules.conds);
     }
     /* check()：期間檢查（D389）——把紅字寫在各條件的期間欄位下，回傳錯誤數；呼叫端按儲存時 >0 就擋下不存 */
     return { render: render, refresh: refresh, rules: () => st.rules, check: check };
   }
 
   window.ztorPurchaseConds = {
-    TYPES: TYPES, FIELDS: FIELDS, FIELDS_EV: FIELDS_EV, FAN_TIERS: FAN_TIERS, STRINGS: STRINGS,
+    TYPES: TYPES, FIELDS: FIELDS, FAN_TIERS: FAN_TIERS, STRINGS: STRINGS, TIX_FEAT: TIX_FEAT, featFor: featFor,
     t: t, isDiscK: isDiscK, fields: fields, norm: norm,
-    condPrice: condPrice, pctOf: pctOf, pctText: pctText, evPriceText: evPriceText, copyForTicket: copyForTicket,
+    condPrice: condPrice, pctOf: pctOf, pctText: pctText,
     html: html, syncWarn: syncWarn, discTimeBad: discTimeBad, capErrKey: capErrKey, capBad: capBad, mount: mount,
     periodWins: periodWins, periodErrs: periodErrs, syncPeriod: syncPeriod
   };

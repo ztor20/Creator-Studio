@@ -75,7 +75,11 @@
    差別只在有沒有引導圖示，回饋不該分兩套。配方沿用閘門那一版（比 Q9 的 --accent 亮一點）。
    **橘點不一起搬**：閘門沒有持久選取態，hover 冒點是它唯一的選取預告；一般 radio-cards
    已選的那張本來就有點，hover 再冒第二個點會讀成「兩張都選了」。 */
-.radio-cards .segmented__btn:hover { background: var(--ztu-glass-strong);   /* ztorUI 換裝補漏 2026-09-11（稽核 C 表裁決）：舊值 color-mix(in srgb, var(--foreground) 6%, var(--accent)) */ }
+/* 2026-10-20 使用者指示（可點卡片 hover 全站統一）：上浮 --clickable-card-lift ＋底色 --clickable-card-hover-bg，不換邊框與陰影。
+   已選卡的底色規則在下方（--active:hover 同權重、較後寫，蓋回已選玻璃底），所以已選卡只上浮不換底。 */
+.radio-cards .segmented__btn { transition: background-color var(--duration) var(--easing), color var(--duration) var(--easing), transform var(--duration) var(--easing); }
+@media (prefers-reduced-motion: reduce) { .radio-cards .segmented__btn:hover { transform: none; } }
+.radio-cards .segmented__btn:hover { transform: translateY(var(--clickable-card-lift)); background: var(--clickable-card-hover-bg);   /* ztorUI 換裝補漏 2026-09-11（稽核 C 表裁決）：舊值 color-mix(in srgb, var(--foreground) 6%, var(--accent)) */ }
 
 /* 已選＝扁平卡面、無橘外框（只留灰邊框）；標記＝置中小橘實心點、無外圈（對齊 Figma node 781-4386）。
    ztorUI 換裝（2026-08-28 Wave 2b 熔接自 demo/ztorui-skin §4.2b）：
@@ -164,6 +168,8 @@
 /* hover 底色已於 2026-08-09 上收到 base（見上方 `.radio-cards .segmented__btn:hover`），
    閘門不再自己留一份。這裡只保留閘門獨有的那一半：hover 時右上冒橘點。 */
 .radio-cards--gate .segmented__btn:hover::after { background: radial-gradient(circle at center, var(--primary) 0 3px, transparent 3.5px); }
+/* 閘門沒有持久選取態（上方已把 --active 的橘點拿掉），但 JS 仍會替預設那一張掛 --active——它的 hover 底色要跟另外兩張一樣換成標準的 --clickable-card-hover-bg，否則三張卡 hover 反應不一致（2026-10-20）。 */
+.radio-cards--gate .segmented__btn--active:hover { background: var(--clickable-card-hover-bg); }
 .radio-cards--gate .radio-card__text { gap: var(--sp-6); }
 
 /* --list 變體（2026-08-09 promoted from create-event.html，原本用該頁的

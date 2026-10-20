@@ -304,12 +304,11 @@
          已排程活動在產品上生不出來，那是一份自相矛盾的示範資料。要示範「還缺東西」
          該用草稿，不是已排程。 */
       tiers: [
-        { id: 'tier-ga', name: 'General admission', price: 600, qty: 1200, sold: 0 }
+        { id: 'tier-ga', name: 'General admission', price: 600, qty: 1200, sold: 0,
+          rules: { conds: { buyTime: { from: '2026-11-01T12:00', to: '2026-11-20T23:59' }, cap: { person: '4' } } } }   // D460：原活動層預設的限購＋限時購買，改成門票自己的條件
       ],
-      /* 活動層預設購票規則（D387 示範，2026-10-09）：ztor 自建活動在建立流程票務設定裡設的條件——限購＋限時購買
-         （形狀同 create-event eventRules `{ conds }`）。活動詳情票務分頁頂端唯讀列出全部條件、不掛來源標記；
-         GA 沒有自己一組條件，照這組生效。其他自建活動沒有 rules＝空狀態示範。限時購買落在開賣 11/1 之後、活動 11/21 之前。 */
-      rules: { conds: { buyTime: { from: '2026-11-01T12:00', to: '2026-11-20T23:59' }, cap: { person: '4' } } },
+      /* 墓碑 2026-10-20（D460）：活動層預設購票規則（原 D387 示範的活動層 rules：限購＋限時購買）移除——活動層沒有任何預設購票規則，
+         同一組條件改成 GA 自己的購買條件（見上面 tier-ga 的 rules）。限時購買落在開賣 11/1 之後、活動 11/21 之前。 */
       /* D363 示範（2026-10-07）：活動顯示設定為隱藏（下方 publish.shown:false）→ 含本活動票券的組合包在電子商店跟著隱藏、
          組合商品細節頁的顯示開關停用並寫原因；組合包自己的顯示值保留（這一組自己是顯示）。 */
       bundles: [
@@ -586,9 +585,7 @@
           rules: { conds: { cap: { person: '4', bky: true } } },
           rulesFix: true }
       ],
-      /* 活動層預設購票規則：D417 決定一（2026-10-15）起 bookyay 活動限購不帶入，活動層沒有條件、創作者也不能設定
-         （原 D385 決定一示範的活動限購 6／4／2 移除）。 */
-      rules: { conds: {} },
+      /* 墓碑 2026-10-20（D460）：活動層預設購票規則（rules: { conds: {} }，D417 決定一起 bookyay 活動就是空的）整個欄位移除。 */
       /* 墓碑 2026-10-16（D429）：bookyay 二人套票自動建立的組合包 bd-nye-duo（1 人票 × 2、鎖定 200 套、整組鎖定 fix、港幣欄鎖 HK$550）刪除；
          套票限購改落在門票 tier-duo 本身。下面創作者自建的組合包保留。 */
       bundles: [
@@ -742,7 +739,6 @@
         { id: 'tier-tc-companion', name: 'Wheelchair companion', price: 0, hkd: 0, qty: 20, sold: 6, img: 'images/projects/nick-lwh.jpg',
           rules: { conds: { cap: { person: '1', bky: true } } }, rulesFix: true }
       ],
-      rules: { conds: {} },   // D417 決定一（2026-10-15）：bookyay 活動限購不帶入，活動層沒有條件
       bundles: [
         /* 墓碑 2026-10-16（D429）：自動建立的套票組合包 bd-tc-duo（賣出 60 組）刪除，銷量改記在門票 tier-tc-duo。 */
         /* 2026-10-16 示範資料補齊（D435／D433 示範；不是產品規則）：創作者自建、已下架、尚未售出的組合包——
@@ -863,7 +859,6 @@
           rules: { conds: { cap: { person: '4', bky: true } } },
           rulesFix: true }
       ],
-      rules: { conds: {} },   // D417 決定一（2026-10-15）：bookyay 活動限購不帶入，活動層沒有條件
       bundles: [
         /* 墓碑 2026-10-16（D429）：自動建立的套票組合包 bd-ty-duo（賣出 200 組）刪除，銷量改記在門票 tier-ty-duo。 */
         { id: 'bd-ty-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-ty-ga'], qty: 1 },
@@ -933,7 +928,6 @@
           rules: { conds: { cap: { person: '4', bky: true } } },
           rulesFix: true }
       ],
-      rules: { conds: {} },   // D417 決定一（2026-10-15）：bookyay 活動限購不帶入，活動層沒有條件
       bundles: [
         /* 墓碑 2026-10-16（D429）：自動建立的套票組合包 bd-kh-duo（賣出 190 組）刪除，銷量改記在門票 tier-kh-duo。 */
         { id: 'bd-kh-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-kh-ga'], qty: 1 },
@@ -1000,7 +994,6 @@
           rules: { conds: { cap: { person: '4', bky: true } } },
           rulesFix: true }
       ],
-      rules: { conds: {} },   // D417 決定一（2026-10-15）：bookyay 活動限購不帶入，活動層沒有條件
       bundles: [
         /* 墓碑 2026-10-16（D429）：自動建立的套票組合包 bd-pt-duo（取消前賣出 30 組）刪除，銷量改記在門票 tier-pt-duo。 */
         /* 創作者自建（D410 示範）：單人票＋電子商店商品（綁取貨場次），隨活動下架一併下架（D457：原「取消」連動改為下架） */
@@ -2008,8 +2001,7 @@
         { id: 'tier-khh-duo', name: 'Duo pass', price: 2221, hkd: 550, qty: 200, sold: 0, img: 'images/projects/nick-i.jpg',
           rules: { conds: { cap: { person: '2', bky: true } } }, rulesFix: true }   // D429：原 1 人票 HK$275（隱藏鎖定 hideFix）
       ],
-      /* 墓碑 2026-10-15（D417 決定一）：活動層限購（bookyay maxPurchaseCnt 6／EachTime 4／Time 2）不帶入，活動層沒有條件 */
-      rules: { conds: {} },
+      /* 墓碑 2026-10-15（D417 決定一）：活動層限購（bookyay maxPurchaseCnt 6／EachTime 4／Time 2）不帶入；2026-10-20（D460）：活動層 rules 欄位整個移除 */
       /* D390（稽核第一節原型第 13 條）示範：草稿裡存過、不在 bookyay 鎖定範圍的發布設定——續填時保留（create-event keepDraft）。
          墓碑 2026-10-12（D395）：原本一併示範的直接促銷同意（terms.marketing）隨欄位移除。 */
       listing: { mode: 'schedule', from: '2026-11-10 12:00', to: '2027-01-01 12:00' },
@@ -2968,7 +2960,7 @@
          不進清單，活動清單、計數與組合包示範都看不到它；最終版照舊。get() 不濾（直連照樣查得到，畫面上的多場元素由 data-feat 收起）。 */
       var multiOff = window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S87');
       /* 2026-10-13 D410 決定四（示範資料）：release2.4 只顯示 bookyay 匯入的活動與共看派對——其餘示範活動掛功能 S95（⚪），
-         版本不含 S95 時不進清單（活動清單、計數、店鋪設定的活動候選、首頁畫布等 list() 的消費端一起收起）；get() 不濾（直連照樣查得到）。 */
+         版本不含 S95 時不進清單（活動清單、計數、店鋪設定的活動候選、首頁畫布等 list() 的消費端一起收起）；get() 2026-10-20 起也比照（見 get()）。 */
       var demoOff = window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S95');
       /* 2026-10-15 D422 決定一：release2.4 不含共看派對（S75 改 ⚪）——版本不含 S75 時共看派對的示範活動也不進清單；
          與 events.html 靜態列掛 data-feat="S75" 同一個標記（最終版照舊）。get() 不濾。 */
@@ -2997,6 +2989,14 @@
           if (EVENTS[i].id === id) { ev = clone(EVENTS[i]); break; }
         }
         if (!ev) ev = dynDrafts().filter(function (e) { return e.id === id; })[0] || null;   // D390：Admin 第一次儲存產生的草稿
+      }
+      /* 2026-10-20（使用者：release2.4 不能自建活動）：版本不含 S95 時，直連網址也看不到非 bookyay 的示範活動——
+         原本 get() 不濾（D410 決定四，直連照樣查得到），結果 release2.4 用網址仍進得去自建活動（例：lrh-studio-live）。
+         現在比照 list()：不是 release2.4 留下的示範活動（bookyay 匯入的活動、共看派對）一律回查不到；
+         沒帶 id 的示例頁預設改取第一筆留下的活動。最終版（含 S95）不受影響。 */
+      var demoOffGet = window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S95');
+      if (ev && demoOffGet && !isRel24Demo(ev)) {
+        ev = id ? null : (EVENTS.filter(isRel24Demo).map(clone)[0] || null);
       }
       if (!ev) return null;                  // 有 id 但查不到＝查詢失敗
       applyEdits(ev);                        // D390：活動詳情的編輯結果（門票逐筆編輯、頁面儲存、發布設定）

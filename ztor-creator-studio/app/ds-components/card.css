@@ -1,7 +1,7 @@
 /* ============================================================
    Ztor — Card
    Q3 2026-07-13：預設卡＝1px 純邊框（平、乾淨）。只有可點/浮起的強調卡
-   （.ztor-card--clickable、selection-card）hover 時才升級純陰影。
+   （.ztor-card--clickable、selection-card）hover 時上浮＋底色換按鈕 hover 階（2026-10-20，不換邊框與陰影）。
    ============================================================ */
 
 .ztor-card {
@@ -18,12 +18,17 @@
   border-radius: var(--radius-xl);   /* 卡片級圓角放大 6→16（示範，2026-07-17）：與 form-section--outlined 統一 */
 
   transition: box-shadow var(--duration) var(--easing),
-              transform  var(--duration) var(--easing);
+              transform  var(--duration) var(--easing),
+              background-color var(--duration) var(--easing);
 }
 
+/* 可點卡片 hover 的全站標準（2026-10-20 使用者指示，取代原本 −2px＋--shadow-card-hover）：
+   上浮 --clickable-card-lift（4px）＋底色換成 --clickable-card-hover-bg（＝按鈕 hover 階 --control-raise-hover）；
+   不換邊框、不換陰影。其他「整張卡是一個點擊區」的元件（tier-card／project-card／selection-card／
+   kpi--tappable／vshare__opt）照同一組 token 寫同樣兩行，不另造數值。 */
 .ztor-card--clickable:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-card-hover);
+  transform: translateY(var(--clickable-card-lift));
+  background: var(--clickable-card-hover-bg);
 }
 
 .ztor-card--clickable:focus-visible {
@@ -100,6 +105,13 @@
   padding: var(--card-pad);
   box-shadow: var(--shadow-card), var(--shadow-edge-top);
 }
+/* 整張卡是連結／按鈕的 .card（IP Market 的 `<a class="card ipm-card">`，2026-10-20 補上原本沒有的 hover）：
+   走全站可點卡片標準——上浮 --clickable-card-lift ＋底色 --clickable-card-hover-bg，不換邊框與陰影。
+   用 `a.card[href]`／`button.card` 當觸發，不需要額外掛 class；純展示的 `<div class="card">` 不受影響。 */
+:where(a.card[href], button.card) { cursor: pointer; transition: transform var(--duration) var(--easing), background-color var(--duration) var(--easing); }
+:where(a.card[href], button.card):hover { transform: translateY(var(--clickable-card-lift)); background: var(--clickable-card-hover-bg); }
+@media (prefers-reduced-motion: reduce) { :where(a.card[href], button.card):hover { transform: none; } }
+/* 上面用 :where() 把權重壓到 0：`.card` 自己若已有 transition（例如首頁的 `.live-item`，也是 `<a class="card">`）要保留自己的。 */
 /* 2026-08-17 撤除（墓碑）：.card--bare（無底卡）。當天做出來給項目詳情的交付藍圖用，
    同一輪使用者又裁示「整頁 section 底色統一用標準卡面」，它就沒有消費者了。
    要「內容直接坐在頁面上」的場合請直接不要用 .card，不要復活這支。 */

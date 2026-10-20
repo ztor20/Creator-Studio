@@ -169,7 +169,7 @@
                （D188，2026-08-17 搬到那裡）。對應的 JS 入口（syncEditMode 的顯隱、click 的
                confirm() 分支）同輪一起退場；i18n 的 ee.delete／ee.delete.confirm／
                ee.delete.confirm.sold／event-detail.edit.confirm-delete(0) 留值不消費。 -->
-          <button class="btn btn--ghost" type="button" data-ed-cancel hidden data-i18n="ee.discard">Discard changes</button>
+          <!-- 墓碑 2026-10-20：「捨棄變更」自頁首搬到分頁工具列右側、「儲存變更」旁邊（使用者指示；三處工具列各一顆，都掛 data-ed-cancel）。 -->
           <!-- 墓碑 2026-08-17：「取消活動」搬到「設定」分頁最下面（使用者指示）。
                頁首那一排是「常用動作」，取消活動是不可逆、而且很少按的一次性決定，
                放在最順手的位置只會增加誤觸——它該待在設定的末端，跟其他破壞性動作一起。 -->
@@ -863,6 +863,7 @@
             <div class="list-toolbar__actions">
               <!-- data-view-safe：這顆就是「進入編輯」的開關本身，被「檢視模式藏掉所有按鈕」
                    那條規則掃到會讓人再也進不了編輯（它原本住在 page-intro，不在那條規則的範圍內）。 -->
+              <button class="btn btn--ghost" type="button" data-view-safe data-ed-cancel data-dock-icon hidden><i data-lucide="undo-2" class="ztor-icon"></i><span data-i18n="ee.discard">Discard changes</span></button>
               <button class="btn btn--outline" type="button" data-view-safe data-ed-editmode data-dock-icon aria-pressed="false">
                 <i data-lucide="pencil" class="ztor-icon"></i>
                 <span data-ed-editmode-label data-i18n="event-detail.btn.edit">Edit event</span>
@@ -1390,6 +1391,7 @@
             <!-- 2026-10-10（使用者指示「整頁的編輯要在票務這一列的右側也能開啟」）：整頁編輯開關與「設定」「售票與名單」分頁那兩顆是同一個動作，
                  三處都掛 data-ed-editmode，狀態（編輯／儲存 N 項變更）一起同步。 -->
             <div class="list-toolbar__actions">
+              <button class="btn btn--ghost" type="button" data-view-safe data-ed-cancel data-dock-icon hidden><i data-lucide="undo-2" class="ztor-icon"></i><span data-i18n="ee.discard">Discard changes</span></button>
               <button class="btn btn--outline" type="button" data-view-safe data-ed-editmode data-dock-icon aria-pressed="false">
                 <i data-lucide="pencil" class="ztor-icon"></i>
                 <span data-ed-editmode-label data-i18n="event-detail.btn.edit">Edit event</span>
@@ -1422,19 +1424,8 @@
           </nav>
         </div>
 
-        <!-- 活動預設購票規則（D385 決定一、D387、D388，5.1.6.2 §4.5 F9、5.1.6.3 §2.6）：跟隨活動的門票照它生效。
-             bookyay 帶入的活動：活動層只有活動限購（D366／D368 決定二），唯讀、標題掛 From bookyay（D388 決定四照舊）。
-             ztor 自建的活動：列出建立流程票務設定裡設的全部條件、不掛來源標記；沒有條件時空狀態。
-             D388（2026-10-09）起自建活動可改：抬頭右邊「編輯」→ 卡內換成建立流程同一套條件清單（js/purchase-conds.js），
-             底下一句「只影響之後的購買」，抬頭換成取消／儲存。已結束與已取消不出現編輯（D361 決定三整頁唯讀）。
-             內容由 renderEvRules() 畫。 -->
-        <section class="form-section form-section--dense form-section--card" id="ed-evrules" hidden>
-          <div class="form-section__head form-section__head--actions">
-            <div class="form-section__head-titles"><h3 class="form-section__title" id="ed-evrules-title"><span data-i18n="ed.evrules.title">Default purchase rules</span></h3></div>
-            <div class="form-section__head-actions" id="ed-evrules-actions"></div>
-          </div>
-          <div id="ed-evrules-body"></div>
-        </section>
+        <!-- 墓碑 2026-10-20（D460）：「活動預設購票規則」卡（#ed-evrules，D385／D387／D388）整段退場——活動層沒有任何預設購票規則，
+             條件只在單張門票自己的購買條件（門票彈窗的「購買條件」區）與組合包自己的購買條件。 -->
         <div id="ed-tier-list"></div>
         <div id="ed-tier-table" hidden></div>
         <!-- 新增票種是一張卡、不是一顆按鈕（2026-08-17 使用者指示「要像創建流程中一樣是
@@ -1593,6 +1584,7 @@
                  這一頁是互斥切換（data-nav-mode="switch"），工作列跟著目前那一節換動作：data-nav-act="<節 key>" 只在那一節是目前這一節時出現，
                  顯隱由 syncNavSections() 統一算；交易明細還沒有任何一筆時另掛 data-nav-act-off 收起（同原本整組收起）。 -->
             <div class="list-toolbar__actions">
+              <button class="btn btn--ghost" type="button" data-view-safe data-ed-cancel data-dock-icon hidden><i data-lucide="undo-2" class="ztor-icon"></i><span data-i18n="ee.discard">Discard changes</span></button>
               <button class="btn btn--outline" type="button" data-view-safe data-ed-editmode data-dock-icon aria-pressed="false">
                 <i data-lucide="pencil" class="ztor-icon"></i>
                 <span data-ed-editmode-label data-i18n="event-detail.btn.edit">Edit event</span>
@@ -2020,7 +2012,7 @@
      例外平台費）／入場／販售。**一般活動的購買條件在這裡沒有**：發布後先不開放改（2026-08-11 裁決，
      2026-10-09 D385 決定一維持），（原最後一個區塊「販售」已隨 D422／D444 退場）。
      例外（D385，5.1.6.2 §4.5 F9）：bookyay 帶入的活動多一個唯讀的「購買條件」區塊（#ed-tm-rules-sec），列出這張票由 bookyay
-     帶入的限購／折扣／限時折扣、掛 From bookyay；沒有門票層條件的票寫「跟隨活動預設」＋活動層限購。入場區對 bookyay 帶入的票
+     帶入的限購／折扣／限時折扣、掛 From bookyay；沒有門票層條件的票寫空狀態（D460：沒有「跟隨活動預設」）。入場區對 bookyay 帶入的票
      鎖定為跟隨場次（#ed-tm-early-pol 唯讀讀數），刪除鈕停用＋原因（#ed-tm-del-why）。系列子場唯讀（共用設定在母頁改）。 -->
 <div class="payout-modal" id="ed-tier-modal" hidden>
   <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ed-tm-title">
@@ -2144,8 +2136,8 @@
 
       <!-- 購買條件（D385 決定一、D388，5.1.6.2 §4.5 F9、5.1.6.3 §2.6）：
            bookyay 帶入的活動——整區唯讀（kv 列），標題掛 From bookyay（D388 決定四照舊）。
-           ztor 自建的活動——D388（2026-10-09）起可改，結構同建立流程的單張門票彈窗：抬頭右邊「跟隨活動預設」開關，
-           開＝唯讀列出活動預設、關＝攤開這張票自己的一組（js/purchase-conds.js 的條件清單，與 create-event 同一套）；
+           ztor 自建的活動——D388（2026-10-09）起可改，結構同建立流程的單張門票彈窗：這張票自己的一組條件
+           （js/purchase-conds.js 的條件清單，與 create-event 同一套）；D460（2026-10-20）起沒有「跟隨活動預設」開關與活動層預設可繼承；
            區塊底下一句「只影響之後的購買」。內容由 syncTmRules() 畫。
            位置：入場之後、與建立流程同序（基本／價格與數量／入場／購買條件）。 -->
       <section class="form-section form-section--dense form-section--card" id="ed-tm-rules-sec" hidden>
@@ -2276,7 +2268,8 @@
      過去這裡直接 return，但頁首另一段 hydrate 照跑，造成示例頁 h1 已換成首筆活動、
      <title> 與麵包屑卻停在舊示例文案的自相矛盾狀態。 */
   const ev = window.ztorEvents.get(idParam);
-  if (!ev) {                             // id 有帶但查不到：不顯示別人的活動，改顯示查詢失敗
+  /* id 有帶但查不到：不顯示別人的活動，改顯示查詢失敗 */
+  function showEventNotFound() {
     const page = document.querySelector('.page');
     if (page) {
       page.innerHTML =
@@ -2292,8 +2285,15 @@
     document.title = ((window.i18nT && window.i18nT('event.notfound.title')) || 'Event not found') + ' · Ztor Creator Studio';
     const foot = document.querySelector('.app-footer');
     if (foot) foot.hidden = true;
-    return;
   }
+  if (!ev) { showEventNotFound(); return; }
+  /* 2026-10-20（使用者：release2.4 不能自建活動）：版本開關（js/devtools.js）排在頁面最後才載入，上面 get() 當下還不知道版本，
+     store 的版本過濾（S95）此時不會生效——等所有腳本載完（DOMContentLoaded）再補查一次：版本不含 S95 又不是 release2.4 留下的活動，
+     直連網址一樣顯示「找不到活動」。最終版不受影響。 */
+  document.addEventListener('DOMContentLoaded', function () {
+    const d = window.ztorDevState;
+    if (d && d.featOn && !d.featOn('S95') && window.ztorEvents.isRel24Demo && !window.ztorEvents.isRel24Demo(ev)) showEventNotFound();
+  });
   const id = ev.id;                      // 後續一律用真實 id（示例頁＝首筆的 id）
   /* ── 依活動類型收起不適用的區塊（D149：共看派對不套用票種／QR 報到／退款佇列／系列）──
      慣例沿用 create-event.html 的 data-hide-type。共看派對的進場＝分享連結＋選配付費牆、
@@ -4189,7 +4189,7 @@
      營運動作不受影響：隱藏／顯示、上架／下架、開賣／停售（含發布設定的時間〔D435 推導〕）、撤銷、報到更正。
      做法：設定分頁裡要鎖的分節（活動內容／場次／地點／在地化）各自掛 data-mode="view"（沿用檢視態的樣子與按鈕白名單，
      不另做第三種鎖定外觀），欄位逐一設唯讀；發布設定、連結、上下架、封存四節不鎖。票務分頁的入口由
-     rulesEditable／tixAddOff／門票彈窗各自問 edStockOnly()。下架後（ev.unlisted）照現行規則開放，bookyay 鎖定欄位照舊鎖。
+     tixAddOff／門票彈窗各自問 edStockOnly()。下架後（ev.unlisted）照現行規則開放，bookyay 鎖定欄位照舊鎖。
      var 宣告：syncUnlist 在初始化早期就會呼叫到這裡，避免 TDZ。 */
   var edStockLocked = false;
   function edStockOnly() {
@@ -4657,11 +4657,9 @@
     document.querySelectorAll('.tab-panel[data-editable]').forEach(p => p.setAttribute('data-mode', mode));
     /* D390（稽核第一節原型第 4 條）：發布設定跟著頁面的編輯模式——進入編輯時從活動複製一份草稿，離開（儲存或捨棄）時丟掉 */
     pubDraft = mode === 'edit' ? pubFromEv() : null;
-    /* D392（2026-10-10，使用者「照你推薦」）：門票、活動預設購票規則、通知開關改成頁面草稿——進入編輯時從活動複製一份，
+    /* D392（2026-10-10，使用者「照你推薦」）：門票、通知開關改成頁面草稿（D460：活動預設購票規則已退場）——進入編輯時從活動複製一份，
        離開（儲存或捨棄）時一律從活動重新複製（儲存時 commitEdit 已先寫回活動，捨棄則等於還原）。 */
     edTiers = cloneTiers(ev.tiers);
-    edRulesDraft = mode === 'edit' && ev.rules ? JSON.parse(JSON.stringify(ev.rules)) : null;
-    evRulesWork = null;
     notifDraft = mode === 'edit' ? Object.assign({}, notifState()) : null;
     /* 進入編輯就記下基準值；離開編輯把基準清掉（沒有基準＝沒有未儲存的變更，
        離開防護也就不該攔人）。 */
@@ -4693,9 +4691,8 @@
     ['images', s => s.gallery + '' + s.video],                   // D390 決定十三：影片預告與圖片同屬素材一列
     ['publish', s => s.pub],                                      // D390：發布設定改成跟著編輯模式，算一項
     /* D392（2026-10-10）：撤銷 D390 稽核第一節原型第 3 條的「門票各自存了就生效」——門票（含新增、刪除、圖片、購買條件、顯示開關）、
-       活動預設購票規則、通知開關都改成頁面草稿，各算一項，按「儲存」才寫入、捨棄還原。 */
+       通知開關都改成頁面草稿，各算一項，按「儲存」才寫入、捨棄還原。墓碑 2026-10-20（D460）：活動預設購票規則（'rules'）一項退場。 */
     ['tiers',  s => s.tiers],
-    ['rules',  s => s.rules],
     ['notif',  s => s.notif]
   ];
   let edBaseline = null;
@@ -4715,7 +4712,6 @@
       video: edVideoSrc(),
       pub: JSON.stringify(pubDraft || null),
       tiers: tiersCanon(edTiers),
-      rules: rulesCanon(edRulesDraft || ev.rules),
       notif: notifCanon(notifDraft || notifState())
     };
   }
@@ -4743,8 +4739,7 @@
         }
       }
     });
-    const cancel = document.querySelector('[data-ed-cancel]');
-    if (cancel) cancel.disabled = editing ? n === 0 : false;
+    document.querySelectorAll('[data-ed-cancel]').forEach(cancel => { cancel.disabled = editing ? n === 0 : false; });
     /* F10 的「已變更」記號沒有落點：那是獨立編輯頁的總覽摘要列，這一頁是就地編輯、
        沒有那份摘要（EDIT-001 已登記編輯頁退場）。變更數改由儲存鈕的文案表達。 */
   }
@@ -4854,13 +4849,11 @@
     const cand = Object.assign({}, ev, {
       sale: pubDraft.sale,
       listing: lst.mode === 'schedule' ? { from: lst.from, to: lst.unlistOn ? lst.to : '' } : { to: lst.unlistOn ? lst.to : '' },
-      date: s0.date || ev.date, start: s0.start || ev.start,
-      rules: curRules()   // D392：預設購票規則的草稿一起比
+      date: s0.date || ev.date, start: s0.start || ev.start
     });
     const list = (e2, tiers) => {
       const et = TB.times(e2), out = [];
       (tiers || []).forEach(t => { if (t.rules && Object.keys(PC.periodErrs(t.rules, et, pcT)).length) out.push(T('ed.conflict.ticket', 'Ticket · {n}').replace('{n}', t.name || '—')); });
-      if (e2.rules && Object.keys(PC.periodErrs(e2.rules, et, pcT)).length) out.push(T('ed.evrules.title', 'Default purchase rules'));
       (e2.bundles || []).forEach(b => { if (b.sched && Object.keys(TB.schedErrors(b, et, pcT) || {}).length) out.push(T('ed.conflict.bundle', 'Ticket bundle · {n}').replace('{n}', b.name || '—')); });
       return out;
     };
@@ -4919,9 +4912,8 @@
       if (!ev.listing.from && !ev.listing.to) ev.listing = {};
       patch.publish = ev.publish; patch.sale = ev.sale; patch.listing = ev.listing;
     }
-    /* D392：門票（逐筆修改、新增、刪除）、活動預設購票規則（bookyay 帶入者唯讀）、通知開關跟頁面其他欄位一起寫入 */
+    /* D392：門票（逐筆修改、新增、刪除）、通知開關跟頁面其他欄位一起寫入（D460：活動預設購票規則已退場） */
     if (changed.indexOf('tiers') >= 0) saveTiers();
-    if (changed.indexOf('rules') >= 0 && !evIsBky() && edRulesDraft) { ev.rules = edRulesDraft; patch.rules = ev.rules; }   // 只影響之後的購買（D388 決定二）
     if (changed.indexOf('notif') >= 0 && notifDraft) { try { localStorage.setItem(NOTIF_KEY, JSON.stringify(notifDraft)); } catch (e) {} }
     window.ztorEvents.saveEdits(ev.id, patch);
     if (notice) window.ztorEvents.logChangeNotice(ev.id, notice);
@@ -5035,7 +5027,14 @@
     const link = e.target.closest('a[href]');
     if (!link || !isDirty()) return;
     const href = link.getAttribute('href') || '';
-    if (!href || href.charAt(0) === '#' || link.target === '_blank') return;
+    if (!href || href.charAt(0) === '#') return;
+    /* 2026-10-20（使用者指示「編輯模式下點任何會跳出分頁的按鈕，都詢問捨棄或儲存」）：另開分頁的連結也要問——
+       存完或捨棄後再另開，本頁留在原處（編輯狀態在儲存時才結束）。 */
+    if (link.target === '_blank') {
+      e.preventDefault();
+      leaveTo(href, () => { window.open(link.href, '_blank', 'noopener'); }, true);
+      return;
+    }
     e.preventDefault();
     /* 登出（D392 補充二）：側欄的登出 handler 會直接換頁，這裡先擋下它，確認後再呼叫 sidebar.js 的 ztorLogout */
     const logout = link.hasAttribute('data-logout') && typeof window.ztorLogout === 'function';
@@ -5045,16 +5044,18 @@
   /* 站內導頁的唯一出口（D392 補充二，2026-10-10 使用者「在離開整個編輯頁面時，尚未儲存，要有 popup 提醒用戶」）：
      <a> 連結之外，用 JS 導頁的入口（組合包卡、預覽與在地化、再辦一場）也走這一支——有未儲存的變更（含門票、預設購票規則、
      通知開關的暫存）就跳三選一對話，沒有就直接走。關分頁／重新整理由上方 beforeunload 接（瀏覽器原生提示）。 */
-  function leaveTo(href, go) {
+  function leaveTo(href, go, newTab) {
     const leave = typeof go === 'function' ? go : () => { location.href = href; };
     if (!isDirty()) { leave(); return; }
+    /* newTab：要另開分頁的入口（目前頁面留著）——文案改「儲存並開啟／捨棄並開啟」；捨棄＝真的把編輯還原（discardEdit），
+       不能像換頁那樣只清基準線，不然本頁還停在編輯態卻不再追蹤變更。 */
     openConfirm({
-      title: T('event-detail.leave.title', 'Leave without saving?'),
-      body: '<p class="text-sub">' + T('event-detail.leave.body', 'You have changes that have not been saved.') + '</p>',
-      okLabel: T('event-detail.leave.save', 'Save & leave'),
-      altLabel: T('event-detail.leave.discard', 'Leave without saving'),
+      title: T(newTab ? 'event-detail.leave.title.tab' : 'event-detail.leave.title', newTab ? 'Unsaved changes' : 'Leave without saving?'),
+      body: '<p class="text-sub">' + T(newTab ? 'event-detail.leave.body.tab' : 'event-detail.leave.body', newTab ? 'Save or discard your changes before opening another page.' : 'You have changes that have not been saved.') + '</p>',
+      okLabel: T(newTab ? 'event-detail.leave.save.tab' : 'event-detail.leave.save', newTab ? 'Save & open' : 'Save & leave'),
+      altLabel: T(newTab ? 'event-detail.leave.discard.tab' : 'event-detail.leave.discard', newTab ? 'Discard & open' : 'Leave without saving'),
       onOk: () => { trySave(leave); },   // D390 稽核第一節原型第 5 條：走同一套檢查與高影響確認，沒過就留在原頁
-      onAlt: () => { edBaseline = null; leave(); }
+      onAlt: () => { if (newTab) { discardEdit(); } else { edBaseline = null; } leave(); }
     });
   }
 
@@ -5156,7 +5157,6 @@
     return JSON.stringify(c(v) || null);
   }
   const normRules = r => (r && window.ztorPurchaseConds) ? window.ztorPurchaseConds.norm(JSON.parse(JSON.stringify(r))) : r;
-  function rulesCanon(r) { return canonJSON(normRules(r)); }
   function tiersCanon(list) { return canonJSON((list || []).map(t => t.rules ? Object.assign({}, t, { rules: normRules(t.rules) }) : t)); }
   function saveTiers() {
     ev.tiers = cloneTiers(edTiers);
@@ -5618,10 +5618,10 @@
   /* ── bookyay 帶入活動的唯讀補齊（D385，2026-10-09；5.1.6.2 §4.5 F9、5.1.6.3 §2.6）──────────────
      決定一：購買條件唯讀呈現——這張票由 bookyay 帶入的限購（D427 起只有每人總限購；每次交易、限購次數、折扣、早鳥不帶入），
              資料形狀同 create-event 的門票規則 `rules: { conds: { cap } }`（帶 bky:true）；
-             沒有門票層條件的票寫「跟隨活動預設」（D417 起 bookyay 活動沒有活動層限購，活動層沒有條件）。
+             沒有門票層條件的票寫空狀態（D417 起 bookyay 活動沒有活動層限購；D460 起任何活動都沒有活動層預設購票規則）。
              D417 決定五（最終版，S96）：編輯模式下 bookyay 門票可自加「折扣」「限時折扣」（tmBkyWork），其他條件仍不能加。
              一般活動的單張門票不顯示購買條件區（發布後先不開放改購買條件，2026-08-11 裁決維持）；
-             活動層那張唯讀卡（#ed-evrules）D387 起自建活動也顯示，見 renderEvRules。
+             墓碑 2026-10-20（D460）：活動層那張「預設購票規則」卡（#ed-evrules／renderEvRules）退場。
      決定二：bookyay 帶入的票（含未售出）刪除鈕停用，原因寫在鈕旁（#ed-tm-del-why）。
      決定三：bookyay 帶入的票，提前入場與早到處理鎖定為跟隨場次（場次的值由 bookyay 帶入，D365）。
      「bookyay 帶入的票」＝價格帶 bookyay 原價（isBkyTier，D330；D429 起不再有套票轉出的 1 人票 hideFix）；
@@ -5655,8 +5655,9 @@
     };
     const win = x => ruleWhen(x.from) + ' – ' + ruleWhen(x.to);
     const tierTxt = x => T('ce.rule.tier.' + (x.tier || 'fan'), x.tier || 'fan');
-    const row = (k, v) => '<div class="kv"' + (RULE_FEAT[k] ? ' data-feat="' + RULE_FEAT[k] + '"' : '') + '>' +
-      '<span class="kv__k">' + tixEsc(T('ed.rule.' + k, k)) + '</span><span class="kv__v">' + tixEsc(v) + '</span></div>';
+    /* D461：唯讀列同條件卡——限時購買與限購掛 S104（PC.featFor；bookyay 帶入的不掛），粉絲分級三種照舊 S82 */
+    const row = (k, v) => { const f = RULE_FEAT[k] || PC.featFor(k, c[k], { typeFeat: PC.TIX_FEAT }); return '<div class="kv"' + (f ? ' data-feat="' + f + '"' : '') + '>' +
+      '<span class="kv__k">' + tixEsc(T('ed.rule.' + k, k)) + '</span><span class="kv__v">' + tixEsc(v) + '</span></div>'; };
     const val = {
       buyTime: x => win(x),
       buyTier: x => tierTxt(x),
@@ -5669,9 +5670,8 @@
     };
     return RULE_KEYS.filter(k => c[k]).map(k => row(k, val[k](c[k]))).join('');
   }
-  const evRuleConds = () => { const r = ev && curRules(); return (r && r.conds) || {}; };   // D392：編輯中讀頁面草稿
   /* ── 購買條件的編輯（D388，2026-10-09；5.1.6.2 §4.5 F9、5.1.6.3 §2.6）──────────────────────
-     自建活動發布後可以改活動預設購票規則與單張門票的購買條件，條件模型同建立流程（5.1.6.1 F22）。
+     自建活動發布後可以改單張門票的購買條件（D460：活動預設購票規則已退場），條件模型同建立流程（5.1.6.1 F22）。
      畫法與建立流程共用 js/purchase-conds.js（create-event 的 condsHTML 同一套），本頁只管狀態與儲存。
      改動只影響之後的購買、已售出的票不變、限購改小不追回（D388 決定二、三）——兩個編輯處都寫一句。
      bookyay 帶入的活動照舊唯讀（D388 決定四）。已結束與已取消整頁唯讀（D361 決定三），不出現編輯入口。 */
@@ -5681,7 +5681,6 @@
      D392：門票彈窗的「套用」只改頁面草稿，算進「儲存 N 項變更」、捨棄會還原（ASSUMPTIONS EDIT-003）。 */
   const edEditing = () => { const p = document.querySelector('.tab-panel[data-editable]'); return !!p && p.getAttribute('data-mode') === 'edit'; };
   const tmRO = () => stageRO() || !edEditing();   // 門票彈窗唯讀：已結束／已取消，或還沒按編輯
-  const rulesEditable = () => !!ev && !evIsBky() && !stageRO() && edEditing() && !edStockOnly();   // D435：上架中只能改庫存
   const regateFeat = () => { if (window.ztorDevState && window.ztorDevState.regate) window.ztorDevState.regate(); };
   const featOnPC = id => { const d = window.ztorDevState; return !id || !d || !d.featOn || d.featOn(id); };
   const evCur = () => {
@@ -5690,14 +5689,12 @@
     return (t0 && S.priceOf(ev, t0).base) || S.DEFAULT_CURRENCY || 'TWD';
   };
   const pcMoney = n => window.ztorEvents.fmtMoney(evCur(), n);
-  /* 讀數用的票價：活動層＝跟隨活動的門票（沒有就全部門票）；門票層＝彈窗裡正在填的票價 */
+  /* 讀數用的票價：門票層＝彈窗裡正在填的票價 */
+  /* D461（2026-10-20）：門票的限時購買與限購掛 S104（⚪ 只在最終版），typeFeat 只在門票這裡傳；bookyay 帶入的限購不掛 */
   const pcCtx = {
     esc: tixEsc, featOn: featOnPC, srcChip: () => bkyChipHTML(),
     pctReadout: c => PC.pctText(c, [Number(tmEl('ed-tm-price').value) || 0]),
-    evPriceReadout: c => {
-      const fol = edTiers.filter(x => !x.rules);
-      return PC.evPriceText(c, (fol.length ? fol : edTiers).map(x => Number(x.price) || 0), pcMoney);
-    }
+    typeFeat: PC.TIX_FEAT
   };
   /* D389（2026-10-09）：改限時購買、限時折扣時期間不能超出活動上架區間（限時購買的結束也不能晚於活動停售），
      超出就地紅字、按儲存擋下——判斷與文案同建立流程，在共用元件 js/purchase-conds.js（periodErrs／mount 的 check()），
@@ -5705,83 +5702,18 @@
      改購買條件不列高影響變更、不通知持票人（D389 決定二）：不進 highImpactDiffs、不開「儲存並通知」確認；D392 起跟頁面一起儲存。 */
   const pcTimes = () => window.ZtorTicketBundle ? window.ZtorTicketBundle.times(ev) : null;
   const pcT = k => T(k, k);
-  let evRulesUI = null;   // 活動預設購票規則編輯中的條件清單（mount 回傳；check()＝期間檢查）
   const afterHintHTML = () => '<p class="field__hint" data-i18n="ed.rules.after">' +
     tixEsc(T('ed.rules.after', 'Changes apply to purchases from now on. Tickets already sold stay as they are, and lowering a limit doesn\u2019t take back tickets fans already bought.')) + '</p>';
 
-  /* 活動預設購票規則（票務分頁頂端那張卡）：
-     D385：bookyay 帶入的活動——只有活動限購、標題掛 From bookyay、唯讀；
-     D387：ztor 自建的活動也顯示——列出建立時設的全部條件、不掛來源標記；沒有條件時空狀態；
-     D388（2026-10-09）：自建活動可改——抬頭「編輯」→ 條件清單（新增／修改／移除）＋取消／儲存。 */
-  /* D392：edRulesDraft＝頁面草稿（進入編輯時從活動複製，null＝沒在編輯、讀活動本身）；
-     evRulesWork＝卡片上打開的條件編輯器那一份（「套用」才併進頁面草稿，「取消」丟掉）。 */
-  let edRulesDraft = null;
-  let evRulesWork = null;
-  const curRules = () => edRulesDraft || ev.rules;
-  function renderEvRules() {
-    const sec = document.getElementById('ed-evrules');
-    if (!sec || !ev) return;
-    const bky = evIsBky();
-    /* D417 決定一（2026-10-15）：bookyay 匯入的活動沒有活動層限購、創作者也不能設定（入口移除）——活動層沒有任何條件，
-       整張「預設購票規則」卡不出現（原 D385／D397 的唯讀卡與「bookyay 沒有設定」說明退場，ed.evrules.none 不再使用）。 */
-    if (bky) { sec.hidden = true; evRulesWork = null; return; }
-    sec.hidden = false;
-    const body = document.getElementById('ed-evrules-body');
-    const acts = document.getElementById('ed-evrules-actions');
-    if (!rulesEditable()) evRulesWork = null;
-    if (evRulesWork) {
-      body.innerHTML = '<div id="ed-evrules-editor"></div>' + afterHintHTML();
-      evRulesUI = PC.mount(document.getElementById('ed-evrules-editor'), { rules: evRulesWork, scope: 'event', ctx: pcCtx, times: pcTimes });
-      acts.innerHTML =
-        '<button type="button" class="btn btn--outline btn--sm" data-evrules-cancel data-i18n="ce.tier.cancel">' + tixEsc(T('ce.tier.cancel', 'Cancel')) + '</button>' +
-        '<button type="button" class="btn btn--primary btn--sm" data-evrules-save data-i18n="ed.tm.apply">' + tixEsc(T('ed.tm.apply', 'Apply')) + '</button>';
-    } else {
-      const rows = ruleCondRows(evRuleConds(), null);
-      const noneKey = 'ed.evrules.none.own';   /* bookyay 活動在上面就整張收起（D417），這裡只剩自建活動；舊的 bky 分支（ed.evrules.none）2026-10-15 隨 D424 決定 18 清掉 */
-      /* 2026-10-12（UI-CHANGES 一百六十九）：沒有任何條件＝檢視態整張卡不出現；編輯態才出現「目前無設定條件」＋「編輯」
-         （bookyay 帶入者編輯態寫「bookyay 沒有設定」、不給編輯——條件由 bookyay 管） */
-      const tixTab = document.querySelector('.tab-panel[data-panel="tiers"]');
-      if (!rows && !(tixTab && tixTab.getAttribute('data-mode') === 'edit')) sec.hidden = true;
-      body.innerHTML = rows
-        /* --fact（2026-10-10）：票務分頁改跟整頁編輯模式後，檢視態會收起一般 .field__hint——這兩句是事實說明（沒有條件／跟隨規則），檢視態照常顯示 */
-        ? '<div>' + rows + '</div><p class="field__hint field__hint--fact" data-i18n="ed.evrules.hint">' + tixEsc(T('ed.evrules.hint', '')) + '</p>'
-        : '<p class="field__hint field__hint--fact" data-i18n="' + noneKey + '">' + tixEsc(T(noneKey, '')) + '</p>';
-      acts.innerHTML = rulesEditable()
-        ? '<button type="button" class="btn btn--outline btn--sm" data-evrules-edit data-i18n="ed.evrules.edit">' + tixEsc(T('ed.evrules.edit', 'Edit')) + '</button>'
-        : '';
-    }
-    acts.hidden = !acts.innerHTML;
-    markBkySource(document.getElementById('ed-evrules-title'), bky);
-    /* D392 補充二：套用過、還沒儲存的預設購票規則標「已修改」 */
-    setStagedMark(document.getElementById('ed-evrules-title'), !!edBaseline && !bky && rulesCanon(curRules()) !== rulesCanon(ev.rules));
-    regateFeat();   // 粉絲分級條件（S82）照版本收起
-  }
-  document.getElementById('ed-evrules')?.addEventListener('click', e => {
-    if (e.target.closest('[data-evrules-edit]')) {
-      if (!rulesEditable()) return;
-      evRulesWork = JSON.parse(JSON.stringify(PC.norm(curRules())));
-      renderEvRules();
-    } else if (e.target.closest('[data-evrules-cancel]')) {
-      evRulesWork = null;
-      renderEvRules();
-    } else if (e.target.closest('[data-evrules-save]')) {
-      if (!evRulesWork) return;
-      if (evRulesUI && evRulesUI.check()) return;   // D389：期間超出活動上架區間——擋套用，紅字已就地顯示在那張條件卡
-      edRulesDraft = evRulesWork;   // D392：併進頁面草稿，按「儲存」才取代原條件（只影響之後的購買，D388 決定二）
-      evRulesWork = null;
-      renderEvRules();
-      refreshTix();
-      syncDirty();
-      if (window.ztorToast) window.ztorToast.show(T('ed.evrules.applied', 'Default purchase rules applied — save the event to keep them'), { tone: 'success' });
-    }
-  });
+  /* 墓碑 2026-10-20（D460）：活動預設購票規則卡（renderEvRules／edRulesDraft／evRulesWork／curRules／evRulesUI，D385／D387／D388／D392）整組退場——
+     活動層沒有任何預設購票規則，購買條件只在單張門票自己那一組。 */
 
   /* 單張門票彈窗的購買條件區（syncTmBky 呼叫）：
      bookyay 帶入的活動——唯讀 kv（D385，照舊）；
-     ztor 自建的活動（D388）——同建立流程：「跟隨活動預設」開關＋條件清單，tmRulesOwn＝這張票自己的一組（null＝跟隨）。 */
+     ztor 自建的活動（D388）——同建立流程：條件清單，tmRulesOwn＝這張票自己的一組（D460 起沒有「跟隨活動預設」開關；沒有條件＝空的一組，不是 null）。 */
   let tmRulesOwn = null;
   let tmRulesUI = null;   // 條件清單的 mount 回傳（refresh＝票價一改重算折扣讀數）
-  /* D417 決定五（2026-10-15，〔推導〕；S96 ⚪ 只在最終版）：bookyay 門票自加「折扣」「限時折扣」——
+  /* D417 決定五（2026-10-15，〔推導〕；S96，2026-10-20 D461 起 🔵 release2.4 也提供）：bookyay 門票自加「折扣」「限時折扣」——
      tmBkyWork＝彈窗裡這張票的一組（bky 限購＋自加的折扣類），開彈窗時從 t.rules 複製、「套用」才寫回；
      D419 定案：bookyay 門票沒有「跟隨活動預設」，沒有帶入限購的票直接在自己的條件裡加；全部移除就回到空的一組。 */
   const BKY_ADD_KEYS = ['disc', 'discTime'];
@@ -5836,36 +5768,24 @@
     tmRulesUI = null;
     rsec.hidden = false;
     const edit = !tmRO() && !edStockOnly();   // 2026-10-10：檢視態（未按編輯）也唯讀；D435：上架中只能改張數
-    const follow = !tmRulesOwn;
-    acts.innerHTML = '<span class="field__label" data-i18n="ed.tm.rules.follow">' + tixEsc(T('ed.tm.rules.follow', 'Follow event defaults')) + '</span>' +
-      '<button type="button" class="switch' + (follow ? ' switch--on' : '') + (edit ? '' : ' switch--locked') + '" role="switch" aria-checked="' + (follow ? 'true' : 'false') + '"' +
-        (edit ? '' : ' aria-disabled="true"') + ' data-tm-rules-follow aria-label="' + tixEsc(T('ed.tm.rules.follow', 'Follow event defaults')) + '"></button>';
-    acts.hidden = false;
-    if (follow) {
-      const rows = ruleCondRows(evRuleConds(), t);
-      box.innerHTML = '<div>' + (rows || '<p class="field__hint" data-i18n="ed.evrules.none.own">' + tixEsc(T('ed.evrules.none.own', '')) + '</p>') + '</div>' +
-        (edit ? afterHintHTML() : '');
-    } else if (edit) {
+    /* 墓碑 2026-10-20（D460）：區塊標題右側的「跟隨活動預設」開關（[data-tm-rules-follow]）與「從活動預設複製一組」退場。 */
+    acts.innerHTML = ''; acts.hidden = true;
+    if (edit) {
       box.innerHTML = '<div id="ed-tm-rules-editor"></div>' + afterHintHTML();
       tmRulesUI = PC.mount(tmEl('ed-tm-rules-editor'), { rules: tmRulesOwn, scope: t.id, ctx: pcCtx, times: pcTimes });
     } else {
-      box.innerHTML = '<div>' + (ruleCondRows(tmRulesOwn.conds, t) || '') + '</div>';
+      const rows = ruleCondRows(tmRulesOwn.conds, t);
+      box.innerHTML = rows ? '<div>' + rows + '</div>'
+        : '<div class="empty-card"><span class="empty-card__icon"><i data-lucide="inbox" class="ztor-icon"></i></span><p class="empty-card__title">' + tixEsc(PC.t('d.cond.empty')) + '</p></div>';
+      if (window.ztorIcons) window.ztorIcons.applyIcons(box);
     }
     regateFeat();
   }
-  tmEl('ed-tm-rules-actions')?.addEventListener('click', e => {
-    const sw = e.target.closest('[data-tm-rules-follow]');
-    if (!sw || sw.classList.contains('switch--locked') || !tmTier) return;
-    /* 關＝攤開這張票自己的一組：從活動預設複製一份（% 換成這張票的固定價，D368；同 create-event rulesForEdit）；
-       開＝丟掉自己那一份、回到跟隨 */
-    tmRulesOwn = tmRulesOwn ? null : PC.copyForTicket(curRules(), Number(tmEl('ed-tm-price').value) || 0);   // D392：從預設購票規則的草稿複製
-    syncTmRules(tmTier);
-  });
 
   /* 單張門票彈窗裡的三件事（購買條件區、入場鎖定、刪除停用），開彈窗時重算 */
   function syncTmBky(t) {
     const bky = !tmNew && tierBky(t);
-    syncTmRules(t);   // D385／D388：bookyay 唯讀；自建活動可改（跟隨開關＋條件清單）
+    syncTmRules(t);   // D385／D388：bookyay 唯讀；自建活動可改（條件清單；D460 起沒有跟隨開關）
     /* 入場：鎖定為跟隨場次——bookyay 活動的每一張票都鎖，含另外新增的票與新增中的那一張（D386 決定一） */
     const entryLock = evIsBky();
     const early = tmEl('ed-tm-early');
@@ -5928,7 +5848,7 @@
     if (tmNew) { tmHow = 'type'; fillTmSess(); }
     tmEl('ed-tm-name').value = t.name || '';
     tmImg = (t.img || '').trim();   // D384：沒有自己的圖＝沿用活動主視覺
-    tmRulesOwn = (!evIsBky() && t.rules) ? JSON.parse(JSON.stringify(PC.norm(t.rules))) : null;   // D388：自建活動這張票自己的一組（null＝跟隨）
+    tmRulesOwn = evIsBky() ? null : JSON.parse(JSON.stringify(PC.norm(t.rules || { conds: {} })));   // D388／D460：自建活動這張票自己的一組（沒有條件＝空的一組）
     tmBkyWork = null;   // D417：bookyay 門票自加折扣類的工作副本，syncTmRules 依版本與編輯狀態才建立
     renderTmImg();
     tmEl('ed-tm-price').value = t.price == null ? '' : t.price;
@@ -6095,9 +6015,9 @@
     if (!evIsBky()) tmTier.earlyMin = tmEl('ed-tm-early').value;   // D385／D386：bookyay 活動的票（含另外新增的）鎖定跟隨場次，不寫回
     tmTier.hidden = !tmShown; // D328：關＝隱藏（D422：已存在的門票按鈕當下已寫回，這裡寫同一個值；新門票跟著套用寫入）
     tmTier.img = (tmImg || '').trim();   // D384：空字串＝沿用活動主視覺
-    /* D388：自建活動的購買條件——改後的一組取代原本的，只影響之後的購買；跟隨＝拿掉自己那一份 */
-    if (!evIsBky() && !stageRO()) { if (tmRulesOwn) tmTier.rules = tmRulesOwn; else delete tmTier.rules; }
-    /* D417 決定五（最終版）：bookyay 門票自加的折扣類寫回；沒有任何條件＝回到跟隨（拿掉自己那一組） */
+    /* D388：自建活動的購買條件——改後的一組取代原本的，只影響之後的購買；D460：沒有任何條件＝拿掉自己那一組 */
+    if (!evIsBky() && !stageRO()) { if (tmRulesOwn && Object.keys(tmRulesOwn.conds || {}).length) tmTier.rules = tmRulesOwn; else delete tmTier.rules; }
+    /* D417 決定五（最終版）：bookyay 門票自加的折扣類寫回；沒有任何條件＝拿掉自己那一組 */
     if (evIsBky() && tmBkyWork && !stageRO()) {
       if (Object.keys(tmBkyWork.conds || {}).length) { tmTier.rules = tmBkyWork; tmTier.rulesFix = true; }
       else { delete tmTier.rules; delete tmTier.rulesFix; }
@@ -6222,11 +6142,9 @@
     renderEdTierTable();
   });
   function refreshTix() { if (tixView === 'cards') renderEdTiers(); else renderEdTierTable(); }
-  /* 2026-10-10：整頁編輯模式一翻，票務的編輯入口跟著開關；離開編輯時預設購票規則的草稿一併丟掉（rulesEditable 為假即清草稿），
-     開著的門票彈窗收起（它是照開啟當下的模式畫的） */
+  /* 2026-10-10：整頁編輯模式一翻，票務的編輯入口跟著開關；開著的門票彈窗收起（它是照開啟當下的模式畫的） */
   document.addEventListener('ed:mode', () => {
     if (!tmEl('ed-tier-modal').hidden) closeTierModal();
-    renderEvRules();
     refreshTix();
     try { syncNavSections(); } catch (e) {}   /* 2026-10-12：沒有資料的分節只在編輯態出現（data-view-empty） */
   });
@@ -7916,11 +7834,10 @@
 
   hydrate();
   renderEdTiers();
-  renderEvRules();          // D385／D387／D388：活動預設購票規則卡（bookyay 唯讀只有限購並標來源；自建列全部條件、可編輯，沒有時空狀態）
   /* 換版本（devtools 面板）時重畫：新增條件選單要照新版本決定還有沒有可加的（同 create-event） */
   window.addEventListener('load', () => {
     const d = window.ztorDevState;
-    if (d && d.on) d.on(() => { try { renderEvRules(); if (tmTier && !tmEl('ed-tier-modal').hidden) syncTmRules(tmTier); } catch (e) {} });
+    if (d && d.on) d.on(() => { try { if (tmTier && !tmEl('ed-tier-modal').hidden) syncTmRules(tmTier); } catch (e) {} });
   });
   /* 防重繪迴圈（D388 起條件清單有日期欄位）：重畫會插入 datetime 欄位 → partials/date-input.js 的 observer 呼叫 applyI18n()
      → 又 dispatch 'i18n:applied' → 又重畫……同 hydrate 那一支的坑（見下方 i18nBusy 說明），用 setTimeout(0) 解旗標擋掉自己造成的那一輪。 */
@@ -7928,7 +7845,7 @@
   document.addEventListener('i18n:applied', () => {
     if (rulesI18nBusy) return;
     rulesI18nBusy = true;
-    try { renderEvRules(); if (tmTier && !tmEl('ed-tier-modal').hidden) syncTmBky(tmTier); } catch (e) {}
+    try { if (tmTier && !tmEl('ed-tier-modal').hidden) syncTmBky(tmTier); } catch (e) {}
     setTimeout(() => { rulesI18nBusy = false; }, 0);
   });
   syncEditMode();          // 載入後先鎖成唯讀（面板預設 data-mode="view"）

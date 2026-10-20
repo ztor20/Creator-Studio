@@ -79,11 +79,16 @@
 /* 可點卡片 hover 浮起（2026-08-10 使用者指示要有 hover 效果）：站上「可點的卡片」既有的
    答案就是浮起（Q5，2026-07-26 Q34 把清單列也一併收進同一個語彙），這裡沿用同一支陰影
    token，不另造第二種回饋。邊界同時提亮一階，暗色主題下光靠陰影不夠明顯。 */
-.tier-card--clickable { transition: box-shadow var(--duration) var(--easing), border-color var(--duration) var(--easing); }
+.tier-card--clickable { transition: transform var(--duration) var(--easing), background-color var(--duration) var(--easing); }
+/* 2026-10-20 使用者回饋「可點卻看不出 hover」「沒有上浮、只多了外框，不要外框」「還是看不出上浮」「除了上浮，背景色也可以調整，像按鈕一樣」：
+   不換邊框、不換陰影（陰影裸值也過不了 token 棘輪）；上浮 4px＋底色換成按鈕 hover 用的 --control-raise-hover。
+   2px 位移在這張卡的重陰影底下看不出來，所以比標準可點卡（2px）多一倍，再靠底色變化讀出「可點」。 */
+/* 2026-10-20 同日：位移與底色收成全站可點卡片 token（--clickable-card-lift／--clickable-card-hover-bg，見 _tokens.css、card.css），數值不變。 */
 .tier-card--clickable:hover {
-  border-color: var(--muted-foreground);
-  box-shadow: var(--shadow-float);
+  transform: translateY(var(--clickable-card-lift));
+  background: var(--clickable-card-hover-bg);
 }
+@media (prefers-reduced-motion: reduce) { .tier-card--clickable:hover { transform: none; } }
 .tier-card--clickable .tier-card__actions,
 .tier-card--clickable .tier-card__grip { cursor: default; }
 
@@ -253,8 +258,8 @@
 .tier-card__foot-spacer { margin-left: auto; }
 
 /* ── 規則區塊（購買條件／每人限購／折扣）──────────────────────────
-   同一組欄位在活動層（所有票種的預設）與票種卡（這張自訂）各出現一次，
-   共用同一支渲染函式，所以樣式也只有這一份。
+   同一組欄位在單張門票（這張自己的條件）裡出現；2026-10-20（D460）起活動層預設已移除，
+   只剩門票層與組合包，共用同一支渲染函式，所以樣式也只有這一份。
    一條規則＝標籤＋一組 .segmented 選法＋選到才展開的欄位；欄位本身一律吃
    既有的 .input／.select／.amount-field，本檔只排間距。 */
 .rule + .rule { margin-top: var(--sp-20); }
@@ -324,7 +329,7 @@
    `.tier-card__ownbtn` 的 `create-event-legacy.html` 那顆卡標按鈕被撐成整寬。
    基礎的 `.tier-card__ownbtn`（上面兩條，卡標列靠右的小按鈕）仍由 legacy 頁消費，不要動。 */
 
-/* 收合卡上的「自訂」標記：哪幾張不跟隨活動預設，不用打開卡也看得出來。
+/* 收合卡上的「自訂」標記（2026-10-20 D460 起 create-event 不再用——活動層預設已移除；legacy 頁 create-event-legacy 仍消費）：哪幾張不跟隨活動預設，不用打開卡也看得出來。
    編輯態收起來——那時同一行的按鈕已經在說同一件事。 */
 .tier-card__badge { flex: none; }
 .tier-card__badge[hidden] { display: none; }

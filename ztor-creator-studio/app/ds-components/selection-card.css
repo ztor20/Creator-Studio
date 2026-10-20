@@ -51,9 +51,14 @@
   font: inherit;
   text-align: left;
   position: relative;
-  transition: box-shadow 150ms ease, background 150ms ease, outline-color 150ms ease;
+  transition: box-shadow 150ms ease, background 150ms ease, outline-color 150ms ease,
+              transform var(--duration) var(--easing);
 }
-.selection-card:hover { box-shadow: var(--shadow-card-hover); }
+/* 2026-10-20 使用者指示（可點卡片 hover 全站統一）：上浮＋底色換按鈕 hover 階，不換邊框與陰影。
+   已選的卡保留自己的已選底色（橘 5% 薄染），只上浮、不換底。 */
+.selection-card:hover { transform: translateY(var(--clickable-card-lift)); }
+.selection-card:not(.selection-card--active):hover { background: var(--clickable-card-hover-bg); }
+@media (prefers-reduced-motion: reduce) { .selection-card:hover { transform: none; } }
 /* 已選預設＝橘色「線框」（outline，不放進陰影）＋卡面陰影維持中性、不換底色——
    建立流程選擇卡的標準（2026-06-24／06-25 使用者指定：陰影不帶橘色，橘色是線匡）。
    用 outline+offset 不撐版面、跟隨圓角。 */
@@ -122,7 +127,7 @@
 .selection-grid:has(.selection-card--icon) { gap: var(--sp-8); }   /* 卡間距 8（Figma）*/
 /* 2026-07-18：型別卡底色用 --input-surface（暗色比 section 卡亮一階＝浮出的填色選項；亮色仍白卡）——對齊 midnight「選項比 section 亮一階」。 */
 .selection-card--icon { border: 1px solid var(--border); box-shadow: none; background: var(--ztu-film);   /* ztorUI 換裝補漏 2026-09-11（稽核 C 表裁決）：舊值 var(--input-surface) */ }
-.selection-card--icon:hover { box-shadow: none; border-color: var(--muted-foreground); }
+/* 2026-10-20：hover 不再換邊框色（使用者：不要外框），改由 base 的上浮＋底色承擔。 */
 /* 2026-07-18 使用者裁示：已選型別卡除橘 outline 外，再加淡橘底（對齊 midnight 探索頁）；
    icon 維持中性、不加勾。僅 --icon 變體。 */
 .selection-card--icon.selection-card--active { box-shadow: none; background: color-mix(in srgb, var(--primary) 5%, var(--input-surface)); }

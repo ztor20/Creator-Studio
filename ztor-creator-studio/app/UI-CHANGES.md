@@ -13,6 +13,120 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-20（二百八十）· release2.4 直連網址也進不去自建活動（B 反饋）
+
+**標籤**：release2.4
+
+使用者 2026-10-20：release2.4 不能自建活動。清單早已收起非 bookyay 的示範活動（S95），但用網址直接開（例如 `event-detail.html?id=lrh-studio-live&version=release2.4`）仍進得去。
+
+**B 反饋**
+
+- `js/events-store.js`：`get()` 比照 `list()`——版本不含 S95 時，不是 release2.4 留下的示範活動（bookyay 匯入、共看派對）回查不到；沒帶 id 的示例頁預設改取第一筆留下的活動。
+- `event-detail.html`：版本開關（`js/devtools.js`）排在頁面最後才載入，頁首 `get()` 當下不知道版本；不到最後的 `DOMContentLoaded` 補查一次，不符就顯示「找不到活動」。「找不到活動」畫面抽成 `showEventNotFound()`。
+- 驗證：`?version=release2.4` 開 lrh-studio-live → 找不到活動；nick-live-taoyuan-bky（bookyay）正常；`?version=full` 兩者都正常；Console 0 錯誤。
+- 未處理：bundle-detail、order-detail、scanner、create-event 等其他頁用 `get()` 讀活動，同樣有載入順序問題，release2.4 直連非 bookyay 活動時行為未逐頁確認。
+
+## 2026-10-20（二百七十九）· D461 release2.4 門票只能新增折扣與限時折扣；bookyay 門票 release2.4 也能自加（A spec、D infra）
+
+**標籤**：release2.4
+
+D461（使用者裁決，2026-10-20，版本切割、規格與規則手冊照最終版不動）：release2.4 的所有門票（bookyay 匯入與自建一樣）可新增的購買條件只有「折扣」與「限時折扣」；bookyay 帶入並鎖定的每人總限購照樣顯示；最終版七種條件照 D460 不變；組合包不受影響。
+
+**A spec（release2.4 範圍）**
+
+- `js/purchase-conds.js`：新增 `TIX_FEAT`（`buyTime`／`cap` → S104）與 `featFor(k, c, ctx)`——條件卡與「新增條件」選單項的 `data-feat` 改由它決定：種類本身的 S82 優先，其次呼叫端傳的 `ctx.typeFeat`；`bky` 帶入的條件不掛。只有門票的呼叫端傳 `typeFeat`，組合包（create-bundle、bundle-detail）不傳，限時購買與限購照舊。
+- `create-event.html`：門票的 `pcCtx` 帶 `typeFeat: PC.TIX_FEAT`（bookyay 門票的 `bkyAddCtx` 由它衍生，一併生效）；票卡的購買條件摘要（`buySummary`）與限購摘要（`capSummary`）在 S104 不在版本內時不列創作者自設的限時購買與限購（bookyay 帶入的限購照列）。
+- `event-detail.html`：門票彈窗的 `pcCtx` 帶 `typeFeat`；唯讀條件列（`ruleCondRows`）同樣經 `featFor` 掛 S104。
+- S96（bookyay 門票自加折扣與限時折扣）release2.4 起開放：入口判斷本來就看 `featOn('S96')`，只改功能表與後備表。
+
+**D infra**
+
+- `feature-scope-map.md`：S96 改 🔵 release2.4、說明補 D461；新增 S104 ⚪（門票的限時購買與限購）；版本說明補 D461 一段；本期統計、S 模組小計與功能總數以程式逐列重數更新（🟢 92 · 🔵 51 · ⚪ 37 · ⚫ 6，合計 186）。
+- `js/devtools.js`：`FEAT_TIER` 後備表 `S96: 'release2.4'`、補 `S104: 'tbd'`。
+- `requirements-map.md`：補一行 D461 原型同步。
+
+## 2026-10-20（二百七十八）· D460 活動層預設購票規則永久移除；票務設定彈窗 release2.4 不出現（C 撤除、A spec）
+
+**標籤**：release2.4
+
+D460（使用者裁決，2026-10-20，規格 5.1.6.1 v3.03、5.1.6.2 v3.81、5.1.6.3 v98）：活動沒有任何預設購票規則，單張門票沒有「跟隨活動預設」，購買條件只存在門票自己與組合包自己。同日另一個獨立裁示：release2.4 全是 bookyay 匯入、票種票價張數已鎖定，建立活動步驟 4 的「票務設定」彈窗不出現。
+
+**C 撤除（所有版本）**
+
+- `create-event.html`：票務設定彈窗的「購票規則」區塊（`#ce-rules-sec`／`#ce-rules`／`#ce-rules-summary`／`[data-rules-toggle]`）整段移除；活動層狀態（`eventRules`、`renderRules`、`rulesSummaryText`、`syncRulesSummary`、`evRulesLocked`、`evPriceReadout`）移除；`rulesOf(t)` 改為「這張票自己的一組，沒有就是空的一組」，`rulesForEdit` 第一次加條件才長出一組。
+- 單張門票彈窗「購買條件」：區塊標題右側的「跟隨活動預設」開關（`[data-tier-follow]`）、繼承摘要（`tierRuleSummaryHTML`）、草稿的 `rulesOpen` 移除，區塊永遠是這張票自己的條件清單，沒有條件由清單自己畫「還沒有條件」空狀態。
+- 門票卡標題列的「自訂」徽章（`data-tier-custom`，標不跟隨活動預設）移除；`renderTierBadges()` 留空殼。
+- 發布前檢查與關彈窗擋存：限時間超出上架區間、限時折扣價高於一般折扣價、限購沒填，都只檢查門票自己那一份（`discTimeIssue`／`capIssue`／`timeLayerIssues`／`earliestSale` 不再有活動層分支）。
+- 粉絲預覽鏡像（第 8 步 `buildFanModel`）：資訊表的「限購」「優先購」兩列原本讀活動層條件，現在不畫；限購、折扣、限時、限分級只寫在每張門票自己的列上。
+- `js/purchase-conds.js`：`scope="event"` 分支（折扣類百分比欄、`FIELDS_EV`）、`evPriceText`、`copyForTicket`、`discTimeBad`／`syncWarn` 的 `isEvent` 參數整組退場；舊資料的 `pct` 仍由 `condPrice` 讀得懂。
+- `event-detail.html`：票務分頁「預設購票規則」卡（`#ed-evrules`）、`renderEvRules`、`edRulesDraft`／`evRulesWork`／`curRules`、變更偵測項目（`'rules'`）、儲存寫入（`patch.rules`）、`timeConflicts` 的活動層檢查、離開防護（隨變更偵測）整組移除；單張門票彈窗「購買條件」同建立流程，自建活動沒有跟隨開關與「從活動預設複製」，`tmRulesOwn` 沒有條件＝空的一組、存檔時拿掉 `t.rules`。
+- `js/events-store.js`：示範資料的活動層 `rules` 欄位全部移除；`taiwan-fest-kenting` 原本的活動層限購＋限時購買（每人 4 張、11/1–11/20）改掛在 `tier-ga` 自己的條件上，示範不變。
+- `js/i18n.js`：`ed.evrules.title／hint／none.own／edit／applied`、`ed.tm.rules.follow`、`ed.tm.rules.on`、`tb.issue.eventrules` 移除；`create-event.html` 字典 `d.rules.h／sub／edit／close`、`d.tm.follow` 移除。
+
+**A spec（版本切割，非規格變更）**
+
+- 新功能編號 S103（⚪ TBD，「票務設定彈窗（手動建立活動的票種與票務）」）：`create-event.html` 入口 `#ce-quick-open`、彈窗 `#ce-quick-modal`、第一次新增門票時「用快速設定」那張卡 `[data-tixstart="quick"]`、步驟標題下方那句說明 `.wizard__step-sub` 掛 `data-feat="S103"`；`js/devtools.js` FEAT_TIER 後備表補 `S103: 'tbd'`；`feature-scope-map.md` 登記。
+- release2.4：步驟 4 沒有票務設定按鈕，bookyay 匯入的票本來就直接列成票種卡（點開仍是單張門票彈窗），列表不空；`openTixStart()` 在 S103 不在版本內時直接手動建，不再問「怎麼建」。最終版（`?version=full`）保留票務設定彈窗（只有票種與生成的門票，沒有購票規則）。
+
+**D 文件**：`design-system.md`／`design-system.html`／`design-components.html` 的 Section 標題分量示範（「跟隨活動預設」開關改以 bookyay 帶入徽章示範）、單張門票彈窗說明、規則與試算說明、條件清單（`cond-list`）的 Purpose／Consumers／JS 區同步；`ds-components/cond-list.css`、`ticket-tier-card.css` 只改註解。`cond-list` 仍有單張門票與組合包兩種消費者，不退場。
+
+## 2026-10-20（二百七十七）· 可點卡片 hover 全站統一：上浮＋底色像按鈕一樣變，不換邊框與陰影（B 反饋）
+
+**標籤**：release2.4、最終版
+
+使用者 2026-10-20 指示：可點擊的卡片 hover 要「上浮＋背景色像按鈕一樣變」，套用到整個 CS 所有一樣的地方，不只票種卡；明說不要外框、陰影不換。承接（二百七十五）票種卡的範本，把它升成元件層標準。
+
+**B 反饋**
+
+- 新 token（`ds-components/_tokens.css`，亮暗兩個主題區塊都宣告）：`--clickable-card-lift`（`-4px`）、`--clickable-card-hover-bg`（別名 `--control-raise-hover`，按鈕 hover 階）。暗色區塊重宣告別名，才吃得到暗色的 `--control-raise-hover`。
+- 標準定義在 `ds-components/card.css` 的 `.ztor-card--clickable:hover`（原 −2px＋`--shadow-card-hover` 退場）；其他元件照同一組 token 各寫兩行，不另造數值。減少動態偏好時不位移。
+- 套用（位移＋底色）：
+  - `card.css`：`.ztor-card--clickable`；新增 `a.card[href]`／`button.card`（IP Market 的 `<a class="card ipm-card">` 原本完全沒有 hover）。
+  - `ticket-tier-card.css`：`.tier-card--clickable` 改吃 token（數值不變）。
+  - `shared.css`：`.project-card`（原 −2px＋`--shadow-card-hover`）。
+  - `selection-card.css`：`.selection-card`（原只換陰影）；`--icon` 變體 hover 換邊框色的規則移除；已選卡只上浮、保留已選底色。
+  - `radio-card.css`：`.radio-cards .segmented__btn`（原只換玻璃底）；已選卡只上浮；閘門（`--gate`）預設那張雖掛 `--active` 但無持久選取態，hover 照一般卡換底色，三張反應一致。
+  - `kpi.css`：`.kpi--tappable`（原 −2px＋陰影）。
+  - `media-vault.css`：`.vault-ovcard`（原只換邊框染橘）。
+  - `vault-share.css`：`.vshare__opt`（原只換邊框色）；已選卡只上浮。
+  - `payout-modal.css`：`.payout-bank-card`（原完全沒有 hover；選中卡只上浮，「新增」虛線卡與停用卡不套）、`.payout-bank-option`（原完全沒有 hover；已選卡只上浮）。
+  - `live-item.css`：`.live-item`（首頁 `<a class="card live-item">`，原 −2px 只動位移；補上底色）。
+- 只吃位移：`canvas-home.css` 的 `.canvas-start__card`（−2px→token；底色維持照片上的 `--on-media` 薄膜，不吃按鈕 hover 色，因為亮色主題是不透明灰、蓋在照片上會變灰板）。
+- 前提修正（D infra）：`js/reveal.js` 進場播完 1.4 秒後卸掉 `.reveal`／`.is-in`／行內 transition-delay。原本被它標到的 `.card`／`.kpi`，hover 的 transform 被 `html.reveal-on .reveal.is-in { transform: none }`（權重更高）與 `.kpi.reveal` 的 kpiRise 動畫（fill-mode both）擋住，上浮從來出不來，行內 transition-delay 還讓底色變化慢半拍；進場終態與預設態相同，卸掉不改變畫面。
+- 不套用（各有自己的 hover 語彙，理由見 `design-system.md` 5.3「可點卡片 hover」）：清單／表格列、按鈕／chip／`.check-card` 膠囊、虛線新增／投放格、縮圖畫廊（`.vault-tile`、`.work-card` 只動封面）、`.brand-card`（整張不是點擊區）、`.alert--banner[data-go]`、粉絲端鏡像 `.fep-shop`、`.canvas-stage__pick`、`.issue-panel--compact .issue-card`。
+- `design-system.md`／`design-system.html`／`design-components.html`：Q3、Q5、5.3 新增「可點卡片 hover」條目與 demo、`.ztor-card`／`.selection-card`／`.project-card`／`.tier-card--clickable` 的 hover 說明、陰影與表面階層 token 表新增兩個 token；`.ztor-card` 矩陣的 :hover 欄示範改為新效果（拿掉內嵌裸陰影值）。`STYLE-DECISIONS.md` 新增 Q136，Q5 的「借陰影浮起」由它取代。
+
+**補修（2026-10-20，使用者回報組合包收合列沒同步）**
+
+- `ds-components/bundle-editor.css`：`.bd-row`（`<button class="card bd-row">`，專案詳情「方案」與建立專案的組合包收合列）自己有一條 `.bd-row:hover { background }`，權重比全站標準的 `:where(button.card):hover` 高，蓋掉上浮，只剩換底色（且是舊的 `--ztu-glass-strong`）。該條撤除，改走標準：上浮 4px＋`--clickable-card-hover-bg`。實測 hover 為 translateY(-4px)、底色 rgba(222,223,233,.12)、邊框與靜止態相同。
+- 掃描：全站 `<button class="card …">`／`<a class="card …">` 帶的其他 class 裡，自己另有 `:hover` 規則的只剩 `.bd-row` 與 `.live-item`（後者已統一）。
+
+## 2026-10-20（二百七十六）· D459 活動詳情編輯模式：捨棄變更並排在儲存變更旁、另開分頁的按鈕也要問（A spec）
+
+**標籤**：release2.4、最終版
+
+依據 D459（使用者 2026-10-20 指示：編輯條件下「捨棄變更」應在「儲存變更」旁邊；編輯模式下點任何會跳出分頁的按鈕，都詢問捨棄或儲存變更）。
+
+**A spec-derived**
+
+- `event-detail.html`：頁首動作列的「捨棄變更」拿掉，改在三處分頁工具列（設定、票務、售票與名單）各放一顆（`data-ed-cancel`，緊鄰「儲存變更」左側，`btn--ghost`＋undo-2 圖示）；顯隱與停用（無變更時停用）改為對所有 `[data-ed-cancel]` 生效。
+- 離開防護（`leaveTo`）新增 `newTab` 模式：攔下 `target="_blank"` 的連結（掃碼器開啟、bookyay App Store 按鈕等），有未儲存變更時跳對話，選項「儲存並開啟」／「捨棄並開啟」／取消；捨棄＝`discardEdit()`（本頁編輯還原）後另開，本頁仍留著。
+- `js/i18n.js`：新增 `event-detail.leave.title.tab`、`.body.tab`、`.save.tab`、`.discard.tab`（中英）。
+- 驗證：inner-circle-taipei 進編輯後，三處工具列的「捨棄變更」（無變更時停用）緊鄰「儲存變更」、頁首已無；改一欄後點掃碼器的另開連結，跳出「儲存並開啟／捨棄並開啟」對話。
+- 未動：「檢視售票頁」鈕（`data-ed-preview`）在原型裡沒有任何點擊處理，本來就是無作用的示意鈕，因此沒有可攔的導頁。
+
+## 2026-10-20（二百七十五）· 可點的票種卡 hover 看得出來（B 反饋）
+
+**標籤**：release2.4、最終版
+
+使用者 2026-10-20 回饋：活動詳情票務的票種卡可以點擊，hover 看不出效果。
+
+**B 反饋**
+
+- `ds-components/ticket-tier-card.css`：`.tier-card--clickable:hover` 原本只換邊色與 `--shadow-float`，卡片底本來就有很重的陰影，深色主題下幾乎看不出來；不換邊框（使用者明說不要外框）、不換陰影；上浮 4px＋底色換成按鈕 hover 用的 `--control-raise-hover`（使用者指示「背景色也可以調整，像按鈕一樣」）。經過幾輪：只留 2px 位移在重陰影底下看不出，使用者回報「看不出來有上浮」，所以票種卡這裡比標準可點卡（2px）多一倍並加底色變化。曾試過加深陰影，但裸 rgba 值過不了 check_ds_sync 的 token 棘輪（第 10 項），改用既有 token。`prefers-reduced-motion` 時不位移。使用此 class 的 create-event 票種卡、event-detail 票種卡共用。
+- `design-system.md`：`.tier-card--clickable` 條目補 hover 說明。
+- 驗證：event-detail（inner-circle-taipei）票種卡 hover 時邊色與陰影不變、上浮 4px、底色換成 `--control-raise-hover`；check_ds_sync 全 PASS（第 10 項 token 棘輪恢復）。
+
 ## 2026-10-20（二百七十四）· D458 商品與組合包的「可與優惠碼疊加」改為優惠碼總開關，開啟後選碼或建立新碼（A spec-derived · C 撤除）
 
 **標籤**：release2.4、最終版（商品與組合包的優惠碼開關兩版都有；代理碼與次數用完的示範碼只在最終版）

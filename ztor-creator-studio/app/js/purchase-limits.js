@@ -11,7 +11,7 @@
    這支只負責畫與算，不另存一份字；元素帶 data-i18n，換語言時 i18n.js 直接換字、不必重畫。
 
    消費者：
-     · js/purchase-conds.js   活動的「限購」條件卡（create-event 第 4 步、event-detail 活動層與門票彈窗）——只借 hintHTML()
+     · js/purchase-conds.js   活動的「限購」條件卡（create-event 第 4 步與 event-detail 的門票彈窗；D460 起沒有活動層）——只借 hintHTML()
      · create-product.html／product-detail.html   商品的限購開關底下那一欄（fieldsHTML，unit=item）
      · create-bundle.html／bundle-detail.html     組合包的「限購」區塊（blockHTML，unit=set：自己的設定、獨立計算）
      · js/bundle-editor.js（create-event 組合包彈窗 layout:'split'）  同上（2026-10-12 改接，UI-CHANGES 一百八十八；存在 b.limits）

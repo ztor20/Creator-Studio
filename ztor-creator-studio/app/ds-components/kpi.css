@@ -183,7 +183,7 @@ html[data-embed] .kpi {
 .kpi__cur { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--muted-foreground); margin-right: var(--sp-2); letter-spacing: 0; }
 
 /* --tappable：整塊 tile 是一顆 <button>，點了開 in-place popup（F2 兩張計數 tile）。
-   互動語彙全部借既有階梯：hover ＝ .ztor-card--clickable 的 −2px 浮起＋E3 陰影；
+   互動語彙全部借既有階梯：hover ＝ .ztor-card--clickable 的上浮＋按鈕 hover 底色（2026-10-20 起，不換陰影）；
    focus ＝ 全站 focus ring；label 尾端 chevron ＝ alert 卡／data-list 列的
    「這會打開東西」記號，hover 時往右 2px。不自創新視覺。 */
 .kpi--tappable {
@@ -198,12 +198,15 @@ html[data-embed] .kpi {
   /* 也可以是 <a>（2026-09-11：淨利磚整塊連到收入管理，取代磚內的 .kpi__link 文字連結）：去底線、字色跟磚 */
   text-decoration: none;
   transition: box-shadow var(--duration) var(--easing),
-              transform  var(--duration) var(--easing);
+              transform  var(--duration) var(--easing),
+              background-color var(--duration) var(--easing);
 }
+/* 2026-10-20：hover 改走全站可點卡片標準（上浮 --clickable-card-lift＋底色 --clickable-card-hover-bg，不換陰影與邊框），見 card.css。 */
 .kpi--tappable:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-card-hover), var(--shadow-edge-top);
+  transform: translateY(var(--clickable-card-lift));
+  background: var(--clickable-card-hover-bg);
 }
+@media (prefers-reduced-motion: reduce) { .kpi--tappable:hover { transform: none; } }
 .kpi--tappable:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
