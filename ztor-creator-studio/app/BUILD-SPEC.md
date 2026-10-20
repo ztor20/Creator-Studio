@@ -1,5 +1,7 @@
 # Ztor Creator Studio · R 2.1 BUILD-SPEC
 
+> **2026-10-20 · D460 活動層預設購票規則移除的呈現（UI-CHANGES 二百七十八、ASSUMPTIONS UIA-282）**：沒有新元件，全部是刪除與收窄。單張門票彈窗的「購買條件」區塊只有一種畫法：這張票自己的條件清單（`cond-list`，空時畫「還沒有條件」空狀態），標題右側沒有開關；`js/purchase-conds.js` 只剩門票層與組合包兩種範圍。`create-event.html` 票務設定彈窗只有「票種」與「生成的門票」兩塊；S103（⚪）收起入口與彈窗時，步驟 4 靠票種卡本身呈現 bookyay 匯入的票。`event-detail.html` 票務分頁頂端不再有「預設購票規則」卡。
+>
 > **2026-10-16 · 版本閘空殼收合（UI-CHANGES 二百五十九）**：`js/devtools.js` `applyVersion()` 收完 `data-feat`／`data-feat-off` 後跑 `collapseEmptySections()`——`.bd-sec`、`.form-section` 的標題列（`*__head`／`*__title`／`*__sub`、h1–h6）以外內容全是 `.ztd-ver-hidden`（或只包著它們的外框）時，整段掛 `.ztd-ver-hidden`＋`data-ztd-empty`；`[hidden]` 不算空、由內往外連鎖；切版本先還原再重算。不含 `.card`（bento 格線會留洞，收入管理「最近交易」卡待使用者決定）；新區段不用另掛標記，動態畫的區段照舊在畫完後呼叫 `ztorDevState.regate()`。
 >
 > **2026-10-20 · D457 活動封存與拿掉已取消階段的呈現（UI-CHANGES 二百七十三、ASSUMPTIONS UIA-279）**：活動階段五個（草稿、已排程、售票中、進行中、已結束），沒有「取消活動」；封存是階段以外的另一維度（同已下架）：`events-store` 的 `archived` 旗標＋`setArchived()`，`edIsClosed(ev)`＝已結束或已封存，原型所有「已結束／已取消整頁唯讀」判斷改走這一支。`event-detail.html` 設定分頁底部是「封存活動」區塊（`#ed-archive`，已下架才出現；確認後重載整頁），已封存時頁首只留「解除封存」＋「已封存」徽章（優先於已下架與完售）＋ info-banner。`events.html` 的 `inStage()` 規則：已封存只在「已封存」篩選出現、「全部」與各階段不含；列操作由 `syncArchiveItems()` 注入「封存」「解除封存」。沒有新元件，沿用 `info-banner`、`leave-dialog`、`badge`。

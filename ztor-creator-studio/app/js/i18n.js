@@ -3892,6 +3892,10 @@
     'event-detail.discard.title': { en: 'Discard changes?',          zh: '要捨棄變更嗎？' },
     'event-detail.discard.body':  { en: 'The event goes back to what it was when you started editing.', zh: '活動會回到你開始編輯之前的內容。' },
     'event-detail.discard.ok':    { en: 'Discard',                   zh: '捨棄變更' },
+    'event-detail.leave.title.tab':   { en: 'Unsaved changes', zh: '有尚未儲存的變更' },
+    'event-detail.leave.body.tab':    { en: 'Save or discard your changes before opening another page.', zh: '開啟另一個頁面前，先儲存或捨棄這些變更。' },
+    'event-detail.leave.save.tab':    { en: 'Save & open', zh: '儲存並開啟' },
+    'event-detail.leave.discard.tab': { en: 'Discard & open', zh: '捨棄並開啟' },
     'event-detail.leave.title':   { en: 'Leave without saving?',     zh: '還沒儲存就要離開嗎？' },
     'event-detail.leave.body':    { en: 'You have changes that have not been saved.', zh: '你有還沒儲存的變更。' },
     'event-detail.leave.save':    { en: 'Save & leave',              zh: '儲存並離開' },
@@ -7020,7 +7024,6 @@
     'tb.sale.on.sub':          { en: 'Off means not on sale — fans can’t check out. On sells on the times below.', zh: '關掉＝未開賣，粉絲不能結帳；開著就照下方的時間販售。' },
     'tb.publish.blocked':      { en: 'These times fall outside the event’s listing period. Fix them before publishing:', zh: '下列時間超出活動上架區間，修正後才能發布：' },
     'tb.save.blocked':         { en: 'Sale times fall outside the event’s listing period — fix them before saving.', zh: '開賣或停售時間超出活動上架區間，修正後才能儲存。' },
-    'tb.issue.eventrules':     { en: 'Default purchase rules',         zh: '活動層購票規則' },
     'tb.issue.bundle':         { en: 'times or purchase rules',        zh: '時間或購買條件' },
     'cpp.bd.sp.fan.title':     { en: 'What fans see',                  zh: '粉絲看到的' },
     'cpp.bd.sp.fan.session':   { en: 'Date',                           zh: '場次' },
@@ -10692,8 +10695,6 @@
     'ed.tm.sec.show':     { en: 'Listing & display',      zh: '上架與顯示' },
     /* D385（2026-10-09，5.1.6.2 §4.5 F9）：bookyay 帶入活動的唯讀補齊——購買條件、活動預設購票規則、入場鎖定、刪除停用 */
     'ed.tm.sec.rules':    { en: 'Purchase rules',         zh: '購買條件' },
-    'ed.tm.rules.follow': { en: 'Follow event defaults',  zh: '跟隨活動預設' },
-    'ed.tm.rules.on':     { en: 'On',                     zh: '開' },
     'ed.rule.cap':        { en: 'Purchase limits',        zh: '限購' },
     'ed.rule.cap.person': { en: '{n} per person',         zh: '每人 {n} 張' },
     /* 墓碑 2026-10-16（D427）：ed.rule.cap.order（每次 {n} 張）、ed.rule.cap.times（限 {n} 次）退場 */
@@ -10707,12 +10708,7 @@
     'ed.rule.discTier':   { en: 'Fan tier discount',      zh: '粉絲分級折扣' },
     'ed.rule.discBoth':   { en: 'Limited-time fan tier discount', zh: '限時＋限粉絲分級折扣' },
     'ed.rule.pctOnly':    { en: '{n}% off',               zh: '折 {n}%' },
-    'ed.evrules.title':   { en: 'Default purchase rules', zh: '預設購票規則' },
-    'ed.evrules.hint':    { en: 'Tickets without their own rules follow these.', zh: '沒有自己一組條件的門票照這組生效。' },
-    'ed.evrules.none.own': { en: 'No conditions set.', zh: '目前無設定條件' },
     /* D388（2026-10-09）：自建活動發布後可改活動預設購票規則與單張門票購買條件——只影響之後的購買 */
-    'ed.evrules.edit':    { en: 'Edit',                   zh: '編輯' },
-    'ed.evrules.applied': { en: 'Default purchase rules applied — save the event to keep them', zh: '已套用預設購票規則，儲存活動後才會生效' },
     'ed.rules.after':     { en: 'Changes apply to purchases from now on. Tickets already sold stay as they are, and lowering a limit doesn\u2019t take back tickets fans already bought.',
                             zh: '修改只影響之後的購買，已售出的票不變；限購改小也不會收回粉絲已買的票。' },
     'ed.tm.early.pol':    { en: 'Arriving before early entry time', zh: '早於提前入場時間的處理' },   // D396 改稱呼

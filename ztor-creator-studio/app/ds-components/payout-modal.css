@@ -34,7 +34,13 @@
   color: var(--foreground);
   text-align: left;
   text-decoration: none;
+  transition: transform var(--duration) var(--easing), background-color var(--duration) var(--easing);
 }
+/* 2026-10-20 使用者指示（可點卡片 hover 全站統一；原本這張可點卡完全沒有 hover）：上浮＋底色換按鈕 hover 階，不動邊框與陰影。
+   選中卡的底色由 inset 陰影疊出（見下），換 background 看不出來，所以選中卡只上浮；「新增」虛線卡與停用卡（aria-disabled）不套（見 design-system.md）。 */
+.payout-bank-card:not(.payout-bank-card--add):not([aria-disabled="true"]):hover { transform: translateY(var(--clickable-card-lift)); }
+.payout-bank-card:not(.payout-bank-card--add):not(.payout-bank-card--selected):not([aria-disabled="true"]):hover { background: var(--clickable-card-hover-bg); }
+@media (prefers-reduced-motion: reduce) { .payout-bank-card:hover { transform: none; } }
 /* 選中態（2026-08-13 隨 Q66 一起翻）：底色原本吃 `--card`——基底改成薄膜之後，
    那個值剛好等於母卡，選中的那張反而變得比沒選的更「沉」。改成薄膜再疊一層，
    比未選態亮一階；2px 白內環仍是主要的選中訊號，陰影跟著分組面一起交出。 */
@@ -286,7 +292,12 @@
   color: var(--foreground);
   text-align: left;
   cursor: pointer;
+  transition: transform var(--duration) var(--easing), background-color var(--duration) var(--easing);
 }
+/* 2026-10-20：可點卡片 hover 全站標準——上浮＋底色換按鈕 hover 階（已選卡 .is-active 只上浮、保留自己的白底與 2px 描框）。 */
+.payout-bank-option:hover { transform: translateY(var(--clickable-card-lift)); }
+.payout-bank-option:not(.is-active):hover { background: var(--clickable-card-hover-bg); }
+@media (prefers-reduced-motion: reduce) { .payout-bank-option:hover { transform: none; } }
 .payout-bank-option.is-active {
   background: var(--card);
   box-shadow: inset 0 0 0 2px var(--foreground);

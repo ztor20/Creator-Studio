@@ -58,8 +58,22 @@
       groupCount.set(key, i + 1);
     });
 
+    /* 進場播完就卸掉 `.reveal`／`.is-in`／行內 transition-delay（2026-10-20，可點卡片 hover 上浮的前提）：
+       `html.reveal-on .reveal.is-in { transform: none }` 的權重高於任何元件的 `:hover`，
+       `.kpi.reveal` 的 kpiRise 動畫又以 fill-mode `both` 永遠把 transform 釘在 translateY(0)——
+       於是所有被 reveal 標到的 `.card`／`.kpi`（可點卡片的 hover 位移）一輩子上浮不了，
+       行內 transition-delay（最多 240ms）還會讓 hover 的底色變化慢半拍。
+       進場是一次性的，終態（opacity 1、無位移）與沒有 `.reveal` 的預設態相同，所以播完卸掉不改變畫面。
+       1400ms ＝ 最長的一條（kpiRise 0.7s ＋ 最晚的 delay 0.5s）再留餘裕。 */
+    function settle(el) {
+      setTimeout(function () {
+        el.classList.remove('reveal', 'is-in');
+        el.style.transitionDelay = '';
+      }, 1400);
+    }
+
     if (!('IntersectionObserver' in window)) {
-      els.forEach(function (el) { el.classList.add('is-in'); });
+      els.forEach(function (el) { el.classList.add('is-in'); settle(el); });
       return;
     }
 
@@ -68,6 +82,7 @@
         if (e.isIntersecting) {
           e.target.classList.add('is-in');
           io.unobserve(e.target);
+          settle(e.target);
         }
       });
     }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });

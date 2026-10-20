@@ -88,6 +88,14 @@
      亮色維持既有的 --accent 灰（白卡上往灰走才叫亮一階的相反——白卡本來就是最亮，
      hover 只能往下踩一點）；深色見 [data-theme="dark"] 的覆寫。 */
   --control-raise-hover: var(--accent);
+  /* 可點卡片 hover（2026-10-20 使用者指示：可點的卡片 hover ＝ 上浮＋底色像按鈕一樣變，全站同一個答案；
+     不換邊框、不換陰影）。lift 取 4px：2px 位移在卡片的陰影底下看不出來，使用者連續回報「看不出上浮」才定 4。
+     底色別名指向 --control-raise-hover（按鈕 hover 階）——所以暗色區塊也要重宣告一次，
+     否則 :root 這份別名在 body 層取到的仍是亮色解析值。消費者（完整對照看 design-system.md「可點卡片 hover」）：.ztor-card--clickable／a.card[href]／.tier-card--clickable／
+     .project-card／.selection-card／.radio-cards .segmented__btn／.kpi--tappable／.vault-ovcard／.vshare__opt／
+     .payout-bank-card／.payout-bank-option／.live-item（位移＋底色）；.canvas-start__card（只吃位移）。 */
+  --clickable-card-lift: -4px;
+  --clickable-card-hover-bg: var(--control-raise-hover);
   --ring:              var(--primary);   /* 品牌橘 focus ring；亮暗同色（2026-06-25）。a11y：白底約 1.3:1 低於 WCAG，依「無障礙僅建議」保留 */
 
   /* 分層色階（2026-09-01 新增，調參器 `docs/chart-palette-tuner.html` 定案）：
@@ -840,6 +848,8 @@
      就是從薄膜掉回一塊比周圍更暗的色塊——玻璃面愈亮愈明顯（2026-08-31 使用者在浮層裡回報）。
      改成同一族薄膜的 3 倍濃度，hover ＝ 同一片膜變厚，不換材質。 */
   --control-raise-hover: rgba(222, 223, 233, 0.12);
+  --clickable-card-lift: -4px;   /* 與亮色同值；位移不分主題，這裡重宣告只為兩個主題區塊成對 */
+  --clickable-card-hover-bg: var(--control-raise-hover);   /* 重宣告：讓別名吃到暗色的 --control-raise-hover */
   /* --ring 不覆寫 → 繼承 var(--primary)=橘，亮暗同色（2026-06-25）*/
 
   /* Charts — dark variants

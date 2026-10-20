@@ -83,12 +83,12 @@ System-level discipline. Component-level Do / Don't lives inside each component 
   card／kpi／預覽卡／選擇卡／表格容器／資訊 banner／上傳卡／彈窗 dialog 等「內容容器」統一 16px，與 form-section 一致；控制項維持 6px（形狀＝角色，呼應 Q1）。
 - **Q3 卡片預設＝1px 純邊框**
   `.card` / `.kpi` / `.ztor-card` 預設用 `border: 1px solid var(--border)`，不用陰影。
-  只有可點／浮起的強調卡（`.ztor-card--clickable` hover、`.selection-card`）hover 時才升級成純陰影（`--shadow-card-hover`）。
+  只有可點／浮起的強調卡（`.ztor-card--clickable` hover、`.selection-card`）才有 hover 回饋；2026-10-20 起回饋改為「上浮＋底色換按鈕 hover 階」，不再升級陰影（見 5.3「可點卡片 hover」）。
 - **Q4 控制項＝視覺邊線**
   `.input` / `.textarea` / `.select` 使用 `0 0 0 1px var(--border)` 陰影邊線，避免原生 border 影響控件尺寸。
   focus 改為 `--ring` 1px 邊線 + 4px 柔光環；`.ztor-metric-pill`、`.switch` 維持各自既有規則。
 - **Q5 hover 浮起規則**
-  可點卡片 hover 借 `--shadow-float` / `--shadow-card-hover` 浮起。
+  **2026-10-20 使用者更新**：整張卡是一個點擊區的卡片 hover ＝ 上浮 `--clickable-card-lift`（4px）＋底色 `--clickable-card-hover-bg`（＝按鈕 hover 階 `--control-raise-hover`），不換邊框、不換陰影；原「借 `--shadow-float` / `--shadow-card-hover` 浮起」退場。完整定義、消費者與例外見 5.3「可點卡片 hover」。
   清單列與表格列 hover 只換底色 `--accent`，不浮起。
   純預覽／展示卡（preview-card、kpi）不做 hover。
 - **Q6 表單節奏**
@@ -466,7 +466,7 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px but
 | `shadow-float` | `0 8px 24px -8px rgba(12,10,9,0.08), 0 2px 6px -2px rgba(12,10,9,0.05), 0 0 0 1px rgba(23,23,23,0.05)` | E3 floating — dropdowns, popovers, tooltips（2026-07-21：product-list 的 hover/drag 浮起改用去 rim 的 `shadow-lift-flat`，見下一列） |
 | `shadow-lift-flat` | 亮 = `shadow-float` 去掉 `0 0 0 1px` 那層（`0 8px 24px -8px rgba(12,10,9,0.08), 0 2px 6px -2px rgba(12,10,9,0.05)`）；暗 = 與 `shadow-float` 相同 | E3 變體，僅 product-list 列 hover／drag 浮起用（2026-07-21，使用者反饋「hover 不要 border」）。亮色列表卡背景（`--card` 白）與頁面背景色差已夠明顯，rim 反而被誤讀成邊框；暗色仍需要 rim 才看得出浮起（深底陰影本身不夠明顯），故暗色不變 |
 | `shadow-overlay` | `0 16px 40px -8px rgba(12,10,9,0.18), 0 0 0 1px rgba(23,23,23,0.08)` | E4 overlay — modals, dialogs, drawers |
-| `shadow-card-hover` | `var(--shadow-float)` | Clickable card hover lift = borrow E3 (interaction rises one rung) |
+| `shadow-card-hover` | `var(--shadow-float)` | 舊「可點卡片 hover 借 E3」的別名；2026-10-20 起可點卡片 hover 改走 `--clickable-card-lift` / `--clickable-card-hover-bg`，此 token 僅剩 `.brand-card` 等少數處使用 |
 | `shadow-raise` | `0 1px 2px rgba(0,0,0,0.06)` (dark `0.5`) | Low control raise — primary buttons, input drop, segmented active |
 | `shadow-raise-strong` | `0 1px 2px rgba(0,0,0,0.16)` (dark `0.6`) | Floating control — switch knob, chart marker drop |
 | `shadow-hairline` | `0 0 0.833px rgba(0,0,0,0.2)` | Sub-pixel border simulation |
@@ -714,7 +714,7 @@ E0–E4 海拔階梯（見 Pillar 1 §1.5）：一元件一階、互動借上一
 | E0 貼底 | `--shadow-hairline` | No lift — page / rails / table rows; hairline is an edge, not elevation |
 | E1 微浮 | `--shadow-raise` / `-strong` | Buttons, inputs, segmented, switch knob |
 | E2 卡片 | `--shadow-card` | Base selection-card, dropdown-item, table, composer, cookie-banner — surfaces this rung still applies to at rest. **Not** `.card` / `.kpi` / `.ztor-card` (Q3 2026-07-13), nor `.selection-card--icon` / `.radio-cards` (Q13 2026-07-16) — those default to 1px `--border`, no shadow |
-| E3 懸浮 | `--shadow-float` | Dropdowns, popovers, tooltips, dragged rows; `--shadow-card-hover` aliases here (also the hover rung for `.ztor-card--clickable` / `.selection-card`) |
+| E3 懸浮 | `--shadow-float` | Dropdowns, popovers, tooltips, dragged rows; `--shadow-card-hover` aliases here（2026-10-20 起可點卡片 hover 不再用它，改為上浮＋底色，見 5.3；此別名目前僅 `.brand-card` 與 fan 端鏡像仍引用） |
 | E4 覆蓋 | `--shadow-overlay` | Modals, dialogs, drawers (above the scrim) |
 
 Content surfaces top out at E2. Edge utilities（`--shadow-micro` / `--shadow-seam` / `--shadow-header`）屬方向性分隔手法、不在階梯內。Hero is the only deeply-shadowed surface and it does it via gradient overlay, not box-shadow.
@@ -1918,7 +1918,7 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 | State | Selector | Change |
 |---|---|---|
 | default | — | `--card` bg, 1px `--border`, `--radius` (Q3 2026-07-13: flat border, no shadow at rest) |
-| hover | `.ztor-card--clickable:hover` | `translateY(-2px)` + `--shadow-card-hover` (borrows E3) |
+| hover | `.ztor-card--clickable:hover` | `translateY(var(--clickable-card-lift))`（−4px）＋ `background: var(--clickable-card-hover-bg)`；邊框與陰影不變（2026-10-20，全站標準，見 5.3） |
 | focus | `.ztor-card--clickable:focus-visible` | `2px solid var(--ring)` outline, `2px` offset |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
@@ -2520,7 +2520,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | State | Selector | Change |
 |---|---|---|
 | default | — | `--card` bg + soft card shadow (`--shadow-card`) |
-| hover | `.selection-card:hover` | Shadow lifts to `--shadow-card-hover` |
+| hover | `.selection-card:hover` | 上浮 `--clickable-card-lift` ＋底色換 `--clickable-card-hover-bg`（已選卡只上浮、保留已選底色）；不換邊框與陰影（2026-10-20） |
 | active/selected | `.selection-card--active` | Tinted bg (`color-mix --primary 16%`) + 2px `--primary` outline + 1px shadow; `__tag` recolors to `--primary-foreground` |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
@@ -5604,7 +5604,7 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 - `.tier-add` — 網格最後一格的新增卡（沿用 `.upload-tile` 的虛線語彙），與票種卡等寬、同列等高（2026-10-12 補 `align-self: stretch`：`.tier-grid` 用 `align-items:start`，新增格不自己 stretch 會停在 min-height、比同列卡矮一截）
 - `.tier-toolbar`（`__actions`）— 網格上方靠右的批次編輯工具列
 - `.card.tier-card` — 單張票種卡，卡體外觀全部來自 `.card`（Q32 的無邊框＋陰影），本元件不重畫
-- `.tier-card--clickable`（2026-08-09 promote）— 加法修飾類，整張卡是開啟編輯的點擊區（`⋮` 選單與拖曳把手排除）。**opt-in，不寫進裸的 `.tier-card`**：本元件也給 `create-event-legacy.html` 用，那邊的卡從來不是「整卡可點」，直接改基礎 class 會讓 legacy 卡悄悄跟著變可點
+- `.tier-card--clickable`（2026-08-09 promote）— 加法修飾類，整張卡是開啟編輯的點擊區（`⋮` 選單與拖曳把手排除）。**opt-in，不寫進裸的 `.tier-card`**：本元件也給 `create-event-legacy.html` 用，那邊的卡從來不是「整卡可點」，直接改基礎 class 會讓 legacy 卡悄悄跟著變可點 hover（2026-10-20，使用者回饋看不出上浮）：上浮 `--clickable-card-lift`（4px）＋底色 `--clickable-card-hover-bg`（＝按鈕 hover 用的 `--control-raise-hover`），不換邊框與陰影；同日這組數值升為全站可點卡片標準（見 5.3「可點卡片 hover」），本卡不再自成一格；減少動態偏好時不位移。
 - `.tier-card__grip`（2026-08-09 promote）— 卡標列的拖曳把手（排序不從 bookyay 帶入，直接在 UI 上拖），`cursor:grab`／拖曳中 `grabbing`；`--editing` 態收起（少了它票種名才能與下面自動生成的門票名稱左緣對齊）
 - `.tier-card__head` ＞ `.tier-card__grip` ＋ `.tier-card__name`（卡標＝票種名稱，`--untitled` 為未命名時的降權態）＋ `.tier-card__badge`＋`.tier-card__ownbtn`（編輯態才出現的自訂規則按鈕）＋ `.tier-card__actions`（⋮ 選單）
 - `.tier-card__thumb`（卡標小縮圖，2026-08-09 promote，方形裁切、非原圖比例）— **同日第二輪由卡標那一行移出，改坐在卡標下方自成一列**（使用者指示「圖片放下一行」）：擠在卡標列時只能當個記號（28px），獨立成列後放大到 40px（圖示 14px→18px），上下各加 `--sp-2`／`--sp-10` margin，才真的看得出圖裡是什麼
@@ -5613,7 +5613,7 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 - `.tier-card--editing` — 編輯態：顯示 `__body` 與 `__foot`，隱藏 `__facts` 與 `__edit`
 - `.tier-card--group` — 批次編輯中的卡：`__foot` 收起（動作在工具列），`__actions` 保留（移除單張只剩這條路）
 - `.tier-card__body` — 三個 `.field` 直排（窄卡放不下三欄並排）；空的 `.field__hint` 不佔行
-- `.tier-card__badge` — 標題列的「自訂」徽章（吃 `.badge`），標出這張不跟隨活動預設；是 `__name` 的兄弟不是子節點——邊打字邊更新卡標會覆寫 `__name` 的文字，放裡面會被洗掉。編輯態隱藏（同一行的按鈕已經在說同一件事）
+- `.tier-card__badge` — 標題列的「自訂」徽章（吃 `.badge`），標出這張不跟隨活動預設（2026-10-20 D460：create-event 的活動層預設已移除，這枚徽章現行頁不再用，只剩 legacy 頁 `create-event-legacy.html` 消費）；是 `__name` 的兄弟不是子節點——邊打字邊更新卡標會覆寫 `__name` 的文字，放裡面會被洗掉。編輯態隱藏（同一行的按鈕已經在說同一件事）
 - `.tier-card__ownbtn` — 標題列靠右的「自訂規則」按鈕（吃 `.btn.btn--outline.btn--sm`），`aria-pressed` 表態；只在 `--editing` 出現，`--group` 時把 `__actions` 的 `margin-left:auto` 歸零，兩者才會靠右成一組
 - `.tier-card__rules` — 卡內的自訂規則欄位本體（開關已移到標題列）；坐在門票彈窗（`.payout-dialog`）裡時去掉上方留白、內距與分隔線（購買條件區自己有標題列，2026-10-12 UI-CHANGES 二百一十四）
 - `.rule`（`.rule-when` / `.rule-row` / `.rule-unit` / `.rule-sub`）— **2026-08-06 起活動層那份住在彈窗裡**（`.payout-modal`／`.payout-dialog`，入口是收入試算卡底部的「＋ 新增售票規則」；票種卡那份仍在卡內）。一條規則＝標籤＋**模式下拉**＋選到才展開的欄位（**2026-08-06 由 `.segmented` 改為 `.select`**：選項長到 4–5 個之後並排按鈕會擠成一長條，也沒有「已選的是什麼」這個單一落點可讀）；`--sub` 是折扣底下的條件，縮排一階並用左邊界標出從屬
@@ -5635,7 +5635,7 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 
 **為什麼是網格、沒有 List／Grid 切換** — 版型來源是 Beamco Artist Portal v3 的 Ticket Type Settings（Figma `0gWC6dR1yzdEu0g1LqvRvJ` node 1904-82978），那份設計有 List／Grid 兩種檢視，List 是橫向捲動。2026-08-04 使用者裁決只採用 Grid：橫向捲會把卡片推出畫面（設計稿自己的截圖就切掉了第一張），而這一步最需要一眼看到的正是「有幾種票、加起來幾張」。切換鈕因此整個不做——少一個沒人會切的控制項。
 
-**規則與試算（2026-08-04 第三輪）** — 同一支渲染函式產出三種設定（購買條件／每人限購／折扣），在活動層（`#ce-rules`，所有票種的預設）與票種卡（`.tier-card__rules`，這張自訂）各用一次。範圍走**繼承＋覆寫**：票種卡上一個開關決定要不要有自己的一份，關掉就丟回去跟隨活動預設（不保留上次填的值，免得看起來還在生效）；不跟隨的卡在標題列掛 `.tier-card__badge`。**2026-08-06（使用者指示）該開關由卡內的 switch 列改成標題列靠右的按鈕 `.tier-card__ownbtn`**——原本它夾在數量欄與規則欄位之間，讀起來像「再一個要填的欄位」；移到卡標同一行後才看得出它是這張卡的模式開關。開啟態用橘框橘字而不是實色橘：同一張卡的卡底已經有一顆實色橘的「儲存」，兩顆實色橘會分不出哪顆是這一步的主要動作。關閉時卡內只留一行 `.field__hint` 說它跟著活動預設走（不再有 `.tier-card__rules` 那條分隔線與空區塊）。舊的 `.tier-card__own` 已無消費者，CSS 留墓碑。`.rule`／`.rule-when`／`.rule-row`／`.rule-sub`（折扣的條件縮排一階表示從屬）只排間距，欄位本身一律吃既有的 `.input`／`.select`／`.amount-field`／`.segmented`／`.switch`。收入試算 `.calc-sum` 用既有 `.kv`，最後一列 `.calc-sum__out` 加上分隔線與大一階的字；結果為負時 `.calc-sum__neg` 轉紅並照實顯示負數。**試算坐右軌**（2026-08-04 使用者指示）：沿用 `wizard-split`（左＝你在填的東西、右＝填出來的結果，捲動時結果一直跟著），消費頁需要三件事——載 `wizard-split.css`、在該步驟把 `.wizard__body` 加上 `--mid`（820 容不下網格＋320 右軌，其餘步驟維持 820 不動）、執行期量 `.wizard__top` 高度寫進 `--wizard-top-h`（sticky 才不會鑽進 header 底下；高度隨語言換行而變，硬寫會漂）。**餵給試算的輸入（活動支出）留在左欄**——站上右軌一律唯讀，不放正在編輯的欄位。
+**規則與試算（2026-08-04 第三輪；2026-10-20 D460：下文的「活動層預設」與「繼承＋覆寫」「跟隨活動預設開關」整套已移除，現行只有單張門票自己的條件，歷史敘述保留供查）** — 同一支渲染函式產出三種設定（購買條件／每人限購／折扣），在活動層（`#ce-rules`，所有票種的預設）與票種卡（`.tier-card__rules`，這張自訂）各用一次。範圍走**繼承＋覆寫**：票種卡上一個開關決定要不要有自己的一份，關掉就丟回去跟隨活動預設（不保留上次填的值，免得看起來還在生效）；不跟隨的卡在標題列掛 `.tier-card__badge`。**2026-08-06（使用者指示）該開關由卡內的 switch 列改成標題列靠右的按鈕 `.tier-card__ownbtn`**——原本它夾在數量欄與規則欄位之間，讀起來像「再一個要填的欄位」；移到卡標同一行後才看得出它是這張卡的模式開關。開啟態用橘框橘字而不是實色橘：同一張卡的卡底已經有一顆實色橘的「儲存」，兩顆實色橘會分不出哪顆是這一步的主要動作。關閉時卡內只留一行 `.field__hint` 說它跟著活動預設走（不再有 `.tier-card__rules` 那條分隔線與空區塊）。舊的 `.tier-card__own` 已無消費者，CSS 留墓碑。`.rule`／`.rule-when`／`.rule-row`／`.rule-sub`（折扣的條件縮排一階表示從屬）只排間距，欄位本身一律吃既有的 `.input`／`.select`／`.amount-field`／`.segmented`／`.switch`。收入試算 `.calc-sum` 用既有 `.kv`，最後一列 `.calc-sum__out` 加上分隔線與大一階的字；結果為負時 `.calc-sum__neg` 轉紅並照實顯示負數。**試算坐右軌**（2026-08-04 使用者指示）：沿用 `wizard-split`（左＝你在填的東西、右＝填出來的結果，捲動時結果一直跟著），消費頁需要三件事——載 `wizard-split.css`、在該步驟把 `.wizard__body` 加上 `--mid`（820 容不下網格＋320 右軌，其餘步驟維持 820 不動）、執行期量 `.wizard__top` 高度寫進 `--wizard-top-h`（sticky 才不會鑽進 header 底下；高度隨語言換行而變，硬寫會漂）。**餵給試算的輸入（活動支出）留在左欄**——站上右軌一律唯讀，不放正在編輯的欄位。
 
 **踩過的坑：i18n 重繪的無限迴圈** — 規則區塊含 `datetime-local` 欄位，`partials/date-input.js` 的 MutationObserver 接到新節點會呼叫 `applyI18n()`，而 `i18n.js` 的 `apply()` 結尾一律 dispatch `i18n:applied`；消費頁若在該事件上重繪規則，就會「重繪 → 插入日期欄 → observer → dispatch → 再重繪」無窮下去（2026-08-04 實際卡死整頁）。消費端必須在重繪期間擋掉自己造成的那一輪（旗標＋`setTimeout(0)` 解除：observer callback 是 microtask，一定跑在該 macrotask 之前）。
 
@@ -5645,7 +5645,7 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 
 **Dependencies** — `.card`（卡體）、`.btn`（`--outline`／`--primary`／`--destructive`／`--icon`）、`.dropdown`（⋮ 選單）、`.field` ／`.input`／`.amount-field--readonly`（價格的 `$` 綴詞）、`.upload-tile`（新增格）、`.ztor-icon`。**不吃 `.form-grid`**——2026-08-04 卡改窄之後三欄改直排，格線 helper 不再參與。無獨立 JS 檔；卡片渲染、驗證（名稱 1–40 字且不重複／價格整數 ≥ 0／數量整數 ≥ 1／Σ 數量 ≤ 容量）與草稿的 Save／Cancel 由 `create-event.html` 的行內控制器處理。
 
-**單張門票彈窗改單欄四區塊（2026-09-22，D311）** — 彈窗殼仍是 `.payout-modal`／`.payout-dialog`（Q27），但內容整個重排：**分頁（設定／購買條件）退場**，改成四個 `.form-section--dense`——基本（門票名稱＋縮成一格的門票圖片）／價格與數量（`.calc-list--form` 算式列表：票價 ＝ 粉絲付 − 平台費 ＝ 創作者實收，數量刻意排在列表之外；2026-09-23 D316 收掉「＋ 手續費」那一列，平台費與支付費一律由創作者負擔）／入場（提前入場分鐘數＋「跟隨場次／自訂」二選一）／購買條件（區塊標題右側一顆「跟隨活動預設」開關：開＝三組規則的繼承值摘要三列，關＝`rulesHTML` 攤開可改，copy-on-write 不變）。標題列多一行副標（場次日期・場地），頁尾左側是 `.payout-dialog__foot-note`「N 個欄位待修正」。**2026-09-23（Q125）區塊標題的分量重排**：「基本」不畫標題列（彈窗標題與副標已經是脈絡，門票名稱與門票圖片兩格彼此無關、各自的標籤也說完了）、「入場」改 `.form-section__title--quiet` 輕標題（這一層沒有區塊級控制項），「價格與數量」（算式單元＋bookyay 徽章）與「購買條件」（跟隨開關）維持正常那一階；`event-detail.html` 的票種彈窗同一套判斷。同輪把彈窗內的節奏收成一把梯子（6／16／12／32／24），見 Pillar 4 的 Form section 條目。
+**單張門票彈窗改單欄四區塊（2026-09-22，D311）** — 彈窗殼仍是 `.payout-modal`／`.payout-dialog`（Q27），但內容整個重排：**分頁（設定／購買條件）退場**，改成四個 `.form-section--dense`——基本（門票名稱＋縮成一格的門票圖片）／價格與數量（`.calc-list--form` 算式列表：票價 ＝ 粉絲付 − 平台費 ＝ 創作者實收，數量刻意排在列表之外；2026-09-23 D316 收掉「＋ 手續費」那一列，平台費與支付費一律由創作者負擔）／入場（提前入場分鐘數＋「跟隨場次／自訂」二選一）／購買條件（這張票自己的條件清單；**2026-10-20 D460：區塊標題右側的「跟隨活動預設」開關與繼承值摘要三列退場**，活動層沒有任何預設購票規則，沒有條件＝「還沒有條件」）。標題列多一行副標（場次日期・場地），頁尾左側是 `.payout-dialog__foot-note`「N 個欄位待修正」。**2026-09-23（Q125）區塊標題的分量重排**：「基本」不畫標題列（彈窗標題與副標已經是脈絡，門票名稱與門票圖片兩格彼此無關、各自的標籤也說完了）、「入場」改 `.form-section__title--quiet` 輕標題（這一層沒有區塊級控制項），「價格與數量」（算式單元＋bookyay 徽章）與「購買條件」（原本靠跟隨開關換來標題；D460 後換成必須連著讀的一組條件清單）維持正常那一階；`event-detail.html` 的票種彈窗同一套判斷。同輪把彈窗內的節奏收成一把梯子（6／16／12／32／24），見 Pillar 4 的 Form section 條目。
 
 - **平台費那一列是純顯示（2026-09-23，D315 撤銷 D311 的例外平台費）** — 這一列標所屬葉節點、費率與來源（「平台預設」或「這位創作者的覆寫」兩種），creator 與 Admin 看到的是同一個唯讀列，門票彈窗沒有任何編輯入口；費率的唯一設定處是 Admin 的平台費率設定頁（5.1.0.3）。費率兩層解析（creator 覆寫 → General）住在 `js/platform-fees.js`，葉節點名稱共用費率設定頁的 `fees.dim.*`／`fees.leaf.*`，不另抄一份中文字串。🪦 D311 的例外平台費開關、費率 % 欄與 `.calc-list__extra` 一併退場。
 - **bookyay 帶入的票** — 價格與數量整段改唯讀事實列（`.calc-list` 不帶 `--form`）＋區塊標題一枚「bookyay 帶入」徽章，不再逐欄掛鎖徽章與清空鈕（D308 同一口徑）。
@@ -5888,7 +5888,7 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 - `.quick-result__row` — grid 兩行（第一行：名稱跨滿整列；第二行：金額／數量／標籤／動作）
 - `.quick-result__name` — 名稱，超長截字尾
 - `.quick-result__num` — 出現兩次（金額、數量），等寬數字
-- `.quick-result__tag` — 「跟隨活動預設」或「已自訂」說明；`.quick-result__tag--own` 加深顏色標出已自訂（不會跟著活動預設走的那幾張要看得出來）
+- `.quick-result__tag` — 「跟著預設」（跟隨票種預設值）或「已自訂」說明（與已移除的活動層預設購票規則無關）；`.quick-result__tag--own` 加深顏色標出已自訂（不會跟著活動預設走的那幾張要看得出來）
 - `.quick-result__end`（選配）— 重設鈕
 
 **兩行一列（2026-08-10 改版）** — 原本是一列五欄（`1fr 88 64 148 108`，扣掉間距至少要 470px）。票務設定彈窗改成左右分欄之後，這份清單住進 360px 的側欄，五欄橫排會把每一欄都壓成一兩個字。改成名稱獨佔第一行、金額·數量·標籤·動作排第二行；欄位靠 grid 自動流排，**markup 一行都不用改**（名稱 `grid-column: 1 / -1` 跨滿整列，後面四個依序落位）。數量同輪由裸數字改成帶單位（「400 張」）——橫排時靠欄位位置就讀得出那是張數，直排之後位置線索消失，數字得自己說明自己。原本 ≤720px 的斷點一併撤除：兩行一列本身就是窄版面的排法，不必再換一次。
@@ -6427,6 +6427,17 @@ Global interaction defaults — keyframes live here (state-driven), not in Pilla
 - **Switch** (`.switch / --on`): 150ms knob slide; track `--muted` ↔ `--primary`.
 - **Accordion**: chevron-rotate, height transition on expand/collapse.
 - **Motion**: durations 150–240ms, ease-out; all entrance animations gated behind `@media (prefers-reduced-motion: reduce)` (shown immediately when reduced).
+- **可點卡片 hover**（2026-10-20，使用者指示，全站同一個答案；取代 Q5 原「借 `--shadow-float` 浮起」）：
+  - 適用：卡片**整張臉是一個點擊區**（導頁、開編輯、開彈窗、選一個選項）。
+  - 效果：`transform: translateY(var(--clickable-card-lift))`（−4px，2px 在卡片陰影底下看不出來）＋ `background: var(--clickable-card-hover-bg)`（別名 `--control-raise-hover`，按鈕 hover 階：深色 `rgba(222,223,233,.12)`／亮色 `var(--accent)`）。**不換邊框、不換陰影。**
+  - `prefers-reduced-motion: reduce`：不位移（底色照換）。
+  - 已選的卡（`--active`／`.is-active`／`--selected`）只上浮、保留自己的已選底色（`:not(...)` 排除，不另換底）。
+  - token：`--clickable-card-lift`（`-4px`）、`--clickable-card-hover-bg`，定義在 `_tokens.css` 亮暗兩個主題區塊（別名要在暗色區塊重宣告才吃得到暗色的 `--control-raise-hover`）。
+  - 消費者（位移＋底色）：`.ztor-card--clickable`（`card.css`）、`a.card[href]`／`button.card`（`card.css`，IP Market 的 `<a class="card ipm-card">`）、`.tier-card--clickable`（`ticket-tier-card.css`）、`.project-card`（`shared.css`）、`.selection-card`（`selection-card.css`）、`.radio-cards .segmented__btn`（`radio-card.css`）、`.kpi--tappable`（`kpi.css`）、`.vault-ovcard`（`media-vault.css`）、`.vshare__opt`（`vault-share.css`）、`.payout-bank-card`／`.payout-bank-option`（`payout-modal.css`）、`.live-item`（`live-item.css`，首頁的 `<a class="card live-item">`）。
+  - 只吃位移：`.canvas-start__card`（`canvas-home.css`，底色是照片上的 `--on-media` 薄膜）。
+  - 前提：`js/reveal.js` 會在卡片進場後 1.4 秒卸掉 `.reveal`／`.is-in`／行內 transition-delay。被標到的 `.card`／`.kpi` 原本被 `html.reveal-on .reveal.is-in { transform: none }`（權重更高）與 `.kpi.reveal` 的 kpiRise 動畫（fill-mode both 釘住 transform）擋住，hover 位移出不來；新增會被 reveal 標到的可點卡片不用另外處理。
+  - 不套用（各有自己的 hover 語彙）：清單／表格列（`.product-list__row`〔Q34〕、`.data-list__row--go`、`.alert--card[data-go]`、`.vault-row`、`.pickup-select__row`）；按鈕、chip、`.check-card` 膠囊；虛線的新增／投放格（`.upload-tile`、`.cb-add-tile`、`.payout-bank-card--add`）；縮圖畫廊（`.vault-tile`；`.work-card` 只動封面）；卡內另有按鈕、整張非點擊區的卡（`.brand-card`，hover 陰影升級為存量）；`.alert--banner[data-go]`（實色 banner）；粉絲端鏡像 `.fep-shop`（`.pdp-rec-card` 等）；照片上的 `.canvas-stage__pick`、`.issue-panel--compact .issue-card`（列＋玻璃 hover）。
+  - 新增「整張可點的卡」時：直接寫這兩行（用 token，不寫數值），並登錄到本條消費者清單。
 - **Lifecycle states** (see the Lifecycle pattern card in §5.1):
   - **404** — same chrome, single "Page not found" headline, link back to Dashboard.
   - **Empty stub** (`.empty-stub`) — routes not yet built (orange mark + display title + spec refs).
@@ -6473,6 +6484,7 @@ All use the `wizard-focus` template (no main topbar), a centered `stepper`, a st
 - **凹槽與襯底往暗**：`--muted` `#161718`。消費者：`.segmented` 的軌道（軌道凹、滑塊才浮）、媒體井（圖片未載入的佔位格）、進度條底。**這一類不在翻向範圍**。
 
 - **控件（浮在表面上的按鈕）往亮**：`--control-raise`（深色 `rgba(222,223,233,.04)`／亮色 `var(--card)`）。消費者：`.btn--outline`。**不要用絕對表面色**——寫死 `--card` 時，同一顆按鈕在畫布上比底亮、在卡裡同色、在 L2 分組面裡反而更暗（Q67）。
+- **可點卡片 hover（上浮＋換底）**：`--clickable-card-lift`（`-4px`）＋ `--clickable-card-hover-bg`（別名 `--control-raise-hover`，所以也是「往亮」的控件階）。亮暗兩個主題區塊都宣告。消費者與例外見 5.3「可點卡片 hover」。
 
 判斷句：這塊東西是「疊在容器上的一層」還是「容器上挖出來的一個凹槽」？前者往亮，後者往暗。控件一律往亮。
 
@@ -7210,7 +7222,7 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 ### 4.227 Condition list（條件清單）
 
-**Purpose** — 「好幾種不同的條件，各加一次」的清單：一開始是空的，從「＋ 新增條件」選單挑一種加入，每張條件卡可移除，加過的種類不再出現在選單裡。首見於建立活動的購票規則（D366／D367，2026-10-07）：活動層預設（票務設定彈窗）與單張門票彈窗的「購買條件」共用同一份畫法。2026-10-09（D388）起活動詳情也用它：自建活動發布後改活動預設購票規則與單張門票購買條件，畫法從 create-event 頁內抽成共用 JS 元件 `js/purchase-conds.js`，兩頁同一套。
+**Purpose** — 「好幾種不同的條件，各加一次」的清單：一開始是空的，從「＋ 新增條件」選單挑一種加入，每張條件卡可移除，加過的種類不再出現在選單裡。首見於建立活動的購票規則（D366／D367，2026-10-07）：單張門票彈窗的「購買條件」用這份畫法。2026-10-09（D388）起活動詳情也用它：自建活動發布後改單張門票購買條件，畫法從 create-event 頁內抽成共用 JS 元件 `js/purchase-conds.js`，兩頁同一套。**2026-10-20（D460）：活動層預設購票規則永久移除**（票務設定彈窗的「購票規則」區塊、event-detail 的「預設購票規則」卡），本元件只剩單張門票與組合包兩種消費者，沒有「活動層／門票層」兩種範圍。
 
 **`_layer`** · molecule ｜ **source tier** · Project ｜ **surface 層** · 卡框是 `.control-group` 的 1px 內描邊（`--layer-line`）、不填色，坐在 L1／L2 卡上都成立（建立活動的兩個消費位置分別是 `form-section--outlined` 與 `form-section--card`）。
 
@@ -7230,9 +7242,9 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **Token usage** — `--sp-8`／`--sp-12`／`--sp-16`、`--fs-14`、`--fw-medium`、`--control-h-xs`、`--foreground`／`--muted-foreground`／`--destructive`（＋ Control group 的 `--radius-xl`、`--layer-line`）。
 
-**Consumers** — `create-event.html`（`#ce-rules` 活動層預設、單張門票彈窗 `[data-rules-for]`）、`event-detail.html`（D388：票務分頁「預設購票規則」卡的編輯態 `#ed-evrules-editor`、單張門票彈窗購買條件區 `#ed-tm-rules-editor`，僅自建活動）。
+**Consumers** — `create-event.html`（單張門票彈窗 `[data-rules-for]`）、`event-detail.html`（單張門票彈窗購買條件區 `#ed-tm-rules-editor`，僅自建活動）。2026-10-20（D460）起 `#ce-rules` 與 `#ed-evrules-editor`（活動層預設）已移除。
 
-**CSS** — [`cond-list.css`](./ds-components/cond-list.css) ｜ **JS** — `js/purchase-conds.js`（2026-10-09 自 create-event 頁內抽出；`window.ztorPurchaseConds`：`html(rules, scope, locked, ctx)` 畫整份清單、`mount(host, opts)` 畫進容器並自己接新增／移除／輸入（活動詳情用）、`copyForTicket()` 活動層一組複製成門票自己的一組、`condPrice`／`pctText`／`evPriceText` 價格讀數、`STRINGS` 條件字樣（create-event 併回自己的字典）、`periodErrs(rules, et, T)`／`syncPeriod()` 限時條件的期間檢查（D389：超出活動上架區間、限時購買結束晚於活動停售時寫進卡上 `[data-rule-tl-err]`；create-event 與 event-detail 共用），`mount()` 傳 `times` 時回傳 `check()` 供儲存擋下。D428（2026-10-16）：`capErrKey(conds)`／`capBad(conds)` 判斷限購開了卻沒填每人總限購數量（bookyay 帶入 `bky` 不算），紅字 `.field__error[data-cond-warn="cap"]` 畫在該欄下、與限時折扣價那一行同走 `syncWarn()`（錯誤時輸入框 `aria-invalid`），所以 `check()` 也一併算進錯誤數。create-event 的 `condsHTML()` 改為呼叫 `html()`，事件與 copy-on-write 仍在頁內）
+**CSS** — [`cond-list.css`](./ds-components/cond-list.css) ｜ **JS** — `js/purchase-conds.js`（2026-10-09 自 create-event 頁內抽出；`window.ztorPurchaseConds`：`html(rules, scope, locked, ctx)` 畫整份清單、`mount(host, opts)` 畫進容器並自己接新增／移除／輸入（活動詳情用）、`condPrice`／`pctText` 價格讀數（2026-10-20 D460：`copyForTicket()`、`evPriceText`、`FIELDS_EV` 與 `scope="event"` 的百分比欄隨活動層預設退場）、`STRINGS` 條件字樣（create-event 併回自己的字典）、`periodErrs(rules, et, T)`／`syncPeriod()` 限時條件的期間檢查（D389：超出活動上架區間、限時購買結束晚於活動停售時寫進卡上 `[data-rule-tl-err]`；create-event 與 event-detail 共用），`mount()` 傳 `times` 時回傳 `check()` 供儲存擋下。D428（2026-10-16）：`capErrKey(conds)`／`capBad(conds)` 判斷限購開了卻沒填每人總限購數量（bookyay 帶入 `bky` 不算），紅字 `.field__error[data-cond-warn="cap"]` 畫在該欄下、與限時折扣價那一行同走 `syncWarn()`（錯誤時輸入框 `aria-invalid`），所以 `check()` 也一併算進錯誤數。create-event 的 `condsHTML()` 改為呼叫 `html()`，事件與 copy-on-write 仍在頁內）
 
 ### 4.228 Venue map（活動地點地圖）
 
