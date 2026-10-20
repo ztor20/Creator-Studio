@@ -674,7 +674,7 @@
     /* ── bookyay 演唱會：六個狀態的全選項示範（2026-10-13 D410 決定四，原型示範資料、不是產品規則）──────────────
        release2.4 只顯示 bookyay 匯入的活動與共看派對；每個狀態各一場「所有選項都填入或開啟」的 bookyay 演唱會：
          草稿＝khh-countdown-draft、已排程＝taipei-nye（另有順豐寄送 hsinchu-vinyl-sf）、售票中＝nick-live-taichung-bky
-         ＋nick-acoustic-tainan-bky（已下架）、進行中＝nick-live-taoyuan-bky、已結束＝nick-live-kaohsiung-bky、已取消＝nick-summer-pingtung-bky。
+         ＋nick-acoustic-tainan-bky（已下架）、進行中＝nick-live-taoyuan-bky、已結束＝nick-live-kaohsiung-bky（另有已結束且已封存 nick-summer-pingtung-bky，D457）。
        金額口徑同 taipei-nye（D330）：hkd＝bookyay 港幣原價（鎖定）、price＝換算成創作者幣別 TWD 的基準價（HK$ ÷ 7.8 × 31.5，四捨五入）。
        門票：二人套票帶入後就是一張普通門票（D429，2026-10-16；票價照 bookyay 現價、張數照時段上限、本門票限購落在這張票，rulesFix；
        墓碑：原本拆成隱藏 1 人票＋自動組合包，D328／D329），另一張單人票帶自己的 bookyay 限購（D366、D367，rulesFix）。D417（2026-10-15）起折扣、早鳥、限購次數、活動限購都不帶入。⚠ 一個時段兩種票與 D328「只帶第一種門票」不一致，
@@ -952,8 +952,8 @@
       listing: { from: '2026-06-25 12:00', to: '' }
     },
     {
-      /* 已取消（D375 決定二）：bookyay 端取消、同步到 ztor——活動轉已取消、下架、票券撤銷（撤銷結果由 bookyay 同步，
-         transactions() 把這場的已付款訂單一律標成已撤銷、執行者 bookyay）；含其門票的上架中組合包隨活動下架（listed:false）。 */
+      /* 已封存示範（D457）：原為 D375 決定二的「bookyay 取消同步成已取消」示範；bookyay 沒有取消活動，該規則整段退場，
+         這一場改成已結束、已下架、已封存（封存後唯讀、離開主清單，只在「已封存」篩選看得到）。 */
       id: 'nick-summer-pingtung-bky',
       bkyId: 'bky-20',   /* D414：對應 js/sidebar.js BOOKYAY_EVENTS 的 bky-20（Admin 創作者活動管理，已發布） */
       type: 'concert',
@@ -964,10 +964,9 @@
       series: null,
       name: 'NICKTHEREAL Summer Live — Pingtung',
       highlight: 'Beachside, one night only',
-      desc: '墾丁海邊的夏日場。因颱風於 bookyay 取消。',
+      desc: '墾丁海邊的夏日場，日落開唱。',
       descBlocks: [
-        { type: 'text', html: '<p>墾丁海邊的夏日場，日落開唱。</p>' },
-        { type: 'text', html: '<p><strong>取消說明</strong></p><p>因颱風警報，主辦單位已於 8/20 取消本場演出，票券由 bookyay 統一撤銷。</p>' }
+        { type: 'text', html: '<p>墾丁海邊的夏日場，日落開唱。</p>' }
       ],
       lineup: ['NICKTHEREAL 周湯豪', 'Kai Band 凱樂團'],   // D410 示範：表演陣容補第二組
       venue: '墾丁大灣沙灘',
@@ -983,11 +982,11 @@
       end: '00:30',
       doors: '17:30',
       early: 'warn',
-      terms: { tnc: { on: true, text: '活動如因天候取消，票券由 bookyay 統一撤銷，退款依付款方式原路退回。' } },
+      terms: { tnc: { on: true, text: '戶外場地如遇天候因素，將依主辦單位公告調整。' } },
       tiers: [
         /* D410 示範（2026-10-13 驗收補缺）：兩張門票都補門票圖片；單人票補折扣與早鳥（bookyay 帶入、鎖定），
            單人票 sold 421 含經自建組合包賣出的 12 張（D408）。 */
-        /* 二人套票（D429 示範資料）：一張普通門票 HK$400 → NT$1,615、張數照時段上限 200、取消前賣出 30 張（＝原自動組合包 30 組）。 */
+        /* 二人套票（D429 示範資料）：一張普通門票 HK$400 → NT$1,615、張數照時段上限 200、賣出 30 張（＝原自動組合包 30 組）。 */
         { id: 'tier-pt-duo', name: 'Duo pass', price: 1615, hkd: 400, qty: 200, sold: 30, img: 'images/projects/nick-i.jpg',
           rules: { conds: { cap: { person: '2', bky: true } } }, rulesFix: true },
         { id: 'tier-pt-ga', name: 'General admission', price: 1615, hkd: 400, qty: 450, sold: 240, override: { USD: 50 }, img: 'images/projects/nick-lwh.jpg',
@@ -1004,21 +1003,21 @@
       rules: { conds: {} },   // D417 決定一（2026-10-15）：bookyay 活動限購不帶入，活動層沒有條件
       bundles: [
         /* 墓碑 2026-10-16（D429）：自動建立的套票組合包 bd-pt-duo（取消前賣出 30 組）刪除，銷量改記在門票 tier-pt-duo。 */
-        /* 創作者自建（D410 示範）：單人票＋電子商店商品（綁取貨場次），隨活動取消一併下架、訂單由 bookyay 撤銷同步 */
+        /* 創作者自建（D410 示範）：單人票＋電子商店商品（綁取貨場次），隨活動下架一併下架（D457：原「取消」連動改為下架） */
         { id: 'bd-pt-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-pt-ga'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
           disc: 10, price: 1994, sold: 12, cap: 100, listed: false, override: { USD: 62 } }
       ],
       sold: 451,   // D429：原 481（套票 1 人票 60 張 → 套票門票 30 張）
-      revenue: 0,        // bookyay 取消後所有票券（含組合包裡的）都已撤銷，沒有留下的收入；撤銷前的成交在交易明細逐筆看得到
-      status: 'cancelled',
+      revenue: 777798,   // D457：bookyay 沒有取消活動，原「取消後票券全撤銷、收入 0」退場；示範改為已結束＋已下架＋已封存，收入依四種票價與張數重算
+      status: 'ended',
       unlisted: true,
-      bkyCancel: { at: '2026-08-20 10:00' },
+      archived: true,   // D457 示範：已下架後封存（已結束的活動也要先下架才能封存）
       images: { keyvisual: 'images/projects/nick-smdbbs.jpg', banner: '', gallery: ['images/projects/nick-asn.jpg', 'images/projects/nick-wln.jpg'] },   // D410 示範：圖庫補兩張
       video: 'images/events/teaser-demo.mp4',   // D410 示範：影片預告
       publish: { pickup: 'eticket', shown: true },
       sale: { from: '2026-06-15 12:00', to: '2026-08-28 23:59' },
-      listing: { from: '2026-06-10 12:00', to: '' }   // D410 示範：上架時間（bookyay 取消後已下架，見 unlisted）
+      listing: { from: '2026-06-10 12:00', to: '' }   // D410 示範：上架時間（D457：已下架＋已封存，見 unlisted／archived）
     },
     {
       id: 'realive-r2-watchparty',
@@ -1135,7 +1134,7 @@
 
     /* ══ 六個狀態 × 五個類型的完整矩陣（2026-08-17 使用者指示）══════════════════
        在此之前，可挑的組合有一半是空的：線上活動（virtual）全站一筆都沒有、已取消整個
-       狀態沒有任何活動、進行中只有一場見面會。要看「售票中的多站巡演長什麼樣」可以，
+       狀態沒有任何活動（D457：已取消階段退場，改以「已封存」旗標呈現）、進行中只有一場見面會。要看「售票中的多站巡演長什麼樣」可以，
        要看「已取消的共看派對長什麼樣」就沒有東西可看——而那正是原型要拿來評估的地方。
 
        矩陣的兩條軸：
@@ -1714,7 +1713,7 @@
       category: 'concert',
       series: null,
       name: 'Hualien Summer Love Festival — NICKTHEREAL set',
-      desc: 'Lakeside stage at Liyu Lake. Cancelled on a typhoon warning.',
+      desc: 'Lakeside stage at Liyu Lake. Taken down after the show and archived.',
       lineup: ['NICKTHEREAL 周湯豪'],
       venue: 'Liyu Lake',
       city: 'Hualien, Taiwan',
@@ -1730,7 +1729,9 @@
       ],
       sold: 892,
       revenue: 892000,
-      status: 'cancelled',
+      status: 'ended',
+      unlisted: true,
+      archived: true,   // D457 示範：已下架後封存
       images: { keyvisual: 'images/projects/nick-flames.jpg', banner: '', gallery: [] },
       video: false
     },
@@ -1741,7 +1742,7 @@
       category: 'concert',
       series: { id: 'realive-china-2027', name: 'REALIVE World Tour — China leg (2027)', index: 1, total: 2 },
       name: 'REALIVE World Tour — China leg (2027)',
-      desc: 'Two added China dates. Cancelled when the venue partner withdrew.',
+      desc: 'Two added China dates. Taken down and archived while the venue is reconsidered.',
       lineup: ['NICKTHEREAL 周湯豪'],
       venue: 'Strait Culture and Art Centre',
       city: 'Fuzhou, China',
@@ -1756,7 +1757,9 @@
       ],
       sold: 421,
       revenue: 463100,
-      status: 'cancelled',
+      status: 'on-sale',
+      unlisted: true,
+      archived: true,   // D457 示範：已下架後封存
       images: { keyvisual: 'images/projects/nick-realive.jpg', banner: '', gallery: [] },
       video: false
     },
@@ -1767,7 +1770,7 @@
       category: 'concert',
       series: { id: 'realive-china-2027', name: 'REALIVE World Tour — China leg (2027)', index: 2, total: 2 },
       name: 'REALIVE World Tour — China leg (2027)',
-      desc: 'Two added China dates. Cancelled when the venue partner withdrew.',
+      desc: 'Two added China dates. Taken down and archived while the venue is reconsidered.',
       lineup: ['NICKTHEREAL 周湯豪'],
       venue: 'CH8 Livehouse',
       city: 'Hangzhou, China',
@@ -1782,7 +1785,9 @@
       ],
       sold: 318,
       revenue: 349800,
-      status: 'cancelled',
+      status: 'on-sale',
+      unlisted: true,
+      archived: true,   // D457 示範：已下架後封存
       images: { keyvisual: 'images/projects/nick-realive.jpg', banner: '', gallery: [] },
       video: false
     },
@@ -1793,7 +1798,7 @@
       category: 'fans-meet',
       series: null,
       name: 'LOVE RAGE HOPE — Tokyo pop-up meet',
-      desc: 'A pop-up meet at Shibuya Loft. Cancelled when the visa schedule slipped.',
+      desc: 'A pop-up meet at Shibuya Loft. Taken down and archived after the date passed.',
       lineup: ['NICKTHEREAL 周湯豪'],
       venue: 'Shibuya Loft',
       city: 'Tokyo, Japan',
@@ -1809,7 +1814,9 @@
       ],
       sold: 74,
       revenue: 66600,
-      status: 'cancelled',
+      status: 'ended',
+      unlisted: true,
+      archived: true,   // D457 示範：已下架後封存
       images: { keyvisual: 'images/projects/nick-lrh.jpg', banner: '', gallery: [] },
       video: false
     },
@@ -1820,7 +1827,7 @@
       category: 'online',
       series: null,
       name: 'LOVE RAGE HOPE — Backers briefing, online',
-      desc: 'A progress briefing for backers. Cancelled and folded into the next project update.',
+      desc: 'A progress briefing for backers. Taken down once folded into the next project update.',
       lineup: ['NICKTHEREAL 周湯豪'],
       venue: 'Online',
       city: '',
@@ -1836,7 +1843,8 @@
       ],
       sold: 233,
       revenue: 46600,
-      status: 'cancelled',
+      status: 'ended',
+      unlisted: true,
       images: { keyvisual: 'images/projects/nick-lrh.jpg', banner: '', gallery: [] },
       video: false
     },
@@ -1847,7 +1855,7 @@
       category: 'online',
       series: null,
       name: 'REALIVE (R2) rehearsal footage — Watch party',
-      desc: 'Watching the R2 rehearsal footage together. Cancelled with the tour date.',
+      desc: 'Watching the R2 rehearsal footage together. Taken down with the tour date.',
       lineup: [],
       venue: 'Online',
       city: '',
@@ -1865,7 +1873,8 @@
       ],
       sold: 96,
       revenue: 11520,
-      status: 'cancelled',
+      status: 'ended',
+      unlisted: true,
       images: { keyvisual: 'images/projects/nick-r2-special.jpg', banner: '', gallery: [] },
       video: false
     },
@@ -2271,7 +2280,7 @@
      交易明細的每一列＝一筆訂單，要能打開電子商店的訂單詳情（直接購票的訂單共用同一頁）。
      訂單編號＝'ZT-' ＋ 活動在 EVENTS 的序號（100 起）＋ 4 碼流水：門票訂單 0000 起、組合包訂單 5000 起、
      作廢示範 9000 起；orders-store 的 get() 用 findOrder() 反查回「哪一場活動的哪一筆交易」。
-     下單日期在開賣起日到活動前一天（不晚於今天；bookyay 取消的活動不晚於取消前一天）之間決定性散開，
+     下單日期在開賣起日到活動前一天（不晚於今天）之間決定性散開，
      付款時間＝下單日期＋ atMin 的時刻；金流商一律 Stripe（D411 範例），付款編號為示意字串（原型、非真實）。 */
   function evIndex(ev) {
     for (var i = 0; i < EVENTS.length; i++) if (EVENTS[i].id === (ev && ev.id)) return i;
@@ -2285,7 +2294,6 @@
     var from = String((ev.sale && ev.sale.from) || '').slice(0, 10) || addDays(ev.date || todayStr(), -45);
     var to = addDays(ev.date || todayStr(), -1);
     if (to >= todayStr()) to = addDays(todayStr(), -1);   // 下單日期最晚到昨天，付款時間不會落在「今天稍後」
-    if (ev.bkyCancel && ev.bkyCancel.at) { var c = addDays(String(ev.bkyCancel.at).slice(0, 10), -1); if (c < to) to = c; }
     if (to < from) to = from;
     var span = Math.round((new Date(to + 'T00:00:00') - new Date(from + 'T00:00:00')) / 86400000);
     return { from: from, span: Math.max(0, span) };
@@ -2430,13 +2438,30 @@
   function applyUnlist(ev) {
     var u = unlistMap();
     if (ev && Object.prototype.hasOwnProperty.call(u, ev.id)) ev.unlisted = !!u[ev.id];
+    return applyArchive(ev);
+  }
+
+  /* ── 已封存（2026-10-20 · D457，比照商品封存 D284／D298）──────────────────────
+     封存＝階段以外的另一個維度（同已下架）：只有已下架的活動能封存（已結束也要先下架），封存後整頁唯讀、離開主清單，
+     只有「解除封存」一個動作，解除後回到已下架、不自動上架。活動的 `archived: true`（mock 可直接帶）；
+     詳情頁與清單列的封存／解除封存寫進 localStorage `ztor.event-archived`（同下架的做法，存 true／false 兩值）。
+     封存必然下架（archived 時 unlisted 一律為 true）；封存時一併取消尚未生效的上架排程（listing.from 清空）。 */
+  var ARCHIVE_KEY = 'ztor.event-archived';
+  function archiveMap() {
+    try { return JSON.parse(localStorage.getItem(ARCHIVE_KEY) || '{}') || {}; }
+    catch (e) { return {}; }
+  }
+  function applyArchive(ev) {
+    var a = archiveMap();
+    if (ev && Object.prototype.hasOwnProperty.call(a, ev.id)) ev.archived = !!a[ev.id];
+    if (ev) { ev.archived = !!ev.archived; if (ev.archived) ev.unlisted = true; }
     return ev;
   }
 
   /* 完售（D375 決定七）：所有門票與票務商品都賣完。票務商品吃門票的庫存（賣一組扣它含的票），門票張數合計（含隱藏）賣光
-     ＝票務商品也買不到，所以以門票合計判定（同 event-detail 系列卡既有口徑）。完售不是階段（D361 決定七），草稿與已取消不掛。 */
+     ＝票務商品也買不到，所以以門票合計判定（同 event-detail 系列卡既有口徑）。完售不是階段（D361 決定七），草稿不掛。 */
   function isSoldOut(ev) {
-    if (!ev || ['draft', 'cancelled'].indexOf(ev.status) >= 0) return false;
+    if (!ev || ['draft'].indexOf(ev.status) >= 0) return false;
     var q = (ev.tiers || []).reduce(function (a, t) { return a + (Number(t.qty) || 0); }, 0);
     if (q > 0 && (Number(ev.sold) || 0) >= q) return true;
     /* D447 決定六〔推導〕：營運把庫存設為 0 也算賣完——每張門票庫存 0，且每個票務商品可售套數 0 或沒有票務商品 */
@@ -2870,18 +2895,18 @@
       var ev = window.ztorEvents.get(id);
       return ev ? (ev.bundles || []).slice() : [];
     },
-    /* 取消活動的連動下架（2026-10-05 · D352 稽核 B3／B16，主規格 §7.14「活動取消或下架時連動組合包」，D292）：
+    /* 活動下架的連動下架（2026-10-05 · D352 稽核 B3／B16，主規格 §7.14「活動下架時連動組合包」，D292；D457：取消活動退場，只剩下架）：
        回傳會跟著一起下架的「上架中」組合包（給確認彈窗列名）；已下架、已封存、已刪除的不受影響、不列。
-       活動詳情頁頁首與活動清單列操作的「取消活動」共用這一支，確認內容才會說同一件事。 */
-    cancelBundlesOf: function (id) {
+       活動詳情頁設定分頁與活動清單列操作的「下架」共用這一支，確認內容才會說同一件事。 */
+    unlistBundlesOf: function (id) {
       var ev = window.ztorEvents.get(id);
       return ev ? (ev.bundles || []).filter(function (b) { return b.listed !== false && !b.archived && !b.deleted; }) : [];
     },
     /* D448（2026-10-19）：活動重新上架前，問要不要同時上架的組合包——含本活動票券、目前已下架的（已封存、已刪除的不列）。
-       已結束、已取消的活動，組合包本來就不能重新上架（D437 決定一），回空陣列、不問。活動詳情「重新上架」用這一支。 */
+       已結束的活動，組合包本來就不能重新上架（D437 決定一；D457：已封存的活動整頁唯讀、不會走到這裡），回空陣列、不問。活動詳情「重新上架」用這一支。 */
     relistBundlesOf: function (id) {
       var ev = window.ztorEvents.get(id);
-      if (!ev || ev.status === 'ended' || ev.status === 'cancelled') return [];
+      if (!ev || ev.status === 'ended' || ev.archived) return [];
       return (ev.bundles || []).filter(function (b) { return b.listed === false && !b.archived && !b.deleted; });
     },
     removeDraft: function (id) {
@@ -2986,6 +3011,14 @@
       u[id] = !!on;
       try { localStorage.setItem(UNLIST_KEY, JSON.stringify(u)); } catch (e) {}
     },
+    /* 封存／解除封存（D457）：只有已下架能封存（呼叫端把關）；封存時清掉尚未生效的上架排程、解除後回到已下架（unlisted 維持 true、不自動上架） */
+    setArchived: function (id, on) {
+      if (!id) return;
+      var a = archiveMap();
+      a[id] = !!on;
+      try { localStorage.setItem(ARCHIVE_KEY, JSON.stringify(a)); } catch (e) {}
+      if (on) { var u = unlistMap(); u[id] = true; try { localStorage.setItem(UNLIST_KEY, JSON.stringify(u)); } catch (e) {} }
+    },
     isSoldOut: isSoldOut,
     tierLocked: tierLocked,
     tierStock: tierStock,
@@ -2996,8 +3029,7 @@
        允許哪些轉換由呼叫端（event-detail.html）依 §7.2 狀態機判斷，本檔只負責存。 */
     setStage: function (id, status) { if (id) writeStage(id, status); },
     resetStage: function (id) { if (id) writeStage(id, null); },
-    /* 交易明細：有金流的階段才有（售票中／進行中／已結束／已取消）。
-       已取消也要有——取消的活動照樣要對帳「賣過多少、退了多少」。 */
+    /* 交易明細：有金流的階段才有（售票中／進行中／已結束）。已封存的活動階段不變、交易照樣看得到（唯讀）。 */
     /* D361（2026-10-07）：售票中從「任一張門票或票務商品開始能買」起算，已排程＝已發布、還沒有任何東西能買，
        所以已排程沒有成交、這裡不給交易，與上面的階段清單一致。預售示範 nick-symphonic-taipei 的組合包預售
        10/08 已開始，2026-10-09 起改為售票中（D390 稽核原型第 16 條，UIA-210 關閉）。
@@ -3005,17 +3037,12 @@
        比例與名單同一套口徑（進行中＝arrivedAtOpen ÷ sold、已結束＝0.91），非真實核銷資料。 */
     transactions: function (id) {
       var ev = window.ztorEvents.get(id);
-      if (!ev || ['on-sale', 'live', 'ended', 'cancelled'].indexOf(ev.status) < 0) return [];
+      if (!ev || ['on-sale', 'live', 'ended'].indexOf(ev.status) < 0) return [];
       var out = buildTx(ev);
       /* D410 決定三：bookyay 活動照回傳的入場人數（沒資料＝沒有任何一筆標已報到）；自建照舊 */
       var rate = (ev.status === 'ended' || ev.status === 'live') && ev.sold ? Math.min(1, arrivedOf(ev) / ev.sold) : 0;
       if (rate > 0) out.forEach(function (t, i) {
         if (t.status === 'paid' && ((i * 37) % 100) < rate * 100) t.checkedIn = true;
-      });
-      /* D375 決定二：bookyay 端取消的活動，票券由 bookyay 撤銷、同步回 ztor——已付款的一律標成已撤銷（執行者 bookyay，唯讀顯示）。 */
-      if (ev.status === 'cancelled' && ev.source === 'bookyay' && ev.bkyCancel) out.forEach(function (t) {
-        if (t.status !== 'paid') return;
-        t.status = 'voided'; t.voidedAt = ev.bkyCancel.at || ''; t.voidedBy = 'bookyay';
       });
       return out;
     },
@@ -3023,13 +3050,8 @@
     bundleTicketShare: bundleTicketShare,
     bundleTransactions: function (id) {
       var ev = window.ztorEvents.get(id);
-      if (!ev || ['on-sale', 'live', 'ended', 'cancelled'].indexOf(ev.status) < 0) return [];
+      if (!ev || ['on-sale', 'live', 'ended'].indexOf(ev.status) < 0) return [];
       var out = buildBundleTx(ev);
-      /* D375 決定二：bookyay 端取消＝組合包裡的門票同樣由 bookyay 撤銷，組合包訂單一併標成已撤銷（同 transactions()） */
-      if (ev.status === 'cancelled' && ev.source === 'bookyay' && ev.bkyCancel) out.forEach(function (t) {
-        if (t.status !== 'paid') return;
-        t.status = 'voided'; t.voidedAt = ev.bkyCancel.at || ''; t.voidedBy = 'bookyay';
-      });
       return out;
     },
     /* 最終報到統計（2026-08-13）：現場報到台只在進行中出現，活動結束後那張報到快照卡
@@ -3053,7 +3075,7 @@
        · 進行中：照舊，用該場的 arrivedAtOpen
        · 已結束：到場數用 checkinSummary 同一條公式（sold × 0.91），
          名單表逐列的已到場加總才會等於結案卡與圖例的正常核銷數，不會兩處打架
-       已取消不生成：名單分頁在該狀態整節收起（syncSalesView），沒有消費端。 */
+       （D457：已取消階段退場，原「已取消不生成」註解隨之拿掉；已封存的活動照原階段決定。） */
     roster: function (id) {
       var ev = window.ztorEvents.get(id);
       if (!ev) return [];

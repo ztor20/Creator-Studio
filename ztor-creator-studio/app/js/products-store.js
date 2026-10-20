@@ -27,10 +27,12 @@
 // ── 詳情頁的示範狀態欄位（2026-09-11，由頁面層寫死改成資料驅動；缺值＝頁面顯示既有空狀態）──
 //   sales      { units, gross, net } | null   銷售摘要 KPI；null＝尚無銷售（切到 .when-empty）。gross／net 為顯示字串（'$2,944'）
 //   discount   { price, limited: { start, end } | null, stack: bool } | null   單售折扣；null＝關。
-//              price 填折扣價、limited 有值＝限時折扣開＋起訖（YYYY-MM-DD）、stack＝可與優惠碼疊加
+//              price 填折扣價、limited 有值＝限時折扣開＋起訖（YYYY-MM-DD）、stack＝（舊欄位名）商品端優惠碼總開關的預設值（D458，2026-10-20：
+//              原「可與優惠碼疊加」；true＝開、其餘＝關；選了哪些碼不存這裡，存在優惠碼端 js/discount-codes-store.js）
+//   codesOn    bool（選填，D458）  明寫商品端優惠碼總開關預設值；沒寫＝讀 discount.stack。組合包（BUNDLE_SEED）同
 //   limit      { person } | null   限購（D427，2026-10-16 起只留每人總限購數量，件；空字串＝不限）；有值＝開關開＋填值。
 //              舊資料的單一數字＝每人總限購；舊的 order（每次交易）／times（限購次數）一律忽略（js/purchase-limits.js norm()）。
-//              組合包的限購預設取成員交集（換算成組），所以這裡的值也是組合包「跟隨成員」的來源
+//              D456（2026-10-20）起組合包的限購不繼承成員，這裡的值不再是組合包限購的來源
 //   films      string[]        電影關聯（js/films-store.js 的 id）；空＝picker 沒有已選 chip
 //   projects   [{ title | titleKey, href }]   被哪些項目引用；titleKey 走 i18n（persona 覆寫字典可換名）；空＝「尚未被任何項目引用」
 //   tags       string[]        商品標籤的初始 chip
@@ -761,6 +763,10 @@
     'vintage-synth':      { id: 'vintage-synth', nameKey: 'e-shop.a3.name', img: 'vintage-synth.webp', listed: true, shown: true, saleStart: daysFromNow(-100), duration: 7, bids: 23, bidders: 9, shipped: true },
     /* 流標（結標、無人出價，D287）：四個月前結標、bids 0 → deriveAuctionStatus 判成 unsold（完售 ended 的同層新桶） */
     'tour-enamel-pin':    { id: 'tour-enamel-pin', nameKey: 'e-shop.a7.name', img: 'enamel-pin-wave.webp', listed: true, shown: true, saleStart: daysFromNow(-120), duration: 7, bids: 0, bidders: 0 },
+    /* 流標（有出價、最高出價未達保留價，2026-10-20 · D455 B3）：兩天前結標、6 次出價、最高 $140 < 保留價 $200
+       → ListingState.auctionUnsoldReason 回 'reserve'、狀態判 unsold；通知中心有一則對應通知（sidebar.js NOTIF_INFO）。
+       reserve／topBid 是示範欄位（出價引擎不在原型範圍）。曾有出價＝不可刪除、只能封存（D307）。 */
+    'tour-patch-set':     { id: 'tour-patch-set', nameKey: 'e-shop.a9.name', img: 'patch-set.webp', listed: true, shown: true, saleStart: daysFromNow(-7), duration: 5, bids: 6, bidders: 4, reserve: 200, topBid: 140 },
     /* 已下架（Unlisted）：結標後創作者手動下架，等著封存 */
     'lyric-sheet':        { id: 'lyric-sheet', nameKey: 'e-shop.a4.name', img: 'notebook.webp', listed: false, shown: true, saleStart: daysFromNow(-40), duration: 5, bids: 11, bidders: 6 },
     /* 零出價、已下架（2026-09-22 · D307「拍賣的刪除」）：兩個月前結標沒有人出價（流標），之後下架——清單「已下架」列與細節頁都有「刪除」。
@@ -1228,7 +1234,7 @@
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 10, discount: { percent: 10, limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
       /* 墓碑 2026-10-16：perks（額外權益，D292 示範）——D402 已從組合包移除，殘留欄位刪除（稽核順帶發現） */
-      /* limits（2026-10-16 示範資料補齊，稽核 S1）：組合包限購「覆寫」每人 1 組（S94，獨立計算、可改回跟隨成員；D427 只剩每人總限購） */
+      /* limits（2026-10-16 示範資料補齊，稽核 S1）：組合包限購自己設每人 1 組（S94，獨立計算；D427 只剩每人總限購；D456 起不繼承成員） */
       limits: { person: '1' },
       sales: { units: 5, gross: '$1,400', net: '$1,120' },
       films: ['film-zheng-yi-sao'],
@@ -1259,11 +1265,12 @@
     'winter-preorder-set': {
       id: 'winter-preorder-set', persona: 'default', name: '冬季預購組', img: 'coastline-hoodie.webp',
       description: '連帽外套＋六片帽，11 月開放預購。',
-      /* D398 示範：每組含 2 頂帽（qty 2）。帽子每人總限購 3 件 ÷ 2 ＝ 每人 1 組；外套不限購（D427 前的「每次 4 件、限 2 次」已退場）→ 跟隨成員＝每人 1 組 */
+      /* D398 示範：每組含 2 頂帽（qty 2）。帽子每人總限購 3 件 ÷ 2 ＝ 每人 1 組；外套不限購（D427 前的「每次 4 件、限 2 次」已退場）→ 改版前跟隨成員＝每人 1 組。D456 起組合包不繼承成員，這筆示範把當時的推導值寫成自己的上限（每人 1 組）〔推導：既有組合包轉換〕 */
       members: [{ productId: 'hoodie' }, { productId: 'cap', qty: 2 }],
       cap: 100, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: '2026-11-01T12:00:00', saleEnd: null, lowThreshold: 0,
       discountPct: 15, discount: null,
+      limits: { person: '1' },
       sales: null
     },
     /* 販售結束（saleEnd 已過）；被 1 個項目引用 */
@@ -1388,7 +1395,7 @@
       cap: 30, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 10, discount: { percent: 10, limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
-      limits: { person: '1' },   /* 2026-10-16 示範資料補齊（稽核 S1）：組合包限購覆寫每人 1 組 */
+      limits: { person: '1' },   /* 2026-10-16 示範資料補齊（稽核 S1）：組合包限購自己設每人 1 組（D456） */
       sales: { units: 8, gross: 'NT$55,840', net: 'NT$47,464' },
       films: ['film-neon-harbor'],
       history: [{ id: 'b1', date: '2026/09/08', sets: '— → 2', items: [{ productId: 'nick-vinyl', delta: '— → 2' }, { productId: 'wy-24ce-tee', delta: '— → 2' }, { productId: 'wy-24ce-jersey', combo: 'M', delta: '— → 2' }] }]

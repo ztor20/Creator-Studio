@@ -214,9 +214,8 @@ record('1_qty_vs_capacity', [], 'D340 容量刪除，本條退場');
     } else if (status === 'on-sale') {
       // 售票中的合理性：一般應為未來或今天（正在賣的場次過去售票中極不合理）
       if (dMs < todayMs) v.push(e.id + '（on-sale）：日期 ' + dateStr + ' 已在過去，售票中卻已過期');
-    } else if (status === 'cancelled') {
-      // 慣例：已取消的日期不拘（可能是原定未來日期被取消，也可能是過去），不強制斷言
     }
+    // D457（2026-10-20）：已取消階段退場，原「已取消日期不拘」慣例隨之移除；已封存不是階段，照原階段斷言
   });
   record('4_date_vs_status', v, '', info);
 })();

@@ -1,0 +1,46 @@
+/* ============================================================
+   code-picker.css · 商品端優惠碼選擇欄（2026-10-20 D458）
+   ------------------------------------------------------------
+   商品與組合包的「使用優惠碼」開關打開後出現的那一塊：
+     上面＝唯讀「已自動適用」（範圍是全部商店的碼，不能取消）
+     中間＝「優惠碼」多選（chip＋下拉建議，可選的是範圍含「特定商品」的碼）
+     「建立新的優惠碼」＝下拉清單最上面的一個選項（開小彈窗，適用範圍預帶本商品）
+   選碼＝把這個商品加進該碼的「特定商品」範圍；資料仍存在優惠碼端（js/discount-codes-store.js）。
+   markup 與互動由 js/code-picker.js（window.ztorCodePicker.mount）產生；開關本身由消費頁自己放
+   （control-row 或 price-ladder 開關列），本元件只管開關打開後的內容。
+
+   anatomy
+     .code-picker                       整塊（直排、gap 由容器持有）
+       .code-picker__auto               已自動適用群組（沒有碼就不渲染）
+         .code-picker__label            群組小標
+         .code-picker__chips > .chip.chip--static   每個自動適用的碼
+           .code-picker__pct            折扣 % 小字
+       .code-picker__field              「優惠碼」多選欄
+         .combobox > .tag-input__field（chip＋輸入）＋ .combobox__menu（建議清單，重用 combobox.css）
+         .chip__tag                     chip 內的狀態小字（已結束／已停用／已用完／隨商品儲存）
+       .code-picker__new-opt            下拉清單最上面的「建立新的優惠碼」選項（.combobox__opt，下方分隔線）
+     [data-locked]                      組合包上架中：輸入與按鈕停用、chip 不能移除
+     彈窗＝重用 payout-modal／payout-dialog（ds-components/payout-modal.css），欄位用 .field／.input／.amount-field。
+   surface：坐在 control-group__body、price-ladder 的 --panel 列或 form-section 卡面上（白或略深一階）；
+   chip 底吃 --chip-surface，邊界靠欄位的 1px 邊，兩層都成立。
+   ============================================================ */
+.code-picker { display: flex; flex-direction: column; gap: var(--sp-12); min-width: 0; }
+.code-picker__auto { display: flex; flex-direction: column; gap: var(--sp-6); }
+.code-picker__label { font-size: var(--fs-12); color: var(--muted-foreground); }
+.code-picker__chips { display: flex; flex-wrap: wrap; gap: var(--sp-6); }
+.code-picker__pct,
+.chip__tag { font-size: var(--fs-11); color: var(--muted-foreground); }
+.code-picker__field { display: flex; flex-direction: column; gap: var(--sp-6); }
+.code-picker__field .tag-input__field .chip { cursor: default; }
+.code-picker__new-opt { border-bottom: 1px solid var(--border); gap: var(--sp-8); }
+.code-picker__new-opt .ztor-icon { flex: none; }
+.code-picker__empty { font-size: var(--fs-12); color: var(--muted-foreground); padding: var(--sp-8); }
+.code-picker[data-locked] .tag-input__field { opacity: .6; cursor: not-allowed; }
+.code-picker[data-locked] .tag-input__entry { pointer-events: none; }
+.code-picker[data-locked] .chip__remove { display: none; }
+.code-picker-modal__scope { font-size: var(--fs-13); color: var(--foreground-muted); }
+.code-picker-modal__row { display: flex; align-items: center; gap: var(--sp-8); }
+.code-picker-modal__row .input { flex: 1 1 auto; min-width: 0; }
+.code-picker-modal__dates { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-12); }
+/* 2026-10-20：價格階梯為了圓角把 overflow 設成 hidden，會把下拉清單裁掉；有選碼欄時放開（圓角由內層列自己負責） */
+.price-ladder:has(.code-picker__field) { overflow: visible; }

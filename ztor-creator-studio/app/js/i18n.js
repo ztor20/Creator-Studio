@@ -327,7 +327,7 @@
     'ace.bky.orig':       { en: 'bookyay: {name}',    zh: 'bookyay 原名：{name}' },
     /* 墓碑 2026-10-16（D440 決定四）：ace.r24.multi／ace.r24.repeat（多時段、重覆活動 release2.4 不支援，D384 決定三）刪除——bookyay 多個時段帶入後合成同一場。 */
     'ace.r24.pickup':     { en: 'Store pickup — release2.4 doesn’t offer store pickup.', zh: '取票方式是到店自取，release2.4 沒有到店自取' },
-    'ace.map.event':      { en: 'Event',              zh: '活動' },
+    'ace.r24.sf':         { en: 'SF Express — release2.4 only offers e-tickets.', zh: '取票方式是順豐寄送，release2.4 只有電子門票' },    'ace.map.event':      { en: 'Event',              zh: '活動' },
     'ace.map.org-hint':   { en: 'For reference only — it isn’t copied into the event.', zh: '只當參考，不會帶入活動資料。' },
     'ace.map.ph':         { en: 'Search name, shop handle or email', zh: '搜尋名稱、店鋪識別或 Email' },
     'ace.map.picked':     { en: 'Selected: {name}',   zh: '已選：{name}' },
@@ -884,6 +884,10 @@
     'notif.auto-unlist.title': { en: '“Kowloon After Dark coaster set” unlisted on schedule', zh: '「九龍夜行 杯墊組」已依排程下架' },
     'notif.auto-unlist.meta':  { en: '“Backstage tea set” includes it and was unlisted with it.', zh: '「後台茶水組」含這件商品，已一併下架。' },
     'notif.auto-unlist.time':  { en: 'Yesterday',             zh: '昨天' },
+    /* 2026-10-20 D455 B3：有出價但未達保留價而流標，通知創作者 */
+    'notif.reserve-unmet.title': { en: '“Signed tour patch set” ended unsold', zh: '「巡演親簽布章組」流標' },
+    'notif.reserve-unmet.meta':  { en: 'The highest bid didn’t reach your reserve price.', zh: '最高出價沒達到你設定的保留價。' },
+    'notif.reserve-unmet.time':  { en: '2 days ago',          zh: '2 天前' },
     'notif.ip-expiring.title':{ en: 'IP license expires soon', zh: 'IP 授權即將到期' },
     'notif.ip-expiring.meta': { en: '“Mong Kok Sniper concept poster” expires in 7 days.', zh: '「旺角狙擊 概念海報」授權 7 天後到期。' },
     'notif.ip-expiring.time': { en: '2h',                     zh: '2 小時前' },
@@ -2902,9 +2906,9 @@
     'e-shop.relist.blocked-ok':    { en: 'Got it',                         zh: '知道了' },
     /* 2026-10-16：活動組合包的票券成員不查封存；活動或門票不能賣時才擋（partials/bundle-relist.js defaultTicketBlocked） */
     'e-shop.relist.ticket-blocked-title': { en: '“{n}” can’t be listed yet', zh: '「{n}」還不能上架' },
-    /* D437 決定一：擋下原因是活動已結束或已取消時用這一句（不叫創作者先讓活動回到上架） */
+    /* D437 決定一：擋下原因是活動已結束或已封存時用這一句（不叫創作者先讓活動回到上架；D457：已封存取代已取消） */
     'e-shop.relist.ticket-ended-title':   { en: '“{n}” can’t be listed again', zh: '「{n}」不能重新上架' },
-    'e-shop.relist.ticket-ended-body':    { en: 'The event has ended or was cancelled, so a bundle with its tickets can’t be listed again:', zh: '所屬活動已結束或已取消，含它門票的組合包不能重新上架：' },
+    'e-shop.relist.ticket-ended-body':    { en: 'The event has ended or is archived, so a bundle with its tickets can’t be listed again:', zh: '所屬活動已結束或已封存，含它門票的組合包不能重新上架：' },
     'e-shop.relist.ticket-blocked-body':  { en: 'The event or its tickets can’t be sold right now. List the event again (or keep at least one allowed ticket), then list the bundle:', zh: '所屬活動或門票目前不能販售。請先讓活動回到上架（或至少保留一種允許的門票），再上架組合包：' },
     'e-shop.delete.title':      { en: 'Delete draft “{n}”?',               zh: '要刪除草稿「{n}」嗎？' },
     'e-shop.delete.body':       { en: 'A deleted draft cannot be recovered.', zh: '草稿刪除後無法復原。' },
@@ -3175,6 +3179,10 @@
     'e-shop.a8.name':         { en: 'Handwritten setlist sheet',            zh: '手寫演出曲目單' },
     'e-shop.a8.meta':         { en: 'Good · All fans',                      zh: '良好 · 全部粉絲' },
     'e-shop.a8.bid':          { en: 'From $120',                            zh: '起標 $120' },
+    /* 2026-10-20 D455 B3：有出價但最高出價未達保留價 → 流標的示範列 */
+    'e-shop.a9.name':         { en: 'Signed tour patch set',                zh: '巡演親簽布章組' },
+    'e-shop.a9.meta':         { en: 'Like new · All fans',                  zh: '近全新 · 全部粉絲' },
+    'e-shop.a9.activity':     { en: '6 bids · Reserve not met',             zh: '6 次出價 · 未達保留價' },
     'e-shop.a.nobid':         { en: '—',                                   zh: '—' },
     'e-shop.a.more':          { en: 'More actions',                        zh: '更多操作' },
     'e-shop.a.copylink':      { en: 'Copy link',                           zh: '複製連結' },
@@ -3292,7 +3300,7 @@
 
     /* ─── Restock flow (spec 5.1.5.6) ─────────────────────── */
     'restock.title':          { en: 'Restock',                            zh: '補貨' },
-    'restock.sub':            { en: "Add stock for physical items. Digital / unlimited items don't apply.", zh: '為實體商品補貨；數位／不限量商品不適用。' },
+    'restock.sub':            { en: "Add stock for physical items, limited or unlimited. Digital items don't apply.", zh: '為實體商品補貨，限量與不限量都可以；數位商品不適用。' },   /* 2026-10-20 D455（B1）：不限量實體商品照常可補 */
     'restock.close':          { en: 'Close restock',                      zh: '關閉補貨' },
     'restock.select':         { en: 'Select items to restock',            zh: '選擇要補貨的品項' },
     'restock.empty':          { en: 'All your products are sufficiently stocked.', zh: '目前所有商品庫存充足。' },
@@ -3306,7 +3314,7 @@
     'restock.col.after':      { en: 'After',                              zh: '補後數量' },
     'restock.method':         { en: 'Restock method',                     zh: '補貨方式' },
     'restock.method.now':     { en: 'Restock now',                        zh: '立即補貨' },
-    'restock.method.scheduled': { en: 'Scheduled',                        zh: '定時補貨' },
+    'restock.method.scheduled': { en: 'Scheduled',                        zh: '計時補貨' },   /* 2026-10-20 D455（A5）：統一「計時補貨」 */
     'restock.method.now-hint':  { en: 'Stock is on hand — adds to inventory immediately.', zh: '現貨在手，送出即計入庫存。' },
     'restock.method.scheduled-hint': { en: 'Ordered from a supplier — mark received on arrival.', zh: '向供應商下單，到貨後按「到貨確認」入庫。' },
     'restock.f.qty':          { en: 'Restock quantity',                   zh: '補貨數量' },
@@ -3316,7 +3324,7 @@
     'restock.f.supplier':     { en: 'Supplier (optional)',                zh: '供應商（選填）' },
     'restock.f.eta':          { en: 'Expected arrival',                   zh: '預計到貨' },
     'restock.f.notes':        { en: 'Notes (optional)',                   zh: '備註（選填）' },
-    'restock.note':           { en: '<strong>Restock now</strong> adds stock immediately; <strong>Scheduled</strong> marks items Restocking until you Mark received. Each restocked item is logged on the product page. Digital / unlimited items can\'t be restocked.', zh: '<strong>立即補貨</strong>送出即入庫；<strong>定時補貨</strong>會標記為補貨中，直到你按「到貨確認」。每個有補的品項都會記錄於商品頁。數位／不限量商品不適用補貨。' },
+    'restock.note':           { en: '<strong>Restock now</strong> adds stock immediately; <strong>Scheduled</strong> marks items Restocking until you Mark received. Each restocked item is logged on the product page. Digital items can\'t be restocked.', zh: '<strong>立即補貨</strong>送出即入庫；<strong>計時補貨</strong>會標記為補貨中，直到你按「到貨確認」。每個有補的品項都會記錄於商品頁。數位商品不適用補貨。' },
     'restock.receive':        { en: 'Mark received',                      zh: '到貨確認' },
     'restock.submit':         { en: 'Submit restock',                     zh: '送出補貨' },
     'restock.history.title':  { en: 'Stock history',                      zh: '庫存歷史紀錄' },  /* 2026-09-11 補貨＋鎖定合併 */
@@ -3598,6 +3606,9 @@
     'pd.cfile.ip.slot':               { en: 'Asset slot',       zh: '素材槽' },
     'product-detail.var.opts-locked': { en: 'Options are fixed after creation — edit price, stock, SKU and cost per variation in the table below.', zh: '選項建立後固定不可調整——各選項組合的價格、庫存、SKU 與成本改於下方的表格。' },
     'product-detail.var.listed':    { en: 'Listed',                               zh: '上架中' },
+    /* 2026-10-20 D455 B9：單獨下架只動這一個選項組合 */
+    'product-detail.var.unlisted-toast': { en: '“{c}” unlisted. Other options keep selling.', zh: '「{c}」已下架，其他選項組合照賣。' },
+    'product-detail.var.relisted-toast': { en: '“{c}” is listed again.',  zh: '「{c}」已重新上架。' },
     'product-detail.stock.history': { en: 'Restock history',                      zh: '補貨紀錄' },
     'product-detail.stock.edit':    { en: 'Edit',                                 zh: '編輯' },
     'product-detail.edit.title':    { en: 'Edit pricing &amp; options',           zh: '編輯定價與規格' },
@@ -3711,7 +3722,7 @@
     'ad.bids.time1':        { en: '2h ago',                  zh: '2 小時前' },
     'ad.bids.time2':        { en: '5h ago',                  zh: '5 小時前' },
     'ad.bids.time3':        { en: '8h ago',                  zh: '8 小時前' },
-    'ad.bids.viewall':      { en: 'View all 8 bids',         zh: '查看全部 8 筆出價' },
+    'ad.bids.viewall':      { en: 'View all {n} bids',       zh: '查看全部 {n} 筆出價' },   // D455 驗收修正：{n} 由 auction-detail 依資料的 bids 填入
     'ad.bids.reserve':      { en: 'Reserve met',             zh: '已達保留價' },
     'ad.info.title':        { en: 'Auction info',            zh: '拍賣資訊' },
     'ad.info.status':       { en: 'Status',                  zh: '狀態' },
@@ -3727,8 +3738,11 @@
     /* 2026-09-18（D287）流標結果列：右欄競標狀態卡，結標無出價時才顯示（見 auction-detail.html data-ad-unsold-row） */
     'ad.info.result':       { en: 'Result',                  zh: '結果' },
     'ad.result.unsold':     { en: 'Unsold — no bids',        zh: '流標 · 無人出價' },
+    'ad.result.unsold-reserve': { en: 'Unsold — reserve not met', zh: '流標 · 未達保留價' },   /* 2026-10-20 D455 B3 */
+    'ad.result.notified':   { en: 'We let you know when it closed.', zh: '結標時已通知你。' },
+    'ad.bids.reserve-unmet': { en: 'Reserve not met',        zh: '未達保留價' },
     'ad.info.fee':          { en: 'Platform fee',            zh: '平台費' },
-    'ad.info.fee-v':        { en: '10%',              zh: '10%' },
+    'ad.info.fee-v':        { en: 'Per platform rates · E-Shop › Auction', zh: '依平台費率設定 · 電子商店 › 拍賣商品' },   /* 2026-10-20 D455 B6：不寫死 10%，照 5.1.0.3 電子商店維度的拍賣費率 */
     'ad.info.fulfil':       { en: 'After the auction ends, the winning order, shipping and fulfilment are handled in Order management.', zh: '結標後，得標訂單、出貨與履約由訂單管理承接。' },
     'ad.info.fulfil-cta':   { en: 'Go to order management →', zh: '前往訂單管理 →' },
     'ad.preview.title':     { en: 'How fans see this auction', zh: '粉絲看到此拍賣的樣子' },
@@ -3864,8 +3878,7 @@
     'sd.leg3':           { en: 'Date 3 of 3',                           zh: '第 3 場 / 共 3 場' },
     'sd.act.open':       { en: 'Open this date',                        zh: '開啟這一場' },
     'sd.act.edit':       { en: 'Edit date & venue',                     zh: '改日期與場地' },
-    'sd.act.cancel':     { en: 'Cancel this date',                      zh: '取消這一場' },
-    'sd.cancel.note':    { en: '<strong>Cancelling one date follows the same cancellation &amp; void rules as cancelling a standalone event (§5.1.6 F5).</strong> Being part of a series changes nothing about that date\u2019s tickets — Admin voids any still valid after cancelling, one by one or all at once (not automatic, D253; Admin only, D282); the other dates are untouched.', zh: '<strong>取消一場的取消與撤銷規則與取消一場獨立活動完全相同（§5.1.6 F5）。</strong>屬於系列不改變這一場票券的處理方式——取消後由 Admin 逐票或整場撤銷仍有效的票券（不自動觸發，D253；執行者 D282），其他場次不受影響。' },
+    /* 墓碑 2026-10-20（D457）：sd.act.cancel／sd.cancel.note 刪除 */
     'sd.footer1':        { en: 'REALIVE World Tour — Asia leg · 3 dates', zh: 'REALIVE 世界巡迴 — 亞洲段 · 共 3 場' },
     'sd.footer2':        { en: 'Ticket revenue rolls up to Earnings → Event ticketing', zh: '票券收入歸入收入管理 → 活動票券' },
     /* D340（2026-09-30）：「多站活動」這個活動形式已刪除，多站需求改用系列活動——系列相關字樣一律回到「系列」（5.1.6.3 §2.12 系列清單） */
@@ -4023,8 +4036,12 @@
     'events.stage.live':      { en: 'Live',          zh: '進行中' },
     'events.stage.on-sale':   { en: 'On sale',       zh: '售票中' },
     'events.stage.scheduled': { en: 'Scheduled',     zh: '已排程' },
-    'events.stage.cancelled': { en: 'Cancelled',     zh: '已取消' },
     'events.stage.draft':     { en: 'Draft',         zh: '草稿' },
+    /* D457（2026-10-20）：活動拿掉取消功能與已取消階段——墓碑：events.stage.cancelled、event-detail.btn.cancelevent／badge.cancelled／danger.*／cancel.*（title、bky、body、body0、carts、bundles、ok）／
+       unlist.confirm.cancel／relist.confirm.cancelled／wrap.cancelled／wrap.settle.cancelled／notif.cancel.*／notif.log.change.cancel、bd.unlist.reason-event、bd.event.cancelled-lock 已移除（零消費者）。
+       清單分頁改「已封存」（不是階段），詳情頁新增封存與解除封存；字串比照商品封存（e-shop.a.archive／e-shop.a.unarchive／shop.status.archived 共用）。 */
+    'events.stage.archived':  { en: 'Archived',      zh: '已封存' },
+    'events.archive.title':   { en: 'Archive “{n}”?', zh: '要封存「{n}」嗎？' },
     'events.stage.past':      { en: 'Ended',         zh: '已結束' },   /* D361：清單分頁與詳情徽章同一組英文（Draft／Scheduled／On sale／Live／Ended／Cancelled） */
     'events.cat.aria':        { en: 'Filter by event type', zh: '依活動類型篩選' },
     'events.badge.live':      { en: 'Live',          zh: '進行中' },
@@ -4199,7 +4216,7 @@
     'events.r.nick-live-kaohsiung-bky.meta':           { en: 'Concert · bookyay', zh: '演唱會 · bookyay' },
     'events.r.nick-live-kaohsiung-bky.datetime':       { en: 'Sep 26, 2026 · 6:00 PM', zh: '2026/09/26 · 晚上 6:00' },
     'events.r.nick-summer-pingtung-bky.title':         { en: 'NICKTHEREAL Summer Live — Pingtung', zh: 'NICKTHEREAL 夏日演唱會 — 屏東' },
-    'events.r.nick-summer-pingtung-bky.meta':          { en: 'Concert · cancelled in bookyay', zh: '演唱會 · 已在 bookyay 取消' },
+    'events.r.nick-summer-pingtung-bky.meta':          { en: 'Concert · bookyay', zh: '演唱會 · bookyay' },
     'events.r.nick-summer-pingtung-bky.datetime':      { en: 'Aug 29, 2026 · 6:30 PM', zh: '2026/08/29 · 晚上 6:30' },
     'events.r.mirror-khh-draft.datetime':              { en: '2026/10/02 · 7:00 PM', zh: '2026/10/02 · 晚上 7:00' },   // D440：三個時段合成一場
     'events.r.lrh-meet-draft.title':                   { en: 'LOVE RAGE HOPE fan meet (planning)', zh: 'LOVE RAGE HOPE 見面會（規劃中）' },
@@ -4321,9 +4338,8 @@
     'event-detail.scanner.bky.pickup.go':   { en: 'Go to Pickup',           zh: '前往取貨管理' },
     /* D394（2026-10-12）：bookyay 活動的報到台改成「bookyay 掃描器連結＋複製」與「前往取貨管理」兩格 */
     'event-detail.scanner.bky.badge':     { en: 'Via bookyay',              zh: '由 bookyay 掃票' },
-    'event-detail.scanner.bky.url':       { en: 'bookyay scanner link',     zh: 'bookyay 掃描器連結' },
-    'event-detail.scanner.bky.hint':      { en: 'Tickets are scanned at the door with bookyay’s scanner. Send this link to door staff.', zh: '門票入場用 bookyay 的掃描器掃票，把這條連結傳給門口的工作人員。' },
-    'event-detail.scanner.bky.nourl':     { en: 'bookyay hasn’t sent a scanner link for this event yet. Door staff can still scan tickets with the bookyay Organizer App.', zh: 'bookyay 還沒提供這場的掃描器連結。門口仍可用 bookyay Organizer App 掃票。' },
+    'event-detail.scanner.bky.app':       { en: 'Please scan tickets in the bookyay App.', zh: '請由 bookyay App 掃碼' },
+    'event-detail.scanner.bky.app.open':  { en: 'Open bookyay App in the App Store', zh: '開啟 bookyay App（App Store）' },
     'event-detail.scanner.bky.pickup.label': { en: 'Bundle pickup',         zh: '組合包取貨' },
     /* D453：組合包取貨掃碼器網址（取貨場次的 scanner 網址）的欄位標籤；沒有取貨場次時退回上面的「組合包取貨」 */
     'event-detail.scanner.bky.pickup.scan': { en: 'Bundle pickup scanner link', zh: '組合包取貨掃碼器連結' },
@@ -4928,7 +4944,9 @@
     'pstage.cancel':        { en: 'Cancel',                           zh: '取消' },
     /* D390 稽核第一節原型第 6 條：已結束、已取消時在地化頁唯讀 */
     'evloc.back.ro':        { en: 'Back',                             zh: '返回' },
-    'evloc.ro':             { en: 'This event has ended or been cancelled — translations and prices are view-only.', zh: '活動已結束或已取消，翻譯與價格只能檢視。' },
+    'evloc.ro':             { en: 'This event has ended or is archived — translations and prices are view-only.', zh: '活動已結束或已封存，翻譯與價格只能檢視。' },
+    'evloc.listed':         { en: 'This event is listed — translations and prices are view-only. To edit them, unlist the event first, then relist it after you save.', zh: '活動上架中，翻譯與價格只能檢視。要修改請先下架活動，儲存後再自行重新上架。' },   // D455
+    'evloc.listed.partial': { en: 'This event is listed — its translations and ticket prices are view-only. Unlisted bundles can still be edited. To edit the rest, unlist the event first, then relist it after you save.', zh: '活動上架中，活動的翻譯與票價只能檢視；已下架的組合包仍可修改。其他要修改請先下架活動，儲存後再自行重新上架。' },   // D455：組合包看自己的上架狀態
     /* event-localization.html（活動詳情「預覽與在地化」的全頁版，5.1.6.3 §2.13） */
     'evloc.title':          { en: 'Preview & localization',           zh: '預覽與在地化' },
     'evloc.back':           { en: 'Back to event',                    zh: '返回活動' },
@@ -5597,7 +5615,7 @@
     'ca.deliver.event.note':    { en: 'Winner receives an entry pass / ticket. Integration with the Events module (check-in, rights) pending spec.', zh: '得標者取得入場憑證／門票。與活動（Events）模組的報到與權利串接待規格確認。' },
     'ca.tags.title':        { en: 'Tags',                             zh: '標籤' },
     'ca.ready.title':       { en: 'Ready to start auction?',          zh: '可以開拍了嗎？' },
-    'ca.ready.togo':        { en: '8 items needed to start the auction', zh: '還差 8 項才能開拍' },
+    'ca.ready.togo':        { en: '7 items needed to start the auction', zh: '還差 7 項才能開拍' },   /* 2026-10-20 D455 B5：附圖不列入就緒檢查，8 項改 7 項 */
     'ca.ready.done':        { en: 'Ready to start the auction!',      zh: '可以開拍了！' },
     'ca.chip.ready':        { en: 'Ready',                            zh: '就緒' },
     'ca.chk.hero':          { en: 'Hero image',                       zh: '主圖' },
@@ -5681,7 +5699,7 @@
     'cp.auc.sub':           { en: 'No fixed price — fans bid. One-of-a-kind, so no stock or variations.', zh: '無固定價，由粉絲競標。唯一件，無庫存與多選項。' },
     'cp.auc.start':         { en: 'Starting price',                   zh: '起標價' },
     'cp.auc.reserve':       { en: 'Reserve price',                    zh: '保留價' },
-    'cp.auc.reserve-hint':  { en: "Item won't sell below this. Behaviour if unmet pending spec.", zh: '低於此價不成交。未達保留價的行為規格待補。' },
+    'cp.auc.reserve-hint':  { en: "If the highest bid doesn't reach this, the auction ends unsold and we'll let you know.", zh: '最高出價沒達到保留價就流標、不成交，並通知你。' },   /* 2026-10-20 D455 B3 */
     'cp.auc.duration':      { en: 'Duration',                        zh: '競標時長' },
     'cp.auc.dur3':          { en: '3 days',                          zh: '3 天' },
     'cp.auc.dur3-sub':      { en: 'Quick and intense',               zh: '短而激烈' },
@@ -5940,7 +5958,6 @@
     'cp.qc.specs':          { en: 'Specifications',                   zh: '詳細規格' },
     'cp.qc.weight':         { en: 'Shipping weight',                  zh: '重量' },
     'cp.qc.limit':          { en: 'Purchase limit',                   zh: '限購上限' },   /* D427：原「至少一種限購上限」 */
-    'cp.qc.file':           { en: 'Item file',                        zh: '內容檔案' },
     'cp.qc.cover':          { en: 'Cover art',                        zh: '封面' },
     'cp.qc.digicap':        { en: 'Total quantity & copies',          zh: '上限數量與剩餘份數' },
     'cp.show':              { en: 'Show in my shop',                  zh: '上架開關' },
@@ -5954,8 +5971,41 @@
     'cp.sale.percent':      { en: 'Discount %',                       zh: '折扣 %' },
     'cp.sale.linkhint':     { en: 'Enter either — the other updates from your list price.', zh: '填一個即可，另一個依定價自動換算。' },
     'cp.sale.pct-allhint':  { en: 'Applied to every variation — fans pay the discounted price.', zh: '套用到所有選項組合——粉絲付折後價。' },
-    'cp.discount.stack':    { en: 'Stack with discount codes',      zh: '可與優惠碼疊加' },
-    'cp.discount.stack-sub':{ en: 'Off means the buyer gets whichever single discount is best for them', zh: '關閉時，買家只會拿到對他最划算的那一個折扣' },
+    /* D458（2026-10-20）：原「可與優惠碼疊加」改為商品端優惠碼總開關。標籤先用不誤導的「使用優惠碼」（規格標待確認是否改名，ASSUMPTIONS 記〔推導〕）。
+       墓碑：舊 en 'Stack with discount codes'／zh '可與優惠碼疊加'、sub 'Off means the buyer gets whichever single discount is best for them'／'關閉時，買家只會拿到對他最划算的那一個折扣'（擇一語意已失效）。 */
+    'cp.discount.stack':    { en: 'Use discount codes',             zh: '使用優惠碼' },
+    'cp.discount.stack-sub':{ en: 'Off means no store discount code can be used here', zh: '關閉時，任何商店優惠碼都不能用在這裡' },
+    /* 商品端優惠碼選擇欄（js/code-picker.js · ds-components/code-picker.css） */
+    'cpk.title':            { en: 'Discount codes',                 zh: '優惠碼' },
+    'cpk.auto':             { en: 'Applied automatically',          zh: '已自動適用' },
+    'cpk.auto.hint':        { en: 'Codes for the whole store apply without picking', zh: '範圍是全部商店的碼，不必另外選' },
+    'cpk.select.ph':        { en: 'Pick codes…',                    zh: '選擇優惠碼…' },
+    'cpk.empty':            { en: 'No more codes to add',           zh: '沒有可加入的優惠碼' },
+    'cpk.new':              { en: 'Create a new code',              zh: '建立新的優惠碼' },
+    'cpk.hint':             { en: 'Picking a code adds this to that code’s specific items. With none picked, only whole-store codes apply.', zh: '選了碼，就是把這個加進該碼的特定商品範圍；都不選時，只適用全部商店的碼' },
+    'cpk.locked':           { en: 'Live — unlist it first to change codes', zh: '上架中，先下架才能改優惠碼' },
+    'cpk.pending':          { en: 'Saves with this',                zh: '隨儲存建立' },
+    'cpk.status.scheduled': { en: 'Scheduled',                      zh: '尚未開始' },
+    'cpk.status.ended':     { en: 'Ended',                          zh: '已結束' },
+    'cpk.status.disabled':  { en: 'Disabled',                       zh: '已停用' },
+    'cpk.status.exhausted': { en: 'Used up',                        zh: '已用完' },
+    'cpk.m.code':           { en: 'Code',                           zh: '代碼' },
+    'cpk.m.code.hint':      { en: '8–20 letters or digits, not case-sensitive.', zh: '8–20 個英數字，不分大小寫。' },
+    'cpk.m.gen':            { en: 'Generate',                       zh: '產生' },
+    'cpk.m.pct':            { en: 'Discount',                       zh: '折扣' },
+    'cpk.m.start':          { en: 'Starts',                         zh: '開始' },
+    'cpk.m.end':            { en: 'Ends',                           zh: '結束' },
+    'cpk.m.scope':          { en: 'Applies to',                     zh: '適用範圍' },
+    'cpk.m.scope.v':        { en: 'Specific item: {name}',          zh: '特定商品：{name}' },
+    'cpk.m.scope.this':     { en: 'this item',                      zh: '本商品' },
+    'cpk.m.cancel':         { en: 'Cancel',                         zh: '取消' },
+    'cpk.m.save':           { en: 'Create code',                    zh: '建立' },
+    'cpk.err.format':       { en: 'Use 8–20 letters or digits.',    zh: '代碼需為 8–20 個英數字。' },
+    'cpk.err.taken':        { en: 'That code already exists.',      zh: '這組代碼已經存在。' },
+    'cpk.err.pct':          { en: 'Discount must be 1–100%.',       zh: '折扣需為 1–100%。' },
+    'cpk.err.range':        { en: 'The end date must be after the start date.', zh: '結束日需晚於開始日。' },
+    'cpk.toast.created':    { en: 'Code created and selected',      zh: '已建立並選入' },
+    'store-settings.codes.scope.off': { en: 'Item’s code switch is off — not applied', zh: '商品端優惠碼開關為關閉，不適用' },
     'cp.discount.limited':  { en: 'Limited-time discount',            zh: '開啟限時折扣' },
     'cp.discount.limited-sub':{ en: 'Apply the discount only during a set period', zh: '只在指定檔期內套用折扣' },
     'cp.sale.start':        { en: 'Discount start date',              zh: '折扣開始日' },
@@ -5991,6 +6041,7 @@
        時間欄＋一句「留空＝不自動下架」，要從「沒填」推回「不會發生」。開關關著就是不排。 */
     'cp.listing.unlist-sched': { en: 'Unlist at a set time',          zh: '定時下架' },
     'cp.listing.unlist-sched-sub': { en: 'Unlists automatically at the time you set', zh: '到指定時間自動下架' },
+    'ca.listing.unlist-sched-sub': { en: 'Unlists at the time you set. If bidding is still open, it unlists once the auction ends', zh: '到指定時間自動下架；若當時還在競標，結標後才下架' },   /* 2026-10-20 D455 B4 */
     'cp.listing.saleend-sched': { en: 'Close sales at a set time',    zh: '定時停售' },
     'cp.listing.saleend-sched-sub': { en: 'Checkout closes then; the item stays visible', zh: '到指定時間停止結帳，商店仍看得到' },
     'cp.listing.listed-switch': { en: 'Listed',                        zh: '上架' },
@@ -6005,6 +6056,7 @@
     'cp.listing.schedule':  { en: 'Schedule',                         zh: '定時上架' },
     'cp.listing.none-sub':  { en: 'Save as draft, stays hidden',      zh: '存成草稿，先不對外' },
     'cp.listing.now-sub':   { en: 'Goes live right after saving',     zh: '儲存後立刻出現在商店' },
+    'cp.listing.now-sell':  { en: 'Goes live when you tap Start selling', zh: '按「開始販售」後上架' },   /* 2026-10-20 D455 A4：建立商品第 2 步側欄按「開始販售」才上架，存檔不上架 */
     'cb.listing.none-sub':  { en: 'Published, but not listed yet',    zh: '發布後暫不上架' },   /* 2026-10-12 建立組合包（使用者指示） */
     'cb.listing.now-sub':   { en: 'Goes live when you publish',       zh: '發布後同時上架' },   /* 2026-10-12 建立組合包：上架發生在「發布」而不是儲存草稿（使用者指示） */
     'cp.listing.schedule-sub': { en: 'Auto-lists at the time you set', zh: '到指定時間自動上架' },
@@ -6099,11 +6151,10 @@
     'cb.why.listing-time':  { en: 'Scheduled listing needs a time',   zh: '定時上架要填時間' },
     'cb.note.tickets':      { en: "Includes event tickets — each set draws its tickets from the tier's own pool, and every ticket gets its own QR and check-in.", zh: '含活動票券：每賣一套就從該票種的數量池扣掉張數（與單賣票共用），每張票各自一個 QR、各自報到。' },
     'cb.fee.ticket-rate':   { en: 'Includes event tickets — the platform fee follows the event ticket rate for the whole bundle, not split by member.', zh: '含活動票券：平台費整筆依活動票務費率計，不拆成員分攤。' },
-    'cb.follow-event':      { en: 'Includes tickets for “{name}” ({status}). Stays a draft until the event is published; listing and sale times follow the event unless you set your own; unlisted if the event is cancelled or unlisted.', zh: '含活動「{name}」（{status}）的票券。活動未發布時為草稿；上架與開賣時間預設跟隨活動、可另設；活動取消或下架時一同下架。' },
+    'cb.follow-event':      { en: 'Includes tickets for “{name}” ({status}). Stays a draft until the event is published; listing and sale times follow the event unless you set your own; unlisted if the event is unlisted.', zh: '含活動「{name}」（{status}）的票券。活動未發布時為草稿；上架與開賣時間預設跟隨活動、可另設；活動下架時一同下架。' },
     'bd.members.ticket-note': { en: "Ticket members draw from the tier's own pool — each set sold takes its tickets from the tier. Every ticket gets its own QR and checks in on its own.", zh: '票券成員與單賣票共用同一個票種數量池，每賣一套就從該票種扣掉張數；每張票各自一個 QR、各自報到。' },
     /* D437 決定二（2026-10-16）：賣出後另設的上架、下架、開賣、停售時間仍可改，只影響之後的購買 */
     'bd.members.locked':    { en: '{n} sold — members and quantities are locked. You can still change the price, discount, cap, purchase rules and limits, listing and sale times, and sale; to change what is inside, create a new bundle.', zh: '已售出 {n} 套，成員與數量已鎖定。仍可改售價、折扣、販售上限、購買條件與限購、上架與開賣時間、停售；要換內容請另建新組、停售這一組。' },
-    'bd.unlist.reason-event': { en: 'Unlisted together with the event “{n}” — it was cancelled.', zh: '隨活動「{n}」一同下架——該活動已取消。' },
     /* 2026-10-05（D352 稽核 B17，主規格 §7.14、D292 裁決十二）：活動結束、轉為不可售時，上架中的組合包自動下架並通知創作者 */
     'bd.unlist.reason-event-ended': { en: 'Unlisted automatically — the event “{n}” has ended.', zh: '活動「{n}」已結束，這個組合包自動下架。' },
     /* 只收窄、不回寫（2026-09-21 · D294 決定三，5.1.5.9 §2.3）：活動組合包上架卡的四句說明 */
@@ -6111,9 +6162,9 @@
     'bd.event.draft':       { en: 'Draft — follows the event “{name}”. It gets its listing, show and sale switches when the event is published.', zh: '草稿：隨活動「{name}」發布。活動發布後才有上架、顯示與開賣三個開關。' },
     'bd.event.list-lock':   { en: 'The event “{name}” is not listed ({status}) — this bundle cannot be listed on its own.', zh: '活動「{name}」未上架（{status}），這個組合包無法自行上架。' },
     /* D363（2026-10-07）：活動設定是最高優先層級——活動下架、隱藏時組合包跟著 */
-    /* D437 決定一（2026-10-16）：活動已結束或已取消 → 含它門票的組合包不能重新上架（與 D352 活動結束自動下架一致） */
+    /* D437 決定一（2026-10-16；D457：已取消改已封存）：活動已結束或已封存 → 含它門票的組合包不能重新上架（與 D352 活動結束自動下架一致） */
     'bd.event.ended-lock':     { en: 'The event “{name}” has ended — this bundle can’t be listed again.', zh: '活動「{name}」已結束，這個組合包不能重新上架。' },
-    'bd.event.cancelled-lock': { en: 'The event “{name}” was cancelled — this bundle can’t be listed again.', zh: '活動「{name}」已取消，這個組合包不能重新上架。' },
+    'bd.event.archived-lock':  { en: 'The event “{name}” is archived — this bundle can’t be listed again.', zh: '活動「{name}」已封存，這個組合包不能重新上架。' },   /* D457：取代原 bd.event.cancelled-lock（墓碑） */
     'bd.event.unlisted-lock': { en: 'The event “{name}” has been unlisted — this bundle can’t be listed until the event is listed again.', zh: '活動「{name}」已下架，活動重新上架前這個組合包無法上架。' },
     'bd.event.hidden-lock':   { en: 'The event “{name}” is hidden, so this bundle is hidden too. Its own show setting is kept and applies again once the event is shown.', zh: '活動「{name}」隱藏中，組合包跟著隱藏。組合包自己的顯示設定會保留，活動改回顯示後照它。' },
     'bd.setov.evhidden':      { en: 'Hidden with the event', zh: '跟著活動隱藏' },
@@ -6914,7 +6965,7 @@
     'tb.rules.from.many':      { en: 'Uses the strictest rules of the {n} tickets inside.', zh: '取所含 {n} 張門票中最嚴的條件。' },
     'tb.rules.from.one':       { en: 'Same rules as the ticket inside.', zh: '與所含門票的條件相同。' },
     'tb.rules.sets':           { en: 'Limits count sets ({n} tickets each).', zh: '限購以組計（每組 {n} 張）。' },
-    'tb.rules.later':          { en: 'You can tighten them on the bundle page after creating.', zh: '建立後可到組合包細節頁收緊。' },
+    'cb.rules.later':          { en: 'Set from the defaults. You can change them on the bundle page after creating.', zh: '照預設帶入，建立後可到組合包細節頁調整。' },   /* 2026-10-20 D455（B7）：建立時不能調整 */
     'tb.rules.none':           { en: 'Add a ticket first — the rules come from it.', zh: '先加入票券成員，購買條件從門票帶入。' },
     'tb.rules.locked':         { en: 'Includes conditions locked by bookyay — they can’t be changed here.', zh: '含 bookyay 帶入且鎖定的條件，這裡不能調整。' },
     'tb.rules.nooverlap':      { en: 'No overlapping time',            zh: '沒有交集的時間' },
@@ -6937,27 +6988,12 @@
     'pl.none':                 { en: 'No limit',                       zh: '不限' },
     'pl.u.tix':                { en: 'tickets',                        zh: '張' },
     'pl.u.item':               { en: 'items',                          zh: '件' },
-    'pl.state.follow':         { en: 'Following members',              zh: '跟隨成員' },
-    'pl.state.override':       { en: 'Overridden',                     zh: '已覆寫' },
-    'pl.follow.default':       { en: 'Follow members',                 zh: '跟隨成員預設' },   /* 2026-10-12 組合包限購的開關標籤：開＝跟隨成員、關＝覆寫 */
-    /* D400（2026-10-12 使用者裁決）：跟隨成員＝與成員共用額度（買組合包會扣成員商品的個人限購額度）；
-       已覆寫＝組合包獨立計算、不扣成員商品；含門票時門票部分永遠與單張門票共用（D342）、只能收窄 */
-    'pl.sub.follow':           { en: 'Uses the strictest member limit, counted in sets. Shares each member’s allowance — each set bought uses up its units from them.', zh: '取各成員換算成組後最嚴的上限；與成員商品共用額度，買組合包會扣成員商品的個人限購額度（件數＝組數 × 每組件數）。' },
-    'pl.sub.follow.tix':       { en: 'Uses the strictest member limit, counted in sets. Shares the allowance of the products and tickets inside — buying this bundle counts toward them.', zh: '取各成員換算成組後最嚴的上限；與成員商品、單張門票共用額度，買組合包會一併扣它們的個人限購額度。' },
-    'pl.sub.override':         { en: 'Your own limits — looser or tighter than the members. This bundle keeps its own count and doesn’t use up the members’ allowance.', zh: '自訂上限，可以比成員寬或嚴；組合包自己計算額度，不扣成員商品的額度。' },
-    'pl.sub.override.tix':     { en: 'Your own limits. Product members can be loosened and keep a separate count; the tickets inside can only be tightened and still share the ticket allowance.', zh: '自訂上限；商品成員的部分可以放寬、自己計算額度，門票只能收窄、仍與單張門票共用額度。' },
-    'pl.act.override':         { en: 'Override',                       zh: '覆寫' },
-    'pl.act.follow':           { en: 'Follow members again',           zh: '改回跟隨成員' },
-    'pl.src.none':             { en: 'No member sets this',            zh: '成員都沒設' },
-    'pl.src.one':              { en: 'From {name}: {n}',               zh: '取自 {name}：{n} {u}' },
-    'pl.src.conv':             { en: 'From {name}: {n} ÷ {per} per set', zh: '取自 {name}：{n} {u} ÷ 每組 {per} {u}' },
-    'pl.src.was':              { en: 'Members allow {v}',              zh: '跟隨成員時：{v}' },
-    'pl.src.ceil':             { en: 'tickets cap it at {n}',          zh: '門票上限 {n} 組' },
+    /* D456（2026-10-20）：組合包的限購不繼承成員——預設不限、獨立計算（買組合包不扣成員商品或單張門票的限購額度，反過來也一樣）。
+       墓碑：pl.state.follow／.override、pl.follow.default、pl.sub.follow／.follow.tix／.override／.override.tix、pl.act.override／.follow、
+       pl.src.none／.one／.conv／.was／.ceil（取自誰）隨跟隨成員退場 */
+    'pl.sub':                  { en: 'Your own limit for this bundle — set it looser or tighter than the members. It’s counted separately: buying this bundle doesn’t use up the products’ or tickets’ own limits.', zh: '組合包自己的上限，可以比成員寬或嚴；獨立計算，買組合包不扣成員商品或單張門票的限購額度。' },
     'pl.err.int':              { en: 'Enter a whole number, 1 or more.', zh: '請填 1 以上的整數。' },
-    'pl.err.ceil':             { en: 'Can’t be more than {n} — the tickets inside allow {n} sets.', zh: '不得超過 {n}：所含門票換算最多 {n} 組。' },
-    'pl.err.short.item':       { en: '{name} allows {n} but each set needs {per} — not even 1 set. Raise its limit, use fewer per set, or override.', zh: '{name} 限購 {n} {u}，每組要 {per} {u}，不足 1 組。請調高它的限購、減少每組件數，或覆寫上限。' },
-    'pl.err.short.tix':        { en: '{name} allows {n} but each set needs {per} — not even 1 set. Raise the ticket’s limit or change tickets per set.', zh: '{name} 限購 {n} {u}，每組要 {per} {u}，不足 1 組。請調高門票的限購，或改每組張數。' },
-    'pl.err.required':         { en: 'Enter a limit.',                 zh: '請填上限。' },
+    'pl.err.required':         { en: 'Enter a limit.',                 zh: '請填上限。' },   /* 商品（限購開著）與活動門票的必填；組合包空白＝不限（D456），不用這句 */
     'pl.cond.empty':           { en: 'No conditions yet — anyone can buy it.', zh: '還沒有條件：任何人都買得到。' },
     'pl.err.outside':          { en: 'Outside this bundle’s listing period ({period}).', zh: '超出組合包的上架區間（{period}）。' },
     'pl.qc.rules':             { en: 'Purchase rules & limits',        zh: '購買條件與限購' },
@@ -7899,6 +7935,10 @@
     'pk.row4.meta':     { en: '1 item', zh: '1 商品' },
     'pk.row4.loc':      { en: 'TADA Center', zh: 'TADA 中心' },
     'pk.row4.time':     { en: 'Jun 21, closed', zh: '6/21 已結束' },
+    'pk.row5.name':     { en: 'Hsinchu pop-up — pickup', zh: '新竹快閃店取貨' },   /* 2026-10-20 D455（A9）：已封存場次的示範列 */
+    'pk.row5.meta':     { en: '2 items', zh: '2 商品' },
+    'pk.row5.loc':      { en: 'Big City, Hsinchu', zh: '新竹巨城' },
+    'pk.row5.time':     { en: 'May 3, closed', zh: '5/3 已結束' },
     'pk.stat.pending':  { en: 'Pending',       zh: '待核銷' },
     'pk.stat.done':     { en: 'Redeemed',      zh: '已核銷' },
     'pk.stat.sold':     { en: 'Sold',          zh: '已售' },
@@ -7959,7 +7999,6 @@
     'pk.roster.r4':     { en: 'Order #ZT-10466 · Kowloon After Dark tee (L) ×1 · redeemed 14:31', zh: '訂單 #ZT-10466 · 九龍夜行 紀念 T 恤 (L) ×1 · 14:31 核銷' },
     'pk.roster.source': { en: 'Source',       zh: '來源' },
     'pk.roster.reverse':{ en: 'Reverse redemption', zh: '反轉核銷' },
-    'pk.roster.manual': { en: 'Redeem manually', zh: '手動核銷' },
     'pk.roster.noresult': { en: 'No matching people', zh: '查無符合的名單' },
     /* D240 一物一碼：買多件的買家收成一列可展開的群組列，列首寫本場次已領幾件。 */
     'pk.roster.group.expand': { en: 'Show pickup units', zh: '展開這位買家的領取單位' },
@@ -7985,7 +8024,7 @@
     'pk.log.export':    { en: 'Export',       zh: '匯出' },
     'pk.log.exported':  { en: 'Exported',     zh: '已匯出' },
     'pk.log.l1':        { en: 'Devon W. · Kowloon After Dark tee (M)', zh: 'Devon W. · 九龍夜行 紀念 T 恤 (M)' },
-    'pk.log.l1.meta':   { en: '14:22 · PU-10475-01 · order #ZT-10475 · staff: Jo', zh: '14:22 · PU-10475-01 · 訂單 #ZT-10475 · 工作人員：Jo' },
+    'pk.log.l1.meta':   { en: '14:22 · PU-10475-01 · order #ZT-10475', zh: '14:22 · PU-10475-01 · 訂單 #ZT-10475' },   /* 2026-10-20 D455（B11）：不記工作人員姓名 */
     'pk.log.l2':        { en: 'Aria S. · Signing GA entry', zh: 'Aria S. · 簽書會一般入場' },
     'pk.log.l2.meta':   { en: '14:05 · ticket TK-88213 · check-in written to Events', zh: '14:05 · 票券 TK-88213 · 入場狀態已回寫 Events' },
     'pk.log.l3':        { en: 'Kai T. · Kowloon After Dark tee (L)', zh: 'Kai T. · 九龍夜行 紀念 T 恤 (L)' },
@@ -8015,7 +8054,6 @@
     'pk.board.redeemed.ended':  { en: '68 / 80 units', zh: '68 / 80 件' },
     'pk.board.buyers':  { en: 'Buyers',        zh: '買家' },
     'pk.board.buyers.val': { en: '52 people',  zh: '52 位' },
-    'pk.board.export':  { en: 'Export no-shows', zh: '匯出未領名單' },
     'pk.a.copyurl':     { en: 'Copy scanner URL', zh: '複製掃碼網址' },
     'pk.a.copypw':      { en: 'Copy scanner password', zh: '複製掃碼密碼' },
     'pk.pw.unset':      { en: 'Not set — URL is open', zh: '未設定，網址不上鎖' },
@@ -8071,7 +8109,7 @@
     'pks.items.hint':   { en: '— physical items set to on-site QR pickup', zh: '— 取貨方式設為現場 QR 領取的實體商品' },
     'pks.tickets':      { en: 'Event tickets', zh: '活動票券' },
     'pks.tickets.hint': { en: '— redeem event tickets with the same scanner', zh: '— 用同一支 scanner 核銷活動票券' },
-    'pks.f.pw':         { en: 'Scanner password', zh: 'Scanner 密碼' },
+    'pks.f.pw':         { en: 'Scanner password', zh: '掃碼密碼' },   /* 2026-10-20 D455（B10）：必填，建立場次彈窗改用這個 key（原 pks.f.pw.opt 選填版退場） */
     'pks.f.pw.ph':      { en: 'Staff enter this to scan', zh: '工作人員掃描前輸入' },
     'pks.f.pw.hint':    { en: 'Staff type this after opening the scanner URL. Changing it later signs out active scanners.', zh: '工作人員開啟 scanner URL 後輸入。日後修改會登出既有 scanner。' },
     'pks.create':       { en: 'Create session', zh: '建立場次' },
@@ -8081,7 +8119,6 @@
     'pks.next':         { en: 'Next',           zh: '下一步' },
     'pks.back':         { en: 'Back',           zh: '上一步' },
     'pks.save':         { en: 'Save changes',   zh: '儲存變更' },
-    'pks.f.pw.opt':     { en: 'Scanner password (optional)', zh: '掃碼密碼（選填）' },
     'pks.f.pw.gen':     { en: 'Regenerate',     zh: '重新產生' },
     'pks.f.url':        { en: 'Scanner URL',    zh: '掃碼網址' },
     'pks.f.url.reset':  { en: 'Reset',          zh: '重設' },
@@ -8122,9 +8159,6 @@
     'sc.state.live':    { en: 'Live now',       zh: '進行中' },
     'sc.state.notyet':  { en: 'Not started',    zh: '尚未開始' },
     'sc.state.ended':   { en: 'Ended',          zh: '已結束' },
-    'sc.pw.staff':      { en: 'Staff name',     zh: '工作人員標示' },
-    'sc.pw.staff.opt':  { en: 'Optional',       zh: '選填' },
-    'sc.pw.staff.hint': { en: 'Recorded on every redemption for later reconciliation.', zh: '會記在每筆核銷紀錄上，方便事後對帳。' },
     'sc.lock.title':    { en: 'Temporarily locked', zh: '已暫時鎖定' },
     'sc.lock.body':     { en: '5 wrong attempts — this device is locked for 10 minutes. The creator can still change the password in the studio. (Demo: 10 seconds.)', zh: '密碼連續錯誤 5 次，此裝置暫停輸入 10 分鐘；創作者仍可在後台修改密碼。（demo 以 10 秒代替）' },
     'sc.cnt.pending':   { en: 'Pending',        zh: '待核銷' },
@@ -10178,9 +10212,19 @@
     'ed.bd.add.hint':  { en: 'Starts with this event’s tickets', zh: '自動帶入這場活動的門票' },
     'event-detail.btn.golive': { en: 'Open sales now', zh: '立即開賣' },
     'event-detail.btn.opensales': { en: 'Open sales now', zh: '立即開賣' },
-    'event-detail.btn.cancelevent': { en: 'Cancel event', zh: '取消活動' },
     'event-detail.btn.duplicate': { en: 'Run it again', zh: '再辦一場' },
-    'event-detail.badge.cancelled': { en: 'Cancelled', zh: '已取消' },
+    /* 封存／解除封存（D457，2026-10-20；比照商品 D284／D298）：只有已下架能封存；已封存整頁唯讀、頁首只有解除封存 */
+    'event-detail.btn.unarchive': { en: 'Unarchive', zh: '解除封存' },
+    'event-detail.archived.banner': { en: 'Archived — read-only. Unarchiving returns it to Unlisted; settings are kept.', zh: '已封存：整頁唯讀，解除封存後回到已下架、設定照舊保留。' },
+    'event-detail.archive.title': { en: 'Archive this event', zh: '封存活動' },
+    'event-detail.archive.sub': { en: 'It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can unarchive it anytime.', zh: '封存後離開主清單，只在「已封存」篩選出現；整頁唯讀，訂單與收入不受影響，隨時可以解除封存。' },
+    'event-detail.archive.needunlist': { en: 'Unlist the event first.', zh: '要先下架活動。' },
+    'event-detail.archive.confirm.title': { en: 'Archive this event?', zh: '確定封存這場活動？' },
+    'event-detail.archive.confirm.body': { en: 'It leaves the main list and only shows under Archived. Its page turns read-only; tickets already sold, orders and revenue are not affected. You can unarchive it anytime.', zh: '封存後活動離開主清單、只在「已封存」篩選出現，整頁唯讀；已售出的票、訂單與收入不受影響。要再使用時可以解除封存。' },
+    'event-detail.archive.confirm.notended': { en: 'This event hasn’t ended yet. Any pending listing schedule is cancelled, and nothing can change on it until you unarchive.', zh: '這場活動還沒結束。尚未生效的上架排程會一併取消，解除封存前什麼都不能改。' },
+    'event-detail.archive.confirm.ok': { en: 'Archive', zh: '封存' },
+    /* 下架確認列出一同下架的組合包（D457：原與取消活動共用 event-detail.cancel.bundles，取消退場後獨立一個鍵） */
+    'event-detail.unlist.bundles': { en: 'These listed bundles include its tickets and are unlisted with it:', zh: '以下上架中的組合包含有這場活動的門票，會一起下架：' },
     /* 多站場次清單用的狀態徽章（2026-08-17）：這幾個階段原本沒有自己的 key，
        因為清單是寫死的假資料、只出現「售票中」與「已排程」兩種。 */
     'event-detail.badge.draft':  { en: 'Draft',         zh: '草稿' },
@@ -10194,7 +10238,6 @@
     'event-detail.unlist.confirm.title': { en: 'Unlist this event?', zh: '確定下架這場活動？' },
     'event-detail.unlist.confirm.body':  { en: 'Fans see the event page as unlisted and can’t buy; anything in their carts shows as unavailable. The event stays in its current stage.', zh: '粉絲會看到活動頁已下架、不能購買，購物車裡的會顯示已失效。活動留在目前的階段。' },
     'event-detail.unlist.confirm.sold':  { en: 'The {n} tickets already sold stay valid.', zh: '已售出的 {n} 張票照常有效。' },
-    'event-detail.unlist.confirm.cancel': { en: 'To call off the event, cancel it instead.', zh: '要讓活動不再舉辦，請改用取消活動。' },
     'event-detail.unlist.confirm.ok':    { en: 'Unlist', zh: '下架' },
     'event-detail.unlist.toast':   { en: 'Event unlisted', zh: '活動已下架' },
     'event-detail.relist.title':   { en: 'Relist this event', zh: '重新上架活動' },
@@ -10202,7 +10245,6 @@
     'event-detail.relist.btn':     { en: 'Relist event', zh: '重新上架' },
     'event-detail.relist.confirm.title':     { en: 'Relist this event?', zh: '確定重新上架？' },
     'event-detail.relist.confirm.ended':     { en: 'This event has ended. Once relisted, fans can find the event page but can’t buy anything.', zh: '這場活動已結束。上架後粉絲找得到活動頁，但不能購買。' },
-    'event-detail.relist.confirm.cancelled': { en: 'This event was cancelled. Once relisted, fans can find the event page but can’t buy anything.', zh: '這場活動已取消。上架後粉絲找得到活動頁，但不能購買。' },
     'event-detail.relist.confirm.ok': { en: 'Relist', zh: '上架' },
     'event-detail.relist.toast':   { en: 'Event relisted', zh: '活動已重新上架' },
     /* D448（2026-10-19）：重新上架前，有含本活動票券、已下架的組合包就彈窗問要不要同時上架 */
@@ -10254,7 +10296,6 @@
     'event-detail.room.tbd': { en: 'One admission for everyone, set in the create flow. Moderation tools and a viewer list are not built yet (D149).', zh: '全場一種入場券，在建立流程設定。房間控場與觀看名單尚未實作（D149）。' },
     'event-detail.wrap.title': { en: 'Wrap-up', zh: '結案' },
     'event-detail.wrap.when': { en: 'Ended {d}', zh: '{d} 結束' },
-    'event-detail.wrap.cancelled': { en: 'Cancelled — the figures below are what had already been paid', zh: '已取消——以下是取消前已付款的部分' },
     'event-detail.wrap.attended': { en: 'Scanned', zh: '已掃描' },
     'event-detail.wrap.rate': { en: '{n}% of tickets sold', zh: '佔實際售出張數 {n}%' },
     'event-detail.wrap.dup': { en: 'Repeat scans', zh: '重複掃描' },
@@ -10271,7 +10312,6 @@
     'event-detail.wrap.settle': { en: 'Settlement', zh: '結算' },
     'event-detail.wrap.settle-meta': { en: 'Settled revenue only', zh: '只計已結算收入' },
     'event-detail.wrap.settle.done': { en: 'Settled', zh: '已結算' },
-    'event-detail.wrap.settle.cancelled': { en: 'Cancelled', zh: '已取消' },
     'event-detail.golive.need.name': { en: 'Event name', zh: '活動名稱' },
     'event-detail.golive.need.date': { en: 'At least one date', zh: '至少一個場次日期' },
     'event-detail.golive.need.venue': { en: 'Venue', zh: '場地' },
@@ -10292,15 +10332,9 @@
     /* D340（5.1.6.3 §2.1）：顯示設定為隱藏時，確認說明改說只能經活動連結進入 */
     'event-detail.golive.body.hidden': { en: 'The sale start moves to now and {n} tickets become buyable — the event stays hidden, so only people with the event link can get in. From here on, changing the venue, date or start time notifies everyone who bought.', zh: '開賣時間會改成現在，{n} 張票開放購買；活動維持隱藏，只能經活動連結進入。之後改場地、日期或開始時間，會通知到每一位購票者。' },
     'event-detail.golive.ok': { en: 'Open sales now', zh: '立即開賣' },
-    'event-detail.cancel.title': { en: 'Cancel this event?', zh: '要取消這場活動嗎？' },
     /* D375 決定二：匯入活動只能在 bookyay 取消，ztor 的取消活動保留但停用 */
-    'event-detail.cancel.bky':   { en: 'Imported events are cancelled in bookyay.', zh: '匯入活動在 bookyay 取消。' },
     /* 2026-10-05（D352 稽核 B15）：撤銷由 Admin 執行（D282），文案不再寫「你可以撤銷」 */
-    'event-detail.cancel.body': { en: '{n} tickets sold are not refunded automatically — every holder is notified, and Admin voids any tickets still valid afterward, one by one or all at once. This cannot be undone.', zh: '已售出的 {n} 張票不會自動退款——會通知每一位持票人，之後由 Admin 逐票或整場撤銷仍有效的票券。這個動作無法復原。' },
-    'event-detail.cancel.body0': { en: 'Nothing has sold yet, so there are no tickets to void. The event can’t be published again, and this cannot be undone.', zh: '目前一張都還沒賣出，沒有票券要撤銷。取消後這場活動不能再發布，而且無法復原。' },
     /* 2026-10-05（D352 稽核 B16，主規格 §7.14、D292）：取消時一同下架的上架中組合包，確認彈窗列名（沒有就不出現） */
-    'event-detail.cancel.bundles': { en: 'These listed bundles include its tickets and are unlisted with it:', zh: '以下上架中的組合包含有這場活動的門票，會一起下架：' },
-    'event-detail.cancel.ok': { en: 'Cancel event', zh: '取消活動' },
     'event-detail.dup.title': { en: 'Run this event again?', zh: '要照這場再辦一次嗎？' },
     'event-detail.dup.body': { en: 'Opens the create flow with this event copied in — name, description, lineup, images and ticket types. Dates, venue and every sales figure start empty.', zh: '會帶著這場的名稱、說明、陣容、圖片與門票設定開一份新的建立流程。日期、場地與所有銷售數字重新開始。' },
     'event-detail.dup.ok': { en: 'Copy into a new event', zh: '複製成新活動' },
@@ -10318,7 +10352,6 @@
     'event-detail.notif.log.reminder.done': { en: 'Sent 24 h before doors', zh: '已於開演前 24 小時寄出' },
     'event-detail.notif.log.reminder.due': { en: 'Goes out 24 h before doors · {d}', zh: '開演前 24 小時寄出 · {d}' },
     'event-detail.notif.log.reminder.nodate': { en: 'Needs a date before it can be scheduled', zh: '要先有日期才能排定' },
-    'event-detail.notif.log.change.cancel': { en: 'Cancellation notice sent to all holders', zh: '取消通知已寄給所有持票人' },
     'event-detail.notif.log.change.none': { en: 'No venue, date or start-time change since sales opened', zh: '開賣以來沒有場地、日期或開始時間的變更' },
     /* D392 補充（2026-10-10）：已排程也顯示「售票與名單」——開賣前的空狀態與寄送紀錄 */
     'event-detail.notif.log.change.presale': { en: 'Sales haven’t opened — no ticket holders to notify yet', zh: '尚未開賣，還沒有持票人需要通知' },
@@ -10326,7 +10359,7 @@
     'event-detail.tx.empty.sub': { en: 'Every paid order shows up here.', zh: '每一筆付款完成的訂單都會列在這裡。' },
     'event-detail.tx.empty.sub.pre': { en: 'Sales haven’t opened yet. Every paid order shows up here once they do.', zh: '還沒開賣。開賣後，每一筆付款完成的訂單都會列在這裡。' },
     'ed.pub.edit-pre': { en: 'Nothing has sold yet, so all of these can still change. Once tickets are on sale, only the sale end, a later unlisting time and the display setting can.', zh: '還沒賣出任何一張票，這些設定都還能改。開賣後只剩停售時間、延後下架與顯示設定可以改。' },
-    'ed.pub.edit-closed': { en: 'This event has ended or been cancelled, so its publish settings are view-only.', zh: '活動已結束或已取消，發布設定只能檢視。' },
+    'ed.pub.edit-closed': { en: 'This event has ended or is archived, so its publish settings are view-only.', zh: '活動已結束或已封存，發布設定只能檢視。' },
     'ed.pub.vis.bundles': { en: "Bundles with this event's tickets are hidden from the E-Shop too. Each bundle keeps its own setting for when the event is shown again.", zh: '含本活動門票的組合包也會從電子商店隱藏；各組合包自己的顯示設定會保留，活動改回顯示後照它。' },
     'event-detail.tab.overview': { en: 'Overview', zh: '總覽' },
     'event-detail.tab.tiers': { en: 'Tickets', zh: '票務' },
@@ -10348,7 +10381,7 @@
     'event-detail.ov.stream-val': { en: 'VIP tier includes live stream', zh: 'VIP 票種含直播' },
     /* 2026-10-05（D352 稽核 B1）：拿掉「只有 Draft → Cancelled 可逆」（D188／D294 已改為已排程與售票中可取消）、撤銷改由 Admin（D282）。
        英文不列階段名——階段英文名統一用哪一組仍待上游確認（清單分頁與詳情徽章目前不同）。 */
-    'event-detail.ov.statemachine': { en: '<strong>Stages only move forward</strong>, from draft to the event ending. Scheduled and on-sale events can be cancelled; cancelling does not refund tickets automatically — Admin voids any tickets still valid afterward, one by one or all at once (§5.1.6 F3, F5).', zh: '<strong>活動階段只會往前走。</strong>草稿 → 已排程 → 售票中 → 進行中 → 已結束；已排程與售票中的活動可以取消。取消不會自動退款，仍有效的票券之後由 Admin 逐票或整場撤銷（§5.1.6 F3、F5）。' },
+    'event-detail.ov.statemachine': { en: '<strong>Stages only move forward</strong>, from draft to the event ending. An event can’t be cancelled — unlist it to take it off the storefront, then archive it when you’re done with it. Tickets still valid are voided by Admin, one by one or all at once (§5.1.6 F3, F5).', zh: '<strong>活動階段只會往前走。</strong>草稿 → 已排程 → 售票中 → 進行中 → 已結束。活動沒有取消動作：要讓它從前台消失就下架，確定不再使用再封存。仍有效的票券由 Admin 逐票或整場撤銷（§5.1.6 F3、F5）。' },
     'event-detail.ov.checkin.title': { en: 'Check-in snapshot', zh: '報到快照' },
     'event-detail.ov.checkin.pending': { en: 'Opens on event day', zh: '活動當天開放' },
     'event-detail.checkin.valid': { en: 'Scanned', zh: '已掃描' },
@@ -10496,13 +10529,16 @@
     /* D392（2026-10-10）：門票、預設購票規則改成套用到頁面草稿，按「儲存」才寫入 */
     'ed.tm.apply': { en: 'Apply', zh: '套用' },
     'ed.tm.applied': { en: 'Applied — save the event to keep it', zh: '已套用，儲存活動後才會生效' },
+    'ed.tm.applied.recheck': { en: 'Applied — save the event to keep it. {list} keep their manual prices; recheck them in Preview & localization.', zh: '已套用，儲存活動後才會生效。{list} 有手動改價、不會跟著換算，請到「預覽與在地化」重新確認。' },   // D455：基準價改變後列出手動改價的幣別
+    'ed.tm.applied.recheck.bd': { en: 'Applied — save the event to keep it. Bundles with this ticket have manual prices that won\'t be recalculated: {bundles}. Recheck them in Preview & localization.', zh: '已套用，儲存活動後才會生效。含這張票的組合包有手動改價、不會跟著換算：{bundles}，請到「預覽與在地化」重新確認。' },   // D455 B14 第 6 條：含這張票的組合包
+    'ed.tm.applied.recheck.both': { en: 'Applied — save the event to keep it. Manual prices won\'t be recalculated. This ticket: {list}. Bundles with this ticket: {bundles}. Recheck them in Preview & localization.', zh: '已套用，儲存活動後才會生效。手動改價不會跟著換算——這張票：{list}；含這張票的組合包：{bundles}，請到「預覽與在地化」重新確認。' },   // D455 B14 第 6 條：門票與組合包都有手動改價
     'ed.tm.removed': { en: 'Ticket removed — save the event to keep it', zh: '已移除門票，儲存活動後才會生效' },
     /* D392 補充二（2026-10-10）：套用後還沒儲存的標記 */
     'ed.staged.changed': { en: 'Edited', zh: '已修改' },
     'ed.staged.new': { en: 'New', zh: '新增' },
     'ed.staged.remove': { en: 'To be removed', zh: '將刪除' },
     'ed.staged.undo': { en: 'Undo', zh: '復原' },
-    'ed.tm.ro': { en: 'This event has ended or been cancelled — tickets are view-only.', zh: '活動已結束或已取消，門票只能檢視。' },
+    'ed.tm.ro': { en: 'This event has ended or is archived — tickets are view-only.', zh: '活動已結束或已封存，門票只能檢視。' },
     'ed.tm.ro.view': { en: 'Select Edit to change this ticket.', zh: '按「編輯」後才能修改這張門票。' },
     'ed.tm.ro.stock': { en: 'This event is listed — only the quantity can change. Unlist the event to edit anything else.', zh: '活動上架中，只能改張數；其他欄位要先下架活動才能修改。' },
     'ed.stockonly.title': { en: 'This event is listed — only stock can change right now', zh: '活動上架中，目前只能改庫存' },
@@ -10512,12 +10548,14 @@
     'sd.confirm.body.listed': { en: 'These {n} dates are listed, so they won’t be updated. Unlist them first to sync — then relist them yourself.', zh: '下面 {n} 場上架中，不會套用這次變更；要先下架這些場次才能同步，同步後再自行重新上架。' },
     'sd.sync.listed.n': { en: '{n} of these dates are listed — they won’t be synced', zh: '其中 {n} 場上架中，儲存時不會同步' },
     'sd.sync.listed.meta': { en: 'Unlist those dates first to sync them, then relist them yourself.', zh: '要先下架這些場次才能同步，同步後再自行重新上架。' },
-    'ed.loc.listed': { en: 'This event is listed — unlist it to edit translations.', zh: '活動上架中，要先下架才能修改翻譯。' },
+    'ed.loc.listed': { en: 'This event is listed — translations and prices are view-only until you unlist it.', zh: '活動上架中，翻譯與價格只能檢視，要先下架才能修改。' },   // D455
+    'ed.notif.listed.title': { en: "This event is listed — notification settings can't change", zh: '活動上架中，通知設定不能修改' },   // D455
+    'ed.notif.listed.body': { en: 'To change them, unlist the event first. After you save, relist it yourself.', zh: '要修改請先下架活動；改完儲存後，再自行重新上架。' },
     'event-detail.relist.dirty': { en: 'Save or discard your changes first, then relist the event.', zh: '請先儲存或捨棄變更，再重新上架。' },
     'bd.stockonly.title': { en: 'This bundle is listed — only locked sets, sales cap and listing and sale times can change', zh: '組合包上架中，只能改鎖定套數、販售上限與上架、開賣時間' },
     'bd.stockonly.body': { en: 'Change locked sets in the Stock tab. Under Edit bundle you can raise the sales cap or switch back to unlimited to restock (never below the sets already sold), and change listing, unlisting, sale start and sale end times. To edit anything else — contents, price, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.', zh: '鎖定套數在「組合庫存」分頁改；按「編輯組合」可調高販售上限或改回不限量來恢復庫存（不得低於已售套數），也能改上架、下架、開賣、停售時間。其他資料（內容、售價、購買條件、翻譯）要先下架這個組合包才能修改，儲存後再自行重新上架。' },
     'bd.tix.min1': { en: 'Keep at least one ticket.', zh: '至少要留一種門票。' },
-    'bd.loc.listed': { en: 'This bundle is listed — unlist it first to make changes.', zh: '組合包上架中，要先下架這個組合包才能修改。' },
+    'bd.loc.listed': { en: 'This bundle is listed — its translations and prices are view-only until you unlist it.', zh: '組合包上架中，翻譯與價格只能檢視，要先下架這個組合包才能修改。' },   // D455
     'bd.cap.under': { en: 'Can’t go below the {n} sets already sold', zh: '不得低於已售出的 {n} 套' },
     'bd.cap.under.why': { en: 'Sales cap can’t be lower than the sets already sold', zh: '販售上限不得低於已售套數' },
     'bd.stockonly.go': { en: 'Unlist bundle', zh: '下架組合包' },
@@ -10526,9 +10564,6 @@
     'event-detail.att.undo.body': { en: 'Only for fixing a mistaken scan. {name}’s ticket {code} goes back to not arrived and can be scanned again.', zh: '只用於更正誤掃。{name} 的票 {code} 會改回未報到，可以再掃一次。' },
     'event-detail.att.undo.ok': { en: 'Mark not arrived', zh: '改回未報到' },
     'event-detail.att.undo.toast': { en: 'Marked as not arrived', zh: '已改回未報到' },
-    'event-detail.danger.title':     { en: 'Cancel this event',  zh: '取消活動' },
-    'event-detail.danger.sub':       { en: 'Cancelling does not refund tickets automatically, and cannot be undone (§5.1.6 F5). Admin voids any tickets still valid afterward from the Sales record.',
-                                       zh: '取消不會自動退款，且無法復原（§5.1.6 F5）。之後由 Admin 在「銷售紀錄」逐票或整場撤銷仍有效的票券。' },
     'event-detail.ov.nav.status': { en: 'Status',        zh: '狀態' },
     'event-detail.series.count':  { en: '{n} of {all}',  zh: '{all} 場中的第 {n} 場' },
     /* 2026-08-17 使用者裁決改名「多站場次」；2026-09-30 D340 刪除「多站活動」這個活動形式、多站需求改用系列活動
@@ -10820,9 +10855,6 @@
     'event-detail.notif.reminder.hint': { en: 'Reminds ticket holders before doors open.', zh: '在開場前提醒持票人。' },
     'event-detail.notif.change.label': { en: 'Event-change notice', zh: '活動異動通知' },
     'event-detail.notif.change.hint': { en: 'Notifies holders of time, venue or lineup changes.', zh: '通知持票人時間、場地或陣容的異動。' },
-    'event-detail.notif.cancel.label': { en: 'Cancellation notice', zh: '取消通知' },
-    'event-detail.notif.cancel.hint': { en: 'If the event is Cancelled, ticket holders are notified. Admin then voids any tickets still valid, one by one or all at once — this does not happen automatically. Always on.', zh: '若活動被取消，會通知持票人。之後由 Admin 逐票或整場撤銷仍有效的票券——不會自動觸發。永遠開啟。' },
-    'event-detail.notif.cancel.badge': { en: 'System', zh: '系統' },
     'event-detail.fin.title': { en: 'Cost & revenue summary', zh: '成本與營收摘要' },
     'event-detail.fin.sub': { en: 'Each sale emits a ticket revenue event. This page never recomputes — figures roll up to Earnings & Project Net Income (§5.1.6 F5).', zh: '每筆售票會產生一筆票券營收事件。此頁從不重新計算──數字會彙整至收益與企劃淨收入（§5.1.6 F5）。' },
     'event-detail.fin.col.event': { en: 'Revenue event', zh: '營收事件' },
@@ -11688,7 +11720,7 @@
                                zh: '按下立即生效，不必儲存。張數會調成已售、保留與已鎖定的總和；要恢復販售就把張數調高。' },
     'ed.bd.zero.done':       { en: 'Stock is already 0 — raise the total in the bundle page to sell again', zh: '庫存已經是 0，要恢復販售請到組合商品細節頁調高總量' },
     'ed.bd.zero.toast':      { en: 'Stock of {name} set to 0 — raise the total in the bundle page to sell again', zh: '「{name}」庫存已設為 0，到組合商品細節頁調高總量即可恢復販售' },
-    'ed.bd.vis.ro':          { en: 'This event has ended or been cancelled — bundles here are view-only.', zh: '活動已結束或已取消，這裡的組合包只能檢視。' },
+    'ed.bd.vis.ro':          { en: 'This event has ended or is archived — bundles here are view-only.', zh: '活動已結束或已封存，這裡的組合包只能檢視。' },
     'ed.bd.hidden.toast':    { en: 'Hid {name} — it’s off the shop and event page now', zh: '已隱藏「{name}」，商店與活動頁不再列出' },
     'ed.bd.shown.toast':     { en: 'Showing {name} again', zh: '「{name}」已重新顯示' },
 

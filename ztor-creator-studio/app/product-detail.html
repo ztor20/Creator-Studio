@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="ds-components/field-more.css?v=r2.2"><link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/code-picker.css?v=r2.2"><!-- D458：優惠碼總開關的選擇欄 -->
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
@@ -823,17 +824,29 @@
             </div>
           </div>
           </div>
-          <!-- 可與優惠碼疊加（同建立商品 F13 · D183；2026-09-11 使用者：「要有可以使用折扣優惠碼的選項，像創建單售商品一樣」）：
-               商店優惠碼（5.1.5.5 F8）能不能再疊在這個商品的折扣上，由商品自己決定；預設關＝擇一，取對買家最有利的。
-               2026-09-22 使用者反饋：歸入 Enable discount 群組內、折扣關閉時一併收起（原本是獨立列，折扣關掉時仍留在畫面上）。 -->
-          <div class="control-row" style="margin-top:12px">
+        </div>
+        </div>
+      </section>
+
+      <!-- §2.15 優惠碼總開關（D458，2026-10-20；取代原「可與優惠碼疊加」純開關，同建立商品 5.1.5.2 F13 唯一定義處）：
+           關閉＝本商品不能用任何商店優惠碼；開啟＝全部商店的碼自動適用，另可多選「特定商品」範圍的碼、或建立新碼
+           （選碼＝把本商品加進該碼的特定商品範圍，資料在優惠碼端）。與排程特價開不開無關，所以獨立成段。
+           開關 id 沿用 pd-stack-codes（快照／概覽都讀它）；選擇欄元件 js/code-picker.js，儲存才寫回碼端。 -->
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="cpk.title">Discount codes</h3>
+        </div>
+        <div class="control-group">
+          <div class="control-row">
             <div>
-              <div class="control-row__main" data-i18n="cp.discount.stack">Stack with discount codes</div>
-              <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means the buyer gets whichever single discount is best for them</div>
+              <div class="control-row__main" data-i18n="cp.discount.stack">Use discount codes</div>
+              <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means no store discount code can be used here</div>
             </div>
             <div class="switch" role="switch" aria-checked="false" tabindex="0" id="pd-stack-codes"></div>
           </div>
-        </div>
+          <div class="control-group__body" data-pd-codes-body hidden>
+            <div data-pd-codes-host></div>
+          </div>
         </div>
       </section>
 
@@ -1317,6 +1330,8 @@
 <script src="js/demand-store.js?v=r2.2"></script><!-- D360 · S69：需求資料與算法（window.ztorDemand；須在 apparel-taxonomy 之後） -->
 <script src="js/demand-board.js?v=r2.2"></script><!-- D360 · S69：ztorDemandView（需求看板與本頁彈窗共用的 renderer）；本頁沒有 [data-demand-board]，頁面接線段不會跑 -->
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="js/discount-codes-store.js?v=r2.2"></script><!-- D458：優惠碼端資料 -->
+<script src="js/code-picker.js?v=r2.2"></script>
 <script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購（欄位與輔助說明；與建立商品、組合包、活動門票共用；D427 起只剩每人總限購） -->
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
@@ -1975,7 +1990,7 @@
       syncLimitErr(false);
     });
     /* 限購（D398；D427 起只剩每人總限購）：開啟時要填（D428 定案，5.1.5.2 §4.6／5.1.5.1 §2.12）——按儲存時沒填就停在編輯態、就地紅字；
-       儲存成功把值寫回商品記錄（product.limit），含本商品、還在跟隨成員的組合包讀到的就是新值 */
+       儲存成功把值寫回商品記錄（product.limit），含本商品的組合包不受影響（D456：組合包的限購不繼承成員） */
     const limitRead = () => PLm ? PLm.read(limitHost, 'data-pd-limit-f') : {};
     const limitOk = () => !state.limitOn || (!!PLm && PLm.KEYS.some(k => PLm.posInt(limitRead()[k]) != null));
     function syncLimitErr(show) {
@@ -2004,7 +2019,7 @@
     };
     revealToggle('pd-discount-toggle', '[data-pd-discount-fields]');
     revealToggle('pd-sale-toggle', '[data-pd-sale-fields]');
-    revealToggle('pd-stack-codes', null);   /* 可與優惠碼疊加：純開關，沒有要揭露的欄位 */
+    revealToggle('pd-stack-codes', '[data-pd-codes-body]');   /* D458：優惠碼總開關——打開才露出選擇欄 */
     /* 單一規格折扣：折扣價 ↔ 折扣 % 雙向連動（2026-09-22，UIA-060 補套；與 create-product 同一段算法——以定價欄為基準、
        最後編輯為準；程式設值不觸發 input 故無迴圈）。多選項商品只有 % 欄（折扣價欄由 data-when-var 收起），% 套到每個組合。 */
     (function () {
@@ -2289,7 +2304,19 @@
       paintSwitch('pd-sale-toggle', !!(d && d.limited), '[data-pd-sale-fields]');
       setInput('pd-sale-start', d && d.limited ? d.limited.start : '');
       setInput('pd-sale-end', d && d.limited ? d.limited.end : '');
-      paintSwitch('pd-stack-codes', !!(d && d.stack), null);
+      /* 優惠碼總開關（D458）：開關值先看碼端資料層（儲存過就以它為準），沒有紀錄時由商品資料的預設帶入——
+         p.codesOn 明寫優先，否則沿用舊欄位 discount.stack（既有「開啟疊加」→ 開、其餘 → 關；選碼不預選）。 */
+      (function () {
+        const key = p.id || 'zine', C = window.ztorCodes;
+        const on = C ? C.switchOn(key, p.codesOn != null ? !!p.codesOn : !!(d && d.stack)) : !!(d && d.stack);
+        paintSwitch('pd-stack-codes', on, '[data-pd-codes-body]');
+        const host = document.querySelector('[data-pd-codes-host]');
+        if (window.ztorCodePicker && host) {
+          if (window.pdCodes) { window.pdCodes.setKey(key); window.pdCodes.reset(); }
+          else window.pdCodes = window.ztorCodePicker.mount(host, { key: key, label: () => (p.name || key) });
+          window.pdCodes.setReadonly(true);
+        }
+      })();
       /* 限購（D398；D427 起只剩每人總限購）：limit＝{ person }（舊資料的單一數字＝每人總限購），有值＝開＋填值。
          state.limitOn 是限購開關 click handler 的真相，要一起對齊 */
       const lim = PLm ? PLm.norm(p.limit) : null;
@@ -2943,7 +2970,8 @@
 <script>
   /* 逐規格列的「單獨下架／重新上架」（定價與庫存分頁的多規格表 kebab）。
      下架 → 該列灰階、輸入 disabled、kebab 切成「重新上架」；上架則還原。純前端 demo，
-     真正的下架狀態與後端待規格（ASSUMPTIONS UIA-078）。 */
+     真正的下架狀態與後端待規格（ASSUMPTIONS UIA-078）。
+     2026-10-20 D455 B9 定案：只下架該選項組合、其他選項組合照賣（spec 5.1.5.1 §3）。 */
   (function () {
     document.addEventListener('click', function (e) {
       /* 2026-09-11：單獨下架／重新上架兩個動作項改成一列開關（照 DS 列操作選單的 --toggle） */
@@ -2958,6 +2986,15 @@
       var vi = row.getAttribute('data-vi');
       var p = window.pdProduct;
       if (p) { if (vi === 'single') p.delisted = !listed; else if (p.variants && p.variants[vi]) p.variants[vi].delisted = !listed; }
+      /* 2026-10-20（D455 B9，spec 5.1.5.1 §3）：單獨下架只下架這一個選項組合，其他選項組合照賣——
+         整件商品的上架狀態不動（頁首徽章、上架開關都不變），toast 把這件事講清楚。 */
+      if (vi !== 'single' && window.ztorToast) {
+        var nameEl = row.querySelector('.variant-cell--variant .variant-cell__text');
+        var combo = (nameEl && nameEl.firstChild) ? nameEl.firstChild.textContent.trim() : '';   /* 只取組合名，不含底下那行 SKU */
+        var tk = listed ? 'product-detail.var.relisted-toast' : 'product-detail.var.unlisted-toast';
+        var fb = listed ? '“{c}” is listed again.' : '“{c}” unlisted. Other options keep selling.';
+        window.ztorToast.show(((window.i18nT && window.i18nT(tk)) || fb).replace('{c}', combo));
+      }
     });
     /* kebab 下拉：原生 <details> 不自動收——補上「點選單項收起」「點外部收起」「一次只開一個」（比照 e-shop 列操作） */
     document.addEventListener('click', function (e) {
@@ -3533,6 +3570,7 @@
       if (!settingsPanel) return;
       settingsPanel.setAttribute('data-mode', editing ? 'edit' : 'view');
       applyReadonly(!editing);
+      if (window.pdCodes) window.pdCodes.setReadonly(!editing);   /* D458：選碼欄只在編輯態可動 */
       var btn = document.querySelector('[data-pd-editmode]');
       var cancel = document.querySelector('[data-pd-edit-cancel]');
       if (cancel) cancel.hidden = !editing;
@@ -3601,6 +3639,7 @@
     function cancelEdit() {
       DRAFT = null;
       restore(SNAP); SNAP = null;
+      if (window.pdCodes) window.pdCodes.reset();   /* D458：丟掉未儲存的選碼與暫存新碼 */
       fillPriceFields(MODEL);
       renderOptEditor(MODEL); renderEditCombos(MODEL);
       setMode(false);
@@ -3630,6 +3669,13 @@
       DRAFT.options = DRAFT.options.map(function (o) { return { name: o.name || '', values: o.values.filter(function (v) { return String(v).trim() !== ''; }) }; }).filter(function (o) { return o.values.length; });
       regen(DRAFT);
       MODEL = DRAFT; DRAFT = null;
+      /* D458：優惠碼總開關與選碼隨儲存寫回碼端的特定商品範圍（關閉不清已選的碼，只是不適用） */
+      if (window.pdCodes && window.ztorCodes) {
+        var cKey = (window.pdProduct && window.pdProduct.id) || 'zine';
+        var cSw = document.getElementById('pd-stack-codes');
+        window.ztorCodes.setSwitch(cKey, !!(cSw && cSw.getAttribute('aria-checked') === 'true'));
+        window.pdCodes.commit(cKey, (window.pdProduct && window.pdProduct.name) || cKey);
+      }
       if (window.pdLimits) window.pdLimits.commit();   /* 限購寫回商品記錄（D398；D427 起只剩每人總限購） */
       if (window.pdApparel) window.pdApparel.commit();   /* 服飾配件欄位寫回商品記錄（group／category／subCategory／audience／attrs／customSpecs） */
       syncLocksToStore();   /* 鎖定量寫回 store，商品層那張唯讀彙總表跟著重畫 */
@@ -3778,8 +3824,8 @@
           : T('product-detail.setov.edition.limited-total', 'Limited · {n} total').replace('{n}', MODEL.cap || '—') });
       rows.push({ g: 'pricing', go: 'rules', key: 'cp.discount.title', fb: 'Discount settings',
         v: on('pd-discount-toggle')
-          ? join([multi ? '' : money(num($v('pd-sale-price'))), $v('pd-sale-percent') ? '-' + $v('pd-sale-percent') + '%' : '', on('pd-sale-toggle') ? join([$v('pd-sale-start'), $v('pd-sale-end')], ' – ') : '', on('pd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : ''])
-          : join([T('product-detail.setov.off', 'Off'), on('pd-stack-codes') ? T('cp.discount.stack', 'Stack with discount codes') : '']) });
+          ? join([multi ? '' : money(num($v('pd-sale-price'))), $v('pd-sale-percent') ? '-' + $v('pd-sale-percent') + '%' : '', on('pd-sale-toggle') ? join([$v('pd-sale-start'), $v('pd-sale-end')], ' – ') : '', on('pd-stack-codes') ? T('cp.discount.stack', 'Use discount codes') : ''])
+          : join([T('product-detail.setov.off', 'Off'), on('pd-stack-codes') ? T('cp.discount.stack', 'Use discount codes') : '']) });
       if (!digital) {
         var pct = $v('pd-threshold-pct') || '10';
         rows.push({ g: 'ops', go: 'rules', key: 'product-detail.threshold.title', fb: 'Low-stock alert', v: on('pd-lowstock-toggle') ? pct + '%' : T('product-detail.setov.off', 'Off') });

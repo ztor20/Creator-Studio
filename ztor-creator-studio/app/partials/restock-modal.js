@@ -29,7 +29,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     <div class="payout-dialog__head">
       <div>
         <h2 class="payout-dialog__title" id="restock-dialog-title" data-i18n="restock.title">Restock</h2>
-        <p class="text-sub" style="margin:6px 0 0;font-size:13px" data-i18n="restock.sub">Add stock for physical items. Digital / unlimited items don't apply.</p>
+        <p class="text-sub" style="margin:6px 0 0;font-size:13px" data-i18n="restock.sub">Add stock for physical items, limited or unlimited. Digital items don't apply.</p>
       </div>
       <button class="btn btn--icon" type="button" aria-label="Close restock" data-i18n-aria-label="restock.close" data-restock-close><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
@@ -47,7 +47,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       <div data-restock-members></div>
       <div data-restock-empty hidden style="padding:16px;text-align:center;font-size:12.5px;color:var(--foreground-subtle)" data-i18n="restock.empty">All your products are sufficiently stocked.</div>
 
-      <!-- 預計到貨時間（僅定時補貨）→ 供應商 → 備註（Figma：表格下方，改用 .field＝有 label→input 間距）-->
+      <!-- 預計到貨時間（僅計時補貨）→ 供應商 → 備註（Figma：表格下方，改用 .field＝有 label→input 間距）-->
       <label class="field" data-restock-eta hidden>
         <span class="field__label"><span data-i18n="restock.f.eta">Expected arrival</span> <span class="field__req">*</span></span>
         <input class="input" type="date" value="2026-07-08">
@@ -213,8 +213,8 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       });
       return true;
     }
-    /* 高度鎖定：定時補貨會多出「預計到貨」欄而變高，彈窗又置中 → 切換方式時整框上下跳。
-       開窗時先量「定時」狀態（最高）的實際高度，鎖成 .payout-dialog 的 min-height，之後切「立即」
+    /* 高度鎖定：計時補貨會多出「預計到貨」欄而變高，彈窗又置中 → 切換方式時整框上下跳。
+       開窗時先量「計時」狀態（最高）的實際高度，鎖成 .payout-dialog 的 min-height，之後切「立即」
        也維持這個高度（body flex 撐開、footer 仍釘底），不再跳。量測在 modal 顯示後、同一幀 paint 前
        同步完成，看不到閃動；每次開窗先歸零重量、自動適應單/多規格不同內容高度。 */
     function lockHeight() {

@@ -49,6 +49,7 @@
 <link rel="stylesheet" href="ds-components/spec-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/size-chart-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/code-picker.css?v=r2.2"><!-- D458：優惠碼總開關打開後的選擇欄（js/code-picker.js） -->
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
@@ -531,16 +532,6 @@
           </div>
         </div>
         </div>
-        <!-- 可與優惠碼疊加（spec 5.1.5.2 F13 · D183）：商店優惠碼（5.1.5.5 F8）能不能再疊在
-             這個商品的特價／分級折扣上，由商品自己決定；預設關＝三者擇一，取對買家最有利的。
-             2026-09-22 使用者反饋：歸入 Enable discount 群組內、折扣關閉時一併收起（原本是獨立列，折扣關掉時仍留在畫面上）。 -->
-        <div class="control-row" style="margin-top:12px">
-          <div>
-            <div class="control-row__main" data-i18n="cp.discount.stack">Stack with discount codes</div>
-            <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means the buyer gets whichever single discount is best for them</div>
-          </div>
-          <div class="switch" role="switch" aria-checked="false" tabindex="0" data-cp-stack></div>
-        </div>
       </div>
       </div>
     </section>
@@ -675,18 +666,31 @@
           </div>
         </div>
         </div>
-        <!-- 可與優惠碼疊加（spec 5.1.5.2 F13 · D183）：多選項模式漏了這一列（2026-09-02 使用者回報）。
-             F13 沒有按規格模式分岔——疊加與否是「這個商品」的決定，不是「這個選項組合」的決定，
-             所以多選項一樣要有，且同樣預設關＝三者擇一、取對買家最有利的。
-             2026-09-22 使用者反饋：歸入 Enable discount 群組內、折扣關閉時一併收起。 -->
-        <div class="control-row" style="margin-top:12px">
-          <div>
-            <div class="control-row__main" data-i18n="cp.discount.stack">Stack with discount codes</div>
-            <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means the buyer gets whichever single discount is best for them</div>
-          </div>
-          <div class="switch" role="switch" aria-checked="false" tabindex="0" data-cp-vstack></div>
-        </div>
       </div>
+      </div>
+    </section>
+
+    <!-- §4.4 F13 優惠碼總開關（D458，2026-10-20；spec 5.1.5.2 §4.4 F13「可與優惠碼疊加」唯一定義處）：
+         取代 2026-09 起放在折扣群組內的「可與優惠碼疊加」純開關（原「關閉＝折扣與優惠碼擇一」）。
+         關閉（預設）＝這個商品不能用任何商店優惠碼；開啟＝全部商店的碼自動適用，另可多選「特定商品」範圍的碼、
+         或建立新碼（選碼＝把本商品加進該碼的特定商品範圍，資料在優惠碼端）。與排程特價開不開無關（D458 決定 4），
+         所以獨立成段、不再收進折扣群組；單一規格與多選項共用這一段（一個商品只有一個總開關）。
+         按「開始販售」時才 commit：新碼與選取結果隨商品儲存一併建立綁定（D458 推導 9／11）。 -->
+    <section class="form-section form-section--outlined" data-cp-show="physical digital" data-cp-codes-section>
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cpk.title">Discount codes</h3>
+      </div>
+      <div class="control-group">
+        <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="cp.discount.stack">Use discount codes</div>
+            <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means no store discount code can be used here</div>
+          </div>
+          <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cp-codes-toggle"></div>
+        </div>
+        <div class="control-group__body" data-cp-codes-body hidden>
+          <div data-cp-codes-host></div>
+        </div>
       </div>
     </section>
 
@@ -871,7 +875,7 @@
             <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-card__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
           </button>
           <button class="segmented__btn segmented__btn--active" type="button" data-cp-listing="now">
-            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.now">List now</span><span class="radio-card__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
+            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.now">List now</span><span class="radio-card__sub" data-i18n="cp.listing.now-sell">Goes live when you tap Start selling</span></span>
           </button>
           <button class="segmented__btn" type="button" data-cp-listing="schedule">
             <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-card__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
@@ -1056,6 +1060,8 @@
 <script src="partials/film-picker.js?v=r2.2"></script>
 <script src="partials/section-outline.js?v=r2.2"></script>
 <script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購（欄位與輔助說明；與商品細節、組合包、活動門票共用；D427 起只剩每人總限購） -->
+<script src="js/discount-codes-store.js?v=r2.2"></script><!-- D458：優惠碼端資料（商品端選碼寫回碼的特定商品範圍） -->
+<script src="js/code-picker.js?v=r2.2"></script>
 <script>
 /* 建立商品流程互動 · spec 5.1.5.2 §3-4 + §4.5 + §5.2.4/§5.2.5
    類型切換、多規格 Variations、庫存版本 Edition、取貨方式、每人限購、
@@ -1423,8 +1429,9 @@
       if (state.limitOn) a.push({ id: 'limit', labelKey: 'cp.qc.limit', step: CP_STEP.limits, k: 'Purchase limit', done: () => limitOk() });
       return a;
     }
+    /* 2026-10-20（spec 5.1.5.2 §4.6 v6.41，D455 A1）：數位就緒檢查只留封面——原本第一項「Item file」
+       （規格舊寫 Item image）拿掉，數位共 4 項：Cover art、Product name、Description、Price。 */
     const a = [
-      { id: 'file',  labelKey: 'cp.qc.file',  step: CP_STEP.file,  k: 'Item file',            done: () => !!assets['d-file'] },
       { id: 'cover', labelKey: 'cp.qc.cover', step: CP_STEP.media, k: 'Cover art',            done: () => !!assets['d-cover'] },
       { id: 'name',  labelKey: 'cp.qc.name',  step: CP_STEP.info,  k: 'Product name',         done: () => has(fName) },
       { id: 'desc',  labelKey: 'cp.qc.desc',  step: CP_STEP.info,  k: 'Description (30+)',     done: () => len(fDesc) >= 30 },
@@ -1567,6 +1574,13 @@
     const nm = ((document.getElementById('cp-f-name') || {}).value || '').trim();
     let pr = ((document.getElementById('cp-price') || {}).value || '').trim();
     if (pr && !/\$/.test(pr)) pr = '$' + pr;
+    /* D458：商品儲存時一併寫入優惠碼端——開關開啟才綁（選取與暫存的新碼）；建立流程還沒有商品 id，用暫時 key */
+    if (cpCodes) {
+      const key = 'new-' + Date.now().toString(36);
+      const on = cpCodesToggle && cpCodesToggle.getAttribute('aria-checked') === 'true';
+      if (window.ztorCodes) window.ztorCodes.setSwitch(key, on);
+      cpCodes.commit(key, nm || key);
+    }
     const q = new URLSearchParams({ posted: '1' });
     if (nm) q.set('name', nm);
     if (pr) q.set('price', pr);
@@ -2209,23 +2223,16 @@
   wireReveal('cp-sale-toggle', '[data-cp-sale-fields]');
   wireReveal('cp-vdiscount-toggle', '[data-cp-vdiscount-fields]');   /* 多規格折扣（折扣%）*/
   wireReveal('cp-vsale-toggle', '[data-cp-vsale-fields]');
-  /* 可與優惠碼疊加（F13 · D183）：這兩顆開關 2026-09-02 補進畫面時只放了 markup、沒有接行為，
-     點了不會動（2026-09-04 使用者回報）。它不揭示任何欄位，所以不能借 wireReveal，
-     另給一個只切自身狀態的接法；單一規格與多規格各一顆，值互相獨立。 */
-  function wireSwitchOnly(sel) {
-    document.querySelectorAll(sel).forEach(function (t) {
-      var flip = function () {
-        var on = t.getAttribute('aria-checked') !== 'true';
-        t.setAttribute('aria-checked', on ? 'true' : 'false');
-        t.classList.toggle('switch--on', on);
-      };
-      t.addEventListener('click', flip);
-      t.addEventListener('keydown', function (e) {
-        if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
-      });
-    });
+  /* 優惠碼總開關（F13 · D458）：開關打開才顯示選擇欄（js/code-picker.js）；單一規格與多選項共用這一顆。
+     選取結果與新碼先留在元件裡，按「開始販售」（doPublishNew）才 commit 進碼端範圍。
+     墓碑 2026-10-20：原 data-cp-stack／data-cp-vstack 兩顆「可與優惠碼疊加」純開關與 wireSwitchOnly 退場。 */
+  const cpCodesToggle = document.getElementById('cp-codes-toggle');
+  const cpCodesHost = document.querySelector('[data-cp-codes-host]');
+  let cpCodes = null;
+  if (cpCodesToggle && cpCodesHost && window.ztorCodePicker) {
+    cpCodes = window.ztorCodePicker.mount(cpCodesHost, { key: null, label: () => ((document.getElementById('cp-f-name') || {}).value || '').trim() });
+    wireReveal('cp-codes-toggle', '[data-cp-codes-body]');
   }
-  wireSwitchOnly('[data-cp-stack], [data-cp-vstack]');
   /* 單一規格折扣：折扣價 ↔ 折扣% 雙向連動（以定價 cp-price 為基準、最後編輯為準；程式設值不觸發 input 故無迴圈）*/
   (function () {
     const base = document.getElementById('cp-price');

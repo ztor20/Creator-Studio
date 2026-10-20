@@ -57,6 +57,7 @@
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script><!-- 本頁沒有導航殼；載它是為了 window.ztorCreator（預覽的主辦＝目前 persona），mount() 找不到 #sidebar 會自己退出 -->
 <script src="js/events-store.js?v=r2.2"></script>
+<script src="js/listing-state.js?v=r2.2"></script><!-- D455 B15：組合包是否已下架（含定時上架未到） -->
 <script src="partials/rich-body.js?v=r2.2"></script><!-- D340：內文的格式化與翻譯欄位切段（只用靜態工具，不掛編輯器） -->
 <script src="partials/venue-map.js?v=r2.2"></script><!-- D369：活動地點地圖 -->
 <script src="js/fan-event-page.js?v=r2.2"></script>
@@ -164,8 +165,8 @@
     if (!first.endDate && a != null && b != null && b > a) { const d = b - a; duration = ((d >= 60 ? Math.floor(d / 60) + ' h' : '') + (d % 60 ? ' ' + (d % 60) + ' min' : '')).trim(); }
     const pickupKey = { eticket: 'fep.pickup.eticket', sf: 'fep.pickup.sf', pickup: 'fep.pickup.pickup', store: 'fep.pickup.pickup' }[(ev.publish || {}).pickup] || 'fep.pickup.eticket';
     const statusKey = { 'on-sale': ['fep.status.on-sale', 'On sale', 'badge--success'], live: ['fep.status.on-sale', 'On sale', 'badge--success'],
-      scheduled: ['fep.status.soon', 'Coming soon', 'badge--info'], ended: ['fep.status.ended', 'Ended', 'badge--neutral'],
-      cancelled: ['fep.status.cancelled', 'Cancelled', 'badge--error'] }[ev.status] || ['fep.status.soon', 'Coming soon', 'badge--info'];
+      scheduled: ['fep.status.soon', 'Coming soon', 'badge--info'], ended: ['fep.status.ended', 'Ended', 'badge--neutral']
+    }[ev.status] || ['fep.status.soon', 'Coming soon', 'badge--info'];
     const tmM = ev.terms || {};
     /* D328：隱藏的票（hidden）交給渲染器略過。墓碑 2026-10-05（D353）：門票簡介（desc／tdesc-<id>）整欄移除 */
     const kvImg = (ev.images && ev.images.keyvisual) || '';
@@ -225,11 +226,46 @@
   /* 已結束、已取消整頁唯讀（D361 決定三，5.1.6.3 §2.13；D390 稽核第一節原型第 6 條）：活動詳情收起了入口，但直接開網址仍進得來——
      這一頁自己也照階段鎖：翻譯格與價格格一律唯讀、主鈕（儲存）收起、預覽不能就地改字，次鈕改「返回」。
      共用的 js/publish-stage.js 沒有唯讀模式，由本頁在它每次重畫後把輸入鎖起來（MutationObserver），不另做第二套畫面。 */
-  const readOnly = ['ended', 'cancelled'].indexOf(ev.status) >= 0;
+  const readOnly = ev.status === 'ended' || !!ev.archived;   // D457：已取消階段退場，已封存取代
+  /* 上架中要先下架（D435；翻譯歸入其他資料由 D455 定案，5.1.6.3 §2.13 編輯時機、5.1.5.9 §2.8）：活動已發布、此刻上架中時，
+     本頁照樣能開、能看預覽，翻譯格與價格格唯讀，上方說明要先下架。判斷同 event-detail 的 edStockOnly()：
+     已排程／售票中／進行中、沒下架、定時上架時間已到（未到視同已下架，D455）。功能閘 S81.1 關掉時不鎖。
+     組合包的資料看組合包自己（D455）：活動上架中、但組合包自己已下架（b.listed === false），那個組合包的名稱、描述、
+     售價仍可改；活動已下架時組合包一定跟著下架（D448），所以不會有「活動下架、組合包上架」要鎖的情形。 */
+  const listedLock = (() => {
+    const d = window.ztorDevState;
+    if (d && d.featOn && !d.featOn('S81.1')) return false;
+    if (readOnly || ['scheduled', 'on-sale', 'live'].indexOf(ev.status) < 0 || ev.unlisted) return false;
+    const lf = (ev.listing || {}).from;
+    const t = lf ? new Date(String(lf).replace(' ', 'T')).getTime() : NaN;
+    return !(!isNaN(t) && t > Date.now());
+  })();
+  /* 已下架的組合包才可改翻譯與價格（D455 B15）：判斷交給 ListingState.isUnlisted（手動下架、封存、定時上架未到、定時下架已過都算），
+     與 bundle-detail 的 bdStockOnly() 同一個判準；欄位照 bundle-detail 的 bundleModel 取（listed 缺值＝上架）。 */
+  const LSt = window.ListingState;
+  const bundleOff = b => LSt
+    ? LSt.isUnlisted({ listed: b.listed !== false, listAt: b.listAt || null, unlistAt: b.unlistAt || null, archived: !!b.archived })
+    : b.listed === false;
+  const openBundles = (ev.bundles || []).filter(bundleOff).map(b => String(b.id));
+  /* 這個欄位或價格列鍵（翻譯表 data-pp-row-field、預覽 data-pp-field-key、價格表 data-pp-price-key）是否鎖住 */
+  function keyLocked(key) {
+    if (readOnly) return true;
+    if (!listedLock) return false;
+    const m = /^bundle-(?:name|desc)-(.+)$/.exec(key || '') || /^bundle:(.+)$/.exec(key || '');
+    return !(m && openBundles.indexOf(m[1]) >= 0);
+  }
+  const partial = !readOnly && listedLock && openBundles.length > 0;   // 只有已下架的組合包可改：儲存鈕留著
   function lockAll() {
-    host.querySelectorAll('input, textarea').forEach(el => { if (!el.readOnly) el.readOnly = true; });
-    host.querySelectorAll('[contenteditable="true"]').forEach(el => el.setAttribute('contenteditable', 'false'));
-    host.querySelectorAll('[data-stage-primary], .pstage-edit').forEach(b => { if (!b.hidden) b.hidden = true; });
+    const scope = [host].concat(Array.from(document.querySelectorAll('.drawer')));
+    scope.forEach(root => {
+      root.querySelectorAll('input, textarea').forEach(el => {
+        const k = el.getAttribute('data-pp-row-field') || el.getAttribute('data-pp-price-key');
+        if (keyLocked(k) && !el.readOnly) el.readOnly = true;
+      });
+      root.querySelectorAll('[data-pp-price-reset]').forEach(b => { if (keyLocked(b.getAttribute('data-pp-price-reset')) && !b.hidden) b.hidden = true; });
+    });
+    host.querySelectorAll('[contenteditable="true"]').forEach(el => { if (keyLocked(el.getAttribute('data-pp-field-key'))) el.setAttribute('contenteditable', 'false'); });
+    if (!partial) host.querySelectorAll('[data-stage-primary], .pstage-edit').forEach(b => { if (!b.hidden) b.hidden = true; });
   }
   window.ztorPublishStage.mount(host, {
     fields: locFields(),
@@ -257,20 +293,22 @@
       location.href = backHref + (backHref.indexOf('?') >= 0 ? '&' : '?') + 'saved=loc';
     },
     onSecondary: () => { location.href = backHref; },
-    ...(readOnly ? { secondaryKey: 'evloc.back.ro' } : {})
+    ...((readOnly || (listedLock && !partial)) ? { secondaryKey: 'evloc.back.ro' } : {})
   });
-  if (readOnly) {
+  if (readOnly || listedLock) {
     const bar = document.createElement('div');
     bar.className = 'info-banner';
-    bar.innerHTML = '<i data-lucide="lock" class="ztor-icon info-banner__icon"></i><span data-i18n="evloc.ro">' +
-      T('evloc.ro', 'This event has ended or been cancelled — translations and prices are view-only.') + '</span>';
+    const roKey = readOnly ? 'evloc.ro' : (partial ? 'evloc.listed.partial' : 'evloc.listed');
+    const roFb = readOnly ? 'This event has ended or is archived — translations and prices are view-only.'
+      : (partial ? 'This event is listed — its translations and ticket prices are view-only. Unlisted bundles can still be edited. To edit the rest, unlist the event first, then relist it after you save.'
+        : 'This event is listed — translations and prices are view-only. To edit them, unlist the event first, then relist it after you save.');
+    bar.innerHTML = '<i data-lucide="lock" class="ztor-icon info-banner__icon"></i><span data-i18n="' + roKey + '">' + T(roKey, roFb) + '</span>';
     host.parentNode.insertBefore(bar, host);
     if (window.ztorIcons) window.ztorIcons.applyIcons(bar);
     lockAll();
     new MutationObserver(lockAll).observe(host, { childList: true, subtree: true, attributes: true, attributeFilter: ['contenteditable', 'hidden'] });
-    /* 抽屜（翻譯表／價格表）掛在 body 底下，一樣要鎖 */
-    new MutationObserver(() => document.querySelectorAll('.drawer input, .drawer textarea').forEach(el => { el.readOnly = true; }))
-      .observe(document.body, { childList: true, subtree: true });
+    /* 抽屜（翻譯表／價格表）掛在 body 底下，一樣要鎖（鍵級：只鎖 keyLocked 的格） */
+    new MutationObserver(lockAll).observe(document.body, { childList: true, subtree: true });
   }
 })();
 </script>

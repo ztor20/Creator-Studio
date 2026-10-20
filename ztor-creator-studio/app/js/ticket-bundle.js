@@ -22,7 +22,9 @@
    狀態形狀（掛在消費頁自己的物件上，例如 bundle-editor 的 b、bundle-detail 的 bundleModel）：
      st.sched = { listAt, unlistAt, saleStart, saleEnd }  每格 null＝跟隨活動、字串＝另設（'YYYY-MM-DDTHH:MM'；'' ＝另設但還沒填）
      st.rules = null（跟隨所含門票）｜{ on, cond, tier, from, to, cap, person }（已調整；person 以「組」計）
-   D427（2026-10-16）：限購只留每人總限購數量——本檔的每次交易限購（order）與限購次數（times）整組移除（墓碑），
+   D456（2026-10-20）：組合包的限購不再跟門票、不再取交集或只能收窄，預設不限、自己設定、獨立計算（js/purchase-limits.js）；
+  本檔下面「購買條件與限購」的限購分支（非 buyOnly）本來就沒有消費者，現在規則也已失效，只留舊資料相容，不要再接。購買條件（分級、限時間）不變。
+  D427（2026-10-16）：限購只留每人總限購數量——本檔的每次交易限購（order）與限購次數（times）整組移除（墓碑），
    舊資料若帶 order／times 一律忽略。
    活動時間（et，由 times(ev) 或頁面自己組）：{ listFrom, listTo, listNow, saleFrom, saleTo, start, draft, shown, unlisted }
 
@@ -373,7 +375,8 @@
           kv(T('tb.rules.buy'), buyText(defBuy(def), T)) +
           kv(T('tb.rules.cap'), capText(defCap(def), T)) +
         '</div>') +
-        (opts.readonly ? '<p class="field__hint">' + esc(note + sep() + T('tb.rules.later')) + '</p>' : '') +
+        /* 2026-10-20 D455（B7）：「建立後到細節頁調整」改由 create-bundle 整組購買條件與限購共用一句（[data-cb-rules-later]），這裡只留來源句 */
+        (opts.readonly ? '<p class="field__hint">' + esc(note) + '</p>' : '') +
         err('empty') + (buyOnly ? '' : err('person'));
     }
     var tierOpts = TIERS_HI.map(function (v) {

@@ -597,7 +597,7 @@
     var at = nowMs(now), out = [];
     (entities || []).forEach(function (e) {
       if (!e || isArchived(e) || isDraftOf(e, null)) return;
-      if (flag(e.listed, true) && passed(e.unlistAt, at)) { unlist(e); out.push(e); }
+      if (flag(e.listed, true) && passed(effectiveUnlistAt(e), at)) { unlist(e); out.push(e); }   /* 拍賣競標中順延到結標（D455） */
     });
     return out;
   }
@@ -607,8 +607,19 @@
     if (isArchived(entity)) return true;                    /* 封存必然下架（§7.14） */
     if (!flag(entity && entity.listed, true)) return true;
     if (future(entity && entity.listAt, at)) return true;     /* 排定上架但還沒到 */
-    if (passed(entity && entity.unlistAt, at)) return true;   /* 自動下架日期與時間已過 */
+    if (passed(effectiveUnlistAt(entity), at)) return true;   /* 自動下架日期與時間已過（拍賣競標中順延到結標，D455） */
     return false;
+  }
+
+  /** 定時下架實際生效的時間（2026-10-20 · D455 B4）：拍賣的下架時間落在競標中（已開拍、未結標）時，
+      定時下架不生效、結標後才處理——生效時間順延到結標時間（＝停售＝開拍＋時長）。
+      理由同 D286：競標中不能下架。商品與組合包沒有競標，原值照回。 */
+  function effectiveUnlistAt(entity) {
+    var u = entity && entity.unlistAt;
+    if (!u || !isAuctionEntity(entity)) return u;
+    var ut = time(u), start = auctionStart(entity), endIso = auctionSaleEnd(entity), end = time(endIso);
+    if (ut !== null && start !== null && end !== null && ut >= start && ut < end) return endIso;
+    return u;
   }
 
   /**
@@ -731,7 +742,8 @@
      deriveAuctionFlags 再依 auctionBidCount() 改判：有出價維持 ended（＝完售／Sold，key 名沿用不改）、
      無出價改成新 key unsold（＝流標／Unsold）。選這個做法而不是把 ended 整個改名，是因為 ended 已經是
      D286 剛定案的「完售」語意、且被三處消費（頁面徽章、篩選 tab、i18n），沒有理由再动它；流標只是
-     新增一個同層的桶。未達保留價、流標能否重新開拍：待確認，不做 UI（見 ASSUMPTIONS UIA-153）。 */
+     新增一個同層的桶。2026-10-20（D455 B3）：有出價但最高出價未達保留價同樣判 unsold（見 auctionUnsoldReason）；
+     流標能否重新開拍仍待確認，不做 UI（見 ASSUMPTIONS UIA-153）。 */
   var AUCTION_STATUS_META = {
     archived: STATUS_META.archived,
     draft:    STATUS_META.draft,
@@ -776,17 +788,46 @@
     return n > 0 ? n : 0;
   }
 
-  /** 拍賣的單一狀態桶（清單篩選用）：archived → draft → unlisted → hidden → ended／unsold → coming → live。
-      ended 再依有無出價拆成 ended（完售）／unsold（流標，D287）。 */
-  function deriveAuctionStatus(a, now) {
-    var st = deriveStatus(auctionEntity(a), { qty: INF, isDraft: isDraftOf(a, null) }, now);
-    return (st === 'ended' && auctionBidCount(a) <= 0) ? 'unsold' : st;
+  /** 流標原因（結標後才有意義）：'nobids'＝結標時無出價（D287）；'reserve'＝有出價但最高出價未達保留價（2026-10-20 · D455 B3）；
+      其餘回 null（＝成交）。reserve／topBid 是示範欄位：reserve 沒設或 ≤0＝沒有保留價，有出價即成交。 */
+  function auctionUnsoldReason(a) {
+    if (auctionBidCount(a) <= 0) return 'nobids';
+    var reserve = num(a && a.reserve);
+    if (!(reserve > 0)) return null;
+    var top = auctionTopBid(a);
+    if (top === null) return null;   /* 有出價但取不到最高出價：不把缺值當 0 判流標（D455 驗收修正） */
+    return top < reserve ? 'reserve' : null;
   }
 
-  /** 細節頁用：主徽章不含隱藏那一層，隱藏另外一顆。同樣把 ended 依出價數拆成 ended／unsold（D287）。 */
+  /** 最高出價：依序取 topBid／highestBid／currentBid，再取出價紀錄（bidList[].amount）的最大值；都取不到回 null。
+      缺值或非數字不當 0——否則有保留價、有出價但沒記最高出價時會被誤判成流標。 */
+  function auctionTopBid(a) {
+    if (!a) return null;
+    var keys = ['topBid', 'highestBid', 'currentBid'], i, v, best = null;
+    for (i = 0; i < keys.length; i++) {
+      v = a[keys[i]];
+      if (v === undefined || v === null || v === '') continue;
+      v = Number(v);
+      if (!isNaN(v)) return v;
+    }
+    (Array.isArray(a.bidList) ? a.bidList : []).forEach(function (b) {
+      var x = Number(b && (b.amount !== undefined ? b.amount : b));
+      if (b !== null && b !== undefined && b !== '' && !isNaN(x) && (best === null || x > best)) best = x;
+    });
+    return best;
+  }
+
+  /** 拍賣的單一狀態桶（清單篩選用）：archived → draft → unlisted → hidden → ended／unsold → coming → live。
+      ended 再依結果拆成 ended（完售）／unsold（流標：無出價 D287，或最高出價未達保留價 D455）。 */
+  function deriveAuctionStatus(a, now) {
+    var st = deriveStatus(auctionEntity(a), { qty: INF, isDraft: isDraftOf(a, null) }, now);
+    return (st === 'ended' && auctionUnsoldReason(a)) ? 'unsold' : st;
+  }
+
+  /** 細節頁用：主徽章不含隱藏那一層，隱藏另外一顆。同樣把 ended 依結果拆成 ended／unsold（D287、D455）。 */
   function deriveAuctionFlags(a, now) {
     var flags = deriveFlags(auctionEntity(a), { qty: INF, isDraft: isDraftOf(a, null) }, now);
-    if (flags.status === 'ended' && auctionBidCount(a) <= 0) return { status: 'unsold', hidden: flags.hidden };
+    if (flags.status === 'ended' && auctionUnsoldReason(a)) return { status: 'unsold', hidden: flags.hidden };
     return flags;
   }
 
@@ -905,6 +946,9 @@
     auctionSaleEnd: auctionSaleEnd,
     auctionStarted: auctionStarted,
     auctionBidCount: auctionBidCount,
+    auctionUnsoldReason: auctionUnsoldReason,
+    auctionTopBid: auctionTopBid,
+    effectiveUnlistAt: effectiveUnlistAt,
     deriveAuctionStatus: deriveAuctionStatus,
     deriveAuctionFlags: deriveAuctionFlags,
     auctionBadgeClass: auctionBadgeClass,

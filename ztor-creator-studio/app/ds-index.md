@@ -400,7 +400,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 176 支；主 class 前 5 個）
+## 元件（ds-components/，共 177 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -427,6 +427,7 @@
 - `check-card.css` — .check-cards, .check-card__group, .check-card, .check-card__mark, .check-card--on ｜ check-card.css · 多選卡（Cosmos 版型）
 - `checkbox.css` — .zcheck, .zcheck__control, .zcheck__input, .zcheck__box, .zcheck__label ｜ Checkbox — the house choice control
 - `chip.css` — .chip-group, .chip-group--loose, .chip, .chip--active, .chip--static ｜ Chip — clickable filter pill with active state +
+- `code-picker.css` — .code-picker, .code-picker__auto, .code-picker__label, .code-picker__chips, .code-picker__pct ｜ code-picker.css · 商品端優惠碼選擇欄（2026-10-20 D458）
 - `collapse-group.css` — .collapse-head, .collapse-head__toggle, .collapse-head__chev, .collapse-head__sum, .collapse-head__sum--todo ｜ collapse-group.css · 可折疊的分組盒（標題列＋一行摘要）
 - `combobox.css` — .combobox, .combobox__menu, .combobox__group, .combobox__opt, .combobox__opt-icon ｜ combobox.css · multi-select typeahead (search-to
 - `completeness.css` — .completeness, .completeness__head, .completeness__label, .completeness__count, .completeness__track ｜ Completeness meter · 素材包完整度（spec 0-設計規格書 §7.7「目前

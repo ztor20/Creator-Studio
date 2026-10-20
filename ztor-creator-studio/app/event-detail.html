@@ -173,6 +173,12 @@
           <!-- 墓碑 2026-08-17：「取消活動」搬到「設定」分頁最下面（使用者指示）。
                頁首那一排是「常用動作」，取消活動是不可逆、而且很少按的一次性決定，
                放在最順手的位置只會增加誤觸——它該待在設定的末端，跟其他破壞性動作一起。 -->
+          <!-- 解除封存（D457，2026-10-20）：已封存的頁首只有這一個主要動作，回到已下架、不自動上架（比照商品 D298）；
+               不確認。syncArchive() 依 ev.archived 顯示，按下寫 events-store setArchived(false) 後重載整頁。 -->
+          <button class="btn btn--primary" type="button" data-view-safe data-ed-unarchive hidden>
+            <i data-lucide="archive-restore" class="ztor-icon"></i>
+            <span data-i18n="event-detail.btn.unarchive">Unarchive</span>
+          </button>
           <button class="btn btn--outline" type="button" data-ed-duplicate data-feat="S76" hidden>
             <i data-lucide="copy" class="ztor-icon"></i>
             <span data-i18n="event-detail.btn.duplicate">Run it again</span>
@@ -207,6 +213,8 @@
             <span class="badge badge--info"><span data-i18n="event-detail.badge.type">Concert</span></span>
             <!-- 已下架（D361 決定五）：上架是階段以外的另一維度，階段徽章不動、另掛這一顆；syncUnlist() 依 ev.unlisted 顯示。
                  排在最後：前三顆由 hydrate 以位置索引（[0] 階段、[1] 系列、[2] 類型）改寫，插在前面會錯位。 -->
+            <!-- 已封存（D457）：封存不是階段，階段徽章照原階段顯示；已封存徽章優先於已下架與完售（那兩顆收起）。syncArchive() 依 ev.archived 顯示 -->
+            <span class="badge badge--neutral" id="ed-archived-badge" hidden><span data-i18n="shop.status.archived">Archived</span></span>
             <span class="badge badge--neutral" id="ed-unlisted-badge" data-feat="S81" hidden><span data-i18n="events.badge.unlisted">Unlisted</span></span>
             <!-- 完售（D375 決定七）：不是階段，同已下架另掛一顆；syncSaleBadges() 依 ztorEvents.isSoldOut() 顯示 -->
             <span class="badge badge--neutral" id="ed-soldout-badge" data-feat="S85" hidden><span data-i18n="events.badge.soldout">Sold out</span></span>
@@ -223,6 +231,12 @@
         <!-- 階段轉換（2026-08-13）：狀態機（§7.2）本來只寫在總覽的說明橫幅裡，畫面上卻沒有
              任何一顆鈕能推進它——草稿填完就是死路。三顆鈕依階段互斥出現，由 syncStage() 驅動：
              發布開賣（草稿／已排程）→ 取消活動（尚未結束的階段）→ 再開一場（已結束）。 -->
+      </div>
+
+      <!-- 封存態說明（D457，比照商品 D284／D298）：整頁唯讀、只能解除封存（回到已下架）。沿用 info-banner，icon 換 archive；未封存時整條收起 -->
+      <div class="info-banner mt-16" id="ed-archived-banner" hidden>
+        <i data-lucide="archive" class="ztor-icon info-banner__icon"></i>
+        <span data-i18n="event-detail.archived.banner">Archived — read-only. Unarchiving returns it to Unlisted; settings are kept.</span>
       </div>
 
       <!-- D415 示範（2026-10-14）：bookyay 端的修改同步到 ztor 後自動下架的提示。ev.bkySyncUnlist 有值、且仍是已下架時才顯示，
@@ -324,8 +338,8 @@
                      這一排剩已售出／活動收入／已作廢票券三格，span-4 × 3 剛好排滿一列。 -->
                 <!-- 已作廢票券 KPI（§2.3，2026-09-09 新增，D253）：規格把它列為 KPI 快照四項之一，
                      此前站上從未真的畫出這張卡（i18n key 早就定義好但零元素綁定）。呈現層已知落差：
-                     D188 要求售票中／進行中／已結束／已取消四階段可見，本輪只接售票中（這裡）與
-                     已結束＋已取消（#ed-glance-voided-card），進行中尚未接，見 ASSUMPTIONS。 -->
+                     D188 要求售票中／進行中／已結束／已取消四階段可見，本輪只接售票中（這裡），進行中尚未接，見 ASSUMPTIONS；
+                     D457（2026-10-20）：已取消階段與 #ed-glance-voided-card 退場。 -->
                 <section class="card bento--span-4" id="ed-sales-voided-card">
                   <div class="stat-row">
                     <div class="stat">
@@ -404,7 +418,7 @@
                  一張卡裡橫排三個數字時，卡是那三個數字的容器、不是它們的標題，讀起來像
                  「一個區塊裡塞了三件事」；一格一張卡之後，每個數字自己就是一張卡的主詞。
                  做法與售票中的兩格 KPI、進行中的到場兩格同一套，三個階段的總覽從此同一種長相。 -->
-            <div class="bento" id="ed-glance" data-stage-show="draft scheduled cancelled" hidden>
+            <div class="bento" id="ed-glance" data-stage-show="draft scheduled" hidden>
               <section class="card bento--span-4">
                 <div class="stat-row">
                   <div class="stat">
@@ -430,18 +444,8 @@
                   </div>
                 </div>
               </section>
-              <!-- 已作廢票券 KPI（§2.3，2026-09-09 新增，D253）：#ed-glance 這個 bento 同時涵蓋
-                   draft／scheduled／ended／cancelled 四階段，但 D188 只要求已結束與已取消可見
-                   （草稿與已排程沒有持票人）。這張卡自己掛 data-stage-show，通用的階段可見性迴圈
-                   （querySelectorAll('[data-stage-show]')）會單獨判斷它，不受父層四階段共用影響。 -->
-              <section class="card bento--span-4" id="ed-glance-voided-card" data-stage-show="cancelled" hidden>
-                <div class="stat-row">
-                  <div class="stat">
-                    <div class="stat__label" data-i18n="event-detail.kpi.voided">Voided tickets</div>
-                    <div class="stat__value" id="ed-glance-voided">—</div>
-                  </div>
-                </div>
-              </section>
+              <!-- 墓碑 2026-10-20（D457）：#ed-glance-voided-card（已作廢票券 KPI，只掛已取消階段）隨「已取消」階段退場；
+                   已作廢票券在售票中的 #ed-sales-voided-card 與已結束的結案卡 #ed-wrap-voided 各有一處。 -->
             </div>
 
             <!-- 票種明細自成一張卡，與售票中的「各票種」同一個落點；卡頭右端那句
@@ -706,16 +710,12 @@
                        · 前往取貨管理：票務商品（組合包）裡的商品用 ztor 的取貨場次領取，不走 bookyay 掃描器。
                        不掛 data-feat：屬 bookyay 帶入活動的活動詳情（S73／S56 延伸，同 D385 做法），release2.4 與最終版都看得到。
                        syncBkyCheckin() 切換。 -->
+                  <!-- D454（2026-10-19）：第一格改成「請由 bookyay App 掃碼」提示＋App Store 按鈕（另開分頁），不再顯示掃描器網址與複製鈕；
+                       events-store 的 bkyScanUrl 欄位照舊保存（5.1.6.1 F21），只是這裡不顯示。目前只有 iOS 連結，Android 之後補〔推導〕。 -->
                   <div class="scanner-access__field" id="ed-bky-scan" hidden>
-                    <div class="scanner-access__label" data-i18n="event-detail.scanner.bky.url">bookyay scanner link</div>
-                    <div class="scanner-access__url" id="ed-bky-scan-row" data-bky-scan-row>
-                      <code id="ed-bky-scan-url" data-bky-scan-url>—</code>
-                      <button class="btn btn--icon btn--sm" type="button" data-view-safe id="ed-bky-scan-copy" data-bky-scan-copy
-                              aria-label="Copy link" title="Copy link"
-                              data-i18n-aria-label="event-detail.live.scanner.copy" data-i18n-title="event-detail.live.scanner.copy"><i data-lucide="copy" class="ztor-icon"></i></button>
-                    </div>
-                    <p class="field__hint field__hint--fact" id="ed-bky-scan-none" data-bky-scan-none hidden data-i18n="event-detail.scanner.bky.nourl">bookyay hasn't sent a scanner link for this event yet. Door staff can still scan tickets with the bookyay Organizer App.</p>
-                    <p class="field__hint field__hint--fact" id="ed-bky-scan-hint" data-bky-scan-hint data-i18n="event-detail.scanner.bky.hint">Tickets are scanned at the door with bookyay's scanner. Send this link to door staff.</p>
+                    <p class="field__hint field__hint--fact" id="ed-bky-scan-hint" data-i18n="event-detail.scanner.bky.app">Please scan tickets in the bookyay App.</p>
+                    <a class="btn btn--outline btn--block" id="ed-bky-scan-app" data-view-safe target="_blank" rel="noopener"
+                       href="https://apps.apple.com/tw/app/bookyay%E5%95%86%E6%88%B6/id1566521986" data-i18n="event-detail.scanner.bky.app.open">Open bookyay App in the App Store</a>
                   </div>
                   <!-- D401 決定四（取代 D394 決定二的「前往取貨管理」）：「前往領取場次」——連到這場組合包商品所在的取貨場次。
                        一個場次＝直接進取貨場次詳情；多個＝進取貨管理並預先篩出這場相關的場次（pickup.html?ev=）；
@@ -1037,7 +1037,7 @@
 
           <div class="info-banner mt-16">
             <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-            <span data-i18n="event-detail.ov.statemachine"><strong>Stages only move forward</strong>, from draft to the event ending. Scheduled and on-sale events can be cancelled; cancelling does not refund tickets automatically — Admin voids any tickets still valid afterward, one by one or all at once (§5.1.6 F3, F5).</span>
+            <span data-i18n="event-detail.ov.statemachine"><strong>Stages only move forward</strong>, from draft to the event ending. An event can’t be cancelled — unlist it to take it off the storefront, then archive it when you’re done with it. Tickets still valid are voided by Admin, one by one or all at once (§5.1.6 F3, F5).</span>
           </div>
         </section>
           </div>
@@ -1231,7 +1231,7 @@
               <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-view-safe data-pub-val="eticket">
                 <span class="radio-card__text"><span class="radio-card__title" data-i18n="ed.pub.pickup.eticket">E-ticket</span><span class="radio-card__sub" data-i18n="ed.pub.pickup.eticket.sub">The ticket lives in the app; scan it at the door.</span></span>
               </button>
-              <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-view-safe data-pub-val="sf">
+              <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-view-safe data-pub-val="sf" data-feat="S102">
                 <span class="radio-card__text"><span class="radio-card__title" data-i18n="ed.pub.pickup.sf">SF Express</span><span class="radio-card__sub" data-i18n="ed.pub.pickup.sf.sub">A physical ticket ships to the fan's address; the fan pays postage.</span></span>
               </button>
               <!-- 2026-10-09 D383：到店自取（S89 ⚪）release2.4 收起 -->
@@ -1347,15 +1347,16 @@
             </section>
           </div>
 
-          <div data-nav-panel="danger" id="ed-danger" hidden>
+          <!-- ═══ 封存／解除封存（D457，2026-10-20；取代原「取消活動」整塊）═══
+               活動沒有取消動作，要歸檔就封存（比照商品 D284／D298）：只有已下架才出現，封存後整頁唯讀、離開主清單；
+               已封存時整頁只剩頁首的「解除封存」，這一塊跟著收起。確認內容由 syncArchive()／click 委派處理。 -->
+          <div data-nav-panel="archive" id="ed-archive" data-feat="S81" hidden>
             <div class="section-head">
-              <h2 class="section-head__title" data-i18n="event-detail.danger.title">Cancel this event</h2>
-              <div class="section-head__sub" data-i18n="event-detail.danger.sub">Cancelling does not refund tickets automatically, and cannot be undone (§5.1.6 F5). Admin voids any tickets still valid afterward from the Sales record.</div>
+              <h2 class="section-head__title" data-i18n="event-detail.archive.title">Archive this event</h2>
+              <div class="section-head__sub" data-i18n="event-detail.archive.sub">It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can unarchive it anytime.</div>
             </div>
             <section class="card">
-              <button class="btn btn--destructive" type="button" data-view-safe data-ed-cancelevent data-i18n="event-detail.btn.cancelevent">Cancel event</button>
-              <!-- D375 決定二：匯入活動只能在 bookyay 取消（取消後同步到 ztor）；按鈕保留但停用，未來再開放 -->
-              <p class="field__hint field__hint--fact mt-8" id="ed-cancel-bky" hidden data-i18n="event-detail.cancel.bky">Imported events are cancelled in bookyay.</p>
+              <button class="btn btn--outline" type="button" data-view-safe data-ed-archive><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="e-shop.a.archive">Archive</span></button>
             </section>
           </div>
 
@@ -1779,6 +1780,15 @@
           <h2 class="section-head__title" data-i18n="event-detail.notif.title">Notifications</h2>
           <div class="section-head__sub" data-i18n="event-detail.notif.sub">Purchase confirmation, pre-event reminder and change notices (§5.1.6 F5).</div>
         </div>
+        <!-- D455（2026-10-20，S81.1）：通知開關屬其他資料，活動上架中要先下架才能切換——就地說明＋下架入口（同設定分頁的 data-ed-stockonly-note）。edStockSync() 切 hidden -->
+        <div class="alert alert--row alert--info mb-16" data-ed-notif-listed-note data-feat="S81.1" role="note" hidden>
+          <span class="alert__icon"><i data-lucide="lock" class="ztor-icon"></i></span>
+          <div class="alert__body">
+            <div class="alert__title" data-i18n="ed.notif.listed.title">This event is listed — notification settings can't change</div>
+            <div class="alert__meta" data-i18n="ed.notif.listed.body">To change them, unlist the event first. After you save, relist it yourself.</div>
+          </div>
+          <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-unlist data-i18n="event-detail.unlist.btn">Unlist event</button>
+        </div>
 
         <!-- 2026-08-13：三個開關原本是純裝飾的 <div>，點了不會動。改用站上 canonical 的
              button ＋ role=switch ＋ aria-checked（鍵盤與輔助技術都吃得到），狀態存在本機。 -->
@@ -1797,19 +1807,12 @@
             </div>
             <button class="switch switch--on" type="button" role="switch" aria-checked="true" data-notif="reminder" aria-label="Pre-event reminder" data-i18n-aria-label="event-detail.notif.reminder.label"></button>
           </div>
-          <div class="settings-row">
+          <div class="settings-row" style="border-bottom:0">
             <div>
               <div class="settings-row__label" data-i18n="event-detail.notif.change.label">Event-change notice</div>
               <div class="settings-row__hint" data-i18n="event-detail.notif.change.hint">Notifies holders of time, venue or lineup changes.</div>
             </div>
             <button class="switch switch--on" type="button" role="switch" aria-checked="true" data-notif="change" aria-label="Event-change notice" data-i18n-aria-label="event-detail.notif.change.label"></button>
-          </div>
-          <div class="settings-row" style="border-bottom:0">
-            <div>
-              <div class="settings-row__label" data-i18n="event-detail.notif.cancel.label">Cancellation notice</div>
-              <div class="settings-row__hint" data-i18n="event-detail.notif.cancel.hint">If the event is Cancelled, ticket holders are notified. Admin then voids any tickets still valid, one by one or all at once — this does not happen automatically. Always on.</div>
-            </div>
-            <span class="badge badge--neutral"><span data-i18n="event-detail.notif.cancel.badge">System</span></span>
           </div>
         </section>
 
@@ -2183,7 +2186,7 @@
       <span class="field__hint" id="ed-tm-del-why" hidden></span>
       <span class="payout-dialog__foot-note" id="ed-tm-foot-note" hidden></span>
       <!-- D361 決定三（D390 稽核第一節原型第 1 條）：已結束、已取消的活動門票只能看 -->
-      <span class="field__hint" id="ed-tm-ro-note" data-i18n="ed.tm.ro" hidden>This event has ended or been cancelled — tickets are view-only.</span>
+      <span class="field__hint" id="ed-tm-ro-note" data-i18n="ed.tm.ro" hidden>This event has ended or is archived — tickets are view-only.</span>
       <span class="payout-dialog__foot-actions">
         <button class="btn btn--outline" type="button" data-tm-close data-i18n="ce.tier.cancel">Cancel</button>
         <button class="btn btn--primary" type="button" id="ed-tm-save" data-i18n="ed.tm.apply">Apply</button>
@@ -2331,12 +2334,13 @@
   }
   const STAGE_KEY = { 'live': 'events.badge.live', 'on-sale': 'events.badge.on-sale',
                       'draft': 'events.status.draft', 'ended': 'events.badge.ended', 'scheduled': 'events.badge.scheduled',
-                      'cancelled': 'event-detail.badge.cancelled' };
-  /* 徽章色態：進行中＝warning、售票中＝success、已取消＝destructive，其餘中性。
+                      };
+  /* 徽章色態：進行中＝warning、售票中＝success，其餘中性（D457：已取消階段退場，原已取消＝destructive）。
      一個地方決定，頁首與系列清單共用。 */
   const stageBadgeCls = s => s === 'live' ? ' badge--warning'
-                           : s === 'on-sale' ? ' badge--success'
-                           : s === 'cancelled' ? ' badge--error' : '';
+                           : s === 'on-sale' ? ' badge--success' : '';
+  /* 整頁唯讀（D361 決定三、D457）：已結束或已封存。原 ['ended','cancelled'] 判斷全部改走這一支（function 宣告，初始化早期就會被呼叫到） */
+  function edIsClosed(e) { return !!e && (e.status === 'ended' || !!e.archived); }
   /* 顯示用名稱：草稿常常還沒取名，標題與麵包屑不能就這樣開天窗。 */
   const evName = () => (ev.name || '').trim() || T('event-detail.untitled', 'Untitled event');
 
@@ -2712,34 +2716,7 @@
   /* 報到（2026-10-08 · D375 決定五）：bookyay 匯入活動的門票入場由 bookyay Organizer App 掃票——
      現場報到台（掃碼器卡）保留但停用：狀態徽章改「已停用」、連結的複製／分享／開啟停用，下方說明＋取貨管理連結
      （票務商品裡的商品照電子商店取貨流程）。名單分頁的已入場／未入場名單改唯讀說明來源，「開啟掃碼器」停用。 */
-  /* bookyay 掃描器連結的兩格（D394 現場報到台、D397 現場掃碼卡共用一支）：有連結畫連結＋複製，沒有寫一句說明。
-     元素用 data-bky-scan-* 找，同一套 markup 在兩張卡各一份，不靠 id。 */
-  function fillBkyScan(root) {
-    const url = String(ev.bkyScanUrl || '').trim();
-    const pick = k => root.querySelector('[data-bky-scan-' + k + ']');
-    const row = pick('row'), none = pick('none'), hint = pick('hint'), code = pick('url'), copy = pick('copy');
-    if (row) row.hidden = !url;
-    if (hint) hint.hidden = !url;
-    if (none) none.hidden = !!url;
-    if (code) code.textContent = url || '—';
-    if (copy && !copy.dataset.bound) {
-      copy.dataset.bound = '1';
-      copy.addEventListener('click', () => {
-        const u = String(ev.bkyScanUrl || '').trim();
-        if (!u) return;
-        if (navigator.clipboard) navigator.clipboard.writeText(u).catch(() => {});
-        const done = T('event-detail.live.scanner.copied', 'Link copied');
-        copy.removeAttribute('data-i18n-title'); copy.removeAttribute('data-i18n-aria-label');
-        copy.title = done; copy.setAttribute('aria-label', done);
-        if (window.ztorToast) window.ztorToast.show(done);
-        setTimeout(() => {
-          copy.setAttribute('data-i18n-title', 'event-detail.live.scanner.copy');
-          copy.setAttribute('data-i18n-aria-label', 'event-detail.live.scanner.copy');
-          if (window.applyI18n) window.applyI18n(copy);
-        }, 1600);
-      });
-    }
-  }
+  /* D454：bookyay 掃描器連結的顯示格（網址＋複製）撤除，改提示由 bookyay App 掃碼（fillBkyScan 已移除）。 */
   /* 「前往領取場次」（D401 決定四〔推導〕）：這場活動組合包裡的商品綁在哪些取貨場次（bundles[].products[].pickup，
      原型示意欄位 { s, nameKey }，ASSUMPTIONS UIA-248），依數量分三種：
        · 一個 → 按鈕直接進那個取貨場次詳情（pickup-detail.html?s=）。
@@ -2854,12 +2831,11 @@
       }
       const note = document.getElementById('ed-scanner-bky');
       if (note) note.hidden = !bky;
-      /* D394（2026-10-12）：ztor 掃碼器三格收起，換成 bookyay 掃描器連結（有才畫連結＋複製，沒有寫一句說明） */
+      /* D394（2026-10-12）：ztor 掃碼器三格收起；D454 起換成「請由 bookyay App 掃碼」提示＋App Store 按鈕 */
       card.querySelectorAll('[data-ztor-scan]').forEach(el => { el.hidden = bky; });
       const bkyBox = document.getElementById('ed-bky-scan');
       if (bkyBox) {
         bkyBox.hidden = !bky;
-        if (bky) fillBkyScan(bkyBox);
       }
     }
     /* D401 決定四（2026-10-12，5.1.6.3 v58；UI-CHANGES 一百八十七）：bookyay 活動在已排程與售票中，把上面那張掃碼器卡整張搬到
@@ -2983,7 +2959,7 @@
   /* 2026-08-11 重新設計：場次與發布設定自總覽拆出，兩者跟總覽同命——設定一直都在，
      每個階段都看得到（草稿階段正是在填它們）。 */
   /* 2026-08-13 使用者裁示：**場次、票務、票務商品三個分頁在每個階段都要有**——
-     它們是「這場活動賣什麼」的定義，不是某個階段才成立的營運視角。已取消也保留這三個，
+     它們是「這場活動賣什麼」的定義，不是某個階段才成立的營運視角。已結束也保留這三個，
      創作者仍需要查得到當初賣的是什麼。 */
   /* 2026-08-17 分頁重整（乙案）：「發布設定」併進「設定」（原 dates），
      所以 publish 從每個階段的清單裡拿掉；dates 現在承載活動內容＋場次＋地點＋發布設定。
@@ -3002,8 +2978,7 @@
     scheduled:   ALWAYS.concat(['sales']),
     'on-sale':   ALWAYS.concat(['sales']),
     live:        ALWAYS.concat(['sales']),
-    ended:       ALWAYS.concat(['sales']),
-    cancelled:   ALWAYS.concat(['sales'])
+    ended:       ALWAYS.concat(['sales'])
   };
   function applyTabs() {
     let allowed = (TABS_BY_STAGE[ev.status] || TABS_BY_STAGE['on-sale']).slice();
@@ -3080,11 +3055,8 @@
   /* ── 階段轉換（2026-08-13）─────────────────────────────────────
      §7.2 的狀態機此前只寫在總覽的說明橫幅裡，畫面上沒有任何一顆鈕能推進它。三顆鈕：
        發布開賣（draft／scheduled → on-sale）：先擋「還不能賣」的資料缺口，缺什麼直接列出來。
-       取消活動（draft／scheduled／on-sale）：2026-09-09 起依 D253 不再自動退款，
-         確認彈窗改成講清楚有幾張票已售出、取消後要逐票或整場作廢，再讓人按。
-       再開一場（ended／cancelled）：以這場為範本開新活動——巡演最常做的動作。
-     ⚠ 與 §7.2 的出入：規格寫「僅 Draft → Cancelled 可逆」，這裡把取消開放到已排程與售票中
-       （見 ASSUMPTIONS STAGE-001），待上游裁決。 */
+       再開一場（ended／unlisted，D457〔推導〕：原為 ended／cancelled）：以這場為範本開新活動——巡演最常做的動作；已封存不提供。
+     D457（2026-10-20）：取消活動整個退場（含 §7.2 與 STAGE-001 的出入），階段只剩五個；改以「封存」歸檔（見 syncArchive）。 */
   const money0 = n => '$' + fmtNum(Math.round(n));
   /* 墓碑 2026-10-09（D390 決定二）：goLiveBlockers()（開賣前缺名稱／日期／場地／可賣門票就擋）退場——「立即開賣」只對已發布的活動，
      發布前檢核已通過，不再另做開賣前置條件檢查（5.1.6.3 §2.1）。 */
@@ -3150,22 +3122,6 @@
     const s = ev.status;
     const show = (sel, on) => { const el = $(sel); if (el) el.hidden = !on; };
     syncGoLive();
-    /* 取消活動：尚未結束的階段都給，但改放設定的最末端。
-       2026-09-18（D281）：刪除活動鈕退場後，這裡是「讓活動不再發生」的唯一出口——已排程與售票中
-       都看得到（D188／STAGE-001）。草稿不進本頁（下方 status==='draft' 導回建立流程，2026-08-17
-       裁決），草稿要怎麼「取消／放棄」是建立流程那一側的事，記 ASSUMPTIONS 產品缺口。 */
-    const danger = document.getElementById('ed-danger');
-    if (danger) danger.hidden = ['scheduled', 'on-sale'].indexOf(s) < 0;
-    /* D375 決定二（2026-10-08）：bookyay 匯入活動只能在 bookyay 取消，取消後同步到 ztor；取消鈕保留但停用、下方一句說明。
-       ztor 自建活動照舊（使用者 2026-10-08 更正：只對匯入活動停用）。 */
-    const cancelBtn = document.querySelector('[data-ed-cancelevent]');
-    const cancelBky = document.getElementById('ed-cancel-bky');
-    if (cancelBtn) {
-      cancelBtn.disabled = isBky();
-      if (isBky()) { cancelBtn.setAttribute('aria-disabled', 'true'); cancelBtn.title = T('event-detail.cancel.bky', 'Imported events are cancelled in bookyay.'); }
-      else { cancelBtn.removeAttribute('aria-disabled'); cancelBtn.removeAttribute('title'); }
-    }
-    if (cancelBky) cancelBky.hidden = !isBky();
     const voidBky = document.getElementById('ed-void-bky');
     if (voidBky) voidBky.hidden = !isBky();   // D375 決定一：沒有成交時也要看得到「撤銷在 bookyay 後台處理」
     const voidEmptySub = document.querySelector('#ed-void-empty .empty-card__text');
@@ -3174,19 +3130,49 @@
       voidEmptySub.textContent = T('event-detail.void.empty.sub.bky', 'Tickets voided in bookyay show up here.');
     }
     syncBkyCheckin();
-    document.querySelectorAll('[data-ed-duplicate]').forEach(b => {
-      /* 頁首那顆只在結束後出現；結案卡裡的那顆本來就跟著卡片一起顯示 */
-      if (b.closest('.page-intro__actions')) b.hidden = ['ended', 'cancelled'].indexOf(s) < 0;
-    });
+    syncHeaderActions();
     /* 墓碑 2026-08-17：這裡原本要在「發布並開賣」（草稿）與「現在開賣」（已排程）之間
        切按鈕文案。草稿已不在這一頁的範圍、提前開賣只在已排程出現，文案因此固定。 */
     /* 結束或取消之後不再提供編輯入口——那些欄位改了也不會發生任何事。
        2026-10-07（D361 決定三）：已結束與已取消整頁唯讀，含在地化——頁首與在地化分節的「預覽與在地化」
        入口一併收起（它有自己的儲存，不受檢視模式管，不收就還能改翻譯與幣別價）。Admin 的撤銷照常可做。 */
-    const readOnly = ['ended', 'cancelled'].indexOf(s) >= 0;
+    const readOnly = edIsClosed(ev);
     if (readOnly) document.querySelectorAll('[data-ed-editmode]').forEach(edit => { edit.hidden = true; });
     if (readOnly) document.querySelectorAll('[data-ed-localize]').forEach(b => { b.hidden = true; });
     syncUnlist();
+  }
+
+  /* 頁首動作（D457）：再辦一場＝已結束或已下架才出現（原為已結束或已取消〔推導〕），已封存一律不提供；
+     已封存的頁首只有「解除封存」，其餘（檢視售票頁、預覽與在地化、再辦一場）收起。上架／下架會改變 ev.unlisted，所以 syncUnlist 也呼叫這一支。 */
+  function syncHeaderActions() {
+    const s = ev.status, arch = !!ev.archived;
+    document.querySelectorAll('[data-ed-duplicate]').forEach(b => {
+      if (arch) { b.hidden = true; return; }
+      /* 頁首那顆只在已結束或已下架出現；結案卡裡的那顆本來就跟著卡片一起顯示 */
+      if (b.closest('.page-intro__actions')) b.hidden = !(s === 'ended' || !!ev.unlisted);
+    });
+    document.querySelectorAll('[data-ed-unarchive]').forEach(b => { b.hidden = !arch; });
+    if (arch) document.querySelectorAll('.page-intro__actions [data-ed-preview], .page-intro__actions [data-ed-localize]').forEach(b => { b.hidden = true; });
+  }
+
+  /* 封存／解除封存（D457，2026-10-20；比照商品 D284／D288／D298，規則本體在 5.1.6.3 §2.1）：
+     只有已下架的活動能封存（已結束也要先下架）；封存＝階段不變、離開主清單、整頁唯讀（edIsClosed）、頁首只剩「解除封存」；
+     解除封存不確認、回到已下架、不自動上架。封存／解除封存後重載整頁，所有唯讀判斷一次重算。
+     「設定」分頁底部的封存區塊只在已下架（且尚未封存）時出現；已封存時上架／下架區塊也收起（唯一動作是頁首解除封存）。 */
+  function syncArchive() {
+    const arch = !!ev.archived;
+    const box = document.getElementById('ed-archive');
+    if (box) box.hidden = !(ev.unlisted && !arch && ev.status !== 'draft');
+    const badge = document.getElementById('ed-archived-badge');
+    if (badge) badge.hidden = !arch;
+    const banner = document.getElementById('ed-archived-banner');
+    if (banner) banner.hidden = !arch;
+    if (arch) {
+      const ub = document.getElementById('ed-unlisted-badge'); if (ub) ub.hidden = true;
+      const sb = document.getElementById('ed-soldout-badge'); if (sb) sb.hidden = true;
+      const ul = document.getElementById('ed-unlist'); if (ul) ul.hidden = true;
+    }
+    syncHeaderActions();
   }
 
   /* 上架／下架（D361 決定五 → D371 決定一，2026-10-08）：草稿以外六個階段都出現（本頁不收草稿），
@@ -3215,6 +3201,7 @@
     if (bkyNote) bkyNote.hidden = !isBky();   // D415（修訂 D375 決定三）：bookyay 修改同步＝自動下架並通知、手動重新上架；改回草稿＝同步下架
     syncBkySyncNotice();
     syncSaleBadges();
+    syncArchive();    // D457：封存區塊、頁首動作與徽章優先序跟著上架／下架重算
     edLiveRelock();   // D413：進行中的高影響欄位跟著上架／下架鎖或解
   }
   document.addEventListener('ztor:creator-changed', () => syncUnlist());
@@ -3239,7 +3226,7 @@
     const box = document.getElementById('ed-bkysync');
     if (!box) return;
     const info = ev && ev.bkySyncUnlist;
-    const on = !!(info && isBky() && ev.unlisted && !bkySyncDone());
+    const on = !!(info && isBky() && ev.unlisted && !ev.archived && !bkySyncDone());   // D457：已封存只有解除封存一個動作，這則含「重新上架」的提示收起
     box.hidden = !on;
     if (!on) return;
     const changes = (info.changes || []).map(c =>
@@ -3254,7 +3241,7 @@
   function syncSaleBadges() {
     const S = window.ztorEvents;
     const sb = document.getElementById('ed-soldout-badge');
-    if (sb) sb.hidden = !(S && S.isSoldOut && S.isSoldOut(ev));
+    if (sb) sb.hidden = !(S && S.isSoldOut && S.isSoldOut(ev)) || !!ev.archived;   // D457：已封存徽章優先，完售收起
   }
   document.addEventListener('click', e => {
     /* 立即開賣（D390 決定二，5.1.6.3 §2.1，取代「發布並開賣」）：已排程、開賣時間設在未來才出現；按下＝開賣時間改成現在，活動轉售票中。
@@ -3283,43 +3270,43 @@
       });
       return;
     }
-    if (e.target.closest('[data-ed-cancelevent]')) {
-      /* 2026-09-09（D253）：取消不再自動觸發退款，故不再需要算「這場總共要退多少錢」——
-         那個金額（refund）此前只是餵給下面這句文案，D253 後這句文案本身也改了語意。 */
-      const sold = ev.sold || 0;
-      const impact = sold
-        ? T('event-detail.cancel.body', '{n} tickets sold are not refunded automatically — every holder is notified, and Admin voids any tickets still valid afterward, one by one or all at once. This cannot be undone.')
-            .replace('{n}', fmtNum(sold))
-        : T('event-detail.cancel.body0', 'Nothing has sold yet. The event stops being publishable.');
-      /* 2026-10-05（D352 稽核 B16，主規格 §7.14「活動取消或下架時連動組合包」，D292）：確認內容列出會一同下架的
-         「上架中」組合包；沒有就不出現。名單由 events-store cancelBundlesOf() 給，活動清單列操作的取消活動用同一支。 */
-      const escC = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-      const goingDown = window.ztorEvents.cancelBundlesOf ? window.ztorEvents.cancelBundlesOf(ev.id) : [];
-      const bundlesHtml = goingDown.length
-        ? '<p class="text-sub mt-16">' + T('event-detail.cancel.bundles', 'These listed bundles include its tickets and are unlisted with it:') + '</p>' +
-          '<div class="data-list mt-8">' + goingDown.map(b =>
-            '<div class="data-list__row"><div class="data-list__row-main"><span>' + escC(b.name) + '</span></div></div>').join('') + '</div>'
-        : '';
+    /* 封存（D457）：只有已下架能封存；確認說明封存後整頁唯讀、離開主清單、已售出的票與訂單不受影響、可解除封存；
+       活動尚未結束（已排程、售票中、進行中）時再多提醒一次〔推導〕；封存時一併取消尚未生效的上架排程〔推導，比照商品〕。 */
+    if (e.target.closest('[data-ed-archive]')) {
+      if (!ev.unlisted || ev.archived) {
+        if (window.ztorToast) window.ztorToast.show(T('event-detail.archive.needunlist', 'Unlist the event first.'), { tone: 'error' });
+        return;
+      }
+      const notEnded = ['scheduled', 'on-sale', 'live'].indexOf(ev.status) >= 0;
       openConfirm({
-        title: T('event-detail.cancel.title', 'Cancel this event?'),
-        body: '<p>' + impact + '</p>' + bundlesHtml,
-        okLabel: T('event-detail.cancel.ok', 'Cancel event'),
-        danger: true,
-        onOk: () => setStage('cancelled')
+        title: T('event-detail.archive.confirm.title', 'Archive this event?'),
+        body: '<p>' + T('event-detail.archive.confirm.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; tickets already sold, orders and revenue are not affected. You can unarchive it anytime.') + '</p>' +
+          (notEnded ? '<p class="text-sub mt-16">' + T('event-detail.archive.confirm.notended', 'This event hasn’t ended yet. Any pending listing schedule is cancelled, and nothing can change on it until you unarchive.') + '</p>' : ''),
+        okLabel: T('event-detail.archive.confirm.ok', 'Archive'),
+        onOk: () => {
+          if (ev.listing && ev.listing.from) window.ztorEvents.saveEdits(ev.id, { listing: Object.assign({}, ev.listing, { from: '' }) });   // 封存時取消尚未生效的上架排程
+          window.ztorEvents.setArchived(ev.id, true);
+          location.reload();
+        }
       });
       return;
     }
+    /* 解除封存（D457，同 D298）：不確認，回到已下架、不自動上架；整頁重載。 */
+    if (e.target.closest('[data-ed-unarchive]')) {
+      window.ztorEvents.setArchived(ev.id, false);
+      location.reload();
+      return;
+    }
     /* 下架（D371 決定一）：已有成交時說明已售出的票照常有效；列出會一同下架的上架中組合包（主規格 §7.14，
-       與取消活動共用 cancelBundlesOf()）。還能取消的階段多一句「要結束這場活動請用取消」。 */
+       unlistBundlesOf()；D457：取消活動退場，原「要結束這場活動請用取消」一句拿掉）。 */
     if (e.target.closest('[data-ed-unlist]')) {
       const escU = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
       const sold = ev.sold || 0;
       const lines = [T('event-detail.unlist.confirm.body', 'Fans see the event page as unlisted and can’t buy; anything in their carts shows as unavailable. The event stays in its current stage.')];   // D415 決定七、八
       if (sold) lines.push(T('event-detail.unlist.confirm.sold', 'The {n} tickets already sold stay valid.').replace('{n}', fmtNum(sold)));
-      if (['scheduled', 'on-sale'].indexOf(ev.status) >= 0) lines.push(T('event-detail.unlist.confirm.cancel', 'To call off the event, cancel it instead.'));
-      const goingDown = window.ztorEvents.cancelBundlesOf ? window.ztorEvents.cancelBundlesOf(ev.id) : [];
+      const goingDown = window.ztorEvents.unlistBundlesOf ? window.ztorEvents.unlistBundlesOf(ev.id) : [];
       const bundlesHtml = goingDown.length
-        ? '<p class="text-sub mt-16">' + T('event-detail.cancel.bundles', 'These listed bundles include its tickets and are unlisted with it:') + '</p>' +
+        ? '<p class="text-sub mt-16">' + T('event-detail.unlist.bundles', 'These listed bundles include its tickets and are unlisted with it:') + '</p>' +
           '<div class="data-list mt-8">' + goingDown.map(b =>
             '<div class="data-list__row"><div class="data-list__row-main"><span>' + escU(b.name) + '</span></div></div>').join('') + '</div>'
         : '';
@@ -3337,7 +3324,7 @@
       });
       return;
     }
-    /* 重新上架（D371 決定一）：已結束／已取消先提示「粉絲找得到活動頁但不能購買」，確認才上架；
+    /* 重新上架（D371 決定一；D457：已取消退場）：已結束先提示「粉絲找得到活動頁但不能購買」，確認才上架；
        其他階段直接上架（可逆的營運動作，與下架對稱不必再問一次）。組合包不自動重新上架，說明句寫在區塊副標。 */
     if (e.target.closest('[data-ed-relist]')) {
       /* D435〔推導〕：編輯中還有沒儲存的變更時先不重新上架——上架後只剩庫存能改，未儲存的其他變更會卡在草稿裡。
@@ -3354,13 +3341,10 @@
         syncUnlist();
         if (window.ztorToast) window.ztorToast.show(T('event-detail.relist.toast', 'Event relisted'));
       };
-      if (['ended', 'cancelled'].indexOf(ev.status) >= 0) {
-        const key = ev.status === 'ended' ? 'event-detail.relist.confirm.ended' : 'event-detail.relist.confirm.cancelled';
+      if (ev.status === 'ended') {
         openConfirm({
           title: T('event-detail.relist.confirm.title', 'Relist this event?'),
-          body: '<p>' + T(key, ev.status === 'ended'
-            ? 'This event has ended. Once relisted, fans can find the event page but can’t buy anything.'
-            : 'This event was cancelled. Once relisted, fans can find the event page but can’t buy anything.') + '</p>',
+          body: '<p>' + T('event-detail.relist.confirm.ended', 'This event has ended. Once relisted, fans can find the event page but can’t buy anything.') + '</p>',
           okLabel: T('event-detail.relist.confirm.ok', 'Relist'),
           onOk: relist
         });
@@ -3765,16 +3749,15 @@
   }
 
   /* ── 已作廢票券 KPI（§2.3，2026-09-09 新增，D253）─────────────────────
-     售票中（#ed-sales-voided）與已結束／已取消（#ed-glance-voided）兩處各放一張，
+     售票中（#ed-sales-voided）放一張（D457：已取消階段與 #ed-glance-voided 退場），
      同一個計數：voided 交易的張數（qty）加總，不是筆數——一筆交易可能是 2 張票。
      呈現層已知落差（見 ASSUMPTIONS）：規格 §2.3 D188 要求售票中／進行中／已結束／
-     已取消四階段皆可見，本輪只接了售票中與已結束＋已取消，進行中（#ed-live-bento）
+     已取消四階段皆可見，本輪只接了售票中（D457：已取消階段退場），進行中（#ed-live-bento）
      尚未接，非本輪範圍（不影響本頁預設示例活動＝on-sale 階段的驗收）。 */
   function refreshVoidedKpi() {
     const voidedQty = txAll.filter(t => t.status === 'voided').reduce((a, t) => a + (t.qty || 0), 0);
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
     set('ed-sales-voided', fmtNum(voidedQty));
-    set('ed-glance-voided', fmtNum(voidedQty));
     /* meta 是靜態「尚無作廢」，張數 > 0 時會跟主數字互相矛盾（讀成「2 張／尚無作廢」），
        這裡蓋掉成有意義的說明；歸零時交回原本的 data-i18n 靜態文字。 */
     const metaEl = document.querySelector('#ed-sales-voided-card .stat__meta');
@@ -4205,7 +4188,7 @@
      票價、購買條件、通知設定、組合包內容與售價…）唯讀，就地說明「要先下架才能修改」並附下架入口。
      營運動作不受影響：隱藏／顯示、上架／下架、開賣／停售（含發布設定的時間〔D435 推導〕）、撤銷、報到更正。
      做法：設定分頁裡要鎖的分節（活動內容／場次／地點／在地化）各自掛 data-mode="view"（沿用檢視態的樣子與按鈕白名單，
-     不另做第三種鎖定外觀），欄位逐一設唯讀；發布設定、連結、上下架、取消活動四節不鎖。票務分頁的入口由
+     不另做第三種鎖定外觀），欄位逐一設唯讀；發布設定、連結、上下架、封存四節不鎖。票務分頁的入口由
      rulesEditable／tixAddOff／門票彈窗各自問 edStockOnly()。下架後（ev.unlisted）照現行規則開放，bookyay 鎖定欄位照舊鎖。
      var 宣告：syncUnlist 在初始化早期就會呼叫到這裡，避免 TDZ。 */
   var edStockLocked = false;
@@ -4219,7 +4202,7 @@
     if (!isNaN(t) && t > Date.now()) return false;
     return true;
   }
-  var ED_STOCK_FREE = ['publish', 'link', 'unlist', 'danger'];
+  var ED_STOCK_FREE = ['publish', 'link', 'unlist', 'archive'];
   function edStockSync() { try { edStockSync0(); } catch (e) {} }
   function edStockSync0() {
     const p0 = document.querySelector('.tab-panel[data-editable]');
@@ -4240,14 +4223,17 @@
       }
     });
     document.querySelectorAll('[data-ed-stockonly-note]').forEach(n => { n.hidden = !lock; });
-    /* 翻譯（預覽與在地化）屬其他資料（規格 5.1.6.2，協調者 2026-10-16 補充）：活動上架中要先下架才能改。
-       在地化有自己的儲存、不受整頁編輯管，所以不論是否在編輯，上架中一律停用入口並用 title 寫原因（不做沉默停用）。 */
+    /* 翻譯（預覽與在地化）屬其他資料（D455 定案，5.1.6.3 §2.13 編輯時機）：活動上架中「唯讀並說明要先下架」。
+       2026-10-20 起入口不停用：照樣能進去看預覽，event-localization.html 自己依上架狀態把翻譯格與價格格鎖成唯讀、頁頂說明要先下架；
+       這裡只用 title 預告。墓碑 2026-10-20（D455）：上架中停用入口（b.disabled）。 */
     const locOff = edStockOnly();
     document.querySelectorAll('[data-ed-localize]').forEach(b => {
-      b.disabled = locOff;
-      if (locOff) { b.setAttribute('aria-disabled', 'true'); b.title = T('ed.loc.listed', 'This event is listed — unlist it to edit translations.'); }
-      else { b.removeAttribute('aria-disabled'); b.removeAttribute('title'); }
+      b.disabled = false; b.removeAttribute('aria-disabled');
+      if (locOff) b.title = T('ed.loc.listed', 'This event is listed — translations and prices are view-only until you unlist it.');
+      else b.removeAttribute('title');
     });
+    /* 通知開關（D455 定案）：上架中要先下架才能切換——售票與名單分頁的通知設定就地說明＋下架入口（編輯中才出現，同上方說明） */
+    document.querySelectorAll('[data-ed-notif-listed-note]').forEach(n => { n.hidden = !lock; });
     if (window.ZtorViewMode) document.querySelectorAll('.tab-panel[data-panel="dates"]').forEach(p => window.ZtorViewMode.sync(p));
     const was = edStockLocked;
     edStockLocked = lock;
@@ -4607,7 +4593,7 @@
   });
   /* 開賣前／已結束或已取消（function 宣告：場次在初始化早期就會渲染，下方 const 的 preSale／stageClosed 那時還沒宣告） */
   function edPreSale() { return !!ev && ['draft', 'scheduled'].indexOf(ev.status) >= 0; }
-  function edClosed() { return !!ev && ['ended', 'cancelled'].indexOf(ev.status) >= 0; }
+  function edClosed() { return edIsClosed(ev); }
   /* 一場的名稱（沒取名就「第 N 場」）與那一場的門票清單（確認對話用） */
   function sessName(s) {
     const i = edSessions.indexOf(s);
@@ -5454,7 +5440,7 @@
       (tmNew ? "Off hides it from the price list — fans can't buy it on its own, but bundles can still include it." : 'Takes effect right away, no need to save. Hidden tickets stay off the price list but can still sell inside bundles.'));
     b.setAttribute('aria-pressed', tmShown ? 'false' : 'true');
     b.disabled = !!why;
-    if (why) { b.setAttribute('aria-disabled', 'true'); b.title = T('ed.tm.ro', 'This event has ended or been cancelled — tickets are view-only.'); }
+    if (why) { b.setAttribute('aria-disabled', 'true'); b.title = T('ed.tm.ro', 'This event has ended or is archived — tickets are view-only.'); }
     else { b.removeAttribute('aria-disabled'); b.removeAttribute('title'); }
   }
   /* ── 庫存設為 0（D447 決定一，2026-10-19；S100）────────────────────────────────
@@ -5474,7 +5460,7 @@
     return '';
   }
   const tierZeroWhy = why => ({
-    ro: T('ed.tm.ro', 'This event has ended or been cancelled — tickets are view-only.'),
+    ro: T('ed.tm.ro', 'This event has ended or is archived — tickets are view-only.'),
     bky: T('ed.tix.zero.bky', "Quantity comes from bookyay and is locked. To stop sales, bring the stop time forward, unlist the event or hide this ticket."),
     zero: T('ed.tix.zero.done', 'Stock is already 0'),
     new: T('ed.tix.zero.new', 'Apply this ticket first')
@@ -5690,7 +5676,7 @@
      改動只影響之後的購買、已售出的票不變、限購改小不追回（D388 決定二、三）——兩個編輯處都寫一句。
      bookyay 帶入的活動照舊唯讀（D388 決定四）。已結束與已取消整頁唯讀（D361 決定三），不出現編輯入口。 */
   const PC = window.ztorPurchaseConds;
-  const stageRO = () => !!ev && ['ended', 'cancelled'].indexOf(ev.status) >= 0;
+  const stageRO = () => edIsClosed(ev);
   /* 2026-10-10（使用者指示「整頁的編輯都要跟著一起改開啟才能編輯」）：票務的編輯入口只在整頁編輯模式出現。
      D392：門票彈窗的「套用」只改頁面草稿，算進「儲存 N 項變更」、捨棄會還原（ASSUMPTIONS EDIT-003）。 */
   const edEditing = () => { const p = document.querySelector('.tab-panel[data-editable]'); return !!p && p.getAttribute('data-mode') === 'edit'; };
@@ -6018,7 +6004,7 @@
     if (roNote) {
       const rk = stageRO() ? 'ed.tm.ro' : stockOnly ? 'ed.tm.ro.stock' : 'ed.tm.ro.view';
       roNote.setAttribute('data-i18n', rk);
-      roNote.textContent = T(rk, stageRO() ? 'This event has ended or been cancelled — tickets are view-only.'
+      roNote.textContent = T(rk, stageRO() ? 'This event has ended or is archived — tickets are view-only.'
         : stockOnly ? "This event is listed — only the quantity can change. Unlist the event to edit anything else."
         : 'Select Edit to change this ticket.');
       roNote.hidden = !(ro || stockOnly);
@@ -6091,7 +6077,18 @@
       syncTmFoot(); return; }   // 沒過驗證就不關，理由留在頁尾
     /* 墓碑 2026-09-23（D315）：儲存時不再寫回 `feeException`（D311 的逐門票例外費率）。 */
     tmTier.name = tmEl('ed-tm-name').value.trim();
+    /* D455（主規格 §7.15、5.1.6.3 §2.13）：基準價改變後，有手動改價的幣別保留不換算（D415），列出那些幣別、提示創作者重新確認 */
+    const priceWas = Number(tmTier.price) || 0;
+    const ovCurs = tmNew ? [] : Object.keys((window.ztorEvents.priceOf(ev, tmTier) || {}).override || {})
+      .filter(c => { const o = window.ztorEvents.priceOf(ev, tmTier).override[c]; return o != null && o !== '' && window.ztorEvents.CURRENCIES.indexOf(c) >= 0; });
     tmTier.price = tmEl('ed-tm-price').value;
+    const recheckCurs = (ovCurs.length && (Number(tmTier.price) || 0) !== priceWas) ? ovCurs : [];
+    /* D455 B14 第 6 條（§7.15）：含這張票、且有手動改價的組合包也一起列出（組合包的換算價跟著門票基準價走） */
+    const recheckBds = (tmNew || (Number(tmTier.price) || 0) === priceWas) ? [] : (ev.bundles || [])
+      .filter(b => window.ztorEvents.bundleTickets(b).tierIds.indexOf(tmTier.id) >= 0)
+      .map(b => ({ b, curs: Object.keys(b.override || {}).filter(c => { const o = b.override[c]; return o != null && o !== '' && window.ztorEvents.CURRENCIES.indexOf(c) >= 0; }) }))
+      .filter(x => x.curs.length)
+      .map(x => x.b.name + ' (' + x.curs.join(', ') + ')');
     const sold = Number(tmTier.sold) || 0;
     tmTier.qty = Math.max(sold, Number(tmEl('ed-tm-qty').value) || 0);
     /* 墓碑 2026-09-23（D316）：儲存時不再寫回 `fee`（粉絲加價的手續費）。 */
@@ -6118,7 +6115,10 @@
     closeTierModal();
     refreshTix();
     syncDirty();
-    if (window.ztorToast) window.ztorToast.show(T('ed.tm.applied', 'Applied — save the event to keep it'), { tone: 'success' });
+    if (window.ztorToast && recheckCurs.length && recheckBds.length) window.ztorToast.show(T('ed.tm.applied.recheck.both', 'Applied — save the event to keep it. Manual prices won\'t be recalculated. This ticket: {list}. Bundles with this ticket: {bundles}. Recheck them in Preview & localization.').replace('{list}', recheckCurs.join(', ')).replace('{bundles}', recheckBds.join('; ')));
+    else if (window.ztorToast && recheckBds.length) window.ztorToast.show(T('ed.tm.applied.recheck.bd', 'Applied — save the event to keep it. Bundles with this ticket have manual prices that won\'t be recalculated: {bundles}. Recheck them in Preview & localization.').replace('{bundles}', recheckBds.join('; ')));
+    else if (window.ztorToast && recheckCurs.length) window.ztorToast.show(T('ed.tm.applied.recheck', 'Applied — save the event to keep it. {list} keep their manual prices; recheck them in Preview & localization.').replace('{list}', recheckCurs.join(', ')));
+    else if (window.ztorToast) window.ztorToast.show(T('ed.tm.applied', 'Applied — save the event to keep it'), { tone: 'success' });
   });
   tmEl('ed-tm-delete')?.addEventListener('click', () => {
     if (!tmTier || (Number(tmTier.sold) || 0) > 0 || tmRO()) return;
@@ -6159,7 +6159,7 @@
     const visBtn = t => {
       const why = tierVisBlock(t);
       /* 已結束／已取消唯讀：按鈕留著但停用，title 說明原因（同站上停用鈕的做法，不做沉默停用） */
-      const dis = why ? ' disabled aria-disabled="true" title="' + esc(T('ed.tm.ro', 'This event has ended or been cancelled — tickets are view-only.')) + '"' : '';
+      const dis = why ? ' disabled aria-disabled="true" title="' + esc(T('ed.tm.ro', 'This event has ended or is archived — tickets are view-only.')) + '"' : '';
       return '<button type="button" class="btn btn--ghost btn--sm" data-view-safe data-tix-vis="' + esc(t.id) + '" data-feat="' + visFeat(t) + '"' + dis + '>' +
         esc(T(t.hidden ? 'ed.tix.show' : 'ed.tix.hide', t.hidden ? 'Show' : 'Hide')) + '</button>';
     };
@@ -6365,8 +6365,8 @@
 
   /* 售票與名單的五節（2026-08-17 使用者指定的名稱與順序）：
      預設看哪一節隨階段走——售票中盯的是賣得如何、進行中盯的是誰來了。
-     已取消沒有名單（活動不會發生）；通知照樣顯示、唯讀（D390；D413 決定一）。 */
-  const SV_DEFAULT = { 'on-sale': 'tx', live: 'roster', ended: 'tx', cancelled: 'tx' };
+     D457：已取消階段退場，沒有「不顯示名單」的階段；已封存的活動照原階段顯示、通知唯讀（D390；D413 決定一）。 */
+  const SV_DEFAULT = { 'on-sale': 'tx', live: 'roster', ended: 'tx' };
   /* 三組分節橫列都要有行為（2026-08-17 修）：此前只有「售票與名單」呼叫過
      initSectionNav，設定與票務那兩排點了不會捲、也永遠沒有作用中的那一條底線——
      一排標籤全部長一樣，讀不出自己在哪一節（使用者圈出：「已選有底線，沒底線的
@@ -6384,11 +6384,8 @@
   });
   function syncSalesView() {
     if (!salesRoot) return;
-    /* 已取消：活動不會發生，名單與通知沒有對象——那兩節連同它們的入口一起收起。
-       其餘階段五節都排在同一頁，上排只負責跳。 */
-    const cancelled = ev.status === 'cancelled';
-    /* D390（5.1.6.3 §4「已取消」）：名單不顯示；通知留著——寄送紀錄要讀得到「取消通知已寄給所有持票人」（§2.10.1），開關唯讀 */
-    const has = { tx: true, void: true, finance: true, roster: !cancelled, notif: true };
+    /* D457：已取消階段退場，五節一律都在（原已取消收起名單）；其餘階段五節都排在同一頁，上排只負責跳。 */
+    const has = { tx: true, void: true, finance: true, roster: true, notif: true };
     salesRoot.querySelectorAll('[data-nav-item]').forEach(b => { b.hidden = !has[b.dataset.navItem]; });
     salesRoot.querySelectorAll('[data-nav-panel]').forEach(p => { p.hidden = !has[p.dataset.navPanel]; });
   }
@@ -6409,9 +6406,7 @@
       scheduled: ['badge', 'event-detail.badge.scheduled', 'Scheduled'],
       'on-sale': ['badge--success', 'event-detail.badge.on-sale', 'On sale'],
       live: ['badge--warning', 'event-detail.badge.live', 'Live'],
-      ended: ['badge--neutral', 'event-detail.badge.ended', 'Ended'],
-      // badge--error（不是 badge--destructive——那個 class 全站沒有定義，寫上去等於沒有顏色）
-      cancelled: ['badge--error', 'event-detail.badge.cancelled', 'Cancelled']
+      ended: ['badge--neutral', 'event-detail.badge.ended', 'Ended']
     };
     /* 巡演的每一站常常共用同一個活動名稱（實測 REALIVE 亞洲段三站都叫
        「REALIVE World Tour — Asia leg」），真正把它們分開的是場地。名稱重複時改用
@@ -6419,7 +6414,7 @@
     const dupName = all.length > 1 && all.every(x => x.name === all[0].name);
     box.innerHTML = all.map(x => {
       const me = x.id === ev.id;
-      const b = BADGE[x.status] || BADGE.scheduled;
+      const b = x.archived ? ['badge--neutral', 'shop.status.archived', 'Archived'] : (BADGE[x.status] || BADGE.scheduled);   // D457：已封存徽章優先
       const title = dupName ? (x.venue || x.name) : x.name;
       const meta = [x.date, dupName ? null : x.venue].filter(Boolean).join(' · ') +
         (me ? ' · ' + T('event-detail.series.this', 'this event') : '');
@@ -7047,7 +7042,7 @@
      發布面板刻意不掛 data-editable：shared.css 的白名單會把 [data-mode="view"] 底下沒標 data-view-safe 的 button 藏掉，
      這裡的選項卡同時也是「現在的設定是什麼」的唯讀呈現，藏掉就沒東西看了——所以鎖定由本段自己做。 */
   const preSale = () => ['draft', 'scheduled'].indexOf(ev.status) >= 0;
-  const stageClosed = () => ['ended', 'cancelled'].indexOf(ev.status) >= 0;
+  const stageClosed = () => edIsClosed(ev);
   let pubDraft = null;   // 編輯模式下的草稿：{ publish, sale, listing:{ mode, from, to, unlistOn } }；null＝檢視（讀活動本身）
   function pubFromEv() {
     const lst = ev.listing || {};
@@ -7238,7 +7233,7 @@
       note.innerHTML = T(key, pre
         ? 'Nothing has sold yet, so all of these can still change. Once tickets are on sale, only the sale end, a later unlisting time and the display setting can.'
         : (stageClosed()
-          ? 'This event has ended or been cancelled, so its publish settings are view-only.'
+          ? 'This event has ended or is archived, so its publish settings are view-only.'
           : 'Tickets are on sale: you can still move the sale end earlier or later, push the unlisting time later, and switch the display setting. Listing, sale start and ticket delivery are locked.'));
     }
     const edit = document.getElementById('ed-pub-edit');
@@ -7380,7 +7375,7 @@
        編輯態才出現空狀態＋「在電子商店建立組合包」入口 */
     card.closest('[data-nav-panel]')?.toggleAttribute('data-view-empty', !bds.length);
     /* D397 決定一（UI-CHANGES 一百七十五）：建立入口自動帶入這場活動；已結束／已取消不提供（這場的票不能加入組合包） */
-    const canCreate = ['ended', 'cancelled'].indexOf(ev.status) < 0;
+    const canCreate = !edIsClosed(ev);
     const createHref = 'create-bundle.html?ev=' + encodeURIComponent(ev.id) + '&from=event-detail';
     document.querySelectorAll('[data-ed-bundle-create]').forEach(a => { a.href = createHref; a.hidden = !canCreate; });
     /* 2026-08-19 清掉 #ed-bundle-count 死分支：計數徽章已在 2026-08-18 依使用者指示
@@ -7478,7 +7473,7 @@
   function bdVisBtn(b) {
     const why = bdVisBlock();
     const hidden = b.shown === false;
-    const dis = why ? ' disabled aria-disabled="true" title="' + esc(T('ed.bd.vis.ro', 'This event has ended or been cancelled — bundles here are view-only.')) + '"' : '';
+    const dis = why ? ' disabled aria-disabled="true" title="' + esc(T('ed.bd.vis.ro', 'This event has ended or is archived — bundles here are view-only.')) + '"' : '';
     return '<button type="button" class="btn btn--ghost btn--sm" data-view-safe data-bd-vis="' + esc(b.id) + '" data-feat="S99"' + dis + '>' +
       esc(T(hidden ? 'ed.tix.show' : 'ed.tix.hide', hidden ? 'Show' : 'Hide')) + '</button>';
   }
@@ -7495,7 +7490,7 @@
     return '';
   }
   const bdZeroWhy = why => ({
-    ro: T('ed.bd.vis.ro', 'This event has ended or been cancelled — bundles here are view-only.'),
+    ro: T('ed.bd.vis.ro', 'This event has ended or is archived — bundles here are view-only.'),
     zero: T('ed.bd.zero.done', 'Stock is already 0 — raise the total in the bundle page to sell again')
   }[why] || '');
   function bdZeroBtn(b) {
@@ -7643,7 +7638,7 @@
   function renderWrapUp() {
     const card = $('#ed-wrapup');
     if (!card) return;
-    const on = ['ended', 'cancelled'].indexOf(ev.status) >= 0;
+    const on = ev.status === 'ended';   // D457：已取消階段退場；已封存的結束前活動沒有結案卡
     card.hidden = !on;
     if (!on) return;
     const ci = window.ztorEvents.checkinSummary(ev.id);
@@ -7654,12 +7649,9 @@
     /* 撤銷等於沒賣出（使用者 2026-10-12 裁決）：store 的 sold 本來就不含作廢票（見 buildTx 註解），
        所以到場率與未到場的分母不用再扣；已撤銷張數只作為對帳資訊列在收入卡。 */
     const voidedQty = txs.filter(t => t.status === 'voided').reduce((a, t) => a + (t.qty || 0), 0);
-    const cancelled = ev.status === 'cancelled';
+    const cancelled = false;   // D457：已取消階段退場（保留變數讓下方結案卡算式不動）
     const note = $('#ed-wrap-note');
-    if (note) {
-      note.hidden = !cancelled;
-      if (cancelled) note.textContent = T('event-detail.wrap.cancelled', 'Cancelled — sales below are what had already been paid');
-    }
+    if (note) note.hidden = true;
     const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
     /* 2026-08-19 修復：判斷式仍只排除共看派對，2026-08-17 全站已把「線上」統一改成
        ONLINE_TYPES（其餘 5 處都改過，唯獨這裡漏網）——結果線上活動（virtual）結束後
@@ -7704,9 +7696,7 @@
     /* 2026-09-09（D253）：已取消不再意味著「退款進行中」——改為手動作廢，這裡改顯示
        「已取消」，與付款．結算軸的整體改名一致（見 renderTx／renderFinance）。
        2026-10-12：已結束的結算只有「已結算」（使用者裁決，沒有「待結算」這一態）。 */
-    set('#ed-wrap-settle', cancelled
-      ? T('event-detail.wrap.settle.cancelled', 'Cancelled')
-      : T('event-detail.wrap.settle.done', 'Settled'));
+    set('#ed-wrap-settle', T('event-detail.wrap.settle.done', 'Settled'));
   }
 
   /* 已結束的場次：報到快照卡不該再寫「開演當天才開放」，改填這場最後的三色統計。 */
@@ -7875,7 +7865,7 @@
       /* D361 決定三：已結束、已取消整頁唯讀——通知開關一併鎖住（照樣看得到開或關） */
       /* 2026-10-10：通知開關是這場活動的設定，跟著整頁編輯模式——按「編輯活動」後才能切（D392：切的是草稿，儲存才生效） */
       const editingNow = (() => { const p = document.querySelector('.tab-panel[data-editable]'); return !!p && p.getAttribute('data-mode') === 'edit'; })();
-      const ro = ['ended', 'cancelled'].indexOf(ev.status) >= 0 || !editingNow || edStockOnly();   // D435：通知設定不是庫存，上架中要先下架才能改
+      const ro = edIsClosed(ev) || !editingNow || edStockOnly();   // D435：通知設定不是庫存，上架中要先下架才能改
       sw.classList.toggle('switch--locked', ro);
       if (ro) sw.setAttribute('aria-disabled', 'true'); else sw.removeAttribute('aria-disabled');
       if (!sw.dataset.wired) {
@@ -7895,23 +7885,21 @@
     set('#ed-notif-log-purchase', paid
       ? T('event-detail.notif.log.purchase.n', '{n} sent · one per paid order').replace('{n}', fmtNum(paid))
       : T('event-detail.notif.log.purchase.0', 'Nothing sold yet — none sent'));
-    const ended = ['ended', 'cancelled'].indexOf(ev.status) >= 0;
+    const ended = ev.status === 'ended';
     set('#ed-notif-log-reminder', ended
       ? T('event-detail.notif.log.reminder.done', 'Sent 24 h before doors')
       : (ev.date ? T('event-detail.notif.log.reminder.due', 'Goes out 24 h before doors · {d}').replace('{d}', fmtDate(ev.date))
                  : T('event-detail.notif.log.reminder.nodate', 'Needs a date before it can be scheduled')));
     /* 活動變更通知（D390 稽核第一節原型第 9 條）：照實際寫——售票中或進行中儲存過高影響變更就是寄過（events-store changeNotices），
-       寫最近一次的時間、通知人數與次數；沒有才寫未寄出。已取消照舊寫取消通知已寄給所有持票人。 */
+       寫最近一次的時間、通知人數與次數；沒有才寫未寄出。（D457：取消通知退場，原已取消那一句拿掉。） */
     const notices = window.ztorEvents.changeNotices ? window.ztorEvents.changeNotices(ev.id) : [];
     const lastN = notices[notices.length - 1];
-    set('#ed-notif-log-change', ev.status === 'cancelled'
-      ? T('event-detail.notif.log.change.cancel', 'Cancellation notice sent to all holders')
-      : (lastN
+    set('#ed-notif-log-change', lastN
         ? T('event-detail.notif.log.change.sent', 'Last sent {t} to {n} holders · {c} in total')
             .replace('{t}', lastN.at).replace('{n}', fmtNum(lastN.holders || 0)).replace('{c}', fmtNum(notices.length))
         : (edPreSale()   // D392 補充：開賣前沒有持票人可通知
           ? T('event-detail.notif.log.change.presale', 'Sales haven’t opened — no ticket holders to notify yet')
-          : T('event-detail.notif.log.change.none', 'No venue, date or start-time change since sales opened'))));
+          : T('event-detail.notif.log.change.none', 'No venue, date or start-time change since sales opened')));
     const bp = $('#ed-notif-badge-purchase'), br = $('#ed-notif-badge-reminder'), bc = $('#ed-notif-badge-change');
     const badge = (el, cls, key, fb) => {
       if (!el) return;
@@ -7920,8 +7908,8 @@
     };
     badge(bp, paid ? 'badge--success' : 'badge--neutral', paid ? 'event-detail.notif.log.sent' : 'event-detail.notif.log.none', paid ? 'Sent' : 'Not sent');
     badge(br, ended ? 'badge--success' : '', ended ? 'event-detail.notif.log.sent' : 'event-detail.notif.log.scheduled', ended ? 'Sent' : 'Scheduled');
-    const changeSent = ev.status === 'cancelled' || !!lastN;
-    badge(bc, ev.status === 'cancelled' ? 'badge--warning' : (lastN ? 'badge--success' : 'badge--neutral'),
+    const changeSent = !!lastN;
+    badge(bc, lastN ? 'badge--success' : 'badge--neutral',
           changeSent ? 'event-detail.notif.log.sent' : 'event-detail.notif.log.none',
           changeSent ? 'Sent' : 'Not sent');
   }

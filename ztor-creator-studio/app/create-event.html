@@ -32,6 +32,7 @@
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2"><!-- D340：顯示設定隱藏時的活動連結（複製／重置） -->
 <link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/code-picker.css?v=r2.2"><!-- D458：第 6 步票務商品「使用優惠碼」的選擇欄（js/bundle-editor.js 動態掛 js/code-picker.js） -->
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2"><!-- D391 第 5 題：移除場次確認裡列出會一併刪除的門票（同活動詳情確認對話的列表） -->
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/readiness.css?v=r2.2">
@@ -231,7 +232,7 @@
         <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-gate-type="meet" data-feat="S79"><i data-lucide="users" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.type.meet">Meet &amp; Greet</span><span class="radio-card__sub" data-i18n="ce.type.meet-sub">Intimate fan interaction</span></span></button>
         <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-gate-type="festival" data-feat="S79"><i data-lucide="tent" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.type.festival">Festival</span><span class="radio-card__sub" data-i18n="ce.type.festival-sub">Multi-day, multiple acts</span></span></button>
         <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-gate-type="launch" data-feat="S79"><i data-lucide="party-popper" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.type.launch">Launch Party</span><span class="radio-card__sub" data-i18n="ce.type.launch-sub">Celebrate a release</span></span></button>
-        <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-gate-type="virtual" data-feat="S79"><i data-lucide="video" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.type.virtual">Virtual Event</span><span class="radio-card__sub" data-i18n="ce.type.virtual-sub">Online-only experience</span></span></button>
+        <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-gate-type="virtual" data-feat="S101"><i data-lucide="video" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.type.virtual">Virtual Event</span><span class="radio-card__sub" data-i18n="ce.type.virtual-sub">Online-only experience</span></span></button>
         <!-- 共看派對（D149 §4.7）：2026-08-09 補回。它走的是原本的分支流程，不經 bookyay 帶入。 -->
         <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-gate-type="watchparty" data-feat="S75"><i data-lucide="film" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.type.watchparty">Watch Party</span><span class="radio-card__sub" data-i18n="ce.type.watchparty-sub">Watch a video together, in sync</span></span></button>
       </div>
@@ -1113,7 +1114,8 @@
           <button class="segmented__btn segmented__btn--active" type="button" data-val="eticket">
             <span class="radio-card__text"><span class="radio-card__title" data-di="d.ship.e">電子門票</span><span class="radio-card__sub" data-di="d.ship.e.sub">票收在 App 裡，入場掃碼。</span></span>
           </button>
-          <button class="segmented__btn" type="button" data-val="sf">
+          <!-- 2026-10-20：順豐寄送（S102 ⚪）release2.4 收起，release2.4 取票方式只有電子門票 -->
+          <button class="segmented__btn" type="button" data-val="sf" data-feat="S102">
             <span class="radio-card__text"><span class="radio-card__title" data-di="d.ship.sf">順豐寄送</span><span class="radio-card__sub" data-di="d.ship.sf.sub">實體票寄到粉絲填的地址，運費粉絲付。</span></span>
           </button>
           <!-- 2026-10-09 D383：到店自取（S89 ⚪）release2.4 收起，最終版照舊 -->
@@ -1411,6 +1413,8 @@
 <script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購的輔助說明（purchase-conds 的限購條件卡借用），要先於 purchase-conds 載入；D427 起只剩每人總限購 -->
 <script src="js/purchase-conds.js?v=r2.2"></script>   <!-- D388：購買條件編輯器（新增條件清單），與 event-detail 共用 -->
 <script src="partials/film-picker.js?v=r2.2"></script>   <!-- D342：第 6 步收電影關聯（5.1.5.4 F10），共用選片器 -->
+<script src="js/discount-codes-store.js?v=r2.2"></script><!-- D458：優惠碼端資料 -->
+<script src="js/code-picker.js?v=r2.2"></script>
 <script src="js/bundle-editor.js?v=r2.2"></script>
 <script>
 (function () {
@@ -5349,6 +5353,7 @@
     "d.bgate.noticket": { en: "This event has no tickets set up, so it can't be imported.", zh: "這場活動沒有設定門票，不能帶入" },
     /* release2.4 範圍：到店自取的活動標不能帶入（D384 決定一）。
        墓碑 2026-10-16（D440 決定四）：d.bgate.multi／d.bgate.repeat（多時段、重覆活動不能帶入，D383）刪除——多個時段帶入後合成同一場。 */
+    "d.bgate.sf":       { en: "Tickets for this event are shipped by SF Express. Shipping isn't available yet, so it can't be imported.", zh: "這場活動的取票方式是順豐寄送，目前還沒有郵寄取票，不能帶入" },
     "d.bgate.pickup":   { en: "Tickets for this event are picked up in store. Store pickup isn't available yet, so it can't be imported.", zh: "這場活動的取票方式是到店自取，目前還沒有到店自取，不能帶入" },
     "d.limits":       { en: "Other event settings", zh: "其他活動設定" },
     "d.limits.sub":   { en: "Leave blank for no limit.", zh: "留空就是不限制。" },
@@ -6340,6 +6345,7 @@
   const bkyVerBlock = r => {
     if (!r || r.imported) return "";
     if (!featOn("S89") && r.ship === "pickup") return "pickup";
+    if (!featOn("S102") && r.ship === "sf") return "sf";   // 2026-10-20：順豐寄送不在 release2.4
     return "";
   };
   /* ── 創作者帶入的候選範圍（D390 決定十七，2026-10-09；以 5.1.0.6 為準）────────────────────────────

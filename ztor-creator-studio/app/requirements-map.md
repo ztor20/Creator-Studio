@@ -25,6 +25,10 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-20 D458 原型同步（UI-CHANGES 二百七十四、ASSUMPTIONS UIA-280；tier 🔵 release2.4，代理碼與次數用完的示範碼只在最終版）**：5.1.5.2 §4.4 F13（唯一定義處）、5.1.5.1 §2.15、5.1.5.4 F7、5.1.5.9 §2.3、5.1.5.5 F8.2、5.1.6.3 §2.6.1 → 商品與組合包的「可與優惠碼疊加」改為商品端優惠碼總開關（標籤暫用「使用優惠碼」，待確認）：`create-product.html`、`product-detail.html`（獨立一段「優惠碼」）、`create-bundle.html`、`bundle-detail.html`（價格階梯開關列＋面板列）、`js/bundle-editor.js`（建立活動第 6 步票務商品，S64）；開啟後的選擇欄是新元件 Code picker（`js/code-picker.js`、`ds-components/code-picker.css`），資料走新增的 `js/discount-codes-store.js`，`store-settings.html` 優惠碼清單的範圍欄從同一份資料重畫並對開關關閉的商品標「不適用」。活動票種與獨立票不新增開關。
+>
+> **2026-10-20 D457 原型同步（UI-CHANGES 二百七十三、ASSUMPTIONS UIA-279；S81 🔵，tier 不變）**：5.1.6 F1／F3／F5、5.1.6.3 §2.1／§2.10／第 4 段頁面狀態、主規格 §7.2／§7.14 → 活動拿掉「取消活動」與「已取消」階段（五階段），新增封存／解除封存與清單「已封存」篩選：`js/events-store.js`（`archived` 旗標、`setArchived`、`unlistBundlesOf`、移除 cancelled 與 bkyCancel）、`events.html`（已封存分頁、列徽章與列操作）、`event-detail.html`（設定分頁封存區塊、已封存唯讀與頁首解除封存、通知取消通知項移除）、`create-bundle.html`／`bundle-detail.html`／`partials/bundle-relist.js`／`event-localization.html`／`store-settings.html`／`js/components.js`（已封存比照已結束的唯讀與不可加入）、`js/i18n.js`。5.1.6.3 §2.1 的「再辦一場」（已結束與已下架）、§2.10 通知三開關、第 4 段「已封存」頁面狀態各有對應。
+>
 > **2026-10-19 D448 原型同步（UI-CHANGES 二百六十五、ASSUMPTIONS UIA-276；tier 不變）**：5.1.6.3 §2.1 重新上架、主規格 §7.14「活動取消或下架時連動組合包」 → `event-detail.html` 重新上架前彈窗問要不要同時上架已下架的組合包；`js/events-store.js` `relistBundlesOf()`。
 
 > **2026-10-19 D447 門票與票務商品庫存設為 0（UI-CHANGES 二百六十四、ASSUMPTIONS UIA-275；tier 🔵 release2.4，S100）**：主規格 §7.14、5.1.6.2、5.1.6.3 §2.6／§2.6.1、5.1.5.9 → `event-detail.html`（門票列表與彈窗「庫存設為 0」`tierZeroBlock`／`setTierStockZeroNow`、票務商品「庫存設為 0」`setBundleSetsZeroNow`：改為限量、總量＝已售）、`bundle-detail.html`（`evBundlePersist` 補寫回限量總量 `cap`）、`js/events-store.js`（`tierStock`／`tierZeroQty`／`bundleLeft`／`bundleZeroCap`、`isSoldOut`）、`js/fan-event-page.js`＋`event-localization.html`（粉絲端售罄）、`js/i18n.js`、`js/devtools.js`、`feature-scope-map.md`。
@@ -71,6 +75,10 @@
 > - 5.1.6.1 F22、5.1.6.2 F9、5.1.6.3 §2.6：`js/purchase-conds.js` 限購條件卡空白就地紅字（`capErrKey`／`capBad`、`[data-cond-warn="cap"]`）；`create-event.html` 擋在門票彈窗儲存、票務設定關閉與發布前（`capIssue`）；`event-detail.html` 擋在門票彈窗儲存（`tmErrors` 的 `cap`）與預設購票規則套用（`check()`）。
 > - 主規格 §7.14「組合包的限購」：`js/purchase-limits.js` `errors()` 覆寫（設上限）空白回「請填上限。」，`create-bundle.html`、`bundle-detail.html`、`js/bundle-editor.js` 同擋。
 > - 5.1.5.2 §4.6、5.1.5.1 §2.12：商品端原本就擋，只把程式註解〔推導〕改 D428 定案。只進 main（release2.4 與最終版）。
+
+> **2026-10-20 D456 原型同步：組合包限購不繼承成員（UI-CHANGES 二百七十、ASSUMPTIONS UIA-278；S94）**：
+> - 主規格 §7.14「組合包的限購」v4.96、5.1.5.4 §4 F2、5.1.5.9 §2.3：`create-bundle.html` `[data-cb-rules]`、`bundle-detail.html` `[data-bd-rules-sec]`、`js/bundle-editor.js`（建立活動第 6 步）的限購區塊改為預設不限、獨立計算，拿掉「跟隨成員預設」開關與「取自誰」；`js/purchase-limits.js`、`js/i18n.js`（`pl.sub`）、`ds-components/limit-set.css`、`design-system.md／html` 同步。購買條件的跟隨所含門票與只能收窄不變。
+> - 規則手冊另行同步（見 decisions.md D456 影響欄）。
 
 > **2026-10-16 D427 原型同步：限購只留每人總限購數量（UI-CHANGES 二百四十五、ASSUMPTIONS UIA-266；S35、S94、S72）**：
 > - 主規格 §7.2、5.1.5.2 F9、5.1.5.1 §2.12：`create-product.html`、`product-detail.html` 限購開關底下只剩「每人總限購數量」一欄（`[data-cp-limit-host]`／`[data-pd-limit-host]`），開了就要填。

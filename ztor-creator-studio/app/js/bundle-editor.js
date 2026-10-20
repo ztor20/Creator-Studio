@@ -342,12 +342,14 @@
              films    電影關聯（films-store id）
              shown    顯示設定（預設顯示）
              saleOn／sale  限時折扣（排程特價 F7）：{ pct, from, to }
-             stack    可與優惠碼疊加（預設關）
+             stack    使用優惠碼＝優惠碼總開關（預設關；D458，原「可與優惠碼疊加」，欄位名沿用 stack）
+             codes／codesNew  開關打開後選的優惠碼與暫存的新碼（js/code-picker.js）；活動建立流程的組合包還沒有落地 id，
+                      選取先留在這份資料裡，不寫進碼端（活動發布寫入 events-store 的落點尚未接，見 ASSUMPTIONS）
              alloc    鎖定套數的逐票種分配 { 票種 id: 組數 }（選填，合計 ≤ 鎖定套數）
              sched    上架、下架、開賣、停售四格的跟隨／另設（null＝跟隨活動；js/ticket-bundle.js）
              rules    購買條件與限購（null＝跟隨所含門票）——2026-10-12 起只剩購買條件
-             limits   限購（2026-10-12，UI-CHANGES 一百八十八；js/purchase-limits.js）：null＝跟隨成員、{ person, order, times }＝已覆寫 */
-        media: [], films: [], shown: true, saleOn: false, sale: null, stack: false, alloc: {}, sched: {}, rules: null, limits: null,
+             limits   限購（2026-10-12，UI-CHANGES 一百八十八；js/purchase-limits.js）：null＝不限、{ person }＝自己設的上限（D456） */
+        media: [], films: [], shown: true, saleOn: false, sale: null, stack: false, codes: [], codesNew: [], alloc: {}, sched: {}, rules: null, limits: null,
       };
       if (seed) {
         /* price 刻意不從 seed 收：舊種子資料還帶著寫死的價格，收進來會蓋掉算出來的值。 */
@@ -377,8 +379,8 @@
         ['media', 'films'].forEach(function (k) { b[k] = Array.isArray(seed[k]) ? seed[k].slice() : []; });
         ['alloc', 'sched'].forEach(function (k) { b[k] = seed[k] ? JSON.parse(JSON.stringify(seed[k])) : {}; });
         b.rules = seed.rules ? JSON.parse(JSON.stringify(seed.rules)) : null;
-        /* 2026-10-12（UI-CHANGES 一百八十八）：限購 b.limits（null＝跟隨成員、物件＝已覆寫）。舊資料（D342）沒有 limits、
-           限購寫在 rules（cap:'cap'）→ 相容讀成已覆寫（同 bundle-detail 的讀法）；之後存檔只認 limits，rules 只剩購買條件。 */
+        /* 2026-10-12（UI-CHANGES 一百八十八）：限購 b.limits（null＝不限、物件＝自己設的上限，D456）。舊資料（D342）沒有 limits、
+           限購寫在 rules（cap:'cap'）→ 相容讀成自己設的上限（同 bundle-detail 的讀法）；之後存檔只認 limits，rules 只剩購買條件。 */
         var PLs = window.ztorPurchaseLimits;
         b.limits = seed.limits !== undefined
           ? (seed.limits ? JSON.parse(JSON.stringify(PLs ? PLs.norm(seed.limits) : seed.limits)) : null)
@@ -1005,49 +1007,28 @@
                buyOnly: true };
     }
     /* ── 組合包的限購（2026-10-12 改接 js/purchase-limits.js，UI-CHANGES 一百八十八；D398、主規格 §7.14「組合包的限購」）──
-       與 create-bundle／bundle-detail 同一套：成員＝允許的每張門票（門票自己的限購，跟隨活動預設時就是活動層那一份；
-       每組用量＝每組張數）＋每件商品（商品的 limit，每組 1 件）；預設跟隨成員（換算後取交集），可覆寫（從跟隨值起手）、可改回。
-       存檔形狀 b.limits：null＝跟隨成員、{ person }（字串，以組計；D427 起只剩每人總限購）＝已覆寫。
+       與 create-bundle／bundle-detail 同一套。D456（2026-10-20）起不繼承成員：限購是組合包自己的設定，預設不限，
+       不帶入成員商品或門票的限購，成員改了也不跟；可以比成員寬或嚴，設上限最低 1 組；額度獨立計算。
+       存檔形狀 b.limits：null＝不限、{ person }（字串，以組計；D427 起只剩每人總限購）＝自己設的上限。
        舊資料（D342）只有 b.rules（cap:'cap' 時帶 person）→ 讀進來時以 PL.fromRules 轉成 b.limits（舊的 order／times 忽略，D427）。
+       墓碑 2026-10-20（D456）：limitMembers／productLimit（成員清單，只為算成員交集）與跟隨成員開關退場。
        墓碑 2026-10-16（D429）：bookyay 套票自動建立的組合包（srcFix）照 purchase-limits 的 locked 畫鎖定徽章（pl.lock.bky）退場。 */
     function plApi() { return (SPLIT && getTickets && window.ztorPurchaseLimits) || null; }
-    function productLimit(it) {
-      var P = window.ZTOR_PRODUCTS || {}, raw = it && P[it.id];
-      if (!(raw && raw.limit) && it && it.name) {
-        Object.keys(P).some(function (k) { if (P[k] && P[k].name === it.name && P[k].limit) { raw = P[k]; return true; } return false; });
-      }
-      return (raw && raw.limit) || (it && it.limit) || null;
-    }
-    function limitMembers(b) {
-      var TB = window.ZtorTicketBundle, n = tixQty(b), out = [];
-      tixIds(b).map(ticketById).filter(Boolean).forEach(function (t) {
-        var r = TB ? TB.tierRules(t.rules) : {};
-        out.push({ kind: 'ticket', name: t.name || '', per: n, lim: { person: r.person || '' } });
-      });
-      b.items.forEach(function (it) {
-        out.push({ kind: 'product', name: it.name || '', per: 1, lim: productLimit(it) });
-      });
-      return out;
-    }
     function limitsErrCount(b) {
       var PL = plApi();
       if (!PL) return 0;
-      return Object.keys(PL.errors(b.limits, PL.derive(limitMembers(b)), T)).length;
+      return Object.keys(PL.errors(b.limits, T)).length;
     }
     function limitsHTML(b) {
       var PL = plApi();
       if (!PL) return '';
-      var mem = limitMembers(b);
-      if (!mem.length) return '<div data-bd-pl></div>';   /* 2026-10-12 使用者：沒有成員時限購整塊不顯示（原本一句「至少加入 1 個成員」） */
-      return '<div data-bd-pl>' + PL.blockHTML(b.limits, PL.derive(mem), T, {
-        title: true
-        /* 墓碑 2026-10-16（D427）：keys: PL.KEYS_BKY（bookyay 自動組合包只畫兩欄）退場——限購只剩每人總限購一欄 */
-      }) + '</div>';
+      if (!tixIds(b).length && !b.items.length) return '<div data-bd-pl></div>';   /* 2026-10-12 使用者：沒有成員時限購整塊不顯示（原本一句「至少加入 1 個成員」） */
+      return '<div data-bd-pl>' + PL.blockHTML(b.limits, T, { title: true }) + '</div>';
     }
     function limitsSync(card, b) {
       var PL = plApi(), host = card && card.querySelector('[data-bd-pl]');
       if (!PL || !host) return;
-      PL.syncErrors(host, b, PL.derive(limitMembers(b)), T);
+      PL.syncErrors(host, b, T);
     }
     function tbErrCount(b) {
       var c = tbCtx(b);
@@ -2113,10 +2094,13 @@
               '<small data-bd-save>' + esc(saveText(b)) + '</small></div>' +
           '</div>' +
           saleRows +
-          /* 可與優惠碼疊加（F7） */
+          /* 使用優惠碼（F7，D458：原「可與優惠碼疊加」）：優惠碼總開關＋打開後的選擇欄（js/code-picker.js，render 後掛進 host） */
           '<div class="price-ladder__step" data-feat="S64">' +
             ladderK(esc(T('cp.discount.stack')), T('cp.discount.stack-sub')) +
             ladderSwitch('data-bd-stack-toggle', !!b.stack, false, T('cp.discount.stack')) +
+          '</div>' +
+          '<div class="price-ladder__step price-ladder__step--panel" data-feat="S64"' + (b.stack ? '' : ' hidden') + '>' +
+            '<div class="price-ladder__codes" data-bd-codes-host></div>' +
           '</div>' +
           /* 粉絲實付（平時）；限時折扣生效時下面一行「期間 $Y」 */
           '<div class="price-ladder__step price-ladder__step--total">' +
@@ -2599,9 +2583,9 @@
     /* 取消＝還原打開時的快照（SPLIT）。快照只收這一組的資料欄位，不收 fresh／collapsed 這類 UI 狀態。 */
     /* lockAsk（2026-10-12 改版）：數量卡「要鎖定庫存嗎」的選擇，取消時一起還原 */
     var SNAP_KEYS = ['name', 'desc', 'discount', 'discountOn', 'avail', 'cap', 'lockSets', 'lockAsk', 'perks', 'scope', 'cover', 'nameTouched',
-                     'shown', 'saleOn', 'stack'];
+                     'shown', 'saleOn', 'stack', 'codes'];
     /* D342：物件型欄位整份深拷貝（取消要還原到打開那一刻，不能跟著工作中的物件一起變） */
-    var SNAP_DEEP = ['sale', 'media', 'films', 'alloc', 'sched', 'rules', 'limits'];   /* limits：2026-10-12 限購改接（UI-CHANGES 一百八十八） */
+    var SNAP_DEEP = ['sale', 'media', 'films', 'alloc', 'sched', 'rules', 'limits', 'codesNew'];   /* limits：2026-10-12 限購改接（UI-CHANGES 一百八十八） */
     function snapOf(b) {
       var o = {};
       SNAP_KEYS.forEach(function (k) { o[k] = Array.isArray(b[k]) ? b[k].slice() : b[k]; });
@@ -3047,6 +3031,12 @@
         if (fh && window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createFilmPicker) {
           window.ZTOR_PARTIALS.createFilmPicker(fh, { selected: bb.films || [], onChange: function (ids) { bb.films = ids.slice(); onChange(BUNDLES); } });
           if (window.applyI18n) window.applyI18n(fh);
+        }
+        /* D458：優惠碼選擇欄（開關打開才有 host 可見）；每次重畫都是新節點，狀態從 b.codes／b.codesNew 帶回 */
+        var ch = card.querySelector('[data-bd-codes-host]');
+        if (ch && window.ztorCodePicker) {
+          window.ztorCodePicker.mount(ch, { key: null, selected: bb.codes || [], pending: bb.codesNew || [], label: function () { return bb.name || ''; },
+            onChange: function (st) { bb.codes = st.codes; bb.codesNew = st.pending; onChange(BUNDLES); } });
         }
         var c = tbCtx(bb); if (c) c.TB.syncErrors(card, bb, c, T);
         limitsSync(card, bb);   /* 2026-10-12（UI-CHANGES 一百八十八）：限購的就地紅字 */
@@ -3678,11 +3668,6 @@
         if (e.target.closest('[data-bd-shown-toggle]').getAttribute('aria-disabled') === 'true') return;   /* D363：活動隱藏中不能切 */
         b.shown = b.shown === false; render({ blur: true }); return;
       }
-      /* 2026-10-12（UI-CHANGES 一百八十八）：限購「跟隨成員預設」開關——沿用 purchase-limits 的 data-pl-act 委派
-         （同 create-bundle 的 PLc.onClick）：關＝覆寫、從跟隨值起手；開＝改回跟隨成員。 */
-      if (SPLIT && plApi() && e.target.closest('[data-pl-act]')) {
-        if (plApi().onClick(e, b, plApi().derive(limitMembers(b)))) { render({ blur: true }); return; }
-      }
       if (SPLIT) {
         var tbc = tbCtx(b);
         if (tbc && tbc.TB.onClick(e, b, tbc)) { render({ blur: true }); return; }
@@ -3820,7 +3805,7 @@
         copy.lockSets = b.lockSets;
         copy.nameTouched = true;
         /* D342：第 6 步補齊的欄位每一組都沿用（逐票種分配以票種為鍵，跨場通用） */
-        copy.shown = b.shown; copy.saleOn = b.saleOn; copy.stack = b.stack;
+        copy.shown = b.shown; copy.saleOn = b.saleOn; copy.stack = b.stack; copy.codes = (b.codes || []).slice();
         SNAP_DEEP.forEach(function (k) { copy[k] = b[k] == null ? b[k] : JSON.parse(JSON.stringify(b[k])); });
         copy.items = b.items.slice();
         copy.perks = b.perks.slice();
