@@ -948,6 +948,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Section nav | 🟡 molecule | ✓ App | 分頁內的側欄分節導覽（原 `.settings-nav`，2026-08-17 提升為中性元件）。**Q75 全站統一分隔線式（2026-08-25）**：取代原本比照 filter-tabs 的藥丸／橘 tint 底畫法——每列 1px `--border-soft` 下緣線、末列去線、無底色、無藥丸、無 icon，已選只換 `--selected-ink`＋medium 字重。**2026-08-26 擴大為所有詳情頁的頁級導覽**：product／project／auction／bundle／creator／fan／ip 七個詳情頁由橫排 `.tabs` 改為本元件，加上 series-detail 與 settings（舊別名 `.settings-nav__item` 選擇器隨元件本體生效，見下方 Settings nav 行）共九頁同款；橫排 `.tabs` 留給清單頁工具列與節內篩選。同日新增 `.section-nav__count`（素面 11px 數字、`margin-left:auto` 靠右貼列尾、tabular-nums、已選列跟著換 `--selected-ink`，與 `.tabs--count-plain` 同一種素面數字語言），承接 creator-detail／ip-detail 分頁原本的計數 | [section-nav.css](./ds-components/section-nav.css) |
 | Section outline | 🟡 molecule | ✓ App | 長表單的本頁大綱（2026-10-12，lab-section-nav 選定 C 款）：直排細字清單，目前節亮起＋左側細線（scroll-spy），點擊平滑捲到該節；每列前有狀態圓（必填未填＝橘色空心圈／已完成＝實心打勾／選填＝灰點），頂部「必填 N／M」＋進度條，sticky。`--gutter` 變體放進頁面左側空白欄、視窗 <1400px 隱藏。與 `.section-nav`（分頁內側欄、無狀態）、`.section-tabs`（頂端橫排、無狀態）的分工：只有本支帶「必填完成度」。詳見 §4.233 | [section-outline.css](./ds-components/section-outline.css) |
 | Limit set | 🟡 molecule | ✓ App | 限購（2026-10-12 D398 promote；2026-10-16 D427 起只剩「每人總限購數量」一欄，每次交易限購數量／限購次數退場）：一欄＋一句輔助說明、只換單位（件／組／張）；組合包變體 `.limit-set--bundle` 為「限購」標題＋一句額度說明（獨立計算，D456 起不繼承成員、沒有跟隨成員開關）＋細框裡一列（左名稱與說明、右輸入框）。markup 一律由 `js/purchase-limits.js` 產生。詳見 §4.234 | [limit-set.css](./ds-components/limit-set.css) |
+| Rules group | 🟡 molecule | ✓ App | 購買條件群組（2026-10-21，UI-CHANGES 二百八十二；使用者反饋「購買條件與限購太零散」）：把原本兩個獨立線框（購買條件、限購）、各自的標題與調整入口，整併成**一個**細框（同價格階梯 `--border-soft`／`--radius-md`）：條件那一列（左＝名稱＋來源說明、右＝讀數＋跟隨開關同一排，關掉跟隨或純商品條件清單時編輯內容接在列下 `__body`）→ 限購那一列（左＝名稱＋兩句說明、右＝輸入框）→ 底部一句彙總「目前生效：購買條件「…」、限購「…」」。節標題只出現一次；三處（建立組合、組合細節、建立活動組合包彈窗）同一套 markup。詳見 §4.240 | [rules-group.css](./ds-components/rules-group.css) |
 | Price ladder | 🟡 molecule | ✓ App | 價格階梯（2026-10-12 D402）：原價 → 組合折扣 → 限時折扣 → 使用優惠碼（D458 起原「可與優惠碼疊加」改為優惠碼總開關，開啟後接放選擇欄的面板列）→ 粉絲實付，排成一條由上往下的列；開關列右邊放開關、打開後展開面板列；「看怎麼算」展開逐項明細；價格不是單一值時主價格下加區間小字。詳見 §4.235 | [price-ladder.css](./ds-components/price-ladder.css) |
 | Member table | 🟡 molecule | ✓ App | 組合物表（2026-10-12 D402）：商品與活動票券成員同一張表，五欄（展開｜名稱｜原價・剩餘｜每組數量｜移除），票券列可展開、展開入口兩處同步。詳見 §4.236 | [member-table.css](./ds-components/member-table.css) |
 | Form ask | 🟡 molecule | ✓ App | 問句式設定塊（問句→說明→二選一→選了才出現的內容）＋標題列讀數 `.form-tally`（分類標 `.form-cat` 已撤除）（2026-10-12 D402）。詳見 §4.237 | [form-ask.css](./ds-components/form-ask.css) |
@@ -5645,12 +5646,12 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 
 **Dependencies** — `.card`（卡體）、`.btn`（`--outline`／`--primary`／`--destructive`／`--icon`）、`.dropdown`（⋮ 選單）、`.field` ／`.input`／`.amount-field--readonly`（價格的 `$` 綴詞）、`.upload-tile`（新增格）、`.ztor-icon`。**不吃 `.form-grid`**——2026-08-04 卡改窄之後三欄改直排，格線 helper 不再參與。無獨立 JS 檔；卡片渲染、驗證（名稱 1–40 字且不重複／價格整數 ≥ 0／數量整數 ≥ 1／Σ 數量 ≤ 容量）與草稿的 Save／Cancel 由 `create-event.html` 的行內控制器處理。
 
-**單張門票彈窗改單欄四區塊（2026-09-22，D311）** — 彈窗殼仍是 `.payout-modal`／`.payout-dialog`（Q27），但內容整個重排：**分頁（設定／購買條件）退場**，改成四個 `.form-section--dense`——基本（門票名稱＋縮成一格的門票圖片）／價格與數量（`.calc-list--form` 算式列表：票價 ＝ 粉絲付 − 平台費 ＝ 創作者實收，數量刻意排在列表之外；2026-09-23 D316 收掉「＋ 手續費」那一列，平台費與支付費一律由創作者負擔）／入場（提前入場分鐘數＋「跟隨場次／自訂」二選一）／購買條件（這張票自己的條件清單；**2026-10-20 D460：區塊標題右側的「跟隨活動預設」開關與繼承值摘要三列退場**，活動層沒有任何預設購票規則，沒有條件＝「還沒有條件」）。標題列多一行副標（場次日期・場地），頁尾左側是 `.payout-dialog__foot-note`「N 個欄位待修正」。**2026-09-23（Q125）區塊標題的分量重排**：「基本」不畫標題列（彈窗標題與副標已經是脈絡，門票名稱與門票圖片兩格彼此無關、各自的標籤也說完了）、「入場」改 `.form-section__title--quiet` 輕標題（這一層沒有區塊級控制項），「價格與數量」（算式單元＋bookyay 徽章）與「購買條件」（原本靠跟隨開關換來標題；D460 後換成必須連著讀的一組條件清單）維持正常那一階；`event-detail.html` 的票種彈窗同一套判斷。同輪把彈窗內的節奏收成一把梯子（6／16／12／32／24），見 Pillar 4 的 Form section 條目。
+**單張門票彈窗改單欄四區塊（2026-09-22，D311）** — 彈窗殼仍是 `.payout-modal`／`.payout-dialog`（Q27），但內容整個重排：**分頁（設定／購買條件）退場**，改成三個 `.form-section--dense`——基本（門票名稱＋縮成一格的門票圖片）／價格與數量（`.calc-list--form` 算式列表：票價 ＝ 粉絲付 − 平台費 ＝ 創作者實收，數量刻意排在列表之外；2026-09-23 D316 收掉「＋ 手續費」那一列，平台費與支付費一律由創作者負擔）／購買條件（這張票自己的條件清單；**2026-10-20 D460：區塊標題右側的「跟隨活動預設」開關與繼承值摘要三列退場**，活動層沒有任何預設購票規則，沒有條件＝「還沒有條件」）。標題列多一行副標（場次日期・場地），頁尾左側是 `.payout-dialog__foot-note`「N 個欄位待修正」。**2026-09-23（Q125）區塊標題的分量重排**：「基本」不畫標題列（彈窗標題與副標已經是脈絡，門票名稱與門票圖片兩格彼此無關、各自的標籤也說完了）、`.form-section__title--quiet` 輕標題（這一層沒有區塊級控制項；2026-10-21 D462 門票彈窗的「入場」區退場後，目前沒有產品頁在用，DS 頁留一個示意），「價格與數量」（算式單元＋bookyay 徽章）與「購買條件」（原本靠跟隨開關換來標題；D460 後換成必須連著讀的一組條件清單）維持正常那一階；`event-detail.html` 的票種彈窗同一套判斷。同輪把彈窗內的節奏收成一把梯子（6／16／12／32／24），見 Pillar 4 的 Form section 條目。
 
 - **平台費那一列是純顯示（2026-09-23，D315 撤銷 D311 的例外平台費）** — 這一列標所屬葉節點、費率與來源（「平台預設」或「這位創作者的覆寫」兩種），creator 與 Admin 看到的是同一個唯讀列，門票彈窗沒有任何編輯入口；費率的唯一設定處是 Admin 的平台費率設定頁（5.1.0.3）。費率兩層解析（creator 覆寫 → General）住在 `js/platform-fees.js`，葉節點名稱共用費率設定頁的 `fees.dim.*`／`fees.leaf.*`，不另抄一份中文字串。🪦 D311 的例外平台費開關、費率 % 欄與 `.calc-list__extra` 一併退場。
 - **bookyay 帶入的票** — 價格與數量整段改唯讀事實列（`.calc-list` 不帶 `--form`）＋區塊標題一枚「bookyay 帶入」徽章，不再逐欄掛鎖徽章與清空鈕（D308 同一口徑）。
 - 🪦 tombstone：`ruleHeadHTML`／`syncModalRuleHead`（分頁頂端那一行提示＋「改回跟隨活動預設」按鈕）、`grossFieldHTML`（「總價」唯讀欄——它把算出來的數字做成看起來能填的欄位，又排在票價之前，加法關係完全看不見）、`modalTab`。
-- `event-detail.html` 的票種彈窗（D311 決定六）同一套結構：基本／價格與數量（同一組算式列）／入場。**購買條件在詳情頁沒有**——發布後改購買條件的規則上游未定（2026-08-11 裁決未變），所以最後一個區塊是「入場」（原「販售」暫停區塊已隨 D422／D444 退場）。
+- `event-detail.html` 的票種彈窗（D311 決定六）同一套結構：基本／價格與數量（同一組算式列）。**一般活動的購買條件在詳情頁沒有**——發布後改購買條件的規則上游未定（2026-08-11 裁決未變）；bookyay 帶入與自建活動的購買條件區見 D385／D388。原「販售」暫停區塊已隨 D422／D444 退場；原「入場」區（提前入場分鐘數、早到處理）於 2026-10-21（D462）整組退場，提前入場只在場次層。
 
 **Consumers** — `create-event.html`（spec 5.1.6.1 步驟 4／5）、`event-detail.html`（票務分頁的票種彈窗）。
 
@@ -6840,7 +6841,9 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **Token usage** — `--border`／`--border-soft`／`--radius-xl`（框與線）、`--ztu-glass-strong`（hover）、`--column-head-ink`／`--fs-12`（表頭）、`--font-ui`／`--fs-14`／`--fs-13`／`--fs-12`、`--foreground`／`--foreground-muted`／`--muted-foreground`、`--status-error`（超量）、`--sp-2/8/12/14/16/24/28/32`、`--control-h-xs`（規格輸入框）。欄軌 `--lockset-col`（`minmax(64px, 100px)`）／`--lockset-colgap`（`clamp(--sp-12, 4%, --sp-32)`）是元件本地變數，窄容器自動收斂。
 
-**Consumers** — bundle-detail.html（組合庫存分頁「商品庫存鎖定」）、create-bundle.html（F4 庫存）。探索紀錄：lab-bundle-lock.html（L1／L2／L3 三案，L3 定案）。
+**JS 元件：`js/lock-alloc.js`（`window.ZtorLockAlloc`，2026-10-21 由 create-bundle、bundle-detail 各抄一份的 `renderAlloc`／`refreshAlloc` 列迴圈抽出）** — `render(host, { prefix, members, productOf, nameCell, alloc, multiOnly, skipMissing })` 只在成員清單變動時重建列；`refresh(host, { prefix, bundle, productOf, T, setQty, disabled })` 更新庫存／未鎖定／已鎖定三個數字、「已指定 x 件／超過鎖定量」與逐選項輸入框的 `aria-invalid`，回傳 `{ anyBad }`。屬性前綴 `prefix` 區分消費頁（`cb`＝create-bundle、`bd`＝bundle-detail、`sp`＝建立活動組合包彈窗），markup 與 class 一律是上面 anatomy 的那一套。規則（D266／D268，純電子商店組合包與含票券的組合包同一套）：多選項成員已鎖定＝N × 每套用量（唯讀），另可展開「逐選項組合」選填分配——每格不得大於該組合當下沒被別的管道鎖走的量、各格合計不得超過已鎖定量，數字一律問 `ListingState.bundleAllocOf`。建立活動組合包彈窗（`layout:'split'`）只在「鎖定套數＞0 且成員含多選項商品」時出現這張清單（`multiOnly:true`，單一選項商品沒有可填的東西），資料落在 `b.itemAlloc`（`{ 商品 id: { 選項組合索引: 件數 } }`，形狀同 `ListingState` 的 bundle.alloc）；超額擋存、footer 說原因（`cpp.bd.sp.why.valloc`）。
+
+**Consumers** — bundle-detail.html（組合庫存分頁「商品庫存鎖定」）、create-bundle.html（F4 庫存）、js/bundle-editor.js（建立活動第 6 步組合包彈窗「數量」段，多選項商品成員的逐選項分配，2026-10-21）。探索紀錄：lab-bundle-lock.html（L1／L2／L3 三案，L3 定案）。
 
 ### 4.211 Profile avatar row（頭像列）
 
@@ -7438,6 +7441,8 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **Consumers** — `create-product.html`、`product-detail.html`（商品限購欄）；`create-bundle.html`、`bundle-detail.html`（組合包區塊，含標題）；`create-event.html`、`event-detail.html`（經 `purchase-conds.js` 只用輔助說明）。
 
+**2026-10-21**：組合包的三個消費點改用 `blockHTML(…, { group:true })`，畫成 Rules group（§4.240）裡的一列（`.rules-group__row[data-pl-block]`：左＝`pl.set.person`＋兩句說明、右＝輸入框），不再自帶標題與外框；`title`／預設變體保留給舊用法與 DS demo。新增 `sumText()`／`syncSum()` 寫群組底部彙總句。
+
 **CSS** — [`limit-set.css`](./ds-components/limit-set.css)
 
 ---
@@ -7595,3 +7600,33 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 **Consumers** — `create-product.html`、`product-detail.html`（「優惠碼」獨立一段，在折扣設定之後）；`create-bundle.html`、`bundle-detail.html`（價格階梯的「使用優惠碼」列）；`js/bundle-editor.js`（建立活動第 6 步票務商品的價格階梯，`layout:'split'`）。
 
 **CSS** — [`code-picker.css`](./ds-components/code-picker.css)
+
+---
+
+### 4.240 Rules group（購買條件群組）
+
+**Purpose** — 組合包的「購買條件與限購」整併成**一個**群組（2026-10-21，UI-CHANGES 二百八十二）。原本購買條件（跟隨所含門票）與限購是同一節裡兩個獨立線框，各有自己的標題、讀數與調整入口，圓角、內距、邊線也不一致，使用者覺得太零散。現在同一個細框內依序放：條件列（含調整入口）→ 限購列 → 一句彙總；標題只在節標題出現一次，讀數與調整入口在同一列。只改呈現，不改產品規則（D342／D398／D456：條件取所含門票最嚴、限購預設不限獨立計算、版本閘 S63／S94 的顯隱照舊）。
+
+**`_layer`** · molecule ｜ **source tier** · App ｜ **surface 層** · 坐在 `form-section--outlined` 卡面（白／灰皆可），框用 `--border-soft`
+
+**Anatomy**
+- `.rules-group` — 整個群組的細框（`--border-soft`、`--radius-md`、`overflow:hidden`，同 price-ladder 的框）
+  - `.rules-group__row` — 一列（flex 可換行；列與列之間 `border-bottom` 細線）
+    - `.rules-group__k` — 左欄：名稱 `__t`（`--fs-14`）＋ 說明 `__s`（`--fs-12`、`--muted-foreground`，限購列有兩句）
+    - `.rules-group__v` — 右欄：讀數 `__val` ＋ 調整入口 `__act`（文字＋`.switch`，「跟隨所含門票」）；限購列是 `.input.rules-group__input`（寬 160）
+    - `.rules-group__body` — 展開內容，獨佔一行：跟隨關掉後的設定（條件二選一、期間、分級）、純商品的條件清單（`js/purchase-conds.js`）、就地錯誤句；只剩隱藏錯誤句時自動收起
+    - `.rules-group__err` — 就地錯誤句（限購）
+  - `.rules-group__sum` — 底部一句彙總（`--fs-12`、`--muted-foreground`）；可帶 `.rules-group__sum-note` 附註（建立組合時「照預設帶入…」）
+- `[data-rg-slot]` — 頁面把 TB／PL 的產出塞進列時用的殼，`display:contents`
+
+**Behavior** — 容器與各列外殼寫在消費頁 markup；購買條件那一列由 `js/ticket-bundle.js` 的 `rulesHTML(…, { group:true })`（含門票）或 `rgRowHTML()`（純商品的唯讀「不限」）產生，限購那一列由 `js/purchase-limits.js` 的 `blockHTML(…, { group:true })` 產生，彙總句由 `purchase-limits.syncSum(root, buy, lim, T)` 寫入所有 `[data-rg-sum]`（`buy`＝`ZtorTicketBundle.buyLine()` 的購買條件一句讀數，沒有條件列時傳 `null`＝只說限購）。條件或限購任一改動就地更新彙總句，不重畫輸入框（游標不丟）。含門票的購買條件版本閘 S63、限購 S94：S63 不在版本內就沒有條件列、節標題只剩「限購」。窄容器（≤480px）讀數、入口落到名稱下方、輸入框吃滿。
+
+**States** — 跟隨（讀數＋開關開）／已調整（開關關、body 展開編輯）／鎖定（成員門票由 bookyay 帶入，開關 `switch--locked`、body 有一句原因）／檢視態（輸入框 `disabled`）／建立組合（唯讀，只呈現預設值）／錯誤（`aria-invalid`＋`.field__error`）／沒有成員（限購列與彙總句都不畫）。
+
+**Token usage** — `--sp-2`／`--sp-8`／`--sp-12`／`--sp-14`／`--sp-16`、`--fs-12`／`--fs-14`、`--lh-relaxed`、`--foreground`／`--muted-foreground`、`--border-soft`、`--radius-md`。
+
+**Dependencies** — Switch、Input、Field（`.field__error`／`.field__hint`）；內容來自 Limit set 的 `blockHTML` 與 `ticket-bundle.js`。
+
+**Consumers** — `create-bundle.html`（「購買條件與限購」卡，唯讀）、`bundle-detail.html`（組合設定分頁，可編輯）、`js/bundle-editor.js`（建立活動第 5 步組合包彈窗第 5 段，`layout:'split'`）。
+
+**CSS** — [`rules-group.css`](./ds-components/rules-group.css)

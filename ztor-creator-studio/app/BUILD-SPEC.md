@@ -1,5 +1,9 @@
 # Ztor Creator Studio · R 2.1 BUILD-SPEC
 
+> **2026-10-21 · D462 單張門票提前入場移除的呈現（UI-CHANGES 二百八十四、ASSUMPTIONS UIA-285）**：沒有新元件，全部是刪除與收窄。單張門票彈窗在建立流程與活動詳情都只剩三個區塊（價格與數量／購買條件／上架與顯示，基本區沒有標題列），票卡事實列不再有「提前入場」；提前入場只在場次層（`sessDoorsHTML`，開關＋時間＋早到處理二選一）。`scanner.html` 結果卡只讀所屬場次的提前入場時間與早到處理（兩列），示範票的 `early` 為 `{ open, policy }`。
+>
+> **2026-10-21 · 票務組合包「數量鎖定」逐選項分配與「購買條件與限購」整併（UI-CHANGES 二百八十一、二百八十二，ASSUMPTIONS UIA-283、UIA-284；5.1.5.4 §4 F2／F4、D266／D268、D342／D398／D456）**：新元件 Rules group（`ds-components/rules-group.css`，§4.240）——購買條件與限購兩個獨立線框整併成一個細框（條件列、限購列、底部一句彙總），三處（`create-bundle.html`、`bundle-detail.html`、`js/bundle-editor.js` 的 `layout:'split'`）同一套 markup，產生器在 `js/ticket-bundle.js`（`rulesHTML({ group:true })`／`rgRowHTML`／`buyLine`）與 `js/purchase-limits.js`（`blockHTML({ group:true })`／`syncSum`）。新共用 JS 元件 `js/lock-alloc.js`（`ZtorLockAlloc.render`／`refresh`）：指定鎖定項目清單（含多選項商品逐選項分配）三處共用，建立活動組合包彈窗新增這一段（`b.itemAlloc`，只在鎖定套數＞0 且成員含多選項商品時出現）。`ListingState.bundleAllocOf` 單格上限改算「庫存 − 別的管道已鎖」。沒有產品規則變動。
+>
 > **2026-10-20 · D460 活動層預設購票規則移除的呈現（UI-CHANGES 二百七十八、ASSUMPTIONS UIA-282）**：沒有新元件，全部是刪除與收窄。單張門票彈窗的「購買條件」區塊只有一種畫法：這張票自己的條件清單（`cond-list`，空時畫「還沒有條件」空狀態），標題右側沒有開關；`js/purchase-conds.js` 只剩門票層與組合包兩種範圍。`create-event.html` 票務設定彈窗只有「票種」與「生成的門票」兩塊；S103（⚪）收起入口與彈窗時，步驟 4 靠票種卡本身呈現 bookyay 匯入的票。`event-detail.html` 票務分頁頂端不再有「預設購票規則」卡。
 >
 > **2026-10-16 · 版本閘空殼收合（UI-CHANGES 二百五十九）**：`js/devtools.js` `applyVersion()` 收完 `data-feat`／`data-feat-off` 後跑 `collapseEmptySections()`——`.bd-sec`、`.form-section` 的標題列（`*__head`／`*__title`／`*__sub`、h1–h6）以外內容全是 `.ztd-ver-hidden`（或只包著它們的外框）時，整段掛 `.ztd-ver-hidden`＋`data-ztd-empty`；`[hidden]` 不算空、由內往外連鎖；切版本先還原再重算。不含 `.card`（bento 格線會留洞，收入管理「最近交易」卡待使用者決定）；新區段不用另掛標記，動態畫的區段照舊在畫完後呼叫 `ztorDevState.regate()`。

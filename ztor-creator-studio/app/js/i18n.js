@@ -4389,14 +4389,10 @@
     'ed.early.policy':    { en: 'Arriving before early entry time', zh: '早於提前入場時間入場' },   // D396 改稱呼，同建立流程
     'ed.early.warn':      { en: 'Allow entry',                    zh: '仍可入場' },
     'ed.early.block':     { en: 'Deny entry',                     zh: '不能入場' },
-    'ed.early.policy.hint': { en: 'Ticket types can enter earlier — set that on the Tiers tab.', zh: '票種可以各自提前入場，在「票種」分頁設定。' },
     /* 墓碑 2026-09-23（D316）：'ed.tix.fee'（手續費）——平台費與支付費改由創作者負擔，
        票價之上沒有加給粉絲的手續費；票務卡事實列與票種彈窗那一列一起退場。 */
-    'ed.tix.early':       { en: 'Early entry (min)',              zh: '提前入場（分鐘）' },
+    /* 墓碑 2026-10-21（D462）：ed.tix.early／.hint／.nodoors／.follow／.card、ed.tm.sec.entry、ed.tm.doors.at／.before／.min、ed.tm.early.pol／.pol.follow／.pol.custom／.bky／.bky.none、ed.early.policy.hint——單張門票的提前入場（分鐘、早到處理、bookyay 跟隨場次讀數）整組退場，提前入場只在場次層。 */
     /* D396（2026-10-12）：場次的「開放入場」改名「提前入場時間」，票的說明句跟著改稱呼 */
-    'ed.tix.early.hint':  { en: "{n} min before the date's early entry time — in at {t}.", zh: '比場次的提前入場時間再早 {n} 分鐘，{t} 可以入場。' },
-    'ed.tix.early.nodoors': { en: "This date has no early entry time, so early entry doesn't apply.", zh: '場次沒有開啟提前入場時間，票的提前入場不適用。' },
-    'ed.tix.early.follow': { en: "Empty or 0 — follows the date's early entry time.", zh: '留空或 0＝跟著場次的提前入場時間。' },
     'ee.tix.sold':        { en: '{n} of {q} sold',                zh: '已售 {n} / {q}' },
     'ee.tix.nodelete':    { en: "Can't delete — {n} buyers hold this tier", zh: '不可刪除——已有 {n} 位買家持有此票種' },
     /* 票價 0 即免費（2026-08-06 使用者裁決：不做「免費票」這個獨立模式，價格就是狀態） */
@@ -6921,9 +6917,8 @@
     'cpp.bd.sp.desc.ph':       { en: 'Tell fans what they get',        zh: '告訴粉絲他們會拿到什麼' },
     /* 墓碑 2026-09-22：命名段「上架」標籤隨方案 A 刪除（Q123，跟著活動那一行自帶主詞），零消費；留值不刪。 */
     'cpp.bd.sp.listing':       { en: 'Listing',                        zh: '上架' },
-    'cpp.bd.sp.follow':        { en: 'Follows the event',              zh: '跟著活動' },
+    /* 墓碑 2026-10-21：cpp.bd.sp.follow／.draft 隨「跟著活動」那一列拿掉（.hint 本來就沒消費者） */
     'cpp.bd.sp.follow.hint':   { en: 'Listing and sale times follow the event unless you set your own below.', zh: '上架與開賣時間預設跟隨活動，也可以在下方另設。' },
-    'cpp.bd.sp.follow.draft':  { en: 'Stays a draft until the event is published. Listing and sale times follow the event unless you set your own.', zh: '活動發布前維持草稿；上架與開賣時間預設跟隨活動、可另設。' },
     /* ── D342（2026-10-01）票務商品：上架與開賣跟隨或另設、購買條件與限購、第 6 步補齊組合包欄位 ──
        規則本體見主規格 §7.14「活動販售的時間層級」「票務商品的購買條件」；共用渲染在 js/ticket-bundle.js（tb.*）。 */
     'cpp.bd.sp.sec.media':     { en: 'Name & media',                   zh: '命名與素材' },
@@ -6937,6 +6932,7 @@
     'cpp.bd.sp.why.tb':        { en: 'Fix the times or purchase rules marked in red.', zh: '有時間或購買條件要修正（見紅字）。' },
     'cpp.bd.sp.why.sale':      { en: 'Finish the limited-time discount.', zh: '限時折扣還沒填完整。' },
     'cpp.bd.sp.why.alloc':     { en: 'The tier split is over the locked sets.', zh: '逐票種分配超過鎖定套數。' },
+    'cpp.bd.sp.why.valloc':    { en: 'The option split is over what’s available or locked.', zh: '逐選項組合分配超過可鎖定量或已鎖定量。' },   /* 2026-10-21：多選項商品逐選項分配（每格上限、合計上限） */
     'tb.f.listAt':             { en: 'Listing time',                   zh: '上架日期與時間' },
     'tb.f.unlistAt':           { en: 'Unlist time',                    zh: '下架日期與時間' },
     'tb.f.saleStart':          { en: 'Sale start',                     zh: '開賣日期與時間' },
@@ -6974,6 +6970,10 @@
     'tb.rules.locked':         { en: 'Includes conditions locked by bookyay — they can’t be changed here.', zh: '含 bookyay 帶入且鎖定的條件，這裡不能調整。' },
     'tb.rules.nooverlap':      { en: 'No overlapping time',            zh: '沒有交集的時間' },
     'tb.rules.buy':            { en: 'Who can buy',                    zh: '購買條件' },
+    /* 2026-10-21（UI-CHANGES 二百八十二）：「購買條件與限購」整併成一個群組（ds-components/rules-group.css）——購買條件那一列的名稱、底部一句彙總 */
+    'rg.buy':                  { en: 'Who can buy',                    zh: '誰可以買' },
+    'rg.sum':                  { en: 'In effect: who can buy — {buy}; limit — {lim}.', zh: '目前生效：購買條件「{buy}」、限購「{lim}」。' },
+    'rg.sum.lim':              { en: 'In effect: limit — {lim}.',      zh: '目前生效：限購「{lim}」。' },
     'tb.rules.cap':            { en: 'Purchase limits',                zh: '限購' },
     'tb.rules.restrict':       { en: 'Restricted',                     zh: '限制' },
     /* ── D398（2026-10-12）限購：活動門票（張）／商品（件）／組合包（組）同一套句型，只換單位。
@@ -8230,18 +8230,13 @@
     'sc.res.early':     { en: 'Early — confirm before redeeming', zh: '早到 — 確認後才核銷' },
     'sc.res.earlyno':   { en: 'Too early to enter', zh: '還不能入場' },
     'sc.res.confirmearly': { en: 'Let in and redeem', zh: '確認入場並核銷' },
-    'sc.note.early.allow': { en: 'It’s before this ticket’s earliest entry time ({t}). Early arrivals can still enter — check with the guest, then redeem.', zh: '還沒到這張票的最早可入場時間（{t}）。這張票設定為仍可入場，跟觀眾確認後再核銷。' },
-    'sc.note.early.block': { en: 'This ticket can’t enter before {t}. Ask the guest to come back then.', zh: '這張票 {t} 之前不能入場，請觀眾到時間再來。' },
-    'sc.early.open':    { en: 'Early entry time', zh: '場次提前入場時間' },
-    'sc.early.min':     { en: 'Ticket early entry', zh: '門票提前入場' },
-    'sc.early.min.val': { en: '{n} min earlier', zh: '再提早 {n} 分鐘' },
-    'sc.early.min.none': { en: 'None', zh: '無' },
-    'sc.early.earliest': { en: 'Earliest entry', zh: '最早可入場' },
-    'sc.early.policy':  { en: 'If early', zh: '早到處理' },
+    'sc.note.early.allow': { en: 'It’s before this date’s early entry time ({t}). Early arrivals can still enter — check with the guest, then redeem.', zh: '還沒到這一場的提前入場時間（{t}）。這一場設定為仍可入場，跟觀眾確認後再核銷。' },
+    'sc.note.early.block': { en: 'This date doesn’t let guests in before {t}. Ask the guest to come back then.', zh: '這一場 {t} 之前不能入場，請觀眾到時間再來。' },
+    'sc.early.open':    { en: 'Early entry time', zh: '提前入場時間' },
+    /* 墓碑 2026-10-21（D462）：sc.early.min／.min.val／.min.none／.earliest／.own／.follow——掃碼器結果卡的門票提前入場分鐘、最早可入場、門票自訂／跟隨場次標記退場。 */
+    'sc.early.policy':  { en: 'If early', zh: '早於提前入場時間' },
     'sc.early.allow':   { en: 'Allow entry', zh: '仍可入場' },
     'sc.early.block':   { en: 'Deny entry', zh: '不能入場' },
-    'sc.early.follow':  { en: 'follows the date', zh: '跟隨場次' },
-    'sc.early.own':     { en: 'ticket setting', zh: '門票自訂' },
     'sc.demo.bundle':   { en: 'Bundle member',     zh: '組合成員' },
 
     'od.item1.name':  { en: 'Pirate Queen zine vol. 02', zh: '海上霸姬 幕後寫真誌 vol.02' },
@@ -10680,17 +10675,12 @@
     'ed.pub.link':        { en: 'Event link & QR',        zh: '活動連結與 QR' },
     'ed.pub.link.hint':   { en: 'Where fans buy tickets. The QR points at the same page.', zh: '粉絲買票的入口，QR 指向同一頁。' },
     'ed.pub.edit-tbd':    { en: 'You can still switch the display setting at any time. The other settings lock once tickets are on sale — changing them would affect buyers, and which ones can change is still being decided upstream.', zh: '顯示設定隨時都能切換。其他設定開賣後鎖住——改動會影響已購票的粉絲，哪些還能改上游還沒定。' },
-    'ed.tix.early.card':  { en: '{n} min early ({t})',    zh: '提早 {n} 分鐘（{t}）' },
     'ed.tm.delete':       { en: 'Delete tier',            zh: '刪除門票' },
     /* 票種彈窗的區塊與計算列表（2026-09-22，D311）：與建立流程第 5 步的單張門票彈窗同一套
        資訊結構——基本／價格與數量／入場／販售。購買條件在詳情頁沒有（上游未定，2026-08-11）。 */
     /* 墓碑 'ed.tm.sec.basic'（en Basics／zh 基本）：2026-09-23 Q125 拿掉票種彈窗「基本」的
        區塊標題——彈窗標題與副標已經是脈絡，段內只有一格、標籤自己說完了。 */
     'ed.tm.sec.price':    { en: 'Price & quantity',       zh: '價格與數量' },
-    'ed.tm.sec.entry':    { en: 'Early entry time',       zh: '提前入場時間' },   // 2026-10-12 照場次步驟用詞（原「入場」）
-    'ed.tm.doors.at':     { en: 'Time',                   zh: '時間' },
-    'ed.tm.doors.before': { en: 'Before start',           zh: '開演前' },
-    'ed.tm.doors.min':    { en: 'min',                    zh: '分鐘' },
     'ce.img.setkv':       { en: 'Set as key visual',      zh: '設為主視覺' },
     'ed.tm.sec.show':     { en: 'Listing & display',      zh: '上架與顯示' },
     /* D385（2026-10-09，5.1.6.2 §4.5 F9）：bookyay 帶入活動的唯讀補齊——購買條件、活動預設購票規則、入場鎖定、刪除停用 */
@@ -10711,12 +10701,7 @@
     /* D388（2026-10-09）：自建活動發布後可改活動預設購票規則與單張門票購買條件——只影響之後的購買 */
     'ed.rules.after':     { en: 'Changes apply to purchases from now on. Tickets already sold stay as they are, and lowering a limit doesn\u2019t take back tickets fans already bought.',
                             zh: '修改只影響之後的購買，已售出的票不變；限購改小也不會收回粉絲已買的票。' },
-    'ed.tm.early.pol':    { en: 'Arriving before early entry time', zh: '早於提前入場時間的處理' },   // D396 改稱呼
-    'ed.tm.early.pol.follow': { en: 'Follow the date',    zh: '跟隨場次' },
-    'ed.tm.early.pol.custom': { en: 'Custom',             zh: '自訂' },
     'ed.evrules.none.cond': { en: 'No conditions set', zh: '未設定條件' },
-    'ed.tm.early.bky':    { en: 'Follows the date — early entry at {t}, set in bookyay.', zh: '跟隨場次——提前入場時間 {t}，由 bookyay 帶入。' },
-    'ed.tm.early.bky.none': { en: 'Follows the date — bookyay has no early entry time for it.', zh: '跟隨場次——bookyay 沒有設定提前入場時間。' },
     'ed.tm.del.bky':      { en: "Imported from bookyay — it can't be deleted. Change it in bookyay.", zh: '由 bookyay 帶入，不能刪除；要改請回 bookyay 改。' },
     'ed.tm.sec.sale':     { en: 'Selling',                zh: '販售' },
     'ed.tm.gross':        { en: 'What fans pay',          zh: '粉絲實付' },

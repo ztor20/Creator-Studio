@@ -2013,7 +2013,7 @@
      2026-10-09 D385 決定一維持），（原最後一個區塊「販售」已隨 D422／D444 退場）。
      例外（D385，5.1.6.2 §4.5 F9）：bookyay 帶入的活動多一個唯讀的「購買條件」區塊（#ed-tm-rules-sec），列出這張票由 bookyay
      帶入的限購／折扣／限時折扣、掛 From bookyay；沒有門票層條件的票寫空狀態（D460：沒有「跟隨活動預設」）。入場區對 bookyay 帶入的票
-     鎖定為跟隨場次（#ed-tm-early-pol 唯讀讀數），刪除鈕停用＋原因（#ed-tm-del-why）。系列子場唯讀（共用設定在母頁改）。 -->
+     刪除鈕停用＋原因（#ed-tm-del-why）。2026-10-21（D462）：門票層的「入場／提前入場」區塊整組退場，提前入場只在場次層。系列子場唯讀（共用設定在母頁改）。 -->
 <div class="payout-modal" id="ed-tier-modal" hidden>
   <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ed-tm-title">
     <div class="payout-dialog__head">
@@ -2105,34 +2105,6 @@
         </div>
       </section>
 
-      <section class="form-section form-section--dense form-section--card" id="ed-tm-entry-sec">
-        <!-- 標題（2026-10-12 使用者）：照場次步驟改稱「提前入場時間」，標題色回到一般區塊標題（原 Q125 的輕量標題退場） -->
-        <div class="form-section__head"><h3 class="form-section__title" id="ed-tm-entry-title"><span data-i18n="ed.tm.sec.entry">Early entry time</span></h3></div>
-        <div class="field" id="ed-tm-early-field">
-          <label class="field__label" for="ed-tm-early" data-i18n="ed.tix.early">Early entry (min)</label>
-          <input class="input" id="ed-tm-early" type="number" min="0" step="5">
-          <p class="field__hint" id="ed-tm-early-hint"></p>
-        </div>
-        <!-- bookyay 活動：跟隨場次的設定直接畫成與場次步驟一樣的兩格（時間、開演前幾分鐘，停用），不用文字說明（syncTmBky） -->
-        <div class="form-grid" id="ed-tm-early-follow" hidden>
-          <div class="field is-source-locked"><label class="field__label" for="ed-tm-follow-at" data-i18n="ed.tm.doors.at">Time</label>
-            <input class="input" id="ed-tm-follow-at" type="time" disabled></div>
-          <div class="field is-source-locked"><label class="field__label" for="ed-tm-follow-min" data-i18n="ed.tm.doors.before">Before start</label>
-            <span class="amount-field amount-field--suffix amount-field--readonly">
-              <input class="input amount-field__input" id="ed-tm-follow-min" type="number" placeholder="0" disabled>
-              <span class="amount-field__unit" data-i18n="ed.tm.doors.min">min</span></span></div>
-        </div>
-        <!-- 早於開放時間的處理（D385 決定三，5.1.6.1 F22 入場區 → 5.1.6.2 F9）：只有 bookyay 帶入的票出現——
-             鎖定為「跟隨場次」、唯讀讀出該場由 bookyay 帶入的值（D365）；來源標記掛在區塊標題（syncTmBky）。 -->
-        <div class="field is-source-locked" id="ed-tm-early-pol" hidden>
-          <div class="field__label" data-i18n="ed.tm.early.pol">Before doors open</div>
-          <!-- 2026-10-12 使用者：鎖定時維持可設定時的版型——兩張選項卡（停用），選中「跟隨場次」，副標寫該場的處理方式（syncTmBky） -->
-          <div class="segmented radio-cards" role="radiogroup" aria-disabled="true" id="ed-tm-early-pol-seg">
-            <button type="button" disabled class="segmented__btn segmented__btn--active" role="radio" aria-checked="true"><span class="radio-card__text"><span class="radio-card__title" data-i18n="ed.tm.early.pol.follow">Follow the date</span><span class="radio-card__sub" id="ed-tm-early-pol-v"></span></span></button>
-            <button type="button" disabled class="segmented__btn" role="radio" aria-checked="false"><span class="radio-card__text"><span class="radio-card__title" data-i18n="ed.tm.early.pol.custom">Custom</span></span></button>
-          </div>
-        </div>
-      </section>
 
       <!-- 購買條件（D385 決定一、D388，5.1.6.2 §4.5 F9、5.1.6.3 §2.6）：
            bookyay 帶入的活動——整區唯讀（kv 列），標題掛 From bookyay（D388 決定四照舊）。
@@ -2270,6 +2242,7 @@
   const ev = window.ztorEvents.get(idParam);
   /* id 有帶但查不到：不顯示別人的活動，改顯示查詢失敗 */
   function showEventNotFound() {
+    window.__edNotFound = true;   // 之後的即時示意計時器（tick／paintLive）看到這個旗標就停，不去寫已被換掉的節點
     const page = document.querySelector('.page');
     if (page) {
       page.innerHTML =
@@ -2606,6 +2579,7 @@
   const noDataTxt = () => T('event-detail.checkin.nodata', 'No data yet');
 
   function paintLive() {
+    if (window.__edNotFound) return;
     if (ciNoData()) {
       $('#ed-live-arrived').textContent = noDataTxt();
       $('#ed-live-of').textContent = '';
@@ -2702,6 +2676,7 @@
   }
 
   function tick() {
+    if (window.__edNotFound) { clearInterval(timer); timer = null; return; }
     if (arrived >= (ev.sold || 0)) { clearInterval(timer); timer = null; return; }   // 到齊就停：人數不可能超過售出張數
     const next = roster.find(r => !r.arrived && !r.corrected);
     if (!next) { clearInterval(timer); timer = null; return; }
@@ -4448,7 +4423,7 @@
               tixEsc(T(v === 'warn' ? 'ed.early.warn' : 'ed.early.block', v === 'warn' ? 'Allow entry' : 'Deny entry')) + '</button>').join('') +
           '</div>' +
           /* 墓碑（2026-08-13 使用者指示「刪除」）：「票種可以各自提前入場…」那句退場，
-             同 create-event。i18n key `ed.early.policy.hint` 保留未用。 */
+             同 create-event。 */
         '</div>' +
         '</div>' +
       '</div>' +
@@ -5219,14 +5194,7 @@
   const tixEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-  function earlyHintFor(n) {
-    /* 換算基準＝第 1 場的提前入場時間（多場時各場可能不同，票種層先跟第 1 場，見 EDIT-001 ⑦）。 */
-    const doorsM = hhmmToMin((edSessions[0] || {}).doors || '');
-    if (!(Number(n) > 0)) return T('ed.tix.early.follow', "Empty or 0 — follows the date's early entry time.");
-    return doorsM != null
-      ? T('ed.tix.early.hint', '{n} min before doors — in at {t}').replace('{n}', Number(n)).replace('{t}', minToHhmm(doorsM - Number(n)))
-      : T('ed.tix.early.nodoors', "This date has no early entry time, so early entry doesn't apply.");
-  }
+  /* 墓碑 2026-10-21（D462）：earlyHintFor（單張門票提前入場分鐘的換算說明）隨門票層提前入場退場。 */
 
   /* bookyay 帶入的票（D330）：priceObj 帶 pin＝{ HKD: 原價 }。回「HK$300」；不是 bookyay 帶入的回空字串。 */
   const isBkyTier = t => { const po = window.ztorEvents.priceOf(ev, t); return !!(po.pin && po.pin.HKD != null); };
@@ -5301,8 +5269,6 @@
         /* 2026-10-09（D390 稽核第一節原型第 17 條）：bookyay 活動的門票隱藏徽章掛 S92；創作者自建活動自己切成隱藏的票屬 S55
            （⚪，release2.4 收起開關），徽章跟著收，不然看得到「隱藏」卻找不到開關。墓碑 2026-10-16（D429）：1 人票（hideFix）條件退場。 */
         (t.hidden ? '<span class="badge badge--neutral" data-feat="' + ((ev && ev.source === 'bookyay') ? 'S92' : 'S55') + '">' + tixEsc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '');
-      const doorsM = hhmmToMin((edSessions[0] || {}).doors || '');
-      const n = Number(t.earlyMin) || 0;
       return (removed
           ? '<div class="card tier-card staged-remove" data-ed-tier-removed="' + tixEsc(t.id) + '">'
           : '<div class="card tier-card tier-card--clickable" data-ed-tier="' + tixEsc(t.id) + '">') +
@@ -5327,10 +5293,7 @@
           /* 墓碑 2026-09-23（D316）：卡面的「手續費」事實列隨欄位退場。 */
           fact(T('ee.tix.qty', 'Quantity'), fmtNum(Number(t.qty) || 0)) +
           fact(T('ed.tix.col.sold', 'Sold'), fmtNum(sold)) +
-          (n > 0 && doorsM != null
-            ? fact(T('ed.tix.early', 'Early entry'), tixEsc(T('ed.tix.early.card', '{n} min early ({t})')
-                .replace('{n}', n).replace('{t}', minToHhmm(doorsM - n))))
-            : '') +
+          /* 墓碑 2026-10-21（D462）：卡面的「提前入場」事實列隨門票層提前入場退場。 */
         '</dl>' +
         (removed ? '<div class="staged-remove__keep staged-remove__bar">' + stagedRemoveKeep(t) + '</div>' : '') +
       '</div>';
@@ -5782,44 +5745,11 @@
     regateFeat();
   }
 
-  /* 單張門票彈窗裡的三件事（購買條件區、入場鎖定、刪除停用），開彈窗時重算 */
+  /* 單張門票彈窗裡的兩件事（購買條件區、刪除停用），開彈窗時重算 */
   function syncTmBky(t) {
     const bky = !tmNew && tierBky(t);
     syncTmRules(t);   // D385／D388：bookyay 唯讀；自建活動可改（條件清單；D460 起沒有跟隨開關）
-    /* 入場：鎖定為跟隨場次——bookyay 活動的每一張票都鎖，含另外新增的票與新增中的那一張（D386 決定一） */
-    const entryLock = evIsBky();
-    const early = tmEl('ed-tm-early');
-    const ef = early.closest('.field');
-    const sessId = tmNew ? (tmHow === 'solo' ? tmEl('ed-tm-sess').value : '') : (isSoloTier(t) ? t.sess : '');
-    const sess = (sessId && edSessions.find(x => x.id === sessId)) || edSessions[0] || {};
-    early.readOnly = entryLock;
-    if (entryLock) {
-      early.value = '';
-      tmEl('ed-tm-early-hint').textContent = (sess.doors || '').trim()
-        ? T('ed.tm.early.bky', 'Follows the date — doors open at {t}, set in bookyay.').replace('{t}', sess.doors)
-        : T('ed.tm.early.bky.none', 'Follows the date — bookyay has no doors-open time for it.');
-    }
-    if (ef) ef.classList.toggle('is-source-locked', entryLock);
-    /* D396（5.1.6.2 v3.51〔推導〕）：場次沒開提前入場時間＝沒有基準時間，票的提前入場不適用——欄位唯讀、說明句寫原因 */
-    if (!entryLock && !(sess.doors || '').trim()) {
-      early.readOnly = true;
-      tmEl('ed-tm-early-hint').textContent = T('ed.tix.early.nodoors', "This date has no early entry time, so early entry doesn't apply.");
-    }
-    /* 跟隨場次的設定直接畫出來（時間、開演前幾分鐘），取代原本的輸入框＋說明文字 */
-    const follow = tmEl('ed-tm-early-follow');
-    follow.hidden = !entryLock;
-    tmEl('ed-tm-early-field').hidden = entryLock;
-    if (entryLock) {
-      const fAt = tmEl('ed-tm-follow-at');
-      fAt.value = (sess.doors || '').trim();
-      fAt.dispatchEvent(new Event('input'));   // partials/date-input.js 靠 input 事件收起「選擇時間」placeholder；程式設值不會自己觸發
-      tmEl('ed-tm-follow-min').value = sess.doorsMin == null ? '' : sess.doorsMin;
-    }
-    const pol = tmEl('ed-tm-early-pol');
-    pol.hidden = !entryLock || !(sess.doors || '').trim();
-    if (!pol.hidden) tmEl('ed-tm-early-pol-v').textContent =
-      T(sess.early === 'block' ? 'ed.early.block' : 'ed.early.warn', sess.early === 'block' ? 'Deny entry' : 'Allow entry');
-    markBkySource(tmEl('ed-tm-entry-title'), entryLock);
+    /* 墓碑 2026-10-21（D462）：入場鎖定為跟隨場次（提前入場欄、跟隨場次兩格、早於提前入場時間的處理讀數）整段退場。 */
     /* 刪除：bookyay 帶入的票一律停用（含未售出），原因寫在鈕旁 */
     const why = tmEl('ed-tm-del-why');
     if (bky) {
@@ -5853,8 +5783,6 @@
     renderTmImg();
     tmEl('ed-tm-price').value = t.price == null ? '' : t.price;
     tmEl('ed-tm-qty').value = t.qty == null ? '' : t.qty;
-    tmEl('ed-tm-early').value = t.earlyMin == null ? '' : t.earlyMin;
-    tmEl('ed-tm-early-hint').textContent = earlyHintFor(t.earlyMin);
     tmEl('ed-tm-price-cur').textContent = evCur();   // 2026-10-12 使用者：票價前綴顯示實際幣別（代碼），不寫死 $
     tmShown = !t.hidden;   // D422：隱藏／顯示按鈕的狀態（新門票＝草稿值，已存在的門票＝目前狀態，按下立即寫回）
     /* 墓碑 2026-10-16（D429）：bookyay 套票轉換出的 1 人票（hideFix，D329）——顯示開關鎖定為隱藏、票價與張數鎖定、
@@ -5873,7 +5801,7 @@
     del.disabled = sold > 0;
     del.title = sold > 0 ? T('ee.tix.nodelete', "Can't delete — {n} buyers hold this tier").replace('{n}', fmtNum(sold)) : '';
     /* 2026-08-18：票種在子場也可以改（在這裡改＝只改這一場）。 */
-    ['ed-tm-name', 'ed-tm-price', 'ed-tm-qty', 'ed-tm-early'].forEach(id => { tmEl(id).readOnly = false; });
+    ['ed-tm-name', 'ed-tm-price', 'ed-tm-qty'].forEach(id => { tmEl(id).readOnly = false; });
     if (isBkyTier(t)) tmEl('ed-tm-price').readOnly = true;   // D330：bookyay 帶入的基準價由港幣原價換算而來、鎖定（改價走在地化的逐幣別覆寫）
     /* 張數（5.1.6.1 F21「票種名稱與預設價格與張數」鎖定；2026-10-07 補）＋
        票價與張數的來源標記（同票名那一枚） */
@@ -5902,7 +5830,7 @@
        圖片不能換、沒有儲存與刪除；頁尾一句說明為什麼。 */
     const ro = tmRO();   // 2026-10-10：未按編輯＝只能看，同已結束／已取消
     if (ro) {
-      ['ed-tm-name', 'ed-tm-price', 'ed-tm-qty', 'ed-tm-early'].forEach(id => { tmEl(id).readOnly = true; });
+      ['ed-tm-name', 'ed-tm-price', 'ed-tm-qty'].forEach(id => { tmEl(id).readOnly = true; });
       /* D422：隱藏／顯示是營運動作——檢視模式仍可按（syncTmShow 只在已結束／已取消時停用），這裡不鎖 */
       tmEl('ed-tm-save').hidden = true;
       del.hidden = true;
@@ -5913,7 +5841,7 @@
        隱藏／顯示是營運動作，照常可按。bookyay 帶入的票張數本來就鎖（F21），維持鎖定。 */
     const stockOnly = !ro && edStockOnly();
     if (stockOnly) {
-      ['ed-tm-name', 'ed-tm-price', 'ed-tm-early'].forEach(id => { tmEl(id).readOnly = true; });
+      ['ed-tm-name', 'ed-tm-price'].forEach(id => { tmEl(id).readOnly = true; });
       del.hidden = true;
       tmEl('ed-tm-del-why').hidden = true;
       tmEl('ed-tm-img-field').querySelectorAll('[data-tm-img], [data-tm-img-reset]').forEach(x => { x.style.pointerEvents = 'none'; if (x.matches('[data-tm-img-reset]')) x.hidden = true; });
@@ -5959,11 +5887,7 @@
     tmHow = b.getAttribute('data-tm-how');
     syncTmHow(); syncTmFoot(); syncTmBky(tmTier);
   });
-  tmEl('ed-tm-sess')?.addEventListener('change', () => { syncTmSub(); syncTmFoot(); if (tmTier) syncTmBky(tmTier); });   // D386：入場鎖定讀的是所選場次的開放入場
-  tmEl('ed-tm-early')?.addEventListener('input', () => {
-    if (tmEl('ed-tm-early').readOnly) return;   // D385／D386：bookyay 活動的票鎖定，說明句不換
-    tmEl('ed-tm-early-hint').textContent = earlyHintFor(tmEl('ed-tm-early').value);
-  });
+  tmEl('ed-tm-sess')?.addEventListener('change', () => { syncTmSub(); syncTmFoot(); if (tmTier) syncTmBky(tmTier); });
   /* 票價一改，計算列表立刻跟上（只換那幾格的字、不重畫，游標留在欄位裡）。 */
   /* D388：自建活動這張票自己的條件清單，折扣卡旁的百分比跟著票價即時重算（共用元件 refresh，同建立流程） */
   tmEl('ed-tm-price')?.addEventListener('input', () => { syncTmCalc(); syncTmFoot(); if (tmRulesUI && tmEl('ed-tm-rules-editor')) tmRulesUI.refresh(); });
@@ -6012,7 +5936,6 @@
     const sold = Number(tmTier.sold) || 0;
     tmTier.qty = Math.max(sold, Number(tmEl('ed-tm-qty').value) || 0);
     /* 墓碑 2026-09-23（D316）：儲存時不再寫回 `fee`（粉絲加價的手續費）。 */
-    if (!evIsBky()) tmTier.earlyMin = tmEl('ed-tm-early').value;   // D385／D386：bookyay 活動的票（含另外新增的）鎖定跟隨場次，不寫回
     tmTier.hidden = !tmShown; // D328：關＝隱藏（D422：已存在的門票按鈕當下已寫回，這裡寫同一個值；新門票跟著套用寫入）
     tmTier.img = (tmImg || '').trim();   // D384：空字串＝沿用活動主視覺
     /* D388：自建活動的購買條件——改後的一組取代原本的，只影響之後的購買；D460：沒有任何條件＝拿掉自己那一組 */
@@ -6057,7 +5980,7 @@
   document.getElementById('ed-tier-add')?.addEventListener('click', () => {
     if (tmRO() || isBky()) return;   // 2026-10-10：新增卡在檢視態已收起，這裡再擋一次；D410：bookyay 活動不能另外新增門票
     /* D381：新票先不進 edTiers——按儲存才加入（見 ed-tm-save），取消就丟掉 */
-    const t = { id: 'tier-new-' + Date.now(), name: '', price: 0, qty: 0, sold: 0, earlyMin: '' };
+    const t = { id: 'tier-new-' + Date.now(), name: '', price: 0, qty: 0, sold: 0 };
     tmNew = true;
     openTierModal(t);
   });

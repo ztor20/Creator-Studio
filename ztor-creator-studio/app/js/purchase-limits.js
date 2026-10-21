@@ -27,7 +27,12 @@
      read(root, attr)                         從畫好的欄位讀回 { person }
      fromRules(rules)                         舊的票務商品 rules（cap='cap' 時）或條件清單形狀（rules.conds.cap）→ 組合包自己的限購值
      errors(lim, T)                           組合包限購的擋存錯誤 { 欄位: 訊息 }（空白＝不限，沒有錯）
-     blockHTML(lim, T, opts)                  組合包的限購區塊（標題＋一句額度說明＋每人總限購一欄）
+     blockHTML(lim, T, opts)                  組合包的限購區塊（標題＋一句額度說明＋每人總限購一欄）；opts.group＝2026-10-21 起畫成
+                                              「購買條件」群組（ds-components/rules-group.css）裡的一列：名稱與兩句說明在左、輸入框在右同一排，
+                                              不再自帶標題與外框（三個消費頁共用，UI-CHANGES 二百八十一）
+     sumText(buy, lim, T) / syncSum(root, buy, lim, T)
+                                              群組底部那一句彙總（「目前生效：購買條件「…」、限購「…」」）；buy＝購買條件的一句讀數，
+                                              沒有購買條件那一列（純商品且版本沒開、或只剩限購）傳 null；syncSum 寫進 root 底下所有 [data-rg-sum]
      onInput(e, holder)                       輸入（holder.limits：null＝不限、物件＝自己設的上限）；回傳 true＝有處理
      syncErrors(root, holder, T)              把錯誤寫進就地的 [data-pl-err]，回傳錯誤數
 
@@ -145,12 +150,40 @@
      墓碑 2026-10-16（D429）：locked／lockNote 兩個選項（bookyay 套票自動建立的組合包）隨自動組合包退場。 */
   function blockHTML(lim, T, opts) {
     opts = opts || {};
+    if (opts.group) return groupRowHTML(lim, T, opts);
     var vals = norm(lim) || {};
     return '<div class="limit-set limit-set--bundle" data-pl-block>' +
       (opts.title ? '<div class="limit-set__head"><span class="limit-set__title" data-i18n="tb.rules.cap">' + esc(tr(T, 'tb.rules.cap')) + '</span></div>' : '') +
       '<p class="limit-set__sub" data-i18n="pl.sub">' + esc(tr(T, 'pl.sub')) + '</p>' +
       fieldsHTML({ unit: 'set', vals: vals, T: T, disabled: !!opts.disabled, errs: true }) +
     '</div>';
+  }
+  /* 群組版（opts.group）：.rules-group 的一列。data-pl-block 掛在列上，onInput／syncErrors 的選擇器照舊成立 */
+  function groupRowHTML(lim, T, opts) {
+    opts = opts || {};
+    var v = (norm(lim) || {}).person || '', id = opts.idPrefix ? opts.idPrefix + '-person' : '';
+    return '<div class="rules-group__row" data-pl-block data-pl-field="person">' +
+      '<div class="rules-group__k">' +
+        '<label class="rules-group__t"' + (id ? ' for="' + id + '"' : '') + ' data-i18n="pl.set.person">' + esc(tr(T, 'pl.set.person')) + '</label>' +
+        '<span class="rules-group__s" data-i18n="pl.set.person.hint">' + esc(tr(T, 'pl.set.person.hint')) + '</span>' +
+        '<span class="rules-group__s" data-i18n="pl.sub">' + esc(tr(T, 'pl.sub')) + '</span>' +
+      '</div>' +
+      '<div class="rules-group__v"><input class="input rules-group__input" type="number" min="1" step="1" inputmode="numeric"' + (id ? ' id="' + id + '"' : '') +
+        ' data-pl-f="person" value="' + esc(v) + '" placeholder="' + esc(tr(T, 'pl.none')) + '" data-i18n-placeholder="pl.none"' + (opts.disabled ? ' disabled' : '') + '></div>' +
+      '<p class="field__error rules-group__err" data-pl-err="person" hidden></p>' +
+    '</div>';
+  }
+  /* 彙總句：購買條件那一列存在（buy 有字）→「目前生效：購買條件「…」、限購「…」」；只剩限購 → 「目前生效：限購「…」」 */
+  function sumText(buy, lim, T) {
+    var l = text(lim, 'set', T);
+    return buy == null || buy === ''
+      ? tr(T, 'rg.sum.lim').replace('{lim}', l)
+      : tr(T, 'rg.sum').replace('{buy}', buy).replace('{lim}', l);
+  }
+  function syncSum(root, buy, lim, T) {
+    if (!root) return;
+    var t = sumText(buy, lim, T);
+    root.querySelectorAll('[data-rg-sum]').forEach(function (el) { el.textContent = t; });
   }
   function onInput(e, holder) {
     var f = e.target.closest && e.target.closest('[data-pl-block] [data-pl-f]');
@@ -174,6 +207,6 @@
     KEYS: KEYS, norm: norm, has: has, posInt: posInt, text: text,
     hintHTML: hintHTML, fieldsHTML: fieldsHTML, read: read,
     fromRules: fromRules, errors: errors,
-    blockHTML: blockHTML, onInput: onInput, syncErrors: syncErrors
+    blockHTML: blockHTML, sumText: sumText, syncSum: syncSum, onInput: onInput, syncErrors: syncErrors
   };
 })();
