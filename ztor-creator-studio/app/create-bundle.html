@@ -44,6 +44,7 @@
 <link rel="stylesheet" href="ds-components/form-ask.css?v=r2.2"><!-- 2026-10-12 改版：問句設定塊（鎖定／販售上限）、分類標、標題列讀數 -->
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2"><!-- 2026-10-12 改版：「加入組合物」彈窗的商品／活動票券分頁 -->
 <link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398／D456：組合包限購（自己的設定、獨立計算；js/purchase-limits.js） -->
+<link rel="stylesheet" href="ds-components/rules-group.css?v=r2.2"><!-- 2026-10-21：購買條件與限購整併成一個群組 -->
 <link rel="stylesheet" href="ds-components/cond-list.css?v=r2.2"><!-- D400：純商品組合包的購買條件（js/purchase-conds.js 條件清單） -->
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2"><!-- 條件卡的期間兩欄 .rule-row -->
@@ -368,18 +369,19 @@
       <!-- 購買條件與限購（F2；D342、D398、D400；2026-10-20 D455 B7）：建立時一律照預設帶入、不能調整，調整統一在組合包細節頁。
            購買條件——含門票＝跟隨所含門票（取最嚴）的唯讀讀數；純商品＝預設不限的唯讀讀數。
            限購——js/purchase-limits.js 畫「限購」標題＋一句額度說明＋每人總限購一欄，停用（disabled，D456：預設不限）。 -->
-      <div class="stack" data-cb-rules>
-        <!-- 2026-10-12 使用者：「這個也用線框的」——購買條件整塊同定時下架等列的線框（control-group--plain） -->
-        <div class="field control-group control-group--plain control-group--readout" data-cb-buy>
-          <div class="field__label" data-i18n="tb.rules.buy">Who can buy</div>
-          <div data-tb-host="cb-rules" data-feat="S63" hidden></div>
-          <div data-cb-conds-wrap hidden>
-            <div data-cb-conds-host></div>
-          </div>
+      <!-- 2026-10-21（UI-CHANGES 二百八十二）：購買條件與限購整併成一個群組 .rules-group（ds-components/rules-group.css）——
+           條件列（讀數在右）→ 限購列（輸入框在右）→ 底部一句彙總；原本兩個獨立線框、各自的標題與調整入口退場。 -->
+      <div class="rules-group" data-cb-rules>
+        <div class="rules-group__row" data-cb-buy>
+          <div data-tb-host="cb-rules" data-rg-slot data-feat="S63" hidden></div>
+          <div data-cb-conds-wrap data-rg-slot hidden></div>
         </div>
         <div data-pl-host="cb"></div>
-        <!-- 2026-10-20 D455（B7）：建立時照預設帶入、不能調整；一句話交代去哪裡改（沒有成員時跟限購區塊一起收） -->
-        <p class="field__hint" data-cb-rules-later data-i18n="cb.rules.later" hidden>Set from the defaults. You can change them on the bundle page after creating.</p>
+        <div class="rules-group__sum" data-cb-rules-sum hidden>
+          <span data-rg-sum></span>
+          <!-- 2026-10-20 D455（B7）：建立時照預設帶入、不能調整；一句話交代去哪裡改（沒有成員時跟整個群組一起收） -->
+          <span class="rules-group__sum-note" data-cb-rules-later data-i18n="cb.rules.later">Set from the defaults. You can change them on the bundle page after creating.</span>
+        </div>
       </div>
     </section>
 
@@ -393,14 +395,7 @@
              跟著哪一場（＋徽章）→ 顯示設定 → 上架、下架、開賣、停售四格「跟隨活動／另設」（js/ticket-bundle.js）→
              購買條件與限購的預設讀數（建立時照預設帶入、調整在組合包細節頁，5.1.5.4 F2「購買條件與限購」） -->
         <div class="stack" data-cb-listing-follow hidden data-feat="S62">
-          <!-- 2026-10-12 使用者：「跟著活動」換成外框列（同顯示於商店），並拿掉「預設跟隨…」那句提示 -->
-          <div class="control-row">
-            <div>
-              <div class="control-row__main" data-i18n="cpp.bd.sp.follow">Follows the event</div>
-              <div class="control-row__sub" data-cb-follow-ev></div>
-            </div>
-            <span data-cb-follow-badge></span>
-          </div>
+          <!-- 墓碑 2026-10-21（使用者：上架與開賣第一行的「跟著活動＋活動名＋草稿徽章」在 UI 上不必要）：該列拿掉；跟隨活動的規則本身不變，只是不再多佔一列。 -->
           <div class="control-row">
             <div>
               <div class="control-row__main" data-i18n="cp.listing.shown-h">Show in shop</div>
@@ -627,6 +622,7 @@
 
 <!-- D241：狀態與可售量的唯一推導層（spec §7.14）。必須早於下面的頁內 script。 -->
 <script src="js/listing-state.js?v=r2.2"></script>
+<script src="js/lock-alloc.js?v=r2.2"></script><!-- 2026-10-21：指定鎖定項目清單（含多選項逐選項分配）三處共用 -->
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/discount-codes-store.js?v=r2.2"></script><!-- D458：優惠碼端資料 -->
 <script src="js/code-picker.js?v=r2.2"></script>
@@ -874,50 +870,12 @@
       + (multi ? '<span class="lockset__sub" data-i18n="cp.var.multiple">Multiple options</span>' : '')
       + '</span></span>';
   }
-  /* 指定鎖定項目清單（D266／D268）：只在成員清單變動時重建，數字更新走 refreshAlloc() */
+  /* 指定鎖定項目清單（D266／D268）：只在成員清單變動時重建，數字更新走 refreshAlloc()。
+     列與數字的畫法抽成 js/lock-alloc.js（2026-10-21，與 bundle-detail、建立活動組合包彈窗共用），這裡只給名稱格與資料。 */
+  const lockAllocOpts = () => ({ prefix: 'cb', members: bundleDraft.members, productOf: m => products[m.productId], nameCell: (m, p, multi) => nameCellHTML(m, p, multi), alloc: bundleDraft.alloc, skipMissing: true, T: T, setQty: setQty });
   function renderAlloc() {
     if (!allocEl) return;
-    [...allocEl.querySelectorAll('[data-cb-alloc-row], [data-cb-alloc-group]')].forEach(r => r.remove());
-    bundleDraft.members.forEach(m => {
-      const p = products[m.productId];
-      if (!p) return;
-      const multi = isMultiMember(p);
-      const gid = 'alloc-' + m.productId;
-      const row = document.createElement('div');
-      row.className = 'lockset__row' + (multi ? ' lockset__row--sub rowdis__head' : '');
-      row.setAttribute('data-cb-alloc-row', m.productId);
-      row.innerHTML = nameCellHTML(m, p, multi)
-        + '<span class="lockset__num" data-cb-stock></span>'
-        + '<span class="lockset__num" data-cb-free></span>'
-        + '<span data-cb-lockcell></span>'
-        + (multi
-          ? '<span class="lockset__end"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="' + gid + '" aria-expanded="false" aria-label="Show options" data-i18n-aria-label="bd.lock.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span>'
-          : '<span></span>');
-      if (multi) {
-        const group = document.createElement('div');
-        group.className = 'rowdis__group rowdis__group--gutter';
-        group.setAttribute('data-cb-alloc-group', m.productId);
-        group.appendChild(row);
-        group.insertAdjacentHTML('beforeend', p.variants.map((v, vi) =>
-          '<div class="lockset__row lockset__child" data-rowdis-child="' + gid + '" hidden data-cb-alloc-child="' + esc(m.productId) + '" data-cb-vi="' + vi + '">'
-            + '<span class="lockset__name">' + (window.ProductsStore && window.ProductsStore.variantThumb ? window.ProductsStore.variantThumb(p, v, { label: (v.combo || []).join(' / ') }) : '') + '<span>' + esc((v.combo || []).join(' / ')) + '</span></span>'
-          + '<span class="lockset__num" data-cb-stock></span>'
-          + '<span class="lockset__num" data-cb-free></span>'
-          + '<span><span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" placeholder="0" data-cb-alloc-input data-cb-vi="' + vi + '" data-i18n-aria-label="stock.lock" aria-label="Locked"><span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></span></span>'
-          + '<span></span></div>').join(''));
-        allocEl.appendChild(group);
-        const a = (bundleDraft.alloc || {})[m.productId] || {};
-        group.querySelectorAll('[data-cb-alloc-input]').forEach(inp => {
-          const q = a[Number(inp.dataset.cbVi)];
-          inp.value = (q === null || q === undefined || q === '') ? '' : String(q);
-        });
-      } else {
-        allocEl.appendChild(row);
-      }
-    });
-    if (window.ztorIcons) window.ztorIcons.applyIcons(allocEl);
-    if (window.applyI18n) window.applyI18n(allocEl);
-    if (window.rowDisclosure && window.rowDisclosure.sync) window.rowDisclosure.sync(allocEl);
+    window.ZtorLockAlloc.render(allocEl, lockAllocOpts());
     refreshAlloc();
   }
   /* 誰壓出上限：票券成員寫「票券」、商品寫名字（同 bundle-editor 的 memberCapWho／whoText） */
@@ -992,47 +950,7 @@
     const over = lockOver();
     if (setsInput) { if (over) setsInput.setAttribute('aria-invalid', 'true'); else setsInput.removeAttribute('aria-invalid'); }
     if (setsHint) { setsHint.textContent = lockHintText(); setsHint.classList.toggle('is-over', !!over); }
-    let anyBad = false;
-    bundleDraft.members.forEach(m => {
-      const p = products[m.productId];
-      const row = allocEl.querySelector('[data-cb-alloc-row="' + m.productId + '"]');
-      if (!p || !row) return;
-      const multi = isMultiMember(p);
-      const stock = multi ? LS.variantsTotal(p.variants) : ((p.pool && (p.pool.total === 'unlimited')) ? Infinity : Number(p.pool && p.pool.total) || 0);
-      const free = LS.freeQty(p);
-      const locked = LS.bundleMemberLock(bundleDraft, m);
-      const per = LS.memberPer(m);
-      setQty(row.querySelector('[data-cb-stock]'), stock);
-      setQty(row.querySelector('[data-cb-free]'), free);
-      const cell = row.querySelector('[data-cb-lockcell]');
-      if (cell) {
-        if (locked === null) {
-          cell.innerHTML = '<span class="lockset__nolock" data-i18n="bd.lock.shared">' + esc(T('bd.lock.shared', 'Not locked')) + '</span>';
-        } else {
-          const al = multi ? LS.bundleAllocOf(bundleDraft, m, p) : null;
-          if (al && al.over) anyBad = true;
-          const sub = !multi ? '' : (al.over ? T('bd.lock.over', 'Exceeds locked qty') : (al.assigned ? T('bd.lock.assigned', '{n} pcs pinned').replace('{n}', al.assigned) : ''));
-          cell.innerHTML = '<span class="lockset__lockval"><span class="lockset__lockval-row"><span>' + locked
-            + (per > 1 ? '<span class="lockset__per">' + T('bd.lock.per', '{n} per set').replace('{n}', per) + '</span>' : '')
-            + '</span><span data-i18n="stock.unit-pcs">' + T('stock.unit-pcs', 'pcs') + '</span></span>'
-            + (multi ? '<span class="lockset__sub lockset__lockval-sub' + (al.over ? ' is-over' : '') + '">' + esc(sub) + '</span>' : '')
-            + '</span>';
-        }
-      }
-      if (multi) {
-        const al = LS.bundleAllocOf(bundleDraft, m, p);
-        al.rows.forEach(r => {
-          if (r.bad) anyBad = true;
-          const child = allocEl.querySelector('[data-cb-alloc-child="' + m.productId + '"][data-cb-vi="' + r.vi + '"]');
-          if (!child) return;
-          const v = p.variants[r.vi];
-          setQty(child.querySelector('[data-cb-stock]'), Number(v.stock) || 0);
-          setQty(child.querySelector('[data-cb-free]'), LS.variantFree(v));
-          const inp = child.querySelector('[data-cb-alloc-input]');
-          if (inp) { inp.disabled = locked === null; if (r.bad) inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid'); }
-        });
-      }
-    });
+    const anyBad = window.ZtorLockAlloc.refresh(allocEl, Object.assign(lockAllocOpts(), { bundle: bundleDraft })).anyBad;
     void lim;
     lockBad = anyBad || !!over;
   }
@@ -1535,10 +1453,6 @@
     const ev = tix.event && ticketMember() ? (EV ? (EV.get(tix.event.id) || tix.event) : tix.event) : null;
     if (follow) follow.hidden = !ev;
     if (controls) controls.hidden = !!ev;
-    const slot = document.querySelector('[data-cb-follow-ev]');
-    const badge = document.querySelector('[data-cb-follow-badge]');
-    if (slot && ev) slot.innerHTML = '<a class="card__link" href="event-detail.html?id=' + esc(ev.id) + '" target="_blank" rel="noopener">' + esc(evName(ev)) + '</a>';
-    if (badge && ev) badge.innerHTML = evTinyBadgeHTML(ev);
     renderTbFollow(ev);
   }
   /* ── D342：票務商品的上架與開賣（跟隨活動／另設）與購買條件預設（js/ticket-bundle.js 共用）──────────────
@@ -1563,7 +1477,8 @@
     const sig = [c.ev.id, tix.tierIds.join('+'), tix.qty, TB.KEYS.map(k => TB.isCustom(tbState, k) ? 'c' : 'f').join(''), document.documentElement.lang].join('|');
     if (hs && sig !== tbSig) { hs.innerHTML = TB.schedHTML(tbState, c.et, T); if (window.ztorIcons) window.ztorIcons.applyIcons(hs); }
     tbSig = sig;
-    if (hr) hr.innerHTML = TB.rulesHTML(tbState, c.def, c.et, T, { n: c.n, readonly: true, buyOnly: true });
+    if (hr) hr.innerHTML = TB.rulesHTML(tbState, c.def, c.et, T, { n: c.n, readonly: true, buyOnly: true, group: true });   /* 2026-10-21：畫成 .rules-group 的一列（UI-CHANGES 二百八十二） */
+    if (window.cbSyncRulesSum) window.cbSyncRulesSum();
     TB.syncErrors(document.querySelector('.wizard__sheet') || document.body, tbState, c, T);   /* 購買條件的錯誤句在第一張分卡（D398 搬過去），時間的在上架段：整張表單一起同步 */
   }
   function tbErrCount() { const c = tbCtx(); return c ? TB.errorCount(tbState, c, T) : 0; }
@@ -1605,10 +1520,7 @@
        純商品的購買條件預設不限（D400）→ 只畫唯讀讀數，不再掛 js/purchase-conds.js 的條件清單（cbCondsApi 留空）。 */
     const later = document.querySelector('[data-cb-rules-later]');
     if (later) later.hidden = !bundleDraft.members.length;
-    if (!tixOn && wrap) {
-      const ch = wrap.querySelector('[data-cb-conds-host]');
-      if (ch) ch.innerHTML = '<div class="field-readout">' + esc(T('ce.rule.any', 'No limit')) + '</div>';
-    }
+    if (!tixOn && wrap) wrap.innerHTML = TB.rgRowHTML({ title: T('rg.buy', 'Who can buy'), value: T('ce.rule.any', 'No limit') });
     const host = document.querySelector('[data-pl-host="cb"]');
     if (!PLc || !host) return;
     const sig = (bundleDraft.members.length ? 'm' : 'n') + '|' + document.documentElement.lang;
@@ -1616,12 +1528,23 @@
       cbLimSig = sig;
       /* 2026-10-12 使用者：沒有成員時限購區塊整個不顯示（原本放一句「至少加入 1 個成員」）
          D455：disabled＝欄位停用，建立時只呈現預設值（D456：預設不限） */
-      host.innerHTML = bundleDraft.members.length ? PLc.blockHTML(cbRulesState.limits, T, { title: true, disabled: true }) : '';
+      host.innerHTML = bundleDraft.members.length ? PLc.blockHTML(cbRulesState.limits, T, { group: true, disabled: true, idPrefix: 'cb-pl' }) : '';
       if (window.ztorIcons) window.ztorIcons.applyIcons(host);
     }
     PLc.syncErrors(host, cbRulesState, T);
+    cbSyncRulesSum();
   }
   window.cbRenderRules = renderCbRules;
+  /* 群組底部一句彙總：購買條件（含門票＝所含門票取最嚴；純商品＝不限；版本沒開 S63 的含門票＝沒有這一列）＋限購；沒有成員時整句收起 */
+  function cbSyncRulesSum() {
+    const box = document.querySelector('[data-cb-rules-sum]');
+    if (!box || !PLc) return;
+    box.hidden = !bundleDraft.members.length;
+    let buy = T('ce.rule.any', 'No limit');
+    if (ticketMember()) { const c = tbCtx(); buy = (c && featOnC('S63')) ? TB.buyLine(tbState, c.def, T) : null; }
+    PLc.syncSum(box, buy, cbRulesState.limits, T);
+  }
+  window.cbSyncRulesSum = cbSyncRulesSum;
   (function () {
     const host = document.querySelector('[data-pl-host="cb"]');
     if (!host || !PLc) return;
@@ -1629,6 +1552,7 @@
       if (!PLc.onInput(e, cbRulesState)) return;
       e.stopPropagation();   /* 不觸發整頁 recompute（只要就地重算錯誤與檢核） */
       PLc.syncErrors(host, cbRulesState, T);
+      cbSyncRulesSum();
       recompute();
     });
   })();

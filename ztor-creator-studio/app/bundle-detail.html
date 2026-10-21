@@ -55,6 +55,7 @@
 <link rel="stylesheet" href="ds-components/form-ask.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2"><!-- form-ask 的二選一（segmented.radio-cards 的 .radio-card__text） -->
 <link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398／D456：組合包限購（自己的設定、獨立計算；js/purchase-limits.js） -->
+<link rel="stylesheet" href="ds-components/rules-group.css?v=r2.2"><!-- 2026-10-21：購買條件與限購整併成一個群組 -->
 <link rel="stylesheet" href="ds-components/cond-list.css?v=r2.2"><!-- D400：純商品組合包的購買條件（js/purchase-conds.js 條件清單） -->
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
@@ -552,18 +553,20 @@
           <div class="form-section__head">
             <h3 class="form-section__title" data-bd-rules-title data-i18n="product-detail.limit2.title">Purchase limits</h3>
           </div>
-          <div class="stack">
-            <div class="stack" data-tb-rules-sec hidden data-feat="S63">
-              <div class="bd-sub"><span class="bd-sub__title" data-i18n="tb.rules.buy">Who can buy</span></div>
-              <div data-tb-host="rules"></div>
+          <!-- 2026-10-21（UI-CHANGES 二百八十二）：購買條件與限購整併成一個群組 .rules-group（ds-components/rules-group.css，同建立組合、建立活動組合包彈窗）：
+               條件列（含門票＝跟隨所含門票；純商品＝條件清單）→ 限購列 → 底部一句彙總；原本的「誰可以買」小標與兩個獨立線框退場。 -->
+          <div class="rules-group" data-bd-rules-group>
+            <div class="rules-group__row" data-tb-rules-sec hidden data-feat="S63">
+              <div data-tb-host="rules" data-rg-slot></div>
             </div>
             <!-- D400：純商品組合包也有購買條件（限時購買／限粉絲分級購買），預設不限；js/purchase-conds.js 條件清單（只開這兩種），
                  期間須在組合包自己的上架區間內〔推導〕。檢視態畫成鎖定的條件卡（沒有條件時一句「任何人都買得到」） -->
-            <div class="stack" data-bd-conds hidden>
-              <div class="bd-sub"><span class="bd-sub__title" data-i18n="tb.rules.buy">Who can buy</span></div>
-              <div data-bd-conds-host></div>
+            <div class="rules-group__row" data-bd-conds hidden>
+              <div class="rules-group__k"><span class="rules-group__t" data-i18n="rg.buy">Who can buy</span></div>
+              <div class="rules-group__body" data-bd-conds-host></div>
             </div>
             <div data-pl-host="bd"></div>
+            <div class="rules-group__sum" data-bd-rules-sum><span data-rg-sum></span></div>
           </div>
         </section>
 
@@ -754,6 +757,7 @@
 <script src="js/i18n.js?v=r2.2"></script>
 <!-- D241：狀態與可售量的唯一推導層（spec §7.14）。products-store 會用到它，須先載。 -->
 <script src="js/listing-state.js?v=r2.2"></script>
+<script src="js/lock-alloc.js?v=r2.2"></script><!-- 2026-10-21：指定鎖定項目清單（含多選項逐選項分配）三處共用 -->
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/discount-codes-store.js?v=r2.2"></script><!-- D458：優惠碼端資料 -->
 <script src="js/code-picker.js?v=r2.2"></script>
@@ -1182,49 +1186,11 @@
         + (multi ? '<span class="lockset__sub" data-i18n="cp.var.multiple">Multiple options</span>' : '')
         + '</span></span>';
     }
+    /* 列與數字的畫法抽成 js/lock-alloc.js（2026-10-21，與建立組合、建立活動組合包彈窗共用），這裡只給名稱格與資料。 */
+    const lockAllocOpts = () => ({ prefix: 'bd', members: bundleModel.members, productOf: m => productOf(m.productId), nameCell: (m, p, multi) => nameCellHTML(m, p, multi), alloc: bundleModel.alloc, T: T, setQty: setQty, disabled: locked => (locked === null) || !lockEditing });
     function renderAlloc() {
       if (!allocEl) return;
-      [...allocEl.querySelectorAll('[data-bd-alloc-row], [data-bd-alloc-group]')].forEach(r => r.remove());
-      bundleModel.members.forEach(m => {
-        const p = productOf(m.productId);
-        const multi = isMultiMember(p);
-        const gid = 'alloc-' + m.productId;
-        const row = document.createElement('div');
-        row.className = 'lockset__row' + (multi ? ' lockset__row--sub rowdis__head' : '');
-        row.setAttribute('data-bd-alloc-row', m.productId);
-        row.innerHTML = nameCellHTML(m, p, multi)
-          + '<span class="lockset__num" data-bd-stock></span>'
-          + '<span class="lockset__num" data-bd-free></span>'
-          + '<span data-bd-lockcell></span>'
-          + (multi
-            ? '<span class="lockset__end"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="' + gid + '" aria-expanded="false" aria-label="Show options" data-i18n-aria-label="bd.lock.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span>'
-            : '<span></span>');
-        if (multi) {
-          const group = document.createElement('div');
-          group.className = 'rowdis__group rowdis__group--gutter';
-          group.setAttribute('data-bd-alloc-group', m.productId);
-          group.appendChild(row);
-          group.insertAdjacentHTML('beforeend', p.variants.map((v, vi) =>
-            '<div class="lockset__row lockset__child" data-rowdis-child="' + gid + '" hidden data-bd-alloc-child="' + esc(m.productId) + '" data-bd-vi="' + vi + '">'
-            /* 列首唯讀縮圖（2026-09-11 D268）：這個組合自己的圖（實線）或沿用商品主圖（虛線），只看不改 */
-            + '<span class="lockset__name">' + (window.ProductsStore && window.ProductsStore.variantThumb ? window.ProductsStore.variantThumb(p, v, { label: (v.combo || []).join(' / ') }) : '') + '<span>' + esc((v.combo || []).join(' / ')) + '</span></span>'
-            + '<span class="lockset__num" data-bd-stock></span>'
-            + '<span class="lockset__num" data-bd-free></span>'
-            + '<span><span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" placeholder="0" data-bd-alloc-input data-bd-vi="' + vi + '" data-i18n-aria-label="stock.lock" aria-label="Locked"><span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></span></span>'
-            + '<span></span></div>').join(''));
-          allocEl.appendChild(group);
-          const a = (bundleModel.alloc || {})[m.productId] || {};
-          group.querySelectorAll('[data-bd-alloc-input]').forEach(inp => {
-            const q = a[Number(inp.dataset.bdVi)];
-            inp.value = (q === null || q === undefined || q === '') ? '' : String(q);
-          });
-        } else {
-          allocEl.appendChild(row);
-        }
-      });
-      if (window.ztorIcons) window.ztorIcons.applyIcons(allocEl);
-      if (window.applyI18n) window.applyI18n(allocEl);
-      if (window.rowDisclosure && window.rowDisclosure.sync) window.rowDisclosure.sync(allocEl);
+      window.ZtorLockAlloc.render(allocEl, lockAllocOpts());
       refreshAlloc();
     }
 
@@ -1250,48 +1216,13 @@
               : T('cpp.bd.sp.lock.hint', 'Blank = shares what’s left with single sales'));
         setsHint.classList.toggle('is-over', !!over);
       }
+      /* 清單裡每一列的數字、已鎖定格與逐選項輸入框：js/lock-alloc.js（與建立組合、建立活動組合包彈窗共用） */
+      if (allocEl) window.ZtorLockAlloc.refresh(allocEl, Object.assign(lockAllocOpts(), { bundle: bundleModel }));
       bundleModel.members.forEach(m => {
         const p = map[m.productId];
-        const row = allocEl && allocEl.querySelector('[data-bd-alloc-row="' + m.productId + '"]');
         const listRow = document.querySelector('#bd-members [data-bd-pid="' + m.productId + '"]');
-        const multi = isMultiMember(p);
-        const stock = !p ? 0 : (multi ? LS.variantsTotal(p.variants) : ((p.pool && (p.pool.total === 'unlimited')) ? Infinity : Number(p.pool && p.pool.total) || 0));
         const free = !p ? 0 : LS.freeQty(p);
         const locked = LS.bundleMemberLock(bundleModel, m);
-        const per = LS.memberPer(m);
-        if (row) {
-          setQty(row.querySelector('[data-bd-stock]'), stock);
-          setQty(row.querySelector('[data-bd-free]'), free);
-          const cell = row.querySelector('[data-bd-lockcell]');
-          if (cell) {
-            if (locked === null) {
-              cell.innerHTML = '<span class="lockset__nolock" data-i18n="bd.lock.shared">' + esc(T('bd.lock.shared', 'Not locked')) + '</span>';
-            } else {
-              const al = multi ? LS.bundleAllocOf(bundleModel, m, p) : null;
-              const sub = !multi ? '' : (al.over ? T('bd.lock.over', 'Exceeds locked qty') : (al.assigned ? T('bd.lock.assigned', '{n} pcs pinned').replace('{n}', al.assigned) : ''));
-              cell.innerHTML = '<span class="lockset__lockval"><span class="lockset__lockval-row"><span>' + locked
-                + (per > 1 ? '<span class="lockset__per">' + T('bd.lock.per', '{n} per set').replace('{n}', per) + '</span>' : '')
-                + '</span><span data-i18n="stock.unit-pcs">' + T('stock.unit-pcs', 'pcs') + '</span></span>'
-                + (multi ? '<span class="lockset__sub lockset__lockval-sub' + (al.over ? ' is-over' : '') + '">' + esc(sub) + '</span>' : '')
-                + '</span>';
-            }
-          }
-          if (multi) {
-            const al = LS.bundleAllocOf(bundleModel, m, p);
-            al.rows.forEach(r => {
-              const child = allocEl.querySelector('[data-bd-alloc-child="' + m.productId + '"][data-bd-vi="' + r.vi + '"]');
-              if (!child) return;
-              const v = p.variants[r.vi];
-              setQty(child.querySelector('[data-bd-stock]'), Number(v.stock) || 0);
-              setQty(child.querySelector('[data-bd-free]'), LS.variantFree(v));
-              const inp = child.querySelector('[data-bd-alloc-input]');
-              if (inp) {
-                inp.disabled = (locked === null) || !lockEditing;
-                if (r.bad) inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid');
-              }
-            });
-          }
-        }
         /* 成員清單只顯示、不重複提供編輯：同一個數字不做兩個入口。 */
         if (listRow) {
           setQty(listRow.querySelector('[data-bd-free]'), free);
@@ -1904,14 +1835,15 @@
       const hl = document.querySelector('[data-tb-host="list"]'), hs = document.querySelector('[data-tb-host="sale"]'), hr = document.querySelector('[data-tb-host="rules"]');
       if (hl) hl.innerHTML = TB.schedHTML(bundleModel, c.et, T, { keys: ['listAt', 'unlistAt'], note: false });
       if (hs) hs.innerHTML = '<div class="stack">' + tbOnSaleHTML() + TB.schedHTML(bundleModel, c.et, T, { keys: ['saleStart', 'saleEnd'] }) + '</div>';   /* 開關列與時間列之間的節奏由 .stack 持有（Q103） */
-      /* 墓碑 2026-10-16（D429）：自動建立的組合包只畫唯讀讀數＋原因（D390 決定十九／二十，tb.rules.fix）那一支退場 */
-      if (hr) hr.innerHTML = (c.locked ? '<p class="lctl__lock-note">' + esc(T('tb.rules.locked', '')) + '</p>' : '') +
-          TB.rulesHTML(bundleModel, c.def, c.et, T, { n: c.n, locked: c.locked, buyOnly: true });
+      /* 墓碑 2026-10-16（D429）：自動建立的組合包只畫唯讀讀數＋原因（D390 決定十九／二十，tb.rules.fix）那一支退場。
+         2026-10-21：bookyay 鎖定說明句（c.locked）改由 rulesHTML 的 group 版放進同一列的 body。 */
+      if (hr) hr.innerHTML = TB.rulesHTML(bundleModel, c.def, c.et, T, { n: c.n, locked: c.locked, buyOnly: true, group: true });   /* 2026-10-21：畫成 .rules-group 的一列 */
       const editing = settingsPanel && settingsPanel.getAttribute('data-mode') === 'edit';
       [hl, hs, hr].forEach(h => { if (!h) return; h.querySelectorAll('input, textarea').forEach(el => { el.readOnly = !editing; }); h.querySelectorAll('select').forEach(el => { el.disabled = !editing; }); });
       TB.syncErrors(settingsPanel, bundleModel, c, T);
       tbApply(c);
       if (window.bdStockLockApply) window.bdStockLockApply();   /* D438：上架中重畫購買條件後補鎖 */
+      if (window.bdSyncRulesSum) window.bdSyncRulesSum();   /* 2026-10-21：群組底部彙總句跟著購買條件走 */
     }
     window.bdRenderTB = renderTB;
 
@@ -1936,11 +1868,12 @@
       if (title) { const k = buyOn ? 'cpp.bd.sp.sec.rules' : 'product-detail.limit2.title'; title.setAttribute('data-i18n', k); title.textContent = T(k, buyOn ? 'Purchase rules' : 'Purchase limits'); }
       /* 2026-10-12 改版（D402，UI-CHANGES 一百八十八）：title:true＝元件自己畫「限購」標題（同建立組合包），外層小標退場；D456 起沒有跟隨成員開關 */
       host.innerHTML = PL.blockHTML(bundleModel.limits, T, {
-        disabled: !editing, title: true
+        disabled: !editing, group: true, idPrefix: 'bd-pl'   /* 2026-10-21：畫成 .rules-group 的一列（UI-CHANGES 二百八十二），標題與外框都由群組負責 */
         /* 墓碑 2026-10-16（D427）：keys: PL.KEYS_BKY（bookyay 自動組合包只畫兩欄）退場——限購只剩每人總限購一欄 */
       });
       if (window.ztorIcons) window.ztorIcons.applyIcons(host);
       PL.syncErrors(host, bundleModel, T);
+      bdSyncRulesSum();
       if (window.bdStockLockApply) window.bdStockLockApply();   /* D438：上架中重畫限購後補鎖 */
     }
     window.bdRenderLimits = renderLimits;
@@ -1961,7 +1894,7 @@
       if (hasTix) { bdCondsApi = null; return; }
       if (editing) {
         if (!bdCondsApi) bdCondsApi = PC.mount(host, { rules: bundleModel.conds, scope: 'bundle', ctx: condsCtx, times: bdEt, tr: bdTr,
-          onChange: r => { bundleModel.conds = r; renderBdSettingsOverview(); } });
+          onChange: r => { bundleModel.conds = r; bdSyncRulesSum(); renderBdSettingsOverview(); } });
         else bdCondsApi.check();
         return;
       }
@@ -1972,11 +1905,30 @@
     }
     const condsErrCount = () => (PC && !bundleModel.members.some(m => m.kind === 'ticket')) ? Object.keys(PC.periodErrs(bundleModel.conds, bdEt(), bdTr)).length : 0;
     window.bdLimitsText = () => PL ? PL.text(bundleModel.limits, 'set', T) : '';
+    /* 群組底部一句彙總（2026-10-21）：購買條件一句讀數＋限購。含門票＝跟隨所含門票（或另設後的設定），版本沒開 S63 時沒有這一列；純商品＝條件清單的現況 */
+    function bdCondsLine() {
+      const raw = bundleModel.conds || {}, cs = raw.conds || raw, parts = [];
+      const rng = x => (x && (x.from || x.to)) ? ' ' + String(x.from || '…').replace('T', ' ') + ' – ' + String(x.to || '…').replace('T', ' ') : '';
+      if (cs.buyTime) parts.push(T('d.cond.buyTime', 'Sales window') + rng(cs.buyTime));
+      if (cs.buyTier) parts.push(T('d.cond.buyTier', 'Fan tier only'));
+      return parts.length ? parts.join(' · ') : T('ce.rule.any', 'No limit');
+    }
+    function bdSyncRulesSum() {
+      const box = document.querySelector('[data-bd-rules-sum]');
+      if (!box || !PL) return;
+      const hasTix = bundleModel.members.some(m => m.kind === 'ticket');
+      let buy;
+      if (hasTix) { const c = tbCtx(); buy = (c && featOnB('S63')) ? TB.buyLine(bundleModel, c.def, T) : null; }
+      else buy = bdCondsLine();
+      PL.syncSum(box, buy, bundleModel.limits, T);
+    }
+    window.bdSyncRulesSum = bdSyncRulesSum;
     const limitsErrCount = () => (PL ? Object.keys(PL.errors(bundleModel.limits, T)).length : 0) + condsErrCount();
     if (settingsPanel && PL) {
       settingsPanel.addEventListener('input', e => {
         if (!PL.onInput(e, bundleModel)) return;
         PL.syncErrors(document.querySelector('[data-pl-host="bd"]'), bundleModel, T);
+        bdSyncRulesSum();
         renderBdSettingsOverview();
       });
     }
@@ -2009,6 +1961,7 @@
         const c = tbCtx(); if (!c) return;
         TB.syncErrors(settingsPanel, bundleModel, c, T);
         tbApply(c);
+        if (window.bdSyncRulesSum) window.bdSyncRulesSum();   /* 2026-10-21：群組底部彙總句跟著購買條件的輸入走 */
       });
       settingsPanel.addEventListener('change', e => {
         const at = e.target.closest && e.target.closest('[data-tb-at]');

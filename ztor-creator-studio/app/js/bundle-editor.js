@@ -346,10 +346,12 @@
              codes／codesNew  開關打開後選的優惠碼與暫存的新碼（js/code-picker.js）；活動建立流程的組合包還沒有落地 id，
                       選取先留在這份資料裡，不寫進碼端（活動發布寫入 events-store 的落點尚未接，見 ASSUMPTIONS）
              alloc    鎖定套數的逐票種分配 { 票種 id: 組數 }（選填，合計 ≤ 鎖定套數）
+             itemAlloc 多選項商品成員的逐選項組合分配 { 商品 id: { 選項組合索引: 件數 } }（2026-10-21；選填，形狀同 ListingState 的 bundle.alloc，
+                      每格 ≤ 該組合當下沒被鎖定的量、各商品合計 ≤ 鎖定套數 × 每套用量；規則見 js/lock-alloc.js、D266／D268）
              sched    上架、下架、開賣、停售四格的跟隨／另設（null＝跟隨活動；js/ticket-bundle.js）
              rules    購買條件與限購（null＝跟隨所含門票）——2026-10-12 起只剩購買條件
              limits   限購（2026-10-12，UI-CHANGES 一百八十八；js/purchase-limits.js）：null＝不限、{ person }＝自己設的上限（D456） */
-        media: [], films: [], shown: true, saleOn: false, sale: null, stack: false, codes: [], codesNew: [], alloc: {}, sched: {}, rules: null, limits: null,
+        media: [], films: [], shown: true, saleOn: false, sale: null, stack: false, codes: [], codesNew: [], alloc: {}, itemAlloc: {}, sched: {}, rules: null, limits: null,
       };
       if (seed) {
         /* price 刻意不從 seed 收：舊種子資料還帶著寫死的價格，收進來會蓋掉算出來的值。 */
@@ -377,7 +379,7 @@
         /* 種子帶了限時折扣（之前存過的）＝開著 */
         if (seed.sale && seed.saleOn !== false) b.saleOn = true;
         ['media', 'films'].forEach(function (k) { b[k] = Array.isArray(seed[k]) ? seed[k].slice() : []; });
-        ['alloc', 'sched'].forEach(function (k) { b[k] = seed[k] ? JSON.parse(JSON.stringify(seed[k])) : {}; });
+        ['alloc', 'itemAlloc', 'sched'].forEach(function (k) { b[k] = seed[k] ? JSON.parse(JSON.stringify(seed[k])) : {}; });
         b.rules = seed.rules ? JSON.parse(JSON.stringify(seed.rules)) : null;
         /* 2026-10-12（UI-CHANGES 一百八十八）：限購 b.limits（null＝不限、物件＝自己設的上限，D456）。舊資料（D342）沒有 limits、
            限購寫在 rules（cap:'cap'）→ 相容讀成自己設的上限（同 bundle-detail 的讀法）；之後存檔只認 limits，rules 只剩購買條件。 */
@@ -1022,13 +1024,23 @@
     function limitsHTML(b) {
       var PL = plApi();
       if (!PL) return '';
-      if (!tixIds(b).length && !b.items.length) return '<div data-bd-pl></div>';   /* 2026-10-12 使用者：沒有成員時限購整塊不顯示（原本一句「至少加入 1 個成員」） */
-      return '<div data-bd-pl>' + PL.blockHTML(b.limits, T, { title: true }) + '</div>';
+      if (!tixIds(b).length && !b.items.length) return '';   /* 2026-10-12 使用者：沒有成員時限購整塊不顯示（原本一句「至少加入 1 個成員」） */
+      /* 2026-10-21（UI-CHANGES 二百八十二）：畫成 .rules-group 的一列（輸入框在右），標題與外框由群組負責 */
+      return PL.blockHTML(b.limits, T, { group: true, idPrefix: 'bd-pl-' + b.id });
+    }
+    function featOnS(id) { var dd = window.ztorDevState; return !dd || !dd.featOn || dd.featOn(id); }
+    /* 群組底部一句彙總（購買條件一句讀數＋限購）：版本沒開 S63 就沒有購買條件那一列，只說限購 */
+    function rulesSumSync(card, b) {
+      var PL = plApi(), root = card && card.querySelector('[data-bd-sec="rules"]');
+      if (!PL || !root) return;
+      var c = tbCtx(b);
+      PL.syncSum(root, (c && featOnS('S63')) ? c.TB.buyLine(b, c.def, T) : null, b.limits, T);
     }
     function limitsSync(card, b) {
-      var PL = plApi(), host = card && card.querySelector('[data-bd-pl]');
-      if (!PL || !host) return;
-      PL.syncErrors(host, b, T);
+      var PL = plApi();
+      if (!PL || !card) return;
+      PL.syncErrors(card, b, T);
+      rulesSumSync(card, b);
     }
     function tbErrCount(b) {
       var c = tbCtx(b);
@@ -1045,6 +1057,24 @@
       return Object.keys(b.alloc || {}).reduce(function (a, k) { var v = num(b.alloc[k]); return a + (Number.isFinite(v) && v > 0 ? Math.floor(v) : 0); }, 0);
     }
     function allocOver(b) { return SPLIT && lockN(b) > 0 && allocSum(b) > lockN(b); }
+    /* 多選項商品成員的逐選項組合分配（2026-10-21；D266／D268，與 create-bundle／bundle-detail 同一套規則與同一份清單渲染 js/lock-alloc.js）：
+       只有「鎖定套數＞0 且該成員是多選項商品」才出現；每格 ≤ 該組合當下沒被鎖定的量、各商品合計 ≤ 鎖定套數 × 每套用量（SPLIT 一套扣一件）。
+       數字一律問 ListingState：把這張卡的商品成員轉成它的 bundle／product 形狀（vModel／vProduct），不另算。 */
+    var LA = window.ZtorLockAlloc, LSt = window.ListingState;
+    function vProduct(it) { var raw = (window.ZTOR_PRODUCTS || {})[it.id]; return raw && raw.variants ? raw : it; }
+    function vItems(b) { return (SPLIT && LA && LSt) ? b.items.filter(function (it) { return LA.isMulti(vProduct(it)); }) : []; }
+    function vModel(b) {
+      return { id: b.id || 'sp-draft', lockSets: lockN(b) || null, alloc: b.itemAlloc || {},
+               members: b.items.map(function (it) { return { productId: it.id, qty: 1 }; }) };
+    }
+    function vAllocBad(b) {
+      if (!lockN(b)) return false;
+      var vm = vModel(b);
+      return vItems(b).some(function (it) {
+        var al = LSt.bundleAllocOf(vm, { productId: it.id, qty: 1 }, vProduct(it));
+        return al.over || al.rows.some(function (r) { return r.bad; });
+      });
+    }
     function readiness(b) {
       return [
         hasContent(b),
@@ -1053,6 +1083,7 @@
         !lockOver(b),   /* SPLIT：鎖定套數超過可售上限也擋（其餘版型沒有這個欄位，恆為 true） */
         !saleBad(b),    /* D342：限時折扣沒填完整 */
         !allocOver(b),  /* D342：逐票種分配超過鎖定套數 */
+        !vAllocBad(b),  /* 2026-10-21：多選項商品的逐選項分配超額（單格或合計） */
         !tbErrCount(b)  /* D342：時間超出活動上架區間、購買條件放寬或交集為空 */
       ];
     }
@@ -1072,6 +1103,7 @@
       if (capOver(b)) return T('cpp.bd.sp.why.cap');
       if (saleBad(b)) return T('cpp.bd.sp.why.sale');
       if (allocOver(b)) return T('cpp.bd.sp.why.alloc');
+      if (vAllocBad(b)) return T('cpp.bd.sp.why.valloc');
       if (limitsErrCount(b)) return T('pl.err.save');   /* 2026-10-12（UI-CHANGES 一百八十八）：限購紅字（同 create-bundle 的擋關句） */
       if (tbErrCount(b)) return T('cpp.bd.sp.why.tb');
       return '';
@@ -2040,6 +2072,39 @@
           esc(over ? T('cpp.bd.sp.alloc.over').replace('{n}', lockN(b)) : T('cpp.bd.sp.alloc.hint').replace('{n}', lockN(b))) + '</div>' +
       '</div>';
     }
+    /* 多選項商品成員的逐選項分配（見 vAllocBad 上方說明）：清單殼＋重建判準；列與數字由 js/lock-alloc.js 畫（prefix 'sp'） */
+    function vKey(b) { return lockN(b) ? vItems(b).map(function (it) { return it.id; }).join('|') : ''; }
+    function vallocHTML(b) {
+      if (!vKey(b)) return '';
+      return '<div class="field bd-field--table" data-feat="S64">' +
+        '<div class="lockset" data-bd-valloc><div class="lockset__head"><span>' + esc(T('cb.lock.col.member')) + '</span><span>' + esc(T('bd.lock.col.stock')) + '</span><span>' +
+          esc(T('stock.free')) + '</span><span>' + esc(T('bd.lock.col.locked')) + '</span><span></span></div></div>' +
+        '<p class="lctl__note">' + esc(T('stock.restock-hint')) + '</p></div>';
+    }
+    function vOpts(b) {
+      return { prefix: 'sp', members: vModel(b).members, alloc: b.itemAlloc || {}, multiOnly: true, skipMissing: true, T: T,
+        productOf: function (m) { var it = b.items.filter(function (x) { return x.id === m.productId; })[0]; return it ? vProduct(it) : null; },
+        nameCell: function (m, p) {
+          var it = b.items.filter(function (x) { return x.id === m.productId; })[0] || {};
+          return '<span class="lockset__name">' + (it.img
+            ? '<img class="data-list__thumb data-list__thumb--lg" src="' + esc(it.img) + '" alt="">'
+            : '<span class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></span>') +
+            '<span class="lockset__text"><span title="' + esc(it.name || '') + '">' + esc(it.name || '') + '</span>' +
+            '<span class="lockset__sub">' + esc(T('cp.var.multiple')) + '</span></span></span>';
+        } };
+    }
+    /* 就地同步：成員或鎖定套數變了才重建清單（輸入框有焦點時不重建，數字照樣刷新），其餘只刷新數字與錯誤態 */
+    function syncValloc(card, b) {
+      var box = card.querySelector('[data-bd-valloc-box]');
+      if (!box || !LA || !LSt) return;
+      var key = vKey(b), focusIn = !!(document.activeElement && box.contains(document.activeElement));
+      if (key !== (box.getAttribute('data-key') || '') && !focusIn) {
+        box.innerHTML = vallocHTML(b); box.setAttribute('data-key', key);
+        var h0 = box.querySelector('[data-bd-valloc]'); if (h0) LA.render(h0, vOpts(b));
+      }
+      var host = box.querySelector('[data-bd-valloc]');
+      if (host) LA.refresh(host, Object.assign(vOpts(b), { bundle: vModel(b) }));
+    }
     /* 開關列（price-ladder__v--switch）：與既有 data-bd-*-toggle 事件同一顆，只換外框 */
     function ladderSwitch(attr, on, locked, label) {
       return '<div class="price-ladder__v price-ladder__v--switch"><div class="switch' + (on ? ' switch--on' : '') + (locked ? ' switch--locked' : '') +
@@ -2143,6 +2208,7 @@
               stepperHTML('data-bd-f="lockSets" aria-label="' + esc(T('cb.lock.sets')) + '"', b.lockSets, T('cpp.bd.sp.unit.group'), 0, null, 'bd-disc', !lockable) +
             '</div>' +
             '<div data-bd-alloc-box>' + allocHTML(b) + '</div>' +
+            '<div data-bd-valloc-box data-key=""></div>' +
           '</div>' +
         '</div>' +
         /* 販售上限（F4）：不限量／限量；上限不得大於成員能供應的組數（D292） */
@@ -2231,18 +2297,12 @@
        顯示設定（同 5.1.5.4 §4 F6）＋四個時間逐格「跟隨活動／另設」（js/ticket-bundle.js）。
        活動還沒發布時組合包同為草稿（D293 不變），這一段先記下要跟隨還是另設，發布時生效。 */
     function secListingSplitHTML(b) {
-      var ev = eventInfo(), c = tbCtx(b);
+      var c = tbCtx(b);
       return '<section class="bd-sec bd-sec--stack" data-bd-sec="listing" data-feat="S62">' +
         '<div class="bd-sec__head">' +
           '<h3 class="bd-sec__title">' + esc(T('cpp.bd.sp.sec.listing')) + '</h3>' +
         '</div>' +
-        /* 2026-10-12 使用者：「跟著活動」換成外框列（同顯示於商店），並拿掉「預設跟隨…」那句提示（草稿活動的「維持草稿」說明仍保留） */
-        '<div class="control-row">' +
-          '<div><div class="control-row__main">' + esc(T('cpp.bd.sp.follow')) + '</div>' +
-            '<div class="control-row__sub">' + esc(ev.name || T('event-detail.untitled')) + '</div></div>' +
-          eventBadgeHTML(ev) +
-        '</div>' +
-        (ev.status === 'draft' ? '<div class="field__hint">' + esc(T('cpp.bd.sp.follow.draft')) + '</div>' : '') +
+        /* 墓碑 2026-10-21（使用者：上架與開賣第一行的「跟著活動＋活動名＋草稿徽章」與草稿說明在 UI 上不必要）：該列與草稿說明拿掉；跟隨活動的規則不變。 */
         /* D363 決定二：活動隱藏中（第 7 步顯示開關關掉，et.shown === false）→ 這顆開關停用、畫成關，下面多一句原因；
            組合包自己的值（b.shown）保留，活動切回顯示後照它自己的開關。彈窗每次開都重畫，所以第 7 步改了再回來就是新的狀態。 */
         (function () {
@@ -2262,25 +2322,22 @@
     function secRulesSplitHTML(b) {
       var c = tbCtx(b);
       if (!c) return '';
-      /* 2026-10-12（UI-CHANGES 一百八十八；UIA-247 第 9 項）：拆成兩組，同 create-bundle 的 [data-cb-rules]——
-         「購買條件」（含門票＝ticket-bundle 的跟隨所含門票／調整，buyOnly，S63）＋「限購」（js/purchase-limits.js 的組合包限購區塊，S94）。
-         版本閘先問再畫（D366 做法）：S63 不在版本內就不畫購買條件、節標題只剩「限購」（同 bundle-detail）。 */
-      var dd = window.ztorDevState, featOn = function (id) { return !dd || !dd.featOn || dd.featOn(id); };
-      var buyOn = featOn('S63'), limOn = featOn('S94') && !!plApi();
+      /* 2026-10-21（UI-CHANGES 二百八十二）：購買條件與限購整併成一個群組 .rules-group（ds-components/rules-group.css，同 create-bundle、bundle-detail）：
+         條件列（讀數與跟隨開關同一排）→ 限購列（輸入框在右）→ 底部一句彙總；原本兩個獨立線框、各自的標題與調整入口退場。
+         版本閘先問再畫（D366 做法）：S63（含門票的購買條件）不在版本內就不畫條件列、節標題只剩「限購」（S94）。 */
+      var buyOn = featOnS('S63'), limOn = featOnS('S94') && !!plApi();
       if (!buyOn && !limOn) return '';
       var tk = buyOn ? 'cpp.bd.sp.sec.rules' : 'product-detail.limit2.title';
+      /* 墓碑 2026-10-16（D429）：bookyay 自動建立的組合包只畫唯讀讀數＋一句原因（D390 決定十九／二十，tb.rules.fix）那一支退場；成員門票鎖定（c.locked）仍整組唯讀。 */
       return '<section class="bd-sec bd-sec--stack" data-bd-sec="rules" data-feat="S63,S94">' +
         '<div class="bd-sec__head">' +
           '<h3 class="bd-sec__title">' + esc(T(tk)) + '</h3>' +
         '</div>' +
-        '<div class="stack">' +
-        (buyOn ? '<div class="field control-group control-group--plain control-group--readout" data-feat="S63">' +   /* 2026-10-12：同建立組合包「購買條件」線框、讀數靠右 */
-          '<div class="field__label">' + esc(T('tb.rules.buy')) + '</div>' +
-          /* 墓碑 2026-10-16（D429）：bookyay 自動建立的組合包只畫唯讀讀數＋一句原因（D390 決定十九／二十，tb.rules.fix）那一支退場。 */
-          (c.locked ? '<p class="field__hint">' + esc(T('tb.rules.locked')) + '</p>' : '') +
-            c.TB.rulesHTML(b, c.def, c.et, T, { n: c.n, locked: c.locked, buyOnly: true }) +
-        '</div>' : '') +
-        (limOn ? limitsHTML(b) : '') +
+        '<div class="rules-group">' +
+          (buyOn ? '<div class="rules-group__row" data-feat="S63">' +
+            c.TB.rulesHTML(b, c.def, c.et, T, { n: c.n, locked: c.locked, buyOnly: true, group: true }) + '</div>' : '') +
+          (limOn ? limitsHTML(b) : '') +
+          '<div class="rules-group__sum" data-rg-sum></div>' +
         '</div>' +
       '</section>';
     }
@@ -2560,6 +2617,7 @@
         var ah = allocBox.querySelector('[data-bd-alloc-hint]');
         if (ah) { var ov = allocOver(b); ah.classList.toggle('fc-hint--over', ov); ah.textContent = ov ? T('cpp.bd.sp.alloc.over').replace('{n}', lockN(b)) : T('cpp.bd.sp.alloc.hint').replace('{n}', lockN(b)); }
       }
+      syncValloc(card, b);   /* 2026-10-21：多選項商品的逐選項分配 */
       /* 購買條件的預設跟著允許票種與每組張數變（限購換算成組）：焦點不在這一段時整段重畫 */
       var rulesSec = card.querySelector('[data-bd-sec="rules"]');
       if (rulesSec && !(document.activeElement && rulesSec.contains(document.activeElement))) {
@@ -2585,7 +2643,7 @@
     var SNAP_KEYS = ['name', 'desc', 'discount', 'discountOn', 'avail', 'cap', 'lockSets', 'lockAsk', 'perks', 'scope', 'cover', 'nameTouched',
                      'shown', 'saleOn', 'stack', 'codes'];
     /* D342：物件型欄位整份深拷貝（取消要還原到打開那一刻，不能跟著工作中的物件一起變） */
-    var SNAP_DEEP = ['sale', 'media', 'films', 'alloc', 'sched', 'rules', 'limits', 'codesNew'];   /* limits：2026-10-12 限購改接（UI-CHANGES 一百八十八） */
+    var SNAP_DEEP = ['sale', 'media', 'films', 'alloc', 'itemAlloc', 'sched', 'rules', 'limits', 'codesNew'];   /* limits：2026-10-12 限購改接（UI-CHANGES 一百八十八） */
     function snapOf(b) {
       var o = {};
       SNAP_KEYS.forEach(function (k) { o[k] = Array.isArray(b[k]) ? b[k].slice() : b[k]; });
@@ -3040,6 +3098,7 @@
         }
         var c = tbCtx(bb); if (c) c.TB.syncErrors(card, bb, c, T);
         limitsSync(card, bb);   /* 2026-10-12（UI-CHANGES 一百八十八）：限購的就地紅字 */
+        syncValloc(card, bb);   /* 2026-10-21：多選項商品的逐選項分配（每次重畫都是新節點，清單殼在這裡填） */
       });
 
       if (keep && keep.sel && !(o && o.blur)) {
@@ -3389,6 +3448,19 @@
         syncSplit(card, b); onChange(BUNDLES);
         return;
       }
+      /* 2026-10-21：多選項商品的逐選項分配輸入（清單列由 js/lock-alloc.js 畫，屬性前綴 sp） */
+      if (SPLIT && e.target.hasAttribute('data-sp-alloc-input')) {
+        var vch = e.target.closest('[data-sp-alloc-child]');
+        if (vch) {
+          var vpid = vch.getAttribute('data-sp-alloc-child'), vvi = Number(vch.getAttribute('data-sp-vi'));
+          var vraw = e.target.value.trim(), vn = vraw === '' ? null : Math.floor(Number(vraw));
+          b.itemAlloc = b.itemAlloc || {};
+          if (!b.itemAlloc[vpid]) b.itemAlloc[vpid] = {};
+          b.itemAlloc[vpid][vvi] = (vn === null || isNaN(vn) || vn <= 0) ? null : vn;
+        }
+        syncSplit(card, b); onChange(BUNDLES);
+        return;
+      }
       if (SPLIT && e.target.hasAttribute('data-bd-alloc')) {
         b.alloc = b.alloc || {};
         b.alloc[e.target.getAttribute('data-bd-alloc')] = e.target.value;
@@ -3612,7 +3684,7 @@
         if (lk) {
           if (lk.disabled) return;
           b.lockAsk = lk.getAttribute('data-bd-lock');
-          if (b.lockAsk === 'no') { b.lockSets = ''; b.alloc = {}; }
+          if (b.lockAsk === 'no') { b.lockSets = ''; b.alloc = {}; b.itemAlloc = {}; }
           render({ blur: true }); onChange(BUNDLES);
           return;
         }

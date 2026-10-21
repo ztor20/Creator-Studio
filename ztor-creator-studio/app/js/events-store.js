@@ -104,7 +104,7 @@
       /* 早到政策（2026-08-11 與建立流程同步）：比自己那張票的入場時間早到的人怎麼辦。
          沒寫的活動預設 'warn'（仍可入場）；這一場示範 'block'。 */
       early: 'block',
-      /* earlyMin＝比開放入場提早幾分鐘（2026-08-11 新欄，沒寫＝無）。2026-09-29：手續費種子 `fee` 清掉（D316 已退場，D327 決定八）。
+      /* 墓碑 2026-10-21（D462）：門票的 earlyMin（比提前入場時間再早幾分鐘，2026-08-11 新欄）整欄退場，提前入場只在場次層（sessions[].doors／early）。2026-09-29：手續費種子 `fee` 清掉（D316 已退場，D327 決定八）。
          hidden＝顯示開關關閉（2026-09-29 D328 新欄，沒寫＝顯示）。墓碑 2026-10-05（D353）：desc（門票簡介）整欄移除。
          sale＝限時折扣 { pct, from, to }（2026-09-29 D329 新欄；D417 起 bookyay 早鳥不帶入）。
          墓碑 2026-10-16（D429）：hideFix（bookyay 套票轉出的 1 人票、鎖定為隱藏）與組合包的 fix（bookyay 自動建立、整組鎖定）兩欄退場——
@@ -115,7 +115,7 @@
         /* 墓碑 2026-09-23（D315）：`feeException`（D311 的逐門票例外平台費率，這一筆原本
            示範「Admin 為這張票談了 3%」）隨例外整組退場——平台費只剩 Admin 在費率設定頁
            設的兩層（General 預設 × 逐 creator 覆寫），門票資料不再帶自己的費率。 */
-        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 100, earlyMin: 30, override: { USD: 135 } },
+        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 100, override: { USD: 135 } },
         { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 200 },
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 300 }
       ],
@@ -224,7 +224,7 @@
       doors: '18:30',
       tiers: [
         /* reserved＝下單未付款佔走的（2026-08-11 新欄，示範營運列表用）。 */
-        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 40, earlyMin: 30, reserved: 6 },
+        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 40, reserved: 6 },
         { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 60, reserved: 11 },
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 100 }
       ],

@@ -13,6 +13,70 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-21（二百八十四）· D462 單張門票的提前入場整組移除，只留場次層（B 反饋，上游 D462 決定）
+
+**標籤**：release2.4、最終版
+
+使用者 2026-10-21（D462）：「票務上的『提前入場時間』移除，只留場次上的『提前入場時間』即可。」場次層（建立活動步驟 3 每一場的「提前入場時間」開關＋時間＋「早於提前入場時間入場」二選一，D396／D365）與 bookyay 帶入場次層的邏輯一字不動。
+
+**B 反饋（C 撤除性質：欄位整組退場）**
+
+- `create-event.html`：單張門票彈窗的「提前入場時間」區塊整段移除（提前入場分鐘欄、「跟隨場次／自訂」二選一與自訂後的「仍可入場／不能入場」、bookyay 票鎖定時的兩格唯讀＋早到處理讀數）；票卡的「提前入場」事實列移除；草稿、commitTier 不再讀寫 `earlymin`／`early`；彈窗由四區塊變三區塊（價格與數量／購買條件／上架與顯示，基本區無標題列）。連帶移除 `earlyHintText`、`tierEarlyPolicyHTML`、`syncEarlyHint`、`earlyFactValue`、`entryLocked`、`tierEntryLockedHTML`、`sessDoors`、`subtractMinutes`、`earlyPolicyLabel`，以及對應的委派分支；頁內 i18n `d.tm.sec.entry`、`d.tier.early*`、`d.early.mode.*`、`d.tier.early.bky*`、`d.early.policy.hint` 刪除留墓碑。場次層的 `d.early.policy`／`warn`／`block`／`.sub`、`d.doors.*`、`d.min` 保留。
+- `event-detail.html`：單張門票彈窗的「提前入場時間」區塊（`#ed-tm-entry-sec`，含 bookyay 票唯讀的「跟隨場次」兩格與早到處理選項卡）整段移除；票卡「提前入場」事實列、`earlyHintFor`、檢視態讀數、儲存時寫回 `earlyMin` 全部移除；新增票的預設不再帶 `earlyMin`。
+- `scanner.html`：結果卡與兩顆示範鈕（早到：仍可入場／早到：不能入場）改成只看所屬場次——示範票的 `early` 只剩 `{ open, policy }`，最早可入場＝場次的提前入場時間；結果卡由四列縮成兩列（提前入場時間、早於提前入場時間），備註句改成「還沒到這一場的提前入場時間」；示範行為不變（Mina 提示後可核銷、Leo 擋下、Ivy 已過時間走一般流程）。
+- `js/events-store.js`：門票種子的 `earlyMin: 30`（兩筆）移除；場次層的 `doors`／`early` 照舊。
+- `js/i18n.js`：`ed.tix.early*`、`ed.tm.sec.entry`、`ed.tm.doors.*`、`ed.tm.early.*`、`ed.early.policy.hint`、`sc.early.min*`／`earliest`／`own`／`follow` 刪除留墓碑；`sc.early.open`、`sc.early.policy`、`sc.note.early.*` 改字（門票→場次）。
+- `design-system.md`／`design-system.html`／`design-components.html`：單張門票彈窗敘述由「四區塊含入場」改為三區塊；DS 頁輕標題（`.form-section__title--quiet`）示範原本借用「入場／提前入場（分鐘）」，改成中性的「備註」示意（元件 CSS 不動、目前沒有產品頁使用，已在說明註記）；`design-components.html` 以 `scripts/gen_design_gallery.py` 重生。
+
+**不變**：場次層一切；粉絲端不顯示提前入場資訊（D397 決定四）；組合包與票務商品的取貨掃碼。
+
+## 2026-10-21（二百八十三）· 票務組合包「上架與開賣」第一行拿掉（B 反饋）
+
+**標籤**：release2.4、最終版
+
+使用者 2026-10-21：票務組合包「上架與開賣」第一行（草稿）在 UI 上不必要。
+
+**B 反饋**
+
+- `js/bundle-editor.js` `secListingSplitHTML`（活動裡的票務組合包彈窗）與 `create-bundle.html` `[data-cb-listing-follow]`：拿掉第一行「跟著活動＋活動名＋活動狀態徽章（草稿等）」與活動為草稿時的說明句；`create-bundle.html` 的 `[data-cb-follow-ev]`／`[data-cb-follow-badge]` 填值一併移除。
+- `js/i18n.js`：`cpp.bd.sp.follow`、`cpp.bd.sp.follow.draft` 刪除留墓碑。
+- 不變：跟隨活動的規則與四個時間格（上架、下架、開賣、停售「跟隨活動／另設」）、顯示設定都保留，只是不再多佔一行。
+
+## 2026-10-21（二百八十二）· 票務組合包「購買條件與限購」整併成一個群組（A spec 呈現、B 反饋）
+
+**標籤**：release2.4
+
+使用者 2026-10-21：「購買條件與限購」太零散。實際看過三處（建立活動第 5 步組合包彈窗 `layout:'split'`、`create-bundle.html` 選含票券成員、`bundle-detail.html` 組合設定分頁）後，零散在這幾點：節標題「購買條件與限購」底下又有「購買條件」與「限購」兩層標題（有的頁還多一個「誰可以買」小標）；購買條件與限購是兩個獨立線框，圓角、內距、邊線、間距都不同；購買條件的讀數（「不限」）與調整入口（跟隨開關）分在兩個位置；限購的標題、一句說明、欄位再各占一層。只改呈現，不改產品規則（D342／D398／D456：條件取所含門票最嚴、限購預設不限且獨立計算、版本閘 S63／S94 的顯隱邏輯都保留）。
+
+**A spec（呈現）**
+
+- 新元件 Rules group（`ds-components/rules-group.css`，首次出現就 promote）：同一個細框內依序放條件列（左＝名稱＋來源說明、右＝讀數＋跟隨開關同一排；關掉跟隨或純商品條件清單時編輯內容接在列下）→ 限購列（左＝名稱＋兩句說明、右＝輸入框）→ 底部一句彙總「目前生效：購買條件「…」、限購「…」」。標題只在節標題出現一次，群組內沒有小標題或第二個外框。窄容器讀數與入口落到名稱下方。
+- `js/ticket-bundle.js`：`rulesHTML(…, { group:true })` 畫條件那一列（跟隨：讀數＋開關；已調整：開關關＋展開設定），新增 `rgRowHTML()`（純商品唯讀「不限」一列）與 `buyLine()`（彙總句用的購買條件一句讀數）。
+- `js/purchase-limits.js`：`blockHTML(…, { group:true })` 畫限購那一列（`data-pl-block` 掛在列上，既有 `onInput`／`syncErrors` 選擇器照舊成立），新增 `sumText()`／`syncSum()`。
+- 三個消費點同步：`create-bundle.html`（唯讀；彙總句旁保留「照預設帶入，建立後可到組合包細節頁調整」）、`bundle-detail.html`（可編輯；純商品的條件清單變成條件列的 body；輸入購買條件或限購時彙總句就地更新）、`js/bundle-editor.js` 的 `secRulesSplitHTML`／`limitsHTML`／`limitsSync`。`rg.buy`、`rg.sum`、`rg.sum.lim` 三個新字串（`js/i18n.js`，不動 `pl.*` 段）。
+- 文件同步：`design-system.md` §4.240（含元件總表一列、§4.234 Limit set 補註）、`design-system.html`（`<link>`、TOC、元件總表、§4.240 兩個 demo）、重生 `design-components.html`、`ds-index.md`。
+
+**舊結構退場（墓碑）**：`create-bundle.html`／`bundle-detail.html` 的 `.control-group--plain.control-group--readout` 購買條件線框與 `.bd-sub`「誰可以買」小標、`[data-bd-conds]` 外層 `.stack` 退場；限購 `blockHTML` 的 `title`／預設變體（`.limit-set--bundle` 自帶標題與外框）仍在 `limit-set.css`，目前沒有消費者，只留 DS demo。
+
+**驗證**：`?version=full` 與 `?version=release2.4` 開 create-bundle（含票券成員）、bundle-detail（含票券、編輯態切跟隨、輸入限購）、create-event 第 5 步彈窗；375 寬無橫向捲動；Console 0 錯誤。
+
+## 2026-10-21（二百八十一）· 票務組合包「數量鎖定」補上多選項商品成員的逐選項分配（A spec）
+
+**標籤**：release2.4
+
+規格 5.1.5.4 「鎖定套數」與 D266（修訂 D255／D258）：成員若是多選項（Variant）商品，已鎖定量＝N × 每套用量（唯讀），另可展開「逐選項組合」選填分配——指定哪些選項組合各鎖幾件，每格不得大於該組合當下沒被鎖定的量、各格合計不得超過該成員的已鎖定量；純電子商店組合包與含票券的組合包同一套規則。`create-bundle.html` 與 `bundle-detail.html` 早已有這個 UI，建立活動第 5 步的組合包彈窗（`layout:'split'`）的 `b.alloc` 只做「逐票種分配」，多選項商品成員缺這一塊。
+
+**A spec**
+
+- `js/lock-alloc.js`（新，`window.ZtorLockAlloc`）：把 create-bundle、bundle-detail 各抄一份的 `renderAlloc`／`refreshAlloc` 列迴圈抽成共用（`render`／`refresh`，屬性前綴 `cb`／`bd`／`sp` 區分消費頁），兩頁改呼叫它，行為不變。
+- `js/bundle-editor.js`（SPLIT）：數量卡「鎖定套數」底下新增「指定鎖定項目」清單（沿用 `.lockset` 元件與 `bd.lock.*`／`stock.*` 文案），**只在鎖定套數＞0 且成員含多選項商品時出現**，只列多選項成員（單一選項成員的已鎖定量沒有可填的東西）。資料 `b.itemAlloc = { 商品 id: { 選項組合索引: 件數 } }`（形狀同 `ListingState` 的 bundle.alloc，與逐票種分配的 `b.alloc` 分開存）；進快照（取消還原）與種子讀回。每格上限、合計上限都問 `ListingState.bundleAllocOf`；超額擋存，footer 說原因（`cpp.bd.sp.why.valloc`）；選「不鎖定」連同逐選項分配一併清空。
+- `create-event.html` 補載入 `js/listing-state.js`（早於 products-store）、`js/row-disclosure.js`、`js/lock-alloc.js` 與 `row-disclosure.css`、`variant-builder.css`。
+- `design-system.md` §4.210 補 JS 元件說明與消費頁。
+
+**B 反饋（順手修一個既有誤判）**：`js/listing-state.js` `bundleAllocOf` 的每格上限原本用 `variantFree + own`，而 `variantFree` 夾在 0，本組合自己填超量（已由 `applyBundleLock` 寫進規格的鎖定）之後上限就等於填的值，單格超過可鎖定量永遠不會標紅（create-bundle、bundle-detail 都中）。改為 `庫存 − 別的管道已鎖`，有效狀態下數字不變。
+
+**驗證**：`?version=full`、`?version=release2.4` 開 create-event 第 5 步彈窗，加多選項商品（26MS T-Shirt 白，M／L／XL）→ 鎖定 4～5 組 → 展開逐選項輸入：合計超過「超過鎖定量」紅字＋完成鈕停用＋footer 原因、單格超過該組合未鎖定量紅框、改回合法值恢復；完成後重開讀回數字；create-bundle、bundle-detail（signing-set，persona default）列與數字照舊；Console 0 錯誤。
+
 ## 2026-10-20（二百八十）· release2.4 直連網址也進不去自建活動（B 反饋）
 
 **標籤**：release2.4

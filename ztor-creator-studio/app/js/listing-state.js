@@ -333,7 +333,9 @@
     (product && product.variants || []).forEach(function (v, vi) {
       var q = lockVal(a[vi]);
       var own = variantLockOf(v, { bundle: bundle.id }) || 0;
-      var max = variantFree(v) + own;
+      /* 上限＝該組合沒被「別的管道」鎖走的量。不能用 variantFree + own：variantFree 會夾在 0，本組合填超量（已由 applyBundleLock 寫進 v.locks）
+         之後 free 被夾成 0、max 就等於 own，超量的格子永遠不算錯（2026-10-21 修；SPLIT 組合包彈窗沿用同一個函式） */
+      var max = Math.max(0, variantStock(v) - (variantLockedTotal(v) - own));
       if (q !== null) assigned += q;
       rows.push({ vi: vi, qty: q, max: max, bad: q !== null && q > max });
     });

@@ -1,0 +1,85 @@
+/* ============================================================
+   rules-group.css · 購買條件群組（2026-10-21，UI-CHANGES 二百八十二；使用者反饋「購買條件與限購太零散」）
+   ------------------------------------------------------------
+   原本「購買條件」（跟隨所含門票）與「限購」是同一節裡兩個獨立線框：各有自己的標題、讀數與調整入口，
+   框的圓角、內距、邊線也不一致。整併成同一個容器：
+
+     一個細框（同價格階梯 price-ladder 的框）
+       購買條件那一列    左＝名稱＋來源說明、右＝讀數＋調整入口（跟隨開關）同一排；
+                         展開的編輯內容（條件清單、跟隨關掉後的設定）接在這一列底下 __body
+       限購那一列        左＝名稱＋兩句說明、右＝輸入框
+       底部一句彙總      __sum「目前生效：購買條件「…」、限購「…」」，隨上面任一列的改動就地更新
+     節標題只在區段標題出現一次（購買條件與限購），群組內不再有小標題或第二個外框。
+
+   產出方式：容器與各列的外殼寫在消費頁的 markup；購買條件那一列的內容由 js/ticket-bundle.js rulesHTML({ group:true })／rgRowHTML 產生，
+   限購那一列由 js/purchase-limits.js blockHTML(…, { group:true }) 產生，彙總句由 purchase-limits.syncSum 寫入。
+
+   anatomy
+     .rules-group                       整個群組的細框（單一外框、列與列之間細線）
+       .rules-group__row                一列；flex 可換行（窄容器時讀數與入口落到名稱下方）
+         .rules-group__k                左欄：名稱 __t（14）＋ 說明 __s（12，可兩句）
+         .rules-group__v                右欄：讀數 __val ＋ 調整入口 __act（文字＋開關）或輸入框 __input
+         .rules-group__body             展開內容：獨佔一行、吃滿整列（條件清單、跟隨關掉後的設定、就地錯誤）
+         .rules-group__err              就地錯誤句：獨佔一行
+       .rules-group__sum                底部一句彙總（12，muted）；可再帶 .rules-group__sum-note 一句附註（建立組合時「照預設帶入…」）
+     [data-rg-slot]                     頁面把 TB／PL 的產出塞進列時用的殼：display:contents，產出的 __k／__v／__body 直接成為列的子元素
+
+   surface：坐在 form-section--outlined 卡面（白／灰皆可，框用 --border-soft）。
+   消費：create-bundle.html（數量之後的「購買條件與限購」卡）、bundle-detail.html（組合設定分頁）、js/bundle-editor.js（建立活動第 5 步組合包彈窗 layout:'split'）
+   ============================================================ */
+.rules-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.rules-group__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--sp-16);
+  row-gap: var(--sp-8);
+  min-width: 0;
+  padding: var(--sp-14) var(--sp-16);
+  border-bottom: 1px solid var(--border-soft);
+}
+.rules-group__row[hidden] { display: none; }
+.rules-group__row[data-pl-block] { align-items: flex-start; }
+[data-rg-slot] { display: contents; }
+[data-rg-slot][hidden] { display: none; }
+
+.rules-group__k { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+.rules-group__t { font-size: var(--fs-14); color: var(--foreground); }
+.rules-group__s { font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-relaxed); }
+
+.rules-group__v { flex: none; display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-12); margin-left: auto; min-width: 0; }
+.rules-group__val { font-size: var(--fs-14); color: var(--foreground); text-align: right; }
+.rules-group__act { display: inline-flex; align-items: center; gap: var(--sp-8); font-size: var(--fs-12); color: var(--muted-foreground); }
+.rules-group__input { width: 160px; max-width: 100%; }
+
+.rules-group__body { flex: 1 1 100%; min-width: 0; }
+.rules-group__err { flex: 1 1 100%; margin: 0; }
+.rules-group__err[hidden] { display: none; }
+.rules-group__body:empty,
+.rules-group__body:not(:has(> :not([hidden]))) { display: none; }   /* 只剩隱藏的就地錯誤句時不佔 row-gap */
+
+.rules-group__sum {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-12) var(--sp-16);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  line-height: var(--lh-relaxed);
+}
+.rules-group__sum[hidden] { display: none; }
+.rules-group__sum-note[hidden] { display: none; }
+
+/* 窄容器（手機）：讀數與入口落到名稱下方、輸入框吃滿 */
+@media (max-width: 480px) {
+  .rules-group__v { flex: 1 1 100%; justify-content: flex-start; margin-left: 0; }
+  .rules-group__val { text-align: left; }
+  .rules-group__input { width: 100%; }
+}

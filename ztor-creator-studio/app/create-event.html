@@ -62,11 +62,14 @@
 <link rel="stylesheet" href="ds-components/form-ask.css?v=r2.2"><!-- 2026-10-12 改版：鎖定／販售上限問句、分類標、最多可賣讀數 -->
 <link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- 2026-10-12（UI-CHANGES 一百八十八）：第 5 步組合包彈窗的限購改接 js/purchase-limits.js（「限購」＋「跟隨成員預設」開關＋三列） -->
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2"><!-- 同上：購買條件與限購兩組的直向節奏（同 create-bundle [data-cb-rules]） -->
+<link rel="stylesheet" href="ds-components/rules-group.css?v=r2.2"><!-- 2026-10-21：購買條件與限購整併成一個群組（組合包彈窗第 5 段） -->
 <link rel="stylesheet" href="ds-components/stepper.css?v=r2.2">   <!-- 2026-09-18：票券清單表的張數步進器（.zstep） -->
 <!-- 2026-09-21 第 6 步兩欄版型（bundle-editor `layout:'split'`）：語意句 insight-row、鎖定套數 lock-sets、
      右欄「粉絲看到的」預覽卡 bundle-preview-card；markup 由 js/bundle-editor.js 動態產生，check 15 掃不到、要手動連 -->
 <link rel="stylesheet" href="ds-components/insight-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/row-disclosure.css?v=r2.2"><!-- 2026-10-21：逐選項分配的展開列（多選項商品成員） -->
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=r2.2"><!-- 同上：選項組合列的唯讀縮圖 .variant-thumb--ro -->
 <link rel="stylesheet" href="ds-components/follow-field.css?v=r2.2"><!-- D342：票務商品上架與開賣「跟隨活動／另設」 -->
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2"><!-- D342：第 6 步電影關聯的選片器（partials/film-picker 注入 .tag-input） -->
 <link rel="stylesheet" href="ds-components/bundle-preview-card.css?v=r2.2">
@@ -1386,6 +1389,7 @@
 <script src="js/link-field.js?v=r2.2"></script>   <!-- D340：顯示設定隱藏時的活動連結（複製／重置） -->
 <script src="js/currency.js?v=r2.2"></script>   <!-- D316：CE_BASE_CURRENCY 改讀 window.ztorCurrency.CREATOR（創作者幣別） -->
 <!-- 套組銷售（步驟 5）掛共用套組編輯器；它從 products-store 取既有商品當候選 -->
+<script src="js/listing-state.js?v=r2.2"></script><!-- 2026-10-21：逐選項分配的數字（須早於 products-store：store 在 IIFE 裡抓 ListingState） -->
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="partials/stepper.js?v=r2.2"></script>   <!-- 2026-09-18：.zstep 步進行為（票券清單表的張數） -->
 <script src="js/section-tabs.js?v=r2.2"></script>   <!-- 2026-09-21：組合包彈窗的分節分頁行為，bundle-editor 每次 render 後呼叫 init -->
@@ -1395,6 +1399,8 @@
 <script src="partials/film-picker.js?v=r2.2"></script>   <!-- D342：第 6 步收電影關聯（5.1.5.4 F10），共用選片器 -->
 <script src="js/discount-codes-store.js?v=r2.2"></script><!-- D458：優惠碼端資料 -->
 <script src="js/code-picker.js?v=r2.2"></script>
+<script src="js/row-disclosure.js?v=r2.2"></script>   <!-- 2026-10-21：逐選項分配清單的展開把手 -->
+<script src="js/lock-alloc.js?v=r2.2"></script>   <!-- 2026-10-21：指定鎖定項目清單（與 create-bundle、bundle-detail 共用） -->
 <script src="js/bundle-editor.js?v=r2.2"></script>
 <script>
 (function () {
@@ -2873,8 +2879,7 @@
     /* 墓碑 2026-09-23（D316）：票不再帶 `fee`（加在票價之上、由粉絲負擔的手續費）。 */
     t.tname = (d.tname || "").trim();
     t.img = (d.img || "").trim();                       // 留空＝跟著活動主視覺走
-    t.earlymin = String(d.earlymin || "").trim();        // 留空或 0＝跟著場次的開放入場時間
-    t.early = (d.early || "").trim();                    // 留空＝跟著這一場的設定
+    /* 墓碑 2026-10-21（D462）：門票層的 earlymin（提前入場分鐘）與 early（早於提前入場時間的自訂處理）整組退場，提前入場只在場次層。 */
     /* D328（5.1.6.1 F22 基本區）：顯示開關（預設顯示；關＝隱藏：活動頁票價清單不列、不能單張買，仍可當組合包的票券成員）。
        墓碑 2026-10-05（D353）：門票簡介（t.desc）整欄移除，基本區剩門票名稱、門票圖片與顯示開關。 */
     t.hidden = !!d.hidden;
@@ -3230,10 +3235,7 @@
           (Number(dv.price) === 0 ? esc(T("ce.tier.free", "Free ticket")) : '$' + esc(dv.price)) + '</dd></div>' +
         '<div class="tier-card__fact"><dt>' + esc(T("ce.tier.qty", "Quantity")) + '</dt><dd>' + esc(dv.qty) + '</dd></div>' +
         /* 墓碑 2026-09-23（D316）：卡面的「手續費」事實列隨欄位退場。 */
-        /* 提前入場只在真的設了才出現（2026-08-11 使用者指示）：跟場次一樣的票不用特別標，
-           掃一眼票務清單，看得到這一列的才是「跟其他票不一樣、能早進」的那幾張。 */
-        (Number(dv.earlymin) > 0 && sessDoors(t) ? '<div class="tier-card__fact"><dt>' + esc(dT("d.tier.early.fact")) + '</dt><dd>' +
-          esc(earlyFactValue(t, dv)) + '</dd></div>' : '') +
+        /* 墓碑 2026-10-21（D462）：卡面的「提前入場」事實列隨門票層提前入場退場。 */
         (buySummary(t) ? '<div class="tier-card__fact"><dt>' + esc(dT("d.tier.buycond")) + '</dt><dd>' + esc(buySummary(t)) + '</dd></div>' : '') +
         (capSummary(t) ? '<div class="tier-card__fact"><dt>' + esc(dT("d.rule.cap")) + '</dt><dd>' + esc(capSummary(t)) + '</dd></div>' : '') +
         /* 折扣讀數可能有兩三段（限時價・之後價・分級價），每段自成一行（.tier-card__line），不撐破卡寬 */
@@ -3354,7 +3356,7 @@
            bookyay 帶入時整個不出現（2026-08-09 使用者裁決）：票務組合由 bookyay 決定，
            要多一種賣法就從既有的票分票出去，不是在這裡憑空多一張。 */
         /* 2026-10-09 D390 決定八（修訂上段 2026-08-09 的「bookyay 帶入時整個不出現」）：bookyay 活動在建立流程也能新增門票，
-           與活動詳情一致；新增的票不是 bookyay 帶入的票（價格、張數可改），只有入場照 D386 鎖定跟隨場次（entryLocked）。 */
+           與活動詳情一致；新增的票不是 bookyay 帶入的票（價格、張數可改），（D462 起門票沒有入場區，entryLocked 退場）。 */
         /* 2026-10-13 D410 決定一（取代上段 D390 決定八）：bookyay 匯入的活動門票只來自 bookyay，票種門票與獨立票都不能另外新增——
            新增格對 bookyay 活動整個不出現（隱藏，不是停用），與活動詳情一致。 */
         '<div class="tier-grid">' + tiersOf(ss.id).map(tierCardHTML).join("") +
@@ -3385,18 +3387,7 @@
     return own && own !== auto ? dT("d.tier.tname.orig").replace("{name}", auto) : "";
   }
 
-  /* 提前入場（2026-08-11 使用者指示）：同一場次，不同票種可以有不同的入場時間——
-     VIP 想比一般票早半小時進場之類。原始構想是直接填「幾點入場」，但那樣一場裡
-     每張票各自寫一個絕對時間，讀的人要自己心算跟場次的開放入場差多少、也容易跟
-     「場次的開放入場」搞混，誤填成活動幾點開始。改成填「提前幾分鐘」（相對場次
-     的開放入場時間，不是相對開始時間）——同一種輸入方式，但這格問的是差距、不是
-     另一個絕對時間，且畫面上把換算後的實際時間一併顯示，不必自己心算
-     （2026-08-11 使用者指示：分鐘數要保留，換算後的時間也要顯示）。
-     留空或 0＝跟著場次的開放入場時間，不用整場每張票都手動填一次。 */
-  function sessDoors(t) {
-    const s = series.list.find(x => x.id === t.sess);
-    return (s && s.doors || "").trim();
-  }
+  /* 墓碑 2026-10-21（D462）：「提前入場（分鐘）」門票層設定（2026-08-11 使用者指示，VIP 比一般票早進場）整組退場，sessDoors 隨之移除。 */
   /* HH:MM ↔ 當日分鐘數。跨到前一天就繞回去（早 8 小時入場這種極端值也算得出來）。 */
   const hhmmToMin = hhmm => {
     const m = /^(\d{1,2}):(\d{2})$/.exec(String(hhmm == null ? "" : hhmm).trim());
@@ -3406,65 +3397,9 @@
     const t = ((Math.round(v) % 1440) + 1440) % 1440;
     return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0");
   };
-  function subtractMinutes(hhmm, mins) {
-    const base = hhmmToMin(hhmm);
-    return base == null ? "" : minToHhmm(base - (Number(mins) || 0));
-  }
-  function earlyHintText(t, d) {
-    const mins = Number(d.earlymin) || 0;
-    const doors = sessDoors(t);
-    if (!doors) return dT("d.tier.early.hint.nodoors");   // D396：場次沒開提前入場時間＝不適用（欄位停用）
-    if (mins <= 0) return dT("d.tier.early.hint.default").replace("{doors}", doors);
-    return dT("d.tier.early.hint.set").replace("{n}", mins).replace("{time}", subtractMinutes(doors, mins));
-  }
-  /* 早於開放時間入場：票種層的複寫（2026-08-11 使用者指示「預設是場次裡的設定，
-     這裡可以再次設定複寫」）。
-     2026-09-22（D311）改成**明確的二選一**：「跟隨場次（顯示場次現在設的那一個）／自訂」，
-     選了自訂才出現「仍可入場／不能入場」。此前靠一句 hint 暗示現在是繼承還是複寫、再用
-     一顆「改回跟著場次」還原——繼承是這一格的兩個答案之一，就該是一個可選的選項，
-     不是藏在說明句裡的狀態。`t.early` 留空＝跟著那一場走，資料語意不變。
-     場次沒有開放入場時間時整塊不出現：沒有門檻就沒有「早於」可言（與場次那邊同一條規則）。 */
+  /* 墓碑 2026-10-21（D462）：earlyHintText（換算說明）、tierEarlyPolicyHTML（跟隨場次／自訂二選一）、syncEarlyHint、
+     earlyFactValue（卡面短句）隨門票層提前入場退場；門票不再有自己的提前入場設定，一律以所屬場次為準（D396）。 */
   const sessOf = t => series.list.find(x => x.id === t.sess) || null;
-  const earlyPolicyLabel = v => dT(v === "block" ? "d.early.block" : "d.early.warn");
-  function tierEarlyPolicyHTML(t, d) {
-    const s = sessOf(t);
-    if (!s || !((s.doors || "").trim() || String(s.doorsMin == null ? "" : s.doorsMin).trim())) return "";
-    const own = (d.early || "").trim();
-    const eff = own || s.early || "warn";
-    const card = (attr, v, active, title, sub) => '<button type="button" class="segmented__btn' +
-      (active ? " segmented__btn--active" : "") + '" role="radio" aria-checked="' +
-      (active ? "true" : "false") + '" ' + attr + '="' + v + '">' +
-      '<span class="radio-card__text">' +
-        '<span class="radio-card__title">' + esc(title) + '</span>' +
-        (sub ? '<span class="radio-card__sub">' + esc(sub) + '</span>' : '') +
-      '</span></button>';
-    return '<div class="field">' +
-      '<div class="field__label">' + esc(dT("d.early.policy")) + '</div>' +
-      '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(dT("d.early.policy")) + '">' +
-        card("data-tier-early-mode", "follow", !own, dT("d.early.mode.follow"),
-             earlyPolicyLabel(s.early || "warn")) +
-        card("data-tier-early-mode", "custom", !!own, dT("d.early.mode.custom"), "") +
-      '</div>' +
-      (own ? '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(dT("d.early.policy")) + '">' +
-        card("data-tier-early", "warn", eff === "warn", dT("d.early.warn"), dT("d.early.warn.sub")) +
-        card("data-tier-early", "block", eff === "block", dT("d.early.block"), dT("d.early.block.sub")) +
-      '</div>' : "") +
-    '</div>';
-  }
-
-  function syncEarlyHint(card, t) {
-    const hint = card && card.querySelector('[data-tier-hint="earlymin"]');
-    if (hint) hint.textContent = earlyHintText(t, drafts[t.id] || {});
-  }
-  /* 卡面那一列（2026-08-11）：跟彈窗裡的常駐說明用同一套換算，只是措辭改成短句
-     （卡面空間有限），場次還沒填開放入場時間就只寫分鐘數、不硬湊一個時間出來。 */
-  function earlyFactValue(t, dv) {
-    const mins = Number(dv.earlymin) || 0;
-    const doors = sessDoors(t);
-    return doors
-      ? dT("d.tier.early.fact.value").replace("{n}", mins).replace("{time}", subtractMinutes(doors, mins))
-      : dT("d.tier.early.fact.value.nodoors").replace("{n}", mins);
-  }
 
   /* ---- 平台費（2026-09-22 D311 建立，2026-09-23 D315 收回一層）--------------------
      一張票的費率＝**該 creator 的覆寫 → General** 兩層解析，解析本身住在
@@ -3626,8 +3561,8 @@
     return tierSecHTML("d.tier.buycond", '<div class="tier-card__rules" data-rules-for="' + t.id + '">' + condsHTML(rulesOf(t), t.id) + '</div>');
   }
 
-  /* 單欄四區塊（2026-09-22，D311）：基本 → 價格與數量 → 入場 → 購買條件。
-     順序＝「這是什麼票 → 賣多少、賣幾張 → 幾點能進 → 誰能買」，跟創作者腦子裡的句子同序。
+  /* 單欄區塊（2026-09-22，D311；2026-10-21 D462 起沒有「入場」區）：基本 → 價格與數量 → 購買條件。
+     順序＝「這是什麼票 → 賣多少、賣幾張 → 誰能買」，跟創作者腦子裡的句子同序。
      左右兩欄與「設定／購買條件」兩個分頁同日退場：圖片縮成一格就不必再開一欄，
      而誰能買本來就是這張票的設定之一、不是另一件事。 */
   function tierModalHTML(t, d) {
@@ -3642,56 +3577,13 @@
                           { phKey: "d.tier.tname.ph", phFb: "", opt: true, hint: tnameHint(t, d) })) +
         tierImgFieldHTML(t, d)) +
       tierPriceSecHTML(t, d) +
-      (entryLocked(t) ? tierEntryLockedHTML(t) : tierSecHTML("d.tm.sec.entry",
-        /* 提前入場（2026-08-11 使用者指示，見上方 sessDoors／earlyHintText 說明）：
-           填的是分鐘數，換算後的實際時間顯示在它的常駐說明裡（即時算，不另存一份時間
-           字串——場次的開放入場一改，這裡自動跟上）。 */
-        tierFieldHTML("earlymin", "d.tier.early", "Early entry", d.earlymin == null ? "" : d.earlymin,
-                      { phKey: "d.tier.early.ph", phFb: "0", num: true, min0: true, opt: true,
-                        off: !sessDoors(t),   // D396：場次沒開提前入場時間＝沒有基準時間，票的提前入場不適用
-                        hint: earlyHintText(t, d) }) +
-        tierEarlyPolicyHTML(t, d))) +
       tierRulesSecHTML(t, d) +
       /* 2026-10-12 使用者指示：顯示開關自成一區「上架與顯示」，不再放在基本區裡。
          區塊整段掛與開關同一個功能標記（2026-10-15）：開關在版本外被收起時，不留一個只有標題的空區塊。 */
       tierSecHTML("d.tm.sec.show", tierShowRowHTML(t, d))
         .replace("<section ", '<section data-feat="' + (bkyOn ? "S92" : "S55") + '" ');
   }
-  /* 入場區的 bookyay 鎖定（D385 決定三，2026-10-09；5.1.6.1 F21「過早入場 → 開放入場」末項、F22 入場區）：
-     bookyay 帶入的票（t.fix）提前入場與早於開放時間的處理一律跟隨場次、鎖定——不給輸入框與「自訂」，
-     改成兩列唯讀讀數（同價格與數量區的 bookyay 唯讀做法），區塊標題旁一枚來源徽章。
-     場次的開放入場本身由 bookyay 的過早入場帶入並鎖定（D365）；沒有開放入場時只寫一句「跟隨場次」。 */
-  /* D386 決定一／D390 決定八：bookyay 活動在建立流程另外新增的票（含獨立票、含新增中的那一張）入場同樣鎖定跟隨場次——
-     看活動來源（bkyOn），不只看這張票是不是 bookyay 帶入的（t.fix）。bkyOn 宣告在後段，包 try 避開 TDZ。 */
-  function entryLocked(t) {
-    if (t && t.fix) return true;
-    try { return !!bkyOn; } catch (e) { return false; }
-  }
-  function tierEntryLockedHTML(t) {
-    /* 2026-10-12 使用者：「跟隨場次的設定應該反映在 UI 上，不要用文字說明」——鎖定時直接畫出這一場的提前入場設定
-       （時間、開演前幾分鐘，與場次步驟同樣兩格，停用）＋早於提前入場時間入場的選項卡，不再寫「跟隨場次——提前入場時間 16:30」。
-       標題與欄名照場次步驟的用詞。 */
-    const s = sessOf(t) || {};
-    const doors = sessDoors(t);
-    const mins = s.doorsMin == null ? "" : s.doorsMin;
-    const card = (active, title, sub) => '<button type="button" disabled class="segmented__btn' + (active ? " segmented__btn--active" : "") +
-      '" role="radio" aria-checked="' + (active ? "true" : "false") + '"><span class="radio-card__text"><span class="radio-card__title">' +
-      esc(title) + '</span>' + (sub ? '<span class="radio-card__sub">' + esc(sub) + '</span>' : '') + '</span></button>';
-    return tierSecHTML("d.tm.sec.entry",
-      '<div class="form-grid">' +
-        '<div class="field is-source-locked"><label class="field__label"><span>' + esc(dT("d.doors.at")) + '</span> ' + srcChip() + '</label>' +
-          '<input class="input" type="time" value="' + esc(doors || "") + '" disabled></div>' +
-        '<div class="field is-source-locked"><label class="field__label"><span>' + esc(dT("d.doors.before")) + '</span> ' + srcChip() + '</label>' +
-          '<span class="amount-field amount-field--suffix amount-field--readonly">' +
-            '<input class="input amount-field__input" type="number" value="' + esc(mins) + '" placeholder="0" disabled>' +
-            '<span class="amount-field__unit">' + esc(dT("d.min")) + '</span></span></div>' +
-      '</div>' +
-      (doors ? '<div class="field is-source-locked"><div class="field__label"><span>' + esc(dT("d.early.policy")) + '</span> ' + srcChip() + '</div>' +
-        '<div class="segmented radio-cards" role="radiogroup" aria-disabled="true" aria-label="' + esc(dT("d.early.policy")) + '">' +
-          card(true, dT("d.early.mode.follow"), earlyPolicyLabel(s.early || "warn")) +
-          card(false, dT("d.early.mode.custom"), "") +
-        '</div></div>' : ""));
-  }
+  /* 墓碑 2026-10-21（D462）：入場區的 bookyay 鎖定（entryLocked／tierEntryLockedHTML，D385 決定三、D386、D390 決定八）隨門票層提前入場退場。 */
   /* 副標＝這張票屬於哪一場（2026-09-22，D311）：日期・場地。多場次活動只看票名
      （「VIP」）分不出是哪一場的票。場地一律讀整場共用的那一格（D340 只做定點）。兩樣都沒有就不出現這一行。 */
   function tierModalSubText(t) {
@@ -3765,8 +3657,6 @@
     /* 門票名稱預設就填好自動生成的那個名字（2026-08-09 使用者指示），不再只放 placeholder——
        它是這張票真正的名字，讓人一打開就看得到、要改再改，而不是猜留空會變成什麼。 */
     drafts[t.id] = { price: t.price, qty: t.qty,
-                     earlymin: t.earlymin == null ? "" : t.earlymin,
-                     early: t.early == null ? "" : t.early,
                      addons: (t.addons || []).slice(),
                      img: (t.img || "").trim(),
                      hidden: !!t.hidden,           // D328 顯示開關（false＝顯示）
@@ -3831,12 +3721,6 @@
         const t0 = tiers.find(x => x.id === card.dataset.tier);
         if (t0) syncTierCalc(card, t0);
       }
-      /* 打提前入場的分鐘數時，說明句要立刻跟著換算，不然使用者看不到自己打的
-         30 分鐘等於幾點——這正是原始設計被詬病「看不出換算後的時間」的地方。 */
-      if (f.dataset.tierF === "earlymin") {
-        const t0 = tiers.find(x => x.id === card.dataset.tier);
-        if (t0) syncEarlyHint(card, t0);
-      }
       renderTierErrors();
       renderTierCount();
       renderCalc();
@@ -3884,29 +3768,10 @@
           if (tmodeOf(t) !== "solo") openTypeMenu(card, "");
           syncNewTypeHint(card, t);
         }
-        /* 清掉提前入場的分鐘數＝回到跟著場次的開放入場時間，說明句要立刻換回那一句
-           （不然會停在剛才清掉之前算出來的時間，跟欄位已經是空的對不上）。 */
-        if (key === "earlymin") syncEarlyHint(card, t);
         renderTierErrors(); renderTierCount(); scheduleSave();
         return;
       }
-      /* 早於開放時間入場（2026-09-22 D311 改成二選一）：先選「跟隨場次／自訂」——
-         跟隨＝把這張票自己的設定清掉；自訂＝先落到場次現在的那個值，再選仍可／不能入場。
-         兩者都重繪彈窗（要長出或收掉第二排卡，且這一區沒有正在打字的欄位）。 */
-      const tEarlyMode = e.target.closest("[data-tier-early-mode]");
-      if (tEarlyMode && drafts[t.id]) {
-        const sOwn = sessOf(t);
-        drafts[t.id].early = tEarlyMode.dataset.tierEarlyMode === "custom"
-          ? ((sOwn && sOwn.early) || "warn") : "";
-        renderTierModal();
-        return;
-      }
-      const tEarly = e.target.closest("[data-tier-early]");
-      if (tEarly && drafts[t.id]) {
-        drafts[t.id].early = tEarly.dataset.tierEarly;
-        renderTierModal();
-        return;
-      }
+      /* 墓碑 2026-10-21（D462）：「跟隨場次／自訂」與「仍可入場／不能入場」的委派分支（data-tier-early-mode／data-tier-early）退場。 */
       /* 墓碑 2026-09-23（D315）：例外平台費開關（`[data-tier-fee-exc]`）的委派分支退場。 */
       /* 墓碑 2026-10-20（D460）：「跟隨活動預設」開關（[data-tier-follow]）的委派分支退場。 */
       /* 顯示開關（D328）：只改草稿，就地翻開關——彈窗裡沒有別的東西跟著它變。 */
@@ -5185,7 +5050,7 @@
        彈窗標題與副標已經是脈絡，底下兩格彼此無關、各自的標籤也說完了自己是什麼。
        區塊容器留著（維持段間節奏），只是不畫標題列。 */
     "d.tm.sec.price": { en: "Price & quantity",   zh: "價格與數量" },
-    "d.tm.sec.entry": { en: "Early entry time",   zh: "提前入場時間" },   // 2026-10-12 使用者：照場次步驟的用詞（原「入場」）
+    /* 墓碑 2026-10-21（D462）："d.tm.sec.entry"（單張門票彈窗的「提前入場時間」區塊標題）退場。 */
     "d.tm.sec.show":  { en: "Listing & display",   zh: "上架與顯示" },
     /* 計算列表的三個算出來的數字（D316）：「粉絲付」＝票價，「創作者實收」＝票價−平台費。 */
     "d.tm.gross":     { en: "What fans pay",      zh: "粉絲實付" },
@@ -5296,21 +5161,7 @@
        票價之上沒有加給粉絲的手續費，欄位、卡面事實列與計算列表那一列一起退場。 */
     /* 墓碑 2026-09-22（D311）：`d.tier.fee.ph`（手續費欄的 placeholder）——手續費改住進計算列表，
        列裡的金額欄一律用 "0" 當 placeholder（金額欄的空值就是 0，不分欄位），不再逐欄開一把 key。 */
-    /* 提前入場（2026-08-11 使用者指示）：填分鐘數，說明句換算成實際時間顯示，
-       兩個數字同時看得到，不用自己心算。標籤特意標「提前」不是「入場時間」——
-       這格問的是跟場次開放入場的差距，不是另一個獨立的絕對時間。 */
-    "d.tier.early":   { en: "Early entry (minutes)", zh: "提前入場（分鐘）" },
-    "d.tier.early.ph": { en: "0",                 zh: "0" },
-    /* D396（2026-10-12）：場次的「開放入場」改名「提前入場時間」，這幾句跟著改稱呼 */
-    "d.tier.early.hint.default": { en: "Follows the date's early entry time ({doors}).",
-                                    zh: "跟著場次的提前入場時間（{doors}）。" },
-    "d.tier.early.hint.set": { en: "{n} minutes before the date's early entry time — opens at {time}.",
-                                zh: "比場次的提前入場時間再早 {n} 分鐘，也就是 {time} 可以入場。" },
-    "d.tier.early.hint.nodoors": { en: "This date has no early entry time, so early entry doesn't apply.",
-                                    zh: "場次沒有開啟提前入場時間，票的提前入場不適用。" },
-    "d.tier.early.fact": { en: "Early entry",     zh: "提前入場" },
-    "d.tier.early.fact.value": { en: "{n} min early ({time})", zh: "提早 {n} 分鐘（{time}）" },
-    "d.tier.early.fact.value.nodoors": { en: "{n} min early", zh: "提早 {n} 分鐘" },
+    /* 墓碑 2026-10-21（D462）：d.tier.early／.ph／.hint.default／.hint.set／.hint.nodoors／.fact／.fact.value／.fact.value.nodoors（門票層提前入場分鐘）隨門票層提前入場退場。 */
     "d.tier.tname":   { en: "Ticket name",       zh: "門票名稱" },
     "d.tier.tname.ph":{ en: "Session + tier",    zh: "留空就用場次名＋票種" },
     "d.tier.tname.orig": { en: "Original combination name: {name}", zh: "原組合名稱：{name}" },
@@ -5329,7 +5180,7 @@
     "d.sess.name":    { en: "Date name",         zh: "場次名稱" },
     "d.sess.name.ph": { en: "e.g., Day 1",       zh: "例：Day 1" },
     /* 早到處理（2026-08-11 使用者指示）：門口的政策，一個活動只設一份，
-       跟票種無關——票種各自能提前多久入場是另一件事，見下面 d.tier.early.*。
+       跟票種無關（2026-10-21 D462 起門票也沒有自己的提前入場，一律看所屬場次）。
        文案同日第二輪改寫（使用者：「這些詞句可以優化嗎」）：
        ① 兩個選項由講機制（提示／擋下）改成講**結果**（仍可入場／不能入場）——
           創作者在這裡決定的是「要不要放人進來」，機制是職員那邊的事，降到副標。
@@ -5351,20 +5202,8 @@
     "d.early.warn.sub":   { en: "Staff can confirm and let them through.", zh: "票務人員可人工確認。" },
     "d.early.block":      { en: "Deny entry",         zh: "不能入場" },
     "d.early.block.sub":  { en: "Staff can't override it.", zh: "票務人員限制操作。" },
-    /* 票種層的複寫（2026-08-11 使用者指示）：預設跟著場次，這裡可以再設一次。
-       2026-09-22（D311）改成明確的二選一，繼承成為一個可選的選項。 */
-    "d.early.mode.follow": { en: "Follow the date",  zh: "跟隨場次" },
-    "d.early.mode.custom": { en: "Custom",           zh: "自訂" },
-    /* D385 決定三：bookyay 帶入的票，提前入場鎖定為跟隨場次（唯讀讀數） */
-    "d.tier.early.bky":      { en: "Follows the date — early entry at {t}", zh: "跟隨場次——提前入場時間 {t}" },   // D396 改稱呼
-    "d.tier.early.bky.none": { en: "Follows the date",  zh: "跟隨場次" },
-    /* 墓碑 2026-09-22（D311）：`d.early.follow`／`d.early.own`（繼承與複寫的兩句提示）與
-       `d.early.followback`（「改回跟著場次」按鈕）隨二選一退場——現在哪一邊生效由選中的
-       那張卡說，場次現在設的值寫在「跟隨場次」卡的副標上。 */
-    /* 說明改成指路（2026-08-11）：整併之後這裡真正需要交代的是「每張票的入場時間
-       不一定等於這個時間」，以及那件事在哪裡設定。 */
-    "d.early.policy.hint": { en: "Ticket types can enter earlier — set that per ticket in the Ticket types & tickets step.",
-                              zh: "票種可以各自提前入場，在「票種與票務」那一步設定。" },
+    /* 墓碑 2026-10-21（D462）：d.early.mode.follow／.custom（門票層「跟隨場次／自訂」）、d.tier.early.bky／.bky.none（bookyay 票的跟隨場次讀數）退場。 */
+    /* 墓碑 2026-10-21（D462）：d.early.policy.hint（「票種可以各自提前入場，在票種那一步設定」）退場——門票層沒有提前入場。 */
     "d.tier.type":    { en: "Ticket type",       zh: "票種" },
     "d.tier.edit.fix":{ en: "Edit what's editable", zh: "編輯可改的欄位" },
     "d.prod.towel":   { en: "Official towel",    zh: "官方毛巾" },

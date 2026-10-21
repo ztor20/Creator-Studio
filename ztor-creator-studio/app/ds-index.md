@@ -404,7 +404,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 177 支；主 class 前 5 個）
+## 元件（ds-components/，共 178 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -528,6 +528,7 @@
 - `rich-body.css` — .rich-body, .rich-body__blocks, .rich-body__block, .rich-body__main, .rich-body__grip ｜ rich-body.css · 描述區塊編輯器（一串可排序的文字／圖片／影片區塊）
 - `roster-picker.css` — .roster-picker, .roster-picker__pick, .roster-picker__bar, .roster-picker__search, .roster-picker__grid ｜ Roster picker · 上面選人、下面看那一位（2026-09-02 建、同日改版；
 - `row-disclosure.css` — .rowdis__group, .product-list-scroll, .rowdis__group--gutter, .rowdis__head, .rowdis__label ｜ Row disclosure（可展開子列）— 2026-09-03 建，2026-09-04 改
+- `rules-group.css` — .rules-group, .rules-group__row, .rules-group__k, .rules-group__t, .rules-group__s ｜ rules-group.css · 購買條件群組（2026-10-21，UI-CHANGES 二
 - `scanner.css` — .scanner-page, .scanner-frame, .scanner-top, .scanner-top__name, .scanner-brand ｜ Mobile scanner · spec 5.1.5.14 (standalone phone
 - `search-collapse.css` — .search-collapse, .search-collapse__field, .search-collapse__close ｜ search-collapse — 收合於工具列的搜尋（點放大鏡展開成 field-pill）
 - `section-nav.css` — .section-nav-layout, .section-nav, .section-nav__item, .settings-nav__item, .section-nav__item--active ｜ section-nav.css · 側欄分節導覽（一頁多節，左邊選、右邊看）

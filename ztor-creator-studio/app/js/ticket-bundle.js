@@ -353,11 +353,31 @@
     }).join('') + '</div>';
   }
   function err(key) { return '<p class="field__error" data-tb-err="' + key + '" hidden></p>'; }
+  /* ── 購買條件群組的一列（2026-10-21，UI-CHANGES 二百八十二；元件 ds-components/rules-group.css）──
+     「購買條件」與「限購」整併成同一個容器 .rules-group：每一列＝左邊名稱＋一句說明、右邊讀數與調整入口同一排，
+     展開的編輯內容（條件清單、跟隨關掉後的設定）放在列下方的 body。容器、限購那一列與彙總句見 js/purchase-limits.js。
+     o：{ title, sub, value（讀數文字）, act（調整入口 HTML，例如跟隨開關）, body（展開內容 HTML） }；回傳的是列「裡面」的內容，
+     列本身（.rules-group__row）由消費頁的 markup 提供（頁面用 [data-rg-slot]＋display:contents 把它們攤成列的子元素）。 */
+  function rgRowHTML(o) {
+    return '<div class="rules-group__k"><span class="rules-group__t">' + esc(o.title) + '</span>' +
+        (o.sub ? '<span class="rules-group__s">' + esc(o.sub) + '</span>' : '') + '</div>' +
+      ((o.value != null && o.value !== '') || o.act
+        ? '<div class="rules-group__v">' + (o.value != null && o.value !== '' ? '<span class="rules-group__val">' + esc(o.value) + '</span>' : '') + (o.act || '') + '</div>'
+        : '') +
+      (o.body ? '<div class="rules-group__body">' + o.body + '</div>' : '');
+  }
+  /* 購買條件的一句讀數（彙總句用）：沒有成員門票＝null；已另設＝目前設定；否則＝預設（跟隨所含門票，取最嚴） */
+  function buyLine(st, def, T) {
+    if (!def || !def.count) return null;
+    var r = st && st.rules;
+    return buyText(r ? curBuy(r) : defBuy(def), T);
+  }
   /* opts.readonly＝只畫預設讀數（create-bundle：建立時照預設帶入，調整在細節頁）；opts.locked＝bookyay 鎖定不能改；
-     opts.n＝每組張數（限購換算成套）。 */
+     opts.n＝每組張數（限購換算成套）；opts.group＝2026-10-21 起畫成 .rules-group 的一列內容（rgRowHTML），不再自己帶標題與外框。 */
   function rulesHTML(st, def, et, T, opts) {
     opts = opts || {};
     var r = st && st.rules, n = Math.max(1, Math.floor(Number(opts.n) || 1)), buyOnly = !!opts.buyOnly;
+    if (opts.group) return rulesGroupHTML(st, def, et, T, opts);
     if (!def || !def.count) return '<p class="field__hint">' + esc(T('tb.rules.none')) + '</p>';
     var follow = !r || opts.readonly;
     /* buyOnly：不提「限購以組計」那句（限購在組合包的限購區塊） */
@@ -416,6 +436,40 @@
   }
   /* 墓碑 2026-10-16（D429）：buySummary()（只有購買條件那一半的摘要，D398；唯一消費者是 bookyay 自動建立的組合包的唯讀讀數）
      隨自動組合包退場，連同匯出一起刪除。 */
+  /* group 版（只含購買條件，buyOnly）：跟隨時＝名稱＋來源說明＋讀數＋跟隨開關同一列；關掉跟隨＝同一列＋下方展開設定（條件二選一、期間、分級） */
+  function rulesGroupHTML(st, def, et, T, opts) {
+    var r = st && st.rules, title = T('rg.buy');
+    if (!def || !def.count) return rgRowHTML({ title: title, sub: T('tb.rules.none') });
+    var follow = !r || opts.readonly;
+    var note = def.count > 1 ? T('tb.rules.from.many').replace('{n}', def.count) : T('tb.rules.from.one');
+    var act = opts.readonly ? '' :
+      '<span class="rules-group__act"><span>' + esc(T('tb.rules.follow')) + '</span>' +
+        '<div class="switch' + (follow ? ' switch--on' : '') + (opts.locked ? ' switch--locked' : '') + '" role="switch" aria-checked="' + follow + '"' +
+          (opts.locked ? ' aria-disabled="true"' : ' tabindex="0"') + ' data-tb-rules-follow aria-label="' + esc(T('tb.rules.follow')) + '"></div></span>';
+    var lockNote = opts.locked && T('tb.rules.locked') ? '<p class="field__hint">' + esc(T('tb.rules.locked')) + '</p>' : '';
+    if (follow) {
+      return rgRowHTML({ title: title, sub: note, value: buyText(defBuy(def), T), act: act, body: lockNote + err('empty') });
+    }
+    var tierOpts = TIERS_HI.map(function (v) {
+      return '<option value="' + v + '"' + (r.tier === v ? ' selected' : '') + '>' + esc(T('ce.rule.tier.' + v)) + '</option>';
+    }).join('');
+    var when = function (part, inner) { return condHas(r, part) ? '<div class="rule-when">' + inner + '</div>' : ''; };
+    var editor = '<div class="rule">' +
+        radio('on', r.on ? 'on' : 'off', [{ v: 'off', k: 'ce.rule.any' }, { v: 'on', k: 'tb.rules.restrict' }], T) +
+        (r.on ? '<div class="rule-sub">' +
+          radio('cond', r.cond, [{ v: 'time', k: 'ce.rule.time' }, { v: 'tier', k: 'ce.rule.tier' }, { v: 'both', k: 'ce.rule.both' }], T) +
+          when('time', '<div class="rule-row">' +
+            '<div class="field"><label class="field__label">' + esc(T('ce.rule.from')) + '</label><input class="input" type="datetime-local" data-tb-rule-f="from" value="' + esc(local(r.from)) + '"></div>' +
+            '<div class="field"><label class="field__label">' + esc(T('ce.rule.to')) + '</label><input class="input" type="datetime-local" data-tb-rule-f="to" value="' + esc(local(r.to)) + '"></div>' +
+          '</div>' + '<div class="field__hint">' + esc(T('tb.time.hint').replace('{period}', periodText(et, T))) + '</div>' + err('time')) +
+          when('tier', '<div class="field"><label class="field__label">' + esc(T('tb.tier.min')) + '</label>' +
+            '<select class="select" data-tb-rule-f="tier">' + tierOpts + '</select>' +
+            (def.tier ? '<div class="field__hint">' + esc(T('tb.tier.hint').replace('{tier}', tierText(def, T))) + '</div>' : '') + '</div>') +
+        '</div>' : '') +
+        err('tier') + err('empty') +
+      '</div>';
+    return rgRowHTML({ title: title, sub: note, act: act, body: lockNote + editor });
+  }
   /* 摘要（收合列、清單、細節頁讀數共用）：「超級粉絲以上 · 每人 2 組」 */
   function rulesSummary(st, def, T) {
     if (!def || !def.count) return '';
@@ -489,7 +543,7 @@
     evHidden: evHidden, saleCeil: saleCeil, lateEnd: lateEnd, lateText: lateText,
     eventValue: eventValue, followText: followText, isCustom: isCustom, effective: effective,
     schedErrors: schedErrors, schedHTML: schedHTML,
-    ruleConds: ruleConds, tierRules: tierRules, defaults: defaults, seedFrom: seedFrom, rulesErrors: rulesErrors, rulesHTML: rulesHTML, rulesSummary: rulesSummary,
+    ruleConds: ruleConds, tierRules: tierRules, defaults: defaults, seedFrom: seedFrom, rulesErrors: rulesErrors, rulesHTML: rulesHTML, rulesSummary: rulesSummary, rgRowHTML: rgRowHTML, buyLine: buyLine,
     onClick: onClick, onInput: onInput, syncErrors: syncErrors, errorCount: errorCount
   };
 })();
